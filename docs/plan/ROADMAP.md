@@ -28,8 +28,11 @@
 | M4 AI → canonical | 1 周 | 9.5 | ✅ `d057c3a` | SymbolExtractor + SymbolValidator + SymbolDetection 前端 | 0007 |
 | M5 策略市场 | 4-6 周 | 14.5 | ✅ `bfb8988` | marketplace_strategies + sandbox_scan + AI 合规检查 | — |
 | M6 部署上线 | 2 周 | 16.5 | ✅ `332360c` | backup/bench/deploy/status Makefile targets | — |
+| M7 量化基础设施 | 5-7 周 | 23.5 | 🅒 pending | mthub + 因子 DSL + factorsvc + ClickHouse + quantengine（ONNX）+ research 包；沙箱降级为研究专用 | 0013-0016（待写） |
 
-**P0 关键路径**：M0.1 → M0.2 → M0.3 → M1 → M2 → M3 → M4 → M5 → M6，全部 ✅ 已完成（2026-05-23）。
+**P0 关键路径（M0.1 → M6）**：全部 ✅ 已完成（2026-05-23）。
+
+**M7 关键路径**：M7.1 mthub → M7.2 因子 DSL → M7.3 factorsvc → M7.4 ClickHouse → M7.5 quantengine → M7.6 research 包 → M7.7 沙箱降级。
 
 ---
 
@@ -245,6 +248,97 @@ migration 092：`strategy_listings` / `strategy_subscriptions` / `strategy_perfo
 
 ---
 
+## M7｜量化基础设施（5-7 周）
+
+**目标**：把 ant 从「会下单的交易系统」拉到「专业量化平台」——参照 alfq 的「研究/生产分离」哲学，引入因子 DSL、ClickHouse 时序库、ONNX 推理通道，并把 Python 沙箱降级为研究专用。
+
+**蓝本**：
+- `@/opt/alfq/backend/go/internal/{mthub,factor/dsl,factorsvc,quantengine,mdgateway}`
+- `@/opt/alfq/research/alfq_research/`（data/factor/backtest/model）
+- `@/opt/alfq/docs/06-Python策略沙箱设计.md`（研究/生产分离哲学）
+- `@/opt/alfq/docs/09-因子DSL规范.md`（DSL EBNF 语法）
+
+### 设计决策：沙箱去留
+
+**结论**：保留沙箱代码，但**降级为研究专用**；生产路径切换为 DSL + ONNX。
+
+#### 现状问题（ant）
+
+用户编写的 Python 代码 `validate_strategy_code()` → `RestrictedPython compile` → 在 strategy-service 进程内 `exec()`：
+
+1. **安全风险长期暴露**：AST 白名单 + RestrictedPython 是「黑名单式攻面收敛」，CVE 史上多次被绕（attribute escape、frame walking、subclass injection）。生产实盘资金 + 不可信用户代码 + 共享进程 = 永远的猫鼠游戏。
+2. **无法横向扩展**：Python GIL + 进程内执行，单 strategy-service 容器同时跑 N 条策略时互相阻塞；`fork-per-execution`（ADR-0004 推荐方向 B）尚未落地。
+3. **回测/实盘语义漂移**：`indicators.py` 230 行硬编码算子，跟 AI 自然语言生成的策略描述对不上，AI 生成的「ema(close, 20)」要由 prompts 翻译为 Python 代码再过沙箱，**两次损耗**。
+4. **难以热更新**：策略变更需要发版重启 strategy-service；DSL/ONNX 模式只需 reload 表达式与模型文件。
+
+#### alfq 方案优势
+
+| 维度 | ant 现状（沙箱） | alfq 方案（DSL + ONNX） |
+|---|---|---|
+| 生产代码语言 | 用户 Python（不可信） | Go 解析 DSL + Go 加载 ONNX（全可信） |
+| 安全攻面 | RestrictedPython + AST 白名单（持续维护） | 零（DSL 是受限文法，ONNX 是数据） |
+| 性能 | Python 解释 + GIL | Go 增量算子 + onnxruntime native |
+| AI 自然语言 → 策略 | NL → Python → 沙箱 exec | NL → DSL 字符串（直接可校验/执行） |
+| 热更新 | 需重启 strategy-service | 直接 reload 表达式/模型 |
+| 回测/实盘一致 | 双引擎易漂移 | Go DSL 引擎 + Python 研究 DSL 引擎**严格语义对齐**（alfq 已有对齐测试） |
+| 多租户隔离 | 进程内共享 | 算子无状态 + 因子值按 tenant_id 写 CH |
+
+#### 沙箱保留位置
+
+- **保留**：`strategy-service/app/engine/sandbox.py` 作为**研究层**入口（notebook、本地回测、AI 实验），仅在用户自己的会话上下文跑，不接触实盘资金
+- **不再用于**：实盘信号生成；M2 OMS 之前的「Python 直接发单」路径在 M7.7 完全切断
+- **新增护栏**：`internal/connect/strategy_service.go` 增加 `production=true` 标志检测，生产模式拒绝任何 Python 代码路径
+
+### 卡片
+
+| ID | 内容 | 蓝本 | 验收 |
+|---|---|---|---|
+| M7.1-1 | 移植 `internal/mthub/`：Hub + Session + OrderEventBroker + Service（替代直调 mt4client/mt5client） | `@alfq/backend/go/internal/mthub/` | 同账户多次下单复用同一会话；symbol→bid/ask 实时缓存可被 OMS PreSubmit 取用 |
+| M7.1-2 | 抽象统一 `internal/broker/gateway.go` 接口，把 mt4client/mt5client 1146 行重复代码折叠到 `mdgateway/adapter/{mt4,mt5}/client.go` 各 ≤ 80 行 | `@alfq/backend/go/internal/mdgateway/adapter/` | LOC 减少 ≥ 50%；mt4/mt5 各保留 1 份 client，trading/account/stream/subscription 通过接口调用 |
+| M7.1-3 | OrderEventBroker：跨账户事件 fan-in，订阅者按 user_id 过滤 | `@alfq/backend/go/internal/mthub/events.go` | 单元测试：3 账户事件 → 1 user 订阅者收到 3 条 |
+| M7.2-1 | 移植 `internal/factor/dsl/`：Lexer/Parser/AST/15 算子（SMA/EMA/RSI/BB/ATR/Corr/Cov/统计/震荡） | `@alfq/backend/go/internal/factor/dsl/` | `ema($close, 20) / ema($close, 60) - 1` 可解析+求值，与 alfq 数值对齐误差 < 1e-9 |
+| M7.2-2 | 编写 `docs/spec/factor-dsl.md`：EBNF 语法 + 算子表 + 与 alfq 对齐说明 | `@alfq/docs/09-因子DSL规范.md` | 文档评审通过 |
+| M7.2-3 | DSL validator：表达式合法性 + 字段白名单（$open/$high/$low/$close/$volume）+ 复杂度上限（深度 ≤ 8） | — | 单测：恶意表达式（递归/巨长）被拒 |
+| M7.3-1 | 移植 `internal/factorsvc/`：engine + window_buffer + subscriber + factor_ch_writer | `@alfq/backend/go/internal/factorsvc/` | bar 流入 → 因子值出（in-process 通道 + ClickHouse 持久化） |
+| M7.3-2 | migration 096：`factor_definitions` 表（id/expression/symbols/owner_user_id/active） | — | DDL + seed 5 个内置因子 |
+| M7.3-3 | 因子值订阅 Connect RPC：`SubscribeFactorValues(factor_name, symbols)` | — | 前端可订阅实时因子值流 |
+| M7.4-1 | 引入 ClickHouse 容器（`clickhouse:24-alpine`）+ 网络隔离 + healthcheck | `@alfq/backend/go/internal/mdgateway/clickhouse_conn.go` | `docker compose up -d clickhouse` healthy |
+| M7.4-2 | 移植 `chmigrate/` 4 张时序表：`md_ticks` `md_bars` `factor_values` `signals`（按 alfq schema） | `@alfq/backend/go/internal/mdgateway/chmigrate/` | 启动后 4 表存在；写入 1000 条 tick 后查询 ≤ 100ms |
+| M7.4-3 | `internal/mdgateway/runner.go`：MT 行情 → bar_aggregator → quality 校验 → CH 持久化 | `@alfq/backend/go/internal/mdgateway/runner.go` | 端到端：MT4 tick → CH `md_bars` 表行 |
+| M7.4-4 | spill_replay 容错：CH 写入失败时落本地 spool，恢复后回放 | `@alfq/backend/go/internal/mdgateway/spill_replay.go` | 故障注入：CH 停 30s → 恢复后数据无丢失 |
+| M7.5-1 | 移植 `internal/quantengine/`：onnx_runtime + runtime + runner + signal_oms_bridge | `@alfq/backend/go/internal/quantengine/` | ONNX 模型加载 + 推理 + 输出信号 → OMS 提单 |
+| M7.5-2 | migration 097：`strategy_models` 表（id/onnx_uri/inputs/outputs/version/owner） | — | DDL + seed 1 个 demo 模型 |
+| M7.5-3 | 信号 → OMS 桥接：直接走 M2 已有的 oms.Executor，附 `signal_id` 审计 | — | e2e：模型推理输出 buy 信号 → OMS 状态 SUBMITTED |
+| M7.6-1 | 新建 `research/` Python 包（uv + pyproject.toml + ruff strict） | `@alfq/research/` | `cd research && uv run pytest` 通过 |
+| M7.6-2 | `research/ant_research/factor/dsl/`：Python 端 DSL 引擎（与 Go 端语义对齐，每个算子单测） | `@alfq/research/alfq_research/factor/dsl/` | Go/Python 对齐测试：100 个表达式 + 1000 bar，最大误差 < 1e-9 |
+| M7.6-3 | `research/ant_research/model/`：trainer.py（LightGBM/sklearn）+ exporter.py（ONNX 导出 + MinIO/本地 upload） | `@alfq/research/alfq_research/model/` | 训练 demo → 导出 → quantengine 加载推理一致 |
+| M7.6-4 | `research/ant_research/backtest/`：vectorized.py（polars 向量化） + event.py（事件驱动）+ broker_sim.py | `@alfq/research/alfq_research/backtest/` | 同一 DSL 因子在向量化/事件驱动下结果一致 |
+| M7.6-5 | DataClient：从 ClickHouse 拉历史 bar/tick/factor_value（只读，按 user_id 过滤） | `@alfq/research/alfq_research/data/` | notebook 一行 `client.bars('BTCUSD', '1d')` 拿数据 |
+| M7.7-1 | 沙箱降级：`sandbox.py` 加 `production_mode` 检测，生产模式直接 raise；仅在 `research_mode` 可用 | — | 实盘下单链路 grep 无 sandbox 调用 |
+| M7.7-2 | strategy-service 路由分裂：`/research/*` 走沙箱，`/production/*` 仅接受 DSL/model_id 引用 | — | OpenAPI 契约 + 集成测试 |
+| M7.7-3 | 老 Python 策略迁移工具：`migrate_legacy_strategy.py` 把现有 `strategies.code`（Python）转 DSL（能转的）+ 标记 unconvertible | — | 50% 内置策略可全自动转 DSL；剩余给出迁移 issue |
+| M7.7-4 | AI 生成策略契约切换：`ai_strategy_validator.go` 输出从 Python code → DSL 字符串 + ONNX URI（可选） | M4 已有验证器扩展 | 10 条 NL 样例 → 100% 输出 DSL，0 输出 Python |
+
+### 退出标准
+
+- `mthub` 接管所有 MT 账户连接；mt4client/mt5client 不再被 server/service/connect 直接 import
+- ClickHouse 启动后 1 小时持续写入 tick/bar/factor_value，无 spill
+- 至少 1 个 ONNX 模型（demo 动量策略）端到端跑通：训练 → 导出 → quantengine 推理 → OMS 提单
+- 实盘下单链路完全无 Python 代码执行（grep 验证）
+- `research/` 包独立可用：`cd research && uv run jupyter lab` 可跑 notebook
+- Go DSL 与 Python DSL 数值对齐误差 < 1e-9
+- AI 生成策略 100% 输出 DSL（不再生成 Python）
+
+### 待写 ADR
+
+- **ADR-0013 因子 DSL 规范**（Go/Python 双引擎语义对齐契约）
+- **ADR-0014 ClickHouse 时序存储**（PG 业务库 vs CH 时序库职责边界）
+- **ADR-0015 ONNX 推理通道**（模型版本管理 + signal→OMS 审计）
+- **ADR-0016 沙箱降级**（生产路径排除 Python 的决策与回退方案）
+
+---
+
 ## 历史版本
 
 - v1.0 (2026-05-23)：基于 DESIGN-REVIEW-2026-05 + AlfQ 迁移计划首版
+- v1.1 (2026-05-23)：M0.1-M6 全部 ✅；新增 M7 量化基础设施（mthub + DSL + ClickHouse + ONNX + 沙箱降级）
