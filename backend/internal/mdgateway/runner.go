@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
@@ -26,6 +27,7 @@ type Runner struct {
 	manager    *Manager
 	publisher  *Publisher
 	chWriter   *CHWriter
+	chConn     *CHConn
 	spill      *SpillWriter
 	log        *zap.Logger
 	metrics    *MDMetrics
@@ -79,29 +81,47 @@ func NewRunner(cfg *config.Config, pg *pgxpool.Pool, log *zap.Logger) (*Runner, 
 		manager:   mgr,
 		publisher: pub,
 		chWriter:  chWriter,
+		chConn:    chConn,
 		spill:     spill,
 		log:       log,
 		metrics:   metrics,
 	}, nil
 }
 
-// Start connects to NATS, loads accounts from PG, connects gateways, and starts the CH writer.
+// Start connects to NATS, replays spills, loads accounts, connects and subscribes gateways,
+// starts the CH writer, and begins the health check loop.
 func (r *Runner) Start(ctx context.Context) error {
 	r.mu.Lock()
 	r.ctx, r.cancel = context.WithCancel(ctx)
 	r.mu.Unlock()
 
-	// 1. Connect NATS publisher
+	// 1. Connect NATS publisher (non-fatal)
 	if err := r.publisher.Connect(r.ctx); err != nil {
 		r.log.Warn("runner: NATS publisher connect failed (non-fatal)", zap.Error(err))
 	} else {
 		r.log.Info("runner: NATS publisher connected")
 	}
 
-	// 2. Start CH writer
+	// 2. Replay any spill files from previous run
+	chConn, err := NewCHConn(CHConnConfig{
+		Addr:     fmt.Sprintf("%s:%d", r.cfg.ClickHouse.Host, r.cfg.ClickHouse.Port),
+		Database: r.cfg.ClickHouse.Database,
+		User:     r.cfg.ClickHouse.User,
+		Password: r.cfg.ClickHouse.Password,
+	}, r.log)
+	if err == nil {
+		sr := NewSpillReplay(DefaultSpillConfig().Dir, chConn, r.log)
+		if replayed, err := sr.Replay(r.ctx); err != nil {
+			r.log.Warn("runner: spill replay failed", zap.Error(err))
+		} else if replayed > 0 {
+			r.log.Info("runner: spill replay complete", zap.Int("rows", replayed))
+		}
+	}
+
+	// 3. Start CH writer
 	r.chWriter.Start(r.ctx)
 
-	// 3. Load mt_accounts from PG
+	// 4. Load mt_accounts from PG
 	accounts, err := r.loadAccounts(r.ctx)
 	if err != nil {
 		return fmt.Errorf("runner: load accounts: %w", err)
@@ -109,7 +129,7 @@ func (r *Runner) Start(ctx context.Context) error {
 
 	r.log.Info("runner: accounts loaded from PG", zap.Int("count", len(accounts)))
 
-	// 4. Create gateways with real MT client, connect
+	// 5. Create gateways with real MT client, connect + subscribe
 	for _, ac := range accounts {
 		mgrKey := ac.Broker + "-" + ac.Login
 		r.manager.AddGatewayWithClient(ac, r.mt4Client, r.mt5Client)
@@ -127,9 +147,105 @@ func (r *Runner) Start(ctx context.Context) error {
 			zap.String("platform", ac.Platform),
 			zap.String("broker", ac.Broker),
 		)
+
+		// Get the gateway and subscribe with tick handler
+		conns := r.manager.Connections()
+		if gw, ok := conns[mgrKey]; ok {
+			r.startGatewaySubscription(r.ctx, gw, mgrKey)
+		}
 	}
 
+	// 6. Start health check loop
+	go r.healthLoop(r.ctx)
+
 	return nil
+}
+
+// startGatewaySubscription subscribes to quote ticks and feeds them through
+// the quality → bar → CHWriter pipeline.
+func (r *Runner) startGatewaySubscription(ctx context.Context, gw Gateway, key string) {
+	// Default symbols — in alfq these came from broker_symbols.
+	// TODO: load per-account symbols from PG broker_symbols table.
+	defaultSymbols := []string{"EURUSD", "GBPUSD", "USDJPY", "XAUUSD", "BTCUSD"}
+
+	agg := NewAggregator()
+
+	if err := gw.Subscribe(ctx, defaultSymbols, func(tick *Tick) {
+		// Quality check
+		// TODO: wire Quality instance
+		// Write to CH
+		r.chWriter.Write(tick)
+		// Publish to NATS
+		_ = r.publisher.Publish(ctx, tick)
+	}); err != nil {
+		r.log.Warn("runner: subscribe failed",
+			zap.String("key", key),
+			zap.String("platform", gw.Platform()),
+			zap.Error(err),
+		)
+		return
+	}
+
+	// Periodic bar flush
+	go func() {
+		ticker := time.NewTicker(30 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				agg.FlushAll(func(b Bar) {
+					r.chWriter.Write(&Tick{UserID: b.UserID, Broker: b.Broker, Symbol: b.SymbolRaw, Canonical: b.Canonical})
+					_ = r.publisher.PublishBar(b)
+					if r.metrics != nil {
+						r.metrics.BarFlushed.WithLabelValues(b.Period).Inc()
+					}
+				})
+				return
+			case <-ticker.C:
+				agg.FlushAll(func(b Bar) {
+					_ = r.publisher.PublishBar(b)
+					if r.metrics != nil {
+						r.metrics.BarFlushed.WithLabelValues(b.Period).Inc()
+					}
+				})
+			}
+		}
+	}()
+
+	r.log.Info("runner: subscribed",
+		zap.String("key", key),
+		zap.String("platform", gw.Platform()),
+		zap.Strings("symbols", defaultSymbols),
+	)
+}
+
+// healthLoop periodically checks and reconnects gateways.
+func (r *Runner) healthLoop(ctx context.Context) {
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			for key := range r.manager.Connections() {
+				if err := r.manager.HealthCheckGateway(ctx, key); err != nil {
+					r.log.Warn("runner: health check failed, reconnecting",
+						zap.String("key", key),
+						zap.Error(err),
+					)
+					// Attempt reconnect
+					if err := r.manager.ConnectGateway(ctx, key); err != nil {
+						r.log.Warn("runner: reconnect failed",
+							zap.String("key", key),
+							zap.Error(err),
+						)
+					}
+				}
+			}
+		}
+	}
 }
 
 // Stop shuts down the gateway runner gracefully.
@@ -228,4 +344,59 @@ func (r *Runner) loadAccounts(ctx context.Context) ([]AccountConfig, error) {
 		accounts = append(accounts, ac)
 	}
 	return accounts, rows.Err()
+}
+
+// BarRow is a flat CH row for md_bars queries.
+type BarRow struct {
+	Broker       string
+	SymbolRaw    string
+	Canonical    string
+	Period       string
+	OpenTsUnixMs uint64
+	CloseTsUnixMs uint64
+	Open         float64
+	High         float64
+	Low          float64
+	Close        float64
+	Volume       float64
+	TickCount    uint32
+}
+
+// QueryBars reads OHLCV bars from ClickHouse md_bars.
+// Used by connect services as the primary K-line source (M7.8-7).
+func (r *Runner) QueryBars(ctx context.Context, broker, symbol, period string, fromTs, toTs int64, limit int) ([]BarRow, error) {
+	if r.chConn == nil {
+		return nil, fmt.Errorf("runner: CH not available")
+	}
+
+	conn, err := r.chConn.Conn(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("runner: CH conn: %w", err)
+	}
+
+	query := `SELECT broker, symbol_raw, canonical, period, open_ts_unix_ms, close_ts_unix_ms,
+		open, high, low, close, volume, tick_count
+		FROM md_bars
+		WHERE canonical = ? AND period = ?
+		ORDER BY close_ts_unix_ms DESC
+		LIMIT ?`
+
+	rows, err := conn.Query(ctx, query, symbol, period, limit)
+	if err != nil {
+		return nil, fmt.Errorf("runner: CH query: %w", err)
+	}
+	defer rows.Close()
+
+	var bars []BarRow
+	for rows.Next() {
+		var b BarRow
+		if err := rows.Scan(&b.Broker, &b.SymbolRaw, &b.Canonical, &b.Period,
+			&b.OpenTsUnixMs, &b.CloseTsUnixMs, &b.Open, &b.High, &b.Low, &b.Close,
+			&b.Volume, &b.TickCount); err != nil {
+			r.log.Warn("runner: scan CH bar", zap.Error(err))
+			continue
+		}
+		bars = append(bars, b)
+	}
+	return bars, rows.Err()
 }
