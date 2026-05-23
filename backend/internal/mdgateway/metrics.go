@@ -31,8 +31,8 @@ func NewMDMetrics(reg prometheus.Registerer) *MDMetrics {
 		}, []string{"broker", "symbol"}),
 		TickDropped: factory.NewCounterVec(prometheus.CounterOpts{
 			Name: "md_tick_dropped_total",
-			Help: "Ticks dropped by quality checks, by broker and symbol.",
-		}, []string{"broker", "symbol"}),
+			Help: "Ticks dropped by quality checks, by broker, symbol, and reason.",
+		}, []string{"broker", "symbol", "reason"}),
 		TickOutlier: factory.NewCounterVec(prometheus.CounterOpts{
 			Name: "md_tick_outlier_total",
 			Help: "Ticks flagged as price outliers.",

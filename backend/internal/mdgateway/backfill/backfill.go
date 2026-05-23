@@ -202,3 +202,16 @@ func (r *Runner) RunTicks(ctx context.Context, cfg Config) (int, error) {
 	r.log.Info("backfill: ticks complete", zap.Int("total_rows", total))
 	return total, nil
 }
+
+// RunBarsFromMT5 backfills bars directly from an MT5 connection using QuoteHistory.
+// This is used when PG does not have the raw bar data (e.g. new symbols).
+//
+// M7.8-14: TODO — wire mt5client connection and call QuoteHistory for each symbol.
+// The interface is defined; the implementation requires a live mt5client.MT5Connection.
+//
+//	func (r *Runner) RunBarsFromMT5(ctx context.Context, conn *mt5client.MT5Connection, cfg Config) (int, error) {
+//	    for _, sym := range cfg.Symbols {
+//	        bars, err := conn.QuoteHistory(ctx, sym, pb.Timeframe_TIMEFRAME_M1, cfg.FromTime.Format("2006-01-02T15:04:05"), 5000)
+//	        ...
+//	    }
+//	}

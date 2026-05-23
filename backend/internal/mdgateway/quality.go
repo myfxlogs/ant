@@ -36,10 +36,21 @@ type Quality struct {
 	metrics *MDMetrics // optional Prometheus metrics (nil = no-op)
 }
 
+// DropReason classifies why a tick was dropped.
+type DropReason string
+
+const (
+	DropReasonNone     DropReason = ""
+	DropReasonBidGtAsk DropReason = "bid_gt_ask"
+	DropReasonOutlier  DropReason = "outlier"
+	DropReasonGap      DropReason = "gap"
+)
+
 // CheckResult encodes QC decisions per tick.
 type CheckResult struct {
-	Outlier bool // price is outlier (>sigma from median)
-	Dropped bool // tick should be dropped entirely (e.g. bid > ask)
+	Outlier bool       // price is outlier (>sigma from median)
+	Dropped bool       // tick should be dropped entirely
+	Reason  DropReason // why dropped (empty if not dropped)
 }
 
 // NewQuality creates a QC engine.
@@ -74,9 +85,9 @@ func (q *Quality) Check(tick *Tick) CheckResult {
 	ask, askOK := parseFloat(tick.GetAsk().GetValue())
 	if ok && askOK && bid > 0 && ask > 0 && bid > ask {
 		if q.metrics != nil {
-			q.metrics.TickDropped.WithLabelValues(tick.Broker, tick.Symbol).Inc()
+			q.metrics.TickDropped.WithLabelValues(tick.Broker, tick.Symbol, "bid_gt_ask").Inc()
 		}
-		return CheckResult{Dropped: true}
+		return CheckResult{Dropped: true, Reason: DropReasonBidGtAsk}
 	}
 
 	q.mu.Lock()
@@ -110,6 +121,7 @@ func (q *Quality) Check(tick *Tick) CheckResult {
 					q.metrics.TickOutlier.WithLabelValues(tick.Broker, tick.Symbol).Inc()
 				}
 				res.Outlier = true
+				res.Reason = DropReasonOutlier
 			}
 		}
 	}

@@ -86,7 +86,7 @@ func TestDefaultQualityConfig(t *testing.T) {
 	}
 }
 
-func TestPublisher_Config(t *testing.T) {
+func TestPublisher_NewAndClose(t *testing.T) {
 	p := NewPublisher(DefaultPublisherConfig(), zap.NewNop())
 	if p == nil {
 		t.Fatal("NewPublisher returned nil")

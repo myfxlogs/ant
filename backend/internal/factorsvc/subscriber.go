@@ -53,6 +53,11 @@ func (s *Subscriber) Unsubscribe(id string) {
 	delete(s.handlers, id)
 }
 
+// M7.8-10: TODO — switch from in-process dispatch to NATS subscription.
+// Current: factor values are delivered via in-process handler fan-out.
+// Target: subscribe to NATS subject "md_events.bar" and dispatch to handlers.
+// This decouples factorsvc from mdgateway and enables horizontal scaling.
+//
 // Dispatch sends a factor value to all registered handlers concurrently.
 func (s *Subscriber) Dispatch(ctx context.Context, fv FactorValue) {
 	s.mu.RLock()
