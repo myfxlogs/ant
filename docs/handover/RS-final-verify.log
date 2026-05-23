@@ -1,0 +1,73 @@
+=== M0.1 Final Verification — 2026-05-23T02:43:45+00:00 ===
+
+--- M0.1-1: git rm --cached result ---
+204139 frontend/package-lock.json
+41431 mcp-server/package-lock.json
+30090 frontend/src/i18n/resources/vi/ai.ts
+
+--- M0.1-2: gitignore + no tracked gen ---
+
+--- M0.1-3: CI jobs ---
+name: CI
+    name: Line limits
+      - name: Check source and generated line limits
+    name: Backend (lint)
+      - name: go vet
+      - name: golangci-lint
+    name: Backend (test + build)
+      - name: go test
+      - name: go build
+      - name: go build cmd/server
+    name: Proto (buf breaking)
+      - name: buf breaking
+    name: Proto (codegen drift)
+      - name: Install proto toolchain
+      - name: Regenerate protobuf
+      - name: Assert no uncommitted changes after codegen
+    name: Migrations (down check)
+      - name: Check PR-added .up.sql have matching .down.sql
+    name: Frontend (lint + build)
+      - name: Install deps
+      - name: Lint
+      - name: Build
+
+--- M0.1-4: docker-compose healthchecks ---
+5
+
+--- M0.1-5: migration .down check script ---
+  migration-down-check:
+    name: Migrations (down check)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check PR-added .up.sql have matching .down.sql
+        run: |
+          BASE=$(git merge-base origin/main HEAD 2>/dev/null || echo "HEAD~1")
+
+--- M0.1-6: env-check ---
+Checking .env against .env.example...
+All env keys present ✅
+
+--- ADR status ---
+0004-python-sandbox-process-model.md: ## Status
+0006-sqlc-vs-sqlx.md: ## Status
+0007-ai-bounded-tools.md: ## Status
+0010-error-code-system.md: ## Status
+0011-observability.md: ## Status
+0012-broker-adapter.md: ## Status
+
+--- git status ---
+ M .gitignore
+ M Makefile
+D  backend/mt4/go.mod
+D  backend/mt5/go.mod
+ M docs/adr/0004-python-sandbox-process-model.md
+ M docs/adr/0006-sqlc-vs-sqlx.md
+ M docs/adr/0007-ai-bounded-tools.md
+ M docs/adr/0010-error-code-system.md
+ M docs/adr/0011-observability.md
+ M docs/adr/0012-broker-adapter.md
+?? docs/handover/

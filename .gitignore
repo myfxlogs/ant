@@ -15,7 +15,11 @@ backend/server
 # Proto generated code (local only — CI regenerates via `make proto`)
 backend/gen/
 backend/mt4/*.pb.go
+backend/mt4/go.mod
+backend/mt4/go.sum
 backend/mt5/*.pb.go
+backend/mt5/go.mod
+backend/mt5/go.sum
 frontend/src/gen/
 tools/proto-gen/bin/
 

@@ -37,3 +37,5 @@ strategy-service 是 ant 的核心安全边界。当前实现（`@/opt/ant/strat
 
 ## History
 - 2026-05-23 Proposed
+
+- 2026-05-23 Accepted（按推荐方向落地，详见 Decision）

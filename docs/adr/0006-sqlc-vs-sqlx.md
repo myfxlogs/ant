@@ -32,3 +32,5 @@ AGENT.md 写明「sqlc 优先，不引入 ORM」，但仓库现状（`@/opt/ant/
 
 ## History
 - 2026-05-23 Proposed
+
+- 2026-05-23 Accepted（按推荐方向落地，详见 Decision）

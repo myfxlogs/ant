@@ -48,3 +48,5 @@ type BrokerAdapter interface {
 
 ## History
 - 2026-05-23 Proposed
+
+- 2026-05-23 Accepted（按推荐方向落地，详见 Decision）

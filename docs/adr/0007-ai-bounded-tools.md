@@ -26,3 +26,5 @@ ant 的核心特色是「自然语言 → Python 策略」。LLM 调用什么工
 
 ## History
 - 2026-05-23 Proposed
+
+- 2026-05-23 Accepted（按推荐方向落地，详见 Decision）
