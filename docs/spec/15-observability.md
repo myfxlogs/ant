@@ -1,7 +1,8 @@
 # 15 · 可观测性规范
 
 > 路径：`backend/internal/metrics/` + `backend/internal/monitoring/`
-> 端点：`/metrics`（Prometheus）、`/healthz`、`/readyz`、`/livez/account/{id}`
+> 端点：`/metrics`（Prometheus）、`/healthz`、`/readyz`
+> 账户状态不走 HTTP 端点（决策 RV-C4）：走 ConnectRPC `MtHubService.GetAccountStatus` + Prometheus Gauge `mt_account_connected{account_id, broker, platform}`
 
 ## 1. 三支柱
 
@@ -136,23 +137,21 @@ HTTP 503 Service Unavailable
 }
 ```
 
-### 4.3 GET /livez/account/{accountID}
+### 4.3 账户健康查询（不走 HTTP）
 
-单账户健康。用于前端"账户状态"组件。
+**废弃**：原计划的 `GET /livez/account/{id}` HTTP 端点已废弃（决策 RV-C4：k8s liveness 哲学只关心进程级；账户级是观测问题不是健康检查问题）。
 
-```json
-HTTP 200 OK
-{
-  "account_id": "uuid",
-  "broker": "...",
-  "platform": "mt5",
-  "state": "connected",          // disconnected | connecting | connected | degraded
-  "last_tick_at": "2026-05-23T...",
-  "circuit_state": "closed",
-  "tick_rate_1m": 234,
-  "subscribed_symbols": ["BTCUSD", "EURUSD"]
-}
-```
+**替代方案**：
+
+1. **前端查询** → ConnectRPC `MtHubService.GetAccountStatus(account_id)` 返回：
+   ```
+   { account_id, broker, platform, state, last_tick_at, circuit_state, tick_rate_1m, subscribed_symbols }
+   ```
+2. **SRE / Grafana** → Prometheus Gauge：
+   - `mt_account_connected{account_id, broker, platform}` ∈ {0,1}
+   - `md_tick_total{broker, canonical}` 以 rate(1m) 求 tick rate
+   - `md_circuit_state{broker, mtapi_endpoint}` 看熝断
+3. **告警**：在 Grafana 设 `mt_account_connected == 0 for 60s` 规则
 
 `state` 状态机：
 
@@ -271,11 +270,10 @@ curl -sf http://localhost:8080/metrics | grep -c "^md_tick_total" | grep -q "^1$
 # /readyz 200
 curl -sfo /dev/null -w "%{http_code}" http://localhost:8080/readyz | grep -q "^200$"
 
-# 至少有一个账户 livez 可查
-ACCOUNT_ID=$(docker exec ant-postgres psql -U ant -d ant -tAc \
-  "SELECT id FROM mt_accounts WHERE is_active=true LIMIT 1")
-curl -sfo /tmp/livez.json "http://localhost:8080/livez/account/$ACCOUNT_ID"
-jq -e '.state == "connected"' /tmp/livez.json
+# 至少有一个账户 connected（走 metric 代替原 livez/account）
+curl -sf http://localhost:8080/metrics \
+  | grep -E '^mt_account_connected\{[^}]+\} 1$' \
+  | head -1 | grep -q 'mt_account_connected'
 
 # 日志含必填字段
 docker logs ant-backend 2>&1 | head -100 | jq -e \

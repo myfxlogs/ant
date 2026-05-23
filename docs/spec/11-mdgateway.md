@@ -46,7 +46,7 @@ type Manager struct {
     publisher   *Publisher
     chWriter    *CHWriter
     spillWriter *SpillWriter
-    breakers    map[string]*CircuitBreaker  // accountID → breaker
+    breakers    map[string]*CircuitBreaker  // brokerKey ("broker|host:port") → breaker（per-broker，非 per-account；见 §11）
 
     mu       sync.RWMutex
     gateways map[string]Gateway  // accountID → Gateway
@@ -204,7 +204,7 @@ type QualityConfig struct {
 type CheckResult struct {
     Outlier      bool
     Dropped      bool
-    DroppedReason string  // "bid_gt_ask" | "outlier" | "parse_error" | ""
+    DroppedReason string  // "bid_gt_ask" | "non_positive" | "parse_error" | ""（不再含 outlier；见 §5.1）
 }
 
 func (q *Quality) Check(t *mdtick.Tick) CheckResult
@@ -212,14 +212,32 @@ func (q *Quality) Check(t *mdtick.Tick) CheckResult
 
 详细规则：
 
-| 规则 | 触发条件 | 行为 |
-|---|---|---|
-| bid > ask | Bid.Cmp(Ask) > 0 | drop + reason=`bid_gt_ask` |
-| 价格离群 | |bid - median| > N*MAD（N=5）| outlier=true（不 drop，但计数）|
-| Gap | (cur.ts - last.ts)/1000 > 5s | 计 metric `md_gap_total`，不 drop |
-| Clock skew | |broker.ts - local.now| > 30s | 计 gauge `md_clock_skew_seconds` |
+### 5.1 检查规则（行业标杆：行情数据"少不丢"原则）
+
+> **核心原则**：只在数据**显然不可用**时丢弃；可疑但合法的跳变（新闻、流动性事件）一律放行 + 上报 metric，由下游决定如何应对。
+> 参考：LMAX、Bloomberg B-PIPE、Refinitiv Elektron 均采用此哲学。
+
+| 规则 | 触发条件 | 行为 | 理由 |
+|---|---|---|---|
+| **bid > ask** | `Bid.Cmp(Ask) > 0` | **drop** + `reason="bid_gt_ask"` | 套利不可能；必为 broker bug |
+| **非正数价格** | `Bid.Sign()<=0 \|\| Ask.Sign()<=0` | **drop** + `reason="non_positive"` | 价格不可能 ≤ 0 |
+| **解析失败** | `decimal.NewFromString` err | **drop** + `reason="parse_error"` | 数据损坏 |
+| 价格跳变 | \|bid - median(last 100)\| > N×MAD（默认 N=5）| **不 drop**；置 `outlier=true` + metric | FX 重尾分布；新闻/经济数据公布会真实跳变 |
+| Gap | `(cur.ts - last.ts)/1000 > 5s` | **不 drop**；metric `md_gap_total` | 周末/节假日/低流动性正常现象 |
+| Clock skew | \|broker.ts - local.now\| > 30s | **不 drop**；gauge `md_clock_skew_seconds` | 仅观测，不参与决策（已用 ArrivedUnixMs） |
 
 **禁止**：用 mean/stdev（FX 重尾不适用）。**必须**用 median + MAD（`alfq quality.go` 同款）。
+
+### 5.2 metric 与 reason 标签
+
+```
+md_tick_dropped_total{broker, canonical, reason}
+  reason ∈ {bid_gt_ask, non_positive, parse_error}     仅这 3 个
+md_tick_anomaly_total{broker, canonical, kind}
+  kind ∈ {outlier, gap, clock_skew}                     不丢，仅观测
+```
+
+**判分依据**（决策记录见 BACKLOG RV-C2）：5σ 跳变在外汇 NFP / FOMC / 黑天鹅事件下是真实价格，drop 会导致策略错过关键信号。代价比留下偶尔的"脏 tick"高得多。
 
 ## 6. tick_dedup.go（v2 新增）
 
@@ -436,7 +454,15 @@ func (c *CircuitBreaker) OnFailure()
 func (c *CircuitBreaker) State() State
 ```
 
-每个账户一个 CircuitBreaker。Manager 在调用 adapter 前调 `Allow()`，失败时 `OnFailure()`。
+**作用域：每个 broker endpoint 一个 CircuitBreaker（非 per-account）**。
+
+理由（行业标杆 Hystrix / resilience4j）：
+- 故障相关性在网络层 — 同 broker 多账户共享 mtapi 网关，一个不可达时全体不可达，per-account 重复决策无意义且制造噪音
+- 认证错误（密码错、token 过期）走单独路径：直接置账户为 `disabled`，不进入 breaker（避免污染网络故障判断）
+
+`brokerKey = fmt.Sprintf("%s|%s:%s", cfg.Broker, cfg.MtapiHost, cfg.MtapiPort)`
+
+Manager 在调用 adapter 前调 `breakers[brokerKey].Allow()`，失败时 `OnFailure()`；认证错误**不**调 `OnFailure`，改写 PG `mt_accounts.account_status='auth_failed'` + alert。
 
 ## 12. metrics.go（Prometheus）
 
@@ -452,8 +478,10 @@ func (c *CircuitBreaker) State() State
 | `md_ch_write_latency_seconds` | Histogram | kind |
 | `md_spill_writes_total` | Counter | reason={ch_error,queue_full} |
 | `md_spill_replay_total` | Counter | status={ok,err} |
-| `md_circuit_state` | Gauge | account_id, broker |
+| `md_circuit_state` | Gauge | broker, mtapi_endpoint（per-broker，非 per-account；见 §11）|
+| `md_tick_anomaly_total` | Counter | broker, canonical, kind={outlier,gap,clock_skew}（见 §5）|
 | `md_gateway_connected` | Gauge | account_id, broker, platform |
+| `mt_account_connected` | Gauge | account_id, broker, platform（同 md_gateway_connected 别名；前端/Grafana 用此名查询，决策 RV-C4）|
 | `md_clock_skew_seconds` | Gauge | broker |
 | `md_canonical_fallback_total` | Counter | broker |
 

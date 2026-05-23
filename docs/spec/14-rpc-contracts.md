@@ -35,8 +35,23 @@ service MtHubService {
   rpc SymbolParams(SymbolParamsRequest) returns (SymbolParamsResponse);
   rpc PriceHistory(PriceHistoryRequest) returns (PriceHistoryResponse);
 
+  // 账户健康（替代原 GET /livez/account/{id}，决策 RV-C4）
+  rpc GetAccountStatus(GetAccountStatusRequest) returns (AccountStatus);
+
   // SSE：用户所有 MT 账户的订单事件流
   rpc StreamOrderEvents(StreamOrderEventsRequest) returns (stream OrderEvent);
+}
+
+message GetAccountStatusRequest { string account_id = 1; }
+message AccountStatus {
+  string account_id           = 1;
+  string broker               = 2;
+  string platform             = 3;
+  string state                = 4;  // disconnected|connecting|connected|degraded
+  google.protobuf.Timestamp last_tick_at = 5;
+  string circuit_state        = 6;  // closed|open|half_open
+  double tick_rate_1m         = 7;
+  repeated string subscribed_symbols = 8;
 }
 
 // ----- Place / Close -----

@@ -38,15 +38,15 @@
 
 | Sub-milestone | 内容 | 卡片数 | 预估工日 |
 |---|---|---|---|
-| **M7.0** | 准备：容器、依赖、proto 重构、处置 v1 | 8 | 2 |
+| **M7.0** | 准备：容器、依赖、proto 重构、处置 v1、secrets | 9 | 3 |
 | **M7.1** | mdgateway 完整重做（含 adapter） | 18 | 7 |
 | **M7.2** | mthub + ConnectRPC 暴露 | 9 | 4 |
 | **M7.3** | factorsvc + DSL（移植 alfq） | 7 | 3 |
 | **M7.4** | quantengine + ONNX | 6 | 3 |
 | **M7.5** | 业务层切流 + 老 kline_service 标 deprecated | 8 | 3 |
-| **M7.6** | 端到端测试 + chaos | 6 | 3 |
+| **M7.6** | 端到端测试 + chaos + telemetry | 7 | 3 |
 | **M7.Z** | 关闭：硬指标全过 + ROADMAP 状态更新 | 3 | 1 |
-| **总计** | | **65** | **~26 工日** |
+| **总计** | | **67** | **~27 工日** |
 
 ---
 
@@ -60,8 +60,9 @@
 | M7.0-4 | 🅒 `internal/storage/clickhouse/client.go` 包含 Connect/Ping/PrepareBatch | 同左 + `*_test.go` | `cd backend && go test ./internal/storage/clickhouse/...` | |
 | M7.0-5 | 🅒 `internal/storage/nats/client.go` 包含 Connect + JetStream + ensureStream(MD_EVENTS) | 同左 + `*_test.go` | `cd backend && go test ./internal/storage/nats/...` | |
 | M7.0-6 | 🅒 Makefile 加 `migrate-ch` `verify-card` 目标 | `Makefile` | `make help \| grep -E 'migrate-ch\|verify-card'` | |
-| M7.0-7 | 🅒 proto 布局重构：**仅** ant 自有平铺 `proto/*.proto` 迁到 `proto/ant/v1/*.proto`；**保留** `proto/mt4/` `proto/mt5/`（mtapi.io 第三方 proto，不许改）；buf.gen.yaml 调输出到 `backend/gen/proto/ant/v1/`；frontend client 同步 | `proto/ant/v1/` `buf.gen.yaml` `frontend/src/gen/ant/v1/` | `make proto && test -f backend/gen/proto/ant/v1/common.pb.go && test -f frontend/src/gen/ant/v1/common_pb.ts && test -d proto/mt4 && test -d proto/mt5 && git diff --exit-code -- backend/gen frontend/src/gen` | |
+| M7.0-7 | 🅒 proto 布局重构：**仅** ant 自有平铺 `proto/*.proto` 迁到 `proto/ant/v1/*.proto`；**保留** `proto/mt4/` `proto/mt5/`（mtapi.io 第三方 proto，不许改）；buf.gen.yaml 调输出到 `backend/gen/proto/ant/v1/`；frontend client 同步；**附带**更新 `docs/spec/10-mt-adapter.md` §5.1/5.3 中 import 示例从 `anttrader/gen/proto/mt4` 改为 v2 路径 | `proto/ant/v1/` `buf.gen.yaml` `frontend/src/gen/ant/v1/` `docs/spec/10-mt-adapter.md` | `make proto && test -f backend/gen/proto/ant/v1/common.pb.go && test -f frontend/src/gen/ant/v1/common_pb.ts && test -d proto/mt4 && test -d proto/mt5 && git diff --exit-code -- backend/gen frontend/src/gen` | |
 | M7.0-8 | 🅒 处置 v1 既存代码：删除 `backend/internal/adapter/{mt4,mt5}_adapter.go`（双 adapter 目录冲突）；标记 `backend/internal/{mdgateway,mthub,factorsvc,quantengine}` 现有 .go 为 v1（在文件头加 `// V1-LEGACY: will be replaced by M7.1-7.4 cards`，**不删除**——M7.1-7.4 卡片在写入新文件时若与 v1 同名则覆盖、不同名则在卡片"附带删除"列出 v1 文件清单） | `backend/internal/adapter/` (删除) + `backend/internal/{mdgateway,mthub,factorsvc,quantengine}/*.go` (加注释) | `! test -d backend/internal/adapter; for d in mdgateway mthub factorsvc quantengine; do grep -L 'V1-LEGACY' backend/internal/$d/*.go \| grep -v _test.go \| awk 'NR>0{exit 1}'; done` | M9 删除 v1 包时此注释作为筛选锚 |
+| M7.0-9 | 🅒 实现 `internal/secrets/` (vault.Client AES-256-GCM 接口) — **M7.1-2 ETL 前置依赖** | `backend/internal/secrets/{vault.go,aes_gcm.go,vault_test.go,aes_gcm_test.go}` + `.env.example` 加 `ANT_MASTER_KEY=<base64-32B>` | `cd backend && go test -race -cover ./internal/secrets/... \| awk '/coverage:/{gsub("%",""); if ($2<90) exit 1}'; grep -q '^ANT_MASTER_KEY=' .env.example` | 见 spec/17 §1 |
 
 ---
 
@@ -141,11 +142,11 @@ docker exec ant-clickhouse clickhouse-client --query \
 
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
-| M7.2-1 | 🅒 `proto/ant/v1/mthub_service.proto` 9 个 RPC | 同左 | `make proto-breaking` 通过 |
+| M7.2-1 | 🅒 `proto/ant/v1/mthub_service.proto` 8 个 RPC（含 GetAccountStatus 替代原 livez/account）| 同左 | `make proto-breaking` 通过 + `grep -c '^  rpc ' proto/ant/v1/mthub_service.proto \| grep -q '^8$'` |
 | M7.2-2 | 🅒 `proto/ant/v1/market_service.proto` 3 个 RPC | 同左 | 同上 |
 | M7.2-3 | 🅒 `make proto` 生成 Go + TS stub | `backend/gen/proto/ant/v1/` `frontend/src/gen/ant/v1/` | `test -f backend/gen/proto/ant/v1/mthub_service.pb.go && test -f frontend/src/gen/ant/v1/mthub_service_pb.ts` |
 | M7.2-4 | 🅒 `internal/mthub/{types.go,executor.go,session.go,hub.go,events.go,service.go,metrics.go}` | 同左 + 全部 _test.go | LOC ≤ 300（非测试，与 spec/12 §1 一致）；test cover ≥ 60% |
-| M7.2-5 | 🅒 `internal/connect/mthub_service.go` 9 个 handler 实现 | 同左 + `mthub_service_test.go` | grpcurl 真实调通 PlaceOrder（dockertest mtapi mock） |
+| M7.2-5 | 🅒 `internal/connect/mthub_service.go` 8 个 handler 实现（PlaceOrder/CloseOrder/OpenedOrders/OrderHistory/SymbolParams/PriceHistory/GetAccountStatus/StreamOrderEvents）| 同左 + `mthub_service_test.go` | grpcurl 真实调通 PlaceOrder（dockertest mtapi mock） + `GetAccountStatus` 返 connected |
 | M7.2-6 | 🅒 `internal/connect/market_handler.go` 3 个 handler（GetKlines 走 CH） | 同左 + test | grpcurl 调通 GetKlines 返回 CH 数据 |
 | M7.2-7 | 🅒 SSE：StreamOrderEvents handler | `internal/connect/mthub_service.go` 内 | curl SSE 5s 内收到至少 1 个事件（dockertest 触发）|
 | M7.2-8 | 🅒 frontend client wrapper：`frontend/src/api/mthub.ts` `frontend/src/api/market.ts` | 同左 | `cd frontend && pnpm tsc --noEmit` |
@@ -207,6 +208,7 @@ docker exec ant-clickhouse clickhouse-client --query \
 | M7.6-4 | 🅒 SSE 重连：客户端断开 30s → 重连后继续收事件 | `tests/e2e/sse_reconnect_test.go` | 重连后 5s 内收到事件 |
 | M7.6-5 | 🅒 7 天稳定性运行（人工 + monitoring）：tick rate / drop / circuit / spill 全部健康 | `docs/handover/verify-M7.6-5.log` | Grafana 截图归档 + 指标证据 |
 | M7.6-6 | 🅒 LOC 终检：mdgateway + adapter + mthub 三者非测试 LOC ≤ 1500 | — | `LOC=$(find backend/internal/mdgateway backend/internal/mthub -name "*.go" -not -name "*_test.go" \| xargs wc -l \| tail -1 \| awk '{print $1}'); test "$LOC" -le 1500` （注：`mdgateway/adapter/` 为 mdgateway 子目录，`find backend/internal/mdgateway` 已含）|
+| M7.6-7 | 🅒 telemetry 完整性测试：spec/15 + spec/11 §12 + ADR-0005 §5.3 列出的所有 metric 必须能在 `/metrics` 抓到（含至少 1 个 sample）| `tests/e2e/telemetry_test.go` (build tag e2e) | `go test -tags=e2e -run TestTelemetryCompleteness ./tests/e2e/... -timeout 5m`：测试断言 `curl /metrics` 输出包含 spec 列出的全部指标名（白名单文件 `tests/e2e/metrics_required.txt`）|
 
 ---
 

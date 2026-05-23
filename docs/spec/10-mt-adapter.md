@@ -129,7 +129,7 @@ type Gateway interface {
     Subscribe(ctx context.Context, symbols []string, handler TickHandler) error
 
     // HealthCheck 返回 nil 表示账户在线且可用。
-    // 用于 /livez/account/{id}。
+    // 用于 MtHubService.GetAccountStatus（决策 RV-C4 后替代原 /livez/account）。
     HealthCheck(ctx context.Context) error
 
     // SessionID 返回当前 broker session token；未连接时返回空。

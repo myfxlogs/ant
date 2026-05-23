@@ -26,7 +26,7 @@ ant 是量化交易平台。量化交易的全部价值链：
 
 每一层都必须暴露：
 - **Prometheus 指标**：tick rate、drop count by reason、ch write latency、circuit state、account state
-- **健康端点**：`/healthz`（进程活）、`/readyz`（关键账户已连）、`/livez/account/{id}`（单账户状态）
+- **健康端点**：`/healthz`（进程活）、`/readyz`（关键依赖就绪）；单账户状态走 ConnectRPC `MtHubService.GetAccountStatus` + Prom Gauge `mt_account_connected`（决策 RV-C4）
 - **结构化日志**：每条 ERROR/WARN 必带 `account_id`/`broker`/`symbol`/`trace_id` 四字段
 
 → "不可观测的地基 = 摸黑救火"。

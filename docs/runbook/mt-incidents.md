@@ -53,7 +53,10 @@ curl -s http://localhost:8080/metrics \
 ### 3.2 单账户 livez 状态
 
 ```bash
-curl -s http://localhost:8080/livez/account/$ACCOUNT_ID | jq '.'
+# 走 ConnectRPC GetAccountStatus（决策 RV-C4 后替代 livez/account）
+grpcurl -plaintext -d "{\"account_id\":\"$ACCOUNT_ID\"}" \
+  localhost:8080 ant.v1.MtHubService/GetAccountStatus \
+  | jq '.'
 ```
 
 `state` 通常是 `degraded`，看 `last_tick_at`。
@@ -116,7 +119,10 @@ curl -X POST http://localhost:8080/admin/v1/spill-replay \
 
 ```bash
 ACCOUNT_ID=...
-curl -s http://localhost:8080/livez/account/$ACCOUNT_ID | jq '.'
+# 走 ConnectRPC GetAccountStatus（决策 RV-C4 后替代 livez/account）
+grpcurl -plaintext -d "{\"account_id\":\"$ACCOUNT_ID\"}" \
+  localhost:8080 ant.v1.MtHubService/GetAccountStatus \
+  | jq '.'
 ```
 
 - `state=disconnected` → §3

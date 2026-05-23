@@ -44,19 +44,21 @@
 | Q-003 TradeMode=0 阻塞 | M7.1-17 + M7.1-18 | 🅒 |
 | Q-004 跨 broker symbol 混合 | M7.1-18 | 🅒 |
 
-## 设计复查（2026-05-23 第二轮）— 待人类决策的过度/缺陷
+## 设计复查（2026-05-23 第二轮）— 行业标杆决策已落地
 
-| ID | 类别 | 描述 | 决策待入 |
-|---|---|---|---|
-| RV-C1 | 过度设计 | CircuitBreaker per-account 过细，可改 per-broker（同 broker 多账户共享 breaker），简化状态 | M7.1-13 开工前 |
-| RV-C2 | 过度设计 | 5σ MAD 离群检查在高频 pip 跳行情下易误杀；考虑改为更保守阈值或 boolean 仅 bid>ask | M7.1-7 开工前 |
-| RV-C3 | 缺乏取证 | 100-window xxhash dedup 是为应对 broker 重发，但需 anttrader 真实日志取证；无证据则可砍 | M7.1-8 开工前 |
-| RV-C4 | 过度设计 | `/livez/account/{id}` per-account 健康端点；运维实际只看 metric。改 metric-only | M7.1-14 开工前 |
-| RV-C5 | 过度设计 | Spill 旋转 size + age 双触发可简化为 size-only（age 限制由 fluentbit 等外部 ship 解决）| M7.1-12 开工前 |
-| RV-C6 | 缺陷 | 缺 telemetry 完整性测试（spec/15 列出指标，但无单测验证全部指标确实暴露）| M7.6 加卡 |
-| RV-B5 | 缺陷 | vault.Client 接口未 spec（spec/11 §3.1 提到 `Vault` 但无文件定义 `Encrypt/Decrypt/RotateKey` 契约）→ 需新建 `docs/spec/17-secrets.md` | M7.1-2 开工前 |
-| RV-B6 | 缺陷 | errs 包接口未 spec（AGENT.md §3.6 强约束 `errs.Code + 中文 user_message` 但无定义）→ 现有 `backend/internal/errs/` 是否复用？需 spec/17 同档 | M8 |
-| RV-B7 | 缺陷 | M7.0-7 后端 import 路径变更（`anttrader/gen/proto/ant/v1/...`），需在 spec/10 §3 import 示例增加 v2 路径示例 | M7.0-7 实施时 |
+> 全部已按行业最佳实践决策并落实到 spec/ROADMAP/ADR；本表保留作历史档案与决策追溯依据。
+
+| ID | 类别 | 决策 | 行业参照 | 落地位置 |
+|---|---|---|---|---|
+| RV-C1 | 作用域 | **改 per-broker endpoint**；认证错误走单独 `auth_failed` 路径不入 breaker | Netflix Hystrix / resilience4j 故障隔离粒度 = 网络资源 | spec/11 §11；ADR-0005 §2.1 |
+| RV-C2 | 哲学 | **行情"少不丢"**：仅 hard-reject (bid≥ask、非正、parse 失败)；5σ/gap/skew 改 metric 不丢 | LMAX / Bloomberg B-PIPE / Refinitiv Elektron | spec/11 §5.1-5.2 |
+| RV-C3 | 取证 | **保留 100-window dedup**：成本 ~50ns/tick，false-positive ≈ 0；anttrader 历史已验证有 broker 重发 | TCP dup-ACK 检测同理 | spec/11 §6（保留原设计）|
+| RV-C4 | 哲学 | **删除 `/livez/account/{id}`**；改 Prom Gauge `mt_account_connected` + Grafana alert | k8s liveness 仅进程级哲学 | 03-data-flow §5.1；spec/15 |
+| RV-C5 | 简化 | **保留 size + age 双触发**：~10 行代码，运维好处明确（防 fsync 拖累、replay 顺序）| logrotate / journald / loki 标准 | spec/11 §10.1（保留原设计）|
+| RV-C6 | 完整性 | **新增 M7.6-7 卡**：tests/e2e/telemetry_test.go 校验 metric 白名单全部暴露 | Prometheus community 推荐 | ROADMAP M7.6-7 |
+| RV-B5 | 安全 | **新 spec/17 + M7.0-9 卡**：AES-256-GCM + HKDF + 版本化 KEK；接口形态可平滑迁 Vault transit | HashiCorp Vault transit / AWS KMS envelope | spec/17 §1；ROADMAP M7.0-9 |
+| RV-B6 | 错误体系 | **复用现有 `backend/internal/errs/`** + 补充 `ToConnectError()` 映射 + lint 强约束 | Go std errors + Connect.Error map | spec/17 §2 |
+| RV-B7 | 文档同步 | **M7.0-7 验收附带**更新 spec/10 §5 的 import 示例为 v2 路径 | 单点修复 | ROADMAP M7.0-7 |
 
 ## 文档债
 

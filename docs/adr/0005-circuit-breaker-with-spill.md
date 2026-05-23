@@ -20,7 +20,7 @@ ant v1 都没做。alfq v1 做了 Spill 但**没做 CircuitBreaker**，CH 故障
 
 ## 2. 决策
 
-### 2.1 CircuitBreaker（每账户一个）
+### 2.1 CircuitBreaker（每 broker endpoint 一个，非 per-account）
 
 **位置**：`mdgateway/circuit_breaker.go`
 
@@ -33,7 +33,8 @@ ant v1 都没做。alfq v1 做了 Spill 但**没做 CircuitBreaker**，CH 故障
 - `Manager.HandleTick` 调 adapter 前 `breaker.Allow()`
 - adapter 失败 `breaker.OnFailure()`
 - adapter 成功 `breaker.OnSuccess()`
-- 熔断状态暴露 metric `md_circuit_state{account_id, broker}`
+- 熔断状态暴露 metric `md_circuit_state{broker, mtapi_endpoint}`
+- **作用域选择依据**：故障相关性在网络层（同 broker 多账户共享 mtapi 网关）。认证错误不入 breaker，走账户状态机 `auth_failed` 路径。
 
 ### 2.2 SpillWriter（CH fallback）
 
@@ -66,6 +67,7 @@ ant v1 都没做。alfq v1 做了 Spill 但**没做 CircuitBreaker**，CH 故障
 |---|---|
 | go-resilience4j 库 | 引入大依赖；自研 132 行够用 |
 | 全局单 breaker | 单 broker 故障传染所有账户 |
+| Per-account breaker（原草图）| 同 broker 多账户重复决策 + 制造器变器噪音 |
 | Token bucket 限流 | 解决问题不同（限速 vs 故障）|
 
 ### 3.2 Spill
@@ -132,8 +134,8 @@ func (r *SpillReplay) Run(ctx context.Context) (replayed int, err error)
 
 | 指标 | Labels |
 |---|---|
-| `md_circuit_state` | account_id, broker（0=closed, 1=open, 2=half_open）|
-| `md_circuit_transitions_total` | account_id, broker, from, to |
+| `md_circuit_state` | broker, mtapi_endpoint（0=closed, 1=open, 2=half_open）|
+| `md_circuit_transitions_total` | broker, mtapi_endpoint, from, to |
 | `md_spill_writes_total` | reason={ch_error, queue_full} |
 | `md_spill_replay_total` | status={ok, err} |
 | `md_spill_replay_lag_seconds` | — (启动时单次) |
@@ -146,7 +148,7 @@ func (r *SpillReplay) Run(ctx context.Context) (replayed int, err error)
   expr: md_circuit_state == 1
   for: 5m
   annotations:
-    summary: "CircuitBreaker open >5min on {{ $labels.account_id }}/{{ $labels.broker }}"
+    summary: "CircuitBreaker open >5min on broker={{ $labels.broker }} endpoint={{ $labels.mtapi_endpoint }}"
 
 - alert: SpillDirBigGrowing
   expr: increase(md_spill_dir_bytes[10m]) > 1e9   # >1GB / 10min
