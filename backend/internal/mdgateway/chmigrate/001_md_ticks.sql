@@ -13,6 +13,6 @@ CREATE TABLE IF NOT EXISTS md_ticks (
     ask              Decimal(18, 6),
     bid_volume       Float64,
     ask_volume       Float64
-) ENGINE = MergeTree()
+) ENGINE = ReplacingMergeTree()
 PARTITION BY toYYYYMM(toDate(ts_unix_ms / 1000))
 ORDER BY (broker, canonical, ts_unix_ms);

@@ -86,12 +86,12 @@ func TestDefaultQualityConfig(t *testing.T) {
 	}
 }
 
-func TestPublisher_NoOp(t *testing.T) {
-	p := NewPublisher(zap.NewNop(), "")
+func TestPublisher_Config(t *testing.T) {
+	p := NewPublisher(DefaultPublisherConfig(), zap.NewNop())
 	if p == nil {
 		t.Fatal("NewPublisher returned nil")
 	}
 	if err := p.Close(); err != nil {
-		t.Fatal("Close should be no-op")
+		t.Fatal(err)
 	}
 }

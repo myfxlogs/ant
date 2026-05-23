@@ -1,4 +1,4 @@
-// Package mdgateway — ClickHouse async batch writer.
+// Package mdgateway — ClickHouse async batch writer with spill fallback.
 package mdgateway
 
 import (
@@ -13,6 +13,7 @@ import (
 type CHWriterConfig struct {
 	FlushInterval time.Duration // batch flush interval (default 1s)
 	MaxBatchSize  int           // max rows per batch (default 1000)
+	SpillWriter   *SpillWriter  // optional fallback for CH write failures
 }
 
 // DefaultCHWriterConfig returns sensible defaults.
@@ -24,13 +25,16 @@ func DefaultCHWriterConfig() CHWriterConfig {
 }
 
 // CHWriter buffers ticks and flushes them to ClickHouse in batches.
+// When CH write fails and a SpillWriter is configured, ticks fall back
+// to JSONL spill files for later replay.
 type CHWriter struct {
-	cfg    CHWriterConfig
-	log    *zap.Logger
-	chConn *CHConn
-	ticks  chan *Tick
-	done   chan struct{}
-	wg     sync.WaitGroup
+	cfg     CHWriterConfig
+	log     *zap.Logger
+	chConn  *CHConn
+	ticks   chan *Tick
+	done    chan struct{}
+	wg      sync.WaitGroup
+	metrics *MDMetrics
 }
 
 // NewCHWriter creates a CHWriter backed by a real ClickHouse connection.
@@ -48,6 +52,11 @@ func NewCHWriter(cfg CHWriterConfig, chConn *CHConn, log *zap.Logger) *CHWriter 
 		ticks:  make(chan *Tick, cfg.MaxBatchSize*2),
 		done:   make(chan struct{}),
 	}
+}
+
+// SetMetrics attaches Prometheus metrics to the writer.
+func (w *CHWriter) SetMetrics(m *MDMetrics) {
+	w.metrics = m
 }
 
 // Start begins the async flush loop.
@@ -99,16 +108,36 @@ func (w *CHWriter) Write(tick *Tick) {
 	}
 }
 
-// flushBatch writes a batch of ticks to ClickHouse.
+// flushBatch writes a batch of ticks to ClickHouse, spilling on failure.
 func (w *CHWriter) flushBatch(ctx context.Context, batch []*Tick) {
 	if len(batch) == 0 {
 		return
 	}
 
+	if err := w.tryFlush(ctx, batch); err != nil {
+		w.log.Error("chwriter: flush failed, spilling",
+			zap.Int("rows", len(batch)),
+			zap.Error(err),
+		)
+		if w.metrics != nil {
+			w.metrics.CHWriteErrors.Inc()
+		}
+		if w.cfg.SpillWriter != nil {
+			for _, t := range batch {
+				if err := w.cfg.SpillWriter.Write(t); err != nil {
+					w.log.Error("chwriter: spill write failed", zap.Error(err))
+				} else if w.metrics != nil {
+					w.metrics.SpillWrites.Inc()
+				}
+			}
+		}
+	}
+}
+
+func (w *CHWriter) tryFlush(ctx context.Context, batch []*Tick) error {
 	conn, err := w.chConn.Conn(ctx)
 	if err != nil {
-		w.log.Error("chwriter: get conn", zap.Error(err))
-		return
+		return err
 	}
 
 	insCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
@@ -116,36 +145,27 @@ func (w *CHWriter) flushBatch(ctx context.Context, batch []*Tick) {
 
 	chBatch, err := conn.PrepareBatch(insCtx, "INSERT INTO md_ticks")
 	if err != nil {
-		w.log.Error("chwriter: prepare batch", zap.Error(err))
-		return
+		return err
 	}
 
 	for _, t := range batch {
-		// Pass bid/ask as strings to preserve decimal precision (CH driver handles
-		// string→Decimal(18,6) conversion natively).
 		if err := chBatch.Append(
 			t.UserID,
 			t.Broker,
-			t.Symbol,    // symbol_raw
-			t.Canonical, // canonical (filled by normalizer)
+			t.Symbol,
+			t.Canonical,
 			uint64(t.TsUnixMs),
 			uint64(t.ArrivedUnixMs),
-			t.GetBid().GetValue(), // Decimal(18,6) from string
+			t.GetBid().GetValue(),
 			t.GetAsk().GetValue(),
 			t.BidVolume,
 			t.AskVolume,
 		); err != nil {
-			w.log.Error("chwriter: append", zap.Error(err))
-			// Continue with remaining ticks in batch
+			return err
 		}
 	}
 
-	if err := chBatch.Send(); err != nil {
-		w.log.Error("chwriter: send batch", zap.Error(err), zap.Int("rows", len(batch)))
-		return
-	}
-
-	// Batch flushed — rows tracked via Prometheus md_tick_total/metrics.
+	return chBatch.Send()
 }
 
 // Close flushes remaining ticks and closes the writer.
