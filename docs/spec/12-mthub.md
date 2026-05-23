@@ -1,7 +1,8 @@
 # 12 · mthub 规范（会话与下单中心）
 
 > 路径：`backend/internal/mthub/`
-> 目标 LOC：≤ 600 行（含测试 ≤ 1200）
+> 目标 LOC：非测试 ≤ 450 行（含测试 ≤ 900）
+> LOC 预算分配依据：AGENT.md §5 「MT 接入非测试 LOC ≤ 1500 (M7)」 = mdgateway 800 + adapter 250 + mthub 450
 > 上游：业务层（oms/marketplace/ai）；下游：`adapter/mt[45]/executor.go`
 
 ## 1. 职责
@@ -23,15 +24,17 @@ mthub 是 ant 唯一的"会话注册中心"。所有 MT 账户的：
 
 ```
 backend/internal/mthub/
-├── service.go         ≤200 lines  MtHubService（业务层调用入口）
-├── hub.go             ≤150 lines  Hub（session 注册 + 复用）
-├── events.go          ≤180 lines  OrderEventBroker（fan-in/fan-out）
-├── executor.go        ≤80 lines   OrderExecutor 接口定义
-├── session.go         ≤100 lines  Session 类型 + 续期逻辑
-├── types.go           ≤150 lines  OrderRequest/OrderRecord/SymbolParam 等
-├── metrics.go         ≤80 lines
+├── service.go         ≤150 lines  MtHubService（业务层调用入口）
+├── hub.go             ≤100 lines  Hub（session 注册 + 复用）
+├── events.go          ≤120 lines  OrderEventBroker（fan-in/fan-out）
+├── executor.go        ≤60 lines   OrderExecutor 接口定义
+├── session.go         ≤80 lines   Session 类型 + 续期逻辑
+├── types.go           ≤120 lines  OrderRequest/OrderRecord/SymbolParam 等
+├── metrics.go         ≤60 lines
 └── *_test.go
 ```
+
+**子文件上限总和 ≤ 690**，可依实际微调，但总 LOC 不超 450。
 
 ## 3. 类型契约（`types.go`）
 
@@ -231,7 +234,7 @@ service MtHubService {
 }
 ```
 
-`internal/connect/mthub_handler.go` 仅做：
+`internal/connect/mthub_service.go` 仅做（文件名与 `spec/14-rpc-contracts.md` §4 一致）：
 1. 参数校验（required fields）
 2. 调用 `MtHubService` 对应方法
 3. proto ↔ 内部类型转换
@@ -273,7 +276,7 @@ service MtHubService {
 # LOC
 LOC=$(find backend/internal/mthub -name "*.go" -not -name "*_test.go" \
        | xargs wc -l | tail -1 | awk '{print $1}')
-test "$LOC" -le 600 || { echo "LOC=$LOC > 600"; exit 1; }
+test "$LOC" -le 450 || { echo "LOC=$LOC > 450"; exit 1; }
 
 # 必有文件
 for f in service.go hub.go events.go executor.go session.go types.go metrics.go; do

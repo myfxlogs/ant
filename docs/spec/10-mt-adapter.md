@@ -367,7 +367,8 @@ test "$LOC" -le 250 || { echo "LOC=$LOC > 250"; exit 1; }
 CI 会做这一项检查：
 ```bash
 # 每个引用 quirk 的注释必须能在 quirks register 找到对应 ID
-grep -hoE 'QUIRK Q-[0-9]+' backend/internal/mdgateway/adapter -r | sort -u | while read q; do
-    grep -q "^### $q" docs/spec/16-mtapi-quirks-register.md || { echo "Unknown $q"; exit 1; }
+grep -hoE 'QUIRK Q-[0-9]+' backend/internal/mdgateway/adapter -r \
+    | sed 's/QUIRK //' | sort -u | while read q; do
+    grep -q "^## $q" docs/spec/16-mtapi-quirks-register.md || { echo "Unknown $q"; exit 1; }
 done
 ```

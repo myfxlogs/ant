@@ -137,17 +137,30 @@ type RunnerDeps struct {
 
 ### 3.2 加载账户 SQL
 
+实际查询走 `mt_accounts_v2` 视图（见 `docs/spec/13-clickhouse-schema.md` §4.1），把 v1 列名映射到 v2 命名：
+
 ```sql
 SELECT
-  a.id, a.user_id, a.broker, a.platform,
-  a.login, a.password_encrypted, a.server,
-  a.mtapi_host, a.mtapi_port, a.mtapi_token_encrypted
-FROM mt_accounts a
-WHERE a.is_active = true
-  AND a.deleted_at IS NULL;
+  id, user_id,
+  platform,                    -- v1 列名 mt_type
+  broker,                      -- v1 列名 broker_company
+  mtapi_host,                  -- v1 列名 broker_host
+  mtapi_port,                  -- v2 新增
+  login,
+  password_encrypted,          -- v2 新增（M7.1-2 ETL 后填充）
+  mtapi_token_encrypted,       -- v2 新增（同上）
+  server,                      -- v1 列名 broker_server
+  canonical_subscribed_symbols -- v2 新增
+FROM mt_accounts_v2
+WHERE is_active = true;
 ```
 
-详见 `docs/spec/13-clickhouse-schema.md` §"PG 配套 schema"。
+**M7.1-2 实施前**：`mt_accounts_v2` 视图未建。runner.go 必须先检查视图存在，否则 fatal。
+
+**ETL 路径**（M7.1-2 卡片同步执行）：
+1. `chmigrate` 创建 `mt_accounts_v2` 视图
+2. 写一次性 ETL：把 v1 `password` `mt_token` 通过 vault 加密 → 填入 `password_encrypted` `mtapi_token_encrypted`
+3. 验证 100% 行已 ETL → 标记 v1 列为 deprecated（注释，不删除）
 
 ## 4. normalizer.go
 

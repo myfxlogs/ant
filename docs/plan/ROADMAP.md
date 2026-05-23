@@ -38,7 +38,7 @@
 
 | Sub-milestone | 内容 | 卡片数 | 预估工日 |
 |---|---|---|---|
-| **M7.0** | 准备：归档 v1、容器、依赖 | 6 | 2 |
+| **M7.0** | 准备：归档 v1、容器、依赖、proto 重构 | 7 | 2 |
 | **M7.1** | mdgateway 完整重做（含 adapter） | 18 | 7 |
 | **M7.2** | mthub + ConnectRPC 暴露 | 9 | 4 |
 | **M7.3** | factorsvc + DSL（移植 alfq） | 7 | 3 |
@@ -46,7 +46,7 @@
 | **M7.5** | 业务层切流 + 老 kline_service 标 deprecated | 8 | 3 |
 | **M7.6** | 端到端测试 + chaos | 6 | 3 |
 | **M7.Z** | 关闭：硬指标全过 + ROADMAP 状态更新 | 3 | 1 |
-| **总计** | | **63** | **~26 工日** |
+| **总计** | | **64** | **~26 工日** |
 
 ---
 
@@ -60,6 +60,7 @@
 | M7.0-4 | 🅒 `internal/storage/clickhouse/client.go` 包含 Connect/Ping/PrepareBatch | 同左 + `*_test.go` | `cd backend && go test ./internal/storage/clickhouse/...` | |
 | M7.0-5 | 🅒 `internal/storage/nats/client.go` 包含 Connect + JetStream + ensureStream(MD_EVENTS) | 同左 + `*_test.go` | `cd backend && go test ./internal/storage/nats/...` | |
 | M7.0-6 | 🅒 Makefile 加 `migrate-ch` `verify-card` 目标 | `Makefile` | `make help \| grep -E 'migrate-ch\|verify-card'` | |
+| M7.0-7 | 🅒 proto 布局重构：平铺 `proto/*.proto` 迁到 `proto/ant/v1/*.proto`；buf.gen.yaml 调输出到 `backend/gen/proto/ant/v1/`；frontend client 同步 | `proto/ant/v1/` `buf.gen.yaml` `frontend/src/gen/ant/v1/` | `make proto && test -f backend/gen/proto/ant/v1/common.pb.go && test -f frontend/src/gen/ant/v1/common_pb.ts && git diff --exit-code -- backend/gen frontend/src/gen` | |
 
 ---
 
@@ -72,7 +73,7 @@
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
 | M7.1-1 | 🅒 chmigrate：实现 + 5 张表 SQL | `backend/internal/mdgateway/chmigrate/{migrate.go,001_md_ticks.sql,002_md_bars.sql,003_factor_values.sql,004_signals.sql,005_schema_version.sql}` + `migrate_test.go` | `make migrate-ch && docker exec ant-clickhouse clickhouse-client --query "SELECT count() FROM system.tables WHERE database='ant'" \| grep -q '^[5-9]'` |
-| M7.1-2 | 🅒 PG migrations：`mt_accounts` v2 字段 + `broker_symbols` + `factor_definitions` | `backend/migrations/0XX_mt_accounts_v2.up.sql` `0XX_broker_symbols.up.sql` `0XX_factor_definitions.up.sql` 及对应 .down.sql | `make migrate; docker exec ant-postgres psql -U ant -d ant -tAc "SELECT column_name FROM information_schema.columns WHERE table_name='mt_accounts' AND column_name='mtapi_token_encrypted'" \| grep -q .` |
+| M7.1-2 | 🅒 PG migrations + ETL：`mt_accounts` v2 字段 + `mt_accounts_v2` 视图 + `broker_symbols` + `factor_definitions`（包含 vault 加密 ETL）| `backend/migrations/098_mt_accounts_v2.up.sql` (`+ .down.sql`) `099_broker_symbols.up.sql` `100_factor_definitions.up.sql`（含 DROP 老表子任务）；ETL 脚本 `backend/cmd/etl-mt-accounts/main.go` | `make migrate; docker exec ant-postgres psql -U ant -d ant -tAc "SELECT column_name FROM information_schema.columns WHERE table_name='mt_accounts' AND column_name='mtapi_token_encrypted'" \| grep -q .; docker exec ant-postgres psql -U ant -d ant -tAc "SELECT count(*) FROM mt_accounts_v2 WHERE password_encrypted IS NOT NULL" \| awk '$1>0 \|\| NR==0{exit 0} {exit 1}'` |
 | M7.1-3 | 🅒 sqlc 生成 `BrokerSymbols` `FactorDefinitions` queries | `backend/internal/repository/queries/{broker_symbols.sql,factor_definitions.sql}` + 生成代码 | `cd backend && make sqlc && go build ./internal/repository/...` |
 
 ### M7.1.B 类型与共享
@@ -142,10 +143,10 @@ docker exec ant-clickhouse clickhouse-client --query \
 | M7.2-1 | 🅒 `proto/ant/v1/mthub_service.proto` 9 个 RPC | 同左 | `make proto-breaking` 通过 |
 | M7.2-2 | 🅒 `proto/ant/v1/market_service.proto` 3 个 RPC | 同左 | 同上 |
 | M7.2-3 | 🅒 `make proto` 生成 Go + TS stub | `backend/gen/proto/ant/v1/` `frontend/src/gen/ant/v1/` | `test -f backend/gen/proto/ant/v1/mthub_service.pb.go && test -f frontend/src/gen/ant/v1/mthub_service_pb.ts` |
-| M7.2-4 | 🅒 `internal/mthub/{types.go,executor.go,session.go,hub.go,events.go,service.go,metrics.go}` | 同左 + 全部 _test.go | LOC ≤ 600；test cover ≥ 60% |
-| M7.2-5 | 🅒 `internal/connect/mthub_handler.go` 9 个 handler 实现 | 同左 + `mthub_handler_test.go` | grpcurl 真实调通 PlaceOrder（dockertest mtapi mock） |
+| M7.2-4 | 🅒 `internal/mthub/{types.go,executor.go,session.go,hub.go,events.go,service.go,metrics.go}` | 同左 + 全部 _test.go | LOC ≤ 450（非测试，与 spec/12 §1 一致）；test cover ≥ 60% |
+| M7.2-5 | 🅒 `internal/connect/mthub_service.go` 9 个 handler 实现 | 同左 + `mthub_service_test.go` | grpcurl 真实调通 PlaceOrder（dockertest mtapi mock） |
 | M7.2-6 | 🅒 `internal/connect/market_handler.go` 3 个 handler（GetKlines 走 CH） | 同左 + test | grpcurl 调通 GetKlines 返回 CH 数据 |
-| M7.2-7 | 🅒 SSE：StreamOrderEvents handler | `internal/connect/mthub_handler.go` 内 | curl SSE 5s 内收到至少 1 个事件（dockertest 触发）|
+| M7.2-7 | 🅒 SSE：StreamOrderEvents handler | `internal/connect/mthub_service.go` 内 | curl SSE 5s 内收到至少 1 个事件（dockertest 触发）|
 | M7.2-8 | 🅒 frontend client wrapper：`frontend/src/api/mthub.ts` `frontend/src/api/market.ts` | 同左 | `cd frontend && pnpm tsc --noEmit` |
 | M7.2-9 | 🅒 mthub 注入 mdgateway runner（共享 session） | `internal/mdgateway/runner.go` + `internal/mthub/hub.go` | runner 启动后 hub.Get(accountID) != nil |
 
@@ -190,7 +191,7 @@ docker exec ant-clickhouse clickhouse-client --query \
 | M7.5-4 | 🅒 `connect/python_strategy_service.go` 切流 | 同左 + test | 沙箱拉历史走 CH |
 | M7.5-5 | 🅒 `service/kline_service*.go` 全部加 `// Deprecated: see internal/mdgateway. To be removed in M9.` | 同左 7 个文件 | `grep -c '// Deprecated' backend/internal/service/kline_service*.go \| grep -q '^7$'` |
 | M7.5-6 | 🅒 grep 验证业务代码 0 处直 import mt4client/mt5client（除 service/kline_service*）| — | `! grep -rE 'anttrader/internal/(mt4\|mt5)client' backend/internal/{ai,marketplace,oms,risk,connect,quantengine,factorsvc,mthub}/ \|\| exit 1` |
-| M7.5-7 | 🅒 老 `kline_data` 表设为只读（trigger 阻止 INSERT） | `backend/migrations/0XX_kline_data_readonly.up.sql` | `psql -c "INSERT INTO kline_data ..."` 返回 error |
+| M7.5-7 | 🅒 老 `kline_data` 表设为只读（trigger 阻止 INSERT） | `backend/migrations/101_kline_data_readonly.up.sql` (`+ .down.sql`) | `psql -c "INSERT INTO kline_data ..."` 返回 error |
 | M7.5-8 | 🅒 frontend K 线组件切到新 RPC `MarketService.GetKlines` | `frontend/src/api/kline.ts` 与相关组件 | 浏览器手动验收：K 线展示正常 |
 
 ---

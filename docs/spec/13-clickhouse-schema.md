@@ -197,29 +197,63 @@ ORDER BY ticks DESC;
 
 ## 4. PG 业务表配套（v2 仅新增）
 
-### 4.1 `mt_accounts`（保留 + 修改）
+### 4.1 `mt_accounts`（v1 已存在，v2 仅新增字段）
 
-ant 已有 `mt_accounts` 表（来自 v1）；v2 仅新增字段，不破坏：
+ant v1 的 `mt_accounts` 字段如下（来自 `migrations/001_init.up.sql`）：
 
-```sql
--- migrations/0XX_mt_accounts_v2_fields.up.sql
-ALTER TABLE mt_accounts
-    ADD COLUMN IF NOT EXISTS mtapi_host TEXT NOT NULL DEFAULT '',
-    ADD COLUMN IF NOT EXISTS mtapi_port TEXT NOT NULL DEFAULT '',
-    ADD COLUMN IF NOT EXISTS mtapi_token_encrypted BYTEA,
-    ADD COLUMN IF NOT EXISTS canonical_subscribed_symbols TEXT[]
-        NOT NULL DEFAULT ARRAY[]::TEXT[];
+```
+id, user_id, mt_type ('mt4'|'mt5'), broker_company, broker_server, broker_host,
+login, password (明文，待 v2 加密), alias, is_disabled, balance, credit, equity,
+margin, free_margin, margin_level, leverage, currency, account_method, is_investor,
+account_status, stream_status, mt_token (明文 mtapi token), last_error,
+last_connected_at, last_checked_at, created_at, updated_at
 ```
 
-字段说明：
-- `mtapi_host/port`: 该账户使用的 mtapi.io 网关地址（多区域支持）
-- `mtapi_token_encrypted`: AES-GCM 加密的 mtapi token
-- `canonical_subscribed_symbols`: 该账户订阅的 canonical 列表（启动时 SubscribeMany 用）
+v2 仅 ALTER ADD（不 RENAME，避免破坏 v1 业务代码读路径）：
+
+```sql
+-- migrations/098_mt_accounts_v2_fields.up.sql
+ALTER TABLE mt_accounts
+    -- mtapi 网关连接（host 沿用现有 broker_host；新增 port 与加密 token）
+    ADD COLUMN IF NOT EXISTS mtapi_port TEXT NOT NULL DEFAULT '443',
+    ADD COLUMN IF NOT EXISTS mtapi_token_encrypted BYTEA,
+    -- 加密 password（M7.1 实施时 ETL 把 password 列加密入此列）
+    ADD COLUMN IF NOT EXISTS password_encrypted BYTEA,
+    -- 订阅 symbol 白名单（canonical 形态）
+    ADD COLUMN IF NOT EXISTS canonical_subscribed_symbols TEXT[]
+        NOT NULL DEFAULT ARRAY[]::TEXT[];
+
+-- 视图：把 v1 字段映射到 v2 命名（避免业务代码大改）
+CREATE OR REPLACE VIEW mt_accounts_v2 AS
+SELECT
+    id, user_id,
+    mt_type AS platform,            -- 'mt4'|'mt5'
+    broker_company AS broker,
+    broker_host AS mtapi_host,
+    mtapi_port,
+    login,
+    password_encrypted,
+    mtapi_token_encrypted,
+    broker_server AS server,
+    NOT is_disabled AS is_active,
+    canonical_subscribed_symbols,
+    created_at, updated_at
+FROM mt_accounts
+WHERE NOT is_disabled;
+```
+
+新增字段说明：
+- `mtapi_port`：mtapi.io 网关端口（v1 默认 443，无字段）
+- `mtapi_token_encrypted`：AES-GCM 加密后的 mtapi token；M7.1 完成前 vault 实现后从 `mt_token` ETL
+- `password_encrypted`：同上，加密 broker login password；ETL 后老 `password` 列保留只读
+- `canonical_subscribed_symbols`：M7.1 实施时根据 `broker_symbols` 反查填充
+
+**v1 字段不删除**（M9 才考虑）：业务代码 `account_status` `stream_status` `last_error` 等 v1 字段继续保留。
 
 ### 4.2 `broker_symbols`（v2 新建）
 
 ```sql
--- migrations/0XX_broker_symbols.up.sql
+-- migrations/099_broker_symbols.up.sql
 CREATE TABLE IF NOT EXISTS broker_symbols (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     broker          TEXT NOT NULL,
@@ -242,7 +276,10 @@ CREATE INDEX idx_broker_symbols_canonical ON broker_symbols(canonical);
 ### 4.3 `factor_definitions`（v2 新建）
 
 ```sql
--- migrations/0XX_factor_definitions.up.sql
+-- migrations/100_factor_definitions.up.sql
+-- (注：v1 已有 096_factor_definitions，v2 重建不同 schema。
+--  实施时先 DROP 老表，或选一个未占用的表名如 factor_defs_v2。
+--  推荐：在 098 migration 里作为子任务 DROP 老 factor_definitions，本 migration 重建。)
 CREATE TABLE IF NOT EXISTS factor_definitions (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,

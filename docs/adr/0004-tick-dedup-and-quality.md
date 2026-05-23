@@ -92,7 +92,7 @@ Seen ⇔ hash ∈ ringBuffer
 type CheckResult struct {
     Outlier       bool
     Dropped       bool
-    DroppedReason string  // "" | "parse_error" | "bid_gt_ask" | "outlier_critical"
+    DroppedReason string  // "" | "parse_error" | "bid_gt_ask"
 }
 
 func (q *Quality) Check(t *mdtick.Tick) CheckResult

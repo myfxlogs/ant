@@ -1,8 +1,10 @@
 # 14 · ConnectRPC 契约（mthub.v1 + market.v1）
 
 > 路径：`proto/ant/v1/`
-> 生成：`make proto` → `backend/gen/proto/ant/v1/` + `frontend/src/gen/`
+> 生成：`make proto` → `backend/gen/proto/ant/v1/` + `frontend/src/gen/ant/v1/`
 > 目标：v2 新增 2 个 service，前端可直接调用
+>
+> **前置依赖**：本 spec 假设 `proto/ant/v1/` 目录已存在（v1 是平铺 `proto/*.proto`）。完成 ROADMAP M7.0-7 后再开工本 spec 涉及的 M7.2-* 卡片。
 
 ## 1. 文件清单
 
