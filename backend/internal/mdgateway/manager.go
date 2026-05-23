@@ -196,6 +196,9 @@ func (m *Manager) HealthCheckGateway(ctx context.Context, key string) error {
 	}
 
 	if cbOk && !cb.Allow() {
+		if m.metrics != nil {
+			m.metrics.CircuitState.Set(1)
+		}
 		return fmt.Errorf("mdgateway: circuit open for %q", key)
 	}
 
@@ -203,11 +206,17 @@ func (m *Manager) HealthCheckGateway(ctx context.Context, key string) error {
 		if cbOk {
 			cb.RecordFailure()
 		}
+		if m.metrics != nil {
+			m.metrics.CircuitState.Set(1)
+		}
 		return err
 	}
 
 	if cbOk {
 		cb.RecordSuccess()
+	}
+	if m.metrics != nil {
+		m.metrics.CircuitState.Set(0)
 	}
 	return nil
 }

@@ -119,6 +119,9 @@ func (p *Publisher) EnsureStreams() error {
 
 // Publish sends a Tick to the "md_events.tick" subject.
 func (p *Publisher) Publish(ctx context.Context, tick *Tick) error {
+	if tick == nil {
+		return nil
+	}
 	return p.publish("tick", tick)
 }
 

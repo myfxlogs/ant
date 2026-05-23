@@ -47,7 +47,15 @@ func NewWindowBuffer(maxSize int, log *zap.Logger) *WindowBuffer {
 
 // Push adds a bar to the window and evicts the oldest if at capacity.
 func (w *WindowBuffer) Push(userID, symbol, period string, bar *Bar) {
+	if bar == nil {
+		return
+	}
 	key := fmt.Sprintf("%s/%s/%s", userID, symbol, period)
+
+	open, _ := parseFloat(bar.Open)
+	high, _ := parseFloat(bar.High)
+	low, _ := parseFloat(bar.Low)
+	closeV, _ := parseFloat(bar.Close)
 
 	w.mu.Lock()
 	rb, ok := w.buffers[key]
@@ -55,12 +63,6 @@ func (w *WindowBuffer) Push(userID, symbol, period string, bar *Bar) {
 		rb = &ringBuffer{bars: make([]*barRecord, w.maxSize), cap: w.maxSize}
 		w.buffers[key] = rb
 	}
-	w.mu.Unlock()
-
-	open, _ := parseFloat(bar.Open)
-	high, _ := parseFloat(bar.High)
-	low, _ := parseFloat(bar.Low)
-	closeV, _ := parseFloat(bar.Close)
 	rb.add(&barRecord{
 		Open:   open,
 		High:   high,
@@ -69,6 +71,7 @@ func (w *WindowBuffer) Push(userID, symbol, period string, bar *Bar) {
 		Volume: bar.Volume,
 		TsMs:   bar.CloseTsUnixMs,
 	})
+	w.mu.Unlock()
 }
 
 // PushRaw adds a bar from raw values (used for CH bootstrap).
@@ -81,8 +84,6 @@ func (w *WindowBuffer) PushRaw(userID, symbol, period string, open, high, low, c
 		rb = &ringBuffer{bars: make([]*barRecord, w.maxSize), cap: w.maxSize}
 		w.buffers[key] = rb
 	}
-	w.mu.Unlock()
-
 	rb.add(&barRecord{
 		Open:   open,
 		High:   high,
@@ -91,6 +92,7 @@ func (w *WindowBuffer) PushRaw(userID, symbol, period string, open, high, low, c
 		Volume: volume,
 		TsMs:   tsMs,
 	})
+	w.mu.Unlock()
 }
 
 // Snapshot returns a copy of the current window for a key, oldest first.

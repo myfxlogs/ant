@@ -76,6 +76,9 @@ func NewSpillWriter(cfg SpillConfig, log *zap.Logger) (*SpillWriter, error) {
 
 // Write writes a Tick to the current spill file.
 func (w *SpillWriter) Write(tick *Tick) error {
+	if tick == nil {
+		return nil
+	}
 	w.mu.Lock()
 	defer w.mu.Unlock()
 

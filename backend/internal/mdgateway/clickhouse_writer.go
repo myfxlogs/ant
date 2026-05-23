@@ -99,6 +99,9 @@ func (w *CHWriter) loop(ctx context.Context) {
 
 // Write enqueues a Tick for batch insertion. Non-blocking — drops on full channel.
 func (w *CHWriter) Write(tick *Tick) {
+	if tick == nil {
+		return
+	}
 	select {
 	case w.ticks <- tick:
 	default:
@@ -122,14 +125,23 @@ func (w *CHWriter) flushBatch(ctx context.Context, batch []*Tick) {
 		if w.metrics != nil {
 			w.metrics.CHWriteErrors.Inc()
 		}
+		spilled := 0
 		if w.cfg.SpillWriter != nil {
 			for _, t := range batch {
 				if err := w.cfg.SpillWriter.Write(t); err != nil {
 					w.log.Error("chwriter: spill write failed", zap.Error(err))
-				} else if w.metrics != nil {
-					w.metrics.SpillWrites.Inc()
+				} else {
+					spilled++
+					if w.metrics != nil {
+						w.metrics.SpillWrites.Inc()
+					}
 				}
 			}
+		}
+		if spilled < len(batch) && w.cfg.SpillWriter == nil {
+			w.log.Error("chwriter: data loss — no spill writer configured",
+				zap.Int("lost_rows", len(batch)),
+			)
 		}
 	}
 }

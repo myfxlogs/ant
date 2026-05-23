@@ -5,7 +5,6 @@ import (
 	"math"
 	"sort"
 	"sync"
-	"time"
 )
 
 // QualityConfig holds QC thresholds.
@@ -34,10 +33,7 @@ type Quality struct {
 	lastTS map[string]int64     // broker:symbol → last tick ts_ms
 	prices map[string][]float64 // broker:symbol → sliding window of recent prices
 
-	// Prometheus metrics (registered lazily in NewQuality)
-	gapCount   interface{ Inc() } // *prometheus.CounterVec
-	outlierCnt interface{ Inc() } // *prometheus.CounterVec
-	skewGauge  interface{ Set(float64) } // prometheus.Gauge
+	metrics *MDMetrics // optional Prometheus metrics (nil = no-op)
 }
 
 // CheckResult encodes QC decisions per tick.
@@ -46,33 +42,39 @@ type CheckResult struct {
 	Dropped bool // tick should be dropped entirely (e.g. bid > ask)
 }
 
-// NewQuality creates a QC engine. Prometheus registration is skipped
-// if the caller has not imported prometheus; metrics become no-ops.
+// NewQuality creates a QC engine.
 func NewQuality(cfg QualityConfig) *Quality {
 	if cfg.HistorySize == 0 {
 		cfg = DefaultQualityConfig()
 	}
-	q := &Quality{
-		cfg:    cfg,
-		lastTS: make(map[string]int64),
-		prices: make(map[string][]float64),
-		// Metrics are optional no-ops by default;
-		// wire real prometheus counters via RegisterMetrics() if needed.
+	return &Quality{
+		cfg:     cfg,
+		lastTS:  make(map[string]int64),
+		prices:  make(map[string][]float64),
+		metrics: nil,
 	}
-	return q
+}
+
+// SetMetrics wires real Prometheus counters.
+func (q *Quality) SetMetrics(m *MDMetrics) {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+	q.metrics = m
 }
 
 // Check validates a single tick. Returns QC result for logging/CH tagging.
 func (q *Quality) Check(tick *Tick) CheckResult {
+	if tick == nil {
+		return CheckResult{Dropped: true}
+	}
 	key := tick.Broker + ":" + tick.Symbol
-	now := time.Now().UnixMilli()
 
 	// Rule 1: bid > ask → invalid tick, drop entirely
 	bid, ok := parseFloat(tick.GetBid().GetValue())
 	ask, askOK := parseFloat(tick.GetAsk().GetValue())
 	if ok && askOK && bid > 0 && ask > 0 && bid > ask {
-		if q.outlierCnt != nil {
-			q.outlierCnt.Inc()
+		if q.metrics != nil {
+			q.metrics.TickDropped.WithLabelValues(tick.Broker, tick.Symbol).Inc()
 		}
 		return CheckResult{Dropped: true}
 	}
@@ -92,14 +94,6 @@ func (q *Quality) Check(tick *Tick) CheckResult {
 	}
 	q.lastTS[key] = tick.TsUnixMs
 
-	// Clock skew
-	skew := math.Abs(float64(tick.TsUnixMs-now)) / 1000.0
-	if skew > q.cfg.SkewMaxSeconds {
-		if q.skewGauge != nil {
-			q.skewGauge.Set(skew)
-		}
-	}
-
 	// Outlier detection
 	if ok && bid > 0 {
 		window := q.prices[key]
@@ -112,8 +106,8 @@ func (q *Quality) Check(tick *Tick) CheckResult {
 		if len(window) >= q.cfg.HistorySize/2 {
 			median, sigma := medianSigma(window)
 			if sigma > 0 && math.Abs(bid-median) > q.cfg.OutlierSigma*sigma {
-				if q.outlierCnt != nil {
-					q.outlierCnt.Inc()
+				if q.metrics != nil {
+					q.metrics.TickOutlier.WithLabelValues(tick.Broker, tick.Symbol).Inc()
 				}
 				res.Outlier = true
 			}
