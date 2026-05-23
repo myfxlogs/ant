@@ -1,9 +1,8 @@
 # AGENT.md — ANT
 
-> 工作仓库 `/opt/ant/` | M0 启动阶段 | 2026-05-19
+> 工作仓库 `/opt/ant/` | M0.5 工程基线+文档治理完成 | 2026-05-23
 >
-> 🤖 **AI Agent 第一次进仓库**：本文件是当前唯一执行入口。
-> `docs/tasks/AGENT-RUNBOOK.md`（阅读顺序 / 执行循环 / 卡住升级路径）**待建立**；建立前以本文为唯一约束源。
+> 🤖 **AI Agent 第一次进仓库**：本文件是主要入口；执行流程详见 `docs/tasks/AGENT-RUNBOOK.md`。
 >
 > 📌 **项目定位**：以 ant 为主体，从 AlfQ 选择性迁移优秀功能并优化。
 >
@@ -66,17 +65,17 @@
 
 | 主题 | 唯一源 |
 |---|---|
-| 项目实施计划（里程碑） | **待建立** `docs/plan/ROADMAP.md` |
+| 项目实施计划（里程碑） | `docs/plan/ROADMAP.md` |
 | AlfQ 功能迁移清单（输入蓝本，非约束） | `docs/AlfQ功能迁移计划.md`（只读参考；实际里程碑以 ROADMAP 为准） |
 | 订单状态机 | **待建立** `docs/domain/订单状态机.md` |
-| 全量错误码 | **待建立** `docs/错误码与异常处理规范.md` |
+| 全量错误码 | **待建立** `docs/错误码与异常处理规范.md`（M0.3 雏形：`internal/errs/`） |
 | 数据库设计与表索引 | **待建立** `docs/数据库设计.md` |
 | 权限角色 | **待建立** `docs/权限设计.md` |
 | NFR（NFR ≥ SLO ≥ SLA） | **待建立** `docs/总体架构与技术决策.md` |
 | 依赖白名单 | **待建立**（建立前：新增依赖必须 ADR 立项，禁 AGPL） |
 | 复杂度上限 | 本文档 §复杂度硬上限（CI 强制） |
 | Proto 包结构 | **待建立** `docs/API与接口规范.md` §2 |
-| ADR 索引 | **待建立** `docs/adr/README.md` |
+| ADR 索引 | `docs/adr/README.md`（12 篇全 Accepted） |
 
 冲突处理：选编号大的（更新的）+ PR 中指出。
 
@@ -128,23 +127,27 @@
 
 Conventional Commits: `type(scope): subject`。分支: `feat|fix|chore|docs|refactor|test/<scope>`。main 保护，PR + 2 reviewer。PR 必带：关联文档、测试结果、风险评估。
 
-## 当前阶段：M0（启动阶段）
+## 当前阶段：M0.5（工程基线 + 文档治理完成）
 
-ant 是主体项目；**过程文档**全新独立，**功能**从 AlfQ 选择性迁移。`backend/` `frontend/` 中从 anttrader 带过来的代码作为初始脚手架，迁移/调整任何一块都走 ADR 立项 → 重写/适配 → 补测试 三步，不允许原样大块复制 AlfQ 代码。
+**已完成**（M0.0→M0.2）：
+- M0.0：git 化、docker 构建通、版本基线（Go1.26/Py3.14/Node24/PG18/Redis8）
+- M0.1：入仓二进制清理、CI workflow（8 jobs）、5 容器 healthcheck、migration .down 政策、.env.example 全量
+- M0.2：12 篇 ADR 全部 Accepted、docs/README.md 五大区导航、ADR 按主题索引、remediation-2026-05 归档、AGENT-RUNBOOK 就绪
 
-仓库现状：
+**进行中**：M0.3 复杂度与品质红线（baseline/lint/trace_id/errs 包/vitest）
 
-- `backend/`：Go 后端服务（脚手架，待按 ADR 逐块迁移/重构）
-- `frontend/`：React SPA（脚手架，待按 ADR 逐块迁移/重构）
-- `strategy-service/`：Python 沙箱策略执行服务（脚手架）
-- `docker-compose.yml`：已隔离 anttrader 命名冲突，统一 `ant-*` 前缀
-- `.env`：已配置 `JWT_SECRET`、`DB_PASSWORD` 等敏感配置（不入仓）
+**仓库现状**：
+- `backend/`：Go 后端（基础架构就绪，M1-M5 按 ROADMAP 逐模块迁移/重构）
+- `frontend/`：React SPA（基础架构就绪）
+- `strategy-service/`：Python 沙箱服务（基础架构就绪）
+- `docker-compose.yml`：5 容器全部 healthy，ant-* 命名隔离
+- `docs/adr/`：12 篇 Accepted，编号 0001-0012
+- `docs/plan/ROADMAP.md`：M0.1-M6 完整路线图
 
-M0 待办：
-
-- 起草 `docs/plan/ROADMAP.md`（参考 `docs/AlfQ功能迁移计划.md` 里的功能选项，但里程碑、验收口径、优先级由 ant 独立定义）
-- 起草 `docs/adr/0001-*.md` 起的初始 ADR 序列（见上文 ADR 章节清单）
-- 建立 `docs/tasks/AGENT-RUNBOOK.md` 执行入口
+**关键审查引用**：
+- `docs/audit/DESIGN-REVIEW-2026-05.md`：145 项 finding（CR/MR/MN/UX/SEC/DOC），卡片实施来源
+- AGENT.md §防偷懒约束（7 条）：所有卡片完成必须满足
+- AGENT.md §复杂度硬上限：Go ≤300 行/文件、TS ≤250 行/文件、函数 ≤50 行等
 
 ## Makefile
 

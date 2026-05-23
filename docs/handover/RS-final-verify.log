@@ -71,3 +71,56 @@ D  backend/mt5/go.mod
  M docs/adr/0011-observability.md
  M docs/adr/0012-broker-adapter.md
 ?? docs/handover/
+
+=== M0.2 Final Verification — 2026-05-23T02:48:26+00:00 ===
+
+--- M0.2-1: 12 ADR status (all Accepted) ---
+0001-connect-rpc-sse.md: ## Status
+0002-three-domain-monorepo.md: ## Status
+0003-postgres-redis.md: ## Status
+0004-python-sandbox-process-model.md: ## Status
+0005-user-centric-architecture.md: ## Status
+0006-sqlc-vs-sqlx.md: ## Status
+0007-ai-bounded-tools.md: ## Status
+0008-docker-compose-deployment.md: ## Status
+0009-runtime-version-baseline.md: ## Status
+0010-error-code-system.md: ## Status
+0011-observability.md: ## Status
+0012-broker-adapter.md: ## Status
+
+--- M0.2-2: ADR index ---
+64 docs/adr/README.md
+
+--- M0.2-3: docs/README.md ---
+62 docs/README.md
+
+--- M0.2-4: remediation-2026-05 archived ---
+14
+files in archive
+old path exists: NO
+
+--- M0.2-5: AGENT.md correction ---
+3:> 工作仓库 `/opt/ant/` | M0.5 工程基线+文档治理完成 | 2026-05-23
+5:> 🤖 **AI Agent 第一次进仓库**：本文件是主要入口；执行流程详见 `docs/tasks/AGENT-RUNBOOK.md`。
+130:## 当前阶段：M0.5（工程基线 + 文档治理完成）
+135:- M0.2：12 篇 ADR 全部 Accepted、docs/README.md 五大区导航、ADR 按主题索引、remediation-2026-05 归档、AGENT-RUNBOOK 就绪
+148:- `docs/audit/DESIGN-REVIEW-2026-05.md`：145 项 finding（CR/MR/MN/UX/SEC/DOC），卡片实施来源
+
+--- M0.2-6: RUNBOOK exists ---
+107 docs/tasks/AGENT-RUNBOOK.md
+
+--- ROADMAP M0.2 exit criteria ---
+12 ADR Accepted: docs/adr/0001-connect-rpc-sse.md:2
+docs/adr/0002-three-domain-monorepo.md:2
+docs/adr/0003-postgres-redis.md:2
+docs/adr/0004-python-sandbox-process-model.md:2
+docs/adr/0005-user-centric-architecture.md:2
+docs/adr/0006-sqlc-vs-sqlx.md:2
+docs/adr/0007-ai-bounded-tools.md:2
+docs/adr/0008-docker-compose-deployment.md:2
+docs/adr/0009-runtime-version-baseline.md:2
+docs/adr/0010-error-code-system.md:2
+docs/adr/0011-observability.md:2
+docs/adr/0012-broker-adapter.md:2
+docs/README.md exists: YES
+AGENT-RUNBOOK.md exists: YES
