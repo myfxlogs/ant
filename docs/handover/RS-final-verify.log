@@ -372,3 +372,30 @@ ok  	anttrader/internal/risksvc	0.006s
 OK
 
 --- Full build ---
+=== M6 Final Verification — 2026-05-23T09:27:48+00:00 ===
+
+--- M6-1: Dockerfile stage markers ---
+==> backend/Dockerfile <==
+# M6-1: multi-stage build — compile in builder, run in scratch/distroless
+
+==> frontend/Dockerfile <==
+# M6-1: multi-stage build — build in Node, serve via nginx
+
+==> strategy-service/Dockerfile <==
+# M6-1: single-stage Python service (slim base)
+
+--- M6-2: backup script ---
+syntax OK
+
+--- M6-3: Makefile deploy targets ---
+16
+Makefile targets added
+
+--- M6-5: bench script ---
+syntax OK
+
+--- make env-check ---
+Checking .env against .env.example...
+All env keys present ✅
+
+--- Full Go build ---

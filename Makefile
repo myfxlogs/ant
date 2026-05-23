@@ -141,3 +141,38 @@ rtk-env:
 
 rtk-grep:
 	@$(RTK) grep
+
+# ── M6 deployment & ops targets ───────────────────────────────────────
+
+.PHONY: deploy backup bench status
+
+# M6-3: Gray-release deploy — build all images, restart affected containers.
+deploy: build
+	@echo "Starting gray-release deploy..."
+	docker compose up -d --remove-orphans
+	@echo "Waiting for health checks..."
+	@sleep 5
+	@docker compose ps --format "table {{.Name}}\t{{.Status}}" | grep -E 'ant-|Name'
+	@echo "Deploy complete. Run 'make status' to verify."
+
+# M6-2: Database backup.
+backup:
+	@./scripts/backup-db.sh
+
+# M6-5: Smoke benchmark.
+bench:
+	@./scripts/bench-health.sh
+
+# M6-4: Health status overview.
+status:
+	@echo "=== ant container health ==="
+	@docker compose ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}"
+	@echo ""
+	@echo "=== health check endpoints ==="
+	@for url in \
+		http://localhost:8080/healthz \
+		http://localhost:8080/health \
+		http://localhost:8081/healthz; do \
+		printf "  %-45s " "$$url"; \
+		curl -sf -o /dev/null "$$url" && echo "✅" || echo "❌"; \
+	done

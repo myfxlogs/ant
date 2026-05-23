@@ -1,3 +1,4 @@
+# M6-1: multi-stage build — compile in builder, run in scratch/distroless
 ARG ALPINE_MIRROR=
 FROM golang:1.26.2-alpine AS builder
 ARG ALPINE_MIRROR

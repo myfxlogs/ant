@@ -1,3 +1,4 @@
+# M6-1: single-stage Python service (slim base)
 FROM python:3.14-slim
 
 WORKDIR /app

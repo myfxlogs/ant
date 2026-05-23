@@ -1,3 +1,4 @@
+# M6-1: multi-stage build — build in Node, serve via nginx
 # Node 24 LTS 对齐 CI；镜像源不可达时可：`docker compose build --build-arg NODE_BUILD_IMAGE=docker.io/library/node:24-alpine frontend`
 ARG NODE_BUILD_IMAGE=hub.rat.dev/library/node:24.15-alpine
 ARG NGINX_RUNTIME_IMAGE=docker.io/library/nginx:alpine
