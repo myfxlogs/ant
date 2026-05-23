@@ -1,14 +1,20 @@
-# 与 CI（Node 22）对齐；镜像源无 22 时可：`docker compose build --build-arg NODE_BUILD_IMAGE=docker.io/library/node:22-alpine frontend`
+# Node 24 LTS 对齐 CI；镜像源不可达时可：`docker compose build --build-arg NODE_BUILD_IMAGE=docker.io/library/node:24-alpine frontend`
 ARG NODE_BUILD_IMAGE=hub.rat.dev/library/node:24.15-alpine
 ARG NGINX_RUNTIME_IMAGE=docker.io/library/nginx:alpine
+ARG ALPINE_MIRROR=
+ARG NPM_REGISTRY=https://registry.npmjs.org
 FROM ${NODE_BUILD_IMAGE} AS builder
+ARG ALPINE_MIRROR
+ARG NPM_REGISTRY
 
 WORKDIR /app
 
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+RUN if [ -n "$ALPINE_MIRROR" ]; then \
+        sed -i "s|dl-cdn.alpinelinux.org|$ALPINE_MIRROR|g" /etc/apk/repositories; \
+    fi
 
 COPY package.json package-lock.json ./
-RUN npm ci --registry=https://registry.npmmirror.com
+RUN npm ci --registry="$NPM_REGISTRY"
 
 COPY . .
 ARG VITE_MENU_MODE=simple
@@ -20,8 +26,11 @@ ENV VITE_STREAM_URL=$VITE_STREAM_URL
 RUN npm run build
 
 FROM ${NGINX_RUNTIME_IMAGE}
+ARG ALPINE_MIRROR
 
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
+RUN if [ -n "$ALPINE_MIRROR" ]; then \
+        sed -i "s|dl-cdn.alpinelinux.org|$ALPINE_MIRROR|g" /etc/apk/repositories; \
+    fi && \
     adduser -D -u 1000 -g '' nginxuser && \
     rm -rf /etc/nginx/conf.d/default.conf
 

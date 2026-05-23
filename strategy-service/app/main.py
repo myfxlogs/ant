@@ -47,6 +47,7 @@ async def shutdown():
 
 
 @app.get("/health")
+@app.get("/healthz")
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 

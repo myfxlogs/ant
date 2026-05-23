@@ -1,81 +1,129 @@
 name: CI
 
-# 触发：push 到 main / PR 进入 main。fork PR 也跑，但 secrets 不会注入。
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
 
-# 同分支并发只跑最新一次，节省 runner 配额。
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  # ── M0.1-3: line limits ──
   line-limits:
     name: Line limits
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
       - name: Check source and generated line limits
         run: python3 scripts/check-file-lines.py
 
-  backend:
-    name: Backend (Go test)
+  # ── M0.1-3: backend lint ──
+  backend-lint:
+    name: Backend (lint)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: backend
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-go@v5
         with:
           go-version: '1.25.6'
           cache: true
           cache-dependency-path: backend/go.sum
-
       - name: go vet
         run: go vet ./...
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.64
+          working-directory: backend
+          args: --timeout=5m --out-format=colored-line-number
 
-      - name: go test
-        run: go test ./... -count=1
-
-  proto-drift:
-    name: Proto codegen drift
+  # ── M0.1-3: backend test + build ──
+  backend-test:
+    name: Backend (test + build)
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: ant
+          POSTGRES_PASSWORD: ant_test
+          POSTGRES_DB: ant
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U ant -d ant"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-go@v5
         with:
           go-version: '1.25.6'
           cache: true
           cache-dependency-path: backend/go.sum
+      - name: go test
+        run: go test ./... -count=1 -race -short
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: ant
+          DB_PASSWORD: ant_test
+          DB_NAME: ant
+      - name: go build
+        run: go build ./...
+      - name: go build cmd/server
+        run: go build -o /dev/null ./cmd/server
 
+  # ── M0.1-3: proto breaking ──
+  proto-breaking:
+    name: Proto (buf breaking)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bufbuild/buf-setup-action@v1
+        with:
+          version: '1.50.0'
+      - uses: bufbuild/buf-lint-action@v1
+      - name: buf breaking
+        run: buf breaking --against 'https://github.com/${{ github.repository }}.git#branch=main'
+
+  # ── M0.1-3: proto drift ──
+  proto-drift:
+    name: Proto (codegen drift)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.6'
+          cache: true
+          cache-dependency-path: backend/go.sum
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
-
-      - name: Install buf + protoc-gen-es (npm)
-        run: |
-          (cd tools/proto-gen && npm ci)
-          (cd frontend && npm ci)
-
-      - name: Regenerate protobuf (Go + TS)
-        run: make proto-tools && make proto
-
+      - name: Install proto toolchain
+        run: make proto-tools
+      - name: Regenerate protobuf
+        run: make proto
       - name: Assert no uncommitted changes after codegen
         run: |
           if [ -n "$(git status --porcelain=v1)" ]; then
@@ -85,6 +133,33 @@ jobs:
             exit 1
           fi
 
+  # ── M0.1-5: migration .down check ──
+  migration-down-check:
+    name: Migrations (down check)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check PR-added .up.sql have matching .down.sql
+        run: |
+          BASE=$(git merge-base origin/main HEAD 2>/dev/null || echo "HEAD~1")
+          FAIL=0
+          for f in $(git diff --name-only --diff-filter=A "$BASE"...HEAD -- 'backend/migrations/*.up.sql' 2>/dev/null); do
+            down="${f%.up.sql}.down.sql"
+            if [ ! -f "$down" ]; then
+              echo "::error::PR adds $f but missing $down"
+              FAIL=1
+            fi
+          done
+          if [ $FAIL -ne 0 ]; then
+            echo "::error::Every .up.sql added in this PR must have a matching .down.sql"
+            exit 1
+          fi
+          echo "All PR-added .up.sql files have matching .down.sql ✅"
+
+  # ── M0.1-3: frontend ──
   frontend:
     name: Frontend (lint + build)
     runs-on: ubuntu-latest
@@ -94,18 +169,14 @@ jobs:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
-
       - name: Install deps
         run: npm ci
-
       - name: Lint
         run: npm run lint
-
       - name: Build
         run: npm run build

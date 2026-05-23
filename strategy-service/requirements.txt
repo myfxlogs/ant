@@ -1,26 +1,28 @@
-# 基础依赖
-fastapi==0.104.1
-uvicorn==0.24.0
-pydantic==2.5.0
-pydantic-settings==2.1.0
-python-dotenv==1.0.0
+# Python 3.14 基线（运行时主版本通过 ADR 锁版；以下依赖需兼容 3.14）
 
-# 数据处理
-numpy==1.26.3
-pandas==2.1.4
+# 基础依赖
+fastapi>=0.115,<0.120
+uvicorn[standard]>=0.32,<1
+pydantic>=2.10,<3
+pydantic-settings>=2.6,<3
+python-dotenv>=1.0,<2
+
+# 数据处理（numpy ≥ 2.2 / pandas ≥ 2.2.3 才支持 Python 3.13+）
+numpy>=2.2,<3
+pandas>=2.2.3,<3
 
 # 技术指标
 # TA-Lib 安装复杂，暂时注释
 # TA-Lib==0.4.26
 
-# 安全
-restrictedpython==8.1
+# 安全（沙箱 AST 限制；选用支持最新 Python 的版本）
+RestrictedPython>=8.1
 
 # 记忆系统
-rank-bm25==0.2.2
+rank-bm25>=0.2.2
 
 # 日志
-python-json-logger==2.0.7
+python-json-logger>=2.0,<4
 
 # 测试
-pytest==8.3.3
+pytest>=8.3,<9

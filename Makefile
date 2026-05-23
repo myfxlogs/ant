@@ -52,6 +52,22 @@ docker-build:
 	@echo "Building Docker images..."
 	@docker compose build
 
+env-check:
+	@echo "Checking .env against .env.example..."
+	@test -f .env || { echo "ERROR: .env not found. Run: cp .env.example .env"; exit 1; }
+	@MISSING=0; \
+	for key in $$(grep -E '^[A-Z][A-Z0-9_]+=' .env.example | sed 's/=.*//' | sort -u); do \
+		if ! grep -qE "^$${key}=" .env 2>/dev/null; then \
+			echo "MISSING: $${key}"; \
+			MISSING=1; \
+		fi; \
+	done; \
+	if [ $$MISSING -ne 0 ]; then \
+		echo "ERROR: missing required env keys. See .env.example for expected variables."; \
+		exit 1; \
+	fi; \
+	@echo "All env keys present ✅"
+
 .PHONY: proto-tools proto check-lines verify
 
 proto-tools:

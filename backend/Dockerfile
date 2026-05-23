@@ -1,4 +1,6 @@
+ARG ALPINE_MIRROR=
 FROM golang:1.26.2-alpine AS builder
+ARG ALPINE_MIRROR
 
 WORKDIR /app
 
@@ -8,7 +10,10 @@ ENV CGO_ENABLED=0
 ENV GOOS=linux
 ENV GOARCH=amd64
 
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
+RUN if [ -n "$ALPINE_MIRROR" ]; then \
+        sed -i "s|dl-cdn.alpinelinux.org|$ALPINE_MIRROR|g" /etc/apk/repositories; \
+    fi && \
+    apk update && \
     apk add --no-cache git ca-certificates tzdata
 
 COPY go.mod go.sum ./
@@ -25,10 +30,14 @@ RUN go build -ldflags="-w -s" -o /antrader ./cmd/server
 RUN go build -ldflags="-w -s" -o /create_admin ./cmd/create_admin
 
 FROM golang:1.26.2-alpine
+ARG ALPINE_MIRROR
 
 WORKDIR /app
 
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
+RUN if [ -n "$ALPINE_MIRROR" ]; then \
+        sed -i "s|dl-cdn.alpinelinux.org|$ALPINE_MIRROR|g" /etc/apk/repositories; \
+    fi && \
+    apk update && \
     apk add --no-cache ca-certificates tzdata wget postgresql-client procps && \
     adduser -D -u 1000 -g '' appuser
 

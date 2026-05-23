@@ -24,6 +24,11 @@ services:
         condition: service_started
       strategy-service:
         condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - ant-network
 
@@ -52,10 +57,16 @@ services:
       - REDIS_PORT=6379
       - TZ=Asia/Shanghai
       - GIN_MODE=release
-      - FMP_API_KEY=e3c00f1701463b13be5e55bd327f72c7
+      - FMP_API_KEY=${FMP_API_KEY:-}
       - ANTRADER_SEED_DEFAULT_STRATEGY_TEMPLATES=true
       - ANTRADER_SCHEDULE_EVENT_DRIVEN_ENABLED=true
       - ANTRADER_SCHEDULE_WATCHDOG_INTERVAL=30s
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     depends_on:
       postgres:
         condition: service_healthy
@@ -77,6 +88,12 @@ services:
           memory: 384M
         reservations:
           memory: 192M
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     privileged: true
     cap_add:
       - NET_ADMIN
@@ -87,7 +104,7 @@ services:
 
   postgres:
     container_name: ant-postgres
-    image: postgres:15-alpine
+    image: postgres:18-alpine
     restart: always
     deploy:
       resources:
