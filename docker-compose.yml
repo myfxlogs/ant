@@ -1,6 +1,6 @@
 services:
   frontend:
-    container_name: anttrader-frontend
+    container_name: ant-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -9,10 +9,10 @@ services:
         NODE_BUILD_IMAGE: ${NODE_BUILD_IMAGE:-hub.rat.dev/library/node:22-alpine}
         VITE_API_URL: ${VITE_API_URL:-}
         VITE_STREAM_URL: ${VITE_STREAM_URL:-}
-    image: anttrader-prod-frontend
+    image: ant-prod-frontend
     restart: always
     ports:
-      - "8012:8080"
+      - "${ANT_FRONTEND_PORT:-8022}:8080"
     deploy:
       resources:
         limits:
@@ -25,14 +25,14 @@ services:
       strategy-service:
         condition: service_started
     networks:
-      - anttrader-network
+      - ant-network
 
   backend:
-    container_name: anttrader-backend
+    container_name: ant-backend
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: anttrader-prod-backend
+    image: ant-prod-backend
     restart: always
     deploy:
       resources:
@@ -42,11 +42,11 @@ services:
           memory: 256M
     environment:
       - DB_HOST=postgres
-      - DB_NAME=antrader
-      - DB_USER=antuser
-      - DB_PASSWORD=HavEr7901
+      - DB_NAME=${DB_NAME:-ant}
+      - DB_USER=${DB_USER:-ant}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set in .env}
       - DB_PORT=5432
-      - JWT_SECRET=antrader_jwt_secret_key_production_change_this_in_production
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET must be set in .env (32+ chars)}
       - STRATEGY_SERVICE_URL=http://strategy-service:8081
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -62,14 +62,14 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - anttrader-network
+      - ant-network
 
   strategy-service:
-    container_name: anttrader-strategy-service
+    container_name: ant-strategy-service
     build:
       context: ./strategy-service
       dockerfile: Dockerfile
-    image: anttrader-prod-strategy-service
+    image: ant-prod-strategy-service
     restart: always
     deploy:
       resources:
@@ -83,10 +83,10 @@ services:
     security_opt:
       - label=disable
     networks:
-      - anttrader-network
+      - ant-network
 
   postgres:
-    container_name: anttrader-postgres
+    container_name: ant-postgres
     image: postgres:15-alpine
     restart: always
     deploy:
@@ -96,22 +96,22 @@ services:
         reservations:
           memory: 256M
     environment:
-      - POSTGRES_USER=antuser
-      - POSTGRES_PASSWORD=HavEr7901
-      - POSTGRES_DB=antrader
+      - POSTGRES_USER=${DB_USER:-ant}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set in .env}
+      - POSTGRES_DB=${DB_NAME:-ant}
       - PGDATA=/var/lib/postgresql/data
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U antuser -d antrader"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-ant} -d ${DB_NAME:-ant}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - anttrader-network
+      - ant-network
 
   redis:
-    container_name: anttrader-redis
+    container_name: ant-redis
     image: redis:8-alpine
     restart: always
     deploy:
@@ -129,16 +129,14 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - anttrader-network
+      - ant-network
 
 networks:
-  anttrader-network:
+  ant-network:
     driver: bridge
 
 volumes:
   postgres_data:
-    external: true
-    name: anttrader_postgres_data
+    name: ant_postgres_data
   redis_data:
-    external: true
-    name: anttrader_redis_data
+    name: ant_redis_data

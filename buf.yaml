@@ -2,7 +2,7 @@ version: v2
 deps: []
 modules:
   - path: proto
-    name: buf.build/anttrader/api
+    name: buf.build/ant/api
 lint:
   use:
     - STANDARD

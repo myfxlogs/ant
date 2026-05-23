@@ -11,7 +11,7 @@ database:
   port: ${DB_PORT:5432}
   name: ${DB_NAME:antrader}
   user: ${DB_USER:antuser}
-  password: ${DB_PASSWORD:HavEr7901}
+  password: ${DB_PASSWORD}
   sslmode: ${DB_SSLMODE:disable}
   max_open_conns: ${DB_MAX_OPEN_CONNS:100}
   max_idle_conns: ${DB_MAX_IDLE_CONNS:10}
@@ -34,7 +34,7 @@ redis:
   idle_check_frequency: ${REDIS_IDLE_CHECK_FREQUENCY:1m}
 
 jwt:
-  secret: ${JWT_SECRET:antrader_jwt_secret_key_at_least_32_characters_long}
+  secret: ${JWT_SECRET}
   access_expire: 24h
   refresh_expire: 168h
   issuer: antrader

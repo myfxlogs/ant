@@ -24,7 +24,8 @@ clean:
 
 migrate:
 	@echo "Running migrations..."
-	@PGPASSWORD=HavEr7901 psql -U antuser -d antrader -h localhost -f backend/migrations/001_init.up.sql
+	@set -a; . ./.env; set +a; \
+	  PGPASSWORD=$$DB_PASSWORD psql -U $${DB_USER:-ant} -d $${DB_NAME:-ant} -h localhost -f backend/migrations/001_init.up.sql
 
 deps:
 	@echo "Installing dependencies..."
