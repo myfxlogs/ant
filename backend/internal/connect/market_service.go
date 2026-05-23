@@ -191,6 +191,8 @@ func (s *MarketService) GetKlines(ctx context.Context, req *connect.Request[v1.G
 		Count:     int(req.Msg.Count),
 	}
 
+	// M7.8-7: CH 优先路径 — 先查 md_bars，miss 回退 PG kline_data
+	// TODO: switch to mdgateway CHWriter→CHConn.Query when CH is wired
 	klines, err := s.klineSvc.GetKlines(ctx, userID, accountID, klineReq)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)

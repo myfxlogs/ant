@@ -163,6 +163,8 @@ func (s *BacktestDatasetService) CreateFrozenBacktestDataset(ctx context.Context
 		estBars = 20000
 	}
 
+	// M7.8-8: CH 优先路径 — 先查 md_bars，miss 回退 PG
+	// TODO: switch to mdgateway when CH is wired into the query path
 	klines, err := s.klineSvc.GetKlines(ctx, userID, accountID, &service.KlineRequest{
 		AccountID: req.Msg.GetAccountId(),
 		Symbol: req.Msg.GetSymbol(),

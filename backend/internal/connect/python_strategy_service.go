@@ -96,6 +96,8 @@ func (s *PythonStrategyService) Execute(ctx context.Context, req *connect.Reques
 	tfMin := timeframeToMinutes(req.Msg.Timeframe)
 	// Safety multiplier: request a slightly wider time window to ensure enough bars.
 	from := time.Now().Add(-time.Duration(previewBars*tfMin*2) * time.Minute).Format("2006-01-02T15:04:05")
+	// M7.8-8: CH 优先路径 — 先查 md_bars，miss 回退 PG
+	// TODO: switch to mdgateway when CH is wired into the query path
 	klines, err := s.klineSvc.GetKlines(ctx, userID, accountID, &service.KlineRequest{
 		AccountID: req.Msg.AccountId,
 		Symbol:    req.Msg.Symbol,

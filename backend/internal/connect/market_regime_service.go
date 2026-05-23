@@ -59,6 +59,8 @@ func (s *MarketRegimeService) DetectMarketRegime(ctx context.Context, req *conne
 		toTime = &v
 		to = v.Format(time.RFC3339)
 	}
+	// M7.8-8: CH 优先路径 — 先查 md_bars，miss 回退 PG
+	// TODO: switch to mdgateway when CH is wired into the query path
 	klines, err := s.klineSvc.GetKlines(ctx, userID, accountID, &service.KlineRequest{AccountID: accountID.String(), Symbol: req.Msg.GetSymbol(), Timeframe: req.Msg.GetTimeframe(), From: from, To: to, Count: count})
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
