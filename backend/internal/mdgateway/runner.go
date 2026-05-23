@@ -6,6 +6,7 @@ package mdgateway
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -209,7 +210,8 @@ func (r *Runner) loadAccounts(ctx context.Context) ([]AccountConfig, error) {
 			Host:     row.BrokerHost,
 			Port:     "443",
 		}
-		// Normalize platform
+		// Normalize platform (case-insensitive)
+		ac.Platform = strings.ToLower(ac.Platform)
 		if ac.Platform != "mt4" && ac.Platform != "mt5" {
 			r.log.Warn("runner: unknown platform", zap.String("mt_type", ac.Platform))
 			continue

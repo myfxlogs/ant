@@ -16,7 +16,7 @@ type mt4Gateway struct {
 	inner *mt4adapter.Gateway
 }
 
-func newMT4Gateway(cfg AccountConfig, normalizer *Normalizer) Gateway {
+func newMT4Gateway(cfg AccountConfig, normalizer *Normalizer, mt4Client interface{}) Gateway {
 	ac := mdtick.AccountConfig{
 		Broker:   cfg.Broker,
 		Login:    cfg.Login,
@@ -31,7 +31,7 @@ func newMT4Gateway(cfg AccountConfig, normalizer *Normalizer) Gateway {
 			Resolver: &resolverBridge{inner: normalizer.resolver},
 		}
 	}
-	return &mt4Gateway{inner: mt4adapter.New(ac, an, zap.NewNop())}
+	return &mt4Gateway{inner: mt4adapter.New(ac, an, zap.NewNop(), nil)}
 }
 
 // resolverBridge adapts mdgateway.CanonicalResolver to mdtick.CanonicalResolver.

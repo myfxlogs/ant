@@ -224,7 +224,7 @@ func (m *Manager) HealthCheckGateway(ctx context.Context, key string) error {
 func newGateway(cfg AccountConfig, normalizer *Normalizer) Gateway {
 	switch cfg.Platform {
 	case "mt4":
-		return newMT4Gateway(cfg, normalizer)
+		return newMT4Gateway(cfg, normalizer, nil)
 	case "mt5":
 		return newMT5Gateway(cfg, normalizer)
 	default:

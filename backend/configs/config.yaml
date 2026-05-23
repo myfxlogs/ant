@@ -55,6 +55,13 @@ mt5:
   retry_interval: 1s
   use_tls: true
 
+clickhouse:
+  host: ${CH_HOST:clickhouse}
+  port: ${CH_PORT:9000}
+  user: ${CH_USER:default}
+  password: ${CH_PASSWORD:}
+  database: ${CH_DATABASE:ant}
+
 strategy_service:
   url: ${STRATEGY_SERVICE_URL:http://localhost:8081}
 

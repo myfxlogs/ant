@@ -57,6 +57,11 @@ services:
       - REDIS_PORT=6379
       - TZ=Asia/Shanghai
       - GIN_MODE=release
+      - CH_HOST=clickhouse
+      - CH_PORT=9000
+      - CH_USER=${CH_USER:-default}
+      - CH_PASSWORD=${CH_PASSWORD:-clickhouse}
+      - CH_DATABASE=${CH_DATABASE:-ant}
       - FMP_API_KEY=${FMP_API_KEY:-}
       - ANTRADER_SEED_DEFAULT_STRATEGY_TEMPLATES=true
       - ANTRADER_SCHEDULE_EVENT_DRIVEN_ENABLED=true
@@ -127,6 +132,35 @@ services:
     networks:
       - ant-network
 
+  clickhouse:
+    container_name: ant-clickhouse
+    image: clickhouse/clickhouse-server:24-alpine
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+        reservations:
+          memory: 512M
+    environment:
+      - CLICKHOUSE_DB=default
+      - CLICKHOUSE_USER=${CH_USER:-default}
+      - CLICKHOUSE_PASSWORD=${CH_PASSWORD:-clickhouse}
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+    ports:
+      - "${CH_HTTP_PORT:-8123}:8123"
+      - "${CH_NATIVE_PORT:-9000}:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    healthcheck:
+      test: ["CMD-SHELL", "clickhouse-client --user ${CH_USER:-default} --password ${CH_PASSWORD:-clickhouse} --query 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - ant-network
+
   redis:
     container_name: ant-redis
     image: redis:8-alpine
@@ -157,3 +191,5 @@ volumes:
     name: ant_postgres_data
   redis_data:
     name: ant_redis_data
+  clickhouse_data:
+    name: ant_clickhouse_data

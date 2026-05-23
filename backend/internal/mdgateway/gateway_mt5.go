@@ -31,7 +31,7 @@ func newMT5Gateway(cfg AccountConfig, normalizer *Normalizer) Gateway {
 			Resolver: &resolverBridge{inner: normalizer.resolver},
 		}
 	}
-	return &mt5Gateway{inner: mt5adapter.New(ac, an, zap.NewNop())}
+	return &mt5Gateway{inner: mt5adapter.New(ac, an, zap.NewNop(), nil)}
 }
 
 func (g *mt5Gateway) Platform() string                { return g.inner.Platform() }

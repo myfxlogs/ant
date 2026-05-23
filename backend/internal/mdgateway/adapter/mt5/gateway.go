@@ -33,11 +33,12 @@ type Gateway struct {
 }
 
 // New creates an MT5 gateway adapter.
-func New(cfg mdtick.AccountConfig, normalizer *mdtick.Normalizer, log *zap.Logger) *Gateway {
+func New(cfg mdtick.AccountConfig, normalizer *mdtick.Normalizer, log *zap.Logger, client *mt5client.MT5Client) *Gateway {
 	return &Gateway{
 		cfg:        cfg,
 		normalizer: normalizer,
 		log:        log,
+		client:     client,
 	}
 }
 
@@ -59,6 +60,9 @@ func (g *Gateway) BrokerID() string { return g.cfg.Broker }
 
 // Connect establishes an MT5 connection via the mt5client pool.
 func (g *Gateway) Connect(ctx context.Context) error {
+	if g.client == nil {
+		return fmt.Errorf("mt5: client not configured")
+	}
 	g.mu.Lock()
 	defer g.mu.Unlock()
 
