@@ -319,6 +319,50 @@ migration 092：`strategy_listings` / `strategy_subscriptions` / `strategy_perfo
 | M7.7-3 | 老 Python 策略迁移工具：`migrate_legacy_strategy.py` 把现有 `strategies.code`（Python）转 DSL（能转的）+ 标记 unconvertible | — | 50% 内置策略可全自动转 DSL；剩余给出迁移 issue |
 | M7.7-4 | AI 生成策略契约切换：`ai_strategy_validator.go` 输出从 Python code → DSL 字符串 + ONNX URI（可选） | M4 已有验证器扩展 | 10 条 NL 样例 → 100% 输出 DSL，0 输出 Python |
 
+### M7.8 — 装配与收尾（迁移评估发现，~10-15 工日）
+
+> **背景**：`85694a1`/`c0a5984`/`e719ff8`/`42921c3` 已把 mdgateway/mthub/factorsvc/factor/research/quantengine 包从 alfq 移植完成且 `go build`/`go test` 全绿。但**包仍是孤岛**——server 启动钩子未调用、ConnectRPC 未暴露、老 `kline_service` 仍在生产路径。M7.8 负责把这些代码真正接入运行时。
+
+#### P0 装配（断点修复）
+
+| ID | 内容 | 蓝本 | 验收 |
+|---|---|---|---|
+| M7.8-1 | 编写 `internal/mdgateway/runner.go`（等价 alfq `RunGateway`）：从 PG 加载 `mt_accounts` → `manager.AddGateway` → `Connect` → `Subscribe` → 装配 publisher+CHWriter+SpillWriter | `@alfq/.../mdgateway/runner.go` | 启动后 `docker logs ant-backend` 出现 "accounts loaded from PG"，至少 1 个账户 Connected |
+| M7.8-2 | `internal/server/start_mdgateway.go`：在 server 启动 hook 调用 `chmigrate.Run(ctx, ch, log)` + `mdgateway.RunGateway(ctx, deps)` | 同上 | `clickhouse-client --query 'SHOW TABLES FROM ant'` 列出 md_ticks/md_bars/factor_values/signals |
+| M7.8-3 | `proto/mthub/v1/mthub.proto`：移植 alfq 的 9 个 RPC（EnsureSession/CloseSession/OrderSend/OrderClose/OrderHistory/OpenedOrders/SymbolParamsMany/PriceHistory/SubscribeOrderEvents） | `@alfq/backend/proto/alfq/mthub/v1/mthub.proto` | `make proto` 生成 `gen/proto/mthub/v1/*.connect.go` |
+| M7.8-4 | `internal/connect/mthub_service.go`：ConnectRPC handler 把 `*connect.Request` 转 `mthub.MtHubService` 内部签名 | — | 前端可 `client.ensureSession({ accountId })` 拿到 sessionID |
+| M7.8-5 | `.env.example` 补 `CH_HOST/CH_PORT/CH_USER/CH_PASSWORD/CH_DATABASE`；`config/config.go` 加 `ClickHouseConfig` | — | `make env-check` 不再缺 CH 项 |
+| M7.8-6 | `001_md_ticks.sql` 加回 TTL（90 天）；写 ADR-0014 说明 PG vs CH 边界与 TTL 策略 | `@alfq/.../chmigrate/001_md_ticks.sql` | `SHOW CREATE TABLE md_ticks` 含 `TTL ... INTERVAL 90 DAY` |
+
+#### P1 切流（消除双数据源）
+
+| ID | 内容 | 验收 |
+|---|---|---|
+| M7.8-7 | `connect/market_service.go`：K 线查询从 `kline_service` 切到 mdgateway（先读 CH md_bars，回退 PG kline_data） | 查询 BTCUSD 1m 1000 根，CH 命中率 ≥ 90% |
+| M7.8-8 | `connect/{market_regime,backtest_dataset,python_strategy}_service.go`：同上切流 | 4 个 endpoint 全部走 CH 路径 |
+| M7.8-9 | `internal/service/kline_service*.go` 全部加 `// Deprecated: see internal/mdgateway` + 计划下线（M8） | grep 验证；保留只读路径 |
+| M7.8-10 | `factorsvc/subscriber.go` 订阅 NATS `md.bar.*` 主题（替代 in-process 通道） | NATS subject 计数 = 因子计算次数 |
+
+#### P1 测试补全
+
+| ID | 内容 | 验收 |
+|---|---|---|
+| M7.8-11 | 补 `mdgateway/{publisher_test,clickhouse_writer_test,spill_replay_test,runner_test}.go` 4 个文件 | 4 路径覆盖率 ≥ 60% |
+| M7.8-12 | 补 `mdgateway/chmigrate/migrate_test.go`（用 dockertest 起临时 CH） | CI 通过 |
+| M7.8-13 | OrderEventBroker 跨账户 fan-in e2e 测试：3 账户事件 → 1 user 收 3 条（M7.1-3 验收） | `events_test.go` 加该用例 |
+
+#### P1 历史回填
+
+| ID | 内容 | 蓝本 | 验收 |
+|---|---|---|---|
+| M7.8-14 | 扩展 `mdgateway/backfill/backfill.go`：除 PG→CH 拷贝外，新增 MT5 QuoteHistory 直拉路径（按 1m/5m/15m/1h/4h/1d/1w/1M） | `@alfq/.../mdgateway/backfill/backfill.go` | 一个账户回填近 30 天 BTCUSD 1m → CH md_bars 行数 ≥ 43000 |
+
+#### P2 可观测增强
+
+| ID | 内容 | 验收 |
+|---|---|---|
+| M7.8-15 | `quality.go`：把 dropped 原因细分为 `bid_gt_ask / outlier / gap`，作为 Prometheus label | Grafana 看板能区分三类丢弃 |
+
 ### 退出标准
 
 - `mthub` 接管所有 MT 账户连接；mt4client/mt5client 不再被 server/service/connect 直接 import
@@ -342,3 +386,4 @@ migration 092：`strategy_listings` / `strategy_subscriptions` / `strategy_perfo
 
 - v1.0 (2026-05-23)：基于 DESIGN-REVIEW-2026-05 + AlfQ 迁移计划首版
 - v1.1 (2026-05-23)：M0.1-M6 全部 ✅；新增 M7 量化基础设施（mthub + DSL + ClickHouse + ONNX + 沙箱降级）
+- v1.2 (2026-05-23)：M7 包移植完成（85694a1/c0a5984/e719ff8/42921c3）；新增 M7.8 装配与收尾 15 张卡片，把孤岛包接入运行时 + 切断老 kline_service 双数据源
