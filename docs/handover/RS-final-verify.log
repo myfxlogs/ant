@@ -246,3 +246,34 @@ ok  	anttrader/internal/symbol	0.004s
 
 --- Seed count ---
 ok  	anttrader/internal/symbol	0.004s
+=== M2 Final Verification — 2026-05-23T03:38:11+00:00 ===
+
+--- M2-1: migration 091 ---
+migrations/091_orders_state_machine.down.sql
+migrations/091_orders_state_machine.up.sql
+migrations/092_risk_events.down.sql
+migrations/092_risk_events.up.sql
+
+--- M2-2: OMS state machine tests ---
+=== RUN   TestStateTransitions
+--- PASS: TestStateTransitions (0.00s)
+=== RUN   TestInvalidTransitions
+--- PASS: TestInvalidTransitions (0.00s)
+=== RUN   TestIsTerminal
+--- PASS: TestIsTerminal (0.00s)
+=== RUN   TestTransitionRoundTrip
+--- PASS: TestTransitionRoundTrip (0.00s)
+PASS
+ok  	anttrader/internal/oms	0.005s
+
+--- M2-3: broker adapter build ---
+OK
+
+--- M2-5: risk_events table ---
+-- 092_risk_events.up.sql
+-- M2-5: risk_events audit table — records every risk check result for compliance.
+
+CREATE TABLE IF NOT EXISTS risk_events (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+
+--- Full build ---
