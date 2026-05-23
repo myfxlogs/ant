@@ -6,6 +6,7 @@ import (
 
 	"anttrader/internal/mdgateway/adapter/mdtick"
 	mt4adapter "anttrader/internal/mdgateway/adapter/mt4"
+	"anttrader/internal/mt4client"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -16,7 +17,7 @@ type mt4Gateway struct {
 	inner *mt4adapter.Gateway
 }
 
-func newMT4Gateway(cfg AccountConfig, normalizer *Normalizer, mt4Client interface{}) Gateway {
+func newMT4Gateway(cfg AccountConfig, normalizer *Normalizer, mt4c *mt4client.MT4Client) Gateway {
 	ac := mdtick.AccountConfig{
 		Broker:   cfg.Broker,
 		Login:    cfg.Login,
@@ -31,7 +32,7 @@ func newMT4Gateway(cfg AccountConfig, normalizer *Normalizer, mt4Client interfac
 			Resolver: &resolverBridge{inner: normalizer.resolver},
 		}
 	}
-	return &mt4Gateway{inner: mt4adapter.New(ac, an, zap.NewNop(), nil)}
+	return &mt4Gateway{inner: mt4adapter.New(ac, an, zap.NewNop(), mt4c)}
 }
 
 // resolverBridge adapts mdgateway.CanonicalResolver to mdtick.CanonicalResolver.

@@ -6,6 +6,7 @@ import (
 
 	"anttrader/internal/mdgateway/adapter/mdtick"
 	mt5adapter "anttrader/internal/mdgateway/adapter/mt5"
+	"anttrader/internal/mt5client"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -16,7 +17,7 @@ type mt5Gateway struct {
 	inner *mt5adapter.Gateway
 }
 
-func newMT5Gateway(cfg AccountConfig, normalizer *Normalizer) Gateway {
+func newMT5Gateway(cfg AccountConfig, normalizer *Normalizer, mt5c *mt5client.MT5Client) Gateway {
 	ac := mdtick.AccountConfig{
 		Broker:   cfg.Broker,
 		Login:    cfg.Login,
@@ -31,7 +32,7 @@ func newMT5Gateway(cfg AccountConfig, normalizer *Normalizer) Gateway {
 			Resolver: &resolverBridge{inner: normalizer.resolver},
 		}
 	}
-	return &mt5Gateway{inner: mt5adapter.New(ac, an, zap.NewNop(), nil)}
+	return &mt5Gateway{inner: mt5adapter.New(ac, an, zap.NewNop(), mt5c)}
 }
 
 func (g *mt5Gateway) Platform() string                { return g.inner.Platform() }

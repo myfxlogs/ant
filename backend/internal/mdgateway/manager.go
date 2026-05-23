@@ -14,6 +14,9 @@ import (
 	"fmt"
 	"sync"
 
+	"anttrader/internal/mt4client"
+	"anttrader/internal/mt5client"
+
 	"google.golang.org/grpc"
 )
 
@@ -127,10 +130,15 @@ func NewManager(cfg Config) *Manager {
 
 // AddGateway adds or replaces a gateway connection with circuit breaker.
 func (m *Manager) AddGateway(cfg AccountConfig) {
+	m.AddGatewayWithClient(cfg, nil, nil)
+}
+
+// AddGatewayWithClient adds a gateway with real MT clients.
+func (m *Manager) AddGatewayWithClient(cfg AccountConfig, mt4c *mt4client.MT4Client, mt5c *mt5client.MT5Client) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	key := cfg.Broker + "-" + cfg.Login
-	m.gateways[key] = newGateway(cfg, m.normalizer)
+	m.gateways[key] = newGatewayWithClient(cfg, m.normalizer, mt4c, mt5c)
 	m.breakers[key] = NewCircuitBreaker(DefaultCircuitBreakerConfig())
 }
 
@@ -222,11 +230,15 @@ func (m *Manager) HealthCheckGateway(ctx context.Context, key string) error {
 }
 
 func newGateway(cfg AccountConfig, normalizer *Normalizer) Gateway {
+	return newGatewayWithClient(cfg, normalizer, nil, nil)
+}
+
+func newGatewayWithClient(cfg AccountConfig, normalizer *Normalizer, mt4c *mt4client.MT4Client, mt5c *mt5client.MT5Client) Gateway {
 	switch cfg.Platform {
 	case "mt4":
-		return newMT4Gateway(cfg, normalizer, nil)
+		return newMT4Gateway(cfg, normalizer, mt4c)
 	case "mt5":
-		return newMT5Gateway(cfg, normalizer)
+		return newMT5Gateway(cfg, normalizer, mt5c)
 	default:
 		panic(fmt.Sprintf("mdgateway: unknown platform %q", cfg.Platform))
 	}

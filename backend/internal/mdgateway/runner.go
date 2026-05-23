@@ -13,18 +13,22 @@ import (
 	"go.uber.org/zap"
 
 	"anttrader/internal/config"
+	"anttrader/internal/mt4client"
+	"anttrader/internal/mt5client"
 )
 
 // Runner orchestrates the mdgateway lifecycle.
 type Runner struct {
-	cfg       *config.Config
-	pg        *pgxpool.Pool
-	manager   *Manager
-	publisher *Publisher
-	chWriter  *CHWriter
-	spill     *SpillWriter
-	log       *zap.Logger
-	metrics   *MDMetrics
+	cfg        *config.Config
+	pg         *pgxpool.Pool
+	mt4Client  *mt4client.MT4Client
+	mt5Client  *mt5client.MT5Client
+	manager    *Manager
+	publisher  *Publisher
+	chWriter   *CHWriter
+	spill      *SpillWriter
+	log        *zap.Logger
+	metrics    *MDMetrics
 
 	mu     sync.Mutex
 	ctx    context.Context
@@ -61,12 +65,17 @@ func NewRunner(cfg *config.Config, pg *pgxpool.Pool, log *zap.Logger) (*Runner, 
 	metrics := NewMDMetrics(nil)
 	chWriter.SetMetrics(metrics)
 
+	mt4c := mt4client.NewMT4Client(&cfg.MT4)
+	mt5c := mt5client.NewMT5Client(&cfg.MT5)
+
 	mgr := NewEmptyManager()
 	mgr.SetMetrics(metrics)
 
 	return &Runner{
 		cfg:       cfg,
 		pg:        pg,
+		mt4Client: mt4c,
+		mt5Client: mt5c,
 		manager:   mgr,
 		publisher: pub,
 		chWriter:  chWriter,
@@ -100,10 +109,10 @@ func (r *Runner) Start(ctx context.Context) error {
 
 	r.log.Info("runner: accounts loaded from PG", zap.Int("count", len(accounts)))
 
-	// 4. Create gateways, connect, subscribe
+	// 4. Create gateways with real MT client, connect
 	for _, ac := range accounts {
 		mgrKey := ac.Broker + "-" + ac.Login
-		r.manager.AddGateway(ac)
+		r.manager.AddGatewayWithClient(ac, r.mt4Client, r.mt5Client)
 
 		if err := r.manager.ConnectGateway(r.ctx, mgrKey); err != nil {
 			r.log.Warn("runner: gateway connect failed",
