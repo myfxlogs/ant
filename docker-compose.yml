@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_MENU_MODE: ${VITE_MENU_MODE:-full}
-        NODE_BUILD_IMAGE: ${NODE_BUILD_IMAGE:-hub.rat.dev/library/node:22-alpine}
+        NODE_BUILD_IMAGE: ${NODE_BUILD_IMAGE:-docker.io/library/node:22-alpine}
         VITE_API_URL: ${VITE_API_URL:-}
         VITE_STREAM_URL: ${VITE_STREAM_URL:-}
     image: ant-prod-frontend
