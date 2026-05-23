@@ -297,3 +297,41 @@ internal/service/engine_selector.go:86:	return s.pick(ctx).OrderSend(ctx, userID
 --- OMS bridge integration ---
 internal/service/oms_bridge.go:5
 internal/service/trading_service_orders.go:1
+=== M3 Final Verification — 2026-05-23T03:51:42+00:00 ===
+
+--- M3-1: risksvc rules (8 rules + engine) ---
+=== RUN   TestEngine_AllPass
+--- PASS: TestEngine_AllPass (0.00s)
+=== RUN   TestEngine_MaxPositionBlocked
+--- PASS: TestEngine_MaxPositionBlocked (0.00s)
+=== RUN   TestEngine_MarginBlocked
+--- PASS: TestEngine_MarginBlocked (0.00s)
+=== RUN   TestEngine_CanonicalAuthBlocked
+--- PASS: TestEngine_CanonicalAuthBlocked (0.00s)
+=== RUN   TestEngine_CanonicalAuthAllowed
+--- PASS: TestEngine_CanonicalAuthAllowed (0.00s)
+=== RUN   TestEngine_DrawdownBlocked
+--- PASS: TestEngine_DrawdownBlocked (0.00s)
+=== RUN   TestEngine_DrawdownAllowed
+--- PASS: TestEngine_DrawdownAllowed (0.00s)
+=== RUN   TestEngine_RulesList
+--- PASS: TestEngine_RulesList (0.00s)
+=== RUN   TestEngine_SessionWeekend
+--- PASS: TestEngine_SessionWeekend (0.00s)
+PASS
+ok  	anttrader/internal/risksvc	0.007s
+
+--- M3-2/3: migrations 093-094 ---
+migrations/093_user_risk_profiles.down.sql
+migrations/093_user_risk_profiles.up.sql
+migrations/094_risk_control_migration.down.sql
+migrations/094_risk_control_migration.up.sql
+
+--- M3-4: OMS PreSubmit hook ---
+OK
+
+--- Full build + all tests ---
+ok  	anttrader/internal/risksvc	0.003s
+ok  	anttrader/internal/oms	0.004s
+ok  	anttrader/internal/symbol	0.005s
+ok  	anttrader/internal/errs	0.004s
