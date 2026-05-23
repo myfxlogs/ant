@@ -35,6 +35,7 @@ const StrategyAssetPage = lazy(() => import('@/pages/strategy/StrategyAssetPage'
 const StrategySchedulePage = lazy(() => import('@/pages/strategy/StrategySchedulePage'));
 const StrategyScheduleLogsPage = lazy(() => import('@/pages/strategy/StrategyScheduleLogsPage'));
 const LogManagement = lazy(() => import('@/pages/logs/LogManagement'));
+const ResearchPage = lazy(() => import('@/pages/research/ResearchPage'));
 const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
 const UserManagement = lazy(() => import('@/pages/admin/UserManagement'));
 const AccountManagement = lazy(() => import('@/pages/admin/AccountManagement'));
@@ -220,6 +221,14 @@ function AppContent() {
             element={
               <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
                 <LogManagement />
+              </Suspense>
+            }
+          />
+          <Route
+            path="research"
+            element={
+              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                <ResearchPage />
               </Suspense>
             }
           />

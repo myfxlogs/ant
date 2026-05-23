@@ -335,3 +335,27 @@ ok  	anttrader/internal/risksvc	0.003s
 ok  	anttrader/internal/oms	0.004s
 ok  	anttrader/internal/symbol	0.005s
 ok  	anttrader/internal/errs	0.004s
+=== M4 Final Verification — 2026-05-23T09:01:03+00:00 ===
+
+--- M4-1: SymbolExtractor tests ---
+=== RUN   TestSymbolExtractor_Chinese
+--- PASS: TestSymbolExtractor_Chinese (0.00s)
+=== RUN   TestSymbolExtractor_English
+--- PASS: TestSymbolExtractor_English (0.00s)
+=== RUN   TestSymbolExtractor_MultipleAliases
+--- PASS: TestSymbolExtractor_MultipleAliases (0.00s)
+=== RUN   TestSymbolExtractor_UpperPattern
+--- PASS: TestSymbolExtractor_UpperPattern (0.00s)
+=== RUN   TestSymbolExtractor_NoMatch
+--- PASS: TestSymbolExtractor_NoMatch (0.00s)
+PASS
+ok  	anttrader/internal/ai	0.009s
+
+--- Full build ---
+
+--- All accumulated tests ---
+ok  	anttrader/internal/ai	0.012s
+ok  	anttrader/internal/risksvc	0.004s
+ok  	anttrader/internal/oms	0.007s
+ok  	anttrader/internal/symbol	0.005s
+ok  	anttrader/internal/errs	0.006s

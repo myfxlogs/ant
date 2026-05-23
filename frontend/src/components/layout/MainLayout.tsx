@@ -16,6 +16,7 @@ import {
   IconWaveSine,
   IconFlask,
   IconArchive,
+  IconMicroscope,
 } from '@tabler/icons-react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -37,6 +38,7 @@ const menuKeys = {
   marketRegime: '/strategy/market-regime',
   assets: '/strategy/assets',
   schedules: '/strategy/schedules',
+  research: '/research',
   logs: '/logs',
 } as const;
 
@@ -82,6 +84,7 @@ export default function MainLayout() {
     { key: menuKeys.marketRegime, icon: <IconWaveSine size={20} stroke={1.5} />, label: '市场状态' },
     { key: menuKeys.assets, icon: <IconArchive size={20} stroke={1.5} />, label: '资产库' },
     { key: menuKeys.schedules, icon: <IconBolt size={20} stroke={1.5} />, label: t('menu.schedules') },
+    { key: menuKeys.research, icon: <IconMicroscope size={20} stroke={1.5} />, label: '量化研究' },
     { key: menuKeys.logs, icon: <IconHistory size={20} stroke={1.5} />, label: t('menu.logs') },
   ];
 
