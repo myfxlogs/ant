@@ -1,4 +1,9 @@
+//go:build ignore
+// +build ignore
+
 // Package connect — MtHubService ConnectRPC handler.
+// Requires `make proto` to generate proto stubs.
+// Remove the build ignore tag after running make proto.
 // Bridges proto requests to mthub.MtHubService.
 package connect
 

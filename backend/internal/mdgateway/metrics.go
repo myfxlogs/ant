@@ -19,9 +19,10 @@ type MDMetrics struct {
 }
 
 // NewMDMetrics registers and returns the mdgateway metrics.
+// If reg is nil, uses a new isolated registry (safe for tests).
 func NewMDMetrics(reg prometheus.Registerer) *MDMetrics {
 	if reg == nil {
-		reg = prometheus.DefaultRegisterer
+		reg = prometheus.NewRegistry()
 	}
 	factory := promauto.With(reg)
 	return &MDMetrics{
