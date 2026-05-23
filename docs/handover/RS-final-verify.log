@@ -124,3 +124,69 @@ docs/adr/0011-observability.md:2
 docs/adr/0012-broker-adapter.md:2
 docs/README.md exists: YES
 AGENT-RUNBOOK.md exists: YES
+
+=== M0.3 Final Verification — 2026-05-23T03:06:53+00:00 ===
+
+--- M0.3-1: baseline.json ---
+Go files >300: 52
+TS files >250: 36
+Go funcs >50: 193
+Total violations frozen: 281
+
+--- M0.3-2: golangci-lint config ---
+8
+lines in .golangci.yml: 65
+
+--- M0.3-3/4/5: eslint config ---
+import { defineConfig, globalIgnores } from 'eslint/config'
+  globalIgnores([
+      // M0.3-4: no-explicit-any enforced (baseline waiver via CI --new-from-rev)
+      '@typescript-eslint/no-explicit-any': 'error',
+      // M0.3-3: max-lines — TS files ≤250 lines (matching AGENT.md §复杂度硬上限)
+      'max-lines': ['error', {
+
+--- M0.3-6: errs package ---
+go: cannot find main module, but found .git/config in /opt/ant
+	to create a module there, run:
+	go mod init
+
+--- M0.3-7: trace interceptor ---
+go: cannot find main module, but found .git/config in /opt/ant
+	to create a module there, run:
+	go mod init
+build: FAIL
+
+--- M0.3-8: frontend vitest ---
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[90m (2)[39m
+[2m   Start at [22m 03:07:19
+[2m   Duration [22m 465ms[2m (transform 58ms, setup 0ms, import 208ms, tests 9ms, environment 0ms)[22m
+
+
+--- M0.3-9: backend errs test ---
+go: cannot find main module, but found .git/config in /opt/ant
+	to create a module there, run:
+	go mod init
+
+--- make verify ---
+Checking file line limits...
+line check ok: 0 oversized file(s) allowed by baseline
+--- M0.3-6/9: backend errs test ---
+--- PASS: TestNew (0.00s)
+--- PASS: TestNewf (0.00s)
+--- PASS: TestWrap (0.00s)
+--- PASS: TestWrapf (0.00s)
+--- PASS: TestMessageCN (0.00s)
+--- PASS: TestMessageEN (0.00s)
+--- PASS: TestError_Error (0.00s)
+--- PASS: TestSeverity (0.00s)
+--- PASS: TestTop50Coverage (0.00s)
+PASS
+ok  	anttrader/internal/errs	0.008s
+
+--- M0.3-7: trace interceptor build ---
+sh: 6: cd: can't cd to backend
+
+--- M0.3-8: frontend vitest (retry from correct dir) ---
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[90m (2)[39m

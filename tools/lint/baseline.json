@@ -1,0 +1,2016 @@
+{
+  "version": "1.0",
+  "generated": "2026-05-23",
+  "description": "Baseline waiver for existing violations. Tier 3 exempt files excluded. CI enforces: any PR-touched file that still exceeds limits \u2192 CI red.",
+  "exempt_rules": {
+    "tier3_dirs": [
+      "**/gen/**",
+      "**/i18n/**",
+      "**/vendor/**"
+    ],
+    "tier3_patterns": [
+      "*.pb.go",
+      "*_grpc.pb.go",
+      "**/mt4/**",
+      "**/mt5/**",
+      "**/*defaults.ts",
+      "**/*defaults.tsx",
+      "**/*const*.go"
+    ]
+  },
+  "go_files_over_300": [
+    {
+      "path": "backend/internal/service/debate_v2_service.go",
+      "lines": 722,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/service/admin_service.go",
+      "lines": 661,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/service/python_strategy_service.go",
+      "lines": 622,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/connect/python_strategy_service_backtest_runs.go",
+      "lines": 616,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/server/seed_default_templates.go",
+      "lines": 584,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/connect/analytics_service.go",
+      "lines": 558,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/service/execution_gateway.go",
+      "lines": 531,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/service/strategy_schedule_runner_loop.go",
+      "lines": 503,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/repository/analytics_repository_account_stats.go",
+      "lines": 502,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/ai/training_engine.go",
+      "lines": 475,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/connect/stream_subscribe_events.go",
+      "lines": 474,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/repository/log_repository.go",
+      "lines": 472,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/monitoring/monitoring_service.go",
+      "lines": 469,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/connect/account_service.go",
+      "lines": 460,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/service/trading_service_orders.go",
+      "lines": 459,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/mt5client/trading_methods.go",
+      "lines": 458,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/connect/strategy_service_templates.go",
+      "lines": 458,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/service/debate_v2_prompts.go",
+      "lines": 455,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/model/models.go",
+      "lines": 454,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/service/strategy_schedule_service.go",
+      "lines": 454,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/repository/auto_trading_repository.go",
+      "lines": 450,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/service/ai_config_service.go",
+      "lines": 433,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/service/tick_backtest_engine.go",
+      "lines": 427,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/service/trading_risk.go",
+      "lines": 417,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/connect/trading_service_orders.go",
+      "lines": 416,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/service/market_service.go",
+      "lines": 413,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/connect/python_strategy_service.go",
+      "lines": 397,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/connect/strategy_experiment_service.go",
+      "lines": 395,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/repository/backtest_run_repository.go",
+      "lines": 383,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/connect/trading_service_queries.go",
+      "lines": 380,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/service/account_service.go",
+      "lines": 379,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/connect/stream_workers_quote.go",
+      "lines": 378,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/mt4client/stream_methods.go",
+      "lines": 377,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/connect/stream_workers_order.go",
+      "lines": 374,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/repository/strategy_repository.go",
+      "lines": 365,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/connection/history.go",
+      "lines": 353,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/service/economic_calendar_service.go",
+      "lines": 353,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/connect/session_agent.go",
+      "lines": 344,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/service/backtest_run_worker.go",
+      "lines": 340,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/monitoring/system_metrics.go",
+      "lines": 335,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/cache/cache_service.go",
+      "lines": 334,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/service/strategy_schedule_runner_eval.go",
+      "lines": 333,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/model/auto_trading.go",
+      "lines": 321,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/connect/log_service.go",
+      "lines": 317,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/mt5client/account_methods.go",
+      "lines": 314,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/connect/stream_user_summary.go",
+      "lines": 311,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/ai/deepseek/client.go",
+      "lines": 309,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/connect/account_supervisor.go",
+      "lines": 306,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/service/economic_calendar_translation.go",
+      "lines": 304,
+      "limit": 300
+    },
+    {
+      "path": "backend/cmd/seed_strategy_templates/main.go",
+      "lines": 302,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/pkg/goroutine/manager.go",
+      "lines": 301,
+      "limit": 300
+    },
+    {
+      "path": "backend/internal/service/analytics_monthly.go",
+      "lines": 301,
+      "limit": 300
+    }
+  ],
+  "ts_files_over_250": [
+    {
+      "path": "frontend/src/pages/ai/debate/DebatePageV2Steps.tsx",
+      "lines": 793,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/pages/strategy/StrategyTemplatePage.tsx",
+      "lines": 750,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/pages/strategy/StrategySchedulePage.tsx",
+      "lines": 683,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/pages/strategy/StrategyTemplateScheduleLaunchForm.tsx",
+      "lines": 661,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/pages/ai/SystemAI.tsx",
+      "lines": 646,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/pages/analytics/Summary.tsx",
+      "lines": 641,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/client/ai.ts",
+      "lines": 558,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/pages/accounts/BindAccount.tsx",
+      "lines": 498,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/pages/ai/debate/flow/useDebateFlow.ts",
+      "lines": 479,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/pages/logs/LogManagement.tsx",
+      "lines": 475,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/pages/strategy/components/EditScheduleModal.tsx",
+      "lines": 467,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/pages/accounts/components/AccountAnalyticsSection.tsx",
+      "lines": 467,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/pages/ai/systemai/hooks.ts",
+      "lines": 459,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/pages/accounts/AccountDetail.tsx",
+      "lines": 455,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/providers/ConnectProvider.tsx",
+      "lines": 447,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/components/strategy/CodeEditor.tsx",
+      "lines": 441,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/pages/accounts/components/MonthlyAnalysisCard.tsx",
+      "lines": 438,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/pages/admin/UserManagement.tsx",
+      "lines": 434,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/pages/strategy/StrategyScheduleLogsPage.tsx",
+      "lines": 422,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/stores/aiStore.ts",
+      "lines": 412,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/pages/admin/SystemConfig.tsx",
+      "lines": 384,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/pages/ai/AISettings.tsx",
+      "lines": 373,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/components/strategy/CodeAssist.tsx",
+      "lines": 350,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/client/debateV2.ts",
+      "lines": 347,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/pages/strategy/StrategyTemplateScheduleLaunchModal.tsx",
+      "lines": 343,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/pages/dashboard/Dashboard.tsx",
+      "lines": 337,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/App.tsx",
+      "lines": 333,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/components/layout/MainLayout.tsx",
+      "lines": 314,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/client/stream.ts",
+      "lines": 293,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/client/strategy.ts",
+      "lines": 293,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/components/strategy/BacktestRunDrawer.tsx",
+      "lines": 284,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/stores/tradingStore.ts",
+      "lines": 283,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/pages/admin/Dashboard.tsx",
+      "lines": 281,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/pages/strategy/components/ScheduleHealthModal.tsx",
+      "lines": 276,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/components/notification/NotificationCenter.tsx",
+      "lines": 276,
+      "limit": 250
+    },
+    {
+      "path": "frontend/src/components/trade/TradeConfirmModal.tsx",
+      "lines": 258,
+      "limit": 250
+    }
+  ],
+  "go_functions_over_50": [
+    {
+      "file": "backend/internal/server/seed_default_templates.go",
+      "function": "getDefaultStrategyTemplates",
+      "lines": 404,
+      "limit": 50,
+      "start_line": 181,
+      "end_line": 585
+    },
+    {
+      "file": "backend/internal/connect/stream_subscribe_events.go",
+      "function": "SubscribeEvents",
+      "lines": 381,
+      "limit": 50,
+      "start_line": 67,
+      "end_line": 448
+    },
+    {
+      "file": "backend/internal/connect/stream_workers_order.go",
+      "function": "startOrderStreamWithCtx",
+      "lines": 330,
+      "limit": 50,
+      "start_line": 45,
+      "end_line": 375
+    },
+    {
+      "file": "backend/internal/service/strategy_schedule_runner_eval.go",
+      "function": "evalOnce",
+      "lines": 299,
+      "limit": 50,
+      "start_line": 35,
+      "end_line": 334
+    },
+    {
+      "file": "backend/internal/connect/session_agent.go",
+      "function": "Run",
+      "lines": 280,
+      "limit": 50,
+      "start_line": 43,
+      "end_line": 323
+    },
+    {
+      "file": "backend/internal/server/seed_default_templates_i18n.go",
+      "function": "getTemplateI18nMap",
+      "lines": 265,
+      "limit": 50,
+      "start_line": 13,
+      "end_line": 278
+    },
+    {
+      "file": "backend/internal/connect/account_supervisor.go",
+      "function": "Run",
+      "lines": 237,
+      "limit": 50,
+      "start_line": 47,
+      "end_line": 284
+    },
+    {
+      "file": "backend/internal/connect/stream_user_summary.go",
+      "function": "SubscribeUserSummary",
+      "lines": 215,
+      "limit": 50,
+      "start_line": 19,
+      "end_line": 234
+    },
+    {
+      "file": "backend/internal/connect/python_strategy_service.go",
+      "function": "Backtest",
+      "lines": 205,
+      "limit": 50,
+      "start_line": 172,
+      "end_line": 377
+    },
+    {
+      "file": "backend/internal/service/strategy_schedule_runner_loop.go",
+      "function": "loopStableEventDriven",
+      "lines": 196,
+      "limit": 50,
+      "start_line": 193,
+      "end_line": 389
+    },
+    {
+      "file": "backend/internal/connect/stream_workers_profit.go",
+      "function": "startProfitStreamWithCtx",
+      "lines": 195,
+      "limit": 50,
+      "start_line": 58,
+      "end_line": 253
+    },
+    {
+      "file": "backend/cmd/seed_strategy_templates/main.go",
+      "function": "getDefaultTemplates",
+      "lines": 186,
+      "limit": 50,
+      "start_line": 117,
+      "end_line": 303
+    },
+    {
+      "file": "backend/internal/connect/stream_workers_quote.go",
+      "function": "startQuoteStreamWithCtx",
+      "lines": 184,
+      "limit": 50,
+      "start_line": 69,
+      "end_line": 253
+    },
+    {
+      "file": "backend/internal/service/trading_service_positions.go",
+      "function": "getPositionsMT5",
+      "lines": 167,
+      "limit": 50,
+      "start_line": 104,
+      "end_line": 271
+    },
+    {
+      "file": "backend/internal/server/seed_default_templates_extra.go",
+      "function": "getExtraDefaultStrategyTemplates",
+      "lines": 167,
+      "limit": 50,
+      "start_line": 3,
+      "end_line": 170
+    },
+    {
+      "file": "backend/internal/service/python_strategy_service.go",
+      "function": "NewPythonStrategyService",
+      "lines": 164,
+      "limit": 50,
+      "start_line": 28,
+      "end_line": 192
+    },
+    {
+      "file": "backend/internal/service/account_service.go",
+      "function": "BindAccount",
+      "lines": 163,
+      "limit": 50,
+      "start_line": 88,
+      "end_line": 251
+    },
+    {
+      "file": "backend/internal/mt4client/connection.go",
+      "function": "Connect",
+      "lines": 159,
+      "limit": 50,
+      "start_line": 50,
+      "end_line": 209
+    },
+    {
+      "file": "backend/internal/service/debate_v2_prompts.go",
+      "function": "CodeSystemPromptV2",
+      "lines": 159,
+      "limit": 50,
+      "start_line": 240,
+      "end_line": 399
+    },
+    {
+      "file": "backend/internal/server/seed_default_templates.go",
+      "function": "seedDefaultStrategyTemplates",
+      "lines": 158,
+      "limit": 50,
+      "start_line": 23,
+      "end_line": 181
+    },
+    {
+      "file": "backend/internal/service/python_strategy_service.go",
+      "function": "RunBacktest",
+      "lines": 151,
+      "limit": 50,
+      "start_line": 371,
+      "end_line": 522
+    },
+    {
+      "file": "backend/internal/service/economic_calendar_translation.go",
+      "function": "translateBatchWithZhipu",
+      "lines": 138,
+      "limit": 50,
+      "start_line": 167,
+      "end_line": 305
+    },
+    {
+      "file": "backend/internal/service/backtest_run_worker.go",
+      "function": "prepareBacktestInputs",
+      "lines": 138,
+      "limit": 50,
+      "start_line": 203,
+      "end_line": 341
+    },
+    {
+      "file": "backend/internal/connection/history.go",
+      "function": "syncHistoryAsync",
+      "lines": 136,
+      "limit": 50,
+      "start_line": 49,
+      "end_line": 185
+    },
+    {
+      "file": "backend/internal/connect/analytics_service.go",
+      "function": "convertAccountAnalyticsToProto",
+      "lines": 134,
+      "limit": 50,
+      "start_line": 349,
+      "end_line": 483
+    },
+    {
+      "file": "backend/internal/service/analytics_monthly.go",
+      "function": "buildMonthlyBonusSymbolViews",
+      "lines": 130,
+      "limit": 50,
+      "start_line": 34,
+      "end_line": 164
+    },
+    {
+      "file": "backend/internal/service/execution_gateway.go",
+      "function": "OrderSend",
+      "lines": 127,
+      "limit": 50,
+      "start_line": 246,
+      "end_line": 373
+    },
+    {
+      "file": "backend/internal/service/strategy_schedule_runner_close.go",
+      "function": "closeSchedulePositions",
+      "lines": 127,
+      "limit": 50,
+      "start_line": 64,
+      "end_line": 191
+    },
+    {
+      "file": "backend/internal/connect/ai_chat_prepare.go",
+      "function": "prepareChatInvocation",
+      "lines": 127,
+      "limit": 50,
+      "start_line": 35,
+      "end_line": 162
+    },
+    {
+      "file": "backend/internal/service/economic_calendar_service.go",
+      "function": "GetCalendar",
+      "lines": 125,
+      "limit": 50,
+      "start_line": 87,
+      "end_line": 212
+    },
+    {
+      "file": "backend/internal/service/strategy_schedule_service.go",
+      "function": "RunBacktest",
+      "lines": 121,
+      "limit": 50,
+      "start_line": 232,
+      "end_line": 353
+    },
+    {
+      "file": "backend/internal/connect/stream_leader_supervisor.go",
+      "function": "ensureSupervisor",
+      "lines": 121,
+      "limit": 50,
+      "start_line": 33,
+      "end_line": 154
+    },
+    {
+      "file": "backend/internal/service/ai_report_service.go",
+      "function": "GenerateReportStream",
+      "lines": 117,
+      "limit": 50,
+      "start_line": 141,
+      "end_line": 258
+    },
+    {
+      "file": "backend/internal/service/strategy_schedule_runner_loop.go",
+      "function": "loopHFQuote",
+      "lines": 115,
+      "limit": 50,
+      "start_line": 389,
+      "end_line": 504
+    },
+    {
+      "file": "backend/internal/connect/trading_service_orders.go",
+      "function": "OrderSend",
+      "lines": 114,
+      "limit": 50,
+      "start_line": 19,
+      "end_line": 133
+    },
+    {
+      "file": "backend/cmd/migrate_schedules_v1_to_v2/main.go",
+      "function": "migrateSchedulesV1ToV2",
+      "lines": 113,
+      "limit": 50,
+      "start_line": 56,
+      "end_line": 169
+    },
+    {
+      "file": "backend/internal/service/auto_trading_service_execute.go",
+      "function": "ExecuteSignal",
+      "lines": 112,
+      "limit": 50,
+      "start_line": 17,
+      "end_line": 129
+    },
+    {
+      "file": "backend/internal/service/economic_calendar_indicators.go",
+      "function": "fetchIndicatorFromFRED",
+      "lines": 110,
+      "limit": 50,
+      "start_line": 161,
+      "end_line": 271
+    },
+    {
+      "file": "backend/internal/service/admin_service.go",
+      "function": "SetConfig",
+      "lines": 109,
+      "limit": 50,
+      "start_line": 469,
+      "end_line": 578
+    },
+    {
+      "file": "backend/internal/ai/deepseek/client.go",
+      "function": "StreamChat",
+      "lines": 109,
+      "limit": 50,
+      "start_line": 182,
+      "end_line": 291
+    },
+    {
+      "file": "backend/internal/mt5client/connection.go",
+      "function": "Connect",
+      "lines": 108,
+      "limit": 50,
+      "start_line": 48,
+      "end_line": 156
+    },
+    {
+      "file": "backend/internal/service/economic_calendar_translation.go",
+      "function": "localizeEvents",
+      "lines": 108,
+      "limit": 50,
+      "start_line": 59,
+      "end_line": 167
+    },
+    {
+      "file": "backend/internal/connect/python_strategy_service_backtest_runs.go",
+      "function": "prepareBacktestInputs",
+      "lines": 106,
+      "limit": 50,
+      "start_line": 342,
+      "end_line": 448
+    },
+    {
+      "file": "backend/internal/connect/trading_service_orders.go",
+      "function": "OrderClose",
+      "lines": 99,
+      "limit": 50,
+      "start_line": 231,
+      "end_line": 330
+    },
+    {
+      "file": "backend/internal/mt4client/stream_methods.go",
+      "function": "SubscribeOrderProfitStream",
+      "lines": 98,
+      "limit": 50,
+      "start_line": 50,
+      "end_line": 148
+    },
+    {
+      "file": "backend/internal/connect/trading_service_orders.go",
+      "function": "OrderModify",
+      "lines": 98,
+      "limit": 50,
+      "start_line": 133,
+      "end_line": 231
+    },
+    {
+      "file": "backend/internal/server/server.go",
+      "function": "setupConnectHandlers",
+      "lines": 98,
+      "limit": 50,
+      "start_line": 82,
+      "end_line": 180
+    },
+    {
+      "file": "backend/internal/service/strategy_executor.go",
+      "function": "ExecuteSignal",
+      "lines": 97,
+      "limit": 50,
+      "start_line": 58,
+      "end_line": 155
+    },
+    {
+      "file": "backend/internal/repository/analytics_repository_account_stats.go",
+      "function": "GetDailyPnL",
+      "lines": 96,
+      "limit": 50,
+      "start_line": 258,
+      "end_line": 354
+    },
+    {
+      "file": "backend/internal/service/trading_service.go",
+      "function": "NewTradingService",
+      "lines": 93,
+      "limit": 50,
+      "start_line": 51,
+      "end_line": 144
+    },
+    {
+      "file": "backend/internal/connect/account_service.go",
+      "function": "UpdateAccount",
+      "lines": 93,
+      "limit": 50,
+      "start_line": 145,
+      "end_line": 238
+    },
+    {
+      "file": "backend/internal/service/economic_calendar_service.go",
+      "function": "saveToDB",
+      "lines": 91,
+      "limit": 50,
+      "start_line": 263,
+      "end_line": 354
+    },
+    {
+      "file": "backend/internal/service/tick_dataset_service.go",
+      "function": "CreateFrozenTickDatasetFromRedis",
+      "lines": 90,
+      "limit": 50,
+      "start_line": 52,
+      "end_line": 142
+    },
+    {
+      "file": "backend/internal/connect/trading_service_queries.go",
+      "function": "positionsFromStreamSnapshot",
+      "lines": 90,
+      "limit": 50,
+      "start_line": 169,
+      "end_line": 259
+    },
+    {
+      "file": "backend/internal/service/debate_v2_dto.go",
+      "function": "buildDTO",
+      "lines": 89,
+      "limit": 50,
+      "start_line": 93,
+      "end_line": 182
+    },
+    {
+      "file": "backend/internal/repository/admin_repo_logs.go",
+      "function": "ListLogs",
+      "lines": 89,
+      "limit": 50,
+      "start_line": 56,
+      "end_line": 145
+    },
+    {
+      "file": "backend/internal/model/logs.go",
+      "function": "NewStrategyExecutionLog",
+      "lines": 88,
+      "limit": 50,
+      "start_line": 98,
+      "end_line": 186
+    },
+    {
+      "file": "backend/internal/model/auto_trading.go",
+      "function": "NewTradingLog",
+      "lines": 88,
+      "limit": 50,
+      "start_line": 175,
+      "end_line": 263
+    },
+    {
+      "file": "backend/internal/ai/zhipu/client.go",
+      "function": "StreamChat",
+      "lines": 87,
+      "limit": 50,
+      "start_line": 135,
+      "end_line": 222
+    },
+    {
+      "file": "backend/internal/connection/connection.go",
+      "function": "Connect",
+      "lines": 85,
+      "limit": 50,
+      "start_line": 88,
+      "end_line": 173
+    },
+    {
+      "file": "backend/internal/connect/stream_leader_idle_shutdown.go",
+      "function": "scheduleIdleShutdown",
+      "lines": 85,
+      "limit": 50,
+      "start_line": 10,
+      "end_line": 95
+    },
+    {
+      "file": "backend/internal/repository/admin_repo_logs.go",
+      "function": "GetRiskMetricsWindows",
+      "lines": 85,
+      "limit": 50,
+      "start_line": 145,
+      "end_line": 230
+    },
+    {
+      "file": "backend/internal/mt4client/stream_methods.go",
+      "function": "SubscribeOrderUpdateStream",
+      "lines": 84,
+      "limit": 50,
+      "start_line": 148,
+      "end_line": 232
+    },
+    {
+      "file": "backend/internal/connection/reconnect.go",
+      "function": "checkAllConnections",
+      "lines": 84,
+      "limit": 50,
+      "start_line": 92,
+      "end_line": 176
+    },
+    {
+      "file": "backend/internal/connect/python_strategy_service_backtest_runs.go",
+      "function": "StartBacktestRun",
+      "lines": 84,
+      "limit": 50,
+      "start_line": 21,
+      "end_line": 105
+    },
+    {
+      "file": "backend/internal/connect/python_strategy_service_backtest_runs.go",
+      "function": "WatchBacktestRun",
+      "lines": 83,
+      "limit": 50,
+      "start_line": 152,
+      "end_line": 235
+    },
+    {
+      "file": "backend/internal/ai/training_engine.go",
+      "function": "Run",
+      "lines": 83,
+      "limit": 50,
+      "start_line": 159,
+      "end_line": 242
+    },
+    {
+      "file": "backend/internal/repository/admin_repo_positions_orders.go",
+      "function": "ListOrders",
+      "lines": 82,
+      "limit": 50,
+      "start_line": 86,
+      "end_line": 168
+    },
+    {
+      "file": "backend/internal/app/container.go",
+      "function": "NewContainer",
+      "lines": 82,
+      "limit": 50,
+      "start_line": 81,
+      "end_line": 163
+    },
+    {
+      "file": "backend/internal/mt5client/trading_methods.go",
+      "function": "SubscribeOrderProfitStream",
+      "lines": 81,
+      "limit": 50,
+      "start_line": 296,
+      "end_line": 377
+    },
+    {
+      "file": "backend/internal/service/ai_call.go",
+      "function": "streamChatWithRetry",
+      "lines": 81,
+      "limit": 50,
+      "start_line": 79,
+      "end_line": 160
+    },
+    {
+      "file": "backend/internal/service/execution_gateway.go",
+      "function": "OrderModify",
+      "lines": 80,
+      "limit": 50,
+      "start_line": 373,
+      "end_line": 453
+    },
+    {
+      "file": "backend/internal/service/execution_gateway.go",
+      "function": "OrderClose",
+      "lines": 79,
+      "limit": 50,
+      "start_line": 453,
+      "end_line": 532
+    },
+    {
+      "file": "backend/internal/mt4client/stream_methods.go",
+      "function": "SubscribeQuoteStream",
+      "lines": 78,
+      "limit": 50,
+      "start_line": 244,
+      "end_line": 322
+    },
+    {
+      "file": "backend/internal/monitoring/system_metrics.go",
+      "function": "parseRedisInfo",
+      "lines": 77,
+      "limit": 50,
+      "start_line": 223,
+      "end_line": 300
+    },
+    {
+      "file": "backend/internal/service/ai_report_service.go",
+      "function": "GenerateReport",
+      "lines": 76,
+      "limit": 50,
+      "start_line": 65,
+      "end_line": 141
+    },
+    {
+      "file": "backend/internal/monitoring/monitoring_service.go",
+      "function": "loadDefaultAlertRules",
+      "lines": 76,
+      "limit": 50,
+      "start_line": 208,
+      "end_line": 284
+    },
+    {
+      "file": "backend/internal/connect/stream_subscribe_history.go",
+      "function": "SubscribeHistory",
+      "lines": 76,
+      "limit": 50,
+      "start_line": 69,
+      "end_line": 145
+    },
+    {
+      "file": "backend/internal/repository/admin_repo_positions_orders.go",
+      "function": "ListPositions",
+      "lines": 76,
+      "limit": 50,
+      "start_line": 10,
+      "end_line": 86
+    },
+    {
+      "file": "backend/cmd/create_api_key/main.go",
+      "function": "main",
+      "lines": 75,
+      "limit": 50,
+      "start_line": 21,
+      "end_line": 96
+    },
+    {
+      "file": "backend/internal/mt5client/trading_methods.go",
+      "function": "SubscribeQuoteStream",
+      "lines": 75,
+      "limit": 50,
+      "start_line": 214,
+      "end_line": 289
+    },
+    {
+      "file": "backend/internal/service/trading_service_orders.go",
+      "function": "OrderClose",
+      "lines": 75,
+      "limit": 50,
+      "start_line": 278,
+      "end_line": 353
+    },
+    {
+      "file": "backend/internal/connect/trading_service_queries.go",
+      "function": "GetPositions",
+      "lines": 75,
+      "limit": 50,
+      "start_line": 21,
+      "end_line": 96
+    },
+    {
+      "file": "backend/internal/repository/log_repository.go",
+      "function": "GetOperationLogs",
+      "lines": 75,
+      "limit": 50,
+      "start_line": 398,
+      "end_line": 473
+    },
+    {
+      "file": "backend/internal/service/backtest_dataset_service.go",
+      "function": "CreateFrozenDatasetFromKlines",
+      "lines": 74,
+      "limit": 50,
+      "start_line": 34,
+      "end_line": 108
+    },
+    {
+      "file": "backend/internal/service/analytics_monthly.go",
+      "function": "GetMonthlyAnalysis",
+      "lines": 74,
+      "limit": 50,
+      "start_line": 193,
+      "end_line": 267
+    },
+    {
+      "file": "backend/internal/connect/stream_leader_session.go",
+      "function": "SetSessionLeader",
+      "lines": 73,
+      "limit": 50,
+      "start_line": 12,
+      "end_line": 85
+    },
+    {
+      "file": "backend/internal/connect/python_strategy_service_backtest_runs.go",
+      "function": "toProtoBacktestRun",
+      "lines": 73,
+      "limit": 50,
+      "start_line": 544,
+      "end_line": 617
+    },
+    {
+      "file": "backend/internal/connect/stream_leader_forwarder.go",
+      "function": "startForwarder",
+      "lines": 73,
+      "limit": 50,
+      "start_line": 13,
+      "end_line": 86
+    },
+    {
+      "file": "backend/internal/service/systemai/discovery.go",
+      "function": "fetchZhipuModels",
+      "lines": 72,
+      "limit": 50,
+      "start_line": 173,
+      "end_line": 245
+    },
+    {
+      "file": "backend/internal/connect/log_service.go",
+      "function": "GetExecutionLogs",
+      "lines": 72,
+      "limit": 50,
+      "start_line": 113,
+      "end_line": 185
+    },
+    {
+      "file": "backend/internal/connect/log_service.go",
+      "function": "GetOperationLogs",
+      "lines": 72,
+      "limit": 50,
+      "start_line": 246,
+      "end_line": 318
+    },
+    {
+      "file": "backend/internal/ai/openai/client.go",
+      "function": "StreamChat",
+      "lines": 72,
+      "limit": 50,
+      "start_line": 193,
+      "end_line": 265
+    },
+    {
+      "file": "backend/internal/connection/utils.go",
+      "function": "FormatConnectionError",
+      "lines": 71,
+      "limit": 50,
+      "start_line": 21,
+      "end_line": 92
+    },
+    {
+      "file": "backend/internal/service/analytics_stats.go",
+      "function": "calculateTradeStatsFromRecords",
+      "lines": 71,
+      "limit": 50,
+      "start_line": 76,
+      "end_line": 147
+    },
+    {
+      "file": "backend/internal/connect/strategy_service_templates.go",
+      "function": "convertTemplateToPBWithLocale",
+      "lines": 71,
+      "limit": 50,
+      "start_line": 360,
+      "end_line": 431
+    },
+    {
+      "file": "backend/internal/repository/admin_repo_accounts.go",
+      "function": "ListAccounts",
+      "lines": 71,
+      "limit": 50,
+      "start_line": 28,
+      "end_line": 99
+    },
+    {
+      "file": "backend/cmd/seed_strategy_templates/main.go",
+      "function": "main",
+      "lines": 70,
+      "limit": 50,
+      "start_line": 25,
+      "end_line": 95
+    },
+    {
+      "file": "backend/internal/pkg/goroutine/manager.go",
+      "function": "Spawn",
+      "lines": 70,
+      "limit": 50,
+      "start_line": 72,
+      "end_line": 142
+    },
+    {
+      "file": "backend/internal/mt5client/trading_methods.go",
+      "function": "SubscribeOrderUpdateStream",
+      "lines": 70,
+      "limit": 50,
+      "start_line": 377,
+      "end_line": 447
+    },
+    {
+      "file": "backend/internal/connect/schedule_health_service.go",
+      "function": "GetScheduleHealth",
+      "lines": 70,
+      "limit": 50,
+      "start_line": 35,
+      "end_line": 105
+    },
+    {
+      "file": "backend/internal/service/trailing_stop_service.go",
+      "function": "updateSingleTrailingStop",
+      "lines": 68,
+      "limit": 50,
+      "start_line": 123,
+      "end_line": 191
+    },
+    {
+      "file": "backend/internal/connect/admin_service_system.go",
+      "function": "GetMetrics",
+      "lines": 68,
+      "limit": 50,
+      "start_line": 49,
+      "end_line": 117
+    },
+    {
+      "file": "backend/internal/connect/python_strategy_service.go",
+      "function": "Execute",
+      "lines": 68,
+      "limit": 50,
+      "start_line": 78,
+      "end_line": 146
+    },
+    {
+      "file": "backend/internal/connect/stream_legacy_subscriptions.go",
+      "function": "SubscribeOrderUpdates",
+      "lines": 68,
+      "limit": 50,
+      "start_line": 87,
+      "end_line": 155
+    },
+    {
+      "file": "backend/internal/connect/backtest_dataset_service.go",
+      "function": "ListBacktestDatasets",
+      "lines": 68,
+      "limit": 50,
+      "start_line": 53,
+      "end_line": 121
+    },
+    {
+      "file": "backend/internal/connect/backtest_dataset_service.go",
+      "function": "CreateFrozenBacktestDataset",
+      "lines": 68,
+      "limit": 50,
+      "start_line": 121,
+      "end_line": 189
+    },
+    {
+      "file": "backend/internal/connect/strategy_service_backtest_signals.go",
+      "function": "RunBacktest",
+      "lines": 68,
+      "limit": 50,
+      "start_line": 15,
+      "end_line": 83
+    },
+    {
+      "file": "backend/internal/ai/anthropic/client.go",
+      "function": "Chat",
+      "lines": 67,
+      "limit": 50,
+      "start_line": 105,
+      "end_line": 172
+    },
+    {
+      "file": "backend/internal/repository/admin_repo_users.go",
+      "function": "ListUsers",
+      "lines": 67,
+      "limit": 50,
+      "start_line": 19,
+      "end_line": 86
+    },
+    {
+      "file": "backend/internal/repository/analytics_repository_account_stats.go",
+      "function": "GetHourlyStats",
+      "lines": 67,
+      "limit": 50,
+      "start_line": 436,
+      "end_line": 503
+    },
+    {
+      "file": "backend/internal/repository/log_repository.go",
+      "function": "GetExecutionLogs",
+      "lines": 67,
+      "limit": 50,
+      "start_line": 204,
+      "end_line": 271
+    },
+    {
+      "file": "backend/internal/repository/log_repository.go",
+      "function": "GetOrderHistory",
+      "lines": 67,
+      "limit": 50,
+      "start_line": 304,
+      "end_line": 371
+    },
+    {
+      "file": "backend/pkg/faultisol/executor.go",
+      "function": "ExecuteWithValue",
+      "lines": 66,
+      "limit": 50,
+      "start_line": 146,
+      "end_line": 212
+    },
+    {
+      "file": "backend/internal/service/analytics_stats.go",
+      "function": "calculateTradeStats",
+      "lines": 66,
+      "limit": 50,
+      "start_line": 10,
+      "end_line": 76
+    },
+    {
+      "file": "backend/internal/service/tick_backtest_engine.go",
+      "function": "OrderSend",
+      "lines": 66,
+      "limit": 50,
+      "start_line": 243,
+      "end_line": 309
+    },
+    {
+      "file": "backend/internal/service/strategy_schedule_service.go",
+      "function": "UpdateRiskAssessment",
+      "lines": 66,
+      "limit": 50,
+      "start_line": 353,
+      "end_line": 419
+    },
+    {
+      "file": "backend/internal/service/kline_service_core.go",
+      "function": "GetKlines",
+      "lines": 65,
+      "limit": 50,
+      "start_line": 88,
+      "end_line": 153
+    },
+    {
+      "file": "backend/internal/service/ai_agent_service.go",
+      "function": "defsToRows",
+      "lines": 65,
+      "limit": 50,
+      "start_line": 141,
+      "end_line": 206
+    },
+    {
+      "file": "backend/internal/connect/stream_redis_streams.go",
+      "function": "readAccountStreamLoop",
+      "lines": 65,
+      "limit": 50,
+      "start_line": 152,
+      "end_line": 217
+    },
+    {
+      "file": "backend/internal/connect/stream_legacy_subscriptions.go",
+      "function": "SubscribeProfitUpdates",
+      "lines": 65,
+      "limit": 50,
+      "start_line": 155,
+      "end_line": 220
+    },
+    {
+      "file": "backend/internal/connect/strategy_experiment_service.go",
+      "function": "SubmitStrategyExperiment",
+      "lines": 65,
+      "limit": 50,
+      "start_line": 33,
+      "end_line": 98
+    },
+    {
+      "file": "backend/internal/ai/deepseek/client.go",
+      "function": "Chat",
+      "lines": 65,
+      "limit": 50,
+      "start_line": 117,
+      "end_line": 182
+    },
+    {
+      "file": "backend/cmd/create_admin/main.go",
+      "function": "main",
+      "lines": 64,
+      "limit": 50,
+      "start_line": 18,
+      "end_line": 82
+    },
+    {
+      "file": "backend/internal/service/trading_service_history.go",
+      "function": "SyncOrderHistory",
+      "lines": 64,
+      "limit": 50,
+      "start_line": 153,
+      "end_line": 217
+    },
+    {
+      "file": "backend/internal/service/trading_service_positions.go",
+      "function": "getPositionsMT4",
+      "lines": 64,
+      "limit": 50,
+      "start_line": 40,
+      "end_line": 104
+    },
+    {
+      "file": "backend/internal/connect/stream_legacy_subscriptions.go",
+      "function": "SubscribeQuotes",
+      "lines": 64,
+      "limit": 50,
+      "start_line": 23,
+      "end_line": 87
+    },
+    {
+      "file": "backend/internal/repository/analytics_repository_equity.go",
+      "function": "GetEquityCurve",
+      "lines": 64,
+      "limit": 50,
+      "start_line": 12,
+      "end_line": 76
+    },
+    {
+      "file": "backend/internal/repository/ai_workflow_repository.go",
+      "function": "AppendStep",
+      "lines": 64,
+      "limit": 50,
+      "start_line": 72,
+      "end_line": 136
+    },
+    {
+      "file": "backend/internal/service/advisor_service.go",
+      "function": "GetAdviceStream",
+      "lines": 63,
+      "limit": 50,
+      "start_line": 120,
+      "end_line": 183
+    },
+    {
+      "file": "backend/internal/service/debate_v2_advance_job.go",
+      "function": "subscribe",
+      "lines": 63,
+      "limit": 50,
+      "start_line": 167,
+      "end_line": 230
+    },
+    {
+      "file": "backend/internal/service/auto_trading_service_risk.go",
+      "function": "CalculatePositionSize",
+      "lines": 62,
+      "limit": 50,
+      "start_line": 89,
+      "end_line": 151
+    },
+    {
+      "file": "backend/internal/service/debate_v2_service.go",
+      "function": "Advance",
+      "lines": 62,
+      "limit": 50,
+      "start_line": 325,
+      "end_line": 387
+    },
+    {
+      "file": "backend/internal/service/risk_engine.go",
+      "function": "CheckAuto",
+      "lines": 62,
+      "limit": 50,
+      "start_line": 30,
+      "end_line": 92
+    },
+    {
+      "file": "backend/internal/monitoring/system_metrics.go",
+      "function": "collectMemoryMetrics",
+      "lines": 62,
+      "limit": 50,
+      "start_line": 55,
+      "end_line": 117
+    },
+    {
+      "file": "backend/internal/connect/analytics_service.go",
+      "function": "GetMonthlyAnalysisBonus",
+      "lines": 62,
+      "limit": 50,
+      "start_line": 287,
+      "end_line": 349
+    },
+    {
+      "file": "backend/pkg/faultisol/executor.go",
+      "function": "Execute",
+      "lines": 61,
+      "limit": 50,
+      "start_line": 85,
+      "end_line": 146
+    },
+    {
+      "file": "backend/internal/service/admin_service.go",
+      "function": "ListConfigs",
+      "lines": 61,
+      "limit": 50,
+      "start_line": 408,
+      "end_line": 469
+    },
+    {
+      "file": "backend/internal/connect/log_service.go",
+      "function": "GetOrderLogHistory",
+      "lines": 61,
+      "limit": 50,
+      "start_line": 185,
+      "end_line": 246
+    },
+    {
+      "file": "backend/internal/connect/stream_publish.go",
+      "function": "BroadcastAccountStatus",
+      "lines": 61,
+      "limit": 50,
+      "start_line": 17,
+      "end_line": 78
+    },
+    {
+      "file": "backend/internal/repository/debate_repository.go",
+      "function": "UpdateSession",
+      "lines": 61,
+      "limit": 50,
+      "start_line": 139,
+      "end_line": 200
+    },
+    {
+      "file": "backend/internal/service/strategy_schedule_risk.go",
+      "function": "applySignalDefaults",
+      "lines": 60,
+      "limit": 50,
+      "start_line": 106,
+      "end_line": 166
+    },
+    {
+      "file": "backend/internal/connect/stream_types_test_helpers.go",
+      "function": "BuildSnapshotEventsForTest",
+      "lines": 60,
+      "limit": 50,
+      "start_line": 41,
+      "end_line": 101
+    },
+    {
+      "file": "backend/internal/connection/reconnect.go",
+      "function": "Reconnect",
+      "lines": 59,
+      "limit": 50,
+      "start_line": 176,
+      "end_line": 235
+    },
+    {
+      "file": "backend/internal/connect/strategy_service_templates.go",
+      "function": "UpdateTemplate",
+      "lines": 59,
+      "limit": 50,
+      "start_line": 241,
+      "end_line": 300
+    },
+    {
+      "file": "backend/internal/model/auto_trading.go",
+      "function": "SetOrders",
+      "lines": 58,
+      "limit": 50,
+      "start_line": 117,
+      "end_line": 175
+    },
+    {
+      "file": "backend/internal/service/advisor_service.go",
+      "function": "GetAdvice",
+      "lines": 58,
+      "limit": 50,
+      "start_line": 62,
+      "end_line": 120
+    },
+    {
+      "file": "backend/internal/service/backtest_run_service.go",
+      "function": "Record",
+      "lines": 58,
+      "limit": 50,
+      "start_line": 58,
+      "end_line": 116
+    },
+    {
+      "file": "backend/internal/service/systemai/discovery.go",
+      "function": "fetchModelsPage",
+      "lines": 58,
+      "limit": 50,
+      "start_line": 77,
+      "end_line": 135
+    },
+    {
+      "file": "backend/internal/connect/stream_user_summary.go",
+      "function": "computeUserSummaryStats",
+      "lines": 58,
+      "limit": 50,
+      "start_line": 254,
+      "end_line": 312
+    },
+    {
+      "file": "backend/internal/ai/zhipu/client.go",
+      "function": "doRequest",
+      "lines": 58,
+      "limit": 50,
+      "start_line": 243,
+      "end_line": 301
+    },
+    {
+      "file": "backend/internal/repository/log_repository.go",
+      "function": "GetScheduleRunLogs",
+      "lines": 58,
+      "limit": 50,
+      "start_line": 48,
+      "end_line": 106
+    },
+    {
+      "file": "backend/cmd/server/main.go",
+      "function": "main",
+      "lines": 57,
+      "limit": 50,
+      "start_line": 20,
+      "end_line": 77
+    },
+    {
+      "file": "backend/internal/model/strategy.go",
+      "function": "SetRiskControl",
+      "lines": 57,
+      "limit": 50,
+      "start_line": 167,
+      "end_line": 224
+    },
+    {
+      "file": "backend/internal/config/config.go",
+      "function": "Addr",
+      "lines": 57,
+      "limit": 50,
+      "start_line": 104,
+      "end_line": 161
+    },
+    {
+      "file": "backend/internal/connect/strategy_service_templates.go",
+      "function": "UpdateTemplateDraft",
+      "lines": 57,
+      "limit": 50,
+      "start_line": 128,
+      "end_line": 185
+    },
+    {
+      "file": "backend/internal/model/logs.go",
+      "function": "NewAccountConnectionLog",
+      "lines": 56,
+      "limit": 50,
+      "start_line": 42,
+      "end_line": 98
+    },
+    {
+      "file": "backend/internal/service/trading_service_orders.go",
+      "function": "OrderModify",
+      "lines": 56,
+      "limit": 50,
+      "start_line": 170,
+      "end_line": 226
+    },
+    {
+      "file": "backend/internal/service/debate_v2_service.go",
+      "function": "Chat",
+      "lines": 56,
+      "limit": 50,
+      "start_line": 269,
+      "end_line": 325
+    },
+    {
+      "file": "backend/internal/service/ai_config_service.go",
+      "function": "buildProvider",
+      "lines": 56,
+      "limit": 50,
+      "start_line": 352,
+      "end_line": 408
+    },
+    {
+      "file": "backend/internal/connect/auto_trading_service_schedule.go",
+      "function": "UpdateSchedule",
+      "lines": 56,
+      "limit": 50,
+      "start_line": 97,
+      "end_line": 153
+    },
+    {
+      "file": "backend/internal/connect/python_strategy_service_backtest_runs.go",
+      "function": "GetBacktestRun",
+      "lines": 56,
+      "limit": 50,
+      "start_line": 448,
+      "end_line": 504
+    },
+    {
+      "file": "backend/internal/repository/log_repository.go",
+      "function": "GetConnectionLogs",
+      "lines": 56,
+      "limit": 50,
+      "start_line": 106,
+      "end_line": 162
+    },
+    {
+      "file": "backend/internal/model/strategy_template.go",
+      "function": "Scan",
+      "lines": 55,
+      "limit": 50,
+      "start_line": 128,
+      "end_line": 183
+    },
+    {
+      "file": "backend/internal/service/analytics_account.go",
+      "function": "GetAccountAnalytics",
+      "lines": 55,
+      "limit": 50,
+      "start_line": 12,
+      "end_line": 67
+    },
+    {
+      "file": "backend/internal/service/economic_calendar_indicators.go",
+      "function": "loadIndicatorFromDB",
+      "lines": 55,
+      "limit": 50,
+      "start_line": 106,
+      "end_line": 161
+    },
+    {
+      "file": "backend/internal/service/ai_code_assist_service.go",
+      "function": "ReviseCode",
+      "lines": 55,
+      "limit": 50,
+      "start_line": 47,
+      "end_line": 102
+    },
+    {
+      "file": "backend/internal/service/admin_metrics.go",
+      "function": "GetSystemMetrics",
+      "lines": 55,
+      "limit": 50,
+      "start_line": 56,
+      "end_line": 111
+    },
+    {
+      "file": "backend/internal/service/kline_service_mt5.go",
+      "function": "getKlinesMT5",
+      "lines": 55,
+      "limit": 50,
+      "start_line": 16,
+      "end_line": 71
+    },
+    {
+      "file": "backend/internal/service/trading_service_orders.go",
+      "function": "OrderSend",
+      "lines": 54,
+      "limit": 50,
+      "start_line": 16,
+      "end_line": 70
+    },
+    {
+      "file": "backend/internal/connect/auto_trading_service_risk.go",
+      "function": "UpdateRiskConfig",
+      "lines": 54,
+      "limit": 50,
+      "start_line": 59,
+      "end_line": 113
+    },
+    {
+      "file": "backend/internal/connect/auto_trading_service_logs.go",
+      "function": "GetTradingLogs",
+      "lines": 54,
+      "limit": 50,
+      "start_line": 16,
+      "end_line": 70
+    },
+    {
+      "file": "backend/internal/connect/trading_service_queries.go",
+      "function": "GetOrderHistory",
+      "lines": 54,
+      "limit": 50,
+      "start_line": 298,
+      "end_line": 352
+    },
+    {
+      "file": "backend/internal/connect/account_service.go",
+      "function": "ConnectAccount",
+      "lines": 54,
+      "limit": 50,
+      "start_line": 270,
+      "end_line": 324
+    },
+    {
+      "file": "backend/internal/repository/backtest_run_repository.go",
+      "function": "ListByUser",
+      "lines": 54,
+      "limit": 50,
+      "start_line": 125,
+      "end_line": 179
+    },
+    {
+      "file": "backend/internal/service/python_strategy_service.go",
+      "function": "DefaultBacktestCostModelFromEnv",
+      "lines": 53,
+      "limit": 50,
+      "start_line": 192,
+      "end_line": 245
+    },
+    {
+      "file": "backend/internal/service/trading_service_history.go",
+      "function": "getOrderHistoryMT5",
+      "lines": 53,
+      "limit": 50,
+      "start_line": 100,
+      "end_line": 153
+    },
+    {
+      "file": "backend/internal/connect/trading_service_queries.go",
+      "function": "logPositionsDiagnostic",
+      "lines": 53,
+      "limit": 50,
+      "start_line": 116,
+      "end_line": 169
+    },
+    {
+      "file": "backend/internal/connect/python_strategy_service_backtest_runs.go",
+      "function": "validateStartBacktestRunRequest",
+      "lines": 53,
+      "limit": 50,
+      "start_line": 258,
+      "end_line": 311
+    },
+    {
+      "file": "backend/internal/ai/deepseek/client.go",
+      "function": "NewClientWithModel",
+      "lines": 53,
+      "limit": 50,
+      "start_line": 64,
+      "end_line": 117
+    },
+    {
+      "file": "backend/internal/repository/admin_repo.go",
+      "function": "GetDashboardStats",
+      "lines": 53,
+      "limit": 50,
+      "start_line": 30,
+      "end_line": 83
+    },
+    {
+      "file": "backend/internal/service/economic_calendar_indicators.go",
+      "function": "GetKeyIndicators",
+      "lines": 52,
+      "limit": 50,
+      "start_line": 54,
+      "end_line": 106
+    },
+    {
+      "file": "backend/internal/service/backtest_run_worker.go",
+      "function": "runBacktest",
+      "lines": 52,
+      "limit": 50,
+      "start_line": 151,
+      "end_line": 203
+    },
+    {
+      "file": "backend/internal/service/strategy_schedule_service.go",
+      "function": "CreateSchedule",
+      "lines": 52,
+      "limit": 50,
+      "start_line": 61,
+      "end_line": 113
+    },
+    {
+      "file": "backend/internal/connect/log_service.go",
+      "function": "GetConnectionLogs",
+      "lines": 52,
+      "limit": 50,
+      "start_line": 25,
+      "end_line": 77
+    },
+    {
+      "file": "backend/internal/connect/market_regime_service.go",
+      "function": "DetectMarketRegime",
+      "lines": 52,
+      "limit": 50,
+      "start_line": 29,
+      "end_line": 81
+    },
+    {
+      "file": "backend/internal/mt4client/stream_methods.go",
+      "function": "subscribePositionSymbols",
+      "lines": 51,
+      "limit": 50,
+      "start_line": 322,
+      "end_line": 373
+    },
+    {
+      "file": "backend/internal/service/admin_metrics.go",
+      "function": "readRiskMetricCounters",
+      "lines": 51,
+      "limit": 50,
+      "start_line": 111,
+      "end_line": 162
+    },
+    {
+      "file": "backend/internal/service/tick_backtest_engine.go",
+      "function": "checkPendingOrders",
+      "lines": 51,
+      "limit": 50,
+      "start_line": 110,
+      "end_line": 161
+    },
+    {
+      "file": "backend/internal/connect/auto_trading_service_schedule.go",
+      "function": "CreateSchedule",
+      "lines": 51,
+      "limit": 50,
+      "start_line": 16,
+      "end_line": 67
+    },
+    {
+      "file": "backend/internal/connect/stream_methods.go",
+      "function": "registerSubscriber",
+      "lines": 51,
+      "limit": 50,
+      "start_line": 80,
+      "end_line": 131
+    },
+    {
+      "file": "backend/internal/ai/openai/client.go",
+      "function": "Chat",
+      "lines": 51,
+      "limit": 50,
+      "start_line": 142,
+      "end_line": 193
+    },
+    {
+      "file": "backend/internal/repository/analytics_repository_account_stats.go",
+      "function": "GetMonthlyPnL",
+      "lines": 51,
+      "limit": 50,
+      "start_line": 207,
+      "end_line": 258
+    }
+  ],
+  "totals": {
+    "go_files_over_300": 52,
+    "ts_files_over_250": 36,
+    "go_functions_over_50": 193
+  }
+}

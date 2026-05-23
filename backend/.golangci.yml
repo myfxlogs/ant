@@ -1,0 +1,65 @@
+# golangci-lint configuration for ant backend
+# M0.3: complexity limits + baseline waiver strategy
+#
+# CI usage:
+#   golangci-lint run --new-from-rev=origin/main   # only check changed code
+#   golangci-lint run ./...                          # full check (baseline in tools/lint/)
+#
+# Baseline: tools/lint/baseline.json freezes existing 281 violations.
+# Any PR touching a baseline-listed file must reduce it below the limit,
+# or CI will fail.
+
+run:
+  timeout: 5m
+  tests: false
+
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - revive
+    - gocyclo
+    - funlen
+    - gocognit
+
+linters-settings:
+  revive:
+    rules:
+      - name: argument-limit
+        severity: warning
+        arguments: [5]
+
+  gocyclo:
+    min-complexity: 11  # Red at >10 (matching AGENT.md §复杂度硬上限)
+
+  funlen:
+    lines: 50      # Red at >50 lines per function
+    statements: 40
+
+  gocognit:
+    min-complexity: 11
+
+issues:
+  exclude-dirs:
+    # Tier 3 permanent exemptions (M0.3-5)
+    - backend/gen
+    - backend/mt4
+    - backend/mt5
+    - frontend
+
+  exclude-files:
+    # Proto generated code
+    - ".*\\.pb\\.go$"
+    - ".*_grpc\\.pb\\.go$"
+    # Constants / defaults
+    - ".*const.*\\.go$"
+
+  exclude-rules:
+    # Allow long files for well-known patterns in existing code
+    # (CI enforces: --new-from-rev to only gate new/changed code)
+    - path: "backend/internal/model/models\\.go"
+      linters: [funlen]

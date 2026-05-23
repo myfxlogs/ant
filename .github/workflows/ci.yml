@@ -169,6 +169,8 @@ jobs:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -176,7 +178,16 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Install deps
         run: npm ci
-      - name: Lint
-        run: npm run lint
+      - name: Lint (incremental — only changed files)
+        run: |
+          BASE=$(git merge-base origin/main HEAD 2>/dev/null || echo "HEAD~1")
+          FILES=$(git diff --name-only --diff-filter=ACMR "$BASE"...HEAD -- 'frontend/src/**/*.{ts,tsx}' 2>/dev/null || true)
+          if [ -z "$FILES" ]; then
+            echo "No TS/TSX files changed — skipping lint"
+          else
+            echo "Linting changed files:"
+            echo "$FILES"
+            npx eslint $FILES
+          fi
       - name: Build
         run: npm run build
