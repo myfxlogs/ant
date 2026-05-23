@@ -11,12 +11,16 @@ import (
 
 // MT5Adapter wraps the existing mt5client connection with the oms.BrokerAdapter interface.
 type MT5Adapter struct {
+	baseAdapter
 	conn *mt5client.MT5Connection
 }
 
 // NewMT5Adapter creates an MT5 broker adapter.
 func NewMT5Adapter(conn *mt5client.MT5Connection) *MT5Adapter {
-	return &MT5Adapter{conn: conn}
+	return &MT5Adapter{
+		baseAdapter: baseAdapter{platform: "mt5"},
+		conn:        conn,
+	}
 }
 
 // Submit sends an order via the MT5 gateway.
@@ -42,16 +46,4 @@ func (a *MT5Adapter) Submit(ctx context.Context, req *oms.OrderRequest) (*oms.Br
 		FilledQty: float64(resp.Volume),
 		FillPrice: resp.OpenPrice,
 	}, nil
-}
-
-func (a *MT5Adapter) Cancel(ctx context.Context, ticket string) error {
-	return fmt.Errorf("mt5 cancel not implemented")
-}
-
-func (a *MT5Adapter) Modify(ctx context.Context, ticket string, price, stopPrice float64) error {
-	return fmt.Errorf("mt5 modify not implemented")
-}
-
-func (a *MT5Adapter) Query(ctx context.Context, ticket string) (*oms.Order, error) {
-	return nil, fmt.Errorf("mt5 query not implemented")
 }

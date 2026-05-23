@@ -4,6 +4,7 @@ package mdgateway
 import (
 	"context"
 
+	"anttrader/internal/mdgateway/adapter/mdtick"
 	mt4adapter "anttrader/internal/mdgateway/adapter/mt4"
 
 	"go.uber.org/zap"
@@ -16,7 +17,7 @@ type mt4Gateway struct {
 }
 
 func newMT4Gateway(cfg AccountConfig, normalizer *Normalizer) Gateway {
-	ac := mt4adapter.AccountConfig{
+	ac := mdtick.AccountConfig{
 		Broker:   cfg.Broker,
 		Login:    cfg.Login,
 		Password: cfg.Password,
@@ -24,16 +25,16 @@ func newMT4Gateway(cfg AccountConfig, normalizer *Normalizer) Gateway {
 		Host:     cfg.Host,
 		Port:     cfg.Port,
 	}
-	var an *mt4adapter.Normalizer
+	var an *mdtick.Normalizer
 	if normalizer != nil {
-		an = &mt4adapter.Normalizer{
+		an = &mdtick.Normalizer{
 			Resolver: &resolverBridge{inner: normalizer.resolver},
 		}
 	}
 	return &mt4Gateway{inner: mt4adapter.New(ac, an, zap.NewNop())}
 }
 
-// resolverBridge adapts mdgateway.CanonicalResolver to mt4adapter.CanonicalResolver.
+// resolverBridge adapts mdgateway.CanonicalResolver to mdtick.CanonicalResolver.
 type resolverBridge struct {
 	inner CanonicalResolver
 }
@@ -54,7 +55,7 @@ func (g *mt4Gateway) Disconnect(ctx context.Context) error { return g.inner.Disc
 func (g *mt4Gateway) HealthCheck(ctx context.Context) error { return g.inner.HealthCheck(ctx) }
 
 func (g *mt4Gateway) Subscribe(ctx context.Context, symbols []string, handler TickHandler) error {
-	return g.inner.Subscribe(ctx, symbols, func(t *mt4adapter.Tick) {
+	return g.inner.Subscribe(ctx, symbols, func(t *mdtick.Tick) {
 		handler(&Tick{
 			UserID:        t.UserID,
 			Broker:        t.Broker,

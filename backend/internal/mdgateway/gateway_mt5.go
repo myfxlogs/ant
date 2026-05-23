@@ -4,6 +4,7 @@ package mdgateway
 import (
 	"context"
 
+	"anttrader/internal/mdgateway/adapter/mdtick"
 	mt5adapter "anttrader/internal/mdgateway/adapter/mt5"
 
 	"go.uber.org/zap"
@@ -16,7 +17,7 @@ type mt5Gateway struct {
 }
 
 func newMT5Gateway(cfg AccountConfig, normalizer *Normalizer) Gateway {
-	ac := mt5adapter.AccountConfig{
+	ac := mdtick.AccountConfig{
 		Broker:   cfg.Broker,
 		Login:    cfg.Login,
 		Password: cfg.Password,
@@ -24,25 +25,13 @@ func newMT5Gateway(cfg AccountConfig, normalizer *Normalizer) Gateway {
 		Host:     cfg.Host,
 		Port:     cfg.Port,
 	}
-	var an *mt5adapter.Normalizer
+	var an *mdtick.Normalizer
 	if normalizer != nil {
-		an = &mt5adapter.Normalizer{
-			Resolver: &resolverBridgeMT5{inner: normalizer.resolver},
+		an = &mdtick.Normalizer{
+			Resolver: &resolverBridge{inner: normalizer.resolver},
 		}
 	}
 	return &mt5Gateway{inner: mt5adapter.New(ac, an, zap.NewNop())}
-}
-
-// resolverBridgeMT5 adapts mdgateway.CanonicalResolver to mt5adapter.CanonicalResolver.
-type resolverBridgeMT5 struct {
-	inner CanonicalResolver
-}
-
-func (r *resolverBridgeMT5) Resolve(brokerID, symbolRaw string) string {
-	if r.inner != nil {
-		return r.inner.Resolve(brokerID, symbolRaw)
-	}
-	return symbolRaw
 }
 
 func (g *mt5Gateway) Platform() string                { return g.inner.Platform() }
@@ -54,7 +43,7 @@ func (g *mt5Gateway) Disconnect(ctx context.Context) error { return g.inner.Disc
 func (g *mt5Gateway) HealthCheck(ctx context.Context) error { return g.inner.HealthCheck(ctx) }
 
 func (g *mt5Gateway) Subscribe(ctx context.Context, symbols []string, handler TickHandler) error {
-	return g.inner.Subscribe(ctx, symbols, func(t *mt5adapter.Tick) {
+	return g.inner.Subscribe(ctx, symbols, func(t *mdtick.Tick) {
 		handler(&Tick{
 			UserID:        t.UserID,
 			Broker:        t.Broker,

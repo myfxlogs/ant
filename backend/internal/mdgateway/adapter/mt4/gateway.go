@@ -14,82 +14,16 @@ import (
 	"time"
 
 	pb "anttrader/mt4"
+	"anttrader/internal/mdgateway/adapter/mdtick"
 	"anttrader/internal/mt4client"
 
 	"go.uber.org/zap"
 )
 
-// AccountConfig mirrors mdgateway.AccountConfig to avoid circular imports.
-type AccountConfig struct {
-	Broker   string
-	Login    string
-	Password string
-	Server   string
-	Host     string
-	Port     string
-}
-
-// Money is a monetary value with string-preserved decimal precision.
-type Money struct {
-	Value string
-}
-
-// GetValue returns the string value (compat with proto getter pattern).
-func (m *Money) GetValue() string {
-	if m == nil {
-		return ""
-	}
-	return m.Value
-}
-
-// Tick is a normalized market data tick.
-type Tick struct {
-	UserID        string
-	Broker        string
-	Symbol        string
-	Canonical     string
-	TsUnixMs      int64
-	ArrivedUnixMs int64
-	Bid           *Money
-	Ask           *Money
-	BidVolume     float64
-	AskVolume     float64
-}
-
-// TickHandler is called for each normalized Tick.
-type TickHandler func(tick *Tick)
-
-// CanonicalResolver resolves (broker, symbol_raw) -> canonical name.
-type CanonicalResolver interface {
-	Resolve(brokerID, symbolRaw string) string
-}
-
-// Normalizer converts broker-specific quote types to Tick.
-type Normalizer struct {
-	Resolver CanonicalResolver
-}
-
-// Tick creates a Tick with common fields filled, including canonical name.
-func (n *Normalizer) Tick(userID, broker, symbol string, tsMs int64, bid, ask string) *Tick {
-	canon := symbol
-	if n.Resolver != nil {
-		canon = n.Resolver.Resolve(broker, symbol)
-	}
-	return &Tick{
-		UserID:    userID,
-		Broker:    broker,
-		Symbol:    symbol,
-		Canonical: canon,
-		TsUnixMs:  tsMs,
-		Bid:       &Money{Value: bid},
-		Ask:       &Money{Value: ask},
-	}
-}
-
 // Gateway is the MT4 gateway implementation.
 type Gateway struct {
-	cfg        AccountConfig
-	normalizer *Normalizer
+	cfg        mdtick.AccountConfig
+	normalizer *mdtick.Normalizer
 	log        *zap.Logger
 
 	mu     sync.Mutex
@@ -99,7 +33,7 @@ type Gateway struct {
 }
 
 // New creates an MT4 gateway adapter.
-func New(cfg AccountConfig, normalizer *Normalizer, log *zap.Logger) *Gateway {
+func New(cfg mdtick.AccountConfig, normalizer *mdtick.Normalizer, log *zap.Logger) *Gateway {
 	return &Gateway{
 		cfg:        cfg,
 		normalizer: normalizer,
@@ -164,7 +98,7 @@ func (g *Gateway) Disconnect(ctx context.Context) error {
 }
 
 // Subscribe starts the quote stream and forwards normalized ticks to handler.
-func (g *Gateway) Subscribe(ctx context.Context, symbols []string, handler TickHandler) error {
+func (g *Gateway) Subscribe(ctx context.Context, symbols []string, handler mdtick.TickHandler) error {
 	g.mu.Lock()
 	if g.conn == nil {
 		g.mu.Unlock()
@@ -222,20 +156,20 @@ func (g *Gateway) HealthCheck(ctx context.Context) error {
 }
 
 // normalize converts a protobuf QuoteEventArgs to a local Tick.
-func (g *Gateway) normalize(q *pb.QuoteEventArgs, userID string, normalizer *Normalizer) *Tick {
+func (g *Gateway) normalize(q *pb.QuoteEventArgs, userID string, normalizer *mdtick.Normalizer) *mdtick.Tick {
 	if normalizer != nil {
 		return normalizer.Tick(userID, g.cfg.Broker, q.Symbol,
 			time.Now().UnixMilli(),
 			fmt.Sprintf("%.6f", q.Bid), fmt.Sprintf("%.6f", q.Ask))
 	}
-	return &Tick{
+	return &mdtick.Tick{
 		UserID:        userID,
 		Broker:        g.cfg.Broker,
 		Symbol:        q.Symbol,
 		Canonical:     q.Symbol,
 		TsUnixMs:      time.Now().UnixMilli(),
 		ArrivedUnixMs: time.Now().UnixMilli(),
-		Bid:           &Money{Value: fmt.Sprintf("%.6f", q.Bid)},
-		Ask:           &Money{Value: fmt.Sprintf("%.6f", q.Ask)},
+		Bid:           &mdtick.Money{Value: fmt.Sprintf("%.6f", q.Bid)},
+		Ask:           &mdtick.Money{Value: fmt.Sprintf("%.6f", q.Ask)},
 	}
 }
