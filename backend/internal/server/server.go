@@ -49,6 +49,9 @@ func New(cfg *config.Config) (*Server, error) {
 		seedDefaultStrategyTemplates(context.Background(), c.SQLXDB, c.TemplateRepo)
 	}
 
+	// M1-3: seed canonical_symbols on every startup (idempotent).
+	seedCanonicalSymbols(context.Background(), c.SQLXDB)
+
 	s := &Server{
 		cfg:       cfg,
 		container: c,

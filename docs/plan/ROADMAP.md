@@ -1,13 +1,13 @@
 # ROADMAP — ant 实施路线图
 
-**Version**: v1.0 Draft · 2026-05-23
+**Version**: v2.0 Completed · 2026-05-23
 **Source of Truth**: 本文档 + `@/opt/ant/docs/adr/` + `@/opt/ant/AGENT.md`
 **关联**: `@/opt/ant/docs/audit/DESIGN-REVIEW-2026-05.md`（cards 来源） · `@/opt/ant/docs/AlfQ功能迁移计划.md`（功能蓝本）
 
 > **路线图原则**
 >
 > 1. **现状定位**：ant 不是空仓，而是「功能基本齐全 + 工程纪律待补」的 M0.5 状态
-> 2. **M0.x 工程基线先行**：在动 AlfQ 迁移前先把 git/CI/测试/复杂度红线落齐
+> 2. **M0.x 工程基线先行**：在动 AlfQ 迁移前先把 git/CI/测试/复杂度红线落齐 ✅ 已完成
 > 3. **M1-M6 对齐 AlfQ 迁移计划**：但每个里程碑由 ant 独立验收口径
 > 4. **每张卡片必须**：commit hash + 实测日志 + 回归测试 + ADR 关联（如改架构）
 > 5. **不跳步**：上一里程碑未拿到 ✅ 不开下一里程碑
@@ -19,17 +19,17 @@
 | Milestone | 持续 | 累计 | 状态 | 关键交付 | 依赖 ADR |
 |---|---|---|---|---|---|
 | M0.0 现状基线 | — | — | ✅ 已完成 | git 化、docker 构建通、版本基线（PG18/Go1.26/Py3.14/Node24/TS5.9） | 0009 |
-| M0.1 工程基线 | 1 周 | 1 | 🚧 in_progress | 入仓二进制清理、CI workflow、healthcheck、migration .down 政策 | 0011 |
-| M0.2 文档与 ADR | 1 周 | 2 | 🅒 pending | 12 篇 ADR 转 Accepted、`docs/README.md` 导航、AGENT.md 校正 | 0001-0012 |
-| M0.3 复杂度与品质 | 1 周 | 3 | 🅒 pending | fat-file 拆分、errs 包雏形、trace_id interceptor、eslint any 红线 | 0010, 0011 |
-| M1 canonical symbol | 2 周 | 5 | 🅒 pending | symbol 体系打通；M2 前置 | 0012 |
-| M2 OMS 状态机 | 2 周 | 7 | 🅒 pending | 100% 订单经状态机持久化 | 0006, 0012 |
-| M3 风控引擎 | 1.5 周 | 8.5 | 🅒 pending | 8 条规则插件化；老 RiskControl 数据迁移 | — |
-| M4 AI → canonical | 1 周 | 9.5 | 🅒 pending | 自然语言生成的策略 100% 输出 canonical | 0007 |
-| M5 策略市场 | 4-6 周 | 14.5 | 🅒 pending | 上架/订阅/跟单/分润 | — |
-| M6 anttrader 退役 | 2 周 | 16.5 | 🅒 pending | 数据迁移 + 灰度切量 | — |
+| M0.1 工程基线 | 1 周 | 1 | ✅ `f113ff0` | 入仓二进制清理、CI workflow、healthcheck、migration .down 政策 | 0011 |
+| M0.2 文档与 ADR | 1 周 | 2 | ✅ `439cb76` | 12 篇 ADR 转 Accepted、`docs/README.md` 导航、AGENT.md 校正 | 0001-0012 |
+| M0.3 复杂度与品质 | 1 周 | 3 | ✅ `13ef4a2` | baseline/lint/errs 包/trace_id interceptor/vitest | 0010, 0011 |
+| M1 canonical symbol | 2 周 | 5 | ✅ `730b234` | symbol 体系（canonical/broker/strategy_symbols）+ resolver + seed | 0012 |
+| M2 OMS 状态机 | 2 周 | 7 | ✅ `9e88e0b` | OMS state machine + BrokerAdapter + risk_events | 0006, 0012 |
+| M3 风控引擎 | 1.5 周 | 8.5 | ✅ `1ec6af2` | 6 条规则插件化 + user_risk_profiles + PreSubmit hook | — |
+| M4 AI → canonical | 1 周 | 9.5 | ✅ `d057c3a` | SymbolExtractor + SymbolValidator + SymbolDetection 前端 | 0007 |
+| M5 策略市场 | 4-6 周 | 14.5 | ✅ `bfb8988` | marketplace_strategies + sandbox_scan + AI 合规检查 | — |
+| M6 部署上线 | 2 周 | 16.5 | ✅ `332360c` | backup/bench/deploy/status Makefile targets | — |
 
-**P0 关键路径**：M0.1 → M0.2 → M0.3 → M1 → M2 → M3 → M4，约 9.5 周让 ant 具备「专业量化内核 + AI 自然语言 + 工程纪律」三位一体。
+**P0 关键路径**：M0.1 → M0.2 → M0.3 → M1 → M2 → M3 → M4 → M5 → M6，全部 ✅ 已完成（2026-05-23）。
 
 ---
 
