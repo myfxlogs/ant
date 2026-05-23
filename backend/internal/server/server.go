@@ -14,6 +14,7 @@ import (
 
 	"anttrader/internal/app"
 	"anttrader/internal/config"
+	"anttrader/pkg/logger"
 	connectsvc "anttrader/internal/connect"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/repository"
@@ -60,8 +61,16 @@ func New(cfg *config.Config) (*Server, error) {
 	return s, nil
 }
 func (s *Server) Start() error {
+	ctx := context.Background()
+
 	if s.lifecycle != nil {
-		s.lifecycle.Start(context.Background())
+		s.lifecycle.Start(ctx)
+	}
+
+	// M7.8-2: Start market data gateway (ClickHouse migration + runner)
+	if s.cfg.ClickHouse.Host != "" {
+		log := logger.Get()
+		go s.startMarketDataGateway(ctx, log)
 	}
 
 	connectHandler := s.setupConnectHandlers()

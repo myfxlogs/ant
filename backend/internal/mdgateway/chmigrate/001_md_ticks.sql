@@ -15,4 +15,5 @@ CREATE TABLE IF NOT EXISTS md_ticks (
     ask_volume       Float64
 ) ENGINE = ReplacingMergeTree()
 PARTITION BY toYYYYMM(toDate(ts_unix_ms / 1000))
-ORDER BY (broker, canonical, ts_unix_ms);
+ORDER BY (broker, canonical, ts_unix_ms)
+TTL toDateTime(ts_unix_ms / 1000) + INTERVAL 90 DAY;

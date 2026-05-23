@@ -10,19 +10,20 @@ import (
 )
 
 type Config struct {
-	Server     ServerConfig     `yaml:"server"`
-	Database   DatabaseConfig   `yaml:"database"`
-	Redis      RedisConfig      `yaml:"redis"`
-	JWT        JWTConfig        `yaml:"jwt"`
-	MT4        MT4Config        `yaml:"mt4"`
-	MT5        MT5Config        `yaml:"mt5"`
+	Server          ServerConfig          `yaml:"server"`
+	Database        DatabaseConfig        `yaml:"database"`
+	Redis           RedisConfig           `yaml:"redis"`
+	JWT             JWTConfig             `yaml:"jwt"`
+	MT4             MT4Config             `yaml:"mt4"`
+	MT5             MT5Config             `yaml:"mt5"`
+	ClickHouse      ClickHouseConfig      `yaml:"clickhouse"`
 	StrategyService StrategyServiceConfig `yaml:"strategy_service"`
-	Log        LogConfig        `yaml:"log"`
-	RateLimit  RateLimitConfig  `yaml:"rate_limit"`
-	Business   BusinessConfig   `yaml:"business"`
-	Monitoring MonitoringConfig `yaml:"monitoring"`
-	Cache      CacheConfig      `yaml:"cache"`
-	FMP        FMPConfig        `yaml:"fmp"`
+	Log             LogConfig             `yaml:"log"`
+	RateLimit       RateLimitConfig       `yaml:"rate_limit"`
+	Business        BusinessConfig        `yaml:"business"`
+	Monitoring      MonitoringConfig      `yaml:"monitoring"`
+	Cache           CacheConfig           `yaml:"cache"`
+	FMP             FMPConfig             `yaml:"fmp"`
 }
 
 type ServerConfig struct {
@@ -147,6 +148,14 @@ type CacheConfig struct {
 
 type StrategyServiceConfig struct {
 	URL string `yaml:"url"`
+}
+
+type ClickHouseConfig struct {
+	Host     string `yaml:"host"`
+	Port     int    `yaml:"port"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
+	Database string `yaml:"database"`
 }
 
 type FMPConfig struct {
