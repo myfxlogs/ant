@@ -190,3 +190,59 @@ sh: 6: cd: can't cd to backend
 --- M0.3-8: frontend vitest (retry from correct dir) ---
 [2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
 [2m      Tests [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+
+=== M1 Final Verification — 2026-05-23T03:14:05+00:00 ===
+
+--- M1-1: migrations 087-090 ---
+backend/migrations/087_canonical_symbols.down.sql
+backend/migrations/087_canonical_symbols.up.sql
+backend/migrations/088_broker_symbols.down.sql
+backend/migrations/088_broker_symbols.up.sql
+backend/migrations/089_strategy_symbols.down.sql
+backend/migrations/089_strategy_symbols.up.sql
+backend/migrations/090_strategies_canonical_migration.down.sql
+backend/migrations/090_strategies_canonical_migration.up.sql
+
+--- M1-2: symbolsync package ---
+pattern ./internal/symbolsync/...: directory prefix internal/symbolsync does not contain main module or its selected dependencies
+
+--- M1-3: seed canonical_symbols ---
+go: cannot find main module, but found .git/config in /opt/ant
+	to create a module there, run:
+	go mod init
+
+--- M1-4: resolver ---
+pattern ./internal/symbol/...: directory prefix internal/symbol does not contain main module or its selected dependencies
+
+--- Canonicalize test ---
+go: cannot find main module, but found .git/config in /opt/ant
+	to create a module there, run:
+	go mod init
+
+--- Full test suite ---
+go: cannot find main module, but found .git/config in /opt/ant
+	to create a module there, run:
+	go mod init
+
+--- Full build ---
+pattern ./...: directory prefix . does not contain main module or its selected dependencies
+
+=== M1 Final Verification (backend/) — 2026-05-23T03:14:13+00:00 ===
+
+--- M1-2: symbolsync build ---
+OK
+
+--- M1-3/4: symbol tests ---
+=== RUN   TestCanonicalize
+--- PASS: TestCanonicalize (0.00s)
+=== RUN   TestSeedCanonicals_Count
+--- PASS: TestSeedCanonicals_Count (0.00s)
+=== RUN   TestSeedCanonicals_Coverage
+--- PASS: TestSeedCanonicals_Coverage (0.00s)
+PASS
+ok  	anttrader/internal/symbol	0.004s
+
+--- M1: Full build ---
+
+--- Seed count ---
+ok  	anttrader/internal/symbol	0.004s
