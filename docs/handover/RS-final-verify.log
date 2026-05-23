@@ -359,3 +359,16 @@ ok  	anttrader/internal/risksvc	0.004s
 ok  	anttrader/internal/oms	0.007s
 ok  	anttrader/internal/symbol	0.005s
 ok  	anttrader/internal/errs	0.006s
+=== M5 Final Verification — 2026-05-23T09:10:25+00:00 ===
+
+--- All Go tests ---
+ok  	anttrader/internal/ai	0.007s
+ok  	anttrader/internal/errs	0.005s
+ok  	anttrader/internal/oms	0.006s
+ok  	anttrader/internal/symbol	0.005s
+ok  	anttrader/internal/risksvc	0.006s
+
+--- Python syntax check ---
+OK
+
+--- Full build ---
