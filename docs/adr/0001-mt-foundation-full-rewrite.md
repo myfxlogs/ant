@@ -68,7 +68,7 @@ ant 项目当前**未上线、无外部用户**，是地基重写的最佳时机
 
 | 指标 | M7 完成 | M8 完成 | M9 完成 |
 |---|---|---|---|
-| MT 接入总 LOC（含测试） | ≤ 1500 | ≤ 1200 | ≤ 1000 |
+| MT 接入总 LOC（非测试，与 AGENT.md §5 一致） | ≤ 1500 | ≤ 1200 | ≤ 1000 |
 | 业务代码 grep 直调 mt4client/mt5client | 0 | 0 | 0（包已删除）|
 | service/ 包文件 ≤ 400 行 | — | 100% | 100% |
 | sqlc 覆盖率 | — | ≥ 80% | ≥ 95% |
@@ -107,8 +107,8 @@ case "$MILESTONE" in
   M9) test "$LOC" -le 1000 ;;
 esac
 
-# (2) 业务代码 0 处直调
-! grep -rE 'anttrader/internal/(mt4|mt5)client' backend/internal/{ai,marketplace,oms,risk,connect,service}/
+# (2) 业务代码 0 处直调（service/ 是 deprecation 区，豁免至 M9）
+! grep -rE 'anttrader/internal/(mt4|mt5)client' backend/internal/{ai,marketplace,oms,risk,connect,quantengine,factorsvc,mthub}/
 
 # (3) 生产路径零 Python
 ! grep -rE 'exec\(|eval\(|subprocess|sandbox' backend/internal/{quantengine,oms}/

@@ -81,10 +81,14 @@
   | `runner.go` | 装配入口（从 PG 加载账户 → 启动全链路） |
 - 详见 `docs/spec/11-mdgateway.md`
 
-### L3 · 撮合 / OMS（`oms/`）
-- 与 mdgateway 平级（数据进 vs 订单出）
-- 调用 mthub 提单、写 PG.orders、触发风控
-- **不依赖**直接 MT 调用（统一走 mthub）
+### L6 · OMS（`oms/`）— 注意：本节订正
+
+> **订正**：早期草图 §1 把 oms 画在 L3。**实际归属 L6**。理由：oms 调用 `mthub.OrderExecutor`（L5），按 §4 "禁止反向依赖" 不变量，依赖上层服务的模块必须在更高层。
+> §1 ASCII 图保留历史画法（不易改图），以本节为准。
+
+- **订阅者角色**：订阅 NATS `md.factor.*` / `oms.events.*` 事件，提单 / 跟单
+- 调 `mthub.OrderExecutor`（L5）下单、写 PG.orders、调 `risk.PreCheck`（同 L6 同级）
+- **不依赖**直接 MT 调用（统一经 mthub）
 
 ### L4 · 因子计算（`factorsvc/`）
 - 订阅 NATS `md.bar.*` → DSL 引擎求值 → 写 CH `factor_values`

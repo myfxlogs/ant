@@ -44,6 +44,20 @@
 | Q-003 TradeMode=0 阻塞 | M7.1-17 + M7.1-18 | 🅒 |
 | Q-004 跨 broker symbol 混合 | M7.1-18 | 🅒 |
 
+## 设计复查（2026-05-23 第二轮）— 待人类决策的过度/缺陷
+
+| ID | 类别 | 描述 | 决策待入 |
+|---|---|---|---|
+| RV-C1 | 过度设计 | CircuitBreaker per-account 过细，可改 per-broker（同 broker 多账户共享 breaker），简化状态 | M7.1-13 开工前 |
+| RV-C2 | 过度设计 | 5σ MAD 离群检查在高频 pip 跳行情下易误杀；考虑改为更保守阈值或 boolean 仅 bid>ask | M7.1-7 开工前 |
+| RV-C3 | 缺乏取证 | 100-window xxhash dedup 是为应对 broker 重发，但需 anttrader 真实日志取证；无证据则可砍 | M7.1-8 开工前 |
+| RV-C4 | 过度设计 | `/livez/account/{id}` per-account 健康端点；运维实际只看 metric。改 metric-only | M7.1-14 开工前 |
+| RV-C5 | 过度设计 | Spill 旋转 size + age 双触发可简化为 size-only（age 限制由 fluentbit 等外部 ship 解决）| M7.1-12 开工前 |
+| RV-C6 | 缺陷 | 缺 telemetry 完整性测试（spec/15 列出指标，但无单测验证全部指标确实暴露）| M7.6 加卡 |
+| RV-B5 | 缺陷 | vault.Client 接口未 spec（spec/11 §3.1 提到 `Vault` 但无文件定义 `Encrypt/Decrypt/RotateKey` 契约）→ 需新建 `docs/spec/17-secrets.md` | M7.1-2 开工前 |
+| RV-B6 | 缺陷 | errs 包接口未 spec（AGENT.md §3.6 强约束 `errs.Code + 中文 user_message` 但无定义）→ 现有 `backend/internal/errs/` 是否复用？需 spec/17 同档 | M8 |
+| RV-B7 | 缺陷 | M7.0-7 后端 import 路径变更（`anttrader/gen/proto/ant/v1/...`），需在 spec/10 §3 import 示例增加 v2 路径示例 | M7.0-7 实施时 |
+
 ## 文档债
 
 - [ ] `docs/spec/dep-allowlist.md` 依赖白名单（M8 立）

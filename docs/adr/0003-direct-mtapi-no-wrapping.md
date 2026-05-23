@@ -54,7 +54,7 @@ alfq 的做法（参考）：
 ## 4. 后果
 
 ### 正面
-- MT 接入 LOC 从 ~3049 → ≤ 250（adapter）+ ≤ 800（mdgateway）= ≤ 1050
+- MT 接入 LOC 从 ~3049 → ≤ 400（adapter）+ ≤ 800（mdgateway）+ ≤ 300（mthub）= ≤ 1500（与 AGENT.md §5 一致）
 - 心智模型单一（业务 → mthub.OrderExecutor → adapter → mtapi）
 - 暗坑修复有单一权威位置（adapter + quirks register）
 
@@ -87,7 +87,14 @@ git grep -l 'anttrader/gen/proto/mt[45]' backend/ \
   || { echo "FAIL: legacy mt[45]client imported"; exit 1; }
 ```
 
-### 5.3 quirks register 强关联
+### 5.3 mtapi proto 来源不许 fork
+
+- `proto/mt4/` `proto/mt5/` 必须以上游 mtapi.io 官方发布为唯一来源
+- 不许手改（加字段/重命名/改 number）。需要额外语义 → 在 `proto/ant/v1/` 定义 wrapper message，**不要**编辑 mtapi 原生 proto
+- 升级 mtapi proto = ADR 变更（需新 ADR）
+- CI 检查：`proto/mt[45]/` git diff vs upstream（实施方式：仓库根保留 `proto/mt[45]/.upstream-sha256` 文件记录上游 commit，`make proto` 验证本地 = upstream）
+
+### 5.4 quirks register 强关联
 
 每条已知暗坑必须：
 1. 在 `docs/spec/16-mtapi-quirks-register.md` 有 `## Q-NNN` 条目
@@ -102,7 +109,7 @@ git grep -l 'anttrader/gen/proto/mt[45]' backend/ \
 # (1) adapter 行数
 LOC=$(find backend/internal/mdgateway/adapter -name "*.go" -not -name "*_test.go" \
        | xargs wc -l | tail -1 | awk '{print $1}')
-test "$LOC" -le 250
+test "$LOC" -le 400  # 与 spec/10 §1 + AGENT.md §5 一致
 
 # (2) 无重复 mtapi import
 ALLOWED='backend/internal/mdgateway/adapter/(mt4|mt5)'

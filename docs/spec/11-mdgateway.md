@@ -466,6 +466,47 @@ func (c *CircuitBreaker) State() State
 
 详见 `docs/spec/12-mthub.md`（占位）+ 后续 `docs/spec/20-factorsvc.md`（M8 撰写）。
 
+## 13.5 NATS JetStream stream 配置（B1）
+
+`internal/storage/nats/client.go::ensureStream` 在启动时确保下列 stream 存在；不存在则按下表创建，已存在则校验关键字段一致（不一致 fatal）：
+
+| Stream | Subjects | Storage | Retention | MaxAge | MaxBytes | Replicas | Discard |
+|---|---|---|---|---|---|---|---|
+| `MD_EVENTS` | `md.tick.>` `md.bar.>` `md.factor.>` | File | Limits | 24h | 20 GiB | 1 | OldFirst |
+| `OMS_EVENTS` | `oms.order.>` `oms.signal.>` | File | Limits | 7d | 5 GiB | 1 | OldFirst |
+
+理由：md 数据量大 → 短保留；oms 业务数据 → 长保留。Replicas=1 因 v2 单机部署（ADR 0001 §3）。Discard=OldFirst 保护 publisher 不阻塞。
+
+## 13.6 backpressure 策略（B3，全链统一）
+
+| 队列 | 满了怎么办 | metric | 上限/默认 |
+|---|---|---|---|
+| `CHWriter.tickQ` | 直接 SpillWriter（不阻塞） | `md_spill_writes_total{reason="queue_full"}` | 10000 |
+| `CHWriter.barQ` | 同上 | 同上 | 5000 |
+| `Publisher` NATS | JetStream Discard=OldFirst（NATS 内部丢旧） | `md_publish_total{status="dropped"}` | stream MaxBytes |
+| factorsvc bar buffer | per-key ring，覆盖最旧 | `factor_buffer_evicted_total` | lookback+50 |
+| quantengine signalQ | 阻塞 100ms 后丢弃 + log error | `quant_signal_dropped_total` | 1000 |
+| SSE per-client | 阻塞 50ms 后断开 client | `sse_client_dropped_total` | 256 events |
+
+**核心原则**：上游永远不许因下游拥塞而阻塞 → tick 接收链路 0 阻塞点。
+
+## 13.7 graceful shutdown 顺序（B2）
+
+收到 SIGTERM 后 `runner.Stop(ctx)` 严格按以下顺序：
+
+```
+1. HTTP server.Shutdown(ctx, 5s)           // 停接新请求；正在跑的 RPC 自然结束
+2. for each gateway: g.Disconnect(ctx)     // 不再产生新 tick
+3. wait 100ms                              // 让 in-flight tick 跑完 HandleTick
+4. CHWriter.Flush(ctx, 10s)                // drain tickQ/barQ → CH（CH 不通则 spill）
+5. Publisher.Drain(ctx, 5s)                // NATS publish ack 等待
+6. SpillWriter.Close()                     // fsync 当前 jsonl
+7. close storage (NATS, CH, Redis, PG)
+8. logger.Sync()
+```
+
+每步带超时；总预算 ≤ 30s（k8s/systemd 默认 stopGracePeriod 内）。任一步超时 → `log.Warn` 并继续；不阻断后续步骤。
+
 ## 14. 验收命令
 
 ```bash

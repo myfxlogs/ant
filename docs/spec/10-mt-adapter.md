@@ -1,7 +1,8 @@
 # 10 · MT 适配层规范（adapter/mt4 + adapter/mt5）
 
 > 路径：`backend/internal/mdgateway/adapter/`
-> 目标 LOC：mt4 + mt5 + mdtick 共 ≤ 250 行（含测试 ≤ 500 行）
+> 目标 LOC（非测试）：mt4 gateway+executor + mt5 gateway+executor + mdtick 共 ≤ 400 行；含测试 ≤ 800 行
+> LOC 预算分配（总 1500 / AGENT.md §5）：mdgateway 800 + adapter 400 + mthub 300 = 1500
 
 ## 1. 范围与禁忌
 
@@ -62,18 +63,19 @@ type Tick struct {
     AskVolume      float64
 }
 
-// AccountConfig 来自 PG.mt_accounts；mdgateway.RunGateway 加载后传入 adapter
+// AccountConfig 来自 PG.mt_accounts_v2 视图；mdgateway.runner 加载并解密后传入 adapter。
+// 字段命名与 SQL 列名严格对齐（见 docs/spec/13 §4.1 视图定义）。
 type AccountConfig struct {
-    AccountID    string  // PG.mt_accounts.id (UUID)
-    UserID       string  // PG.users.id
-    Broker       string  // PG.mt_accounts.broker
-    Platform     string  // "mt4" / "mt5"
-    Login        string
-    Password     string  // 解密后明文（vault 取出）
-    Server       string
-    Host         string  // mtapi.io gRPC host
-    Port         string  // mtapi.io gRPC port
-    MtapiToken   string  // mtapi 鉴权 token
+    AccountID  string  // mt_accounts_v2.id (UUID)
+    UserID     string  // mt_accounts_v2.user_id
+    Broker     string  // mt_accounts_v2.broker          (来源 broker_company)
+    Platform   string  // mt_accounts_v2.platform        ("mt4" / "mt5")
+    Login      string  // mt_accounts_v2.login
+    Password   string  // password_encrypted 解密后明文（vault.Decrypt）
+    Server     string  // mt_accounts_v2.server          (来源 broker_server)
+    MtapiHost  string  // mt_accounts_v2.mtapi_host      (来源 broker_host)
+    MtapiPort  string  // mt_accounts_v2.mtapi_port
+    MtapiToken string  // mtapi_token_encrypted 解密后明文
 }
 
 // Bar 由 mdgateway.bar_aggregator 产出，不在 adapter 层
@@ -247,7 +249,7 @@ func (g *Gateway) Subscribe(ctx context.Context, syms []string, h mdgateway.Tick
 
 ```go
 func (g *Gateway) Connect(ctx context.Context) error {
-    addr := g.cfg.Host + ":" + g.cfg.Port
+    addr := g.cfg.MtapiHost + ":" + g.cfg.MtapiPort
     conn, err := grpc.DialContext(ctx, addr,
         grpc.WithTransportCredentials(insecure.NewCredentials()),  // mtapi.io 用 token 鉴权
         grpc.WithBlock(),
@@ -350,7 +352,7 @@ package mt4_test
 # LOC 上限
 LOC=$(find backend/internal/mdgateway/adapter -name "*.go" -not -name "*_test.go" \
        | xargs wc -l | tail -1 | awk '{print $1}')
-test "$LOC" -le 250 || { echo "LOC=$LOC > 250"; exit 1; }
+test "$LOC" -le 400 || { echo "LOC=$LOC > 400"; exit 1; }
 
 # 不许 import mt4client/mt5client
 ! grep -r "mt4client\|mt5client" backend/internal/mdgateway/adapter/

@@ -1,8 +1,8 @@
 # 12 · mthub 规范（会话与下单中心）
 
 > 路径：`backend/internal/mthub/`
-> 目标 LOC：非测试 ≤ 450 行（含测试 ≤ 900）
-> LOC 预算分配依据：AGENT.md §5 「MT 接入非测试 LOC ≤ 1500 (M7)」 = mdgateway 800 + adapter 250 + mthub 450
+> 目标 LOC：非测试 ≤ 300 行（含测试 ≤ 600）
+> LOC 预算分配依据：AGENT.md §5 「MT 接入非测试 LOC ≤ 1500 (M7)」 = mdgateway 800 + adapter 400 + mthub 300
 > 上游：业务层（oms/marketplace/ai）；下游：`adapter/mt[45]/executor.go`
 
 ## 1. 职责
@@ -34,7 +34,7 @@ backend/internal/mthub/
 └── *_test.go
 ```
 
-**子文件上限总和 ≤ 690**，可依实际微调，但总 LOC 不超 450。
+**子文件上限总和 ≤ 690**，可依实际微调，但总 LOC 不超 300（拍顶依 AGENT.md §5 总预算）。实施时宁可合并主要刷减 executor.go (60) 与 events.go (120)。
 
 ## 3. 类型契约（`types.go`）
 
@@ -276,7 +276,7 @@ service MtHubService {
 # LOC
 LOC=$(find backend/internal/mthub -name "*.go" -not -name "*_test.go" \
        | xargs wc -l | tail -1 | awk '{print $1}')
-test "$LOC" -le 450 || { echo "LOC=$LOC > 450"; exit 1; }
+test "$LOC" -le 300 || { echo "LOC=$LOC > 300"; exit 1; }
 
 # 必有文件
 for f in service.go hub.go events.go executor.go session.go types.go metrics.go; do

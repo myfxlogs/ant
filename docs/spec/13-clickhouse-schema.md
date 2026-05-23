@@ -276,10 +276,11 @@ CREATE INDEX idx_broker_symbols_canonical ON broker_symbols(canonical);
 ### 4.3 `factor_definitions`（v2 新建）
 
 ```sql
--- migrations/100_factor_definitions.up.sql
--- (注：v1 已有 096_factor_definitions，v2 重建不同 schema。
---  实施时先 DROP 老表，或选一个未占用的表名如 factor_defs_v2。
---  推荐：在 098 migration 里作为子任务 DROP 老 factor_definitions，本 migration 重建。)
+-- migrations/100_factor_definitions_v2.up.sql
+-- v1 已有 096_factor_definitions（schema 不同），本 migration **必须**先 DROP CASCADE
+-- 再重建为 v2 schema。down.sql 反向：先 DROP v2 → 让 096 重新生效（需 redo 096）。
+DROP TABLE IF EXISTS factor_definitions CASCADE;
+
 CREATE TABLE IF NOT EXISTS factor_definitions (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,

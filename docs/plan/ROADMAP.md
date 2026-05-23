@@ -38,7 +38,7 @@
 
 | Sub-milestone | 内容 | 卡片数 | 预估工日 |
 |---|---|---|---|
-| **M7.0** | 准备：归档 v1、容器、依赖、proto 重构 | 7 | 2 |
+| **M7.0** | 准备：容器、依赖、proto 重构、处置 v1 | 8 | 2 |
 | **M7.1** | mdgateway 完整重做（含 adapter） | 18 | 7 |
 | **M7.2** | mthub + ConnectRPC 暴露 | 9 | 4 |
 | **M7.3** | factorsvc + DSL（移植 alfq） | 7 | 3 |
@@ -46,7 +46,7 @@
 | **M7.5** | 业务层切流 + 老 kline_service 标 deprecated | 8 | 3 |
 | **M7.6** | 端到端测试 + chaos | 6 | 3 |
 | **M7.Z** | 关闭：硬指标全过 + ROADMAP 状态更新 | 3 | 1 |
-| **总计** | | **64** | **~26 工日** |
+| **总计** | | **65** | **~26 工日** |
 
 ---
 
@@ -60,7 +60,8 @@
 | M7.0-4 | 🅒 `internal/storage/clickhouse/client.go` 包含 Connect/Ping/PrepareBatch | 同左 + `*_test.go` | `cd backend && go test ./internal/storage/clickhouse/...` | |
 | M7.0-5 | 🅒 `internal/storage/nats/client.go` 包含 Connect + JetStream + ensureStream(MD_EVENTS) | 同左 + `*_test.go` | `cd backend && go test ./internal/storage/nats/...` | |
 | M7.0-6 | 🅒 Makefile 加 `migrate-ch` `verify-card` 目标 | `Makefile` | `make help \| grep -E 'migrate-ch\|verify-card'` | |
-| M7.0-7 | 🅒 proto 布局重构：平铺 `proto/*.proto` 迁到 `proto/ant/v1/*.proto`；buf.gen.yaml 调输出到 `backend/gen/proto/ant/v1/`；frontend client 同步 | `proto/ant/v1/` `buf.gen.yaml` `frontend/src/gen/ant/v1/` | `make proto && test -f backend/gen/proto/ant/v1/common.pb.go && test -f frontend/src/gen/ant/v1/common_pb.ts && git diff --exit-code -- backend/gen frontend/src/gen` | |
+| M7.0-7 | 🅒 proto 布局重构：**仅** ant 自有平铺 `proto/*.proto` 迁到 `proto/ant/v1/*.proto`；**保留** `proto/mt4/` `proto/mt5/`（mtapi.io 第三方 proto，不许改）；buf.gen.yaml 调输出到 `backend/gen/proto/ant/v1/`；frontend client 同步 | `proto/ant/v1/` `buf.gen.yaml` `frontend/src/gen/ant/v1/` | `make proto && test -f backend/gen/proto/ant/v1/common.pb.go && test -f frontend/src/gen/ant/v1/common_pb.ts && test -d proto/mt4 && test -d proto/mt5 && git diff --exit-code -- backend/gen frontend/src/gen` | |
+| M7.0-8 | 🅒 处置 v1 既存代码：删除 `backend/internal/adapter/{mt4,mt5}_adapter.go`（双 adapter 目录冲突）；标记 `backend/internal/{mdgateway,mthub,factorsvc,quantengine}` 现有 .go 为 v1（在文件头加 `// V1-LEGACY: will be replaced by M7.1-7.4 cards`，**不删除**——M7.1-7.4 卡片在写入新文件时若与 v1 同名则覆盖、不同名则在卡片"附带删除"列出 v1 文件清单） | `backend/internal/adapter/` (删除) + `backend/internal/{mdgateway,mthub,factorsvc,quantengine}/*.go` (加注释) | `! test -d backend/internal/adapter; for d in mdgateway mthub factorsvc quantengine; do grep -L 'V1-LEGACY' backend/internal/$d/*.go \| grep -v _test.go \| awk 'NR>0{exit 1}'; done` | M9 删除 v1 包时此注释作为筛选锚 |
 
 ---
 
@@ -73,7 +74,7 @@
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
 | M7.1-1 | 🅒 chmigrate：实现 + 5 张表 SQL | `backend/internal/mdgateway/chmigrate/{migrate.go,001_md_ticks.sql,002_md_bars.sql,003_factor_values.sql,004_signals.sql,005_schema_version.sql}` + `migrate_test.go` | `make migrate-ch && docker exec ant-clickhouse clickhouse-client --query "SELECT count() FROM system.tables WHERE database='ant'" \| grep -q '^[5-9]'` |
-| M7.1-2 | 🅒 PG migrations + ETL：`mt_accounts` v2 字段 + `mt_accounts_v2` 视图 + `broker_symbols` + `factor_definitions`（包含 vault 加密 ETL）| `backend/migrations/098_mt_accounts_v2.up.sql` (`+ .down.sql`) `099_broker_symbols.up.sql` `100_factor_definitions.up.sql`（含 DROP 老表子任务）；ETL 脚本 `backend/cmd/etl-mt-accounts/main.go` | `make migrate; docker exec ant-postgres psql -U ant -d ant -tAc "SELECT column_name FROM information_schema.columns WHERE table_name='mt_accounts' AND column_name='mtapi_token_encrypted'" \| grep -q .; docker exec ant-postgres psql -U ant -d ant -tAc "SELECT count(*) FROM mt_accounts_v2 WHERE password_encrypted IS NOT NULL" \| awk '$1>0 \|\| NR==0{exit 0} {exit 1}'` |
+| M7.1-2 | 🅒 PG migrations + ETL：`mt_accounts` v2 字段 + `mt_accounts_v2` 视图 + `broker_symbols` + 重建 `factor_definitions`（含 vault 加密 ETL）| `backend/migrations/098_mt_accounts_v2.up.sql` (`+ .down.sql`) `099_broker_symbols.up.sql` (`+.down`) `100_factor_definitions_v2.up.sql` (`+.down`，**第一行 `DROP TABLE IF EXISTS factor_definitions CASCADE;`** 删除 v1 096 的版本后重建；命名带 _v2 后缀避免与 096 文件名混淆) ；ETL 脚本 `backend/cmd/etl-mt-accounts/main.go` | `make migrate; docker exec ant-postgres psql -U ant -d ant -tAc "SELECT column_name FROM information_schema.columns WHERE table_name='mt_accounts' AND column_name='mtapi_token_encrypted'" \| grep -q .; docker exec ant-postgres psql -U ant -d ant -tAc "SELECT count(*) FROM mt_accounts_v2 WHERE password_encrypted IS NOT NULL" \| awk '$1>0 \|\| NR==0{exit 0} {exit 1}'; docker exec ant-postgres psql -U ant -d ant -tAc "SELECT column_name FROM information_schema.columns WHERE table_name='factor_definitions' AND column_name='canonicals'" \| grep -q .` |
 | M7.1-3 | 🅒 sqlc 生成 `BrokerSymbols` `FactorDefinitions` queries | `backend/internal/repository/queries/{broker_symbols.sql,factor_definitions.sql}` + 生成代码 | `cd backend && make sqlc && go build ./internal/repository/...` |
 
 ### M7.1.B 类型与共享
@@ -143,7 +144,7 @@ docker exec ant-clickhouse clickhouse-client --query \
 | M7.2-1 | 🅒 `proto/ant/v1/mthub_service.proto` 9 个 RPC | 同左 | `make proto-breaking` 通过 |
 | M7.2-2 | 🅒 `proto/ant/v1/market_service.proto` 3 个 RPC | 同左 | 同上 |
 | M7.2-3 | 🅒 `make proto` 生成 Go + TS stub | `backend/gen/proto/ant/v1/` `frontend/src/gen/ant/v1/` | `test -f backend/gen/proto/ant/v1/mthub_service.pb.go && test -f frontend/src/gen/ant/v1/mthub_service_pb.ts` |
-| M7.2-4 | 🅒 `internal/mthub/{types.go,executor.go,session.go,hub.go,events.go,service.go,metrics.go}` | 同左 + 全部 _test.go | LOC ≤ 450（非测试，与 spec/12 §1 一致）；test cover ≥ 60% |
+| M7.2-4 | 🅒 `internal/mthub/{types.go,executor.go,session.go,hub.go,events.go,service.go,metrics.go}` | 同左 + 全部 _test.go | LOC ≤ 300（非测试，与 spec/12 §1 一致）；test cover ≥ 60% |
 | M7.2-5 | 🅒 `internal/connect/mthub_service.go` 9 个 handler 实现 | 同左 + `mthub_service_test.go` | grpcurl 真实调通 PlaceOrder（dockertest mtapi mock） |
 | M7.2-6 | 🅒 `internal/connect/market_handler.go` 3 个 handler（GetKlines 走 CH） | 同左 + test | grpcurl 调通 GetKlines 返回 CH 数据 |
 | M7.2-7 | 🅒 SSE：StreamOrderEvents handler | `internal/connect/mthub_service.go` 内 | curl SSE 5s 内收到至少 1 个事件（dockertest 触发）|
@@ -205,7 +206,7 @@ docker exec ant-clickhouse clickhouse-client --query \
 | M7.6-3 | 🅒 chaos：单 broker 失联 → 其他账户照常 | `tests/chaos/broker_outage_test.go` | 故障账户 metric `md_circuit_state=1`，其他 ≠ 1 |
 | M7.6-4 | 🅒 SSE 重连：客户端断开 30s → 重连后继续收事件 | `tests/e2e/sse_reconnect_test.go` | 重连后 5s 内收到事件 |
 | M7.6-5 | 🅒 7 天稳定性运行（人工 + monitoring）：tick rate / drop / circuit / spill 全部健康 | `docs/handover/verify-M7.6-5.log` | Grafana 截图归档 + 指标证据 |
-| M7.6-6 | 🅒 LOC 终检：mdgateway + adapter + mthub LOC | — | `LOC=$(find backend/internal/{mdgateway,mthub} -name "*.go" -not -name "*_test.go" \| xargs wc -l \| tail -1 \| awk '{print $1}'); test "$LOC" -le 1500` |
+| M7.6-6 | 🅒 LOC 终检：mdgateway + adapter + mthub 三者非测试 LOC ≤ 1500 | — | `LOC=$(find backend/internal/mdgateway backend/internal/mthub -name "*.go" -not -name "*_test.go" \| xargs wc -l \| tail -1 \| awk '{print $1}'); test "$LOC" -le 1500` （注：`mdgateway/adapter/` 为 mdgateway 子目录，`find backend/internal/mdgateway` 已含）|
 
 ---
 
