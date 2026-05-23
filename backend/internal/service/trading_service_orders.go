@@ -47,11 +47,8 @@ func (s *TradingService) OrderSend(ctx context.Context, userID uuid.UUID, req *O
 		}
 		recordRiskValidateMetric("pass", "OK", account.MTType, TradeTriggerSourceFromContext(ctx), time.Since(riskStart))
 
-		if account.MTType == "MT4" {
-			result, err = s.orderSendMT4(ctx, accountID, account, req)
-		} else {
-			result, err = s.orderSendMT5(ctx, accountID, account, req)
-		}
+		// M2-4: prefer OMS BrokerAdapter; fallback to legacy direct path
+		result, err = s.orderSendViaOMS(ctx, accountID, account, req.AccountID, req)
 
 		if err != nil {
 			recordOrderSendMetric("failed", err.Error())

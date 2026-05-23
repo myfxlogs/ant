@@ -277,3 +277,23 @@ CREATE TABLE IF NOT EXISTS risk_events (
     id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 
 --- Full build ---
+=== M2-4/M2-6 Final Verification — 2026-05-23T03:44:32+00:00 ===
+
+--- Full build ---
+
+--- All tests ---
+ok  	anttrader/internal/oms	0.004s
+ok  	anttrader/internal/symbol	0.004s
+ok  	anttrader/internal/errs	0.004s
+
+--- grep: direct broker calls from service layer ---
+internal/service/trading_service_orders.go:93:	order, err := conn.OrderSend(ctx, req.Symbol, op, req.Volume, req.Price, req.StopLoss, req.TakeProfit, req.Slippage, req.Comment, int32(req.Magic))
+internal/service/trading_service_orders.go:143:	order, err := conn.OrderSend(ctx, req.Symbol, op, req.Volume, req.Price, req.StopLoss, req.TakeProfit, req.Slippage, req.Comment, req.Magic)
+internal/service/strategy_executor.go:103:	orderResp, err := e.engine.OrderSend(ctx, userID, orderReq)
+internal/service/strategy_executor.go:109:		orderResp, err = e.gateway.OrderSend(ctx, userID, orderReq, op)
+internal/service/engine_selector.go:86:	return s.pick(ctx).OrderSend(ctx, userID, req)
+(should only show fallback orderSendMT4/MT5 — ok if ≤3 hits)
+
+--- OMS bridge integration ---
+internal/service/oms_bridge.go:5
+internal/service/trading_service_orders.go:1
