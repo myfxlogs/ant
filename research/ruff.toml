@@ -1,0 +1,39 @@
+line-length = 120
+target-version = "py312"
+
+[lint]
+select = [
+    "E", "F", "W",
+    "C901",
+    "PLR0911", "PLR0912", "PLR0913", "PLR0915",
+    "S",
+    "B",
+    "SIM",
+]
+ignore = [
+    "S101",
+    "E701",
+    "E702",
+    "PLR0911",
+    "E741",
+    "N802",
+    "N806",
+    "N818",
+    "N803",
+    "N999",
+    "E501",
+    "F403",
+    "F405",
+    "B027",
+    "S311",
+]
+
+exclude = [
+    ".venv",
+    ".pytest_cache",
+    "__pycache__",
+    "notebooks",
+]
+
+[lint.mccabe]
+max-complexity = 10
