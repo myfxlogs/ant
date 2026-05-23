@@ -237,7 +237,7 @@ ant v2 **不是 alfq 的克隆**。差异：
 | 维度 | alfq | ant v2 | 理由 |
 |---|---|---|---|
 | 进程数 | 4 | 1 | 单机部署、降低心智成本 |
-| 多租户 | tenant_id | user_id（单租户） | ant 是用户中心架构（ADR 0005） |
+| 数据归属 | tenant_id（B2B 多租户）| **平台共享 + 用户私有两段**（C2C 散户平台）| ADR-0006：marketplace/跟单成立的前提 |
 | 熔断 | 无 | CircuitBreaker | broker 故障常态 |
 | Spill 旋转 | 单文件 | 按大小/时间旋转 | 长时间故障保护 |
 | Tick dedup | 无 | 100 条窗口 | broker 重发问题验证存在 |
@@ -248,7 +248,7 @@ ant v2 **不是 alfq 的克隆**。差异：
 
 > 这些不变量是 v2 设计的"宪法"。任何 PR 不得违反。
 
-1. **canonical 在 L2 出口完成**：进入 L3 的 Tick 一定有非空 `canonical` 字段
+1. **canonical 在 L3 入口完成**：adapter（L2）产出的 Tick `Canonical` 字段为空字符串；mdgateway.Manager.HandleTick 第一步调用 `Normalizer.Resolve(broker, symbol_raw)` 填充。理由：normalizer 依赖 PG `broker_symbols` + LRU cache，不应注入 adapter（破坏"纯翻译"职责）。**进入 L3 之后**的所有处理（quality/dedup/aggregator/publisher/chwriter）一定看到非空 `Canonical`。
 2. **生产路径零 Python**：从 NATS factor 到 OMS 下单，全链路 Go
 3. **价格类型**：PG `NUMERIC(20,8)` ↔ Go `decimal.Decimal` ↔ CH `Decimal(18,6)`，禁 float
 4. **时间统一**：UTC，毫秒精度（`int64`）
@@ -258,5 +258,11 @@ ant v2 **不是 alfq 的克隆**。差异：
 8. **业务代码 0 处直调 mt4client/mt5client**（v2 完成后）
 9. **业务代码 0 处直读 PG 行情表**（v2 完成后）
 10. **每个错误必有 errs.Code + 中文 user_message**
+11. **业务数据二分法**（ADR-0006）：
+    - **平台共享**（无 `user_id`、所有用户可读）：`platform_strategies`、`platform_factors`、`platform_ai_agents`、`broker_symbols`、`admins`
+    - **用户私有**（必须 `user_id` 外键 + RLS）：`mt_accounts`、`user_strategies`、`user_factor_overrides`、`user_ai_agents`、`orders`、`positions`、`trades`、`user_subscriptions`、`copy_trade_links`
+    - **禁止**：在 user 表中复制官方/平台数据（如旧 `seed_default_templates.go` per-user 复制）
+12. **admin 鉴权独立**（ADR-0006）：废弃 `users.role='admin'`；平台运营走 `admins` 表 + JWT scope `platform:admin`
+13. **PlatformScope 接口预留**（ADR-0006）：所有读 `platform_*` 表的查询必须经 `scope.Current(ctx)`（当前 no-op 返回 `'ant'`），为 M10+ 多 tenant 白标输出预留路径
 
-CI 应有 lint 规则强制 1, 2, 3, 8, 9（其他靠代码 review）。
+CI 应有 lint 规则强制 1, 2, 3, 8, 9, 11, 12（其他靠代码 review）。

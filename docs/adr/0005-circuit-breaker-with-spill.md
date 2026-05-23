@@ -155,7 +155,29 @@ func (r *SpillReplay) Run(ctx context.Context) (replayed int, err error)
   for: 0s
   annotations:
     summary: "Spill directory growing fast; CH likely down"
+
+- alert: SpillUnwritable
+  expr: rate(md_tick_dropped_total{reason="spill_failed"}[2m]) > 0
+  for: 1m
+  annotations:
+    summary: "Spill writes failing → CircuitBreaker triggered (decision D-3): disk full / perms / RO mount"
 ```
+
+### 5.5 D-3 升级链路（spill 故障 → breaker）
+
+```
+CHWriter.flushBatch INSERT 失败
+  → spill.WriteTick/WriteBar(...)
+     ├─ ok        → return
+     └─ err       → spillFailStreak++
+                    if spillFailStreak >= 3:
+                       onSpillFail(brokerKey, err)   // 注入回调
+                       Manager.breakers[brokerKey].OnFailure()
+                       metric md_tick_dropped_total{reason="spill_failed"}++
+                       alert SpillUnwritable 触发
+```
+
+`onSpillFail` 回调由 Manager 在构造 CHWriter 时注入。一次成功写入即重置 streak。
 
 ## 6. 验证方式
 

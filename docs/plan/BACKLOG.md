@@ -2,19 +2,62 @@
 
 > 已知缺陷、待办、未立项的工作项。卡片成熟后晋升到 `ROADMAP.md`。
 
-## M8 候选（业务层渐进重构）
+## M8 · 业务层架构订正（C2C 平台 + 用户分层）
 
-| 候选 | 描述 | 估时 |
+> **前置必读**：`docs/adr/0006-platform-shared-vs-user-private.md`
+> **目标**：把 ant 从 user-as-tenant（B2B SaaS 错位）订正为"平台共享层 + 用户消费层"（C2C），让 marketplace / 跟单 / admin 鉴权成立。
+> **不变量参照**：`02-overview.md` §8 #11 #12 #13
+
+### M8.0 · 数据模型迁移（基础）
+
+| ID | 内容 | 文件 | 验收 |
+|---|---|---|---|
+| M8.0-1 | PG migrations：新建 `platform_strategies` `platform_factors` `platform_ai_agents` `admins` `user_subscriptions` `user_strategy_publishes` `copy_trade_links` `user_factor_overrides` `user_ai_agents` 9 张表 | `backend/migrations/110_platform_tables.up.sql` (`+.down`) | `make migrate; for t in platform_strategies platform_factors platform_ai_agents admins user_subscriptions user_strategy_publishes copy_trade_links user_factor_overrides user_ai_agents; do docker exec ant-postgres psql -U ant -d ant -tAc "SELECT to_regclass('$t')" \| grep -q "$t"; done` |
+| M8.0-2 | ETL：把当前 `strategy_templates` 中 `is_official=true` 行去重迁到 `platform_strategies`；per-user 副本删除 | `backend/cmd/etl-platform-data/main.go` | ETL 后 `SELECT count(*) FROM strategy_templates WHERE is_official=true GROUP BY user_id HAVING count(*)>0` 零行 |
+| M8.0-3 | ETL：`factor_definitions` 中通用因子（MA/RSI/MACD/Bollinger 等内置）迁到 `platform_factors`；per-user 副本删除（仅保留用户自创） | 同 M8.0-2 cmd 目录 | ETL 后 platform_factors 行数 ≥ 5；user 自有 factor 行数减少 |
+| M8.0-4 | ETL：当前 `ai_agent_definitions` 默认 5 个角色迁到 `platform_ai_agents`；前端 `defaultAgentTemplates.ts` 改为读 RPC（不再硬编码）| 同上 + `frontend/src/pages/ai/defaultAgentTemplates.ts` | platform_ai_agents 行数 ≥ 5；前端 grep 无硬编码默认 prompt |
+| M8.0-5 | ETL：当前 `users.role='admin'` 行迁到 `admins` 表；users.role 限制为 `'user'` 单一值（迁移后加 CHECK 约束）| 同上 + `backend/migrations/111_admin_separation.up.sql` | `SELECT count(*) FROM users WHERE role!='user'` 零行；`SELECT count(*) FROM admins` ≥ 1 |
+| M8.0-6 | sqlc：为 9 张新表生成 queries | `backend/internal/repository/queries/{platform_*,admins,user_subscriptions,...}.sql` + 生成代码 | `cd backend && make sqlc && go build ./internal/repository/...` |
+
+### M8.1 · PlatformScope + service 重构
+
+| ID | 内容 | 文件 | 验收 |
+|---|---|---|---|
+| M8.1-1 | 新建 `internal/platform/scope.go`：`PlatformScope` 接口 + 默认实现（始终返回 `'ant'`）| 同左 + `scope_test.go` | `cd backend && go test ./internal/platform/...` |
+| M8.1-2 | `StrategyTemplateService` 重构：`List(ctx, userID)` 返回 `platform_strategies ∪ user_strategies`；详情读取按 ID 路由到对应表 | `backend/internal/service/strategy_template_service.go` | 单测：返 list 含 platform_* 行 + user_* 行；handler 不变 |
+| M8.1-3 | `FactorService`、`AIAgentService` 类似重构：列表 = platform ∪ user_*；user 修改 platform 项 → 写到 `user_*_overrides` 表（不污染 platform） | 对应 service | 单测：override 后 user List 看到的是 override 值；其他 user 看到的仍是 platform 原值 |
+| M8.1-4 | 删除 `seed_default_templates.go` per-user 复制逻辑；改为单次 seed 到 `platform_strategies` | `backend/cmd/seed_strategy_templates/main.go` `backend/internal/server/seed_default_templates.go` | grep 无 `for _, userID := range users` seed 模式 |
+
+### M8.2 · marketplace / 跟单（C2C 核心）
+
+| ID | 内容 | 文件 | 验收 |
+|---|---|---|---|
+| M8.2-1 | proto：`MarketplaceService` RPC（PublishStrategy / Subscribe / Unsubscribe / ListPublished / ListSubscriptions）| `proto/ant/v1/marketplace_service.proto` | `make proto` |
+| M8.2-2 | service：`MarketplaceService` 实现 + handler | `backend/internal/marketplace/{service.go,publisher.go,subscriber.go}` + handler | grpcurl 调通 PublishStrategy → ListPublished 看到 |
+| M8.2-3 | service：`CopyTradeService`：订阅 NATS `oms.events.>` 中 publisher 用户的 fill 事件 → 按 ratio 在 subscriber MT 账户发对等单 | `backend/internal/copytrade/service.go` | E2E：A 发布策略 + 真实下单 → B 订阅 → B 账户出现等比例镜像单 |
+| M8.2-4 | 前端 marketplace 页：列表 / 详情 / 订阅 / 我的发布 | `frontend/src/pages/marketplace/` | `pnpm tsc --noEmit` + 手测 |
+
+### M8.3 · admin 鉴权独立
+
+| ID | 内容 | 文件 | 验收 |
+|---|---|---|---|
+| M8.3-1 | proto：`AdminService` 独立服务 + JWT scope `platform:admin` | `proto/ant/v1/admin_service.proto` + auth middleware | scope 校验单测通过 |
+| M8.3-2 | 把当前散在 `service/admin_*.go` 的方法迁到 `internal/admin/`，**禁止**复用 user JWT | `backend/internal/admin/` | `! grep -rE 'users\.role.*admin' backend/internal/` |
+| M8.3-3 | 前端 admin 页用独立登录路径 `/admin/login`；user JWT 不能进 admin 页 | `frontend/src/pages/admin/` | 手测 + 单测 |
+
+### M8.4 · 旧债清理（原 M8-X1..X9 中仍有价值的）
+
+| ID | 内容 | 估时 |
 |---|---|---|
-| M8-X1 | 全部 service/*.go 拆到 ≤ 400 行 | 5d |
-| M8-X2 | 业务表 sqlc 覆盖 ≥ 80% | 8d |
-| M8-X3 | errs 包替换所有裸字符串错误 | 6d |
-| M8-X4 | trace_id 全链路（含 SSE）| 3d |
-| M8-X5 | golangci-lint baseline 削减到 < 50 处 | 4d |
-| M8-X6 | sandbox_scan 接入 strategy-service 沙箱（M5 残留）| 2d |
-| M8-X7 | SQL 注入修复（log_repo + admin_repo）| 3d |
-| M8-X8 | risk_control JSONB 残留删除 | 2d |
-| M8-X9 | i18n en/ja/zh-tw 补齐前端 | 8d |
+| M8.4-1 | service 拆分：每个文件 ≤ 400 行（M8.0-M8.3 改造后顺手做）| 5d |
+| M8.4-2 | sqlc 覆盖业务表 ≥ 80% | 8d |
+| M8.4-3 | errs 包替换所有裸字符串错误（spec/17 §2.3 lint 强约束） | 6d |
+| M8.4-4 | trace_id 全链路（含 SSE）| 3d |
+| M8.4-5 | golangci-lint baseline 削减到 < 50 | 4d |
+| M8.4-6 | SQL 注入修复（log_repo + admin_repo）| 3d |
+| M8.4-7 | risk_control JSONB 残留删除 | 2d |
+| M8.4-8 | i18n en/ja/zh-tw 前端补齐 | 8d |
+| M8.4-9 | sandbox_scan 接入 strategy-service 沙箱（M5 残留）| 2d |
 
 ## M9 候选（清理老包）
 

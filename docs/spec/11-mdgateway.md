@@ -232,7 +232,8 @@ func (q *Quality) Check(t *mdtick.Tick) CheckResult
 
 ```
 md_tick_dropped_total{broker, canonical, reason}
-  reason ∈ {bid_gt_ask, non_positive, parse_error}     仅这 3 个
+  reason ∈ {bid_gt_ask, non_positive, parse_error, spill_failed}
+       前 3 类来自 quality（§5.1）；spill_failed 来自 §9 升级路径（D-3）
 md_tick_anomaly_total{broker, canonical, kind}
   kind ∈ {outlier, gap, clock_skew}                     不丢，仅观测
 ```
@@ -255,7 +256,13 @@ type ringHash struct {
 }
 
 // Seen 返回 true 表示该 tick 已在最近 N 条窗口内出现过（应丢弃）。
-// hash 计算：xxhash(ts_unix_ms || bid || ask)
+// hash 计算：xxhash(ts_unix_ms || bid || ask || bid_volume || ask_volume)
+//
+// 为何含 volume（决策 D-2，2026-05-23）：
+// 同一毫秒内 broker 可能推送多笔同价位但量不同的成交（活跃品种 EURUSD 欧盘、
+// XAUUSD 美盘 1s 内常见）。仅用 (ts,bid,ask) 三元组会把第二笔误判为重复，
+// 影响 bar 的 Volume 字段精度。加上 (bid_volume,ask_volume) 后 false-positive ≈ 0，
+// 哈希成本由 3 字段串接增至 5 字段串接，可忽略。
 func (d *TickDedup) Seen(t *mdtick.Tick) bool
 ```
 
@@ -372,6 +379,14 @@ func (w *CHWriter) Flush(ctx context.Context) error  // shutdown 时
 - `EnqueueTick` chan 满 → **立即** 写 SpillWriter，不阻塞调用方
 - 后台 goroutine 每 `FlushInterval` 或 `MaxBatchSize` 触发批量 INSERT
 - INSERT 失败 → 整批写 SpillWriter；不重试（spill_replay 启动时回放）
+- **SpillWriter 也失败时的升级路径（决策 D-3，2026-05-23）**：
+  1. `spill.WriteTick/WriteBar` 连续失败 ≥ 3 次（计数器 `spillFailStreak`）
+  2. CHWriter 通过注入的 `OnSpillFail func(brokerKey string, err error)` 回调上报 Manager
+  3. Manager 对该 brokerKey 的 CircuitBreaker 调 `OnFailure()`（与 broker 不可达同等故障）
+  4. metric `md_tick_dropped_total{reason="spill_failed"}` 递增；alert `SpillUnwritable` 触发
+  5. 一次成功写入即重置 streak
+- 触发场景：磁盘满、目录权限漂移（容器重启 UID 变化）、云盘短暂只读
+- 哲学一致：**任何"行情链路最后一道防线"故障都必须熔断而不是静默丢数据**（01-vision §准则 3）
 
 INSERT 模板（用 ClickHouse client `PrepareBatch`）：
 
