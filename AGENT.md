@@ -1,211 +1,273 @@
-# AGENT.md — ANT
+# AGENT.md — ant (v2 · MT 重写期)
 
-> 工作仓库 `/opt/ant/` | M0.5 工程基线+文档治理完成 | 2026-05-23
->
-> 🤖 **AI Agent 第一次进仓库**：本文件是主要入口；执行流程详见 `docs/tasks/AGENT-RUNBOOK.md`。
->
-> 📌 **项目定位**：以 ant 为主体，从 AlfQ 选择性迁移优秀功能并优化。
->
-> - **过程文档**（plan / ADR / 规范 / 验收脚本）全新独立编写，不复用 AlfQ 旧文档。
-> - **功能实现**：可以 AlfQ 代码/设计为蓝本参考。迁移任何一块功能时必须：出 ADR 说明为何迁 + 独立重写或适配本仓架构 + 补测试；不允许原样大块拷贝。
-> - AlfQ 原始资料是「输入」不是「约束」：ant 仓库内部本文档 + 本仓 ADR 才是唯一约束源。
-
-## 项目身份
-
-用户驱动的智能量化交易平台（Go + Python + React），基于 AI 策略生成与 Python 沙箱执行。面向普通散户，支持多交易账号绑定、自然语言策略生成、策略市场交易。设计原则：**先抄后改**。
-
-## 三域结构
-
-`backend/`（Go 服务 + proto）| `strategy-service/`（Python 沙箱执行，pip + requirements.txt）| `frontend/`（React SPA，pnpm）
-
-- Go 1.26 / Python 3.14 / TypeScript 5.9 / Node 24 LTS（运行时主版本基线，仅 ADR 可锁）
-- Proto 单一源 `proto/ant/v1/` → `buf generate` 出 Go/TS/Python stub
-- 5 服务（容器内端口；宿主仅暴露 frontend）：`ant-frontend` 容器 8080（Nginx 静态托管 + `/api/` 反代，宿主端口 `${ANT_FRONTEND_PORT:-8022}`）、`ant-backend` 8080（业务 API + OMS + 风控，仅集群内）、`ant-strategy-service` 8081（Python 沙箱，仅集群内）、`ant-postgres` 5432、`ant-redis` 6379
-- 部署形态：单机 docker-compose（独立于 anttrader 生产环境，命名/网络/卷统一 `ant-*` 前缀）
-
-## 硬性规则
-
-**协议**：Connect RPC + SSE（Server Streaming）。禁止 REST 新接口、禁止 WebSocket。内部 gRPC，异步走 Redis。
-
-**数据**：PG 18（主数据）+ Redis 8（缓存/锁）。时序数据（如需）方案待 ADR 决策。
-
-**MT4 vs MT5**：两套完全独立的协议/平台，proto 定义、枚举语义、撮合模型均不可共用。`adapter/mt4/` 与 `adapter/mt5/` 设计待立项。
-
-**安全红线**：用户 Python 代码仅在 `strategy-service` 沙箱中执行，禁止直接访问生产数据库或外部网络。沙箱实现方案（DSL / ONNX / 受限解释器等）待 ADR 决策。
-
-**前后端职责**：所有业务计算在后端完成，前端仅负责展示和渲染。后端对前端零信任——所有输入必须独立验证。数字格式化、货币计算、状态推断、数据转换等逻辑一律在后端执行后返回最终展示值。
-
-**价格**：`NUMERIC(20,8)` / decimal，禁止 float64 直接比较。时间统一 UTC。
-
-**日志**：结构化 JSON，必带 `trace_id` `user_id` `request_id`。
-
-**版本**：默认追随官网最新稳定版。当前运行时基线：Go 1.26 / Python 3.14 / Node 24 LTS / PostgreSQL 18 / Redis 8 / TypeScript 5.9。主版本仅允许通过 ADR 锁版，理由必须在 ADR 中写明；其余工具/库不得保留旧版本（除非有明确兼容性问题并记录）。
-
-**部署形态**：**单机 docker-compose**。不引入 K8s/Helm/ArgoCD/Service Mesh/HPA/多副本。容器隔离细节见上文「三域结构」。
-
-## ADR（不可逆）
-
-本项目独立编写 ADR（AlfQ 可作设计参考，但不直接引用其 ADR 编号/结构）。需要立项的初始决策清单：
-
-- Connect RPC + SSE 通信协议
-- 三域 monorepo（backend / strategy-service / frontend）
-- PostgreSQL + Redis 主存方案
-- 用户 Python 沙箱隔离方案
-- 用户中心架构（非多租户）
-- sqlc 优先，不引入 ORM
-- AI 策略生成的 bounded tools 设计
-- 单机 docker-compose 生产部署形态
-- 运行时主版本基线锁版（PG 18 / Go 1.26 / Python 3.14 / Node 24 LTS / Redis 8 / TypeScript 5.9）
-
-新增决策 → `docs/adr/NNNN-<slug>.md`，编号从 `0001` 单调递增。
-
-## 文档唯一源
-
-不同文档冲突时，以下为权威：
-
-| 主题 | 唯一源 |
-|---|---|
-| 项目实施计划（里程碑） | `docs/plan/ROADMAP.md` |
-| AlfQ 功能迁移清单（输入蓝本，非约束） | `docs/AlfQ功能迁移计划.md`（只读参考；实际里程碑以 ROADMAP 为准） |
-| 订单状态机 | **待建立** `docs/domain/订单状态机.md` |
-| 全量错误码 | **待建立** `docs/错误码与异常处理规范.md`（M0.3 雏形：`internal/errs/`） |
-| 数据库设计与表索引 | **待建立** `docs/数据库设计.md` |
-| 权限角色 | **待建立** `docs/权限设计.md` |
-| NFR（NFR ≥ SLO ≥ SLA） | **待建立** `docs/总体架构与技术决策.md` |
-| 依赖白名单 | **待建立**（建立前：新增依赖必须 ADR 立项，禁 AGPL） |
-| 复杂度上限 | 本文档 §复杂度硬上限（CI 强制） |
-| Proto 包结构 | **待建立** `docs/API与接口规范.md` §2 |
-| ADR 索引 | `docs/adr/README.md`（12 篇全 Accepted） |
-
-冲突处理：选编号大的（更新的）+ PR 中指出。
-
-## 复杂度硬上限（CI 强制）
-
-| 维度 | Go | Python | TS |
-|---|---|---|---|
-| 单文件行数 | ≤300 | ≤400 | ≤250 |
-| 单函数行数 | ≤50 | ≤50 | ≤50 |
-| 圈复杂度 | ≤10 | ≤10 | ≤10 |
-| 函数参数 | ≤5 | ≤5 | ≤5 |
-| 嵌套深度 | ≤4 | ≤4 | ≤4 |
-
-严禁 `// nolint`。PR ≤ 800 行业务代码（生成/YAML/CI/Dockerfile 不计入）。
-
-### 存量违规分层处理（避免反 ROI 的全量重构）
-
-仓库存量 ~254 处违规（Go 文件 52 / TS 文件 37 / Go 函数 165）按以下分层处理：
-
-- **Tier 1 — 必拆**：M1-M5 热路径文件 + 文件 >500 行 或 函数 >100 行。**进入对应 milestone 时作为前置工作量拆到上限以内**，不单独立项；清单见 `docs/plan/ROADMAP.md` §M0.3 Tier 1 热路径清单。
-- **Tier 2 — Boy Scout**：路径上的 300–500 行文件 / 50–100 行函数。任何卡片触碰时**顺手拆，合并到该卡片提交**。
-- **Tier 3 — 永久豁免**：① i18n 资源文件（`**/i18n/**`）；② proto 生成代码（`**/gen/**`）；③ 数据/常量/默认值文件（`**/*defaults.ts` `**/*const*.go`）；④ 单一职责的大型 model 集中定义（`backend/internal/model/models.go` 等，独立 ADR 评估后可上调到 ≤500）。
-
-### CI 强制方式
-
-- 维护 `tools/lint/baseline.json` 冻结**初版** 254 处违规作为 waiver
-- 任何 PR 触碰文件后若该文件仍超线 → CI red（即 baseline 列表中的项**不允许新增**，已存在的不阻塞）
-- 新文件 / 新增函数零容忍：超线一律 CI red
-- baseline 项目须每月 review 一次：减少了多少、增加了多少（违规净增 → 工程债增长信号）
-
-## 工程纪律
-
-1. 单一职责 — Handler 只编排，业务在 service
-2. 接口驱动 — 跨边界先 interface
-3. 代码生成优先 — RPC: buf / SQL: sqlc / 前端类型: buf
-4. 三处下沉 — 重复 3 次 → `internal/common/`
-5. 错误集中 — `errs` 包，禁裸字符串
-6. 状态机外置 — 订单/连接等显式状态机
-7. 零循环依赖 — CI 检测
-
-## 编码要点
-
-- **Go**：gofumpt+golangci-lint, zap 日志, `ctx` 首参, 禁 panic, `go test -race`
-- **Python**：ruff+mypy strict, loguru, 类型注解强制（strategy-service）
-- **TS**：strict mode, 禁 any, TanStack Query + Zustand, Tailwind
-- **通用**：Go snake_case / Py snake_case / TS kebab-case · 依赖白名单待建立，新增依赖一律走 ADR · 禁 AGPL 入仓
-
-## 提交与 PR
-
-Conventional Commits: `type(scope): subject`。分支: `feat|fix|chore|docs|refactor|test/<scope>`。main 保护，PR + 2 reviewer。PR 必带：关联文档、测试结果、风险评估。
-
-## 当前阶段：M0.5（工程基线 + 文档治理完成）
-
-**已完成**（M0.0→M0.2）：
-- M0.0：git 化、docker 构建通、版本基线（Go1.26/Py3.14/Node24/PG18/Redis8）
-- M0.1：入仓二进制清理、CI workflow（8 jobs）、5 容器 healthcheck、migration .down 政策、.env.example 全量
-- M0.2：12 篇 ADR 全部 Accepted、docs/README.md 五大区导航、ADR 按主题索引、remediation-2026-05 归档、AGENT-RUNBOOK 就绪
-
-**进行中**：M0.3 复杂度与品质红线（baseline/lint/trace_id/errs 包/vitest）
-
-**仓库现状**：
-- `backend/`：Go 后端（基础架构就绪，M1-M5 按 ROADMAP 逐模块迁移/重构）
-- `frontend/`：React SPA（基础架构就绪）
-- `strategy-service/`：Python 沙箱服务（基础架构就绪）
-- `docker-compose.yml`：5 容器全部 healthy，ant-* 命名隔离
-- `docs/adr/`：12 篇 Accepted，编号 0001-0012
-- `docs/plan/ROADMAP.md`：M0.1-M6 完整路线图
-
-**关键审查引用**：
-- `docs/audit/DESIGN-REVIEW-2026-05.md`：145 项 finding（CR/MR/MN/UX/SEC/DOC），卡片实施来源
-- AGENT.md §防偷懒约束（7 条）：所有卡片完成必须满足
-- AGENT.md §复杂度硬上限：Go ≤300 行/文件、TS ≤250 行/文件、函数 ≤50 行等
-
-## Makefile
-
-```
-make proto          # buf lint + breaking + generate
-make build / test / lint
-make go-lint / go-test / go-build
-make py-lint / py-test
-make web-lint / web-build
-make docker-up / docker-down / docker-logs
-make migrate        # 数据库迁移
-```
-
-## 禁止
-
-- main 直接 push · force push 共享分支 · `--no-verify`
-- REST 新接口（除 healthz/metrics）· WebSocket
-- 用户 Python 代码直接访问生产数据库或外部网络
-- proto 不跑 buf breaking
-- 硬编码秘钥 · .env 入仓 · >100MB 入仓
-- AGPL 代码复制 · 跨里程碑实施 · 凭常识决定安全/合规
-- 破坏 anttrader 生产环境（命名冲突、端口冲突、数据冲突）
+> 仓库 `/opt/ant/` · 文档版本 v2 · 2026-05-23
+> v1 文档已归档至 `docs.old/`、`AGENT.md.v1.bak`
+> 本文档是 **AI Agent 唯一约束源**。所有冲突以本文档 + `docs/` 下版本最新文件为准。
 
 ---
 
-## 防偷懒约束（强制）
+## 0. 角色与执行模式（重读三遍）
 
-落地 `docs/tasks/*.md` / `docs/audit/*.md` 中任何卡片必须遵守以下 7 条；违反任一条即视为"假完成"，相关卡片自动降回 🅒，禁止再宣称完成。
+### 0.1 谁来写代码
 
-### 1. 物证强制留痕
+> **本仓库所有代码由 AI Agent 实现。人类只做：① 评审文档；② 前端验收；③ 决策审批；④ 不写代码。**
 
-每条卡片必须在 `docs/handover/RS-final-verify.log` 留下 ≥20 行连续真实 stdout，含可复现的 UUID / 时间戳 / ticket 号 / 行数计数。文档仅改字、不带验收日志 = 失败。
+含义：
+- **文档不能有歧义**：模糊描述 = AI 走偏 = 返工
+- **验收必须可机械执行**：所有验收步骤用 shell 命令表达，不允许"人工目测"
+- **每张卡片 = 一个独立 PR**：AI 一次执行一张卡片，commit 完成后等待人类 ack 才能继续下一张
+- **AI 不许擅自跨范围**：超出当前卡片的代码改动，无论多"顺手"，都禁止合入同一 PR
 
-所有验收命令统一以下列形式留痕：
-```bash
-<verify_cmd> 2>&1 | tee -a docs/handover/RS-final-verify.log
+### 0.2 AI 执行流程（每张卡片必走）
+
+```
+1. 阅读卡片 → 列出输入/输出/依赖
+2. 阅读 docs/spec/ + docs/adr/ 中卡片引用的所有文件（无遗漏）
+3. 运行卡片"前置检查"shell（必须全过）
+4. 实施代码改动（仅限卡片范围）
+5. 跑卡片"验收命令"（全部退出码 0）
+6. 把验收 stdout 追加到 docs/handover/verify-MNNN.log
+7. git commit (Conventional Commits + Verify: 引用 log 行号)
+8. 把卡片状态从 🅒 改为 ☑（在 ROADMAP.md / BACKLOG.md）
+9. STOP，等人类 review
 ```
 
-### 2. 验收命令禁止改动
+**违反任何一步 → 卡片自动降回 🅒，禁止再宣称完成**（详见 §11 防偷懒约束）。
 
-plan / audit 里写的 `psql -c "..."` / `grpcurl -d ...` / `docker exec ...` 等验收命令是契约。Agent 若改命令使其更"好通过"（放宽 WHERE 条件、降低 COUNT 阈值、换更宽容的 SQL）= 整轮失败。
+---
 
-### 3. 重跑可复现（24h 窗口）
+## 1. 项目身份
 
-卡片完成提交后 24h 内，人类审查者随时挑任意 3 条已标 ☑ 的卡片，原样重跑其验收命令（命令中 `git diff` 类范围以 PR 的 `merge-base origin/main` 为基线，单 commit PR 可退化为 `HEAD~1`）。要求：
+**ant**：用户驱动的智能量化交易平台（MT4/MT5 + AI 策略生成 + 策略市场）。
 
-- 涉及非时间窗 SQL（`COUNT(*) FROM risk_events` / `broker_ticket IS NOT NULL` 等）：结果必须仍非 0、且与 Agent 贴的数量级相符（±10%）；
-- 涉及时间窗 SQL（`WHERE created_at > now()-interval N`）：必须仍为非 0（系统在线持续产出），数量不要求精确一致；
-- 涉及 UUID/ticket 等具体值：原样 SELECT 必须仍能查到对应行。
+- **当前阶段**：M7-rewrite（地基重做：MT 接入 / ClickHouse 时序 / 因子 DSL / quantengine / order hub），路径 B（地基重做 + 业务渐进重构）
+- **不重做**的范围：AI 助手、策略市场、admin、auth、worker、frontend、user/tenant 业务表
+- **重做**的范围：见 `docs/plan/ROADMAP.md` §M7-rewrite
 
-任一条不满足 → 整轮作废、所有 ☑ 卡片全部降回 🅒。
+参考蓝本：`/opt/alfq/`（同 owner，代码可自由复用；但**不允许大块原样拷贝，必须改写适配 ant 包名/接口/schema**）。
 
-### 4. 禁止 mock / stub 顶替真实依赖
+---
 
-凡涉及"broker 真实下单 / risk_events 真写表 / strategy 真执行 / vault 真读 secret / MT 网关真返回 ticket"，必须用真实容器、真实账户、真实 PG/Redis。
+## 2. 三域 + 五容器
+
+```
+backend/         Go 1.26 + ConnectRPC + sqlc        → ant-backend (8080, 集群内)
+strategy-service/ Python 3.14 + uv (研究模式沙箱)    → ant-strategy-service (8081, 集群内)
+frontend/        React 19 + TS 5.9 + pnpm + Tailwind → ant-frontend (Nginx, 宿主 ${ANT_FRONTEND_PORT:-8022})
+                                                     → ant-postgres (5432)
+                                                     → ant-redis (6379)
+                                                     → ant-clickhouse (9000) ← v2 新增
+                                                     → ant-nats (4222) ← v2 新增
+```
+
+- **proto 单源** `proto/ant/v1/` → `buf generate` 出 Go/TS/Python stub
+- **不引入** K8s / Helm / Service Mesh / 多副本
+- **运行时基线**（仅 ADR 可变）：Go 1.26 / Python 3.14 / Node 24 LTS / TS 5.9 / PG 18 / Redis 8 / ClickHouse 24 / NATS 2.10
+
+---
+
+## 3. 硬性规则（违反 = PR 拒绝）
+
+### 3.1 协议
+- 对外：**ConnectRPC + SSE**。禁止新增 REST（除 `/healthz` `/readyz` `/livez` `/metrics`）。禁止 WebSocket。
+- 内部：进程内函数调用或 NATS JetStream（异步）。
+
+### 3.2 数据
+- **业务库**：PostgreSQL 18（用户、账户绑定、订单、风控、AI、市场、审计）
+- **时序库**：ClickHouse 24（tick / bar / factor_value / signal），见 `docs/spec/13-clickhouse-schema.md`
+- **缓存/锁**：Redis 8
+- **MQ**：NATS JetStream（行情 fan-out + 因子触发）
+- **PG ↔ CH 边界**：见 `docs/adr/0002-clickhouse-as-timeseries.md`
+
+### 3.3 MT 接入
+- mtapi gRPC 是**唯一**的 MT 接入路径。**禁止新增对 `internal/mt4client` `internal/mt5client` 的 import**（这两个包将在 M7-rewrite 完成后删除）。
+- mt4 与 mt5 是两套独立协议：`adapter/mt4/` `adapter/mt5/` 不许共享代码（除 `adapter/mdtick/` 共享 DTO）。
+
+### 3.4 安全红线
+- 用户 Python 代码**只在研究模式**沙箱中执行（`strategy-service`）。
+- **生产路径**（实盘下单）禁止任何 Python 代码执行。生产策略 = DSL 字符串 + ONNX 模型引用，由 `quantengine` 加载。
+- 见 `docs/adr/0005-circuit-breaker-with-spill.md` §"沙箱降级"。
+
+### 3.5 前后端职责
+- 所有业务计算在后端完成；前端仅展示。
+- 后端对前端**零信任**——所有输入独立校验。
+- 数字格式化、货币计算、状态推断**一律后端处理**后返回展示值。
+
+### 3.6 类型与精度
+- 价格：`NUMERIC(20,8)` (PG) / `Decimal(18,6)` (CH) / `decimal.Decimal` (Go) / `Decimal` (Python)。**禁止 float64 直接比较或参与价格计算**。
+- 时间：UTC，毫秒精度（`int64 ts_unix_ms`）。
+- 日志：结构化 JSON，必带 `trace_id` `user_id` `request_id` `account_id`（涉及账户时）。
+
+### 3.7 部署
+- **单机 docker-compose**，命名前缀 `ant-`。
+- 不许破坏 `anttrader`（独立项目，端口/卷/网络隔离）。
+
+---
+
+## 4. 文档权威源
+
+> **冲突时按下表第一行顺序裁定，下行让上行。**
+
+| 优先级 | 主题 | 文件 |
+|---|---|---|
+| P0 | 项目身份与硬规则 | `AGENT.md`（本文档）|
+| P0 | ADR（不可逆决策） | `docs/adr/NNNN-*.md` |
+| P1 | 架构总览 | `docs/architecture/*.md` |
+| P1 | 模块规范 | `docs/spec/*.md` |
+| P2 | 实施计划 | `docs/plan/ROADMAP.md` |
+| P2 | 待办与缺陷 | `docs/plan/BACKLOG.md` |
+| P3 | 应急手册 | `docs/runbook/*.md` |
+
+冲突处理：选**优先级高**的；同级别选**编号大/时间新**的；不能仲裁时**停下来报告人类**，禁止自行裁决。
+
+---
+
+## 5. B 路线长期硬指标（必须达成才能关闭 milestone）
+
+| 指标 | M7 完成 | M8 完成 | M9 完成 |
+|---|---|---|---|
+| **MT 接入总 LOC** | ≤ 1500（含测试）| ≤ 1200 | ≤ 1000 |
+| **业务代码 grep 直调 mt4client/mt5client** | 0 处 | 0 处 | mt4client/mt5client 包已删除 |
+| **service/ 包文件 ≤ 400 行** | 不要求 | 100% 文件达标 | 100% 文件达标 |
+| **sqlc 覆盖率** | 不要求 | ≥ 80% | ≥ 95% |
+| **CH tick 写入零丢失（连续 7 天）** | ✅ | ✅ | ✅ |
+| **生产路径 Python 执行 grep** | 0 处 | 0 处 | 0 处 |
+
+任一指标不达标 → milestone 不许标 ☑。
+
+---
+
+## 6. 复杂度硬上限（CI 强制）
+
+| 维度 | Go | Python | TypeScript |
+|---|---|---|---|
+| 单文件行数 | ≤ 300 | ≤ 400 | ≤ 250 |
+| 单函数行数 | ≤ 50 | ≤ 50 | ≤ 50 |
+| 圈复杂度 | ≤ 10 | ≤ 10 | ≤ 10 |
+| 函数参数数 | ≤ 5 | ≤ 5 | ≤ 5 |
+| 嵌套深度 | ≤ 4 | ≤ 4 | ≤ 4 |
+
+- 严禁 `//nolint` `# noqa` `// @ts-ignore`（特殊场景见 `tools/lint/baseline.json`）
+- 单 PR ≤ 800 行业务代码（生成代码 / YAML / Dockerfile 不计入）
+- baseline 列表中已有违规不阻塞；新增违规一律 CI red
+
+---
+
+## 7. 工程纪律（10 条）
+
+1. **单一职责**：handler 只编排；业务在 service；数据访问在 repo
+2. **接口驱动**：跨包边界先定 interface，后实现
+3. **代码生成优先**：RPC = buf；SQL = sqlc；TS 类型 = buf 自动生成
+4. **三处下沉**：同一逻辑出现 3 次 → 抽到 `internal/common/`
+5. **错误集中**：用 `internal/errs/`，**禁止裸字符串错误**
+6. **状态机外置**：订单/连接等显式状态机，不许散落 if/else
+7. **零循环依赖**：CI 强制（go list / madge）
+8. **canonical 入口规范化**：所有 (broker, symbol_raw) 在 adapter 出口转 canonical；下游禁止再做 symbol 转换
+9. **价格不丢精度**：PG `NUMERIC(20,8)` ↔ Go `decimal.Decimal` ↔ CH `Decimal(18,6)`，转换在 ORM 层完成
+10. **可观测性默认开**：每个 service 必须暴露 Prometheus metrics + structured log + healthz
+
+---
+
+## 8. 编码规范
+
+### 8.1 Go
+- gofumpt + golangci-lint（v1.62+）+ `go test -race`
+- zap 日志；`ctx context.Context` 永远是首参；禁 panic（除 main 启动失败）
+- 包名 snake_case；导出符号 PascalCase；私有 camelCase
+- 文件头注释：`// Package <name> ...`（一行说明）
+
+### 8.2 Python（仅 strategy-service / research）
+- ruff strict + mypy strict（`disallow_untyped_defs = true`）
+- loguru；强制类型注解
+- 模块名 snake_case
+
+### 8.3 TypeScript（frontend）
+- strict mode；禁 any（必要时 `unknown` + 类型守卫）
+- TanStack Query + Zustand；Tailwind；shadcn/ui
+- 文件名 kebab-case
+
+### 8.4 通用
+- 依赖白名单见 `docs/spec/dep-allowlist.md`（待建）；新增依赖必须 ADR
+- AGPL 代码禁入仓
+- secrets 永不入仓；`.env` 在 gitignore
+
+---
+
+## 9. 提交与分支
+
+### 9.1 Conventional Commits
+```
+type(scope): subject
+
+[optional body]
+
+Verify: docs/handover/verify-MNNN.log:<起始行>-<结束行>
+[optional footer]
+```
+
+`type ∈ {feat, fix, refactor, docs, test, chore, perf, build, ci}`
+
+### 9.2 分支
+- `main` 受保护，禁止直接 push
+- 工作分支：`<type>/<scope>/<short-desc>`（例：`feat/mdgateway/runner`）
+- 一张卡片 = 一个分支 = 一个 PR
+
+### 9.3 PR
+- 必填：关联卡片 ID、验收日志路径、风险评估
+- AI 自检 7 条（§11）全过才允许提交
+- 人类 review 通过后 squash merge
+
+---
+
+## 10. 禁止清单
+
+- ❌ main 直接 push / force push 共享分支 / `--no-verify`
+- ❌ REST 新接口（除 healthz/readyz/livez/metrics）
+- ❌ WebSocket
+- ❌ 用户 Python 代码访问生产 DB / 网络
+- ❌ 生产路径调用 Python 解释器
+- ❌ 业务代码直接 import `internal/mt4client` `internal/mt5client`（v2 起）
+- ❌ 业务代码直接读写 `kline_data` `tick_data` 等老 PG 行情表
+- ❌ float64 参与价格运算
+- ❌ proto 改动不跑 buf breaking
+- ❌ 硬编码秘钥 / .env 入仓 / >50MB 文件入仓
+- ❌ AGPL 代码复制
+- ❌ 跨里程碑卡片实施（一次只做一张）
+- ❌ 凭常识决定安全/合规（必须 ADR 或 spec 引用）
+- ❌ 破坏 anttrader 生产环境（端口/卷/容器名冲突）
+
+---
+
+## 11. 防偷懒约束（8 条强制）
+
+落地任何卡片必须遵守以下 8 条；违反任一条 = "假完成"，卡片自动降回 🅒。
+
+### 11.1 物证留痕
+
+每张卡片在 `docs/handover/verify-<card_id>.log` 留 ≥ 20 行连续真实 stdout，含 UUID / 时间戳 / 行数。文档改字 + 不带验收日志 = 失败。
 
 ```bash
-# 仅检查生产路径，排除测试 / fixtures / broker_sim 等合法 stub
+<verify_cmd> 2>&1 | tee -a docs/handover/verify-<card_id>.log
+```
+
+### 11.2 验收命令禁改
+
+ROADMAP / BACKLOG / spec 中写的 `psql -c` `clickhouse-client --query` `grpcurl -d` 等命令是**契约**。AI 改命令使其更"好通过"= 整轮失败。
+
+### 11.3 24h 重跑可复现
+
+卡片 commit 后 24h 内人类可挑任意 3 张已 ☑ 的卡片原样重跑：
+- 非时间窗 SQL：结果非 0 且与原贴数量级相符（±10%）
+- 时间窗 SQL：仍非 0
+- UUID/ticket 具体值：原样 SELECT 仍能查到
+
+任一不满足 → 整轮作废、所有 ☑ 降回 🅒。
+
+### 11.4 禁 mock / stub 顶替真实依赖
+
+凡涉及 broker 真实下单、CH 真写表、MT 真返回 ticket，必须用真实容器 + 真实账户。
+
+```bash
 BASE=$(git merge-base origin/main HEAD)
 git diff --name-only "$BASE"...HEAD \
   | grep -E '^(backend/(cmd|internal)|strategy-service/(src|app)|frontend/src)/' \
@@ -214,71 +276,129 @@ git diff --name-only "$BASE"...HEAD \
   && echo "FAIL: production code references mock/stub/Fake" && exit 1 || true
 ```
 
-例外白名单（合法 stub，不计入违规）：`strategy-service/src/broker_sim.py`（如需）、`internal/testutil/`、proto 生成代码、Connect RPC interceptor 链中的 noop。
+例外白名单：`strategy-service/src/broker_sim.py` / `internal/testutil/` / proto 生成代码 / Connect interceptor noop。
 
-### 5. 禁止删 / 弱化测试
+### 11.5 禁删 / 弱化测试
 
 ```bash
-# 测试文件净删除行数 > 净新增行数 → 失败（基线 = PR merge-base）
 BASE=$(git merge-base origin/main HEAD)
 git diff --numstat "$BASE"...HEAD -- '*_test.go' 'test_*.py' \
   | awk '{add+=$1; del+=$2} END{ if (del>add) exit 1 }'
 ```
 
-新增功能必须配回归测试，否则该卡片不许标 ☑。`t.Skip()` / `pytest.skip` / `xfail` 数量相对 `merge-base origin/main` 不得净增。
+新增功能必须配回归测试。`t.Skip` / `pytest.skip` / `xfail` 不得净增。
 
-### 6. 卡片状态机闭环检查
+### 11.6 卡片状态机闭环
 
-每个 `☑` 卡片必须满足：
+每个 ☑ 必须满足：
+- 有对应 commit short-sha（在卡片表"备注"列）
+- commit 实际改动 ≥ 卡片预估的 30%（`git show --stat` 统计，proto 生成代码除外）
+- commit body 含 `Verify: docs/handover/verify-<id>.log:<行>-<行>`
 
-- 有对应 commit hash（在卡片表格"备注"列写出短 sha）；
-- commit 实际改动行数 ≥ 该卡片预估工作量的 30%（防"改一行注释就标完成"，行数按 `git show --stat` 统计，proto 生成代码不计入）；
-- commit message 遵守上文 §提交与 PR 的 Conventional Commits 规则，并在 **commit body**（非 subject）中追加一行：
-  ```
-  Verify: docs/handover/RS-final-verify.log:<起始行>-<结束行>
-  ```
-
-对 audit 文档（`docs/audit/DESIGN-REVIEW-*.md`）的卡片，落地完成时把 heading 后追加 `[☑]` 标记，自检脚本据此统计完成度（见下条）。
-
-### 7. 自检脚本卡口（落地前必跑全过）
-
-以 `当前活跃的 plan/audit 文件` 为输入，下列每条非 0 退出即失败：
+### 11.7 自检脚本（合入前必跑）
 
 ```bash
 set -euo pipefail
-PLAN=$(ls -t docs/tasks/REMEDIATION-PLAN-*.md docs/tasks/ROADMAP-*.md 2>/dev/null | head -1 || true)
-AUDIT=$(ls -t docs/audit/DESIGN-REVIEW-*.md 2>/dev/null | head -1 || true)
 
-# 无活跃 plan/audit 时本节空转（仍受其他 6 条约束）；存在则必须全过
-if [ -n "${PLAN:-}" ]; then
-  # (a) plan 中无未完成标记 / 待办占位
-  grep -cE '^🅒|TODO|FIXME|XXX-hack' "$PLAN" | awk '$1>0{exit 1}'
-fi
+# (a) ROADMAP/BACKLOG 当前里程碑无 🅒 / TODO / FIXME
+PLAN=docs/plan/ROADMAP.md
+grep -cE '^🅒|TODO|FIXME|XXX-hack' "$PLAN" | awk '$1>0{exit 1}'
 
-if [ -n "${AUDIT:-}" ]; then
-  # (b) audit 文档卡片必须 100% 标完（heading 后追加 [☑]）
-  total=$(grep -cE '^### (CR|MR|MN)-[0-9]+' "$AUDIT")
-  done_n=$(grep -cE '^### (CR|MR|MN)-[0-9]+.*\[☑\]' "$AUDIT")
-  test "$total" = "$done_n" || { echo "AUDIT incomplete $done_n/$total"; exit 1; }
+# (b) 当前卡片验收日志存在且行数 ≥ 20
+test -f "docs/handover/verify-${CARD_ID}.log"
+wc -l "docs/handover/verify-${CARD_ID}.log" | awk '$1<20{exit 1}'
 
-  # (c) 验收日志行数下限（每卡片 ≥20 行 × 卡片总数）
-  test -f docs/handover/RS-final-verify.log
-  wc -l docs/handover/RS-final-verify.log | awk -v t="$total" '$1 < t*20 {exit 1}'
-fi
+# (c) build & test
+( cd backend && go build ./... && go test -race ./internal/... )
+( cd strategy-service && uv run pytest -q )
 
-# (d) 关键运行时断言（非 0 行）— 仅当容器在线时强制；CI 离线环境跳过
+# (d) 复杂度
+make lint
+
+# (e) 关键运行时（容器在线时）
 if docker inspect ant-postgres >/dev/null 2>&1; then
-  PSQL=(docker exec ant-postgres psql -U "${DB_USER:-ant}" -d "${DB_NAME:-ant}" -tAc)
-  "${PSQL[@]}" "SELECT COUNT(*) FROM strategies"             | awk '$1==0{exit 1}'
-  "${PSQL[@]}" "SELECT COUNT(*) FROM accounts"               | awk '$1==0{exit 1}'
-  "${PSQL[@]}" "SELECT COUNT(*) FROM orders WHERE state='filled'" | awk '$1==0{exit 1}'
+  docker exec ant-postgres psql -U ant -d ant -tAc "SELECT 1" | grep -q 1
+fi
+if docker inspect ant-clickhouse >/dev/null 2>&1; then
+  docker exec ant-clickhouse clickhouse-client --query "SELECT 1" | grep -q 1
 fi
 ```
 
-任一行非 0 退出 → 自动撤回所有 ☑、降回 🅒，禁止 git tag、禁止提交 handover。
+任一行非 0 退出 → 自动降回 🅒，禁止 commit。
+
+### 11.8 迁移完整性
+
+从 alfq 移植任何模块必须迁移**全部设计文件**，禁止只搬部分：
+- 设计文档列出 N 个文件 → 实际写入必须 = N
+- 禁止用临时 hack 顶替正式实现
+- 依赖链不许断裂
+
+```bash
+MODULE_DIR=backend/internal/<module>
+for f in $(grep -oE '^\| `[^`]+\.go`' docs/spec/<module>.md | tr -d '|`' | xargs); do
+  test -f "$MODULE_DIR/$f" || { echo "MISSING: $f"; exit 1; }
+done
+go build "./$MODULE_DIR/..."
+```
 
 ### 兜底原则
 
-> **"代码已写"≠"卡片完成"。卡片完成 = 代码 + 测试 + 真实运行时 stdout 三者齐全且可复现。**
+> **"代码已写" ≠ "卡片完成"。卡片完成 = 代码 + 测试 + 真实运行时 stdout 三者齐全且可复现。**
+>
+> 卡片做不通时，坦诚降级写明"🅒 + 阻塞原因 + 已尝试方案"并停下汇报。**禁止用文档改字、mock 替换、放宽验收命令绕过。**
 
-若卡片确实做不通（依赖缺失、broker 限制、设计错误等），坦诚降级写明"🅒 + 阻塞原因 + 已尝试方案"并停下汇报；**禁止用文档改字、mock 替换、放宽验收命令绕过**。
+---
+
+## 12. AI 文档阅读清单（每次开工必读）
+
+按顺序读完才能开始执行任何卡片：
+
+1. `AGENT.md`（本文件）
+2. `docs/architecture/01-vision.md`
+3. `docs/architecture/02-overview.md`
+4. `docs/architecture/03-data-flow.md`
+5. 卡片所在 milestone 的全部 `docs/spec/*.md`
+6. 卡片引用的所有 `docs/adr/*.md`
+7. `docs/plan/ROADMAP.md` §当前 milestone
+8. `docs/spec/16-mtapi-quirks-register.md`（涉及 MT 时）
+
+读完后**回答自检 5 问**（在 PR 描述中写明）：
+1. 本卡片要改动哪些文件？（精确路径列表）
+2. 本卡片的输入是什么？（上游卡片 / 配置 / 数据）
+3. 本卡片的输出是什么？（接口 / 表 / 文件）
+4. 本卡片的验收命令是什么？（精确 shell）
+5. 本卡片可能踩哪些坑？（参考 quirks register）
+
+5 问任一答不上来 → 暂停，回去读文档。
+
+---
+
+## 13. Makefile（标准入口）
+
+```
+make proto          buf lint + breaking + generate
+make build          go build ./...
+make test           go test -race ./internal/... + uv run pytest
+make lint           gofumpt + golangci-lint + ruff + mypy + tsc
+make migrate-pg     PostgreSQL 迁移
+make migrate-ch     ClickHouse 迁移（v2 新增）
+make docker-up      docker-compose up -d
+make docker-down    docker-compose down
+make docker-logs    docker-compose logs -f
+make verify-card    跑 §11.7 自检脚本（CARD_ID=M7.X-Y）
+```
+
+---
+
+## 14. 当前阶段速览
+
+- **里程碑**：M7-rewrite（MT 地基重做）
+- **路径**：B（地基重做 + 业务渐进重构）
+- **入口**：`docs/plan/ROADMAP.md` §M7
+- **测试覆盖目标**：M7 完成 ≥ 30%，M8 完成 ≥ 50%
+- **当前未关闭的 ADR**：见 `docs/adr/README.md`
+- **当前活跃 quirks**：见 `docs/spec/16-mtapi-quirks-register.md`
+
+---
+
+> 最后一行原则：**当 AI 在文档中找不到明确指引时，默认行为 = 停下报告人类，而不是自行决策。**

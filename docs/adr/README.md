@@ -1,64 +1,50 @@
-# ADR 索引
+# ADR 索引（v2）
 
-**Format**: Architecture Decision Records，参考 [ADR GitHub Org](https://adr.github.io/) Markdown 模板（精简版）。
-**编号规则**：单调递增，`NNNN-<slug>.md`。
-**生命周期**：`Proposed` → `Accepted`（不可逆）→ `Superseded by NNNN`（如被替代）。
-**最后更新**：2026-05-23（M0.2 全量 Accepted）
+> v1 ADR 已归档至 `docs.old/adr/`。
+> v2 仅保留 MT 重写域的 5 篇核心决策；后续每月新增。
 
-## 按状态
+| ID | 标题 | 状态 |
+|---|---|---|
+| 0001 | MT 基础完全重写（路线 B） | Accepted |
+| 0002 | ClickHouse 作为时序存储 | Accepted |
+| 0003 | mtapi 直连，不再二次包装 | Accepted |
+| 0004 | Tick 去重与质量分级 | Accepted |
+| 0005 | CircuitBreaker + Spill 故障恢复 | Accepted |
 
-### Accepted（12/12 ✅）
+## 编号规则
 
-| # | 标题 | 实施里程碑 | 关联 |
-|---|---|---|---|
-| 0001 | [Connect RPC + SSE 通信协议](0001-connect-rpc-sse.md) | 既定 | AGENT.md 协议规则 |
-| 0002 | [三域 monorepo](0002-three-domain-monorepo.md) | 既定 | AGENT.md 三域结构 |
-| 0003 | [PostgreSQL + Redis 主存方案](0003-postgres-redis.md) | 既定 | AGENT.md 数据规则 |
-| 0004 | [Python 沙箱进程模型](0004-python-sandbox-process-model.md) | M3 | 安全红线 |
-| 0005 | [用户中心架构（非多租户）](0005-user-centric-architecture.md) | 既定 | AlfQ 迁移 §1.2 |
-| 0006 | [SQL 访问层：sqlc vs sqlx](0006-sqlc-vs-sqlx.md) | M2-M6 | 代码生成优先 |
-| 0007 | [AI 策略生成 bounded tools](0007-ai-bounded-tools.md) | M4 | M4 AI 闭环 |
-| 0008 | [单机 docker-compose 部署](0008-docker-compose-deployment.md) | 既定 | AGENT.md 部署形态 |
-| 0009 | [运行时主版本基线锁版](0009-runtime-version-baseline.md) | 既定 | AGENT.md 版本规则 |
-| 0010 | [错误码体系](0010-error-code-system.md) | M0.3 | MR-04 |
-| 0011 | [可观测性：trace_id / health / metrics](0011-observability.md) | M0.3 | MR-05, MR-07 |
-| 0012 | [Broker Adapter 抽象](0012-broker-adapter.md) | M1/M2 | M1+M2 前置 |
+- 单调递增，不复用、不删除
+- 文件名 `NNNN-<kebab-slug>.md`
+- 状态：`Proposed | Accepted | Rejected | Superseded`
+- Superseded 的 ADR 在 header 注明 superseded by NNNN
 
-### Proposed（0）
+## 模板
 
-无待决策项。全部 12 篇 ADR 已在 M0.2 完成 Accepted。
+```markdown
+# ADR-NNNN · <标题>
 
-## 按主题
+- **状态**：Accepted | Proposed | Rejected | Superseded by NNNN
+- **日期**：YYYY-MM-DD
+- **决策者**：<name>
+- **关联 spec**：docs/spec/...
 
-| 主题 | ADR |
-|---|---|
-| **通信协议** | 0001 Connect RPC + SSE |
-| **仓库结构** | 0002 三域 monorepo |
-| **数据存储** | 0003 PostgreSQL + Redis |
-| **安全沙箱** | 0004 Python 沙箱进程模型 |
-| **用户模型** | 0005 用户中心架构 |
-| **数据访问** | 0006 sqlc vs sqlx |
-| **AI 安全** | 0007 AI bounded tools |
-| **部署形态** | 0008 单机 docker-compose |
-| **版本基线** | 0009 运行时主版本锁版 |
-| **错误处理** | 0010 错误码体系 |
-| **可观测性** | 0011 trace_id / health / metrics |
-| **交易网关** | 0012 Broker Adapter |
-| **策略市场** | 待立（M5 前置：D-09 计费模式） |
-| **移动端** | 待立（D-04） |
-| **i18n** | 待立（D-08 语种选择） |
-| **a11y** | 待立（D-05 基线） |
+## 1. 背景
+（为什么需要这个决策）
 
-## 编写规范
+## 2. 决策
+（一段话说清楚做什么）
 
-每篇 ADR 含 7 节：
+## 3. 备选方案
+| 方案 | 优点 | 缺点 | 否决理由 |
 
-1. **Status**: Accepted (yyyy-mm-dd) / Superseded by NNNN
-2. **Context**: 为什么需要这个决策（≤10 行）
-3. **Options**: 候选方案 A/B/C，各列利弊
-4. **Decision**: 选了哪个 + 理由
-5. **Consequences**: 正/负面影响、迁移路径
-6. **Related**: 关联 finding / ADR / 文档
-7. **History**: 状态变更记录
+## 4. 后果
+- 正面：
+- 负面：
+- 中性：
 
-新决策 → 提 PR 在 `docs/adr/NNNN-<slug>.md`，编号从 `0013` 单调递增。
+## 5. 实施约束
+（具体的代码/接口/schema 约束）
+
+## 6. 验证方式
+（如何证明决策落地）
+```

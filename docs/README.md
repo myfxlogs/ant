@@ -1,62 +1,71 @@
-# docs 导航
+# ant 文档（v2 · MT 基础重写版）
 
-> ant 量化交易平台文档体系 · 最后更新 2026-05-23（M0.2）
+> **重置说明**：v1 文档已归档至 `docs.old/`。v2 围绕「**MetaTrader 作为量化数据基础**」重新设计，参照 alfq 架构并基于 ant 已有积累（CircuitBreaker、Spill 旋转、mtapi 暗坑修复）做精简化重构。
+>
+> **关键决策**：彻底重写 MT 层（mt4client/mt5client → 新 mdgateway+adapter+mthub），目标 ~600 行替代 ~4500 行；保留 ant 已有的故障恢复增量；切断与老 kline_service 的双数据源。
 
-## 快速入口
+---
 
-| 你是… | 读这个 |
-|--------|--------|
-| 新 Agent 第一天 | [AGENT-RUNBOOK](../docs/tasks/AGENT-RUNBOOK.md) → [ADR 索引](adr/README.md) |
-| 实施卡片 | [ROADMAP](../docs/plan/ROADMAP.md) → 对应 milestone 卡片表 |
-| 查架构 | [ADR 索引](adr/README.md) → 按主题找对应 ADR |
-| 查验收 | [handover/](handover/) `RS-final-verify.log` |
+## 阅读路径
 
-## 五大区
+| 角色 | 推荐阅读顺序 |
+|---|---|
+| **新工程师 onboarding** | `architecture/01-vision.md` → `architecture/02-overview.md` → `architecture/03-data-flow.md` |
+| **MT 适配实现者** | `spec/10-mt-adapter.md` → `spec/16-mtapi-quirks-register.md` → `adr/0003` |
+| **行情网关实现者** | `spec/11-mdgateway.md` → `spec/13-clickhouse-schema.md` → `adr/0004` `0005` |
+| **会话/下单实现者** | `spec/12-mthub.md` → `spec/14-rpc-contracts.md` |
+| **运维/SRE** | `spec/15-observability.md` → `runbook/mt-incidents.md` |
+| **决策审计** | `adr/` 全部按编号读 |
+| **执行计划** | `plan/ROADMAP.md` |
 
-### 1. domain — 领域设计
+---
 
-| 文档 | 状态 | 说明 |
+## 目录结构
+
+```
+docs/
+├── README.md                    本文件
+├── architecture/
+│   ├── 01-vision.md             设计哲学：MT = 地基
+│   ├── 02-overview.md           整体架构图 + 7 层职责划分
+│   └── 03-data-flow.md          tick/bar/factor/signal 流转时序
+├── spec/
+│   ├── 10-mt-adapter.md         mtapi gRPC → Gateway 接口契约
+│   ├── 11-mdgateway.md          网关内部：normalizer/quality/aggregator/publisher/writer/spill/circuit
+│   ├── 12-mthub.md              会话注册中心 + OrderEventBroker
+│   ├── 13-clickhouse-schema.md  CH 4 表设计、TTL、分区、查询模式
+│   ├── 14-rpc-contracts.md      ConnectRPC proto 契约（mthub.v1）
+│   ├── 15-observability.md      Prometheus 指标、健康检查、日志规范
+│   └── 16-mtapi-quirks-register.md  mtapi 暗坑清单（18 个月修复史提取）
+├── adr/
+│   ├── README.md                ADR 索引
+│   ├── 0001-mt-foundation-full-rewrite.md
+│   ├── 0002-clickhouse-as-timeseries.md
+│   ├── 0003-direct-mtapi-no-wrapping.md
+│   ├── 0004-tick-dedup-and-quality.md
+│   └── 0005-circuit-breaker-with-spill.md
+├── plan/
+│   ├── ROADMAP.md               里程碑与卡片
+│   └── BACKLOG.md               待办与已知缺陷
+└── runbook/
+    └── mt-incidents.md          常见故障应急手册
+```
+
+---
+
+## 设计哲学一句话
+
+> **MT 是 ant 的地基；地基的稳定性 = 项目天花板。**
+> 所以我们：(1) 用最少的代码实现最完整的语义；(2) 把可观测性与故障恢复内建到每一层；(3) 把暗坑作为知识沉淀而非散落代码。
+
+---
+
+## 与旧文档的差异
+
+| 维度 | docs.old (v1) | docs (v2) |
 |---|---|---|
-| `docs/domains/` | 🚧 待建立 | 订单状态机、风控规则、symbol 体系等 |
-| `docs/接口与数据流架构约定.md` | ✅ 现行 | 接口形态与数据流约定 |
-
-### 2. plan — 计划与路线图
-
-| 文档 | 状态 |
-|---|---|
-| `docs/plan/ROADMAP.md` | ✅ M0.1-M6 完整路线图 |
-| `docs/AlfQ功能迁移计划.md` | 📖 参考蓝本（只读，非约束） |
-| `docs/进度/` | 🚧 进度跟踪 |
-
-### 3. adr — 架构决策记录
-
-| 文档 | 状态 |
-|---|---|
-| `docs/adr/README.md` | ✅ 12 篇 ADR 全部 Accepted，按主题索引 |
-| `docs/adr/0001-*.md` … `0012-*.md` | ✅ 7 节标准格式 |
-
-### 4. audit — 审查与整改
-
-| 文档 | 状态 |
-|---|---|
-| `docs/audit/DESIGN-REVIEW-2026-05.md` | ✅ 145 项 finding 完整清单 |
-| `docs/_archive/remediation-2026-05/` | 📦 14 文件已归档（2026-05-23） |
-
-### 5. runbook — 执行手册
-
-| 文档 | 状态 |
-|---|---|
-| `docs/tasks/AGENT-RUNBOOK.md` | ✅ 执行入口 |
-| `docs/handover/RS-final-verify.log` | ✅ M0.1 验收日志 |
-
-## 专项设计
-
-| 文档 | 说明 |
-|---|---|
-| `docs/专项设计/` | 辩论流程、SSE 配置、边缘网关等专项 |
-
-## 文档约定
-
-- 中文为主，技术术语保留英文
-- 状态标记：✅ 现行 · 🚧 施工中 · 📖 参考 · 📦 已归档
-- 冲突处理：ADR > ROADMAP > AGENT.md > 其他
+| MT 层定位 | "K 线源 + 下单通道" | "量化数据基础设施" |
+| 代码量目标 | 现状 ~4500 行 | 目标 ~600 行 |
+| 数据存储 | PG.kline_data 单源 | ClickHouse 4 表 + PG 业务库 |
+| 文档粒度 | 12 篇综合 | 7 篇规范 + 5 篇 ADR + 1 篇 quirks |
+| ADR 编号 | 0001-0016（混合） | 0001-0005（仅 MT 重写域） |

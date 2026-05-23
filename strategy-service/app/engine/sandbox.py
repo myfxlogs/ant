@@ -1,8 +1,12 @@
 """Strategy sandbox.
 
 契约：docs/domains/backtest-system.md §7.4.3 · sandbox.py
+ADR: ADR-0016 沙箱降级
 
-Layered defence for running untrusted user code:
+M7.7: 沙箱降级为研究专用。生产模式下直接拒绝，仅 research_mode 可用。
+生产路径使用 DSL + ONNX，不再执行任意 Python 代码。
+
+Layered defence for running untrusted user code (research mode only):
 
 1. **AST whitelist** — forbids ``import``, dunder access, dangerous builtins,
    validates ``run(context)`` signature (see :py:func:`validate_strategy_code`).
@@ -235,10 +239,42 @@ def code_sha256(source: str) -> str:
 # --- StrategyRunner ------------------------------------------------------
 
 
+_production_mode: bool = False
+
+
+def set_production_mode(enabled: bool) -> None:
+    """Set the sandbox production mode flag.
+
+    When True, all Python strategy execution is blocked.
+    This is a global guard that cannot be bypassed once enabled.
+    """
+    global _production_mode
+    _production_mode = enabled
+
+
+def is_production_mode() -> bool:
+    """Return True if the sandbox is in production mode."""
+    return _production_mode
+
+
+class SandboxBlockedError(Exception):
+    """Raised when a strategy is executed in production mode."""
+
+
 class StrategyRunner:
-    """Compile once, execute per bar."""
+    """Compile once, execute per bar.
+    
+    M7.7: In production mode, the sandbox is blocked entirely.
+    Production paths use DSL + ONNX; Python execution is research-only.
+    """
 
     def __init__(self, source: str, timeout_ms: int = 30_000) -> None:
+        if _production_mode:
+            raise SandboxBlockedError(
+                "sandbox blocked: production mode active. "
+                "Python strategy execution is research-only. "
+                "Use DSL expressions or ONNX models for live trading."
+            )
         validation = validate_strategy_code(source)
         if not validation.valid:
             raise StrategyCompileError("; ".join(validation.errors))

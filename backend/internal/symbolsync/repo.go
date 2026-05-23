@@ -70,6 +70,55 @@ func (r *Repo) ListByBroker(ctx context.Context, brokerID string) ([]BrokerSymbo
 	return rows, nil
 }
 
+// UpsertSymbols batch-upserts all broker symbols in a single transaction.
+func (r *Repo) UpsertSymbols(ctx context.Context, symbols []BrokerSymbol) error {
+	tx, err := r.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("symbolsync batch upsert: begin tx: %w", err)
+	}
+	defer tx.Rollback()
+
+	for _, s := range symbols {
+		_, err := tx.NamedExecContext(ctx, `
+			INSERT INTO broker_symbols (
+				broker_id, symbol_raw, canonical,
+				digits, point, tick_size,
+				min_lot, max_lot, lot_step,
+				swap_long, swap_short,
+				trade_mode, description,
+				raw_payload, partial, updated_at
+			) VALUES (
+				:broker_id, :symbol_raw, :canonical,
+				:digits, :point, :tick_size,
+				:min_lot, :max_lot, :lot_step,
+				:swap_long, :swap_short,
+				:trade_mode, :description,
+				:raw_payload, :partial, now()
+			)
+			ON CONFLICT (broker_id, symbol_raw) DO UPDATE SET
+				canonical     = EXCLUDED.canonical,
+				digits        = EXCLUDED.digits,
+				point         = EXCLUDED.point,
+				tick_size     = EXCLUDED.tick_size,
+				min_lot       = EXCLUDED.min_lot,
+				max_lot       = EXCLUDED.max_lot,
+				lot_step      = EXCLUDED.lot_step,
+				swap_long     = EXCLUDED.swap_long,
+				swap_short    = EXCLUDED.swap_short,
+				trade_mode    = EXCLUDED.trade_mode,
+				description   = EXCLUDED.description,
+				raw_payload   = EXCLUDED.raw_payload,
+				partial       = EXCLUDED.partial,
+				updated_at    = now()
+		`, s)
+		if err != nil {
+			return fmt.Errorf("symbolsync batch upsert %s/%s: %w", s.BrokerID, s.SymbolRaw, err)
+		}
+	}
+
+	return tx.Commit()
+}
+
 // SeedCanonicalSymbols inserts the initial canonical_symbols dictionary.
 func (r *Repo) SeedCanonicalSymbols(ctx context.Context, entries []struct {
 	Canonical   string
