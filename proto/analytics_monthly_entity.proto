@@ -1,0 +1,8 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+message MonthlyPnL { string month = 1; double profit = 2; int32 trades = 3; }
+message MonthlyAnalysisPoint { int32 year = 1; int32 month = 2; double change = 3; double profit = 4; double lots = 5; double pips = 6; int32 trades = 7; }
+message MonthlySymbolPopularity { string symbol = 1; int32 trades = 2; double share_percent = 3; }
+message MonthlySymbolRiskRatio { string symbol = 1; double risk_ratio = 2; }
+message MonthlySymbolHoldingSplit { string symbol = 1; double bulls_seconds = 2; double short_term_seconds = 3; }

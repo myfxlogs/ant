@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+message DiscoverSystemAIModelsRequest {
+  string provider_id = 1;
+}
+message DiscoverSystemAIModelsResponse {
+  string provider_id = 1;
+  repeated string models = 2;
+  string default_model = 3;
+}
+
+message ValidateSystemAIConnectionRequest {
+  string provider_id = 1;
+}
+message ValidateSystemAIConnectionResponse {
+  string provider_id = 1;
+  bool ok = 2;
+  int32 model_count = 3;
+}

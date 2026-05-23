@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+message AIAgentDefinition {
+  string id = 1;
+  string agent_key = 2;
+  string type = 3;
+  string name = 4;
+  string identity = 5;
+  string input_hint = 6;
+  bool enabled = 7;
+  int32 position = 8;
+  string provider_id = 9;
+  string model_override = 10;
+}
+
+message ListAgentsRequest {}
+
+message ListAgentsResponse {
+  repeated AIAgentDefinition agents = 1;
+}
+
+message SetAgentsRequest {
+  repeated AIAgentDefinition agents = 1;
+}
+
+message SetAgentsResponse {
+  repeated AIAgentDefinition agents = 1;
+}

@@ -1,0 +1,8 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+message GetTradingSummaryRequest { string start_date = 1; string end_date = 2; }
+message TradingSummary { TradingOverview overview = 1; map<string, PlatformStats> by_platform = 2; TradingDetails trading = 3; }
+message TradingOverview { int32 total_users = 1; int32 active_users = 2; int32 total_accounts = 3; int32 connected_accounts = 4; int32 total_trades = 5; int32 today_trades = 6; double total_profit = 7; int32 active_positions = 8; }
+message PlatformStats { int32 trades = 1; double profit = 2; }
+message TradingDetails { int32 total_orders = 1; int32 closed_orders = 2; double net_profit = 3; double total_profit = 4; double total_loss = 5; int32 pending_orders = 6; double total_volume = 7; double avg_trade_size = 8; double win_rate = 9; double profit_factor = 10; }

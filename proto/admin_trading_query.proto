@@ -1,0 +1,8 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+import "trading.proto";
+message ListPositionsRequest { int32 page = 1; int32 page_size = 2; string account_id = 3; }
+message ListPositionsResponse { repeated Order positions = 1; int32 total = 2; }
+message ListOrdersRequest { int32 page = 1; int32 page_size = 2; string account_id = 3; string from = 4; string to = 5; }
+message ListOrdersResponse { repeated Order orders = 1; int32 total = 2; }

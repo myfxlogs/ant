@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+message ConnectAccountRequest { string id = 1; }
+message ConnectAccountResponse { bool success = 1; string message = 2; }
+message DisconnectAccountRequest { string id = 1; }
+message ReconnectAccountRequest { string id = 1; }
+message SearchBrokerRequest { string company = 1; string mt_type = 2; }
+message SearchBrokerResponse { repeated BrokerCompany companies = 1; }
+message BrokerCompany { string company_name = 1; repeated BrokerServer servers = 2; }
+message BrokerServer { string name = 1; repeated string access = 2; }

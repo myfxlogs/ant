@@ -1,0 +1,6 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+import public "analytics_account.proto";
+import public "analytics_summary.proto";
+import public "analytics_risk.proto";

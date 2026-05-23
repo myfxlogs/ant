@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import public "stream_event_core.proto";
+import public "stream_event_account.proto";
+import public "stream_event_trade.proto";
+import public "stream_event_sync.proto";
+import public "stream_event_command.proto";

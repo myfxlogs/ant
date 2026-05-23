@@ -1,0 +1,144 @@
+services:
+  frontend:
+    container_name: anttrader-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_MENU_MODE: ${VITE_MENU_MODE:-full}
+        NODE_BUILD_IMAGE: ${NODE_BUILD_IMAGE:-hub.rat.dev/library/node:22-alpine}
+        VITE_API_URL: ${VITE_API_URL:-}
+        VITE_STREAM_URL: ${VITE_STREAM_URL:-}
+    image: anttrader-prod-frontend
+    restart: always
+    ports:
+      - "8012:8080"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    depends_on:
+      backend:
+        condition: service_started
+      strategy-service:
+        condition: service_started
+    networks:
+      - anttrader-network
+
+  backend:
+    container_name: anttrader-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: anttrader-prod-backend
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    environment:
+      - DB_HOST=postgres
+      - DB_NAME=antrader
+      - DB_USER=antuser
+      - DB_PASSWORD=HavEr7901
+      - DB_PORT=5432
+      - JWT_SECRET=antrader_jwt_secret_key_production_change_this_in_production
+      - STRATEGY_SERVICE_URL=http://strategy-service:8081
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - TZ=Asia/Shanghai
+      - GIN_MODE=release
+      - FMP_API_KEY=e3c00f1701463b13be5e55bd327f72c7
+      - ANTRADER_SEED_DEFAULT_STRATEGY_TEMPLATES=true
+      - ANTRADER_SCHEDULE_EVENT_DRIVEN_ENABLED=true
+      - ANTRADER_SCHEDULE_WATCHDOG_INTERVAL=30s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - anttrader-network
+
+  strategy-service:
+    container_name: anttrader-strategy-service
+    build:
+      context: ./strategy-service
+      dockerfile: Dockerfile
+    image: anttrader-prod-strategy-service
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+        reservations:
+          memory: 192M
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+    security_opt:
+      - label=disable
+    networks:
+      - anttrader-network
+
+  postgres:
+    container_name: anttrader-postgres
+    image: postgres:15-alpine
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    environment:
+      - POSTGRES_USER=antuser
+      - POSTGRES_PASSWORD=HavEr7901
+      - POSTGRES_DB=antrader
+      - PGDATA=/var/lib/postgresql/data
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U antuser -d antrader"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - anttrader-network
+
+  redis:
+    container_name: anttrader-redis
+    image: redis:8-alpine
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "200mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - anttrader-network
+
+networks:
+  anttrader-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    external: true
+    name: anttrader_postgres_data
+  redis_data:
+    external: true
+    name: anttrader_redis_data

@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/empty.proto";
+import "stream_events.proto";
+import "market.proto";
+
+service StreamService {
+  rpc SubscribeEvents(SubscribeEventsRequest) returns (stream StreamEvent);
+  // History replay stream (bounded, ends after sending up to limit events).
+  rpc SubscribeHistory(SubscribeHistoryRequest) returns (stream StreamEvent);
+  rpc SubscribeQuotes(SubscribeQuotesRequest) returns (stream Quote);
+  rpc SubscribeOrderUpdates(SubscribeOrderUpdatesRequest) returns (stream OrderUpdateEvent);
+  rpc SubscribeProfitUpdates(SubscribeProfitUpdatesRequest) returns (stream ProfitUpdateEvent);
+
+  // User-level summary stream for dashboard (aggregated by backend).
+  rpc SubscribeUserSummary(google.protobuf.Empty) returns (stream UserSummaryEvent);
+}
+
+message SubscribeEventsRequest {
+  repeated string account_ids = 1;
+  // Deprecated: use last_event_ids map for per-account cursors.
+  string last_event_id = 2;
+  // Per-account Redis Streams cursor: key = account_id, value = last received event_id.
+  // On reconnect the server resumes from these positions (exclusive).
+  // Accounts absent from the map start from the latest snapshot + new events.
+  map<string, string> last_event_ids = 3;
+}
+
+message SubscribeHistoryRequest {
+  repeated string account_ids = 1;
+  // Per-account Redis Streams cursor: start after these event ids (exclusive).
+  // Accounts absent from the map start from the beginning (0-0).
+  map<string, string> last_event_ids = 2;
+  // Maximum number of events to send in total across all accounts.
+  int32 limit = 3;
+}
+
+message SubscribeQuotesRequest {
+  string account_id = 1;
+  repeated string symbols = 2;
+}
+
+message SubscribeOrderUpdatesRequest {
+  string account_id = 1;
+}
+
+message SubscribeProfitUpdatesRequest {
+  string account_id = 1;
+}

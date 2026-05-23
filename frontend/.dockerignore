@@ -1,0 +1,42 @@
+# Development files
+node_modules/
+*.log
+.env
+.env.*
+*.swp
+*.swo
+*~
+
+# Test directories
+e2e/
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+coverage/
+playwright-report/
+test-results/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+playwright.config.ts
+vitest.config.ts
+
+# Build artifacts
+*.local

@@ -1,0 +1,11 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+import "google/protobuf/empty.proto";
+import "admin_config.proto";
+service AdminConfigService {
+  rpc ListConfigs(google.protobuf.Empty) returns (ListConfigsResponse);
+  rpc GetConfig(GetConfigRequest) returns (SystemConfig);
+  rpc SetConfig(SetConfigRequest) returns (google.protobuf.Empty);
+  rpc ToggleConfigEnabled(ToggleConfigEnabledRequest) returns (google.protobuf.Empty);
+}

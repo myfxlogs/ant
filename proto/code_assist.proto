@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+service CodeAssistService {
+  rpc ReviseCode(ReviseCodeRequest) returns (ReviseCodeResponse);
+  rpc ExplainCode(ExplainCodeRequest) returns (ExplainCodeResponse);
+  rpc ValidateStrategyExtended(ValidateStrategyExtendedRequest) returns (ValidateStrategyExtendedResponse);
+}
+
+message CodeChatMessage {
+  string role = 1;
+  string content = 2;
+}
+
+message ReviseCodeRequest {
+  string code = 1;
+  string instruction = 2;
+  repeated CodeChatMessage history = 3;
+  string locale = 4;
+}
+
+message ReviseCodeResponse {
+  string text = 1;
+  string python = 2;
+}
+
+message ExplainCodeRequest {
+  string code = 1;
+  string locale = 2;
+}
+
+message ExplainCodeResponse {
+  string explanation = 1;
+}
+
+message ValidateStrategyExtendedRequest {
+  string code = 1;
+}
+
+message ValidateStrategyExtendedResponse {
+  bool valid = 1;
+  repeated string errors = 2;
+  repeated string warnings = 3;
+  repeated RequiredParamSpec parameters = 4;
+}
+
+message RequiredParamSpec {
+  string key = 1;
+  bool required = 2;
+  string default_value = 3;
+  string type = 4;
+  string suggested_value = 5;
+}

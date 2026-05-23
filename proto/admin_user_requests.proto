@@ -1,0 +1,14 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+import "admin_user_entity.proto";
+message ListUsersRequest { int32 page = 1; int32 page_size = 2; string search = 3; string status = 4; string role = 5; }
+message ListUsersResponse { repeated UserWithAccounts users = 1; int32 total = 2; }
+message GetUserRequest { string id = 1; }
+message CreateUserRequest { string username = 1; string email = 2; string password = 3; string role = 4; }
+message UpdateUserRequest { string id = 1; optional string username = 2; optional string email = 3; optional string role = 4; optional string status = 5; }
+message DeleteUserRequest { string id = 1; }
+message DisableUserRequest { string id = 1; }
+message EnableUserRequest { string id = 1; }
+message ResetUserPasswordRequest { string id = 1; }
+message ResetUserPasswordResponse { string new_password = 1; }

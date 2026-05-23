@@ -1,0 +1,9 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+import "admin_system_health.proto";
+message MetricsResponse { SystemMetrics system = 1; AppMetrics app = 2; repeated Alert active_alerts = 3; }
+message SystemMetrics { double cpu_usage_percent = 1; double memory_usage_percent = 2; int64 memory_used_bytes = 3; int64 memory_total_bytes = 4; double disk_usage_percent = 5; int64 disk_used_bytes = 6; int64 disk_total_bytes = 7; int32 goroutines_count = 8; }
+message AppMetrics { int32 total_users = 1; int32 active_users = 2; int32 total_accounts = 3; int32 connected_accounts = 4; int32 online_accounts = 5; int32 total_strategies = 6; int32 active_strategies = 7; double total_profit = 8; int32 total_trades_today = 9; int64 risk_validate_total = 10; int64 risk_validate_pass = 11; int64 risk_validate_reject = 12; int64 risk_validate_error = 13; int64 order_send_success = 14; int64 order_send_failed = 15; int64 order_close_success = 16; int64 order_close_failed = 17; repeated RiskMetricsWindow risk_windows = 18; }
+message RiskMetricsWindow { string window = 1; int32 hours = 2; int64 risk_validate_total = 3; int64 risk_validate_pass = 4; int64 risk_validate_reject = 5; int64 risk_validate_error = 6; int64 order_send_success = 7; int64 order_send_failed = 8; int64 order_close_success = 9; int64 order_close_failed = 10; repeated RiskCodeCount top_reject_risk_codes = 11; }
+message RiskCodeCount { string risk_code = 1; int64 count = 2; }

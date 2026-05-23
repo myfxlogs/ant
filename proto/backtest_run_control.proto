@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "backtest_run.proto";
+
+message CancelBacktestRunRequest {
+  string run_id = 1;
+}
+
+message CancelBacktestRunResponse {
+  BacktestRun run = 1;
+}
+
+message DeleteBacktestRunRequest {
+  string run_id = 1;
+}
+
+message DeleteBacktestRunResponse {
+  bool deleted = 1;
+}

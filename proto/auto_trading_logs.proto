@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/timestamp.proto";
+
+message GetTradingLogsRequest {
+  string user_id = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+  string log_type = 4;
+  string start_date = 5;
+  string end_date = 6;
+}
+message GetTradingLogsResponse {
+  repeated TradingLog logs = 1;
+  int32 total = 2;
+}
+message GetRecentTradingLogsRequest {
+  string user_id = 1;
+  int32 limit = 2;
+}
+message GetRecentTradingLogsResponse {
+  repeated TradingLog logs = 1;
+}
+message TradingLog {
+  string id = 1;
+  string user_id = 2;
+  string account_id = 3;
+  string strategy_id = 4;
+  string log_type = 5;
+  string action = 6;
+  string symbol = 7;
+  string details = 8;
+  double volume = 9;
+  double price = 10;
+  int64 ticket = 11;
+  double profit = 12;
+  google.protobuf.Timestamp created_at = 13;
+}

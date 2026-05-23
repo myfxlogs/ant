@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import public "ai_conversation.proto";
+import public "ai_chat_requests.proto";

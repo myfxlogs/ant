@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "debate_v2_messages.proto";
+
+service DebateV2StreamService {
+  rpc SubscribeDebateV2Session(SubscribeDebateV2SessionRequest) returns (stream DebateV2SessionEvent);
+}
+
+message SubscribeDebateV2SessionRequest {
+  string session_id = 1;
+  string locale = 2;
+}
+
+message DebateV2SessionEvent {
+  string type = 1;
+  DebateV2Session session = 2;
+}

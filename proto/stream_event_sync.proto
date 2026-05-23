@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+message SyncEvent { string sync_id = 1; SyncPhase phase = 2; string reason = 3; string last_event_id = 4; }
+enum SyncPhase { SYNC_PHASE_UNSPECIFIED = 0; SYNC_PHASE_STARTED = 1; SYNC_PHASE_COMPLETED = 2; }

@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/timestamp.proto";
+
+message GetExecutionLogsRequest { int32 page = 1; int32 page_size = 2; string account_id = 3; string schedule_id = 8; string symbol = 4; string status = 5; string start_date = 6; string end_date = 7; }
+message GetExecutionLogsResponse { repeated ExecutionLog logs = 1; int32 total = 2; }
+message ExecutionLog { string id = 1; string account_id = 2; string schedule_id = 18; string symbol = 3; string timeframe = 4; string status = 5; string signal_type = 6; double signal_price = 7; double signal_volume = 8; double signal_stop_loss = 9; double signal_take_profit = 10; string executed_order_id = 11; double executed_price = 12; double executed_volume = 13; double profit = 14; string error_message = 15; int64 execution_time_ms = 16; google.protobuf.Timestamp created_at = 17; }

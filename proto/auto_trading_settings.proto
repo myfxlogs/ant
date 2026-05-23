@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/timestamp.proto";
+
+message GetGlobalSettingsRequest {}
+message GlobalSettings {
+  string id = 1;
+  string user_id = 2;
+  bool auto_trade_enabled = 3;
+  double max_risk_percent = 4;
+  int32 max_positions = 5;
+  double max_lot_size = 6;
+  double max_daily_loss = 7;
+  double max_drawdown_percent = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
+message UpdateGlobalSettingsRequest {
+  string user_id = 1;
+  optional bool auto_trade_enabled = 2;
+  optional double max_risk_percent = 3;
+  optional int32 max_positions = 4;
+  optional double max_lot_size = 5;
+  optional double max_daily_loss = 6;
+  optional double max_drawdown_percent = 7;
+}
+message ToggleAutoTradeRequest {
+  string user_id = 1;
+  bool enabled = 2;
+}
+message ToggleAutoTradeResponse {
+  bool success = 1;
+  string message = 2;
+}
+message GetAutoTradingStatusRequest {}
+message AutoTradingStatus {
+  bool global_enabled = 1;
+  int32 active_strategies = 2;
+  int32 pending_signals = 3;
+  int32 today_executions = 4;
+  double today_profit = 5;
+}

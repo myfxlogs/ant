@@ -1,0 +1,115 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "debate_v2_messages.proto";
+import "google/protobuf/empty.proto";
+import "strategy_messages.proto";
+
+service DebateV2Service {
+  rpc StartDebateV2(StartDebateV2Request) returns (DebateV2Session);
+  rpc ChatDebateV2(ChatDebateV2Request) returns (DebateV2Session);
+  rpc AdvanceDebateV2(DebateV2SessionRequest) returns (DebateV2Session);
+  // Unary submit when the next step needs LLM (agent kickoff or code generation), or after StartDebateV2RejectCodeJob.
+  // Progress: GET /antrader/sse/debate-v2/advance-jobs/{job_id}/stream (SSE).
+  rpc StartDebateV2AdvanceJob(DebateV2SessionRequest) returns (StartDebateV2AdvanceJobResponse);
+  rpc GetDebateV2AdvanceJob(GetDebateV2AdvanceJobRequest) returns (GetDebateV2AdvanceJobResponse);
+  // Intent + agent:* chat: Prepare returns job_id (no LLM); browser opens SSE; Run starts streaming LLM.
+  // Progress: GET /antrader/sse/debate-v2/chat-jobs/{job_id}/stream (SSE).
+  rpc PrepareDebateV2ChatJob(ChatDebateV2Request) returns (StartDebateV2ChatJobResponse);
+  rpc RunDebateV2ChatJob(RunDebateV2ChatJobRequest) returns (google.protobuf.Empty);
+  rpc GetDebateV2ChatJob(GetDebateV2ChatJobRequest) returns (GetDebateV2ChatJobResponse);
+  rpc BackDebateV2(DebateV2SessionRequest) returns (DebateV2Session);
+  rpc SetDebateV2Params(SetDebateV2ParamsRequest) returns (DebateV2Session);
+  rpc RejectDebateV2Code(RejectDebateV2CodeRequest) returns (DebateV2Session);
+  // Regenerate code after reject: same Job hub + SSE as advance (GET .../advance-jobs/{job_id}/stream).
+  rpc StartDebateV2RejectCodeJob(RejectDebateV2CodeRequest) returns (StartDebateV2AdvanceJobResponse);
+  rpc ListDebateV2Sessions(ListDebateV2SessionsRequest) returns (ListDebateV2SessionsResponse);
+  rpc GetDebateV2Session(GetDebateV2SessionRequest) returns (DebateV2Session);
+  rpc DeleteDebateV2Session(DeleteDebateV2SessionRequest) returns (google.protobuf.Empty);
+}
+
+message StartDebateV2Request {
+  repeated string agents = 1;
+  string title = 2;
+  string locale = 3;
+}
+
+message ChatDebateV2Request {
+  string session_id = 1;
+  string message = 2;
+  string locale = 3;
+}
+
+message DebateV2SessionRequest {
+  string session_id = 1;
+  string locale = 2;
+}
+
+message StartDebateV2AdvanceJobResponse {
+  string job_id = 1;
+  string session_id = 2;
+}
+
+message GetDebateV2AdvanceJobRequest {
+  string job_id = 1;
+}
+
+// phase: queued | running | completed | failed
+message GetDebateV2AdvanceJobResponse {
+  string phase = 1;
+  string message = 2;
+  string session_id = 3;
+}
+
+message StartDebateV2ChatJobResponse {
+  string job_id = 1;
+  string session_id = 2;
+}
+
+message RunDebateV2ChatJobRequest {
+  string job_id = 1;
+}
+
+message GetDebateV2ChatJobRequest {
+  string job_id = 1;
+}
+
+// phase: queued | running | completed | failed
+message GetDebateV2ChatJobResponse {
+  string phase = 1;
+  string message = 2;
+  string session_id = 3;
+}
+
+message SetDebateV2ParamsRequest {
+  string session_id = 1;
+  repeated TemplateParameter params = 2;
+  string locale = 3;
+}
+
+message RejectDebateV2CodeRequest {
+  string session_id = 1;
+  string feedback = 2;
+  string locale = 3;
+}
+
+message ListDebateV2SessionsRequest {
+  string locale = 1;
+  int32 limit = 2;
+}
+
+message ListDebateV2SessionsResponse {
+  repeated DebateV2Session sessions = 1;
+}
+
+message GetDebateV2SessionRequest {
+  string session_id = 1;
+  string locale = 2;
+}
+
+message DeleteDebateV2SessionRequest {
+  string session_id = 1;
+}

@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+service BacktestTradesService {
+  rpc ListBacktestRunTrades(ListBacktestRunTradesRequest) returns (ListBacktestRunTradesResponse);
+}
+
+message ListBacktestRunTradesRequest {
+  string run_id = 1;
+}
+
+message ListBacktestRunTradesResponse {
+  repeated BacktestTrade trades = 1;
+  BacktestTradeSummary summary = 2;
+}
+
+message BacktestTrade {
+  int64 ticket = 1;
+  string side = 2;
+  double volume = 3;
+  int64 open_ts = 4;
+  double open_price = 5;
+  int64 close_ts = 6;
+  double close_price = 7;
+  double pnl = 8;
+  double commission = 9;
+  string reason = 10;
+}
+
+message BacktestTradeSummary {
+  int32 count = 1;
+  int32 wins = 2;
+  int32 losses = 3;
+  double net_pnl = 4;
+}

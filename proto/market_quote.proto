@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/timestamp.proto";
+
+message GetQuoteRequest { string account_id = 1; string symbol = 2; }
+message GetQuotesRequest { string account_id = 1; repeated string symbols = 2; }
+message GetQuotesResponse { repeated Quote quotes = 1; }
+message Quote {
+  string symbol = 1; double bid = 2; double ask = 3; google.protobuf.Timestamp time = 4;
+  double last = 5; uint64 volume = 6; int32 spread = 7;
+}

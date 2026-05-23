@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package antrader;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "anttrader/gen/proto;antrader";
+
+service AgentService {
+  rpc IssueAgentToken(IssueAgentTokenRequest) returns (IssueAgentTokenResponse);
+  rpc ListAgentTokens(ListAgentTokensRequest) returns (ListAgentTokensResponse);
+  rpc RevokeAgentToken(RevokeAgentTokenRequest) returns (AgentToken);
+  rpc ListAgentAudit(ListAgentAuditRequest) returns (ListAgentAuditResponse);
+  rpc GetAgentCapabilities(GetAgentCapabilitiesRequest) returns (AgentCapabilities);
+}
+
+message AgentToken {
+  string id = 1;
+  string user_id = 2;
+  string name = 3;
+  string token_prefix = 4;
+  repeated string scopes = 5;
+  repeated string account_allowlist = 6;
+  repeated string symbol_allowlist = 7;
+  bool paper_only = 8;
+  int32 rate_limit_per_min = 9;
+  google.protobuf.Timestamp expires_at = 10;
+  string status = 11;
+  google.protobuf.Timestamp last_used_at = 12;
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp updated_at = 14;
+}
+
+message AgentAuditEntry {
+  string id = 1;
+  string user_id = 2;
+  string agent_token_id = 3;
+  string agent_name = 4;
+  string rpc_service = 5;
+  string rpc_method = 6;
+  string scope = 7;
+  string status_code = 8;
+  string idempotency_key = 9;
+  string risk_decision = 10;
+  string request_summary = 11;
+  string response_summary = 12;
+  int64 duration_ms = 13;
+  google.protobuf.Timestamp created_at = 14;
+}
+
+message IssueAgentTokenRequest {
+  string name = 1;
+  repeated string scopes = 2;
+  repeated string account_allowlist = 3;
+  repeated string symbol_allowlist = 4;
+  bool paper_only = 5;
+  int32 rate_limit_per_min = 6;
+  google.protobuf.Timestamp expires_at = 7;
+}
+
+message IssueAgentTokenResponse {
+  AgentToken token = 1;
+  string plaintext_token = 2;
+}
+
+message ListAgentTokensRequest {}
+
+message ListAgentTokensResponse {
+  repeated AgentToken tokens = 1;
+}
+
+message RevokeAgentTokenRequest {
+  string token_id = 1;
+}
+
+message ListAgentAuditRequest {
+  string token_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message ListAgentAuditResponse {
+  repeated AgentAuditEntry entries = 1;
+}
+
+message GetAgentCapabilitiesRequest {}
+
+message AgentCapabilities {
+  repeated string scopes = 1;
+  bool live_trading_enabled = 2;
+  repeated string available_tools = 3;
+}

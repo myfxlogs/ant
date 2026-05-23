@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+message UpdateSystemAIConfigRequest {
+  string provider_id = 1;
+  string name = 2;
+  string base_url = 3;
+  string organization = 4;
+  repeated string models = 5;
+  string default_model = 6;
+  double temperature = 7;
+  int32 timeout_seconds = 8;
+  int32 max_tokens = 9;
+  repeated string purposes = 10;
+  repeated string primary_for = 11;
+  bool enabled = 12;
+}
+message UpdateSystemAIConfigResponse {
+  string provider_id = 1;
+}
+
+message UpdateSystemAISecretRequest {
+  string provider_id = 1;
+  string secret = 2;
+}
+message UpdateSystemAISecretResponse {
+  string provider_id = 1;
+  bool secret_updated = 2;
+}

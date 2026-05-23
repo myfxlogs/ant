@@ -1,0 +1,5 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+message GetRiskMetricsRequest { string account_id = 1; }
+message RiskMetrics { double value_at_risk = 1; double expected_shortfall = 2; double volatility = 3; double beta = 4; double alpha = 5; double sortino_ratio = 6; double calmar_ratio = 7; double max_drawdown = 8; double max_drawdown_percent = 9; double sharpe_ratio = 10; double average_daily_return = 11; double return_std_dev = 12; }

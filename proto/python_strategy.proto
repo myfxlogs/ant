@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/empty.proto";
+import "common.proto";
+import "strategy_messages.proto";
+import "backtest_run.proto";
+import "backtest_run_start.proto";
+import "backtest_run_query.proto";
+import "backtest_run_control.proto";
+
+service PythonStrategyService {
+  rpc Execute(ExecuteStrategyRequest) returns (ExecuteStrategyResponse);
+  rpc Validate(ValidateStrategyRequest) returns (ValidateStrategyResponse);
+  rpc Backtest(BacktestStrategyRequest) returns (BacktestStrategyResponse);
+  rpc StartBacktestRun(StartBacktestRunRequest) returns (StartBacktestRunResponse);
+  rpc GetBacktestRun(GetBacktestRunRequest) returns (GetBacktestRunResponse);
+  rpc ListBacktestRuns(ListBacktestRunsRequest) returns (ListBacktestRunsResponse);
+  rpc WatchBacktestRun(WatchBacktestRunRequest) returns (stream BacktestRunUpdate);
+  rpc CancelBacktestRun(CancelBacktestRunRequest) returns (CancelBacktestRunResponse);
+  rpc DeleteBacktestRun(DeleteBacktestRunRequest) returns (DeleteBacktestRunResponse);
+  rpc GetTemplates(google.protobuf.Empty) returns (GetPythonTemplatesResponse);
+}
+
+message ExecuteStrategyRequest {
+  string code = 1;
+  string account_id = 2;
+  string symbol = 3;
+  string timeframe = 4;
+}
+
+message ExecuteStrategyResponse {
+  bool success = 1;
+  StrategySignal signal = 2;
+  repeated string logs = 3;
+  string error = 4;
+}
+
+message ValidateStrategyRequest {
+  string code = 1;
+}
+
+message ValidateStrategyResponse {
+  bool valid = 1;
+  repeated string errors = 2;
+  repeated string warnings = 3;
+}
+
+message BacktestStrategyRequest {
+  string code = 1;
+  string account_id = 2;
+  string symbol = 3;
+  string timeframe = 4;
+  double initial_capital = 5;
+  optional string dataset_id = 6;
+}
+
+message BacktestStrategyResponse {
+  bool success = 1;
+  BacktestMetrics metrics = 2;
+  repeated double equity_curve = 3;
+  string error = 4;
+  optional string dataset_id = 5;
+}
+
+message GetPythonTemplatesResponse {
+  repeated PythonTemplate templates = 1;
+}
+
+message PythonTemplate {
+  string name = 1;
+  string description = 2;
+  string code = 3;
+}

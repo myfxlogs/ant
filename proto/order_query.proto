@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "order_entity.proto";
+
+message GetPositionsRequest { string account_id = 1; }
+message GetPositionsResponse { repeated Order positions = 1; }
+message GetPendingOrdersRequest { string account_id = 1; }
+message GetPendingOrdersResponse { repeated Order orders = 1; }
+message GetOrderHistoryRequest { string account_id = 1; string from = 2; string to = 3; int32 page = 4; int32 page_size = 5; }
+message GetOrderHistoryResponse { repeated Order orders = 1; int32 total = 2; int32 page = 3; int32 page_size = 4; }
+message SyncOrderHistoryRequest { string account_id = 1; }
+message SyncOrderHistoryResponse { int32 synced_records = 1; }

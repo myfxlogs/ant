@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/timestamp.proto";
+
+message GetOrderLogHistoryRequest { int32 page = 1; int32 page_size = 2; string account_id = 3; string symbol = 4; string start_date = 5; string end_date = 6; string schedule_id = 7; }
+message GetOrderLogHistoryResponse { repeated OrderHistoryRecord orders = 1; int32 total = 2; }
+message OrderHistoryRecord { string id = 1; string account_id = 2; string schedule_id = 12; int64 ticket = 3; string symbol = 4; string order_type = 5; double lots = 6; double open_price = 7; double close_price = 8; double profit = 9; google.protobuf.Timestamp open_time = 10; google.protobuf.Timestamp close_time = 11; }

@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/timestamp.proto";
+
+enum BacktestRunMode {
+  BACKTEST_RUN_MODE_UNSPECIFIED = 0;
+  BACKTEST_RUN_MODE_KLINE_RANGE = 1;
+  BACKTEST_RUN_MODE_DATASET = 2;
+}
+
+enum BacktestRunStatus {
+  BACKTEST_RUN_STATUS_UNSPECIFIED = 0;
+  BACKTEST_RUN_STATUS_PENDING = 1;
+  BACKTEST_RUN_STATUS_RUNNING = 2;
+  BACKTEST_RUN_STATUS_SUCCEEDED = 3;
+  BACKTEST_RUN_STATUS_FAILED = 4;
+  BACKTEST_RUN_STATUS_CANCEL_REQUESTED = 5;
+  BACKTEST_RUN_STATUS_CANCELED = 6;
+}
+
+message BacktestRun {
+  string id = 1;
+  string account_id = 2;
+  string symbol = 3;
+  string timeframe = 4;
+  optional string dataset_id = 5;
+  BacktestRunMode mode = 6;
+  optional google.protobuf.Timestamp from = 7;
+  optional google.protobuf.Timestamp to = 8;
+  BacktestRunStatus status = 9;
+  string error = 10;
+  optional string python_service_version = 11;
+  google.protobuf.Timestamp created_at = 12;
+  optional google.protobuf.Timestamp started_at = 13;
+  optional google.protobuf.Timestamp finished_at = 14;
+  optional string template_id = 15;
+  optional string template_draft_id = 16;
+  // Phase B2: secondary symbols available to the strategy as features.
+  // Trading execution still targets ``symbol``.
+  repeated string extra_symbols = 17;
+  bool is_terminal = 18;
+  bool is_succeeded = 19;
+}

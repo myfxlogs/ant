@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/timestamp.proto";
+import "common.proto";
+
+message StrategySchedule {
+  string id = 1;
+  string user_id = 2;
+  string template_id = 3;
+  string account_id = 4;
+  string name = 5;
+  string symbol = 6;
+  string timeframe = 7;
+  map<string, string> parameters = 8;
+  string schedule_type = 9;
+  ScheduleConfig schedule_config = 10;
+  BacktestMetrics backtest_metrics = 11;
+  int32 risk_score = 12;
+  string risk_level = 13;
+  repeated string risk_reasons = 14;
+  repeated string risk_warnings = 15;
+  bool is_active = 16;
+  google.protobuf.Timestamp last_run_at = 17;
+  google.protobuf.Timestamp next_run_at = 18;
+  int32 run_count = 19;
+  string last_error = 20;
+  google.protobuf.Timestamp created_at = 21;
+  google.protobuf.Timestamp updated_at = 22;
+  int32 enable_count = 23;
+}
+
+message ScheduleConfig {
+  string cron_expression = 1;
+  int64 interval_ms = 2;
+  string event_trigger = 3;
+  string trigger_mode = 4;
+  int64 stable_override_interval_ms = 5;
+  int64 hf_cooldown_ms = 6;
+}

@@ -1,0 +1,58 @@
+# Dependencies & build
+node_modules/
+**/node_modules/
+dist/
+build/
+coverage/
+*.exe
+*.test
+
+# Go build output (local)
+backend/bin/
+tools/proto-gen/bin/
+
+# Runtime
+*.pid
+*.out
+__pycache__/
+*.py[cod]
+.pytest_cache/
+nginx/logs/
+.mypy_cache/
+
+# Secrets & local env
+.env
+.env.*
+!.env.example
+docker-compose.override.yml
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+.windsurf/
+.windsurfrules
+.cursor/
+.trae/
+
+# Local backups (large, not source of truth)
+bak260421/
+_nonproduction_archive/
+backups/
+
+# Local experiments / upstream mirrors — not part of AntTrader product repo
+Emulator/
+mtproto/
+test/
+frontend/e2e/
+
+# Local test reports / traces
+frontend/playwright-report/
+frontend/playwright-traces/
+frontend/test-results/
+
+# Local credentials
+id_ed25519
+# 运维 SSH 私钥目录（如 ./ssh/id_ed25519），切勿提交
+ssh/

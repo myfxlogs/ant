@@ -1,0 +1,39 @@
+/* Centered message styles */
+.centered-message {
+  text-align: center !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  margin: 0 auto !important;
+  width: fit-content !important;
+  max-width: 80vw !important;
+}
+
+/* Override antd message positioning */
+.ant-message {
+  text-align: center !important;
+}
+
+.ant-message-notice-content {
+  text-align: center !important;
+}
+
+/* Centered modal styles */
+.centered-modal .ant-modal-content {
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.centered-modal .ant-modal-header {
+  margin-bottom: 16px;
+}
+
+.centered-modal .ant-modal-body {
+  text-align: center;
+  padding: 16px 24px;
+}
+
+.centered-modal .ant-modal-title {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+}

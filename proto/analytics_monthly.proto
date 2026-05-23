@@ -1,0 +1,5 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+import public "analytics_monthly_entity.proto";
+import public "analytics_monthly_query.proto";

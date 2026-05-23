@@ -1,0 +1,9 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+import "google/protobuf/timestamp.proto";
+message ListLogsRequest { int32 page = 1; int32 page_size = 2; string user_id = 3; string action = 4; string start_date = 5; string end_date = 6; string module = 7; string action_type = 8; }
+message ListLogsResponse { repeated AdminLog logs = 1; int32 total = 2; }
+message AdminLog { string id = 1; string user_id = 2; string module = 3; string action_type = 4; string target_type = 5; string target_id = 6; bool success = 7; string error_message = 8; string action = 9; string details = 10; string ip = 11; google.protobuf.Timestamp created_at = 12; }
+message ExportLogsRequest { string user_id = 1; string action = 2; string start_date = 3; string end_date = 4; }
+message ExportLogsResponse { bytes data = 1; string filename = 2; }

@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "order_entity.proto";
+
+message OrderSendRequest { string account_id = 1; optional string idempotency_key = 10; string symbol = 2; string type = 3; double volume = 4; double price = 5; double stop_loss = 6; double take_profit = 7; string comment = 8; int64 magic_number = 9; }
+message OrderSendResponse { Order order = 1; string error = 2; int32 retcode = 3; string message = 4; string request_id = 5; RiskError risk_error = 6; }
+message OrderModifyRequest { string account_id = 1; optional string idempotency_key = 10; int64 ticket = 2; double stop_loss = 3; double take_profit = 4; double price = 5; }
+message OrderModifyResponse { Order order = 1; string error = 2; int32 retcode = 3; string message = 4; string request_id = 5; RiskError risk_error = 6; }
+message OrderCloseRequest { string account_id = 1; optional string idempotency_key = 10; int64 ticket = 2; double volume = 3; double price = 4; string close_reason = 5; }
+message OrderCloseResponse { Order order = 1; string error = 2; int32 retcode = 3; string message = 4; string request_id = 5; RiskError risk_error = 6; }

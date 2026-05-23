@@ -1,0 +1,4 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+message DashboardStats { int32 total_users = 1; int32 active_users = 2; int32 total_accounts = 3; int32 active_accounts = 4; int32 online_accounts = 5; int32 connected_accounts = 6; int32 total_strategies = 7; int32 active_strategies = 8; int32 total_trades = 9; int32 today_trades = 10; double today_profit = 11; }

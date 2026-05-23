@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+service AIPrimaryService {
+  rpc GetAIPrimary(GetAIPrimaryRequest) returns (AIPrimaryResponse);
+  rpc SetAIPrimary(SetAIPrimaryRequest) returns (AIPrimaryResponse);
+}
+
+message GetAIPrimaryRequest {}
+
+message SetAIPrimaryRequest {
+  string provider_id = 1;
+  string model = 2;
+}
+
+message AIPrimaryResponse {
+  string provider_id = 1;
+  string model = 2;
+}

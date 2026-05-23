@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/empty.proto";
+
+service IndicatorCatalogService {
+  rpc GetIndicatorCatalog(google.protobuf.Empty) returns (IndicatorCatalogResponse);
+}
+
+message IndicatorCatalogResponse {
+  repeated IndicatorCatalogItem indicators = 1;
+  repeated IndicatorCatalogParam risk_params = 2;
+}
+
+message IndicatorCatalogItem {
+  string name = 1;
+  string call_signature = 2;
+  string description = 3;
+  repeated IndicatorCatalogParam param_keys = 4;
+}
+
+message IndicatorCatalogParam {
+  string key = 1;
+  string label = 2;
+  string type = 3;
+  double default = 4;
+  double min = 5;
+  double max = 6;
+  string description = 7;
+}

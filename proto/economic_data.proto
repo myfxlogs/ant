@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/empty.proto";
+
+service EconomicDataService {
+  rpc ListEconomicCalendarEvents(ListEconomicCalendarEventsRequest) returns (ListEconomicCalendarEventsResponse);
+  rpc ListEconomicIndicators(google.protobuf.Empty) returns (ListEconomicIndicatorsResponse);
+}
+
+message ListEconomicCalendarEventsRequest {
+  string from = 1;
+  string to = 2;
+  string country = 3;
+  string symbol = 4;
+  string importance = 5;
+  string lang = 6;
+}
+
+message ListEconomicCalendarEventsResponse {
+  repeated EconomicCalendarEvent events = 1;
+}
+
+message EconomicCalendarEvent {
+  string date = 1;
+  string time = 2;
+  string country = 3;
+  string event = 4;
+  string localized_event = 5;
+  string impact = 6;
+  string actual = 7;
+  string previous = 8;
+  string estimate = 9;
+  string unit = 10;
+  string currency = 11;
+  int64 timestamp = 12;
+}
+
+message ListEconomicIndicatorsResponse {
+  repeated EconomicIndicator indicators = 1;
+}
+
+message EconomicIndicator {
+  string code = 1;
+  string series_id = 2;
+  string name = 3;
+  string units = 4;
+  string frequency = 5;
+  string latest_date = 6;
+  double latest_value = 7;
+  repeated EconomicIndicatorPoint history = 8;
+}
+
+message EconomicIndicatorPoint {
+  string date = 1;
+  double value = 2;
+}

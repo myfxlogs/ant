@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "common.proto";
+import "backtest_run.proto";
+
+message GetBacktestRunRequest {
+  string run_id = 1;
+}
+
+message GetBacktestRunResponse {
+  BacktestRun run = 1;
+  BacktestMetrics metrics = 2;
+  repeated double equity_curve = 3;
+  optional string dataset_id = 4;
+}
+
+message WatchBacktestRunRequest {
+  string run_id = 1;
+}
+
+message BacktestRunUpdate {
+  BacktestRun run = 1;
+  BacktestMetrics metrics = 2;
+  repeated double equity_curve = 3;
+}
+
+message ListBacktestRunsRequest {
+  optional string account_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message ListBacktestRunsResponse {
+  repeated BacktestRun runs = 1;
+}

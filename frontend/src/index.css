@@ -1,0 +1,337 @@
+@import "tailwindcss";
+
+:root {
+  --color-primary: #D4AF37;
+  --color-primary-light: #E6C65C;
+  --color-primary-dark: #B8960B;
+  --color-accent: #141D22;
+  --color-bg-main: #FFFFFF;
+  --color-bg-card: #FFFFFF;
+  --color-bg-secondary: #F5F7F9;
+  --color-bg-tertiary: #E8ECF0;
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-text: #141D22;
+  --color-text-secondary: #5A6B75;
+  --color-text-muted: #8A9AA5;
+  --color-success: #00A651;
+  --color-danger: #E53935;
+  --color-info: #2196F3;
+  
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: #FFFFFF;
+  color: var(--color-text);
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.glow-primary {
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #D4AF37 0%, #E6C65C 50%, #D4AF37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #D4AF37 0%, #B8960B 100%);
+  color: #FFFFFF;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+  border: none;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #E6C65C 0%, #D4AF37 100%);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+.input-light {
+  background: #F5F7F9;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #141D22;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s;
+}
+
+.input-light::placeholder {
+  color: #8A9AA5;
+}
+
+.input-light:focus {
+  outline: none;
+  border-color: #D4AF37;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.1);
+}
+
+.stat-card {
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.stat-card:hover {
+  border-color: rgba(212, 175, 55, 0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.price-up {
+  color: #00A651;
+}
+
+.price-down {
+  color: #E53935;
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.ant-card {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+.ant-card-head {
+  color: #141D22 !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+.ant-card-head-title {
+  color: #141D22 !important;
+}
+
+.ant-table {
+  background: transparent !important;
+}
+
+.ant-table-thead > tr > th {
+  background: #F5F7F9 !important;
+  color: #5A6B75 !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+.ant-table-tbody > tr > td {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: #F5F7F9 !important;
+}
+
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-select-selector,
+.ant-picker {
+  background: #F5F7F9 !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #141D22 !important;
+  border-radius: 8px !important;
+}
+
+.ant-input::placeholder,
+.ant-input-affix-wrapper input::placeholder {
+  color: #8A9AA5 !important;
+}
+
+.ant-input:focus,
+.ant-input-affix-wrapper-focused,
+.ant-select-focused .ant-select-selector,
+.ant-picker-focused {
+  border-color: #D4AF37 !important;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.1) !important;
+}
+
+.ant-btn-primary {
+  background: linear-gradient(135deg, #D4AF37 0%, #B8960B 100%) !important;
+  border: none !important;
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+}
+
+.ant-btn-primary:hover {
+  background: linear-gradient(135deg, #E6C65C 0%, #D4AF37 100%) !important;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3) !important;
+}
+
+.ai-assistant-scope .ant-tabs-ink-bar,
+.ai-assistant-scope .ant-steps .ant-steps-item-process .ant-steps-item-icon {
+  background: var(--color-primary) !important;
+}
+
+.ai-assistant-scope .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn,
+.ai-assistant-scope .ant-tabs-tab:hover,
+.ai-assistant-scope .ant-steps .ant-steps-item-process .ant-steps-item-title,
+.ai-assistant-scope .ant-steps .ant-steps-item-finish .ant-steps-item-title {
+  color: var(--color-primary-dark) !important;
+}
+
+.ai-assistant-scope .ant-steps .ant-steps-item-process .ant-steps-item-icon,
+.ai-assistant-scope .ant-steps .ant-steps-item-finish .ant-steps-item-icon {
+  border-color: var(--color-primary) !important;
+}
+
+.ai-assistant-scope .ant-steps .ant-steps-item-finish .ant-steps-item-icon > .ant-steps-icon {
+  color: var(--color-primary-dark) !important;
+}
+
+.ai-assistant-scope .ant-steps .ant-steps-item-finish .ant-steps-item-tail::after,
+.ai-assistant-scope .ant-steps .ant-steps-item-process .ant-steps-item-tail::after {
+  background-color: rgba(212, 175, 55, 0.45) !important;
+}
+
+.ai-assistant-scope .ai-gold-alert.ant-alert-info {
+  background: rgba(212, 175, 55, 0.12) !important;
+  border-color: rgba(212, 175, 55, 0.45) !important;
+}
+
+.ai-assistant-scope .ai-gold-alert.ant-alert-info .ant-alert-icon {
+  color: var(--color-primary-dark) !important;
+}
+
+.ant-statistic-title {
+  color: #8A9AA5 !important;
+}
+
+.ant-statistic-content {
+  color: #141D22 !important;
+}
+
+.ant-tag {
+  border-radius: 4px !important;
+}
+
+.ant-spin-dot-item {
+  background-color: #D4AF37 !important;
+}
+
+.ant-message-notice-content {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #141D22 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.ant-dropdown-menu {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.ant-dropdown-menu-item {
+  color: #141D22 !important;
+}
+
+.ant-dropdown-menu-item:hover {
+  background: #F5F7F9 !important;
+}
+
+.ant-menu {
+  background: transparent !important;
+}
+
+.ant-menu-item {
+  color: #5A6B75 !important;
+  margin: 4px 8px !important;
+  border-radius: 8px !important;
+}
+
+.ant-menu-item-selected {
+  color: #D4AF37 !important;
+  background: rgba(212, 175, 55, 0.1) !important;
+}
+
+.ant-menu-item:hover {
+  color: #D4AF37 !important;
+  background: rgba(212, 175, 55, 0.05) !important;
+}
+
+.ant-avatar {
+  background: linear-gradient(135deg, #D4AF37 0%, #B8960B 100%) !important;
+}
+
+.ant-layout-sider {
+  background: #FFFFFF !important;
+  border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+.ant-layout-header {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+  backdrop-filter: blur(12px);
+}
+
+/* === Responsive overrides === */
+/* 在窄屏下让 antd Modal/Drawer 不要溢出视口；保留桌面默认 width 设计。 */
+@media (max-width: 768px) {
+  .ant-modal {
+    max-width: calc(100vw - 16px) !important;
+    margin: 8px auto !important;
+    top: 8px !important;
+  }
+  .ant-modal-body {
+    max-height: calc(100vh - 160px);
+    overflow: auto;
+  }
+  .ant-drawer-content-wrapper {
+    max-width: 95vw !important;
+  }
+  /* 任何在 desktop 下 minWidth/width 写死的 Select / Input / column 也不要冲破容器。 */
+  .ant-select, .ant-input, .ant-input-number, .ant-picker {
+    max-width: 100% !important;
+  }
+}
+
+/* 让被 Tailwind 容器包裹的内容默认不水平溢出（避免长字符串撑爆移动端）。 */
+body, #root {
+  overflow-x: hidden;
+}

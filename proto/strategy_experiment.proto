@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+package antrader;
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "anttrader/gen/proto;antrader";
+
+service StrategyExperimentService {
+  rpc SubmitStrategyExperiment(SubmitStrategyExperimentRequest) returns (SubmitStrategyExperimentResponse);
+  rpc GetStrategyExperiment(GetStrategyExperimentRequest) returns (StrategyExperiment);
+  rpc ListStrategyExperiments(ListStrategyExperimentsRequest) returns (ListStrategyExperimentsResponse);
+  rpc CancelStrategyExperiment(CancelStrategyExperimentRequest) returns (StrategyExperiment);
+  rpc ListExperimentCandidates(ListExperimentCandidatesRequest) returns (ListExperimentCandidatesResponse);
+  rpc GetExperimentCandidate(GetExperimentCandidateRequest) returns (StrategyExperimentCandidate);
+  rpc PromoteCandidateToDraft(PromoteCandidateToDraftRequest) returns (PromoteCandidateToDraftResponse);
+}
+
+message StrategyExperiment {
+  string id = 1;
+  string user_id = 2;
+  string base_template_id = 3;
+  string status = 4;
+  google.protobuf.Struct parameter_space = 5;
+  string search_method = 6;
+  int32 max_candidates = 7;
+  string objective = 8;
+  string market_regime_ref = 9;
+  string best_candidate_id = 10;
+  string job_id = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp finished_at = 13;
+}
+
+message StrategyExperimentCandidate {
+  string id = 1;
+  string experiment_id = 2;
+  google.protobuf.Struct parameters = 3;
+  string draft_code_ref = 4;
+  string backtest_run_id = 5;
+  double score = 6;
+  string grade = 7;
+  google.protobuf.Struct score_components = 8;
+  int32 rank = 9;
+  string summary = 10;
+  string recommendation = 11;
+  google.protobuf.Timestamp created_at = 12;
+}
+
+message SubmitStrategyExperimentRequest {
+  string base_template_id = 1;
+  google.protobuf.Struct parameter_space = 2;
+  string search_method = 3;
+  int32 max_candidates = 4;
+  string objective = 5;
+  string idempotency_key = 6;
+}
+
+message SubmitStrategyExperimentResponse {
+  StrategyExperiment experiment = 1;
+  string job_id = 2;
+}
+
+message GetStrategyExperimentRequest {
+  string experiment_id = 1;
+}
+
+message ListStrategyExperimentsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message ListStrategyExperimentsResponse {
+  repeated StrategyExperiment experiments = 1;
+}
+
+message CancelStrategyExperimentRequest {
+  string experiment_id = 1;
+}
+
+message ListExperimentCandidatesRequest {
+  string experiment_id = 1;
+}
+
+message ListExperimentCandidatesResponse {
+  repeated StrategyExperimentCandidate candidates = 1;
+}
+
+message GetExperimentCandidateRequest {
+  string candidate_id = 1;
+}
+
+message PromoteCandidateToDraftRequest {
+  string candidate_id = 1;
+  string name = 2;
+}
+
+message PromoteCandidateToDraftResponse {
+  string template_id = 1;
+}

@@ -1,0 +1,111 @@
+name: CI
+
+# 触发：push 到 main / PR 进入 main。fork PR 也跑，但 secrets 不会注入。
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# 同分支并发只跑最新一次，节省 runner 配额。
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  line-limits:
+    name: Line limits
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check source and generated line limits
+        run: python3 scripts/check-file-lines.py
+
+  backend:
+    name: Backend (Go test)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.6'
+          cache: true
+          cache-dependency-path: backend/go.sum
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: go test
+        run: go test ./... -count=1
+
+  proto-drift:
+    name: Proto codegen drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.6'
+          cache: true
+          cache-dependency-path: backend/go.sum
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install buf + protoc-gen-es (npm)
+        run: |
+          (cd tools/proto-gen && npm ci)
+          (cd frontend && npm ci)
+
+      - name: Regenerate protobuf (Go + TS)
+        run: make proto-tools && make proto
+
+      - name: Assert no uncommitted changes after codegen
+        run: |
+          if [ -n "$(git status --porcelain=v1)" ]; then
+            echo "::error::Working tree dirty after buf generate — commit updated gen or align toolchain."
+            git status
+            git diff
+            exit 1
+          fi
+
+  frontend:
+    name: Frontend (lint + build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build

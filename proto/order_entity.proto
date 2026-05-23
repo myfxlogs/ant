@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/timestamp.proto";
+
+message RiskError { string code = 1; string reason = 2; string user_message = 3; bool retryable = 4; string context_json = 5; }
+message Order {
+  int64 ticket = 1; string symbol = 2; string type = 3; double volume = 4;
+  double open_price = 5; double close_price = 6; double stop_loss = 7; double take_profit = 8;
+  double profit = 9; double swap = 10; double commission = 11;
+  google.protobuf.Timestamp open_time = 12; google.protobuf.Timestamp close_time = 13;
+  string comment = 14; int64 magic_number = 15; string account_id = 16;
+}

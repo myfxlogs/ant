@@ -1,0 +1,16 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+import "google/protobuf/empty.proto";
+import "admin_user.proto";
+service AdminUserService {
+  rpc GetDashboard(google.protobuf.Empty) returns (DashboardStats);
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+  rpc GetUser(GetUserRequest) returns (UserWithAccounts);
+  rpc CreateUser(CreateUserRequest) returns (UserWithAccounts);
+  rpc UpdateUser(UpdateUserRequest) returns (UserWithAccounts);
+  rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty);
+  rpc DisableUser(DisableUserRequest) returns (google.protobuf.Empty);
+  rpc EnableUser(EnableUserRequest) returns (google.protobuf.Empty);
+  rpc ResetUserPassword(ResetUserPasswordRequest) returns (ResetUserPasswordResponse);
+}

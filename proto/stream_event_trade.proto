@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+message OrderUpdateEvent { string account_id = 1; int64 ticket = 2; string symbol = 3; string type = 4; double volume = 5; double open_price = 6; double profit = 7; string action = 8; double stop_loss = 9; double take_profit = 10; double close_price = 11; int64 open_time = 12; int64 close_time = 13; double swap = 14; double commission = 15; string comment = 16; }
+message DealUpdateEvent { string account_id = 1; int64 deal_ticket = 2; int64 position_ticket = 3; string symbol = 4; string deal_type = 5; string direction = 6; double volume = 7; double price = 8; double profit = 9; double swap = 10; double commission = 11; int64 time = 12; string comment = 13; int64 expert_id = 14; }
+message PositionUpdateEvent { string account_id = 1; int64 position_ticket = 2; string symbol = 3; string action = 4; double volume = 5; double open_price = 6; double close_price = 7; double profit = 8; double stop_loss = 9; double take_profit = 10; int64 open_time = 11; int64 close_time = 12; string comment = 13; }
+message LedgerEntryEvent { string account_id = 1; string entry_type = 2; double amount = 3; string currency = 4; int64 time = 5; string comment = 6; int64 related_ticket = 7; }

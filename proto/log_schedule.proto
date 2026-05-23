@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/timestamp.proto";
+
+message GetScheduleRunLogsRequest { int32 page = 1; int32 page_size = 2; string schedule_id = 3; }
+message GetScheduleRunLogsResponse { repeated ScheduleRunLog logs = 1; int32 total = 2; }
+message ScheduleRunLog { string id = 1; string kind = 2; string action = 3; string status = 4; int64 duration_ms = 5; string error_message = 6; string signal_type = 7; double signal_volume = 8; google.protobuf.Timestamp created_at = 9; }

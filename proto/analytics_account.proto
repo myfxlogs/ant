@@ -1,0 +1,12 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+import "analytics_time.proto";
+import "analytics_symbol.proto";
+import "analytics_report.proto";
+import "analytics_monthly_entity.proto";
+import "analytics_risk.proto";
+message GetAccountAnalyticsRequest { string account_id = 1; }
+message EquityPoint { string date = 1; double equity = 2; double balance = 3; double profit = 4; }
+message TradeStats { int32 total_trades = 1; int32 winning_trades = 2; int32 losing_trades = 3; double win_rate = 4; double total_profit = 5; double total_loss = 6; double net_profit = 7; double profit_factor = 8; double average_profit = 9; double average_loss = 10; double average_trade = 11; double largest_win = 12; double largest_loss = 13; int32 max_consecutive_wins = 14; int32 max_consecutive_losses = 15; string average_holding_time = 16; double total_deposit = 17; double total_withdrawal = 18; double net_deposit = 19; int32 buy_trades = 20; int32 sell_trades = 21; double average_volume = 22; }
+message AccountAnalytics { double balance = 1; double equity = 2; double profit = 3; double margin = 4; double free_margin = 5; double margin_level = 6; int32 total_trades = 7; int32 winning_trades = 8; int32 losing_trades = 9; double win_rate = 10; double profit_factor = 11; double max_drawdown = 12; double sharpe_ratio = 13; repeated EquityPoint equity_curve = 14; repeated SymbolStats symbol_stats = 15; repeated DailyPnL daily_pnl = 16; repeated HourlyStats hourly_stats = 17; TradeStats trade_stats = 18; repeated MonthlyPnL monthly_pnl = 19; repeated TradeRecord recent_trades = 20; RiskMetrics risk_metrics = 21; repeated WeekdayPnL weekday_pnl = 22; }

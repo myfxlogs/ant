@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import public "order_entity.proto";
+import public "order_trade.proto";
+import public "order_query.proto";
+
+service TradingService {
+  rpc OrderSend(OrderSendRequest) returns (OrderSendResponse);
+  rpc OrderModify(OrderModifyRequest) returns (OrderModifyResponse);
+  rpc OrderClose(OrderCloseRequest) returns (OrderCloseResponse);
+  rpc GetPositions(GetPositionsRequest) returns (GetPositionsResponse);
+  rpc GetPendingOrders(GetPendingOrdersRequest) returns (GetPendingOrdersResponse);
+  rpc GetOrderHistory(GetOrderHistoryRequest) returns (GetOrderHistoryResponse);
+  rpc SyncOrderHistory(SyncOrderHistoryRequest) returns (SyncOrderHistoryResponse);
+}

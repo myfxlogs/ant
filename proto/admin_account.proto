@@ -1,0 +1,10 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+import "google/protobuf/timestamp.proto";
+message ListAccountsAdminRequest { int32 page = 1; int32 page_size = 2; string user_id = 3; string search = 4; string status = 5; string mt_type = 6; }
+message ListAccountsAdminResponse { repeated AccountWithUser accounts = 1; int32 total = 2; }
+message GetAccountAdminRequest { string id = 1; }
+message AccountWithUser { string id = 1; string user_id = 2; string login = 3; string mt_type = 4; string broker_company = 5; string broker_server = 6; string status = 7; string account_status = 8; string user_email = 9; string user_nickname = 10; double balance = 11; double credit = 12; double equity = 13; double margin = 14; double free_margin = 15; double margin_level = 16; int32 leverage = 17; string currency = 18; google.protobuf.Timestamp last_connected_at = 19; google.protobuf.Timestamp created_at = 20; }
+message FreezeAccountRequest { string id = 1; }
+message UnfreezeAccountRequest { string id = 1; }

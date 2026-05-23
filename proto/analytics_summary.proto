@@ -1,0 +1,5 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+message GetSummaryRequest { string account_id = 1; }
+message Summary { double total_balance = 1; double total_equity = 2; double total_profit = 3; int32 total_trades = 4; double win_rate = 5; double profit_factor = 6; double sharpe_ratio = 7; double max_drawdown = 8; }

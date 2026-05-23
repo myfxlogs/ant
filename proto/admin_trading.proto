@@ -1,0 +1,5 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+import public "admin_trading_query.proto";
+import public "admin_trading_summary.proto";

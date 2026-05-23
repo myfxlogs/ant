@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "strategy_schedule_entity.proto";
+
+message CreateScheduleRequest {
+  string template_id = 1;
+  string account_id = 2;
+  string name = 3;
+  string symbol = 4;
+  string timeframe = 5;
+  map<string, string> parameters = 6;
+  string schedule_type = 7;
+  ScheduleConfig schedule_config = 8;
+}
+
+message UpdateScheduleRequest {
+  string id = 1;
+  optional string name = 2;
+  optional string symbol = 3;
+  optional string timeframe = 4;
+  map<string, string> parameters = 5;
+  optional string schedule_type = 6;
+  ScheduleConfig schedule_config = 7;
+}
+
+message DeleteScheduleRequest {
+  string id = 1;
+}
+
+message ToggleScheduleRequest {
+  string id = 1;
+  bool active = 2;
+}

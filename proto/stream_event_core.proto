@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/timestamp.proto";
+import "stream_event_account.proto";
+import "stream_event_trade.proto";
+import "stream_event_sync.proto";
+import "stream_event_command.proto";
+
+message StreamEvent {
+  string type = 1;
+  string account_id = 2;
+  google.protobuf.Timestamp timestamp = 3;
+  string event_id = 10;
+  oneof payload {
+    QuoteEvent quote = 4;
+    OrderUpdateEvent order_update = 5;
+    ProfitUpdateEvent profit_update = 6;
+    AccountStatusEvent account_status = 7;
+    StrategyExecutionEvent strategy_execution = 8;
+    RiskAlertEvent risk_alert = 9;
+    SyncEvent sync = 11;
+    DealUpdateEvent deal_update = 12;
+    PositionUpdateEvent position_update = 13;
+    LedgerEntryEvent ledger_entry = 14;
+    TradeCommandEvent trade_command = 15;
+    TradeReceiptEvent trade_receipt = 16;
+  }
+}
+message QuoteEvent { string symbol = 1; double bid = 2; double ask = 3; string time = 4; }

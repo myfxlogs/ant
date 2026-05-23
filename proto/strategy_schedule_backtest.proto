@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "common.proto";
+
+message RunBacktestRequest {
+  string template_id = 1;
+  string account_id = 2;
+  string symbol = 3;
+  string timeframe = 4;
+  map<string, string> parameters = 5;
+  double initial_capital = 6;
+  optional string dataset_id = 7;
+}
+
+message RunBacktestResponse {
+  bool success = 1;
+  BacktestMetrics metrics = 2;
+  int32 risk_score = 3;
+  string risk_level = 4;
+  repeated string risk_reasons = 5;
+  repeated string risk_warnings = 6;
+  bool is_reliable = 7;
+  string error = 8;
+  optional string dataset_id = 9;
+}

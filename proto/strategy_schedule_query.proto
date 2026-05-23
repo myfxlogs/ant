@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "strategy_schedule_entity.proto";
+
+message ListSchedulesRequest {}
+
+message ListSchedulesResponse {
+  repeated StrategySchedule schedules = 1;
+}
+
+message GetScheduleRequest {
+  string id = 1;
+}

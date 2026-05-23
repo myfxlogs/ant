@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/empty.proto";
+import public "account_entity.proto";
+import public "account_crud.proto";
+import public "account_connection.proto";
+import public "account_permission.proto";
+
+service AccountService {
+  rpc ListAccounts(ListAccountsRequest) returns (ListAccountsResponse);
+  rpc GetAccount(GetAccountRequest) returns (Account);
+  rpc CreateAccount(CreateAccountRequest) returns (Account);
+  rpc UpdateAccount(UpdateAccountRequest) returns (Account);
+  rpc DeleteAccount(DeleteAccountRequest) returns (google.protobuf.Empty);
+  rpc ConnectAccount(ConnectAccountRequest) returns (ConnectAccountResponse);
+  rpc DisconnectAccount(DisconnectAccountRequest) returns (google.protobuf.Empty);
+  rpc ReconnectAccount(ReconnectAccountRequest) returns (google.protobuf.Empty);
+  rpc SearchBroker(SearchBrokerRequest) returns (SearchBrokerResponse);
+  rpc VerifyTradePermission(VerifyTradePermissionRequest) returns (VerifyTradePermissionResponse);
+  rpc UpdateTradingPassword(UpdateTradingPasswordRequest) returns (UpdateTradingPasswordResponse);
+}

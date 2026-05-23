@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import public "market_quote.proto";
+import public "market_symbol.proto";
+import public "market_kline.proto";
+import public "market_watch.proto";
+
+service MarketService {
+  rpc GetQuote(GetQuoteRequest) returns (Quote);
+  rpc GetQuotes(GetQuotesRequest) returns (GetQuotesResponse);
+  rpc GetSymbols(GetSymbolsRequest) returns (GetSymbolsResponse);
+  rpc GetSymbolParams(GetSymbolParamsRequest) returns (SymbolParamsResponse);
+  rpc GetKlines(GetKlinesRequest) returns (GetKlinesResponse);
+  rpc GetMarketWatch(GetMarketWatchRequest) returns (GetMarketWatchResponse);
+}

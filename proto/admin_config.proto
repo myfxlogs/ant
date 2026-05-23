@@ -1,0 +1,8 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+message ListConfigsResponse { repeated SystemConfig configs = 1; }
+message GetConfigRequest { string key = 1; }
+message SystemConfig { string key = 1; string value = 2; string description = 3; bool enabled = 4; }
+message SetConfigRequest { string key = 1; string value = 2; string description = 3; }
+message ToggleConfigEnabledRequest { string key = 1; bool enabled = 2; }

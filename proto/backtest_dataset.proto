@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+service BacktestDatasetService {
+  rpc ListBacktestDatasets(ListBacktestDatasetsRequest) returns (ListBacktestDatasetsResponse);
+  rpc CreateFrozenBacktestDataset(CreateFrozenBacktestDatasetRequest) returns (CreateFrozenBacktestDatasetResponse);
+  rpc DeleteBacktestDataset(DeleteBacktestDatasetRequest) returns (google.protobuf.Empty);
+}
+
+message BacktestDataset {
+  string id = 1;
+  string account_id = 2;
+  string symbol = 3;
+  string timeframe = 4;
+  optional google.protobuf.Timestamp from = 5;
+  optional google.protobuf.Timestamp to = 6;
+  int32 count = 7;
+  bool frozen = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+message ListBacktestDatasetsRequest {
+  optional string account_id = 1;
+  optional string symbol = 2;
+  optional string timeframe = 3;
+  int32 limit = 4;
+  int32 offset = 5;
+}
+
+message ListBacktestDatasetsResponse {
+  repeated BacktestDataset datasets = 1;
+}
+
+message CreateFrozenBacktestDatasetRequest {
+  string account_id = 1;
+  string symbol = 2;
+  string timeframe = 3;
+  google.protobuf.Timestamp from = 4;
+  google.protobuf.Timestamp to = 5;
+}
+
+message CreateFrozenBacktestDatasetResponse {
+  string dataset_id = 1;
+}
+
+message DeleteBacktestDatasetRequest {
+  string dataset_id = 1;
+}

@@ -1,0 +1,8 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+import "admin_log.proto";
+service AdminLogService {
+  rpc ListLogs(ListLogsRequest) returns (ListLogsResponse);
+  rpc ExportLogs(ExportLogsRequest) returns (ExportLogsResponse);
+}

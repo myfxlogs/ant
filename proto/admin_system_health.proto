@@ -1,0 +1,9 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+import "google/protobuf/timestamp.proto";
+message HealthCheckResponse { string status = 1; string version = 2; int64 uptime_seconds = 3; map<string, ServiceHealth> services = 4; }
+message ServiceHealth { bool healthy = 1; string message = 2; }
+message Alert { string id = 1; string severity = 2; string title = 3; string message = 4; google.protobuf.Timestamp created_at = 5; bool resolved = 6; }
+message ResolveAlertRequest { string alert_id = 1; }
+message InvalidateCacheRequest { repeated string tags = 1; }

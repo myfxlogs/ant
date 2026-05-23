@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/timestamp.proto";
+
+message GetConnectionLogsRequest { int32 page = 1; int32 page_size = 2; string account_id = 3; string status = 4; string start_date = 5; string end_date = 6; }
+message GetConnectionLogsResponse { repeated ConnectionLog logs = 1; int32 total = 2; }
+message ConnectionLog { string id = 1; string account_id = 2; string event_type = 3; string status = 4; string message = 5; string error_detail = 6; string server_host = 7; int32 server_port = 8; int64 login_id = 9; int64 connection_duration_seconds = 10; google.protobuf.Timestamp created_at = 11; }

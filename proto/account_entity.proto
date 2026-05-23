@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/timestamp.proto";
+
+message Account {
+  string id = 1; string user_id = 2; string login = 3; string mt_type = 4;
+  string broker_company = 5; string broker_server = 6; string broker_host = 7;
+  string status = 8; string token = 9; bool is_disabled = 10; string last_error = 11;
+  google.protobuf.Timestamp connected_at = 12; google.protobuf.Timestamp created_at = 13; google.protobuf.Timestamp updated_at = 14;
+  double balance = 15; double credit = 16; double equity = 17; double margin = 18; double free_margin = 19;
+  double margin_level = 20; int32 leverage = 21; string currency = 22; string account_type = 23;
+  string account_method = 24; bool is_investor = 25; string alias = 26;
+  double profit = 27; double profit_percent = 28;
+}

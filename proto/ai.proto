@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import public "ai_report.proto";
+import public "ai_chat.proto";
+import public "ai_workflow.proto";
+import public "ai_agent.proto";
+
+service AIService {
+  rpc GetAIReports(GetAIReportsRequest) returns (GetAIReportsResponse);
+  rpc GenerateReport(GenerateReportRequest) returns (GenerateReportResponse);
+  rpc Chat(ChatRequest) returns (ChatResponse);
+  // Server-streaming assistant reply; see docs/AI对话体验与可靠性优化.md
+  rpc ChatStream(ChatRequest) returns (stream ChatStreamChunk);
+  rpc ListConversations(ListConversationsRequest) returns (ListConversationsResponse);
+  rpc GetConversation(GetConversationRequest) returns (GetConversationResponse);
+  rpc CreateConversation(CreateConversationRequest) returns (CreateConversationResponse);
+  rpc DeleteConversation(DeleteConversationRequest) returns (DeleteConversationResponse);
+  rpc UpdateConversationTitle(UpdateConversationTitleRequest) returns (UpdateConversationTitleResponse);
+  rpc CreateWorkflowRun(CreateWorkflowRunRequest) returns (CreateWorkflowRunResponse);
+  rpc AppendWorkflowStep(AppendWorkflowStepRequest) returns (AppendWorkflowStepResponse);
+  rpc ListWorkflowRuns(ListWorkflowRunsRequest) returns (ListWorkflowRunsResponse);
+  rpc GetWorkflowRun(GetWorkflowRunRequest) returns (GetWorkflowRunResponse);
+  rpc ListAgents(ListAgentsRequest) returns (ListAgentsResponse);
+  rpc SetAgents(SetAgentsRequest) returns (SetAgentsResponse);
+}

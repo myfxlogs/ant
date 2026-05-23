@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "system_ai_entity.proto";
+
+message ListSystemAIConfigsRequest {}
+message ListSystemAIConfigsResponse {
+  repeated SystemAIConfig items = 1;
+}
+
+message GetSystemAIConfigRequest {
+  string provider_id = 1;
+}
+message GetSystemAIConfigResponse {
+  SystemAIConfig item = 1;
+}

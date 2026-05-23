@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "strategy_template_entity.proto";
+
+message ListTemplatesRequest {}
+
+message ListTemplatesResponse {
+  repeated StrategyTemplate templates = 1;
+}
+
+message GetTemplateRequest {
+  string id = 1;
+}
+
+message CreateTemplateRequest {
+  string name = 1;
+  string description = 2;
+  string code = 3;
+  repeated TemplateParameter parameters = 4;
+  bool is_public = 5;
+  repeated string tags = 6;
+}
+
+message CreateTemplateDraftRequest {
+  string name = 1;
+}
+
+message UpdateTemplateDraftRequest {
+  string id = 1;
+  optional string name = 2;
+  optional string description = 3;
+  optional string code = 4;
+  repeated TemplateParameter parameters = 5;
+  repeated string tags = 6;
+}
+
+message PublishTemplateDraftRequest {
+  string id = 1;
+}
+
+message CancelTemplateDraftRequest {
+  string id = 1;
+}
+
+message UpdateTemplateRequest {
+  string id = 1;
+  optional string name = 2;
+  optional string description = 3;
+  optional string code = 4;
+  repeated TemplateParameter parameters = 5;
+  optional bool is_public = 6;
+  repeated string tags = 7;
+}
+
+message DeleteTemplateRequest {
+  string id = 1;
+}

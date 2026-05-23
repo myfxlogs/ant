@@ -1,0 +1,11 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+import "google/protobuf/empty.proto";
+import "admin_account.proto";
+service AdminAccountService {
+  rpc ListAccountsAdmin(ListAccountsAdminRequest) returns (ListAccountsAdminResponse);
+  rpc GetAccountAdmin(GetAccountAdminRequest) returns (AccountWithUser);
+  rpc FreezeAccount(FreezeAccountRequest) returns (google.protobuf.Empty);
+  rpc UnfreezeAccount(UnfreezeAccountRequest) returns (google.protobuf.Empty);
+}

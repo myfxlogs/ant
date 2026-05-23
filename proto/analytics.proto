@@ -1,0 +1,19 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+import "analytics_core.proto";
+import "analytics_time.proto";
+import "analytics_symbol.proto";
+import "analytics_report.proto";
+import "analytics_monthly.proto";
+service AnalyticsService {
+  rpc GetAccountAnalytics(GetAccountAnalyticsRequest) returns (AccountAnalytics);
+  rpc GetSummary(GetSummaryRequest) returns (Summary);
+  rpc GetRiskMetrics(GetRiskMetricsRequest) returns (RiskMetrics);
+  rpc GetSymbolStats(GetSymbolStatsRequest) returns (SymbolStatsResponse);
+  rpc GetReport(GetReportRequest) returns (Report);
+  rpc GetRecentTrades(GetRecentTradesRequest) returns (RecentTradesResponse);
+  rpc GetMonthlyPnL(GetMonthlyPnLRequest) returns (MonthlyPnLResponse);
+  rpc GetMonthlyAnalysis(GetMonthlyAnalysisRequest) returns (MonthlyAnalysisResponse);
+  rpc GetMonthlyAnalysisBonus(GetMonthlyAnalysisBonusRequest) returns (MonthlyAnalysisBonusResponse);
+}

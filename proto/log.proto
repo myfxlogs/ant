@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "log_connection.proto";
+import "log_execution.proto";
+import "log_order.proto";
+import "log_operation.proto";
+import "log_schedule.proto";
+
+service LogService {
+  rpc GetConnectionLogs(GetConnectionLogsRequest) returns (GetConnectionLogsResponse);
+  rpc GetExecutionLogs(GetExecutionLogsRequest) returns (GetExecutionLogsResponse);
+  rpc GetOrderLogHistory(GetOrderLogHistoryRequest) returns (GetOrderLogHistoryResponse);
+  rpc GetOperationLogs(GetOperationLogsRequest) returns (GetOperationLogsResponse);
+  rpc GetScheduleRunLogs(GetScheduleRunLogsRequest) returns (GetScheduleRunLogsResponse);
+}

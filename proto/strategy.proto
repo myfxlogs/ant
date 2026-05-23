@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/empty.proto";
+import "strategy_messages.proto";
+
+service StrategyService {
+  rpc ListTemplates(ListTemplatesRequest) returns (ListTemplatesResponse);
+  rpc GetTemplate(GetTemplateRequest) returns (StrategyTemplate);
+  rpc CreateTemplate(CreateTemplateRequest) returns (StrategyTemplate);
+  rpc UpdateTemplate(UpdateTemplateRequest) returns (StrategyTemplate);
+  rpc DeleteTemplate(DeleteTemplateRequest) returns (google.protobuf.Empty);
+
+  rpc CreateTemplateDraft(CreateTemplateDraftRequest) returns (StrategyTemplate);
+  rpc UpdateTemplateDraft(UpdateTemplateDraftRequest) returns (StrategyTemplate);
+  rpc PublishTemplateDraft(PublishTemplateDraftRequest) returns (StrategyTemplate);
+  rpc CancelTemplateDraft(CancelTemplateDraftRequest) returns (google.protobuf.Empty);
+
+  rpc ListSchedules(ListSchedulesRequest) returns (ListSchedulesResponse);
+  rpc GetSchedule(GetScheduleRequest) returns (StrategySchedule);
+  rpc CreateSchedule(CreateScheduleRequest) returns (StrategySchedule);
+  rpc UpdateSchedule(UpdateScheduleRequest) returns (StrategySchedule);
+  rpc DeleteSchedule(DeleteScheduleRequest) returns (google.protobuf.Empty);
+  rpc ToggleSchedule(ToggleScheduleRequest) returns (StrategySchedule);
+  rpc RunBacktest(RunBacktestRequest) returns (RunBacktestResponse);
+
+  rpc ListSignals(ListSignalsRequest) returns (ListSignalsResponse);
+  rpc ExecuteSignal(ExecuteSignalRequest) returns (ExecuteSignalResponse);
+  rpc ConfirmSignal(ConfirmSignalRequest) returns (google.protobuf.Empty);
+  rpc CancelSignal(CancelSignalRequest) returns (google.protobuf.Empty);
+}

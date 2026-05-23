@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import public "strategy_template_messages.proto";
+import public "strategy_schedule_messages.proto";
+import public "strategy_signal_messages.proto";

@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "account_entity.proto";
+
+message ListAccountsRequest {}
+message ListAccountsResponse { repeated Account accounts = 1; }
+message GetAccountRequest { string id = 1; }
+message CreateAccountRequest { string login = 1; string password = 2; string mt_type = 3; string broker_company = 4; string broker_server = 5; string broker_host = 6; }
+message UpdateAccountRequest { string id = 1; optional string broker_company = 2; optional string broker_server = 3; optional string broker_host = 4; optional bool is_disabled = 5; }
+message DeleteAccountRequest { string id = 1; }

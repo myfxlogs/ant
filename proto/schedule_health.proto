@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/timestamp.proto";
+
+service ScheduleHealthService {
+  rpc GetScheduleHealth(GetScheduleHealthRequest) returns (GetScheduleHealthResponse);
+}
+
+message GetScheduleHealthRequest {
+  string schedule_id = 1;
+  int32 run_limit = 2;
+  int32 order_limit = 3;
+}
+
+message GetScheduleHealthResponse {
+  ScheduleHealthSummary summary = 1;
+  repeated ScheduleHealthRunLog run_logs = 2;
+  repeated ScheduleHealthOrder orders = 3;
+}
+
+message ScheduleHealthSummary {
+  int32 total_runs = 1;
+  int32 success_runs = 2;
+  int32 failed_runs = 3;
+  double success_rate = 4;
+  google.protobuf.Timestamp last_run_at = 5;
+  string latest_error = 6;
+  string latest_order_ticket = 7;
+  double latest_order_profit = 8;
+  bool has_latest_order_profit = 9;
+  string grade_level = 10;
+  string grade_color = 11;
+  string grade_note_code = 12;
+  double green_success_rate = 13;
+  int32 green_max_failed_runs = 14;
+  double yellow_success_rate = 15;
+  int32 min_sample_size = 16;
+}
+
+message ScheduleHealthRunLog {
+  string id = 1;
+  string status = 2;
+  string signal_type = 3;
+  int64 duration_ms = 4;
+  string error_message = 5;
+  google.protobuf.Timestamp created_at = 6;
+}
+
+message ScheduleHealthOrder {
+  string id = 1;
+  int64 ticket = 2;
+  string order_type = 3;
+  string symbol = 4;
+  double profit = 5;
+  google.protobuf.Timestamp open_time = 6;
+  google.protobuf.Timestamp close_time = 7;
+}

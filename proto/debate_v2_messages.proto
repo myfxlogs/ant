@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "strategy_messages.proto";
+
+message DebateV2Session {
+  string id = 1;
+  string title = 2;
+  string status = 3;
+  string current_step = 4;
+  repeated string agents = 5;
+  repeated DebateV2Step steps = 6;
+  repeated TemplateParameter param_schema = 7;
+  DebateV2Code code = 8;
+  string provider = 9;
+  string model = 10;
+  DebateV2Usage usage = 11;
+  string created_at = 12;
+  string updated_at = 13;
+}
+
+message DebateV2Step {
+  string step_key = 1;
+  string agent_key = 2;
+  string agent_name = 3;
+  repeated DebateV2Message messages = 4;
+}
+
+message DebateV2Message {
+  string id = 1;
+  string role = 2;
+  string content = 3;
+  string kind = 4;
+}
+
+message DebateV2Code {
+  string text = 1;
+  string python = 2;
+}
+
+message DebateV2Usage {
+  int32 prompt_tokens = 1;
+  int32 completion_tokens = 2;
+  int32 total_tokens = 3;
+}

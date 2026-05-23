@@ -1,0 +1,51 @@
+# Old binaries and test files
+anttrader-server
+coverage.out
+coverage_unit.out
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test directories
+cmd/test_mt/
+cmd/test_mt5_direct/
+cmd/test_mt5_official/
+cmd/test_mt5_token/
+cmd/integration_test/
+test/
+
+# Development files
+*.log
+logs/
+tmp/
+.env
+.env.*
+*.swp
+*.swo
+*~
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Test coverage
+coverage.txt
+coverage.html
+*.out

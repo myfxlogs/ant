@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/timestamp.proto";
+
+message StrategyTemplate {
+  string id = 1;
+  string user_id = 2;
+  string name = 3;
+  string description = 4;
+  string code = 5;
+  repeated TemplateParameter parameters = 6;
+  bool is_public = 7;
+  repeated string tags = 8;
+  int32 use_count = 9;
+  string status = 12;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+  bool is_system = 13;
+}
+
+message TemplateParameter {
+  string name = 1;
+  string type = 2;
+  string default = 3;
+  string min = 4;
+  string max = 5;
+  string step = 6;
+  string label = 7;
+  string description = 8;
+  repeated string options = 9;
+}

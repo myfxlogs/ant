@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/timestamp.proto";
+
+message ConversationSummary {
+  string id = 1;
+  string title = 2;
+  int32 message_count = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+}
+
+message ConversationMessage {
+  string id = 1;
+  string role = 2;
+  string content = 3;
+  google.protobuf.Timestamp created_at = 4;
+}

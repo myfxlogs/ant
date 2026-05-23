@@ -1,0 +1,9 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+import public "admin_user.proto";
+import public "admin_account.proto";
+import public "admin_trading.proto";
+import public "admin_config.proto";
+import public "admin_log.proto";
+import public "admin_system.proto";

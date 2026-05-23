@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+message GetMarketWatchRequest { string account_id = 1; repeated string symbols = 2; }
+message GetMarketWatchResponse { repeated MarketWatchItem items = 1; }
+message MarketWatchItem {
+  string symbol = 1; double bid = 2; double ask = 3; double high = 4; double low = 5;
+  double open = 6; double close = 7; double change = 8; int32 spread = 9; uint64 volume = 10;
+}

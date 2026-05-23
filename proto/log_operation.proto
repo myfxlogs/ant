@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/timestamp.proto";
+
+message GetOperationLogsRequest { int32 page = 1; int32 page_size = 2; string module = 3; string action = 4; string resource_type = 5; string resource_id = 6; string start_date = 7; string end_date = 8; }
+message GetOperationLogsResponse { repeated OperationLog logs = 1; int32 total = 2; }
+message OperationLog { string id = 1; string user_id = 2; string module = 3; string action = 4; string details = 5; string ip = 6; string user_agent = 7; string status = 8; string error_message = 9; string resource_type = 10; string resource_id = 11; int64 duration_ms = 12; google.protobuf.Timestamp created_at = 13; }

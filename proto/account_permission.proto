@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+message VerifyTradePermissionRequest { string id = 1; }
+message VerifyTradePermissionResponse { bool has_trade_permission = 1; bool is_investor = 2; bool verified = 3; string message = 4; }
+message UpdateTradingPasswordRequest { string id = 1; string new_password = 2; }
+message UpdateTradingPasswordResponse { bool success = 1; bool has_trade_permission = 2; bool is_investor = 3; string message = 4; }

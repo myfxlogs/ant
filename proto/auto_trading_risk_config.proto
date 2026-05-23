@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/timestamp.proto";
+
+message GetRiskConfigRequest { string user_id = 1; string account_id = 2; }
+message RiskConfig { string id = 1; string user_id = 2; string account_id = 3; int32 max_positions = 4; double max_lot_size = 5; double max_daily_loss = 6; double daily_loss_used = 7; double max_drawdown_percent = 8; double max_risk_percent = 9; google.protobuf.Timestamp created_at = 10; google.protobuf.Timestamp updated_at = 11; }
+message UpdateRiskConfigRequest { string user_id = 1; string account_id = 2; optional int32 max_positions = 3; optional double max_lot_size = 4; optional double max_daily_loss = 5; optional double max_drawdown_percent = 6; optional double max_risk_percent = 7; }

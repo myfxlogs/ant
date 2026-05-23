@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/timestamp.proto";
+
+message GetAIReportsRequest {
+  string account_id = 1;
+  int32 limit = 2;
+}
+
+message GetAIReportsResponse {
+  repeated AIReport reports = 1;
+}
+
+message AIReport {
+  string id = 1;
+  string account_id = 2;
+  string report_type = 3;
+  string title = 4;
+  string content = 5;
+  repeated string recommendations = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+message GenerateReportRequest {
+  string account_id = 1;
+  string report_type = 2;
+  string period = 3;
+}
+
+message GenerateReportResponse {
+  AIReport report = 1;
+}

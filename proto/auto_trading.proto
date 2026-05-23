@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/empty.proto";
+import public "strategy_messages.proto";
+import public "auto_trading_settings.proto";
+import public "auto_trading_risk.proto";
+import public "auto_trading_logs.proto";
+
+service AutoTradingService {
+  rpc GetGlobalSettings(GetGlobalSettingsRequest) returns (GlobalSettings);
+  rpc UpdateGlobalSettings(UpdateGlobalSettingsRequest) returns (GlobalSettings);
+  rpc ToggleAutoTrade(ToggleAutoTradeRequest) returns (ToggleAutoTradeResponse);
+  rpc GetRiskConfig(GetRiskConfigRequest) returns (RiskConfig);
+  rpc UpdateRiskConfig(UpdateRiskConfigRequest) returns (RiskConfig);
+  rpc CheckRiskLimits(CheckRiskLimitsRequest) returns (CheckRiskLimitsResponse);
+  rpc CalculatePositionSize(CalculatePositionSizeRequest) returns (CalculatePositionSizeResponse);
+  rpc GetAutoTradingStatus(GetAutoTradingStatusRequest) returns (AutoTradingStatus);
+  rpc CreateSchedule(CreateScheduleRequest) returns (StrategySchedule);
+  rpc GetSchedule(GetScheduleRequest) returns (StrategySchedule);
+  rpc UpdateSchedule(UpdateScheduleRequest) returns (StrategySchedule);
+  rpc DeleteSchedule(DeleteScheduleRequest) returns (google.protobuf.Empty);
+  rpc ToggleSchedule(ToggleScheduleRequest) returns (StrategySchedule);
+  rpc GetTradingLogs(GetTradingLogsRequest) returns (GetTradingLogsResponse);
+  rpc GetRecentTradingLogs(GetRecentTradingLogsRequest) returns (GetRecentTradingLogsResponse);
+}

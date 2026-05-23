@@ -1,0 +1,6 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+message DailyPnL { string date = 1; double profit = 2; int32 trades = 3; string day = 4; double lots = 5; double balance = 6; double max_floating_loss_amount = 7; double max_floating_loss_ratio = 8; double max_floating_profit_amount = 9; double max_floating_profit_ratio = 10; double profit_factor = 11; }
+message HourlyStats { int32 hour = 1; double profit = 2; int32 trades = 3; double win_rate = 4; double lots = 5; double balance = 6; double max_floating_loss_amount = 7; double max_floating_loss_ratio = 8; double max_floating_profit_amount = 9; double max_floating_profit_ratio = 10; double profit_factor = 11; }
+message WeekdayPnL { int32 weekday = 1; double profit = 2; int32 trades = 3; }

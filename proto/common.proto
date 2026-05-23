@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+message BacktestMetrics {
+  double total_return = 1;
+  double annual_return = 2;
+  double max_drawdown = 3;
+  double sharpe_ratio = 4;
+  double win_rate = 5;
+  double profit_factor = 6;
+  int32 total_trades = 7;
+  int32 winning_trades = 8;
+  int32 losing_trades = 9;
+  double average_profit = 10;
+  double average_loss = 11;
+}

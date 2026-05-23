@@ -1,0 +1,25 @@
+// api.proto — Hub file that re-exports all service-specific proto modules.
+// All service definitions and messages have been split into individual files.
+// This file exists for backward compatibility with any tooling that imports "api.proto".
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "common.proto";
+import "auth.proto";
+import "account.proto";
+import "trading.proto";
+import "market.proto";
+import "stream.proto";
+import "stream_events.proto";
+import "strategy_messages.proto";
+import "strategy.proto";
+import "python_strategy.proto";
+import "backtest_dataset.proto";
+import "ai.proto";
+import "analytics.proto";
+import "admin.proto";
+import "auto_trading.proto";
+import "log.proto";

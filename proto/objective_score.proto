@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+service ObjectiveScoreService {
+  rpc CalculateObjectiveScore(ObjectiveScoreRequest) returns (ObjectiveScoreResponse);
+}
+
+message ObjectiveKline {
+  string open_time = 1;
+  string close_time = 2;
+  double open_price = 3;
+  double high_price = 4;
+  double low_price = 5;
+  double close_price = 6;
+  double volume = 7;
+}
+
+message ObjectiveScoreRequest {
+  string symbol = 1;
+  string timeframe = 2;
+  repeated ObjectiveKline klines = 3;
+}
+
+message ObjectiveScoreResponse {
+  string decision = 1;
+  double overall_score = 2;
+  double technical_score = 3;
+  ObjectiveSignals signals = 4;
+}
+
+message ObjectiveSignals {
+  RSISignal rsi = 1;
+  MACDSignal macd = 2;
+  MASignal ma = 3;
+}
+
+message RSISignal {
+  double value = 1;
+  string signal = 2;
+}
+
+message MACDSignal {
+  double value = 1;
+  double signal_line = 2;
+  double histogram = 3;
+  string signal = 4;
+  string trend = 5;
+}
+
+message MASignal {
+  double ma5 = 1;
+  double ma10 = 2;
+  double ma20 = 3;
+  string trend = 4;
+}

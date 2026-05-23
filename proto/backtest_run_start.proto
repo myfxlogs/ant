@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+import "google/protobuf/timestamp.proto";
+import "backtest_run.proto";
+
+message StartBacktestRunRequest {
+  string code = 1;
+  string account_id = 2;
+  string symbol = 3;
+  string timeframe = 4;
+  double initial_capital = 5;
+  BacktestRunMode mode = 6;
+  optional google.protobuf.Timestamp from = 7;
+  optional google.protobuf.Timestamp to = 8;
+  optional string dataset_id = 9;
+  optional string template_id = 10;
+  optional string template_draft_id = 11;
+  // Phase B2: secondary symbols (same timeframe/account) whose K-lines are
+  // fetched and exposed to the strategy via context['closes_by_symbol'].
+  repeated string extra_symbols = 12;
+}
+
+message StartBacktestRunResponse {
+  string run_id = 1;
+}

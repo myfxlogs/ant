@@ -1,0 +1,94 @@
+server:
+  http_port: 8080
+  grpc_port: 9090
+  mode: release
+  read_timeout: 300s
+  write_timeout: 300s
+  shutdown_timeout: 10s
+
+database:
+  host: ${DB_HOST:localhost}
+  port: ${DB_PORT:5432}
+  name: ${DB_NAME:antrader}
+  user: ${DB_USER:antuser}
+  password: ${DB_PASSWORD:HavEr7901}
+  sslmode: ${DB_SSLMODE:disable}
+  max_open_conns: ${DB_MAX_OPEN_CONNS:100}
+  max_idle_conns: ${DB_MAX_IDLE_CONNS:10}
+  conn_max_lifetime: 1h
+  conn_max_idle_time: 10m
+
+redis:
+  host: ${REDIS_HOST:localhost}
+  port: ${REDIS_PORT:6379}
+  password: ${REDIS_PASSWORD:}
+  db: ${REDIS_DB:0}
+  pool_size: ${REDIS_POOL_SIZE:100}
+  min_idle_conns: ${REDIS_MIN_IDLE_CONNS:10}
+  max_retries: 3
+  dial_timeout: 5s
+  read_timeout: 3s
+  write_timeout: 3s
+  pool_timeout: ${REDIS_POOL_TIMEOUT:4s}
+  idle_timeout: ${REDIS_IDLE_TIMEOUT:5m}
+  idle_check_frequency: ${REDIS_IDLE_CHECK_FREQUENCY:1m}
+
+jwt:
+  secret: ${JWT_SECRET:antrader_jwt_secret_key_at_least_32_characters_long}
+  access_expire: 24h
+  refresh_expire: 168h
+  issuer: antrader
+
+mt4:
+  gateway_host: mt4grpc3.mtapi.io
+  gateway_port: 443
+  timeout: 30s
+  max_retries: 3
+  retry_interval: 1s
+  use_tls: true
+
+mt5:
+  gateway_host: mt5grpc3.mtapi.io
+  gateway_port: 443
+  timeout: 30s
+  max_retries: 3
+  retry_interval: 1s
+  use_tls: true
+
+strategy_service:
+  url: ${STRATEGY_SERVICE_URL:http://strategy-service:8081}
+
+log:
+  level: info
+  format: json
+  output: stdout
+  file_max_size: 100
+  file_max_backups: 10
+  file_max_age: 30
+  compress: true
+
+rate_limit:
+  enabled: true
+  requests_per_second: 100
+  burst: 200
+  by_ip: true
+  by_user: true
+
+business:
+  max_accounts_per_user: 10
+  max_positions_per_account: 50
+  default_leverage: 100
+  min_lot_size: 0.01
+
+monitoring:
+  enabled: true
+  metrics_url: "http://localhost:9090/metrics"
+  alerts_url: "http://localhost:9090/alerts"
+  interval: 30s
+
+cache:
+  enabled: true
+  default_ttl: 5m
+  cleanup_interval: 10m
+  max_memory_mb: 512
+  compression_enabled: true

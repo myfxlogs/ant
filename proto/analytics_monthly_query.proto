@@ -1,0 +1,10 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+import "analytics_monthly_entity.proto";
+message GetMonthlyPnLRequest { string account_id = 1; int32 year = 2; }
+message MonthlyPnLResponse { repeated MonthlyPnL monthly_pnl = 1; }
+message GetMonthlyAnalysisRequest { string account_id = 1; }
+message MonthlyAnalysisResponse { repeated int32 years = 1; repeated MonthlyAnalysisPoint data = 2; }
+message GetMonthlyAnalysisBonusRequest { string account_id = 1; int32 year = 2; int32 month = 3; }
+message MonthlyAnalysisBonusResponse { double risk_ratio = 1; repeated MonthlySymbolPopularity symbol_popularity = 2; double average_holding_seconds = 3; int32 total_trades = 4; repeated MonthlySymbolRiskRatio symbol_risk_ratios = 5; repeated MonthlySymbolHoldingSplit symbol_holding_split = 6; }

@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package antrader;
+
+option go_package = "anttrader/gen/proto;antrader";
+
+message CheckRiskLimitsRequest { string account_id = 1; string symbol = 2; double volume = 3; double current_balance = 4; double current_equity = 5; int32 open_positions = 6; }
+message CheckRiskLimitsResponse { bool allowed = 1; bool is_within_limits = 2; string reason = 3; int32 max_positions = 4; int32 position_count = 5; double daily_loss_limit = 6; double daily_loss_used = 7; double max_drawdown_percent = 8; double drawdown_percent = 9; }

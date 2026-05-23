@@ -1,0 +1,6 @@
+syntax = "proto3";
+package antrader;
+option go_package = "anttrader/gen/proto;antrader";
+message GetSymbolStatsRequest { string account_id = 1; }
+message SymbolStatsResponse { repeated SymbolStats stats = 1; }
+message SymbolStats { string symbol = 1; int32 trades = 2; double profit = 3; double win_rate = 4; double avg_profit = 5; double avg_loss = 6; double trade_share_percent = 7; }
