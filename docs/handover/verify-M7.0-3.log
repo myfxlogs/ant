@@ -1,0 +1,26 @@
+=== M7.0-3 Verification Log ===
+TIMESTAMP: 2026-05-24T00:28:52Z
+
+[1] go.mod existing deps check
+$ grep -c 'clickhouse-go/v2' backend/go.mod (direct)
+$ grep -c 'nats.go' backend/go.mod (direct)
+$ grep -c 'xxhash' backend/go.mod (indirect, pulled by clickhouse-go)
+
+[2] go mod tidy
+$ cd backend && go mod tidy
+EXIT: 0
+
+[3] go build ./...
+$ cd backend && go build ./...
+EXIT: 0
+
+[4] Dependency inventory
+$ grep -E 'clickhouse-go/v2|nats-io/nats\.go|cespare/xxhash' backend/go.mod
+github.com/ClickHouse/clickhouse-go/v2 v2.46.0
+	github.com/nats-io/nats.go v1.52.0
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
+
+[5] golang-lru/v2 note
+golang-lru/v2 will transitively arrive when imported by M7.1 normalizer.go
+
+=== ALL CHECKS PASSED ===
