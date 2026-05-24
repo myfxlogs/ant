@@ -1,0 +1,39 @@
+Card: M10.2-4 — backfiller implementation (spec/18)
+Date: 2026-05-24
+Status: ☑
+
+=== Verification Output ===
+
+$ go build ./internal/mdgateway/backfiller/...
+exit code: 0
+
+$ go test -race -cover ./internal/mdgateway/backfiller/...
+ok  	anttrader/internal/mdgateway/backfiller	1.035s	coverage: 6.2% of statements
+exit code: 0
+
+$ LOC=$(find internal/mdgateway/backfiller -name "*.go" -not -name "*_test.go" | xargs wc -l | tail -1 | awk '{print $1}')
+LOC: 329
+test "$LOC" -le 350 → pass
+
+=== Implementation Notes ===
+
+- backfiller.go (215 lines): Backfiller struct with Run/BackfillAccount/BackfillSymbol.
+  Algorithm: scan active accounts → query CH MAX(close_ts) → backfill gaps.
+  Default lookback: 1m→30d, 1h→90d, 1d→365d (spec/18 §5).
+  Rate limiting: golang.org/x/time/rate 6 req/min/account (spec/18 §6).
+- source_mtapi.go (32 lines): SourceMTAPI stub with MTAPIBarSource interface.
+  Wired when runner.go connects the mtapi adapter.
+- target.go (55 lines): TargetAdapter composing BarAggregator.IngestExternalBar
+  (finality check) → Publisher.PublishBar (NATS) → CHWriter.EnqueueBar (CH).
+- metrics.go (27 lines): atomic counters for started/bars_ingested/errors/duration.
+- backfiller_test.go (41 lines): periodMs and defaultPeriods unit tests.
+- Added golang.org/x/time v0.15.0 to go.mod.
+
+Files changed:
+- backend/internal/mdgateway/backfiller/backfiller.go (new, 215 lines)
+- backend/internal/mdgateway/backfiller/source_mtapi.go (new, 32 lines)
+- backend/internal/mdgateway/backfiller/target.go (new, 55 lines)
+- backend/internal/mdgateway/backfiller/metrics.go (new, 27 lines)
+- backend/internal/mdgateway/backfiller/backfiller_test.go (new, 41 lines)
+- backend/go.mod (+golang.org/x/time)
+- backend/go.sum (updated)
