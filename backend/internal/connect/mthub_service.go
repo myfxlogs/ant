@@ -1,188 +1,153 @@
-//go:build ignore
-// +build ignore
-
-// Package connect — MtHubService ConnectRPC handler.
-// Requires `make proto` to generate proto stubs.
-// Remove the build ignore tag after running make proto.
-// Bridges proto requests to mthub.MtHubService.
 package connect
 
 import (
 	"context"
-	"fmt"
 
 	"connectrpc.com/connect"
+	"github.com/shopspring/decimal"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
-	mthubv1 "anttrader/gen/proto/anttrader/mthub/v1"
-	"anttrader/gen/proto/anttrader/mthub/v1/mthubv1connect"
+	antv1 "anttrader/gen/proto/ant/v1"
+	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/mthub"
 )
 
-// MtHubService implements the generated ConnectRPC MtHubServiceHandler.
-type MtHubService struct {
+// MtHubServer implements ant.v1.MtHubServiceHandler.
+type MtHubServer struct {
 	svc *mthub.MtHubService
 }
 
-// NewMtHubService creates a ConnectRPC handler for the mthub service.
-func NewMtHubService(svc *mthub.MtHubService) mthubv1connect.MtHubServiceHandler {
-	return &MtHubService{svc: svc}
+var _ antv1c.MtHubServiceHandler = (*MtHubServer)(nil)
+
+// NewMtHubServer creates a ConnectRPC server for mthub.
+func NewMtHubServer(svc *mthub.MtHubService) *MtHubServer {
+	return &MtHubServer{svc: svc}
 }
 
-// EnsureSession finds or creates a session for the given account.
-func (s *MtHubService) EnsureSession(ctx context.Context, req *connect.Request[mthubv1.EnsureSessionRequest]) (*connect.Response[mthubv1.EnsureSessionResponse], error) {
-	result, err := s.svc.EnsureSession(ctx, req.Msg.AccountId)
-	if err != nil {
-		return nil, err
+func (s *MtHubServer) PlaceOrder(ctx context.Context, req *connect.Request[antv1.PlaceOrderRequest]) (*connect.Response[antv1.PlaceOrderResponse], error) {
+	m := req.Msg
+	vol, err := decimal.NewFromString(m.Volume)
+	if err != nil { return nil, connect.NewError(connect.CodeInvalidArgument, err) }
+	price, _ := decimal.NewFromString(m.Price)
+	sl, _ := decimal.NewFromString(m.StopLoss)
+	tp, _ := decimal.NewFromString(m.TakeProfit)
+
+	rec, err := s.svc.PlaceOrder(ctx, &mthub.OrderRequest{
+		AccountID: m.AccountId, Canonical: m.Canonical,
+		Side: sideFromProto(m.Side), OrderType: orderTypeFromProto(m.OrderType),
+		Volume: vol, Price: price, StopLoss: sl, TakeProfit: tp,
+		Comment: m.Comment, ClientID: m.ClientId, Magic: m.Magic,
+	})
+	if err != nil { return nil, connect.NewError(connect.CodeInternal, err) }
+	return connect.NewResponse(&antv1.PlaceOrderResponse{Ticket: rec.Ticket, Status: "submitted"}), nil
+}
+
+func (s *MtHubServer) CloseOrder(ctx context.Context, req *connect.Request[antv1.CloseOrderRequest]) (*connect.Response[antv1.CloseOrderResponse], error) {
+	m := req.Msg
+	lots := decimal.Zero
+	if m.Lots != "" { lots, _ = decimal.NewFromString(m.Lots) }
+	if err := s.svc.CloseOrder(ctx, m.AccountId, m.Ticket, lots); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	if result == nil {
-		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("session not found"))
-	}
-	return connect.NewResponse(&mthubv1.EnsureSessionResponse{
-		SessionId:     result.SessionID,
-		AlreadyActive: result.AlreadyActive,
+	return connect.NewResponse(&antv1.CloseOrderResponse{Status: "closed"}), nil
+}
+
+func (s *MtHubServer) OpenedOrders(ctx context.Context, req *connect.Request[antv1.OpenedOrdersRequest]) (*connect.Response[antv1.OpenedOrdersResponse], error) {
+	list, err := s.svc.OpenedOrders(ctx, req.Msg.AccountId)
+	if err != nil { return nil, connect.NewError(connect.CodeInternal, err) }
+	return connect.NewResponse(&antv1.OpenedOrdersResponse{Orders: toProtoOrders(list)}), nil
+}
+
+func (s *MtHubServer) OrderHistory(ctx context.Context, req *connect.Request[antv1.OrderHistoryRequest]) (*connect.Response[antv1.OrderHistoryResponse], error) {
+	list, err := s.svc.OrderHistory(ctx, req.Msg.AccountId, req.Msg.From.AsTime(), req.Msg.To.AsTime())
+	if err != nil { return nil, connect.NewError(connect.CodeInternal, err) }
+	return connect.NewResponse(&antv1.OrderHistoryResponse{Orders: toProtoOrders(list)}), nil
+}
+
+func (s *MtHubServer) SymbolParams(ctx context.Context, req *connect.Request[antv1.SymbolParamsRequest]) (*connect.Response[antv1.SymbolParamsResponse], error) {
+	list, err := s.svc.SymbolParams(ctx, req.Msg.AccountId, req.Msg.Canonicals)
+	if err != nil { return nil, connect.NewError(connect.CodeInternal, err) }
+	return connect.NewResponse(&antv1.SymbolParamsResponse{Params: toProtoParams(list)}), nil
+}
+
+func (s *MtHubServer) PriceHistory(ctx context.Context, req *connect.Request[antv1.PriceHistoryRequest]) (*connect.Response[antv1.PriceHistoryResponse], error) {
+	return connect.NewResponse(&antv1.PriceHistoryResponse{}), nil
+}
+
+func (s *MtHubServer) GetAccountStatus(ctx context.Context, req *connect.Request[antv1.GetAccountStatusRequest]) (*connect.Response[antv1.AccountStatus], error) {
+	return connect.NewResponse(&antv1.AccountStatus{
+		AccountId: req.Msg.AccountId, State: "connected",
+		LastTickAt: timestamppb.Now(),
 	}), nil
 }
 
-// CloseSession removes a session from the registry.
-func (s *MtHubService) CloseSession(ctx context.Context, req *connect.Request[mthubv1.CloseSessionRequest]) (*connect.Response[mthubv1.CloseSessionResponse], error) {
-	if err := s.svc.CloseSession(ctx, req.Msg.AccountId); err != nil {
-		return nil, err
-	}
-	return connect.NewResponse(&mthubv1.CloseSessionResponse{}), nil
-}
-
-// OrderSend places a new order.
-func (s *MtHubService) OrderSend(ctx context.Context, req *connect.Request[mthubv1.OrderSendRequest]) (*connect.Response[mthubv1.OrderSendResponse], error) {
-	result, err := s.svc.OrderSend(ctx, req.Msg.AccountId, &mthub.OrderRequest{
-		Symbol:  req.Msg.Symbol,
-		Side:    req.Msg.Side,
-		Volume:  req.Msg.Volume,
-		Price:   req.Msg.Price,
-		Sl:      req.Msg.Sl,
-		Tp:      req.Msg.Tp,
-		Comment: req.Msg.Comment,
-		Type:    req.Msg.Type,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return connect.NewResponse(&mthubv1.OrderSendResponse{
-		Ticket: result.Ticket,
-		Error:  result.Error,
-	}), nil
-}
-
-// OrderClose closes an existing order.
-func (s *MtHubService) OrderClose(ctx context.Context, req *connect.Request[mthubv1.OrderCloseRequest]) (*connect.Response[mthubv1.OrderCloseResponse], error) {
-	result, err := s.svc.OrderClose(ctx, req.Msg.AccountId, &mthub.CloseRequest{
-		Ticket: req.Msg.Ticket,
-		Lots:   req.Msg.Lots,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return connect.NewResponse(&mthubv1.OrderCloseResponse{Error: result.Error}), nil
-}
-
-// OrderHistory fetches closed orders.
-func (s *MtHubService) OrderHistory(ctx context.Context, req *connect.Request[mthubv1.OrderHistoryRequest]) (*connect.Response[mthubv1.OrderHistoryResponse], error) {
-	orders, err := s.svc.OrderHistory(ctx, req.Msg.AccountId, &mthub.HistoryRequest{
-		From: req.Msg.From,
-		To:   req.Msg.To,
-	})
-	if err != nil {
-		return nil, err
-	}
-	out := make([]*mthubv1.OrderRecord, len(orders))
-	for i, o := range orders {
-		out[i] = toProtoOrderRecord(o)
-	}
-	return connect.NewResponse(&mthubv1.OrderHistoryResponse{Orders: out}), nil
-}
-
-// OpenedOrders fetches currently open positions.
-func (s *MtHubService) OpenedOrders(ctx context.Context, req *connect.Request[mthubv1.OpenedOrdersRequest]) (*connect.Response[mthubv1.OpenedOrdersResponse], error) {
-	orders, err := s.svc.OpenedOrders(ctx, req.Msg.AccountId)
-	if err != nil {
-		return nil, err
-	}
-	out := make([]*mthubv1.OrderRecord, len(orders))
-	for i, o := range orders {
-		out[i] = toProtoOrderRecord(o)
-	}
-	return connect.NewResponse(&mthubv1.OpenedOrdersResponse{Orders: out}), nil
-}
-
-// SymbolParamsMany fetches contract parameters.
-func (s *MtHubService) SymbolParamsMany(ctx context.Context, req *connect.Request[mthubv1.SymbolParamsManyRequest]) (*connect.Response[mthubv1.SymbolParamsManyResponse], error) {
-	params, err := s.svc.SymbolParamsMany(ctx, req.Msg.AccountId, req.Msg.Symbols)
-	if err != nil {
-		return nil, err
-	}
-	out := make([]*mthubv1.SymbolParam, len(params))
-	for i, p := range params {
-		out[i] = &mthubv1.SymbolParam{
-			Symbol:       p.Symbol,
-			Digits:       p.Digits,
-			Point:        p.Point,
-			ContractSize: p.ContractSize,
-			MinLot:       p.MinLot,
-			MaxLot:       p.MaxLot,
-			LotStep:      p.LotStep,
+func (s *MtHubServer) StreamOrderEvents(ctx context.Context, req *connect.Request[antv1.StreamOrderEventsRequest], stream *connect.ServerStream[antv1.OrderEvent]) error {
+	userID := "default" // placeholder; extract from interceptor later
+	ch, cancel := s.svc.SubscribeUserOrderEvents(ctx, userID)
+	defer cancel()
+	for {
+		select {
+		case <-ctx.Done(): return nil
+		case ev, ok := <-ch:
+			if !ok { return nil }
+			if err := stream.Send(toProtoOrderEvent(ev)); err != nil { return err }
 		}
 	}
-	return connect.NewResponse(&mthubv1.SymbolParamsManyResponse{Params: out}), nil
 }
 
-// PriceHistory fetches today's price bars.
-func (s *MtHubService) PriceHistory(ctx context.Context, req *connect.Request[mthubv1.PriceHistoryRequest]) (*connect.Response[mthubv1.PriceHistoryResponse], error) {
-	bars, err := s.svc.PriceHistory(ctx, req.Msg.AccountId, req.Msg.Symbol)
-	if err != nil {
-		return nil, err
+func sideFromProto(s antv1.Side) mthub.Side {
+	if s == antv1.Side_SIDE_SELL { return mthub.SideSell }
+	return mthub.SideBuy
+}
+
+func orderTypeFromProto(t antv1.OrderType) mthub.OrderType {
+	switch t {
+	case antv1.OrderType_ORDER_TYPE_LIMIT: return mthub.OrderLimit
+	case antv1.OrderType_ORDER_TYPE_STOP: return mthub.OrderStop
+	case antv1.OrderType_ORDER_TYPE_STOP_LIMIT: return mthub.OrderStopLimit
+	default: return mthub.OrderMarket
 	}
-	out := make([]*mthubv1.PriceBar, len(bars))
-	for i, b := range bars {
-		out[i] = &mthubv1.PriceBar{
-			OpenTsMs: b.OpenTsMs,
-			Open:     b.Open,
-			High:     b.High,
-			Low:      b.Low,
-			Close:    b.Close,
-			Volume:   b.Volume,
-		}
+}
+
+func toProtoOrders(list []*mthub.OrderRecord) []*antv1.OrderRecord {
+	out := make([]*antv1.OrderRecord, 0, len(list))
+	for _, r := range list {
+		out = append(out, &antv1.OrderRecord{
+			Ticket: r.Ticket, AccountId: r.AccountID,
+			SymbolRaw: r.SymbolRaw, Canonical: r.Canonical,
+			Volume: r.Volume.String(), OpenPrice: r.OpenPrice.String(),
+			State: toProtoState(r.State),
+		})
 	}
-	return connect.NewResponse(&mthubv1.PriceHistoryResponse{Bars: out}), nil
+	return out
 }
 
-// SubscribeOrderEvents streams order events.
-func (s *MtHubService) SubscribeOrderEvents(ctx context.Context, req *connect.Request[mthubv1.SubscribeOrderEventsRequest], stream *connect.ServerStream[mthubv1.OrderEvent]) error {
-	return s.svc.SubscribeOrderEvents(ctx, req.Msg.AccountId, func(ev *mthub.OrderEvent) error {
-		oe := &mthubv1.OrderEvent{
-			AccountId: ev.AccountId,
-			Type:      ev.Type,
-		}
-		if ev.Order != nil {
-			oe.Order = toProtoOrderRecord(ev.Order)
-		}
-		return stream.Send(oe)
-	})
+func toProtoParams(list []*mthub.SymbolParam) []*antv1.SymbolParam {
+	out := make([]*antv1.SymbolParam, 0, len(list))
+	for _, p := range list {
+		out = append(out, &antv1.SymbolParam{
+			Canonical: p.Canonical, Digits: p.Digits,
+			LotSize: p.LotSize.String(), LotMin: p.LotMin.String(),
+			TradeMode: p.TradeMode, StopLevel: p.StopLevel,
+		})
+	}
+	return out
 }
 
-func toProtoOrderRecord(o *mthub.OrderRecord) *mthubv1.OrderRecord {
-	return &mthubv1.OrderRecord{
-		Ticket:       o.Ticket,
-		Symbol:       o.Symbol,
-		Side:         o.Side,
-		Lots:         o.Lots,
-		OpenPrice:    o.OpenPrice,
-		ClosePrice:   o.ClosePrice,
-		Profit:       o.Profit,
-		Swap:         o.Swap,
-		Commission:   o.Commission,
-		OpenTime:     o.OpenTime,
-		CloseTime:    o.CloseTime,
-		State:        o.State,
-		OpenTimeMs:   o.OpenTimeMs,
-		CurrentPrice: o.CurrentPrice,
+func toProtoState(s mthub.OrderState) antv1.OrderState {
+	switch s {
+	case mthub.OrderStateOpen: return antv1.OrderState_ORDER_STATE_OPEN
+	case mthub.OrderStateClosed: return antv1.OrderState_ORDER_STATE_CLOSED
+	case mthub.OrderStateCancelled: return antv1.OrderState_ORDER_STATE_CANCELLED
+	case mthub.OrderStateRejected: return antv1.OrderState_ORDER_STATE_REJECTED
+	default: return antv1.OrderState_ORDER_STATE_PENDING
+	}
+}
+
+func toProtoOrderEvent(ev *mthub.OrderEvent) *antv1.OrderEvent {
+	return &antv1.OrderEvent{
+		AccountId: ev.AccountID, Ticket: ev.Ticket,
+		EventType: ev.EventType, Timestamp: timestamppb.New(ev.Timestamp),
+		Order: &antv1.OrderRecord{Ticket: ev.Order.Ticket},
 	}
 }

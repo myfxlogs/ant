@@ -1,5 +1,0 @@
-syntax = "proto3";
-package ant.v1;
-option go_package = "anttrader/gen/proto/ant/v1;antv1";
-import public "analytics_monthly_entity.proto";
-import public "analytics_monthly_query.proto";

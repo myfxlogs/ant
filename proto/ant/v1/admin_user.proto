@@ -1,6 +1,0 @@
-syntax = "proto3";
-package ant.v1;
-option go_package = "anttrader/gen/proto/ant/v1;antv1";
-import public "admin_dashboard.proto";
-import public "admin_user_entity.proto";
-import public "admin_user_requests.proto";

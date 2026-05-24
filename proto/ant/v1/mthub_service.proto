@@ -1,0 +1,81 @@
+syntax = "proto3";
+package ant.v1;
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+import "google/protobuf/timestamp.proto";
+
+service MtHubService {
+  rpc PlaceOrder(PlaceOrderRequest) returns (PlaceOrderResponse);
+  rpc CloseOrder(CloseOrderRequest) returns (CloseOrderResponse);
+  rpc OpenedOrders(OpenedOrdersRequest) returns (OpenedOrdersResponse);
+  rpc OrderHistory(OrderHistoryRequest) returns (OrderHistoryResponse);
+  rpc SymbolParams(SymbolParamsRequest) returns (SymbolParamsResponse);
+  rpc PriceHistory(PriceHistoryRequest) returns (PriceHistoryResponse);
+  rpc GetAccountStatus(GetAccountStatusRequest) returns (AccountStatus);
+  rpc StreamOrderEvents(StreamOrderEventsRequest) returns (stream OrderEvent);
+}
+
+message GetAccountStatusRequest { string account_id = 1; }
+message AccountStatus {
+  string account_id = 1; string broker = 2; string platform = 3;
+  string state = 4; google.protobuf.Timestamp last_tick_at = 5;
+  string circuit_state = 6; double tick_rate_1m = 7;
+  repeated string subscribed_symbols = 8;
+}
+
+message PlaceOrderRequest {
+  string account_id = 1; string canonical = 2; Side side = 3;
+  OrderType order_type = 4; string volume = 5; string price = 6;
+  string stop_loss = 7; string take_profit = 8; string comment = 9;
+  string client_id = 10; int32 magic = 11;
+}
+message PlaceOrderResponse { int64 ticket = 1; string status = 2; }
+
+message CloseOrderRequest { string account_id = 1; int64 ticket = 2; string lots = 3; }
+message CloseOrderResponse { string status = 1; }
+
+message OpenedOrdersRequest { string account_id = 1; }
+message OpenedOrdersResponse { repeated OrderRecord orders = 1; }
+
+message OrderHistoryRequest { string account_id = 1; google.protobuf.Timestamp from = 2; google.protobuf.Timestamp to = 3; }
+message OrderHistoryResponse { repeated OrderRecord orders = 1; }
+
+message SymbolParamsRequest { string account_id = 1; repeated string canonicals = 2; }
+message SymbolParamsResponse { repeated SymbolParam params = 1; }
+
+message PriceHistoryRequest {
+  string account_id = 1; string canonical = 2; string period = 3;
+  google.protobuf.Timestamp from = 4; google.protobuf.Timestamp to = 5; int32 limit = 6;
+}
+message PriceHistoryResponse { repeated OHLCV bars = 1; }
+
+message StreamOrderEventsRequest {}
+
+message OrderEvent {
+  string account_id = 1; int64 ticket = 2; string event_type = 3;
+  OrderRecord order = 4; google.protobuf.Timestamp timestamp = 5;
+}
+
+enum Side { SIDE_UNSPECIFIED = 0; SIDE_BUY = 1; SIDE_SELL = 2; }
+enum OrderType { ORDER_TYPE_UNSPECIFIED = 0; ORDER_TYPE_MARKET = 1; ORDER_TYPE_LIMIT = 2; ORDER_TYPE_STOP = 3; ORDER_TYPE_STOP_LIMIT = 4; }
+enum OrderState { ORDER_STATE_UNSPECIFIED = 0; ORDER_STATE_PENDING = 1; ORDER_STATE_OPEN = 2; ORDER_STATE_CLOSED = 3; ORDER_STATE_CANCELLED = 4; ORDER_STATE_REJECTED = 5; }
+
+message OrderRecord {
+  int64 ticket = 1; string account_id = 2; string symbol_raw = 3; string canonical = 4;
+  Side side = 5; OrderType order_type = 6; string volume = 7; string open_price = 8;
+  google.protobuf.Timestamp open_time = 9; string close_price = 10;
+  google.protobuf.Timestamp close_time = 11; string profit = 12; string commission = 13;
+  string swap = 14; string comment = 15; int32 magic = 16; OrderState state = 17;
+}
+
+message SymbolParam {
+  string canonical = 1; string symbol_raw = 2; int32 digits = 3;
+  string point_value = 4; string lot_size = 5; string lot_step = 6;
+  string lot_min = 7; string lot_max = 8; bool spread_float = 9;
+  int32 trade_mode = 10; int32 stop_level = 11;
+}
+
+message OHLCV {
+  google.protobuf.Timestamp open_time = 1; google.protobuf.Timestamp close_time = 2;
+  string open = 3; string high = 4; string low = 5; string close = 6;
+  double volume = 7; uint32 tick_count = 8;
+}

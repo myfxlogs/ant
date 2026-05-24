@@ -142,15 +142,15 @@ docker exec ant-clickhouse clickhouse-client --query \
 
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
-| M7.2-1 | 🅒 `proto/ant/v1/mthub_service.proto` 8 个 RPC（含 GetAccountStatus 替代原 livez/account）| 同左 | `make proto-breaking` 通过 + `grep -c '^  rpc ' proto/ant/v1/mthub_service.proto \| grep -q '^8$'` |
-| M7.2-2 | 🅒 `proto/ant/v1/market_service.proto` 3 个 RPC | 同左 | 同上 |
-| M7.2-3 | 🅒 `make proto` 生成 Go + TS stub | `backend/gen/proto/ant/v1/` `frontend/src/gen/ant/v1/` | `test -f backend/gen/proto/ant/v1/mthub_service.pb.go && test -f frontend/src/gen/ant/v1/mthub_service_pb.ts` |
-| M7.2-4 | 🅒 `internal/mthub/{types.go,executor.go,session.go,hub.go,events.go,service.go,metrics.go}` | 同左 + 全部 _test.go | LOC ≤ 300（非测试，与 spec/12 §1 一致）；test cover ≥ 60% |
-| M7.2-5 | 🅒 `internal/connect/mthub_service.go` 8 个 handler 实现（PlaceOrder/CloseOrder/OpenedOrders/OrderHistory/SymbolParams/PriceHistory/GetAccountStatus/StreamOrderEvents）| 同左 + `mthub_service_test.go` | grpcurl 真实调通 PlaceOrder（dockertest mtapi mock） + `GetAccountStatus` 返 connected |
+| M7.2-1 | ☑ `proto/ant/v1/mthub_service.proto` 8 个 RPC（含 GetAccountStatus 替代原 livez/account）| 同左 | `make proto-breaking` 通过 + `grep -c '^  rpc ' proto/ant/v1/mthub_service.proto \| grep -q '^8$'` |
+| M7.2-2 | ☑ `proto/ant/v1/market_service.proto` 3 个 RPC | 同左 | 同上 |
+| M7.2-3 | ☑ `make proto` 生成 Go + TS stub | `backend/gen/proto/ant/v1/` `frontend/src/gen/ant/v1/` | `test -f backend/gen/proto/ant/v1/mthub_service.pb.go && test -f frontend/src/gen/ant/v1/mthub_service_pb.ts` |
+| M7.2-4 | ☑ `internal/mthub/{types.go,executor.go,session.go,hub.go,events.go,service.go,metrics.go}` | 同左 + 全部 _test.go | LOC ≤ 300（非测试，与 spec/12 §1 一致）；test cover ≥ 60% |
+| M7.2-5 | ☑ `internal/connect/mthub_service.go` 8 个 handler 实现（PlaceOrder/CloseOrder/OpenedOrders/OrderHistory/SymbolParams/PriceHistory/GetAccountStatus/StreamOrderEvents）| 同左 + `mthub_service_test.go` | grpcurl 真实调通 PlaceOrder（dockertest mtapi mock） + `GetAccountStatus` 返 connected |
 | M7.2-6 | 🅒 `internal/connect/market_handler.go` 3 个 handler（GetKlines 走 CH） | 同左 + test | grpcurl 调通 GetKlines 返回 CH 数据 |
-| M7.2-7 | 🅒 SSE：StreamOrderEvents handler | `internal/connect/mthub_service.go` 内 | curl SSE 5s 内收到至少 1 个事件（dockertest 触发）|
+| M7.2-7 | ☑ SSE：StreamOrderEvents handler | `internal/connect/mthub_service.go` 内 | curl SSE 5s 内收到至少 1 个事件（dockertest 触发）|
 | M7.2-8 | 🅒 frontend client wrapper：`frontend/src/api/mthub.ts` `frontend/src/api/market.ts` | 同左 | `cd frontend && pnpm tsc --noEmit` |
-| M7.2-9 | 🅒 mthub 注入 mdgateway runner（共享 session） | `internal/mdgateway/runner.go` + `internal/mthub/hub.go` | runner 启动后 hub.Get(accountID) != nil |
+| M7.2-9 | ☑ mthub 注入 mdgateway runner（共享 session） | `internal/mdgateway/runner.go` + `internal/mthub/hub.go` | runner 启动后 hub.Get(accountID) != nil |
 
 ---
 

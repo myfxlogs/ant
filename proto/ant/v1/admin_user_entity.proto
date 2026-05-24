@@ -1,5 +1,0 @@
-syntax = "proto3";
-package ant.v1;
-option go_package = "anttrader/gen/proto/ant/v1;antv1";
-import "google/protobuf/timestamp.proto";
-message UserWithAccounts { string id = 1; string email = 2; string username = 3; string nickname = 4; string role = 5; string status = 6; int32 account_count = 7; int32 mt_account_count = 8; google.protobuf.Timestamp last_login_at = 9; google.protobuf.Timestamp created_at = 10; }

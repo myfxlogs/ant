@@ -1,0 +1,30 @@
+syntax = "proto3";
+package ant.v1;
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+import "google/protobuf/timestamp.proto";
+import "mthub_service.proto";
+
+service MarketService {
+  rpc GetKlines(GetKlinesRequest) returns (GetKlinesResponse);
+  rpc GetSymbolStats(GetSymbolStatsRequest) returns (GetSymbolStatsResponse);
+  rpc StreamTicks(StreamTicksRequest) returns (stream TickMsg);
+}
+
+message GetKlinesRequest {
+  string canonical = 1; string broker = 2; string period = 3;
+  google.protobuf.Timestamp from = 4; google.protobuf.Timestamp to = 5; int32 limit = 6;
+}
+message GetKlinesResponse { repeated OHLCV bars = 1; }
+
+message GetSymbolStatsRequest { string canonical = 1; string broker = 2; }
+message GetSymbolStatsResponse {
+  string current_bid = 1; string current_ask = 2; string change_24h_pct = 3;
+  string spread = 4; uint64 tick_rate_1m = 5;
+}
+
+message StreamTicksRequest { repeated string canonicals = 1; string broker = 2; }
+message TickMsg {
+  string canonical = 1; string broker = 2; int64 ts_unix_ms = 3;
+  string bid = 4; string ask = 5;
+}
+
