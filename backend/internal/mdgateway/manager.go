@@ -8,7 +8,6 @@ import (
 	"anttrader/internal/mdgateway/adapter/mdtick"
 )
 
-// Gateway is the contract every MT adapter must implement.
 type Gateway interface {
 	Platform() string
 	AccountID() string
@@ -19,10 +18,8 @@ type Gateway interface {
 	SessionID() string
 }
 
-// TickHandler is called by the adapter for each received tick.
 type TickHandler func(t *mdtick.Tick)
 
-// ManagerDeps holds all dependencies for Manager.
 type ManagerDeps struct {
 	Normalizer  *Normalizer
 	Quality     *Quality
@@ -33,8 +30,6 @@ type ManagerDeps struct {
 	SpillWriter *SpillWriter
 }
 
-// Manager orchestrates connections, platform dispatch, circuit breaker
-// protection, and tick fan-out to publisher + CH writer.
 type Manager struct {
 	normalizer  *Normalizer
 	quality     *Quality
@@ -49,7 +44,6 @@ type Manager struct {
 	gateways map[string]Gateway
 }
 
-// NewManager constructs and returns a Manager.
 func NewManager(deps ManagerDeps) *Manager {
 	return &Manager{
 		normalizer:  deps.Normalizer,
@@ -64,7 +58,6 @@ func NewManager(deps ManagerDeps) *Manager {
 	}
 }
 
-// AddGateway registers and starts a new gateway.
 func (m *Manager) AddGateway(ctx context.Context, gw Gateway, syms []string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -75,7 +68,6 @@ func (m *Manager) AddGateway(ctx context.Context, gw Gateway, syms []string) err
 	return nil
 }
 
-// RemoveGateway closes and removes a registered gateway.
 func (m *Manager) RemoveGateway(ctx context.Context, accountID string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -87,43 +79,33 @@ func (m *Manager) RemoveGateway(ctx context.Context, accountID string) error {
 	return gw.Disconnect(ctx)
 }
 
-// HandleTick processes a tick through the full pipeline:
-// normalizer → quality → dedup → aggregator → publisher → chWriter.
 func (m *Manager) HandleTick(t *mdtick.Tick) {
-	// 1. canonical
 	t.Canonical = m.normalizer.Resolve(t.Broker, t.SymbolRaw)
 
-	// 2. quality
 	qr := m.quality.Check(t)
 	if qr.Dropped {
 		return
 	}
 
-	// 3. dedup
 	if m.dedup.Seen(t) {
 		return
 	}
 
-	// 4. aggregate bars
 	var bars []*mdtick.Bar
 	m.aggregator.AddTick(t, func(b *mdtick.Bar) { bars = append(bars, b) })
 
-	// 5. publish tick
 	_ = m.publisher.PublishTick(t)
 
-	// 6. publish bars
 	for _, b := range bars {
 		_ = m.publisher.PublishBar(b)
 	}
 
-	// 7. write to ClickHouse (async via channel)
 	m.chWriter.EnqueueTick(t)
 	for _, b := range bars {
 		m.chWriter.EnqueueBar(b)
 	}
 }
 
-// Health returns health summaries for all registered gateways.
 func (m *Manager) Health() []AccountHealth {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -137,7 +119,6 @@ func (m *Manager) Health() []AccountHealth {
 	return result
 }
 
-// AccountHealth summarizes a single account state.
 type AccountHealth struct {
 	AccountID    string
 	Broker       string

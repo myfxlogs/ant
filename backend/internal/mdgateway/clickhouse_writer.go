@@ -12,14 +12,12 @@ import (
 	"anttrader/internal/mdgateway/adapter/mdtick"
 )
 
-// CHWriterConfig configures ClickHouse async batch writer.
 type CHWriterConfig struct {
 	FlushInterval time.Duration // default 1s
 	MaxBatchSize  int           // default 1000
 	QueueSize     int           // default 5000; overflow → spill
 }
 
-// DefaultCHWriterConfig returns sensible defaults.
 func DefaultCHWriterConfig() CHWriterConfig {
 	return CHWriterConfig{
 		FlushInterval: time.Second,
@@ -28,8 +26,6 @@ func DefaultCHWriterConfig() CHWriterConfig {
 	}
 }
 
-// CHWriter asynchronously batches and writes ticks/bars to ClickHouse.
-// When the channel is full, writes fall through to SpillWriter.
 type CHWriter struct {
 	cfg    CHWriterConfig
 	conn   clickhouse.Conn
@@ -44,7 +40,6 @@ type CHWriter struct {
 	mu             sync.Mutex
 }
 
-// NewCHWriter creates a ClickHouse batch writer.
 func NewCHWriter(cfg CHWriterConfig, conn clickhouse.Conn, spill *SpillWriter, log *zap.Logger) *CHWriter {
 	if cfg.QueueSize <= 0 { cfg.QueueSize = 5000 }
 	return &CHWriter{
@@ -57,14 +52,10 @@ func NewCHWriter(cfg CHWriterConfig, conn clickhouse.Conn, spill *SpillWriter, l
 	}
 }
 
-// SetOnSpillFail sets a callback invoked when spill writer also fails
-// (decision D-3 backpressure upgrade path).
 func (w *CHWriter) SetOnSpillFail(fn func(brokerKey string, err error)) {
 	w.onSpillFail = fn
 }
 
-// EnqueueTick sends a tick to the async writer. Non-blocking; falls back
-// to SpillWriter if the channel is full.
 func (w *CHWriter) EnqueueTick(t *mdtick.Tick) {
 	select {
 	case w.tickQ <- t:
@@ -73,7 +64,6 @@ func (w *CHWriter) EnqueueTick(t *mdtick.Tick) {
 	}
 }
 
-// EnqueueBar sends a bar to the async writer.
 func (w *CHWriter) EnqueueBar(b *mdtick.Bar) {
 	select {
 	case w.barQ <- b:
@@ -82,7 +72,6 @@ func (w *CHWriter) EnqueueBar(b *mdtick.Bar) {
 	}
 }
 
-// Start launches the background flush loop. Blocks until ctx is done.
 func (w *CHWriter) Start(ctx context.Context) {
 	ticker := time.NewTicker(w.cfg.FlushInterval)
 	defer ticker.Stop()
@@ -198,5 +187,4 @@ func (w *CHWriter) spillFailed(broker string, err error) {
 	}
 }
 
-// Ensure driver.Batch type is referenced.
 var _ driver.Batch = nil

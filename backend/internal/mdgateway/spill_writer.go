@@ -13,14 +13,12 @@ import (
 	"anttrader/internal/mdgateway/adapter/mdtick"
 )
 
-// SpillWriterConfig holds spill writer settings.
 type SpillWriterConfig struct {
 	Dir          string        // default /var/lib/ant/spill
 	MaxFileBytes int64         // default 100 MB
 	MaxFileAge   time.Duration // default 1h
 }
 
-// DefaultSpillConfig returns sensible defaults.
 func DefaultSpillConfig() SpillWriterConfig {
 	return SpillWriterConfig{
 		Dir:          "/var/lib/ant/spill",
@@ -29,8 +27,6 @@ func DefaultSpillConfig() SpillWriterConfig {
 	}
 }
 
-// SpillWriter persists ticks and bars to local JSONL files when
-// ClickHouse is unavailable.
 type SpillWriter struct {
 	cfg SpillWriterConfig
 	log *zap.Logger
@@ -41,7 +37,6 @@ type SpillWriter struct {
 	curStart time.Time
 }
 
-// NewSpillWriter creates a new spill writer. Creates the directory if missing.
 func NewSpillWriter(cfg SpillWriterConfig, log *zap.Logger) (*SpillWriter, error) {
 	if err := os.MkdirAll(cfg.Dir, 0755); err != nil {
 		return nil, fmt.Errorf("spill: mkdir %s: %w", cfg.Dir, err)
@@ -67,7 +62,6 @@ type spillEntry struct {
 	Count    uint32  `json:"N,omitempty"`
 }
 
-// WriteTick serializes a tick as JSONL.
 func (s *SpillWriter) WriteTick(t *mdtick.Tick) error {
 	return s.write(spillEntry{
 		Kind: "tick", Ts: t.ArrivedUnixMs, Broker: t.Broker, Canonical: t.Canonical,
@@ -75,7 +69,6 @@ func (s *SpillWriter) WriteTick(t *mdtick.Tick) error {
 	})
 }
 
-// WriteBar serializes a bar as JSONL.
 func (s *SpillWriter) WriteBar(b *mdtick.Bar) error {
 	return s.write(spillEntry{
 		Kind: "bar", Ts: b.CloseTsUnixMs, Broker: b.Broker, Canonical: b.Canonical,
@@ -125,7 +118,6 @@ func (s *SpillWriter) rotate() error {
 	return nil
 }
 
-// Close flushes and closes the current spill file.
 func (s *SpillWriter) Close() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
