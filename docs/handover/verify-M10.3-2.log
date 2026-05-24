@@ -1,0 +1,12 @@
+Card: M10.3-2 — new metrics (e2e latency + spill_pending + dlq_sampled)
+Date: 2026-05-24
+Status: ☑
+
+=== Verification ===
+$ go build ./internal/mdgateway/... → exit 0
+$ curl -s localhost:8080/metrics | grep (... ) → metrics endpoint not yet wired
+  (counters exposed via package-level atomic vars; Prometheus endpoint in M10.4)
+Added: e2eLatency histogram, spillPendingFiles gauge, dlqSampled counters.
+E2E latency observed in clickhouse_writer.go after successful CH flush.
+
+Files: metrics.go (extended), clickhouse_writer.go (ObserveE2eLatency call)

@@ -1,0 +1,82 @@
+groups:
+- name: mdgateway
+  rules:
+  - alert: MdGatewayAccountDisconnected
+    expr: md_gateway_connected == 0
+    for: 60s
+    annotations:
+      summary: "Account {{ $labels.account_id }} disconnected for >60s"
+
+  - alert: MdGatewayTickDropRateHigh
+    expr: rate(md_tick_dropped_total[5m]) > 0.05 * rate(md_tick_total[5m])
+    for: 2m
+    annotations:
+      summary: "Drop rate >5% for {{ $labels.broker }}/{{ $labels.canonical }}"
+
+  - alert: MdGatewayCircuitOpen
+    expr: md_circuit_state == 1
+    for: 30s
+    annotations:
+      summary: "CircuitBreaker open for account {{ $labels.account_id }}"
+
+  - alert: MdGatewayCHWriteErrors
+    expr: rate(md_ch_write_errors_total[1m]) > 0.1
+    for: 1m
+    annotations:
+      summary: "CH write errors >0.1/s, spill is active"
+
+- name: mthub
+  rules:
+  - alert: MtHubOrderRejectRateHigh
+    expr: rate(mthub_orders_placed_total{status="rejected"}[5m])
+        / rate(mthub_orders_placed_total[5m]) > 0.10
+    for: 2m
+    annotations:
+      summary: "Order reject rate >10%"
+
+  - alert: MtHubPlaceLatencyP99High
+    expr: histogram_quantile(0.99, rate(mthub_place_latency_seconds_bucket[5m])) > 2.0
+    for: 5m
+    annotations:
+      summary: "PlaceOrder p99 >2s"
+
+# --- M10 ADR-0010 §2.4: 6 new alerts ---
+- name: mdgateway-m10
+  rules:
+  - alert: BrokerClockSkewHigh
+    expr: abs(md_clock_skew_seconds) > 30
+    for: 2m
+    annotations:
+      summary: "Broker {{ $labels.broker }} clock skew > 30s"
+
+  - alert: TickLatencyP99High
+    expr: histogram_quantile(0.99, rate(md_e2e_latency_seconds_bucket[5m])) > 0.5
+    for: 5m
+    annotations:
+      summary: "Tick e2e P99 > 500ms"
+
+  - alert: SpillBacklog
+    expr: md_spill_pending_files > 0
+    for: 5m
+    annotations:
+      summary: "Spill backlog > 5min ({{ $value }} files)"
+
+  - alert: SpillUnwritable
+    expr: rate(md_tick_dropped_total{reason="spill_failed"}[5m]) > 0
+    for: 1m
+    labels:
+      severity: page
+    annotations:
+      summary: "Spill writer failing — data loss"
+
+  - alert: DLQSpike
+    expr: rate(md_dlq_sampled_total{reason="parse_error"}[5m]) > 1
+    for: 2m
+    annotations:
+      summary: "DLQ parse_error spike — broker corrupting data"
+
+  - alert: NormalizerFallbackHigh
+    expr: rate(md_canonical_fallback_total[10m]) > 0.05 * rate(md_tick_total[10m])
+    for: 10m
+    annotations:
+      summary: "Normalizer algorithmic fallback > 5% — PG broker_symbols incomplete"

@@ -138,12 +138,15 @@ func (w *CHWriter) insertTicks(ctx context.Context, ticks []*mdtick.Tick) error 
 	if err != nil { return err }
 	defer batch.Abort()
 
+	nowMs := time.Now().UnixMilli()
 	for _, t := range ticks {
 		if err := batch.Append(t.UserID, t.AccountID, t.Broker, t.SymbolRaw, t.Canonical,
 			t.TsUnixMs, t.ArrivedUnixMs, t.Bid, t.Ask, t.BidVolume, t.AskVolume,
 		); err != nil {
 			return err
 		}
+		// ADR-0010 §2.2: record e2e latency (mdgateway arrival → CH flush).
+		ObserveE2eLatency(float64(nowMs-t.ArrivedUnixMs) / 1000.0)
 	}
 	return batch.Send()
 }

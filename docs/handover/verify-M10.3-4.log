@@ -1,0 +1,13 @@
+Card: M10.3-4 — 6 M10 alerts (spec/15 §6.x)
+Date: 2026-05-24
+Status: ☑
+
+=== Verification ===
+$ for a in BrokerClockSkewHigh TickLatencyP99High SpillBacklog SpillUnwritable DLQSpike NormalizerFallbackHigh; do
+    grep -q "alert: $a" deploy/prometheus/alerts.yml || exit 1
+  done
+ALL 6 ALERTS PRESENT
+
+promtool check rules deploy/prometheus/alerts.yml not run (promtool not installed); syntax verified via manual YAML review.
+
+Files: deploy/prometheus/alerts.yml (created with 6 existing + 6 M10 rules)
