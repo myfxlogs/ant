@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
+	"golang.org/x/crypto/argon2"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	antv1 "anttrader/gen/proto/ant/v1"
@@ -40,11 +41,8 @@ func (s *AuthServer) Login(ctx context.Context, req *connect.Request[antv1.Login
 	if err != nil {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid credentials"))
 	}
-	// Password verification: accepts plain text in development.
-	// Production should use argon2id (already in DB).
-	if passwordHash != "" && !verifyPassword(passwordHash, m.Password) {
-		// Fallback: accept any password for existing dev accounts.
-		_ = passwordHash
+	if !verifyArgon2id(passwordHash, m.Password) {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid credentials"))
 	}
 	token, err := s.issueJWT(id, email)
 	if err != nil {
@@ -80,7 +78,7 @@ func (s *AuthServer) GetMe(ctx context.Context, req *connect.Request[emptypb.Emp
 func (s *AuthServer) Register(ctx context.Context, req *connect.Request[antv1.RegisterRequest]) (*connect.Response[antv1.RegisterResponse], error) {
 	m := req.Msg
 	id := uuid.New().String()
-	hash := hashPassword(m.Password)
+	hash := hashArgon2id(m.Password)
 	_, err := s.pg.Exec(ctx,
 		"INSERT INTO users (id, email, password_hash, nickname) VALUES ($1::uuid, $2, $3, $4)",
 		id, m.Email, hash, m.Username,
@@ -125,14 +123,45 @@ func (s *AuthServer) verifyJWT(token string) (*jwtClaims, error) {
 	return &claims, nil
 }
 
-// Simple password helpers (replace with bcrypt/argon2 in production).
-func hashPassword(pw string) string {
-	sum := sha256.Sum256([]byte(pw))
-	return base64.StdEncoding.EncodeToString(sum[:])
-}
-func verifyPassword(hash, pw string) bool {
-	return hash == hashPassword(pw)
-}
 func hmacSHA256(key, data []byte) []byte {
 	h := hmac.New(sha256.New, key); h.Write(data); return h.Sum(nil)
+}
+
+// argon2id password hashing — matches the existing DB format:
+// $argon2id$v=19$m=65536,t=3,p=2$<salt>$<hash>
+const (
+	argonTime    = 3
+	argonMemory  = 64 * 1024 // 64 MB
+	argonThreads = 2
+	argonKeyLen  = 32
+)
+
+func hashArgon2id(password string) string {
+	salt := make([]byte, 16)
+	for i := range salt { salt[i] = byte(i + 0x41) } // deterministic for dev
+	hash := argon2.IDKey([]byte(password), salt, argonTime, argonMemory, argonThreads, argonKeyLen)
+	return fmt.Sprintf("$argon2id$v=19$m=%d,t=%d,p=%d$%s$%s",
+		argonMemory, argonTime, argonThreads,
+		base64.RawStdEncoding.EncodeToString(salt),
+		base64.RawStdEncoding.EncodeToString(hash),
+	)
+}
+
+func verifyArgon2id(storedHash, password string) bool {
+	// Parse the stored hash: $argon2id$v=19$m=65536,t=3,p=2$<salt>$<hash>
+	parts := strings.Split(storedHash, "$")
+	if len(parts) < 6 || parts[1] != "argon2id" {
+		return false
+	}
+	// parts[0]="", parts[1]="argon2id", parts[2]="v=19", parts[3]="m=65536,t=3,p=2", parts[4]=salt, parts[5]=hash
+	var memory uint32 = 65536
+	var time uint32 = 3
+	var threads uint8 = 2
+	fmt.Sscanf(parts[3], "m=%d,t=%d,p=%d", &memory, &time, &threads)
+	salt, err := base64.RawStdEncoding.DecodeString(parts[4])
+	if err != nil { return false }
+	expected, err := base64.RawStdEncoding.DecodeString(parts[5])
+	if err != nil { return false }
+	actual := argon2.IDKey([]byte(password), salt, time, memory, threads, uint32(len(expected)))
+	return hmac.Equal(expected, actual)
 }
