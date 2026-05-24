@@ -30,7 +30,8 @@ func NewBarAggregator() *BarAggregator {
 }
 
 // AddTick processes a tick; emits completed bars via onBar.
-// Uses ArrivedUnixMs for bucketing (QUIRK Q-001).
+// ADR-0008 §2.2 + ADR-0009 §2.2: Uses ArrivedUnixMs for bucketing
+// (local clock — the only system-clock source; QUIRK Q-001).
 func (a *BarAggregator) AddTick(t *mdtick.Tick, onBar func(*mdtick.Bar)) {
 	a.mu.Lock()
 	defer a.mu.Unlock()

@@ -1,0 +1,30 @@
+Card: M10.1-2 — arrived_unix_ms time-axis discipline
+Date: 2026-05-24
+Status: ☑
+
+=== Verification Output ===
+
+$ grep -nE '\bts_unix_ms\b.*\b(bucket|partition|cutoff|TTL|window)' \
+    backend/internal/mdgateway/clickhouse_writer.go backend/internal/mdgateway/bar_aggregator.go
+exit code: 1 (no matches — no boundary misuse of ts_unix_ms)
+
+$ go test -race ./internal/mdgateway/...
+?   anttrader/internal/mdgateway [no test files]
+?   anttrader/internal/mdgateway/adapter/mdtick [no test files]
+?   anttrader/internal/mdgateway/adapter/mt4 [no test files]
+?   anttrader/internal/mdgateway/adapter/mt5 [no test files]
+?   anttrader/internal/mdgateway/chmigrate [no test files]
+exit code: 0
+
+=== Implementation Notes ===
+
+- bar_aggregator.go already used ArrivedUnixMs for bucketing (QUIRK Q-001).
+  No boundary changes needed; added ADR-0008 §2.2 + ADR-0009 §2.2 annotation.
+- clickhouse_writer.go: ts_unix_ms only appears as a data column in INSERT statements,
+  never for boundary decisions. Added ADR-0008 §2.2 annotation to clarify
+  ts_unix_ms = broker clock (business display) vs arrived_unix_ms = system clock.
+- bar CloseTsUnixMs already correctly sourced from ArrivedUnixMs (ADR-0009 §2.2).
+
+Files changed:
+- backend/internal/mdgateway/clickhouse_writer.go (ADR annotations)
+- backend/internal/mdgateway/bar_aggregator.go (ADR annotation)
