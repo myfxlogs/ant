@@ -9,19 +9,23 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
+
+	"anttrader/internal/mdgateway/adapter/mdtick"
 )
 
-// SpillReplay reads spill JSONL files and replays them through the CH writer.
+// SpillReplay reads spill JSONL files and replays them through the publisher and CH writer.
 type SpillReplay struct {
-	dir  string
-	ch   *CHWriter
-	log  *zap.Logger
+	dir       string
+	publisher *Publisher
+	ch        *CHWriter
+	log       *zap.Logger
 }
 
 // NewSpillReplay creates a replay engine.
-func NewSpillReplay(dir string, ch *CHWriter, log *zap.Logger) *SpillReplay {
-	return &SpillReplay{dir: dir, ch: ch, log: log}
+func NewSpillReplay(dir string, pub *Publisher, ch *CHWriter, log *zap.Logger) *SpillReplay {
+	return &SpillReplay{dir: dir, publisher: pub, ch: ch, log: log}
 }
 
 // Run scans the spill directory for *.jsonl files and replays them in
@@ -82,6 +86,43 @@ func (r *SpillReplay) replayFile(ctx context.Context, path string) (int, error) 
 		var e spillEntry
 		if err := json.Unmarshal(line, &e); err != nil {
 			continue // skip malformed lines
+		}
+
+		// ADR-0009 §2.1: dual-write — publisher first, then CHWriter.
+		// Construct minimal DTO from spillEntry (sparse format; missing
+		// UserID/AccountID/SymbolRaw are empty — fine for replay).
+		switch e.Kind {
+		case "tick":
+			tick := &mdtick.Tick{
+				Broker:        e.Broker,
+				Canonical:     e.Canonical,
+				TsUnixMs:      e.Ts,
+				ArrivedUnixMs: e.Ts,
+				Bid:           decimal.RequireFromString(e.Bid),
+				Ask:           decimal.RequireFromString(e.Ask),
+				BidVolume:     e.BidVol,
+				AskVolume:     e.AskVol,
+				IsReplay:      true,
+			}
+			_ = r.publisher.PublishTick(tick)
+			r.ch.EnqueueTick(tick)
+		case "bar":
+			bar := &mdtick.Bar{
+				Broker:        e.Broker,
+				Canonical:     e.Canonical,
+				Period:        e.Period,
+				OpenTsUnixMs:  e.Ts,
+				CloseTsUnixMs: e.Ts,
+				Open:          decimal.RequireFromString(e.Open),
+				High:          decimal.RequireFromString(e.High),
+				Low:           decimal.RequireFromString(e.Low),
+				Close:         decimal.RequireFromString(e.Close),
+				Volume:        e.Volume,
+				TickCount:     e.Count,
+				IsReplay:      true,
+			}
+			_ = r.publisher.PublishBar(bar)
+			r.ch.EnqueueBar(bar)
 		}
 		count++
 	}
