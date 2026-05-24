@@ -23,7 +23,7 @@
 
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
-| M8.1-1 | 新建 `internal/platform/scope.go`：`PlatformScope` 接口 + 默认实现（始终返回 `'ant'`）| 同左 + `scope_test.go` | `cd backend && go test ./internal/platform/...` |
+| M8.1-1 | ☑ PlatformScope interface + default impl |
 | M8.1-2 | `StrategyTemplateService` 重构：`List(ctx, userID)` 返回 `platform_strategies ∪ user_strategies`；详情读取按 ID 路由到对应表 | `backend/internal/service/strategy_template_service.go` | 单测：返 list 含 platform_* 行 + user_* 行；handler 不变 |
 | M8.1-3 | `FactorService`、`AIAgentService` 类似重构：列表 = platform ∪ user_*；user 修改 platform 项 → 写到 `user_*_overrides` 表（不污染 platform） | 对应 service | 单测：override 后 user List 看到的是 override 值；其他 user 看到的仍是 platform 原值 |
 | M8.1-4 | 删除 `seed_default_templates.go` per-user 复制逻辑；改为单次 seed 到 `platform_strategies` | `backend/cmd/seed_strategy_templates/main.go` `backend/internal/server/seed_default_templates.go` | grep 无 `for _, userID := range users` seed 模式 |
