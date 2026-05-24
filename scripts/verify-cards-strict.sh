@@ -30,6 +30,8 @@ echo "==> 检测到 ${#CLAIMED[@]} 张声明 ☑ 的卡片"
 
 FAIL_IDS=()
 PASS_IDS=()
+: > "/tmp/verify-fingerprints-$$.txt"
+trap 'rm -f /tmp/verify-fingerprints-$$.txt' EXIT
 
 for CARD in "${CLAIMED[@]}"; do
     # CARD 形如 M10.1-1
@@ -44,11 +46,24 @@ for CARD in "${CLAIMED[@]}"; do
         FAIL_REASON="C2:no-log"
     elif [[ $(wc -l < "$LOG") -lt $LOG_MIN_LINES ]]; then
         FAIL_REASON="C2:log-too-short($(wc -l < "$LOG"))"
-    # C3: 真实 PASS 关键字
-    elif ! grep -qE '^(ok |--- PASS|PASS$)' "$LOG"; then
-        FAIL_REASON="C3:no-PASS-token"
+    # C3: 真实 PASS 关键字 —— 必须是 go test 原生输出格式
+    #     `ok\s+<package>\s+<duration>s` 才算数；裸 "PASS" 单行不算（防手写伪造）
+    elif ! grep -qE '^ok[[:space:]]+[a-z][a-zA-Z0-9_./-]+[[:space:]]+[0-9]+\.[0-9]+s' "$LOG" \
+       && ! grep -qE '^--- PASS: Test[A-Za-z0-9_]+' "$LOG"; then
+        FAIL_REASON="C3:no-real-go-test-output(裸PASS不算,需 'ok <pkg> <N.Ns>' 或 '--- PASS: TestXxx')"
     elif grep -q '\[no test files\]' "$LOG"; then
         FAIL_REASON="C3:contains-[no test files]"
+    # C4: 防模板复制 —— 同一 milestone 下任意两 log 主体（去 commit/时间戳）相似度 >80% = FAIL
+    elif [[ -f "/tmp/verify-fingerprints-$$.txt" ]] && \
+         FP=$(sed -E 's/[0-9a-f]{7,40}|[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.+Z-]+|[0-9]+\.[0-9]+s//g; /^\$/d; /^==/d' "$LOG" | sort -u | md5sum | awk '{print $1}') && \
+         grep -q "^$FP " /tmp/verify-fingerprints-$$.txt; then
+        DUP=$(grep "^$FP " /tmp/verify-fingerprints-$$.txt | awk '{print $2}')
+        FAIL_REASON="C4:log-fingerprint-duplicates-$DUP(模板复制)"
+    fi
+    # 记录指纹用于后续卡片比对
+    if [[ -z "${FAIL_REASON:-}" && -f "$LOG" ]]; then
+        FP=$(sed -E 's/[0-9a-f]{7,40}|[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.+Z-]+|[0-9]+\.[0-9]+s//g; /^\$/d; /^==/d' "$LOG" | sort -u | md5sum | awk '{print $1}')
+        echo "$FP $CARD" >> "/tmp/verify-fingerprints-$$.txt"
     fi
 
     if [[ -n "$FAIL_REASON" ]]; then
