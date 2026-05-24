@@ -1,9 +1,202 @@
 package mdgateway
 
-import "anttrader/internal/mdgateway/adapter/mdtick"
+import (
+	"context"
+	"sync"
+	"time"
 
-type CHWriter struct{}
+	"github.com/ClickHouse/clickhouse-go/v2"
+	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
+	"go.uber.org/zap"
 
-func NewCHWriter() *CHWriter { return &CHWriter{} }
-func (w *CHWriter) EnqueueTick(t *mdtick.Tick) {}
-func (w *CHWriter) EnqueueBar(b *mdtick.Bar) {}
+	"anttrader/internal/mdgateway/adapter/mdtick"
+)
+
+// CHWriterConfig configures ClickHouse async batch writer.
+type CHWriterConfig struct {
+	FlushInterval time.Duration // default 1s
+	MaxBatchSize  int           // default 1000
+	QueueSize     int           // default 5000; overflow → spill
+}
+
+// DefaultCHWriterConfig returns sensible defaults.
+func DefaultCHWriterConfig() CHWriterConfig {
+	return CHWriterConfig{
+		FlushInterval: time.Second,
+		MaxBatchSize:  1000,
+		QueueSize:     5000,
+	}
+}
+
+// CHWriter asynchronously batches and writes ticks/bars to ClickHouse.
+// When the channel is full, writes fall through to SpillWriter.
+type CHWriter struct {
+	cfg    CHWriterConfig
+	conn   clickhouse.Conn
+	log    *zap.Logger
+	spill  *SpillWriter
+
+	tickQ chan *mdtick.Tick
+	barQ  chan *mdtick.Bar
+
+	onSpillFail    func(brokerKey string, err error)
+	spillFailCount int
+	mu             sync.Mutex
+}
+
+// NewCHWriter creates a ClickHouse batch writer.
+func NewCHWriter(cfg CHWriterConfig, conn clickhouse.Conn, spill *SpillWriter, log *zap.Logger) *CHWriter {
+	if cfg.QueueSize <= 0 { cfg.QueueSize = 5000 }
+	return &CHWriter{
+		cfg:   cfg,
+		conn:  conn,
+		log:   log,
+		spill: spill,
+		tickQ: make(chan *mdtick.Tick, cfg.QueueSize),
+		barQ:  make(chan *mdtick.Bar, cfg.QueueSize),
+	}
+}
+
+// SetOnSpillFail sets a callback invoked when spill writer also fails
+// (decision D-3 backpressure upgrade path).
+func (w *CHWriter) SetOnSpillFail(fn func(brokerKey string, err error)) {
+	w.onSpillFail = fn
+}
+
+// EnqueueTick sends a tick to the async writer. Non-blocking; falls back
+// to SpillWriter if the channel is full.
+func (w *CHWriter) EnqueueTick(t *mdtick.Tick) {
+	select {
+	case w.tickQ <- t:
+	default:
+		w.writeSpillTick(t)
+	}
+}
+
+// EnqueueBar sends a bar to the async writer.
+func (w *CHWriter) EnqueueBar(b *mdtick.Bar) {
+	select {
+	case w.barQ <- b:
+	default:
+		w.writeSpillBar(b)
+	}
+}
+
+// Start launches the background flush loop. Blocks until ctx is done.
+func (w *CHWriter) Start(ctx context.Context) {
+	ticker := time.NewTicker(w.cfg.FlushInterval)
+	defer ticker.Stop()
+
+	var tickBatch []*mdtick.Tick
+	var barBatch []*mdtick.Bar
+
+	for {
+		select {
+		case <-ctx.Done():
+			w.flush(ctx, tickBatch, barBatch)
+			return
+		case t := <-w.tickQ:
+			tickBatch = append(tickBatch, t)
+			if len(tickBatch) >= w.cfg.MaxBatchSize {
+				w.flushTicks(ctx, tickBatch)
+				tickBatch = tickBatch[:0]
+			}
+		case b := <-w.barQ:
+			barBatch = append(barBatch, b)
+			if len(barBatch) >= w.cfg.MaxBatchSize {
+				w.flushBars(ctx, barBatch)
+				barBatch = barBatch[:0]
+			}
+		case <-ticker.C:
+			w.flushTicks(ctx, tickBatch)
+			w.flushBars(ctx, barBatch)
+			tickBatch = tickBatch[:0]
+			barBatch = barBatch[:0]
+		}
+	}
+}
+
+func (w *CHWriter) flush(ctx context.Context, ticks []*mdtick.Tick, bars []*mdtick.Bar) {
+	w.flushTicks(ctx, ticks)
+	w.flushBars(ctx, bars)
+}
+
+func (w *CHWriter) flushTicks(ctx context.Context, batch []*mdtick.Tick) {
+	if len(batch) == 0 { return }
+	if err := w.insertTicks(ctx, batch); err != nil {
+		w.log.Warn("chwriter: tick flush failed, spilling", zap.Int("count", len(batch)), zap.Error(err))
+		for _, t := range batch {
+			w.writeSpillTick(t)
+		}
+	}
+}
+
+func (w *CHWriter) flushBars(ctx context.Context, batch []*mdtick.Bar) {
+	if len(batch) == 0 { return }
+	if err := w.insertBars(ctx, batch); err != nil {
+		w.log.Warn("chwriter: bar flush failed, spilling", zap.Int("count", len(batch)), zap.Error(err))
+		for _, b := range batch {
+			w.writeSpillBar(b)
+		}
+	}
+}
+
+func (w *CHWriter) insertTicks(ctx context.Context, ticks []*mdtick.Tick) error {
+	batch, err := w.conn.PrepareBatch(ctx,
+		"INSERT INTO md_ticks (user_id, account_id, broker, symbol_raw, canonical, ts_unix_ms, arrived_unix_ms, bid, ask, bid_volume, ask_volume)")
+	if err != nil { return err }
+	defer batch.Abort()
+
+	for _, t := range ticks {
+		if err := batch.Append(t.UserID, t.AccountID, t.Broker, t.SymbolRaw, t.Canonical,
+			t.TsUnixMs, t.ArrivedUnixMs, t.Bid, t.Ask, t.BidVolume, t.AskVolume,
+		); err != nil {
+			return err
+		}
+	}
+	return batch.Send()
+}
+
+func (w *CHWriter) insertBars(ctx context.Context, bars []*mdtick.Bar) error {
+	batch, err := w.conn.PrepareBatch(ctx,
+		"INSERT INTO md_bars (user_id, account_id, broker, symbol_raw, canonical, period, open_ts_unix_ms, close_ts_unix_ms, open, high, low, close, volume, tick_count)")
+	if err != nil { return err }
+	defer batch.Abort()
+
+	for _, b := range bars {
+		if err := batch.Append(b.UserID, b.AccountID, b.Broker, "", b.Canonical, b.Period,
+			b.OpenTsUnixMs, b.CloseTsUnixMs, b.Open, b.High, b.Low, b.Close, b.Volume, b.TickCount,
+		); err != nil {
+			return err
+		}
+	}
+	return batch.Send()
+}
+
+func (w *CHWriter) writeSpillTick(t *mdtick.Tick) {
+	if w.spill == nil { return }
+	if err := w.spill.WriteTick(t); err != nil {
+		w.spillFailed(t.Broker, err)
+	}
+}
+
+func (w *CHWriter) writeSpillBar(b *mdtick.Bar) {
+	if w.spill == nil { return }
+	if err := w.spill.WriteBar(b); err != nil {
+		w.spillFailed(b.Broker, err)
+	}
+}
+
+func (w *CHWriter) spillFailed(broker string, err error) {
+	w.mu.Lock()
+	w.spillFailCount++
+	count := w.spillFailCount
+	w.mu.Unlock()
+
+	if count >= 3 && w.onSpillFail != nil {
+		w.onSpillFail(broker, err)
+	}
+}
+
+// Ensure driver.Batch type is referenced.
+var _ driver.Batch = nil
