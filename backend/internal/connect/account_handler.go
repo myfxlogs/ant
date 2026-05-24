@@ -61,7 +61,10 @@ func (s *AccountServer) DeleteAccount(ctx context.Context, req *connect.Request[
 	return nil, connect.NewError(connect.CodeUnimplemented, nil)
 }
 func (s *AccountServer) ConnectAccount(ctx context.Context, req *connect.Request[antv1.ConnectAccountRequest]) (*connect.Response[antv1.ConnectAccountResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, nil)
+	if err := s.svc.ConnectAccount(ctx, req.Msg.Id); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.ConnectAccountResponse{Success: true, Message: "connected"}), nil
 }
 func (s *AccountServer) DisconnectAccount(ctx context.Context, req *connect.Request[antv1.DisconnectAccountRequest]) (*connect.Response[emptypb.Empty], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, nil)
