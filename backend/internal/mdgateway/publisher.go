@@ -14,9 +14,10 @@ func (p *Publisher) PublishTick(t *mdtick.Tick) error {
 	if p.js == nil { return nil }
 	msg := natsgo.NewMsg(subj)
 	msg.Data = []byte(t.Bid.String())
-	if t.IsReplay { // ADR-0009 §2.1
+	if t.IsReplay {
 		msg.Header.Set("X-Ant-Replay", "1")
 	}
+	msg.Header.Set("Nats-Msg-Id", fmt.Sprintf("%s:%s:%d:%x", t.Broker, t.Canonical, t.TsUnixMs, hashTick(t)))
 	_, err := p.js.PublishMsg(msg)
 	return err
 }
@@ -25,9 +26,18 @@ func (p *Publisher) PublishBar(b *mdtick.Bar) error {
 	subj := fmt.Sprintf("md.bar.%s.%s.%s", b.Broker, b.Canonical, b.Period)
 	msg := natsgo.NewMsg(subj)
 	msg.Data = []byte(b.Close.String())
-	if b.IsReplay { // ADR-0009 §2.1
+	if b.IsReplay {
 		msg.Header.Set("X-Ant-Replay", "1")
 	}
+	msg.Header.Set("Nats-Msg-Id", fmt.Sprintf("%s:%s:%s:%d", b.Broker, b.Canonical, b.Period, b.CloseTsUnixMs))
 	_, err := p.js.PublishMsg(msg)
 	return err
+}
+
+func hashTick(t *mdtick.Tick) uint64 {
+	var h uint64 = 14695981039346656037
+	for _, c := range t.Broker { h = (h ^ uint64(c)) * 1099511628211 }
+	h = (h ^ '/') * 1099511628211
+	for _, c := range t.Canonical { h = (h ^ uint64(c)) * 1099511628211 }
+	return h ^ uint64(t.TsUnixMs)
 }

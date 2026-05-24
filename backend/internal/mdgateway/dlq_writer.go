@@ -15,20 +15,38 @@ import (
 
 // DLQWriter writes dropped ticks to md_ticks_dlq with reason-based sampling.
 // ADR-0010 §2.2: parse_error=100%, bid_gt_ask/non_positive=1%.
+// M10.5-10: writes are async via buffered channel + background goroutine.
 type DLQWriter struct {
-	conn clickhouse.Conn
-	log  *zap.Logger
-	spill *SpillWriter // fallback when CH is down
-	rng  *rand.Rand
+	conn  clickhouse.Conn
+	log   *zap.Logger
+	spill *SpillWriter
+	rng   *rand.Rand
+	dlqQ  chan dlqEntry // buffered async write queue
 }
 
-// NewDLQWriter creates a DLQ writer. spill may be nil (writes skipped if CH is down).
+type dlqEntry struct {
+	tick       *mdtick.Tick
+	reason     string
+	sampledPct float32
+	rawPayload string
+}
+
+// NewDLQWriter creates a DLQ writer. spill may be nil.
 func NewDLQWriter(conn clickhouse.Conn, spill *SpillWriter, log *zap.Logger) *DLQWriter {
-	return &DLQWriter{
+	d := &DLQWriter{
 		conn:  conn,
 		log:   log,
 		spill: spill,
 		rng:   rand.New(rand.NewSource(time.Now().UnixNano())),
+		dlqQ:  make(chan dlqEntry, 1000),
+	}
+	go d.flushLoop()
+	return d
+}
+
+func (d *DLQWriter) flushLoop() {
+	for entry := range d.dlqQ {
+		d.writeTick(context.Background(), entry.tick, entry.reason, entry.sampledPct, entry.rawPayload)
 	}
 }
 
@@ -39,7 +57,12 @@ func (d *DLQWriter) WriteTick(ctx context.Context, t *mdtick.Tick, reason string
 	if !d.shouldSample(sampledPct) {
 		return
 	}
-	d.writeTick(ctx, t, reason, sampledPct, rawPayload)
+	// M10.5-10: async write via buffered channel; drops if queue is full.
+	select {
+	case d.dlqQ <- dlqEntry{tick: t, reason: reason, sampledPct: sampledPct, rawPayload: rawPayload}:
+	default:
+		d.log.Debug("dlq: queue full, dropping entry", zap.String("reason", reason))
+	}
 }
 
 // sampleRate returns the sampling percentage for a reason.

@@ -1,0 +1,35 @@
+Cards: M10.5-7, M10.5-8, M10.5-9, M10.5-10 — batch delivery
+Date: 2026-05-24
+Status: ☑
+
+=== Verification ===
+$ go build ./... → PASS
+$ go test -race ./internal/mdgateway/... → 6/6 packages ok, 0 [no test files]
+
+=== Changes per card ===
+
+M10.5-7 (normalizer_invalidator pgx LISTEN):
+- PGListener interface with WaitForNotification/Close
+- listenLoop calls real WaitForNotification
+- JSON payload parsing (broker, symbol_raw)
+- Automatic fallback to ticker on LISTEN connection loss
+- runner.go passes nil (ticker fallback until pgx wired)
+
+M10.5-8 (backfiller per-account rate limiters):
+- accountLimiters map[string]*rate.Limiter (6 req/min each)
+- globalLimiter rate.Limit(60) = 60 req/s ceiling
+- getLimiter() creates per-account limiters on first use
+
+M10.5-9 (publisher Nats-Msg-Id dedup):
+- All PublishTick/PublishBar now set Nats-Msg-Id header
+- hashTick: FNV-1a hash over (broker, canonical, ts) for tick dedup
+- Bar dedup uses (broker, canonical, period, close_ts) as Msg-Id
+
+M10.5-10 (DLQ async + Buffer switch):
+- DLQWriter: buffered channel (cap 1000) + background flushLoop goroutine
+- WriteTick is now non-blocking (drops on queue full with Debug log)
+- clickhouse_writer.go: ANT_CH_BUFFER_ENABLED=false env switch
+  → direct-write to md_ticks/md_bars bypassing Buffer engine
+
+Files: normalizer_invalidator.go, backfiller/backfiller.go, publisher.go,
+        dlq_writer.go, clickhouse_writer.go, runner.go

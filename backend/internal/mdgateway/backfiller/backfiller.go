@@ -51,24 +51,36 @@ type PGActiveAccounts interface {
 
 // Backfiller fills historical bar gaps for all active accounts.
 type Backfiller struct {
-	src        Source
-	tgt        Target
-	chMax      CHMaxCloseTs
-	pgActive   PGActiveAccounts
-	limiter    *rate.Limiter // 6 req/min/account
-	metrics    *Metrics
+	src             Source
+	tgt             Target
+	chMax           CHMaxCloseTs
+	pgActive        PGActiveAccounts
+	accountLimiters map[string]*rate.Limiter // per-account: 6 req/min each
+	globalLimiter   *rate.Limiter            // global: 60 req/s ceiling
+	metrics         *Metrics
 }
 
 // New creates a Backfiller.
 func New(src Source, tgt Target, chMax CHMaxCloseTs, pgActive PGActiveAccounts) *Backfiller {
 	return &Backfiller{
-		src:      src,
-		tgt:      tgt,
-		chMax:    chMax,
-		pgActive: pgActive,
-		limiter:  rate.NewLimiter(rate.Every(10*time.Second), 1), // 6 req/min/account
-		metrics:  &Metrics{},
+		src:             src,
+		tgt:             tgt,
+		chMax:           chMax,
+		pgActive:        pgActive,
+		accountLimiters: make(map[string]*rate.Limiter),
+		globalLimiter:   rate.NewLimiter(rate.Limit(60), 1), // 60 req/s global ceiling
+		metrics:         &Metrics{},
 	}
+}
+
+// getLimiter returns the per-account limiter, creating one if needed.
+func (b *Backfiller) getLimiter(accountID string) *rate.Limiter {
+	if l, ok := b.accountLimiters[accountID]; ok {
+		return l
+	}
+	l := rate.NewLimiter(rate.Every(10*time.Second), 1) // 6 req/min/account
+	b.accountLimiters[accountID] = l
+	return l
 }
 
 // Run executes a complete backfill scan for all active accounts.
@@ -166,8 +178,12 @@ func (b *Backfiller) backfillSymbol(ctx context.Context, acc ActiveAccount, cano
 }
 
 func (b *Backfiller) backfillRange(ctx context.Context, acc ActiveAccount, canon, period string, from, to int64) error {
+	accLimiter := b.getLimiter(acc.AccountID)
 	for from < to {
-		if err := b.limiter.Wait(ctx); err != nil {
+		if err := accLimiter.Wait(ctx); err != nil {
+			return err
+		}
+		if err := b.globalLimiter.Wait(ctx); err != nil {
 			return err
 		}
 		bars, err := b.src.FetchBars(ctx, FetchReq{

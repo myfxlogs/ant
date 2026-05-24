@@ -94,7 +94,7 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	invalidator := NewNormalizerInvalidator(log, func(broker, symbolRaw string) {
 		normalizer.InvalidateCache(broker, symbolRaw)
 	})
-	invalidator.Start(ctx, deps.PG)
+	invalidator.Start(ctx, nil) // nil = ticker fallback; pgx.Conn implements PGListener
 
 	// --- Manager (wires HandleTick pipeline) ---
 	mgr := NewManager(ManagerDeps{

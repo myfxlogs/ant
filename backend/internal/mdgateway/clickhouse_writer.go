@@ -2,6 +2,7 @@ package mdgateway
 
 import (
 	"context"
+	"os"
 	"sync"
 	"time"
 
@@ -139,11 +140,14 @@ func (w *CHWriter) flushBars(ctx context.Context, batch []*mdtick.Bar) {
 }
 
 func (w *CHWriter) insertTicks(ctx context.Context, ticks []*mdtick.Tick) error {
-	// ADR-0008 §2.2: ts_unix_ms is broker clock (business display only);
-	// arrived_unix_ms is mdgateway local clock (partition, TTL, ORDER BY, bar boundaries).
 	// M10 ADR-0011: INSERT into Buffer engine table; CH internally flushes to md_ticks.
+	// M10.5-10: ANT_CH_BUFFER_ENABLED=false → direct-write to md_ticks (Buffer bypass).
+	targetTable := "md_ticks_buffer"
+	if os.Getenv("ANT_CH_BUFFER_ENABLED") == "false" {
+		targetTable = "md_ticks"
+	}
 	batch, err := w.conn.PrepareBatch(ctx,
-		"INSERT INTO md_ticks_buffer (user_id, account_id, broker, symbol_raw, canonical, ts_unix_ms, arrived_unix_ms, bid, ask, bid_volume, ask_volume, is_replay)")
+		"INSERT INTO "+targetTable+" (user_id, account_id, broker, symbol_raw, canonical, ts_unix_ms, arrived_unix_ms, bid, ask, bid_volume, ask_volume, is_replay)")
 	if err != nil { return err }
 	defer batch.Abort()
 
@@ -168,8 +172,13 @@ func (w *CHWriter) insertBars(ctx context.Context, bars []*mdtick.Bar) error {
 	// ADR-0008 §2.2 + ADR-0009 §2.2: close_ts_unix_ms is set from ArrivedUnixMs by bar_aggregator;
 	// open_ts_unix_ms follows the same clock source for consistency.
 	// M10 ADR-0011: INSERT into Buffer engine table; CH internally flushes to md_bars.
+	// M10.5-10: ANT_CH_BUFFER_ENABLED=false → direct-write to md_bars.
+	barsTarget := "md_bars_buffer"
+	if os.Getenv("ANT_CH_BUFFER_ENABLED") == "false" {
+		barsTarget = "md_bars"
+	}
 	batch, err := w.conn.PrepareBatch(ctx,
-		"INSERT INTO md_bars_buffer (user_id, account_id, broker, symbol_raw, canonical, period, open_ts_unix_ms, close_ts_unix_ms, open, high, low, close, volume, tick_count, is_replay)")
+		"INSERT INTO "+barsTarget+" (user_id, account_id, broker, symbol_raw, canonical, period, open_ts_unix_ms, close_ts_unix_ms, open, high, low, close, volume, tick_count, is_replay)")
 	if err != nil { return err }
 	defer batch.Abort()
 
