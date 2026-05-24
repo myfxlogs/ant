@@ -13,16 +13,18 @@ import (
 )
 
 type CHWriterConfig struct {
-	FlushInterval time.Duration // default 1s
-	MaxBatchSize  int           // default 1000
-	QueueSize     int           // default 5000; overflow → spill
+	// M10 默认值（ADR-0011 §2.1）；env 可覆盖
+	FlushInterval time.Duration // 默认 500ms（M7 旧值 1s）
+	MaxBatchSize  int           // 默认 10000（M7 旧值 1000）
+	QueueSize     int           // 默认 50000（M7 旧值 5000）；满则走 spill
 }
 
 func DefaultCHWriterConfig() CHWriterConfig {
+	// M10 ADR-0011 §2.1: tuned for 100-account peak (25k tick/s).
 	return CHWriterConfig{
-		FlushInterval: time.Second,
-		MaxBatchSize:  1000,
-		QueueSize:     5000,
+		FlushInterval: 500 * time.Millisecond,
+		MaxBatchSize:  10000,
+		QueueSize:     50000,
 	}
 }
 
