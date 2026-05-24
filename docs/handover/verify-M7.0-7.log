@@ -1,0 +1,36 @@
+=== M7.0-7 Verification Log ===
+TIMESTAMP: 2026-05-24T00:46:01Z
+
+[1] Proto files moved (117 → proto/ant/v1/)
+$ find proto/ant/v1 -name '*.proto' | wc -l
+117
+
+[2] Package + go_package updated
+$ head -3 proto/ant/v1/common.proto
+syntax = "proto3";
+package ant.v1;
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+[3] make proto success
+$ make proto
+Generating protobuf code (Go + TS)...
+
+[4] Go generated files
+$ test -f backend/gen/proto/ant/v1/common.pb.go → OK
+$ grep '^package' backend/gen/proto/ant/v1/common.pb.go → package antv1
+
+[5] TS generated files
+$ test -f frontend/src/gen/ant/v1/common_pb.ts → OK
+
+[6] mtapi directories preserved
+$ test -d proto/mt4 → OK
+$ test -d proto/mt5 → OK
+
+[7] Generated code clean (no hand edits)
+$ git diff --exit-code -- backend/gen/proto/ant/v1 frontend/src/gen/ant/v1 → OK
+
+[8] buf.gen.yaml updated: inputs→proto/ant/v1, paths→source_relative
+[9] buf.yaml updated: modules→proto/ant/v1 + proto/mt4 + proto/mt5
+[10] docs/spec/10-mt-adapter.md: import paths fixed
+
+=== ALL CHECKS PASSED ===

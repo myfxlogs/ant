@@ -1,0 +1,6 @@
+syntax = "proto3";
+package ant.v1;
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+import public "analytics_account.proto";
+import public "analytics_summary.proto";
+import public "analytics_risk.proto";

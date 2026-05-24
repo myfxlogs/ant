@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package ant.v1;
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+service JobService {
+  rpc GetJob(GetJobRequest) returns (Job);
+  rpc CancelJob(CancelJobRequest) returns (Job);
+  rpc SubscribeJob(SubscribeJobRequest) returns (stream JobEvent);
+}
+
+message Job {
+  string id = 1;
+  string user_id = 2;
+  string kind = 3;
+  string status = 4;
+  double progress = 5;
+  string stage = 6;
+  string request_summary = 7;
+  string result_ref = 8;
+  string result_summary = 9;
+  string error_code = 10;
+  string error_message = 11;
+  string idempotency_key = 12;
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp started_at = 14;
+  google.protobuf.Timestamp finished_at = 15;
+  google.protobuf.Timestamp expires_at = 16;
+}
+
+message JobEvent {
+  string job_id = 1;
+  int64 seq = 2;
+  string type = 3;
+  string status = 4;
+  double progress = 5;
+  string stage = 6;
+  string message = 7;
+  google.protobuf.Struct payload = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+message GetJobRequest {
+  string job_id = 1;
+}
+
+message CancelJobRequest {
+  string job_id = 1;
+}
+
+message SubscribeJobRequest {
+  string job_id = 1;
+  int64 after_seq = 2;
+}

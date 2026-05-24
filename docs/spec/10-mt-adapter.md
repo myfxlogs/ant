@@ -154,7 +154,7 @@ import (
     "sync"
     "time"
 
-    pb "anttrader/gen/proto/mt4"  // mtapi proto
+    pb "anttrader/mt4"  // mtapi proto (v2: separate module)
     "anttrader/internal/mdgateway/adapter/mdtick"
     "github.com/shopspring/decimal"
     "go.uber.org/zap"
@@ -289,7 +289,7 @@ func (g *Gateway) Connect(ctx context.Context) error {
 ## 6. MT5 实现规范（`adapter/mt5/gateway.go`）
 
 与 mt4 同构，差异：
-- proto: `anttrader/gen/proto/mt5`
+- proto: `anttrader/mt5`（v2：独立 Go module）
 - `OnTick` 返回 `Bid/Ask/Last/Volume`（含 volume）
 - 时间戳已是毫秒（无需 `*1000`）
 - `BidVolume/AskVolume` 可填实际值

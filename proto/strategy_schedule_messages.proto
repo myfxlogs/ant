@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package antrader;
-
-option go_package = "anttrader/gen/proto;antrader";
-
-import public "strategy_schedule_entity.proto";
-import public "strategy_schedule_requests.proto";

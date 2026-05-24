@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package ant.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+service StrategyAssetService {
+  rpc ListStrategyAssets(ListStrategyAssetsRequest) returns (ListStrategyAssetsResponse);
+  rpc GetStrategyAsset(GetStrategyAssetRequest) returns (StrategyAsset);
+  rpc SubmitAssetReview(SubmitAssetReviewRequest) returns (StrategyAsset);
+  rpc ReviewStrategyAsset(ReviewStrategyAssetRequest) returns (StrategyAsset);
+  rpc CloneStrategyAsset(CloneStrategyAssetRequest) returns (CloneStrategyAssetResponse);
+  rpc CheckAssetUpdate(CheckAssetUpdateRequest) returns (StrategyAssetClone);
+  rpc SyncStrategyAsset(SyncStrategyAssetRequest) returns (StrategyAssetClone);
+  rpc ListAssetClones(ListAssetClonesRequest) returns (ListAssetClonesResponse);
+}
+
+message StrategyAsset {
+  string id = 1;
+  string owner_user_id = 2;
+  string source_template_id = 3;
+  int32 source_version = 4;
+  string name = 5;
+  string description = 6;
+  string visibility = 7;
+  string review_status = 8;
+  string rating_summary = 9;
+  int32 clone_count = 10;
+  int32 latest_version = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+}
+
+message StrategyAssetClone {
+  string id = 1;
+  string asset_id = 2;
+  string user_id = 3;
+  string cloned_template_id = 4;
+  int32 source_version = 5;
+  bool sync_available = 6;
+  google.protobuf.Timestamp last_sync_check_at = 7;
+  google.protobuf.Timestamp created_at = 8;
+}
+
+message ListStrategyAssetsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+}
+
+message ListStrategyAssetsResponse {
+  repeated StrategyAsset assets = 1;
+}
+
+message GetStrategyAssetRequest {
+  string asset_id = 1;
+}
+
+message SubmitAssetReviewRequest {
+  string source_template_id = 1;
+  string name = 2;
+  string description = 3;
+  string visibility = 4;
+}
+
+message ReviewStrategyAssetRequest {
+  string asset_id = 1;
+  string review_status = 2;
+  string rating_summary = 3;
+}
+
+message CloneStrategyAssetRequest {
+  string asset_id = 1;
+  string name = 2;
+}
+
+message CloneStrategyAssetResponse {
+  string template_id = 1;
+  StrategyAssetClone clone = 2;
+}
+
+message CheckAssetUpdateRequest {
+  string clone_id = 1;
+}
+
+message SyncStrategyAssetRequest {
+  string clone_id = 1;
+}
+
+message ListAssetClonesRequest {
+  string asset_id = 1;
+}
+
+message ListAssetClonesResponse {
+  repeated StrategyAssetClone clones = 1;
+}

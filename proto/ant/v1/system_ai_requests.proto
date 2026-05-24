@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+import public "system_ai_query.proto";
+import public "system_ai_update.proto";
+import public "system_ai_probe.proto";

@@ -1,16 +1,16 @@
 version: v2
 inputs:
-  - directory: proto
+  - directory: proto/ant/v1
 clean: false
 plugins:
   - local: protoc-gen-go
-    out: backend/gen/proto
+    out: backend/gen/proto/ant/v1
     opt:
-      - paths=import
+      - paths=source_relative
   - local: protoc-gen-connect-go
-    out: backend/gen/proto
+    out: backend/gen/proto/ant/v1
     opt:
-      - paths=import
+      - paths=source_relative
   - local: protoc-gen-es
-    out: frontend/src/gen
+    out: frontend/src/gen/ant/v1
     opt: target=ts

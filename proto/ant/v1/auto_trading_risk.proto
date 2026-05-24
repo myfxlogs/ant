@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+import public "auto_trading_risk_config.proto";
+import public "auto_trading_risk_check.proto";
+import public "auto_trading_position_size.proto";

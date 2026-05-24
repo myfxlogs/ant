@@ -1,8 +1,10 @@
 version: v2
 deps: []
 modules:
-  - path: proto
+  - path: proto/ant/v1
     name: buf.build/ant/api
+  - path: proto/mt4
+  - path: proto/mt5
 lint:
   use:
     - STANDARD

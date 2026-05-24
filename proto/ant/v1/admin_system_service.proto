@@ -1,0 +1,12 @@
+syntax = "proto3";
+package ant.v1;
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+import "google/protobuf/empty.proto";
+import "admin_system.proto";
+service AdminSystemService {
+  rpc HealthCheck(google.protobuf.Empty) returns (HealthCheckResponse);
+  rpc GetMetrics(google.protobuf.Empty) returns (MetricsResponse);
+  rpc ResolveAlert(ResolveAlertRequest) returns (google.protobuf.Empty);
+  rpc ClearCache(google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc InvalidateCache(InvalidateCacheRequest) returns (google.protobuf.Empty);
+}
