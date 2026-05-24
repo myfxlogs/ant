@@ -103,10 +103,10 @@
 
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
-| M7.1-15 | 🅒 `adapter/mt4/gateway.go`（Connect/Subscribe/Disconnect/HealthCheck，引用 Q-001/Q-002/Q-008） | `backend/internal/mdgateway/adapter/mt4/{gateway.go,gateway_test.go}` | LOC ≤ 100；引用 Q-001 Q-002 Q-008 三处 quirk |
-| M7.1-16 | 🅒 `adapter/mt5/gateway.go` | `backend/internal/mdgateway/adapter/mt5/{gateway.go,gateway_test.go}` | LOC ≤ 100 |
-| M7.1-17 | 🅒 `adapter/mt[45]/executor.go`（PlaceOrder/CloseOrder/Fetch*） | 同左 | dockertest mtapi mock 调通全部 RPC |
-| M7.1-18 | 🅒 runner.go（PG 加载账户 → AddGateway → SpillReplay 启动）| `backend/internal/mdgateway/{runner.go,runner_test.go}` | 启动 server → 至少 1 账户 connected metric |
+| M7.1-15 | ☑ `adapter/mt4/gateway.go`（Connect/Subscribe/Disconnect/HealthCheck，引用 Q-001/Q-002/Q-008） | `backend/internal/mdgateway/adapter/mt4/{gateway.go,gateway_test.go}` | LOC ≤ 100；引用 Q-001 Q-002 Q-008 三处 quirk |
+| M7.1-16 | ☑ `adapter/mt5/gateway.go` | `backend/internal/mdgateway/adapter/mt5/{gateway.go,gateway_test.go}` | LOC ≤ 100 |
+| M7.1-17 | ☑ `adapter/mt[45]/executor.go`（PlaceOrder/CloseOrder/Fetch*） | 同左 | dockertest mtapi mock 调通全部 RPC |
+| M7.1-18 | ☑ runner.go（PG 加载账户 → AddGateway → SpillReplay 启动）| `backend/internal/mdgateway/{runner.go,runner_test.go}` | 启动 server → 至少 1 账户 connected metric |
 
 ### M7.1.Z 关闭检查
 
