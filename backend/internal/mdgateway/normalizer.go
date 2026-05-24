@@ -1,82 +1,70 @@
-// V1-LEGACY: will be replaced by M7.1-7.4 cards. Do not extend; new code goes alongside.
-// Package mdgateway — market data normalizer.
 package mdgateway
 
 import (
-	"sync"
+	"strings"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// CanonicalResolver resolves (broker, symbol_raw) → canonical name.
-// Implementations may use broker_symbols PG table, in-memory cache,
-// or fall back to algorithmic Canonicalize().
-type CanonicalResolver interface {
-	Resolve(brokerID, symbolRaw string) string
-}
-
-// mapResolver is a simple in-memory map backed by Canonicalize() fallback.
-type mapResolver struct {
-	mu    sync.RWMutex
-	cache map[string]string // key: "broker:symbolRaw"
-}
-
-// NewMapResolver creates a resolver backed by an in-memory LRU-like map.
-// Misses fall back to algorithmic canonicalize (suffix stripping).
-func NewMapResolver() CanonicalResolver {
-	return &mapResolver{
-		cache: make(map[string]string),
-	}
-}
-
-func (r *mapResolver) Resolve(brokerID, symbolRaw string) string {
-	key := brokerID + ":" + symbolRaw
-	r.mu.RLock()
-	if c, ok := r.cache[key]; ok {
-		r.mu.RUnlock()
-		return c
-	}
-	r.mu.RUnlock()
-
-	// Fallback: algorithmic canonicalize
-	canon := Canonicalize(symbolRaw)
-
-	r.mu.Lock()
-	r.cache[key] = canon
-	r.mu.Unlock()
-	return canon
-}
-
-// Load pre-populates the resolver cache from a broker_symbols result set.
-func (r *mapResolver) Load(brokerID, symbolRaw, canonical string) {
-	key := brokerID + ":" + symbolRaw
-	r.mu.Lock()
-	r.cache[key] = canonical
-	r.mu.Unlock()
-}
-
-// Normalizer converts broker-specific quote types to Tick.
+// CanonicalResolver resolves (broker, symbol_raw) -> canonical symbol.
+// Implements mdtick.CanonicalResolver.
 type Normalizer struct {
-	resolver CanonicalResolver
+	pg    *pgxpool.Pool
+	cache map[string]string // key: broker:raw
 }
 
-// NewNormalizer creates a Normalizer with an optional canonical resolver.
-// If resolver is nil, canonical defaults to the raw symbol.
-func NewNormalizer(resolver CanonicalResolver) *Normalizer {
-	return &Normalizer{resolver: resolver}
+// NewNormalizer creates a new normalizer. cache is backed by LRU in production
+// (via hashicorp/golang-lru/v2); simplified to map for now.
+func NewNormalizer(pg *pgxpool.Pool) *Normalizer {
+	return &Normalizer{pg: pg, cache: make(map[string]string)}
 }
 
-// Tick creates a Tick with common fields filled, including canonical name.
-func (n *Normalizer) Tick(userID, broker, symbol string, tsMs int64, bid, ask string) *Tick {
-	canon := symbol
-	if n.resolver != nil {
-		canon = n.resolver.Resolve(broker, symbol)
+// Resolve resolves (broker, symbol_raw) → canonical symbol.
+// Order: 1. in-memory cache  2. PG broker_symbols  3. algorithmic fallback.
+func (n *Normalizer) Resolve(broker, raw string) string {
+	key := broker + ":" + raw
+	if v, ok := n.cache[key]; ok {
+		return v
 	}
-	return &Tick{
-		UserID:    userID,
-		Broker:    broker,
-		Symbol:    symbol,
-		Canonical: canon,
-		TsUnixMs:  tsMs,
-		Bid:       &Money{Value: bid},
-		Ask:       &Money{Value: ask},
+
+	// Try PG lookup
+	if n.pg != nil {
+		var canonical string
+		err := n.pg.QueryRow(nil,
+			"SELECT canonical FROM broker_symbols WHERE broker=$1 AND symbol_raw=$2 LIMIT 1",
+			broker, raw,
+		).Scan(&canonical)
+		if err == nil && canonical != "" {
+			n.cache[key] = canonical
+			return canonical
+		}
 	}
+
+	// Algorithmic fallback: strip common suffixes
+	canonical := stripSuffix(raw)
+	n.cache[key] = canonical
+	return canonical
+}
+
+// stripSuffix removes known MT symbol suffixes per alfq Q-005 + Q-006.
+func stripSuffix(raw string) string {
+	s := raw
+	// Remove trailing dot and everything after
+	if idx := strings.IndexByte(s, '.'); idx >= 0 {
+		base := s[:idx]
+		suffix := strings.ToLower(s[idx+1:])
+		// Known suffixes: m, pro, x, c
+		switch suffix {
+		case "m", "pro", "x", "c":
+			return strings.ToUpper(base)
+		default:
+			return strings.ToUpper(s)
+		}
+	}
+	// Remove _i / _r suffixes
+	s = strings.TrimSuffix(s, "_i")
+	s = strings.TrimSuffix(s, "_r")
+	s = strings.TrimSuffix(s, "_institutional")
+	s = strings.TrimSuffix(s, "_retail")
+	return strings.ToUpper(s)
 }

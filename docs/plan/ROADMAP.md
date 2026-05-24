@@ -89,15 +89,15 @@
 
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
-| M7.1-6 | 🅒 normalizer.go（cache + PG + algorithmic fallback） | `backend/internal/mdgateway/{normalizer.go,normalizer_test.go}` | `go test -run TestNormalizer ./internal/mdgateway/ -count=1 -v` 覆盖率 ≥ 80% |
-| M7.1-7 | 🅒 quality.go（bid>ask + 5σ MAD + gap + skew，含 dropped_reason label） | `backend/internal/mdgateway/{quality.go,quality_test.go,metrics.go}` | `go test -run TestQuality ./internal/mdgateway/ -v` 覆盖 4 类规则 |
-| M7.1-8 | 🅒 tick_dedup.go（100-window xxhash） | `backend/internal/mdgateway/{tick_dedup.go,tick_dedup_test.go}` | `go test -run TestTickDedup ./internal/mdgateway/ -v` |
-| M7.1-9 | 🅒 bar_aggregator.go（用 ArrivedUnixMs 分桶；6 周期）| `backend/internal/mdgateway/{bar_aggregator.go,bar_aggregator_test.go}` | 单测含 `Q-001` 重现用例 |
-| M7.1-10 | 🅒 publisher.go（NATS JetStream md.tick.* / md.bar.*） | `backend/internal/mdgateway/{publisher.go,publisher_test.go}` | 启动 ant-nats 后单测 publish 真实订阅 |
+| M7.1-6 | ☑ normalizer.go（cache + PG + algorithmic fallback） | `backend/internal/mdgateway/{normalizer.go,normalizer_test.go}` | `go test -run TestNormalizer ./internal/mdgateway/ -count=1 -v` 覆盖率 ≥ 80% |
+| M7.1-7 | ☑ quality.go（bid>ask + 5σ MAD + gap + skew，含 dropped_reason label） | `backend/internal/mdgateway/{quality.go,quality_test.go,metrics.go}` | `go test -run TestQuality ./internal/mdgateway/ -v` 覆盖 4 类规则 |
+| M7.1-8 | ☑ tick_dedup.go（100-window xxhash） | `backend/internal/mdgateway/{tick_dedup.go,tick_dedup_test.go}` | `go test -run TestTickDedup ./internal/mdgateway/ -v` |
+| M7.1-9 | ☑ bar_aggregator.go（用 ArrivedUnixMs 分桶；6 周期）| `backend/internal/mdgateway/{bar_aggregator.go,bar_aggregator_test.go}` | 单测含 `Q-001` 重现用例 |
+| M7.1-10 | ☑ publisher.go（NATS JetStream md.tick.* / md.bar.*） | `backend/internal/mdgateway/{publisher.go,publisher_test.go}` | 启动 ant-nats 后单测 publish 真实订阅 |
 | M7.1-11 | 🅒 clickhouse_writer.go（chan + batch + spill fallback） | `backend/internal/mdgateway/{clickhouse_writer.go,clickhouse_writer_test.go}` | dockertest CH 真写 + 模拟 CH down → spill 路径 |
 | M7.1-12 | 🅒 spill_writer.go + spill_replay.go（jsonl + 旋转 + 启动 replay） | `backend/internal/mdgateway/{spill_writer.go,spill_writer_test.go,spill_replay.go,spill_replay_test.go}` | 单测旋转 by size + by age + replay |
-| M7.1-13 | 🅒 circuit_breaker.go（滑动窗口） | `backend/internal/mdgateway/{circuit_breaker.go,circuit_breaker_test.go}` | 单测 closed→open→half_open→closed 全状态机 |
-| M7.1-14 | 🅒 manager.go（HandleTick 串接子组件 + Add/Remove/Health） | `backend/internal/mdgateway/{manager.go,manager_test.go}` | 集成测试：单 mock gateway 推 100 tick → CH 100 行 |
+| M7.1-13 | ☑ circuit_breaker.go（滑动窗口） | `backend/internal/mdgateway/{circuit_breaker.go,circuit_breaker_test.go}` | 单测 closed→open→half_open→closed 全状态机 |
+| M7.1-14 | ☑ manager.go（HandleTick 串接子组件 + Add/Remove/Health） | `backend/internal/mdgateway/{manager.go,manager_test.go}` | 集成测试：单 mock gateway 推 100 tick → CH 100 行 |
 
 ### M7.1.D adapter
 

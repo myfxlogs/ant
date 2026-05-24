@@ -1,133 +1,104 @@
-// V1-LEGACY: will be replaced by M7.1-7.4 cards. Do not extend; new code goes alongside.
-// Package mdgateway — circuit breaker for gateway connections.
-// Implements a simple sliding-window circuit breaker that opens after
-// consecutive failures and half-opens after a cooldown period.
 package mdgateway
 
 import (
+	"fmt"
 	"sync"
 	"time"
 )
 
-// CircuitState represents the breaker state.
-type CircuitState int
+type State int
 
 const (
-	CircuitClosed   CircuitState = iota // normal operation
-	CircuitOpen                         // rejecting requests
-	CircuitHalfOpen                     // testing recovery
+	StateClosed State = iota
+	StateOpen
+	StateHalfOpen
 )
 
-// CircuitBreakerConfig holds breaker thresholds.
-type CircuitBreakerConfig struct {
-	FailureThreshold int           // consecutive failures to open (default 5)
-	SuccessThreshold int           // consecutive successes to close (default 2)
-	CooldownPeriod   time.Duration // wait before half-open (default 30s)
-}
-
-// DefaultCircuitBreakerConfig returns sensible defaults.
-func DefaultCircuitBreakerConfig() CircuitBreakerConfig {
-	return CircuitBreakerConfig{
-		FailureThreshold: 5,
-		SuccessThreshold: 2,
-		CooldownPeriod:   30 * time.Second,
+func (s State) String() string {
+	switch s {
+	case StateClosed: return "closed"
+	case StateOpen: return "open"
+	case StateHalfOpen: return "half_open"
+	default: return "unknown"
 	}
 }
 
-// CircuitBreaker protects a gateway from cascading failures.
+// CircuitBreaker implements a sliding-window circuit breaker per broker endpoint.
+// Scoped per-broker (not per-account) because failure correlation is at the
+// network layer (Netflix Hystrix / resilience4j pattern).
 type CircuitBreaker struct {
-	cfg CircuitBreakerConfig
+	failureThreshold int
+	successThreshold int
+	cooldown         time.Duration
 
-	mu             sync.Mutex
-	state          CircuitState
-	failureCount   int
-	successCount   int
-	lastFailureAt  time.Time
-	lastStateChange time.Time
+	mu        sync.Mutex
+	state     State
+	failures  int
+	successes int
+	openedAt  time.Time
 }
 
-// NewCircuitBreaker creates a new circuit breaker.
-func NewCircuitBreaker(cfg CircuitBreakerConfig) *CircuitBreaker {
-	if cfg.FailureThreshold <= 0 {
-		cfg.FailureThreshold = 5
-	}
-	if cfg.SuccessThreshold <= 0 {
-		cfg.SuccessThreshold = 2
-	}
-	if cfg.CooldownPeriod <= 0 {
-		cfg.CooldownPeriod = 30 * time.Second
-	}
+func NewCircuitBreaker(failureThreshold, successThreshold int, cooldown time.Duration) *CircuitBreaker {
+	if failureThreshold <= 0 { failureThreshold = 5 }
+	if successThreshold <= 0 { successThreshold = 2 }
+	if cooldown <= 0 { cooldown = 30 * time.Second }
 	return &CircuitBreaker{
-		cfg:   cfg,
-		state: CircuitClosed,
+		failureThreshold: failureThreshold,
+		successThreshold: successThreshold,
+		cooldown:         cooldown,
+		state:            StateClosed,
 	}
 }
 
-// State returns the current circuit state.
-func (cb *CircuitBreaker) State() CircuitState {
-	cb.mu.Lock()
-	defer cb.mu.Unlock()
-	return cb.state
-}
-
-// Allow returns true if the request should proceed.
-func (cb *CircuitBreaker) Allow() bool {
-	cb.mu.Lock()
-	defer cb.mu.Unlock()
-
-	switch cb.state {
-	case CircuitClosed:
-		return true
-	case CircuitOpen:
-		if time.Since(cb.lastStateChange) >= cb.cfg.CooldownPeriod {
-			cb.state = CircuitHalfOpen
-			cb.lastStateChange = time.Now()
+func (c *CircuitBreaker) Allow() bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	switch c.state {
+	case StateClosed: return true
+	case StateOpen:
+		if time.Since(c.openedAt) >= c.cooldown {
+			c.state = StateHalfOpen
+			c.successes = 0
 			return true
 		}
 		return false
-	case CircuitHalfOpen:
-		return true
+	case StateHalfOpen: return true
+	default: return false
 	}
-	return false
 }
 
-// RecordSuccess reports a successful operation.
-func (cb *CircuitBreaker) RecordSuccess() {
-	cb.mu.Lock()
-	defer cb.mu.Unlock()
-
-	switch cb.state {
-	case CircuitClosed:
-		cb.failureCount = 0
-	case CircuitHalfOpen:
-		cb.successCount++
-		if cb.successCount >= cb.cfg.SuccessThreshold {
-			cb.state = CircuitClosed
-			cb.failureCount = 0
-			cb.successCount = 0
-			cb.lastStateChange = time.Now()
+func (c *CircuitBreaker) OnSuccess() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.state == StateHalfOpen {
+		c.successes++
+		if c.successes >= c.successThreshold {
+			c.state = StateClosed
+			c.failures = 0
 		}
 	}
 }
 
-// RecordFailure reports a failed operation.
-func (cb *CircuitBreaker) RecordFailure() {
-	cb.mu.Lock()
-	defer cb.mu.Unlock()
-
-	cb.lastFailureAt = time.Now()
-
-	switch cb.state {
-	case CircuitClosed:
-		cb.failureCount++
-		if cb.failureCount >= cb.cfg.FailureThreshold {
-			cb.state = CircuitOpen
-			cb.successCount = 0
-			cb.lastStateChange = time.Now()
-		}
-	case CircuitHalfOpen:
-		cb.state = CircuitOpen
-		cb.successCount = 0
-		cb.lastStateChange = time.Now()
+func (c *CircuitBreaker) OnFailure() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.failures++
+	if c.state == StateHalfOpen {
+		c.state = StateOpen
+		c.openedAt = time.Now()
+	} else if c.failures >= c.failureThreshold && c.state == StateClosed {
+		c.state = StateOpen
+		c.openedAt = time.Now()
 	}
+}
+
+func (c *CircuitBreaker) State() State {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.state
+}
+
+// BrokerKey constructs the circuit breaker key from broker identity.
+func BrokerKey(broker, host, port string) string {
+	return fmt.Sprintf("%s|%s:%s", broker, host, port)
 }

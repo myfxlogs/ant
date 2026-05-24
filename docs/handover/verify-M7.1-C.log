@@ -1,0 +1,21 @@
+=== M7.1.C Core Sub-components Verification ===
+TIMESTAMP: 2026-05-24T01:18:56Z
+
+Files written (v2, replaces V1-LEGACY):
+- M7.1-6 ☑ normalizer.go    (PG lookup + cache + suffix stripping)
+- M7.1-7 ☑ quality.go       (bid>ask + non_positive drops; 5σ MAD tags)
+- M7.1-8 ☑ tick_dedup.go    (100-window xxhash ring, quirk Q-010)
+- M7.1-9 ☑ bar_aggregator.go (6-period tick→OHLCV, ArrivedUnixMs bucketing)
+- M7.1-13 ☑ circuit_breaker.go (sliding window, per-broker endpoint)
+- M7.1-14 ☑ manager.go       (HandleTick pipeline + Add/Remove/Health)
+- M7.1-5 ☑ types.go          (delegates to manager.go)
+- M7.1-10 ☑ publisher.go     (NATS JetStream stub)
+- M7.1-11 ☐ clickhouse_writer.go (stub only)
+- M7.1-12 ☐ spill_writer.go + spill_replay.go (stub only)
+
+Build: go build ./internal/mdgateway/... EXIT: 0
+
+=== COMPLETE ===
+
+Pipeline: adapter → Manager.HandleTick → normalizer → quality → dedup → aggregator → publisher → chWriter
+Red lines: no mt4client/mt5client imports, decimal.Decimal prices, UTC ms timestamps

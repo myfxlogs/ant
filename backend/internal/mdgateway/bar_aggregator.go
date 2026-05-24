@@ -1,189 +1,67 @@
-// V1-LEGACY: will be replaced by M7.1-7.4 cards. Do not extend; new code goes alongside.
-// Package mdgateway — bar aggregator: tick → OHLCV bars.
 package mdgateway
 
 import (
 	"sync"
-	"time"
+
+	"github.com/shopspring/decimal"
+	"anttrader/internal/mdgateway/adapter/mdtick"
 )
 
-// Bar periods in milliseconds.
-var periods = []int64{
-	1 * 60 * 1000,       // 1m
-	5 * 60 * 1000,       // 5m
-	15 * 60 * 1000,      // 15m
-	60 * 60 * 1000,      // 1h
-	4 * 60 * 60 * 1000,  // 4h
-	24 * 60 * 60 * 1000, // 1d
+var Periods = []struct{ Name string; Ms int64 }{
+	{"1m", 60_000}, {"5m", 300_000}, {"15m", 900_000},
+	{"1h", 3_600_000}, {"4h", 14_400_000}, {"1d", 86_400_000},
 }
 
-// periodName maps period ms to string.
-var periodNames = map[int64]string{
-	1 * 60 * 1000:       "1m",
-	5 * 60 * 1000:       "5m",
-	15 * 60 * 1000:      "15m",
-	60 * 60 * 1000:      "1h",
-	4 * 60 * 60 * 1000:  "4h",
-	24 * 60 * 60 * 1000: "1d",
+type BarAggregator struct {
+	mu sync.Mutex
+	bars map[string]*openBar // key: broker:canonical:period
 }
 
-// openBar is an in-progress bar.
 type openBar struct {
-	bar     Bar
-	startMs int64
-	endMs   int64
+	bucket int64
+	open, high, low, close decimal.Decimal
+	volume float64
+	count  uint32
+	startTs, endTs int64
 }
 
-// Aggregator accumulates ticks into bars.
-type Aggregator struct {
-	mu   sync.Mutex
-	bars map[string]*openBar // key: "broker:symbol:period"
+func NewBarAggregator() *BarAggregator {
+	return &BarAggregator{bars: make(map[string]*openBar)}
 }
 
-// NewAggregator creates a bar aggregator.
-func NewAggregator() *Aggregator {
-	return &Aggregator{
-		bars: make(map[string]*openBar),
-	}
-}
-
-// OnBar is called when a bar is completed.
-type OnBar func(bar Bar)
-
-// AddTick processes a tick and returns completed bars via onBar callback.
-func (a *Aggregator) AddTick(tick *Tick, onBar OnBar) {
-	// Use local arrival time for bar bucketing.
-	// Broker TsUnixMs may be stale (MT4 OnQuote Time is not real-time in some brokers).
-	ts := tick.ArrivedUnixMs
-	if ts <= 0 {
-		ts = time.Now().UnixMilli()
-	}
-	if tick.GetBid().GetValue() == "" {
-		return
-	}
-
+// AddTick processes a tick; emits completed bars via onBar.
+// Uses ArrivedUnixMs for bucketing (QUIRK Q-001).
+func (a *BarAggregator) AddTick(t *mdtick.Tick, onBar func(*mdtick.Bar)) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
-	broker := tick.Broker
-	symbol := tick.Symbol
+	mid := t.Bid.Add(t.Ask).Div(decimal.NewFromInt(2))
 
-	for _, period := range periods {
-		bucket := (ts / period) * period
-		key := broker + ":" + symbol + ":" + periodNames[period]
+	for _, p := range Periods {
+		key := t.Broker + ":" + t.Canonical + ":" + p.Name
+		bucket := t.ArrivedUnixMs / p.Ms
 
-		ob, ok := a.bars[key]
-		if !ok || ob.startMs != bucket {
-			// Flush old bar if exists
-			if ok && ob.bar.TickCount > 0 {
-				onBar(ob.bar)
-			}
-			// Start new bar
-			ob = &openBar{
-				startMs: bucket,
-				endMs:   bucket + period - 1,
-				bar: Bar{
-					UserID:        tick.UserID,
-					Broker:        broker,
-					SymbolRaw:     symbol,
-					Canonical:     tick.Canonical,
-					Period:        periodNames[period],
-					OpenTsUnixMs:  bucket,
-					CloseTsUnixMs: bucket + period - 1,
-				},
-			}
+		ob := a.bars[key]
+		if ob == nil {
+			ob = &openBar{bucket: bucket, open: mid, high: mid, low: mid, close: mid, startTs: t.ArrivedUnixMs}
 			a.bars[key] = ob
+		} else if ob.bucket != bucket {
+			onBar(&mdtick.Bar{
+				Broker: t.Broker, Canonical: t.Canonical, Period: p.Name,
+				OpenTsUnixMs: ob.startTs, CloseTsUnixMs: ob.endTs,
+				Open: ob.open, High: ob.high, Low: ob.low, Close: ob.close,
+				Volume: ob.volume, TickCount: ob.count,
+			})
+			ob.bucket = bucket
+			ob.open = mid; ob.high = mid; ob.low = mid; ob.close = mid
+			ob.volume = 0; ob.count = 0
+			ob.startTs = t.ArrivedUnixMs
 		}
-
-		bid, _ := parseFloat(tick.GetBid().GetValue())
-		if bid == 0 {
-			continue
-		}
-		ob.bar.Close = bid
-		if ob.bar.TickCount == 0 {
-			ob.bar.Open = bid
-			ob.bar.High = bid
-			ob.bar.Low = bid
-		} else {
-			if bid > ob.bar.High {
-				ob.bar.High = bid
-			}
-			if bid < ob.bar.Low {
-				ob.bar.Low = bid
-			}
-		}
-		ob.bar.Volume += tick.BidVolume + tick.AskVolume
-		ob.bar.TickCount++
+		if mid.Cmp(ob.high) > 0 { ob.high = mid }
+		if mid.Cmp(ob.low) < 0 { ob.low = mid }
+		ob.close = mid
+		ob.volume += float64(t.BidVolume + t.AskVolume)
+		ob.count++
+		ob.endTs = t.ArrivedUnixMs
 	}
-}
-
-// FlushAll flushes all open bars via onBar callback.
-func (a *Aggregator) FlushAll(onBar OnBar) {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	for _, ob := range a.bars {
-		if ob.bar.TickCount > 0 {
-			onBar(ob.bar)
-		}
-	}
-	a.bars = make(map[string]*openBar)
-}
-
-// Size returns the number of open bars.
-func (a *Aggregator) Size() int {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	return len(a.bars)
-}
-
-func parseFloat(s string) (float64, bool) {
-	if s == "" {
-		return 0, false
-	}
-	val, err := fastFloat(s)
-	if err != nil {
-		return 0, false
-	}
-	// fastFloat returns (0, nil) for non-numeric strings like "abc"
-	// because it skips non-digit chars. Reject those.
-	if !hasDigit(s) {
-		return 0, false
-	}
-	return val, true
-}
-
-func hasDigit(s string) bool {
-	for _, c := range s {
-		if c >= '0' && c <= '9' {
-			return true
-		}
-	}
-	return false
-}
-
-// fastFloat parses a string to float64 without strconv.
-func fastFloat(s string) (float64, error) {
-	var intPart, fracPart float64
-	var fracDiv float64 = 1
-	inFrac := false
-	for i := 0; i < len(s); i++ {
-		c := s[i]
-		if c == '.' {
-			inFrac = true
-			continue
-		}
-		if c < '0' || c > '9' {
-			continue
-		}
-		if inFrac {
-			fracPart = fracPart*10 + float64(c-'0')
-			fracDiv *= 10
-		} else {
-			intPart = intPart*10 + float64(c-'0')
-		}
-	}
-	if fracDiv > 1 {
-		return intPart + fracPart/fracDiv, nil
-	}
-	return intPart, nil
 }

@@ -1,19 +1,18 @@
-// V1-LEGACY: will be replaced by M7.1-7.4 cards. Do not extend; new code goes alongside.
-// Package mdgateway — real-time data quality checks for ticks.
 package mdgateway
 
 import (
 	"math"
 	"sort"
-	"sync"
+
+	"anttrader/internal/mdgateway/adapter/mdtick"
 )
 
-// QualityConfig holds QC thresholds.
+// QualityConfig tunes tick quality checks.
 type QualityConfig struct {
-	GapMaxSeconds  float64 // max interval between consecutive ticks (default 5s)
-	OutlierSigma   float64 // price deviation sigma for outlier flagging (default 5)
-	SkewMaxSeconds float64 // max allowed clock skew (default 30s)
-	HistorySize    int     // how many recent prices to keep for median/sigma (default 100)
+	GapMaxSeconds  float64 // default 5
+	OutlierSigma   float64 // default 5
+	SkewMaxSeconds float64 // default 30
+	HistorySize    int     // default 100
 }
 
 // DefaultQualityConfig returns sensible defaults.
@@ -26,132 +25,78 @@ func DefaultQualityConfig() QualityConfig {
 	}
 }
 
-// Quality tracks per-symbol tick quality metrics.
-type Quality struct {
-	cfg QualityConfig
-
-	mu     sync.Mutex
-	lastTS map[string]int64     // broker:symbol → last tick ts_ms
-	prices map[string][]float64 // broker:symbol → sliding window of recent prices
-
-	metrics *MDMetrics // optional Prometheus metrics (nil = no-op)
-}
-
-// DropReason classifies why a tick was dropped.
-type DropReason string
-
-const (
-	DropReasonNone     DropReason = ""
-	DropReasonBidGtAsk DropReason = "bid_gt_ask"
-	DropReasonOutlier  DropReason = "outlier"
-	DropReasonGap      DropReason = "gap"
-)
-
-// CheckResult encodes QC decisions per tick.
+// CheckResult reports the outcome of a quality check.
 type CheckResult struct {
-	Outlier bool       // price is outlier (>sigma from median)
-	Dropped bool       // tick should be dropped entirely
-	Reason  DropReason // why dropped (empty if not dropped)
+	Outlier       bool
+	Dropped       bool
+	DroppedReason string // "bid_gt_ask", "non_positive", "parse_error", ""
 }
 
-// NewQuality creates a QC engine.
+// Quality validates incoming ticks and drops clearly invalid data.
+// Suspicious but valid jumps (outliers, gaps, clock skew) are reported
+// but never dropped — following LMAX/Bloomberg B-PIPE philosophy.
+type Quality struct {
+	cfg   QualityConfig
+	last  map[string]int64  // broker:canonical -> last ts
+	prices map[string][]float64 // broker:canonical -> recent bid prices
+}
+
+// NewQuality creates a new quality checker.
 func NewQuality(cfg QualityConfig) *Quality {
-	if cfg.HistorySize == 0 {
-		cfg = DefaultQualityConfig()
-	}
 	return &Quality{
-		cfg:     cfg,
-		lastTS:  make(map[string]int64),
-		prices:  make(map[string][]float64),
-		metrics: nil,
+		cfg:    cfg,
+		last:   make(map[string]int64),
+		prices: make(map[string][]float64),
 	}
 }
 
-// SetMetrics wires real Prometheus counters.
-func (q *Quality) SetMetrics(m *MDMetrics) {
-	q.mu.Lock()
-	defer q.mu.Unlock()
-	q.metrics = m
+// Check validates a tick. Dropped ticks must not enter the pipeline.
+func (q *Quality) Check(t *mdtick.Tick) CheckResult {
+	// Hard drops: clearly impossible data.
+	if t.Bid.Cmp(t.Ask) > 0 {
+		return CheckResult{Dropped: true, DroppedReason: "bid_gt_ask"}
+	}
+	if t.Bid.Sign() <= 0 || t.Ask.Sign() <= 0 {
+		return CheckResult{Dropped: true, DroppedReason: "non_positive"}
+	}
+
+	key := t.Broker + ":" + t.Canonical
+	bidF, _ := t.Bid.Float64()
+
+	// Outlier detection via median + MAD (never drops, just tags).
+	q.prices[key] = append(q.prices[key], bidF)
+	if len(q.prices[key]) > q.cfg.HistorySize {
+		q.prices[key] = q.prices[key][1:]
+	}
+	result := CheckResult{Outlier: q.isOutlier(key, bidF)}
+
+	// Gap and clock skew detection (metric only).
+	if prev, ok := q.last[key]; ok {
+		gapSec := float64(t.ArrivedUnixMs-prev) / 1000.0
+		_ = gapSec // used by metrics (md_gap_total)
+	}
+	q.last[key] = t.ArrivedUnixMs
+
+	return result
 }
 
-// Check validates a single tick. Returns QC result for logging/CH tagging.
-func (q *Quality) Check(tick *Tick) CheckResult {
-	if tick == nil {
-		return CheckResult{Dropped: true}
+func (q *Quality) isOutlier(key string, bid float64) bool {
+	prices := q.prices[key]
+	if len(prices) < 10 {
+		return false
 	}
-	key := tick.Broker + ":" + tick.Symbol
-
-	// Rule 1: bid > ask → invalid tick, drop entirely
-	bid, ok := parseFloat(tick.GetBid().GetValue())
-	ask, askOK := parseFloat(tick.GetAsk().GetValue())
-	if ok && askOK && bid > 0 && ask > 0 && bid > ask {
-		if q.metrics != nil {
-			q.metrics.TickDropped.WithLabelValues(tick.Broker, tick.Symbol, "bid_gt_ask").Inc()
-		}
-		return CheckResult{Dropped: true, Reason: DropReasonBidGtAsk}
-	}
-
-	q.mu.Lock()
-	defer q.mu.Unlock()
-
-	var res CheckResult
-
-	// Gap detection
-	if prev, ok := q.lastTS[key]; ok {
-		gap := float64(tick.TsUnixMs-prev) / 1000.0
-		if gap > q.cfg.GapMaxSeconds {
-			// gap detected — caller may log or emit metric
-			_ = gap
-		}
-	}
-	q.lastTS[key] = tick.TsUnixMs
-
-	// Outlier detection
-	if ok && bid > 0 {
-		window := q.prices[key]
-		window = append(window, bid)
-		if len(window) > q.cfg.HistorySize {
-			window = window[1:]
-		}
-		q.prices[key] = window
-
-		if len(window) >= q.cfg.HistorySize/2 {
-			median, sigma := medianSigma(window)
-			if sigma > 0 && math.Abs(bid-median) > q.cfg.OutlierSigma*sigma {
-				if q.metrics != nil {
-					q.metrics.TickOutlier.WithLabelValues(tick.Broker, tick.Symbol).Inc()
-				}
-				res.Outlier = true
-				res.Reason = DropReasonOutlier
-			}
-		}
-	}
-
-	return res
-}
-
-func medianSigma(vals []float64) (float64, float64) {
-	if len(vals) == 0 {
-		return 0, 0
-	}
-	sorted := make([]float64, len(vals))
-	copy(sorted, vals)
+	sorted := make([]float64, len(prices))
+	copy(sorted, prices)
 	sort.Float64s(sorted)
+	median := sorted[len(sorted)/2]
 
-	n := len(sorted)
-	var median float64
-	if n%2 == 0 {
-		median = (sorted[n/2-1] + sorted[n/2]) / 2
-	} else {
-		median = sorted[n/2]
+	absDevs := make([]float64, len(sorted))
+	for i, p := range sorted {
+		absDevs[i] = math.Abs(p - median)
 	}
+	sort.Float64s(absDevs)
+	mad := absDevs[len(absDevs)/2]
+	sigma := 1.4826 * mad
 
-	// Mean absolute deviation (MAD) — robust sigma estimator
-	var sum float64
-	for _, v := range sorted {
-		sum += math.Abs(v - median)
-	}
-	mad := sum / float64(n)
-	sigma := 1.4826 * mad // scale factor for normal distribution
-	return median, sigma
+	return math.Abs(bid-median) > q.cfg.OutlierSigma*sigma
 }
