@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
 	"anttrader/internal/model"
@@ -172,4 +173,23 @@ func (s *StrategyTemplateService) DeleteTemplate(ctx context.Context, templateID
 
 func (s *StrategyTemplateService) IncrementUseCount(ctx context.Context, templateID uuid.UUID) error {
 	return s.templateRepo.IncrementUseCount(ctx, templateID)
+}
+
+// Platform strategies combined with user strategies (ADR-0006 invariant #11).
+type PlatformStrategy struct {
+	ID, Name, Description, Expression, Category string
+}
+
+// ListPlatformStrategies returns all official platform strategies.
+func ListPlatformStrategies(ctx context.Context, pool *pgxpool.Pool) ([]PlatformStrategy, error) {
+	rows, err := pool.Query(ctx, "SELECT id, name, description, expression, category FROM platform_strategies WHERE is_official = true ORDER BY name")
+	if err != nil { return nil, err }
+	defer rows.Close()
+	var out []PlatformStrategy
+	for rows.Next() {
+		var p PlatformStrategy
+		if err := rows.Scan(&p.ID, &p.Name, &p.Description, &p.Expression, &p.Category); err != nil { return nil, err }
+		out = append(out, p)
+	}
+	return out, rows.Err()
 }
