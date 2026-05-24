@@ -1,3 +1,4 @@
-// @stale v1 client module — replaced by ConnectRPC ant/v1/ in M7.2
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// @stale v1 client — rebuild for ConnectRPC ant/v1/
 export const aiApi = {} as any;
+export const toFriendlyAIError = (e: any) => 'AI error';
+export type AIAgentDefinitionView = any;

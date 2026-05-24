@@ -1,3 +1,7 @@
-// @stale v1 client module — replaced by ConnectRPC ant/v1/ in M7.2
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// @stale v1 client — rebuild for ConnectRPC ant/v1/
 export const debateV2Api = {} as any;
+export const waitAdvanceJob = async () => ({}) as any;
+export const waitChatJob = async () => ({}) as any;
+export type V2Session = any;
+export type V2Step = any;
+export type V2Usage = any;
