@@ -20,7 +20,6 @@ RUN if [ -n "$ALPINE_MIRROR" ]; then \
 COPY go.mod go.sum ./
 
 # go.mod uses local replaces; copy their module files before downloading deps.
-COPY gen/proto/anttrader/gen/proto/go.mod gen/proto/anttrader/gen/proto/go.mod
 COPY mt4/go.mod mt4/go.mod
 COPY mt5/go.mod mt5/go.mod
 RUN go mod download
