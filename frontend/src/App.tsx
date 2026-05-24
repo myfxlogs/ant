@@ -10,28 +10,42 @@ import 'dayjs/locale/zh-tw';
 import 'dayjs/locale/ja';
 import 'dayjs/locale/vi';
 import i18n, { normalizeLanguage, type SupportedLanguage } from '@/i18n';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Spin } from 'antd';
 
 import MainLayout from '@/components/layout/MainLayout';
+
+const MarketplacePage = lazy(() => import('@/pages/marketplace/Marketplace'));
+const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'));
 
 const localeMap: Record<SupportedLanguage, typeof zhCN> = {
   'zh-CN': zhCN, en: enUS, ja: jaJP, vi: viVN,
 };
 
-function PlaceholderPage({ title, description }: { title: string; description: string }) {
+const Loading = () => (
+  <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
+    <Spin size="large" />
+  </div>
+);
+
+function HomePage() {
+  const { t } = useTranslation();
   return (
     <Result
       status="info"
-      title={title}
-      subTitle={description}
-      extra={<Button type="primary" onClick={() => window.location.reload()}>Refresh</Button>}
+      title={t('common.loading', 'Ant v2')}
+      subTitle="Market data pipeline operational — MT4/MT5 quotes verified. Use Marketplace to discover strategies."
+      extra={
+        <Button type="primary" href="/marketplace">
+          Browse Marketplace
+        </Button>
+      }
     />
   );
 }
 
 function App() {
-  const { t } = useTranslation();
   const [locale, setLocale] = useState<SupportedLanguage>('zh-CN');
 
   useEffect(() => {
@@ -44,16 +58,15 @@ function App() {
   return (
     <ConfigProvider locale={localeMap[locale] || enUS}>
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<MainLayout />}>
-            <Route index element={
-              <PlaceholderPage
-                title={t('common.loading', 'Ant v2')}
-                description="Market data pipeline operational. Frontend pages being rebuilt on ConnectRPC ant/v1/."
-              />
-            } />
-          </Route>
-        </Routes>
+        <Suspense fallback={<Loading />}>
+          <Routes>
+            <Route path="/" element={<MainLayout />}>
+              <Route index element={<HomePage />} />
+              <Route path="marketplace" element={<MarketplacePage />} />
+              <Route path="admin" element={<AdminDashboard />} />
+            </Route>
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </ConfigProvider>
   );
