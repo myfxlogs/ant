@@ -104,8 +104,12 @@ func (r *SpillReplay) replayFile(ctx context.Context, path string) (int, error) 
 				AskVolume:     e.AskVol,
 				IsReplay:      true,
 			}
-			_ = r.publisher.PublishTick(tick)
-			r.ch.EnqueueTick(tick)
+			if r.publisher != nil {
+				_ = r.publisher.PublishTick(tick)
+			}
+			if r.ch != nil {
+				r.ch.EnqueueTick(tick)
+			}
 		case "bar":
 			bar := &mdtick.Bar{
 				Broker:        e.Broker,
@@ -129,8 +133,12 @@ func (r *SpillReplay) replayFile(ctx context.Context, path string) (int, error) 
 			// already provides correctness. The IngestExternalBar check is
 			// stronger (prevents the INSERT entirely) and is exercised in the
 			// backfiller path.
-			_ = r.publisher.PublishBar(bar)
-			r.ch.EnqueueBar(bar)
+			if r.publisher != nil {
+				_ = r.publisher.PublishBar(bar)
+			}
+			if r.ch != nil {
+				r.ch.EnqueueBar(bar)
+			}
 		}
 		count++
 	}

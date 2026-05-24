@@ -62,6 +62,10 @@ func (d *DLQWriter) shouldSample(pct float32) bool {
 }
 
 func (d *DLQWriter) writeTick(ctx context.Context, t *mdtick.Tick, reason string, pct float32, raw string) {
+	if d.conn == nil {
+		d.spillDLQ(t, reason, pct, raw)
+		return
+	}
 	batch, err := d.conn.PrepareBatch(ctx,
 		"INSERT INTO md_ticks_dlq (user_id, account_id, broker, symbol_raw, canonical, ts_unix_ms, arrived_unix_ms, bid_str, ask_str, bid_volume, ask_volume, reason, sampled_pct, raw_payload)")
 	if err != nil {
