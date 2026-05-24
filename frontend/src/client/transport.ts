@@ -24,6 +24,14 @@ const STREAM_URL = rawStreamUrl.replace(/\/+$/, '');
 let hasShownConnectionError = false;
 let lastBizErrorAt = 0;
 
+// Services that are available on the new v2 backend.
+// All others silently return empty — no error modals.
+const v2Services = new Set([
+  'ant.v1.marketplaceservice',
+  'ant.v1.mthubservice',
+  'ant.v1.marketservice',
+]);
+
 /** Narrow Connect request shape for logging / stream heuristics (transport layer only). */
 function procedureHint(req: unknown): { key: string; label: string } {
   const r = req as {
@@ -37,16 +45,46 @@ function procedureHint(req: unknown): { key: string; label: string } {
   return { key, label };
 }
 
+// Rewrite old antrader.* → ant.v1.* (M7 proto migration).
+function rewriteLegacyPath(url: string): string {
+  return url.replace(/\/(antrader\.)/g, '/ant.v1.');
+}
+
+// Shared fetch with path rewrite.
+function v2Fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  if (typeof input === 'string') {
+    input = rewriteLegacyPath(input);
+  } else if (input instanceof Request) {
+    const newUrl = rewriteLegacyPath(input.url);
+    if (newUrl !== input.url) {
+      input = new Request(newUrl, input);
+    }
+  }
+  return fetch(input, init);
+}
+
 const interceptors: Interceptor[] = [
   (next) => async (req) => {
     const proc = procedureHint(req).key;
     const isAuthFree = proc.includes('authservice') && (proc.includes('login') || proc.includes('register'));
+
+    // Silently skip requests for services not yet on v2 backend.
+    // Only allow v2-available services + auth (login/register).
+    if (!isAuthFree && v2Services.size > 0) {
+      const svcPath = proc.replace(/^antrader\./, 'ant.v1.');
+      const isV2 = [...v2Services].some(s => svcPath.startsWith(s));
+      if (!isV2) {
+        // Return an empty-like response: ConnectError with CodeUnimplemented,
+        // but suppress the error modal so pages degrade gracefully.
+        throw new ConnectError('migrating to ant v2', 12); // CodeUnimplemented = 12
+      }
+    }
+
     const token = localStorage.getItem('access_token');
     if (token && !isAuthFree) {
       req.header.set('Authorization', `Bearer ${token}`);
     }
 
-    // Attach current UI language so backend can localize responses (e.g. strategy templates).
     const lang = i18n.language || 'en';
     if (lang) {
       req.header.set('Accept-Language', lang);
@@ -55,12 +93,14 @@ const interceptors: Interceptor[] = [
     try {
       return await next(req);
     } catch (error: unknown) {
-      // Ignore abort errors (normal when canceling streams)
+      if (error instanceof ConnectError && error.code === 12) {
+        throw error; // unimplemented — don't show error modal
+      }
+
       if (error instanceof Error && (error.message.includes('aborted') || error.message.includes('abort'))) {
         throw error;
       }
 
-      // 检测连接错误并显示居中弹窗
       if (error instanceof Error && error.message.includes('Failed to fetch')) {
         if (!hasShownConnectionError) {
           hasShownConnectionError = true;
@@ -69,9 +109,7 @@ const interceptors: Interceptor[] = [
             content: i18n.t('errors.connection_failed.content'),
             centered: true,
             okText: i18n.t('common.confirm'),
-            onOk: () => {
-              hasShownConnectionError = false;
-            },
+            onOk: () => { hasShownConnectionError = false; },
           });
         }
       } else {
@@ -104,9 +142,11 @@ const interceptors: Interceptor[] = [
 export const transport = createConnectTransport({
   baseUrl: API_URL,
   interceptors,
+  fetch: v2Fetch,
 });
 
 export const streamTransport = createConnectTransport({
   baseUrl: STREAM_URL,
   interceptors,
+  fetch: v2Fetch,
 });
