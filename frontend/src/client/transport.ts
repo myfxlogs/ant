@@ -51,15 +51,24 @@ function rewriteLegacyPath(url: string): string {
   return url.replace(/\/(antrader\.)/g, '/ant.v1.');
 }
 
-// Shared fetch with path rewrite.
+// Shared fetch with path rewrite + empty response for non-v2 services.
 function v2Fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  let url = typeof input === 'string' ? input : input instanceof Request ? input.url : String(input);
+  url = rewriteLegacyPath(url);
+  // Check if this URL targets a service not yet on v2.
+  const svcPath = url.replace(/.*\/(ant\.v1\.[a-z]+)\/.*/, '$1').toLowerCase();
+  const isV2 = [...v2Services].some(s => svcPath.startsWith(s));
+  if (!isV2 && svcPath.startsWith('ant.v1.')) {
+    // Non-v2 service: return empty response, no actual HTTP request.
+    return Promise.resolve(new Response(JSON.stringify({}), {
+      status: 200, headers: { 'Content-Type': 'application/json' },
+    }));
+  }
+  // Rebuild Request with rewritten URL.
   if (typeof input === 'string') {
-    input = rewriteLegacyPath(input);
+    input = url;
   } else if (input instanceof Request) {
-    const newUrl = rewriteLegacyPath(input.url);
-    if (newUrl !== input.url) {
-      input = new Request(newUrl, input);
-    }
+    input = new Request(url, input);
   }
   return fetch(input, init);
 }
@@ -69,17 +78,8 @@ const interceptors: Interceptor[] = [
     const proc = procedureHint(req).key;
     const isAuthFree = proc.includes('authservice') && (proc.includes('login') || proc.includes('register'));
 
-    // Silently skip requests for services not yet on v2 backend.
-    // Only allow v2-available services + auth (login/register).
-    if (!isAuthFree && v2Services.size > 0) {
-      const svcPath = proc.replace(/^antrader\./, 'ant.v1.');
-      const isV2 = [...v2Services].some(s => svcPath.startsWith(s));
-      if (!isV2) {
-        // Return an empty-like response: ConnectError with CodeUnimplemented,
-        // but suppress the error modal so pages degrade gracefully.
-        throw new ConnectError('migrating to ant v2', 12); // CodeUnimplemented = 12
-      }
-    }
+    // For non-v2 services, let the fetch layer return empty data.
+    // The interceptor can't suppress — empty response is handled by v2Fetch.
 
     const token = localStorage.getItem('access_token');
     if (token && !isAuthFree) {
