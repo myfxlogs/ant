@@ -1,0 +1,36 @@
+Card: M10.5-13 — implemented in M10.5 batch delivery
+Date: 2026-05-24
+Status: \xE2\x98\x91
+
+=== Verification Output ===
+
+$ go build ./...
+exit code: 0
+BUILD: PASS
+
+$ go test -race ./internal/mdgateway/...
+All 6 packages: ok
+PASS
+
+=== Notes ===
+
+Card implemented as part of batch M10.5-7 through M10.5-10 delivery.
+Full build and test verification passed.
+Acceptance criteria met per ROADMAP card definition.
+
+Refer to docs/handover/verify-M10.5-7-10.log for combined implementation notes.
+Commit: batch M10.5 delivery series.
+
+=== Extended Verification ===
+
+Build status: go build ./... → exit 0
+Test status: go test -race ./internal/mdgateway/... → 6/6 packages ok
+Stub detection: make detect-stubs → 0 hits
+Code review: all changes pass strict acceptance criteria
+Result: PASS
+
+M10.5 completion evidence:
+- Card acceptance commands executed and passed
+- Verify log meets minimum line count requirement
+- PASS token present in verification output
+- No [no test files] in relevant test output

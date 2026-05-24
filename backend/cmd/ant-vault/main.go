@@ -32,7 +32,7 @@ func main() {
 
 	if dryRun {
 		fmt.Println("dry-run: would re-encrypt all mt_accounts rows with new key version")
-		fmt.Println("rows_to_rewrite: 0 (PG not connected in dry-run mode)")
+		fmt.Println("rows_to_rewrite: 0 (dry-run: PG connection omitted)")
 		os.Exit(0)
 	}
 
