@@ -52,6 +52,12 @@ runner.go 已创建，全组件装配完成：
 - ✅ backfiller/source_mtapi.go 已连接到 real adapter 接口
 - ✅ OTel SDK 真实实现（go.opentelemetry.io/otel v1.43.0，OTLP gRPC exporter，1% 采样）
 
+## M10 最终闭环（2026-05-24）
+
+**"最后一步"已完成**：`cmd/server/main.go` 现在启动时连接 CH + NATS，并在 goroutine 中运行 `mdgateway.Run()`。完整的数据管道（tick 摄入 → mdgateway → CH/NATS → backfiller → factorsvc/quantengine）在 ant-server 进程中有了运行入口。
+
+server 启动链：PG → ClickHouse → NATS → mdgateway.Run → ConnectRPC handlers → graceful shutdown（SIGINT/SIGTERM → pipeline cancel → drain → close）。
+
 ## 待后续实施
 
 以下组件在运行环境中可完全启用：
