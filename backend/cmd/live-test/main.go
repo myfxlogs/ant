@@ -9,11 +9,9 @@ import (
 
 	"google.golang.org/grpc/metadata"
 
-	"anttrader/internal/mdgateway"
 	mt4adapter "anttrader/internal/mdgateway/adapter/mt4"
 	"anttrader/internal/mdgateway/adapter/mdtick"
 	"anttrader/internal/secrets"
-	mt4gw "anttrader/internal/mdgateway/adapter/mt4"
 	pb4 "anttrader/mt4"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
@@ -50,67 +48,65 @@ func main() {
 			MtapiHost: host, MtapiPort: port, MtapiToken: string(token),
 		}
 
-		var gw mdgateway.Gateway
-		gw = mt4adapter.New(cfg, log)
-
+		gw := mt4adapter.New(cfg, log)
 		if err := gw.Connect(ctx); err != nil {
 			fmt.Printf("  Connect FAILED: %v\n", err)
 			continue
 		}
 		fmt.Printf("  Connected! Session=%s\n", gw.SessionID())
 
-		// Get all symbols
-		var allSymbols []string
-		switch mtType {
-		case "MT4":
-			if g, ok := gw.(*mt4gw.Gateway); ok {
-				mdCtx := metadata.NewOutgoingContext(ctx, metadata.Pairs("id", g.SessionID(), "authorization", "Bearer "+cfg.MtapiToken))
-				resp, err := g.MT4Client().Symbols(mdCtx, &pb4.SymbolsRequest{Id: g.SessionID()})
-				if err != nil { fmt.Printf("  Symbols error: %v\n", err); continue }
-				allSymbols = resp.GetResult()
-			}
-		default:
-			fmt.Println("  Only MT4 supported for Symbol fetch")
-			continue
-		}
+		mdCtx := metadata.NewOutgoingContext(ctx, metadata.Pairs("id", gw.SessionID(), "authorization", "Bearer "+cfg.MtapiToken))
 
-		fmt.Printf("  Total symbols: %d\n", len(allSymbols))
-
-		// Filter crypto/gold symbols
-		crypto := []string{}
-		for _, s := range allSymbols {
-			upper := strings.ToUpper(s)
-			if strings.Contains(upper, "BTC") || strings.Contains(upper, "ETH") ||
-			   strings.Contains(upper, "XAU") || strings.Contains(upper, "XRP") ||
-			   strings.Contains(upper, "LTC") || strings.Contains(upper, "CRYPTO") {
-				crypto = append(crypto, s)
+		// Try Quote RPC first (non-streaming, single quote)
+		fmt.Println("  Trying Quote(Id) RPC...")
+		qResp, err := gw.MT4Client().Quote(mdCtx, &pb4.QuoteRequest{Id: gw.SessionID()})
+		if err != nil {
+			fmt.Printf("  Quote RPC error: %v\n", err)
+		} else if qResp.GetError() != nil {
+			fmt.Printf("  Quote app error: %s\n", qResp.GetError().GetMessage())
+		} else {
+			q := qResp.GetResult()
+			if q != nil {
+				fmt.Printf("  Quote SUCCESS: %s bid=%.5f ask=%.5f\n", q.GetSymbol(), q.GetBid(), q.GetAsk())
+			} else {
+				fmt.Println("  Quote returned nil result")
 			}
 		}
-		fmt.Printf("  Crypto/gold symbols: %v\n", crypto)
 
-		if len(crypto) == 0 && len(allSymbols) > 0 {
-			fmt.Printf("  All symbols (first 20): %v\n", allSymbols[:min(20, len(allSymbols))])
+		// Try QuoteMany with BTCUSDm
+		symbols := []string{"BTCUSDm", "ETHUSDm", "XAUUSDm"}
+		fmt.Printf("  Trying QuoteMany(%v)...\n", symbols)
+		qmResp, err := gw.MT4Client().GetQuoteMany(mdCtx, &pb4.GetQuoteManyRequest{Symbols: symbols})
+		if err != nil {
+			fmt.Printf("  QuoteMany error: %v\n", err)
+		} else if qmResp.GetError() != nil {
+			fmt.Printf("  QuoteMany app error: %s\n", qmResp.GetError().GetMessage())
+		} else {
+			results := qmResp.GetResult()
+			fmt.Printf("  QuoteMany got %d quotes\n", len(results))
+			for _, q := range results {
+				if q == nil { continue }
+				fmt.Printf("    %s: bid=%.5f ask=%.5f time=%d\n",
+					q.GetSymbol(), q.GetBid(), q.GetAsk(), q.GetTime().GetSeconds())
+			}
 		}
 
-		// Subscribe to OnQuote (sends ALL quotes, not filtered by symbols)
-		count := 0
-		gotTick := make(chan struct{})
+		// Subscribe to OnQuote and check for Error field in reply
+		fmt.Println("  Starting OnQuote stream...")
+		gotAny := make(chan struct{})
 		gw.Subscribe(ctx, nil, func(t *mdtick.Tick) {
-			count++
-			fmt.Printf("  >> TICK #%d: %s bid=%s ask=%s\n", count, t.SymbolRaw, t.Bid.String(), t.Ask.String())
-			if count >= 3 { close(gotTick) }
+			fmt.Printf("  >> TICK: %s bid=%s ask=%s\n", t.SymbolRaw, t.Bid.String(), t.Ask.String())
+			close(gotAny)
 		})
 
 		select {
-		case <-gotTick:
-			fmt.Printf("  SUCCESS! %d ticks received\n", count)
-			gw.Disconnect(ctx)
-			return
+		case <-gotAny:
+			fmt.Println("  SUCCESS! Tick received")
 		case <-time.After(15 * time.Second):
-			fmt.Printf("  No ticks in 15s (total: %d)\n", count)
+			fmt.Println("  No ticks in 15s")
 		}
 		gw.Disconnect(ctx)
+		return
 	}
+	_ = strings.Join
 }
-
-func min(a, b int) int { if a < b { return a }; return b }
