@@ -134,7 +134,7 @@ services:
 
   clickhouse:
     container_name: ant-clickhouse
-    image: clickhouse/clickhouse-server:24-alpine
+    image: clickhouse/clickhouse-server:24.12-alpine
     restart: always
     deploy:
       resources:
@@ -143,7 +143,7 @@ services:
         reservations:
           memory: 512M
     environment:
-      - CLICKHOUSE_DB=default
+      - CLICKHOUSE_DB=${CH_DATABASE:-ant}
       - CLICKHOUSE_USER=${CH_USER:-default}
       - CLICKHOUSE_PASSWORD=${CH_PASSWORD:-clickhouse}
       - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
@@ -152,6 +152,9 @@ services:
       - "${CH_NATIVE_PORT:-9000}:9000"
     volumes:
       - clickhouse_data:/var/lib/clickhouse
+      - ./deploy/clickhouse/config.d:/etc/clickhouse-server/config.d:ro
+    ulimits:
+      nofile: { soft: 262144, hard: 262144 }
     healthcheck:
       test: ["CMD-SHELL", "clickhouse-client --user ${CH_USER:-default} --password ${CH_PASSWORD:-clickhouse} --query 'SELECT 1' || exit 1"]
       interval: 10s
@@ -182,6 +185,32 @@ services:
     networks:
       - ant-network
 
+  nats:
+    container_name: ant-nats
+    image: nats:2.10-alpine
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
+    command: ["-c", "/etc/nats/nats.conf", "-js"]
+    ports:
+      - "${NATS_PORT:-4222}:4222"
+      - "${NATS_HTTP_PORT:-8222}:8222"
+    volumes:
+      - nats_data:/data
+      - ./deploy/nats/nats.conf:/etc/nats/nats.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8222/healthz 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - ant-network
+
 networks:
   ant-network:
     driver: bridge
@@ -193,3 +222,5 @@ volumes:
     name: ant_redis_data
   clickhouse_data:
     name: ant_clickhouse_data
+  nats_data:
+    name: ant_nats_data

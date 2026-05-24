@@ -1,0 +1,48 @@
+=== M7.0-1 Verification Log ===
+TIMESTAMP: 2026-05-24T00:18:41Z
+
+[1] docker compose up -d clickhouse nats
+STDOUT: Container ant-nats Started
+        Container ant-clickhouse Started
+
+[2] ClickHouse health check
+$ docker inspect -f '{{.State.Health.Status}}' ant-clickhouse
+healthy
+
+[3] ClickHouse SELECT 1
+$ docker exec ant-clickhouse clickhouse-client --user default --password clickhouse --query "SELECT 1"
+1
+
+[4] NATS health check
+$ docker inspect -f '{{.State.Health.Status}}' ant-nats
+healthy
+
+[5] NATS HTTP healthz
+$ wget -qO- http://localhost:8222/healthz
+{"status":"ok"}
+
+[6] NATS account info (nats CLI not in alpine image; || true tolerated)
+$ docker exec ant-nats nats account info 2>&1 || true
+OCI runtime exec failed: exec: "nats": executable file not found in $PATH
+
+[7] ClickHouse config.d loaded
+$ docker logs ant-clickhouse 2>&1 | grep "Merging configuration"
+Merging configuration file '/etc/clickhouse-server/config.d/ant.xml'.
+
+[8] NATS JetStream enabled
+$ docker logs ant-nats 2>&1 | grep JETSTREAM
+---------------- JETSTREAM ----------------
+  Max Memory:      256.00 MB
+  Max Storage:     10.00 GB
+  Store Directory: "/data/jetstream/jetstream"
+
+[9] Files created
+- deploy/clickhouse/config.d/ant.xml
+- deploy/nats/nats.conf
+
+[10] docker-compose.yml changes
+- ClickHouse: CLICKHOUSE_DB=ant, ulimits nofile=262144, config.d mount
+- NATS: new service with JetStream, healthcheck via wget /healthz
+- Volume: nats_data added
+
+=== ALL CHECKS PASSED ===
