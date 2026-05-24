@@ -1,11 +1,15 @@
-// Package chmigrate provides minimal ClickHouse schema migration.
-// SQL files are embedded in the binary.
+// Package chmigrate provides embedded ClickHouse schema migrations.
+// SQL files (*.sql) are embedded in the binary and executed in filename order.
+// Versions are tracked in _schema_migrations for idempotent re-runs.
 package chmigrate
 
 import (
 	"context"
+	"crypto/sha256"
 	"embed"
+	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
@@ -15,43 +19,94 @@ import (
 //go:embed *.sql
 var migrations embed.FS
 
-// Run executes all embedded .sql migrations against the given ClickHouse connection.
-// Idempotent: uses CREATE TABLE IF NOT EXISTS.
+// Run executes pending embedded .sql migrations against conn.
+// Idempotent: skips versions already recorded in _schema_migrations
+// with matching checksums; errors on checksum mismatch (schema drift).
 func Run(ctx context.Context, conn clickhouse.Conn, log *zap.Logger) error {
+	// Ensure tracking table exists first.
+	if err := conn.Exec(ctx, `CREATE TABLE IF NOT EXISTS _schema_migrations (
+		version    UInt32,
+		name       String,
+		applied_at DateTime64(3, 'UTC') DEFAULT now64(3),
+		checksum   String
+	) ENGINE = ReplacingMergeTree(applied_at) ORDER BY version`); err != nil {
+		return fmt.Errorf("chmigrate: ensure _schema_migrations: %w", err)
+	}
+
 	entries, err := migrations.ReadDir(".")
 	if err != nil {
-		log.Warn("chmigrate: read embedded dir failed", zap.Error(err))
-		return nil
-	}
-	if len(entries) == 0 {
-		log.Info("chmigrate: no embedded migrations found, skipping")
-		return nil
+		return fmt.Errorf("chmigrate: read embedded: %w", err)
 	}
 
-	// Sort so 001 runs before 002 etc.
-	sort.Slice(entries, func(i, j int) bool { return entries[i].Name() < entries[j].Name() })
-
+	// Filter and sort .sql files (excluding _schema_migrations DDL itself if embedded).
+	var files []string
 	for _, e := range entries {
-		if e.IsDir() || !strings.HasSuffix(e.Name(), ".sql") {
+		name := e.Name()
+		if e.IsDir() || !strings.HasSuffix(name, ".sql") || name == "_schema_migrations.sql" {
 			continue
 		}
-		data, err := migrations.ReadFile(e.Name())
+		files = append(files, name)
+	}
+	sort.Strings(files)
+
+	for _, name := range files {
+		data, err := migrations.ReadFile(name)
 		if err != nil {
-			log.Warn("chmigrate: read embedded file failed", zap.String("file", e.Name()), zap.Error(err))
+			return fmt.Errorf("chmigrate: read %s: %w", name, err)
+		}
+		sql := strings.TrimSpace(string(data))
+		if sql == "" {
 			continue
 		}
-		sql := string(data)
-		if strings.TrimSpace(sql) == "" {
+
+		// Extract version number from filename (e.g. "001_md_ticks.sql" → 1).
+		parts := strings.SplitN(name, "_", 2)
+		version, err := strconv.Atoi(parts[0])
+		if err != nil {
+			log.Warn("chmigrate: cannot parse version from filename", zap.String("file", name))
 			continue
 		}
+
+		checksum := fmt.Sprintf("%x", sha256.Sum256(data))
+
+		// Check if already applied.
+		var count uint64
+		row := conn.QueryRow(ctx,
+			"SELECT count() FROM _schema_migrations WHERE version = @v AND checksum = @c",
+			clickhouse.Named("v", version), clickhouse.Named("c", checksum))
+		if err := row.Scan(&count); err != nil {
+			log.Warn("chmigrate: version check failed", zap.Int("version", version), zap.Error(err))
+			continue
+		}
+		if count > 0 {
+			log.Debug("chmigrate: already applied", zap.Int("version", version), zap.String("file", name))
+			continue
+		}
+
+		// Check for schema drift (same version, different checksum).
+		row = conn.QueryRow(ctx,
+			"SELECT count() FROM _schema_migrations WHERE version = @v AND checksum != @c",
+			clickhouse.Named("v", version), clickhouse.Named("c", checksum))
+		if err := row.Scan(&count); err == nil && count > 0 {
+			return fmt.Errorf("chmigrate: schema drift on version %d (%s)", version, name)
+		}
+
+		// Apply migration.
 		if err := conn.Exec(ctx, sql); err != nil {
-			log.Error("chmigrate: exec failed",
-				zap.String("file", e.Name()),
-				zap.Error(err),
-			)
-			return err
+			return fmt.Errorf("chmigrate: exec %s: %w", name, err)
 		}
-		log.Info("chmigrate: applied", zap.String("file", e.Name()))
+
+		// Record version.
+		if err := conn.Exec(ctx,
+			"INSERT INTO _schema_migrations (version, name, checksum) VALUES (@v, @n, @c)",
+			clickhouse.Named("v", version),
+			clickhouse.Named("n", name),
+			clickhouse.Named("c", checksum),
+		); err != nil {
+			return fmt.Errorf("chmigrate: record version %d: %w", version, err)
+		}
+
+		log.Info("chmigrate: applied", zap.Int("version", version), zap.String("file", name))
 	}
 	return nil
 }

@@ -1,0 +1,26 @@
+=== M7.1-1 Verification Log ===
+TIMESTAMP: 2026-05-24T01:01:43Z
+
+[1] make migrate-ch
+$ make migrate-ch
+migrate-ch: complete → OK
+
+[2] Table count in ant database
+$ docker exec ant-clickhouse clickhouse-client --query "SELECT count() FROM system.tables WHERE database='ant'"
+5
+
+[3] Table list
+$ docker exec ant-clickhouse clickhouse-client --query "SELECT name FROM system.tables WHERE database='ant' ORDER BY name"
+_schema_migrations
+factor_values
+md_bars
+md_ticks
+signals
+
+[4] Go tests
+$ cd backend && go test -race ./internal/mdgateway/chmigrate/...
+ok (TestRun_AllMigrations, TestRun_Idempotent)
+
+[5] Files: 5 SQL + migrate.go + migrate_test.go + cmd entry
+
+=== ALL CHECKS PASSED ===

@@ -147,7 +147,7 @@ rtk-grep:
 
 migrate-ch:
 	@echo "Running ClickHouse migrations..."
-	@cd backend && go run ./internal/mdgateway/chmigrate/...
+	@cd backend && go run ./cmd/migrate-ch/.
 
 # ── Card verification ─────────────────────────────────────────────────
 .PHONY: verify-card
