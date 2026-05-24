@@ -1,10 +1,11 @@
 package mt4
 import (
-	"context"; "fmt"; "sync"; "time"
+	"context"; "fmt"; "strings"; "sync"; "time"
 	pb "anttrader/mt4"
 	"anttrader/internal/mdgateway"; "anttrader/internal/mdgateway/adapter/mdtick"
 	"github.com/shopspring/decimal"; "go.uber.org/zap"
-	"google.golang.org/grpc"; "google.golang.org/grpc/credentials/insecure"; "google.golang.org/grpc/metadata"
+	"crypto/tls"
+	"google.golang.org/grpc"; "google.golang.org/grpc/credentials"; "google.golang.org/grpc/metadata"
 )
 type Gateway struct {
 	cfg mdtick.AccountConfig; log *zap.Logger
@@ -16,10 +17,17 @@ func New(cfg mdtick.AccountConfig, log *zap.Logger) *Gateway { return &Gateway{c
 func (g *Gateway) Platform() string { return "mt4" }
 func (g *Gateway) AccountID() string { return g.cfg.AccountID }
 func (g *Gateway) Connect(ctx context.Context) error {
-	addr := g.cfg.MtapiHost+":"+g.cfg.MtapiPort
-	conn, err := grpc.DialContext(ctx, addr, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(16*1024*1024)))
+	gateway := g.cfg.MtapiHost
+	if gateway == "" || gateway == g.cfg.Server { gateway = "mt4grpc3.mtapi.io:443" }
+	if !strings.Contains(gateway, ":") { gateway += ":443" }
+	conn, err := grpc.DialContext(ctx, gateway, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(16*1024*1024)))
 	if err != nil { return fmt.Errorf("mt4 dial: %w", err) }
 	g.mu.Lock(); g.conn=conn; g.client=pb.NewMT4Client(conn); g.connCli=pb.NewConnectionClient(conn); g.streamCli=pb.NewStreamsClient(conn); g.mu.Unlock()
+	md := metadata.New(map[string]string{"authorization":"Bearer "+g.cfg.MtapiToken})
+	loginCtx := metadata.NewOutgoingContext(ctx, md)
+	loginResp, err := g.connCli.Connect(loginCtx, &pb.ConnectRequest{Host: g.cfg.Server, Port: 443, User: int32(strToInt(g.cfg.Login)), Password: g.cfg.Password})
+	if err != nil { g.conn.Close(); g.conn=nil; return fmt.Errorf("mt4 login: %w", err) }
+	g.mu.Lock(); g.sessionID=loginResp.GetResult(); g.mu.Unlock()
 	return nil
 }
 func (g *Gateway) Disconnect(ctx context.Context) error {
@@ -55,3 +63,8 @@ func (g *Gateway) HealthCheck(ctx context.Context) error {
 	if g.conn == nil { return fmt.Errorf("mt4: not connected") }; return nil
 }
 func (g *Gateway) SessionID() string { g.mu.RLock(); defer g.mu.RUnlock(); return g.sessionID }
+func strToInt(s string) int {
+	v := 0
+	for _, c := range s { if c >= '0' && c <= '9' { v = v*10 + int(c-'0') } }
+	return v
+}

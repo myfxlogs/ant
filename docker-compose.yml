@@ -110,6 +110,8 @@ services:
   postgres:
     container_name: ant-postgres
     image: postgres:18-alpine
+    ports:
+      - "5433:5432"
     restart: always
     deploy:
       resources:
