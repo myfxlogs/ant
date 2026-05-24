@@ -1,0 +1,21 @@
+=== M7.1-3 Verification Log ===
+TIMESTAMP: 2026-05-24T01:12:17Z
+
+[1] Query files created
+$ ls backend/internal/repository/queries/
+broker_symbols.sql  factor_definitions.sql
+
+[2] Generated code
+$ ls backend/internal/repository/*.sql.go
+broker_symbols.sql.go  factor_definitions.sql.go
+
+[3] DBTX interface (db.go) ✓
+[4] Queries type (db.go) ✓
+
+[5] go build ./internal/repository/...
+$ cd backend && go build ./internal/repository/...
+EXIT: 0
+
+[6] make sqlc target added to Makefile
+
+=== ALL CHECKS PASSED ===

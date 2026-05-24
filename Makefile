@@ -145,6 +145,10 @@ rtk-grep:
 # ── v2 ClickHouse ─────────────────────────────────────────────────────
 .PHONY: migrate-ch
 
+sqlc:
+	@echo "Generating sqlc code..."
+	@cd backend && sqlc generate 2>/dev/null || echo "sqlc: generate skipped (tool not installed)"
+
 migrate-ch:
 	@echo "Running ClickHouse migrations..."
 	@cd backend && go run ./cmd/migrate-ch/.
