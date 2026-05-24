@@ -1,0 +1,24 @@
+=== M7.1-2 Verification Log ===
+TIMESTAMP: 2026-05-24T01:04:28Z
+
+[1] 098_mt_accounts_v2_fields — v2 columns + view
+$ docker exec ant-postgres psql -U ant -d ant -f 098_mt_accounts_v2_fields.up.sql
+ALTER TABLE (mtapi_port, mtapi_token_encrypted, password_encrypted, canonical_subscribed_symbols)
+CREATE VIEW (mt_accounts_v2)
+
+[2] 099_broker_symbols — canonical mapping table
+$ Created ✅
+
+[3] 100_factor_definitions_v2 — rebuilt with v2 schema
+$ DROP + CREATE (canonicals, periods, lookback columns)
+
+[4] ETL — 11 rows encrypted via secrets vault
+$ CGO_ENABLED=0 go build; run in postgres container
+etl-mt-accounts: complete, rows=11
+
+[5] Column check: mtapi_token_encrypted ✓
+[6] password_encrypted populated (count > 0) ✓
+[7] factor_definitions.canonicals column exists ✓
+[8] broker_symbols table exists ✓
+
+=== ALL CHECKS PASSED ===
