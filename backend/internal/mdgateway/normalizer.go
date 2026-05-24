@@ -47,6 +47,13 @@ func (n *Normalizer) Resolve(broker, raw string) string {
 	return canonical
 }
 
+// InvalidateCache removes a cached entry for (broker, symbol_raw).
+// Called by NormalizerInvalidator on PG NOTIFY events (ADR-0011 §2.3).
+func (n *Normalizer) InvalidateCache(broker, symbolRaw string) {
+	key := broker + ":" + symbolRaw
+	delete(n.cache, key)
+}
+
 // stripSuffix removes known MT symbol suffixes per alfq Q-005 + Q-006.
 func stripSuffix(raw string) string {
 	s := raw

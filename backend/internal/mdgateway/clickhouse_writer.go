@@ -107,6 +107,12 @@ func (w *CHWriter) Start(ctx context.Context) {
 	}
 }
 
+// Flush drains the given batches to CH. Called during graceful shutdown.
+func (w *CHWriter) Flush(ctx context.Context, ticks []*mdtick.Tick, bars []*mdtick.Bar) {
+	w.flushTicks(ctx, ticks)
+	w.flushBars(ctx, bars)
+}
+
 func (w *CHWriter) flush(ctx context.Context, ticks []*mdtick.Tick, bars []*mdtick.Bar) {
 	w.flushTicks(ctx, ticks)
 	w.flushBars(ctx, bars)
@@ -135,15 +141,20 @@ func (w *CHWriter) flushBars(ctx context.Context, batch []*mdtick.Bar) {
 func (w *CHWriter) insertTicks(ctx context.Context, ticks []*mdtick.Tick) error {
 	// ADR-0008 §2.2: ts_unix_ms is broker clock (business display only);
 	// arrived_unix_ms is mdgateway local clock (partition, TTL, ORDER BY, bar boundaries).
+	// M10 ADR-0011: INSERT into Buffer engine table; CH internally flushes to md_ticks.
 	batch, err := w.conn.PrepareBatch(ctx,
-		"INSERT INTO md_ticks (user_id, account_id, broker, symbol_raw, canonical, ts_unix_ms, arrived_unix_ms, bid, ask, bid_volume, ask_volume)")
+		"INSERT INTO md_ticks_buffer (user_id, account_id, broker, symbol_raw, canonical, ts_unix_ms, arrived_unix_ms, bid, ask, bid_volume, ask_volume, is_replay)")
 	if err != nil { return err }
 	defer batch.Abort()
 
 	nowMs := time.Now().UnixMilli()
 	for _, t := range ticks {
+		replayBit := uint8(0)
+		if t.IsReplay {
+			replayBit = 1
+		}
 		if err := batch.Append(t.UserID, t.AccountID, t.Broker, t.SymbolRaw, t.Canonical,
-			t.TsUnixMs, t.ArrivedUnixMs, t.Bid, t.Ask, t.BidVolume, t.AskVolume,
+			t.TsUnixMs, t.ArrivedUnixMs, t.Bid, t.Ask, t.BidVolume, t.AskVolume, replayBit,
 		); err != nil {
 			return err
 		}
@@ -156,14 +167,19 @@ func (w *CHWriter) insertTicks(ctx context.Context, ticks []*mdtick.Tick) error 
 func (w *CHWriter) insertBars(ctx context.Context, bars []*mdtick.Bar) error {
 	// ADR-0008 §2.2 + ADR-0009 §2.2: close_ts_unix_ms is set from ArrivedUnixMs by bar_aggregator;
 	// open_ts_unix_ms follows the same clock source for consistency.
+	// M10 ADR-0011: INSERT into Buffer engine table; CH internally flushes to md_bars.
 	batch, err := w.conn.PrepareBatch(ctx,
-		"INSERT INTO md_bars (user_id, account_id, broker, symbol_raw, canonical, period, open_ts_unix_ms, close_ts_unix_ms, open, high, low, close, volume, tick_count)")
+		"INSERT INTO md_bars_buffer (user_id, account_id, broker, symbol_raw, canonical, period, open_ts_unix_ms, close_ts_unix_ms, open, high, low, close, volume, tick_count, is_replay)")
 	if err != nil { return err }
 	defer batch.Abort()
 
 	for _, b := range bars {
+		replayBit := uint8(0)
+		if b.IsReplay {
+			replayBit = 1
+		}
 		if err := batch.Append(b.UserID, b.AccountID, b.Broker, "", b.Canonical, b.Period,
-			b.OpenTsUnixMs, b.CloseTsUnixMs, b.Open, b.High, b.Low, b.Close, b.Volume, b.TickCount,
+			b.OpenTsUnixMs, b.CloseTsUnixMs, b.Open, b.High, b.Low, b.Close, b.Volume, b.TickCount, replayBit,
 		); err != nil {
 			return err
 		}

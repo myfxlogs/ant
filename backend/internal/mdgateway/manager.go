@@ -80,6 +80,9 @@ func (m *Manager) RemoveGateway(ctx context.Context, accountID string) error {
 }
 
 func (m *Manager) HandleTick(t *mdtick.Tick) {
+	// ADR-0010 §2.3: trace span for the full tick processing pipeline.
+	// ctx, span := m.tracer.StartSpan(context.Background(), "HandleTick")
+	// defer span.End()
 	t.Canonical = m.normalizer.Resolve(t.Broker, t.SymbolRaw)
 
 	qr := m.quality.Check(t)

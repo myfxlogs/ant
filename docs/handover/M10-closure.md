@@ -42,14 +42,21 @@
 | L-5 Vault 单点密钥 | ADR-0011 §2.2 | MasterProvider + vault rotate CLI |
 | L-6 Trace 缺失 | ADR-0010 §2.3 | OTel Tracer stub |
 
+## M10 补充（2026-05-24 第2轮）
+
+runner.go 已创建，全组件装配完成：
+- ✅ runner.go — 装配入口（SpillReplay → BarAggregator → CHWriter → Backfiller → Invalidator → Manager）
+- ✅ INSERT 目标已更新：md_ticks→md_ticks_buffer、md_bars→md_bars_buffer
+- ✅ is_replay 列已加入 INSERT 语句
+- ✅ PG migration 111：broker_symbols NOTIFY trigger
+- ✅ backfiller/source_mtapi.go 已连接到 real adapter 接口
+- ✅ OTel SDK 真实实现（go.opentelemetry.io/otel v1.43.0，OTLP gRPC exporter，1% 采样）
+
 ## 待后续实施
 
-以下组件在 runner.go 集成后可完全启用：
-- backfiller (需要 PG 连接 + mtapi adapter)
-- md-doctor (需要 CH + NATS 连接)
-- slo-report (需要 Prometheus)
-- normalizer_invalidator (需要 pgx LISTEN)
-- OTel SDK (需要 go.opentelemetry.io/otel 依赖)
+以下组件在运行环境中可完全启用：
+- md-doctor (需要运行中的 CH + NATS)
+- slo-report (需要运行中的 Prometheus)
 - 100 账户负载测试 (需要 mock broker 基础设施)
 
 ## 不变量验证

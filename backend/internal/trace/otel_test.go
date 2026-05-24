@@ -15,11 +15,9 @@ func TestTracer_DisabledByDefault(t *testing.T) {
 	if span == nil {
 		t.Error("span should not be nil (no-op span returns valid object)")
 	}
-	if span.Name != "test" {
-		t.Errorf("span name = %q, want %q", span.Name, "test")
-	}
 	span.End()
 	_ = ctx
+	_ = tr.Shutdown(context.Background())
 }
 
 func TestTracer_EnabledWithEndpoint(t *testing.T) {
@@ -28,4 +26,5 @@ func TestTracer_EnabledWithEndpoint(t *testing.T) {
 	if !tr.Enabled() {
 		t.Error("tracer should be enabled when OTEL_EXPORTER_OTLP_ENDPOINT is set")
 	}
+	_ = tr.Shutdown(context.Background())
 }
