@@ -72,6 +72,7 @@ func (g *Gateway) HealthCheck(ctx context.Context) error {
 	if g.conn == nil { return fmt.Errorf("mt5: not connected") }; return nil
 }
 func (g *Gateway) SessionID() string { g.mu.RLock(); defer g.mu.RUnlock(); return g.sessionID }
+func (g *Gateway) MT5Client() pb.MT5Client { g.mu.RLock(); defer g.mu.RUnlock(); return g.client }
 func strToUint64(s string) uint64 {
 	var v uint64
 	for _, c := range s { if c >= '0' && c <= '9' { v = v*10 + uint64(c-'0') } }

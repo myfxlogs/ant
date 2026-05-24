@@ -69,6 +69,7 @@ func (g *Gateway) HealthCheck(ctx context.Context) error {
 	if g.conn == nil { return fmt.Errorf("mt4: not connected") }; return nil
 }
 func (g *Gateway) SessionID() string { g.mu.RLock(); defer g.mu.RUnlock(); return g.sessionID }
+func (g *Gateway) MT4Client() pb.MT4Client { g.mu.RLock(); defer g.mu.RUnlock(); return g.client }
 func strToInt(s string) int {
 	v := 0
 	for _, c := range s { if c >= '0' && c <= '9' { v = v*10 + int(c-'0') } }
