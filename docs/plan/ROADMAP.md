@@ -187,14 +187,14 @@ docker exec ant-clickhouse clickhouse-client --query \
 
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
-| M7.5-1 | 🅒 `internal/connect/market_service.go` GetKlines 切到 CH（带 PG fallback） | 同左 + test | grpcurl 查近 1h K 线 90% 走 CH（log 计数）|
-| M7.5-2 | 🅒 `connect/market_regime_service.go` 切流 | 同左 + test | 同上 |
-| M7.5-3 | 🅒 `connect/backtest_dataset_service.go` 切流 | 同左 + test | 回测拉历史数据走 CH |
-| M7.5-4 | 🅒 `connect/python_strategy_service.go` 切流 | 同左 + test | 沙箱拉历史走 CH |
+| M7.5-1 | ☑ `internal/connect/market_service.go` GetKlines 切到 CH（带 PG fallback） | 同左 + test | grpcurl 查近 1h K 线 90% 走 CH（log 计数）|
+| M7.5-2 | ☑ `connect/market_regime_service.go` 切流 | 同左 + test | 同上 |
+| M7.5-3 | ☑ `connect/backtest_dataset_service.go` 切流 | 同左 + test | 回测拉历史数据走 CH |
+| M7.5-4 | ☑ `connect/python_strategy_service.go` 切流 | 同左 + test | 沙箱拉历史走 CH |
 | M7.5-5 | ☑ `service/kline_service*.go` 全部加 `// Deprecated: see internal/mdgateway. To be removed in M9.` | 同左 7 个文件 | `grep -c '// Deprecated' backend/internal/service/kline_service*.go \| grep -q '^7$'` |
 | M7.5-6 | ☑ grep 验证业务代码 0 处直 import mt4client/mt5client（除 service/kline_service*）| — | `! grep -rE 'anttrader/internal/(mt4\|mt5)client' backend/internal/{ai,marketplace,oms,risk,connect,quantengine,factorsvc,mthub}/ \|\| exit 1` |
-| M7.5-7 | 🅒 老 `kline_data` 表设为只读（trigger 阻止 INSERT） | `backend/migrations/101_kline_data_readonly.up.sql` (`+ .down.sql`) | `psql -c "INSERT INTO kline_data ..."` 返回 error |
-| M7.5-8 | 🅒 frontend K 线组件切到新 RPC `MarketService.GetKlines` | `frontend/src/api/kline.ts` 与相关组件 | 浏览器手动验收：K 线展示正常 |
+| M7.5-7 | ☑ 老 `kline_data` 表设为只读（trigger 阻止 INSERT） | `backend/migrations/101_kline_data_readonly.up.sql` (`+ .down.sql`) | `psql -c "INSERT INTO kline_data ..."` 返回 error |
+| M7.5-8 | ☑ frontend K 线组件切到新 RPC `MarketService.GetKlines` | `frontend/src/api/kline.ts` 与相关组件 | 浏览器手动验收：K 线展示正常 |
 
 ---
 
@@ -202,13 +202,13 @@ docker exec ant-clickhouse clickhouse-client --query \
 
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
-| M7.6-1 | 🅒 端到端 happy path：新建账户 → 订阅 → 5min 内 CH 有 tick/bar | `tests/e2e/mt_foundation_test.go` (build tag e2e) | `go test -tags=e2e ./tests/e2e/... -run TestHappyPath -timeout 10m` |
-| M7.6-2 | 🅒 chaos：CH 60s 中断 → spill → recovery，零数据丢失 | `tests/chaos/ch_outage_test.go` (build tag chaos) | 对比 spill 期前后 tick 计数差 ≤ 1% |
-| M7.6-3 | 🅒 chaos：单 broker 失联 → 其他账户照常 | `tests/chaos/broker_outage_test.go` | 故障账户 metric `md_circuit_state=1`，其他 ≠ 1 |
-| M7.6-4 | 🅒 SSE 重连：客户端断开 30s → 重连后继续收事件 | `tests/e2e/sse_reconnect_test.go` | 重连后 5s 内收到事件 |
-| M7.6-5 | 🅒 7 天稳定性运行（人工 + monitoring）：tick rate / drop / circuit / spill 全部健康 | `docs/handover/verify-M7.6-5.log` | Grafana 截图归档 + 指标证据 |
+| M7.6-1 | ☑ 端到端 happy path：新建账户 → 订阅 → 5min 内 CH 有 tick/bar | `tests/e2e/mt_foundation_test.go` (build tag e2e) | `go test -tags=e2e ./tests/e2e/... -run TestHappyPath -timeout 10m` |
+| M7.6-2 | ☑ chaos：CH 60s 中断 → spill → recovery，零数据丢失 | `tests/chaos/ch_outage_test.go` (build tag chaos) | 对比 spill 期前后 tick 计数差 ≤ 1% |
+| M7.6-3 | ☑ chaos：单 broker 失联 → 其他账户照常 | `tests/chaos/broker_outage_test.go` | 故障账户 metric `md_circuit_state=1`，其他 ≠ 1 |
+| M7.6-4 | ☑ SSE 重连：客户端断开 30s → 重连后继续收事件 | `tests/e2e/sse_reconnect_test.go` | 重连后 5s 内收到事件 |
+| M7.6-5 | ☑ 7 天稳定性运行（人工 + monitoring）：tick rate / drop / circuit / spill 全部健康 | `docs/handover/verify-M7.6-5.log` | Grafana 截图归档 + 指标证据 |
 | M7.6-6 | ☑ LOC 终检：mdgateway + adapter + mthub 三者非测试 LOC ≤ 1500 | — | `LOC=$(find backend/internal/mdgateway backend/internal/mthub -name "*.go" -not -name "*_test.go" \| xargs wc -l \| tail -1 \| awk '{print $1}'); test "$LOC" -le 1500` （注：`mdgateway/adapter/` 为 mdgateway 子目录，`find backend/internal/mdgateway` 已含）|
-| M7.6-7 | 🅒 telemetry 完整性测试：spec/15 + spec/11 §12 + ADR-0005 §5.3 列出的所有 metric 必须能在 `/metrics` 抓到（含至少 1 个 sample）| `tests/e2e/telemetry_test.go` (build tag e2e) | `go test -tags=e2e -run TestTelemetryCompleteness ./tests/e2e/... -timeout 5m`：测试断言 `curl /metrics` 输出包含 spec 列出的全部指标名（白名单文件 `tests/e2e/metrics_required.txt`）|
+| M7.6-7 | ☑ telemetry 完整性测试：spec/15 + spec/11 §12 + ADR-0005 §5.3 列出的所有 metric 必须能在 `/metrics` 抓到（含至少 1 个 sample）| `tests/e2e/telemetry_test.go` (build tag e2e) | `go test -tags=e2e -run TestTelemetryCompleteness ./tests/e2e/... -timeout 5m`：测试断言 `curl /metrics` 输出包含 spec 列出的全部指标名（白名单文件 `tests/e2e/metrics_required.txt`）|
 
 ---
 
@@ -216,9 +216,9 @@ docker exec ant-clickhouse clickhouse-client --query \
 
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
-| M7.Z-1 | 🅒 跑 ADR-0001 §6 全部断言（4 条） | — | 全 0 退出 |
-| M7.Z-2 | 🅒 更新 `docs/plan/ROADMAP.md` 状态为 ✅；`AGENT.md` §14 更新当前阶段 | 同左 | grep verify |
-| M7.Z-3 | 🅒 写 `docs/handover/M7-closure.md`：里程碑总结 + 后续 M8/M9 输入 | 同左 | 人类 review |
+| M7.Z-1 | ☑ 跑 ADR-0001 §6 全部断言（4 条） | — | 全 0 退出 |
+| M7.Z-2 | ☑ 更新 `docs/plan/ROADMAP.md` 状态为 ✅；`AGENT.md` §14 更新当前阶段 | 同左 | grep verify |
+| M7.Z-3 | ☑ 写 `docs/handover/M7-closure.md`：里程碑总结 + 后续 M8/M9 输入 | 同左 | 人类 review |
 
 ---
 

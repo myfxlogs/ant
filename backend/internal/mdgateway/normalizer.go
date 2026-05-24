@@ -1,6 +1,7 @@
 package mdgateway
 
 import (
+	"context"
 	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -30,7 +31,7 @@ func (n *Normalizer) Resolve(broker, raw string) string {
 	// Try PG lookup
 	if n.pg != nil {
 		var canonical string
-		err := n.pg.QueryRow(nil,
+		err := n.pg.QueryRow(context.Background(),
 			"SELECT canonical FROM broker_symbols WHERE broker=$1 AND symbol_raw=$2 LIMIT 1",
 			broker, raw,
 		).Scan(&canonical)
