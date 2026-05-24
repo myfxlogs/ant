@@ -1,0 +1,18 @@
+Card: M10.5-6 — slo-report implementation (Prometheus API, 4 SLO, markdown)
+Date: 2026-05-24
+Status: ☑
+
+=== Verification ===
+$ go build ./cmd/slo-report/... → PASS
+$ /tmp/slo-report | grep -c 'SLO-MD' → 4 (all 4 SLOs present)
+$ grep -rE '(stub|"— stub")' cmd/slo-report/ → 0 hits
+$ promtool check rules deploy/prometheus/rules.yml → (promtool not installed, YAML syntax verified)
+
+Implementation:
+- Prometheus v1 API client via github.com/prometheus/client_golang
+- 4 SLO queries: availability, P99 latency, data integrity, spill_pending
+- Markdown table output
+- Error budget calculation (0.1% monthly)
+- deploy/prometheus/rules.yml: md:up:1m + md:availability:30d recording rules
+
+Files: cmd/slo-report/main.go (70 lines), deploy/prometheus/rules.yml (new)
