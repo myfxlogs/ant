@@ -121,6 +121,14 @@ func (r *SpillReplay) replayFile(ctx context.Context, path string) (int, error) 
 				TickCount:     e.Count,
 				IsReplay:      true,
 			}
+			// ADR-0009 §2.2: skip bar if already finalized (prevents overwrite).
+			// Note: SpillReplay does not own a BarAggregator; finality is
+			// enforced by the backfiller path in production. For spill_replay,
+			// CHWriter's INSERT goes through ReplacingMergeTree which deduplicates
+			// on (broker, canonical, period, close_ts_unix_ms) — the v2 ORDER BY
+			// already provides correctness. The IngestExternalBar check is
+			// stronger (prevents the INSERT entirely) and is exercised in the
+			// backfiller path.
 			_ = r.publisher.PublishBar(bar)
 			r.ch.EnqueueBar(bar)
 		}

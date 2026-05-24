@@ -12,9 +12,18 @@ var Periods = []struct{ Name string; Ms int64 }{
 	{"1h", 3_600_000}, {"4h", 14_400_000}, {"1d", 86_400_000},
 }
 
+// finalizedBars stores the MAX close_ts_unix_ms for each (broker,canonical,period)
+// that has been committed to CH. Replay/backfill bars with close_ts <= this value
+// are skipped (ADR-0009 §2.2 bar finality invariant).
+type finalizedKey struct {
+	broker, canonical, period string
+}
+
 type BarAggregator struct {
 	mu sync.Mutex
 	bars map[string]*openBar // key: broker:canonical:period
+
+	finalizedBars map[finalizedKey]int64
 }
 
 type openBar struct {
@@ -26,7 +35,43 @@ type openBar struct {
 }
 
 func NewBarAggregator() *BarAggregator {
-	return &BarAggregator{bars: make(map[string]*openBar)}
+	return &BarAggregator{
+		bars:          make(map[string]*openBar),
+		finalizedBars: make(map[finalizedKey]int64),
+	}
+}
+
+// LoadFinalizedBars hydrates the finalized-bars map from ClickHouse.
+// Call after CH connection is established, before any bar ingestion.
+// Query: SELECT broker, canonical, period, MAX(close_ts_unix_ms)
+//
+//	FROM md_bars GROUP BY broker, canonical, period
+func (a *BarAggregator) LoadFinalizedBars(maxCloseTs map[finalizedKey]int64) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	for k, v := range maxCloseTs {
+		a.finalizedBars[k] = v
+	}
+}
+
+// IngestExternalBar handles bars from backfiller or spill_replay (IsReplay=true).
+// Returns false if the bar was skipped because its close_ts <= finalizedBars[key]
+// (ADR-0009 §2.2 bar finality invariant).
+func (a *BarAggregator) IngestExternalBar(b *mdtick.Bar) bool {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
+	fk := finalizedKey{b.Broker, b.Canonical, b.Period}
+	if finalized, ok := a.finalizedBars[fk]; ok && b.CloseTsUnixMs <= finalized {
+		// Already finalized — skip.
+		barSkippedFinalized.Add(1)
+		return false
+	}
+	// Accept: update finalized ceiling.
+	if b.CloseTsUnixMs > a.finalizedBars[fk] {
+		a.finalizedBars[fk] = b.CloseTsUnixMs
+	}
+	return true
 }
 
 // AddTick processes a tick; emits completed bars via onBar.
@@ -47,12 +92,18 @@ func (a *BarAggregator) AddTick(t *mdtick.Tick, onBar func(*mdtick.Bar)) {
 			ob = &openBar{bucket: bucket, open: mid, high: mid, low: mid, close: mid, startTs: t.ArrivedUnixMs}
 			a.bars[key] = ob
 		} else if ob.bucket != bucket {
-			onBar(&mdtick.Bar{
+			bar := &mdtick.Bar{
 				Broker: t.Broker, Canonical: t.Canonical, Period: p.Name,
 				OpenTsUnixMs: ob.startTs, CloseTsUnixMs: ob.endTs,
 				Open: ob.open, High: ob.high, Low: ob.low, Close: ob.close,
 				Volume: ob.volume, TickCount: ob.count,
-			})
+			}
+			// ADR-0009 §2.2: real-time bars update finalized ceiling.
+			fk := finalizedKey{t.Broker, t.Canonical, p.Name}
+			if bar.CloseTsUnixMs > a.finalizedBars[fk] {
+				a.finalizedBars[fk] = bar.CloseTsUnixMs
+			}
+			onBar(bar)
 			ob.bucket = bucket
 			ob.open = mid; ob.high = mid; ob.low = mid; ob.close = mid
 			ob.volume = 0; ob.count = 0

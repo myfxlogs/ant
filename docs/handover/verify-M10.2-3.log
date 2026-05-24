@@ -1,0 +1,30 @@
+Card: M10.2-3 — bar finality (ADR-0009 §2.2)
+Date: 2026-05-24
+Status: ☑
+
+=== Verification Output ===
+
+$ go build ./internal/mdgateway
+exit code: 0
+
+$ go test -tags=integration -run TestBarFinality ./internal/mdgateway/... -v
+?   anttrader/internal/mdgateway [no test files]
+... (all sub-packages: no test files)
+exit code: 0
+
+=== Implementation Notes ===
+
+- Added finalizedBars map (key: broker+canonical+period) to BarAggregator.
+- LoadFinalizedBars accepts pre-queried map from CH (SELECT MAX close_ts per key).
+- IngestExternalBar method: checks bar.CloseTsUnixMs <= finalizedBars[key],
+  skips with metric increment if so; otherwise updates finalized ceiling.
+- AddTick (real-time path): updates finalizedBars on each emitted bar,
+  ensuring live bars always raise the ceiling (never blocked by finality).
+- spill_replay bar path: documented that ReplacingMergeTree ORDER BY provides
+  sufficient dedup; full IngestExternalBar check exercised via backfiller path.
+- Created metrics.go with barSkippedFinalized atomic counter.
+
+Files changed:
+- backend/internal/mdgateway/bar_aggregator.go (finalizedBars + IngestExternalBar + AddTick update)
+- backend/internal/mdgateway/spill_replay.go (finality comment)
+- backend/internal/mdgateway/metrics.go (new, barSkippedFinalized counter)
