@@ -12,7 +12,7 @@
 
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
-| M8.0-1 | PG migrations：新建 `platform_strategies` `platform_factors` `platform_ai_agents` `admins` `user_subscriptions` `user_strategy_publishes` `copy_trade_links` `user_factor_overrides` `user_ai_agents` 9 张表 | `backend/migrations/110_platform_tables.up.sql` (`+.down`) | `make migrate; for t in platform_strategies platform_factors platform_ai_agents admins user_subscriptions user_strategy_publishes copy_trade_links user_factor_overrides user_ai_agents; do docker exec ant-postgres psql -U ant -d ant -tAc "SELECT to_regclass('$t')" \| grep -q "$t"; done` |
+| M8.0-1 | ☑ PG migrations：新建 9 张 C2C 平台表 |
 | M8.0-2 | ETL：把当前 `strategy_templates` 中 `is_official=true` 行去重迁到 `platform_strategies`；per-user 副本删除 | `backend/cmd/etl-platform-data/main.go` | ETL 后 `SELECT count(*) FROM strategy_templates WHERE is_official=true GROUP BY user_id HAVING count(*)>0` 零行 |
 | M8.0-3 | ETL：`factor_definitions` 中通用因子（MA/RSI/MACD/Bollinger 等内置）迁到 `platform_factors`；per-user 副本删除（仅保留用户自创） | 同 M8.0-2 cmd 目录 | ETL 后 platform_factors 行数 ≥ 5；user 自有 factor 行数减少 |
 | M8.0-4 | ETL：当前 `ai_agent_definitions` 默认 5 个角色迁到 `platform_ai_agents`；前端 `defaultAgentTemplates.ts` 改为读 RPC（不再硬编码）| 同上 + `frontend/src/pages/ai/defaultAgentTemplates.ts` | platform_ai_agents 行数 ≥ 5；前端 grep 无硬编码默认 prompt |
