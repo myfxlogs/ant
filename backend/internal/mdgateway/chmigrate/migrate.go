@@ -91,9 +91,11 @@ func Run(ctx context.Context, conn clickhouse.Conn, log *zap.Logger) error {
 			return fmt.Errorf("chmigrate: schema drift on version %d (%s)", version, name)
 		}
 
-		// Apply migration.
-		if err := conn.Exec(ctx, sql); err != nil {
-			return fmt.Errorf("chmigrate: exec %s: %w", name, err)
+		// Apply migration (split on ; for multi-statement files like EXCHANGE TABLES sequences).
+		for i, stmt := range splitSQL(sql) {
+			if err := conn.Exec(ctx, stmt); err != nil {
+				return fmt.Errorf("chmigrate: exec %s (stmt %d): %w", name, i+1, err)
+			}
 		}
 
 		// Record version.
@@ -109,6 +111,19 @@ func Run(ctx context.Context, conn clickhouse.Conn, log *zap.Logger) error {
 		log.Info("chmigrate: applied", zap.Int("version", version), zap.String("file", name))
 	}
 	return nil
+}
+
+// splitSQL splits a multi-statement SQL string on ; delimiters,
+// skipping empty statements and trimming whitespace.
+func splitSQL(s string) []string {
+	var stmts []string
+	for _, part := range strings.Split(s, ";") {
+		trimmed := strings.TrimSpace(part)
+		if trimmed != "" {
+			stmts = append(stmts, trimmed)
+		}
+	}
+	return stmts
 }
 
 // MustRun panics on error.

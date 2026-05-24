@@ -1,0 +1,39 @@
+Card: M10.1-1 — chmigrate 006/007 v2 schema (EXCHANGE TABLES)
+Date: 2026-05-24
+Status: ☑
+
+=== Verification Output ===
+
+$ make migrate-ch
+Running ClickHouse migrations...
+{"level":"info","ts":1779609522.338923,"caller":"chmigrate/migrate.go:111","msg":"chmigrate: applied","version":6,"file":"006_md_ticks_v2.sql"}
+{"level":"info","ts":1779609522.3664691,"caller":"chmigrate/migrate.go:111","msg":"chmigrate: applied","version":7,"file":"007_md_bars_v2.sql"}
+{"level":"info","ts":1779609522.3665745,"caller":"migrate-ch/main.go:43","msg":"migrate-ch: complete"}
+exit code: 0
+
+$ docker exec ant-clickhouse clickhouse-client --query "SELECT sorting_key FROM system.tables WHERE database='ant' AND name='md_ticks'"
+broker, canonical, ts_unix_ms, bid, ask, bid_volume, ask_volume
+
+$ docker exec ant-clickhouse clickhouse-client --query "SELECT engine_full FROM system.tables WHERE database='ant' AND name='md_ticks'"
+ReplacingMergeTree(arrived_unix_ms) PARTITION BY toYYYYMM(toDateTime(arrived_unix_ms / 1000)) ORDER BY (broker, canonical, ts_unix_ms, bid, ask, bid_volume, ask_volume) TTL toDateTime(arrived_unix_ms / 1000) + toIntervalDay(90) SETTINGS index_granularity = 8192
+
+Legacy tables preserved:
+md_ticks_legacy count: 2
+md_bars_legacy count: 2
+(active tables md_ticks/md_bars also have 2 rows each — data migrated intact)
+
+$ docker exec ant-clickhouse clickhouse-client --query "SELECT sorting_key FROM system.tables WHERE database='ant' AND name='md_bars'"
+broker, canonical, period, close_ts_unix_ms
+
+=== Implementation Notes ===
+
+- Modified migrate.go to support multi-statement SQL files (split on ; delimiter).
+  Required because EXCHANGE TABLES/RENAME cannot be expressed in a single statement.
+- Used toDateTime (not toDateTime64) for TTL/PARTITION to match ClickHouse's
+  requirement that TTL expressions resolve to DateTime type.
+- ClickHouse internally normalizes INTERVAL 90 DAY to toIntervalDay(90) in system.tables.
+
+Files changed:
+- backend/internal/mdgateway/chmigrate/006_md_ticks_v2.sql (new)
+- backend/internal/mdgateway/chmigrate/007_md_bars_v2.sql (new)
+- backend/internal/mdgateway/chmigrate/migrate.go (multi-statement support)
