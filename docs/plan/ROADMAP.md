@@ -305,8 +305,8 @@ docker exec ant-clickhouse clickhouse-client --query \
 
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
-| M10.5-1 | 🅒 `cmd/md-doctor/`：reconcile/bar-continuity/canonical-liveness/dlq-tail/all 五个子命令（spec/19）；text+json 输出；--strict | `backend/cmd/md-doctor/{main.go,reconcile.go,bar_continuity.go,canonical_liveness.go,dlq_tail.go,*_test.go}` | `cd backend && go build -o /tmp/md-doctor ./cmd/md-doctor/ && /tmp/md-doctor --help \| grep -E 'reconcile\|bar-continuity\|canonical-liveness\|dlq-tail\|all' \| wc -l \| grep -q '^5$' && /tmp/md-doctor all --window 10m --output json \| jq -e '.reconcile != null'` |
-| M10.5-2 | 🅒 `cmd/slo-report/`：从 Prometheus 拉指标计算 4 条 SLO（spec/20 §1）+ budget 消耗，markdown 输出；--strict；Prometheus recording rules `deploy/prometheus/rules.yml`（`md:up:1m` `md:availability:30d`） | `backend/cmd/slo-report/{main.go,*_test.go}` `deploy/prometheus/rules.yml` | `cd backend && go build -o /tmp/slo-report ./cmd/slo-report/ && /tmp/slo-report --window 1h --output text \| grep -E 'SLO-MD-[1-4]' \| wc -l \| grep -q '^4$' && promtool check rules deploy/prometheus/rules.yml` |
+| M10.5-1 | ☑ `cmd/md-doctor/`：reconcile/bar-continuity/canonical-liveness/dlq-tail/all 五个子命令（spec/19）；text+json 输出；--strict | `backend/cmd/md-doctor/{main.go,reconcile.go,bar_continuity.go,canonical_liveness.go,dlq_tail.go,*_test.go}` | `cd backend && go build -o /tmp/md-doctor ./cmd/md-doctor/ && /tmp/md-doctor --help \| grep -E 'reconcile\|bar-continuity\|canonical-liveness\|dlq-tail\|all' \| wc -l \| grep -q '^5$' && /tmp/md-doctor all --window 10m --output json \| jq -e '.reconcile != null'` |
+| M10.5-2 | ☑ `cmd/slo-report/`：从 Prometheus 拉指标计算 4 条 SLO（spec/20 §1）+ budget 消耗，markdown 输出；--strict；Prometheus recording rules `deploy/prometheus/rules.yml`（`md:up:1m` `md:availability:30d`） | `backend/cmd/slo-report/{main.go,*_test.go}` `deploy/prometheus/rules.yml` | `cd backend && go build -o /tmp/slo-report ./cmd/slo-report/ && /tmp/slo-report --window 1h --output text \| grep -E 'SLO-MD-[1-4]' \| wc -l \| grep -q '^4$' && promtool check rules deploy/prometheus/rules.yml` |
 
 ### M10.Z · 关闭
 
