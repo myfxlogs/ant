@@ -1,1 +1,2 @@
 # Existing non-generated files over 800 lines. New oversized non-MD source files are forbidden.
+frontend/src/gen/ant/v1/mthub_service_pb.ts
