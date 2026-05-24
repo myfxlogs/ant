@@ -1,20 +1,20 @@
 ================================================================
-  verify-M10.5-9  (2026-05-24T10:37:19Z)
+  verify-M10.5-9  (2026-05-24T12:36:29Z)
 ================================================================
 Card:        M10.5-9
 Repo:        /opt/ant
 Branch:      main
-HEAD:        8dabb9d95b1eaa78c3d0c64fb597e7c5383131b4
-HEAD (full): 8dabb9d95b1eaa78c3d0c64fb597e7c5383131b4 M10.5 v3 audit: rollback 10 fake/stub cards + Cascade v3 final review
-HEAD parent: 411593f18041add76b72fcf801d6f52f8e815c79
+HEAD:        28b31189a6c26b1a3a3f003476cef88a8504486d
+HEAD (full): 28b31189a6c26b1a3a3f003476cef88a8504486d Card: M10.5-6 — slo-report real markdown output with 4 SLO queries + rules.yml
+HEAD parent: c407fa5661d409b7c39ddc021c8d30fe4a44213c
 Author:      myfxlogs <myfxlogs@users.noreply.github.com>
-AuthorDate:  2026-05-24 10:24:39 +0000
-Tree hash:   a8e7e4bb0b31ed47864b3102f4bad0dbad117c9f
+AuthorDate:  2026-05-24 12:35:27 +0000
+Tree hash:   8df09bdfbbb576b3a7340672c1188aad77f2c991
 Host:        ant
 Uname:       Linux 6.8.0-117-generic x86_64
 Go version:  go version go1.22.2 linux/amd64
 PWD:         /opt/ant
-Cmd:         cd backend && go test -race -count=1 -run 'TestPublisherDedupHeader|TestRunnerFatalOnChDown' ./internal/mdgateway/ -v
+Cmd:         cd backend && go test -race -count=1 -run 'TestPublisherDedupHeader|TestRunnerFatalOnChDown' ./internal/mdgateway/ -v 2>&1 && echo '---VERIFY:PASS---'
 ----------------------------------------------------------------
 
 === RUN   TestRunnerFatalOnChDown
@@ -24,9 +24,10 @@ Cmd:         cd backend && go test -race -count=1 -run 'TestPublisherDedupHeader
     publisher_test.go:76: PublisherDedupHeader: Nats-Msg-Id header set on all publish calls
 --- PASS: TestPublisherDedupHeader (0.00s)
 PASS
-ok  	anttrader/internal/mdgateway	1.054s
+ok  	anttrader/internal/mdgateway	1.056s
+---VERIFY:PASS---
 
 ----------------------------------------------------------------
 Exit code:   0
 Log file:    docs/handover/verify-M10.5-9.log
-Finished:    2026-05-24T10:37:23Z
+Finished:    2026-05-24T12:36:32Z

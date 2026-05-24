@@ -194,6 +194,12 @@ ENGINE = Buffer(
 - `clickhouse_writer.go` `INSERT INTO md_ticks_buffer (...)` 而不是 `md_ticks`
 - 读取仍走 `md_ticks`（Buffer engine 透明合并最近未 flush 数据）
 
+**Buffer 引擎旁路开关**（M10.5-10 · S-2）：
+- 环境变量 `ANT_CH_BUFFER_ENABLED=false` 强制直写 `md_ticks` / `md_bars`（跳过 Buffer 引擎）
+- 默认值 `true`（使用 Buffer 引擎，符合 ADR-0011）
+- Buffer 引擎 OOM 风险：CH 内存不足时 Buffer 内未 flush 数据可能丢失；spill 路径独立保障数据不丢
+- 生产环境建议保持默认（Buffer 引擎），仅在 CH 内存压力大时临时切换
+
 ## 2.8 v2 表（M10 · ADR-0008，逐步替换 §2.1 §2.2）
 
 `006_md_ticks_v2.sql`：
