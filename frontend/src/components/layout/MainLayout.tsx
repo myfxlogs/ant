@@ -23,7 +23,6 @@ const useAuth = () => ({ user: null });
 import NotificationCenter from '@/components/notification/NotificationCenter';
 import ContentContainer from '@/components/layout/ContentContainer';
 import { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
-import { useTranslation } from 'react-i18next';
 import i18n, { normalizeLanguage, setLanguage, type SupportedLanguage } from '@/i18n';
 
 const { Header, Content } = Layout;
@@ -54,7 +53,6 @@ const languages: { key: SupportedLanguage; labelKey: string }[] = [
 
 export default function MainLayout() {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const { t } = useTranslation();
   const [language, setLanguageState] = useState<SupportedLanguage>(normalizeLanguage(i18n.language));
   const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
@@ -73,19 +71,19 @@ export default function MainLayout() {
   }, []);
 
   const allMenuItems = [
-    { key: menuKeys.dashboard, icon: <IconHome size={20} stroke={1.5} />, label: t('menu.dashboard') },
+    { key: menuKeys.dashboard, icon: <IconHome size={20} stroke={1.5} />, label: 'Dashboard' },
     {
       key: menuKeys.ai,
       icon: <IconBrain size={20} stroke={1.5} />,
-      label: t('menu.aiAssistant'),
+      label: 'AI Assistant',
     },
-    { key: menuKeys.strategies, icon: <IconList size={20} stroke={1.5} />, label: t('menu.strategies') },
+    { key: menuKeys.strategies, icon: <IconList size={20} stroke={1.5} />, label: 'Strategies' },
     { key: menuKeys.experiments, icon: <IconFlask size={20} stroke={1.5} />, label: '策略实验' },
     { key: menuKeys.marketRegime, icon: <IconWaveSine size={20} stroke={1.5} />, label: '市场状态' },
     { key: menuKeys.assets, icon: <IconArchive size={20} stroke={1.5} />, label: '资产库' },
-    { key: menuKeys.schedules, icon: <IconBolt size={20} stroke={1.5} />, label: t('menu.schedules') },
+    { key: menuKeys.schedules, icon: <IconBolt size={20} stroke={1.5} />, label: 'Schedules' },
     { key: menuKeys.research, icon: <IconMicroscope size={20} stroke={1.5} />, label: '量化研究' },
-    { key: menuKeys.logs, icon: <IconHistory size={20} stroke={1.5} />, label: t('menu.logs') },
+    { key: menuKeys.logs, icon: <IconHistory size={20} stroke={1.5} />, label: 'Logs' },
   ];
 
   const menuItems =
@@ -103,13 +101,13 @@ export default function MainLayout() {
   }, []);
 
   const userMenuItems = [
-    { key: 'profile', icon: <IconUserCircle size={18} stroke={1.5} />, label: t('topbar.profile') },
-    { key: 'settings', icon: <IconSettings size={18} stroke={1.5} />, label: t('topbar.settings') },
+    { key: 'profile', icon: <IconUserCircle size={18} stroke={1.5} />, label: 'Profile' },
+    { key: 'settings', icon: <IconSettings size={18} stroke={1.5} />, label: 'Settings' },
     ...(isAdmin
-      ? [{ type: 'divider' as const }, { key: 'admin', icon: <IconChartLine size={18} stroke={1.5} />, label: t('topbar.switchToAdmin') }]
+      ? [{ type: 'divider' as const }, { key: 'admin', icon: <IconChartLine size={18} stroke={1.5} />, label: 'Switch to Admin' }]
       : []),
     { type: 'divider' as const },
-    { key: 'logout', icon: <IconLogout size={18} stroke={1.5} />, label: t('topbar.logout'), danger: true },
+    { key: 'logout', icon: <IconLogout size={18} stroke={1.5} />, label: 'Logout', danger: true },
   ];
 
   const handleUserMenuClick = ({ key }: { key: string }) => {
@@ -171,7 +169,7 @@ export default function MainLayout() {
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: BRAND_GRADIENT }}>
               <IconChartLine size={22} stroke={2} color="#FFFFFF" />
             </div>
-            <span className="font-bold text-lg text-gradient" style={{ fontFamily: 'Poppins, sans-serif' }}>{t('app.name')}</span>
+            <span className="font-bold text-lg text-gradient" style={{ fontFamily: 'Poppins, sans-serif' }}>{'Ant'}</span>
           </div>
         </div>
         {menuContent}
@@ -211,7 +209,7 @@ export default function MainLayout() {
               <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: BRAND_GRADIENT }}>
                 <IconChartLine size={22} stroke={2} color="#FFFFFF" />
               </div>
-              <span className="font-bold text-lg text-gradient" style={{ fontFamily: 'Poppins, sans-serif' }}>{t('app.name')}</span>
+              <span className="font-bold text-lg text-gradient" style={{ fontFamily: 'Poppins, sans-serif' }}>{'Ant'}</span>
             </div>
           </div>
           {menuContent}
@@ -245,7 +243,7 @@ export default function MainLayout() {
             {!isMobile && (
               <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: '#F5F7F9', border: '1px solid rgba(0, 0, 0, 0.08)' }}>
                 <div className="w-2 h-2 rounded-full" style={{ background: '#00A651', animation: 'pulse 2s infinite' }} />
-                <span className="text-sm" style={{ color: '#5A6B75' }}>{t('topbar.systemOk')}</span>
+                <span className="text-sm" style={{ color: '#5A6B75' }}>{'System OK'}</span>
               </div>
             )}
           </div>
@@ -293,7 +291,7 @@ export default function MainLayout() {
                 />
                 {!isMobile && (
                   <div className="hidden sm:block">
-                    <div className="text-sm font-medium" style={{ color: '#141D22' }}>{user?.nickname || user?.email?.split('@')[0] || t('topbar.user')}</div>
+                    <div className="text-sm font-medium" style={{ color: '#141D22' }}>{user?.nickname || user?.email?.split('@')[0] || 'User'}</div>
                   </div>
                 )}
               </div>
