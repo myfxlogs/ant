@@ -82,8 +82,8 @@
 
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
-| M7.1-4 | 🅒 `adapter/mdtick/` 共享 DTO（Tick/Bar/Money/AccountConfig）+ Normalizer 接口 | `backend/internal/mdgateway/adapter/mdtick/{mdtick.go,normalizer.go,*_test.go}` | `cd backend && go build ./internal/mdgateway/adapter/mdtick/... && go test ./internal/mdgateway/adapter/mdtick/...` |
-| M7.1-5 | 🅒 mdgateway types.go：Gateway 接口、Manager 类型 | `backend/internal/mdgateway/{types.go,types_test.go}` | `cd backend && go build ./internal/mdgateway/` |
+| M7.1-4 | ☑ `adapter/mdtick/` 共享 DTO（Tick/Bar/Money/AccountConfig）+ Normalizer 接口 | `backend/internal/mdgateway/adapter/mdtick/{mdtick.go,normalizer.go,*_test.go}` | `cd backend && go build ./internal/mdgateway/adapter/mdtick/... && go test ./internal/mdgateway/adapter/mdtick/...` |
+| M7.1-5 | ☑ mdgateway types.go：Gateway 接口、Manager 类型 | `backend/internal/mdgateway/{types.go,types_test.go}` | `cd backend && go build ./internal/mdgateway/` |
 
 ### M7.1.C 子组件（每个独立卡片）
 

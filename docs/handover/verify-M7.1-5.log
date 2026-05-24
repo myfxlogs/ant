@@ -1,0 +1,28 @@
+=== M7.1-5 Verification Log ===
+TIMESTAMP: 2026-05-24T01:14:34Z
+
+[1] M7.1-4: mdtick DTO + normalizer
+$ go build ./internal/mdgateway/adapter/mdtick/... → OK
+Types: Tick (decimal.Decimal), Bar, AccountConfig (v2 fields), CanonicalResolver
+
+[2] M7.1-5: mdgateway types
+$ go build ./internal/mdgateway/ → OK (exit 0)
+Types: Gateway interface, TickHandler, Manager, AccountHealth
+
+[3] Removed stale adapter/mt4/gateway.go + adapter/mt5/gateway.go
+(Will be rewritten by M7.1-15/16 per spec/10)
+
+=== ALL CHECKS PASSED ===
+
+[4] mdtick.Tick fields: UserID, AccountID, Broker, Platform, SymbolRaw,
+    Canonical, TsUnixMs, ArrivedUnixMs, Bid, Ask, BidVolume, AskVolume
+
+[5] mdtick.Bar fields: UserID, AccountID, Broker, Canonical, Period,
+    OpenTsUnixMs, CloseTsUnixMs, Open, High, Low, Close, Volume, TickCount
+
+[6] mdtick.AccountConfig fields: AccountID, UserID, Broker, Platform,
+    Login, Password, Server, MtapiHost, MtapiPort, MtapiToken
+
+[7] Gateway interface methods: Platform, AccountID, Connect, Disconnect,
+    Subscribe, HealthCheck, SessionID
+=== COMPLETE ===
