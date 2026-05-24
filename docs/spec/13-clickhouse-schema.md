@@ -197,6 +197,12 @@ ENGINE = Buffer(
 ## 2.8 v2 表（M10 · ADR-0008，逐步替换 §2.1 §2.2）
 
 `006_md_ticks_v2.sql`：
+
+> ⚠️ **迁移前置条件**（M10.5-13）：执行前必须满足：
+> 1. 磁盘可用空间 ≥ `md_ticks` 表当前占用 × 1.5（INSERT SELECT 产生额外存储）
+> 2. 在维护窗口内执行（1.5TB 数据预计 2-5 小时）
+> 3. 迁移期间不阻塞写入（EXCHANGE TABLES 是原子操作）
+> 4. `md_ticks_legacy` 保留 24h 后由运维手动 DROP
 ```sql
 -- 1. 创建新 schema
 CREATE TABLE IF NOT EXISTS md_ticks_v2 (
@@ -404,6 +410,25 @@ DROP TABLE IF EXISTS kline_data;
 DROP TABLE IF EXISTS tick_data;  -- 如有
 ```
 
+## 4.x 查询规范 · ReplacingMergeTree + FINAL（M10.5-13）
+
+**规则**：所有对 `md_ticks` / `md_bars`（ReplacingMergeTree 引擎）的**分析/对账类查询**必须加 `FINAL` 关键字，以保证查询时已去重。
+
+```sql
+-- ✅ 正确：对账查询
+SELECT count() FROM md_ticks FINAL WHERE arrived_unix_ms > now64()*1000 - 600000
+
+-- ✅ 正确：回测读取
+SELECT * FROM md_bars FINAL WHERE canonical='EURUSD' AND period='1m' ORDER BY close_ts_unix_ms
+
+-- ⚠️ 容忍：实时监控（允许少量误差）
+SELECT broker, canonical, count() FROM md_ticks WHERE arrived_unix_ms > now64()*1000 - 60000 GROUP BY broker, canonical
+```
+
+**原理**：ReplacingMergeTree 只在后台 merge 时去重，查询不保证去重。不加 `FINAL` 的 `SELECT count()` 会随 merge 进度波动，导致端到端对账（md-doctor）误报。
+
+---
+
 ## 5. chmigrate 实现
 
 ### 5.1 `chmigrate/migrate.go`
@@ -475,6 +500,23 @@ if err := chmigrate.Run(ctx, ch, log); err != nil {
 | signals | ~200B | 50 | 180 万行 | ~50 MB |
 
 满足 PG **绝不**能承受、CH 轻松吃下的设计目标。
+
+### 7.1 md_bars 长期容量与归档（M10.5-13）
+
+`md_bars` 当前无 TTL（"不过期"设计），长期运行需考虑：
+
+| 年限 | 累计行数（100 账户） | 压缩后预估 | 建议 |
+|---|---|---|---|
+| 1 年 | 54M | ~2 GB | 无操作 |
+| 3 年 | 162M | ~6 GB | 考虑加 TTL `INTERVAL 3 YEAR` |
+| 5 年 | 270M | ~10 GB | 强烈建议加 TTL 或冷热分层 |
+
+**冷热分层方案**（M10+ 实施）：
+- 热数据（90d）：本地 SSD，`md_bars` 主表
+- 冷数据（90d–3y）：`md_bars_archive`，`ENGINE = MergeTree() ORDER BY (...) TTL close_ts + INTERVAL 3 YEAR`，存储到 S3/对象存储
+- 归档查询：`SELECT * FROM merge('ant', 'md_bars|md_bars_archive') WHERE ...`
+
+当前阶段（M10）不实施分层，仅在容量规划中记录。当 `md_bars` 磁盘占用 > 50GB 时触发归档立项。
 
 ## 8. 验收命令
 
