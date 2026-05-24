@@ -38,6 +38,9 @@ func main() {
 
 	// Services
 	platformSvc := service.NewPlatformService(pool)
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" { jwtSecret = "ant-dev-secret-change-in-production" }
+
 	hub := mthub.NewHub()
 	eventBroker := mthub.NewOrderEventBroker()
 	mthubSvc := mthub.NewMtHubService(hub, eventBroker)
@@ -45,6 +48,9 @@ func main() {
 	mux := http.NewServeMux()
 
 	// ConnectRPC handlers
+	authServer := connect.NewAuthServer(pool, jwtSecret)
+	mux.Handle(antv1c.NewAuthServiceHandler(authServer))
+
 	mthubServer := connect.NewMtHubServer(mthubSvc)
 	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer))
 
