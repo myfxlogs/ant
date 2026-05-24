@@ -12,12 +12,22 @@ func NewPublisher(js natsgo.JetStreamContext) *Publisher { return &Publisher{js:
 func (p *Publisher) PublishTick(t *mdtick.Tick) error {
 	subj := fmt.Sprintf("md.tick.%s.%s", t.Broker, t.Canonical)
 	if p.js == nil { return nil }
-	_, err := p.js.Publish(subj, []byte(t.Bid.String()))
+	msg := natsgo.NewMsg(subj)
+	msg.Data = []byte(t.Bid.String())
+	if t.IsReplay { // ADR-0009 §2.1
+		msg.Header.Set("X-Ant-Replay", "1")
+	}
+	_, err := p.js.PublishMsg(msg)
 	return err
 }
 func (p *Publisher) PublishBar(b *mdtick.Bar) error {
 	if p.js == nil { return nil }
 	subj := fmt.Sprintf("md.bar.%s.%s.%s", b.Broker, b.Canonical, b.Period)
-	_, err := p.js.Publish(subj, []byte(b.Close.String()))
+	msg := natsgo.NewMsg(subj)
+	msg.Data = []byte(b.Close.String())
+	if b.IsReplay { // ADR-0009 §2.1
+		msg.Header.Set("X-Ant-Replay", "1")
+	}
+	_, err := p.js.PublishMsg(msg)
 	return err
 }

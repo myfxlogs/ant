@@ -18,6 +18,7 @@ type Tick struct {
 	Ask           decimal.Decimal
 	BidVolume     float64
 	AskVolume     float64
+	IsReplay      bool            // true when tick originates from spill_replay or backfiller (ADR-0009)
 }
 
 // Bar is produced by mdgateway.bar_aggregator from accumulated ticks.
@@ -35,6 +36,7 @@ type Bar struct {
 	Close         decimal.Decimal
 	Volume        float64
 	TickCount     uint32
+	IsReplay      bool   // true when bar originates from spill_replay or backfiller (ADR-0009)
 }
 
 // AccountConfig comes from PG mt_accounts_v2 view; runner decrypts and passes to adapter.

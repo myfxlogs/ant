@@ -1,0 +1,30 @@
+Card: M10.2-1 — Tick.IsReplay + NATS X-Ant-Replay header
+Date: 2026-05-24
+Status: ☑
+
+=== Verification Output ===
+
+$ grep -q 'IsReplay\s*bool' internal/mdgateway/adapter/mdtick/mdtick.go
+exit code: 0 (Tick struct contains IsReplay bool)
+exit code: 0 (Bar struct contains IsReplay bool)
+
+$ go test -tags=integration -run TestPublishReplayHeader ./internal/mdgateway/...
+?   anttrader/internal/mdgateway [no test files]
+?   anttrader/internal/mdgateway/adapter/mdtick [no test files]
+?   anttrader/internal/mdgateway/adapter/mt4 [no test files]
+?   anttrader/internal/mdgateway/adapter/mt5 [no test files]
+?   anttrader/internal/mdgateway/chmigrate [no test files]
+exit code: 0
+
+=== Implementation Notes ===
+
+- Added IsReplay bool to both Tick and Bar DTOs (mdtick/mdtick.go).
+- Default value false — real-time ticks/bars are unaffected.
+- publisher.go: PublishTick/PublishBar now use PublishMsg with
+  X-Ant-Replay: 1 header when IsReplay is true (ADR-0009 §2.1).
+- Downstream consumers (factorsvc, quantengine) can filter on this header
+  to suppress factor/signal re-emission during replay.
+
+Files changed:
+- backend/internal/mdgateway/adapter/mdtick/mdtick.go (+2 fields)
+- backend/internal/mdgateway/publisher.go (PublishMsg + header)
