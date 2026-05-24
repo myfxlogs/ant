@@ -1,0 +1,30 @@
+=== M7.0-9 Verification Log ===
+TIMESTAMP: 2026-05-24T00:53:01Z
+
+[1] go test -race -cover
+$ cd backend && go test -race -count=1 -cover ./internal/secrets/...
+ok  	anttrader/internal/secrets	1.058s	coverage: 90.0% of statements
+
+[2] ANT_MASTER_KEY in .env.example
+$ grep -q '^ANT_MASTER_KEY=' .env.example → OK
+
+[3] API surface:
+- secrets.New(masterB64, currentVersion) → (Client, error)
+- secrets.GenerateMasterKey() → (string, error)
+- Client.Encrypt(ctx, purpose, plaintext) → ([]byte, error)
+- Client.Decrypt(ctx, purpose, ciphertext) → ([]byte, error)
+- Client.Reencrypt(ctx, purpose, ciphertext) → ([]byte, error)
+- Client.CurrentVersion() → uint8
+- Purpose constants: mt-password, mtapi-token, broker-cookie
+
+[4] Algorithm: AES-256-GCM + HKDF-SHA256 + versioned KEK
+    Ciphertext format: version(1B) || nonce(12B) || AES-GCM(ciphertext+tag)
+
+[5] Test cases (14):
+  RoundTrip, DifferentPurpose, CorruptedTag, TooShort, UnknownVersion,
+  OldVersionDecrypt, NonceUnique(1000), Reencrypt, InvalidVersion,
+  InvalidKeyLength, InvalidBase64, EmptyPlaintext, VersionTooHigh,
+  ReencryptInvalidCiphertext, DeriveKeyConcurrent, CurrentVersion,
+  GenerateMasterKey(10×), EncryptCacheHit
+
+=== ALL CHECKS PASSED ===
