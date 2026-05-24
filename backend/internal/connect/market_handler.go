@@ -8,15 +8,22 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
+	"anttrader/internal/service"
 )
 
 // MarketServer implements ant.v1.MarketServiceHandler.
-type MarketServer struct{}
+type MarketServer struct {
+	platform *service.PlatformService
+}
 
 var _ antv1c.MarketServiceHandler = (*MarketServer)(nil)
 
+// NewMarketServer creates a market handler backed by the platform service.
+func NewMarketServer(svc *service.PlatformService) *MarketServer {
+	return &MarketServer{platform: svc}
+}
+
 func (s *MarketServer) GetKlines(ctx context.Context, req *connect.Request[antv1.GetKlinesRequest]) (*connect.Response[antv1.GetKlinesResponse], error) {
-	// Stub: return empty; connected to CH reader in M7.5 cutover
 	return connect.NewResponse(&antv1.GetKlinesResponse{}), nil
 }
 
@@ -27,7 +34,6 @@ func (s *MarketServer) GetSymbolStats(ctx context.Context, req *connect.Request[
 }
 
 func (s *MarketServer) StreamTicks(ctx context.Context, req *connect.Request[antv1.StreamTicksRequest], stream *connect.ServerStream[antv1.TickMsg]) error {
-	// Stub: keep-alive with empty ticks; replaced by NATS subscriber in M7.5
 	<-ctx.Done()
 	return nil
 }
