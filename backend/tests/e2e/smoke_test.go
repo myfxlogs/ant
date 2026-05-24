@@ -21,18 +21,17 @@ import (
 	natscli "anttrader/internal/storage/nats"
 )
 
-// TestE2ESmoke (M10.5-11): inject 100 real ticks through the mdgateway data
-// pipeline using real CH + real NATS, then reconcile three independent sinks:
+// TestE2ESmoke (M10.5-11): inject ticks through the mdgateway data pipeline
+// using real CH + real NATS, then reconcile three independent sinks:
 //
-//	(1) NATS JetStream  — subscribe to md.tick.E2E_SMOKE.>
-//	(2) ClickHouse      — SELECT count() FROM md_ticks FINAL WHERE broker='E2E_SMOKE'
-//	(3) DLQ             — SELECT count() FROM md_ticks_dlq WHERE broker='E2E_SMOKE'
+//	(1) NATS  — subscribe to md.tick.<brokerTag>.>
+//	(2) CH    — SELECT count() FROM md_ticks FINAL WHERE broker=<brokerTag>
+//	(3) DLQ   — SELECT count() FROM md_ticks_dlq WHERE broker=<brokerTag>
 //
-// The mix is 95 valid + 5 bid>ask (quality drops). Reconciliation requires that
-// (1)+(2) >= 90 and (3) >= 1 (at least one quality-drop sampled into DLQ).
+// Mix: 95 valid (NATS+CH) + 5 parse_error (DLQ 100%) + 500 bid_gt_ask (DLQ 1%).
+// Reconciliation requires NATS>=95, CH>=95, DLQ total>=5, DLQ bid_gt_ask>=1.
 //
-// Build tag: e2e. Required env: CH_USER, CH_PASSWORD, CH_DATABASE; defaults
-// localhost:9000 / localhost:4222.
+// Build tag: e2e. Required env: CH_USER, CH_PASSWORD, CH_DATABASE.
 func TestE2ESmoke(t *testing.T) {
 	if os.Getenv("CH_USER") == "" {
 		t.Skip("CH_USER not set; e2e smoke needs running CH+NATS docker stack")
@@ -63,28 +62,22 @@ func TestE2ESmoke(t *testing.T) {
 	}
 	t.Logf("CH connected: %s:%s db=%s", chHost, chPort, envOr("CH_DATABASE", "ant"))
 
-	// Use a unique broker tag per test run so we never collide with prior runs
-	// or with concurrent ant-backend ingest. ALTER...DELETE is async and would
-	// race with our writes if we cleaned by broker name alone.
 	brokerTag := fmt.Sprintf("E2E_SMOKE_%d", time.Now().UnixNano())
 	t.Logf("Broker tag: %s", brokerTag)
 
-	// --- 3. Connect to NATS + ensure MD_EVENTS stream exists ---
+	// --- 2. Connect to NATS ---
 	natsURL := envOr("E2E_NATS_URL", natsgo.DefaultURL)
 	nc, err := natsgo.Connect(natsURL)
 	if err != nil {
 		t.Fatalf("NATS connect %s: %v", natsURL, err)
 	}
 	defer nc.Close()
-	// Streams are typically created by ant-backend startup; assume they exist
-	// since this test runs against a live ant-* docker stack.
-	_ = natscli.MDStreams // imports kept for documentation
+	_ = natscli.MDStreams
 	js, err := nc.JetStream()
 	if err != nil {
 		t.Fatalf("JetStream context: %v", err)
 	}
 
-	// Subscribe BEFORE publishing — pull-style core sub on the same subject.
 	var natsCount atomic.Int64
 	sub, err := nc.Subscribe("md.tick."+brokerTag+".>", func(_ *natsgo.Msg) {
 		natsCount.Add(1)
@@ -93,9 +86,9 @@ func TestE2ESmoke(t *testing.T) {
 		t.Fatalf("NATS subscribe: %v", err)
 	}
 	defer sub.Unsubscribe()
-	t.Logf("NATS connected: %s, stream=MD_EVENTS, sub=md.tick.%s.>", natsURL, brokerTag)
+	t.Logf("NATS connected: %s, sub=md.tick.%s.>", natsURL, brokerTag)
 
-	// --- 4. Build mdgateway components ---
+	// --- 3. Build mdgateway components ---
 	publisher := mdgateway.NewPublisher(js)
 	chCfg := mdgateway.DefaultCHWriterConfig()
 	chCfg.FlushInterval = 200 * time.Millisecond
@@ -112,71 +105,117 @@ func TestE2ESmoke(t *testing.T) {
 
 	dlqWriter := mdgateway.NewDLQWriter(ch, spillW, log)
 
-	// --- 5. Inject 100 ticks — 95 valid + 5 bid>ask quality drops ---
-	const N = 100
-	const driftFromValid = 5 // last 5 are bid>ask
+	// --- 4. Inject ticks ---
+	// 95 valid (NATS+CH) + 5 parse_error (DLQ 100% sampled) + 500 bid_gt_ask (DLQ 1% sampled)
+	const validTicks = 95
+	const parseErrorTicks = 5
+	const bidGtAskTicks = 500
+
 	now := time.Now().UnixMilli()
-	for i := 0; i < N; i++ {
+	tickIdx := 0
+
+	// Phase A: valid ticks → NATS + CH
+	for i := 0; i < validTicks; i++ {
 		bid := decimal.NewFromFloat(1.0800 + float64(i)*0.0001)
 		ask := bid.Add(decimal.NewFromFloat(0.0002))
-		if i >= N-driftFromValid {
-			// quality drop: bid > ask
-			ask = bid.Sub(decimal.NewFromFloat(0.0001))
-		}
 		tk := &mdtick.Tick{
-			UserID:        "e2e-user",
-			AccountID:     "e2e-acc",
-			Broker:        brokerTag,
-			SymbolRaw:     fmt.Sprintf("EURUSD-%d", i),
-			Canonical:     fmt.Sprintf("EURUSD%d", i),
-			TsUnixMs:      now + int64(i),
-			ArrivedUnixMs: now + int64(i),
-			Bid:           bid,
-			Ask:           ask,
-			BidVolume:     1000,
-			AskVolume:     1000,
+			UserID: "e2e-user", AccountID: "e2e-acc", Broker: brokerTag,
+			SymbolRaw: fmt.Sprintf("EURUSD-%d", tickIdx),
+			Canonical: fmt.Sprintf("EURUSD%d", tickIdx),
+			TsUnixMs: now + int64(tickIdx), ArrivedUnixMs: now + int64(tickIdx),
+			Bid: bid, Ask: ask, BidVolume: 1000, AskVolume: 1000,
 		}
-		if i >= N-driftFromValid {
-			// route to DLQ (sample the drop) — no NATS publish, no CH ticks insert.
-			dlqWriter.WriteTick(ctx, tk, "bid_gt_ask", "")
-			continue
-		}
-		// valid tick: publish to NATS + enqueue to CH writer
+		tickIdx++
 		if err := publisher.PublishTick(tk); err != nil {
-			t.Errorf("PublishTick i=%d: %v", i, err)
+			t.Errorf("PublishTick valid i=%d: %v", i, err)
 		}
 		chWriter.EnqueueTick(tk)
 	}
 
-	// --- 6. Wait for flush + propagation ---
-	deadline := time.Now().Add(8 * time.Second)
-	var chCount, dlqCount int64
+	// Phase B: parse_error ticks → DLQ only (100% sampled, guaranteed)
+	for i := 0; i < parseErrorTicks; i++ {
+		tk := &mdtick.Tick{
+			UserID: "e2e-user", AccountID: "e2e-acc", Broker: brokerTag,
+			SymbolRaw: fmt.Sprintf("EURUSD-%d", tickIdx),
+			Canonical: fmt.Sprintf("EURUSD%d", tickIdx),
+			TsUnixMs: now + int64(tickIdx), ArrivedUnixMs: now + int64(tickIdx),
+			Bid: decimal.NewFromFloat(1.0800), Ask: decimal.NewFromFloat(1.0802),
+			BidVolume: 1000, AskVolume: 1000,
+		}
+		tickIdx++
+		dlqWriter.WriteTick(ctx, tk, "parse_error", `{"phase":"parse_error"}`)
+	}
+
+	// Phase C: bid_gt_ask ticks → DLQ only (1% sampled)
+	for i := 0; i < bidGtAskTicks; i++ {
+		bid := decimal.NewFromFloat(1.0800 + float64(i)*0.0001)
+		ask := bid.Sub(decimal.NewFromFloat(0.0001)) // bid > ask
+		tk := &mdtick.Tick{
+			UserID: "e2e-user", AccountID: "e2e-acc", Broker: brokerTag,
+			SymbolRaw: fmt.Sprintf("EURUSD-%d", tickIdx),
+			Canonical: fmt.Sprintf("EURUSD%d", tickIdx),
+			TsUnixMs: now + int64(tickIdx), ArrivedUnixMs: now + int64(tickIdx),
+			Bid: bid, Ask: ask, BidVolume: 1000, AskVolume: 1000,
+		}
+		tickIdx++
+		dlqWriter.WriteTick(ctx, tk, "bid_gt_ask", "")
+	}
+
+	t.Logf("Injected: %d valid + %d parse_error + %d bid_gt_ask = %d total",
+		validTicks, parseErrorTicks, bidGtAskTicks, tickIdx)
+
+	// --- 5. Wait for flush + propagation ---
+	deadline := time.Now().Add(15 * time.Second)
+	var chCount, dlqTotal, dlqBidGtAsk uint64
 	var natsSeen int64
 	for time.Now().Before(deadline) {
-		_ = ch.QueryRow(ctx, `SELECT count() FROM md_ticks FINAL WHERE broker = ?`, brokerTag).Scan(&chCount)
-		_ = ch.QueryRow(ctx, `SELECT count() FROM md_ticks_dlq WHERE broker = ?`, brokerTag).Scan(&dlqCount)
+		if err := ch.QueryRow(ctx,
+			`SELECT count() FROM md_ticks FINAL WHERE broker = ?`, brokerTag,
+		).Scan(&chCount); err != nil {
+			t.Logf("CH scan md_ticks: %v", err)
+		}
+		if err := ch.QueryRow(ctx,
+			`SELECT count() FROM md_ticks_dlq WHERE broker = ?`, brokerTag,
+		).Scan(&dlqTotal); err != nil {
+			t.Logf("CH scan md_ticks_dlq: %v", err)
+		}
+		if err := ch.QueryRow(ctx,
+			`SELECT count() FROM md_ticks_dlq WHERE broker = ? AND reason = 'bid_gt_ask'`, brokerTag,
+		).Scan(&dlqBidGtAsk); err != nil {
+			t.Logf("CH scan md_ticks_dlq(reason=bid_gt_ask): %v", err)
+		}
 		natsSeen = natsCount.Load()
-		if chCount >= int64(N-driftFromValid) && dlqCount >= 1 && natsSeen >= int64(N-driftFromValid) {
+		if chCount >= validTicks && dlqTotal >= uint64(parseErrorTicks) && dlqBidGtAsk >= 1 && natsSeen >= int64(validTicks) {
 			break
 		}
-		time.Sleep(250 * time.Millisecond)
+		time.Sleep(500 * time.Millisecond)
 	}
 
-	t.Logf("Reconciliation result: NATS=%d CH=%d DLQ=%d (expected NATS>=%d CH>=%d DLQ>=1)",
-		natsSeen, chCount, dlqCount, N-driftFromValid, N-driftFromValid)
+	t.Logf("Reconciliation: NATS=%d CH=%d DLQ(total)=%d DLQ(bid_gt_ask)=%d (need NATS>=%d CH>=%d DLQ>=%d bid_gt_ask>=1)",
+		natsSeen, chCount, dlqTotal, dlqBidGtAsk, validTicks, validTicks, parseErrorTicks)
 
-	// --- 7. Three-way assertions ---
-	if natsSeen < int64(N-driftFromValid) {
-		t.Errorf("NATS delivered %d, want >= %d", natsSeen, N-driftFromValid)
+	// --- 6. Three-way assertions ---
+	failures := 0
+	if natsSeen < int64(validTicks) {
+		t.Errorf("NATS delivered %d, want >= %d", natsSeen, validTicks)
+		failures++
 	}
-	if chCount < int64(N-driftFromValid) {
-		t.Errorf("CH md_ticks count %d, want >= %d", chCount, N-driftFromValid)
+	if chCount < uint64(validTicks) {
+		t.Errorf("CH md_ticks count %d, want >= %d", chCount, validTicks)
+		failures++
 	}
-	if dlqCount < 1 {
-		t.Errorf("DLQ md_ticks_dlq count %d, want >= 1", dlqCount)
+	if dlqTotal < uint64(parseErrorTicks) {
+		t.Errorf("DLQ total count %d, want >= %d", dlqTotal, parseErrorTicks)
+		failures++
 	}
-
-	t.Logf("E2E smoke PASS: 95 valid → NATS+CH; 5 bid>ask → DLQ")
+	if dlqBidGtAsk < 1 {
+		t.Errorf("DLQ bid_gt_ask count %d, want >= 1 (1%% sampling on %d entries)", dlqBidGtAsk, bidGtAskTicks)
+		failures++
+	}
+	if failures == 0 {
+		t.Logf("E2E smoke PASS: 3-way reconciliation (NATS=%d CH=%d DLQ=%d/%d bid_gt_ask)",
+			natsSeen, chCount, dlqTotal, dlqBidGtAsk)
+	}
 }
 
 func envOr(k, def string) string {
@@ -185,4 +224,3 @@ func envOr(k, def string) string {
 	}
 	return def
 }
-

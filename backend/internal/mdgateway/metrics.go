@@ -83,3 +83,36 @@ func (h *histogram) observe(seconds float64) {
 	}
 }
 
+// percentile returns the bucket upper bound at or above the given percentile (0-100).
+// Returns 0 if no observations recorded.
+func (h *histogram) percentile(p float64) float64 {
+	var total int64
+	for i := range h.counts {
+		total += h.counts[i].Load()
+	}
+	if total == 0 {
+		return 0
+	}
+	threshold := int64(float64(total) * p / 100.0)
+	var cum int64
+	for i, b := range h.buckets {
+		cum += h.counts[i].Load()
+		if cum >= threshold {
+			return b
+		}
+	}
+	return h.buckets[len(h.buckets)-1]
+}
+
+// E2eLatencyP99 returns the P99 end-to-end latency in seconds.
+func E2eLatencyP99() float64 { return e2eLatency.percentile(99) }
+
+// E2eLatencyCount returns the total number of latency observations.
+func E2eLatencyCount() int64 {
+	var total int64
+	for i := range e2eLatency.counts {
+		total += e2eLatency.counts[i].Load()
+	}
+	return total
+}
+

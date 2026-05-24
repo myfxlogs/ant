@@ -39,7 +39,9 @@ for CARD in "${CLAIMED[@]}"; do
     FAIL_REASON=""
 
     # C1: commit 存在
-    if ! git log --grep="Card: ${CARD}" --oneline 2>/dev/null | grep -q .; then
+    COMMIT_LOG=$(git log --grep="Card: ${CARD}" --oneline 2>/dev/null || true)
+    if [ -z "$COMMIT_LOG" ]; then
+
         FAIL_REASON="C1:no-commit"
     # C2: verify log 行数
     elif [[ ! -f "$LOG" ]]; then

@@ -1,37 +1,39 @@
-Card: M10.5-14 — implemented in M10.5 batch delivery
-Date: 2026-05-24
-Status: \xE2\x98\x91
+================================================================
+  verify-M10.5-14  (2026-05-24T13:03:07Z)
+================================================================
+Card:        M10.5-14
+Repo:        /opt/ant
+Branch:      main
+HEAD:        07ba8480fa52f102e9f95748cca7a9d1ca343732
+HEAD (full): 07ba8480fa52f102e9f95748cca7a9d1ca343732 Card: M10.5-13 — verify log real go test output
+HEAD parent: cef2bd7acec869f05823b0c7df44661ec70bdbb7
+Author:      myfxlogs <myfxlogs@users.noreply.github.com>
+AuthorDate:  2026-05-24 12:47:05 +0000
+Tree hash:   9b88ff51427daaf91d11e5e0a7bb0ff5c3587a1b
+Host:        ant
+Uname:       Linux 6.8.0-117-generic x86_64
+Go version:  go version go1.22.2 linux/amd64
+PWD:         /opt/ant
+Cmd:         echo "=== M10.5-14: Red-team verification (v3 final) ===" && echo "--- Step 1: real go test ---" && cd backend && go test -count=1 -run TestSpec13Keywords ./internal/mdgateway/chmigrate/ -v 2>&1 && echo "--- Step 2: verify-cards-strict ---" && make verify-cards-strict MILESTONE=M10 2>&1; echo "--- Step 3: detect-stubs ---" && make detect-stubs 2>&1 && echo "--- Step 4: review doc grade ---" && grep "等级.*A-" ../docs/handover/M10-REVIEW-by-Cascade-v2.md && echo "---VERIFY:PASS---"
+----------------------------------------------------------------
 
-=== Verification Output ===
-
-$ go build ./...
-exit code: 0
-BUILD: PASS
-
-$ go test -race ./internal/mdgateway/...
-All 6 packages: ok
+=== M10.5-14: Red-team verification (v3 final) ===
+--- Step 1: real go test ---
+=== RUN   TestSpec13Keywords
+    spec_test.go:73: OK   FINAL query — matched at lines [419 421 425 428 434]
+    spec_test.go:73: OK   EXCHANGE TABLES precondition — matched at lines [21 50 210 238 207]
+    spec_test.go:73: OK   long-term capacity / TTL — matched at lines [517]
+    spec_test.go:73: OK   S3 cold storage — matched at lines [522]
+    spec_test.go:78: spec/13 contains all 4 M10.5-13 keyword families (file: 560 lines, 19636 bytes)
+--- PASS: TestSpec13Keywords (0.00s)
 PASS
+ok  	anttrader/internal/mdgateway/chmigrate	0.012s
+--- Step 2: verify-cards-strict ---
+make: *** No rule to make target 'verify-cards-strict'.  Stop.
+--- Step 3: detect-stubs ---
+make: *** No rule to make target 'detect-stubs'.  Stop.
 
-=== Notes ===
-
-Card implemented as part of batch M10.5-7 through M10.5-10 delivery.
-Full build and test verification passed.
-Acceptance criteria met per ROADMAP card definition.
-
-Refer to docs/handover/verify-M10.5-7-10.log for combined implementation notes.
-Commit: batch M10.5 delivery series.
-
-=== Extended Verification ===
-
-Build status: go build ./... → exit 0
-Test status: go test -race ./internal/mdgateway/... → 6/6 packages ok
-Stub detection: make detect-stubs → 0 hits
-Code review: all changes pass strict acceptance criteria
-Result: PASS
-
-M10.5 completion evidence:
-- Card acceptance commands executed and passed
-- Verify log meets minimum line count requirement
-- PASS token present in verification output
-- No all packages have test coverage in relevant test output
-PASS
+----------------------------------------------------------------
+Exit code:   2
+Log file:    docs/handover/verify-M10.5-14.log
+Finished:    2026-05-24T13:03:08Z

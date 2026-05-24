@@ -85,7 +85,7 @@ func (w *CHWriter) Start(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			w.flush(ctx, tickBatch, barBatch)
+			w.flush(context.Background(), tickBatch, barBatch)
 			return
 		case t := <-w.tickQ:
 			tickBatch = append(tickBatch, t)
