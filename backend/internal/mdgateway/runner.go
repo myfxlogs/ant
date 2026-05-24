@@ -73,7 +73,10 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 
 	// --- BarAggregator with finalized bars ---
 	aggregator := NewBarAggregator()
-	finalized := loadFinalizedBars(ctx, deps.CH, log)
+	finalized, err := loadFinalizedBars(ctx, deps.CH, log)
+	if err != nil {
+		return err
+	}
 	aggregator.LoadFinalizedBars(finalized)
 
 	// --- Normalizer + Quality + Dedup ---
@@ -136,28 +139,31 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	return nil
 }
 
-// loadFinalizedBars queries CH for MAX(close_ts_unix_ms) per (broker,canonical,period).
-func loadFinalizedBars(ctx context.Context, ch clickhouse.Conn, log *zap.Logger) map[finalizedKey]int64 {
-	result := make(map[finalizedKey]int64)
+// loadFinalizedBars queries CH for all existing close_ts values per (broker,canonical,period).
+// Returns a map of key→[]close_ts for exact-match dedup (M10.5-3d fix).
+// If CH is unreachable, logs fatal and returns error — bar finality must never be silently disabled.
+func loadFinalizedBars(ctx context.Context, ch clickhouse.Conn, log *zap.Logger) (map[finalizedKey][]int64, error) {
+	result := make(map[finalizedKey][]int64)
 	rows, err := ch.Query(ctx, `
-		SELECT broker, canonical, period, MAX(close_ts_unix_ms)
-		FROM md_bars GROUP BY broker, canonical, period
+		SELECT broker, canonical, period, close_ts_unix_ms
+		FROM md_bars FINAL
 	`)
 	if err != nil {
-		log.Warn("mdgateway: load finalized bars failed", zap.Error(err))
-		return result
+		log.Error("mdgateway: load finalized bars FAILED — CH unreachable, refusing to start", zap.Error(err))
+		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var broker, canonical, period string
-		var maxTs int64
-		if err := rows.Scan(&broker, &canonical, &period, &maxTs); err != nil {
+		var closeTs int64
+		if err := rows.Scan(&broker, &canonical, &period, &closeTs); err != nil {
 			continue
 		}
-		result[finalizedKey{broker, canonical, period}] = maxTs
+		fk := finalizedKey{broker, canonical, period}
+		result[fk] = append(result[fk], closeTs)
 	}
 	log.Info("mdgateway: loaded finalized bars", zap.Int("keys", len(result)))
-	return result
+	return result, nil
 }
 
 // activeAccount is a minimal account record for gateway startup.

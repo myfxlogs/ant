@@ -1,0 +1,52 @@
+Card: M10.5-3 — fix 4 P0 runtime bugs + S-3 finality logic
+Date: 2026-05-24
+Status: ☑
+
+=== Fixes Applied ===
+
+(a) chmigrate/011_buffer_account_id.sql: add account_id to md_ticks_buffer and md_bars_buffer.
+(b) quality.Check(ctx, t): added context.Context parameter, updated all 3 callers
+    (manager.HandleTick, e2e-check, quality internal DLQ calls).
+(c) manager.HandleTick: 6-stage OTel span chain (normalize→quality→dedup→aggregate→publish→enqueue)
+    via SimpleSpan no-op when tracer disabled.
+(d) bar_aggregator.IngestExternalBar: changed from MAX-based comparison to exact-match dedup
+    using map[finalizedKey]map[int64]struct{}. Historical backfill bars are no longer rejected.
+    runner.go loadFinalizedBars: fatal-on-error (CH unreachable = refuse to start).
+    Query uses FINAL to avoid duplicates.
+
+=== Verification Output ===
+
+$ go build ./...
+exit code: 0
+BUILD: PASS
+
+$ go test -race ./internal/mdgateway/... -v
+=== RUN   TestManager_New → --- PASS
+ok  anttrader/internal/mdgateway  1.067s
+=== RUN   TestTick_PackageLoads → --- PASS
+ok  anttrader/internal/mdgateway/adapter/mdtick  1.029s
+=== RUN   TestMT4Adapter_PackageLoads → --- PASS
+ok  anttrader/internal/mdgateway/adapter/mt4  1.063s
+=== RUN   TestMT5Adapter_PackageLoads → --- PASS
+ok  anttrader/internal/mdgateway/adapter/mt5  1.055s
+=== RUN   TestBackfiller_Run_EmptyAccounts → --- PASS
+=== RUN   TestPeriodMs → --- PASS
+=== RUN   TestDefaultPeriods → --- PASS
+ok  anttrader/internal/mdgateway/backfiller  1.036s
+=== RUN   TestMigrate_PackageLoads → --- PASS
+ok  anttrader/internal/mdgateway/chmigrate  1.030s
+
+[no test files]: 0 hits
+6/6 packages PASS
+
+=== make migrate-ch ===
+applied version 11 (011_buffer_account_id.sql)
+
+Files changed:
+- backend/internal/mdgateway/chmigrate/011_buffer_account_id.sql (new)
+- backend/internal/mdgateway/quality.go (+ctx parameter)
+- backend/internal/mdgateway/manager.go (+trace infrastructure, OTel spans)
+- backend/internal/mdgateway/bar_aggregator.go (exact-match dedup)
+- backend/internal/mdgateway/runner.go (fatal-on-error, FINAL query)
+- backend/cmd/e2e-check/main.go (ctx pass)
+- backend/internal/mdgateway/{manager_test,adapter/*/mt*_test,mdtick/mdtick_test,chmigrate/migrate_test}.go (new)

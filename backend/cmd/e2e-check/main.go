@@ -60,7 +60,7 @@ func main() {
 			Bid: bid, Ask: ask,
 		}
 		t.Canonical = norm.Resolve(broker, t.SymbolRaw)
-		if qual.Check(t).Dropped { fmt.Printf("  %s DROPPED\n", t.SymbolRaw); continue }
+		if qual.Check(ctx, t).Dropped { fmt.Printf("  %s DROPPED\n", t.SymbolRaw); continue }
 		if dedup.Seen(t) { fmt.Printf("  %s DUP\n", t.SymbolRaw); continue }
 
 		batch, _ := ch.PrepareBatch(ctx, "INSERT INTO ant.md_ticks (user_id, account_id, broker, symbol_raw, canonical, ts_unix_ms, arrived_unix_ms, bid, ask, bid_volume, ask_volume)")

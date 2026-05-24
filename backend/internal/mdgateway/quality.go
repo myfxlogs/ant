@@ -1,6 +1,7 @@
 package mdgateway
 
 import (
+	"context"
 	"math"
 	"sort"
 
@@ -57,17 +58,17 @@ func (q *Quality) SetDLQWriter(dlq *DLQWriter) {
 }
 
 // Check validates a tick. Dropped ticks must not enter the pipeline.
-func (q *Quality) Check(t *mdtick.Tick) CheckResult {
+func (q *Quality) Check(ctx context.Context, t *mdtick.Tick) CheckResult {
 	// Hard drops: clearly impossible data.
 	if t.Bid.Cmp(t.Ask) > 0 {
 		if q.dlq != nil {
-			q.dlq.WriteTick(nil, t, "bid_gt_ask", "")
+			q.dlq.WriteTick(ctx, t, "bid_gt_ask", "")
 		}
 		return CheckResult{Dropped: true, DroppedReason: "bid_gt_ask"}
 	}
 	if t.Bid.Sign() <= 0 || t.Ask.Sign() <= 0 {
 		if q.dlq != nil {
-			q.dlq.WriteTick(nil, t, "non_positive", "")
+			q.dlq.WriteTick(ctx, t, "non_positive", "")
 		}
 		return CheckResult{Dropped: true, DroppedReason: "non_positive"}
 	}

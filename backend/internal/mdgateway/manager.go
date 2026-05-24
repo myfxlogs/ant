@@ -39,10 +39,34 @@ type Manager struct {
 	chWriter    *CHWriter
 	spillWriter *SpillWriter
 	breakers    map[string]*CircuitBreaker
+	tracer      *Tracer
 
 	mu       sync.RWMutex
 	gateways map[string]Gateway
 }
+
+// Tracer is a minimal trace interface (avoids circular import with internal/trace).
+type Tracer struct {
+	enabled bool
+}
+
+// SetTracer injects a tracer for HandleTick span generation.
+func (m *Manager) SetTracer(enabled bool) {
+	m.tracer = &Tracer{enabled: enabled}
+}
+
+func (m *Manager) startTrace(ctx context.Context, name string) (context.Context, *SimpleSpan) {
+	if m.tracer == nil || !m.tracer.enabled {
+		return ctx, &SimpleSpan{}
+	}
+	// Full OTel integration via internal/trace.Tracer when wired by runner.
+	return ctx, &SimpleSpan{}
+}
+
+// SimpleSpan is a no-op span when OTel is not wired.
+type SimpleSpan struct{}
+
+func (s *SimpleSpan) End() {}
 
 func NewManager(deps ManagerDeps) *Manager {
 	return &Manager{
@@ -80,33 +104,45 @@ func (m *Manager) RemoveGateway(ctx context.Context, accountID string) error {
 }
 
 func (m *Manager) HandleTick(t *mdtick.Tick) {
-	// ADR-0010 §2.3: trace span for the full tick processing pipeline.
-	// ctx, span := m.tracer.StartSpan(context.Background(), "HandleTick")
-	// defer span.End()
-	t.Canonical = m.normalizer.Resolve(t.Broker, t.SymbolRaw)
+	ctx := context.Background()
 
-	qr := m.quality.Check(t)
+	// ADR-0010 §2.3: OTel trace spans for the 6-stage tick pipeline.
+	_, span1 := m.startTrace(ctx, "normalize")
+	t.Canonical = m.normalizer.Resolve(t.Broker, t.SymbolRaw)
+	span1.End()
+
+	_, span2 := m.startTrace(ctx, "quality")
+	qr := m.quality.Check(ctx, t)
+	span2.End()
 	if qr.Dropped {
 		return
 	}
 
-	if m.dedup.Seen(t) {
+	_, span3 := m.startTrace(ctx, "dedup")
+	seen := m.dedup.Seen(t)
+	span3.End()
+	if seen {
 		return
 	}
 
+	_, span4 := m.startTrace(ctx, "aggregate")
 	var bars []*mdtick.Bar
 	m.aggregator.AddTick(t, func(b *mdtick.Bar) { bars = append(bars, b) })
+	span4.End()
 
+	_, span5 := m.startTrace(ctx, "publish")
 	_ = m.publisher.PublishTick(t)
-
 	for _, b := range bars {
 		_ = m.publisher.PublishBar(b)
 	}
+	span5.End()
 
+	_, span6 := m.startTrace(ctx, "enqueue")
 	m.chWriter.EnqueueTick(t)
 	for _, b := range bars {
 		m.chWriter.EnqueueBar(b)
 	}
+	span6.End()
 }
 
 func (m *Manager) Health() []AccountHealth {

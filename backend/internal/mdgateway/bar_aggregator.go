@@ -12,9 +12,10 @@ var Periods = []struct{ Name string; Ms int64 }{
 	{"1h", 3_600_000}, {"4h", 14_400_000}, {"1d", 86_400_000},
 }
 
-// finalizedBars stores the MAX close_ts_unix_ms for each (broker,canonical,period)
-// that has been committed to CH. Replay/backfill bars with close_ts <= this value
-// are skipped (ADR-0009 §2.2 bar finality invariant).
+// finalizedBars stores the set of close_ts_unix_ms values that have been
+// committed to CH for each (broker,canonical,period). Replay/backfill bars
+// with an exact-match close_ts are skipped (ADR-0009 §2.2 + M10.5-3d fix:
+// changed from MAX-based comparison to exact-match dedup).
 type finalizedKey struct {
 	broker, canonical, period string
 }
@@ -23,7 +24,7 @@ type BarAggregator struct {
 	mu sync.Mutex
 	bars map[string]*openBar // key: broker:canonical:period
 
-	finalizedBars map[finalizedKey]int64
+	finalizedBars map[finalizedKey]map[int64]struct{} // set of close_ts values per key
 }
 
 type openBar struct {
@@ -37,7 +38,7 @@ type openBar struct {
 func NewBarAggregator() *BarAggregator {
 	return &BarAggregator{
 		bars:          make(map[string]*openBar),
-		finalizedBars: make(map[finalizedKey]int64),
+		finalizedBars: make(map[finalizedKey]map[int64]struct{}),
 	}
 }
 
@@ -46,31 +47,40 @@ func NewBarAggregator() *BarAggregator {
 // Query: SELECT broker, canonical, period, MAX(close_ts_unix_ms)
 //
 //	FROM md_bars GROUP BY broker, canonical, period
-func (a *BarAggregator) LoadFinalizedBars(maxCloseTs map[finalizedKey]int64) {
+// LoadFinalizedBars hydrates the finalized set from CH close_ts values.
+// Call after CH connection is established, before any bar ingestion.
+func (a *BarAggregator) LoadFinalizedBars(closeTsMap map[finalizedKey][]int64) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	for k, v := range maxCloseTs {
-		a.finalizedBars[k] = v
+	for k, vals := range closeTsMap {
+		if a.finalizedBars[k] == nil {
+			a.finalizedBars[k] = make(map[int64]struct{})
+		}
+		for _, v := range vals {
+			a.finalizedBars[k][v] = struct{}{}
+		}
 	}
 }
 
 // IngestExternalBar handles bars from backfiller or spill_replay (IsReplay=true).
-// Returns false if the bar was skipped because its close_ts <= finalizedBars[key]
-// (ADR-0009 §2.2 bar finality invariant).
+// Returns false if the bar was skipped because its close_ts already exists in
+// the finalized set (ADR-0009 §2.2 + M10.5-3d: exact-match dedup).
 func (a *BarAggregator) IngestExternalBar(b *mdtick.Bar) bool {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
 	fk := finalizedKey{b.Broker, b.Canonical, b.Period}
-	if finalized, ok := a.finalizedBars[fk]; ok && b.CloseTsUnixMs <= finalized {
-		// Already finalized — skip.
-		barSkippedFinalized.Add(1)
-		return false
+	if set, ok := a.finalizedBars[fk]; ok {
+		if _, exists := set[b.CloseTsUnixMs]; exists {
+			barSkippedFinalized.Add(1)
+			return false
+		}
 	}
-	// Accept: update finalized ceiling.
-	if b.CloseTsUnixMs > a.finalizedBars[fk] {
-		a.finalizedBars[fk] = b.CloseTsUnixMs
+	// Accept: add to finalized set.
+	if a.finalizedBars[fk] == nil {
+		a.finalizedBars[fk] = make(map[int64]struct{})
 	}
+	a.finalizedBars[fk][b.CloseTsUnixMs] = struct{}{}
 	return true
 }
 
@@ -98,11 +108,12 @@ func (a *BarAggregator) AddTick(t *mdtick.Tick, onBar func(*mdtick.Bar)) {
 				Open: ob.open, High: ob.high, Low: ob.low, Close: ob.close,
 				Volume: ob.volume, TickCount: ob.count,
 			}
-			// ADR-0009 §2.2: real-time bars update finalized ceiling.
+			// ADR-0009 §2.2 + M10.5-3d: real-time bars add to finalized set.
 			fk := finalizedKey{t.Broker, t.Canonical, p.Name}
-			if bar.CloseTsUnixMs > a.finalizedBars[fk] {
-				a.finalizedBars[fk] = bar.CloseTsUnixMs
+			if a.finalizedBars[fk] == nil {
+				a.finalizedBars[fk] = make(map[int64]struct{})
 			}
+			a.finalizedBars[fk][bar.CloseTsUnixMs] = struct{}{}
 			onBar(bar)
 			ob.bucket = bucket
 			ob.open = mid; ob.high = mid; ob.low = mid; ob.close = mid
