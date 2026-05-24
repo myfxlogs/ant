@@ -113,7 +113,7 @@ type AlignmentData struct {
 // TestGoDSLAlignment generates alignment data for Python-side comparison.
 func TestGoDSLAlignment(t *testing.T) {
 	if testing.Short() {
-		t.Skip("skipping alignment test in short mode")
+		t.Skip("将在卡片 M10.5-4 中实施: skipping alignment test in short mode")
 	}
 
 	rng := rand.New(rand.NewSource(42)) // deterministic

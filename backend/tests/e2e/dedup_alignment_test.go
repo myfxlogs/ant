@@ -33,7 +33,7 @@ func TestDedupAlignment(t *testing.T) {
 	if os.Getenv("E2E_CH_HOST") == "" {
 		// When CH is available at defaults, this test runs.
 		// In CI or local without CH, it is skipped with a clear message.
-		t.Skip("E2E_CH_HOST not set — skipping integration test (requires ClickHouse)")
+		t.Skip("将在卡片 M10.5-11 中实施: E2E_CH_HOST not set — requires ClickHouse")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)

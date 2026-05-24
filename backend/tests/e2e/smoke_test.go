@@ -19,5 +19,5 @@ func TestE2ESmoke(t *testing.T) {
 
 	chHost := ""
 	_ = chHost // env check
-	t.Skip("e2e smoke: requires running CH + NATS + ant-backend stack (set E2E_CH_HOST)")
+	t.Skip("将在卡片 M10.5-11 中实施: requires running CH + NATS + ant-backend stack")
 }

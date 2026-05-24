@@ -14,5 +14,5 @@ func Test100AccountsNoSpill(t *testing.T) {
 	//   2. Run for 5 minutes
 	//   3. Assert md_spill_writes_total == 0
 	//   4. Assert histogram_quantile(0.99, md_e2e_latency_seconds) < 0.5
-	t.Skip("loadtest: requires mock broker infrastructure + full pipeline")
+	t.Skip("将在卡片 M10.5-12 中实施: requires mock broker infrastructure + full pipeline")
 }

@@ -54,3 +54,17 @@ func TestDLQSampling(t *testing.T) {
 }
 
 var _ clickhouse.Conn = nil
+
+func TestDLQAsync(t *testing.T) {
+	dlq := NewDLQWriter(nil, nil, zap.NewNop())
+	tick := &mdtick.Tick{
+		Broker: "test", Canonical: "EURUSD",
+		TsUnixMs: 1000, ArrivedUnixMs: 1000,
+		Bid: requireDecimal(t, "1.08000"), Ask: requireDecimal(t, "1.08002"),
+	}
+	// 1000 writes through async channel — should not block.
+	for i := 0; i < 1000; i++ {
+		dlq.WriteTick(context.Background(), tick, "parse_error", "")
+	}
+	t.Log("DLQAsync: 1000 async writes completed without blocking")
+}

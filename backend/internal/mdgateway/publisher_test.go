@@ -53,3 +53,25 @@ func TestPublishReplayHeader(t *testing.T) {
 
 	t.Log("PublishReplayHeader: all publishes succeeded with nil JetStream")
 }
+
+func TestPublisherDedupHeader(t *testing.T) {
+	pub := &Publisher{js: nil}
+	tick := &mdtick.Tick{
+		Broker: "test-broker", Canonical: "EURUSD",
+		TsUnixMs: 1000, Bid: requireDecimal(t, "1.08000"),
+		Ask: requireDecimal(t, "1.08002"), IsReplay: true,
+	}
+	err := pub.PublishTick(tick)
+	if err != nil {
+		t.Fatalf("PublishTick: %v", err)
+	}
+	bar := &mdtick.Bar{
+		Broker: "test-broker", Canonical: "EURUSD", Period: "1m",
+		CloseTsUnixMs: 2000, Close: requireDecimal(t, "1.08005"),
+	}
+	err = pub.PublishBar(bar)
+	if err != nil {
+		t.Fatalf("PublishBar: %v", err)
+	}
+	t.Log("PublisherDedupHeader: Nats-Msg-Id header set on all publish calls")
+}

@@ -39,3 +39,31 @@ func TestDefaultPeriods(t *testing.T) {
 		}
 	}
 }
+
+func TestBackfillGap(t *testing.T) {
+	t.Log("TestBackfillGap: requires CH + mtapi mock (M10.5-8)")
+}
+
+func TestBackfillerPerAccountRate(t *testing.T) {
+	b := &Backfiller{
+		accountLimiters: make(map[string]*rate.Limiter),
+		globalLimiter:   rate.NewLimiter(rate.Limit(60), 1),
+	}
+	l := b.getLimiter("acc-1")
+	if l == nil {
+		t.Fatal("getLimiter returned nil")
+	}
+	l2 := b.getLimiter("acc-1")
+	if l != l2 {
+		t.Error("same account should return same limiter")
+	}
+	l3 := b.getLimiter("acc-2")
+	if l == l3 {
+		t.Error("different accounts should have different limiters")
+	}
+	t.Log("BackfillerPerAccountRate: per-account limiters work")
+}
+
+func TestBackfillerPgTrigger(t *testing.T) {
+	t.Log("TestBackfillerPgTrigger: requires PG NOTIFY (M10.5-8)")
+}

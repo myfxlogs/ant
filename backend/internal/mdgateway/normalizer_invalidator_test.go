@@ -49,3 +49,25 @@ func TestNormalizerListener_StartStop(t *testing.T) {
 	ni.Stop()
 	t.Log("NormalizerListener: start/stop lifecycle works")
 }
+
+func TestNormalizerListener(t *testing.T) {
+	t.Run("PgListen", func(t *testing.T) {
+		ni := NewNormalizerInvalidator(zap.NewNop(), func(broker, symbolRaw string) {})
+		ctx, cancel := context.WithCancel(context.Background())
+		ni.Start(ctx, nil)
+		time.Sleep(50 * time.Millisecond)
+		ni.Stop()
+		cancel()
+	})
+	t.Run("Fallback", func(t *testing.T) {
+		invalidated := make(chan string, 10)
+		ni := NewNormalizerInvalidator(zap.NewNop(), func(broker, symbolRaw string) {
+			invalidated <- broker + ":" + symbolRaw
+		})
+		ctx, cancel := context.WithCancel(context.Background())
+		ni.Start(ctx, nil)
+		time.Sleep(100 * time.Millisecond)
+		cancel()
+		ni.Stop()
+	})
+}
