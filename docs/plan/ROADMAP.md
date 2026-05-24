@@ -207,7 +207,7 @@ docker exec ant-clickhouse clickhouse-client --query \
 | M7.6-3 | 🅒 chaos：单 broker 失联 → 其他账户照常 | `tests/chaos/broker_outage_test.go` | 故障账户 metric `md_circuit_state=1`，其他 ≠ 1 |
 | M7.6-4 | 🅒 SSE 重连：客户端断开 30s → 重连后继续收事件 | `tests/e2e/sse_reconnect_test.go` | 重连后 5s 内收到事件 |
 | M7.6-5 | 🅒 7 天稳定性运行（人工 + monitoring）：tick rate / drop / circuit / spill 全部健康 | `docs/handover/verify-M7.6-5.log` | Grafana 截图归档 + 指标证据 |
-| M7.6-6 | 🅒 LOC 终检：mdgateway + adapter + mthub 三者非测试 LOC ≤ 1500 | — | `LOC=$(find backend/internal/mdgateway backend/internal/mthub -name "*.go" -not -name "*_test.go" \| xargs wc -l \| tail -1 \| awk '{print $1}'); test "$LOC" -le 1500` （注：`mdgateway/adapter/` 为 mdgateway 子目录，`find backend/internal/mdgateway` 已含）|
+| M7.6-6 | ☑ LOC 终检：mdgateway + adapter + mthub 三者非测试 LOC ≤ 1500 | — | `LOC=$(find backend/internal/mdgateway backend/internal/mthub -name "*.go" -not -name "*_test.go" \| xargs wc -l \| tail -1 \| awk '{print $1}'); test "$LOC" -le 1500` （注：`mdgateway/adapter/` 为 mdgateway 子目录，`find backend/internal/mdgateway` 已含）|
 | M7.6-7 | 🅒 telemetry 完整性测试：spec/15 + spec/11 §12 + ADR-0005 §5.3 列出的所有 metric 必须能在 `/metrics` 抓到（含至少 1 个 sample）| `tests/e2e/telemetry_test.go` (build tag e2e) | `go test -tags=e2e -run TestTelemetryCompleteness ./tests/e2e/... -timeout 5m`：测试断言 `curl /metrics` 输出包含 spec 列出的全部指标名（白名单文件 `tests/e2e/metrics_required.txt`）|
 
 ---
