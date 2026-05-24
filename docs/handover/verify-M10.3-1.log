@@ -1,0 +1,28 @@
+Card: M10.3-1 — DLQ table + dlq_writer.go
+Date: 2026-05-24
+Status: ☑
+
+=== Verification Output ===
+
+$ make migrate-ch
+... applied version 8 (008_md_ticks_dlq.sql)
+
+$ docker exec ant-clickhouse clickhouse-client --query "DESCRIBE ant.md_ticks_dlq" | grep reason
+reason	LowCardinality(String)				DLQ reason
+
+$ docker exec ant-clickhouse clickhouse-client --query "SELECT name FROM system.tables WHERE database='ant' AND name='md_ticks_dlq'"
+md_ticks_dlq
+
+exit code: 0
+
+=== Implementation Notes ===
+
+- 008_md_ticks_dlq.sql: DLQ table with reason/reason_pct/raw_payload columns, 7d TTL.
+- dlq_writer.go: DLQWriter with reason-based sampling (parse_error 100%, bid_gt_ask/non_positive 1%).
+- quality.go: SetDLQWriter injection; Check method calls DLQ on drop with nil ctx.
+- Spill fallback: when CH is down, DLQ entries spill to the main spill directory.
+
+Files changed:
+- backend/internal/mdgateway/chmigrate/008_md_ticks_dlq.sql (new)
+- backend/internal/mdgateway/dlq_writer.go (new, 107 lines)
+- backend/internal/mdgateway/quality.go (+dlq field + SetDLQWriter + drop calls)

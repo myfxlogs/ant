@@ -39,6 +39,7 @@ type Quality struct {
 	cfg   QualityConfig
 	last  map[string]int64  // broker:canonical -> last ts
 	prices map[string][]float64 // broker:canonical -> recent bid prices
+	dlq   *DLQWriter // optional; nil means no DLQ (M10 ADR-0010 §2.2)
 }
 
 // NewQuality creates a new quality checker.
@@ -50,13 +51,24 @@ func NewQuality(cfg QualityConfig) *Quality {
 	}
 }
 
+// SetDLQWriter injects an optional DLQ writer for dropped-tick sampling.
+func (q *Quality) SetDLQWriter(dlq *DLQWriter) {
+	q.dlq = dlq
+}
+
 // Check validates a tick. Dropped ticks must not enter the pipeline.
 func (q *Quality) Check(t *mdtick.Tick) CheckResult {
 	// Hard drops: clearly impossible data.
 	if t.Bid.Cmp(t.Ask) > 0 {
+		if q.dlq != nil {
+			q.dlq.WriteTick(nil, t, "bid_gt_ask", "")
+		}
 		return CheckResult{Dropped: true, DroppedReason: "bid_gt_ask"}
 	}
 	if t.Bid.Sign() <= 0 || t.Ask.Sign() <= 0 {
+		if q.dlq != nil {
+			q.dlq.WriteTick(nil, t, "non_positive", "")
+		}
 		return CheckResult{Dropped: true, DroppedReason: "non_positive"}
 	}
 
