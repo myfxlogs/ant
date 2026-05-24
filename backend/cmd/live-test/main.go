@@ -4,18 +4,16 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc/metadata"
 
-	"anttrader/internal/mdgateway"
-	mt4adapter "anttrader/internal/mdgateway/adapter/mt4"
+	mt5adapter "anttrader/internal/mdgateway/adapter/mt5"
 	"anttrader/internal/mdgateway/adapter/mdtick"
 	"anttrader/internal/secrets"
-	pb4 "anttrader/mt4"
-	"github.com/ClickHouse/clickhouse-go/v2"
-	"github.com/shopspring/decimal"
+	pb5 "anttrader/mt5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -32,102 +30,111 @@ func main() {
 	if err != nil { panic(err) }
 	defer pool.Close()
 
-	// Load MT4 account
+	// Load MT5 account
 	var id, broker, login, host, port string
 	var pwEnc, tokenEnc []byte
-	pool.QueryRow(ctx, "SELECT id, broker_company, login, broker_host, COALESCE(mtapi_port,'443'), password_encrypted, mtapi_token_encrypted FROM mt_accounts WHERE mt_type='MT4' AND NOT is_disabled LIMIT 1").Scan(&id, &broker, &login, &host, &port, &pwEnc, &tokenEnc)
+	pool.QueryRow(ctx, "SELECT id, broker_company, login, broker_host, COALESCE(mtapi_port,'443'), password_encrypted, mtapi_token_encrypted FROM mt_accounts WHERE mt_type='MT5' AND NOT is_disabled LIMIT 1").Scan(&id, &broker, &login, &host, &port, &pwEnc, &tokenEnc)
 	pw, _ := vault.Decrypt(ctx, secrets.PurposeMTPassword, pwEnc)
 	token, _ := vault.Decrypt(ctx, secrets.PurposeMTAPIToken, tokenEnc)
+	fmt.Printf("=== MT5 login=%s broker=%s ===\n", login, broker)
 
 	cfg := mdtick.AccountConfig{
-		AccountID: id, Broker: broker, Platform: "mt4",
+		AccountID: id, Broker: broker, Platform: "mt5",
 		Login: login, Password: string(pw), Server: host,
 		MtapiHost: host, MtapiPort: port, MtapiToken: string(token),
 	}
 
-	gw := mt4adapter.New(cfg, log)
-	if err := gw.Connect(ctx); err != nil { fmt.Printf("FAIL connect: %v\n", err); return }
+	gw := mt5adapter.New(cfg, log)
+	if err := gw.Connect(ctx); err != nil {
+		fmt.Printf("Connect FAILED: %v\n", err)
+		return
+	}
 	defer gw.Disconnect(ctx)
 	fmt.Printf("Connected! Session=%s\n", gw.SessionID())
 
-	// Setup mdgateway pipeline
-	norm := mdgateway.NewNormalizer(pool)
-	qual := mdgateway.NewQuality(mdgateway.DefaultQualityConfig())
-	dedup := mdgateway.NewTickDedup(100)
-	agg := mdgateway.NewBarAggregator()
-
-	// Connect to CH for writing
-	ch, err := clickhouse.Open(&clickhouse.Options{
-		Addr: []string{"127.0.0.1:9000"},
-		Auth: clickhouse.Auth{Database: "ant", Username: "default", Password: "clickhouse"},
-	})
-	if err != nil { fmt.Printf("CH connect fail: %v\n", err); return }
-	defer ch.Close()
-
-	spill, _ := mdgateway.NewSpillWriter(mdgateway.DefaultSpillConfig(), log)
-	chWriter := mdgateway.NewCHWriter(mdgateway.DefaultCHWriterConfig(), ch, spill, log)
-	pub := mdgateway.NewPublisher(nil)
-
-	mgr := mdgateway.NewManager(mdgateway.ManagerDeps{
-		Normalizer: norm, Quality: qual, Dedup: dedup,
-		Aggregator: agg, Publisher: pub, CHWriter: chWriter, SpillWriter: spill,
-	})
-
-	// Start CH writer before processing ticks
-	chCtx, chCancel := context.WithCancel(ctx)
-	go chWriter.Start(chCtx)
-	defer chCancel()
-
-	// Get quotes via QuoteMany and run through pipeline
 	mdCtx := metadata.NewOutgoingContext(ctx, metadata.Pairs("id", gw.SessionID(), "authorization", "Bearer "+cfg.MtapiToken))
-	symbols := []string{"BTCUSDm", "ETHUSDm", "XAUUSDm"}
 
-	fmt.Println("Fetching quotes...")
-	qmResp, err := gw.MT4Client().GetQuoteMany(mdCtx, &pb4.GetQuoteManyRequest{Symbols: symbols})
-	if err != nil { fmt.Printf("QuoteMany fail: %v\n", err); return }
+	// Step 1: Get symbols
+	fmt.Println("Fetching symbols...")
+	symResp, err := gw.MT5Client().Symbols(mdCtx, &pb5.SymbolsRequest{Id: gw.SessionID()})
+	if err != nil {
+		fmt.Printf("Symbols RPC error: %v\n", err)
+		return
+	}
+	if symResp.GetError() != nil {
+		fmt.Printf("Symbols app error: %s\n", symResp.GetError().GetMessage())
+		return
+	}
 
-	var tickCount int
-	for _, q := range qmResp.GetResult() {
-		if q == nil { continue }
-		t := &mdtick.Tick{
-			UserID: "test", AccountID: id, Broker: broker, Platform: "mt4",
-			SymbolRaw: q.GetSymbol(), Canonical: "",
-			TsUnixMs: q.GetTime().AsTime().UnixMilli(),
-			ArrivedUnixMs: time.Now().UTC().UnixMilli(),
-			Bid: decimalFromFloat(q.GetBid()), Ask: decimalFromFloat(q.GetAsk()),
+	results := symResp.GetResult()
+	fmt.Printf("Total symbols: %d\n", len(results))
+
+	// MT5 SymbolInfo: Currency field IS the symbol code (e.g. "BTCUSDm")
+	// Description is the human-readable label (e.g. "Bitcoin vs US Dollar")
+	var symbolNames []string
+	for _, si := range results {
+		if si == nil { continue }
+		name := si.GetCurrency()
+		if name != "" {
+			symbolNames = append(symbolNames, name)
+			if len(symbolNames) <= 5 {
+				fmt.Printf("  %s = %s\n", name, si.GetDescription())
+			}
 		}
-		bidF, _ := t.Bid.Float64(); askF, _ := t.Ask.Float64()
-		fmt.Printf("  %s: bid=%.2f ask=%.2f\n", t.SymbolRaw, bidF, askF)
-
-		// Run through full pipeline
-		mgr.HandleTick(t)
-		tickCount++
 	}
-	fmt.Printf("Pipeline: %d ticks processed\n", tickCount)
+	fmt.Printf("Extracted names: %d\n", len(symbolNames))
 
-	// Wait for async CH flush
-	time.Sleep(2 * time.Second)
+	// Filter crypto
+	var crypto []string
+	for _, s := range symbolNames {
+		upper := strings.ToUpper(s)
+		if strings.Contains(upper, "BTC") || strings.Contains(upper, "ETH") ||
+		   strings.Contains(upper, "XAU") || strings.Contains(upper, "XRP") {
+			crypto = append(crypto, s)
+		}
+	}
+	fmt.Printf("Crypto: %v\n", crypto)
 
-	// Direct CH INSERT for verification
-	fmt.Println("Writing directly to ClickHouse...")
-	batch, err := ch.PrepareBatch(ctx, "INSERT INTO md_ticks (user_id, broker, symbol_raw, canonical, ts_unix_ms, arrived_unix_ms, bid, ask, bid_volume, ask_volume)")
-	if err != nil { fmt.Printf("CH PrepareBatch fail: %v\n", err); return }
-	nowMs := time.Now().UTC().UnixMilli()
-	batch.Append("test", broker, "BTCUSDm", "BTCUSD", nowMs, nowMs, decimal.NewFromFloat(76743.13), decimal.NewFromFloat(76757.13), 0.0, 0.0)
-	batch.Append("test", broker, "ETHUSDm", "ETHUSD", nowMs, nowMs, decimal.NewFromFloat(2120.76), decimal.NewFromFloat(2122.16), 0.0, 0.0)
-	batch.Send()
+	// Step 2: Try QuoteMany with found crypto symbols (or try common MT5 names)
+	quoteSymbols := crypto
+	if len(quoteSymbols) == 0 {
+		// MT5 may use different naming - try common ones
+		quoteSymbols = []string{"BTCUSD", "ETHUSD", "XAUUSD", "BTCUSDm", "ETHUSDm"}
+	}
+	if len(quoteSymbols) > 10 {
+		quoteSymbols = quoteSymbols[:10]
+	}
 
-	var chCount uint64
-	ch.QueryRow(ctx, "SELECT count() FROM md_ticks WHERE arrived_unix_ms > 0").Scan(&chCount)
-	fmt.Printf("CH md_ticks rows: %d\n", chCount)
-
-	if chCount >= 2 {
-		fmt.Println("✅ E2E PIPELINE VERIFIED: broker→adapter→normalizer→quality→dedup→Insert→ClickHouse")
+	fmt.Printf("Trying QuoteMany: %v\n", quoteSymbols)
+	qmResp, err := gw.MT5Client().GetQuoteMany(mdCtx, &pb5.GetQuoteManyRequest{Symbols: quoteSymbols})
+	if err != nil {
+		fmt.Printf("QuoteMany RPC error: %v\n", err)
+	} else if qmResp.GetError() != nil {
+		fmt.Printf("QuoteMany app error: %s\n", qmResp.GetError().GetMessage())
 	} else {
-		fmt.Printf("FAIL: expected >=2 rows, got %d\n", chCount)
+		quotes := qmResp.GetResult()
+		fmt.Printf("Got %d quotes:\n", len(quotes))
+		for _, q := range quotes {
+			if q == nil { continue }
+			fmt.Printf("  %s: bid=%.5f ask=%.5f vol=%d\n",
+				q.GetSymbol(), q.GetBid(), q.GetAsk(), q.GetVolume())
+		}
 	}
-}
 
-func decimalFromFloat(f float64) decimal.Decimal {
-	return decimal.NewFromFloat(f)
+	// Step 3: Try OnQuote stream
+	fmt.Println("Starting OnQuote stream...")
+	gotAny := make(chan struct{})
+	count := 0
+	gw.Subscribe(ctx, nil, func(t *mdtick.Tick) {
+		count++
+		fmt.Printf("  >> TICK #%d: %s bid=%s ask=%s\n", count, t.SymbolRaw, t.Bid.String(), t.Ask.String())
+		if count >= 3 { close(gotAny) }
+	})
+
+	select {
+	case <-gotAny:
+		fmt.Printf("SUCCESS: %d ticks received\n", count)
+	case <-time.After(15 * time.Second):
+		fmt.Printf("No ticks in 15s (got %d)\n", count)
+	}
 }
