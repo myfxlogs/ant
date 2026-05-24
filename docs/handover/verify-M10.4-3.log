@@ -1,0 +1,16 @@
+Card: M10.4-3 — envelope encryption + vault rotate CLI
+Date: 2026-05-24
+Status: ☑
+
+=== Verification ===
+$ go test -race -cover ./internal/secrets/...
+ok  	anttrader/internal/secrets	1.074s	coverage: 88.9%
+
+$ ANT_MASTER_KEY=... go run ./cmd/ant-vault --dry-run
+dry-run: would re-encrypt all mt_accounts rows with new key version
+rows_to_rewrite: 0 (PG not connected in dry-run mode)
+
+Added: MasterProvider interface (env/file/KMS), vault rotate CLI.
+Existing AES-256-GCM with HKDF per-purpose key derivation retained.
+
+Files: master_provider.go, master_provider_test.go, cmd/ant-vault/main.go
