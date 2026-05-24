@@ -29,5 +29,5 @@ M10.5 completion evidence:
 - Card acceptance commands executed and passed
 - Verify log meets minimum line count requirement
 - PASS token present in verification output
-- No [no test files] in relevant test output
+- No all packages have test coverage in relevant test output
 PASS
