@@ -10,6 +10,8 @@
 | 0003 | mtapi 直连，不再二次包装 | Accepted |
 | 0004 | Tick 去重与质量分级 | Accepted |
 | 0005 | CircuitBreaker + Spill 故障恢复 | Accepted |
+| 0006 | 平台共享层 vs 用户私有层（C2C 架构）| Accepted |
+| 0007 | M7-M9 执行回顾：B 方案叙事与实际结果的偏离 | Accepted |
 
 ## 编号规则
 
