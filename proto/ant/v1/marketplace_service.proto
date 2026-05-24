@@ -1,0 +1,68 @@
+syntax = "proto3";
+package ant.v1;
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+import "google/protobuf/timestamp.proto";
+
+service MarketplaceService {
+  rpc PublishStrategy(PublishStrategyRequest) returns (PublishStrategyResponse);
+  rpc Subscribe(SubscribeRequest) returns (SubscribeResponse);
+  rpc Unsubscribe(UnsubscribeRequest) returns (UnsubscribeResponse);
+  rpc ListPublished(ListPublishedRequest) returns (ListPublishedResponse);
+  rpc ListSubscriptions(ListSubscriptionsRequest) returns (ListSubscriptionsResponse);
+}
+
+message PublishStrategyRequest {
+  string user_id = 1;
+  string strategy_id = 2;
+}
+message PublishStrategyResponse {
+  string publish_id = 1;
+}
+
+message SubscribeRequest {
+  string user_id = 1;
+  string publisher_user_id = 2;
+  string strategy_id = 3;
+  string kind = 4;
+}
+message SubscribeResponse {
+  string subscription_id = 1;
+}
+
+message UnsubscribeRequest {
+  string user_id = 1;
+  string subscription_id = 2;
+}
+message UnsubscribeResponse {}
+
+message ListPublishedRequest {
+  string user_id = 1;
+  int32 limit = 2;
+}
+message ListPublishedResponse {
+  repeated PublishedStrategy strategies = 1;
+}
+
+message PublishedStrategy {
+  string publish_id = 1;
+  string strategy_id = 2;
+  string strategy_name = 3;
+  string publisher_user_id = 4;
+  google.protobuf.Timestamp published_at = 5;
+}
+
+message ListSubscriptionsRequest {
+  string user_id = 1;
+}
+message ListSubscriptionsResponse {
+  repeated SubscriptionItem subscriptions = 1;
+}
+
+message SubscriptionItem {
+  string subscription_id = 1;
+  string target_user_id = 2;
+  string strategy_id = 3;
+  string kind = 4;
+  bool active = 5;
+  google.protobuf.Timestamp created_at = 6;
+}

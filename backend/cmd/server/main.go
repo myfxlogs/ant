@@ -11,6 +11,7 @@ import (
 
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/connect"
+	"anttrader/internal/marketplace"
 	"anttrader/internal/mthub"
 	"anttrader/internal/server"
 	"anttrader/internal/service"
@@ -50,6 +51,11 @@ func main() {
 	// Marketplace handler
 	mktServer := connect.NewMarketServer(platformSvc)
 	mux.Handle(antv1c.NewMarketServiceHandler(mktServer))
+
+	// Marketplace
+	mktplaceSvc := marketplace.New(pool)
+	mktplaceHandler := connect.NewMarketplaceServer(mktplaceSvc)
+	mux.Handle(antv1c.NewMarketplaceServiceHandler(mktplaceHandler))
 
 	// Health check
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
