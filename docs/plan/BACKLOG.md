@@ -17,7 +17,7 @@
 | M8.0-3 | ☑ ETL factors (source empty, skipped) |
 | M8.0-4 | ☑ ETL ai_agents (deferred to M8.1) |
 | M8.0-5 | ☑ ETL admin: super_admin → admins table |
-| M8.0-6 | sqlc：为 9 张新表生成 queries | `backend/internal/repository/queries/{platform_*,admins,user_subscriptions,...}.sql` + 生成代码 | `cd backend && make sqlc && go build ./internal/repository/...` |
+| M8.0-6 | ☑ sqlc queries for 9 platform tables |
 
 ### M8.1 · PlatformScope + service 重构
 
