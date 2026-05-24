@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, List, Switch, Tag, message } from 'antd';
+import { useTranslation } from 'react-i18next';
 
 interface Account {
   accountId: string;
@@ -13,6 +14,7 @@ interface Account {
 const API = '/ant.v1.MtHubService';
 
 export default function AdminPage() {
+  const { t } = useTranslation();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(false);
 

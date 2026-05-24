@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { ConfigProvider, Result, Button, Spin } from 'antd';
+import { ConfigProvider, Spin } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
+import zhTW from 'antd/locale/zh_TW';
 import enUS from 'antd/locale/en_US';
 import jaJP from 'antd/locale/ja_JP';
 import viVN from 'antd/locale/vi_VN';
@@ -9,87 +10,324 @@ import 'dayjs/locale/zh-cn';
 import 'dayjs/locale/zh-tw';
 import 'dayjs/locale/ja';
 import 'dayjs/locale/vi';
+import { useAuthStore } from '@/stores/authStore';
+import { ConnectProvider } from '@/providers/ConnectProvider';
 import i18n, { normalizeLanguage, type SupportedLanguage } from '@/i18n';
-import { useEffect, useState, lazy, Suspense } from 'react';
+import { useEffect, useState, Suspense, lazy } from 'react';
 
 import MainLayout from '@/components/layout/MainLayout';
-import LoginPage from '@/pages/auth/LoginPage';
+import AdminLayout from '@/components/layout/AdminLayout';
+import AIAssistantLayout from '@/pages/ai/AIAssistantLayout';
+const Login = lazy(() => import('@/pages/auth/Login'));
+const Register = lazy(() => import('@/pages/auth/Register'));
+const Dashboard = lazy(() => import('@/pages/dashboard/Dashboard'));
+const AccountDetail = lazy(() => import('@/pages/accounts/AccountDetail'));
+const BindAccount = lazy(() => import('@/pages/accounts/BindAccount'));
+const Summary = lazy(() => import('@/pages/analytics/Summary'));
+const DebatePage = lazy(() => import('@/pages/ai/debate/DebatePageV2'));
+const AISettings = lazy(() => import('@/pages/ai/AISettings'));
+const SystemAI = lazy(() => import('@/pages/ai/SystemAI'));
+import RequireAIConfig from '@/pages/ai/components/RequireAIConfig';
+const StrategyTemplatePage = lazy(() => import('@/pages/strategy/StrategyTemplatePage'));
+const StrategyExperimentPage = lazy(() => import('@/pages/strategy/StrategyExperimentPage'));
+const MarketRegimePage = lazy(() => import('@/pages/strategy/MarketRegimePage'));
+const StrategyAssetPage = lazy(() => import('@/pages/strategy/StrategyAssetPage'));
+const StrategySchedulePage = lazy(() => import('@/pages/strategy/StrategySchedulePage'));
+const StrategyScheduleLogsPage = lazy(() => import('@/pages/strategy/StrategyScheduleLogsPage'));
+const LogManagement = lazy(() => import('@/pages/logs/LogManagement'));
+const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
+const UserManagement = lazy(() => import('@/pages/admin/UserManagement'));
+const AccountManagement = lazy(() => import('@/pages/admin/AccountManagement'));
+const TradingMonitor = lazy(() => import('@/pages/admin/TradingMonitor'));
+const OperationLogs = lazy(() => import('@/pages/admin/OperationLogs'));
+const SystemConfig = lazy(() => import('@/pages/admin/SystemConfig'));
 
-const MarketplacePage = lazy(() => import('@/pages/marketplace/Marketplace'));
-const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'));
-
-const localeMap: Record<SupportedLanguage, typeof zhCN> = {
-  'zh-CN': zhCN, en: enUS, ja: jaJP, vi: viVN,
-};
-
-const Loading = () => (
-  <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
-    <Spin size="large" />
-  </div>
-);
-
-function HomePage() {
-  return (
-    <Result
-      status="info"
-      title="Ant v2"
-      subTitle="Market data pipeline operational — MT4/MT5 quotes verified."
-      extra={
-        <Button type="primary" href="/marketplace">
-          Browse Marketplace
-        </Button>
-      }
-    />
-  );
+function PrivateRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuthStore();
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
-function App() {
-  const [locale, setLocale] = useState<SupportedLanguage>('zh-CN');
-  const [auth, setAuth] = useState<{ token: string; userId: string } | null>(() => {
-    const token = localStorage.getItem('auth_token');
-    const userId = localStorage.getItem('userId');
-    return token && userId ? { token, userId } : null;
-  });
+function PublicRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuthStore();
+  return isAuthenticated ? <Navigate to="/" replace /> : <>{children}</>;
+}
 
-  useEffect(() => {
-    const lang = normalizeLanguage(i18n.language);
-    setLocale(lang);
-    const dl = lang === 'zh-CN' ? 'zh-cn' : lang === 'zh-TW' ? 'zh-tw' : lang;
-    dayjs.locale(dl);
-  }, []);
-
-  function handleLogin(token: string, userId: string) {
-    setAuth({ token, userId });
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, user } = useAuthStore();
+  const adminRoles = ['super_admin', 'operation', 'customer_service', 'audit'];
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
   }
+  if (!user?.role || !adminRoles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
+}
 
-  if (!auth) {
+function AppContent() {
+  const { _hasHydrated } = useAuthStore();
+
+  if (!_hasHydrated) {
     return (
-      <ConfigProvider locale={localeMap[locale] || enUS}>
-        <BrowserRouter>
-          <Routes>
-            <Route path="*" element={<LoginPage onLogin={handleLogin} />} />
-          </Routes>
-        </BrowserRouter>
-      </ConfigProvider>
+      <div className="min-h-screen flex items-center justify-center">
+        <Spin size="large" />
+      </div>
     );
   }
 
   return (
-    <ConfigProvider locale={localeMap[locale] || enUS}>
+    <ConnectProvider>
+      <Routes>
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Spin size="large" /></div>}>
+                <Login />
+              </Suspense>
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Spin size="large" /></div>}>
+                <Register />
+              </Suspense>
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/"
+          element={
+            <PrivateRoute>
+              <MainLayout />
+            </PrivateRoute>
+          }
+        >
+          <Route
+            index
+            element={
+              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                <Dashboard />
+              </Suspense>
+            }
+          />
+          <Route
+            path="accounts/:id"
+            element={
+              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                <AccountDetail />
+              </Suspense>
+            }
+          />
+          <Route
+            path="accounts/bind"
+            element={
+              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                <BindAccount />
+              </Suspense>
+            }
+          />
+          <Route
+            path="analytics"
+            element={
+              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                <Summary />
+              </Suspense>
+            }
+          />
+          <Route path="ai" element={<AIAssistantLayout />}>
+            <Route index element={<Navigate to="/ai/debate" replace />} />
+            <Route
+              path="debate"
+              element={
+                <RequireAIConfig>
+                  <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                    <DebatePage />
+                  </Suspense>
+                </RequireAIConfig>
+              }
+            />
+            <Route
+              path="settings"
+              element={
+                <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                  <SystemAI />
+                </Suspense>
+              }
+            />
+            <Route
+              path="agents"
+              element={
+                <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                  <AISettings mode="agents" />
+                </Suspense>
+              }
+            />
+          </Route>
+          <Route
+            path="strategy/templates"
+            element={
+              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                <StrategyTemplatePage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="strategy/experiments"
+            element={
+              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                <StrategyExperimentPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="strategy/market-regime"
+            element={
+              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                <MarketRegimePage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="strategy/assets"
+            element={
+              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                <StrategyAssetPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="strategy/schedules"
+            element={
+              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                <StrategySchedulePage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="strategy/schedules/:id/logs"
+            element={
+              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                <StrategyScheduleLogsPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="logs"
+            element={
+              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                <LogManagement />
+              </Suspense>
+            }
+          />
+        </Route>
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminLayout />
+            </AdminRoute>
+          }
+        >
+          <Route
+            index
+            element={
+              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                <AdminDashboard />
+              </Suspense>
+            }
+          />
+          <Route
+            path="users"
+            element={
+              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                <UserManagement />
+              </Suspense>
+            }
+          />
+          <Route
+            path="accounts"
+            element={
+              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                <AccountManagement />
+              </Suspense>
+            }
+          />
+          <Route
+            path="trading"
+            element={
+              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                <TradingMonitor />
+              </Suspense>
+            }
+          />
+          <Route
+            path="logs"
+            element={
+              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                <OperationLogs />
+              </Suspense>
+            }
+          />
+          <Route
+            path="config"
+            element={
+              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                <SystemConfig />
+              </Suspense>
+            }
+          />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </ConnectProvider>
+  );
+}
+
+export default function App() {
+  const [lang, setLang] = useState<SupportedLanguage>(normalizeLanguage(i18n.language));
+
+  useEffect(() => {
+    const handler = (lng: string) => setLang(normalizeLanguage(lng));
+    i18n.on('languageChanged', handler);
+    return () => {
+      i18n.off('languageChanged', handler);
+    };
+  }, []);
+
+  useEffect(() => {
+    const dayjsLocale =
+      lang === 'zh-cn'
+        ? 'zh-cn'
+        : lang === 'zh-tw'
+          ? 'zh-tw'
+          : lang === 'ja'
+            ? 'ja'
+            : lang === 'vi'
+              ? 'vi'
+              : 'en';
+    dayjs.locale(dayjsLocale);
+  }, [lang]);
+
+  const antdLocale =
+    lang === 'zh-cn'
+      ? zhCN
+      : lang === 'zh-tw'
+        ? zhTW
+        : lang === 'ja'
+          ? jaJP
+          : lang === 'vi'
+            ? viVN
+            : enUS;
+
+  return (
+    <ConfigProvider locale={antdLocale}>
       <BrowserRouter>
-        <Suspense fallback={<Loading />}>
-          <Routes>
-            <Route path="/" element={<MainLayout />}>
-              <Route index element={<HomePage />} />
-              <Route path="marketplace" element={<MarketplacePage />} />
-              <Route path="admin" element={<AdminDashboard />} />
-            </Route>
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
+        <AppContent />
       </BrowserRouter>
     </ConfigProvider>
   );
 }
-
-export default App;

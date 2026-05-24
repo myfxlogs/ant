@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Card, List, Button, Space, Tag, message } from 'antd';
+import { Card, List, Button, Space, message } from 'antd';
+import { useTranslation } from 'react-i18next';
 
 interface Strategy {
   publishId: string;
@@ -12,6 +13,7 @@ interface Strategy {
 const API = '/ant.v1.MarketplaceService';
 
 export default function MarketplacePage() {
+  const { t } = useTranslation();
   const [strategies, setStrategies] = useState<Strategy[]>([]);
   const [loading, setLoading] = useState(false);
   const userId = localStorage.getItem('userId') || '';
