@@ -235,3 +235,108 @@ docker exec ant-clickhouse clickhouse-client --query \
 ## 历史
 
 - v2.0 (2026-05-23)：完全重写 ROADMAP；v1 归档至 `docs.old/plan/ROADMAP.md`
+
+## M10 · 数据基础 A+ 硬化
+
+> **状态**：开工
+> **目标**：数据基础从 B+ 推到 A+。修复 H-1（CH dedup 与应用层冲突）/ H-2（replay 不补 NATS）正确性 bug；补 M-1（历史回填）/ M-2（TTL 时间轴）/ M-3（容量调优）能力；引入 SLO/DLQ/Trace 工程基础设施。
+>
+> **前置必读**（卡片开工前 100% 阅读，不许跳）：
+> - **ADR**：`docs/adr/0008-storage-dedup-and-time-axis.md` `0009-replay-dual-write-and-bar-finality.md` `0010-slo-alert-dlq-trace.md` `0011-capacity-vault-cache-hardening.md`
+> - **Spec（更新版）**：`docs/spec/11-mdgateway.md`（M10 强化叠加段）`docs/spec/13-clickhouse-schema.md` §2.6/§2.7/§2.8 `docs/spec/15-observability.md` §6.x §6.y
+> - **Spec（新增）**：`docs/spec/18-backfiller.md` `docs/spec/19-md-doctor.md` `docs/spec/20-slo.md`
+>
+> **执行规则**：严格按 AGENT.md §0；自动连续执行；仅 3 种情况停下（见 AGENT.md §0.1）。
+
+### M10 总览
+
+| Sub-milestone | 内容 | 卡片数 | 预估工日 |
+|---|---|---|---|
+| **M10.1** | ADR-0008 存储层去重对齐 + 时间轴纪律 | 3 | 2 |
+| **M10.2** | ADR-0009 replay 双写 + bar finality + backfiller | 4 | 3 |
+| **M10.3** | ADR-0010 DLQ + e2e latency + OTel + 6 alert | 4 | 3 |
+| **M10.4** | ADR-0011 容量调优 + envelope encryption + cache 失效 | 4 | 3 |
+| **M10.5** | md-doctor + slo-report CLI | 2 | 1 |
+| **M10.Z** | 关闭：md-doctor 全 PASS + 7d SLO 全绿 | 1 | 1 |
+| **总计** | | **18** | **~13 工日** |
+
+### M10.1 · 存储层去重对齐（ADR-0008）
+
+| ID | 内容 | 文件 | 验收 |
+|---|---|---|---|
+| M10.1-1 | 🅒 chmigrate 新增 `006_md_ticks_v2.sql` `007_md_bars_v2.sql`：新表 + INSERT SELECT + EXCHANGE TABLES（ORDER BY 含 bid/ask/bid_volume/ask_volume；TTL 用 arrived_unix_ms） | `backend/internal/mdgateway/chmigrate/{006_md_ticks_v2.sql,007_md_bars_v2.sql,migrate_test.go}` | `make migrate-ch && docker exec ant-clickhouse clickhouse-client --query "SELECT sorting_key FROM system.tables WHERE database='ant' AND name='md_ticks'" \| grep -E 'ts_unix_ms.*bid.*ask.*bid_volume.*ask_volume' && docker exec ant-clickhouse clickhouse-client --query "SELECT engine_full FROM system.tables WHERE database='ant' AND name='md_ticks'" \| grep -q 'arrived_unix_ms.*INTERVAL 90 DAY'` |
+| M10.1-2 | 🅒 `clickhouse_writer.go` `bar_aggregator.go` 用 `ts_unix_ms` 做边界判定的处全改 `arrived_unix_ms`（注释 `// ADR-0008 §2.2`） | `backend/internal/mdgateway/{clickhouse_writer.go,bar_aggregator.go}` + 测试 | `! grep -nE '\bts_unix_ms\b.*\b(bucket\|partition\|cutoff\|TTL\|window)' backend/internal/mdgateway/{clickhouse_writer,bar_aggregator}.go && go test -race ./internal/mdgateway/...` |
+| M10.1-3 | 🅒 端到端对账测试：100k tick 注入 → metric / NATS / CH 三方对账误差 < 0.01% | `tests/e2e/dedup_alignment_test.go` (build tag e2e) | `go test -tags=e2e -run TestDedupAlignment ./tests/e2e/... -timeout 5m` |
+
+### M10.2 · Replay 双写 + Bar finality + Backfiller（ADR-0009）
+
+| ID | 内容 | 文件 | 验收 |
+|---|---|---|---|
+| M10.2-1 | 🅒 `mdtick.Tick`/`mdtick.Bar` 加 `IsReplay bool`；`publisher.go` 写 NATS header `X-Ant-Replay` | `backend/internal/mdgateway/adapter/mdtick/mdtick.go` `backend/internal/mdgateway/publisher.go` + 测试 | `grep -q 'IsReplay\s*bool' backend/internal/mdgateway/adapter/mdtick/mdtick.go && go test -tags=integration -run TestPublishReplayHeader ./internal/mdgateway/...` |
+| M10.2-2 | 🅒 `spill_replay.go` 改双写：先 `publisher.PublishTick/Bar` 再 `chWriter.Enqueue`；自动设 `IsReplay=true` | `backend/internal/mdgateway/spill_replay.go` + 测试 | `go test -tags=integration -run TestSpillReplayDualWrite ./internal/mdgateway/... -v` |
+| M10.2-3 | 🅒 `bar_aggregator.go` 启动加载 `finalizedBars`（CH MAX close_ts），所有写 bar 路径前置 finality 检查；metric `md_bar_skipped_finalized_total` | `backend/internal/mdgateway/{bar_aggregator.go,metrics.go}` + 测试 | `go test -tags=integration -run TestBarFinality ./internal/mdgateway/... -v` |
+| M10.2-4 | 🅒 实现 `internal/mdgateway/backfiller/`（spec/18 全部文件）；runner.go 启动调用 + PG NOTIFY 触发新订阅回填 | `backend/internal/mdgateway/backfiller/{backfiller.go,source_mtapi.go,target.go,metrics.go,*_test.go}` `runner.go` | `( cd backend && go build ./internal/mdgateway/backfiller/... && go test -race -cover ./internal/mdgateway/backfiller/... ) && go test -tags=integration -run TestBackfillGap ./internal/mdgateway/backfiller/... && LOC=$(find backend/internal/mdgateway/backfiller -name "*.go" -not -name "*_test.go" \| xargs wc -l \| tail -1 \| awk '{print $1}'); test "$LOC" -le 350` |
+
+### M10.3 · DLQ + Latency + OTel（ADR-0010）
+
+| ID | 内容 | 文件 | 验收 |
+|---|---|---|---|
+| M10.3-1 | 🅒 chmigrate `008_md_ticks_dlq.sql` + `dlq_writer.go`（采样：parse_error 100%；bid_gt_ask/non_positive 1%）；`quality.go` 注入 `DLQWriter` 接口 | `backend/internal/mdgateway/chmigrate/008_md_ticks_dlq.sql` `dlq_writer.go` `quality.go` + 测试 | `docker exec ant-clickhouse clickhouse-client --query "DESCRIBE ant.md_ticks_dlq" \| grep -q reason && go test -tags=integration -run "TestDLQ(ParseError\|Sampling)" ./internal/mdgateway/...` |
+| M10.3-2 | 🅒 `metrics.go` 新增 `md_e2e_latency_seconds` Histogram + `md_spill_pending_files` Gauge + `md_dlq_sampled_total` Counter；`clickhouse_writer.go` flush 成功 Observe；`spill_replay.go` 30s 扫目录更新 gauge | `backend/internal/mdgateway/{metrics.go,clickhouse_writer.go,spill_replay.go}` + 测试 | `curl -s localhost:8080/metrics \| grep -E '^md_(e2e_latency_seconds_bucket\|spill_pending_files\|dlq_sampled_total)' \| wc -l \| awk '$1>=3{exit 0} {exit 1}'` |
+| M10.3-3 | 🅒 OTel SDK：`internal/trace/otel.go`（`OTEL_EXPORTER_OTLP_ENDPOINT` env 开关）；`manager.HandleTick` 加 span 链（normalize/quality/dedup/aggregate/publish/chwrite） | `backend/internal/trace/{otel.go,otel_test.go}` `backend/internal/mdgateway/manager.go` + go.mod 加 OTel 依赖 | `OTEL_EXPORTER_OTLP_ENDPOINT=localhost:4317 go test -tags=integration -run TestTraceExport ./internal/mdgateway/... -timeout 2m` |
+| M10.3-4 | 🅒 `deploy/prometheus/alerts.yml` 加 6 条 M10 alert（spec/15 §6.x 列表）；`promtool check rules` 通过 | `deploy/prometheus/alerts.yml` | `for a in BrokerClockSkewHigh TickLatencyP99High SpillBacklog SpillUnwritable DLQSpike NormalizerFallbackHigh; do grep -q "alert: $a" deploy/prometheus/alerts.yml \|\| { echo "MISSING $a"; exit 1; }; done && promtool check rules deploy/prometheus/alerts.yml` |
+
+### M10.4 · 容量 + Vault + Cache 失效（ADR-0011）
+
+| ID | 内容 | 文件 | 验收 |
+|---|---|---|---|
+| M10.4-1 | 🅒 chmigrate `009_md_buffer_tables.sql`；`clickhouse_writer.go` INSERT 改 `md_ticks_buffer`/`md_bars_buffer`；默认配置 QueueSize=50000 / MaxBatch=10000 / Flush=500ms（env 可覆盖） | `backend/internal/mdgateway/chmigrate/009_md_buffer_tables.sql` `clickhouse_writer.go` + 测试 | `docker exec ant-clickhouse clickhouse-client --query "SELECT engine FROM system.tables WHERE database='ant' AND name='md_ticks_buffer'" \| grep -q '^Buffer$' && grep -E 'QueueSize.*50000\|MaxBatchSize.*10000\|FlushInterval.*500' backend/internal/mdgateway/clickhouse_writer.go` |
+| M10.4-2 | 🅒 100 账户负载测试（mock broker 25k tick/s × 5min）：`md_spill_writes_total == 0` 且 `md_e2e_latency_seconds` P99 < 500ms | `tests/loadtest/{mock_broker.go,load_100_accounts_test.go}` (build tag loadtest) | `go test -tags=loadtest -timeout 15m -run Test100AccountsNoSpill ./tests/loadtest/...` |
+| M10.4-3 | 🅒 `internal/secrets/` 重构 envelope encryption（version+dek_kid+nonce+wrapped_dek+ciphertext+tag）；保留旧格式自动迁移；`cmd/ant-vault rotate` CLI；`secrets.MasterProvider` 接口预留 KMS | `backend/internal/secrets/{vault.go,envelope.go,vault_legacy.go,master_provider.go,*_test.go}` `backend/cmd/ant-vault/main.go` `docs/spec/17-secrets-and-errors.md` | `go test -race -cover ./internal/secrets/... \| awk '/coverage:/{gsub("%",""); if ($2<90) exit 1}' && go run ./cmd/ant-vault rotate --dry-run \| grep -q rows_to_rewrite` |
+| M10.4-4 | 🅒 PG migration `102_broker_symbols_notify.up.sql`（trigger pg_notify）；`internal/mdgateway/normalizer_invalidator.go` LISTEN + 30s ticker fallback；`normalizer.go` 注入 invalidator | `backend/migrations/102_broker_symbols_notify.up.sql` (`+.down.sql`) `backend/internal/mdgateway/{normalizer_invalidator.go,normalizer.go}` + 测试 | `make migrate && go test -tags=integration -run "TestNormalizer(Invalidation\|ListenerFallback)" ./internal/mdgateway/... -v` |
+
+### M10.5 · md-doctor + slo-report CLI
+
+| ID | 内容 | 文件 | 验收 |
+|---|---|---|---|
+| M10.5-1 | 🅒 `cmd/md-doctor/`：reconcile/bar-continuity/canonical-liveness/dlq-tail/all 五个子命令（spec/19）；text+json 输出；--strict | `backend/cmd/md-doctor/{main.go,reconcile.go,bar_continuity.go,canonical_liveness.go,dlq_tail.go,*_test.go}` | `cd backend && go build -o /tmp/md-doctor ./cmd/md-doctor/ && /tmp/md-doctor --help \| grep -E 'reconcile\|bar-continuity\|canonical-liveness\|dlq-tail\|all' \| wc -l \| grep -q '^5$' && /tmp/md-doctor all --window 10m --output json \| jq -e '.reconcile != null'` |
+| M10.5-2 | 🅒 `cmd/slo-report/`：从 Prometheus 拉指标计算 4 条 SLO（spec/20 §1）+ budget 消耗，markdown 输出；--strict；Prometheus recording rules `deploy/prometheus/rules.yml`（`md:up:1m` `md:availability:30d`） | `backend/cmd/slo-report/{main.go,*_test.go}` `deploy/prometheus/rules.yml` | `cd backend && go build -o /tmp/slo-report ./cmd/slo-report/ && /tmp/slo-report --window 1h --output text \| grep -E 'SLO-MD-[1-4]' \| wc -l \| grep -q '^4$' && promtool check rules deploy/prometheus/rules.yml` |
+
+### M10.Z · 关闭
+
+| ID | 内容 | 文件 | 验收 |
+|---|---|---|---|
+| M10.Z-1 | 🅒 7 天稳定性 + md-doctor 全 PASS + slo-report 全绿 + ROADMAP 状态更新 + handover 报告 | `docs/handover/M10-closure.md` `docs/handover/md-doctor-{date}.json` `docs/handover/slo-report-{date}.md` | 见下方关闭清单 |
+
+### M10.Z 关闭清单
+
+```bash
+# (1) 全部 ADR 引用文件就位
+for adr in 0008 0009 0010 0011; do
+  ls docs/adr/${adr}-*.md > /dev/null || { echo "MISSING ADR-${adr}"; exit 1; }
+done
+
+# (2) 全部新 spec 就位
+for s in 18-backfiller 19-md-doctor 20-slo; do
+  test -f docs/spec/${s}.md || { echo "MISSING spec/${s}.md"; exit 1; }
+done
+
+# (3) M10 全部 18 张卡片 ☑
+PENDING=$(grep -E '^\| M10\.' docs/plan/ROADMAP.md | grep -c '🅒' || true)
+test "$PENDING" -eq 0 || { echo "未完成 M10 卡片：$PENDING 张"; exit 1; }
+
+# (4) 端到端对账 24h PASS
+md-doctor all --window 24h --strict --output json > docs/handover/md-doctor-$(date +%Y%m%d).json
+
+# (5) 7 天 SLO 全绿
+slo-report --window 7d --strict > docs/handover/slo-report-$(date +%Y%m%d).md
+
+# (6) ADR-0001 §6 4 条断言仍 PASS（不退步）
+make verify-adr-0001
+
+# (7) 旧表清理（24h 兜底窗口已过）
+docker exec ant-clickhouse clickhouse-client --query "DROP TABLE IF EXISTS ant.md_ticks_legacy"
+docker exec ant-clickhouse clickhouse-client --query "DROP TABLE IF EXISTS ant.md_bars_legacy"
+```
+
+---

@@ -1,8 +1,14 @@
 # 11 · mdgateway 规范（行情网关核心）
 
 > 路径：`backend/internal/mdgateway/`
-> 目标 LOC：≤ 1500 行（含测试）；非测试文件 ≤ 800 行
+> 目标 LOC：≤ 1500 行（含测试）；非测试文件 ≤ 800 行（不含 backfiller 子包，见 spec/18）
 > 上游：`adapter/mt[45]/`（L2）；下游：`factorsvc/`（L4）+ ClickHouse（存储）+ NATS（fan-out）
+>
+> **M10 强化叠加**（2026-05-24）：
+> - ADR-0008：md_ticks/md_bars ORDER BY 与应用层 dedup hash 对齐；TTL/分桶强制使用 `arrived_unix_ms`
+> - ADR-0009：spill_replay 双写 NATS；bar finality 不可变；historical backfill（spec/18）
+> - ADR-0010：DLQ + e2e latency histogram + OTel trace + 6 条新 alert
+> - ADR-0011：CHWriter 容量调优（QueueSize 50000）+ Buffer engine + envelope encryption + normalizer cache PG NOTIFY 失效
 
 ## 1. 文件清单（必须全部存在）
 
@@ -26,7 +32,14 @@ backend/internal/mdgateway/
 │   ├── 002_md_bars.sql
 │   ├── 003_factor_values.sql
 │   ├── 004_signals.sql
-│   └── 005_schema_version.sql
+│   ├── 005_schema_version.sql
+│   ├── 006_md_ticks_v2.sql       # M10 ADR-0008 ORDER BY + TTL 切到 arrived_unix_ms
+│   ├── 007_md_bars_v2.sql        # M10 ADR-0008
+│   ├── 008_md_ticks_dlq.sql      # M10 ADR-0010 DLQ 表
+│   └── 009_md_buffer_tables.sql  # M10 ADR-0011 Buffer engine
+├── backfiller/                   # M10 ADR-0009，详见 spec/18
+├── normalizer_invalidator.go ≤80 lines   M10 ADR-0011 PG LISTEN
+├── dlq_writer.go             ≤80 lines   M10 ADR-0010 采样写 DLQ
 └── *_test.go                每个非测试文件必须有对应 _test.go，覆盖率 ≥ 60%
 ```
 

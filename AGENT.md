@@ -389,11 +389,16 @@ go build "./$MODULE_DIR/..."
 3. `docs/architecture/02-overview.md`（**§8 不变量 11/12/13 是数据归属宪法，必读**）
 4. `docs/architecture/03-data-flow.md`
 5. **`docs/adr/0006-platform-shared-vs-user-private.md`**（C2C 数据归属决策；M8 起所有业务卡必读）
-6. 卡片所在 milestone 的全部 `docs/spec/*.md`
-7. 卡片引用的所有 `docs/adr/*.md`
-8. `docs/plan/ROADMAP.md` §当前 milestone
-9. `docs/spec/16-mtapi-quirks-register.md`（涉及 MT 时）
-10. `docs/spec/17-secrets-and-errors.md`（涉及加密/错误处理时）
+6. **`docs/adr/0008-storage-dedup-and-time-axis.md`**（M10 起所有数据基础卡必读）
+7. **`docs/adr/0009-replay-dual-write-and-bar-finality.md`**（同上）
+8. **`docs/adr/0010-slo-alert-dlq-trace.md`**（同上）
+9. **`docs/adr/0011-capacity-vault-cache-hardening.md`**（同上）
+10. M10 新增 spec：`docs/spec/18-backfiller.md` `docs/spec/19-md-doctor.md` `docs/spec/20-slo.md`
+11. 卡片所在 milestone 的全部 `docs/spec/*.md`
+12. 卡片引用的所有 `docs/adr/*.md`
+13. `docs/plan/ROADMAP.md` §当前 milestone
+14. `docs/spec/16-mtapi-quirks-register.md`（涉及 MT 时）
+15. `docs/spec/17-secrets-and-errors.md`（涉及加密/错误处理时）
 
 读完后**回答自检 5 问**（在 PR 描述中写明）：
 1. 本卡片要改动哪些文件？（精确路径列表）

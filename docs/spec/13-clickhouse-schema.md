@@ -135,6 +135,97 @@ CREATE TABLE IF NOT EXISTS _schema_migrations (
 ORDER BY version;
 ```
 
+## 2.6 `008_md_ticks_dlq.sql`（M10 · ADR-0010）
+
+```sql
+-- 死信队列：保留被 quality.go drop 的 tick 样本便于排错
+-- TTL 7 天（短期）
+CREATE TABLE IF NOT EXISTS md_ticks_dlq (
+    user_id          LowCardinality(String),
+    account_id       LowCardinality(String),
+    broker           LowCardinality(String),
+    symbol_raw       LowCardinality(String),
+    canonical        LowCardinality(String),
+    ts_unix_ms       UInt64,
+    arrived_unix_ms  UInt64,
+    bid_str          String,         -- 原始字符串（parse_error 时 decimal 解析失败）
+    ask_str          String,
+    bid_volume       Float64,
+    ask_volume       Float64,
+    reason           LowCardinality(String),  -- 'bid_gt_ask' | 'non_positive' | 'parse_error' | 'spill_failed'
+    sampled_pct      Float32,        -- 采样率（用于反推总量）
+    raw_payload      String          -- broker 原始 JSON（便于重放）
+) ENGINE = MergeTree()
+PARTITION BY toYYYYMM(toDateTime64(arrived_unix_ms / 1000.0, 3))
+ORDER BY (reason, broker, arrived_unix_ms)
+TTL toDateTime64(arrived_unix_ms / 1000.0, 3) + INTERVAL 7 DAY
+SETTINGS index_granularity = 8192;
+```
+
+## 2.7 `009_md_buffer_tables.sql`（M10 · ADR-0011）
+
+```sql
+-- 应用层 INSERT 走 Buffer 表，CH 内部异步合并到底表
+-- 优势：磁盘 IOPS 压力降至 1/10；CH OOM 时丢 buffer 内数据（可接受，因为 spill 路径独立）
+CREATE TABLE IF NOT EXISTS md_ticks_buffer AS md_ticks
+ENGINE = Buffer(
+    ant, md_ticks,
+    16,              -- num_layers
+    1, 5,            -- min_time_s, max_time_s
+    10000, 1000000,  -- min_rows, max_rows
+    10000000, 100000000  -- min_bytes, max_bytes
+);
+
+CREATE TABLE IF NOT EXISTS md_bars_buffer AS md_bars
+ENGINE = Buffer(
+    ant, md_bars,
+    4,
+    5, 30,
+    1000, 100000,
+    1000000, 10000000
+);
+```
+
+**写入路径变更**（M10 实施后）：
+- `clickhouse_writer.go` `INSERT INTO md_ticks_buffer (...)` 而不是 `md_ticks`
+- 读取仍走 `md_ticks`（Buffer engine 透明合并最近未 flush 数据）
+
+## 2.8 v2 表（M10 · ADR-0008，逐步替换 §2.1 §2.2）
+
+`006_md_ticks_v2.sql`：
+```sql
+-- 1. 创建新 schema
+CREATE TABLE IF NOT EXISTS md_ticks_v2 (
+    user_id          LowCardinality(String),  -- 仅审计；查询不用
+    account_id       LowCardinality(String),
+    broker           LowCardinality(String),
+    symbol_raw       LowCardinality(String),
+    canonical        LowCardinality(String),
+    ts_unix_ms       UInt64,
+    arrived_unix_ms  UInt64,
+    bid              Decimal(18, 6),
+    ask              Decimal(18, 6),
+    bid_volume       Float64,
+    ask_volume       Float64,
+    is_replay        UInt8 DEFAULT 0,         -- ADR-0009：spill replay / backfill 来源
+    INDEX idx_canonical canonical TYPE bloom_filter GRANULARITY 4
+) ENGINE = ReplacingMergeTree(arrived_unix_ms)
+PARTITION BY toYYYYMM(toDateTime64(arrived_unix_ms / 1000.0, 3))
+ORDER BY (broker, canonical, ts_unix_ms, bid, ask, bid_volume, ask_volume)
+TTL toDateTime64(arrived_unix_ms / 1000.0, 3) + INTERVAL 90 DAY
+SETTINGS index_granularity = 8192;
+
+-- 2. 历史数据 INSERT SELECT（背景任务，不阻塞写）
+INSERT INTO md_ticks_v2 SELECT *, 0 AS is_replay FROM md_ticks;
+
+-- 3. 原子切换
+EXCHANGE TABLES md_ticks AND md_ticks_v2;
+RENAME TABLE md_ticks_v2 TO md_ticks_legacy;
+-- 运维 24h 后人工 DROP TABLE md_ticks_legacy
+```
+
+`007_md_bars_v2.sql` 同结构：ORDER BY 加 `period`，分区/TTL 切 `close_ts_unix_ms`（实质=ArrivedUnixMs，见 ADR-0009 §2.2）。
+
 ## 3. 查询模式（reference patterns）
 
 ### 3.1 用户查询最近 1000 根 1m K 线

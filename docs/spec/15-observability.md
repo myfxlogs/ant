@@ -250,6 +250,53 @@ groups:
       summary: "PlaceOrder p99 >2s"
 ```
 
+## 6.x M10 新增告警（ADR-0010）
+
+```yaml
+- name: mdgateway-m10
+  rules:
+  - alert: BrokerClockSkewHigh
+    expr: abs(md_clock_skew_seconds) > 30
+    for: 2m
+    annotations: { summary: "Broker {{ $labels.broker }} clock skew > 30s" }
+
+  - alert: TickLatencyP99High
+    expr: histogram_quantile(0.99, rate(md_e2e_latency_seconds_bucket[5m])) > 0.5
+    for: 5m
+    annotations: { summary: "Tick e2e P99 > 500ms" }
+
+  - alert: SpillBacklog
+    expr: md_spill_pending_files > 0
+    for: 5m
+    annotations: { summary: "Spill backlog > 5min ({{ $value }} files)" }
+
+  - alert: SpillUnwritable
+    expr: rate(md_tick_dropped_total{reason="spill_failed"}[5m]) > 0
+    for: 1m
+    labels: { severity: page }
+    annotations: { summary: "Spill writer failing — data loss" }
+
+  - alert: DLQSpike
+    expr: rate(md_dlq_sampled_total{reason="parse_error"}[5m]) > 1
+    for: 2m
+    annotations: { summary: "DLQ parse_error spike — broker corrupting data" }
+
+  - alert: NormalizerFallbackHigh
+    expr: rate(md_canonical_fallback_total[10m]) > 0.05 * rate(md_tick_total[10m])
+    for: 10m
+    annotations: { summary: "Normalizer algorithmic fallback > 5% — PG broker_symbols incomplete" }
+```
+
+## 6.y M10 新增 metric
+
+| 指标名 | 类型 | Labels | 用途 |
+|---|---|---|---|
+| `md_e2e_latency_seconds` | Histogram | kind={tick,bar} | SLO-MD-2 端到端延迟 |
+| `md_spill_pending_files` | Gauge | — | SLO-MD-4 降级 |
+| `md_dlq_sampled_total` | Counter | reason | DLQ 采样写入量 |
+| `md_bar_skipped_finalized_total` | Counter | broker, canonical, period | bar finality 跳过计数 |
+| `md_backfill_*` | 多 | — | 见 spec/18 §7 |
+
 ## 7. Grafana dashboard（必要面板）
 
 `deploy/grafana/dashboards/mt-foundation.json` 包含：
