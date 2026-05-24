@@ -367,9 +367,10 @@ StreamConfig{
 
 ```go
 type CHWriterConfig struct {
-    FlushInterval time.Duration  // 默认 1s
-    MaxBatchSize  int            // 默认 1000
-    QueueSize     int            // 默认 5000；满则走 spill
+    // M10 默认值（ADR-0011 §2.1）；env 可覆盖
+    FlushInterval time.Duration  // 默认 500ms（M7 旧值 1s）
+    MaxBatchSize  int            // 默认 10000（M7 旧值 1000）
+    QueueSize     int            // 默认 50000（M7 旧值 5000）；满则走 spill
 }
 
 type CHWriter struct {
@@ -404,11 +405,16 @@ func (w *CHWriter) Flush(ctx context.Context) error  // shutdown 时
 INSERT 模板（用 ClickHouse client `PrepareBatch`）：
 
 ```sql
-INSERT INTO md_ticks (
+-- M10 ADR-0011：写入 Buffer engine 表，CH 内部异步 flush 到 md_ticks
+-- 详见 spec/13 §2.7
+INSERT INTO md_ticks_buffer (
     user_id, account_id, broker, symbol_raw, canonical,
-    ts_unix_ms, arrived_unix_ms, bid, ask, bid_volume, ask_volume
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ts_unix_ms, arrived_unix_ms, bid, ask, bid_volume, ask_volume,
+    is_replay
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ```
+
+bar 同理 `INSERT INTO md_bars_buffer (...)`。
 
 ## 10. spill_writer.go + spill_replay.go
 

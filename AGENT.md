@@ -43,9 +43,11 @@
 
 **ant**：用户驱动的智能量化交易平台（MT4/MT5 + AI 策略生成 + 策略市场）。
 
-- **当前阶段**：M7-rewrite（地基重做：MT 接入 / ClickHouse 时序 / 因子 DSL / quantengine / order hub），路径 B（地基重做 + 业务渐进重构）
-- **不重做**的范围：AI 助手、策略市场、admin、auth、worker、frontend、user/tenant 业务表
-- **重做**的范围：见 `docs/plan/ROADMAP.md` §M7-rewrite
+- **当前阶段**：**M10 数据基础 A+ 硬化**（M7-M9 后端已 ☑；前端已删除待 M11 重建）
+- **路径事实修正**（2026-05-24）：M7 实际执行结果**等价于路线 A（全量重写）**，详见 `docs/adr/0007`；**前端旧代码已基本全部删除**，与全量重写无差别
+- **当前重做范围**：见 `docs/plan/ROADMAP.md` §M10（18 张卡片，纯后端）
+- **M11 待立项**：前端从零重建（参考 alfq 前端 + ant.v1 ConnectRPC 契约）
+- **不重做的范围**：AI 助手、策略市场、admin、auth、worker、user/tenant 业务表（PG 层稳定）
 
 参考蓝本：`/opt/alfq/`（同 owner，代码可自由复用；但**不允许大块原样拷贝，必须改写适配 ant 包名/接口/schema**）。
 
@@ -430,12 +432,14 @@ make verify-card    跑 §11.7 自检脚本（CARD_ID=M7.X-Y）
 
 ## 14. 当前阶段速览
 
-- **里程碑**：M7-rewrite（MT 地基重做）
-- **路径**：B（地基重做 + 业务渐进重构）
-- **入口**：`docs/plan/ROADMAP.md` §M7
-- **测试覆盖目标**：M7 完成 ≥ 30%，M8 完成 ≥ 50%
-- **当前未关闭的 ADR**：见 `docs/adr/README.md`
+- **里程碑**：**M10 数据基础 A+ 硬化**（M7–M9 后端已 ☑）
+- **路径**：实际等价 A（全量重写）；前端已删除待 M11
+- **入口**：`docs/plan/ROADMAP.md` §M10 + `docs/plan/M10-DEEPSEEK-PROMPT.md`
+- **澄清清单**：`docs/plan/M10-CLARIFICATIONS.md`
+- **测试覆盖目标**：M10 各子模块 ≥ 60%；M11（前端）≥ 50%
+- **当前未关闭的 ADR**：0008 / 0009 / 0010 / 0011（见 `docs/adr/README.md`）
 - **当前活跃 quirks**：见 `docs/spec/16-mtapi-quirks-register.md`
+- **前端现状**：旧代码已基本全部删除；M10 任何卡片**禁止依赖前端验收**；M11 立项后从零重建
 
 ---
 

@@ -18,7 +18,7 @@
 
 "down" 定义：连续 60s 无任何 tick 写入 CH（across all accounts）。
 
-实现：Prometheus recording rule
+实现：Prometheus recording rule（存入 `deploy/prometheus/rules.yml`，与 alert rules 文件 `deploy/prometheus/alerts.yml` 分文件管理；alerts.yml 详见 spec/15 §6 / §6.x）：
 ```yaml
 - record: md:up:1m
   expr: (rate(md_tick_total[1m]) > 0)

@@ -18,6 +18,8 @@
 
 ### 2.1 `001_md_ticks.sql`
 
+> ⚠️ **M10 更新**：此 DDL 已被 `006_md_ticks_v2.sql` 通过 `EXCHANGE TABLES` 替换；当前生产 schema 见 §2.8。本段保留作为初始创建参考与历史溯源。
+
 ```sql
 -- 001_md_ticks.sql
 -- 实时 tick 存储；按月分区；90 天 TTL
@@ -44,6 +46,8 @@ SETTINGS index_granularity = 8192;
 ```
 
 ### 2.2 `002_md_bars.sql`
+
+> ⚠️ **M10 更新**：此 DDL 已被 `007_md_bars_v2.sql` 通过 `EXCHANGE TABLES` 替换；当前生产 schema 见 §2.8。本段保留作为初始创建参考与历史溯源。
 
 ```sql
 -- 002_md_bars.sql

@@ -127,6 +127,8 @@ Rotation 流程：
 3. `internal/secrets/vault.go` 重构为 envelope；旧实现保留为 `vault_legacy.go`，启动时检测格式自动迁移
 4. 一次性 CLI `cmd/ant-vault-migrate/main.go`：扫 `mt_accounts.password_encrypted` 旧格式 → 解密 → envelope encrypt 重写
 5. `migrations/102_broker_symbols_notify.up.sql`：CREATE FUNCTION + TRIGGER（`pg_notify`）
+   - **编号说明**：PG migration 当前最高为 064；065–101 预留给 M8/M9 业务迁移，M10 PG 迁移从 102 起。
+   - 与 ClickHouse migration（`chmigrate/001`–`009`）独立编号互不冲突。
 6. `normalizer.go` 接受可选 `cancel <-chan struct{}` 用于 listener 注入
 7. spec/11 §4 §9 §13.6 同步更新
 8. spec/17 §1 envelope 设计图

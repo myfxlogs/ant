@@ -43,7 +43,7 @@ M7 已有 22 个 metric + 7 条 alert，但缺三个关键能力：
 
 ### 2.3 OpenTelemetry Trace
 
-数据基础引入 OTel（M8 计划提前到 M10），跨度链：
+数据基础引入 OTel（M8 遗留项 M8.4-4，M10 承接），跨度链：
 
 ```
 adapter.OnQuote

@@ -147,7 +147,7 @@ docker exec ant-clickhouse clickhouse-client --query \
 | M7.2-5 | ☑ `internal/connect/mthub_service.go` 8 个 handler 实现（PlaceOrder/CloseOrder/OpenedOrders/OrderHistory/SymbolParams/PriceHistory/GetAccountStatus/StreamOrderEvents）| 同左 + `mthub_service_test.go` | grpcurl 真实调通 PlaceOrder（dockertest mtapi mock） + `GetAccountStatus` 返 connected |
 | M7.2-6 | ☑ `internal/connect/market_handler.go` 3 个 handler（GetKlines 走 CH） | 同左 + test | grpcurl 调通 GetKlines 返回 CH 数据 |
 | M7.2-7 | ☑ SSE：StreamOrderEvents handler | `internal/connect/mthub_service.go` 内 | curl SSE 5s 内收到至少 1 个事件（dockertest 触发）|
-| M7.2-8 | ☑ frontend client wrapper：`frontend/src/api/mthub.ts` `frontend/src/api/market.ts` | 同左 | `cd frontend && pnpm tsc --noEmit` |
+| M7.2-8 | ⊘ frontend client wrapper（旧前端已删除；TS stub 仍生成但无消费方；M11 重新评估）| 同左 | M11 立项后重新评估 |
 | M7.2-9 | ☑ mthub 注入 mdgateway runner（共享 session） | `internal/mdgateway/runner.go` + `internal/mthub/hub.go` | runner 启动后 hub.Get(accountID) != nil |
 
 ---
@@ -192,7 +192,7 @@ docker exec ant-clickhouse clickhouse-client --query \
 | M7.5-5 | ☑ `service/kline_service*.go` 全部加 `// Deprecated: see internal/mdgateway. To be removed in M9.` | 同左 7 个文件 | `grep -c '// Deprecated' backend/internal/service/kline_service*.go \| grep -q '^7$'` |
 | M7.5-6 | ☑ grep 验证业务代码 0 处直 import mt4client/mt5client（除 service/kline_service*）| — | `! grep -rE 'anttrader/internal/(mt4\|mt5)client' backend/internal/{ai,marketplace,oms,risk,connect,quantengine,factorsvc,mthub}/ \|\| exit 1` |
 | M7.5-7 | ☑ 老 `kline_data` 表设为只读（trigger 阻止 INSERT） | `backend/migrations/101_kline_data_readonly.up.sql` (`+ .down.sql`) | `psql -c "INSERT INTO kline_data ..."` 返回 error |
-| M7.5-8 | ☑ frontend K 线组件切到新 RPC `MarketService.GetKlines` | `frontend/src/api/kline.ts` 与相关组件 | 浏览器手动验收：K 线展示正常 |
+| M7.5-8 | ⊘ frontend K 线组件切到新 RPC（旧前端已删除，2026-05-24 复盘后失效；M11 重建时一并重做）| `frontend/src/api/kline.ts` 与相关组件 | M11 立项后重新评估 |
 
 ---
 
@@ -238,6 +238,12 @@ docker exec ant-clickhouse clickhouse-client --query \
 
 ## M10 · 数据基础 A+ 硬化
 
+> ⚠️ **前端现状重要前提**（2026-05-24 修正）：旧 frontend 已基本全部删除，**与路线 A（全量重写）无差别**，需在 M11 全面重建。
+> - M10 是**纯后端**里程碑，验收手段限定为：CLI 输出 / `curl /metrics` / `docker exec clickhouse-client` / `go test`
+> - **禁止**任何 "打开浏览器看 UI" 类验收
+> - M7.5-8（"frontend K 线组件切到新 RPC"）的 ☑ 状态在前端被删除后已**事实失效**，由 M11 重做（不在 M10 关闭判据内）
+> - ROADMAP 中所有 `frontend/src/...` 路径假定为 M11 待建，M10 卡片不应触及
+>
 > **状态**：开工
 > **目标**：数据基础从 B+ 推到 A+。修复 H-1（CH dedup 与应用层冲突）/ H-2（replay 不补 NATS）正确性 bug；补 M-1（历史回填）/ M-2（TTL 时间轴）/ M-3（容量调优）能力；引入 SLO/DLQ/Trace 工程基础设施。
 >
@@ -291,7 +297,7 @@ docker exec ant-clickhouse clickhouse-client --query \
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
 | M10.4-1 | 🅒 chmigrate `009_md_buffer_tables.sql`；`clickhouse_writer.go` INSERT 改 `md_ticks_buffer`/`md_bars_buffer`；默认配置 QueueSize=50000 / MaxBatch=10000 / Flush=500ms（env 可覆盖） | `backend/internal/mdgateway/chmigrate/009_md_buffer_tables.sql` `clickhouse_writer.go` + 测试 | `docker exec ant-clickhouse clickhouse-client --query "SELECT engine FROM system.tables WHERE database='ant' AND name='md_ticks_buffer'" \| grep -q '^Buffer$' && grep -E 'QueueSize.*50000\|MaxBatchSize.*10000\|FlushInterval.*500' backend/internal/mdgateway/clickhouse_writer.go` |
-| M10.4-2 | 🅒 100 账户负载测试（mock broker 25k tick/s × 5min）：`md_spill_writes_total == 0` 且 `md_e2e_latency_seconds` P99 < 500ms | `tests/loadtest/{mock_broker.go,load_100_accounts_test.go}` (build tag loadtest) | `go test -tags=loadtest -timeout 15m -run Test100AccountsNoSpill ./tests/loadtest/...` |
+| M10.4-2 | 🅒 100 账户负载测试（mock broker 25k tick/s × 5min）：`md_spill_writes_total == 0` 且 `md_e2e_latency_seconds` P99 < 500ms | `tests/loadtest/{mock_broker.go,load_100_accounts_test.go}` (build tag loadtest) | `go test -tags=loadtest -timeout 15m -run Test100AccountsNoSpill ./tests/loadtest/...`；测试函数内部必须包含 ADR-0011 §6 列出的两条断言：(1) `md_spill_writes_total == 0`；(2) `histogram_quantile(0.99, md_e2e_latency_seconds) < 0.5`。断言失败 → `t.Fatalf` 退出非 0 |
 | M10.4-3 | 🅒 `internal/secrets/` 重构 envelope encryption（version+dek_kid+nonce+wrapped_dek+ciphertext+tag）；保留旧格式自动迁移；`cmd/ant-vault rotate` CLI；`secrets.MasterProvider` 接口预留 KMS | `backend/internal/secrets/{vault.go,envelope.go,vault_legacy.go,master_provider.go,*_test.go}` `backend/cmd/ant-vault/main.go` `docs/spec/17-secrets-and-errors.md` | `go test -race -cover ./internal/secrets/... \| awk '/coverage:/{gsub("%",""); if ($2<90) exit 1}' && go run ./cmd/ant-vault rotate --dry-run \| grep -q rows_to_rewrite` |
 | M10.4-4 | 🅒 PG migration `102_broker_symbols_notify.up.sql`（trigger pg_notify）；`internal/mdgateway/normalizer_invalidator.go` LISTEN + 30s ticker fallback；`normalizer.go` 注入 invalidator | `backend/migrations/102_broker_symbols_notify.up.sql` (`+.down.sql`) `backend/internal/mdgateway/{normalizer_invalidator.go,normalizer.go}` + 测试 | `make migrate && go test -tags=integration -run "TestNormalizer(Invalidation\|ListenerFallback)" ./internal/mdgateway/... -v` |
 

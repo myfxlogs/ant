@@ -1,7 +1,7 @@
 # ADR 索引（v2）
 
 > v1 ADR 已归档至 `docs.old/adr/`。
-> v2 仅保留 MT 重写域的 5 篇核心决策；后续每月新增。
+> v2 维护：MT 重写（0001–0005）+ C2C 归属（0006）+ M7 复盘（0007）+ M10 硬化（0008–0011）。
 
 | ID | 标题 | 状态 |
 |---|---|---|
@@ -12,6 +12,10 @@
 | 0005 | CircuitBreaker + Spill 故障恢复 | Accepted |
 | 0006 | 平台共享层 vs 用户私有层（C2C 架构）| Accepted |
 | 0007 | M7-M9 执行回顾：B 方案叙事与实际结果的偏离 | Accepted |
+| 0008 | 存储层去重键对齐 + 时间轴纪律 | Accepted |
+| 0009 | Spill Replay 双写 + Bar 不可变性 + 历史回填 | Accepted |
+| 0010 | SLO + Alert + DLQ + Trace 框架 | Accepted |
+| 0011 | 容量调优 + Vault 轮换 + Normalizer 缓存失效 | Accepted |
 
 ## 编号规则
 
