@@ -1,0 +1,30 @@
+=== M7.0-4 Verification Log ===
+TIMESTAMP: 2026-05-24T00:35:14Z
+
+[1] go test -race ./internal/storage/clickhouse/...
+$ cd backend && go test -race -count=1 ./internal/storage/clickhouse/...
+ok  	anttrader/internal/storage/clickhouse	1.070s
+
+[2] Test cases executed (7):
+- TestConnect_Success     PASS  (127.0.0.1:9000, auth_db=ant)
+- TestConnect_InvalidAddr PASS  (nonexistent:9999 → error)
+- TestConnect_EmptyAddr   PASS  (empty addr → "Addr is required")
+- TestPing_Success        PASS  (ping after connect)
+- TestPing_NotConnected   PASS  (ping nil conn → "not connected")
+- TestPrepareBatch_Success PASS (CREATE TABLE + APPEND 2 rows + Send → count=2)
+- TestClose               PASS  (close + ping after close → error)
+
+[3] Client API surface:
+- Connect(ctx, Config) → (*Client, error)
+- Ping(ctx) → error
+- PrepareBatch(ctx, query) → (driver.Batch, error)
+- Conn() → clickhouse.Conn
+- Close() → error
+
+[4] Config struct fields: Addr, Database, User, Password
+
+[5] Dependencies used:
+- github.com/ClickHouse/clickhouse-go/v2 (direct)
+- github.com/ClickHouse/clickhouse-go/v2/lib/driver (direct, for Batch type)
+
+=== ALL CHECKS PASSED ===
