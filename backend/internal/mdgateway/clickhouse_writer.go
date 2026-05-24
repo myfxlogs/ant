@@ -139,13 +139,26 @@ func (w *CHWriter) flushBars(ctx context.Context, batch []*mdtick.Bar) {
 	}
 }
 
-func (w *CHWriter) insertTicks(ctx context.Context, ticks []*mdtick.Tick) error {
-	// M10 ADR-0011: INSERT into Buffer engine table; CH internally flushes to md_ticks.
-	// M10.5-10: ANT_CH_BUFFER_ENABLED=false → direct-write to md_ticks (Buffer bypass).
-	targetTable := "md_ticks_buffer"
+// tickTargetTable returns the CH target table for tick INSERTs.
+// ADR-0011: default = md_ticks_buffer (Buffer engine).
+// M10.5-10: ANT_CH_BUFFER_ENABLED=false → direct-write md_ticks (Buffer bypass).
+func tickTargetTable() string {
 	if os.Getenv("ANT_CH_BUFFER_ENABLED") == "false" {
-		targetTable = "md_ticks"
+		return "md_ticks"
 	}
+	return "md_ticks_buffer"
+}
+
+// barTargetTable returns the CH target table for bar INSERTs (see tickTargetTable).
+func barTargetTable() string {
+	if os.Getenv("ANT_CH_BUFFER_ENABLED") == "false" {
+		return "md_bars"
+	}
+	return "md_bars_buffer"
+}
+
+func (w *CHWriter) insertTicks(ctx context.Context, ticks []*mdtick.Tick) error {
+	targetTable := tickTargetTable()
 	batch, err := w.conn.PrepareBatch(ctx,
 		"INSERT INTO "+targetTable+" (user_id, account_id, broker, symbol_raw, canonical, ts_unix_ms, arrived_unix_ms, bid, ask, bid_volume, ask_volume, is_replay)")
 	if err != nil { return err }
@@ -171,12 +184,7 @@ func (w *CHWriter) insertTicks(ctx context.Context, ticks []*mdtick.Tick) error 
 func (w *CHWriter) insertBars(ctx context.Context, bars []*mdtick.Bar) error {
 	// ADR-0008 §2.2 + ADR-0009 §2.2: close_ts_unix_ms is set from ArrivedUnixMs by bar_aggregator;
 	// open_ts_unix_ms follows the same clock source for consistency.
-	// M10 ADR-0011: INSERT into Buffer engine table; CH internally flushes to md_bars.
-	// M10.5-10: ANT_CH_BUFFER_ENABLED=false → direct-write to md_bars.
-	barsTarget := "md_bars_buffer"
-	if os.Getenv("ANT_CH_BUFFER_ENABLED") == "false" {
-		barsTarget = "md_bars"
-	}
+	barsTarget := barTargetTable()
 	batch, err := w.conn.PrepareBatch(ctx,
 		"INSERT INTO "+barsTarget+" (user_id, account_id, broker, symbol_raw, canonical, period, open_ts_unix_ms, close_ts_unix_ms, open, high, low, close, volume, tick_count, is_replay)")
 	if err != nil { return err }

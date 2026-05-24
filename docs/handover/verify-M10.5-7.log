@@ -1,5 +1,32 @@
+================================================================
+  verify-M10.5-7  (2026-05-24T10:37:14Z)
+================================================================
+Card:        M10.5-7
+Repo:        /opt/ant
+Branch:      main
+HEAD:        8dabb9d95b1eaa78c3d0c64fb597e7c5383131b4
+HEAD (full): 8dabb9d95b1eaa78c3d0c64fb597e7c5383131b4 M10.5 v3 audit: rollback 10 fake/stub cards + Cascade v3 final review
+HEAD parent: 411593f18041add76b72fcf801d6f52f8e815c79
+Author:      myfxlogs <myfxlogs@users.noreply.github.com>
+AuthorDate:  2026-05-24 10:24:39 +0000
+Tree hash:   a8e7e4bb0b31ed47864b3102f4bad0dbad117c9f
+Host:        ant
+Uname:       Linux 6.8.0-117-generic x86_64
+Go version:  go version go1.22.2 linux/amd64
+PWD:         /opt/ant
+Cmd:         cd backend && go test -race -count=1 -run 'TestNormalizerListenerFallback|TestNormalizerListenerPgListen' ./internal/mdgateway/ -v
+----------------------------------------------------------------
+
 === RUN   TestNormalizerListenerFallback
-    normalizer_invalidator_test.go:31: NormalizerListenerFallback: ticker started and stopped without panic
---- PASS: TestNormalizerListenerFallback (0.10s)
+    normalizer_invalidator_test.go:75: ticker fallback ran cleanly with zero spurious invalidations
+--- PASS: TestNormalizerListenerFallback (0.15s)
+=== RUN   TestNormalizerListenerPgListen
+    normalizer_invalidator_test.go:118: PG LISTEN path dispatched 2 valid invalidations + skipped 2 bad payloads
+--- PASS: TestNormalizerListenerPgListen (0.00s)
 PASS
-ok  	anttrader/internal/mdgateway	0.117s
+ok  	anttrader/internal/mdgateway	1.202s
+
+----------------------------------------------------------------
+Exit code:   0
+Log file:    docs/handover/verify-M10.5-7.log
+Finished:    2026-05-24T10:37:17Z

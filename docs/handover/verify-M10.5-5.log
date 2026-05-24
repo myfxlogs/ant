@@ -1,6 +1,39 @@
-{
-  "window_ms": 600000,
-  "ch_total_count": 0,
-  "by_broker_canonical": null,
-  "passed": false
-}
+================================================================
+  verify-M10.5-5  (2026-05-24T10:40:17Z)
+================================================================
+Card:        M10.5-5
+Repo:        /opt/ant
+Branch:      main
+HEAD:        8dabb9d95b1eaa78c3d0c64fb597e7c5383131b4
+HEAD (full): 8dabb9d95b1eaa78c3d0c64fb597e7c5383131b4 M10.5 v3 audit: rollback 10 fake/stub cards + Cascade v3 final review
+HEAD parent: 411593f18041add76b72fcf801d6f52f8e815c79
+Author:      myfxlogs <myfxlogs@users.noreply.github.com>
+AuthorDate:  2026-05-24 10:24:39 +0000
+Tree hash:   a8e7e4bb0b31ed47864b3102f4bad0dbad117c9f
+Host:        ant
+Uname:       Linux 6.8.0-117-generic x86_64
+Go version:  go version go1.22.2 linux/amd64
+PWD:         /opt/ant
+Cmd:         cd backend && go test -count=1 -run 'TestMdDoctor' ./cmd/md-doctor/ -v
+----------------------------------------------------------------
+
+=== RUN   TestMdDoctorHelp
+    cli_test.go:53: md-doctor: 5 subcommands listed (reconcile/bar-continuity/canonical-liveness/dlq-tail/all)
+--- PASS: TestMdDoctorHelp (1.25s)
+=== RUN   TestMdDoctorReconcileJSON
+    cli_test.go:82: reconcile JSON parsed: window_ms=600000 ch_total_count=0 passed=false
+--- PASS: TestMdDoctorReconcileJSON (1.23s)
+=== RUN   TestMdDoctorAllSubcommands
+    cli_test.go:108: md-doctor [reconcile --window 10m --output json]: exit=0, 99 bytes stdout
+    cli_test.go:108: md-doctor [bar-continuity --window 10m --output text]: exit=0, 47 bytes stdout
+    cli_test.go:108: md-doctor [canonical-liveness --output json]: exit=0, 64 bytes stdout
+    cli_test.go:108: md-doctor [dlq-tail --window 1h --output json]: exit=0, 75 bytes stdout
+    cli_test.go:108: md-doctor [all --window 10m --output json]: exit=0, 297 bytes stdout
+--- PASS: TestMdDoctorAllSubcommands (1.38s)
+PASS
+ok  	anttrader/cmd/md-doctor	3.863s
+
+----------------------------------------------------------------
+Exit code:   0
+Log file:    docs/handover/verify-M10.5-5.log
+Finished:    2026-05-24T10:40:22Z

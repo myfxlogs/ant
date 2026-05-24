@@ -1,8 +1,11 @@
 package backfiller
 
 import (
+	"context"
 	"testing"
+	"time"
 
+	"go.uber.org/zap"
 	"golang.org/x/time/rate"
 )
 
@@ -66,6 +69,69 @@ func TestBackfillerPerAccountRate(t *testing.T) {
 	t.Log("BackfillerPerAccountRate: per-account limiters work")
 }
 
+// fakePGNotifier feeds queued payloads to PGTrigger.Run; mimics pgx.Conn LISTEN.
+type fakePGNotifier struct {
+	payloads chan string
+}
+
+func (f *fakePGNotifier) WaitForNotification(ctx context.Context) (string, string, error) {
+	select {
+	case <-ctx.Done():
+		return "", "", ctx.Err()
+	case p, ok := <-f.payloads:
+		if !ok {
+			return "", "", context.Canceled
+		}
+		return "new_subscription", p, nil
+	}
+}
+
+func (f *fakePGNotifier) Close() error { return nil }
+
 func TestBackfillerPgTrigger(t *testing.T) {
-	t.Log("TestBackfillerPgTrigger: requires PG NOTIFY (M10.5-8)")
+	// M10.5-8 M-1: PG NOTIFY new_subscription → BackfillAccount(account_id) without 6h cron wait.
+	notifier := &fakePGNotifier{payloads: make(chan string, 4)}
+	notifier.payloads <- `{"account_id":"acc-42"}`
+	notifier.payloads <- `{"account_id":"acc-7"}`
+	notifier.payloads <- `not-json`              // bad payload, should be skipped not crash
+	notifier.payloads <- `{"account_id":""}`     // empty account_id, should be skipped
+
+	called := make(chan string, 4)
+	cb := func(_ context.Context, accountID string) error {
+		called <- accountID
+		return nil
+	}
+
+	trig := NewPGTrigger(zap.NewNop(), cb)
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan struct{})
+	go func() {
+		_ = trig.Run(ctx, notifier)
+		close(done)
+	}()
+
+	// Expect exactly the 2 valid payloads to dispatch backfill calls.
+	got := []string{}
+	timeout := time.After(2 * time.Second)
+	for len(got) < 2 {
+		select {
+		case acc := <-called:
+			got = append(got, acc)
+		case <-timeout:
+			t.Fatalf("timed out waiting for backfill calls; got %d/2", len(got))
+		}
+	}
+	cancel()
+	<-done
+
+	if got[0] != "acc-42" || got[1] != "acc-7" {
+		t.Errorf("expected [acc-42 acc-7], got %v", got)
+	}
+	// Verify bad/empty payloads did NOT trigger extra calls.
+	select {
+	case extra := <-called:
+		t.Errorf("unexpected extra backfill call for %q (bad payloads should be skipped)", extra)
+	default:
+	}
+	t.Logf("PGTrigger correctly dispatched 2 valid backfills + skipped 2 bad payloads")
 }
