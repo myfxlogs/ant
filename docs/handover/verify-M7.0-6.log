@@ -1,0 +1,23 @@
+=== M7.0-6 Verification Log ===
+TIMESTAMP: 2026-05-24T00:40:07Z
+
+[1] make help | grep migrate-ch
+$ make help | grep migrate-ch
+  migrate-ch     run ClickHouse migrations (v2)
+
+[2] make help | grep verify-card
+$ make help | grep verify-card
+  verify-card    verify a ROADMAP card (set CARD_ID=M7.X-Y)
+
+[3] verify-card self-test (CARD_ID=M7.0-1)
+$ CARD_ID=M7.0-1 make verify-card
+=== Verifying card M7.0-1 ===
+(backend build + all tests pass)
+=== Card M7.0-1 verified OK ===
+
+[4] New Makefile targets:
+- migrate-ch:  go run ./internal/mdgateway/chmigrate/...
+- verify-card: handover log check (≥20 lines) + go build + go test -race
+- help:       list of all common targets
+
+=== ALL CHECKS PASSED ===

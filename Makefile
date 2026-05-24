@@ -142,6 +142,43 @@ rtk-env:
 rtk-grep:
 	@$(RTK) grep
 
+# ── v2 ClickHouse ─────────────────────────────────────────────────────
+.PHONY: migrate-ch
+
+migrate-ch:
+	@echo "Running ClickHouse migrations..."
+	@cd backend && go run ./internal/mdgateway/chmigrate/...
+
+# ── Card verification ─────────────────────────────────────────────────
+.PHONY: verify-card
+
+verify-card:
+	@test -n "$$CARD_ID" || { echo "ERROR: CARD_ID not set. Usage: CARD_ID=M7.X-Y make verify-card"; exit 1; }
+	@echo "=== Verifying card $$CARD_ID ==="
+	@test -f "docs/handover/verify-$$CARD_ID.log" || { echo "FAIL: handover log missing"; exit 1; }
+	@test $$(wc -l < "docs/handover/verify-$$CARD_ID.log") -ge 20 || { echo "FAIL: log < 20 lines"; exit 1; }
+	@cd backend && go build ./... || { echo "FAIL: backend build"; exit 1; }
+	@cd backend && go test -race ./internal/... || { echo "FAIL: tests"; exit 1; }
+	@echo "=== Card $$CARD_ID verified OK ==="
+
+# ── Help ──────────────────────────────────────────────────────────────
+.PHONY: help
+
+help:
+	@echo "ant Makefile targets:"
+	@echo "  build          compile backend binary"
+	@echo "  test           run all tests"
+	@echo "  migrate        run PostgreSQL migrations"
+	@echo "  migrate-ch     run ClickHouse migrations (v2)"
+	@echo "  verify-card    verify a ROADMAP card (set CARD_ID=M7.X-Y)"
+	@echo "  proto          generate protobuf (Go + TS)"
+	@echo "  docker-up      start all containers"
+	@echo "  docker-down    stop all containers"
+	@echo "  lint           run linters"
+	@echo "  deploy         gray-release deploy"
+	@echo "  backup         database backup"
+	@echo "  status         health check overview"
+
 # ── M6 deployment & ops targets ───────────────────────────────────────
 
 .PHONY: deploy backup bench status
