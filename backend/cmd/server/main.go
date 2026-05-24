@@ -49,6 +49,10 @@ func main() {
 	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer))
 
 	// Marketplace handler
+	// Account
+	accountServer := connect.NewAccountServer(platformSvc)
+	mux.Handle(antv1c.NewAccountServiceHandler(accountServer))
+
 	mktServer := connect.NewMarketServer(platformSvc)
 	mux.Handle(antv1c.NewMarketServiceHandler(mktServer))
 

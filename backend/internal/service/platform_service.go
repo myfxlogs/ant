@@ -98,6 +98,42 @@ type Admin struct {
 	Scope  string // "platform:admin"
 }
 
+// AccountDTO is a lightweight account view for the frontend.
+type AccountDTO struct {
+	ID, UserID, Platform, Broker, Login, Server string
+	IsDisabled                                   bool
+}
+
+// ListAccounts returns all accounts.
+func (s *PlatformService) ListAccounts(ctx context.Context) ([]AccountDTO, error) {
+	rows, err := s.pg.Query(ctx, `
+		SELECT id, user_id, mt_type, broker_company, login, broker_server, is_disabled
+		FROM mt_accounts ORDER BY mt_type, login
+	`)
+	if err != nil { return nil, err }
+	defer rows.Close()
+	var out []AccountDTO
+	for rows.Next() {
+		var a AccountDTO
+		if err := rows.Scan(&a.ID, &a.UserID, &a.Platform, &a.Broker, &a.Login, &a.Server, &a.IsDisabled); err != nil {
+			return nil, err
+		}
+		out = append(out, a)
+	}
+	return out, rows.Err()
+}
+
+// GetAccount returns a single account by ID.
+func (s *PlatformService) GetAccount(ctx context.Context, accountID string) (*AccountDTO, error) {
+	var a AccountDTO
+	err := s.pg.QueryRow(ctx, `
+		SELECT id, user_id, mt_type, broker_company, login, broker_server, is_disabled
+		FROM mt_accounts WHERE id = $1::uuid
+	`, accountID).Scan(&a.ID, &a.UserID, &a.Platform, &a.Broker, &a.Login, &a.Server, &a.IsDisabled)
+	if err != nil { return nil, err }
+	return &a, nil
+}
+
 // IsAdmin checks if a user has admin privileges.
 func (s *PlatformService) IsAdmin(ctx context.Context, userID string) (bool, error) {
 	var count int

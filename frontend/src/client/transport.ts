@@ -27,6 +27,7 @@ let lastBizErrorAt = 0;
 // Services that are available on the new v2 backend.
 // All others silently return empty — no error modals.
 const v2Services = new Set([
+  'ant.v1.accountservice',
   'ant.v1.marketplaceservice',
   'ant.v1.mthubservice',
   'ant.v1.marketservice',

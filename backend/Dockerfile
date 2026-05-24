@@ -27,7 +27,6 @@ RUN go mod download
 COPY . .
 
 RUN go build -ldflags="-w -s" -o /antrader ./cmd/server
-RUN go build -ldflags="-w -s" -o /create_admin ./cmd/create_admin
 
 FROM golang:1.26.2-alpine
 ARG ALPINE_MIRROR
@@ -42,12 +41,11 @@ RUN if [ -n "$ALPINE_MIRROR" ]; then \
     adduser -D -u 1000 -g '' appuser
 
 COPY --from=builder /antrader /app/antrader
-COPY --from=builder /create_admin /app/create_admin
 COPY configs /app/configs
 COPY migrations /app/migrations
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 
-RUN chmod +x /app/antrader /app/create_admin /app/docker-entrypoint.sh && chown -R appuser:appuser /app
+RUN chmod +x /app/antrader /app/docker-entrypoint.sh && chown -R appuser:appuser /app
 
 USER appuser
 
