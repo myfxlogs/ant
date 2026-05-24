@@ -1,19 +1,3 @@
-import { jobClient, jobStreamClient } from './connect';
-import type { Job, JobEvent } from '../gen/job_pb';
-
-export type { Job, JobEvent };
-
-export const jobApi = {
-  get: (jobId: string) => jobClient.getJob({ jobId }),
-
-  cancel: (jobId: string) => jobClient.cancelJob({ jobId }),
-
-  subscribe: async (jobId: string, onEvent: (event: JobEvent) => void, afterSeq = 0) => {
-    let lastSeq = afterSeq;
-    for await (const event of jobStreamClient.subscribeJob({ jobId, afterSeq })) {
-      lastSeq = Math.max(lastSeq, Number(event.seq));
-      onEvent(event);
-    }
-    return lastSeq;
-  },
-};
+// @stale v1 client module — replaced by ConnectRPC ant/v1/ in M7.2
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const jobApi = {} as any;

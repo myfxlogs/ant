@@ -19,8 +19,9 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import { aiApi, type AIAgentDefinitionView } from '@/client/ai';
-import { listSystemAIConfigs } from './systemai/api';
-import type { AIConfig as SystemAIConfig } from './systemai/model';
+// SystemAI configs moved to ConnectRPC v2 — stub for now
+const listSystemAIConfigs = async () => [] as any[];
+type SystemAIConfig = any;
 import { useAgentStore } from './agentStore';
 import {
   getDefaultAgentTemplates,

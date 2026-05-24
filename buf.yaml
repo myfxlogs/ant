@@ -3,8 +3,8 @@ deps: []
 modules:
   - path: proto/ant/v1
     name: buf.build/ant/api
-  - path: proto/mt4
-  - path: proto/mt5
+# mt4/mt5 are third-party protos from mtapi.io — pre-generated .go in backend/mt4,mt5/
+# No .proto sources available locally; excluded from buf lint
 lint:
   use:
     - STANDARD
