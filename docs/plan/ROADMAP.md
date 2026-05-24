@@ -160,13 +160,13 @@ docker exec ant-clickhouse clickhouse-client --query \
 
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
-| M7.3-1 | 🅒 移植 alfq factor/dsl（lex/parser/compile + 14 算子）| `backend/internal/factor/dsl/*.go` | `go test ./internal/factor/dsl/... -count=1` 全过；测试包含 100 表达式样本 |
-| M7.3-2 | 🅒 factorsvc/window_buffer.go（ring buffer per key） | 同左 + test | ring buffer 满时旧值淘汰 |
-| M7.3-3 | 🅒 factorsvc/engine.go（FactorDef 加载 + Eval） | 同左 + test | 注入 100 bars → eval 1 次 < 10ms |
-| M7.3-4 | 🅒 factorsvc/factor_ch_writer.go（batch flush） | 同左 + test | dockertest CH 真写 |
-| M7.3-5 | 🅒 factorsvc/subscriber.go（NATS md.bar.* → engine） | 同左 + test | 集成测试：发 bar → CH factor_values 出现 |
-| M7.3-6 | 🅒 factorsvc/metrics.go | 同左 + test | `factor_eval_total` 等指标暴露 |
-| M7.3-7 | 🅒 factorsvc 接入 server 启动钩子 | `cmd/ant-server/main.go` | 启动后 NATS subject `md.factor.>` 有消息 |
+| M7.3-1 | ☑ 移植 alfq factor/dsl（lex/parser/compile + 14 算子）| `backend/internal/factor/dsl/*.go` | `go test ./internal/factor/dsl/... -count=1` 全过；测试包含 100 表达式样本 |
+| M7.3-2 | ☑ factorsvc/window_buffer.go（ring buffer per key） | 同左 + test | ring buffer 满时旧值淘汰 |
+| M7.3-3 | ☑ factorsvc/engine.go（FactorDef 加载 + Eval） | 同左 + test | 注入 100 bars → eval 1 次 < 10ms |
+| M7.3-4 | ☑ factorsvc/factor_ch_writer.go（batch flush） | 同左 + test | dockertest CH 真写 |
+| M7.3-5 | ☑ factorsvc/subscriber.go（NATS md.bar.* → engine） | 同左 + test | 集成测试：发 bar → CH factor_values 出现 |
+| M7.3-6 | ☑ factorsvc/metrics.go | 同左 + test | `factor_eval_total` 等指标暴露 |
+| M7.3-7 | ☑ factorsvc 接入 server 启动钩子 | `cmd/ant-server/main.go` | 启动后 NATS subject `md.factor.>` 有消息 |
 
 ---
 
@@ -174,12 +174,12 @@ docker exec ant-clickhouse clickhouse-client --query \
 
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
-| M7.4-1 | 🅒 `internal/quantengine/types.go`（Signal / ModelDef） | + test | LOC ≤ 100 |
-| M7.4-2 | 🅒 ONNX runtime 集成（onnxruntime-go） + 模型加载 | `internal/quantengine/onnx.go` + test | mock 模型 load + infer 通过 |
-| M7.4-3 | 🅒 DSL 信号规则评估器 | `internal/quantengine/dsl_signal.go` + test | DSL "ma20 > close" → buy 信号 |
-| M7.4-4 | 🅒 subscriber.go（订阅 NATS md.factor.> 触发推理）| + test | 端到端：factor → signal → CH `signals` |
-| M7.4-5 | 🅒 SignalRouter 接 oms（PG.signals 之外补 CH 审计） | `internal/oms/signal_router.go`（重构）+ test | 信号被 risk reject 时 CH `signals.rejected=1` |
-| M7.4-6 | 🅒 quantengine 接入 server 启动 | `cmd/ant-server/main.go` | 启动后 quant_inference_total 计数 |
+| M7.4-1 | ☑ `internal/quantengine/types.go`（Signal / ModelDef） | + test | LOC ≤ 100 |
+| M7.4-2 | ☑ ONNX runtime 集成（onnxruntime-go） + 模型加载 | `internal/quantengine/onnx.go` + test | mock 模型 load + infer 通过 |
+| M7.4-3 | ☑ DSL 信号规则评估器 | `internal/quantengine/dsl_signal.go` + test | DSL "ma20 > close" → buy 信号 |
+| M7.4-4 | ☑ subscriber.go（订阅 NATS md.factor.> 触发推理）| + test | 端到端：factor → signal → CH `signals` |
+| M7.4-5 | ☑ SignalRouter 接 oms（PG.signals 之外补 CH 审计） | `internal/oms/signal_router.go`（重构）+ test | 信号被 risk reject 时 CH `signals.rejected=1` |
+| M7.4-6 | ☑ quantengine 接入 server 启动 | `cmd/ant-server/main.go` | 启动后 quant_inference_total 计数 |
 
 ---
 
@@ -191,8 +191,8 @@ docker exec ant-clickhouse clickhouse-client --query \
 | M7.5-2 | 🅒 `connect/market_regime_service.go` 切流 | 同左 + test | 同上 |
 | M7.5-3 | 🅒 `connect/backtest_dataset_service.go` 切流 | 同左 + test | 回测拉历史数据走 CH |
 | M7.5-4 | 🅒 `connect/python_strategy_service.go` 切流 | 同左 + test | 沙箱拉历史走 CH |
-| M7.5-5 | 🅒 `service/kline_service*.go` 全部加 `// Deprecated: see internal/mdgateway. To be removed in M9.` | 同左 7 个文件 | `grep -c '// Deprecated' backend/internal/service/kline_service*.go \| grep -q '^7$'` |
-| M7.5-6 | 🅒 grep 验证业务代码 0 处直 import mt4client/mt5client（除 service/kline_service*）| — | `! grep -rE 'anttrader/internal/(mt4\|mt5)client' backend/internal/{ai,marketplace,oms,risk,connect,quantengine,factorsvc,mthub}/ \|\| exit 1` |
+| M7.5-5 | ☑ `service/kline_service*.go` 全部加 `// Deprecated: see internal/mdgateway. To be removed in M9.` | 同左 7 个文件 | `grep -c '// Deprecated' backend/internal/service/kline_service*.go \| grep -q '^7$'` |
+| M7.5-6 | ☑ grep 验证业务代码 0 处直 import mt4client/mt5client（除 service/kline_service*）| — | `! grep -rE 'anttrader/internal/(mt4\|mt5)client' backend/internal/{ai,marketplace,oms,risk,connect,quantengine,factorsvc,mthub}/ \|\| exit 1` |
 | M7.5-7 | 🅒 老 `kline_data` 表设为只读（trigger 阻止 INSERT） | `backend/migrations/101_kline_data_readonly.up.sql` (`+ .down.sql`) | `psql -c "INSERT INTO kline_data ..."` 返回 error |
 | M7.5-8 | 🅒 frontend K 线组件切到新 RPC `MarketService.GetKlines` | `frontend/src/api/kline.ts` 与相关组件 | 浏览器手动验收：K 线展示正常 |
 
