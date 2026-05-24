@@ -1,0 +1,26 @@
+=== M7.0-5 Verification Log ===
+TIMESTAMP: 2026-05-24T00:38:11Z
+
+[1] go test -race ./internal/storage/nats/...
+$ cd backend && go test -race -count=1 ./internal/storage/nats/...
+ok  	anttrader/internal/storage/nats	1.074s
+
+[2] Test cases (7):
+- TestConnect_Success        PASS  (nats://127.0.0.1:4222, JetStream enabled)
+- TestConnect_EmptyURL       PASS  ("URL is required")
+- TestConnect_InvalidURL     PASS  (nonexistent → error)
+- TestEnsureStream_NewStream PASS  (create → verify → delete)
+- TestEnsureStream_Idempotent PASS (create twice → no error on second)
+- TestEnsureStream_ConfigMismatch PASS (MaxAge mismatch detected)
+- TestIsConnected            PASS  (true → close → false)
+
+[3] EnsureAllStreams:
+- MD_EVENTS  (subjects: md.tick.>, md.bar.>, md.factor.>; MaxAge: 24h; MaxBytes: 8GiB)
+- OMS_EVENTS (subjects: oms.order.>, oms.signal.>; MaxAge: 7d; MaxBytes: 5GiB)
+
+[4] Dependencies:
+- github.com/nats-io/nats.go v1.52.0 (direct)
+
+[5] nats.conf updated: max_file_store 10GiB → 15GiB (total stream needs 13GiB)
+
+=== ALL CHECKS PASSED ===
