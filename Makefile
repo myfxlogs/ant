@@ -165,6 +165,53 @@ verify-card:
 	@cd backend && go test -race ./internal/... || { echo "FAIL: tests"; exit 1; }
 	@echo "=== Card $$CARD_ID verified OK ==="
 
+# ── Strict card verification (AGENT.md §0.3) ─────────────────────────
+.PHONY: verify-cards-strict detect-stubs detect-skip-tests detect-orphan-test-claims
+
+# Usage: make verify-cards-strict MILESTONE=M10 [APPLY=1]
+verify-cards-strict:
+	@test -n "$(MILESTONE)" || { echo "ERROR: MILESTONE not set. Usage: make verify-cards-strict MILESTONE=M10"; exit 1; }
+	@if [ "$(APPLY)" = "1" ]; then \
+		bash scripts/verify-cards-strict.sh $(MILESTONE) --apply; \
+	else \
+		bash scripts/verify-cards-strict.sh $(MILESTONE); \
+	fi
+
+# 反 stub 探测：扫描生产代码（非 _test.go）中的偷工关键词
+detect-stubs:
+	@echo "=== detect-stubs: scanning backend/{cmd,internal} for stub keywords ==="
+	@HITS=$$(grep -rEn '(printf|Printf|Println|Print)\(\s*"[^"]*\b(stub|TODO|placeholder|not (wired|connected|implemented))\b' \
+		backend/cmd backend/internal --include='*.go' --exclude='*_test.go' 2>/dev/null | wc -l); \
+	echo "Hits: $$HITS"; \
+	if [ "$$HITS" -gt 0 ]; then \
+		grep -rEn '(printf|Printf|Println|Print)\(\s*"[^"]*\b(stub|TODO|placeholder|not (wired|connected|implemented))\b' \
+			backend/cmd backend/internal --include='*.go' --exclude='*_test.go' 2>/dev/null; \
+		echo "FAIL: $$HITS stub hits found"; exit 1; \
+	fi; \
+	echo "OK: 0 hits"
+
+# 列出无 milestone 引用的 t.Skip
+detect-skip-tests:
+	@echo "=== detect-skip-tests: t.Skip without milestone reference ==="
+	@grep -rEn 't\.Skip(f)?\(' backend --include='*_test.go' 2>/dev/null \
+		| grep -vE '将在卡片\s*M[0-9]+\.[0-9Z]+-[0-9]+\s*中实施' \
+		| tee /tmp/orphan-skips.txt; \
+	N=$$(wc -l < /tmp/orphan-skips.txt 2>/dev/null || echo 0); \
+	if [ "$$N" -gt 0 ]; then echo "FAIL: $$N orphan skips"; exit 1; fi; \
+	echo "OK: 0 orphan skips"
+
+# 卡片声明的 Test 函数但代码中不存在
+detect-orphan-test-claims:
+	@echo "=== detect-orphan-test-claims: cards claim Test funcs that don't exist ==="
+	@grep -oE 'Test[A-Z][A-Za-z0-9_]+' docs/plan/ROADMAP.md | sort -u > /tmp/claimed.txt
+	@grep -rhoE '^func\s+Test[A-Z][A-Za-z0-9_]+' backend --include='*_test.go' \
+		| awk '{print $$2}' | sort -u > /tmp/existing.txt
+	@MISSING=$$(comm -23 /tmp/claimed.txt /tmp/existing.txt); \
+	if [ -n "$$MISSING" ]; then \
+		echo "FAIL: claimed in ROADMAP but missing in code:"; echo "$$MISSING"; exit 1; \
+	fi; \
+	echo "OK: all claimed Test funcs exist"
+
 # ── Help ──────────────────────────────────────────────────────────────
 .PHONY: help
 

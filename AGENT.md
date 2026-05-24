@@ -1,8 +1,16 @@
 # AGENT.md — ant (v2 · MT 重写期)
 
-> 仓库 `/opt/ant/` · 文档版本 v2 · 2026-05-23
+> 仓库 `/opt/ant/` · 文档版本 v2 · 2026-05-24
 > v1 文档已归档至 `docs.old/`、`AGENT.md.v1.bak`
 > 本文档是 **AI Agent 唯一约束源**。所有冲突以本文档 + `docs/` 下版本最新文件为准。
+
+---
+
+## 🚨 卡片完成的唯一定义（开工前重读三遍）
+
+> **卡片 ☑ 的唯一定义：verify log 含真实 stdout 的 `PASS`/`ok`/`--- PASS` 关键字且不含 `[no test files]`、代码不含 `stub`/`TODO`/`Placeholder`/`not wired`/`not connected`/`not implemented`、卡片声明的测试函数必须实际存在并跑过；任一不满足 = 卡片自动作废 + 状态回退至 🅒 + milestone 关闭判据失效。规则边界不是用来寻找最小满足解的，是用来证明你真的做完了。**
+
+执行机器化校验：`make verify-cards-strict MILESTONE=M10` —— 任一卡片 FAIL → 自动改 ROADMAP 状态 + 拒绝 commit。
 
 ---
 
@@ -36,6 +44,66 @@
 ```
 
 **违反任何一步 → 卡片自动降回 🅒，禁止再宣称完成**（详见 §11 防偷懒约束）。
+
+### 0.3 卡片 ☑ 的 3 个机器可证伪硬条件（缺一不可）
+
+每张卡片要从 🅒 改为 ☑，**必须**同时满足以下 3 条，由 `scripts/verify-cards-strict.sh` 自动检查：
+
+| 条件 | 检查命令 |
+|---|---|
+| **C1** 有真实 commit | `git log --grep='Card: M<m>\.<x>-<y>' --oneline \| wc -l` ≥ 1 |
+| **C2** 有真实 verify log | `wc -l docs/handover/verify-M<m>.<x>-<y>.log` ≥ 30 |
+| **C3** verify log 含真实 PASS | `grep -cE '^(--- PASS\|^ok \|PASS$)' docs/handover/...log` ≥ 1 **且** `! grep -q '\[no test files\]' docs/handover/...log` |
+
+**任一条件 FAIL → 该卡片状态由脚本自动改回 🅒**。
+
+`Makefile` target：
+```
+verify-cards-strict:
+    @bash scripts/verify-cards-strict.sh $(MILESTONE)
+```
+
+milestone 关闭判据：`make verify-cards-strict MILESTONE=Mxx` 退出码必须为 0。
+
+### 0.4 反 stub 红线（违反 = 卡片作废 + 状态回退）
+
+以下行为在生产代码路径中**绝对禁止**（`_test.go` 文件不受此约束）：
+
+```
+❌ printf("stub") / println("stub")
+❌ fmt.Println("TODO") / fmt.Print("Placeholder")
+❌ 注释内容含 "not wired" / "not connected" / "not implemented" / "placeholder"
+   且对应函数体没有真实实现（只有 <-ctx.Done() 或 return nil）
+❌ t.Skip / t.Skipf 不附 "将在卡片 M<m>.<x>-<y> 中实施" 明确引用
+❌ verify log 中出现 "[no test files]" 视为 FAIL 而非 PASS
+❌ 卡片验收命令引用的测试函数（grep -oE 'Test\w+' on 验收 shell）必须实际存在
+   于 *_test.go 文件，且至少有一行 t.Run / assert / require 真断言
+❌ closure 报告含 "待后续实施" / "将在 X 中完成" / "stub" 段落但 milestone 仍标 ☑
+```
+
+机器化探测：
+```bash
+make detect-stubs                 # grep 全仓库 stub 关键词，阈值 > 0 → fail
+make detect-skip-tests            # 列出无 milestone 引用的 t.Skip
+make detect-orphan-test-claims    # 卡片提及但代码中不存在的 Test 函数
+```
+
+### 0.5 卡片设计模板（写卡片的人必读）
+
+任何新卡片**必须**满足：
+
+```
+- 文件数：≤ 4 个新增/修改文件
+- 验收 shell 行数：≤ 4 行
+- 验收必须以以下 3 种 grep 之一收尾：
+    && grep -qE '^(ok |--- PASS|PASS$)' verify-Mxx.X-Y.log
+    && grep -qE '<预期字段名>' <CLI/CH/HTTP 真实输出>
+    && ! grep -q '\[no test files\]' verify-Mxx.X-Y.log
+- 禁止单卡片同时承担：①schema 改动 + ②业务逻辑 + ③CLI 工具 + ④端到端测试
+  （4 类合一 = 必然 stub 化，强制拆为 4 张子卡）
+```
+
+违反 → 卡片设计阶段被拒收，不得分配给 builder agent。
 
 ---
 

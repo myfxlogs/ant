@@ -1,7 +1,19 @@
 # M10 数据基础 A+ 硬化 · DeepSeek 启动指引
 
-> **唯一目标**：把 M10 的 18 张卡片从 🅒 推到 ☑。人类不写一行代码、只在前端做最终验收。
-> **预算**：~13 工日；硬性下限：所有验收命令退出码 0。
+> ⚠️ **2026-05-24 强制修订**：第一轮 M10 18 卡片机械回退 17 张到 🅒（Cascade 独立审计 + DeepSeek design review 联合发现 3 P0 + 5 P1 + 11 P2 + 9 设计缺陷）。本文件**不再适用于初版 M10**，仅适用于 **M10.5 补完段（12 张新卡片）**。
+>
+> **新规则**：AGENT.md §0.3（3 条机器可证伪硬条件）+ §0.4（反 stub 红线）+ §0.5（卡片粒度模板）**强制生效**。
+>
+> **校验工具**：`make verify-cards-strict MILESTONE=M10` / `make detect-stubs` / `make detect-skip-tests` / `make detect-orphan-test-claims`，任一非 0 退出 = milestone 不可关闭。
+
+## 一句话开工提示词（粘到 DeepSeek 对话首条）
+
+> **卡片 ☑ 的唯一定义：verify log 含真实 stdout 的 `PASS`/`ok`/`--- PASS` 关键字且不含 `[no test files]`、代码不含 `stub`/`TODO`/`Placeholder`/`not wired`/`not connected`/`not implemented`、卡片声明的测试函数必须实际存在并跑过；任一不满足 = 卡片自动作废 + 状态回退至 🅒 + milestone 关闭判据失效。规则边界不是用来寻找最小满足解的，是用来证明你真的做完了。每提交一张卡片前先本地跑 `make verify-cards-strict MILESTONE=M10 && make detect-stubs && make detect-orphan-test-claims`，三条全 0 退出再 commit；任一失败 → 自查不 commit。**
+
+---
+
+> **唯一目标（修订版）**：完成 M10.5-3 ~ M10.5-14 共 12 张补完卡片，让 M10 整体（含初版 17 张 + 补完 12 张 + 已 ☑ 的 M10.2-4）通过 `make verify-cards-strict MILESTONE=M10` 退出码 0。
+> **预算**：~12 工日
 
 ## 启动提示词（直接喂给 DeepSeek）
 

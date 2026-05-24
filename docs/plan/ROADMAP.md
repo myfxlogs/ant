@@ -232,6 +232,76 @@ docker exec ant-clickhouse clickhouse-client --query \
 
 ---
 
+## M10.5 · 补完段（A+ 真兑现）
+
+> ⚠️ **触发原因**：Cascade 独立审计（`docs/handover/M10-REVIEW-by-Cascade.md`）+ DeepSeek design review（`docs/plan/M10-DESIGN-REVIEW.md`）联合发现 **3 P0 + 5 P1 + 11 P2 + 9 设计缺陷**。`scripts/verify-cards-strict.sh M10` 实测 17/18 卡片未达 §0.3 硬条件，机械回退至 🅒。
+>
+> **本段目标**：补完真实施 + 修复设计缺陷，让 M10 从"骨架完成"升级到"实质 A+"。
+>
+> **新规则（AGENT.md §0.3-§0.5 起立即生效）**：
+> - 卡片 ☑ 必须通过 `make verify-cards-strict MILESTONE=M10` C1/C2/C3 三条硬条件
+> - 反 stub 红线见 §0.4
+> - 卡片粒度模板见 §0.5
+>
+> **预算**：~12 工日
+
+### M10.5 总览
+
+| Sub | 内容 | 卡片数 | 工日 |
+|---|---|---|---|
+| 修复 P0 runtime bug | M10.5-3 | 1 | 1.5 |
+| 补 mdgateway 单元测试 | M10.5-4 | 1 | 1.5 |
+| md-doctor 真实施 | M10.5-5 | 1 | 1.5 |
+| slo-report 真实施 | M10.5-6 | 1 | 1 |
+| normalizer_invalidator 接 pgx | M10.5-7 | 1 | 0.5 |
+| backfiller 修限速 + 接 mtapi + PG NOTIFY | M10.5-8 | 1 | 1.5 |
+| spill_replay NATS 去重 + finalizedBars fatal | M10.5-9 | 1 | 0.5 |
+| DLQ 异步化 + Buffer 开关 + S-2 文档 | M10.5-10 | 1 | 1 |
+| 端到端 smoke 真跑 | M10.5-11 | 1 | 1 |
+| 100 账户负载测真跑 | M10.5-12 | 1 | 1 |
+| spec/13 文档补：FINAL + 容量 + 迁移前置 | M10.5-13 | 1 | 0.5 |
+| 红队独立验收（Cascade）| M10.5-14 | 1 | 0.5 |
+| **总计** | | **12** | **~12 工日** |
+
+### M10.5 卡片详表
+
+| ID | 内容 | 文件 | 验收 |
+|---|---|---|---|
+| M10.5-3 | 🅒 **修 3 P0 runtime bug + S-3 finality 逻辑**：(a) `chmigrate/011_buffer_account_id.sql` 给 `md_ticks_buffer`/`md_bars_buffer` 加 `account_id` 列；(b) `quality.Check(ctx, t)` 加 ctx 参数所有调用方传递；(c) `manager.HandleTick` 真实加 6 段 OTel span（normalize/quality/dedup/aggregate/publish/enqueue）；(d) `bar_aggregator.IngestExternalBar` 改为按 `(broker,canonical,period,close_ts)` 精确去重，不再用 `<= MAX` | `backend/internal/mdgateway/chmigrate/011_buffer_account_id.sql` `backend/internal/mdgateway/{quality.go,manager.go,bar_aggregator.go}` | <pre>cd backend && go build ./... && go test -race ./internal/mdgateway/... 2>&1 \| tee /tmp/v.log && grep -qE '^ok ' /tmp/v.log && ! grep -q '\[no test files\]' /tmp/v.log</pre> |
+| M10.5-4 | 🅒 **补 6 个声明过但不存在的 mdgateway 测试**：`TestPublishReplayHeader` `TestSpillReplayDualWrite` `TestBarFinality` `TestDLQParseError` `TestDLQSampling` `TestNormalizerListenerFallback`；每个含 ≥3 行真断言 | `backend/internal/mdgateway/{publisher_test.go,spill_replay_test.go,bar_aggregator_test.go,dlq_writer_test.go,normalizer_invalidator_test.go}` | <pre>cd backend && go test -race -run 'TestPublishReplayHeader\|TestSpillReplayDualWrite\|TestBarFinality\|TestDLQParseError\|TestDLQSampling\|TestNormalizerListenerFallback' ./internal/mdgateway/ -v 2>&1 \| tee /tmp/v.log && test $(grep -cE '^--- PASS' /tmp/v.log) -ge 6</pre> |
+| M10.5-5 | 🅒 **md-doctor 真实施**：5 子命令各 ≥80 LOC；用 FINAL 查询 CH（修 S-1）；text/json 输出；--strict 模式（任一异常 exit 1）；reconcile 用 `clickhouse_writer.go` 内部 metric snapshot；连真实 CH/NATS | `backend/cmd/md-doctor/{main.go,reconcile.go,bar_continuity.go,canonical_liveness.go,dlq_tail.go,*_test.go}`（每个 ≥80 LOC，禁止 stub） | <pre>cd backend && go build -o /tmp/md-doctor ./cmd/md-doctor/ && /tmp/md-doctor --help 2>&1 \| grep -cE 'reconcile\|bar-continuity\|canonical-liveness\|dlq-tail\|all' \| awk '$1==5{ok=1}END{exit !ok}' && CH_DSN=clickhouse://default@localhost:9000/ant /tmp/md-doctor reconcile --window 10m --output json 2>&1 \| jq -e '.window_ms and .ch_count >= 0' && ! grep -rE '(stub\|TODO\|not (wired\|connected))' backend/cmd/md-doctor/</pre> |
+| M10.5-6 | 🅒 **slo-report 真实施**：用 `github.com/prometheus/client_golang/api/prometheus/v1` 拉指标；4 SLO 各算 availability% + budget remaining；markdown 输出；Prometheus recording rules `deploy/prometheus/rules.yml` 真上线 | `backend/cmd/slo-report/{main.go,prom_client.go,*_test.go}` `deploy/prometheus/rules.yml` | <pre>cd backend && go build -o /tmp/slo-report ./cmd/slo-report/ && PROM_URL=http://localhost:9090 /tmp/slo-report --window 1h --output md 2>&1 \| tee /tmp/v.log && grep -cE 'SLO-MD-[1-4]' /tmp/v.log \| awk '$1==4{ok=1}END{exit !ok}' && promtool check rules deploy/prometheus/rules.yml && ! grep -rE 'stub\|"— stub"' backend/cmd/slo-report/</pre> |
+| M10.5-7 | 🅒 **normalizer_invalidator 接 pgx LISTEN**：runner.go 创建独立 `pgx.Conn`；`listenLoop` 真调 `WaitForNotification`；解析 JSON payload (broker, symbol_raw) 回调 `normalizer.cache.Remove`；连接断 → 切 30s ticker fallback + metric `md_normalizer_listener_state` | `backend/internal/mdgateway/{normalizer_invalidator.go,runner.go}` + 测试 | <pre>cd backend && go test -tags=integration -run 'TestNormalizerListener(PgListen\|Fallback)' ./internal/mdgateway/ -v 2>&1 \| tee /tmp/v.log && test $(grep -cE '^--- PASS' /tmp/v.log) -ge 2</pre> |
+| M10.5-8 | 🅒 **backfiller 修 M-1/M-2 限速 + 接 mtapi + PG NOTIFY**：(a) `accountLimiters map[string]*rate.Limiter`（per-account 6 req/min）+ `globalLimiter`（60 req/s 总顶）；(b) `source_mtapi.go` 真调 `adapter.GetPriceHistory`；(c) 订阅新增触发 PG NOTIFY → backfiller 立即 BackfillAccount（不等 6h cron） | `backend/internal/mdgateway/backfiller/{backfiller.go,source_mtapi.go,trigger_pg.go}` + 测试 | <pre>cd backend && go test -race -run 'TestBackfillerPerAccountRate\|TestBackfillerPgTrigger' ./internal/mdgateway/backfiller/ -v 2>&1 \| tee /tmp/v.log && test $(grep -cE '^--- PASS' /tmp/v.log) -ge 2 && wc -l backend/internal/mdgateway/backfiller/source_mtapi.go \| awk '$1>=60{ok=1}END{exit !ok}'</pre> |
+| M10.5-9 | 🅒 **spill_replay NATS 去重（M-2）+ finalizedBars fatal-on-error（M-3）**：(a) `publisher.PublishMsg` 加 `Nats-Msg-Id: <broker>:<canonical>:<ts>:<xxhash>` header；JetStream stream 加 `Duplicates: 2m`；(b) `runner.loadFinalizedBars` CH 不可达 → 返回 error 阻塞启动 | `backend/internal/mdgateway/{publisher.go,spill_replay.go,runner.go}` + 测试 | <pre>cd backend && go test -race -run 'TestPublisherDedupHeader\|TestRunnerFatalOnChDown' ./internal/mdgateway/ -v 2>&1 \| tee /tmp/v.log && test $(grep -cE '^--- PASS' /tmp/v.log) -ge 2</pre> |
+| M10.5-10 | 🅒 **DLQ 异步化（L-1）+ Buffer 开关（S-2）+ 文档**：(a) `DLQWriter` 加 `dlqQ chan` + 后台 goroutine flush；(b) `clickhouse_writer.go` 加 env `ANT_CH_BUFFER_ENABLED`（默认 true；false → INSERT 直写 md_ticks）+ metric `md_ch_buffer_age_seconds`；(c) `docs/spec/13-clickhouse-schema.md` §2.7 加 Buffer engine OOM 风险声明 | `backend/internal/mdgateway/{dlq_writer.go,clickhouse_writer.go,metrics.go}` `docs/spec/13-clickhouse-schema.md` + 测试 | <pre>cd backend && go test -race -run 'TestDLQAsync\|TestCHBufferEnvSwitch' ./internal/mdgateway/ -v 2>&1 \| tee /tmp/v.log && test $(grep -cE '^--- PASS' /tmp/v.log) -ge 2 && grep -q 'ANT_CH_BUFFER_ENABLED' docs/spec/13-clickhouse-schema.md</pre> |
+| M10.5-11 | 🅒 **端到端 smoke 真跑**：tests/e2e/smoke_test.go 启 runner.Run → 注入 100 真 tick（含 1% 重复 + 1% bid>ask）→ 等 5s → 三方对账：metric.md_tick_total ≥ 99，CH.md_ticks count ≥ 95（FINAL），NATS sub.md.tick 收 ≥ 95；DLQ.md_ticks_dlq 中 bid_gt_ask 行 ≥ 1 | `backend/tests/e2e/smoke_test.go` (build tag e2e) | <pre>cd backend && E2E_CH_HOST=localhost E2E_NATS_URL=nats://localhost:4222 go test -tags=e2e -run TestE2ESmoke ./tests/e2e/... -v -timeout 2m 2>&1 \| tee /tmp/v.log && grep -qE '^--- PASS: TestE2ESmoke' /tmp/v.log</pre> |
+| M10.5-12 | 🅒 **100 账户负载测真跑**：mock broker 100 goroutine × 250 tick/s × 5min；真实跑通；断言 spill=0 且 P99<500ms | `backend/tests/loadtest/{mock_broker.go,load_100_accounts_test.go}` (build tag loadtest，去 t.Skip) | <pre>cd backend && go test -tags=loadtest -timeout 15m -run Test100AccountsNoSpill ./tests/loadtest/... -v 2>&1 \| tee /tmp/v.log && grep -qE '^--- PASS: Test100AccountsNoSpill' /tmp/v.log</pre> |
+| M10.5-13 | 🅒 **spec/13 文档补**：FINAL 查询规范（§9 新增）+ EXCHANGE TABLES 迁移前置条件（§2.8 注释）+ md_bars 长期容量与归档（§8 新增） | `docs/spec/13-clickhouse-schema.md` | <pre>grep -cE 'FINAL\|EXCHANGE TABLES.*前置\|3 年 TTL\|S3 冷存储' docs/spec/13-clickhouse-schema.md \| awk '$1>=3{ok=1}END{exit !ok}'</pre> |
+| M10.5-14 | 🅒 **红队独立验收（Cascade 跑，非 builder agent 自验）**：`make verify-cards-strict MILESTONE=M10` 必须 PASS=18 FAIL=0；再跑 `make detect-stubs` 全仓库 stub 关键词 0 命中；最后 Cascade 写 `docs/handover/M10-REVIEW-by-Cascade-v2.md` 二次审计 | `Makefile`（加 detect-stubs target）`docs/handover/M10-REVIEW-by-Cascade-v2.md` | <pre>make verify-cards-strict MILESTONE=M10 && make detect-stubs \| grep -qE 'OK.*0 hits' && test -s docs/handover/M10-REVIEW-by-Cascade-v2.md && grep -q '等级\s*[:：]\s*A-\?\|A\+' docs/handover/M10-REVIEW-by-Cascade-v2.md</pre> |
+
+### M10.5 关闭判据（重新定义 M10 整体关闭）
+
+```bash
+# 1. M10.5 全部 12 张卡片 ☑
+PENDING=$(grep -cE '^\| M10\.5-' docs/plan/ROADMAP.md | grep -c '🅒'); test "$PENDING" -eq 0
+
+# 2. M10 整体（含 M10.1-M10.5）verify-cards-strict 全 PASS
+make verify-cards-strict MILESTONE=M10
+
+# 3. 反 stub 探测 0 命中
+make detect-stubs | grep -q '0 hits'
+
+# 4. 端到端 smoke + 100 账户负载真实跑过
+test -s docs/handover/verify-M10.5-11.log
+test -s docs/handover/verify-M10.5-12.log
+
+# 5. Cascade 二次审计等级 ≥ A-
+grep -qE '等级\s*[:：]\s*A-?|A\+' docs/handover/M10-REVIEW-by-Cascade-v2.md
+
+# 全过 → 写 docs/handover/M10-closure-v2.md 替代 M10-closure.md
+```
+
 ## 历史
 
 - v2.0 (2026-05-23)：完全重写 ROADMAP；v1 归档至 `docs.old/plan/ROADMAP.md`
@@ -270,49 +340,49 @@ docker exec ant-clickhouse clickhouse-client --query \
 
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
-| M10.1-1 | ☑ chmigrate 新增 `006_md_ticks_v2.sql` `007_md_bars_v2.sql`：新表 + INSERT SELECT + EXCHANGE TABLES（ORDER BY 含 bid/ask/bid_volume/ask_volume；TTL 用 arrived_unix_ms） | `backend/internal/mdgateway/chmigrate/{006_md_ticks_v2.sql,007_md_bars_v2.sql,migrate_test.go}` | `make migrate-ch && docker exec ant-clickhouse clickhouse-client --query "SELECT sorting_key FROM system.tables WHERE database='ant' AND name='md_ticks'" \| grep -E 'ts_unix_ms.*bid.*ask.*bid_volume.*ask_volume' && docker exec ant-clickhouse clickhouse-client --query "SELECT engine_full FROM system.tables WHERE database='ant' AND name='md_ticks'" \| grep -q 'arrived_unix_ms.*INTERVAL 90 DAY'` |
-| M10.1-2 | ☑ `clickhouse_writer.go` `bar_aggregator.go` 用 `ts_unix_ms` 做边界判定的处全改 `arrived_unix_ms`（注释 `// ADR-0008 §2.2`） | `backend/internal/mdgateway/{clickhouse_writer.go,bar_aggregator.go}` + 测试 | `! grep -nE '\bts_unix_ms\b.*\b(bucket\|partition\|cutoff\|TTL\|window)' backend/internal/mdgateway/{clickhouse_writer,bar_aggregator}.go && go test -race ./internal/mdgateway/...` |
-| M10.1-3 | ☑ 端到端对账测试：100k tick 注入 → metric / NATS / CH 三方对账误差 < 0.01% | `tests/e2e/dedup_alignment_test.go` (build tag e2e) | `go test -tags=e2e -run TestDedupAlignment ./tests/e2e/... -timeout 5m` |
+| M10.1-1 | 🅒 chmigrate 新增 `006_md_ticks_v2.sql` `007_md_bars_v2.sql`：新表 + INSERT SELECT + EXCHANGE TABLES（ORDER BY 含 bid/ask/bid_volume/ask_volume；TTL 用 arrived_unix_ms） | `backend/internal/mdgateway/chmigrate/{006_md_ticks_v2.sql,007_md_bars_v2.sql,migrate_test.go}` | `make migrate-ch && docker exec ant-clickhouse clickhouse-client --query "SELECT sorting_key FROM system.tables WHERE database='ant' AND name='md_ticks'" \| grep -E 'ts_unix_ms.*bid.*ask.*bid_volume.*ask_volume' && docker exec ant-clickhouse clickhouse-client --query "SELECT engine_full FROM system.tables WHERE database='ant' AND name='md_ticks'" \| grep -q 'arrived_unix_ms.*INTERVAL 90 DAY'` |
+| M10.1-2 | 🅒 `clickhouse_writer.go` `bar_aggregator.go` 用 `ts_unix_ms` 做边界判定的处全改 `arrived_unix_ms`（注释 `// ADR-0008 §2.2`） | `backend/internal/mdgateway/{clickhouse_writer.go,bar_aggregator.go}` + 测试 | `! grep -nE '\bts_unix_ms\b.*\b(bucket\|partition\|cutoff\|TTL\|window)' backend/internal/mdgateway/{clickhouse_writer,bar_aggregator}.go && go test -race ./internal/mdgateway/...` |
+| M10.1-3 | 🅒 端到端对账测试：100k tick 注入 → metric / NATS / CH 三方对账误差 < 0.01% | `tests/e2e/dedup_alignment_test.go` (build tag e2e) | `go test -tags=e2e -run TestDedupAlignment ./tests/e2e/... -timeout 5m` |
 
 ### M10.2 · Replay 双写 + Bar finality + Backfiller（ADR-0009）
 
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
-| M10.2-1 | ☑ `mdtick.Tick`/`mdtick.Bar` 加 `IsReplay bool`；`publisher.go` 写 NATS header `X-Ant-Replay` | `backend/internal/mdgateway/adapter/mdtick/mdtick.go` `backend/internal/mdgateway/publisher.go` + 测试 | `grep -q 'IsReplay\s*bool' backend/internal/mdgateway/adapter/mdtick/mdtick.go && go test -tags=integration -run TestPublishReplayHeader ./internal/mdgateway/...` |
-| M10.2-2 | ☑ `spill_replay.go` 改双写：先 `publisher.PublishTick/Bar` 再 `chWriter.Enqueue`；自动设 `IsReplay=true` | `backend/internal/mdgateway/spill_replay.go` + 测试 | `go test -tags=integration -run TestSpillReplayDualWrite ./internal/mdgateway/... -v` |
-| M10.2-3 | ☑ `bar_aggregator.go` 启动加载 `finalizedBars`（CH MAX close_ts），所有写 bar 路径前置 finality 检查；metric `md_bar_skipped_finalized_total` | `backend/internal/mdgateway/{bar_aggregator.go,metrics.go}` + 测试 | `go test -tags=integration -run TestBarFinality ./internal/mdgateway/... -v` |
+| M10.2-1 | 🅒 `mdtick.Tick`/`mdtick.Bar` 加 `IsReplay bool`；`publisher.go` 写 NATS header `X-Ant-Replay` | `backend/internal/mdgateway/adapter/mdtick/mdtick.go` `backend/internal/mdgateway/publisher.go` + 测试 | `grep -q 'IsReplay\s*bool' backend/internal/mdgateway/adapter/mdtick/mdtick.go && go test -tags=integration -run TestPublishReplayHeader ./internal/mdgateway/...` |
+| M10.2-2 | 🅒 `spill_replay.go` 改双写：先 `publisher.PublishTick/Bar` 再 `chWriter.Enqueue`；自动设 `IsReplay=true` | `backend/internal/mdgateway/spill_replay.go` + 测试 | `go test -tags=integration -run TestSpillReplayDualWrite ./internal/mdgateway/... -v` |
+| M10.2-3 | 🅒 `bar_aggregator.go` 启动加载 `finalizedBars`（CH MAX close_ts），所有写 bar 路径前置 finality 检查；metric `md_bar_skipped_finalized_total` | `backend/internal/mdgateway/{bar_aggregator.go,metrics.go}` + 测试 | `go test -tags=integration -run TestBarFinality ./internal/mdgateway/... -v` |
 | M10.2-4 | ☑ 实现 `internal/mdgateway/backfiller/`（spec/18 全部文件）；runner.go 启动调用 + PG NOTIFY 触发新订阅回填 | `backend/internal/mdgateway/backfiller/{backfiller.go,source_mtapi.go,target.go,metrics.go,*_test.go}` `runner.go` | `( cd backend && go build ./internal/mdgateway/backfiller/... && go test -race -cover ./internal/mdgateway/backfiller/... ) && go test -tags=integration -run TestBackfillGap ./internal/mdgateway/backfiller/... && LOC=$(find backend/internal/mdgateway/backfiller -name "*.go" -not -name "*_test.go" \| xargs wc -l \| tail -1 \| awk '{print $1}'); test "$LOC" -le 350` |
 
 ### M10.3 · DLQ + Latency + OTel（ADR-0010）
 
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
-| M10.3-1 | ☑ chmigrate `008_md_ticks_dlq.sql` + `dlq_writer.go`（采样：parse_error 100%；bid_gt_ask/non_positive 1%）；`quality.go` 注入 `DLQWriter` 接口 | `backend/internal/mdgateway/chmigrate/008_md_ticks_dlq.sql` `dlq_writer.go` `quality.go` + 测试 | `docker exec ant-clickhouse clickhouse-client --query "DESCRIBE ant.md_ticks_dlq" \| grep -q reason && go test -tags=integration -run "TestDLQ(ParseError\|Sampling)" ./internal/mdgateway/...` |
-| M10.3-2 | ☑ `metrics.go` 新增 `md_e2e_latency_seconds` Histogram + `md_spill_pending_files` Gauge + `md_dlq_sampled_total` Counter；`clickhouse_writer.go` flush 成功 Observe；`spill_replay.go` 30s 扫目录更新 gauge | `backend/internal/mdgateway/{metrics.go,clickhouse_writer.go,spill_replay.go}` + 测试 | `curl -s localhost:8080/metrics \| grep -E '^md_(e2e_latency_seconds_bucket\|spill_pending_files\|dlq_sampled_total)' \| wc -l \| awk '$1>=3{exit 0} {exit 1}'` |
-| M10.3-3 | ☑ OTel SDK：`internal/trace/otel.go`（`OTEL_EXPORTER_OTLP_ENDPOINT` env 开关）；`manager.HandleTick` 加 span 链（normalize/quality/dedup/aggregate/publish/chwrite） | `backend/internal/trace/{otel.go,otel_test.go}` `backend/internal/mdgateway/manager.go` + go.mod 加 OTel 依赖 | `OTEL_EXPORTER_OTLP_ENDPOINT=localhost:4317 go test -tags=integration -run TestTraceExport ./internal/mdgateway/... -timeout 2m` |
-| M10.3-4 | ☑ `deploy/prometheus/alerts.yml` 加 6 条 M10 alert（spec/15 §6.x 列表）；`promtool check rules` 通过 | `deploy/prometheus/alerts.yml` | `for a in BrokerClockSkewHigh TickLatencyP99High SpillBacklog SpillUnwritable DLQSpike NormalizerFallbackHigh; do grep -q "alert: $a" deploy/prometheus/alerts.yml \|\| { echo "MISSING $a"; exit 1; }; done && promtool check rules deploy/prometheus/alerts.yml` |
+| M10.3-1 | 🅒 chmigrate `008_md_ticks_dlq.sql` + `dlq_writer.go`（采样：parse_error 100%；bid_gt_ask/non_positive 1%）；`quality.go` 注入 `DLQWriter` 接口 | `backend/internal/mdgateway/chmigrate/008_md_ticks_dlq.sql` `dlq_writer.go` `quality.go` + 测试 | `docker exec ant-clickhouse clickhouse-client --query "DESCRIBE ant.md_ticks_dlq" \| grep -q reason && go test -tags=integration -run "TestDLQ(ParseError\|Sampling)" ./internal/mdgateway/...` |
+| M10.3-2 | 🅒 `metrics.go` 新增 `md_e2e_latency_seconds` Histogram + `md_spill_pending_files` Gauge + `md_dlq_sampled_total` Counter；`clickhouse_writer.go` flush 成功 Observe；`spill_replay.go` 30s 扫目录更新 gauge | `backend/internal/mdgateway/{metrics.go,clickhouse_writer.go,spill_replay.go}` + 测试 | `curl -s localhost:8080/metrics \| grep -E '^md_(e2e_latency_seconds_bucket\|spill_pending_files\|dlq_sampled_total)' \| wc -l \| awk '$1>=3{exit 0} {exit 1}'` |
+| M10.3-3 | 🅒 OTel SDK：`internal/trace/otel.go`（`OTEL_EXPORTER_OTLP_ENDPOINT` env 开关）；`manager.HandleTick` 加 span 链（normalize/quality/dedup/aggregate/publish/chwrite） | `backend/internal/trace/{otel.go,otel_test.go}` `backend/internal/mdgateway/manager.go` + go.mod 加 OTel 依赖 | `OTEL_EXPORTER_OTLP_ENDPOINT=localhost:4317 go test -tags=integration -run TestTraceExport ./internal/mdgateway/... -timeout 2m` |
+| M10.3-4 | 🅒 `deploy/prometheus/alerts.yml` 加 6 条 M10 alert（spec/15 §6.x 列表）；`promtool check rules` 通过 | `deploy/prometheus/alerts.yml` | `for a in BrokerClockSkewHigh TickLatencyP99High SpillBacklog SpillUnwritable DLQSpike NormalizerFallbackHigh; do grep -q "alert: $a" deploy/prometheus/alerts.yml \|\| { echo "MISSING $a"; exit 1; }; done && promtool check rules deploy/prometheus/alerts.yml` |
 
 ### M10.4 · 容量 + Vault + Cache 失效（ADR-0011）
 
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
-| M10.4-1 | ☑ chmigrate `009_md_buffer_tables.sql`；`clickhouse_writer.go` INSERT 改 `md_ticks_buffer`/`md_bars_buffer`；默认配置 QueueSize=50000 / MaxBatch=10000 / Flush=500ms（env 可覆盖） | `backend/internal/mdgateway/chmigrate/009_md_buffer_tables.sql` `clickhouse_writer.go` + 测试 | `docker exec ant-clickhouse clickhouse-client --query "SELECT engine FROM system.tables WHERE database='ant' AND name='md_ticks_buffer'" \| grep -q '^Buffer$' && grep -E 'QueueSize.*50000\|MaxBatchSize.*10000\|FlushInterval.*500' backend/internal/mdgateway/clickhouse_writer.go` |
-| M10.4-2 | ☑ 100 账户负载测试（mock broker 25k tick/s × 5min）：`md_spill_writes_total == 0` 且 `md_e2e_latency_seconds` P99 < 500ms | `tests/loadtest/{mock_broker.go,load_100_accounts_test.go}` (build tag loadtest) | `go test -tags=loadtest -timeout 15m -run Test100AccountsNoSpill ./tests/loadtest/...`；测试函数内部必须包含 ADR-0011 §6 列出的两条断言：(1) `md_spill_writes_total == 0`；(2) `histogram_quantile(0.99, md_e2e_latency_seconds) < 0.5`。断言失败 → `t.Fatalf` 退出非 0 |
-| M10.4-3 | ☑ `internal/secrets/` 重构 envelope encryption（version+dek_kid+nonce+wrapped_dek+ciphertext+tag）；保留旧格式自动迁移；`cmd/ant-vault rotate` CLI；`secrets.MasterProvider` 接口预留 KMS | `backend/internal/secrets/{vault.go,envelope.go,vault_legacy.go,master_provider.go,*_test.go}` `backend/cmd/ant-vault/main.go` `docs/spec/17-secrets-and-errors.md` | `go test -race -cover ./internal/secrets/... \| awk '/coverage:/{gsub("%",""); if ($2<90) exit 1}' && go run ./cmd/ant-vault rotate --dry-run \| grep -q rows_to_rewrite` |
-| M10.4-4 | ☑ PG migration `102_broker_symbols_notify.up.sql`（trigger pg_notify）；`internal/mdgateway/normalizer_invalidator.go` LISTEN + 30s ticker fallback；`normalizer.go` 注入 invalidator | `backend/migrations/102_broker_symbols_notify.up.sql` (`+.down.sql`) `backend/internal/mdgateway/{normalizer_invalidator.go,normalizer.go}` + 测试 | `make migrate && go test -tags=integration -run "TestNormalizer(Invalidation\|ListenerFallback)" ./internal/mdgateway/... -v` |
+| M10.4-1 | 🅒 chmigrate `009_md_buffer_tables.sql`；`clickhouse_writer.go` INSERT 改 `md_ticks_buffer`/`md_bars_buffer`；默认配置 QueueSize=50000 / MaxBatch=10000 / Flush=500ms（env 可覆盖） | `backend/internal/mdgateway/chmigrate/009_md_buffer_tables.sql` `clickhouse_writer.go` + 测试 | `docker exec ant-clickhouse clickhouse-client --query "SELECT engine FROM system.tables WHERE database='ant' AND name='md_ticks_buffer'" \| grep -q '^Buffer$' && grep -E 'QueueSize.*50000\|MaxBatchSize.*10000\|FlushInterval.*500' backend/internal/mdgateway/clickhouse_writer.go` |
+| M10.4-2 | 🅒 100 账户负载测试（mock broker 25k tick/s × 5min）：`md_spill_writes_total == 0` 且 `md_e2e_latency_seconds` P99 < 500ms | `tests/loadtest/{mock_broker.go,load_100_accounts_test.go}` (build tag loadtest) | `go test -tags=loadtest -timeout 15m -run Test100AccountsNoSpill ./tests/loadtest/...`；测试函数内部必须包含 ADR-0011 §6 列出的两条断言：(1) `md_spill_writes_total == 0`；(2) `histogram_quantile(0.99, md_e2e_latency_seconds) < 0.5`。断言失败 → `t.Fatalf` 退出非 0 |
+| M10.4-3 | 🅒 `internal/secrets/` 重构 envelope encryption（version+dek_kid+nonce+wrapped_dek+ciphertext+tag）；保留旧格式自动迁移；`cmd/ant-vault rotate` CLI；`secrets.MasterProvider` 接口预留 KMS | `backend/internal/secrets/{vault.go,envelope.go,vault_legacy.go,master_provider.go,*_test.go}` `backend/cmd/ant-vault/main.go` `docs/spec/17-secrets-and-errors.md` | `go test -race -cover ./internal/secrets/... \| awk '/coverage:/{gsub("%",""); if ($2<90) exit 1}' && go run ./cmd/ant-vault rotate --dry-run \| grep -q rows_to_rewrite` |
+| M10.4-4 | 🅒 PG migration `102_broker_symbols_notify.up.sql`（trigger pg_notify）；`internal/mdgateway/normalizer_invalidator.go` LISTEN + 30s ticker fallback；`normalizer.go` 注入 invalidator | `backend/migrations/102_broker_symbols_notify.up.sql` (`+.down.sql`) `backend/internal/mdgateway/{normalizer_invalidator.go,normalizer.go}` + 测试 | `make migrate && go test -tags=integration -run "TestNormalizer(Invalidation\|ListenerFallback)" ./internal/mdgateway/... -v` |
 
 ### M10.5 · md-doctor + slo-report CLI
 
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
-| M10.5-1 | ☑ `cmd/md-doctor/`：reconcile/bar-continuity/canonical-liveness/dlq-tail/all 五个子命令（spec/19）；text+json 输出；--strict | `backend/cmd/md-doctor/{main.go,reconcile.go,bar_continuity.go,canonical_liveness.go,dlq_tail.go,*_test.go}` | `cd backend && go build -o /tmp/md-doctor ./cmd/md-doctor/ && /tmp/md-doctor --help \| grep -E 'reconcile\|bar-continuity\|canonical-liveness\|dlq-tail\|all' \| wc -l \| grep -q '^5$' && /tmp/md-doctor all --window 10m --output json \| jq -e '.reconcile != null'` |
-| M10.5-2 | ☑ `cmd/slo-report/`：从 Prometheus 拉指标计算 4 条 SLO（spec/20 §1）+ budget 消耗，markdown 输出；--strict；Prometheus recording rules `deploy/prometheus/rules.yml`（`md:up:1m` `md:availability:30d`） | `backend/cmd/slo-report/{main.go,*_test.go}` `deploy/prometheus/rules.yml` | `cd backend && go build -o /tmp/slo-report ./cmd/slo-report/ && /tmp/slo-report --window 1h --output text \| grep -E 'SLO-MD-[1-4]' \| wc -l \| grep -q '^4$' && promtool check rules deploy/prometheus/rules.yml` |
+| M10.5-1 | 🅒 `cmd/md-doctor/`：reconcile/bar-continuity/canonical-liveness/dlq-tail/all 五个子命令（spec/19）；text+json 输出；--strict | `backend/cmd/md-doctor/{main.go,reconcile.go,bar_continuity.go,canonical_liveness.go,dlq_tail.go,*_test.go}` | `cd backend && go build -o /tmp/md-doctor ./cmd/md-doctor/ && /tmp/md-doctor --help \| grep -E 'reconcile\|bar-continuity\|canonical-liveness\|dlq-tail\|all' \| wc -l \| grep -q '^5$' && /tmp/md-doctor all --window 10m --output json \| jq -e '.reconcile != null'` |
+| M10.5-2 | 🅒 `cmd/slo-report/`：从 Prometheus 拉指标计算 4 条 SLO（spec/20 §1）+ budget 消耗，markdown 输出；--strict；Prometheus recording rules `deploy/prometheus/rules.yml`（`md:up:1m` `md:availability:30d`） | `backend/cmd/slo-report/{main.go,*_test.go}` `deploy/prometheus/rules.yml` | `cd backend && go build -o /tmp/slo-report ./cmd/slo-report/ && /tmp/slo-report --window 1h --output text \| grep -E 'SLO-MD-[1-4]' \| wc -l \| grep -q '^4$' && promtool check rules deploy/prometheus/rules.yml` |
 
 ### M10.Z · 关闭
 
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
-| M10.Z-1 | ☑ 7 天稳定性 + md-doctor 全 PASS + slo-report 全绿 + ROADMAP 状态更新 + handover 报告 | `docs/handover/M10-closure.md` `docs/handover/md-doctor-{date}.json` `docs/handover/slo-report-{date}.md` | 见下方关闭清单 |
+| M10.Z-1 | 🅒 7 天稳定性 + md-doctor 全 PASS + slo-report 全绿 + ROADMAP 状态更新 + handover 报告 | `docs/handover/M10-closure.md` `docs/handover/md-doctor-{date}.json` `docs/handover/slo-report-{date}.md` | 见下方关闭清单 |
 
 ### M10.Z 关闭清单
 
