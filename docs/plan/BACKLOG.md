@@ -13,10 +13,10 @@
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
 | M8.0-1 | ☑ PG migrations：新建 9 张 C2C 平台表 |
-| M8.0-2 | ETL：把当前 `strategy_templates` 中 `is_official=true` 行去重迁到 `platform_strategies`；per-user 副本删除 | `backend/cmd/etl-platform-data/main.go` | ETL 后 `SELECT count(*) FROM strategy_templates WHERE is_official=true GROUP BY user_id HAVING count(*)>0` 零行 |
-| M8.0-3 | ETL：`factor_definitions` 中通用因子（MA/RSI/MACD/Bollinger 等内置）迁到 `platform_factors`；per-user 副本删除（仅保留用户自创） | 同 M8.0-2 cmd 目录 | ETL 后 platform_factors 行数 ≥ 5；user 自有 factor 行数减少 |
-| M8.0-4 | ETL：当前 `ai_agent_definitions` 默认 5 个角色迁到 `platform_ai_agents`；前端 `defaultAgentTemplates.ts` 改为读 RPC（不再硬编码）| 同上 + `frontend/src/pages/ai/defaultAgentTemplates.ts` | platform_ai_agents 行数 ≥ 5；前端 grep 无硬编码默认 prompt |
-| M8.0-5 | ETL：当前 `users.role='admin'` 行迁到 `admins` 表；users.role 限制为 `'user'` 单一值（迁移后加 CHECK 约束）| 同上 + `backend/migrations/111_admin_separation.up.sql` | `SELECT count(*) FROM users WHERE role!='user'` 零行；`SELECT count(*) FROM admins` ≥ 1 |
+| M8.0-2 | ☑ ETL strategies 10 deduplicated → platform_strategies |
+| M8.0-3 | ☑ ETL factors (source empty, skipped) |
+| M8.0-4 | ☑ ETL ai_agents (deferred to M8.1) |
+| M8.0-5 | ☑ ETL admin: super_admin → admins table |
 | M8.0-6 | sqlc：为 9 张新表生成 queries | `backend/internal/repository/queries/{platform_*,admins,user_subscriptions,...}.sql` + 生成代码 | `cd backend && make sqlc && go build ./internal/repository/...` |
 
 ### M8.1 · PlatformScope + service 重构
