@@ -1,3 +1,4 @@
+// V1-LEGACY: will be replaced by M7.1-7.4 cards. Do not extend; new code goes alongside.
 // Package mdgateway — gateway runner.
 // Loads mt_accounts from PG, creates gateways, connects, subscribes,
 // and assembles the full publisher+CHWriter+SpillWriter pipeline.

@@ -1,0 +1,24 @@
+=== M7.0-8 Verification Log ===
+TIMESTAMP: 2026-05-24T00:47:08Z
+
+[1] Legacy adapter deleted
+$ rm backend/internal/adapter/mt4_adapter.go mt5_adapter.go
+$ rmdir backend/internal/adapter
+$ test -d backend/internal/adapter → fails (correctly gone)
+
+[2] V1-LEGACY markers on non-test files
+$ for d in mdgateway mthub factorsvc quantengine; do
+    grep -L 'V1-LEGACY' backend/internal/$d/*.go | grep -v _test.go
+  done
+(no output = all files have marker ✓)
+
+[3] Per-directory confirmation
+mdgateway:    grep -L V1-LEGACY *.go (non-test) → OK
+mthub:        grep -L V1-LEGACY *.go (non-test) → OK
+factorsvc:    grep -L V1-LEGACY *.go (non-test) → OK
+quantengine:  grep -L V1-LEGACY *.go (non-test) → OK
+
+[4] v2 adapter intact
+$ test -d backend/internal/mdgateway/adapter → EXISTS (correct)
+
+=== ALL CHECKS PASSED ===

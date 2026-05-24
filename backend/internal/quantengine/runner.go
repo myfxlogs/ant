@@ -1,3 +1,4 @@
+// V1-LEGACY: will be replaced by M7.1-7.4 cards. Do not extend; new code goes alongside.
 // Package quantengine wires factor evaluation and strategy execution into a single process.
 // Per-strategy goroutine isolation + snapshot persistence + hot-reload.
 package quantengine

@@ -1,3 +1,4 @@
+// V1-LEGACY: will be replaced by M7.1-7.4 cards. Do not extend; new code goes alongside.
 // Package quantengine — Per-strategy runtime with goroutine isolation.
 //
 // Each strategy runs in its own goroutine with recover() protection.

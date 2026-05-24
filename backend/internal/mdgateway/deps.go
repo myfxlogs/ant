@@ -1,3 +1,4 @@
+// V1-LEGACY: will be replaced by M7.1-7.4 cards. Do not extend; new code goes alongside.
 // Package mdgateway — dependency container.
 // Provides a minimal Deps struct so mdgateway does not depend on
 // an external bootstrap package.

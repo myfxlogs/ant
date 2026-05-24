@@ -1,3 +1,4 @@
+// V1-LEGACY: will be replaced by M7.1-7.4 cards. Do not extend; new code goes alongside.
 // Package quantengine — signal-to-OMS bridge.
 //
 // Bridges strategy signals (from DSL or ONNX) to OMS order submission

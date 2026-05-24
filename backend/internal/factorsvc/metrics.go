@@ -1,3 +1,4 @@
+// V1-LEGACY: will be replaced by M7.1-7.4 cards. Do not extend; new code goes alongside.
 package factorsvc
 
 // Metrics is a stub for factor evaluation metrics.

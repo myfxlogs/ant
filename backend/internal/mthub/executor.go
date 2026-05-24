@@ -1,3 +1,4 @@
+// V1-LEGACY: will be replaced by M7.1-7.4 cards. Do not extend; new code goes alongside.
 // Package mthub — OrderExecutor implementation bridging broker adapters
 // to the mthub service. Wraps the existing oms.BrokerAdapter interface.
 package mthub
