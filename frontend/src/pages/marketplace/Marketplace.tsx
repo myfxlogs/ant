@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Card, List, Button, Space, Tag, message } from 'antd';
-import { useTranslation } from 'react-i18next';
 
 interface Strategy {
   publishId: string;
@@ -13,15 +12,13 @@ interface Strategy {
 const API = '/ant.v1.MarketplaceService';
 
 export default function MarketplacePage() {
-  const { t } = useTranslation();
   const [strategies, setStrategies] = useState<Strategy[]>([]);
   const [loading, setLoading] = useState(false);
-
-  const [userId] = useState(() => localStorage.getItem('userId') || 'default');
+  const [userId] = useState(() => localStorage.getItem('userId') || '');
 
   useEffect(() => {
-    fetchPublished();
-  }, []);
+    if (userId) fetchPublished();
+  }, [userId]);
 
   async function fetchPublished() {
     setLoading(true);
@@ -41,6 +38,7 @@ export default function MarketplacePage() {
   }
 
   async function handleSubscribe(publisherUserId: string, strategyId: string) {
+    if (!userId) { message.warning('No user ID set'); return; }
     try {
       const res = await fetch(`${API}/Subscribe`, {
         method: 'POST',
@@ -48,14 +46,39 @@ export default function MarketplacePage() {
         body: JSON.stringify({ userId, publisherUserId, strategyId, kind: 'copy_trade' }),
       });
       if (res.ok) message.success('Subscribed!');
-      else message.error('Subscribe failed');
+      else { const err = await res.json(); message.error(err.message || 'Subscribe failed'); }
     } catch {
       message.error('Network error');
     }
   }
 
+  async function handlePublish(strategyId: string) {
+    if (!userId) { message.warning('No user ID set'); return; }
+    try {
+      await fetch(`${API}/PublishStrategy`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, strategyId }),
+      });
+      message.success('Published!');
+      fetchPublished();
+    } catch {
+      message.error('Publish failed');
+    }
+  }
+
   return (
-    <Card title={t('marketplace.title', 'Strategy Marketplace')}>
+    <Card title="Strategy Marketplace" extra={
+      !userId ? (
+        <input
+          placeholder="Your User ID (UUID)"
+          onBlur={(e) => { localStorage.setItem('userId', e.target.value); window.location.reload(); }}
+          style={{ width: 280 }}
+        />
+      ) : (
+        <Tag color="green">User: {userId.slice(0, 8)}...</Tag>
+      )
+    }>
       <List
         loading={loading}
         dataSource={strategies}
@@ -63,18 +86,18 @@ export default function MarketplacePage() {
           <List.Item
             actions={[
               <Space key="actions">
-                <Tag color="blue">{s.publisherUserId === userId ? 'Yours' : 'Public'}</Tag>
-                {s.publisherUserId !== userId && (
-                  <Button size="small" type="primary" onClick={() => handleSubscribe(s.publisherUserId, s.strategyId)}>
-                    Subscribe
-                  </Button>
-                )}
+                <Button size="small" type="primary" onClick={() => handleSubscribe(s.publisherUserId, s.strategyId)}>
+                  Subscribe
+                </Button>
+                <Button size="small" onClick={() => handlePublish(s.strategyId)}>
+                  Publish
+                </Button>
               </Space>
             ]}
           >
             <List.Item.Meta
               title={s.strategyName || s.strategyId}
-              description={`by ${s.publisherUserId} | ${s.strategyId}`}
+              description={`by ${s.publisherUserId ? s.publisherUserId.slice(0, 8) : 'unknown'}... | ${s.strategyId}`}
             />
           </List.Item>
         )}

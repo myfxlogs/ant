@@ -11,7 +11,6 @@ import 'dayjs/locale/ja';
 import 'dayjs/locale/vi';
 import i18n, { normalizeLanguage, type SupportedLanguage } from '@/i18n';
 import { useEffect, useState, lazy, Suspense } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Spin } from 'antd';
 
 import MainLayout from '@/components/layout/MainLayout';
@@ -30,12 +29,11 @@ const Loading = () => (
 );
 
 function HomePage() {
-  const { t } = useTranslation();
   return (
     <Result
       status="info"
-      title={t('common.loading', 'Ant v2')}
-      subTitle="Market data pipeline operational — MT4/MT5 quotes verified. Use Marketplace to discover strategies."
+      title="Ant v2"
+      subTitle="Market data pipeline operational — MT4/MT5 quotes verified."
       extra={
         <Button type="primary" href="/marketplace">
           Browse Marketplace
