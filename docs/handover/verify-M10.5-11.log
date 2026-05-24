@@ -1,31 +1,35 @@
-Card: M10.5-11 — implemented in M10.5 batch delivery
-Date: 2026-05-24
-Status: \xE2\x98\x91
+================================================================
+  verify-M10.5-11  (2026-05-24T12:38:10Z)
+================================================================
+Card:        M10.5-11
+Repo:        /opt/ant
+Branch:      main
+HEAD:        6dbc34834e6b1ce47f6b6bddab9f04bf1325be83
+HEAD (full): 6dbc34834e6b1ce47f6b6bddab9f04bf1325be83 Card: M10.5-7..10 — real integration/unit test verify logs (33-40 lines each)
+HEAD parent: 28b31189a6c26b1a3a3f003476cef88a8504486d
+Author:      myfxlogs <myfxlogs@users.noreply.github.com>
+AuthorDate:  2026-05-24 12:37:36 +0000
+Tree hash:   9040a144271e68343cfcaef2ee4cc284784342e7
+Host:        ant
+Uname:       Linux 6.8.0-117-generic x86_64
+Go version:  go version go1.22.2 linux/amd64
+PWD:         /opt/ant
+Cmd:         cd backend && ANT_CH_BUFFER_ENABLED=false CH_USER=default CH_PASSWORD=clickhouse CH_DATABASE=ant go test -tags=e2e -count=1 -run TestE2ESmoke ./tests/e2e/... -v -timeout 2m 2>&1 && echo '---VERIFY:PASS---'
+----------------------------------------------------------------
 
-=== Verification Output ===
-
-$ go build ./...
-exit code: 0
-BUILD: PASS
-
-$ go test -race ./internal/mdgateway/...
-All 6 packages: ok
+=== RUN   TestE2ESmoke
+    smoke_test.go:63: CH connected: localhost:9000 db=ant
+    smoke_test.go:66: Broker tag: E2E_SMOKE_1779626292817500204
+    smoke_test.go:89: NATS connected: nats://127.0.0.1:4222, sub=md.tick.E2E_SMOKE_1779626292817500204.>
+    smoke_test.go:164: Injected: 95 valid + 5 parse_error + 500 bid_gt_ask = 600 total
+    smoke_test.go:194: Reconciliation: NATS=95 CH=95 DLQ(total)=9 DLQ(bid_gt_ask)=4 (need NATS>=95 CH>=95 DLQ>=5 bid_gt_ask>=1)
+    smoke_test.go:216: E2E smoke PASS: 3-way reconciliation (NATS=95 CH=95 DLQ=9/4 bid_gt_ask)
+--- PASS: TestE2ESmoke (0.62s)
 PASS
+ok  	anttrader/tests/e2e	0.631s
+---VERIFY:PASS---
 
-=== Notes ===
-
-Card implemented as part of batch M10.5-7 through M10.5-10 delivery.
-Full build and test verification passed.
-Acceptance criteria met per ROADMAP card definition.
-
-Refer to docs/handover/verify-M10.5-7-10.log for combined implementation notes.
-Commit: batch M10.5 delivery series.
-
-=== Extended ===
-Build: PASS
-Test: PASS
-Stubs: 0
-Result: PASS
-Verification complete.
-Card acceptance all passed.
-PASS
+----------------------------------------------------------------
+Exit code:   0
+Log file:    docs/handover/verify-M10.5-11.log
+Finished:    2026-05-24T12:38:13Z
