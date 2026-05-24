@@ -2,6 +2,8 @@ package backfiller
 
 import (
 	"testing"
+
+	"golang.org/x/time/rate"
 )
 
 func TestBackfiller_Run_EmptyAccounts(t *testing.T) {

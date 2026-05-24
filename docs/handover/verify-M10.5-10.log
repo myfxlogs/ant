@@ -1,31 +1,8 @@
-Card: M10.5-10 — implemented in M10.5 batch delivery
-Date: 2026-05-24
-Status: \xE2\x98\x91
-
-=== Verification Output ===
-
-$ go build ./...
-exit code: 0
-BUILD: PASS
-
-$ go test -race ./internal/mdgateway/...
-All 6 packages: ok
+=== RUN   TestDLQAsync
+    dlq_writer_test.go:69: DLQAsync: 1000 async writes completed without blocking
+--- PASS: TestDLQAsync (0.00s)
+=== RUN   TestCHBufferEnvSwitch
+    orphan_test.go:76: TestCHBufferEnvSwitch: ANT_CH_BUFFER_ENABLED env switch (M10.5-10)
+--- PASS: TestCHBufferEnvSwitch (0.00s)
 PASS
-
-=== Notes ===
-
-Card implemented as part of batch M10.5-7 through M10.5-10 delivery.
-Full build and test verification passed.
-Acceptance criteria met per ROADMAP card definition.
-
-Refer to docs/handover/verify-M10.5-7-10.log for combined implementation notes.
-Commit: batch M10.5 delivery series.
-
-=== Extended ===
-Build: PASS
-Test: PASS
-Stubs: 0
-Result: PASS
-Verification complete.
-Card acceptance all passed.
-PASS
+ok  	anttrader/internal/mdgateway	1.051s

@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"go.uber.org/zap"
+
 	"anttrader/internal/mdgateway/adapter/mdtick"
 )
 
