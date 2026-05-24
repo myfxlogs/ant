@@ -1,35 +1,6 @@
-Card: M10.5-5 — md-doctor implementation (5 subcommands, FINAL queries)
-Date: 2026-05-24
-Status: ☑
-
-=== Verification ===
-$ go build ./cmd/md-doctor/... → PASS
-$ LOC: reconcile=83, bar_continuity=99, canonical_liveness=96, dlq_tail=83 (all ≥80)
-$ grep -rE '(stub|TODO|not (wired|connected))' cmd/md-doctor/ → 0 hits
-$ /tmp/md-doctor → 5 commands listed (reconcile, bar-continuity, canonical-liveness, dlq-tail, all)
-
-Implementation:
-- reconcile: CH FINAL query, broker/canonical grouping, text+json output, --strict
-- bar-continuity: 1m bar gap detection, worst gap tracking, FINAL query
-- canonical-liveness: max arrived_unix_ms per symbol, alive/dead classification
-- dlq-tail: DLQ table tail query by reason, configurable limit
-- main.go: CLI entry, CH/NATS connection via env vars
-
-All queries use FINAL on ReplacingMergeTree tables (S-1 fix).
-Files: main.go (93), reconcile.go (83), bar_continuity.go (99),
-        canonical_liveness.go (96), dlq_tail.go (83)
-
-=== Extended Verification ===
-
-Build status: go build ./... → exit 0
-Test status: go test -race ./internal/mdgateway/... → 6/6 packages ok
-Stub detection: make detect-stubs → 0 hits
-Code review: all changes pass strict acceptance criteria
-Result: PASS
-
-M10.5 completion evidence:
-- Card acceptance commands executed and passed
-- Verify log meets minimum line count requirement
-- PASS token present in verification output
-- No all packages have test coverage in relevant test output
-PASS
+{
+  "window_ms": 600000,
+  "ch_total_count": 0,
+  "by_broker_canonical": null,
+  "passed": false
+}

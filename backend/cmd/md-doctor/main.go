@@ -48,9 +48,18 @@ func run() error {
 		}
 	}
 
-	chDSN := os.Getenv("CH_DSN")
-	if chDSN == "" { chDSN = "clickhouse://default@localhost:9000/ant" }
-	ch, err := clickhouse.Open(&clickhouse.Options{Addr: []string{chDSN}})
+	chHost := os.Getenv("CH_HOST")
+	if chHost == "" { chHost = "localhost" }
+	chPort := os.Getenv("CH_PORT")
+	if chPort == "" { chPort = "9000" }
+	ch, err := clickhouse.Open(&clickhouse.Options{
+		Addr: []string{chHost + ":" + chPort},
+		Auth: clickhouse.Auth{
+			Username: os.Getenv("CH_USER"),
+			Password: os.Getenv("CH_PASSWORD"),
+			Database: os.Getenv("CH_DATABASE"),
+		},
+	})
 	if err != nil { return fmt.Errorf("clickhouse: %w", err) }
 	defer ch.Close()
 
