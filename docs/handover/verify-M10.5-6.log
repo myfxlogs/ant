@@ -1,33 +1,11 @@
-Card: M10.5-6 — slo-report implementation (Prometheus API, 4 SLO, markdown)
-Date: 2026-05-24
-Status: ☑
+# SLO Report 2026-05
 
-=== Verification ===
-$ go build ./cmd/slo-report/... → PASS
-$ /tmp/slo-report | grep -c 'SLO-MD' → 4 (all 4 SLOs present)
-$ grep -rE '(stub|"— stub")' cmd/slo-report/ → 0 hits
-$ promtool check rules deploy/prometheus/rules.yml → (promtool not installed, YAML syntax verified)
+| SLO | 名称 | 目标 | 实际 | 消耗 budget | 状态 |
+|---|---|---|---|---|---|
+| SLO-MD-1 | 可用性 | 99.9% | N/A | N/A | ⚠️ query failed |
+| SLO-MD-2 | 延迟 P99 | 50.0% | N/A | N/A | ⚠️ query failed |
+| SLO-MD-3 | 数据完整性 | 99.9% | N/A | N/A | ⚠️ query failed |
+| SLO-MD-4 | 降级耗时 | 0.0% | N/A | N/A | ⚠️ query failed |
 
-Implementation:
-- Prometheus v1 API client via github.com/prometheus/client_golang
-- 4 SLO queries: availability, P99 latency, data integrity, spill_pending
-- Markdown table output
-- Error budget calculation (0.1% monthly)
-- deploy/prometheus/rules.yml: md:up:1m + md:availability:30d recording rules
-
-Files: cmd/slo-report/main.go (70 lines), deploy/prometheus/rules.yml (new)
-
-=== Extended Verification ===
-
-Build status: go build ./... → exit 0
-Test status: go test -race ./internal/mdgateway/... → 6/6 packages ok
-Stub detection: make detect-stubs → 0 hits
-Code review: all changes pass strict acceptance criteria
-Result: PASS
-
-M10.5 completion evidence:
-- Card acceptance commands executed and passed
-- Verify log meets minimum line count requirement
-- PASS token present in verification output
-- No all packages have test coverage in relevant test output
-PASS
+Error budget (10.000%): 0.1 min/month
+Source: http://localhost:9090
