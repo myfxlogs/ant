@@ -42,7 +42,7 @@ type SubscriptionItem struct {
 func (s *Service) Publish(ctx context.Context, userID, strategyID string) (string, error) {
 	id := uuid.New().String()
 	_, err := s.pg.Exec(ctx, `
-		INSERT INTO user_strategy_publishes (id, publisher_user_id, strategy_id, published_at)
+		INSERT INTO user_strategy_publishes (id, user_id, platform_strategy_id, published_at)
 		VALUES ($1, $2, $3, now())
 	`, id, userID, strategyID)
 	if err != nil {
@@ -77,11 +77,11 @@ func (s *Service) Unsubscribe(ctx context.Context, userID, subscriptionID string
 func (s *Service) ListPublished(ctx context.Context, userID string, limit int) ([]PublishedStrategy, error) {
 	if limit <= 0 { limit = 50 }
 	rows, err := s.pg.Query(ctx, `
-		SELECT usp.id, usp.strategy_id, COALESCE(st.name, usp.strategy_id),
-			usp.publisher_user_id, usp.published_at
+		SELECT usp.id, usp.platform_strategy_id, COALESCE(ps.name, usp.platform_strategy_id::text),
+			usp.user_id, usp.published_at
 		FROM user_strategy_publishes usp
-		LEFT JOIN strategy_templates st ON st.id::text = usp.strategy_id
-		WHERE usp.publisher_user_id = $1
+		LEFT JOIN platform_strategies ps ON ps.id::text = usp.platform_strategy_id::text
+		WHERE usp.user_id::text = $1
 		ORDER BY usp.published_at DESC
 		LIMIT $2
 	`, userID, limit)
@@ -103,7 +103,7 @@ func (s *Service) ListSubscriptions(ctx context.Context, userID string) ([]Subsc
 	rows, err := s.pg.Query(ctx, `
 		SELECT id, target_user_id, target_strategy_id, kind, active, created_at
 		FROM user_subscriptions
-		WHERE subscriber_user_id = $1 AND active = true
+		WHERE subscriber_user_id::text = $1 AND active = true
 		ORDER BY created_at DESC
 	`, userID)
 	if err != nil { return nil, err }
