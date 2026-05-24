@@ -55,7 +55,7 @@
 | ID | 内容 | 文件 | 验收 | 备注 |
 |---|---|---|---|---|
 | M7.0-1 | ☑ 备份 v1 配置；docker-compose 加 ant-clickhouse + ant-nats | `docker-compose.yml`、`.env.example`、`deploy/clickhouse/config.d/`、`deploy/nats/nats.conf` | `docker compose up -d ant-clickhouse ant-nats; docker inspect -f '{{.State.Health.Status}}' ant-clickhouse \| grep -q healthy; docker exec ant-nats nats account info \|\| true` | |
-| M7.0-2 | 🅒 `.env.example` 增加 CH/NATS 必备变量 | `.env.example` | `grep -E '^(CH_HOST\|CH_PORT\|CH_USER\|CH_PASSWORD\|CH_DATABASE\|NATS_URL)=' .env.example \| wc -l \| grep -q '^6$'` | |
+| M7.0-2 | ☑ `.env.example` 增加 CH/NATS 必备变量 | `.env.example` | `grep -E '^(CH_HOST\|CH_PORT\|CH_USER\|CH_PASSWORD\|CH_DATABASE\|NATS_URL)=' .env.example \| wc -l \| grep -q '^6$'` | |
 | M7.0-3 | 🅒 `backend/go.mod` 添加 `github.com/ClickHouse/clickhouse-go/v2` `github.com/nats-io/nats.go` `github.com/cespare/xxhash/v2` `github.com/hashicorp/golang-lru/v2` | `backend/go.mod` `backend/go.sum` | `cd backend && go mod tidy && go build ./...` | |
 | M7.0-4 | 🅒 `internal/storage/clickhouse/client.go` 包含 Connect/Ping/PrepareBatch | 同左 + `*_test.go` | `cd backend && go test ./internal/storage/clickhouse/...` | |
 | M7.0-5 | 🅒 `internal/storage/nats/client.go` 包含 Connect + JetStream + ensureStream(MD_EVENTS) | 同左 + `*_test.go` | `cd backend && go test ./internal/storage/nats/...` | |

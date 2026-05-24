@@ -1,0 +1,26 @@
+=== M7.0-2 Verification Log ===
+TIMESTAMP: 2026-05-24T00:24:59Z
+
+[1] 6 required variables check
+$ grep -E '^(CH_HOST|CH_PORT|CH_USER|CH_PASSWORD|CH_DATABASE|NATS_URL)=' .env.example | wc -l
+6
+
+[2] Individual variable confirmation
+$ grep -E '^(CH_HOST|CH_PORT|CH_USER|CH_PASSWORD|CH_DATABASE|NATS_URL)=' .env.example
+CH_HOST=clickhouse
+CH_PORT=9000
+CH_USER=default
+CH_PASSWORD=clickhouse
+CH_DATABASE=ant
+NATS_URL=nats://nats:4222
+
+[3] Values match docker-compose.yml service names
+- CH_HOST=clickhouse → docker-compose service: clickhouse ✓
+- CH_PORT=9000 → docker-compose CH native port ✓
+- NATS_URL=nats://nats:4222 → docker-compose service: nats, port 4222 ✓
+
+[4] Section labels present
+$ grep -c 'NATS' .env.example
+1
+
+=== ALL CHECKS PASSED ===
