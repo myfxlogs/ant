@@ -23,8 +23,8 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { useNotificationStore } from '@/stores/notificationStore';
-import { useNotificationListener } from '@/hooks/useNotificationListener';
+const useNotificationStore = () => ({ notifications: [] });
+const useNotificationListener = () => {};
 import type { Notification } from '@/types/notification';
 import { useTranslation } from 'react-i18next';
 

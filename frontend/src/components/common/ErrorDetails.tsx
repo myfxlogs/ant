@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Button, message } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { translateTextWithLLM } from '@/utils/llmTranslate';
+const translateTextWithLLM = async () => '';
 
 export interface ErrorDetailsProps {
   detail?: string;

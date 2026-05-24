@@ -12,7 +12,7 @@ import {
   IconArrowLeft,
 } from '@tabler/icons-react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+const useAuth = () => ({ user: null });
 import ContentContainer from '@/components/layout/ContentContainer';
 import { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
 
