@@ -14,11 +14,9 @@ const API = '/ant.v1.MarketplaceService';
 export default function MarketplacePage() {
   const [strategies, setStrategies] = useState<Strategy[]>([]);
   const [loading, setLoading] = useState(false);
-  const [userId] = useState(() => localStorage.getItem('userId') || '');
+  const userId = localStorage.getItem('userId') || '';
 
-  useEffect(() => {
-    if (userId) fetchPublished();
-  }, [userId]);
+  useEffect(() => { fetchPublished(); }, []);
 
   async function fetchPublished() {
     setLoading(true);
@@ -68,17 +66,7 @@ export default function MarketplacePage() {
   }
 
   return (
-    <Card title="Strategy Marketplace" extra={
-      !userId ? (
-        <input
-          placeholder="Your User ID (UUID)"
-          onBlur={(e) => { localStorage.setItem('userId', e.target.value); window.location.reload(); }}
-          style={{ width: 280 }}
-        />
-      ) : (
-        <Tag color="green">User: {userId.slice(0, 8)}...</Tag>
-      )
-    }>
+    <Card title="Strategy Marketplace">
       <List
         loading={loading}
         dataSource={strategies}

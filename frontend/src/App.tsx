@@ -1,5 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { ConfigProvider, Result, Button } from 'antd';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { ConfigProvider, Result, Button, Spin } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import enUS from 'antd/locale/en_US';
 import jaJP from 'antd/locale/ja_JP';
@@ -11,9 +11,9 @@ import 'dayjs/locale/ja';
 import 'dayjs/locale/vi';
 import i18n, { normalizeLanguage, type SupportedLanguage } from '@/i18n';
 import { useEffect, useState, lazy, Suspense } from 'react';
-import { Spin } from 'antd';
 
 import MainLayout from '@/components/layout/MainLayout';
+import LoginPage from '@/pages/auth/LoginPage';
 
 const MarketplacePage = lazy(() => import('@/pages/marketplace/Marketplace'));
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'));
@@ -45,6 +45,11 @@ function HomePage() {
 
 function App() {
   const [locale, setLocale] = useState<SupportedLanguage>('zh-CN');
+  const [auth, setAuth] = useState<{ token: string; userId: string } | null>(() => {
+    const token = localStorage.getItem('auth_token');
+    const userId = localStorage.getItem('userId');
+    return token && userId ? { token, userId } : null;
+  });
 
   useEffect(() => {
     const lang = normalizeLanguage(i18n.language);
@@ -52,6 +57,22 @@ function App() {
     const dl = lang === 'zh-CN' ? 'zh-cn' : lang === 'zh-TW' ? 'zh-tw' : lang;
     dayjs.locale(dl);
   }, []);
+
+  function handleLogin(token: string, userId: string) {
+    setAuth({ token, userId });
+  }
+
+  if (!auth) {
+    return (
+      <ConfigProvider locale={localeMap[locale] || enUS}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="*" element={<LoginPage onLogin={handleLogin} />} />
+          </Routes>
+        </BrowserRouter>
+      </ConfigProvider>
+    );
+  }
 
   return (
     <ConfigProvider locale={localeMap[locale] || enUS}>
@@ -63,6 +84,7 @@ function App() {
               <Route path="marketplace" element={<MarketplacePage />} />
               <Route path="admin" element={<AdminDashboard />} />
             </Route>
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
       </BrowserRouter>
