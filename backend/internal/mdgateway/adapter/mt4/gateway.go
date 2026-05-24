@@ -1,6 +1,7 @@
 package mt4
 import (
 	"context"; "fmt"; "strings"; "sync"; "time"
+	"github.com/google/uuid"
 	pb "anttrader/mt4"
 	"anttrader/internal/mdgateway"; "anttrader/internal/mdgateway/adapter/mdtick"
 	"github.com/shopspring/decimal"; "go.uber.org/zap"
@@ -23,11 +24,16 @@ func (g *Gateway) Connect(ctx context.Context) error {
 	conn, err := grpc.DialContext(ctx, gateway, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(16*1024*1024)))
 	if err != nil { return fmt.Errorf("mt4 dial: %w", err) }
 	g.mu.Lock(); g.conn=conn; g.client=pb.NewMT4Client(conn); g.connCli=pb.NewConnectionClient(conn); g.streamCli=pb.NewStreamsClient(conn); g.mu.Unlock()
-	md := metadata.New(map[string]string{"authorization":"Bearer "+g.cfg.MtapiToken})
+	sessionUUID := uuid.NewString()
+	md := metadata.New(map[string]string{"authorization":"Bearer "+g.cfg.MtapiToken, "id": sessionUUID})
 	loginCtx := metadata.NewOutgoingContext(ctx, md)
-	loginResp, err := g.connCli.Connect(loginCtx, &pb.ConnectRequest{Host: g.cfg.Server, Port: 443, User: int32(strToInt(g.cfg.Login)), Password: g.cfg.Password})
+	brokerHost := g.cfg.Server
+	if idx := strings.LastIndex(brokerHost, ":"); idx > 0 { brokerHost = brokerHost[:idx] }
+	loginResp, err := g.connCli.Connect(loginCtx, &pb.ConnectRequest{Host: brokerHost, Port: 443, User: int32(strToInt(g.cfg.Login)), Password: g.cfg.Password, Id: &sessionUUID})
 	if err != nil { g.conn.Close(); g.conn=nil; return fmt.Errorf("mt4 login: %w", err) }
-	g.mu.Lock(); g.sessionID=loginResp.GetResult(); g.mu.Unlock()
+	token := loginResp.GetResult()
+	if token == "" { g.conn.Close(); g.conn=nil; return fmt.Errorf("mt4 login: empty token") }
+	g.mu.Lock(); g.sessionID=token; g.mu.Unlock()
 	return nil
 }
 func (g *Gateway) Disconnect(ctx context.Context) error {

@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	"anttrader/internal/mdgateway"
+	mt4adapter "anttrader/internal/mdgateway/adapter/mt4"
 	mt5adapter "anttrader/internal/mdgateway/adapter/mt5"
 	"anttrader/internal/mdgateway/adapter/mdtick"
 	"anttrader/internal/secrets"
@@ -26,56 +28,62 @@ func main() {
 	if err != nil { panic(err) }
 	defer pool.Close()
 
+	// Load MT4 account (try Exness MT4 which might have different symbol setup)
 	var id, broker, login, host, port string
 	var pwEnc, tokenEnc []byte
-	err = pool.QueryRow(ctx, `
-		SELECT id, broker_company, login, broker_host,
-			COALESCE(mtapi_port, '443'),
-			password_encrypted, mtapi_token_encrypted
-		FROM mt_accounts WHERE mt_type='MT5' AND NOT is_disabled LIMIT 1`,
-	).Scan(&id, &broker, &login, &host, &port, &pwEnc, &tokenEnc)
-	if err != nil { panic(fmt.Sprintf("query: %v", err)) }
 
-	fmt.Printf("ID=%s broker=%s login=%s host=%s port=%s\n", id, broker, login, host, port)
+	// Try both accounts
+	rows, _ := pool.Query(ctx, "SELECT id, mt_type, broker_company, login, broker_host, COALESCE(mtapi_port,'443'), password_encrypted, mtapi_token_encrypted FROM mt_accounts WHERE NOT is_disabled")
+	defer rows.Close()
+	
+	for rows.Next() {
+		var mtType string
+		rows.Scan(&id, &mtType, &broker, &login, &host, &port, &pwEnc, &tokenEnc)
+		pw, _ := vault.Decrypt(ctx, secrets.PurposeMTPassword, pwEnc)
+		token, _ := vault.Decrypt(ctx, secrets.PurposeMTAPIToken, tokenEnc)
+		fmt.Printf("Account: %s type=%s broker=%s host=%s\n", login, mtType, broker, host)
+		
+		cfg := mdtick.AccountConfig{
+			AccountID: id, Broker: broker, Platform: mtType,
+			Login: login, Password: string(pw), Server: host,
+			MtapiHost: host, MtapiPort: port, MtapiToken: string(token),
+		}
+		
+		var gw mdgateway.Gateway
+		if mtType == "MT5" { gw = mt5adapter.New(cfg, log) } else { gw = mt4adapter.New(cfg, log) }
+		fmt.Println("  Connecting...")
+		if err := gw.Connect(ctx); err != nil {
+			fmt.Printf("  Connect FAILED: %v\n", err)
+			continue
+		}
+		fmt.Printf("  Connected! SessionID=%s\n", gw.SessionID())
 
-	pw, err := vault.Decrypt(ctx, secrets.PurposeMTPassword, pwEnc)
-	if err != nil { panic(fmt.Sprintf("decrypt pw: %v", err)) }
-	token, err := vault.Decrypt(ctx, secrets.PurposeMTAPIToken, tokenEnc)
-	if err != nil { panic(fmt.Sprintf("decrypt token: %v", err)) }
-
-	fmt.Printf("Password decrypted: %d bytes, Token decrypted: %d bytes\n", len(pw), len(token))
-
-	cfg := mdtick.AccountConfig{
-		AccountID: id, Broker: broker, Platform: "mt5",
-		Login: login, Password: string(pw), Server: host,
-		MtapiHost: host, MtapiPort: port, MtapiToken: string(token),
+		// Try different crypto symbols including broker-specific suffixes
+		for _, symbols := range [][]string{
+			{"BTCUSD", "ETHUSD", "XAUUSD"},
+			{"BTCUSDm", "ETHUSDm", "XAUUSDm"},
+			{"BTCUSD.pro", "BTCUSD.c"},
+		} {
+			fmt.Printf("  Trying symbols: %v\n", symbols)
+			gotTick := make(chan struct{})
+			err = gw.Subscribe(ctx, symbols, func(t *mdtick.Tick) {
+				fmt.Printf("  >> TICK: %s bid=%s ask=%s\n", t.SymbolRaw, t.Bid.String(), t.Ask.String())
+				close(gotTick)
+			})
+			if err != nil {
+				fmt.Printf("  Subscribe error: %v\n", err)
+				continue
+			}
+			select {
+			case <-gotTick:
+				fmt.Println("  GOT TICK!")
+				gw.Disconnect(ctx)
+				return
+			case <-time.After(8 * time.Second):
+				fmt.Println("  No ticks in 8s")
+			}
+		}
+		gw.Disconnect(ctx)
 	}
-
-	gw := mt5adapter.New(cfg, log)
-	fmt.Println("Connecting...")
-	if err := gw.Connect(ctx); err != nil {
-		fmt.Printf("Connect FAILED: %v\n", err)
-		return
-	}
-	fmt.Println("Connected!")
-
-	symbols := []string{"BTCUSD"}
-	fmt.Printf("Subscribing to: %v\n", symbols)
-
-	tickCount := 0
-	done := make(chan struct{})
-	err = gw.Subscribe(ctx, symbols, func(t *mdtick.Tick) {
-		tickCount++
-		fmt.Printf("[%d] %s bid=%s ask=%s\n", tickCount, t.SymbolRaw, t.Bid.String(), t.Ask.String())
-		if tickCount >= 3 { close(done) }
-	})
-	if err != nil { panic(err) }
-
-	select {
-	case <-done:
-		fmt.Printf("SUCCESS: %d ticks received\n", tickCount)
-	case <-time.After(30 * time.Second):
-		fmt.Printf("TIMEOUT: no ticks in 30s (market closed or no quotes)\n")
-	}
-	gw.Disconnect(ctx)
+	fmt.Println("Both accounts tested, no ticks received (weekend).")
 }
