@@ -45,11 +45,11 @@ func (g *Gateway) Disconnect(ctx context.Context) error {
 	g.client=nil; g.connCli=nil; g.streamCli=nil; g.sessionID=""; return nil
 }
 func (g *Gateway) Subscribe(ctx context.Context, syms []string, handler mdgateway.TickHandler) error {
-	g.mu.RLock(); sc := g.streamCli; g.mu.RUnlock()
+	g.mu.RLock(); sc := g.streamCli; sid := g.sessionID; g.mu.RUnlock()
 	if sc == nil { return fmt.Errorf("mt5: not connected") }
 	subCtx, cancel := context.WithCancel(ctx); g.mu.Lock(); g.cancelSub=cancel; g.mu.Unlock()
-	md := metadata.New(map[string]string{"authorization":"Bearer "+g.cfg.MtapiToken}); subCtx=metadata.NewOutgoingContext(subCtx, md)
-	stream, err := sc.OnQuote(subCtx, &pb.OnQuoteRequest{Id: g.sessionID})
+	md := metadata.New(map[string]string{"authorization":"Bearer "+g.cfg.MtapiToken, "id": sid}); subCtx=metadata.NewOutgoingContext(subCtx, md)
+	stream, err := sc.OnQuote(subCtx, &pb.OnQuoteRequest{Id: sid})
 	if err != nil { return fmt.Errorf("mt5 subscribe: %w", err) }
 	go func() {
 		for {
