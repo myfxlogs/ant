@@ -1,0 +1,65 @@
+=== P0-8: ROADMAP 状态回滚 ===
+Card: REMEDIATION-2026-05-26 P0-8
+Date: 2026-05-26
+Status: ☑
+
+--- Acceptance Criteria ---
+AC1: M10-BASE Phase B (B1-B6) ☑→🅒
+AC2: M10-BASE Phase E (E0) ☑→🅒
+AC3: M11-13~17 ☑→🅒
+AC4: 标注回滚原因
+AC5: grep ☑ 数量减少 ≥10 张
+
+--- Step 1: 回滚前状态 ---
+$ grep -c '☑' docs/plan/ROADMAP.md
+153
+
+--- Step 2: 回滚的卡片（共 12 张）---
+Phase B (OMS + 幂等 + Event Ledger):
+  M10-BASE-B1: OMS 状态机升级          ☑→🅒
+  M10-BASE-B2: OMS 启动对账门控        ☑→🅒
+  M10-BASE-B3: 三层幂等实现            ☑→🅒
+  M10-BASE-B4: Event-sourced ledger    ☑→🅒
+  M10-BASE-B5: Live State Cache        ☑→🅒
+  M10-BASE-B6: Tier-2 Derived + Backpressure  ☑→🅒
+
+Phase E (AI 策略多级质量门控):
+  M10-BASE-E0: Strategy Lifecycle 抽象  ☑→🅒
+
+M11-13~17:
+  M11-13: Execution Algo (TWAP/VWAP/POV)  ☑→🅒
+  M11-14: 成本基础追踪 (FIFO/LIFO/HIFO)   ☑→🅒
+  M11-15: P&L 归因三维分解               ☑→🅒
+  M11-16: 地缘合规 Gate                   ☑→🅒
+  M11-17: Trade Reporting schema          ☑→🅒
+
+--- Step 3: 回滚原因 ---
+原因: OMS/reconcile/idempotency/ledger/cache/backpressure/strategy-lifecycle
+虽代码完整但 MT5 真实 broker 回环未验证。P0-3 刚实现 MT5 PlaceOrder/
+CloseOrder/ModifyOrder/FetchSymbolParams，尚未在真实 MT5 账户上回放。
+P0-1 已删 controlplane/quantengine 死代码。
+
+--- Step 4: 回滚后状态 ---
+$ grep -c '☑' docs/plan/ROADMAP.md
+142
+
+☑ 减少: 153 → 142 = 11 张 (≥ 10 ✓)
+
+--- Step 5: 验证回滚卡片 ---
+$ grep -E 'M10-BASE-B[1-6].*🅒|M10-BASE-E0.*🅒|M11-1[3-7].*🅒' docs/plan/ROADMAP.md | wc -l
+12 (excluding note line)
+
+--- Step 6: 注解更新 ---
+Updated M10-BASE section status note:
+  "2026-05-26 P0-8 回滚：Phase B (B1-B6) + Phase E (E0) + M11-13~17 共 12 张 ☑→🅒"
+  "原因：OMS/reconcile/idempotency/ledger/cache/backpressure/strategy-lifecycle
+   虽代码完整但 MT5 真实 broker 回环未验证"
+  "P0-1 已删 controlplane/quantengine 死代码；P0-3 已修 MT5 4 个 not yet implemented stub"
+  "进度：R0 ☑ 五件套完成 → P0 8 张卡中 P0-1~P0-7 已 ☑，P0-8 当前"
+
+--- Summary ---
+AC1 (Phase B rolled back): PASS (6 cards)
+AC2 (Phase E rolled back): PASS (1 card)
+AC3 (M11-13~17 rolled back): PASS (5 cards)
+AC4 (reason annotated): PASS
+AC5 (☑ reduced 11 ≥ 10): PASS
