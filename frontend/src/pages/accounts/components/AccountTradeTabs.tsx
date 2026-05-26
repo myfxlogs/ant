@@ -162,7 +162,6 @@ export default function AccountTradeTabs({
               />
             </div>
             </Spin>
-          </div>
         ),
     },
   ];
