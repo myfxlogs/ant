@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Button, Card, Form, Input, Select, Space, Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { strategyApi, type StrategyTemplate } from '@/client/strategy';
 import { strategyAssetApi, type StrategyAsset } from '@/client/strategyAsset';
 import { showError, showSuccess } from '@/utils/message';
+import { useRpcQuery } from '@/hooks/useRpcQuery';
+import { StatusResult } from '@/components/common/StatusResult';
 import { useTranslation } from 'react-i18next';
 
 const { Text, Title } = Typography;
@@ -11,33 +13,37 @@ const { Text, Title } = Typography;
 export default function StrategyAssetPage() {
   const { t } = useTranslation();
   const [form] = Form.useForm();
-  const [templates, setTemplates] = useState<StrategyTemplate[]>([]);
-  const [assets, setAssets] = useState<StrategyAsset[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const load = async () => {
-    try {
-      const [tpls, rows] = await Promise.all([strategyApi.listTemplates(), strategyAssetApi.list()]);
-      setTemplates(tpls);
-      setAssets(rows);
-    } catch {
-      showError(t('strategy.asset.messages.loadFailed'));
-    }
-  };
+  const {
+    data: templates = [],
+    isLoading: templatesLoading,
+    error: templatesError,
+    refetch: refetchTemplates,
+  } = useRpcQuery(['strategy', 'templates'], () => strategyApi.listTemplates());
 
-  useEffect(() => { void load(); }, []);
+  const {
+    data: assets = [],
+    isLoading: assetsLoading,
+    error: assetsError,
+    refetch: refetchAssets,
+  } = useRpcQuery(['strategy', 'assets'], () => strategyAssetApi.list());
+
+  const isLoading = templatesLoading || assetsLoading;
+  const error = templatesError || assetsError;
+  const refetch = () => { refetchTemplates(); refetchAssets(); };
 
   const submit = async (values: { sourceTemplateId: string; name: string; description: string; visibility: string }) => {
-    setLoading(true);
+    setSubmitting(true);
     try {
       await strategyAssetApi.submitReview(values);
       showSuccess(t('strategy.asset.messages.submitSuccess'));
       form.resetFields();
-      await load();
+      refetch();
     } catch {
       showError(t('strategy.asset.messages.submitFailed'));
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -45,7 +51,7 @@ export default function StrategyAssetPage() {
     try {
       const res = await strategyAssetApi.clone(row.id, `${row.name} ${t('strategy.templates.copySuffix')}`);
       showSuccess(t('strategy.asset.messages.cloneSuccess', { templateId: res.templateId }));
-      await load();
+      refetch();
     } catch {
       showError(t('strategy.asset.messages.cloneFailed'));
     }
@@ -61,6 +67,11 @@ export default function StrategyAssetPage() {
     { title: t('strategy.asset.actions'), render: (_, row) => <Button size="small" onClick={() => void clone(row)}>{t('strategy.asset.cloneAsDraft')}</Button> },
   ];
 
+  const templateOptions = useMemo(
+    () => (templates as StrategyTemplate[]).map(tpl => ({ value: tpl.id, label: tpl.name || tpl.id })),
+    [templates],
+  );
+
   return (
     <div className="space-y-4">
       <div>
@@ -70,18 +81,26 @@ export default function StrategyAssetPage() {
       <Card title={t('strategy.asset.submitAsset')}>
         <Form form={form} layout="vertical" onFinish={submit} initialValues={{ visibility: 'private' }}>
           <Form.Item name="sourceTemplateId" label={t('strategy.asset.sourceTemplate')} rules={[{ required: true, message: t('strategy.asset.validation.selectTemplate') }]}>
-            <Select options={templates.map(tpl => ({ value: tpl.id, label: tpl.name || tpl.id }))} />
+            <Select options={templateOptions} loading={templatesLoading} />
           </Form.Item>
           <Form.Item name="name" label={t('strategy.asset.assetName')} rules={[{ required: true, message: t('strategy.asset.validation.enterName') }]}><Input /></Form.Item>
           <Form.Item name="description" label={t('strategy.asset.description')}><Input.TextArea rows={3} /></Form.Item>
           <Space wrap>
             <Form.Item name="visibility" label={t('strategy.asset.visibility')}><Select style={{ width: 160 }} options={[{ value: 'private', label: 'private' }, { value: 'public', label: 'public' }]} /></Form.Item>
           </Space>
-          <Form.Item><Button type="primary" htmlType="submit" loading={loading}>{t('strategy.asset.submit')}</Button></Form.Item>
+          <Form.Item><Button type="primary" htmlType="submit" loading={submitting}>{t('strategy.asset.submit')}</Button></Form.Item>
         </Form>
       </Card>
       <Card title={t('strategy.asset.assetList')}>
-        <Table rowKey="id" dataSource={assets} columns={columns} size="small" pagination={false} />
+        <StatusResult
+          loading={isLoading}
+          error={error instanceof Error ? error.message : null}
+          empty={!isLoading && !error && (assets as StrategyAsset[]).length === 0}
+          emptyText={t('strategy.asset.empty', { defaultValue: 'No strategy assets yet' })}
+          onRetry={refetch}
+        >
+          <Table rowKey="id" dataSource={assets as StrategyAsset[]} columns={columns} size="small" pagination={false} />
+        </StatusResult>
       </Card>
     </div>
   );

@@ -15,8 +15,6 @@ import {
   DeleteBacktestRunRequestSchema,
 } from '../gen/ant/v1/backtest_run_control_pb';
 
-export type { StrategySignal, BacktestMetrics } from '../gen/ant/v1/api_pb';
-
 export interface ExecuteStrategyResult {
   success: boolean;
   signal?: any;

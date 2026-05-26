@@ -1,8 +1,6 @@
 import { accountClient } from './connect';
 import { toCamelCase } from '../adapters/dataAdapter';
 
-export type { Account, BrokerCompany } from '../gen/ant/v1/api_pb';
-
 export interface ConnectAccountResult {
   success: boolean;
   message: string;
