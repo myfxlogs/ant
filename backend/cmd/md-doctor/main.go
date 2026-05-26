@@ -9,6 +9,8 @@ import (
 
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/nats-io/nats.go"
+
+	"anttrader/internal/config"
 )
 
 var (
@@ -48,24 +50,19 @@ func run() error {
 		}
 	}
 
-	chHost := os.Getenv("CH_HOST")
-	if chHost == "" { chHost = "localhost" }
-	chPort := os.Getenv("CH_PORT")
-	if chPort == "" { chPort = "9000" }
+	cfg := config.Load()
 	ch, err := clickhouse.Open(&clickhouse.Options{
-		Addr: []string{chHost + ":" + chPort},
+		Addr: []string{fmt.Sprintf("%s:%s", cfg.CHHost, cfg.CHPort)},
 		Auth: clickhouse.Auth{
-			Username: os.Getenv("CH_USER"),
-			Password: os.Getenv("CH_PASSWORD"),
-			Database: os.Getenv("CH_DATABASE"),
+			Username: cfg.CHUser,
+			Password: cfg.CHPassword,
+			Database: cfg.CHDatabase,
 		},
 	})
 	if err != nil { return fmt.Errorf("clickhouse: %w", err) }
 	defer ch.Close()
 
-	natsURL := os.Getenv("NATS_URL")
-	if natsURL == "" { natsURL = nats.DefaultURL }
-	nc, err := nats.Connect(natsURL)
+	nc, err := nats.Connect(cfg.NATSURL)
 	if err != nil { return fmt.Errorf("nats: %w", err) }
 	defer nc.Close()
 

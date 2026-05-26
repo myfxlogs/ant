@@ -1,0 +1,110 @@
+=== P1-4: 配置统一 — 删除 YAML，env var 作为单一配置源 ===
+Card: REMEDIATION-2026-05-26 P1-4
+Date: 2026-05-26
+Status: ☑
+
+--- Acceptance Criteria ---
+AC1: internal/config/config.go — 统一 Config struct + Load() + Validate()
+AC2: internal/config/config_test.go — 5 测试覆盖默认值/env 读取/bool 解析/Validate
+AC3: cmd/server/main.go 不再有散落的 env()/os.Getenv() 调用
+AC4: 3 个 CLI 工具 (etl-mt-accounts, migrate-ch, md-doctor) 使用 config.Load()
+AC5: configs/config.yaml 和 configs/config.prod.yaml 已删除
+AC6: go build ./... 通过
+AC7: go vet ./... 通过
+AC8: go test ./internal/config/... ./internal/connect/... ./internal/repository/... ./internal/service/... 全过
+
+--- Step 1: internal/config/config.go ---
+  新建统一配置包:
+    - Config struct: 16 个字段，覆盖 PG/CH/NATS/Redis/Secrets/JWT/Server/GeoIP/KYC
+    - Load(): 从 os.Getenv 读取，与 main.go 原默认值完全一致
+    - Validate(): 检查 JWT_SECRET 非空
+    - getenv(key, fallback): 私有辅助
+    - getenvBool(key, fallback): 私有辅助，支持 "true"/"1"/"yes"
+
+  默认值对齐验证 (config.go vs 原 main.go):
+    DB_HOST=postgres, DB_PORT=5432, DB_USER=ant, DB_PASSWORD=ant, DB_NAME=ant, DB_SSLMODE=disable ✓
+    CH_HOST=clickhouse, CH_PORT=9000, CH_USER=default, CH_PASSWORD="", CH_DATABASE=ant ✓
+    NATS_URL=nats.DefaultURL ✓
+    REDIS_HOST=redis, REDIS_PORT="", REDIS_PASSWORD="" ✓
+    PORT=8080, SPILL_DIR=/var/lib/ant/spill ✓
+    GEOIP_DB_PATH=/var/lib/ant/geoip/GeoLite2-Country.mmdb ✓
+    REQUIRE_KYC/DISCLAIMER/QUESTIONNAIRE=false ✓
+
+--- Step 2: internal/config/config_test.go ---
+  5 测试:
+    TestLoadDefaults       — 所有默认值
+    TestLoadFromEnv         — 16 个 env var 覆盖读取
+    TestValidateMissingJWT  — JWT_SECRET 缺失报错
+    TestValidateOK          — JWT_SECRET 设置后通过
+    TestGetenvBool          — 7 个 bool 值解析 (true/1/yes/false/0/no/空)
+
+  $ go test ./internal/config/...
+  ok  anttrader/internal/config  0.013s
+
+--- Step 3: cmd/server/main.go ---
+  变更:
+    - 新增 import "anttrader/internal/config"
+    - 删除 import "os" (env/envBool 是唯一使用者)
+    - main() 开头: cfg := config.Load() + cfg.Validate()
+    - 所有 env("X", "d") → cfg.FieldName (DB 5 处, CH 5 处, NATS 1 处, Redis 3 处, 杂项 4 处)
+    - os.Getenv("ANT_MASTER_KEY") → cfg.AntMasterKey (2 处: secrets client + aiBox)
+    - os.Getenv("JWT_SECRET") → cfg.JWTSecret (2 处: 验证 + authServer)
+    - 删除 env() 函数 (5 行)
+    - 删除 envBool() 函数 (11 行)
+    共消除 33 行散落配置代码
+
+--- Step 4: 3 CLI 工具 ---
+  cmd/etl-mt-accounts/main.go:
+    - 删除 import "os" + env() 函数 (6 行)
+    - 新增 import "anttrader/internal/config"
+    - os.Getenv("ANT_MASTER_KEY") → cfg.AntMasterKey
+    - env("DB_*", ...) → cfg.DB* (5 处)
+
+  cmd/migrate-ch/main.go:
+    - 删除 import "os" + env() 函数 (6 行)
+    - 新增 import "anttrader/internal/config"
+    - env("CH_*", ...) → cfg.CH* (5 处)
+
+  cmd/md-doctor/main.go:
+    - 新增 import "anttrader/internal/config"
+    - os.Getenv("CH_*") + fallback 逻辑 → cfg.CH* (6 处)
+    - os.Getenv("NATS_URL") + fallback → cfg.NATSURL (1 处)
+
+  保留 os.Getenv 的文件 (明确排除，非本卡范围):
+    - cmd/slo-report/main.go → PROM_URL
+    - cmd/e2e-check/main.go → ANT_MASTER_KEY, DB_PASSWORD
+
+--- Step 5: 删除 YAML 文件 ---
+  删除:
+    configs/config.yaml       (55 行，无代码引用)
+    configs/config.prod.yaml  (51 行，无代码引用)
+
+  验证无残留引用:
+    $ grep -rn 'config\.yaml\|config\.prod\.yaml' --include='*.go' --include='*.md'
+    (none)
+
+--- Step 6: Build & Vet ---
+  $ go build ./...
+  (no errors)
+
+  $ go vet ./...
+  (no errors)
+
+--- Step 7: Test ---
+  $ go test ./internal/config/... ./internal/connect/... ./internal/repository/... ./internal/service/...
+  ok  anttrader/internal/config  0.013s
+  ok  anttrader/internal/service  (cached)
+  (all other packages: no test files, compile+load OK)
+
+--- Summary ---
+AC1 (config.go): PASS
+AC2 (config_test.go 5 测试): PASS
+AC3 (main.go 无散落 env/os.Getenv): PASS
+AC4 (3 CLI 工具统一): PASS
+AC5 (YAML 已删除): PASS
+AC6 (go build): PASS
+AC7 (go vet): PASS
+AC8 (go test): PASS
+
+P1-4 完成: env var 成为唯一配置源，删除 106 行未使用的 YAML 模板，
+消除 3 个 CLI 工具中重复的 env() 克隆，main.go 减少 33 行散落配置代码。

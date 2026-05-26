@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
 	"os/signal"
 	"syscall"
 	"time"
@@ -36,6 +35,7 @@ import (
 	"anttrader/internal/service"
 	systemai "anttrader/internal/service/systemai"
 	antredis "anttrader/internal/storage/redis"
+	"anttrader/internal/config"
 
 	connectrpc "connectrpc.com/connect"
 )
@@ -44,14 +44,19 @@ func main() {
 	log, _ := zap.NewProduction()
 	defer log.Sync()
 
+	cfg := config.Load()
+	if err := cfg.Validate(); err != nil {
+		log.Fatal("invalid config", zap.Error(err))
+	}
+
 	// Connect to PostgreSQL
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
-		env("DB_USER", "ant"),
-		env("DB_PASSWORD", "ant"),
-		env("DB_HOST", "postgres"),
-		env("DB_PORT", "5432"),
-		env("DB_NAME", "ant"),
-		env("DB_SSLMODE", "disable"),
+		cfg.DBUser,
+		cfg.DBPassword,
+		cfg.DBHost,
+		cfg.DBPort,
+		cfg.DBName,
+		cfg.DBSSLMode,
 	)
 	pool, err := pgxpool.New(context.Background(), dsn)
 	if err != nil {
@@ -60,11 +65,11 @@ func main() {
 	defer pool.Close()
 
 	// Connect to ClickHouse
-	chHost := env("CH_HOST", "clickhouse")
-	chPort := env("CH_PORT", "9000")
-	chUser := env("CH_USER", "default")
-	chPass := env("CH_PASSWORD", "")
-	chDB := env("CH_DATABASE", "ant")
+	chHost := cfg.CHHost
+	chPort := cfg.CHPort
+	chUser := cfg.CHUser
+	chPass := cfg.CHPassword
+	chDB := cfg.CHDatabase
 	ch, err := clickhouse.Open(&clickhouse.Options{
 		Addr: []string{fmt.Sprintf("%s:%s", chHost, chPort)},
 		Auth: clickhouse.Auth{
@@ -82,7 +87,7 @@ func main() {
 	}
 
 	// Connect to NATS
-	natsURL := env("NATS_URL", nats.DefaultURL)
+	natsURL := cfg.NATSURL
 	nc, err := nats.Connect(natsURL)
 	if err != nil {
 		log.Fatal("nats connect failed", zap.Error(err))
@@ -91,9 +96,9 @@ func main() {
 
 	// Connect to Redis
 	redisCfg := antredis.Config{
-		Host:         env("REDIS_HOST", "redis"),
+		Host:         cfg.RedisHost,
 		Port:         6379,
-		Password:     env("REDIS_PASSWORD", ""),
+		Password:     cfg.RedisPassword,
 		DB:           0,
 		PoolSize:     10,
 		MinIdleConns: 3,
@@ -101,7 +106,7 @@ func main() {
 		DialTimeout:  5 * time.Second,
 		ReadTimeout:  3 * time.Second,
 	}
-	if p := env("REDIS_PORT", ""); p != "" {
+	if p := cfg.RedisPort; p != "" {
 		fmt.Sscanf(p, "%d", &redisCfg.Port)
 	}
 	rdb, err := antredis.Connect(context.Background(), redisCfg)
@@ -112,7 +117,7 @@ func main() {
 
 	// --- Secrets client (decrypts account passwords and mtapi tokens) ---
 	var secClient secrets.Client
-	if mk := os.Getenv("ANT_MASTER_KEY"); mk != "" {
+	if mk := cfg.AntMasterKey; mk != "" {
 		var err error
 		secClient, err = secrets.New(mk, 1)
 		if err != nil {
@@ -125,7 +130,7 @@ func main() {
 
 	// Services
 	platformSvc := service.NewPlatformService(pool)
-	jwtSecret := os.Getenv("JWT_SECRET")
+	jwtSecret := cfg.JWTSecret
 	if jwtSecret == "" {
 		log.Fatal("JWT_SECRET is required")
 	}
@@ -145,7 +150,7 @@ func main() {
 	eventStore := mthub.NewTradeEventStore(js)
 	mthubSvc := mthub.NewMtHubService(hub, eventBroker, accountBroker, snapshotBroker, idemGuard, reconcileGate, eventStore)
 	// --- mdgateway pipeline (M10 runner) ---
-	spillDir := env("SPILL_DIR", "/var/lib/ant/spill")
+	spillDir := cfg.SpillDir
 	pipelineCtx, pipelineCancel := context.WithCancel(context.Background())
 	defer pipelineCancel()
 
@@ -291,7 +296,7 @@ func main() {
 
 	aiRepo := repository.NewSystemAIConfigRepository(pool)
 	var aiBox *secretbox.Box
-	if mk := os.Getenv("ANT_MASTER_KEY"); mk != "" {
+	if mk := cfg.AntMasterKey; mk != "" {
 		aiBox = secretbox.New([]byte(mk))
 	}
 	aiSvc := systemai.NewService(aiRepo, aiBox)
@@ -341,13 +346,13 @@ func main() {
 
 	// --- M11-16 Jurisdictional Gate ---
 	jurisStore := risksvc.NewPgJurisdictionStore(pool)
-	geoipResolver := risksvc.NewMaxMindGeoIPResolver(env("GEOIP_DB_PATH", "/var/lib/ant/geoip/GeoLite2-Country.mmdb"))
+	geoipResolver := risksvc.NewMaxMindGeoIPResolver(cfg.GeoIPDBPath)
 	jurisGate := &risksvc.JurisdictionGate{
 		Store:               jurisStore,
 		GeoIP:               geoipResolver,
-		RequireKYC:          envBool("REQUIRE_KYC", false),
-		RequireDisclaimer:   envBool("REQUIRE_DISCLAIMER", false),
-		RequireQuestionnaire: envBool("REQUIRE_QUESTIONNAIRE", false),
+		RequireKYC:           cfg.RequireKYC,
+		RequireDisclaimer:    cfg.RequireDisclaimer,
+		RequireQuestionnaire: cfg.RequireQuestionnaire,
 	}
 	_ = jurisGate // wired into SignalPipeline at runtime via risksvc.KycJurisdictionRule
 
@@ -413,7 +418,7 @@ func main() {
 	// Start reconciliation loop (cancelled on shutdown)
 	go reconLoop.Start(ctx)
 
-	port := env("PORT", "8080")
+	port := cfg.Port
 	log.Info("ant v2 starting", zap.String("port", port), zap.String("ch", chHost), zap.String("nats", natsURL))
 
 	go func() {
@@ -425,19 +430,4 @@ func main() {
 	if err := server.Run(ctx, mux, port, log); err != nil {
 		log.Fatal("server failed", zap.Error(err))
 	}
-}
-
-func env(key, fallback string) string {
-	if v := os.Getenv(key); v != "" {
-		return v
-	}
-	return fallback
-}
-
-func envBool(key string, fallback bool) bool {
-	v := os.Getenv(key)
-	if v == "" {
-		return fallback
-	}
-	return v == "true" || v == "1" || v == "yes"
 }

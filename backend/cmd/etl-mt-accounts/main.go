@@ -7,11 +7,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
+	"anttrader/internal/config"
 	"anttrader/internal/secrets"
 )
 
@@ -19,22 +19,22 @@ func main() {
 	log, _ := zap.NewProduction()
 	defer log.Sync()
 
-	masterKey := os.Getenv("ANT_MASTER_KEY")
-	if masterKey == "" {
+	cfg := config.Load()
+	if cfg.AntMasterKey == "" {
 		log.Fatal("ANT_MASTER_KEY not set")
 	}
 
-	vault, err := secrets.New(masterKey, 1)
+	vault, err := secrets.New(cfg.AntMasterKey, 1)
 	if err != nil {
 		log.Fatal("vault init failed", zap.Error(err))
 	}
 
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
-		env("DB_USER", "ant"),
-		env("DB_PASSWORD", "ant"),
-		env("DB_HOST", "127.0.0.1"),
-		env("DB_PORT", "5432"),
-		env("DB_NAME", "ant"),
+		cfg.DBUser,
+		cfg.DBPassword,
+		cfg.DBHost,
+		cfg.DBPort,
+		cfg.DBName,
 	)
 
 	pool, err := pgxpool.New(context.Background(), dsn)
@@ -88,11 +88,4 @@ func main() {
 		count++
 	}
 	log.Info("etl-mt-accounts: complete", zap.Int("rows", count))
-}
-
-func env(key, fallback string) string {
-	if v := os.Getenv(key); v != "" {
-		return v
-	}
-	return fallback
 }

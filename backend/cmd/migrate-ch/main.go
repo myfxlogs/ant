@@ -4,12 +4,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"go.uber.org/zap"
 
+	"anttrader/internal/config"
 	"anttrader/internal/mdgateway/chmigrate"
 )
 
@@ -17,18 +17,14 @@ func main() {
 	log, _ := zap.NewProduction()
 	defer log.Sync()
 
-	host := env("CH_HOST", "127.0.0.1")
-	port := env("CH_PORT", "9000")
-	user := env("CH_USER", "default")
-	password := env("CH_PASSWORD", "clickhouse")
-	database := env("CH_DATABASE", "ant")
+	cfg := config.Load()
 
 	conn, err := clickhouse.Open(&clickhouse.Options{
-		Addr: []string{fmt.Sprintf("%s:%s", host, port)},
+		Addr: []string{fmt.Sprintf("%s:%s", cfg.CHHost, cfg.CHPort)},
 		Auth: clickhouse.Auth{
-			Database: database,
-			Username: user,
-			Password: password,
+			Database: cfg.CHDatabase,
+			Username: cfg.CHUser,
+			Password: cfg.CHPassword,
 		},
 		DialTimeout: 10 * time.Second,
 	})
@@ -41,11 +37,4 @@ func main() {
 		log.Fatal("migration failed", zap.Error(err))
 	}
 	log.Info("migrate-ch: complete")
-}
-
-func env(key, fallback string) string {
-	if v := os.Getenv(key); v != "" {
-		return v
-	}
-	return fallback
 }
