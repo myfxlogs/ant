@@ -1,0 +1,42 @@
+=== P1-5: AppError 加 Unwrap() 链 ===
+Card: REMEDIATION-2026-05-26 P1-5
+Date: 2026-05-26
+Status: ☑
+
+--- Acceptance Criteria ---
+AC1: AppError 实现 Unwrap() 方法 ✓
+AC2: errors.Is() 可穿透 AppError 找到内层 sentinel ✓
+AC3: errors.As() 可正确匹配 *AppError ✓
+AC4: go build ./... 通过 ✓
+AC5: go vet ./... 通过 ✓
+AC6: 5 个单元测试全过 ✓
+
+--- Change ---
+internal/pkg/errors/errors.go:
+  + func (e *AppError) Unwrap() error { return e.Err }  (3 lines)
+
+  说明: Error() 方法已正确格式化内层 error（用 %v），无需改动。
+  Unwrap() 使 errors.Is/errors.As 能穿透 AppError 到达被包装的底层 error。
+
+--- Caller audit ---
+唯一构造方: internal/service/auth_service.go (20 处 apperrors.New(code, err))
+  - 所有 20 处已正确传递底层 err，无需迁移
+  - 0 处 type assertion on *AppError
+  - 0 处 errors.Is/As on AppError (Unwrap 为未来调用方提供能力)
+  - NewWithMessage() 0 处调用（保留，API 合法）
+  - 0 处 struct literal 构造
+
+--- Test ---
+internal/pkg/errors/errors_test.go (NEW, 5 tests):
+  TestAppError_Error          — Error() with inner error
+  TestAppError_Error_Nil      — Error() without inner error
+  TestAppError_Unwrap         — errors.Is finds sentinel via Unwrap
+  TestAppError_Unwrap_Nil     — Unwrap() returns nil
+  TestAppError_Unwrap_AsType  — errors.As matches *AppError
+
+  $ go test ./internal/pkg/errors/... -v -race
+  PASS (5/5)
+
+--- Files ---
+Modified: internal/pkg/errors/errors.go     (+3 lines)
+New:      internal/pkg/errors/errors_test.go (61 lines)

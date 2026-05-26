@@ -161,6 +161,10 @@ func (e *AppError) Error() string {
 	return fmt.Sprintf("[%d] %s", e.Code, e.Message)
 }
 
+func (e *AppError) Unwrap() error {
+	return e.Err
+}
+
 func New(code int, err error) *AppError {
 	msg, ok := errorMessages[code]
 	if !ok {
