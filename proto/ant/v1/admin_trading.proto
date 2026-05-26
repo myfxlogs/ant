@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+service AdminTradingService {
+  rpc GetTradingSummary(GetTradingSummaryRequest) returns (TradingSummary);
+}
+
+message GetTradingSummaryRequest {
+  string start_date = 1;
+  string end_date = 2;
+}
+
+message TradingSummary {
+  TradingPeriod period = 1;
+  TradingOverview overview = 2;
+  TradingStats trading = 3;
+  map<string, PlatformSummary> by_platform = 4;
+}
+
+message TradingPeriod {
+  string start_date = 1;
+  string end_date = 2;
+}
+
+message TradingOverview {
+  int64 total_users = 1;
+  int64 active_users = 2;
+  int64 total_accounts = 3;
+  int64 connected_accounts = 4;
+}
+
+message TradingStats {
+  int64 total_orders = 1;
+  int64 closed_orders = 2;
+  int64 pending_orders = 3;
+  double total_volume = 4;
+  double total_profit = 5;
+  double total_loss = 6;
+  double net_profit = 7;
+}
+
+message PlatformSummary {
+  int64 accounts = 1;
+  int64 orders = 2;
+  double volume = 3;
+}

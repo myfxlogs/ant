@@ -6,6 +6,8 @@ const dashboard = {
     accountOverview: 'Account Overview',
     accountList: 'Account List',
     viewAll: 'View all',
+    streamLive: 'Live',
+    streamOffline: 'Offline',
     noAccounts: 'No accounts yet. Click "Bind Account" to get started.',
     stats: {
     totalEquity: 'Total Equity',

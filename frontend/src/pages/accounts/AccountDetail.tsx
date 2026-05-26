@@ -165,8 +165,8 @@ export default function AccountDetail() {
   // still render snapshot/account values to avoid perpetual "loading..." cards.
   const isStreamLoading = !isDataReceived && connectionState === 'connecting';
   
-  const [chartPeriod, setChartPeriod] = useState<'day' | 'week' | 'month' | 'all'>('month');
   const [chartType, setChartType] = useState<'equity' | 'balance' | 'profit'>('equity');
+  const [chartPeriod, setChartPeriod] = useState<'day' | 'week' | 'month' | 'all'>('month');
 
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
@@ -177,10 +177,26 @@ export default function AccountDetail() {
   const [monthlyAnalysisData, setMonthlyAnalysisData] = useState<unknown[]>([]);
   const [syncingHistory, setSyncingHistory] = useState(false);
   const [connecting, setConnecting] = useState(false);
+  const [disabling, setDisabling] = useState(false);
   const [historyTrades, setHistoryTrades] = useState<NonNullable<AccountRecentTradesResponse['trades']>>([]);
   const [historyTotal, setHistoryTotal] = useState(0);
   const [historyPage, setHistoryPage] = useState(1);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const historyPageSize = 10;
+
+  const loadHistory = useCallback(async (accountId: string, page: number) => {
+    setHistoryLoading(true);
+    try {
+      const tradesData = await analyticsApi.getRecentTrades(accountId, page, historyPageSize);
+      setHistoryTrades((tradesData as AccountRecentTradesResponse).trades || []);
+      setHistoryTotal((tradesData as AccountRecentTradesResponse).total || 0);
+      setHistoryPage(page);
+    } catch (_error) {
+      // History fetch errors are non-fatal; analyticsError handles the main section.
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, [historyPageSize]);
 
   const loadAllData = useCallback(async (accountId: string) => {
     setAnalyticsLoading(true);
@@ -204,7 +220,7 @@ export default function AccountDetail() {
     } finally {
       setAnalyticsLoading(false);
     }
-  }, [selectedYear]);
+  }, [selectedYear, historyPageSize]);
 
   useEffect(() => {
     if (!id) return;
@@ -324,12 +340,15 @@ export default function AccountDetail() {
         showErrorModal(t('common.operationFailed'));
       }
     } else {
+      setDisabling(true);
       try {
         await disableAccount(currentAccount.id);
-        await fetchAccount(currentAccount.id, false); // 刷新账户信息，但不显示 loading
+        await fetchAccount(currentAccount.id, false);
         showSuccessModal(t('accounts.messages.disabledSuccess'));
       } catch (_error) {
         showErrorModal(t('common.operationFailed'));
+      } finally {
+        setDisabling(false);
       }
     }
   }, [currentAccount, enableAccount, disableAccount, fetchAccount, t]);
@@ -375,9 +394,9 @@ export default function AccountDetail() {
   }, [currentAccount, t]);
 
   const menuItems: MenuProps['items'] = useMemo(() => [
-    { 
-      key: 'toggle', 
-      label: currentAccount?.isDisabled ? t('accounts.detail.actions.enableAccount') : t('accounts.detail.actions.disableAccount'), 
+    {
+      key: 'toggle',
+      label: currentAccount?.isDisabled ? t('accounts.detail.actions.enableAccount') : t('accounts.detail.actions.disableAccount'),
       icon: currentAccount?.isDisabled ? (
         enablingAccount === currentAccount.id ? (
           <Spin size="small" />
@@ -385,14 +404,25 @@ export default function AccountDetail() {
           <IconPlayerPlay size={16} stroke={1.5} />
         )
       ) : (
-        <IconPlayerPause size={16} stroke={1.5} />
-      ), 
-      onClick: handleToggleStatus 
+        disabling ? <Spin size="small" /> : <IconPlayerPause size={16} stroke={1.5} />
+      ),
+      onClick: handleToggleStatus,
+      disabled: disabling,
     },
-  ], [currentAccount?.isDisabled, currentAccount?.id, enablingAccount, handleToggleStatus, t]);
+  ], [currentAccount?.isDisabled, currentAccount?.id, enablingAccount, disabling, handleToggleStatus, t]);
 
   const { equityChartData, profitByMonthData, symbolDistributionData, dailyPnLData, hourlyData, tradeStats, riskMetrics } = useMemo(() => {
     const equityCurve = analytics?.equityCurve?.map((point) => ({ date: point.date, equity: point.equity, balance: point.balance, profit: point.profit })) || [];
+    // Client-side filter by selected period
+    const filteredEquityCurve = (() => {
+      if (chartPeriod === 'all' || equityCurve.length === 0) return equityCurve;
+      const now = new Date();
+      const cutoff = new Date();
+      if (chartPeriod === 'day') cutoff.setDate(now.getDate() - 1);
+      else if (chartPeriod === 'week') cutoff.setDate(now.getDate() - 7);
+      else if (chartPeriod === 'month') cutoff.setDate(now.getDate() - 30);
+      return equityCurve.filter((p) => new Date(p.date) >= cutoff);
+    })();
     const profitByMonth = monthlyPnL
       .map((m) => {
         const monthValue = m?.month ?? m?.monthNum ?? m?.month_num;
@@ -428,7 +458,7 @@ export default function AccountDetail() {
       }));
 
     return {
-      equityChartData: equityCurve,
+      equityChartData: filteredEquityCurve,
       profitByMonthData: profitByMonth,
       symbolDistributionData: symbolDistribution,
       dailyPnLData: dailyPnl,
@@ -446,7 +476,7 @@ export default function AccountDetail() {
       tradeStats: analytics?.tradeStats || { totalTrades: 0, winRate: 0, profitFactor: 0, averageProfit: 0, averageLoss: 0, largestWin: 0, largestLoss: 0, maxConsecutiveWins: 0, maxConsecutiveLosses: 0, averageHoldingTime: '-', netProfit: 0, totalDeposit: 0, totalWithdrawal: 0, netDeposit: 0 },
       riskMetrics: analytics?.riskMetrics || { maxDrawdownPercent: 0, sharpeRatio: 0, sortinoRatio: 0, calmarRatio: 0, volatility: 0, averageDailyReturn: 0 },
     };
-  }, [analytics, monthlyPnL]);
+  }, [analytics, monthlyPnL, chartPeriod]);
 
   const { realPositions, pendingOrders } = useMemo(() => {
     const positionsList = Array.isArray(positions) ? positions : [];
@@ -526,6 +556,7 @@ export default function AccountDetail() {
             onHistoryTradesChange={setHistoryTrades}
             onHistoryTotalChange={setHistoryTotal}
             onHistoryPageChange={setHistoryPage}
+            historyLoading={historyLoading}
           />
         </div>
 

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Button, Card, Col, Row, Statistic, Tag } from 'antd';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { Button, Card, Col, Row, Skeleton, Statistic, Tag } from 'antd';
 import { StatusResult } from '@/components/common/StatusResult';
 import {
   IconCurrencyDollar,
@@ -11,6 +11,8 @@ import {
   IconX,
   IconArrowUp,
   IconBuildingBank,
+  IconWifi,
+  IconWifiOff,
 } from '@tabler/icons-react';
 import { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
 import { useNavigate } from 'react-router-dom';
@@ -18,6 +20,7 @@ import { useAccount } from '@/hooks/useAccount';
 import { useAuthStore } from '@/stores/authStore';
 import { useTradingStore } from '@/stores/tradingStore';
 import { useAccountStore } from '@/stores/accountStore';
+import { ConnectContext } from '@/providers/connectContext';
 import type { Account } from '@/types/account';
 import { useTranslation } from 'react-i18next';
 
@@ -30,6 +33,8 @@ export default function Dashboard() {
   const userSummary = useTradingStore((state) => state.userSummary);
   const [localLoading, setLocalLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const connectCtx = useContext(ConnectContext);
+  const streamConnected = connectCtx?.isConnected ?? false;
 
   const localConnectedCount = useMemo(() => {
     return (accounts || []).filter((a) => !a.isDisabled && a.status === 'connected').length;
@@ -121,7 +126,13 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold" style={{ fontFamily: 'Poppins, sans-serif', color: '#141D22' }}>
             {t('dashboard.welcome', { name: getDisplayName() })}
           </h1>
-          <p className="mt-1" style={{ color: '#8A9AA5' }}>{t('dashboard.subtitle')}</p>
+          <p className="mt-1" style={{ color: '#8A9AA5' }}>
+            {t('dashboard.subtitle')}
+            <span className="ml-3 inline-flex items-center gap-1" style={{ fontSize: 12, color: streamConnected ? '#00A651' : '#E53935' }}>
+              {streamConnected ? <IconWifi size={14} /> : <IconWifiOff size={14} />}
+              {streamConnected ? t('dashboard.streamLive') : t('dashboard.streamOffline')}
+            </span>
+          </p>
         </div>
         <Button 
           type="primary" 
@@ -141,80 +152,90 @@ export default function Dashboard() {
         }}
       >
         <h2 className="text-lg font-semibold mb-4" style={{ color: '#141D22' }}>{t('dashboard.accountOverview')}</h2>
-        <Row gutter={[16, 16]}>
-          <Col xs={12} sm={6}>
-            <div className="stat-card group cursor-pointer">
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(212, 175, 55, 0.1)' }}>
-                  <IconCurrencyDollar size={20} stroke={1.5} color="#D4AF37" />
-                </div>
-                <IconArrowUp size={16} stroke={1.5} color="#00A651" />
-              </div>
-              <Statistic
-                title={<span style={{ color: '#8A9AA5', fontSize: '14px' }}>{t('dashboard.stats.totalEquity')}</span>}
-                value={stats.totalEquity}
-                precision={2}
-                prefix={<span style={{ color: '#8A9AA5' }}>$</span>}
-                styles={{ content: { color: '#141D22', fontSize: '24px', fontWeight: 600 } }}
-              />
-            </div>
-          </Col>
-          <Col xs={12} sm={6}>
-            <div className="stat-card group cursor-pointer">
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(0, 166, 81, 0.1)' }}>
-                  <IconChartLine size={20} stroke={1.5} color="#00A651" />
-                </div>
-              </div>
-              <Statistic
-                title={<span style={{ color: '#8A9AA5', fontSize: '14px' }}>{t('dashboard.stats.connected')}</span>}
-                value={stats.connectedCount}
-                styles={{ content: { color: '#00A651', fontSize: '24px', fontWeight: 600 } }}
-              />
-            </div>
-          </Col>
-          <Col xs={12} sm={6}>
-            <div className="stat-card group cursor-pointer">
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(90, 107, 117, 0.1)' }}>
-                  <IconUsers size={20} stroke={1.5} color="#5A6B75" />
-                </div>
-              </div>
-              <Statistic
-                title={<span style={{ color: '#8A9AA5', fontSize: '14px' }}>{t('dashboard.stats.accountCount')}</span>}
-                value={stats.accountCount}
-                styles={{ content: { color: '#141D22', fontSize: '24px', fontWeight: 600 } }}
-              />
-            </div>
-          </Col>
-          <Col xs={12} sm={6}>
-            <div className="stat-card group cursor-pointer">
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(0, 166, 81, 0.1)' }}>
-                  <IconChartLine size={20} stroke={1.5} color="#00A651" />
-                </div>
-                {stats.totalProfit >= 0 ? (
+        {localLoading ? (
+          <Row gutter={[16, 16]}>
+            {[1, 2, 3, 4].map((i) => (
+              <Col xs={12} sm={6} key={i}>
+                <Skeleton active paragraph={{ rows: 1 }} title={{ width: '60%' }} />
+              </Col>
+            ))}
+          </Row>
+        ) : (
+          <Row gutter={[16, 16]}>
+            <Col xs={12} sm={6}>
+              <div className="stat-card group cursor-pointer">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(212, 175, 55, 0.1)' }}>
+                    <IconCurrencyDollar size={20} stroke={1.5} color="#D4AF37" />
+                  </div>
                   <IconArrowUp size={16} stroke={1.5} color="#00A651" />
-                ) : (
-                  <IconArrowUp size={16} stroke={1.5} color="#E53935" style={{ transform: 'rotate(180deg)' }} />
-                )}
+                </div>
+                <Statistic
+                  title={<span style={{ color: '#8A9AA5', fontSize: '14px' }}>{t('dashboard.stats.totalEquity')}</span>}
+                  value={stats.totalEquity}
+                  precision={2}
+                  prefix={<span style={{ color: '#8A9AA5' }}>$</span>}
+                  styles={{ content: { color: '#141D22', fontSize: '24px', fontWeight: 600 } }}
+                />
               </div>
-              <Statistic
-                title={<span style={{ color: '#8A9AA5', fontSize: '14px' }}>{t('dashboard.stats.totalProfit')}</span>}
-                value={stats.totalProfit}
-                precision={2}
-                prefix={<span style={{ color: '#8A9AA5' }}>$</span>}
-                styles={{ 
-                  content: { 
-                    color: stats.totalProfit >= 0 ? '#00A651' : '#E53935',
-                    fontSize: '24px',
-                    fontWeight: 600
-                  }
-                }}
-              />
-            </div>
-          </Col>
-        </Row>
+            </Col>
+            <Col xs={12} sm={6}>
+              <div className="stat-card group cursor-pointer">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(0, 166, 81, 0.1)' }}>
+                    <IconChartLine size={20} stroke={1.5} color="#00A651" />
+                  </div>
+                </div>
+                <Statistic
+                  title={<span style={{ color: '#8A9AA5', fontSize: '14px' }}>{t('dashboard.stats.connected')}</span>}
+                  value={stats.connectedCount}
+                  styles={{ content: { color: '#00A651', fontSize: '24px', fontWeight: 600 } }}
+                />
+              </div>
+            </Col>
+            <Col xs={12} sm={6}>
+              <div className="stat-card group cursor-pointer">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(90, 107, 117, 0.1)' }}>
+                    <IconUsers size={20} stroke={1.5} color="#5A6B75" />
+                  </div>
+                </div>
+                <Statistic
+                  title={<span style={{ color: '#8A9AA5', fontSize: '14px' }}>{t('dashboard.stats.accountCount')}</span>}
+                  value={stats.accountCount}
+                  styles={{ content: { color: '#141D22', fontSize: '24px', fontWeight: 600 } }}
+                />
+              </div>
+            </Col>
+            <Col xs={12} sm={6}>
+              <div className="stat-card group cursor-pointer">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(0, 166, 81, 0.1)' }}>
+                    <IconChartLine size={20} stroke={1.5} color="#00A651" />
+                  </div>
+                  {stats.totalProfit >= 0 ? (
+                    <IconArrowUp size={16} stroke={1.5} color="#00A651" />
+                  ) : (
+                    <IconArrowUp size={16} stroke={1.5} color="#E53935" style={{ transform: 'rotate(180deg)' }} />
+                  )}
+                </div>
+                <Statistic
+                  title={<span style={{ color: '#8A9AA5', fontSize: '14px' }}>{t('dashboard.stats.totalProfit')}</span>}
+                  value={stats.totalProfit}
+                  precision={2}
+                  prefix={<span style={{ color: '#8A9AA5' }}>$</span>}
+                  styles={{
+                    content: {
+                      color: stats.totalProfit >= 0 ? '#00A651' : '#E53935',
+                      fontSize: '24px',
+                      fontWeight: 600
+                    }
+                  }}
+                />
+              </div>
+            </Col>
+          </Row>
+        )}
       </div>
 
       <Row gutter={[16, 16]}>
@@ -222,6 +243,13 @@ export default function Dashboard() {
           <Card
             title={<span style={{ color: '#141D22', fontWeight: 500 }}>{t('dashboard.accountList')}</span>}
             className="glass-card"
+            extra={
+              (accounts?.length || 0) > 4 ? (
+                <Button type="link" onClick={() => navigate('/accounts')} style={{ padding: 0 }}>
+                  {t('dashboard.viewAll')} →
+                </Button>
+              ) : null
+            }
           >
             <StatusResult
               loading={localLoading}

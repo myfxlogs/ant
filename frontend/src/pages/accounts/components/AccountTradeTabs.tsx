@@ -1,4 +1,5 @@
-import { Pagination, Tabs } from 'antd';
+import { useState } from 'react';
+import { Pagination, Spin, Tabs } from 'antd';
 import type { TabsProps } from 'antd';
 import {
   IconChartLine,
@@ -20,6 +21,7 @@ type Props = {
   onHistoryTradesChange: (trades: any[]) => void;
   onHistoryTotalChange: (total: number) => void;
   onHistoryPageChange: (page: number) => void;
+  historyLoading?: boolean;
 };
 
 export default function AccountTradeTabs({
@@ -33,8 +35,11 @@ export default function AccountTradeTabs({
   onHistoryTradesChange,
   onHistoryTotalChange,
   onHistoryPageChange,
+  historyLoading = false,
 }: Props) {
   const { t } = useTranslation();
+  const [localHistoryLoading, setLocalHistoryLoading] = useState(false);
+  const isHistoryLoading = historyLoading || localHistoryLoading;
 
   const tradeTabs: TabsProps['items'] = [
     {
@@ -114,7 +119,7 @@ export default function AccountTradeTabs({
             <p className="mt-4">{t('accounts.tradeTabs.emptyHistory')}</p>
           </div>
         ) : (
-          <div>
+          <Spin spinning={isHistoryLoading}>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -143,16 +148,20 @@ export default function AccountTradeTabs({
                 total={historyTotal}
                 onChange={(page) => {
                   if (!id) return;
+                  setLocalHistoryLoading(true);
                   analyticsApi.getRecentTrades(id, page, historyPageSize).then((data) => {
                     onHistoryTradesChange(data?.trades || []);
                     onHistoryTotalChange(data?.total || 0);
                     onHistoryPageChange(page);
+                  }).finally(() => {
+                    setLocalHistoryLoading(false);
                   });
                 }}
                 showSizeChanger={false}
                 showTotal={(total) => t('accounts.tradeTabs.pagination.total', { total })}
               />
             </div>
+            </Spin>
           </div>
         ),
     },

@@ -109,6 +109,44 @@ func (r *AdminRepository) GetTradingSummary(ctx context.Context, startDate, endD
 		WHERE DATE(close_time) BETWEEN $1 AND $2`, startDate, endDate,
 	).Scan(&summary.Trading.ClosedOrders, &summary.Trading.TotalVolume, &summary.Trading.TotalProfit)
 
+	_ = r.db.QueryRow(ctx, `
+		SELECT COALESCE(SUM(CASE WHEN profit < 0 THEN profit ELSE 0 END), 0)
+		FROM trade_records
+		WHERE DATE(close_time) BETWEEN $1 AND $2`, startDate, endDate,
+	).Scan(&summary.Trading.TotalLoss)
+
+	_ = r.db.QueryRow(ctx, `
+		SELECT COUNT(*) FROM trade_records
+		WHERE close_time IS NULL`, // pending orders
+	).Scan(&summary.Trading.PendingOrders)
+
+	_ = r.db.QueryRow(ctx, `
+		SELECT COUNT(*)
+		FROM trade_records
+		WHERE DATE(close_time) BETWEEN $1 AND $2`, startDate, endDate,
+	).Scan(&summary.Trading.TotalOrders)
+
+	summary.Trading.NetProfit = summary.Trading.TotalProfit + summary.Trading.TotalLoss
+
+	// ByPlatform breakdown
+	rows, err := r.db.Query(ctx, `
+		SELECT COALESCE(ma.platform, 'unknown'), COUNT(DISTINCT ma.id), COUNT(tr.id), COALESCE(SUM(tr.volume), 0)
+		FROM mt_accounts ma
+		LEFT JOIN trade_records tr ON tr.account_id = ma.id
+			AND DATE(tr.close_time) BETWEEN $1 AND $2
+		GROUP BY ma.platform`, startDate, endDate)
+	if err == nil {
+		defer rows.Close()
+		summary.ByPlatform = make(map[string]model.PlatformSummary)
+		for rows.Next() {
+			var platform string
+			var plat model.PlatformSummary
+			if err := rows.Scan(&platform, &plat.Accounts, &plat.Orders, &plat.Volume); err == nil {
+				summary.ByPlatform[platform] = plat
+			}
+		}
+	}
+
 	return summary, nil
 }
 

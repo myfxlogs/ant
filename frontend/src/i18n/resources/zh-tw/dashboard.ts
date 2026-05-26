@@ -6,6 +6,8 @@ const dashboard = {
     accountOverview: '帳戶總覽',
     accountList: '帳戶列表',
     viewAll: '查看全部',
+    streamLive: '即時連接',
+    streamOffline: '即時離線',
     noAccounts: '暫無帳戶，點擊右上角綁定',
     stats: {
     totalEquity: '總淨值',

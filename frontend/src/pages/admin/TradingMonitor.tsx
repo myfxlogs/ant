@@ -1,57 +1,47 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, Table, Row, Col, Statistic, DatePicker } from 'antd';
 import { IconTrendingUp, IconTrendingDown } from '@tabler/icons-react';
 import { useRpcQuery } from '@/hooks/useRpcQuery';
 import { adminApi } from '@/client/admin';
+import type { TradingSummary } from '@/client/admin';
 import { StatusResult } from '@/components/common/StatusResult';
 import { useTranslation } from 'react-i18next';
+import dayjs from 'dayjs';
 
 const { RangePicker } = DatePicker;
 
-interface PlatformData {
-  platform: string;
-  accounts?: number;
-  orders?: number;
-  volume?: number;
-}
-
-interface TradingMonitorSummary {
-  overview?: {
-    totalUsers?: number;
-    activeUsers?: number;
-    totalAccounts?: number;
-    connectedAccounts?: number;
-  };
-  trading?: {
-    totalOrders?: number;
-    closedOrders?: number;
-    totalVolume?: number;
-    netProfit?: number;
-    totalProfit?: number;
-    totalLoss?: number;
-    pendingOrders?: number;
-  };
-  byPlatform?: Record<string, PlatformData>;
+function int(v: bigint | number | undefined): number {
+  if (typeof v === 'bigint') return Number(v);
+  return v ?? 0;
 }
 
 export default function TradingMonitor() {
   const { t } = useTranslation();
 
+  const [dates, setDates] = useState<[string, string]>(() => {
+    const end = dayjs().format('YYYY-MM-DD');
+    const start = dayjs().subtract(30, 'day').format('YYYY-MM-DD');
+    return [start, end];
+  });
+
   const { data: summary, isLoading, error, refetch } = useRpcQuery(
-    ['admin', 'tradingSummary'],
-    () => adminApi.getTradingSummary() as Promise<TradingMonitorSummary>,
+    ['admin', 'tradingSummary', ...dates],
+    () => adminApi.getTradingSummary({ startDate: dates[0], endDate: dates[1] }) as Promise<TradingSummary>,
   );
 
-  const handleDateChange = (dates: [Date | null, Date | null] | null) => {
-    // Dates trigger a re-fetch of the same query. In a real implementation,
-    // the date range would be passed as query params.
-    refetch();
+  const handleDateChange = (vals: [Date | null, Date | null] | null) => {
+    if (vals?.[0] && vals?.[1]) {
+      setDates([
+        dayjs(vals[0]).format('YYYY-MM-DD'),
+        dayjs(vals[1]).format('YYYY-MM-DD'),
+      ]);
+    }
   };
 
   const platformColumns = useMemo(() => [
     { title: t('admin.trading.platform'), dataIndex: 'platform', key: 'platform' },
-    { title: t('admin.trading.accounts'), dataIndex: 'accounts', key: 'accounts' },
-    { title: t('admin.trading.orders'), dataIndex: 'orders', key: 'orders' },
+    { title: t('admin.trading.accounts'), dataIndex: 'accounts', key: 'accounts', render: (v: bigint | number) => int(v) },
+    { title: t('admin.trading.orders'), dataIndex: 'orders', key: 'orders', render: (v: bigint | number) => int(v) },
     {
       title: t('admin.trading.volume'),
       dataIndex: 'volume',
@@ -62,7 +52,12 @@ export default function TradingMonitor() {
 
   const platformData = useMemo(() =>
     summary?.byPlatform
-      ? Object.entries(summary.byPlatform).map(([platform, data]) => ({ platform, ...data }))
+      ? Object.entries(summary.byPlatform).map(([platform, data]) => ({
+          platform,
+          accounts: int(data.accounts),
+          orders: int(data.orders),
+          volume: data.volume,
+        }))
       : [],
     [summary],
   );
@@ -78,22 +73,22 @@ export default function TradingMonitor() {
         <Row gutter={[16, 16]}>
           <Col xs={12} sm={6}>
             <Card>
-              <Statistic title={t('admin.trading.totalUsers')} value={summary?.overview?.totalUsers || 0} />
+              <Statistic title={t('admin.trading.totalUsers')} value={int(summary?.overview?.totalUsers)} />
             </Card>
           </Col>
           <Col xs={12} sm={6}>
             <Card>
-              <Statistic title={t('admin.trading.activeUsers')} value={summary?.overview?.activeUsers || 0} />
+              <Statistic title={t('admin.trading.activeUsers')} value={int(summary?.overview?.activeUsers)} />
             </Card>
           </Col>
           <Col xs={12} sm={6}>
             <Card>
-              <Statistic title={t('admin.trading.totalAccounts')} value={summary?.overview?.totalAccounts || 0} />
+              <Statistic title={t('admin.trading.totalAccounts')} value={int(summary?.overview?.totalAccounts)} />
             </Card>
           </Col>
           <Col xs={12} sm={6}>
             <Card>
-              <Statistic title={t('admin.trading.connectedAccounts')} value={summary?.overview?.connectedAccounts || 0} />
+              <Statistic title={t('admin.trading.connectedAccounts')} value={int(summary?.overview?.connectedAccounts)} />
             </Card>
           </Col>
         </Row>
@@ -101,12 +96,12 @@ export default function TradingMonitor() {
         <Row gutter={[16, 16]}>
           <Col xs={12} sm={6}>
             <Card>
-              <Statistic title={t('admin.trading.totalOrders')} value={summary?.trading?.totalOrders || 0} />
+              <Statistic title={t('admin.trading.totalOrders')} value={int(summary?.trading?.totalOrders)} />
             </Card>
           </Col>
           <Col xs={12} sm={6}>
             <Card>
-              <Statistic title={t('admin.trading.closedOrders')} value={summary?.trading?.closedOrders || 0} />
+              <Statistic title={t('admin.trading.closedOrders')} value={int(summary?.trading?.closedOrders)} />
             </Card>
           </Col>
           <Col xs={12} sm={6}>
@@ -152,7 +147,7 @@ export default function TradingMonitor() {
               />
             </Col>
             <Col xs={12} sm={8}>
-              <Statistic title={t('admin.trading.pendingOrders')} value={summary?.trading?.pendingOrders || 0} />
+              <Statistic title={t('admin.trading.pendingOrders')} value={int(summary?.trading?.pendingOrders)} />
             </Col>
           </Row>
         </Card>

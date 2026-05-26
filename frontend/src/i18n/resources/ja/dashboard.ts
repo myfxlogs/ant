@@ -6,6 +6,8 @@ const dashboard = {
     accountOverview: '口座概要',
     accountList: '口座一覧',
     viewAll: 'すべて表示',
+    streamLive: 'ライブ接続',
+    streamOffline: 'オフライン',
     noAccounts: '口座がありません。右上から連携してください。',
     stats: {
       totalEquity: '有効証拠金合計',

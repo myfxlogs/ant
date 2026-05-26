@@ -6,6 +6,8 @@ const dashboard = {
     accountOverview: 'Tổng quan tài khoản',
     accountList: 'Danh sách tài khoản',
     viewAll: 'Xem tất cả',
+    streamLive: 'Kết nối trực tiếp',
+    streamOffline: 'Ngoại tuyến',
     noAccounts: 'Chưa có tài khoản. Hãy nhấn “Liên kết tài khoản”.',
     stats: {
       totalEquity: 'Tổng vốn',

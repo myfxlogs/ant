@@ -446,9 +446,11 @@ type TradingSummary struct {
 		TotalLoss     float64 `json:"total_loss"`
 		NetProfit     float64 `json:"net_profit"`
 	} `json:"trading"`
-	ByPlatform map[string]struct {
-		Accounts int64   `json:"accounts"`
-		Orders   int64   `json:"orders"`
-		Volume   float64 `json:"volume"`
-	} `json:"by_platform"`
+	ByPlatform map[string]PlatformSummary `json:"by_platform"`
+}
+
+type PlatformSummary struct {
+	Accounts int64   `json:"accounts"`
+	Orders   int64   `json:"orders"`
+	Volume   float64 `json:"volume"`
 }

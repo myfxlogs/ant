@@ -324,6 +324,10 @@ func main() {
 	mux.Handle(antv1c.NewJobServiceHandler(jobServer, connectrpc.WithInterceptors(authInterceptor)))
 	logServiceServer := connect.NewLogServiceServer(logSvc, log)
 	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, connectrpc.WithInterceptors(authInterceptor)))
+	adminRepo := repository.NewAdminRepository(pool, sqlxDB)
+	adminTradingServer := connect.NewAdminTradingServer(adminRepo, log)
+	mux.Handle(antv1c.NewAdminTradingServiceHandler(adminTradingServer, connectrpc.WithInterceptors(authInterceptor)))
+
 	strategyExperimentServer := connect.NewStrategyExperimentServer(strategyExperimentRepo, log)
 	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, connectrpc.WithInterceptors(authInterceptor)))
 	strategyAssetServer := connect.NewStrategyAssetServer(strategyAssetRepo, log)
