@@ -15,6 +15,9 @@ backend/server
 # Proto generated code — committed to repo so CI doesn't need `make proto` before build.
 # The proto-drift CI job regenerates and checks for dirty working tree.
 
+# Proto toolchain binaries (installed by `make proto-tools`)
+tools/proto-gen/bin/
+
 # Runtime
 *.pid
 *.out
