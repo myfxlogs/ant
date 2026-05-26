@@ -17,7 +17,12 @@ import (
 	"go.uber.org/zap"
 
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/connect"
+	"anttrader/internal/connect/admin"
+	"anttrader/internal/connect/ai"
+	mktplace "anttrader/internal/connect/marketplace"
+	"anttrader/internal/connect/strategy"
+	"anttrader/internal/connect/system"
+	"anttrader/internal/connect/user"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/marketplace"
 	"anttrader/internal/mdgateway"
@@ -261,22 +266,22 @@ func main() {
 	mux := http.NewServeMux()
 
 	// ConnectRPC handlers
-	authServer := connect.NewAuthServer(pool, jwtSecret, log)
+	authServer := user.NewAuthServer(pool, jwtSecret, log)
 	mux.Handle(antv1c.NewAuthServiceHandler(authServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	reconLoop := mthub.NewReconciliationLoop(hub, pool, rdb.Client(), log, reconcileGate)
 
-	mthubServer := connect.NewMtHubServer(mthubSvc, pool, log)
+	mthubServer := system.NewMtHubServer(mthubSvc, pool, log)
 	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, connectrpc.WithInterceptors(authInterceptor)))
 
-	accountServer := connect.NewAccountServer(platformSvc, log)
+	accountServer := user.NewAccountServer(platformSvc, log)
 	mux.Handle(antv1c.NewAccountServiceHandler(accountServer, connectrpc.WithInterceptors(authInterceptor)))
 
-	mktServer := connect.NewMarketServer(platformSvc, ch, nc, log)
+	mktServer := mktplace.NewMarketServer(platformSvc, ch, nc, log)
 	mux.Handle(antv1c.NewMarketServiceHandler(mktServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	mktplaceSvc := marketplace.New(pool)
-	mktplaceHandler := connect.NewMarketplaceServer(mktplaceSvc, log)
+	mktplaceHandler := mktplace.NewMarketplaceServer(mktplaceSvc, log)
 	mux.Handle(antv1c.NewMarketplaceServiceHandler(mktplaceHandler, connectrpc.WithInterceptors(authInterceptor)))
 
 	// Repos using sqlx for legacy service compatibility.
@@ -291,48 +296,48 @@ func main() {
 		aiBox = secretbox.New([]byte(mk))
 	}
 	aiSvc := systemai.NewService(aiRepo, aiBox)
-	aiServer := connect.NewAIServer(aiSvc, pool, log)
+	aiServer := ai.NewAIServer(aiSvc, pool, log)
 	mux.Handle(antv1c.NewAIServiceHandler(aiServer, connectrpc.WithInterceptors(authInterceptor)))
 
-	streamServer := connect.NewStreamServer(mthubSvc, pool, log)
+	streamServer := system.NewStreamServer(mthubSvc, pool, log)
 	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	strategySvc := service.NewStrategySvc(pool)
-	strategyServer := connect.NewStrategyServer(strategySvc, log)
+	strategyServer := strategy.NewStrategyServer(strategySvc, log)
 	mux.Handle(antv1c.NewStrategyServiceHandler(strategyServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	// Mock/stub handlers — return mock data for services not yet connected to real backends.
 	// Real: SystemAI, AIPrimary, Job, ScheduleHealth
 	// Mock: PythonStrategy, CodeAssist, BacktestTrades, EconomicData
 	// Stub: DebateV2, DebateV2Stream
-	pythonStrategyServer := connect.NewPythonStrategyServer(log)
+	pythonStrategyServer := strategy.NewPythonStrategyServer(log)
 	mux.Handle(antv1c.NewPythonStrategyServiceHandler(pythonStrategyServer, connectrpc.WithInterceptors(authInterceptor)))
-	codeAssistServer := connect.NewCodeAssistServer(log)
+	codeAssistServer := ai.NewCodeAssistServer(log)
 	mux.Handle(antv1c.NewCodeAssistServiceHandler(codeAssistServer, connectrpc.WithInterceptors(authInterceptor)))
-	systemAIServer := connect.NewSystemAIServer(aiSvc, log)
+	systemAIServer := ai.NewSystemAIServer(aiSvc, log)
 	mux.Handle(antv1c.NewSystemAIServiceHandler(systemAIServer, connectrpc.WithInterceptors(authInterceptor)))
-	aiPrimaryServer := connect.NewAIPrimaryServer(aiSvc, log)
+	aiPrimaryServer := ai.NewAIPrimaryServer(aiSvc, log)
 	mux.Handle(antv1c.NewAIPrimaryServiceHandler(aiPrimaryServer, connectrpc.WithInterceptors(authInterceptor)))
-	backtestTradesServer := connect.NewBacktestTradesServer(log)
+	backtestTradesServer := strategy.NewBacktestTradesServer(log)
 	mux.Handle(antv1c.NewBacktestTradesServiceHandler(backtestTradesServer, connectrpc.WithInterceptors(authInterceptor)))
-	economicDataServer := connect.NewEconomicDataServer(log)
+	economicDataServer := system.NewEconomicDataServer(log)
 	mux.Handle(antv1c.NewEconomicDataServiceHandler(economicDataServer, connectrpc.WithInterceptors(authInterceptor)))
-	jobServer := connect.NewJobServer(pool, log)
+	jobServer := system.NewJobServer(pool, log)
 	mux.Handle(antv1c.NewJobServiceHandler(jobServer, connectrpc.WithInterceptors(authInterceptor)))
-	logServiceServer := connect.NewLogServiceServer(logSvc, log)
+	logServiceServer := system.NewLogServiceServer(logSvc, log)
 	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, connectrpc.WithInterceptors(authInterceptor)))
 	adminRepo := repository.NewAdminRepository(pool, sqlxDB)
-	adminTradingServer := connect.NewAdminTradingServer(adminRepo, log)
+	adminTradingServer := admin.NewAdminTradingServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminTradingServiceHandler(adminTradingServer, connectrpc.WithInterceptors(authInterceptor)))
-	adminConfigServer := connect.NewAdminConfigServer(adminRepo, log)
+	adminConfigServer := admin.NewAdminConfigServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminConfigServiceHandler(adminConfigServer, connectrpc.WithInterceptors(authInterceptor)))
-	adminLogServer := connect.NewAdminLogServer(adminRepo, log)
+	adminLogServer := admin.NewAdminLogServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminLogServiceHandler(adminLogServer, connectrpc.WithInterceptors(authInterceptor)))
-	adminAccountServer := connect.NewAdminAccountServer(adminRepo, log)
+	adminAccountServer := admin.NewAdminAccountServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminAccountServiceHandler(adminAccountServer, connectrpc.WithInterceptors(authInterceptor)))
-	adminUserServer := connect.NewAdminUserServer(adminRepo, log)
+	adminUserServer := admin.NewAdminUserServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminUserServiceHandler(adminUserServer, connectrpc.WithInterceptors(authInterceptor)))
-	adminSystemServer := connect.NewAdminSystemServer(adminRepo, log)
+	adminSystemServer := admin.NewAdminSystemServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminSystemServiceHandler(adminSystemServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	// --- M11-16 Jurisdictional Gate ---
@@ -347,24 +352,24 @@ func main() {
 	}
 	_ = jurisGate // wired into SignalPipeline at runtime via risksvc.KycJurisdictionRule
 
-	adminJurisdictionServer := connect.NewAdminJurisdictionServer(adminRepo, log)
+	adminJurisdictionServer := admin.NewAdminJurisdictionServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	analyticsRepo := repository.NewAnalyticsRepository(sqlxDB)
-	analyticsServer := connect.NewAnalyticsServer(analyticsRepo, log)
+	analyticsServer := system.NewAnalyticsServer(analyticsRepo, log)
 	mux.Handle(antv1c.NewAnalyticsServiceHandler(analyticsServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	marketRegimeRepo := repository.NewMarketRegimeRepository(sqlxDB)
-	marketRegimeServer := connect.NewMarketRegimeServer(marketRegimeRepo, log)
+	marketRegimeServer := mktplace.NewMarketRegimeServer(marketRegimeRepo, log)
 	mux.Handle(antv1c.NewMarketRegimeServiceHandler(marketRegimeServer, connectrpc.WithInterceptors(authInterceptor)))
 
-	strategyExperimentServer := connect.NewStrategyExperimentServer(strategyExperimentRepo, log)
+	strategyExperimentServer := strategy.NewStrategyExperimentServer(strategyExperimentRepo, log)
 	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, connectrpc.WithInterceptors(authInterceptor)))
-	strategyAssetServer := connect.NewStrategyAssetServer(strategyAssetRepo, log)
+	strategyAssetServer := strategy.NewStrategyAssetServer(strategyAssetRepo, log)
 	mux.Handle(antv1c.NewStrategyAssetServiceHandler(strategyAssetServer, connectrpc.WithInterceptors(authInterceptor)))
-	scheduleHealthServer := connect.NewScheduleHealthServer(pool, log)
+	scheduleHealthServer := system.NewScheduleHealthServer(pool, log)
 	mux.Handle(antv1c.NewScheduleHealthServiceHandler(scheduleHealthServer, connectrpc.WithInterceptors(authInterceptor)))
-	indicatorCatalogServer := connect.NewIndicatorCatalogServer(log)
+	indicatorCatalogServer := mktplace.NewIndicatorCatalogServer(log)
 	mux.Handle(antv1c.NewIndicatorCatalogServiceHandler(indicatorCatalogServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	// Catch-all: returns CodeUnimplemented for unknown routes (frontend silently swallows).
