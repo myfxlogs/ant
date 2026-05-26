@@ -232,7 +232,11 @@ docker exec ant-clickhouse clickhouse-client --query \
 > **核心原则**：基础架构必须按正确的金融语义建设。PositionSizer 不是"更多风控规则"而是范式转换；15-state OMS 不是"更多状态"而是金融安全性；costsvc 不是"更多字段"而是回测可信度的根基。M11 架构决策提前到 M10-BASE 执行，避免 M10 建完后被 M11 拆掉重做。
 > **研读前置**（Phase B 开工前）：通读 NautilusTrader 4 个核心文件 + Lean Algorithm.Framework README（~1 工日）。具体文件清单见对标调研文档 §九 Step 1。
 > **前置**：M10.5 全部 12 张卡片 ☑
-> **状态**：M10-BASE 全部 38/38 cards ☑ 完成 — risksvc 84.0%, mthub 28.5%, oms 51.4%
+> **状态**：⚠️ **完成度声明不实**（2026-05-26 双 reviewer 审计）— 详见 `docs/audit/2026-05-26-项目真实状态-合并报告.md`
+>   - M10-BASE 38/38 ☑ + M11 5/5 ☑ 中至少 **Phase B / E / F7 + M11-13 应回 🅒**：MT5 PlaceOrder/CloseOrder/ModifyOrder 全部 `not yet implemented`、`controlplane`/`quantengine` 0 import 是死代码
+>   - 46 张 ☑ 卡片**全部缺 handover log**；`mthub 28.5%` / `oms 51.4%` 覆盖率不达 60% 也标 ☑
+>   - 修复执行计划：`docs/plan/REMEDIATION-2026-05-26.md`（R0+P0-P3 共 36 卡 / 21-33 工日）
+>   - **冻结**：本节内任何卡片再开新工之前，必须先完成 R0 五件套（防伪验收）
 
 ### M10-BASE 总览
 
