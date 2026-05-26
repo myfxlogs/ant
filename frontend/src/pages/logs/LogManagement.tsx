@@ -8,7 +8,7 @@ import type { OrderHistoryRecord } from '@/gen/ant/v1/log_order_pb';
 import type { OperationLog } from '@/gen/ant/v1/log_operation_pb';
 import { getDeviceLocale, getDeviceTimeZone } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
-import { showError } from '@/utils/message';
+import { StatusResult } from '@/components/common/StatusResult';
 import { useTranslation } from 'react-i18next';
 
 const { RangePicker } = DatePicker;
@@ -36,6 +36,7 @@ export default function LogManagement() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('connection');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -99,6 +100,7 @@ export default function LogManagement() {
 
   const fetchLogs = useCallback(async (filters?: Record<string, unknown>) => {
     setLoading(true);
+    setError(null);
     try {
       let result: { logs?: LogEntry[]; orders?: OrderHistoryRecord[]; total: number };
       
@@ -140,8 +142,8 @@ export default function LogManagement() {
           setTotal(result.total);
           break;
       }
-    } catch (error) {
-      showError(getErrorMessage(error, t('logs.loadFailed')));
+    } catch (err) {
+      setError(getErrorMessage(err, t('logs.loadFailed')));
     } finally {
       setLoading(false);
     }
@@ -471,27 +473,34 @@ export default function LogManagement() {
           className="mb-4"
         />
         {renderFilterForm()}
-        <Table
-          scroll={{ x: "max-content" }}
-          columns={
-            activeTab === 'connection' ? connectionColumns :
-            activeTab === 'execution' ? executionColumns :
-            activeTab === 'orders' ? orderColumns :
-            operationColumns
-          }
-          dataSource={filteredLogs}
-          rowKey="id"
+        <StatusResult
           loading={loading}
-          pagination={{
-            current: page,
-            pageSize,
-            total,
-            onChange: (p, ps) => {
-              setPage(p);
-              setPageSize(ps);
-            },
-          }}
-        />
+          error={error}
+          empty={!loading && !error && filteredLogs.length === 0}
+          emptyText={t('common.noData', { defaultValue: 'No logs found' })}
+          onRetry={() => fetchLogs()}
+        >
+          <Table
+            scroll={{ x: "max-content" }}
+            columns={
+              activeTab === 'connection' ? connectionColumns :
+              activeTab === 'execution' ? executionColumns :
+              activeTab === 'orders' ? orderColumns :
+              operationColumns
+            }
+            dataSource={filteredLogs}
+            rowKey="id"
+            pagination={{
+              current: page,
+              pageSize,
+              total,
+              onChange: (p, ps) => {
+                setPage(p);
+                setPageSize(ps);
+              },
+            }}
+          />
+        </StatusResult>
       </Card>
     </div>
   );

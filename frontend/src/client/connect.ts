@@ -25,6 +25,7 @@ import { AdminUserService } from "../gen/ant/v1/admin_user_pb";
 import { AdminSystemService } from "../gen/ant/v1/admin_system_pb";
 import { AnalyticsService } from "../gen/ant/v1/analytics_pb";
 import { MarketRegimeService } from "../gen/ant/v1/market_regime_pb";
+import { MarketplaceService } from "../gen/ant/v1/marketplace_service_pb";
 import { JobService } from "../gen/ant/v1/job_pb";
 import { ScheduleHealthService } from "../gen/ant/v1/schedule_health_pb";
 import { streamTransport, transport } from "./transport";
@@ -85,6 +86,7 @@ export const strategyExperimentClient = createClient(
   transport,
 );
 export const marketRegimeClient = createClient(MarketRegimeService, transport);
+export const marketplaceClient = createClient(MarketplaceService, transport);
 export const strategyAssetClient = createClient(StrategyAssetService, transport);
 export const jobClient = createClient(JobService, transport);
 export const jobStreamClient = createClient(JobService, streamTransport);
