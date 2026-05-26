@@ -22,9 +22,16 @@ import AdminLayout from '@/components/layout/AdminLayout';
 import AIAssistantLayout from '@/pages/ai/AIAssistantLayout';
 const Login = lazy(() => import('@/pages/auth/Login'));
 const Register = lazy(() => import('@/pages/auth/Register'));
+const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'));
+const TermsOfService = lazy(() => import('@/pages/legal/TermsOfService'));
+const PrivacyPolicy = lazy(() => import('@/pages/legal/PrivacyPolicy'));
 const Dashboard = lazy(() => import('@/pages/dashboard/Dashboard'));
 const AccountDetail = lazy(() => import('@/pages/accounts/AccountDetail'));
+const AccountsList = lazy(() => import('@/pages/accounts/AccountsList'));
 const BindAccount = lazy(() => import('@/pages/accounts/BindAccount'));
+const Trading = lazy(() => import('@/pages/trading/Trading'));
+const Market = lazy(() => import('@/pages/market/Market'));
+const Marketplace = lazy(() => import('@/pages/marketplace/Marketplace'));
 const Summary = lazy(() => import('@/pages/analytics/Summary'));
 const DebatePage = lazy(() => import('@/pages/ai/debate/DebatePageV2'));
 const AISettings = lazy(() => import('@/pages/ai/AISettings'));
@@ -102,6 +109,32 @@ function AppContent() {
           }
         />
         <Route
+          path="/forgot-password"
+          element={
+            <PublicRoute>
+              <PageWrapper>
+                <ForgotPassword />
+              </PageWrapper>
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/terms"
+          element={
+            <PageWrapper>
+              <TermsOfService />
+            </PageWrapper>
+          }
+        />
+        <Route
+          path="/privacy"
+          element={
+            <PageWrapper>
+              <PrivacyPolicy />
+            </PageWrapper>
+          }
+        />
+        <Route
           path="/"
           element={
             <PrivateRoute>
@@ -118,6 +151,14 @@ function AppContent() {
             }
           />
           <Route
+            path="accounts"
+            element={
+              <PageWrapper>
+                <AccountsList />
+              </PageWrapper>
+            }
+          />
+          <Route
             path="accounts/:id"
             element={
               <PageWrapper>
@@ -130,6 +171,30 @@ function AppContent() {
             element={
               <PageWrapper>
                 <BindAccount />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="trading"
+            element={
+              <PageWrapper>
+                <Trading />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="market"
+            element={
+              <PageWrapper>
+                <Market />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="marketplace"
+            element={
+              <PageWrapper>
+                <Marketplace />
               </PageWrapper>
             }
           />

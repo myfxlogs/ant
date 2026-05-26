@@ -1,0 +1,98 @@
+=== P0-5: 前端补缺失路由 ===
+Card: REMEDIATION-2026-05-26 P0-5
+Date: 2026-05-26
+Status: ☑
+
+--- Acceptance Criteria ---
+AC1: /marketplace → Marketplace.tsx (已有页面，补路由)
+AC2: /trading → Trading placeholder page
+AC3: /market → 重定向到 /marketplace
+AC4: /accounts → AccountsList placeholder page
+AC5: /forgot-password → ForgotPassword page (contact support)
+AC6: (Bonus) /terms → TermsOfService page
+AC7: (Bonus) /privacy → PrivacyPolicy page
+AC8: vite build 通过
+
+--- 新增文件 ---
+New files created:
+  frontend/src/components/common/PlaceholderPage.tsx     (reusable placeholder)
+  frontend/src/pages/accounts/AccountsList.tsx           (/accounts)
+  frontend/src/pages/auth/ForgotPassword.tsx             (/forgot-password)
+  frontend/src/pages/legal/TermsOfService.tsx            (/terms)
+  frontend/src/pages/legal/PrivacyPolicy.tsx             (/privacy)
+  frontend/src/pages/trading/Trading.tsx                 (/trading)
+  frontend/src/pages/market/Market.tsx                   (/market → redirect)
+
+--- Step 1: 断链确认 ---
+$ grep -rn 'navigate.*accounts\|to=.*forgot\|to=.*terms\|to=.*privacy\|path:.*trading\|path:.*market' frontend/src/
+Dashboard.tsx:248: navigate('/accounts')
+Dashboard.tsx:115: path: '/trading'
+Dashboard.tsx:116: path: '/market'
+Dashboard.tsx:119: path: '/trading'
+Login.tsx:138: to="/forgot-password"
+Login.tsx:181: to="/terms"
+Login.tsx:183: to="/privacy"
+
+All 7 broken links identified.
+
+--- Step 2: App.tsx diff ---
++ const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'));
++ const TermsOfService = lazy(() => import('@/pages/legal/TermsOfService'));
++ const PrivacyPolicy = lazy(() => import('@/pages/legal/PrivacyPolicy'));
++ const AccountsList = lazy(() => import('@/pages/accounts/AccountsList'));
++ const Trading = lazy(() => import('@/pages/trading/Trading'));
++ const Market = lazy(() => import('@/pages/market/Market'));
++ const Marketplace = lazy(() => import('@/pages/marketplace/Marketplace'));
+
+New public routes:
+  /forgot-password → ForgotPassword (PublicRoute wrapper)
+  /terms → TermsOfService (no auth gate)
+  /privacy → PrivacyPolicy (no auth gate)
+
+New private routes (inside MainLayout):
+  /accounts → AccountsList
+  /trading → Trading
+  /market → Market (redirects to /marketplace)
+  /marketplace → Marketplace
+
+--- Step 3: PlaceholderPage component ---
+Reusable component using antd Result + i18n. Used by:
+  AccountsList, Trading, TermsOfService, PrivacyPolicy
+
+--- Step 4: ForgotPassword page ---
+Custom page with:
+  - antd Result with MailOutlined icon
+  - "Contact administrator to reset password" message
+  - "Back to Login" button
+  - Full-screen centered layout matching app design
+
+--- Step 5: Market redirect ---
+Market.tsx: useEffect(() => navigate('/marketplace', { replace: true }))
+/minimal rerender, no flash of content
+
+--- Step 6: Vite build ---
+$ cd frontend && npx vite build
+✓ built in 50.52s
+
+All routes included in build:
+  dist/assets/App-BmxRSl2P.js  228.10 kB (includes all new lazy chunks)
+
+--- Step 7: Route coverage ---
+| Route             | Before     | After      |
+|-------------------|------------|------------|
+| /marketplace      | 404        | Marketplace|
+| /trading          | 404        | Placeholder|
+| /market           | /marketplace redirect | ✓ |
+| /accounts         | 404        | Placeholder|
+| /forgot-password  | 404        | ForgotPwd  |
+| /terms            | 404        | Placeholder|
+| /privacy          | 404        | Placeholder|
+
+--- Summary ---
+AC1 (/marketplace): PASS
+AC2 (/trading): PASS
+AC3 (/market → redirect): PASS
+AC4 (/accounts): PASS
+AC5 (/forgot-password): PASS
+AC6-7 (/terms, /privacy bonus): PASS
+AC8 (vite build): PASS
