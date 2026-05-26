@@ -12,6 +12,13 @@ import (
 	"anttrader/internal/storage/nats"
 )
 
+func skipIfNoNATS(t *testing.T) {
+	t.Helper()
+	if os.Getenv("CI") != "" && os.Getenv("NATS_URL") == "" {
+		t.Skip("skipping NATS integration test in CI without NATS service")
+	}
+}
+
 func testConfig() nats.Config {
 	url := os.Getenv("NATS_URL")
 	if url == "" {
@@ -21,6 +28,7 @@ func testConfig() nats.Config {
 }
 
 func TestConnect_Success(t *testing.T) {
+	skipIfNoNATS(t)
 	client, err := nats.Connect(context.Background(), testConfig())
 	require.NoError(t, err)
 	defer client.Close()
@@ -44,6 +52,7 @@ func TestConnect_InvalidURL(t *testing.T) {
 }
 
 func TestEnsureStream_NewStream(t *testing.T) {
+	skipIfNoNATS(t)
 	client, err := nats.Connect(context.Background(), testConfig())
 	require.NoError(t, err)
 	defer client.Close()
@@ -63,6 +72,7 @@ func TestEnsureStream_NewStream(t *testing.T) {
 }
 
 func TestEnsureStream_Idempotent(t *testing.T) {
+	skipIfNoNATS(t)
 	client, err := nats.Connect(context.Background(), testConfig())
 	require.NoError(t, err)
 	defer client.Close()
@@ -85,6 +95,7 @@ func TestEnsureStream_Idempotent(t *testing.T) {
 }
 
 func TestEnsureStream_ConfigMismatch(t *testing.T) {
+	skipIfNoNATS(t)
 	client, err := nats.Connect(context.Background(), testConfig())
 	require.NoError(t, err)
 	defer client.Close()
@@ -114,6 +125,7 @@ func TestEnsureStream_ConfigMismatch(t *testing.T) {
 }
 
 func TestEnsureAllStreams(t *testing.T) {
+	skipIfNoNATS(t)
 	client, err := nats.Connect(context.Background(), testConfig())
 	require.NoError(t, err)
 	defer client.Close()
@@ -137,6 +149,7 @@ func TestEnsureAllStreams(t *testing.T) {
 }
 
 func TestIsConnected(t *testing.T) {
+	skipIfNoNATS(t)
 	client, err := nats.Connect(context.Background(), testConfig())
 	require.NoError(t, err)
 
