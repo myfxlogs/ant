@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type TickDatasetRepository struct {
-	db *sqlx.DB
+	db *pgxpool.Pool
 }
 
 type TickDataset struct {
@@ -33,33 +33,36 @@ type TickDatasetTick struct {
 	CreatedAt time.Time `db:"created_at"`
 }
 
-func NewTickDatasetRepository(db *sqlx.DB) *TickDatasetRepository {
+func NewTickDatasetRepository(db *pgxpool.Pool) *TickDatasetRepository {
 	return &TickDatasetRepository{db: db}
 }
 
 func (r *TickDatasetRepository) Create(ctx context.Context, ds *TickDataset) (uuid.UUID, error) {
 	query := `
-		INSERT INTO tick_datasets (id, user_id, account_id, symbol, from_time, to_time, frozen, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-		RETURNING id
-	`
+			INSERT INTO tick_datasets (id, user_id, account_id, symbol, from_time, to_time, frozen, created_at, updated_at)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+			RETURNING id
+		`
 	id := ds.ID
 	if id == uuid.Nil {
 		id = uuid.New()
 	}
 	var out uuid.UUID
-	err := r.db.QueryRowxContext(ctx, query, id, ds.UserID, ds.AccountID, ds.Symbol, ds.FromTime, ds.ToTime, ds.Frozen).Scan(&out)
+	err := r.db.QueryRow(ctx, query, id, ds.UserID, ds.AccountID, ds.Symbol, ds.FromTime, ds.ToTime, ds.Frozen).Scan(&out)
 	return out, err
 }
 
 func (r *TickDatasetRepository) GetByID(ctx context.Context, id uuid.UUID) (*TickDataset, error) {
 	query := `
-		SELECT id, user_id, account_id, symbol, from_time, to_time, frozen, created_at, updated_at
-		FROM tick_datasets
-		WHERE id = $1
-	`
+			SELECT id, user_id, account_id, symbol, from_time, to_time, frozen, created_at, updated_at
+			FROM tick_datasets
+			WHERE id = $1
+		`
 	var ds TickDataset
-	if err := r.db.GetContext(ctx, &ds, query, id); err != nil {
+	err := r.db.QueryRow(ctx, query, id).Scan(
+		&ds.ID, &ds.UserID, &ds.AccountID, &ds.Symbol, &ds.FromTime, &ds.ToTime, &ds.Frozen, &ds.CreatedAt, &ds.UpdatedAt,
+	)
+	if err != nil {
 		return nil, err
 	}
 	return &ds, nil
@@ -67,7 +70,7 @@ func (r *TickDatasetRepository) GetByID(ctx context.Context, id uuid.UUID) (*Tic
 
 func (r *TickDatasetRepository) SetFrozen(ctx context.Context, id uuid.UUID, frozen bool) error {
 	query := `UPDATE tick_datasets SET frozen = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1`
-	_, err := r.db.ExecContext(ctx, query, id, frozen)
+	_, err := r.db.Exec(ctx, query, id, frozen)
 	if err != nil {
 		return fmt.Errorf("set tick dataset frozen: %w", err)
 	}
@@ -79,41 +82,56 @@ func (r *TickDatasetRepository) BatchInsertTicks(ctx context.Context, ticks []*T
 		return nil
 	}
 	query := `
-		INSERT INTO tick_dataset_ticks (dataset_id, time, bid, ask)
-		VALUES ($1,$2,$3,$4)
-		ON CONFLICT DO NOTHING
-	`
-	return withTx(ctx, r.db, func(tx *sqlx.Tx) error {
-		for _, t := range ticks {
-			if t == nil {
-				continue
-			}
-			if _, err := tx.ExecContext(ctx, query, t.DatasetID, t.Time, t.Bid, t.Ask); err != nil {
-				if err != nil {
-					return fmt.Errorf("insert tick: %w", err)
-				}
-				return nil
-			}
+			INSERT INTO tick_dataset_ticks (dataset_id, time, bid, ask)
+			VALUES ($1,$2,$3,$4)
+			ON CONFLICT DO NOTHING
+		`
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	for _, t := range ticks {
+		if t == nil {
+			continue
 		}
-		return nil
-	})
+		if _, err := tx.Exec(ctx, query, t.DatasetID, t.Time, t.Bid, t.Ask); err != nil {
+			if err != nil {
+				return fmt.Errorf("insert tick: %w", err)
+			}
+			return nil
+		}
+	}
+	return tx.Commit(ctx)
 }
 
 func (r *TickDatasetRepository) ListTicks(ctx context.Context, datasetID uuid.UUID, limit int) ([]*TickDatasetTick, error) {
 	query := `
-		SELECT dataset_id, time, bid, ask, created_at
-		FROM tick_dataset_ticks
-		WHERE dataset_id = $1
-		ORDER BY time ASC
-	`
+			SELECT dataset_id, time, bid, ask, created_at
+			FROM tick_dataset_ticks
+			WHERE dataset_id = $1
+			ORDER BY time ASC
+		`
 	args := []interface{}{datasetID}
 	if limit > 0 {
 		query += " LIMIT $2"
 		args = append(args, limit)
 	}
-	var rows []*TickDatasetTick
-	if err := r.db.SelectContext(ctx, &rows, query, args...); err != nil {
+	rows, err := r.db.Query(ctx, query, args...)
+	if err != nil {
 		return nil, err
 	}
-	return rows, nil
+	defer rows.Close()
+	var result []*TickDatasetTick
+	for rows.Next() {
+		var t TickDatasetTick
+		if err := rows.Scan(&t.DatasetID, &t.Time, &t.Bid, &t.Ask, &t.CreatedAt); err != nil {
+			return nil, err
+		}
+		result = append(result, &t)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return result, nil
 }

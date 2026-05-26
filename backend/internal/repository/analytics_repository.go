@@ -1,13 +1,13 @@
 package repository
 
 import (
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type AnalyticsRepository struct {
-	db *sqlx.DB
+	db *pgxpool.Pool
 }
 
-func NewAnalyticsRepository(db *sqlx.DB) *AnalyticsRepository {
+func NewAnalyticsRepository(db *pgxpool.Pool) *AnalyticsRepository {
 	return &AnalyticsRepository{db: db}
 }

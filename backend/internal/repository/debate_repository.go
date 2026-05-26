@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"strings"
@@ -11,23 +10,24 @@ import (
 	"anttrader/internal/model"
 
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // DebateSession represents a persisted multi-agent debate conversation.
 type DebateSession struct {
-	ID                     uuid.UUID      `db:"id" json:"id"`
-	UserID                 uuid.UUID      `db:"user_id" json:"userId"`
-	Title                  string         `db:"title" json:"title"`
-	Status                 string         `db:"status" json:"status"`
+	ID                     uuid.UUID       `db:"id" json:"id"`
+	UserID                 uuid.UUID       `db:"user_id" json:"userId"`
+	Title                  string          `db:"title" json:"title"`
+	Status                 string          `db:"status" json:"status"`
 	Agents                 model.StringArray `db:"agents" json:"agents"`
-	CurrentIntentTurnID    uuid.NullUUID  `db:"current_intent_turn_id" json:"currentIntentTurnId,omitempty"`
-	CurrentConsensusTurnID uuid.NullUUID  `db:"current_consensus_turn_id" json:"currentConsensusTurnId,omitempty"`
-	CurrentCodeTurnID      uuid.NullUUID  `db:"current_code_turn_id" json:"currentCodeTurnId,omitempty"`
-	TemplateID             sql.NullString `db:"template_id" json:"templateId,omitempty"`
-	ParamSchema            model.JSONB    `db:"param_schema" json:"paramSchema,omitempty"`
-	CreatedAt              time.Time      `db:"created_at" json:"createdAt"`
-	UpdatedAt              time.Time      `db:"updated_at" json:"updatedAt"`
+	CurrentIntentTurnID    uuid.NullUUID   `db:"current_intent_turn_id" json:"currentIntentTurnId,omitempty"`
+	CurrentConsensusTurnID uuid.NullUUID   `db:"current_consensus_turn_id" json:"currentConsensusTurnId,omitempty"`
+	CurrentCodeTurnID      uuid.NullUUID   `db:"current_code_turn_id" json:"currentCodeTurnId,omitempty"`
+	TemplateID             *string         `db:"template_id" json:"templateId,omitempty"`
+	ParamSchema            model.JSONB     `db:"param_schema" json:"paramSchema,omitempty"`
+	CreatedAt              time.Time       `db:"created_at" json:"createdAt"`
+	UpdatedAt              time.Time       `db:"updated_at" json:"updatedAt"`
 }
 
 // DebateTurn represents a single message / artifact within a debate session.
@@ -49,10 +49,10 @@ type DebateTurn struct {
 }
 
 type DebateRepository struct {
-	db *sqlx.DB
+	db *pgxpool.Pool
 }
 
-func NewDebateRepository(db *sqlx.DB) *DebateRepository {
+func NewDebateRepository(db *pgxpool.Pool) *DebateRepository {
 	return &DebateRepository{db: db}
 }
 
@@ -70,9 +70,9 @@ func (r *DebateRepository) CreateSession(ctx context.Context, userID uuid.UUID, 
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-	_, err := r.db.ExecContext(ctx,
+	_, err := r.db.Exec(ctx,
 		`INSERT INTO debate_sessions (id, user_id, title, status, agents, created_at, updated_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+			 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
 		s.ID, s.UserID, s.Title, s.Status, s.Agents, s.CreatedAt, s.UpdatedAt,
 	)
 	if err != nil {
@@ -86,36 +86,52 @@ func (r *DebateRepository) ListSessions(ctx context.Context, userID uuid.UUID, l
 	if limit <= 0 || limit > 200 {
 		limit = 50
 	}
-	var rows []DebateSession
-	err := r.db.SelectContext(ctx, &rows,
+	rows, err := r.db.Query(ctx,
 		`SELECT id, user_id, title, status, agents,
-		        current_intent_turn_id, current_consensus_turn_id, current_code_turn_id,
-		        template_id, param_schema, created_at, updated_at
-		 FROM debate_sessions
-		 WHERE user_id = $1 AND status <> 'archived'
-		 ORDER BY updated_at DESC
-		 LIMIT $2`,
+			        current_intent_turn_id, current_consensus_turn_id, current_code_turn_id,
+			        template_id, param_schema, created_at, updated_at
+			 FROM debate_sessions
+			 WHERE user_id = $1 AND status <> 'archived'
+			 ORDER BY updated_at DESC
+			 LIMIT $2`,
 		userID, limit,
 	)
 	if err != nil {
 		return nil, err
 	}
-	return rows, nil
+	defer rows.Close()
+
+	var sessions []DebateSession
+	for rows.Next() {
+		var s DebateSession
+		if err := rows.Scan(&s.ID, &s.UserID, &s.Title, &s.Status, &s.Agents,
+			&s.CurrentIntentTurnID, &s.CurrentConsensusTurnID, &s.CurrentCodeTurnID,
+			&s.TemplateID, &s.ParamSchema, &s.CreatedAt, &s.UpdatedAt); err != nil {
+			return nil, err
+		}
+		sessions = append(sessions, s)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return sessions, nil
 }
 
 // GetSession returns a single session scoped to the owner.
 func (r *DebateRepository) GetSession(ctx context.Context, id, userID uuid.UUID) (*DebateSession, error) {
 	var s DebateSession
-	err := r.db.GetContext(ctx, &s,
+	err := r.db.QueryRow(ctx,
 		`SELECT id, user_id, title, status, agents,
-		        current_intent_turn_id, current_consensus_turn_id, current_code_turn_id,
-		        template_id, param_schema, created_at, updated_at
-		 FROM debate_sessions
-		 WHERE id = $1 AND user_id = $2`,
+			        current_intent_turn_id, current_consensus_turn_id, current_code_turn_id,
+			        template_id, param_schema, created_at, updated_at
+			 FROM debate_sessions
+			 WHERE id = $1 AND user_id = $2`,
 		id, userID,
-	)
+	).Scan(&s.ID, &s.UserID, &s.Title, &s.Status, &s.Agents,
+		&s.CurrentIntentTurnID, &s.CurrentConsensusTurnID, &s.CurrentCodeTurnID,
+		&s.TemplateID, &s.ParamSchema, &s.CreatedAt, &s.UpdatedAt)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
@@ -193,7 +209,7 @@ func (r *DebateRepository) UpdateSession(ctx context.Context, id, userID uuid.UU
 	args = append(args, id, userID)
 	query := "UPDATE debate_sessions SET " + strings.Join(sets, ", ") +
 		" WHERE id = $" + itoa(idx) + " AND user_id = $" + itoa(idx+1)
-	_, err := r.db.ExecContext(ctx, query, args...)
+	_, err := r.db.Exec(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("update debate session: %w", err)
 	}
@@ -202,7 +218,7 @@ func (r *DebateRepository) UpdateSession(ctx context.Context, id, userID uuid.UU
 
 // DeleteSession removes a session (and its turns via ON DELETE CASCADE).
 func (r *DebateRepository) DeleteSession(ctx context.Context, id, userID uuid.UUID) error {
-	_, err := r.db.ExecContext(ctx,
+	_, err := r.db.Exec(ctx,
 		`DELETE FROM debate_sessions WHERE id = $1 AND user_id = $2`,
 		id, userID,
 	)
@@ -220,15 +236,15 @@ func (r *DebateRepository) AddTurn(ctx context.Context, t *DebateTurn) (*DebateT
 	if t.Status == "" {
 		t.Status = "approved"
 	}
-	_, err := r.db.ExecContext(ctx,
+	_, err := r.db.Exec(ctx,
 		`INSERT INTO debate_turns (id, session_id, parent_turn_id, type, role, status, content_text, content_json, created_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
 		t.ID, t.SessionID, t.ParentTurnID, t.Type, t.Role, t.Status, t.ContentText, nullableJSON(t.ContentJSON), t.CreatedAt,
 	)
 	if err != nil {
 		return nil, err
 	}
-	_, _ = r.db.ExecContext(ctx,
+	_, _ = r.db.Exec(ctx,
 		`UPDATE debate_sessions SET updated_at = $1 WHERE id = $2`,
 		time.Now(), t.SessionID,
 	)
@@ -237,23 +253,35 @@ func (r *DebateRepository) AddTurn(ctx context.Context, t *DebateTurn) (*DebateT
 
 // ListTurns returns all turns of a session in chronological order.
 func (r *DebateRepository) ListTurns(ctx context.Context, sessionID uuid.UUID) ([]DebateTurn, error) {
-	var rows []DebateTurn
-	err := r.db.SelectContext(ctx, &rows,
+	rows, err := r.db.Query(ctx,
 		`SELECT id, session_id, parent_turn_id, type, role, status, content_text, content_json, created_at
-		 FROM debate_turns
-		 WHERE session_id = $1
-		 ORDER BY created_at ASC, id ASC`,
+			 FROM debate_turns
+			 WHERE session_id = $1
+			 ORDER BY created_at ASC, id ASC`,
 		sessionID,
 	)
 	if err != nil {
 		return nil, err
 	}
-	return rows, nil
+	defer rows.Close()
+
+	var turns []DebateTurn
+	for rows.Next() {
+		var t DebateTurn
+		if err := rows.Scan(&t.ID, &t.SessionID, &t.ParentTurnID, &t.Type, &t.Role, &t.Status, &t.ContentText, &t.ContentJSON, &t.CreatedAt); err != nil {
+			return nil, err
+		}
+		turns = append(turns, t)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return turns, nil
 }
 
 // UpdateTurnStatus changes a single turn's status (approve/reject/supersede).
 func (r *DebateRepository) UpdateTurnStatus(ctx context.Context, id uuid.UUID, status string) error {
-	_, err := r.db.ExecContext(ctx,
+	_, err := r.db.Exec(ctx,
 		`UPDATE debate_turns SET status = $1 WHERE id = $2`,
 		status, id,
 	)

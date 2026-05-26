@@ -2,13 +2,13 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"anttrader/internal/model"
 )
@@ -19,16 +19,16 @@ var (
 )
 
 type StrategyTemplateRepository struct {
-	db *sqlx.DB
+	db *pgxpool.Pool
 }
 
-func NewStrategyTemplateRepository(db *sqlx.DB) *StrategyTemplateRepository {
+func NewStrategyTemplateRepository(db *pgxpool.Pool) *StrategyTemplateRepository {
 	return &StrategyTemplateRepository{db: db}
 }
 
 func (r *StrategyTemplateRepository) SetStatus(ctx context.Context, id uuid.UUID, status string) error {
 	query := `UPDATE strategy_templates SET status = $2, updated_at = $3 WHERE id = $1`
-	_, err := r.db.ExecContext(ctx, query, id, status, time.Now())
+	_, err := r.db.Exec(ctx, query, id, status, time.Now())
 	if err != nil {
 		return fmt.Errorf("set template status: %w", err)
 	}
@@ -49,7 +49,7 @@ func (r *StrategyTemplateRepository) Create(ctx context.Context, template *model
 	template.CreatedAt = now
 	template.UpdatedAt = now
 
-	_, err := r.db.ExecContext(ctx, query,
+	_, err := r.db.Exec(ctx, query,
 		template.ID, template.UserID, template.Name, template.Description,
 		template.Code, template.Status, template.Parameters, template.I18n,
 		template.IsPublic, template.IsSystem, template.Tags,
@@ -60,11 +60,18 @@ func (r *StrategyTemplateRepository) Create(ctx context.Context, template *model
 }
 
 func (r *StrategyTemplateRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.StrategyTemplate, error) {
-	query := `SELECT * FROM strategy_templates WHERE id = $1`
 	var template model.StrategyTemplate
-	err := r.db.GetContext(ctx, &template, query, id)
+	err := r.db.QueryRow(ctx,
+		`SELECT id, user_id, name, description, code, status, parameters, i18n, is_public, is_system, tags, use_count, created_at, updated_at
+		FROM strategy_templates WHERE id = $1`, id,
+	).Scan(
+		&template.ID, &template.UserID, &template.Name, &template.Description,
+		&template.Code, &template.Status, &template.Parameters, &template.I18n,
+		&template.IsPublic, &template.IsSystem, &template.Tags,
+		&template.UseCount, &template.CreatedAt, &template.UpdatedAt,
+	)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrTemplateNotFound
 		}
 		return nil, err
@@ -73,40 +80,84 @@ func (r *StrategyTemplateRepository) GetByID(ctx context.Context, id uuid.UUID) 
 }
 
 func (r *StrategyTemplateRepository) GetByUserID(ctx context.Context, userID uuid.UUID) ([]*model.StrategyTemplate, error) {
-	query := `SELECT * FROM strategy_templates WHERE user_id = $1 AND status <> $2 ORDER BY created_at DESC`
-	var templates []*model.StrategyTemplate
-	err := r.db.SelectContext(ctx, &templates, query, userID, model.StrategyTemplateStatusCanceled)
+	rows, err := r.db.Query(ctx,
+		`SELECT id, user_id, name, description, code, status, parameters, i18n, is_public, is_system, tags, use_count, created_at, updated_at
+		FROM strategy_templates WHERE user_id = $1 AND status <> $2 ORDER BY created_at DESC`,
+		userID, model.StrategyTemplateStatusCanceled)
 	if err != nil {
 		return nil, err
 	}
-	return templates, nil
+	defer rows.Close()
+
+	var templates []*model.StrategyTemplate
+	for rows.Next() {
+		var t model.StrategyTemplate
+		if err := rows.Scan(
+			&t.ID, &t.UserID, &t.Name, &t.Description,
+			&t.Code, &t.Status, &t.Parameters, &t.I18n,
+			&t.IsPublic, &t.IsSystem, &t.Tags,
+			&t.UseCount, &t.CreatedAt, &t.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		templates = append(templates, &t)
+	}
+	return templates, rows.Err()
 }
 
 func (r *StrategyTemplateRepository) GetPublicTemplates(ctx context.Context, limit, offset int) ([]*model.StrategyTemplate, error) {
-	query := `
-		SELECT * FROM strategy_templates 
+	rows, err := r.db.Query(ctx,
+		`SELECT id, user_id, name, description, code, status, parameters, i18n, is_public, is_system, tags, use_count, created_at, updated_at
+		FROM strategy_templates
 		WHERE is_public = true AND status = $3
-		ORDER BY use_count DESC, created_at DESC 
-		LIMIT $1 OFFSET $2`
-	var templates []*model.StrategyTemplate
-	err := r.db.SelectContext(ctx, &templates, query, limit, offset, model.StrategyTemplateStatusPublished)
+		ORDER BY use_count DESC, created_at DESC
+		LIMIT $1 OFFSET $2`, limit, offset, model.StrategyTemplateStatusPublished)
 	if err != nil {
 		return nil, err
 	}
-	return templates, nil
+	defer rows.Close()
+
+	var templates []*model.StrategyTemplate
+	for rows.Next() {
+		var t model.StrategyTemplate
+		if err := rows.Scan(
+			&t.ID, &t.UserID, &t.Name, &t.Description,
+			&t.Code, &t.Status, &t.Parameters, &t.I18n,
+			&t.IsPublic, &t.IsSystem, &t.Tags,
+			&t.UseCount, &t.CreatedAt, &t.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		templates = append(templates, &t)
+	}
+	return templates, rows.Err()
 }
 
 func (r *StrategyTemplateRepository) Search(ctx context.Context, userID uuid.UUID, keyword string) ([]*model.StrategyTemplate, error) {
-	query := `
-		SELECT * FROM strategy_templates 
+	rows, err := r.db.Query(ctx,
+		`SELECT id, user_id, name, description, code, status, parameters, i18n, is_public, is_system, tags, use_count, created_at, updated_at
+		FROM strategy_templates
 		WHERE user_id = $1 AND (name ILIKE $2 OR description ILIKE $2)
-		ORDER BY created_at DESC`
-	var templates []*model.StrategyTemplate
-	err := r.db.SelectContext(ctx, &templates, query, userID, "%"+keyword+"%")
+		ORDER BY created_at DESC`, userID, "%"+keyword+"%")
 	if err != nil {
 		return nil, err
 	}
-	return templates, nil
+	defer rows.Close()
+
+	var templates []*model.StrategyTemplate
+	for rows.Next() {
+		var t model.StrategyTemplate
+		if err := rows.Scan(
+			&t.ID, &t.UserID, &t.Name, &t.Description,
+			&t.Code, &t.Status, &t.Parameters, &t.I18n,
+			&t.IsPublic, &t.IsSystem, &t.Tags,
+			&t.UseCount, &t.CreatedAt, &t.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		templates = append(templates, &t)
+	}
+	return templates, rows.Err()
 }
 
 func (r *StrategyTemplateRepository) Update(ctx context.Context, template *model.StrategyTemplate) error {
@@ -120,7 +171,7 @@ func (r *StrategyTemplateRepository) Update(ctx context.Context, template *model
 
 	template.UpdatedAt = time.Now()
 
-	_, err := r.db.ExecContext(ctx, query,
+	_, err := r.db.Exec(ctx, query,
 		template.ID, template.Name, template.Description, template.Code, template.Status,
 		template.Parameters, template.I18n, template.IsPublic, template.Tags, template.UpdatedAt,
 	)
@@ -136,19 +187,16 @@ func (r *StrategyTemplateRepository) Delete(ctx context.Context, id uuid.UUID) e
 	// then disambiguate "not found" vs "is system" with a follow-up existence
 	// check only when nothing was deleted, to keep the happy path a single RTT.
 	query := `DELETE FROM strategy_templates WHERE id = $1 AND is_system = FALSE`
-	result, err := r.db.ExecContext(ctx, query, id)
+	ct, err := r.db.Exec(ctx, query, id)
 	if err != nil {
 		return fmt.Errorf("delete template: %w", err)
 	}
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("delete template: %w", err)
-	}
-	if rows == 0 {
+	if ct.RowsAffected() == 0 {
 		var isSystem bool
-		if err2 := r.db.GetContext(ctx, &isSystem,
-			`SELECT is_system FROM strategy_templates WHERE id = $1`, id); err2 != nil {
-			if errors.Is(err2, sql.ErrNoRows) {
+		err2 := r.db.QueryRow(ctx,
+			`SELECT is_system FROM strategy_templates WHERE id = $1`, id).Scan(&isSystem)
+		if err2 != nil {
+			if errors.Is(err2, pgx.ErrNoRows) {
 				return ErrTemplateNotFound
 			}
 			return err2
@@ -163,7 +211,7 @@ func (r *StrategyTemplateRepository) Delete(ctx context.Context, id uuid.UUID) e
 
 func (r *StrategyTemplateRepository) IncrementUseCount(ctx context.Context, id uuid.UUID) error {
 	query := `UPDATE strategy_templates SET use_count = use_count + 1 WHERE id = $1`
-	_, err := r.db.ExecContext(ctx, query, id)
+	_, err := r.db.Exec(ctx, query, id)
 	if err != nil {
 		return fmt.Errorf("increment use count: %w", err)
 	}
@@ -173,6 +221,6 @@ func (r *StrategyTemplateRepository) IncrementUseCount(ctx context.Context, id u
 func (r *StrategyTemplateRepository) CountByUserID(ctx context.Context, userID uuid.UUID) (int, error) {
 	query := `SELECT COUNT(*) FROM strategy_templates WHERE user_id = $1`
 	var count int
-	err := r.db.GetContext(ctx, &count, query, userID)
+	err := r.db.QueryRow(ctx, query, userID).Scan(&count)
 	return count, err
 }

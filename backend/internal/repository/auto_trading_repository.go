@@ -2,13 +2,13 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"anttrader/internal/model"
 )
@@ -21,21 +21,21 @@ var (
 )
 
 type AutoTradingRepository struct {
-	db *sqlx.DB
+	db *pgxpool.Pool
 }
 
-func NewAutoTradingRepository(db *sqlx.DB) *AutoTradingRepository {
+func NewAutoTradingRepository(db *pgxpool.Pool) *AutoTradingRepository {
 	return &AutoTradingRepository{db: db}
 }
 
 func (r *AutoTradingRepository) CreateSchedule(ctx context.Context, schedule *model.StrategyScheduleLegacy) error {
 	query := `
-		INSERT INTO strategy_schedules (
-			id, user_id, template_id, account_id, name, symbol, timeframe,
-			parameters, schedule_type, schedule_config,
-			is_active, last_run_at, next_run_at, last_error, run_count,
-			created_at, updated_at
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`
+			INSERT INTO strategy_schedules (
+				id, user_id, template_id, account_id, name, symbol, timeframe,
+				parameters, schedule_type, schedule_config,
+				is_active, last_run_at, next_run_at, last_error, run_count,
+				created_at, updated_at
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`
 
 	now := time.Now()
 	if schedule.ID == uuid.Nil {
@@ -44,7 +44,7 @@ func (r *AutoTradingRepository) CreateSchedule(ctx context.Context, schedule *mo
 	schedule.CreatedAt = now
 	schedule.UpdatedAt = now
 
-	_, err := r.db.ExecContext(ctx, query,
+	_, err := r.db.Exec(ctx, query,
 		schedule.ID, schedule.UserID, schedule.TemplateID, schedule.AccountID, schedule.Name, schedule.Symbol, schedule.Timeframe,
 		schedule.Parameters, schedule.ScheduleType, schedule.ScheduleConfig,
 		schedule.IsActive, schedule.LastRunAt, schedule.NextRunAt,
@@ -57,11 +57,16 @@ func (r *AutoTradingRepository) CreateSchedule(ctx context.Context, schedule *mo
 }
 
 func (r *AutoTradingRepository) GetScheduleByID(ctx context.Context, id uuid.UUID) (*model.StrategyScheduleLegacy, error) {
-	query := `SELECT * FROM strategy_schedules WHERE id = $1`
+	query := `SELECT id, strategy_id, user_id, template_id, account_id, name, symbol, timeframe, parameters, schedule_type, schedule_config, is_active, last_run_at, next_run_at, last_error, run_count, created_at, updated_at FROM strategy_schedules WHERE id = $1`
 	var schedule model.StrategyScheduleLegacy
-	err := r.db.GetContext(ctx, &schedule, query, id)
+	err := r.db.QueryRow(ctx, query, id).Scan(
+		&schedule.ID, &schedule.StrategyID, &schedule.UserID, &schedule.TemplateID, &schedule.AccountID,
+		&schedule.Name, &schedule.Symbol, &schedule.Timeframe, &schedule.Parameters, &schedule.ScheduleType, &schedule.ScheduleConfig,
+		&schedule.IsActive, &schedule.LastRunAt, &schedule.NextRunAt, &schedule.LastError, &schedule.RunCount,
+		&schedule.CreatedAt, &schedule.UpdatedAt,
+	)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrLegacyScheduleNotFound
 		}
 		return nil, err
@@ -70,50 +75,145 @@ func (r *AutoTradingRepository) GetScheduleByID(ctx context.Context, id uuid.UUI
 }
 
 func (r *AutoTradingRepository) GetSchedulesByTemplateID(ctx context.Context, templateID uuid.UUID) ([]*model.StrategyScheduleLegacy, error) {
-	query := `SELECT * FROM strategy_schedules WHERE template_id = $1 ORDER BY created_at DESC`
+	query := `SELECT id, strategy_id, user_id, template_id, account_id, name, symbol, timeframe, parameters, schedule_type, schedule_config, is_active, last_run_at, next_run_at, last_error, run_count, created_at, updated_at FROM strategy_schedules WHERE template_id = $1 ORDER BY created_at DESC`
+	rows, err := r.db.Query(ctx, query, templateID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 	var schedules []*model.StrategyScheduleLegacy
-	err := r.db.SelectContext(ctx, &schedules, query, templateID)
-	return schedules, err
+	for rows.Next() {
+		var s model.StrategyScheduleLegacy
+		if err := rows.Scan(
+			&s.ID, &s.StrategyID, &s.UserID, &s.TemplateID, &s.AccountID,
+			&s.Name, &s.Symbol, &s.Timeframe, &s.Parameters, &s.ScheduleType, &s.ScheduleConfig,
+			&s.IsActive, &s.LastRunAt, &s.NextRunAt, &s.LastError, &s.RunCount,
+			&s.CreatedAt, &s.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		schedules = append(schedules, &s)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return schedules, nil
 }
 
 func (r *AutoTradingRepository) GetSchedulesByUserID(ctx context.Context, userID uuid.UUID) ([]*model.StrategyScheduleLegacy, error) {
-	query := `SELECT * FROM strategy_schedules WHERE user_id = $1 ORDER BY created_at DESC`
+	query := `SELECT id, strategy_id, user_id, template_id, account_id, name, symbol, timeframe, parameters, schedule_type, schedule_config, is_active, last_run_at, next_run_at, last_error, run_count, created_at, updated_at FROM strategy_schedules WHERE user_id = $1 ORDER BY created_at DESC`
+	rows, err := r.db.Query(ctx, query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 	var schedules []*model.StrategyScheduleLegacy
-	err := r.db.SelectContext(ctx, &schedules, query, userID)
-	return schedules, err
+	for rows.Next() {
+		var s model.StrategyScheduleLegacy
+		if err := rows.Scan(
+			&s.ID, &s.StrategyID, &s.UserID, &s.TemplateID, &s.AccountID,
+			&s.Name, &s.Symbol, &s.Timeframe, &s.Parameters, &s.ScheduleType, &s.ScheduleConfig,
+			&s.IsActive, &s.LastRunAt, &s.NextRunAt, &s.LastError, &s.RunCount,
+			&s.CreatedAt, &s.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		schedules = append(schedules, &s)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return schedules, nil
 }
 
 func (r *AutoTradingRepository) GetSchedulesByAccountID(ctx context.Context, accountID uuid.UUID) ([]*model.StrategyScheduleLegacy, error) {
-	query := `SELECT * FROM strategy_schedules WHERE account_id = $1 ORDER BY created_at DESC`
+	query := `SELECT id, strategy_id, user_id, template_id, account_id, name, symbol, timeframe, parameters, schedule_type, schedule_config, is_active, last_run_at, next_run_at, last_error, run_count, created_at, updated_at FROM strategy_schedules WHERE account_id = $1 ORDER BY created_at DESC`
+	rows, err := r.db.Query(ctx, query, accountID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 	var schedules []*model.StrategyScheduleLegacy
-	err := r.db.SelectContext(ctx, &schedules, query, accountID)
-	return schedules, err
+	for rows.Next() {
+		var s model.StrategyScheduleLegacy
+		if err := rows.Scan(
+			&s.ID, &s.StrategyID, &s.UserID, &s.TemplateID, &s.AccountID,
+			&s.Name, &s.Symbol, &s.Timeframe, &s.Parameters, &s.ScheduleType, &s.ScheduleConfig,
+			&s.IsActive, &s.LastRunAt, &s.NextRunAt, &s.LastError, &s.RunCount,
+			&s.CreatedAt, &s.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		schedules = append(schedules, &s)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return schedules, nil
 }
 
 func (r *AutoTradingRepository) GetActiveSchedules(ctx context.Context) ([]*model.StrategyScheduleLegacy, error) {
-	query := `SELECT * FROM strategy_schedules WHERE is_active = true ORDER BY next_run_at ASC`
+	query := `SELECT id, strategy_id, user_id, template_id, account_id, name, symbol, timeframe, parameters, schedule_type, schedule_config, is_active, last_run_at, next_run_at, last_error, run_count, created_at, updated_at FROM strategy_schedules WHERE is_active = true ORDER BY next_run_at ASC`
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 	var schedules []*model.StrategyScheduleLegacy
-	err := r.db.SelectContext(ctx, &schedules, query)
-	return schedules, err
+	for rows.Next() {
+		var s model.StrategyScheduleLegacy
+		if err := rows.Scan(
+			&s.ID, &s.StrategyID, &s.UserID, &s.TemplateID, &s.AccountID,
+			&s.Name, &s.Symbol, &s.Timeframe, &s.Parameters, &s.ScheduleType, &s.ScheduleConfig,
+			&s.IsActive, &s.LastRunAt, &s.NextRunAt, &s.LastError, &s.RunCount,
+			&s.CreatedAt, &s.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		schedules = append(schedules, &s)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return schedules, nil
 }
 
 func (r *AutoTradingRepository) GetDueSchedules(ctx context.Context, before time.Time) ([]*model.StrategyScheduleLegacy, error) {
-	query := `SELECT * FROM strategy_schedules WHERE is_active = true AND next_run_at <= $1 ORDER BY next_run_at ASC`
+	query := `SELECT id, strategy_id, user_id, template_id, account_id, name, symbol, timeframe, parameters, schedule_type, schedule_config, is_active, last_run_at, next_run_at, last_error, run_count, created_at, updated_at FROM strategy_schedules WHERE is_active = true AND next_run_at <= $1 ORDER BY next_run_at ASC`
+	rows, err := r.db.Query(ctx, query, before)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 	var schedules []*model.StrategyScheduleLegacy
-	err := r.db.SelectContext(ctx, &schedules, query, before)
-	return schedules, err
+	for rows.Next() {
+		var s model.StrategyScheduleLegacy
+		if err := rows.Scan(
+			&s.ID, &s.StrategyID, &s.UserID, &s.TemplateID, &s.AccountID,
+			&s.Name, &s.Symbol, &s.Timeframe, &s.Parameters, &s.ScheduleType, &s.ScheduleConfig,
+			&s.IsActive, &s.LastRunAt, &s.NextRunAt, &s.LastError, &s.RunCount,
+			&s.CreatedAt, &s.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		schedules = append(schedules, &s)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return schedules, nil
 }
 
 func (r *AutoTradingRepository) UpdateSchedule(ctx context.Context, schedule *model.StrategyScheduleLegacy) error {
 	query := `
-		UPDATE strategy_schedules SET
-			schedule_type = $2, schedule_config = $3, is_active = $4,
-			last_run_at = $5, next_run_at = $6, last_error = $7,
-			run_count = $8, updated_at = $9
-		WHERE id = $1`
+			UPDATE strategy_schedules SET
+				schedule_type = $2, schedule_config = $3, is_active = $4,
+				last_run_at = $5, next_run_at = $6, last_error = $7,
+				run_count = $8, updated_at = $9
+			WHERE id = $1`
 
 	schedule.UpdatedAt = time.Now()
-	_, err := r.db.ExecContext(ctx, query,
+	_, err := r.db.Exec(ctx, query,
 		schedule.ID, schedule.ScheduleType, schedule.ScheduleConfig, schedule.IsActive,
 		schedule.LastRunAt, schedule.NextRunAt, schedule.LastError, schedule.RunCount,
 		schedule.UpdatedAt,
@@ -126,7 +226,7 @@ func (r *AutoTradingRepository) UpdateSchedule(ctx context.Context, schedule *mo
 
 func (r *AutoTradingRepository) UpdateScheduleStatus(ctx context.Context, id uuid.UUID, isActive bool) error {
 	query := `UPDATE strategy_schedules SET is_active = $2, updated_at = $3 WHERE id = $1`
-	_, err := r.db.ExecContext(ctx, query, id, isActive, time.Now())
+	_, err := r.db.Exec(ctx, query, id, isActive, time.Now())
 	if err != nil {
 		return fmt.Errorf("update schedule status: %w", err)
 	}
@@ -135,15 +235,11 @@ func (r *AutoTradingRepository) UpdateScheduleStatus(ctx context.Context, id uui
 
 func (r *AutoTradingRepository) DeleteSchedule(ctx context.Context, id uuid.UUID) error {
 	query := `DELETE FROM strategy_schedules WHERE id = $1`
-	result, err := r.db.ExecContext(ctx, query, id)
+	result, err := r.db.Exec(ctx, query, id)
 	if err != nil {
 		return fmt.Errorf("delete schedule: %w", err)
 	}
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("delete schedule: %w", err)
-	}
-	if rows == 0 {
+	if result.RowsAffected() == 0 {
 		return ErrLegacyScheduleNotFound
 	}
 	return nil
@@ -151,17 +247,17 @@ func (r *AutoTradingRepository) DeleteSchedule(ctx context.Context, id uuid.UUID
 
 func (r *AutoTradingRepository) CreateExecution(ctx context.Context, execution *model.StrategyExecution) error {
 	query := `
-		INSERT INTO strategy_executions (
-			id, user_id, template_id, schedule_id, account_id, status,
-			signals, orders, error_message, started_at, completed_at
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`
+			INSERT INTO strategy_executions (
+				id, user_id, template_id, schedule_id, account_id, status,
+				signals, orders, error_message, started_at, completed_at
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`
 
 	if execution.ID == uuid.Nil {
 		execution.ID = uuid.New()
 	}
 	execution.StartedAt = time.Now()
 
-	_, err := r.db.ExecContext(ctx, query,
+	_, err := r.db.Exec(ctx, query,
 		execution.ID, execution.UserID, execution.TemplateID, execution.ScheduleID, execution.AccountID,
 		execution.Status, execution.Signals, execution.Orders, execution.ErrorMessage,
 		execution.StartedAt, execution.CompletedAt,
@@ -173,11 +269,15 @@ func (r *AutoTradingRepository) CreateExecution(ctx context.Context, execution *
 }
 
 func (r *AutoTradingRepository) GetExecutionByID(ctx context.Context, id uuid.UUID) (*model.StrategyExecution, error) {
-	query := `SELECT * FROM strategy_executions WHERE id = $1`
+	query := `SELECT id, user_id, template_id, schedule_id, account_id, status, signals, orders, error_message, started_at, completed_at FROM strategy_executions WHERE id = $1`
 	var execution model.StrategyExecution
-	err := r.db.GetContext(ctx, &execution, query, id)
+	err := r.db.QueryRow(ctx, query, id).Scan(
+		&execution.ID, &execution.UserID, &execution.TemplateID, &execution.ScheduleID, &execution.AccountID,
+		&execution.Status, &execution.Signals, &execution.Orders, &execution.ErrorMessage,
+		&execution.StartedAt, &execution.CompletedAt,
+	)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrExecutionNotFound
 		}
 		return nil, err
@@ -186,33 +286,87 @@ func (r *AutoTradingRepository) GetExecutionByID(ctx context.Context, id uuid.UU
 }
 
 func (r *AutoTradingRepository) GetExecutionsByTemplateID(ctx context.Context, templateID uuid.UUID, limit int) ([]*model.StrategyExecution, error) {
-	query := `SELECT * FROM strategy_executions WHERE template_id = $1 ORDER BY started_at DESC LIMIT $2`
+	query := `SELECT id, user_id, template_id, schedule_id, account_id, status, signals, orders, error_message, started_at, completed_at FROM strategy_executions WHERE template_id = $1 ORDER BY started_at DESC LIMIT $2`
+	rows, err := r.db.Query(ctx, query, templateID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 	var executions []*model.StrategyExecution
-	err := r.db.SelectContext(ctx, &executions, query, templateID, limit)
-	return executions, err
+	for rows.Next() {
+		var e model.StrategyExecution
+		if err := rows.Scan(
+			&e.ID, &e.UserID, &e.TemplateID, &e.ScheduleID, &e.AccountID,
+			&e.Status, &e.Signals, &e.Orders, &e.ErrorMessage,
+			&e.StartedAt, &e.CompletedAt,
+		); err != nil {
+			return nil, err
+		}
+		executions = append(executions, &e)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return executions, nil
 }
 
 func (r *AutoTradingRepository) GetExecutionsByUserID(ctx context.Context, userID uuid.UUID, limit int) ([]*model.StrategyExecution, error) {
-	query := `SELECT * FROM strategy_executions WHERE user_id = $1 ORDER BY started_at DESC LIMIT $2`
+	query := `SELECT id, user_id, template_id, schedule_id, account_id, status, signals, orders, error_message, started_at, completed_at FROM strategy_executions WHERE user_id = $1 ORDER BY started_at DESC LIMIT $2`
+	rows, err := r.db.Query(ctx, query, userID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 	var executions []*model.StrategyExecution
-	err := r.db.SelectContext(ctx, &executions, query, userID, limit)
-	return executions, err
+	for rows.Next() {
+		var e model.StrategyExecution
+		if err := rows.Scan(
+			&e.ID, &e.UserID, &e.TemplateID, &e.ScheduleID, &e.AccountID,
+			&e.Status, &e.Signals, &e.Orders, &e.ErrorMessage,
+			&e.StartedAt, &e.CompletedAt,
+		); err != nil {
+			return nil, err
+		}
+		executions = append(executions, &e)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return executions, nil
 }
 
 func (r *AutoTradingRepository) GetExecutionsByAccountID(ctx context.Context, accountID uuid.UUID, limit int) ([]*model.StrategyExecution, error) {
-	query := `SELECT * FROM strategy_executions WHERE account_id = $1 ORDER BY started_at DESC LIMIT $2`
+	query := `SELECT id, user_id, template_id, schedule_id, account_id, status, signals, orders, error_message, started_at, completed_at FROM strategy_executions WHERE account_id = $1 ORDER BY started_at DESC LIMIT $2`
+	rows, err := r.db.Query(ctx, query, accountID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 	var executions []*model.StrategyExecution
-	err := r.db.SelectContext(ctx, &executions, query, accountID, limit)
-	return executions, err
+	for rows.Next() {
+		var e model.StrategyExecution
+		if err := rows.Scan(
+			&e.ID, &e.UserID, &e.TemplateID, &e.ScheduleID, &e.AccountID,
+			&e.Status, &e.Signals, &e.Orders, &e.ErrorMessage,
+			&e.StartedAt, &e.CompletedAt,
+		); err != nil {
+			return nil, err
+		}
+		executions = append(executions, &e)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return executions, nil
 }
 
 func (r *AutoTradingRepository) UpdateExecution(ctx context.Context, execution *model.StrategyExecution) error {
 	query := `
-		UPDATE strategy_executions SET
-			status = $2, signals = $3, orders = $4, error_message = $5, completed_at = $6
-		WHERE id = $1`
+			UPDATE strategy_executions SET
+				status = $2, signals = $3, orders = $4, error_message = $5, completed_at = $6
+			WHERE id = $1`
 
-	_, err := r.db.ExecContext(ctx, query,
+	_, err := r.db.Exec(ctx, query,
 		execution.ID, execution.Status, execution.Signals, execution.Orders,
 		execution.ErrorMessage, execution.CompletedAt,
 	)
@@ -225,27 +379,27 @@ func (r *AutoTradingRepository) UpdateExecution(ctx context.Context, execution *
 func (r *AutoTradingRepository) GetTodayExecutionCount(ctx context.Context, accountID uuid.UUID) (int, error) {
 	query := `SELECT COUNT(*) FROM strategy_executions WHERE account_id = $1 AND started_at >= CURRENT_DATE`
 	var count int
-	err := r.db.GetContext(ctx, &count, query, accountID)
+	err := r.db.QueryRow(ctx, query, accountID).Scan(&count)
 	return count, err
 }
 
 func (r *AutoTradingRepository) GetTodayProfit(ctx context.Context, accountID uuid.UUID) (float64, error) {
 	query := `
-		SELECT COALESCE(SUM((orders->>'profit')::float), 0)
-		FROM strategy_executions
-		WHERE account_id = $1 AND started_at >= CURRENT_DATE AND status = 'completed'`
+			SELECT COALESCE(SUM((orders->>'profit')::float), 0)
+			FROM strategy_executions
+			WHERE account_id = $1 AND started_at >= CURRENT_DATE AND status = 'completed'`
 	var profit float64
-	err := r.db.GetContext(ctx, &profit, query, accountID)
+	err := r.db.QueryRow(ctx, query, accountID).Scan(&profit)
 	return profit, err
 }
 
 func (r *AutoTradingRepository) CreateRiskConfig(ctx context.Context, config *model.RiskConfig) error {
 	query := `
-		INSERT INTO risk_configs (
-			id, user_id, account_id, max_risk_percent, max_daily_loss,
-			max_drawdown_percent, max_positions, max_lot_size, daily_loss_used,
-			trailing_stop_enabled, trailing_stop_pips, created_at, updated_at
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`
+			INSERT INTO risk_configs (
+				id, user_id, account_id, max_risk_percent, max_daily_loss,
+				max_drawdown_percent, max_positions, max_lot_size, daily_loss_used,
+				trailing_stop_enabled, trailing_stop_pips, created_at, updated_at
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`
 
 	now := time.Now()
 	if config.ID == uuid.Nil {
@@ -259,7 +413,7 @@ func (r *AutoTradingRepository) CreateRiskConfig(ctx context.Context, config *mo
 		accountID = nil
 	}
 
-	_, err := r.db.ExecContext(ctx, query,
+	_, err := r.db.Exec(ctx, query,
 		config.ID, config.UserID, accountID, config.MaxRiskPercent,
 		config.MaxDailyLoss, config.MaxDrawdownPercent, config.MaxPositions,
 		config.MaxLotSize, config.DailyLossUsed, config.TrailingStopEnabled,
@@ -272,11 +426,16 @@ func (r *AutoTradingRepository) CreateRiskConfig(ctx context.Context, config *mo
 }
 
 func (r *AutoTradingRepository) GetRiskConfigByID(ctx context.Context, id uuid.UUID) (*model.RiskConfig, error) {
-	query := `SELECT * FROM risk_configs WHERE id = $1`
+	query := `SELECT id, user_id, account_id, max_risk_percent, max_daily_loss, max_drawdown_percent, max_positions, max_lot_size, daily_loss_used, trailing_stop_enabled, trailing_stop_pips, created_at, updated_at FROM risk_configs WHERE id = $1`
 	var config model.RiskConfig
-	err := r.db.GetContext(ctx, &config, query, id)
+	err := r.db.QueryRow(ctx, query, id).Scan(
+		&config.ID, &config.UserID, &config.AccountID, &config.MaxRiskPercent,
+		&config.MaxDailyLoss, &config.MaxDrawdownPercent, &config.MaxPositions,
+		&config.MaxLotSize, &config.DailyLossUsed, &config.TrailingStopEnabled,
+		&config.TrailingStopPips, &config.CreatedAt, &config.UpdatedAt,
+	)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrRiskConfigNotFound
 		}
 		return nil, err
@@ -285,11 +444,16 @@ func (r *AutoTradingRepository) GetRiskConfigByID(ctx context.Context, id uuid.U
 }
 
 func (r *AutoTradingRepository) GetRiskConfigByUserID(ctx context.Context, userID uuid.UUID) (*model.RiskConfig, error) {
-	query := `SELECT * FROM risk_configs WHERE user_id = $1 AND (account_id IS NULL OR account_id = '00000000-0000-0000-0000-000000000000')`
+	query := `SELECT id, user_id, account_id, max_risk_percent, max_daily_loss, max_drawdown_percent, max_positions, max_lot_size, daily_loss_used, trailing_stop_enabled, trailing_stop_pips, created_at, updated_at FROM risk_configs WHERE user_id = $1 AND (account_id IS NULL OR account_id = '00000000-0000-0000-0000-000000000000')`
 	var config model.RiskConfig
-	err := r.db.GetContext(ctx, &config, query, userID)
+	err := r.db.QueryRow(ctx, query, userID).Scan(
+		&config.ID, &config.UserID, &config.AccountID, &config.MaxRiskPercent,
+		&config.MaxDailyLoss, &config.MaxDrawdownPercent, &config.MaxPositions,
+		&config.MaxLotSize, &config.DailyLossUsed, &config.TrailingStopEnabled,
+		&config.TrailingStopPips, &config.CreatedAt, &config.UpdatedAt,
+	)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrRiskConfigNotFound
 		}
 		return nil, err
@@ -298,11 +462,16 @@ func (r *AutoTradingRepository) GetRiskConfigByUserID(ctx context.Context, userI
 }
 
 func (r *AutoTradingRepository) GetRiskConfigByAccountID(ctx context.Context, accountID uuid.UUID) (*model.RiskConfig, error) {
-	query := `SELECT * FROM risk_configs WHERE account_id = $1`
+	query := `SELECT id, user_id, account_id, max_risk_percent, max_daily_loss, max_drawdown_percent, max_positions, max_lot_size, daily_loss_used, trailing_stop_enabled, trailing_stop_pips, created_at, updated_at FROM risk_configs WHERE account_id = $1`
 	var config model.RiskConfig
-	err := r.db.GetContext(ctx, &config, query, accountID)
+	err := r.db.QueryRow(ctx, query, accountID).Scan(
+		&config.ID, &config.UserID, &config.AccountID, &config.MaxRiskPercent,
+		&config.MaxDailyLoss, &config.MaxDrawdownPercent, &config.MaxPositions,
+		&config.MaxLotSize, &config.DailyLossUsed, &config.TrailingStopEnabled,
+		&config.TrailingStopPips, &config.CreatedAt, &config.UpdatedAt,
+	)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrRiskConfigNotFound
 		}
 		return nil, err
@@ -312,14 +481,14 @@ func (r *AutoTradingRepository) GetRiskConfigByAccountID(ctx context.Context, ac
 
 func (r *AutoTradingRepository) UpdateRiskConfig(ctx context.Context, config *model.RiskConfig) error {
 	query := `
-		UPDATE risk_configs SET
-			max_risk_percent = $2, max_daily_loss = $3, max_drawdown_percent = $4,
-			max_positions = $5, max_lot_size = $6, daily_loss_used = $7,
-			trailing_stop_enabled = $8, trailing_stop_pips = $9, updated_at = $10
-		WHERE id = $1`
+			UPDATE risk_configs SET
+				max_risk_percent = $2, max_daily_loss = $3, max_drawdown_percent = $4,
+				max_positions = $5, max_lot_size = $6, daily_loss_used = $7,
+				trailing_stop_enabled = $8, trailing_stop_pips = $9, updated_at = $10
+			WHERE id = $1`
 
 	config.UpdatedAt = time.Now()
-	_, err := r.db.ExecContext(ctx, query,
+	_, err := r.db.Exec(ctx, query,
 		config.ID, config.MaxRiskPercent, config.MaxDailyLoss, config.MaxDrawdownPercent,
 		config.MaxPositions, config.MaxLotSize, config.DailyLossUsed,
 		config.TrailingStopEnabled, config.TrailingStopPips, config.UpdatedAt,
@@ -332,7 +501,7 @@ func (r *AutoTradingRepository) UpdateRiskConfig(ctx context.Context, config *mo
 
 func (r *AutoTradingRepository) UpdateDailyLossUsed(ctx context.Context, id uuid.UUID, dailyLossUsed float64) error {
 	query := `UPDATE risk_configs SET daily_loss_used = $2, updated_at = $3 WHERE id = $1`
-	_, err := r.db.ExecContext(ctx, query, id, dailyLossUsed, time.Now())
+	_, err := r.db.Exec(ctx, query, id, dailyLossUsed, time.Now())
 	if err != nil {
 		return fmt.Errorf("update daily loss used: %w", err)
 	}
@@ -341,7 +510,7 @@ func (r *AutoTradingRepository) UpdateDailyLossUsed(ctx context.Context, id uuid
 
 func (r *AutoTradingRepository) ResetDailyLossUsed(ctx context.Context, userID uuid.UUID) error {
 	query := `UPDATE risk_configs SET daily_loss_used = 0, updated_at = $2 WHERE user_id = $1`
-	_, err := r.db.ExecContext(ctx, query, userID, time.Now())
+	_, err := r.db.Exec(ctx, query, userID, time.Now())
 	if err != nil {
 		return fmt.Errorf("reset daily loss used: %w", err)
 	}
@@ -350,10 +519,10 @@ func (r *AutoTradingRepository) ResetDailyLossUsed(ctx context.Context, userID u
 
 func (r *AutoTradingRepository) CreateGlobalSettings(ctx context.Context, settings *model.GlobalSettings) error {
 	query := `
-		INSERT INTO global_settings (
-			id, user_id, auto_trade_enabled, max_risk_percent,
-			max_positions, max_lot_size, max_daily_loss, max_drawdown_percent, created_at, updated_at
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
+			INSERT INTO global_settings (
+				id, user_id, auto_trade_enabled, max_risk_percent,
+				max_positions, max_lot_size, max_daily_loss, max_drawdown_percent, created_at, updated_at
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 
 	now := time.Now()
 	if settings.ID == uuid.Nil {
@@ -362,7 +531,7 @@ func (r *AutoTradingRepository) CreateGlobalSettings(ctx context.Context, settin
 	settings.CreatedAt = now
 	settings.UpdatedAt = now
 
-	_, err := r.db.ExecContext(ctx, query,
+	_, err := r.db.Exec(ctx, query,
 		settings.ID, settings.UserID, settings.AutoTradeEnabled, settings.MaxRiskPercent,
 		settings.MaxPositions, settings.MaxLotSize, settings.MaxDailyLoss, settings.MaxDrawdownPercent, settings.CreatedAt, settings.UpdatedAt,
 	)
@@ -373,11 +542,15 @@ func (r *AutoTradingRepository) CreateGlobalSettings(ctx context.Context, settin
 }
 
 func (r *AutoTradingRepository) GetGlobalSettingsByUserID(ctx context.Context, userID uuid.UUID) (*model.GlobalSettings, error) {
-	query := `SELECT * FROM global_settings WHERE user_id = $1`
+	query := `SELECT id, user_id, auto_trade_enabled, notification_enabled, email_notification, sms_notification, max_risk_percent, max_positions, max_lot_size, max_daily_loss, max_drawdown_percent, created_at, updated_at FROM global_settings WHERE user_id = $1`
 	var settings model.GlobalSettings
-	err := r.db.GetContext(ctx, &settings, query, userID)
+	err := r.db.QueryRow(ctx, query, userID).Scan(
+		&settings.ID, &settings.UserID, &settings.AutoTradeEnabled, &settings.NotificationEnabled, &settings.EmailNotification, &settings.SmsNotification,
+		&settings.MaxRiskPercent, &settings.MaxPositions, &settings.MaxLotSize, &settings.MaxDailyLoss, &settings.MaxDrawdownPercent,
+		&settings.CreatedAt, &settings.UpdatedAt,
+	)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrGlobalSettingsNotFound
 		}
 		return nil, err
@@ -387,13 +560,13 @@ func (r *AutoTradingRepository) GetGlobalSettingsByUserID(ctx context.Context, u
 
 func (r *AutoTradingRepository) UpdateGlobalSettings(ctx context.Context, settings *model.GlobalSettings) error {
 	query := `
-		UPDATE global_settings SET
-			auto_trade_enabled = $2, max_risk_percent = $3,
-			max_positions = $4, max_lot_size = $5, max_daily_loss = $6, max_drawdown_percent = $7, updated_at = $8
-		WHERE id = $1`
+			UPDATE global_settings SET
+				auto_trade_enabled = $2, max_risk_percent = $3,
+				max_positions = $4, max_lot_size = $5, max_daily_loss = $6, max_drawdown_percent = $7, updated_at = $8
+			WHERE id = $1`
 
 	settings.UpdatedAt = time.Now()
-	_, err := r.db.ExecContext(ctx, query,
+	_, err := r.db.Exec(ctx, query,
 		settings.ID, settings.AutoTradeEnabled, settings.MaxRiskPercent,
 		settings.MaxPositions, settings.MaxLotSize, settings.MaxDailyLoss, settings.MaxDrawdownPercent, settings.UpdatedAt,
 	)
@@ -405,7 +578,7 @@ func (r *AutoTradingRepository) UpdateGlobalSettings(ctx context.Context, settin
 
 func (r *AutoTradingRepository) UpdateAutoTradeEnabled(ctx context.Context, userID uuid.UUID, enabled bool) error {
 	query := `UPDATE global_settings SET auto_trade_enabled = $2, updated_at = $3 WHERE user_id = $1`
-	_, err := r.db.ExecContext(ctx, query, userID, enabled, time.Now())
+	_, err := r.db.Exec(ctx, query, userID, enabled, time.Now())
 	if err != nil {
 		return fmt.Errorf("update auto trade enabled: %w", err)
 	}
@@ -414,16 +587,16 @@ func (r *AutoTradingRepository) UpdateAutoTradeEnabled(ctx context.Context, user
 
 func (r *AutoTradingRepository) CreateTradingLog(ctx context.Context, log *model.TradingLog) error {
 	query := `
-		INSERT INTO trade_logs (
-			id, user_id, account_id, action, symbol, order_type, volume, price, ticket, profit, message, created_at
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`
+			INSERT INTO trade_logs (
+				id, user_id, account_id, action, symbol, order_type, volume, price, ticket, profit, message, created_at
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`
 
 	if log.ID == uuid.Nil {
 		log.ID = uuid.New()
 	}
 	log.CreatedAt = time.Now()
 
-	_, err := r.db.ExecContext(ctx, query,
+	_, err := r.db.Exec(ctx, query,
 		log.ID, log.UserID, log.AccountID, log.Action, log.Symbol, log.LogType, 0, 0, 0, 0, log.Message, log.CreatedAt,
 	)
 	if err != nil {
@@ -457,7 +630,7 @@ func (r *AutoTradingRepository) GetTradingLogs(ctx context.Context, userID uuid.
 
 	countQuery := `SELECT COUNT(*) ` + baseQuery
 	var total int
-	err := r.db.GetContext(ctx, &total, countQuery, args...)
+	err := r.db.QueryRow(ctx, countQuery, args...).Scan(&total)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -477,14 +650,43 @@ func (r *AutoTradingRepository) GetTradingLogs(ctx context.Context, userID uuid.
 	dataQuery := `SELECT id, user_id, account_id, action, symbol, order_type as log_type, volume, price, ticket, profit, message, created_at ` + baseQuery + ` ORDER BY created_at DESC LIMIT $` + string(rune('0'+argIndex)) + ` OFFSET $` + string(rune('0'+argIndex+1))
 	args = append(args, pageSize, offset)
 
+	rows, err := r.db.Query(ctx, dataQuery, args...)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
 	var logs []*model.TradingLog
-	err = r.db.SelectContext(ctx, &logs, dataQuery, args...)
-	return logs, total, err
+	for rows.Next() {
+		var l model.TradingLog
+		if err := rows.Scan(&l.ID, &l.UserID, &l.AccountID, &l.Action, &l.Symbol, &l.LogType, &l.Volume, &l.Price, &l.Ticket, &l.Profit, &l.Message, &l.CreatedAt); err != nil {
+			return nil, 0, err
+		}
+		logs = append(logs, &l)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, 0, err
+	}
+	return logs, total, nil
 }
 
 func (r *AutoTradingRepository) GetRecentTradingLogs(ctx context.Context, userID uuid.UUID, limit int) ([]*model.TradingLog, error) {
 	query := `SELECT id, user_id, account_id, action, symbol, order_type as log_type, volume, price, ticket, profit, message, created_at FROM trade_logs WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2`
+	rows, err := r.db.Query(ctx, query, userID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 	var logs []*model.TradingLog
-	err := r.db.SelectContext(ctx, &logs, query, userID, limit)
+	for rows.Next() {
+		var l model.TradingLog
+		if err := rows.Scan(&l.ID, &l.UserID, &l.AccountID, &l.Action, &l.Symbol, &l.LogType, &l.Volume, &l.Price, &l.Ticket, &l.Profit, &l.Message, &l.CreatedAt); err != nil {
+			return nil, err
+		}
+		logs = append(logs, &l)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 	return logs, err
 }

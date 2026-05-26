@@ -85,10 +85,13 @@ func (r *AdminRepository) ListUsers(ctx context.Context, params *model.UserListP
 
 func (r *AdminRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
 	user := &model.User{}
-	err := r.sqlxDB.GetContext(ctx, user,
+	err := r.db.QueryRow(ctx,
 		`SELECT id, email, password_hash, nickname, avatar, role, status,
 		        last_login_at, created_at, updated_at
-		 FROM users WHERE id = $1`, id)
+		 FROM users WHERE id = $1`, id).Scan(
+		&user.ID, &user.Email, &user.PasswordHash, &user.Nickname, &user.Avatar,
+		&user.Role, &user.Status, &user.LastLoginAt, &user.CreatedAt, &user.UpdatedAt,
+	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrUserNotFound

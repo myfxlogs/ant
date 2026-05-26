@@ -11,8 +11,8 @@ import (
 
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
-	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/jmoiron/sqlx"
+
+
 	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
 
@@ -58,13 +58,6 @@ func main() {
 		log.Fatal("pg connect failed", zap.Error(err))
 	}
 	defer pool.Close()
-
-	// sqlx connection (for repos that predate pgxpool)
-	sqlxDB, err := sqlx.Open("pgx", dsn)
-	if err != nil {
-		log.Fatal("sqlx connect failed", zap.Error(err))
-	}
-	defer sqlxDB.Close()
 
 	// Connect to ClickHouse
 	chHost := env("CH_HOST", "clickhouse")
@@ -291,11 +284,10 @@ func main() {
 	mktplaceHandler := mktplace.NewMarketplaceServer(mktplaceSvc, log)
 	mux.Handle(antv1c.NewMarketplaceServiceHandler(mktplaceHandler, connectrpc.WithInterceptors(authInterceptor)))
 
-	// Repos using sqlx for legacy service compatibility.
-	logRepo := repository.NewLogRepository(sqlxDB)
+	logRepo := repository.NewLogRepository(pool)
 	logSvc := service.NewLogService(logRepo)
-	strategyExperimentRepo := repository.NewStrategyExperimentRepository(sqlxDB)
-	strategyAssetRepo := repository.NewStrategyAssetRepository(sqlxDB)
+	strategyExperimentRepo := repository.NewStrategyExperimentRepository(pool)
+	strategyAssetRepo := repository.NewStrategyAssetRepository(pool)
 
 	aiRepo := repository.NewSystemAIConfigRepository(pool)
 	var aiBox *secretbox.Box
@@ -333,7 +325,7 @@ func main() {
 	mux.Handle(antv1c.NewJobServiceHandler(jobServer, connectrpc.WithInterceptors(authInterceptor)))
 	logServiceServer := system.NewLogServiceServer(logSvc, log)
 	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, connectrpc.WithInterceptors(authInterceptor)))
-	adminRepo := repository.NewAdminRepository(pool, sqlxDB)
+	adminRepo := repository.NewAdminRepository(pool)
 	adminTradingServer := admin.NewAdminTradingServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminTradingServiceHandler(adminTradingServer, connectrpc.WithInterceptors(authInterceptor)))
 	adminConfigServer := admin.NewAdminConfigServer(adminRepo, log)
@@ -362,11 +354,11 @@ func main() {
 	adminJurisdictionServer := admin.NewAdminJurisdictionServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(authInterceptor)))
 
-	analyticsRepo := repository.NewAnalyticsRepository(sqlxDB)
+	analyticsRepo := repository.NewAnalyticsRepository(pool)
 	analyticsServer := system.NewAnalyticsServer(analyticsRepo, log)
 	mux.Handle(antv1c.NewAnalyticsServiceHandler(analyticsServer, connectrpc.WithInterceptors(authInterceptor)))
 
-	marketRegimeRepo := repository.NewMarketRegimeRepository(sqlxDB)
+	marketRegimeRepo := repository.NewMarketRegimeRepository(pool)
 	marketRegimeServer := mktplace.NewMarketRegimeServer(marketRegimeRepo, log)
 	mux.Handle(antv1c.NewMarketRegimeServiceHandler(marketRegimeServer, connectrpc.WithInterceptors(authInterceptor)))
 

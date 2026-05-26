@@ -27,7 +27,7 @@ func (r *AnalyticsRepository) GetUserPnLTradesWinLoss(ctx context.Context, userI
 			AND tr.close_time >= $2 AND tr.close_time <= $3
 			AND ($4 = false OR ma.is_disabled = false)
 	`
-	err = r.db.QueryRowxContext(ctx, query, userID, start, end, enabledOnly).Scan(&pnl, &trades, &winTrades, &lossTrades, &sumProfitPos, &sumLossAbs)
+	err = r.db.QueryRow(ctx, query, userID, start, end, enabledOnly).Scan(&pnl, &trades, &winTrades, &lossTrades, &sumProfitPos, &sumLossAbs)
 	return
 }
 
@@ -44,9 +44,20 @@ func (r *AnalyticsRepository) GetUserDailyPnL(ctx context.Context, userID uuid.U
 		GROUP BY DATE(tr.close_time)
 		ORDER BY date ASC
 	`
-	var rows []UserDailyPnL
-	err := r.db.SelectContext(ctx, &rows, query, userID, start, end, enabledOnly)
-	return rows, err
+	rows, err := r.db.Query(ctx, query, userID, start, end, enabledOnly)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var result []UserDailyPnL
+	for rows.Next() {
+		var row UserDailyPnL
+		if err := rows.Scan(&row.Date, &row.PnL); err != nil {
+			return nil, err
+		}
+		result = append(result, row)
+	}
+	return result, rows.Err()
 }
 
 func (r *AnalyticsRepository) GetUserConsecutiveStats(ctx context.Context, userID uuid.UUID, start, end time.Time, enabledOnly bool) (maxWins, maxLosses int, err error) {
@@ -75,6 +86,6 @@ func (r *AnalyticsRepository) GetUserConsecutiveStats(ctx context.Context, userI
 			COALESCE(MAX(CASE WHEN sign = -1 THEN cnt END), 0) AS max_losses
 		FROM groups
 	`
-	err = r.db.QueryRowxContext(ctx, query, userID, start, end, enabledOnly).Scan(&maxWins, &maxLosses)
+	err = r.db.QueryRow(ctx, query, userID, start, end, enabledOnly).Scan(&maxWins, &maxLosses)
 	return
 }

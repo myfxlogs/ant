@@ -34,9 +34,20 @@ func (r *AnalyticsRepository) GetTradeRecords(ctx context.Context, accountID uui
 		WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3
 		ORDER BY close_time ASC
 	`
+	rows, err := r.db.Query(ctx, query, accountID, start, end)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 	var records []*TradeRecord
-	err := r.db.SelectContext(ctx, &records, query, accountID, start, end)
-	return records, err
+	for rows.Next() {
+		rec := &TradeRecord{}
+		if err := rows.Scan(&rec.ID, &rec.AccountID, &rec.Symbol, &rec.OrderType, &rec.Volume, &rec.OpenPrice, &rec.ClosePrice, &rec.Profit, &rec.Swap, &rec.Commission, &rec.OpenTime, &rec.CloseTime); err != nil {
+			return nil, err
+		}
+		records = append(records, rec)
+	}
+	return records, rows.Err()
 }
 
 func (r *AnalyticsRepository) GetTradeRecordsByUser(ctx context.Context, userID uuid.UUID, start, end time.Time) ([]*TradeRecord, error) {
@@ -50,9 +61,20 @@ func (r *AnalyticsRepository) GetTradeRecordsByUser(ctx context.Context, userID 
 		WHERE ma.user_id = $1 AND tr.close_time >= $2 AND tr.close_time <= $3
 		ORDER BY tr.close_time ASC
 	`
+	rows, err := r.db.Query(ctx, query, userID, start, end)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 	var records []*TradeRecord
-	err := r.db.SelectContext(ctx, &records, query, userID, start, end)
-	return records, err
+	for rows.Next() {
+		rec := &TradeRecord{}
+		if err := rows.Scan(&rec.ID, &rec.AccountID, &rec.Symbol, &rec.OrderType, &rec.Volume, &rec.OpenPrice, &rec.ClosePrice, &rec.Profit, &rec.Swap, &rec.Commission, &rec.OpenTime, &rec.CloseTime); err != nil {
+			return nil, err
+		}
+		records = append(records, rec)
+	}
+	return records, rows.Err()
 }
 
 func (r *AnalyticsRepository) GetTradeLogsByAccount(ctx context.Context, accountID uuid.UUID, start, end time.Time) ([]*model.TradeLog, error) {
@@ -61,9 +83,20 @@ func (r *AnalyticsRepository) GetTradeLogsByAccount(ctx context.Context, account
 		WHERE account_id = $1 AND created_at >= $2 AND created_at <= $3
 		ORDER BY created_at ASC
 	`
+	rows, err := r.db.Query(ctx, query, accountID, start, end)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 	var logs []*model.TradeLog
-	err := r.db.SelectContext(ctx, &logs, query, accountID, start, end)
-	return logs, err
+	for rows.Next() {
+		t := &model.TradeLog{}
+		if err := rows.Scan(&t.ID, &t.UserID, &t.AccountID, &t.Action, &t.Symbol, &t.OrderType, &t.Volume, &t.Price, &t.Ticket, &t.Profit, &t.Message, &t.CreatedAt); err != nil {
+			return nil, err
+		}
+		logs = append(logs, t)
+	}
+	return logs, rows.Err()
 }
 
 func (r *AnalyticsRepository) GetTradeRecordsWithLimit(ctx context.Context, accountID uuid.UUID, start, end time.Time, limit int) ([]*model.TradeRecord, error) {
@@ -78,26 +111,48 @@ func (r *AnalyticsRepository) GetTradeRecordsWithLimit(ctx context.Context, acco
 	`
 	if limit > 0 {
 		query += " LIMIT $4"
+		rows, err := r.db.Query(ctx, query, accountID, start, end, limit)
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
 		var records []*model.TradeRecord
-		err := r.db.SelectContext(ctx, &records, query, accountID, start, end, limit)
-		return records, err
+		for rows.Next() {
+			rec := &model.TradeRecord{}
+			if err := rows.Scan(&rec.ID, &rec.AccountID, &rec.Ticket, &rec.Symbol, &rec.OrderType, &rec.Volume, &rec.OpenPrice, &rec.ClosePrice, &rec.Profit, &rec.Swap, &rec.Commission, &rec.OpenTime, &rec.CloseTime, &rec.StopLoss, &rec.TakeProfit, &rec.OrderComment, &rec.MagicNumber); err != nil {
+				return nil, err
+			}
+			records = append(records, rec)
+		}
+		return records, rows.Err()
 	}
+	rows, err := r.db.Query(ctx, query, accountID, start, end)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 	var records []*model.TradeRecord
-	err := r.db.SelectContext(ctx, &records, query, accountID, start, end)
-	return records, err
+	for rows.Next() {
+		rec := &model.TradeRecord{}
+		if err := rows.Scan(&rec.ID, &rec.AccountID, &rec.Ticket, &rec.Symbol, &rec.OrderType, &rec.Volume, &rec.OpenPrice, &rec.ClosePrice, &rec.Profit, &rec.Swap, &rec.Commission, &rec.OpenTime, &rec.CloseTime, &rec.StopLoss, &rec.TakeProfit, &rec.OrderComment, &rec.MagicNumber); err != nil {
+			return nil, err
+		}
+		records = append(records, rec)
+	}
+	return records, rows.Err()
 }
 
 func (r *AnalyticsRepository) GetTradeRecordsCount(ctx context.Context, accountID uuid.UUID, start, end time.Time) (int, error) {
 	query := `SELECT COUNT(*) FROM trade_records WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3`
 	var total int
-	err := r.db.GetContext(ctx, &total, query, accountID, start, end)
+	err := r.db.QueryRow(ctx, query, accountID, start, end).Scan(&total)
 	return total, err
 }
 
 func (r *AnalyticsRepository) GetTradeRecordsPaginated(ctx context.Context, accountID uuid.UUID, start, end time.Time, page, pageSize int) ([]*model.TradeRecord, int, error) {
 	countQuery := `SELECT COUNT(*) FROM trade_records WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3`
 	var total int
-	err := r.db.GetContext(ctx, &total, countQuery, accountID, start, end)
+	err := r.db.QueryRow(ctx, countQuery, accountID, start, end).Scan(&total)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -113,7 +168,18 @@ func (r *AnalyticsRepository) GetTradeRecordsPaginated(ctx context.Context, acco
 		ORDER BY close_time DESC
 		LIMIT $4 OFFSET $5
 	`
+	rows, err := r.db.Query(ctx, query, accountID, start, end, pageSize, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
 	var records []*model.TradeRecord
-	err = r.db.SelectContext(ctx, &records, query, accountID, start, end, pageSize, offset)
-	return records, total, err
+	for rows.Next() {
+		rec := &model.TradeRecord{}
+		if err := rows.Scan(&rec.ID, &rec.AccountID, &rec.Ticket, &rec.Symbol, &rec.OrderType, &rec.Volume, &rec.OpenPrice, &rec.ClosePrice, &rec.Profit, &rec.Swap, &rec.Commission, &rec.OpenTime, &rec.CloseTime, &rec.StopLoss, &rec.TakeProfit, &rec.OrderComment, &rec.MagicNumber); err != nil {
+			return nil, 0, err
+		}
+		records = append(records, rec)
+	}
+	return records, total, rows.Err()
 }

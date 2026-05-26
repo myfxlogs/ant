@@ -1,0 +1,169 @@
+=== P1-3: 删除 sqlx 统一 pgxpool ===
+Card: REMEDIATION-2026-05-26 P1-3
+Date: 2026-05-26
+Status: ☑
+
+--- Acceptance Criteria ---
+AC1: go.mod 中 jmoiron/sqlx 依赖已移除
+AC2: 所有 repository 使用 pgxpool.Pool (不再有 sqlx.DB 字段)
+AC3: cmd/server/main.go 不再创建 sqlx 连接
+AC4: go build ./... 通过
+AC5: go vet ./... 通过
+AC6: go test ./internal/connect/... ./internal/repository/... ./internal/service/... 全过
+
+--- Step 1: 基线 ---
+修复前: 20 个文件使用 sqlx
+
+  go.mod:
+    github.com/jmoiron/sqlx v1.4.0
+    github.com/jackc/pgx/v5/stdlib (为 sqlx 提供 pgx 驱动)
+
+  cmd/server/main.go:
+    sqlxDB, err := sqlx.Open("pgx", dsn)  — 第二个 PG 连接池
+
+  repository 层 (18 文件):
+    admin_repo.go                          — dual pgxpool + sqlx
+    admin_repo_users.go                    — GetUserByID 用 sqlxDB.GetContext
+    analytics_repository.go                — sqlx.DB
+    analytics_repository_account_stats.go  — SelectContext x9, GetContext x3
+    analytics_repository_equity.go         — SelectContext x1
+    analytics_repository_trades.go         — SelectContext x5, GetContext x2
+    analytics_repository_user_stats.go     — QueryRowxContext x2, SelectContext x1
+    strategy_experiment_repository.go      — sqlx.DB + sql.ErrNoRows
+    log_repository.go                      — ExecContext x6, GetContext x5, SelectContext x5
+    strategy_asset_repository.go           — sqlx.DB + sql.ErrNoRows
+    market_regime_repository.go           — sqlx.DB + pq.StringArray
+    strategy_schedule_repository.go        — sqlx.DB + sql.ErrNoRows
+    strategy_template_repository.go        — sqlx.DB
+    backtest_run_repository.go             — sqlx.DB + pq.StringArray
+    backtest_dataset_repository.go         — sqlx.Tx + ExecContext
+    agent_repository.go                    — sqlx.DB + sql.ErrNoRows
+    trade_record_repository.go            — BeginTxx + PreparexContext
+    trade_log_repository.go               — sqlx.DB
+
+  非 repository 文件 (3 文件):
+    marketplace/repo.go                    — NamedExecContext + Rebind
+    symbol/resolver.go                     — GetContext + SelectContext
+    oms/repo.go                            — NamedExecContext + ExecContext
+
+--- Step 2: 转换规则 ---
+
+  导入替换:
+    "github.com/jmoiron/sqlx"  → "github.com/jackc/pgx/v5/pgxpool"
+    "database/sql"             → "github.com/jackc/pgx/v5"  (用于 pgx.ErrNoRows)
+    删除 "github.com/lib/pq"   (pq.StringArray → []string)
+
+  方法替换:
+    ExecContext(ctx, ...)       → Exec(ctx, ...)
+    GetContext(ctx, &dest, ...) → QueryRow(ctx, ...).Scan(&fields...)
+    SelectContext(ctx, &slice, ...) → Query(ctx, ...) + rows.Next() + rows.Scan(&fields...)
+    QueryRowxContext(ctx, ...).Scan(...) → QueryRow(ctx, ...).Scan(...)
+
+  类型替换:
+    *sqlx.DB         → *pgxpool.Pool
+    sqlx.Tx          → pgx.Tx
+    sql.ErrNoRows    → pgx.ErrNoRows
+    pq.StringArray   → []string
+    NamedExecContext → Exec (命名参数 → 位置参数 $1, $2, ...)
+    Rebind()         → 删除 (pgx 只用 $N)
+    BeginTxx         → Begin
+    tx.Commit()      → tx.Commit(ctx)
+    tx.Rollback()    → tx.Rollback(ctx)
+
+  关键注意:
+    - 所有 SELECT * 和 RETURNING * 扩展为显式列列表
+    - 所有 struct 字段按 db tag 顺序显式列举在 Scan() 中
+    - RowsAffected() 从 (int64, error) 变为 int64
+
+--- Step 3: 已转换文件 (25 个) ---
+
+  P1-2 预埋 (2):
+    ai_conversation_repository.go  — sqlx → pgxpool (P1-2 已完成)
+    job_repository.go              — sqlx → pgxpool (P1-2 已完成)
+
+  本卡转换 (23):
+    admin_repo.go                          — 删除 sqlxDB 字段 + 导入
+    admin_repo_users.go                    — GetUserByID: GetContext → QueryRow + Scan
+    analytics_repository.go                — 结构体 + 构造函数
+    analytics_repository_account_stats.go  — 全部方法转换
+    analytics_repository_equity.go         — GetEquityCurve
+    analytics_repository_trades.go         — 全部方法转换
+    analytics_repository_user_stats.go     — 全部方法转换
+    strategy_experiment_repository.go      — 全部方法转换 + sql.ErrNoRows → pgx.ErrNoRows
+    log_repository.go                      — 全部方法转换
+    strategy_asset_repository.go           — 全部方法转换
+    market_regime_repository.go           — pq.StringArray → []string
+    strategy_schedule_repository.go        — 全部方法转换
+    strategy_template_repository.go        — 全部方法转换
+    backtest_run_repository.go            — pq.StringArray → []string
+    backtest_dataset_repository.go         — sqlx.Tx → pgx.Tx
+    agent_repository.go                    — sql.ErrNoRows → pgx.ErrNoRows
+    trade_record_repository.go            — BeginTxx → Begin
+    trade_log_repository.go               — 全部方法转换
+    tick_dataset_repository.go            — 全部方法转换
+    ai_workflow_repository.go             — 全部方法转换 + 修复预存未用导入
+    debate_repository.go                  — TemplateID sql.NullString → *string
+    auto_trading_repository.go            — 17 个 SELECT * 扩展为显式列
+    marketplace/repo.go                   — NamedExecContext + Rebind 移除
+    symbol/resolver.go                     — GetContext → QueryRow + Scan
+    oms/repo.go                            — NamedExecContext 移除
+
+--- Step 4: main.go 更新 ---
+
+  删除:
+    - import "github.com/jmoiron/sqlx"
+    - import _ "github.com/jackc/pgx/v5/stdlib"
+    - sqlxDB 连接建立 (6 行: sqlx.Open + log.Fatal + defer Close)
+    - "Repos using sqlx for legacy service compatibility" 注释
+
+  构造函数参数 sqlxDB → pool (5 处):
+    repository.NewLogRepository(sqlxDB)                  → NewLogRepository(pool)
+    repository.NewStrategyExperimentRepository(sqlxDB)   → NewStrategyExperimentRepository(pool)
+    repository.NewStrategyAssetRepository(sqlxDB)        → NewStrategyAssetRepository(pool)
+    repository.NewAnalyticsRepository(sqlxDB)            → NewAnalyticsRepository(pool)
+    repository.NewMarketRegimeRepository(sqlxDB)         → NewMarketRegimeRepository(pool)
+
+--- Step 5: go.mod ---
+  移除:
+    github.com/jmoiron/sqlx v1.4.0
+    github.com/jackc/pgx/v5 v5.7.9 (stdlib 间接依赖，已单独保留)
+
+--- Step 6: Build & Vet ---
+  $ go build ./...
+  (no errors)
+
+  $ go vet ./...
+  (no errors)
+
+--- Step 7: Test ---
+  $ go test ./internal/connect/... ./internal/repository/... ./internal/service/...
+  ok  anttrader/internal/service  0.011s
+  (all other packages: no test files, compile+load OK)
+
+  $ go test ./internal/mdgateway/... ./internal/mthub/... ./internal/symbol/... ./internal/oms/...
+  ok  anttrader/internal/mdgateway  5.888s
+  ok  anttrader/internal/mthub      (cached)
+  ok  anttrader/internal/symbol     0.006s
+  ok  anttrader/internal/oms        0.011s
+
+--- Step 8: 验证 ---
+  $ grep -rn 'jmoiron\|sqlx\.DB\|sqlx\.Tx\|sqlx\.Open' --include='*.go' | grep -v '.git/' | grep -v '_test.go'
+  (none)
+
+  $ grep -rn 'db \*' internal/repository/ --include='*.go'
+  全部 25 个 repository 均使用 *pgxpool.Pool
+  (0 个 *sqlx.DB 残留)
+
+  $ grep 'jmoiron\|sqlx' go.mod
+  (none)
+
+--- Summary ---
+AC1 (go.mod 无 sqlx): PASS
+AC2 (repository 全 pgxpool): PASS (25/25)
+AC3 (main.go 不创建 sqlx 连接): PASS
+AC4 (go build): PASS
+AC5 (go vet): PASS
+AC6 (go test): PASS
+
+P1-3 完成: 删除 jmoiron/sqlx 依赖，25 个文件从 sqlx 迁移到 pgxpool。
+app 现在只维护一个 Postgres 连接池 (pgxpool)，消除了双重连接的内存/连接数浪费。

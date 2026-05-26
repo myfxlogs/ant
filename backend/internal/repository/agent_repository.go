@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
-	"database/sql"
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
@@ -13,7 +12,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var ErrAgentTokenNotFound = errors.New("agent token not found")
@@ -54,10 +54,10 @@ type AgentAuditLog struct {
 }
 
 type AgentRepository struct {
-	db *sqlx.DB
+	db *pgxpool.Pool
 }
 
-func NewAgentRepository(db *sqlx.DB) *AgentRepository {
+func NewAgentRepository(db *pgxpool.Pool) *AgentRepository {
 	return &AgentRepository{db: db}
 }
 
@@ -92,7 +92,7 @@ func (r *AgentRepository) CreateToken(ctx context.Context, token *AgentToken) er
 	if token.RateLimitPerMinute <= 0 {
 		token.RateLimitPerMinute = 60
 	}
-	_, err := r.db.ExecContext(ctx, `
+	_, err := r.db.Exec(ctx, `
 		INSERT INTO agent_tokens (id, user_id, name, token_prefix, token_hash, scopes, account_allowlist, symbol_allowlist, paper_only, rate_limit_per_min, expires_at, status, last_used_at, created_at, updated_at)
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
 	`, token.ID, token.UserID, token.Name, token.TokenPrefix, token.TokenHash, token.Scopes, token.AccountAllowlist, token.SymbolAllowlist, token.PaperOnly, token.RateLimitPerMinute, token.ExpiresAt, token.Status, token.LastUsedAt, token.CreatedAt, token.UpdatedAt)
@@ -103,15 +103,43 @@ func (r *AgentRepository) CreateToken(ctx context.Context, token *AgentToken) er
 }
 
 func (r *AgentRepository) ListTokens(ctx context.Context, userID uuid.UUID) ([]AgentToken, error) {
+	rows, err := r.db.Query(ctx,
+		`SELECT id, user_id, name, token_prefix, token_hash, scopes, account_allowlist, symbol_allowlist, paper_only, rate_limit_per_min, expires_at, status, last_used_at, created_at, updated_at
+		FROM agent_tokens WHERE user_id = $1 ORDER BY created_at DESC`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
 	var tokens []AgentToken
-	err := r.db.SelectContext(ctx, &tokens, `SELECT * FROM agent_tokens WHERE user_id = $1 ORDER BY created_at DESC`, userID)
-	return tokens, err
+	for rows.Next() {
+		var t AgentToken
+		if err := rows.Scan(
+			&t.ID, &t.UserID, &t.Name, &t.TokenPrefix, &t.TokenHash,
+			&t.Scopes, &t.AccountAllowlist, &t.SymbolAllowlist, &t.PaperOnly,
+			&t.RateLimitPerMinute, &t.ExpiresAt, &t.Status, &t.LastUsedAt,
+			&t.CreatedAt, &t.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		tokens = append(tokens, t)
+	}
+	return tokens, rows.Err()
 }
 
 func (r *AgentRepository) RevokeToken(ctx context.Context, userID, tokenID uuid.UUID) (*AgentToken, error) {
 	var token AgentToken
-	err := r.db.GetContext(ctx, &token, `UPDATE agent_tokens SET status = 'revoked', updated_at = now() WHERE id = $1 AND user_id = $2 RETURNING *`, tokenID, userID)
-	if errors.Is(err, sql.ErrNoRows) {
+	err := r.db.QueryRow(ctx,
+		`UPDATE agent_tokens SET status = 'revoked', updated_at = now() WHERE id = $1 AND user_id = $2
+		RETURNING id, user_id, name, token_prefix, token_hash, scopes, account_allowlist, symbol_allowlist, paper_only, rate_limit_per_min, expires_at, status, last_used_at, created_at, updated_at`,
+		tokenID, userID,
+	).Scan(
+		&token.ID, &token.UserID, &token.Name, &token.TokenPrefix, &token.TokenHash,
+		&token.Scopes, &token.AccountAllowlist, &token.SymbolAllowlist, &token.PaperOnly,
+		&token.RateLimitPerMinute, &token.ExpiresAt, &token.Status, &token.LastUsedAt,
+		&token.CreatedAt, &token.UpdatedAt,
+	)
+	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrAgentTokenNotFound
 	}
 	return &token, err
@@ -124,13 +152,38 @@ func (r *AgentRepository) ListAudit(ctx context.Context, userID uuid.UUID, token
 	if offset < 0 {
 		offset = 0
 	}
-	var rows []AgentAuditLog
+	var rowsRows pgx.Rows
+	var err error
 	if tokenID != nil {
-		err := r.db.SelectContext(ctx, &rows, `SELECT * FROM agent_audit_logs WHERE user_id = $1 AND agent_token_id = $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4`, userID, *tokenID, limit, offset)
-		return rows, err
+		rowsRows, err = r.db.Query(ctx,
+			`SELECT id, user_id, agent_token_id, agent_name, rpc_service, rpc_method, scope, status_code, idempotency_key, risk_decision, request_summary, response_summary, duration_ms, created_at
+			FROM agent_audit_logs WHERE user_id = $1 AND agent_token_id = $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4`,
+			userID, *tokenID, limit, offset)
+	} else {
+		rowsRows, err = r.db.Query(ctx,
+			`SELECT id, user_id, agent_token_id, agent_name, rpc_service, rpc_method, scope, status_code, idempotency_key, risk_decision, request_summary, response_summary, duration_ms, created_at
+			FROM agent_audit_logs WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
+			userID, limit, offset)
 	}
-	err := r.db.SelectContext(ctx, &rows, `SELECT * FROM agent_audit_logs WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`, userID, limit, offset)
-	return rows, err
+	if err != nil {
+		return nil, err
+	}
+	defer rowsRows.Close()
+
+	var rows []AgentAuditLog
+	for rowsRows.Next() {
+		var a AgentAuditLog
+		if err := rowsRows.Scan(
+			&a.ID, &a.UserID, &a.AgentTokenID, &a.AgentName,
+			&a.RPCService, &a.RPCMethod, &a.Scope, &a.StatusCode,
+			&a.IdempotencyKey, &a.RiskDecision, &a.RequestSummary, &a.ResponseSummary,
+			&a.DurationMS, &a.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		rows = append(rows, a)
+	}
+	return rows, rowsRows.Err()
 }
 
 func NormalizeAgentScopes(scopes []string) []string {

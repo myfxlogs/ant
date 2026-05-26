@@ -7,11 +7,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type BacktestDatasetRepository struct {
-	db *sqlx.DB
+	db *pgxpool.Pool
 }
 
 type BacktestDataset struct {
@@ -43,7 +44,7 @@ type BacktestDatasetBar struct {
 	CreatedAt  time.Time `db:"created_at"`
 }
 
-func NewBacktestDatasetRepository(db *sqlx.DB) *BacktestDatasetRepository {
+func NewBacktestDatasetRepository(db *pgxpool.Pool) *BacktestDatasetRepository {
 	return &BacktestDatasetRepository{db: db}
 }
 
@@ -58,20 +59,24 @@ func (r *BacktestDatasetRepository) Create(ctx context.Context, ds *BacktestData
 		id = uuid.New()
 	}
 	var out uuid.UUID
-	err := r.db.QueryRowxContext(ctx, query,
+	err := r.db.QueryRow(ctx, query,
 		id, ds.UserID, ds.AccountID, ds.Symbol, ds.Timeframe, ds.FromTime, ds.ToTime, ds.Count, ds.Frozen, ds.CostModelSnapshot,
 	).Scan(&out)
 	return out, err
 }
 
 func (r *BacktestDatasetRepository) GetByID(ctx context.Context, id uuid.UUID) (*BacktestDataset, error) {
-	query := `
-		SELECT id, user_id, account_id, symbol, timeframe, from_time, to_time, count, frozen, cost_model_snapshot, created_at, updated_at
-		FROM backtest_datasets
-		WHERE id = $1
-	`
 	var ds BacktestDataset
-	if err := r.db.GetContext(ctx, &ds, query, id); err != nil {
+	err := r.db.QueryRow(ctx,
+		`SELECT id, user_id, account_id, symbol, timeframe, from_time, to_time, count, frozen, cost_model_snapshot, created_at, updated_at
+		FROM backtest_datasets
+		WHERE id = $1`, id,
+	).Scan(
+		&ds.ID, &ds.UserID, &ds.AccountID, &ds.Symbol, &ds.Timeframe,
+		&ds.FromTime, &ds.ToTime, &ds.Count, &ds.Frozen, &ds.CostModelSnapshot,
+		&ds.CreatedAt, &ds.UpdatedAt,
+	)
+	if err != nil {
 		return nil, err
 	}
 	return &ds, nil
@@ -116,11 +121,25 @@ func (r *BacktestDatasetRepository) List(ctx context.Context, userID uuid.UUID, 
 	query += " OFFSET $" + itoa(idx)
 	args = append(args, offset)
 
-	var rows []*BacktestDataset
-	if err := r.db.SelectContext(ctx, &rows, query, args...); err != nil {
+	rows, err := r.db.Query(ctx, query, args...)
+	if err != nil {
 		return nil, err
 	}
-	return rows, nil
+	defer rows.Close()
+
+	var datasets []*BacktestDataset
+	for rows.Next() {
+		var ds BacktestDataset
+		if err := rows.Scan(
+			&ds.ID, &ds.UserID, &ds.AccountID, &ds.Symbol, &ds.Timeframe,
+			&ds.FromTime, &ds.ToTime, &ds.Count, &ds.Frozen, &ds.CostModelSnapshot,
+			&ds.CreatedAt, &ds.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		datasets = append(datasets, &ds)
+	}
+	return datasets, rows.Err()
 }
 
 func itoa(i int) string {
@@ -129,7 +148,7 @@ func itoa(i int) string {
 
 func (r *BacktestDatasetRepository) SetFrozen(ctx context.Context, id uuid.UUID, frozen bool) error {
 	query := `UPDATE backtest_datasets SET frozen = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1`
-	_, err := r.db.ExecContext(ctx, query, id, frozen)
+	_, err := r.db.Exec(ctx, query, id, frozen)
 	if err != nil {
 		return fmt.Errorf("set dataset frozen: %w", err)
 	}
@@ -138,15 +157,11 @@ func (r *BacktestDatasetRepository) SetFrozen(ctx context.Context, id uuid.UUID,
 
 func (r *BacktestDatasetRepository) Delete(ctx context.Context, id uuid.UUID, userID uuid.UUID) (bool, error) {
 	query := `DELETE FROM backtest_datasets WHERE id = $1 AND user_id = $2`
-	res, err := r.db.ExecContext(ctx, query, id, userID)
+	ct, err := r.db.Exec(ctx, query, id, userID)
 	if err != nil {
 		return false, err
 	}
-	n, err := res.RowsAffected()
-	if err != nil {
-		return false, err
-	}
-	return n > 0, nil
+	return ct.RowsAffected() > 0, nil
 }
 
 func (r *BacktestDatasetRepository) BatchInsertBars(ctx context.Context, bars []*BacktestDatasetBar) error {
@@ -161,12 +176,12 @@ func (r *BacktestDatasetRepository) BatchInsertBars(ctx context.Context, bars []
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
 		ON CONFLICT DO NOTHING
 	`
-	return withTx(ctx, r.db, func(tx *sqlx.Tx) error {
+	return withTx(ctx, r.db, func(tx pgx.Tx) error {
 		for _, b := range bars {
 			if b == nil {
 				continue
 			}
-			if _, err := tx.ExecContext(ctx, query,
+			if _, err := tx.Exec(ctx, query,
 				b.DatasetID, b.Symbol, b.Timeframe, b.OpenTime, b.CloseTime,
 				b.OpenPrice, b.HighPrice, b.LowPrice, b.ClosePrice, b.TickVolume,
 			); err != nil {
@@ -189,24 +204,39 @@ func (r *BacktestDatasetRepository) ListBars(ctx context.Context, datasetID uuid
 		query += " LIMIT $2"
 		args = append(args, limit)
 	}
-	var rows []*BacktestDatasetBar
-	if err := r.db.SelectContext(ctx, &rows, query, args...); err != nil {
+	rows, err := r.db.Query(ctx, query, args...)
+	if err != nil {
 		return nil, err
 	}
-	return rows, nil
+	defer rows.Close()
+
+	var bars []*BacktestDatasetBar
+	for rows.Next() {
+		var b BacktestDatasetBar
+		if err := rows.Scan(
+			&b.DatasetID, &b.Symbol, &b.Timeframe,
+			&b.OpenTime, &b.CloseTime,
+			&b.OpenPrice, &b.HighPrice, &b.LowPrice, &b.ClosePrice,
+			&b.TickVolume, &b.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		bars = append(bars, &b)
+	}
+	return bars, rows.Err()
 }
 
-func withTx(ctx context.Context, db *sqlx.DB, fn func(tx *sqlx.Tx) error) error {
-	tx, err := db.BeginTxx(ctx, nil)
+func withTx(ctx context.Context, db *pgxpool.Pool, fn func(tx pgx.Tx) error) error {
+	tx, err := db.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("list dataset bars: %w", err)
 	}
-	defer tx.Rollback()
+	defer tx.Rollback(ctx)
 	if err := fn(tx); err != nil {
 		if err != nil {
 			return fmt.Errorf("list dataset bars: %w", err)
 		}
 		return nil
 	}
-	return tx.Commit()
+	return tx.Commit(ctx)
 }

@@ -2,14 +2,14 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"anttrader/internal/model"
 )
@@ -17,10 +17,10 @@ import (
 var ErrScheduleNotFound = errors.New("strategy schedule not found")
 
 type StrategyScheduleRepository struct {
-	db *sqlx.DB
+	db *pgxpool.Pool
 }
 
-func NewStrategyScheduleRepository(db *sqlx.DB) *StrategyScheduleRepository {
+func NewStrategyScheduleRepository(db *pgxpool.Pool) *StrategyScheduleRepository {
 	return &StrategyScheduleRepository{db: db}
 }
 
@@ -32,7 +32,7 @@ func (r *StrategyScheduleRepository) Create(ctx context.Context, s *model.Strate
 	s.CreatedAt = now
 	s.UpdatedAt = now
 
-	_, err := r.db.ExecContext(ctx,
+	_, err := r.db.Exec(ctx,
 		`INSERT INTO strategy_schedules (
 			id, user_id, template_id, account_id, name, symbol, timeframe,
 			parameters, schedule_type, schedule_config, backtest_metrics,
@@ -51,8 +51,24 @@ func (r *StrategyScheduleRepository) Create(ctx context.Context, s *model.Strate
 
 func (r *StrategyScheduleRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.StrategySchedule, error) {
 	var s model.StrategySchedule
-	if err := r.db.GetContext(ctx, &s, `SELECT * FROM strategy_schedules WHERE id = $1`, id); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+	err := r.db.QueryRow(ctx,
+		`SELECT id, user_id, template_id, account_id, name, symbol, timeframe,
+			parameters, schedule_type, schedule_config, backtest_metrics,
+			risk_score, risk_level, risk_reasons, risk_warnings, last_backtest_at,
+			is_active, last_run_at, next_run_at, run_count, last_error, enable_count,
+			manual_run_count, last_manual_run_at, last_manual_error,
+			created_at, updated_at
+		FROM strategy_schedules WHERE id = $1`, id,
+	).Scan(
+		&s.ID, &s.UserID, &s.TemplateID, &s.AccountID, &s.Name, &s.Symbol, &s.Timeframe,
+		&s.Parameters, &s.ScheduleType, &s.ScheduleConfig, &s.BacktestMetrics,
+		&s.RiskScore, &s.RiskLevel, &s.RiskReasons, &s.RiskWarnings, &s.LastBacktestAt,
+		&s.IsActive, &s.LastRunAt, &s.NextRunAt, &s.RunCount, &s.LastError, &s.EnableCount,
+		&s.ManualRunCount, &s.LastManualRunAt, &s.LastManualError,
+		&s.CreatedAt, &s.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrScheduleNotFound
 		}
 		return nil, err
@@ -61,32 +77,122 @@ func (r *StrategyScheduleRepository) GetByID(ctx context.Context, id uuid.UUID) 
 }
 
 func (r *StrategyScheduleRepository) GetByUserID(ctx context.Context, userID uuid.UUID) ([]*model.StrategySchedule, error) {
+	rows, err := r.db.Query(ctx,
+		`SELECT id, user_id, template_id, account_id, name, symbol, timeframe,
+			parameters, schedule_type, schedule_config, backtest_metrics,
+			risk_score, risk_level, risk_reasons, risk_warnings, last_backtest_at,
+			is_active, last_run_at, next_run_at, run_count, last_error, enable_count,
+			manual_run_count, last_manual_run_at, last_manual_error,
+			created_at, updated_at
+		FROM strategy_schedules WHERE user_id = $1 ORDER BY created_at DESC`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
 	var schedules []*model.StrategySchedule
-	err := r.db.SelectContext(ctx, &schedules,
-		`SELECT * FROM strategy_schedules WHERE user_id = $1 ORDER BY created_at DESC`, userID)
-	return schedules, err
+	for rows.Next() {
+		var s model.StrategySchedule
+		if err := rows.Scan(
+			&s.ID, &s.UserID, &s.TemplateID, &s.AccountID, &s.Name, &s.Symbol, &s.Timeframe,
+			&s.Parameters, &s.ScheduleType, &s.ScheduleConfig, &s.BacktestMetrics,
+			&s.RiskScore, &s.RiskLevel, &s.RiskReasons, &s.RiskWarnings, &s.LastBacktestAt,
+			&s.IsActive, &s.LastRunAt, &s.NextRunAt, &s.RunCount, &s.LastError, &s.EnableCount,
+			&s.ManualRunCount, &s.LastManualRunAt, &s.LastManualError,
+			&s.CreatedAt, &s.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		schedules = append(schedules, &s)
+	}
+	return schedules, rows.Err()
 }
 
 func (r *StrategyScheduleRepository) GetByTemplateID(ctx context.Context, templateID uuid.UUID) ([]*model.StrategySchedule, error) {
+	rows, err := r.db.Query(ctx,
+		`SELECT id, user_id, template_id, account_id, name, symbol, timeframe,
+			parameters, schedule_type, schedule_config, backtest_metrics,
+			risk_score, risk_level, risk_reasons, risk_warnings, last_backtest_at,
+			is_active, last_run_at, next_run_at, run_count, last_error, enable_count,
+			manual_run_count, last_manual_run_at, last_manual_error,
+			created_at, updated_at
+		FROM strategy_schedules WHERE template_id = $1 ORDER BY created_at DESC`, templateID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
 	var schedules []*model.StrategySchedule
-	err := r.db.SelectContext(ctx, &schedules,
-		`SELECT * FROM strategy_schedules WHERE template_id = $1 ORDER BY created_at DESC`, templateID)
-	return schedules, err
+	for rows.Next() {
+		var s model.StrategySchedule
+		if err := rows.Scan(
+			&s.ID, &s.UserID, &s.TemplateID, &s.AccountID, &s.Name, &s.Symbol, &s.Timeframe,
+			&s.Parameters, &s.ScheduleType, &s.ScheduleConfig, &s.BacktestMetrics,
+			&s.RiskScore, &s.RiskLevel, &s.RiskReasons, &s.RiskWarnings, &s.LastBacktestAt,
+			&s.IsActive, &s.LastRunAt, &s.NextRunAt, &s.RunCount, &s.LastError, &s.EnableCount,
+			&s.ManualRunCount, &s.LastManualRunAt, &s.LastManualError,
+			&s.CreatedAt, &s.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		schedules = append(schedules, &s)
+	}
+	return schedules, rows.Err()
 }
 
 func (r *StrategyScheduleRepository) GetByAccountID(ctx context.Context, accountID uuid.UUID) ([]*model.StrategySchedule, error) {
+	rows, err := r.db.Query(ctx,
+		`SELECT id, user_id, template_id, account_id, name, symbol, timeframe,
+			parameters, schedule_type, schedule_config, backtest_metrics,
+			risk_score, risk_level, risk_reasons, risk_warnings, last_backtest_at,
+			is_active, last_run_at, next_run_at, run_count, last_error, enable_count,
+			manual_run_count, last_manual_run_at, last_manual_error,
+			created_at, updated_at
+		FROM strategy_schedules WHERE account_id = $1 ORDER BY created_at DESC`, accountID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
 	var schedules []*model.StrategySchedule
-	err := r.db.SelectContext(ctx, &schedules,
-		`SELECT * FROM strategy_schedules WHERE account_id = $1 ORDER BY created_at DESC`, accountID)
-	return schedules, err
+	for rows.Next() {
+		var s model.StrategySchedule
+		if err := rows.Scan(
+			&s.ID, &s.UserID, &s.TemplateID, &s.AccountID, &s.Name, &s.Symbol, &s.Timeframe,
+			&s.Parameters, &s.ScheduleType, &s.ScheduleConfig, &s.BacktestMetrics,
+			&s.RiskScore, &s.RiskLevel, &s.RiskReasons, &s.RiskWarnings, &s.LastBacktestAt,
+			&s.IsActive, &s.LastRunAt, &s.NextRunAt, &s.RunCount, &s.LastError, &s.EnableCount,
+			&s.ManualRunCount, &s.LastManualRunAt, &s.LastManualError,
+			&s.CreatedAt, &s.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		schedules = append(schedules, &s)
+	}
+	return schedules, rows.Err()
 }
 
 func (r *StrategyScheduleRepository) GetByUniqueKey(ctx context.Context, userID, accountID, templateID uuid.UUID, symbol, timeframe string) (*model.StrategySchedule, error) {
 	var s model.StrategySchedule
-	if err := r.db.GetContext(ctx, &s,
-		`SELECT * FROM strategy_schedules WHERE user_id = $1 AND account_id = $2 AND template_id = $3 AND symbol = $4 AND timeframe = $5 LIMIT 1`,
-		userID, accountID, templateID, symbol, timeframe); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+	err := r.db.QueryRow(ctx,
+		`SELECT id, user_id, template_id, account_id, name, symbol, timeframe,
+			parameters, schedule_type, schedule_config, backtest_metrics,
+			risk_score, risk_level, risk_reasons, risk_warnings, last_backtest_at,
+			is_active, last_run_at, next_run_at, run_count, last_error, enable_count,
+			manual_run_count, last_manual_run_at, last_manual_error,
+			created_at, updated_at
+		FROM strategy_schedules WHERE user_id = $1 AND account_id = $2 AND template_id = $3 AND symbol = $4 AND timeframe = $5 LIMIT 1`,
+		userID, accountID, templateID, symbol, timeframe,
+	).Scan(
+		&s.ID, &s.UserID, &s.TemplateID, &s.AccountID, &s.Name, &s.Symbol, &s.Timeframe,
+		&s.Parameters, &s.ScheduleType, &s.ScheduleConfig, &s.BacktestMetrics,
+		&s.RiskScore, &s.RiskLevel, &s.RiskReasons, &s.RiskWarnings, &s.LastBacktestAt,
+		&s.IsActive, &s.LastRunAt, &s.NextRunAt, &s.RunCount, &s.LastError, &s.EnableCount,
+		&s.ManualRunCount, &s.LastManualRunAt, &s.LastManualError,
+		&s.CreatedAt, &s.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrScheduleNotFound
 		}
 		return nil, err
@@ -95,23 +201,73 @@ func (r *StrategyScheduleRepository) GetByUniqueKey(ctx context.Context, userID,
 }
 
 func (r *StrategyScheduleRepository) GetActiveSchedules(ctx context.Context) ([]*model.StrategySchedule, error) {
+	rows, err := r.db.Query(ctx,
+		`SELECT id, user_id, template_id, account_id, name, symbol, timeframe,
+			parameters, schedule_type, schedule_config, backtest_metrics,
+			risk_score, risk_level, risk_reasons, risk_warnings, last_backtest_at,
+			is_active, last_run_at, next_run_at, run_count, last_error, enable_count,
+			manual_run_count, last_manual_run_at, last_manual_error,
+			created_at, updated_at
+		FROM strategy_schedules WHERE is_active = true ORDER BY next_run_at ASC`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
 	var schedules []*model.StrategySchedule
-	err := r.db.SelectContext(ctx, &schedules,
-		`SELECT * FROM strategy_schedules WHERE is_active = true ORDER BY next_run_at ASC`)
-	return schedules, err
+	for rows.Next() {
+		var s model.StrategySchedule
+		if err := rows.Scan(
+			&s.ID, &s.UserID, &s.TemplateID, &s.AccountID, &s.Name, &s.Symbol, &s.Timeframe,
+			&s.Parameters, &s.ScheduleType, &s.ScheduleConfig, &s.BacktestMetrics,
+			&s.RiskScore, &s.RiskLevel, &s.RiskReasons, &s.RiskWarnings, &s.LastBacktestAt,
+			&s.IsActive, &s.LastRunAt, &s.NextRunAt, &s.RunCount, &s.LastError, &s.EnableCount,
+			&s.ManualRunCount, &s.LastManualRunAt, &s.LastManualError,
+			&s.CreatedAt, &s.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		schedules = append(schedules, &s)
+	}
+	return schedules, rows.Err()
 }
 
 func (r *StrategyScheduleRepository) GetDueSchedules(ctx context.Context, before time.Time) ([]*model.StrategySchedule, error) {
-	var schedules []*model.StrategySchedule
-	err := r.db.SelectContext(ctx, &schedules,
-		`SELECT * FROM strategy_schedules WHERE is_active = true AND next_run_at IS NOT NULL AND next_run_at <= $1 ORDER BY next_run_at ASC`,
+	rows, err := r.db.Query(ctx,
+		`SELECT id, user_id, template_id, account_id, name, symbol, timeframe,
+			parameters, schedule_type, schedule_config, backtest_metrics,
+			risk_score, risk_level, risk_reasons, risk_warnings, last_backtest_at,
+			is_active, last_run_at, next_run_at, run_count, last_error, enable_count,
+			manual_run_count, last_manual_run_at, last_manual_error,
+			created_at, updated_at
+		FROM strategy_schedules WHERE is_active = true AND next_run_at IS NOT NULL AND next_run_at <= $1 ORDER BY next_run_at ASC`,
 		before)
-	return schedules, err
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var schedules []*model.StrategySchedule
+	for rows.Next() {
+		var s model.StrategySchedule
+		if err := rows.Scan(
+			&s.ID, &s.UserID, &s.TemplateID, &s.AccountID, &s.Name, &s.Symbol, &s.Timeframe,
+			&s.Parameters, &s.ScheduleType, &s.ScheduleConfig, &s.BacktestMetrics,
+			&s.RiskScore, &s.RiskLevel, &s.RiskReasons, &s.RiskWarnings, &s.LastBacktestAt,
+			&s.IsActive, &s.LastRunAt, &s.NextRunAt, &s.RunCount, &s.LastError, &s.EnableCount,
+			&s.ManualRunCount, &s.LastManualRunAt, &s.LastManualError,
+			&s.CreatedAt, &s.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		schedules = append(schedules, &s)
+	}
+	return schedules, rows.Err()
 }
 
 func (r *StrategyScheduleRepository) Update(ctx context.Context, s *model.StrategySchedule) error {
 	s.UpdatedAt = time.Now()
-	_, err := r.db.ExecContext(ctx,
+	_, err := r.db.Exec(ctx,
 		`UPDATE strategy_schedules SET
 			name = $2, symbol = $3, timeframe = $4, parameters = $5,
 			schedule_type = $6, schedule_config = $7, backtest_metrics = $8,
@@ -135,7 +291,7 @@ func (r *StrategyScheduleRepository) UpdateRiskAssessment(ctx context.Context, i
 	reasonsJSON, _ := json.Marshal(a.Reasons)
 	warningsJSON, _ := json.Marshal(a.Warnings)
 
-	_, err := r.db.ExecContext(ctx,
+	_, err := r.db.Exec(ctx,
 		`UPDATE strategy_schedules SET
 			backtest_metrics = $2, risk_score = $3, risk_level = $4,
 			risk_reasons = $5, risk_warnings = $6, last_backtest_at = $7, updated_at = $8
@@ -146,7 +302,7 @@ func (r *StrategyScheduleRepository) UpdateRiskAssessment(ctx context.Context, i
 }
 
 func (r *StrategyScheduleRepository) UpdateNextRunAt(ctx context.Context, id uuid.UUID, nextRunAt time.Time) error {
-	_, err := r.db.ExecContext(ctx,
+	_, err := r.db.Exec(ctx,
 		`UPDATE strategy_schedules SET next_run_at = $2, updated_at = $3 WHERE id = $1`,
 		id, nextRunAt, time.Now())
 	return fmt.Errorf("update next run at: %w", err)
@@ -158,14 +314,14 @@ func (r *StrategyScheduleRepository) UpdateLastRun(ctx context.Context, id uuid.
 	if runErr != nil {
 		errMsg = runErr.Error()
 	}
-	_, err := r.db.ExecContext(ctx,
+	_, err := r.db.Exec(ctx,
 		`UPDATE strategy_schedules SET last_run_at = $2, run_count = run_count + 1, last_error = $3, updated_at = $4 WHERE id = $1`,
 		id, now, errMsg, now)
 	return fmt.Errorf("update last run: %w", err)
 }
 
 func (r *StrategyScheduleRepository) SetActive(ctx context.Context, id uuid.UUID, active bool) error {
-	_, err := r.db.ExecContext(ctx,
+	_, err := r.db.Exec(ctx,
 		`UPDATE strategy_schedules SET
 			is_active = $2,
 			enable_count = enable_count + CASE WHEN $2 = true AND is_active = false THEN 1 ELSE 0 END,
@@ -176,21 +332,17 @@ func (r *StrategyScheduleRepository) SetActive(ctx context.Context, id uuid.UUID
 }
 
 func (r *StrategyScheduleRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	if _, err := r.db.ExecContext(ctx, `DELETE FROM strategy_execution_logs WHERE schedule_id = $1`, id); err != nil {
+	if _, err := r.db.Exec(ctx, `DELETE FROM strategy_execution_logs WHERE schedule_id = $1`, id); err != nil {
 		if err != nil {
 			return fmt.Errorf("delete schedule: %w", err)
 		}
 		return nil
 	}
-	result, err := r.db.ExecContext(ctx, `DELETE FROM strategy_schedules WHERE id = $1`, id)
+	ct, err := r.db.Exec(ctx, `DELETE FROM strategy_schedules WHERE id = $1`, id)
 	if err != nil {
 		return fmt.Errorf("delete schedule: %w", err)
 	}
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("delete schedule: %w", err)
-	}
-	if rows == 0 {
+	if ct.RowsAffected() == 0 {
 		return ErrScheduleNotFound
 	}
 	return nil
@@ -198,12 +350,12 @@ func (r *StrategyScheduleRepository) Delete(ctx context.Context, id uuid.UUID) e
 
 func (r *StrategyScheduleRepository) CountByUserID(ctx context.Context, userID uuid.UUID) (int, error) {
 	var count int
-	err := r.db.GetContext(ctx, &count, `SELECT COUNT(*) FROM strategy_schedules WHERE user_id = $1`, userID)
+	err := r.db.QueryRow(ctx, `SELECT COUNT(*) FROM strategy_schedules WHERE user_id = $1`, userID).Scan(&count)
 	return count, err
 }
 
 func (r *StrategyScheduleRepository) CountByTemplateID(ctx context.Context, templateID uuid.UUID) (int, error) {
 	var count int
-	err := r.db.GetContext(ctx, &count, `SELECT COUNT(*) FROM strategy_schedules WHERE template_id = $1`, templateID)
+	err := r.db.QueryRow(ctx, `SELECT COUNT(*) FROM strategy_schedules WHERE template_id = $1`, templateID).Scan(&count)
 	return count, err
 }

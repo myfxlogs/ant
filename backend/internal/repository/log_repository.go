@@ -7,16 +7,16 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"anttrader/internal/model"
 )
 
 type LogRepository struct {
-	db *sqlx.DB
+	db *pgxpool.Pool
 }
 
-func NewLogRepository(db *sqlx.DB) *LogRepository {
+func NewLogRepository(db *pgxpool.Pool) *LogRepository {
 	return &LogRepository{db: db}
 }
 
@@ -27,22 +27,22 @@ func (r *LogRepository) CreateConnectionLog(ctx context.Context, log *model.Acco
 			server_host, server_port, login_id, connection_duration_seconds, created_at
 		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`
 
-	_, err := r.db.ExecContext(ctx, query,
+	_, err := r.db.Exec(ctx, query,
 		log.ID, log.UserID, log.AccountID, log.EventType, log.Status, log.Message, log.ErrorDetail,
 		log.ServerHost, log.ServerPort, log.LoginID, log.ConnectionDurationSecs, log.CreatedAt)
 	return fmt.Errorf("create connection log: %w", err)
 }
 
 type ScheduleRunLogRow struct {
-	ID          uuid.UUID `db:"id"`
-	Kind        string    `db:"kind"`
-	Action      string    `db:"action"`
-	Status      string    `db:"status"`
-	DurationMs  int64     `db:"duration_ms"`
-	ErrorMessage string   `db:"error_message"`
-	SignalType  string    `db:"signal_type"`
-	SignalVolume float64  `db:"signal_volume"`
-	CreatedAt   time.Time `db:"created_at"`
+	ID           uuid.UUID `db:"id"`
+	Kind         string    `db:"kind"`
+	Action       string    `db:"action"`
+	Status       string    `db:"status"`
+	DurationMs   int64     `db:"duration_ms"`
+	ErrorMessage string    `db:"error_message"`
+	SignalType   string    `db:"signal_type"`
+	SignalVolume float64   `db:"signal_volume"`
+	CreatedAt    time.Time `db:"created_at"`
 }
 
 func (r *LogRepository) GetScheduleRunLogs(ctx context.Context, userID uuid.UUID, scheduleID uuid.UUID, page, pageSize int) ([]*ScheduleRunLogRow, int, error) {
@@ -93,14 +93,28 @@ WITH merged AS (
 
 	countQuery := base + `SELECT COUNT(*) FROM merged`
 	var total int
-	if err := r.db.GetContext(ctx, &total, countQuery, userID, scheduleID); err != nil {
+	if err := r.db.QueryRow(ctx, countQuery, userID, scheduleID).Scan(&total); err != nil {
 		return nil, 0, err
 	}
 
 	dataQuery := base + ` SELECT * FROM merged ORDER BY created_at DESC LIMIT $3 OFFSET $4`
+	queryRows, err := r.db.Query(ctx, dataQuery, userID, scheduleID, pageSize, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer queryRows.Close()
 	rows := make([]*ScheduleRunLogRow, 0)
-	err := r.db.SelectContext(ctx, &rows, dataQuery, userID, scheduleID, pageSize, offset)
-	return rows, total, err
+	for queryRows.Next() {
+		var row ScheduleRunLogRow
+		if err := queryRows.Scan(&row.ID, &row.Kind, &row.Action, &row.Status, &row.DurationMs, &row.ErrorMessage, &row.SignalType, &row.SignalVolume, &row.CreatedAt); err != nil {
+			return nil, 0, err
+		}
+		rows = append(rows, &row)
+	}
+	if err := queryRows.Err(); err != nil {
+		return nil, 0, err
+	}
+	return rows, total, nil
 }
 
 func (r *LogRepository) GetConnectionLogs(ctx context.Context, userID uuid.UUID, params *model.LogQueryParams) ([]*model.AccountConnectionLog, int, error) {
@@ -134,8 +148,7 @@ func (r *LogRepository) GetConnectionLogs(ctx context.Context, userID uuid.UUID,
 
 	countQuery := `SELECT COUNT(*) ` + baseQuery
 	var total int
-	err := r.db.GetContext(ctx, &total, countQuery, args...)
-	if err != nil {
+	if err := r.db.QueryRow(ctx, countQuery, args...).Scan(&total); err != nil {
 		return nil, 0, err
 	}
 
@@ -154,9 +167,23 @@ func (r *LogRepository) GetConnectionLogs(ctx context.Context, userID uuid.UUID,
 	dataQuery := fmt.Sprintf(`SELECT * %s ORDER BY created_at DESC LIMIT $%d OFFSET $%d`, baseQuery, argIndex, argIndex+1)
 	args = append(args, pageSize, offset)
 
+	queryRows, err := r.db.Query(ctx, dataQuery, args...)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer queryRows.Close()
 	var logs []*model.AccountConnectionLog
-	err = r.db.SelectContext(ctx, &logs, dataQuery, args...)
-	return logs, total, err
+	for queryRows.Next() {
+		var log model.AccountConnectionLog
+		if err := queryRows.Scan(&log.ID, &log.UserID, &log.AccountID, &log.EventType, &log.Status, &log.Message, &log.ErrorDetail, &log.ServerHost, &log.ServerPort, &log.LoginID, &log.ConnectionDurationSecs, &log.CreatedAt); err != nil {
+			return nil, 0, err
+		}
+		logs = append(logs, &log)
+	}
+	if err := queryRows.Err(); err != nil {
+		return nil, 0, err
+	}
+	return logs, total, nil
 }
 
 func (r *LogRepository) CreateExecutionLog(ctx context.Context, log *model.StrategyExecutionLog) error {
@@ -176,7 +203,7 @@ func (r *LogRepository) CreateExecutionLog(ctx context.Context, log *model.Strat
 		strategyParams, _ = json.Marshal(log.StrategyParams)
 	}
 
-	_, err := r.db.ExecContext(ctx, query,
+	_, err := r.db.Exec(ctx, query,
 		log.ID, log.UserID, log.ScheduleID, log.TemplateID, log.AccountID, log.Symbol, log.Timeframe, log.Status,
 		log.SignalType, log.SignalPrice, log.SignalVolume, log.SignalStopLoss, log.SignalTakeProfit,
 		log.ExecutedOrderID, log.ExecutedPrice, log.ExecutedVolume, log.Profit, log.ErrorMessage,
@@ -193,7 +220,7 @@ func (r *LogRepository) UpdateExecutionLog(ctx context.Context, log *model.Strat
 			execution_time_ms = $13
 		WHERE id = $1`
 
-	_, err := r.db.ExecContext(ctx, query,
+	_, err := r.db.Exec(ctx, query,
 		log.ID, log.Status, log.SignalType, log.SignalPrice, log.SignalVolume,
 		log.SignalStopLoss, log.SignalTakeProfit, log.ExecutedOrderID,
 		log.ExecutedPrice, log.ExecutedVolume, log.Profit, log.ErrorMessage,
@@ -243,8 +270,7 @@ func (r *LogRepository) GetExecutionLogs(ctx context.Context, userID uuid.UUID, 
 
 	countQuery := `SELECT COUNT(*) ` + baseQuery
 	var total int
-	err := r.db.GetContext(ctx, &total, countQuery, args...)
-	if err != nil {
+	if err := r.db.QueryRow(ctx, countQuery, args...).Scan(&total); err != nil {
 		return nil, 0, err
 	}
 
@@ -263,9 +289,23 @@ func (r *LogRepository) GetExecutionLogs(ctx context.Context, userID uuid.UUID, 
 	dataQuery := fmt.Sprintf(`SELECT * %s ORDER BY created_at DESC LIMIT $%d OFFSET $%d`, baseQuery, argIndex, argIndex+1)
 	args = append(args, pageSize, offset)
 
+	queryRows, err := r.db.Query(ctx, dataQuery, args...)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer queryRows.Close()
 	var logs []*model.StrategyExecutionLog
-	err = r.db.SelectContext(ctx, &logs, dataQuery, args...)
-	return logs, total, err
+	for queryRows.Next() {
+		var log model.StrategyExecutionLog
+		if err := queryRows.Scan(&log.ID, &log.UserID, &log.ScheduleID, &log.TemplateID, &log.AccountID, &log.Symbol, &log.Timeframe, &log.Status, &log.SignalType, &log.SignalPrice, &log.SignalVolume, &log.SignalStopLoss, &log.SignalTakeProfit, &log.ExecutedOrderID, &log.ExecutedPrice, &log.ExecutedVolume, &log.Profit, &log.ErrorMessage, &log.ExecutionTimeMs, &log.KlineData, &log.StrategyParams, &log.CreatedAt); err != nil {
+			return nil, 0, err
+		}
+		logs = append(logs, &log)
+	}
+	if err := queryRows.Err(); err != nil {
+		return nil, 0, err
+	}
+	return logs, total, nil
 }
 
 func (r *LogRepository) CreateOrderHistory(ctx context.Context, order *model.OrderHistory) error {
@@ -276,7 +316,7 @@ func (r *LogRepository) CreateOrderHistory(ctx context.Context, order *model.Ord
 			profit, commission, swap, comment, magic_number, is_auto_trade, schedule_id, created_at
 		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`
 
-	_, err := r.db.ExecContext(ctx, query,
+	_, err := r.db.Exec(ctx, query,
 		order.ID, order.UserID, order.AccountID, order.Ticket, order.OrderType, order.Symbol, order.Volume,
 		order.OpenPrice, order.ClosePrice, order.OpenTime, order.CloseTime, order.StopLoss, order.TakeProfit,
 		order.Profit, order.Commission, order.Swap, order.Comment, order.MagicNumber, order.IsAutoTrade, order.ScheduleID, order.CreatedAt)
@@ -294,11 +334,11 @@ func (r *LogRepository) UpdateOrderHistoryClose(ctx context.Context, userID, acc
 			commission = $9
 		WHERE user_id = $1 AND account_id = $2 AND schedule_id = $3 AND ticket = $4
 		  AND close_time IS NULL`
-	res, err := r.db.ExecContext(ctx, q, userID, accountID, scheduleID, ticket, closePrice, closeTime, profit, swap, commission)
+	res, err := r.db.Exec(ctx, q, userID, accountID, scheduleID, ticket, closePrice, closeTime, profit, swap, commission)
 	if err != nil {
 		return 0, err
 	}
-	return res.RowsAffected()
+	return res.RowsAffected(), nil
 }
 
 func (r *LogRepository) GetOrderHistory(ctx context.Context, userID uuid.UUID, params *model.LogQueryParams) ([]*model.OrderHistory, int, error) {
@@ -343,8 +383,7 @@ func (r *LogRepository) GetOrderHistory(ctx context.Context, userID uuid.UUID, p
 
 	countQuery := `SELECT COUNT(*) ` + baseQuery
 	var total int
-	err := r.db.GetContext(ctx, &total, countQuery, args...)
-	if err != nil {
+	if err := r.db.QueryRow(ctx, countQuery, args...).Scan(&total); err != nil {
 		return nil, 0, err
 	}
 
@@ -363,9 +402,23 @@ func (r *LogRepository) GetOrderHistory(ctx context.Context, userID uuid.UUID, p
 	dataQuery := fmt.Sprintf(`SELECT * %s ORDER BY open_time DESC LIMIT $%d OFFSET $%d`, baseQuery, argIndex, argIndex+1)
 	args = append(args, pageSize, offset)
 
+	queryRows, err := r.db.Query(ctx, dataQuery, args...)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer queryRows.Close()
 	var orders []*model.OrderHistory
-	err = r.db.SelectContext(ctx, &orders, dataQuery, args...)
-	return orders, total, err
+	for queryRows.Next() {
+		var order model.OrderHistory
+		if err := queryRows.Scan(&order.ID, &order.UserID, &order.AccountID, &order.Ticket, &order.OrderType, &order.Symbol, &order.Volume, &order.OpenPrice, &order.ClosePrice, &order.OpenTime, &order.CloseTime, &order.StopLoss, &order.TakeProfit, &order.Profit, &order.Commission, &order.Swap, &order.Comment, &order.MagicNumber, &order.IsAutoTrade, &order.ScheduleID, &order.CreatedAt); err != nil {
+			return nil, 0, err
+		}
+		orders = append(orders, &order)
+	}
+	if err := queryRows.Err(); err != nil {
+		return nil, 0, err
+	}
+	return orders, total, nil
 }
 
 func (r *LogRepository) CreateOperationLog(ctx context.Context, log *model.SystemOperationLog) error {
@@ -389,7 +442,7 @@ func (r *LogRepository) CreateOperationLog(ctx context.Context, log *model.Syste
 		newValue, _ = json.Marshal(log.NewValue)
 	}
 
-	_, err := r.db.ExecContext(ctx, query,
+	_, err := r.db.Exec(ctx, query,
 		log.ID, log.UserID, log.OperationType, log.Module, log.ResourceType, log.ResourceID, log.Action,
 		oldValue, newValue, log.IPAddress, log.UserAgent, log.Status, log.ErrorMessage, log.DurationMs, log.CreatedAt)
 	return fmt.Errorf("create operation log: %w", err)
@@ -446,8 +499,7 @@ func (r *LogRepository) GetOperationLogs(ctx context.Context, userID uuid.UUID, 
 
 	countQuery := `SELECT COUNT(*) ` + baseQuery
 	var total int
-	err := r.db.GetContext(ctx, &total, countQuery, args...)
-	if err != nil {
+	if err := r.db.QueryRow(ctx, countQuery, args...).Scan(&total); err != nil {
 		return nil, 0, err
 	}
 
@@ -466,7 +518,21 @@ func (r *LogRepository) GetOperationLogs(ctx context.Context, userID uuid.UUID, 
 	dataQuery := fmt.Sprintf(`SELECT * %s ORDER BY created_at DESC LIMIT $%d OFFSET $%d`, baseQuery, argIndex, argIndex+1)
 	args = append(args, pageSize, offset)
 
+	queryRows, err := r.db.Query(ctx, dataQuery, args...)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer queryRows.Close()
 	var logs []*model.SystemOperationLog
-	err = r.db.SelectContext(ctx, &logs, dataQuery, args...)
-	return logs, total, err
+	for queryRows.Next() {
+		var log model.SystemOperationLog
+		if err := queryRows.Scan(&log.ID, &log.UserID, &log.OperationType, &log.Module, &log.ResourceType, &log.ResourceID, &log.Action, &log.OldValue, &log.NewValue, &log.IPAddress, &log.UserAgent, &log.Status, &log.ErrorMessage, &log.DurationMs, &log.CreatedAt); err != nil {
+			return nil, 0, err
+		}
+		logs = append(logs, &log)
+	}
+	if err := queryRows.Err(); err != nil {
+		return nil, 0, err
+	}
+	return logs, total, nil
 }

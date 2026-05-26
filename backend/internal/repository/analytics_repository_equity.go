@@ -32,9 +32,20 @@ func (r *AnalyticsRepository) GetEquityCurve(ctx context.Context, accountID uuid
 		Profit            float64   `db:"profit"`
 		DepositWithdrawal float64   `db:"deposit_withdrawal"`
 	}
-	var dailyDataList []dailyData
-	err = r.db.SelectContext(ctx, &dailyDataList, query, accountID, start, end)
+	rows, err := r.db.Query(ctx, query, accountID, start, end)
 	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var dailyDataList []dailyData
+	for rows.Next() {
+		var dd dailyData
+		if err := rows.Scan(&dd.Date, &dd.Profit, &dd.DepositWithdrawal); err != nil {
+			return nil, err
+		}
+		dailyDataList = append(dailyDataList, dd)
+	}
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 

@@ -2,13 +2,13 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var (
@@ -48,10 +48,10 @@ type StrategyExperimentCandidate struct {
 }
 
 type StrategyExperimentRepository struct {
-	db *sqlx.DB
+	db *pgxpool.Pool
 }
 
-func NewStrategyExperimentRepository(db *sqlx.DB) *StrategyExperimentRepository {
+func NewStrategyExperimentRepository(db *pgxpool.Pool) *StrategyExperimentRepository {
 	return &StrategyExperimentRepository{db: db}
 }
 
@@ -74,7 +74,7 @@ func (r *StrategyExperimentRepository) Create(ctx context.Context, exp *Strategy
 	if len(exp.ParameterSpace) == 0 {
 		exp.ParameterSpace = []byte(`{}`)
 	}
-	_, err := r.db.ExecContext(ctx, `
+	_, err := r.db.Exec(ctx, `
 		INSERT INTO strategy_experiments (id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,created_at,finished_at)
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
 	`, exp.ID, exp.UserID, exp.BaseTemplateID, exp.Status, exp.ParameterSpace, exp.SearchMethod, exp.MaxCandidates, exp.Objective, exp.MarketRegimeRef, exp.BestCandidateID, exp.JobID, exp.CreatedAt, exp.FinishedAt)
@@ -86,8 +86,10 @@ func (r *StrategyExperimentRepository) Create(ctx context.Context, exp *Strategy
 
 func (r *StrategyExperimentRepository) Get(ctx context.Context, userID, id uuid.UUID) (*StrategyExperiment, error) {
 	var exp StrategyExperiment
-	err := r.db.GetContext(ctx, &exp, `SELECT id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,created_at,finished_at FROM strategy_experiments WHERE id = $1 AND user_id = $2`, id, userID)
-	if errors.Is(err, sql.ErrNoRows) {
+	err := r.db.QueryRow(ctx, `SELECT id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,created_at,finished_at FROM strategy_experiments WHERE id = $1 AND user_id = $2`, id, userID).Scan(
+		&exp.ID, &exp.UserID, &exp.BaseTemplateID, &exp.Status, &exp.ParameterSpace, &exp.SearchMethod, &exp.MaxCandidates, &exp.Objective, &exp.MarketRegimeRef, &exp.BestCandidateID, &exp.JobID, &exp.CreatedAt, &exp.FinishedAt,
+	)
+	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrStrategyExperimentNotFound
 	}
 	return &exp, err
@@ -100,15 +102,30 @@ func (r *StrategyExperimentRepository) List(ctx context.Context, userID uuid.UUI
 	if offset < 0 {
 		offset = 0
 	}
-	var rows []StrategyExperiment
-	err := r.db.SelectContext(ctx, &rows, `SELECT id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,created_at,finished_at FROM strategy_experiments WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`, userID, limit, offset)
-	return rows, err
+	rows, err := r.db.Query(ctx, `SELECT id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,created_at,finished_at FROM strategy_experiments WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`, userID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var result []StrategyExperiment
+	for rows.Next() {
+		var exp StrategyExperiment
+		if err := rows.Scan(
+			&exp.ID, &exp.UserID, &exp.BaseTemplateID, &exp.Status, &exp.ParameterSpace, &exp.SearchMethod, &exp.MaxCandidates, &exp.Objective, &exp.MarketRegimeRef, &exp.BestCandidateID, &exp.JobID, &exp.CreatedAt, &exp.FinishedAt,
+		); err != nil {
+			return nil, err
+		}
+		result = append(result, exp)
+	}
+	return result, rows.Err()
 }
 
 func (r *StrategyExperimentRepository) Cancel(ctx context.Context, userID, id uuid.UUID) (*StrategyExperiment, error) {
 	var exp StrategyExperiment
-	err := r.db.GetContext(ctx, &exp, `UPDATE strategy_experiments SET status = 'CANCELLED', finished_at = COALESCE(finished_at, now()) WHERE id = $1 AND user_id = $2 AND status IN ('QUEUED','RUNNING') RETURNING id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,created_at,finished_at`, id, userID)
-	if errors.Is(err, sql.ErrNoRows) {
+	err := r.db.QueryRow(ctx, `UPDATE strategy_experiments SET status = 'CANCELLED', finished_at = COALESCE(finished_at, now()) WHERE id = $1 AND user_id = $2 AND status IN ('QUEUED','RUNNING') RETURNING id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,created_at,finished_at`, id, userID).Scan(
+		&exp.ID, &exp.UserID, &exp.BaseTemplateID, &exp.Status, &exp.ParameterSpace, &exp.SearchMethod, &exp.MaxCandidates, &exp.Objective, &exp.MarketRegimeRef, &exp.BestCandidateID, &exp.JobID, &exp.CreatedAt, &exp.FinishedAt,
+	)
+	if errors.Is(err, pgx.ErrNoRows) {
 		return r.Get(ctx, userID, id)
 	}
 	return &exp, err
@@ -127,7 +144,7 @@ func (r *StrategyExperimentRepository) CreateCandidate(ctx context.Context, cand
 	if len(candidate.ScoreComponents) == 0 {
 		candidate.ScoreComponents = []byte(`{}`)
 	}
-	_, err := r.db.ExecContext(ctx, `
+	_, err := r.db.Exec(ctx, `
 		INSERT INTO strategy_experiment_candidates (id,experiment_id,parameters,draft_code_ref,backtest_run_id,score,grade,score_components,rank,summary,recommendation,created_at)
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
 	`, candidate.ID, candidate.ExperimentID, candidate.Parameters, candidate.DraftCodeRef, candidate.BacktestRunID, candidate.Score, candidate.Grade, candidate.ScoreComponents, candidate.Rank, candidate.Summary, candidate.Recommendation, candidate.CreatedAt)
@@ -141,26 +158,37 @@ func (r *StrategyExperimentRepository) ListCandidates(ctx context.Context, userI
 	if _, err := r.Get(ctx, userID, experimentID); err != nil {
 		return nil, err
 	}
-	var rows []StrategyExperimentCandidate
-	err := r.db.SelectContext(ctx, &rows, `SELECT * FROM strategy_experiment_candidates WHERE experiment_id = $1 ORDER BY rank ASC, created_at ASC`, experimentID)
-	return rows, err
+	rows, err := r.db.Query(ctx, `SELECT * FROM strategy_experiment_candidates WHERE experiment_id = $1 ORDER BY rank ASC, created_at ASC`, experimentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var result []StrategyExperimentCandidate
+	for rows.Next() {
+		var c StrategyExperimentCandidate
+		if err := rows.Scan(&c.ID, &c.ExperimentID, &c.Parameters, &c.DraftCodeRef, &c.BacktestRunID, &c.Score, &c.Grade, &c.ScoreComponents, &c.Rank, &c.Summary, &c.Recommendation, &c.CreatedAt); err != nil {
+			return nil, err
+		}
+		result = append(result, c)
+	}
+	return result, rows.Err()
 }
 
 func (r *StrategyExperimentRepository) GetCandidate(ctx context.Context, userID, candidateID uuid.UUID) (*StrategyExperimentCandidate, error) {
 	var row StrategyExperimentCandidate
-	err := r.db.GetContext(ctx, &row, `
+	err := r.db.QueryRow(ctx, `
 		SELECT c.* FROM strategy_experiment_candidates c
 		JOIN strategy_experiments e ON e.id = c.experiment_id
 		WHERE c.id = $1 AND e.user_id = $2
-	`, candidateID, userID)
-	if errors.Is(err, sql.ErrNoRows) {
+	`, candidateID, userID).Scan(&row.ID, &row.ExperimentID, &row.Parameters, &row.DraftCodeRef, &row.BacktestRunID, &row.Score, &row.Grade, &row.ScoreComponents, &row.Rank, &row.Summary, &row.Recommendation, &row.CreatedAt)
+	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrExperimentCandidateNotFound
 	}
 	return &row, err
 }
 
 func (r *StrategyExperimentRepository) SetBestCandidate(ctx context.Context, experimentID, candidateID uuid.UUID) error {
-	_, err := r.db.ExecContext(ctx, `UPDATE strategy_experiments SET best_candidate_id = $2 WHERE id = $1`, experimentID, candidateID)
+	_, err := r.db.Exec(ctx, `UPDATE strategy_experiments SET best_candidate_id = $2 WHERE id = $1`, experimentID, candidateID)
 	if err != nil {
 		return fmt.Errorf("set best candidate: %w", err)
 	}

@@ -6,7 +6,6 @@ import (
 	"errors"
 	"time"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jmoiron/sqlx"
 
 	"anttrader/internal/model"
 )
@@ -19,12 +18,11 @@ var (
 )
 
 type AdminRepository struct {
-	db     *pgxpool.Pool
-	sqlxDB *sqlx.DB
+	db *pgxpool.Pool
 }
 
-func NewAdminRepository(db *pgxpool.Pool, sqlxDB *sqlx.DB) *AdminRepository {
-	return &AdminRepository{db: db, sqlxDB: sqlxDB}
+func NewAdminRepository(db *pgxpool.Pool) *AdminRepository {
+	return &AdminRepository{db: db}
 }
 
 func (r *AdminRepository) GetDashboardStats(ctx context.Context) (*model.DashboardStats, error) {

@@ -7,12 +7,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type BacktestRunRepository struct {
-	db *sqlx.DB
+	db *pgxpool.Pool
 }
 
 type BacktestRun struct {
@@ -40,11 +39,11 @@ type BacktestRun struct {
 	FinishedAt          *time.Time `db:"finished_at"`
 	StrategyCode        *string    `db:"strategy_code"`
 	InitialCapital      *float64   `db:"initial_capital"`
-	ExtraSymbols        pq.StringArray `db:"extra_symbols"`
+	ExtraSymbols        []string   `db:"extra_symbols"`
 	CreatedAt           time.Time  `db:"created_at"`
 }
 
-func NewBacktestRunRepository(db *sqlx.DB) *BacktestRunRepository {
+func NewBacktestRunRepository(db *pgxpool.Pool) *BacktestRunRepository {
 	return &BacktestRunRepository{db: db}
 }
 
@@ -68,7 +67,7 @@ func (r *BacktestRunRepository) Create(ctx context.Context, run *BacktestRun) (u
 		id = uuid.New()
 	}
 	var out uuid.UUID
-	err := r.db.QueryRowxContext(ctx, query,
+	err := r.db.QueryRow(ctx, query,
 		id,
 		run.UserID,
 		run.AccountID,
@@ -103,8 +102,8 @@ func (r *BacktestRunRepository) GetByID(ctx context.Context, userID, runID uuid.
 		return nil, errors.New("repository not initialized")
 	}
 	var out BacktestRun
-	query := `
-		SELECT
+	err := r.db.QueryRow(ctx,
+		`SELECT
 			id, user_id, account_id, symbol, timeframe, dataset_id, template_id, template_draft_id,
 			mode, from_ts, to_ts,
 			cancel_requested_at, lease_until,
@@ -114,9 +113,18 @@ func (r *BacktestRunRepository) GetByID(ctx context.Context, userID, runID uuid.
 			extra_symbols,
 			created_at
 		FROM backtest_runs
-		WHERE id = $1 AND user_id = $2
-	`
-	err := r.db.GetContext(ctx, &out, query, runID, userID)
+		WHERE id = $1 AND user_id = $2`,
+		runID, userID,
+	).Scan(
+		&out.ID, &out.UserID, &out.AccountID, &out.Symbol, &out.Timeframe, &out.DatasetID, &out.TemplateID, &out.TemplateDraftID,
+		&out.Mode, &out.FromTs, &out.ToTs,
+		&out.CancelRequestedAt, &out.LeaseUntil,
+		&out.StrategyCodeHash, &out.PythonServiceVersion,
+		&out.CostModelSnapshot, &out.Metrics, &out.EquityCurve,
+		&out.Status, &out.Error, &out.StartedAt, &out.FinishedAt, &out.StrategyCode, &out.InitialCapital,
+		&out.ExtraSymbols,
+		&out.CreatedAt,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -139,8 +147,8 @@ func (r *BacktestRunRepository) ListByUser(ctx context.Context, userID uuid.UUID
 
 	items := []*BacktestRun{}
 	if accountID == nil || *accountID == uuid.Nil {
-		query := `
-			SELECT
+		rows, err := r.db.Query(ctx,
+			`SELECT
 				id, user_id, account_id, symbol, timeframe, dataset_id, template_id, template_draft_id,
 				mode, from_ts, to_ts,
 				cancel_requested_at, lease_until,
@@ -152,14 +160,33 @@ func (r *BacktestRunRepository) ListByUser(ctx context.Context, userID uuid.UUID
 			FROM backtest_runs
 			WHERE user_id = $1
 			ORDER BY created_at DESC
-			LIMIT $2 OFFSET $3
-		`
-		err := r.db.SelectContext(ctx, &items, query, userID, limit, offset)
-		return items, err
+			LIMIT $2 OFFSET $3`,
+			userID, limit, offset)
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var out BacktestRun
+			if err := rows.Scan(
+				&out.ID, &out.UserID, &out.AccountID, &out.Symbol, &out.Timeframe, &out.DatasetID, &out.TemplateID, &out.TemplateDraftID,
+				&out.Mode, &out.FromTs, &out.ToTs,
+				&out.CancelRequestedAt, &out.LeaseUntil,
+				&out.StrategyCodeHash, &out.PythonServiceVersion,
+				&out.CostModelSnapshot, &out.Metrics, &out.EquityCurve,
+				&out.Status, &out.Error, &out.StartedAt, &out.FinishedAt, &out.StrategyCode, &out.InitialCapital,
+				&out.ExtraSymbols,
+				&out.CreatedAt,
+			); err != nil {
+				return nil, err
+			}
+			items = append(items, &out)
+		}
+		return items, rows.Err()
 	}
 
-	query := `
-		SELECT
+	rows, err := r.db.Query(ctx,
+		`SELECT
 			id, user_id, account_id, symbol, timeframe, dataset_id, template_id, template_draft_id,
 			mode, from_ts, to_ts,
 			cancel_requested_at, lease_until,
@@ -171,10 +198,29 @@ func (r *BacktestRunRepository) ListByUser(ctx context.Context, userID uuid.UUID
 		FROM backtest_runs
 		WHERE user_id = $1 AND account_id = $2
 		ORDER BY created_at DESC
-		LIMIT $3 OFFSET $4
-	`
-	err := r.db.SelectContext(ctx, &items, query, userID, *accountID, limit, offset)
-	return items, err
+		LIMIT $3 OFFSET $4`,
+		userID, *accountID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var out BacktestRun
+		if err := rows.Scan(
+			&out.ID, &out.UserID, &out.AccountID, &out.Symbol, &out.Timeframe, &out.DatasetID, &out.TemplateID, &out.TemplateDraftID,
+			&out.Mode, &out.FromTs, &out.ToTs,
+			&out.CancelRequestedAt, &out.LeaseUntil,
+			&out.StrategyCodeHash, &out.PythonServiceVersion,
+			&out.CostModelSnapshot, &out.Metrics, &out.EquityCurve,
+			&out.Status, &out.Error, &out.StartedAt, &out.FinishedAt, &out.StrategyCode, &out.InitialCapital,
+			&out.ExtraSymbols,
+			&out.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &out)
+	}
+	return items, rows.Err()
 }
 
 func (r *BacktestRunRepository) ClaimNextForWork(ctx context.Context, leaseUntil time.Time) (*BacktestRun, error) {
@@ -218,7 +264,16 @@ func (r *BacktestRunRepository) ClaimNextForWork(ctx context.Context, leaseUntil
 			b.extra_symbols,
 			b.created_at
 	`
-	err := r.db.GetContext(ctx, &out, query, leaseUntil)
+	err := r.db.QueryRow(ctx, query, leaseUntil).Scan(
+		&out.ID, &out.UserID, &out.AccountID, &out.Symbol, &out.Timeframe, &out.DatasetID, &out.TemplateID, &out.TemplateDraftID,
+		&out.Mode, &out.FromTs, &out.ToTs,
+		&out.CancelRequestedAt, &out.LeaseUntil,
+		&out.StrategyCodeHash, &out.PythonServiceVersion,
+		&out.CostModelSnapshot, &out.Metrics, &out.EquityCurve,
+		&out.Status, &out.Error, &out.StartedAt, &out.FinishedAt, &out.StrategyCode, &out.InitialCapital,
+		&out.ExtraSymbols,
+		&out.CreatedAt,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -234,7 +289,7 @@ func (r *BacktestRunRepository) ExtendLease(ctx context.Context, userID, runID u
 		SET lease_until = $3
 		WHERE id = $1 AND user_id = $2 AND finished_at IS NULL
 	`
-	_, err := r.db.ExecContext(ctx, query, runID, userID, leaseUntil)
+	_, err := r.db.Exec(ctx, query, runID, userID, leaseUntil)
 	if err != nil {
 		return fmt.Errorf("extend lease: %w", err)
 	}
@@ -255,7 +310,7 @@ func (r *BacktestRunRepository) RequestCancel(ctx context.Context, userID, runID
 			cancel_requested_at = COALESCE(cancel_requested_at, CURRENT_TIMESTAMP)
 		WHERE id = $1 AND user_id = $2
 	`
-	_, err := r.db.ExecContext(ctx, query, runID, userID)
+	_, err := r.db.Exec(ctx, query, runID, userID)
 	if err != nil {
 		return fmt.Errorf("request cancel: %w", err)
 	}
@@ -270,15 +325,11 @@ func (r *BacktestRunRepository) Delete(ctx context.Context, userID, runID uuid.U
 		DELETE FROM backtest_runs
 		WHERE id = $1 AND user_id = $2
 	`
-	res, err := r.db.ExecContext(ctx, query, runID, userID)
+	ct, err := r.db.Exec(ctx, query, runID, userID)
 	if err != nil {
 		return false, err
 	}
-	n, err := res.RowsAffected()
-	if err != nil {
-		return false, err
-	}
-	return n > 0, nil
+	return ct.RowsAffected() > 0, nil
 }
 
 func (r *BacktestRunRepository) CountActiveByUser(ctx context.Context, userID uuid.UUID) (int, error) {
@@ -291,7 +342,7 @@ func (r *BacktestRunRepository) CountActiveByUser(ctx context.Context, userID uu
 		FROM backtest_runs
 		WHERE user_id = $1 AND status IN ('PENDING','RUNNING','CANCEL_REQUESTED')
 	`
-	err := r.db.GetContext(ctx, &n, query, userID)
+	err := r.db.QueryRow(ctx, query, userID).Scan(&n)
 	return n, err
 }
 
@@ -305,7 +356,7 @@ func (r *BacktestRunRepository) CountPendingByUser(ctx context.Context, userID u
 		FROM backtest_runs
 		WHERE user_id = $1 AND status = 'PENDING'
 	`
-	err := r.db.GetContext(ctx, &n, query, userID)
+	err := r.db.QueryRow(ctx, query, userID).Scan(&n)
 	return n, err
 }
 
@@ -319,7 +370,7 @@ func (r *BacktestRunRepository) CountRecentStartsByUser(ctx context.Context, use
 		FROM backtest_runs
 		WHERE user_id = $1 AND created_at >= $2
 	`
-	err := r.db.GetContext(ctx, &n, query, userID, since)
+	err := r.db.QueryRow(ctx, query, userID, since).Scan(&n)
 	return n, err
 }
 
@@ -333,7 +384,7 @@ func (r *BacktestRunRepository) CountActiveByAccount(ctx context.Context, userID
 		FROM backtest_runs
 		WHERE user_id = $1 AND account_id = $2 AND status IN ('PENDING','RUNNING','CANCEL_REQUESTED')
 	`
-	err := r.db.GetContext(ctx, &n, query, userID, accountID)
+	err := r.db.QueryRow(ctx, query, userID, accountID).Scan(&n)
 	return n, err
 }
 
@@ -347,7 +398,7 @@ func (r *BacktestRunRepository) CountPendingByAccount(ctx context.Context, userI
 		FROM backtest_runs
 		WHERE user_id = $1 AND account_id = $2 AND status = 'PENDING'
 	`
-	err := r.db.GetContext(ctx, &n, query, userID, accountID)
+	err := r.db.QueryRow(ctx, query, userID, accountID).Scan(&n)
 	return n, err
 }
 
@@ -362,7 +413,7 @@ func (r *BacktestRunRepository) GetStatusAndCancelRequestedAt(ctx context.Contex
 		FROM backtest_runs
 		WHERE id = $1 AND user_id = $2
 	`
-	err := r.db.QueryRowxContext(ctx, query, runID, userID).Scan(&status, &cancelAt)
+	err := r.db.QueryRow(ctx, query, runID, userID).Scan(&status, &cancelAt)
 	return status, cancelAt, err
 }
 
@@ -385,7 +436,7 @@ func (r *BacktestRunRepository) UpdateAsyncFields(ctx context.Context, userID, r
 			equity_curve = COALESCE($8, equity_curve)
 		WHERE id = $1 AND user_id = $2
 	`
-	_, err := r.db.ExecContext(ctx, query, runID, userID, status, errMsg, startedAt, finishedAt, metrics, equityCurve)
+	_, err := r.db.Exec(ctx, query, runID, userID, status, errMsg, startedAt, finishedAt, metrics, equityCurve)
 	if err != nil {
 		return fmt.Errorf("update async fields: %w", err)
 	}

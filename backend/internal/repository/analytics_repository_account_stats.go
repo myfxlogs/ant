@@ -51,9 +51,20 @@ func (r *AnalyticsRepository) GetSymbolStats(ctx context.Context, accountID uuid
 		GROUP BY symbol
 		ORDER BY net_profit DESC
 	`
+	rows, err := r.db.Query(ctx, query, accountID, start, end)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 	var stats []*model.SymbolStats
-	err := r.db.SelectContext(ctx, &stats, query, accountID, start, end)
-	return stats, err
+	for rows.Next() {
+		s := &model.SymbolStats{}
+		if err := rows.Scan(&s.Symbol, &s.TotalTrades, &s.WinningTrades, &s.LosingTrades, &s.WinRate, &s.TotalProfit, &s.TotalLoss, &s.NetProfit, &s.ProfitFactor, &s.AverageProfit, &s.TotalVolume, &s.AverageVolume, &s.LargestWin, &s.LargestLoss, &s.AverageHoldingTime); err != nil {
+			return nil, err
+		}
+		stats = append(stats, s)
+	}
+	return stats, rows.Err()
 }
 
 func (r *AnalyticsRepository) GetDailyEquity(ctx context.Context, accountID uuid.UUID, start, end time.Time) ([]*model.DailyEquity, error) {
@@ -70,9 +81,20 @@ func (r *AnalyticsRepository) GetDailyEquity(ctx context.Context, accountID uuid
 		Date   time.Time `db:"date"`
 		Profit float64   `db:"profit"`
 	}
-	var dailyProfits []dailyProfit
-	err := r.db.SelectContext(ctx, &dailyProfits, query, accountID, start, end)
+	rows, err := r.db.Query(ctx, query, accountID, start, end)
 	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var dailyProfits []dailyProfit
+	for rows.Next() {
+		var dp dailyProfit
+		if err := rows.Scan(&dp.Date, &dp.Profit); err != nil {
+			return nil, err
+		}
+		dailyProfits = append(dailyProfits, dp)
+	}
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
@@ -95,7 +117,7 @@ func (r *AnalyticsRepository) GetDailyEquity(ctx context.Context, accountID uuid
 func (r *AnalyticsRepository) GetAccountBalance(ctx context.Context, accountID uuid.UUID) (float64, error) {
 	query := `SELECT balance FROM mt_accounts WHERE id = $1`
 	var balance float64
-	err := r.db.GetContext(ctx, &balance, query, accountID)
+	err := r.db.QueryRow(ctx, query, accountID).Scan(&balance)
 	return balance, err
 }
 
@@ -110,7 +132,7 @@ func (r *AnalyticsRepository) GetAccountInitialBalance(ctx context.Context, acco
 		) as initial_balance
 	`
 	var balance float64
-	err := r.db.GetContext(ctx, &balance, query, accountID)
+	err := r.db.QueryRow(ctx, query, accountID).Scan(&balance)
 	return balance, err
 }
 
@@ -137,7 +159,7 @@ func (r *AnalyticsRepository) GetConsecutiveStats(ctx context.Context, accountID
 			COALESCE(MAX(CASE WHEN sign = -1 THEN cnt END), 0) as max_losses
 		FROM groups
 	`
-	err = r.db.QueryRowxContext(ctx, query, accountID, start, end).Scan(&maxWins, &maxLosses)
+	err = r.db.QueryRow(ctx, query, accountID, start, end).Scan(&maxWins, &maxLosses)
 	return
 }
 
@@ -148,7 +170,7 @@ func (r *AnalyticsRepository) GetHoldingTimeStats(ctx context.Context, accountID
 		WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3
 			AND order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit')
 	`
-	err = r.db.GetContext(ctx, &avgHoldingSeconds, query, accountID, start, end)
+	err = r.db.QueryRow(ctx, query, accountID, start, end).Scan(&avgHoldingSeconds)
 	return
 }
 
@@ -161,9 +183,20 @@ func (r *AnalyticsRepository) GetDailyReturns(ctx context.Context, accountID uui
 		GROUP BY DATE(close_time)
 		ORDER BY DATE(close_time)
 	`
+	rows, err := r.db.Query(ctx, query, accountID, start, end)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 	var returns []float64
-	err := r.db.SelectContext(ctx, &returns, query, accountID, start, end)
-	return returns, err
+	for rows.Next() {
+		var ret float64
+		if err := rows.Scan(&ret); err != nil {
+			return nil, err
+		}
+		returns = append(returns, ret)
+	}
+	return returns, rows.Err()
 }
 
 func (r *AnalyticsRepository) GetMaxDrawdown(ctx context.Context, accountID uuid.UUID, start, end time.Time) (maxDrawdown float64, maxDrawdownPercent float64, err error) {
@@ -200,7 +233,7 @@ func (r *AnalyticsRepository) GetMaxDrawdown(ctx context.Context, accountID uuid
 			END as max_drawdown_percent
 		FROM with_running_max
 	`
-	err = r.db.QueryRowxContext(ctx, query, accountID, start, end).Scan(&maxDrawdown, &maxDrawdownPercent)
+	err = r.db.QueryRow(ctx, query, accountID, start, end).Scan(&maxDrawdown, &maxDrawdownPercent)
 	return
 }
 
@@ -219,6 +252,11 @@ func (r *AnalyticsRepository) GetMonthlyPnL(ctx context.Context, accountID uuid.
 		GROUP BY EXTRACT(MONTH FROM close_time), TO_CHAR(close_time, 'Mon')
 		ORDER BY month_num
 	`
+	rows, err := r.db.Query(ctx, query, accountID, year)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 	var stats []*struct {
 		MonthNum   int     `db:"month_num"`
 		Month      string  `db:"month"`
@@ -227,8 +265,21 @@ func (r *AnalyticsRepository) GetMonthlyPnL(ctx context.Context, accountID uuid.
 		WinTrades  int     `db:"win_trades"`
 		LossTrades int     `db:"loss_trades"`
 	}
-	err := r.db.SelectContext(ctx, &stats, query, accountID, year)
-	if err != nil {
+	for rows.Next() {
+		s := &struct {
+			MonthNum   int     `db:"month_num"`
+			Month      string  `db:"month"`
+			Profit     float64 `db:"profit"`
+			Trades     int     `db:"trades"`
+			WinTrades  int     `db:"win_trades"`
+			LossTrades int     `db:"loss_trades"`
+		}{}
+		if err := rows.Scan(&s.MonthNum, &s.Month, &s.Profit, &s.Trades, &s.WinTrades, &s.LossTrades); err != nil {
+			return nil, err
+		}
+		stats = append(stats, s)
+	}
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
@@ -265,13 +316,13 @@ func (r *AnalyticsRepository) GetDailyPnL(ctx context.Context, accountID uuid.UU
 	}
 
 	type dailyStat struct {
-		Date       time.Time `db:"date"`
-		PnL        float64   `db:"pnl"`
-		Trades     int       `db:"trades"`
-		Lots       float64   `db:"lots"`
-		GrossProfit float64  `db:"gross_profit"`
-		GrossLoss  float64   `db:"gross_loss"`
-		Cashflow   float64   `db:"cashflow"`
+		Date        time.Time `db:"date"`
+		PnL         float64   `db:"pnl"`
+		Trades      int       `db:"trades"`
+		Lots        float64   `db:"lots"`
+		GrossProfit float64   `db:"gross_profit"`
+		GrossLoss   float64   `db:"gross_loss"`
+		Cashflow    float64   `db:"cashflow"`
 	}
 	query := `
 		SELECT
@@ -287,8 +338,20 @@ func (r *AnalyticsRepository) GetDailyPnL(ctx context.Context, accountID uuid.UU
 		GROUP BY DATE(close_time)
 		ORDER BY date ASC
 	`
+	rows, err := r.db.Query(ctx, query, accountID, start, end)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 	var stats []dailyStat
-	if err := r.db.SelectContext(ctx, &stats, query, accountID, start, end); err != nil {
+	for rows.Next() {
+		var s dailyStat
+		if err := rows.Scan(&s.Date, &s.PnL, &s.Trades, &s.Lots, &s.GrossProfit, &s.GrossLoss, &s.Cashflow); err != nil {
+			return nil, err
+		}
+		stats = append(stats, s)
+	}
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 	if len(stats) == 0 {
@@ -350,7 +413,7 @@ func (r *AnalyticsRepository) GetDailyPnL(ctx context.Context, accountID uuid.UU
 	return result, nil
 }
 
-// GetWeekdayPnL aggregates closed-trade P/L by ISO weekday (1=Mon … 7=Sun) in [start, end].
+// GetWeekdayPnL aggregates closed-trade P/L by ISO weekday (1=Mon � 7=Sun) in [start, end].
 func (r *AnalyticsRepository) GetWeekdayPnL(ctx context.Context, accountID uuid.UUID, start, end time.Time) ([]*model.WeekdayPnL, error) {
 	query := `
 		SELECT
@@ -363,12 +426,28 @@ func (r *AnalyticsRepository) GetWeekdayPnL(ctx context.Context, accountID uuid.
 		GROUP BY EXTRACT(ISODOW FROM close_time)
 		ORDER BY weekday
 	`
+	rows, err := r.db.Query(ctx, query, accountID, start, end)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 	var stats []*struct {
 		Weekday int     `db:"weekday"`
 		PnL     float64 `db:"pnl"`
 		Trades  int     `db:"trades"`
 	}
-	if err := r.db.SelectContext(ctx, &stats, query, accountID, start, end); err != nil {
+	for rows.Next() {
+		s := &struct {
+			Weekday int     `db:"weekday"`
+			PnL     float64 `db:"pnl"`
+			Trades  int     `db:"trades"`
+		}{}
+		if err := rows.Scan(&s.Weekday, &s.PnL, &s.Trades); err != nil {
+			return nil, err
+		}
+		stats = append(stats, s)
+	}
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
@@ -410,11 +489,20 @@ func (r *AnalyticsRepository) GetMonthlyAnalysisRaw(ctx context.Context, account
 		ORDER BY year ASC, month ASC
 	`
 
-	var points []*model.MonthlyAnalysisPoint
-	if err := r.db.SelectContext(ctx, &points, query, accountID); err != nil {
+	rows, err := r.db.Query(ctx, query, accountID)
+	if err != nil {
 		return nil, err
 	}
-	return points, nil
+	defer rows.Close()
+	var points []*model.MonthlyAnalysisPoint
+	for rows.Next() {
+		p := &model.MonthlyAnalysisPoint{}
+		if err := rows.Scan(&p.Year, &p.Month, &p.Profit, &p.Lots, &p.Pips, &p.Trades); err != nil {
+			return nil, err
+		}
+		points = append(points, p)
+	}
+	return points, rows.Err()
 }
 
 func (r *AnalyticsRepository) GetMonthlyAnalysisYears(ctx context.Context, accountID uuid.UUID) ([]int, error) {
@@ -426,11 +514,20 @@ func (r *AnalyticsRepository) GetMonthlyAnalysisYears(ctx context.Context, accou
 		ORDER BY year ASC
 	`
 
-	var years []int
-	if err := r.db.SelectContext(ctx, &years, query, accountID); err != nil {
+	rows, err := r.db.Query(ctx, query, accountID)
+	if err != nil {
 		return nil, err
 	}
-	return years, nil
+	defer rows.Close()
+	var years []int
+	for rows.Next() {
+		var year int
+		if err := rows.Scan(&year); err != nil {
+			return nil, err
+		}
+		years = append(years, year)
+	}
+	return years, rows.Err()
 }
 
 func (r *AnalyticsRepository) GetHourlyStats(ctx context.Context, accountID uuid.UUID, start, end time.Time) ([]*model.HourlyStats, error) {
@@ -452,35 +549,55 @@ func (r *AnalyticsRepository) GetHourlyStats(ctx context.Context, accountID uuid
 		GROUP BY EXTRACT(HOUR FROM close_time)
 		ORDER BY hour_start
 	`
-	var stats []*struct {
-		HourStart int     `db:"hour_start"`
-		Trades    int     `db:"trades"`
-		Lots      float64 `db:"lots"`
-		Profit    float64 `db:"profit"`
-		GrossProfit float64 `db:"gross_profit"`
-		GrossLoss float64 `db:"gross_loss"`
-		WinRate   float64 `db:"win_rate"`
+	rows, err := r.db.Query(ctx, query, accountID, start, end)
+	if err != nil {
+		return nil, err
 	}
-	if err := r.db.SelectContext(ctx, &stats, query, accountID, start, end); err != nil {
+	defer rows.Close()
+	var stats []*struct {
+		HourStart   int     `db:"hour_start"`
+		Trades      int     `db:"trades"`
+		Lots        float64 `db:"lots"`
+		Profit      float64 `db:"profit"`
+		GrossProfit float64 `db:"gross_profit"`
+		GrossLoss   float64 `db:"gross_loss"`
+		WinRate     float64 `db:"win_rate"`
+	}
+	for rows.Next() {
+		s := &struct {
+			HourStart   int     `db:"hour_start"`
+			Trades      int     `db:"trades"`
+			Lots        float64 `db:"lots"`
+			Profit      float64 `db:"profit"`
+			GrossProfit float64 `db:"gross_profit"`
+			GrossLoss   float64 `db:"gross_loss"`
+			WinRate     float64 `db:"win_rate"`
+		}{}
+		if err := rows.Scan(&s.HourStart, &s.Trades, &s.Lots, &s.Profit, &s.GrossProfit, &s.GrossLoss, &s.WinRate); err != nil {
+			return nil, err
+		}
+		stats = append(stats, s)
+	}
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
 	result := make([]*model.HourlyStats, 24)
 	for h := 0; h < 24; h++ {
 		result[h] = &model.HourlyStats{
-			Hour:      fmt.Sprintf("%02d:00", h),
-			HourStart: h,
-			Trades:    0,
-			Profit:    0,
-			WinRate:   0,
-			AvgPnL:    0,
-			Lots:      0,
-			Balance:   0,
-			ProfitFactor: 0,
+			Hour:                  fmt.Sprintf("%02d:00", h),
+			HourStart:             h,
+			Trades:                0,
+			Profit:                0,
+			WinRate:               0,
+			AvgPnL:                0,
+			Lots:                  0,
+			Balance:               0,
+			ProfitFactor:          0,
 			MaxFloatingLossAmount: 0,
-			MaxFloatingLossRatio: 0,
+			MaxFloatingLossRatio:  0,
 			MaxFloatingProfitAmount: 0,
-			MaxFloatingProfitRatio: 0,
+			MaxFloatingProfitRatio:  0,
 		}
 	}
 	for _, s := range stats {

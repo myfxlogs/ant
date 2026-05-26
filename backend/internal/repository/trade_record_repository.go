@@ -6,16 +6,16 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"anttrader/internal/model"
 )
 
 type TradeRecordRepository struct {
-	db *sqlx.DB
+	db *pgxpool.Pool
 }
 
-func NewTradeRecordRepository(db *sqlx.DB) *TradeRecordRepository {
+func NewTradeRecordRepository(db *pgxpool.Pool) *TradeRecordRepository {
 	return &TradeRecordRepository{db: db}
 }
 
@@ -38,7 +38,7 @@ func (r *TradeRecordRepository) Create(ctx context.Context, record *model.TradeR
 			updated_at = CURRENT_TIMESTAMP
 		RETURNING id
 	`
-	return r.db.QueryRowxContext(ctx, query,
+	return r.db.QueryRow(ctx, query,
 		record.ScheduleID, record.AccountID, record.Ticket, record.Symbol, record.OrderType, record.Volume,
 		record.OpenPrice, record.ClosePrice, record.Profit, record.Swap, record.Commission,
 		record.OpenTime, record.CloseTime, record.StopLoss, record.TakeProfit,
@@ -51,11 +51,11 @@ func (r *TradeRecordRepository) BatchCreate(ctx context.Context, records []*mode
 		return nil
 	}
 
-	tx, err := r.db.BeginTxx(ctx, nil)
+	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("batch create trade record: %w", err)
 	}
-	defer tx.Rollback()
+	defer tx.Rollback(ctx)
 
 	query := `
 		INSERT INTO trade_records (
@@ -75,14 +75,8 @@ func (r *TradeRecordRepository) BatchCreate(ctx context.Context, records []*mode
 			updated_at = CURRENT_TIMESTAMP
 	`
 
-	stmt, err := tx.PreparexContext(ctx, query)
-	if err != nil {
-		return fmt.Errorf("batch create trade record: %w", err)
-	}
-	defer stmt.Close()
-
 	for _, record := range records {
-		_, err := stmt.ExecContext(ctx,
+		_, err := tx.Exec(ctx, query,
 			record.ScheduleID, record.AccountID, record.Ticket, record.Symbol, record.OrderType, record.Volume,
 			record.OpenPrice, record.ClosePrice, record.Profit, record.Swap, record.Commission,
 			record.OpenTime, record.CloseTime, record.StopLoss, record.TakeProfit,
@@ -93,15 +87,16 @@ func (r *TradeRecordRepository) BatchCreate(ctx context.Context, records []*mode
 		}
 	}
 
-	return tx.Commit()
+	return tx.Commit(ctx)
 }
 
 func (r *TradeRecordRepository) GetByAccountID(ctx context.Context, accountID uuid.UUID, start, end time.Time, limit int) ([]*model.TradeRecord, error) {
 	query := `
-		SELECT 
-			id, account_id, ticket, symbol, order_type, volume,
+		SELECT
+			id, schedule_id, account_id, ticket, symbol, order_type, volume,
 			open_price, close_price, profit, swap, commission,
-			open_time, close_time, stop_loss, take_profit, order_comment, magic_number, platform
+			open_time, close_time, stop_loss, take_profit, order_comment, magic_number, platform,
+			created_at, updated_at
 		FROM trade_records
 		WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3
 		ORDER BY close_time DESC
@@ -113,9 +108,27 @@ func (r *TradeRecordRepository) GetByAccountID(ctx context.Context, accountID uu
 		args = append(args, limit)
 	}
 
+	rows, err := r.db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
 	var records []*model.TradeRecord
-	err := r.db.SelectContext(ctx, &records, query, args...)
-	return records, err
+	for rows.Next() {
+		var rec model.TradeRecord
+		if err := rows.Scan(
+			&rec.ID, &rec.ScheduleID, &rec.AccountID, &rec.Ticket, &rec.Symbol, &rec.OrderType,
+			&rec.Volume, &rec.OpenPrice, &rec.ClosePrice, &rec.Profit, &rec.Swap, &rec.Commission,
+			&rec.OpenTime, &rec.CloseTime, &rec.StopLoss, &rec.TakeProfit,
+			&rec.OrderComment, &rec.MagicNumber, &rec.Platform,
+			&rec.CreatedAt, &rec.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		records = append(records, &rec)
+	}
+	return records, rows.Err()
 }
 
 func (r *TradeRecordRepository) GetLastSyncTime(ctx context.Context, accountID uuid.UUID) (*time.Time, error) {
@@ -123,7 +136,7 @@ func (r *TradeRecordRepository) GetLastSyncTime(ctx context.Context, accountID u
 		SELECT MAX(close_time) FROM trade_records WHERE account_id = $1
 	`
 	var lastTime *time.Time
-	err := r.db.QueryRowxContext(ctx, query, accountID).Scan(&lastTime)
+	err := r.db.QueryRow(ctx, query, accountID).Scan(&lastTime)
 	if err != nil {
 		return nil, err
 	}
@@ -133,13 +146,13 @@ func (r *TradeRecordRepository) GetLastSyncTime(ctx context.Context, accountID u
 func (r *TradeRecordRepository) CountByAccount(ctx context.Context, accountID uuid.UUID) (int, error) {
 	query := `SELECT COUNT(*) FROM trade_records WHERE account_id = $1`
 	var count int
-	err := r.db.QueryRowxContext(ctx, query, accountID).Scan(&count)
+	err := r.db.QueryRow(ctx, query, accountID).Scan(&count)
 	return count, err
 }
 
 func (r *TradeRecordRepository) DeleteByAccount(ctx context.Context, accountID uuid.UUID) error {
 	query := `DELETE FROM trade_records WHERE account_id = $1`
-	_, err := r.db.ExecContext(ctx, query, accountID)
+	_, err := r.db.Exec(ctx, query, accountID)
 	if err != nil {
 		return fmt.Errorf("delete trade records by account: %w", err)
 	}

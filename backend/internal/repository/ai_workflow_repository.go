@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var ErrAIWorkflowRunNotFound = errors.New("ai workflow run not found")
@@ -36,10 +36,10 @@ type AIWorkflowStep struct {
 }
 
 type AIWorkflowRepository struct {
-	db *sqlx.DB
+	db *pgxpool.Pool
 }
 
-func NewAIWorkflowRepository(db *sqlx.DB) *AIWorkflowRepository {
+func NewAIWorkflowRepository(db *pgxpool.Pool) *AIWorkflowRepository {
 	return &AIWorkflowRepository{db: db}
 }
 
@@ -58,9 +58,9 @@ func (r *AIWorkflowRepository) CreateRun(ctx context.Context, userID uuid.UUID, 
 		UpdatedAt: now,
 		StepCount: 0,
 	}
-	_, err := r.db.ExecContext(ctx,
+	_, err := r.db.Exec(ctx,
 		`INSERT INTO ai_workflow_runs (id, user_id, title, status, context_json, created_at, updated_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+			 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
 		run.ID, run.UserID, run.Title, run.Status, run.Context, run.CreatedAt, run.UpdatedAt,
 	)
 	if err != nil {
@@ -72,7 +72,7 @@ func (r *AIWorkflowRepository) CreateRun(ctx context.Context, userID uuid.UUID, 
 func (r *AIWorkflowRepository) AppendStep(ctx context.Context, userID, runID uuid.UUID, key, title, status, input, output, stepErr string, durationMs int64) (*AIWorkflowStep, error) {
 	// authorize run ownership
 	var exists int
-	err := r.db.GetContext(ctx, &exists, `SELECT 1 FROM ai_workflow_runs WHERE id = $1 AND user_id = $2`, runID, userID)
+	err := r.db.QueryRow(ctx, `SELECT 1 FROM ai_workflow_runs WHERE id = $1 AND user_id = $2`, runID, userID).Scan(&exists)
 	if err != nil {
 		return nil, ErrAIWorkflowRunNotFound
 	}
@@ -93,17 +93,17 @@ func (r *AIWorkflowRepository) AppendStep(ctx context.Context, userID, runID uui
 		CreatedAt: time.Now(),
 	}
 
-	tx, txErr := r.db.BeginTxx(ctx, nil)
+	tx, txErr := r.db.Begin(ctx)
 	if txErr != nil {
 		return nil, txErr
 	}
 	defer func() {
-		tx.Rollback() // errcheck excluded; after commit this is a no-op
+		tx.Rollback(ctx) // errcheck excluded; after commit this is a no-op
 	}()
 
-	_, err = tx.ExecContext(ctx,
+	_, err = tx.Exec(ctx,
 		`INSERT INTO ai_workflow_steps (id, run_id, step_key, title, status, input, output, error, duration_ms, created_at)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+			 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
 		step.ID, step.RunID, step.Key, step.Title, step.Status, step.Input, step.Output, step.Error, step.Duration, step.CreatedAt,
 	)
 	if err != nil {
@@ -118,18 +118,18 @@ func (r *AIWorkflowRepository) AppendStep(ctx context.Context, userID, runID uui
 	if status == "done" && key == "code" {
 		newRunStatus = "succeeded"
 	}
-	_, err = tx.ExecContext(ctx,
+	_, err = tx.Exec(ctx,
 		`UPDATE ai_workflow_runs
-		 SET updated_at = $1,
-		     status = CASE WHEN status = 'running' THEN $2 ELSE status END
-		 WHERE id = $3 AND user_id = $4`,
+			 SET updated_at = $1,
+			     status = CASE WHEN status = 'running' THEN $2 ELSE status END
+			 WHERE id = $3 AND user_id = $4`,
 		now, newRunStatus, runID, userID,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := tx.Commit(); err != nil {
+	if err := tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 	return step, nil
@@ -146,19 +146,31 @@ func (r *AIWorkflowRepository) ListRuns(ctx context.Context, userID uuid.UUID, l
 		offset = 0
 	}
 
-	var runs []AIWorkflowRun
-	err := r.db.SelectContext(ctx, &runs,
+	rows, err := r.db.Query(ctx,
 		`SELECT r.id, r.user_id, r.title, r.status, r.context_json, r.created_at, r.updated_at,
-		        COALESCE(s.cnt, 0) AS step_count
-		 FROM ai_workflow_runs r
-		 LEFT JOIN (SELECT run_id, COUNT(*) AS cnt FROM ai_workflow_steps GROUP BY run_id) s
-		   ON s.run_id = r.id
-		 WHERE r.user_id = $1
-		 ORDER BY r.updated_at DESC
-		 LIMIT $2 OFFSET $3`,
+			        COALESCE(s.cnt, 0) AS step_count
+			 FROM ai_workflow_runs r
+			 LEFT JOIN (SELECT run_id, COUNT(*) AS cnt FROM ai_workflow_steps GROUP BY run_id) s
+			   ON s.run_id = r.id
+			 WHERE r.user_id = $1
+			 ORDER BY r.updated_at DESC
+			 LIMIT $2 OFFSET $3`,
 		userID, limit, offset,
 	)
 	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var runs []AIWorkflowRun
+	for rows.Next() {
+		var run AIWorkflowRun
+		if err := rows.Scan(&run.ID, &run.UserID, &run.Title, &run.Status, &run.Context, &run.CreatedAt, &run.UpdatedAt, &run.StepCount); err != nil {
+			return nil, err
+		}
+		runs = append(runs, run)
+	}
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 	return runs, nil
@@ -166,22 +178,34 @@ func (r *AIWorkflowRepository) ListRuns(ctx context.Context, userID uuid.UUID, l
 
 func (r *AIWorkflowRepository) GetRun(ctx context.Context, userID, runID uuid.UUID) (*AIWorkflowRun, []AIWorkflowStep, error) {
 	var run AIWorkflowRun
-	err := r.db.GetContext(ctx, &run,
+	err := r.db.QueryRow(ctx,
 		`SELECT id, user_id, title, status, context_json, created_at, updated_at
-		 FROM ai_workflow_runs WHERE id = $1 AND user_id = $2`,
+			 FROM ai_workflow_runs WHERE id = $1 AND user_id = $2`,
 		runID, userID,
-	)
+	).Scan(&run.ID, &run.UserID, &run.Title, &run.Status, &run.Context, &run.CreatedAt, &run.UpdatedAt)
 	if err != nil {
 		return nil, nil, ErrAIWorkflowRunNotFound
 	}
 
-	var steps []AIWorkflowStep
-	err = r.db.SelectContext(ctx, &steps,
+	rows, err := r.db.Query(ctx,
 		`SELECT id, run_id, step_key, title, status, input, output, error, duration_ms, created_at
-		 FROM ai_workflow_steps WHERE run_id = $1 ORDER BY created_at ASC`,
+			 FROM ai_workflow_steps WHERE run_id = $1 ORDER BY created_at ASC`,
 		runID,
 	)
 	if err != nil {
+		return nil, nil, err
+	}
+	defer rows.Close()
+
+	var steps []AIWorkflowStep
+	for rows.Next() {
+		var s AIWorkflowStep
+		if err := rows.Scan(&s.ID, &s.RunID, &s.Key, &s.Title, &s.Status, &s.Input, &s.Output, &s.Error, &s.Duration, &s.CreatedAt); err != nil {
+			return nil, nil, err
+		}
+		steps = append(steps, s)
+	}
+	if err := rows.Err(); err != nil {
 		return nil, nil, err
 	}
 
