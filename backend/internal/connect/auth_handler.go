@@ -112,8 +112,12 @@ func (s *AuthServer) Register(ctx context.Context, req *connect.Request[antv1.Re
 	if username == "" {
 		username = m.Email
 	}
-	hash := hashArgon2id(m.Password)
-	_, err := s.pg.Exec(ctx,
+	hash, err := hashArgon2id(m.Password)
+	if err != nil {
+		s.log.Error("Register: hash password", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	_, err = s.pg.Exec(ctx,
 		"INSERT INTO users (id, email, password_hash, nickname) VALUES ($1::uuid, $2, $3, $4)",
 		id, m.Email, hash, username,
 	)
@@ -135,17 +139,17 @@ const (
 	argonKeyLen  = 32
 )
 
-func hashArgon2id(password string) string {
+func hashArgon2id(password string) (string, error) {
 	salt := make([]byte, 16)
 	if _, err := rand.Read(salt); err != nil {
-		panic("crypto/rand failed: " + err.Error())
+		return "", fmt.Errorf("crypto/rand: %w", err)
 	}
 	hash := argon2.IDKey([]byte(password), salt, argonTime, argonMemory, argonThreads, argonKeyLen)
 	return fmt.Sprintf("$argon2id$v=19$m=%d,t=%d,p=%d$%s$%s",
 		argonMemory, argonTime, argonThreads,
 		base64.RawStdEncoding.EncodeToString(salt),
 		base64.RawStdEncoding.EncodeToString(hash),
-	)
+	), nil
 }
 
 func verifyArgon2id(storedHash, password string) bool {
