@@ -4,23 +4,28 @@ import { IconDownload } from '@tabler/icons-react';
 import { adminApi, type AdminLog, type LogListParams } from '@/client/admin';
 import { formatDateTime } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
+import { StatusResult } from '@/components/common/StatusResult';
 
 const { RangePicker } = DatePicker;
 
 export default function OperationLogs() {
   const [logs, setLogs] = useState<AdminLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [params, setParams] = useState<LogListParams>({ page: 1, pageSize: 20 });
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const result = await adminApi.listLogs(params);
       setLogs(result.logs);
       setTotal(result.total);
-    } catch (error) {
-      message.error(getErrorMessage(error, '加载日志失败'));
+    } catch (err) {
+      const msg = getErrorMessage(err, '加载日志失败');
+      setError(msg);
+      message.error(msg);
     } finally {
       setLoading(false);
     }
@@ -140,6 +145,7 @@ export default function OperationLogs() {
           />
         </div>
 
+        <StatusResult error={error} onRetry={fetchLogs}>
         <Table
           scroll={{ x: "max-content" }}
           columns={columns}
@@ -155,6 +161,7 @@ export default function OperationLogs() {
             onChange: (page, pageSize) => setParams({ ...params, page, pageSize }),
           }}
         />
+        </StatusResult>
       </Card>
     </div>
   );

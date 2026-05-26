@@ -26,6 +26,7 @@ import { useAccountStore } from '@/stores/accountStore';
 import { useShallow } from 'zustand/react/shallow';
 import { analyticsApi } from '@/client/analytics';
 import { tradingApi } from '@/client/trading';
+import type { ConnectAccountResult } from '@/client/account';
 import AccountTradeTabs from './components/AccountTradeTabs';
 import AccountAnalyticsSection from './components/AccountAnalyticsSection';
 import {
@@ -36,12 +37,123 @@ import { formatTimestamp, isPendingOrder } from './components/AccountDetail.util
 import { getErrorMessage, translateMaybeI18nKey } from '@/utils/error';
 import { useTranslation } from 'react-i18next';
 
+// Analytics proto types are not yet generated (backend stubs).
+// Define local interfaces matching the expected API response shapes.
+interface AccountAnalyticsData {
+  tradeStats?: AccountTradeStats;
+  riskMetrics?: AccountRiskMetrics;
+  symbolStats?: AccountSymbolStat[];
+  equityCurve?: AccountEquityPoint[];
+  dailyPnl?: AccountDailyPnlItem[];
+  hourlyStats?: AccountHourlyStat[];
+}
+
+interface AccountTradeStats {
+  totalTrades?: number;
+  winRate?: number;
+  profitFactor?: number;
+  averageProfit?: number;
+  averageLoss?: number;
+  largestWin?: number;
+  largestLoss?: number;
+  maxConsecutiveWins?: number;
+  maxConsecutiveLosses?: number;
+  averageHoldingTime?: string;
+  netProfit?: number;
+  totalDeposit?: number;
+  totalWithdrawal?: number;
+  netDeposit?: number;
+}
+
+interface AccountRiskMetrics {
+  maxDrawdownPercent?: number;
+  sharpeRatio?: number;
+  sortinoRatio?: number;
+  calmarRatio?: number;
+  volatility?: number;
+  averageDailyReturn?: number;
+}
+
+interface AccountSymbolStat {
+  symbol: string;
+  profit: number;
+  tradeSharePercent?: number;
+}
+
+interface AccountEquityPoint {
+  date: string;
+  equity: number;
+  balance: number;
+  profit: number;
+}
+
+interface AccountDailyPnlItem {
+  day: string;
+  date: string;
+  pnl?: number;
+  profit?: number;
+  trades: number;
+  lots?: number;
+  balance?: number;
+  profitFactor?: number;
+  maxFloatingLossAmount?: number;
+  maxFloatingLossRatio?: number;
+  maxFloatingProfitAmount?: number;
+  maxFloatingProfitRatio?: number;
+}
+
+interface AccountHourlyStat {
+  hour?: string;
+  lots?: number;
+  balance?: number;
+  profitFactor?: number;
+  maxFloatingLossAmount?: number;
+  maxFloatingLossRatio?: number;
+  maxFloatingProfitAmount?: number;
+  maxFloatingProfitRatio?: number;
+}
+
+interface AccountRecentTradesResponse {
+  trades?: Array<{
+    ticket: bigint | number;
+    symbol: string;
+    type: string;
+    volume: number;
+    openPrice: number;
+    closePrice: number;
+    profit: number;
+    openTime?: string | Date;
+    closeTime?: string | Date;
+    swap?: number;
+    commission?: number;
+    comment?: string;
+  }>;
+  total?: number;
+}
+
+interface AccountMonthlyPnLItem {
+  month?: string;
+  monthNum?: number;
+  month_num?: number;
+  profit: number;
+  trades: number;
+}
+
+interface AccountMonthlyPnLResponse {
+  monthlyPnl?: AccountMonthlyPnLItem[];
+}
+
+interface AccountMonthlyAnalysisResponse {
+  years?: number[];
+  data?: unknown[];
+}
+
 export default function AccountDetail() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { currentAccount, fetchAccount, fetchAccounts, disableAccount, enableAccount, setCurrentAccount } = useAccount();
-  const { connectAccount, fetchPositions, positions } = useTrading();
+  const { connectAccount, positions } = useTrading();
   const setCurrentAccountId = useTradingStore((state) => state.setCurrentAccountId);
   const accountInfo = useTradingStore(useShallow((state) => id ? state.accountInfoMap.get(id) : null));
   const hasReceivedData = useTradingStore((state) => state.hasReceivedData);
@@ -58,19 +170,21 @@ export default function AccountDetail() {
 
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
-  const [analytics, setAnalytics] = useState<any>(null);
-  const [monthlyPnL, setMonthlyPnL] = useState<any[]>([]);
+  const [analyticsError, setAnalyticsError] = useState<string | null>(null);
+  const [analytics, setAnalytics] = useState<AccountAnalyticsData | null>(null);
+  const [monthlyPnL, setMonthlyPnL] = useState<AccountMonthlyPnLItem[]>([]);
   const [monthlyAnalysisYears, setMonthlyAnalysisYears] = useState<number[]>([]);
-  const [monthlyAnalysisData, setMonthlyAnalysisData] = useState<any[]>([]);
+  const [monthlyAnalysisData, setMonthlyAnalysisData] = useState<unknown[]>([]);
   const [syncingHistory, setSyncingHistory] = useState(false);
   const [connecting, setConnecting] = useState(false);
-  const [historyTrades, setHistoryTrades] = useState<any[]>([]);
+  const [historyTrades, setHistoryTrades] = useState<NonNullable<AccountRecentTradesResponse['trades']>>([]);
   const [historyTotal, setHistoryTotal] = useState(0);
   const [historyPage, setHistoryPage] = useState(1);
   const historyPageSize = 10;
 
   const loadAllData = useCallback(async (accountId: string) => {
     setAnalyticsLoading(true);
+    setAnalyticsError(null);
     try {
       const [analyticsData, tradesData, monthlyData, monthlyAnalysisResp] = await Promise.all([
         analyticsApi.getAccountAnalytics(accountId),
@@ -78,15 +192,15 @@ export default function AccountDetail() {
         analyticsApi.getMonthlyPnL(accountId, selectedYear),
         analyticsApi.getMonthlyAnalysis(accountId),
       ]);
-      setAnalytics(analyticsData as any);
-      setHistoryTrades((tradesData as any).trades || []);
-      setHistoryTotal((tradesData as any).total || 0);
+      setAnalytics(analyticsData as AccountAnalyticsData);
+      setHistoryTrades((tradesData as AccountRecentTradesResponse).trades || []);
+      setHistoryTotal((tradesData as AccountRecentTradesResponse).total || 0);
       setHistoryPage(1);
-      setMonthlyPnL((monthlyData as any).monthlyPnl || []);
-      setMonthlyAnalysisYears((monthlyAnalysisResp as any).years || []);
-      setMonthlyAnalysisData((monthlyAnalysisResp as any).data || []);
+      setMonthlyPnL((monthlyData as AccountMonthlyPnLResponse).monthlyPnl || []);
+      setMonthlyAnalysisYears((monthlyAnalysisResp as AccountMonthlyAnalysisResponse).years || []);
+      setMonthlyAnalysisData((monthlyAnalysisResp as AccountMonthlyAnalysisResponse).data || []);
     } catch (error) {
-      showError(getErrorMessage(error, '加载分析数据失败'));
+      setAnalyticsError(getErrorMessage(error, '加载分析数据失败'));
     } finally {
       setAnalyticsLoading(false);
     }
@@ -103,7 +217,7 @@ export default function AccountDetail() {
 
       // 如果列表里已有该账户，直接用缓存填充 currentAccount，避免详情页一直等待
       if (account) {
-        setCurrentAccount(account as any);
+        setCurrentAccount(account);
       }
       
       // 如果 store 中没有当前账户，才获取详情（不显示 loading）
@@ -116,16 +230,9 @@ export default function AccountDetail() {
         }
       }
       
-      // 加载分析数据（不阻塞 UI）
+      // Load analytics data (non-blocking). Positions come from the real-time
+      // stream via position_snapshot events — no RPC fetchPositions needed.
       loadAllData(id).catch((error) => showError(getErrorMessage(error, '加载分析数据失败')));
-
-      // 无条件拉持仓：useTrading.fetchPositions 内部已处理
-      // 账户未连接→自动重连→重取 的兜底，账户禁用时后端返回空数组即可。
-      // 此处若再加 status==='connected' 前置判断，会因缓存的账户 status
-      // 过期而把首屏持仓“卡”住。
-      if (!useAccountStore.getState().currentAccount?.isDisabled) {
-        fetchPositions(id, false);
-      }
     };
     
     init();
@@ -135,12 +242,8 @@ export default function AccountDetail() {
       const { action, order } = customEvent.detail;
       
       if (action === 'PositionClose' && order) {
-        // Same rationale as init(): don't gate on the possibly-stale cached
-        // status; fetchPositions handles not-connected via auto-reconnect.
-        if (!useAccountStore.getState().currentAccount?.isDisabled) {
-          fetchPositions(id);
-        }
-        
+        // Positions come from SSE stream (position_snapshot). Only refresh
+        // analytics / trade history on position changes.
         const newTrade = {
           ticket: order.ticket,
           symbol: order.symbol,
@@ -156,8 +259,8 @@ export default function AccountDetail() {
           comment: order.comment || '',
         };
         
-        setHistoryTrades((prev: any[]) => {
-          const exists = prev.some((t: any) => t.ticket === order.ticket);
+        setHistoryTrades((prev) => {
+          const exists = prev.some((t) => t.ticket === order.ticket);
           if (exists) return prev;
           return [newTrade, ...prev];
         });
@@ -167,9 +270,6 @@ export default function AccountDetail() {
         loadAllData(id).catch((error) => showError(getErrorMessage(error, '加载分析数据失败')));
       } else if (action === 'PositionOpen' || action === 'PendingOpen') {
         if (id) {
-          if (!useAccountStore.getState().currentAccount?.isDisabled) {
-            fetchPositions(id);
-          }
           loadAllData(id).catch((error) => showError(getErrorMessage(error, '加载分析数据失败')));
         }
       }
@@ -184,25 +284,25 @@ export default function AccountDetail() {
       setCurrentAccountId(null);
       window.removeEventListener('position-change', handlePositionChange);
     };
-  }, [id, loadAllData, fetchAccounts, fetchAccount, fetchPositions, setCurrentAccount, navigate, setCurrentAccountId, t]);
+  }, [id, loadAllData, fetchAccounts, fetchAccount, setCurrentAccount, navigate, setCurrentAccountId, t]);
 
   const handleConnect = useCallback(async () => {
     if (!currentAccount || connecting) return;
     setConnecting(true);
     try {
-      const result: any = await connectAccount(currentAccount.id);
+      const result: ConnectAccountResult = await connectAccount(currentAccount.id);
       const msg = translateMaybeI18nKey(result?.message, t('common.operationFailed'));
       if (result?.success === false) {
         showError(msg);
       } else if (result?.message) {
         showSuccess(msg);
       }
-      fetchPositions(currentAccount.id, false); // 连接后获取持仓，但不显示 loading
+      // Positions arrive via SSE stream after reconnect — no explicit fetchPositions needed.
       await fetchAccount(currentAccount.id, false); // 获取账户详情，但不显示 loading
     } finally {
       setConnecting(false);
     }
-  }, [currentAccount, connecting, connectAccount, fetchPositions, fetchAccount, t]);
+  }, [currentAccount, connecting, connectAccount, fetchAccount, t]);
 
   const handleRefreshAnalytics = useCallback(async () => {
     if (!id) return;
@@ -292,19 +392,19 @@ export default function AccountDetail() {
   ], [currentAccount?.isDisabled, currentAccount?.id, enablingAccount, handleToggleStatus, t]);
 
   const { equityChartData, profitByMonthData, symbolDistributionData, dailyPnLData, hourlyData, tradeStats, riskMetrics } = useMemo(() => {
-    const equityCurve = analytics?.equityCurve?.map((point: any) => ({ date: point.date, equity: point.equity, balance: point.balance, profit: point.profit })) || [];
+    const equityCurve = analytics?.equityCurve?.map((point) => ({ date: point.date, equity: point.equity, balance: point.balance, profit: point.profit })) || [];
     const profitByMonth = monthlyPnL
-      .map((m: any) => {
-        const monthValue = (m as any)?.month ?? (m as any)?.monthNum ?? (m as any)?.month_num;
+      .map((m) => {
+        const monthValue = m?.month ?? m?.monthNum ?? m?.month_num;
         return {
           month: String(monthValue ?? ''),
           profit: m.profit,
           trades: m.trades,
         };
       })
-      .filter((m: any) => m.month);
+      .filter((m) => m.month);
     const dailyPnlRaw = analytics?.dailyPnl || [];
-    const dailyPnl = dailyPnlRaw.map((d: any) => ({
+    const dailyPnl = dailyPnlRaw.map((d) => ({
       day: d.day,
       date: d.date,
       profit: d.pnl ?? d.profit,
@@ -317,22 +417,22 @@ export default function AccountDetail() {
       maxFloatingProfitAmount: d.maxFloatingProfitAmount ?? 0,
       maxFloatingProfitRatio: d.maxFloatingProfitRatio ?? 0,
     }));
-    
+
     const symbolStats = analytics?.symbolStats || [];
     const symbolDistribution = symbolStats
       .slice(0, 6)
-      .map((s: any) => ({
+      .map((s) => ({
         name: s.symbol,
         value: Math.round(Number(s.tradeSharePercent || 0)),
         profit: s.profit,
       }));
-    
+
     return {
       equityChartData: equityCurve,
       profitByMonthData: profitByMonth,
       symbolDistributionData: symbolDistribution,
       dailyPnLData: dailyPnl,
-      hourlyData: (analytics?.hourlyStats || []).map((h: any) => ({
+      hourlyData: (analytics?.hourlyStats || []).map((h) => ({
         ...h,
         hourLabel: `${String(Number(h.hour ?? 0)).padStart(2, '0')}:00`,
         lots: h.lots ?? 0,
@@ -431,6 +531,8 @@ export default function AccountDetail() {
 
         <AccountAnalyticsSection
           analyticsLoading={analyticsLoading}
+          analyticsError={analyticsError}
+          onRetryAnalytics={() => id && loadAllData(id)}
           chartType={chartType}
           setChartType={setChartType}
           chartPeriod={chartPeriod}

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Button, Card, Col, Row, Spin, Statistic, Tag } from 'antd';
+import { Button, Card, Col, Row, Statistic, Tag } from 'antd';
+import { StatusResult } from '@/components/common/StatusResult';
 import {
   IconCurrencyDollar,
   IconUsers,
@@ -28,6 +29,7 @@ export default function Dashboard() {
   const accountInfoMap = useTradingStore((state) => state.accountInfoMap);
   const userSummary = useTradingStore((state) => state.userSummary);
   const [localLoading, setLocalLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const localConnectedCount = useMemo(() => {
     return (accounts || []).filter((a) => !a.isDisabled && a.status === 'connected').length;
@@ -49,19 +51,24 @@ export default function Dashboard() {
     const loadData = async () => {
       const currentAccounts = useAccountStore.getState().accounts;
       const hasData = currentAccounts && currentAccounts.length > 0;
-      
+
       if (!hasData) {
         setLocalLoading(true);
-        await fetchAccounts();
-        setLocalLoading(false);
+        setLoadError(null);
+        try {
+          await fetchAccounts();
+        } catch (err) {
+          setLoadError(err instanceof Error ? err.message : 'Failed to load accounts');
+        } finally {
+          setLocalLoading(false);
+        }
       }
-      // 有数据时，不调用 fetchAccounts，直接使用缓存
     };
     loadData();
-  }, [fetchAccounts]); // 只在首次挂载时执行
+  }, [fetchAccounts]);
 
   const stats = useMemo(() => {
-    const backendConnected = (userSummary as any)?.connectedCount;
+    const backendConnected = userSummary?.connectedCount;
     const connectedCount =
       typeof backendConnected === 'number' && Number.isFinite(backendConnected)
         ? backendConnected
@@ -212,11 +219,17 @@ export default function Dashboard() {
 
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={16}>
-          <Card 
+          <Card
             title={<span style={{ color: '#141D22', fontWeight: 500 }}>{t('dashboard.accountList')}</span>}
             className="glass-card"
           >
-            <Spin spinning={localLoading}>
+            <StatusResult
+              loading={localLoading}
+              error={loadError}
+              onRetry={() => fetchAccounts()}
+              empty={!localLoading && !loadError && (!accounts || accounts.length === 0)}
+              emptyText={t('dashboard.noAccounts')}
+            >
               <div className="space-y-3">
                 {(accounts || []).slice(0, 4).map((item) => {
                   const live = accountInfoValues[item.id];
@@ -287,14 +300,8 @@ export default function Dashboard() {
                   </div>
                 );
                 })}
-                {(!accounts || accounts.length === 0) && (
-                  <div className="text-center py-8" style={{ color: '#8A9AA5' }}>
-                    <IconBuildingBank size={40} stroke={1.5} />
-                    <p className="mt-3">{t('dashboard.noAccounts')}</p>
-                  </div>
-                )}
               </div>
-            </Spin>
+            </StatusResult>
           </Card>
         </Col>
 

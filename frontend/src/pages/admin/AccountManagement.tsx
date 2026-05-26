@@ -1,9 +1,10 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Card, Table, Button, Input, Select, Space, Tag, Drawer, Descriptions, message, Popconfirm, Skeleton } from 'antd';
+import { Card, Table, Button, Input, Select, Space, Tag, Drawer, Descriptions, message, Popconfirm } from 'antd';
 import { adminApi, type AccountWithUser, type AccountListParams } from '@/client/admin';
 import { formatDateTime } from '@/utils/date';
 import { useAdminAccountStore } from '@/stores/adminAccountStore';
 import { getErrorMessage } from '@/utils/error';
+import { StatusResult } from '@/components/common/StatusResult';
 
 const { Search } = Input;
 
@@ -21,6 +22,7 @@ const getParamsKey = (params: AccountListParams) => {
 export default function AccountManagement() {
   const [accounts, setAccounts] = useState<AccountWithUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [params, setParams] = useState<AccountListParams>({ page: 1, pageSize: 20 });
   const [detailDrawerVisible, setDetailDrawerVisible] = useState(false);
@@ -53,9 +55,12 @@ export default function AccountManagement() {
       setAccounts(result.accounts);
       setTotal(result.total);
       setCachedData(paramsKey, result.accounts, result.total);
-    } catch (error) {
+      setError(null);
+    } catch (err) {
       if (!cached) {
-        message.error(getErrorMessage(error, '加载账户列表失败'));
+        const msg = getErrorMessage(err, '加载账户列表失败');
+        setError(msg);
+        message.error(msg);
       }
     } finally {
       setLoading(false);
@@ -144,9 +149,7 @@ export default function AccountManagement() {
           </Select>
         </Space>
       </div>
-      {loading && accounts.length === 0 ? (
-        <Skeleton active paragraph={{ rows: 10 }} />
-      ) : (
+      <StatusResult error={error} onRetry={() => fetchAccounts()}>
         <Table
           scroll={{ x: "max-content" }}
           columns={columns}
@@ -160,7 +163,7 @@ export default function AccountManagement() {
             onChange: (page, pageSize) => setParams({ ...params, page, pageSize }),
           }}
         />
-      )}
+      </StatusResult>
       <Drawer
         title="账户详情"
         open={detailDrawerVisible}

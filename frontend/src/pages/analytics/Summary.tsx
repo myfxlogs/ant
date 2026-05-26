@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Card, Select, Row, Col, Statistic, Spin, Space } from 'antd';
+import { Card, Select, Row, Col, Statistic, Space } from 'antd';
+import { StatusResult } from '@/components/common/StatusResult';
 import { useTranslation } from 'react-i18next';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -14,6 +15,8 @@ import {
 } from '@tabler/icons-react';
 import { useAccount } from '@/hooks/useAccount';
 import { analyticsApi } from '@/client/analytics';
+import type { SymbolInfo } from '@/client/market';
+import type { EconomicCalendarEvent, EconomicIndicator } from '@/gen/ant/v1/economic_data_pb';
 import { periodOptions } from './Summary.constants';
 import {
   getDirectionPieData,
@@ -25,17 +28,77 @@ import {
 } from './Summary.helpers';
 import { formatHoldingTime } from '@/utils/date';
 
+// Analytics proto types are not yet generated (backend stubs).
+// Define local interfaces matching the expected API response shapes.
+interface AnalyticsTradeStats {
+  netProfit?: number;
+  totalTrades?: number;
+  winningTrades?: number;
+  losingTrades?: number;
+  buyTrades?: number;
+  sellTrades?: number;
+  winRate?: number;
+  profitFactor?: number;
+  averageHoldingTime?: string;
+  maxConsecutiveWins?: number;
+  maxConsecutiveLosses?: number;
+  averageVolume?: number;
+  averageProfit?: number;
+  averageLoss?: number;
+}
+
+interface AnalyticsRiskMetrics {
+  maxDrawdown?: number;
+  maxDrawdownPercent?: number;
+  sharpeRatio?: number;
+  sortinoRatio?: number;
+  volatility?: number;
+  valueAtRisk?: number;
+}
+
+interface AnalyticsSymbolStat {
+  symbol: string;
+  profit: number;
+  trades: number;
+  tradeSharePercent?: number;
+}
+
+interface AnalyticsEquityPoint {
+  date: string;
+  equity: number;
+  balance?: number;
+  profit?: number;
+}
+
+interface AnalyticsMonthlyPnlItem {
+  month: string;
+  profit: number;
+  trades: number;
+}
+
+interface AnalyticsData {
+  tradeStats?: AnalyticsTradeStats;
+  riskMetrics?: AnalyticsRiskMetrics;
+  symbolStats?: AnalyticsSymbolStat[];
+  equityCurve?: AnalyticsEquityPoint[];
+  monthlyPnl?: AnalyticsMonthlyPnlItem[];
+  profit?: number;
+  equity?: number;
+  balance?: number;
+}
+
 export default function Summary() {
   const { t, i18n } = useTranslation();
   const { accounts, fetchAccounts } = useAccount();
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState('month');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [analytics, setAnalytics] = useState<any>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(false);
-  const [calendarEvents, setCalendarEvents] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [calendarEvents, setCalendarEvents] = useState<EconomicCalendarEvent[]>([]);
   const [calendarLoading, setCalendarLoading] = useState(false);
-  const [keyIndicators, setKeyIndicators] = useState<any[]>([]);
+  const [keyIndicators, setKeyIndicators] = useState<EconomicIndicator[]>([]);
   const [keyIndicatorsLoading, setKeyIndicatorsLoading] = useState(false);
 
   useEffect(() => {
@@ -54,18 +117,19 @@ export default function Summary() {
   const fetchAnalytics = useCallback(async () => {
     if (!selectedAccount) return;
     setLoading(true);
+    setError(null);
     try {
       const [accountAnalytics, monthlyPnL] = await Promise.all([
         analyticsApi.getAccountAnalytics(selectedAccount),
         analyticsApi.getMonthlyPnL(selectedAccount, selectedYear),
       ]);
       setAnalytics({
-        ...(accountAnalytics as any),
-        monthlyPnl: (monthlyPnL as any)?.monthlyPnl || (accountAnalytics as any)?.monthlyPnl || [],
+        ...(accountAnalytics as AnalyticsData),
+        monthlyPnl: (monthlyPnL as { monthlyPnl?: AnalyticsMonthlyPnlItem[] })?.monthlyPnl || (accountAnalytics as AnalyticsData)?.monthlyPnl || [],
       });
-    } catch (_error) {
-      // 错误处理 - 保持默认值
+    } catch (err: unknown) {
       setAnalytics(null);
+      setError(err instanceof Error ? err.message : 'Failed to load analytics');
     } finally {
       setLoading(false);
     }
@@ -120,12 +184,12 @@ export default function Summary() {
     };
   }, [i18n.language]);
 
-  const tradeStats = (analytics as any)?.tradeStats || null;
-  const riskMetrics = (analytics as any)?.riskMetrics || null;
-  const symbolStats = (analytics as any)?.symbolStats || [];
+  const tradeStats = analytics?.tradeStats || null;
+  const riskMetrics = analytics?.riskMetrics || null;
+  const symbolStats = analytics?.symbolStats || [];
 
-  const equityCurveData = getEquityCurveData((analytics as any)?.equityCurve || []);
-  const monthlyData = getMonthlyData((analytics as any)?.monthlyPnl || []);
+  const equityCurveData = getEquityCurveData(analytics?.equityCurve || []);
+  const monthlyData = getMonthlyData(analytics?.monthlyPnl || []);
   const symbolPieData = getSymbolPieData(symbolStats);
   const directionPieData = getDirectionPieData(t, tradeStats);
   const profitPieData = getProfitPieData(t, tradeStats);
@@ -160,7 +224,7 @@ export default function Summary() {
         </Space>
       </div>
 
-      <Spin spinning={loading}>
+      <StatusResult loading={loading && !analytics} error={error} onRetry={fetchAnalytics}>
         <div
           className="rounded-2xl p-6"
           style={{
@@ -238,7 +302,7 @@ export default function Summary() {
                 <span style={{ color: '#8A9AA5', fontSize: '14px' }}>{t('analytics.summary.metrics.netProfit')}</span>
               </div>
               <div className="text-2xl font-semibold" style={{ color: (tradeStats?.netProfit || 0) >= 0 ? '#00A651' : '#E53935' }}>
-                ${(Number((analytics as any)?.profit || tradeStats?.netProfit || 0)).toFixed(2)}
+                ${(Number(analytics?.profit || tradeStats?.netProfit || 0)).toFixed(2)}
               </div>
             </div>
           </Col>
@@ -249,7 +313,7 @@ export default function Summary() {
                 <span style={{ color: '#8A9AA5', fontSize: '14px' }}>{t('analytics.summary.metrics.equity')}</span>
               </div>
               <div className="text-2xl font-semibold" style={{ color: '#141D22' }}>
-                ${(Number((analytics as any)?.equity || 0)).toFixed(2)}
+                ${(Number(analytics?.equity || 0)).toFixed(2)}
               </div>
             </div>
           </Col>
@@ -260,7 +324,7 @@ export default function Summary() {
                 <span style={{ color: '#8A9AA5', fontSize: '14px' }}>{t('analytics.summary.metrics.balance')}</span>
               </div>
               <div className="text-2xl font-semibold" style={{ color: '#141D22' }}>
-                ${(Number((analytics as any)?.balance || 0)).toFixed(2)}
+                ${(Number(analytics?.balance || 0)).toFixed(2)}
               </div>
             </div>
           </Col>
@@ -271,7 +335,7 @@ export default function Summary() {
                 <span style={{ color: '#8A9AA5', fontSize: '14px' }}>{t('analytics.summary.metrics.equityValue')}</span>
               </div>
               <div className="text-2xl font-semibold" style={{ color: '#141D22' }}>
-                ${(Number((analytics as any)?.equity || 0)).toFixed(2)}
+                ${(Number(analytics?.equity || 0)).toFixed(2)}
               </div>
             </div>
           </Col>
@@ -599,7 +663,7 @@ export default function Summary() {
               ) : null}
               {keyIndicators.length > 0 ? (
                 <div className="space-y-3 max-h-64 overflow-auto mt-1">
-                  {keyIndicators.map((ind: any) => {
+                  {keyIndicators.map((ind) => {
                     const history = Array.isArray(ind.history) ? [...ind.history].reverse() : [];
                     return (
                       <div key={ind.code} className="text-xs p-1.5 rounded-lg" style={{ backgroundColor: '#F7F9FB' }}>
@@ -635,7 +699,7 @@ export default function Summary() {
             </Col>
           </Row>
         </Card>
-      </Spin>
+      </StatusResult>
     </div>
   );
 }

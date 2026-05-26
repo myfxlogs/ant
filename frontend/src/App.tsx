@@ -12,8 +12,10 @@ import 'dayjs/locale/ja';
 import 'dayjs/locale/vi';
 import { useAuthStore } from '@/stores/authStore';
 import { ConnectProvider } from '@/providers/ConnectProvider';
+import { QueryProvider } from '@/providers/QueryProvider';
 import i18n, { normalizeLanguage, type SupportedLanguage } from '@/i18n';
-import { useEffect, useState, Suspense, lazy } from 'react';
+import { useEffect, useState, lazy } from 'react';
+import { PageWrapper } from '@/components/common/PageWrapper';
 
 import MainLayout from '@/components/layout/MainLayout';
 import AdminLayout from '@/components/layout/AdminLayout';
@@ -82,9 +84,9 @@ function AppContent() {
           path="/login"
           element={
             <PublicRoute>
-              <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Spin size="large" /></div>}>
+              <PageWrapper>
                 <Login />
-              </Suspense>
+              </PageWrapper>
             </PublicRoute>
           }
         />
@@ -92,9 +94,9 @@ function AppContent() {
           path="/register"
           element={
             <PublicRoute>
-              <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Spin size="large" /></div>}>
+              <PageWrapper>
                 <Register />
-              </Suspense>
+              </PageWrapper>
             </PublicRoute>
           }
         />
@@ -109,33 +111,33 @@ function AppContent() {
           <Route
             index
             element={
-              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+              <PageWrapper>
                 <Dashboard />
-              </Suspense>
+              </PageWrapper>
             }
           />
           <Route
             path="accounts/:id"
             element={
-              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+              <PageWrapper>
                 <AccountDetail />
-              </Suspense>
+              </PageWrapper>
             }
           />
           <Route
             path="accounts/bind"
             element={
-              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+              <PageWrapper>
                 <BindAccount />
-              </Suspense>
+              </PageWrapper>
             }
           />
           <Route
             path="analytics"
             element={
-              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+              <PageWrapper>
                 <Summary />
-              </Suspense>
+              </PageWrapper>
             }
           />
           <Route path="ai" element={<AIAssistantLayout />}>
@@ -144,83 +146,83 @@ function AppContent() {
               path="debate"
               element={
                 <RequireAIConfig>
-                  <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                  <PageWrapper>
                     <DebatePage />
-                  </Suspense>
+                  </PageWrapper>
                 </RequireAIConfig>
               }
             />
             <Route
               path="settings"
               element={
-                <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                <PageWrapper>
                   <SystemAI />
-                </Suspense>
+                </PageWrapper>
               }
             />
             <Route
               path="agents"
               element={
-                <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+                <PageWrapper>
                   <AISettings mode="agents" />
-                </Suspense>
+                </PageWrapper>
               }
             />
           </Route>
           <Route
             path="strategy/templates"
             element={
-              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+              <PageWrapper>
                 <StrategyTemplatePage />
-              </Suspense>
+              </PageWrapper>
             }
           />
           <Route
             path="strategy/experiments"
             element={
-              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+              <PageWrapper>
                 <StrategyExperimentPage />
-              </Suspense>
+              </PageWrapper>
             }
           />
           <Route
             path="strategy/market-regime"
             element={
-              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+              <PageWrapper>
                 <MarketRegimePage />
-              </Suspense>
+              </PageWrapper>
             }
           />
           <Route
             path="strategy/assets"
             element={
-              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+              <PageWrapper>
                 <StrategyAssetPage />
-              </Suspense>
+              </PageWrapper>
             }
           />
           <Route
             path="strategy/schedules"
             element={
-              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+              <PageWrapper>
                 <StrategySchedulePage />
-              </Suspense>
+              </PageWrapper>
             }
           />
           <Route
             path="strategy/schedules/:id/logs"
             element={
-              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+              <PageWrapper>
                 <StrategyScheduleLogsPage />
-              </Suspense>
+              </PageWrapper>
             }
           />
           <Route
             path="logs"
             element={
-              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+              <PageWrapper>
                 <LogManagement />
-              </Suspense>
+              </PageWrapper>
             }
           />
         </Route>
@@ -235,49 +237,49 @@ function AppContent() {
           <Route
             index
             element={
-              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+              <PageWrapper>
                 <AdminDashboard />
-              </Suspense>
+              </PageWrapper>
             }
           />
           <Route
             path="users"
             element={
-              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+              <PageWrapper>
                 <UserManagement />
-              </Suspense>
+              </PageWrapper>
             }
           />
           <Route
             path="accounts"
             element={
-              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+              <PageWrapper>
                 <AccountManagement />
-              </Suspense>
+              </PageWrapper>
             }
           />
           <Route
             path="trading"
             element={
-              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+              <PageWrapper>
                 <TradingMonitor />
-              </Suspense>
+              </PageWrapper>
             }
           />
           <Route
             path="logs"
             element={
-              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+              <PageWrapper>
                 <OperationLogs />
-              </Suspense>
+              </PageWrapper>
             }
           />
           <Route
             path="config"
             element={
-              <Suspense fallback={<div className="flex items-center justify-center py-10"><Spin size="large" /></div>}>
+              <PageWrapper>
                 <SystemConfig />
-              </Suspense>
+              </PageWrapper>
             }
           />
         </Route>
@@ -325,9 +327,11 @@ export default function App() {
 
   return (
     <ConfigProvider locale={antdLocale}>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
+      <QueryProvider>
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </QueryProvider>
     </ConfigProvider>
   );
 }

@@ -1,4 +1,4 @@
-import { Segmented, Spin, Tag } from 'antd';
+import { Segmented, Tag } from 'antd';
 import {
   Area,
   AreaChart,
@@ -25,12 +25,15 @@ import { CHART_COLORS } from '@/constants/performance';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatHoldingTime } from '@/utils/date';
+import { StatusResult } from '@/components/common/StatusResult';
 
 import { StatCard } from './AccountDetail.shared';
 import MonthlyAnalysisCard from './MonthlyAnalysisCard';
 
 type Props = {
   analyticsLoading: boolean;
+  analyticsError?: string | null;
+  onRetryAnalytics?: () => void;
   chartType: 'equity' | 'balance' | 'profit';
   setChartType: (value: 'equity' | 'balance' | 'profit') => void;
   chartPeriod: 'day' | 'week' | 'month' | 'all';
@@ -52,6 +55,8 @@ type Props = {
 
 export default function AccountAnalyticsSection({
   analyticsLoading,
+  analyticsError,
+  onRetryAnalytics,
   chartType,
   setChartType,
   chartPeriod,
@@ -97,16 +102,8 @@ export default function AccountAnalyticsSection({
     return idx;
   };
 
-  if (analyticsLoading) {
-    return (
-      <div className="flex justify-center items-center py-12">
-        <Spin size="large" />
-      </div>
-    );
-  }
-
   return (
-    <>
+    <StatusResult loading={analyticsLoading} error={analyticsError} onRetry={onRetryAnalytics}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
           <div className="flex items-center justify-between mb-4">
@@ -462,6 +459,6 @@ export default function AccountAnalyticsSection({
         currency={currency}
       />
 
-    </>
+    </StatusResult>
   );
 }

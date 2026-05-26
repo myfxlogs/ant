@@ -7,7 +7,6 @@ import React, {
 } from "react";
 import { Form, message, Space } from "antd";
 import dayjs from "dayjs";
-import "dayjs/locale/zh-cn";
 import { strategyTemplateApi } from "@/client/strategy";
 import type {
   StrategyTemplate,
@@ -16,7 +15,7 @@ import type {
 import { DEFAULT_TEMPLATES } from "./StrategyTemplatePage.defaults";
 import { copyToClipboard } from "@/utils/clipboard";
 import { accountApi } from "@/client/account";
-import { marketApi } from "@/client/market";
+import { marketApi, type SymbolInfo } from "@/client/market";
 import { pythonStrategyApi } from "@/client/pythonStrategy";
 import { getDeviceLocale } from "@/utils/date";
 import { codeAssistApi, type RequiredParamSpec } from "@/client/codeAssist";
@@ -35,6 +34,12 @@ import {
 import { useStrategyTemplateRuns } from "./hooks/useStrategyTemplateRuns";
 import { buildStrategyTemplateColumns } from "./StrategyTemplateColumns";
 
+// accountApi.list() returns plain objects after toCamelCase transformation.
+interface AccountLike {
+  id: string;
+  [key: string]: unknown;
+}
+
 const StrategyTemplatePage: React.FC = () => {
   const { t, i18n } = useTranslation();
   const location = useLocation();
@@ -44,6 +49,8 @@ const StrategyTemplatePage: React.FC = () => {
 
   const [templates, setTemplates] = useState<StrategyTemplate[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [runsError, setRunsError] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingTemplate, setEditingTemplate] =
     useState<StrategyTemplate | null>(null);
@@ -73,7 +80,7 @@ const StrategyTemplatePage: React.FC = () => {
   const [backtestSubmitting, setBacktestSubmitting] = useState(false);
   const [backtestTemplate, setBacktestTemplate] =
     useState<StrategyTemplate | null>(null);
-  const [accounts, setAccounts] = useState<any[]>([]);
+  const [accounts, setAccounts] = useState<AccountLike[]>([]);
   const [symbols, setSymbols] = useState<{ value: string; label: string }[]>(
     [],
   );
@@ -128,11 +135,14 @@ const StrategyTemplatePage: React.FC = () => {
 
   const fetchTemplates = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const response = await strategyTemplateApi.list();
-      setTemplates((response as any) || []);
-    } catch (_error) {
-      message.error(t("strategy.templates.messages.fetchTemplateListFailed"));
+      setTemplates(response || []);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : t("strategy.templates.messages.fetchTemplateListFailed");
+      setError(msg);
+      message.error(msg);
     } finally {
       setLoading(false);
     }
@@ -140,8 +150,8 @@ const StrategyTemplatePage: React.FC = () => {
 
   const fetchAccounts = async () => {
     try {
-      const data = (await accountApi.list()) as any[];
-      setAccounts(data || []);
+      const data = await accountApi.list();
+      setAccounts((data as AccountLike[]) || []);
     } catch (_e) {
       setAccounts([]);
     }
@@ -157,7 +167,7 @@ const StrategyTemplatePage: React.FC = () => {
       const list = await marketApi.getSymbols(accountId);
       const seen = new Set<string>();
       const opts = (list || [])
-        .map((s) => String((s as any)?.symbol || "").trim())
+        .map((s: SymbolInfo) => String(s?.symbol || "").trim())
         .filter((v) => v)
         .filter((v) => {
           if (seen.has(v)) return false;
@@ -211,14 +221,14 @@ const StrategyTemplatePage: React.FC = () => {
       // since the templates list may not be loaded yet at this point.
       if (groupParam !== "user" && groupParam !== "system") {
         const found = (templates || []).find(
-          (x: any) => String(x?.id || "") === tid,
+          (x) => String(x?.id || "") === tid,
         );
         if (found) {
-          const tags = Array.isArray((found as any)?.tags)
-            ? (found as any).tags
+          const tags = Array.isArray(found?.tags)
+            ? found.tags
             : [];
           const isSystem =
-            Boolean((found as any)?.isSystem) ||
+            Boolean(found?.isSystem) ||
             tags.includes("preset") ||
             tid.startsWith("default-");
           setTemplateGroup(isSystem ? "system" : "user");
@@ -296,10 +306,11 @@ const StrategyTemplatePage: React.FC = () => {
       setLastValidatedCode(code);
       message.success(t("strategy.templates.messages.codeValidationPassed"));
       return true;
-    } catch (e: any) {
+    } catch (e: unknown) {
+      const err = e as { message?: string };
       message.error(
         String(
-          e?.message ||
+          err?.message ||
             e ||
             t("strategy.templates.messages.codeValidationFailed"),
         ),
@@ -310,7 +321,7 @@ const StrategyTemplatePage: React.FC = () => {
     }
   };
 
-  const handleSave = async (values: any) => {
+  const handleSave = async (values: Record<string, unknown>) => {
     try {
       setCodeValidating(true);
       const ext = await codeAssistApi.validateExtended(
@@ -326,11 +337,11 @@ const StrategyTemplatePage: React.FC = () => {
       }
 
       const data: CreateTemplateRequest = {
-        name: values.name,
-        description: values.description || "",
-        code: values.code,
+        name: String(values.name || ""),
+        description: String(values.description || ""),
+        code: String(values.code || ""),
         parameters: [],
-        isPublic: values.isPublic || false,
+        isPublic: Boolean(values.isPublic) || false,
         tags: [],
       };
 
@@ -358,10 +369,11 @@ const StrategyTemplatePage: React.FC = () => {
       await strategyTemplateApi.delete(id);
       message.success(t("strategy.templates.messages.templateDeleted"));
       fetchTemplates();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { code?: string; rawMessage?: string; message?: string };
       // 后端对系统模板返回 permission_denied，给出明确提示。
-      const code = String(error?.code || "").toLowerCase();
-      const msg = String(error?.rawMessage || error?.message || "");
+      const code = String(err?.code || "").toLowerCase();
+      const msg = String(err?.rawMessage || err?.message || "");
       if (
         code.includes("permission") ||
         msg.toLowerCase().includes("system template")
@@ -381,23 +393,23 @@ const StrategyTemplatePage: React.FC = () => {
   const fetchTemplateCodeIfNeeded = async (
     tpl: StrategyTemplate,
   ): Promise<StrategyTemplate> => {
-    const id = String((tpl as any)?.id || "");
+    const id = String(tpl?.id || "");
     const isDefault = id.startsWith("default-");
     if (isDefault) return tpl;
-    const code = String((tpl as any)?.code || "");
+    const code = String(tpl?.code || "");
     if (code) return tpl;
-    const full: any = await strategyTemplateApi.get(id);
+    const full = await strategyTemplateApi.get(id);
     return {
       ...tpl,
-      ...(full as any),
-      code: String((full as any)?.code || ""),
-    } as StrategyTemplate;
+      ...full,
+      code: String(full?.code || ""),
+    };
   };
 
   const handleViewCode = async (tpl: StrategyTemplate) => {
     try {
       const full = await fetchTemplateCodeIfNeeded(tpl);
-      setViewingCode(String((full as any)?.code || ""));
+      setViewingCode(String(full?.code || ""));
       setCodeModalVisible(true);
     } catch (_e) {
       message.error(t("strategy.templates.messages.readStrategyCodeFailed"));
@@ -420,7 +432,7 @@ const StrategyTemplatePage: React.FC = () => {
     setBacktestParamValues({});
     try {
       const ext = await codeAssistApi.validateExtended(
-        String((full as any)?.code || ""),
+        String(full?.code || ""),
       );
       if (ext.valid) {
         setBacktestRequiredParams(ext.parameters || []);
@@ -469,7 +481,7 @@ const StrategyTemplatePage: React.FC = () => {
     setBacktestSubmitting(true);
     try {
       const fullTemplate = await fetchTemplateCodeIfNeeded(backtestTemplate);
-      if (!String((fullTemplate as any)?.code || "")) {
+      if (!String(fullTemplate?.code || "")) {
         message.error(
           t("strategy.templates.messages.strategyCodeEmptyCannotBacktest"),
         );
@@ -480,7 +492,7 @@ const StrategyTemplatePage: React.FC = () => {
         !range ||
         !range?.[0] ||
         !range?.[1] ||
-        typeof (range?.[0] as any)?.toDate !== "function"
+        typeof range[0].toDate !== "function"
       ) {
         message.error(t("strategy.templates.messages.selectBacktestRange"));
         return;
@@ -497,7 +509,7 @@ const StrategyTemplatePage: React.FC = () => {
         return;
       }
       const extraSymbols = Array.isArray(values.extraSymbols)
-        ? (values.extraSymbols as any[])
+        ? (values.extraSymbols as string[])
             .map((s) => String(s))
             .filter((s) => !!s && s !== String(values.symbol))
         : [];
@@ -523,7 +535,7 @@ const StrategyTemplatePage: React.FC = () => {
         return;
       }
       const codeToSubmit = wrapStrategyCodeWithParams(
-        String((fullTemplate as any)?.code || ""),
+        String(fullTemplate?.code || ""),
         backtestParamValues,
       );
 
@@ -550,12 +562,13 @@ const StrategyTemplatePage: React.FC = () => {
       setSelectedRunId(resp.runId);
       setRunDrawerOpen(true);
       await fetchRuns();
-    } catch (e: any) {
+    } catch (e: unknown) {
+      const err = e as { rawMessage?: string; code?: string | number; message?: string };
       const errMsg =
         String(
-          e?.rawMessage ||
-            (e?.code !== undefined ? `code=${String(e.code)} ` : "") +
-              (e?.message || "") ||
+          err?.rawMessage ||
+            (err?.code !== undefined ? `code=${String(err.code)} ` : "") +
+              (err?.message || "") ||
             e,
         ) || t("strategy.templates.messages.backtestSubmitFailed");
       message.error(errMsg);
@@ -627,7 +640,14 @@ const StrategyTemplatePage: React.FC = () => {
 
   const dataSource = useMemo(() => {
     if (templates.length > 0) return templates;
-    return (DEFAULT_TEMPLATES || []).map((tpl: any) => ({
+    interface DefaultTemplateItem {
+      nameKey?: string;
+      descriptionKey?: string;
+      name?: string;
+      description?: string;
+      [key: string]: unknown;
+    }
+    return (DEFAULT_TEMPLATES as DefaultTemplateItem[] || []).map((tpl) => ({
       ...tpl,
       name: tpl?.nameKey ? t(String(tpl.nameKey)) : tpl?.name,
       description: tpl?.descriptionKey
@@ -711,6 +731,8 @@ const StrategyTemplatePage: React.FC = () => {
           templatesCount={templates.length}
           templateGroup={templateGroup}
           loading={loading}
+          error={error}
+          onRetry={fetchTemplates}
           columns={columns}
           highlightTemplateId={highlightTemplateId}
           onTemplateGroupChange={setTemplateGroup}

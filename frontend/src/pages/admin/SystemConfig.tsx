@@ -4,10 +4,14 @@ import { IconEdit } from '@tabler/icons-react';
 import { adminApi, type SystemConfig as AdminConfigType } from '@/client/admin';
 import { formatDateTime } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
+import { useTranslation } from 'react-i18next';
+import { StatusResult } from '@/components/common/StatusResult';
 
 export default function SystemConfigPage() {
+  const { t } = useTranslation();
   const [configs, setConfigs] = useState<AdminConfigType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [currentConfig, setCurrentConfig] = useState<AdminConfigType | null>(null);
   const [form] = Form.useForm();
@@ -25,6 +29,7 @@ export default function SystemConfigPage() {
 
   const fetchConfigs = async () => {
     setLoading(true);
+    setError(null);
     try {
       const result = await adminApi.listConfigs();
       setConfigs(
@@ -35,8 +40,10 @@ export default function SystemConfigPage() {
           c?.key === 'strategy.schedule.health_grading_config'
         ),
       );
-    } catch (error) {
-      message.error(getErrorMessage(error, '加载配置失败'));
+    } catch (err) {
+      const msg = getErrorMessage(err, t('admin.config.messages.loadFailed'));
+      setError(msg);
+      message.error(msg);
     } finally {
       setLoading(false);
     }
@@ -90,26 +97,26 @@ export default function SystemConfigPage() {
 			if (isAIProviderCatalog) {
 				const raw = (values.value || '').trim();
 				if (!raw) {
-					message.error('JSON 不能为空');
+					message.error(t('admin.config.validation.jsonEmpty'));
 					return;
 				}
 				try {
 					JSON.parse(raw);
 				} catch {
-					message.error('JSON 格式不正确');
+					message.error(t('admin.config.validation.jsonInvalid'));
 					return;
 				}
 			} else if (isStrategyHealthConfig) {
 				const raw = (values.value || '').trim();
 				if (!raw) {
-					message.error('JSON 不能为空');
+					message.error(t('admin.config.validation.jsonEmpty'));
 					return;
 				}
 				let parsed: any;
 				try {
 					parsed = JSON.parse(raw);
 				} catch {
-					message.error('JSON 格式不正确');
+					message.error(t('admin.config.validation.jsonInvalid'));
 					return;
 				}
 				const greenSuccessRate = Number(parsed?.green_success_rate);
@@ -117,23 +124,23 @@ export default function SystemConfigPage() {
 				const greenMaxFailedRuns = Number(parsed?.green_max_failed_runs);
 				const minSampleSize = Number(parsed?.min_sample_size);
 				if (!Number.isFinite(greenSuccessRate) || greenSuccessRate < 0 || greenSuccessRate > 100) {
-					message.error('green_success_rate 必须在 0~100 之间');
+					message.error(t('admin.config.validation.greenSuccessRateRange'));
 					return;
 				}
 				if (!Number.isFinite(yellowSuccessRate) || yellowSuccessRate < 0 || yellowSuccessRate > 100) {
-					message.error('yellow_success_rate 必须在 0~100 之间');
+					message.error(t('admin.config.validation.yellowSuccessRateRange'));
 					return;
 				}
 				if (yellowSuccessRate > greenSuccessRate) {
-					message.error('yellow_success_rate 不能大于 green_success_rate');
+					message.error(t('admin.config.validation.yellowNotGreaterThanGreen'));
 					return;
 				}
 				if (!Number.isFinite(greenMaxFailedRuns) || greenMaxFailedRuns < 0) {
-					message.error('green_max_failed_runs 必须大于等于 0');
+					message.error(t('admin.config.validation.greenMaxFailedRunsNonNegative'));
 					return;
 				}
 				if (!Number.isFinite(minSampleSize) || minSampleSize < 0) {
-					message.error('min_sample_size 必须大于等于 0');
+					message.error(t('admin.config.validation.minSampleSizeNonNegative'));
 					return;
 				}
 			} else if (isEconAIConfig) {
@@ -143,11 +150,11 @@ export default function SystemConfigPage() {
 				const baseURL = (values.base_url || '').toString().trim();
 				const enabled = values.enabled !== false;
 				if (!apiKey) {
-					message.error('API Key 不能为空');
+					message.error(t('admin.config.validation.apiKeyRequired'));
 					return;
 				}
 				if (!model) {
-					message.error('模型名称不能为空');
+					message.error(t('admin.config.validation.modelRequired'));
 					return;
 				}
 				const cfg = {
@@ -164,11 +171,11 @@ export default function SystemConfigPage() {
 			} else {
 				await adminApi.setConfig(currentConfig.key, values);
 			}
-      message.success('配置已更新');
+      message.success(t('admin.config.messages.updated'));
       setEditModalVisible(false);
       fetchConfigs();
     } catch (error) {
-      message.error(getErrorMessage(error, '更新失败'));
+      message.error(getErrorMessage(error, t('admin.config.messages.updateFailed')));
     }
   };
 
@@ -180,7 +187,7 @@ export default function SystemConfigPage() {
 			const obj = JSON.parse(raw);
 			form.setFieldsValue({ value: JSON.stringify(obj, null, 2) });
 		} catch {
-			message.error('JSON 格式不正确');
+			message.error(t('admin.config.validation.jsonInvalid'));
 		}
 	};
 
@@ -194,32 +201,35 @@ export default function SystemConfigPage() {
   const handleToggleEnabled = async (key: string, enabled: boolean) => {
     try {
       await adminApi.toggleConfigEnabled(key, enabled);
-      message.success(enabled ? '配置已启用' : '配置已禁用');
+      message.success(enabled ? t('admin.config.messages.enabled') : t('admin.config.messages.disabled'));
       fetchConfigs();
     } catch (error) {
-      message.error(getErrorMessage(error, '操作失败'));
+      message.error(getErrorMessage(error, t('admin.config.messages.operationFailed')));
     }
   };
 
-  const keyLabelMap: Record<string, string> = {
-    'max_accounts_per_user': '每用户最大账户数',
-    'ai.provider_catalog': 'AI 模型提供商目录',
-    'econ.translation.ai_config': '经济日历翻译模型配置',
-    'strategy.schedule.health_grading_config': '策略健康分级阈值配置',
+  const getKeyLabel = (key: string): string => {
+    const labelMap: Record<string, string> = {
+      'max_accounts_per_user': t('admin.config.maxAccountsPerUser'),
+      'ai.provider_catalog': t('admin.config.aiProviderCatalog'),
+      'econ.translation.ai_config': t('admin.config.econAIConfig'),
+      'strategy.schedule.health_grading_config': t('admin.config.strategyHealthConfig'),
+    };
+    return labelMap[key] || key;
   };
 
   const columns = [
     {
-      title: '配置项',
+      title: t('admin.config.configItem'),
       dataIndex: 'key',
       key: 'key',
       width: 200,
       render: (text: string) => (
-				<span className="font-medium">{keyLabelMap[text] || text}</span>
+				<span className="font-medium">{getKeyLabel(text)}</span>
 			),
     },
     {
-      title: '值',
+      title: t('admin.config.value'),
       dataIndex: 'value',
       key: 'value',
       width: 150,
@@ -236,44 +246,44 @@ export default function SystemConfigPage() {
 		},
     },
     {
-      title: '描述',
+      title: t('admin.config.description'),
       dataIndex: 'description',
       key: 'description',
       ellipsis: true,
     },
     {
-      title: '状态',
+      title: t('admin.config.status'),
       dataIndex: 'enabled',
       key: 'enabled',
       width: 100,
       render: (enabled: boolean) => (
         <Tag color={enabled ? 'success' : 'default'}>
-          {enabled ? '启用' : '禁用'}
+          {enabled ? t('common.enabled') : t('common.disabled')}
         </Tag>
       ),
     },
     {
-      title: '开关',
+      title: t('admin.config.toggle'),
       key: 'toggle',
       width: 80,
       render: (_: unknown, record: AdminConfigType) => (
         <Switch
           checked={record.enabled}
           onChange={(checked) => handleToggleEnabled(record.key, checked)}
-          checkedChildren="开"
-          unCheckedChildren="关"
+          checkedChildren={t('admin.config.on')}
+          unCheckedChildren={t('admin.config.off')}
         />
       ),
     },
     {
-      title: '更新时间',
+      title: t('admin.config.updatedAt'),
       dataIndex: 'updated_at',
       key: 'updated_at',
       width: 180,
       render: (_text: any, record: AdminConfigType) => formatDateTime(record.updated_at),
     },
     {
-      title: '操作',
+      title: t('common.edit'),
       key: 'action',
       width: 100,
       render: (_: unknown, record: AdminConfigType) => (
@@ -283,7 +293,7 @@ export default function SystemConfigPage() {
           icon={<IconEdit size={14} />}
           onClick={() => handleEdit(record)}
         >
-          编辑
+          {t('common.edit')}
         </Button>
       ),
     },
@@ -291,9 +301,10 @@ export default function SystemConfigPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold" style={{ color: '#141D22' }}>系统配置</h1>
+      <h1 className="text-2xl font-bold" style={{ color: '#141D22' }}>{t('admin.config.title')}</h1>
 
       <Card>
+        <StatusResult error={error} onRetry={fetchConfigs}>
         <Table
           scroll={{ x: "max-content" }}
           columns={columns}
@@ -302,19 +313,20 @@ export default function SystemConfigPage() {
           loading={loading}
           pagination={false}
         />
+        </StatusResult>
       </Card>
 
       <Modal
-        title={`编辑配置: ${currentConfig?.key || ''}`}
+        title={t('admin.config.editConfig', { key: currentConfig?.key || '' })}
         open={editModalVisible}
         onCancel={() => setEditModalVisible(false)}
         footer={null}
       >
         <Form form={form} onFinish={handleSave} layout="vertical">
 				{(isAIProviderCatalog || isStrategyHealthConfig) && (
-					<Form.Item name="value" label="值" rules={[{ required: true }]}> 
+					<Form.Item name="value" label={t('admin.config.value')} rules={[{ required: true }]}>
 						<Input.TextArea
-							placeholder="请输入 JSON"
+							placeholder={t('admin.config.placeholders.json')}
 							rows={10}
 							style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}
 						/>
@@ -325,56 +337,56 @@ export default function SystemConfigPage() {
             type="info"
             showIcon
             style={{ marginBottom: 16 }}
-            message="阈值字段说明"
-            description="green_success_rate: 绿色成功率阈值；green_max_failed_runs: 绿色最大失败次数；yellow_success_rate: 黄色成功率阈值；min_sample_size: 最小样本数。"
+            message={t('admin.config.thresholdInfo')}
+            description={t('admin.config.thresholdDesc')}
           />
         )}
 				{isEconAIConfig && (
 					<>
-						<Form.Item name="provider" label="提供商" rules={[{ required: true }]}> 
+						<Form.Item name="provider" label={t('admin.config.provider')} rules={[{ required: true }]}>
 							<Select
 								options={[
-									{ label: '智谱 (Zhipu)', value: 'zhipu' },
-									{ label: 'DeepSeek', value: 'deepseek' },
-									{ label: '自定义 / OpenAI 兼容', value: 'custom' },
+									{ label: t('admin.config.providerOptions.zhipu'), value: 'zhipu' },
+									{ label: t('admin.config.providerOptions.deepseek'), value: 'deepseek' },
+									{ label: t('admin.config.providerOptions.custom'), value: 'custom' },
 								]}
 							/>
 						</Form.Item>
-						<Form.Item name="api_key" label="API Key" rules={[{ required: true }]}> 
-							<Input.Password placeholder="请输入 API Key" />
+						<Form.Item name="api_key" label="API Key" rules={[{ required: true }]}>
+							<Input.Password placeholder={t('admin.config.placeholders.apiKey')} />
 						</Form.Item>
-						<Form.Item name="model" label="模型名称" rules={[{ required: true }]}> 
-							<Input placeholder="例如 glm-4-flash / deepseek-chat / gpt-4o-mini" />
+						<Form.Item name="model" label={t('admin.config.modelName')} rules={[{ required: true }]}>
+							<Input placeholder={t('admin.config.placeholders.model')} />
 						</Form.Item>
-						<Form.Item name="base_url" label="Base URL（可选，仅自定义/OpenAI 兼容）"> 
-							<Input placeholder="例如 https://api.openai.com 或自建网关" />
+						<Form.Item name="base_url" label={t('admin.config.baseUrlLabel')}>
+							<Input placeholder={t('admin.config.placeholders.baseUrl')} />
 						</Form.Item>
-						<Form.Item name="enabled" label="是否启用" valuePropName="checked"> 
+						<Form.Item name="enabled" label={t('admin.config.enableToggle')} valuePropName="checked">
 							<Switch />
 						</Form.Item>
 					</>
 				)}
 				{!isAIProviderCatalog && !isEconAIConfig && !isStrategyHealthConfig && (
-					<Form.Item name="value" label="值" rules={[{ required: true }]}> 
-						<Input placeholder="请输入配置值" />
+					<Form.Item name="value" label={t('admin.config.value')} rules={[{ required: true }]}>
+						<Input placeholder={t('admin.config.placeholders.configValue')} />
 					</Form.Item>
 				)}
-          <Form.Item name="description" label="描述">
-            <Input.TextArea placeholder="请输入描述" rows={3} />
+          <Form.Item name="description" label={t('admin.config.description')}>
+            <Input.TextArea placeholder={t('admin.config.placeholders.description')} rows={3} />
           </Form.Item>
           <Form.Item>
             <Space>
 						{isAIProviderCatalog && (
-							<Button onClick={handleFormatJson}>格式化 JSON</Button>
+							<Button onClick={handleFormatJson}>{t('admin.config.formatJson')}</Button>
 						)}
             {isStrategyHealthConfig && (
               <>
-                <Button onClick={handleUseStrategyHealthTemplate}>填充示例</Button>
-                <Button onClick={handleFormatJson}>格式化 JSON</Button>
+                <Button onClick={handleUseStrategyHealthTemplate}>{t('admin.config.fillTemplate')}</Button>
+                <Button onClick={handleFormatJson}>{t('admin.config.formatJson')}</Button>
               </>
             )}
-              <Button type="primary" htmlType="submit">保存</Button>
-              <Button onClick={() => setEditModalVisible(false)}>取消</Button>
+              <Button type="primary" htmlType="submit">{t('common.save')}</Button>
+              <Button onClick={() => setEditModalVisible(false)}>{t('common.cancel')}</Button>
             </Space>
           </Form.Item>
         </Form>

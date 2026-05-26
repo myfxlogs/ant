@@ -2,24 +2,25 @@ import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Card, Descriptions, Space, Table, Tabs, Tag, Typography, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import type { Timestamp } from '@bufbuild/protobuf/wkt';
+import { timestampDate } from '@bufbuild/protobuf/wkt';
 
 import { logApi } from '@/client/log';
 import { strategyScheduleV2Api } from '@/client/strategy';
 import type { OrderHistoryRecord } from '@/types/log';
 import { getDeviceLocale, getDeviceTimeZone } from '@/utils/date';
 import { useTranslation } from 'react-i18next';
+import { StatusResult } from '@/components/common/StatusResult';
 
 const { Title, Text } = Typography;
 
-function formatTime(v: any) {
+function formatTime(v: unknown) {
   if (!v) return '-';
   const locale = getDeviceLocale();
   const timeZone = getDeviceTimeZone();
   try {
     if (typeof v === 'string') {
       const s = v.trim();
-      // Handle timestamps like "YYYY-MM-DD HH:mm:ss" (no timezone info).
-      // Treat as UTC to avoid implicit local-time parsing drift.
       if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(\.\d+)?$/.test(s)) {
         const d = new Date(s.replace(' ', 'T') + 'Z');
         if (!Number.isNaN(d.getTime())) {
@@ -29,37 +30,21 @@ function formatTime(v: any) {
     }
 
     if (typeof v === 'object') {
-      const toDate = (v as any)?.toDate;
-      if (typeof toDate === 'function') {
+      const ts = v as Partial<Timestamp>;
+      const secNum =
+        typeof ts.seconds === 'number'
+          ? ts.seconds
+          : typeof ts.seconds === 'bigint'
+            ? Number(ts.seconds)
+            : undefined;
+      if (typeof secNum === 'number' && Number.isFinite(secNum)) {
         try {
-          const d = toDate.call(v);
+          const d = timestampDate(v as Timestamp);
           if (d instanceof Date && !Number.isNaN(d.getTime())) {
             return d.toLocaleString(locale, { timeZone, hour12: false });
           }
         } catch {
           // ignore
-        }
-      }
-
-      const seconds = (v as any)?.seconds;
-      const nanos = (v as any)?.nanos;
-      const secNum =
-        typeof seconds === 'number'
-          ? seconds
-          : typeof seconds === 'bigint'
-            ? Number(seconds)
-            : undefined;
-      if (typeof secNum === 'number' && Number.isFinite(secNum)) {
-        const nanoNum =
-          typeof nanos === 'number'
-            ? nanos
-            : typeof nanos === 'bigint'
-              ? Number(nanos)
-              : 0;
-        const ms = secNum * 1000 + (Number.isFinite(nanoNum) ? Math.floor(nanoNum / 1_000_000) : 0);
-        const d = new Date(ms);
-        if (!Number.isNaN(d.getTime())) {
-          return d.toLocaleString(locale, { timeZone, hour12: false });
         }
       }
     }
@@ -144,6 +129,7 @@ export default function StrategyScheduleLogsPage() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [schedule, setSchedule] = useState<any>(null);
 
   const [activeTab, setActiveTab] = useState<'exec' | 'orders'>('exec');
@@ -197,6 +183,7 @@ export default function StrategyScheduleLogsPage() {
       return;
     }
     setLoading(true);
+    setError(null);
     try {
       await Promise.all([
         refreshSchedule(),
@@ -204,7 +191,9 @@ export default function StrategyScheduleLogsPage() {
         refreshOrders(),
       ]);
     } catch (e: any) {
-      message.error(e?.message || t('common.loadingFailed'));
+      const msg = e?.message || t('common.loadingFailed');
+      setError(msg);
+      message.error(msg);
     } finally {
       setLoading(false);
     }
@@ -364,9 +353,10 @@ export default function StrategyScheduleLogsPage() {
       </Card>
 
       <Card>
+        <StatusResult error={error} onRetry={() => refresh()}>
         <Tabs
           activeKey={activeTab}
-          onChange={(k) => setActiveTab(k as any)}
+          onChange={(k) => setActiveTab(k as 'exec' | 'orders')}
           items={[
             {
               key: 'exec',
@@ -374,7 +364,7 @@ export default function StrategyScheduleLogsPage() {
               children: (
                 <Table
                   scroll={{ x: "max-content" }}
-                  rowKey={(r) => String((r as any)?.id || '')}
+                  rowKey={(r: Record<string, unknown>) => String(r?.id || '')}
                   loading={loading}
                   columns={execColumns}
                   dataSource={execLogs}
@@ -416,6 +406,7 @@ export default function StrategyScheduleLogsPage() {
             },
           ]}
         />
+        </StatusResult>
       </Card>
     </Space>
   );

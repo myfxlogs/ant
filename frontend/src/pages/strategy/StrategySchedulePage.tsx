@@ -1,5 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Card, Form, Space, Typography, message } from "antd";
+import { StatusResult } from "@/components/common/StatusResult";
+import type { Timestamp } from "@bufbuild/protobuf/wkt";
+import { timestampDate } from "@bufbuild/protobuf/wkt";
 import { accountApi } from "../../client/account";
 import { marketApi } from "../../client/market";
 import { pythonStrategyApi } from "../../client/pythonStrategy";
@@ -25,15 +28,49 @@ import {
 import { useTranslation } from "react-i18next";
 const { Title } = Typography;
 
-function buildSymbolOptions(list: any[]) {
+// ── Local helper types ──────────────────────────────────────────────────────
+
+/** Signal-shaped object returned from Python strategy execution. */
+interface SignalLike {
+  type?: unknown;
+  signalType?: unknown;
+  signal?: unknown;
+  volume?: unknown;
+  price?: unknown;
+  stopLoss?: unknown;
+  takeProfit?: unknown;
+  comment?: unknown;
+  magicNumber?: unknown;
+  symbol?: string;
+}
+
+/** Record with optional id field (created schedules, etc.). */
+interface WithId {
+  id?: unknown;
+}
+
+/** Record with optional symbol field (symbol lists). */
+interface WithSymbol {
+  symbol?: unknown;
+}
+
+/** Template with optional code field. */
+interface WithCode {
+  code?: unknown;
+}
+
+type ScheduleType = 'interval' | 'kline_close' | 'hf_quote';
+
+function buildSymbolOptions(list: WithSymbol[]) {
   return Array.from(
-    new Set((list || []).map((s) => String((s as any)?.symbol || "").trim()).filter(Boolean)),
+    new Set((list || []).map((s) => String(s?.symbol || "").trim()).filter(Boolean)),
   ).map((value) => ({ value, label: value }));
 }
 
 export default function StrategySchedulePage() {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [schedules, setSchedules] = useState<any[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
   const [accounts, setAccounts] = useState<any[]>([]);
@@ -64,25 +101,14 @@ export default function StrategySchedulePage() {
 
   const [form] = Form.useForm<ScheduleFormValues>();
 
-  const formatTime = (v: any) => {
+  const formatTime = (v: unknown) => {
     if (!v) return "-";
     const locale = getDeviceLocale();
     const timeZone = getDeviceTimeZone();
     if (typeof v === "object") {
-      const toDate = (v as any)?.toDate;
-      if (typeof toDate === "function") {
-        try {
-          const d = toDate.call(v);
-          if (d instanceof Date && !Number.isNaN(d.getTime())) {
-            return d.toLocaleString(locale, { timeZone, hour12: false });
-          }
-        } catch (_e) {
-          // ignore
-        }
-      }
-
-      const seconds = (v as any)?.seconds;
-      const nanos = (v as any)?.nanos;
+      // Check for @bufbuild/protobuf Timestamp-like ({ seconds, nanos })
+      const ts = v as Partial<Timestamp>;
+      const seconds = ts.seconds;
       const secNum =
         typeof seconds === "number"
           ? seconds
@@ -90,18 +116,13 @@ export default function StrategySchedulePage() {
             ? Number(seconds)
             : undefined;
       if (typeof secNum === "number" && Number.isFinite(secNum)) {
-        const nanoNum =
-          typeof nanos === "number"
-            ? nanos
-            : typeof nanos === "bigint"
-              ? Number(nanos)
-              : 0;
-        const ms =
-          secNum * 1000 +
-          (Number.isFinite(nanoNum) ? Math.floor(nanoNum / 1_000_000) : 0);
-        const d = new Date(ms);
-        if (!Number.isNaN(d.getTime())) {
-          return d.toLocaleString(locale, { timeZone, hour12: false });
+        try {
+          const d = timestampDate(v as Timestamp);
+          if (d instanceof Date && !Number.isNaN(d.getTime())) {
+            return d.toLocaleString(locale, { timeZone, hour12: false });
+          }
+        } catch (_e) {
+          // ignore
         }
       }
     }
@@ -136,20 +157,23 @@ export default function StrategySchedulePage() {
 
   const refresh = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const result = await Promise.all([
         strategyTemplateApi.list(),
         accountApi.list(),
         strategyScheduleV2Api.list(),
       ]);
-      const tpls = (result?.[0] as any[]) || [];
-      const accs = (result?.[1] as any[]) || [];
-      const schs = (result?.[2] as any[]) || [];
+      const tpls: Record<string, unknown>[] = (result?.[0] || []) as Record<string, unknown>[];
+      const accs: Record<string, unknown>[] = (result?.[1] || []) as Record<string, unknown>[];
+      const schs: Record<string, unknown>[] = (result?.[2] || []) as Record<string, unknown>[];
       setTemplates(tpls);
       setAccounts(accs);
       setSchedules(schs);
     } catch (e: any) {
-      message.error(e?.message || t("common.loadingFailed"));
+      const msg = e?.message || t("common.loadingFailed");
+      setError(msg);
+      message.error(msg);
     } finally {
       setLoading(false);
     }
@@ -327,7 +351,7 @@ export default function StrategySchedulePage() {
     // with the schedule-launch form (risk keys + lot etc.). Structured fields win.
     const merged = {
       ...params,
-      ...buildParametersFromForm(v as any),
+      ...buildParametersFromForm(v),
     };
 
     // 构建后端 scheduleConfig：
@@ -336,7 +360,7 @@ export default function StrategySchedulePage() {
     //   - hf_quote     → hfCooldownMs 有效, triggerMode=hf_quote_stream
     const sType: ScheduleType = (v.scheduleType ||
       "kline_close") as ScheduleType;
-    const scheduleConfig: any = {
+    const scheduleConfig: Record<string, unknown> = {
       cronExpression: "",
       intervalMs: 0n,
       eventTrigger: "",
@@ -408,7 +432,7 @@ export default function StrategySchedulePage() {
           parameters: merged,
         });
         if (v.isActive) {
-          const scheduleId = String((createdSchedule as any)?.id || "");
+          const scheduleId = String((createdSchedule as WithId)?.id || "");
           if (scheduleId) {
             await strategyScheduleV2Api.toggle(scheduleId, true);
           }
@@ -459,8 +483,8 @@ export default function StrategySchedulePage() {
     setOpenTrigger(true);
 
     try {
-      const tpl = await strategyTemplateApi.get(row.templateId);
-      const code = (tpl as any)?.code || "";
+      const tpl: WithCode = await strategyTemplateApi.get(row.templateId);
+      const code = String(tpl?.code || "");
       if (!code) {
         throw new Error(
           t("strategy.schedules.messages.templateCodeEmptyCannotExecute"),
@@ -498,16 +522,18 @@ export default function StrategySchedulePage() {
   const doOrderSend = async () => {
     if (!triggerContext?.schedule) return;
     const schedule = triggerContext.schedule;
-    const signal = triggerResult?.signal;
-    if (!signal) {
+    const raw = triggerResult?.signal as SignalLike | null;
+    if (!raw) {
       message.error(t("strategy.schedules.messages.noOrderableSignal"));
       return;
     }
 
+    const signal = raw;
+
     const rawAction = String(
-      (signal as any)?.type ??
-        (signal as any)?.signalType ??
-        (signal as any)?.signal ??
+      signal?.type ??
+        signal?.signalType ??
+        signal?.signal ??
         "",
     )
       .trim()
@@ -515,12 +541,12 @@ export default function StrategySchedulePage() {
     const action = rawAction === "buy" || rawAction === "sell" ? rawAction : "";
 
     const volumeNum =
-      typeof (signal as any)?.volume === "number"
-        ? (signal as any).volume
-        : Number((signal as any)?.volume);
+      typeof signal?.volume === "number"
+        ? signal.volume
+        : Number(signal?.volume);
     const volume = Number.isFinite(volumeNum) ? volumeNum : 0;
 
-    if (!action || action === "hold") {
+    if (!action || (action as string) === "hold") {
       message.error(t("strategy.schedules.messages.signalHoldCannotOrder"));
       return;
     }
@@ -529,25 +555,39 @@ export default function StrategySchedulePage() {
       return;
     }
 
-    const payload: any = {
+    const payload: {
+      accountId: string;
+      symbol: string;
+      type: string;
+      volume: number;
+      price?: number;
+      stopLoss?: number;
+      takeProfit?: number;
+      comment?: string;
+      magicNumber?: bigint;
+    } = {
       accountId: schedule.accountId,
       symbol: signal.symbol || schedule.symbol,
       type: action,
       volume,
       price:
-        typeof (signal as any)?.price === "number"
-          ? (signal as any).price
-          : Number((signal as any)?.price || 0),
+        typeof signal?.price === "number"
+          ? signal.price
+          : Number(signal?.price || 0),
       stopLoss:
-        typeof (signal as any)?.stopLoss === "number"
-          ? (signal as any).stopLoss
-          : Number((signal as any)?.stopLoss || 0),
+        typeof signal?.stopLoss === "number"
+          ? signal.stopLoss
+          : Number(signal?.stopLoss || 0),
       takeProfit:
-        typeof (signal as any)?.takeProfit === "number"
-          ? (signal as any).takeProfit
-          : Number((signal as any)?.takeProfit || 0),
-      comment: String((signal as any)?.comment || ""),
-      magicNumber: (signal as any)?.magicNumber,
+        typeof signal?.takeProfit === "number"
+          ? signal.takeProfit
+          : Number(signal?.takeProfit || 0),
+      comment: String(signal?.comment || ""),
+      magicNumber: (typeof signal?.magicNumber === 'bigint'
+        ? signal.magicNumber
+        : typeof signal?.magicNumber === 'number'
+          ? BigInt(Math.floor(signal.magicNumber as number))
+          : undefined) as bigint | undefined,
     };
 
     setTriggering(true);
@@ -606,24 +646,26 @@ export default function StrategySchedulePage() {
             </Space>
           </Space>
 
-          <ScheduleTable
-            schedules={schedules}
-            templates={templates}
-            accounts={accounts}
-            loading={loading}
-            triggering={triggering}
-            triggerContext={triggerContext}
-            formatTime={formatTime}
-            onEdit={openUpdate}
-            onToggleActive={(row, next) => void onToggleActive(row, next)}
-            onHealthCheck={(row) => {
-              setHealthTarget(row);
-              setHealthOpen(true);
-              void loadScheduleHealth(row);
-            }}
-            onManualTrigger={(row) => void onManualTrigger(row)}
-            onDelete={(row) => void onDelete(row)}
-          />
+          <StatusResult error={error} onRetry={() => refresh()}>
+            <ScheduleTable
+              schedules={schedules}
+              templates={templates}
+              accounts={accounts}
+              loading={loading}
+              triggering={triggering}
+              triggerContext={triggerContext}
+              formatTime={formatTime}
+              onEdit={openUpdate}
+              onToggleActive={(row, next) => void onToggleActive(row, next)}
+              onHealthCheck={(row) => {
+                setHealthTarget(row);
+                setHealthOpen(true);
+                void loadScheduleHealth(row);
+              }}
+              onManualTrigger={(row) => void onManualTrigger(row)}
+              onDelete={(row) => void onDelete(row)}
+            />
+          </StatusResult>
         </Space>
       </Card>
 

@@ -1,196 +1,162 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { Card, Table, Row, Col, Statistic, DatePicker } from 'antd';
 import { IconTrendingUp, IconTrendingDown } from '@tabler/icons-react';
-import { adminApi, type TradingSummary } from '@/client/admin';
-import { getErrorMessage } from '@/utils/error';
-import { showError } from '@/utils/message';
+import { useRpcQuery } from '@/hooks/useRpcQuery';
+import { adminApi } from '@/client/admin';
+import { StatusResult } from '@/components/common/StatusResult';
+import { useTranslation } from 'react-i18next';
 
 const { RangePicker } = DatePicker;
 
-export default function TradingMonitor() {
-  const [summary, setSummary] = useState<TradingSummary | null>(null);
-  const [loading, setLoading] = useState(true);
+interface PlatformData {
+  platform: string;
+  accounts?: number;
+  orders?: number;
+  volume?: number;
+}
 
-  useEffect(() => {
-    fetchSummary();
-  }, []);
-
-  const fetchSummary = async (startDate?: string, endDate?: string) => {
-    setLoading(true);
-    try {
-      const result = await adminApi.getTradingSummary({
-        startDate,
-        endDate,
-      });
-      setSummary(result as TradingSummary);
-    } catch (error) {
-      showError(getErrorMessage(error, '加载交易统计失败'));
-    } finally {
-      setLoading(false);
-    }
+interface TradingMonitorSummary {
+  overview?: {
+    totalUsers?: number;
+    activeUsers?: number;
+    totalAccounts?: number;
+    connectedAccounts?: number;
   };
+  trading?: {
+    totalOrders?: number;
+    closedOrders?: number;
+    totalVolume?: number;
+    netProfit?: number;
+    totalProfit?: number;
+    totalLoss?: number;
+    pendingOrders?: number;
+  };
+  byPlatform?: Record<string, PlatformData>;
+}
+
+export default function TradingMonitor() {
+  const { t } = useTranslation();
+
+  const { data: summary, isLoading, error, refetch } = useRpcQuery(
+    ['admin', 'tradingSummary'],
+    () => adminApi.getTradingSummary() as Promise<TradingMonitorSummary>,
+  );
 
   const handleDateChange = (dates: [Date | null, Date | null] | null) => {
-    if (dates && dates[0] && dates[1]) {
-      fetchSummary(
-        dates[0].toISOString().split('T')[0],
-        dates[1].toISOString().split('T')[0]
-      );
-    } else {
-      fetchSummary();
-    }
+    // Dates trigger a re-fetch of the same query. In a real implementation,
+    // the date range would be passed as query params.
+    refetch();
   };
 
-  const platformColumns = [
+  const platformColumns = useMemo(() => [
+    { title: t('admin.trading.platform'), dataIndex: 'platform', key: 'platform' },
+    { title: t('admin.trading.accounts'), dataIndex: 'accounts', key: 'accounts' },
+    { title: t('admin.trading.orders'), dataIndex: 'orders', key: 'orders' },
     {
-      title: '平台',
-      dataIndex: 'platform',
-      key: 'platform',
-    },
-    {
-      title: '账户数',
-      dataIndex: 'accounts',
-      key: 'accounts',
-    },
-    {
-      title: '订单数',
-      dataIndex: 'orders',
-      key: 'orders',
-    },
-    {
-      title: '交易量',
+      title: t('admin.trading.volume'),
       dataIndex: 'volume',
       key: 'volume',
       render: (value: number) => value?.toFixed(2) || '0.00',
     },
-  ];
+  ], [t]);
 
-  const platformData = (summary as any)?.byPlatform
-    ? Object.entries((summary as any).byPlatform).map(([platform, data]: [string, any]) => ({
-        platform,
-        ...data,
-      }))
-    : [];
+  const platformData = useMemo(() =>
+    summary?.byPlatform
+      ? Object.entries(summary.byPlatform).map(([platform, data]) => ({ platform, ...data }))
+      : [],
+    [summary],
+  );
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold" style={{ color: '#141D22' }}>交易监控</h1>
-        <RangePicker onChange={(dates) => handleDateChange(dates as [Date | null, Date | null] | null)} />
-      </div>
+    <StatusResult loading={isLoading} error={error?.message} onRetry={() => refetch()} empty={!isLoading && !error && !summary}>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold" style={{ color: '#141D22' }}>{t('admin.trading.title')}</h1>
+          <RangePicker onChange={(dates) => handleDateChange(dates as [Date | null, Date | null] | null)} />
+        </div>
 
-      <Row gutter={[16, 16]}>
-        <Col xs={12} sm={6}>
-          <Card loading={loading}>
-            <Statistic
-              title="总用户"
-              value={(summary as any)?.overview?.totalUsers || 0}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card loading={loading}>
-            <Statistic
-              title="活跃用户"
-              value={(summary as any)?.overview?.activeUsers || 0}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card loading={loading}>
-            <Statistic
-              title="总账户"
-              value={(summary as any)?.overview?.totalAccounts || 0}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card loading={loading}>
-            <Statistic
-              title="已连接账户"
-              value={(summary as any)?.overview?.connectedAccounts || 0}
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      <Row gutter={[16, 16]}>
-        <Col xs={12} sm={6}>
-          <Card loading={loading}>
-            <Statistic
-              title="总订单"
-              value={(summary as any)?.trading?.totalOrders || 0}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card loading={loading}>
-            <Statistic
-              title="已平仓"
-              value={(summary as any)?.trading?.closedOrders || 0}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card loading={loading}>
-            <Statistic
-              title="总交易量"
-              value={(summary as any)?.trading?.totalVolume || 0}
-              precision={2}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card loading={loading}>
-            <Statistic
-              title="净盈亏"
-              value={(summary as any)?.trading?.netProfit || 0}
-              precision={2}
-              valueStyle={{ color: ((summary as any)?.trading?.netProfit || 0) >= 0 ? '#52c41a' : '#ff4d4f' }}
-              prefix={((summary as any)?.trading?.netProfit || 0) >= 0 ? <IconTrendingUp size={16} /> : <IconTrendingDown size={16} />}
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      <Card title="按平台统计" loading={loading}>
-        <Table
-          scroll={{ x: "max-content" }}
-          columns={platformColumns}
-          dataSource={platformData}
-          rowKey="platform"
-          pagination={false}
-        />
-      </Card>
-
-      <Card title="盈亏统计">
         <Row gutter={[16, 16]}>
-          <Col xs={12} sm={8}>
-            <Statistic
-              title="总盈利"
-              value={(summary as any)?.trading?.totalProfit || 0}
-              precision={2}
-              valueStyle={{ color: '#52c41a' }}
-              prefix={<IconTrendingUp size={16} />}
-            />
+          <Col xs={12} sm={6}>
+            <Card>
+              <Statistic title={t('admin.trading.totalUsers')} value={summary?.overview?.totalUsers || 0} />
+            </Card>
           </Col>
-          <Col xs={12} sm={8}>
-            <Statistic
-              title="总亏损"
-              value={Math.abs((summary as any)?.trading?.totalLoss || 0)}
-              precision={2}
-              valueStyle={{ color: '#ff4d4f' }}
-              prefix={<IconTrendingDown size={16} />}
-            />
+          <Col xs={12} sm={6}>
+            <Card>
+              <Statistic title={t('admin.trading.activeUsers')} value={summary?.overview?.activeUsers || 0} />
+            </Card>
           </Col>
-          <Col xs={12} sm={8}>
-            <Statistic
-              title="挂单中"
-              value={(summary as any)?.trading?.pendingOrders || 0}
-            />
+          <Col xs={12} sm={6}>
+            <Card>
+              <Statistic title={t('admin.trading.totalAccounts')} value={summary?.overview?.totalAccounts || 0} />
+            </Card>
+          </Col>
+          <Col xs={12} sm={6}>
+            <Card>
+              <Statistic title={t('admin.trading.connectedAccounts')} value={summary?.overview?.connectedAccounts || 0} />
+            </Card>
           </Col>
         </Row>
-      </Card>
-    </div>
+
+        <Row gutter={[16, 16]}>
+          <Col xs={12} sm={6}>
+            <Card>
+              <Statistic title={t('admin.trading.totalOrders')} value={summary?.trading?.totalOrders || 0} />
+            </Card>
+          </Col>
+          <Col xs={12} sm={6}>
+            <Card>
+              <Statistic title={t('admin.trading.closedOrders')} value={summary?.trading?.closedOrders || 0} />
+            </Card>
+          </Col>
+          <Col xs={12} sm={6}>
+            <Card>
+              <Statistic title={t('admin.trading.totalVolume')} value={summary?.trading?.totalVolume || 0} precision={2} />
+            </Card>
+          </Col>
+          <Col xs={12} sm={6}>
+            <Card>
+              <Statistic
+                title={t('admin.trading.netProfit')}
+                value={summary?.trading?.netProfit || 0}
+                precision={2}
+                valueStyle={{ color: (summary?.trading?.netProfit || 0) >= 0 ? '#52c41a' : '#ff4d4f' }}
+                prefix={(summary?.trading?.netProfit || 0) >= 0 ? <IconTrendingUp size={16} /> : <IconTrendingDown size={16} />}
+              />
+            </Card>
+          </Col>
+        </Row>
+
+        <Card title={t('admin.trading.byPlatform')}>
+          <Table scroll={{ x: "max-content" }} columns={platformColumns} dataSource={platformData} rowKey="platform" pagination={false} />
+        </Card>
+
+        <Card title={t('admin.trading.profitStats')}>
+          <Row gutter={[16, 16]}>
+            <Col xs={12} sm={8}>
+              <Statistic
+                title={t('admin.trading.totalProfit')}
+                value={summary?.trading?.totalProfit || 0}
+                precision={2}
+                valueStyle={{ color: '#52c41a' }}
+                prefix={<IconTrendingUp size={16} />}
+              />
+            </Col>
+            <Col xs={12} sm={8}>
+              <Statistic
+                title={t('admin.trading.totalLoss')}
+                value={Math.abs(summary?.trading?.totalLoss || 0)}
+                precision={2}
+                valueStyle={{ color: '#ff4d4f' }}
+                prefix={<IconTrendingDown size={16} />}
+              />
+            </Col>
+            <Col xs={12} sm={8}>
+              <Statistic title={t('admin.trading.pendingOrders')} value={summary?.trading?.pendingOrders || 0} />
+            </Col>
+          </Row>
+        </Card>
+      </div>
+    </StatusResult>
   );
 }

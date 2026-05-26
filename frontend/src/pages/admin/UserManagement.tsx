@@ -6,6 +6,7 @@ import { formatDateTime } from '@/utils/date';
 import { useTranslation } from 'react-i18next';
 import { showError, showSuccess } from '@/utils/message';
 import { getErrorMessage } from '@/utils/error';
+import { StatusResult } from '@/components/common/StatusResult';
 import GradientButton from '@/components/common/GradientButton';
 
 const { Search } = Input;
@@ -14,6 +15,7 @@ export default function UserManagement() {
   const { t } = useTranslation();
   const [users, setUsers] = useState<UserWithAccounts[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [params, setParams] = useState<UserListParams>({ page: 1, pageSize: 20 });
   const [createModalVisible, setCreateModalVisible] = useState(false);
@@ -27,12 +29,15 @@ export default function UserManagement() {
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const result = await adminApi.listUsers(params);
       setUsers(result.users);
       setTotal(result.total);
-    } catch (error) {
-      showError(getErrorMessage(error, '加载用户列表失败'));
+    } catch (err) {
+      const msg = getErrorMessage(err, '加载用户列表失败');
+      setError(msg);
+      showError(msg);
     } finally {
       setLoading(false);
     }
@@ -113,7 +118,7 @@ export default function UserManagement() {
   const showEditModal = (user: UserWithAccounts) => {
     setCurrentUser(user);
     editForm.setFieldsValue({
-      nickname: (user as any).nickname,
+      nickname: user.nickname,
       role: user.role,
       status: user.status,
     });
@@ -274,6 +279,7 @@ export default function UserManagement() {
           />
         </div>
 
+        <StatusResult error={error} onRetry={fetchUsers}>
         <Table
 
           scroll={{ x: "max-content" }}
@@ -290,6 +296,7 @@ export default function UserManagement() {
             onChange: (page, pageSize) => setParams({ ...params, page, pageSize }),
           }}
         />
+        </StatusResult>
       </Card>
 
       <Modal
@@ -416,12 +423,12 @@ export default function UserManagement() {
           <Descriptions column={1} bordered>
             <Descriptions.Item label={t('admin.userManagement.drawer.labels.id')}>{currentUser.id}</Descriptions.Item>
             <Descriptions.Item label={t('admin.userManagement.drawer.labels.email')}>{currentUser.email}</Descriptions.Item>
-            <Descriptions.Item label={t('admin.userManagement.drawer.labels.nickname')}>{(currentUser as any).nickname}</Descriptions.Item>
+            <Descriptions.Item label={t('admin.userManagement.drawer.labels.nickname')}>{currentUser?.nickname}</Descriptions.Item>
             <Descriptions.Item label={t('admin.userManagement.drawer.labels.role')}>{currentUser.role}</Descriptions.Item>
             <Descriptions.Item label={t('admin.userManagement.drawer.labels.status')}>{currentUser.status}</Descriptions.Item>
-            <Descriptions.Item label={t('admin.userManagement.drawer.labels.mtAccountCount')}>{(currentUser as any).mtAccountCount}</Descriptions.Item>
+            <Descriptions.Item label={t('admin.userManagement.drawer.labels.mtAccountCount')}>{currentUser?.mtAccountCount}</Descriptions.Item>
             <Descriptions.Item label={t('admin.userManagement.drawer.labels.lastLogin')}>
-              {formatDateTime((currentUser as any).lastLoginAt)}
+              {formatDateTime(currentUser?.lastLoginAt)}
             </Descriptions.Item>
             <Descriptions.Item label={t('admin.userManagement.drawer.labels.createdAt')}>
               {formatDateTime(currentUser.createdAt)}

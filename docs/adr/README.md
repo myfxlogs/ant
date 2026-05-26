@@ -16,6 +16,14 @@
 | 0009 | Spill Replay 双写 + Bar 不可变性 + 历史回填 | Accepted |
 | 0010 | SLO + Alert + DLQ + Trace 框架 | Accepted |
 | 0011 | 容量调优 + Vault 轮换 + Normalizer 缓存失效 | Accepted |
+| 0012 | 统一回测/实盘代码路径 | Accepted |
+| 0013 | 订单状态机 + 崩溃恢复 + 幂等性 | Accepted |
+| 0014 | 持仓级风控 | Accepted |
+| 0015 | 仿真交易（Paper Trading）| Accepted |
+| 0016 | Bar 修订级联处理 | Accepted |
+| 0017 | AI 会话记忆 + 意图澄清 + 回测反馈 | Accepted |
+| 0018 | 信号→执行延迟 SLO | Accepted |
+| 0019 | M11 前端架构（增量重构，React/Zustand/TanStack Query） | Accepted |
 
 ## 编号规则
 

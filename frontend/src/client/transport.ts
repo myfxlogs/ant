@@ -1,5 +1,5 @@
 import { createConnectTransport } from '@connectrpc/connect-web';
-import { ConnectError, type Interceptor } from '@connectrpc/connect';
+import { ConnectError, Code, type Interceptor } from '@connectrpc/connect';
 import { Modal, message } from 'antd';
 import i18n from '@/i18n';
 import { isLikelyStreamTransportFailure, isStreamServiceProcedure } from '@/utils/streamErrors';
@@ -24,17 +24,42 @@ const STREAM_URL = rawStreamUrl.replace(/\/+$/, '');
 let hasShownConnectionError = false;
 let lastBizErrorAt = 0;
 
-// Services that are available on the new v2 backend.
-// All others silently return empty — no error modals.
-const v2Services = new Set([
-  'ant.v1.authservice',
-  'ant.v1.accountservice',
-  'ant.v1.marketplaceservice',
-  'ant.v1.mthubservice',
-  'ant.v1.marketservice',
-]);
+// --- Token refresh ---
+let refreshPromise: Promise<string | null> | null = null;
 
-/** Narrow Connect request shape for logging / stream heuristics (transport layer only). */
+async function tryRefreshToken(): Promise<string | null> {
+  const refreshToken = localStorage.getItem('refresh_token');
+  if (!refreshToken) return null;
+
+  try {
+    const baseUrl = API_URL;
+    const res = await fetch(`${baseUrl}/ant.v1.AuthService/RefreshToken`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const newAccess = data.accessToken || data.access_token;
+    const newRefresh = data.refreshToken || data.refresh_token;
+    if (newAccess) {
+      localStorage.setItem('access_token', newAccess);
+      if (newRefresh) localStorage.setItem('refresh_token', newRefresh);
+      return newAccess;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+async function refreshAndGetToken(): Promise<string | null> {
+  if (!refreshPromise) {
+    refreshPromise = tryRefreshToken().finally(() => { refreshPromise = null; });
+  }
+  return refreshPromise;
+}
+
 function procedureHint(req: unknown): { key: string; label: string } {
   const r = req as {
     service?: { typeName?: string };
@@ -47,40 +72,29 @@ function procedureHint(req: unknown): { key: string; label: string } {
   return { key, label };
 }
 
-// Rewrite old antrader.* → ant.v1.* (M7 proto migration).
-function rewriteLegacyPath(url: string): string {
-  return url.replace(/\/(antrader\.)/g, '/ant.v1.');
-}
-
-// Shared fetch with path rewrite + empty response for non-v2 services.
-function v2Fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-  let url = typeof input === 'string' ? input : input instanceof Request ? input.url : String(input);
-  url = rewriteLegacyPath(url);
-  // Check if this URL targets a service not yet on v2.
-  const svcPath = url.replace(/.*\/(ant\.v1\.[a-z]+)\/.*/, '$1').toLowerCase();
-  const isV2 = [...v2Services].some(s => svcPath.startsWith(s));
-  if (!isV2 && svcPath.startsWith('ant.v1.')) {
-    // Non-v2 service: return empty response, no actual HTTP request.
-    return Promise.resolve(new Response(JSON.stringify({}), {
-      status: 200, headers: { 'Content-Type': 'application/json' },
-    }));
-  }
-  // Rebuild Request with rewritten URL.
-  if (typeof input === 'string') {
-    input = url;
-  } else if (input instanceof Request) {
-    input = new Request(url, input);
-  }
-  return fetch(input, init);
-}
-
 const interceptors: Interceptor[] = [
+  // Token refresh interceptor — runs first to catch 401 and retry
+  (next) => async (req) => {
+    try {
+      return await next(req);
+    } catch (error: unknown) {
+      if (error instanceof ConnectError && error.code === Code.Unauthenticated) {
+        const proc = procedureHint(req).key;
+        if (proc.includes('authservice') && (proc.includes('refreshtoken') || proc.includes('login') || proc.includes('register'))) {
+          throw error;
+        }
+        const newToken = await refreshAndGetToken();
+        if (newToken) {
+          req.header.set('Authorization', `Bearer ${newToken}`);
+          return next(req);
+        }
+      }
+      throw error;
+    }
+  },
   (next) => async (req) => {
     const proc = procedureHint(req).key;
     const isAuthFree = proc.includes('authservice') && (proc.includes('login') || proc.includes('register'));
-
-    // For non-v2 services, let the fetch layer return empty data.
-    // The interceptor can't suppress — empty response is handled by v2Fetch.
 
     const token = localStorage.getItem('access_token');
     if (token && !isAuthFree) {
@@ -96,7 +110,7 @@ const interceptors: Interceptor[] = [
       return await next(req);
     } catch (error: unknown) {
       if (error instanceof ConnectError && error.code === 12) {
-        throw error; // unimplemented — don't show error modal
+        throw error; // unimplemented
       }
 
       if (error instanceof Error && (error.message.includes('aborted') || error.message.includes('abort'))) {
@@ -144,11 +158,9 @@ const interceptors: Interceptor[] = [
 export const transport = createConnectTransport({
   baseUrl: API_URL,
   interceptors,
-  fetch: v2Fetch,
 });
 
 export const streamTransport = createConnectTransport({
   baseUrl: STREAM_URL,
   interceptors,
-  fetch: v2Fetch,
 });
