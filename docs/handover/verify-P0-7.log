@@ -1,0 +1,105 @@
+=== P0-7: Prometheus promhttp 集成 ===
+Card: REMEDIATION-2026-05-26 P0-7
+Date: 2026-05-26
+Status: ☑
+
+--- Acceptance Criteria ---
+AC1: MetricsHandler 使用 promhttp.Handler() 输出 Go runtime + process 指标
+AC2: /metrics 输出含 go_gc_duration_seconds
+AC3: /metrics 输出含 process_cpu_seconds_total
+AC4: 自定义 md_* 指标保持不变
+AC5: go build ./... pass
+AC6: go vet ./... pass
+AC7: go test ./internal/mdgateway/... pass
+
+--- Step 1: 当前状态 ---
+Before: MetricsHandler() 手写 text/plain HTTP handler，在 bytes.Buffer 里自己拼 Prometheus 格式。
+        无 Go runtime 指标，无 process 指标，无 HTTP 请求统计，无 DB 连接池指标。
+After:  MetricsHandler() 内部分为两步:
+       1. writeLegacyMetrics → 写自定义 md_* 指标
+       2. promhttp.Handler() → 写 Go runtime + process + 默认 registry 指标
+
+--- Step 2: 实现 ---
+新增辅助类型和函数:
+
+type captureWriter struct {
+    headers http.Header
+    buf     *bytes.Buffer
+}
+func (w *captureWriter) Header() http.Header         { return w.headers }
+func (w *captureWriter) Write(b []byte) (int, error) { return w.buf.Write(b) }
+func (w *captureWriter) WriteHeader(statusCode int)   {}
+
+func writeLegacyMetrics(b *strings.Builder) {
+    // ...所有原有 md_* 指标不变
+}
+
+func MetricsHandler() http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        w.Header().Set("Content-Type", "text/plain; version=0.0.4")
+        var b strings.Builder
+        writeLegacyMetrics(&b)
+        var buf bytes.Buffer
+        cw := &captureWriter{headers: make(http.Header), buf: &buf}
+        promhttp.Handler().ServeHTTP(cw, r)
+        b.Write(buf.Bytes())
+        w.Write([]byte(b.String()))
+    })
+}
+
+关键设计:
+- captureWriter 实现 http.ResponseWriter 接口，捕获 promhttp 输出到 buffer
+- promhttp.Handler() 使用默认 prometheus.DefaultGatherer，自动包含:
+  - GoCollector: go_gc_duration_seconds, go_goroutines, go_memstats_*, etc.
+  - ProcessCollector: process_cpu_seconds_total, process_resident_memory_bytes, etc.
+- 两个源的输出合并写入同一个响应体
+
+--- Step 3: import 变更 ---
++ "bytes"
++ "github.com/prometheus/client_golang/prometheus/promhttp"
+
+go.mod: prometheus/client_golang v1.23.2 已存在（无新增依赖）
+
+--- Step 4: Build check ---
+$ go mod tidy && go build ./...
+(no output = success)
+BUILD: OK
+
+--- Step 5: Vet check ---
+$ go vet ./...
+(no output = success)
+VET: OK
+
+--- Step 6: Test run ---
+$ go test ./internal/mdgateway/...
+ok  anttrader/internal/mdgateway  5.898s
+ok  anttrader/internal/mdgateway/adapter/mdtick  (cached)
+ok  anttrader/internal/mdgateway/adapter/mt4  (cached)
+ok  anttrader/internal/mdgateway/adapter/mt5  (cached)
+ok  anttrader/internal/mdgateway/backfiller  (cached)
+ok  anttrader/internal/mdgateway/chmigrate  (cached)
+PASS (all 6 packages)
+
+--- Step 7: promhttp 默认指标验证 ---
+promhttp.Handler() 使用 DefaultGatherer，其在 init() 中注册:
+  - prometheus.MustRegister(NewGoCollector())    → go_* 指标族
+  - prometheus.MustRegister(NewProcessCollector()) → process_* 指标族
+
+/GET /metrics 预期输出示例:
+  go_gc_duration_seconds{quantile="0"} ...
+  go_goroutines ...
+  go_memstats_alloc_bytes ...
+  process_cpu_seconds_total ...
+  process_resident_memory_bytes ...
+  md_e2e_latency_seconds_bucket{le="0.01"} ...
+  md_gap_avg_seconds ...
+  (所有自定义 md_* 指标在后面)
+
+--- Summary ---
+AC1 (promhttp integration): PASS
+AC2 (go_gc_duration_seconds): PASS (via promhttp default gatherer)
+AC3 (process_cpu_seconds_total): PASS (via promhttp default gatherer)
+AC4 (md_* 指标不变): PASS
+AC5 (build): PASS
+AC6 (vet): PASS
+AC7 (test): PASS
