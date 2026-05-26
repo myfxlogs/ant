@@ -1,0 +1,122 @@
+=== P0-3: MT5 4 RPC 实现 (PlaceOrder / CloseOrder / ModifyOrder / FetchSymbolParams) ===
+Card: REMEDIATION-2026-05-26 P0-3
+Date: 2026-05-26
+Status: ☑
+
+--- Acceptance Criteria ---
+AC1: PlaceOrder calls mtapi Trading.OrderSend → returns ticket int64
+AC2: CloseOrder calls mtapi Trading.OrderClose
+AC3: ModifyOrder calls mtapi Trading.OrderModify
+AC4: FetchSymbolParams calls mtapi MT5.SymbolParams per symbol
+AC5: go build ./... pass
+AC6: go vet ./internal/mdgateway/... pass
+AC7: go test ./internal/mdgateway/... pass
+AC8: detect-stubs: MT5 "not yet implemented" 从 5→1 (仅剩 SubscribeOrderEvents)
+
+--- Step 1: 新增 TradingClient 到 Gateway ---
+diff: Gateway struct 新增 tradingCli pb.TradingClient 字段
+diff: Connect() 初始化 g.tradingCli = pb.NewTradingClient(conn)
+diff: Disconnect() 清理 g.tradingCli = nil
+
+--- Step 2: PlaceOrder 实现 ---
+$ grep -A24 'func (g \*Gateway) PlaceOrder' backend/internal/mdgateway/adapter/mt5/gateway.go
+func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
+    g.mu.RLock(); tc := g.tradingCli; sid := g.sessionID; g.mu.RUnlock()
+    if tc == nil || sid == "" { return 0, fmt.Errorf("mt5 PlaceOrder: not connected") }
+    ot := mt5OrderType(req.Side, req.OrderType)
+    price := req.Price.InexactFloat64()
+    md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.cfg.MtapiToken})
+    ctx = metadata.NewOutgoingContext(ctx, md)
+    resp, err := tc.OrderSend(ctx, &pb.OrderSendRequest{
+        Id: sid, Symbol: req.Canonical, Operation: ot,
+        Volume: req.Volume.InexactFloat64(),
+        Price: &price, Stoploss: pfloat64(req.StopLoss), Takeprofit: pfloat64(req.TakeProfit),
+        Comment: &req.Comment, ExpertID: pInt64(int64(req.Magic)),
+    })
+    if err != nil { return 0, fmt.Errorf("mt5 OrderSend: %w", err) }
+    if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
+        return 0, fmt.Errorf("mt5 OrderSend: code=%d msg=%s", resp.GetError().GetCode(), resp.GetError().GetMessage())
+    }
+    if resp.GetResult() == nil { return 0, fmt.Errorf("mt5 OrderSend: nil result") }
+    return resp.GetResult().GetTicket(), nil
+}
+
+--- Step 3: mt5OrderType helper ---
+Maps mthub (Side × OrderType) → pb.OrderType enum:
+  Buy+Market→Buy, Sell+Market→Sell
+  Buy+Limit→BuyLimit, Sell+Limit→SellLimit
+  Buy+Stop→BuyStop, Sell+Stop→SellStop
+  Buy+StopLimit→BuyStopLimit, Sell+StopLimit→SellStopLimit
+
+--- Step 4: CloseOrder 实现 ---
+func (g *Gateway) CloseOrder(ctx context.Context, ticket int64, lots decimal.Decimal) error {
+    g.mu.RLock(); tc := g.tradingCli; sid := g.sessionID; g.mu.RUnlock()
+    if tc == nil || sid == "" { return fmt.Errorf("mt5 CloseOrder: not connected") }
+    md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.cfg.MtapiToken})
+    ctx = metadata.NewOutgoingContext(ctx, md)
+    l := lots.InexactFloat64()
+    resp, err := tc.OrderClose(ctx, &pb.OrderCloseRequest{Id: sid, Ticket: ticket, Lots: &l})
+    if err != nil { return fmt.Errorf("mt5 OrderClose: %w", err) }
+    if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
+        return fmt.Errorf("mt5 OrderClose: code=%d msg=%s", ...)
+    }
+    return nil
+}
+
+--- Step 5: ModifyOrder 实现 ---
+func (g *Gateway) ModifyOrder(ctx context.Context, ticket int64, sl, tp, price decimal.Decimal) error {
+    g.mu.RLock(); tc := g.tradingCli; sid := g.sessionID; g.mu.RUnlock()
+    if tc == nil || sid == "" { return fmt.Errorf("mt5 ModifyOrder: not connected") }
+    md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.cfg.MtapiToken})
+    ctx = metadata.NewOutgoingContext(ctx, md)
+    resp, err := tc.OrderModify(ctx, &pb.OrderModifyRequest{
+        Id: sid, Ticket: ticket, Stoploss: sl.InexactFloat64(), Takeprofit: tp.InexactFloat64(),
+    })
+    // ... error handling same pattern
+}
+
+--- Step 6: FetchSymbolParams 实现 ---
+func (g *Gateway) FetchSymbolParams(ctx context.Context, canonicals []string) ([]*mthub.SymbolParam, error) {
+    // iterates canonicals, calls client.SymbolParams per symbol
+    // maps SymbolInfo + SymGroup → mthub.SymbolParam:
+    //   Digits←SymbolInfo.Digits, TradeMode←SymGroup.TradeMode, StopLevel←SymGroup.SL
+    //   PointValue←SymbolInfo.TickValue, LotSize←SymbolInfo.ContractSize
+    //   LotStep←SymGroup.LotsStep, LotMin←SymGroup.MinLots, LotMax←SymGroup.MaxLots
+    //   SpreadFloat←SymbolInfo.Spread>0
+}
+
+--- Step 7: Build check ---
+$ cd backend && go build ./...
+(no output = success)
+BUILD: OK
+
+--- Step 8: Vet check ---
+$ go vet ./internal/mdgateway/...
+(no output = success)
+VET: OK
+
+--- Step 9: Test run ---
+$ go test ./internal/mdgateway/... -v
+=== RUN   TestMT5Adapter_PackageLoads
+    mt5_test.go:6: mt5 adapter package compiled and loaded
+--- PASS: TestMT5Adapter_PackageLoads (0.00s)
+PASS  ok  anttrader/internal/mdgateway/adapter/mt5  0.010s
+(all mdgateway tests pass: 5.898s for main, plus adapter/mdtick, adapter/mt4, backfiller, chmigrate)
+
+--- Step 10: detect-stubs verification ---
+$ make detect-stubs
+Before P0-3: 13 hits (5 MT5 stubs)
+After  P0-3: 9  hits (1 MT5 stub: SubscribeOrderEvents — not in P0-3 scope)
+MT5 reduction: 5→1 ✓
+
+--- Summary ---
+AC1 (PlaceOrder): PASS
+AC2 (CloseOrder): PASS
+AC3 (ModifyOrder): PASS
+AC4 (FetchSymbolParams): PASS
+AC5 (build): PASS
+AC6 (vet): PASS
+AC7 (test): PASS
+AC8 (stubs 5→1): PASS
+
+Note: mtapi real playback requires live broker connection; RPC implementations follow same metadata/auth pattern as existing OpenedOrders and AccountSummary calls. Error handling mirrors FetchOpenedOrders pattern (check resp.GetError() + resp.GetResult() nil guard).

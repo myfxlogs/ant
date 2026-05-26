@@ -11,7 +11,7 @@ import (
 type Gateway struct {
 	cfg mdtick.AccountConfig; log *zap.Logger
 	mu sync.RWMutex; conn *grpc.ClientConn
-	client pb.MT5Client; connCli pb.ConnectionClient; streamCli pb.StreamsClient; qhCli pb.QuoteHistoryClient; subCli pb.SubscriptionsClient
+	client pb.MT5Client; connCli pb.ConnectionClient; streamCli pb.StreamsClient; qhCli pb.QuoteHistoryClient; subCli pb.SubscriptionsClient; tradingCli pb.TradingClient
 	sessionID string; cancelSub context.CancelFunc; cancelProfitSub context.CancelFunc; cancelOrderUpdateSub context.CancelFunc
 }
 func New(cfg mdtick.AccountConfig, log *zap.Logger) *Gateway { return &Gateway{cfg: cfg, log: log} }
@@ -28,7 +28,7 @@ func (g *Gateway) Connect(ctx context.Context) error {
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(16*1024*1024)),
 	)
 	if err != nil { return fmt.Errorf("mt5 dial: %w", err) }
-	g.mu.Lock(); g.conn=conn; g.client=pb.NewMT5Client(conn); g.connCli=pb.NewConnectionClient(conn); g.streamCli=pb.NewStreamsClient(conn); g.qhCli=pb.NewQuoteHistoryClient(conn); g.subCli=pb.NewSubscriptionsClient(conn); g.mu.Unlock()
+	g.mu.Lock(); g.conn=conn; g.client=pb.NewMT5Client(conn); g.connCli=pb.NewConnectionClient(conn); g.streamCli=pb.NewStreamsClient(conn); g.qhCli=pb.NewQuoteHistoryClient(conn); g.subCli=pb.NewSubscriptionsClient(conn); g.tradingCli=pb.NewTradingClient(conn); g.mu.Unlock()
 	// Connect to broker via mtapi (alfq pattern: id="mdgw-<login>", no authorization header, no Id in ConnectRequest for MT5).
 	tempID := "mdgw-" + g.cfg.Login
 	md := metadata.New(map[string]string{"id": tempID})
@@ -54,7 +54,7 @@ func (g *Gateway) Disconnect(ctx context.Context) error {
 	if g.cancelProfitSub != nil { g.cancelProfitSub(); g.cancelProfitSub = nil }
 	if g.cancelOrderUpdateSub != nil { g.cancelOrderUpdateSub(); g.cancelOrderUpdateSub = nil }
 	if g.conn != nil { g.conn.Close(); g.conn = nil }
-	g.client=nil; g.connCli=nil; g.streamCli=nil; g.qhCli=nil; g.subCli=nil; g.sessionID=""; return nil
+	g.client=nil; g.connCli=nil; g.streamCli=nil; g.qhCli=nil; g.subCli=nil; g.tradingCli=nil; g.sessionID=""; return nil
 }
 func (g *Gateway) Subscribe(ctx context.Context, syms []string, handler mdtick.TickHandler) error {
 	g.mu.RLock(); sc := g.streamCli; sub := g.subCli; sid := g.sessionID; g.mu.RUnlock()
@@ -554,15 +554,74 @@ func (g *Gateway) MT5Client() pb.MT5Client { g.mu.RLock(); defer g.mu.RUnlock();
 // --- OrderExecutor interface (mthub) ---
 
 func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
-	return 0, fmt.Errorf("mt5: PlaceOrder not yet implemented")
+	g.mu.RLock(); tc := g.tradingCli; sid := g.sessionID; g.mu.RUnlock()
+	if tc == nil || sid == "" { return 0, fmt.Errorf("mt5 PlaceOrder: not connected") }
+	ot := mt5OrderType(req.Side, req.OrderType)
+	price := req.Price.InexactFloat64()
+	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.cfg.MtapiToken})
+	ctx = metadata.NewOutgoingContext(ctx, md)
+	resp, err := tc.OrderSend(ctx, &pb.OrderSendRequest{
+		Id: sid, Symbol: req.Canonical, Operation: ot,
+		Volume: req.Volume.InexactFloat64(),
+		Price: &price, Stoploss: pfloat64(req.StopLoss), Takeprofit: pfloat64(req.TakeProfit),
+		Comment: &req.Comment, ExpertID: pInt64(int64(req.Magic)),
+	})
+	if err != nil { return 0, fmt.Errorf("mt5 OrderSend: %w", err) }
+	if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
+		return 0, fmt.Errorf("mt5 OrderSend: code=%d msg=%s", resp.GetError().GetCode(), resp.GetError().GetMessage())
+	}
+	if resp.GetResult() == nil { return 0, fmt.Errorf("mt5 OrderSend: nil result") }
+	return resp.GetResult().GetTicket(), nil
 }
 
+func mt5OrderType(side mthub.Side, ot mthub.OrderType) pb.OrderType {
+	switch {
+	case side == mthub.SideBuy && ot == mthub.OrderMarket: return pb.OrderType_OrderType_Buy
+	case side == mthub.SideSell && ot == mthub.OrderMarket: return pb.OrderType_OrderType_Sell
+	case side == mthub.SideBuy && ot == mthub.OrderLimit: return pb.OrderType_OrderType_BuyLimit
+	case side == mthub.SideSell && ot == mthub.OrderLimit: return pb.OrderType_OrderType_SellLimit
+	case side == mthub.SideBuy && ot == mthub.OrderStop: return pb.OrderType_OrderType_BuyStop
+	case side == mthub.SideSell && ot == mthub.OrderStop: return pb.OrderType_OrderType_SellStop
+	case side == mthub.SideBuy && ot == mthub.OrderStopLimit: return pb.OrderType_OrderType_BuyStopLimit
+	case side == mthub.SideSell && ot == mthub.OrderStopLimit: return pb.OrderType_OrderType_SellStopLimit
+	default: return pb.OrderType_OrderType_Buy
+	}
+}
+
+func pfloat64(d decimal.Decimal) *float64 {
+	if d.IsZero() { return nil }
+	v := d.InexactFloat64(); return &v
+}
+
+func pInt64(v int64) *int64 { if v == 0 { return nil }; return &v }
+
 func (g *Gateway) CloseOrder(ctx context.Context, ticket int64, lots decimal.Decimal) error {
-	return fmt.Errorf("mt5: CloseOrder not yet implemented")
+	g.mu.RLock(); tc := g.tradingCli; sid := g.sessionID; g.mu.RUnlock()
+	if tc == nil || sid == "" { return fmt.Errorf("mt5 CloseOrder: not connected") }
+	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.cfg.MtapiToken})
+	ctx = metadata.NewOutgoingContext(ctx, md)
+	l := lots.InexactFloat64()
+	resp, err := tc.OrderClose(ctx, &pb.OrderCloseRequest{Id: sid, Ticket: ticket, Lots: &l})
+	if err != nil { return fmt.Errorf("mt5 OrderClose: %w", err) }
+	if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
+		return fmt.Errorf("mt5 OrderClose: code=%d msg=%s", resp.GetError().GetCode(), resp.GetError().GetMessage())
+	}
+	return nil
 }
 
 func (g *Gateway) ModifyOrder(ctx context.Context, ticket int64, sl, tp, price decimal.Decimal) error {
-	return fmt.Errorf("mt5: ModifyOrder not yet implemented")
+	g.mu.RLock(); tc := g.tradingCli; sid := g.sessionID; g.mu.RUnlock()
+	if tc == nil || sid == "" { return fmt.Errorf("mt5 ModifyOrder: not connected") }
+	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.cfg.MtapiToken})
+	ctx = metadata.NewOutgoingContext(ctx, md)
+	resp, err := tc.OrderModify(ctx, &pb.OrderModifyRequest{
+		Id: sid, Ticket: ticket, Stoploss: sl.InexactFloat64(), Takeprofit: tp.InexactFloat64(),
+	})
+	if err != nil { return fmt.Errorf("mt5 OrderModify: %w", err) }
+	if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
+		return fmt.Errorf("mt5 OrderModify: code=%d msg=%s", resp.GetError().GetCode(), resp.GetError().GetMessage())
+	}
+	return nil
 }
 
 func (g *Gateway) FetchOpenedOrders(ctx context.Context) ([]*mthub.OrderRecord, error) {
@@ -623,7 +682,35 @@ func (g *Gateway) FetchOrderHistory(ctx context.Context, from, to time.Time) ([]
 }
 
 func (g *Gateway) FetchSymbolParams(ctx context.Context, canonicals []string) ([]*mthub.SymbolParam, error) {
-	return nil, fmt.Errorf("mt5: FetchSymbolParams not yet implemented")
+	g.mu.RLock(); client := g.client; sid := g.sessionID; g.mu.RUnlock()
+	if client == nil || sid == "" { return nil, fmt.Errorf("mt5 FetchSymbolParams: not connected") }
+	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.cfg.MtapiToken})
+	out := make([]*mthub.SymbolParam, 0, len(canonicals))
+	for _, c := range canonicals {
+		ctx2 := metadata.NewOutgoingContext(ctx, md)
+		resp, err := client.SymbolParams(ctx2, &pb.SymbolParamsRequest{Id: sid, Symbol: c})
+		if err != nil { return out, fmt.Errorf("mt5 SymbolParams(%s): %w", c, err) }
+		if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
+			return out, fmt.Errorf("mt5 SymbolParams(%s): code=%d msg=%s", c, resp.GetError().GetCode(), resp.GetError().GetMessage())
+		}
+		r := resp.GetResult()
+		if r == nil { continue }
+		si := r.GetSymbolInfo()
+		sg := r.GetSymbolGroup()
+		out = append(out, &mthub.SymbolParam{
+			Canonical: c, SymbolRaw: c,
+			Digits:     si.GetDigits(),
+			TradeMode:  int32(sg.GetTradeMode()),
+			StopLevel:  sg.GetSL(),
+			PointValue: decimal.NewFromFloat(si.GetTickValue()),
+			LotSize:    decimal.NewFromFloat(si.GetContractSize()),
+			LotStep:    decimal.NewFromFloat(sg.GetLotsStep()),
+			LotMin:     decimal.NewFromFloat(sg.GetMinLots()),
+			LotMax:     decimal.NewFromFloat(sg.GetMaxLots()),
+			SpreadFloat: si.GetSpread() > 0,
+		})
+	}
+	return out, nil
 }
 
 func (g *Gateway) SubscribeOrderEvents(ctx context.Context, h mthub.OrderEventHandler) error {
