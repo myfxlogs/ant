@@ -1,0 +1,100 @@
+=== P0-4: MT4 GetOrderHistory 实现 ===
+Card: REMEDIATION-2026-05-26 P0-4
+Date: 2026-05-26
+Status: ☑
+
+--- Acceptance Criteria ---
+AC1: FetchOrderHistory calls mtapi MT4.OrderHistory RPC
+AC2: Maps MT4 Order → mthub.OrderRecord (reuses existing FetchOpenedOrders mapping)
+AC3: Respects from/to time range (format: yyyy-MM-ddTHH:mm:ss)
+AC4: State infer: CloseTime==0 → OrderStateOpen, else OrderStateClosed
+AC5: go build ./... pass
+AC6: go vet ./internal/mdgateway/... pass
+AC7: go test ./internal/mdgateway/... pass
+
+--- Step 1: Check pre-existing stub ---
+$ grep -n 'FetchOrderHistory' backend/internal/mdgateway/adapter/mt4/gateway.go
+Before:
+  567: return nil, nil // TODO: implement via MT4 OrderHistory RPC
+After:
+  (full implementation, 51 lines)
+
+Note: This stub was NOT detected by detect-stubs because it returned nil
+(not fmt.Errorf), so detect-stubs count will not change.
+
+--- Step 2: Implementation ---
+$ sed -n '567,617p' backend/internal/mdgateway/adapter/mt4/gateway.go
+func (g *Gateway) FetchOrderHistory(ctx context.Context, from, to time.Time) ([]*mthub.OrderRecord, error) {
+    g.mu.RLock()
+    client := g.client
+    sid := g.sessionID
+    g.mu.RUnlock()
+    if client == nil || sid == "" {
+        return nil, fmt.Errorf("mt4 FetchOrderHistory: not connected")
+    }
+    fromStr := from.UTC().Format("2006-01-02T15:04:05")
+    toStr := to.UTC().Format("2006-01-02T15:04:05")
+    md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.cfg.MtapiToken})
+    ctx = metadata.NewOutgoingContext(ctx, md)
+    resp, err := client.OrderHistory(ctx, &pb.OrderHistoryRequest{Id: sid, From: fromStr, To: toStr})
+    if err != nil {
+        return nil, fmt.Errorf("mt4 OrderHistory: %w", err)
+    }
+    if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
+        return nil, fmt.Errorf("mt4 OrderHistory: code=%d msg=%s", ...)
+    }
+    orders := resp.GetResult()
+    out := make([]*mthub.OrderRecord, 0, len(orders))
+    for _, o := range orders {
+        side := mthub.SideBuy
+        ot := mthub.OrderMarket
+        switch o.GetType() { ... }  // same mapping as FetchOpenedOrders
+        state := mthub.OrderStateClosed
+        if o.GetCloseTime().GetSeconds() == 0 { state = mthub.OrderStateOpen }
+        out = append(out, &mthub.OrderRecord{...})
+    }
+    return out, nil
+}
+
+--- Step 3: Proto definition (mt4.proto:126) ---
+rpc OrderHistory(OrderHistoryRequest) returns (OrderHistoryReply);
+
+OrderHistoryRequest: id, from (yyyy-MM-ddTHH:mm:ss), to
+OrderHistoryReply: repeated Order result + Error error
+
+MT4 Order fields mapped to mthub.OrderRecord:
+  Ticket, Symbol, Type(→Side+OrderType), Lots(→Volume), OpenPrice, ClosePrice,
+  StopLoss, TakeProfit, Swap, Commission, Comment, MagicNumber(→Magic),
+  Profit, OpenTime, CloseTime
+
+--- Step 4: Build check ---
+$ cd backend && go build ./...
+(no output = success)
+BUILD: OK
+
+--- Step 5: Vet check ---
+$ go vet ./internal/mdgateway/...
+(no output = success)
+VET: OK
+
+--- Step 6: Test run ---
+$ go test ./internal/mdgateway/... -v
+=== RUN   TestMT4Adapter_PackageLoads
+    mt4_test.go:6: mt4 adapter package compiled and loaded
+--- PASS: TestMT4Adapter_PackageLoads (0.00s)
+PASS  ok  anttrader/internal/mdgateway/adapter/mt4  0.021s
+(all mdgateway tests pass)
+
+--- Step 7: detect-stubs unchanged ---
+$ make detect-stubs
+Hits: 9 (same as after P0-3 — MT4 order ops + MT5 SubscribeOrderEvents + admin handlers)
+P0-4 does not reduce stub count because the old FetchOrderHistory returned nil, not Errorf.
+
+--- Summary ---
+AC1 (calls OrderHistory RPC): PASS
+AC2 (maps Order→OrderRecord): PASS
+AC3 (time range formatting): PASS
+AC4 (State inference): PASS
+AC5 (build): PASS
+AC6 (vet): PASS
+AC7 (test): PASS
