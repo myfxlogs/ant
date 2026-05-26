@@ -173,18 +173,6 @@ func New(code int, err error) *AppError {
 	}
 }
 
-func needsDetail(code int) bool {
-	noDetailCodes := map[int]bool{
-		AccountAlreadyBound:  true,
-		UserNotFound:         true,
-		UserAlreadyExists:    true,
-		InvalidPassword:      true,
-		AccountNotFound:      true,
-		AccountLimitExceeded: true,
-	}
-	return !noDetailCodes[code]
-}
-
 func NewWithMessage(code int, message string, err error) *AppError {
 	return &AppError{
 		Code:    code,

@@ -101,7 +101,7 @@ func (t *MarketStateTracker) Update(tick *mdtick.Tick) *MarketState {
 		t.states[key] = ms
 	}
 
-	ms.LastQuote = time.Now()
+	ms.LastQuote = Clk.Now()
 	ms.QuoteAgeMs = 0
 
 	// Spread in basis points for Z-score tracking.

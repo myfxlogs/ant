@@ -59,7 +59,7 @@ type Capability struct {
 
 // HasOrderType returns true if the given order type is allowed.
 func (c *Capability) HasOrderType(ot string) bool {
-	if c.OrderTypes == nil || len(c.OrderTypes) == 0 {
+	if len(c.OrderTypes) == 0 {
 		return true
 	}
 	for _, allowed := range c.OrderTypes {

@@ -75,9 +75,7 @@ func DecideApproval(pr *PipelineResult) *ApprovalDecision {
 	case "REJECTED":
 		ad.Allowed = false
 		ad.Reason = "one or more critical quality gates failed"
-		for _, err := range pr.Errors {
-			ad.Requires = append(ad.Requires, err)
-		}
+		ad.Requires = append(ad.Requires, pr.Errors...)
 	case "NEEDS_REVIEW":
 		ad.Allowed = false
 		ad.Reason = "quality gates require manual review"

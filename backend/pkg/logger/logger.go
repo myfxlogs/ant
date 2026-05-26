@@ -83,7 +83,7 @@ func getWriteSyncer(output string) zapcore.WriteSyncer {
 
 func Get() *zap.Logger {
 	if globalLogger == nil {
-		Init(&Config{Level: "info", Format: "json", Output: "stdout"})
+		_ = Init(&Config{Level: "info", Format: "json", Output: "stdout"})
 	}
 	return globalLogger
 }

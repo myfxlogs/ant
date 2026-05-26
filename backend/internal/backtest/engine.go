@@ -78,8 +78,6 @@ func (e *Engine) Run(strategy StrategyFunc) *Metrics {
 		}
 
 		direction, volume := strategy(bar, e.position)
-		unrealizedPnL := e.unrealizedPnL(bar.Close)
-		currentEquity := balance + unrealizedPnL
 
 		if e.position == 0 && direction != 0 && volume > 0 {
 			fill := e.FillModel.SimulateFill(direction, volume, bar.Close, 0, e.rng)
@@ -130,7 +128,7 @@ func (e *Engine) Run(strategy StrategyFunc) *Metrics {
 			}
 		}
 
-		currentEquity = balance + e.unrealizedPnL(bar.Close)
+		currentEquity := balance + e.unrealizedPnL(bar.Close)
 		e.equity = append(e.equity, currentEquity)
 	}
 

@@ -40,7 +40,6 @@ type realTimer struct {
 	T    *time.Timer
 	mu   sync.Mutex
 	done bool
-	fn   func() // for AfterFunc
 }
 
 func (t *realTimer) C() <-chan time.Time { return t.T.C }

@@ -40,7 +40,7 @@ func (r *AnalyticsRepository) GetEquityCurve(ctx context.Context, accountID uuid
 
 	var result []*model.EquityPoint
 	runningBalance := initialBalance
-	runningEquity := initialBalance
+	var runningEquity float64
 	cumulativeTradingPnL := 0.0
 
 	for _, dd := range dailyDataList {

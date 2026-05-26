@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -377,23 +376,3 @@ func scanSignalRows(rows pgx.Rows) ([]SignalRow, error) {
 	return out, rows.Err()
 }
 
-// --- JSON helpers ---
-
-func jsonBytes(v any) []byte {
-	if v == nil {
-		return nil
-	}
-	b, _ := json.Marshal(v)
-	return b
-}
-
-func mustParseJSON[T any](raw []byte, fallback T) T {
-	if len(raw) == 0 {
-		return fallback
-	}
-	var out T
-	if err := json.Unmarshal(raw, &out); err != nil {
-		return fallback
-	}
-	return out
-}

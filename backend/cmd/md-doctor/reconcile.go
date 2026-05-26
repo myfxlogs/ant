@@ -73,11 +73,3 @@ func doReconcile(ch clickhouse.Conn) error {
 	if strict && !out.Passed { return fmt.Errorf("reconcile: no data found in window %s", window) }
 	return nil
 }
-
-// validateReconcileWindow ensures the time window is at least 1 minute.
-func validateReconcileWindow(w time.Duration) error {
-	if w < time.Minute {
-		return fmt.Errorf("reconcile: window must be >= 1m, got %s", w)
-	}
-	return nil
-}

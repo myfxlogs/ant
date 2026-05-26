@@ -97,7 +97,7 @@ WITH merged AS (
 		return nil, 0, err
 	}
 
-	dataQuery := base + fmt.Sprintf(`SELECT * FROM merged ORDER BY created_at DESC LIMIT $3 OFFSET $4`)
+	dataQuery := base + ` SELECT * FROM merged ORDER BY created_at DESC LIMIT $3 OFFSET $4`
 	rows := make([]*ScheduleRunLogRow, 0)
 	err := r.db.SelectContext(ctx, &rows, dataQuery, userID, scheduleID, pageSize, offset)
 	return rows, total, err

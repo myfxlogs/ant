@@ -67,17 +67,3 @@ func doDLQTail(ch clickhouse.Conn) error {
 	}
 	return nil
 }
-
-// dlqReasonWhitelist checks if a reason string is a known DLQ reason.
-func dlqReasonWhitelist(reason string) bool {
-	switch reason {
-	case "parse_error", "bid_gt_ask", "non_positive", "spill_failed":
-		return true
-	}
-	return false
-}
-
-// formatDLQTime formats a unix millisecond timestamp for DLQ output.
-func formatDLQTime(ms int64) string {
-	return time.Unix(ms/1000, 0).UTC().Format(time.RFC3339)
-}

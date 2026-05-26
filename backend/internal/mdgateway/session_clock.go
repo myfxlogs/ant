@@ -125,12 +125,12 @@ func (sc *SessionClock) BarBoundary(t time.Time, periodMs int64) int64 {
 func (sc *SessionClock) BrokerTime() time.Time {
 	sc.mu.RLock()
 	defer sc.mu.RUnlock()
-	return time.Now().Add(time.Duration(sc.brokerOffsetMs) * time.Millisecond)
+	return Clk.Now().Add(time.Duration(sc.brokerOffsetMs) * time.Millisecond)
 }
 
 // ClockSkewMs calculates the absolute clock skew between broker timestamp and local time.
 func (sc *SessionClock) ClockSkewMs(brokerTsUnixMs int64) int64 {
-	now := time.Now().UnixMilli()
+	now := Clk.Now().UnixMilli()
 	skew := now - brokerTsUnixMs
 	if skew < 0 {
 		skew = -skew

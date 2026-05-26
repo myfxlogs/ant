@@ -87,9 +87,9 @@ func NewUserLimiter(cfg Config) *UserLimiter {
 // AllowSignal returns true if the user is under their signal rate limit.
 func (l *UserLimiter) AllowSignal(userID string) bool {
 	rl := l.getOrCreate(userID)
-	rl.LastAccess.Store(time.Now().UnixNano())
+	rl.LastAccess.Store(Clk.Now().UnixNano())
 
-	nowSec := time.Now().Unix()
+	nowSec := Clk.Now().Unix()
 	limit := l.cfg.SignalPerUserMax
 	if limit <= 0 {
 		limit = 100
@@ -119,9 +119,9 @@ func (l *UserLimiter) AllowSignal(userID string) bool {
 // AllowOrder returns true if the user is under their order rate limit.
 func (l *UserLimiter) AllowOrder(userID string) bool {
 	rl := l.getOrCreate(userID)
-	rl.LastAccess.Store(time.Now().UnixNano())
+	rl.LastAccess.Store(Clk.Now().UnixNano())
 
-	nowSec := time.Now().Unix()
+	nowSec := Clk.Now().Unix()
 	limit := l.cfg.OrderPerUserMax
 	if limit <= 0 {
 		limit = 10
@@ -157,9 +157,9 @@ func (l *UserLimiter) AllowCHWrite(userID string, bytes int64) bool {
 	}
 
 	rl := l.getOrCreate(userID)
-	rl.LastAccess.Store(time.Now().UnixNano())
+	rl.LastAccess.Store(Clk.Now().UnixNano())
 
-	nowSec := time.Now().Unix()
+	nowSec := Clk.Now().Unix()
 	limit := l.cfg.CHWritePerUserMax
 	if limit <= 0 {
 		limit = 10_000_000
@@ -191,7 +191,7 @@ func (l *UserLimiter) allowGlobalCHWrite(bytes int64) bool {
 		return true
 	}
 
-	nowSec := time.Now().Unix()
+	nowSec := Clk.Now().Unix()
 
 	for {
 		old := l.globalChWindow.Load()
@@ -232,7 +232,7 @@ func (l *UserLimiter) EvictIdle() int64 {
 	if idleTimeout <= 0 {
 		idleTimeout = 30 * 24 * time.Hour
 	}
-	cutoff := time.Now().Add(-idleTimeout).UnixNano()
+	cutoff := Clk.Now().Add(-idleTimeout).UnixNano()
 	var removed int64
 	for e := l.lru.Back(); e != nil; {
 		prev := e.Prev()
@@ -267,14 +267,14 @@ func (l *UserLimiter) getOrCreate(userID string) *RateLimit {
 		}
 	}
 
-	nowUnix := time.Now().Unix()
+	nowUnix := Clk.Now().Unix()
 	rl := &RateLimit{
 		userID:       userID,
 		signalWindow: nowUnix,
 		orderWindow:  nowUnix,
 		chWindow:     nowUnix,
 	}
-	rl.LastAccess.Store(time.Now().UnixNano())
+	rl.LastAccess.Store(Clk.Now().UnixNano())
 	elem := l.lru.PushFront(rl)
 	l.entries[userID] = elem
 	l.activeUsers.Store(int64(len(l.entries)))

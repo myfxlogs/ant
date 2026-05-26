@@ -11,7 +11,6 @@ import (
 type Compiler struct {
 	fields    map[string]int // field name → FieldIndex
 	factors   map[string]Op
-	validated bool
 }
 
 // FieldIndex maps a field name to an index in the []float64 field array.

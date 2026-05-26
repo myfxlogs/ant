@@ -113,7 +113,7 @@ func CanRunStrategyTemplateOnline(status string) bool {
 type StringArray []string
 
 func (s StringArray) Value() (driver.Value, error) {
-	if s == nil || len(s) == 0 {
+	if len(s) == 0 {
 		return "{}", nil
 	}
 	var result string

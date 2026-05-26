@@ -14,7 +14,6 @@ type sourceState struct {
 	lastBid  float64
 	lastAsk  float64
 	lastMid  float64
-	updateAt int64 // unix nano
 }
 
 // NewCrossSourceValidator creates a validator with the given max deviation.

@@ -54,7 +54,7 @@ func (f *FillModel) Compute(grossPrice float64, p costsvc.EstimateParams, isBack
 		costPerUnit = breakdown.TotalCost / (lots * contractSize)
 	}
 
-	netPrice := grossPrice
+	var netPrice float64
 	if p.Side == "buy" {
 		netPrice = grossPrice + costPerUnit
 	} else {

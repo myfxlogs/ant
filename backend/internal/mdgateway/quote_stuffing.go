@@ -53,7 +53,7 @@ func (d *StuffingDetector) IsPaused(broker, canonical string) bool {
 	defer d.mu.Unlock()
 	key := broker + ":" + canonical
 	if until, ok := d.pausedUntil[key]; ok {
-		if time.Now().Before(until) {
+		if Clk.Now().Before(until) {
 			return true
 		}
 		delete(d.pausedUntil, key)
@@ -65,7 +65,7 @@ func (d *StuffingDetector) IsPaused(broker, canonical string) bool {
 func (d *StuffingDetector) PausedSymbols() []string {
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	now := time.Now()
+	now := Clk.Now()
 	var result []string
 	for key, until := range d.pausedUntil {
 		if now.Before(until) {
@@ -81,7 +81,7 @@ func (d *StuffingDetector) Observe(broker, canonical string) (stuffed bool, zsco
 	defer d.mu.Unlock()
 
 	key := broker + ":" + canonical
-	now := time.Now()
+	now := Clk.Now()
 
 	// Check if currently paused.
 	if until, ok := d.pausedUntil[key]; ok && now.Before(until) {

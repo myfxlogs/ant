@@ -147,7 +147,7 @@ func (f *UserMetricsFlusher) FlushedTotal() int64 { return f.flushedTotal.Load()
 func (f *UserMetricsFlusher) FlushErrors() int64 { return f.flushErrors.Load() }
 
 func (f *UserMetricsFlusher) loop(ctx context.Context) {
-	ticker := time.NewTicker(f.interval)
+	ticker := Clk.NewTicker(f.interval)
 	defer ticker.Stop()
 
 	for {
@@ -156,7 +156,7 @@ func (f *UserMetricsFlusher) loop(ctx context.Context) {
 			// Final flush before exit.
 			f.doFlush(context.Background())
 			return
-		case <-ticker.C:
+		case <-ticker.C():
 			f.doFlush(ctx)
 		}
 	}
