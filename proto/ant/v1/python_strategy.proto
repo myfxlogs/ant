@@ -7,7 +7,6 @@ option go_package = "anttrader/gen/proto/ant/v1;antv1";
 import "google/protobuf/empty.proto";
 import "common.proto";
 import "strategy_messages.proto";
-import "backtest_run.proto";
 import "backtest_run_start.proto";
 import "backtest_run_query.proto";
 import "backtest_run_control.proto";

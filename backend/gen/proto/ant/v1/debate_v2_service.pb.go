@@ -868,7 +868,7 @@ var File_debate_v2_service_proto protoreflect.FileDescriptor
 
 const file_debate_v2_service_proto_rawDesc = "" +
 	"\n" +
-	"\x17debate_v2_service.proto\x12\x06ant.v1\x1a\x18debate_v2_messages.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x17strategy_messages.proto\"\\\n" +
+	"\x17debate_v2_service.proto\x12\x06ant.v1\x1a\x18debate_v2_messages.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1estrategy_template_entity.proto\"\\\n" +
 	"\x14StartDebateV2Request\x12\x16\n" +
 	"\x06agents\x18\x01 \x03(\tR\x06agents\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12\x16\n" +
@@ -1026,7 +1026,7 @@ func file_debate_v2_service_proto_init() {
 		return
 	}
 	file_debate_v2_messages_proto_init()
-	file_strategy_messages_proto_init()
+	file_strategy_template_entity_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

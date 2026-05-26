@@ -73,9 +73,10 @@ env-check:
 proto-tools:
 	@echo "Installing proto generation toolchain..."
 	@cd tools/proto-gen && npm ci
+	@cd frontend && npm ci
 	@mkdir -p tools/proto-gen/bin
 	@# protoc-gen-connect-go@v1.19.1 requires Go >= 1.24 (see connect-go go.mod).
-	@cd backend && GOBIN="$(CURDIR)/tools/proto-gen/bin" go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.35.2
+	@cd backend && GOBIN="$(CURDIR)/tools/proto-gen/bin" go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.11
 	@cd backend && GOBIN="$(CURDIR)/tools/proto-gen/bin" go install connectrpc.com/connect/cmd/protoc-gen-connect-go@v1.19.1
 
 proto:

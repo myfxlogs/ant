@@ -6,7 +6,7 @@ option go_package = "anttrader/gen/proto/ant/v1;antv1";
 
 import "debate_v2_messages.proto";
 import "google/protobuf/empty.proto";
-import "strategy_messages.proto";
+import "strategy_template_entity.proto";
 
 service DebateV2Service {
   rpc StartDebateV2(StartDebateV2Request) returns (DebateV2Session);

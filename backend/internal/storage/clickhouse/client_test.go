@@ -12,6 +12,13 @@ import (
 	"anttrader/internal/storage/clickhouse"
 )
 
+func skipIfNoClickHouse(t *testing.T) {
+	t.Helper()
+	if os.Getenv("CI") != "" && os.Getenv("CH_HOST") == "" {
+		t.Skip("skipping ClickHouse integration test in CI without ClickHouse service")
+	}
+}
+
 func testConfig() clickhouse.Config {
 	host := os.Getenv("CH_HOST")
 	if host == "" {
@@ -30,6 +37,7 @@ func testConfig() clickhouse.Config {
 }
 
 func TestConnect_Success(t *testing.T) {
+	skipIfNoClickHouse(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -60,6 +68,7 @@ func TestConnect_EmptyAddr(t *testing.T) {
 }
 
 func TestPing_Success(t *testing.T) {
+	skipIfNoClickHouse(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -79,6 +88,7 @@ func TestPing_NotConnected(t *testing.T) {
 }
 
 func TestPrepareBatch_Success(t *testing.T) {
+	skipIfNoClickHouse(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -110,6 +120,7 @@ func TestPrepareBatch_Success(t *testing.T) {
 }
 
 func TestClose(t *testing.T) {
+	skipIfNoClickHouse(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
