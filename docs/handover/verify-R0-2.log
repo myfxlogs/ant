@@ -1,0 +1,49 @@
+=== R0-2: detect-deadcode ===
+Date: 2026-05-26
+Tool: scripts/detect-deadcode.sh + make detect-deadcode
+
+=== Verification ===
+1. Script scans pre-defined list of known dead packages:
+   - internal/controlplane
+   - internal/quantengine
+   - internal/tenant
+   - internal/dataquality
+   - internal/marketstate
+   - internal/qualitygate
+
+2. For each package, greps backend/{cmd,internal} for import references
+   (excluding _test.go files). Package is DEAD if 0 references found.
+
+3. Also checks:
+   - internal/connect/stub_handlers.go: counts CodeUnimplemented
+   - gorm.io/gorm: checks if imported by any production code
+
+4. Exit code: 0=clean, 1=dead code found
+
+=== Full run ===
+$ make detect-deadcode
+=== detect-deadcode: 8 dead packages/deps found ===
+  DEAD: internal/controlplane
+  DEAD: internal/quantengine
+  DEAD: internal/tenant
+  DEAD: internal/dataquality
+  DEAD: internal/marketstate
+  DEAD: internal/qualitygate
+  DEAD: internal/connect/stub_handlers.go (16 CodeUnimplemented)
+  DEAD: gorm.io/gorm (in go.mod, not imported by any production code)
+FAIL: 8 dead code items found
+
+=== Verification commands ===
+$ grep -rln "internal/controlplane" backend/cmd backend/internal --include='*.go' 2>/dev/null | grep -v _test.go
+(empty - verified 0 imports)
+
+$ grep -rln "internal/quantengine" backend/cmd backend/internal --include='*.go' 2>/dev/null | grep -v _test.go
+(empty - verified 0 imports)
+
+$ grep -c CodeUnimplemented backend/internal/connect/stub_handlers.go
+16
+
+$ grep -rln 'gorm\.io' backend/cmd backend/internal --include='*.go' 2>/dev/null | grep -v _test.go
+(empty - verified gorm unused in production)
+
+R0-2 VERIFIED: tool correctly identifies 8 dead code items.

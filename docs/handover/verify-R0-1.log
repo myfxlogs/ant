@@ -1,0 +1,44 @@
+=== R0-1: detect-stubs upgrade ===
+Date: 2026-05-26
+Tool: make detect-stubs (Makefile)
+
+=== Verification ===
+1. Pattern upgrade: (printf|Printf|Println|Print) expanded to include:
+   - Errorf("...not yet implemented...")
+   - errors.New("...not implemented...")
+   - fmt.Errorf("...not yet implemented...")
+
+2. New regex:
+   (printf|Printf|Println|Print|Errorf|errors\.New|fmt\.Errorf)\(\s*"[^"]*\b(stub|TODO|placeholder|not (wired|(yet )?implemented))\b
+
+3. Before upgrade: old regex only caught Printf/Print variants, missed Errorf + errors.New
+4. After upgrade: 13 real stub hits detected:
+   - MT5: PlaceOrder, CloseOrder, ModifyOrder, FetchSymbolParams, SubscribeOrderEvents (5)
+   - MT4: PlaceOrder, CloseOrder, ModifyOrder, FetchSymbolParams, SubscribeOrderEvents (5)
+   - Admin: ResolveAlert, ClearCache, InvalidateCache (3)
+
+5. False positive handling: "not connected" is excluded from pattern
+   (runtime connectivity error, not a stub placeholder)
+
+6. Exit code: 1 (as expected — 13 hits found)
+
+=== Full run ===
+$ make detect-stubs
+=== detect-stubs: scanning backend/{cmd,internal} for stub keywords ===
+Hits: 13
+backend/internal/mdgateway/adapter/mt5/gateway.go:557:	return 0, fmt.Errorf("mt5: PlaceOrder not yet implemented")
+backend/internal/mdgateway/adapter/mt5/gateway.go:561:	return fmt.Errorf("mt5: CloseOrder not yet implemented")
+backend/internal/mdgateway/adapter/mt5/gateway.go:565:	return fmt.Errorf("mt5: ModifyOrder not yet implemented")
+backend/internal/mdgateway/adapter/mt5/gateway.go:626:	return nil, fmt.Errorf("mt5: FetchSymbolParams not yet implemented")
+backend/internal/mdgateway/adapter/mt5/gateway.go:630:	return fmt.Errorf("mt5: SubscribeOrderEvents not yet implemented")
+backend/internal/mdgateway/adapter/mt4/gateway.go:507:	return 0, fmt.Errorf("mt4: PlaceOrder not yet implemented")
+backend/internal/mdgateway/adapter/mt4/gateway.go:511:	return fmt.Errorf("mt4: CloseOrder not yet implemented")
+backend/internal/mdgateway/adapter/mt4/gateway.go:515:	return fmt.Errorf("mt4: ModifyOrder not yet implemented")
+backend/internal/mdgateway/adapter/mt4/gateway.go:572:	return nil, fmt.Errorf("mt4: FetchSymbolParams not yet implemented")
+backend/internal/mdgateway/adapter/mt4/gateway.go:576:	return fmt.Errorf("mt4: SubscribeOrderEvents not yet implemented")
+backend/internal/connect/admin_system_handler.go:56:	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ResolveAlert not implemented"))
+backend/internal/connect/admin_system_handler.go:60:	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ClearCache not implemented"))
+backend/internal/connect/admin_system_handler.go:64:	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("InvalidateCache not implemented"))
+FAIL: 13 stub hits found
+
+R0-1 VERIFIED: tool created, correctly detects 13 stub implementations.

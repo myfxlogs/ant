@@ -1,0 +1,34 @@
+=== R0-4: detect-layering ===
+Date: 2026-05-26
+Tool: scripts/detect-layering.sh + make detect-layering
+
+=== Verification ===
+1. Scans backend/internal/connect/*.go (excluding _test.go)
+2. For each handler file, checks for direct imports of:
+   - pgxpool.Pool (bypassing service layer)
+   - clickhouse.Conn (bypassing service layer)
+   - sqlx.DB/sqlx.Tx/sqlx.Rows (bypassing repository)
+
+3. Exit code: 0=clean, 1=layering violations
+
+=== Full run ===
+$ make detect-layering
+=== detect-layering: scanning connect/ handlers for direct DB access ===
+  LAYER-VIOLATION: ai_handler.go — pgxpool.Pool
+  LAYER-VIOLATION: auth_handler.go — pgxpool.Pool
+  LAYER-VIOLATION: job_handler.go — pgxpool.Pool
+  LAYER-VIOLATION: market_handler.go — clickhouse.Conn
+  LAYER-VIOLATION: mthub_service.go — pgxpool.Pool
+  LAYER-VIOLATION: schedule_health_handler.go — pgxpool.Pool
+  LAYER-VIOLATION: stream_handler.go — pgxpool.Pool
+FAIL: 7 handler(s) with direct DB access — must route through service layer
+
+=== Verification (sample) ===
+$ grep -c 'pgxpool\.Pool' backend/internal/connect/ai_handler.go
+1
+$ grep -c 'clickhouse\.Conn' backend/internal/connect/market_handler.go
+1
+$ grep -c 'pgxpool\.Pool' backend/internal/connect/auth_handler.go
+1
+
+R0-4 VERIFIED: tool correctly identifies 7 handlers with direct DB access.

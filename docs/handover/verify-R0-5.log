@@ -1,0 +1,32 @@
+=== R0-5: detect-spec-drift ===
+Date: 2026-05-26
+Tool: scripts/detect-spec-drift.sh + make detect-spec-drift
+
+=== Verification ===
+1. Compares spec LOC limits (from docs/spec/11-mdgateway.md) vs actual file sizes
+2. Defined constraints:
+   - mdgateway/ (non-test): spec <= 800 lines
+   - mdgateway/runner.go: spec <= 200 lines
+   - mdgateway/clickhouse_writer.go: spec <= 180 lines
+
+3. Exit code: 0=clean, 1=spec drift found
+
+=== Full run ===
+$ make detect-spec-drift
+=== detect-spec-drift: comparing spec LOC limits vs actual ===
+  DRIFT: backend/internal/mdgateway — spec ≤800, actual 3339 (4.1x over)
+  DRIFT: backend/internal/mdgateway/runner.go — spec ≤200, actual 585 (2.9x over)
+  DRIFT: backend/internal/mdgateway/clickhouse_writer.go — spec ≤180, actual 275 (1.5x over)
+FAIL: 3 spec drift(s) found
+
+=== Verification commands ===
+$ find backend/internal/mdgateway -maxdepth 1 -name '*.go' ! -name '*_test.go' -exec cat {} + | wc -l
+3339
+
+$ wc -l < backend/internal/mdgateway/runner.go
+585
+
+$ wc -l < backend/internal/mdgateway/clickhouse_writer.go
+275
+
+R0-5 VERIFIED: tool correctly identifies 3 spec LOC violations.

@@ -181,11 +181,11 @@ verify-cards-strict:
 # 反 stub 探测：扫描生产代码（非 _test.go）中的偷工关键词
 detect-stubs:
 	@echo "=== detect-stubs: scanning backend/{cmd,internal} for stub keywords ==="
-	@HITS=$$(grep -rEn '(printf|Printf|Println|Print)\(\s*"[^"]*\b(stub|TODO|placeholder|not (wired|connected|implemented))\b' \
+	@HITS=$$(grep -rEn '(printf|Printf|Println|Print|Errorf|errors\.New|fmt\.Errorf)\(\s*"[^"]*\b(stub|TODO|placeholder|not (wired|(yet )?implemented))\b' \
 		backend/cmd backend/internal --include='*.go' --exclude='*_test.go' 2>/dev/null | wc -l); \
 	echo "Hits: $$HITS"; \
 	if [ "$$HITS" -gt 0 ]; then \
-		grep -rEn '(printf|Printf|Println|Print)\(\s*"[^"]*\b(stub|TODO|placeholder|not (wired|connected|implemented))\b' \
+		grep -rEn '(printf|Printf|Println|Print|Errorf|errors\.New|fmt\.Errorf)\(\s*"[^"]*\b(stub|TODO|placeholder|not (wired|(yet )?implemented))\b' \
 			backend/cmd backend/internal --include='*.go' --exclude='*_test.go' 2>/dev/null; \
 		echo "FAIL: $$HITS stub hits found"; exit 1; \
 	fi; \
@@ -212,6 +212,29 @@ detect-orphan-test-claims:
 		echo "FAIL: claimed in ROADMAP but missing in code:"; echo "$$MISSING"; exit 1; \
 	fi; \
 	echo "OK: all claimed Test funcs exist"
+
+# ── R0 验收防伪五件套 ──────────────────────────────────────────────────
+.PHONY: detect-deadcode detect-fakecomplete detect-layering detect-spec-drift detect-all
+
+# R0-2: 扫 internal/ 下 0 import 的死包
+detect-deadcode:
+	@bash scripts/detect-deadcode.sh
+
+# R0-3: 扫 ROADMAP ☑ 卡片是否有 handover log
+detect-fakecomplete:
+	@bash scripts/detect-fakecomplete.sh
+
+# R0-4: 扫 connect/*.go 是否直接 import pgxpool/sqlx/clickhouse
+detect-layering:
+	@bash scripts/detect-layering.sh
+
+# R0-5: 比对 spec LOC 限制 vs 实际 wc -l
+detect-spec-drift:
+	@bash scripts/detect-spec-drift.sh
+
+# R0 五件套全跑
+detect-all: detect-stubs detect-deadcode detect-fakecomplete detect-layering detect-spec-drift
+	@echo "=== R0 detect-all: all 5 checks PASSED ==="
 
 # ── Help ──────────────────────────────────────────────────────────────
 .PHONY: help
