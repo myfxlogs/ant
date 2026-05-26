@@ -137,7 +137,10 @@ func (r *SystemAIConfigRepository) Upsert(ctx context.Context, row *SystemAIConf
 	`,
 		row.UserID, row.ProviderID, row.Name, row.BaseURL, row.Organization, models, row.DefaultModel,
 		row.Temperature, row.TimeoutSeconds, row.MaxTokens, purposes, primaryFor, row.Enabled, updatedBy)
-	return fmt.Errorf("upsert system ai config: %w", err)
+		if err != nil {
+			return fmt.Errorf("upsert system ai config: %w", err)
+		}
+		return nil
 }
 
 func (r *SystemAIConfigRepository) Delete(ctx context.Context, userID uuid.UUID, providerID string) error {
