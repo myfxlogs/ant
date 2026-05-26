@@ -1,4 +1,4 @@
-package connect
+package user
 
 import (
 	"context"

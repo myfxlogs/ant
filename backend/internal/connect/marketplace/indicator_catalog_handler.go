@@ -1,4 +1,4 @@
-package connect
+package marketplace
 
 import (
 	"context"
