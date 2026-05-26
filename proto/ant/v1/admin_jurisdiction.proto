@@ -1,0 +1,102 @@
+syntax = "proto3";
+
+package ant.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+service AdminJurisdictionService {
+  rpc GetJurisdictionStatus(GetJurisdictionStatusRequest) returns (GetJurisdictionStatusResponse);
+  rpc SetKYCStatus(SetKYCStatusRequest) returns (SetKYCStatusResponse);
+  rpc ListSanctionedCountries(ListSanctionedCountriesRequest) returns (ListSanctionedCountriesResponse);
+  rpc AddSanctionedCountry(AddSanctionedCountryRequest) returns (AddSanctionedCountryResponse);
+  rpc RemoveSanctionedCountry(RemoveSanctionedCountryRequest) returns (RemoveSanctionedCountryResponse);
+  rpc ListUsersByKYCStatus(ListUsersByKYCStatusRequest) returns (ListUsersByKYCStatusResponse);
+  rpc SetSanctionedOverride(SetSanctionedOverrideRequest) returns (SetSanctionedOverrideResponse);
+}
+
+message JurisdictionStatus {
+  string user_id = 1;
+  string kyc_status = 2;
+  string country_code = 3;
+  bool is_sanctioned = 4;
+  bool disclaimer_accepted = 5;
+  bool questionnaire_completed = 6;
+  int32 risk_score = 7;
+  bool sanctioned_override = 8;
+  google.protobuf.Timestamp kyc_verified_at = 9;
+  google.protobuf.Timestamp disclaimer_accepted_at = 10;
+  google.protobuf.Timestamp questionnaire_completed_at = 11;
+}
+
+message SanctionedCountry {
+  string country_code = 1;
+  string label = 2;
+  string added_by = 3;
+  google.protobuf.Timestamp added_at = 4;
+}
+
+message UserKYCItem {
+  string user_id = 1;
+  string email = 2;
+  string kyc_status = 3;
+  string country_code = 4;
+  bool is_sanctioned = 5;
+  bool disclaimer_accepted = 6;
+  bool questionnaire_completed = 7;
+  int32 risk_score = 8;
+  bool sanctioned_override = 9;
+}
+
+message GetJurisdictionStatusRequest {
+  string user_id = 1;
+}
+
+message GetJurisdictionStatusResponse {
+  JurisdictionStatus status = 1;
+}
+
+message SetKYCStatusRequest {
+  string user_id = 1;
+  string kyc_status = 2;
+}
+
+message SetKYCStatusResponse {}
+
+message ListSanctionedCountriesRequest {}
+
+message ListSanctionedCountriesResponse {
+  repeated SanctionedCountry countries = 1;
+}
+
+message AddSanctionedCountryRequest {
+  string country_code = 1;
+  string label = 2;
+}
+
+message AddSanctionedCountryResponse {}
+
+message RemoveSanctionedCountryRequest {
+  string country_code = 1;
+}
+
+message RemoveSanctionedCountryResponse {}
+
+message ListUsersByKYCStatusRequest {
+  string kyc_status = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+}
+
+message ListUsersByKYCStatusResponse {
+  repeated UserKYCItem users = 1;
+  int64 total = 2;
+}
+
+message SetSanctionedOverrideRequest {
+  string user_id = 1;
+  bool override = 2;
+}
+
+message SetSanctionedOverrideResponse {}

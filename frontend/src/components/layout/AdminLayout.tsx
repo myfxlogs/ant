@@ -7,6 +7,7 @@ import {
   IconChartLine,
   IconFileText,
   IconSettings,
+  IconShield,
   IconLogout,
   IconMenu2,
   IconArrowLeft,
@@ -45,6 +46,7 @@ export default function AdminLayout() {
     { key: '/admin/trading', icon: <IconChartLine size={20} stroke={1.5} />, label: t('admin.sidebar.tradingMonitor') },
     { key: '/admin/logs', icon: <IconFileText size={20} stroke={1.5} />, label: t('admin.sidebar.operationLogs') },
     { key: '/admin/config', icon: <IconSettings size={20} stroke={1.5} />, label: t('admin.sidebar.systemConfig') },
+    { key: '/admin/jurisdiction', icon: <IconShield size={20} stroke={1.5} />, label: t('admin.sidebar.jurisdiction') },
   ];
 
   const userMenuItems = [

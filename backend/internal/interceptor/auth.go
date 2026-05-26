@@ -17,6 +17,7 @@ type contextKey string
 const UserIDKey contextKey = "user_id"
 const APIScopesKey contextKey = "api_scopes"
 const APIKeyAuthenticatedKey contextKey = "api_key_authenticated"
+const ClientIPKey contextKey = "client_ip"
 
 type JWTClaims struct {
 	UserID string `json:"user_id"`
@@ -50,6 +51,7 @@ func (i *AuthInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 		}
 
 		ctx = context.WithValue(ctx, UserIDKey, userID)
+		ctx = context.WithValue(ctx, ClientIPKey, extractClientIP(req.Header()))
 		if apiKeyAuth {
 			ctx = context.WithValue(ctx, APIKeyAuthenticatedKey, true)
 		}
@@ -74,6 +76,7 @@ func (i *AuthInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc
 		}
 
 		ctx = context.WithValue(ctx, UserIDKey, userID)
+		ctx = context.WithValue(ctx, ClientIPKey, extractClientIP(conn.RequestHeader()))
 		if apiKeyAuth {
 			ctx = context.WithValue(ctx, APIKeyAuthenticatedKey, true)
 		}
@@ -167,6 +170,33 @@ func ValidateToken(tokenString, jwtSecret string) (*JWTClaims, error) {
 func GetUserID(ctx context.Context) string {
 	if userID, ok := ctx.Value(UserIDKey).(string); ok {
 		return userID
+	}
+	return ""
+}
+
+// GetClientIP extracts the client IP address from the context.
+// The IP is injected by the auth interceptor from X-Forwarded-For / X-Real-IP headers.
+func GetClientIP(ctx context.Context) string {
+	if ip, ok := ctx.Value(ClientIPKey).(string); ok {
+		return ip
+	}
+	return ""
+}
+
+// extractClientIP extracts the client IP from HTTP headers.
+// Checks X-Forwarded-For (first entry), then X-Real-IP.
+func extractClientIP(header interface{ Get(string) string }) string {
+	if xff := header.Get("X-Forwarded-For"); xff != "" {
+		// Take the first IP in the chain (original client).
+		for i := 0; i < len(xff); i++ {
+			if xff[i] == ',' {
+				return xff[:i]
+			}
+		}
+		return xff
+	}
+	if xri := header.Get("X-Real-IP"); xri != "" {
+		return xri
 	}
 	return ""
 }

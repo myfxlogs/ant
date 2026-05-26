@@ -1,4 +1,4 @@
-import { adminAccountClient, adminConfigClient, adminLogClient, adminSystemClient, adminTradingClient, adminUserClient } from './connect';
+import { adminAccountClient, adminConfigClient, adminJurisdictionClient, adminLogClient, adminSystemClient, adminTradingClient, adminUserClient } from './connect';
 
 // Note: getDashboard is defined in AdminUserService, not AdminSystemService
 
@@ -225,5 +225,42 @@ export const adminApi = {
 
   invalidateCache: async (tags: string[]) => {
     await adminSystemClient.invalidateCache({ tags });
+  },
+
+  // --- Jurisdiction Gate (M11-16) ---
+
+  getJurisdictionStatus: async (userId: string) => {
+    const resp: any = await adminJurisdictionClient.getJurisdictionStatus({ userId });
+    return resp.status;
+  },
+
+  setKYCStatus: async (userId: string, kycStatus: string) => {
+    await adminJurisdictionClient.setKYCStatus({ userId, kycStatus });
+  },
+
+  listSanctionedCountries: async () => {
+    const resp: any = await adminJurisdictionClient.listSanctionedCountries({});
+    return resp.countries ?? [];
+  },
+
+  addSanctionedCountry: async (countryCode: string, label: string) => {
+    await adminJurisdictionClient.addSanctionedCountry({ countryCode, label });
+  },
+
+  removeSanctionedCountry: async (countryCode: string) => {
+    await adminJurisdictionClient.removeSanctionedCountry({ countryCode });
+  },
+
+  listUsersByKYCStatus: async (params: { kycStatus?: string; page?: number; pageSize?: number }) => {
+    const resp: any = await adminJurisdictionClient.listUsersByKYCStatus({
+      kycStatus: params.kycStatus ?? '',
+      page: params.page ?? 1,
+      pageSize: params.pageSize ?? 20,
+    });
+    return { users: resp.users ?? [], total: resp.total ?? 0 };
+  },
+
+  setSanctionedOverride: async (userId: string, override: boolean) => {
+    await adminJurisdictionClient.setSanctionedOverride({ userId, override });
   },
 };

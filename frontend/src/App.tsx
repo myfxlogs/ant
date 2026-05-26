@@ -43,6 +43,7 @@ const AccountManagement = lazy(() => import('@/pages/admin/AccountManagement'));
 const TradingMonitor = lazy(() => import('@/pages/admin/TradingMonitor'));
 const OperationLogs = lazy(() => import('@/pages/admin/OperationLogs'));
 const SystemConfig = lazy(() => import('@/pages/admin/SystemConfig'));
+const JurisdictionGate = lazy(() => import('@/pages/admin/JurisdictionGate'));
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
@@ -279,6 +280,14 @@ function AppContent() {
             element={
               <PageWrapper>
                 <SystemConfig />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="jurisdiction"
+            element={
+              <PageWrapper>
+                <JurisdictionGate />
               </PageWrapper>
             }
           />

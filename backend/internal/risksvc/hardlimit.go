@@ -40,24 +40,24 @@ type HardLimitRequest struct {
 	Equity         float64
 	FreeMargin     float64
 	ContractExpiry time.Time // zero if not applicable
+	ClientIP       string    // extracted from X-Forwarded-For / X-Real-IP
 }
 
 // --- Rule 1: KYC/Jurisdiction ---
 
-// KycJurisdictionRule blocks users from sanctioned jurisdictions or unverified KYC.
+// KycJurisdictionRule delegates to JurisdictionGate for the five-component
+// compliance check: GeoIP → sanctions → KYC → disclaimer → questionnaire.
 type KycJurisdictionRule struct {
-	// SanctionedCountries is the set of blocked ISO 3166-1 alpha-2 country codes.
-	SanctionedCountries map[string]bool
-	// RequireKYC toggles KYC verification requirement.
-	RequireKYC bool
+	Gate *JurisdictionGate
 }
 
 func (r *KycJurisdictionRule) Name() string { return "kyc_jurisdiction" }
 
-func (r *KycJurisdictionRule) Check(_ context.Context, req *HardLimitRequest) error {
-	// Delegate to capability checker for actual DB lookup.
-	// The precheck loads capabilities which include KYC status.
-	return nil
+func (r *KycJurisdictionRule) Check(ctx context.Context, req *HardLimitRequest) error {
+	if r.Gate == nil {
+		return nil
+	}
+	return r.Gate.Check(ctx, req.UserID, req.ClientIP)
 }
 
 // --- Rule 2: Margin Floor ---

@@ -38,6 +38,9 @@ type SignalRequest struct {
 
 	// Multi-account block trade (optional)
 	TargetAccounts []AllocAccount
+
+	// ClientIP is extracted from the incoming request for GeoIP jurisdiction checks.
+	ClientIP string
 }
 
 // SignalResult is the outcome of the signal pipeline.
@@ -111,6 +114,7 @@ func (p *SignalPipeline) Process(ctx context.Context, sig *SignalRequest) *Signa
 			Equity:         sig.Equity,
 			FreeMargin:     sig.FreeMargin,
 			ContractExpiry: sig.ContractExpiry,
+			ClientIP:       sig.ClientIP,
 		}
 		if err := p.hardLimit.Evaluate(ctx, req); err != nil {
 			return &SignalResult{Allowed: false, Reason: err.Error(), Stage: "hardlimit"}

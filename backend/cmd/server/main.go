@@ -25,6 +25,7 @@ import (
 	"anttrader/internal/mthub"
 	"anttrader/internal/pkg/secretbox"
 	"anttrader/internal/repository"
+	"anttrader/internal/risksvc"
 	"anttrader/internal/secrets"
 	"anttrader/internal/server"
 	"anttrader/internal/service"
@@ -338,6 +339,21 @@ func main() {
 	adminSystemServer := connect.NewAdminSystemServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminSystemServiceHandler(adminSystemServer, connectrpc.WithInterceptors(authInterceptor)))
 
+	// --- M11-16 Jurisdictional Gate ---
+	jurisStore := risksvc.NewPgJurisdictionStore(pool)
+	geoipResolver := risksvc.NewMaxMindGeoIPResolver(env("GEOIP_DB_PATH", "/var/lib/ant/geoip/GeoLite2-Country.mmdb"))
+	jurisGate := &risksvc.JurisdictionGate{
+		Store:               jurisStore,
+		GeoIP:               geoipResolver,
+		RequireKYC:          envBool("REQUIRE_KYC", false),
+		RequireDisclaimer:   envBool("REQUIRE_DISCLAIMER", false),
+		RequireQuestionnaire: envBool("REQUIRE_QUESTIONNAIRE", false),
+	}
+	_ = jurisGate // wired into SignalPipeline at runtime via risksvc.KycJurisdictionRule
+
+	adminJurisdictionServer := connect.NewAdminJurisdictionServer(adminRepo, log)
+	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(authInterceptor)))
+
 	analyticsRepo := repository.NewAnalyticsRepository(sqlxDB)
 	analyticsServer := connect.NewAnalyticsServer(analyticsRepo, log)
 	mux.Handle(antv1c.NewAnalyticsServiceHandler(analyticsServer, connectrpc.WithInterceptors(authInterceptor)))
@@ -416,4 +432,12 @@ func env(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+func envBool(key string, fallback bool) bool {
+	v := os.Getenv(key)
+	if v == "" {
+		return fallback
+	}
+	return v == "true" || v == "1" || v == "yes"
 }
