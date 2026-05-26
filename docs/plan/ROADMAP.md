@@ -567,7 +567,7 @@ docker exec ant-clickhouse clickhouse-client --query "DROP TABLE IF EXISTS ant.m
 > **对标开源**：**Lean** `Algorithm.Framework/Execution/`（VWAP / σ-based execution timing，Apache 2.0 友好）。**Hummingbot** `strategy_v2/executors/`（DCA executor 等组合模式）。
 > **前置**：M10-BASE 全部 Phase A-F 关闭
 > **性质**：本段卡片均为纯增量金融功能，依赖 M10-BASE 建立的基础架构（PositionSizer 管线、costsvc、15-state OMS、event ledger、MarketState）。
-> **状态**：🅒 待 M10-BASE 关闭后开工
+> **状态**：☑ 全部 5 张卡片已完成 (2026-05-26)
 
 ### M11 总览
 
@@ -584,12 +584,11 @@ docker exec ant-clickhouse clickhouse-client --query "DROP TABLE IF EXISTS ant.m
 
 | ID | 内容 | 文件 | 验收 | 备注 |
 |---|---|---|---|---|
-| M11-13 | 🅒 Execution Algo 层：TWAP / VWAP / POV / Implementation Shortfall；在 OMS 和 mthub 之间加 `execalgo/`；SaaS 聚合 1000 用户同一信号后拆成多笔小单 | `backend/internal/execalgo/{twap.go,vwap.go,pov.go,shortfall.go,algo.go,*_test.go}` | `go test -race -cover ./internal/execalgo/... \| awk '/coverage:/{gsub("%",""); if ($2<80) exit 1}'` | 参考 Lean `Execution/VolumeWeightedAveragePriceExecutionModel.cs`（Apache 2.0）+ Hummingbot `strategy_v2/executors/` |
-| M11-15 | 🅒 P&L 归因三维分解 | `backend/internal/oms/{pnl_attribution.go,pnl_attribution_test.go}` | `go test -race -run TestPnLAttribution ./internal/oms/... -v` | 参考 freqtrade backtest report HTML + Lean PerformanceMetrics |
-| M11-14 | 🅒 成本基础追踪（FIFO / LIFO / HIFO）：关闭仓位时匹配对应开仓、计算 realized P&L 按税务方法 | `backend/internal/costsvc/{cost_basis.go,cost_basis_test.go}` | `go test -race -run 'Test(FIFO\|LIFO\|HIFO)' ./internal/costsvc/... -v` | P3；专业用户需求 |
-| M11-15 | 🅒 P&L 归因三维分解：`Net P&L = Gross P&L(signal) - Slippage(execution) - Commission - Swap(holding)`，每个维度独立 metric | `backend/internal/oms/{pnl_attribution.go,pnl_attribution_test.go}` | `go test -race -run TestPnLAttribution ./internal/oms/... -v` | P3；依赖 costsvc 和 FillModel |
-| M11-16 | 🅒 地缘合规 Gate：KYC + IP 地理位置检测 + 受限地区拒止 + 显式免责声明 + 用户风险问卷 | `backend/internal/risksvc/{jurisdiction.go,jurisdiction_test.go}` | `go test -race -run TestJurisdictionGate ./internal/risksvc/... -v` | P1；来自 M11-8 监管边界 |
-| M11-17 | 🅒 Trade Reporting schema 预留：EMIR / MiFID II 类报告字段在 trade_event_log 中预留，不实现完整报告 | `backend/internal/mdgateway/chmigrate/014_trade_reporting_fields.sql` | `docker exec ant-clickhouse clickhouse-client --query "DESCRIBE ant.trade_event_log" \| grep -E 'reporting_' | P3 |
+| M11-13 | ☑ Execution Algo 层：TWAP / VWAP / POV / Implementation Shortfall；在 OMS 和 mthub 之间加 `execalgo/`；SaaS 聚合 1000 用户同一信号后拆成多笔小单 | `backend/internal/execalgo/{twap.go,vwap.go,pov.go,shortfall.go,algo.go,*_test.go}` | `go test -race -cover ./internal/execalgo/... \| awk '/coverage:/{gsub("%",""); if ($2<80) exit 1}'` | b33331a |
+| M11-14 | ☑ 成本基础追踪（FIFO / LIFO / HIFO）：关闭仓位时匹配对应开仓、计算 realized P&L 按税务方法 | `backend/internal/costsvc/{cost_basis.go,cost_basis_test.go}` | `go test -race -run 'Test(FIFO\|LIFO\|HIFO)' ./internal/costsvc/... -v` | 9d2ebc1 |
+| M11-15 | ☑ P&L 归因三维分解：`Net P&L = Gross P&L(signal) - Slippage(execution) - Commission - Swap(holding)`，每个维度独立 metric | `backend/internal/oms/{pnl_attribution.go,pnl_attribution_test.go}` | `go test -race -run TestPnLAttribution ./internal/oms/... -v` | 9d2ebc1 |
+| M11-16 | ☑ 地缘合规 Gate：KYC + IP 地理位置检测 + 受限地区拒止 + 显式免责声明 + 用户风险问卷 | `backend/internal/risksvc/{jurisdiction.go,jurisdiction_test.go}` | `go test -race -run TestJurisdictionGate ./internal/risksvc/... -v` | ebb361d |
+| M11-17 | ☑ Trade Reporting schema 预留：EMIR / MiFID II 类报告字段在 trade_event_log 中预留，不实现完整报告 | `backend/internal/mdgateway/chmigrate/014_trade_reporting_fields.sql` | `docker exec ant-clickhouse clickhouse-client --query "DESCRIBE ant.trade_event_log" \| grep -E 'reporting_' | 2080665 |
 
 ### M11 关闭判据
 

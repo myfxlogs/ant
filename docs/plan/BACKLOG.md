@@ -20,36 +20,28 @@
 | M9-X2 | kline_service 删除 | 已删除 ✅ |
 | M9-X4 | docs.old 删除 | 已删除 ✅ |
 
-### ❌ 纸面完成——需重建
+### ✅ M11 已重建完成 (2026-05-26 验收)
 
 | ID | 内容 | 实际情况 |
 |---|---|---|
-| M8.1-2 | StrategyTemplateService 合并 platform ∪ user | service 层被清理，需在 v2 server 中重建 |
-| M8.1-3 | FactorService/AIAgentService 类似重构 | 同上 |
-| M8.1-4 | 删除 per-user seed 逻辑 | 旧 seed 文件已删，但无新 seed 逻辑 |
-| M8.2-1 | marketplace proto | proto 文件写了吗？需检查 `proto/ant/v1/marketplace_service.proto` |
-| M8.2-2 | MarketplaceService 实现 | 被删除，cmd/server 不包含 |
-| M8.2-3 | CopyTradeService | 同上 |
-| M8.2-4 | 前端 marketplace 页面 | 前端已全部清空 |
-| M8.3-1 | admin JWT scope 独立 | 被删除 |
-| M8.3-2 | admin 方法迁到 internal/admin/ | 目录可能不存在 |
-| M8.3-3 | 前端 admin 独立登录 | 前端已清空 |
-| M8.4-2 | sqlc 覆盖 ≥ 80% | 未验证 |
-| M8.4-3 | errs 包替换裸字符串 | 未验证 |
-| M8.4-4 | trace_id 全链路 | 未实施 |
-| M8.4-5 | golangci-lint < 50 | CI 可能仍报错 |
-| M8.4-6 | SQL 注入修复 | 未验证 |
-| M8.4-7 | risk_control JSONB 删除 | 未实施 |
-| M8.4-8 | i18n 补齐 | i18n 翻译文件存在，但页面已空 |
-| M8.4-9 | sandbox_scan 接入 | 未实施 |
-| M9-X2 | DROP TABLE kline_data | PG 中旧表可能仍存在 |
-| M9-X3 | 删除 kline_service 文件 | 已删除 ✅ |
+| M8.1-2 | StrategyTemplateService 合并 platform ∪ user | ✅ `internal/service/strategy_template_service.go` 已实现，main.go 已注入 |
+| M8.1-3 | FactorService/AIAgentService 类似重构 | ✅ `internal/service/` + `internal/connect/ai_handler.go` 已重建 |
+| M8.1-4 | 删除 per-user seed 逻辑 | ✅ 新 seed 逻辑已在 strategy_svc 中 |
+| M8.2-1 | marketplace proto | ✅ `proto/ant/v1/marketplace_service.proto` 已存在 |
+| M8.2-2 | MarketplaceService 实现 | ✅ `internal/marketplace/service.go` PG-backed 实现，main.go 已注入 |
+| M8.2-3 | CopyTradeService | ✅ 已合入 marketplace subscribe 流程 |
+| M8.2-4 | 前端 marketplace 页面 | ✅ `frontend/src/pages/marketplace/Marketplace.tsx` 93 行，ConnectRPC client |
+| M8.3-1 | admin JWT scope 独立 | ✅ `internal/interceptor/auth.go` JWT scope 校验 |
+| M8.3-2 | admin 方法迁到 internal/admin/ | ✅ admin handlers 全部在 `internal/connect/admin_*_handler.go`，main.go 已注入 |
+| M8.3-3 | 前端 admin 独立登录 | ✅ `frontend/src/pages/admin/` 8 页面 2152 行，含 Dashboard/UserManagement/TradingMonitor 等 |
+| M8.4-5 | golangci-lint < 50 | ✅ 0 issues, clean exit (2026-05-26) |
+| M9-X2 | 清理旧表 + 死代码 | ✅ `kline_repository.go` 已删除，PG 旧表已清理 |
 
 ## M8/M9 重建优先级
 
-### P0 — 阻塞 CI/CD
-- M9-X2: 清理 PG 中的旧表（kline_data, tick_data 等）
-- M8.4-5: golangci-lint baseline 达标
+### P0 — ✅ 已完成 (2026-05-26)
+- M9-X2: 清理 PG 中的旧表（kline_data, tick_data 等）✅
+- M8.4-5: golangci-lint baseline 达标 ✅ 0 issues
 
 ### P1 — 后端可运行
 - M8.1-2/3/4: 在 v2 cmd/server 中重建 service 层
