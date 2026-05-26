@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+import "google/protobuf/timestamp.proto";
+
+service MarketRegimeService {
+  rpc DetectMarketRegime(DetectMarketRegimeRequest) returns (DetectMarketRegimeResponse);
+  rpc GetMarketRegime(GetMarketRegimeRequest) returns (GetMarketRegimeResponse);
+}
+
+message DetectMarketRegimeRequest {
+  string account_id = 1;
+  string symbol = 2;
+  string timeframe = 3;
+  int32 count = 4;
+  google.protobuf.Timestamp from = 5;
+  google.protobuf.Timestamp to = 6;
+}
+
+message DetectMarketRegimeResponse {
+  MarketRegime regime = 1;
+}
+
+message GetMarketRegimeRequest {
+  string regime_id = 1;
+}
+
+message GetMarketRegimeResponse {
+  MarketRegime regime = 1;
+}
+
+message MarketRegime {
+  string id = 1;
+  string user_id = 2;
+  string account_id = 3;
+  string symbol = 4;
+  string timeframe = 5;
+  string regime = 6;
+  double confidence = 7;
+  string features = 8;
+  string segments = 9;
+  repeated string strategy_families = 10;
+  google.protobuf.Timestamp from_time = 11;
+  google.protobuf.Timestamp to_time = 12;
+  string model_version = 13;
+  google.protobuf.Timestamp created_at = 14;
+}

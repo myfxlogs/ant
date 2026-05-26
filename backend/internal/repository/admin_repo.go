@@ -150,6 +150,10 @@ func (r *AdminRepository) GetTradingSummary(ctx context.Context, startDate, endD
 	return summary, nil
 }
 
+func (r *AdminRepository) Ping(ctx context.Context) error {
+	return r.db.Ping(ctx)
+}
+
 func (r *AdminRepository) HasPermission(ctx context.Context, role, permissionCode string) (bool, error) {
 	return role == "admin", nil
 }

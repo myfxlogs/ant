@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package ant.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+service AdminAccountService {
+  rpc ListAccountsAdmin(ListAccountsAdminRequest) returns (ListAccountsAdminResponse);
+  rpc FreezeAccount(FreezeAccountRequest) returns (FreezeAccountResponse);
+  rpc UnfreezeAccount(UnfreezeAccountRequest) returns (UnfreezeAccountResponse);
+}
+
+message AccountWithUser {
+  string id = 1;
+  string user_id = 2;
+  string user_email = 3;
+  string user_nickname = 4;
+  string mt_type = 5;
+  string broker_company = 6;
+  string broker_server = 7;
+  string login = 8;
+  string alias = 9;
+  bool is_disabled = 10;
+  double balance = 11;
+  double credit = 12;
+  double equity = 13;
+  double margin = 14;
+  double free_margin = 15;
+  double margin_level = 16;
+  int32 leverage = 17;
+  string currency = 18;
+  bool is_investor = 19;
+  string account_status = 20;
+  string stream_status = 21;
+  string last_error = 22;
+  string account_type = 23;
+  google.protobuf.Timestamp last_connected_at = 24;
+  google.protobuf.Timestamp last_checked_at = 25;
+  google.protobuf.Timestamp created_at = 26;
+  google.protobuf.Timestamp updated_at = 27;
+}
+
+message ListAccountsAdminRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string search = 3;
+  string status = 4;
+  string mt_type = 5;
+  string user_id = 6;
+}
+
+message ListAccountsAdminResponse {
+  repeated AccountWithUser accounts = 1;
+  int64 total = 2;
+}
+
+message FreezeAccountRequest {
+  string id = 1;
+}
+
+message FreezeAccountResponse {}
+
+message UnfreezeAccountRequest {
+  string id = 1;
+}
+
+message UnfreezeAccountResponse {}

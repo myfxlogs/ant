@@ -1,7 +1,7 @@
 import { analyticsClient, economicDataClient } from './connect';
 import i18n from '@/i18n';
 
-export type { AccountAnalytics, Summary, RiskMetrics, SymbolStats, TradeRecord, MonthlyPnL } from '../gen/ant/v1/api_pb';
+export type { TradeStats, RiskMetrics, SymbolStat, TradeRecord, MonthlyPnLItem } from '../gen/ant/v1/analytics_pb';
 
 const analyticsService = analyticsClient;
 

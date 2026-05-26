@@ -1,0 +1,139 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+service AnalyticsService {
+  rpc GetAccountAnalytics(GetAccountAnalyticsRequest) returns (AccountAnalyticsResponse);
+  rpc GetRecentTrades(GetRecentTradesRequest) returns (GetRecentTradesResponse);
+  rpc GetMonthlyPnL(GetMonthlyPnLRequest) returns (GetMonthlyPnLResponse);
+  rpc GetMonthlyAnalysis(GetMonthlyAnalysisRequest) returns (GetMonthlyAnalysisResponse);
+}
+
+message GetAccountAnalyticsRequest {
+  string account_id = 1;
+}
+
+message AccountAnalyticsResponse {
+  TradeStats trade_stats = 1;
+  RiskMetrics risk_metrics = 2;
+  repeated SymbolStat symbol_stats = 3;
+  repeated EquityPoint equity_curve = 4;
+  repeated DailyPnL daily_pnl = 5;
+  repeated HourlyStat hourly_stats = 6;
+}
+
+message TradeStats {
+  int64 total_trades = 1;
+  double win_rate = 2;
+  double profit_factor = 3;
+  double average_profit = 4;
+  double average_loss = 5;
+  double largest_win = 6;
+  double largest_loss = 7;
+  int64 max_consecutive_wins = 8;
+  int64 max_consecutive_losses = 9;
+  string average_holding_time = 10;
+  double net_profit = 11;
+  double total_deposit = 12;
+  double total_withdrawal = 13;
+  double net_deposit = 14;
+}
+
+message RiskMetrics {
+  double max_drawdown_percent = 1;
+  double sharpe_ratio = 2;
+  double sortino_ratio = 3;
+  double calmar_ratio = 4;
+  double volatility = 5;
+  double average_daily_return = 6;
+}
+
+message SymbolStat {
+  string symbol = 1;
+  double profit = 2;
+  double trade_share_percent = 3;
+}
+
+message EquityPoint {
+  string date = 1;
+  double equity = 2;
+  double balance = 3;
+  double profit = 4;
+}
+
+message DailyPnL {
+  string day = 1;
+  string date = 2;
+  double pnl = 3;
+  int64 trades = 4;
+  double lots = 5;
+  double balance = 6;
+  double profit_factor = 7;
+  double max_floating_loss_amount = 8;
+  double max_floating_loss_ratio = 9;
+  double max_floating_profit_amount = 10;
+  double max_floating_profit_ratio = 11;
+}
+
+message HourlyStat {
+  int32 hour = 1;
+  double lots = 2;
+  double balance = 3;
+  double profit_factor = 4;
+  double max_floating_loss_amount = 5;
+  double max_floating_loss_ratio = 6;
+  double max_floating_profit_amount = 7;
+  double max_floating_profit_ratio = 8;
+}
+
+message TradeRecord {
+  string ticket = 1;
+  string symbol = 2;
+  string type = 3;
+  double volume = 4;
+  double open_price = 5;
+  double close_price = 6;
+  double profit = 7;
+  string open_time = 8;
+  string close_time = 9;
+  double swap = 10;
+  double commission = 11;
+  string comment = 12;
+}
+
+message GetRecentTradesRequest {
+  string account_id = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+}
+
+message GetRecentTradesResponse {
+  repeated TradeRecord trades = 1;
+  int64 total = 2;
+}
+
+message MonthlyPnLItem {
+  int32 month = 1;
+  double profit = 2;
+  int64 trades = 3;
+}
+
+message GetMonthlyPnLRequest {
+  string account_id = 1;
+  int32 year = 2;
+}
+
+message GetMonthlyPnLResponse {
+  repeated MonthlyPnLItem monthly_pnl = 1;
+}
+
+message GetMonthlyAnalysisRequest {
+  string account_id = 1;
+}
+
+message GetMonthlyAnalysisResponse {
+  repeated int32 years = 1;
+  bytes data = 2;
+}

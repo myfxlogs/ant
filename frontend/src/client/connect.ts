@@ -18,6 +18,13 @@ import { EconomicDataService } from "../gen/ant/v1/economic_data_pb";
 import { StrategyExperimentService } from "../gen/ant/v1/strategy_experiment_pb";
 import { StrategyAssetService } from "../gen/ant/v1/strategy_asset_pb";
 import { AdminTradingService } from "../gen/ant/v1/admin_trading_pb";
+import { AdminConfigService } from "../gen/ant/v1/admin_config_pb";
+import { AdminLogService } from "../gen/ant/v1/admin_log_pb";
+import { AdminAccountService } from "../gen/ant/v1/admin_account_pb";
+import { AdminUserService } from "../gen/ant/v1/admin_user_pb";
+import { AdminSystemService } from "../gen/ant/v1/admin_system_pb";
+import { AnalyticsService } from "../gen/ant/v1/analytics_pb";
+import { MarketRegimeService } from "../gen/ant/v1/market_regime_pb";
 import { JobService } from "../gen/ant/v1/job_pb";
 import { ScheduleHealthService } from "../gen/ant/v1/schedule_health_pb";
 import { streamTransport, transport } from "./transport";
@@ -49,13 +56,13 @@ export const aiClient = createClient(AIService, transport);
 export const systemAIClient = createClient(SystemAIService, transport);
 export const aiPrimaryClient = createClient(AIPrimaryService, transport);
 export const codeAssistClient = createClient(CodeAssistService, transport);
-export const adminUserClient = createStubClient();
-export const adminAccountClient = createStubClient();
+export const adminUserClient = createClient(AdminUserService, transport);
+export const adminAccountClient = createClient(AdminAccountService, transport);
 export const adminTradingClient = createClient(AdminTradingService, transport);
-export const adminConfigClient = createStubClient();
-export const adminLogClient = createStubClient();
-export const adminSystemClient = createStubClient();
-export const analyticsClient = createStubClient();
+export const adminConfigClient = createClient(AdminConfigService, transport);
+export const adminLogClient = createClient(AdminLogService, transport);
+export const adminSystemClient = createClient(AdminSystemService, transport);
+export const analyticsClient = createClient(AnalyticsService, transport);
 export const pythonStrategyClient = createClient(
   PythonStrategyService,
   transport,
@@ -77,7 +84,7 @@ export const strategyExperimentClient = createClient(
   StrategyExperimentService,
   transport,
 );
-export const marketRegimeClient = createStubClient();
+export const marketRegimeClient = createClient(MarketRegimeService, transport);
 export const strategyAssetClient = createClient(StrategyAssetService, transport);
 export const jobClient = createClient(JobService, transport);
 export const jobStreamClient = createClient(JobService, streamTransport);

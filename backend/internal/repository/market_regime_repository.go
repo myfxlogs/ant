@@ -70,3 +70,12 @@ func (r *MarketRegimeRepository) Get(ctx context.Context, userID, id uuid.UUID) 
 	}
 	return &row, err
 }
+
+func (r *MarketRegimeRepository) GetByID(ctx context.Context, id uuid.UUID) (*MarketRegime, error) {
+	var row MarketRegime
+	err := r.db.GetContext(ctx, &row, `SELECT * FROM market_regimes WHERE id = $1`, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrMarketRegimeNotFound
+	}
+	return &row, err
+}

@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+service AdminSystemService {
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+  rpc GetMetrics(GetMetricsRequest) returns (GetMetricsResponse);
+  rpc ResolveAlert(ResolveAlertRequest) returns (ResolveAlertResponse);
+  rpc ClearCache(ClearCacheRequest) returns (ClearCacheResponse);
+  rpc InvalidateCache(InvalidateCacheRequest) returns (InvalidateCacheResponse);
+}
+
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+  string status = 1;
+  string db_status = 2;
+  string redis_status = 3;
+  string nats_status = 4;
+}
+
+message MetricPoint {
+  string name = 1;
+  double value = 2;
+  map<string, string> labels = 3;
+}
+
+message GetMetricsRequest {}
+
+message GetMetricsResponse {
+  repeated MetricPoint metrics = 1;
+}
+
+message ResolveAlertRequest {
+  string alert_id = 1;
+}
+
+message ResolveAlertResponse {}
+
+message ClearCacheRequest {}
+
+message ClearCacheResponse {}
+
+message InvalidateCacheRequest {
+  repeated string tags = 1;
+}
+
+message InvalidateCacheResponse {}

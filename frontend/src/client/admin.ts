@@ -2,10 +2,10 @@ import { adminAccountClient, adminConfigClient, adminLogClient, adminSystemClien
 
 // Note: getDashboard is defined in AdminUserService, not AdminSystemService
 
-export type { DashboardStats } from '../gen/ant/v1/admin_dashboard_pb';
+export type { DashboardStats } from '../gen/ant/v1/admin_user_pb';
 export type { AdminLog } from '../gen/ant/v1/admin_log_pb';
 export type { AccountWithUser } from '../gen/ant/v1/admin_account_pb';
-export type { UserWithAccounts } from '../gen/ant/v1/admin_user_entity_pb';
+export type { UserWithAccounts } from '../gen/ant/v1/admin_user_pb';
 export type { TradingSummary } from '../gen/ant/v1/admin_trading_pb';
 export type { SystemConfig } from '../gen/ant/v1/admin_config_pb';
 
@@ -54,7 +54,8 @@ export type LogListParams = {
 
 export const adminApi = {
   getDashboard: async () => {
-    return await adminUserClient.getDashboard({});
+    const resp = await adminUserClient.getDashboard({});
+    return (resp as any).stats ?? resp;
   },
 
   getDashboardStats: async () => {

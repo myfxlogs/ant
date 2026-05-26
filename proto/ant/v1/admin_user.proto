@@ -1,0 +1,118 @@
+syntax = "proto3";
+
+package ant.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+service AdminUserService {
+  rpc GetDashboard(GetDashboardRequest) returns (GetDashboardResponse);
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse);
+  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+  rpc DisableUser(DisableUserRequest) returns (DisableUserResponse);
+  rpc EnableUser(EnableUserRequest) returns (EnableUserResponse);
+  rpc ResetUserPassword(ResetUserPasswordRequest) returns (ResetUserPasswordResponse);
+}
+
+message DashboardStats {
+  int64 total_users = 1;
+  int64 active_users = 2;
+  int64 total_accounts = 3;
+  int64 online_accounts = 4;
+  int64 today_trades = 5;
+  double today_volume = 6;
+  double today_profit = 7;
+  double system_load = 8;
+}
+
+message GetDashboardRequest {}
+
+message GetDashboardResponse {
+  DashboardStats stats = 1;
+}
+
+message UserAccountSummary {
+  string id = 1;
+  string login = 2;
+  string mt_type = 3;
+  string broker_company = 4;
+  string account_status = 5;
+}
+
+message UserWithAccounts {
+  string id = 1;
+  string username = 2;
+  string email = 3;
+  string nickname = 4;
+  string role = 5;
+  string status = 6;
+  bool email_verified = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+  google.protobuf.Timestamp last_login_at = 10;
+  repeated UserAccountSummary accounts = 11;
+}
+
+message ListUsersRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string search = 3;
+  string status = 4;
+  string role = 5;
+}
+
+message ListUsersResponse {
+  repeated UserWithAccounts users = 1;
+  int64 total = 2;
+}
+
+message CreateUserRequest {
+  string username = 1;
+  string email = 2;
+  string password = 3;
+  string role = 4;
+}
+
+message CreateUserResponse {
+  string id = 1;
+}
+
+message UpdateUserRequest {
+  string id = 1;
+  string username = 2;
+  string email = 3;
+  string role = 4;
+  string status = 5;
+  string nickname = 6;
+}
+
+message UpdateUserResponse {}
+
+message DeleteUserRequest {
+  string id = 1;
+}
+
+message DeleteUserResponse {}
+
+message DisableUserRequest {
+  string id = 1;
+}
+
+message DisableUserResponse {}
+
+message EnableUserRequest {
+  string id = 1;
+}
+
+message EnableUserResponse {}
+
+message ResetUserPasswordRequest {
+  string id = 1;
+}
+
+message ResetUserPasswordResponse {
+  string new_password = 1;
+}
