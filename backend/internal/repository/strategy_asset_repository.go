@@ -116,7 +116,10 @@ func (r *StrategyAssetRepository) CreateClone(ctx context.Context, row *Strategy
 	if err == nil {
 		_, _ = r.db.ExecContext(ctx, `UPDATE strategy_assets SET clone_count = clone_count + 1 WHERE id = $1`, row.AssetID)
 	}
-	return fmt.Errorf("create asset clone: %w", err)
+	if err != nil {
+		return fmt.Errorf("create asset clone: %w", err)
+	}
+	return nil
 }
 
 func (r *StrategyAssetRepository) GetClone(ctx context.Context, userID, id uuid.UUID) (*StrategyAssetClone, error) {

@@ -11,6 +11,8 @@ import (
 
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
+	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jmoiron/sqlx"
 	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
 
@@ -50,6 +52,13 @@ func main() {
 		log.Fatal("pg connect failed", zap.Error(err))
 	}
 	defer pool.Close()
+
+	// sqlx connection (for repos that predate pgxpool)
+	sqlxDB, err := sqlx.Open("pgx", dsn)
+	if err != nil {
+		log.Fatal("sqlx connect failed", zap.Error(err))
+	}
+	defer sqlxDB.Close()
 
 	// Connect to ClickHouse
 	chHost := env("CH_HOST", "clickhouse")
@@ -269,6 +278,12 @@ func main() {
 	mktplaceHandler := connect.NewMarketplaceServer(mktplaceSvc, log)
 	mux.Handle(antv1c.NewMarketplaceServiceHandler(mktplaceHandler, connectrpc.WithInterceptors(authInterceptor)))
 
+	// Repos using sqlx for legacy service compatibility.
+	logRepo := repository.NewLogRepository(sqlxDB)
+	logSvc := service.NewLogService(logRepo)
+	strategyExperimentRepo := repository.NewStrategyExperimentRepository(sqlxDB)
+	strategyAssetRepo := repository.NewStrategyAssetRepository(sqlxDB)
+
 	aiRepo := repository.NewSystemAIConfigRepository(pool)
 	var aiBox *secretbox.Box
 	if mk := os.Getenv("ANT_MASTER_KEY"); mk != "" {
@@ -287,7 +302,7 @@ func main() {
 
 	// Mock/stub handlers — return mock data for services not yet connected to real backends.
 	// Real: SystemAI, AIPrimary, Job, ScheduleHealth
-	// Mock: PythonStrategy, CodeAssist, BacktestTrades, EconomicData, Log, StrategyExperiment, StrategyAsset, IndicatorCatalog
+	// Mock: PythonStrategy, CodeAssist, BacktestTrades, EconomicData
 	// Stub: DebateV2, DebateV2Stream
 	pythonStrategyServer := connect.NewPythonStrategyServer(log)
 	mux.Handle(antv1c.NewPythonStrategyServiceHandler(pythonStrategyServer, connectrpc.WithInterceptors(authInterceptor)))
@@ -307,11 +322,11 @@ func main() {
 	mux.Handle(antv1c.NewEconomicDataServiceHandler(economicDataServer, connectrpc.WithInterceptors(authInterceptor)))
 	jobServer := connect.NewJobServer(pool, log)
 	mux.Handle(antv1c.NewJobServiceHandler(jobServer, connectrpc.WithInterceptors(authInterceptor)))
-	logServiceServer := connect.NewLogServiceServer(log)
+	logServiceServer := connect.NewLogServiceServer(logSvc, log)
 	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, connectrpc.WithInterceptors(authInterceptor)))
-	strategyExperimentServer := connect.NewStrategyExperimentServer(log)
+	strategyExperimentServer := connect.NewStrategyExperimentServer(strategyExperimentRepo, log)
 	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, connectrpc.WithInterceptors(authInterceptor)))
-	strategyAssetServer := connect.NewStrategyAssetServer(log)
+	strategyAssetServer := connect.NewStrategyAssetServer(strategyAssetRepo, log)
 	mux.Handle(antv1c.NewStrategyAssetServiceHandler(strategyAssetServer, connectrpc.WithInterceptors(authInterceptor)))
 	scheduleHealthServer := connect.NewScheduleHealthServer(pool, log)
 	mux.Handle(antv1c.NewScheduleHealthServiceHandler(scheduleHealthServer, connectrpc.WithInterceptors(authInterceptor)))

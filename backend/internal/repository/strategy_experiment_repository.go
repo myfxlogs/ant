@@ -78,12 +78,15 @@ func (r *StrategyExperimentRepository) Create(ctx context.Context, exp *Strategy
 		INSERT INTO strategy_experiments (id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,created_at,finished_at)
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
 	`, exp.ID, exp.UserID, exp.BaseTemplateID, exp.Status, exp.ParameterSpace, exp.SearchMethod, exp.MaxCandidates, exp.Objective, exp.MarketRegimeRef, exp.BestCandidateID, exp.JobID, exp.CreatedAt, exp.FinishedAt)
-	return fmt.Errorf("create experiment: %w", err)
+	if err != nil {
+		return fmt.Errorf("create experiment: %w", err)
+	}
+	return nil
 }
 
 func (r *StrategyExperimentRepository) Get(ctx context.Context, userID, id uuid.UUID) (*StrategyExperiment, error) {
 	var exp StrategyExperiment
-	err := r.db.GetContext(ctx, &exp, `SELECT * FROM strategy_experiments WHERE id = $1 AND user_id = $2`, id, userID)
+	err := r.db.GetContext(ctx, &exp, `SELECT id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,created_at,finished_at FROM strategy_experiments WHERE id = $1 AND user_id = $2`, id, userID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, ErrStrategyExperimentNotFound
 	}
@@ -98,13 +101,13 @@ func (r *StrategyExperimentRepository) List(ctx context.Context, userID uuid.UUI
 		offset = 0
 	}
 	var rows []StrategyExperiment
-	err := r.db.SelectContext(ctx, &rows, `SELECT * FROM strategy_experiments WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`, userID, limit, offset)
+	err := r.db.SelectContext(ctx, &rows, `SELECT id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,created_at,finished_at FROM strategy_experiments WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`, userID, limit, offset)
 	return rows, err
 }
 
 func (r *StrategyExperimentRepository) Cancel(ctx context.Context, userID, id uuid.UUID) (*StrategyExperiment, error) {
 	var exp StrategyExperiment
-	err := r.db.GetContext(ctx, &exp, `UPDATE strategy_experiments SET status = 'CANCELLED', finished_at = COALESCE(finished_at, now()) WHERE id = $1 AND user_id = $2 AND status IN ('QUEUED','RUNNING') RETURNING *`, id, userID)
+	err := r.db.GetContext(ctx, &exp, `UPDATE strategy_experiments SET status = 'CANCELLED', finished_at = COALESCE(finished_at, now()) WHERE id = $1 AND user_id = $2 AND status IN ('QUEUED','RUNNING') RETURNING id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,created_at,finished_at`, id, userID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return r.Get(ctx, userID, id)
 	}
@@ -128,7 +131,10 @@ func (r *StrategyExperimentRepository) CreateCandidate(ctx context.Context, cand
 		INSERT INTO strategy_experiment_candidates (id,experiment_id,parameters,draft_code_ref,backtest_run_id,score,grade,score_components,rank,summary,recommendation,created_at)
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
 	`, candidate.ID, candidate.ExperimentID, candidate.Parameters, candidate.DraftCodeRef, candidate.BacktestRunID, candidate.Score, candidate.Grade, candidate.ScoreComponents, candidate.Rank, candidate.Summary, candidate.Recommendation, candidate.CreatedAt)
-	return fmt.Errorf("create experiment candidate: %w", err)
+	if err != nil {
+		return fmt.Errorf("create experiment candidate: %w", err)
+	}
+	return nil
 }
 
 func (r *StrategyExperimentRepository) ListCandidates(ctx context.Context, userID, experimentID uuid.UUID) ([]StrategyExperimentCandidate, error) {
