@@ -1,14 +1,12 @@
-package connect
+package system
 
 import (
 	"context"
-
 	"fmt"
 
 	"go.uber.org/zap"
 
 	"connectrpc.com/connect"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/shopspring/decimal"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -16,20 +14,20 @@ import (
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/mthub"
+	"anttrader/internal/service"
 )
 
 // MtHubServer implements ant.v1.MtHubServiceHandler.
 type MtHubServer struct {
-	svc *mthub.MtHubService
-	pg  *pgxpool.Pool
-	log *zap.Logger
+	svc      *mthub.MtHubService
+	platform *service.PlatformService
+	log      *zap.Logger
 }
 
 var _ antv1c.MtHubServiceHandler = (*MtHubServer)(nil)
 
-// NewMtHubServer creates a ConnectRPC server for mthub.
-func NewMtHubServer(svc *mthub.MtHubService, pg *pgxpool.Pool, log *zap.Logger) *MtHubServer {
-	return &MtHubServer{svc: svc, pg: pg, log: log}
+func NewMtHubServer(svc *mthub.MtHubService, platform *service.PlatformService, log *zap.Logger) *MtHubServer {
+	return &MtHubServer{svc: svc, platform: platform, log: log}
 }
 
 func (s *MtHubServer) PlaceOrder(ctx context.Context, req *connect.Request[antv1.PlaceOrderRequest]) (*connect.Response[antv1.PlaceOrderResponse], error) {
@@ -38,7 +36,8 @@ func (s *MtHubServer) PlaceOrder(ctx context.Context, req *connect.Request[antv1
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
 	}
 	m := req.Msg
-	if !accountOwnedByUser(ctx, s.pg, userID, m.AccountId) {
+	ok, err := s.platform.UserOwnsAccount(ctx, userID, m.AccountId)
+	if err != nil || !ok {
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
 	}
 	vol, err := decimal.NewFromString(m.Volume)
@@ -68,7 +67,8 @@ func (s *MtHubServer) CloseOrder(ctx context.Context, req *connect.Request[antv1
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
 	}
 	m := req.Msg
-	if !accountOwnedByUser(ctx, s.pg, userID, m.AccountId) {
+	ok, err := s.platform.UserOwnsAccount(ctx, userID, m.AccountId)
+	if err != nil || !ok {
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
 	}
 	lots := decimal.Zero
@@ -87,7 +87,8 @@ func (s *MtHubServer) OpenedOrders(ctx context.Context, req *connect.Request[ant
 	if userID == "" {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
 	}
-	if !accountOwnedByUser(ctx, s.pg, userID, req.Msg.AccountId) {
+	ok, err := s.platform.UserOwnsAccount(ctx, userID, req.Msg.AccountId)
+	if err != nil || !ok {
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
 	}
 	list, err := s.svc.OpenedOrders(ctx, req.Msg.AccountId)
@@ -103,7 +104,8 @@ func (s *MtHubServer) OrderHistory(ctx context.Context, req *connect.Request[ant
 	if userID == "" {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
 	}
-	if !accountOwnedByUser(ctx, s.pg, userID, req.Msg.AccountId) {
+	ok, err := s.platform.UserOwnsAccount(ctx, userID, req.Msg.AccountId)
+	if err != nil || !ok {
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
 	}
 	list, err := s.svc.OrderHistory(ctx, req.Msg.AccountId, req.Msg.From.AsTime(), req.Msg.To.AsTime())
@@ -119,7 +121,8 @@ func (s *MtHubServer) SymbolParams(ctx context.Context, req *connect.Request[ant
 	if userID == "" {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
 	}
-	if !accountOwnedByUser(ctx, s.pg, userID, req.Msg.AccountId) {
+	ok, err := s.platform.UserOwnsAccount(ctx, userID, req.Msg.AccountId)
+	if err != nil || !ok {
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
 	}
 	list, err := s.svc.SymbolParams(ctx, req.Msg.AccountId, req.Msg.Canonicals)
@@ -255,13 +258,4 @@ func toProtoOrderEvent(ev *mthub.OrderEvent) *antv1.OrderEvent {
 		EventType: ev.EventType, Timestamp: timestamppb.New(ev.Timestamp),
 		Order: &antv1.OrderRecord{Ticket: ev.Order.Ticket},
 	}
-}
-
-func accountOwnedByUser(ctx context.Context, pg *pgxpool.Pool, userID, accountID string) bool {
-	var exists bool
-	err := pg.QueryRow(ctx,
-		`SELECT EXISTS(SELECT 1 FROM mt_accounts WHERE id = $1 AND user_id = $2)`,
-		accountID, userID,
-	).Scan(&exists)
-	return err == nil && exists
 }

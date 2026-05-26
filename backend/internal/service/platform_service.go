@@ -247,3 +247,99 @@ func (s *PlatformService) IsAdmin(ctx context.Context, userID string) (bool, err
 	err := s.pg.QueryRow(ctx, "SELECT count(*) FROM admins WHERE user_id = $1", userID).Scan(&count)
 	return count > 0, err
 }
+
+// UserOwnsAccount checks if an account belongs to the given user.
+func (s *PlatformService) UserOwnsAccount(ctx context.Context, userID, accountID string) (bool, error) {
+	var exists bool
+	err := s.pg.QueryRow(ctx,
+		"SELECT EXISTS(SELECT 1 FROM mt_accounts WHERE id = $1 AND user_id = $2)",
+		accountID, userID,
+	).Scan(&exists)
+	return exists, err
+}
+
+// GetUserAccountIDs returns all account IDs belonging to a user.
+func (s *PlatformService) GetUserAccountIDs(ctx context.Context, userID string) ([]string, error) {
+	rows, err := s.pg.Query(ctx, "SELECT id FROM mt_accounts WHERE user_id = $1", userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var ids []string
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	return ids, rows.Err()
+}
+
+// AccountSnapshot holds the current state of an MT account from the database.
+type AccountSnapshot struct {
+	ID           string
+	Status       string
+	Balance      float64
+	Equity       float64
+	Credit       float64
+	Margin       float64
+	FreeMargin   float64
+	MarginLevel  float64
+}
+
+// GetUserAccountSnapshots returns current state for all of a user's MT accounts.
+func (s *PlatformService) GetUserAccountSnapshots(ctx context.Context, userID string) ([]AccountSnapshot, error) {
+	rows, err := s.pg.Query(ctx,
+		"SELECT id, account_status, balance, equity, credit, margin, free_margin, margin_level FROM mt_accounts WHERE user_id = $1",
+		userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []AccountSnapshot
+	for rows.Next() {
+		var a AccountSnapshot
+		if err := rows.Scan(&a.ID, &a.Status, &a.Balance, &a.Equity, &a.Credit, &a.Margin, &a.FreeMargin, &a.MarginLevel); err != nil {
+			return nil, err
+		}
+		out = append(out, a)
+	}
+	return out, rows.Err()
+}
+
+// UserAccountsSummary holds the aggregated account summary for a user.
+type UserAccountsSummary struct {
+	TotalBalance   float64
+	TotalEquity    float64
+	TotalProfit    float64
+	AccountCount   int32
+	ConnectedCount int32
+}
+
+// GetUserAccountsSummary computes an aggregated summary of a user's accounts.
+func (s *PlatformService) GetUserAccountsSummary(ctx context.Context, userID string) (*UserAccountsSummary, error) {
+	rows, err := s.pg.Query(ctx,
+		"SELECT balance, equity, account_status FROM mt_accounts WHERE user_id = $1", userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var sum UserAccountsSummary
+	for rows.Next() {
+		var balance, equity float64
+		var status string
+		if err := rows.Scan(&balance, &equity, &status); err != nil {
+			continue
+		}
+		sum.TotalBalance += balance
+		sum.TotalEquity += equity
+		sum.TotalProfit += equity - balance
+		sum.AccountCount++
+		if status == "connected" {
+			sum.ConnectedCount++
+		}
+	}
+	return &sum, rows.Err()
+}

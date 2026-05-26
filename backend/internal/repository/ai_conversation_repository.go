@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type AIConversation struct {
@@ -27,10 +27,10 @@ type AIMessage struct {
 }
 
 type AIConversationRepository struct {
-	db *sqlx.DB
+	db *pgxpool.Pool
 }
 
-func NewAIConversationRepository(db *sqlx.DB) *AIConversationRepository {
+func NewAIConversationRepository(db *pgxpool.Pool) *AIConversationRepository {
 	return &AIConversationRepository{db: db}
 }
 
@@ -42,7 +42,7 @@ func (r *AIConversationRepository) Create(ctx context.Context, userID uuid.UUID,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-	_, err := r.db.ExecContext(ctx,
+	_, err := r.db.Exec(ctx,
 		`INSERT INTO ai_conversations (id, user_id, title, created_at, updated_at)
 		 VALUES ($1, $2, $3, $4, $5)`,
 		conv.ID, conv.UserID, conv.Title, conv.CreatedAt, conv.UpdatedAt,
@@ -54,8 +54,7 @@ func (r *AIConversationRepository) Create(ctx context.Context, userID uuid.UUID,
 }
 
 func (r *AIConversationRepository) ListByUser(ctx context.Context, userID uuid.UUID) ([]AIConversation, error) {
-	var convs []AIConversation
-	err := r.db.SelectContext(ctx, &convs,
+	rows, err := r.db.Query(ctx,
 		`SELECT c.id, c.user_id, c.title, c.created_at, c.updated_at,
 		        COALESCE(m.cnt, 0) AS message_count
 		 FROM ai_conversations c
@@ -68,16 +67,26 @@ func (r *AIConversationRepository) ListByUser(ctx context.Context, userID uuid.U
 	if err != nil {
 		return nil, err
 	}
-	return convs, nil
+	defer rows.Close()
+
+	var convs []AIConversation
+	for rows.Next() {
+		var c AIConversation
+		if err := rows.Scan(&c.ID, &c.UserID, &c.Title, &c.CreatedAt, &c.UpdatedAt, &c.MessageCount); err != nil {
+			return nil, err
+		}
+		convs = append(convs, c)
+	}
+	return convs, rows.Err()
 }
 
 func (r *AIConversationRepository) GetByID(ctx context.Context, id, userID uuid.UUID) (*AIConversation, error) {
 	var conv AIConversation
-	err := r.db.GetContext(ctx, &conv,
+	err := r.db.QueryRow(ctx,
 		`SELECT id, user_id, title, created_at, updated_at FROM ai_conversations
 		 WHERE id = $1 AND user_id = $2`,
 		id, userID,
-	)
+	).Scan(&conv.ID, &conv.UserID, &conv.Title, &conv.CreatedAt, &conv.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +94,7 @@ func (r *AIConversationRepository) GetByID(ctx context.Context, id, userID uuid.
 }
 
 func (r *AIConversationRepository) UpdateTitle(ctx context.Context, id, userID uuid.UUID, title string) error {
-	_, err := r.db.ExecContext(ctx,
+	_, err := r.db.Exec(ctx,
 		`UPDATE ai_conversations SET title = $1, updated_at = $2 WHERE id = $3 AND user_id = $4`,
 		title, time.Now(), id, userID,
 	)
@@ -96,7 +105,7 @@ func (r *AIConversationRepository) UpdateTitle(ctx context.Context, id, userID u
 }
 
 func (r *AIConversationRepository) Touch(ctx context.Context, id uuid.UUID) error {
-	_, err := r.db.ExecContext(ctx,
+	_, err := r.db.Exec(ctx,
 		`UPDATE ai_conversations SET updated_at = $1 WHERE id = $2`,
 		time.Now(), id,
 	)
@@ -107,7 +116,7 @@ func (r *AIConversationRepository) Touch(ctx context.Context, id uuid.UUID) erro
 }
 
 func (r *AIConversationRepository) Delete(ctx context.Context, id, userID uuid.UUID) error {
-	_, err := r.db.ExecContext(ctx,
+	_, err := r.db.Exec(ctx,
 		`DELETE FROM ai_conversations WHERE id = $1 AND user_id = $2`,
 		id, userID,
 	)
@@ -125,7 +134,7 @@ func (r *AIConversationRepository) AddMessage(ctx context.Context, conversationI
 		Content:        content,
 		CreatedAt:      time.Now(),
 	}
-	_, err := r.db.ExecContext(ctx,
+	_, err := r.db.Exec(ctx,
 		`INSERT INTO ai_messages (id, conversation_id, role, content, created_at)
 		 VALUES ($1, $2, $3, $4, $5)`,
 		msg.ID, msg.ConversationID, msg.Role, msg.Content, msg.CreatedAt,
@@ -137,8 +146,7 @@ func (r *AIConversationRepository) AddMessage(ctx context.Context, conversationI
 }
 
 func (r *AIConversationRepository) GetMessages(ctx context.Context, conversationID uuid.UUID) ([]AIMessage, error) {
-	var msgs []AIMessage
-	err := r.db.SelectContext(ctx, &msgs,
+	rows, err := r.db.Query(ctx,
 		`SELECT id, conversation_id, role, content, created_at
 		 FROM ai_messages WHERE conversation_id = $1 ORDER BY created_at ASC`,
 		conversationID,
@@ -146,5 +154,21 @@ func (r *AIConversationRepository) GetMessages(ctx context.Context, conversation
 	if err != nil {
 		return nil, err
 	}
-	return msgs, nil
+	defer rows.Close()
+
+	var msgs []AIMessage
+	for rows.Next() {
+		var m AIMessage
+		if err := rows.Scan(&m.ID, &m.ConversationID, &m.Role, &m.Content, &m.CreatedAt); err != nil {
+			return nil, err
+		}
+		msgs = append(msgs, m)
+	}
+	return msgs, rows.Err()
+}
+
+// DeleteMessagesByConversation removes all messages for a conversation.
+func (r *AIConversationRepository) DeleteMessagesByConversation(ctx context.Context, conversationID uuid.UUID) error {
+	_, err := r.db.Exec(ctx, `DELETE FROM ai_messages WHERE conversation_id = $1`, conversationID)
+	return err
 }

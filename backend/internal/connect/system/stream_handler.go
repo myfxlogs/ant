@@ -1,8 +1,7 @@
-package connect
+package system
 
 import (
 	"context"
-
 	"errors"
 	"fmt"
 	"time"
@@ -10,7 +9,6 @@ import (
 	"go.uber.org/zap"
 
 	"connectrpc.com/connect"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/shopspring/decimal"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -19,19 +17,20 @@ import (
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/mthub"
+	"anttrader/internal/service"
 )
 
 // StreamServer implements the ant.v1.StreamServiceHandler interface.
 type StreamServer struct {
-	svc *mthub.MtHubService
-	pg  *pgxpool.Pool
-	log *zap.Logger
+	svc      *mthub.MtHubService
+	platform *service.PlatformService
+	log      *zap.Logger
 }
 
 var _ antv1c.StreamServiceHandler = (*StreamServer)(nil)
 
-func NewStreamServer(svc *mthub.MtHubService, pg *pgxpool.Pool, log *zap.Logger) *StreamServer {
-	return &StreamServer{svc: svc, pg: pg, log: log}
+func NewStreamServer(svc *mthub.MtHubService, platform *service.PlatformService, log *zap.Logger) *StreamServer {
+	return &StreamServer{svc: svc, platform: platform, log: log}
 }
 
 func decToFloat(d decimal.Decimal) float64 {
@@ -93,7 +92,6 @@ func (s *StreamServer) SubscribeEvents(
 		return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
 	}
 
-	// Subscribe to order events from mthub.
 	orderCh, orderCancel := s.svc.SubscribeUserOrderEvents(ctx, userID)
 	defer orderCancel()
 
@@ -103,7 +101,6 @@ func (s *StreamServer) SubscribeEvents(
 	}
 	filterAll := len(accountSet) == 0
 
-	// Find all accounts for this user and subscribe to profit events.
 	type profitSub struct {
 		accountID string
 		ch        <-chan *mthub.AccountProfitEvent
@@ -116,7 +113,7 @@ func (s *StreamServer) SubscribeEvents(
 		}
 	}()
 
-	accountIDs := loadUserAccountIDs(ctx, s.pg, userID)
+	accountIDs, _ := s.platform.GetUserAccountIDs(ctx, userID)
 	for _, aid := range accountIDs {
 		if !filterAll && !accountSet[aid] {
 			continue
@@ -126,7 +123,6 @@ func (s *StreamServer) SubscribeEvents(
 	}
 
 	if filterAll && len(profitSubs) == 0 {
-		// No accounts — keep the stream alive with periodic keepalive.
 		ticker := time.NewTicker(30 * time.Second)
 		defer ticker.Stop()
 		for {
@@ -138,13 +134,8 @@ func (s *StreamServer) SubscribeEvents(
 		}
 	}
 
-	// Send initial profit + status snapshot from DB so the frontend
-	// has data immediately, even before gateway profit events arrive.
 	connectedIDs := s.sendInitialSnapshot(ctx, stream, userID, accountSet, filterAll)
 
-	// Fetch positions once for connected accounts and stream as a single
-	// position_snapshot per account.  After this, OnOrderUpdate (snapCh)
-	// provides all subsequent real-time position data.
 	for _, aid := range connectedIDs {
 		rpcCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 		orders, err := s.svc.OpenedOrders(rpcCtx, aid)
@@ -170,8 +161,6 @@ func (s *StreamServer) SubscribeEvents(
 		})
 	}
 
-	// Subscribe to position snapshots (full OpenedOrders from OnOrderUpdate stream).
-	// These provide real-time position data with all fields in one event.
 	type snapSub struct {
 		accountID string
 		ch        <-chan *mthub.PositionSnapshot
@@ -191,7 +180,6 @@ func (s *StreamServer) SubscribeEvents(
 		snapSubs = append(snapSubs, snapSub{accountID: aid, ch: ch, cancel: cancel})
 	}
 
-	// Multiplex order events + profit events + snapshots into the SSE stream.
 	profitCh := make(chan *mthub.AccountProfitEvent, 64)
 	for _, ps := range profitSubs {
 		go func(ch <-chan *mthub.AccountProfitEvent) {
@@ -218,7 +206,6 @@ func (s *StreamServer) SubscribeEvents(
 		}(ss.ch)
 	}
 
-	// Track known tickets per account for close detection on full snapshots.
 	snapKnownTickets := make(map[string]map[int64]bool)
 
 	for {
@@ -268,7 +255,6 @@ func (s *StreamServer) SubscribeEvents(
 			}
 			now := timestamppb.Now()
 
-			// Send account_status.
 			stream.Send(&antv1.StreamEvent{
 				Type:      "account_status",
 				AccountId: snap.AccountID,
@@ -281,7 +267,6 @@ func (s *StreamServer) SubscribeEvents(
 				},
 			})
 
-			// Detect closed positions (disappeared from snapshot).
 			currentTickets := make(map[int64]bool, len(snap.Positions))
 			for _, pos := range snap.Positions {
 				currentTickets[pos.Ticket] = true
@@ -306,8 +291,6 @@ func (s *StreamServer) SubscribeEvents(
 			}
 			snapKnownTickets[snap.AccountID] = currentTickets
 
-			// Send ALL positions as a SINGLE position_snapshot event — ticket,
-			// symbol, lots, prices, profit all in one message. No per-position flicker.
 			positions := make([]*antv1.OrderUpdateEvent, 0, len(snap.Positions))
 			for _, pos := range snap.Positions {
 				positions = append(positions, &antv1.OrderUpdateEvent{
@@ -368,9 +351,6 @@ func profitEventToProto(pev *mthub.AccountProfitEvent) *antv1.ProfitUpdateEvent 
 	}
 }
 
-// sendInitialSnapshot queries the DB for current account state and sends
-// profit_update + account_status events to the stream.  Returns the list of
-// connected account IDs so the caller can fetch positions asynchronously.
 func (s *StreamServer) sendInitialSnapshot(
 	ctx context.Context,
 	stream *connect.ServerStream[antv1.StreamEvent],
@@ -378,92 +358,59 @@ func (s *StreamServer) sendInitialSnapshot(
 	accountSet map[string]bool,
 	filterAll bool,
 ) (connectedIDs []string) {
-	rows, err := s.pg.Query(ctx, `
-		SELECT id, account_status, balance, equity, credit, margin, free_margin, margin_level
-		FROM mt_accounts WHERE user_id = $1`, userID)
+	snapshots, err := s.platform.GetUserAccountSnapshots(ctx, userID)
 	if err != nil {
 		return nil
 	}
-	defer rows.Close()
 
 	now := timestamppb.Now()
-	for rows.Next() {
-		var id, status string
-		var balance, equity, credit, margin, freeMargin, marginLevel float64
-		if err := rows.Scan(&id, &status, &balance, &equity, &credit, &margin, &freeMargin, &marginLevel); err != nil {
-			continue
-		}
-		if !filterAll && !accountSet[id] {
+	for _, a := range snapshots {
+		if !filterAll && !accountSet[a.ID] {
 			continue
 		}
 
-		profit := equity - balance
+		profit := a.Equity - a.Balance
 		var profitPercent float64
-		if balance > 0 {
-			profitPercent = profit / balance * 100
+		if a.Balance > 0 {
+			profitPercent = profit / a.Balance * 100
 		}
 
-		// Profit update.
 		stream.Send(&antv1.StreamEvent{
 			Type:      "profit_update",
-			AccountId: id,
+			AccountId: a.ID,
 			Timestamp: now,
 			Payload: &antv1.StreamEvent_ProfitUpdate{
 				ProfitUpdate: &antv1.ProfitUpdateEvent{
-					AccountId:     id,
-					Balance:       balance,
-					Equity:        equity,
+					AccountId:     a.ID,
+					Balance:       a.Balance,
+					Equity:        a.Equity,
 					Profit:        profit,
-					Credit:        credit,
-					Margin:        margin,
-					FreeMargin:    freeMargin,
-					MarginLevel:   marginLevel,
+					Credit:        a.Credit,
+					Margin:        a.Margin,
+					FreeMargin:    a.FreeMargin,
+					MarginLevel:   a.MarginLevel,
 					ProfitPercent: profitPercent,
 				},
 			},
 		})
 
-		// Account status.
 		stream.Send(&antv1.StreamEvent{
 			Type:      "account_status",
-			AccountId: id,
+			AccountId: a.ID,
 			Timestamp: now,
 			Payload: &antv1.StreamEvent_AccountStatus{
 				AccountStatus: &antv1.AccountStatusEvent{
-					AccountId: id,
-					Status:    status,
+					AccountId: a.ID,
+					Status:    a.Status,
 				},
 			},
 		})
 
-		if status == "connected" {
-			connectedIDs = append(connectedIDs, id)
+		if a.Status == "connected" {
+			connectedIDs = append(connectedIDs, a.ID)
 		}
-	}
-	if err := rows.Err(); err != nil {
-		s.log.Warn("sendInitialSnapshot rows iteration error", zap.Error(err))
 	}
 	return connectedIDs
-}
-
-// loadUserAccountIDs queries mt_accounts for all account IDs belonging to a user.
-func loadUserAccountIDs(ctx context.Context, pg *pgxpool.Pool, userID string) []string {
-	rows, err := pg.Query(ctx, `SELECT id FROM mt_accounts WHERE user_id = $1`, userID)
-	if err != nil {
-		return nil
-	}
-	defer rows.Close()
-	var ids []string
-	for rows.Next() {
-		var id string
-		if err := rows.Scan(&id); err == nil {
-			ids = append(ids, id)
-		}
-	}
-	if err := rows.Err(); err != nil {
-		return nil
-	}
-	return ids
 }
 
 // SubscribeHistory replays historical events (bounded).
@@ -523,7 +470,8 @@ func (s *StreamServer) SubscribeProfitUpdates(
 	if accountID == "" {
 		return connect.NewError(connect.CodeInvalidArgument, errors.New("account_id is required"))
 	}
-	if !userOwnsAccount(ctx, s.pg, userID, accountID) {
+	ok, err := s.platform.UserOwnsAccount(ctx, userID, accountID)
+	if err != nil || !ok {
 		return connect.NewError(connect.CodePermissionDenied, errors.New("account does not belong to user"))
 	}
 
@@ -556,11 +504,9 @@ func (s *StreamServer) SubscribeUserSummary(
 		return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
 	}
 
-	// Find all accounts for this user and subscribe to profit events.
-	accountIDs := loadUserAccountIDs(ctx, s.pg, userID)
+	accountIDs, _ := s.platform.GetUserAccountIDs(ctx, userID)
 
-	// Send initial summary from current DB state.
-	if ev := computeSummary(ctx, s.pg, userID); ev != nil {
+	if ev := s.computeSummary(ctx, userID); ev != nil {
 		if err := stream.Send(ev); err != nil {
 			return fmt.Errorf("send initial user summary: %w", err)
 		}
@@ -571,7 +517,6 @@ func (s *StreamServer) SubscribeUserSummary(
 		return nil
 	}
 
-	// Subscribe to profit events for all accounts and recompute summary on each update.
 	profitCh := make(chan *mthub.AccountProfitEvent, len(accountIDs)*2)
 	cancels := make([]func(), 0, len(accountIDs))
 	defer func() {
@@ -602,8 +547,7 @@ func (s *StreamServer) SubscribeUserSummary(
 			if !ok {
 				continue
 			}
-			// Recompute summary from DB on each profit event.
-			if ev := computeSummary(ctx, s.pg, userID); ev != nil {
+			if ev := s.computeSummary(ctx, userID); ev != nil {
 				if err := stream.Send(ev); err != nil {
 					return fmt.Errorf("send recomputed user summary: %w", err)
 				}
@@ -612,51 +556,17 @@ func (s *StreamServer) SubscribeUserSummary(
 	}
 }
 
-func computeSummary(ctx context.Context, pg *pgxpool.Pool, userID string) *antv1.UserSummaryEvent {
-	rows, err := pg.Query(ctx, `
-		SELECT balance, equity, account_status
-		FROM mt_accounts WHERE user_id = $1
-	`, userID)
+func (s *StreamServer) computeSummary(ctx context.Context, userID string) *antv1.UserSummaryEvent {
+	summary, err := s.platform.GetUserAccountsSummary(ctx, userID)
 	if err != nil {
 		return nil
 	}
-	defer rows.Close()
-
-	var totalBalance, totalEquity, totalProfit float64
-	var accountCount, connectedCount int32
-	for rows.Next() {
-		var balance, equity float64
-		var status string
-		if err := rows.Scan(&balance, &equity, &status); err != nil {
-			continue
-		}
-		totalBalance += balance
-		totalEquity += equity
-		totalProfit += equity - balance
-		accountCount++
-		if status == "connected" {
-			connectedCount++
-		}
-	}
-	if err := rows.Err(); err != nil {
-		return nil
-	}
-
 	return &antv1.UserSummaryEvent{
-		TotalBalance:   totalBalance,
-		TotalEquity:    totalEquity,
-		TotalProfit:    totalProfit,
-		AccountCount:   accountCount,
-		ConnectedCount: connectedCount,
+		TotalBalance:   summary.TotalBalance,
+		TotalEquity:    summary.TotalEquity,
+		TotalProfit:    summary.TotalProfit,
+		AccountCount:   summary.AccountCount,
+		ConnectedCount: summary.ConnectedCount,
 		UpdatedAt:      timestamppb.Now(),
 	}
-}
-
-func userOwnsAccount(ctx context.Context, pg *pgxpool.Pool, userID, accountID string) bool {
-	var exists bool
-	err := pg.QueryRow(ctx,
-		`SELECT EXISTS(SELECT 1 FROM mt_accounts WHERE id = $1 AND user_id = $2)`,
-		accountID, userID,
-	).Scan(&exists)
-	return err == nil && exists
 }

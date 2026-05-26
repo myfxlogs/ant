@@ -1,9 +1,8 @@
-package connect
+package user
 
 import (
 	"context"
 	"crypto/rand"
-
 	"crypto/hmac"
 	"encoding/base64"
 	"fmt"
@@ -15,48 +14,50 @@ import (
 	"connectrpc.com/connect"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/crypto/argon2"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
+	"anttrader/internal/model"
+	"anttrader/internal/repository"
 )
 
 // AuthServer implements ant.v1.AuthServiceHandler.
 type AuthServer struct {
-	pg        *pgxpool.Pool
+	users     *repository.UserRepository
 	jwtSecret string
 	log       *zap.Logger
 }
 
 var _ antv1c.AuthServiceHandler = (*AuthServer)(nil)
 
-func NewAuthServer(pg *pgxpool.Pool, jwtSecret string, log *zap.Logger) *AuthServer {
-	return &AuthServer{pg: pg, jwtSecret: jwtSecret, log: log}
+func NewAuthServer(users *repository.UserRepository, jwtSecret string, log *zap.Logger) *AuthServer {
+	return &AuthServer{users: users, jwtSecret: jwtSecret, log: log}
 }
 
 func (s *AuthServer) Login(ctx context.Context, req *connect.Request[antv1.LoginRequest]) (*connect.Response[antv1.LoginResponse], error) {
 	m := req.Msg
-	var id, email, nickname, passwordHash string
-	err := s.pg.QueryRow(ctx,
-		"SELECT id, email, COALESCE(nickname, email), password_hash FROM users WHERE email = $1", m.Email,
-	).Scan(&id, &email, &nickname, &passwordHash)
+	user, err := s.users.GetByEmail(ctx, m.Email)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid credentials"))
 	}
-	if !verifyArgon2id(passwordHash, m.Password) {
+	if !verifyArgon2id(user.PasswordHash, m.Password) {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid credentials"))
 	}
-	token, err := s.issueJWT(id, email)
+	token, err := s.issueJWT(user.ID.String(), m.Email)
 	if err != nil {
 		s.log.Error("Login", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	nickname := m.Email
+	if user.Nickname != nil && *user.Nickname != "" {
+		nickname = *user.Nickname
+	}
 	return connect.NewResponse(&antv1.LoginResponse{
 		AccessToken: token, RefreshToken: token,
-		User: &antv1.User{Id: id, Email: email, Username: nickname},
+		User: &antv1.User{Id: user.ID.String(), Email: user.Email, Username: nickname},
 	}), nil
 }
 
@@ -83,9 +84,15 @@ func (s *AuthServer) RefreshToken(ctx context.Context, req *connect.Request[antv
 	if err != nil {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid refresh token"))
 	}
-	var email string
-	_ = s.pg.QueryRow(ctx, "SELECT email FROM users WHERE id = $1::uuid", claims.UserID).Scan(&email)
-	token, err := s.issueJWT(claims.UserID, email)
+	uid, err := uuid.Parse(claims.UserID)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid token claims"))
+	}
+	user, err := s.users.GetByID(ctx, uid)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("user not found"))
+	}
+	token, err := s.issueJWT(claims.UserID, user.Email)
 	if err != nil {
 		s.log.Error("RefreshToken", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -98,35 +105,56 @@ func (s *AuthServer) GetMe(ctx context.Context, req *connect.Request[emptypb.Emp
 	if userID == "" {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
 	}
-	var email, nickname string
-	_ = s.pg.QueryRow(ctx, "SELECT email, COALESCE(nickname, email) FROM users WHERE id = $1::uuid", userID).Scan(&email, &nickname)
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user id"))
+	}
+	user, err := s.users.GetByID(ctx, uid)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("user not found"))
+	}
+	nickname := user.Email
+	if user.Nickname != nil && *user.Nickname != "" {
+		nickname = *user.Nickname
+	}
 	return connect.NewResponse(&antv1.GetMeResponse{
-		User: &antv1.User{Id: userID, Email: email, Username: nickname},
+		User: &antv1.User{Id: userID, Email: user.Email, Username: nickname},
 	}), nil
 }
 
 func (s *AuthServer) Register(ctx context.Context, req *connect.Request[antv1.RegisterRequest]) (*connect.Response[antv1.RegisterResponse], error) {
 	m := req.Msg
-	id := uuid.New().String()
 	username := m.Username
 	if username == "" {
 		username = m.Email
+	}
+	exists, err := s.users.ExistsByEmail(ctx, m.Email)
+	if err != nil {
+		s.log.Error("Register: check exists", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if exists {
+		return nil, connect.NewError(connect.CodeAlreadyExists, fmt.Errorf("email already registered"))
 	}
 	hash, err := hashArgon2id(m.Password)
 	if err != nil {
 		s.log.Error("Register: hash password", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	_, err = s.pg.Exec(ctx,
-		"INSERT INTO users (id, email, password_hash, nickname) VALUES ($1::uuid, $2, $3, $4)",
-		id, m.Email, hash, username,
-	)
-	if err != nil {
+	nickname := username
+	user := &model.User{
+		Email:        m.Email,
+		PasswordHash: hash,
+		Nickname:     &nickname,
+		Role:         "user",
+		Status:       "active",
+	}
+	if err := s.users.Create(ctx, user); err != nil {
 		s.log.Error("Register", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.RegisterResponse{
-		User: &antv1.User{Id: id, Email: m.Email},
+		User: &antv1.User{Id: user.ID.String(), Email: m.Email},
 	}), nil
 }
 
@@ -153,12 +181,10 @@ func hashArgon2id(password string) (string, error) {
 }
 
 func verifyArgon2id(storedHash, password string) bool {
-	// Parse the stored hash: $argon2id$v=19$m=65536,t=3,p=2$<salt>$<hash>
 	parts := strings.Split(storedHash, "$")
 	if len(parts) < 6 || parts[1] != "argon2id" {
 		return false
 	}
-	// parts[0]="", parts[1]="argon2id", parts[2]="v=19", parts[3]="m=65536,t=3,p=2", parts[4]=salt, parts[5]=hash
 	var memory uint32 = 65536
 	var time uint32 = 3
 	var threads uint8 = 2

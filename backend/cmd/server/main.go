@@ -266,18 +266,25 @@ func main() {
 	mux := http.NewServeMux()
 
 	// ConnectRPC handlers
-	authServer := user.NewAuthServer(pool, jwtSecret, log)
+	// Repositories for handler→service→repository layering (P1-2).
+	userRepo := repository.NewUserRepository(pool)
+	convRepo := repository.NewAIConversationRepository(pool)
+	jobRepo := repository.NewJobRepository(pool)
+	schedHealthRepo := repository.NewScheduleHealthRepository(pool)
+	marketDataRepo := repository.NewMarketDataRepository(ch)
+
+	authServer := user.NewAuthServer(userRepo, jwtSecret, log)
 	mux.Handle(antv1c.NewAuthServiceHandler(authServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	reconLoop := mthub.NewReconciliationLoop(hub, pool, rdb.Client(), log, reconcileGate)
 
-	mthubServer := system.NewMtHubServer(mthubSvc, pool, log)
+	mthubServer := system.NewMtHubServer(mthubSvc, platformSvc, log)
 	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	accountServer := user.NewAccountServer(platformSvc, log)
 	mux.Handle(antv1c.NewAccountServiceHandler(accountServer, connectrpc.WithInterceptors(authInterceptor)))
 
-	mktServer := mktplace.NewMarketServer(platformSvc, ch, nc, log)
+	mktServer := mktplace.NewMarketServer(platformSvc, marketDataRepo, nc, log)
 	mux.Handle(antv1c.NewMarketServiceHandler(mktServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	mktplaceSvc := marketplace.New(pool)
@@ -296,10 +303,10 @@ func main() {
 		aiBox = secretbox.New([]byte(mk))
 	}
 	aiSvc := systemai.NewService(aiRepo, aiBox)
-	aiServer := ai.NewAIServer(aiSvc, pool, log)
+	aiServer := ai.NewAIServer(aiSvc, convRepo, log)
 	mux.Handle(antv1c.NewAIServiceHandler(aiServer, connectrpc.WithInterceptors(authInterceptor)))
 
-	streamServer := system.NewStreamServer(mthubSvc, pool, log)
+	streamServer := system.NewStreamServer(mthubSvc, platformSvc, log)
 	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	strategySvc := service.NewStrategySvc(pool)
@@ -322,7 +329,7 @@ func main() {
 	mux.Handle(antv1c.NewBacktestTradesServiceHandler(backtestTradesServer, connectrpc.WithInterceptors(authInterceptor)))
 	economicDataServer := system.NewEconomicDataServer(log)
 	mux.Handle(antv1c.NewEconomicDataServiceHandler(economicDataServer, connectrpc.WithInterceptors(authInterceptor)))
-	jobServer := system.NewJobServer(pool, log)
+	jobServer := system.NewJobServer(jobRepo, log)
 	mux.Handle(antv1c.NewJobServiceHandler(jobServer, connectrpc.WithInterceptors(authInterceptor)))
 	logServiceServer := system.NewLogServiceServer(logSvc, log)
 	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, connectrpc.WithInterceptors(authInterceptor)))
@@ -367,7 +374,7 @@ func main() {
 	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, connectrpc.WithInterceptors(authInterceptor)))
 	strategyAssetServer := strategy.NewStrategyAssetServer(strategyAssetRepo, log)
 	mux.Handle(antv1c.NewStrategyAssetServiceHandler(strategyAssetServer, connectrpc.WithInterceptors(authInterceptor)))
-	scheduleHealthServer := system.NewScheduleHealthServer(pool, log)
+	scheduleHealthServer := system.NewScheduleHealthServer(schedHealthRepo, log)
 	mux.Handle(antv1c.NewScheduleHealthServiceHandler(scheduleHealthServer, connectrpc.WithInterceptors(authInterceptor)))
 	indicatorCatalogServer := mktplace.NewIndicatorCatalogServer(log)
 	mux.Handle(antv1c.NewIndicatorCatalogServiceHandler(indicatorCatalogServer, connectrpc.WithInterceptors(authInterceptor)))

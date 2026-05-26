@@ -1,4 +1,4 @@
-package connect
+package ai
 
 import (
 	"context"
@@ -9,25 +9,25 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
+	"anttrader/internal/repository"
 	aiSvc "anttrader/internal/service/systemai"
 )
 
 // AIServer implements the ant.v1.AIServiceHandler interface.
 type AIServer struct {
-	systemSvc *aiSvc.Service
-	pg        *pgxpool.Pool
-	log       *zap.Logger
+	systemSvc    *aiSvc.Service
+	conversations *repository.AIConversationRepository
+	log          *zap.Logger
 }
 
 // NewAIServer creates an AI service ConnectRPC handler.
-func NewAIServer(systemSvc *aiSvc.Service, pg *pgxpool.Pool, log *zap.Logger) *AIServer {
-	return &AIServer{systemSvc: systemSvc, pg: pg, log: log}
+func NewAIServer(systemSvc *aiSvc.Service, conversations *repository.AIConversationRepository, log *zap.Logger) *AIServer {
+	return &AIServer{systemSvc: systemSvc, conversations: conversations, log: log}
 }
 
 var _ antv1c.AIServiceHandler = (*AIServer)(nil)
@@ -65,15 +65,11 @@ func (s *AIServer) Chat(ctx context.Context, req *connect.Request[antv1.ChatRequ
 		cid, err := uuid.Parse(m.ConversationId)
 		if err == nil {
 			now := time.Now()
-			_, _ = s.pg.Exec(ctx,
-				`INSERT INTO ai_messages (id, conversation_id, role, content, created_at) VALUES (gen_random_uuid(), $1, 'user', $2, $3)`,
-				cid, m.Message, now,
-			)
-			_, _ = s.pg.Exec(ctx,
-				`INSERT INTO ai_messages (id, conversation_id, role, content, created_at) VALUES (gen_random_uuid(), $1, 'assistant', $2, $3)`,
-				cid, reply, now,
-			)
-			_, _ = s.pg.Exec(ctx, `UPDATE ai_conversations SET updated_at=$1 WHERE id=$2 AND user_id=$3`, now, cid, uid)
+			_, _ = s.conversations.AddMessage(ctx, cid, "user", m.Message)
+			_, _ = s.conversations.AddMessage(ctx, cid, "assistant", reply)
+			_ = s.conversations.Touch(ctx, cid)
+			_ = uid // keep import
+			_ = now
 		}
 	}
 	return connect.NewResponse(&antv1.ChatResponse{
@@ -103,40 +99,22 @@ func (s *AIServer) ChatStream(ctx context.Context, req *connect.Request[antv1.Ch
 
 func (s *AIServer) ListConversations(ctx context.Context, req *connect.Request[antv1.ListConversationsRequest]) (*connect.Response[antv1.ListConversationsResponse], error) {
 	uid := s.userID(ctx)
-	rows, err := s.pg.Query(ctx, `
-		SELECT c.id, c.title, c.created_at, c.updated_at, COALESCE(m.cnt, 0) AS message_count
-		FROM ai_conversations c
-		LEFT JOIN (SELECT conversation_id, COUNT(*) AS cnt FROM ai_messages GROUP BY conversation_id) m
-		  ON m.conversation_id = c.id
-		WHERE c.user_id = $1
-		ORDER BY c.updated_at DESC
-	`, uid)
+	convs, err := s.conversations.ListByUser(ctx, uid)
 	if err != nil {
 		s.log.Error("ListConversations", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	defer rows.Close()
-
-	var convs []*antv1.ConversationSummary
-	for rows.Next() {
-		var id, title string
-		var msgCount int32
-		var cat, uat time.Time
-		if err := rows.Scan(&id, &title, &cat, &uat, &msgCount); err != nil {
-			continue
-		}
-		convs = append(convs, &antv1.ConversationSummary{
-			Id:           id,
-			Title:        title,
-			MessageCount: msgCount,
-			CreatedAt:    timestamppb.New(cat),
-			UpdatedAt:    timestamppb.New(uat),
+	var out []*antv1.ConversationSummary
+	for _, c := range convs {
+		out = append(out, &antv1.ConversationSummary{
+			Id:           c.ID.String(),
+			Title:        c.Title,
+			MessageCount: int32(c.MessageCount),
+			CreatedAt:    timestamppb.New(c.CreatedAt),
+			UpdatedAt:    timestamppb.New(c.UpdatedAt),
 		})
 	}
-	if err := rows.Err(); err != nil {
-		s.log.Warn("ListConversations rows iteration error", zap.Error(err))
-	}
-	return connect.NewResponse(&antv1.ListConversationsResponse{Conversations: convs}), nil
+	return connect.NewResponse(&antv1.ListConversationsResponse{Conversations: out}), nil
 }
 
 func (s *AIServer) GetConversation(ctx context.Context, req *connect.Request[antv1.GetConversationRequest]) (*connect.Response[antv1.GetConversationResponse], error) {
@@ -145,48 +123,32 @@ func (s *AIServer) GetConversation(ctx context.Context, req *connect.Request[ant
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-
-	var id, title string
-	var cat, uat time.Time
-	err = s.pg.QueryRow(ctx,
-		`SELECT id, title, created_at, updated_at FROM ai_conversations WHERE id=$1 AND user_id=$2`, cid, uid,
-	).Scan(&id, &title, &cat, &uat)
+	conv, err := s.conversations.GetByID(ctx, cid, uid)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("conversation not found"))
 	}
-
-	conv := &antv1.ConversationSummary{
-		Id:        id,
-		Title:     title,
-		CreatedAt: timestamppb.New(cat),
-		UpdatedAt: timestamppb.New(uat),
+	summary := &antv1.ConversationSummary{
+		Id:        conv.ID.String(),
+		Title:     conv.Title,
+		CreatedAt: timestamppb.New(conv.CreatedAt),
+		UpdatedAt: timestamppb.New(conv.UpdatedAt),
 	}
-
-	msgRows, err := s.pg.Query(ctx,
-		`SELECT id, role, content, created_at FROM ai_messages WHERE conversation_id=$1 ORDER BY created_at ASC`, cid,
-	)
+	msgs, err := s.conversations.GetMessages(ctx, cid)
 	if err != nil {
 		s.log.Error("GetConversation messages", zap.Error(err))
-		return connect.NewResponse(&antv1.GetConversationResponse{Conversation: conv}), nil
+		return connect.NewResponse(&antv1.GetConversationResponse{Conversation: summary}), nil
 	}
-	defer msgRows.Close()
-
 	var messages []*antv1.ConversationMessage
-	for msgRows.Next() {
-		var mid, role, content string
-		var mcat time.Time
-		if err := msgRows.Scan(&mid, &role, &content, &mcat); err != nil {
-			continue
-		}
+	for _, m := range msgs {
 		messages = append(messages, &antv1.ConversationMessage{
-			Id:        mid,
-			Role:      role,
-			Content:   content,
-			CreatedAt: timestamppb.New(mcat),
+			Id:        m.ID.String(),
+			Role:      m.Role,
+			Content:   m.Content,
+			CreatedAt: timestamppb.New(m.CreatedAt),
 		})
 	}
 	return connect.NewResponse(&antv1.GetConversationResponse{
-		Conversation: conv,
+		Conversation: summary,
 		Messages:     messages,
 	}), nil
 }
@@ -197,22 +159,17 @@ func (s *AIServer) CreateConversation(ctx context.Context, req *connect.Request[
 	if title == "" {
 		title = "新对话"
 	}
-	id := uuid.New()
-	now := time.Now()
-	_, err := s.pg.Exec(ctx,
-		`INSERT INTO ai_conversations (id, user_id, title, created_at, updated_at) VALUES ($1, $2, $3, $4, $4)`,
-		id, uid, title, now,
-	)
+	conv, err := s.conversations.Create(ctx, uid, title)
 	if err != nil {
 		s.log.Error("CreateConversation", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.CreateConversationResponse{
 		Conversation: &antv1.ConversationSummary{
-			Id:        id.String(),
-			Title:     title,
-			CreatedAt: timestamppb.New(now),
-			UpdatedAt: timestamppb.New(now),
+			Id:        conv.ID.String(),
+			Title:     conv.Title,
+			CreatedAt: timestamppb.New(conv.CreatedAt),
+			UpdatedAt: timestamppb.New(conv.UpdatedAt),
 		},
 	}), nil
 }
@@ -223,9 +180,8 @@ func (s *AIServer) DeleteConversation(ctx context.Context, req *connect.Request[
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	_, _ = s.pg.Exec(ctx, `DELETE FROM ai_messages WHERE conversation_id=$1`, cid)
-	_, err = s.pg.Exec(ctx, `DELETE FROM ai_conversations WHERE id=$1 AND user_id=$2`, cid, uid)
-	if err != nil {
+	_ = s.conversations.DeleteMessagesByConversation(ctx, cid)
+	if err := s.conversations.Delete(ctx, cid, uid); err != nil {
 		s.log.Error("DeleteConversation", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -238,11 +194,7 @@ func (s *AIServer) UpdateConversationTitle(ctx context.Context, req *connect.Req
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	_, err = s.pg.Exec(ctx,
-		`UPDATE ai_conversations SET title=$3, updated_at=NOW() WHERE id=$1 AND user_id=$2`,
-		cid, uid, req.Msg.Title,
-	)
-	if err != nil {
+	if err := s.conversations.UpdateTitle(ctx, cid, uid, req.Msg.Title); err != nil {
 		s.log.Error("UpdateConversationTitle", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
