@@ -1,0 +1,68 @@
+name: CI Nightly
+
+on:
+  schedule:
+    - cron: '37 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  # ── Full test + coverage (no -short) ──
+  nightly-test:
+    name: Full test + coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: ant
+          POSTGRES_PASSWORD: ant_test
+          POSTGRES_DB: ant
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U ant -d ant"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.0'
+          cache: true
+          cache-dependency-path: backend/go.sum
+      - name: go test (full)
+        run: go test ./... -count=1 -race -coverprofile=coverage.out -covermode=atomic
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: ant
+          DB_PASSWORD: ant_test
+          DB_NAME: ant
+      - name: Coverage summary
+        run: |
+          go tool cover -func=coverage.out | tail -1
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: backend/coverage.out
+          flags: nightly
+          fail_ci_if_error: false
+
+  # ── Data foundation checks ──
+  nightly-data-check:
+    name: Data foundation (md-doctor + slo-report)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.0'
+          cache: true
+          cache-dependency-path: backend/go.sum
+      - name: ci-nightly
+        run: make ci-nightly

@@ -136,6 +136,7 @@ func main() {
 	}
 
 	authInterceptor := interceptor.NewAuthInterceptor(jwtSecret, nil)
+	rateLimitInterceptor := interceptor.NewRateLimitInterceptor(cfg.RateLimitLoginPerMinute, cfg.RateLimitEnabled)
 
 	hub := mthub.NewHub()
 	eventBroker := mthub.NewOrderEventBroker()
@@ -272,7 +273,7 @@ func main() {
 	marketDataRepo := repository.NewMarketDataRepository(ch)
 
 	authServer := user.NewAuthServer(userRepo, jwtSecret, log)
-	mux.Handle(antv1c.NewAuthServiceHandler(authServer, connectrpc.WithInterceptors(authInterceptor)))
+	mux.Handle(antv1c.NewAuthServiceHandler(authServer, connectrpc.WithInterceptors(rateLimitInterceptor, authInterceptor)))
 
 	reconLoop := mthub.NewReconciliationLoop(hub, pool, rdb.Client(), log, reconcileGate)
 

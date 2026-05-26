@@ -1,0 +1,67 @@
+=== P2: 工程化升级 ===
+Card: REMEDIATION-2026-05-26 P2
+Date: 2026-05-26
+Status: ☑
+
+--- P2-1: CI 覆盖率门控 ---
+AC1: ci.yml backend-test 加 -coverprofile ✓
+AC2: codecov.yml 60% target (informational) ✓
+AC3: ci-nightly.yml 完整测试 + coverage 上传 ✓
+AC4: Makefile coverage/coverage-html targets ✓
+
+--- P2-2: 安全扫描 ---
+AC1: security-scan.yml (gosec + trivy-fs + trivy-image) ✓
+AC2: dependabot.yml (Go + npm + Docker, weekly) ✓
+AC3: .trivyignore 预留 ✓
+AC4: Makefile security-scan target ✓
+
+--- P2-3: verify-cards-strict CI 化 ---
+AC1: ci.yml verify-cards-strict job (detect-all + verify-cards-strict M11) ✓
+
+--- P2-4: 架构总览文档 ---
+AC1: docs/spec/00-architecture-overview.md (207 行) ✓
+AC2: Mermaid graph TB 数据流图 (7 层 + 存储) ✓
+AC3: 数据所有权矩阵 (Platform Shared vs User Private) ✓
+
+--- P2-5: PostgreSQL Schema 目录 ---
+AC1: docs/spec/09-postgres-schema-catalog.md (957 行) ✓
+AC2: 覆盖全部 88 个 migration, 82 张表, 13 个域 ✓
+AC3: 13-clickhouse-schema.md 交叉引用 ✓
+
+--- P2-6: 登录速率限制 ---
+AC1: internal/interceptor/ratelimit.go ✓
+AC2: RateLimitLoginPerMinute (default 10) + RateLimitEnabled (default true) ✓
+AC3: cmd/server/main.go 引入 rateLimitInterceptor ✓
+AC4: 9 个单元测试全部通过 ✓
+
+--- Verification ---
+$ go build ./...    (pass)
+$ go vet ./...      (pass)
+$ go test ./internal/config/... ./internal/interceptor/... ./internal/service/... -race
+ok  anttrader/internal/config      1.036s
+ok  anttrader/internal/interceptor 1.048s
+ok  anttrader/internal/service     1.033s
+
+$ make -C /opt/ant detect-all
+(detect-stubs: 9 pre-existing hits from P0-3/P0-4/admin — no regression)
+(all other checks pass)
+
+--- Files changed ---
+New (9):
+  .github/workflows/ci-nightly.yml
+  .github/workflows/security-scan.yml
+  .github/dependabot.yml
+  codecov.yml
+  .trivyignore
+  docs/spec/00-architecture-overview.md
+  docs/spec/09-postgres-schema-catalog.md
+  internal/interceptor/ratelimit.go
+  internal/interceptor/ratelimit_test.go
+
+Modified (6):
+  .github/workflows/ci.yml            (+coverage, +verify-cards-strict job)
+  Makefile                            (+coverage, +security-scan targets, fix run target)
+  cmd/server/main.go                  (+rateLimitInterceptor)
+  internal/config/config.go           (+rate limit fields + getenvInt)
+  internal/config/config_test.go      (+rate limit assertions)
+  docs/spec/13-clickhouse-schema.md   (+cross-reference to PG catalog)

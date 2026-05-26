@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/nats-io/nats.go"
 )
@@ -45,6 +46,10 @@ type Config struct {
 	SpillDir    string
 	GeoIPDBPath string
 
+	// Rate limiting
+	RateLimitLoginPerMinute int
+	RateLimitEnabled        bool
+
 	// Jurisdictional gate flags
 	RequireKYC           bool
 	RequireDisclaimer    bool
@@ -83,6 +88,9 @@ func Load() *Config {
 		RequireKYC:           getenvBool("REQUIRE_KYC", false),
 		RequireDisclaimer:    getenvBool("REQUIRE_DISCLAIMER", false),
 		RequireQuestionnaire: getenvBool("REQUIRE_QUESTIONNAIRE", false),
+
+		RateLimitLoginPerMinute: getenvInt("RATE_LIMIT_LOGIN_PER_MINUTE", 10),
+		RateLimitEnabled:        getenvBool("RATE_LIMIT_ENABLED", true),
 	}
 }
 
@@ -107,4 +115,16 @@ func getenvBool(key string, fallback bool) bool {
 		return fallback
 	}
 	return v == "true" || v == "1" || v == "yes"
+}
+
+func getenvInt(key string, fallback int) int {
+	v := os.Getenv(key)
+	if v == "" {
+		return fallback
+	}
+	n, err := strconv.Atoi(v)
+	if err != nil {
+		return fallback
+	}
+	return n
 }

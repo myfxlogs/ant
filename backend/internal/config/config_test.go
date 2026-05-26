@@ -39,6 +39,9 @@ func TestLoadDefaults(t *testing.T) {
 	assert.False(t, cfg.RequireKYC)
 	assert.False(t, cfg.RequireDisclaimer)
 	assert.False(t, cfg.RequireQuestionnaire)
+
+	assert.Equal(t, 10, cfg.RateLimitLoginPerMinute)
+	assert.True(t, cfg.RateLimitEnabled)
 }
 
 func TestLoadFromEnv(t *testing.T) {
@@ -66,6 +69,9 @@ func TestLoadFromEnv(t *testing.T) {
 	t.Setenv("PORT", "9090")
 	t.Setenv("SPILL_DIR", "/tmp/spill")
 	t.Setenv("GEOIP_DB_PATH", "/opt/geoip/custom.mmdb")
+
+	t.Setenv("RATE_LIMIT_LOGIN_PER_MINUTE", "20")
+	t.Setenv("RATE_LIMIT_ENABLED", "false")
 
 	t.Setenv("REQUIRE_KYC", "true")
 	t.Setenv("REQUIRE_DISCLAIMER", "1")
@@ -101,6 +107,9 @@ func TestLoadFromEnv(t *testing.T) {
 	assert.True(t, cfg.RequireKYC)
 	assert.True(t, cfg.RequireDisclaimer)
 	assert.True(t, cfg.RequireQuestionnaire)
+
+	assert.Equal(t, 20, cfg.RateLimitLoginPerMinute)
+	assert.False(t, cfg.RateLimitEnabled)
 }
 
 func TestValidateMissingJWT(t *testing.T) {

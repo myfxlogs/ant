@@ -1,0 +1,4 @@
+# Known false positives and accepted risks for trivy scanning.
+# Add entries as CVE-YYYY-NNNNN or package@version patterns.
+# Example:
+# CVE-2024-9999    # Accepted: libfoo fixed in next base image

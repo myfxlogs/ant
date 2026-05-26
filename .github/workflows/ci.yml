@@ -78,13 +78,19 @@ jobs:
           cache: true
           cache-dependency-path: backend/go.sum
       - name: go test
-        run: go test ./... -count=1 -race -short
+        run: go test ./... -count=1 -race -short -coverprofile=coverage.out -covermode=atomic
         env:
           DB_HOST: localhost
           DB_PORT: 5432
           DB_USER: ant
           DB_PASSWORD: ant_test
           DB_NAME: ant
+      - name: Coverage summary
+        run: |
+          echo "=== Coverage Summary ==="
+          go tool cover -func=coverage.out | tail -1
+          COV=$(go tool cover -func=coverage.out | tail -1 | awk '{print $3}' | sed 's/%//')
+          echo "Overall coverage: ${COV}%"
       - name: go build
         run: go build ./...
       - name: go build cmd/server
@@ -192,3 +198,17 @@ jobs:
           fi
       - name: Build
         run: npm run build
+
+  # ── P2-3: verify-cards-strict + R0 five-piece ──
+  verify-cards-strict:
+    name: Card verification (strict)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: R0 five-piece suite
+        run: make detect-all
+      - name: verify-cards-strict (M11)
+        run: make verify-cards-strict MILESTONE=M11

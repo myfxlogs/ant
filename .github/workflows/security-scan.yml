@@ -1,0 +1,77 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+jobs:
+  # ── gosec standalone (Go security analyzer) ──
+  gosec:
+    name: gosec
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.0'
+          cache: true
+          cache-dependency-path: backend/go.sum
+      - name: Install gosec
+        run: go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
+      - name: Run gosec
+        run: gosec -quiet -severity medium ./...
+
+  # ── trivy filesystem scan ──
+  trivy-fs:
+    name: trivy (filesystem)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run trivy fs scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: backend/
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          exit-code: 1
+
+  # ── trivy Docker image scan (main push only) ──
+  trivy-image:
+    name: trivy (Docker images)
+    if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        image:
+          - backend/Dockerfile
+          - frontend/Dockerfile
+          - strategy-service/Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          file: ${{ matrix.image }}
+          push: false
+          load: true
+          tags: ant-image:${{ matrix.image }}
+      - name: Run trivy image scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: image
+          image-ref: ant-image:${{ matrix.image }}
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          exit-code: 1

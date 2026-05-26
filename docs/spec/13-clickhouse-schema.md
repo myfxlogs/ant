@@ -304,6 +304,8 @@ ORDER BY ticks DESC;
 
 ## 4. PG 业务表配套（v2 仅新增）
 
+> 完整的 PostgreSQL 表目录见 [09-postgres-schema-catalog.md](09-postgres-schema-catalog.md)。
+
 ### 4.1 `mt_accounts`（v1 已存在，v2 仅新增字段）
 
 ant v1 的 `mt_accounts` 字段如下（来自 `migrations/001_init.up.sql`）：

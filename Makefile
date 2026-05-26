@@ -12,11 +12,28 @@ build:
 
 run:
 	@echo "Running $(APP_NAME)..."
-	@cd backend && go run ./$(CMD_DIR) -config configs/config.yaml
+	@cd backend && go run ./$(CMD_DIR)
 
 test:
 	@echo "Running tests..."
 	@cd backend && go test -v ./...
+
+coverage:
+	@echo "Running tests with coverage..."
+	@cd backend && go test -count=1 -race -short -coverprofile=coverage.out -covermode=atomic ./...
+	@cd backend && go tool cover -func=coverage.out | tail -1
+
+coverage-html:
+	@echo "Generating coverage HTML report..."
+	@cd backend && go test -count=1 -race -short -coverprofile=coverage.out -covermode=atomic ./...
+	@cd backend && go tool cover -html=coverage.out -o coverage.html
+	@echo "Coverage report: backend/coverage.html"
+
+security-scan:
+	@echo "=== gosec ==="
+	@cd backend && gosec -quiet -severity medium ./... || echo "gosec: WARNING (install: go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest)"
+	@echo "=== trivy fs ==="
+	@trivy fs --severity HIGH,CRITICAL --scanners vuln ./backend 2>&1 || echo "trivy: WARNING (install: https://aquasecurity.github.io/trivy/)"
 
 clean:
 	@echo "Cleaning..."
@@ -255,6 +272,9 @@ ci-nightly:
 help:
 	@echo "ant Makefile targets:"
 	@echo "  ci-nightly     run md-doctor + slo-report (daily cron)"
+	@echo "  coverage       run tests with coverage summary"
+	@echo "  coverage-html  generate coverage HTML report"
+	@echo "  security-scan  run gosec + trivy filesystem scan"
 	@echo "  build          compile backend binary"
 	@echo "  test           run all tests"
 	@echo "  migrate        run PostgreSQL migrations"
