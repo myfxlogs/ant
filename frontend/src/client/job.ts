@@ -1,5 +1,5 @@
 import { jobClient, jobStreamClient } from './connect';
-import type { Job, JobEvent } from '../gen/job_pb';
+import type { Job, JobEvent } from '../gen/ant/v1/job_pb';
 
 export type { Job, JobEvent };
 

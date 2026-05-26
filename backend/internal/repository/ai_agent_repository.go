@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -68,12 +69,12 @@ func (r *AIAgentDefinitionRepository) ListByUser(ctx context.Context, userID uui
 func (r *AIAgentDefinitionRepository) ReplaceByUser(ctx context.Context, userID uuid.UUID, agents []*AIAgentDefinitionRow) error {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("replace agent definitions: %w", err)
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 
 	if _, err := tx.Exec(ctx, `DELETE FROM ai_agent_definitions WHERE user_id = $1`, userID); err != nil {
-		return err
+		return fmt.Errorf("replace agent definitions: %w", err)
 	}
 	for _, a := range agents {
 		id := a.ID
@@ -88,7 +89,7 @@ func (r *AIAgentDefinitionRepository) ReplaceByUser(ctx context.Context, userID 
 			id, userID, a.AgentKey, a.Type, a.Name, a.Identity, a.InputHint,
 			a.Enabled, a.Position, a.ProviderID, a.ModelOverride,
 		); err != nil {
-			return err
+			return fmt.Errorf("replace agent definitions: %w", err)
 		}
 	}
 	return tx.Commit(ctx)

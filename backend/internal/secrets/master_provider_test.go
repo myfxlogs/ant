@@ -27,9 +27,24 @@ func TestEnvMasterKey_Valid(t *testing.T) {
 }
 
 func TestEnvMasterKey_Rotate(t *testing.T) {
-	_, _, err := secrets.EnvMasterKey{}.Rotate(context.Background())
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "rotate not supported")
+	// L-3: EnvMasterKey.Rotate now generates and persists a new key.
+	key, err := secrets.GenerateMasterKey()
+	assert.NoError(t, err)
+	t.Setenv("ANT_MASTER_KEY", key)
+
+	// Use a temp dir for key persistence.
+	keyDir := t.TempDir()
+	t.Setenv("ANT_KEY_DIR", keyDir)
+
+	newVer, newKey, err := secrets.EnvMasterKey{}.Rotate(context.Background())
+	assert.NoError(t, err)
+	assert.GreaterOrEqual(t, newVer, uint8(2)) // first rotation = v2
+	assert.Len(t, newKey, 32)
+
+	// Verify the key file was written.
+	files, _ := os.ReadDir(keyDir)
+	assert.GreaterOrEqual(t, len(files), 1)
+	t.Logf("Rotate: version=%d, key_files=%d", newVer, len(files))
 }
 
 func TestFileMasterKey_NotSet(t *testing.T) {

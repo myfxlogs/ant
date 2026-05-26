@@ -83,18 +83,21 @@ func (s *SpillWriter) write(e spillEntry) error {
 
 	if s.cur == nil || s.shouldRotate() {
 		if err := s.rotate(); err != nil {
-			return err
+			return fmt.Errorf("rotate spill file: %w", err)
 		}
 	}
 
 	data, err := json.Marshal(e)
 	if err != nil {
-		return err
+		return fmt.Errorf("marshal spill entry: %w", err)
 	}
 	data = append(data, '\n')
 	n, err := s.cur.Write(data)
+	if err != nil {
+		return fmt.Errorf("write spill entry to file: %w", err)
+	}
 	s.curBytes += int64(n)
-	return err
+	return nil
 }
 
 func (s *SpillWriter) shouldRotate() bool {
@@ -106,14 +109,14 @@ func (s *SpillWriter) rotate() error {
 	if s.cur != nil {
 		s.cur.Close()
 	}
-	fname := filepath.Join(s.cfg.Dir, fmt.Sprintf("spill-%d.jsonl", time.Now().UnixMilli()))
+	fname := filepath.Join(s.cfg.Dir, fmt.Sprintf("spill-%d.jsonl", Clk.Now().UnixMilli()))
 	f, err := os.Create(fname)
 	if err != nil {
 		return fmt.Errorf("spill: create %s: %w", fname, err)
 	}
 	s.cur = f
 	s.curBytes = 0
-	s.curStart = time.Now()
+	s.curStart = Clk.Now()
 	s.log.Info("spill: rotated", zap.String("file", fname))
 	return nil
 }
@@ -123,7 +126,7 @@ func (s *SpillWriter) Close() error {
 	defer s.mu.Unlock()
 	if s.cur != nil {
 		if err := s.cur.Close(); err != nil {
-			return err
+			return fmt.Errorf("close spill file: %w", err)
 		}
 		s.cur = nil
 	}

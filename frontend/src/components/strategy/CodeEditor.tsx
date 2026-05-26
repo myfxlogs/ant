@@ -53,12 +53,12 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code: controlledCode, onCodeCha
 
   const loadAccounts = useCallback(async () => {
     try {
-      const data = await accountApi.list() as any[];
-      const accountList = (data || []).map((a: any) => ({
+      const data = await accountApi.list() as Account[];
+      const accountList = (data || []).map((a: Account) => ({
         id: a.id,
         login: a.login,
-		mtType: a.mtType || a.mtType,
-		isDisabled: !!a.isDisabled,
+        mtType: a.mtType,
+        isDisabled: !!a.isDisabled,
       }));
       setAccounts(accountList);
     } catch (error) {
@@ -78,7 +78,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code: controlledCode, onCodeCha
       const list = await marketApi.getSymbols(accountId);
       const seen = new Set<string>();
       const opts = (list || [])
-        .map((s) => String((s as any)?.symbol || '').trim())
+        .map((s: { symbol?: unknown }) => String(s?.symbol || '').trim())
         .filter((v) => v)
         .filter((v) => {
           if (seen.has(v)) return false;
@@ -299,8 +299,8 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code: controlledCode, onCodeCha
               disabled={!selectedAccount || symbolsLoading}
               optionFilterProp="label"
               filterOption={(input, option) => {
-                const key = String((option as any)?.value || '').toLowerCase();
-                const label = String((option as any)?.label || '').toLowerCase();
+                const key = String(option?.value || '').toLowerCase();
+                const label = String(option?.label || '').toLowerCase();
                 const q = input.toLowerCase();
                 return key.includes(q) || label.includes(q);
               }}

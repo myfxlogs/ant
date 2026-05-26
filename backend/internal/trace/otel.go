@@ -51,6 +51,26 @@ func New() *Tracer {
 	return &Tracer{provider: provider, enabled: true}
 }
 
+// NewWithProvider creates a tracer backed by a user-supplied TracerProvider.
+// Use this for testing with tracetest.InMemoryExporter or custom sampling.
+// L-2: enables e2e verification of pipeline spans without an external collector.
+func NewWithProvider(provider *sdktrace.TracerProvider) *Tracer {
+	if provider == nil {
+		return &Tracer{enabled: false}
+	}
+	otel.SetTracerProvider(provider)
+	otel.SetTextMapPropagator(propagation.TraceContext{})
+	return &Tracer{provider: provider, enabled: true}
+}
+
+// ForceFlush flushes all pending spans to the exporter. For testing.
+func (t *Tracer) ForceFlush(ctx context.Context) error {
+	if t.provider != nil {
+		return t.provider.ForceFlush(ctx)
+	}
+	return nil
+}
+
 // StartSpan begins a new span. If disabled, returns a no-op span.
 func (t *Tracer) StartSpan(ctx context.Context, name string) (context.Context, *Span) {
 	if !t.enabled {

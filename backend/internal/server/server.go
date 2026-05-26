@@ -5,21 +5,18 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"go.uber.org/zap"
 )
 
-// Run starts the ant v2 HTTP server and blocks until SIGTERM.
+// Run starts the ant v2 HTTP server and blocks until ctx is cancelled or a listen error occurs.
 func Run(ctx context.Context, mux *http.ServeMux, port string, log *zap.Logger) error {
 	srv := &http.Server{
 		Addr:         ":" + port,
 		Handler:      mux,
 		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 30 * time.Second,
+		WriteTimeout: 0, // disabled: streaming endpoints (SSE/ConnectRPC server-stream) hold writes open indefinitely
 		IdleTimeout:  120 * time.Second,
 	}
 
@@ -31,14 +28,9 @@ func Run(ctx context.Context, mux *http.ServeMux, port string, log *zap.Logger) 
 		}
 	}()
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-
 	select {
 	case err := <-errCh:
 		return fmt.Errorf("server: listen: %w", err)
-	case <-quit:
-		log.Info("shutting down...")
 	case <-ctx.Done():
 		log.Info("context cancelled, shutting down...")
 	}

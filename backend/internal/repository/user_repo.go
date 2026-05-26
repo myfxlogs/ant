@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -102,13 +103,19 @@ func (r *UserRepository) Update(ctx context.Context, user *model.User) error {
 func (r *UserRepository) UpdateLastLogin(ctx context.Context, id uuid.UUID) error {
 	query := `UPDATE users SET last_login_at = $2 WHERE id = $1`
 	_, err := r.db.Exec(ctx, query, id, time.Now())
-	return err
+	if err != nil {
+		return fmt.Errorf("update last login: %w", err)
+	}
+	return nil
 }
 
 func (r *UserRepository) UpdatePassword(ctx context.Context, id uuid.UUID, passwordHash string) error {
 	query := `UPDATE users SET password_hash = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1`
 	_, err := r.db.Exec(ctx, query, id, passwordHash)
-	return err
+	if err != nil {
+		return fmt.Errorf("update password: %w", err)
+	}
+	return nil
 }
 
 // GetAIPrimary 读取用户在 /ai/settings 选定的「默认主模型」。
@@ -123,7 +130,10 @@ func (r *UserRepository) GetAIPrimary(ctx context.Context, id uuid.UUID) (provid
 func (r *UserRepository) SetAIPrimary(ctx context.Context, id uuid.UUID, providerID, model string) error {
 	const q = `UPDATE users SET ai_primary_provider_id = $2, ai_primary_model = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $1`
 	_, err := r.db.Exec(ctx, q, id, providerID, model)
-	return err
+	if err != nil {
+		return fmt.Errorf("set ai primary: %w", err)
+	}
+	return nil
 }
 
 func (r *UserRepository) ExistsByEmail(ctx context.Context, email string) (bool, error) {

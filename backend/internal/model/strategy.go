@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -127,7 +128,7 @@ func (s *Strategy) GetConditions() ([]StrategyCondition, error) {
 func (s *Strategy) SetConditions(conditions []StrategyCondition) error {
 	data, err := json.Marshal(conditions)
 	if err != nil {
-		return err
+		return fmt.Errorf("marshal strategy conditions: %w", err)
 	}
 	s.Conditions = data
 	return nil
@@ -147,7 +148,7 @@ func (s *Strategy) GetActions() ([]StrategyAction, error) {
 func (s *Strategy) SetActions(actions []StrategyAction) error {
 	data, err := json.Marshal(actions)
 	if err != nil {
-		return err
+		return fmt.Errorf("marshal strategy actions: %w", err)
 	}
 	s.Actions = data
 	return nil
@@ -171,7 +172,7 @@ func (s *Strategy) SetRiskControl(rc *RiskControl) error {
 	}
 	data, err := json.Marshal(rc)
 	if err != nil {
-		return err
+		return fmt.Errorf("marshal risk control: %w", err)
 	}
 	s.RiskControl = data
 	return nil

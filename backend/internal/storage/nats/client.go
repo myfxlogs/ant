@@ -121,7 +121,7 @@ func (c *Client) EnsureStream(ctx context.Context, sc StreamConfig) error {
 func (c *Client) EnsureAllStreams(ctx context.Context) error {
 	for _, sc := range MDStreams() {
 		if err := c.EnsureStream(ctx, sc); err != nil {
-			return err
+			return fmt.Errorf("ensure stream %s: %w", sc.Name, err)
 		}
 	}
 	return nil

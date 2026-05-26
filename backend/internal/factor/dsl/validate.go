@@ -55,7 +55,7 @@ func validateNode(node Node, fields, factors map[string]bool) error {
 		}
 		for _, arg := range n.Args {
 			if err := validateNode(arg, fields, factors); err != nil {
-				return err
+				return fmt.Errorf("validate call argument: %w", err)
 			}
 		}
 	case *FactorRef:
@@ -64,17 +64,17 @@ func validateNode(node Node, fields, factors map[string]bool) error {
 		}
 	case *BinaryExpr:
 		if err := validateNode(n.Left, fields, factors); err != nil {
-			return err
+			return fmt.Errorf("validate binary left operand: %w", err)
 		}
 		return validateNode(n.Right, fields, factors)
 	case *UnaryExpr:
 		return validateNode(n.Expr, fields, factors)
 	case *TernaryExpr:
 		if err := validateNode(n.Cond, fields, factors); err != nil {
-			return err
+			return fmt.Errorf("validate ternary condition: %w", err)
 		}
 		if err := validateNode(n.True, fields, factors); err != nil {
-			return err
+			return fmt.Errorf("validate ternary true branch: %w", err)
 		}
 		return validateNode(n.False, fields, factors)
 	}

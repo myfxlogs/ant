@@ -12,27 +12,32 @@ interface ChatBoxProps {
 }
 
 function renderMarkdown(content: string): React.ReactNode {
-  // Handle code blocks
+  // Escape ALL HTML first to prevent XSS. Markdown syntax characters
+  // (*, _, #, `, -, etc.) are not HTML special characters, so escaping
+  // first does not interfere with the regex transformations below.
+  let result = escapeHtml(content);
+
+  // Handle code blocks (content already HTML-escaped, no need to re-escape)
   const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
-  let result = content.replace(codeBlockRegex, (_, lang, code) => {
-    return `<pre class="overflow-x-auto my-2"><code class="language-${lang || ''}">${escapeHtml(code.trim())}</code></pre>`;
+  result = result.replace(codeBlockRegex, (_, lang, code) => {
+    return `<pre class="overflow-x-auto my-2"><code class="language-${lang || ''}">${code.trim()}</code></pre>`;
   });
 
-  // Handle inline code
+  // Handle inline code (content already HTML-escaped)
   result = result.replace(/`([^`]+)`/g, '<code class="text-sm">$1</code>');
 
-  // Handle bold
+  // Handle bold (captured text is already escaped)
   result = result.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 
-  // Handle italic
+  // Handle italic (captured text is already escaped)
   result = result.replace(/\*([^*]+)\*/g, '<em>$1</em>');
 
-  // Handle headings
+  // Handle headings (captured text is already escaped)
   result = result.replace(/^### (.+)$/gm, '<h3 class="text-base font-semibold mt-3 mb-2">$1</h3>');
   result = result.replace(/^## (.+)$/gm, '<h2 class="text-lg font-semibold mt-3 mb-2">$1</h2>');
   result = result.replace(/^# (.+)$/gm, '<h1 class="text-xl font-bold mt-3 mb-2">$1</h1>');
 
-  // Handle lists
+  // Handle lists (captured text is already escaped)
   result = result.replace(/^- (.+)$/gm, '<li class="ml-4">$1</li>');
   result = result.replace(/^\d+\. (.+)$/gm, '<li class="ml-4 list-decimal">$1</li>');
 
@@ -98,9 +103,7 @@ export default function ChatBox({ messages, loading }: ChatBoxProps) {
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           description={
             <span style={{ color: '#8A9AA5' }}>
-              {t('ai.chatBox.emptyDescription', {
-                defaultValue: t('ai.chatBox.empty', { defaultValue: '開始與 AI 助手對話' }),
-              })}
+              {t('ai.chatBox.emptyDescription')}
             </span>
           }
         />
@@ -141,7 +144,7 @@ export default function ChatBox({ messages, loading }: ChatBoxProps) {
                 {msg.isLoading && !msg.content ? (
                   <div className="flex items-center gap-2">
                     <IconLoader2 size={16} stroke={1.5} className="animate-spin" />
-                    <span>{t('ai.chatBox.thinking', { defaultValue: '思考中...' })}</span>
+                    <span>{t('ai.chatBox.thinking')}</span>
                   </div>
                 ) : (
                   <div>
@@ -157,7 +160,7 @@ export default function ChatBox({ messages, loading }: ChatBoxProps) {
                     >
                       {renderMarkdown(
                         assistantTooLong[msg.id] && !expanded[msg.id]
-                          ? msg.content.slice(0, maxCollapsedChars) + `\n\n...(${t('ai.chatBox.truncated', { defaultValue: '內容過長，已截斷' })})`
+                          ? msg.content.slice(0, maxCollapsedChars) + `\n\n...(${t('ai.chatBox.truncated')})`
                           : msg.content
                       )}
                     </div>
@@ -174,8 +177,8 @@ export default function ChatBox({ messages, loading }: ChatBoxProps) {
                           }
                         >
                           {expanded[msg.id]
-                            ? t('ai.chatBox.collapse', { defaultValue: '收起' })
-                            : t('ai.chatBox.expandAll', { defaultValue: '展開全部' })}
+                            ? t('ai.chatBox.collapse')
+                            : t('ai.chatBox.expandAll')}
                         </button>
                       </div>
                     )}

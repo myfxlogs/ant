@@ -185,6 +185,7 @@ const aiSettings = {
           inputHintPlaceholder: '输入提示（可选）',
           modelProfilePlaceholder: '默认（沿用当前配置档）',
           modelProfileEmpty: '请先在「AI 设置」启用至少一个 provider/模型',
+          historicalBinding: '{{value}}（历史绑定）',
         },
         types: {
           style: '风格/范式',

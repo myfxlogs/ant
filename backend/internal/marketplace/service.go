@@ -70,7 +70,10 @@ func (s *Service) Unsubscribe(ctx context.Context, userID, subscriptionID string
 		UPDATE user_subscriptions SET active = false
 		WHERE id = $1 AND subscriber_user_id = $2
 	`, subscriptionID, userID)
-	return err
+	if err != nil {
+		return fmt.Errorf("marketplace: unsubscribe: %w", err)
+	}
+	return nil
 }
 
 // ListPublished returns strategies published by a user.

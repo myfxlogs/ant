@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -28,7 +29,10 @@ func NewStrategyTemplateRepository(db *sqlx.DB) *StrategyTemplateRepository {
 func (r *StrategyTemplateRepository) SetStatus(ctx context.Context, id uuid.UUID, status string) error {
 	query := `UPDATE strategy_templates SET status = $2, updated_at = $3 WHERE id = $1`
 	_, err := r.db.ExecContext(ctx, query, id, status, time.Now())
-	return err
+	if err != nil {
+		return fmt.Errorf("set template status: %w", err)
+	}
+	return nil
 }
 
 func (r *StrategyTemplateRepository) Create(ctx context.Context, template *model.StrategyTemplate) error {
@@ -52,7 +56,7 @@ func (r *StrategyTemplateRepository) Create(ctx context.Context, template *model
 		template.UseCount, template.CreatedAt, template.UpdatedAt,
 	)
 
-	return err
+	return fmt.Errorf("create template: %w", err)
 }
 
 func (r *StrategyTemplateRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.StrategyTemplate, error) {
@@ -121,7 +125,7 @@ func (r *StrategyTemplateRepository) Update(ctx context.Context, template *model
 		template.Parameters, template.I18n, template.IsPublic, template.Tags, template.UpdatedAt,
 	)
 
-	return err
+	return fmt.Errorf("update template: %w", err)
 }
 
 // Delete removes a user-owned template. System templates (is_system = true)
@@ -134,11 +138,11 @@ func (r *StrategyTemplateRepository) Delete(ctx context.Context, id uuid.UUID) e
 	query := `DELETE FROM strategy_templates WHERE id = $1 AND is_system = FALSE`
 	result, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("delete template: %w", err)
 	}
 	rows, err := result.RowsAffected()
 	if err != nil {
-		return err
+		return fmt.Errorf("delete template: %w", err)
 	}
 	if rows == 0 {
 		var isSystem bool
@@ -160,7 +164,10 @@ func (r *StrategyTemplateRepository) Delete(ctx context.Context, id uuid.UUID) e
 func (r *StrategyTemplateRepository) IncrementUseCount(ctx context.Context, id uuid.UUID) error {
 	query := `UPDATE strategy_templates SET use_count = use_count + 1 WHERE id = $1`
 	_, err := r.db.ExecContext(ctx, query, id)
-	return err
+	if err != nil {
+		return fmt.Errorf("increment use count: %w", err)
+	}
+	return nil
 }
 
 func (r *StrategyTemplateRepository) CountByUserID(ctx context.Context, userID uuid.UUID) (int, error) {

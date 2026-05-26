@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -28,7 +29,7 @@ func (r *KlineRepository) Create(ctx context.Context, kline *model.KlineData) er
 		kline.OpenPrice, kline.HighPrice, kline.LowPrice, kline.ClosePrice,
 		kline.TickVolume, kline.RealVolume, kline.Spread, kline.CreatedAt, kline.UpdatedAt,
 	)
-	return err
+	return fmt.Errorf("create kline: %w", err)
 }
 
 func (r *KlineRepository) BatchCreate(ctx context.Context, klines []*model.KlineData) error {
@@ -38,7 +39,7 @@ func (r *KlineRepository) BatchCreate(ctx context.Context, klines []*model.Kline
 
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("batch create kline: %w", err)
 	}
 	defer tx.Rollback()
 
@@ -55,7 +56,7 @@ func (r *KlineRepository) BatchCreate(ctx context.Context, klines []*model.Kline
 			kline.TickVolume, kline.RealVolume, kline.Spread, kline.CreatedAt, kline.UpdatedAt,
 		)
 		if err != nil {
-			return err
+			return fmt.Errorf("batch create kline: %w", err)
 		}
 	}
 
@@ -100,5 +101,8 @@ func (r *KlineRepository) GetLatest(ctx context.Context, symbol, timeframe strin
 func (r *KlineRepository) DeleteOlderThan(ctx context.Context, olderThan time.Time) error {
 	query := `DELETE FROM kline_data WHERE open_time < $1`
 	_, err := r.db.ExecContext(ctx, query, olderThan)
-	return err
+	if err != nil {
+		return fmt.Errorf("delete kline older than: %w", err)
+	}
+	return nil
 }

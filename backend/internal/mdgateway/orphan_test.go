@@ -43,35 +43,77 @@ func TestCHBufferEnvSwitch(t *testing.T) {
 	// M10.5-10 S-2: ANT_CH_BUFFER_ENABLED env switches CH INSERT target tables.
 	// default → md_ticks_buffer / md_bars_buffer (Buffer engine, ADR-0011)
 	// =false  → md_ticks / md_bars (direct write, Buffer bypass)
+	// S-2: runtime toggle via SetBufferEnabled — dynamic OOM auto-degradation.
+
+	// Use a nil conn (target table check doesn't need a real CH connection).
+	log := zap.NewNop()
+	w := NewCHWriter(DefaultCHWriterConfig(), nil, nil, log)
+
 	t.Run("default_uses_buffer", func(t *testing.T) {
 		t.Setenv("ANT_CH_BUFFER_ENABLED", "")
-		if got := tickTargetTable(); got != "md_ticks_buffer" {
+		w2 := NewCHWriter(DefaultCHWriterConfig(), nil, nil, nil)
+		if !w2.BufferEnabled() {
+			t.Error("default: buffer should be enabled")
+		}
+		if got := w2.tickTargetTable(); got != "md_ticks_buffer" {
 			t.Errorf("default tickTargetTable=%q, want md_ticks_buffer", got)
 		}
-		if got := barTargetTable(); got != "md_bars_buffer" {
+		if got := w2.barTargetTable(); got != "md_bars_buffer" {
 			t.Errorf("default barTargetTable=%q, want md_bars_buffer", got)
 		}
 	})
 	t.Run("false_bypasses_buffer", func(t *testing.T) {
 		t.Setenv("ANT_CH_BUFFER_ENABLED", "false")
-		if got := tickTargetTable(); got != "md_ticks" {
+		w2 := NewCHWriter(DefaultCHWriterConfig(), nil, nil, nil)
+		if w2.BufferEnabled() {
+			t.Error("env=false: buffer should be disabled")
+		}
+		if got := w2.tickTargetTable(); got != "md_ticks" {
 			t.Errorf("env=false tickTargetTable=%q, want md_ticks", got)
 		}
-		if got := barTargetTable(); got != "md_bars" {
+		if got := w2.barTargetTable(); got != "md_bars" {
 			t.Errorf("env=false barTargetTable=%q, want md_bars", got)
 		}
 	})
 	t.Run("any_other_value_uses_buffer", func(t *testing.T) {
 		t.Setenv("ANT_CH_BUFFER_ENABLED", "true")
-		if got := tickTargetTable(); got != "md_ticks_buffer" {
+		w2 := NewCHWriter(DefaultCHWriterConfig(), nil, nil, nil)
+		if !w2.BufferEnabled() {
+			t.Error("env=true: buffer should be enabled")
+		}
+		if got := w2.tickTargetTable(); got != "md_ticks_buffer" {
 			t.Errorf("env=true tickTargetTable=%q, want md_ticks_buffer", got)
+		}
+	})
+	t.Run("runtime_toggle", func(t *testing.T) {
+		// S-2: dynamic toggle at runtime — the key OOM auto-degradation mechanism.
+		if got := w.tickTargetTable(); got != "md_ticks_buffer" {
+			t.Fatalf("pre-toggle: want md_ticks_buffer, got %q", got)
+		}
+		w.SetBufferEnabled(false)
+		if w.BufferEnabled() {
+			t.Fatal("after SetBufferEnabled(false): BufferEnabled should be false")
+		}
+		if got := w.tickTargetTable(); got != "md_ticks" {
+			t.Errorf("post-toggle tickTargetTable=%q, want md_ticks", got)
+		}
+		if got := w.barTargetTable(); got != "md_bars" {
+			t.Errorf("post-toggle barTargetTable=%q, want md_bars", got)
+		}
+		// Re-enable.
+		w.SetBufferEnabled(true)
+		if !w.BufferEnabled() {
+			t.Fatal("after SetBufferEnabled(true): BufferEnabled should be true")
+		}
+		if got := w.tickTargetTable(); got != "md_ticks_buffer" {
+			t.Errorf("re-enabled tickTargetTable=%q, want md_ticks_buffer", got)
 		}
 	})
 }
 
 func TestNormalizer(t *testing.T) {
 	n := NewNormalizer(nil)
-	result := n.Resolve("test-broker", "EURUSDm")
+	result := n.Resolve(context.Background(), "test-broker", "EURUSDm")
 	if result == "" {
 		t.Error("normalizer should produce non-empty result")
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -49,7 +50,10 @@ func (r *AutoTradingRepository) CreateSchedule(ctx context.Context, schedule *mo
 		schedule.IsActive, schedule.LastRunAt, schedule.NextRunAt,
 		schedule.LastError, schedule.RunCount, schedule.CreatedAt, schedule.UpdatedAt,
 	)
-	return err
+	if err != nil {
+		return fmt.Errorf("create schedule: %w", err)
+	}
+	return nil
 }
 
 func (r *AutoTradingRepository) GetScheduleByID(ctx context.Context, id uuid.UUID) (*model.StrategyScheduleLegacy, error) {
@@ -114,24 +118,30 @@ func (r *AutoTradingRepository) UpdateSchedule(ctx context.Context, schedule *mo
 		schedule.LastRunAt, schedule.NextRunAt, schedule.LastError, schedule.RunCount,
 		schedule.UpdatedAt,
 	)
-	return err
+	if err != nil {
+		return fmt.Errorf("update schedule: %w", err)
+	}
+	return nil
 }
 
 func (r *AutoTradingRepository) UpdateScheduleStatus(ctx context.Context, id uuid.UUID, isActive bool) error {
 	query := `UPDATE strategy_schedules SET is_active = $2, updated_at = $3 WHERE id = $1`
 	_, err := r.db.ExecContext(ctx, query, id, isActive, time.Now())
-	return err
+	if err != nil {
+		return fmt.Errorf("update schedule status: %w", err)
+	}
+	return nil
 }
 
 func (r *AutoTradingRepository) DeleteSchedule(ctx context.Context, id uuid.UUID) error {
 	query := `DELETE FROM strategy_schedules WHERE id = $1`
 	result, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("delete schedule: %w", err)
 	}
 	rows, err := result.RowsAffected()
 	if err != nil {
-		return err
+		return fmt.Errorf("delete schedule: %w", err)
 	}
 	if rows == 0 {
 		return ErrLegacyScheduleNotFound
@@ -156,7 +166,10 @@ func (r *AutoTradingRepository) CreateExecution(ctx context.Context, execution *
 		execution.Status, execution.Signals, execution.Orders, execution.ErrorMessage,
 		execution.StartedAt, execution.CompletedAt,
 	)
-	return err
+	if err != nil {
+		return fmt.Errorf("create execution: %w", err)
+	}
+	return nil
 }
 
 func (r *AutoTradingRepository) GetExecutionByID(ctx context.Context, id uuid.UUID) (*model.StrategyExecution, error) {
@@ -203,7 +216,10 @@ func (r *AutoTradingRepository) UpdateExecution(ctx context.Context, execution *
 		execution.ID, execution.Status, execution.Signals, execution.Orders,
 		execution.ErrorMessage, execution.CompletedAt,
 	)
-	return err
+	if err != nil {
+		return fmt.Errorf("update execution: %w", err)
+	}
+	return nil
 }
 
 func (r *AutoTradingRepository) GetTodayExecutionCount(ctx context.Context, accountID uuid.UUID) (int, error) {
@@ -249,7 +265,10 @@ func (r *AutoTradingRepository) CreateRiskConfig(ctx context.Context, config *mo
 		config.MaxLotSize, config.DailyLossUsed, config.TrailingStopEnabled,
 		config.TrailingStopPips, config.CreatedAt, config.UpdatedAt,
 	)
-	return err
+	if err != nil {
+		return fmt.Errorf("create risk config: %w", err)
+	}
+	return nil
 }
 
 func (r *AutoTradingRepository) GetRiskConfigByID(ctx context.Context, id uuid.UUID) (*model.RiskConfig, error) {
@@ -305,19 +324,28 @@ func (r *AutoTradingRepository) UpdateRiskConfig(ctx context.Context, config *mo
 		config.MaxPositions, config.MaxLotSize, config.DailyLossUsed,
 		config.TrailingStopEnabled, config.TrailingStopPips, config.UpdatedAt,
 	)
-	return err
+	if err != nil {
+		return fmt.Errorf("update risk config: %w", err)
+	}
+	return nil
 }
 
 func (r *AutoTradingRepository) UpdateDailyLossUsed(ctx context.Context, id uuid.UUID, dailyLossUsed float64) error {
 	query := `UPDATE risk_configs SET daily_loss_used = $2, updated_at = $3 WHERE id = $1`
 	_, err := r.db.ExecContext(ctx, query, id, dailyLossUsed, time.Now())
-	return err
+	if err != nil {
+		return fmt.Errorf("update daily loss used: %w", err)
+	}
+	return nil
 }
 
 func (r *AutoTradingRepository) ResetDailyLossUsed(ctx context.Context, userID uuid.UUID) error {
 	query := `UPDATE risk_configs SET daily_loss_used = 0, updated_at = $2 WHERE user_id = $1`
 	_, err := r.db.ExecContext(ctx, query, userID, time.Now())
-	return err
+	if err != nil {
+		return fmt.Errorf("reset daily loss used: %w", err)
+	}
+	return nil
 }
 
 func (r *AutoTradingRepository) CreateGlobalSettings(ctx context.Context, settings *model.GlobalSettings) error {
@@ -338,7 +366,10 @@ func (r *AutoTradingRepository) CreateGlobalSettings(ctx context.Context, settin
 		settings.ID, settings.UserID, settings.AutoTradeEnabled, settings.MaxRiskPercent,
 		settings.MaxPositions, settings.MaxLotSize, settings.MaxDailyLoss, settings.MaxDrawdownPercent, settings.CreatedAt, settings.UpdatedAt,
 	)
-	return err
+	if err != nil {
+		return fmt.Errorf("create global settings: %w", err)
+	}
+	return nil
 }
 
 func (r *AutoTradingRepository) GetGlobalSettingsByUserID(ctx context.Context, userID uuid.UUID) (*model.GlobalSettings, error) {
@@ -366,13 +397,19 @@ func (r *AutoTradingRepository) UpdateGlobalSettings(ctx context.Context, settin
 		settings.ID, settings.AutoTradeEnabled, settings.MaxRiskPercent,
 		settings.MaxPositions, settings.MaxLotSize, settings.MaxDailyLoss, settings.MaxDrawdownPercent, settings.UpdatedAt,
 	)
-	return err
+	if err != nil {
+		return fmt.Errorf("update global settings: %w", err)
+	}
+	return nil
 }
 
 func (r *AutoTradingRepository) UpdateAutoTradeEnabled(ctx context.Context, userID uuid.UUID, enabled bool) error {
 	query := `UPDATE global_settings SET auto_trade_enabled = $2, updated_at = $3 WHERE user_id = $1`
 	_, err := r.db.ExecContext(ctx, query, userID, enabled, time.Now())
-	return err
+	if err != nil {
+		return fmt.Errorf("update auto trade enabled: %w", err)
+	}
+	return nil
 }
 
 func (r *AutoTradingRepository) CreateTradingLog(ctx context.Context, log *model.TradingLog) error {
@@ -389,7 +426,10 @@ func (r *AutoTradingRepository) CreateTradingLog(ctx context.Context, log *model
 	_, err := r.db.ExecContext(ctx, query,
 		log.ID, log.UserID, log.AccountID, log.Action, log.Symbol, log.LogType, 0, 0, 0, 0, log.Message, log.CreatedAt,
 	)
-	return err
+	if err != nil {
+		return fmt.Errorf("create trading log: %w", err)
+	}
+	return nil
 }
 
 func (r *AutoTradingRepository) GetTradingLogs(ctx context.Context, userID uuid.UUID, params *model.LogListParams) ([]*model.TradingLog, int, error) {

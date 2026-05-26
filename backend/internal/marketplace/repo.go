@@ -4,6 +4,7 @@ package marketplace
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -52,7 +53,10 @@ func (r *Repo) Publish(ctx context.Context, s *Strategy) error {
 		VALUES (:id, :strategy_id, :publisher_id, :title, :description,
 			:price_model, :price_amount, :asset_class, :symbols, :timeframe, :risk_level, :tags, :status)
 	`, s)
-	return err
+	if err != nil {
+		return fmt.Errorf("marketplace: publish strategy: %w", err)
+	}
+	return nil
 }
 
 // ListPublished returns all published strategies, ordered by recency.

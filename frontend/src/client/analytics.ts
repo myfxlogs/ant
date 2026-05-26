@@ -1,9 +1,39 @@
 import { analyticsClient, economicDataClient } from './connect';
 import i18n from '@/i18n';
 
-export type { AccountAnalytics, Summary, RiskMetrics, SymbolStats, TradeRecord, MonthlyPnL } from '../gen/api_pb';
+export type { AccountAnalytics, Summary, RiskMetrics, SymbolStats, TradeRecord, MonthlyPnL } from '../gen/ant/v1/api_pb';
 
 const analyticsService = analyticsClient;
+
+// Analytics service currently uses a stub client (backend handlers not yet
+// fully implemented). The interfaces below document the expected response
+// shapes once the backend is available.
+interface RecentTradesResponse {
+  trades?: unknown[];
+  total?: number;
+}
+
+interface MonthlyPnLResponse {
+  monthlyPnl?: unknown[];
+}
+
+interface MonthlyAnalysisResponse {
+  years?: number[];
+  data?: unknown[];
+}
+
+interface SymbolStatsResponse {
+  stats?: unknown[];
+}
+
+interface MonthlyAnalysisBonusResponse {
+  riskRatio?: number;
+  symbolPopularity?: Array<{ symbol: string; trades: number; sharePercent: number }>;
+  symbolRiskRatios?: Array<{ symbol: string; riskRatio: number }>;
+  symbolHoldingSplit?: Array<{ symbol: string; bullsSeconds: number; shortTermSeconds: number }>;
+  averageHoldingSeconds?: number;
+  totalTrades?: number;
+}
 
 export const analyticsApi = {
   getAccountAnalytics: async (accountId: string) => {
@@ -11,20 +41,20 @@ export const analyticsApi = {
   },
 
   getTradeRecords: async (accountId: string, _params?: { from?: string; to?: string }) => {
-    const response: any = await analyticsService.getRecentTrades({
+    const response = await analyticsService.getRecentTrades({
       accountId,
       page: 1,
       pageSize: 100,
-    });
+    }) as unknown as RecentTradesResponse;
     return response.trades;
   },
 
   getRecentTrades: async (accountId: string, page?: number, pageSize?: number) => {
-    const response: any = await analyticsService.getRecentTrades({
+    const response = await analyticsService.getRecentTrades({
       accountId,
       page: page || 1,
       pageSize: pageSize || 10,
-    });
+    }) as unknown as RecentTradesResponse;
     return {
       trades: response.trades,
       total: response.total,
@@ -32,19 +62,19 @@ export const analyticsApi = {
   },
 
   getMonthlyPnL: async (accountId: string, year?: number) => {
-    const response: any = await analyticsService.getMonthlyPnL({ 
-      accountId, 
-      year: year || new Date().getFullYear() 
-    });
-    return { 
-      monthlyPnl: response.monthlyPnl
+    const response = await analyticsService.getMonthlyPnL({
+      accountId,
+      year: year || new Date().getFullYear(),
+    }) as unknown as MonthlyPnLResponse;
+    return {
+      monthlyPnl: response.monthlyPnl,
     };
   },
 
   getMonthlyAnalysis: async (accountId: string) => {
-    const response: any = await (analyticsService as any).getMonthlyAnalysis({
+    const response = await analyticsService.getMonthlyAnalysis({
       accountId,
-    });
+    }) as unknown as MonthlyAnalysisResponse;
     return {
       years: response.years || [],
       data: response.data || [],
@@ -56,7 +86,7 @@ export const analyticsApi = {
       accountId,
       year,
       month,
-    });
+    }) as unknown as MonthlyAnalysisBonusResponse;
     const rows = response.symbolPopularity ?? [];
     const risks = response.symbolRiskRatios ?? [];
     const holds = response.symbolHoldingSplit ?? [];
@@ -90,11 +120,17 @@ export const analyticsApi = {
   },
 
   getSymbolStats: async (accountId: string) => {
-    const response: any = await analyticsService.getSymbolStats({ accountId });
+    const response = await analyticsService.getSymbolStats({ accountId }) as unknown as SymbolStatsResponse;
     return response.stats;
   },
 
-  getEconomicCalendar: async (params?: { from?: string; to?: string; country?: string; symbol?: string; importance?: string }) => {
+  getEconomicCalendar: async (params?: {
+    from?: string;
+    to?: string;
+    country?: string;
+    symbol?: string;
+    importance?: string;
+  }) => {
     const lang = i18n.language || 'en';
     const data = await economicDataClient.listEconomicCalendarEvents({
       from: params?.from || '',

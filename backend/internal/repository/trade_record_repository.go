@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -52,7 +53,7 @@ func (r *TradeRecordRepository) BatchCreate(ctx context.Context, records []*mode
 
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("batch create trade record: %w", err)
 	}
 	defer tx.Rollback()
 
@@ -76,7 +77,7 @@ func (r *TradeRecordRepository) BatchCreate(ctx context.Context, records []*mode
 
 	stmt, err := tx.PreparexContext(ctx, query)
 	if err != nil {
-		return err
+		return fmt.Errorf("batch create trade record: %w", err)
 	}
 	defer stmt.Close()
 
@@ -88,7 +89,7 @@ func (r *TradeRecordRepository) BatchCreate(ctx context.Context, records []*mode
 			record.OrderComment, record.MagicNumber, record.Platform,
 		)
 		if err != nil {
-			return err
+			return fmt.Errorf("batch create trade record: %w", err)
 		}
 	}
 
@@ -139,5 +140,8 @@ func (r *TradeRecordRepository) CountByAccount(ctx context.Context, accountID uu
 func (r *TradeRecordRepository) DeleteByAccount(ctx context.Context, accountID uuid.UUID) error {
 	query := `DELETE FROM trade_records WHERE account_id = $1`
 	_, err := r.db.ExecContext(ctx, query, accountID)
-	return err
+	if err != nil {
+		return fmt.Errorf("delete trade records by account: %w", err)
+	}
+	return nil
 }

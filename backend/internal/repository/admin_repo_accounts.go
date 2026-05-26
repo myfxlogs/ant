@@ -11,6 +11,8 @@ import (
 	"anttrader/internal/model"
 )
 
+var ErrAccountNotFound = errors.New("account not found")
+
 type AccountWithUser struct {
 	model.MTAccount
 	UserEmail    string  `json:"user_email" db:"user_email"`
@@ -101,7 +103,7 @@ func (r *AdminRepository) SetAccountStatus(ctx context.Context, id uuid.UUID, st
 		`UPDATE mt_accounts SET account_status = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
 		id, status)
 	if err != nil {
-		return err
+		return fmt.Errorf("set account status: %w", err)
 	}
 	if result.RowsAffected() == 0 {
 		return ErrAccountNotFound

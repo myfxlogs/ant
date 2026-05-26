@@ -1,16 +1,17 @@
 import { authClient } from './connect';
+import type { User } from '@/types/auth';
 
-export type { User } from '../gen/api_pb';
+export type { User };
 
 export interface LoginResult {
   accessToken: string;
   refreshToken: string;
   expiresAt: bigint;
-  user: any;
+  user: User;
 }
 
 export interface RegisterResult {
-  user: any;
+  user: User;
 }
 
 export interface RefreshTokenResult {
@@ -32,8 +33,8 @@ export const authApi = {
     };
   },
 
-  register: async (email: string, password: string, nickname: string): Promise<RegisterResult> => {
-    const response: any = await authClient.register({ email, password, nickname });
+  register: async (email: string, password: string, username?: string): Promise<RegisterResult> => {
+    const response: any = await authClient.register({ email, password, username: username || email });
     return {
       user: response.user,
     };

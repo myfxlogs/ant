@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -55,7 +56,10 @@ func (r *MarketRegimeRepository) Create(ctx context.Context, row *MarketRegime) 
 		INSERT INTO market_regimes (id,user_id,account_id,symbol,timeframe,regime,confidence,features,segments,strategy_families,from_time,to_time,model_version,created_at)
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
 	`, row.ID, row.UserID, row.AccountID, row.Symbol, row.Timeframe, row.Regime, row.Confidence, row.Features, row.Segments, row.StrategyFamilies, row.FromTime, row.ToTime, row.ModelVersion, row.CreatedAt)
-	return err
+	if err != nil {
+		return fmt.Errorf("create market regime: %w", err)
+	}
+	return nil
 }
 
 func (r *MarketRegimeRepository) Get(ctx context.Context, userID, id uuid.UUID) (*MarketRegime, error) {

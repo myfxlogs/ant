@@ -3,6 +3,7 @@ package interceptor
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -43,7 +44,7 @@ func (i *AuthInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 			return next(ctx, req)
 		}
 
-		userID, scopes, apiKeyAuth, err := i.authenticate(req.Header())
+		userID, scopes, apiKeyAuth, err := i.authenticate(ctx, req.Header())
 		if err != nil {
 			return nil, err
 		}
@@ -67,9 +68,9 @@ func (i *AuthInterceptor) WrapStreamingClient(next connect.StreamingClientFunc) 
 
 func (i *AuthInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc) connect.StreamingHandlerFunc {
 	return func(ctx context.Context, conn connect.StreamingHandlerConn) error {
-		userID, scopes, apiKeyAuth, err := i.authenticate(conn.RequestHeader())
+		userID, scopes, apiKeyAuth, err := i.authenticate(ctx, conn.RequestHeader())
 		if err != nil {
-			return err
+			return fmt.Errorf("authenticate streaming request: %w", err)
 		}
 
 		ctx = context.WithValue(ctx, UserIDKey, userID)
@@ -92,7 +93,7 @@ func (i *AuthInterceptor) UserIDFromHTTP(r *http.Request) (uuid.UUID, error) {
 			hdr.Set("Authorization", "Bearer "+t)
 		}
 	}
-	s, _, _, err := i.authenticate(hdr)
+	s, _, _, err := i.authenticate(r.Context(), hdr)
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -103,10 +104,10 @@ func (i *AuthInterceptor) UserIDFromHTTP(r *http.Request) (uuid.UUID, error) {
 	return uid, nil
 }
 
-func (i *AuthInterceptor) authenticate(header http.Header) (string, []string, bool, error) {
+func (i *AuthInterceptor) authenticate(ctx context.Context, header http.Header) (string, []string, bool, error) {
 	apiKey := header.Get("X-API-Key")
 	if apiKey != "" && i.apiKeySvc != nil {
-		userID, scopes, err := i.apiKeySvc.Validate(context.Background(), apiKey)
+		userID, scopes, err := i.apiKeySvc.Validate(ctx, apiKey)
 		if err != nil {
 			return "", nil, false, connect.NewError(connect.CodeUnauthenticated, errors.New("invalid api key"))
 		}

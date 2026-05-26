@@ -120,7 +120,7 @@ func (r *AdminRepository) UpdateUser(ctx context.Context, user *model.User) erro
 func (r *AdminRepository) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	result, err := r.db.Exec(ctx, `DELETE FROM users WHERE id = $1`, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("delete user: %w", err)
 	}
 	if result.RowsAffected() == 0 {
 		return ErrUserNotFound
@@ -133,7 +133,7 @@ func (r *AdminRepository) SetUserStatus(ctx context.Context, id uuid.UUID, statu
 		`UPDATE users SET status = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
 		id, status)
 	if err != nil {
-		return err
+		return fmt.Errorf("set user status: %w", err)
 	}
 	if result.RowsAffected() == 0 {
 		return ErrUserNotFound
@@ -146,7 +146,7 @@ func (r *AdminRepository) ResetUserPassword(ctx context.Context, id uuid.UUID, p
 		`UPDATE users SET password_hash = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
 		id, passwordHash)
 	if err != nil {
-		return err
+		return fmt.Errorf("reset user password: %w", err)
 	}
 	if result.RowsAffected() == 0 {
 		return ErrUserNotFound

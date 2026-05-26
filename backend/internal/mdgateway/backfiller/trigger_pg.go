@@ -3,6 +3,7 @@ package backfiller
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"go.uber.org/zap"
 )
@@ -49,7 +50,7 @@ func (t *PGTrigger) Run(ctx context.Context, notifier PGNotifier) error {
 			if ctx.Err() != nil {
 				return nil
 			}
-			return err
+			return fmt.Errorf("wait for PG notification: %w", err)
 		}
 		var np notifyPayload
 		if jerr := json.Unmarshal([]byte(payload), &np); jerr != nil {

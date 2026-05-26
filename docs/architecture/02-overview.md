@@ -18,7 +18,11 @@
 ┌──────────┴────────────┐               ┌──────────┴──────────┐
 │  L5  量化引擎          │               │  L5  会话与下单     │
 │  internal/quantengine  │               │  internal/mthub     │
-│  (DSL eval + ONNX)     │               │  (session+events)   │
+│  (DSL eval + ONNX)     │               │  ├─ SessionRegistry │
+│  ├─ FactorSource iface │               │  ├─ OrderExecutor   │
+│  └─ SignalRouter       │               │  ├─ OrderStateMachine│
+└──────────┬─────────────┘               │  ├─ IdempotencyGuard │
+           │                             │  └─ Reconciliation  │
 └──────────┬────────────┘               └──────────┬──────────┘
            │                                       │
 ┌──────────┴───────────────────────────────────────┴──────────┐
@@ -104,9 +108,17 @@
 - MT 会话注册中心（accountID → session）
 - OrderEventBroker（fan-in MT 事件 → 业务订阅）
 - OrderExecutor（统一下单接口）
-- 详见 `docs/spec/12-mthub.md`
+- OrderStateMachine（ant 侧 10-state 订单状态机，镜像 MT5 OrderState）
+- IdempotencyGuard（(account_id, client_id) 幂等去重，Redis 24h TTL）
+- ReconciliationLoop（启动对账 + 每 30s 主动 polling 对账）
+- 详见 `docs/spec/12-mthub.md`、`docs/spec/22-order-state-machine.md`
 
-### L6 · 业务编排（`ai/` `marketplace/` `risk/` `oms/`）
+### L6 · 业务编排（`ai/` `marketplace/` `risk/` `oms/` `paper/`）
+- `ai/` — AI 策略生成（自然语言→策略代码），见 `docs/spec/26-ai-strategy-generation.md`
+- `risk/` — 风控引擎：PreCheck（同步 4 项检查）+ Monitor（异步 margin call / stop-out），见 `docs/spec/23-risk-management.md`
+- `oms/` — SignalRouter + OrderTracker，见 §"OMS"订正
+- `paper/` — 仿真交易：PaperExecutor（滑点/延迟/部分成交模型）+ 数据隔离，见 `docs/spec/24-paper-trading.md`
+- `marketplace/` — 策略市场基础设施（M11+ 激活变现），当前仅保留数据模型
 - handler 只编排；业务规则在 service
 - 与 L5 通过 interface 解耦
 
@@ -172,6 +184,103 @@ NATS md.factor.* (or CH factor_values poll)
   → CH md_bars (主路径)
      fallback → PG kline_data (兼容期；M9 删除)
   → return proto
+```
+
+### 3.5 统一回测/实盘路径（ADR-0012）
+
+```
+回测模式:
+  CH md_bars (历史)
+    → ReplaySource (实现 BarSource/FactorSource interface)
+    → factorsvc.Subscriber.OnBar
+    → DSL.Eval
+    → quantengine.OnFactor
+    → Signal{Symbol, Side, TargetQty, Source="replay"}
+    → CH signals (审计)
+    → oms.SignalRouter
+        └─ signal.Source == "replay" → paper.PaperExecutor.Place
+            ├─ FillModel.SimulateFill
+            └─ PG paper_orders
+
+实盘模式:
+  NATS md.bar.* (实时)
+    → LiveSource (实现 BarSource/FactorSource interface)
+    → factorsvc.Subscriber.OnBar
+    → DSL.Eval
+    → quantengine.OnFactor
+    → Signal{Symbol, Side, TargetQty, Source="live"}
+    → CH signals (审计)
+    → oms.SignalRouter
+        ├─ risk.PreCheck (4 项同步阻断)
+        └─ mthub.OrderExecutor.Place
+            → adapter/mt[45]/executor.go → mtapi.OrderSend
+            → PG orders
+```
+
+**关键约束**：factorsvc 和 quantengine 只依赖 `Source` interface，业务逻辑零 `if isBacktest` 分支。回测和实盘走完全相同的 factor → signal → execution 代码路径。
+
+### 3.6 Bar 修订级联（ADR-0016）
+
+```
+BarAggregator 检测修订 (md_bars.version > 1)
+  → NATS bar.revision.<broker>.<canonical>.<period>
+  → factorsvc.OnBarRevision
+      ├─ 窗口重置 (丢弃旧 bar 版本，用新 bar 重新计算)
+      ├─ DSL.Eval (使用新窗口)
+      ├─ factor_value.version = bar.version  (同步版本号)
+      └─ CH factor_values (INSERT 新版本，非 UPDATE)
+  → quantengine.OnFactorRevision
+      ├─ 信号重算
+      ├─ 信号未执行 (PG signals.state == "pending")
+      │     → 更新信号 (PG signals UPDATE target_qty, trigger_price)
+      └─ 信号已执行 (PG signals.state ∈ {submitted, filled, partial})
+            → 记录偏差 (CH bar_revision_log)
+            → 不修改订单 (订单不可变原则)
+```
+
+### 3.7 订单状态机恢复流程（ADR-0013）
+
+```
+进程启动
+  → mthub.ReconciliationLoop.Start()
+      ├─ 遍历所有 active sessions (PG mt_accounts WHERE is_active=true)
+      ├─ 对每个 account:
+      │     ├─ FetchOpenedOrders(account_id)
+      │     │     → 获取 MT broker 当前挂单 + 持仓
+      │     ├─ FetchOrderHistory(account_id, since=now-5min)
+      │     │     → 获取最近交易历史
+      │     └─ 三方对账 (ant PG ↔ MT broker ↔ Redis idempotency keys)
+      │           ├─ ant 有、MT 无 → ghost order → 标记 CANCELLED + alert
+      │           ├─ MT 有、ant 无 → orphan → 补录入 PG orders
+      │           └─ 状态不一致 → MT 为准，ant 更新 + metric
+      └─ 启动 30s 定时对账 (ReconciliationLoop.Poll)
+
+每 30s:
+  → ReconciliationLoop.Poll()
+      ├─ 对比 ant_state vs mt_state (per active account)
+      ├─ 偏差 → Prometheus mt_reconciliation_mismatch_total +1
+      └─ 自动修复 (MT broker 状态为权威来源)
+```
+
+### 3.8 仿真交易执行流（ADR-0015）
+
+```
+oms.SignalRouter (signal.Source == "replay")
+  → paper.PaperExecutor.Place(order)
+      ├─ FillModel.SimulateFill(order)
+      │     ├─ 滑点计算 (configurable: fixed_pct / normal / skip)
+      │     ├─ 延迟模拟 (configurable: fixed_ms / normal / none)
+      │     └─ 部分成交判断 (configurable: full_only / uniform / pareto)
+      ├─ PG paper_orders (INSERT, 与 orders 表物理隔离)
+      └─ 返回 FillResult{filled_volume, fill_price, slippage_bps}
+
+策略升级到实盘:
+  → paper.PromoteToLive(paper_strategy_id, user_id)
+      ├─ 验证回测指标 (Sharpe > 0, max_drawdown < risk_limit)
+      ├─ 克隆策略: paper_strategies → user_strategies
+      ├─ 切换数据源: ReplaySource → LiveSource
+      ├─ 切换执行器: PaperExecutor → LiveExecutor (mthub)
+      └─ 标记 paper_strategy.promoted_at = NOW()
 ```
 
 ## 4. 包依赖图（强制无环）
@@ -264,5 +373,27 @@ ant v2 **不是 alfq 的克隆**。差异：
     - **禁止**：在 user 表中复制官方/平台数据（如旧 `seed_default_templates.go` per-user 复制）
 12. **admin 鉴权独立**（ADR-0006）：废弃 `users.role='admin'`；平台运营走 `admins` 表 + JWT scope `platform:admin`
 13. **PlatformScope 接口预留**（ADR-0006）：所有读 `platform_*` 表的查询必须经 `scope.Current(ctx)`（当前 no-op 返回 `'ant'`），为 M10+ 多 tenant 白标输出预留路径
+14. **回测与实盘同一代码路径**（ADR-0012）：factorsvc 和 quantengine 只依赖 `Source` interface（`LiveSource` / `ReplaySource`），不得在业务逻辑中判断 `if isBacktest`。违反此条 → 回测结果不可信。
+15. **订单不可变**（ADR-0013）：一旦 `ant_state` 进入 `FILLED`/`PARTIALLY_FILLED`，订单参数（volume/price/sl/tp）不可修改。只能通过新建反向订单来改变持仓。
+16. **Bar 修订不修改历史行**（ADR-0016）：`md_bars` 使用 INSERT 新版本（`version` 递增），禁止 UPDATE 历史 bar 行。因子值同步携带 bar 版本号。
+17. **仿真与实盘数据隔离**（ADR-0015）：`paper_*` 表簇与实盘表（`orders`/`positions`/`trades`）物理隔离，仿真订单不得触发真实 broker 调用。
+18. **风控阻断优先于下单**（ADR-0014）：所有订单（包括 AI 生成的策略订单）必须先通过 `risk.PreCheck` 4 项同步检查，不得绕过。风控拒因必须写入审计日志。
+19. **AI 策略代码合规必扫**（ADR-0017）：AI 生成的 DSL 代码必须通过 13 条合规规则扫描，未通过不得进入回测。扫描结果写入 metric `ai_strategy_generation_total{result="compliance_blocked"}`。
+20. **信号→执行全链路可追踪**（ADR-0018）：每个信号必须有 OTel trace，从 `factor_ts_unix_ms` 到 `broker_ack_ts`，分阶段归因延迟。端到端 SLO P99 < 235ms。
 
 CI 应有 lint 规则强制 1, 2, 3, 8, 9, 11, 12（其他靠代码 review）。
+
+## 9. M11+ 推迟功能
+
+以下功能已在架构中预留接口或数据模型，但**不在 M10 交付范围**内。推迟策略：先让核心量化系统稳定运行 ≥ 30 天，再启动变现层。
+
+| 功能 | 推迟理由 | 预留方式 |
+|------|----------|----------|
+| 策略市场变现（支付/订阅/分润/评分）| 核心量化系统先稳定 | `platform_strategies` 表、`user_subscriptions` 表已定义 |
+| 跟单交易自动化 | 依赖订单执行完全稳定 | `copy_trade_links` 表、OMS SignalRouter `Subscription` 接口预留 |
+| 多租户白标（C 模型）| ant 当前单实例 | `PlatformScope` interface（当前 no-op 返回 `'ant'`），见 ADR-0006 |
+| Python 沙箱生产路径 | DSL+ONNX 覆盖 90% 策略需求 | `strategysvc` 仅研究模式运行；生产路径强制 Go |
+| 策略回测排行榜 | 依赖大量真实回测数据积累 | `BacktestMetrics` 结构体已定义；`paper_strategies` 表预留 `ranking_score` 列 |
+| 社交/社区功能 | 非量化核心 | 未预留 |
+
+**触发条件**：M10 验收通过（7 天稳定性测试）+ 生产环境连续 30 天零 P0 事故 → 启动 M11 变现层规划。

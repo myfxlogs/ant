@@ -215,8 +215,22 @@ detect-orphan-test-claims:
 # ── Help ──────────────────────────────────────────────────────────────
 .PHONY: help
 
+# ── CI Nightly (M10-BASE-A3) ───────────────────────────────────────────
+.PHONY: ci-nightly
+
+ci-nightly:
+	@echo "=== ci-nightly: md-doctor + slo-report ==="
+	@cd backend && go build -o /tmp/md-doctor ./cmd/md-doctor/
+	@cd backend && go build -o /tmp/slo-report ./cmd/slo-report/
+	@echo "--- md-doctor all (24h) ---"
+	@/tmp/md-doctor all --window 24h --strict --output json 2>&1 || echo "md-doctor: WARNING (see above)"
+	@echo "--- slo-report (24h) ---"
+	@/tmp/slo-report --window 24h --strict 2>&1 || echo "slo-report: WARNING (see above)"
+	@echo "=== ci-nightly complete ==="
+
 help:
 	@echo "ant Makefile targets:"
+	@echo "  ci-nightly     run md-doctor + slo-report (daily cron)"
 	@echo "  build          compile backend binary"
 	@echo "  test           run all tests"
 	@echo "  migrate        run PostgreSQL migrations"

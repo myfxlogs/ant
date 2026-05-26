@@ -53,21 +53,21 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
                 style={{ borderColor: 'rgba(0, 0, 0, 0.06)', opacity: 0.7 }}
               >
                 <td className="p-3 font-medium" style={{ color: '#141D22' }}>
-                  {(account as any).login}
+                  {account.login}
                 </td>
                 <td className="p-3">
-                  <Tag color={(account as any).mtType === 'MT4' ? 'blue' : 'purple'} style={{ borderRadius: '4px' }}>
-                    {(account as any).mtType}
+                  <Tag color={account.mtType === 'MT4' ? 'blue' : 'purple'} style={{ borderRadius: '4px' }}>
+                    {account.mtType}
                   </Tag>
                 </td>
                 <td className="p-3" style={{ color: '#8A9AA5' }}>
-                  {(account as any).brokerCompany || '-'}
+                  {account.brokerCompany || '-'}
                 </td>
                 <td className="text-right p-3" style={{ color: '#141D22' }}>
-                  {(((account as any).balance || 0) as number).toFixed(2)} {(account as any).currency || 'USD'}
+                  {(account.balance || 0).toFixed(2)} {account.currency || 'USD'}
                 </td>
                 <td className="text-right p-3" style={{ color: '#141D22' }}>
-                  {(((account as any).equity || 0) as number).toFixed(2)} {(account as any).currency || 'USD'}
+                  {(account.equity || 0).toFixed(2)} {account.currency || 'USD'}
                 </td>
                 <td className="text-right p-3">
                   <div className="flex justify-end gap-2">
@@ -114,27 +114,27 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <span className="font-medium" style={{ color: '#141D22' }}>
-                  {(account as any).login}
+                  {account.login}
                 </span>
-                <Tag color={(account as any).mtType === 'MT4' ? 'blue' : 'purple'} style={{ borderRadius: '4px' }}>
-                  {(account as any).mtType}
+                <Tag color={account.mtType === 'MT4' ? 'blue' : 'purple'} style={{ borderRadius: '4px' }}>
+                  {account.mtType}
                 </Tag>
               </div>
               <Tag color="red">{t('common.disabled')}</Tag>
             </div>
             <div className="text-sm mb-3" style={{ color: '#8A9AA5' }}>
-              {(account as any).brokerCompany || '-'}
+              {account.brokerCompany || '-'}
             </div>
             <div className="flex justify-between mb-3 text-sm">
               <div>
                 <span style={{ color: '#8A9AA5' }}>{t('accounts.disabled.mobile.balanceLabel')}</span>
-                <span style={{ color: '#141D22' }}>{(((account as any).balance || 0) as number).toFixed(2)}</span>
+                <span style={{ color: '#141D22' }}>{(account.balance || 0).toFixed(2)}</span>
               </div>
               <div>
                 <span style={{ color: '#8A9AA5' }}>{t('accounts.disabled.mobile.equityLabel')}</span>
-                <span style={{ color: '#141D22' }}>{(((account as any).equity || 0) as number).toFixed(2)}</span>
+                <span style={{ color: '#141D22' }}>{(account.equity || 0).toFixed(2)}</span>
               </div>
-              <div style={{ color: '#8A9AA5' }}>{(account as any).currency || 'USD'}</div>
+              <div style={{ color: '#8A9AA5' }}>{account.currency || 'USD'}</div>
             </div>
             <div className="flex gap-2">
               <Button

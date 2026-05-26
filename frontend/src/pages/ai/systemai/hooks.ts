@@ -81,7 +81,7 @@ export function useSystemAIPage() {
       await fetchConfigs()
     } catch (err) {
       console.error('failed to load ai configs', err)
-      setError('加载配置失败')
+      setError(t('ai.systemAI.messages.loadConfigFailed'))
     } finally {
       setLoading(false)
     }
@@ -159,10 +159,10 @@ export function useSystemAIPage() {
         setValidated(false)
         setDraft((prev) => prev ? { ...prev, has_secret: true } : prev)
         setLastAutoDiscoverKey('')
-        setNotice('密钥已保存，正在自动发现模型...')
+        setNotice(t('ai.systemAI.messages.secretSavedAutoDiscover'))
         void silentReload()
       } catch (e) {
-        const msg = e instanceof Error ? e.message : '密钥自动保存失败'
+        const msg = e instanceof Error ? e.message : t('ai.systemAI.messages.secretAutoSaveFailed')
         setError(msg)
       } finally {
         setSavingSecret(false)
@@ -203,7 +203,7 @@ export function useSystemAIPage() {
             }
             return next
           })
-          setNotice(`已自动发现 ${models.length} 个模型（仅作选择建议）`)
+          setNotice(t('ai.systemAI.messages.autoDiscoveredModels', { count: models.length }))
           setError('')
           setValidated(false)
           setLastAutoDiscoverKey(key)
@@ -241,7 +241,7 @@ export function useSystemAIPage() {
         }
         const body = await validateSystemAI(draft.provider_id)
         setValidated(true)
-        setNotice(`已自动验证：发现 ${body.model_count ?? 0} 个模型`)
+        setNotice(t('ai.systemAI.messages.autoValidatedModels', { count: body.model_count ?? 0 }))
         setError('')
       } catch (e) {
         const msg = e instanceof Error ? e.message : t('ai.settings.messages.validateFailed')
@@ -261,11 +261,11 @@ export function useSystemAIPage() {
     try {
       await persistDraftConfig(draft)
       setConfigs((prev) => prev.some((item) => item.provider_id === draft.provider_id) ? prev.map((item) => item.provider_id === draft.provider_id ? draft : item) : [...prev, draft])
-      setNotice('配置已保存')
+      setNotice(t('ai.systemAI.messages.configSaved'))
       setError('')
       void silentReload()
     } catch (e) {
-      const msg = e instanceof Error ? e.message : '配置保存失败'
+      const msg = e instanceof Error ? e.message : t('ai.systemAI.messages.configSaveFailed')
       setError(msg)
       throw e
     } finally {
@@ -314,12 +314,12 @@ export function useSystemAIPage() {
     setSavingConfig(true)
     try {
       await persistDraftConfig(optimistic)
-      setNotice(next ? '已启用' : '已停用')
+      setNotice(next ? t('ai.settings.messages.enabled') : t('ai.settings.messages.disabled'))
       setError('')
       void silentReload()
     } catch (e) {
       setDraft((prev) => prev ? { ...prev, enabled: !next } : prev)
-      const msg = e instanceof Error ? e.message : '更新启用状态失败'
+      const msg = e instanceof Error ? e.message : t('ai.systemAI.messages.toggleEnabledFailed')
       setError(msg)
     } finally {
       setSavingConfig(false)
@@ -383,7 +383,7 @@ export function useSystemAIPage() {
         enabled: false,
         has_secret: false,
       } : prev)
-      setNotice('密钥已删除，厂商配置已恢复默认初始化')
+      setNotice(t('ai.systemAI.messages.secretDeletedConfigReset'))
       setError('')
       setValidated(false)
       void silentReload()
@@ -393,7 +393,7 @@ export function useSystemAIPage() {
         removeLocalCustomProvider()
         return
       }
-      setError(msg || '删除密钥失败')
+      setError(msg || t('ai.systemAI.messages.deleteSecretFailed'))
     } finally {
       setSavingSecret(false)
     }
@@ -415,13 +415,13 @@ export function useSystemAIPage() {
       }
       const body = await validateSystemAI(draft.provider_id)
       setValidated(true)
-      setNotice(`验证通过：发现 ${body.model_count ?? 0} 个模型`)
+      setNotice(t('ai.systemAI.messages.validationPassedModels', { count: body.model_count ?? 0 }))
       setError('')
     } catch (e) {
-      const msg = e instanceof Error ? e.message : '验证失败'
+      const msg = e instanceof Error ? e.message : t('ai.settings.messages.validateFailed')
       setValidated(false)
       if (msg.includes('401/403') && !draft.has_secret && !secretInput.trim()) {
-        setError('验证失败：当前厂商通常需要 API Key。请先填写并保存密钥，再重试验证连接。')
+        setError(t('ai.systemAI.messages.validationFailedNeedApiKey'))
       } else {
         setError(toFriendlyDiscoverMessage(msg, t))
       }

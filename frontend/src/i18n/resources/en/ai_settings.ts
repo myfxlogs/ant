@@ -185,6 +185,7 @@ const aiSettings = {
           inputHintPlaceholder: 'Input hint (optional)',
           modelProfilePlaceholder: 'Default (use current profile)',
           modelProfileEmpty: 'Please first enable at least one provider/model in "AI Settings"',
+          historicalBinding: '{{value}} (historical)',
         },
         types: {
           style: 'Style/Paradigm',

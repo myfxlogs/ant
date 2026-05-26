@@ -3,31 +3,48 @@ package connect
 import (
 	"context"
 
+	"fmt"
+
+	"go.uber.org/zap"
+
 	"connectrpc.com/connect"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/shopspring/decimal"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
+	"anttrader/internal/interceptor"
 	"anttrader/internal/mthub"
 )
 
 // MtHubServer implements ant.v1.MtHubServiceHandler.
 type MtHubServer struct {
 	svc *mthub.MtHubService
+	pg  *pgxpool.Pool
+	log *zap.Logger
 }
 
 var _ antv1c.MtHubServiceHandler = (*MtHubServer)(nil)
 
 // NewMtHubServer creates a ConnectRPC server for mthub.
-func NewMtHubServer(svc *mthub.MtHubService) *MtHubServer {
-	return &MtHubServer{svc: svc}
+func NewMtHubServer(svc *mthub.MtHubService, pg *pgxpool.Pool, log *zap.Logger) *MtHubServer {
+	return &MtHubServer{svc: svc, pg: pg, log: log}
 }
 
 func (s *MtHubServer) PlaceOrder(ctx context.Context, req *connect.Request[antv1.PlaceOrderRequest]) (*connect.Response[antv1.PlaceOrderResponse], error) {
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
+	}
 	m := req.Msg
+	if !accountOwnedByUser(ctx, s.pg, userID, m.AccountId) {
+		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
+	}
 	vol, err := decimal.NewFromString(m.Volume)
-	if err != nil { return nil, connect.NewError(connect.CodeInvalidArgument, err) }
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
 	price, _ := decimal.NewFromString(m.Price)
 	sl, _ := decimal.NewFromString(m.StopLoss)
 	tp, _ := decimal.NewFromString(m.TakeProfit)
@@ -38,35 +55,78 @@ func (s *MtHubServer) PlaceOrder(ctx context.Context, req *connect.Request[antv1
 		Volume: vol, Price: price, StopLoss: sl, TakeProfit: tp,
 		Comment: m.Comment, ClientID: m.ClientId, Magic: m.Magic,
 	})
-	if err != nil { return nil, connect.NewError(connect.CodeInternal, err) }
+	if err != nil {
+		s.log.Error("PlaceOrder", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
 	return connect.NewResponse(&antv1.PlaceOrderResponse{Ticket: rec.Ticket, Status: "submitted"}), nil
 }
 
 func (s *MtHubServer) CloseOrder(ctx context.Context, req *connect.Request[antv1.CloseOrderRequest]) (*connect.Response[antv1.CloseOrderResponse], error) {
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
+	}
 	m := req.Msg
+	if !accountOwnedByUser(ctx, s.pg, userID, m.AccountId) {
+		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
+	}
 	lots := decimal.Zero
-	if m.Lots != "" { lots, _ = decimal.NewFromString(m.Lots) }
+	if m.Lots != "" {
+		lots, _ = decimal.NewFromString(m.Lots)
+	}
 	if err := s.svc.CloseOrder(ctx, m.AccountId, m.Ticket, lots); err != nil {
+		s.log.Error("CloseOrder", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.CloseOrderResponse{Status: "closed"}), nil
 }
 
 func (s *MtHubServer) OpenedOrders(ctx context.Context, req *connect.Request[antv1.OpenedOrdersRequest]) (*connect.Response[antv1.OpenedOrdersResponse], error) {
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
+	}
+	if !accountOwnedByUser(ctx, s.pg, userID, req.Msg.AccountId) {
+		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
+	}
 	list, err := s.svc.OpenedOrders(ctx, req.Msg.AccountId)
-	if err != nil { return nil, connect.NewError(connect.CodeInternal, err) }
+	if err != nil {
+		s.log.Error("OpenedOrders", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
 	return connect.NewResponse(&antv1.OpenedOrdersResponse{Orders: toProtoOrders(list)}), nil
 }
 
 func (s *MtHubServer) OrderHistory(ctx context.Context, req *connect.Request[antv1.OrderHistoryRequest]) (*connect.Response[antv1.OrderHistoryResponse], error) {
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
+	}
+	if !accountOwnedByUser(ctx, s.pg, userID, req.Msg.AccountId) {
+		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
+	}
 	list, err := s.svc.OrderHistory(ctx, req.Msg.AccountId, req.Msg.From.AsTime(), req.Msg.To.AsTime())
-	if err != nil { return nil, connect.NewError(connect.CodeInternal, err) }
+	if err != nil {
+		s.log.Error("OrderHistory", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
 	return connect.NewResponse(&antv1.OrderHistoryResponse{Orders: toProtoOrders(list)}), nil
 }
 
 func (s *MtHubServer) SymbolParams(ctx context.Context, req *connect.Request[antv1.SymbolParamsRequest]) (*connect.Response[antv1.SymbolParamsResponse], error) {
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
+	}
+	if !accountOwnedByUser(ctx, s.pg, userID, req.Msg.AccountId) {
+		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
+	}
 	list, err := s.svc.SymbolParams(ctx, req.Msg.AccountId, req.Msg.Canonicals)
-	if err != nil { return nil, connect.NewError(connect.CodeInternal, err) }
+	if err != nil {
+		s.log.Error("SymbolParams", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
 	return connect.NewResponse(&antv1.SymbolParamsResponse{Params: toProtoParams(list)}), nil
 }
 
@@ -82,30 +142,44 @@ func (s *MtHubServer) GetAccountStatus(ctx context.Context, req *connect.Request
 }
 
 func (s *MtHubServer) StreamOrderEvents(ctx context.Context, req *connect.Request[antv1.StreamOrderEventsRequest], stream *connect.ServerStream[antv1.OrderEvent]) error {
-	userID := "default" // placeholder; extract from interceptor later
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
+	}
 	ch, cancel := s.svc.SubscribeUserOrderEvents(ctx, userID)
 	defer cancel()
 	for {
 		select {
-		case <-ctx.Done(): return nil
+		case <-ctx.Done():
+			return nil
 		case ev, ok := <-ch:
-			if !ok { return nil }
-			if err := stream.Send(toProtoOrderEvent(ev)); err != nil { return err }
+			if !ok {
+				return nil
+			}
+			if err := stream.Send(toProtoOrderEvent(ev)); err != nil {
+				return fmt.Errorf("send order event to stream: %w", err)
+			}
 		}
 	}
 }
 
 func sideFromProto(s antv1.Side) mthub.Side {
-	if s == antv1.Side_SIDE_SELL { return mthub.SideSell }
+	if s == antv1.Side_SIDE_SELL {
+		return mthub.SideSell
+	}
 	return mthub.SideBuy
 }
 
 func orderTypeFromProto(t antv1.OrderType) mthub.OrderType {
 	switch t {
-	case antv1.OrderType_ORDER_TYPE_LIMIT: return mthub.OrderLimit
-	case antv1.OrderType_ORDER_TYPE_STOP: return mthub.OrderStop
-	case antv1.OrderType_ORDER_TYPE_STOP_LIMIT: return mthub.OrderStopLimit
-	default: return mthub.OrderMarket
+	case antv1.OrderType_ORDER_TYPE_LIMIT:
+		return mthub.OrderLimit
+	case antv1.OrderType_ORDER_TYPE_STOP:
+		return mthub.OrderStop
+	case antv1.OrderType_ORDER_TYPE_STOP_LIMIT:
+		return mthub.OrderStopLimit
+	default:
+		return mthub.OrderMarket
 	}
 }
 
@@ -115,11 +189,37 @@ func toProtoOrders(list []*mthub.OrderRecord) []*antv1.OrderRecord {
 		out = append(out, &antv1.OrderRecord{
 			Ticket: r.Ticket, AccountId: r.AccountID,
 			SymbolRaw: r.SymbolRaw, Canonical: r.Canonical,
+			Side: toProtoSide(r.Side), OrderType: toProtoOrderType(r.OrderType),
 			Volume: r.Volume.String(), OpenPrice: r.OpenPrice.String(),
-			State: toProtoState(r.State),
+			ClosePrice: r.ClosePrice.String(), Profit: r.Profit.String(),
+			Commission: r.Commission.String(), Swap: r.Swap.String(),
+			OpenTime: timestamppb.New(r.OpenTime), CloseTime: timestamppb.New(r.CloseTime),
+			Comment: r.Comment, Magic: r.Magic, State: toProtoState(r.State),
 		})
 	}
 	return out
+}
+
+func toProtoSide(s mthub.Side) antv1.Side {
+	if s == mthub.SideSell {
+		return antv1.Side_SIDE_SELL
+	}
+	return antv1.Side_SIDE_BUY
+}
+
+func toProtoOrderType(t mthub.OrderType) antv1.OrderType {
+	switch t {
+	case mthub.OrderMarket:
+		return antv1.OrderType_ORDER_TYPE_MARKET
+	case mthub.OrderLimit:
+		return antv1.OrderType_ORDER_TYPE_LIMIT
+	case mthub.OrderStop:
+		return antv1.OrderType_ORDER_TYPE_STOP
+	case mthub.OrderStopLimit:
+		return antv1.OrderType_ORDER_TYPE_STOP_LIMIT
+	default:
+		return antv1.OrderType_ORDER_TYPE_MARKET
+	}
 }
 
 func toProtoParams(list []*mthub.SymbolParam) []*antv1.SymbolParam {
@@ -136,11 +236,16 @@ func toProtoParams(list []*mthub.SymbolParam) []*antv1.SymbolParam {
 
 func toProtoState(s mthub.OrderState) antv1.OrderState {
 	switch s {
-	case mthub.OrderStateOpen: return antv1.OrderState_ORDER_STATE_OPEN
-	case mthub.OrderStateClosed: return antv1.OrderState_ORDER_STATE_CLOSED
-	case mthub.OrderStateCancelled: return antv1.OrderState_ORDER_STATE_CANCELLED
-	case mthub.OrderStateRejected: return antv1.OrderState_ORDER_STATE_REJECTED
-	default: return antv1.OrderState_ORDER_STATE_PENDING
+	case mthub.OrderStateOpen:
+		return antv1.OrderState_ORDER_STATE_OPEN
+	case mthub.OrderStateClosed:
+		return antv1.OrderState_ORDER_STATE_CLOSED
+	case mthub.OrderStateCancelled:
+		return antv1.OrderState_ORDER_STATE_CANCELLED
+	case mthub.OrderStateRejected:
+		return antv1.OrderState_ORDER_STATE_REJECTED
+	default:
+		return antv1.OrderState_ORDER_STATE_PENDING
 	}
 }
 
@@ -150,4 +255,13 @@ func toProtoOrderEvent(ev *mthub.OrderEvent) *antv1.OrderEvent {
 		EventType: ev.EventType, Timestamp: timestamppb.New(ev.Timestamp),
 		Order: &antv1.OrderRecord{Ticket: ev.Order.Ticket},
 	}
+}
+
+func accountOwnedByUser(ctx context.Context, pg *pgxpool.Pool, userID, accountID string) bool {
+	var exists bool
+	err := pg.QueryRow(ctx,
+		`SELECT EXISTS(SELECT 1 FROM mt_accounts WHERE id = $1 AND user_id = $2)`,
+		accountID, userID,
+	).Scan(&exists)
+	return err == nil && exists
 }

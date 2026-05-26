@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useTradingStore } from '@/stores/tradingStore';
 import { tradingApi } from '@/client/trading';
+import type { Position } from '@/types/trading';
 import { accountApi } from '@/client/account';
 import { getErrorMessage, translateMaybeI18nKey } from '@/utils/error';
 import { showError, showSuccess } from '@/utils/message';
@@ -28,7 +29,7 @@ export function useTrading() {
     try {
       const positions = await tradingApi.getPositions(accountId);
       const positionsArray = Array.isArray(positions) ? positions : [];
-      setPositions(accountId, positionsArray as any);
+      setPositions(accountId, positionsArray as Position[]);
       return positionsArray;
     } catch (error) {
       const isFailedPrecondition = error instanceof ConnectError && error.code === Code.FailedPrecondition;
@@ -46,7 +47,7 @@ export function useTrading() {
             if (result?.success !== false) {
               const positionsAfterReconnect = await tradingApi.getPositions(accountId);
               const positionsArray = Array.isArray(positionsAfterReconnect) ? positionsAfterReconnect : [];
-              setPositions(accountId, positionsArray as any);
+              setPositions(accountId, positionsArray as Position[]);
               return positionsArray;
             }
           } catch (_e) {

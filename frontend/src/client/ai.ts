@@ -3,11 +3,11 @@ import i18n from '@/i18n';
 import { timestampDate } from '@bufbuild/protobuf/wkt';
 import type { Timestamp } from '@bufbuild/protobuf/wkt';
 import { create } from '@bufbuild/protobuf';
-import { AIAgentDefinitionSchema, type AIAgentDefinition } from '../gen/ai_agent_pb';
-import type { ConversationMessage as ProtoConversationMessage, ConversationSummary as ProtoConversationSummary } from '../gen/ai_conversation_pb';
-import type { WorkflowRunSummary as ProtoWorkflowRunSummary, WorkflowStep as ProtoWorkflowStep } from '../gen/ai_workflow_entity_pb';
+import { AIAgentDefinitionSchema, type AIAgentDefinition } from '../gen/ant/v1/ai_agent_pb';
+import type { ConversationMessage as ProtoConversationMessage, ConversationSummary as ProtoConversationSummary } from '../gen/ant/v1/ai_conversation_pb';
+import type { WorkflowRunSummary as ProtoWorkflowRunSummary, WorkflowStep as ProtoWorkflowStep } from '../gen/ant/v1/ai_workflow_entity_pb';
 
-export type { AIReport } from '../gen/ai_pb';
+export type { AIReport } from '../gen/ant/v1/ai_pb';
 
 function protoDate(ts: Timestamp | undefined): Date {
   return ts ? timestampDate(ts) : new Date();

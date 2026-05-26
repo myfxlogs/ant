@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -45,7 +46,7 @@ func (r *StrategyScheduleRepository) Create(ctx context.Context, s *model.Strate
 		s.IsActive, s.LastRunAt, s.NextRunAt, s.RunCount, s.LastError, s.EnableCount,
 		s.CreatedAt, s.UpdatedAt,
 	)
-	return err
+	return fmt.Errorf("create schedule: %w", err)
 }
 
 func (r *StrategyScheduleRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.StrategySchedule, error) {
@@ -124,7 +125,7 @@ func (r *StrategyScheduleRepository) Update(ctx context.Context, s *model.Strate
 		s.LastBacktestAt, s.IsActive, s.LastRunAt, s.NextRunAt,
 		s.RunCount, s.LastError, s.UpdatedAt,
 	)
-	return err
+	return fmt.Errorf("update schedule: %w", err)
 }
 
 func (r *StrategyScheduleRepository) UpdateRiskAssessment(ctx context.Context, id uuid.UUID, a *model.RiskAssessment, m *model.BacktestMetrics) error {
@@ -141,14 +142,14 @@ func (r *StrategyScheduleRepository) UpdateRiskAssessment(ctx context.Context, i
 		WHERE id = $1`,
 		id, metricsJSON, a.Score, a.Level, reasonsJSON, warningsJSON, now, now,
 	)
-	return err
+	return fmt.Errorf("update risk assessment: %w", err)
 }
 
 func (r *StrategyScheduleRepository) UpdateNextRunAt(ctx context.Context, id uuid.UUID, nextRunAt time.Time) error {
 	_, err := r.db.ExecContext(ctx,
 		`UPDATE strategy_schedules SET next_run_at = $2, updated_at = $3 WHERE id = $1`,
 		id, nextRunAt, time.Now())
-	return err
+	return fmt.Errorf("update next run at: %w", err)
 }
 
 func (r *StrategyScheduleRepository) UpdateLastRun(ctx context.Context, id uuid.UUID, runErr error) error {
@@ -160,7 +161,7 @@ func (r *StrategyScheduleRepository) UpdateLastRun(ctx context.Context, id uuid.
 	_, err := r.db.ExecContext(ctx,
 		`UPDATE strategy_schedules SET last_run_at = $2, run_count = run_count + 1, last_error = $3, updated_at = $4 WHERE id = $1`,
 		id, now, errMsg, now)
-	return err
+	return fmt.Errorf("update last run: %w", err)
 }
 
 func (r *StrategyScheduleRepository) SetActive(ctx context.Context, id uuid.UUID, active bool) error {
@@ -171,20 +172,23 @@ func (r *StrategyScheduleRepository) SetActive(ctx context.Context, id uuid.UUID
 			updated_at = $3
 		WHERE id = $1`,
 		id, active, time.Now())
-	return err
+	return fmt.Errorf("set schedule active: %w", err)
 }
 
 func (r *StrategyScheduleRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	if _, err := r.db.ExecContext(ctx, `DELETE FROM strategy_execution_logs WHERE schedule_id = $1`, id); err != nil {
-		return err
+		if err != nil {
+			return fmt.Errorf("delete schedule: %w", err)
+		}
+		return nil
 	}
 	result, err := r.db.ExecContext(ctx, `DELETE FROM strategy_schedules WHERE id = $1`, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("delete schedule: %w", err)
 	}
 	rows, err := result.RowsAffected()
 	if err != nil {
-		return err
+		return fmt.Errorf("delete schedule: %w", err)
 	}
 	if rows == 0 {
 		return ErrScheduleNotFound

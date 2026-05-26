@@ -1,21 +1,21 @@
 import { pythonStrategyClient, pythonStrategyStreamClient } from './connect';
 import { create } from '@bufbuild/protobuf';
 import type { Timestamp } from '@bufbuild/protobuf/wkt';
-import { BacktestRunMode } from '../gen/backtest_run_pb';
+import { BacktestRunMode } from '../gen/ant/v1/backtest_run_pb';
 import {
   StartBacktestRunRequestSchema,
-} from '../gen/backtest_run_start_pb';
+} from '../gen/ant/v1/backtest_run_start_pb';
 import {
   GetBacktestRunRequestSchema,
   ListBacktestRunsRequestSchema,
   WatchBacktestRunRequestSchema,
-} from '../gen/backtest_run_query_pb';
+} from '../gen/ant/v1/backtest_run_query_pb';
 import {
   CancelBacktestRunRequestSchema,
   DeleteBacktestRunRequestSchema,
-} from '../gen/backtest_run_control_pb';
+} from '../gen/ant/v1/backtest_run_control_pb';
 
-export type { StrategySignal, BacktestMetrics } from '../gen/api_pb';
+export type { StrategySignal, BacktestMetrics } from '../gen/ant/v1/api_pb';
 
 export interface ExecuteStrategyResult {
   success: boolean;

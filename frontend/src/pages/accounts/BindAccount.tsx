@@ -124,7 +124,7 @@ export default function BindAccount() {
         brokerHost: host,
       };
 
-      await bindAccount(request as any);
+      await bindAccount(request);
       showSuccess(t('accounts.bind.messages.bindSuccess'));
       navigate('/');
     } catch (error) {

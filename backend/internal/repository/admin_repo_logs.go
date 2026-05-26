@@ -42,7 +42,7 @@ func (r *AdminRepository) CreateLog(ctx context.Context, log *model.AdminLog) er
 	if log.Details != nil {
 		detailsJSON, err = json.Marshal(log.Details)
 		if err != nil {
-			return err
+			return fmt.Errorf("marshal log details: %w", err)
 		}
 	}
 

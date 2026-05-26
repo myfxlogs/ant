@@ -85,10 +85,10 @@ func (c *CircuitBreaker) OnFailure() {
 	c.failures++
 	if c.state == StateHalfOpen {
 		c.state = StateOpen
-		c.openedAt = time.Now()
+		c.openedAt = Clk.Now()
 	} else if c.failures >= c.failureThreshold && c.state == StateClosed {
 		c.state = StateOpen
-		c.openedAt = time.Now()
+		c.openedAt = Clk.Now()
 	}
 }
 

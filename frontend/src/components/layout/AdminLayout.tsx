@@ -15,19 +15,11 @@ import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import ContentContainer from '@/components/layout/ContentContainer';
 import { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
+import { useTranslation } from 'react-i18next';
 
 const { Header, Content, Sider } = Layout;
 
 const BRAND_GRADIENT = PRIMARY_GRADIENT;
-
-const menuItems = [
-  { key: '/admin', icon: <IconDashboard size={20} stroke={1.5} />, label: '仪表盘' },
-  { key: '/admin/users', icon: <IconUsers size={20} stroke={1.5} />, label: '用户管理' },
-  { key: '/admin/accounts', icon: <IconBuildingBank size={20} stroke={1.5} />, label: '账户管理' },
-  { key: '/admin/trading', icon: <IconChartLine size={20} stroke={1.5} />, label: '交易监控' },
-  { key: '/admin/logs', icon: <IconFileText size={20} stroke={1.5} />, label: '操作日志' },
-  { key: '/admin/config', icon: <IconSettings size={20} stroke={1.5} />, label: '系统配置' },
-];
 
 export default function AdminLayout() {
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -35,6 +27,7 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -45,10 +38,19 @@ export default function AdminLayout() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  const menuItems = [
+    { key: '/admin', icon: <IconDashboard size={20} stroke={1.5} />, label: t('admin.sidebar.dashboard') },
+    { key: '/admin/users', icon: <IconUsers size={20} stroke={1.5} />, label: t('admin.sidebar.userManagement') },
+    { key: '/admin/accounts', icon: <IconBuildingBank size={20} stroke={1.5} />, label: t('admin.sidebar.accountManagement') },
+    { key: '/admin/trading', icon: <IconChartLine size={20} stroke={1.5} />, label: t('admin.sidebar.tradingMonitor') },
+    { key: '/admin/logs', icon: <IconFileText size={20} stroke={1.5} />, label: t('admin.sidebar.operationLogs') },
+    { key: '/admin/config', icon: <IconSettings size={20} stroke={1.5} />, label: t('admin.sidebar.systemConfig') },
+  ];
+
   const userMenuItems = [
-    { key: 'back', icon: <IconArrowLeft size={18} stroke={1.5} />, label: '返回用户端' },
+    { key: 'back', icon: <IconArrowLeft size={18} stroke={1.5} />, label: t('admin.header.backToUser') },
     { type: 'divider' as const },
-    { key: 'logout', icon: <IconLogout size={18} stroke={1.5} />, label: '退出登录', danger: true },
+    { key: 'logout', icon: <IconLogout size={18} stroke={1.5} />, label: t('admin.header.logout'), danger: true },
   ];
 
   const handleUserMenuClick = ({ key }: { key: string }) => {
@@ -94,7 +96,7 @@ export default function AdminLayout() {
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: BRAND_GRADIENT }}>
               <IconChartLine size={22} stroke={2} color="#FFFFFF" />
             </div>
-            <span className="font-bold text-lg text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>管理后台</span>
+            <span className="font-bold text-lg text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>{t('admin.header.adminPanel')}</span>
           </div>
         </div>
         <div style={{ background: '#1a1f36', minHeight: 'calc(100% - 64px)' }}>
@@ -122,7 +124,7 @@ export default function AdminLayout() {
               <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: BRAND_GRADIENT }}>
                 <IconChartLine size={22} stroke={2} color="#FFFFFF" />
               </div>
-              <span className="font-bold text-lg text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>管理后台</span>
+              <span className="font-bold text-lg text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>{t('admin.header.adminPanel')}</span>
             </div>
           </div>
           <div style={{ padding: '8px' }}>
@@ -157,7 +159,7 @@ export default function AdminLayout() {
             )}
             {!isMobile && (
               <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: '#fef3c7', border: '1px solid #fcd34d' }}>
-                <span className="text-sm font-medium" style={{ color: '#92400e' }}>管理员模式</span>
+                <span className="text-sm font-medium" style={{ color: '#92400e' }}>{t('admin.header.adminMode')}</span>
               </div>
             )}
           </div>
@@ -175,7 +177,7 @@ export default function AdminLayout() {
                 />
                 {!isMobile && (
                   <div className="hidden sm:block">
-                    <div className="text-sm font-medium" style={{ color: '#141D22' }}>{user?.nickname || user?.email?.split('@')[0] || '管理员'}</div>
+                    <div className="text-sm font-medium" style={{ color: '#141D22' }}>{user?.nickname || user?.email?.split('@')[0] || t('admin.header.admin')}</div>
                   </div>
                 )}
               </div>

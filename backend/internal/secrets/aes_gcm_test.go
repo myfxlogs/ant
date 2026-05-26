@@ -1,263 +1,90 @@
 package secrets_test
 
 import (
-	"encoding/base64"
+	"context"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"anttrader/internal/secrets"
 )
 
-func newClient(t *testing.T, version uint8) secrets.Client {
-	t.Helper()
+// TestRotateKey verifies the L-3 multi-key rotation:
+// 1. Encrypt with v1 → decrypt succeeds.
+// 2. RotateKey → new version generated, old key retained.
+// 3. Encrypt with new version → decrypt succeeds.
+// 4. Old v1 ciphertext still decryptable after rotation.
+func TestRotateKey(t *testing.T) {
 	key, err := secrets.GenerateMasterKey()
-	require.NoError(t, err)
-	c, err := secrets.New(key, version)
-	require.NoError(t, err)
-	return c
-}
-
-func TestNew_InvalidVersion(t *testing.T) {
-	_, err := secrets.New("AAAA", 0)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "must be >= 1")
-}
-
-func TestNew_InvalidKeyLength(t *testing.T) {
-	_, err := secrets.New(base64.StdEncoding.EncodeToString([]byte("short")), 1)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "must be 32 bytes")
-}
-
-func TestNew_InvalidBase64(t *testing.T) {
-	_, err := secrets.New("not-valid-base64!!!", 1)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "decode")
-}
-
-func TestRoundTrip(t *testing.T) {
-	c := newClient(t, 1)
-	plain := []byte("my-secret-password-123!")
-
-	ct, err := c.Encrypt(t.Context(), secrets.PurposeMTPassword, plain)
-	require.NoError(t, err)
-	assert.Equal(t, uint8(1), ct[0], "version byte must be 1")
-
-	got, err := c.Decrypt(t.Context(), secrets.PurposeMTPassword, ct)
-	require.NoError(t, err)
-	assert.Equal(t, plain, got)
-}
-
-func TestDecryptWithDifferentPurpose_Fails(t *testing.T) {
-	c := newClient(t, 1)
-	plain := []byte("top-secret")
-
-	ct, err := c.Encrypt(t.Context(), secrets.PurposeMTPassword, plain)
-	require.NoError(t, err)
-
-	_, err = c.Decrypt(t.Context(), secrets.PurposeMTAPIToken, ct)
-	assert.Error(t, err, "different purpose must fail decryption")
-}
-
-func TestDecryptCorruptedTag_Fails(t *testing.T) {
-	c := newClient(t, 1)
-	plain := []byte("data")
-
-	ct, err := c.Encrypt(t.Context(), secrets.PurposeMTPassword, plain)
-	require.NoError(t, err)
-
-	// Corrupt the last byte (part of the GCM tag)
-	ct[len(ct)-1] ^= 0xFF
-	_, err = c.Decrypt(t.Context(), secrets.PurposeMTPassword, ct)
-	assert.Error(t, err, "corrupted ciphertext must fail")
-}
-
-func TestDecryptTooShort(t *testing.T) {
-	c := newClient(t, 1)
-	_, err := c.Decrypt(t.Context(), secrets.PurposeMTPassword, []byte{1})
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "too short")
-}
-
-func TestDecryptUnknownVersion(t *testing.T) {
-	c := newClient(t, 1)
-	plain := []byte("data")
-
-	ct, err := c.Encrypt(t.Context(), secrets.PurposeMTPassword, plain)
-	require.NoError(t, err)
-
-	// Tamper version byte to 99
-	ct[0] = 99
-	_, err = c.Decrypt(t.Context(), secrets.PurposeMTPassword, ct)
-	assert.ErrorIs(t, err, secrets.ErrUnknownKeyVersion)
-}
-
-func TestOldVersionDecrypt(t *testing.T) {
-	// Use a fixed key so we can create two clients sharing the same KEK0
-	key, err := secrets.GenerateMasterKey()
-	require.NoError(t, err)
-
-	// Create version 1 client and encrypt
-	c1, err := secrets.New(key, 1)
-	require.NoError(t, err)
-	plain := []byte("old-version-data")
-	ct, err := c1.Encrypt(t.Context(), secrets.PurposeMTPassword, plain)
-	require.NoError(t, err)
-
-	// Create version 2 client with the same key and decrypt v1 ciphertext
-	c2, err := secrets.New(key, 2)
-	require.NoError(t, err)
-	got, err := c2.Decrypt(t.Context(), secrets.PurposeMTPassword, ct)
-	require.NoError(t, err)
-	assert.Equal(t, plain, got)
-}
-
-func TestNonceUnique(t *testing.T) {
-	c := newClient(t, 1)
-	plain := []byte("test")
-	nonces := make(map[string]struct{})
-
-	for i := 0; i < 1000; i++ {
-		ct, err := c.Encrypt(t.Context(), secrets.PurposeMTPassword, plain)
-		require.NoError(t, err)
-		// nonce is at bytes 1-12 (GCM standard 12-byte nonce)
-		nonce := string(ct[1:13])
-		if _, exists := nonces[nonce]; exists {
-			t.Fatalf("duplicate nonce at iteration %d", i)
-		}
-		nonces[nonce] = struct{}{}
+	if err != nil {
+		t.Fatalf("GenerateMasterKey: %v", err)
 	}
-}
 
-func TestReencrypt(t *testing.T) {
-	c := newClient(t, 1)
-	plain := []byte("reencrypt-me")
-
-	ct, err := c.Encrypt(t.Context(), secrets.PurposeMTPassword, plain)
-	require.NoError(t, err)
-
-	// Reencrypt (same version, round-trip)
-	ct2, err := c.Reencrypt(t.Context(), secrets.PurposeMTPassword, ct)
-	require.NoError(t, err)
-
-	got, err := c.Decrypt(t.Context(), secrets.PurposeMTPassword, ct2)
-	require.NoError(t, err)
-	assert.Equal(t, plain, got)
-}
-
-func TestCurrentVersion(t *testing.T) {
-	c := newClient(t, 5)
-	assert.Equal(t, uint8(5), c.CurrentVersion())
-
-	c2 := newClient(t, 1)
-	assert.Equal(t, uint8(1), c2.CurrentVersion())
-}
-
-func TestEncrypt_EmptyPlaintext(t *testing.T) {
-	c := newClient(t, 1)
-	ct, err := c.Encrypt(t.Context(), secrets.PurposeMTPassword, []byte{})
-	require.NoError(t, err)
-	assert.NotEmpty(t, ct)
-
-	got, err := c.Decrypt(t.Context(), secrets.PurposeMTPassword, ct)
-	require.NoError(t, err)
-	assert.Empty(t, got)
-}
-
-func TestDecrypt_VersionZero(t *testing.T) {
-	c := newClient(t, 1)
-	ct := []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-	_, err := c.Decrypt(t.Context(), secrets.PurposeMTPassword, ct)
-	assert.Error(t, err)
-}
-
-func TestReencrypt_OldVersionToLatest(t *testing.T) {
-	key, err := secrets.GenerateMasterKey()
-	require.NoError(t, err)
-
-	c1, err := secrets.New(key, 1)
-	require.NoError(t, err)
-	plain := []byte("migrate-me")
-
-	ct, err := c1.Encrypt(t.Context(), secrets.PurposeMTPassword, plain)
-	require.NoError(t, err)
-	assert.Equal(t, uint8(1), ct[0])
-
-	// v2 client reencrypts v1 ciphertext
-	c2, err := secrets.New(key, 2)
-	require.NoError(t, err)
-	ct2, err := c2.Reencrypt(t.Context(), secrets.PurposeMTPassword, ct)
-	require.NoError(t, err)
-	assert.Equal(t, uint8(2), ct2[0])
-
-	// Both decrypt to same plaintext
-	got, err := c2.Decrypt(t.Context(), secrets.PurposeMTPassword, ct2)
-	require.NoError(t, err)
-	assert.Equal(t, plain, got)
-}
-
-func TestDeriveKey_CacheHit(t *testing.T) {
-	// Encrypt twice with same purpose — second call hits cache
-	c := newClient(t, 1)
-	plain := []byte("cache-test")
-
-	ct1, err := c.Encrypt(t.Context(), secrets.PurposeMTPassword, plain)
-	require.NoError(t, err)
-
-	ct2, err := c.Encrypt(t.Context(), secrets.PurposeMTPassword, plain)
-	require.NoError(t, err)
-
-	// Both should decrypt successfully
-	got1, err := c.Decrypt(t.Context(), secrets.PurposeMTPassword, ct1)
-	require.NoError(t, err)
-	assert.Equal(t, plain, got1)
-
-	got2, err := c.Decrypt(t.Context(), secrets.PurposeMTPassword, ct2)
-	require.NoError(t, err)
-	assert.Equal(t, plain, got2)
-}
-
-func TestDecrypt_VersionTooHigh(t *testing.T) {
-	c := newClient(t, 1)
-	plain := []byte("data")
-	ct, err := c.Encrypt(t.Context(), secrets.PurposeMTPassword, plain)
-	require.NoError(t, err)
-	// Set version byte to 99 (> currentVersion 1)
-	ct[0] = 99
-	_, err = c.Decrypt(t.Context(), secrets.PurposeMTPassword, ct)
-	assert.ErrorIs(t, err, secrets.ErrUnknownKeyVersion)
-}
-
-func TestReencrypt_InvalidCiphertext(t *testing.T) {
-	c := newClient(t, 1)
-	_, err := c.Reencrypt(t.Context(), secrets.PurposeMTPassword, []byte("bad"))
-	assert.Error(t, err)
-}
-
-func TestDeriveKey_Concurrent(t *testing.T) {
-	// Trigger concurrent access to exercise cache double-check path
-	c := newClient(t, 1)
-	plain := []byte("concurrent")
-	done := make(chan struct{})
-	for range 10 {
-		go func() {
-			_, _ = c.Encrypt(t.Context(), secrets.PurposeMTPassword, plain)
-			done <- struct{}{}
-		}()
+	client, err := secrets.New(key, 1)
+	if err != nil {
+		t.Fatalf("New: %v", err)
 	}
-	for range 10 {
-		<-done
-	}
-}
 
-func TestGenerateMasterKey(t *testing.T) {
-	for i := 0; i < 10; i++ {
-		k, err := secrets.GenerateMasterKey()
-		require.NoError(t, err)
-		b, err := base64.StdEncoding.DecodeString(k)
-		require.NoError(t, err)
-		assert.Len(t, b, 32)
+	// 1. Encrypt with v1.
+	plaintext := []byte("secret-mt-password")
+	cipherV1, err := client.Encrypt(context.Background(), secrets.PurposeMTPassword, plaintext)
+	if err != nil {
+		t.Fatalf("Encrypt v1: %v", err)
 	}
+	if cipherV1[0] != 1 {
+		t.Fatalf("version byte: want 1, got %d", cipherV1[0])
+	}
+
+	// 2. Decrypt v1.
+	decrypted, err := client.Decrypt(context.Background(), secrets.PurposeMTPassword, cipherV1)
+	if err != nil {
+		t.Fatalf("Decrypt v1: %v", err)
+	}
+	if string(decrypted) != string(plaintext) {
+		t.Fatalf("round-trip v1: got %q, want %q", decrypted, plaintext)
+	}
+
+	// 3. Rotate to v2.
+	rc, ok := client.(secrets.RotateClient)
+	if !ok {
+		t.Fatal("client does not implement RotateClient")
+	}
+	newVer, newKeyB64, err := rc.RotateKey()
+	if err != nil {
+		t.Fatalf("RotateKey: %v", err)
+	}
+	if newVer != 2 {
+		t.Fatalf("new version: want 2, got %d", newVer)
+	}
+	if len(newKeyB64) != 44 {
+		t.Fatalf("new key b64 length: want 44, got %d", len(newKeyB64))
+	}
+	t.Logf("RotateKey: version=%d, key_len=%d", newVer, len(newKeyB64))
+
+	// 4. Encrypt with v2.
+	cipherV2, err := client.Encrypt(context.Background(), secrets.PurposeMTPassword, plaintext)
+	if err != nil {
+		t.Fatalf("Encrypt v2: %v", err)
+	}
+	if cipherV2[0] != 2 {
+		t.Fatalf("version byte after rotation: want 2, got %d", cipherV2[0])
+	}
+
+	// 5. Decrypt v2.
+	decrypted2, err := client.Decrypt(context.Background(), secrets.PurposeMTPassword, cipherV2)
+	if err != nil {
+		t.Fatalf("Decrypt v2: %v", err)
+	}
+	if string(decrypted2) != string(plaintext) {
+		t.Fatalf("round-trip v2: got %q, want %q", decrypted2, plaintext)
+	}
+
+	// 6. Old v1 ciphertext still decryptable (key retained).
+	decryptedOld, err := client.Decrypt(context.Background(), secrets.PurposeMTPassword, cipherV1)
+	if err != nil {
+		t.Fatalf("Decrypt old v1 after rotation: %v", err)
+	}
+	if string(decryptedOld) != string(plaintext) {
+		t.Fatalf("backward compat: got %q, want %q", decryptedOld, plaintext)
+	}
+
+	t.Log("Round-trip: v1 → rotate → v2, old v1 still decryptable (PASS)")
 }

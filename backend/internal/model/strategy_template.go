@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -72,7 +73,7 @@ func (t *StrategyTemplate) SetI18n(v *TemplateI18n) error {
 	}
 	data, err := json.Marshal(v)
 	if err != nil {
-		return err
+		return fmt.Errorf("marshal template i18n: %w", err)
 	}
 	t.I18n = data
 	return nil
@@ -192,7 +193,7 @@ func (t *StrategyTemplate) GetParameters() ([]TemplateParameter, error) {
 func (t *StrategyTemplate) SetParameters(params []TemplateParameter) error {
 	data, err := json.Marshal(params)
 	if err != nil {
-		return err
+		return fmt.Errorf("marshal template parameters: %w", err)
 	}
 	t.Parameters = data
 	return nil

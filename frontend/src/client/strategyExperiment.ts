@@ -1,5 +1,5 @@
 import { strategyExperimentClient } from './connect';
-import type { StrategyExperiment, StrategyExperimentCandidate } from '../gen/strategy_experiment_pb';
+import type { StrategyExperiment, StrategyExperimentCandidate } from '../gen/ant/v1/strategy_experiment_pb';
 
 export type { StrategyExperiment, StrategyExperimentCandidate };
 

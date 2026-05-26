@@ -2,6 +2,7 @@ package backfiller
 
 import (
 	"context"
+	"fmt"
 
 	"anttrader/internal/mdgateway/adapter/mdtick"
 )
@@ -46,7 +47,7 @@ func (ta *TargetAdapter) IngestBar(ctx context.Context, bar *mdtick.Bar) error {
 
 	// 2. Publish to NATS (with X-Ant-Replay header already set).
 	if err := ta.publisher.PublishBar(bar); err != nil {
-		return err
+		return fmt.Errorf("publish backfilled bar to NATS: %w", err)
 	}
 
 	// 3. Enqueue for CH write.

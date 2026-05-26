@@ -77,7 +77,7 @@ export default function MainLayout() {
     },
     { key: menuKeys.strategies, icon: <IconList size={20} stroke={1.5} />, label: t('menu.strategies') },
     // { key: menuKeys.experiments, icon: <IconFlask size={20} stroke={1.5} />, label: '策略实验' },
-    { key: menuKeys.marketRegime, icon: <IconWaveSine size={20} stroke={1.5} />, label: '市场状态' },
+    { key: menuKeys.marketRegime, icon: <IconWaveSine size={20} stroke={1.5} />, label: t('menu.marketRegime') },
     // { key: menuKeys.assets, icon: <IconArchive size={20} stroke={1.5} />, label: '资产库' },
     { key: menuKeys.schedules, icon: <IconBolt size={20} stroke={1.5} />, label: t('menu.schedules') },
     { key: menuKeys.logs, icon: <IconHistory size={20} stroke={1.5} />, label: t('menu.logs') },

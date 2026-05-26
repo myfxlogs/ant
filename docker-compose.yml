@@ -25,7 +25,7 @@ services:
       strategy-service:
         condition: service_started
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -52,6 +52,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set in .env}
       - DB_PORT=5432
       - JWT_SECRET=${JWT_SECRET:?JWT_SECRET must be set in .env (32+ chars)}
+      - NATS_URL=nats://nats:4222
       - STRATEGY_SERVICE_URL=http://strategy-service:8081
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -94,7 +95,7 @@ services:
         reservations:
           memory: 192M
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/healthz || exit 1"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:8081/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5

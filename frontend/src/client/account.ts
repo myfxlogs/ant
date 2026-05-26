@@ -1,7 +1,7 @@
 import { accountClient } from './connect';
 import { toCamelCase } from '../adapters/dataAdapter';
 
-export type { Account, BrokerCompany } from '../gen/api_pb';
+export type { Account, BrokerCompany } from '../gen/ant/v1/api_pb';
 
 export interface ConnectAccountResult {
   success: boolean;
@@ -11,8 +11,7 @@ export interface ConnectAccountResult {
 export const accountApi = {
   list: async () => {
     const response = await accountClient.listAccounts({});
-    const accounts = (response as any).accounts || [];
-    return toCamelCase(accounts);
+    return toCamelCase(response.accounts);
   },
 
   get: async (id: string) => {
@@ -59,7 +58,7 @@ export const accountApi = {
   },
 
   connect: async (id: string): Promise<ConnectAccountResult> => {
-    const response: any = await accountClient.connectAccount({ id });
+    const response = await accountClient.connectAccount({ id });
     return {
       success: response.success,
       message: response.message,
@@ -75,35 +74,36 @@ export const accountApi = {
   },
 
   searchBroker: async (company: string, mtType?: string) => {
-    const response: any = await accountClient.searchBroker({ 
+    const response = await accountClient.searchBroker({
       company,
       mtType: mtType || 'MT5',
     });
     return response.companies;
   },
 
-  // 轻量探测账户是否具备交易权限（非投资者只读模式）。
+  // Lightweight probe to check whether the account has trade permissions
+  // (not investor read-only mode).
   verifyTradePermission: async (id: string) => {
-    const response: any = await (accountClient as any).verifyTradePermission({ id });
+    const response = await accountClient.verifyTradePermission({ id });
     return {
-      hasTradePermission: Boolean(response?.hasTradePermission),
-      isInvestor: Boolean(response?.isInvestor),
-      verified: Boolean(response?.verified),
-      message: String(response?.message || ''),
+      hasTradePermission: response.hasTradePermission,
+      isInvestor: response.isInvestor,
+      verified: response.verified,
+      message: response.message,
     };
   },
 
-  // 用新密码做一次 Connect 测试，成功后覆盖库里存的密码并刷新 is_investor。
+  // Test-connect with a new password, then persist it and refresh is_investor.
   updateTradingPassword: async (id: string, newPassword: string) => {
-    const response: any = await (accountClient as any).updateTradingPassword({
+    const response = await accountClient.updateTradingPassword({
       id,
       newPassword,
     });
     return {
-      success: Boolean(response?.success),
-      hasTradePermission: Boolean(response?.hasTradePermission),
-      isInvestor: Boolean(response?.isInvestor),
-      message: String(response?.message || ''),
+      success: response.success,
+      hasTradePermission: response.hasTradePermission,
+      isInvestor: response.isInvestor,
+      message: response.message,
     };
   },
 };

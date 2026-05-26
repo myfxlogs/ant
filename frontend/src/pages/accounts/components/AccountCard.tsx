@@ -28,10 +28,10 @@ type Props = {
 };
 
 const getStatusIndicator = (account: Account, t: (key: string) => string) => {
-  if ((account as any).isDisabled) {
+  if (account.isDisabled) {
     return { icon: '⚪', color: '#8A9AA5', text: t('accounts.card.status.disabled') };
   }
-  switch ((account as any).status) {
+  switch (account.status) {
     case 'connected':
       return { icon: '🟢', color: '#00A651', text: t('accounts.card.status.connected') };
     case 'connecting':
@@ -59,23 +59,23 @@ export default function AccountCard({
 }: Props) {
   const { t } = useTranslation();
   const status = getStatusIndicator(account, t);
-  const balance = realtimeInfo?.balance ?? (account as any).balance ?? 0;
-  const equity = realtimeInfo?.equity ?? (account as any).equity ?? 0;
+  const balance = realtimeInfo?.balance ?? account.balance ?? 0;
+  const equity = realtimeInfo?.equity ?? account.equity ?? 0;
 
   const balanceDisplay = useMemo(() => {
     const isNegative = balance < 0;
     const color = isNegative ? '#E53935' : '#141D22';
-    return { text: `${isNegative ? '-' : ''}${Math.abs(balance).toFixed(2)} ${(account as any).currency || 'USD'}`, color };
+    return { text: `${isNegative ? '-' : ''}${Math.abs(balance).toFixed(2)} ${account.currency || 'USD'}`, color };
   }, [balance, account]);
 
   const equityDisplay = useMemo(() => {
     const isNegative = equity < 0;
     const color = isNegative ? '#E53935' : '#141D22';
-    return { text: `${isNegative ? '-' : ''}${Math.abs(equity).toFixed(2)} ${(account as any).currency || 'USD'}`, color };
+    return { text: `${isNegative ? '-' : ''}${Math.abs(equity).toFixed(2)} ${account.currency || 'USD'}`, color };
   }, [equity, account]);
 
   const handleStatusClick = () => {
-    if (!(account as any).isDisabled && (account as any).status !== 'connected') {
+    if (!account.isDisabled && account.status !== 'connected') {
       onConnect(account.id);
     }
   };
@@ -83,8 +83,8 @@ export default function AccountCard({
   const menuItems: MenuProps['items'] = [
     {
       key: 'toggle',
-      label: (account as any).isDisabled ? t('common.enable') : t('common.disable'),
-      icon: (account as any).isDisabled ? (
+      label: account.isDisabled ? t('common.enable') : t('common.disable'),
+      icon: account.isDisabled ? (
         enablingAccount === account.id ? (
           <Spin size="small" />
         ) : (
@@ -94,7 +94,7 @@ export default function AccountCard({
         <IconPlayerPause size={14} stroke={1.5} />
       ),
       onClick: () => {
-        if ((account as any).isDisabled) {
+        if (account.isDisabled) {
           onEnable(account.id);
         } else {
           onDisable(account.id);
@@ -134,7 +134,7 @@ export default function AccountCard({
       style={{
         background: '#FFFFFF',
         boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)',
-        opacity: (account as any).isDisabled ? 0.6 : 1,
+        opacity: account.isDisabled ? 0.6 : 1,
       }}
     >
       <div className="p-5">
@@ -143,13 +143,13 @@ export default function AccountCard({
             <span className="text-xl">{status.icon}</span>
             <div>
               <div className="font-semibold text-lg" style={{ color: '#141D22' }}>
-                {(account as any).login}
+                {account.login}
               </div>
               <Tag
-                color={(account as any).mtType === 'MT4' ? 'blue' : 'purple'}
+                color={account.mtType === 'MT4' ? 'blue' : 'purple'}
                 style={{ borderRadius: '4px', marginLeft: '8px' }}
               >
-                {(account as any).mtType}
+                {account.mtType}
               </Tag>
             </div>
           </div>
@@ -159,7 +159,7 @@ export default function AccountCard({
               color: status.color,
               border: 'none',
               borderRadius: '6px',
-              cursor: !(account as any).isDisabled && (account as any).status !== 'connected' ? 'pointer' : 'default',
+              cursor: !account.isDisabled && account.status !== 'connected' ? 'pointer' : 'default',
             }}
             onClick={handleStatusClick}
           >
@@ -191,13 +191,13 @@ export default function AccountCard({
           <div className="flex justify-between">
             <span style={{ color: '#8A9AA5' }}>{t('accounts.card.fields.broker')}</span>
             <span className="font-medium" style={{ color: '#141D22' }}>
-              {(account as any).brokerCompany}
+              {account.brokerCompany}
             </span>
           </div>
           <div className="flex justify-between">
             <span style={{ color: '#8A9AA5' }}>{t('accounts.card.fields.server')}</span>
             <span className="font-medium" style={{ color: '#141D22' }}>
-              {(account as any).brokerServer}
+              {account.brokerServer}
             </span>
           </div>
         </div>

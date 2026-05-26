@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/jackc/pgx/v5"
 
@@ -51,14 +52,17 @@ func (r *AdminRepository) SetConfig(ctx context.Context, key, value, description
 		ON CONFLICT (key) DO UPDATE SET value = $2, description = $3, updated_at = CURRENT_TIMESTAMP
 	`
 	_, err := r.db.Exec(ctx, query, key, value, description)
-	return err
+	if err != nil {
+		return fmt.Errorf("set config: %w", err)
+	}
+	return nil
 }
 
 func (r *AdminRepository) SetConfigEnabled(ctx context.Context, key string, enabled bool) error {
 	query := `UPDATE system_config SET enabled = $2, updated_at = CURRENT_TIMESTAMP WHERE key = $1`
 	result, err := r.db.Exec(ctx, query, key, enabled)
 	if err != nil {
-		return err
+		return fmt.Errorf("set config enabled: %w", err)
 	}
 	if result.RowsAffected() == 0 {
 		return ErrConfigNotFound

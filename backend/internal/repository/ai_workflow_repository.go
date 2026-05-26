@@ -97,7 +97,11 @@ func (r *AIWorkflowRepository) AppendStep(ctx context.Context, userID, runID uui
 	if txErr != nil {
 		return nil, txErr
 	}
-	defer func() { _ = tx.Rollback() }()
+	defer func() {
+		if err := tx.Rollback(); err != nil && err.Error() != "sql: transaction has already been committed or rolled back" {
+			// rollback failed for a reason other than "already committed"
+		}
+	}()
 
 	_, err = tx.ExecContext(ctx,
 		`INSERT INTO ai_workflow_steps (id, run_id, step_key, title, status, input, output, error, duration_ms, created_at)

@@ -30,7 +30,7 @@ type DailyLoss struct {
 func (r *DailyLoss) Name() string { return "daily_loss" }
 func (r *DailyLoss) Check(_ context.Context, req *CheckRequest) *CheckResult {
 	if time.Since(r.DayStart) > 24*time.Hour {
-		r.DayStart = time.Now()
+		r.DayStart = Clk.Now()
 		r.DailyPL = 0
 	}
 	if r.Limit > 0 && r.DailyPL < -r.Limit {
@@ -69,7 +69,7 @@ type Session struct{}
 
 func (r *Session) Name() string { return "session" }
 func (r *Session) Check(_ context.Context, req *CheckRequest) *CheckResult {
-	now := time.Now().UTC()
+	now := Clk.Now().UTC()
 	if now.Weekday() == time.Saturday || now.Weekday() == time.Sunday {
 		return &CheckResult{Passed: false, Rule: r.Name(), Reason: "market closed (weekend)"}
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -77,7 +78,7 @@ func (r *StrategyExperimentRepository) Create(ctx context.Context, exp *Strategy
 		INSERT INTO strategy_experiments (id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,created_at,finished_at)
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
 	`, exp.ID, exp.UserID, exp.BaseTemplateID, exp.Status, exp.ParameterSpace, exp.SearchMethod, exp.MaxCandidates, exp.Objective, exp.MarketRegimeRef, exp.BestCandidateID, exp.JobID, exp.CreatedAt, exp.FinishedAt)
-	return err
+	return fmt.Errorf("create experiment: %w", err)
 }
 
 func (r *StrategyExperimentRepository) Get(ctx context.Context, userID, id uuid.UUID) (*StrategyExperiment, error) {
@@ -127,7 +128,7 @@ func (r *StrategyExperimentRepository) CreateCandidate(ctx context.Context, cand
 		INSERT INTO strategy_experiment_candidates (id,experiment_id,parameters,draft_code_ref,backtest_run_id,score,grade,score_components,rank,summary,recommendation,created_at)
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
 	`, candidate.ID, candidate.ExperimentID, candidate.Parameters, candidate.DraftCodeRef, candidate.BacktestRunID, candidate.Score, candidate.Grade, candidate.ScoreComponents, candidate.Rank, candidate.Summary, candidate.Recommendation, candidate.CreatedAt)
-	return err
+	return fmt.Errorf("create experiment candidate: %w", err)
 }
 
 func (r *StrategyExperimentRepository) ListCandidates(ctx context.Context, userID, experimentID uuid.UUID) ([]StrategyExperimentCandidate, error) {
@@ -154,5 +155,8 @@ func (r *StrategyExperimentRepository) GetCandidate(ctx context.Context, userID,
 
 func (r *StrategyExperimentRepository) SetBestCandidate(ctx context.Context, experimentID, candidateID uuid.UUID) error {
 	_, err := r.db.ExecContext(ctx, `UPDATE strategy_experiments SET best_candidate_id = $2 WHERE id = $1`, experimentID, candidateID)
-	return err
+	if err != nil {
+		return fmt.Errorf("set best candidate: %w", err)
+	}
+	return nil
 }

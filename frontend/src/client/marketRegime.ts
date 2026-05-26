@@ -1,6 +1,6 @@
 import { timestampFromDate } from '@bufbuild/protobuf/wkt';
 import { marketRegimeClient } from './connect';
-import type { MarketRegime } from '../gen/market_regime_pb';
+import type { MarketRegime } from '../gen/ant/v1/market_regime_pb';
 
 export type { MarketRegime };
 

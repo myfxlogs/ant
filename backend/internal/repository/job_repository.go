@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -66,7 +67,7 @@ func (r *JobRepository) CreateJob(ctx context.Context, job *Job) error {
 		INSERT INTO jobs (id, user_id, kind, status, progress, stage, request_summary, result_ref, result_summary, error_code, error_message, idempotency_key, created_at, started_at, finished_at, expires_at)
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
 	`, job.ID, job.UserID, job.Kind, job.Status, job.Progress, job.Stage, job.RequestSummary, job.ResultRef, job.ResultSummary, job.ErrorCode, job.ErrorMessage, job.IdempotencyKey, job.CreatedAt, job.StartedAt, job.FinishedAt, job.ExpiresAt)
-	return err
+	return fmt.Errorf("create job: %w", err)
 }
 
 func (r *JobRepository) GetJob(ctx context.Context, userID, jobID uuid.UUID) (*Job, error) {
@@ -98,7 +99,7 @@ func (r *JobRepository) AddEvent(ctx context.Context, event *JobEvent) error {
 	if event.Seq <= 0 {
 		err := r.db.GetContext(ctx, &nextSeq, `SELECT COALESCE(MAX(seq), 0) + 1 FROM job_events WHERE job_id = $1`, event.JobID)
 		if err != nil {
-			return err
+			return fmt.Errorf("add job event: %w", err)
 		}
 		event.Seq = nextSeq
 	}
@@ -109,7 +110,7 @@ func (r *JobRepository) AddEvent(ctx context.Context, event *JobEvent) error {
 		INSERT INTO job_events (id, job_id, seq, type, status, progress, stage, message, payload, created_at)
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
 	`, event.ID, event.JobID, event.Seq, event.Type, event.Status, event.Progress, event.Stage, event.Message, event.Payload, event.CreatedAt)
-	return err
+	return fmt.Errorf("add job event: %w", err)
 }
 
 func (r *JobRepository) ListEvents(ctx context.Context, jobID uuid.UUID, afterSeq int64, limit int) ([]JobEvent, error) {

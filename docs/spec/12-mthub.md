@@ -266,7 +266,64 @@ service MtHubService {
 | `mthub_event_subscriber_count` | Gauge | user_id |
 | `mthub_event_dropped_total` | Counter | reason={chan_full} |
 
-## 11. 验收命令
+## 11. 订单状态机与崩溃恢复
+
+> **详细规范**：`docs/spec/22-order-state-machine.md`
+> **关联 ADR**：ADR-0013
+
+mthub 持有订单状态机的**执行端**职责：
+
+### 11.1 IdempotencyGuard（`idempotency.go`，≤ 60 lines）
+
+```go
+type IdempotencyGuard struct {
+    redis *redis.Client
+}
+
+// CheckAndSet 原子检查并设置幂等键。
+// key = "idem:{account_id}:{client_id}", value = ticket, TTL = 24h.
+// 返回 (isDuplicate bool, existingTicket int64).
+// 用于 PlaceOrder 入口：若重复则返回已有 ticket（不重复下单）。
+func (g *IdempotencyGuard) CheckAndSet(ctx context.Context, accountID, clientID string, ticket int64) (bool, int64, error)
+```
+
+### 11.2 ReconciliationLoop（`reconciliation.go`，≤ 120 lines）
+
+```go
+type ReconciliationLoop struct {
+    hub        *Hub
+    pg         *pgxpool.Pool
+    redis      *redis.Client
+    log        *zap.Logger
+}
+
+// Start 启动时对账 + 每 30s 定时对账。
+// 对账流程：
+//   1. FetchOpenedOrders + FetchOrderHistory(5min窗口) → MT broker 当前状态
+//   2. SELECT * FROM orders WHERE account_id=? AND ant_state IN (pending, submitted, partial) → ant 状态
+//   3. 三方比对：
+//      - ant 有、MT 无 → ghost → UPDATE ant_state='CANCELLED' + alert
+//      - MT 有、ant 无 → orphan → INSERT INTO orders + metric
+//      - 状态不一致 → MT 为准 → UPDATE ant_state + metric
+func (r *ReconciliationLoop) Start(ctx context.Context)
+func (r *ReconciliationLoop) Poll(ctx context.Context)
+```
+
+### 11.3 10-state 状态机（镜像 MT5）
+
+```
+PENDING → SUBMITTED → PARTIALLY_FILLED → FILLED
+                       PARTIALLY_FILLED → CANCELLED (剩余取消)
+PENDING → REJECTED
+PENDING → CANCELLED
+PENDING → EXPIRED (超时未成交)
+SUBMITTED → CANCELLED
+SUBMITTED → EXPIRED
+```
+
+mthub 负责**驱动力**（调用 adapter.OrderSend/CloseOrder），状态转换由 oms.OrderTracker 根据 broker 回调更新 PG。详见 `docs/spec/22-order-state-machine.md`。
+
+## 12. 验收命令
 
 ```bash
 # 编译 + 测试

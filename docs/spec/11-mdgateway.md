@@ -539,18 +539,32 @@ Manager 在调用 adapter 前调 `breakers[brokerKey].Allow()`，失败时 `OnFa
 
 理由：md 数据量大 → 短保留；oms 业务数据 → 长保留。Replicas=1 因 v2 单机部署（ADR 0001 §3）。Discard=OldFirst 保护 publisher 不阻塞。
 
-## 13.6 backpressure 策略（B3，全链统一）
+## 13.6 backpressure 策略（B3 + M10-BASE-B6，全链统一）
 
 | 队列 | 满了怎么办 | metric | 上限/默认 |
 |---|---|---|---|
-| `CHWriter.tickQ` | 直接 SpillWriter（不阻塞） | `md_spill_writes_total{reason="queue_full"}` | 10000 |
-| `CHWriter.barQ` | 同上 | 同上 | 5000 |
-| `Publisher` NATS | JetStream Discard=OldFirst（NATS 内部丢旧） | `md_publish_total{status="dropped"}` | stream MaxBytes |
-| factorsvc bar buffer | per-key ring，覆盖最旧 | `factor_buffer_evicted_total` | lookback+50 |
-| quantengine signalQ | 阻塞 100ms 后丢弃 + log error | `quant_signal_dropped_total` | 1000 |
+| `CHWriter.tickQ` | 直接 SpillWriter（不阻塞） | `md_chan_full_total` | 50000 |
+| `CHWriter.barQ` | 同上 | `md_chan_full_total` | 50000 |
+| `Publisher` NATS | JetStream Discard=OldFirst + metric increment | `md_nats_publish_dropped_total` | stream MaxBytes |
+| `Manager.HandleTick` pipeline | 各阶段 bounded chan 满载 drop | `md_chan_full_total` | per-stage |
+| NATS consumer | 消费滞后监控 | `md_consumer_lag` | gauge |
+| signal 通路 | 阻塞 100ms 后丢弃 | `signal_dropped_total` | 1000 |
 | SSE per-client | 阻塞 50ms 后断开 client | `sse_client_dropped_total` | 256 events |
 
 **核心原则**：上游永远不许因下游拥塞而阻塞 → tick 接收链路 0 阻塞点。
+
+### 13.6.1 M10-BASE-B6 Backpressure Metrics
+
+四条核心 backpressure metric（Prometheus 格式，`/metrics` 端点输出）：
+
+| Metric | 类型 | 含义 |
+|---|---|---|
+| `md_chan_full_total` | counter | bounded channel 满载 drop 累计次数 |
+| `md_nats_publish_dropped_total` | counter | NATS JetStream publish 失败累计次数 |
+| `md_consumer_lag` | gauge | NATS consumer 滞后消息数 |
+| `signal_dropped_total` | counter | quantengine signal 被丢弃累计次数 |
+
+验收：`curl -s localhost:8080/metrics | grep -cE '^(md_chan_full_total|md_nats_publish_dropped_total|md_consumer_lag|signal_dropped_total)' | awk '$1>=4{exit 0}{exit 1}'`
 
 ## 13.7 graceful shutdown 顺序（B2）
 
@@ -569,7 +583,44 @@ Manager 在调用 adapter 前调 `breakers[brokerKey].Allow()`，失败时 `OnFa
 
 每步带超时；总预算 ≤ 30s（k8s/systemd 默认 stopGracePeriod 内）。任一步超时 → `log.Warn` 并继续；不阻断后续步骤。
 
-## 14. 验收命令
+## 15. Bar 修订检测与处理
+
+> **详细规范**：`docs/spec/25-bar-revision-cascade.md`
+> **关联 ADR**：ADR-0016
+
+### 15.1 修订检测（`bar_aggregator.go` 追加）
+
+```go
+// BarAggregator.flushBar 在 bar 完成时检测是否为修订版：
+//   SELECT version FROM md_bars
+//   WHERE broker=? AND canonical=? AND period=? AND bar_start_unix_ms=?
+//   ORDER BY version DESC LIMIT 1
+// 若已有 version ≥ 1 → 本次 bar 的 version = prev_version + 1
+// 首次写入 → version = 1
+```
+
+### 15.2 修订通知
+
+```go
+// Publisher 新增方法：
+func (p *Publisher) PublishBarRevision(b *mdtick.Bar) error
+// Subject: bar.revision.<broker>.<canonical>.<period>
+```
+
+### 15.3 不变性保证
+
+- `md_bars` 仅 INSERT，永不做 UPDATE（即使同一 bar_start 有修订版）
+- 修订版与初版通过 `(broker, canonical, period, bar_start_unix_ms, version)` 唯一标识
+- 查询历史 bar 时始终取 `MAX(version)` per bar_start
+
+### 15.4 指标
+
+| 指标 | 类型 | 说明 |
+|------|------|------|
+| `md_bar_revision_total` | Counter | broker, canonical, period |
+| `md_bar_skipped_finalized_total` | Counter | broker, canonical, period（bar 已固化后拒绝修订） |
+
+## 16. 验收命令
 
 ```bash
 # 编译 + 测试

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"math/rand"
-	"time"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
@@ -37,7 +36,7 @@ func NewDLQWriter(conn clickhouse.Conn, spill *SpillWriter, log *zap.Logger) *DL
 		conn:  conn,
 		log:   log,
 		spill: spill,
-		rng:   rand.New(rand.NewSource(time.Now().UnixNano())),
+		rng:   rand.New(rand.NewSource(Clk.Now().UnixNano())),
 		dlqQ:  make(chan dlqEntry, 1000),
 	}
 	go d.flushLoop()

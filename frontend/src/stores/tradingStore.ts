@@ -2,9 +2,6 @@ import { create } from 'zustand';
 import type { Position, TradeLog } from '@/types/trading';
 import { toCamelCase } from '../adapters/dataAdapter';
 
-/** While profit stream is fresh, keep per-position floating fields from stream when getPositions (Connect RPC) refetches. */
-const STREAM_FLOAT_MERGE_MS = 4500;
-
 export type SetPositionsOptions = { preferRpcProfit?: boolean };
 
 export interface AccountInfo {
@@ -114,57 +111,14 @@ export const useTradingStore = create<TradingState>((set, get) => ({
     m.set(accountId, Date.now());
     return { lastStreamProfitAtByAccount: m };
   }),
-  setPositions: (accountId, positions, opts) => set((state) => {
+  setPositions: (accountId, positions, _opts) => set((state) => {
     const newMap = new Map(state.positionsMap);
     const camelPositions = Array.isArray(positions) ? toCamelCase<Position[]>(positions) : [];
-    const lastAt = state.lastStreamProfitAtByAccount.get(accountId) ?? 0;
-    const streamFresh =
-      state.accountReceivedData.has(accountId) && Date.now() - lastAt < STREAM_FLOAT_MERGE_MS;
-    const prev = state.positionsMap.get(accountId) || [];
-    const prevByTicket = new Map(prev.map((p) => [Number((p as Position).ticket), p]));
-    const partialShrink =
-      streamFresh && prev.length > 0 && camelPositions.length > 0 && camelPositions.length < prev.length;
-    let merged = camelPositions;
-    // Guard against transient partial getPositions snapshots while stream is actively updating.
-    // Keep rows not present in this RPC frame for a short window to avoid list count flapping.
-    if (partialShrink) {
-      const incomingByTicket = new Map(
-        camelPositions.map((p) => [Number((p as Position).ticket), p] as const),
-      );
-      merged = prev.map((old) => {
-        const t = Number((old as Position).ticket);
-        const inc = incomingByTicket.get(t);
-        if (!inc) return old;
-        return {
-          ...inc,
-          profit: old.profit,
-          currentPrice: old.currentPrice || inc.currentPrice,
-          closePrice: old.closePrice ?? inc.closePrice,
-        };
-      });
-      for (const p of camelPositions) {
-        const t = Number((p as Position).ticket);
-        if (!prevByTicket.has(t)) merged.push(p);
-      }
-    }
-    if (streamFresh && prev.length > 0 && opts?.preferRpcProfit !== true && !partialShrink) {
-      merged = camelPositions.map((p) => {
-        const t = Number((p as Position).ticket);
-        const old = prevByTicket.get(t);
-        if (!old) return p;
-        return {
-          ...p,
-          profit: old.profit,
-          currentPrice: old.currentPrice || (p as Position).currentPrice,
-          closePrice: old.closePrice ?? (p as Position).closePrice,
-        };
-      });
-    }
-    newMap.set(accountId, merged);
+    newMap.set(accountId, camelPositions);
 
     let newPositions = state.positions;
     if (state.currentAccountId === accountId) {
-      newPositions = merged;
+      newPositions = camelPositions;
     }
 
     return {
@@ -176,6 +130,12 @@ export const useTradingStore = create<TradingState>((set, get) => ({
     const newMap = new Map(state.positionsMap);
     const accountPositions = newMap.get(accountId) || [];
     const camelPosition = toCamelCase<Position>(position);
+    // Dedup: skip if a position with the same ticket already exists
+    // (e.g. initial stream snapshot may arrive after fetchPositions RPC).
+    const ticket = Number((camelPosition as any).ticket);
+    if (accountPositions.some((p) => Number((p as any).ticket) === ticket)) {
+      return {};
+    }
     newMap.set(accountId, [...accountPositions, camelPosition]);
     
     let newPositions = state.positions;
@@ -207,6 +167,8 @@ export const useTradingStore = create<TradingState>((set, get) => ({
   removePosition: (accountId, ticket) => set((state) => {
     const newMap = new Map(state.positionsMap);
     const accountPositions = newMap.get(accountId) || [];
+    const exists = accountPositions.some((p) => Number((p as any).ticket) === ticket);
+    if (!exists) return {};
     const filteredPositions = accountPositions.filter((p) => Number((p as any).ticket) !== ticket);
     newMap.set(accountId, filteredPositions);
     

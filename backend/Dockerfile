@@ -45,7 +45,7 @@ COPY configs /app/configs
 COPY migrations /app/migrations
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 
-RUN chmod +x /app/antrader /app/docker-entrypoint.sh && chown -R appuser:appuser /app
+RUN mkdir -p /var/lib/ant/spill && chmod +x /app/antrader /app/docker-entrypoint.sh && chown -R appuser:appuser /app /var/lib/ant
 
 USER appuser
 

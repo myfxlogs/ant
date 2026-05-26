@@ -68,7 +68,7 @@ export const RequiredParamsForm: React.FC<RequiredParamsFormProps> = ({ paramete
 			return (
 				<InputNumber
 					style={{ width: '100%' }}
-					value={v as any}
+					value={(typeof v === 'number' ? v : null)}
 					onChange={(nv) => set(nv)}
 					placeholder={placeholderFor(p)}
 				/>
@@ -79,7 +79,7 @@ export const RequiredParamsForm: React.FC<RequiredParamsFormProps> = ({ paramete
 		}
 		return (
 			<Input
-				value={v as any}
+				value={v === undefined || v === null ? undefined : String(v)}
 				onChange={(e) => set(e.target.value)}
 				placeholder={placeholderFor(p)}
 			/>

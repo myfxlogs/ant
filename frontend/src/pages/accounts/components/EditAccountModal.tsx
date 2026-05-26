@@ -51,12 +51,12 @@ export default function EditAccountModal({ open, account, onClose }: Props) {
           <div className="p-4 rounded-xl" style={{ background: '#F5F7F9' }}>
             <div className="flex justify-between mb-2">
               <span style={{ color: '#8A9AA5' }}>{t('accounts.edit.fields.tradingAccount')}</span>
-              <span style={{ color: '#141D22' }}>{(account as any).login}</span>
+              <span style={{ color: '#141D22' }}>{account.login}</span>
             </div>
             <div className="flex justify-between">
               <span style={{ color: '#8A9AA5' }}>{t('accounts.edit.fields.server')}</span>
               <span style={{ color: '#141D22' }}>
-                {(account as any).brokerServer || (account as any).brokerCompany}
+                {account.brokerServer || account.brokerCompany}
               </span>
             </div>
           </div>

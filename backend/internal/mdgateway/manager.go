@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"sync"
 
+	"go.uber.org/zap"
+
+	anttrace "anttrader/internal/trace"
 	"anttrader/internal/mdgateway/adapter/mdtick"
 )
 
@@ -13,72 +16,87 @@ type Gateway interface {
 	AccountID() string
 	Connect(ctx context.Context) error
 	Disconnect(ctx context.Context) error
-	Subscribe(ctx context.Context, symbols []string, handler TickHandler) error
+	Subscribe(ctx context.Context, symbols []string, handler mdtick.TickHandler) error
+	SubscribeProfit(ctx context.Context, handler mdtick.ProfitHandler) error
+	SubscribeOrderUpdate(ctx context.Context, handler mdtick.OrderUpdateHandler) error
 	HealthCheck(ctx context.Context) error
 	SessionID() string
 }
 
-type TickHandler func(t *mdtick.Tick)
-
 type ManagerDeps struct {
-	Normalizer  *Normalizer
-	Quality     *Quality
-	Dedup       *TickDedup
-	Aggregator  *BarAggregator
-	Publisher   *Publisher
-	CHWriter    *CHWriter
-	SpillWriter *SpillWriter
+	Normalizer       *Normalizer
+	Quality          *Quality
+	Dedup            *TickDedup
+	Aggregator       *BarAggregator
+	Publisher        *Publisher
+	CHWriter         *CHWriter
+	SpillWriter      *SpillWriter
+	MarketState      *MarketStateTracker  // M10-BASE-F1
+	StuffingDetector *StuffingDetector    // M10-BASE-F4
+	Log              *zap.Logger
 }
 
 type Manager struct {
-	normalizer  *Normalizer
-	quality     *Quality
-	dedup       *TickDedup
-	aggregator  *BarAggregator
-	publisher   *Publisher
-	chWriter    *CHWriter
-	spillWriter *SpillWriter
-	breakers    map[string]*CircuitBreaker
-	tracer      *Tracer
+	normalizer       *Normalizer
+	quality          *Quality
+	dedup            *TickDedup
+	aggregator       *BarAggregator
+	publisher        *Publisher
+	chWriter         *CHWriter
+	spillWriter      *SpillWriter
+	marketState      *MarketStateTracker
+	stuffingDetector *StuffingDetector
+	breakers         map[string]*CircuitBreaker
+	otelTracer       *anttrace.Tracer // L-2: real OTel tracer, nil = no-op
+	log              *zap.Logger
 
-	mu       sync.RWMutex
-	gateways map[string]Gateway
+	mu         sync.RWMutex
+	gateways   map[string]Gateway
+	lastTickAt map[string]int64 // accountID -> unix ms
+	baseCtx    context.Context
 }
 
-// Tracer is a minimal trace interface (avoids circular import with internal/trace).
-type Tracer struct {
-	enabled bool
+// SetOTelTracer injects the OTel tracer for HandleTick span generation.
+// Pass nil to disable tracing. L-2: replaces the old SetTracer(bool) stub.
+func (m *Manager) SetOTelTracer(t *anttrace.Tracer) {
+	m.otelTracer = t
 }
 
-// SetTracer injects a tracer for HandleTick span generation.
-func (m *Manager) SetTracer(enabled bool) {
-	m.tracer = &Tracer{enabled: enabled}
+// SetBaseContext sets the base context for tick processing. If not set,
+// context.Background() is used (acceptable for the background pipeline).
+func (m *Manager) SetBaseContext(ctx context.Context) {
+	m.baseCtx = ctx
 }
 
-func (m *Manager) startTrace(ctx context.Context, name string) (context.Context, *SimpleSpan) {
-	if m.tracer == nil || !m.tracer.enabled {
-		return ctx, &SimpleSpan{}
+func (m *Manager) baseContext() context.Context {
+	if m.baseCtx != nil {
+		return m.baseCtx
 	}
-	// Full OTel integration via internal/trace.Tracer when wired by runner.
-	return ctx, &SimpleSpan{}
+	return context.Background()
 }
 
-// SimpleSpan is a no-op span when OTel is not wired.
-type SimpleSpan struct{}
-
-func (s *SimpleSpan) End() {}
+func (m *Manager) startTrace(ctx context.Context, name string) (context.Context, *anttrace.Span) {
+	if m.otelTracer == nil {
+		return ctx, &anttrace.Span{}
+	}
+	return m.otelTracer.StartSpan(ctx, name)
+}
 
 func NewManager(deps ManagerDeps) *Manager {
 	return &Manager{
-		normalizer:  deps.Normalizer,
-		quality:     deps.Quality,
-		dedup:       deps.Dedup,
-		aggregator:  deps.Aggregator,
-		publisher:   deps.Publisher,
-		chWriter:    deps.CHWriter,
-		spillWriter: deps.SpillWriter,
-		breakers:    make(map[string]*CircuitBreaker),
-		gateways:    make(map[string]Gateway),
+		normalizer:       deps.Normalizer,
+		quality:          deps.Quality,
+		dedup:            deps.Dedup,
+		aggregator:       deps.Aggregator,
+		publisher:        deps.Publisher,
+		chWriter:         deps.CHWriter,
+		spillWriter:      deps.SpillWriter,
+		marketState:      deps.MarketState,
+		stuffingDetector: deps.StuffingDetector,
+		breakers:         make(map[string]*CircuitBreaker),
+		gateways:         make(map[string]Gateway),
+		lastTickAt:       make(map[string]int64),
+		log:              deps.Log,
 	}
 }
 
@@ -104,11 +122,18 @@ func (m *Manager) RemoveGateway(ctx context.Context, accountID string) error {
 }
 
 func (m *Manager) HandleTick(t *mdtick.Tick) {
-	ctx := context.Background()
+	ctx := m.baseContext()
+
+	// M10-BASE-F4: quote stuffing check before full pipeline.
+	if m.stuffingDetector != nil {
+		if m.stuffingDetector.IsPaused(t.Broker, t.Canonical) {
+			return // symbol paused due to stuffing
+		}
+	}
 
 	// ADR-0010 §2.3: OTel trace spans for the 6-stage tick pipeline.
 	_, span1 := m.startTrace(ctx, "normalize")
-	t.Canonical = m.normalizer.Resolve(t.Broker, t.SymbolRaw)
+	t.Canonical = m.normalizer.Resolve(ctx, t.Broker, t.SymbolRaw)
 	span1.End()
 
 	_, span2 := m.startTrace(ctx, "quality")
@@ -118,11 +143,38 @@ func (m *Manager) HandleTick(t *mdtick.Tick) {
 		return
 	}
 
+	// M10-BASE-F4: track tick rate for stuffing detection.
+	if m.stuffingDetector != nil {
+		if stuffed, _ := m.stuffingDetector.Observe(t.Broker, t.Canonical); stuffed {
+			return // just stuffed — drop this tick
+		}
+	}
+
+	// M10-BASE-F5: spread anomaly detection.
+	if qr.SpreadBps > 0 && m.quality != nil {
+		key := t.Broker + ":" + t.Canonical
+		m.quality.trackSpread(key, qr.SpreadBps)
+		z := m.quality.SpreadZscore(key, qr.SpreadBps)
+		if z > m.quality.cfg.MaxSpreadZscore {
+			RecordSpreadAnomaly()
+		}
+	}
+
 	_, span3 := m.startTrace(ctx, "dedup")
 	seen := m.dedup.Seen(t)
 	span3.End()
 	if seen {
 		return
+	}
+
+	// Record last tick time for staleness detection.
+	m.mu.Lock()
+	m.lastTickAt[t.AccountID] = Clk.Now().UnixMilli()
+	m.mu.Unlock()
+
+	// M10-BASE-F1: update market state for tradability.
+	if m.marketState != nil {
+		m.marketState.Update(t)
 	}
 
 	_, span4 := m.startTrace(ctx, "aggregate")
@@ -131,9 +183,13 @@ func (m *Manager) HandleTick(t *mdtick.Tick) {
 	span4.End()
 
 	_, span5 := m.startTrace(ctx, "publish")
-	_ = m.publisher.PublishTick(t)
+	if err := m.publisher.PublishTick(t); err != nil && m.log != nil {
+		m.log.Warn("mdgateway: PublishTick failed", zap.String("account", t.AccountID), zap.String("symbol", t.Canonical), zap.Error(err))
+	}
 	for _, b := range bars {
-		_ = m.publisher.PublishBar(b)
+		if err := m.publisher.PublishBar(b); err != nil && m.log != nil {
+			m.log.Warn("mdgateway: PublishBar failed", zap.String("account", b.AccountID), zap.String("symbol", b.Canonical), zap.Error(err))
+		}
 	}
 	span5.End()
 
@@ -148,11 +204,23 @@ func (m *Manager) HandleTick(t *mdtick.Tick) {
 func (m *Manager) Health() []AccountHealth {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
+	now := Clk.Now().UnixMilli()
 	var result []AccountHealth
 	for _, gw := range m.gateways {
+		lastAt := m.lastTickAt[gw.AccountID()]
+		state := "healthy"
+		if lastAt == 0 {
+			state = "no_data"
+		} else if now-lastAt > 15*60*1000 {
+			state = "dead"
+		} else if now-lastAt > 5*60*1000 {
+			state = "stale"
+		}
 		result = append(result, AccountHealth{
-			AccountID: gw.AccountID(),
-			Platform:  gw.Platform(),
+			AccountID:  gw.AccountID(),
+			Platform:   gw.Platform(),
+			State:      state,
+			LastTickAt: lastAt,
 		})
 	}
 	return result

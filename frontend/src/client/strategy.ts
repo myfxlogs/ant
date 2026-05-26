@@ -2,13 +2,13 @@ import type { PartialMessage } from '@bufbuild/protobuf';
 import { create } from '@bufbuild/protobuf';
 import { timestampDate } from '@bufbuild/protobuf/wkt';
 import { strategyClient } from './connect';
-import type { BacktestMetrics } from '../gen/common_pb';
-import { ScheduleConfigSchema, type ScheduleConfig } from '../gen/strategy_schedule_entity_pb';
-import type { TemplateParameter } from '../gen/strategy_template_entity_pb';
+import type { BacktestMetrics } from '../gen/ant/v1/common_pb';
+import { ScheduleConfigSchema, type ScheduleConfig } from '../gen/ant/v1/strategy_schedule_entity_pb';
+import type { TemplateParameter } from '../gen/ant/v1/strategy_template_entity_pb';
 
-export type { StrategyTemplate, TemplateParameter } from '../gen/strategy_template_entity_pb';
-export type { StrategySchedule, ScheduleConfig } from '../gen/strategy_schedule_entity_pb';
-export type { StrategySignal } from '../gen/strategy_signal_messages_pb';
+export type { StrategyTemplate, TemplateParameter } from '../gen/ant/v1/strategy_template_entity_pb';
+export type { StrategySchedule, ScheduleConfig } from '../gen/ant/v1/strategy_schedule_entity_pb';
+export type { StrategySignal } from '../gen/ant/v1/strategy_signal_messages_pb';
 export type { BacktestMetrics };
 
 export interface RunBacktestResult {

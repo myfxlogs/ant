@@ -59,7 +59,7 @@ func main() {
 			TsUnixMs: q.GetTime().AsTime().UnixMilli(), ArrivedUnixMs: time.Now().UTC().UnixMilli(),
 			Bid: bid, Ask: ask,
 		}
-		t.Canonical = norm.Resolve(broker, t.SymbolRaw)
+		t.Canonical = norm.Resolve(ctx, broker, t.SymbolRaw)
 		if qual.Check(ctx, t).Dropped { fmt.Printf("  %s DROPPED\n", t.SymbolRaw); continue }
 		if dedup.Seen(t) { fmt.Printf("  %s DUP\n", t.SymbolRaw); continue }
 

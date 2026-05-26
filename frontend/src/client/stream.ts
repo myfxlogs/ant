@@ -1,7 +1,7 @@
 import { streamClient } from './connect';
 import type { OrderUpdate, ProfitUpdate } from '../adapters/dataAdapter';
-import type { AccountStatusEvent } from '../gen/stream_event_account_pb';
-import type { StreamEvent } from '../gen/stream_event_core_pb';
+import type { AccountStatusEvent } from '../gen/ant/v1/stream_event_account_pb';
+import type { StreamEvent } from '../gen/ant/v1/stream_event_core_pb';
 import { toCamelCase } from '../adapters/dataAdapter';
 import { isLikelyStreamTransportFailure } from '../utils/streamErrors';
 import type { UserSummary } from '../stores/tradingStore';
@@ -9,14 +9,15 @@ import type { UserSummary } from '../stores/tradingStore';
 /** Stop reconnecting after repeated proxy/HTTP2-style failures (reduces browser network error spam). */
 const STREAM_TRANSPORT_FAILURE_CAP = 12;
 
-export type { StreamEvent } from '../gen/stream_event_core_pb';
-export type { OrderUpdateEvent } from '../gen/stream_event_trade_pb';
-export type { ProfitUpdateEvent, UserSummaryEvent } from '../gen/stream_event_account_pb';
+export type { StreamEvent } from '../gen/ant/v1/stream_event_core_pb';
+export type { OrderUpdateEvent } from '../gen/ant/v1/stream_event_trade_pb';
+export type { ProfitUpdateEvent, UserSummaryEvent } from '../gen/ant/v1/stream_event_account_pb';
 
 export interface StreamCallbacks {
   onOrder?: (order: OrderUpdate) => void;
   onProfit?: (profit: ProfitUpdate) => void;
   onStatus?: (status: AccountStatusEvent) => void;
+  onPositionSnapshot?: (accountId: string, positions: OrderUpdate[]) => void;
   onError?: (error: Error) => void;
 }
 
@@ -138,6 +139,12 @@ export const streamApi = {
             case 'accountStatus':
               callbacks.onStatus?.(toCamelCase<AccountStatusEvent>(e.payload.value));
               break;
+            case 'positionSnapshot': {
+              const snap = toCamelCase<{ accountId: string; positions: Record<string, unknown>[] }>(e.payload.value);
+              const orders = (snap.positions || []).map((o) => toCamelCase<OrderUpdate>(o));
+              callbacks.onPositionSnapshot?.(snap.accountId, orders);
+              break;
+            }
             default:
               break;
           }

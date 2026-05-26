@@ -33,6 +33,17 @@ const (
 	PurposeBrokerCookie Purpose = "broker-cookie" // 预留：第三方登录态
 )
 
+// RotateClient extends Client with key rotation support. L-3.
+// Not all Client implementations support rotation (e.g. KMS-backed clients
+// may delegate rotation to the KMS API).
+type RotateClient interface {
+	Client
+	// RotateKey generates a new master key version.
+	// Returns the new version number and base64-encoded key material.
+	// Old keys are retained for decryption of legacy ciphertexts.
+	RotateKey() (newVersion uint8, newKeyB64 string, err error)
+}
+
 // ErrUnknownKeyVersion is returned when the ciphertext version byte
 // references a KEK version that is not available.
 var ErrUnknownKeyVersion = &SecretError{Msg: "unknown key version"}

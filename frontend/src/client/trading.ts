@@ -1,54 +1,42 @@
 import { tradingClient } from './connect';
 
-export type { Order } from '../gen/api_pb';
+export interface RiskError {
+  code?: string;
+  reason?: string;
+  userMessage?: string;
+  retryable?: boolean;
+  contextJson?: string;
+}
 
 export interface OrderSendResult {
-  order?: any;
+  order?: unknown;
   error: string;
   retcode?: number;
   message?: string;
   requestId?: string;
-  riskError?: {
-    code?: string;
-    reason?: string;
-    userMessage?: string;
-    retryable?: boolean;
-    contextJson?: string;
-  };
+  riskError?: RiskError;
 }
 
 export interface OrderModifyResult {
-  order?: any;
+  order?: unknown;
   error: string;
   retcode?: number;
   message?: string;
   requestId?: string;
-  riskError?: {
-    code?: string;
-    reason?: string;
-    userMessage?: string;
-    retryable?: boolean;
-    contextJson?: string;
-  };
+  riskError?: RiskError;
 }
 
 export interface OrderCloseResult {
-  order?: any;
+  order?: unknown;
   error: string;
   retcode?: number;
   message?: string;
   requestId?: string;
-  riskError?: {
-    code?: string;
-    reason?: string;
-    userMessage?: string;
-    retryable?: boolean;
-    contextJson?: string;
-  };
+  riskError?: RiskError;
 }
 
 export interface OrderHistoryResult {
-  orders: any[];
+  orders: unknown[];
   total: number;
   page: number;
   pageSize: number;
@@ -56,6 +44,22 @@ export interface OrderHistoryResult {
 
 export interface SyncOrderHistoryResult {
   syncedRecords: number;
+}
+
+// Proto OrderRecord uses string for decimal fields; frontend expects number.
+// Convert orders from proto wire format to JS-friendly format.
+function fromProtoOrders(orders: unknown[]): unknown[] {
+  return (orders || []).map((o: Record<string, unknown>) => ({
+    ...o,
+    ticket: Number(o.ticket),
+    volume: Number(o.volume),
+    openPrice: Number(o.openPrice),
+    closePrice: Number(o.closePrice || 0),
+    profit: Number(o.profit),
+    commission: Number(o.commission || 0),
+    swap: Number(o.swap || 0),
+    magic: Number(o.magic || 0),
+  }));
 }
 
 export const tradingApi = {
@@ -70,27 +74,34 @@ export const tradingApi = {
     comment?: string;
     magicNumber?: bigint;
   }): Promise<OrderSendResult> => {
-    const response: any = await tradingClient.orderSend({
-      accountId: params.accountId,
-      symbol: params.symbol,
-      type: params.type,
-      volume: params.volume,
-      price: params.price || 0,
-      stopLoss: params.stopLoss || 0,
-      takeProfit: params.takeProfit || 0,
-      comment: params.comment || '',
-      magicNumber: params.magicNumber || BigInt(0),
-    });
+    // Params use pre-transform field names (symbol, type, magicNumber) that
+    // differ from the proto schema (canonical, side+orderType, magic).
+    const response = await tradingClient.placeOrder(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      {
+        accountId: params.accountId,
+        symbol: params.symbol,
+        type: params.type,
+        volume: params.volume,
+        price: params.price || 0,
+        stopLoss: params.stopLoss || 0,
+        takeProfit: params.takeProfit || 0,
+        comment: params.comment || '',
+        magicNumber: params.magicNumber || BigInt(0),
+      } as any,
+    ) as unknown as Record<string, unknown>;
     return {
       order: response.order,
-      error: response.error,
-      retcode: response.retcode,
-      message: response.message,
-      requestId: response.requestId,
-      riskError: response.riskError,
+      error: String(response.error ?? ''),
+      retcode: response.retcode as number | undefined,
+      message: response.message as string | undefined,
+      requestId: response.requestId as string | undefined,
+      riskError: response.riskError as RiskError | undefined,
     };
   },
 
+  // orderModify is not yet defined in the MtHubService proto; it uses a
+  // runtime RPC that does not have generated TypeScript types.
   orderModify: async (params: {
     accountId: string;
     ticket: bigint;
@@ -98,7 +109,9 @@ export const tradingApi = {
     takeProfit?: number;
     price?: number;
   }): Promise<OrderModifyResult> => {
-    const response: any = await tradingClient.orderModify({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const client = tradingClient as unknown as Record<string, (req: Record<string, unknown>) => Promise<Record<string, unknown>>>;
+    const response = await client.orderModify({
       accountId: params.accountId,
       ticket: params.ticket,
       stopLoss: params.stopLoss || 0,
@@ -107,11 +120,11 @@ export const tradingApi = {
     });
     return {
       order: response.order,
-      error: response.error,
-      retcode: response.retcode,
-      message: response.message,
-      requestId: response.requestId,
-      riskError: response.riskError,
+      error: String(response.error ?? ''),
+      retcode: response.retcode as number | undefined,
+      message: response.message as string | undefined,
+      requestId: response.requestId as string | undefined,
+      riskError: response.riskError as RiskError | undefined,
     };
   },
 
@@ -121,29 +134,36 @@ export const tradingApi = {
     volume?: number;
     price?: number;
   }): Promise<OrderCloseResult> => {
-    const response: any = await tradingClient.orderClose({
-      accountId: params.accountId,
-      ticket: params.ticket,
-      volume: params.volume || 0,
-      price: params.price || 0,
-    });
+    // Params use pre-transform field names; proto CloseOrderRequest uses lots (string).
+    const response = await tradingClient.closeOrder(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      {
+        accountId: params.accountId,
+        ticket: params.ticket,
+        volume: params.volume || 0,
+        price: params.price || 0,
+      } as any,
+    ) as unknown as Record<string, unknown>;
     return {
       order: response.order,
-      error: response.error,
-      retcode: response.retcode,
-      message: response.message,
-      requestId: response.requestId,
-      riskError: response.riskError,
+      error: String(response.error ?? ''),
+      retcode: response.retcode as number | undefined,
+      message: response.message as string | undefined,
+      requestId: response.requestId as string | undefined,
+      riskError: response.riskError as RiskError | undefined,
     };
   },
 
   getPositions: async (accountId: string) => {
-    const response: any = await tradingClient.getPositions({ accountId });
-    return response.positions;
+    const response = await tradingClient.openedOrders({ accountId });
+    return fromProtoOrders(response.orders as unknown[]);
   },
 
+  // getPendingOrders is not yet defined in the MtHubService proto.
   getPendingOrders: async (accountId: string) => {
-    const response: any = await tradingClient.getPendingOrders({ accountId });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const client = tradingClient as unknown as Record<string, (req: Record<string, unknown>) => Promise<Record<string, unknown>>>;
+    const response = await client.getPendingOrders({ accountId });
     return response.orders;
   },
 
@@ -154,25 +174,34 @@ export const tradingApi = {
     page?: number;
     pageSize?: number;
   }): Promise<OrderHistoryResult> => {
-    const response: any = await tradingClient.getOrderHistory({
-      accountId: params.accountId,
-      from: params.from || '',
-      to: params.to || '',
-      page: params.page || 1,
-      pageSize: params.pageSize || 50,
-    });
+    // Proto OrderHistoryRequest uses Timestamp for from/to and does not
+    // include page/pageSize. The backend handles string-to-Timestamp
+    // conversion and pagination.
+    const response = await tradingClient.orderHistory(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      {
+        accountId: params.accountId,
+        from: params.from || '',
+        to: params.to || '',
+        page: params.page || 1,
+        pageSize: params.pageSize || 50,
+      } as any,
+    ) as unknown as Record<string, unknown>;
     return {
-      orders: response.orders,
-      total: response.total,
-      page: response.page,
-      pageSize: response.pageSize,
+      orders: fromProtoOrders(response.orders as unknown[]),
+      total: Number(response.total ?? 0),
+      page: Number(response.page ?? 1),
+      pageSize: Number(response.pageSize ?? 50),
     };
   },
 
+  // syncOrderHistory is not yet defined in the MtHubService proto.
   syncOrderHistory: async (accountId: string): Promise<SyncOrderHistoryResult> => {
-    const response: any = await tradingClient.syncOrderHistory({ accountId });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const client = tradingClient as unknown as Record<string, (req: Record<string, unknown>) => Promise<Record<string, unknown>>>;
+    const response = await client.syncOrderHistory({ accountId });
     return {
-      syncedRecords: response.syncedRecords,
+      syncedRecords: Number(response.syncedRecords ?? 0),
     };
   },
 };

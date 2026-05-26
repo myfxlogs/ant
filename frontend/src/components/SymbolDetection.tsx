@@ -1,6 +1,7 @@
 import { Tag, Space, Tooltip } from 'antd'
 import { CheckCircleOutlined, WarningOutlined, CloseCircleOutlined } from '@ant-design/icons'
 import type { ValidateResult, ResolvedSymbol } from '@/types/symbol'
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   result: ValidateResult | null
@@ -8,22 +9,34 @@ interface Props {
 }
 
 export default function SymbolDetection({ result, loading }: Props) {
+  const { t } = useTranslation()
+
   if (!result && !loading) return null
+
+  const tradeModeLabel = (mode: number): string => {
+    switch (mode) {
+      case 0: return t('symbolDetection.tradeMode.disabled')
+      case 1: return t('symbolDetection.tradeMode.longOnly')
+      case 2: return t('symbolDetection.tradeMode.shortOnly')
+      case 3: return t('symbolDetection.tradeMode.longShort')
+      default: return t('symbolDetection.tradeMode.unknown', { mode })
+    }
+  }
 
   return (
     <div style={{ padding: '12px 0' }}>
       <div style={{ marginBottom: 8, fontWeight: 600, fontSize: 14 }}>
-        识别到的交易品种
+        {t('symbolDetection.label')}
       </div>
 
       {loading && (
-        <div style={{ color: '#888' }}>正在解析…</div>
+        <div style={{ color: '#888' }}>{t('symbolDetection.loading')}</div>
       )}
 
       {result && result.extracted.length === 0 && (
         <Space>
           <WarningOutlined style={{ color: '#faad14' }} />
-          <span style={{ color: '#888' }}>未识别到交易品种，请尝试包含具体的品种名称（如"比特币"、"EURUSD"、"黄金"）</span>
+          <span style={{ color: '#888' }}>{t('symbolDetection.noSymbols')}</span>
         </Space>
       )}
 
@@ -36,8 +49,8 @@ export default function SymbolDetection({ result, loading }: Props) {
                 key={i}
                 title={
                   resolved
-                    ? `broker: ${resolved.symbol_raw || '—'} | 模式: ${tradeModeLabel(resolved.trade_mode)}`
-                    : '尚未绑定交易账户，无法解析'
+                    ? t('symbolDetection.resolvedTooltip', { broker: resolved.symbol_raw || '—', mode: tradeModeLabel(resolved.trade_mode) })
+                    : t('symbolDetection.unresolvedTooltip')
                 }
               >
                 <Tag
@@ -74,14 +87,4 @@ export default function SymbolDetection({ result, loading }: Props) {
       )}
     </div>
   )
-}
-
-function tradeModeLabel(mode: number): string {
-  switch (mode) {
-    case 0: return '已禁用'
-    case 1: return '仅做多'
-    case 2: return '仅做空'
-    case 3: return '多空均可'
-    default: return `未知(${mode})`
-  }
 }

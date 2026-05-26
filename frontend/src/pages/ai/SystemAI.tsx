@@ -67,7 +67,7 @@ function useProviderLabel() {
     const custom = providerId === 'openai_compatible' || providerId.startsWith('openai_compatible_')
     if (custom && fallbackName?.trim()) return fallbackName
     const key = `ai.settings.providers.${custom ? 'openai_compatible' : providerId}`
-    const tr = t(key as any)
+    const tr = t(key as Parameters<typeof t>[0])
     if (tr && tr !== key) return tr as string
     return PROVIDER_META[custom ? 'openai_compatible' : providerId]?.label || fallbackName || providerId
   }, [t])
@@ -79,7 +79,7 @@ function useProviderTagline() {
   const { t } = useTranslation()
   return useCallback((providerId: string) => {
     const key = `ai.systemAI.taglines.${providerId}`
-    const tr = t(key as any)
+    const tr = t(key as Parameters<typeof t>[0])
     if (tr && tr !== key) return tr as string
     return PROVIDER_META[providerId]?.tagline || ''
   }, [t])

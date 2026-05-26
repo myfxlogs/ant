@@ -48,9 +48,9 @@ const BacktestRunsCard: React.FC<Props> = ({ runs, loading, onRefresh, onView, o
       render: (t: any, r: any) => {
         const base = String(t || '').trim();
         const fallback = [
-          formatDateTime((r as any)?.createdAt),
-          String((r as any)?.symbol || '').trim(),
-          String((r as any)?.timeframe || '').trim(),
+          formatDateTime(r?.createdAt),
+          String(r?.symbol || '').trim(),
+          String(r?.timeframe || '').trim(),
         ]
           .filter(Boolean)
           .join(' ');
@@ -125,7 +125,7 @@ const BacktestRunsCard: React.FC<Props> = ({ runs, loading, onRefresh, onView, o
       <Table
         columns={columns}
         dataSource={runs}
-        rowKey={(r) => String((r as any)?.id || '')}
+        rowKey={(r) => String(r?.id || '')}
         loading={loading}
         scroll={{ x: 'max-content' }}
         pagination={{

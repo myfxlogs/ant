@@ -2,6 +2,7 @@ package model
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -78,7 +79,7 @@ func (s *StrategySchedule) GetParameters() (map[string]interface{}, error) {
 func (s *StrategySchedule) SetParameters(params map[string]interface{}) error {
 	data, err := json.Marshal(params)
 	if err != nil {
-		return err
+		return fmt.Errorf("marshal strategy schedule parameters: %w", err)
 	}
 	s.Parameters = data
 	return nil
@@ -100,7 +101,7 @@ func (s *StrategySchedule) SetBacktestMetrics(metrics *BacktestMetrics) error {
 	}
 	data, err := json.Marshal(metrics)
 	if err != nil {
-		return err
+		return fmt.Errorf("marshal backtest metrics: %w", err)
 	}
 	s.BacktestMetrics = data
 	return nil
@@ -118,7 +119,7 @@ func (s *StrategySchedule) GetRiskReasons() ([]string, error) {
 func (s *StrategySchedule) SetRiskReasons(reasons []string) error {
 	data, err := json.Marshal(reasons)
 	if err != nil {
-		return err
+		return fmt.Errorf("marshal risk reasons: %w", err)
 	}
 	s.RiskReasons = data
 	return nil
@@ -136,7 +137,7 @@ func (s *StrategySchedule) GetRiskWarnings() ([]string, error) {
 func (s *StrategySchedule) SetRiskWarnings(warnings []string) error {
 	data, err := json.Marshal(warnings)
 	if err != nil {
-		return err
+		return fmt.Errorf("marshal risk warnings: %w", err)
 	}
 	s.RiskWarnings = data
 	return nil
@@ -154,7 +155,7 @@ func (s *StrategySchedule) GetScheduleConfig() (map[string]interface{}, error) {
 func (s *StrategySchedule) SetScheduleConfig(config map[string]interface{}) error {
 	data, err := json.Marshal(config)
 	if err != nil {
-		return err
+		return fmt.Errorf("marshal schedule config: %w", err)
 	}
 	s.ScheduleConfig = data
 	return nil

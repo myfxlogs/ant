@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -114,7 +115,7 @@ func (s *StrategyTemplateService) PublishDraft(ctx context.Context, userID, tplI
 func (s *StrategyTemplateService) CancelDraft(ctx context.Context, userID, tplID uuid.UUID) error {
 	tpl, err := s.templateRepo.GetByID(ctx, tplID)
 	if err != nil {
-		return err
+		return fmt.Errorf("get template by ID for cancel draft: %w", err)
 	}
 	if tpl.UserID != userID {
 		return ErrTemplateUnauthorized
@@ -159,7 +160,7 @@ func (s *StrategyTemplateService) UpdateTemplate(ctx context.Context, template *
 	// name/code/... on a preset).
 	existing, err := s.templateRepo.GetByID(ctx, template.ID)
 	if err != nil {
-		return err
+		return fmt.Errorf("get existing template for update guard: %w", err)
 	}
 	if existing != nil && existing.IsSystem {
 		return repository.ErrTemplateIsSystem

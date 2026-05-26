@@ -153,7 +153,7 @@ export const StrategyTemplateScheduleLaunchForm: React.FC<Props> = ({
 			maxDrawdownPct: defaults?.maxDrawdownPct,
 			enableAfterCreate: defaults?.enableAfterCreate ?? true,
 		};
-		form.setFieldsValue(initial as any);
+		form.setFieldsValue(initial as Record<string, unknown>);
 		const initialAccountId = String(initial.accountId || '');
 		setSelectedAccountId(initialAccountId);
 		if (initialAccountId) {
@@ -211,7 +211,7 @@ export const StrategyTemplateScheduleLaunchForm: React.FC<Props> = ({
 	const watchedScheduleType = Form.useWatch('scheduleType', form);
 
 	const buildParameters = (): Record<string, string> => {
-		const v = form.getFieldsValue(true) as any;
+		const v = form.getFieldsValue(true);
 		const out = buildParametersFromForm(v);
 		for (const [key, raw] of Object.entries(paramValues || {})) {
 			if (!key || raw === undefined || raw === null || raw === '') continue;
@@ -364,7 +364,7 @@ export const StrategyTemplateScheduleLaunchForm: React.FC<Props> = ({
 						// 由于 label 现在是 ReactNode，用 optionLabelProp + filterOption 做搜索。
 						optionLabelProp="labelText"
 						filterOption={(input, option) => {
-							const labelText = String((option as any)?.labelText || '').toLowerCase();
+							const labelText = String((option as { labelText?: string })?.labelText || '').toLowerCase();
 							return labelText.includes(input.toLowerCase());
 						}}
 						options={accountOptions.map((a) => ({

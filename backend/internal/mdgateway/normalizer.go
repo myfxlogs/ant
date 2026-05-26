@@ -3,6 +3,7 @@ package mdgateway
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -22,16 +23,24 @@ func NewNormalizer(pg *pgxpool.Pool) *Normalizer {
 
 // Resolve resolves (broker, symbol_raw) → canonical symbol.
 // Order: 1. in-memory cache  2. PG broker_symbols  3. algorithmic fallback.
-func (n *Normalizer) Resolve(broker, raw string) string {
+func (n *Normalizer) Resolve(ctx context.Context, broker, raw string) string {
 	key := broker + ":" + raw
 	if v, ok := n.cache[key]; ok {
 		return v
 	}
 
+	// Guard against unbounded cache growth: reset if exceeding 100k entries.
+	const maxCacheSize = 100_000
+	if len(n.cache) > maxCacheSize {
+		n.cache = make(map[string]string, maxCacheSize)
+	}
+
 	// Try PG lookup
 	if n.pg != nil {
 		var canonical string
-		err := n.pg.QueryRow(context.Background(),
+		queryCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+		defer cancel()
+		err := n.pg.QueryRow(queryCtx,
 			"SELECT canonical FROM broker_symbols WHERE broker=$1 AND symbol_raw=$2 LIMIT 1",
 			broker, raw,
 		).Scan(&canonical)

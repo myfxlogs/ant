@@ -1,15 +1,15 @@
 import { createClient } from '@connectrpc/connect';
-import { LogService } from '../gen/log_pb';
+import { LogService } from '../gen/ant/v1/log_pb';
 import { transport } from './transport';
-import type { ConnectionLog as RpcConnectionLog } from '../gen/log_connection_pb';
-import type { ExecutionLog as RpcExecutionLog } from '../gen/log_execution_pb';
-import type { OrderHistoryRecord as RpcOrderHistoryRecord } from '../gen/log_order_pb';
-import type { OperationLog as RpcOperationLog } from '../gen/log_operation_pb';
-import type { ScheduleRunLog } from '../gen/log_schedule_pb';
+import type { ConnectionLog as RpcConnectionLog } from '../gen/ant/v1/log_connection_pb';
+import type { ExecutionLog as RpcExecutionLog } from '../gen/ant/v1/log_execution_pb';
+import type { OrderHistoryRecord as RpcOrderHistoryRecord } from '../gen/ant/v1/log_order_pb';
+import type { OperationLog as RpcOperationLog } from '../gen/ant/v1/log_operation_pb';
+import type { ScheduleRunLog } from '../gen/ant/v1/log_schedule_pb';
 
 const logClient = createClient(LogService, transport);
 
-export type { ScheduleRunLog } from '../gen/log_schedule_pb';
+export type { ScheduleRunLog } from '../gen/ant/v1/log_schedule_pb';
 
 export const logApi = {
   getConnectionLogs: async (params: {

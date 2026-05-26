@@ -1,5 +1,5 @@
 import { marketClient } from './connect';
-import type { Kline } from '../gen/market_pb';
+import type { Kline } from '../gen/ant/v1/market_pb';
 
 export interface SymbolInfo {
   symbol: string;

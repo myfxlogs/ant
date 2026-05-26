@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -67,7 +68,10 @@ func (r *TickDatasetRepository) GetByID(ctx context.Context, id uuid.UUID) (*Tic
 func (r *TickDatasetRepository) SetFrozen(ctx context.Context, id uuid.UUID, frozen bool) error {
 	query := `UPDATE tick_datasets SET frozen = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1`
 	_, err := r.db.ExecContext(ctx, query, id, frozen)
-	return err
+	if err != nil {
+		return fmt.Errorf("set tick dataset frozen: %w", err)
+	}
+	return nil
 }
 
 func (r *TickDatasetRepository) BatchInsertTicks(ctx context.Context, ticks []*TickDatasetTick) error {
@@ -85,7 +89,10 @@ func (r *TickDatasetRepository) BatchInsertTicks(ctx context.Context, ticks []*T
 				continue
 			}
 			if _, err := tx.ExecContext(ctx, query, t.DatasetID, t.Time, t.Bid, t.Ask); err != nil {
-				return err
+				if err != nil {
+					return fmt.Errorf("insert tick: %w", err)
+				}
+				return nil
 			}
 		}
 		return nil

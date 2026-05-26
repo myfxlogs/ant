@@ -65,3 +65,30 @@
 | Quirk | 状态 |
 |---|---|
 | Q-001 ~ Q-015 | 已在 `docs/spec/16-mtapi-quirks-register.md`，adapter 代码中 QUIRK 注释完整 |
+
+## M10 新增待办（已晋升到 ROADMAP M10-BASE）
+
+> **2026-05-25**：以下所有卡片已晋升到 `docs/plan/ROADMAP.md` M10-BASE Phase B/C/D/E/F。
+> M11 金融架构设计（`docs/金融架构改造-M11路线图-2026-05-25.md`）的架构决策已融合到 M10-BASE 各卡片中。
+> BACKLOG 中保留此节仅作历史参考；以后内容以 ROADMAP 为准。
+
+### 晋升映射
+
+| BACKLOG ID | ROADMAP ID | Phase |
+|---|---|---|
+| M10-ORDER-1~4 | M10-BASE-B1~B6 | Phase B (OMS + 幂等 + Event Ledger) |
+| M10-RISK-1~3 | M10-BASE-C1~C6 | Phase C (风控引擎重构) |
+| M10-BACKTEST-1~4 | M10-BASE-D4~D6 | Phase D (回测引擎 + costsvc) |
+| M10-PAPER-1~3 | M10-BASE-D1~D3 | Phase D (回测引擎 + costsvc) |
+| M10-AI-1~6 | M10-BASE-E1~E6 | Phase E (AI 策略质量门控) |
+| M10-BAR-1~4 | M10-BASE-F1~F3 | Phase F (数据质量升级) |
+| M10-SLO-1~3 + OBS-1~2 | M10-BASE-F4~F7 | Phase F (数据质量升级 + SRE) |
+| M8.1-2/3/4, M8.2-1/2, M8.3-1/2 | M10-BASE 各 Phase | 按优先级分配 |
+
+### 原卡片内容（历史参考）
+
+<details>
+<summary>点击展开原 BACKLOG M10 卡片</summary>
+
+（内容已迁移，见 ROADMAP.md M10-BASE 节。此处省略。）
+</details>

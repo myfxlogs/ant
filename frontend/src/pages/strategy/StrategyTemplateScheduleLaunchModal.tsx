@@ -236,9 +236,9 @@ export const StrategyTemplateScheduleLaunchModal: React.FC<StrategyTemplateSched
 	const run = scoreSnapshot?.run;
 	const formDefaults: Partial<ScheduleLaunchFormValues> = hasRun
 		? {
-				accountId: String((run as any)?.accountId || (run as any)?.account_id || ''),
-				symbol: String((run as any)?.symbol || ''),
-				timeframe: String((run as any)?.timeframe || 'H1'),
+				accountId: String(run?.accountId || run?.account_id || ''),
+				symbol: String(run?.symbol || ''),
+				timeframe: String(run?.timeframe || 'H1'),
 				scheduleType: 'kline_close',
 				intervalMs: 300_000,
 				enableAfterCreate: true,

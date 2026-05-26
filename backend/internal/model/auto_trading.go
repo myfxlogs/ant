@@ -2,6 +2,7 @@ package model
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -50,7 +51,7 @@ func (s *StrategyScheduleLegacy) SetScheduleConfig(config *ScheduleConfig) error
 	}
 	data, err := json.Marshal(config)
 	if err != nil {
-		return err
+		return fmt.Errorf("marshal schedule config: %w", err)
 	}
 	s.ScheduleConfig = data
 	return nil
@@ -99,7 +100,7 @@ func (e *StrategyExecution) GetSignals() ([]ExecutionSignal, error) {
 func (e *StrategyExecution) SetSignals(signals []ExecutionSignal) error {
 	data, err := json.Marshal(signals)
 	if err != nil {
-		return err
+		return fmt.Errorf("marshal execution signals: %w", err)
 	}
 	e.Signals = data
 	return nil
@@ -117,7 +118,7 @@ func (e *StrategyExecution) GetOrders() ([]ExecutionResult, error) {
 func (e *StrategyExecution) SetOrders(orders []ExecutionResult) error {
 	data, err := json.Marshal(orders)
 	if err != nil {
-		return err
+		return fmt.Errorf("marshal execution orders: %w", err)
 	}
 	e.Orders = data
 	return nil

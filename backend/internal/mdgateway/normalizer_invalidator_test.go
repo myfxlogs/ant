@@ -50,7 +50,7 @@ func (f *fakePGListener) Close() error {
 //  2. ticker goroutine terminates cleanly on Stop+cancel.
 func TestNormalizerListenerFallback(t *testing.T) {
 	invalidated := make(chan string, 10)
-	ni := NewNormalizerInvalidator(zap.NewNop(), func(broker, symbolRaw string) {
+	ni := NewNormalizerInvalidator(zap.NewNop(), nil, func(broker, symbolRaw string) {
 		invalidated <- broker + ":" + symbolRaw
 	})
 
@@ -80,7 +80,7 @@ func TestNormalizerListenerFallback(t *testing.T) {
 // symbol_raw) exactly once with the parsed fields.
 func TestNormalizerListenerPgListen(t *testing.T) {
 	invalidated := make(chan string, 4)
-	ni := NewNormalizerInvalidator(zap.NewNop(), func(broker, symbolRaw string) {
+	ni := NewNormalizerInvalidator(zap.NewNop(), nil, func(broker, symbolRaw string) {
 		invalidated <- broker + ":" + symbolRaw
 	})
 
@@ -119,7 +119,7 @@ func TestNormalizerListenerPgListen(t *testing.T) {
 }
 
 func TestNormalizerListener_StartStop(t *testing.T) {
-	ni := NewNormalizerInvalidator(zap.NewNop(), func(broker, symbolRaw string) {})
+	ni := NewNormalizerInvalidator(zap.NewNop(), nil, func(broker, symbolRaw string) {})
 
 	ctx, cancel := context.WithCancel(context.Background())
 	ni.Start(ctx, nil)
@@ -138,7 +138,7 @@ func TestNormalizerListener_StartStop(t *testing.T) {
 
 func TestNormalizerListener(t *testing.T) {
 	t.Run("PgListen", func(t *testing.T) {
-		ni := NewNormalizerInvalidator(zap.NewNop(), func(broker, symbolRaw string) {})
+		ni := NewNormalizerInvalidator(zap.NewNop(), nil, func(broker, symbolRaw string) {})
 		ctx, cancel := context.WithCancel(context.Background())
 		ni.Start(ctx, nil)
 		time.Sleep(50 * time.Millisecond)
@@ -147,7 +147,7 @@ func TestNormalizerListener(t *testing.T) {
 	})
 	t.Run("Fallback", func(t *testing.T) {
 		invalidated := make(chan string, 10)
-		ni := NewNormalizerInvalidator(zap.NewNop(), func(broker, symbolRaw string) {
+		ni := NewNormalizerInvalidator(zap.NewNop(), nil, func(broker, symbolRaw string) {
 			invalidated <- broker + ":" + symbolRaw
 		})
 		ctx, cancel := context.WithCancel(context.Background())

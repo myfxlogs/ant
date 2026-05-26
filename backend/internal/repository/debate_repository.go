@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -193,7 +194,10 @@ func (r *DebateRepository) UpdateSession(ctx context.Context, id, userID uuid.UU
 	query := "UPDATE debate_sessions SET " + strings.Join(sets, ", ") +
 		" WHERE id = $" + itoa(idx) + " AND user_id = $" + itoa(idx+1)
 	_, err := r.db.ExecContext(ctx, query, args...)
-	return err
+	if err != nil {
+		return fmt.Errorf("update debate session: %w", err)
+	}
+	return nil
 }
 
 // DeleteSession removes a session (and its turns via ON DELETE CASCADE).
@@ -202,7 +206,7 @@ func (r *DebateRepository) DeleteSession(ctx context.Context, id, userID uuid.UU
 		`DELETE FROM debate_sessions WHERE id = $1 AND user_id = $2`,
 		id, userID,
 	)
-	return err
+	return fmt.Errorf("delete debate session: %w", err)
 }
 
 // AddTurn inserts a turn and bumps session updated_at.
@@ -253,7 +257,7 @@ func (r *DebateRepository) UpdateTurnStatus(ctx context.Context, id uuid.UUID, s
 		`UPDATE debate_turns SET status = $1 WHERE id = $2`,
 		status, id,
 	)
-	return err
+	return fmt.Errorf("update debate turn status: %w", err)
 }
 
 // -- helpers --

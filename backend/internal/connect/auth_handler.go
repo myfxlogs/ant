@@ -2,42 +2,47 @@ package connect
 
 import (
 	"context"
+	"crypto/rand"
+
 	"crypto/hmac"
-	"crypto/sha256"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
+	"go.uber.org/zap"
+
 	"connectrpc.com/connect"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/crypto/argon2"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/google/uuid"
+	"anttrader/internal/interceptor"
 )
 
 // AuthServer implements ant.v1.AuthServiceHandler.
 type AuthServer struct {
 	pg        *pgxpool.Pool
 	jwtSecret string
+	log       *zap.Logger
 }
 
 var _ antv1c.AuthServiceHandler = (*AuthServer)(nil)
 
-func NewAuthServer(pg *pgxpool.Pool, jwtSecret string) *AuthServer {
-	return &AuthServer{pg: pg, jwtSecret: jwtSecret}
+func NewAuthServer(pg *pgxpool.Pool, jwtSecret string, log *zap.Logger) *AuthServer {
+	return &AuthServer{pg: pg, jwtSecret: jwtSecret, log: log}
 }
 
 func (s *AuthServer) Login(ctx context.Context, req *connect.Request[antv1.LoginRequest]) (*connect.Response[antv1.LoginResponse], error) {
 	m := req.Msg
-	var id, email, passwordHash string
+	var id, email, nickname, passwordHash string
 	err := s.pg.QueryRow(ctx,
-		"SELECT id, email, password_hash FROM users WHERE email = $1", m.Email,
-	).Scan(&id, &email, &passwordHash)
+		"SELECT id, email, COALESCE(nickname, email), password_hash FROM users WHERE email = $1", m.Email,
+	).Scan(&id, &email, &nickname, &passwordHash)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid credentials"))
 	}
@@ -46,11 +51,27 @@ func (s *AuthServer) Login(ctx context.Context, req *connect.Request[antv1.Login
 	}
 	token, err := s.issueJWT(id, email)
 	if err != nil {
+		s.log.Error("Login", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.LoginResponse{
 		AccessToken: token, RefreshToken: token,
+		User: &antv1.User{Id: id, Email: email, Username: nickname},
 	}), nil
+}
+
+func (s *AuthServer) issueJWT(userID, email string) (string, error) {
+	now := time.Now()
+	claims := &interceptor.JWTClaims{
+		UserID: userID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(now.Add(24 * time.Hour)),
+			IssuedAt:  jwt.NewNumericDate(now),
+			Subject:   email,
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(s.jwtSecret))
 }
 
 func (s *AuthServer) Logout(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
@@ -58,73 +79,51 @@ func (s *AuthServer) Logout(ctx context.Context, req *connect.Request[emptypb.Em
 }
 
 func (s *AuthServer) RefreshToken(ctx context.Context, req *connect.Request[antv1.RefreshTokenRequest]) (*connect.Response[antv1.RefreshTokenResponse], error) {
-	return connect.NewResponse(&antv1.RefreshTokenResponse{AccessToken: req.Msg.RefreshToken}), nil
+	claims, err := interceptor.ValidateToken(req.Msg.RefreshToken, s.jwtSecret)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid refresh token"))
+	}
+	var email string
+	_ = s.pg.QueryRow(ctx, "SELECT email FROM users WHERE id = $1::uuid", claims.UserID).Scan(&email)
+	token, err := s.issueJWT(claims.UserID, email)
+	if err != nil {
+		s.log.Error("RefreshToken", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.RefreshTokenResponse{AccessToken: token, RefreshToken: token}), nil
 }
 
 func (s *AuthServer) GetMe(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[antv1.GetMeResponse], error) {
-	authHeader := req.Header().Get("Authorization")
-	if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("no token"))
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
 	}
-	claims, err := s.verifyJWT(strings.TrimPrefix(authHeader, "Bearer "))
-	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
-	}
+	var email, nickname string
+	_ = s.pg.QueryRow(ctx, "SELECT email, COALESCE(nickname, email) FROM users WHERE id = $1::uuid", userID).Scan(&email, &nickname)
 	return connect.NewResponse(&antv1.GetMeResponse{
-		User: &antv1.User{Id: claims.UserID, Email: claims.Email},
+		User: &antv1.User{Id: userID, Email: email, Username: nickname},
 	}), nil
 }
 
 func (s *AuthServer) Register(ctx context.Context, req *connect.Request[antv1.RegisterRequest]) (*connect.Response[antv1.RegisterResponse], error) {
 	m := req.Msg
 	id := uuid.New().String()
+	username := m.Username
+	if username == "" {
+		username = m.Email
+	}
 	hash := hashArgon2id(m.Password)
 	_, err := s.pg.Exec(ctx,
 		"INSERT INTO users (id, email, password_hash, nickname) VALUES ($1::uuid, $2, $3, $4)",
-		id, m.Email, hash, m.Username,
+		id, m.Email, hash, username,
 	)
 	if err != nil {
+		s.log.Error("Register", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.RegisterResponse{
 		User: &antv1.User{Id: id, Email: m.Email},
 	}), nil
-}
-
-type jwtClaims struct {
-	UserID string `json:"uid"`
-	Email  string `json:"eml"`
-	Exp    int64  `json:"exp"`
-}
-
-func (s *AuthServer) issueJWT(userID, email string) (string, error) {
-	claims := jwtClaims{UserID: userID, Email: email, Exp: time.Now().Add(24 * time.Hour).Unix()}
-	payload, _ := json.Marshal(claims)
-	parts := []string{
-		base64.RawURLEncoding.EncodeToString([]byte(`{"alg":"HS256","typ":"JWT"}`)),
-		base64.RawURLEncoding.EncodeToString(payload),
-	}
-	sig := hmacSHA256([]byte(s.jwtSecret), []byte(parts[0]+"."+parts[1]))
-	parts = append(parts, base64.RawURLEncoding.EncodeToString(sig))
-	return strings.Join(parts, "."), nil
-}
-
-func (s *AuthServer) verifyJWT(token string) (*jwtClaims, error) {
-	parts := strings.Split(token, ".")
-	if len(parts) != 3 { return nil, fmt.Errorf("invalid token") }
-	data, err := base64.RawURLEncoding.DecodeString(parts[1])
-	if err != nil { return nil, err }
-	expectedSig := hmacSHA256([]byte(s.jwtSecret), []byte(parts[0]+"."+parts[1]))
-	actualSig, _ := base64.RawURLEncoding.DecodeString(parts[2])
-	if !hmac.Equal(expectedSig, actualSig) { return nil, fmt.Errorf("invalid signature") }
-	var claims jwtClaims
-	if err := json.Unmarshal(data, &claims); err != nil { return nil, err }
-	if claims.Exp < time.Now().Unix() { return nil, fmt.Errorf("token expired") }
-	return &claims, nil
-}
-
-func hmacSHA256(key, data []byte) []byte {
-	h := hmac.New(sha256.New, key); h.Write(data); return h.Sum(nil)
 }
 
 // argon2id password hashing — matches the existing DB format:
@@ -138,7 +137,9 @@ const (
 
 func hashArgon2id(password string) string {
 	salt := make([]byte, 16)
-	for i := range salt { salt[i] = byte(i + 0x41) } // deterministic for dev
+	if _, err := rand.Read(salt); err != nil {
+		panic("crypto/rand failed: " + err.Error())
+	}
 	hash := argon2.IDKey([]byte(password), salt, argonTime, argonMemory, argonThreads, argonKeyLen)
 	return fmt.Sprintf("$argon2id$v=19$m=%d,t=%d,p=%d$%s$%s",
 		argonMemory, argonTime, argonThreads,
@@ -159,9 +160,13 @@ func verifyArgon2id(storedHash, password string) bool {
 	var threads uint8 = 2
 	fmt.Sscanf(parts[3], "m=%d,t=%d,p=%d", &memory, &time, &threads)
 	salt, err := base64.RawStdEncoding.DecodeString(parts[4])
-	if err != nil { return false }
+	if err != nil {
+		return false
+	}
 	expected, err := base64.RawStdEncoding.DecodeString(parts[5])
-	if err != nil { return false }
+	if err != nil {
+		return false
+	}
 	actual := argon2.IDKey([]byte(password), salt, time, memory, threads, uint32(len(expected)))
 	return hmac.Equal(expected, actual)
 }

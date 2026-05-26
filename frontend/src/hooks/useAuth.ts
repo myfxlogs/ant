@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
-import { authApi } from '@/client/auth';
+import { authApi, type User } from '@/client/auth';
 import { getErrorMessage } from '@/utils/error';
 import { showError, showSuccess, showWarning } from '@/utils/message';
 import i18n from '@/i18n';
@@ -13,7 +13,7 @@ export function useAuth() {
   const login = useCallback(async (data: { email: string; password: string }) => {
     try {
       const response = await authApi.login(data.email, data.password);
-      setTokens(response.accessToken, response.refreshToken || '', response.user as any);
+      setTokens(response.accessToken, response.refreshToken || '', response.user as User);
       showSuccess(i18n.t('auth.messages.loginSuccess'));
       navigate('/');
       return true;
@@ -23,9 +23,9 @@ export function useAuth() {
     }
   }, [setTokens, navigate]);
 
-  const register = useCallback(async (data: { email: string; password: string; nickname?: string }) => {
+  const register = useCallback(async (data: { email: string; password: string; username?: string }) => {
     try {
-      await authApi.register(data.email, data.password, data.nickname || data.email);
+      await authApi.register(data.email, data.password, data.username);
       showSuccess(i18n.t('auth.messages.registerSuccess'));
       navigate('/login');
       return true;

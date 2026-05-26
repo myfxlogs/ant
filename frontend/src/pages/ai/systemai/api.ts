@@ -2,15 +2,15 @@ import { create } from '@bufbuild/protobuf'
 import { systemAIClient } from '@/client/connect'
 import {
   ListSystemAIConfigsRequestSchema,
-} from '@/gen/system_ai_query_pb'
+} from '@/gen/ant/v1/system_ai_query_pb'
 import {
   UpdateSystemAIConfigRequestSchema,
   UpdateSystemAISecretRequestSchema,
-} from '@/gen/system_ai_update_pb'
+} from '@/gen/ant/v1/system_ai_update_pb'
 import {
   DiscoverSystemAIModelsRequestSchema,
   ValidateSystemAIConnectionRequestSchema,
-} from '@/gen/system_ai_probe_pb'
+} from '@/gen/ant/v1/system_ai_probe_pb'
 import type { AIConfig } from './model'
 
 export async function listSystemAIConfigs(): Promise<{ items: AIConfig[] }> {

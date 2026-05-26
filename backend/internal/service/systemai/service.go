@@ -6,6 +6,7 @@ package systemai
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/google/uuid"
@@ -46,7 +47,7 @@ func NewService(repo *repository.SystemAIConfigRepository, box *secretbox.Box) *
 func (s *Service) EnsureSeed(ctx context.Context, userID uuid.UUID) error {
 	rows, err := s.repo.ListByUser(ctx, userID)
 	if err != nil {
-		return err
+		return fmt.Errorf("list AI configs by user: %w", err)
 	}
 	existing := make(map[string]struct{}, len(rows))
 	for _, r := range rows {
@@ -65,7 +66,7 @@ func (s *Service) EnsureSeed(ctx context.Context, userID uuid.UUID) error {
 			Name:       p.Name,
 		}
 		if err := s.repo.Upsert(ctx, row, tag); err != nil {
-			return err
+			return fmt.Errorf("upsert AI config seed row: %w", err)
 		}
 	}
 	return nil
@@ -94,7 +95,7 @@ func (s *Service) UpdateSecret(ctx context.Context, userID uuid.UUID, providerID
 				if errors.Is(err, repository.ErrSystemAIConfigNotFound) {
 					return nil
 				}
-				return err
+				return fmt.Errorf("delete AI config: %w", err)
 			}
 			return nil
 		}
@@ -105,7 +106,7 @@ func (s *Service) UpdateSecret(ctx context.Context, userID uuid.UUID, providerID
 	}
 	ct, salt, nonce, err := s.box.Seal([]byte(secret))
 	if err != nil {
-		return err
+		return fmt.Errorf("encrypt API secret: %w", err)
 	}
 	return s.repo.SetSecret(ctx, userID, providerID, &repository.SystemAISecret{
 		Ciphertext: ct, Salt: salt, Nonce: nonce,

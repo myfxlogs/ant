@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -37,7 +38,10 @@ func (r *TradeLogRepository) Create(ctx context.Context, log *model.TradeLog) er
 		log.Message,
 		log.CreatedAt,
 	)
-	return err
+	if err != nil {
+		return fmt.Errorf("create trade log: %w", err)
+	}
+	return nil
 }
 
 func (r *TradeLogRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.TradeLog, error) {

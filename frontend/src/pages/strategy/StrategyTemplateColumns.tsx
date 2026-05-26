@@ -1,4 +1,3 @@
-import React from 'react';
 import { Button, Space, Tag, Tooltip, Typography, Popconfirm } from 'antd';
 import {
 	CodeOutlined,
@@ -38,7 +37,7 @@ export const buildStrategyTemplateColumns = (params: BuildColumnsParams): Column
 				// 优先读 isSystem（权威字段，来自 proto）。
 				// 兼容后端旧版本：若字段缺失，回落到 tags.preset 判断。
 				const tags = Array.isArray(record?.tags) ? record.tags : [];
-				const isSystem = Boolean((record as any)?.isSystem) || tags.includes('preset');
+				const isSystem = Boolean(record?.isSystem) || tags.includes('preset');
 				return (
 					<Space size={4} wrap>
 						<Text strong>{name}</Text>
@@ -118,7 +117,7 @@ export const buildStrategyTemplateColumns = (params: BuildColumnsParams): Column
 				// 系统模板（含本地的 default-* 占位）不能编辑/删除，仅可回测/查看/复制。
 				const tags = Array.isArray(record?.tags) ? record.tags : [];
 				const isSystem =
-					Boolean((record as any)?.isSystem) ||
+					Boolean(record?.isSystem) ||
 					tags.includes('preset') ||
 					record.id.startsWith('default-');
 				// 本地 default-* 占位模板没有真实后端 id，不能直接用于 createSchedule。

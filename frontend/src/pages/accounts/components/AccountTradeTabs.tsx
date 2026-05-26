@@ -144,8 +144,8 @@ export default function AccountTradeTabs({
                 onChange={(page) => {
                   if (!id) return;
                   analyticsApi.getRecentTrades(id, page, historyPageSize).then((data) => {
-                    onHistoryTradesChange((data as any).trades || []);
-                    onHistoryTotalChange((data as any).total || 0);
+                    onHistoryTradesChange(data?.trades || []);
+                    onHistoryTotalChange(data?.total || 0);
                     onHistoryPageChange(page);
                   });
                 }}

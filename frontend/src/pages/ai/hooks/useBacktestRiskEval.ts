@@ -54,15 +54,16 @@ export function useBacktestRiskEval(params: {
       try {
         if (!mounted) return;
         setRisk((prev) => ({ ...prev, loading: true }));
-        const resp = await strategyApi.runBacktest({
+        const backtestParams: Parameters<typeof strategyApi.runBacktest>[0] = {
           templateId,
           accountId,
           symbol,
           timeframe,
           parameters: {},
           initialCapital: 10000,
-          ...(datasetId ? { datasetId } : {}),
-        } as any);
+        };
+        if (datasetId) (backtestParams as Record<string, unknown>).datasetId = datasetId;
+        const resp = await strategyApi.runBacktest(backtestParams);
 
         if (!mounted) return;
         setRisk({

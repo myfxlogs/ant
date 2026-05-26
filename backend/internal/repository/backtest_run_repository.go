@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -234,7 +235,10 @@ func (r *BacktestRunRepository) ExtendLease(ctx context.Context, userID, runID u
 		WHERE id = $1 AND user_id = $2 AND finished_at IS NULL
 	`
 	_, err := r.db.ExecContext(ctx, query, runID, userID, leaseUntil)
-	return err
+	if err != nil {
+		return fmt.Errorf("extend lease: %w", err)
+	}
+	return nil
 }
 
 func (r *BacktestRunRepository) RequestCancel(ctx context.Context, userID, runID uuid.UUID) error {
@@ -252,7 +256,10 @@ func (r *BacktestRunRepository) RequestCancel(ctx context.Context, userID, runID
 		WHERE id = $1 AND user_id = $2
 	`
 	_, err := r.db.ExecContext(ctx, query, runID, userID)
-	return err
+	if err != nil {
+		return fmt.Errorf("request cancel: %w", err)
+	}
+	return nil
 }
 
 func (r *BacktestRunRepository) Delete(ctx context.Context, userID, runID uuid.UUID) (bool, error) {
@@ -379,5 +386,8 @@ func (r *BacktestRunRepository) UpdateAsyncFields(ctx context.Context, userID, r
 		WHERE id = $1 AND user_id = $2
 	`
 	_, err := r.db.ExecContext(ctx, query, runID, userID, status, errMsg, startedAt, finishedAt, metrics, equityCurve)
-	return err
+	if err != nil {
+		return fmt.Errorf("update async fields: %w", err)
+	}
+	return nil
 }

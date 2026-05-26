@@ -64,7 +64,7 @@ export const StrategyTemplateBacktestModal: React.FC<StrategyTemplateBacktestMod
 			width={720}
 		>
 			<Form form={form} size="small" layout="vertical" initialValues={{ timeframe: 'H1', initialCapital: 10000 }}>
-				{template && Array.isArray((template as any)?.parameters) && (template as any).parameters.length > 0 && (
+				{template && Array.isArray(template?.parameters) && template.parameters.length > 0 && (
 					<div
 						style={{
 							marginBottom: 12,
@@ -79,7 +79,7 @@ export const StrategyTemplateBacktestModal: React.FC<StrategyTemplateBacktestMod
 						</Typography.Text>
 						<div style={{ marginTop: 6 }}>
 							<Space size={[6, 6]} wrap>
-								{(template as any).parameters.map((p: any) => (
+								{template.parameters.map((p: any) => (
 									<Tag key={String(p?.name || '')} color="blue" style={{ marginInlineEnd: 0 }}>
 										<span style={{ fontWeight: 500 }}>{String(p?.label || p?.name || '')}</span>
 										<span style={{ opacity: 0.65 }}> ({String(p?.name || '')})</span>

@@ -30,7 +30,7 @@ func (r *LogRepository) CreateConnectionLog(ctx context.Context, log *model.Acco
 	_, err := r.db.ExecContext(ctx, query,
 		log.ID, log.UserID, log.AccountID, log.EventType, log.Status, log.Message, log.ErrorDetail,
 		log.ServerHost, log.ServerPort, log.LoginID, log.ConnectionDurationSecs, log.CreatedAt)
-	return err
+	return fmt.Errorf("create connection log: %w", err)
 }
 
 type ScheduleRunLogRow struct {
@@ -181,7 +181,7 @@ func (r *LogRepository) CreateExecutionLog(ctx context.Context, log *model.Strat
 		log.SignalType, log.SignalPrice, log.SignalVolume, log.SignalStopLoss, log.SignalTakeProfit,
 		log.ExecutedOrderID, log.ExecutedPrice, log.ExecutedVolume, log.Profit, log.ErrorMessage,
 		log.ExecutionTimeMs, klineData, strategyParams, log.CreatedAt)
-	return err
+	return fmt.Errorf("create execution log: %w", err)
 }
 
 func (r *LogRepository) UpdateExecutionLog(ctx context.Context, log *model.StrategyExecutionLog) error {
@@ -198,7 +198,7 @@ func (r *LogRepository) UpdateExecutionLog(ctx context.Context, log *model.Strat
 		log.SignalStopLoss, log.SignalTakeProfit, log.ExecutedOrderID,
 		log.ExecutedPrice, log.ExecutedVolume, log.Profit, log.ErrorMessage,
 		log.ExecutionTimeMs)
-	return err
+	return fmt.Errorf("update execution log: %w", err)
 }
 
 func (r *LogRepository) GetExecutionLogs(ctx context.Context, userID uuid.UUID, params *model.LogQueryParams) ([]*model.StrategyExecutionLog, int, error) {
@@ -280,7 +280,7 @@ func (r *LogRepository) CreateOrderHistory(ctx context.Context, order *model.Ord
 		order.ID, order.UserID, order.AccountID, order.Ticket, order.OrderType, order.Symbol, order.Volume,
 		order.OpenPrice, order.ClosePrice, order.OpenTime, order.CloseTime, order.StopLoss, order.TakeProfit,
 		order.Profit, order.Commission, order.Swap, order.Comment, order.MagicNumber, order.IsAutoTrade, order.ScheduleID, order.CreatedAt)
-	return err
+	return fmt.Errorf("create order history: %w", err)
 }
 
 // UpdateOrderHistoryClose fills close_* / PnL on a row previously inserted for this schedule ticket (first close only).
@@ -392,7 +392,7 @@ func (r *LogRepository) CreateOperationLog(ctx context.Context, log *model.Syste
 	_, err := r.db.ExecContext(ctx, query,
 		log.ID, log.UserID, log.OperationType, log.Module, log.ResourceType, log.ResourceID, log.Action,
 		oldValue, newValue, log.IPAddress, log.UserAgent, log.Status, log.ErrorMessage, log.DurationMs, log.CreatedAt)
-	return err
+	return fmt.Errorf("create operation log: %w", err)
 }
 
 func (r *LogRepository) GetOperationLogs(ctx context.Context, userID uuid.UUID, params *model.LogQueryParams) ([]*model.SystemOperationLog, int, error) {

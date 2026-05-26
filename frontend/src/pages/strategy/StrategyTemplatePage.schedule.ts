@@ -74,7 +74,7 @@ export async function createScheduleFromRun(
 	const symbol = String(params.form?.symbol || params.run?.symbol || '').trim();
 	const timeframe = String(params.form?.timeframe || params.run?.timeframe || '').trim();
 	const scheduleType = params.form?.scheduleType || 'kline_close';
-	const scheduleConfig: any = {};
+	const scheduleConfig: Record<string, unknown> = {};
 	if (scheduleType === 'interval') {
 		scheduleConfig.intervalMs = BigInt(params.form?.intervalMs || 300_000);
 	} else if (scheduleType === 'hf_quote') {
@@ -85,7 +85,7 @@ export async function createScheduleFromRun(
 	}
 	// sanitize parameters to a plain string->string map to avoid JSON encoding issues
 	const parameters: Record<string, string> = Object.fromEntries(
-		Object.entries(params.parameters || {}).map(([k, v]) => [String(k), String(v as any)]),
+		Object.entries(params.parameters || {}).map(([k, v]) => [String(k), String(v)]),
 	);
 	// derive schedule name; prefer user-provided name
 	const customName = String(parameters['__schedule.name'] || '').trim();
@@ -120,7 +120,7 @@ export async function createScheduleFromRun(
 			parameters,
 			scheduleType,
 			scheduleConfig,
-		} as any);
+		});
 		const scheduleId = String(resp?.id || resp?.schedule?.id || '').trim();
 		if (scheduleId && params.enableAfterCreate) {
 			await strategyApi.toggleSchedule(scheduleId, true);

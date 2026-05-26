@@ -1,5 +1,5 @@
-import type { DebateV2Session as DebateV2SessionMessage } from '../gen/debate_v2_messages_pb';
-import type { TemplateParameter } from '../gen/strategy_messages_pb';
+import type { DebateV2Session as DebateV2SessionMessage } from '../gen/ant/v1/debate_v2_messages_pb';
+import type { TemplateParameter } from '../gen/ant/v1/strategy_messages_pb';
 import { debateV2Client } from './connect';
 import { apiBaseUrl } from './transport';
 
@@ -234,7 +234,7 @@ async function waitDebateV2Job(
 	if (!token) {
 		return Promise.reject(new Error('missing access_token'));
 	}
-	const url = `${apiBaseUrl}/antrader/sse/debate-v2/${streamSubpath}/${encodeURIComponent(jobId)}/stream?access_token=${encodeURIComponent(token)}`;
+	const url = `${apiBaseUrl}/sse/debate-v2/${streamSubpath}/${encodeURIComponent(jobId)}/stream?access_token=${encodeURIComponent(token)}`;
 
 	const deadlineMs = 15 * 60_000;
 	const deadlineAt = Date.now() + deadlineMs;

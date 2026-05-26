@@ -272,7 +272,7 @@ export default function AISettings() {
               const inList = !cur || modelOptions.some((o) => o.value === cur);
               const opts = inList
                 ? modelOptions
-                : [...modelOptions, { value: cur, label: `${cur}（历史绑定）` }];
+                : [...modelOptions, { value: cur, label: t('ai.settings.agent.fields.historicalBinding', { value: cur }) }];
 
               return (
                 <List.Item
@@ -302,7 +302,7 @@ export default function AISettings() {
                           // seed 时按当时 locale 烤进去的旧字符串，否则切换语言
                           // 后会出现「左中文 + 右英文」并存。
                           <Text strong style={{ minWidth: 180, display: 'inline-block' }}>
-                            {t(`ai.settings.agent.types.${agent.type}` as any)}
+                            {t(`ai.settings.agent.types.${agent.type}`)}
                           </Text>
                         ) : (
                           <Input

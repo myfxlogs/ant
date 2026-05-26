@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -95,7 +96,10 @@ func (r *AgentRepository) CreateToken(ctx context.Context, token *AgentToken) er
 		INSERT INTO agent_tokens (id, user_id, name, token_prefix, token_hash, scopes, account_allowlist, symbol_allowlist, paper_only, rate_limit_per_min, expires_at, status, last_used_at, created_at, updated_at)
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
 	`, token.ID, token.UserID, token.Name, token.TokenPrefix, token.TokenHash, token.Scopes, token.AccountAllowlist, token.SymbolAllowlist, token.PaperOnly, token.RateLimitPerMinute, token.ExpiresAt, token.Status, token.LastUsedAt, token.CreatedAt, token.UpdatedAt)
-	return err
+	if err != nil {
+		return fmt.Errorf("create agent token: %w", err)
+	}
+	return nil
 }
 
 func (r *AgentRepository) ListTokens(ctx context.Context, userID uuid.UUID) ([]AgentToken, error) {

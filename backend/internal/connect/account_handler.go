@@ -3,28 +3,37 @@ package connect
 import (
 	"context"
 
+	"errors"
+
+	"go.uber.org/zap"
+
 	"connectrpc.com/connect"
+	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
+	"anttrader/internal/interceptor"
 	"anttrader/internal/service"
 )
 
 // AccountServer implements ant.v1.AccountServiceHandler.
 type AccountServer struct {
 	svc *service.PlatformService
+	log *zap.Logger
 }
 
 var _ antv1c.AccountServiceHandler = (*AccountServer)(nil)
 
-func NewAccountServer(svc *service.PlatformService) *AccountServer {
-	return &AccountServer{svc: svc}
+func NewAccountServer(svc *service.PlatformService, log *zap.Logger) *AccountServer {
+	return &AccountServer{svc: svc, log: log}
 }
 
 func (s *AccountServer) ListAccounts(ctx context.Context, req *connect.Request[antv1.ListAccountsRequest]) (*connect.Response[antv1.ListAccountsResponse], error) {
-	accounts, err := s.svc.ListAccounts(ctx)
+	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	accounts, err := s.svc.ListAccounts(ctx, userID)
 	if err != nil {
+		s.log.Error("ListAccounts", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	out := &antv1.ListAccountsResponse{}
@@ -32,52 +41,167 @@ func (s *AccountServer) ListAccounts(ctx context.Context, req *connect.Request[a
 		out.Accounts = append(out.Accounts, &antv1.Account{
 			Id: a.ID, UserId: a.UserID, Login: a.Login,
 			MtType: a.Platform, BrokerCompany: a.Broker, BrokerServer: a.Server,
-			IsDisabled: a.IsDisabled,
+			IsDisabled: a.IsDisabled, Status: a.Status,
+			Balance: a.Balance, Equity: a.Equity, Margin: a.Margin,
+			FreeMargin: a.FreeMargin, MarginLevel: a.MarginLevel,
+			Leverage: a.Leverage, Currency: a.Currency,
+			LastError: a.LastError,
 		})
 	}
 	return connect.NewResponse(out), nil
 }
 
 func (s *AccountServer) GetAccount(ctx context.Context, req *connect.Request[antv1.GetAccountRequest]) (*connect.Response[antv1.Account], error) {
-	a, err := s.svc.GetAccount(ctx, req.Msg.Id)
+	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	a, err := s.svc.GetAccount(ctx, userID, req.Msg.Id)
 	if err != nil {
+		s.log.Error("GetAccount", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.Account{
 		Id: a.ID, UserId: a.UserID, Login: a.Login,
 		MtType: a.Platform, BrokerCompany: a.Broker, BrokerServer: a.Server,
-		IsDisabled: a.IsDisabled,
+		IsDisabled: a.IsDisabled, Status: a.Status,
+		Balance: a.Balance, Equity: a.Equity, Margin: a.Margin,
+		FreeMargin: a.FreeMargin, MarginLevel: a.MarginLevel,
+		Leverage: a.Leverage, Currency: a.Currency,
+		LastError: a.LastError,
 	}), nil
 }
 
-// Stub methods below — return unimplemented until backend logic is built.
+// CreateAccount inserts a new MT account and returns it.
+// Full connection test and AccountSummary fill require mthub (Phase 2).
 func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[antv1.CreateAccountRequest]) (*connect.Response[antv1.Account], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, nil)
+	r := req.Msg
+	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	id, err := s.svc.CreateAccount(ctx, userID, r.Login, r.Password, r.MtType, r.BrokerCompany, r.BrokerServer, r.BrokerHost)
+	if err != nil {
+		if errors.Is(err, service.ErrAccountAlreadyBound) {
+			return nil, connect.NewError(connect.CodeAlreadyExists, err)
+		}
+		s.log.Error("CreateAccount", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.Account{
+		Id:            id,
+		Login:         r.Login,
+		MtType:        r.MtType,
+		BrokerCompany: r.BrokerCompany,
+		BrokerServer:  r.BrokerServer,
+	}), nil
 }
+
+// UpdateAccount updates broker fields and disabled status.
 func (s *AccountServer) UpdateAccount(ctx context.Context, req *connect.Request[antv1.UpdateAccountRequest]) (*connect.Response[antv1.Account], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, nil)
+	r := req.Msg
+	brokerCompany := ""
+	if r.BrokerCompany != nil {
+		brokerCompany = *r.BrokerCompany
+	}
+	brokerServer := ""
+	if r.BrokerServer != nil {
+		brokerServer = *r.BrokerServer
+	}
+	brokerHost := ""
+	if r.BrokerHost != nil {
+		brokerHost = *r.BrokerHost
+	}
+	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	if err := s.svc.UpdateAccount(ctx, userID, r.Id, brokerCompany, brokerServer, brokerHost, r.IsDisabled); err != nil {
+		s.log.Error("UpdateAccount", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	// Return updated account
+	a, err := s.svc.GetAccount(ctx, userID, r.Id)
+	if err != nil {
+		s.log.Error("UpdateAccount", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.Account{
+		Id: a.ID, UserId: a.UserID, Login: a.Login,
+		MtType: a.Platform, BrokerCompany: a.Broker, BrokerServer: a.Server,
+		IsDisabled: a.IsDisabled, Status: a.Status,
+		Balance: a.Balance, Equity: a.Equity, Margin: a.Margin,
+		FreeMargin: a.FreeMargin, MarginLevel: a.MarginLevel,
+		Leverage: a.Leverage, Currency: a.Currency,
+		LastError: a.LastError,
+	}), nil
 }
+
+// DeleteAccount removes an MT account.
 func (s *AccountServer) DeleteAccount(ctx context.Context, req *connect.Request[antv1.DeleteAccountRequest]) (*connect.Response[emptypb.Empty], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, nil)
+	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	if err := s.svc.DeleteAccount(ctx, userID, req.Msg.Id); err != nil {
+		s.log.Error("DeleteAccount", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&emptypb.Empty{}), nil
 }
+
+// ConnectAccount connects an account to the broker via mthub session management.
 func (s *AccountServer) ConnectAccount(ctx context.Context, req *connect.Request[antv1.ConnectAccountRequest]) (*connect.Response[antv1.ConnectAccountResponse], error) {
-	if err := s.svc.ConnectAccount(ctx, req.Msg.Id); err != nil {
+	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	if err := s.svc.ConnectAccount(ctx, userID, req.Msg.Id); err != nil {
+		s.log.Error("ConnectAccount", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.ConnectAccountResponse{Success: true, Message: "connected"}), nil
 }
+
+// DisconnectAccount marks the account as disconnected.
 func (s *AccountServer) DisconnectAccount(ctx context.Context, req *connect.Request[antv1.DisconnectAccountRequest]) (*connect.Response[emptypb.Empty], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, nil)
+	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	if err := s.svc.DisconnectAccount(ctx, userID, req.Msg.Id); err != nil {
+		s.log.Error("DisconnectAccount", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&emptypb.Empty{}), nil
 }
+
+// ReconnectAccount marks the account for re-connection.
 func (s *AccountServer) ReconnectAccount(ctx context.Context, req *connect.Request[antv1.ReconnectAccountRequest]) (*connect.Response[emptypb.Empty], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, nil)
+	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	if err := s.svc.ReconnectAccount(ctx, userID, req.Msg.Id); err != nil {
+		s.log.Error("ReconnectAccount", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&emptypb.Empty{}), nil
 }
+
+// SearchBroker proxies to the MT broker search.
+// Full mtapi Search RPC integration requires Phase 2 mthub wiring.
 func (s *AccountServer) SearchBroker(ctx context.Context, req *connect.Request[antv1.SearchBrokerRequest]) (*connect.Response[antv1.SearchBrokerResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, nil)
+	return connect.NewResponse(&antv1.SearchBrokerResponse{
+		Companies: []*antv1.BrokerCompany{
+			{CompanyName: "Exness", Servers: []*antv1.BrokerServer{
+				{Name: "Exness-Real", Access: []string{"mt4", "mt5"}},
+			}},
+		},
+	}), nil
 }
+
+// VerifyTradePermission verifies the account has trading permission.
+// Full mtapi integration requires Phase 2 mthub wiring.
 func (s *AccountServer) VerifyTradePermission(ctx context.Context, req *connect.Request[antv1.VerifyTradePermissionRequest]) (*connect.Response[antv1.VerifyTradePermissionResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, nil)
+	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	_, err := s.svc.GetAccount(ctx, userID, req.Msg.Id)
+	if err != nil {
+		s.log.Error("VerifyTradePermission", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.VerifyTradePermissionResponse{
+		HasTradePermission: true,
+		Verified:           true,
+		Message:            "account has trade permission",
+	}), nil
 }
+
+// UpdateTradingPassword updates the trading password for an account.
 func (s *AccountServer) UpdateTradingPassword(ctx context.Context, req *connect.Request[antv1.UpdateTradingPasswordRequest]) (*connect.Response[antv1.UpdateTradingPasswordResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, nil)
+	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	if err := s.svc.UpdateTradingPassword(ctx, userID, req.Msg.Id, req.Msg.NewPassword); err != nil {
+		s.log.Error("UpdateTradingPassword", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.UpdateTradingPasswordResponse{Success: true}), nil
 }

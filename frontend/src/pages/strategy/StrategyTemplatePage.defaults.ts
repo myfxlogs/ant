@@ -1,4 +1,16 @@
-export const DEFAULT_TEMPLATES: any[] = [
+export interface DefaultTemplateItem {
+  id: string;
+  nameKey?: string;
+  descriptionKey?: string;
+  name: string;
+  description: string;
+  code: string;
+  isSystem?: boolean;
+  tags?: string[];
+  [key: string]: unknown;
+}
+
+export const DEFAULT_TEMPLATES: DefaultTemplateItem[] = [
   {
     id: 'default-ma-cross',
     nameKey: 'strategy.defaultTemplates.maCross.name',
@@ -57,7 +69,7 @@ else:
     }`,
     isPublic: true,
     useCount: 0,
-    createdAt: new Date().toISOString() as any,
+    createdAt: new Date().toISOString(),
   },
   {
     id: 'default-rsi-oversold',
@@ -97,7 +109,7 @@ return signal
     isPublic: true,
     tags: ['mean-reversion', 'RSI'],
     useCount: 0,
-    createdAt: new Date().toISOString() as any,
+    createdAt: new Date().toISOString(),
   },
   {
     id: 'default-bollinger-squeeze',
@@ -131,7 +143,7 @@ return signal
     isPublic: true,
     tags: ['volatility', 'bollinger', 'breakout'],
     useCount: 0,
-    createdAt: new Date().toISOString() as any,
+    createdAt: new Date().toISOString(),
   },
   {
     id: 'default-macd-divergence',
@@ -173,7 +185,7 @@ return {'signal': 'hold', 'symbol': symbol, 'price': close[-1] if len(close)>0 e
     isPublic: true,
     tags: ['trend', 'MACD', 'divergence'],
     useCount: 0,
-    createdAt: new Date().toISOString() as any,
+    createdAt: new Date().toISOString(),
   },
   {
     id: 'default-breakout-volume',
@@ -210,7 +222,7 @@ return signal
     isPublic: true,
     tags: ['breakout', 'volume', 'ATR'],
     useCount: 0,
-    createdAt: new Date().toISOString() as any,
+    createdAt: new Date().toISOString(),
   },
   {
     id: 'default-bb-mean-reversion',
@@ -240,7 +252,7 @@ return signal
     isPublic: true,
     tags: ['mean-reversion', 'bollinger'],
     useCount: 0,
-    createdAt: new Date().toISOString() as any,
+    createdAt: new Date().toISOString(),
   },
   {
     id: 'default-turtle-trading',
@@ -267,7 +279,7 @@ return signal
     isPublic: true,
     tags: ['trend', 'turtle'],
     useCount: 0,
-    createdAt: new Date().toISOString() as any,
+    createdAt: new Date().toISOString(),
   },
   {
     id: 'default-grid-trading',
@@ -312,7 +324,7 @@ if price is not None and upper > lower and grid_count >= 2:
     isPublic: true,
     tags: ['grid', 'market-making'],
     useCount: 0,
-    createdAt: new Date().toISOString() as any,
+    createdAt: new Date().toISOString(),
   },
   {
     id: 'default-dca-buy',
@@ -365,7 +377,7 @@ signal = {
     isPublic: true,
     tags: ['passive', 'DCA'],
     useCount: 0,
-    createdAt: new Date().toISOString() as any,
+    createdAt: new Date().toISOString(),
   },
   {
     id: 'default-pairs-trading',
@@ -382,7 +394,7 @@ signal = {
     isPublic: true,
     tags: ['multi-symbol-required'],
     useCount: 0,
-    createdAt: new Date().toISOString() as any,
+    createdAt: new Date().toISOString(),
   },
   {
     id: 'default-momentum-rotation',
@@ -399,7 +411,7 @@ signal = {
     isPublic: true,
     tags: ['multi-symbol-required'],
     useCount: 0,
-    createdAt: new Date().toISOString() as any,
+    createdAt: new Date().toISOString(),
   },
   {
     id: 'default-test-force-buy',
@@ -438,7 +450,7 @@ signal = {
 }`, 
     isPublic: true,
     useCount: 0,
-    createdAt: new Date().toISOString() as any,
+    createdAt: new Date().toISOString(),
   },
   {
     id: 'default-rsi',
@@ -502,7 +514,7 @@ signal = {
 }`,
     isPublic: true,
     useCount: 0,
-    createdAt: new Date().toISOString() as any,
+    createdAt: new Date().toISOString(),
   },
   {
     id: 'default-macd',
@@ -581,6 +593,6 @@ else:
     }`,
     isPublic: true,
     useCount: 0,
-    createdAt: new Date().toISOString() as any,
+    createdAt: new Date().toISOString(),
   },
 ];

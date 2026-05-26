@@ -80,7 +80,7 @@ export function useStrategyTemplateRuns(t: (key: string) => string) {
 
   useEffect(() => {
     for (const r of runs || []) {
-      const id = String((r as any)?.id || "");
+      const id = String(r?.id || "");
       if (!id) continue;
       if (isTerminalRun(r)) {
         runStreamUnsubRef.current[id]?.();

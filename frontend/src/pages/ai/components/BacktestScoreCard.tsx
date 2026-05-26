@@ -1,6 +1,6 @@
 import { Alert, Card, Descriptions, Progress, Tag } from 'antd';
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { BacktestRunStatus } from '@/gen/backtest_run_pb';
+import { BacktestRunStatus } from '@/gen/ant/v1/backtest_run_pb';
 import { useTranslation } from 'react-i18next';
 
 function backtestStatusLabel(status: string, t: (k: string) => string): string {

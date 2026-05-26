@@ -2,7 +2,10 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Table, Card, Form, DatePicker, Select, Button, Tag, Tabs, Space, Input } from 'antd';
 import { accountApi } from '@/client/account';
 import { logApi } from '@/client/log';
-import type { ConnectionLog } from '@/gen/log_connection_pb';
+import type { ConnectionLog } from '@/gen/ant/v1/log_connection_pb';
+import type { ExecutionLog } from '@/gen/ant/v1/log_execution_pb';
+import type { OrderHistoryRecord } from '@/gen/ant/v1/log_order_pb';
+import type { OperationLog } from '@/gen/ant/v1/log_operation_pb';
 import { getDeviceLocale, getDeviceTimeZone } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
 import { showError } from '@/utils/message';
@@ -10,15 +13,34 @@ import { useTranslation } from 'react-i18next';
 
 const { RangePicker } = DatePicker;
 
+type LogEntry = ConnectionLog | ExecutionLog | OrderHistoryRecord | OperationLog;
+
+// accountApi.list() returns plain objects after toCamelCase transformation.
+interface AccountLike {
+  id: string;
+  brokerServer?: string;
+  brokerHost?: string;
+  brokerCompany?: string;
+  [key: string]: unknown;
+}
+
+interface OperationDetails {
+  result?: string;
+  risk_code?: string;
+  request_id?: string;
+  trigger_source?: string;
+  [key: string]: unknown;
+}
+
 export default function LogManagement() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('connection');
   const [loading, setLoading] = useState(false);
-  const [logs, setLogs] = useState<any[]>([]);
+  const [logs, setLogs] = useState<LogEntry[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const [accounts, setAccounts] = useState<any[]>([]);
+  const [accounts, setAccounts] = useState<AccountLike[]>([]);
   const [opRiskCode, setOpRiskCode] = useState('');
   const [opRequestId, setOpRequestId] = useState('');
   const [opTriggerSource, setOpTriggerSource] = useState('');
@@ -26,14 +48,14 @@ export default function LogManagement() {
   const [form] = Form.useForm();
 
   const accountById = useMemo(() => {
-    const m = new Map<string, any>();
-    (accounts || []).forEach((a: any) => {
+    const m = new Map<string, AccountLike>();
+    (accounts || []).forEach((a) => {
       if (a?.id) m.set(String(a.id), a);
     });
     return m;
   }, [accounts]);
 
-  const toDateSafe = (v: any): Date | null => {
+  const toDateSafe = (v: unknown): Date | null => {
     if (!v) return null;
     if (v instanceof Date && !Number.isNaN(v.getTime())) return v;
     if (typeof v === 'string') {
@@ -44,18 +66,18 @@ export default function LogManagement() {
       const d = new Date(v);
       return Number.isNaN(d.getTime()) ? null : d;
     }
-    if (typeof v === 'object') {
-      const toDate = (v as any)?.toDate;
-      if (typeof toDate === 'function') {
+    if (typeof v === 'object' && v !== null) {
+      const vo = v as Record<string, unknown>;
+      if (typeof vo['toDate'] === 'function') {
         try {
-          const d = toDate.call(v);
+          const d = (vo['toDate'] as () => Date).call(v);
           if (d instanceof Date && !Number.isNaN(d.getTime())) return d;
         } catch (_e) {
           // ignore
         }
       }
-      const seconds = (v as any)?.seconds;
-      const nanos = (v as any)?.nanos;
+      const seconds = vo['seconds'];
+      const nanos = vo['nanos'];
       const secNum = typeof seconds === 'bigint' ? Number(seconds) : typeof seconds === 'number' ? seconds : undefined;
       const nanoNum = typeof nanos === 'bigint' ? Number(nanos) : typeof nanos === 'number' ? nanos : 0;
       if (typeof secNum === 'number' && Number.isFinite(secNum)) {
@@ -67,7 +89,7 @@ export default function LogManagement() {
     return null;
   };
 
-  const formatTime = (v: any) => {
+  const formatTime = (v: unknown) => {
     const d = toDateSafe(v);
     if (!d) return '-';
     const locale = getDeviceLocale();
@@ -75,10 +97,10 @@ export default function LogManagement() {
     return d.toLocaleString(locale, { timeZone, hour12: false });
   };
 
-  const fetchLogs = useCallback(async (filters?: any) => {
+  const fetchLogs = useCallback(async (filters?: Record<string, unknown>) => {
     setLoading(true);
     try {
-      let result: any;
+      let result: { logs?: LogEntry[]; orders?: OrderHistoryRecord[]; total: number };
       
       switch (activeTab) {
         case 'connection':
@@ -119,7 +141,7 @@ export default function LogManagement() {
           break;
       }
     } catch (error) {
-      showError(getErrorMessage(error, '加载日志失败'));
+      showError(getErrorMessage(error, t('logs.loadFailed')));
     } finally {
       setLoading(false);
     }
@@ -128,7 +150,7 @@ export default function LogManagement() {
   useEffect(() => {
     accountApi
       .list()
-      .then((accs: any) => setAccounts(Array.isArray(accs) ? accs : []))
+      .then((accs: AccountLike[]) => setAccounts(Array.isArray(accs) ? accs : []))
       .catch(() => setAccounts([]));
   }, []);
 
@@ -138,7 +160,7 @@ export default function LogManagement() {
 
   const handleSearch = () => {
     const values = form.getFieldsValue();
-    const filters: any = {};
+    const filters: Record<string, unknown> = {};
     
     if (values.dateRange) {
       filters.startDate = values.dateRange[0].format('YYYY-MM-DD');
@@ -209,7 +231,7 @@ export default function LogManagement() {
     return <Tag color={colors[type] || 'default'}>{type.toUpperCase()}</Tag>;
   };
 
-  const parseOperationDetails = (raw?: string): Record<string, any> => {
+  const parseOperationDetails = (raw?: string): OperationDetails => {
     if (!raw) return {};
     try {
       const parsed = JSON.parse(raw);
@@ -221,7 +243,7 @@ export default function LogManagement() {
   };
 
   const connectionColumns = [
-    { title: t('logs.time'), dataIndex: 'createdAt', key: 'createdAt', width: 180, render: (v: any) => formatTime(v) },
+    { title: t('logs.time'), dataIndex: 'createdAt', key: 'createdAt', width: 180, render: (v: unknown) => formatTime(v) },
     { title: t('logs.eventType'), dataIndex: 'eventType', key: 'eventType', width: 120, render: getEventTypeTag },
     { title: t('logs.status'), dataIndex: 'status', key: 'status', width: 100, render: getStatusTag },
     {
@@ -255,7 +277,7 @@ export default function LogManagement() {
   ];
 
   const executionColumns = [
-    { title: t('logs.time'), dataIndex: 'createdAt', key: 'createdAt', width: 180, render: (v: any) => formatTime(v) },
+    { title: t('logs.time'), dataIndex: 'createdAt', key: 'createdAt', width: 180, render: (v: unknown) => formatTime(v) },
     { title: t('logs.product'), dataIndex: 'symbol', key: 'symbol', width: 100 },
     { title: t('logs.period'), dataIndex: 'timeframe', key: 'timeframe', width: 80 },
     { title: t('logs.status'), dataIndex: 'status', key: 'status', width: 100, render: getStatusTag },
@@ -268,7 +290,7 @@ export default function LogManagement() {
   ];
 
   const orderColumns = [
-    { title: t('logs.time'), dataIndex: 'openTime', key: 'openTime', width: 180, render: (v: any) => formatTime(v) },
+    { title: t('logs.time'), dataIndex: 'openTime', key: 'openTime', width: 180, render: (v: unknown) => formatTime(v) },
     { title: t('logs.orderTable.ticket'), dataIndex: 'ticket', key: 'ticket', width: 100 },
     { title: t('logs.product'), dataIndex: 'symbol', key: 'symbol', width: 100 },
     { title: t('logs.orderTable.type'), dataIndex: 'orderType', key: 'orderType', width: 100 },
@@ -279,14 +301,14 @@ export default function LogManagement() {
   ];
 
   const operationColumns = [
-    { title: t('logs.time'), dataIndex: 'createdAt', key: 'createdAt', width: 180, render: (v: any) => formatTime(v) },
+    { title: t('logs.time'), dataIndex: 'createdAt', key: 'createdAt', width: 180, render: (v: unknown) => formatTime(v) },
     { title: t('logs.module'), dataIndex: 'module', key: 'module', width: 120 },
     { title: t('logs.action'), dataIndex: 'action', key: 'action', width: 150 },
     {
-      title: '结果',
+      title: t('logs.result'),
       key: 'riskResult',
       width: 100,
-      render: (_: any, r: any) => {
+      render: (_: unknown, r: OperationLog) => {
         const d = parseOperationDetails(r?.details);
         const val = String(d?.result || '').toLowerCase();
         if (!val) return '-';
@@ -294,28 +316,28 @@ export default function LogManagement() {
       },
     },
     {
-      title: '风险码',
+      title: t('logs.riskCode'),
       key: 'riskCode',
       width: 220,
-      render: (_: any, r: any) => {
+      render: (_: unknown, r: OperationLog) => {
         const d = parseOperationDetails(r?.details);
         return d?.risk_code || '-';
       },
     },
     {
-      title: '请求ID',
+      title: t('logs.requestId'),
       key: 'requestId',
       width: 220,
-      render: (_: any, r: any) => {
+      render: (_: unknown, r: OperationLog) => {
         const d = parseOperationDetails(r?.details);
         return d?.request_id || '-';
       },
     },
     {
-      title: '触发源',
+      title: t('logs.triggerSource'),
       key: 'triggerSource',
       width: 120,
-      render: (_: any, r: any) => {
+      render: (_: unknown, r: OperationLog) => {
         const d = parseOperationDetails(r?.details);
         return d?.trigger_source || '-';
       },
@@ -326,8 +348,9 @@ export default function LogManagement() {
 
   const filteredLogs = useMemo(() => {
     if (activeTab !== 'operations') return logs;
-    return logs.filter((r: any) => {
-      const d = parseOperationDetails(r?.details);
+    return logs.filter((r) => {
+      const op = r as OperationLog;
+      const d = parseOperationDetails(op?.details);
       if (opRiskCode && !String(d?.risk_code || '').toLowerCase().includes(opRiskCode.toLowerCase())) return false;
       if (opRequestId && !String(d?.request_id || '').toLowerCase().includes(opRequestId.toLowerCase())) return false;
       if (opTriggerSource && String(d?.trigger_source || '').toLowerCase() !== opTriggerSource.toLowerCase()) return false;
@@ -379,10 +402,10 @@ export default function LogManagement() {
                   });
                 }}
               >
-                风控日志快速筛选
+                {t('logs.riskLogQuickFilter')}
               </Button>
             </Form.Item>
-            <Form.Item label="风险码">
+            <Form.Item label={t('logs.riskCode')}>
               <Input
                 style={{ width: 220 }}
                 placeholder="RISK_MARGIN_INSUFFICIENT"
@@ -390,7 +413,7 @@ export default function LogManagement() {
                 onChange={(e) => setOpRiskCode(e.target.value)}
               />
             </Form.Item>
-            <Form.Item label="请求ID">
+            <Form.Item label={t('logs.requestId')}>
               <Input
                 style={{ width: 220 }}
                 placeholder="request_id"
@@ -398,7 +421,7 @@ export default function LogManagement() {
                 onChange={(e) => setOpRequestId(e.target.value)}
               />
             </Form.Item>
-            <Form.Item label="触发源">
+            <Form.Item label={t('logs.triggerSource')}>
               <Select
                 allowClear
                 style={{ width: 130 }}
@@ -411,7 +434,7 @@ export default function LogManagement() {
                 ]}
               />
             </Form.Item>
-            <Form.Item label="结果">
+            <Form.Item label={t('logs.result')}>
               <Select
                 allowClear
                 style={{ width: 120 }}

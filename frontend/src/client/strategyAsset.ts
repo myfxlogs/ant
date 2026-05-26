@@ -1,5 +1,5 @@
 import { strategyAssetClient } from './connect';
-import type { StrategyAsset, StrategyAssetClone } from '../gen/strategy_asset_pb';
+import type { StrategyAsset, StrategyAssetClone } from '../gen/ant/v1/strategy_asset_pb';
 
 export type { StrategyAsset, StrategyAssetClone };
 

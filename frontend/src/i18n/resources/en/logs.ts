@@ -34,6 +34,12 @@ const logs = {
 
     search: 'Search',
     reset: 'Reset',
+    result: 'Result',
+    riskCode: 'Risk Code',
+    requestId: 'Request ID',
+    triggerSource: 'Trigger Source',
+    riskLogQuickFilter: 'Risk Log Quick Filter',
+    loadFailed: 'Failed to load logs',
     orderTable: {
       ticket: 'Ticket',
       type: 'Type',

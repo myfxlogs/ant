@@ -76,6 +76,55 @@ ant_ch_pool_active_conns                                       Gauge
 ant_nats_connected                                             Gauge   1/0
 ```
 
+### 3.6 backtest / replay（ADR-0012）
+
+```
+backtest_run_total{strategy_id, status}                       Counter  status ∈ {ok, err, timeout}
+backtest_run_duration_seconds{strategy_id}                     Histogram
+backtest_bar_replayed_total{canonical, period}                 Counter
+backtest_signal_generated_total{strategy_id, side}             Counter
+backtest_divergence_ratio{strategy_id}                         Gauge    回测/实盘信号偏差率
+```
+
+### 3.7 order state machine（ADR-0013）
+
+```
+mt_reconciliation_mismatch_total{account_id, type}             Counter  type ∈ {ghost, orphan, state_mismatch}
+mt_reconciliation_duration_seconds{account_id}                 Histogram
+mt_idempotency_hit_total{account_id}                           Counter
+mt_idempotency_key_ttl_seconds{account_id}                     Gauge
+```
+
+### 3.8 paper trading（ADR-0015）
+
+```
+paper_order_total{strategy_id, status}                         Counter  status ∈ {filled, partial, rejected}
+paper_fill_slippage_bps{strategy_id, symbol}                   Histogram
+paper_fill_latency_seconds{strategy_id}                        Histogram
+paper_promotion_total{strategy_id, status}                     Counter  status ∈ {ok, rejected}
+```
+
+### 3.9 AI strategy generation（ADR-0017）
+
+```
+ai_strategy_generation_total{provider, result}                 Counter  result ∈ {success, failed, compliance_blocked}
+ai_clarification_rounds                                       Histogram  bucket: [1, 2, 3]
+ai_backtest_trigger_total{strategy_id, status}                 Counter
+ai_conversation_duration_seconds{conversation_id}              Histogram
+ai_code_compliance_violations_total{rule_id}                   Counter
+```
+
+### 3.10 signal execution latency（ADR-0018）
+
+```
+signal_to_execution_latency_seconds                            Histogram  bucket: [0.01, 0.025, 0.05, 0.1, 0.15, 0.235, 0.3, 0.5, 1, 2]
+quant_inference_latency_seconds                                Histogram
+oms_risk_check_latency_seconds                                 Histogram
+mthub_broker_ack_latency_seconds                               Histogram
+oms_signal_dropped_total{reason}                               Counter
+oms_signal_total                                               Counter
+```
+
 ## 4. 健康端点契约
 
 ### 4.1 GET /healthz
@@ -307,6 +356,11 @@ groups:
 4. **mthub**：order placed rate / reject rate / latency p50/p95/p99
 5. **资源**：goroutines / memory / pool conns
 6. **NATS**：subjects rate / pending messages
+7. **订单状态机**：reconciliation mismatches | idempotency hits | ghost/orphan counts
+8. **回测**：run duration | signal divergence ratio | bar replay rate
+9. **仿真交易**：fill slippage distribution | promotion success rate
+10. **AI 策略生成**：generation success rate | clarification rounds | compliance violations
+11. **信号延迟 SLO**：e2e latency heatmap (P50/P95/P99) | per-stage attribution | error budget burn gauge
 
 ## 8. 验收命令
 

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -136,7 +137,7 @@ func (r *SystemAIConfigRepository) Upsert(ctx context.Context, row *SystemAIConf
 	`,
 		row.UserID, row.ProviderID, row.Name, row.BaseURL, row.Organization, models, row.DefaultModel,
 		row.Temperature, row.TimeoutSeconds, row.MaxTokens, purposes, primaryFor, row.Enabled, updatedBy)
-	return err
+	return fmt.Errorf("upsert system ai config: %w", err)
 }
 
 func (r *SystemAIConfigRepository) Delete(ctx context.Context, userID uuid.UUID, providerID string) error {
@@ -144,7 +145,7 @@ func (r *SystemAIConfigRepository) Delete(ctx context.Context, userID uuid.UUID,
 		DELETE FROM system_ai_configs
 		WHERE user_id = $1 AND provider_id = $2`, userID, providerID)
 	if err != nil {
-		return err
+		return fmt.Errorf("delete system ai config: %w", err)
 	}
 	if tag.RowsAffected() == 0 {
 		return ErrSystemAIConfigNotFound
@@ -161,7 +162,7 @@ func (r *SystemAIConfigRepository) SetSecret(ctx context.Context, userID uuid.UU
 				has_secret = FALSE, updated_at = NOW(), updated_by = $1
 			WHERE user_id = $2 AND provider_id = $3`, updatedBy, userID, providerID)
 		if err != nil {
-			return err
+			return fmt.Errorf("set system ai secret: %w", err)
 		}
 		if tag.RowsAffected() == 0 {
 			return ErrSystemAIConfigNotFound
@@ -175,7 +176,7 @@ func (r *SystemAIConfigRepository) SetSecret(ctx context.Context, userID uuid.UU
 		WHERE user_id = $5 AND provider_id = $6`,
 		sec.Ciphertext, sec.Salt, sec.Nonce, updatedBy, userID, providerID)
 	if err != nil {
-		return err
+		return fmt.Errorf("set system ai secret: %w", err)
 	}
 	if tag.RowsAffected() == 0 {
 		return ErrSystemAIConfigNotFound

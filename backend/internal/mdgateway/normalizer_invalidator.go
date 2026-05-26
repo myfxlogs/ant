@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 )
 
@@ -18,19 +19,22 @@ type PGListener interface {
 // NormalizerInvalidator listens for PG NOTIFY broker_symbols_changed events
 // and invalidates the normalizer cache for affected (broker, symbol_raw) pairs.
 // Falls back to 30s ticker polling when the LISTEN connection is lost (ADR-0011 §2.3).
+// When ticker fallback is active, actively queries broker_symbols to detect changes.
 type NormalizerInvalidator struct {
 	cancel       context.CancelFunc
 	log          *zap.Logger
 	onInvalidate func(broker, symbolRaw string)
+	pg           *pgxpool.Pool // nil if PG not available (ticker will only heartbeat)
 	mu           sync.Mutex
 	running      bool
 }
 
 // NewNormalizerInvalidator creates an invalidator. onInvalidate is called
 // when a broker_symbols change is detected, e.g. normalizer.cache.Remove(key).
-func NewNormalizerInvalidator(log *zap.Logger, onInvalidate func(broker, symbolRaw string)) *NormalizerInvalidator {
+func NewNormalizerInvalidator(log *zap.Logger, pg *pgxpool.Pool, onInvalidate func(broker, symbolRaw string)) *NormalizerInvalidator {
 	return &NormalizerInvalidator{
 		log:          log,
+		pg:           pg,
 		onInvalidate: onInvalidate,
 	}
 }
@@ -93,17 +97,60 @@ func (ni *NormalizerInvalidator) listenLoop(ctx context.Context, listener PGList
 }
 
 func (ni *NormalizerInvalidator) tickerLoop(ctx context.Context) {
-	ticker := time.NewTicker(30 * time.Second)
+	ticker := Clk.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 	ni.log.Info("normalizer_invalidator: ticker fallback started (30s)")
+
+	// Track known symbol set so we only invalidate on actual changes.
+	known := make(map[string]bool) // "broker:symbol_raw"
 
 	for {
 		select {
 		case <-ctx.Done():
 			ni.log.Info("normalizer_invalidator: ticker stopped")
 			return
-		case <-ticker.C:
-			ni.log.Debug("normalizer_invalidator: ticker heartbeat")
+		case <-ticker.C():
+			if ni.pg == nil {
+				ni.log.Debug("normalizer_invalidator: ticker heartbeat (no PG)")
+				continue
+			}
+			ni.refreshFromPG(ctx, known)
 		}
+	}
+}
+
+func (ni *NormalizerInvalidator) refreshFromPG(ctx context.Context, known map[string]bool) {
+	rows, err := ni.pg.Query(ctx,
+		"SELECT broker_id::text, symbol_raw FROM broker_symbols")
+	if err != nil {
+		ni.log.Warn("normalizer_invalidator: PG query failed", zap.Error(err))
+		return
+	}
+	defer rows.Close()
+
+	seen := make(map[string]bool)
+	var count int
+	for rows.Next() {
+		var brokerID, symbolRaw string
+		if err := rows.Scan(&brokerID, &symbolRaw); err != nil {
+			continue
+		}
+		key := brokerID + ":" + symbolRaw
+		seen[key] = true
+		if !known[key] {
+			ni.onInvalidate(brokerID, symbolRaw)
+			count++
+		}
+	}
+
+	// Replace known set with current state.
+	clear(known)
+	for k := range seen {
+		known[k] = true
+	}
+
+	if count > 0 {
+		ni.log.Info("normalizer_invalidator: ticker invalidated cache entries",
+			zap.Int("count", count))
 	}
 }

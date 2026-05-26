@@ -1,6 +1,6 @@
 # 03 · 数据流时序
 
-> **本文档展示 4 条核心数据流的时序细节。每个箭头都有对应的代码位置与可观测信号。**
+> **本文档展示 12 条核心数据流的时序细节。每个箭头都有对应的代码位置与可观测信号。**
 
 ## 1. 行情接入流（Tick → CH/NATS）
 
@@ -246,3 +246,239 @@ ant-server main()
 | PG 不可达 | API 503；新订单拒绝；行情链路照常 | 即时告警 | restart 后续 |
 
 每条降级路径必须有：测试用例（chaos/）+ Prometheus 指标 + runbook 条目（`docs/runbook/mt-incidents.md`）。
+
+## 8. 统一回测/实盘路径时序（ADR-0012）
+
+```
+CH (历史) / NATS (实时)    Source iface    factorsvc    quantengine    OMS          PaperExecutor / mthub
+ │                              │               │             │            │                │
+ │ bars                         │               │             │            │                │
+ ├─────────────►                │               │             │            │                │
+ │              OnBar           │               │             │            │                │
+ │              ├──────────────►│               │             │            │                │
+ │              │               │ DSL.Eval      │             │            │                │
+ │              │               ├──────────────►│             │            │                │
+ │              │               │ factor_value  │             │            │                │
+ │              │               │◄──────────────┤             │            │                │
+ │              │               │ Publish       │             │            │                │
+ │              │               ├─────────────────────────────►            │                │
+ │              │               │               │ ONNX/DSL     │            │                │
+ │              │               │               ├────────────►│            │                │
+ │              │               │               │ Signal{Source}           │                │
+ │              │               │               │◄────────────┤            │                │
+ │              │               │               │ CH signals (audit)       │                │
+ │              │               │               ├─────────────────────────►│                │
+ │              │               │               │             │ Signal     │                │
+ │              │               │               ├─────────────────────────►│                │
+ │              │               │               │             │            │                │
+ │              │               │               │    Source=="live"?       │                │
+ │              │               │               │    ──→ risk.PreCheck     │                │
+ │              │               │               │         → mthub.Place    │                │
+ │              │               │               │         → broker ack     │                │
+ │              │               │               │    Source=="replay"?     │                │
+ │              │               │               │    ──→ PaperExecutor     │                │
+ │              │               │               │         → FillModel      │                │
+ │              │               │               │         → PG paper_orders│                │
+```
+
+**接口契约**：
+
+```go
+type BarSource interface {
+    Subscribe(ctx context.Context, canonical, period string) (<-chan *Bar, error)
+}
+type FactorSource interface {
+    Subscribe(ctx context.Context, canonical string) (<-chan *FactorValue, error)
+}
+// LiveSource: NATS JetStream 订阅
+// ReplaySource: CH SELECT 历史查询 + 时间推进
+```
+
+## 9. 信号→执行延迟预算时序（ADR-0018）
+
+```
+factorsvc      quantengine     OMS/risk       mthub         adapter/mt    mtapi/broker
+ │                 │               │             │               │             │
+ │ factor trigger   │               │             │               │             │
+ │ (T0)             │               │             │               │             │
+ ├────────────────►│               │             │               │             │
+ │ < 5ms           │               │             │               │             │
+ │                 │ ONNX/DSL      │             │               │             │
+ │                 │ < 20ms P99    │             │               │             │
+ │                 ├──────────────►│             │               │             │
+ │                 │ Signal        │ PreCheck    │               │             │
+ │                 │               │ < 5ms P99   │               │             │
+ │                 │               ├────────────►│               │             │
+ │                 │               │ Place       │               │             │
+ │                 │               │             │ < 10ms P99    │             │
+ │                 │               │             ├──────────────►│             │
+ │                 │               │             │ OrderSend     │             │
+ │                 │               │             │               │ < 200ms P99 │
+ │                 │               │             │               ├────────────►│
+ │                 │               │             │               │ broker ack  │
+ │                 │               │             │               │◄────────────┤
+ │                 │               │             │               │             │
+ │                 │               │             │ T_end (broker_ack_ts)       │
+ │                 │               │             │               │             │
+ │ ◄───────────────┬───────────────┬─────────────┬───────────────┬─────────────┤
+ │                 OTel trace 贯穿全链路，分阶段归因延迟                          │
+ │                 signal_to_execution_latency_seconds.Observe(T_end - T0)      │
+```
+
+**分阶段预算**：
+
+| 阶段 | P99 预算 | 测量指标 |
+|------|----------|----------|
+| factorsvc → NATS publish | < 5ms | — |
+| quantengine.OnFactor → signal | < 20ms | `quant_inference_latency_seconds` |
+| oms.SignalRouter → risk.PreCheck | < 5ms | `oms_risk_check_latency_seconds` |
+| oms → mthub.Place | < 10ms | `mthub_place_latency_seconds` |
+| mthub → adapter.OrderSend → broker ack | < 200ms | `mthub_broker_ack_latency_seconds` |
+| **总计** | **< 235ms** | `signal_to_execution_latency_seconds` |
+
+## 10. 订单状态机恢复时序（ADR-0013）
+
+```
+启动                    mthub.ReconciliationLoop    MT broker        PG orders       Redis
+ │                           │                        │                │               │
+ │ Start()                   │                        │                │               │
+ ├──────────────────────────►│                        │                │               │
+ │                           │ FetchOpenedOrders      │                │               │
+ │                           ├───────────────────────►│                │               │
+ │                           │ open orders            │                │               │
+ │                           │◄───────────────────────┤                │               │
+ │                           │ FetchOrderHistory(since=now-5min)       │               │
+ │                           ├───────────────────────►│                │               │
+ │                           │ recent history         │                │               │
+ │                           │◄───────────────────────┤                │               │
+ │                           │                        │                │               │
+ │                           │ SELECT * FROM orders WHERE account_id=? │               │
+ │                           ├────────────────────────────────────────►│               │
+ │                           │ ant orders                              │               │
+ │                           │◄────────────────────────────────────────┤               │
+ │                           │                        │                │               │
+ │                           │ 三方对账:                                │               │
+ │                           │ ─ ant 有, MT 无 → ghost → CANCEL        │               │
+ │                           │ ─ MT 有, ant 无 → orphan → INSERT       │               │
+ │                           │ ─ 状态不一致 → MT 为准 → UPDATE          │               │
+ │                           │                        │                │               │
+ │                           │ 写入 idempotency keys                    │               │
+ │                           ├────────────────────────────────────────────────────────►│
+ │                           │                        │                │   SET (account_id, client_id) 24h TTL
+ │                           │                        │                │               │
+ │                           │ === 30s timer ===      │                │               │
+ │                           │ Poll()                 │                │               │
+ │                           ├───────────────────────►│                │               │
+ │                           │ 对比 ant_state vs mt_state              │               │
+ │                           │ 偏差 → metric + auto-fix                │               │
+```
+
+## 11. Bar 修订级联时序（ADR-0016）
+
+```
+BarAggregator     NATS              factorsvc       quantengine      OMS            PG signals
+ │                 │                    │                │              │                │
+ │ 检测 version>1  │                    │                │              │                │
+ ├────────────────►│                    │                │              │                │
+ │ Publish          │                    │                │              │                │
+ │ bar.revision     │                    │                │              │                │
+ │                  │ OnBarRevision      │                │              │                │
+ │                  ├───────────────────►│                │              │                │
+ │                  │                    │ 窗口重置       │              │                │
+ │                  │                    │ DSL.Eval       │              │                │
+ │                  │                    │ (新 bar 窗口)  │              │                │
+ │                  │                    │ CH INSERT       │              │                │
+ │                  │                    │ factor_values   │              │                │
+ │                  │                    │ (version=bar.version)          │                │
+ │                  │                    │                │              │                │
+ │                  │                    │ Publish        │              │                │
+ │                  │                    │ md.factor.*    │              │                │
+ │                  │                    ├───────────────►│              │                │
+ │                  │                    │                │ 信号重算     │                │
+ │                  │                    │                ├─────────────►│                │
+ │                  │                    │                │              │ SELECT state  │
+ │                  │                    │                │              │◄───────────────┤
+ │                  │                    │                │              │                │
+ │                  │                    │                │ state==pending?               │
+ │                  │                    │                │ ──→ UPDATE signal             │
+ │                  │                    │                │ state∈{submitted,filled}?      │
+ │                  │                    │                │ ──→ CH bar_revision_log        │
+ │                  │                    │                │     (记录偏差，不修改订单)      │
+```
+
+## 12. 仿真交易时序（ADR-0015）
+
+```
+oms.SignalRouter    PaperExecutor    FillModel      PG paper_orders    PG paper_positions
+ │ (Source=="replay")    │               │                │                   │
+ ├──────────────────────►│               │                │                   │
+ │ Place(order)          │               │                │                   │
+ │                       │ SimulateFill  │                │                   │
+ │                       ├──────────────►│                │                   │
+ │                       │               │ slippage calc  │                   │
+ │                       │               │ latency sim    │                   │
+ │                       │               │ partial fill?  │                   │
+ │                       │ FillResult    │                │                   │
+ │                       │◄──────────────┤                │                   │
+ │                       │               │                │                   │
+ │                       │ INSERT (state=filled, fill_price, slippage_bps)    │
+ │                       ├──────────────────────────────►│                   │
+ │                       │                               │                   │
+ │                       │ UPSERT paper_positions         │                   │
+ │                       ├───────────────────────────────────────────────────►│
+ │                       │                               │                   │
+ │ FillResult            │                               │                   │
+ │◄──────────────────────┤                               │                   │
+```
+
+**升级到实盘**：
+
+```
+用户触发            PaperExecutor      risk.PreCheck    mthub           PG
+ │                      │                   │              │              │
+ │ PromoteToLive(id)    │                   │              │              │
+ ├─────────────────────►│                   │              │              │
+ │                      │ Validate:         │              │              │
+ │                      │ Sharpe > 0?       │              │              │
+ │                      │ drawdown < limit? │              │              │
+ │                      │                   │              │              │
+ │                      │ Clone strategy:   │              │              │
+ │                      │ paper → user_strategies         │              │
+ │                      ├──────────────────────────────────────────────►│
+ │                      │                   │              │              │
+ │                      │ Switch Source:    │              │              │
+ │                      │ Replay → Live     │              │              │
+ │                      │ Switch Executor:  │              │              │
+ │                      │ Paper → Live(mthub)              │              │
+ │                      │                   │              │              │
+ │                      │ Mark promoted_at=NOW()           │              │
+ │                      ├──────────────────────────────────────────────►│
+ │                      │                   │              │              │
+ │ OK                   │                   │              │              │
+ │◄─────────────────────┤                   │              │              │
+```
+
+## 13. 信号 SLO 告警流
+
+```
+Prometheus                    Alertmanager         SRE
+ │                               │                  │
+ │ 每 5min 评估:                  │                  │
+ │ signal_to_execution_latency   │                  │
+ │ P99 > 500ms?                  │                  │
+ ├──────────────────────────────►│                  │
+ │                               │ SignalExecution  │
+ │                               │ LatencyHigh      │
+ │                               ├─────────────────►│
+ │                               │ (page)           │
+ │                               │                  │
+ │ Error budget burn rate:       │                  │
+ │ (1 - P99_within_SLO)          │                  │
+ │  > 14.4 × (1 - 0.99)         │                  │
+ │  for 1h                       │                  │
+ ├──────────────────────────────►│                  │
+ │                               │ ErrorBudgetBurn  │
+ │                               │ Signal           │
+ │                               ├─────────────────►│
+ │                               │ (page)           │
+```

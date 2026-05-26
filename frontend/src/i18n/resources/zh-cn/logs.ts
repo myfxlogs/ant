@@ -31,6 +31,19 @@ const logs = {
     success: '成功',
     failed: '失败',
     exampleSymbolPlaceholder: '如: XAUUSD',
+    result: '结果',
+    riskCode: '风险码',
+    requestId: '请求ID',
+    triggerSource: '触发源',
+    riskLogQuickFilter: '风控日志快速筛选',
+    loadFailed: '加载日志失败',
+    orderTable: {
+      ticket: '订单号',
+      type: '类型',
+      lots: '手数',
+      open: '开仓价',
+      close: '平仓价',
+    },
   },
 } as const;
 

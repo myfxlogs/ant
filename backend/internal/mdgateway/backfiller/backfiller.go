@@ -4,6 +4,7 @@ package backfiller
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"golang.org/x/time/rate"
@@ -88,7 +89,7 @@ func (b *Backfiller) getLimiter(accountID string) *rate.Limiter {
 func (b *Backfiller) Run(ctx context.Context) error {
 	accounts, err := b.pgActive.ActiveAccounts(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("load active accounts: %w", err)
 	}
 	b.metrics.started.Add(int64(len(accounts)))
 
@@ -105,7 +106,7 @@ func (b *Backfiller) Run(ctx context.Context) error {
 func (b *Backfiller) BackfillAccount(ctx context.Context, accountID string) error {
 	accounts, err := b.pgActive.ActiveAccounts(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("load active accounts for single-account backfill: %w", err)
 	}
 	for _, acc := range accounts {
 		if acc.AccountID == accountID {
@@ -119,7 +120,7 @@ func (b *Backfiller) BackfillAccount(ctx context.Context, accountID string) erro
 func (b *Backfiller) BackfillSymbol(ctx context.Context, accountID, canonical string) error {
 	accounts, err := b.pgActive.ActiveAccounts(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("load active accounts for symbol backfill: %w", err)
 	}
 	for _, acc := range accounts {
 		if acc.AccountID == accountID {
@@ -136,7 +137,7 @@ func (b *Backfiller) BackfillSymbol(ctx context.Context, accountID, canonical st
 func (b *Backfiller) backfillAccount(ctx context.Context, acc ActiveAccount) error {
 	for _, canon := range acc.Symbols {
 		if err := b.backfillSymbol(ctx, acc, canon); err != nil {
-			return err
+			return fmt.Errorf("backfill symbol %s: %w", canon, err)
 		}
 	}
 	return nil
@@ -155,17 +156,17 @@ func (b *Backfiller) backfillSymbol(ctx context.Context, acc ActiveAccount, cano
 	for _, dp := range defaultPeriods {
 		from, err := b.chMax.MaxCloseTs(ctx, acc.Broker, canon, dp.name)
 		if err != nil {
-			return err
+			return fmt.Errorf("query max close_ts for %s/%s/%s: %w", acc.Broker, canon, dp.name, err)
 		}
 		if from == 0 {
-			from = time.Now().Add(-dp.lookback).UnixMilli()
+			from = Clk.Now().Add(-dp.lookback).UnixMilli()
 		}
-		to := time.Now().UnixMilli()
+		to := Clk.Now().UnixMilli()
 		if to-from < periodMs(dp.name)*2 {
 			continue // gap < 2 periods, not worth the API call
 		}
 
-		started := time.Now()
+		started := Clk.Now()
 		if err := b.backfillRange(ctx, acc, canon, dp.name, from, to); err != nil {
 			b.metrics.errors.Add(1)
 			continue
@@ -181,10 +182,10 @@ func (b *Backfiller) backfillRange(ctx context.Context, acc ActiveAccount, canon
 	accLimiter := b.getLimiter(acc.AccountID)
 	for from < to {
 		if err := accLimiter.Wait(ctx); err != nil {
-			return err
+			return fmt.Errorf("account rate limiter wait: %w", err)
 		}
 		if err := b.globalLimiter.Wait(ctx); err != nil {
-			return err
+			return fmt.Errorf("global rate limiter wait: %w", err)
 		}
 		bars, err := b.src.FetchBars(ctx, FetchReq{
 			AccountID: acc.AccountID,
@@ -196,12 +197,12 @@ func (b *Backfiller) backfillRange(ctx context.Context, acc ActiveAccount, canon
 			Limit:     5000,
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("fetch bars: %w", err)
 		}
 		for _, bar := range bars {
 			bar.IsReplay = true
 			if err := b.tgt.IngestBar(ctx, bar); err != nil {
-				return err
+				return fmt.Errorf("ingest bar: %w", err)
 			}
 		}
 		if len(bars) == 0 {

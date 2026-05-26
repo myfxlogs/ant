@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "stream_event_account.proto";
+import "stream_event_trade.proto";
+import "stream_event_sync.proto";
+import "stream_event_command.proto";
+
+// StreamEvent is the union event type pushed via SubscribeEvents.
+message StreamEvent {
+  string type = 1;
+  string account_id = 2;
+  google.protobuf.Timestamp timestamp = 3;
+  string event_id = 10;
+  oneof payload {
+    OrderUpdateEvent order_update = 5;
+    ProfitUpdateEvent profit_update = 6;
+    AccountStatusEvent account_status = 7;
+    StrategyExecutionEvent strategy_execution = 8;
+    RiskAlertEvent risk_alert = 9;
+    SyncEvent sync = 11;
+    DealUpdateEvent deal_update = 12;
+    PositionUpdateEvent position_update = 13;
+    LedgerEntryEvent ledger_entry = 14;
+    TradeCommandEvent trade_command = 15;
+    TradeReceiptEvent trade_receipt = 16;
+    PositionSnapshotEvent position_snapshot = 17;
+  }
+}
+
+message SubscribeEventsRequest {
+  repeated string account_ids = 1;
+}
+
+message SubscribeHistoryRequest {
+  repeated string account_ids = 1;
+  int32 limit = 2;
+  google.protobuf.Timestamp since = 3;
+}
+
+message SubscribeOrderUpdatesRequest {
+  string account_id = 1;
+}
+
+message SubscribeProfitUpdatesRequest {
+  string account_id = 1;
+}
+
+// StreamService provides server-streaming endpoints for real-time data.
+service StreamService {
+  rpc SubscribeEvents(SubscribeEventsRequest) returns (stream StreamEvent);
+  rpc SubscribeHistory(SubscribeHistoryRequest) returns (stream StreamEvent);
+  rpc SubscribeOrderUpdates(SubscribeOrderUpdatesRequest) returns (stream OrderUpdateEvent);
+  rpc SubscribeProfitUpdates(SubscribeProfitUpdatesRequest) returns (stream ProfitUpdateEvent);
+  rpc SubscribeUserSummary(google.protobuf.Empty) returns (stream UserSummaryEvent);
+}

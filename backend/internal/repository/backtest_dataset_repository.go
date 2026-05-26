@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -129,7 +130,10 @@ func itoa(i int) string {
 func (r *BacktestDatasetRepository) SetFrozen(ctx context.Context, id uuid.UUID, frozen bool) error {
 	query := `UPDATE backtest_datasets SET frozen = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1`
 	_, err := r.db.ExecContext(ctx, query, id, frozen)
-	return err
+	if err != nil {
+		return fmt.Errorf("set dataset frozen: %w", err)
+	}
+	return nil
 }
 
 func (r *BacktestDatasetRepository) Delete(ctx context.Context, id uuid.UUID, userID uuid.UUID) (bool, error) {
@@ -166,7 +170,7 @@ func (r *BacktestDatasetRepository) BatchInsertBars(ctx context.Context, bars []
 				b.DatasetID, b.Symbol, b.Timeframe, b.OpenTime, b.CloseTime,
 				b.OpenPrice, b.HighPrice, b.LowPrice, b.ClosePrice, b.TickVolume,
 			); err != nil {
-				return err
+				return fmt.Errorf("insert dataset bar: %w", err)
 			}
 		}
 		return nil
@@ -195,11 +199,14 @@ func (r *BacktestDatasetRepository) ListBars(ctx context.Context, datasetID uuid
 func withTx(ctx context.Context, db *sqlx.DB, fn func(tx *sqlx.Tx) error) error {
 	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("list dataset bars: %w", err)
 	}
 	defer tx.Rollback()
 	if err := fn(tx); err != nil {
-		return err
+		if err != nil {
+			return fmt.Errorf("list dataset bars: %w", err)
+		}
+		return nil
 	}
 	return tx.Commit()
 }

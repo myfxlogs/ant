@@ -5,6 +5,7 @@ import { strategyApi, type StrategyTemplate } from '@/client/strategy';
 import { strategyExperimentApi, type StrategyExperiment, type StrategyExperimentCandidate } from '@/client/strategyExperiment';
 import { jobApi, type JobEvent } from '@/client/job';
 import { showError, showSuccess } from '@/utils/message';
+import { useTranslation } from 'react-i18next';
 
 const { Text, Title } = Typography;
 const maxJobEvents = 20;
@@ -21,19 +22,19 @@ function defaultParameterSpace() {
   return JSON.stringify({ fast_period: [8, 12, 16], slow_period: [24, 30], risk_pct: [0.5, 1] }, null, 2);
 }
 
-function JobEventStreamCard({ jobId, events }: { jobId?: string; events: JobEvent[] }) {
+function JobEventStreamCard({ jobId, events, t }: { jobId?: string; events: JobEvent[]; t: (key: string, options?: Record<string, unknown>) => string }) {
   const latestEvent = events[events.length - 1];
   const progressPercent = Math.round((latestEvent?.progress || 0) * 100);
 
   return (
-    <Card title="Job 事件流">
+    <Card title={t('strategy.experiment.jobEventStream')}>
       {jobId ? (
         <div className="space-y-3">
           <Progress percent={progressPercent} size="small" />
           <List
             size="small"
             dataSource={events}
-            locale={{ emptyText: '暂无事件' }}
+            locale={{ emptyText: t('strategy.experiment.noEvents') }}
             renderItem={event => (
               <List.Item>
                 <Space>
@@ -46,14 +47,14 @@ function JobEventStreamCard({ jobId, events }: { jobId?: string; events: JobEven
           />
         </div>
       ) : (
-        <Text type="secondary">选择带 Job 的实验后显示事件。</Text>
+        <Text type="secondary">{t('strategy.experiment.selectJobToView')}</Text>
       )}
     </Card>
   );
 }
 
 export default function StrategyExperimentPage() {
-  const [form] = Form.useForm();
+  const { t } = useTranslation();
   const [templates, setTemplates] = useState<StrategyTemplate[]>([]);
   const [experiments, setExperiments] = useState<StrategyExperiment[]>([]);
   const [candidates, setCandidates] = useState<StrategyExperimentCandidate[]>([]);
@@ -71,7 +72,7 @@ export default function StrategyExperimentPage() {
     try {
       setTemplates(await strategyApi.listTemplates());
     } catch {
-      showError('加载策略模板失败');
+      showError(t('strategy.experiment.messages.loadTemplatesFailed'));
     }
   };
 
@@ -83,7 +84,7 @@ export default function StrategyExperimentPage() {
         setSelectedExperimentId(rows[0].id);
       }
     } catch {
-      showError('加载实验列表失败');
+      showError(t('strategy.experiment.messages.loadExperimentsFailed'));
     }
   };
 
@@ -96,7 +97,7 @@ export default function StrategyExperimentPage() {
     try {
       setCandidates(await strategyExperimentApi.listCandidates(experimentId));
     } catch {
-      showError('加载候选失败');
+      showError(t('strategy.experiment.messages.loadCandidatesFailed'));
     } finally {
       setCandidateLoading(false);
     }
@@ -124,7 +125,7 @@ export default function StrategyExperimentPage() {
       }
     }).catch(() => {
       if (!cancelled) {
-        showError('订阅实验 Job 事件失败');
+        showError(t('strategy.experiment.messages.subscribeJobFailed'));
       }
     });
     return () => {
@@ -143,13 +144,13 @@ export default function StrategyExperimentPage() {
         maxCandidates: values.maxCandidates,
         objective: values.objective,
       });
-      showSuccess('策略实验已生成候选');
+      showSuccess(t('strategy.experiment.messages.candidatesGenerated'));
       await loadExperiments();
       if (res.experiment?.id) {
         setSelectedExperimentId(res.experiment.id);
       }
     } catch {
-      showError('提交策略实验失败，请确认参数空间是合法 JSON');
+      showError(t('strategy.experiment.messages.submitFailed'));
     } finally {
       setLoading(false);
     }
@@ -158,88 +159,88 @@ export default function StrategyExperimentPage() {
   const promote = async (candidate: StrategyExperimentCandidate) => {
     try {
       const res = await strategyExperimentApi.promoteCandidateToDraft(candidate.id, `实验候选 ${candidate.rank}`);
-      showSuccess(`已生成草稿模板：${res.templateId}`);
+      showSuccess(t('strategy.experiment.messages.draftGenerated', { templateId: res.templateId }));
     } catch {
-      showError('提升候选为草稿失败');
+      showError(t('strategy.experiment.messages.promoteFailed'));
     }
   };
 
   const experimentColumns: ColumnsType<StrategyExperiment> = [
-    { title: '状态', dataIndex: 'status', render: v => <Tag color={v === 'SUCCEEDED' ? 'green' : 'blue'}>{v}</Tag> },
-    { title: '搜索方式', dataIndex: 'searchMethod' },
-    { title: '候选上限', dataIndex: 'maxCandidates' },
-    { title: '目标', dataIndex: 'objective' },
+    { title: t('strategy.experiment.list.column.status'), dataIndex: 'status', render: v => <Tag color={v === 'SUCCEEDED' ? 'green' : 'blue'}>{v}</Tag> },
+    { title: t('strategy.experiment.list.column.searchMethod'), dataIndex: 'searchMethod' },
+    { title: t('strategy.experiment.list.column.maxCandidates'), dataIndex: 'maxCandidates' },
+    { title: t('strategy.experiment.list.column.objective'), dataIndex: 'objective' },
     { title: 'Job', dataIndex: 'jobId', ellipsis: true },
     {
-      title: '操作',
-      render: (_, row) => <Button size="small" onClick={() => setSelectedExperimentId(row.id)}>查看候选</Button>,
+      title: t('strategy.experiment.list.column.actions'),
+      render: (_, row) => <Button size="small" onClick={() => setSelectedExperimentId(row.id)}>{t('strategy.experiment.list.column.viewCandidates')}</Button>,
     },
   ];
 
   const candidateColumns: ColumnsType<StrategyExperimentCandidate> = [
-    { title: '排名', dataIndex: 'rank', width: 80 },
-    { title: '等级', dataIndex: 'grade', width: 80, render: v => <Tag color={v === 'A' ? 'gold' : v === 'B' ? 'blue' : 'default'}>{v}</Tag> },
-    { title: '评分', dataIndex: 'score', width: 100, render: v => Number(v).toFixed(1) },
-    { title: '参数', dataIndex: 'parameters', render: v => <Text code>{JSON.stringify(v)}</Text> },
-    { title: '摘要', dataIndex: 'summary' },
-    { title: '建议', dataIndex: 'recommendation' },
+    { title: t('strategy.experiment.candidates.column.rank'), dataIndex: 'rank', width: 80 },
+    { title: t('strategy.experiment.candidates.column.grade'), dataIndex: 'grade', width: 80, render: v => <Tag color={v === 'A' ? 'gold' : v === 'B' ? 'blue' : 'default'}>{v}</Tag> },
+    { title: t('strategy.experiment.candidates.column.score'), dataIndex: 'score', width: 100, render: v => Number(v).toFixed(1) },
+    { title: t('strategy.experiment.candidates.column.parameters'), dataIndex: 'parameters', render: v => <Text code>{JSON.stringify(v)}</Text> },
+    { title: t('strategy.experiment.candidates.column.summary'), dataIndex: 'summary' },
+    { title: t('strategy.experiment.candidates.column.recommendation'), dataIndex: 'recommendation' },
     {
-      title: '操作',
+      title: t('strategy.experiment.candidates.column.actions'),
       width: 120,
-      render: (_, row) => <Button size="small" type="primary" onClick={() => void promote(row)}>生成草稿</Button>,
+      render: (_, row) => <Button size="small" type="primary" onClick={() => void promote(row)}>{t('strategy.experiment.candidates.column.generateDraft')}</Button>,
     },
   ];
 
   return (
     <div className="space-y-4">
       <div>
-        <Title level={3}>策略实验</Title>
-        <Text type="secondary">参数实验、候选评分与草稿生成均由后端完成，前端只负责提交和展示。</Text>
+        <Title level={3}>{t('strategy.experiment.title')}</Title>
+        <Text type="secondary">{t('strategy.experiment.subtitle')}</Text>
       </div>
 
-      <Alert type="info" showIcon message="当前为确定性参数实验最小闭环，候选仅生成草稿，不会自动发布、调度或交易。" />
+      <Alert type="info" showIcon message={t('strategy.experiment.ruleVersionAlert')} />
 
-      <Card title="提交实验">
+      <Card title={t('strategy.experiment.submitForm.title')}>
         <Form
           form={form}
           layout="vertical"
           initialValues={{ parameterSpace: defaultParameterSpace(), searchMethod: 'grid', maxCandidates: 12, objective: 'balanced' }}
           onFinish={handleSubmit}
         >
-          <Form.Item name="baseTemplateId" label="基础策略模板" rules={[{ required: true, message: '请选择基础策略模板' }]}>
+          <Form.Item name="baseTemplateId" label={t('strategy.experiment.submitForm.baseTemplate')} rules={[{ required: true, message: t('strategy.experiment.submitForm.baseTemplateRequired') }]}>
             <Select
               showSearch
               options={templates.map(t => ({ value: t.id, label: `${t.name || t.id} (${t.status || '-'})` }))}
-              placeholder="选择模板"
+              placeholder={t('strategy.experiment.submitForm.baseTemplatePlaceholder')}
             />
           </Form.Item>
-          <Form.Item name="parameterSpace" label="参数空间 JSON" rules={[{ required: true, message: '请输入参数空间 JSON' }]}>
+          <Form.Item name="parameterSpace" label={t('strategy.experiment.submitForm.parameterSpace')} rules={[{ required: true, message: t('strategy.experiment.submitForm.parameterSpaceRequired') }]}>
             <Input.TextArea rows={8} />
           </Form.Item>
           <Space size="large" wrap>
-            <Form.Item name="searchMethod" label="搜索方式">
+            <Form.Item name="searchMethod" label={t('strategy.experiment.submitForm.searchMethod')}>
               <Select style={{ width: 160 }} options={[{ value: 'grid', label: 'Grid' }, { value: 'random', label: 'Random' }]} />
             </Form.Item>
-            <Form.Item name="maxCandidates" label="候选上限">
+            <Form.Item name="maxCandidates" label={t('strategy.experiment.submitForm.maxCandidates')}>
               <InputNumber min={1} max={50} />
             </Form.Item>
-            <Form.Item name="objective" label="目标">
+            <Form.Item name="objective" label={t('strategy.experiment.submitForm.objective')}>
               <Input style={{ width: 220 }} />
             </Form.Item>
           </Space>
           <Form.Item>
-            <Button type="primary" htmlType="submit" loading={loading}>提交实验</Button>
+            <Button type="primary" htmlType="submit" loading={loading}>{t('strategy.experiment.submitForm.submit')}</Button>
           </Form.Item>
         </Form>
       </Card>
 
-      <Card title="实验列表">
+      <Card title={t('strategy.experiment.list.title')}>
         <Table rowKey="id" size="small" dataSource={experiments} columns={experimentColumns} pagination={false} />
       </Card>
 
-      <JobEventStreamCard jobId={selectedExperiment?.jobId} events={jobEvents} />
+      <JobEventStreamCard jobId={selectedExperiment?.jobId} events={jobEvents} t={t} />
 
-      <Card title={selectedExperiment ? `候选列表：${selectedExperiment.id}` : '候选列表'}>
+      <Card title={selectedExperiment ? t('strategy.experiment.candidates.titleWithId', { id: selectedExperiment.id }) : t('strategy.experiment.candidates.title')}>
         <Table rowKey="id" size="small" loading={candidateLoading} dataSource={candidates} columns={candidateColumns} pagination={false} scroll={{ x: 1100 }} />
       </Card>
     </div>

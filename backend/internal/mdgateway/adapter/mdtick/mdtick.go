@@ -4,6 +4,89 @@ package mdtick
 
 import "github.com/shopspring/decimal"
 
+// TickHandler is the callback that receives ticks from a gateway adapter.
+type TickHandler func(t *Tick)
+
+// ProfitHandler is the callback that receives profit/account updates from a gateway adapter.
+type ProfitHandler func(p *ProfitUpdate)
+
+// OrderUpdateHandler is the callback that receives real-time order updates from OnOrderUpdate stream.
+// The handler receives the full account snapshot (metrics + all opened positions) on every order change.
+type OrderUpdateHandler func(o *OrderUpdate)
+
+// ProfitUpdate represents an account profit/financial snapshot from mtapi OnOrderProfit.
+type ProfitUpdate struct {
+	AccountID    string
+	Platform     string
+	Balance      float64
+	Credit       float64
+	Equity       float64
+	Margin       float64
+	FreeMargin   float64
+	MarginLevel  float64
+	Profit       float64
+	ProfitPercent float64
+	Positions    []ProfitPosition
+}
+
+// ProfitPosition is an open position snapshot within a ProfitUpdate.
+type ProfitPosition struct {
+	Ticket       int64
+	Symbol       string
+	Profit       float64
+	Volume       float64
+	CurrentPrice float64
+}
+
+// OrderUpdate represents a real-time order change event from OnOrderUpdate stream.
+// Contains the triggering update + full account snapshot (metrics + opened positions).
+type OrderUpdate struct {
+	AccountID   string
+	Platform    string
+	// The specific order change.
+	UpdateTicket  int64
+	UpdateType    string // "open", "close", "modify", "delete", "pending_open", "pending_close", etc.
+	UpdateSymbol  string
+	UpdateVolume  float64
+	UpdateOpenPrice  float64
+	UpdateClosePrice float64
+	UpdateProfit     float64
+	UpdateSwap       float64
+	UpdateCommission float64
+	UpdateComment    string
+	UpdateOpenTime   int64 // unix seconds
+	UpdateCloseTime  int64 // unix seconds
+	UpdateSL         float64
+	UpdateTP         float64
+	// Account metrics from OrderUpdateSummary.
+	Balance     float64
+	Credit      float64
+	Equity      float64
+	Margin      float64
+	FreeMargin  float64
+	MarginLevel float64
+	Profit      float64
+	// Full opened positions list.
+	Positions []OrderUpdatePosition
+}
+
+// OrderUpdatePosition is an opened position within an OrderUpdate.
+type OrderUpdatePosition struct {
+	Ticket       int64
+	Symbol       string
+	Type         string  // "buy", "sell", etc.
+	Volume       float64
+	OpenPrice    float64
+	CurrentPrice float64
+	StopLoss     float64
+	TakeProfit   float64
+	Profit       float64
+	Swap         float64
+	Commission   float64
+	Comment      string
+	OpenTime     int64   // unix seconds
+}
+
 // Tick is the canonical tick representation flowing into mdgateway.
 type Tick struct {
 	UserID        string          // ant user ID
@@ -48,8 +131,10 @@ type AccountConfig struct {
 	Platform     string // mt_accounts_v2.platform ("mt4" / "mt5")
 	Login        string // mt_accounts_v2.login
 	Password     string // password_encrypted decrypted plaintext (vault.Decrypt)
-	Server       string // mt_accounts_v2.server (from broker_server)
-	MtapiHost    string // mt_accounts_v2.mtapi_host (from broker_host)
+	Server       string // mt_accounts_v2.server (from broker_server, display name)
+	BrokerHost   string // mt_accounts_v2.broker_host (actual broker IP:port for mtapi Connect)
+	MtapiHost    string // mt_accounts_v2.mtapi_host (mtapi gateway endpoint, empty=mtapi.io)
 	MtapiPort    string // mt_accounts_v2.mtapi_port
-	MtapiToken   string // mtapi_token_encrypted decrypted plaintext
+	MtapiToken   string   // mt_token plaintext from DB
+	Symbols      []string // canonical_subscribed_symbols
 }

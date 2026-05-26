@@ -97,7 +97,97 @@ md-doctor all --window 7d --strict
 slo-report --window 7d --strict
 ```
 
-## 6. 反模式
+## 6. 信号→执行延迟 SLO（SLO-SIG）
+
+> **详细规范**：`docs/spec/27-signal-execution-slo.md`
+> **关联 ADR**：ADR-0018
+
+### 6.1 SLO 定义
+
+| SLO ID | 指标 | 目标 | 窗口 | Error Budget |
+|--------|------|------|------|--------------|
+| **SLO-SIG-1** | `histogram_quantile(0.99, signal_to_execution_latency_seconds_bucket)` | < 235ms | 5min 滚动 | P99 > 235ms 持续 > 1h/月 |
+| **SLO-SIG-2** | `histogram_quantile(0.50, signal_to_execution_latency_seconds_bucket)` | < 62ms | 5min 滚动 | 仅参考，不告警 |
+| **SLO-SIG-3** | `rate(oms_signal_dropped_total{reason!="risk_deny"}[5m]) / rate(oms_signal_total[5m])` | < 0.01% | 5min 滚动 | 丢弃 > 10min/月 |
+
+### 6.2 分阶段预算
+
+| 阶段 | P99 预算 | 占比 |
+|------|----------|------|
+| factorsvc → NATS publish | < 5ms | 2% |
+| quantengine.OnFactor → signal | < 20ms | 9% |
+| oms.SignalRouter → risk.PreCheck | < 5ms | 2% |
+| oms → mthub.Place | < 10ms | 4% |
+| mthub → adapter.OrderSend → broker ack | < 200ms | 85% |
+| **总计** | **< 235ms** | 100% |
+
+broker ack 阶段占总延迟的 85%，是最大单项。ant 侧（factor + risk + mthub）可压缩至 ~35ms。优化优先级：选择更快的 broker/更近的 mtapi 网关 > mthub 内部优化 > factorsvc 批量优化。
+
+### 6.3 Prometheus Histogram
+
+```go
+var signalToExecutionLatency = prometheus.NewHistogram(prometheus.HistogramOpts{
+    Name:    "signal_to_execution_latency_seconds",
+    Help:    "End-to-end latency from factor trigger to broker acknowledgment.",
+    Buckets: []float64{0.01, 0.025, 0.05, 0.1, 0.15, 0.235, 0.3, 0.5, 1, 2},
+})
+
+// 分阶段 histogram
+var quantInferenceLatency = prometheus.NewHistogram(...)   // bucket: [0.001, 0.005, 0.01, 0.02, 0.05]
+var omsRiskCheckLatency = prometheus.NewHistogram(...)      // bucket: [0.001, 0.002, 0.005, 0.01]
+var mthubPlaceLatency = prometheus.NewHistogram(...)        // bucket: [0.001, 0.005, 0.01, 0.02]
+var mthubBrokerAckLatency = prometheus.NewHistogram(...)    // bucket: [0.01, 0.05, 0.1, 0.2, 0.5, 1]
+```
+
+### 6.4 OTel Trace 传播
+
+```go
+// factorsvc: 附加 factor_ts_unix_ms 到 NATS 消息 header
+msg.Header.Set("factor-ts-unix-ms", strconv.FormatInt(fv.TsUnixMs, 10))
+
+// quantengine: 创建根 span
+ctx, span := tracer.Start(ctx, "signal-to-execution",
+    trace.WithTimestamp(time.UnixMilli(factorTs)))
+defer span.End()
+
+// oms: 子 span → risk-check
+// mthub: 子 span → mthub-place-order
+// 记录 broker_ack_ts
+signal_to_execution_latency.Observe(float64(resp.AckTs - signal.FactorTsMs) / 1000)
+```
+
+### 6.5 告警
+
+```yaml
+- alert: SignalExecutionLatencyHigh
+  expr: |
+    histogram_quantile(0.99,
+      rate(signal_to_execution_latency_seconds_bucket[5m])
+    ) > 0.500
+  for: 5m
+  labels: { severity: page }
+  annotations: {
+    summary: "信号→执行 P99 延迟超过 500ms",
+    runbook: "docs/runbook/mt-incidents.md#信号执行延迟"
+  }
+
+- alert: ErrorBudgetBurnSignal
+  expr: |
+    (
+      1 - (
+        sum(rate(signal_to_execution_latency_seconds_bucket{le="0.235"}[5m]))
+        / sum(rate(signal_to_execution_latency_seconds_count[5m]))
+      )
+    ) > 14.4 * (1 - 0.99)
+  for: 1h
+  labels: { severity: page }
+  annotations: {
+    summary: "信号 SLO error budget 快速燃烧",
+    description: "1h 内消耗了 30d budget 的 14.4%"
+  }
+```
+
+## 7. 反模式
 
 - ❌ 把 SLO 设到现状之上（"我们想做到 99.99%"）→ 永远透支
 - ❌ 不区分 user-facing 和 system-internal SLO（行情接入是 system-internal，不直接面向用户）
@@ -107,12 +197,12 @@ slo-report --window 7d --strict
 - ✅ Alert 阈值 = SLO 目标 + 缓冲（例如 SLO 0.1% drop，alert 0.5% drop 即告警预警）
 - ✅ Burn rate 多窗口（fast: 1h × 14.4×；slow: 6h × 6×）
 
-## 7. 验收命令
+## 8. 验收命令
 
 ```bash
-# 1. 文档存在 + 4 条 SLO
+# 1. 文档存在 + 7 条 SLO
 test -f docs/spec/20-slo.md
-grep -E 'SLO-MD-[1-4]' docs/spec/20-slo.md | wc -l | awk '$1>=4'
+grep -E 'SLO-(MD|SIG)-[1-4]' docs/spec/20-slo.md | wc -l | awk '$1>=7'
 
 # 2. recording rule 存在
 grep -q 'md:availability:30d' deploy/prometheus/rules.yml
@@ -123,7 +213,10 @@ curl -s localhost:8080/metrics | grep -q '^md_e2e_latency_seconds_bucket'
 # 4. md_spill_pending_files gauge 存在
 curl -s localhost:8080/metrics | grep -q '^md_spill_pending_files'
 
-# 5. SLO report CLI 可执行
+# 5. signal_to_execution_latency_seconds 暴露
+curl -s localhost:8080/metrics | grep -q 'signal_to_execution_latency_seconds_bucket'
+
+# 6. SLO report CLI 可执行
 go build -o /tmp/slo-report ./cmd/slo-report/
-/tmp/slo-report --window 1h --output text | grep -E 'SLO-MD-[1-4]'
+/tmp/slo-report --window 1h --output text | grep -E 'SLO-(MD|SIG)-[1-4]'
 ```

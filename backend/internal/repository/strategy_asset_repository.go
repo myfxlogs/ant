@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -68,7 +69,10 @@ func (r *StrategyAssetRepository) Create(ctx context.Context, row *StrategyAsset
 		row.LatestVersion = row.SourceVersion
 	}
 	_, err := r.db.ExecContext(ctx, `INSERT INTO strategy_assets (id,owner_user_id,source_template_id,source_version,name,description,visibility,review_status,rating_summary,clone_count,latest_version,created_at,updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`, row.ID, row.OwnerUserID, row.SourceTemplateID, row.SourceVersion, row.Name, row.Description, row.Visibility, row.ReviewStatus, row.RatingSummary, row.CloneCount, row.LatestVersion, row.CreatedAt, row.UpdatedAt)
-	return err
+	if err != nil {
+		return fmt.Errorf("create asset: %w", err)
+	}
+	return nil
 }
 
 func (r *StrategyAssetRepository) List(ctx context.Context, userID uuid.UUID, limit, offset int) ([]StrategyAsset, error) {
@@ -112,7 +116,7 @@ func (r *StrategyAssetRepository) CreateClone(ctx context.Context, row *Strategy
 	if err == nil {
 		_, _ = r.db.ExecContext(ctx, `UPDATE strategy_assets SET clone_count = clone_count + 1 WHERE id = $1`, row.AssetID)
 	}
-	return err
+	return fmt.Errorf("create asset clone: %w", err)
 }
 
 func (r *StrategyAssetRepository) GetClone(ctx context.Context, userID, id uuid.UUID) (*StrategyAssetClone, error) {

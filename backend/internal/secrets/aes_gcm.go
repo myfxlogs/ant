@@ -14,6 +14,16 @@ import (
 	"golang.org/x/crypto/hkdf"
 )
 
+// cryptoRand is the random source for nonce/DEK generation.
+// It defaults to crypto/rand.Reader and can be swapped in tests.
+var cryptoRand io.Reader = rand.Reader
+
+// SetRandReader replaces the random source (for testing only).
+func SetRandReader(r io.Reader) { cryptoRand = r }
+
+// ResetRandReader restores the default crypto/rand source.
+func ResetRandReader() { cryptoRand = rand.Reader }
+
 // New creates a new AES-GCM Client from a base64-encoded master key.
 func New(masterB64 string, currentVersion uint8) (Client, error) {
 	if currentVersion < 1 {
@@ -26,18 +36,37 @@ func New(masterB64 string, currentVersion uint8) (Client, error) {
 	if len(kek0) != 32 {
 		return nil, &SecretError{Msg: fmt.Sprintf("master key must be 32 bytes, got %d", len(kek0))}
 	}
-	return &aesGCMClient{kek0: kek0, currentVersion: currentVersion, cache: make(map[string]cipher.AEAD)}, nil
+	keks := map[uint8][]byte{1: kek0}
+	return &aesGCMClient{kek0: kek0, keks: keks, currentVersion: currentVersion, cache: make(map[string]cipher.AEAD)}, nil
 }
 
 // GenerateMasterKey creates a random 32-byte key and returns it base64-encoded.
 func GenerateMasterKey() (string, error) {
 	key := make([]byte, 32)
-	_, _ = io.ReadFull(rand.Reader, key) // rand.Reader is infallible on Linux
+	_, _ = io.ReadFull(cryptoRand, key) // rand.Reader is infallible on Linux
 	return base64.StdEncoding.EncodeToString(key), nil
+}
+
+// RotateKey generates a new master key, stores it for decryption of future
+// versions, and returns the new version + base64-encoded key. Old keys are
+// retained so existing ciphertexts remain decryptable. L-3.
+func (c *aesGCMClient) RotateKey() (newVersion uint8, newKeyB64 string, err error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	newKey := make([]byte, 32)
+	if _, err := io.ReadFull(cryptoRand, newKey); err != nil {
+		return 0, "", fmt.Errorf("secrets: rotate: %w", err)
+	}
+
+	c.currentVersion++
+	c.keks[c.currentVersion] = newKey
+	return c.currentVersion, base64.StdEncoding.EncodeToString(newKey), nil
 }
 
 type aesGCMClient struct {
 	kek0           []byte
+	keks           map[uint8][]byte // L-3: per-version master keys for rotation
 	currentVersion uint8
 	mu             sync.RWMutex
 	cache          map[string]cipher.AEAD
@@ -55,8 +84,16 @@ func (c *aesGCMClient) getAEAD(version uint8, purpose Purpose) (cipher.AEAD, err
 	}
 	c.mu.RUnlock()
 
+	// L-3: use per-version master key if available, otherwise fall back to kek0.
+	sourceKey := c.kek0
+	c.mu.RLock()
+	if vk, ok := c.keks[version]; ok {
+		sourceKey = vk
+	}
+	c.mu.RUnlock()
+
 	info := fmt.Sprintf("ant/v%d/%s", version, purpose)
-	r := hkdf.New(sha256.New, c.kek0, nil, []byte(info))
+	r := hkdf.New(sha256.New, sourceKey, nil, []byte(info))
 	kek := make([]byte, 32)
 	if _, err := io.ReadFull(r, kek); err != nil {
 		return nil, fmt.Errorf("secrets: hkdf: %w", err)
@@ -80,7 +117,7 @@ func (c *aesGCMClient) Encrypt(_ context.Context, purpose Purpose, plaintext []b
 		return nil, err
 	}
 	nonce := make([]byte, aead.NonceSize())
-	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+	if _, err := io.ReadFull(cryptoRand, nonce); err != nil {
 		return nil, fmt.Errorf("secrets: nonce: %w", err)
 	}
 	out := make([]byte, 1+len(nonce))

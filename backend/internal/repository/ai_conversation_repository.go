@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -88,7 +89,10 @@ func (r *AIConversationRepository) UpdateTitle(ctx context.Context, id, userID u
 		`UPDATE ai_conversations SET title = $1, updated_at = $2 WHERE id = $3 AND user_id = $4`,
 		title, time.Now(), id, userID,
 	)
-	return err
+	if err != nil {
+		return fmt.Errorf("update conversation title: %w", err)
+	}
+	return nil
 }
 
 func (r *AIConversationRepository) Touch(ctx context.Context, id uuid.UUID) error {
@@ -96,7 +100,10 @@ func (r *AIConversationRepository) Touch(ctx context.Context, id uuid.UUID) erro
 		`UPDATE ai_conversations SET updated_at = $1 WHERE id = $2`,
 		time.Now(), id,
 	)
-	return err
+	if err != nil {
+		return fmt.Errorf("touch conversation: %w", err)
+	}
+	return nil
 }
 
 func (r *AIConversationRepository) Delete(ctx context.Context, id, userID uuid.UUID) error {
@@ -104,7 +111,10 @@ func (r *AIConversationRepository) Delete(ctx context.Context, id, userID uuid.U
 		`DELETE FROM ai_conversations WHERE id = $1 AND user_id = $2`,
 		id, userID,
 	)
-	return err
+	if err != nil {
+		return fmt.Errorf("delete conversation: %w", err)
+	}
+	return nil
 }
 
 func (r *AIConversationRepository) AddMessage(ctx context.Context, conversationID uuid.UUID, role, content string) (*AIMessage, error) {

@@ -1,15 +1,13 @@
 import { useEffect, useRef, useState, useCallback, type ReactNode } from 'react';
 import { subscribeEvents, subscribeUserSummary } from '@/client/stream';
-import { tradingApi } from '@/client/trading';
 import type { OrderProfitItem, OrderUpdate, ProfitUpdate } from '@/adapters/dataAdapter';
-import { toCamelCase } from '@/adapters/dataAdapter';
 import { useAuthStore } from '@/stores/authStore';
 import { useTradingStore, type AccountInfo } from '@/stores/tradingStore';
 import { useAccountStore } from '@/stores/accountStore';
 import { ConnectContext } from './connectContext';
 import { getDeviceLocale, getDeviceTimeZone } from '@/utils/date';
 import type { Position } from '@/types/trading';
-import type { AccountStatusEvent } from '@/gen/stream_event_account_pb';
+import type { AccountStatusEvent } from '@/gen/ant/v1/stream_event_account_pb';
 
 function normalizePositionSide(raw: string): Position['type'] {
   const u = raw.toLowerCase();
@@ -35,9 +33,6 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
   const connectTimeoutRef = useRef<number | null>(null);
   const profitUpdateTimeoutRef = useRef<number | null>(null);
   const pendingProfitUpdates = useRef<Map<string, ProfitUpdate>>(new Map());
-  /** Throttle full getPositions refresh while profit stream updates account cards (row-level profit). */
-  const profitPositionsPollRef = useRef<Map<string, number>>(new Map());
-  const POSITIONS_POLL_MS = 1000;
 
   const connect = useCallback(() => {
     // Single-flight: if a connect is already scheduled/in-progress, do not queue another.
@@ -210,8 +205,11 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
             };
 
             if (isClose || isDelete) {
+              const existed = (store.positionsMap.get(accountId) || []).some((p) => p.ticket === ticket);
               store.removePosition(accountId, ticket);
-              dispatchPositionChange('PositionClose');
+              if (existed) {
+                dispatchPositionChange('PositionClose');
+              }
               return;
             }
 
@@ -227,7 +225,9 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
                 ...positionPatch,
                 currentPrice: old?.currentPrice ?? positionPatch.openPrice,
               });
-              dispatchPositionChange('PositionOpen');
+              if (!old) {
+                dispatchPositionChange('PositionOpen');
+              }
               return;
             }
 
@@ -319,22 +319,10 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
                   useTradingStore.getState().updatePosition(accId, ticket, posPatch);
                 }
 
-                const now = Date.now();
-                const lastPoll = profitPositionsPollRef.current.get(accId) ?? 0;
-                if (existingRows.length > 0 && now - lastPoll >= POSITIONS_POLL_MS) {
-                  profitPositionsPollRef.current.set(accId, now);
-                  tradingApi
-                    .getPositions(accId)
-                    .then((pos) => {
-                      const arr = Array.isArray(pos) ? pos : [];
-                      useTradingStore.getState().setPositions(accId, toCamelCase<Position[]>(arr), { preferRpcProfit: true });
-                    })
-                    .catch(() => {});
-                }
               }
 
               pendingProfitUpdates.current.clear();
-            }, 100);
+            }, 300);
           },
           onStatus: (status: AccountStatusEvent) => {
             if (!mountedRef.current) return;
@@ -347,6 +335,50 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
             if (mapped === 'connected' || mapped === 'connecting' || mapped === 'disconnected') {
               useAccountStore.getState().updateAccountStatus(accountId, mapped);
             }
+          },
+          onPositionSnapshot: (accountId: string, positions: OrderUpdate[]) => {
+            if (!mountedRef.current) return;
+            const locale = getDeviceLocale();
+            const timeZone = getDeviceTimeZone();
+
+            // Map positions into the store's Position shape, then batch-replace
+            // all at once (no per-position flicker).
+            const mapped = positions.map((o) => ({
+              ticket: Number(o.ticket),
+              symbol: o.symbol || '',
+              type: normalizePositionSide(o.type || 'buy'),
+              volume: Number(o.volume || 0),
+              openPrice: Number(o.openPrice || 0),
+              sl: Number(o.stopLoss ?? 0),
+              tp: Number(o.takeProfit ?? 0),
+              profit: Number(o.profit || 0),
+              swap: Number(o.swap ?? 0),
+              commission: Number(o.commission ?? 0),
+              comment: o.comment || '',
+              action: o.action,
+              closePrice: Number(o.closePrice ?? 0),
+              closeTime: o.closeTime
+                ? new Date(Number(o.closeTime) * 1000).toLocaleString(locale, { timeZone })
+                : '',
+              openTime: o.openTime
+                ? new Date(Number(o.openTime) * 1000).toLocaleString(locale, { timeZone })
+                : '',
+              currentPrice: 0,
+            }));
+
+            const store = useTradingStore.getState();
+            const existing = store.positionsMap.get(accountId) || [];
+            // Preserve currentPrice from existing positions.
+            const existingByTicket = new Map(existing.map((p) => [Number((p as { ticket: number }).ticket), p]));
+            const final = mapped.map((pos) => {
+              const old = existingByTicket.get(pos.ticket);
+              if (old) {
+                return { ...pos, currentPrice: (old as { currentPrice?: number }).currentPrice ?? pos.openPrice };
+              }
+              return { ...pos, currentPrice: pos.openPrice };
+            });
+
+            useTradingStore.getState().setPositions(accountId, final as unknown as Position[]);
           },
           onError: () => {},
         });
