@@ -1,0 +1,45 @@
+// strategy_state.proto — M10-BASE-E0 Strategy Lifecycle state persistence.
+//
+// StrategyState is the canonical wire format for strategy snapshot/restore.
+// Stored in PG strategy_state.state_data as JSONB (protobuf-compatible JSON).
+
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+import "google/protobuf/timestamp.proto";
+
+message StrategyState {
+    string strategy_name = 1;
+    string strategy_version = 2;
+    string instance_id = 3;
+    string account_id = 4;
+    string user_id = 5;
+    repeated string symbols = 6;
+    map<string, string> parameters = 7;
+    repeated StatePosition positions = 8;
+    StateMetrics metrics = 9;
+    bytes custom_state = 10;           // strategy-specific opaque blob
+    google.protobuf.Timestamp snapshotted_at = 11;
+    int32 schema_version = 12;         // incremented on breaking changes
+}
+
+message StatePosition {
+    string symbol = 1;
+    string side = 2;                   // "buy" / "sell"
+    double volume = 3;
+    double entry_price = 4;
+    int64 open_time_unix_ms = 5;
+}
+
+message StateMetrics {
+    int32 total_trades = 1;
+    double win_rate = 2;
+    double sharpe_ratio = 3;
+    double net_pnl = 4;
+    double gross_pnl = 5;
+    double max_drawdown = 6;
+    double total_cost = 7;
+}
