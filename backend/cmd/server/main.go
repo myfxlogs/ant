@@ -176,9 +176,41 @@ func main() {
 	pipelineCtx, pipelineCancel := context.WithCancel(context.Background())
 	defer pipelineCancel()
 
-	// Margin call dedup: 5-minute cooldown per account (V3-R-7).
+	// B-2.3: Per-broker 3-level margin call detection.
+	// Level 1 (预警): margin_level <= call_pct * 1.5 → SSE only
+	// Level 2 (警告): margin_level <= call_pct → SSE + Email
+	// Level 3 (危急): margin_level <= call_pct * 0.7 → SSE + Email (1min cooldown)
+	type marginLevel int
+	const (
+		mLevelWarn marginLevel = 1
+		mLevelCall marginLevel = 2
+		mLevelCrit marginLevel = 3
+	)
 	var marginCallMu sync.Mutex
-	marginCallLastSent := make(map[string]time.Time)
+	marginCallLastSent := make(map[string]map[int]time.Time)
+	// Per-account broker thresholds loaded from mt_accounts.
+	marginCallThresholds := make(map[string]float64) // accountID → broker_margin_call_pct
+	var emailNotifier *notifier.EmailNotifier             // set after creation; referenced by OnAccountProfit closure
+	var platformAgg *risksvc.PlatformAggregator           // set after creation; referenced by OnOrderUpdate closure
+
+	// Load per-account broker margin call thresholds (default 100.0 from migration 122).
+	func() {
+		rows, err := pool.Query(context.Background(), `SELECT id, broker_margin_call_pct FROM mt_accounts`)
+		if err != nil {
+			log.Warn("B-2.3: failed to load margin thresholds, using defaults", zap.Error(err))
+			return
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var aid string
+			var pct float64
+			if err := rows.Scan(&aid, &pct); err != nil {
+				log.Warn("B-2.3: scan margin threshold failed", zap.Error(err))
+				continue
+			}
+			marginCallThresholds[aid] = pct
+		}
+	}()
 
 	go func() {
 		log.Info("mdgateway pipeline starting", zap.String("spill_dir", spillDir))
@@ -218,22 +250,13 @@ func main() {
 						return out
 					}(),
 				})
-				// V3-R-7: Publish MarginCall event when margin level drops below 100%.
-				if p.MarginLevel > 0 && p.MarginLevel < 100 {
-					marginCallMu.Lock()
-					last := marginCallLastSent[accountID]
-					if time.Since(last) > 5*time.Minute {
-						marginCallLastSent[accountID] = time.Now()
-						marginCallMu.Unlock()
-						eventStore.Publish(context.Background(), &mthub.TradeEvent{
-							EventID:   fmt.Sprintf("mc-%s-%d", accountID, time.Now().Unix()),
-							EventType: mthub.TradeEventOrderMarginCall,
-							AccountID: accountID,
-							UserID:    userID,
-						})
-					} else {
-						marginCallMu.Unlock()
+				// B-2.3: 3-level margin call detection with per-broker thresholds.
+				if p.MarginLevel > 0 {
+					callPct := marginCallThresholds[accountID]
+					if callPct <= 0 {
+						callPct = 100.0
 					}
+					checkMarginCall(accountID, userID, p.MarginLevel, p.Margin, p.Equity, callPct, &marginCallMu, marginCallLastSent, eventStore, emailNotifier)
 				}
 			},
 			OnOrderUpdate: func(accountID, userID string, o *mdtick.OrderUpdate) {
@@ -298,6 +321,46 @@ func main() {
 					})
 				}
 				snapshotBroker.Publish(snapshot)
+
+				// B-1.2: Feed PlatformAggregator for risk pipeline Stage 3 (platform_limits).
+				platformAgg.ClearAccount(accountID)
+				for _, pos := range o.Positions {
+					netVol := pos.Volume
+					if pos.Type == "sell" {
+						netVol = -netVol
+					}
+					platformAgg.UpdatePosition(accountID, &risksvc.AggregatorPosition{
+						Canonical: pos.Symbol,
+						NetVolume: netVol,
+						Notional:  pos.Volume * pos.CurrentPrice * 100000,
+						Margin:    0,
+					})
+				}
+			},
+			OnAccountDisconnect: func(accountID string) {
+				platformAgg.ClearAccount(accountID)
+			},
+			OnBrokerInfo: func(accountID, platform, broker string, info *mdtick.BrokerInfo) {
+				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				defer cancel()
+				pct := info.MarginCallPct
+				stop := info.StopOutPct
+				// Zero values mean "proto doesn't expose these yet" — keep the schema DEFAULTs.
+				if pct > 0 || stop > 0 {
+					_, err := pool.Exec(ctx,
+						`UPDATE mt_accounts SET broker_margin_call_pct=$1, broker_stop_out_pct=$2,
+						 updated_at=CURRENT_TIMESTAMP WHERE id=$3`,
+						pct, stop, accountID)
+					if err != nil {
+						log.Warn("failed to persist broker margin info",
+							zap.String("account", accountID), zap.Error(err))
+					} else {
+						log.Info("broker margin thresholds updated",
+							zap.String("account", accountID),
+							zap.Float64("margin_call_pct", pct),
+							zap.Float64("stop_out_pct", stop))
+					}
+				}
 			},
 		}); err != nil {
 			log.Error("mdgateway pipeline exited with error", zap.Error(err))
@@ -422,7 +485,8 @@ func main() {
 		// CapabilityStore column expectations (093 migration vs capability.go struct).
 		// Default Tier0 (view-only) applies until schema alignment is complete.
 		hardLimit := risksvc.NewHardLimitEvaluator(&risksvc.KycJurisdictionRule{Gate: jurisGate})
-		platformAgg := risksvc.NewPlatformAggregator()
+		platformAgg = risksvc.NewPlatformAggregator()
+		platformAgg.StartRefreshLoop(5 * time.Second) // B-1.4: async recalculate on dirty
 		platformLimits := risksvc.DefaultPlatformLimits()
 		riskEngine := risksvc.NewEngine(
 			&risksvc.MaxPosition{Max: 20},
@@ -490,7 +554,7 @@ func main() {
 	mthubSvc.SetKillSwitch(sreKillSwitch) // V3-R-5: PlaceOrder blocked when kill switch engaged
 	sreBreakers := controlplane.NewBreakerRegistry(controlplane.DefaultBreakerConfig())
 	sreCanary := controlplane.NewCanaryManager()
-	emailNotifier := notifier.NewEmailNotifier(notifier.EmailConfig{
+	emailNotifier = notifier.NewEmailNotifier(notifier.EmailConfig{
 		Host:     cfg.SMTPHost,
 		Port:     cfg.SMTPPort,
 		User:     cfg.SMTPUser,
@@ -620,4 +684,62 @@ func main() {
 	if err := server.Run(ctx, mux, port, log); err != nil {
 		log.Fatal("server failed", zap.Error(err))
 	}
+
+
 }
+
+// checkMarginCall evaluates margin level against per-broker thresholds and publishes
+// events + sends emails at 3 severity levels with independent cooldowns.
+func checkMarginCall(
+	accountID, userID string,
+	marginLevel, margin, equity, callPct float64,
+	mu *sync.Mutex,
+	lastSent map[string]map[int]time.Time,
+	eventStore *mthub.TradeEventStore,
+	notifier *notifier.EmailNotifier,
+) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	if lastSent[accountID] == nil {
+		lastSent[accountID] = make(map[int]time.Time)
+	}
+
+	now := time.Now()
+
+	// Determine current severity level.
+	var curLevel int
+	switch {
+	case marginLevel <= callPct*0.7:
+		curLevel = 3
+	case marginLevel <= callPct:
+		curLevel = 2
+	case marginLevel <= callPct*1.5:
+		curLevel = 1
+	default:
+		delete(lastSent, accountID)
+		return
+	}
+
+	cooldown := 5 * time.Minute
+	if curLevel == 3 {
+		cooldown = 1 * time.Minute
+	}
+
+	if since := now.Sub(lastSent[accountID][curLevel]); since < cooldown {
+		return
+	}
+	lastSent[accountID][curLevel] = now
+
+	eventStore.Publish(context.Background(), &mthub.TradeEvent{
+		EventID:   fmt.Sprintf("mc-%s-%d-%d", accountID, now.Unix(), curLevel),
+		EventType: mthub.TradeEventOrderMarginCall,
+		AccountID: accountID,
+		UserID:    userID,
+	})
+
+	if curLevel >= 2 && notifier != nil {
+		notifier.MarginCallAlert(accountID, userID, margin, equity)
+	}
+}
+

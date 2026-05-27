@@ -2,7 +2,11 @@
 // This package MUST NOT import mdgateway, mt4, or mt5.
 package mdtick
 
-import "github.com/shopspring/decimal"
+import (
+	"context"
+
+	"github.com/shopspring/decimal"
+)
 
 // TickHandler is the callback that receives ticks from a gateway adapter.
 type TickHandler func(t *Tick)
@@ -13,6 +17,25 @@ type ProfitHandler func(p *ProfitUpdate)
 // OrderUpdateHandler is the callback that receives real-time order updates from OnOrderUpdate stream.
 // The handler receives the full account snapshot (metrics + all opened positions) on every order change.
 type OrderUpdateHandler func(o *OrderUpdate)
+
+// BrokerInfoHandler is the callback that receives broker-level settings after gateway connect.
+// Called once per successful connection; values of 0 mean "use schema default".
+type BrokerInfoHandler func(accountID, platform, broker string, info *BrokerInfo)
+
+// BrokerInfo holds broker-level margin configuration fetched after mtapi Connect.
+// Zero values signal that the broker did not expose these settings and the
+// schema DEFAULTs (100.0 / 50.0) should be used.
+type BrokerInfo struct {
+	MarginCallPct float64 // broker margin_call_level (e.g. 60.0 == 60%)
+	StopOutPct    float64 // broker stop_out_level (e.g. 30.0 == 30%)
+}
+
+// BrokerInfoFetcher is implemented by mt4.Gateway and mt5.Gateway.
+// After Connect succeeds, the runner calls FetchBrokerInfo to populate
+// BrokerInfo and passes it to the OnBrokerInfo callback.
+type BrokerInfoFetcher interface {
+	FetchBrokerInfo(ctx context.Context) (*BrokerInfo, error)
+}
 
 // ProfitUpdate represents an account profit/financial snapshot from mtapi OnOrderProfit.
 type ProfitUpdate struct {

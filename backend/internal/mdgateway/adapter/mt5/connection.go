@@ -178,6 +178,38 @@ func minDuration(a, b time.Duration) time.Duration {
 	return b
 }
 
+// FetchBrokerInfo implements mdtick.BrokerInfoFetcher.
+// Calls AccountSummary after Connect to extract broker-level margin settings.
+// Current mtapi proto does not expose ACCOUNT_MARGIN_SO_CALL / ACCOUNT_MARGIN_SO_SO;
+// returns zero values to signal "use schema DEFAULTs" until the proto is extended.
+func (g *Gateway) FetchBrokerInfo(ctx context.Context) (*mdtick.BrokerInfo, error) {
+	g.mu.RLock()
+	client := g.client
+	sid := g.sessionID
+	g.mu.RUnlock()
+
+	if client == nil || sid == "" {
+		return &mdtick.BrokerInfo{}, nil
+	}
+
+	resp, err := client.AccountSummary(ctx, &pb.AccountSummaryRequest{Id: sid})
+	if err != nil {
+		return nil, fmt.Errorf("mt5 AccountSummary: %w", err)
+	}
+	if resp.GetResult() == nil {
+		return &mdtick.BrokerInfo{}, nil
+	}
+
+	// Proto v2.x AccountSummary does not carry MarginCallLevel / StopOutLevel.
+	// When these fields are added to the mtapi proto, uncomment:
+	//   summary := resp.GetResult()
+	//   return &mdtick.BrokerInfo{
+	//       MarginCallPct: summary.GetMarginCallLevel(),
+	//       StopOutPct:    summary.GetStopOutLevel(),
+	//   }, nil
+	return &mdtick.BrokerInfo{}, nil
+}
+
 func strToUint64(s string) uint64 {
 	var v uint64
 	for _, c := range s {

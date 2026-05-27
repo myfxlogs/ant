@@ -31,9 +31,11 @@ type RunnerDeps struct {
 	NATSConn       *nats.Conn
 	SpillDir       string          // default /var/lib/ant/spill
 	Secrets        secrets.Client  // decrypts account passwords and mtapi tokens
-	OnAccountProfit  func(accountID, userID string, p *mdtick.ProfitUpdate)    // receives real-time balance/equity from mtapi OnOrderProfit
-	OnOrderUpdate    func(accountID, userID string, o *mdtick.OrderUpdate)     // receives real-time order/position changes from mtapi OnOrderUpdate
-	Hub             *mthub.Hub
+	OnAccountProfit     func(accountID, userID string, p *mdtick.ProfitUpdate)    // receives real-time balance/equity from mtapi OnOrderProfit
+	OnOrderUpdate       func(accountID, userID string, o *mdtick.OrderUpdate)     // receives real-time order/position changes from mtapi OnOrderUpdate
+	OnAccountDisconnect func(accountID string)                                     // B-1.3: called when gateway stops/fails for an account
+	OnBrokerInfo        func(accountID, platform, broker string, info *mdtick.BrokerInfo) // B-2.2: called once after successful Connect
+	Hub                 *mthub.Hub
 }
 
 // Run assembles and starts the full mdgateway pipeline.
@@ -160,6 +162,20 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 				continue
 			}
 
+			// B-2.2: fetch broker-level margin thresholds after connect.
+			if deps.OnBrokerInfo != nil {
+				if fetcher, ok := gw.(mdtick.BrokerInfoFetcher); ok {
+					info, err := fetcher.FetchBrokerInfo(ctx)
+					if err != nil {
+						log.Warn("mdgateway: FetchBrokerInfo failed",
+							zap.String("account", accID), zap.Error(err))
+					}
+					if info != nil {
+						deps.OnBrokerInfo(accID, cfg.Platform, cfg.Broker, info)
+					}
+				}
+			}
+
 			// Register gateway for health tracking + backfiller source routing.
 			_ = mgr.AddGateway(ctx, gw, nil)
 
@@ -221,7 +237,7 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	}
 
 	// --- Health monitor ---
-	go healthMonitor(ctx, mgr, chWriter, log)
+	go healthMonitor(ctx, mgr, chWriter, log, deps.OnAccountDisconnect)
 
 	// --- Account event subscriber (NATS: account.connect/disconnect/reconnect) ---
 	startAccountEventSubscriber(ctx, deps.NATSConn, log)
@@ -241,7 +257,7 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 
 // healthMonitor checks gateway health every 30s, monitors memory pressure
 // for S-2 auto-degradation, and emits stale/dead account metrics.
-func healthMonitor(ctx context.Context, mgr *Manager, chw *CHWriter, log *zap.Logger) {
+func healthMonitor(ctx context.Context, mgr *Manager, chw *CHWriter, log *zap.Logger, onDisconnect func(accountID string)) {
 	ticker := Clk.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 
@@ -265,7 +281,10 @@ func healthMonitor(ctx context.Context, mgr *Manager, chw *CHWriter, log *zap.Lo
 						zap.String("platform", h.Platform))
 				case "dead":
 					dead++
-					log.Error("mdgateway: dead account — no ticks for >15 min",
+					if onDisconnect != nil {
+							onDisconnect(h.AccountID)
+						}
+						log.Error("mdgateway: dead account — no ticks for >15 min",
 						zap.String("account", h.AccountID),
 						zap.String("platform", h.Platform))
 				case "no_data":
