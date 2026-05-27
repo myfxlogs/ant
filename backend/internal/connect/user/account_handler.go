@@ -193,14 +193,28 @@ func (s *AccountServer) SearchBroker(ctx context.Context, req *connect.Request[a
 	}), nil
 }
 
-// VerifyTradePermission verifies the account has trading permission.
-// Full mtapi integration requires Phase 2 mthub wiring.
+// VerifyTradePermission checks whether the account can trade based on PG state.
 func (s *AccountServer) VerifyTradePermission(ctx context.Context, req *connect.Request[antv1.VerifyTradePermissionRequest]) (*connect.Response[antv1.VerifyTradePermissionResponse], error) {
 	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
-	_, err := s.svc.GetAccount(ctx, userID, req.Msg.Id)
+	acct, err := s.svc.GetAccount(ctx, userID, req.Msg.Id)
 	if err != nil {
 		s.log.Error("VerifyTradePermission", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	// Check real account state: disabled or frozen accounts cannot trade.
+	if acct.IsDisabled {
+		return connect.NewResponse(&antv1.VerifyTradePermissionResponse{
+			HasTradePermission: false,
+			Verified:           true,
+			Message:            "account is disabled",
+		}), nil
+	}
+	if acct.Status == "frozen" || acct.Status == "needs_rebind" {
+		return connect.NewResponse(&antv1.VerifyTradePermissionResponse{
+			HasTradePermission: false,
+			Verified:           true,
+			Message:            "account status is " + acct.Status,
+		}), nil
 	}
 	return connect.NewResponse(&antv1.VerifyTradePermissionResponse{
 		HasTradePermission: true,

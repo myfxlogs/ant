@@ -1,0 +1,76 @@
+=== Sprint 2 · Task S2.3: GetAccountStatus / VerifyTradePermission → real ===
+Date: 2026-05-27
+Plan: docs/plan/2026-05-27-整改与执行计划.md §4.S2.3
+
+--- Problem ---
+V2 §2.D-3 / plan S2.3: Both GetAccountStatus and VerifyTradePermission returned
+hardcoded responses that always indicated success regardless of actual account state.
+
+- GetAccountStatus: always returned {State: "connected", LastTickAt: now()} with no
+  ownership check, session check, or PG status check.
+- VerifyTradePermission: always returned {HasTradePermission: true, Verified: true}
+  after only checking the account exists in PG (no disabled/frozen/status check).
+
+--- Fix ---
+Part 1 — internal/mthub/service.go (MODIFIED):
+- Added SessionState(ctx, accountID) method to MtHubService
+- Uses Hub.EnsureSession (auto-refreshes expired sessions)
+- Returns "connected" or "not_found"
+
+Part 2 — internal/connect/system/mthub_service.go (MODIFIED):
+- GetAccountStatus now checks:
+  a. User authentication (GetUserID)
+  b. Ownership: platform.GetAccount(ctx, userID, accountID) with WHERE user_id=$2
+  c. Hub session state via svc.SessionState()
+  d. Falls back to PG account_status if no session found
+- Added uuid import for user ID parsing
+
+Part 3 — internal/connect/user/account_handler.go (MODIFIED):
+- VerifyTradePermission now checks:
+  a. Account exists and belongs to user (existing GetAccount check)
+  b. acct.IsDisabled → returns HasTradePermission: false, "account is disabled"
+  c. acct.Status == "frozen" or "needs_rebind" → returns false with reason
+  d. Otherwise → returns true
+
+Part 4 — internal/mthub/session_test.go (NEW):
+- TestSessionState_Connected: registered session → "connected"
+- TestSessionState_NotFound: no session → "not_found"
+- TestSessionState_ExpiredRefreshes: expired session auto-refreshed → "connected"
+
+--- Acceptance Command ---
+cd /opt/ant/backend && go test ./internal/mthub/... ./internal/connect/user/... ./internal/connect/system/... -v
+
+--- Acceptance Output ---
+=== RUN   TestSessionState_Connected
+--- PASS: TestSessionState_Connected (0.00s)
+=== RUN   TestSessionState_NotFound
+--- PASS: TestSessionState_NotFound (0.00s)
+=== RUN   TestSessionState_ExpiredRefreshes
+--- PASS: TestSessionState_ExpiredRefreshes (0.00s)
+PASS
+ok      anttrader/internal/mthub        0.015s
+=== RUN   TestSearchBroker_FallbackToMock
+--- PASS: TestSearchBroker_FallbackToMock (0.00s)
+PASS
+ok      anttrader/internal/connect/user        0.017s
+=== RUN   TestToProtoOrderEvent_NilOrder
+--- PASS: TestToProtoOrderEvent_NilOrder (0.00s)
+=== RUN   TestToProtoOrderEvent_WithOrder
+--- PASS: TestToProtoOrderEvent_WithOrder (0.00s)
+PASS
+ok      anttrader/internal/connect/system      0.011s
+
+--- Test Coverage ---
+- TestSessionState_Connected: Hub.Register → SessionState returns "connected"
+- TestSessionState_NotFound: no registration → "not_found"
+- TestSessionState_ExpiredRefreshes: expired session auto-refreshed by EnsureSession
+- TestSearchBroker_FallbackToMock: existing S2.2 test still passes
+- TestToProtoOrderEvent_NilOrder/WithOrder: existing S0.7 tests still pass
+
+--- Pre-commit checks ---
+- go build ./... : PASS
+- go vet ./... : PASS
+- No new panic, nil dereference, TODO, or stub introduced
+- GetAccountStatus now enforces account ownership (was missing before)
+- VerifyTradePermission now checks IsDisabled + frozen/needs_rebind status
+- Diff: 5 files changed (3 modified + 2 new)

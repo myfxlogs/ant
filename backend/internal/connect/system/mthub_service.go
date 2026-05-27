@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap"
 
 	"connectrpc.com/connect"
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -138,8 +139,30 @@ func (s *MtHubServer) PriceHistory(ctx context.Context, req *connect.Request[ant
 }
 
 func (s *MtHubServer) GetAccountStatus(ctx context.Context, req *connect.Request[antv1.GetAccountStatusRequest]) (*connect.Response[antv1.AccountStatus], error) {
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
+	}
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user id"))
+	}
+	// Ownership check: user must own this account.
+	acct, err := s.platform.GetAccount(ctx, uid, req.Msg.AccountId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account not found or not owned by user"))
+	}
+	// Determine state from Hub session + PG account_status.
+	state := s.svc.SessionState(ctx, req.Msg.AccountId)
+	if state == "not_found" {
+		state = acct.Status
+		if state == "" {
+			state = "disconnected"
+		}
+	}
 	return connect.NewResponse(&antv1.AccountStatus{
-		AccountId: req.Msg.AccountId, State: "connected",
+		AccountId:  req.Msg.AccountId,
+		State:      state,
 		LastTickAt: timestamppb.Now(),
 	}), nil
 }

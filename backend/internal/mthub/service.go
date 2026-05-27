@@ -69,6 +69,16 @@ func (s *MtHubService) SetAccountStateProvider(p AccountStateProvider) { s.accou
 // SetOmsWriter injects the OMS state writer for order lifecycle tracking (S1.2).
 func (s *MtHubService) SetOmsWriter(w *OmsWriter) { s.omsWriter = w }
 
+// SessionState returns "connected" if the Hub has a session for the account,
+// or "not_found" otherwise. Expired sessions are auto-refreshed by EnsureSession.
+func (s *MtHubService) SessionState(ctx context.Context, accountID string) string {
+	_, err := s.hub.EnsureSession(ctx, accountID)
+	if err != nil {
+		return "not_found"
+	}
+	return "connected"
+}
+
 // ErrRateLimited is returned when the user exceeds their order rate limit.
 var ErrRateLimited = errors.New("mthub: order rate limit exceeded")
 
