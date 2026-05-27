@@ -1,0 +1,28 @@
+=== RUN   TestQuality_SpreadComputation
+=== PAUSE TestQuality_SpreadComputation
+=== RUN   TestQuality_SpreadZscore
+=== PAUSE TestQuality_SpreadZscore
+=== CONT  TestQuality_SpreadComputation
+=== CONT  TestQuality_SpreadZscore
+--- PASS: TestQuality_SpreadZscore (0.00s)
+--- PASS: TestQuality_SpreadComputation (0.00s)
+PASS
+ok  	anttrader/internal/mdgateway	1.080s
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/brokersearch	1.064s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mdtick	1.051s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mt4	1.063s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mt5	1.056s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/backfiller	1.038s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/chmigrate	1.034s [no tests to run]

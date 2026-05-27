@@ -1,0 +1,68 @@
+=== RUN   TestRealClock_Now
+=== PAUSE TestRealClock_Now
+=== RUN   TestRealClock_Sleep
+=== PAUSE TestRealClock_Sleep
+=== RUN   TestRealClock_NewTicker
+=== PAUSE TestRealClock_NewTicker
+=== RUN   TestRealClock_NewTimer
+=== PAUSE TestRealClock_NewTimer
+=== RUN   TestRealClock_AfterFunc
+=== PAUSE TestRealClock_AfterFunc
+=== RUN   TestSimulatedClock_Now
+=== PAUSE TestSimulatedClock_Now
+=== RUN   TestSimulatedClock_Sleep
+=== PAUSE TestSimulatedClock_Sleep
+=== RUN   TestSimulatedClock_Timer
+=== PAUSE TestSimulatedClock_Timer
+=== RUN   TestSimulatedClock_AfterFuncAndAdvance
+=== PAUSE TestSimulatedClock_AfterFuncAndAdvance
+=== RUN   TestSimulatedClock_Ticker
+=== PAUSE TestSimulatedClock_Ticker
+=== RUN   TestSimulatedTimer_Stop
+=== PAUSE TestSimulatedTimer_Stop
+=== RUN   TestSimulatedTimer_Reset
+=== PAUSE TestSimulatedTimer_Reset
+=== RUN   TestSimulatedClock_SetNow
+=== PAUSE TestSimulatedClock_SetNow
+=== RUN   TestSimulatedClock_Determinism
+=== PAUSE TestSimulatedClock_Determinism
+=== RUN   TestEventHeap_Order
+=== PAUSE TestEventHeap_Order
+=== RUN   TestEventHeap_SameTimeOrder
+=== PAUSE TestEventHeap_SameTimeOrder
+=== CONT  TestRealClock_Now
+--- PASS: TestRealClock_Now (0.00s)
+=== CONT  TestEventHeap_Order
+--- PASS: TestEventHeap_Order (0.00s)
+=== CONT  TestSimulatedClock_Determinism
+    clock_test.go:217: Determinism: 2 runs → identical results [1 3 2] (PASS)
+--- PASS: TestSimulatedClock_Determinism (0.00s)
+=== CONT  TestSimulatedClock_SetNow
+--- PASS: TestSimulatedClock_SetNow (0.00s)
+=== CONT  TestSimulatedTimer_Reset
+--- PASS: TestSimulatedTimer_Reset (0.00s)
+=== CONT  TestEventHeap_SameTimeOrder
+--- PASS: TestEventHeap_SameTimeOrder (0.00s)
+=== CONT  TestSimulatedTimer_Stop
+--- PASS: TestSimulatedTimer_Stop (0.00s)
+=== CONT  TestSimulatedClock_AfterFuncAndAdvance
+--- PASS: TestSimulatedClock_AfterFuncAndAdvance (0.00s)
+=== CONT  TestSimulatedClock_Now
+=== CONT  TestRealClock_NewTicker
+--- PASS: TestSimulatedClock_Now (0.00s)
+=== CONT  TestSimulatedClock_Ticker
+=== CONT  TestRealClock_NewTimer
+--- PASS: TestSimulatedClock_Ticker (0.00s)
+=== CONT  TestSimulatedClock_Timer
+--- PASS: TestSimulatedClock_Timer (0.00s)
+=== CONT  TestRealClock_AfterFunc
+=== CONT  TestSimulatedClock_Sleep
+--- PASS: TestSimulatedClock_Sleep (0.00s)
+=== CONT  TestRealClock_Sleep
+--- PASS: TestRealClock_NewTicker (0.01s)
+--- PASS: TestRealClock_NewTimer (0.01s)
+--- PASS: TestRealClock_AfterFunc (0.01s)
+--- PASS: TestRealClock_Sleep (0.01s)
+PASS
+coverage: 67.4% of statements
+ok  	anttrader/internal/clock	1.047s	coverage: 67.4% of statements

@@ -1,0 +1,24 @@
+=== RUN   TestQuality_NTPSkewDrop
+=== PAUSE TestQuality_NTPSkewDrop
+=== CONT  TestQuality_NTPSkewDrop
+--- PASS: TestQuality_NTPSkewDrop (0.00s)
+PASS
+ok  	anttrader/internal/mdgateway	1.087s
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/brokersearch	1.054s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mdtick	1.045s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mt4	1.048s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mt5	1.037s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/backfiller	1.025s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/chmigrate	1.029s [no tests to run]

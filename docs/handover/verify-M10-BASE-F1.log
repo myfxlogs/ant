@@ -1,0 +1,44 @@
+=== RUN   TestMarketStateTracker_Update
+=== PAUSE TestMarketStateTracker_Update
+=== RUN   TestMarketStateTracker_StaleQuote
+=== PAUSE TestMarketStateTracker_StaleQuote
+=== RUN   TestMarketStateTracker_GetAndAll
+=== PAUSE TestMarketStateTracker_GetAndAll
+=== RUN   TestMarketState_GetAll
+=== PAUSE TestMarketState_GetAll
+=== RUN   TestMarketState_RefreshAges
+=== PAUSE TestMarketState_RefreshAges
+=== RUN   TestMarketState_UpdateStale
+=== PAUSE TestMarketState_UpdateStale
+=== CONT  TestMarketStateTracker_StaleQuote
+=== CONT  TestMarketStateTracker_GetAndAll
+--- PASS: TestMarketStateTracker_GetAndAll (0.00s)
+=== CONT  TestMarketState_UpdateStale
+--- PASS: TestMarketState_UpdateStale (0.00s)
+=== CONT  TestMarketState_RefreshAges
+--- PASS: TestMarketState_RefreshAges (0.00s)
+=== CONT  TestMarketState_GetAll
+--- PASS: TestMarketState_GetAll (0.00s)
+=== CONT  TestMarketStateTracker_Update
+--- PASS: TestMarketStateTracker_Update (0.00s)
+--- PASS: TestMarketStateTracker_StaleQuote (0.20s)
+PASS
+ok  	anttrader/internal/mdgateway	1.291s
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/brokersearch	1.075s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mdtick	1.054s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mt4	1.048s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mt5	1.062s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/backfiller	1.044s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/chmigrate	1.041s [no tests to run]

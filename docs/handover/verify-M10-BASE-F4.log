@@ -1,0 +1,60 @@
+=== RUN   TestStuffingDetector_NormalTickRate
+=== PAUSE TestStuffingDetector_NormalTickRate
+=== RUN   TestStuffingDetector_IsPaused
+=== PAUSE TestStuffingDetector_IsPaused
+=== RUN   TestStuffingDetector_ObserveTracksRate
+=== PAUSE TestStuffingDetector_ObserveTracksRate
+=== RUN   TestStuffingAnomalyMetrics
+=== PAUSE TestStuffingAnomalyMetrics
+=== RUN   TestStuffingDetector_IsPaused_Empty
+=== PAUSE TestStuffingDetector_IsPaused_Empty
+=== RUN   TestStuffingDetector_PausedSymbols_Empty
+=== PAUSE TestStuffingDetector_PausedSymbols_Empty
+=== RUN   TestStuffingDetector_Observe_FirstTick
+=== PAUSE TestStuffingDetector_Observe_FirstTick
+=== RUN   TestStuffingDetector_Observe_Multiple
+=== PAUSE TestStuffingDetector_Observe_Multiple
+=== RUN   TestStuffingDetector_IsPaused_Expired
+=== PAUSE TestStuffingDetector_IsPaused_Expired
+=== RUN   TestStuffingDetector_IsPaused_Active
+=== PAUSE TestStuffingDetector_IsPaused_Active
+=== CONT  TestStuffingDetector_NormalTickRate
+=== CONT  TestStuffingDetector_Observe_Multiple
+=== CONT  TestStuffingAnomalyMetrics
+--- PASS: TestStuffingDetector_Observe_Multiple (0.00s)
+=== CONT  TestStuffingDetector_PausedSymbols_Empty
+--- PASS: TestStuffingAnomalyMetrics (0.00s)
+=== CONT  TestStuffingDetector_ObserveTracksRate
+=== CONT  TestStuffingDetector_IsPaused_Active
+--- PASS: TestStuffingDetector_PausedSymbols_Empty (0.00s)
+=== CONT  TestStuffingDetector_IsPaused
+--- PASS: TestStuffingDetector_IsPaused_Active (0.00s)
+=== CONT  TestStuffingDetector_Observe_FirstTick
+--- PASS: TestStuffingDetector_IsPaused (0.00s)
+=== CONT  TestStuffingDetector_IsPaused_Empty
+=== CONT  TestStuffingDetector_IsPaused_Expired
+--- PASS: TestStuffingDetector_Observe_FirstTick (0.00s)
+--- PASS: TestStuffingDetector_IsPaused_Empty (0.00s)
+--- PASS: TestStuffingDetector_IsPaused_Expired (0.00s)
+--- PASS: TestStuffingDetector_ObserveTracksRate (0.05s)
+--- PASS: TestStuffingDetector_NormalTickRate (5.02s)
+PASS
+ok  	anttrader/internal/mdgateway	6.112s
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/brokersearch	1.039s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mdtick	1.051s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mt4	1.050s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mt5	1.050s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/backfiller	1.027s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/chmigrate	1.038s [no tests to run]

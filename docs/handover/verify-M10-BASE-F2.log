@@ -1,0 +1,48 @@
+=== RUN   TestSessionClock_IsWeekend
+=== PAUSE TestSessionClock_IsWeekend
+=== RUN   TestSessionClock_IsHoliday
+=== PAUSE TestSessionClock_IsHoliday
+=== RUN   TestSessionClock_SessionPhase
+=== PAUSE TestSessionClock_SessionPhase
+=== RUN   TestSessionClock_InSwapWindow
+=== PAUSE TestSessionClock_InSwapWindow
+=== RUN   TestSessionClock_BrokerOffset
+=== PAUSE TestSessionClock_BrokerOffset
+=== RUN   TestSessionClock_BarBoundary
+=== PAUSE TestSessionClock_BarBoundary
+=== RUN   TestSessionClock_ClockSkewMs
+=== PAUSE TestSessionClock_ClockSkewMs
+=== CONT  TestSessionClock_BrokerOffset
+=== CONT  TestSessionClock_InSwapWindow
+--- PASS: TestSessionClock_BrokerOffset (0.00s)
+=== CONT  TestSessionClock_IsHoliday
+--- PASS: TestSessionClock_InSwapWindow (0.00s)
+=== CONT  TestSessionClock_IsWeekend
+--- PASS: TestSessionClock_IsHoliday (0.00s)
+=== CONT  TestSessionClock_SessionPhase
+=== CONT  TestSessionClock_BarBoundary
+=== CONT  TestSessionClock_ClockSkewMs
+--- PASS: TestSessionClock_IsWeekend (0.00s)
+--- PASS: TestSessionClock_BarBoundary (0.00s)
+--- PASS: TestSessionClock_SessionPhase (0.00s)
+--- PASS: TestSessionClock_ClockSkewMs (0.00s)
+PASS
+ok  	anttrader/internal/mdgateway	1.063s
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/brokersearch	1.043s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mdtick	1.038s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mt4	1.058s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mt5	1.049s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/backfiller	1.024s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/chmigrate	1.035s [no tests to run]

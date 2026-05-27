@@ -1,0 +1,79 @@
+=== RUN   TestUserLimiter_AllowSignal
+=== PAUSE TestUserLimiter_AllowSignal
+=== RUN   TestUserLimiter_AllowOrder
+=== PAUSE TestUserLimiter_AllowOrder
+=== RUN   TestUserLimiter_AllowCHWrite
+=== PAUSE TestUserLimiter_AllowCHWrite
+=== RUN   TestUserLimiter_LRUEviction
+=== PAUSE TestUserLimiter_LRUEviction
+=== RUN   TestUserLimiter_EvictIdle
+=== PAUSE TestUserLimiter_EvictIdle
+=== RUN   TestUserLimiter_BlockedCounts
+=== PAUSE TestUserLimiter_BlockedCounts
+=== RUN   TestUserLimiter_Concurrent
+=== PAUSE TestUserLimiter_Concurrent
+=== RUN   TestGetUserID_NoAuth
+=== PAUSE TestGetUserID_NoAuth
+=== RUN   TestSpanWithUser_NoSpan
+=== PAUSE TestSpanWithUser_NoSpan
+=== RUN   TestSpanWithUser_EmptyUserID
+=== PAUSE TestSpanWithUser_EmptyUserID
+=== RUN   TestLoggerWithUser_NoAuth
+=== PAUSE TestLoggerWithUser_NoAuth
+=== RUN   TestUserLimiter_SignalRateEnforcement
+=== PAUSE TestUserLimiter_SignalRateEnforcement
+=== RUN   TestUserLimiter_OrderRateEnforcement
+=== PAUSE TestUserLimiter_OrderRateEnforcement
+=== RUN   TestUserLimiter_CHWritePerUserEnforcement
+=== PAUSE TestUserLimiter_CHWritePerUserEnforcement
+=== RUN   TestUserLimiter_GlobalCHCeilingEnforcement
+=== PAUSE TestUserLimiter_GlobalCHCeilingEnforcement
+=== RUN   TestUserLimiter_GlobalCHCeilingWindowReset
+=== PAUSE TestUserLimiter_GlobalCHCeilingWindowReset
+=== RUN   TestUserLimiter_PerUserWindowReset
+=== PAUSE TestUserLimiter_PerUserWindowReset
+=== RUN   TestUserLimiter_SeparateLimitsIndependent
+=== PAUSE TestUserLimiter_SeparateLimitsIndependent
+=== RUN   TestUserLimiter_HighConcurrency
+=== PAUSE TestUserLimiter_HighConcurrency
+=== CONT  TestUserLimiter_BlockedCounts
+--- PASS: TestUserLimiter_BlockedCounts (0.00s)
+=== CONT  TestUserLimiter_LRUEviction
+=== CONT  TestUserLimiter_EvictIdle
+--- PASS: TestUserLimiter_LRUEviction (0.00s)
+=== CONT  TestUserLimiter_AllowCHWrite
+=== CONT  TestUserLimiter_PerUserWindowReset
+=== CONT  TestSpanWithUser_NoSpan
+--- PASS: TestUserLimiter_AllowCHWrite (0.00s)
+=== CONT  TestGetUserID_NoAuth
+--- PASS: TestGetUserID_NoAuth (0.00s)
+=== CONT  TestUserLimiter_Concurrent
+--- PASS: TestUserLimiter_PerUserWindowReset (0.00s)
+--- PASS: TestSpanWithUser_NoSpan (0.00s)
+=== CONT  TestUserLimiter_HighConcurrency
+=== CONT  TestLoggerWithUser_NoAuth
+--- PASS: TestLoggerWithUser_NoAuth (0.00s)
+=== CONT  TestUserLimiter_SeparateLimitsIndependent
+--- PASS: TestUserLimiter_SeparateLimitsIndependent (0.00s)
+=== CONT  TestUserLimiter_CHWritePerUserEnforcement
+--- PASS: TestUserLimiter_CHWritePerUserEnforcement (0.00s)
+=== CONT  TestUserLimiter_GlobalCHCeilingEnforcement
+--- PASS: TestUserLimiter_GlobalCHCeilingEnforcement (0.00s)
+=== CONT  TestUserLimiter_AllowOrder
+--- PASS: TestUserLimiter_AllowOrder (0.00s)
+=== CONT  TestUserLimiter_GlobalCHCeilingWindowReset
+--- PASS: TestUserLimiter_GlobalCHCeilingWindowReset (0.00s)
+=== CONT  TestUserLimiter_AllowSignal
+--- PASS: TestUserLimiter_AllowSignal (0.00s)
+=== CONT  TestUserLimiter_SignalRateEnforcement
+--- PASS: TestUserLimiter_SignalRateEnforcement (0.00s)
+=== CONT  TestUserLimiter_OrderRateEnforcement
+--- PASS: TestUserLimiter_OrderRateEnforcement (0.00s)
+=== CONT  TestSpanWithUser_EmptyUserID
+--- PASS: TestSpanWithUser_EmptyUserID (0.00s)
+--- PASS: TestUserLimiter_Concurrent (0.01s)
+--- PASS: TestUserLimiter_EvictIdle (0.02s)
+--- PASS: TestUserLimiter_HighConcurrency (0.18s)
+PASS
+coverage: 89.2% of statements
+ok  	anttrader/internal/usermgr	1.225s	coverage: 89.2% of statements

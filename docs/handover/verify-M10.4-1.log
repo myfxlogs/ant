@@ -1,0 +1,30 @@
+# Verify M10.4-1 — CH Buffer tables + config
+# Date: 2026-05-27
+# Acceptance: md_ticks_buffer/md_bars_buffer use Buffer engine + env-configurable params
+
+## Buffer Table Verification
+
+$ docker exec ant-clickhouse clickhouse-client --query "SELECT engine FROM system.tables WHERE database='ant' AND name='md_ticks_buffer'"
+Buffer
+
+$ docker exec ant-clickhouse clickhouse-client --query "SELECT engine FROM system.tables WHERE database='ant' AND name='md_bars_buffer'"
+Buffer
+
+## Buffer Config in clickhouse_writer.go
+
+    FlushInterval time.Duration // 默认 500ms
+    MaxBatchSize  int           // 默认 10000
+    QueueSize     int           // 默认 50000；满则走 spill
+
+Default values confirmed:
+    FlushInterval: 500 * time.Millisecond,
+    MaxBatchSize:  10000,
+    QueueSize:     50000,
+
+ENV override: ANT_CH_BUFFER_QUEUE_SIZE, ANT_CH_BUFFER_MAX_BATCH, ANT_CH_BUFFER_FLUSH_MS
+
+## md_ticks sorting_key (ADR-0008 §2.2 compliant)
+$ docker exec ant-clickhouse clickhouse-client --query "SELECT sorting_key FROM system.tables WHERE database='ant' AND name='md_ticks'"
+broker, canonical, ts_unix_ms, bid, ask, bid_volume, ask_volume
+
+## Card Status: ☑ VERIFIED — Buffer engine active, config params match spec

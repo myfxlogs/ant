@@ -1,0 +1,6 @@
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/factor	1.028s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/factor/dsl	1.025s [no tests to run]
