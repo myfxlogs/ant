@@ -19,6 +19,8 @@ type mockMT4Client struct {
 	orderHistoryErr  error
 	quoteHistoryRes  *pb.QuoteHistoryReply
 	quoteHistoryErr  error
+	symbolParamsRes  *pb.SymbolParamsReply
+	symbolParamsErr  error
 }
 
 func (m *mockMT4Client) AccountSummary(ctx context.Context, in *pb.AccountSummaryRequest, opts ...grpc.CallOption) (*pb.AccountSummaryReply, error) {
@@ -40,6 +42,9 @@ func (m *mockMT4Client) Symbols(ctx context.Context, in *pb.SymbolsRequest, opts
 	return nil, fmt.Errorf("mock: not implemented")
 }
 func (m *mockMT4Client) SymbolParams(ctx context.Context, in *pb.SymbolParamsRequest, opts ...grpc.CallOption) (*pb.SymbolParamsReply, error) {
+	if m.symbolParamsRes != nil || m.symbolParamsErr != nil {
+		return m.symbolParamsRes, m.symbolParamsErr
+	}
 	return nil, fmt.Errorf("mock: not implemented")
 }
 func (m *mockMT4Client) ServerTimezone(ctx context.Context, in *pb.ServerTimezoneRequest, opts ...grpc.CallOption) (*pb.ServerTimezoneReply, error) {
@@ -223,3 +228,31 @@ func (m *mockSubCli) SubscribeOrderUpdate(ctx context.Context, in *pb.SubscribeO
 func (m *mockSubCli) SubscribeQuoteHistory(ctx context.Context, in *pb.SubscribeQuoteHistoryRequest, opts ...grpc.CallOption) (*pb.SubscribeQuoteHistoryReply, error) {
 	return nil, fmt.Errorf("mock: not implemented")
 }
+
+
+// mockTradingClient implements pb.TradingClient for testing order operations.
+type mockTradingClient struct {
+	orderSendRes   *pb.OrderSendReply
+	orderSendErr   error
+	orderCloseRes  *pb.OrderCloseReply
+	orderCloseErr  error
+	orderModifyRes *pb.OrderModifyReply
+	orderModifyErr error
+}
+
+func (m *mockTradingClient) OrderSend(ctx context.Context, in *pb.OrderSendRequest, opts ...grpc.CallOption) (*pb.OrderSendReply, error) {
+	return m.orderSendRes, m.orderSendErr
+}
+func (m *mockTradingClient) OrderModify(ctx context.Context, in *pb.OrderModifyRequest, opts ...grpc.CallOption) (*pb.OrderModifyReply, error) {
+	return m.orderModifyRes, m.orderModifyErr
+}
+func (m *mockTradingClient) OrderCloseBy(ctx context.Context, in *pb.OrderCloseByRequest, opts ...grpc.CallOption) (*pb.OrderCloseByReply, error) {
+	return nil, fmt.Errorf("mock: not implemented")
+}
+func (m *mockTradingClient) OrderDelete(ctx context.Context, in *pb.OrderDeleteRequest, opts ...grpc.CallOption) (*pb.OrderDeleteReply, error) {
+	return nil, fmt.Errorf("mock: not implemented")
+}
+func (m *mockTradingClient) OrderClose(ctx context.Context, in *pb.OrderCloseRequest, opts ...grpc.CallOption) (*pb.OrderCloseReply, error) {
+	return m.orderCloseRes, m.orderCloseErr
+}
+
