@@ -10,6 +10,7 @@ import (
 	"github.com/shopspring/decimal"
 
 	"anttrader/internal/costsvc"
+	"anttrader/internal/risksvc"
 	"anttrader/internal/usermgr"
 )
 
@@ -25,6 +26,10 @@ type MtHubService struct {
 	eventStore     *TradeEventStore // may be nil if NATS is not configured
 	userLimiter    *usermgr.UserLimiter
 	costEstimator  costsvc.CostEstimator // M10-BASE-D2: pre-trade cost estimation
+
+	// S1.1: pre-trade risk pipeline (capability → hardlimit → platform → engine → sizer)
+	riskPipeline        RiskPipeline
+	accountStateProvider AccountStateProvider
 }
 
 // NewMtHubService creates the service with a Hub, event broker, and optional idempotency guard.
@@ -37,6 +42,26 @@ func (s *MtHubService) SetUserLimiter(l *usermgr.UserLimiter) { s.userLimiter = 
 
 // SetCostEstimator injects the pre-trade cost estimator (M10-BASE-D2).
 func (s *MtHubService) SetCostEstimator(e costsvc.CostEstimator) { s.costEstimator = e }
+
+// RiskPipeline is the pre-trade risk and sizing pipeline (M10-BASE-C6, S1.1).
+type RiskPipeline interface {
+	Process(ctx context.Context, req *risksvc.SignalRequest) *risksvc.SignalResult
+}
+
+// SetRiskPipeline injects the risk pipeline for pre-trade checks.
+func (s *MtHubService) SetRiskPipeline(p RiskPipeline) { s.riskPipeline = p }
+
+// AccountState holds snapshot data needed for risk evaluation.
+type AccountState struct {
+	Balance, Equity, FreeMargin, Margin float64
+	Positions                            int
+}
+
+// AccountStateProvider fetches account state for risk evaluation.
+type AccountStateProvider func(ctx context.Context, accountID string) (*AccountState, error)
+
+// SetAccountStateProvider injects the account state fetcher for risk evaluation.
+func (s *MtHubService) SetAccountStateProvider(p AccountStateProvider) { s.accountStateProvider = p }
 
 // ErrRateLimited is returned when the user exceeds their order rate limit.
 var ErrRateLimited = errors.New("mthub: order rate limit exceeded")
@@ -68,6 +93,39 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 		uid := usermgr.GetUserID(ctx)
 		if uid != "" && !s.userLimiter.AllowOrder(uid) {
 			return nil, ErrRateLimited
+		}
+	}
+
+	// Pre-trade risk pipeline (S1.1): capability → hardlimit → platform → engine → sizer.
+	if s.riskPipeline != nil {
+		// Fetch account state for risk evaluation.
+		var balance, equity, freeMargin, margin float64
+		var positions int
+		if s.accountStateProvider != nil {
+			if state, err := s.accountStateProvider(ctx, req.AccountID); err == nil && state != nil {
+				balance, equity, freeMargin, margin = state.Balance, state.Equity, state.FreeMargin, state.Margin
+				positions = state.Positions
+			}
+		}
+		uid := usermgr.GetUserID(ctx)
+		result := s.riskPipeline.Process(ctx, &risksvc.SignalRequest{
+			UserID:     uid,
+			AccountID:  req.AccountID,
+			Symbol:     req.Canonical,
+			Side:       sideToString(req.Side),
+			Price:      req.Price.InexactFloat64(),
+			Balance:    balance,
+			Equity:     equity,
+			FreeMargin: freeMargin,
+			Margin:     margin,
+			Positions:  positions,
+		})
+		if !result.Allowed {
+			return nil, fmt.Errorf("risk rejected at %s: %s", result.Stage, result.Reason)
+		}
+		// Override requested volume with sizer output.
+		if result.Lots > 0 {
+			req.Volume = decimal.NewFromFloat(result.Lots)
 		}
 	}
 

@@ -361,7 +361,45 @@ func main() {
 		RequireDisclaimer:    cfg.RequireDisclaimer,
 		RequireQuestionnaire: cfg.RequireQuestionnaire,
 	}
-	_ = jurisGate // wired into SignalPipeline at runtime via risksvc.KycJurisdictionRule
+	// S1.1: Wire SignalPipeline for pre-trade risk checks (capability → hardlimit → platform → engine → sizer).
+		capStore := risksvc.NewCapabilityStore()
+		// NOTE: LoadFromPG skipped — user_risk_profiles schema doesn't yet match
+		// CapabilityStore column expectations (093 migration vs capability.go struct).
+		// Default Tier0 (view-only) applies until schema alignment is complete.
+		hardLimit := risksvc.NewHardLimitEvaluator(&risksvc.KycJurisdictionRule{Gate: jurisGate})
+		platformAgg := risksvc.NewPlatformAggregator()
+		platformLimits := risksvc.DefaultPlatformLimits()
+		riskEngine := risksvc.NewEngine()
+		sizer := &risksvc.VolTargetSizer{RiskBudgetPct: 0.01}
+		allocator := &risksvc.ProRataAllocator{}
+
+		pipeline := risksvc.NewSignalPipeline(risksvc.PipelineConfig{
+			CapStore:  capStore,
+			HardLimit: hardLimit,
+			Platform:  platformAgg,
+			Limits:    platformLimits,
+			Engine:    riskEngine,
+			Sizer:     sizer,
+			Allocator: allocator,
+		})
+		mthubSvc.SetRiskPipeline(pipeline)
+
+		// Account state provider queries PG for balance/equity/margin per account.
+		mthubSvc.SetAccountStateProvider(func(ctx context.Context, accountID string) (*mthub.AccountState, error) {
+			var state mthub.AccountState
+			var positions int64
+			err := pool.QueryRow(ctx,
+				`SELECT balance, equity, free_margin, COALESCE(margin, 0)::float8,
+				        COALESCE((SELECT count(*) FROM positions WHERE mt_account_id = $1), 0)::int
+				 FROM mt_accounts WHERE id = $1::uuid`,
+				accountID,
+			).Scan(&state.Balance, &state.Equity, &state.FreeMargin, &state.Margin, &positions)
+			if err != nil {
+				return nil, err
+			}
+			state.Positions = int(positions)
+			return &state, nil
+		})
 
 	adminJurisdictionServer := admin.NewAdminJurisdictionServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(authInterceptor, adminInterceptor)))
