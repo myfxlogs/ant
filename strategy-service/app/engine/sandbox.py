@@ -22,8 +22,10 @@ deadline). This keeps the sandbox itself side-effect-free and composable.
 from __future__ import annotations
 
 import ast
+import ctypes
 import hashlib
 import math
+import threading
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional
 
@@ -261,6 +263,21 @@ class SandboxBlockedError(Exception):
     """Raised when a strategy is executed in production mode."""
 
 
+class SandboxTimeoutError(StrategyRuntimeError):
+    """Raised when strategy execution exceeds the configured timeout."""
+
+
+def _raise_async(thread_id: int, exc_class: type) -> int:
+    """Raise an exception asynchronously in the given thread.
+
+    Returns the number of thread states modified (0 = thread not found,
+    1 = success, >1 = restored). Uses CPython's PyThreadState_SetAsyncExc.
+    """
+    return ctypes.pythonapi.PyThreadState_SetAsyncExc(
+        ctypes.c_long(thread_id), ctypes.py_object(exc_class)
+    )
+
+
 class StrategyRunner:
     """Compile once, execute per bar.
     
@@ -291,11 +308,40 @@ class StrategyRunner:
         return code_sha256(self._source)
 
     def call(self, ctx: dict) -> Optional[dict]:
-        """Execute the strategy with ``ctx`` and return its signal dict (or ``None``)."""
+        """Execute the strategy with ``ctx`` and return its signal dict (or ``None``).
+
+        A timer-based timeout is enforced using ``self._timeout_ms``. If the
+        strategy code does not yield within the timeout, ``SandboxTimeoutError``
+        is raised in the calling thread.
+        """
+        tid = threading.get_ident()
+        timer: Optional[threading.Timer] = None
+
+        if self._timeout_ms > 0:
+            timer = threading.Timer(
+                self._timeout_ms / 1000.0,
+                _raise_async, args=(tid, SandboxTimeoutError),
+            )
+            timer.start()
+
+        try:
+            return self._call_impl(ctx)
+        except SandboxTimeoutError:
+            raise SandboxTimeoutError(
+                f"策略执行超时 ({self._timeout_ms}ms)"
+            )
+        finally:
+            if timer is not None:
+                timer.cancel()
+
+    def _call_impl(self, ctx: dict) -> Optional[dict]:
+        """Internal execution without timeout machinery."""
         globals_dict = self._build_globals()
         locals_dict = dict(ctx)
         try:
             exec(self._bytecode, globals_dict, locals_dict)
+        except SandboxTimeoutError:
+            raise
         except Exception as e:
             raise StrategyRuntimeError(f"策略代码执行错误: {e}") from e
 
@@ -303,6 +349,8 @@ class StrategyRunner:
         if callable(run_fn):
             try:
                 result = run_fn(dict(ctx))
+            except SandboxTimeoutError:
+                raise
             except Exception as e:
                 raise StrategyRuntimeError(f"run() 抛出异常: {e}") from e
             return self._coerce_signal(result)

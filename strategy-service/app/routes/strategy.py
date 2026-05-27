@@ -56,7 +56,10 @@ async def execute_strategy(request: StrategyExecuteRequest):
         timeout_seconds = int(os.getenv('BACKTEST_TIMEOUT', '120'))
         runner = StrategyRunner(request.strategy_code, timeout_ms=timeout_seconds * 1000)
         loop = asyncio.get_event_loop()
-        signal_data = await loop.run_in_executor(None, runner.call, context)
+        signal_data = await asyncio.wait_for(
+            loop.run_in_executor(None, runner.call, context),
+            timeout=timeout_seconds + 5,  # slightly above sandbox timeout for graceful error
+        )
         elapsed = (time.time() - start_time) * 1000
         if signal_data is None or not isinstance(signal_data, dict):
             return StrategyExecuteResponse(success=False, error="策略未返回有效信号", execution_time_ms=elapsed, logs=[])
