@@ -242,7 +242,7 @@ func (s *PlatformService) UpdateTradingPassword(ctx context.Context, userID uuid
 	return nil
 }
 
-func (s *PlatformService) IsAdmin(ctx context.Context, userID string) (bool, error) {
+func (s *PlatformService) IsAdmin(ctx context.Context, userID uuid.UUID) (bool, error) {
 	var count int
 	err := s.pg.QueryRow(ctx, "SELECT count(*) FROM admins WHERE user_id = $1", userID).Scan(&count)
 	return count > 0, err

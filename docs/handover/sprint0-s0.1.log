@@ -1,0 +1,46 @@
+=== Sprint 0 · Task S0.1: Admin RPC 管理员拦截器 ===
+Date: 2026-05-27
+Plan: docs/plan/2026-05-27-整改与执行计划.md §2.S0.1
+
+--- Changes ---
+1. NEW:  backend/internal/interceptor/admin.go
+   - AdminInterceptor struct with WrapUnary + WrapStreamingHandler
+   - AdminChecker interface (IsAdmin(ctx, uuid.UUID) (bool, error))
+   - PermissionDenied on non-admin, passes through on admin
+   - All denied attempts logged with zap (user + RPC procedure)
+
+2. MOD:  backend/internal/service/platform_service.go:245
+   - IsAdmin signature: string → uuid.UUID
+
+3. MOD:  backend/cmd/server/main.go
+   - L139: adminInterceptor := interceptor.NewAdminInterceptor(platformSvc, log)
+   - L341-366: All 7 AdminXxxServiceHandler changed from authInterceptor → authInterceptor, adminInterceptor
+     · AdminTradingServiceHandler
+     · AdminConfigServiceHandler
+     · AdminLogServiceHandler
+     · AdminAccountServiceHandler
+     · AdminUserServiceHandler
+     · AdminSystemServiceHandler
+     · AdminJurisdictionServiceHandler
+
+4. NEW:  backend/internal/connect/admin/admin_interceptor_integration_test.go
+   - 3 test cases: non-admin denied, admin allowed, no-auth denied
+
+--- Acceptance: go test -tags=integration -run TestAdminRequiresAdminRole ./internal/connect/admin/... ---
+
+=== RUN   TestAdminRequiresAdminRole
+    admin_interceptor_integration_test.go:127: non-admin correctly denied: permission_denied
+    admin_interceptor_integration_test.go:142: admin correctly allowed
+    admin_interceptor_integration_test.go:157: missing auth correctly denied: unauthenticated
+--- PASS: TestAdminRequiresAdminRole (0.20s)
+PASS
+ok  	anttrader/internal/connect/admin	0.216s
+
+--- Regression check: go test -short ./internal/interceptor/... ./internal/service/... ---
+All existing tests PASS (interceptor: 10/10, service: 4/4)
+
+--- No new panics, nil dereferences, TODOs, or stubs introduced ---
+Verified by:
+  - grep -rn 'TODO\|FIXME\|stub\|panic(' backend/internal/interceptor/admin.go → 0 matches
+  - go build ./... → clean exit 0
+  - All existing tests pass

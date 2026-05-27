@@ -136,6 +136,7 @@ func main() {
 	}
 
 	authInterceptor := interceptor.NewAuthInterceptor(jwtSecret, nil)
+	adminInterceptor := interceptor.NewAdminInterceptor(platformSvc, log)
 	rateLimitInterceptor := interceptor.NewRateLimitInterceptor(cfg.RateLimitLoginPerMinute, cfg.RateLimitEnabled)
 
 	hub := mthub.NewHub()
@@ -337,17 +338,17 @@ func main() {
 	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, connectrpc.WithInterceptors(authInterceptor)))
 	adminRepo := repository.NewAdminRepository(pool)
 	adminTradingServer := admin.NewAdminTradingServer(adminRepo, log)
-	mux.Handle(antv1c.NewAdminTradingServiceHandler(adminTradingServer, connectrpc.WithInterceptors(authInterceptor)))
+	mux.Handle(antv1c.NewAdminTradingServiceHandler(adminTradingServer, connectrpc.WithInterceptors(authInterceptor, adminInterceptor)))
 	adminConfigServer := admin.NewAdminConfigServer(adminRepo, log)
-	mux.Handle(antv1c.NewAdminConfigServiceHandler(adminConfigServer, connectrpc.WithInterceptors(authInterceptor)))
+	mux.Handle(antv1c.NewAdminConfigServiceHandler(adminConfigServer, connectrpc.WithInterceptors(authInterceptor, adminInterceptor)))
 	adminLogServer := admin.NewAdminLogServer(adminRepo, log)
-	mux.Handle(antv1c.NewAdminLogServiceHandler(adminLogServer, connectrpc.WithInterceptors(authInterceptor)))
+	mux.Handle(antv1c.NewAdminLogServiceHandler(adminLogServer, connectrpc.WithInterceptors(authInterceptor, adminInterceptor)))
 	adminAccountServer := admin.NewAdminAccountServer(adminRepo, log)
-	mux.Handle(antv1c.NewAdminAccountServiceHandler(adminAccountServer, connectrpc.WithInterceptors(authInterceptor)))
+	mux.Handle(antv1c.NewAdminAccountServiceHandler(adminAccountServer, connectrpc.WithInterceptors(authInterceptor, adminInterceptor)))
 	adminUserServer := admin.NewAdminUserServer(adminRepo, log)
-	mux.Handle(antv1c.NewAdminUserServiceHandler(adminUserServer, connectrpc.WithInterceptors(authInterceptor)))
+	mux.Handle(antv1c.NewAdminUserServiceHandler(adminUserServer, connectrpc.WithInterceptors(authInterceptor, adminInterceptor)))
 	adminSystemServer := admin.NewAdminSystemServer(adminRepo, log)
-	mux.Handle(antv1c.NewAdminSystemServiceHandler(adminSystemServer, connectrpc.WithInterceptors(authInterceptor)))
+	mux.Handle(antv1c.NewAdminSystemServiceHandler(adminSystemServer, connectrpc.WithInterceptors(authInterceptor, adminInterceptor)))
 
 	// --- M11-16 Jurisdictional Gate ---
 	jurisStore := risksvc.NewPgJurisdictionStore(pool)
@@ -362,7 +363,7 @@ func main() {
 	_ = jurisGate // wired into SignalPipeline at runtime via risksvc.KycJurisdictionRule
 
 	adminJurisdictionServer := admin.NewAdminJurisdictionServer(adminRepo, log)
-	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(authInterceptor)))
+	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(authInterceptor, adminInterceptor)))
 
 	analyticsRepo := repository.NewAnalyticsRepository(pool)
 	analyticsServer := system.NewAnalyticsServer(analyticsRepo, log)
