@@ -102,8 +102,8 @@ func TestCapabilityStore_GetDefault(t *testing.T) {
 	t.Parallel()
 	s := NewCapabilityStore()
 	c := s.Get("nonexistent")
-	if c.Tier != Tier0ViewOnly {
-		t.Fatalf("default tier should be 0, got %d", c.Tier)
+	if c.Tier != Tier3LiveFull {
+		t.Fatalf("default tier should be 3 (Tier3LiveFull), got %d", c.Tier)
 	}
 }
 

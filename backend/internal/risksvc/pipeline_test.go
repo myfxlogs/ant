@@ -45,7 +45,8 @@ func TestPipeline_FullPass(t *testing.T) {
 func TestPipeline_CapabilityBlocks(t *testing.T) {
 	t.Parallel()
 	capStore := NewCapabilityStore()
-	// u1 defaults to Tier0
+	// Explicitly set u1 to Tier0 to verify capability blocking.
+	capStore.Set(&Capability{UserID: "u1", Tier: Tier0ViewOnly})
 
 	p := NewSignalPipeline(PipelineConfig{CapStore: capStore})
 

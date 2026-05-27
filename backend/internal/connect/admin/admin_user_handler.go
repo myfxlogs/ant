@@ -2,8 +2,10 @@ package admin
 
 import (
 	"context"
+	"fmt"
 
 	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"connectrpc.com/connect"
@@ -92,8 +94,11 @@ func (s *AdminUserServer) CreateUser(ctx context.Context, req *connect.Request[a
 	if user.Role == "" {
 		user.Role = "user"
 	}
-	// Hash placeholder password — real implementation should use bcrypt
-	user.PasswordHash = req.Msg.Password
+	hashed, err := bcrypt.GenerateFromPassword([]byte(req.Msg.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("hash password: %w", err))
+	}
+	user.PasswordHash = string(hashed)
 	if err := s.repo.CreateUser(ctx, user); err != nil {
 		return nil, err
 	}

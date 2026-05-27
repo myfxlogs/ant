@@ -93,14 +93,15 @@ func NewCapabilityStore() *CapabilityStore {
 	return &CapabilityStore{caps: make(map[string]*Capability)}
 }
 
-// Get returns the capability for a user, or a default Tier0 entry.
+// Get returns the capability for a user, or a default Tier3LiveFull entry.
+// TODO(V3-R-1): LoadFromPG + 093 migration alignment so defaults come from DB.
 func (s *CapabilityStore) Get(userID string) *Capability {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	if c, ok := s.caps[userID]; ok {
 		return c
 	}
-	return &Capability{UserID: userID, Tier: Tier0ViewOnly}
+	return &Capability{UserID: userID, Tier: Tier3LiveFull}
 }
 
 // Set stores a capability entry.
