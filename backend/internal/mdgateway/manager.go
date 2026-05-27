@@ -183,11 +183,11 @@ func (m *Manager) HandleTick(t *mdtick.Tick) {
 	span4.End()
 
 	_, span5 := m.startTrace(ctx, "publish")
-	if err := m.publisher.PublishTick(t); err != nil && m.log != nil {
+	if err := m.publisher.PublishTick(ctx, t); err != nil && m.log != nil {
 		m.log.Warn("mdgateway: PublishTick failed", zap.String("account", t.AccountID), zap.String("symbol", t.Canonical), zap.Error(err))
 	}
 	for _, b := range bars {
-		if err := m.publisher.PublishBar(b); err != nil && m.log != nil {
+		if err := m.publisher.PublishBar(ctx, b); err != nil && m.log != nil {
 			m.log.Warn("mdgateway: PublishBar failed", zap.String("account", b.AccountID), zap.String("symbol", b.Canonical), zap.Error(err))
 		}
 	}

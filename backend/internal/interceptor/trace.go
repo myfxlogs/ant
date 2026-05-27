@@ -115,6 +115,27 @@ func LoggerFromContext(ctx context.Context) *zap.Logger {
 	return zap.L()
 }
 
+// InjectNATSTraceHeaders copies W3C trace context from ctx into NATS headers.
+func InjectNATSTraceHeaders(ctx context.Context, h map[string][]string) {
+	if h == nil {
+		return
+	}
+	traceID := TraceIDFromContext(ctx)
+	spanID := SpanIDFromContext(ctx)
+	if traceID == "" {
+		return
+	}
+	// W3C traceparent: 00-{traceID}-{spanID}-01
+	tp := "00-" + traceID + "-"
+	if spanID != "" {
+		tp += spanID
+	} else {
+		tp += "0000000000000000"
+	}
+	tp += "-01"
+	h["traceparent"] = []string{tp}
+}
+
 // LogFields returns zap fields with trace_id and span_id from ctx.
 // Use this when you need to add trace fields to a logger that wasn't
 // created via LoggerFromContext.

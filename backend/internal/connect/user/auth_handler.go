@@ -69,7 +69,7 @@ func (s *AuthServer) Login(ctx context.Context, req *connect.Request[antv1.Login
 	}
 	capTier, perms, _ := s.users.GetCapabilities(ctx, user.ID, user.Role)
 	resp := connect.NewResponse(&antv1.LoginResponse{
-		AccessToken: accessToken, RefreshToken: refreshToken,
+		AccessToken: accessToken,
 		User: &antv1.User{
 			Id: user.ID.String(), Email: user.Email, Username: nickname, Role: user.Role,
 			Permissions: perms, CapabilityTier: int32(capTier),

@@ -302,7 +302,7 @@ func (m *mockAggregator) IngestExternalBar(b *mdtick.Bar) bool { return m.accept
 
 type mockPublisher struct{ called bool }
 
-func (m *mockPublisher) PublishBar(b *mdtick.Bar) error {
+func (m *mockPublisher) PublishBar(_ context.Context, b *mdtick.Bar) error {
 	m.called = true
 	return nil
 }
@@ -313,7 +313,7 @@ func (m *mockCHWriter) EnqueueBar(b *mdtick.Bar) { m.called = true }
 
 type mockErrorPublisher struct{}
 
-func (m *mockErrorPublisher) PublishBar(b *mdtick.Bar) error {
+func (m *mockErrorPublisher) PublishBar(_ context.Context, b *mdtick.Bar) error {
 	return fmt.Errorf("publish failed")
 }
 

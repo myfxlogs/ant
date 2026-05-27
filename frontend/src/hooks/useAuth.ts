@@ -13,7 +13,7 @@ export function useAuth() {
   const login = useCallback(async (data: { email: string; password: string }) => {
     try {
       const response = await authApi.login(data.email, data.password);
-      setTokens(response.accessToken, response.refreshToken || '', response.user as User);
+      setTokens(response.accessToken, '', response.user as User);
       showSuccess(i18n.t('auth.messages.loginSuccess'));
       navigate('/');
       return true;

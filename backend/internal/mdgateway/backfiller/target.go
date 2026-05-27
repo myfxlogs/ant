@@ -13,9 +13,9 @@ type BarAggregatorTarget interface {
 	IngestExternalBar(b *mdtick.Bar) bool
 }
 
-// PublisherTarget publishes bars to NATS (with X-Ant-Replay header).
+// PublisherTarget publishes bars to NATS (with X-Ant-Replay header and trace context).
 type PublisherTarget interface {
-	PublishBar(b *mdtick.Bar) error
+	PublishBar(ctx context.Context, b *mdtick.Bar) error
 }
 
 // CHWriterTarget enqueues bars for ClickHouse insertion.
@@ -46,7 +46,7 @@ func (ta *TargetAdapter) IngestBar(ctx context.Context, bar *mdtick.Bar) error {
 	}
 
 	// 2. Publish to NATS (with X-Ant-Replay header already set).
-	if err := ta.publisher.PublishBar(bar); err != nil {
+	if err := ta.publisher.PublishBar(ctx, bar); err != nil {
 		return fmt.Errorf("publish backfilled bar to NATS: %w", err)
 	}
 

@@ -22,7 +22,7 @@ func (g *Gateway) Subscribe(ctx context.Context, syms []string, handler mdtick.T
 		return fmt.Errorf("mt4: not connected")
 	}
 	if sub != nil && len(syms) > 0 {
-		subMd := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.cfg.MtapiToken})
+		subMd := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
 		subCtx := metadata.NewOutgoingContext(ctx, subMd)
 		if _, err := sub.SubscribeMany(subCtx, &pb.SubscribeManyRequest{Id: sid, Symbols: syms}); err != nil {
 			g.log.Warn("mt4: subscribe symbols failed", zap.Strings("syms", syms), zap.Error(err))
@@ -59,7 +59,7 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 		g.cancelSub = cancel
 		g.mu.Unlock()
 
-		md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.cfg.MtapiToken})
+		md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
 		subCtx = metadata.NewOutgoingContext(subCtx, md)
 		stream, err := sc.OnQuote(subCtx, &pb.OnQuoteRequest{Id: sid})
 		if err != nil {
@@ -135,7 +135,7 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 		g.cancelProfitSub = cancel
 		g.mu.Unlock()
 
-		md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.cfg.MtapiToken})
+		md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
 		subCtx = metadata.NewOutgoingContext(subCtx, md)
 		stream, err := sc.OnOrderProfit(subCtx, &pb.OnOrderProfitRequest{Id: sid})
 		if err != nil {
@@ -227,7 +227,7 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 		g.cancelOrderUpdateSub = cancel
 		g.mu.Unlock()
 
-		md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.cfg.MtapiToken})
+		md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
 		subCtx = metadata.NewOutgoingContext(subCtx, md)
 		stream, err := sc.OnOrderUpdate(subCtx, &pb.OnOrderUpdateRequest{Id: sid})
 		if err != nil {

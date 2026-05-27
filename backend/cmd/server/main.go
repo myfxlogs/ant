@@ -296,7 +296,7 @@ func main() {
 
 	reconLoop := mthub.NewReconciliationLoop(hub, pool, rdb.Client(), log, reconcileGate)
 
-	mthubServer := system.NewMtHubServer(mthubSvc, platformSvc, log)
+	mthubServer := system.NewMtHubServer(mthubSvc, platformSvc, marketDataRepo, log)
 	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	accountServer := user.NewAccountServer(platformSvc, log)

@@ -41,7 +41,7 @@ func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int6
 	}
 	op := mt4Op(req.Side, req.OrderType)
 	price := req.Price.InexactFloat64()
-	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.cfg.MtapiToken})
+	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	resp, err := tc.OrderSend(ctx, &pb.OrderSendRequest{
 		Id: sid, Symbol: req.Canonical, Operation: op,
@@ -70,7 +70,7 @@ func (g *Gateway) CloseOrder(ctx context.Context, ticket int64, lots decimal.Dec
 	if tc == nil || sid == "" {
 		return fmt.Errorf("mt4 CloseOrder: not connected")
 	}
-	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.cfg.MtapiToken})
+	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	l := lots.InexactFloat64()
 	resp, err := tc.OrderClose(ctx, &pb.OrderCloseRequest{Id: sid, Ticket: int32(ticket), Lots: l})
@@ -91,7 +91,7 @@ func (g *Gateway) ModifyOrder(ctx context.Context, ticket int64, sl, tp, price d
 	if tc == nil || sid == "" {
 		return fmt.Errorf("mt4 ModifyOrder: not connected")
 	}
-	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.cfg.MtapiToken})
+	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	resp, err := tc.OrderModify(ctx, &pb.OrderModifyRequest{
 		Id: sid, Ticket: int32(ticket),
@@ -115,7 +115,7 @@ func (g *Gateway) FetchOpenedOrders(ctx context.Context) ([]*mthub.OrderRecord, 
 	if client == nil || sid == "" {
 		return nil, fmt.Errorf("mt4: not connected")
 	}
-	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.cfg.MtapiToken})
+	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	resp, err := client.OpenedOrders(ctx, &pb.OpenedOrdersRequest{Id: sid})
 	if err != nil {
@@ -172,7 +172,7 @@ func (g *Gateway) FetchOrderHistory(ctx context.Context, from, to time.Time) ([]
 	}
 	fromStr := from.UTC().Format("2006-01-02T15:04:05")
 	toStr := to.UTC().Format("2006-01-02T15:04:05")
-	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.cfg.MtapiToken})
+	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	resp, err := client.OrderHistory(ctx, &pb.OrderHistoryRequest{Id: sid, From: fromStr, To: toStr})
 	if err != nil {
@@ -234,7 +234,7 @@ func (g *Gateway) FetchSymbolParams(ctx context.Context, canonicals []string) ([
 	if client == nil || sid == "" {
 		return nil, fmt.Errorf("mt4 FetchSymbolParams: not connected")
 	}
-	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.cfg.MtapiToken})
+	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
 	out := make([]*mthub.SymbolParam, 0, len(canonicals))
 	for _, c := range canonicals {
 		ctx2 := metadata.NewOutgoingContext(ctx, md)
@@ -284,7 +284,7 @@ func (g *Gateway) SubscribeOrderEvents(ctx context.Context, h mthub.OrderEventHa
 	if streamCli == nil || sid == "" {
 		return fmt.Errorf("mt4 SubscribeOrderEvents: not connected")
 	}
-	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.cfg.MtapiToken})
+	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	stream, err := streamCli.OnOrderUpdate(ctx, &pb.OnOrderUpdateRequest{Id: sid})
 	if err != nil {

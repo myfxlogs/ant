@@ -39,6 +39,23 @@ func New(cfg mdtick.AccountConfig, log *zap.Logger) *Gateway {
 func (g *Gateway) Platform() string  { return "mt4" }
 func (g *Gateway) AccountID() string { return g.cfg.AccountID }
 
+// token returns the sanitized mtapi token (strips \r, \n, and other control chars).
+func (g *Gateway) token() string {
+	return sanitizeToken(g.cfg.MtapiToken)
+}
+
+// sanitizeToken strips control characters that could enable HTTP header injection.
+func sanitizeToken(t string) string {
+	b := make([]byte, 0, len(t))
+	for i := 0; i < len(t); i++ {
+		c := t[i]
+		if c >= 32 && c != 127 {
+			b = append(b, c)
+		}
+	}
+	return string(b)
+}
+
 func (g *Gateway) Connect(ctx context.Context) error {
 	gateway := g.cfg.MtapiHost
 	if gateway == "" || gateway == g.cfg.BrokerHost {

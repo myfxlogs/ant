@@ -1,15 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ConfigProvider, Spin } from 'antd';
-import zhCN from 'antd/locale/zh_CN';
-import zhTW from 'antd/locale/zh_TW';
-import enUS from 'antd/locale/en_US';
-import jaJP from 'antd/locale/ja_JP';
-import viVN from 'antd/locale/vi_VN';
 import dayjs from 'dayjs';
-import 'dayjs/locale/zh-cn';
-import 'dayjs/locale/zh-tw';
-import 'dayjs/locale/ja';
-import 'dayjs/locale/vi';
 import { useAuthStore } from '@/stores/authStore';
 import { ConnectProvider } from '@/providers/ConnectProvider';
 import { QueryProvider } from '@/providers/QueryProvider';
@@ -381,8 +372,28 @@ function AppContent() {
   );
 }
 
+// Locale cache: dynamically loaded antd locales keyed by locale code (e.g. "zh_CN").
+const antdLocaleCache: Record<string, unknown> = {};
+
+// dayjsLocale maps our SupportedLanguage to dayjs locale identifiers.
+const dayjsLocaleMap: Record<string, string> = {
+  'zh-cn': 'zh-cn',
+  'zh-tw': 'zh-tw',
+  ja: 'ja',
+  vi: 'vi',
+};
+
+// antdLocaleKey maps our SupportedLanguage to antd locale module paths.
+const antdLocaleKeyMap: Record<string, string> = {
+  'zh-cn': 'zh_CN',
+  'zh-tw': 'zh_TW',
+  ja: 'ja_JP',
+  vi: 'vi_VN',
+};
+
 export default function App() {
   const [lang, setLang] = useState<SupportedLanguage>(normalizeLanguage(i18n.language));
+  const [antdLocale, setAntdLocale] = useState<unknown>(null);
 
   useEffect(() => {
     const handler = (lng: string) => setLang(normalizeLanguage(lng));
@@ -393,32 +404,31 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const dayjsLocale =
-      lang === 'zh-cn'
-        ? 'zh-cn'
-        : lang === 'zh-tw'
-          ? 'zh-tw'
-          : lang === 'ja'
-            ? 'ja'
-            : lang === 'vi'
-              ? 'vi'
-              : 'en';
-    dayjs.locale(dayjsLocale);
+    const dl = dayjsLocaleMap[lang] || 'en';
+    const ak = antdLocaleKeyMap[lang] || 'en_US';
+
+    // Lazy-load dayjs locale (side-effect module registers the locale).
+    if (dl !== 'en') {
+      import(`dayjs/locale/${dl}`).then(() => {
+        dayjs.locale(dl);
+      });
+    } else {
+      dayjs.locale('en');
+    }
+
+    // Lazy-load antd locale with module-level cache.
+    if (antdLocaleCache[ak]) {
+      setAntdLocale(antdLocaleCache[ak]);
+    } else {
+      import(`antd/locale/${ak}`).then((m) => {
+        antdLocaleCache[ak] = m.default;
+        setAntdLocale(m.default);
+      });
+    }
   }, [lang]);
 
-  const antdLocale =
-    lang === 'zh-cn'
-      ? zhCN
-      : lang === 'zh-tw'
-        ? zhTW
-        : lang === 'ja'
-          ? jaJP
-          : lang === 'vi'
-            ? viVN
-            : enUS;
-
   return (
-    <ConfigProvider locale={antdLocale}>
+    <ConfigProvider locale={antdLocale || undefined}>
       <QueryProvider>
         <BrowserRouter>
           <AppContent />

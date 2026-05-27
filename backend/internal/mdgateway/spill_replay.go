@@ -105,7 +105,7 @@ func (r *SpillReplay) replayFile(ctx context.Context, path string) (int, error) 
 				IsReplay:      true,
 			}
 			if r.publisher != nil {
-				_ = r.publisher.PublishTick(tick)
+				_ = r.publisher.PublishTick(ctx, tick)
 			}
 			if r.ch != nil {
 				r.ch.EnqueueTick(tick)
@@ -134,7 +134,7 @@ func (r *SpillReplay) replayFile(ctx context.Context, path string) (int, error) 
 			// stronger (prevents the INSERT entirely) and is exercised in the
 			// backfiller path.
 			if r.publisher != nil {
-				_ = r.publisher.PublishBar(bar)
+				_ = r.publisher.PublishBar(ctx, bar)
 			}
 			if r.ch != nil {
 				r.ch.EnqueueBar(bar)

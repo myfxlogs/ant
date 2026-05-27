@@ -15,6 +15,8 @@ import (
 	"time"
 
 	natsgo "github.com/nats-io/nats.go"
+
+	"anttrader/internal/interceptor"
 )
 
 // TradeEventType enumerates the kinds of order lifecycle events.
@@ -99,6 +101,7 @@ func (s *TradeEventStore) Publish(ctx context.Context, ev *TradeEvent) error {
 		},
 	}
 
+	interceptor.InjectNATSTraceHeaders(ctx, msg.Header)
 	if _, err := s.js.PublishMsg(msg); err != nil {
 		return fmt.Errorf("trade_event_store: publish: %w", err)
 	}

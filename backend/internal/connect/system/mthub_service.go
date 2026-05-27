@@ -15,20 +15,22 @@ import (
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/mthub"
+	"anttrader/internal/repository"
 	"anttrader/internal/service"
 )
 
 // MtHubServer implements ant.v1.MtHubServiceHandler.
 type MtHubServer struct {
-	svc      *mthub.MtHubService
-	platform *service.PlatformService
-	log      *zap.Logger
+	svc           *mthub.MtHubService
+	platform      *service.PlatformService
+	marketData    *repository.MarketDataRepository
+	log           *zap.Logger
 }
 
 var _ antv1c.MtHubServiceHandler = (*MtHubServer)(nil)
 
-func NewMtHubServer(svc *mthub.MtHubService, platform *service.PlatformService, log *zap.Logger) *MtHubServer {
-	return &MtHubServer{svc: svc, platform: platform, log: log}
+func NewMtHubServer(svc *mthub.MtHubService, platform *service.PlatformService, marketData *repository.MarketDataRepository, log *zap.Logger) *MtHubServer {
+	return &MtHubServer{svc: svc, platform: platform, marketData: marketData, log: log}
 }
 
 func (s *MtHubServer) PlaceOrder(ctx context.Context, req *connect.Request[antv1.PlaceOrderRequest]) (*connect.Response[antv1.PlaceOrderResponse], error) {
@@ -135,7 +137,35 @@ func (s *MtHubServer) SymbolParams(ctx context.Context, req *connect.Request[ant
 }
 
 func (s *MtHubServer) PriceHistory(ctx context.Context, req *connect.Request[antv1.PriceHistoryRequest]) (*connect.Response[antv1.PriceHistoryResponse], error) {
-	return connect.NewResponse(&antv1.PriceHistoryResponse{}), nil
+	m := req.Msg
+	period := m.Period
+	if period == "" {
+		period = "M1"
+	}
+	limit := m.Limit
+	if limit <= 0 || limit > 1000 {
+		limit = 500
+	}
+
+	bars, err := s.marketData.GetKlines(ctx, m.Canonical, period, limit)
+	if err != nil {
+		s.log.Warn("PriceHistory: get klines", zap.Error(err))
+		return connect.NewResponse(&antv1.PriceHistoryResponse{}), nil
+	}
+
+	out := make([]*antv1.OHLCV, 0, len(bars))
+	for _, b := range bars {
+		out = append(out, &antv1.OHLCV{
+			OpenTime:  timestamppb.New(b.OpenTime()),
+			CloseTime: timestamppb.New(b.OpenTime()), // kline bars have single timestamp
+			Open:      fmt.Sprintf("%.5f", b.Open),
+			High:      fmt.Sprintf("%.5f", b.High),
+			Low:       fmt.Sprintf("%.5f", b.Low),
+			Close:     fmt.Sprintf("%.5f", b.Close),
+			Volume:    float64(b.TickVolume),
+		})
+	}
+	return connect.NewResponse(&antv1.PriceHistoryResponse{Bars: out}), nil
 }
 
 func (s *MtHubServer) GetAccountStatus(ctx context.Context, req *connect.Request[antv1.GetAccountStatusRequest]) (*connect.Response[antv1.AccountStatus], error) {

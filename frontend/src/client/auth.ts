@@ -5,7 +5,7 @@ export type { User };
 
 export interface LoginResult {
   accessToken: string;
-  refreshToken: string;
+  refreshToken?: string;
   expiresAt: bigint;
   user: User;
 }
@@ -27,7 +27,6 @@ export const authApi = {
     const response: any = await authClient.login({ email, password });
     return {
       accessToken: response.accessToken,
-      refreshToken: response.refreshToken,
       expiresAt: response.expiresAt,
       user: response.user,
     };
