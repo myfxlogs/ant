@@ -64,6 +64,22 @@ jobs:
           cache-dependency-path: backend/go.sum
       - name: go test (full)
         run: go test ./... -count=1 -race -coverprofile=coverage.out -covermode=atomic
+      - name: go test (integration)
+        run: go test ./... -count=1 -tags=integration
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: ant
+          DB_PASSWORD: ant_test
+          DB_NAME: ant
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          CH_HOST: localhost
+          CH_PORT: 9000
+          CH_USER: default
+          CH_PASSWORD: ''
+          CH_DATABASE: ant
+          NATS_URL: nats://localhost:4222
         env:
           DB_HOST: localhost
           DB_PORT: 5432
