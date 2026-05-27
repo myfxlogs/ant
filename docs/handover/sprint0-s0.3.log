@@ -1,0 +1,51 @@
+=== Sprint 0 · Task S0.3: ResetUserPassword 移除响应明文密码 ===
+Date: 2026-05-27
+Plan: docs/plan/2026-05-27-整改与执行计划.md §2.S0.3
+
+--- Changes ---
+1. NEW:  backend/migrations/120_password_reset_tokens.up.sql
+   - password_reset_tokens table: id, user_id, token, expires_at, consumed, created_at
+   - Indexes on token (UNIQUE) and user_id
+
+2. NEW:  backend/migrations/120_password_reset_tokens.down.sql
+   - DROP TABLE IF EXISTS password_reset_tokens
+
+3. NEW:  backend/internal/repository/password_reset_repo.go
+   - PasswordResetToken struct
+   - GenerateToken() — 32 bytes crypto/rand → base64 URL-encoded
+   - CreateResetToken(ctx, userID) — store token with 24h expiry
+   - ValidateResetToken(ctx, token) — check not consumed, not expired
+   - ConsumeResetToken(ctx, token) — mark consumed after use
+   - HashPassword(password) — delegates to pkg/hash argon2id
+
+4. MOD:  backend/internal/connect/admin/admin_user_handler.go
+   - AdminUserServer struct: added resetRepo *repository.PasswordResetRepo
+   - NewAdminUserServer signature: +resetRepo param
+   - ResetUserPassword: no longer returns plaintext
+     · Generate random token as temp password
+     · Hash via repository.HashPassword (argon2id)
+     · Store hash in DB via AdminRepository.ResetUserPassword
+     · Create one-time reset token for self-service
+     · Response: {NewPassword: ""} — empty, not plaintext
+
+5. MOD:  backend/cmd/server/main.go
+   - L340: passwordResetRepo := repository.NewPasswordResetRepo(pool)
+   - L349: NewAdminUserServer(adminRepo, passwordResetRepo, log)
+
+--- Acceptance: go test -tags=integration -run TestResetUserPasswordNoPlaintextInResponse ./internal/connect/admin/... ---
+
+=== RUN   TestResetUserPasswordNoPlaintextInResponse
+    admin_reset_password_integration_test.go:97: NewPassword is empty in response: PASS
+    admin_reset_password_integration_test.go:112: DB stores valid argon2id hash: $argon2id$v=19$m=65536,t=3,p=2$ZOgxIZGyC...
+    admin_reset_password_integration_test.go:127: reset tokens created: 1 PASS
+--- PASS: TestResetUserPasswordNoPlaintextInResponse (0.39s)
+PASS
+ok  	anttrader/internal/connect/admin	0.410s
+
+--- Regression check ---
+go test -short ./internal/interceptor/... ./internal/service/... → all PASS
+
+--- Integrity ---
+- No new panic / nil dereference / TODO / stub introduced
+- grep for TODO/FIXME/stub/panic in new files → 0 matches
+- go build ./... → clean

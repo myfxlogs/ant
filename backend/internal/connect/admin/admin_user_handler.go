@@ -2,8 +2,6 @@ package admin
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/hex"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -18,14 +16,15 @@ import (
 )
 
 type AdminUserServer struct {
-	repo *repository.AdminRepository
-	log  *zap.Logger
+	repo       *repository.AdminRepository
+	resetRepo  *repository.PasswordResetRepo
+	log        *zap.Logger
 }
 
 var _ antv1c.AdminUserServiceHandler = (*AdminUserServer)(nil)
 
-func NewAdminUserServer(repo *repository.AdminRepository, log *zap.Logger) *AdminUserServer {
-	return &AdminUserServer{repo: repo, log: log}
+func NewAdminUserServer(repo *repository.AdminRepository, resetRepo *repository.PasswordResetRepo, log *zap.Logger) *AdminUserServer {
+	return &AdminUserServer{repo: repo, resetRepo: resetRepo, log: log}
 }
 
 func userWithAccountsToProto(u *repository.UserWithAccounts) *antv1.UserWithAccounts {
@@ -166,12 +165,25 @@ func (s *AdminUserServer) ResetUserPassword(ctx context.Context, req *connect.Re
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	// Generate a random temporary password
-	b := make([]byte, 8)
-	rand.Read(b)
-	newPass := hex.EncodeToString(b)
-	if err := s.repo.ResetUserPassword(ctx, id, newPass); err != nil {
+
+	// Hash a random temporary password and store in DB.
+	tempPass, err := repository.GenerateToken()
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	hash, err := repository.HashPassword(tempPass)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if err := s.repo.ResetUserPassword(ctx, id, hash); err != nil {
 		return nil, err
 	}
-	return connect.NewResponse(&antv1.ResetUserPasswordResponse{NewPassword: newPass}), nil
+
+	// Create a one-time reset token so the user can set their own password.
+	if _, err := s.resetRepo.CreateResetToken(ctx, id); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	// Response does not include the plaintext password.
+	return connect.NewResponse(&antv1.ResetUserPasswordResponse{}), nil
 }
