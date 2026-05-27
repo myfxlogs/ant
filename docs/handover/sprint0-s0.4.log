@@ -1,0 +1,54 @@
+=== Sprint 0 · Task S0.4: Strategy IDOR — add ownership checks ===
+Date: 2026-05-27
+Plan: docs/plan/2026-05-27-整改与执行计划.md §2.S0.4
+
+--- Changes ---
+1. MOD:  backend/internal/service/strategy_svc.go
+   Templates:
+   - GetTemplate(ctx, id, userID) — SQL: WHERE id=$1 AND (user_id=$2 OR is_public=true)
+   - UpdateTemplate — SQL: WHERE id=$1 AND user_id=$10 (from struct)
+   - DeleteTemplate(ctx, id, userID) — SQL: WHERE id=$1 AND user_id=$2 AND is_system=false
+   - SetTemplateStatus(ctx, id, userID, status) — SQL: WHERE id=$1 AND user_id=$4
+
+   Schedules:
+   - GetSchedule(ctx, id, userID) — SQL: WHERE id=$1 AND user_id=$2
+   - UpdateSchedule — SQL: WHERE id=$1 AND user_id=$20 (from struct)
+   - DeleteSchedule(ctx, id, userID) — SQL: WHERE id=$1 AND user_id=$2
+   - SetScheduleActive(ctx, id, userID, active) — SQL: WHERE id=$1 AND user_id=$4
+
+   Signals (via JOIN with mt_accounts):
+   - GetSignal(ctx, id, userID) — SQL: JOIN mt_accounts WHERE s.id=$1 AND a.user_id=$2
+   - ExecuteSignal(ctx, signalID, userID) — SQL: account_id IN (SELECT id FROM mt_accounts WHERE user_id=$3)
+   - ConfirmSignal(ctx, signalID, userID) — SQL: same subquery pattern
+   - CancelSignal(ctx, signalID, userID) — SQL: same subquery pattern
+
+2. MOD:  backend/internal/connect/strategy/strategy_handler.go
+   13 handlers updated to pass s.userID(ctx):
+   - GetTemplate, UpdateTemplate, DeleteTemplate
+   - UpdateTemplateDraft, PublishTemplateDraft, CancelTemplateDraft
+   - GetSchedule, UpdateSchedule, DeleteSchedule, ToggleSchedule
+   - ExecuteSignal, ConfirmSignal, CancelSignal
+
+3. NEW:  backend/internal/connect/strategy/strategy_idor_integration_test.go
+   7 test assertions, all passing
+
+--- Acceptance: go test -tags=integration -run TestStrategyIDOR ./internal/connect/strategy/... ---
+=== RUN   TestStrategyIDOR
+    strategy_idor_integration_test.go:130: userA reads own template: PASS
+    strategy_idor_integration_test.go:138: userB denied access to userA's template: PASS
+    strategy_idor_integration_test.go:148: userB cannot delete userA template: PASS
+    strategy_idor_integration_test.go:178: userA reads own schedule: PASS
+    strategy_idor_integration_test.go:186: userB denied access to userA's schedule: PASS
+    strategy_idor_integration_test.go:194: userB cannot delete userA schedule: PASS
+    strategy_idor_integration_test.go:214: userB reads userA's public template (name=A's Public Template): PASS
+--- PASS: TestStrategyIDOR (0.16s)
+PASS
+ok  	anttrader/internal/connect/strategy	0.185s
+
+--- Regression ---
+go test -short ./internal/interceptor/... ./internal/service/... → all PASS
+go build ./... → clean
+
+--- Integrity ---
+- No new panic / nil dereference / TODO / stub introduced
+- grep for TODO/FIXME/stub/panic → 0 matches in changed files

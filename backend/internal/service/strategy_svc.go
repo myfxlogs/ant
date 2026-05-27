@@ -54,11 +54,11 @@ func (s *StrategySvc) ListTemplates(ctx context.Context, userID uuid.UUID) ([]Te
 	return scanTemplateRows(rows)
 }
 
-func (s *StrategySvc) GetTemplate(ctx context.Context, id uuid.UUID) (*TemplateRow, error) {
+func (s *StrategySvc) GetTemplate(ctx context.Context, id, userID uuid.UUID) (*TemplateRow, error) {
 	var t TemplateRow
 	err := s.pg.QueryRow(ctx,
 		`SELECT id, user_id, name, description, code, status, parameters, is_public, is_system, tags, use_count, created_at, updated_at
-		 FROM strategy_templates WHERE id = $1`, id,
+		 FROM strategy_templates WHERE id = $1 AND (user_id = $2 OR is_public = true)`, id, userID,
 	).Scan(&t.ID, &t.UserID, &t.Name, &t.Description, &t.Code, &t.Status, &t.Parameters, &t.IsPublic, &t.IsSystem, &t.Tags, &t.UseCount, &t.CreatedAt, &t.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -93,14 +93,14 @@ func (s *StrategySvc) CreateTemplate(ctx context.Context, t *TemplateRow) error 
 func (s *StrategySvc) UpdateTemplate(ctx context.Context, t *TemplateRow) error {
 	t.UpdatedAt = time.Now()
 	_, err := s.pg.Exec(ctx,
-		`UPDATE strategy_templates SET name=$2, description=$3, code=$4, status=$5, parameters=$6, is_public=$7, tags=$8, updated_at=$9 WHERE id=$1`,
-		t.ID, t.Name, t.Description, t.Code, t.Status, t.Parameters, t.IsPublic, t.Tags, t.UpdatedAt)
+		`UPDATE strategy_templates SET name=$2, description=$3, code=$4, status=$5, parameters=$6, is_public=$7, tags=$8, updated_at=$9 WHERE id=$1 AND user_id=$10`,
+		t.ID, t.Name, t.Description, t.Code, t.Status, t.Parameters, t.IsPublic, t.Tags, t.UpdatedAt, t.UserID)
 	if err != nil { return fmt.Errorf("UpdateTemplate: %w", err) }
 	return nil
 }
 
-func (s *StrategySvc) DeleteTemplate(ctx context.Context, id uuid.UUID) error {
-	tag, err := s.pg.Exec(ctx, `DELETE FROM strategy_templates WHERE id=$1 AND is_system=false`, id)
+func (s *StrategySvc) DeleteTemplate(ctx context.Context, id, userID uuid.UUID) error {
+	tag, err := s.pg.Exec(ctx, `DELETE FROM strategy_templates WHERE id=$1 AND user_id=$2 AND is_system=false`, id, userID)
 	if err != nil {
 		return fmt.Errorf("DeleteTemplate: %w", err)
 	}
@@ -110,8 +110,8 @@ func (s *StrategySvc) DeleteTemplate(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (s *StrategySvc) SetTemplateStatus(ctx context.Context, id uuid.UUID, status string) error {
-	_, err := s.pg.Exec(ctx, `UPDATE strategy_templates SET status=$2, updated_at=$3 WHERE id=$1`, id, status, time.Now())
+func (s *StrategySvc) SetTemplateStatus(ctx context.Context, id, userID uuid.UUID, status string) error {
+	_, err := s.pg.Exec(ctx, `UPDATE strategy_templates SET status=$2, updated_at=$3 WHERE id=$1 AND user_id=$4`, id, status, time.Now(), userID)
 	if err != nil { return fmt.Errorf("SetTemplateStatus: %w", err) }
 	return nil
 }
@@ -158,13 +158,13 @@ func (s *StrategySvc) ListSchedules(ctx context.Context, userID uuid.UUID) ([]Sc
 	return scanScheduleRows(rows)
 }
 
-func (s *StrategySvc) GetSchedule(ctx context.Context, id uuid.UUID) (*ScheduleRow, error) {
+func (s *StrategySvc) GetSchedule(ctx context.Context, id, userID uuid.UUID) (*ScheduleRow, error) {
 	var r ScheduleRow
 	err := s.pg.QueryRow(ctx,
 		`SELECT id, user_id, template_id, account_id, name, symbol, timeframe, parameters, schedule_type, schedule_config,
 		 backtest_metrics, risk_score, risk_level, risk_reasons, risk_warnings, last_backtest_at,
 		 is_active, last_run_at, next_run_at, run_count, last_error, enable_count, created_at, updated_at
-		 FROM strategy_schedules WHERE id = $1`, id,
+		 FROM strategy_schedules WHERE id = $1 AND user_id = $2`, id, userID,
 	).Scan(&r.ID, &r.UserID, &r.TemplateID, &r.AccountID, &r.Name, &r.Symbol, &r.Timeframe,
 		&r.Parameters, &r.ScheduleType, &r.ScheduleConfig,
 		&r.BacktestMetrics, &r.RiskScore, &r.RiskLevel, &r.RiskReasons, &r.RiskWarnings, &r.LastBacktestAt,
@@ -215,17 +215,18 @@ func (s *StrategySvc) UpdateSchedule(ctx context.Context, r *ScheduleRow) error 
 	_, err := s.pg.Exec(ctx,
 		`UPDATE strategy_schedules SET name=$2, symbol=$3, timeframe=$4, parameters=$5, schedule_type=$6, schedule_config=$7,
 		 backtest_metrics=$8, risk_score=$9, risk_level=$10, risk_reasons=$11, risk_warnings=$12, last_backtest_at=$13,
-		 is_active=$14, last_run_at=$15, next_run_at=$16, run_count=$17, last_error=$18, updated_at=$19 WHERE id=$1`,
+		 is_active=$14, last_run_at=$15, next_run_at=$16, run_count=$17, last_error=$18, updated_at=$19 WHERE id=$1 AND user_id=$20`,
 		r.ID, r.Name, r.Symbol, r.Timeframe, r.Parameters, r.ScheduleType, r.ScheduleConfig,
 		r.BacktestMetrics, r.RiskScore, r.RiskLevel, r.RiskReasons, r.RiskWarnings, r.LastBacktestAt,
-		r.IsActive, r.LastRunAt, r.NextRunAt, r.RunCount, r.LastError, r.UpdatedAt)
+		r.IsActive, r.LastRunAt, r.NextRunAt, r.RunCount, r.LastError, r.UpdatedAt, r.UserID)
 	if err != nil { return fmt.Errorf("UpdateSchedule: %w", err) }
 	return nil
 }
 
-func (s *StrategySvc) DeleteSchedule(ctx context.Context, id uuid.UUID) error {
+func (s *StrategySvc) DeleteSchedule(ctx context.Context, id, userID uuid.UUID) error {
+	// Delete execution logs first, then the schedule — must own both.
 	s.pg.Exec(ctx, `DELETE FROM strategy_execution_logs WHERE schedule_id = $1`, id)
-	tag, err := s.pg.Exec(ctx, `DELETE FROM strategy_schedules WHERE id = $1`, id)
+	tag, err := s.pg.Exec(ctx, `DELETE FROM strategy_schedules WHERE id = $1 AND user_id = $2`, id, userID)
 	if err != nil {
 		return fmt.Errorf("DeleteSchedule: %w", err)
 	}
@@ -235,10 +236,10 @@ func (s *StrategySvc) DeleteSchedule(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (s *StrategySvc) SetScheduleActive(ctx context.Context, id uuid.UUID, active bool) error {
+func (s *StrategySvc) SetScheduleActive(ctx context.Context, id, userID uuid.UUID, active bool) error {
 	_, err := s.pg.Exec(ctx,
-		`UPDATE strategy_schedules SET is_active=$2, enable_count=enable_count+CASE WHEN $2=true AND is_active=false THEN 1 ELSE 0 END, updated_at=$3 WHERE id=$1`,
-		id, active, time.Now())
+		`UPDATE strategy_schedules SET is_active=$2, enable_count=enable_count+CASE WHEN $2=true AND is_active=false THEN 1 ELSE 0 END, updated_at=$3 WHERE id=$1 AND user_id=$4`,
+		id, active, time.Now(), userID)
 	if err != nil { return fmt.Errorf("SetScheduleActive: %w", err) }
 	return nil
 }
@@ -281,10 +282,12 @@ func (s *StrategySvc) ListSignals(ctx context.Context, accountID uuid.UUID, stat
 	return scanSignalRows(rows)
 }
 
-func (s *StrategySvc) GetSignal(ctx context.Context, id uuid.UUID) (*SignalRow, error) {
+func (s *StrategySvc) GetSignal(ctx context.Context, id, userID uuid.UUID) (*SignalRow, error) {
 	var r SignalRow
 	err := s.pg.QueryRow(ctx,
-		`SELECT id, account_id, symbol, signal_type, volume, price, stop_loss, take_profit, reason, status, executed_at, ticket, profit, created_at FROM strategy_signals WHERE id = $1`, id,
+		`SELECT s.id, s.account_id, s.symbol, s.signal_type, s.volume, s.price, s.stop_loss, s.take_profit, s.reason, s.status, s.executed_at, s.ticket, s.profit, s.created_at
+		 FROM strategy_signals s JOIN mt_accounts a ON s.account_id = a.id
+		 WHERE s.id = $1 AND a.user_id = $2`, id, userID,
 	).Scan(&r.ID, &r.AccountID, &r.Symbol, &r.SignalType, &r.Volume, &r.Price, &r.StopLoss, &r.TakeProfit, &r.Reason, &r.Status, &r.ExecutedAt, &r.Ticket, &r.Profit, &r.CreatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -295,22 +298,26 @@ func (s *StrategySvc) GetSignal(ctx context.Context, id uuid.UUID) (*SignalRow, 
 	return &r, nil
 }
 
-func (s *StrategySvc) ExecuteSignal(ctx context.Context, signalID uuid.UUID) (*SignalRow, error) {
+func (s *StrategySvc) ExecuteSignal(ctx context.Context, signalID, userID uuid.UUID) (*SignalRow, error) {
 	now := time.Now()
 	tag, err := s.pg.Exec(ctx,
-		`UPDATE strategy_signals SET status='executed', executed_at=$2 WHERE id=$1 AND status='pending'`, signalID, now)
+		`UPDATE strategy_signals SET status='executed', executed_at=$2
+		 WHERE id=$1 AND status='pending'
+		 AND account_id IN (SELECT id FROM mt_accounts WHERE user_id = $3)`, signalID, now, userID)
 	if err != nil {
 		return nil, fmt.Errorf("ExecuteSignal: %w", err)
 	}
 	if tag.RowsAffected() == 0 {
 		return nil, ErrSignalNotFound
 	}
-	return s.GetSignal(ctx, signalID)
+	return s.GetSignal(ctx, signalID, userID)
 }
 
-func (s *StrategySvc) ConfirmSignal(ctx context.Context, signalID uuid.UUID) error {
+func (s *StrategySvc) ConfirmSignal(ctx context.Context, signalID, userID uuid.UUID) error {
 	tag, err := s.pg.Exec(ctx,
-		`UPDATE strategy_signals SET status='confirmed' WHERE id=$1 AND status='pending'`, signalID)
+		`UPDATE strategy_signals SET status='confirmed'
+		 WHERE id=$1 AND status='pending'
+		 AND account_id IN (SELECT id FROM mt_accounts WHERE user_id = $2)`, signalID, userID)
 	if err != nil {
 		return fmt.Errorf("ConfirmSignal: %w", err)
 	}
@@ -320,9 +327,11 @@ func (s *StrategySvc) ConfirmSignal(ctx context.Context, signalID uuid.UUID) err
 	return nil
 }
 
-func (s *StrategySvc) CancelSignal(ctx context.Context, signalID uuid.UUID) error {
+func (s *StrategySvc) CancelSignal(ctx context.Context, signalID, userID uuid.UUID) error {
 	tag, err := s.pg.Exec(ctx,
-		`UPDATE strategy_signals SET status='cancelled' WHERE id=$1 AND status IN ('pending','confirmed')`, signalID)
+		`UPDATE strategy_signals SET status='cancelled'
+		 WHERE id=$1 AND status IN ('pending','confirmed')
+		 AND account_id IN (SELECT id FROM mt_accounts WHERE user_id = $2)`, signalID, userID)
 	if err != nil {
 		return fmt.Errorf("CancelSignal: %w", err)
 	}

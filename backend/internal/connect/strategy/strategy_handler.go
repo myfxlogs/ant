@@ -53,7 +53,7 @@ func (s *StrategyServer) GetTemplate(ctx context.Context, req *connect.Request[a
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	row, err := s.svc.GetTemplate(ctx, id)
+	row, err := s.svc.GetTemplate(ctx, id, s.userID(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ func (s *StrategyServer) UpdateTemplate(ctx context.Context, req *connect.Reques
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	existing, err := s.svc.GetTemplate(ctx, id)
+	existing, err := s.svc.GetTemplate(ctx, id, s.userID(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +117,7 @@ func (s *StrategyServer) DeleteTemplate(ctx context.Context, req *connect.Reques
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	if err := s.svc.DeleteTemplate(ctx, id); err != nil {
+	if err := s.svc.DeleteTemplate(ctx, id, s.userID(ctx)); err != nil {
 		return nil, err
 	}
 	return connect.NewResponse(&emptypb.Empty{}), nil
@@ -143,7 +143,7 @@ func (s *StrategyServer) UpdateTemplateDraft(ctx context.Context, req *connect.R
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	existing, err := s.svc.GetTemplate(ctx, id)
+	existing, err := s.svc.GetTemplate(ctx, id, s.userID(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -173,11 +173,11 @@ func (s *StrategyServer) PublishTemplateDraft(ctx context.Context, req *connect.
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	existing, err := s.svc.GetTemplate(ctx, id)
+	existing, err := s.svc.GetTemplate(ctx, id, s.userID(ctx))
 	if err != nil {
 		return nil, err
 	}
-	if err := s.svc.SetTemplateStatus(ctx, id, "published"); err != nil {
+	if err := s.svc.SetTemplateStatus(ctx, id, s.userID(ctx), "published"); err != nil {
 		return nil, err
 	}
 	existing.Status = "published"
@@ -189,7 +189,7 @@ func (s *StrategyServer) CancelTemplateDraft(ctx context.Context, req *connect.R
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	if err := s.svc.SetTemplateStatus(ctx, id, "canceled"); err != nil {
+	if err := s.svc.SetTemplateStatus(ctx, id, s.userID(ctx), "canceled"); err != nil {
 		return nil, err
 	}
 	return connect.NewResponse(&emptypb.Empty{}), nil
@@ -214,7 +214,7 @@ func (s *StrategyServer) GetSchedule(ctx context.Context, req *connect.Request[a
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	row, err := s.svc.GetSchedule(ctx, id)
+	row, err := s.svc.GetSchedule(ctx, id, s.userID(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -255,7 +255,7 @@ func (s *StrategyServer) UpdateSchedule(ctx context.Context, req *connect.Reques
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	existing, err := s.svc.GetSchedule(ctx, id)
+	existing, err := s.svc.GetSchedule(ctx, id, s.userID(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -288,7 +288,7 @@ func (s *StrategyServer) DeleteSchedule(ctx context.Context, req *connect.Reques
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	if err := s.svc.DeleteSchedule(ctx, id); err != nil {
+	if err := s.svc.DeleteSchedule(ctx, id, s.userID(ctx)); err != nil {
 		return nil, err
 	}
 	return connect.NewResponse(&emptypb.Empty{}), nil
@@ -300,10 +300,10 @@ func (s *StrategyServer) ToggleSchedule(ctx context.Context, req *connect.Reques
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	if err := s.svc.SetScheduleActive(ctx, id, m.Active); err != nil {
+	if err := s.svc.SetScheduleActive(ctx, id, s.userID(ctx), m.Active); err != nil {
 		return nil, err
 	}
-	row, err := s.svc.GetSchedule(ctx, id)
+	row, err := s.svc.GetSchedule(ctx, id, s.userID(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -339,7 +339,7 @@ func (s *StrategyServer) ExecuteSignal(ctx context.Context, req *connect.Request
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	row, err := s.svc.ExecuteSignal(ctx, id)
+	row, err := s.svc.ExecuteSignal(ctx, id, s.userID(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -361,7 +361,7 @@ func (s *StrategyServer) ConfirmSignal(ctx context.Context, req *connect.Request
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	if err := s.svc.ConfirmSignal(ctx, id); err != nil {
+	if err := s.svc.ConfirmSignal(ctx, id, s.userID(ctx)); err != nil {
 		return nil, err
 	}
 	return connect.NewResponse(&emptypb.Empty{}), nil
@@ -372,7 +372,7 @@ func (s *StrategyServer) CancelSignal(ctx context.Context, req *connect.Request[
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	if err := s.svc.CancelSignal(ctx, id); err != nil {
+	if err := s.svc.CancelSignal(ctx, id, s.userID(ctx)); err != nil {
 		return nil, err
 	}
 	return connect.NewResponse(&emptypb.Empty{}), nil
