@@ -27,4 +27,15 @@ ENV override: ANT_CH_BUFFER_QUEUE_SIZE, ANT_CH_BUFFER_MAX_BATCH, ANT_CH_BUFFER_F
 $ docker exec ant-clickhouse clickhouse-client --query "SELECT sorting_key FROM system.tables WHERE database='ant' AND name='md_ticks'"
 broker, canonical, ts_unix_ms, bid, ask, bid_volume, ask_volume
 
+## Fresh go test output (2026-05-27, -count=1, no cache)
+
+$ cd /opt/ant/backend && go test -count=1 ./internal/mdgateway/...
+ok  	anttrader/internal/mdgateway	5.270s
+ok  	anttrader/internal/mdgateway/adapter/brokersearch	0.040s
+ok  	anttrader/internal/mdgateway/adapter/mdtick	0.005s
+ok  	anttrader/internal/mdgateway/adapter/mt4	0.052s
+ok  	anttrader/internal/mdgateway/adapter/mt5	0.028s
+ok  	anttrader/internal/mdgateway/backfiller	0.010s
+ok  	anttrader/internal/mdgateway/chmigrate	0.012s
+
 ## Card Status: ☑ VERIFIED — Buffer engine active, config params match spec
