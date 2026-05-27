@@ -57,6 +57,14 @@ type Config struct {
 
 	// External service URLs
 	StrategyServiceURL string // Python strategy-service: http://strategy-service:8081
+
+	// SMTP (email notifications)
+	SMTPHost     string
+	SMTPPort     string
+	SMTPUser     string
+	SMTPPassword string
+	SMTPFrom     string
+	SMTPTo       string // comma-separated admin email addresses
 }
 
 // Load reads all configuration from environment variables with defaults.
@@ -93,6 +101,13 @@ func Load() *Config {
 		RequireQuestionnaire: getenvBool("REQUIRE_QUESTIONNAIRE", false),
 
 		StrategyServiceURL: getenv("STRATEGY_SERVICE_URL", ""),
+
+		SMTPHost:     os.Getenv("SMTP_HOST"),
+		SMTPPort:     getenv("SMTP_PORT", "587"),
+		SMTPUser:     os.Getenv("SMTP_USER"),
+		SMTPPassword: os.Getenv("SMTP_PASSWORD"),
+		SMTPFrom:     getenv("SMTP_FROM", "ant@localhost"),
+		SMTPTo:       os.Getenv("SMTP_TO"),
 
 		RateLimitLoginPerMinute: getenvInt("RATE_LIMIT_LOGIN_PER_MINUTE", 10),
 		RateLimitEnabled:        getenvBool("RATE_LIMIT_ENABLED", true),

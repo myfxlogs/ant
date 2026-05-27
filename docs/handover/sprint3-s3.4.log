@@ -1,0 +1,73 @@
+# S3.4 Handover Log — Email 通知
+# Date: 2026-05-27
+# Task: Sprint 3.4 — SMTP Email 推送通道
+# Status: COMPLETED
+
+## Changes Summary
+
+### New Files
+
+1. **backend/internal/notifier/email.go** (187 行)
+   - EmailConfig: Host, Port, User, Password, From, To
+   - NewEmailNotifier: 返回 nil 当 SMTP 未配置时 (graceful degradation)
+   - Send(subject, body): 完整 SMTP 发送流程 (Dial → STARTTLS → Auth → Mail → Rcpt → Data → Quit)
+   - 5 种告警方法:
+     - MarginCallAlert(accountID, userID, margin, equity) — 保证金追缴
+     - KillSwitchAlert(reason, operator) — Kill Switch 激活
+     - BreakerTripAlert(strategyID, lossPct) — 策略熔断
+     - PromoteToLiveAlert(strategyID, version) — 策略上线
+     - AnomalyAlert(detail) — 异常 RPC/DDoS 告警
+   - 主题前缀: [ANT ALERT] / [ANT INFO]
+   - TLS: ServerName 通过 tls.Config 配置
+
+### Modified Files
+
+2. **backend/internal/config/config.go**
+   - Config 新增 6 个 SMTP 字段: SMTPHost, SMTPPort(587), SMTPUser, SMTPPassword, SMTPFrom, SMTPTo
+   - Load() 从环境变量读取 SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, SMTP_TO
+
+3. **backend/internal/connect/admin/sre_handler.go**
+   - SREHandler 新增 notifier *notifier.EmailNotifier 字段
+   - NewSREHandler 新增 notifier 参数
+   - KillSwitchEngage: 激活后调用 notifier.KillSwitchAlert()
+
+4. **backend/cmd/server/main.go**
+   - L38: import notifier + strings
+   - L449-456: 从 cfg 创建 EmailNotifier (nil-safe)
+   - L458: SREHandler 注入 emailNotifier
+   - L51-59: splitAndTrim 辅助函数
+
+## Architecture Notes
+
+### SMTP 发送流程
+  net.Dial(smtp_host:port) → STARTTLS → Auth(PlainAuth) → Mail → Rcpt → Data → Quit
+  优雅降级: SMTP_HOST="" → NewEmailNotifier() 返回 nil → 不发送邮件
+  认证失败: 记录 Warn 日志，尝试无认证继续
+
+### 告警触发点 (当前)
+  - Kill Switch Engage: SRE handler POST /api/admin/sre/killswitch/engage
+  后续可接入:
+  - NATS "account.margin_call" → MarginCallAlert
+  - Strategy Breaker RecordPnL → BreakerTripAlert
+  - Canary Promote → PromoteToLiveAlert
+  - RateLimit 拦截 → AnomalyAlert
+
+### 配置示例 (docker-compose 环境变量)
+  SMTP_HOST=smtp.example.com
+  SMTP_PORT=587
+  SMTP_USER=alerts@example.com
+  SMTP_PASSWORD=***
+  SMTP_FROM="Ant Alerts <alerts@example.com>"
+  SMTP_TO=admin@company.com,oncall@company.com
+
+## Verification Results
+- Go build: `go build ./cmd/server/` → PASS
+- Pre-commit: no panic/TODO/stub/fixme/hack in new files
+- Graceful: SMTP_HOST="" → mailNotifier==nil → no crash, logged warning
+
+## Completeness
+  Sprint 3 (10d) 全部完成:
+  S3.1 Trading 页 ✓
+  S3.2 AI Gate 进度面板 ✓
+  S3.3 SRE 控制 UI ✓
+  S3.4 Email 通知 ✓

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -30,6 +31,7 @@ import (
 	"anttrader/internal/mdgateway/adapter/brokersearch"
 	"anttrader/internal/mdgateway/adapter/mdtick"
 	"anttrader/internal/mthub"
+	"anttrader/internal/notifier"
 	"anttrader/internal/pkg/secretbox"
 	"anttrader/internal/repository"
 	"anttrader/internal/risksvc"
@@ -44,6 +46,17 @@ import (
 
 	connectrpc "connectrpc.com/connect"
 )
+
+func splitAndTrim(s, sep string) []string {
+	var out []string
+	for _, part := range strings.Split(s, sep) {
+		part = strings.TrimSpace(part)
+		if part != "" {
+			out = append(out, part)
+		}
+	}
+	return out
+}
 
 func main() {
 	log, _ := zap.NewProduction()
@@ -445,7 +458,15 @@ func main() {
 	sreKillSwitch := controlplane.NewKillSwitch()
 	sreBreakers := controlplane.NewBreakerRegistry(controlplane.DefaultBreakerConfig())
 	sreCanary := controlplane.NewCanaryManager()
-	sreHandler := admin.NewSREHandler(sreKillSwitch, sreBreakers, sreCanary, platformSvc, log)
+	emailNotifier := notifier.NewEmailNotifier(notifier.EmailConfig{
+		Host:     cfg.SMTPHost,
+		Port:     cfg.SMTPPort,
+		User:     cfg.SMTPUser,
+		Password: cfg.SMTPPassword,
+		From:     cfg.SMTPFrom,
+		To:       splitAndTrim(cfg.SMTPTo, ","),
+	}, log)
+	sreHandler := admin.NewSREHandler(sreKillSwitch, sreBreakers, sreCanary, platformSvc, emailNotifier, log)
 
 	analyticsRepo := repository.NewAnalyticsRepository(pool)
 	analyticsServer := system.NewAnalyticsServer(analyticsRepo, log)

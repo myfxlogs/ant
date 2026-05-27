@@ -9,6 +9,7 @@ import (
 
 	"anttrader/internal/controlplane"
 	"anttrader/internal/interceptor"
+	"anttrader/internal/notifier"
 )
 
 // SREHandler exposes the control-plane over plain HTTP for the admin UI.
@@ -17,6 +18,7 @@ type SREHandler struct {
 	breakers   *controlplane.BreakerRegistry
 	canary     *controlplane.CanaryManager
 	checker    interceptor.AdminChecker
+	notifier   *notifier.EmailNotifier
 	log        *zap.Logger
 }
 
@@ -26,9 +28,10 @@ func NewSREHandler(
 	br *controlplane.BreakerRegistry,
 	cm *controlplane.CanaryManager,
 	checker interceptor.AdminChecker,
+	n *notifier.EmailNotifier,
 	log *zap.Logger,
 ) *SREHandler {
-	return &SREHandler{killSwitch: ks, breakers: br, canary: cm, checker: checker, log: log}
+	return &SREHandler{killSwitch: ks, breakers: br, canary: cm, checker: checker, notifier: n, log: log}
 }
 
 func (h *SREHandler) requireAdmin(w http.ResponseWriter, r *http.Request, ai *interceptor.AuthInterceptor) bool {
@@ -88,6 +91,9 @@ func (h *SREHandler) HandleKillSwitchEngage(w http.ResponseWriter, r *http.Reque
 	}
 	h.killSwitch.Engage(body.Reason, body.Operator)
 	h.log.Warn("kill switch engaged", zap.String("reason", body.Reason), zap.String("operator", body.Operator))
+		if h.notifier != nil {
+			h.notifier.KillSwitchAlert(body.Reason, body.Operator)
+		}
 	writeJSON(w, 200, h.killSwitch.Status())
 }
 
