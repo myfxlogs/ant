@@ -22,6 +22,7 @@ import (
 	"anttrader/internal/connect/strategy"
 	"anttrader/internal/connect/system"
 	"anttrader/internal/connect/user"
+	"anttrader/internal/costsvc"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/marketplace"
 	"anttrader/internal/mdgateway"
@@ -34,6 +35,7 @@ import (
 	"anttrader/internal/server"
 	"anttrader/internal/service"
 	systemai "anttrader/internal/service/systemai"
+	"anttrader/internal/usermgr"
 	antredis "anttrader/internal/storage/redis"
 	"anttrader/internal/config"
 
@@ -400,6 +402,21 @@ func main() {
 			state.Positions = int(positions)
 			return &state, nil
 		})
+
+		// S1.3: Wire per-user rate limiter (10 orders/sec/user, 100 signals/sec/user).
+		limiter := usermgr.NewUserLimiter(usermgr.DefaultConfig())
+		mthubSvc.SetUserLimiter(limiter)
+
+		// S1.3: Wire pre-trade cost estimator (EURUSD default model).
+		eurtusdModel := &costsvc.CostModel{
+			Symbol:           "EURUSD",
+			SpreadPips:       1.0,
+			PipSize:          0.0001,
+			PipValue:         10.0,
+			CommissionPerLot: 7.0,
+		}
+		estimator := &costsvc.StaticEstimator{Model: eurtusdModel}
+		mthubSvc.SetCostEstimator(estimator)
 
 	adminJurisdictionServer := admin.NewAdminJurisdictionServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(authInterceptor, adminInterceptor)))

@@ -1,0 +1,37 @@
+=== Sprint 1 · Task S1.3: Wire CostEstimator + UserLimiter into main.go ===
+Date: 2026-05-27
+Plan: docs/plan/2026-05-27-整改与执行计划.md §3.S1.3
+
+--- Problem ---
+`MtHubService.SetUserLimiter()` and `MtHubService.SetCostEstimator()` setters existed, and `PlaceOrder()` already called both (`AllowOrder` before broker submission, `Estimate` for cost breakdown JSON). But neither was actually wired in `cmd/server/main.go` — the setters were never called, so both were nil and silently skipped on every order.
+
+--- Fix ---
+cmd/server/main.go:
+1. Added imports for `usermgr` and `costsvc`
+2. Created `usermgr.NewUserLimiter(usermgr.DefaultConfig())` — 10 orders/sec/user, 100 signals/sec/user, 50k LRU entries, 30-day idle eviction
+3. Injected via `mthubSvc.SetUserLimiter(limiter)`
+4. Created EURUSD `CostModel`: 1.0 pip spread, $10 pip value, $7/lot commission
+5. Created `costsvc.StaticEstimator{Model: eurtusdModel}`
+6. Injected via `mthubSvc.SetCostEstimator(estimator)`
+7. chWriter injection skipped — no standalone chWriter object exists in main.go (CH connection passed directly to mdgateway and MarketDataRepository)
+
+Tests created in limiter_estimator_test.go:
+- TestUserLimiterEffective: verifies limiter stores correctly, AllowOrder works, flood test exceeds limit
+- TestCostEstimator_Wired: verifies estimator stored, PlaceOrder succeeds with cost estimation
+- TestUserLimiter_RateLimitKicksIn: direct limiter test — 3 orders allowed, 4th blocked
+
+--- Acceptance Command ---
+go test -tags=integration -run TestUserLimiterEffective ./internal/mthub/... -v
+
+--- Acceptance Output ---
+=== RUN   TestUserLimiterEffective
+--- PASS: TestUserLimiterEffective (0.00s)
+PASS
+ok  	anttrader/internal/mthub	0.018s
+
+--- Pre-commit checks ---
+- go build ./... : PASS (clean, no errors)
+- go test -run 'TestUserLimiter|TestCostEstimator' ./internal/mthub/... : 3/3 PASS
+- No new panic, nil dereference, TODO, or stub introduced
+- cost_breakdown JSON now populated in TradeEvent published to NATS on each order
+- Rate limit now enforced (10 orders/sec/user by default)
