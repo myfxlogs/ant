@@ -42,7 +42,11 @@ import (
 	"anttrader/internal/strategysvc"
 	"anttrader/internal/usermgr"
 	antredis "anttrader/internal/storage/redis"
+	"anttrader/internal/backtest"
 	"anttrader/internal/config"
+	"anttrader/internal/execalgo"
+	"anttrader/internal/factor"
+	"anttrader/internal/oms"
 
 	connectrpc "connectrpc.com/connect"
 )
@@ -451,6 +455,36 @@ func main() {
 		// S1.2: OMS state writer for order lifecycle tracking.
 		omsWriter := mthub.NewOmsWriter(pool, eventStore)
 		mthubSvc.SetOmsWriter(omsWriter)
+
+		// D-1: Wire oms.Repo for order persistence.
+		omsRepo := oms.NewRepo(pool)
+		_ = omsRepo // available for future order path migration (ADR-0012)
+
+		// D-1: Wire execution algo registry for scheduled order execution (M11-13).
+		algoRegistry := map[string]execalgo.Algo{
+			"twap":      execalgo.NewTwap(30 * time.Second),
+			"vwap":      execalgo.NewVwap(execalgo.FlatVolumeProfile{}, 26),
+			"pov":       execalgo.NewPov(0.15, 30*time.Second, 1.0),
+			"shortfall": execalgo.NewShortfall(0.7, 10),
+		}
+		_ = algoRegistry // available for scheduled order execution (M11-13)
+
+		// D-1: Wire factor subscriber for bar-event DSL evaluation (M10-BASE-B6).
+		// MarketState is not wired here — the mdgateway pipeline owns the tracker.
+		// When the factor subscriber needs tradability gating, the pipeline will
+		// inject its MarketStateTracker via factorSub.SetMarketState().
+		factorSub := factor.NewSubscriber(factor.DefaultSubscriberConfig(), log)
+		go factorSub.Start(context.Background())
+
+		// D-1: Wire backtest fill model for Go-native backtest fallback.
+		backtestFill := &backtest.FillModel{
+			SlippagePips:    1.0,
+			Latency:         50 * time.Millisecond,
+			PartialFillProb: 0.05,
+			CostModel:       eurtusdModel,
+			ContractSize:    100000,
+		}
+		_ = backtestFill // available for Python strategy backtest fallback
 
 	adminJurisdictionServer := admin.NewAdminJurisdictionServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(authInterceptor, adminInterceptor)))
