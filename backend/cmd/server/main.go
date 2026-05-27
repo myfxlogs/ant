@@ -383,10 +383,16 @@ func main() {
 	indicatorCatalogServer := mktplace.NewIndicatorCatalogServer(log)
 	mux.Handle(antv1c.NewIndicatorCatalogServiceHandler(indicatorCatalogServer, connectrpc.WithInterceptors(authInterceptor)))
 
-	// Catch-all: returns CodeUnimplemented for unknown routes (frontend silently swallows).
+	// Catch-all: return 404 for unknown routes.
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte(`{"code":"not_found"}`))
+			return
+		}
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"code":"unimplemented"}`))
+		w.Write([]byte(`{"status":"ant-v2"}`))
 	})
 
 	// Auth cookie endpoints — refresh token via httpOnly cookie.

@@ -253,9 +253,13 @@ func toProtoState(s mthub.OrderState) antv1.OrderState {
 }
 
 func toProtoOrderEvent(ev *mthub.OrderEvent) *antv1.OrderEvent {
+	order := &antv1.OrderRecord{}
+	if ev.Order != nil {
+		order.Ticket = ev.Order.Ticket
+	}
 	return &antv1.OrderEvent{
 		AccountId: ev.AccountID, Ticket: ev.Ticket,
 		EventType: ev.EventType, Timestamp: timestamppb.New(ev.Timestamp),
-		Order: &antv1.OrderRecord{Ticket: ev.Order.Ticket},
+		Order: order,
 	}
 }

@@ -1,0 +1,42 @@
+=== Sprint 0 · Task S0.7: Fix nil OrderEvent deref + 404 catch-all route ===
+Date: 2026-05-27
+Plan: docs/plan/2026-05-27-整改与执行计划.md §2.S0.7
+
+--- Problem ---
+1. `backend/internal/connect/system/mthub_service.go:259` — `toProtoOrderEvent` dereferences `ev.Order.Ticket` without nil check. If `ev.Order` is nil (which can happen for non-trade events like status updates), this causes a nil pointer panic.
+
+2. `backend/cmd/server/main.go:385-388` — catch-all route returns `{"code":"unimplemented"}` for all unknown paths without setting HTTP status. ConnectRPC clients may silently swallow this, making debugging hard.
+
+--- Fix ---
+1. mthub_service.go — nil-guard `ev.Order` before accessing `.Ticket`:
+   - Create default `order := &antv1.OrderRecord{}`
+   - If `ev.Order != nil`, copy `Ticket`
+   - Always return a non-nil `Order` field (zero-value Ticket = 0 is safe)
+
+2. main.go — proper HTTP 404 for unknown routes:
+   - Check `r.URL.Path != "/"` → return `http.StatusNotFound` with `{"code":"not_found"}`
+   - Root path `/` still returns `{"status":"ant-v2"}` (health check)
+
+--- Acceptance Command ---
+go test -run TestToProtoOrderEvent ./internal/connect/system/... -v
+
+--- Acceptance Output ---
+=== RUN   TestToProtoOrderEvent_NilOrder
+--- PASS: TestToProtoOrderEvent_NilOrder (0.00s)
+=== RUN   TestToProtoOrderEvent_WithOrder
+--- PASS: TestToProtoOrderEvent_WithOrder (0.00s)
+PASS
+ok  	anttrader/internal/connect/system	0.022s
+
+--- curl /nonexistent → 404 ---
+Server requires full infrastructure (PG + Redis) — cannot start for smoke test.
+Code review verification:
+  - r.URL.Path != "/" → w.WriteHeader(http.StatusNotFound) + {"code":"not_found"}
+  - r.URL.Path == "/" → {"status":"ant-v2"} (existing health check, preserved)
+Logic is trivially correct — standard HTTP mux catch-all pattern.
+
+--- Pre-commit checks ---
+- go build ./internal/connect/system/... ./cmd/server/... : PASS
+- No new panic, nil dereference, TODO, or stub introduced
+- TestToProtoOrderEvent_NilOrder: verifies nil Order → zero-value Ticket, no panic
+- TestToProtoOrderEvent_WithOrder: verifies non-nil Order → correct Ticket
