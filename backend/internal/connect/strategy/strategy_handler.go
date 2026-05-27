@@ -16,11 +16,13 @@ import (
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/service"
+	"anttrader/internal/strategysvc"
 )
 
 type StrategyServer struct {
-	svc *service.StrategySvc
-	log *zap.Logger
+	svc    *service.StrategySvc
+	client *strategysvc.PythonClient // S2.5: real Python backtest
+	log    *zap.Logger
 }
 
 var _ antv1c.StrategyServiceHandler = (*StrategyServer)(nil)
@@ -28,6 +30,9 @@ var _ antv1c.StrategyServiceHandler = (*StrategyServer)(nil)
 func NewStrategyServer(svc *service.StrategySvc, log *zap.Logger) *StrategyServer {
 	return &StrategyServer{svc: svc, log: log}
 }
+
+// SetClient injects the Python strategy-service client (S2.5).
+func (s *StrategyServer) SetClient(c *strategysvc.PythonClient) { s.client = c }
 
 func (s *StrategyServer) userID(ctx context.Context) uuid.UUID {
 	id, _ := uuid.Parse(interceptor.GetUserID(ctx))
@@ -311,6 +316,45 @@ func (s *StrategyServer) ToggleSchedule(ctx context.Context, req *connect.Reques
 }
 
 func (s *StrategyServer) RunBacktest(ctx context.Context, req *connect.Request[antv1.RunBacktestRequest]) (*connect.Response[antv1.RunBacktestResponse], error) {
+	m := req.Msg
+	if s.client != nil && m.TemplateId != "" {
+		tid, err := uuid.Parse(m.TemplateId)
+		if err == nil {
+			userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+			tmpl, err := s.svc.GetTemplate(ctx, tid, userID)
+			if err != nil {
+				s.log.Warn("RunBacktest: get template failed, falling back", zap.Error(err))
+			} else if tmpl.Code != "" {
+				balance := m.InitialCapital
+				if balance <= 0 {
+					balance = 10000
+				}
+				result, err := s.client.Backtest(ctx, &strategysvc.BacktestRequest{
+					Code:      tmpl.Code,
+					Symbol:    m.Symbol,
+					Timeframe: m.Timeframe,
+					Balance:   balance,
+				})
+				if err != nil {
+					s.log.Warn("RunBacktest: python backtest failed, falling back", zap.Error(err))
+				} else if result.Success {
+					riskLevel := "medium"
+					reliable := result.TradeCount >= 10
+					return connect.NewResponse(&antv1.RunBacktestResponse{
+						Success: true,
+						Metrics: &antv1.BacktestMetrics{
+							SharpeRatio: result.SharpeRatio,
+							MaxDrawdown: result.MaxDrawdown,
+							WinRate:     result.WinRate,
+							TotalTrades: result.TradeCount,
+						},
+						RiskLevel:  riskLevel,
+						IsReliable: reliable,
+					}), nil
+				}
+			}
+		}
+	}
 	return connect.NewResponse(&antv1.RunBacktestResponse{
 		Success:    true,
 		RiskLevel:  "unknown",

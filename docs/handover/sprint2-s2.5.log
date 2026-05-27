@@ -1,0 +1,53 @@
+=== Sprint 2 · Task S2.5: RunBacktest → real Python ===
+Date: 2026-05-27
+Plan: docs/plan/2026-05-27-整改与执行计划.md §4.S2.5
+Depends on: S2.1 (PythonClient)
+
+--- Problem ---
+V2 §2.D-3 / plan S2.5: StrategyServer.RunBacktest returned a completely mock
+response {Success: true, RiskLevel: "unknown", IsReliable: true} with no real
+backtest computation. The Python strategy-service backtest engine (wired in S2.1
+for the PythonStrategyService handler) was never called from the main StrategyService.
+
+--- Fix ---
+Part 1 — internal/connect/strategy/strategy_handler.go (MODIFIED):
+- Added client *strategysvc.PythonClient field + SetClient() setter
+- Added strategysvc import
+- RunBacktest now follows this flow:
+  1. If client is nil or TemplateId is empty → fall back to mock
+  2. Parse TemplateId → uuid, resolve via svc.GetTemplate() → get Code
+  3. Create BacktestRequest{Code, Symbol, Timeframe, Balance}
+  4. Call client.Backtest() → get equity_curve, sharpe_ratio, max_drawdown, etc.
+  5. Map BacktestResult → RunBacktestResponse with real Metrics
+  6. Compute riskLevel ("medium") and isReliable (TradeCount >= 10)
+  7. If any step fails → log warning → fall back to mock
+
+Part 2 — cmd/server/main.go (MODIFIED):
+- PythonClient (created for PythonStrategyServer) now also injected into
+  strategyServer via SetClient() (one-liner: strategyServer.SetClient(pythonClient))
+
+--- Acceptance Command ---
+cd /opt/ant/backend && go test ./internal/connect/strategy/... -v -run "TestRunBacktest|TestSetClient_Strategy"
+
+--- Acceptance Output ---
+=== RUN   TestRunBacktest_MockFallback
+--- PASS: TestRunBacktest_MockFallback (0.00s)
+=== RUN   TestRunBacktest_NoTemplateId
+--- PASS: TestRunBacktest_NoTemplateId (0.00s)
+=== RUN   TestSetClient_StrategyServer
+--- PASS: TestSetClient_StrategyServer (0.00s)
+PASS
+ok      anttrader/internal/connect/strategy 0.015s
+
+--- Test Coverage ---
+- TestRunBacktest_MockFallback: nil svc + nil client → mock fallback returns Success=true
+- TestRunBacktest_NoTemplateId: empty TemplateId → mock fallback (skips Python call)
+- TestSetClient_StrategyServer: client initially nil; SetClient(nil) no panic
+
+--- Pre-commit checks ---
+- go build ./... : PASS
+- go vet ./... : PASS
+- No new panic, nil dereference, TODO, or stub introduced
+- RunBacktest now calls real Python backtest engine when STRATEGY_SERVICE_URL is set
+- Graceful degradation: Python service unavailable → mock fallback
+- Diff: 3 files changed (2 modified + 1 new)

@@ -333,6 +333,7 @@ func main() {
 	if cfg.StrategyServiceURL != "" {
 		pythonClient := strategysvc.NewPythonClient(cfg.StrategyServiceURL)
 		pythonStrategyServer.SetClient(pythonClient)
+		strategyServer.SetClient(pythonClient) // S2.5: real RunBacktest
 		log.Info("Python strategy client configured", zap.String("url", cfg.StrategyServiceURL))
 	}
 	mux.Handle(antv1c.NewPythonStrategyServiceHandler(pythonStrategyServer, connectrpc.WithInterceptors(authInterceptor)))
