@@ -22,6 +22,7 @@ import (
 	"anttrader/internal/connect/strategy"
 	"anttrader/internal/connect/system"
 	"anttrader/internal/connect/user"
+	"anttrader/internal/controlplane"
 	"anttrader/internal/costsvc"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/marketplace"
@@ -440,6 +441,12 @@ func main() {
 	adminJurisdictionServer := admin.NewAdminJurisdictionServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(authInterceptor, adminInterceptor)))
 
+	// --- SRE control plane ---
+	sreKillSwitch := controlplane.NewKillSwitch()
+	sreBreakers := controlplane.NewBreakerRegistry(controlplane.DefaultBreakerConfig())
+	sreCanary := controlplane.NewCanaryManager()
+	sreHandler := admin.NewSREHandler(sreKillSwitch, sreBreakers, sreCanary, platformSvc, log)
+
 	analyticsRepo := repository.NewAnalyticsRepository(pool)
 	analyticsServer := system.NewAnalyticsServer(analyticsRepo, log)
 	mux.Handle(antv1c.NewAnalyticsServiceHandler(analyticsServer, connectrpc.WithInterceptors(authInterceptor)))
@@ -484,6 +491,32 @@ func main() {
 	// SSE endpoint for AI gate pipeline progress.
 	mux.HandleFunc("/sse/ai/gate-progress", func(w http.ResponseWriter, r *http.Request) {
 		gateProgressServer.HandleGateProgressSSE(w, r, authInterceptor)
+	})
+
+	// SRE control plane HTTP endpoints.
+	mux.HandleFunc("/api/admin/sre/killswitch/status", func(w http.ResponseWriter, r *http.Request) {
+		sreHandler.HandleKillSwitchStatus(w, r, authInterceptor)
+	})
+	mux.HandleFunc("/api/admin/sre/killswitch/engage", func(w http.ResponseWriter, r *http.Request) {
+		sreHandler.HandleKillSwitchEngage(w, r, authInterceptor)
+	})
+	mux.HandleFunc("/api/admin/sre/killswitch/disengage", func(w http.ResponseWriter, r *http.Request) {
+		sreHandler.HandleKillSwitchDisengage(w, r, authInterceptor)
+	})
+	mux.HandleFunc("/api/admin/sre/breakers", func(w http.ResponseWriter, r *http.Request) {
+		sreHandler.HandleBreakersList(w, r, authInterceptor)
+	})
+	mux.HandleFunc("/api/admin/sre/breakers/reset", func(w http.ResponseWriter, r *http.Request) {
+		sreHandler.HandleBreakerReset(w, r, authInterceptor)
+	})
+	mux.HandleFunc("/api/admin/sre/canary", func(w http.ResponseWriter, r *http.Request) {
+		sreHandler.HandleCanaryList(w, r, authInterceptor)
+	})
+	mux.HandleFunc("/api/admin/sre/canary/set", func(w http.ResponseWriter, r *http.Request) {
+		sreHandler.HandleCanarySet(w, r, authInterceptor)
+	})
+	mux.HandleFunc("/api/admin/sre/canary/delete", func(w http.ResponseWriter, r *http.Request) {
+		sreHandler.HandleCanaryDelete(w, r, authInterceptor)
 	})
 
 	// Prometheus /metrics endpoint (M10 ADR-0010 §2.4).

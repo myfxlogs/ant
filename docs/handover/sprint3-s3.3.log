@@ -1,0 +1,95 @@
+# S3.3 Handover Log — SRE 控制 UI
+# Date: 2026-05-27
+# Task: Sprint 3.3 — Kill Switch + Strategy Breakers + Canary 灰度
+# Status: COMPLETED
+
+## Changes Summary
+
+### Backend: controlplane 包 (恢复并重建)
+
+1. **internal/controlplane/killswitch.go** (67 行)
+   - KillSwitch struct: Engage/Disengage/IsEngaged/Status
+   - KillSwitchStatus: engaged, reason, operator, engaged_at
+   - 线程安全 (sync.RWMutex)
+
+2. **internal/controlplane/breaker.go** (179 行)
+   - StrategyBreaker: 三态 (closed/open/half_open)
+   - RecordPnL: 滚动窗口 P&L 累计 → 超过阈值自动熔断
+   - 冷却期后自动半开 (half_open) 允许探测交易
+   - BreakerRegistry: per-strategy 注册与查询
+   - StrategyBreakerStatus: state, total_pnl, loss_percent, trade_count
+
+3. **internal/controlplane/canary.go** (76 行)
+   - CanaryManager: Set/Get/List/Remove/Promote
+   - CanaryConfig: strategy_id, version_tag, account_ids, duration_days
+
+### Backend: SRE HTTP Handler
+
+4. **internal/connect/admin/sre_handler.go** (175 行)
+   - 8 个 HTTP endpoint (全部 admin-only):
+     - GET/POST /api/admin/sre/killswitch/status → HandleKillSwitchStatus
+     - POST /api/admin/sre/killswitch/engage → HandleKillSwitchEngage
+     - POST /api/admin/sre/killswitch/disengage → HandleKillSwitchDisengage
+     - GET /api/admin/sre/breakers → HandleBreakersList
+     - POST /api/admin/sre/breakers/reset → HandleBreakerReset
+     - GET /api/admin/sre/canary → HandleCanaryList
+     - POST /api/admin/sre/canary/set → HandleCanarySet
+     - POST /api/admin/sre/canary/delete → HandleCanaryDelete
+   - 认证: AuthInterceptor.UserIDFromHTTP + AdminChecker.IsAdmin 双重检查
+   - 注入: KillSwitch + BreakerRegistry + CanaryManager + AdminChecker
+
+### Frontend: SRE 管理页面 (4 文件)
+
+5. **frontend/src/pages/admin/sre/SRELayout.tsx** (32 行)
+   - Ant Design Tabs 布局: Kill Switch | Breakers | Canary
+   - 子路由: /admin/sre/killswitch, breakers, canary
+
+6. **frontend/src/pages/admin/sre/KillSwitchPage.tsx** (87 行)
+   - 状态卡片: engaged/disarmed Tag + 详细信息 Descriptions
+   - 激活: Modal 二次确认 + 必填原因
+   - 解除: 直接解除按钮
+   - 实时刷新
+
+7. **frontend/src/pages/admin/sre/BreakersPage.tsx** (63 行)
+   - Table: strategy_id, state(Tag), total_pnl, loss_percent, trade_count
+   - 熔断器: open/closed/half_open 三色 Tag
+   - 重置熔断: Popconfirm 确认
+
+8. **frontend/src/pages/admin/sre/CanaryPage.tsx** (87 行)
+   - Table: strategy_id, version_tag, account_ids(Tag[]), start_at, duration_days
+   - 新建: Modal form (strategy_id, version_tag, account_ids, duration_days)
+   - 删除: Popconfirm 确认
+   - 状态: 灰度中 / 已推广
+
+9. **frontend/src/pages/admin/sre/sreApi.ts** (56 行)
+   - sreFetch<T>: 通用 fetch wrapper (Authorization header + error handling)
+   - TypeScript 类型: KillSwitchStatus, BreakerStatus, CanaryConfig
+   - API 方法: killSwitchStatus, killSwitchEngage, killSwitchDisengage,
+     breakersList, breakerReset, canaryList, canarySet, canaryDelete
+
+### Modified Files
+
+10. **backend/cmd/server/main.go**
+    - L24: import controlplane
+    - L445-449: 创建 KillSwitch, BreakerRegistry, CanaryManager, SREHandler
+    - L498-522: 注册 8 个 /api/admin/sre/* HTTP 路由
+
+11. **frontend/src/App.tsx**
+    - L55-58: lazy import SRE pages + SRELayout
+    - L370-376: /admin/sre/* 路由 (嵌套在 /admin 下)
+
+12. **frontend/src/components/layout/AdminLayout.tsx**
+    - L50: sidebar 新增 "SRE 控制" 菜单项 (key: /admin/sre)
+
+## Verification Results
+- Go build: `go build ./cmd/server/` → PASS
+- TypeScript: `npx tsc --noEmit` → PASS
+- ESLint: `npx eslint src/pages/admin/sre/ src/components/layout/AdminLayout.tsx` → PASS (0 errors)
+- Pre-commit: no panic/TODO/stub/fixme/hack in any new file
+
+## Architecture Notes
+- Controlplane 组件独立于 ConnectRPC proto (纯 Go struct + HTTP handler)
+- SRE HTTP endpoint 认证: AuthInterceptor 提取 user → AdminChecker.IsAdmin 验证
+- 无需修改 proto 文件或重新生成 ConnectRPC 代码
+- Frontend API 使用 fetch() 直接调用 HTTP endpoint (非 ConnectRPC client)
+- SRELayout 使用 React Router <Outlet/> 模式 (与 AIAssistantLayout 一致)

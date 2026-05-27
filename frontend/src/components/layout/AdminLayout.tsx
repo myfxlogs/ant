@@ -47,6 +47,7 @@ export default function AdminLayout() {
     { key: '/admin/logs', icon: <IconFileText size={20} stroke={1.5} />, label: t('admin.sidebar.operationLogs') },
     { key: '/admin/config', icon: <IconSettings size={20} stroke={1.5} />, label: t('admin.sidebar.systemConfig') },
     { key: '/admin/jurisdiction', icon: <IconShield size={20} stroke={1.5} />, label: t('admin.sidebar.jurisdiction') },
+    { key: '/admin/sre', icon: <IconShield size={20} stroke={1.5} />, label: 'SRE 控制' },
   ];
 
   const userMenuItems = [

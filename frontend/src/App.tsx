@@ -52,6 +52,10 @@ const TradingMonitor = lazy(() => import('@/pages/admin/TradingMonitor'));
 const OperationLogs = lazy(() => import('@/pages/admin/OperationLogs'));
 const SystemConfig = lazy(() => import('@/pages/admin/SystemConfig'));
 const JurisdictionGate = lazy(() => import('@/pages/admin/JurisdictionGate'));
+const SREKillSwitch = lazy(() => import('@/pages/admin/sre/KillSwitchPage'));
+const SREBreakers = lazy(() => import('@/pages/admin/sre/BreakersPage'));
+const SRECanary = lazy(() => import('@/pages/admin/sre/CanaryPage'));
+const SRELayout = lazy(() => import('@/pages/admin/sre/SRELayout'));
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
@@ -364,6 +368,12 @@ function AppContent() {
               </PageWrapper>
             }
           />
+          <Route path="sre" element={<SRELayout />}>
+            <Route index element={<Navigate to="/admin/sre/killswitch" replace />} />
+            <Route path="killswitch" element={<PageWrapper><SREKillSwitch /></PageWrapper>} />
+            <Route path="breakers" element={<PageWrapper><SREBreakers /></PageWrapper>} />
+            <Route path="canary" element={<PageWrapper><SRECanary /></PageWrapper>} />
+          </Route>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
