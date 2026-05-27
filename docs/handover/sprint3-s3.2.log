@@ -1,0 +1,77 @@
+# S3.2 Handover Log — AI Gate 进度面板
+# Date: 2026-05-27
+# Task: Sprint 3.2 — AI Gate 进度面板 (SSE streaming + 6-gate 可视化)
+# Status: COMPLETED
+
+## Changes Summary
+
+### New Files
+
+1. **backend/internal/connect/ai/gate_progress_handler.go** (77 行)
+   - GateProgressServer 结构体 + NewGateProgressServer(log)
+   - HandleGateProgressSSE(w, r, authInterceptor): SSE endpoint handler
+   - 认证: authInterceptor.UserIDFromHTTP(r) → 401
+   - 解析 POST body → aigates.PipelineInput
+   - 设置 SSE headers: text/event-stream, no-cache, keep-alive, X-Accel-Buffering: no
+   - 调用 aigates.Pipeline(input) → 遍历 result.Gates
+   - 每个 gate 结果作为 SSE event 发送: `event: gate\ndata: {json}\n\n`
+   - 最后发送 `event: completed\ndata: {passed, summary, first_fail}\n\n`
+   - 日志记录管道完成状态
+
+2. **frontend/src/pages/ai/gate/GateProgressPage.tsx** (171 行)
+   - 表单: DSL 表达式, 日收益率, 策略尝试次数, 6 项模拟交易指标
+   - 默认值预填充 (15 个日收益率样本, 合理的 Paper 指标)
+   - SSE 客户端: fetch POST → ReadableStream → 解析 event: gate/completed
+   - 6 级 Gate 进度展示: Ant Design Steps (vertical, size=small)
+   - 每级 Gate: name(Tag) + status icon + description(score · duration · reason)
+   - Gate 状态: wait → process → finish/error 实时更新
+   - 完成后显示 Alert (success/error) + Collapse 详细结果表格
+   - 重试按钮 + AbortController 取消支持
+
+### Modified Files
+
+3. **backend/cmd/server/main.go**
+   - L320: 新增 `gateProgressServer := ai.NewGateProgressServer(log)`
+   - L483-485: 注册 SSE route `/sse/ai/gate-progress` → HandleGateProgressSSE
+
+4. **frontend/src/App.tsx**
+   - L40: lazy import GateProgressPage
+   - L237-243: 新增 route `/ai/gate` (在 AIAssistantLayout 内)
+
+5. **frontend/src/pages/ai/AIAssistantLayout.tsx**
+   - tabItems: 新增 `/ai/gate` tab (label: 'AI Gate')
+   - activeKey: 新增 `/ai/gate` 路径匹配
+
+6. **frontend/src/i18n/resources/en/ai.ts**
+   - ai.tabs.gate: 'AI Gate'
+   - ai.gate.title: 'AI Gate Eval Panel'
+
+## Architecture Notes
+
+### Backend SSE Pattern
+- 路由: POST `/sse/ai/gate-progress?access_token=...`
+- 认证: query param access_token (与 debateV2 SSE 模式一致)
+- 响应: SSE (text/event-stream)，每个 gate 一个 event
+- 管道计算: 同步调用 ai.Pipeline() (纯计算，微秒级)，无 goroutine 开销
+- 无需修改 proto (纯 HTTP SSE，不依赖 ConnectRPC)
+
+### Frontend SSE Consumer
+- 使用 fetch + ReadableStream (非 EventSource，因需 POST body)
+- 手动解析 SSE 帧 (event:/data: 行)
+- 实时更新 React state 推动 Steps 组件刷新
+- AbortController 支持取消/重试
+
+### 6-Gate Pipeline (来自 internal/ai/gate_pipeline.go)
+  Compliance → LookAhead → WalkForward → DeflatedSharpe → Paper → Correlation
+  短路: 第一个失败的 Gate 停止，不执行后续 Gate
+
+## Verification Results
+- Go build: `go build ./cmd/server/` → PASS (no errors)
+- TypeScript: `npx tsc --noEmit` → PASS (no errors)
+- ESLint: `npx eslint ...` → PASS (0 errors, 0 warnings)
+- Pre-commit check: no new panic/TODO/stub/fixme/hack in changed files
+
+## Compatibility
+- 路由前缀 `/sse/ai/` 与现有 `/sse/debate-v2/` 并行，无冲突
+- GateProgressServer 零依赖注入 (仅需 *zap.Logger)
+- 前端 GateProgressPage 独立组件，不修改任何现有 store/hook/api

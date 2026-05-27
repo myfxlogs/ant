@@ -21,6 +21,7 @@ export default function AIAssistantLayout() {
 		{ key: '/ai/debate', label: t('ai.tabs.debate', { defaultValue: t('ai.debate.title') }) },
 		{ key: '/ai/settings', label: t('ai.tabs.settings', { defaultValue: t('ai.settings.pageTitle') }) },
 		{ key: '/ai/agents', label: t('ai.tabs.agentSettings', { defaultValue: t('ai.settings.agent.title') }) },
+		{ key: '/ai/gate', label: t('ai.tabs.gate', { defaultValue: 'AI Gate' }) },
 	];
 
 	const activeKey = (() => {
@@ -28,6 +29,7 @@ export default function AIAssistantLayout() {
 		if (p.startsWith('/ai/debate')) return '/ai/debate';
 		if (p.startsWith('/ai/agents')) return '/ai/agents';
 		if (p.startsWith('/ai/settings')) return '/ai/settings';
+		if (p.startsWith('/ai/gate')) return '/ai/gate';
 		return '/ai/debate';
 	})();
 

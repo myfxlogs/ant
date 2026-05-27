@@ -319,6 +319,8 @@ func main() {
 	debateV2Server := ai.NewDebateV2Server(debateV2Svc, log)
 	mux.Handle(antv1c.NewDebateV2ServiceHandler(debateV2Server, connectrpc.WithInterceptors(authInterceptor)))
 
+	gateProgressServer := ai.NewGateProgressServer(log)
+
 	streamServer := system.NewStreamServer(mthubSvc, platformSvc, log)
 	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, connectrpc.WithInterceptors(authInterceptor)))
 
@@ -477,6 +479,11 @@ func main() {
 	})
 	mux.HandleFunc("/sse/debate-v2/chat-jobs/", func(w http.ResponseWriter, r *http.Request) {
 		debateV2Server.HandleDebateV2ChatJobSSE(w, r, authInterceptor)
+	})
+
+	// SSE endpoint for AI gate pipeline progress.
+	mux.HandleFunc("/sse/ai/gate-progress", func(w http.ResponseWriter, r *http.Request) {
+		gateProgressServer.HandleGateProgressSSE(w, r, authInterceptor)
 	})
 
 	// Prometheus /metrics endpoint (M10 ADR-0010 §2.4).

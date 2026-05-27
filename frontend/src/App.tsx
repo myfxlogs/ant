@@ -36,6 +36,7 @@ const Summary = lazy(() => import('@/pages/analytics/Summary'));
 const DebatePage = lazy(() => import('@/pages/ai/debate/DebatePageV2'));
 const AISettings = lazy(() => import('@/pages/ai/AISettings'));
 const SystemAI = lazy(() => import('@/pages/ai/SystemAI'));
+const GateProgressPage = lazy(() => import('@/pages/ai/gate/GateProgressPage'));
 import RequireAIConfig from '@/pages/ai/components/RequireAIConfig';
 const StrategyTemplatePage = lazy(() => import('@/pages/strategy/StrategyTemplatePage'));
 const StrategyExperimentPage = lazy(() => import('@/pages/strategy/StrategyExperimentPage'));
@@ -230,6 +231,14 @@ function AppContent() {
               element={
                 <PageWrapper>
                   <AISettings mode="agents" />
+                </PageWrapper>
+              }
+            />
+            <Route
+              path="gate"
+              element={
+                <PageWrapper>
+                  <GateProgressPage />
                 </PageWrapper>
               }
             />

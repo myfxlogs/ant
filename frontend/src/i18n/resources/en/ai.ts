@@ -305,6 +305,10 @@ const aiCore = {
       debate: 'Expert Discussion',
       settings: 'Settings',
       agentSettings: 'Agent Settings',
+      gate: 'AI Gate',
+    },
+    gate: {
+      title: 'AI Gate Eval Panel',
     },
   },
 } as const;
