@@ -4,6 +4,7 @@ import { Modal, message } from 'antd';
 import i18n from '@/i18n';
 import { useAuthStore } from '@/stores/authStore';
 import { isLikelyStreamTransportFailure, isStreamServiceProcedure } from '@/utils/streamErrors';
+import { translateMaybeI18nKey } from '@/utils/error';
 
 const envApiUrl = import.meta.env.VITE_API_URL as string | undefined;
 const envStreamUrl = import.meta.env.VITE_STREAM_URL as string | undefined;
@@ -135,14 +136,17 @@ const interceptors: Interceptor[] = [
           lastBizErrorAt = now;
           const procName = procedureHint(req).label;
           const rawMsg = error instanceof ConnectError ? String(error.rawMessage ?? '').trim() : '';
-          const codePart = error instanceof ConnectError ? `code=${String(error.code)} ` : '';
           const msgPart =
             error instanceof ConnectError
               ? String(error.message || '').trim()
               : error instanceof Error
                 ? String(error.message || '').trim()
                 : String(error).trim();
-          const content = String(rawMsg || `${codePart}${msgPart}` || '').trim();
+          // Translate i18n keys from the backend (e.g. "errors.user_not_found").
+          const translated = translateMaybeI18nKey(rawMsg, '')
+            || translateMaybeI18nKey(msgPart, '')
+            || msgPart;
+          const content = translated.trim();
           if (content) {
             message.error(procName ? `${procName}: ${content}` : content);
           }

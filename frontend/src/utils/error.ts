@@ -122,8 +122,15 @@ export function isConnectionError(error: unknown): boolean {
 export function getErrorMessage(error: unknown, defaultMsg: string): string {
   if (error && typeof error === 'object') {
     const responseError = error as LegacyResponseError;
-    if (responseError.response?.data?.message) {
-      return translateMaybeI18nKey(responseError.response.data.message, defaultMsg);
+    if (responseError.response?.data) {
+      const data = responseError.response.data;
+      // Prefer code-based translation when the backend sends a numeric error code.
+      if (typeof data.code === 'number' && data.code > 0) {
+        return getErrorMessageByCode(data.code, defaultMsg);
+      }
+      if (data.message) {
+        return translateMaybeI18nKey(data.message, defaultMsg);
+      }
     }
     if ('message' in error && typeof (error as Error).message === 'string') {
       const errorMsg = (error as Error).message;
