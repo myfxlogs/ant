@@ -24,12 +24,14 @@ from __future__ import annotations
 import ast
 import ctypes
 import hashlib
+import marshal
 import math
 import threading
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional
 
 from app.engine import indicators
+from app.engine.sandbox_base import BaseSandbox
 from app.engine.types import StrategyCompileError, StrategyRuntimeError
 
 _FORBIDDEN_CALLS = frozenset(
@@ -238,6 +240,48 @@ def code_sha256(source: str) -> str:
     return hashlib.sha256(source.encode()).hexdigest()
 
 
+def build_sandbox_globals() -> dict:
+    """Construct the restricted globals dict for sandbox execution.
+
+    Extracted from StrategyRunner._build_globals so that child-process
+    entry points (backtest_worker, live_worker_main) can build the same
+    environment without instantiating StrategyRunner.
+    """
+    env = _RestrictedEnv.get()
+    import numpy as np  # local import keeps top-level import cheap
+    g: Dict[str, Any] = {
+        "__builtins__": env.safe_builtins,
+        "_getattr_": env.guarded_getattr,
+        "_getitem_": env.guarded_getitem,
+        "_getiter_": env.guarded_getiter,
+        "_write_": env.guarded_write,
+        "_print_": env.print_collector,
+        "np": np,
+        "math": math,
+    }
+    for name in indicators.__all__:
+        g[name] = getattr(indicators, name)
+    g["calculate_rsi"] = lambda prices, period=14: indicators.iRSI(prices, period)
+    return g
+
+
+def compile_and_serialize(source: str) -> bytes:
+    """Pre-compile strategy source via RestrictedPython and return marshalled bytecode.
+
+    The resulting bytes can be passed to :func:`exec_serialized` in a child
+    process, avoiding redundant RestrictedPython compilation.
+    """
+    env = _RestrictedEnv.get()
+    code = env.compile_restricted(source, "<strategy>", "exec")
+    return marshal.dumps(code)
+
+
+def exec_serialized(data: bytes, globals_dict: dict, locals_dict: dict) -> None:
+    """Deserialize pre-compiled bytecode and execute it in the given namespace."""
+    code = marshal.loads(data)
+    exec(code, globals_dict, locals_dict)
+
+
 # --- StrategyRunner ------------------------------------------------------
 
 
@@ -278,11 +322,19 @@ def _raise_async(thread_id: int, exc_class: type) -> int:
     )
 
 
-class StrategyRunner:
+class StrategyRunner(BaseSandbox):
     """Compile once, execute per bar.
-    
+
     M7.7: In production mode, the sandbox is blocked entirely.
     Production paths use DSL + ONNX; Python execution is research-only.
+
+    .. deprecated::
+        The ``threading.Timer`` + ``PyThreadState_SetAsyncExc`` timeout
+        mechanism is preserved for backward compatibility but is ineffective
+        against C extensions and blocking syscalls (V3-R-8).
+        Prefer :class:`app.engine.backtest_sandbox.BacktestSandbox` or
+        :class:`app.engine.live_sandbox.LiveWorker` for process-level
+        isolation via ``multiprocessing.spawn``.
     """
 
     def __init__(self, source: str, timeout_ms: int = 30_000) -> None:
@@ -306,6 +358,10 @@ class StrategyRunner:
     @property
     def source_sha256(self) -> str:
         return code_sha256(self._source)
+
+    def shutdown(self) -> None:
+        """No-op: StrategyRunner holds no external resources."""
+        pass
 
     def call(self, ctx: dict) -> Optional[dict]:
         """Execute the strategy with ``ctx`` and return its signal dict (or ``None``).
@@ -363,24 +419,7 @@ class StrategyRunner:
     # --- internals -------------------------------------------------------
 
     def _build_globals(self) -> dict:
-        env = self._env
-        import numpy as np  # local import keeps top-level import cheap
-        g: Dict[str, Any] = {
-            "__builtins__": env.safe_builtins,
-            "_getattr_": env.guarded_getattr,
-            "_getitem_": env.guarded_getitem,
-            "_getiter_": env.guarded_getiter,
-            "_write_": env.guarded_write,
-            "_print_": env.print_collector,
-            "np": np,
-            "math": math,
-        }
-        # Inject indicator / sizing / query helpers.
-        for name in indicators.__all__:
-            g[name] = getattr(indicators, name)
-        # Legacy alias preserved for older strategies.
-        g["calculate_rsi"] = lambda prices, period=14: indicators.iRSI(prices, period)
-        return g
+        return build_sandbox_globals()
 
     @staticmethod
     def _coerce_signal(value: Any) -> Optional[dict]:

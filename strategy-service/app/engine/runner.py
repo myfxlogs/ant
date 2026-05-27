@@ -29,6 +29,7 @@ from app.engine.market import MarketSimulator, MultiSymbolMarket, TickSimulator
 from app.engine.metrics import build_metrics
 from app.engine.portfolio import Portfolio
 from app.engine.sandbox import StrategyRunner, code_sha256
+from app.engine.sandbox_base import BaseSandbox
 from app.engine.types import (
     BacktestRequest,
     BacktestResult,
@@ -82,7 +83,7 @@ def _parse_expiration(raw: Any) -> Optional[int]:
 class BacktestRunner:
     """Encapsulates one backtest request's execution state."""
 
-    def __init__(self, req: BacktestRequest) -> None:
+    def __init__(self, req: BacktestRequest, sandbox: Optional[BaseSandbox] = None) -> None:
         self._req = req
         self._cost = CostModel(req.cost_profile)
         self._fill = FillModel(self._cost, max_fill_volume=req.max_fill_volume)
@@ -114,7 +115,7 @@ class BacktestRunner:
             contract_size=contract_size,
         )
         self._margin = MarginModel(req.leverage, contract_size)
-        self._strategy = StrategyRunner(req.strategy_code, timeout_ms=req.deadline_ms)
+        self._sandbox = sandbox if sandbox is not None else StrategyRunner(req.strategy_code, timeout_ms=req.deadline_ms)
 
         # Strategy runtime KV persisted across bars (for EA-like behaviours such as grid/martingale).
         self._runtime: dict = {}
@@ -203,7 +204,7 @@ class BacktestRunner:
 
                 # Inject persistent runtime state (mutable dict).
                 ctx["runtime"] = self._runtime
-                signal = self._strategy.call(ctx)
+                signal = self._sandbox.call(ctx)
                 self._dispatch_signal(signal, tick)
                 self._equity_curve.append(self._portfolio.cash)
 
