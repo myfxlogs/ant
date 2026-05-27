@@ -14,6 +14,12 @@ import (
 	"anttrader/internal/usermgr"
 )
 
+// KillSwitchGate is checked before every order placement.
+// Implementations must be concurrency-safe.
+type KillSwitchGate interface {
+	IsEngaged() bool
+}
+
 // MtHubService is the business-layer facade for order operations.
 // All MT account interactions go through this service.
 type MtHubService struct {
@@ -26,6 +32,7 @@ type MtHubService struct {
 	eventStore     *TradeEventStore // may be nil if NATS is not configured
 	userLimiter    *usermgr.UserLimiter
 	costEstimator  costsvc.CostEstimator // M10-BASE-D2: pre-trade cost estimation
+	killSwitch     KillSwitchGate        // V3-R-5: global kill switch
 
 	// S1.1: pre-trade risk pipeline (capability → hardlimit → platform → engine → sizer)
 	riskPipeline        RiskPipeline
@@ -69,6 +76,9 @@ func (s *MtHubService) SetAccountStateProvider(p AccountStateProvider) { s.accou
 // SetOmsWriter injects the OMS state writer for order lifecycle tracking (S1.2).
 func (s *MtHubService) SetOmsWriter(w *OmsWriter) { s.omsWriter = w }
 
+// SetKillSwitch injects the global kill switch for emergency stop (V3-R-5).
+func (s *MtHubService) SetKillSwitch(ks KillSwitchGate) { s.killSwitch = ks }
+
 // SessionState returns "connected" if the Hub has a session for the account,
 // or "not_found" otherwise. Expired sessions are auto-refreshed by EnsureSession.
 func (s *MtHubService) SessionState(ctx context.Context, accountID string) string {
@@ -90,7 +100,13 @@ var ErrReconciling = errors.New("mthub: account reconciling, order rejected")
 
 // PlaceOrder places an order on the account's broker via the registered executor.
 // If an IdempotencyGuard is configured, duplicate client IDs are rejected before broker submission.
+var ErrKillSwitchEngaged = errors.New("mthub: global kill switch engaged")
+
 func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*OrderRecord, error) {
+	if s.killSwitch != nil && s.killSwitch.IsEngaged() {
+		return nil, ErrKillSwitchEngaged
+	}
+
 	if s.idem != nil && req.ClientID != "" {
 		isDup, existingTicket, err := s.idem.CheckAndSet(ctx, req.AccountID, req.ClientID, 0)
 		if err != nil {

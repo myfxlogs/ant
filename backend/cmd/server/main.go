@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -175,6 +176,10 @@ func main() {
 	pipelineCtx, pipelineCancel := context.WithCancel(context.Background())
 	defer pipelineCancel()
 
+	// Margin call dedup: 5-minute cooldown per account (V3-R-7).
+	var marginCallMu sync.Mutex
+	marginCallLastSent := make(map[string]time.Time)
+
 	go func() {
 		log.Info("mdgateway pipeline starting", zap.String("spill_dir", spillDir))
 		if err := mdgateway.Run(pipelineCtx, mdgateway.RunnerDeps{
@@ -213,6 +218,23 @@ func main() {
 						return out
 					}(),
 				})
+				// V3-R-7: Publish MarginCall event when margin level drops below 100%.
+				if p.MarginLevel > 0 && p.MarginLevel < 100 {
+					marginCallMu.Lock()
+					last := marginCallLastSent[accountID]
+					if time.Since(last) > 5*time.Minute {
+						marginCallLastSent[accountID] = time.Now()
+						marginCallMu.Unlock()
+						eventStore.Publish(context.Background(), &mthub.TradeEvent{
+							EventID:   fmt.Sprintf("mc-%s-%d", accountID, time.Now().Unix()),
+							EventType: mthub.TradeEventOrderMarginCall,
+							AccountID: accountID,
+							UserID:    userID,
+						})
+					} else {
+						marginCallMu.Unlock()
+					}
+				}
 			},
 			OnOrderUpdate: func(accountID, userID string, o *mdtick.OrderUpdate) {
 				// Update PG with latest account metrics.
@@ -465,6 +487,7 @@ func main() {
 
 	// --- SRE control plane ---
 	sreKillSwitch := controlplane.NewKillSwitch()
+	mthubSvc.SetKillSwitch(sreKillSwitch) // V3-R-5: PlaceOrder blocked when kill switch engaged
 	sreBreakers := controlplane.NewBreakerRegistry(controlplane.DefaultBreakerConfig())
 	sreCanary := controlplane.NewCanaryManager()
 	emailNotifier := notifier.NewEmailNotifier(notifier.EmailConfig{
