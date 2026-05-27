@@ -35,6 +35,7 @@ import (
 	"anttrader/internal/server"
 	"anttrader/internal/service"
 	systemai "anttrader/internal/service/systemai"
+	"anttrader/internal/strategysvc"
 	"anttrader/internal/usermgr"
 	antredis "anttrader/internal/storage/redis"
 	"anttrader/internal/config"
@@ -323,6 +324,11 @@ func main() {
 	// Real: SystemAI, AIPrimary, Job, ScheduleHealth, DebateV2
 	// Mock: PythonStrategy, CodeAssist, BacktestTrades, EconomicData
 	pythonStrategyServer := strategy.NewPythonStrategyServer(log)
+	if cfg.StrategyServiceURL != "" {
+		pythonClient := strategysvc.NewPythonClient(cfg.StrategyServiceURL)
+		pythonStrategyServer.SetClient(pythonClient)
+		log.Info("Python strategy client configured", zap.String("url", cfg.StrategyServiceURL))
+	}
 	mux.Handle(antv1c.NewPythonStrategyServiceHandler(pythonStrategyServer, connectrpc.WithInterceptors(authInterceptor)))
 	codeAssistServer := ai.NewCodeAssistServer(log)
 	mux.Handle(antv1c.NewCodeAssistServiceHandler(codeAssistServer, connectrpc.WithInterceptors(authInterceptor)))

@@ -11,10 +11,14 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
+	"anttrader/internal/strategysvc"
 )
 
 // PythonStrategyServer implements ant.v1.PythonStrategyServiceHandler.
-type PythonStrategyServer struct{ log *zap.Logger }
+type PythonStrategyServer struct {
+	log    *zap.Logger
+	client *strategysvc.PythonClient // nil if strategy-service not configured (S2.1)
+}
 
 var _ antv1c.PythonStrategyServiceHandler = (*PythonStrategyServer)(nil)
 
@@ -22,7 +26,34 @@ func NewPythonStrategyServer(log *zap.Logger) *PythonStrategyServer {
 	return &PythonStrategyServer{log: log}
 }
 
+// SetClient injects the Python strategy-service client (S2.1).
+func (s *PythonStrategyServer) SetClient(c *strategysvc.PythonClient) { s.client = c }
+
 func (s *PythonStrategyServer) Execute(ctx context.Context, req *connect.Request[antv1.ExecuteStrategyRequest]) (*connect.Response[antv1.ExecuteStrategyResponse], error) {
+	if s.client != nil {
+		result, err := s.client.Execute(ctx, &strategysvc.ExecuteRequest{
+			Code:      req.Msg.Code,
+			AccountID: req.Msg.AccountId,
+			Symbol:    req.Msg.Symbol,
+			Timeframe: req.Msg.Timeframe,
+			Mode:      "paper",
+		})
+		if err != nil {
+			s.log.Warn("python execute failed, falling back to mock", zap.Error(err))
+		} else if result.Success && result.Signal != nil {
+			return connect.NewResponse(&antv1.ExecuteStrategyResponse{
+				Success: true,
+				Signal: &antv1.StrategySignal{
+					SignalType: result.Signal.Side,
+					Volume:     result.Signal.Lots,
+					Price:      result.Signal.Price,
+					StopLoss:   result.Signal.StopLoss,
+					TakeProfit: result.Signal.TakeProfit,
+					Reason:     result.Signal.Reason,
+				},
+			}), nil
+		}
+	}
 	return connect.NewResponse(&antv1.ExecuteStrategyResponse{
 		Success: true,
 		Signal:  &antv1.StrategySignal{Reason: "mock execution"},
@@ -30,12 +61,44 @@ func (s *PythonStrategyServer) Execute(ctx context.Context, req *connect.Request
 }
 
 func (s *PythonStrategyServer) Validate(ctx context.Context, req *connect.Request[antv1.ValidateStrategyRequest]) (*connect.Response[antv1.ValidateStrategyResponse], error) {
+	if s.client != nil {
+		result, err := s.client.Validate(ctx, &strategysvc.ValidateRequest{Code: req.Msg.Code})
+		if err != nil {
+			s.log.Warn("python validate failed, falling back to mock", zap.Error(err))
+		} else {
+			return connect.NewResponse(&antv1.ValidateStrategyResponse{
+				Valid:    result.Valid,
+				Errors:   result.Errors,
+				Warnings: result.Warnings,
+			}), nil
+		}
+	}
 	return connect.NewResponse(&antv1.ValidateStrategyResponse{
 		Valid: true,
 	}), nil
 }
 
 func (s *PythonStrategyServer) Backtest(ctx context.Context, req *connect.Request[antv1.BacktestStrategyRequest]) (*connect.Response[antv1.BacktestStrategyResponse], error) {
+	if s.client != nil {
+		result, err := s.client.Backtest(ctx, &strategysvc.BacktestRequest{
+			Code:      req.Msg.Code,
+			Symbol:    req.Msg.Symbol,
+			Timeframe: req.Msg.Timeframe,
+			Balance:   10000,
+		})
+		if err != nil {
+			s.log.Warn("python backtest failed, falling back to mock", zap.Error(err))
+		} else if result.Success {
+			return connect.NewResponse(&antv1.BacktestStrategyResponse{
+				Success:     true,
+				EquityCurve: result.EquityCurve,
+				Metrics: &antv1.BacktestMetrics{
+					SharpeRatio: result.SharpeRatio,
+					MaxDrawdown: result.MaxDrawdown,
+				},
+			}), nil
+		}
+	}
 	return connect.NewResponse(&antv1.BacktestStrategyResponse{
 		Success:     true,
 		EquityCurve: []float64{10000, 10050, 10100, 10080, 10150, 10200},

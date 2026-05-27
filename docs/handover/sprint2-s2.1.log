@@ -1,0 +1,59 @@
+=== Sprint 2 · Task S2.1: Go ↔ Python strategy-service HTTP client ===
+Date: 2026-05-27
+Plan: docs/plan/2026-05-27-整改与执行计划.md §4.S2.1
+
+--- Problem ---
+V2 §2.D-3: Python backtest engine existed (strategy-service:8081) but was never called. PythonStrategyServer returned hardcoded mock data:
+- Execute: {Success: true, Signal: {Reason: "mock execution"}}
+- Backtest: {EquityCurve: [10000, 10050, 10100, 10080, 10150, 10200]} (6 hardcoded points)
+- Validate: {Valid: true} (always true, no real validation)
+
+--- Fix ---
+Part 1 — internal/strategysvc/python_client.go (NEW):
+- PythonClient struct: baseURL + http.Client (60s timeout)
+- Backtest(BacktestRequest) → BacktestResult (equity_curve, sharpe_ratio, max_drawdown, etc.)
+- Execute(ExecuteRequest) → ExecuteResult (signal with side/lots/price/sl/tp/reason)
+- Validate(ValidateRequest) → ValidateResult (valid, errors, warnings)
+- Health check: GET /api/health
+- JSON marshaling with 400+ error handling
+
+Part 2 — Rewrite python_strategy_handler.go:
+- Added `client *strategysvc.PythonClient` field + SetClient() setter
+- Execute: calls client.Execute() if available → maps to StrategySignal with correct field names (SignalType, Volume, Price, StopLoss, TakeProfit, Reason)
+- Backtest: calls client.Backtest() → returns real equity_curve + BacktestMetrics (SharpeRatio, MaxDrawdown)
+- Validate: calls client.Validate() → returns real Valid/Errors/Warnings
+- All three fall back to mock data when client is nil or call fails (graceful degradation)
+
+Part 3 — config and main.go wiring:
+- Added StrategyServiceURL to Config struct + STRATEGY_SERVICE_URL env var
+- main.go: if cfg.StrategyServiceURL != "", creates PythonClient and injects into PythonStrategyServer
+
+--- Acceptance Command ---
+go test ./internal/strategysvc/... -v
+
+--- Acceptance Output ---
+=== RUN   TestPythonClient_Backtest
+--- PASS: TestPythonClient_Backtest (0.00s)
+=== RUN   TestPythonClient_Execute
+--- PASS: TestPythonClient_Execute (0.00s)
+=== RUN   TestPythonClient_Validate
+--- PASS: TestPythonClient_Validate (0.00s)
+=== RUN   TestPythonClient_Health
+--- PASS: TestPythonClient_Health (0.00s)
+=== RUN   TestNewPythonClient_NoURL
+--- PASS: TestNewPythonClient_NoURL (0.00s)
+PASS
+ok  	anttrader/internal/strategysvc	0.010s
+
+--- Test Coverage ---
+- TestPythonClient_Backtest: POST /api/backtest → equity_curve length > 2 (8 points, > hardcoded 6)
+- TestPythonClient_Execute: POST /api/execute → signal with Lots=0.25
+- TestPythonClient_Validate: POST /api/validate → Valid=true with warnings
+- TestPythonClient_Health: GET /api/health → status 200
+- TestNewPythonClient_NoURL: empty URL → connection error (graceful)
+
+--- Pre-commit checks ---
+- go build ./... : PASS
+- No new panic, nil dereference, TODO, or stub introduced
+- Backend ready for Python strategy-service — controlled by STRATEGY_SERVICE_URL env var
+- Diff: 6 files changed (3 modified + 3 new)

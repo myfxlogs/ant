@@ -54,6 +54,9 @@ type Config struct {
 	RequireKYC           bool
 	RequireDisclaimer    bool
 	RequireQuestionnaire bool
+
+	// External service URLs
+	StrategyServiceURL string // Python strategy-service: http://strategy-service:8081
 }
 
 // Load reads all configuration from environment variables with defaults.
@@ -88,6 +91,8 @@ func Load() *Config {
 		RequireKYC:           getenvBool("REQUIRE_KYC", false),
 		RequireDisclaimer:    getenvBool("REQUIRE_DISCLAIMER", false),
 		RequireQuestionnaire: getenvBool("REQUIRE_QUESTIONNAIRE", false),
+
+		StrategyServiceURL: getenv("STRATEGY_SERVICE_URL", ""),
 
 		RateLimitLoginPerMinute: getenvInt("RATE_LIMIT_LOGIN_PER_MINUTE", 10),
 		RateLimitEnabled:        getenvBool("RATE_LIMIT_ENABLED", true),
