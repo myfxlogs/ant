@@ -1,0 +1,88 @@
+# S3.1 Handover Log — Trading 页实现
+# Date: 2026-05-27
+# Task: Sprint 3.1 — 完整 Trading 页 (4 个组件 + i18n)
+# Status: COMPLETED
+
+## Changes Summary
+
+### Modified Files
+1. **frontend/src/i18n/resources/en/trading.ts**
+   - 新增 20+ i18n keys: title, account, balance, equity, margin, freeMargin,
+     marginLevel, noAccount, placeOrder, symbol, type, volume, price, stopLoss,
+     takeProfit, side, buy, sell, market, limit, stop, positions, noPositions,
+     closePosition, closePositionConfirm, orderHistory, noOrders
+   - 所有 key 均带英文 fallback 字符串
+
+2. **frontend/src/pages/trading/Trading.tsx** (从 13 行占位重写为 52 行)
+   - 组合 4 个子组件: AccountSummaryCard, PositionsTable, PlaceOrderForm,
+     OrderHistoryTable
+   - 挂载时自动 fetchAccounts() → 选中第一个账户
+   - 账户切换时自动 fetchPositions(currentAccountId)
+   - 使用 Zustand tradingStore 读取 currentAccountId/setCurrentAccountId
+   - 响应式布局: Row(gutter=16) + Col(xs=24, lg=14/10)
+
+### New Files
+3. **frontend/src/pages/trading/components/AccountSummaryCard.tsx** (111 行)
+   - 账户下拉选择器 (Select, allowClear)
+   - Balance / Equity / Margin / FreeMargin / MarginLevel 五列统计卡片
+   - 账户状态 Tag (connected=green, connecting=blue, disconnected=red)
+   - 切换账户时自动清空旧持仓
+   - 无选中账户时显示 secondary 提示文本
+
+4. **frontend/src/pages/trading/components/PositionsTable.tsx** (133 行)
+   - Ant Design Table: ticket, symbol, side(Tag), volume, openPrice,
+     currentPrice, SL, TP, P&L(绿/红色), close 按钮
+   - close 按钮使用 Popconfirm 确认弹窗
+   - 调用 closeOrder() → 成功后 removePosition() 从 store 移除
+   - loading 状态绑定 tradingStore.loading
+   - 空状态: "No open positions"
+
+5. **frontend/src/pages/trading/components/PlaceOrderForm.tsx** (96 行)
+   - Buy/Sell Radio.Group (buttonStyle="solid")
+   - Market/Limit/Stop Radio.Group (buttonStyle="outline")
+   - Symbol Input, Volume InputNumber (min=0.01), Price (Limit/Stop 时显示),
+     SL InputNumber, TP InputNumber
+   - Submit 按钮: loading 绑定 store.loading, disabled 绑定 !accountId,
+     danger 绑定 side==='sell'
+   - sendOrder() 后 resetFields(['price','stopLoss','takeProfit','volume'])
+   - type 动态推断: market→buy/sell, limit→buy_limit/sell_limit,
+     stop→buy_stop/sell_stop
+
+6. **frontend/src/pages/trading/components/OrderHistoryTable.tsx** (101 行)
+   - 调用 getOrderHistory({accountId, page, pageSize}) → setOrders/setTotal
+   - 分页: Pagination 组件 (showTotal, onChange, pageSize=20)
+   - 列: ticket, symbol, type(Tag), volume, openPrice, P&L, openTime
+   - useCallback 封装的 loadHistory 避免 effect 无限循环
+   - 无 accountId 时清空数据
+
+## Verification Results
+- TypeScript: `npx tsc --noEmit` → PASS (no errors)
+- ESLint: `npx eslint src/pages/trading/ --ext .tsx,.ts` → PASS (no errors)
+- Pre-commit check: no panic/TODO/stub/fixme/hack in any file
+
+## ESLint Fixes Applied (4 issues resolved)
+1. Trading.tsx:14 — removed unused `accounts` from destructuring
+2. PlaceOrderForm.tsx:2 — removed unused `Select` import
+3. PositionsTable.tsx:1 — removed unused `Space` import
+4. OrderHistoryTable.tsx:20 — extracted loadHistory to useCallback,
+   restructured effect to avoid setState-in-setState
+
+## Architecture Notes
+- Data flow: tradingStore (Zustand) + useTrading hook + tradingApi client
+- All text uses react-i18next useTranslation() with fallback strings
+- Components use Ant Design 6 (antd) components: Table, Card, Form,
+  InputNumber, Radio, Select, Statistic, Tag, Pagination, Popconfirm
+- Type imports: Position from @/types/trading, Account from @/types/account
+- All API calls go through useTrading hook (connectRPC-generated client)
+- BigInt used for ticket in closeOrder (positions table)
+
+## Acceptance Criteria
+- [x] 用户可查看账户摘要 (Balance/Equity/Margin)
+- [x] 用户可在账户间切换
+- [x] 用户可查看当前持仓 (Symbol/Side/Volume/P&L)
+- [x] 用户可平仓 (带确认弹窗)
+- [x] 用户可下单 (Buy/Sell, Market/Limit/Stop, Symbol, Volume, SL/TP)
+- [x] 用户可查看订单历史 (分页)
+- [x] 所有文案已国际化
+- [x] TypeScript 编译通过
+- [x] ESLint 通过

@@ -1,5 +1,32 @@
 const trading = {
   trading: {
+    title: 'Trading',
+    account: 'Account',
+    balance: 'Balance',
+    equity: 'Equity',
+    margin: 'Margin',
+    freeMargin: 'Free Margin',
+    marginLevel: 'Margin Level',
+    noAccount: 'No account selected',
+    placeOrder: 'Place Order',
+    symbol: 'Symbol',
+    type: 'Type',
+    volume: 'Volume',
+    price: 'Price',
+    stopLoss: 'Stop Loss',
+    takeProfit: 'Take Profit',
+    side: 'Side',
+    buy: 'Buy',
+    sell: 'Sell',
+    market: 'Market',
+    limit: 'Limit',
+    stop: 'Stop',
+    positions: 'Positions',
+    noPositions: 'No open positions',
+    closePosition: 'Close',
+    closePositionConfirm: 'Close this position?',
+    orderHistory: 'Order History',
+    noOrders: 'No orders yet',
     risk: {
       errors: {
         RISK_ACCOUNT_TRADE_DISABLED: {
