@@ -1,0 +1,66 @@
+=== RUN   TestNormalizerListenerFallback
+=== PAUSE TestNormalizerListenerFallback
+=== RUN   TestNormalizerListenerPgListen
+=== PAUSE TestNormalizerListenerPgListen
+=== RUN   TestNormalizerListener_StartStop
+=== PAUSE TestNormalizerListener_StartStop
+=== RUN   TestNormalizerListener
+=== PAUSE TestNormalizerListener
+=== RUN   TestNormalizer
+=== PAUSE TestNormalizer
+=== RUN   TestNormalizerInvalidator_StartStop
+=== PAUSE TestNormalizerInvalidator_StartStop
+=== RUN   TestNormalizer_Resolve_CacheHit
+=== PAUSE TestNormalizer_Resolve_CacheHit
+=== RUN   TestNormalizer_Resolve_CacheGuard
+=== PAUSE TestNormalizer_Resolve_CacheGuard
+=== RUN   TestNormalizerInvalidator_TickerLoop
+=== PAUSE TestNormalizerInvalidator_TickerLoop
+=== CONT  TestNormalizerListenerFallback
+=== CONT  TestNormalizerInvalidator_StartStop
+=== CONT  TestNormalizer
+    orphan_test.go:126: normalizer: EURUSDm → EURUSDM
+--- PASS: TestNormalizer (0.00s)
+=== CONT  TestNormalizerListener
+=== RUN   TestNormalizerListener/PgListen
+=== CONT  TestNormalizerInvalidator_TickerLoop
+--- PASS: TestNormalizerInvalidator_StartStop (0.01s)
+=== CONT  TestNormalizerListener_StartStop
+--- PASS: TestNormalizerInvalidator_TickerLoop (0.03s)
+=== CONT  TestNormalizerListenerPgListen
+    normalizer_invalidator_test.go:120: PG LISTEN path dispatched 2 valid invalidations + skipped 2 bad payloads
+--- PASS: TestNormalizerListenerPgListen (0.00s)
+=== CONT  TestNormalizer_Resolve_CacheGuard
+=== RUN   TestNormalizerListener/Fallback
+=== NAME  TestNormalizerListener_StartStop
+    normalizer_invalidator_test.go:139: NormalizerListener: start/stop lifecycle works
+--- PASS: TestNormalizerListener_StartStop (0.05s)
+=== CONT  TestNormalizer_Resolve_CacheHit
+--- PASS: TestNormalizer_Resolve_CacheHit (0.00s)
+--- PASS: TestNormalizer_Resolve_CacheGuard (0.08s)
+=== NAME  TestNormalizerListenerFallback
+    normalizer_invalidator_test.go:76: ticker fallback ran cleanly with zero spurious invalidations
+--- PASS: TestNormalizerListenerFallback (0.15s)
+--- PASS: TestNormalizerListener (0.15s)
+    --- PASS: TestNormalizerListener/PgListen (0.05s)
+    --- PASS: TestNormalizerListener/Fallback (0.10s)
+PASS
+ok  	anttrader/internal/mdgateway	0.176s
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/brokersearch	0.015s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mdtick	0.004s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mt4	0.009s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mt5	0.010s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/backfiller	0.007s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/chmigrate	0.009s [no tests to run]

@@ -1,30 +1,1696 @@
-Card: M10.1-2 — arrived_unix_ms time-axis discipline
-Date: 2026-05-24
-Status: ☑
-
-=== Verification Output ===
-
-$ grep -nE '\bts_unix_ms\b.*\b(bucket|partition|cutoff|TTL|window)' \
-    backend/internal/mdgateway/clickhouse_writer.go backend/internal/mdgateway/bar_aggregator.go
-exit code: 1 (no matches — no boundary misuse of ts_unix_ms)
-
-$ go test -race ./internal/mdgateway/...
-?   anttrader/internal/mdgateway [no test files]
-?   anttrader/internal/mdgateway/adapter/mdtick [no test files]
-?   anttrader/internal/mdgateway/adapter/mt4 [no test files]
-?   anttrader/internal/mdgateway/adapter/mt5 [no test files]
-?   anttrader/internal/mdgateway/chmigrate [no test files]
-exit code: 0
-
-=== Implementation Notes ===
-
-- bar_aggregator.go already used ArrivedUnixMs for bucketing (QUIRK Q-001).
-  No boundary changes needed; added ADR-0008 §2.2 + ADR-0009 §2.2 annotation.
-- clickhouse_writer.go: ts_unix_ms only appears as a data column in INSERT statements,
-  never for boundary decisions. Added ADR-0008 §2.2 annotation to clarify
-  ts_unix_ms = broker clock (business display) vs arrived_unix_ms = system clock.
-- bar CloseTsUnixMs already correctly sourced from ArrivedUnixMs (ADR-0009 §2.2).
-
-Files changed:
-- backend/internal/mdgateway/clickhouse_writer.go (ADR annotations)
-- backend/internal/mdgateway/bar_aggregator.go (ADR annotation)
+=== RUN   TestAccountEventPublisher_NilJS
+--- PASS: TestAccountEventPublisher_NilJS (0.00s)
+=== RUN   TestAccountEventPublisher_NonNilJS
+--- PASS: TestAccountEventPublisher_NonNilJS (0.00s)
+=== RUN   TestAccountEventSubjects
+--- PASS: TestAccountEventSubjects (0.00s)
+=== RUN   TestBarFinality
+=== PAUSE TestBarFinality
+=== RUN   TestCircuitBreakerDefaultThresholds
+=== PAUSE TestCircuitBreakerDefaultThresholds
+=== RUN   TestCircuitBreakerStateString
+=== PAUSE TestCircuitBreakerStateString
+=== RUN   TestCircuitBreakerClosedAllows
+=== PAUSE TestCircuitBreakerClosedAllows
+=== RUN   TestCircuitBreakerTripsOpen
+=== PAUSE TestCircuitBreakerTripsOpen
+=== RUN   TestCircuitBreakerOpenBlocks
+=== PAUSE TestCircuitBreakerOpenBlocks
+=== RUN   TestCircuitBreakerHalfOpenProbe
+=== PAUSE TestCircuitBreakerHalfOpenProbe
+=== RUN   TestCircuitBreakerHalfOpenClose
+=== PAUSE TestCircuitBreakerHalfOpenClose
+=== RUN   TestCircuitBreakerHalfOpenFailureReopens
+=== PAUSE TestCircuitBreakerHalfOpenFailureReopens
+=== RUN   TestCircuitBreakerFailuresInHalfOpen
+=== PAUSE TestCircuitBreakerFailuresInHalfOpen
+=== RUN   TestCircuitBreakerClosedSuccessResetsNothing
+=== PAUSE TestCircuitBreakerClosedSuccessResetsNothing
+=== RUN   TestCircuitBreakerConcurrent
+=== PAUSE TestCircuitBreakerConcurrent
+=== RUN   TestCircuitBreakerConcurrentTripsOpen
+=== PAUSE TestCircuitBreakerConcurrentTripsOpen
+=== RUN   TestBrokerKey
+=== PAUSE TestBrokerKey
+=== RUN   TestCircuitBreakerOpenedAt
+=== PAUSE TestCircuitBreakerOpenedAt
+=== RUN   TestCircuitBreakerCooldownNotElapsed
+=== PAUSE TestCircuitBreakerCooldownNotElapsed
+=== RUN   TestDLQParseError
+=== PAUSE TestDLQParseError
+=== RUN   TestDLQSampling
+=== PAUSE TestDLQSampling
+=== RUN   TestDLQAsync
+=== PAUSE TestDLQAsync
+=== RUN   TestManagerAddGateway
+=== PAUSE TestManagerAddGateway
+=== RUN   TestManagerRemoveGateway
+=== PAUSE TestManagerRemoveGateway
+=== RUN   TestManagerHealthStates
+=== PAUSE TestManagerHealthStates
+=== RUN   TestManagerGatewayCount
+=== PAUSE TestManagerGatewayCount
+=== RUN   TestManager_New
+=== PAUSE TestManager_New
+=== RUN   TestHandleTickCreatesSixSpans
+=== PAUSE TestHandleTickCreatesSixSpans
+=== RUN   TestHandleTickNoOpWhenTracerNil
+=== PAUSE TestHandleTickNoOpWhenTracerNil
+=== RUN   TestTraceSamplingHonored
+=== PAUSE TestTraceSamplingHonored
+=== RUN   TestMarketStateTracker_Update
+=== PAUSE TestMarketStateTracker_Update
+=== RUN   TestMarketStateTracker_StaleQuote
+=== PAUSE TestMarketStateTracker_StaleQuote
+=== RUN   TestMarketStateTracker_GetAndAll
+=== PAUSE TestMarketStateTracker_GetAndAll
+=== RUN   TestSessionClock_IsWeekend
+=== PAUSE TestSessionClock_IsWeekend
+=== RUN   TestSessionClock_IsHoliday
+=== PAUSE TestSessionClock_IsHoliday
+=== RUN   TestSessionClock_SessionPhase
+=== PAUSE TestSessionClock_SessionPhase
+=== RUN   TestSessionClock_InSwapWindow
+=== PAUSE TestSessionClock_InSwapWindow
+=== RUN   TestSessionClock_BrokerOffset
+=== PAUSE TestSessionClock_BrokerOffset
+=== RUN   TestSessionClock_BarBoundary
+=== PAUSE TestSessionClock_BarBoundary
+=== RUN   TestSessionClock_ClockSkewMs
+=== PAUSE TestSessionClock_ClockSkewMs
+=== RUN   TestQuality_NTPSkewDrop
+=== PAUSE TestQuality_NTPSkewDrop
+=== RUN   TestQuality_SpreadComputation
+=== PAUSE TestQuality_SpreadComputation
+=== RUN   TestStuffingDetector_NormalTickRate
+=== PAUSE TestStuffingDetector_NormalTickRate
+=== RUN   TestStuffingDetector_IsPaused
+=== PAUSE TestStuffingDetector_IsPaused
+=== RUN   TestStuffingDetector_ObserveTracksRate
+=== PAUSE TestStuffingDetector_ObserveTracksRate
+=== RUN   TestQuality_SpreadZscore
+=== PAUSE TestQuality_SpreadZscore
+=== RUN   TestQuality_TickRateZscore
+=== PAUSE TestQuality_TickRateZscore
+=== RUN   TestNormalizerListenerFallback
+=== PAUSE TestNormalizerListenerFallback
+=== RUN   TestNormalizerListenerPgListen
+=== PAUSE TestNormalizerListenerPgListen
+=== RUN   TestNormalizerListener_StartStop
+=== PAUSE TestNormalizerListener_StartStop
+=== RUN   TestNormalizerListener
+=== PAUSE TestNormalizerListener
+=== RUN   TestRunnerFatalOnChDown
+=== PAUSE TestRunnerFatalOnChDown
+=== RUN   TestCHBufferEnvSwitch
+=== RUN   TestCHBufferEnvSwitch/default_uses_buffer
+=== RUN   TestCHBufferEnvSwitch/false_bypasses_buffer
+=== RUN   TestCHBufferEnvSwitch/any_other_value_uses_buffer
+=== RUN   TestCHBufferEnvSwitch/runtime_toggle
+--- PASS: TestCHBufferEnvSwitch (0.01s)
+    --- PASS: TestCHBufferEnvSwitch/default_uses_buffer (0.00s)
+    --- PASS: TestCHBufferEnvSwitch/false_bypasses_buffer (0.00s)
+    --- PASS: TestCHBufferEnvSwitch/any_other_value_uses_buffer (0.01s)
+    --- PASS: TestCHBufferEnvSwitch/runtime_toggle (0.00s)
+=== RUN   TestNormalizer
+=== PAUSE TestNormalizer
+=== RUN   TestQuality
+=== PAUSE TestQuality
+=== RUN   TestTickDedup
+=== PAUSE TestTickDedup
+=== RUN   TestTelemetryCompleteness
+=== PAUSE TestTelemetryCompleteness
+=== RUN   TestTraceExport
+=== PAUSE TestTraceExport
+=== RUN   TestDLQ
+=== PAUSE TestDLQ
+=== RUN   TestPublishReplayHeader
+=== PAUSE TestPublishReplayHeader
+=== RUN   TestPublisherDedupHeader
+=== PAUSE TestPublisherDedupHeader
+=== RUN   TestPublisherSubjectFormat
+=== PAUSE TestPublisherSubjectFormat
+=== RUN   TestPublisherBarWithoutReplay
+=== PAUSE TestPublisherBarWithoutReplay
+=== RUN   TestPublisherTickWithoutCanonical
+=== PAUSE TestPublisherTickWithoutCanonical
+=== RUN   TestHashTickDeterministic
+=== PAUSE TestHashTickDeterministic
+=== RUN   TestStripSuffix
+=== PAUSE TestStripSuffix
+=== RUN   TestInvalidateCache
+=== PAUSE TestInvalidateCache
+=== RUN   TestNewNormalizer_NilPool
+=== PAUSE TestNewNormalizer_NilPool
+=== RUN   TestDefaultQuoteSymbols
+=== PAUSE TestDefaultQuoteSymbols
+=== RUN   TestCgroupMemoryLimit
+=== PAUSE TestCgroupMemoryLimit
+=== RUN   TestCurrentMemoryRatio
+=== PAUSE TestCurrentMemoryRatio
+=== RUN   TestNewTickDedup_Defaults
+=== PAUSE TestNewTickDedup_Defaults
+=== RUN   TestTickDedup_Seen
+=== PAUSE TestTickDedup_Seen
+=== RUN   TestTickDedup_DifferentKeys
+=== PAUSE TestTickDedup_DifferentKeys
+=== RUN   TestTickHash
+=== PAUSE TestTickHash
+=== RUN   TestAbs64
+=== PAUSE TestAbs64
+=== RUN   TestZscore
+=== PAUSE TestZscore
+=== RUN   TestDefaultQualityConfig
+=== PAUSE TestDefaultQualityConfig
+=== RUN   TestNewQuality
+=== PAUSE TestNewQuality
+=== RUN   TestSpreadZscore_Empty
+=== PAUSE TestSpreadZscore_Empty
+=== RUN   TestTickRateZscore_Empty
+=== PAUSE TestTickRateZscore_Empty
+=== RUN   TestCheck_ValidTick
+=== PAUSE TestCheck_ValidTick
+=== RUN   TestCheck_InvertedBidAsk
+=== PAUSE TestCheck_InvertedBidAsk
+=== RUN   TestIsOutlier_EmptyHistory
+=== PAUSE TestIsOutlier_EmptyHistory
+=== RUN   TestIsOutlier_Normal
+=== PAUSE TestIsOutlier_Normal
+=== RUN   TestTrackSpread_TrackTickRate
+=== PAUSE TestTrackSpread_TrackTickRate
+=== RUN   TestStateString_Unknown
+=== PAUSE TestStateString_Unknown
+=== RUN   TestCircuitBreaker_OpenBlocks
+=== PAUSE TestCircuitBreaker_OpenBlocks
+=== RUN   TestCircuitBreaker_HalfOpenTransition
+=== PAUSE TestCircuitBreaker_HalfOpenTransition
+=== RUN   TestCircuitBreaker_HalfOpenToClosed
+=== PAUSE TestCircuitBreaker_HalfOpenToClosed
+=== RUN   TestCircuitBreaker_HalfOpenToOpen
+=== PAUSE TestCircuitBreaker_HalfOpenToOpen
+=== RUN   TestDefaultCHWriterConfig
+=== PAUSE TestDefaultCHWriterConfig
+=== RUN   TestTickTargetTable
+=== PAUSE TestTickTargetTable
+=== RUN   TestBarTargetTable
+=== PAUSE TestBarTargetTable
+=== RUN   TestBufferEnabled
+=== PAUSE TestBufferEnabled
+=== RUN   TestDefaultSessionClock
+=== PAUSE TestDefaultSessionClock
+=== RUN   TestSetBrokerOffset
+=== PAUSE TestSetBrokerOffset
+=== RUN   TestAddRemoveHoliday
+=== PAUSE TestAddRemoveHoliday
+=== RUN   TestIsWeekend
+=== PAUSE TestIsWeekend
+=== RUN   TestSessionPhase
+=== PAUSE TestSessionPhase
+=== RUN   TestInSwapWindow
+=== PAUSE TestInSwapWindow
+=== RUN   TestBarBoundary
+=== PAUSE TestBarBoundary
+=== RUN   TestClockSkewMs
+=== PAUSE TestClockSkewMs
+=== RUN   TestDefaultMarketStateConfig
+=== PAUSE TestDefaultMarketStateConfig
+=== RUN   TestMarketState_GetAll
+=== PAUSE TestMarketState_GetAll
+=== RUN   TestMarketState_RefreshAges
+=== PAUSE TestMarketState_RefreshAges
+=== RUN   TestEvaluateTradeable_Holiday
+=== PAUSE TestEvaluateTradeable_Holiday
+=== RUN   TestDefaultSpillConfig
+=== PAUSE TestDefaultSpillConfig
+=== RUN   TestNewUserMetricsCollector
+=== PAUSE TestNewUserMetricsCollector
+=== RUN   TestRecordAndFlush
+=== PAUSE TestRecordAndFlush
+=== RUN   TestFlushedTotal_Initial
+=== PAUSE TestFlushedTotal_Initial
+=== RUN   TestNewBarAggregator
+=== PAUSE TestNewBarAggregator
+=== RUN   TestLoadFinalizedBars_Empty
+=== PAUSE TestLoadFinalizedBars_Empty
+=== RUN   TestIngestExternalBar_NoFinalized
+=== PAUSE TestIngestExternalBar_NoFinalized
+=== RUN   TestBarSkippedFinalized
+=== PAUSE TestBarSkippedFinalized
+=== RUN   TestNewNormalizerInvalidator
+=== PAUSE TestNewNormalizerInvalidator
+=== RUN   TestNormalizerInvalidator_StartStop
+=== PAUSE TestNormalizerInvalidator_StartStop
+=== RUN   TestNewPublisher_NilJS
+=== PAUSE TestNewPublisher_NilJS
+=== RUN   TestRecordClockSkew
+=== PAUSE TestRecordClockSkew
+=== RUN   TestDLQSampled
+=== PAUSE TestDLQSampled
+=== RUN   TestObserveE2eLatency
+=== PAUSE TestObserveE2eLatency
+=== RUN   TestUpdateSpillPendingFiles_Empty
+=== PAUSE TestUpdateSpillPendingFiles_Empty
+=== RUN   TestRecordGap
+=== PAUSE TestRecordGap
+=== RUN   TestClockSkewMaxSeconds
+=== PAUSE TestClockSkewMaxSeconds
+=== RUN   TestStaleAccountCount
+=== PAUSE TestStaleAccountCount
+=== RUN   TestBackpressureMetrics
+=== PAUSE TestBackpressureMetrics
+=== RUN   TestStuffingAnomalyMetrics
+=== PAUSE TestStuffingAnomalyMetrics
+=== RUN   TestNewManager
+=== PAUSE TestNewManager
+=== RUN   TestManager_Health_Empty
+=== PAUSE TestManager_Health_Empty
+=== RUN   TestCHWriterDrain_Empty
+=== PAUSE TestCHWriterDrain_Empty
+=== RUN   TestDefaultStuffingDetectorConfig
+=== PAUSE TestDefaultStuffingDetectorConfig
+=== RUN   TestNewStuffingDetector
+=== PAUSE TestNewStuffingDetector
+=== RUN   TestStuffingDetector_IsPaused_Empty
+=== PAUSE TestStuffingDetector_IsPaused_Empty
+=== RUN   TestStuffingDetector_PausedSymbols_Empty
+=== PAUSE TestStuffingDetector_PausedSymbols_Empty
+=== RUN   TestStuffingDetector_Observe_FirstTick
+=== PAUSE TestStuffingDetector_Observe_FirstTick
+=== RUN   TestStuffingDetector_Observe_Multiple
+=== PAUSE TestStuffingDetector_Observe_Multiple
+=== RUN   TestCHWriter_EnqueueBar
+=== PAUSE TestCHWriter_EnqueueBar
+=== RUN   TestCHWriter_EnqueueBar_FullQueue
+=== PAUSE TestCHWriter_EnqueueBar_FullQueue
+=== RUN   TestCHWriter_Flush_Empty
+=== PAUSE TestCHWriter_Flush_Empty
+=== RUN   TestComputeRateZscore
+=== PAUSE TestComputeRateZscore
+=== RUN   TestComputeRateZscore_Spike
+=== PAUSE TestComputeRateZscore_Spike
+=== RUN   TestComputeRateZscore_SingleValue
+=== PAUSE TestComputeRateZscore_SingleValue
+=== RUN   TestBrokerTime
+=== PAUSE TestBrokerTime
+=== RUN   TestSetBaseContext
+=== PAUSE TestSetBaseContext
+=== RUN   TestRemoveGateway_NotExist
+=== PAUSE TestRemoveGateway_NotExist
+=== RUN   TestSetOnSpillFail
+=== PAUSE TestSetOnSpillFail
+=== RUN   TestSetUserLimiter
+=== PAUSE TestSetUserLimiter
+=== RUN   TestSetDLQWriter
+=== PAUSE TestSetDLQWriter
+=== RUN   TestNewSpillWriter_InvalidDir
+=== PAUSE TestNewSpillWriter_InvalidDir
+=== RUN   TestPercentile_Empty
+=== PAUSE TestPercentile_Empty
+=== RUN   TestPercentile_WithData
+=== PAUSE TestPercentile_WithData
+=== RUN   TestNewHistogram
+=== PAUSE TestNewHistogram
+=== RUN   TestNewNormalizer_NilPG
+=== PAUSE TestNewNormalizer_NilPG
+=== RUN   TestCHWriter_FlushTicks_WithMockConn
+=== PAUSE TestCHWriter_FlushTicks_WithMockConn
+=== RUN   TestCHWriter_FlushBars_WithMockConn
+=== PAUSE TestCHWriter_FlushBars_WithMockConn
+=== RUN   TestCHWriter_Start_WithMockConn
+=== PAUSE TestCHWriter_Start_WithMockConn
+=== RUN   TestCHWriter_EnqueueTick
+=== PAUSE TestCHWriter_EnqueueTick
+=== RUN   TestCHWriter_SpillFailed
+=== PAUSE TestCHWriter_SpillFailed
+=== RUN   TestSpillWriter_ShouldRotate
+=== PAUSE TestSpillWriter_ShouldRotate
+=== RUN   TestPublisher_PublishTick_NilJS
+=== PAUSE TestPublisher_PublishTick_NilJS
+=== RUN   TestPublisher_PublishBar_NilJS
+=== PAUSE TestPublisher_PublishBar_NilJS
+=== RUN   TestPublisher_PublishBarRevision_NilJS
+=== PAUSE TestPublisher_PublishBarRevision_NilJS
+=== RUN   TestBarAggregator_AddTick
+=== PAUSE TestBarAggregator_AddTick
+=== RUN   TestResolve
+=== PAUSE TestResolve
+=== RUN   TestSpillWriter_WriteBar
+=== PAUSE TestSpillWriter_WriteBar
+=== RUN   TestSpillWriter_WriteTick_Real
+=== PAUSE TestSpillWriter_WriteTick_Real
+=== RUN   TestCHWriter_WriteSpillTick_WithSpill
+=== PAUSE TestCHWriter_WriteSpillTick_WithSpill
+=== RUN   TestCHWriter_WriteSpillBar_WithSpill
+=== PAUSE TestCHWriter_WriteSpillBar_WithSpill
+=== RUN   TestShouldSample_Always
+=== PAUSE TestShouldSample_Always
+=== RUN   TestBarAggregator_AddTick_SameBucket
+=== PAUSE TestBarAggregator_AddTick_SameBucket
+=== RUN   TestBarAggregator_AddTick_DifferentBucket
+=== PAUSE TestBarAggregator_AddTick_DifferentBucket
+=== RUN   TestBarAggregator_IngestExternalBar_Finalized
+=== PAUSE TestBarAggregator_IngestExternalBar_Finalized
+=== RUN   TestCHWriter_EnqueueTick_FullQueue
+=== PAUSE TestCHWriter_EnqueueTick_FullQueue
+=== RUN   TestNormalizer_Resolve_CacheHit
+=== PAUSE TestNormalizer_Resolve_CacheHit
+=== RUN   TestNormalizer_Resolve_CacheGuard
+=== PAUSE TestNormalizer_Resolve_CacheGuard
+=== RUN   TestDLQWriter_WriteTick_WithCHConn
+=== PAUSE TestDLQWriter_WriteTick_WithCHConn
+=== RUN   TestDLQWriter_WriteTick_SpillOnly
+=== PAUSE TestDLQWriter_WriteTick_SpillOnly
+=== RUN   TestCheck_StaleTick
+=== PAUSE TestCheck_StaleTick
+=== RUN   TestEvaluateTradeable_Stale
+=== PAUSE TestEvaluateTradeable_Stale
+=== RUN   TestEvaluateTradeable_NoStatePhase
+=== PAUSE TestEvaluateTradeable_NoStatePhase
+=== RUN   TestEvaluateTradeable_Weekend
+=== PAUSE TestEvaluateTradeable_Weekend
+=== RUN   TestEvaluateTradeable_SpreadAnomaly
+=== PAUSE TestEvaluateTradeable_SpreadAnomaly
+=== RUN   TestNormalizerInvalidator_TickerLoop
+=== PAUSE TestNormalizerInvalidator_TickerLoop
+=== RUN   TestSpillReplay_Run_NoFiles
+=== PAUSE TestSpillReplay_Run_NoFiles
+=== RUN   TestStuffingDetector_IsPaused_Expired
+=== PAUSE TestStuffingDetector_IsPaused_Expired
+=== RUN   TestStuffingDetector_IsPaused_Active
+=== PAUSE TestStuffingDetector_IsPaused_Active
+=== RUN   TestCHWriter_Start_FullFlush
+=== PAUSE TestCHWriter_Start_FullFlush
+=== RUN   TestSpillWriter_Rotate_TimeBased
+=== PAUSE TestSpillWriter_Rotate_TimeBased
+=== RUN   TestDLQWriter_SpillDLQ_WithSpill
+=== PAUSE TestDLQWriter_SpillDLQ_WithSpill
+=== RUN   TestClockSkewMs_WithOffset
+=== PAUSE TestClockSkewMs_WithOffset
+=== RUN   TestCheck_StaleArrival
+=== PAUSE TestCheck_StaleArrival
+=== RUN   TestMarketState_UpdateStale
+=== PAUSE TestMarketState_UpdateStale
+=== RUN   TestSpillReplayDualWrite
+=== PAUSE TestSpillReplayDualWrite
+=== RUN   TestUserMetricsCollector_Record
+=== PAUSE TestUserMetricsCollector_Record
+=== RUN   TestUserMetricsCollector_FlushResets
+=== PAUSE TestUserMetricsCollector_FlushResets
+=== RUN   TestUserMetricsCollector_EmptyFlush
+=== PAUSE TestUserMetricsCollector_EmptyFlush
+=== RUN   TestUserMetricsFlusher_Lifecycle
+=== PAUSE TestUserMetricsFlusher_Lifecycle
+=== RUN   TestUserMetricsFlusher_NoWriteFn
+=== PAUSE TestUserMetricsFlusher_NoWriteFn
+=== RUN   TestUserMetricsFlusher_DefaultInterval
+=== PAUSE TestUserMetricsFlusher_DefaultInterval
+=== RUN   TestUserMetricsFlusher_ConcurrentRecord
+=== PAUSE TestUserMetricsFlusher_ConcurrentRecord
+=== CONT  TestCircuitBreakerClosedAllows
+=== CONT  TestDefaultMarketStateConfig
+=== CONT  TestDLQWriter_WriteTick_SpillOnly
+--- PASS: TestCircuitBreakerClosedAllows (0.00s)
+--- PASS: TestDefaultMarketStateConfig (0.00s)
+=== CONT  TestBarBoundary
+=== CONT  TestAddRemoveHoliday
+--- PASS: TestBarBoundary (0.00s)
+=== CONT  TestInSwapWindow
+--- PASS: TestAddRemoveHoliday (0.00s)
+=== CONT  TestSetBrokerOffset
+--- PASS: TestInSwapWindow (0.00s)
+--- PASS: TestSetBrokerOffset (0.00s)
+=== CONT  TestDefaultSessionClock
+=== CONT  TestSessionPhase
+--- PASS: TestSessionPhase (0.00s)
+=== CONT  TestDefaultCHWriterConfig
+=== CONT  TestBufferEnabled
+=== CONT  TestBarTargetTable
+=== CONT  TestIsWeekend
+=== CONT  TestCircuitBreaker_HalfOpenToClosed
+=== CONT  TestCircuitBreaker_HalfOpenTransition
+--- PASS: TestDLQWriter_WriteTick_SpillOnly (0.00s)
+=== CONT  TestTickTargetTable
+=== CONT  TestCircuitBreaker_OpenBlocks
+=== CONT  TestStateString_Unknown
+=== CONT  TestTrackSpread_TrackTickRate
+=== CONT  TestCircuitBreaker_HalfOpenToOpen
+--- PASS: TestDefaultSessionClock (0.00s)
+--- PASS: TestDefaultCHWriterConfig (0.00s)
+--- PASS: TestBarTargetTable (0.00s)
+--- PASS: TestIsWeekend (0.00s)
+--- PASS: TestTickTargetTable (0.00s)
+--- PASS: TestCircuitBreaker_OpenBlocks (0.00s)
+--- PASS: TestStateString_Unknown (0.00s)
+--- PASS: TestTrackSpread_TrackTickRate (0.00s)
+=== CONT  TestIsOutlier_Normal
+--- PASS: TestBufferEnabled (0.00s)
+=== NAME  TestIsOutlier_Normal
+    pure_test.go:305: nearby price flagged as outlier (zscore threshold may be tight)
+--- PASS: TestIsOutlier_Normal (0.00s)
+=== CONT  TestIsOutlier_EmptyHistory
+--- PASS: TestIsOutlier_EmptyHistory (0.00s)
+=== CONT  TestCheck_ValidTick
+=== CONT  TestTickRateZscore_Empty
+--- PASS: TestCheck_ValidTick (0.00s)
+=== CONT  TestSpreadZscore_Empty
+=== CONT  TestCheck_InvertedBidAsk
+--- PASS: TestSpreadZscore_Empty (0.00s)
+=== CONT  TestNewQuality
+--- PASS: TestTickRateZscore_Empty (0.00s)
+--- PASS: TestCheck_InvertedBidAsk (0.00s)
+=== CONT  TestZscore
+--- PASS: TestNewQuality (0.00s)
+=== CONT  TestAbs64
+--- PASS: TestAbs64 (0.00s)
+--- PASS: TestZscore (0.00s)
+=== CONT  TestTickHash
+--- PASS: TestTickHash (0.00s)
+=== CONT  TestPercentile_Empty
+--- PASS: TestPercentile_Empty (0.00s)
+=== CONT  TestTickDedup_DifferentKeys
+--- PASS: TestTickDedup_DifferentKeys (0.00s)
+=== CONT  TestNewHistogram
+--- PASS: TestNewHistogram (0.00s)
+=== CONT  TestNewTickDedup_Defaults
+--- PASS: TestNewTickDedup_Defaults (0.00s)
+=== CONT  TestNewSpillWriter_InvalidDir
+--- PASS: TestNewSpillWriter_InvalidDir (0.00s)
+=== CONT  TestTickDedup_Seen
+--- PASS: TestTickDedup_Seen (0.00s)
+=== CONT  TestSetDLQWriter
+--- PASS: TestSetDLQWriter (0.00s)
+=== CONT  TestCgroupMemoryLimit
+=== CONT  TestRemoveGateway_NotExist
+--- PASS: TestRemoveGateway_NotExist (0.00s)
+=== CONT  TestCurrentMemoryRatio
+--- PASS: TestCgroupMemoryLimit (0.00s)
+=== CONT  TestSetOnSpillFail
+--- PASS: TestCurrentMemoryRatio (0.00s)
+--- PASS: TestSetOnSpillFail (0.00s)
+=== CONT  TestNewNormalizer_NilPool
+--- PASS: TestNewNormalizer_NilPool (0.00s)
+=== CONT  TestBrokerTime
+--- PASS: TestBrokerTime (0.00s)
+=== CONT  TestComputeRateZscore_SingleValue
+--- PASS: TestComputeRateZscore_SingleValue (0.00s)
+=== CONT  TestInvalidateCache
+--- PASS: TestInvalidateCache (0.00s)
+=== CONT  TestComputeRateZscore
+--- PASS: TestComputeRateZscore (0.00s)
+=== CONT  TestStripSuffix
+=== RUN   TestStripSuffix/dot_m_suffix
+=== RUN   TestStripSuffix/dot_pro_suffix
+=== RUN   TestStripSuffix/dot_x_suffix
+=== RUN   TestStripSuffix/dot_c_suffix
+=== RUN   TestStripSuffix/unknown_dot_suffix_kept
+=== RUN   TestStripSuffix/no_suffix
+=== RUN   TestStripSuffix/_i_suffix
+=== RUN   TestStripSuffix/_r_suffix
+=== RUN   TestStripSuffix/_institutional_suffix
+=== RUN   TestStripSuffix/_retail_suffix
+=== RUN   TestStripSuffix/lowercase_input
+=== RUN   TestStripSuffix/empty
+--- PASS: TestStripSuffix (0.00s)
+    --- PASS: TestStripSuffix/dot_m_suffix (0.00s)
+    --- PASS: TestStripSuffix/dot_pro_suffix (0.00s)
+    --- PASS: TestStripSuffix/dot_x_suffix (0.00s)
+    --- PASS: TestStripSuffix/dot_c_suffix (0.00s)
+    --- PASS: TestStripSuffix/unknown_dot_suffix_kept (0.00s)
+    --- PASS: TestStripSuffix/no_suffix (0.00s)
+    --- PASS: TestStripSuffix/_i_suffix (0.00s)
+    --- PASS: TestStripSuffix/_r_suffix (0.00s)
+    --- PASS: TestStripSuffix/_institutional_suffix (0.00s)
+    --- PASS: TestStripSuffix/_retail_suffix (0.00s)
+    --- PASS: TestStripSuffix/lowercase_input (0.00s)
+    --- PASS: TestStripSuffix/empty (0.00s)
+=== CONT  TestCHWriter_EnqueueBar_FullQueue
+--- PASS: TestCHWriter_EnqueueBar_FullQueue (0.00s)
+=== CONT  TestComputeRateZscore_Spike
+--- PASS: TestComputeRateZscore_Spike (0.00s)
+=== CONT  TestDefaultQuoteSymbols
+--- PASS: TestDefaultQuoteSymbols (0.00s)
+=== CONT  TestStuffingDetector_Observe_FirstTick
+=== CONT  TestStuffingDetector_PausedSymbols_Empty
+--- PASS: TestStuffingDetector_PausedSymbols_Empty (0.00s)
+=== CONT  TestPublisherTickWithoutCanonical
+    publisher_test.go:148: PublisherTickWithoutCanonical: metals symbol published
+--- PASS: TestCircuitBreaker_HalfOpenTransition (0.01s)
+--- PASS: TestCircuitBreaker_HalfOpenToOpen (0.01s)
+=== CONT  TestStuffingDetector_IsPaused_Empty
+--- PASS: TestPublisherTickWithoutCanonical (0.00s)
+=== CONT  TestManager_Health_Empty
+--- PASS: TestCircuitBreaker_HalfOpenToClosed (0.01s)
+--- PASS: TestStuffingDetector_Observe_FirstTick (0.00s)
+=== CONT  TestPublisherBarWithoutReplay
+    publisher_test.go:131: PublisherBarWithoutReplay: non-replay bar published
+=== CONT  TestNewStuffingDetector
+=== CONT  TestDefaultStuffingDetectorConfig
+=== CONT  TestStuffingDetector_Observe_Multiple
+=== CONT  TestBackpressureMetrics
+=== CONT  TestStaleAccountCount
+--- PASS: TestManager_Health_Empty (0.00s)
+=== CONT  TestClockSkewMaxSeconds
+--- PASS: TestNewStuffingDetector (0.00s)
+--- PASS: TestBackpressureMetrics (0.00s)
+--- PASS: TestClockSkewMaxSeconds (0.00s)
+=== CONT  TestStuffingAnomalyMetrics
+--- PASS: TestDefaultStuffingDetectorConfig (0.00s)
+=== CONT  TestHashTickDeterministic
+=== CONT  TestObserveE2eLatency
+--- PASS: TestStuffingAnomalyMetrics (0.00s)
+=== NAME  TestHashTickDeterministic
+    publisher_test.go:164: HashTickDeterministic: idempotent and distinct
+=== CONT  TestPublisherSubjectFormat
+    publisher_test.go:109: PublisherSubjectFormat: subjects match NATS convention
+=== CONT  TestDLQSampled
+=== CONT  TestNormalizerInvalidator_StartStop
+=== CONT  TestRecordGap
+=== CONT  TestPublishReplayHeader
+--- PASS: TestStuffingDetector_IsPaused_Empty (0.00s)
+=== NAME  TestPublishReplayHeader
+    publisher_test.go:55: PublishReplayHeader: all publishes succeeded with nil JetStream
+=== CONT  TestRecordClockSkew
+=== CONT  TestNewPublisher_NilJS
+=== CONT  TestBarSkippedFinalized
+=== CONT  TestIngestExternalBar_NoFinalized
+=== CONT  TestLoadFinalizedBars_Empty
+=== CONT  TestNewBarAggregator
+=== CONT  TestFlushedTotal_Initial
+=== CONT  TestNewNormalizerInvalidator
+=== CONT  TestDLQ
+=== CONT  TestNewUserMetricsCollector
+=== CONT  TestRecordAndFlush
+=== NAME  TestDLQ
+    orphan_test.go:180: DLQ: writer created successfully
+=== CONT  TestTelemetryCompleteness
+=== CONT  TestDefaultSpillConfig
+=== CONT  TestEvaluateTradeable_Holiday
+=== CONT  TestClockSkewMs
+=== CONT  TestMarketState_RefreshAges
+=== NAME  TestTelemetryCompleteness
+    orphan_test.go:166: TestTelemetryCompleteness: metrics endpoint not yet wired (M7.6-7)
+=== CONT  TestResolve
+=== CONT  TestTickDedup
+=== CONT  TestDLQWriter_WriteTick_WithCHConn
+=== NAME  TestTickDedup
+    orphan_test.go:161: tick_dedup: first=unique, second=duplicate
+=== CONT  TestCHWriter_EnqueueTick_FullQueue
+=== CONT  TestNormalizer_Resolve_CacheGuard
+--- PASS: TestObserveE2eLatency (0.00s)
+=== CONT  TestBarAggregator_AddTick_DifferentBucket
+--- PASS: TestCHWriter_EnqueueTick_FullQueue (0.00s)
+=== CONT  TestShouldSample_Always
+--- PASS: TestBarAggregator_AddTick_DifferentBucket (0.00s)
+=== CONT  TestTraceExport
+=== CONT  TestCHWriter_WriteSpillBar_WithSpill
+=== NAME  TestTraceExport
+    orphan_test.go:171: TestTraceExport: OTel exporter tested via internal/trace/ package (M10.3-3)
+=== CONT  TestSpillWriter_WriteTick_Real
+--- PASS: TestStaleAccountCount (0.00s)
+--- PASS: TestStuffingDetector_Observe_Multiple (0.00s)
+--- PASS: TestHashTickDeterministic (0.00s)
+--- PASS: TestPublisherSubjectFormat (0.00s)
+--- PASS: TestDLQSampled (0.00s)
+--- PASS: TestRecordGap (0.00s)
+--- PASS: TestPublisherBarWithoutReplay (0.00s)
+--- PASS: TestPublishReplayHeader (0.00s)
+--- PASS: TestNewPublisher_NilJS (0.00s)
+--- PASS: TestBarSkippedFinalized (0.00s)
+--- PASS: TestRecordClockSkew (0.00s)
+--- PASS: TestLoadFinalizedBars_Empty (0.00s)
+--- PASS: TestIngestExternalBar_NoFinalized (0.00s)
+--- PASS: TestNewBarAggregator (0.00s)
+--- PASS: TestFlushedTotal_Initial (0.00s)
+--- PASS: TestNewNormalizerInvalidator (0.00s)
+--- PASS: TestNewUserMetricsCollector (0.00s)
+--- PASS: TestDLQ (0.00s)
+--- PASS: TestRecordAndFlush (0.00s)
+--- PASS: TestDefaultSpillConfig (0.00s)
+--- PASS: TestEvaluateTradeable_Holiday (0.00s)
+--- PASS: TestClockSkewMs (0.00s)
+--- PASS: TestMarketState_RefreshAges (0.00s)
+--- PASS: TestTelemetryCompleteness (0.00s)
+--- PASS: TestResolve (0.00s)
+--- PASS: TestTickDedup (0.00s)
+--- PASS: TestDLQWriter_WriteTick_WithCHConn (0.00s)
+--- PASS: TestShouldSample_Always (0.00s)
+--- PASS: TestTraceExport (0.00s)
+--- PASS: TestSpillWriter_WriteTick_Real (0.00s)
+=== CONT  TestBarAggregator_IngestExternalBar_Finalized
+--- PASS: TestCHWriter_WriteSpillBar_WithSpill (0.00s)
+=== CONT  TestSpillWriter_WriteBar
+=== CONT  TestPublisherDedupHeader
+    publisher_test.go:78: PublisherDedupHeader: Nats-Msg-Id header set on all publish calls
+=== CONT  TestNormalizer
+    orphan_test.go:126: normalizer: EURUSDm → EURUSDM
+=== CONT  TestRunnerFatalOnChDown
+    orphan_test.go:40: loadFinalizedBars correctly returned error on CH-down: simulated CH unreachable
+=== CONT  TestManagerAddGateway
+    manager_gateway_lifecycle_test.go:80: AddGateway: registered, duplicate rejected, health visible
+=== CONT  TestNormalizerListener_StartStop
+=== CONT  TestQuality
+--- PASS: TestBarAggregator_IngestExternalBar_Finalized (0.00s)
+--- PASS: TestPublisherDedupHeader (0.00s)
+--- PASS: TestNormalizer (0.00s)
+--- PASS: TestRunnerFatalOnChDown (0.00s)
+--- PASS: TestManagerAddGateway (0.00s)
+--- PASS: TestSpillWriter_WriteBar (0.00s)
+=== NAME  TestQuality
+    orphan_test.go:142: quality: valid tick → dropped=false outlier=false
+=== CONT  TestCHWriter_WriteSpillTick_WithSpill
+--- PASS: TestQuality (0.00s)
+--- PASS: TestNormalizerInvalidator_StartStop (0.01s)
+=== CONT  TestNormalizerListenerFallback
+--- PASS: TestCHWriter_WriteSpillTick_WithSpill (0.00s)
+=== CONT  TestQuality_TickRateZscore
+--- PASS: TestQuality_TickRateZscore (0.00s)
+=== CONT  TestNormalizerListenerPgListen
+    normalizer_invalidator_test.go:120: PG LISTEN path dispatched 2 valid invalidations + skipped 2 bad payloads
+--- PASS: TestNormalizerListenerPgListen (0.00s)
+=== CONT  TestDLQParseError
+    dlq_writer_test.go:32: DLQParseError: 3 parse_error writes attempted (nil conn — no crash)
+--- PASS: TestDLQParseError (0.00s)
+=== CONT  TestStuffingDetector_ObserveTracksRate
+=== NAME  TestNormalizerListener_StartStop
+    normalizer_invalidator_test.go:139: NormalizerListener: start/stop lifecycle works
+--- PASS: TestNormalizerListener_StartStop (0.05s)
+=== CONT  TestDLQAsync
+    dlq_writer_test.go:72: DLQAsync: 1000 async writes completed without blocking
+--- PASS: TestDLQAsync (0.00s)
+=== CONT  TestStuffingDetector_IsPaused
+--- PASS: TestStuffingDetector_IsPaused (0.00s)
+=== CONT  TestStuffingDetector_NormalTickRate
+--- PASS: TestStuffingDetector_ObserveTracksRate (0.05s)
+=== CONT  TestManagerGatewayCount
+--- PASS: TestManagerGatewayCount (0.00s)
+=== CONT  TestQuality_NTPSkewDrop
+--- PASS: TestQuality_NTPSkewDrop (0.00s)
+=== CONT  TestQuality_SpreadComputation
+--- PASS: TestQuality_SpreadComputation (0.00s)
+=== CONT  TestDLQSampling
+    dlq_writer_test.go:55: DLQSampling: 1500 writes attempted at 1% rate (nil conn — no crash)
+--- PASS: TestDLQSampling (0.00s)
+=== CONT  TestSessionClock_ClockSkewMs
+--- PASS: TestSessionClock_ClockSkewMs (0.00s)
+=== CONT  TestCircuitBreakerClosedSuccessResetsNothing
+--- PASS: TestCircuitBreakerClosedSuccessResetsNothing (0.00s)
+=== CONT  TestSessionClock_BarBoundary
+--- PASS: TestSessionClock_BarBoundary (0.00s)
+=== CONT  TestCircuitBreakerHalfOpenProbe
+=== CONT  TestSessionClock_BrokerOffset
+--- PASS: TestCircuitBreakerHalfOpenProbe (0.06s)
+--- PASS: TestSessionClock_BrokerOffset (0.00s)
+=== CONT  TestCircuitBreakerTripsOpen
+--- PASS: TestCircuitBreakerTripsOpen (0.00s)
+=== CONT  TestSessionClock_SessionPhase
+--- PASS: TestSessionClock_SessionPhase (0.00s)
+=== CONT  TestCircuitBreakerCooldownNotElapsed
+--- PASS: TestCircuitBreakerCooldownNotElapsed (0.00s)
+=== CONT  TestSessionClock_IsHoliday
+--- PASS: TestSessionClock_IsHoliday (0.00s)
+=== CONT  TestCircuitBreakerOpenBlocks
+--- PASS: TestCircuitBreakerOpenBlocks (0.00s)
+=== CONT  TestSessionClock_IsWeekend
+--- PASS: TestSessionClock_IsWeekend (0.00s)
+=== CONT  TestCircuitBreakerStateString
+--- PASS: TestCircuitBreakerStateString (0.00s)
+=== CONT  TestTraceSamplingHonored
+    manager_trace_test.go:172: NeverSample: 0 spans (PASS)
+--- PASS: TestTraceSamplingHonored (0.00s)
+=== CONT  TestMarketStateTracker_StaleQuote
+=== NAME  TestNormalizerListenerFallback
+    normalizer_invalidator_test.go:76: ticker fallback ran cleanly with zero spurious invalidations
+--- PASS: TestNormalizerListenerFallback (0.15s)
+=== CONT  TestHandleTickCreatesSixSpans
+    manager_trace_test.go:68: Observed spans: map[aggregate:1 dedup:1 enqueue:1 normalize:1 publish:1 quality:1]
+--- PASS: TestHandleTickCreatesSixSpans (0.00s)
+=== CONT  TestBarFinality
+    bar_aggregator_test.go:61: BarFinality: exact-match dedup works correctly for both replay and historical gap bars
+--- PASS: TestBarFinality (0.00s)
+=== CONT  TestCircuitBreakerDefaultThresholds
+=== CONT  TestHandleTickNoOpWhenTracerNil
+--- PASS: TestCircuitBreakerDefaultThresholds (0.00s)
+=== NAME  TestHandleTickNoOpWhenTracerNil
+    manager_trace_test.go:125: HandleTick with nil tracer: no panic (PASS)
+--- PASS: TestHandleTickNoOpWhenTracerNil (0.00s)
+=== CONT  TestCircuitBreakerConcurrent
+=== CONT  TestClockSkewMs_WithOffset
+--- PASS: TestCircuitBreakerConcurrent (0.01s)
+--- PASS: TestClockSkewMs_WithOffset (0.00s)
+=== CONT  TestSetUserLimiter
+--- PASS: TestSetUserLimiter (0.00s)
+=== CONT  TestUserMetricsFlusher_ConcurrentRecord
+=== CONT  TestSetBaseContext
+--- PASS: TestSetBaseContext (0.00s)
+=== CONT  TestUserMetricsFlusher_DefaultInterval
+--- PASS: TestUserMetricsFlusher_DefaultInterval (0.00s)
+=== CONT  TestCHWriter_Flush_Empty
+--- PASS: TestCHWriter_Flush_Empty (0.00s)
+=== CONT  TestUserMetricsCollector_FlushResets
+--- PASS: TestUserMetricsCollector_FlushResets (0.00s)
+=== CONT  TestCHWriter_EnqueueBar
+--- PASS: TestUserMetricsFlusher_ConcurrentRecord (0.00s)
+--- PASS: TestCHWriter_EnqueueBar (0.01s)
+=== CONT  TestSpillReplayDualWrite
+    spill_replay_test.go:54: SpillReplayDualWrite: replay succeeded, file moved to /tmp/TestSpillReplayDualWrite408457393/001/processed/spill-1779871034934.jsonl
+=== CONT  TestMarketState_UpdateStale
+--- PASS: TestMarketState_UpdateStale (0.00s)
+=== CONT  TestCHWriterDrain_Empty
+--- PASS: TestCHWriterDrain_Empty (0.00s)
+=== CONT  TestUserMetricsCollector_Record
+--- PASS: TestUserMetricsCollector_Record (0.00s)
+=== CONT  TestNewManager
+--- PASS: TestNewManager (0.00s)
+=== CONT  TestDLQWriter_SpillDLQ_WithSpill
+--- PASS: TestSpillReplayDualWrite (0.00s)
+=== CONT  TestMarketState_GetAll
+=== CONT  TestCircuitBreakerOpenedAt
+--- PASS: TestMarketState_GetAll (0.00s)
+--- PASS: TestDLQWriter_SpillDLQ_WithSpill (0.01s)
+=== CONT  TestUpdateSpillPendingFiles_Empty
+--- PASS: TestCircuitBreakerOpenedAt (0.00s)
+--- PASS: TestUpdateSpillPendingFiles_Empty (0.00s)
+=== CONT  TestSessionClock_InSwapWindow
+--- PASS: TestSessionClock_InSwapWindow (0.00s)
+=== CONT  TestManagerRemoveGateway
+    manager_gateway_lifecycle_test.go:105: RemoveGateway: disconnected, double remove no-op, health empty
+--- PASS: TestManagerRemoveGateway (0.00s)
+=== CONT  TestManagerHealthStates
+    manager_gateway_lifecycle_test.go:155: Health states: no_data → healthy → stale → dead transitions verified
+--- PASS: TestManagerHealthStates (0.00s)
+=== CONT  TestBrokerKey
+--- PASS: TestBrokerKey (0.00s)
+=== CONT  TestCircuitBreakerFailuresInHalfOpen
+--- PASS: TestCircuitBreakerFailuresInHalfOpen (0.01s)
+=== CONT  TestCircuitBreakerHalfOpenFailureReopens
+--- PASS: TestCircuitBreakerHalfOpenFailureReopens (0.01s)
+=== CONT  TestCheck_StaleArrival
+--- PASS: TestCheck_StaleArrival (0.00s)
+=== CONT  TestCircuitBreakerHalfOpenClose
+=== CONT  TestMarketStateTracker_Update
+--- PASS: TestMarketStateTracker_Update (0.00s)
+=== CONT  TestManager_New
+    manager_test.go:11: manager created successfully
+--- PASS: TestManager_New (0.00s)
+=== CONT  TestUserMetricsFlusher_NoWriteFn
+--- PASS: TestCircuitBreakerHalfOpenClose (0.01s)
+=== CONT  TestUserMetricsCollector_EmptyFlush
+--- PASS: TestUserMetricsFlusher_NoWriteFn (0.10s)
+=== CONT  TestUserMetricsFlusher_Lifecycle
+--- PASS: TestUserMetricsCollector_EmptyFlush (0.00s)
+--- PASS: TestMarketStateTracker_StaleQuote (0.20s)
+=== CONT  TestSpillWriter_ShouldRotate
+--- PASS: TestSpillWriter_ShouldRotate (0.00s)
+=== CONT  TestBarAggregator_AddTick
+--- PASS: TestBarAggregator_AddTick (0.00s)
+=== CONT  TestBarAggregator_AddTick_SameBucket
+--- PASS: TestBarAggregator_AddTick_SameBucket (0.00s)
+=== CONT  TestPublisher_PublishBar_NilJS
+--- PASS: TestPublisher_PublishBar_NilJS (0.00s)
+=== CONT  TestPublisher_PublishTick_NilJS
+--- PASS: TestPublisher_PublishTick_NilJS (0.00s)
+=== CONT  TestPublisher_PublishBarRevision_NilJS
+--- PASS: TestPublisher_PublishBarRevision_NilJS (0.00s)
+=== CONT  TestCHWriter_FlushBars_WithMockConn
+--- PASS: TestCHWriter_FlushBars_WithMockConn (0.00s)
+=== CONT  TestCHWriter_SpillFailed
+--- PASS: TestCHWriter_SpillFailed (0.00s)
+=== CONT  TestCHWriter_EnqueueTick
+--- PASS: TestCHWriter_EnqueueTick (0.00s)
+=== CONT  TestNormalizerInvalidator_TickerLoop
+--- PASS: TestNormalizerInvalidator_TickerLoop (0.03s)
+=== CONT  TestCHWriter_Start_FullFlush
+--- PASS: TestUserMetricsFlusher_Lifecycle (0.05s)
+=== CONT  TestSpillWriter_Rotate_TimeBased
+--- PASS: TestSpillWriter_Rotate_TimeBased (0.01s)
+=== CONT  TestStuffingDetector_IsPaused_Expired
+--- PASS: TestStuffingDetector_IsPaused_Expired (0.00s)
+=== CONT  TestStuffingDetector_IsPaused_Active
+--- PASS: TestStuffingDetector_IsPaused_Active (0.00s)
+=== CONT  TestSpillReplay_Run_NoFiles
+=== CONT  TestEvaluateTradeable_Stale
+--- PASS: TestEvaluateTradeable_Stale (0.00s)
+=== CONT  TestEvaluateTradeable_Weekend
+--- PASS: TestEvaluateTradeable_Weekend (0.00s)
+=== CONT  TestEvaluateTradeable_SpreadAnomaly
+=== CONT  TestNewNormalizer_NilPG
+=== CONT  TestCHWriter_FlushTicks_WithMockConn
+=== CONT  TestCHWriter_Start_WithMockConn
+--- PASS: TestEvaluateTradeable_SpreadAnomaly (0.00s)
+--- PASS: TestSpillReplay_Run_NoFiles (0.00s)
+--- PASS: TestNewNormalizer_NilPG (0.00s)
+--- PASS: TestCHWriter_FlushTicks_WithMockConn (0.00s)
+--- PASS: TestCHWriter_Start_FullFlush (0.10s)
+=== CONT  TestCheck_StaleTick
+--- PASS: TestCheck_StaleTick (0.00s)
+=== CONT  TestEvaluateTradeable_NoStatePhase
+--- PASS: TestEvaluateTradeable_NoStatePhase (0.00s)
+=== CONT  TestPercentile_WithData
+--- PASS: TestPercentile_WithData (0.00s)
+=== CONT  TestQuality_SpreadZscore
+--- PASS: TestQuality_SpreadZscore (0.00s)
+=== CONT  TestNormalizer_Resolve_CacheHit
+--- PASS: TestNormalizer_Resolve_CacheHit (0.00s)
+=== CONT  TestNormalizerListener
+=== RUN   TestNormalizerListener/PgListen
+=== RUN   TestNormalizerListener/Fallback
+--- PASS: TestCHWriter_Start_WithMockConn (0.15s)
+=== CONT  TestCircuitBreakerConcurrentTripsOpen
+=== CONT  TestMarketStateTracker_GetAndAll
+--- PASS: TestCircuitBreakerConcurrentTripsOpen (0.00s)
+--- PASS: TestMarketStateTracker_GetAndAll (0.00s)
+=== CONT  TestDefaultQualityConfig
+--- PASS: TestDefaultQualityConfig (0.00s)
+--- PASS: TestNormalizerListener (0.15s)
+    --- PASS: TestNormalizerListener/PgListen (0.05s)
+    --- PASS: TestNormalizerListener/Fallback (0.10s)
+--- PASS: TestNormalizer_Resolve_CacheGuard (0.75s)
+--- PASS: TestStuffingDetector_NormalTickRate (5.02s)
+PASS
+ok  	anttrader/internal/mdgateway	6.214s
+=== RUN   TestNew_Defaults
+--- PASS: TestNew_Defaults (0.00s)
+=== RUN   TestNew_Custom
+--- PASS: TestNew_Custom (0.00s)
+=== RUN   TestMapMT4Reply
+--- PASS: TestMapMT4Reply (0.00s)
+=== RUN   TestMapMT5Reply
+--- PASS: TestMapMT5Reply (0.00s)
+=== RUN   TestMapMT4Reply_Nil
+--- PASS: TestMapMT4Reply_Nil (0.00s)
+=== RUN   TestMapMT5Reply_Nil
+--- PASS: TestMapMT5Reply_Nil (0.00s)
+=== RUN   TestMapMT4Reply_EmptyResult
+--- PASS: TestMapMT4Reply_EmptyResult (0.00s)
+PASS
+ok  	anttrader/internal/mdgateway/adapter/brokersearch	1.075s
+=== RUN   TestTick_PackageLoads
+=== PAUSE TestTick_PackageLoads
+=== CONT  TestTick_PackageLoads
+    mdtick_test.go:7: mdtick DTO package compiled and loaded
+--- PASS: TestTick_PackageLoads (0.00s)
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mdtick	1.052s
+=== RUN   TestNew
+=== PAUSE TestNew
+=== RUN   TestHealthCheck_NotConnected
+=== PAUSE TestHealthCheck_NotConnected
+=== RUN   TestSessionID_Empty
+=== PAUSE TestSessionID_Empty
+=== RUN   TestMT4Client_Nil
+=== PAUSE TestMT4Client_Nil
+=== RUN   TestStrToInt
+=== PAUSE TestStrToInt
+=== RUN   TestMinDuration
+=== PAUSE TestMinDuration
+=== RUN   TestPlaceOrder_Stub
+=== PAUSE TestPlaceOrder_Stub
+=== RUN   TestCloseOrder_Stub
+=== PAUSE TestCloseOrder_Stub
+=== RUN   TestModifyOrder_Stub
+=== PAUSE TestModifyOrder_Stub
+=== RUN   TestFetchSymbolParams_Stub
+=== PAUSE TestFetchSymbolParams_Stub
+=== RUN   TestSubscribeOrderEvents_Stub
+=== PAUSE TestSubscribeOrderEvents_Stub
+=== RUN   TestFetchOpenedOrders_NotConnected
+=== PAUSE TestFetchOpenedOrders_NotConnected
+=== RUN   TestFetchOrderHistory_NotConnected
+=== PAUSE TestFetchOrderHistory_NotConnected
+=== RUN   TestSubscribe_NotConnected
+=== PAUSE TestSubscribe_NotConnected
+=== RUN   TestSubscribeProfit_NotConnected
+=== PAUSE TestSubscribeProfit_NotConnected
+=== RUN   TestSubscribeOrderUpdate_NotConnected
+=== PAUSE TestSubscribeOrderUpdate_NotConnected
+=== RUN   TestMT4UpdateActionLabel
+=== PAUSE TestMT4UpdateActionLabel
+=== RUN   TestMT4OrderOpLabel
+=== PAUSE TestMT4OrderOpLabel
+=== RUN   TestMT4PeriodToTimeframe
+=== PAUSE TestMT4PeriodToTimeframe
+=== RUN   TestConvertMT4Bars_Empty
+=== PAUSE TestConvertMT4Bars_Empty
+=== RUN   TestConvertMT4Bars_WithData
+=== PAUSE TestConvertMT4Bars_WithData
+=== RUN   TestPeriodMs
+=== PAUSE TestPeriodMs
+=== RUN   TestGetPriceHistory_NotConnected
+=== PAUSE TestGetPriceHistory_NotConnected
+=== RUN   TestDisconnect_NilConn
+=== PAUSE TestDisconnect_NilConn
+=== RUN   TestDisconnect_FullState
+=== PAUSE TestDisconnect_FullState
+=== RUN   TestEnsureConnected_AlreadySet
+=== PAUSE TestEnsureConnected_AlreadySet
+=== RUN   TestGetPriceHistory_UnsupportedPeriod
+=== PAUSE TestGetPriceHistory_UnsupportedPeriod
+=== RUN   TestGetPriceHistory_WithMockData
+=== PAUSE TestGetPriceHistory_WithMockData
+=== RUN   TestGetPriceHistory_MockError
+=== PAUSE TestGetPriceHistory_MockError
+=== RUN   TestGetPriceHistory_ErrorCode
+=== PAUSE TestGetPriceHistory_ErrorCode
+=== RUN   TestFetchOpenedOrders_WithMockData
+=== PAUSE TestFetchOpenedOrders_WithMockData
+=== RUN   TestFetchOrderHistory_WithMockData
+=== PAUSE TestFetchOrderHistory_WithMockData
+=== RUN   TestFetchOrderHistory_OpenState
+=== PAUSE TestFetchOrderHistory_OpenState
+=== RUN   TestFetchOrderHistory_ErrorResponse
+=== PAUSE TestFetchOrderHistory_ErrorResponse
+=== RUN   TestSleep_CtxCancelled
+=== PAUSE TestSleep_CtxCancelled
+=== RUN   TestRecvLoop_ReceivesTicks
+=== PAUSE TestRecvLoop_ReceivesTicks
+=== RUN   TestProfitRecvLoop_ReceivesUpdates
+=== PAUSE TestProfitRecvLoop_ReceivesUpdates
+=== RUN   TestOrderUpdateRecvLoop_ReceivesUpdates
+=== PAUSE TestOrderUpdateRecvLoop_ReceivesUpdates
+=== RUN   TestMt4Op
+=== PAUSE TestMt4Op
+=== RUN   TestPlaceOrder_Success
+=== PAUSE TestPlaceOrder_Success
+=== RUN   TestPlaceOrder_ErrorCode
+=== PAUSE TestPlaceOrder_ErrorCode
+=== RUN   TestPlaceOrder_TransportErr
+=== PAUSE TestPlaceOrder_TransportErr
+=== RUN   TestCloseOrder_Success
+=== PAUSE TestCloseOrder_Success
+=== RUN   TestCloseOrder_ErrorCode
+=== PAUSE TestCloseOrder_ErrorCode
+=== RUN   TestModifyOrder_Success
+=== PAUSE TestModifyOrder_Success
+=== RUN   TestModifyOrder_ErrorCode
+=== PAUSE TestModifyOrder_ErrorCode
+=== RUN   TestFetchSymbolParams_Success
+=== PAUSE TestFetchSymbolParams_Success
+=== RUN   TestFetchSymbolParams_ErrorCode
+=== PAUSE TestFetchSymbolParams_ErrorCode
+=== RUN   TestFetchSymbolParams_NoSpread
+=== PAUSE TestFetchSymbolParams_NoSpread
+=== RUN   TestFetchSymbolParams_NilResult
+=== PAUSE TestFetchSymbolParams_NilResult
+=== RUN   TestSubscribeOrderEvents_Success
+=== PAUSE TestSubscribeOrderEvents_Success
+=== RUN   TestSubscribeOrderEvents_StreamError
+=== PAUSE TestSubscribeOrderEvents_StreamError
+=== CONT  TestNew
+=== CONT  TestFetchSymbolParams_Stub
+--- PASS: TestNew (0.00s)
+=== CONT  TestGetPriceHistory_ErrorCode
+--- PASS: TestFetchSymbolParams_Stub (0.00s)
+=== CONT  TestMT4UpdateActionLabel
+=== RUN   TestMT4UpdateActionLabel/position_open
+--- PASS: TestGetPriceHistory_ErrorCode (0.00s)
+=== CONT  TestSubscribe_NotConnected
+=== RUN   TestMT4UpdateActionLabel/position_close
+--- PASS: TestSubscribe_NotConnected (0.00s)
+=== CONT  TestDisconnect_FullState
+=== RUN   TestMT4UpdateActionLabel/position_modify
+--- PASS: TestDisconnect_FullState (0.00s)
+=== CONT  TestGetPriceHistory_MockError
+=== CONT  TestDisconnect_NilConn
+=== RUN   TestMT4UpdateActionLabel/pending_open
+=== CONT  TestGetPriceHistory_NotConnected
+=== CONT  TestEnsureConnected_AlreadySet
+--- PASS: TestGetPriceHistory_MockError (0.00s)
+--- PASS: TestDisconnect_NilConn (0.00s)
+--- PASS: TestGetPriceHistory_NotConnected (0.00s)
+--- PASS: TestEnsureConnected_AlreadySet (0.00s)
+=== CONT  TestConvertMT4Bars_WithData
+=== CONT  TestPeriodMs
+=== RUN   TestPeriodMs/1m
+=== CONT  TestGetPriceHistory_UnsupportedPeriod
+--- PASS: TestGetPriceHistory_UnsupportedPeriod (0.00s)
+=== CONT  TestConvertMT4Bars_Empty
+--- PASS: TestConvertMT4Bars_Empty (0.00s)
+=== CONT  TestMT4OrderOpLabel
+=== RUN   TestMT4OrderOpLabel/buy
+--- PASS: TestConvertMT4Bars_WithData (0.00s)
+=== CONT  TestMT4PeriodToTimeframe
+=== RUN   TestMT4UpdateActionLabel/pending_close
+=== RUN   TestPeriodMs/5m
+=== RUN   TestMT4OrderOpLabel/sell
+=== RUN   TestMT4PeriodToTimeframe/1m
+=== RUN   TestMT4PeriodToTimeframe/5m
+=== RUN   TestMT4UpdateActionLabel/pending_modify
+=== RUN   TestPeriodMs/15m
+=== RUN   TestMT4PeriodToTimeframe/15m
+=== RUN   TestMT4OrderOpLabel/buy_limit
+=== RUN   TestMT4PeriodToTimeframe/30m
+=== RUN   TestMT4OrderOpLabel/sell_limit
+=== RUN   TestPeriodMs/1h
+=== RUN   TestMT4PeriodToTimeframe/1h
+=== RUN   TestMT4OrderOpLabel/buy_stop
+=== RUN   TestMT4UpdateActionLabel/pending_fill
+=== RUN   TestMT4OrderOpLabel/sell_stop
+=== RUN   TestMT4UpdateActionLabel/balance
+=== RUN   TestPeriodMs/4h
+=== RUN   TestMT4PeriodToTimeframe/4h
+=== RUN   TestMT4OrderOpLabel/balance_(defaults_to_buy)
+=== RUN   TestPeriodMs/1d
+=== RUN   TestPeriodMs/unknown
+=== RUN   TestPeriodMs/#00
+--- PASS: TestPeriodMs (0.00s)
+    --- PASS: TestPeriodMs/1m (0.00s)
+    --- PASS: TestPeriodMs/5m (0.00s)
+    --- PASS: TestPeriodMs/15m (0.00s)
+    --- PASS: TestPeriodMs/1h (0.00s)
+    --- PASS: TestPeriodMs/4h (0.00s)
+    --- PASS: TestPeriodMs/1d (0.00s)
+    --- PASS: TestPeriodMs/unknown (0.00s)
+    --- PASS: TestPeriodMs/#00 (0.00s)
+=== RUN   TestMT4PeriodToTimeframe/1d
+=== RUN   TestMT4PeriodToTimeframe/2m
+=== RUN   TestMT4UpdateActionLabel/credit
+--- PASS: TestMT4UpdateActionLabel (0.01s)
+    --- PASS: TestMT4UpdateActionLabel/position_open (0.00s)
+    --- PASS: TestMT4UpdateActionLabel/position_close (0.00s)
+    --- PASS: TestMT4UpdateActionLabel/position_modify (0.00s)
+    --- PASS: TestMT4UpdateActionLabel/pending_open (0.00s)
+    --- PASS: TestMT4UpdateActionLabel/pending_close (0.00s)
+    --- PASS: TestMT4UpdateActionLabel/pending_modify (0.00s)
+    --- PASS: TestMT4UpdateActionLabel/pending_fill (0.00s)
+    --- PASS: TestMT4UpdateActionLabel/balance (0.00s)
+    --- PASS: TestMT4UpdateActionLabel/credit (0.00s)
+=== RUN   TestMT4OrderOpLabel/credit_(defaults_to_buy)
+=== CONT  TestPlaceOrder_Stub
+=== CONT  TestSubscribeOrderUpdate_NotConnected
+--- PASS: TestSubscribeOrderUpdate_NotConnected (0.00s)
+=== CONT  TestFetchOrderHistory_NotConnected
+=== RUN   TestMT4PeriodToTimeframe/1w
+=== CONT  TestSubscribeProfit_NotConnected
+=== CONT  TestSubscribeOrderEvents_Stub
+--- PASS: TestFetchOrderHistory_NotConnected (0.00s)
+=== CONT  TestModifyOrder_Stub
+--- PASS: TestSubscribeOrderEvents_Stub (0.00s)
+--- PASS: TestModifyOrder_Stub (0.00s)
+=== CONT  TestFetchOpenedOrders_NotConnected
+--- PASS: TestSubscribeProfit_NotConnected (0.00s)
+--- PASS: TestFetchOpenedOrders_NotConnected (0.00s)
+=== RUN   TestMT4PeriodToTimeframe/#00
+=== CONT  TestSessionID_Empty
+--- PASS: TestSessionID_Empty (0.00s)
+=== CONT  TestMinDuration
+--- PASS: TestMinDuration (0.00s)
+--- PASS: TestMT4PeriodToTimeframe (0.01s)
+    --- PASS: TestMT4PeriodToTimeframe/1m (0.00s)
+    --- PASS: TestMT4PeriodToTimeframe/5m (0.00s)
+    --- PASS: TestMT4PeriodToTimeframe/15m (0.00s)
+    --- PASS: TestMT4PeriodToTimeframe/30m (0.00s)
+    --- PASS: TestMT4PeriodToTimeframe/1h (0.00s)
+    --- PASS: TestMT4PeriodToTimeframe/4h (0.00s)
+    --- PASS: TestMT4PeriodToTimeframe/1d (0.00s)
+    --- PASS: TestMT4PeriodToTimeframe/2m (0.00s)
+    --- PASS: TestMT4PeriodToTimeframe/1w (0.00s)
+    --- PASS: TestMT4PeriodToTimeframe/#00 (0.00s)
+=== CONT  TestStrToInt
+=== RUN   TestStrToInt/digits_only
+=== RUN   TestStrToInt/with_letters
+=== CONT  TestPlaceOrder_Success
+--- PASS: TestPlaceOrder_Success (0.00s)
+=== CONT  TestSubscribeOrderEvents_StreamError
+--- PASS: TestSubscribeOrderEvents_StreamError (0.00s)
+=== CONT  TestSubscribeOrderEvents_Success
+=== RUN   TestStrToInt/empty
+=== RUN   TestStrToInt/no_digits
+--- PASS: TestSubscribeOrderEvents_Success (0.00s)
+=== RUN   TestStrToInt/mixed
+=== CONT  TestFetchSymbolParams_NilResult
+--- PASS: TestFetchSymbolParams_NilResult (0.00s)
+=== RUN   TestStrToInt/zero
+--- PASS: TestStrToInt (0.00s)
+    --- PASS: TestStrToInt/digits_only (0.00s)
+    --- PASS: TestStrToInt/with_letters (0.00s)
+    --- PASS: TestStrToInt/empty (0.00s)
+    --- PASS: TestStrToInt/no_digits (0.00s)
+    --- PASS: TestStrToInt/mixed (0.00s)
+    --- PASS: TestStrToInt/zero (0.00s)
+=== CONT  TestFetchSymbolParams_ErrorCode
+=== CONT  TestFetchSymbolParams_Success
+--- PASS: TestFetchSymbolParams_ErrorCode (0.00s)
+=== CONT  TestFetchSymbolParams_NoSpread
+--- PASS: TestFetchSymbolParams_Success (0.00s)
+=== CONT  TestModifyOrder_Success
+--- PASS: TestFetchSymbolParams_NoSpread (0.00s)
+=== CONT  TestModifyOrder_ErrorCode
+--- PASS: TestModifyOrder_Success (0.00s)
+=== CONT  TestCloseOrder_ErrorCode
+--- PASS: TestCloseOrder_ErrorCode (0.00s)
+--- PASS: TestModifyOrder_ErrorCode (0.00s)
+=== CONT  TestPlaceOrder_ErrorCode
+--- PASS: TestMT4OrderOpLabel (0.01s)
+    --- PASS: TestMT4OrderOpLabel/buy (0.00s)
+    --- PASS: TestMT4OrderOpLabel/sell (0.00s)
+    --- PASS: TestMT4OrderOpLabel/buy_limit (0.00s)
+    --- PASS: TestMT4OrderOpLabel/sell_limit (0.00s)
+    --- PASS: TestMT4OrderOpLabel/buy_stop (0.00s)
+    --- PASS: TestMT4OrderOpLabel/sell_stop (0.00s)
+    --- PASS: TestMT4OrderOpLabel/balance_(defaults_to_buy) (0.00s)
+    --- PASS: TestMT4OrderOpLabel/credit_(defaults_to_buy) (0.00s)
+=== CONT  TestSleep_CtxCancelled
+--- PASS: TestPlaceOrder_ErrorCode (0.00s)
+=== CONT  TestPlaceOrder_TransportErr
+--- PASS: TestPlaceOrder_TransportErr (0.00s)
+=== CONT  TestCloseOrder_Success
+--- PASS: TestCloseOrder_Success (0.00s)
+=== CONT  TestProfitRecvLoop_ReceivesUpdates
+--- PASS: TestPlaceOrder_Stub (0.00s)
+=== CONT  TestMt4Op
+=== RUN   TestMt4Op/buy_market
+--- PASS: TestSleep_CtxCancelled (0.00s)
+=== RUN   TestMt4Op/sell_market
+=== RUN   TestMt4Op/buy_limit
+=== RUN   TestMt4Op/sell_limit
+=== RUN   TestMt4Op/buy_stop
+=== RUN   TestMt4Op/sell_stop
+=== RUN   TestMt4Op/unknown_type_defaults_to_buy
+=== RUN   TestMt4Op/unknown_type_with_sell_defaults_to_buy
+--- PASS: TestMt4Op (0.00s)
+    --- PASS: TestMt4Op/buy_market (0.00s)
+    --- PASS: TestMt4Op/sell_market (0.00s)
+    --- PASS: TestMt4Op/buy_limit (0.00s)
+    --- PASS: TestMt4Op/sell_limit (0.00s)
+    --- PASS: TestMt4Op/buy_stop (0.00s)
+    --- PASS: TestMt4Op/sell_stop (0.00s)
+    --- PASS: TestMt4Op/unknown_type_defaults_to_buy (0.00s)
+    --- PASS: TestMt4Op/unknown_type_with_sell_defaults_to_buy (0.00s)
+=== CONT  TestHealthCheck_NotConnected
+--- PASS: TestHealthCheck_NotConnected (0.00s)
+=== CONT  TestMT4Client_Nil
+--- PASS: TestMT4Client_Nil (0.00s)
+=== CONT  TestFetchOpenedOrders_WithMockData
+=== CONT  TestRecvLoop_ReceivesTicks
+--- PASS: TestFetchOpenedOrders_WithMockData (0.00s)
+=== CONT  TestFetchOrderHistory_ErrorResponse
+--- PASS: TestFetchOrderHistory_ErrorResponse (0.00s)
+=== CONT  TestFetchOrderHistory_OpenState
+--- PASS: TestFetchOrderHistory_OpenState (0.00s)
+=== CONT  TestGetPriceHistory_WithMockData
+--- PASS: TestGetPriceHistory_WithMockData (0.00s)
+=== CONT  TestFetchOrderHistory_WithMockData
+--- PASS: TestFetchOrderHistory_WithMockData (0.00s)
+=== CONT  TestCloseOrder_Stub
+--- PASS: TestCloseOrder_Stub (0.00s)
+=== CONT  TestOrderUpdateRecvLoop_ReceivesUpdates
+--- PASS: TestRecvLoop_ReceivesTicks (0.00s)
+--- PASS: TestProfitRecvLoop_ReceivesUpdates (0.00s)
+--- PASS: TestOrderUpdateRecvLoop_ReceivesUpdates (0.00s)
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mt4	1.095s
+=== RUN   TestNew
+=== PAUSE TestNew
+=== RUN   TestHealthCheck_NotConnected
+=== PAUSE TestHealthCheck_NotConnected
+=== RUN   TestSessionID_Empty
+=== PAUSE TestSessionID_Empty
+=== RUN   TestMT5Client_Nil
+=== PAUSE TestMT5Client_Nil
+=== RUN   TestStrToUint64
+=== PAUSE TestStrToUint64
+=== RUN   TestMinDuration
+=== PAUSE TestMinDuration
+=== RUN   TestPfloat64
+=== PAUSE TestPfloat64
+=== RUN   TestPInt64
+=== PAUSE TestPInt64
+=== RUN   TestMT5OrderType
+=== PAUSE TestMT5OrderType
+=== RUN   TestPlaceOrder_NotConnected
+=== PAUSE TestPlaceOrder_NotConnected
+=== RUN   TestCloseOrder_NotConnected
+=== PAUSE TestCloseOrder_NotConnected
+=== RUN   TestModifyOrder_NotConnected
+=== PAUSE TestModifyOrder_NotConnected
+=== RUN   TestFetchSymbolParams_NotConnected
+=== PAUSE TestFetchSymbolParams_NotConnected
+=== RUN   TestSubscribeOrderEvents_Stub
+=== PAUSE TestSubscribeOrderEvents_Stub
+=== RUN   TestFetchOpenedOrders_NotConnected
+=== PAUSE TestFetchOpenedOrders_NotConnected
+=== RUN   TestFetchOrderHistory_Stub
+=== PAUSE TestFetchOrderHistory_Stub
+=== RUN   TestSubscribe_NotConnected
+=== PAUSE TestSubscribe_NotConnected
+=== RUN   TestSubscribeProfit_NotConnected
+=== PAUSE TestSubscribeProfit_NotConnected
+=== RUN   TestSubscribeOrderUpdate_NotConnected
+=== PAUSE TestSubscribeOrderUpdate_NotConnected
+=== RUN   TestMT5UpdateTypeLabel
+=== PAUSE TestMT5UpdateTypeLabel
+=== RUN   TestMT5OrderTypeLabel
+=== PAUSE TestMT5OrderTypeLabel
+=== RUN   TestMT5PeriodToTimeframe
+=== PAUSE TestMT5PeriodToTimeframe
+=== RUN   TestConvertMT5Bars_Empty
+=== PAUSE TestConvertMT5Bars_Empty
+=== RUN   TestConvertMT5Bars_WithData
+=== PAUSE TestConvertMT5Bars_WithData
+=== RUN   TestPeriodMs
+=== PAUSE TestPeriodMs
+=== RUN   TestGetPriceHistory_NotConnected
+=== PAUSE TestGetPriceHistory_NotConnected
+=== RUN   TestDisconnect_NilConn
+=== PAUSE TestDisconnect_NilConn
+=== RUN   TestDisconnect_FullState
+=== PAUSE TestDisconnect_FullState
+=== RUN   TestEnsureConnected_AlreadySet
+=== PAUSE TestEnsureConnected_AlreadySet
+=== RUN   TestPlaceOrder_WithMock
+=== PAUSE TestPlaceOrder_WithMock
+=== RUN   TestPlaceOrder_MockError
+=== PAUSE TestPlaceOrder_MockError
+=== RUN   TestPlaceOrder_ErrorCode
+=== PAUSE TestPlaceOrder_ErrorCode
+=== RUN   TestPlaceOrder_NilResult
+=== PAUSE TestPlaceOrder_NilResult
+=== RUN   TestCloseOrder_WithMock
+=== PAUSE TestCloseOrder_WithMock
+=== RUN   TestCloseOrder_MockError
+=== PAUSE TestCloseOrder_MockError
+=== RUN   TestCloseOrder_ErrorCode
+=== PAUSE TestCloseOrder_ErrorCode
+=== RUN   TestModifyOrder_WithMock
+=== PAUSE TestModifyOrder_WithMock
+=== RUN   TestModifyOrder_MockError
+=== PAUSE TestModifyOrder_MockError
+=== RUN   TestModifyOrder_ErrorCode
+=== PAUSE TestModifyOrder_ErrorCode
+=== RUN   TestFetchSymbolParams_WithMock
+=== PAUSE TestFetchSymbolParams_WithMock
+=== RUN   TestFetchSymbolParams_MockError
+=== PAUSE TestFetchSymbolParams_MockError
+=== RUN   TestFetchSymbolParams_ErrorCode
+=== PAUSE TestFetchSymbolParams_ErrorCode
+=== RUN   TestFetchOpenedOrders_WithMock
+=== PAUSE TestFetchOpenedOrders_WithMock
+=== RUN   TestGetPriceHistory_UnsupportedPeriod
+=== PAUSE TestGetPriceHistory_UnsupportedPeriod
+=== RUN   TestSleep_CtxCancelled
+=== PAUSE TestSleep_CtxCancelled
+=== RUN   TestRecvLoop_ReceivesTicks
+=== PAUSE TestRecvLoop_ReceivesTicks
+=== RUN   TestProfitRecvLoop_ReceivesUpdates
+=== PAUSE TestProfitRecvLoop_ReceivesUpdates
+=== RUN   TestOrderUpdateRecvLoop_ReceivesUpdates
+=== PAUSE TestOrderUpdateRecvLoop_ReceivesUpdates
+=== CONT  TestSessionID_Empty
+=== CONT  TestFetchSymbolParams_ErrorCode
+--- PASS: TestSessionID_Empty (0.00s)
+=== CONT  TestOrderUpdateRecvLoop_ReceivesUpdates
+=== CONT  TestProfitRecvLoop_ReceivesUpdates
+=== CONT  TestRecvLoop_ReceivesTicks
+--- PASS: TestFetchSymbolParams_ErrorCode (0.00s)
+=== CONT  TestMT5PeriodToTimeframe
+=== RUN   TestMT5PeriodToTimeframe/1m
+--- PASS: TestProfitRecvLoop_ReceivesUpdates (0.00s)
+=== CONT  TestMT5OrderTypeLabel
+=== RUN   TestMT5OrderTypeLabel/buy
+--- PASS: TestOrderUpdateRecvLoop_ReceivesUpdates (0.00s)
+=== CONT  TestMT5UpdateTypeLabel
+=== RUN   TestMT5OrderTypeLabel/sell
+=== RUN   TestMT5PeriodToTimeframe/5m
+=== RUN   TestMT5UpdateTypeLabel/market_open
+=== RUN   TestMT5UpdateTypeLabel/market_close
+=== RUN   TestMT5PeriodToTimeframe/15m
+=== RUN   TestMT5OrderTypeLabel/buy_limit
+=== RUN   TestMT5UpdateTypeLabel/partial_close
+=== RUN   TestMT5PeriodToTimeframe/30m
+=== RUN   TestMT5UpdateTypeLabel/pending_open
+=== RUN   TestMT5PeriodToTimeframe/1h
+=== RUN   TestMT5UpdateTypeLabel/pending_close
+=== RUN   TestMT5PeriodToTimeframe/4h
+=== RUN   TestMT5OrderTypeLabel/sell_limit
+=== RUN   TestMT5UpdateTypeLabel/market_modify
+=== CONT  TestConvertMT5Bars_Empty
+--- PASS: TestRecvLoop_ReceivesTicks (0.00s)
+=== CONT  TestSubscribeProfit_NotConnected
+=== RUN   TestMT5PeriodToTimeframe/1d
+--- PASS: TestSubscribeProfit_NotConnected (0.00s)
+=== CONT  TestSubscribe_NotConnected
+--- PASS: TestSubscribe_NotConnected (0.00s)
+=== CONT  TestSubscribeOrderUpdate_NotConnected
+--- PASS: TestSubscribeOrderUpdate_NotConnected (0.00s)
+=== RUN   TestMT5OrderTypeLabel/buy_stop
+=== CONT  TestFetchOrderHistory_Stub
+=== RUN   TestMT5UpdateTypeLabel/pending_modify
+--- PASS: TestConvertMT5Bars_Empty (0.00s)
+--- PASS: TestFetchOrderHistory_Stub (0.00s)
+=== CONT  TestSubscribeOrderEvents_Stub
+--- PASS: TestSubscribeOrderEvents_Stub (0.00s)
+=== RUN   TestMT5PeriodToTimeframe/unknown
+=== RUN   TestMT5PeriodToTimeframe/#00
+--- PASS: TestMT5PeriodToTimeframe (0.00s)
+    --- PASS: TestMT5PeriodToTimeframe/1m (0.00s)
+    --- PASS: TestMT5PeriodToTimeframe/5m (0.00s)
+    --- PASS: TestMT5PeriodToTimeframe/15m (0.00s)
+    --- PASS: TestMT5PeriodToTimeframe/30m (0.00s)
+    --- PASS: TestMT5PeriodToTimeframe/1h (0.00s)
+    --- PASS: TestMT5PeriodToTimeframe/4h (0.00s)
+    --- PASS: TestMT5PeriodToTimeframe/1d (0.00s)
+    --- PASS: TestMT5PeriodToTimeframe/unknown (0.00s)
+    --- PASS: TestMT5PeriodToTimeframe/#00 (0.00s)
+=== CONT  TestModifyOrder_NotConnected
+--- PASS: TestModifyOrder_NotConnected (0.00s)
+=== CONT  TestFetchSymbolParams_NotConnected
+--- PASS: TestFetchSymbolParams_NotConnected (0.00s)
+=== CONT  TestCloseOrder_NotConnected
+--- PASS: TestCloseOrder_NotConnected (0.00s)
+=== CONT  TestPlaceOrder_NotConnected
+--- PASS: TestPlaceOrder_NotConnected (0.00s)
+=== CONT  TestMT5OrderType
+=== RUN   TestMT5OrderType/buy_market
+=== RUN   TestMT5OrderType/sell_market
+=== RUN   TestMT5OrderType/buy_limit
+=== CONT  TestFetchOpenedOrders_NotConnected
+--- PASS: TestFetchOpenedOrders_NotConnected (0.00s)
+=== RUN   TestMT5OrderType/sell_limit
+=== RUN   TestMT5OrderTypeLabel/sell_stop
+=== CONT  TestPInt64
+=== RUN   TestMT5OrderType/buy_stop
+=== RUN   TestMT5OrderTypeLabel/buy_stop_limit
+--- PASS: TestPInt64 (0.00s)
+=== RUN   TestMT5OrderType/sell_stop
+=== CONT  TestMinDuration
+--- PASS: TestMinDuration (0.00s)
+=== CONT  TestPfloat64
+=== RUN   TestMT5UpdateTypeLabel/unknown_(default)
+--- PASS: TestPfloat64 (0.00s)
+=== CONT  TestMT5Client_Nil
+--- PASS: TestMT5Client_Nil (0.00s)
+=== CONT  TestStrToUint64
+=== RUN   TestStrToUint64/digits_only
+=== RUN   TestMT5UpdateTypeLabel/started_(default)
+=== RUN   TestMT5OrderType/buy_stop_limit
+=== RUN   TestStrToUint64/with_letters
+=== RUN   TestMT5OrderTypeLabel/sell_stop_limit
+=== RUN   TestMT5OrderType/sell_stop_limit
+=== RUN   TestStrToUint64/empty
+=== RUN   TestMT5UpdateTypeLabel/expired_(default)
+=== RUN   TestStrToUint64/no_digits
+=== RUN   TestStrToUint64/mixed
+=== RUN   TestMT5OrderTypeLabel/balance_(defaults_to_buy)
+=== RUN   TestMT5OrderType/default_(unknown)
+--- PASS: TestMT5OrderType (0.00s)
+    --- PASS: TestMT5OrderType/buy_market (0.00s)
+    --- PASS: TestMT5OrderType/sell_market (0.00s)
+    --- PASS: TestMT5OrderType/buy_limit (0.00s)
+    --- PASS: TestMT5OrderType/sell_limit (0.00s)
+    --- PASS: TestMT5OrderType/buy_stop (0.00s)
+    --- PASS: TestMT5OrderType/sell_stop (0.00s)
+    --- PASS: TestMT5OrderType/buy_stop_limit (0.00s)
+    --- PASS: TestMT5OrderType/sell_stop_limit (0.00s)
+    --- PASS: TestMT5OrderType/default_(unknown) (0.00s)
+=== RUN   TestMT5OrderTypeLabel/credit_(defaults_to_buy)
+=== CONT  TestHealthCheck_NotConnected
+--- PASS: TestHealthCheck_NotConnected (0.00s)
+=== RUN   TestStrToUint64/zero
+=== RUN   TestStrToUint64/max_uint64
+--- PASS: TestMT5OrderTypeLabel (0.01s)
+    --- PASS: TestMT5OrderTypeLabel/buy (0.00s)
+    --- PASS: TestMT5OrderTypeLabel/sell (0.00s)
+    --- PASS: TestMT5OrderTypeLabel/buy_limit (0.00s)
+    --- PASS: TestMT5OrderTypeLabel/sell_limit (0.00s)
+    --- PASS: TestMT5OrderTypeLabel/buy_stop (0.00s)
+    --- PASS: TestMT5OrderTypeLabel/sell_stop (0.00s)
+    --- PASS: TestMT5OrderTypeLabel/buy_stop_limit (0.00s)
+    --- PASS: TestMT5OrderTypeLabel/sell_stop_limit (0.00s)
+    --- PASS: TestMT5OrderTypeLabel/balance_(defaults_to_buy) (0.00s)
+    --- PASS: TestMT5OrderTypeLabel/credit_(defaults_to_buy) (0.00s)
+=== CONT  TestSleep_CtxCancelled
+--- PASS: TestSleep_CtxCancelled (0.00s)
+=== CONT  TestGetPriceHistory_UnsupportedPeriod
+--- PASS: TestStrToUint64 (0.00s)
+    --- PASS: TestStrToUint64/digits_only (0.00s)
+    --- PASS: TestStrToUint64/with_letters (0.00s)
+    --- PASS: TestStrToUint64/empty (0.00s)
+    --- PASS: TestStrToUint64/no_digits (0.00s)
+    --- PASS: TestStrToUint64/mixed (0.00s)
+    --- PASS: TestStrToUint64/zero (0.00s)
+    --- PASS: TestStrToUint64/max_uint64 (0.00s)
+--- PASS: TestGetPriceHistory_UnsupportedPeriod (0.00s)
+=== CONT  TestNew
+--- PASS: TestNew (0.00s)
+=== CONT  TestFetchSymbolParams_MockError
+--- PASS: TestFetchSymbolParams_MockError (0.00s)
+=== CONT  TestFetchOpenedOrders_WithMock
+--- PASS: TestFetchOpenedOrders_WithMock (0.00s)
+=== CONT  TestModifyOrder_ErrorCode
+--- PASS: TestModifyOrder_ErrorCode (0.00s)
+=== CONT  TestCloseOrder_ErrorCode
+--- PASS: TestCloseOrder_ErrorCode (0.00s)
+=== CONT  TestModifyOrder_MockError
+--- PASS: TestModifyOrder_MockError (0.00s)
+=== CONT  TestFetchSymbolParams_WithMock
+--- PASS: TestMT5UpdateTypeLabel (0.01s)
+    --- PASS: TestMT5UpdateTypeLabel/market_open (0.00s)
+    --- PASS: TestMT5UpdateTypeLabel/market_close (0.00s)
+    --- PASS: TestMT5UpdateTypeLabel/partial_close (0.00s)
+    --- PASS: TestMT5UpdateTypeLabel/pending_open (0.00s)
+    --- PASS: TestMT5UpdateTypeLabel/pending_close (0.00s)
+    --- PASS: TestMT5UpdateTypeLabel/market_modify (0.00s)
+    --- PASS: TestMT5UpdateTypeLabel/pending_modify (0.00s)
+    --- PASS: TestMT5UpdateTypeLabel/unknown_(default) (0.00s)
+    --- PASS: TestMT5UpdateTypeLabel/started_(default) (0.00s)
+    --- PASS: TestMT5UpdateTypeLabel/expired_(default) (0.00s)
+=== CONT  TestPlaceOrder_ErrorCode
+--- PASS: TestPlaceOrder_ErrorCode (0.00s)
+=== CONT  TestPlaceOrder_MockError
+--- PASS: TestPlaceOrder_MockError (0.00s)
+=== CONT  TestCloseOrder_WithMock
+--- PASS: TestCloseOrder_WithMock (0.00s)
+=== CONT  TestPlaceOrder_WithMock
+--- PASS: TestPlaceOrder_WithMock (0.00s)
+=== CONT  TestEnsureConnected_AlreadySet
+--- PASS: TestEnsureConnected_AlreadySet (0.00s)
+=== CONT  TestDisconnect_FullState
+--- PASS: TestDisconnect_FullState (0.00s)
+=== CONT  TestGetPriceHistory_NotConnected
+--- PASS: TestGetPriceHistory_NotConnected (0.00s)
+=== CONT  TestPeriodMs
+=== RUN   TestPeriodMs/1m
+=== RUN   TestPeriodMs/5m
+=== RUN   TestPeriodMs/15m
+=== CONT  TestCloseOrder_MockError
+--- PASS: TestCloseOrder_MockError (0.00s)
+=== CONT  TestModifyOrder_WithMock
+--- PASS: TestModifyOrder_WithMock (0.00s)
+=== CONT  TestConvertMT5Bars_WithData
+--- PASS: TestConvertMT5Bars_WithData (0.00s)
+=== CONT  TestDisconnect_NilConn
+--- PASS: TestDisconnect_NilConn (0.00s)
+=== CONT  TestPlaceOrder_NilResult
+--- PASS: TestFetchSymbolParams_WithMock (0.00s)
+--- PASS: TestPlaceOrder_NilResult (0.00s)
+=== RUN   TestPeriodMs/1h
+=== RUN   TestPeriodMs/4h
+=== RUN   TestPeriodMs/1d
+=== RUN   TestPeriodMs/unknown
+=== RUN   TestPeriodMs/#00
+--- PASS: TestPeriodMs (0.00s)
+    --- PASS: TestPeriodMs/1m (0.00s)
+    --- PASS: TestPeriodMs/5m (0.00s)
+    --- PASS: TestPeriodMs/15m (0.00s)
+    --- PASS: TestPeriodMs/1h (0.00s)
+    --- PASS: TestPeriodMs/4h (0.00s)
+    --- PASS: TestPeriodMs/1d (0.00s)
+    --- PASS: TestPeriodMs/unknown (0.00s)
+    --- PASS: TestPeriodMs/#00 (0.00s)
+=== RUN   FuzzStrToUint64
+=== RUN   FuzzStrToUint64/seed#0
+=== RUN   FuzzStrToUint64/seed#1
+=== RUN   FuzzStrToUint64/seed#2
+=== RUN   FuzzStrToUint64/seed#3
+=== RUN   FuzzStrToUint64/seed#4
+--- PASS: FuzzStrToUint64 (0.00s)
+    --- PASS: FuzzStrToUint64/seed#0 (0.00s)
+    --- PASS: FuzzStrToUint64/seed#1 (0.00s)
+    --- PASS: FuzzStrToUint64/seed#2 (0.00s)
+    --- PASS: FuzzStrToUint64/seed#3 (0.00s)
+    --- PASS: FuzzStrToUint64/seed#4 (0.00s)
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mt5	1.073s
+=== RUN   TestBackfiller_Run_EmptyAccounts
+=== PAUSE TestBackfiller_Run_EmptyAccounts
+=== RUN   TestPeriodMs
+=== PAUSE TestPeriodMs
+=== RUN   TestDefaultPeriods
+=== PAUSE TestDefaultPeriods
+=== RUN   TestNew
+=== PAUSE TestNew
+=== RUN   TestGetLimiter_DifferentAccounts
+=== PAUSE TestGetLimiter_DifferentAccounts
+=== RUN   TestNewSourceMTAPI
+=== PAUSE TestNewSourceMTAPI
+=== RUN   TestNewTarget
+=== PAUSE TestNewTarget
+=== RUN   TestNewPGTrigger
+=== PAUSE TestNewPGTrigger
+=== RUN   TestPGTrigger_Run_NoNotifier
+=== PAUSE TestPGTrigger_Run_NoNotifier
+=== RUN   TestMetrics
+=== PAUSE TestMetrics
+=== RUN   TestBackfillAccount_NoMatchingAccount
+=== PAUSE TestBackfillAccount_NoMatchingAccount
+=== RUN   TestBackfillSymbol_NoMatchingSymbol
+=== PAUSE TestBackfillSymbol_NoMatchingSymbol
+=== RUN   TestFetchReq_Fields
+=== PAUSE TestFetchReq_Fields
+=== RUN   TestActiveAccount_Fields
+=== PAUSE TestActiveAccount_Fields
+=== RUN   TestRateLimiter
+=== PAUSE TestRateLimiter
+=== RUN   TestRun_NoAccounts
+=== PAUSE TestRun_NoAccounts
+=== RUN   TestSourceMTAPI_FetchBars_NilAdapter
+=== PAUSE TestSourceMTAPI_FetchBars_NilAdapter
+=== RUN   TestSourceMTAPI_FetchBars_WithAdapter
+=== PAUSE TestSourceMTAPI_FetchBars_WithAdapter
+=== RUN   TestTargetAdapter_IngestBar_SkippedByAgg
+=== PAUSE TestTargetAdapter_IngestBar_SkippedByAgg
+=== RUN   TestTargetAdapter_IngestBar_Accepted
+=== PAUSE TestTargetAdapter_IngestBar_Accepted
+=== RUN   TestTargetAdapter_IngestBar_PublishError
+=== PAUSE TestTargetAdapter_IngestBar_PublishError
+=== RUN   TestPGTrigger_Run_WithNotifier
+=== PAUSE TestPGTrigger_Run_WithNotifier
+=== RUN   TestPGTrigger_Run_BadPayload
+=== PAUSE TestPGTrigger_Run_BadPayload
+=== RUN   TestPGTrigger_Run_EmptyAccountID
+=== PAUSE TestPGTrigger_Run_EmptyAccountID
+=== RUN   TestRun_WithAccounts
+=== PAUSE TestRun_WithAccounts
+=== RUN   TestBackfillAccount_WithMatch
+=== PAUSE TestBackfillAccount_WithMatch
+=== RUN   TestBackfillSymbol_WithMatch
+=== PAUSE TestBackfillSymbol_WithMatch
+=== CONT  TestDefaultPeriods
+--- PASS: TestDefaultPeriods (0.00s)
+=== CONT  TestBackfillAccount_WithMatch
+--- PASS: TestBackfillAccount_WithMatch (0.00s)
+=== CONT  TestRun_WithAccounts
+--- PASS: TestRun_WithAccounts (0.00s)
+=== CONT  TestPGTrigger_Run_EmptyAccountID
+--- PASS: TestPGTrigger_Run_EmptyAccountID (0.00s)
+=== CONT  TestPGTrigger_Run_WithNotifier
+--- PASS: TestPGTrigger_Run_WithNotifier (0.00s)
+=== CONT  TestPGTrigger_Run_BadPayload
+--- PASS: TestPGTrigger_Run_BadPayload (0.00s)
+=== CONT  TestTargetAdapter_IngestBar_Accepted
+--- PASS: TestTargetAdapter_IngestBar_Accepted (0.00s)
+=== CONT  TestTargetAdapter_IngestBar_SkippedByAgg
+--- PASS: TestTargetAdapter_IngestBar_SkippedByAgg (0.00s)
+=== CONT  TestSourceMTAPI_FetchBars_WithAdapter
+--- PASS: TestSourceMTAPI_FetchBars_WithAdapter (0.00s)
+=== CONT  TestSourceMTAPI_FetchBars_NilAdapter
+--- PASS: TestSourceMTAPI_FetchBars_NilAdapter (0.00s)
+=== CONT  TestTargetAdapter_IngestBar_PublishError
+--- PASS: TestTargetAdapter_IngestBar_PublishError (0.00s)
+=== CONT  TestRateLimiter
+--- PASS: TestRateLimiter (0.00s)
+=== CONT  TestActiveAccount_Fields
+--- PASS: TestActiveAccount_Fields (0.00s)
+=== CONT  TestRun_NoAccounts
+--- PASS: TestRun_NoAccounts (0.00s)
+=== CONT  TestFetchReq_Fields
+--- PASS: TestFetchReq_Fields (0.00s)
+=== CONT  TestBackfillSymbol_NoMatchingSymbol
+--- PASS: TestBackfillSymbol_NoMatchingSymbol (0.00s)
+=== CONT  TestMetrics
+--- PASS: TestMetrics (0.00s)
+=== CONT  TestPGTrigger_Run_NoNotifier
+    backfiller_test.go:115: Run with nil notifier: <nil>
+--- PASS: TestPGTrigger_Run_NoNotifier (0.00s)
+=== CONT  TestBackfillAccount_NoMatchingAccount
+--- PASS: TestBackfillAccount_NoMatchingAccount (0.00s)
+=== CONT  TestNewTarget
+--- PASS: TestNewTarget (0.00s)
+=== CONT  TestNewPGTrigger
+--- PASS: TestNewPGTrigger (0.00s)
+=== CONT  TestNewSourceMTAPI
+=== CONT  TestBackfillSymbol_WithMatch
+--- PASS: TestBackfillSymbol_WithMatch (0.00s)
+=== CONT  TestGetLimiter_DifferentAccounts
+--- PASS: TestGetLimiter_DifferentAccounts (0.00s)
+=== CONT  TestNew
+--- PASS: TestNew (0.00s)
+=== CONT  TestPeriodMs
+--- PASS: TestPeriodMs (0.00s)
+=== CONT  TestBackfiller_Run_EmptyAccounts
+    backfiller_test.go:16: backfiller: compilation test passed (zero accounts = no-op)
+--- PASS: TestBackfiller_Run_EmptyAccounts (0.00s)
+--- PASS: TestNewSourceMTAPI (0.00s)
+PASS
+ok  	anttrader/internal/mdgateway/backfiller	1.039s
+=== RUN   TestMigrate_PackageLoads
+=== PAUSE TestMigrate_PackageLoads
+=== RUN   TestSplitSQL_Single
+=== PAUSE TestSplitSQL_Single
+=== RUN   TestSplitSQL_Multiple
+=== PAUSE TestSplitSQL_Multiple
+=== RUN   TestSplitSQL_Empty
+=== PAUSE TestSplitSQL_Empty
+=== RUN   TestSplitSQL_WhitespaceOnly
+=== PAUSE TestSplitSQL_WhitespaceOnly
+=== RUN   TestSplitSQL_TrailingSemicolon
+=== PAUSE TestSplitSQL_TrailingSemicolon
+=== RUN   TestSplitSQL_TrimWhitespace
+=== PAUSE TestSplitSQL_TrimWhitespace
+=== RUN   TestSplitSQL_MultiLine
+=== PAUSE TestSplitSQL_MultiLine
+=== RUN   TestSplitSQL_ExchangeTables
+=== PAUSE TestSplitSQL_ExchangeTables
+=== RUN   TestSplitSQL_FourStatements
+=== PAUSE TestSplitSQL_FourStatements
+=== RUN   TestRun_NoPendingMigrations
+=== PAUSE TestRun_NoPendingMigrations
+=== RUN   TestRun_ValidatesInterface
+=== PAUSE TestRun_ValidatesInterface
+=== RUN   TestMustRun_Success
+=== PAUSE TestMustRun_Success
+=== RUN   TestSpec13Keywords
+=== PAUSE TestSpec13Keywords
+=== RUN   TestSpec13MinimumSize
+=== PAUSE TestSpec13MinimumSize
+=== CONT  TestMigrate_PackageLoads
+    migrate_test.go:16: chmigrate package compiled and loaded
+=== CONT  TestSplitSQL_MultiLine
+--- PASS: TestMigrate_PackageLoads (0.00s)
+=== CONT  TestSplitSQL_FourStatements
+--- PASS: TestSplitSQL_MultiLine (0.00s)
+=== CONT  TestSplitSQL_TrimWhitespace
+=== CONT  TestSplitSQL_TrailingSemicolon
+=== CONT  TestSplitSQL_WhitespaceOnly
+--- PASS: TestSplitSQL_FourStatements (0.00s)
+=== CONT  TestSplitSQL_Multiple
+--- PASS: TestSplitSQL_TrailingSemicolon (0.00s)
+=== CONT  TestSplitSQL_Empty
+--- PASS: TestSplitSQL_WhitespaceOnly (0.00s)
+--- PASS: TestSplitSQL_Empty (0.00s)
+=== CONT  TestSpec13MinimumSize
+=== CONT  TestMustRun_Success
+=== NAME  TestSpec13MinimumSize
+    spec_test.go:96: spec/13 size = 19739 bytes
+--- PASS: TestSpec13MinimumSize (0.00s)
+=== CONT  TestRun_NoPendingMigrations
+--- PASS: TestMustRun_Success (0.00s)
+=== CONT  TestRun_ValidatesInterface
+--- PASS: TestRun_NoPendingMigrations (0.00s)
+=== CONT  TestSplitSQL_ExchangeTables
+=== CONT  TestSpec13Keywords
+--- PASS: TestRun_ValidatesInterface (0.00s)
+--- PASS: TestSplitSQL_Multiple (0.00s)
+--- PASS: TestSplitSQL_TrimWhitespace (0.00s)
+--- PASS: TestSplitSQL_ExchangeTables (0.00s)
+=== CONT  TestSplitSQL_Single
+--- PASS: TestSplitSQL_Single (0.00s)
+=== NAME  TestSpec13Keywords
+    spec_test.go:74: OK   FINAL query — matched at lines [421 423 427 430 436]
+    spec_test.go:74: OK   EXCHANGE TABLES precondition — matched at lines [21 50 210 238 207]
+    spec_test.go:74: OK   long-term capacity / TTL — matched at lines [519]
+    spec_test.go:74: OK   S3 cold storage — matched at lines [524]
+    spec_test.go:79: spec/13 contains all 4 M10.5-13 keyword families (file: 562 lines, 19739 bytes)
+--- PASS: TestSpec13Keywords (0.00s)
+PASS
+ok  	anttrader/internal/mdgateway/chmigrate	1.038s

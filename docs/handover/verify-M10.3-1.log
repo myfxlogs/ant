@@ -1,28 +1,31 @@
-Card: M10.3-1 — DLQ table + dlq_writer.go
-Date: 2026-05-24
-Status: ☑
-
-=== Verification Output ===
-
-$ make migrate-ch
-... applied version 8 (008_md_ticks_dlq.sql)
-
-$ docker exec ant-clickhouse clickhouse-client --query "DESCRIBE ant.md_ticks_dlq" | grep reason
-reason	LowCardinality(String)				DLQ reason
-
-$ docker exec ant-clickhouse clickhouse-client --query "SELECT name FROM system.tables WHERE database='ant' AND name='md_ticks_dlq'"
-md_ticks_dlq
-
-exit code: 0
-
-=== Implementation Notes ===
-
-- 008_md_ticks_dlq.sql: DLQ table with reason/reason_pct/raw_payload columns, 7d TTL.
-- dlq_writer.go: DLQWriter with reason-based sampling (parse_error 100%, bid_gt_ask/non_positive 1%).
-- quality.go: SetDLQWriter injection; Check method calls DLQ on drop with nil ctx.
-- Spill fallback: when CH is down, DLQ entries spill to the main spill directory.
-
-Files changed:
-- backend/internal/mdgateway/chmigrate/008_md_ticks_dlq.sql (new)
-- backend/internal/mdgateway/dlq_writer.go (new, 107 lines)
-- backend/internal/mdgateway/quality.go (+dlq field + SetDLQWriter + drop calls)
+=== RUN   TestDLQParseError
+=== PAUSE TestDLQParseError
+=== RUN   TestDLQSampling
+=== PAUSE TestDLQSampling
+=== CONT  TestDLQParseError
+=== CONT  TestDLQSampling
+    dlq_writer_test.go:55: DLQSampling: 1500 writes attempted at 1% rate (nil conn — no crash)
+--- PASS: TestDLQSampling (0.00s)
+=== NAME  TestDLQParseError
+    dlq_writer_test.go:32: DLQParseError: 3 parse_error writes attempted (nil conn — no crash)
+--- PASS: TestDLQParseError (0.00s)
+PASS
+ok  	anttrader/internal/mdgateway	0.023s
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/brokersearch	0.029s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mdtick	0.006s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mt4	0.027s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mt5	0.026s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/backfiller	0.007s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/chmigrate	0.011s [no tests to run]

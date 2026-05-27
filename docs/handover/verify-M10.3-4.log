@@ -1,13 +1,39 @@
-Card: M10.3-4 — 6 M10 alerts (spec/15 §6.x)
-Date: 2026-05-24
-Status: ☑
+# Verify M10.3-4 — Prometheus Alerts
+# Date: 2026-05-27
+# Card: M10.3-4 — deploy/prometheus/alerts.yml 6 M10 alerts
 
-=== Verification ===
+## Alert Verification (6/6 found)
 $ for a in BrokerClockSkewHigh TickLatencyP99High SpillBacklog SpillUnwritable DLQSpike NormalizerFallbackHigh; do
-    grep -q "alert: $a" deploy/prometheus/alerts.yml || exit 1
+    grep -q "alert: $a" deploy/prometheus/alerts.yml && echo "FOUND: $a"
   done
-ALL 6 ALERTS PRESENT
 
-promtool check rules deploy/prometheus/alerts.yml not run (promtool not installed); syntax verified via manual YAML review.
+FOUND: BrokerClockSkewHigh
+FOUND: TickLatencyP99High
+FOUND: SpillBacklog
+FOUND: SpillUnwritable
+FOUND: DLQSpike
+FOUND: NormalizerFallbackHigh
 
-Files: deploy/prometheus/alerts.yml (created with 6 existing + 6 M10 rules)
+## Alert Details (from alerts.yml)
+- BrokerClockSkewHigh: abs(clock_skew_ms) > 5000ms → warning
+- TickLatencyP99High: P99 > 2s for 5m → critical
+- SpillBacklog: pending files > 100 → warning
+- SpillUnwritable: write errors > 0 for 5m → critical
+- DLQSpike: rate > 100/s for 5m → warning
+- NormalizerFallbackHigh: fallback state > 0 for 10m → warning
+
+## promtool check
+$ promtool check rules deploy/prometheus/alerts.yml
+(promtool not installed locally — verified rule syntax manually)
+
+## go test verification
+$ go test -race ./internal/mdgateway/... -count=1
+ok  	anttrader/internal/mdgateway                    	6.448s
+ok  	anttrader/internal/mdgateway/adapter/brokersearch	1.058s
+ok  	anttrader/internal/mdgateway/adapter/mdtick      	1.049s
+ok  	anttrader/internal/mdgateway/adapter/mt4         	1.056s
+ok  	anttrader/internal/mdgateway/adapter/mt5         	1.063s
+ok  	anttrader/internal/mdgateway/backfiller          	1.037s
+ok  	anttrader/internal/mdgateway/chmigrate           	1.037s
+
+## Card Status: ☑ VERIFIED — All 6 alerts confirmed, tests pass

@@ -1,16 +1,60 @@
-Card: M10.4-3 — envelope encryption + vault rotate CLI
-Date: 2026-05-24
-Status: ☑
-
-=== Verification ===
-$ go test -race -cover ./internal/secrets/...
-ok  	anttrader/internal/secrets	1.074s	coverage: 88.9%
-
-$ ANT_MASTER_KEY=... go run ./cmd/ant-vault --dry-run
-dry-run: would re-encrypt all mt_accounts rows with new key version
-rows_to_rewrite: 0 (PG not connected in dry-run mode)
-
-Added: MasterProvider interface (env/file/KMS), vault rotate CLI.
-Existing AES-256-GCM with HKDF per-purpose key derivation retained.
-
-Files: master_provider.go, master_provider_test.go, cmd/ant-vault/main.go
+=== RUN   TestIsLegacyFormat/empty
+=== NAME  TestEnvelopeDecryptWrongPurpose
+    envelope_test.go:149: Wrong-purpose rejection: envelope: unwrap dek: secrets: decrypt: cipher: message authentication failed (PASS)
+=== CONT  TestEnvelopeDecryptV2_TruncatedWrappedDEK
+=== CONT  TestMigrateToEnvelope_BrokenCiphertext
+=== CONT  TestEnvelopeReencrypt_Error
+=== CONT  TestEnvelopeDecrypt_TooShort
+=== CONT  TestEnvelopeEncrypt_DekReadError
+=== CONT  TestEnvelopeDecryptLegacy
+    envelope_test.go:67: Encrypt legacy: secrets: nonce: unexpected EOF
+--- PASS: TestNew_InvalidVersion (0.00s)
+=== NAME  TestEnvelopeEncrypt_DekReadError
+    coverage_test.go:563: EnvelopeEncrypt DEK read error: envelope: generate dek: unexpected EOF (PASS)
+--- PASS: TestFileMasterKey_Rotate (0.00s)
+=== CONT  TestEnvelopeRoundTrip
+--- PASS: TestEnvelopeReencrypt (0.00s)
+--- PASS: TestMigrateToEnvelope (0.00s)
+--- PASS: TestMigrateNonLegacyPassthrough (0.00s)
+--- PASS: TestEnvelopeCurrentVersion (0.00s)
+--- PASS: TestEnvelopeDecryptWrongPurpose (0.00s)
+=== RUN   TestIsLegacyFormat/v1
+=== NAME  TestEnvelopeRoundTrip
+    envelope_test.go:48: Envelope round-trip: 31 bytes → 122 bytes (PASS)
+=== CONT  TestRotateKey_ThenEnvelopeEncrypt
+=== CONT  TestAESGCMEncrypt_DifferentPurposes
+--- PASS: TestEnvelopeDecryptV2_TruncatedWrappedDEK (0.00s)
+--- PASS: TestEnvelopeReencrypt_Error (0.00s)
+--- PASS: TestMigrateToEnvelope_BrokenCiphertext (0.00s)
+--- PASS: TestEnvelopeDecrypt_TooShort (0.00s)
+=== CONT  TestEncrypt_NonceReadError
+--- FAIL: TestEnvelopeDecryptLegacy (0.00s)
+=== NAME  TestEncrypt_NonceReadError
+    coverage_test.go:512: nonce read error: secrets: nonce: unexpected EOF (PASS)
+=== CONT  TestRotateKey_ReadError
+    coverage_test.go:539: RotateKey read error: secrets: rotate: unexpected EOF (PASS)
+=== CONT  TestGetAEADConcurrent
+--- PASS: TestEnvelopeEncrypt_DekReadError (0.00s)
+=== CONT  TestReencryptAESGCM_DecryptError
+--- PASS: TestReencryptAESGCM_DecryptError (0.00s)
+--- PASS: TestRotateKey_ThenEnvelopeEncrypt (0.00s)
+=== RUN   TestIsLegacyFormat/v127
+--- PASS: TestAESGCMEncrypt_DifferentPurposes (0.00s)
+--- PASS: TestEnvelopeRoundTrip (0.00s)
+--- PASS: TestEncrypt_NonceReadError (0.00s)
+--- PASS: TestRotateKey_ReadError (0.00s)
+=== RUN   TestIsLegacyFormat/v2_envelope
+=== RUN   TestIsLegacyFormat/zero_version
+=== RUN   TestIsLegacyFormat/high_version
+--- PASS: TestIsLegacyFormat (0.00s)
+    --- PASS: TestIsLegacyFormat/empty (0.00s)
+    --- PASS: TestIsLegacyFormat/v1 (0.00s)
+    --- PASS: TestIsLegacyFormat/v127 (0.00s)
+    --- PASS: TestIsLegacyFormat/v2_envelope (0.00s)
+    --- PASS: TestIsLegacyFormat/zero_version (0.00s)
+    --- PASS: TestIsLegacyFormat/high_version (0.00s)
+--- PASS: TestGetAEADConcurrent (0.00s)
+FAIL
+coverage: 90.1% of statements
+FAIL	anttrader/internal/secrets	0.021s
+FAIL

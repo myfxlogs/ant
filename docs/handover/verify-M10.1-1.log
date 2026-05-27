@@ -37,3 +37,14 @@ Files changed:
 - backend/internal/mdgateway/chmigrate/006_md_ticks_v2.sql (new)
 - backend/internal/mdgateway/chmigrate/007_md_bars_v2.sql (new)
 - backend/internal/mdgateway/chmigrate/migrate.go (multi-statement support)
+
+=== Go Test Verification (2026-05-27) ===
+
+$ go test -count=1 -v -run TestMigrate ./internal/mdgateway/chmigrate/...
+=== RUN   TestMigrate_PackageLoads
+=== PAUSE TestMigrate_PackageLoads
+=== CONT  TestMigrate_PackageLoads
+    migrate_test.go:16: chmigrate package compiled and loaded
+--- PASS: TestMigrate_PackageLoads (0.00s)
+PASS
+ok  	anttrader/internal/mdgateway/chmigrate	0.007s

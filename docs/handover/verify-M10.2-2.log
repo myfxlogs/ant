@@ -1,29 +1,38 @@
-Card: M10.2-2 — spill_replay dual-write (NATS + CH)
-Date: 2026-05-24
-Status: ☑
+Card: M10.2-2 — spill_replay.go dual write: publisher first, then chWriter (ADR-0009 §2.1)
+Date: 2026-05-27
+Acceptance: spill_replay.go 改双写：先 publisher.PublishTick/Bar 再 chWriter.Enqueue；自动设 IsReplay=true
+Files: backend/internal/mdgateway/spill_replay.go + 测试
 
-=== Verification Output ===
+=== Go Test Output ===
 
-$ go build ./internal/mdgateway
-exit code: 0
+=== RUN   TestSpillReplayDualWrite
+=== PAUSE TestSpillReplayDualWrite
+=== CONT  TestSpillReplayDualWrite
+    spill_replay_test.go:54: SpillReplayDualWrite: replay succeeded, file moved to /tmp/TestSpillReplayDualWrite521134312/001/processed/spill-1779871045667.jsonl
+--- PASS: TestSpillReplayDualWrite (0.00s)
+PASS
+ok  	anttrader/internal/mdgateway	0.017s
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/brokersearch	0.018s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mdtick	0.008s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mt4	0.015s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mt5	0.018s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/backfiller	0.009s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/chmigrate	0.010s [no tests to run]
 
-$ go test -tags=integration -run TestSpillReplayDualWrite ./internal/mdgateway/... -v
-?   anttrader/internal/mdgateway [no test files]
-... (all sub-packages: no test files)
-exit code: 0
-
-=== Implementation Notes ===
-
-- Modified SpillReplay to accept publisher (*Publisher) alongside CHWriter.
-- replayFile now reconstructs Tick/Bar from spillEntry, sets IsReplay=true,
-  and calls publisher.PublishTick/PublishBar before chWriter.EnqueueTick/Bar.
-- ADR-0009 §2.1: publisher first (so NATS subscribers see data before CH write
-  completes), matching the order in Manager.HandleTick.
-- SpillEntry format is sparse (UserID/AccountID/SymbolRaw not stored in spill
-  JSONL). Reconstructed DTOs use empty strings for these fields — acceptable
-  for replay (CH columns are LowCardinality(String) accepting empty).
-- X-Ant-Replay:1 header is set automatically by publisher when IsReplay=true
-  (from M10.2-1).
-
-Files changed:
-- backend/internal/mdgateway/spill_replay.go (publisher injection + dual-write logic)
+=== Verification Notes ===
+- spill_replay.go writes to publisher FIRST (for NATS fanout), then to chWriter (for CH persistence)
+- IsReplay automatically set to true on all replayed ticks/bars
+- Processed files moved to /processed/ subdirectory after successful replay
+- Card Status: ☑ VERIFIED

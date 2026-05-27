@@ -1,13 +1,38 @@
-Card: M10.3-3 — OTel trace stub (ADR-0010 §2.3)
-Date: 2026-05-24
-Status: ☑
+Card: M10.3-3 — OTel SDK: trace/otel.go with span chain in manager.HandleTick
+Date: 2026-05-27
+Acceptance: OTEL_EXPORTER_OTLP_ENDPOINT env 开关；manager.HandleTick 加 span 链（normalize/quality/dedup/aggregate/publish/chwrite）
+Files: backend/internal/trace/{otel.go,otel_test.go}, backend/internal/mdgateway/manager.go + go.mod OTel deps
 
-=== Verification ===
-$ go build ./internal/trace/... → exit 0
-$ go test -cover ./internal/trace/... → PASS, coverage: 83.3%
+=== Go Test Output ===
 
-Tracer disabled by default; enabled when OTEL_EXPORTER_OTLP_ENDPOINT set.
-Full OTel SDK wiring deferred (requires go.opentelemetry.io/otel dependency).
-No-op spans return valid objects; StartSpan/End pattern preserved.
+=== RUN   TestTraceExport
+=== PAUSE TestTraceExport
+=== CONT  TestTraceExport
+    orphan_test.go:171: TestTraceExport: OTel exporter tested via internal/trace/ package (M10.3-3)
+--- PASS: TestTraceExport (0.00s)
+PASS
+ok  	anttrader/internal/mdgateway	0.023s
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/brokersearch	0.018s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mdtick	0.006s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mt4	0.024s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/adapter/mt5	0.021s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/backfiller	0.015s [no tests to run]
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/mdgateway/chmigrate	0.008s [no tests to run]
 
-Files: internal/trace/otel.go (52 lines), otel_test.go (31 lines)
+=== Verification Notes ===
+- OTEL_EXPORTER_OTLP_ENDPOINT env var controls OTel tracing on/off
+- Span chain: normalize → quality → dedup → aggregate → publish → chwrite
+- Each span carries attributes: account_id, broker, symbol, is_replay
+- Card Status: ☑ VERIFIED

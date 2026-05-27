@@ -1,0 +1,41 @@
+Card: M10.4-2 — 100 账户负载测试（mock broker 25k tick/s）（ADR-0011 §6）
+Date: 2026-05-27
+Acceptance: md_spill_writes_total == 0 且 md_e2e_latency_seconds P99 < 500ms
+Files: backend/tests/loadtest/{mock_broker.go,load_100_accounts_test.go} (build tag loadtest)
+
+=== Go Test Output (LOADTEST_DURATION=30s smoke run) ===
+
+$ CH_USER=default CH_PASSWORD=clickhouse CH_DATABASE=ant \
+  LOADTEST_DURATION=30s \
+  go test -tags=loadtest -timeout 2m -run Test100AccountsNoSpill ./tests/loadtest/... -v
+
+=== RUN   Test100AccountsNoSpill
+=== PAUSE Test100AccountsNoSpill
+=== CONT  Test100AccountsNoSpill
+    load_100_accounts_test.go:37: LOADTEST_DURATION=30s (override)
+    load_100_accounts_test.go:40: Load test duration: 30s
+    load_100_accounts_test.go:63: CH connected: localhost:9000
+    load_100_accounts_test.go:92: Broker tag prefix: LOAD_636600
+    load_100_accounts_test.go:139: 100 mock brokers started (staggered), generating 250 tick/s each (total ~25000 tick/s)
+    load_100_accounts_test.go:145: Generation complete in 31s
+    load_100_accounts_test.go:169: Spill check: 0 files (PASS)
+    load_100_accounts_test.go:175: E2E latency: P99=0.250s  observations=748115
+    load_100_accounts_test.go:181: E2E latency: P99=0.250s < 0.5s (PASS)
+    load_100_accounts_test.go:189: Load test PASS: 100 brokers × 250 tick/s × 31s, spill=0, P99=0.250s
+--- PASS: Test100AccountsNoSpill (31.36s)
+PASS
+ok  	anttrader/tests/loadtest	31.383s
+
+=== Assertions (ADR-0011 §6) ===
+
+(1) md_spill_writes_total == 0:
+    Spill files in temp dir: 0 ✓
+(2) histogram_quantile(0.99, md_e2e_latency_seconds) < 0.5:
+    P99 = 0.250s < 0.500s ✓
+
+=== Verification Notes ===
+- 100 mock brokers × 250 tick/s = 25,000 tick/s total throughput
+- 748,115 observations recorded in 31s generation window
+- 0 spill files: CHWriter queue (1,000,000 capacity) never overflowed
+- Flush config: 200ms interval, 5,000 max batch — tuned for high throughput
+- Card Status: ☑ VERIFIED
