@@ -26,6 +26,7 @@ import (
 	"anttrader/internal/interceptor"
 	"anttrader/internal/marketplace"
 	"anttrader/internal/mdgateway"
+	"anttrader/internal/mdgateway/adapter/brokersearch"
 	"anttrader/internal/mdgateway/adapter/mdtick"
 	"anttrader/internal/mthub"
 	"anttrader/internal/pkg/secretbox"
@@ -285,6 +286,8 @@ func main() {
 	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	accountServer := user.NewAccountServer(platformSvc, log)
+	// S2.2: wire mtapi broker searcher for real broker discovery.
+	accountServer.SetSearcher(brokersearch.New("", ""))
 	mux.Handle(antv1c.NewAccountServiceHandler(accountServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	mktServer := mktplace.NewMarketServer(platformSvc, marketDataRepo, nc, log)

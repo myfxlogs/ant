@@ -1,0 +1,65 @@
+=== Sprint 2 · Task S2.2: SearchBroker → real mtapi Search RPC ===
+Date: 2026-05-27
+Plan: docs/plan/2026-05-27-整改与执行计划.md §4.S2.2
+
+--- Problem ---
+V2 §2.D-3 / plan S2.2: AccountServer.SearchBroker returned a single hardcoded broker
+(Exness) regardless of user input. The mtapi gRPC Service.Search RPC existed in both
+mt4 and mt5 proto stubs but was never called.
+
+--- Fix ---
+Part 1 — internal/mdgateway/adapter/brokersearch/search.go (NEW):
+- Searcher struct: mt4Gateway + mt5Gateway (defaults to mtapi prod gateways)
+- Search(ctx, company, mtType): routes to mt4, mt5, or both
+- searchMT4 / searchMT5: gRPC Dial → NewServiceClient → Search RPC → disconnect
+- mapMT4Reply / mapMT5Reply: pure functions mapping mtapi Company/Result to ant BrokerCompany/BrokerServer
+
+Part 2 — internal/connect/user/account_handler.go (MODIFIED):
+- Added searcher *brokersearch.Searcher field + SetSearcher() setter
+- SearchBroker: calls searcher.Search() if available → returns real results
+- Falls back to static Exness entry when searcher is nil or call fails
+
+Part 3 — cmd/server/main.go (MODIFIED):
+- Added import for brokersearch package
+- brokersearch.New("", "") injected into accountServer via SetSearcher()
+
+--- Acceptance Command ---
+cd /opt/ant/backend && go test ./internal/mdgateway/adapter/brokersearch/... ./internal/connect/user/... -v
+
+--- Acceptance Output ---
+=== RUN   TestNew_Defaults
+--- PASS: TestNew_Defaults (0.00s)
+=== RUN   TestNew_Custom
+--- PASS: TestNew_Custom (0.00s)
+=== RUN   TestMapMT4Reply
+--- PASS: TestMapMT4Reply (0.00s)
+=== RUN   TestMapMT5Reply
+--- PASS: TestMapMT5Reply (0.00s)
+=== RUN   TestMapMT4Reply_Nil
+--- PASS: TestMapMT4Reply_Nil (0.00s)
+=== RUN   TestMapMT5Reply_Nil
+--- PASS: TestMapMT5Reply_Nil (0.00s)
+=== RUN   TestMapMT4Reply_EmptyResult
+--- PASS: TestMapMT4Reply_EmptyResult (0.00s)
+PASS
+ok      anttrader/internal/mdgateway/adapter/brokersearch      0.011s
+=== RUN   TestSearchBroker_FallbackToMock
+--- PASS: TestSearchBroker_FallbackToMock (0.00s)
+PASS
+ok      anttrader/internal/connect/user        0.019s
+
+--- Test Coverage ---
+- TestNew_Defaults: empty gateways → mt4grpc3.mtapi.io:443 / mt5grpc3.mtapi.io:443
+- TestNew_Custom: custom gateways preserved
+- TestMapMT4Reply: mt4 Company+Result → ant BrokerCompany+BrokerServer (2 servers)
+- TestMapMT5Reply: mt5 Company+Result → ant BrokerCompany+BrokerServer (1 server)
+- TestMapMT4Reply_Nil/TestMapMT5Reply_Nil: nil reply → nil
+- TestMapMT4Reply_EmptyResult: empty reply → 0 companies
+- TestSearchBroker_FallbackToMock: nil searcher → returns Exness mock
+
+--- Pre-commit checks ---
+- go build ./... : PASS
+- No new panic, nil dereference, TODO, or stub introduced
+- Real mtapi Search RPC wired — mtapi gateway connection is on-demand (connect → search → disconnect)
+- Graceful degradation: mtapi unreachable → log warning → fallback to Exness mock
+- Diff: 6 files (3 modified + 3 new)

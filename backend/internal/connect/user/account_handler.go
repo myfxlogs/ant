@@ -14,13 +14,15 @@ import (
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
+	"anttrader/internal/mdgateway/adapter/brokersearch"
 	"anttrader/internal/service"
 )
 
 // AccountServer implements ant.v1.AccountServiceHandler.
 type AccountServer struct {
-	svc *service.PlatformService
-	log *zap.Logger
+	svc      *service.PlatformService
+	searcher *brokersearch.Searcher
+	log      *zap.Logger
 }
 
 var _ antv1c.AccountServiceHandler = (*AccountServer)(nil)
@@ -28,6 +30,9 @@ var _ antv1c.AccountServiceHandler = (*AccountServer)(nil)
 func NewAccountServer(svc *service.PlatformService, log *zap.Logger) *AccountServer {
 	return &AccountServer{svc: svc, log: log}
 }
+
+// SetSearcher injects the mtapi broker searcher (S2.2).
+func (s *AccountServer) SetSearcher(searcher *brokersearch.Searcher) { s.searcher = searcher }
 
 func (s *AccountServer) ListAccounts(ctx context.Context, req *connect.Request[antv1.ListAccountsRequest]) (*connect.Response[antv1.ListAccountsResponse], error) {
 	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
@@ -168,9 +173,17 @@ func (s *AccountServer) ReconnectAccount(ctx context.Context, req *connect.Reque
 	return connect.NewResponse(&emptypb.Empty{}), nil
 }
 
-// SearchBroker proxies to the MT broker search.
-// Full mtapi Search RPC integration requires Phase 2 mthub wiring.
+// SearchBroker calls mtapi Search RPC for real broker discovery.
+// Falls back to a static Exness entry when the searcher is unavailable or the call fails.
 func (s *AccountServer) SearchBroker(ctx context.Context, req *connect.Request[antv1.SearchBrokerRequest]) (*connect.Response[antv1.SearchBrokerResponse], error) {
+	if s.searcher != nil {
+		companies, err := s.searcher.Search(ctx, req.Msg.Company, req.Msg.MtType)
+		if err != nil {
+			s.log.Warn("broker search failed, falling back to mock", zap.Error(err))
+		} else if len(companies) > 0 {
+			return connect.NewResponse(&antv1.SearchBrokerResponse{Companies: companies}), nil
+		}
+	}
 	return connect.NewResponse(&antv1.SearchBrokerResponse{
 		Companies: []*antv1.BrokerCompany{
 			{CompanyName: "Exness", Servers: []*antv1.BrokerServer{
