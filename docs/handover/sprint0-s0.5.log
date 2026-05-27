@@ -1,0 +1,40 @@
+=== Sprint 0 · Task S0.5: Fix UpdateAccount SQL parameter shift ===
+Date: 2026-05-27
+Plan: docs/plan/2026-05-27-整改与执行计划.md §2.S0.5
+
+--- Problem ---
+platform_service.go:187-196: $2 used for both broker_company SET and WHERE user_id,
+isDisabled (6th arg) never referenced. Every call corrupted broker_company with user_id UUID.
+
+--- Changes ---
+1. MOD:  backend/internal/service/platform_service.go:187-196
+   SQL renumbered: $1=id, $2=userID, $3=brokerCompany, $4=brokerServer, $5=brokerHost, $6=isDisabled
+   Before: SET broker_company=$2, broker_server=$3, broker_host=$4, is_disabled=$5 WHERE $1 AND $2
+   After:  SET broker_company=$3, broker_server=$4, broker_host=$5, is_disabled=$6 WHERE $1 AND $2
+
+2. NEW:  backend/migrations/121_repair_broker_company_corruption.up.sql
+   Detects rows where broker_company matches UUID pattern (damage from bug).
+   Marks them account_status='needs_rebind' since original value unrecoverable.
+
+3. NEW:  backend/migrations/121_repair_broker_company_corruption.down.sql
+   No-op (data repair marker, not reversible).
+
+4. NEW:  backend/internal/service/platform_update_account_integration_test.go
+   Tests broker_company/broker_server/broker_host/is_disabled all correctly handled.
+
+--- Acceptance: go test -tags=integration -run TestUpdateAccountParamsCorrect ./internal/service/... ---
+=== RUN   TestUpdateAccountParamsCorrect
+    platform_update_account_integration_test.go:79: broker_company correct: NewBroker
+    platform_update_account_integration_test.go:85: broker_server correct: NewServer
+    platform_update_account_integration_test.go:91: broker_host correct: live.mt5.com
+    platform_update_account_integration_test.go:105: is_disabled unchanged: PASS (COALESCE nil → kept false)
+--- PASS: TestUpdateAccountParamsCorrect (0.14s)
+PASS
+ok  	anttrader/internal/service	0.151s
+
+--- Regression ---
+go test -short ./internal/service/... ./internal/interceptor/... → all PASS
+go build ./... → clean
+
+--- Integrity ---
+- No new panic / nil / TODO / stub

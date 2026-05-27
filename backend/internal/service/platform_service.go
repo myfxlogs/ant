@@ -187,10 +187,10 @@ func (s *PlatformService) CreateAccount(ctx context.Context, userID uuid.UUID, l
 func (s *PlatformService) UpdateAccount(ctx context.Context, userID uuid.UUID, id, brokerCompany, brokerServer, brokerHost string, isDisabled *bool) error {
 	_, err := s.pg.Exec(ctx, `
 		UPDATE mt_accounts SET
-			broker_company = COALESCE(NULLIF($2, ''), broker_company),
-			broker_server  = COALESCE(NULLIF($3, ''), broker_server),
-			broker_host    = COALESCE(NULLIF($4, ''), broker_host),
-			is_disabled    = COALESCE($5, is_disabled),
+			broker_company = COALESCE(NULLIF($3, ''), broker_company),
+			broker_server  = COALESCE(NULLIF($4, ''), broker_server),
+			broker_host    = COALESCE(NULLIF($5, ''), broker_host),
+			is_disabled    = COALESCE($6, is_disabled),
 			updated_at     = CURRENT_TIMESTAMP
 		WHERE id = $1::uuid AND user_id = $2
 	`, id, userID, brokerCompany, brokerServer, brokerHost, isDisabled)

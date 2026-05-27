@@ -1,0 +1,2 @@
+-- No reversible action. The needs_rebind flag is a data repair marker.
+-- Downgrade is a no-op.
