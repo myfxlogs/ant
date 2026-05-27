@@ -318,6 +318,7 @@ func main() {
 	logSvc := service.NewLogService(logRepo)
 	strategyExperimentRepo := repository.NewStrategyExperimentRepository(pool)
 	strategyAssetRepo := repository.NewStrategyAssetRepository(pool)
+	backtestRunRepo := repository.NewBacktestRunRepository(pool)
 
 	aiRepo := repository.NewSystemAIConfigRepository(pool)
 	var aiBox *secretbox.Box
@@ -353,13 +354,13 @@ func main() {
 		log.Info("Python strategy client configured", zap.String("url", cfg.StrategyServiceURL))
 	}
 	mux.Handle(antv1c.NewPythonStrategyServiceHandler(pythonStrategyServer, connectrpc.WithInterceptors(authInterceptor)))
-	codeAssistServer := ai.NewCodeAssistServer(log)
+	codeAssistServer := ai.NewCodeAssistServer(aiSvc, log)
 	mux.Handle(antv1c.NewCodeAssistServiceHandler(codeAssistServer, connectrpc.WithInterceptors(authInterceptor)))
 	systemAIServer := ai.NewSystemAIServer(aiSvc, log)
 	mux.Handle(antv1c.NewSystemAIServiceHandler(systemAIServer, connectrpc.WithInterceptors(authInterceptor)))
 	aiPrimaryServer := ai.NewAIPrimaryServer(aiSvc, log)
 	mux.Handle(antv1c.NewAIPrimaryServiceHandler(aiPrimaryServer, connectrpc.WithInterceptors(authInterceptor)))
-	backtestTradesServer := strategy.NewBacktestTradesServer(log)
+	backtestTradesServer := strategy.NewBacktestTradesServer(backtestRunRepo, log)
 	mux.Handle(antv1c.NewBacktestTradesServiceHandler(backtestTradesServer, connectrpc.WithInterceptors(authInterceptor)))
 	economicDataServer := system.NewEconomicDataServer(log)
 	mux.Handle(antv1c.NewEconomicDataServiceHandler(economicDataServer, connectrpc.WithInterceptors(authInterceptor)))
