@@ -1,13 +1,13 @@
 import { Card, Tag, Button, Space, Progress, Popconfirm } from 'antd';
 import {
-  IconTrendingUp,
-  IconTrendingDown,
-  IconCheck,
-  IconX,
-  IconPlayerPlay,
-  IconTarget,
-  IconShield,
-} from '@tabler/icons-react';
+  RiseOutlined,
+  FallOutlined,
+  CheckOutlined,
+  CloseOutlined,
+  CaretRightOutlined,
+  AimOutlined,
+  SafetyOutlined,
+} from '@ant-design/icons';
 import type { Signal } from '@/types/ai';
 import { getDeviceLocale, getDeviceTimeZone } from '@/utils/date';
 import { useTranslation } from 'react-i18next';
@@ -79,14 +79,14 @@ export default function SignalCard({ signal, onConfirm, onCancel, onExecute }: S
                 className="w-10 h-10 rounded-xl flex items-center justify-center"
                 style={{ background: 'rgba(0, 166, 81, 0.1)' }}
               >
-                <IconTrendingUp size={20} stroke={1.5} color="#00A651" />
+                <RiseOutlined size={20} stroke={1.5} color="#00A651" />
               </div>
             ) : (
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center"
                 style={{ background: 'rgba(229, 57, 53, 0.1)' }}
               >
-                <IconTrendingDown size={20} stroke={1.5} color="#E53935" />
+                <FallOutlined size={20} stroke={1.5} color="#E53935" />
               </div>
             )}
             <div>
@@ -156,14 +156,14 @@ export default function SignalCard({ signal, onConfirm, onCancel, onExecute }: S
           <div className="flex gap-4">
             {signal.stop_loss && (
               <div className="flex items-center gap-2 text-sm">
-                <IconShield size={14} stroke={1.5} color="#E53935" />
+                <SafetyOutlined size={14} stroke={1.5} color="#E53935" />
                 <span style={{ color: '#8A9AA5' }}>{t('ai.signalCard.labels.stopLoss')}:</span>
                 <span style={{ color: '#E53935' }}>{signal.stop_loss.toFixed(2)}</span>
               </div>
             )}
             {signal.take_profit && (
               <div className="flex items-center gap-2 text-sm">
-                <IconTarget size={14} stroke={1.5} color="#00A651" />
+                <AimOutlined size={14} stroke={1.5} color="#00A651" />
                 <span style={{ color: '#8A9AA5' }}>{t('ai.signalCard.labels.takeProfit')}:</span>
                 <span style={{ color: '#00A651' }}>{signal.take_profit.toFixed(2)}</span>
               </div>
@@ -194,7 +194,7 @@ export default function SignalCard({ signal, onConfirm, onCancel, onExecute }: S
               <>
                 <Button
                   size="small"
-                  icon={<IconCheck size={14} stroke={1.5} />}
+                  icon={<CheckOutlined size={14} stroke={1.5} />}
                   onClick={() => onConfirm(signal.id)}
                 >
                   {t('ai.signalCard.actions.confirm')}
@@ -208,7 +208,7 @@ export default function SignalCard({ signal, onConfirm, onCancel, onExecute }: S
                   <Button
                     size="small"
                     danger
-                    icon={<IconX size={14} stroke={1.5} />}
+                    icon={<CloseOutlined size={14} stroke={1.5} />}
                   >
                     {t('ai.signalCard.actions.cancel')}
                   </Button>
@@ -226,7 +226,7 @@ export default function SignalCard({ signal, onConfirm, onCancel, onExecute }: S
                 <Button
                   size="small"
                   type="primary"
-                  icon={<IconPlayerPlay size={14} stroke={1.5} />}
+                  icon={<CaretRightOutlined size={14} stroke={1.5} />}
                 >
                   {t('ai.signalCard.actions.executeTrade')}
                 </Button>

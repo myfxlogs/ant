@@ -16,10 +16,10 @@ import {
   YAxis,
 } from 'recharts';
 import {
-  IconChartBar,
+  BarChartOutlined,
   IconChartPie,
-  IconTrophy,
-} from '@tabler/icons-react';
+  TrophyOutlined,
+} from '@ant-design/icons';
 
 import { CHART_COLORS } from '@/constants/performance';
 import React, { useState } from 'react';
@@ -175,7 +175,7 @@ export default function AccountAnalyticsSection({
         <div className="rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold flex items-center gap-2" style={{ color: '#141D22' }}>
-              <IconChartBar size={18} stroke={1.5} />
+              <BarChartOutlined size={18} stroke={1.5} />
               {t('accounts.analytics.monthlyProfitTitle')}
             </h2>
             <div className="flex items-center gap-2">
@@ -220,7 +220,7 @@ export default function AccountAnalyticsSection({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <div className="lg:col-span-2 rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
           <h2 className="text-lg font-semibold flex items-center gap-2 mb-4" style={{ color: '#141D22' }}>
-            <IconTrophy size={18} stroke={1.5} />
+            <TrophyOutlined size={18} stroke={1.5} />
             {t('accounts.analytics.advancedStatsTitle')}
           </h2>
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">

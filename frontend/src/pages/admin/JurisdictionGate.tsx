@@ -18,7 +18,7 @@ import { showError, showSuccess } from '@/utils/message';
 import { StatusResult } from '@/components/common/StatusResult';
 import { useRpcQuery } from '@/hooks/useRpcQuery';
 import { useTranslation } from 'react-i18next';
-import { IconShield } from '@tabler/icons-react';
+import { SafetyOutlined } from '@ant-design/icons';
 import type { SanctionedCountry, JurisdictionStatus, UserKYCItem } from '@/gen/ant/v1/admin_jurisdiction_pb';
 
 const { Title } = Typography;
@@ -177,7 +177,7 @@ export default function JurisdictionGate() {
     <div className="space-y-4">
       <div>
         <Title level={3}>
-          <IconShield size={24} stroke={1.5} className="inline mr-2" />
+          <SafetyOutlined size={24} stroke={1.5} className="inline mr-2" />
           {t('admin.jurisdiction.title')}
         </Title>
       </div>

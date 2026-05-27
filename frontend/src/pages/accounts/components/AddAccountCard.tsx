@@ -1,4 +1,4 @@
-import { IconPlus } from '@tabler/icons-react';
+import { PlusOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 
 type Props = {
@@ -28,7 +28,7 @@ export default function AddAccountCard({ onClick }: Props) {
         className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
         style={{ background: 'rgba(212, 175, 55, 0.1)' }}
       >
-        <IconPlus size={32} stroke={1.5} color="#D4AF37" />
+        <PlusOutlined size={32} stroke={1.5} color="#D4AF37" />
       </div>
       <span className="font-medium" style={{ color: '#8A9AA5' }}>
         {t('accounts.bindNew')}

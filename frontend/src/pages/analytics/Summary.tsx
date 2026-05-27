@@ -7,12 +7,12 @@ import {
   BarChart, Bar, PieChart, Pie, Cell, Legend,
 } from 'recharts';
 import {
-  IconTrendingUp,
-  IconChartLine,
+  RiseOutlined,
+  LineChartOutlined,
   IconChartPie,
-  IconClock,
-  IconTarget,
-} from '@tabler/icons-react';
+  ClockCircleOutlined,
+  AimOutlined,
+} from '@ant-design/icons';
 import { useAccount } from '@/hooks/useAccount';
 import { analyticsApi } from '@/client/analytics';
 import { useRpcQuery } from '@/hooks/useRpcQuery';
@@ -261,7 +261,7 @@ export default function Summary() {
           <Col xs={12} sm={6}>
             <div className="stat-card">
               <div className="flex items-center gap-2 mb-2">
-                <IconTrendingUp size={18} stroke={1.5} color="#00A651" />
+                <RiseOutlined size={18} stroke={1.5} color="#00A651" />
                 <span style={{ color: '#8A9AA5', fontSize: '14px' }}>{t('analytics.summary.metrics.netProfit')}</span>
               </div>
               <div className="text-2xl font-semibold" style={{ color: (tradeStats?.netProfit || 0) >= 0 ? '#00A651' : '#E53935' }}>
@@ -272,7 +272,7 @@ export default function Summary() {
           <Col xs={12} sm={6}>
             <div className="stat-card">
               <div className="flex items-center gap-2 mb-2">
-                <IconChartLine size={18} stroke={1.5} color="#2196F3" />
+                <LineChartOutlined size={18} stroke={1.5} color="#2196F3" />
                 <span style={{ color: '#8A9AA5', fontSize: '14px' }}>{t('analytics.summary.metrics.equity')}</span>
               </div>
               <div className="text-2xl font-semibold" style={{ color: '#141D22' }}>
@@ -283,7 +283,7 @@ export default function Summary() {
           <Col xs={12} sm={6}>
             <div className="stat-card">
               <div className="flex items-center gap-2 mb-2">
-                <IconTarget size={18} stroke={1.5} color="#D4AF37" />
+                <AimOutlined size={18} stroke={1.5} color="#D4AF37" />
                 <span style={{ color: '#8A9AA5', fontSize: '14px' }}>{t('analytics.summary.metrics.balance')}</span>
               </div>
               <div className="text-2xl font-semibold" style={{ color: '#141D22' }}>
@@ -458,7 +458,7 @@ export default function Summary() {
             </Col>
             <Col xs={24} sm={12} md={6}>
               <div className="flex items-center gap-2">
-                <IconClock size={16} stroke={1.5} color="#8A9AA5" />
+                <ClockCircleOutlined size={16} stroke={1.5} color="#8A9AA5" />
                 <span style={{ color: '#8A9AA5', fontSize: '14px' }}>{t('analytics.summary.tradeStats.avgHolding')}</span>
               </div>
               <div className="text-lg font-semibold mt-1" style={{ color: '#141D22' }}>{formatHoldingTime(tradeStats?.averageHoldingTime) || '-'}</div>

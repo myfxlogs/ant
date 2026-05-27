@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Card, Table, Button, Modal, Form, Input, message, Space, Switch, Tag, Select, Alert } from 'antd';
-import { IconEdit } from '@tabler/icons-react';
+import { EditOutlined } from '@ant-design/icons';
 import { adminApi, type SystemConfig as AdminConfigType } from '@/client/admin';
 import { formatDateTime } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
@@ -290,7 +290,7 @@ export default function SystemConfigPage() {
         <Button
           type="link"
           size="small"
-          icon={<IconEdit size={14} />}
+          icon={<EditOutlined size={14} />}
           onClick={() => handleEdit(record)}
         >
           {t('common.edit')}

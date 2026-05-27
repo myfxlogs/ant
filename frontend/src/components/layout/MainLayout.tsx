@@ -1,20 +1,20 @@
 import { useState, useEffect } from 'react';
 import { Layout, Menu, Avatar, Dropdown, Drawer } from 'antd';
 import {
-  IconWorld,
+  GlobalOutlined,
   IconHelpCircle,
   IconUserCircle,
   IconLogout,
-  IconSettings,
-  IconChartLine,
+  SettingOutlined,
+  LineChartOutlined,
   IconHome,
-  IconMenu2,
-  IconBrain,
-  IconBolt,
-  IconHistory,
-  IconList,
+  MenuOutlined,
+  RobotOutlined,
+  ThunderboltOutlined,
+  HistoryOutlined,
+  UnorderedListOutlined,
   IconWaveSine,
-} from '@tabler/icons-react';
+} from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import NotificationCenter from '@/components/notification/NotificationCenter';
@@ -71,15 +71,15 @@ export default function MainLayout() {
     { key: menuKeys.dashboard, icon: <IconHome size={20} stroke={1.5} />, label: t('menu.dashboard') },
     {
       key: menuKeys.ai,
-      icon: <IconBrain size={20} stroke={1.5} />,
+      icon: <RobotOutlined size={20} stroke={1.5} />,
       label: t('menu.aiAssistant'),
     },
-    { key: menuKeys.strategies, icon: <IconList size={20} stroke={1.5} />, label: t('menu.strategies') },
+    { key: menuKeys.strategies, icon: <UnorderedListOutlined size={20} stroke={1.5} />, label: t('menu.strategies') },
     // { key: menuKeys.experiments, icon: <IconFlask size={20} stroke={1.5} />, label: '策略实验' },
     { key: menuKeys.marketRegime, icon: <IconWaveSine size={20} stroke={1.5} />, label: t('menu.marketRegime') },
     // { key: menuKeys.assets, icon: <IconArchive size={20} stroke={1.5} />, label: '资产库' },
-    { key: menuKeys.schedules, icon: <IconBolt size={20} stroke={1.5} />, label: t('menu.schedules') },
-    { key: menuKeys.logs, icon: <IconHistory size={20} stroke={1.5} />, label: t('menu.logs') },
+    { key: menuKeys.schedules, icon: <ThunderboltOutlined size={20} stroke={1.5} />, label: t('menu.schedules') },
+    { key: menuKeys.logs, icon: <HistoryOutlined size={20} stroke={1.5} />, label: t('menu.logs') },
   ];
 
   const menuItems =
@@ -98,9 +98,9 @@ export default function MainLayout() {
 
   const userMenuItems = [
     { key: 'profile', icon: <IconUserCircle size={18} stroke={1.5} />, label: t('topbar.profile') },
-    { key: 'settings', icon: <IconSettings size={18} stroke={1.5} />, label: t('topbar.settings') },
+    { key: 'settings', icon: <SettingOutlined size={18} stroke={1.5} />, label: t('topbar.settings') },
     ...(isAdmin
-      ? [{ type: 'divider' as const }, { key: 'admin', icon: <IconChartLine size={18} stroke={1.5} />, label: t('topbar.switchToAdmin') }]
+      ? [{ type: 'divider' as const }, { key: 'admin', icon: <LineChartOutlined size={18} stroke={1.5} />, label: t('topbar.switchToAdmin') }]
       : []),
     { type: 'divider' as const },
     { key: 'logout', icon: <IconLogout size={18} stroke={1.5} />, label: t('topbar.logout'), danger: true },
@@ -163,7 +163,7 @@ export default function MainLayout() {
         <div className="h-16 flex items-center justify-center" style={{ borderBottom: '1px solid rgba(0, 0, 0, 0.08)' }}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: BRAND_GRADIENT }}>
-              <IconChartLine size={22} stroke={2} color="#FFFFFF" />
+              <LineChartOutlined size={22} stroke={2} color="#FFFFFF" />
             </div>
             <span className="font-bold text-lg text-gradient" style={{ fontFamily: 'Poppins, sans-serif' }}>{t('app.name')}</span>
           </div>
@@ -176,7 +176,7 @@ export default function MainLayout() {
             trigger={['click']}
           >
             <div className="flex items-center gap-2 p-3 rounded-lg cursor-pointer" style={{ background: '#F5F7F9' }}>
-              <IconWorld size={18} stroke={1.5} />
+              <GlobalOutlined size={18} stroke={1.5} />
               <span style={{ color: '#141D22' }}>{t(languages.find(l => l.key === language)?.labelKey || 'language.english')}</span>
             </div>
           </Dropdown>
@@ -203,7 +203,7 @@ export default function MainLayout() {
           <div className="h-16 flex items-center justify-center" style={{ borderBottom: '1px solid rgba(0, 0, 0, 0.08)' }}>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: BRAND_GRADIENT }}>
-                <IconChartLine size={22} stroke={2} color="#FFFFFF" />
+                <LineChartOutlined size={22} stroke={2} color="#FFFFFF" />
               </div>
               <span className="font-bold text-lg text-gradient" style={{ fontFamily: 'Poppins, sans-serif' }}>{t('app.name')}</span>
             </div>
@@ -233,7 +233,7 @@ export default function MainLayout() {
                 className="p-2 rounded-lg transition-colors"
                 style={{ color: '#5A6B75' }}
               >
-                <IconMenu2 size={22} stroke={1.5} />
+                <MenuOutlined size={22} stroke={1.5} />
               </button>
             )}
             {!isMobile && (
@@ -260,7 +260,7 @@ export default function MainLayout() {
                 className="p-2 rounded-lg transition-colors"
                 style={{ color: '#5A6B75' }}
               >
-                <IconWorld size={20} stroke={1.5} />
+                <GlobalOutlined size={20} stroke={1.5} />
               </button>
             </Dropdown>
             

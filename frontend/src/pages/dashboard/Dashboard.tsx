@@ -2,18 +2,18 @@ import { useContext, useEffect, useMemo, useState } from 'react';
 import { Button, Card, Col, Row, Skeleton, Statistic, Tag } from 'antd';
 import { StatusResult } from '@/components/common/StatusResult';
 import {
-  IconCurrencyDollar,
+  DollarOutlined,
   IconUsers,
-  IconChartLine,
-  IconChartBar,
+  LineChartOutlined,
+  BarChartOutlined,
   IconChartPie,
-  IconPlus,
-  IconX,
+  PlusOutlined,
+  CloseOutlined,
   IconArrowUp,
   IconBuildingBank,
   IconWifi,
   IconWifiOff,
-} from '@tabler/icons-react';
+} from '@ant-design/icons';
 import { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
 import { useNavigate } from 'react-router-dom';
 import { useAccount } from '@/hooks/useAccount';
@@ -112,11 +112,11 @@ export default function Dashboard() {
   };
 
   const quickActions = [
-    { key: 'trading', icon: <IconChartLine size={24} stroke={1.5} color="#FFFFFF" />, label: t('dashboard.quickActions.trading'), path: '/trading', color: PRIMARY_GRADIENT },
-    { key: 'market', icon: <IconChartBar size={24} stroke={1.5} color="#FFFFFF" />, label: t('dashboard.quickActions.market'), path: '/market', color: 'linear-gradient(135deg, #5A6B75 0%, #3D4A52 100%)' },
+    { key: 'trading', icon: <LineChartOutlined size={24} stroke={1.5} color="#FFFFFF" />, label: t('dashboard.quickActions.trading'), path: '/trading', color: PRIMARY_GRADIENT },
+    { key: 'market', icon: <BarChartOutlined size={24} stroke={1.5} color="#FFFFFF" />, label: t('dashboard.quickActions.market'), path: '/market', color: 'linear-gradient(135deg, #5A6B75 0%, #3D4A52 100%)' },
     { key: 'analytics', icon: <IconChartPie size={24} stroke={1.5} color="#FFFFFF" />, label: t('dashboard.quickActions.analytics'), path: '/analytics', color: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)' },
-    { key: 'bind', icon: <IconPlus size={24} stroke={1.5} color="#FFFFFF" />, label: t('dashboard.quickActions.bindAccount'), path: '/accounts/bind', color: 'linear-gradient(135deg, #00A651 0%, #008C44 100%)' },
-    { key: 'close', icon: <IconX size={24} stroke={1.5} color="#FFFFFF" />, label: t('dashboard.quickActions.closePosition'), path: '/trading', color: 'linear-gradient(135deg, #E53935 0%, #C62828 100%)' },
+    { key: 'bind', icon: <PlusOutlined size={24} stroke={1.5} color="#FFFFFF" />, label: t('dashboard.quickActions.bindAccount'), path: '/accounts/bind', color: 'linear-gradient(135deg, #00A651 0%, #008C44 100%)' },
+    { key: 'close', icon: <CloseOutlined size={24} stroke={1.5} color="#FFFFFF" />, label: t('dashboard.quickActions.closePosition'), path: '/trading', color: 'linear-gradient(135deg, #E53935 0%, #C62828 100%)' },
   ];
 
   return (
@@ -136,7 +136,7 @@ export default function Dashboard() {
         </div>
         <Button 
           type="primary" 
-          icon={<IconPlus size={16} stroke={1.5} />}
+          icon={<PlusOutlined size={16} stroke={1.5} />}
           onClick={() => navigate('/accounts/bind')}
           style={{ background: PRIMARY_GRADIENT, border: 'none' }}
         >
@@ -166,7 +166,7 @@ export default function Dashboard() {
               <div className="stat-card group cursor-pointer">
                 <div className="flex items-center justify-between mb-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(212, 175, 55, 0.1)' }}>
-                    <IconCurrencyDollar size={20} stroke={1.5} color="#D4AF37" />
+                    <DollarOutlined size={20} stroke={1.5} color="#D4AF37" />
                   </div>
                   <IconArrowUp size={16} stroke={1.5} color="#00A651" />
                 </div>
@@ -183,7 +183,7 @@ export default function Dashboard() {
               <div className="stat-card group cursor-pointer">
                 <div className="flex items-center justify-between mb-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(0, 166, 81, 0.1)' }}>
-                    <IconChartLine size={20} stroke={1.5} color="#00A651" />
+                    <LineChartOutlined size={20} stroke={1.5} color="#00A651" />
                   </div>
                 </div>
                 <Statistic
@@ -211,7 +211,7 @@ export default function Dashboard() {
               <div className="stat-card group cursor-pointer">
                 <div className="flex items-center justify-between mb-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(0, 166, 81, 0.1)' }}>
-                    <IconChartLine size={20} stroke={1.5} color="#00A651" />
+                    <LineChartOutlined size={20} stroke={1.5} color="#00A651" />
                   </div>
                   {stats.totalProfit >= 0 ? (
                     <IconArrowUp size={16} stroke={1.5} color="#00A651" />

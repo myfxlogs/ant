@@ -1,15 +1,15 @@
 import { Button, Dropdown, Modal, Spin, Tag } from 'antd';
 import type { MenuProps } from 'antd';
 import {
-  IconChartLine,
-  IconDotsVertical,
-  IconEdit,
-  IconInfoCircle,
-  IconList,
-  IconPlayerPause,
-  IconPlayerPlay,
-  IconTrash,
-} from '@tabler/icons-react';
+  LineChartOutlined,
+  MoreOutlined,
+  EditOutlined,
+  InfoCircleOutlined,
+  UnorderedListOutlined,
+  PauseCircleOutlined,
+  CaretRightOutlined,
+  DeleteOutlined,
+} from '@ant-design/icons';
 import { useMemo } from 'react';
 import type { Account } from '@/types/account';
 import { useTranslation } from 'react-i18next';
@@ -88,10 +88,10 @@ export default function AccountCard({
         enablingAccount === account.id ? (
           <Spin size="small" />
         ) : (
-          <IconPlayerPlay size={14} stroke={1.5} />
+          <CaretRightOutlined size={14} stroke={1.5} />
         )
       ) : (
-        <IconPlayerPause size={14} stroke={1.5} />
+        <PauseCircleOutlined size={14} stroke={1.5} />
       ),
       onClick: () => {
         if (account.isDisabled) {
@@ -104,7 +104,7 @@ export default function AccountCard({
     {
       key: 'edit',
       label: t('common.edit'),
-      icon: <IconEdit size={14} stroke={1.5} />,
+      icon: <EditOutlined size={14} stroke={1.5} />,
       onClick: () => onEdit(account),
     },
     {
@@ -113,7 +113,7 @@ export default function AccountCard({
     {
       key: 'delete',
       label: t('common.delete'),
-      icon: <IconTrash size={14} stroke={1.5} />,
+      icon: <DeleteOutlined size={14} stroke={1.5} />,
       danger: true,
       onClick: () => {
         Modal.confirm({
@@ -169,7 +169,7 @@ export default function AccountCard({
             <Button
               type="text"
               size="small"
-              icon={<IconDotsVertical size={16} stroke={1.5} />}
+              icon={<MoreOutlined size={16} stroke={1.5} />}
               style={{ color: '#8A9AA5' }}
             />
           </Dropdown>
@@ -205,7 +205,7 @@ export default function AccountCard({
         <div className="flex gap-2 pt-3" style={{ borderTop: '1px solid rgba(0, 0, 0, 0.06)' }}>
           <Button
             size="small"
-            icon={<IconChartLine size={14} stroke={1.5} />}
+            icon={<LineChartOutlined size={14} stroke={1.5} />}
             onClick={() => onNavigateToTrading(account.id)}
             style={{ borderRadius: '6px' }}
           >
@@ -213,7 +213,7 @@ export default function AccountCard({
           </Button>
           <Button
             size="small"
-            icon={<IconList size={14} stroke={1.5} />}
+            icon={<UnorderedListOutlined size={14} stroke={1.5} />}
             onClick={() => onNavigateToDetail(account.id)}
             style={{ borderRadius: '6px' }}
           >
@@ -221,7 +221,7 @@ export default function AccountCard({
           </Button>
           <Button
             size="small"
-            icon={<IconInfoCircle size={14} stroke={1.5} />}
+            icon={<InfoCircleOutlined size={14} stroke={1.5} />}
             onClick={() => onNavigateToDetail(account.id)}
             style={{ borderRadius: '6px' }}
           >

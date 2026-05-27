@@ -1,0 +1,85 @@
+# S4.4 Handover Log — UX 一致性收敛
+# Date: 2026-05-27
+# Task: Sprint 4.4 — React Query migration, i18n lazy-load, icon consolidation, error code i18n, BindAccount fix
+# Status: COMPLETED
+
+## Changes Summary
+
+### 1. BindAccount Fix (critical runtime bug)
+- **File**: `frontend/src/pages/accounts/BindAccount.tsx`
+- **Bug**: line 75 called `message.info(...)` but `message` was not imported (only `showSuccess/showError/showWarning` were)
+- **Fix**: Added `showInfo` to the import and replaced `message.info()` → `showInfo()`
+- **Impact**: Would have crashed at runtime when broker search returned no results
+
+### 2. Icon Library Consolidation (3→1)
+- **Removed**: `@tabler/icons-react` (^3.36.1), `lucide-react` (^1.14.0)
+- **Retained**: `@ant-design/icons` (^6.1.0) — the only icon library
+- **Files modified**: 22 files
+
+#### lucide-react → @ant-design/icons (1 file)
+| File | Icons Replaced |
+|------|---------------|
+| SystemAI.tsx | Bot→RobotOutlined, RefreshCw→ReloadOutlined, Check→CheckOutlined, AlertCircle→ExclamationCircleOutlined, ExternalLink→ExportOutlined, Sparkles→StarOutlined, Zap→ThunderboltOutlined, ShieldCheck→SafetyCertificateOutlined, Link2→LinkOutlined, Cpu→ControlOutlined, Eraser→ClearOutlined |
+
+#### @tabler/icons-react → @ant-design/icons (21 files)
+| File | Icons Replaced |
+|------|---------------|
+| BindAccount.tsx | IconArrowLeft→ArrowLeftOutlined, IconServer→CloudServerOutlined, IconCheck→CheckOutlined, IconAlertCircle→ExclamationCircleOutlined |
+| SystemConfig.tsx | IconEdit→EditOutlined |
+| JurisdictionGate.tsx | IconShield→SafetyOutlined |
+| TradingMonitor.tsx | IconTrendingUp→RiseOutlined, IconTrendingDown→FallOutlined |
+| Dashboard.tsx (admin) | Multiple admin dashboard icons consolidated |
+| Dashboard.tsx | Multiple dashboard icons consolidated |
+| OperationLogs.tsx | IconDownload→DownloadOutlined |
+| UserManagement.tsx | IconPlus→PlusOutlined, IconTrash→DeleteOutlined, IconUserOff→UserDeleteOutlined, IconUserCheck→AuditOutlined, IconKey→KeyOutlined |
+| AccountAnalyticsSection.tsx | Multiple analytics icons consolidated |
+| EditAccountModal.tsx | IconCheck→CheckOutlined |
+| DisabledAccountsSection.tsx | IconPlayerPlay→CaretRightOutlined, IconTrash→DeleteOutlined |
+| AccountTradeTabs.tsx | Multiple trade tab icons consolidated |
+| AccountCard.tsx | Multiple account card icons consolidated |
+| AddAccountCard.tsx | IconPlus→PlusOutlined |
+| AccountDetail.tsx | Multiple account detail icons consolidated |
+| MainLayout.tsx | Multiple layout icons consolidated |
+| AdminLayout.tsx | Multiple admin layout icons consolidated |
+| StrategyCard.tsx | Multiple strategy card icons consolidated |
+| SignalCard.tsx | Multiple signal card icons consolidated |
+| ChatBox.tsx | IconLoader2→LoadingOutlined, IconRobot→RobotOutlined, IconUser→UserOutlined |
+| Summary.tsx | Multiple analytics summary icons consolidated |
+
+### 3. Chart Library Consolidation (2→1)
+- **Removed**: `lightweight-charts` (^5.1.0) — 0 imports found, dead dependency
+- **Retained**: `recharts` (^3.7.0) — used by 5 analytics/trading components
+
+### 4. Already Implemented (verified, no changes needed)
+- **React Query**: `@tanstack/react-query` (^5.100.14) fully integrated
+  - `QueryProvider.tsx` wraps app
+  - `useRpcQuery.ts` / `useRpcMutation.ts` for typed ConnectRPC data fetching
+  - `queryClient.setQueryDefaults` with 30s staleTime + 2 retries
+- **i18n lazy-load**: Dynamic `import()` with `resourceCache` in `i18n/index.ts`
+  - 5 supported languages: zh-cn, zh-tw, en, ja, vi
+  - Bundle loaded on first use, cached permanently
+  - Fallback to browser navigator.languages detection
+- **Error code i18n**: 5 locale files already exist
+  - `src/i18n/resources/{en,ja,vi,zh-cn,zh-tw}/errors.ts`
+  - Backend `AppError` with `Unwrap()` for `errors.Is/As` (P1-5)
+  - Frontend `getErrorMessage()` utility with i18n key mapping
+
+### 5. Package.json Diff
+```diff
+-    "@tabler/icons-react": "^3.36.1",
+-    "lucide-react": "^1.14.0",
+-    "lightweight-charts": "^5.1.0",
+```
+3 packages removed, 0 added. Bundle size reduced.
+
+## Verification
+- TypeScript check: `npx tsc --noEmit` → 0 errors
+- 0 remaining lucide-react/@tabler icons import references
+- Build: frontend Docker container healthy (ant-frontend)
+
+## Completeness
+  Sprint 4 (Engineering Discipline) — ALL COMPLETE:
+  S4.1 ROADMAP mechanical rollback ✓
+  S4.2 补 verify logs ✓
+  S4.3 CI 强化 ✓
+  S4.4 UX 一致性收敛 ✓

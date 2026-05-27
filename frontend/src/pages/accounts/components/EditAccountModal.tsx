@@ -1,5 +1,5 @@
 import { Button, Modal } from 'antd';
-import { IconCheck } from '@tabler/icons-react';
+import { CheckOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import { showError, showSuccess, showWarning } from '@/utils/message';
 import type { Account } from '@/types/account';
@@ -92,7 +92,7 @@ export default function EditAccountModal({ open, account, onClose }: Props) {
 
           {verified && (
             <div className="flex items-center gap-2 p-3 rounded-xl" style={{ background: 'rgba(0, 166, 81, 0.1)' }}>
-              <IconCheck size={18} stroke={1.5} color="#00A651" />
+              <CheckOutlined size={18} stroke={1.5} color="#00A651" />
               <span style={{ color: '#00A651' }}>{t('accounts.edit.messages.passwordVerified')}</span>
             </div>
           )}

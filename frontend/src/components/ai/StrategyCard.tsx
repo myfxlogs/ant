@@ -1,12 +1,12 @@
 import { Card, Tag, Button, Popconfirm, Space, Tooltip } from 'antd';
 import {
-  IconPlayerPlay,
-  IconPlayerPause,
-  IconTrash,
-  IconTarget,
-  IconBolt,
-  IconClock,
-} from '@tabler/icons-react';
+  CaretRightOutlined,
+  PauseCircleOutlined,
+  DeleteOutlined,
+  AimOutlined,
+  ThunderboltOutlined,
+  ClockCircleOutlined,
+} from '@ant-design/icons';
 import type { Strategy } from '@/types/ai';
 import { getDeviceLocale, getDeviceTimeZone } from '@/utils/date';
 import { useTranslation } from 'react-i18next';
@@ -89,7 +89,7 @@ export default function StrategyCard({ strategy, onEnable, onDisable, onDelete }
               <Tag color="gold">{strategy.symbol}</Tag>
               {strategy.triggered_count !== undefined && (
                 <span className="flex items-center gap-1">
-                  <IconTarget size={14} stroke={1.5} />
+                  <AimOutlined size={14} stroke={1.5} />
                   {t('ai.strategyCard.labels.triggeredCount', { count: strategy.triggered_count })}
                 </span>
               )}
@@ -116,7 +116,7 @@ export default function StrategyCard({ strategy, onEnable, onDisable, onDelete }
                 className="flex items-center gap-2 text-sm p-2 rounded-lg"
                 style={{ background: '#F5F7F9' }}
               >
-                <IconBolt size={14} stroke={1.5} color="#D4AF37" />
+                <ThunderboltOutlined size={14} stroke={1.5} color="#D4AF37" />
                 <span style={{ color: '#141D22' }}>{condition.description}</span>
               </div>
             ))}
@@ -147,7 +147,7 @@ export default function StrategyCard({ strategy, onEnable, onDisable, onDelete }
           <div className="flex items-center gap-4 text-xs" style={{ color: '#8A9AA5' }}>
             <Tooltip title={t('ai.strategyCard.tooltips.createdAt')}>
               <span className="flex items-center gap-1">
-                <IconClock size={12} stroke={1.5} />
+                <ClockCircleOutlined size={12} stroke={1.5} />
                 {formatDate(strategy.created_at)}
               </span>
             </Tooltip>
@@ -163,7 +163,7 @@ export default function StrategyCard({ strategy, onEnable, onDisable, onDelete }
             {strategy.status === 'active' ? (
               <Button
                 size="small"
-                icon={<IconPlayerPause size={14} stroke={1.5} />}
+                icon={<PauseCircleOutlined size={14} stroke={1.5} />}
                 onClick={() => onDisable(strategy.id)}
               >
                 {t('ai.strategyCard.actions.stop')}
@@ -172,7 +172,7 @@ export default function StrategyCard({ strategy, onEnable, onDisable, onDelete }
               <Button
                 size="small"
                 type="primary"
-                icon={<IconPlayerPlay size={14} stroke={1.5} />}
+                icon={<CaretRightOutlined size={14} stroke={1.5} />}
                 onClick={() => onEnable(strategy.id)}
               >
                 {t('ai.strategyCard.actions.start')}
@@ -188,7 +188,7 @@ export default function StrategyCard({ strategy, onEnable, onDisable, onDelete }
               <Button
                 size="small"
                 danger
-                icon={<IconTrash size={14} stroke={1.5} />}
+                icon={<DeleteOutlined size={14} stroke={1.5} />}
               />
             </Popconfirm>
           </Space>

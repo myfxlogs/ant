@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Card, Table, Row, Col, Statistic, DatePicker } from 'antd';
-import { IconTrendingUp, IconTrendingDown } from '@tabler/icons-react';
+import { RiseOutlined, FallOutlined } from '@ant-design/icons';
 import { useRpcQuery } from '@/hooks/useRpcQuery';
 import { adminApi } from '@/client/admin';
 import type { TradingSummary } from '@/client/admin';
@@ -116,7 +116,7 @@ export default function TradingMonitor() {
                 value={summary?.trading?.netProfit || 0}
                 precision={2}
                 valueStyle={{ color: (summary?.trading?.netProfit || 0) >= 0 ? '#52c41a' : '#ff4d4f' }}
-                prefix={(summary?.trading?.netProfit || 0) >= 0 ? <IconTrendingUp size={16} /> : <IconTrendingDown size={16} />}
+                prefix={(summary?.trading?.netProfit || 0) >= 0 ? <RiseOutlined size={16} /> : <FallOutlined size={16} />}
               />
             </Card>
           </Col>
@@ -134,7 +134,7 @@ export default function TradingMonitor() {
                 value={summary?.trading?.totalProfit || 0}
                 precision={2}
                 valueStyle={{ color: '#52c41a' }}
-                prefix={<IconTrendingUp size={16} />}
+                prefix={<RiseOutlined size={16} />}
               />
             </Col>
             <Col xs={12} sm={8}>
@@ -143,7 +143,7 @@ export default function TradingMonitor() {
                 value={Math.abs(summary?.trading?.totalLoss || 0)}
                 precision={2}
                 valueStyle={{ color: '#ff4d4f' }}
-                prefix={<IconTrendingDown size={16} />}
+                prefix={<FallOutlined size={16} />}
               />
             </Col>
             <Col xs={12} sm={8}>

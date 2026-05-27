@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Card, Table, Button, Select, DatePicker, message } from 'antd';
-import { IconDownload } from '@tabler/icons-react';
+import { DownloadOutlined } from '@ant-design/icons';
 import { adminApi, type AdminLog, type LogListParams } from '@/client/admin';
 import { formatDateTime } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
@@ -106,7 +106,7 @@ export default function OperationLogs() {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold" style={{ color: '#141D22' }}>操作日志</h1>
         <Button
-          icon={<IconDownload size={16} />}
+          icon={<DownloadOutlined size={16} />}
           onClick={handleExport}
         >
           导出

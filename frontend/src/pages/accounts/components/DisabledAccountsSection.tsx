@@ -1,5 +1,5 @@
 import { Button, Modal, Tag } from 'antd';
-import { IconPlayerPlay, IconTrash } from '@tabler/icons-react';
+import { CaretRightOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { Account } from '@/types/account';
 import { useTranslation } from 'react-i18next';
 
@@ -73,7 +73,7 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
                   <div className="flex justify-end gap-2">
                     <Button
                       size="small"
-                      icon={<IconPlayerPlay size={14} stroke={1.5} />}
+                      icon={<CaretRightOutlined size={14} stroke={1.5} />}
                       onClick={() => onEnable(account.id)}
                       style={{ borderRadius: '6px' }}
                     >
@@ -82,7 +82,7 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
                     <Button
                       size="small"
                       danger
-                      icon={<IconTrash size={14} stroke={1.5} />}
+                      icon={<DeleteOutlined size={14} stroke={1.5} />}
                       onClick={() => {
                         Modal.confirm({
                           title: t('accounts.disabled.confirmDelete.title'),
@@ -139,7 +139,7 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
             <div className="flex gap-2">
               <Button
                 size="small"
-                icon={<IconPlayerPlay size={14} stroke={1.5} />}
+                icon={<CaretRightOutlined size={14} stroke={1.5} />}
                 onClick={() => onEnable(account.id)}
                 style={{ borderRadius: '6px', flex: 1 }}
               >
@@ -148,7 +148,7 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
               <Button
                 size="small"
                 danger
-                icon={<IconTrash size={14} stroke={1.5} />}
+                icon={<DeleteOutlined size={14} stroke={1.5} />}
                 onClick={() => {
                   Modal.confirm({
                     title: t('accounts.disabled.confirmDelete.title'),

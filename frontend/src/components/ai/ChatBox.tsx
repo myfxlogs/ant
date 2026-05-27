@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Spin, Empty } from 'antd';
-import { IconLoader2, IconRobot, IconUser } from '@tabler/icons-react';
+import { LoadingOutlined, RobotOutlined, UserOutlined } from '@ant-design/icons';
 import { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
 import type { Message } from '@/types/ai';
 import { getDeviceLocale, getDeviceTimeZone } from '@/utils/date';
@@ -123,7 +123,7 @@ export default function ChatBox({ messages, loading }: ChatBoxProps) {
               className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
               style={ASSISTANT_AVATAR_STYLE}
             >
-              <IconRobot size={18} stroke={1.5} color="#FFFFFF" />
+              <RobotOutlined size={18} stroke={1.5} color="#FFFFFF" />
             </div>
           )}
 
@@ -143,7 +143,7 @@ export default function ChatBox({ messages, loading }: ChatBoxProps) {
               <div className="prose prose-sm max-w-none" style={{ color: '#141D22' }}>
                 {msg.isLoading && !msg.content ? (
                   <div className="flex items-center gap-2">
-                    <IconLoader2 size={16} stroke={1.5} className="animate-spin" />
+                    <LoadingOutlined size={16} stroke={1.5} className="animate-spin" />
                     <span>{t('ai.chatBox.thinking')}</span>
                   </div>
                 ) : (
@@ -201,7 +201,7 @@ export default function ChatBox({ messages, loading }: ChatBoxProps) {
               className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
               style={{ background: '#5A6B75' }}
             >
-              <IconUser size={18} stroke={1.5} color="#FFFFFF" />
+              <UserOutlined size={18} stroke={1.5} color="#FFFFFF" />
             </div>
           )}
         </div>
@@ -213,7 +213,7 @@ export default function ChatBox({ messages, loading }: ChatBoxProps) {
             className="w-8 h-8 rounded-lg flex items中心 justify-center flex-shrink-0"
             style={ASSISTANT_AVATAR_STYLE}
           >
-            <IconRobot size={18} stroke={1.5} color="#FFFFFF" />
+            <RobotOutlined size={18} stroke={1.5} color="#FFFFFF" />
           </div>
           <div
             className="bg-white rounded-2xl px-4 py-3 shadow-sm"

@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { Pagination, Spin, Tabs } from 'antd';
 import type { TabsProps } from 'antd';
 import {
-  IconChartLine,
-  IconHistory,
-  IconList,
-} from '@tabler/icons-react';
+  LineChartOutlined,
+  HistoryOutlined,
+  UnorderedListOutlined,
+} from '@ant-design/icons';
 import { analyticsApi } from '@/client/analytics';
 import { HistoryTradeRow, PendingOrderRow, PositionRow } from './AccountDetail.shared';
 import { useTranslation } from 'react-i18next';
@@ -46,7 +46,7 @@ export default function AccountTradeTabs({
       key: 'positions',
       label: (
         <span className="flex items-center gap-2">
-          <IconList size={16} stroke={1.5} />
+          <UnorderedListOutlined size={16} stroke={1.5} />
           {t('accounts.tradeTabs.positionsWithCount', { count: realPositions.length })}
           {pendingOrders.length > 0 && ` | ${t('accounts.tradeTabs.pendingWithCount', { count: pendingOrders.length })}`}
         </span>
@@ -54,7 +54,7 @@ export default function AccountTradeTabs({
       children:
         realPositions.length === 0 && pendingOrders.length === 0 ? (
           <div className="text-center py-12" style={{ color: '#8A9AA5' }}>
-            <IconChartLine size={48} stroke={1} color="#D4AF37" style={{ opacity: 0.3 }} />
+            <LineChartOutlined size={48} stroke={1} color="#D4AF37" style={{ opacity: 0.3 }} />
             <p className="mt-4">{t('accounts.tradeTabs.emptyPositions')}</p>
           </div>
         ) : (
@@ -108,14 +108,14 @@ export default function AccountTradeTabs({
       key: 'history',
       label: (
         <span className="flex items-center gap-2">
-          <IconHistory size={16} stroke={1.5} />
+          <HistoryOutlined size={16} stroke={1.5} />
           {t('accounts.tradeTabs.historyWithCount', { count: historyTotal })}
         </span>
       ),
       children:
         historyTrades.length === 0 ? (
           <div className="text-center py-12" style={{ color: '#8A9AA5' }}>
-            <IconHistory size={48} stroke={1} color="#D4AF37" style={{ opacity: 0.3 }} />
+            <HistoryOutlined size={48} stroke={1} color="#D4AF37" style={{ opacity: 0.3 }} />
             <p className="mt-4">{t('accounts.tradeTabs.emptyHistory')}</p>
           </div>
         ) : (

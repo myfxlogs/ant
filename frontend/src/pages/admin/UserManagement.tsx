@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Card, Table, Input, Select, Space, Tag, Modal, Form, Popconfirm, Drawer, Descriptions, Button } from 'antd';
-import { IconPlus, IconTrash, IconUserOff, IconUserCheck, IconKey } from '@tabler/icons-react';
+import { PlusOutlined, DeleteOutlined, UserDeleteOutlined, AuditOutlined, KeyOutlined } from '@ant-design/icons';
 import { adminApi, type UserWithAccounts, type UserListParams, type CreateUserRequest, type UpdateUserRequest } from '@/client/admin';
 import { formatDateTime } from '@/utils/date';
 import { useTranslation } from 'react-i18next';
@@ -206,7 +206,7 @@ export default function UserManagement() {
           <Button
             type="link"
             size="small"
-            icon={<IconKey size={14} />}
+            icon={<KeyOutlined size={14} />}
             onClick={() => showPasswordModal(record)}
           >
             {t('admin.userManagement.actions.changePassword')}
@@ -214,7 +214,7 @@ export default function UserManagement() {
           <Button
             type="link"
             size="small"
-            icon={record.status === 'active' ? <IconUserOff size={14} /> : <IconUserCheck size={14} />}
+            icon={record.status === 'active' ? <UserDeleteOutlined size={14} /> : <AuditOutlined size={14} />}
             onClick={() => handleToggleStatus(record)}
           >
             {record.status === 'active' ? t('admin.userManagement.actions.disable') : t('admin.userManagement.actions.enable')}
@@ -225,7 +225,7 @@ export default function UserManagement() {
             okText={t('common.confirm')}
             cancelText={t('common.cancel')}
           >
-            <Button type="link" size="small" danger icon={<IconTrash size={14} />}>
+            <Button type="link" size="small" danger icon={<DeleteOutlined size={14} />}>
               {t('common.delete')}
             </Button>
           </Popconfirm>
@@ -239,7 +239,7 @@ export default function UserManagement() {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold" style={{ color: '#141D22' }}>{t('admin.userManagement.title')}</h1>
         <GradientButton
-          icon={<IconPlus size={16} />}
+          icon={<PlusOutlined size={16} />}
           onClick={() => setCreateModalVisible(true)}
         >
           {t('admin.userManagement.addUser')}

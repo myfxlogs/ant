@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Layout, Menu, Avatar, Dropdown, Drawer } from 'antd';
 import {
-  IconDashboard,
+  DashboardOutlined,
   IconUsers,
   IconBuildingBank,
-  IconChartLine,
+  LineChartOutlined,
   IconFileText,
-  IconSettings,
-  IconShield,
+  SettingOutlined,
+  SafetyOutlined,
   IconLogout,
-  IconMenu2,
-  IconArrowLeft,
-} from '@tabler/icons-react';
+  MenuOutlined,
+  ArrowLeftOutlined,
+} from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import ContentContainer from '@/components/layout/ContentContainer';
@@ -40,18 +40,18 @@ export default function AdminLayout() {
   }, []);
 
   const menuItems = [
-    { key: '/admin', icon: <IconDashboard size={20} stroke={1.5} />, label: t('admin.sidebar.dashboard') },
+    { key: '/admin', icon: <DashboardOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.dashboard') },
     { key: '/admin/users', icon: <IconUsers size={20} stroke={1.5} />, label: t('admin.sidebar.userManagement') },
     { key: '/admin/accounts', icon: <IconBuildingBank size={20} stroke={1.5} />, label: t('admin.sidebar.accountManagement') },
-    { key: '/admin/trading', icon: <IconChartLine size={20} stroke={1.5} />, label: t('admin.sidebar.tradingMonitor') },
+    { key: '/admin/trading', icon: <LineChartOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.tradingMonitor') },
     { key: '/admin/logs', icon: <IconFileText size={20} stroke={1.5} />, label: t('admin.sidebar.operationLogs') },
-    { key: '/admin/config', icon: <IconSettings size={20} stroke={1.5} />, label: t('admin.sidebar.systemConfig') },
-    { key: '/admin/jurisdiction', icon: <IconShield size={20} stroke={1.5} />, label: t('admin.sidebar.jurisdiction') },
-    { key: '/admin/sre', icon: <IconShield size={20} stroke={1.5} />, label: 'SRE 控制' },
+    { key: '/admin/config', icon: <SettingOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.systemConfig') },
+    { key: '/admin/jurisdiction', icon: <SafetyOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.jurisdiction') },
+    { key: '/admin/sre', icon: <SafetyOutlined size={20} stroke={1.5} />, label: 'SRE 控制' },
   ];
 
   const userMenuItems = [
-    { key: 'back', icon: <IconArrowLeft size={18} stroke={1.5} />, label: t('admin.header.backToUser') },
+    { key: 'back', icon: <ArrowLeftOutlined size={18} stroke={1.5} />, label: t('admin.header.backToUser') },
     { type: 'divider' as const },
     { key: 'logout', icon: <IconLogout size={18} stroke={1.5} />, label: t('admin.header.logout'), danger: true },
   ];
@@ -97,7 +97,7 @@ export default function AdminLayout() {
         <div className="h-16 flex items-center justify-center" style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: BRAND_GRADIENT }}>
-              <IconChartLine size={22} stroke={2} color="#FFFFFF" />
+              <LineChartOutlined size={22} stroke={2} color="#FFFFFF" />
             </div>
             <span className="font-bold text-lg text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>{t('admin.header.adminPanel')}</span>
           </div>
@@ -125,7 +125,7 @@ export default function AdminLayout() {
           <div className="h-16 flex items-center justify-center" style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: BRAND_GRADIENT }}>
-                <IconChartLine size={22} stroke={2} color="#FFFFFF" />
+                <LineChartOutlined size={22} stroke={2} color="#FFFFFF" />
               </div>
               <span className="font-bold text-lg text-white" style={{ fontFamily: 'Poppins, sans-serif' }}>{t('admin.header.adminPanel')}</span>
             </div>
@@ -157,7 +157,7 @@ export default function AdminLayout() {
                 className="p-2 rounded-lg transition-colors"
                 style={{ color: '#5A6B75' }}
               >
-                <IconMenu2 size={22} stroke={1.5} />
+                <MenuOutlined size={22} stroke={1.5} />
               </button>
             )}
             {!isMobile && (

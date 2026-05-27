@@ -3,20 +3,20 @@ import { Tag, Button, Spin, Dropdown, Modal } from 'antd';
 import { showSuccessModal, showErrorModal, showLoadingModal, showSuccess, showError } from '@/utils/message';
 import type { MenuProps } from 'antd';
 import {
-  IconArrowLeft,
-  IconRefresh,
-  IconPlayerPause,
-  IconPlayerPlay,
-  IconDotsVertical,
-  IconWallet,
-  IconChartLine,
-  IconTrendingUp,
-  IconTrendingDown,
+  ArrowLeftOutlined,
+  ReloadOutlined,
+  PauseCircleOutlined,
+  CaretRightOutlined,
+  MoreOutlined,
+  WalletOutlined,
+  LineChartOutlined,
+  RiseOutlined,
+  FallOutlined,
   IconCoin,
   IconPercentage,
-  IconAlertTriangle,
+  WarningOutlined,
   IconCloudDownload,
-} from '@tabler/icons-react';
+} from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAccount } from '@/hooks/useAccount';
 import { useTrading } from '@/hooks/useTrading';
@@ -401,10 +401,10 @@ export default function AccountDetail() {
         enablingAccount === currentAccount.id ? (
           <Spin size="small" />
         ) : (
-          <IconPlayerPlay size={16} stroke={1.5} />
+          <CaretRightOutlined size={16} stroke={1.5} />
         )
       ) : (
-        disabling ? <Spin size="small" /> : <IconPlayerPause size={16} stroke={1.5} />
+        disabling ? <Spin size="small" /> : <PauseCircleOutlined size={16} stroke={1.5} />
       ),
       onClick: handleToggleStatus,
       disabled: disabling,
@@ -509,7 +509,7 @@ export default function AccountDetail() {
       <div className="max-w-7xl mx-auto p-4">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Button type="text" icon={<IconArrowLeft size={20} stroke={1.5} />} onClick={() => navigate('/accounts')} style={{ color: '#8A9AA5' }} />
+            <Button type="text" icon={<ArrowLeftOutlined size={20} stroke={1.5} />} onClick={() => navigate('/accounts')} style={{ color: '#8A9AA5' }} />
             <div>
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-bold" style={{ color: '#141D22' }}>{currentAccount.login}</h1>
@@ -522,17 +522,17 @@ export default function AccountDetail() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button icon={<IconRefresh size={16} stroke={1.5} />} onClick={handleRefreshAnalytics} loading={analyticsLoading} style={{ borderRadius: '8px' }}>{t('common.refresh')}</Button>
+            <Button icon={<ReloadOutlined size={16} stroke={1.5} />} onClick={handleRefreshAnalytics} loading={analyticsLoading} style={{ borderRadius: '8px' }}>{t('common.refresh')}</Button>
             <Button icon={<IconCloudDownload size={16} stroke={1.5} />} onClick={handleSyncHistory} loading={syncingHistory} disabled={currentAccount.status !== 'connected'} style={{ borderRadius: '8px' }}>{t('accounts.detail.actions.syncHistory')}</Button>
-            <Dropdown menu={{ items: menuItems }} trigger={['click']}><Button icon={<IconDotsVertical size={16} stroke={1.5} />} style={{ borderRadius: '8px' }} /></Dropdown>
+            <Dropdown menu={{ items: menuItems }} trigger={['click']}><Button icon={<MoreOutlined size={16} stroke={1.5} />} style={{ borderRadius: '8px' }} /></Dropdown>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-          <InfoCard icon={<IconWallet size={18} stroke={1.5} color="#8A9AA5" />} label={t('accounts.detail.cards.balance')} value={formatCurrency(balance)} loading={isStreamLoading} />
-          <InfoCard icon={<IconChartLine size={18} stroke={1.5} color="#8A9AA5" />} label={t('accounts.detail.cards.equity')} value={formatCurrency(equity)} loading={isStreamLoading} />
+          <InfoCard icon={<WalletOutlined size={18} stroke={1.5} color="#8A9AA5" />} label={t('accounts.detail.cards.balance')} value={formatCurrency(balance)} loading={isStreamLoading} />
+          <InfoCard icon={<LineChartOutlined size={18} stroke={1.5} color="#8A9AA5" />} label={t('accounts.detail.cards.equity')} value={formatCurrency(equity)} loading={isStreamLoading} />
           <div className="rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
-            <div className="flex items-center gap-2 mb-3">{profit >= 0 ? <IconTrendingUp size={18} stroke={1.5} color="#00A651" /> : <IconTrendingDown size={18} stroke={1.5} color="#E53935" />}<span style={{ color: '#8A9AA5', fontSize: '14px' }}>{t('accounts.detail.cards.floatingProfit')}</span></div>
+            <div className="flex items-center gap-2 mb-3">{profit >= 0 ? <RiseOutlined size={18} stroke={1.5} color="#00A651" /> : <FallOutlined size={18} stroke={1.5} color="#E53935" />}<span style={{ color: '#8A9AA5', fontSize: '14px' }}>{t('accounts.detail.cards.floatingProfit')}</span></div>
             {isStreamLoading ? <div className="text-lg" style={{ color: '#8A9AA5' }}>{t('common.loading')}</div> : <div className="flex items-baseline gap-2"><span className="text-2xl font-bold" style={{ color: profit >= 0 ? '#00A651' : '#E53935' }}>{profit >= 0 ? '+' : ''}{formatCurrency(profit)}</span><span style={{ color: profit >= 0 ? '#00A651' : '#E53935', fontSize: '14px' }}>({profitPercent >= 0 ? '+' : ''}{profitPercent.toFixed(2)}%)</span></div>}
           </div>
         </div>
@@ -541,7 +541,7 @@ export default function AccountDetail() {
           <SmallInfoCard icon={<IconCoin size={16} stroke={1.5} color="#8A9AA5" />} label={t('accounts.detail.cards.marginUsed')} value={formatCurrency(margin)} loading={isStreamLoading} />
           <SmallInfoCard icon={<IconCoin size={16} stroke={1.5} color="#8A9AA5" />} label={t('accounts.detail.cards.marginFree')} value={formatCurrency(freeMargin)} loading={isStreamLoading} />
           <SmallInfoCard icon={<IconPercentage size={16} stroke={1.5} color="#8A9AA5" />} label={t('accounts.detail.cards.marginLevel')} value={margin > 0 ? `${(marginLevel || 0).toFixed(2)}%` : '--'} loading={isStreamLoading} valueColor={margin > 0 && (marginLevel || 0) < 100 ? '#E53935' : '#141D22'} />
-          <SmallInfoCard icon={<IconAlertTriangle size={16} stroke={1.5} color="#8A9AA5" />} label={t('accounts.detail.cards.credit')} value={formatCurrency(credit)} loading={isStreamLoading} />
+          <SmallInfoCard icon={<WarningOutlined size={16} stroke={1.5} color="#8A9AA5" />} label={t('accounts.detail.cards.credit')} value={formatCurrency(credit)} loading={isStreamLoading} />
         </div>
 
         <div className="rounded-2xl overflow-hidden mb-6" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>

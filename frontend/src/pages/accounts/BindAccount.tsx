@@ -1,12 +1,7 @@
 import { useState } from 'react';
 import { Button, Modal, Select, Tag } from 'antd';
-import { showSuccess, showError, showWarning } from '@/utils/message';
-import {
-  IconArrowLeft,
-  IconServer,
-  IconCheck,
-  IconAlertCircle,
-} from '@tabler/icons-react';
+import { showSuccess, showError, showWarning, showInfo } from '@/utils/message';
+import { ArrowLeftOutlined, CloudServerOutlined, CheckOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import GradientButton, { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
 import { useAccount } from '@/hooks/useAccount';
@@ -72,7 +67,7 @@ export default function BindAccount() {
         setSearchResults(results);
         showSuccess(t('accounts.bind.messages.foundBrokers', { count: results.length }));
       } else {
-        message.info(t('accounts.bind.messages.noBrokersFound'));
+        showInfo(t('accounts.bind.messages.noBrokersFound'));
       }
     } catch (_error) {
       showError(t('accounts.bind.messages.searchFailed'));
@@ -147,7 +142,7 @@ export default function BindAccount() {
               color: step >= s ? '#FFFFFF' : '#8A9AA5',
             }}
           >
-            {step > s ? <IconCheck size={16} stroke={2} /> : s}
+            {step > s ? <CheckOutlined style={{ fontSize: 16 }} /> : s}
           </div>
           {s < 3 && (
             <div
@@ -313,7 +308,7 @@ export default function BindAccount() {
 
       <div className="p-4 rounded-xl" style={{ background: '#F5F7F9' }}>
         <div className="flex items-center gap-3">
-          <IconServer size={20} stroke={1.5} color="#D4AF37" />
+          <CloudServerOutlined style={{ fontSize: 20, color: '#D4AF37' }} />
           <div>
             <div className="font-medium" style={{ color: '#141D22' }}>{selectedServer?.name}</div>
             <div className="text-sm" style={{ color: '#8A9AA5' }}>{selectedCompany?.companyName} · {mtType}</div>
@@ -438,7 +433,7 @@ export default function BindAccount() {
         <div className="flex items-center gap-4 mb-8">
           <Button
             type="text"
-            icon={<IconArrowLeft size={20} stroke={1.5} />}
+            icon={<ArrowLeftOutlined style={{ fontSize: 20 }} />}
             onClick={() => navigate('/')}
             style={{ color: '#8A9AA5' }}
           />
@@ -474,7 +469,7 @@ export default function BindAccount() {
             className="mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center"
             style={{ background: 'rgba(255, 77, 79, 0.1)' }}
           >
-            <IconAlertCircle size={32} stroke={1.5} color="#FF4D4F" />
+            <ExclamationCircleOutlined style={{ fontSize: 32, color: '#FF4D4F' }} />
           </div>
           <h3 className="text-lg font-semibold mb-2" style={{ color: '#141D22' }}>
             {t('accounts.bind.errorModal.title')}

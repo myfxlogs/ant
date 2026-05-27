@@ -3,12 +3,12 @@ import { Card, Row, Col, Statistic, Table, Tag, Segmented, Empty } from 'antd';
 import { StatusResult } from '@/components/common/StatusResult';
 import {
   IconUsers,
-  IconUserCheck,
+  AuditOutlined,
   IconBuildingBank,
-  IconChartLine,
-  IconTrendingUp,
-  IconTrendingDown,
-} from '@tabler/icons-react';
+  LineChartOutlined,
+  RiseOutlined,
+  FallOutlined,
+} from '@ant-design/icons';
 import { adminApi, type DashboardStats, type AdminLog } from '@/client/admin';
 import { formatDateTime } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
@@ -152,7 +152,7 @@ export default function AdminDashboard() {
             <Statistic
               title={t('admin.dashboard.activeUsers')}
               value={stats?.activeUsers || 0}
-              prefix={<IconUserCheck size={20} stroke={1.5} style={{ color: '#52c41a' }} />}
+              prefix={<AuditOutlined size={20} stroke={1.5} style={{ color: '#52c41a' }} />}
             />
           </Card>
         </Col>
@@ -170,7 +170,7 @@ export default function AdminDashboard() {
             <Statistic
               title={t('admin.dashboard.onlineAccounts')}
               value={stats?.onlineAccounts || 0}
-              prefix={<IconChartLine size={20} stroke={1.5} style={{ color: '#722ed1' }} />}
+              prefix={<LineChartOutlined size={20} stroke={1.5} style={{ color: '#722ed1' }} />}
             />
           </Card>
         </Col>
@@ -179,7 +179,7 @@ export default function AdminDashboard() {
             <Statistic
               title={t('admin.dashboard.todayTrades')}
               value={stats?.todayTrades || 0}
-              prefix={<IconTrendingUp size={20} stroke={1.5} style={{ color: '#13c2c2' }} />}
+              prefix={<RiseOutlined size={20} stroke={1.5} style={{ color: '#13c2c2' }} />}
             />
           </Card>
         </Col>
@@ -189,7 +189,7 @@ export default function AdminDashboard() {
               title={t('admin.dashboard.todayProfit')}
               value={stats?.todayProfit || 0}
               precision={2}
-              prefix={stats?.todayProfit >= 0 ? <IconTrendingUp size={20} stroke={1.5} style={{ color: '#52c41a' }} /> : <IconTrendingDown size={20} stroke={1.5} style={{ color: '#ff4d4f' }} />}
+              prefix={stats?.todayProfit >= 0 ? <RiseOutlined size={20} stroke={1.5} style={{ color: '#52c41a' }} /> : <FallOutlined size={20} stroke={1.5} style={{ color: '#ff4d4f' }} />}
               valueStyle={{ color: stats?.todayProfit >= 0 ? '#52c41a' : '#ff4d4f' }}
             />
           </Card>

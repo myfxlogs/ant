@@ -1,17 +1,17 @@
 import { useCallback, useMemo } from 'react'
 import {
-  Bot,
-  RefreshCw,
-  Check,
-  AlertCircle,
-  ExternalLink,
-  Sparkles,
-  Zap,
-  ShieldCheck,
-  Link2,
-  Cpu,
-  Eraser,
-} from 'lucide-react'
+  RobotOutlined,
+  ReloadOutlined,
+  CheckOutlined,
+  ExclamationCircleOutlined,
+  ExportOutlined,
+  StarOutlined,
+  ThunderboltOutlined,
+  SafetyCertificateOutlined,
+  LinkOutlined,
+  ControlOutlined,
+  ClearOutlined,
+} from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import {
   Input,
@@ -40,13 +40,13 @@ type ProviderMeta = {
 const PROVIDER_META: Record<string, ProviderMeta> = {
   // 注：label / tagline 都只是「i18n 缺失时的兜底字符串」，因此采用中性英文，
   //     避免英文 UI 仍漏出中文（之前 qwen 显示 "通义千问" 就是这个 bug）。
-  openai: { label: 'OpenAI', tagline: 'GPT series · Official', icon: Sparkles },
-  anthropic: { label: 'Anthropic', tagline: 'Claude family', icon: ShieldCheck },
-  deepseek: { label: 'DeepSeek', tagline: 'DeepSeek · Cost-efficient', icon: Zap },
-  moonshot: { label: 'Moonshot', tagline: 'Kimi · Long context', icon: Cpu },
-  qwen: { label: 'Qwen', tagline: 'Alibaba Cloud · CN-optimised', icon: Sparkles },
-  zhipu: { label: 'Zhipu AI', tagline: 'Tsinghua-affiliated · General', icon: Bot },
-  openai_compatible: { label: 'Custom (OpenAI-compatible)', tagline: 'Any OpenAI-compatible endpoint', icon: Link2 },
+  openai: { label: 'OpenAI', tagline: 'GPT series · Official', icon: StarOutlined },
+  anthropic: { label: 'Anthropic', tagline: 'Claude family', icon: SafetyCertificateOutlined },
+  deepseek: { label: 'DeepSeek', tagline: 'DeepSeek · Cost-efficient', icon: ThunderboltOutlined },
+  moonshot: { label: 'Moonshot', tagline: 'Kimi · Long context', icon: ControlOutlined },
+  qwen: { label: 'Qwen', tagline: 'Alibaba Cloud · CN-optimised', icon: StarOutlined },
+  zhipu: { label: 'Zhipu AI', tagline: 'Tsinghua-affiliated · General', icon: RobotOutlined },
+  openai_compatible: { label: 'Custom (OpenAI-compatible)', tagline: 'Any OpenAI-compatible endpoint', icon: LinkOutlined },
 }
 
 function metaOf(providerId: string, fallbackName: string): ProviderMeta {
@@ -54,7 +54,7 @@ function metaOf(providerId: string, fallbackName: string): ProviderMeta {
     PROVIDER_META[providerId] || {
       label: fallbackName || providerId,
       tagline: '',
-      icon: Bot,
+      icon: RobotOutlined,
     }
   )
 }
@@ -182,11 +182,11 @@ export default function SystemAI() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Bot className="w-6 h-6 text-slate-700" /> {t('ai.systemAI.pageTitle', { defaultValue: '系统 AI 配置' })}
+            <RobotOutlined className="w-6 h-6 text-slate-700" /> {t('ai.systemAI.pageTitle', { defaultValue: '系统 AI 配置' })}
           </h1>
           <p className="text-sm text-gray-500 mt-1">{t('ai.systemAI.pageSubtitle', { defaultValue: '统一管理大模型服务商、API 密钥与可用模型；支持 OpenAI 协议兼容端点。' })}</p>
         </div>
-        <Button icon={<RefreshCw className="w-4 h-4" />} onClick={load} loading={loading}>
+        <Button icon={<ReloadOutlined className="w-4 h-4" />} onClick={load} loading={loading}>
           {t('common.refresh', { defaultValue: '刷新' })}
         </Button>
       </div>
@@ -202,7 +202,7 @@ export default function SystemAI() {
 
       {loading && (
         <div className="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-100">
-          <RefreshCw className="w-8 h-8 animate-spin mx-auto text-slate-600" />
+          <ReloadOutlined className="w-8 h-8 animate-spin mx-auto text-slate-600" />
           <p className="text-gray-500 mt-3">{t('common.loading', { defaultValue: '加载中...' })}</p>
         </div>
       )}
@@ -313,7 +313,7 @@ export default function SystemAI() {
                   rel="noreferrer"
                   className="text-xs text-slate-600 hover:text-slate-800 hover:underline inline-flex items-center gap-1"
                 >
-                  <ExternalLink className="w-3 h-3" /> {t('ai.settings.sections.connectionApiKeyLink', { defaultValue: '前往申请 / 管理该厂商 API Key' })}
+                  <ExportOutlined className="w-3 h-3" /> {t('ai.settings.sections.connectionApiKeyLink', { defaultValue: '前往申请 / 管理该厂商 API Key' })}
                 </a>
               ) : null
             }
@@ -360,7 +360,7 @@ export default function SystemAI() {
                 />
                 {draft.base_url && !urlDiagnostics.https && (
                   <p className="text-xs text-slate-600 flex items-center gap-1 mt-1.5">
-                    <AlertCircle className="w-3.5 h-3.5" /> {t('ai.systemAI.fields.httpWarning', { defaultValue: '当前为 HTTP，生产环境建议使用 HTTPS' })}
+                    <ExclamationCircleOutlined className="w-3.5 h-3.5" /> {t('ai.systemAI.fields.httpWarning', { defaultValue: '当前为 HTTP，生产环境建议使用 HTTPS' })}
                   </p>
                 )}
               </div>
@@ -382,7 +382,7 @@ export default function SystemAI() {
                   />
                   <Button
                     size="large"
-                    icon={<Eraser className="w-4 h-4" />}
+                    icon={<ClearOutlined className="w-4 h-4" />}
                     onClick={clearSecret}
                     disabled={savingSecret || !draft.has_secret}
                     loading={savingSecret}
@@ -400,7 +400,7 @@ export default function SystemAI() {
                     <Space size={4}>
                       {discovering ? (
                         <span className="text-xs text-gray-500 flex items-center gap-1">
-                          <RefreshCw className="w-3 h-3 animate-spin" /> {t('ai.systemAI.fields.autoFetching', { defaultValue: '自动拉取中' })}
+                          <ReloadOutlined className="w-3 h-3 animate-spin" /> {t('ai.systemAI.fields.autoFetching', { defaultValue: '自动拉取中' })}
                         </span>
                       ) : null}
                       {(draft.models || []).length > 0 ? (
@@ -533,7 +533,7 @@ export default function SystemAI() {
                 size="large"
                 onClick={saveConfig}
                 loading={savingConfig}
-                icon={<Check className="w-4 h-4" />}
+                icon={<CheckOutlined style={{ fontSize: 16 }} />}
                 type="primary"
               >
                 {t('ai.settings.actions.saveConfig', { defaultValue: '保存配置' })}
@@ -595,7 +595,7 @@ function Label({
         <span className="text-sm font-medium text-gray-700">{text}</span>
         {hint && (
           <Tooltip title={hint}>
-            <AlertCircle className="w-3.5 h-3.5 text-gray-400 cursor-help" />
+            <ExclamationCircleOutlined className="w-3.5 h-3.5 text-gray-400 cursor-help" />
           </Tooltip>
         )}
       </div>
