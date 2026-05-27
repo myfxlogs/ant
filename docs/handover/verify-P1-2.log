@@ -1,0 +1,163 @@
+=== P1-2: 强制 handler→service→repository 分层 ===
+Card: REMEDIATION-2026-05-26 P1-2
+Date: 2026-05-26
+Status: ☑
+
+--- Acceptance Criteria ---
+AC1: 所有 connect handler 不再直接持有 pgxpool.Pool / clickhouse.Conn / sqlx.DB
+AC2: handler→service→repository 分层：handler 只调 service 或 repository 接口
+AC3: go build ./... 通过
+AC4: go vet ./... 通过
+AC5: go test ./internal/connect/... ./internal/repository/... ./internal/service/... 全过
+
+--- Step 1: 违规基线 ---
+修复前 7 个文件直接持有 DB 连接:
+  user/auth_handler.go       — *pgxpool.Pool
+  ai/ai_handler.go           — *pgxpool.Pool
+  system/job_handler.go      — *pgxpool.Pool + pgx.Row/pgx.ErrNoRows
+  system/schedule_health_handler.go — *pgxpool.Pool
+  system/stream_handler.go   — *pgxpool.Pool (loadUserAccountIDs, computeSummary 等 4 个辅助函数)
+  system/mthub_service.go    — *pgxpool.Pool (accountOwnedByUser)
+  marketplace/market_handler.go — clickhouse.Conn
+
+--- Step 2: 仓库层改造 ---
+
+2a. AIConversationRepository: sqlx.DB → pgxpool.Pool
+  方法: Create, ListByUser, GetByID, UpdateTitle, Touch, Delete, AddMessage, GetMessages
+  新增: DeleteMessagesByConversation (delete messages before deleting conversation)
+
+2b. JobRepository: sqlx.DB → pgxpool.Pool
+  方法: CreateJob, GetJob, CancelJob, AddEvent, ListEvents
+  移除 sqlx 特定类型，改用 pgx.Row/pgx.ErrNoRows
+  scanJob 辅助函数提取为包级函数
+
+2c. MarketDataRepository (新文件: repository/market_data_repo.go)
+  构造函数: NewMarketDataRepository(ch clickhouse.Conn)
+  方法: GetKlines(canonical, period, limit), GetLatestTick(canonical)
+  类型: KlineBar, LatestTick
+
+2d. ScheduleHealthRepository (新文件: repository/schedule_health_repo.go)
+  构造函数: NewScheduleHealthRepository(db *pgxpool.Pool)
+  方法: GetGradingConfig, GetScheduleStats, GetLatestOrderProfit, ListRunLogs, ListOrders
+  类型: HealthGradingConfig, ScheduleHealthSummary, ScheduleHealthRunLog, ScheduleHealthOrder
+  辅助: DefaultHealthGradingConfig()
+
+2e. PlatformService 扩展 (service/platform_service.go)
+  新增方法:
+    UserOwnsAccount(ctx, userID, accountID) (bool, error)
+    GetUserAccountIDs(ctx, userID) ([]string, error)
+    GetUserAccountSnapshots(ctx, userID) ([]AccountSnapshot, error)
+    GetUserAccountsSummary(ctx, userID) (*UserAccountsSummary, error)
+  新增类型: AccountSnapshot, UserAccountsSummary
+
+--- Step 3: Handler 更新 ---
+
+3a. user/auth_handler.go
+  Before: AuthServer{pg *pgxpool.Pool, jwtSecret, log}
+  After:  AuthServer{users *repository.UserRepository, jwtSecret, log}
+  changes:
+    Login:      s.pg.QueryRow(...) → s.users.GetByEmail(ctx, email)
+    Register:   s.pg.Exec(INSERT...) → s.users.Create(ctx, &model.User{...})
+    GetMe:      s.pg.QueryRow(...) → s.users.GetByID(ctx, uid)
+    RefreshToken: s.pg.QueryRow(...) → s.users.GetByID(ctx, uid)
+    新增邮箱重复检查: s.users.ExistsByEmail()
+
+3b. ai/ai_handler.go
+  Before: AIServer{systemSvc, pg *pgxpool.Pool, log}
+  After:  AIServer{systemSvc, conversations *repository.AIConversationRepository, log}
+  changes:
+    Chat:              s.pg.Exec(INSERT ai_messages) → s.conversations.AddMessage()
+    ListConversations: s.pg.Query(...) → s.conversations.ListByUser()
+    GetConversation:   s.pg.QueryRow+Query → s.conversations.GetByID+GetMessages
+    CreateConversation: s.pg.Exec(INSERT) → s.conversations.Create()
+    DeleteConversation: s.pg.Exec(DELETE) → s.conversations.DeleteMessagesByConversation + Delete
+    UpdateConversationTitle: s.pg.Exec(UPDATE) → s.conversations.UpdateTitle()
+
+3c. system/job_handler.go
+  Before: JobServer{pg *pgxpool.Pool, log} + scanJobRow using pgx.Row
+  After:  JobServer{jobs *repository.JobRepository, log}
+  changes:
+    GetJob:       scanJobRow(s.pg.QueryRow(...)) → s.jobs.GetJob(ctx, uid, jobID)
+    CancelJob:    scanJobRow(s.pg.QueryRow(UPDATE...)) → s.jobs.CancelJob(ctx, uid, jobID)
+    SubscribeJob: s.pg.Query(SELECT job_events) → s.jobs.ListEvents(ctx, jobID, afterSeq, 100)
+    删除 scanJobRow (迁移到 repository)
+
+3d. system/schedule_health_handler.go
+  Before: ScheduleHealthServer{pg *pgxpool.Pool, log}
+  After:  ScheduleHealthServer{repo *repository.ScheduleHealthRepository, log}
+  changes:
+    getGradingConfig: s.pg.QueryRow(SELECT system_configs) → s.repo.GetGradingConfig()
+    GetScheduleHealth: 5 个独立查询 → s.repo.GetScheduleStats + GetLatestOrderProfit + ListRunLogs + ListOrders
+    删除 healthGradingConfig struct + defaultHealthGradingConfig (迁移到 repository)
+
+3e. system/stream_handler.go
+  Before: StreamServer{svc, pg *pgxpool.Pool, log}
+  After:  StreamServer{svc, platform *service.PlatformService, log}
+  changes:
+    loadUserAccountIDs:   s.pg.Query(SELECT mt_accounts) → s.platform.GetUserAccountIDs()
+    sendInitialSnapshot:  s.pg.Query(SELECT mt_accounts) → s.platform.GetUserAccountSnapshots()
+    computeSummary:       s.pg.Query(SELECT aggregate mt_accounts) → s.platform.GetUserAccountsSummary()
+    userOwnsAccount:      s.pg.QueryRow(SELECT EXISTS) → s.platform.UserOwnsAccount()
+    删除 4 个独立 DB 辅助函数 (loadUserAccountIDs, computeSummary, userOwnsAccount 已移至 PlatformService)
+
+3f. system/mthub_service.go
+  Before: MtHubServer{svc, pg *pgxpool.Pool, log}
+  After:  MtHubServer{svc, platform *service.PlatformService, log}
+  changes:
+    accountOwnedByUser (5 处调用) → s.platform.UserOwnsAccount()
+    删除独立 accountOwnedByUser 函数
+
+3g. marketplace/market_handler.go
+  Before: MarketServer{platform, ch clickhouse.Conn, nc, log}
+  After:  MarketServer{platform, marketData *repository.MarketDataRepository, nc, log}
+  changes:
+    GetKlines:      s.ch.Query(SELECT FROM kline) → s.marketData.GetKlines()
+    GetSymbolStats: s.ch.QueryRow(SELECT FROM tick_raw) → s.marketData.GetLatestTick()
+
+--- Step 4: main.go 构造更新 ---
+
+新增 repository 实例化 (插入在 handler 构造之前):
+  userRepo       := repository.NewUserRepository(pool)
+  convRepo       := repository.NewAIConversationRepository(pool)
+  jobRepo        := repository.NewJobRepository(pool)
+  schedHealthRepo := repository.NewScheduleHealthRepository(pool)
+  marketDataRepo  := repository.NewMarketDataRepository(ch)
+
+构造调用变更:
+  user.NewAuthServer(pool, ...)           → user.NewAuthServer(userRepo, ...)
+  system.NewMtHubServer(mthubSvc, pool)   → system.NewMtHubServer(mthubSvc, platformSvc)
+  mktplace.NewMarketServer(platformSvc, ch, nc) → mktplace.NewMarketServer(platformSvc, marketDataRepo, nc)
+  ai.NewAIServer(aiSvc, pool)             → ai.NewAIServer(aiSvc, convRepo)
+  system.NewStreamServer(mthubSvc, pool)  → system.NewStreamServer(mthubSvc, platformSvc)
+  system.NewJobServer(pool)               → system.NewJobServer(jobRepo)
+  system.NewScheduleHealthServer(pool)    → system.NewScheduleHealthServer(schedHealthRepo)
+
+--- Step 5: Build & Vet ---
+$ go build ./...
+(no errors)
+
+$ go vet ./...
+(no errors)
+
+--- Step 6: Test ---
+$ go test ./internal/connect/... ./internal/repository/... ./internal/service/...
+ok  anttrader/internal/service  0.015s
+(all other packages: no test files, compile+load OK)
+
+--- Step 7: Layering verification ---
+$ grep -rn 'pgxpool\|clickhouse\.Conn\|sqlx\.DB' internal/connect/ --include='*.go'
+修复前: 7 files
+修复后: 0 files  ✓
+
+--- Summary ---
+AC1 (handler 不直接持有 DB 连接): PASS (7→0)
+AC2 (handler→service→repository): PASS (全部通过 service 或 repository 接口)
+AC3 (go build): PASS
+AC4 (go vet): PASS
+AC5 (go test): PASS
+
+P1-3 预埋: AIConversationRepository + JobRepository 已从 sqlx.DB 转为 pgxpool.Pool
+
+Additionally: P1-1 遗漏的 package 声明更新已修复
+  (P1-1 commit d96349f 中 29 个文件保留了 "package connect",
+   本卡重写 7 个 handler 文件时已更正为正确的子包名)

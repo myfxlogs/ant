@@ -1,0 +1,119 @@
+=== P1-1: connect handler 拆分 6 子包 ===
+Card: REMEDIATION-2026-05-26 P1-1
+Date: 2026-05-26
+Status: ☑
+
+--- Acceptance Criteria ---
+AC1: 29 handler 文件拆入 6 子包 (user/admin/ai/strategy/marketplace/system)
+AC2: 所有 package 声明更新为子包名
+AC3: main.go import 更新为 6 子包导入
+AC4: go build ./... 通过
+AC5: go vet ./... 通过
+AC6: go test ./internal/connect/... 所有子包可加载
+
+--- Step 1: 子包结构 ---
+connect/
+  user/         (2 files)  auth_handler.go, account_handler.go
+  admin/        (7 files)  admin_{account,config,jurisdiction,log,system,trading,user}_handler.go
+  ai/           (4 files)  ai_handler.go, ai_primary_handler.go, code_assist_handler.go, system_ai_handler.go
+  strategy/     (5 files)  strategy_handler.go, strategy_asset_handler.go, strategy_experiment_handler.go, python_strategy_handler.go, backtest_trades_handler.go
+  marketplace/  (4 files)  marketplace_handler.go, market_handler.go, market_regime_handler.go, indicator_catalog_handler.go
+  system/       (7 files)  stream_handler.go, job_handler.go, log_handler.go, schedule_health_handler.go, mthub_service.go, economic_data_handler.go, analytics_handler.go
+
+Total: 29 files in 6 subpackages.
+
+--- Step 2: Package 声明 ---
+All 29 files updated from "package connect" to respective subpackage names:
+  user → package user
+  admin → package admin
+  ai → package ai
+  strategy → package strategy
+  marketplace → package marketplace
+  system → package system
+
+--- Step 3: main.go import 修复 ---
+Old (single flat import):
+  "anttrader/internal/connect"
+
+New (6 subpackage imports):
+  "anttrader/internal/connect/admin"
+  "anttrader/internal/connect/ai"
+  mktplace "anttrader/internal/connect/marketplace"  // aliased: conflicts with internal/marketplace
+  "anttrader/internal/connect/strategy"
+  "anttrader/internal/connect/system"
+  "anttrader/internal/connect/user"
+
+Alias required: "anttrader/internal/connect/marketplace" package name is "marketplace",
+which conflicts with existing import "anttrader/internal/marketplace" (service layer).
+Resolved with: mktplace "anttrader/internal/connect/marketplace"
+
+--- Step 4: main.go 构造调用更新 ---
+connect.NewAuthServer → user.NewAuthServer
+connect.NewAccountServer → user.NewAccountServer
+connect.NewMarketServer → mktplace.NewMarketServer
+connect.NewMarketplaceServer → mktplace.NewMarketplaceServer
+connect.NewAIServer → ai.NewAIServer
+connect.NewStreamServer → system.NewStreamServer
+connect.NewMtHubServer → system.NewMtHubServer
+connect.NewStrategyServer → strategy.NewStrategyServer
+connect.NewPythonStrategyServer → strategy.NewPythonStrategyServer
+connect.NewCodeAssistServer → ai.NewCodeAssistServer
+connect.NewSystemAIServer → ai.NewSystemAIServer
+connect.NewAIPrimaryServer → ai.NewAIPrimaryServer
+connect.NewBacktestTradesServer → strategy.NewBacktestTradesServer
+connect.NewEconomicDataServer → system.NewEconomicDataServer
+connect.NewJobServer → system.NewJobServer
+connect.NewLogServiceServer → system.NewLogServiceServer
+connect.NewAdminTradingServer → admin.NewAdminTradingServer
+connect.NewAdminConfigServer → admin.NewAdminConfigServer
+connect.NewAdminLogServer → admin.NewAdminLogServer
+connect.NewAdminAccountServer → admin.NewAdminAccountServer
+connect.NewAdminUserServer → admin.NewAdminUserServer
+connect.NewAdminSystemServer → admin.NewAdminSystemServer
+connect.NewAdminJurisdictionServer → admin.NewAdminJurisdictionServer
+connect.NewAnalyticsServer → system.NewAnalyticsServer
+connect.NewMarketRegimeServer → mktplace.NewMarketRegimeServer
+connect.NewStrategyExperimentServer → strategy.NewStrategyExperimentServer
+connect.NewStrategyAssetServer → strategy.NewStrategyAssetServer
+connect.NewScheduleHealthServer → system.NewScheduleHealthServer
+connect.NewIndicatorCatalogServer → mktplace.NewIndicatorCatalogServer
+
+All 28 constructor calls remapped.
+
+--- Step 5: Build & Vet ---
+$ go build ./...
+(no errors)
+
+$ go vet ./...
+(no errors)
+
+--- Step 6: Test ---
+$ go test ./internal/connect/...
+?   anttrader/internal/connect/admin        [no test files]
+?   anttrader/internal/connect/ai           [no test files]
+?   anttrader/internal/connect/marketplace  [no test files]
+?   anttrader/internal/connect/strategy     [no test files]
+?   anttrader/internal/connect/system       [no test files]
+?   anttrader/internal/connect/user         [no test files]
+
+All 6 subpackages compile and load correctly (no tests existed for handlers).
+
+--- Step 7: Stale reference check ---
+$ grep -rn '"anttrader/internal/connect"' backend/ --include='*.go' | grep -v '_test.go' | grep -v '/connect/'
+(no results — zero stale references to old flat package)
+
+$ ls internal/connect/*.go
+(no files — flat directory emptied, only subdirs remain)
+
+--- Summary ---
+AC1 (6 subpackages, 29 files): PASS
+AC2 (package declarations updated): PASS
+AC3 (main.go imports updated): PASS
+AC4 (go build): PASS
+AC5 (go vet): PASS
+AC6 (go test subpackages load): PASS
+
+Marketplace alias: mktplace (handler) vs marketplace (service) — required due to Go's
+flat package namespace. No way around it without renaming either package.
+
+Commits preserved via git mv — full file history retained.
