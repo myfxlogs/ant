@@ -12,10 +12,10 @@ import {
   LineChartOutlined,
   RiseOutlined,
   FallOutlined,
-  IconCoin,
-  IconPercentage,
+  DollarOutlined,
+  PercentageOutlined,
   WarningOutlined,
-  IconCloudDownload,
+  CloudDownloadOutlined,
 } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAccount } from '@/hooks/useAccount';
@@ -523,7 +523,7 @@ export default function AccountDetail() {
           </div>
           <div className="flex items-center gap-2">
             <Button icon={<ReloadOutlined size={16} stroke={1.5} />} onClick={handleRefreshAnalytics} loading={analyticsLoading} style={{ borderRadius: '8px' }}>{t('common.refresh')}</Button>
-            <Button icon={<IconCloudDownload size={16} stroke={1.5} />} onClick={handleSyncHistory} loading={syncingHistory} disabled={currentAccount.status !== 'connected'} style={{ borderRadius: '8px' }}>{t('accounts.detail.actions.syncHistory')}</Button>
+            <Button icon={<CloudDownloadOutlined size={16} stroke={1.5} />} onClick={handleSyncHistory} loading={syncingHistory} disabled={currentAccount.status !== 'connected'} style={{ borderRadius: '8px' }}>{t('accounts.detail.actions.syncHistory')}</Button>
             <Dropdown menu={{ items: menuItems }} trigger={['click']}><Button icon={<MoreOutlined size={16} stroke={1.5} />} style={{ borderRadius: '8px' }} /></Dropdown>
           </div>
         </div>
@@ -538,9 +538,9 @@ export default function AccountDetail() {
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <SmallInfoCard icon={<IconCoin size={16} stroke={1.5} color="#8A9AA5" />} label={t('accounts.detail.cards.marginUsed')} value={formatCurrency(margin)} loading={isStreamLoading} />
-          <SmallInfoCard icon={<IconCoin size={16} stroke={1.5} color="#8A9AA5" />} label={t('accounts.detail.cards.marginFree')} value={formatCurrency(freeMargin)} loading={isStreamLoading} />
-          <SmallInfoCard icon={<IconPercentage size={16} stroke={1.5} color="#8A9AA5" />} label={t('accounts.detail.cards.marginLevel')} value={margin > 0 ? `${(marginLevel || 0).toFixed(2)}%` : '--'} loading={isStreamLoading} valueColor={margin > 0 && (marginLevel || 0) < 100 ? '#E53935' : '#141D22'} />
+          <SmallInfoCard icon={<DollarOutlined size={16} stroke={1.5} color="#8A9AA5" />} label={t('accounts.detail.cards.marginUsed')} value={formatCurrency(margin)} loading={isStreamLoading} />
+          <SmallInfoCard icon={<DollarOutlined size={16} stroke={1.5} color="#8A9AA5" />} label={t('accounts.detail.cards.marginFree')} value={formatCurrency(freeMargin)} loading={isStreamLoading} />
+          <SmallInfoCard icon={<PercentageOutlined size={16} stroke={1.5} color="#8A9AA5" />} label={t('accounts.detail.cards.marginLevel')} value={margin > 0 ? `${(marginLevel || 0).toFixed(2)}%` : '--'} loading={isStreamLoading} valueColor={margin > 0 && (marginLevel || 0) < 100 ? '#E53935' : '#141D22'} />
           <SmallInfoCard icon={<WarningOutlined size={16} stroke={1.5} color="#8A9AA5" />} label={t('accounts.detail.cards.credit')} value={formatCurrency(credit)} loading={isStreamLoading} />
         </div>
 

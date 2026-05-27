@@ -1,11 +1,16 @@
 import { useState } from 'react';
-import { Card, Form, Input, Button, InputNumber, Radio, Space } from 'antd';
+import { Card, Form, Button, InputNumber, Radio, Space } from 'antd';
 import { SendOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useTradingStore } from '@/stores/tradingStore';
 import { useTrading } from '@/hooks/useTrading';
+import SymbolPicker from '@/components/chart/SymbolPicker';
 
-export default function PlaceOrderForm() {
+interface PlaceOrderFormProps {
+  onSymbolChange?: (symbol: string) => void;
+}
+
+export default function PlaceOrderForm({ onSymbolChange }: PlaceOrderFormProps) {
   const { t } = useTranslation();
   const currentAccountId = useTradingStore((s) => s.currentAccountId);
   const loading = useTradingStore((s) => s.loading);
@@ -60,8 +65,12 @@ export default function PlaceOrderForm() {
         </Space>
 
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <Form.Item name="symbol" label={t('trading.symbol', 'Symbol')} rules={[{ required: true }]} style={{ width: 120 }}>
-            <Input placeholder="EURUSD" />
+          <Form.Item name="symbol" label={t('trading.symbol', 'Symbol')} rules={[{ required: true }]} style={{ width: 180 }}>
+            <SymbolPicker
+              accountId={currentAccountId || ''}
+              onChange={(sym) => onSymbolChange?.(sym)}
+              placeholder="EURUSD"
+            />
           </Form.Item>
           <Form.Item name="volume" label={t('trading.volume', 'Volume')} rules={[{ required: true, type: 'number', min: 0.01 }]} style={{ width: 100 }}>
             <InputNumber min={0.01} step={0.01} placeholder="0.01" />

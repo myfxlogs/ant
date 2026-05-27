@@ -9,7 +9,7 @@ import {
 import {
   RiseOutlined,
   LineChartOutlined,
-  IconChartPie,
+  PieChartOutlined,
   ClockCircleOutlined,
   AimOutlined,
 } from '@ant-design/icons';
@@ -294,7 +294,7 @@ export default function Summary() {
           <Col xs={12} sm={6}>
             <div className="stat-card">
               <div className="flex items-center gap-2 mb-2">
-                <IconChartPie size={18} stroke={1.5} color="#9C27B0" />
+                <PieChartOutlined size={18} stroke={1.5} color="#9C27B0" />
                 <span style={{ color: '#8A9AA5', fontSize: '14px' }}>{t('analytics.summary.metrics.equityValue')}</span>
               </div>
               <div className="text-2xl font-semibold" style={{ color: '#141D22' }}>

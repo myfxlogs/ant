@@ -2,18 +2,18 @@ import { useState, useEffect } from 'react';
 import { Layout, Menu, Avatar, Dropdown, Drawer } from 'antd';
 import {
   GlobalOutlined,
-  IconHelpCircle,
-  IconUserCircle,
-  IconLogout,
+  QuestionCircleOutlined,
+  UserOutlined,
+  LogoutOutlined,
   SettingOutlined,
   LineChartOutlined,
-  IconHome,
+  HomeOutlined,
   MenuOutlined,
   RobotOutlined,
   ThunderboltOutlined,
   HistoryOutlined,
   UnorderedListOutlined,
-  IconWaveSine,
+  FundOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -68,7 +68,7 @@ export default function MainLayout() {
   }, []);
 
   const allMenuItems = [
-    { key: menuKeys.dashboard, icon: <IconHome size={20} stroke={1.5} />, label: t('menu.dashboard') },
+    { key: menuKeys.dashboard, icon: <HomeOutlined size={20} stroke={1.5} />, label: t('menu.dashboard') },
     {
       key: menuKeys.ai,
       icon: <RobotOutlined size={20} stroke={1.5} />,
@@ -76,7 +76,7 @@ export default function MainLayout() {
     },
     { key: menuKeys.strategies, icon: <UnorderedListOutlined size={20} stroke={1.5} />, label: t('menu.strategies') },
     // { key: menuKeys.experiments, icon: <IconFlask size={20} stroke={1.5} />, label: '策略实验' },
-    { key: menuKeys.marketRegime, icon: <IconWaveSine size={20} stroke={1.5} />, label: t('menu.marketRegime') },
+    { key: menuKeys.marketRegime, icon: <FundOutlined size={20} stroke={1.5} />, label: t('menu.marketRegime') },
     // { key: menuKeys.assets, icon: <IconArchive size={20} stroke={1.5} />, label: '资产库' },
     { key: menuKeys.schedules, icon: <ThunderboltOutlined size={20} stroke={1.5} />, label: t('menu.schedules') },
     { key: menuKeys.logs, icon: <HistoryOutlined size={20} stroke={1.5} />, label: t('menu.logs') },
@@ -97,13 +97,13 @@ export default function MainLayout() {
   }, []);
 
   const userMenuItems = [
-    { key: 'profile', icon: <IconUserCircle size={18} stroke={1.5} />, label: t('topbar.profile') },
+    { key: 'profile', icon: <UserOutlined size={18} stroke={1.5} />, label: t('topbar.profile') },
     { key: 'settings', icon: <SettingOutlined size={18} stroke={1.5} />, label: t('topbar.settings') },
     ...(isAdmin
       ? [{ type: 'divider' as const }, { key: 'admin', icon: <LineChartOutlined size={18} stroke={1.5} />, label: t('topbar.switchToAdmin') }]
       : []),
     { type: 'divider' as const },
-    { key: 'logout', icon: <IconLogout size={18} stroke={1.5} />, label: t('topbar.logout'), danger: true },
+    { key: 'logout', icon: <LogoutOutlined size={18} stroke={1.5} />, label: t('topbar.logout'), danger: true },
   ];
 
   const handleUserMenuClick = ({ key }: { key: string }) => {
@@ -271,7 +271,7 @@ export default function MainLayout() {
                 className="p-2 rounded-lg transition-colors"
                 style={{ color: '#5A6B75' }}
               >
-                <IconHelpCircle size={20} stroke={1.5} />
+                <QuestionCircleOutlined size={20} stroke={1.5} />
               </button>
             )}
             
@@ -281,7 +281,7 @@ export default function MainLayout() {
             >
               <div className="flex items-center cursor-pointer gap-2 px-2 py-1 rounded-lg transition-colors">
                 <Avatar 
-                  icon={<IconUserCircle size={22} stroke={1.5} />} 
+                  icon={<UserOutlined size={22} stroke={1.5} />} 
                   style={{ background: BRAND_GRADIENT }}
                   size="small"
                 />

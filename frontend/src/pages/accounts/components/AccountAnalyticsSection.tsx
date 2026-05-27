@@ -17,7 +17,7 @@ import {
 } from 'recharts';
 import {
   BarChartOutlined,
-  IconChartPie,
+  PieChartOutlined,
   TrophyOutlined,
 } from '@ant-design/icons';
 
@@ -248,7 +248,7 @@ export default function AccountAnalyticsSection({
 
         <div className="rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
           <h2 className="text-lg font-semibold flex items-center gap-2 mb-4" style={{ color: '#141D22' }}>
-            <IconChartPie size={18} stroke={1.5} />
+            <PieChartOutlined size={18} stroke={1.5} />
             {t('accounts.analytics.symbolDistributionTitle')}
           </h2>
           {symbolDistributionData.length > 0 ? (

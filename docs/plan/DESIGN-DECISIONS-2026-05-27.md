@@ -558,3 +558,296 @@ class BaseSandbox(ABC):
 | 10 | B-4 | 遗漏 | Bid/Ask 数据源频率不足 | Phase 1 用 OHLC close 近似 + "实验性"? |
 | 11 | B-4 | 遗漏 | 图表初始数据量过大 | 首屏 300 根，增量加载历史? |
 
+---
+
+# ✅ 用户裁定（2026-05-27 第二轮 · 11 项）
+
+> 方法：每条给出 **裁定** + **依据/证据** + **施工动作**。所有结论以本段为准；上方的施工审查段保留作上下文。
+
+## 全局指令 · Telegram 整体延后到生产后再评估
+
+⛔ **B-2.4 / B-2.5（Telegram bot + UI 绑定）此轮全部 cancel**，不进 Week 2 排程。
+
+理由：
+- 当前阶段优先级是**金融大脑可用 + 爆仓不漏报**，而非新增通道
+- Telegram bot 在多 jurisdiction 下有合规/数据出境问题，需先做合规评估
+- Email + SSE + 站内信 已经足够爆仓告警闭环
+- 生产上线后跑 1 月，看真实"用户漏报投诉率"再决定是否引入 Telegram / Discord / WeCom / Slack（不一定 Telegram 优先）
+
+**Q4（Telegram bot token 来源）→ 同步 cancel**，不需裁定。
+
+**B-2 估时重新核算**：去掉 Telegram bot + 绑定 UI 后，B-2 总估时 5d → **2.5d**。
+
+---
+
+## 逐条裁定
+
+### Q1 [B-1 遗漏] `PositionUpdate` 类型 → ✅ **新建轻量类型**
+
+**裁定**：新建 `risksvc.PositionUpdate`，**不复用** `mthub.PositionSnapshot`。
+
+**依据**：
+- `@/opt/ant/backend/internal/mthub/types.go:171-198` 显示 `PositionSnapshot` 含 16 字段（Comment/Swap/Commission/Profit/OpenTime 等），其中风控只用 4 个（AccountID, Symbol/Canonical, Volume, Notional）
+- 复用会让 risksvc 反向依赖 mthub 包，破坏 V3 报告 §V3-E-2 警告的"God Object"反模式
+- mdgateway exporter 在 fan-out 时**两个 exporter 各自 marshal 自己需要的形状**，不要把 SSE-friendly 形状塞给风控
+
+**施工**：
+```go
+// backend/internal/risksvc/position_update.go (新建)
+type PositionUpdate struct {
+    AccountID string
+    Canonical string  // 已在 mdgateway side 完成 raw→canonical 映射
+    NetVolume float64 // 多 → 正，空 → 负
+    Notional  float64 // |volume| × current_price × contract_size
+    Margin    float64 // 已用保证金
+}
+```
+mdgateway runner 在调 exporters 前用现有 PositionSnapshot 投影出 PositionUpdate（一次循环搞定）。
+
+---
+
+### Q2 [B-1 遗漏] `ClearAccount` 触发时机 → ✅ **runner 维度，非 connection.go**
+
+**裁定**：在 mdgateway **runner 层**触发 ClearAccount，不在 mt4/mt5 connection.go。
+
+**依据**：
+- `@/opt/ant/backend/internal/mdgateway/adapter/mt4/connection.go:96,110,136` 三处 `g.conn.Close()` 都是**协议层底层关闭**，无 hook 机制；改造它会渗透到 mt4/mt5 双适配器
+- mdgateway runner 已有"账户生命周期"概念（连接/断开/重连由 runner 调度）
+- 现有 R-7 实现 `@/opt/ant/backend/cmd/server/main.go:180` 的 `marginCallLastSent map` 也是在 runner 订阅层做的，路径一致
+
+**施工**：runner 的"account disconnected"分支（断连重试上限到达 / 用户主动断开 / Reconnect 调度）调 `exporter.OnAccountClose(accountID)`。具体 hook：
+- mtapi RPC 错误 = ConnectionLost → runner.Stop(account)  → 此处 fan-out 给所有 exporters
+- 用户调 `DisconnectAccount` ConnectRPC → publish NATS event → runner 收到后调 fan-out
+- 现有 `nats account.lifecycle` (commit `f1d8c48`) 即天然 hook 点
+
+---
+
+### Q3 [B-2 矛盾] broker 阈值 fallback → ⚠ **修订方案：常量 fallback + 必须 log.Warn**
+
+**裁定**：审查侧建议"用 DefaultPlatformLimits"**不可行**——`@/opt/ant/backend/internal/risksvc/platform_limits.go:6-11` 显示 `PlatformLimits` 只有 GrossExposure/NetExposure/MarginUsed 4 字段，**没有 MarginCallPct/StopOutPct**。改用：
+
+1. 在 `mt_accounts` schema 加字段：`broker_margin_call_pct REAL DEFAULT 100.0, broker_stop_out_pct REAL DEFAULT 50.0`（NOT NULL + default 即"未拉到时用业界中位数"）
+2. mdgateway 拉取成功 → UPDATE 该行
+3. 拉取失败 / 返回 0 → 保留 default 100/50 + `log.Warn("broker_margin_levels_unavailable", account_id, broker)`
+4. 运维侧对该 log 加 alert，> N 次/h 触发人工核查
+
+**理由**：默认值放在 schema 层（DEFAULT 100/50）而非应用层 fallback，**保证任何代码路径都不会读到 0/NaN**。
+
+**施工**：
+- migration: `ALTER TABLE mt_accounts ADD COLUMN broker_margin_call_pct REAL NOT NULL DEFAULT 100.0;` 同理 stop_out_pct
+- mdgateway 拉取失败仅 log，不写零
+
+---
+
+### Q4 [B-2 遗漏] Telegram token → ❌ **CANCEL（按全局指令延后）**
+
+不裁定，整组取消。
+
+---
+
+### Q5 [B-3 矛盾] `set_start_method('fork', force=True)` 与 FastAPI/uvicorn 冲突 → ✅ **采纳审查侧建议，改 spawn**
+
+**裁定**：**移除 `set_start_method('fork', force=True)`**。改为：
+- Linux/macOS：`get_context('spawn')`（默认 spawn 即可，跨平台一致）
+- 显式 pickle 序列化 `RestrictedEnv` + bytecode 传给子进程
+
+**依据**：
+- `force=True` 在 uvicorn worker（非 `__main__`）下可能 crash；审查侧引用 Python doc 正确
+- spawn 性能损失（进程启动 ~150ms vs fork ~10ms）在 backtest 场景**完全可接受**——backtest 单次跑动几十秒到几十分钟，启动开销占比 < 1%
+- spawn 的"必须可 pickle"约束**反而是加分项**：强制 RestrictedEnv 状态显式序列化，避免 fork 时神秘 copy-on-write 问题
+
+**施工**：
+```python
+# strategy-service/app/engine/sandbox_base.py
+import multiprocessing as mp
+_CTX = mp.get_context("spawn")  # 模块级，跨 Linux/macOS 一致
+
+def _spawn_subprocess(target, args):
+    return _CTX.Process(target=target, args=args)
+```
+所有 Backtest/Live 路径用 `_CTX.Process` 起进程，不用模块级 `set_start_method`。
+
+**Windows 不支持** —— 当前项目只跑 Linux/macOS（FastAPI 部署在 Linux），Windows 留 TODO 即可。
+
+---
+
+### Q6 [B-3 矛盾] LiveWorker poll timeout → ✅ **采纳：使用 self._timeout_ms / 1000.0**
+
+**裁定**：审查侧建议正确。LiveWorker 的 `recv_pipe.poll(timeout=...)` **必须**用 `self._timeout_ms / 1000.0`，不能硬编码 5.0s。
+
+**理由**：
+- live 策略 `call()` 应在毫秒-百毫秒级返回（一根 bar 触发，bar 间隔 ≥ 1s），5s 太宽松
+- 沙箱配置已经有 `timeout_ms`（默认 30000ms），用户可调；LiveWorker 必须尊重该配置
+- 5s 硬编码与现有 sandbox.py 行为不一致，会让 backtest/live 超时语义割裂
+
+**施工**：
+```python
+class LiveWorker:
+    def call(self, ctx) -> Optional[dict]:
+        self.send_pipe.send(ctx)
+        timeout_s = self._timeout_ms / 1000.0
+        if not self.recv_pipe.poll(timeout=timeout_s):
+            self._restart()  # 见 Q8
+            raise SandboxTimeoutError(f"live call exceeded {self._timeout_ms}ms")
+        return self.recv_pipe.recv()
+```
+
+---
+
+### Q7 [B-3 遗漏] fork + asyncio 冲突 → ✅ **采纳：子进程入口重建 event loop**
+
+**裁定**：子进程入口必须重建 event loop。**但因 Q5 改 spawn**，asyncio 冲突自动消失（spawn 启全新 Python 解释器，不继承父进程 event loop / fd / signal handlers）。
+
+**施工**：Q5 改 spawn 后**此项无需额外动作**。仅在子进程入口加防御性代码：
+```python
+def _live_worker_main(source, send_pipe, recv_pipe):
+    # spawn 上下文下不继承父 loop，但显式重建以防未来回退 fork
+    import asyncio
+    asyncio.set_event_loop(asyncio.new_event_loop())
+    # ... 沙箱 main loop
+```
+
+**额外加分**：spawn 比 fork 安全得多——也回应了 V3-R-8 中"C 阻塞调用超时无效"的另一半问题（spawn 的子进程 terminate 走 SIGTERM，C 扩展即便不响应 GIL 也会被 OS 杀掉）。
+
+---
+
+### Q8 [B-3 遗漏] LiveWorker 内存泄漏 → ✅ **采纳但调高阈值：每 500 次 call 自动重启**
+
+**裁定**：采纳"call 次数到限自动 restart"的思路，但阈值改 **500**（审查侧建议 100 偏激进）。
+
+**理由**：
+- 100 次 call 在 1m bar 频率下 = 100 分钟，restart 太频繁
+- spawn 启动 ~150ms（Q5），每 500 次 call restart 一次平均 < 1% 开销
+- 同时加**内存软限制**：worker 进程 RSS > 500MB 也触发 restart（用 `resource.setrlimit(RLIMIT_AS)` 在子进程入口设置）
+
+**施工**：
+```python
+class LiveWorker:
+    MAX_CALLS_BEFORE_RESTART = 500
+    MAX_RSS_MB = 500
+    
+    def call(self, ctx):
+        self._call_count += 1
+        if self._call_count >= self.MAX_CALLS_BEFORE_RESTART:
+            self._restart()
+        # ... 实际 call
+    
+    def _restart(self):
+        self.proc.terminate(); self.proc.join(5)
+        if self.proc.is_alive(): self.proc.kill()
+        self._spawn_new_proc()
+        self._call_count = 0
+```
+
+---
+
+### Q9 [B-3 遗漏] 双路径缺统一抽象 `BaseSandbox` ABC → ✅ **采纳**
+
+**裁定**：定义 `BaseSandbox` ABC，BacktestSandbox 与 LiveWorker 都实现它。
+
+**理由**：
+- 路由层 `routes/strategy.py` 拿到的是 `BaseSandbox` 接口而非具体类，便于 mock 单测
+- 未来加第三种沙箱（如 WASM / V8 isolate）时不破坏调用方
+- 维护成本低（30 行 ABC，零 runtime 开销）
+
+**施工**：
+```python
+# strategy-service/app/engine/sandbox_base.py
+from abc import ABC, abstractmethod
+from typing import Optional
+
+class BaseSandbox(ABC):
+    @abstractmethod
+    def call(self, ctx: dict) -> Optional[dict]: ...
+    
+    @abstractmethod
+    def shutdown(self) -> None: ...
+    
+    @property
+    @abstractmethod
+    def source_sha256(self) -> str: ...
+```
+
+---
+
+### Q10 [B-4 遗漏] Bid/Ask 数据源频率不足 → ✅ **采纳：Phase 1 用 OHLC close + "实时性受限" 标签**
+
+**裁定**：Phase 1 不引入新 tick 流，用现有 5s OHLC close 作为 Bid/Ask 近似值。UI 加 tooltip："实时报价（5 秒粒度，下单时以 broker 实际成交价为准）"。Phase 2 接 tick 流。
+
+**理由**：
+- mdgateway 当前 publish 5s bar 已经足够频繁让 K 线"动起来"
+- 真正的 spread（Ask - Bid）从 5s OHLC 算不出（需要单独 quote stream）；Phase 1 直接显示 close 单线即可，**不假装显示 spread**
+- 用户在 Trading 页主要决策是"看趋势 + 下单"，5s 延迟可接受；高频策略本就该走 API 而非 UI
+
+**施工**：
+- Phase 1 PriceChart 只画 1 条价格线（close）+ 当前价格水平虚线，**不画 Ask/Bid 双线**
+- tooltip 注明"~5s 延迟"
+- 下单 confirm 弹窗显示"成交价以 broker 为准"
+
+---
+
+### Q11 [B-4 遗漏] 图表初始数据量过大 → ✅ **采纳：首屏 300 根 + 增量加载**
+
+**裁定**：首次加载 **300 根 bar**，用户向左拖拽（看更早历史）时调 `MarketService.GetPriceHistory(before=oldest_ts, limit=500)` 增量加载。
+
+**理由**：
+- 300 根 H1 ≈ 12.5 天，覆盖近期趋势已足够
+- JSON payload ≈ 50KB，首屏 <100ms 可载入
+- lightweight-charts `setData` + `applyOptions` 支持平滑增量拼接
+
+**施工**：
+```typescript
+// PriceChart.tsx
+const [bars, setBars] = useState<Bar[]>([]);
+const oldestTs = useRef<number>(0);
+
+// 首次
+useEffect(() => {
+    fetchBars({ symbol, limit: 300 }).then(d => {
+        setBars(d); oldestTs.current = d[0].ts;
+    });
+}, [symbol]);
+
+// 拖拽到边界
+chart.timeScale().subscribeVisibleLogicalRangeChange(range => {
+    if (range.from < 50 && !loadingMore.current) {
+        loadingMore.current = true;
+        fetchBars({ symbol, before: oldestTs.current, limit: 500 })
+            .then(d => { setBars(prev => [...d, ...prev]); oldestTs.current = d[0].ts; })
+            .finally(() => { loadingMore.current = false; });
+    }
+});
+```
+
+---
+
+## 修订后施工清单
+
+| # | 裁定 | 影响子任务 |
+|---|------|-----------|
+| Q1 | 新建 `risksvc.PositionUpdate` | B-1.1 接口签名 |
+| Q2 | runner 层 fan-out + ClearAccount | B-1.5 hook 点定 NATS lifecycle subscriber |
+| Q3 | schema DEFAULT 100/50 + log.Warn fallback | B-2.1 migration 加 `NOT NULL DEFAULT` |
+| Q4 | **CANCEL Telegram 全套** | 删除 B-2.4 + B-2.5（节省 2.5d） |
+| Q5 | spawn 替代 fork | B-3.1~3.4 改 `mp.get_context("spawn")` |
+| Q6 | poll timeout = self._timeout_ms/1000 | B-3.3 LiveWorker.call |
+| Q7 | spawn 后自动消失 | B-3.3 入口加防御性 set_event_loop |
+| Q8 | 每 500 次 call 重启 + 500MB RSS | B-3.3 LiveWorker._restart |
+| Q9 | 定义 `BaseSandbox` ABC | 新增 B-3.0 |
+| Q10 | Phase 1 用 close 近似 Bid/Ask | B-4.4 简化 |
+| Q11 | 首屏 300 根 + 增量加载 | B-4.1 实现 |
+
+**估时重新核算**：
+
+| Week | 原 | 修订 |
+|------|----|----|
+| Week 1 | B-1 (2d) + B-2.1-3 (2d) + B-2.6 (0.5d) = 4.5d | 不变 |
+| Week 2 | B-2.4-5 (2.5d) + B-3.1-4 (3d) + B-4.1-2 (1.5d) = 7d | **B-3 + B-4.1-2 only = 4.5d** |
+| Week 3 | B-3.5-6 (1.5d) + B-4.3-6 (2.5d) + buffer (1d) = 5d | 不变 |
+| **总计** | 16.5d | **14d**（删除 Telegram 2.5d） |
+
+**放风**：B-3 风险最高（Q5+Q7+Q8 三处架构改动），建议先写 BaseSandbox + spawn POC 各 1 天再正式开工，留 1d 风险预算 → **总 15d**。
+
+## 一句话签收
+
+> 11 项澄清全部裁定完毕：**Q1/Q2/Q5/Q6/Q7/Q8/Q9/Q10/Q11 采纳审查侧建议**（其中 Q3 因证据修订为"schema DEFAULT 100/50 + log.Warn"，Q5 因 force=True 在 uvicorn 下风险改 spawn）；**Q4 整组 cancel**，Telegram bot 推迟到生产后评估；B-2 估时 5d→2.5d，总周期 16.5d→15d；B-3 因 Q5+Q7+Q8 三处架构动议，开工前需 1 天 spawn POC + BaseSandbox 接口冻结。可以按本裁定开始 Week 1。

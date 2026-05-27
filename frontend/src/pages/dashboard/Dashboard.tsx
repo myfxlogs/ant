@@ -3,16 +3,16 @@ import { Button, Card, Col, Row, Skeleton, Statistic, Tag } from 'antd';
 import { StatusResult } from '@/components/common/StatusResult';
 import {
   DollarOutlined,
-  IconUsers,
+  TeamOutlined,
   LineChartOutlined,
   BarChartOutlined,
-  IconChartPie,
+  PieChartOutlined,
   PlusOutlined,
   CloseOutlined,
-  IconArrowUp,
-  IconBuildingBank,
-  IconWifi,
-  IconWifiOff,
+  ArrowUpOutlined,
+  BankOutlined,
+  WifiOutlined,
+  DisconnectOutlined,
 } from '@ant-design/icons';
 import { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
 import { useNavigate } from 'react-router-dom';
@@ -114,7 +114,7 @@ export default function Dashboard() {
   const quickActions = [
     { key: 'trading', icon: <LineChartOutlined size={24} stroke={1.5} color="#FFFFFF" />, label: t('dashboard.quickActions.trading'), path: '/trading', color: PRIMARY_GRADIENT },
     { key: 'market', icon: <BarChartOutlined size={24} stroke={1.5} color="#FFFFFF" />, label: t('dashboard.quickActions.market'), path: '/market', color: 'linear-gradient(135deg, #5A6B75 0%, #3D4A52 100%)' },
-    { key: 'analytics', icon: <IconChartPie size={24} stroke={1.5} color="#FFFFFF" />, label: t('dashboard.quickActions.analytics'), path: '/analytics', color: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)' },
+    { key: 'analytics', icon: <PieChartOutlined size={24} stroke={1.5} color="#FFFFFF" />, label: t('dashboard.quickActions.analytics'), path: '/analytics', color: 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)' },
     { key: 'bind', icon: <PlusOutlined size={24} stroke={1.5} color="#FFFFFF" />, label: t('dashboard.quickActions.bindAccount'), path: '/accounts/bind', color: 'linear-gradient(135deg, #00A651 0%, #008C44 100%)' },
     { key: 'close', icon: <CloseOutlined size={24} stroke={1.5} color="#FFFFFF" />, label: t('dashboard.quickActions.closePosition'), path: '/trading', color: 'linear-gradient(135deg, #E53935 0%, #C62828 100%)' },
   ];
@@ -129,7 +129,7 @@ export default function Dashboard() {
           <p className="mt-1" style={{ color: '#8A9AA5' }}>
             {t('dashboard.subtitle')}
             <span className="ml-3 inline-flex items-center gap-1" style={{ fontSize: 12, color: streamConnected ? '#00A651' : '#E53935' }}>
-              {streamConnected ? <IconWifi size={14} /> : <IconWifiOff size={14} />}
+              {streamConnected ? <WifiOutlined size={14} /> : <DisconnectOutlined size={14} />}
               {streamConnected ? t('dashboard.streamLive') : t('dashboard.streamOffline')}
             </span>
           </p>
@@ -168,7 +168,7 @@ export default function Dashboard() {
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(212, 175, 55, 0.1)' }}>
                     <DollarOutlined size={20} stroke={1.5} color="#D4AF37" />
                   </div>
-                  <IconArrowUp size={16} stroke={1.5} color="#00A651" />
+                  <ArrowUpOutlined size={16} stroke={1.5} color="#00A651" />
                 </div>
                 <Statistic
                   title={<span style={{ color: '#8A9AA5', fontSize: '14px' }}>{t('dashboard.stats.totalEquity')}</span>}
@@ -197,7 +197,7 @@ export default function Dashboard() {
               <div className="stat-card group cursor-pointer">
                 <div className="flex items-center justify-between mb-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(90, 107, 117, 0.1)' }}>
-                    <IconUsers size={20} stroke={1.5} color="#5A6B75" />
+                    <TeamOutlined size={20} stroke={1.5} color="#5A6B75" />
                   </div>
                 </div>
                 <Statistic
@@ -214,9 +214,9 @@ export default function Dashboard() {
                     <LineChartOutlined size={20} stroke={1.5} color="#00A651" />
                   </div>
                   {stats.totalProfit >= 0 ? (
-                    <IconArrowUp size={16} stroke={1.5} color="#00A651" />
+                    <ArrowUpOutlined size={16} stroke={1.5} color="#00A651" />
                   ) : (
-                    <IconArrowUp size={16} stroke={1.5} color="#E53935" style={{ transform: 'rotate(180deg)' }} />
+                    <ArrowUpOutlined size={16} stroke={1.5} color="#E53935" style={{ transform: 'rotate(180deg)' }} />
                   )}
                 </div>
                 <Statistic
@@ -286,7 +286,7 @@ export default function Dashboard() {
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: item.mtType === 'MT4' ? 'rgba(33, 150, 243, 0.1)' : 'rgba(212, 175, 55, 0.1)' }}>
-                        <IconBuildingBank size={20} stroke={1.5} color={item.mtType === 'MT4' ? '#2196F3' : '#D4AF37'} />
+                        <BankOutlined size={20} stroke={1.5} color={item.mtType === 'MT4' ? '#2196F3' : '#D4AF37'} />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">

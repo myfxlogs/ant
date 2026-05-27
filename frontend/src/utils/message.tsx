@@ -75,6 +75,22 @@ export const showWarning = (content: string, duration: number = 3) => {
 };
 
 /**
+ * 显示居中的信息提示
+ * @param content 信息提示内容
+ * @param duration 持续时间（秒）
+ */
+export const showInfo = (content: string, duration: number = 2) => {
+  return message.info({
+    content: translateMaybeI18nKey(content, content),
+    duration,
+    style: {
+      textAlign: 'center',
+    },
+    className: 'centered-message',
+  });
+};
+
+/**
  * 显示居中的成功提示（Modal 样式）
  * @param title 标题
  * @param content 内容

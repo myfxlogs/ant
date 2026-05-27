@@ -43,8 +43,10 @@ type MTAccount struct {
 	IsInvestor      bool       `json:"is_investor" db:"is_investor"`
 	AccountStatus   string     `json:"account_status" db:"account_status"`
 	StreamStatus    string     `json:"stream_status" db:"stream_status"`
-	MTToken         string     `json:"-" db:"mt_token"`
-	LastError       string     `json:"last_error" db:"last_error"`
+	MTToken              string     `json:"-" db:"mt_token"`
+	BrokerMarginCallPct  float64    `json:"broker_margin_call_pct" db:"broker_margin_call_pct"`
+	BrokerStopOutPct     float64    `json:"broker_stop_out_pct" db:"broker_stop_out_pct"`
+	LastError            string     `json:"last_error" db:"last_error"`
 	LastConnectedAt *time.Time `json:"last_connected_at" db:"last_connected_at"`
 	LastCheckedAt   *time.Time `json:"last_checked_at" db:"last_checked_at"`
 	CreatedAt       time.Time  `json:"created_at" db:"created_at"`

@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import { Layout, Menu, Avatar, Dropdown, Drawer } from 'antd';
 import {
   DashboardOutlined,
-  IconUsers,
-  IconBuildingBank,
+  TeamOutlined,
+  BankOutlined,
   LineChartOutlined,
-  IconFileText,
+  FileTextOutlined,
   SettingOutlined,
   SafetyOutlined,
-  IconLogout,
+  LogoutOutlined,
   MenuOutlined,
   ArrowLeftOutlined,
 } from '@ant-design/icons';
@@ -41,10 +41,10 @@ export default function AdminLayout() {
 
   const menuItems = [
     { key: '/admin', icon: <DashboardOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.dashboard') },
-    { key: '/admin/users', icon: <IconUsers size={20} stroke={1.5} />, label: t('admin.sidebar.userManagement') },
-    { key: '/admin/accounts', icon: <IconBuildingBank size={20} stroke={1.5} />, label: t('admin.sidebar.accountManagement') },
+    { key: '/admin/users', icon: <TeamOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.userManagement') },
+    { key: '/admin/accounts', icon: <BankOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.accountManagement') },
     { key: '/admin/trading', icon: <LineChartOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.tradingMonitor') },
-    { key: '/admin/logs', icon: <IconFileText size={20} stroke={1.5} />, label: t('admin.sidebar.operationLogs') },
+    { key: '/admin/logs', icon: <FileTextOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.operationLogs') },
     { key: '/admin/config', icon: <SettingOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.systemConfig') },
     { key: '/admin/jurisdiction', icon: <SafetyOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.jurisdiction') },
     { key: '/admin/sre', icon: <SafetyOutlined size={20} stroke={1.5} />, label: 'SRE 控制' },
@@ -53,7 +53,7 @@ export default function AdminLayout() {
   const userMenuItems = [
     { key: 'back', icon: <ArrowLeftOutlined size={18} stroke={1.5} />, label: t('admin.header.backToUser') },
     { type: 'divider' as const },
-    { key: 'logout', icon: <IconLogout size={18} stroke={1.5} />, label: t('admin.header.logout'), danger: true },
+    { key: 'logout', icon: <LogoutOutlined size={18} stroke={1.5} />, label: t('admin.header.logout'), danger: true },
   ];
 
   const handleUserMenuClick = ({ key }: { key: string }) => {
@@ -174,7 +174,7 @@ export default function AdminLayout() {
             >
               <div className="flex items-center cursor-pointer gap-2 px-2 py-1 rounded-lg transition-colors">
                 <Avatar
-                  icon={<IconUsers size={22} stroke={1.5} />}
+                  icon={<TeamOutlined size={22} stroke={1.5} />}
                   style={{ background: BRAND_GRADIENT }}
                   size="small"
                 />

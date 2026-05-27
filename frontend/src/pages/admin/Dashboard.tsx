@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { Card, Row, Col, Statistic, Table, Tag, Segmented, Empty } from 'antd';
 import { StatusResult } from '@/components/common/StatusResult';
 import {
-  IconUsers,
+  TeamOutlined,
   AuditOutlined,
-  IconBuildingBank,
+  BankOutlined,
   LineChartOutlined,
   RiseOutlined,
   FallOutlined,
@@ -143,7 +143,7 @@ export default function AdminDashboard() {
             <Statistic
               title={t('admin.dashboard.totalUsers')}
               value={stats?.totalUsers || 0}
-              prefix={<IconUsers size={20} stroke={1.5} style={{ color: '#D4AF37' }} />}
+              prefix={<TeamOutlined size={20} stroke={1.5} style={{ color: '#D4AF37' }} />}
             />
           </Card>
         </Col>
@@ -161,7 +161,7 @@ export default function AdminDashboard() {
             <Statistic
               title={t('admin.dashboard.mtAccounts')}
               value={stats?.totalAccounts || 0}
-              prefix={<IconBuildingBank size={20} stroke={1.5} style={{ color: '#1890ff' }} />}
+              prefix={<BankOutlined size={20} stroke={1.5} style={{ color: '#1890ff' }} />}
             />
           </Card>
         </Col>
