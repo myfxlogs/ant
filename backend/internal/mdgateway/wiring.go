@@ -175,6 +175,40 @@ func (c *chMaxCloseTs) MaxCloseTs(ctx context.Context, broker, canonical, period
 	return ts, nil
 }
 
+// loadSingleAccountConfig queries PG for a single account by ID.
+// Returns nil if not found or inactive.
+func loadSingleAccountConfig(ctx context.Context, pg *pgxpool.Pool, accountID string) (*mdtick.AccountConfig, error) {
+	var (
+		id, userID, platform, broker, mtapiHost, mtapiPort, login, brokerHost, server string
+		password, mtToken string
+		symbols           []string
+	)
+	err := pg.QueryRow(ctx, `
+		SELECT id, user_id, platform, broker, mtapi_host, mtapi_port,
+		       login, password, mt_token, broker_host, server,
+		       canonical_subscribed_symbols
+		FROM mt_accounts_v2 WHERE id = $1 AND is_active = true
+	`, accountID).Scan(&id, &userID, &platform, &broker, &mtapiHost, &mtapiPort,
+		&login, &password, &mtToken, &brokerHost, &server, &symbols)
+	if err != nil {
+		return nil, err
+	}
+	return &mdtick.AccountConfig{
+		AccountID:  id,
+		UserID:     userID,
+		Broker:     broker,
+		Platform:   platform,
+		Login:      login,
+		Password:   password,
+		Server:     server,
+		BrokerHost: brokerHost,
+		MtapiHost:  mtapiHost,
+		MtapiPort:  mtapiPort,
+		MtapiToken: mtToken,
+		Symbols:    symbols,
+	}, nil
+}
+
 // pgActiveAccounts implements backfiller.PGActiveAccounts via pgxpool.
 type pgActiveAccounts struct {
 	pool *pgxpool.Pool

@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap"
 
 	antv1 "anttrader/gen/proto/ant/v1"
+	"anttrader/internal/mdgateway"
 )
 
 func TestSearchBroker_FallbackToMock(t *testing.T) {
@@ -27,3 +28,18 @@ func TestSearchBroker_FallbackToMock(t *testing.T) {
 		t.Errorf("expected 1 server, got %d", len(companies[0].Servers))
 	}
 }
+
+func TestSetPublisher(t *testing.T) {
+	srv := &AccountServer{log: zap.NewNop()}
+	pub := mdgateway.NewAccountEventPublisher(nil, zap.NewNop())
+	srv.SetPublisher(pub)
+	if srv.publisher != pub {
+		t.Error("SetPublisher did not set publisher")
+	}
+	// SetPublisher with a nil-safe publisher: no panic.
+	srv.SetPublisher(nil)
+	if srv.publisher != nil {
+		t.Error("expected nil publisher after setting nil")
+	}
+}
+

@@ -288,6 +288,9 @@ func main() {
 	accountServer := user.NewAccountServer(platformSvc, log)
 	// S2.2: wire mtapi broker searcher for real broker discovery.
 	accountServer.SetSearcher(brokersearch.New("", ""))
+	// S2.4: wire NATS account event publisher for Connect/Disconnect/Reconnect.
+	accountEventPub := mdgateway.NewAccountEventPublisher(js, log)
+	accountServer.SetPublisher(accountEventPub)
 	mux.Handle(antv1c.NewAccountServiceHandler(accountServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	mktServer := mktplace.NewMarketServer(platformSvc, marketDataRepo, nc, log)

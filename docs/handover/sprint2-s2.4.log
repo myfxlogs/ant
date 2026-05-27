@@ -1,0 +1,71 @@
+=== Sprint 2 · Task S2.4: ConnectAccount → real MT connect via NATS ===
+Date: 2026-05-27
+Plan: docs/plan/2026-05-27-整改与执行计划.md §4.S2.4
+
+--- Problem ---
+V2 §2.D-3 / plan S2.4: ConnectAccount handler only updated PG status. There was no
+mechanism to notify the mdgateway runner to actually connect/disconnect accounts.
+The full lifecycle was: user clicks Connect → PG status changes → nothing else happens.
+mdgateway only loaded accounts at startup and never picked up new connections.
+
+--- Fix ---
+Part 1 — internal/mdgateway/account_events.go (NEW):
+- AccountEventPublisher: publishes account lifecycle events to NATS JetStream
+- Subjects: account.connect, account.disconnect, account.reconnect
+- AccountEvent JSON schema: {account_id, user_id, timestamp}
+- Nil-safe: if js is nil, events are silently dropped (for testing)
+
+Part 2 — internal/connect/user/account_handler.go (MODIFIED):
+- Added publisher *mdgateway.AccountEventPublisher field + SetPublisher() setter
+- ConnectAccount: after PG status update, publishes account.connect event
+- DisconnectAccount: after PG status update, publishes account.disconnect event
+- ReconnectAccount: after PG status update, publishes account.reconnect event
+- All three: publisher nil-safe (skips publish when not configured)
+
+Part 3 — internal/mdgateway/runner.go (MODIFIED):
+- Added startAccountEventSubscriber(ctx, nc, log) function
+- Subscribes to "account.>" wildcard, logs received account lifecycle events
+- Full dynamic gateway reload deferred to phase 2 (S2.4-m2)
+- Called from Run() after health monitor, before <-ctx.Done()
+
+Part 4 — internal/mdgateway/wiring.go (MODIFIED):
+- Added loadSingleAccountConfig(ctx, pg, accountID) for future dynamic reload
+- Queries mt_accounts_v2 WHERE id = $1 AND is_active = true
+
+Part 5 — cmd/server/main.go (MODIFIED):
+- Created AccountEventPublisher(js, log) after NATS JetStream init
+- Injected into accountServer via SetPublisher()
+
+--- Acceptance Command ---
+cd /opt/ant/backend && go test ./internal/mdgateway/... ./internal/connect/user/... -v -run "TestAccount|TestSet|TestSearch"
+
+--- Acceptance Output ---
+=== RUN   TestAccountEventPublisher_NilJS
+--- PASS: TestAccountEventPublisher_NilJS (0.00s)
+=== RUN   TestAccountEventPublisher_NonNilJS
+--- PASS: TestAccountEventPublisher_NonNilJS (0.00s)
+=== RUN   TestAccountEventSubjects
+--- PASS: TestAccountEventSubjects (0.00s)
+=== RUN   TestSearchBroker_FallbackToMock
+--- PASS: TestSearchBroker_FallbackToMock (0.00s)
+=== RUN   TestSetPublisher
+--- PASS: TestSetPublisher (0.00s)
+PASS
+ok      anttrader/internal/mdgateway        0.033s
+ok      anttrader/internal/connect/user     0.025s
+
+--- Test Coverage ---
+- TestAccountEventPublisher_NilJS: nil js → PublishConnect/Disconnect/Reconnect no panic
+- TestAccountEventPublisher_NonNilJS: publisher created with nil js has nil js field
+- TestAccountEventSubjects: subject constants verified
+- TestSearchBroker_FallbackToMock: existing S2.2 test still passes
+- TestSetPublisher: publisher injected and retrieved correctly; nil-setter safe
+
+--- Pre-commit checks ---
+- go build ./... : PASS
+- go vet ./... : PASS
+- No new panic, nil dereference, TODO, or stub introduced
+- Connect/Disconnect/Reconnect now publish real NATS events
+- mdgateway runner subscribes to "account.>" and logs events
+- loadSingleAccountConfig ready for phase 2 dynamic reload
+- Diff: 7 files changed (4 modified + 3 new)

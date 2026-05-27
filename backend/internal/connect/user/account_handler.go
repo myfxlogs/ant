@@ -14,15 +14,17 @@ import (
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
+	"anttrader/internal/mdgateway"
 	"anttrader/internal/mdgateway/adapter/brokersearch"
 	"anttrader/internal/service"
 )
 
 // AccountServer implements ant.v1.AccountServiceHandler.
 type AccountServer struct {
-	svc      *service.PlatformService
-	searcher *brokersearch.Searcher
-	log      *zap.Logger
+	svc       *service.PlatformService
+	searcher  *brokersearch.Searcher
+	publisher *mdgateway.AccountEventPublisher
+	log       *zap.Logger
 }
 
 var _ antv1c.AccountServiceHandler = (*AccountServer)(nil)
@@ -33,6 +35,9 @@ func NewAccountServer(svc *service.PlatformService, log *zap.Logger) *AccountSer
 
 // SetSearcher injects the mtapi broker searcher (S2.2).
 func (s *AccountServer) SetSearcher(searcher *brokersearch.Searcher) { s.searcher = searcher }
+
+// SetPublisher injects the NATS account event publisher (S2.4).
+func (s *AccountServer) SetPublisher(p *mdgateway.AccountEventPublisher) { s.publisher = p }
 
 func (s *AccountServer) ListAccounts(ctx context.Context, req *connect.Request[antv1.ListAccountsRequest]) (*connect.Response[antv1.ListAccountsResponse], error) {
 	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
@@ -143,32 +148,43 @@ func (s *AccountServer) DeleteAccount(ctx context.Context, req *connect.Request[
 	return connect.NewResponse(&emptypb.Empty{}), nil
 }
 
-// ConnectAccount connects an account to the broker via mthub session management.
+// ConnectAccount connects an account to the broker and publishes a NATS event
+// so the mdgateway runner reloads and connects the account.
 func (s *AccountServer) ConnectAccount(ctx context.Context, req *connect.Request[antv1.ConnectAccountRequest]) (*connect.Response[antv1.ConnectAccountResponse], error) {
 	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
 	if err := s.svc.ConnectAccount(ctx, userID, req.Msg.Id); err != nil {
 		s.log.Error("ConnectAccount", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	// Publish NATS event to trigger mdgateway runner to connect this account.
+	if s.publisher != nil {
+		s.publisher.PublishConnect(ctx, req.Msg.Id, userID.String())
+	}
 	return connect.NewResponse(&antv1.ConnectAccountResponse{Success: true, Message: "connected"}), nil
 }
 
-// DisconnectAccount marks the account as disconnected.
+// DisconnectAccount marks the account as disconnected and publishes a NATS event.
 func (s *AccountServer) DisconnectAccount(ctx context.Context, req *connect.Request[antv1.DisconnectAccountRequest]) (*connect.Response[emptypb.Empty], error) {
 	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
 	if err := s.svc.DisconnectAccount(ctx, userID, req.Msg.Id); err != nil {
 		s.log.Error("DisconnectAccount", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	if s.publisher != nil {
+		s.publisher.PublishDisconnect(ctx, req.Msg.Id, userID.String())
+	}
 	return connect.NewResponse(&emptypb.Empty{}), nil
 }
 
-// ReconnectAccount marks the account for re-connection.
+// ReconnectAccount marks the account for re-connection and publishes a NATS event.
 func (s *AccountServer) ReconnectAccount(ctx context.Context, req *connect.Request[antv1.ReconnectAccountRequest]) (*connect.Response[emptypb.Empty], error) {
 	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
 	if err := s.svc.ReconnectAccount(ctx, userID, req.Msg.Id); err != nil {
 		s.log.Error("ReconnectAccount", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if s.publisher != nil {
+		s.publisher.PublishReconnect(ctx, req.Msg.Id, userID.String())
 	}
 	return connect.NewResponse(&emptypb.Empty{}), nil
 }

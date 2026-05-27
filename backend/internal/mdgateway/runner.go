@@ -223,6 +223,9 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	// --- Health monitor ---
 	go healthMonitor(ctx, mgr, chWriter, log)
 
+	// --- Account event subscriber (NATS: account.connect/disconnect/reconnect) ---
+	startAccountEventSubscriber(ctx, deps.NATSConn, log)
+
 	// --- Wait for shutdown ---
 	<-ctx.Done()
 	log.Info("mdgateway: shutting down")
@@ -373,4 +376,27 @@ func defaultQuoteSymbols() []string {
 		"BTCUSDm", "ETHUSDm", "XRPUSDm", "SOLUSDm", "BNBUSDm",
 		"EURUSDm", "GBPUSDm", "USDJPYm", "XAUUSDm", "US30m",
 	}
+}
+
+// startAccountEventSubscriber listens for NATS account lifecycle events
+// and logs them. Full dynamic gateway reload is phase 2 (S2.4-m2).
+func startAccountEventSubscriber(ctx context.Context, nc *nats.Conn, log *zap.Logger) {
+	if nc == nil {
+		return
+	}
+	sub, err := nc.Subscribe("account.>", func(m *nats.Msg) {
+		log.Info("mdgateway: account event received",
+			zap.String("subject", m.Subject),
+			zap.String("data", string(m.Data)))
+	})
+	if err != nil {
+		log.Warn("mdgateway: account event subscribe failed", zap.Error(err))
+		return
+	}
+	go func() {
+		<-ctx.Done()
+		sub.Unsubscribe()
+	}()
+	log.Info("mdgateway: account event subscriber started",
+		zap.String("subject", "account.>"))
 }
