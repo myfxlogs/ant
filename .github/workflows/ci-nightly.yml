@@ -27,6 +27,34 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      redis:
+        image: redis:8-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      clickhouse:
+        image: clickhouse/clickhouse-server:24
+        ports: ['9000:9000', '8123:8123']
+        env:
+          CLICKHOUSE_USER: default
+          CLICKHOUSE_PASSWORD: ''
+          CLICKHOUSE_DB: ant
+        options: >-
+          --health-cmd "clickhouse-client --query 'SELECT 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      nats:
+        image: nats:2.10-alpine
+        ports: ['4222:4222']
+        options: >-
+          --health-cmd "nats server check connection"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -42,9 +70,24 @@ jobs:
           DB_USER: ant
           DB_PASSWORD: ant_test
           DB_NAME: ant
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          CH_HOST: localhost
+          CH_PORT: 9000
+          CH_USER: default
+          CH_PASSWORD: ''
+          CH_DATABASE: ant
+          NATS_URL: nats://localhost:4222
       - name: Coverage summary
         run: |
           go tool cover -func=coverage.out | tail -1
+          COV=$(go tool cover -func=coverage.out | tail -1 | awk '{print $3}' | sed 's/%//')
+          THRESHOLD=60
+          if awk "BEGIN {exit !($COV < $THRESHOLD)}"; then
+            echo "::warning::Nightly coverage ${COV}% is below threshold ${THRESHOLD}%"
+          else
+            echo "Nightly coverage ${COV}% ≥ ${THRESHOLD}% — PASS"
+          fi
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
@@ -57,6 +100,27 @@ jobs:
     name: Data foundation (md-doctor + slo-report)
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    services:
+      clickhouse:
+        image: clickhouse/clickhouse-server:24
+        ports: ['9000:9000', '8123:8123']
+        env:
+          CLICKHOUSE_USER: default
+          CLICKHOUSE_PASSWORD: ''
+          CLICKHOUSE_DB: ant
+        options: >-
+          --health-cmd "clickhouse-client --query 'SELECT 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      nats:
+        image: nats:2.10-alpine
+        ports: ['4222:4222']
+        options: >-
+          --health-cmd "nats server check connection"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -66,3 +130,10 @@ jobs:
           cache-dependency-path: backend/go.sum
       - name: ci-nightly
         run: make ci-nightly
+        env:
+          CH_HOST: localhost
+          CH_PORT: 9000
+          CH_USER: default
+          CH_PASSWORD: ''
+          CH_DATABASE: ant
+          NATS_URL: nats://localhost:4222

@@ -91,6 +91,15 @@ jobs:
           go tool cover -func=coverage.out | tail -1
           COV=$(go tool cover -func=coverage.out | tail -1 | awk '{print $3}' | sed 's/%//')
           echo "Overall coverage: ${COV}%"
+      - name: Coverage gate (≥60%)
+        run: |
+          COV=$(go tool cover -func=coverage.out | tail -1 | awk '{print $3}' | sed 's/%//')
+          THRESHOLD=60
+          if awk "BEGIN {exit !($COV < $THRESHOLD)}"; then
+            echo "::error::Coverage ${COV}% is below threshold ${THRESHOLD}%"
+            exit 1
+          fi
+          echo "Coverage ${COV}% ≥ ${THRESHOLD}% — PASS"
       - name: go build
         run: go build ./...
       - name: go build cmd/server

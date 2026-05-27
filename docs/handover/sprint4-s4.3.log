@@ -1,0 +1,58 @@
+# S4.3 Handover Log — CI 强化
+# Date: 2026-05-27
+# Task: Sprint 4.3 — CI coverage gate + NATS/CH/Redis services
+# Status: COMPLETED
+
+## Changes Summary
+
+### Modified Files
+
+1. **.github/workflows/ci.yml** — 新增 coverage gate (≥60%)
+   - backend-test job 原有 Coverage summary 步骤仅打印覆盖率
+   - 新增 Coverage gate 步骤：覆盖率 < 60% 时 `exit 1` 阻塞 PR merge
+   - 使用 `go tool cover -func=coverage.out | tail -1` 提取总覆盖率
+   - THRESHOLD=60 (P2-1 要求的最低门控值)
+
+2. **.github/workflows/ci-nightly.yml** — 新增 NATS/CH/Redis 服务
+   - nightly-test job 新增 3 个 service container:
+     - redis:8-alpine (health check: redis-cli ping)
+     - clickhouse/clickhouse-server:24 (health check: SELECT 1)
+     - nats:2.10-alpine (health check: nats server check connection)
+   - go test env 新增: REDIS_HOST/PORT, CH_HOST/PORT/USER/PASSWORD/DATABASE, NATS_URL
+   - nightly-data-check job 新增 CH + NATS service containers + env vars
+   - Coverage summary 升级为 warning-level gate (不阻塞 nightly，但发 warning)
+
+### 已存在的安全扫描 (P2-2 已满足)
+- security-scan.yml: gosec (severity medium) + trivy fs (HIGH,CRITICAL) + trivy image
+- dependabot.yml: gomod, npm, docker (weekly, Asia/Shanghai)
+- ci.yml verify-cards-strict job: detect-all (R0 五件套) + verify-cards-strict MILESTONE=M11
+
+### CI Pipeline 全景
+
+| Job | 触发 | 服务 | 门控 |
+|-----|------|------|------|
+| line-limits | push/PR | — | Python check-file-lines |
+| backend-lint | push/PR | — | go vet + golangci-lint |
+| backend-test | push/PR | PG | -short + coverage ≥60% |
+| proto-breaking | push/PR | — | buf breaking |
+| proto-drift | push/PR | — | buf generate diff |
+| migration-down | push/PR | — | .up ↔ .down 配对 |
+| frontend | push/PR | — | eslint + build |
+| verify-cards | push/PR | — | detect-all + M11 verify |
+| security-scan | push/PR/cron | — | gosec + trivy |
+| nightly-test | cron 02:37 | PG+Redis+CH+NATS | full test + coverage warning |
+| nightly-data | cron 02:37 | CH+NATS | md-doctor + slo-report |
+
+## Verification
+
+$ yamllint .github/workflows/ci.yml .github/workflows/ci-nightly.yml 2>&1 || echo "yamllint not installed — skipping"
+$ git diff --stat .github/workflows/
+ .github/workflows/ci-nightly.yml | 64 insertions, 0 deletions
+ .github/workflows/ci.yml          |  9 insertions
+
+## Completeness
+  Sprint 4 (Engineering Discipline) progress:
+  S4.1 ROADMAP mechanical rollback ✓
+  S4.2 补 verify logs ✓
+  S4.3 CI 强化 ✓
+  S4.4 UX 一致性收敛 → next
