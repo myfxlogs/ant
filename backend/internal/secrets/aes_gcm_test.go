@@ -13,6 +13,7 @@ import (
 // 3. Encrypt with new version → decrypt succeeds.
 // 4. Old v1 ciphertext still decryptable after rotation.
 func TestRotateKey(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)

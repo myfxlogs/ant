@@ -18,6 +18,7 @@ func closeEnough(a, b float64) bool {
 // ---- FIFO Tests ----
 
 func TestFIFO_SingleOpenFullClose(t *testing.T) {
+	t.Parallel()
 	tracker := NewCostBasisTracker(FIFO)
 	tracker.AddOpening("O1", makeTime("2025-01-01T10:00:00Z"), 1.0, 100.0, "buy")
 
@@ -41,6 +42,7 @@ func TestFIFO_SingleOpenFullClose(t *testing.T) {
 }
 
 func TestFIFO_MultiOpenFIFOOrder(t *testing.T) {
+	t.Parallel()
 	tracker := NewCostBasisTracker(FIFO)
 	tracker.AddOpening("O1", makeTime("2025-01-01T10:00:00Z"), 1.0, 100.0, "buy")
 	tracker.AddOpening("O2", makeTime("2025-01-02T10:00:00Z"), 1.0, 105.0, "buy")
@@ -71,6 +73,7 @@ func TestFIFO_MultiOpenFIFOOrder(t *testing.T) {
 }
 
 func TestFIFO_PartialCloseThenRemaining(t *testing.T) {
+	t.Parallel()
 	tracker := NewCostBasisTracker(FIFO)
 	tracker.AddOpening("O1", makeTime("2025-01-01T10:00:00Z"), 2.0, 100.0, "buy")
 
@@ -100,6 +103,7 @@ func TestFIFO_PartialCloseThenRemaining(t *testing.T) {
 }
 
 func TestFIFO_CloseMoreThanOpen(t *testing.T) {
+	t.Parallel()
 	tracker := NewCostBasisTracker(FIFO)
 	tracker.AddOpening("O1", makeTime("2025-01-01T10:00:00Z"), 1.0, 100.0, "buy")
 
@@ -118,6 +122,7 @@ func TestFIFO_CloseMoreThanOpen(t *testing.T) {
 }
 
 func TestFIFO_ShortPositions(t *testing.T) {
+	t.Parallel()
 	tracker := NewCostBasisTracker(FIFO)
 	tracker.AddOpening("O1", makeTime("2025-01-01T10:00:00Z"), 1.0, 100.0, "sell")
 
@@ -133,6 +138,7 @@ func TestFIFO_ShortPositions(t *testing.T) {
 }
 
 func TestFIFO_MixedSidesDontCross(t *testing.T) {
+	t.Parallel()
 	tracker := NewCostBasisTracker(FIFO)
 	tracker.AddOpening("O1", makeTime("2025-01-01T10:00:00Z"), 1.0, 100.0, "buy")
 	tracker.AddOpening("O2", makeTime("2025-01-02T10:00:00Z"), 1.0, 95.0, "sell")
@@ -151,6 +157,7 @@ func TestFIFO_MixedSidesDontCross(t *testing.T) {
 }
 
 func TestFIFO_EmptyOpenings(t *testing.T) {
+	t.Parallel()
 	tracker := NewCostBasisTracker(FIFO)
 	lots := tracker.Match("C1", 1.0, 100.0, "sell")
 	if len(lots) != 0 {
@@ -159,6 +166,7 @@ func TestFIFO_EmptyOpenings(t *testing.T) {
 }
 
 func TestFIFO_RealizedPnLMatchesVolume(t *testing.T) {
+	t.Parallel()
 	tracker := NewCostBasisTracker(FIFO)
 	tracker.AddOpening("O1", makeTime("2025-01-01T10:00:00Z"), 3.0, 200.0, "buy")
 
@@ -176,6 +184,7 @@ func TestFIFO_RealizedPnLMatchesVolume(t *testing.T) {
 // ---- LIFO Tests ----
 
 func TestLIFO_NewestMatchedFirst(t *testing.T) {
+	t.Parallel()
 	tracker := NewCostBasisTracker(LIFO)
 	tracker.AddOpening("O1", makeTime("2025-01-01T10:00:00Z"), 1.0, 100.0, "buy")
 	tracker.AddOpening("O2", makeTime("2025-01-02T10:00:00Z"), 1.0, 105.0, "buy")
@@ -202,6 +211,7 @@ func TestLIFO_NewestMatchedFirst(t *testing.T) {
 }
 
 func TestLIFO_PartialCloseAcrossMultiple(t *testing.T) {
+	t.Parallel()
 	tracker := NewCostBasisTracker(LIFO)
 	tracker.AddOpening("O1", makeTime("2025-01-01T10:00:00Z"), 1.0, 100.0, "buy")
 	tracker.AddOpening("O2", makeTime("2025-01-02T10:00:00Z"), 1.0, 105.0, "buy")
@@ -231,6 +241,7 @@ func TestLIFO_PartialCloseAcrossMultiple(t *testing.T) {
 // ---- HIFO Tests ----
 
 func TestHIFO_LongHighestCostFirst(t *testing.T) {
+	t.Parallel()
 	tracker := NewCostBasisTracker(HIFO)
 	tracker.AddOpening("O_low", makeTime("2025-01-01T10:00:00Z"), 1.0, 100.0, "buy")
 	tracker.AddOpening("O_mid", makeTime("2025-01-02T10:00:00Z"), 1.0, 105.0, "buy")
@@ -258,6 +269,7 @@ func TestHIFO_LongHighestCostFirst(t *testing.T) {
 }
 
 func TestHIFO_ShortLowestPriceFirst(t *testing.T) {
+	t.Parallel()
 	tracker := NewCostBasisTracker(HIFO)
 	tracker.AddOpening("S_high", makeTime("2025-01-01T10:00:00Z"), 1.0, 110.0, "sell")
 	tracker.AddOpening("S_mid", makeTime("2025-01-02T10:00:00Z"), 1.0, 105.0, "sell")
@@ -285,6 +297,7 @@ func TestHIFO_ShortLowestPriceFirst(t *testing.T) {
 }
 
 func TestHIFO_SamePriceFallsBackToFIFO(t *testing.T) {
+	t.Parallel()
 	tracker := NewCostBasisTracker(HIFO)
 	tracker.AddOpening("O1", makeTime("2025-01-01T10:00:00Z"), 1.0, 100.0, "buy")
 	tracker.AddOpening("O2", makeTime("2025-01-02T10:00:00Z"), 1.0, 100.0, "buy")
@@ -303,6 +316,7 @@ func TestHIFO_SamePriceFallsBackToFIFO(t *testing.T) {
 // ---- Cross-Method Consistency ----
 
 func TestAllMethods_FullCloseSameResult(t *testing.T) {
+	t.Parallel()
 	// Full close of a single opening produces the same P&L regardless of method.
 	openings := []struct {
 		ticket string
@@ -332,6 +346,7 @@ func TestAllMethods_FullCloseSameResult(t *testing.T) {
 }
 
 func TestAllMethods_DifferentOrdering(t *testing.T) {
+	t.Parallel()
 	opens := []struct {
 		ticket string
 		ts     time.Time
@@ -378,6 +393,7 @@ func TestAllMethods_DifferentOrdering(t *testing.T) {
 }
 
 func TestOpenPositionCount(t *testing.T) {
+	t.Parallel()
 	tracker := NewCostBasisTracker(FIFO)
 	if tracker.OpenPositionCount() != 0 {
 		t.Errorf("OpenPositionCount = %d, want 0", tracker.OpenPositionCount())
@@ -397,6 +413,7 @@ func TestOpenPositionCount(t *testing.T) {
 }
 
 func TestCloseLoss(t *testing.T) {
+	t.Parallel()
 	tracker := NewCostBasisTracker(FIFO)
 	tracker.AddOpening("O1", makeTime("2025-01-01T10:00:00Z"), 1.0, 100.0, "buy")
 

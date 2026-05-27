@@ -7,6 +7,7 @@ import (
 )
 
 func TestAppError_Error(t *testing.T) {
+	t.Parallel()
 	e := New(UserNotFound, fmt.Errorf("user 123 not in db"))
 	got := e.Error()
 	want := "[1001] errors.user_not_found: user 123 not in db"
@@ -16,6 +17,7 @@ func TestAppError_Error(t *testing.T) {
 }
 
 func TestAppError_Error_Nil(t *testing.T) {
+	t.Parallel()
 	e := New(NotFound, nil)
 	got := e.Error()
 	want := "[5] errors.not_found"
@@ -25,6 +27,7 @@ func TestAppError_Error_Nil(t *testing.T) {
 }
 
 func TestAppError_Unwrap(t *testing.T) {
+	t.Parallel()
 	sentinel := fmt.Errorf("original error")
 	e := New(InternalError, sentinel)
 	if !stderrors.Is(e, sentinel) {
@@ -33,6 +36,7 @@ func TestAppError_Unwrap(t *testing.T) {
 }
 
 func TestAppError_Unwrap_Nil(t *testing.T) {
+	t.Parallel()
 	e := New(Forbidden, nil)
 	if e.Unwrap() != nil {
 		t.Error("Unwrap() should return nil when inner error is nil")
@@ -40,10 +44,12 @@ func TestAppError_Unwrap_Nil(t *testing.T) {
 }
 
 func TestAppError_Unwrap_AsType(t *testing.T) {
+	t.Parallel()
 	e := New(InternalError, fmt.Errorf("wrapped"))
 	var appErr *AppError
 	if !stderrors.As(e, &appErr) {
-		t.Fatal("stderrors.As should succeed on *AppError")
+		t.Error("stderrors.As should succeed on *AppError")
+		return
 	}
 	if appErr.Code != InternalError {
 		t.Errorf("expected code %d, got %d", InternalError, appErr.Code)

@@ -30,6 +30,7 @@ func computeResultHash(m *Metrics) string {
 }
 
 func TestBacktestDeterminism(t *testing.T) {
+	t.Parallel()
 	// Create a deterministic bar dataset.
 	bars := make([]Bar, 100)
 	price := 1.0850

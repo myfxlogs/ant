@@ -33,6 +33,7 @@ import (
 //
 // Build tag: e2e. Required env: CH_USER, CH_PASSWORD, CH_DATABASE.
 func TestE2ESmoke(t *testing.T) {
+	t.Parallel()
 	if os.Getenv("CH_USER") == "" {
 		t.Skip("CH_USER not set; e2e smoke needs running CH+NATS docker stack")
 	}

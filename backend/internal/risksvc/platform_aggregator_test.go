@@ -5,6 +5,7 @@ import (
 )
 
 func TestPlatformAggregator_NetExposure(t *testing.T) {
+	t.Parallel()
 	a := NewPlatformAggregator()
 
 	// Account 1: long 0.1 EURUSD
@@ -29,6 +30,7 @@ func TestPlatformAggregator_NetExposure(t *testing.T) {
 }
 
 func TestPlatformAggregator_MultipleSymbols(t *testing.T) {
+	t.Parallel()
 	a := NewPlatformAggregator()
 
 	a.UpdatePosition("acc-1", &AggregatorPosition{Canonical: "EURUSD", NetVolume: 0.2, Notional: 217000, Margin: 2170})
@@ -54,6 +56,7 @@ func TestPlatformAggregator_MultipleSymbols(t *testing.T) {
 }
 
 func TestPlatformAggregator_ClearAccount(t *testing.T) {
+	t.Parallel()
 	a := NewPlatformAggregator()
 	a.UpdatePosition("acc-1", &AggregatorPosition{Canonical: "EURUSD", NetVolume: 0.1, Notional: 108500})
 	a.ClearAccount("acc-1")
@@ -68,6 +71,7 @@ func TestPlatformAggregator_ClearAccount(t *testing.T) {
 }
 
 func TestPlatformAggregator_BrokerLimits(t *testing.T) {
+	t.Parallel()
 	a := NewPlatformAggregator()
 	a.UpdatePosition("acc-1", &AggregatorPosition{Canonical: "EURUSD", NetVolume: 0.1, Notional: 108500, Margin: 1085})
 

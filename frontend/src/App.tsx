@@ -64,11 +64,10 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user } = useAuthStore();
-  const adminRoles = ['super_admin', 'operation', 'customer_service', 'audit'];
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-  if (!user?.role || !adminRoles.includes(user.role)) {
+  if (!user?.permissions?.includes('admin:view')) {
     return <Navigate to="/" replace />;
   }
   return <>{children}</>;

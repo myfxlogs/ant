@@ -6,6 +6,7 @@ import ai from './ai';
 import analytics from './analytics';
 import logs from './logs';
 import strategy from './strategy';
+import errors from './errors';
 
 const vi = {
   ...base,
@@ -16,6 +17,7 @@ const vi = {
   ...analytics,
   ...logs,
   ...strategy,
+  ...errors,
 } as const;
 
 export default vi;

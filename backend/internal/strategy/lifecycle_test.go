@@ -40,6 +40,7 @@ func (s *testStrategy) Restore(state []byte) error {
 }
 
 func TestBaseStrategy_Defaults(t *testing.T) {
+	t.Parallel()
 	b := NewBaseStrategy("default", "0.1.0")
 	if b.Name() != "default" {
 		t.Fatalf("name: want default, got %s", b.Name())
@@ -80,6 +81,7 @@ func TestBaseStrategy_Defaults(t *testing.T) {
 }
 
 func TestSnapshotStrategy_Roundtrip(t *testing.T) {
+	t.Parallel()
 	ts := newTestStrategy()
 	state, err := SnapshotStrategy(ts, "inst-1", "acc-1", "user-1")
 	if err != nil {
@@ -128,6 +130,7 @@ func TestSnapshotStrategy_Roundtrip(t *testing.T) {
 }
 
 func TestCheckVersionCompatibility(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		old, new string
 		expected VersionCompatibility
@@ -151,6 +154,7 @@ func TestCheckVersionCompatibility(t *testing.T) {
 }
 
 func TestReloader_ValidateUpgrade(t *testing.T) {
+	t.Parallel()
 	old := NewBaseStrategy("test", "1.0.0")
 	r := NewReloader(old)
 
@@ -179,6 +183,7 @@ func TestReloader_ValidateUpgrade(t *testing.T) {
 }
 
 func TestReloader_Reload_MinorBump(t *testing.T) {
+	t.Parallel()
 	old := newTestStrategy()
 	old.BaseStrategy.version = "1.0.0"
 	r := NewReloader(old)
@@ -202,6 +207,7 @@ func TestReloader_Reload_MinorBump(t *testing.T) {
 }
 
 func TestReloader_Reload_MajorBumpRejected(t *testing.T) {
+	t.Parallel()
 	old := newTestStrategy()
 	old.BaseStrategy.version = "1.0.0"
 	r := NewReloader(old)
@@ -220,6 +226,7 @@ func TestReloader_Reload_MajorBumpRejected(t *testing.T) {
 }
 
 func TestStateMetrics_AllFields(t *testing.T) {
+	t.Parallel()
 	m := &StateMetrics{
 		TotalTrades: 100,
 		WinRate:     0.55,
@@ -239,6 +246,7 @@ func TestStateMetrics_AllFields(t *testing.T) {
 }
 
 func TestParseSemver(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		input string
 		major int

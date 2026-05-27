@@ -6,6 +6,7 @@ import (
 )
 
 func TestOrderStateMachine_All15States(t *testing.T) {
+	t.Parallel()
 	all := []OrderState{
 		StateNew, StateValidated, StateRiskApproved, StateSubmitted,
 		StateWorking, StatePartiallyFilled, StateFilled,
@@ -27,6 +28,7 @@ func TestOrderStateMachine_All15States(t *testing.T) {
 }
 
 func TestStateTransitions(t *testing.T) {
+	t.Parallel()
 	valid := []struct {
 		current, next OrderState
 	}{
@@ -74,6 +76,7 @@ func TestStateTransitions(t *testing.T) {
 }
 
 func TestInvalidTransitions(t *testing.T) {
+	t.Parallel()
 	invalid := []struct {
 		current, next OrderState
 	}{
@@ -105,6 +108,7 @@ func TestInvalidTransitions(t *testing.T) {
 }
 
 func TestIsTerminal(t *testing.T) {
+	t.Parallel()
 	terminals := []OrderState{StateFilled, StateCancelled, StateRejected, StateFailed, StateExpired}
 	for _, s := range terminals {
 		if !IsTerminal(s) {
@@ -124,6 +128,7 @@ func TestIsTerminal(t *testing.T) {
 }
 
 func TestTransitionRoundTrip(t *testing.T) {
+	t.Parallel()
 	// Full happy path: NEW → VALIDATED → RISK_APPROVED → SUBMITTED → WORKING → FILLED
 	path := []OrderState{StateNew, StateValidated, StateRiskApproved, StateSubmitted, StateWorking, StateFilled}
 	for i := 1; i < len(path); i++ {
@@ -134,6 +139,7 @@ func TestTransitionRoundTrip(t *testing.T) {
 }
 
 func TestRequotedPath(t *testing.T) {
+	t.Parallel()
 	// Requoted → re-evaluate risk → re-submit
 	path := []OrderState{StateRequoted, StateRiskApproved, StateSubmitted, StateWorking, StateFilled}
 	for i := 1; i < len(path); i++ {
@@ -144,6 +150,7 @@ func TestRequotedPath(t *testing.T) {
 }
 
 func TestSlippageRejectedPath(t *testing.T) {
+	t.Parallel()
 	// SlippageRejected → re-evaluate risk → re-submit
 	path := []OrderState{StateSlippageRejected, StateRiskApproved, StateSubmitted, StateWorking, StateFilled}
 	for i := 1; i < len(path); i++ {
@@ -154,6 +161,7 @@ func TestSlippageRejectedPath(t *testing.T) {
 }
 
 func TestUnknownToReconcilingPath(t *testing.T) {
+	t.Parallel()
 	// Unknown → Reconciling → resolved by reconciliation
 	path := []OrderState{StateUnknown, StateReconciling, StateWorking, StateFilled}
 	for i := 1; i < len(path); i++ {
@@ -164,6 +172,7 @@ func TestUnknownToReconcilingPath(t *testing.T) {
 }
 
 func TestMarginCallPath(t *testing.T) {
+	t.Parallel()
 	// MarginCall → add margin → re-evaluate → re-submit
 	path := []OrderState{StateMarginCall, StateRiskApproved, StateSubmitted, StateWorking, StateFilled}
 	for i := 1; i < len(path); i++ {
@@ -174,6 +183,7 @@ func TestMarginCallPath(t *testing.T) {
 }
 
 func TestSubmittedToUnknownPath(t *testing.T) {
+	t.Parallel()
 	// SUBMITTED → timeout → UNKNOWN → Reconciling → resolved
 	path := []OrderState{StateSubmitted, StateUnknown, StateReconciling, StateFilled}
 	for i := 1; i < len(path); i++ {
@@ -184,6 +194,7 @@ func TestSubmittedToUnknownPath(t *testing.T) {
 }
 
 func TestReconcilingAllResolutions(t *testing.T) {
+	t.Parallel()
 	// Reconciling can resolve to: Working, PartiallyFilled, Filled, Cancelled, Failed, Expired
 	resolutions := []OrderState{StateWorking, StatePartiallyFilled, StateFilled, StateCancelled, StateFailed, StateExpired}
 	for _, r := range resolutions {
@@ -194,6 +205,7 @@ func TestReconcilingAllResolutions(t *testing.T) {
 }
 
 func TestTimeoutTransition(t *testing.T) {
+	t.Parallel()
 	// Not timed out: should stay SUBMITTED.
 	recent := time.Now()
 	next, err := TimeoutTransition(StateSubmitted, recent)
@@ -216,6 +228,7 @@ func TestTimeoutTransition(t *testing.T) {
 }
 
 func TestTimeoutTransition_OnlyFromSubmitted(t *testing.T) {
+	t.Parallel()
 	old := time.Now().Add(-31 * time.Second)
 	_, err := TimeoutTransition(StateWorking, old)
 	if err == nil {
@@ -224,6 +237,7 @@ func TestTimeoutTransition_OnlyFromSubmitted(t *testing.T) {
 }
 
 func TestShouldTimeout(t *testing.T) {
+	t.Parallel()
 	if ShouldTimeout(time.Now()) {
 		t.Fatal("ShouldTimeout should be false for recent time")
 	}

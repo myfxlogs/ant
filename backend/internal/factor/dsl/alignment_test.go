@@ -112,10 +112,7 @@ type AlignmentData struct {
 
 // TestGoDSLAlignment generates alignment data for Python-side comparison.
 func TestGoDSLAlignment(t *testing.T) {
-	if testing.Short() {
-		t.Skip("将在卡片 M10.5-4 中实施: skipping alignment test in short mode")
-	}
-
+	t.Parallel()
 	rng := rand.New(rand.NewSource(42)) // deterministic
 
 	// Generate 100 expressions
@@ -181,6 +178,7 @@ func TestGoDSLAlignment(t *testing.T) {
 
 // TestGoDSLSelfCheck validates the DSL engine against known reference values.
 func TestGoDSLSelfCheck(t *testing.T) {
+	t.Parallel()
 	fields := dsl.FieldIndex{Fields: map[string]int{"close": 0}}
 	c := dsl.NewCompiler(fields, nil)
 

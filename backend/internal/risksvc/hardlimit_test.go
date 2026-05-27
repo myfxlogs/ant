@@ -7,6 +7,7 @@ import (
 )
 
 func TestHardLimit_MarginFloor_Allowed(t *testing.T) {
+	t.Parallel()
 	rule := &MarginFloorRule{FloorRatio: 1.0}
 	req := &HardLimitRequest{
 		Volume:     0.1,
@@ -19,6 +20,7 @@ func TestHardLimit_MarginFloor_Allowed(t *testing.T) {
 }
 
 func TestHardLimit_MarginFloor_Blocked(t *testing.T) {
+	t.Parallel()
 	rule := &MarginFloorRule{FloorRatio: 1.0}
 	req := &HardLimitRequest{
 		Volume:     10.0,
@@ -37,6 +39,7 @@ func TestHardLimit_MarginFloor_Blocked(t *testing.T) {
 }
 
 func TestHardLimit_MarginFloor_DefaultRatio(t *testing.T) {
+	t.Parallel()
 	rule := &MarginFloorRule{} // FloorRatio defaults to 1.0
 	req := &HardLimitRequest{
 		Volume:     0.01,
@@ -49,6 +52,7 @@ func TestHardLimit_MarginFloor_DefaultRatio(t *testing.T) {
 }
 
 func TestHardLimit_ContractExpiry_Spot(t *testing.T) {
+	t.Parallel()
 	rule := &ContractExpiryRule{CoolingOffHours: 24}
 	req := &HardLimitRequest{
 		ContractExpiry: time.Time{}, // zero = spot
@@ -59,6 +63,7 @@ func TestHardLimit_ContractExpiry_Spot(t *testing.T) {
 }
 
 func TestHardLimit_ContractExpiry_FarFuture(t *testing.T) {
+	t.Parallel()
 	rule := &ContractExpiryRule{CoolingOffHours: 24}
 	req := &HardLimitRequest{
 		ContractExpiry: time.Now().Add(30 * 24 * time.Hour), // 30 days away
@@ -69,6 +74,7 @@ func TestHardLimit_ContractExpiry_FarFuture(t *testing.T) {
 }
 
 func TestHardLimit_ContractExpiry_TooClose(t *testing.T) {
+	t.Parallel()
 	rule := &ContractExpiryRule{CoolingOffHours: 24}
 	req := &HardLimitRequest{
 		ContractExpiry: time.Now().Add(1 * time.Hour), // 1 hour away
@@ -85,6 +91,7 @@ func TestHardLimit_ContractExpiry_TooClose(t *testing.T) {
 }
 
 func TestHardLimit_ContractExpiry_DefaultWindow(t *testing.T) {
+	t.Parallel()
 	rule := &ContractExpiryRule{} // defaults to 24h
 	req := &HardLimitRequest{
 		ContractExpiry: time.Now().Add(23 * time.Hour), // within 24h
@@ -95,6 +102,7 @@ func TestHardLimit_ContractExpiry_DefaultWindow(t *testing.T) {
 }
 
 func TestHardLimitEvaluator_AllPass(t *testing.T) {
+	t.Parallel()
 	e := NewHardLimitEvaluator(
 		&MarginFloorRule{FloorRatio: 1.0},
 		&ContractExpiryRule{CoolingOffHours: 24},
@@ -111,6 +119,7 @@ func TestHardLimitEvaluator_AllPass(t *testing.T) {
 }
 
 func TestHardLimitEvaluator_FirstBlocks(t *testing.T) {
+	t.Parallel()
 	e := NewHardLimitEvaluator(
 		&MarginFloorRule{FloorRatio: 1.0},
 		&ContractExpiryRule{CoolingOffHours: 24},
@@ -133,6 +142,7 @@ func TestHardLimitEvaluator_FirstBlocks(t *testing.T) {
 }
 
 func TestHardLimit_KycJurisdiction_Name(t *testing.T) {
+	t.Parallel()
 	rule := &KycJurisdictionRule{}
 	if rule.Name() != "kyc_jurisdiction" {
 		t.Fatalf("expected kyc_jurisdiction, got %s", rule.Name())
@@ -140,6 +150,7 @@ func TestHardLimit_KycJurisdiction_Name(t *testing.T) {
 }
 
 func TestHardLimit_KillSwitch_Name(t *testing.T) {
+	t.Parallel()
 	rule := &KillSwitchRule{}
 	if rule.Name() != "kill_switch" {
 		t.Fatalf("expected kill_switch, got %s", rule.Name())

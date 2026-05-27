@@ -8,6 +8,7 @@ import (
 )
 
 func TestLoadDefaults(t *testing.T) {
+	t.Parallel()
 	cfg := Load()
 
 	assert.Equal(t, "postgres", cfg.DBHost)
@@ -113,6 +114,7 @@ func TestLoadFromEnv(t *testing.T) {
 }
 
 func TestValidateMissingJWT(t *testing.T) {
+	t.Parallel()
 	cfg := Load()
 	err := cfg.Validate()
 	require.Error(t, err)

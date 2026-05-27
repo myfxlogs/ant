@@ -8,6 +8,7 @@ import (
 )
 
 func TestEnvelopeRoundTrip(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -48,6 +49,7 @@ func TestEnvelopeRoundTrip(t *testing.T) {
 }
 
 func TestEnvelopeDecryptLegacy(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -84,6 +86,7 @@ func TestEnvelopeDecryptLegacy(t *testing.T) {
 }
 
 func TestEnvelopeReencrypt(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -119,6 +122,7 @@ func TestEnvelopeReencrypt(t *testing.T) {
 }
 
 func TestEnvelopeDecryptWrongPurpose(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -146,6 +150,7 @@ func TestEnvelopeDecryptWrongPurpose(t *testing.T) {
 }
 
 func TestEnvelopeCurrentVersion(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -164,6 +169,7 @@ func TestEnvelopeCurrentVersion(t *testing.T) {
 }
 
 func TestIsLegacyFormat(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name string
 		data []byte
@@ -188,6 +194,7 @@ func TestIsLegacyFormat(t *testing.T) {
 }
 
 func TestMigrateToEnvelope(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -232,6 +239,7 @@ func TestMigrateToEnvelope(t *testing.T) {
 }
 
 func TestMigrateNonLegacyPassthrough(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)

@@ -12,6 +12,7 @@ func closeEnoughAttribution(a, b float64) bool {
 }
 
 func TestPnLAttribution_BuyProfitable(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
@@ -60,6 +61,7 @@ func TestPnLAttribution_BuyProfitable(t *testing.T) {
 }
 
 func TestPnLAttribution_SellProfitable(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
@@ -83,6 +85,7 @@ func TestPnLAttribution_SellProfitable(t *testing.T) {
 }
 
 func TestPnLAttribution_LosingTrade(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
@@ -110,6 +113,7 @@ func TestPnLAttribution_LosingTrade(t *testing.T) {
 }
 
 func TestPnLAttribution_FlatTrade(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
@@ -141,6 +145,7 @@ func TestPnLAttribution_FlatTrade(t *testing.T) {
 }
 
 func TestPnLAttribution_ValidateIdentityHolds(t *testing.T) {
+	t.Parallel()
 	// Validate checks the arithmetic identity:
 	//   NetPnL = GrossPnL - Spread - Slippage - Commission - Swap - Funding
 	// Since NetPnL() is computed from fields, this is tautological for
@@ -173,6 +178,7 @@ func TestPnLAttribution_ValidateIdentityHolds(t *testing.T) {
 }
 
 func TestPnLAttribution_AddAggregation(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
@@ -204,6 +210,7 @@ func TestPnLAttribution_AddAggregation(t *testing.T) {
 }
 
 func TestPnLAttribution_ThreeDimensionsIndependent(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
@@ -241,6 +248,7 @@ func TestPnLAttribution_ThreeDimensionsIndependent(t *testing.T) {
 }
 
 func TestPnLAttribution_SwapScalesWithHoldingDays(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
@@ -259,6 +267,7 @@ func TestPnLAttribution_SwapScalesWithHoldingDays(t *testing.T) {
 }
 
 func TestPnLAttribution_ZeroHoldingDays(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
@@ -281,6 +290,7 @@ func TestPnLAttribution_ZeroHoldingDays(t *testing.T) {
 }
 
 func TestPnLAttribution_BpsConsistency(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
@@ -295,6 +305,7 @@ func TestPnLAttribution_BpsConsistency(t *testing.T) {
 }
 
 func TestPnLAttribution_SmallSize(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
@@ -314,6 +325,7 @@ func TestPnLAttribution_SmallSize(t *testing.T) {
 }
 
 func TestPnLAttribution_ValidateAllCostsNonNegative(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
@@ -335,6 +347,7 @@ func TestPnLAttribution_ValidateAllCostsNonNegative(t *testing.T) {
 }
 
 func TestPnLAttribution_LongHoldingSwap(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
@@ -354,6 +367,7 @@ func TestPnLAttribution_LongHoldingSwap(t *testing.T) {
 }
 
 func TestPnLAttribution_SideIsPreserved(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
@@ -370,6 +384,7 @@ func TestPnLAttribution_SideIsPreserved(t *testing.T) {
 }
 
 func TestPnLAttribution_CostModelAccessor(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 	attr := NewPnLAttributor(fm)
@@ -384,6 +399,7 @@ func TestPnLAttribution_CostModelAccessor(t *testing.T) {
 }
 
 func TestPnLAttribution_ValidateErrorFormat(t *testing.T) {
+	t.Parallel()
 	// Manually construct an attribution to verify Validate passes
 	// and the arithmetic identity holds.
 	a := PnLAttribution{

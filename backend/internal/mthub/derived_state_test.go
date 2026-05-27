@@ -6,6 +6,7 @@ import (
 )
 
 func TestDerivedState_UpdateAndGet(t *testing.T) {
+	t.Parallel()
 	ds := NewDerivedState()
 	accounts := map[string]*AccountDerivedState{
 		"acc-1": {AccountID: "acc-1", GrossPnL: 100, NetPnL: 85, Exposure: 10000, MarginUsed: 100},
@@ -38,6 +39,7 @@ func TestDerivedState_UpdateAndGet(t *testing.T) {
 }
 
 func TestDerivedState_GetAccount(t *testing.T) {
+	t.Parallel()
 	ds := NewDerivedState()
 	accounts := map[string]*AccountDerivedState{
 		"acc-1": {AccountID: "acc-1", GrossPnL: 100, NetPnL: 85},
@@ -59,6 +61,7 @@ func TestDerivedState_GetAccount(t *testing.T) {
 }
 
 func TestDerivedComputer_StartStop(t *testing.T) {
+	t.Parallel()
 	cache := NewStateCache(nil, testLogger())
 	computer := NewDerivedComputer(cache, 100*time.Millisecond)
 	computer.Start()
@@ -75,6 +78,7 @@ func TestDerivedComputer_StartStop(t *testing.T) {
 }
 
 func TestDerivedComputer_DefaultInterval(t *testing.T) {
+	t.Parallel()
 	cache := NewStateCache(nil, testLogger())
 	computer := NewDerivedComputer(cache, 0) // 0 → defaults to 5s
 	if computer.interval != 5*time.Second {

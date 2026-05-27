@@ -8,6 +8,7 @@ import (
 )
 
 func TestTradeEventStore_NilJS(t *testing.T) {
+	t.Parallel()
 	store := NewTradeEventStore(nil)
 	ev := &TradeEvent{
 		EventID:   "ev-001",
@@ -22,6 +23,7 @@ func TestTradeEventStore_NilJS(t *testing.T) {
 }
 
 func TestTradeEvent_JSONRoundTrip(t *testing.T) {
+	t.Parallel()
 	ev := TradeEvent{
 		EventID:       "ev-001",
 		EventType:     TradeEventOrderCreated,
@@ -69,6 +71,7 @@ func TestTradeEvent_JSONRoundTrip(t *testing.T) {
 }
 
 func TestTradeEvent_AllEventTypes(t *testing.T) {
+	t.Parallel()
 	types := []TradeEventType{
 		TradeEventOrderCreated,
 		TradeEventOrderSubmitted,
@@ -102,6 +105,7 @@ func TestTradeEvent_AllEventTypes(t *testing.T) {
 }
 
 func TestTradeEventStore_SubjectFormat(t *testing.T) {
+	t.Parallel()
 	// Verify the subject format is consistent with OMS_EVENTS stream config.
 	subject := "oms.order.acc-test-123"
 	if subject != "oms.order.acc-test-123" {

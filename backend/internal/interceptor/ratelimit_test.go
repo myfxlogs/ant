@@ -12,6 +12,7 @@ import (
 )
 
 func TestNewRateLimitInterceptor(t *testing.T) {
+	t.Parallel()
 	i := NewRateLimitInterceptor(5, true)
 	if i.rateLimit != rate.Limit(5.0/60.0) {
 		t.Errorf("expected rateLimit=%v, got %v", rate.Limit(5.0/60.0), i.rateLimit)
@@ -31,6 +32,7 @@ func TestNewRateLimitInterceptor(t *testing.T) {
 }
 
 func TestRateLimitInterceptor_Disabled(t *testing.T) {
+	t.Parallel()
 	i := NewRateLimitInterceptor(10, false)
 	if i.enabled {
 		t.Error("expected enabled=false")
@@ -38,6 +40,7 @@ func TestRateLimitInterceptor_Disabled(t *testing.T) {
 }
 
 func TestGetLimiter_SameIPReturnsSameLimiter(t *testing.T) {
+	t.Parallel()
 	i := NewRateLimitInterceptor(10, true)
 	lim1 := i.getLimiter("10.0.0.1")
 	lim2 := i.getLimiter("10.0.0.1")
@@ -47,6 +50,7 @@ func TestGetLimiter_SameIPReturnsSameLimiter(t *testing.T) {
 }
 
 func TestGetLimiter_DifferentIPsIndependent(t *testing.T) {
+	t.Parallel()
 	i := NewRateLimitInterceptor(10, true)
 	lim1 := i.getLimiter("10.0.0.1")
 	lim2 := i.getLimiter("10.0.0.2")
@@ -77,6 +81,7 @@ func TestLimiter_BlocksExcess(t *testing.T) {
 }
 
 func TestExtractClientIPFromHeader(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name   string
 		header http.Header
@@ -102,6 +107,7 @@ func TestExtractClientIPFromHeader(t *testing.T) {
 }
 
 func TestRateLimitInterceptor_Cleanup(t *testing.T) {
+	t.Parallel()
 	i := NewRateLimitInterceptor(10, true)
 	i.getLimiter("10.1.1.1")
 
@@ -145,6 +151,7 @@ func TestWrapUnary_NonProtectedPath(t *testing.T) {
 }
 
 func TestWrapUnary_LoginPathRateLimits(t *testing.T) {
+	t.Parallel()
 	// Use a real connect request with a known procedure.
 	// connect.NewRequest doesn't let us set the procedure, so we test via a
 	// real httptest handler instead.

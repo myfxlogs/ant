@@ -1,6 +1,9 @@
 package errors
 
-import "fmt"
+import (
+	"connectrpc.com/connect"
+	"fmt"
+)
 
 const (
 	Success            = 0
@@ -190,4 +193,75 @@ func GetMessage(code int) string {
 		return msg
 	}
 	return errorMessages[UnknownError]
+}
+
+var internalToConnectCode = map[int]connect.Code{
+	UnknownError:       connect.CodeInternal,
+	InvalidParameter:   connect.CodeInvalidArgument,
+	Unauthorized:       connect.CodeUnauthenticated,
+	Forbidden:          connect.CodePermissionDenied,
+	NotFound:           connect.CodeNotFound,
+	InternalError:      connect.CodeInternal,
+	RateLimited:        connect.CodeResourceExhausted,
+	ServiceUnavailable: connect.CodeUnavailable,
+	RequestTimeout:     connect.CodeDeadlineExceeded,
+	UserNotFound:       connect.CodeNotFound,
+	UserAlreadyExists:  connect.CodeAlreadyExists,
+	InvalidPassword:    connect.CodeUnauthenticated,
+	TokenExpired:       connect.CodeUnauthenticated,
+	TokenInvalid:       connect.CodeUnauthenticated,
+	TokenMissing:       connect.CodeUnauthenticated,
+	UserDisabled:       connect.CodePermissionDenied,
+	EmailNotVerified:   connect.CodePermissionDenied,
+	PasswordTooWeak:    connect.CodeInvalidArgument,
+	AccountNotFound:    connect.CodeNotFound,
+	AccountAlreadyBound:    connect.CodeAlreadyExists,
+	AccountConnectionFailed: connect.CodeUnavailable,
+	AccountAuthFailed:      connect.CodeUnauthenticated,
+	AccountTimeout:         connect.CodeDeadlineExceeded,
+	AccountLimitExceeded:   connect.CodeResourceExhausted,
+	InvalidAccountType:     connect.CodeInvalidArgument,
+	OrderNotFound:          connect.CodeNotFound,
+	OrderRejected:          connect.CodeFailedPrecondition,
+	InsufficientMargin:     connect.CodeFailedPrecondition,
+	MarketClosed:           connect.CodeUnavailable,
+	InvalidOrderType:       connect.CodeInvalidArgument,
+	InvalidVolume:          connect.CodeInvalidArgument,
+	InvalidPrice:           connect.CodeInvalidArgument,
+	OrderTimeout:           connect.CodeDeadlineExceeded,
+	PositionNotFound:       connect.CodeNotFound,
+	CannotClosePosition:    connect.CodeFailedPrecondition,
+	CannotModifyOrder:      connect.CodeFailedPrecondition,
+	SymbolNotFound:         connect.CodeNotFound,
+	NoMarketData:           connect.CodeUnavailable,
+	SubscriptionFailed:     connect.CodeInternal,
+	QuoteNotAvailable:      connect.CodeUnavailable,
+	HistoryNotAvailable:    connect.CodeUnavailable,
+	InvalidTimeframe:       connect.CodeInvalidArgument,
+	InvalidTimeRange:       connect.CodeInvalidArgument,
+	AnalyticsNotAvailable:  connect.CodeUnavailable,
+	ReportGenerationFailed: connect.CodeInternal,
+	InvalidDateRange:       connect.CodeInvalidArgument,
+	InsufficientData:       connect.CodeInvalidArgument,
+	AdminAccessDenied:      connect.CodePermissionDenied,
+	OperationForbidden:     connect.CodePermissionDenied,
+	AuditLogNotFound:       connect.CodeNotFound,
+	BrokerNotFound:         connect.CodeNotFound,
+	BrokerServerUnavailable: connect.CodeUnavailable,
+}
+
+// ToConnectError converts an AppError into a connect.Error.
+// The AppError.Message (which is an i18n key) is passed as the connect error message
+// so the frontend can translate it.
+func ToConnectError(appErr *AppError) *connect.Error {
+	code, ok := internalToConnectCode[appErr.Code]
+	if !ok {
+		code = connect.CodeInternal
+	}
+	msg := appErr.Message
+	if msg == "" {
+		msg = errorMessages[UnknownError]
+	}
+	connectErr := connect.NewError(code, fmt.Errorf("%s", msg))
+	return connectErr
 }

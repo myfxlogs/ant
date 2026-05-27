@@ -37,6 +37,7 @@ func testConfig() clickhouse.Config {
 }
 
 func TestConnect_Success(t *testing.T) {
+	t.Parallel()
 	skipIfNoClickHouse(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -49,6 +50,7 @@ func TestConnect_Success(t *testing.T) {
 }
 
 func TestConnect_InvalidAddr(t *testing.T) {
+	t.Parallel()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -59,6 +61,7 @@ func TestConnect_InvalidAddr(t *testing.T) {
 }
 
 func TestConnect_EmptyAddr(t *testing.T) {
+	t.Parallel()
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
@@ -68,6 +71,7 @@ func TestConnect_EmptyAddr(t *testing.T) {
 }
 
 func TestPing_Success(t *testing.T) {
+	t.Parallel()
 	skipIfNoClickHouse(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -81,6 +85,7 @@ func TestPing_Success(t *testing.T) {
 }
 
 func TestPing_NotConnected(t *testing.T) {
+	t.Parallel()
 	client := &clickhouse.Client{}
 	err := client.Ping(context.Background())
 	assert.Error(t, err)
@@ -88,6 +93,7 @@ func TestPing_NotConnected(t *testing.T) {
 }
 
 func TestPrepareBatch_Success(t *testing.T) {
+	t.Parallel()
 	skipIfNoClickHouse(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -120,6 +126,7 @@ func TestPrepareBatch_Success(t *testing.T) {
 }
 
 func TestClose(t *testing.T) {
+	t.Parallel()
 	skipIfNoClickHouse(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

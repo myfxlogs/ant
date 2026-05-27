@@ -28,6 +28,7 @@ func testConfig() nats.Config {
 }
 
 func TestConnect_Success(t *testing.T) {
+	t.Parallel()
 	skipIfNoNATS(t)
 	client, err := nats.Connect(context.Background(), testConfig())
 	require.NoError(t, err)
@@ -39,12 +40,14 @@ func TestConnect_Success(t *testing.T) {
 }
 
 func TestConnect_EmptyURL(t *testing.T) {
+	t.Parallel()
 	_, err := nats.Connect(context.Background(), nats.Config{})
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "URL is required")
 }
 
 func TestConnect_InvalidURL(t *testing.T) {
+	t.Parallel()
 	_, err := nats.Connect(context.Background(), nats.Config{
 		URL: "nats://nonexistent:9999",
 	})
@@ -52,6 +55,7 @@ func TestConnect_InvalidURL(t *testing.T) {
 }
 
 func TestEnsureStream_NewStream(t *testing.T) {
+	t.Parallel()
 	skipIfNoNATS(t)
 	client, err := nats.Connect(context.Background(), testConfig())
 	require.NoError(t, err)
@@ -72,6 +76,7 @@ func TestEnsureStream_NewStream(t *testing.T) {
 }
 
 func TestEnsureStream_Idempotent(t *testing.T) {
+	t.Parallel()
 	skipIfNoNATS(t)
 	client, err := nats.Connect(context.Background(), testConfig())
 	require.NoError(t, err)
@@ -95,6 +100,7 @@ func TestEnsureStream_Idempotent(t *testing.T) {
 }
 
 func TestEnsureStream_ConfigMismatch(t *testing.T) {
+	t.Parallel()
 	skipIfNoNATS(t)
 	client, err := nats.Connect(context.Background(), testConfig())
 	require.NoError(t, err)
@@ -125,6 +131,7 @@ func TestEnsureStream_ConfigMismatch(t *testing.T) {
 }
 
 func TestEnsureAllStreams(t *testing.T) {
+	t.Parallel()
 	skipIfNoNATS(t)
 	client, err := nats.Connect(context.Background(), testConfig())
 	require.NoError(t, err)
@@ -149,6 +156,7 @@ func TestEnsureAllStreams(t *testing.T) {
 }
 
 func TestIsConnected(t *testing.T) {
+	t.Parallel()
 	skipIfNoNATS(t)
 	client, err := nats.Connect(context.Background(), testConfig())
 	require.NoError(t, err)

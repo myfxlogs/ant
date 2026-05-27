@@ -42,6 +42,7 @@ func getTestRedis(t *testing.T) *goredis.Client {
 }
 
 func TestThreeLayerIdempotency_FirstCall(t *testing.T) {
+	t.Parallel()
 	pg := getTestPG(t)
 	redis := getTestRedis(t)
 	g := NewThreeLayerGuard(pg, redis)
@@ -59,6 +60,7 @@ func TestThreeLayerIdempotency_FirstCall(t *testing.T) {
 }
 
 func TestThreeLayerIdempotency_DuplicateCall(t *testing.T) {
+	t.Parallel()
 	pg := getTestPG(t)
 	redis := getTestRedis(t)
 	g := NewThreeLayerGuard(pg, redis)
@@ -89,6 +91,7 @@ func TestThreeLayerIdempotency_DuplicateCall(t *testing.T) {
 }
 
 func TestThreeLayerIdempotency_Confirm(t *testing.T) {
+	t.Parallel()
 	pg := getTestPG(t)
 	redis := getTestRedis(t)
 	g := NewThreeLayerGuard(pg, redis)
@@ -118,6 +121,7 @@ func TestThreeLayerIdempotency_Confirm(t *testing.T) {
 }
 
 func TestThreeLayerIdempotency_TTL_96Hours(t *testing.T) {
+	t.Parallel()
 	pg := getTestPG(t)
 	redis := getTestRedis(t)
 	g := NewThreeLayerGuard(pg, redis)
@@ -141,6 +145,7 @@ func TestThreeLayerIdempotency_TTL_96Hours(t *testing.T) {
 }
 
 func TestThreeLayerIdempotency_Concurrent(t *testing.T) {
+	t.Parallel()
 	pg := getTestPG(t)
 	redis := getTestRedis(t)
 	key := idemKey("acc-int-conc", "client-int-conc")
@@ -178,6 +183,7 @@ func TestThreeLayerIdempotency_Concurrent(t *testing.T) {
 }
 
 func TestThreeLayerIdempotency_CrossWeekend(t *testing.T) {
+	t.Parallel()
 	// Simulates the G7 holiday scenario: key must survive from
 	// Friday 17:00 EST to Tuesday 09:00 EST (~88h).
 	// Our 96h TTL provides sufficient coverage.
@@ -205,6 +211,7 @@ func TestThreeLayerIdempotency_CrossWeekend(t *testing.T) {
 }
 
 func TestThreeLayerIdempotency_DifferentAccounts(t *testing.T) {
+	t.Parallel()
 	pg := getTestPG(t)
 	redis := getTestRedis(t)
 	g := NewThreeLayerGuard(pg, redis)

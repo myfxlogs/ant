@@ -4,6 +4,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { strategyApi, type StrategyTemplate } from '@/client/strategy';
 import { strategyExperimentApi, type StrategyExperiment, type StrategyExperimentCandidate } from '@/client/strategyExperiment';
 import { jobApi, type JobEvent } from '@/client/job';
+import { useRpcQuery } from '@/hooks/useRpcQuery';
 import { showError, showSuccess } from '@/utils/message';
 import { useTranslation } from 'react-i18next';
 
@@ -55,63 +56,36 @@ function JobEventStreamCard({ jobId, events, t }: { jobId?: string; events: JobE
 
 export default function StrategyExperimentPage() {
   const { t } = useTranslation();
-  const [templates, setTemplates] = useState<StrategyTemplate[]>([]);
-  const [experiments, setExperiments] = useState<StrategyExperiment[]>([]);
-  const [candidates, setCandidates] = useState<StrategyExperimentCandidate[]>([]);
   const [selectedExperimentId, setSelectedExperimentId] = useState('');
   const [loading, setLoading] = useState(false);
-  const [candidateLoading, setCandidateLoading] = useState(false);
   const [jobEvents, setJobEvents] = useState<JobEvent[]>([]);
+
+  const { data: templates = [] } = useRpcQuery(
+    ['strategy', 'templates'],
+    () => strategyApi.listTemplates(),
+  );
+
+  const { data: experiments = [], refetch: refetchExperiments } = useRpcQuery(
+    ['strategy', 'experiments'],
+    () => strategyExperimentApi.list(),
+  );
+
+  const { data: candidates = [], isLoading: candidateLoading } = useRpcQuery(
+    ['strategy', 'experiments', selectedExperimentId, 'candidates'],
+    () => strategyExperimentApi.listCandidates(selectedExperimentId),
+    { enabled: !!selectedExperimentId },
+  );
+
+  useEffect(() => {
+    if (!selectedExperimentId && experiments.length > 0) {
+      setSelectedExperimentId(experiments[0].id);
+    }
+  }, [experiments, selectedExperimentId]);
 
   const selectedExperiment = useMemo(
     () => experiments.find(item => item.id === selectedExperimentId),
     [experiments, selectedExperimentId],
   );
-
-  const loadTemplates = async () => {
-    try {
-      setTemplates(await strategyApi.listTemplates());
-    } catch {
-      showError(t('strategy.experiment.messages.loadTemplatesFailed'));
-    }
-  };
-
-  const loadExperiments = async () => {
-    try {
-      const rows = await strategyExperimentApi.list();
-      setExperiments(rows);
-      if (!selectedExperimentId && rows.length > 0) {
-        setSelectedExperimentId(rows[0].id);
-      }
-    } catch {
-      showError(t('strategy.experiment.messages.loadExperimentsFailed'));
-    }
-  };
-
-  const loadCandidates = async (experimentId: string) => {
-    if (!experimentId) {
-      setCandidates([]);
-      return;
-    }
-    setCandidateLoading(true);
-    try {
-      setCandidates(await strategyExperimentApi.listCandidates(experimentId));
-    } catch {
-      showError(t('strategy.experiment.messages.loadCandidatesFailed'));
-    } finally {
-      setCandidateLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    void loadTemplates();
-    void loadExperiments();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    void loadCandidates(selectedExperimentId);
-  }, [selectedExperimentId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -145,7 +119,7 @@ export default function StrategyExperimentPage() {
         objective: values.objective,
       });
       showSuccess(t('strategy.experiment.messages.candidatesGenerated'));
-      await loadExperiments();
+      await refetchExperiments();
       if (res.experiment?.id) {
         setSelectedExperimentId(res.experiment.id);
       }

@@ -10,6 +10,7 @@ import (
 )
 
 func TestUserLimiter_AllowSignal(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultConfig()
 	l := NewUserLimiter(cfg)
 
@@ -22,6 +23,7 @@ func TestUserLimiter_AllowSignal(t *testing.T) {
 }
 
 func TestUserLimiter_AllowOrder(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultConfig()
 	l := NewUserLimiter(cfg)
 
@@ -31,6 +33,7 @@ func TestUserLimiter_AllowOrder(t *testing.T) {
 }
 
 func TestUserLimiter_AllowCHWrite(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultConfig()
 	l := NewUserLimiter(cfg)
 
@@ -40,6 +43,7 @@ func TestUserLimiter_AllowCHWrite(t *testing.T) {
 }
 
 func TestUserLimiter_LRUEviction(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultConfig()
 	cfg.MaxEntries = 3
 	l := NewUserLimiter(cfg)
@@ -61,6 +65,7 @@ func TestUserLimiter_LRUEviction(t *testing.T) {
 }
 
 func TestUserLimiter_EvictIdle(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultConfig()
 	cfg.MaxEntries = 100
 	cfg.IdleTimeout = 10 * time.Millisecond
@@ -81,6 +86,7 @@ func TestUserLimiter_EvictIdle(t *testing.T) {
 }
 
 func TestUserLimiter_BlockedCounts(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultConfig()
 	l := NewUserLimiter(cfg)
 
@@ -91,6 +97,7 @@ func TestUserLimiter_BlockedCounts(t *testing.T) {
 }
 
 func TestUserLimiter_Concurrent(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultConfig()
 	l := NewUserLimiter(cfg)
 
@@ -114,6 +121,7 @@ func TestUserLimiter_Concurrent(t *testing.T) {
 }
 
 func TestGetUserID_NoAuth(t *testing.T) {
+	t.Parallel()
 	ctx := t.Context()
 	uid := GetUserID(ctx)
 	if uid != "" {
@@ -122,16 +130,19 @@ func TestGetUserID_NoAuth(t *testing.T) {
 }
 
 func TestSpanWithUser_NoSpan(t *testing.T) {
+	t.Parallel()
 	// Should not panic when there's no span in context.
 	SpanWithUser(t.Context(), "user-1")
 }
 
 func TestSpanWithUser_EmptyUserID(t *testing.T) {
+	t.Parallel()
 	// Should be a no-op for empty userID.
 	SpanWithUser(t.Context(), "")
 }
 
 func TestLoggerWithUser_NoAuth(t *testing.T) {
+	t.Parallel()
 	log := zap.NewNop()
 	augmented := LoggerWithUser(t.Context(), log)
 	if augmented != log {
@@ -140,6 +151,7 @@ func TestLoggerWithUser_NoAuth(t *testing.T) {
 }
 
 func TestUserLimiter_SignalRateEnforcement(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultConfig()
 	cfg.SignalPerUserMax = 3
 	l := NewUserLimiter(cfg)
@@ -163,6 +175,7 @@ func TestUserLimiter_SignalRateEnforcement(t *testing.T) {
 }
 
 func TestUserLimiter_OrderRateEnforcement(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultConfig()
 	cfg.OrderPerUserMax = 2
 	l := NewUserLimiter(cfg)
@@ -184,6 +197,7 @@ func TestUserLimiter_OrderRateEnforcement(t *testing.T) {
 }
 
 func TestUserLimiter_CHWritePerUserEnforcement(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultConfig()
 	cfg.CHWritePerUserMax = 1000
 	l := NewUserLimiter(cfg)
@@ -202,6 +216,7 @@ func TestUserLimiter_CHWritePerUserEnforcement(t *testing.T) {
 }
 
 func TestUserLimiter_GlobalCHCeilingEnforcement(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultConfig()
 	cfg.CHWritePerUserMax = 1_000_000 // high per-user, won't hit
 	cfg.GlobalCHCeiling = 500
@@ -221,6 +236,7 @@ func TestUserLimiter_GlobalCHCeilingEnforcement(t *testing.T) {
 }
 
 func TestUserLimiter_GlobalCHCeilingWindowReset(t *testing.T) {
+	t.Parallel()
 	// This test verifies the global ceiling resets when a new second arrives.
 	cfg := DefaultConfig()
 	cfg.CHWritePerUserMax = 1_000_000
@@ -241,6 +257,7 @@ func TestUserLimiter_GlobalCHCeilingWindowReset(t *testing.T) {
 }
 
 func TestUserLimiter_PerUserWindowReset(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultConfig()
 	cfg.SignalPerUserMax = 2
 	l := NewUserLimiter(cfg)
@@ -270,6 +287,7 @@ func TestUserLimiter_PerUserWindowReset(t *testing.T) {
 }
 
 func TestUserLimiter_SeparateLimitsIndependent(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultConfig()
 	cfg.SignalPerUserMax = 1
 	cfg.OrderPerUserMax = 10
@@ -288,6 +306,7 @@ func TestUserLimiter_SeparateLimitsIndependent(t *testing.T) {
 }
 
 func TestUserLimiter_HighConcurrency(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultConfig()
 	cfg.SignalPerUserMax = 5000
 	cfg.OrderPerUserMax = 5000

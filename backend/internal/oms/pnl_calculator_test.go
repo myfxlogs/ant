@@ -8,6 +8,7 @@ import (
 )
 
 func TestPnLCalculator_Buy_Profitable(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 	calc := NewPnLCalculator(fm)
@@ -32,6 +33,7 @@ func TestPnLCalculator_Buy_Profitable(t *testing.T) {
 }
 
 func TestPnLCalculator_Sell_Profitable(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 	calc := NewPnLCalculator(fm)
@@ -48,6 +50,7 @@ func TestPnLCalculator_Sell_Profitable(t *testing.T) {
 }
 
 func TestPnLCalculator_Losing(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 	calc := NewPnLCalculator(fm)
@@ -64,6 +67,7 @@ func TestPnLCalculator_Losing(t *testing.T) {
 }
 
 func TestPnLCalculator_ZeroHoldingDays(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 	calc := NewPnLCalculator(fm)
@@ -79,6 +83,7 @@ func TestPnLCalculator_ZeroHoldingDays(t *testing.T) {
 }
 
 func TestPnLCalculator_GrossNetSeparation(t *testing.T) {
+	t.Parallel()
 	// Verify that Net = Gross - Spread - Commission - Swap - Slippage.
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
@@ -93,6 +98,7 @@ func TestPnLCalculator_GrossNetSeparation(t *testing.T) {
 }
 
 func TestDualTrackPnL(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 	calc := NewPnLCalculator(fm)

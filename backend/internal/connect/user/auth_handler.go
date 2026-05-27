@@ -55,9 +55,13 @@ func (s *AuthServer) Login(ctx context.Context, req *connect.Request[antv1.Login
 	if user.Nickname != nil && *user.Nickname != "" {
 		nickname = *user.Nickname
 	}
+	capTier, perms, _ := s.users.GetCapabilities(ctx, user.ID, user.Role)
 	return connect.NewResponse(&antv1.LoginResponse{
 		AccessToken: token, RefreshToken: token,
-		User: &antv1.User{Id: user.ID.String(), Email: user.Email, Username: nickname},
+		User: &antv1.User{
+			Id: user.ID.String(), Email: user.Email, Username: nickname, Role: user.Role,
+			Permissions: perms, CapabilityTier: int32(capTier),
+		},
 	}), nil
 }
 
@@ -117,8 +121,12 @@ func (s *AuthServer) GetMe(ctx context.Context, req *connect.Request[emptypb.Emp
 	if user.Nickname != nil && *user.Nickname != "" {
 		nickname = *user.Nickname
 	}
+	capTier, perms, _ := s.users.GetCapabilities(ctx, uid, user.Role)
 	return connect.NewResponse(&antv1.GetMeResponse{
-		User: &antv1.User{Id: userID, Email: user.Email, Username: nickname},
+		User: &antv1.User{
+			Id: userID, Email: user.Email, Username: nickname, Role: user.Role,
+			Permissions: perms, CapabilityTier: int32(capTier),
+		},
 	}), nil
 }
 

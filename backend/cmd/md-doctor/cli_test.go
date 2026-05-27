@@ -43,6 +43,7 @@ func runMDD(t *testing.T, bin string, env []string, args ...string) (stdout, std
 // TestMdDoctorHelp verifies the binary prints all 5 subcommands when invoked
 // without arguments. This documents the public CLI surface.
 func TestMdDoctorHelp(t *testing.T) {
+	t.Parallel()
 	bin := buildBinary(t)
 	stdout, _, _ := runMDD(t, bin, nil)
 	for _, want := range []string{"reconcile", "bar-continuity", "canonical-liveness", "dlq-tail", "all"} {
@@ -56,6 +57,7 @@ func TestMdDoctorHelp(t *testing.T) {
 // TestMdDoctorReconcileJSON requires a running CH (default credentials from
 // CH_USER/CH_PASSWORD/CH_DATABASE env). Verifies the reconcile JSON shape.
 func TestMdDoctorReconcileJSON(t *testing.T) {
+	t.Parallel()
 	if os.Getenv("CH_USER") == "" {
 		t.Skip("CH_USER not set; skipping integration test (no CH credentials)")
 	}
@@ -86,6 +88,7 @@ func TestMdDoctorReconcileJSON(t *testing.T) {
 // TestMdDoctorAllSubcommands smoke-tests that every subcommand exits 0
 // (or with a non-fatal failure code <2) on an empty CH. ADR-0010 §3.1.
 func TestMdDoctorAllSubcommands(t *testing.T) {
+	t.Parallel()
 	if os.Getenv("CH_USER") == "" {
 		t.Skip("CH_USER not set; skipping integration test")
 	}

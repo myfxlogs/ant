@@ -6,6 +6,7 @@ import (
 )
 
 func TestKellySizer_PositiveEdge(t *testing.T) {
+	t.Parallel()
 	// p=0.6, b=2.0 → f* = (0.6*2 - 0.4) / 2 = 0.8/2 = 0.4
 	// half-Kelly = 0.2, cap at 0.25, so f=0.2
 	s := &KellyFractionSizer{
@@ -33,6 +34,7 @@ func TestKellySizer_PositiveEdge(t *testing.T) {
 }
 
 func TestKellySizer_NegativeEdge(t *testing.T) {
+	t.Parallel()
 	// p=0.4, b=1.0 → f* = (0.4*1 - 0.6) / 1 = -0.2 → no bet
 	s := &KellyFractionSizer{
 		WinProb:      0.4,
@@ -49,6 +51,7 @@ func TestKellySizer_NegativeEdge(t *testing.T) {
 }
 
 func TestKellySizer_ZeroEdge(t *testing.T) {
+	t.Parallel()
 	// p=0.5, b=1.0 → f* = (0.5*1 - 0.5) / 1 = 0 → no bet
 	s := &KellyFractionSizer{
 		WinProb:      0.5,
@@ -65,6 +68,7 @@ func TestKellySizer_ZeroEdge(t *testing.T) {
 }
 
 func TestKellySizer_MaxCap(t *testing.T) {
+	t.Parallel()
 	// p=0.9, b=5.0 → f* = (0.9*5 - 0.1) / 5 = 4.4/5 = 0.88
 	// half-Kelly = 0.44, but KellyMax cap at 0.25
 	s := &KellyFractionSizer{
@@ -86,6 +90,7 @@ func TestKellySizer_MaxCap(t *testing.T) {
 }
 
 func TestKellySizer_DefaultFraction(t *testing.T) {
+	t.Parallel()
 	s := &KellyFractionSizer{
 		WinProb:      0.6,
 		WinLossRatio: 2.0,
@@ -102,6 +107,7 @@ func TestKellySizer_DefaultFraction(t *testing.T) {
 }
 
 func TestKellySizer_InvalidWinProb(t *testing.T) {
+	t.Parallel()
 	s := &KellyFractionSizer{WinProb: 0, WinLossRatio: 2.0}
 	req := &SizerRequest{Price: 1.0850, Equity: 100000}
 	res, err := s.Size(context.Background(), req)
@@ -114,6 +120,7 @@ func TestKellySizer_InvalidWinProb(t *testing.T) {
 }
 
 func TestComputeKellyMetrics(t *testing.T) {
+	t.Parallel()
 	km := ComputeKellyMetrics(0.6, 2.0)
 	// f* = (0.6*2 - 0.4)/2 = 0.8/2 = 0.4
 	if km.FStar < 0.39 || km.FStar > 0.41 {

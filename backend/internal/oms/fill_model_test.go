@@ -8,6 +8,7 @@ import (
 )
 
 func TestFillModel_Buy_NetHigherThanGross(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 
@@ -24,6 +25,7 @@ func TestFillModel_Buy_NetHigherThanGross(t *testing.T) {
 }
 
 func TestFillModel_Sell_NetLowerThanGross(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 
@@ -37,6 +39,7 @@ func TestFillModel_Sell_NetLowerThanGross(t *testing.T) {
 }
 
 func TestFillModel_Backtest_EnforcesNonZeroCosts(t *testing.T) {
+	t.Parallel()
 	cm := &costsvc.CostModel{
 		Symbol: "TEST", PipSize: 0.0001, PipValue: 10,
 		SpreadPips: 0, CommissionPerLot: 0, CommissionBps: 0, SlippageBps: 0,
@@ -64,6 +67,7 @@ func TestFillModel_Backtest_EnforcesNonZeroCosts(t *testing.T) {
 }
 
 func TestFillModel_ComputeNet(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 
@@ -77,6 +81,7 @@ func TestFillModel_ComputeNet(t *testing.T) {
 }
 
 func TestFillModel_ZeroVolume(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := NewFillModel(cm)
 

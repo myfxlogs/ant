@@ -7,6 +7,7 @@ import (
 )
 
 func TestPipeline_FullPass(t *testing.T) {
+	t.Parallel()
 	capStore := NewCapabilityStore()
 	capStore.Set(&Capability{UserID: "u1", Tier: Tier2LiveLimited})
 
@@ -42,6 +43,7 @@ func TestPipeline_FullPass(t *testing.T) {
 }
 
 func TestPipeline_CapabilityBlocks(t *testing.T) {
+	t.Parallel()
 	capStore := NewCapabilityStore()
 	// u1 defaults to Tier0
 
@@ -58,6 +60,7 @@ func TestPipeline_CapabilityBlocks(t *testing.T) {
 }
 
 func TestPipeline_KillSwitchBlocks(t *testing.T) {
+	t.Parallel()
 	capStore := NewCapabilityStore()
 	capStore.Set(&Capability{UserID: "u1", Tier: Tier3LiveFull, KillSwitchOn: true})
 
@@ -71,6 +74,7 @@ func TestPipeline_KillSwitchBlocks(t *testing.T) {
 }
 
 func TestPipeline_HardLimitBlocks_MarginFloor(t *testing.T) {
+	t.Parallel()
 	capStore := NewCapabilityStore()
 	capStore.Set(&Capability{UserID: "u1", Tier: Tier2LiveLimited})
 
@@ -93,6 +97,7 @@ func TestPipeline_HardLimitBlocks_MarginFloor(t *testing.T) {
 }
 
 func TestPipeline_HardLimitBlocks_ContractExpiry(t *testing.T) {
+	t.Parallel()
 	capStore := NewCapabilityStore()
 	capStore.Set(&Capability{UserID: "u1", Tier: Tier2LiveLimited})
 
@@ -113,6 +118,7 @@ func TestPipeline_HardLimitBlocks_ContractExpiry(t *testing.T) {
 }
 
 func TestPipeline_PlatformLimitsBlocks(t *testing.T) {
+	t.Parallel()
 	capStore := NewCapabilityStore()
 	capStore.Set(&Capability{UserID: "u1", Tier: Tier2LiveLimited})
 
@@ -139,6 +145,7 @@ func TestPipeline_PlatformLimitsBlocks(t *testing.T) {
 }
 
 func TestPipeline_RiskEngineBlocks(t *testing.T) {
+	t.Parallel()
 	capStore := NewCapabilityStore()
 	capStore.Set(&Capability{UserID: "u1", Tier: Tier2LiveLimited})
 
@@ -160,6 +167,7 @@ func TestPipeline_RiskEngineBlocks(t *testing.T) {
 }
 
 func TestPipeline_NoSizer(t *testing.T) {
+	t.Parallel()
 	capStore := NewCapabilityStore()
 	capStore.Set(&Capability{UserID: "u1", Tier: Tier2LiveLimited})
 
@@ -176,6 +184,7 @@ func TestPipeline_NoSizer(t *testing.T) {
 }
 
 func TestPipeline_ZeroLotsFromSizer(t *testing.T) {
+	t.Parallel()
 	capStore := NewCapabilityStore()
 	capStore.Set(&Capability{UserID: "u1", Tier: Tier2LiveLimited})
 
@@ -198,6 +207,7 @@ func TestPipeline_ZeroLotsFromSizer(t *testing.T) {
 }
 
 func TestPipeline_BlockAllocation_MultiAccount(t *testing.T) {
+	t.Parallel()
 	capStore := NewCapabilityStore()
 	capStore.Set(&Capability{UserID: "u1", Tier: Tier2LiveLimited})
 
@@ -233,6 +243,7 @@ func TestPipeline_BlockAllocation_MultiAccount(t *testing.T) {
 }
 
 func TestPipeline_MinimalConfig(t *testing.T) {
+	t.Parallel()
 	sizer := &VolTargetSizer{RiskBudgetPct: 0.01}
 
 	p := NewSignalPipeline(PipelineConfig{Sizer: sizer})
@@ -252,6 +263,7 @@ func TestPipeline_MinimalConfig(t *testing.T) {
 }
 
 func TestPipeline_KellySizerIntegration(t *testing.T) {
+	t.Parallel()
 	capStore := NewCapabilityStore()
 	capStore.Set(&Capability{UserID: "u1", Tier: Tier2LiveLimited})
 

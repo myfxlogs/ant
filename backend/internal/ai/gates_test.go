@@ -8,6 +8,7 @@ import (
 // --- E1: LookAhead Scanner Tests ---
 
 func TestLookAheadScanner_CleanExpression(t *testing.T) {
+	t.Parallel()
 	s := NewLookAheadScanner()
 	result := s.Scan("sma(close, 5) > ema(close, 20)")
 	if !result.Passed {
@@ -16,6 +17,7 @@ func TestLookAheadScanner_CleanExpression(t *testing.T) {
 }
 
 func TestLookAheadScanner_ExplicitFutureIndex(t *testing.T) {
+	t.Parallel()
 	s := NewLookAheadScanner()
 	result := s.Scan("close[t+1] > open")
 	if result.Passed {
@@ -28,6 +30,7 @@ func TestLookAheadScanner_ExplicitFutureIndex(t *testing.T) {
 }
 
 func TestLookAheadScanner_NegativeRefOffset(t *testing.T) {
+	t.Parallel()
 	s := NewLookAheadScanner()
 	result := s.Scan("ref(close, -1) > open")
 	if result.Passed {
@@ -36,6 +39,7 @@ func TestLookAheadScanner_NegativeRefOffset(t *testing.T) {
 }
 
 func TestLookAheadScanner_FutureHighReference(t *testing.T) {
+	t.Parallel()
 	s := NewLookAheadScanner()
 	result := s.Scan("high[t+1] > high")
 	if result.Passed {
@@ -44,6 +48,7 @@ func TestLookAheadScanner_FutureHighReference(t *testing.T) {
 }
 
 func TestLookAheadScanner_PositiveRefOK(t *testing.T) {
+	t.Parallel()
 	s := NewLookAheadScanner()
 	// ref(close, 1) with positive offset = looking at past value (legitimate).
 	// Our scanner only flags negative offsets (future peek).
@@ -54,6 +59,7 @@ func TestLookAheadScanner_PositiveRefOK(t *testing.T) {
 }
 
 func TestLookAheadScanner_ComplexExpression(t *testing.T) {
+	t.Parallel()
 	s := NewLookAheadScanner()
 	// Contains close[t+2] lookahead.
 	result := s.Scan("close[t+2] > sma(close, 5) && volume > 1000")
@@ -63,6 +69,7 @@ func TestLookAheadScanner_ComplexExpression(t *testing.T) {
 }
 
 func TestHasLookahead(t *testing.T) {
+	t.Parallel()
 	if !HasLookahead("close[t+1] > open") {
 		t.Fatal("HasLookahead should detect future reference")
 	}
@@ -74,6 +81,7 @@ func TestHasLookahead(t *testing.T) {
 // --- E2: Walk-Forward + CPCV Tests ---
 
 func TestWalkForward_Passing(t *testing.T) {
+	t.Parallel()
 	// All returns equal → zero variance → Sharpe=0 for both train and test → diff=0 < 1.0.
 	// No drawdowns since cumulative always increases.
 	returns := make([]float64, 500)
@@ -93,6 +101,7 @@ func TestWalkForward_Passing(t *testing.T) {
 }
 
 func TestWalkForward_InsufficientData(t *testing.T) {
+	t.Parallel()
 	returns := make([]float64, 10) // too few returns
 	cfg := DefaultWalkForwardConfig()
 	result := WalkForward(returns, cfg)
@@ -102,6 +111,7 @@ func TestWalkForward_InsufficientData(t *testing.T) {
 }
 
 func TestWalkForward_OverfittingDetected(t *testing.T) {
+	t.Parallel()
 	// Train period has high Sharpe, test period has very low/negative returns.
 	returns := make([]float64, 250)
 	// First half (train): consistently positive.
@@ -124,6 +134,7 @@ func TestWalkForward_OverfittingDetected(t *testing.T) {
 }
 
 func TestCPCV(t *testing.T) {
+	t.Parallel()
 	returns := make([]float64, 252)
 	for i := range returns {
 		returns[i] = 1.0 + float64(i%20)*0.05
@@ -137,6 +148,7 @@ func TestCPCV(t *testing.T) {
 }
 
 func TestCPCV_EmptyReturns(t *testing.T) {
+	t.Parallel()
 	oosSharpe := CPCV([]float64{}, 6)
 	if oosSharpe != 0 {
 		t.Fatalf("empty returns: want 0, got %.4f", oosSharpe)
@@ -146,6 +158,7 @@ func TestCPCV_EmptyReturns(t *testing.T) {
 // --- E3: Deflated Sharpe Ratio Tests ---
 
 func TestDeflatedSharpe_PositiveEdge(t *testing.T) {
+	t.Parallel()
 	// Daily returns with SR ~1.0: mean ~0.0004, std ~0.006.
 	returns := []float64{
 		0.002, -0.003, 0.005, -0.001, 0.004, -0.006, 0.003, 0.001, -0.002, 0.004,
@@ -162,6 +175,7 @@ func TestDeflatedSharpe_PositiveEdge(t *testing.T) {
 }
 
 func TestDeflatedSharpe_N100_Deflates(t *testing.T) {
+	t.Parallel()
 	// Small returns with variance => modest SR. N=100 => DSR < SR.
 	returns := []float64{0.003, -0.002, 0.001, 0.004, -0.001, 0.002, -0.003, 0.001, 0.000, 0.002}
 	moments := ComputeReturnMoments(returns)
@@ -175,6 +189,7 @@ func TestDeflatedSharpe_N100_Deflates(t *testing.T) {
 }
 
 func TestDeflatedSharpe_ZeroSharpe(t *testing.T) {
+	t.Parallel()
 	moments := ReturnMoments{SharpeRatio: 0}
 	dsr, passed := DeflatedSharpe(moments, DefaultDeflatedSharpeConfig())
 	if dsr != 0 || passed {
@@ -183,6 +198,7 @@ func TestDeflatedSharpe_ZeroSharpe(t *testing.T) {
 }
 
 func TestDeflatedSharpe_NegativeSharpe(t *testing.T) {
+	t.Parallel()
 	moments := ReturnMoments{SharpeRatio: -0.5}
 	dsr, passed := DeflatedSharpe(moments, DefaultDeflatedSharpeConfig())
 	if dsr != 0 || passed {
@@ -191,6 +207,7 @@ func TestDeflatedSharpe_NegativeSharpe(t *testing.T) {
 }
 
 func TestDeflatedSharpe_N1_unchanged(t *testing.T) {
+	t.Parallel()
 	returns := []float64{0.002, -0.003, 0.001, 0.004, -0.001, 0.002, -0.002, 0.003, -0.001, 0.001}
 	moments := ComputeReturnMoments(returns)
 	cfg := DefaultDeflatedSharpeConfig()
@@ -204,6 +221,7 @@ func TestDeflatedSharpe_N1_unchanged(t *testing.T) {
 }
 
 func TestComputeReturnMoments(t *testing.T) {
+	t.Parallel()
 	returns := []float64{0.01, -0.005, 0.02, -0.01, 0.015}
 	moments := ComputeReturnMoments(returns)
 	if moments.SharpeRatio == 0 {
@@ -214,6 +232,7 @@ func TestComputeReturnMoments(t *testing.T) {
 }
 
 func TestDeflatedSharpeFromReturns(t *testing.T) {
+	t.Parallel()
 	returns := []float64{0.002, -0.003, 0.001, 0.004, -0.001, 0.002, -0.002, 0.003, -0.001, 0.001}
 	dsr, passed := DeflatedSharpeFromReturns(returns, 1)
 	t.Logf("DSR from returns: %.4f passed=%v", dsr, passed)
@@ -225,6 +244,7 @@ func TestDeflatedSharpeFromReturns(t *testing.T) {
 // --- E4: Paper Gate Tests ---
 
 func TestPaperGate_Passing(t *testing.T) {
+	t.Parallel()
 	metrics := PaperGateMetrics{
 		PaperDays:         14,
 		BacktestNetReturn: 0.10,
@@ -240,6 +260,7 @@ func TestPaperGate_Passing(t *testing.T) {
 }
 
 func TestPaperGate_InsufficientDays(t *testing.T) {
+	t.Parallel()
 	metrics := PaperGateMetrics{
 		PaperDays:      7, // < 14 minimum
 		PaperNetReturn: 0.05,
@@ -254,6 +275,7 @@ func TestPaperGate_InsufficientDays(t *testing.T) {
 }
 
 func TestPaperGate_NegativePnL(t *testing.T) {
+	t.Parallel()
 	metrics := PaperGateMetrics{
 		PaperDays:      14,
 		PaperNetPnL:    -500, // negative P&L
@@ -267,6 +289,7 @@ func TestPaperGate_NegativePnL(t *testing.T) {
 }
 
 func TestPaperGate_RegimeFail(t *testing.T) {
+	t.Parallel()
 	metrics := PaperGateMetrics{
 		PaperDays:         14,
 		BacktestNetReturn: 0.20,
@@ -282,6 +305,7 @@ func TestPaperGate_RegimeFail(t *testing.T) {
 }
 
 func TestPaperGate_TooFewTrades(t *testing.T) {
+	t.Parallel()
 	metrics := PaperGateMetrics{
 		PaperDays:      14,
 		PaperNetPnL:    1000,
@@ -297,6 +321,7 @@ func TestPaperGate_TooFewTrades(t *testing.T) {
 // --- E5: Correlation Gate Tests ---
 
 func TestCorrelationGate_LowCorrelation(t *testing.T) {
+	t.Parallel()
 	newSignals := []SignalDirection{
 		{Timestamp: 1, Direction: 1},
 		{Timestamp: 2, Direction: -1},
@@ -323,6 +348,7 @@ func TestCorrelationGate_LowCorrelation(t *testing.T) {
 }
 
 func TestCorrelationGate_HighCorrelation(t *testing.T) {
+	t.Parallel()
 	// Strongly correlated signals (same direction pattern but with slight noise).
 	signals := make([]SignalDirection, 50)
 	for i := range signals {
@@ -349,6 +375,7 @@ func TestCorrelationGate_HighCorrelation(t *testing.T) {
 }
 
 func TestCorrelationGate_InsufficientObservations(t *testing.T) {
+	t.Parallel()
 	signals := make([]SignalDirection, 10)
 	existing := map[string][]SignalDirection{}
 	cfg := DefaultCorrelationGateConfig()
@@ -360,6 +387,7 @@ func TestCorrelationGate_InsufficientObservations(t *testing.T) {
 }
 
 func TestPearsonCorrelation(t *testing.T) {
+	t.Parallel()
 	x := []float64{1, 2, 3, 4, 5}
 	y := []float64{2, 4, 6, 8, 10}
 	r := pearsonCorrelation(x, y)
@@ -377,6 +405,7 @@ func TestPearsonCorrelation(t *testing.T) {
 // --- E6: Gate Pipeline Tests ---
 
 func TestAIGatePipeline_AllPass(t *testing.T) {
+	t.Parallel()
 	// Cyclic returns with same distribution across all folds.
 	returns := make([]float64, 500)
 	for i := range returns {
@@ -417,6 +446,7 @@ func TestAIGatePipeline_AllPass(t *testing.T) {
 }
 
 func TestAIGatePipeline_LookAheadFails(t *testing.T) {
+	t.Parallel()
 	input := PipelineInput{
 		Expression:   "close[t+1] > open", // lookahead bias
 		DailyReturns: make([]float64, 200),
@@ -432,6 +462,7 @@ func TestAIGatePipeline_LookAheadFails(t *testing.T) {
 }
 
 func TestAIGatePipeline_EmptyExpressionFails(t *testing.T) {
+	t.Parallel()
 	input := PipelineInput{
 		Expression: "", // empty → compliance fails
 	}
@@ -445,6 +476,7 @@ func TestAIGatePipeline_EmptyExpressionFails(t *testing.T) {
 }
 
 func TestAIGatePipeline_OrderIsCorrect(t *testing.T) {
+	t.Parallel()
 	returns := make([]float64, 200)
 	input := PipelineInput{
 		Expression:   "close[t+1] > open", // fails at lookahead
@@ -465,6 +497,7 @@ func TestAIGatePipeline_OrderIsCorrect(t *testing.T) {
 }
 
 func TestPromoteToLive_AllPass(t *testing.T) {
+	t.Parallel()
 	metrics := PaperGateMetrics{
 		PaperDays:      14,
 		PaperNetPnL:    10000,
@@ -478,6 +511,7 @@ func TestPromoteToLive_AllPass(t *testing.T) {
 }
 
 func TestPromoteToLive_MissingDays(t *testing.T) {
+	t.Parallel()
 	metrics := PaperGateMetrics{PaperDays: 7}
 	passed, msg := PromoteToLive(metrics, 0.98, 0.3, DefaultPromoteConditions())
 	if passed {
@@ -486,6 +520,7 @@ func TestPromoteToLive_MissingDays(t *testing.T) {
 }
 
 func TestPromoteToLive_NegativePnL(t *testing.T) {
+	t.Parallel()
 	metrics := PaperGateMetrics{PaperDays: 14, PaperNetPnL: -100}
 	passed, msg := PromoteToLive(metrics, 0.98, 0.3, DefaultPromoteConditions())
 	if passed {
@@ -494,6 +529,7 @@ func TestPromoteToLive_NegativePnL(t *testing.T) {
 }
 
 func TestPromoteToLive_LowDSR(t *testing.T) {
+	t.Parallel()
 	metrics := PaperGateMetrics{PaperDays: 14, PaperNetPnL: 100}
 	passed, msg := PromoteToLive(metrics, 0.80, 0.3, DefaultPromoteConditions())
 	if passed {
@@ -502,6 +538,7 @@ func TestPromoteToLive_LowDSR(t *testing.T) {
 }
 
 func TestPromoteToLive_HighCorrelation(t *testing.T) {
+	t.Parallel()
 	metrics := PaperGateMetrics{PaperDays: 14, PaperNetPnL: 100}
 	passed, msg := PromoteToLive(metrics, 0.98, 0.85, DefaultPromoteConditions())
 	if passed {
@@ -510,6 +547,7 @@ func TestPromoteToLive_HighCorrelation(t *testing.T) {
 }
 
 func TestGateResultsSummary(t *testing.T) {
+	t.Parallel()
 	result := PipelineResult{
 		Passed: false,
 		Gates: []GateStatus{
@@ -525,6 +563,7 @@ func TestGateResultsSummary(t *testing.T) {
 }
 
 func TestComputeSharpe(t *testing.T) {
+	t.Parallel()
 	// Positive returns with variance → positive Sharpe.
 	returns := []float64{2.0, 1.0, 3.0, 1.5, 2.5, 1.0, 3.0, 2.0, 1.5, 2.5}
 	sr := computeSharpe(returns)
@@ -540,6 +579,7 @@ func TestComputeSharpe(t *testing.T) {
 }
 
 func TestComputeMaxDD_Simple(t *testing.T) {
+	t.Parallel()
 	returns := []float64{100, -50, -30, 20, 50}
 	dd := computeMaxDD(returns)
 	if dd < 0 {

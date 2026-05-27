@@ -6,6 +6,7 @@ import (
 )
 
 func TestVaR(t *testing.T) {
+	t.Parallel()
 	returns := []float64{100, -50, 75, -30, 20, -10, 15, -25, 50, -100}
 	cfg := DefaultVaRConfig()
 	result := ComputeVaR(returns, cfg)
@@ -16,6 +17,7 @@ func TestVaR(t *testing.T) {
 }
 
 func TestStressTest(t *testing.T) {
+	t.Parallel()
 	scenarios := PredefinedScenarios()
 	if len(scenarios) != 4 {
 		t.Fatalf("want 4 scenarios, got %d", len(scenarios))
@@ -29,6 +31,7 @@ func TestStressTest(t *testing.T) {
 }
 
 func TestComputeVaR_NormalReturns(t *testing.T) {
+	t.Parallel()
 	// Simulated daily returns: mostly small changes with one large loss.
 	returns := []float64{
 		100, -50, 75, -30, 20, -10, 15, -25, 50, -100,
@@ -66,6 +69,7 @@ func TestComputeVaR_NormalReturns(t *testing.T) {
 }
 
 func TestComputeVaR_Empty(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultVaRConfig()
 	result := ComputeVaR(nil, cfg)
 
@@ -75,6 +79,7 @@ func TestComputeVaR_Empty(t *testing.T) {
 }
 
 func TestComputeVaR_AllPositive(t *testing.T) {
+	t.Parallel()
 	returns := []float64{10.0, 20.0, 30.0, 40.0, 50.0}
 	cfg := DefaultVaRConfig()
 	result := ComputeVaR(returns, cfg)
@@ -86,6 +91,7 @@ func TestComputeVaR_AllPositive(t *testing.T) {
 }
 
 func TestPredefinedScenarios_Count(t *testing.T) {
+	t.Parallel()
 	scenarios := PredefinedScenarios()
 	if len(scenarios) != 4 {
 		t.Fatalf("want 4 predefined scenarios, got %d", len(scenarios))
@@ -102,6 +108,7 @@ func TestPredefinedScenarios_Count(t *testing.T) {
 }
 
 func TestRunStressTests_AllPass(t *testing.T) {
+	t.Parallel()
 	results := RunStressTests(100000, 50000) // 100k equity, 50k minimum
 
 	for _, r := range results {
@@ -119,6 +126,7 @@ func TestRunStressTests_AllPass(t *testing.T) {
 }
 
 func TestRunStressTests_SomeFail(t *testing.T) {
+	t.Parallel()
 	results := RunStressTests(100000, 95000) // tight margin
 
 	failed := 0
@@ -134,6 +142,7 @@ func TestRunStressTests_SomeFail(t *testing.T) {
 }
 
 func TestRunStressTests_CustomScenario(t *testing.T) {
+	t.Parallel()
 	custom := StressScenario{Name: "apocalypse", Description: "total collapse", Shock: -0.90}
 	results := RunStressTests(100000, 50000, custom)
 
@@ -147,6 +156,7 @@ func TestRunStressTests_CustomScenario(t *testing.T) {
 }
 
 func TestMaxDrawdown(t *testing.T) {
+	t.Parallel()
 	returns := []float64{100, -50, -30, 20, -40, 50, -20}
 	dd := computeMaxDrawdown(returns)
 

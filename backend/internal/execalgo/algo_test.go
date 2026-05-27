@@ -14,6 +14,7 @@ func closeEnoughAlgo(a, b float64) bool { return math.Abs(a-b) < 0.001 }
 // ---- TWAP ----
 
 func TestTwap_EqualSlices(t *testing.T) {
+	t.Parallel()
 	algo := NewTwap(5 * time.Minute)
 	parent := ParentOrder{
 		Symbol: "EURUSD", Side: "buy", TotalVolume: 1.0,
@@ -49,6 +50,7 @@ func TestTwap_EqualSlices(t *testing.T) {
 }
 
 func TestTwap_SingleSliceIfDurationEqualsInterval(t *testing.T) {
+	t.Parallel()
 	algo := NewTwap(time.Minute)
 	parent := ParentOrder{
 		Symbol: "EURUSD", Side: "sell", TotalVolume: 0.5,
@@ -67,6 +69,7 @@ func TestTwap_SingleSliceIfDurationEqualsInterval(t *testing.T) {
 }
 
 func TestTwap_TotalVolumeMatches(t *testing.T) {
+	t.Parallel()
 	algo := NewTwap(2 * time.Minute)
 	parent := ParentOrder{
 		Symbol: "EURUSD", Side: "buy", TotalVolume: 3.0,
@@ -79,6 +82,7 @@ func TestTwap_TotalVolumeMatches(t *testing.T) {
 }
 
 func TestTwap_ZeroVolume(t *testing.T) {
+	t.Parallel()
 	algo := NewTwap(time.Minute)
 	parent := ParentOrder{
 		Symbol: "EURUSD", Side: "buy", TotalVolume: 0,
@@ -91,6 +95,7 @@ func TestTwap_ZeroVolume(t *testing.T) {
 }
 
 func TestTwap_ZeroDuration(t *testing.T) {
+	t.Parallel()
 	algo := NewTwap(time.Minute)
 	parent := ParentOrder{
 		Symbol: "EURUSD", Side: "buy", TotalVolume: 1.0,
@@ -103,6 +108,7 @@ func TestTwap_ZeroDuration(t *testing.T) {
 }
 
 func TestTwap_DefaultInterval(t *testing.T) {
+	t.Parallel()
 	algo := NewTwap(0)
 	parent := ParentOrder{
 		Symbol: "EURUSD", Side: "buy", TotalVolume: 1.0,
@@ -118,6 +124,7 @@ func TestTwap_DefaultInterval(t *testing.T) {
 }
 
 func TestTwap_Name(t *testing.T) {
+	t.Parallel()
 	algo := NewTwap(time.Minute)
 	if algo.Name() != "TWAP" {
 		t.Errorf("Name = %s, want TWAP", algo.Name())
@@ -127,6 +134,7 @@ func TestTwap_Name(t *testing.T) {
 // ---- VWAP ----
 
 func TestVwap_FlatProfileEqualsTwap(t *testing.T) {
+	t.Parallel()
 	vwap := NewVwap(FlatVolumeProfile{}, 6)
 	twap := NewTwap(10 * time.Minute)
 	parent := ParentOrder{
@@ -161,6 +169,7 @@ func (p customProfile) Fraction(_ string, bucketStart time.Time) float64 {
 }
 
 func TestVwap_CustomProfile(t *testing.T) {
+	t.Parallel()
 	// Peak hours 9-11 get more volume
 	profile := customProfile{
 		fractions: map[int]float64{
@@ -191,6 +200,7 @@ func TestVwap_CustomProfile(t *testing.T) {
 }
 
 func TestVwap_NilProfileDefaultsToFlat(t *testing.T) {
+	t.Parallel()
 	vwap := NewVwap(nil, 5)
 	parent := ParentOrder{
 		Symbol: "EURUSD", Side: "buy", TotalVolume: 1.0,
@@ -206,6 +216,7 @@ func TestVwap_NilProfileDefaultsToFlat(t *testing.T) {
 }
 
 func TestVwap_ZeroVolume(t *testing.T) {
+	t.Parallel()
 	vwap := NewVwap(FlatVolumeProfile{}, 5)
 	_, err := vwap.Schedule(ParentOrder{Side: "buy", TotalVolume: 0, StartTime: refTime(), EndTime: refTime().Add(time.Hour)})
 	if err == nil {
@@ -214,6 +225,7 @@ func TestVwap_ZeroVolume(t *testing.T) {
 }
 
 func TestVwap_NegativeProfileFraction(t *testing.T) {
+	t.Parallel()
 	profile := customProfile{fractions: map[int]float64{10: -0.5}}
 	vwap := NewVwap(profile, 3)
 	parent := ParentOrder{
@@ -235,6 +247,7 @@ func TestVwap_NegativeProfileFraction(t *testing.T) {
 // ---- POV ----
 
 func TestPov_RespectsParticipationRate(t *testing.T) {
+	t.Parallel()
 	algo := NewPov(0.1, time.Minute, 1.0) // 10% of 1.0 lot per minute
 	parent := ParentOrder{
 		Symbol: "EURUSD", Side: "buy", TotalVolume: 0.3,
@@ -257,6 +270,7 @@ func TestPov_RespectsParticipationRate(t *testing.T) {
 }
 
 func TestPov_StopsWhenVolumeExhausted(t *testing.T) {
+	t.Parallel()
 	algo := NewPov(0.1, time.Minute, 1.0)
 	parent := ParentOrder{
 		Symbol: "EURUSD", Side: "sell", TotalVolume: 0.15,
@@ -270,6 +284,7 @@ func TestPov_StopsWhenVolumeExhausted(t *testing.T) {
 }
 
 func TestPov_LargeParentSmallRate(t *testing.T) {
+	t.Parallel()
 	algo := NewPov(0.01, 30*time.Second, 2.0) // 1% of 2 lots per 30s
 	parent := ParentOrder{
 		Symbol: "EURUSD", Side: "buy", TotalVolume: 10.0,
@@ -283,6 +298,7 @@ func TestPov_LargeParentSmallRate(t *testing.T) {
 }
 
 func TestPov_ZeroVolume(t *testing.T) {
+	t.Parallel()
 	algo := NewPov(0.1, time.Minute, 1.0)
 	_, err := algo.Schedule(ParentOrder{Side: "buy", TotalVolume: 0, StartTime: refTime(), EndTime: refTime().Add(time.Minute)})
 	if err == nil {
@@ -291,6 +307,7 @@ func TestPov_ZeroVolume(t *testing.T) {
 }
 
 func TestPov_ZeroDuration(t *testing.T) {
+	t.Parallel()
 	algo := NewPov(0.1, time.Minute, 1.0)
 	_, err := algo.Schedule(ParentOrder{Side: "buy", TotalVolume: 1.0, StartTime: refTime(), EndTime: refTime()})
 	if err == nil {
@@ -299,6 +316,7 @@ func TestPov_ZeroDuration(t *testing.T) {
 }
 
 func TestPov_DefaultRate(t *testing.T) {
+	t.Parallel()
 	algo := NewPov(0, time.Minute, 1.0) // should default to 0.05
 	parent := ParentOrder{
 		Symbol: "EURUSD", Side: "buy", TotalVolume: 0.5,
@@ -316,6 +334,7 @@ func TestPov_DefaultRate(t *testing.T) {
 // ---- Implementation Shortfall ----
 
 func TestShortfall_FrontLoaded(t *testing.T) {
+	t.Parallel()
 	algo := NewShortfall(3.0, 8) // urgency clamped to 1.0
 	parent := ParentOrder{
 		Symbol: "EURUSD", Side: "buy", TotalVolume: 1.0,
@@ -334,6 +353,7 @@ func TestShortfall_FrontLoaded(t *testing.T) {
 }
 
 func TestShortfall_ZeroUrgencyIsUniform(t *testing.T) {
+	t.Parallel()
 	algo := NewShortfall(0, 10)
 	parent := ParentOrder{
 		Symbol: "EURUSD", Side: "buy", TotalVolume: 1.0,
@@ -349,6 +369,7 @@ func TestShortfall_ZeroUrgencyIsUniform(t *testing.T) {
 }
 
 func TestShortfall_MaxUrgencyAllInFirst(t *testing.T) {
+	t.Parallel()
 	algo := NewShortfall(1.0, 10)
 	parent := ParentOrder{
 		Symbol: "EURUSD", Side: "sell", TotalVolume: 1.0,
@@ -362,6 +383,7 @@ func TestShortfall_MaxUrgencyAllInFirst(t *testing.T) {
 }
 
 func TestShortfall_TotalVolumeMatches(t *testing.T) {
+	t.Parallel()
 	algo := NewShortfall(0.5, 7)
 	parent := ParentOrder{
 		Symbol: "EURUSD", Side: "buy", TotalVolume: 2.5,
@@ -374,6 +396,7 @@ func TestShortfall_TotalVolumeMatches(t *testing.T) {
 }
 
 func TestShortfall_SingleSlice(t *testing.T) {
+	t.Parallel()
 	algo := NewShortfall(0.5, 1)
 	parent := ParentOrder{
 		Symbol: "EURUSD", Side: "buy", TotalVolume: 1.0,
@@ -389,6 +412,7 @@ func TestShortfall_SingleSlice(t *testing.T) {
 }
 
 func TestShortfall_ZeroVolume(t *testing.T) {
+	t.Parallel()
 	algo := NewShortfall(0.5, 5)
 	_, err := algo.Schedule(ParentOrder{Side: "buy", TotalVolume: 0, StartTime: refTime(), EndTime: refTime().Add(time.Hour)})
 	if err == nil {
@@ -397,6 +421,7 @@ func TestShortfall_ZeroVolume(t *testing.T) {
 }
 
 func TestShortfall_UrgencyOutsideRange(t *testing.T) {
+	t.Parallel()
 	// Negative urgency clamped to 0
 	a1 := NewShortfall(-1.0, 5)
 	if a1.Urgency != 0 {
@@ -410,6 +435,7 @@ func TestShortfall_UrgencyOutsideRange(t *testing.T) {
 }
 
 func TestShortfall_Name(t *testing.T) {
+	t.Parallel()
 	algo := NewShortfall(0.5, 5)
 	if algo.Name() != "ImplementationShortfall" {
 		t.Errorf("Name = %s", algo.Name())
@@ -419,6 +445,7 @@ func TestShortfall_Name(t *testing.T) {
 // ---- Schedule Validation ----
 
 func TestSchedule_ValidateOverScheduled(t *testing.T) {
+	t.Parallel()
 	s := &Schedule{
 		Parent: ParentOrder{TotalVolume: 1.0, StartTime: refTime(), EndTime: refTime().Add(time.Hour)},
 		Slices: []ChildOrder{
@@ -436,6 +463,7 @@ func TestSchedule_ValidateOverScheduled(t *testing.T) {
 }
 
 func TestSchedule_ValidateSliceBeforeStart(t *testing.T) {
+	t.Parallel()
 	s := &Schedule{
 		Parent: ParentOrder{TotalVolume: 1.0, StartTime: refTime(), EndTime: refTime().Add(time.Hour)},
 		Slices: []ChildOrder{
@@ -449,6 +477,7 @@ func TestSchedule_ValidateSliceBeforeStart(t *testing.T) {
 }
 
 func TestSchedule_ValidateSliceAfterEnd(t *testing.T) {
+	t.Parallel()
 	s := &Schedule{
 		Parent: ParentOrder{TotalVolume: 1.0, StartTime: refTime(), EndTime: refTime().Add(time.Hour)},
 		Slices: []ChildOrder{
@@ -462,6 +491,7 @@ func TestSchedule_ValidateSliceAfterEnd(t *testing.T) {
 }
 
 func TestSchedule_ValidateNonPositiveVolume(t *testing.T) {
+	t.Parallel()
 	s := &Schedule{
 		Parent: ParentOrder{TotalVolume: 1.0, StartTime: refTime(), EndTime: refTime().Add(time.Hour)},
 		Slices: []ChildOrder{
@@ -475,6 +505,7 @@ func TestSchedule_ValidateNonPositiveVolume(t *testing.T) {
 }
 
 func TestSchedule_ValidateEmptySlices(t *testing.T) {
+	t.Parallel()
 	s := &Schedule{
 		Parent: ParentOrder{TotalVolume: 1.0, StartTime: refTime(), EndTime: refTime().Add(time.Hour)},
 		Slices: []ChildOrder{},
@@ -485,6 +516,7 @@ func TestSchedule_ValidateEmptySlices(t *testing.T) {
 }
 
 func TestSchedule_ValidateValid(t *testing.T) {
+	t.Parallel()
 	s := &Schedule{
 		Parent: ParentOrder{TotalVolume: 1.0, StartTime: refTime(), EndTime: refTime().Add(time.Hour)},
 		Slices: []ChildOrder{
@@ -500,6 +532,7 @@ func TestSchedule_ValidateValid(t *testing.T) {
 // ---- Cross-Algo Consistency ----
 
 func TestCrossAlgo_AllProduceValidSchedules(t *testing.T) {
+	t.Parallel()
 	parent := ParentOrder{
 		Symbol: "EURUSD", Side: "buy", TotalVolume: 1.0,
 		StartTime: refTime(), EndTime: refTime().Add(30 * time.Minute),
@@ -537,6 +570,7 @@ func TestCrossAlgo_AllProduceValidSchedules(t *testing.T) {
 }
 
 func TestCrossAlgo_DifferentSchedulesForSameParent(t *testing.T) {
+	t.Parallel()
 	// Each algo should produce a distinguishable schedule.
 	parent := ParentOrder{
 		Symbol: "EURUSD", Side: "buy", TotalVolume: 1.0,
@@ -598,6 +632,7 @@ func TestCrossAlgo_DifferentSchedulesForSameParent(t *testing.T) {
 }
 
 func TestParentOrder_Duration(t *testing.T) {
+	t.Parallel()
 	p := ParentOrder{
 		StartTime: refTime(),
 		EndTime:   refTime().Add(30 * time.Minute),
@@ -610,6 +645,7 @@ func TestParentOrder_Duration(t *testing.T) {
 // ---- Volume Profile ----
 
 func TestFlatVolumeProfile(t *testing.T) {
+	t.Parallel()
 	p := FlatVolumeProfile{}
 	if p.Fraction("EURUSD", refTime()) != 1.0 {
 		t.Errorf("FlatVolumeProfile.Fraction = %f, want 1.0", p.Fraction("", time.Time{}))

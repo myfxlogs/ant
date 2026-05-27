@@ -58,4 +58,6 @@ message User {
   string role = 4;
   google.protobuf.Timestamp created_at = 5;
   google.protobuf.Timestamp updated_at = 6;
+  repeated string permissions = 7;
+  int32 capability_tier = 8;
 }

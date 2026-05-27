@@ -3,6 +3,7 @@ package symbol
 import "testing"
 
 func TestCanonicalize(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		raw  string
 		want string
@@ -47,6 +48,7 @@ func TestCanonicalize(t *testing.T) {
 }
 
 func TestSeedCanonicals_Count(t *testing.T) {
+	t.Parallel()
 	seeds := SeedCanonicals()
 	if len(seeds) < 45 {
 		t.Errorf("SeedCanonicals() returned %d entries, want ≥45 (mainstream coverage)", len(seeds))
@@ -62,6 +64,7 @@ func TestSeedCanonicals_Count(t *testing.T) {
 }
 
 func TestSeedCanonicals_Coverage(t *testing.T) {
+	t.Parallel()
 	seeds := SeedCanonicals()
 	// Build a set for fast lookup
 	set := make(map[string]bool)

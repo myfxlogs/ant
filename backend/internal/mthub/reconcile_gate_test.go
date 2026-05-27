@@ -6,6 +6,7 @@ import (
 )
 
 func TestReconcileGate_DefaultAccept(t *testing.T) {
+	t.Parallel()
 	g := NewReconcileGate()
 	if !g.CanAccept("acc-1") {
 		t.Fatal("new gate should accept orders")
@@ -13,6 +14,7 @@ func TestReconcileGate_DefaultAccept(t *testing.T) {
 }
 
 func TestReconcileGate_EnterBlocks(t *testing.T) {
+	t.Parallel()
 	g := NewReconcileGate()
 	g.EnterReconciling("acc-1")
 
@@ -25,6 +27,7 @@ func TestReconcileGate_EnterBlocks(t *testing.T) {
 }
 
 func TestReconcileGate_MarkReconciledUnblocks(t *testing.T) {
+	t.Parallel()
 	g := NewReconcileGate()
 	g.EnterReconciling("acc-1")
 	g.MarkReconciled("acc-1")
@@ -35,6 +38,7 @@ func TestReconcileGate_MarkReconciledUnblocks(t *testing.T) {
 }
 
 func TestReconcileGate_IndependentAccounts(t *testing.T) {
+	t.Parallel()
 	g := NewReconcileGate()
 	g.EnterReconciling("acc-1")
 
@@ -44,6 +48,7 @@ func TestReconcileGate_IndependentAccounts(t *testing.T) {
 }
 
 func TestReconcileGate_EnterAll(t *testing.T) {
+	t.Parallel()
 	g := NewReconcileGate()
 	g.EnterAll([]string{"acc-1", "acc-2", "acc-3"})
 
@@ -53,6 +58,7 @@ func TestReconcileGate_EnterAll(t *testing.T) {
 }
 
 func TestReconcileGate_Count(t *testing.T) {
+	t.Parallel()
 	g := NewReconcileGate()
 	g.EnterReconciling("acc-1")
 	g.EnterReconciling("acc-2")
@@ -66,6 +72,7 @@ func TestReconcileGate_Count(t *testing.T) {
 }
 
 func TestReconcileGate_Concurrent(t *testing.T) {
+	t.Parallel()
 	g := NewReconcileGate()
 	var wg sync.WaitGroup
 	for i := 0; i < 100; i++ {

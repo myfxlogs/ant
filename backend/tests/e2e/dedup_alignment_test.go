@@ -30,6 +30,7 @@ import (
 //
 // This validates ADR-0008: ORDER BY includes (bid, ask, bid_volume, ask_volume).
 func TestDedupAlignment(t *testing.T) {
+	t.Parallel()
 	if os.Getenv("E2E_CH_HOST") == "" {
 		// When CH is available at defaults, this test runs.
 		// In CI or local without CH, it is skipped with a clear message.

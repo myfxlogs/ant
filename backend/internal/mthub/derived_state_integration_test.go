@@ -8,6 +8,7 @@ import (
 )
 
 func TestDerivedQuantities(t *testing.T) {
+	t.Parallel()
 	cache := NewStateCache(nil, testLogger())
 
 	// Populate cache with order fills from multiple accounts.

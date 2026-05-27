@@ -10,6 +10,7 @@ import aiStore from './ai_store';
 import analytics from './analytics';
 import logs from './logs';
 import strategy from './strategy';
+import errors from './errors';
 import { mergeResources } from '../merge';
 
 const en = mergeResources(
@@ -25,6 +26,7 @@ const en = mergeResources(
   analytics,
   logs,
   strategy,
+  errors,
 ) as const;
 
 export default en;

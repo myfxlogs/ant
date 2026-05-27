@@ -7,6 +7,7 @@ import (
 )
 
 func TestVolTargetSizer_EURUSD(t *testing.T) {
+	t.Parallel()
 	s := &VolTargetSizer{RiskBudgetPct: 0.01, MaxLots: 100}
 	req := &SizerRequest{
 		Symbol:       "EURUSD",
@@ -31,6 +32,7 @@ func TestVolTargetSizer_EURUSD(t *testing.T) {
 }
 
 func TestVolTargetSizer_BTCUSD(t *testing.T) {
+	t.Parallel()
 	s := &VolTargetSizer{RiskBudgetPct: 0.01, MaxLots: 100}
 	req := &SizerRequest{
 		Symbol:       "BTCUSD",
@@ -52,6 +54,7 @@ func TestVolTargetSizer_BTCUSD(t *testing.T) {
 }
 
 func TestVolTargetSizer_EURUSDvsBTCUSD_Ratio(t *testing.T) {
+	t.Parallel()
 	s := &VolTargetSizer{RiskBudgetPct: 0.01, MaxLots: 100}
 	eur := &SizerRequest{
 		Symbol: "EURUSD", Price: 1.0850, ATR: 0.0035, ContractSize: 100000, HoldingDays: 5, Equity: 100000,
@@ -70,6 +73,7 @@ func TestVolTargetSizer_EURUSDvsBTCUSD_Ratio(t *testing.T) {
 }
 
 func TestVolTargetSizer_ZeroEquity(t *testing.T) {
+	t.Parallel()
 	s := &VolTargetSizer{RiskBudgetPct: 0.01}
 	req := &SizerRequest{Equity: 0, Price: 1.0850, ATR: 0.0035}
 	res, err := s.Size(context.Background(), req)
@@ -82,6 +86,7 @@ func TestVolTargetSizer_ZeroEquity(t *testing.T) {
 }
 
 func TestVolTargetSizer_MaxLotsCap(t *testing.T) {
+	t.Parallel()
 	s := &VolTargetSizer{RiskBudgetPct: 1.0, MaxLots: 0.5} // 100% risk budget → huge lot
 	req := &SizerRequest{
 		Symbol: "EURUSD", Price: 1.0850, ATR: 0.0001, ContractSize: 100000, HoldingDays: 1, Equity: 100000,
@@ -96,6 +101,7 @@ func TestVolTargetSizer_MaxLotsCap(t *testing.T) {
 }
 
 func TestVolTargetSizer_MinLotsFloor(t *testing.T) {
+	t.Parallel()
 	s := &VolTargetSizer{RiskBudgetPct: 0.001, MinLots: 0.1} // tiny risk budget
 	req := &SizerRequest{
 		Symbol: "EURUSD", Price: 1.0850, ATR: 0.01, ContractSize: 100000, HoldingDays: 10, Equity: 10000,
@@ -110,6 +116,7 @@ func TestVolTargetSizer_MinLotsFloor(t *testing.T) {
 }
 
 func TestVolTargetSizer_DefaultRiskBudget(t *testing.T) {
+	t.Parallel()
 	s := &VolTargetSizer{} // RiskBudgetPct defaults to 0.01
 	req := &SizerRequest{
 		Symbol: "EURUSD", Price: 1.0850, ATR: 0.0035, ContractSize: 100000, HoldingDays: 5, Equity: 100000,
@@ -124,6 +131,7 @@ func TestVolTargetSizer_DefaultRiskBudget(t *testing.T) {
 }
 
 func TestVolTargetSizer_FallbackATR(t *testing.T) {
+	t.Parallel()
 	s := &VolTargetSizer{RiskBudgetPct: 0.01}
 	req := &SizerRequest{
 		Symbol: "EURUSD", Price: 1.0850, ATR: 0, AnnualVol: 0.15, ContractSize: 100000, HoldingDays: 5, Equity: 100000,

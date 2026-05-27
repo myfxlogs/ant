@@ -15,6 +15,8 @@ export interface User {
   nickname: string;
   avatar: string;
   role: string;
+  permissions: string[];
+  capabilityTier: number;
   status: string;
   last_login_at: string | null;
   created_at: string;

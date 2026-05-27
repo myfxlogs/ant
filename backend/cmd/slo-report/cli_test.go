@@ -41,6 +41,7 @@ func runSlo(t *testing.T, bin string, args ...string) (stdout, stderr string, co
 // TestSloReportMarkdown verifies that --output md produces a report containing
 // all 4 SLO IDs (SLO-MD-1..4). Spec/20 §1 requires these IDs verbatim.
 func TestSloReportMarkdown(t *testing.T) {
+	t.Parallel()
 	bin := buildSloReport(t)
 	stdout, stderr, _ := runSlo(t, bin, "--window", "1h", "--output", "md")
 	body := stdout + "\n" + stderr
@@ -56,6 +57,7 @@ func TestSloReportMarkdown(t *testing.T) {
 // TestSloReportPromUnreachable verifies graceful degradation when Prometheus
 // is unreachable: each SLO row reports query-failed status instead of crashing.
 func TestSloReportPromUnreachable(t *testing.T) {
+	t.Parallel()
 	bin := buildSloReport(t)
 	cmd := exec.Command(bin, "--window", "1h", "--output", "md")
 	cmd.Env = append(os.Environ(), "PROM_URL=http://127.0.0.1:1") // refused

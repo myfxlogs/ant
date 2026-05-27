@@ -8,6 +8,7 @@ import (
 )
 
 func TestSpreadCost_Forex(t *testing.T) {
+	t.Parallel()
 	m := DefaultForexModel("EURUSD")
 	cost := m.SpreadCost(1.0) // 1 standard lot
 	// half spread: 0.5 pips * $10/pip = $5
@@ -18,6 +19,7 @@ func TestSpreadCost_Forex(t *testing.T) {
 }
 
 func TestSpreadCost_ZeroSpread(t *testing.T) {
+	t.Parallel()
 	m := &CostModel{Symbol: "TEST", PipValue: 10.0, SpreadPips: 0}
 	cost := m.SpreadCost(1.0)
 	if cost != 0 {
@@ -26,6 +28,7 @@ func TestSpreadCost_ZeroSpread(t *testing.T) {
 }
 
 func TestCommission_PerLot(t *testing.T) {
+	t.Parallel()
 	m := DefaultForexModel("EURUSD")
 	cost := m.Commission(1.0, 100000)
 	// $7 per lot
@@ -35,6 +38,7 @@ func TestCommission_PerLot(t *testing.T) {
 }
 
 func TestCommission_PerNotional(t *testing.T) {
+	t.Parallel()
 	m := DefaultCryptoModel("BTCUSD")
 	// CommissionBps=10, notional=50000, cost = 50000 * 10/10000 = 50
 	cost := m.Commission(1.0, 50000)
@@ -44,6 +48,7 @@ func TestCommission_PerNotional(t *testing.T) {
 }
 
 func TestCommission_MinFloor(t *testing.T) {
+	t.Parallel()
 	m := &CostModel{Symbol: "TEST", MinCommission: 5.0}
 	cost := m.Commission(0.01, 1000)
 	if math.Abs(cost-5.0) > 0.01 {
@@ -52,6 +57,7 @@ func TestCommission_MinFloor(t *testing.T) {
 }
 
 func TestSwapCost_Long(t *testing.T) {
+	t.Parallel()
 	m := DefaultForexModel("EURUSD")
 	// SwapLong=-3.5, 1 lot, holding 3 days → -3.5 * 1 * 3 = -10.50
 	cost := m.SwapCost("buy", 1.0, 1.0850, 100000, 3)
@@ -61,6 +67,7 @@ func TestSwapCost_Long(t *testing.T) {
 }
 
 func TestSwapCost_Short(t *testing.T) {
+	t.Parallel()
 	m := DefaultForexModel("EURUSD")
 	// SwapShort=0.5, 1 lot, 3 days → 0.5 * 1 * 3 = 1.50
 	cost := m.SwapCost("sell", 1.0, 1.0850, 100000, 3)
@@ -70,6 +77,7 @@ func TestSwapCost_Short(t *testing.T) {
 }
 
 func TestSwapCost_ZeroHolding(t *testing.T) {
+	t.Parallel()
 	m := DefaultForexModel("EURUSD")
 	cost := m.SwapCost("buy", 1.0, 1.0850, 100000, 0)
 	if cost != 0 {
@@ -78,6 +86,7 @@ func TestSwapCost_ZeroHolding(t *testing.T) {
 }
 
 func TestFundingCost(t *testing.T) {
+	t.Parallel()
 	m := DefaultCryptoModel("BTCUSD")
 	// funding rate 0.0001, interval 8h, notional 50000
 	// holding 24h → 3 intervals → 0.0001 * 50000 * 3 = 15
@@ -88,6 +97,7 @@ func TestFundingCost(t *testing.T) {
 }
 
 func TestSlippageCost(t *testing.T) {
+	t.Parallel()
 	m := DefaultForexModel("EURUSD")
 	// SlippageBps=0.5, notional=108500, cost = 108500*0.5/10000 = 5.425
 	cost := m.SlippageCost(1.0, 1.0850, 100000)
@@ -97,6 +107,7 @@ func TestSlippageCost(t *testing.T) {
 }
 
 func TestEstimate_Forex_Buy(t *testing.T) {
+	t.Parallel()
 	m := DefaultForexModel("EURUSD")
 	est := m.Estimate(EstimateParams{
 		Side: "buy", Lots: 1.0, Price: 1.0850, ContractSize: 100000, HoldingDays: 1,
@@ -113,6 +124,7 @@ func TestEstimate_Forex_Buy(t *testing.T) {
 }
 
 func TestEstimate_Crypto(t *testing.T) {
+	t.Parallel()
 	m := DefaultCryptoModel("BTCUSD")
 	est := m.Estimate(EstimateParams{
 		Side: "buy", Lots: 1.0, Price: 50000, ContractSize: 1, HoldingDuration: 24 * time.Hour,
@@ -129,6 +141,7 @@ func TestEstimate_Crypto(t *testing.T) {
 }
 
 func TestGrossToNetFillPrice_Buy(t *testing.T) {
+	t.Parallel()
 	m := DefaultForexModel("EURUSD")
 	net := m.GrossToNetFillPrice(1.0850, EstimateParams{
 		Side: "buy", Lots: 1.0, Price: 1.0850, ContractSize: 100000, HoldingDays: 0,
@@ -142,6 +155,7 @@ func TestGrossToNetFillPrice_Buy(t *testing.T) {
 }
 
 func TestGrossToNetFillPrice_Sell(t *testing.T) {
+	t.Parallel()
 	m := DefaultForexModel("EURUSD")
 	net := m.GrossToNetFillPrice(1.0850, EstimateParams{
 		Side: "sell", Lots: 1.0, Price: 1.0850, ContractSize: 100000, HoldingDays: 0,
@@ -153,6 +167,7 @@ func TestGrossToNetFillPrice_Sell(t *testing.T) {
 }
 
 func TestSnapshot_Roundtrip(t *testing.T) {
+	t.Parallel()
 	m := DefaultForexModel("EURUSD")
 	snap := m.Snapshot()
 	if snap.Symbol != "EURUSD" {
@@ -167,6 +182,7 @@ func TestSnapshot_Roundtrip(t *testing.T) {
 }
 
 func TestCostModel_ZeroNotional(t *testing.T) {
+	t.Parallel()
 	m := DefaultForexModel("EURUSD")
 	est := m.Estimate(EstimateParams{Side: "buy", Lots: 0, Price: 1.0850})
 	if est.TotalCost != 0 {
@@ -175,6 +191,7 @@ func TestCostModel_ZeroNotional(t *testing.T) {
 }
 
 func TestEffectiveSwapDays_NoWednesday(t *testing.T) {
+	t.Parallel()
 	// Monday + 1 day (Mon→Tue) = 1 swap charge
 	mon := time.Date(2026, 5, 25, 0, 0, 0, 0, time.UTC) // Monday
 	eff := EffectiveSwapDays(mon, 1)
@@ -184,6 +201,7 @@ func TestEffectiveSwapDays_NoWednesday(t *testing.T) {
 }
 
 func TestEffectiveSwapDays_Wednesday(t *testing.T) {
+	t.Parallel()
 	// Tuesday + 2 days (Tue→Wed→Thu): Wed = 3 charges, total = 4
 	tue := time.Date(2026, 5, 26, 0, 0, 0, 0, time.UTC) // Tuesday
 	eff := EffectiveSwapDays(tue, 2)
@@ -193,6 +211,7 @@ func TestEffectiveSwapDays_Wednesday(t *testing.T) {
 }
 
 func TestEffectiveSwapDays_Zero(t *testing.T) {
+	t.Parallel()
 	eff := EffectiveSwapDays(time.Now(), 0)
 	if eff != 0 {
 		t.Fatalf("zero days: want 0, got %d", eff)
@@ -200,6 +219,7 @@ func TestEffectiveSwapDays_Zero(t *testing.T) {
 }
 
 func TestSwapCostDate_TripleWednesday(t *testing.T) {
+	t.Parallel()
 	m := DefaultForexModel("EURUSD")
 	// Tuesday start, 2 day hold (spans Wed) → effective 4 swap charges
 	tue := time.Date(2026, 5, 26, 0, 0, 0, 0, time.UTC)
@@ -211,6 +231,7 @@ func TestSwapCostDate_TripleWednesday(t *testing.T) {
 }
 
 func TestSnapshot_FrozenAtClock(t *testing.T) {
+	t.Parallel()
 	m := DefaultForexModel("EURUSD")
 	snap := m.Snapshot()
 	if snap.FrozenAt.IsZero() {
@@ -223,6 +244,7 @@ func TestSnapshot_FrozenAtClock(t *testing.T) {
 }
 
 func TestSnapshotConfig(t *testing.T) {
+	t.Parallel()
 	models := map[string]*CostModel{
 		"EURUSD": DefaultForexModel("EURUSD"),
 		"BTCUSD": DefaultCryptoModel("BTCUSD"),
@@ -243,6 +265,7 @@ func TestSnapshotConfig(t *testing.T) {
 }
 
 func TestSnapshotFromList(t *testing.T) {
+	t.Parallel()
 	models := []*CostModel{DefaultForexModel("EURUSD"), DefaultCryptoModel("BTCUSD")}
 	data, err := SnapshotFromList("test_broker", models)
 	if err != nil {
@@ -254,6 +277,7 @@ func TestSnapshotFromList(t *testing.T) {
 }
 
 func TestStaticEstimator(t *testing.T) {
+	t.Parallel()
 	m := DefaultForexModel("EURUSD")
 	est := &StaticEstimator{Model: m}
 	breakdown := est.Estimate(t.Context(), EstimateParams{
@@ -265,6 +289,7 @@ func TestStaticEstimator(t *testing.T) {
 }
 
 func TestMultiModelEstimator_KnownSymbol(t *testing.T) {
+	t.Parallel()
 	est := &MultiModelEstimator{
 		Models:  map[string]*CostModel{"EURUSD": DefaultForexModel("EURUSD")},
 		Default: nil,
@@ -278,6 +303,7 @@ func TestMultiModelEstimator_KnownSymbol(t *testing.T) {
 }
 
 func TestMultiModelEstimator_FallbackDefault(t *testing.T) {
+	t.Parallel()
 	est := &MultiModelEstimator{
 		Models:  map[string]*CostModel{},
 		Default: DefaultForexModel("EURUSD"),
@@ -291,6 +317,7 @@ func TestMultiModelEstimator_FallbackDefault(t *testing.T) {
 }
 
 func TestMultiModelEstimator_NoModel(t *testing.T) {
+	t.Parallel()
 	est := &MultiModelEstimator{
 		Models:  map[string]*CostModel{},
 		Default: nil,

@@ -7,6 +7,7 @@ import (
 )
 
 func TestProRataAllocator_EqualEquity(t *testing.T) {
+	t.Parallel()
 	a := &ProRataAllocator{}
 	accounts := []AllocAccount{
 		{AccountID: "a1", Equity: 50_000, FreeMargin: 50_000},
@@ -25,6 +26,7 @@ func TestProRataAllocator_EqualEquity(t *testing.T) {
 }
 
 func TestProRataAllocator_Proportional(t *testing.T) {
+	t.Parallel()
 	a := &ProRataAllocator{}
 	accounts := []AllocAccount{
 		{AccountID: "big", Equity: 80_000, FreeMargin: 80_000},
@@ -40,6 +42,7 @@ func TestProRataAllocator_Proportional(t *testing.T) {
 }
 
 func TestProRataAllocator_ZeroVolume(t *testing.T) {
+	t.Parallel()
 	a := &ProRataAllocator{}
 	accounts := []AllocAccount{
 		{AccountID: "a1", Equity: 50_000},
@@ -51,6 +54,7 @@ func TestProRataAllocator_ZeroVolume(t *testing.T) {
 }
 
 func TestProRataAllocator_ZeroEquity(t *testing.T) {
+	t.Parallel()
 	a := &ProRataAllocator{}
 	accounts := []AllocAccount{
 		{AccountID: "a1", Equity: 0},
@@ -63,6 +67,7 @@ func TestProRataAllocator_ZeroEquity(t *testing.T) {
 }
 
 func TestFIFOAllocator_PriorityOrder(t *testing.T) {
+	t.Parallel()
 	a := &FIFOAllocator{}
 	accounts := []AllocAccount{
 		{AccountID: "third", Priority: 3, FreeMargin: 1.0},
@@ -81,6 +86,7 @@ func TestFIFOAllocator_PriorityOrder(t *testing.T) {
 }
 
 func TestFIFOAllocator_ExhaustsInOrder(t *testing.T) {
+	t.Parallel()
 	a := &FIFOAllocator{}
 	accounts := []AllocAccount{
 		{AccountID: "a1", Priority: 1, FreeMargin: 0.3},
@@ -96,6 +102,7 @@ func TestFIFOAllocator_ExhaustsInOrder(t *testing.T) {
 }
 
 func TestVWAPAllocator_CapacityWeighted(t *testing.T) {
+	t.Parallel()
 	a := &VWAPAllocator{}
 	accounts := []AllocAccount{
 		{AccountID: "high", FreeMargin: 80_000},
@@ -108,6 +115,7 @@ func TestVWAPAllocator_CapacityWeighted(t *testing.T) {
 }
 
 func TestVWAPAllocator_ZeroCapacity(t *testing.T) {
+	t.Parallel()
 	a := &VWAPAllocator{}
 	accounts := []AllocAccount{
 		{AccountID: "a1", FreeMargin: 0},
@@ -119,6 +127,7 @@ func TestVWAPAllocator_ZeroCapacity(t *testing.T) {
 }
 
 func TestAllocator_Names(t *testing.T) {
+	t.Parallel()
 	if n := (&ProRataAllocator{}).Name(); n != "pro_rata" {
 		t.Fatalf("want pro_rata, got %s", n)
 	}
@@ -131,6 +140,7 @@ func TestAllocator_Names(t *testing.T) {
 }
 
 func TestAllocator_SumsToVolume(t *testing.T) {
+	t.Parallel()
 	ctx := context.Background()
 	accounts := []AllocAccount{
 		{AccountID: "a1", Equity: 100_000, FreeMargin: 50_000, Priority: 1},

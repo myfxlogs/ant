@@ -9,6 +9,7 @@ import (
 )
 
 func TestFillModel_Buy(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := &FillModel{
 		SlippagePips:    0.5,
@@ -40,6 +41,7 @@ func TestFillModel_Buy(t *testing.T) {
 }
 
 func TestFillModel_Sell(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := &FillModel{
 		SlippagePips:    0.5,
@@ -58,6 +60,7 @@ func TestFillModel_Sell(t *testing.T) {
 }
 
 func TestFillModel_PartialFill(t *testing.T) {
+	t.Parallel()
 	cm := costsvc.DefaultForexModel("EURUSD")
 	fm := &FillModel{
 		PartialFillProb:  1.0,
@@ -77,6 +80,7 @@ func TestFillModel_PartialFill(t *testing.T) {
 }
 
 func TestFillModel_NoCostModel(t *testing.T) {
+	t.Parallel()
 	fm := &FillModel{ContractSize: 100000}
 	rng := rand.New(rand.NewSource(42))
 	result := fm.SimulateFill(1, 1.0, 1.0850, 0, rng)
@@ -90,6 +94,7 @@ func TestFillModel_NoCostModel(t *testing.T) {
 }
 
 func TestComputeMetrics_ProfitableStrategy(t *testing.T) {
+	t.Parallel()
 	trades := []Trade{
 		{NetPnL: 100, GrossPnL: 110, Commission: 5, Swap: 3, Slippage: 2},
 		{NetPnL: 200, GrossPnL: 215, Commission: 7, Swap: 5, Slippage: 3},
@@ -123,6 +128,7 @@ func TestComputeMetrics_ProfitableStrategy(t *testing.T) {
 }
 
 func TestComputeMetrics_EmptyTrades(t *testing.T) {
+	t.Parallel()
 	m := ComputeMetrics(nil, 10000, nil)
 	if m.TotalTrades != 0 {
 		t.Fatalf("want 0 trades, got %d", m.TotalTrades)
@@ -130,6 +136,7 @@ func TestComputeMetrics_EmptyTrades(t *testing.T) {
 }
 
 func TestComputeMetrics_AllLosers(t *testing.T) {
+	t.Parallel()
 	trades := []Trade{
 		{NetPnL: -100},
 		{NetPnL: -200},
@@ -144,6 +151,7 @@ func TestComputeMetrics_AllLosers(t *testing.T) {
 }
 
 func TestComputeMaxDrawdown(t *testing.T) {
+	t.Parallel()
 	equity := []float64{100, 110, 105, 95, 100, 90, 100}
 	dd := computeMaxDrawdown(equity)
 	if math.Abs(dd-0.1818) > 0.01 {
@@ -152,6 +160,7 @@ func TestComputeMaxDrawdown(t *testing.T) {
 }
 
 func TestComputeMaxDrawdown_NoDrawdown(t *testing.T) {
+	t.Parallel()
 	equity := []float64{100, 110, 120, 130}
 	dd := computeMaxDrawdown(equity)
 	if dd != 0 {
@@ -160,6 +169,7 @@ func TestComputeMaxDrawdown_NoDrawdown(t *testing.T) {
 }
 
 func TestComputeSharpe(t *testing.T) {
+	t.Parallel()
 	equity := []float64{100, 101, 102, 103, 104, 105}
 	sharpe := computeSharpe(equity, 100)
 	if sharpe < 0 {
@@ -168,6 +178,7 @@ func TestComputeSharpe(t *testing.T) {
 }
 
 func TestEngine_SimpleTrendFollow(t *testing.T) {
+	t.Parallel()
 	bars := make([]Bar, 100)
 	price := 1.0850
 	for i := range bars {
@@ -218,6 +229,7 @@ func TestEngine_SimpleTrendFollow(t *testing.T) {
 }
 
 func TestEngine_NoTrades(t *testing.T) {
+	t.Parallel()
 	bars := []Bar{
 		{OpenTime: 0, CloseTime: 60000, Open: 1.0850, High: 1.0860, Low: 1.0840, Close: 1.0855},
 	}
@@ -230,6 +242,7 @@ func TestEngine_NoTrades(t *testing.T) {
 }
 
 func TestEngine_MeanReversion(t *testing.T) {
+	t.Parallel()
 	bars := make([]Bar, 200)
 	price := 1.0800
 	up := true
@@ -288,6 +301,7 @@ func TestEngine_MeanReversion(t *testing.T) {
 }
 
 func TestEngine_ForceCloseAtEnd(t *testing.T) {
+	t.Parallel()
 	bars := []Bar{
 		{OpenTime: 0, CloseTime: 60000, Open: 1.0850, High: 1.0860, Low: 1.0840, Close: 1.0855},
 		{OpenTime: 60000, CloseTime: 120000, Open: 1.0855, High: 1.0870, Low: 1.0850, Close: 1.0865},
@@ -309,6 +323,7 @@ func TestEngine_ForceCloseAtEnd(t *testing.T) {
 }
 
 func TestEngine_ShortTrade(t *testing.T) {
+	t.Parallel()
 	bars := make([]Bar, 50)
 	price := 1.1000
 	for i := range bars {
@@ -340,6 +355,7 @@ func TestEngine_ShortTrade(t *testing.T) {
 }
 
 func TestEngine_WithCostModel(t *testing.T) {
+	t.Parallel()
 	bars := make([]Bar, 100)
 	price := 1.0850
 	for i := range bars {

@@ -14,6 +14,7 @@ func init() {
 }
 
 func TestCircuitBreaker_New(t *testing.T) {
+	t.Parallel()
 	cb := NewCircuitBreaker(CircuitBreakerConfig{
 		Name:             "test",
 		FailureThreshold: 3,
@@ -27,6 +28,7 @@ func TestCircuitBreaker_New(t *testing.T) {
 }
 
 func TestCircuitBreaker_Allow(t *testing.T) {
+	t.Parallel()
 	cb := NewCircuitBreaker(CircuitBreakerConfig{
 		Name:             "test",
 		FailureThreshold: 3,
@@ -61,6 +63,7 @@ func TestCircuitBreaker_Allow(t *testing.T) {
 }
 
 func TestCircuitBreaker_RecordSuccess(t *testing.T) {
+	t.Parallel()
 	cb := NewCircuitBreaker(CircuitBreakerConfig{
 		Name:             "test",
 		FailureThreshold: 2,
@@ -87,6 +90,7 @@ func TestCircuitBreaker_RecordSuccess(t *testing.T) {
 }
 
 func TestCircuitBreaker_Execute(t *testing.T) {
+	t.Parallel()
 	cb := NewCircuitBreaker(CircuitBreakerConfig{
 		Name:             "test",
 		FailureThreshold: 2,
@@ -127,6 +131,7 @@ func TestCircuitBreaker_Execute(t *testing.T) {
 }
 
 func TestSafeCall_NoPanic(t *testing.T) {
+	t.Parallel()
 	result := SafeCall(func() (interface{}, error) {
 		return "success", nil
 	})
@@ -140,6 +145,7 @@ func TestSafeCall_NoPanic(t *testing.T) {
 }
 
 func TestSafeCall_WithError(t *testing.T) {
+	t.Parallel()
 	testErr := errors.New("test error")
 	result := SafeCall(func() (interface{}, error) {
 		return nil, testErr
@@ -151,6 +157,7 @@ func TestSafeCall_WithError(t *testing.T) {
 }
 
 func TestTimeoutController(t *testing.T) {
+	t.Parallel()
 	config := DefaultTimeoutConfig()
 	tc := NewTimeoutController(config)
 

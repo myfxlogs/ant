@@ -13,6 +13,7 @@ func testLogger() *zap.Logger {
 }
 
 func TestStateCache_GetSetOrder(t *testing.T) {
+	t.Parallel()
 	c := NewStateCache(nil, testLogger())
 
 	ev := &TradeEvent{
@@ -41,6 +42,7 @@ func TestStateCache_GetSetOrder(t *testing.T) {
 }
 
 func TestStateCache_GetOrdersByAccount(t *testing.T) {
+	t.Parallel()
 	c := NewStateCache(nil, testLogger())
 
 	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderFilled, AccountID: "acc-1", Ticket: 1, Canonical: "EURUSD", ToState: "FILLED", Timestamp: time.Now()})
@@ -59,6 +61,7 @@ func TestStateCache_GetOrdersByAccount(t *testing.T) {
 }
 
 func TestStateCache_PositionTracking(t *testing.T) {
+	t.Parallel()
 	c := NewStateCache(nil, testLogger())
 
 	// Buy 0.1 EURUSD.
@@ -90,6 +93,7 @@ func TestStateCache_PositionTracking(t *testing.T) {
 }
 
 func TestStateCache_NonFillEventsDontUpdatePosition(t *testing.T) {
+	t.Parallel()
 	c := NewStateCache(nil, testLogger())
 
 	c.ApplyEvent(&TradeEvent{
@@ -105,6 +109,7 @@ func TestStateCache_NonFillEventsDontUpdatePosition(t *testing.T) {
 }
 
 func TestStateCache_Stats(t *testing.T) {
+	t.Parallel()
 	c := NewStateCache(nil, testLogger())
 
 	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderFilled, AccountID: "acc-1", Ticket: 1, Canonical: "EURUSD", Side: "BUY", Volume: 0.1, ToState: "FILLED", Timestamp: time.Now()})
@@ -120,6 +125,7 @@ func TestStateCache_Stats(t *testing.T) {
 }
 
 func TestStateCache_LoadFromRedis_NoRedis(t *testing.T) {
+	t.Parallel()
 	c := NewStateCache(nil, testLogger())
 	err := c.LoadFromRedis(context.Background())
 	if err != nil {
@@ -128,6 +134,7 @@ func TestStateCache_LoadFromRedis_NoRedis(t *testing.T) {
 }
 
 func TestStateCache_PositionKey(t *testing.T) {
+	t.Parallel()
 	key := positionKey("acc-1", "EURUSD")
 	if key != "acc-1:EURUSD" {
 		t.Fatalf("unexpected position key: %s", key)
@@ -135,6 +142,7 @@ func TestStateCache_PositionKey(t *testing.T) {
 }
 
 func TestStateCache_GetPositionsByAccount(t *testing.T) {
+	t.Parallel()
 	c := NewStateCache(nil, testLogger())
 
 	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderFilled, AccountID: "acc-1", Ticket: 1, Canonical: "EURUSD", Side: "BUY", Volume: 0.1, ToState: "FILLED", Timestamp: time.Now()})

@@ -136,6 +136,35 @@ func (r *UserRepository) SetAIPrimary(ctx context.Context, id uuid.UUID, provide
 	return nil
 }
 
+// GetCapabilities returns the capability tier (from user_risk_profiles) and
+// permission codes (from role_permissions + permissions) for a user.
+// Defaults to tier 0 and empty permissions if no risk profile exists.
+func (r *UserRepository) GetCapabilities(ctx context.Context, userID uuid.UUID, role string) (capabilityTier int, permissions []string, err error) {
+	err = r.db.QueryRow(ctx,
+		`SELECT COALESCE(capability_tier, 0) FROM user_risk_profiles WHERE user_id = $1`, userID,
+	).Scan(&capabilityTier)
+	if err != nil {
+		capabilityTier = 0
+	}
+
+	rows, err := r.db.Query(ctx,
+		`SELECT p.code FROM permissions p
+		 INNER JOIN role_permissions rp ON rp.permission_id = p.id
+		 WHERE rp.role = $1`, role)
+	if err != nil {
+		return capabilityTier, nil, nil
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var code string
+		if err := rows.Scan(&code); err != nil {
+			return capabilityTier, nil, nil
+		}
+		permissions = append(permissions, code)
+	}
+	return capabilityTier, permissions, nil
+}
+
 func (r *UserRepository) ExistsByEmail(ctx context.Context, email string) (bool, error) {
 	var exists bool
 	query := `SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)`

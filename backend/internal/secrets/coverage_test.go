@@ -10,6 +10,7 @@ import (
 )
 
 func TestNew_InvalidVersion(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -25,6 +26,7 @@ func TestNew_InvalidVersion(t *testing.T) {
 }
 
 func TestNew_InvalidKeyLength(t *testing.T) {
+	t.Parallel()
 	_, err := secrets.New("dG9vLXNob3J0", 1) // "too-short" in base64 (9 bytes)
 	if err == nil {
 		t.Fatal("expected error for short key")
@@ -35,6 +37,7 @@ func TestNew_InvalidKeyLength(t *testing.T) {
 }
 
 func TestDecrypt_TooShort(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -52,6 +55,7 @@ func TestDecrypt_TooShort(t *testing.T) {
 }
 
 func TestDecrypt_UnknownVersion(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -72,6 +76,7 @@ func TestDecrypt_UnknownVersion(t *testing.T) {
 }
 
 func TestDecrypt_TamperedCiphertext(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -100,6 +105,7 @@ func TestDecrypt_TamperedCiphertext(t *testing.T) {
 }
 
 func TestReencrypt_AESGCM(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -131,6 +137,7 @@ func TestReencrypt_AESGCM(t *testing.T) {
 }
 
 func TestRotateKey_ErrorPath(t *testing.T) {
+	t.Parallel()
 	// FileMasterKey.Rotate returns an error (unsupported).
 	_, _, err := secrets.FileMasterKey{}.Rotate(context.Background())
 	if err == nil {
@@ -149,6 +156,7 @@ func TestDecodeMasterKey_Base64Fallback(t *testing.T) {
 }
 
 func TestEnvelopeDecryptV2_Tampered(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -180,6 +188,7 @@ func TestEnvelopeDecryptV2_Tampered(t *testing.T) {
 }
 
 func TestEnvelopeDecrypt_TooShort(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -198,6 +207,7 @@ func TestEnvelopeDecrypt_TooShort(t *testing.T) {
 }
 
 func TestEnvelopeDecryptV2_TruncatedWrappedDEK(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -225,6 +235,7 @@ func TestEnvelopeDecryptV2_TruncatedWrappedDEK(t *testing.T) {
 }
 
 func TestEnvelopeReencrypt_Error(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -245,6 +256,7 @@ func TestEnvelopeReencrypt_Error(t *testing.T) {
 }
 
 func TestMigrateToEnvelope_BrokenCiphertext(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -268,6 +280,7 @@ func TestMigrateToEnvelope_BrokenCiphertext(t *testing.T) {
 }
 
 func TestRotateKey_ThenEncrypt(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -330,6 +343,7 @@ func TestKeyDir_Env(t *testing.T) {
 }
 
 func TestRotateKey_ThenEnvelopeEncrypt(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -408,6 +422,7 @@ func TestDecodeBase64_Invalid(t *testing.T) {
 }
 
 func TestReencryptAESGCM_DecryptError(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -426,6 +441,7 @@ func TestReencryptAESGCM_DecryptError(t *testing.T) {
 }
 
 func TestGetAEADConcurrent(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -475,6 +491,7 @@ type failingReader struct{}
 func (failingReader) Read([]byte) (int, error) { return 0, io.ErrUnexpectedEOF }
 
 func TestEncrypt_NonceReadError(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -496,6 +513,7 @@ func TestEncrypt_NonceReadError(t *testing.T) {
 }
 
 func TestRotateKey_ReadError(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -522,6 +540,7 @@ func TestRotateKey_ReadError(t *testing.T) {
 }
 
 func TestEnvelopeEncrypt_DekReadError(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)
@@ -564,6 +583,7 @@ func TestFileMasterKey_ReadError(t *testing.T) {
 }
 
 func TestAESGCMEncrypt_DifferentPurposes(t *testing.T) {
+	t.Parallel()
 	key, err := secrets.GenerateMasterKey()
 	if err != nil {
 		t.Fatalf("GenerateMasterKey: %v", err)

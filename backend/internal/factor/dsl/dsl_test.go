@@ -6,6 +6,7 @@ import (
 )
 
 func TestLexer(t *testing.T) {
+	t.Parallel()
 	toks, err := NewLexer(`ema($close, 20) / ema($close, 60) - 1`).LexAll()
 	if err != nil {
 		t.Fatal(err)
@@ -16,6 +17,7 @@ func TestLexer(t *testing.T) {
 }
 
 func TestLexer_AllTokens(t *testing.T) {
+	t.Parallel()
 	expr := `$close + 3.14 * -2 + true && false || 1 != 2 ? 3 : 4`
 	toks, err := NewLexer(expr).LexAll()
 	if err != nil {
@@ -27,6 +29,7 @@ func TestLexer_AllTokens(t *testing.T) {
 }
 
 func TestLexer_String(t *testing.T) {
+	t.Parallel()
 	toks, err := NewLexer(`"hello world"`).LexAll()
 	if err != nil {
 		t.Fatal(err)
@@ -37,6 +40,7 @@ func TestLexer_String(t *testing.T) {
 }
 
 func TestParse(t *testing.T) {
+	t.Parallel()
 	expr := `ema($close, 20) / ema($close, 60) - 1`
 	node, err := Parse(expr)
 	if err != nil {
@@ -46,6 +50,7 @@ func TestParse(t *testing.T) {
 }
 
 func TestParse_Ternary(t *testing.T) {
+	t.Parallel()
 	node, err := Parse(`$close > sma($close, 20) ? 1 : -1`)
 	if err != nil {
 		t.Fatal(err)
@@ -58,6 +63,7 @@ func TestParse_Ternary(t *testing.T) {
 }
 
 func TestParse_Comparison(t *testing.T) {
+	t.Parallel()
 	for _, expr := range []string{
 		`$close > 100`,
 		`$close >= 100`,
@@ -74,6 +80,7 @@ func TestParse_Comparison(t *testing.T) {
 }
 
 func TestParse_LogicOps(t *testing.T) {
+	t.Parallel()
 	for _, expr := range []string{
 		`$close > 100 && $volume > 1000`,
 		`$close > 100 || $volume > 1000`,
@@ -86,6 +93,7 @@ func TestParse_LogicOps(t *testing.T) {
 }
 
 func TestSMABasic(t *testing.T) {
+	t.Parallel()
 	s := NewSMA(3)
 	vals := []float64{1, 2, 3, 4, 5, 6}
 	expected := []float64{math.NaN(), math.NaN(), 2, 3, 4, 5}
@@ -100,6 +108,7 @@ func TestSMABasic(t *testing.T) {
 }
 
 func TestEMABasic(t *testing.T) {
+	t.Parallel()
 	e := NewEMA(3)
 	vals := []float64{1, 1, 1, 1, 1}
 	for i, v := range vals {
@@ -117,6 +126,7 @@ func TestEMABasic(t *testing.T) {
 }
 
 func TestRSI(t *testing.T) {
+	t.Parallel()
 	rsi := NewRSI(14)
 	// Feed 14 identical values → RSI should be NaN (no gains/losses initially)
 	// Then feed a rising sequence
@@ -135,6 +145,7 @@ func TestRSI(t *testing.T) {
 }
 
 func TestCompileAndEval(t *testing.T) {
+	t.Parallel()
 	fields := FieldIndex{Fields: map[string]int{"close": 0}}
 	c := NewCompiler(fields, nil)
 
@@ -167,6 +178,7 @@ func TestCompileAndEval(t *testing.T) {
 }
 
 func TestCompile_ComplexExpr(t *testing.T) {
+	t.Parallel()
 	fields := FieldIndex{Fields: map[string]int{"close": 0}}
 	c := NewCompiler(fields, nil)
 
@@ -187,6 +199,7 @@ func TestCompile_ComplexExpr(t *testing.T) {
 }
 
 func TestCompile_BB(t *testing.T) {
+	t.Parallel()
 	fields := FieldIndex{Fields: map[string]int{"close": 0}}
 	c := NewCompiler(fields, nil)
 
@@ -206,6 +219,7 @@ func TestCompile_BB(t *testing.T) {
 }
 
 func TestCompile_MACD(t *testing.T) {
+	t.Parallel()
 	fields := FieldIndex{Fields: map[string]int{"close": 0}}
 	c := NewCompiler(fields, nil)
 
@@ -224,6 +238,7 @@ func TestCompile_MACD(t *testing.T) {
 }
 
 func TestCompile_UnknownField(t *testing.T) {
+	t.Parallel()
 	fields := FieldIndex{Fields: map[string]int{"close": 0}}
 	c := NewCompiler(fields, nil)
 	_, err := c.Compile(`sma($open, 20)`)
@@ -233,6 +248,7 @@ func TestCompile_UnknownField(t *testing.T) {
 }
 
 func TestCompile_UnknownFunction(t *testing.T) {
+	t.Parallel()
 	fields := FieldIndex{Fields: map[string]int{"close": 0}}
 	c := NewCompiler(fields, nil)
 	_, err := c.Compile(`bogus($close, 10)`)
@@ -242,6 +258,7 @@ func TestCompile_UnknownFunction(t *testing.T) {
 }
 
 func TestValidation_Safety(t *testing.T) {
+	t.Parallel()
 	err := ValidateExpression(`exec("ls")`, nil, nil)
 	if err == nil {
 		t.Error("expected rejection of dangerous token 'exec'")
@@ -249,6 +266,7 @@ func TestValidation_Safety(t *testing.T) {
 }
 
 func TestValidation_LengthLimit(t *testing.T) {
+	t.Parallel()
 	// Build a 5000-char expression
 	long := ""
 	for i := 0; i < 5000; i++ {
@@ -262,6 +280,7 @@ func TestValidation_LengthLimit(t *testing.T) {
 }
 
 func TestValidation_ParseTimeout(t *testing.T) {
+	t.Parallel()
 	// A deeply nested expression should trigger timeout
 	nested := ""
 	for i := 0; i < 200; i++ {
@@ -276,6 +295,7 @@ func TestValidation_ParseTimeout(t *testing.T) {
 }
 
 func TestParser_Arithmetic(t *testing.T) {
+	t.Parallel()
 	for _, expr := range []string{
 		"1 + 2",
 		"3 - 4",
@@ -293,6 +313,7 @@ func TestParser_Arithmetic(t *testing.T) {
 }
 
 func TestOperatorWarmup(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name   string
 		newOp  func() Op
@@ -318,6 +339,7 @@ func TestOperatorWarmup(t *testing.T) {
 }
 
 func TestOpReset(t *testing.T) {
+	t.Parallel()
 	sma := NewSMA(3)
 	for i := 0; i < 5; i++ {
 		sma.Eval(float64(i))

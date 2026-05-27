@@ -57,8 +57,7 @@ export default function MainLayout() {
   const location = useLocation();
   const { user, logout } = useAuth();
 
-  const adminRoles = ['super_admin', 'operation', 'customer_service', 'audit'];
-  const isAdmin = user?.role && adminRoles.includes(user.role);
+  const isAdmin = user?.permissions?.includes('admin:view') ?? false;
 
   useEffect(() => {
     const handler = (lng: string) => setLanguageState(normalizeLanguage(lng));

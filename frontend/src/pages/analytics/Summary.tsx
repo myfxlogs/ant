@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, Select, Row, Col, Statistic, Space } from 'antd';
 import { StatusResult } from '@/components/common/StatusResult';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,7 @@ import {
 } from '@tabler/icons-react';
 import { useAccount } from '@/hooks/useAccount';
 import { analyticsApi } from '@/client/analytics';
+import { useRpcQuery } from '@/hooks/useRpcQuery';
 import type { SymbolInfo } from '@/client/market';
 import type { EconomicCalendarEvent, EconomicIndicator } from '@/gen/ant/v1/economic_data_pb';
 import { periodOptions } from './Summary.constants';
@@ -93,13 +94,6 @@ export default function Summary() {
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState('month');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [calendarEvents, setCalendarEvents] = useState<EconomicCalendarEvent[]>([]);
-  const [calendarLoading, setCalendarLoading] = useState(false);
-  const [keyIndicators, setKeyIndicators] = useState<EconomicIndicator[]>([]);
-  const [keyIndicatorsLoading, setKeyIndicatorsLoading] = useState(false);
 
   useEffect(() => {
     fetchAccounts();
@@ -114,75 +108,44 @@ export default function Summary() {
     }
   }, [accounts, selectedAccount]);
 
-  const fetchAnalytics = useCallback(async () => {
-    if (!selectedAccount) return;
-    setLoading(true);
-    setError(null);
-    try {
+  const { data: analytics, isLoading: loading, error: queryError, refetch: refetchAnalytics } = useRpcQuery(
+    ['analytics', selectedAccount || '', selectedYear],
+    async () => {
+      if (!selectedAccount) return null;
       const [accountAnalytics, monthlyPnL] = await Promise.all([
         analyticsApi.getAccountAnalytics(selectedAccount),
         analyticsApi.getMonthlyPnL(selectedAccount, selectedYear),
       ]);
-      setAnalytics({
+      return {
         ...(accountAnalytics as AnalyticsData),
         monthlyPnl: (monthlyPnL as { monthlyPnl?: AnalyticsMonthlyPnlItem[] })?.monthlyPnl || (accountAnalytics as AnalyticsData)?.monthlyPnl || [],
-      });
-    } catch (err: unknown) {
-      setAnalytics(null);
-      setError(err instanceof Error ? err.message : 'Failed to load analytics');
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedAccount, selectedYear]);
+      } as AnalyticsData;
+    },
+    { enabled: !!selectedAccount },
+  );
+  const error = queryError instanceof Error ? queryError.message : null;
 
   useEffect(() => {
     if (selectedAccount) {
-      fetchAnalytics();
+      refetchAnalytics();
     }
-  }, [selectedAccount, selectedPeriod, fetchAnalytics]);
+  }, [selectedPeriod, refetchAnalytics]);
 
-  useEffect(() => {
-    let cancelled = false;
-    const loadCalendar = async () => {
-      setCalendarLoading(true);
-      try {
-        const events = await analyticsApi.getEconomicCalendar();
-        if (!cancelled) {
-          setCalendarEvents(Array.isArray(events) ? events.slice(0, 50) : []);
-        }
-      } catch (_error) {
-        if (!cancelled) {
-          setCalendarEvents([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setCalendarLoading(false);
-        }
-      }
-    };
-    const loadIndicators = async () => {
-      setKeyIndicatorsLoading(true);
-      try {
-        const indicators = await analyticsApi.getEconomicIndicators();
-        if (!cancelled) {
-          setKeyIndicators(Array.isArray(indicators) ? indicators : []);
-        }
-      } catch (_error) {
-        if (!cancelled) {
-          setKeyIndicators([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setKeyIndicatorsLoading(false);
-        }
-      }
-    };
-    void loadCalendar();
-    void loadIndicators();
-    return () => {
-      cancelled = true;
-    };
-  }, [i18n.language]);
+  const { data: calendarEvents = [] } = useRpcQuery(
+    ['economic-calendar'],
+    async () => {
+      const events = await analyticsApi.getEconomicCalendar();
+      return (Array.isArray(events) ? events.slice(0, 50) : []) as EconomicCalendarEvent[];
+    },
+  );
+
+  const { data: keyIndicators = [] } = useRpcQuery(
+    ['economic-indicators'],
+    async () => {
+      const indicators = await analyticsApi.getEconomicIndicators();
+      return (Array.isArray(indicators) ? indicators : []) as EconomicIndicator[];
+    },
+  );
 
   const tradeStats = analytics?.tradeStats || null;
   const riskMetrics = analytics?.riskMetrics || null;
@@ -617,10 +580,10 @@ export default function Summary() {
         >
           <Row gutter={16}>
             <Col xs={24} md={14}>
-              {calendarLoading && calendarEvents.length === 0 ? (
+              {false && calendarEvents.length === 0 ? (
                 <div style={{ color: '#8A9AA5' }}>{t('analytics.summary.economicCalendar.loading') || 'Loading economic calendar...'}</div>
               ) : null}
-              {!calendarLoading && calendarEvents.length === 0 ? (
+              {!false && calendarEvents.length === 0 ? (
                 <div style={{ color: '#8A9AA5' }}>{t('analytics.summary.economicCalendar.empty') || 'No economic events available.'}</div>
               ) : null}
               {calendarEvents.length > 0 ? (
@@ -655,10 +618,10 @@ export default function Summary() {
               <div className="mb-2 text-sm font-medium" style={{ color: '#141D22' }}>
                 {t('analytics.summary.economicCalendar.keyIndicatorsTitle') || 'Key macro indicators'}
               </div>
-              {keyIndicatorsLoading && keyIndicators.length === 0 ? (
+              {false && keyIndicators.length === 0 ? (
                 <div style={{ color: '#8A9AA5' }}>{t('analytics.summary.economicCalendar.loading') || 'Loading economic calendar...'}</div>
               ) : null}
-              {!keyIndicatorsLoading && keyIndicators.length === 0 ? (
+              {!false && keyIndicators.length === 0 ? (
                 <div style={{ color: '#8A9AA5' }}>{t('analytics.summary.economicCalendar.empty') || 'No economic events available.'}</div>
               ) : null}
               {keyIndicators.length > 0 ? (

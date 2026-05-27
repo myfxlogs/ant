@@ -7,6 +7,7 @@ import (
 )
 
 func TestRealClock_Now(t *testing.T) {
+	t.Parallel()
 	c := NewRealClock()
 	before := time.Now()
 	now := c.Now()
@@ -18,6 +19,7 @@ func TestRealClock_Now(t *testing.T) {
 }
 
 func TestRealClock_Sleep(t *testing.T) {
+	t.Parallel()
 	c := NewRealClock()
 	start := c.Now()
 	c.Sleep(10 * time.Millisecond)
@@ -28,6 +30,7 @@ func TestRealClock_Sleep(t *testing.T) {
 }
 
 func TestRealClock_NewTicker(t *testing.T) {
+	t.Parallel()
 	c := NewRealClock()
 	ticker := c.NewTicker(10 * time.Millisecond)
 	defer ticker.Stop()
@@ -41,6 +44,7 @@ func TestRealClock_NewTicker(t *testing.T) {
 }
 
 func TestRealClock_NewTimer(t *testing.T) {
+	t.Parallel()
 	c := NewRealClock()
 	timer := c.NewTimer(10 * time.Millisecond)
 	defer timer.Stop()
@@ -54,6 +58,7 @@ func TestRealClock_NewTimer(t *testing.T) {
 }
 
 func TestRealClock_AfterFunc(t *testing.T) {
+	t.Parallel()
 	c := NewRealClock()
 	done := make(chan struct{})
 	c.AfterFunc(10*time.Millisecond, func() { close(done) })
@@ -67,6 +72,7 @@ func TestRealClock_AfterFunc(t *testing.T) {
 }
 
 func TestSimulatedClock_Now(t *testing.T) {
+	t.Parallel()
 	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	c := NewSimulatedClock(start)
 	if !c.Now().Equal(start) {
@@ -75,6 +81,7 @@ func TestSimulatedClock_Now(t *testing.T) {
 }
 
 func TestSimulatedClock_Sleep(t *testing.T) {
+	t.Parallel()
 	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	c := NewSimulatedClock(start)
 	c.Sleep(time.Hour)
@@ -84,6 +91,7 @@ func TestSimulatedClock_Sleep(t *testing.T) {
 }
 
 func TestSimulatedClock_Timer(t *testing.T) {
+	t.Parallel()
 	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	c := NewSimulatedClock(start)
 
@@ -98,6 +106,7 @@ func TestSimulatedClock_Timer(t *testing.T) {
 }
 
 func TestSimulatedClock_AfterFuncAndAdvance(t *testing.T) {
+	t.Parallel()
 	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	c := NewSimulatedClock(start)
 
@@ -114,6 +123,7 @@ func TestSimulatedClock_AfterFuncAndAdvance(t *testing.T) {
 }
 
 func TestSimulatedClock_Ticker(t *testing.T) {
+	t.Parallel()
 	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	c := NewSimulatedClock(start)
 
@@ -132,6 +142,7 @@ func TestSimulatedClock_Ticker(t *testing.T) {
 }
 
 func TestSimulatedTimer_Stop(t *testing.T) {
+	t.Parallel()
 	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	c := NewSimulatedClock(start)
 
@@ -149,6 +160,7 @@ func TestSimulatedTimer_Stop(t *testing.T) {
 }
 
 func TestSimulatedTimer_Reset(t *testing.T) {
+	t.Parallel()
 	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	c := NewSimulatedClock(start)
 
@@ -165,6 +177,7 @@ func TestSimulatedTimer_Reset(t *testing.T) {
 }
 
 func TestSimulatedClock_SetNow(t *testing.T) {
+	t.Parallel()
 	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	c := NewSimulatedClock(start)
 
@@ -176,6 +189,7 @@ func TestSimulatedClock_SetNow(t *testing.T) {
 }
 
 func TestSimulatedClock_Determinism(t *testing.T) {
+	t.Parallel()
 	// M10-BASE-A5: same sequence of events → same output (determinism contract).
 	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 
@@ -204,6 +218,7 @@ func TestSimulatedClock_Determinism(t *testing.T) {
 }
 
 func TestEventHeap_Order(t *testing.T) {
+	t.Parallel()
 	h := &eventHeap{}
 
 	now := time.Now()
@@ -222,6 +237,7 @@ func TestEventHeap_Order(t *testing.T) {
 }
 
 func TestEventHeap_SameTimeOrder(t *testing.T) {
+	t.Parallel()
 	h := &eventHeap{}
 
 	now := time.Now()

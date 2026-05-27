@@ -10,6 +10,7 @@ import (
 )
 
 func TestSubscriber_Push(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultSubscriberConfig()
 	cfg.BufferSize = 2
 	// Disable finality gate for this test.
@@ -34,6 +35,7 @@ func TestSubscriber_Push(t *testing.T) {
 }
 
 func TestSubscriber_Chan(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultSubscriberConfig()
 	cfg.FinalityDelay = 0
 	s := NewSubscriber(cfg, zap.NewNop())
@@ -52,6 +54,7 @@ func TestSubscriber_Chan(t *testing.T) {
 }
 
 func TestSubscriber_StartStop(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultSubscriberConfig()
 	s := NewSubscriber(cfg, zap.NewNop())
 
@@ -61,6 +64,7 @@ func TestSubscriber_StartStop(t *testing.T) {
 }
 
 func TestSubscriber_BarFinalityGate_SkipRecent(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultSubscriberConfig()
 	cfg.BufferSize = 10
 	cfg.FinalityDelay = 10 * time.Second // bars must be at least 10s old
@@ -81,6 +85,7 @@ func TestSubscriber_BarFinalityGate_SkipRecent(t *testing.T) {
 }
 
 func TestSubscriber_BarFinalityGate_OldPasses(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultSubscriberConfig()
 	cfg.BufferSize = 10
 	cfg.FinalityDelay = 10 * time.Second
@@ -106,6 +111,7 @@ func TestSubscriber_BarFinalityGate_OldPasses(t *testing.T) {
 }
 
 func TestSubscriber_BarFinalityGate_ReplayAlwaysPasses(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultSubscriberConfig()
 	cfg.BufferSize = 10
 	cfg.FinalityDelay = 10 * time.Second
@@ -123,6 +129,7 @@ func TestSubscriber_BarFinalityGate_ReplayAlwaysPasses(t *testing.T) {
 }
 
 func TestSubscriber_BarFinalityGate_Disabled(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultSubscriberConfig()
 	cfg.BufferSize = 10
 	cfg.FinalityDelay = 0 // disabled

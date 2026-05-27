@@ -11,6 +11,7 @@ import (
 )
 
 func TestReconcileBeforeAccept(t *testing.T) {
+	t.Parallel()
 	gate := NewReconcileGate()
 	hub := NewHub()
 

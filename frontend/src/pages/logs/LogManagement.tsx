@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Table, Card, Form, DatePicker, Select, Button, Tag, Tabs, Space, Input } from 'antd';
 import { accountApi } from '@/client/account';
 import { logApi } from '@/client/log';
+import { useRpcQuery } from '@/hooks/useRpcQuery';
 import type { ConnectionLog } from '@/gen/ant/v1/log_connection_pb';
 import type { ExecutionLog } from '@/gen/ant/v1/log_execution_pb';
 import type { OrderHistoryRecord } from '@/gen/ant/v1/log_order_pb';
@@ -35,18 +36,44 @@ interface OperationDetails {
 export default function LogManagement() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('connection');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const [accounts, setAccounts] = useState<AccountLike[]>([]);
+  const [filters, setFilters] = useState<Record<string, unknown>>({});
   const [opRiskCode, setOpRiskCode] = useState('');
   const [opRequestId, setOpRequestId] = useState('');
   const [opTriggerSource, setOpTriggerSource] = useState('');
   const [opResult, setOpResult] = useState('');
   const [form] = Form.useForm();
+
+  const { data: accounts = [] } = useRpcQuery(
+    ['logs', 'accounts'],
+    async () => {
+      const accs = await accountApi.list();
+      return (Array.isArray(accs) ? accs : []) as AccountLike[];
+    },
+  );
+
+  const { data: queryResult, isLoading: loading, error: queryError, refetch } = useRpcQuery(
+    ['logs', activeTab, page, pageSize, filters],
+    async () => {
+      switch (activeTab) {
+        case 'connection':
+          return logApi.getConnectionLogs({ page, pageSize, ...filters });
+        case 'execution':
+          return logApi.getExecutionLogs({ page, pageSize, ...filters });
+        case 'orders':
+          return logApi.getOrderHistory({ page, pageSize, ...filters });
+        case 'operations':
+        default:
+          return logApi.getOperationLogs({ page, pageSize, ...filters });
+      }
+    },
+  );
+
+  const logs = (queryResult as { logs?: LogEntry[]; orders?: OrderHistoryRecord[]; total: number } | undefined)?.logs
+    || (queryResult as { orders?: OrderHistoryRecord[] } | undefined)?.orders || [];
+  const total = (queryResult as { total?: number } | undefined)?.total || 0;
+  const error = queryError ? getErrorMessage(queryError, t('logs.loadFailed')) : null;
 
   const accountById = useMemo(() => {
     const m = new Map<string, AccountLike>();
@@ -98,84 +125,22 @@ export default function LogManagement() {
     return d.toLocaleString(locale, { timeZone, hour12: false });
   };
 
-  const fetchLogs = useCallback(async (filters?: Record<string, unknown>) => {
-    setLoading(true);
-    setError(null);
-    try {
-      let result: { logs?: LogEntry[]; orders?: OrderHistoryRecord[]; total: number };
-      
-      switch (activeTab) {
-        case 'connection':
-          result = await logApi.getConnectionLogs({
-            page,
-            pageSize,
-            ...filters,
-          });
-          setLogs(result.logs);
-          setTotal(result.total);
-          break;
-        case 'execution':
-          result = await logApi.getExecutionLogs({
-            page,
-            pageSize,
-            ...filters,
-          });
-          setLogs(result.logs);
-          setTotal(result.total);
-          break;
-        case 'orders':
-          result = await logApi.getOrderHistory({
-            page,
-            pageSize,
-            ...filters,
-          });
-          setLogs(result.orders);
-          setTotal(result.total);
-          break;
-        case 'operations':
-          result = await logApi.getOperationLogs({
-            page,
-            pageSize,
-            ...filters,
-          });
-          setLogs(result.logs);
-          setTotal(result.total);
-          break;
-      }
-    } catch (err) {
-      setError(getErrorMessage(err, t('logs.loadFailed')));
-    } finally {
-      setLoading(false);
-    }
-  }, [activeTab, page, pageSize]);
-
-  useEffect(() => {
-    accountApi
-      .list()
-      .then((accs: AccountLike[]) => setAccounts(Array.isArray(accs) ? accs : []))
-      .catch(() => setAccounts([]));
-  }, []);
-
-  useEffect(() => {
-    fetchLogs();
-  }, [fetchLogs]);
-
   const handleSearch = () => {
     const values = form.getFieldsValue();
-    const filters: Record<string, unknown> = {};
-    
+    const newFilters: Record<string, unknown> = {};
+
     if (values.dateRange) {
-      filters.startDate = values.dateRange[0].format('YYYY-MM-DD');
-      filters.endDate = values.dateRange[1].format('YYYY-MM-DD');
+      newFilters.startDate = values.dateRange[0].format('YYYY-MM-DD');
+      newFilters.endDate = values.dateRange[1].format('YYYY-MM-DD');
     }
-    if (values.status) filters.status = values.status;
-    if (values.symbol) filters.symbol = values.symbol;
-    if (values.accountId) filters.accountId = values.accountId;
-    if (values.module) filters.module = values.module;
-    if (values.action) filters.action = values.action;
-    
+    if (values.status) newFilters.status = values.status;
+    if (values.symbol) newFilters.symbol = values.symbol;
+    if (values.accountId) newFilters.accountId = values.accountId;
+    if (values.module) newFilters.module = values.module;
+    if (values.action) newFilters.action = values.action;
+
     setPage(1);
-    fetchLogs(filters);
+    setFilters(newFilters);
   };
 
   const handleReset = () => {
@@ -185,7 +150,7 @@ export default function LogManagement() {
     setOpTriggerSource('');
     setOpResult('');
     setPage(1);
-    fetchLogs();
+    setFilters({});
   };
 
   const getStatusTag = (status?: string) => {
@@ -395,10 +360,8 @@ export default function LogManagement() {
               <Button
                 onClick={() => {
                   form.setFieldsValue({ module: 'trading_risk', action: 'pre_trade_validate' });
-                  const values = form.getFieldsValue();
                   setPage(1);
-                  fetchLogs({
-                    ...values,
+                  setFilters({
                     module: 'trading_risk',
                     action: 'pre_trade_validate',
                   });
@@ -478,7 +441,7 @@ export default function LogManagement() {
           error={error}
           empty={!loading && !error && filteredLogs.length === 0}
           emptyText={t('common.noData', { defaultValue: 'No logs found' })}
-          onRetry={() => fetchLogs()}
+          onRetry={() => refetch()}
         >
           <Table
             scroll={{ x: "max-content" }}

@@ -9,6 +9,7 @@ import (
 )
 
 func TestScheduleConfig_CronExpression(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name        string
 		cronExpr    string
@@ -42,6 +43,7 @@ func parseCronExpression(expr string) (time.Time, error) {
 }
 
 func TestStrategySchedule_IsActive(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name     string
 		schedule *StrategySchedule
@@ -73,6 +75,7 @@ func TestStrategySchedule_IsActive(t *testing.T) {
 }
 
 func TestIntervalCalculation(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name           string
 		intervalMs     int
@@ -99,6 +102,7 @@ type StrategySchedule struct {
 }
 
 func TestScheduleType_Validation(t *testing.T) {
+	t.Parallel()
 	tests := []struct {
 		name         string
 		scheduleType string

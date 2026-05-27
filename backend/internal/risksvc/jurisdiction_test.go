@@ -7,6 +7,7 @@ import (
 )
 
 func TestJurisdictionGate(t *testing.T) {
+	t.Parallel()
 	t.Run("all clear with verified KYC and clean IP", func(t *testing.T) {
 		store := NewStubJurisdictionStore()
 		store.SetKYCStatus(context.Background(), "user-1", "verified", "")

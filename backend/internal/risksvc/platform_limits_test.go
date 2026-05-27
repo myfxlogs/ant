@@ -5,6 +5,7 @@ import (
 )
 
 func TestPlatformLimits_AllPass(t *testing.T) {
+	t.Parallel()
 	limits := DefaultPlatformLimits()
 	exposure := &PlatformExposure{
 		NetExposureBySymbol: map[string]float64{"EURUSD": 1.0},
@@ -19,6 +20,7 @@ func TestPlatformLimits_AllPass(t *testing.T) {
 }
 
 func TestPlatformLimits_GrossExposureBlocked(t *testing.T) {
+	t.Parallel()
 	limits := &PlatformLimits{MaxTotalGrossExposure: 1_000_000}
 	exposure := &PlatformExposure{
 		TotalGrossExposure: 1_500_000,
@@ -33,6 +35,7 @@ func TestPlatformLimits_GrossExposureBlocked(t *testing.T) {
 }
 
 func TestPlatformLimits_NetExposureBlocked(t *testing.T) {
+	t.Parallel()
 	limits := &PlatformLimits{MaxTotalNetExposure: 500_000}
 	exposure := &PlatformExposure{
 		TotalNetExposure: -800_000,
@@ -44,6 +47,7 @@ func TestPlatformLimits_NetExposureBlocked(t *testing.T) {
 }
 
 func TestPlatformLimits_SymbolNetExposureBlocked(t *testing.T) {
+	t.Parallel()
 	limits := &PlatformLimits{MaxNetExposurePerSymbol: 1_000_000}
 	exposure := &PlatformExposure{
 		NetExposureBySymbol: map[string]float64{"EURUSD": 1_500_000},
@@ -58,6 +62,7 @@ func TestPlatformLimits_SymbolNetExposureBlocked(t *testing.T) {
 }
 
 func TestPlatformLimits_MarginBlocked(t *testing.T) {
+	t.Parallel()
 	limits := &PlatformLimits{MaxTotalMarginUsed: 100_000}
 	exposure := &PlatformExposure{
 		TotalMarginUsed: 150_000,
@@ -69,6 +74,7 @@ func TestPlatformLimits_MarginBlocked(t *testing.T) {
 }
 
 func TestPlatformLimits_NilLimits(t *testing.T) {
+	t.Parallel()
 	var limits *PlatformLimits
 	exposure := &PlatformExposure{TotalGrossExposure: 100_000_000}
 	result := limits.Check(exposure)
@@ -78,6 +84,7 @@ func TestPlatformLimits_NilLimits(t *testing.T) {
 }
 
 func TestPlatformLimits_ZeroLimits(t *testing.T) {
+	t.Parallel()
 	limits := &PlatformLimits{}
 	exposure := &PlatformExposure{TotalGrossExposure: 100_000_000}
 	result := limits.Check(exposure)

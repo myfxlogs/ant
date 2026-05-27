@@ -6,6 +6,7 @@ import (
 )
 
 func TestEngine_AllPass(t *testing.T) {
+	t.Parallel()
 	engine := NewEngine(
 		&MaxPosition{Max: 10},
 		&Margin{MinLevel: 1.5},
@@ -23,6 +24,7 @@ func TestEngine_AllPass(t *testing.T) {
 }
 
 func TestEngine_MaxPositionBlocked(t *testing.T) {
+	t.Parallel()
 	engine := NewEngine(&MaxPosition{Max: 2})
 	req := &CheckRequest{Symbol: "EURUSD", Positions: 3}
 	result := engine.Evaluate(context.Background(), req)
@@ -35,6 +37,7 @@ func TestEngine_MaxPositionBlocked(t *testing.T) {
 }
 
 func TestEngine_MarginBlocked(t *testing.T) {
+	t.Parallel()
 	engine := NewEngine(&Margin{MinLevel: 1.5})
 	req := &CheckRequest{Symbol: "EURUSD", Equity: 1000, Margin: 2000}
 	result := engine.Evaluate(context.Background(), req)
@@ -47,6 +50,7 @@ func TestEngine_MarginBlocked(t *testing.T) {
 }
 
 func TestEngine_CanonicalAuthBlocked(t *testing.T) {
+	t.Parallel()
 	engine := NewEngine(&CanonicalAuth{Whitelist: []string{"EURUSD", "GBPUSD"}})
 	req := &CheckRequest{Symbol: "BTCUSD"}
 	result := engine.Evaluate(context.Background(), req)
@@ -56,6 +60,7 @@ func TestEngine_CanonicalAuthBlocked(t *testing.T) {
 }
 
 func TestEngine_CanonicalAuthAllowed(t *testing.T) {
+	t.Parallel()
 	engine := NewEngine(&CanonicalAuth{Whitelist: []string{"EURUSD"}})
 	req := &CheckRequest{Symbol: "EURUSD"}
 	result := engine.Evaluate(context.Background(), req)
@@ -65,6 +70,7 @@ func TestEngine_CanonicalAuthAllowed(t *testing.T) {
 }
 
 func TestEngine_DrawdownBlocked(t *testing.T) {
+	t.Parallel()
 	engine := NewEngine(&Drawdown{MaxPct: 10, PeakEquity: 10000})
 	req := &CheckRequest{Equity: 8000} // 20% drawdown
 	result := engine.Evaluate(context.Background(), req)
@@ -74,6 +80,7 @@ func TestEngine_DrawdownBlocked(t *testing.T) {
 }
 
 func TestEngine_DrawdownAllowed(t *testing.T) {
+	t.Parallel()
 	engine := NewEngine(&Drawdown{MaxPct: 20, PeakEquity: 10000})
 	req := &CheckRequest{Equity: 9500} // 5% drawdown
 	result := engine.Evaluate(context.Background(), req)
@@ -83,6 +90,7 @@ func TestEngine_DrawdownAllowed(t *testing.T) {
 }
 
 func TestEngine_RulesList(t *testing.T) {
+	t.Parallel()
 	engine := NewEngine(&MaxPosition{Max: 5}, &Session{}, &Margin{MinLevel: 1.5})
 	names := engine.Rules()
 	if len(names) != 3 {
@@ -91,6 +99,7 @@ func TestEngine_RulesList(t *testing.T) {
 }
 
 func TestEngine_SessionWeekend(t *testing.T) {
+	t.Parallel()
 	// Session rule rejects weekends — test logic without time injection
 	engine := NewEngine(&Session{})
 	req := &CheckRequest{Symbol: "EURUSD"}

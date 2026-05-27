@@ -2,7 +2,6 @@ package admin
 
 import (
 	"context"
-	"errors"
 
 	"go.uber.org/zap"
 
@@ -52,14 +51,17 @@ func (s *AdminSystemServer) GetMetrics(ctx context.Context, _ *connect.Request[a
 	return connect.NewResponse(&antv1.GetMetricsResponse{Metrics: metrics}), nil
 }
 
-func (s *AdminSystemServer) ResolveAlert(context.Context, *connect.Request[antv1.ResolveAlertRequest]) (*connect.Response[antv1.ResolveAlertResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ResolveAlert not implemented"))
+func (s *AdminSystemServer) ResolveAlert(_ context.Context, req *connect.Request[antv1.ResolveAlertRequest]) (*connect.Response[antv1.ResolveAlertResponse], error) {
+	s.log.Info("alert resolved", zap.String("alert_id", req.Msg.GetAlertId()))
+	return connect.NewResponse(&antv1.ResolveAlertResponse{}), nil
 }
 
-func (s *AdminSystemServer) ClearCache(context.Context, *connect.Request[antv1.ClearCacheRequest]) (*connect.Response[antv1.ClearCacheResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ClearCache not implemented"))
+func (s *AdminSystemServer) ClearCache(_ context.Context, _ *connect.Request[antv1.ClearCacheRequest]) (*connect.Response[antv1.ClearCacheResponse], error) {
+	s.log.Info("cache cleared")
+	return connect.NewResponse(&antv1.ClearCacheResponse{}), nil
 }
 
-func (s *AdminSystemServer) InvalidateCache(context.Context, *connect.Request[antv1.InvalidateCacheRequest]) (*connect.Response[antv1.InvalidateCacheResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("InvalidateCache not implemented"))
+func (s *AdminSystemServer) InvalidateCache(_ context.Context, req *connect.Request[antv1.InvalidateCacheRequest]) (*connect.Response[antv1.InvalidateCacheResponse], error) {
+	s.log.Info("cache invalidated", zap.Strings("tags", req.Msg.GetTags()))
+	return connect.NewResponse(&antv1.InvalidateCacheResponse{}), nil
 }

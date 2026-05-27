@@ -24,6 +24,7 @@ import (
 //
 // Build tag: loadtest. Required env: CH_USER, CH_PASSWORD, CH_DATABASE.
 func Test100AccountsNoSpill(t *testing.T) {
+	t.Parallel()
 	if os.Getenv("CH_USER") == "" {
 		t.Skip("CH_USER not set; loadtest needs running CH docker stack")
 	}

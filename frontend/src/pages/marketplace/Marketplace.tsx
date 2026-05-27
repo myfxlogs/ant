@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
 import { Card, List, Button, Space, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { marketplaceClient } from '@/client/connect';
+import { useRpcQuery } from '@/hooks/useRpcQuery';
 import { StatusResult } from '@/components/common/StatusResult';
 
 interface Strategy {
@@ -14,26 +14,15 @@ interface Strategy {
 
 export default function MarketplacePage() {
   const { t } = useTranslation();
-  const [strategies, setStrategies] = useState<Strategy[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const userId = localStorage.getItem('userId') || '';
 
-  const fetchPublished = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
+  const { data: strategies = [], isLoading, error, refetch } = useRpcQuery(
+    ['marketplace', 'published', userId],
+    async () => {
       const resp = await marketplaceClient.listPublished({ userId, limit: 50 });
-      setStrategies((resp.strategies || []) as unknown as Strategy[]);
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : t('common.loadingFailed');
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  }, [userId, t]);
-
-  useEffect(() => { fetchPublished(); }, [fetchPublished]);
+      return (resp.strategies || []) as unknown as Strategy[];
+    },
+  );
 
   async function handleSubscribe(publisherUserId: string, strategyId: string) {
     if (!userId) { message.warning('No user ID set'); return; }
@@ -50,20 +39,22 @@ export default function MarketplacePage() {
     try {
       await marketplaceClient.publishStrategy({ userId, strategyId });
       message.success('Published!');
-      fetchPublished();
+      refetch();
     } catch (e: unknown) {
       message.error(e instanceof Error ? e.message : 'Publish failed');
     }
   }
 
+  const errorMessage = error instanceof Error ? error.message : undefined;
+
   return (
     <Card title="Strategy Marketplace">
       <StatusResult
-        loading={loading}
-        error={error}
+        loading={isLoading}
+        error={errorMessage}
         empty={strategies.length === 0}
         emptyText={t('common.noData', { defaultValue: 'No strategies published' })}
-        onRetry={fetchPublished}
+        onRetry={refetch}
       >
         <List
           dataSource={strategies}

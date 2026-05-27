@@ -80,6 +80,7 @@ func TestEnvMasterKey_Base64Format(t *testing.T) {
 }
 
 func TestFileMasterKey_Rotate(t *testing.T) {
+	t.Parallel()
 	_, _, err := secrets.FileMasterKey{}.Rotate(context.Background())
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "rotate not supported")
