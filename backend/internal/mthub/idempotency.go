@@ -102,17 +102,28 @@ func advisoryLockKey(accountID, clientID string) (int32, int32) {
 func (g *ThreeLayerGuard) tryAdvisoryLock(ctx context.Context, accountID, clientID string) (acquired bool, unlock func(), err error) {
 	k1, k2 := advisoryLockKey(accountID, clientID)
 
-	var ok bool
-	err = g.pg.QueryRow(ctx, "SELECT pg_try_advisory_lock($1, $2)", k1, k2).Scan(&ok)
+	// Use transaction-scoped lock: pg_try_advisory_xact_lock releases
+	// automatically on COMMIT/ROLLBACK, so it works correctly with pgxpool
+	// connection pooling (unlike session-level pg_try_advisory_lock).
+	tx, err := g.pg.Begin(ctx)
 	if err != nil {
+		return false, nil, fmt.Errorf("begin tx for advisory lock: %w", err)
+	}
+
+	var ok bool
+	err = tx.QueryRow(ctx, "SELECT pg_try_advisory_xact_lock($1, $2)", k1, k2).Scan(&ok)
+	if err != nil {
+		tx.Rollback(ctx)
 		return false, nil, err
 	}
 	if !ok {
+		tx.Rollback(ctx)
 		return false, nil, nil
 	}
 
 	unlock = func() {
-		_, _ = g.pg.Exec(context.Background(), "SELECT pg_advisory_unlock($1, $2)", k1, k2)
+		// Transaction-scoped lock auto-releases on commit; no explicit unlock needed.
+		_ = tx.Commit(ctx)
 	}
 	return true, unlock, nil
 }
