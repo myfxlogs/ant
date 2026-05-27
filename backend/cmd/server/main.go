@@ -418,6 +418,10 @@ func main() {
 		estimator := &costsvc.StaticEstimator{Model: eurtusdModel}
 		mthubSvc.SetCostEstimator(estimator)
 
+		// S1.2: OMS state writer for order lifecycle tracking.
+		omsWriter := mthub.NewOmsWriter(pool, eventStore)
+		mthubSvc.SetOmsWriter(omsWriter)
+
 	adminJurisdictionServer := admin.NewAdminJurisdictionServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(authInterceptor, adminInterceptor)))
 

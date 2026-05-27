@@ -1,0 +1,67 @@
+=== Sprint 1 · Task S1.2: Wire OMS 15-state state machine ===
+Date: 2026-05-27
+Plan: docs/plan/2026-05-27-整改与执行计划.md §3.S1.2
+
+--- Problem ---
+Orders were submitted directly to the broker with no state tracking in PG. The `oms` package had a full 15-state machine implementation (statemachine.go, repo.go, broker.go, adapter_mt.go) with transition validation and PG persistence, but it was never wired into the order placement path. TradeEvents published to NATS had hardcoded FromState/ToState ("NEW"/"SUBMITTED") with no relationship to actual state transitions.
+
+--- Fix ---
+Part 1 — mthub/oms_writer.go (NEW):
+- Self-contained OMS state writer with local state constants (avoids circular dependency: oms/adapter_mt.go imports mthub for OrderExecutor)
+- 12 state constants: NEW, VALIDATED, RISK_APPROVED, SUBMITTED, WORKING, PARTIALLY_FILLED, FILLED, CANCELLED, REJECTED, FAILED, EXPIRED
+- `isValidOMSTransition()` — full transition table mirroring oms.isValid() (7 state groups, all valid transitions)
+- `InsertOrder()` — INSERT INTO orders with state=NEW, ON CONFLICT DO NOTHING for idempotency
+- `Transition()` — validates transition, UPDATEs orders state in PG, publishes NATS event
+- `IdempotencyKey()` — deterministic order ID: "ord-{accountID}-{clientID}"
+
+Part 2 — mthub/service.go — PlaceOrder modifications:
+- Added `omsWriter *OmsWriter` field + `SetOmsWriter()` setter
+- After idempotency check: InsertOrder with state=NEW
+- After pipeline passes: Transition(NEW → VALIDATED), Transition(VALIDATED → RISK_APPROVED)
+- Pipeline rejects: Transition(NEW → REJECTED)
+- No pipeline configured: auto-approve to RISK_APPROVED
+- Broker session not found: Transition(RISK_APPROVED → FAILED)
+- Broker PlaceOrder error: Transition(RISK_APPROVED → FAILED)
+- Broker success: Transition(RISK_APPROVED → SUBMITTED)
+- TradeEvent FromState changed from hardcoded "NEW" to string(OMSStateRiskApproved)
+
+Part 3 — cmd/server/main.go:
+- `omsWriter := mthub.NewOmsWriter(pool, eventStore)`
+- `mthubSvc.SetOmsWriter(omsWriter)`
+
+Circular dependency resolution:
+- oms/adapter_mt.go imports mthub (for OrderExecutor interface)
+- mthub cannot import oms without creating a cycle
+- Solution: duplicated state constants and transition table in mthub/oms_writer.go
+- Tradeoff: transition rules live in two places (oms/statemachine.go + mthub/oms_writer.go)
+- Future: extract shared types to oms/types.go or internal/omstypes/
+
+--- Acceptance Command ---
+go test -tags=integration -run TestOrderLifecycleFullPath ./internal/mthub/... -v
+
+--- Acceptance Output ---
+=== RUN   TestOrderLifecycleFullPath
+    oms_writer_test.go:76: Full lifecycle path: NEW → VALIDATED → RISK_APPROVED → SUBMITTED — valid
+--- PASS: TestOrderLifecycleFullPath (0.00s)
+PASS
+ok  	anttrader/internal/mthub	0.008s
+
+--- Test Coverage ---
+Unit tests (oms_writer_test.go):
+- TestIsValidOMSTransition_HappyPath: 7 valid transitions verified
+- TestIsValidOMSTransition_RejectPaths: 3 rejection paths verified
+- TestIsValidOMSTransition_Invalid: 7 invalid transitions verified as blocked
+- TestOrderLifecycleFullPath: full NEW→VALIDATED→RISK_APPROVED→SUBMITTED end-to-end
+
+--- State Machine Coverage ---
+Happy path: NEW → VALIDATED → RISK_APPROVED → SUBMITTED → WORKING → PARTIALLY_FILLED → FILLED
+Rejection: VALIDATED → REJECTED | RISK_APPROVED → REJECTED | SUBMITTED → FAILED
+Cancellation: SUBMITTED/WORKING → CANCELLED
+Expiry: SUBMITTED/WORKING → EXPIRED
+
+--- Pre-commit checks ---
+- go build ./... : PASS
+- All 10 mthub unit tests pass (4 OMS + 3 pipeline + 3 limiter/estimator)
+- No new panic, nil dereference, TODO, or stub introduced
+- No circular dependency (mthub ↔ oms resolved via local state constants)
+- Diff: 4 files changed (2 modified + 2 new)

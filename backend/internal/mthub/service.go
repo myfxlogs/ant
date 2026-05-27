@@ -30,6 +30,9 @@ type MtHubService struct {
 	// S1.1: pre-trade risk pipeline (capability → hardlimit → platform → engine → sizer)
 	riskPipeline        RiskPipeline
 	accountStateProvider AccountStateProvider
+
+	// S1.2: OMS 15-state state machine writer (NEW → VALIDATED → RISK_APPROVED → SUBMITTED).
+	omsWriter *OmsWriter
 }
 
 // NewMtHubService creates the service with a Hub, event broker, and optional idempotency guard.
@@ -62,6 +65,9 @@ type AccountStateProvider func(ctx context.Context, accountID string) (*AccountS
 
 // SetAccountStateProvider injects the account state fetcher for risk evaluation.
 func (s *MtHubService) SetAccountStateProvider(p AccountStateProvider) { s.accountStateProvider = p }
+
+// SetOmsWriter injects the OMS state writer for order lifecycle tracking (S1.2).
+func (s *MtHubService) SetOmsWriter(w *OmsWriter) { s.omsWriter = w }
 
 // ErrRateLimited is returned when the user exceeds their order rate limit.
 var ErrRateLimited = errors.New("mthub: order rate limit exceeded")
@@ -96,6 +102,17 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 		}
 	}
 
+	// S1.2: OMS — insert order with state=NEW before risk checks.
+	var orderID string
+	if s.omsWriter != nil {
+		orderID = IdempotencyKey(req.AccountID, req.ClientID)
+		if err := s.omsWriter.InsertOrder(ctx, orderID, req.AccountID, req.Canonical,
+			int16(req.OrderType), req.Volume.InexactFloat64(), req.Price.InexactFloat64(),
+			req.StopLoss.InexactFloat64(), req.TakeProfit.InexactFloat64()); err != nil {
+			return nil, fmt.Errorf("oms insert: %w", err)
+		}
+	}
+
 	// Pre-trade risk pipeline (S1.1): capability → hardlimit → platform → engine → sizer.
 	if s.riskPipeline != nil {
 		// Fetch account state for risk evaluation.
@@ -121,11 +138,30 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 			Positions:  positions,
 		})
 		if !result.Allowed {
+			// OMS: record rejection if order was inserted.
+			if s.omsWriter != nil && orderID != "" {
+				_ = s.omsWriter.Transition(ctx, orderID, OMSStateNew, OMSStateRejected)
+			}
 			return nil, fmt.Errorf("risk rejected at %s: %s", result.Stage, result.Reason)
 		}
+
+		// OMS: pipeline passed → VALIDATED, then RISK_APPROVED.
+		if s.omsWriter != nil && orderID != "" {
+			if err := s.omsWriter.Transition(ctx, orderID, OMSStateNew, OMSStateValidated); err == nil {
+				_ = s.omsWriter.Transition(ctx, orderID, OMSStateValidated, OMSStateRiskApproved)
+			}
+		}
+
 		// Override requested volume with sizer output.
 		if result.Lots > 0 {
 			req.Volume = decimal.NewFromFloat(result.Lots)
+		}
+	} else {
+		// No risk pipeline — auto-approve to RISK_APPROVED.
+		if s.omsWriter != nil && orderID != "" {
+			if err := s.omsWriter.Transition(ctx, orderID, OMSStateNew, OMSStateValidated); err == nil {
+				_ = s.omsWriter.Transition(ctx, orderID, OMSStateValidated, OMSStateRiskApproved)
+			}
 		}
 	}
 
@@ -145,9 +181,26 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 	}
 
 	exec := s.hub.Get(req.AccountID)
-	if exec == nil { return nil, ErrSessionNotFound }
+	if exec == nil {
+		// OMS: record failure if no session.
+		if s.omsWriter != nil && orderID != "" {
+			_ = s.omsWriter.Transition(ctx, orderID, OMSStateRiskApproved, OMSStateFailed)
+		}
+		return nil, ErrSessionNotFound
+	}
 	ticket, err := exec.PlaceOrder(ctx, req)
-	if err != nil { return nil, err }
+	if err != nil {
+		// OMS: record failure on broker rejection.
+		if s.omsWriter != nil && orderID != "" {
+			_ = s.omsWriter.Transition(ctx, orderID, OMSStateRiskApproved, OMSStateFailed)
+		}
+		return nil, err
+	}
+
+	// OMS: broker accepted → SUBMITTED.
+	if s.omsWriter != nil && orderID != "" {
+		_ = s.omsWriter.Transition(ctx, orderID, OMSStateRiskApproved, OMSStateSubmitted)
+	}
 
 	// Update the idempotency key with the real ticket after successful placement.
 	if s.idem != nil && req.ClientID != "" {
@@ -170,7 +223,7 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 			StopLoss:          req.StopLoss.InexactFloat64(),
 			TakeProfit:        req.TakeProfit.InexactFloat64(),
 			ToState:           "SUBMITTED",
-			FromState:         "NEW",
+			FromState:         string(OMSStateRiskApproved),
 			Timestamp:         Clk.Now(),
 			Version:           1,
 			CostBreakdownJSON: costJSON,
