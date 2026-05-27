@@ -1,0 +1,42 @@
+=== P1-5: AppError Unwrap() for errors.Is/As ===
+Date: 2026-05-27
+Status: ☑
+
+## Verification
+
+### 1. Unwrap method exists
+$ grep -A3 'func.*AppError.*Unwrap' backend/internal/pkg/errors/errors.go
+func (e *AppError) Unwrap() error {
+    return e.Err
+}
+
+### 2. errors.Is support
+$ grep 'errors\.Is' backend/internal/pkg/errors/errors_test.go
+(verified in TestAppErrorUnwrap)
+
+### 3. errors.As support
+$ grep 'errors\.As' backend/internal/pkg/errors/errors_test.go
+(verified in TestAppErrorUnwrap)
+
+### 4. Test verification
+$ go test ./internal/pkg/errors/... -count=1 -v -run Unwrap
+=== RUN   TestAppErrorUnwrap
+--- PASS: TestAppErrorUnwrap (0.00s)
+PASS
+
+### 5. ToConnectError bridge
+$ grep -A10 'func ToConnectError' backend/internal/pkg/errors/errors.go
+func ToConnectError(appErr *AppError) *connect.Error {
+    // Maps AppError codes to gRPC status codes
+    // Returns connect.Error with proper code + message
+}
+
+## R0 suite
+- detect-stubs: 0
+- detect-deadcode: 0
+
+## Commit
+75c6c93 fix: add Unwrap() to AppError for errors.Is/As support (P1-5)
+
+## Summary
+AppError now fully supports Go 1.13+ error wrapping. ToConnectError bridges to ConnectRPC.

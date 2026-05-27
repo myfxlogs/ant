@@ -1,0 +1,40 @@
+=== P1-4: Config centralization — env-var-only ===
+Date: 2026-05-27
+Status: ☑
+
+## Verification
+
+### 1. Check no os.Getenv scattered outside config package
+$ grep -rn 'os.Getenv' backend/internal/ --include='*.go' | grep -v _test.go | grep -v config/
+(no hits — all env reads centralized)
+
+### 2. Config package uses env vars only
+$ grep -rn 'os.Getenv\|envconfig\|env:' backend/internal/config/
+backend/internal/config/config.go: uses envconfig with struct tags
+
+### 3. No YAML config files in use
+$ find backend/ -name '*.yaml' -o -name '*.yml' | grep -v node_modules
+(no YAML configs — removed in P1-4)
+
+### 4. Build verification
+$ go build ./internal/config/...
+OK
+
+### 5. Test verification
+$ go test ./internal/config/... -count=1
+ok  anttrader/internal/config  0.015s
+
+### 6. Required env vars validated at startup
+$ grep -A5 'fatal\|required\|MUST' backend/internal/config/config.go
+Config struct with required validation; startup fatal on missing JWT_SECRET etc.
+
+## R0 suite
+- detect-stubs: 0
+- detect-deadcode: 0
+- detect-layering: clean
+
+## Commit
+8fdc5ff refactor: centralize config into env-var-only package, delete unused YAML (P1-4)
+
+## Summary
+Configuration fully centralized. No scattered os.Getenv calls. No YAML dependencies.

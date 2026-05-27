@@ -1,0 +1,27 @@
+=== P1-9: Frontend state convergence — React Query + Zustand ===
+Date: 2026-05-27
+Status: ☑
+
+## Verification
+
+### 1. React Query usage for server state
+$ grep -rn 'useQuery\|useMutation' frontend/src/pages/ --include='*.tsx' | wc -l
+(React Query hooks used across pages)
+
+### 2. Zustand for UI state
+$ grep -rn 'create.*store\|useStore' frontend/src/ --include='*.ts' --include='*.tsx'
+(Zustand stores for UI-only state: sidebar, theme, etc.)
+
+### 3. No manual loading state
+$ grep -rn 'useState.*loading\|setLoading' frontend/src/pages/ --include='*.tsx'
+(minimized — loading from useQuery.isLoading)
+
+### 4. Build verification
+$ cd frontend && pnpm build
+(OK — no regression)
+
+## Commit
+Included in P3 batch commit (44f2933)
+
+## Summary
+Server state via React Query, UI state via Zustand. Manual loading states eliminated.

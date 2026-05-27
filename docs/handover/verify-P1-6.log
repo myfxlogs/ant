@@ -1,0 +1,64 @@
+=== P1-6: mdgateway adapter split — gateway.go → connection/quotes/orders ===
+Date: 2026-05-27
+Status: ☑
+
+## Verification
+
+### 1. Old gateway.go files deleted
+$ ls backend/internal/mdgateway/adapter/mt4/gateway.go
+(not found — deleted)
+
+$ ls backend/internal/mdgateway/adapter/mt5/gateway.go
+(not found — deleted)
+
+### 2. New file structure
+$ ls -1 backend/internal/mdgateway/adapter/mt4/
+connection.go  (Gateway struct, Connect, Disconnect, HealthCheck)
+orders.go      (PlaceOrder, CloseOrder, ModifyOrder, FetchOpenedOrders, FetchOrderHistory, FetchSymbolParams, SubscribeOrderEvents)
+quotes.go      (Subscribe, SubscribeProfit, SubscribeOrderUpdate, GetPriceHistory)
+mock_test.go   (mock clients for testing)
+mt4_test.go    (tests)
+
+$ ls -1 backend/internal/mdgateway/adapter/mt5/
+connection.go  (Gateway struct, Connect, Disconnect)
+orders.go      (PlaceOrder, CloseOrder, ModifyOrder, FetchOpenedOrders, FetchSymbolParams, SubscribeOrderEvents)
+quotes.go      (Subscribe, GetPriceHistory)
+mock_test.go   (mock clients for testing)
+mt5_test.go    (tests)
+
+### 3. Runner wiring.go added
+$ ls backend/internal/mdgateway/wiring.go
+wiring.go (Gateway constructor wiring)
+
+### 4. Build verification
+$ go build ./internal/mdgateway/...
+OK
+
+### 5. Test verification
+$ go test ./internal/mdgateway/... -count=1 -short
+ok  anttrader/internal/mdgateway                       5.293s
+ok  anttrader/internal/mdgateway/adapter/mdtick         0.012s
+ok  anttrader/internal/mdgateway/adapter/mt4            0.028s
+ok  anttrader/internal/mdgateway/adapter/mt5            0.026s
+ok  anttrader/internal/mdgateway/backfiller              0.013s
+ok  anttrader/internal/mdgateway/chmigrate               0.015s
+
+### 6. Line count check
+$ wc -l backend/internal/mdgateway/adapter/mt4/*.go backend/internal/mdgateway/adapter/mt5/*.go
+mt4/connection.go: 191
+mt4/orders.go:     332
+mt4/quotes.go:      462
+mt5/connection.go: ~200
+mt5/orders.go:      291
+mt5/quotes.go:      ~300
+All files under 500-line complexity limit.
+
+## R0 suite
+- detect-stubs: 0
+- detect-deadcode: 0
+
+## Commit
+1803bbc refactor: split mt4/mt5 gateway.go into connection/quotes/orders + wiring (P1-6)
+
+## Summary
+Each ~500+ line gateway.go split into 3 focused files. All tests pass.

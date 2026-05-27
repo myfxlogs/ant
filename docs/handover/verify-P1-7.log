@@ -1,0 +1,51 @@
+=== P1-7: mdgateway test coverage ≥ 0.70 ===
+Date: 2026-05-27
+Status: ☑
+
+## Verification
+
+### 1. MT4 adapter coverage
+$ go test -coverprofile=/tmp/mt4_cover.out ./internal/mdgateway/adapter/mt4/... -count=1 -short
+ok  anttrader/internal/mdgateway/adapter/mt4  0.029s  coverage: 79.3% of statements
+
+### 2. MT5 adapter coverage
+$ go test -coverprofile=/tmp/mt5_cover.out ./internal/mdgateway/adapter/mt5/... -count=1 -short
+ok  anttrader/internal/mdgateway/adapter/mt5  0.045s  coverage: 73.0% of statements
+
+### 3. Other mdgateway subpackages
+backfiller:  88.3%
+chmigrate:   70.6%
+mdtick:      no executable statements (pure types)
+
+### 4. Key function coverage (mt4)
+mt4Op:              100.0%  (was 0%)
+PlaceOrder:          94.4%  (was 33.3%)
+CloseOrder:          93.3%  (was 40.0%)
+ModifyOrder:         92.9%  (was 42.9%)
+FetchSymbolParams:   97.1%  (was 17.6%)
+SubscribeOrderEvents: 88.2%  (was 17.6%)
+FetchOpenedOrders:   76.9%
+FetchOrderHistory:   78.8%
+
+### 5. New mock infrastructure
+mock_test.go additions:
+- mockTradingClient (OrderSend, OrderClose, OrderModify, OrderCloseBy, OrderDelete)
+- mockMT4Client SymbolParams support (symbolParamsRes/symbolParamsErr)
+
+### 6. New tests added
+- TestMt4Op (8 combinations: buy/sell × market/limit/stop + defaults)
+- TestPlaceOrder_Success/ErrorCode/TransportErr
+- TestCloseOrder_Success/ErrorCode
+- TestModifyOrder_Success/ErrorCode
+- TestFetchSymbolParams_Success/ErrorCode/NoSpread/NilResult
+- TestSubscribeOrderEvents_Success/StreamError
+
+## R0 suite
+- detect-stubs: 0
+- detect-deadcode: 0
+
+## Commit
+cb0311d test: mt4 coverage 62.8% → 79.3% with mock TradingClient + order/symbol/event tests (P1-7)
+
+## Summary
+Both adapters exceed 70% threshold. MT4: 79.3%, MT5: 73.0%.

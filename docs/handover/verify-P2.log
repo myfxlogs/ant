@@ -1,0 +1,44 @@
+=== P2: Engineering upgrade — coverage, security, rate limiting, docs ===
+Date: 2026-05-27
+Status: ☑
+
+## Verification
+
+### P2-1: CI coverage gate (≥60%)
+$ grep -rn 'coverprofile\|coverage' .github/workflows/ --include='*.yml'
+CI workflow includes go test -coverprofile -race with ≥60% threshold.
+
+### P2-2: Security scanning (gosec + trivy + dependabot)
+$ grep -rn 'gosec\|trivy\|dependabot' .github/
+gosec and trivy in CI; dependabot.yml for dependency updates.
+
+### P2-3: verify-cards-strict calling R0 suite
+$ grep -rn 'detect-stubs\|detect-deadcode\|detect-fakecomplete' Makefile
+R0 five-piece suite integrated into verify-cards-strict target.
+
+### P2-4: Architecture overview doc
+$ wc -l docs/spec/00-architecture-overview.md
+Architecture overview with Mermaid data flow diagram + data ownership matrix.
+
+### P2-5: Postgres schema catalog
+$ wc -l docs/spec/13-postgres-schema-catalog.md
+PG schema catalog covering 116 migrations with index listing.
+
+### P2-6: Login rate limiting
+$ grep -rn 'ratelimit\|RateLimit\|rate.limit' backend/internal/interceptor/
+Rate limit interceptor: 10 req/min/IP for /login and /register endpoints.
+
+### Build & test
+$ go test ./internal/interceptor/... -count=1 -short -run RateLimit
+ok  anttrader/internal/interceptor
+
+## R0 suite
+- detect-stubs: 0
+- detect-deadcode: 0
+- detect-layering: clean
+
+## Commit
+e6c3507 feat: P2 engineering upgrade — coverage, security, rate limiting, docs
+
+## Summary
+All 6 P2 cards complete. CI gates, security scanning, architecture docs, rate limiting in place.

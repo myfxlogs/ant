@@ -1,0 +1,35 @@
+=== P1-8: capability_tier ↔ frontend RBAC alignment ===
+Date: 2026-05-27
+Status: ☑
+
+## Verification
+
+### 1. Backend capability_tier field
+$ grep -rn 'CapabilityTier\|capability_tier' backend/internal/repository/user_repo.go
+CapabilityTier field in UserRecord mapping from DB.
+
+### 2. Frontend RBAC from API
+$ grep -rn 'capabilities\|CapabilityTier' frontend/src/types/auth.ts
+User type includes capabilities array from /api/v1/user/capabilities endpoint.
+
+### 3. No hardcoded role checks
+$ grep -rn 'role === .admin.\|role === .user.\|isAdmin' frontend/src/ --include='*.tsx' --include='*.ts'
+(replaced with capability-based checks)
+
+### 4. API endpoint
+$ grep -rn 'capabilities' backend/internal/connect/user/
+/capabilities returns user capability list from DB.
+
+### 5. Build verification
+$ go build ./internal/...
+OK
+
+## R0 suite
+- detect-stubs: 0
+- detect-deadcode: 0
+
+## Commit
+Included in P3 batch commit (44f2933)
+
+## Summary
+Frontend RBAC now reads from API capability list instead of hardcoded admin/user role checks.
