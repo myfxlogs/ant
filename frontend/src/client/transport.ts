@@ -2,6 +2,7 @@ import { createConnectTransport } from '@connectrpc/connect-web';
 import { ConnectError, Code, type Interceptor } from '@connectrpc/connect';
 import { Modal, message } from 'antd';
 import i18n from '@/i18n';
+import { useAuthStore } from '@/stores/authStore';
 import { isLikelyStreamTransportFailure, isStreamServiceProcedure } from '@/utils/streamErrors';
 
 const envApiUrl = import.meta.env.VITE_API_URL as string | undefined;
@@ -24,27 +25,20 @@ const STREAM_URL = rawStreamUrl.replace(/\/+$/, '');
 let hasShownConnectionError = false;
 let lastBizErrorAt = 0;
 
-// --- Token refresh ---
+// --- Token refresh via httpOnly cookie ---
 let refreshPromise: Promise<string | null> | null = null;
 
 async function tryRefreshToken(): Promise<string | null> {
-  const refreshToken = localStorage.getItem('refresh_token');
-  if (!refreshToken) return null;
-
   try {
-    const baseUrl = API_URL;
-    const res = await fetch(`${baseUrl}/ant.v1.AuthService/RefreshToken`, {
+    const res = await fetch(`${API_URL}/api/auth/refresh`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken }),
+      credentials: 'include',
     });
     if (!res.ok) return null;
     const data = await res.json();
-    const newAccess = data.accessToken || data.access_token;
-    const newRefresh = data.refreshToken || data.refresh_token;
+    const newAccess = data.access_token;
     if (newAccess) {
-      localStorage.setItem('access_token', newAccess);
-      if (newRefresh) localStorage.setItem('refresh_token', newRefresh);
+      useAuthStore.getState().setAccessToken(newAccess);
       return newAccess;
     }
     return null;
@@ -58,6 +52,10 @@ async function refreshAndGetToken(): Promise<string | null> {
     refreshPromise = tryRefreshToken().finally(() => { refreshPromise = null; });
   }
   return refreshPromise;
+}
+
+function getAccessToken(): string | null {
+  return useAuthStore.getState().accessToken;
 }
 
 function procedureHint(req: unknown): { key: string; label: string } {
@@ -96,7 +94,7 @@ const interceptors: Interceptor[] = [
     const proc = procedureHint(req).key;
     const isAuthFree = proc.includes('authservice') && (proc.includes('login') || proc.includes('register'));
 
-    const token = localStorage.getItem('access_token');
+    const token = getAccessToken();
     if (token && !isAuthFree) {
       req.header.set('Authorization', `Bearer ${token}`);
     }

@@ -88,7 +88,8 @@ func (i *AuthInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc
 }
 
 // UserIDFromHTTP authenticates plain HTTP handlers (e.g. EventSource cannot set
-// Authorization; clients may pass access_token as a query parameter).
+// Authorization; clients may pass access_token as a query parameter, or via
+// the httpOnly refresh_token cookie).
 func (i *AuthInterceptor) UserIDFromHTTP(r *http.Request) (uuid.UUID, error) {
 	hdr := r.Header.Clone()
 	if hdr.Get("X-API-Key") == "" && hdr.Get("Authorization") == "" {
@@ -101,6 +102,24 @@ func (i *AuthInterceptor) UserIDFromHTTP(r *http.Request) (uuid.UUID, error) {
 		return uuid.Nil, err
 	}
 	uid, err := uuid.Parse(s)
+	if err != nil {
+		return uuid.Nil, connect.NewError(connect.CodeUnauthenticated, err)
+	}
+	return uid, nil
+}
+
+// UserIDFromCookie authenticates a plain HTTP request by reading the
+// refresh_token httpOnly cookie. Used by /api/auth/refresh.
+func (i *AuthInterceptor) UserIDFromCookie(r *http.Request) (uuid.UUID, error) {
+	cookie, err := r.Cookie("refresh_token")
+	if err != nil {
+		return uuid.Nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("missing refresh token cookie"))
+	}
+	claims, err := ValidateToken(cookie.Value, i.jwtSecret)
+	if err != nil {
+		return uuid.Nil, connect.NewError(connect.CodeUnauthenticated, err)
+	}
+	uid, err := uuid.Parse(claims.UserID)
 	if err != nil {
 		return uuid.Nil, connect.NewError(connect.CodeUnauthenticated, err)
 	}

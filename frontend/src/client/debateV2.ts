@@ -2,6 +2,7 @@ import type { DebateV2Session as DebateV2SessionMessage } from '../gen/ant/v1/de
 import type { TemplateParameter } from '../gen/ant/v1/strategy_messages_pb';
 import { debateV2Client } from './connect';
 import { apiBaseUrl } from './transport';
+import { useAuthStore } from '@/stores/authStore';
 
 // Client for the redesigned multi-expert debate flow (v2).
 // Backend: DebateV2Service ConnectRPC and backend/internal/service/debate_v2_service.go.
@@ -230,7 +231,7 @@ async function waitDebateV2Job(
 	failedDefault: string,
 	opts?: WaitAdvanceJobOptions,
 ): Promise<void> {
-	const token = typeof localStorage !== 'undefined' ? localStorage.getItem('access_token') : null;
+	const token = useAuthStore.getState().accessToken;
 	if (!token) {
 		return Promise.reject(new Error('missing access_token'));
 	}

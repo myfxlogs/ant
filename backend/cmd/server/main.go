@@ -304,6 +304,11 @@ func main() {
 	aiServer := ai.NewAIServer(aiSvc, convRepo, log)
 	mux.Handle(antv1c.NewAIServiceHandler(aiServer, connectrpc.WithInterceptors(authInterceptor)))
 
+	// Debate V2 service (multi-expert AI strategy generation).
+	debateV2Svc := service.NewDebateV2Service(pool, jobRepo)
+	debateV2Server := ai.NewDebateV2Server(debateV2Svc, log)
+	mux.Handle(antv1c.NewDebateV2ServiceHandler(debateV2Server, connectrpc.WithInterceptors(authInterceptor)))
+
 	streamServer := system.NewStreamServer(mthubSvc, platformSvc, log)
 	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, connectrpc.WithInterceptors(authInterceptor)))
 
@@ -312,9 +317,8 @@ func main() {
 	mux.Handle(antv1c.NewStrategyServiceHandler(strategyServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	// Mock/stub handlers — return mock data for services not yet connected to real backends.
-	// Real: SystemAI, AIPrimary, Job, ScheduleHealth
+	// Real: SystemAI, AIPrimary, Job, ScheduleHealth, DebateV2
 	// Mock: PythonStrategy, CodeAssist, BacktestTrades, EconomicData
-	// Stub: DebateV2, DebateV2Stream
 	pythonStrategyServer := strategy.NewPythonStrategyServer(log)
 	mux.Handle(antv1c.NewPythonStrategyServiceHandler(pythonStrategyServer, connectrpc.WithInterceptors(authInterceptor)))
 	codeAssistServer := ai.NewCodeAssistServer(log)
@@ -381,6 +385,18 @@ func main() {
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{"code":"unimplemented"}`))
+	})
+
+	// Auth cookie endpoints — refresh token via httpOnly cookie.
+	mux.HandleFunc("/api/auth/refresh", authServer.HandleTokenRefresh)
+	mux.HandleFunc("/api/auth/logout", authServer.HandleLogout)
+
+	// SSE endpoints for Debate V2 async jobs.
+	mux.HandleFunc("/sse/debate-v2/advance-jobs/", func(w http.ResponseWriter, r *http.Request) {
+		debateV2Server.HandleDebateV2AdvanceJobSSE(w, r, authInterceptor)
+	})
+	mux.HandleFunc("/sse/debate-v2/chat-jobs/", func(w http.ResponseWriter, r *http.Request) {
+		debateV2Server.HandleDebateV2ChatJobSSE(w, r, authInterceptor)
 	})
 
 	// Prometheus /metrics endpoint (M10 ADR-0010 §2.4).

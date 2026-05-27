@@ -6,6 +6,7 @@ import (
 	"crypto/hmac"
 	"encoding/base64"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -37,6 +38,12 @@ func NewAuthServer(users *repository.UserRepository, jwtSecret string, log *zap.
 	return &AuthServer{users: users, jwtSecret: jwtSecret, log: log}
 }
 
+const (
+	accessTokenTTL  = 15 * time.Minute
+	refreshTokenTTL = 7 * 24 * time.Hour
+	refreshCookie   = "refresh_token"
+)
+
 func (s *AuthServer) Login(ctx context.Context, req *connect.Request[antv1.LoginRequest]) (*connect.Response[antv1.LoginResponse], error) {
 	m := req.Msg
 	user, err := s.users.GetByEmail(ctx, m.Email)
@@ -46,9 +53,14 @@ func (s *AuthServer) Login(ctx context.Context, req *connect.Request[antv1.Login
 	if !verifyArgon2id(user.PasswordHash, m.Password) {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid credentials"))
 	}
-	token, err := s.issueJWT(user.ID.String(), m.Email)
+	accessToken, err := s.issueAccessToken(user.ID.String(), m.Email)
 	if err != nil {
-		s.log.Error("Login", zap.Error(err))
+		s.log.Error("Login: issue access token", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	refreshToken, err := s.issueRefreshToken(user.ID.String(), m.Email)
+	if err != nil {
+		s.log.Error("Login: issue refresh token", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	nickname := m.Email
@@ -56,31 +68,53 @@ func (s *AuthServer) Login(ctx context.Context, req *connect.Request[antv1.Login
 		nickname = *user.Nickname
 	}
 	capTier, perms, _ := s.users.GetCapabilities(ctx, user.ID, user.Role)
-	return connect.NewResponse(&antv1.LoginResponse{
-		AccessToken: token, RefreshToken: token,
+	resp := connect.NewResponse(&antv1.LoginResponse{
+		AccessToken: accessToken, RefreshToken: refreshToken,
 		User: &antv1.User{
 			Id: user.ID.String(), Email: user.Email, Username: nickname, Role: user.Role,
 			Permissions: perms, CapabilityTier: int32(capTier),
 		},
-	}), nil
+	})
+	resp.Header().Set("Set-Cookie", s.makeRefreshCookie(refreshToken))
+	return resp, nil
 }
 
-func (s *AuthServer) issueJWT(userID, email string) (string, error) {
+func (s *AuthServer) issueAccessToken(userID, email string) (string, error) {
+	return s.issueJWT(userID, email, accessTokenTTL)
+}
+
+func (s *AuthServer) issueRefreshToken(userID, email string) (string, error) {
+	return s.issueJWT(userID, email, refreshTokenTTL)
+}
+
+func (s *AuthServer) issueJWT(userID, email string, ttl time.Duration) (string, error) {
 	now := time.Now()
 	claims := &interceptor.JWTClaims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(now.Add(24 * time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(now.Add(ttl)),
 			IssuedAt:  jwt.NewNumericDate(now),
 			Subject:   email,
+			ID:        uuid.NewString(),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(s.jwtSecret))
 }
 
+func (s *AuthServer) makeRefreshCookie(token string) string {
+	return fmt.Sprintf("%s=%s; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=%d",
+		refreshCookie, token, int(refreshTokenTTL.Seconds()))
+}
+
+func (s *AuthServer) clearRefreshCookie() string {
+	return fmt.Sprintf("%s=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0", refreshCookie)
+}
+
 func (s *AuthServer) Logout(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
-	return connect.NewResponse(&emptypb.Empty{}), nil
+	resp := connect.NewResponse(&emptypb.Empty{})
+	resp.Header().Set("Set-Cookie", s.clearRefreshCookie())
+	return resp, nil
 }
 
 func (s *AuthServer) RefreshToken(ctx context.Context, req *connect.Request[antv1.RefreshTokenRequest]) (*connect.Response[antv1.RefreshTokenResponse], error) {
@@ -96,12 +130,74 @@ func (s *AuthServer) RefreshToken(ctx context.Context, req *connect.Request[antv
 	if err != nil {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("user not found"))
 	}
-	token, err := s.issueJWT(claims.UserID, user.Email)
+	accessToken, err := s.issueAccessToken(claims.UserID, user.Email)
 	if err != nil {
-		s.log.Error("RefreshToken", zap.Error(err))
+		s.log.Error("RefreshToken: issue access token", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(&antv1.RefreshTokenResponse{AccessToken: token, RefreshToken: token}), nil
+	refreshToken, err := s.issueRefreshToken(claims.UserID, user.Email)
+	if err != nil {
+		s.log.Error("RefreshToken: issue refresh token", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	resp := connect.NewResponse(&antv1.RefreshTokenResponse{AccessToken: accessToken, RefreshToken: refreshToken})
+	resp.Header().Set("Set-Cookie", s.makeRefreshCookie(refreshToken))
+	return resp, nil
+}
+
+// HandleTokenRefresh is a plain HTTP handler that reads the refresh_token cookie,
+// validates it, issues new tokens, sets a new cookie, and returns JSON.
+func (s *AuthServer) HandleTokenRefresh(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
+		return
+	}
+	cookie, err := r.Cookie(refreshCookie)
+	if err != nil {
+		http.Error(w, `{"error":"missing refresh token"}`, http.StatusUnauthorized)
+		return
+	}
+	claims, err := interceptor.ValidateToken(cookie.Value, s.jwtSecret)
+	if err != nil {
+		http.Error(w, `{"error":"invalid refresh token"}`, http.StatusUnauthorized)
+		return
+	}
+	uid, err := uuid.Parse(claims.UserID)
+	if err != nil {
+		http.Error(w, `{"error":"invalid token claims"}`, http.StatusUnauthorized)
+		return
+	}
+	user, err := s.users.GetByID(r.Context(), uid)
+	if err != nil {
+		http.Error(w, `{"error":"user not found"}`, http.StatusUnauthorized)
+		return
+	}
+	accessToken, err := s.issueAccessToken(claims.UserID, user.Email)
+	if err != nil {
+		s.log.Error("HandleTokenRefresh: issue access token", zap.Error(err))
+		http.Error(w, `{"error":"internal"}`, http.StatusInternalServerError)
+		return
+	}
+	refreshToken, err := s.issueRefreshToken(claims.UserID, user.Email)
+	if err != nil {
+		s.log.Error("HandleTokenRefresh: issue refresh token", zap.Error(err))
+		http.Error(w, `{"error":"internal"}`, http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Set-Cookie", s.makeRefreshCookie(refreshToken))
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(fmt.Sprintf(`{"access_token":"%s"}`, accessToken)))
+}
+
+// HandleLogout is a plain HTTP handler that clears the refresh token cookie.
+func (s *AuthServer) HandleLogout(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
+		return
+	}
+	w.Header().Set("Set-Cookie", s.clearRefreshCookie())
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{"ok":true}`))
 }
 
 func (s *AuthServer) GetMe(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[antv1.GetMeResponse], error) {
