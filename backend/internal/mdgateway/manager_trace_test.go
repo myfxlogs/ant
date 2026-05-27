@@ -18,6 +18,7 @@ import (
 // HandleTick creates one OTel span for each of the 6 pipeline stages.
 // L-2: this test proves tracing is not dead code — spans are observed and verifiable.
 func TestHandleTickCreatesSixSpans(t *testing.T) {
+	t.Parallel()
 	// 1. Create in-memory exporter + TracerProvider with AlwaysSample.
 	exp := tracetest.NewInMemoryExporter()
 	tp := trace.NewTracerProvider(
@@ -100,6 +101,7 @@ func testManager() *Manager {
 // TestHandleTickNoOpWhenTracerNil verifies that HandleTick does not panic
 // when no OTel tracer is set (nil = no-op, not crash).
 func TestHandleTickNoOpWhenTracerNil(t *testing.T) {
+	t.Parallel()
 	mgr := testManager()
 	// No SetOTelTracer call — tracer is nil.
 
@@ -126,6 +128,7 @@ func TestHandleTickNoOpWhenTracerNil(t *testing.T) {
 // TestTraceSamplingHonored verifies that when sampling is disabled (0%),
 // no spans are exported — confirming the sampling config actually works.
 func TestTraceSamplingHonored(t *testing.T) {
+	t.Parallel()
 	exp := tracetest.NewInMemoryExporter()
 	// DropAllSampler = never sample (0%).
 	tp := trace.NewTracerProvider(

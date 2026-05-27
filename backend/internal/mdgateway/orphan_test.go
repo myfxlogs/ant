@@ -24,6 +24,7 @@ func (e *errCHConn) Query(_ context.Context, _ string, _ ...any) (driver.Rows, e
 }
 
 func TestRunnerFatalOnChDown(t *testing.T) {
+	t.Parallel()
 	log := zap.NewNop()
 	// Real assertion: loadFinalizedBars must propagate the underlying CH error.
 	rows, err := loadFinalizedBars(context.Background(), &errCHConn{}, log)
@@ -112,6 +113,7 @@ func TestCHBufferEnvSwitch(t *testing.T) {
 }
 
 func TestNormalizer(t *testing.T) {
+	t.Parallel()
 	n := NewNormalizer(nil)
 	result := n.Resolve(context.Background(), "test-broker", "EURUSDm")
 	if result == "" {
@@ -125,6 +127,7 @@ func TestNormalizer(t *testing.T) {
 }
 
 func TestQuality(t *testing.T) {
+	t.Parallel()
 	q := NewQuality(DefaultQualityConfig())
 
 	tick := &mdtick.Tick{
@@ -140,6 +143,7 @@ func TestQuality(t *testing.T) {
 }
 
 func TestTickDedup(t *testing.T) {
+	t.Parallel()
 	d := NewTickDedup(100)
 	tick := &mdtick.Tick{
 		Broker: "test", Canonical: "EURUSD",
@@ -158,14 +162,17 @@ func TestTickDedup(t *testing.T) {
 }
 
 func TestTelemetryCompleteness(t *testing.T) {
+	t.Parallel()
 	t.Log("TestTelemetryCompleteness: metrics endpoint not yet wired (M7.6-7)")
 }
 
 func TestTraceExport(t *testing.T) {
+	t.Parallel()
 	t.Log("TestTraceExport: OTel exporter tested via internal/trace/ package (M10.3-3)")
 }
 
 func TestDLQ(t *testing.T) {
+	t.Parallel()
 	dlq := NewDLQWriter(nil, nil, zap.NewNop())
 	if dlq == nil {
 		t.Fatal("NewDLQWriter returned nil")

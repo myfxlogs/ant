@@ -7,6 +7,7 @@ import (
 )
 
 func TestUserMetricsCollector_Record(t *testing.T) {
+	t.Parallel()
 	c := NewUserMetricsCollector()
 
 	c.Record("user-1", "signal_count", 10)
@@ -36,6 +37,7 @@ func TestUserMetricsCollector_Record(t *testing.T) {
 }
 
 func TestUserMetricsCollector_FlushResets(t *testing.T) {
+	t.Parallel()
 	c := NewUserMetricsCollector()
 	c.Record("user-1", "ticks", 100)
 
@@ -52,6 +54,7 @@ func TestUserMetricsCollector_FlushResets(t *testing.T) {
 }
 
 func TestUserMetricsCollector_EmptyFlush(t *testing.T) {
+	t.Parallel()
 	c := NewUserMetricsCollector()
 	samples := c.Flush()
 	if len(samples) > 0 {
@@ -60,6 +63,7 @@ func TestUserMetricsCollector_EmptyFlush(t *testing.T) {
 }
 
 func TestUserMetricsFlusher_Lifecycle(t *testing.T) {
+	t.Parallel()
 	flushed := make(chan []UserMetricSample, 1)
 	writeFn := func(_ context.Context, samples []UserMetricSample) error {
 		flushed <- samples
@@ -95,6 +99,7 @@ func TestUserMetricsFlusher_Lifecycle(t *testing.T) {
 }
 
 func TestUserMetricsFlusher_NoWriteFn(t *testing.T) {
+	t.Parallel()
 	f := NewUserMetricsFlusher(50*time.Millisecond, nil)
 	f.Collector().Record("user-x", "metric", 1)
 
@@ -111,6 +116,7 @@ func TestUserMetricsFlusher_NoWriteFn(t *testing.T) {
 }
 
 func TestUserMetricsFlusher_DefaultInterval(t *testing.T) {
+	t.Parallel()
 	f := NewUserMetricsFlusher(0, nil)
 	if f.interval != 5*time.Minute {
 		t.Fatalf("default interval: want 5m, got %v", f.interval)
@@ -118,6 +124,7 @@ func TestUserMetricsFlusher_DefaultInterval(t *testing.T) {
 }
 
 func TestUserMetricsFlusher_ConcurrentRecord(t *testing.T) {
+	t.Parallel()
 	c := NewUserMetricsCollector()
 	done := make(chan struct{})
 

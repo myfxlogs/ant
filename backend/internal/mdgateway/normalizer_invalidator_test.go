@@ -49,6 +49,7 @@ func (f *fakePGListener) Close() error {
 //     spurious invalidations (no PG signal source available).
 //  2. ticker goroutine terminates cleanly on Stop+cancel.
 func TestNormalizerListenerFallback(t *testing.T) {
+	t.Parallel()
 	invalidated := make(chan string, 10)
 	ni := NewNormalizerInvalidator(zap.NewNop(), nil, func(broker, symbolRaw string) {
 		invalidated <- broker + ":" + symbolRaw
@@ -79,6 +80,7 @@ func TestNormalizerListenerFallback(t *testing.T) {
 // arriving via PGListener.WaitForNotification triggers onInvalidate(broker,
 // symbol_raw) exactly once with the parsed fields.
 func TestNormalizerListenerPgListen(t *testing.T) {
+	t.Parallel()
 	invalidated := make(chan string, 4)
 	ni := NewNormalizerInvalidator(zap.NewNop(), nil, func(broker, symbolRaw string) {
 		invalidated <- broker + ":" + symbolRaw
@@ -119,6 +121,7 @@ func TestNormalizerListenerPgListen(t *testing.T) {
 }
 
 func TestNormalizerListener_StartStop(t *testing.T) {
+	t.Parallel()
 	ni := NewNormalizerInvalidator(zap.NewNop(), nil, func(broker, symbolRaw string) {})
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -137,6 +140,7 @@ func TestNormalizerListener_StartStop(t *testing.T) {
 }
 
 func TestNormalizerListener(t *testing.T) {
+	t.Parallel()
 	t.Run("PgListen", func(t *testing.T) {
 		ni := NewNormalizerInvalidator(zap.NewNop(), nil, func(broker, symbolRaw string) {})
 		ctx, cancel := context.WithCancel(context.Background())

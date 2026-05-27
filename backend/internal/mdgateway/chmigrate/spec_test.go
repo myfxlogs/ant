@@ -32,6 +32,7 @@ func findRepoRoot(t *testing.T) string {
 // Each keyword family must appear at least once. The test prints the matching
 // line numbers so the verify log preserves a diff-grade audit trail.
 func TestSpec13Keywords(t *testing.T) {
+	t.Parallel()
 	root := findRepoRoot(t)
 	specPath := filepath.Join(root, "docs", "spec", "13-clickhouse-schema.md")
 	body, err := os.ReadFile(specPath)
@@ -82,6 +83,7 @@ func TestSpec13Keywords(t *testing.T) {
 // TestSpec13MinimumSize sanity-checks that the spec is non-trivial in length;
 // stops accidental empty-file regressions from passing keyword-only checks.
 func TestSpec13MinimumSize(t *testing.T) {
+	t.Parallel()
 	root := findRepoRoot(t)
 	info, err := os.Stat(filepath.Join(root, "docs", "spec", "13-clickhouse-schema.md"))
 	if err != nil {

@@ -51,6 +51,7 @@ func (g *fakeGateway) HealthCheck(ctx context.Context) error {
 }
 
 func TestManagerAddGateway(t *testing.T) {
+	t.Parallel()
 	mgr := NewManager(ManagerDeps{})
 	gw := &fakeGateway{platform: "mt4", accountID: "acc-1"}
 
@@ -80,6 +81,7 @@ func TestManagerAddGateway(t *testing.T) {
 }
 
 func TestManagerRemoveGateway(t *testing.T) {
+	t.Parallel()
 	mgr := NewManager(ManagerDeps{})
 	gw := &fakeGateway{platform: "mt5", accountID: "acc-2"}
 	mgr.AddGateway(context.Background(), gw, nil)
@@ -104,6 +106,7 @@ func TestManagerRemoveGateway(t *testing.T) {
 }
 
 func TestManagerHealthStates(t *testing.T) {
+	t.Parallel()
 	mgr := NewManager(ManagerDeps{})
 	gw1 := &fakeGateway{platform: "mt4", accountID: "acc-a"}
 	gw2 := &fakeGateway{platform: "mt5", accountID: "acc-b"}
@@ -153,6 +156,7 @@ func TestManagerHealthStates(t *testing.T) {
 }
 
 func TestManagerGatewayCount(t *testing.T) {
+	t.Parallel()
 	mgr := NewManager(ManagerDeps{})
 	for i := 0; i < 5; i++ {
 		gw := &fakeGateway{accountID: "acc-" + string(rune('0'+i))}

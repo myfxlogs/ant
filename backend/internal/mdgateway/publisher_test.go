@@ -7,6 +7,7 @@ import (
 )
 
 func TestPublishReplayHeader(t *testing.T) {
+	t.Parallel()
 	// Use nil JetStream (no NATS connection) — publish should be no-op.
 	pub := &Publisher{js: nil}
 
@@ -55,6 +56,7 @@ func TestPublishReplayHeader(t *testing.T) {
 }
 
 func TestPublisherDedupHeader(t *testing.T) {
+	t.Parallel()
 	pub := &Publisher{js: nil}
 	tick := &mdtick.Tick{
 		Broker: "test-broker", Canonical: "EURUSD",
@@ -77,6 +79,7 @@ func TestPublisherDedupHeader(t *testing.T) {
 }
 
 func TestPublisherSubjectFormat(t *testing.T) {
+	t.Parallel()
 	tick := &mdtick.Tick{
 		Broker:    "ic_markets",
 		Canonical: "EURUSD",
@@ -107,6 +110,7 @@ func TestPublisherSubjectFormat(t *testing.T) {
 }
 
 func TestPublisherBarWithoutReplay(t *testing.T) {
+	t.Parallel()
 	pub := &Publisher{js: nil}
 	bar := &mdtick.Bar{
 		Broker:        "oanda",
@@ -128,6 +132,7 @@ func TestPublisherBarWithoutReplay(t *testing.T) {
 }
 
 func TestPublisherTickWithoutCanonical(t *testing.T) {
+	t.Parallel()
 	pub := &Publisher{js: nil}
 	tick := &mdtick.Tick{
 		Broker:    "test-broker",
@@ -144,6 +149,7 @@ func TestPublisherTickWithoutCanonical(t *testing.T) {
 }
 
 func TestHashTickDeterministic(t *testing.T) {
+	t.Parallel()
 	t1 := &mdtick.Tick{Broker: "a", Canonical: "EURUSD", TsUnixMs: 100}
 	t2 := &mdtick.Tick{Broker: "a", Canonical: "EURUSD", TsUnixMs: 100}
 	if hashTick(t1) != hashTick(t2) {

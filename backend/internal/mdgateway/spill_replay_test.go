@@ -11,6 +11,7 @@ import (
 )
 
 func TestSpillReplayDualWrite(t *testing.T) {
+	t.Parallel()
 	dir := t.TempDir()
 
 	// Create a spill file with one tick and one bar.

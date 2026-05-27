@@ -3,6 +3,7 @@ package mdgateway
 import "testing"
 
 func TestManager_New(t *testing.T) {
+	t.Parallel()
 	mgr := NewManager(ManagerDeps{})
 	if mgr == nil {
 		t.Fatal("NewManager returned nil")

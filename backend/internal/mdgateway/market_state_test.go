@@ -12,6 +12,7 @@ import (
 // --- F1: MarketState Tests ---
 
 func TestMarketStateTracker_Update(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultMarketStateConfig()
 	tracker := NewMarketStateTracker(cfg)
 
@@ -26,6 +27,7 @@ func TestMarketStateTracker_Update(t *testing.T) {
 }
 
 func TestMarketStateTracker_StaleQuote(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultMarketStateConfig()
 	cfg.MaxQuoteAgeMs = 100
 	tracker := NewMarketStateTracker(cfg)
@@ -49,6 +51,7 @@ func TestMarketStateTracker_StaleQuote(t *testing.T) {
 }
 
 func TestMarketStateTracker_GetAndAll(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultMarketStateConfig()
 	tracker := NewMarketStateTracker(cfg)
 
@@ -77,6 +80,7 @@ func TestMarketStateTracker_GetAndAll(t *testing.T) {
 // --- F2: SessionClock Tests ---
 
 func TestSessionClock_IsWeekend(t *testing.T) {
+	t.Parallel()
 	sc := DefaultSessionClock()
 
 	// Saturday at noon UTC — weekend.
@@ -99,6 +103,7 @@ func TestSessionClock_IsWeekend(t *testing.T) {
 }
 
 func TestSessionClock_IsHoliday(t *testing.T) {
+	t.Parallel()
 	sc := DefaultSessionClock()
 	sc.AddHoliday("2026-01-01") // New Year
 
@@ -114,6 +119,7 @@ func TestSessionClock_IsHoliday(t *testing.T) {
 }
 
 func TestSessionClock_SessionPhase(t *testing.T) {
+	t.Parallel()
 	sc := DefaultSessionClock()
 	sc.AddHoliday("2026-12-25")
 
@@ -137,6 +143,7 @@ func TestSessionClock_SessionPhase(t *testing.T) {
 }
 
 func TestSessionClock_InSwapWindow(t *testing.T) {
+	t.Parallel()
 	sc := DefaultSessionClock()
 
 	// 21:30 UTC is within swap window (21-23).
@@ -153,6 +160,7 @@ func TestSessionClock_InSwapWindow(t *testing.T) {
 }
 
 func TestSessionClock_BrokerOffset(t *testing.T) {
+	t.Parallel()
 	sc := DefaultSessionClock()
 	sc.SetBrokerOffset(100) // broker is 100ms ahead
 	if sc.BrokerOffsetMs() != 100 {
@@ -161,6 +169,7 @@ func TestSessionClock_BrokerOffset(t *testing.T) {
 }
 
 func TestSessionClock_BarBoundary(t *testing.T) {
+	t.Parallel()
 	sc := DefaultSessionClock()
 	// 1m bar from 10:00:30 → boundary at 10:01:00.
 	t0 := time.Date(2026, 5, 20, 10, 0, 30, 0, time.UTC)
@@ -172,6 +181,7 @@ func TestSessionClock_BarBoundary(t *testing.T) {
 }
 
 func TestSessionClock_ClockSkewMs(t *testing.T) {
+	t.Parallel()
 	sc := DefaultSessionClock()
 	now := time.Now().UnixMilli()
 	brokerTs := now - 100 // broker 100ms behind
@@ -184,6 +194,7 @@ func TestSessionClock_ClockSkewMs(t *testing.T) {
 // --- F3: NTP Clock Skew Drop Tests ---
 
 func TestQuality_NTPSkewDrop(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultQualityConfig()
 	cfg.MaxClockSkewMs = 5000
 	q := NewQuality(cfg)
@@ -226,6 +237,7 @@ func TestQuality_NTPSkewDrop(t *testing.T) {
 }
 
 func TestQuality_SpreadComputation(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultQualityConfig()
 	q := NewQuality(cfg)
 
@@ -248,6 +260,7 @@ func TestQuality_SpreadComputation(t *testing.T) {
 // --- F4: Quote Stuffing Detection Tests ---
 
 func TestStuffingDetector_NormalTickRate(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultStuffingDetectorConfig()
 	cfg.WindowSize = 20
 	detector := NewStuffingDetector(cfg)
@@ -263,6 +276,7 @@ func TestStuffingDetector_NormalTickRate(t *testing.T) {
 }
 
 func TestStuffingDetector_IsPaused(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultStuffingDetectorConfig()
 	detector := NewStuffingDetector(cfg)
 
@@ -277,6 +291,7 @@ func TestStuffingDetector_IsPaused(t *testing.T) {
 }
 
 func TestStuffingDetector_ObserveTracksRate(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultStuffingDetectorConfig()
 	cfg.WindowSize = 50
 	detector := NewStuffingDetector(cfg)
@@ -298,6 +313,7 @@ func TestStuffingDetector_ObserveTracksRate(t *testing.T) {
 // --- F5: Spread Anomaly Tests ---
 
 func TestQuality_SpreadZscore(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultQualityConfig()
 	cfg.HistorySize = 50
 	q := NewQuality(cfg)
@@ -321,6 +337,7 @@ func TestQuality_SpreadZscore(t *testing.T) {
 }
 
 func TestQuality_TickRateZscore(t *testing.T) {
+	t.Parallel()
 	cfg := DefaultQualityConfig()
 	cfg.HistorySize = 50
 	q := NewQuality(cfg)

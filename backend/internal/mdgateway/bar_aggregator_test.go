@@ -9,6 +9,7 @@ import (
 )
 
 func TestBarFinality(t *testing.T) {
+	t.Parallel()
 	agg := NewBarAggregator()
 
 	fk := finalizedKey{"test-broker", "EURUSD", "1m"}

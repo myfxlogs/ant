@@ -6,6 +6,7 @@ import (
 )
 
 func TestCircuitBreakerDefaultThresholds(t *testing.T) {
+	t.Parallel()
 	cb := NewCircuitBreaker(0, 0, 0)
 	if cb.State() != StateClosed {
 		t.Fatal("new circuit breaker must start in closed state")
@@ -19,6 +20,7 @@ func TestCircuitBreakerDefaultThresholds(t *testing.T) {
 }
 
 func TestCircuitBreakerStateString(t *testing.T) {
+	t.Parallel()
 	if s := StateClosed.String(); s != "closed" {
 		t.Fatalf("StateClosed = %q", s)
 	}
@@ -31,6 +33,7 @@ func TestCircuitBreakerStateString(t *testing.T) {
 }
 
 func TestCircuitBreakerClosedAllows(t *testing.T) {
+	t.Parallel()
 	cb := NewCircuitBreaker(3, 2, time.Second)
 	for i := 0; i < 10; i++ {
 		if !cb.Allow() {
@@ -40,6 +43,7 @@ func TestCircuitBreakerClosedAllows(t *testing.T) {
 }
 
 func TestCircuitBreakerTripsOpen(t *testing.T) {
+	t.Parallel()
 	cb := NewCircuitBreaker(3, 2, time.Second)
 	// Record failures but stay under threshold.
 	cb.OnFailure()
@@ -55,6 +59,7 @@ func TestCircuitBreakerTripsOpen(t *testing.T) {
 }
 
 func TestCircuitBreakerOpenBlocks(t *testing.T) {
+	t.Parallel()
 	cb := NewCircuitBreaker(2, 2, 10*time.Second)
 	cb.OnFailure()
 	cb.OnFailure()
@@ -64,6 +69,7 @@ func TestCircuitBreakerOpenBlocks(t *testing.T) {
 }
 
 func TestCircuitBreakerHalfOpenProbe(t *testing.T) {
+	t.Parallel()
 	cb := NewCircuitBreaker(2, 2, 50*time.Millisecond)
 	cb.OnFailure()
 	cb.OnFailure()
@@ -84,6 +90,7 @@ func TestCircuitBreakerHalfOpenProbe(t *testing.T) {
 }
 
 func TestCircuitBreakerHalfOpenClose(t *testing.T) {
+	t.Parallel()
 	cb := NewCircuitBreaker(2, 2, time.Millisecond)
 	cb.OnFailure()
 	cb.OnFailure()
@@ -101,6 +108,7 @@ func TestCircuitBreakerHalfOpenClose(t *testing.T) {
 }
 
 func TestCircuitBreakerHalfOpenFailureReopens(t *testing.T) {
+	t.Parallel()
 	cb := NewCircuitBreaker(2, 2, time.Millisecond)
 	cb.OnFailure()
 	cb.OnFailure()
@@ -114,6 +122,7 @@ func TestCircuitBreakerHalfOpenFailureReopens(t *testing.T) {
 }
 
 func TestCircuitBreakerFailuresInHalfOpen(t *testing.T) {
+	t.Parallel()
 	cb := NewCircuitBreaker(5, 3, time.Millisecond)
 	// Trip open.
 	for i := 0; i < 5; i++ {
@@ -142,6 +151,7 @@ func TestCircuitBreakerFailuresInHalfOpen(t *testing.T) {
 }
 
 func TestCircuitBreakerClosedSuccessResetsNothing(t *testing.T) {
+	t.Parallel()
 	cb := NewCircuitBreaker(3, 2, time.Second)
 	cb.OnSuccess()
 	cb.OnSuccess()
@@ -151,6 +161,7 @@ func TestCircuitBreakerClosedSuccessResetsNothing(t *testing.T) {
 }
 
 func TestCircuitBreakerConcurrent(t *testing.T) {
+	t.Parallel()
 	cb := NewCircuitBreaker(10, 5, 50*time.Millisecond)
 	done := make(chan struct{})
 	for i := 0; i < 100; i++ {
@@ -172,6 +183,7 @@ func TestCircuitBreakerConcurrent(t *testing.T) {
 }
 
 func TestCircuitBreakerConcurrentTripsOpen(t *testing.T) {
+	t.Parallel()
 	cb := NewCircuitBreaker(10, 5, time.Second)
 	done := make(chan struct{})
 	for i := 0; i < 20; i++ {
@@ -191,6 +203,7 @@ func TestCircuitBreakerConcurrentTripsOpen(t *testing.T) {
 }
 
 func TestBrokerKey(t *testing.T) {
+	t.Parallel()
 	k := BrokerKey("ic_markets", "mt4grpc3.mtapi.io", "443")
 	if k != "ic_markets|mt4grpc3.mtapi.io:443" {
 		t.Fatalf("BrokerKey = %q, want ic_markets|mt4grpc3.mtapi.io:443", k)
@@ -203,6 +216,7 @@ func TestBrokerKey(t *testing.T) {
 }
 
 func TestCircuitBreakerOpenedAt(t *testing.T) {
+	t.Parallel()
 	before := time.Now()
 	cb := NewCircuitBreaker(1, 1, time.Second)
 	cb.OnFailure()
@@ -213,6 +227,7 @@ func TestCircuitBreakerOpenedAt(t *testing.T) {
 }
 
 func TestCircuitBreakerCooldownNotElapsed(t *testing.T) {
+	t.Parallel()
 	cb := NewCircuitBreaker(1, 1, 5*time.Second)
 	cb.OnFailure()
 
