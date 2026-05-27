@@ -293,6 +293,8 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
                 if (cr !== undefined) patch.credit = cr;
                 if (Object.keys(patch).length > 0) {
                   tradingStore.setAccountInfoById(accId, patch);
+                  // Sync financial fields to accountStore for unified invalidation (U-5).
+                  useAccountStore.getState().patchAccountFinancials(accId, patch as unknown as Record<string, unknown>);
                 }
                 tradingStore.touchStreamProfitAt(accId);
 

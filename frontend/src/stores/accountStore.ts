@@ -14,6 +14,7 @@ interface AccountState {
   addAccount: (_account: Account) => void;
   updateAccount: (_account: Account) => void;
   updateAccountStatus: (_accountId: string, _status: string) => void;
+  patchAccountFinancials: (_accountId: string, _patch: Partial<Account>) => void;
   removeAccount: (_id: string) => void;
 }
 
@@ -59,6 +60,17 @@ export const useAccountStore = create<AccountState>((set) => ({
     set((state) => ({
       accounts: state.accounts.filter((a) => a.id !== id),
       currentAccount: state.currentAccount?.id === id ? null : state.currentAccount,
+    }));
+  },
+  patchAccountFinancials: (accountId, patch) => {
+    set((state) => ({
+      accounts: state.accounts.map((a) =>
+        a.id === accountId ? { ...a, ...patch } : a,
+      ),
+      currentAccount:
+        state.currentAccount?.id === accountId
+          ? { ...state.currentAccount, ...patch }
+          : state.currentAccount,
     }));
   },
 }));
