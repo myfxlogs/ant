@@ -206,13 +206,10 @@ func TestFetchOpenedOrders_NotConnected(t *testing.T) {
 func TestFetchOrderHistory_Stub(t *testing.T) {
 	t.Parallel()
 	gw := New(mdtick.AccountConfig{}, zap.NewNop())
-	// FetchOrderHistory currently returns nil, nil (TODO stub).
-	records, err := gw.FetchOrderHistory(context.Background(), time.Now(), time.Now())
-	if err != nil {
-		t.Errorf("FetchOrderHistory stub should not error, got %v", err)
-	}
-	if records != nil {
-		t.Errorf("FetchOrderHistory stub should return nil records, got %v", records)
+	// FetchOrderHistory now checks connection state; unconnected gateway returns error.
+	_, err := gw.FetchOrderHistory(context.Background(), time.Now(), time.Now())
+	if err == nil {
+		t.Error("FetchOrderHistory should fail when not connected")
 	}
 }
 

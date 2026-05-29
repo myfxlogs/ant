@@ -81,7 +81,8 @@ func stripSuffix(raw string) string {
 
 	// Known MT5 suffixes appended without delimiter (case-insensitive).
 	// e.g. "XAUUSDm" → "XAUUSD", "BTCUSDpro" → "BTCUSD"
-	suffixes := []string{"m", "pro", "x", "c", "t", "r", "_i", "_r", "_institutional", "_retail"}
+	// Sorted longest-first so "EURUSD_r" matches "_r" before "r".
+	suffixes := []string{"_institutional", "_retail", "_i", "_r", "pro", "m", "x", "c", "t", "r"}
 	for _, suf := range suffixes {
 		if strings.HasSuffix(s, suf) {
 			return strings.ToUpper(strings.TrimSuffix(s, suf))

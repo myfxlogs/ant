@@ -119,9 +119,9 @@ func TestNormalizer(t *testing.T) {
 	if result == "" {
 		t.Error("normalizer should produce non-empty result")
 	}
-	// 'm' without dot prefix is not stripped — only ".m" suffix is handled.
-	if result != "EURUSDM" {
-		t.Errorf("expected EURUSDM, got %s", result)
+	// Undotted 'm' suffix IS stripped — stripSuffix handles both ".m" and "m".
+	if result != "EURUSD" {
+		t.Errorf("expected EURUSD (m suffix stripped), got %s", result)
 	}
 	t.Logf("normalizer: EURUSDm → %s", result)
 }
