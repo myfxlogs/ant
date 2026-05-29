@@ -42,10 +42,11 @@ jobs:
       - name: go vet
         run: go vet ./...
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v9
+        uses: golangci/golangci-lint-action@v6
         with:
-          version: v2.12
+          version: v1.64
           working-directory: backend
+          install-mode: goinstall
           args: --timeout=5m --out-format=colored-line-number --new-from-rev=origin/main
 
   # ── M0.1-3: backend test + build ──

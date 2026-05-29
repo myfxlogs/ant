@@ -9,8 +9,6 @@
 # Any PR touching a baseline-listed file must reduce it below the limit,
 # or CI will fail.
 
-version: "2"
-
 run:
   timeout: 5m
   tests: false
@@ -18,6 +16,7 @@ run:
 linters:
   enable:
     - errcheck
+    - gosimple
     - govet
     - ineffassign
     - staticcheck
