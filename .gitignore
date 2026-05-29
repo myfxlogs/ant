@@ -11,6 +11,12 @@ coverage/
 backend/bin/
 backend/main
 backend/server
+backend/cmd/server/server
+backend/migrate-ch
+
+# Temp / tool artifacts
+.tmp_*
+.reasonix/
 
 # Proto generated code — committed to repo so CI doesn't need `make proto` before build.
 # The proto-drift CI job regenerates and checks for dirty working tree.
