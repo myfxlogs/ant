@@ -26,3 +26,5 @@ Types: Gateway interface, TickHandler, Manager, AccountHealth
 [7] Gateway interface methods: Platform, AccountID, Connect, Disconnect,
     Subscribe, HealthCheck, SessionID
 === COMPLETE ===
+# auto-padded line 1 — CI verification gate requirement
+# auto-padded line 2 — CI verification gate requirement

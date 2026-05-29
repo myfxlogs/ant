@@ -13,6 +13,13 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+const (
+	stepKeyIntent = "v2:intent"
+	stepKeyAgent  = "v2:agent"
+	stepKeyCode   = "v2:code"
+	stepKeyDone   = "v2:done"
+)
+
 // DebateV2Service manages the multi-expert debate flow (v2).
 type DebateV2Service struct {
 	repo        *repository.DebateRepository
@@ -108,7 +115,7 @@ func (s *DebateV2Service) Start(ctx context.Context, userID uuid.UUID, agents []
 	if err != nil {
 		return nil, fmt.Errorf("create session: %w", err)
 	}
-	v2status := "v2:intent"
+	v2status := stepKeyIntent
 	intentStep := V2Step{
 		StepKey: "intent",
 		Messages: []V2Message{{
@@ -470,11 +477,11 @@ func (s *DebateV2Service) saveSteps(ctx context.Context, id uuid.UUID, steps []V
 
 func (s *DebateV2Service) nextStepKey(current string, agents []string) string {
 	switch {
-	case current == "v2:intent":
+	case current == stepKeyIntent:
 		if len(agents) > 0 {
 			return "v2:agent:" + agents[0]
 		}
-		return "v2:code"
+		return stepKeyCode
 	case isAgentStep(current):
 		agent := agentFromStep(current)
 		for i, a := range agents {
@@ -482,9 +489,9 @@ func (s *DebateV2Service) nextStepKey(current string, agents []string) string {
 				return "v2:agent:" + agents[i+1]
 			}
 		}
-		return "v2:code"
-	case current == "v2:code":
-		return "v2:done"
+		return stepKeyCode
+	case current == stepKeyCode:
+		return stepKeyDone
 	default:
 		return ""
 	}
@@ -492,11 +499,11 @@ func (s *DebateV2Service) nextStepKey(current string, agents []string) string {
 
 func (s *DebateV2Service) prevStepKey(current string, agents []string) string {
 	switch {
-	case current == "v2:code":
+	case current == stepKeyCode:
 		if len(agents) > 0 {
 			return "v2:agent:" + agents[len(agents)-1]
 		}
-		return "v2:intent"
+		return stepKeyIntent
 	case isAgentStep(current):
 		agent := agentFromStep(current)
 		for i, a := range agents {
@@ -504,9 +511,9 @@ func (s *DebateV2Service) prevStepKey(current string, agents []string) string {
 				return "v2:agent:" + agents[i-1]
 			}
 		}
-		return "v2:intent"
-	case current == "v2:done":
-		return "v2:code"
+		return stepKeyIntent
+	case current == stepKeyDone:
+		return stepKeyCode
 	default:
 		return ""
 	}
@@ -520,7 +527,7 @@ func (s *DebateV2Service) initStep(stepKey string) V2Step {
 		name = agentKey
 	}
 	content := "开始讨论吧。"
-	if stepKey == "v2:code" {
+	if stepKey == stepKeyCode {
 		content = "正在生成策略代码..."
 	}
 	return V2Step{
@@ -548,7 +555,7 @@ func agentFromStep(status string) string {
 }
 
 func v2StatusToCurrentStep(status string) string {
-	if status == "v2:done" {
+	if status == stepKeyDone {
 		return "code"
 	}
 	return status

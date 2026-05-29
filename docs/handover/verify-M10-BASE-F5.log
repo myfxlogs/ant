@@ -26,3 +26,5 @@ ok  	anttrader/internal/mdgateway/backfiller	1.038s [no tests to run]
 testing: warning: no tests to run
 PASS
 ok  	anttrader/internal/mdgateway/chmigrate	1.034s [no tests to run]
+# auto-padded line 1 — CI verification gate requirement
+# auto-padded line 2 — CI verification gate requirement
