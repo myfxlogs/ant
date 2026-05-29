@@ -24,11 +24,11 @@ type CHWriterConfig struct {
 }
 
 func DefaultCHWriterConfig() CHWriterConfig {
-	// M10 ADR-0011 §2.1: tuned for 100-account peak (25k tick/s).
+	// Tuned for ClickHouse 2 GiB container: smaller batches reduce insert memory pressure.
 	return CHWriterConfig{
 		FlushInterval: 500 * time.Millisecond,
-		MaxBatchSize:  10000,
-		QueueSize:     50000,
+		MaxBatchSize:  2000,
+		QueueSize:     10000,
 	}
 }
 

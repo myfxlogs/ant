@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Layout, Menu, Avatar, Dropdown, Drawer } from 'antd';
+import { Layout, Menu, Avatar, Dropdown, Drawer, Modal, Typography } from 'antd';
 import {
   GlobalOutlined,
   QuestionCircleOutlined,
@@ -7,6 +7,9 @@ import {
   LogoutOutlined,
   SettingOutlined,
   LineChartOutlined,
+  BarChartOutlined,
+  PieChartOutlined,
+  ShopOutlined,
   HomeOutlined,
   MenuOutlined,
   RobotOutlined,
@@ -14,6 +17,9 @@ import {
   HistoryOutlined,
   UnorderedListOutlined,
   FundOutlined,
+  FunctionOutlined,
+  ExperimentOutlined,
+  FolderOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -29,12 +35,17 @@ const BRAND_GRADIENT = PRIMARY_GRADIENT;
 
 const menuKeys = {
   dashboard: '/',
+  trading: '/trading',
+  market: '/market',
+  analytics: '/analytics',
+  marketplace: '/marketplace',
   ai: '/ai',
   strategies: '/strategy/templates',
   experiments: '/strategy/experiments',
   marketRegime: '/strategy/market-regime',
   assets: '/strategy/assets',
   schedules: '/strategy/schedules',
+  indicatorCatalog: '/strategy/indicator-catalog',
   logs: '/logs',
 } as const;
 
@@ -67,6 +78,7 @@ export default function MainLayout() {
     };
   }, []);
 
+  // 核心路径：Dashboard + AI + 策略 + 日志 + Marketplace
   const allMenuItems = [
     { key: menuKeys.dashboard, icon: <HomeOutlined size={20} stroke={1.5} />, label: t('menu.dashboard') },
     {
@@ -75,9 +87,7 @@ export default function MainLayout() {
       label: t('menu.aiAssistant'),
     },
     { key: menuKeys.strategies, icon: <UnorderedListOutlined size={20} stroke={1.5} />, label: t('menu.strategies') },
-    // { key: menuKeys.experiments, icon: <IconFlask size={20} stroke={1.5} />, label: '策略实验' },
-    { key: menuKeys.marketRegime, icon: <FundOutlined size={20} stroke={1.5} />, label: t('menu.marketRegime') },
-    // { key: menuKeys.assets, icon: <IconArchive size={20} stroke={1.5} />, label: '资产库' },
+    { key: menuKeys.assets, icon: <FolderOutlined size={20} stroke={1.5} />, label: t('menu.assets') },
     { key: menuKeys.schedules, icon: <ThunderboltOutlined size={20} stroke={1.5} />, label: t('menu.schedules') },
     { key: menuKeys.logs, icon: <HistoryOutlined size={20} stroke={1.5} />, label: t('menu.logs') },
   ];
@@ -111,6 +121,8 @@ export default function MainLayout() {
       logout();
     } else if (key === 'admin') {
       navigate('/admin');
+    } else if (key === 'profile' || key === 'settings') {
+      navigate('/profile');
     }
   };
 
@@ -270,6 +282,22 @@ export default function MainLayout() {
               <button
                 className="p-2 rounded-lg transition-colors"
                 style={{ color: '#5A6B75' }}
+                onClick={() => {
+                  Modal.info({
+                    title: t('app.name'),
+                    content: (
+                      <div>
+                        <Typography.Paragraph>
+                          {t('common.helpText', 'AntTrader — algorithmic trading platform with AI-assisted strategy generation, multi-broker support, and risk management.')}
+                        </Typography.Paragraph>
+                        <Typography.Paragraph type="secondary">
+                          {t('common.helpContact', 'For support, please contact your system administrator.')}
+                        </Typography.Paragraph>
+                      </div>
+                    ),
+                    okText: t('common.gotIt'),
+                  });
+                }}
               >
                 <QuestionCircleOutlined size={20} stroke={1.5} />
               </button>

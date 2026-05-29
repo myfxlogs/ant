@@ -37,6 +37,17 @@ type BrokerInfoFetcher interface {
 	FetchBrokerInfo(ctx context.Context) (*BrokerInfo, error)
 }
 
+// MTAccountInfo holds basic account details from AccountSummary.
+type MTAccountInfo struct {
+	Balance    float64
+	Credit     float64
+	Equity     float64
+	Margin     float64
+	FreeMargin float64
+	Leverage   int32
+	Currency   string
+}
+
 // ProfitUpdate represents an account profit/financial snapshot from mtapi OnOrderProfit.
 type ProfitUpdate struct {
 	AccountID    string
@@ -67,9 +78,10 @@ type OrderUpdate struct {
 	AccountID   string
 	Platform    string
 	// The specific order change.
-	UpdateTicket  int64
-	UpdateType    string // "open", "close", "modify", "delete", "pending_open", "pending_close", etc.
-	UpdateSymbol  string
+	UpdateTicket    int64
+	UpdateType      string // "open", "close", "modify", "delete", "pending_open", "pending_close", etc.
+	UpdateOrderType string // "buy", "sell", "buy_limit", "sell_limit", etc. (original order type)
+	UpdateSymbol    string
 	UpdateVolume  float64
 	UpdateOpenPrice  float64
 	UpdateClosePrice float64
@@ -89,6 +101,8 @@ type OrderUpdate struct {
 	FreeMargin  float64
 	MarginLevel float64
 	Profit      float64
+	// ProfitPercent is profit as percentage of balance (Balance>0 only).
+	ProfitPercent float64
 	// Full opened positions list.
 	Positions []OrderUpdatePosition
 }

@@ -5,6 +5,7 @@ import i18n from '@/i18n';
 import { useAuthStore } from '@/stores/authStore';
 import { isLikelyStreamTransportFailure, isStreamServiceProcedure } from '@/utils/streamErrors';
 import { translateMaybeI18nKey } from '@/utils/error';
+import { ensureFreshToken, refreshAccessToken } from '@/utils/tokenLifecycle';
 
 const envApiUrl = import.meta.env.VITE_API_URL as string | undefined;
 const envStreamUrl = import.meta.env.VITE_STREAM_URL as string | undefined;
@@ -26,34 +27,10 @@ const STREAM_URL = rawStreamUrl.replace(/\/+$/, '');
 let hasShownConnectionError = false;
 let lastBizErrorAt = 0;
 
-// --- Token refresh via httpOnly cookie ---
-let refreshPromise: Promise<string | null> | null = null;
-
-async function tryRefreshToken(): Promise<string | null> {
-  try {
-    const res = await fetch(`${API_URL}/api/auth/refresh`, {
-      method: 'POST',
-      credentials: 'include',
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const newAccess = data.access_token;
-    if (newAccess) {
-      useAuthStore.getState().setAccessToken(newAccess);
-      return newAccess;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-async function refreshAndGetToken(): Promise<string | null> {
-  if (!refreshPromise) {
-    refreshPromise = tryRefreshToken().finally(() => { refreshPromise = null; });
-  }
-  return refreshPromise;
-}
+// Token refresh + lifecycle now lives in @/utils/tokenLifecycle.
+// transport.ts only:
+//   - calls ensureFreshToken() before each authed request (proactive)
+//   - falls back to refreshAccessToken() inside the 401 retry path (reactive safety net)
 
 function getAccessToken(): string | null {
   return useAuthStore.getState().accessToken;
@@ -72,7 +49,9 @@ function procedureHint(req: unknown): { key: string; label: string } {
 }
 
 const interceptors: Interceptor[] = [
-  // Token refresh interceptor — runs first to catch 401 and retry
+  // Reactive 401 safety net — runs first so it can retry once after a refresh.
+  // With ensureFreshToken() preflight in the next interceptor, this path
+  // should rarely be hit (server restart, secret rotation, clock skew, etc.).
   (next) => async (req) => {
     try {
       return await next(req);
@@ -82,7 +61,7 @@ const interceptors: Interceptor[] = [
         if (proc.includes('authservice') && (proc.includes('refreshtoken') || proc.includes('login') || proc.includes('register'))) {
           throw error;
         }
-        const newToken = await refreshAndGetToken();
+        const newToken = await refreshAccessToken();
         if (newToken) {
           req.header.set('Authorization', `Bearer ${newToken}`);
           return next(req);
@@ -95,7 +74,13 @@ const interceptors: Interceptor[] = [
     const proc = procedureHint(req).key;
     const isAuthFree = proc.includes('authservice') && (proc.includes('login') || proc.includes('register'));
 
-    const token = getAccessToken();
+    // Proactive preflight: if the access token is expired or about to expire,
+    // refresh BEFORE issuing the request so the server never sees a 401 and
+    // the browser DevTools never logs a red error line.
+    let token = getAccessToken();
+    if (token && !isAuthFree) {
+      token = await ensureFreshToken();
+    }
     if (token && !isAuthFree) {
       req.header.set('Authorization', `Bearer ${token}`);
     }

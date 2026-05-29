@@ -243,13 +243,6 @@ export default function Dashboard() {
           <Card
             title={<span style={{ color: '#141D22', fontWeight: 500 }}>{t('dashboard.accountList')}</span>}
             className="glass-card"
-            extra={
-              (accounts?.length || 0) > 4 ? (
-                <Button type="link" onClick={() => navigate('/accounts')} style={{ padding: 0 }}>
-                  {t('dashboard.viewAll')} →
-                </Button>
-              ) : null
-            }
           >
             <StatusResult
               loading={localLoading}

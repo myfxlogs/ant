@@ -47,6 +47,31 @@ func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int6
 	return resp.GetResult().GetTicket(), nil
 }
 
+// openTimeFromOrder extracts the open time from an MT5 Order, falling back
+// to OpenTimestampUTC when the proto Timestamp is nil or zero (some MT5
+// brokers only populate the int64 field).
+func openTimeFromOrder(o *pb.Order) time.Time {
+	if t := o.GetOpenTime(); t != nil && t.GetSeconds() > 0 {
+		return t.AsTime()
+	}
+	if ts := o.GetOpenTimestampUTC(); ts > 0 {
+		return time.Unix(ts, 0)
+	}
+	return time.Time{}
+}
+
+// closeTimeFromOrder extracts the close time from an MT5 Order, falling back
+// to CloseTimestampUTC when the proto Timestamp is nil or zero.
+func closeTimeFromOrder(o *pb.Order) time.Time {
+	if t := o.GetCloseTime(); t != nil && t.GetSeconds() > 0 {
+		return t.AsTime()
+	}
+	if ts := o.GetCloseTimestampUTC(); ts > 0 {
+		return time.Unix(ts, 0)
+	}
+	return time.Time{}
+}
+
 func mt5OrderType(side mthub.Side, ot mthub.OrderType) pb.OrderType {
 	switch {
 	case side == mthub.SideBuy && ot == mthub.OrderMarket:
@@ -176,8 +201,8 @@ func (g *Gateway) FetchOpenedOrders(ctx context.Context) ([]*mthub.OrderRecord, 
 			Volume:     decimal.NewFromFloat(o.GetLots()),
 			OpenPrice:  decimal.NewFromFloat(o.GetOpenPrice()),
 			ClosePrice: decimal.NewFromFloat(o.GetClosePrice()),
-			OpenTime:   o.GetOpenTime().AsTime(),
-			CloseTime:  o.GetCloseTime().AsTime(),
+			OpenTime:   openTimeFromOrder(o),
+			CloseTime:  closeTimeFromOrder(o),
 			Profit:     decimal.NewFromFloat(o.GetProfit()),
 			Swap:       decimal.NewFromFloat(o.GetSwap()),
 			Commission: decimal.NewFromFloat(o.GetCommission()),
@@ -190,7 +215,73 @@ func (g *Gateway) FetchOpenedOrders(ctx context.Context) ([]*mthub.OrderRecord, 
 }
 
 func (g *Gateway) FetchOrderHistory(ctx context.Context, from, to time.Time) ([]*mthub.OrderRecord, error) {
-	return nil, nil // TODO: implement via MT5 OrderHistory RPC
+	g.mu.RLock()
+	client := g.client
+	sid := g.sessionID
+	g.mu.RUnlock()
+	if client == nil || sid == "" {
+		return nil, fmt.Errorf("mt5 FetchOrderHistory: not connected")
+	}
+	fromStr := from.UTC().Format("2006-01-02T15:04:05")
+	toStr := to.UTC().Format("2006-01-02T15:04:05")
+	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
+	ctx = metadata.NewOutgoingContext(ctx, md)
+	resp, err := client.OrderHistory(ctx, &pb.OrderHistoryRequest{Id: sid, From: fromStr, To: toStr})
+	if err != nil {
+		return nil, fmt.Errorf("mt5 OrderHistory: %w", err)
+	}
+	if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
+		return nil, fmt.Errorf("mt5 OrderHistory: code=%d msg=%s", resp.GetError().GetCode(), resp.GetError().GetMessage())
+	}
+	orders := resp.GetResult()
+	out := make([]*mthub.OrderRecord, 0, len(orders))
+	for _, o := range orders {
+		side, ot := mt5OrderTypeToSideAndOrderType(o.GetOrderType())
+		state := mthub.OrderStateClosed
+		if ct := o.GetCloseTime(); ct == nil || ct.GetSeconds() == 0 {
+			state = mthub.OrderStateOpen
+		}
+		out = append(out, &mthub.OrderRecord{
+			Ticket:     o.GetTicket(),
+			SymbolRaw:  o.GetSymbol(),
+			Canonical:  o.GetSymbol(),
+			Side:       side,
+			OrderType:  ot,
+			Volume:     decimal.NewFromFloat(o.GetLots()),
+			OpenPrice:  decimal.NewFromFloat(o.GetOpenPrice()),
+			ClosePrice: decimal.NewFromFloat(o.GetClosePrice()),
+			OpenTime:   openTimeFromOrder(o),
+			CloseTime:  closeTimeFromOrder(o),
+			Profit:     decimal.NewFromFloat(o.GetProfit()),
+			Swap:       decimal.NewFromFloat(o.GetSwap()),
+			Commission: decimal.NewFromFloat(o.GetCommission()),
+			Comment:    o.GetComment(),
+			Magic:      int32(o.GetExpertId()),
+			State:      state,
+		})
+	}
+	return out, nil
+}
+
+func mt5OrderTypeToSideAndOrderType(ot pb.OrderType) (mthub.Side, mthub.OrderType) {
+	switch ot {
+	case pb.OrderType_OrderType_Sell:
+		return mthub.SideSell, mthub.OrderMarket
+	case pb.OrderType_OrderType_BuyLimit:
+		return mthub.SideBuy, mthub.OrderLimit
+	case pb.OrderType_OrderType_SellLimit:
+		return mthub.SideSell, mthub.OrderLimit
+	case pb.OrderType_OrderType_BuyStop:
+		return mthub.SideBuy, mthub.OrderStop
+	case pb.OrderType_OrderType_SellStop:
+		return mthub.SideSell, mthub.OrderStop
+	case pb.OrderType_OrderType_BuyStopLimit:
+		return mthub.SideBuy, mthub.OrderStopLimit
+	case pb.OrderType_OrderType_SellStopLimit:
+		return mthub.SideSell, mthub.OrderStopLimit
+	default:
+		return mthub.SideBuy, mthub.OrderMarket
+	}
 }
 
 func (g *Gateway) FetchSymbolParams(ctx context.Context, canonicals []string) ([]*mthub.SymbolParam, error) {

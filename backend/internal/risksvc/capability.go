@@ -94,7 +94,6 @@ func NewCapabilityStore() *CapabilityStore {
 }
 
 // Get returns the capability for a user, or a default Tier3LiveFull entry.
-// TODO(V3-R-1): LoadFromPG + 093 migration alignment so defaults come from DB.
 func (s *CapabilityStore) Get(userID string) *Capability {
 	s.mu.RLock()
 	defer s.mu.RUnlock()

@@ -76,7 +76,8 @@ func (s *AdminAccountServer) ListAccountsAdmin(ctx context.Context, req *connect
 	}
 	accounts, total, err := s.repo.ListAccounts(ctx, params)
 	if err != nil {
-		return nil, err
+		s.log.Error("ListAccountsAdmin failed", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	items := make([]*antv1.AccountWithUser, len(accounts))
 	for i, a := range accounts {

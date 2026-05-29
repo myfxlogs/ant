@@ -54,6 +54,7 @@ const accounts = {
       historyWithCount: '歷史訂單 ({{count}})',
       emptyPositions: '暫無持倉',
       emptyHistory: '暫無歷史訂單',
+      syncHistory: '同步历史',
       table: {
         orderId: '訂單號',
         symbol: '品種',

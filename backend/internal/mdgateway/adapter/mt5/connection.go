@@ -192,7 +192,12 @@ func (g *Gateway) FetchBrokerInfo(ctx context.Context) (*mdtick.BrokerInfo, erro
 		return &mdtick.BrokerInfo{}, nil
 	}
 
-	resp, err := client.AccountSummary(ctx, &pb.AccountSummaryRequest{Id: sid})
+	md := metadata.New(map[string]string{"id": sid})
+	if tok := g.token(); tok != "" {
+		md.Set("authorization", "Bearer "+tok)
+	}
+	asCtx := metadata.NewOutgoingContext(ctx, md)
+	resp, err := client.AccountSummary(asCtx, &pb.AccountSummaryRequest{Id: sid})
 	if err != nil {
 		return nil, fmt.Errorf("mt5 AccountSummary: %w", err)
 	}
@@ -218,6 +223,43 @@ func strToUint64(s string) uint64 {
 		}
 	}
 	return v
+}
+
+// FetchAccountInfo calls AccountSummary and returns basic account details.
+func (g *Gateway) FetchAccountInfo(ctx context.Context) (*mdtick.MTAccountInfo, error) {
+	g.mu.RLock()
+	client := g.client
+	sid := g.sessionID
+	g.mu.RUnlock()
+
+	if client == nil || sid == "" {
+		return nil, fmt.Errorf("mt5: not connected")
+	}
+
+	md := metadata.New(map[string]string{"id": sid})
+	if tok := g.token(); tok != "" {
+		md.Set("authorization", "Bearer "+tok)
+	}
+	asCtx := metadata.NewOutgoingContext(ctx, md)
+	resp, err := client.AccountSummary(asCtx, &pb.AccountSummaryRequest{Id: sid})
+	if err != nil {
+		return nil, fmt.Errorf("mt5 AccountSummary: %w", err)
+	}
+	if resp.GetResult() == nil {
+		// Investor/read-only accounts may not expose AccountSummary.
+		return &mdtick.MTAccountInfo{}, nil
+	}
+
+	s := resp.GetResult()
+	return &mdtick.MTAccountInfo{
+		Balance:    s.GetBalance(),
+		Credit:     s.GetCredit(),
+		Equity:     s.GetEquity(),
+		Margin:     s.GetMargin(),
+		FreeMargin: s.GetFreeMargin(),
+		Leverage:   int32(s.GetLeverage()),
+		Currency:   s.GetCurrency(),
+	}, nil
 }
 
 func (g *Gateway) HealthCheck(ctx context.Context) error {

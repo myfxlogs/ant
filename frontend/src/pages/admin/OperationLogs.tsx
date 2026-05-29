@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Card, Table, Button, Select, DatePicker, message } from 'antd';
-import { DownloadOutlined } from '@ant-design/icons';
 import { adminApi, type AdminLog, type LogListParams } from '@/client/admin';
 import { formatDateTime } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
@@ -34,26 +33,6 @@ export default function OperationLogs() {
   useEffect(() => {
     fetchLogs();
   }, [fetchLogs]);
-
-  const handleExport = async () => {
-    try {
-      const blob = await adminApi.exportLogs({
-        userId: params.userId,
-        action: params.action,
-      });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `admin_logs_${new Date().toISOString().split('T')[0]}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      message.success('导出成功');
-    } catch (error) {
-      message.error(getErrorMessage(error, '导出失败'));
-    }
-  };
 
   const handleDateChange = (dates: [Date | null, Date | null] | null) => {
     if (dates && dates[0] && dates[1]) {
@@ -105,12 +84,6 @@ export default function OperationLogs() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold" style={{ color: '#141D22' }}>操作日志</h1>
-        <Button
-          icon={<DownloadOutlined size={16} />}
-          onClick={handleExport}
-        >
-          导出
-        </Button>
       </div>
 
       <Card>

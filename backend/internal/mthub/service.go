@@ -79,6 +79,15 @@ func (s *MtHubService) SetOmsWriter(w *OmsWriter) { s.omsWriter = w }
 // SetKillSwitch injects the global kill switch for emergency stop (V3-R-5).
 func (s *MtHubService) SetKillSwitch(ks KillSwitchGate) { s.killSwitch = ks }
 
+// Platform returns the platform string ("mt4"/"mt5") for the account's executor.
+func (s *MtHubService) Platform(accountID string) string {
+	exec := s.hub.Get(accountID)
+	if exec == nil {
+		return ""
+	}
+	return exec.Platform()
+}
+
 // SessionState returns "connected" if the Hub has a session for the account,
 // or "not_found" otherwise. Expired sessions are auto-refreshed by EnsureSession.
 func (s *MtHubService) SessionState(ctx context.Context, accountID string) string {

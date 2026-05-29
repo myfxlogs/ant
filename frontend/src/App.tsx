@@ -18,23 +18,18 @@ const TermsOfService = lazy(() => import('@/pages/legal/TermsOfService'));
 const PrivacyPolicy = lazy(() => import('@/pages/legal/PrivacyPolicy'));
 const Dashboard = lazy(() => import('@/pages/dashboard/Dashboard'));
 const AccountDetail = lazy(() => import('@/pages/accounts/AccountDetail'));
-const AccountsList = lazy(() => import('@/pages/accounts/AccountsList'));
 const BindAccount = lazy(() => import('@/pages/accounts/BindAccount'));
-const Trading = lazy(() => import('@/pages/trading/Trading'));
-const Market = lazy(() => import('@/pages/market/Market'));
-const Marketplace = lazy(() => import('@/pages/marketplace/Marketplace'));
-const Summary = lazy(() => import('@/pages/analytics/Summary'));
 const DebatePage = lazy(() => import('@/pages/ai/debate/DebatePageV2'));
 const AISettings = lazy(() => import('@/pages/ai/AISettings'));
 const SystemAI = lazy(() => import('@/pages/ai/SystemAI'));
 const GateProgressPage = lazy(() => import('@/pages/ai/gate/GateProgressPage'));
 import RequireAIConfig from '@/pages/ai/components/RequireAIConfig';
 const StrategyTemplatePage = lazy(() => import('@/pages/strategy/StrategyTemplatePage'));
-const StrategyExperimentPage = lazy(() => import('@/pages/strategy/StrategyExperimentPage'));
-const MarketRegimePage = lazy(() => import('@/pages/strategy/MarketRegimePage'));
 const StrategyAssetPage = lazy(() => import('@/pages/strategy/StrategyAssetPage'));
 const StrategySchedulePage = lazy(() => import('@/pages/strategy/StrategySchedulePage'));
 const StrategyScheduleLogsPage = lazy(() => import('@/pages/strategy/StrategyScheduleLogsPage'));
+const IndicatorCatalogPage = lazy(() => import('@/pages/strategy/IndicatorCatalogPage'));
+const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'));
 const LogManagement = lazy(() => import('@/pages/logs/LogManagement'));
 const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
 const UserManagement = lazy(() => import('@/pages/admin/UserManagement'));
@@ -146,14 +141,6 @@ function AppContent() {
             }
           />
           <Route
-            path="accounts"
-            element={
-              <PageWrapper>
-                <AccountsList />
-              </PageWrapper>
-            }
-          />
-          <Route
             path="accounts/:id"
             element={
               <PageWrapper>
@@ -170,34 +157,10 @@ function AppContent() {
             }
           />
           <Route
-            path="trading"
+            path="profile"
             element={
               <PageWrapper>
-                <Trading />
-              </PageWrapper>
-            }
-          />
-          <Route
-            path="market"
-            element={
-              <PageWrapper>
-                <Market />
-              </PageWrapper>
-            }
-          />
-          <Route
-            path="marketplace"
-            element={
-              <PageWrapper>
-                <Marketplace />
-              </PageWrapper>
-            }
-          />
-          <Route
-            path="analytics"
-            element={
-              <PageWrapper>
-                <Summary />
+                <ProfilePage />
               </PageWrapper>
             }
           />
@@ -247,22 +210,6 @@ function AppContent() {
             }
           />
           <Route
-            path="strategy/experiments"
-            element={
-              <PageWrapper>
-                <StrategyExperimentPage />
-              </PageWrapper>
-            }
-          />
-          <Route
-            path="strategy/market-regime"
-            element={
-              <PageWrapper>
-                <MarketRegimePage />
-              </PageWrapper>
-            }
-          />
-          <Route
             path="strategy/assets"
             element={
               <PageWrapper>
@@ -283,6 +230,14 @@ function AppContent() {
             element={
               <PageWrapper>
                 <StrategyScheduleLogsPage />
+              </PageWrapper>
+            }
+          />
+          <Route
+            path="strategy/indicator-catalog"
+            element={
+              <PageWrapper>
+                <IndicatorCatalogPage />
               </PageWrapper>
             }
           />
@@ -375,7 +330,27 @@ function AppContent() {
 // Locale cache: dynamically loaded antd locales keyed by locale code (e.g. "zh_CN").
 const antdLocaleCache: Record<string, unknown> = {};
 
-// dayjsLocale maps our SupportedLanguage to dayjs locale identifiers.
+// Statically-analyzable locale loaders — each import() path must be a literal so
+// Vite can discover and bundle the chunks at build time. Template-literal dynamic
+// imports (e.g. import(`dayjs/locale/${dl}`)) are NOT statically analyzable and
+// will fail in production builds.
+
+const dayjsLocaleLoaders: Record<string, () => Promise<void>> = {
+  'zh-cn': () => import('dayjs/locale/zh-cn'),
+  'zh-tw': () => import('dayjs/locale/zh-tw'),
+  ja: () => import('dayjs/locale/ja'),
+  vi: () => import('dayjs/locale/vi'),
+};
+
+const antdLocaleLoaders: Record<string, () => Promise<{ default: unknown }>> = {
+  zh_CN: () => import('antd/locale/zh_CN'),
+  zh_TW: () => import('antd/locale/zh_TW'),
+  ja_JP: () => import('antd/locale/ja_JP'),
+  vi_VN: () => import('antd/locale/vi_VN'),
+  en_US: () => import('antd/locale/en_US'),
+};
+
+// dayjsLocale maps our SupportedLanguage to loader keys.
 const dayjsLocaleMap: Record<string, string> = {
   'zh-cn': 'zh-cn',
   'zh-tw': 'zh-tw',
@@ -383,7 +358,7 @@ const dayjsLocaleMap: Record<string, string> = {
   vi: 'vi',
 };
 
-// antdLocaleKey maps our SupportedLanguage to antd locale module paths.
+// antdLocaleKey maps our SupportedLanguage to loader keys.
 const antdLocaleKeyMap: Record<string, string> = {
   'zh-cn': 'zh_CN',
   'zh-tw': 'zh_TW',
@@ -403,15 +378,34 @@ export default function App() {
     };
   }, []);
 
+  // Proactive token-lifecycle: schedules background refresh when the user is
+  // active + the page is visible, and refreshes on tab visibility change.
+  // The transport interceptor also calls ensureFreshToken() per request, so
+  // even right after a hard reload the first authed RPC will not 401.
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const { startTokenScheduler, ensureFreshToken } = await import('@/utils/tokenLifecycle');
+      if (cancelled) return;
+      // Boot-time preflight: the persisted token may already be expired.
+      await ensureFreshToken();
+      startTokenScheduler();
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   useEffect(() => {
     const dl = dayjsLocaleMap[lang] || 'en';
     const ak = antdLocaleKeyMap[lang] || 'en_US';
 
     // Lazy-load dayjs locale (side-effect module registers the locale).
     if (dl !== 'en') {
-      import(`dayjs/locale/${dl}`).then(() => {
-        dayjs.locale(dl);
-      });
+      const dayjsLoader = dayjsLocaleLoaders[dl];
+      if (dayjsLoader) {
+        dayjsLoader().then(() => {
+          dayjs.locale(dl);
+        });
+      }
     } else {
       dayjs.locale('en');
     }
@@ -420,10 +414,13 @@ export default function App() {
     if (antdLocaleCache[ak]) {
       setAntdLocale(antdLocaleCache[ak]);
     } else {
-      import(`antd/locale/${ak}`).then((m) => {
-        antdLocaleCache[ak] = m.default;
-        setAntdLocale(m.default);
-      });
+      const antdLoader = antdLocaleLoaders[ak];
+      if (antdLoader) {
+        antdLoader().then((m) => {
+          antdLocaleCache[ak] = m.default;
+          setAntdLocale(m.default);
+        });
+      }
     }
   }, [lang]);
 

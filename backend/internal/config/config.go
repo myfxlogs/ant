@@ -58,6 +58,9 @@ type Config struct {
 	// External service URLs
 	StrategyServiceURL string // Python strategy-service: http://strategy-service:8081
 
+	// MTAPI
+	MtapiToken string // optional mtapi gateway token for account connection tests
+
 	// SMTP (email notifications)
 	SMTPHost     string
 	SMTPPort     string
@@ -101,6 +104,8 @@ func Load() *Config {
 		RequireQuestionnaire: getenvBool("REQUIRE_QUESTIONNAIRE", false),
 
 		StrategyServiceURL: getenv("STRATEGY_SERVICE_URL", ""),
+
+		MtapiToken: getenv("MTAPI_TOKEN", ""),
 
 		SMTPHost:     os.Getenv("SMTP_HOST"),
 		SMTPPort:     getenv("SMTP_PORT", "587"),

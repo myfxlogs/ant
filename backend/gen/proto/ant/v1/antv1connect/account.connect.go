@@ -67,6 +67,9 @@ const (
 	// AccountServiceUpdateTradingPasswordProcedure is the fully-qualified name of the AccountService's
 	// UpdateTradingPassword RPC.
 	AccountServiceUpdateTradingPasswordProcedure = "/ant.v1.AccountService/UpdateTradingPassword"
+	// AccountServiceVerifyAccountProcedure is the fully-qualified name of the AccountService's
+	// VerifyAccount RPC.
+	AccountServiceVerifyAccountProcedure = "/ant.v1.AccountService/VerifyAccount"
 )
 
 // AccountServiceClient is a client for the ant.v1.AccountService service.
@@ -82,6 +85,7 @@ type AccountServiceClient interface {
 	SearchBroker(context.Context, *connect.Request[v1.SearchBrokerRequest]) (*connect.Response[v1.SearchBrokerResponse], error)
 	VerifyTradePermission(context.Context, *connect.Request[v1.VerifyTradePermissionRequest]) (*connect.Response[v1.VerifyTradePermissionResponse], error)
 	UpdateTradingPassword(context.Context, *connect.Request[v1.UpdateTradingPasswordRequest]) (*connect.Response[v1.UpdateTradingPasswordResponse], error)
+	VerifyAccount(context.Context, *connect.Request[v1.VerifyAccountRequest]) (*connect.Response[v1.VerifyAccountResponse], error)
 }
 
 // NewAccountServiceClient constructs a client for the ant.v1.AccountService service. By default, it
@@ -161,6 +165,12 @@ func NewAccountServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(accountServiceMethods.ByName("UpdateTradingPassword")),
 			connect.WithClientOptions(opts...),
 		),
+		verifyAccount: connect.NewClient[v1.VerifyAccountRequest, v1.VerifyAccountResponse](
+			httpClient,
+			baseURL+AccountServiceVerifyAccountProcedure,
+			connect.WithSchema(accountServiceMethods.ByName("VerifyAccount")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -177,6 +187,7 @@ type accountServiceClient struct {
 	searchBroker          *connect.Client[v1.SearchBrokerRequest, v1.SearchBrokerResponse]
 	verifyTradePermission *connect.Client[v1.VerifyTradePermissionRequest, v1.VerifyTradePermissionResponse]
 	updateTradingPassword *connect.Client[v1.UpdateTradingPasswordRequest, v1.UpdateTradingPasswordResponse]
+	verifyAccount         *connect.Client[v1.VerifyAccountRequest, v1.VerifyAccountResponse]
 }
 
 // ListAccounts calls ant.v1.AccountService.ListAccounts.
@@ -234,6 +245,11 @@ func (c *accountServiceClient) UpdateTradingPassword(ctx context.Context, req *c
 	return c.updateTradingPassword.CallUnary(ctx, req)
 }
 
+// VerifyAccount calls ant.v1.AccountService.VerifyAccount.
+func (c *accountServiceClient) VerifyAccount(ctx context.Context, req *connect.Request[v1.VerifyAccountRequest]) (*connect.Response[v1.VerifyAccountResponse], error) {
+	return c.verifyAccount.CallUnary(ctx, req)
+}
+
 // AccountServiceHandler is an implementation of the ant.v1.AccountService service.
 type AccountServiceHandler interface {
 	ListAccounts(context.Context, *connect.Request[v1.ListAccountsRequest]) (*connect.Response[v1.ListAccountsResponse], error)
@@ -247,6 +263,7 @@ type AccountServiceHandler interface {
 	SearchBroker(context.Context, *connect.Request[v1.SearchBrokerRequest]) (*connect.Response[v1.SearchBrokerResponse], error)
 	VerifyTradePermission(context.Context, *connect.Request[v1.VerifyTradePermissionRequest]) (*connect.Response[v1.VerifyTradePermissionResponse], error)
 	UpdateTradingPassword(context.Context, *connect.Request[v1.UpdateTradingPasswordRequest]) (*connect.Response[v1.UpdateTradingPasswordResponse], error)
+	VerifyAccount(context.Context, *connect.Request[v1.VerifyAccountRequest]) (*connect.Response[v1.VerifyAccountResponse], error)
 }
 
 // NewAccountServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -322,6 +339,12 @@ func NewAccountServiceHandler(svc AccountServiceHandler, opts ...connect.Handler
 		connect.WithSchema(accountServiceMethods.ByName("UpdateTradingPassword")),
 		connect.WithHandlerOptions(opts...),
 	)
+	accountServiceVerifyAccountHandler := connect.NewUnaryHandler(
+		AccountServiceVerifyAccountProcedure,
+		svc.VerifyAccount,
+		connect.WithSchema(accountServiceMethods.ByName("VerifyAccount")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.AccountService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AccountServiceListAccountsProcedure:
@@ -346,6 +369,8 @@ func NewAccountServiceHandler(svc AccountServiceHandler, opts ...connect.Handler
 			accountServiceVerifyTradePermissionHandler.ServeHTTP(w, r)
 		case AccountServiceUpdateTradingPasswordProcedure:
 			accountServiceUpdateTradingPasswordHandler.ServeHTTP(w, r)
+		case AccountServiceVerifyAccountProcedure:
+			accountServiceVerifyAccountHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -397,4 +422,8 @@ func (UnimplementedAccountServiceHandler) VerifyTradePermission(context.Context,
 
 func (UnimplementedAccountServiceHandler) UpdateTradingPassword(context.Context, *connect.Request[v1.UpdateTradingPasswordRequest]) (*connect.Response[v1.UpdateTradingPasswordResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AccountService.UpdateTradingPassword is not implemented"))
+}
+
+func (UnimplementedAccountServiceHandler) VerifyAccount(context.Context, *connect.Request[v1.VerifyAccountRequest]) (*connect.Response[v1.VerifyAccountResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AccountService.VerifyAccount is not implemented"))
 }

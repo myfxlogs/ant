@@ -25,6 +25,7 @@ const trading = {
     noPositions: 'No open positions',
     closePosition: 'Close',
     closePositionConfirm: 'Close this position?',
+    openTime: 'Open Time',
     orderHistory: 'Order History',
     noOrders: 'No orders yet',
     risk: {

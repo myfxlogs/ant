@@ -733,6 +733,20 @@ const strategy = {
       },
     },
   },
+  indicatorCatalog: {
+    title: '指标目录',
+    description: '策略沙箱中可用的技术指标和风险参数。请在策略代码中仅使用这些辅助函数和参数键。',
+    indicatorsTitle: '技术指标',
+    riskSectionTitle: '风险管理参数',
+    riskParamsTitle: '通用风险参数',
+    riskParamsDesc: '无论选择哪些指标，每个策略都应遵循这些风险管理参数。',
+    paramKey: '键',
+    paramLabel: '标签',
+    paramType: '类型',
+    paramDefault: '默认值',
+    paramRange: '范围',
+    paramDescription: '描述',
+  },
 } as const;
 
 export default strategy;

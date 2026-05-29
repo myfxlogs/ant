@@ -44,7 +44,7 @@ func loadFinalizedBars(ctx context.Context, ch clickhouse.Conn, log *zap.Logger)
 func loadAccountConfigs(ctx context.Context, deps RunnerDeps) ([]mdtick.AccountConfig, error) {
 	rows, err := deps.PG.Query(ctx, `
 		SELECT id, user_id, platform, broker, mtapi_host, mtapi_port,
-		       login, password, mt_token, broker_host, server,
+		       login, password, COALESCE(mt_token, ''), broker_host, server,
 		       canonical_subscribed_symbols
 		FROM mt_accounts_v2 WHERE is_active = true
 	`)
@@ -185,7 +185,7 @@ func loadSingleAccountConfig(ctx context.Context, pg *pgxpool.Pool, accountID st
 	)
 	err := pg.QueryRow(ctx, `
 		SELECT id, user_id, platform, broker, mtapi_host, mtapi_port,
-		       login, password, mt_token, broker_host, server,
+		       login, password, COALESCE(mt_token, ''), broker_host, server,
 		       canonical_subscribed_symbols
 		FROM mt_accounts_v2 WHERE id = $1 AND is_active = true
 	`, accountID).Scan(&id, &userID, &platform, &broker, &mtapiHost, &mtapiPort,

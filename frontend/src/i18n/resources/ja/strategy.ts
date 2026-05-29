@@ -537,6 +537,20 @@ const strategy = {
       saveBlockedNotValidated: 'まず「コード検証」を実行してください。検証に合格するまで保存は無効です。',
     },
   },
+  indicatorCatalog: {
+    title: 'インジケーターカタログ',
+    description: '戦略サンドボックスで利用可能なテクニカル指標とリスクパラメータ。戦略コードではこれらのヘルパーとパラメータキーのみを使用してください。',
+    indicatorsTitle: 'テクニカル指標',
+    riskSectionTitle: 'リスク管理パラメータ',
+    riskParamsTitle: '共通リスクパラメータ',
+    riskParamsDesc: '指標の選択に関わらず、すべての戦略はこれらのリスク管理パラメータを尊重する必要があります。',
+    paramKey: 'キー',
+    paramLabel: 'ラベル',
+    paramType: '型',
+    paramDefault: 'デフォルト',
+    paramRange: '範囲',
+    paramDescription: '説明',
+  },
 } as const;
 
 export default strategy;

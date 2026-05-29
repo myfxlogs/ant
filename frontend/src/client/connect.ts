@@ -13,7 +13,6 @@ import { PythonStrategyService } from "../gen/ant/v1/python_strategy_pb";
 import { BacktestTradesService } from "../gen/ant/v1/backtest_trades_pb";
 import { MtHubService } from "../gen/ant/v1/mthub_service_pb";
 import { DebateV2Service } from "../gen/ant/v1/debate_v2_service_pb";
-import { DebateV2StreamService } from "../gen/ant/v1/debate_v2_stream_pb";
 import { EconomicDataService } from "../gen/ant/v1/economic_data_pb";
 import { StrategyExperimentService } from "../gen/ant/v1/strategy_experiment_pb";
 import { StrategyAssetService } from "../gen/ant/v1/strategy_asset_pb";
@@ -29,24 +28,8 @@ import { MarketplaceService } from "../gen/ant/v1/marketplace_service_pb";
 import { AdminJurisdictionService } from "../gen/ant/v1/admin_jurisdiction_pb";
 import { JobService } from "../gen/ant/v1/job_pb";
 import { ScheduleHealthService } from "../gen/ant/v1/schedule_health_pb";
+import { IndicatorCatalogService } from "../gen/ant/v1/indicator_catalog_pb";
 import { streamTransport, transport } from "./transport";
-
-// Returns a Proxy client that throws for every method call.
-// Used for services whose backend handlers are not yet implemented.
-// Stubs must NEVER silently succeed — that hides missing backend implementations.
-function createStubClient(): any {
-  return new Proxy({}, {
-    get(_target, methodName: string) {
-      if (methodName === "then") return undefined;
-      return async () => {
-        throw new Error(
-          `[stub] ${String(methodName)}() — backend not implemented. ` +
-          `This is a stub client; the real backend handler is missing.`
-        );
-      };
-    },
-  });
-}
 
 export const authClient = createClient(AuthService, transport);
 export const accountClient = createClient(AccountService, transport);
@@ -78,7 +61,6 @@ export const backtestTradesClient = createClient(
   transport,
 );
 export const debateV2Client = createClient(DebateV2Service, transport);
-export const debateV2StreamClient = createClient(DebateV2StreamService, streamTransport);
 export const scheduleHealthClient = createClient(ScheduleHealthService, transport);
 export const economicDataClient = createClient(EconomicDataService, transport);
 export const logClient = createClient(LogService, transport);
@@ -92,3 +74,4 @@ export const strategyAssetClient = createClient(StrategyAssetService, transport)
 export const adminJurisdictionClient = createClient(AdminJurisdictionService, transport);
 export const jobClient = createClient(JobService, transport);
 export const jobStreamClient = createClient(JobService, streamTransport);
+export const indicatorCatalogClient = createClient(IndicatorCatalogService, transport);

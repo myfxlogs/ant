@@ -1,6 +1,9 @@
 <clickhouse>
-    <!-- ant v2 ClickHouse runtime overrides (ADR-0002) -->
     <listen_host>0.0.0.0</listen_host>
     <max_connections>64</max_connections>
     <max_concurrent_queries>16</max_concurrent_queries>
+    <max_table_size_to_drop>0</max_table_size_to_drop>
+    <merge_tree>
+        <max_suspicious_broken_parts>10</max_suspicious_broken_parts>
+    </merge_tree>
 </clickhouse>

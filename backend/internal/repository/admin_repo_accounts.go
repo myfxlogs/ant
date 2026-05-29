@@ -19,12 +19,13 @@ type AccountWithUser struct {
 	UserNickname *string `json:"user_nickname" db:"user_nickname"`
 }
 
-var accountCols = `ma.id, ma.user_id, ma.mt_type, ma.broker_company, ma.broker_server,
-		   ma.broker_host, ma.login, ma.password, ma.alias, ma.is_disabled,
+var accountCols = `ma.id, ma.user_id, ma.mt_type,
+		   COALESCE(ma.broker_company,''), COALESCE(ma.broker_server,''),
+		   ma.broker_host, ma.login, ma.password, COALESCE(ma.alias,''), ma.is_disabled,
 		   ma.balance, ma.credit, ma.equity, ma.margin, ma.free_margin,
-		   ma.margin_level, ma.leverage, ma.currency, ma.account_method,
-		   ma.is_investor, ma.account_status, ma.stream_status, ma.mt_token,
-		   ma.last_error, ma.last_connected_at, ma.last_checked_at,
+		   ma.margin_level, ma.leverage, ma.currency, COALESCE(ma.account_method,''),
+		   ma.is_investor, ma.account_status, ma.stream_status, COALESCE(ma.mt_token,''),
+		   COALESCE(ma.last_error,''), ma.last_connected_at, ma.last_checked_at,
 		   ma.created_at, ma.updated_at, ma.account_type`
 
 func (r *AdminRepository) ListAccounts(ctx context.Context, params *model.AccountListParams) ([]*AccountWithUser, int64, error) {
@@ -124,7 +125,7 @@ func (r *AdminRepository) GetAccountByID(ctx context.Context, id uuid.UUID) (*Ac
 		&a.MarginLevel, &a.Leverage, &a.Currency, &a.AccountMethod,
 		&a.IsInvestor, &a.AccountStatus, &a.StreamStatus, &a.MTToken,
 		&a.LastError, &a.LastConnectedAt, &a.LastCheckedAt,
-		&a.CreatedAt, &a.UpdatedAt,
+		&a.CreatedAt, &a.UpdatedAt, &a.AccountType,
 		&a.UserEmail, &a.UserNickname,
 	)
 	if err != nil {

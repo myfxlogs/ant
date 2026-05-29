@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { Table, Tag, Card, Pagination } from 'antd';
 import { HistoryOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -38,10 +38,14 @@ export default function OrderHistoryTable() {
     loadHistory(currentAccountId, page);
   }, [currentAccountId, page, loadHistory]);
 
-  const fmt = (v: unknown) =>
-    v != null ? Number(v).toFixed(2) : '-';
+  const fmtTime = (v: unknown) => {
+    if (!v) return '-';
+    const ts = Number(v);
+    if (!ts || ts <= 0) return '-';
+    return new Date(ts * 1000).toLocaleString();
+  };
 
-  const columns = [
+  const columns = useMemo(() => [
     { title: '#', dataIndex: 'ticket', key: 'ticket', width: 80, render: (v: unknown) => String(v ?? '-') },
     { title: t('trading.symbol', 'Symbol'), dataIndex: 'symbol', key: 'symbol', width: 100 },
     {
@@ -55,7 +59,7 @@ export default function OrderHistoryTable() {
         return <Tag color={color}>{s.toUpperCase()}</Tag>;
       },
     },
-    { title: t('trading.volume', 'Volume'), dataIndex: 'volume', key: 'volume', width: 80, render: (v: unknown) => fmt(v) },
+    { title: t('trading.volume', 'Volume'), dataIndex: 'volume', key: 'volume', width: 80, render: (v: unknown) => Number(v ?? 0).toFixed(2) },
     { title: t('trading.price', 'Price'), dataIndex: 'openPrice', key: 'openPrice', width: 90, render: (v: unknown) => Number(v ?? 0).toFixed(5) },
     {
       title: 'P&L',
@@ -68,8 +72,8 @@ export default function OrderHistoryTable() {
         return <span style={{ color, fontWeight: 600 }}>{n.toFixed(2)}</span>;
       },
     },
-    { title: 'Time', dataIndex: 'openTime', key: 'openTime', width: 160, render: (v: unknown) => String(v ?? '-') },
-  ];
+    { title: 'Time', dataIndex: 'openTime', key: 'openTime', width: 160, render: (v: unknown) => fmtTime(v) },
+  ], [t]);
 
   return (
     <Card
@@ -79,12 +83,12 @@ export default function OrderHistoryTable() {
       <Table
         dataSource={orders as Record<string, unknown>[]}
         columns={columns}
-        rowKey={(r) => String((r as Record<string, unknown>).ticket ?? Math.random())}
+        rowKey="ticket"
         loading={loading}
         size="small"
         pagination={false}
         locale={{ emptyText: t('trading.noOrders', 'No orders yet') }}
-        scroll={{ x: 700 }}
+        tableLayout="fixed"
       />
       {total > pageSize && (
         <Pagination

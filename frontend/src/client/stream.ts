@@ -1,7 +1,7 @@
 import { streamClient } from './connect';
 import type { OrderUpdate, ProfitUpdate } from '../adapters/dataAdapter';
 import type { AccountStatusEvent } from '../gen/ant/v1/stream_event_account_pb';
-import type { StreamEvent } from '../gen/ant/v1/stream_event_core_pb';
+import type { StreamEvent } from '../gen/ant/v1/stream_pb';
 import { toCamelCase } from '../adapters/dataAdapter';
 import { isLikelyStreamTransportFailure } from '../utils/streamErrors';
 import type { UserSummary } from '../stores/tradingStore';
@@ -9,7 +9,7 @@ import type { UserSummary } from '../stores/tradingStore';
 /** Stop reconnecting after repeated proxy/HTTP2-style failures (reduces browser network error spam). */
 const STREAM_TRANSPORT_FAILURE_CAP = 12;
 
-export type { StreamEvent } from '../gen/ant/v1/stream_event_core_pb';
+export type { StreamEvent } from '../gen/ant/v1/stream_pb';
 export type { OrderUpdateEvent } from '../gen/ant/v1/stream_event_trade_pb';
 export type { ProfitUpdateEvent, UserSummaryEvent } from '../gen/ant/v1/stream_event_account_pb';
 
@@ -167,6 +167,7 @@ export const streamApi = {
         if (isLikelyStreamTransportFailure(error)) {
           transportFailStreak++;
           if (transportFailStreak >= STREAM_TRANSPORT_FAILURE_CAP) {
+            callbacks.onError?.(new Error('stream transport failure cap reached'));
             return;
           }
         } else {
@@ -252,6 +253,7 @@ export const streamApi = {
         if (isLikelyStreamTransportFailure(error)) {
           transportFailStreak++;
           if (transportFailStreak >= STREAM_TRANSPORT_FAILURE_CAP) {
+            onError?.(new Error('stream transport failure cap reached'));
             return;
           }
         } else {

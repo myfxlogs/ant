@@ -65,12 +65,12 @@ func (n *Normalizer) InvalidateCache(broker, symbolRaw string) {
 
 // stripSuffix removes known MT symbol suffixes per alfq Q-005 + Q-006.
 func stripSuffix(raw string) string {
-	s := raw
-	// Remove trailing dot and everything after
+	s := strings.ToLower(raw)
+
+	// Dot-delimited suffixes: e.g. "EURUSD.m" → "EURUSD"
 	if idx := strings.IndexByte(s, '.'); idx >= 0 {
 		base := s[:idx]
-		suffix := strings.ToLower(s[idx+1:])
-		// Known suffixes: m, pro, x, c
+		suffix := s[idx+1:]
 		switch suffix {
 		case "m", "pro", "x", "c":
 			return strings.ToUpper(base)
@@ -78,10 +78,14 @@ func stripSuffix(raw string) string {
 			return strings.ToUpper(s)
 		}
 	}
-	// Remove _i / _r suffixes
-	s = strings.TrimSuffix(s, "_i")
-	s = strings.TrimSuffix(s, "_r")
-	s = strings.TrimSuffix(s, "_institutional")
-	s = strings.TrimSuffix(s, "_retail")
+
+	// Known MT5 suffixes appended without delimiter (case-insensitive).
+	// e.g. "XAUUSDm" → "XAUUSD", "BTCUSDpro" → "BTCUSD"
+	suffixes := []string{"m", "pro", "x", "c", "t", "r", "_i", "_r", "_institutional", "_retail"}
+	for _, suf := range suffixes {
+		if strings.HasSuffix(s, suf) {
+			return strings.ToUpper(strings.TrimSuffix(s, suf))
+		}
+	}
 	return strings.ToUpper(s)
 }

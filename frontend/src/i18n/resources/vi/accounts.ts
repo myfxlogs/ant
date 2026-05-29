@@ -54,6 +54,7 @@ const accounts = {
       historyWithCount: 'Lịch sử ({{count}})',
       emptyPositions: 'Chưa có vị thế',
       emptyHistory: 'Chưa có lịch sử lệnh',
+      syncHistory: 'Đồng bộ lịch sử',
       table: {
         orderId: 'Mã lệnh',
         symbol: 'Mã',

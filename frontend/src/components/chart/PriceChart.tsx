@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { Radio, Spin, Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
-import { createChart, type IChartApi, type ISeriesApi, type CandlestickData, type HistogramData, type Time, ColorType } from 'lightweight-charts';
+import { createChart, CandlestickSeries, HistogramSeries, type IChartApi, type ISeriesApi, type CandlestickData, type HistogramData, type Time, ColorType } from 'lightweight-charts';
 import { marketApi, type KlineData } from '@/client/market';
 
 const TIMEFRAMES = [
@@ -55,6 +55,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
   const loadingMore = useRef(false);
   const loadedAll = useRef(false);
   const handleVisibleRangeChangeRef = useRef<((range: { from: number } | null) => void) | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // B-4.5: responsive — hide chart below 1280px viewport width.
   useEffect(() => {
@@ -65,7 +66,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  // Fetch klines on symbol/timeframe change.
+  // Fetch klines on symbol/timeframe change + poll for updates.
   useEffect(() => {
     if (!symbol) return;
     let cancelled = false;
@@ -74,7 +75,13 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     loadedAll.current = false;
     loadingMore.current = false;
 
-    marketApi.getKlines({ symbol, timeframe, count: INITIAL_BARS })
+    // Clear any existing poll interval.
+    if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+
+    const doFetch = (count: number) =>
+      marketApi.getKlines({ symbol, timeframe, count });
+
+    doFetch(INITIAL_BARS)
       .then((data) => {
         if (cancelled) return;
         setBars(data);
@@ -86,7 +93,26 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
         setLoading(false);
       });
 
-    return () => { cancelled = true; };
+    // Poll for new bars every 5s to keep the chart live.
+    pollRef.current = setInterval(() => {
+      if (cancelled) return;
+      doFetch(5)
+        .then((latest) => {
+          if (cancelled || latest.length === 0) return;
+          setBars((prev) => {
+            const index = new Map<number, KlineData>();
+            for (const b of prev) index.set(b.time, b);
+            for (const b of latest) index.set(b.time, b);
+            return [...index.values()].sort((a, b) => a.time - b.time);
+          });
+        })
+        .catch(() => { /* silent */ });
+    }, 5000);
+
+    return () => {
+      cancelled = true;
+      if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+    };
   }, [symbol, timeframe]);
 
   // Create chart on mount.
@@ -115,7 +141,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
       height,
     });
 
-    const candleSeries = chart.addCandlestickSeries({
+    const candleSeries = chart.addSeries(CandlestickSeries, {
       upColor: '#26a69a',
       downColor: '#ef5350',
       borderUpColor: '#26a69a',
@@ -124,7 +150,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
       wickDownColor: '#ef5350',
     });
 
-    const volumeSeries = chart.addHistogramSeries({
+    const volumeSeries = chart.addSeries(HistogramSeries, {
       priceFormat: { type: 'volume' },
       priceScaleId: '',
     });

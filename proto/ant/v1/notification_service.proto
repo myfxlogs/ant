@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+// NotificationService is the user-facing in-app notification inbox.
+// Handler implementation deferred to P1; schema + proto this round (B-2.6).
+service NotificationService {
+  rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsResponse);
+  rpc MarkRead(MarkReadRequest) returns (MarkReadResponse);
+  rpc MarkAllRead(MarkAllReadRequest) returns (MarkAllReadResponse);
+}
+
+message Notification {
+  string id = 1;
+  string user_id = 2;
+  string type = 3;          // margin_call | risk_alert | system | trade
+  string title = 4;
+  string message = 5;
+  string data_json = 6;     // JSONB as string for proto compatibility
+  bool is_read = 7;
+  string created_at = 8;    // RFC 3339
+}
+
+message ListNotificationsRequest {
+  int32 limit = 1;          // default 50
+  int32 offset = 2;         // default 0
+  bool unread_only = 3;     // default false
+}
+
+message ListNotificationsResponse {
+  repeated Notification notifications = 1;
+  int32 total_unread = 2;
+}
+
+message MarkReadRequest {
+  string id = 1;
+}
+
+message MarkReadResponse {}
+
+message MarkAllReadRequest {}
+
+message MarkAllReadResponse {}

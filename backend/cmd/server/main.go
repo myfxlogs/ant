@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 
@@ -30,7 +31,9 @@ import (
 	"anttrader/internal/marketplace"
 	"anttrader/internal/mdgateway"
 	"anttrader/internal/mdgateway/adapter/brokersearch"
+	"anttrader/internal/mdgateway/chmigrate"
 	"anttrader/internal/mdgateway/adapter/mdtick"
+	"anttrader/internal/model"
 	"anttrader/internal/mthub"
 	"anttrader/internal/notifier"
 	"anttrader/internal/pkg/secretbox"
@@ -105,6 +108,9 @@ func main() {
 	if err := ch.Ping(context.Background()); err != nil {
 		log.Fatal("clickhouse ping failed", zap.Error(err))
 	}
+	if err := chmigrate.Run(context.Background(), ch, log); err != nil {
+		log.Fatal("chmigrate failed", zap.Error(err))
+	}
 
 	// Connect to NATS
 	natsURL := cfg.NATSURL
@@ -145,7 +151,7 @@ func main() {
 		}
 		log.Info("secrets: client initialized")
 	} else {
-		log.Warn("ANT_MASTER_KEY not set — account passwords will NOT be decrypted; gateways will fail to connect")
+		log.Fatal("ANT_MASTER_KEY is required — generate one with: go run cmd/ant-vault/main.go")
 	}
 
 	// Services
@@ -172,6 +178,69 @@ func main() {
 	eventStore := mthub.NewTradeEventStore(js)
 	mthubSvc := mthub.NewMtHubService(hub, eventBroker, accountBroker, snapshotBroker, idemGuard, reconcileGate, eventStore)
 	// --- mdgateway pipeline (M10 runner) ---
+	tradeRecordRepo := repository.NewTradeRecordRepository(pool)
+
+	// syncAccountHistory fetches closed orders from MT broker and writes them to trade_records.
+	syncAccountHistory := func(accountID string) {
+		uid, err := uuid.Parse(accountID)
+		if err != nil {
+			return
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		from := time.Now().AddDate(-1, 0, 0)
+		if t, err := tradeRecordRepo.GetLastSyncTime(ctx, uid); err == nil && t != nil {
+			from = *t
+		}
+		to := time.Now()
+
+		records, err := mthubSvc.OrderHistory(ctx, accountID, from, to)
+		if err != nil {
+			log.Warn("syncHistory: fetch failed", zap.String("account", accountID), zap.Error(err))
+			return
+		}
+
+		platform := mthubSvc.Platform(accountID)
+		tradeRecs := make([]*model.TradeRecord, 0, len(records))
+		for _, r := range records {
+			ot := "BUY"
+			if r.Side == mthub.SideSell {
+				ot = "SELL"
+			}
+			switch r.OrderType {
+			case mthub.OrderMarket:
+			case mthub.OrderLimit:
+				ot += "_LIMIT"
+			case mthub.OrderStop:
+				ot += "_STOP"
+			case mthub.OrderStopLimit:
+				ot += "_STOP_LIMIT"
+			}
+			tradeRecs = append(tradeRecs, &model.TradeRecord{
+				AccountID:    uid,
+				Ticket:       r.Ticket,
+				Symbol:       r.SymbolRaw,
+				OrderType:    ot,
+				Volume:       r.Volume.InexactFloat64(),
+				OpenPrice:    r.OpenPrice.InexactFloat64(),
+				ClosePrice:   r.ClosePrice.InexactFloat64(),
+				Profit:       r.Profit.InexactFloat64(),
+				Swap:         r.Swap.InexactFloat64(),
+				Commission:   r.Commission.InexactFloat64(),
+				OpenTime:     r.OpenTime,
+				CloseTime:    r.CloseTime,
+				OrderComment: r.Comment,
+				MagicNumber:  int(r.Magic),
+				Platform:     platform,
+			})
+		}
+		if err := tradeRecordRepo.BatchCreate(ctx, tradeRecs); err != nil {
+			log.Warn("syncHistory: batch create failed", zap.String("account", accountID), zap.Error(err))
+		} else {
+			log.Info("syncHistory: synced", zap.String("account", accountID), zap.Int("count", len(tradeRecs)))
+		}
+	}
 	spillDir := cfg.SpillDir
 	pipelineCtx, pipelineCancel := context.WithCancel(context.Background())
 	defer pipelineCancel()
@@ -192,6 +261,8 @@ func main() {
 	marginCallThresholds := make(map[string]float64) // accountID → broker_margin_call_pct
 	var emailNotifier *notifier.EmailNotifier             // set after creation; referenced by OnAccountProfit closure
 	var platformAgg *risksvc.PlatformAggregator           // set after creation; referenced by OnOrderUpdate closure
+	var snapshotMu sync.Mutex
+	lastSnapshot := make(map[string]time.Time) // throttle: 1 snapshot/hour/account
 
 	// Load per-account broker margin call thresholds (default 100.0 from migration 122).
 	func() {
@@ -231,6 +302,24 @@ func main() {
 					p.Balance, p.Equity, p.Credit, p.Margin, p.FreeMargin, p.MarginLevel, accountID); err != nil {
 					log.Warn("OnAccountProfit: pg update failed", zap.String("account", accountID), zap.Error(err))
 				}
+				// Record hourly equity snapshot (throttled).
+				func() {
+					snapshotMu.Lock()
+					last, exists := lastSnapshot[accountID]
+					if exists && time.Since(last) < time.Hour {
+						snapshotMu.Unlock()
+						return
+					}
+					lastSnapshot[accountID] = time.Now()
+					snapshotMu.Unlock()
+					_, err := pool.Exec(writeCtx,
+						`INSERT INTO account_balance_history (account_id, balance, equity, margin, free_margin, recorded_at)
+						 VALUES ($1, $2, $3, $4, $5, NOW())`,
+						accountID, p.Balance, p.Equity, p.Margin, p.FreeMargin)
+					if err != nil {
+						log.Debug("OnAccountProfit: snapshot insert failed", zap.String("account", accountID), zap.Error(err))
+					}
+				}()
 				// Publish to mthub for real-time SSE streaming.
 				mthubSvc.PublishAccountProfit(&mthub.AccountProfitEvent{
 					AccountID: accountID, UserID: userID, Platform: p.Platform,
@@ -274,7 +363,7 @@ func main() {
 					AccountID: accountID, UserID: userID, Platform: o.Platform,
 					Balance: o.Balance, Credit: o.Credit, Equity: o.Equity,
 					Margin: o.Margin, FreeMargin: o.FreeMargin, MarginLevel: o.MarginLevel,
-					Profit: o.Profit, Status: "connected", Timestamp: time.Now(),
+					Profit: o.Profit, ProfitPercent: o.ProfitPercent, Status: "connected", Timestamp: time.Now(),
 					Positions: func() []mthub.AccountProfitPosition {
 						out := make([]mthub.AccountProfitPosition, 0, len(o.Positions))
 						for _, pos := range o.Positions {
@@ -336,11 +425,57 @@ func main() {
 						Margin:    0,
 					})
 				}
+
+					// Auto-write closed orders to trade_records.
+					if o.UpdateType == "close" && o.UpdateCloseTime > 0 {
+						uid, err := uuid.Parse(accountID)
+						if err == nil {
+							rec := &model.TradeRecord{
+								AccountID:    uid,
+								Ticket:       o.UpdateTicket,
+								Symbol:       o.UpdateSymbol,
+								OrderType:    o.UpdateOrderType,
+								Volume:       o.UpdateVolume,
+								OpenPrice:    o.UpdateOpenPrice,
+								ClosePrice:   o.UpdateClosePrice,
+								Profit:       o.UpdateProfit,
+								Swap:         o.UpdateSwap,
+								Commission:   o.UpdateCommission,
+								OpenTime:     time.Unix(o.UpdateOpenTime, 0),
+								CloseTime:    time.Unix(o.UpdateCloseTime, 0),
+								StopLoss:     o.UpdateSL,
+								TakeProfit:   o.UpdateTP,
+								OrderComment: o.UpdateComment,
+								Platform:     o.Platform,
+							}
+							if err := tradeRecordRepo.Create(writeCtx, rec); err != nil {
+								log.Warn("OnOrderUpdate: write closed trade failed", zap.String("account", accountID), zap.Int64("ticket", o.UpdateTicket), zap.Error(err))
+							}
+						}
+					}
 			},
 			OnAccountDisconnect: func(accountID string) {
+				syncAccountHistory(accountID)
 				platformAgg.ClearAccount(accountID)
 			},
 			OnBrokerInfo: func(accountID, platform, broker string, info *mdtick.BrokerInfo) {
+				syncAccountHistory(accountID)
+					// Publish initial position snapshot so frontend has data on first load.
+					go func() {
+						sctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+						defer cancel()
+						if orders, err := mthubSvc.OpenedOrders(sctx, accountID); err == nil {
+							snapshot := &mthub.PositionSnapshot{AccountID: accountID, Positions: make([]mthub.PositionSnapshotItem, 0, len(orders))}
+							for _, o := range orders {
+								snapshot.Positions = append(snapshot.Positions, mthub.PositionSnapshotItem{
+									Ticket: o.Ticket, Symbol: o.SymbolRaw, Type: mapSideToString(o.Side), Volume: o.Volume.InexactFloat64(),
+									OpenPrice: o.OpenPrice.InexactFloat64(), Profit: o.Profit.InexactFloat64(),
+									Swap: o.Swap.InexactFloat64(), Commission: o.Commission.InexactFloat64(), Comment: o.Comment,
+								})
+							}
+							snapshotBroker.Publish(snapshot)
+						}
+					}()
 				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 				defer cancel()
 				pct := info.MarginCallPct
@@ -375,14 +510,15 @@ func main() {
 	convRepo := repository.NewAIConversationRepository(pool)
 	jobRepo := repository.NewJobRepository(pool)
 	schedHealthRepo := repository.NewScheduleHealthRepository(pool)
-	marketDataRepo := repository.NewMarketDataRepository(ch)
+	marketDataRepo := repository.NewMarketDataRepository(ch, log)
 
 	authServer := user.NewAuthServer(userRepo, jwtSecret, log)
+	authServer.SetInsecureCookies(true) // no TLS in Docker deployment
 	mux.Handle(antv1c.NewAuthServiceHandler(authServer, connectrpc.WithInterceptors(rateLimitInterceptor, authInterceptor)))
 
 	reconLoop := mthub.NewReconciliationLoop(hub, pool, rdb.Client(), log, reconcileGate)
 
-	mthubServer := system.NewMtHubServer(mthubSvc, platformSvc, marketDataRepo, log)
+	mthubServer := system.NewMtHubServer(mthubSvc, platformSvc, marketDataRepo, tradeRecordRepo, log)
 	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	accountServer := user.NewAccountServer(platformSvc, log)
@@ -391,6 +527,9 @@ func main() {
 	// S2.4: wire NATS account event publisher for Connect/Disconnect/Reconnect.
 	accountEventPub := mdgateway.NewAccountEventPublisher(js, log)
 	accountServer.SetPublisher(accountEventPub)
+	// Wire MT connection tester so CreateAccount validates credentials against broker.
+	mtTester := user.NewMTConnectionTester(cfg.MtapiToken, log)
+	accountServer.SetMTConnectionTester(mtTester)
 	mux.Handle(antv1c.NewAccountServiceHandler(accountServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	mktServer := mktplace.NewMarketServer(platformSvc, marketDataRepo, nc, log)
@@ -432,7 +571,7 @@ func main() {
 	// Mock/stub handlers — return mock data for services not yet connected to real backends.
 	// Real: SystemAI, AIPrimary, Job, ScheduleHealth, DebateV2
 	// Mock: PythonStrategy, CodeAssist, BacktestTrades, EconomicData
-	pythonStrategyServer := strategy.NewPythonStrategyServer(log)
+	pythonStrategyServer := strategy.NewPythonStrategyServer(backtestRunRepo, log)
 	if cfg.StrategyServiceURL != "" {
 		pythonClient := strategysvc.NewPythonClient(cfg.StrategyServiceURL)
 		pythonStrategyServer.SetClient(pythonClient)
@@ -481,9 +620,21 @@ func main() {
 	}
 	// S1.1: Wire SignalPipeline for pre-trade risk checks (capability → hardlimit → platform → engine → sizer).
 		capStore := risksvc.NewCapabilityStore()
-		// NOTE: LoadFromPG skipped — user_risk_profiles schema doesn't yet match
-		// CapabilityStore column expectations (093 migration vs capability.go struct).
-		// Default Tier0 (view-only) applies until schema alignment is complete.
+			rows, err := pool.Query(context.Background(),
+				`SELECT user_id, COALESCE(capability_tier, 0),
+				        COALESCE(order_types_allowed, '{}'),
+				        lot_per_order_max, daily_order_max, leverage_max,
+				        COALESCE(symbol_whitelist, '{}'),
+				        COALESCE(killswitch_enabled, false)
+				 FROM user_risk_profiles`)
+			if err != nil {
+				log.Error("capability LoadFromPG query failed, using defaults", zap.Error(err))
+			} else {
+				if err := capStore.LoadFromPG(context.Background(), rows); err != nil {
+					log.Error("capability LoadFromPG scan failed, using defaults", zap.Error(err))
+				}
+				log.Info("capability store loaded", zap.Int("users", capStore.Count()))
+			}
 		hardLimit := risksvc.NewHardLimitEvaluator(&risksvc.KycJurisdictionRule{Gate: jurisGate})
 		platformAgg = risksvc.NewPlatformAggregator()
 		platformAgg.StartRefreshLoop(5 * time.Second) // B-1.4: async recalculate on dirty
@@ -743,3 +894,9 @@ func checkMarginCall(
 	}
 }
 
+
+func mapSideToString(s mthub.Side) string {
+	if s == mthub.SideBuy { return "buy" }
+	if s == mthub.SideSell { return "sell" }
+	return "buy"
+}

@@ -11,6 +11,11 @@ services:
         VITE_STREAM_URL: ${VITE_STREAM_URL:-}
     image: ant-prod-frontend
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     ports:
       - "${ANT_FRONTEND_PORT:-8022}:8080"
     deploy:
@@ -39,6 +44,11 @@ services:
       dockerfile: Dockerfile
     image: ant-prod-backend
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     deploy:
       resources:
         limits:
@@ -67,6 +77,7 @@ services:
       - ANTRADER_SEED_DEFAULT_STRATEGY_TEMPLATES=true
       - ANTRADER_SCHEDULE_EVENT_DRIVEN_ENABLED=true
       - ANTRADER_SCHEDULE_WATCHDOG_INTERVAL=30s
+      - ANT_MASTER_KEY=${ANT_MASTER_KEY}
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/healthz || exit 1"]
       interval: 10s
@@ -88,6 +99,11 @@ services:
       dockerfile: Dockerfile
     image: ant-prod-strategy-service
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     deploy:
       resources:
         limits:
@@ -114,6 +130,11 @@ services:
     ports:
       - "5433:5432"
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     deploy:
       resources:
         limits:
@@ -139,17 +160,23 @@ services:
     container_name: ant-clickhouse
     image: clickhouse/clickhouse-server:24.12-alpine
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     deploy:
       resources:
         limits:
-          memory: 1024M
+          memory: 4096M
         reservations:
-          memory: 512M
+          memory: 1024M
     environment:
       - CLICKHOUSE_DB=${CH_DATABASE:-ant}
       - CLICKHOUSE_USER=${CH_USER:-default}
       - CLICKHOUSE_PASSWORD=${CH_PASSWORD:-clickhouse}
       - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+      - MAX_MEMORY_USAGE=3000000000
     ports:
       - "${CH_HTTP_PORT:-8123}:8123"
       - "${CH_NATIVE_PORT:-9000}:9000"
@@ -171,6 +198,11 @@ services:
     container_name: ant-redis
     image: redis:8-alpine
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     deploy:
       resources:
         limits:
@@ -192,6 +224,11 @@ services:
     container_name: ant-nats
     image: nats:2.10-alpine
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
     deploy:
       resources:
         limits:

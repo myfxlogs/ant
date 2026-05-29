@@ -52,6 +52,7 @@ const trading = {
         },
       },
     },
+    openTime: '开仓时间',
     messages: {
       fetchPositionsFailed: '获取持仓失败',
       orderSendSuccess: '下单成功',

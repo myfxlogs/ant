@@ -152,13 +152,15 @@ export function useAccount() {
     }
   }, [updateAccount, setEnablingAccount]);
 
-  const deleteAccount = useCallback(async (id: string) => {
+  const deleteAccount = useCallback(async (id: string, password: string) => {
     try {
-      await accountApi.delete(id);
+      await accountApi.delete(id, password);
       removeAccount(id);
       showSuccess(i18n.t('accounts.messages.deleted'));
     } catch (error) {
-      showError(getErrorMessage(error, i18n.t('accounts.messages.deleteFailed')));
+      const msg = getErrorMessage(error, '');
+      // If the backend returned a Chinese error message, prefer it directly.
+      showError(msg || i18n.t('accounts.messages.deleteFailed'));
       throw error;
     }
   }, [removeAccount]);

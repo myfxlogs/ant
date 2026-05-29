@@ -21,11 +21,67 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type EquityCurvePeriod int32
+
+const (
+	EquityCurvePeriod_EQUITY_CURVE_PERIOD_UNSPECIFIED EquityCurvePeriod = 0
+	EquityCurvePeriod_EQUITY_CURVE_PERIOD_DAY         EquityCurvePeriod = 1
+	EquityCurvePeriod_EQUITY_CURVE_PERIOD_WEEK        EquityCurvePeriod = 2
+	EquityCurvePeriod_EQUITY_CURVE_PERIOD_MONTH       EquityCurvePeriod = 3
+	EquityCurvePeriod_EQUITY_CURVE_PERIOD_ALL         EquityCurvePeriod = 4
+)
+
+// Enum value maps for EquityCurvePeriod.
+var (
+	EquityCurvePeriod_name = map[int32]string{
+		0: "EQUITY_CURVE_PERIOD_UNSPECIFIED",
+		1: "EQUITY_CURVE_PERIOD_DAY",
+		2: "EQUITY_CURVE_PERIOD_WEEK",
+		3: "EQUITY_CURVE_PERIOD_MONTH",
+		4: "EQUITY_CURVE_PERIOD_ALL",
+	}
+	EquityCurvePeriod_value = map[string]int32{
+		"EQUITY_CURVE_PERIOD_UNSPECIFIED": 0,
+		"EQUITY_CURVE_PERIOD_DAY":         1,
+		"EQUITY_CURVE_PERIOD_WEEK":        2,
+		"EQUITY_CURVE_PERIOD_MONTH":       3,
+		"EQUITY_CURVE_PERIOD_ALL":         4,
+	}
+)
+
+func (x EquityCurvePeriod) Enum() *EquityCurvePeriod {
+	p := new(EquityCurvePeriod)
+	*p = x
+	return p
+}
+
+func (x EquityCurvePeriod) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (EquityCurvePeriod) Descriptor() protoreflect.EnumDescriptor {
+	return file_analytics_proto_enumTypes[0].Descriptor()
+}
+
+func (EquityCurvePeriod) Type() protoreflect.EnumType {
+	return &file_analytics_proto_enumTypes[0]
+}
+
+func (x EquityCurvePeriod) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use EquityCurvePeriod.Descriptor instead.
+func (EquityCurvePeriod) EnumDescriptor() ([]byte, []int) {
+	return file_analytics_proto_rawDescGZIP(), []int{0}
+}
+
 type GetAccountAnalyticsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	AccountId         string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	EquityCurvePeriod EquityCurvePeriod      `protobuf:"varint,2,opt,name=equity_curve_period,json=equityCurvePeriod,proto3,enum=ant.v1.EquityCurvePeriod" json:"equity_curve_period,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *GetAccountAnalyticsRequest) Reset() {
@@ -63,6 +119,13 @@ func (x *GetAccountAnalyticsRequest) GetAccountId() string {
 		return x.AccountId
 	}
 	return ""
+}
+
+func (x *GetAccountAnalyticsRequest) GetEquityCurvePeriod() EquityCurvePeriod {
+	if x != nil {
+		return x.EquityCurvePeriod
+	}
+	return EquityCurvePeriod_EQUITY_CURVE_PERIOD_UNSPECIFIED
 }
 
 type AccountAnalyticsResponse struct {
@@ -1233,10 +1296,11 @@ var File_analytics_proto protoreflect.FileDescriptor
 
 const file_analytics_proto_rawDesc = "" +
 	"\n" +
-	"\x0fanalytics.proto\x12\x06ant.v1\";\n" +
+	"\x0fanalytics.proto\x12\x06ant.v1\"\x86\x01\n" +
 	"\x1aGetAccountAnalyticsRequest\x12\x1d\n" +
 	"\n" +
-	"account_id\x18\x01 \x01(\tR\taccountId\"\xdc\x02\n" +
+	"account_id\x18\x01 \x01(\tR\taccountId\x12I\n" +
+	"\x13equity_curve_period\x18\x02 \x01(\x0e2\x19.ant.v1.EquityCurvePeriodR\x11equityCurvePeriod\"\xdc\x02\n" +
 	"\x18AccountAnalyticsResponse\x123\n" +
 	"\vtrade_stats\x18\x01 \x01(\v2\x12.ant.v1.TradeStatsR\n" +
 	"tradeStats\x126\n" +
@@ -1350,7 +1414,13 @@ const file_analytics_proto_rawDesc = "" +
 	"account_id\x18\x01 \x01(\tR\taccountId\"F\n" +
 	"\x1aGetMonthlyAnalysisResponse\x12\x14\n" +
 	"\x05years\x18\x01 \x03(\x05R\x05years\x12\x12\n" +
-	"\x04data\x18\x02 \x01(\fR\x04data2\xee\x02\n" +
+	"\x04data\x18\x02 \x01(\fR\x04data*\xaf\x01\n" +
+	"\x11EquityCurvePeriod\x12#\n" +
+	"\x1fEQUITY_CURVE_PERIOD_UNSPECIFIED\x10\x00\x12\x1b\n" +
+	"\x17EQUITY_CURVE_PERIOD_DAY\x10\x01\x12\x1c\n" +
+	"\x18EQUITY_CURVE_PERIOD_WEEK\x10\x02\x12\x1d\n" +
+	"\x19EQUITY_CURVE_PERIOD_MONTH\x10\x03\x12\x1b\n" +
+	"\x17EQUITY_CURVE_PERIOD_ALL\x10\x042\xee\x02\n" +
 	"\x10AnalyticsService\x12[\n" +
 	"\x13GetAccountAnalytics\x12\".ant.v1.GetAccountAnalyticsRequest\x1a .ant.v1.AccountAnalyticsResponse\x12R\n" +
 	"\x0fGetRecentTrades\x12\x1e.ant.v1.GetRecentTradesRequest\x1a\x1f.ant.v1.GetRecentTradesResponse\x12L\n" +
@@ -1369,47 +1439,50 @@ func file_analytics_proto_rawDescGZIP() []byte {
 	return file_analytics_proto_rawDescData
 }
 
+var file_analytics_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_analytics_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_analytics_proto_goTypes = []any{
-	(*GetAccountAnalyticsRequest)(nil), // 0: ant.v1.GetAccountAnalyticsRequest
-	(*AccountAnalyticsResponse)(nil),   // 1: ant.v1.AccountAnalyticsResponse
-	(*TradeStats)(nil),                 // 2: ant.v1.TradeStats
-	(*RiskMetrics)(nil),                // 3: ant.v1.RiskMetrics
-	(*SymbolStat)(nil),                 // 4: ant.v1.SymbolStat
-	(*EquityPoint)(nil),                // 5: ant.v1.EquityPoint
-	(*DailyPnL)(nil),                   // 6: ant.v1.DailyPnL
-	(*HourlyStat)(nil),                 // 7: ant.v1.HourlyStat
-	(*TradeRecord)(nil),                // 8: ant.v1.TradeRecord
-	(*GetRecentTradesRequest)(nil),     // 9: ant.v1.GetRecentTradesRequest
-	(*GetRecentTradesResponse)(nil),    // 10: ant.v1.GetRecentTradesResponse
-	(*MonthlyPnLItem)(nil),             // 11: ant.v1.MonthlyPnLItem
-	(*GetMonthlyPnLRequest)(nil),       // 12: ant.v1.GetMonthlyPnLRequest
-	(*GetMonthlyPnLResponse)(nil),      // 13: ant.v1.GetMonthlyPnLResponse
-	(*GetMonthlyAnalysisRequest)(nil),  // 14: ant.v1.GetMonthlyAnalysisRequest
-	(*GetMonthlyAnalysisResponse)(nil), // 15: ant.v1.GetMonthlyAnalysisResponse
+	(EquityCurvePeriod)(0),             // 0: ant.v1.EquityCurvePeriod
+	(*GetAccountAnalyticsRequest)(nil), // 1: ant.v1.GetAccountAnalyticsRequest
+	(*AccountAnalyticsResponse)(nil),   // 2: ant.v1.AccountAnalyticsResponse
+	(*TradeStats)(nil),                 // 3: ant.v1.TradeStats
+	(*RiskMetrics)(nil),                // 4: ant.v1.RiskMetrics
+	(*SymbolStat)(nil),                 // 5: ant.v1.SymbolStat
+	(*EquityPoint)(nil),                // 6: ant.v1.EquityPoint
+	(*DailyPnL)(nil),                   // 7: ant.v1.DailyPnL
+	(*HourlyStat)(nil),                 // 8: ant.v1.HourlyStat
+	(*TradeRecord)(nil),                // 9: ant.v1.TradeRecord
+	(*GetRecentTradesRequest)(nil),     // 10: ant.v1.GetRecentTradesRequest
+	(*GetRecentTradesResponse)(nil),    // 11: ant.v1.GetRecentTradesResponse
+	(*MonthlyPnLItem)(nil),             // 12: ant.v1.MonthlyPnLItem
+	(*GetMonthlyPnLRequest)(nil),       // 13: ant.v1.GetMonthlyPnLRequest
+	(*GetMonthlyPnLResponse)(nil),      // 14: ant.v1.GetMonthlyPnLResponse
+	(*GetMonthlyAnalysisRequest)(nil),  // 15: ant.v1.GetMonthlyAnalysisRequest
+	(*GetMonthlyAnalysisResponse)(nil), // 16: ant.v1.GetMonthlyAnalysisResponse
 }
 var file_analytics_proto_depIdxs = []int32{
-	2,  // 0: ant.v1.AccountAnalyticsResponse.trade_stats:type_name -> ant.v1.TradeStats
-	3,  // 1: ant.v1.AccountAnalyticsResponse.risk_metrics:type_name -> ant.v1.RiskMetrics
-	4,  // 2: ant.v1.AccountAnalyticsResponse.symbol_stats:type_name -> ant.v1.SymbolStat
-	5,  // 3: ant.v1.AccountAnalyticsResponse.equity_curve:type_name -> ant.v1.EquityPoint
-	6,  // 4: ant.v1.AccountAnalyticsResponse.daily_pnl:type_name -> ant.v1.DailyPnL
-	7,  // 5: ant.v1.AccountAnalyticsResponse.hourly_stats:type_name -> ant.v1.HourlyStat
-	8,  // 6: ant.v1.GetRecentTradesResponse.trades:type_name -> ant.v1.TradeRecord
-	11, // 7: ant.v1.GetMonthlyPnLResponse.monthly_pnl:type_name -> ant.v1.MonthlyPnLItem
-	0,  // 8: ant.v1.AnalyticsService.GetAccountAnalytics:input_type -> ant.v1.GetAccountAnalyticsRequest
-	9,  // 9: ant.v1.AnalyticsService.GetRecentTrades:input_type -> ant.v1.GetRecentTradesRequest
-	12, // 10: ant.v1.AnalyticsService.GetMonthlyPnL:input_type -> ant.v1.GetMonthlyPnLRequest
-	14, // 11: ant.v1.AnalyticsService.GetMonthlyAnalysis:input_type -> ant.v1.GetMonthlyAnalysisRequest
-	1,  // 12: ant.v1.AnalyticsService.GetAccountAnalytics:output_type -> ant.v1.AccountAnalyticsResponse
-	10, // 13: ant.v1.AnalyticsService.GetRecentTrades:output_type -> ant.v1.GetRecentTradesResponse
-	13, // 14: ant.v1.AnalyticsService.GetMonthlyPnL:output_type -> ant.v1.GetMonthlyPnLResponse
-	15, // 15: ant.v1.AnalyticsService.GetMonthlyAnalysis:output_type -> ant.v1.GetMonthlyAnalysisResponse
-	12, // [12:16] is the sub-list for method output_type
-	8,  // [8:12] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	0,  // 0: ant.v1.GetAccountAnalyticsRequest.equity_curve_period:type_name -> ant.v1.EquityCurvePeriod
+	3,  // 1: ant.v1.AccountAnalyticsResponse.trade_stats:type_name -> ant.v1.TradeStats
+	4,  // 2: ant.v1.AccountAnalyticsResponse.risk_metrics:type_name -> ant.v1.RiskMetrics
+	5,  // 3: ant.v1.AccountAnalyticsResponse.symbol_stats:type_name -> ant.v1.SymbolStat
+	6,  // 4: ant.v1.AccountAnalyticsResponse.equity_curve:type_name -> ant.v1.EquityPoint
+	7,  // 5: ant.v1.AccountAnalyticsResponse.daily_pnl:type_name -> ant.v1.DailyPnL
+	8,  // 6: ant.v1.AccountAnalyticsResponse.hourly_stats:type_name -> ant.v1.HourlyStat
+	9,  // 7: ant.v1.GetRecentTradesResponse.trades:type_name -> ant.v1.TradeRecord
+	12, // 8: ant.v1.GetMonthlyPnLResponse.monthly_pnl:type_name -> ant.v1.MonthlyPnLItem
+	1,  // 9: ant.v1.AnalyticsService.GetAccountAnalytics:input_type -> ant.v1.GetAccountAnalyticsRequest
+	10, // 10: ant.v1.AnalyticsService.GetRecentTrades:input_type -> ant.v1.GetRecentTradesRequest
+	13, // 11: ant.v1.AnalyticsService.GetMonthlyPnL:input_type -> ant.v1.GetMonthlyPnLRequest
+	15, // 12: ant.v1.AnalyticsService.GetMonthlyAnalysis:input_type -> ant.v1.GetMonthlyAnalysisRequest
+	2,  // 13: ant.v1.AnalyticsService.GetAccountAnalytics:output_type -> ant.v1.AccountAnalyticsResponse
+	11, // 14: ant.v1.AnalyticsService.GetRecentTrades:output_type -> ant.v1.GetRecentTradesResponse
+	14, // 15: ant.v1.AnalyticsService.GetMonthlyPnL:output_type -> ant.v1.GetMonthlyPnLResponse
+	16, // 16: ant.v1.AnalyticsService.GetMonthlyAnalysis:output_type -> ant.v1.GetMonthlyAnalysisResponse
+	13, // [13:17] is the sub-list for method output_type
+	9,  // [9:13] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_analytics_proto_init() }
@@ -1422,13 +1495,14 @@ func file_analytics_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_analytics_proto_rawDesc), len(file_analytics_proto_rawDesc)),
-			NumEnums:      0,
+			NumEnums:      1,
 			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_analytics_proto_goTypes,
 		DependencyIndexes: file_analytics_proto_depIdxs,
+		EnumInfos:         file_analytics_proto_enumTypes,
 		MessageInfos:      file_analytics_proto_msgTypes,
 	}.Build()
 	File_analytics_proto = out.File

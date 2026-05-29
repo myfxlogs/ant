@@ -20,10 +20,10 @@ import (
 
 // MarketServer implements ant.v1.MarketServiceHandler.
 type MarketServer struct {
-	platform  *service.PlatformService
+	platform   *service.PlatformService
 	marketData *repository.MarketDataRepository
-	nc        *nats.Conn
-	log       *zap.Logger
+	nc         *nats.Conn
+	log        *zap.Logger
 }
 
 var _ antv1c.MarketServiceHandler = (*MarketServer)(nil)
@@ -44,7 +44,7 @@ func (s *MarketServer) GetKlines(ctx context.Context, req *connect.Request[antv1
 		period = "M1"
 	}
 
-	bars, err := s.marketData.GetKlines(ctx, m.Canonical, period, limit)
+	bars, err := s.marketData.GetKlines(ctx, m.Canonical, m.Broker, period, limit)
 	if err != nil {
 		s.log.Error("GetKlines", zap.Error(err))
 		return connect.NewResponse(&antv1.GetKlinesResponse{}), nil
@@ -58,9 +58,14 @@ func (s *MarketServer) GetKlines(ctx context.Context, req *connect.Request[antv1
 			High:      decimalFromFloat(b.High),
 			Low:       decimalFromFloat(b.Low),
 			Close:     decimalFromFloat(b.Close),
-			Volume:    float64(b.TickVolume),
-			TickCount: 0,
+			Volume:    b.Volume,
+			TickCount: b.TickCount,
 		})
+	}
+	// ClickHouse returns bars in DESC order (newest first); lightweight-charts
+	// requires ASC order (oldest first). Reverse so consumers get chronological.
+	for i, j := 0, len(out)-1; i < j; i, j = i+1, j-1 {
+		out[i], out[j] = out[j], out[i]
 	}
 	if out == nil {
 		out = []*antv1.OHLCV{}
@@ -70,7 +75,7 @@ func (s *MarketServer) GetKlines(ctx context.Context, req *connect.Request[antv1
 
 // GetSymbolStats returns current bid/ask/spread from the latest tick.
 func (s *MarketServer) GetSymbolStats(ctx context.Context, req *connect.Request[antv1.GetSymbolStatsRequest]) (*connect.Response[antv1.GetSymbolStatsResponse], error) {
-	tick, err := s.marketData.GetLatestTick(ctx, req.Msg.Canonical)
+	tick, err := s.marketData.GetLatestTick(ctx, req.Msg.Canonical, req.Msg.Broker)
 	if err != nil {
 		return connect.NewResponse(&antv1.GetSymbolStatsResponse{
 			CurrentBid: "0", CurrentAsk: "0", Spread: "0",
@@ -89,14 +94,20 @@ func (s *MarketServer) GetSymbolStats(ctx context.Context, req *connect.Request[
 	}), nil
 }
 
-// StreamTicks subscribes to NATS tick.> pattern and forwards TickMsg to the client.
+// StreamTicks subscribes to NATS JetStream tick subjects and forwards TickMsg to the client.
+// Uses JetStream subscribe (not Core NATS) because the publisher uses JetStream.PublishMsg.
 func (s *MarketServer) StreamTicks(ctx context.Context, req *connect.Request[antv1.StreamTicksRequest], stream *connect.ServerStream[antv1.TickMsg]) error {
 	m := req.Msg
-	subject := "tick.>"
+	subject := "md.tick.>"
 	if len(m.Canonicals) == 1 {
-		subject = fmt.Sprintf("tick.%s", m.Canonicals[0])
+		subject = fmt.Sprintf("md.tick.*.%s", m.Canonicals[0])
 	}
-	sub, err := s.nc.SubscribeSync(subject)
+	js, err := s.nc.JetStream()
+	if err != nil {
+		s.log.Error("StreamTicks: jetstream init failed", zap.Error(err))
+		return connect.NewError(connect.CodeInternal, err)
+	}
+	sub, err := js.SubscribeSync(subject)
 	if err != nil {
 		s.log.Error("StreamTicks: subscribe failed", zap.String("subject", subject), zap.Error(err))
 		return connect.NewError(connect.CodeInternal, err)

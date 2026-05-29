@@ -16,6 +16,40 @@ type PGListener interface {
 	Close() error
 }
 
+// pgListenConn wraps a pgxpool connection for PG NOTIFY listening.
+type pgListenConn struct {
+	conn *pgxpool.Conn
+}
+
+func (p *pgListenConn) WaitForNotification(ctx context.Context) (string, error) {
+	n, err := p.conn.Conn().WaitForNotification(ctx)
+	if err != nil {
+		return "", err
+	}
+	return n.Payload, nil
+}
+
+func (p *pgListenConn) Close() error { p.conn.Release(); return nil }
+
+// newPGListener acquires a PG connection and starts LISTEN on broker_symbols_changed.
+// Returns nil if PG is unavailable, causing ticker fallback.
+func newPGListener(ctx context.Context, pool *pgxpool.Pool, log *zap.Logger) PGListener {
+	if pool == nil {
+		return nil
+	}
+	conn, err := pool.Acquire(ctx)
+	if err != nil {
+		log.Warn("normalizer_invalidator: cannot acquire PG conn, using ticker", zap.Error(err))
+		return nil
+	}
+	if _, err := conn.Exec(ctx, "LISTEN broker_symbols_changed"); err != nil {
+		log.Warn("normalizer_invalidator: LISTEN failed, using ticker", zap.Error(err))
+		conn.Release()
+		return nil
+	}
+	return &pgListenConn{conn: conn}
+}
+
 // NormalizerInvalidator listens for PG NOTIFY broker_symbols_changed events
 // and invalidates the normalizer cache for affected (broker, symbol_raw) pairs.
 // Falls back to 30s ticker polling when the LISTEN connection is lost (ADR-0011 §2.3).

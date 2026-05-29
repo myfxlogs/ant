@@ -109,7 +109,7 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	invalidator := NewNormalizerInvalidator(log, deps.PG, func(broker, symbolRaw string) {
 		normalizer.InvalidateCache(broker, symbolRaw)
 	})
-	invalidator.Start(ctx, nil) // nil = ticker fallback; pgx.Conn implements PGListener
+	invalidator.Start(ctx, newPGListener(ctx, deps.PG, log))
 
 	// --- Manager (wires HandleTick pipeline) ---
 	mgr := NewManager(ManagerDeps{
@@ -143,104 +143,24 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 				zap.String("platform", cfg.Platform),
 				zap.String("broker", cfg.Broker))
 
-			// Build gateway for this account.
-			var gw Gateway
-			switch strings.ToLower(cfg.Platform) {
-			case "mt4":
-				gw = mt4.New(cfg, log)
-			case "mt5":
-				gw = mt5.New(cfg, log)
-			default:
-				log.Warn("mdgateway: unknown platform", zap.String("platform", cfg.Platform), zap.String("account", accID))
-				continue
-			}
-
-			// Connect to mtapi.
-			if err := gw.Connect(ctx); err != nil {
-				log.Error("mdgateway: gateway connect failed",
+			gw, err := startGatewayForAccount(ctx, cfg, deps, mgr, log)
+			if err != nil {
+				log.Error("mdgateway: gateway start failed",
 					zap.String("account", accID), zap.Error(err))
 				continue
 			}
-
-			// B-2.2: fetch broker-level margin thresholds after connect.
-			if deps.OnBrokerInfo != nil {
-				if fetcher, ok := gw.(mdtick.BrokerInfoFetcher); ok {
-					info, err := fetcher.FetchBrokerInfo(ctx)
-					if err != nil {
-						log.Warn("mdgateway: FetchBrokerInfo failed",
-							zap.String("account", accID), zap.Error(err))
-					}
-					if info != nil {
-						deps.OnBrokerInfo(accID, cfg.Platform, cfg.Broker, info)
-					}
-				}
-			}
-
-			// Register gateway for health tracking + backfiller source routing.
-			_ = mgr.AddGateway(ctx, gw, nil)
-
-			// Register as OrderExecutor with mthub so trading operations
-			// (FetchOpenedOrders, etc.) can use this broker connection.
-			if deps.Hub != nil {
-				if exec, ok := gw.(mthub.OrderExecutor); ok {
-					deps.Hub.Register(accID,
-						&mthub.Session{AccountID: accID, CreatedAt: Clk.Now()},
-						exec,
-					)
-				}
-			}
+			// Register as backfiller bar source.
 			if bfSrc, ok := gw.(backfiller.MTAPIBarSource); ok {
 				srcMap.gws[accID] = bfSrc
 			}
-
-			// Default symbols for real-time quotes when account has none configured.
-			syms := cfg.Symbols
-			if len(syms) == 0 {
-				syms = defaultQuoteSymbols()
 			}
-
-			// Subscribe to tick stream; HandleTick is the pipeline entry point.
-			if err := gw.Subscribe(ctx, syms, mgr.HandleTick); err != nil {
-				log.Error("mdgateway: gateway subscribe failed",
-					zap.String("account", accID), zap.Error(err))
-				continue
-			}
-
-			// Subscribe to profit stream (real-time balance/equity/P&L from mtapi OnOrderProfit).
-			if deps.OnAccountProfit != nil {
-				uid := cfg.UserID
-				aid := accID
-				if err := gw.SubscribeProfit(ctx, func(p *mdtick.ProfitUpdate) {
-					deps.OnAccountProfit(aid, uid, p)
-				}); err != nil {
-					log.Warn("mdgateway: profit subscribe failed",
-						zap.String("account", accID), zap.Error(err))
-				}
-			}
-
-			// Subscribe to order update stream (real-time position changes from mtapi OnOrderUpdate).
-			if deps.OnOrderUpdate != nil {
-				uid := cfg.UserID
-				aid := accID
-				if err := gw.SubscribeOrderUpdate(ctx, func(o *mdtick.OrderUpdate) {
-					deps.OnOrderUpdate(aid, uid, o)
-				}); err != nil {
-					log.Warn("mdgateway: order update subscribe failed",
-						zap.String("account", accID), zap.Error(err))
-				}
-			}
-
-			log.Info("mdgateway: gateway active",
-				zap.String("account", accID),
-				zap.String("platform", cfg.Platform))
-		}
 	}
 
 	// --- Health monitor ---
 	go healthMonitor(ctx, mgr, chWriter, log, deps.OnAccountDisconnect)
 
 	// --- Account event subscriber (NATS: account.connect/disconnect/reconnect) ---
-	startAccountEventSubscriber(ctx, deps.NATSConn, log)
+	startAccountEventSubscriber(ctx, deps, mgr, log)
 
 	// --- Wait for shutdown ---
 	<-ctx.Done()
@@ -388,26 +308,147 @@ drainBars:
 	}
 }
 
-// defaultQuoteSymbols returns a default set of major forex + crypto pairs
-// for mtapi SymbolSubscribe when an account has no configured symbols.
+// defaultQuoteSymbols returns a broad set of symbols for mtapi SymbolSubscribe
+// when an account has no configured symbols. Kept in sync with frontend COMMON_SYMBOLS.
+// Broker-normalizer will strip the "m" suffix to produce canonical names.
+// Symbols not recognized by the broker are silently ignored by mtapi.
 func defaultQuoteSymbols() []string {
 	return []string{
+		// Forex majors
+		"EURUSDm", "GBPUSDm", "USDJPYm", "AUDUSDm", "NZDUSDm", "USDCADm", "USDCHFm",
+		// Forex crosses
+		"EURGBPm", "EURJPYm", "GBPJPYm", "AUDJPYm", "NZDJPYm", "CADJPYm", "CHFJPYm",
+		"EURCHFm", "EURAUDm", "EURNZDm", "GBPCHFm", "GBPAUDm", "GBPNZDm",
+		"GBPCADm", "AUDCADm", "AUDCHFm", "AUDNZDm", "NZDCADm", "NZDCHFm", "CADCHFm",
+		// Metals
+		"XAUUSDm", "XAGUSDm", "XAUJPYm",
+		// Crypto
 		"BTCUSDm", "ETHUSDm", "XRPUSDm", "SOLUSDm", "BNBUSDm",
-		"EURUSDm", "GBPUSDm", "USDJPYm", "XAUUSDm", "US30m",
+		// Indices
+		"US30m", "US100m", "GER40m",
 	}
 }
 
-// startAccountEventSubscriber listens for NATS account lifecycle events
-// and logs them. Full dynamic gateway reload is phase 2 (S2.4-m2).
-func startAccountEventSubscriber(ctx context.Context, nc *nats.Conn, log *zap.Logger) {
-	if nc == nil {
+// startGatewayForAccount connects a single account's gateway to the broker,
+// registers it with the manager and hub, fetches broker info, and subscribes
+// to tick/profit/order-update streams. Used by both startup load and dynamic
+// subscriber to eliminate duplication.
+func startGatewayForAccount(ctx context.Context, cfg mdtick.AccountConfig, deps RunnerDeps, mgr *Manager, log *zap.Logger) (Gateway, error) {
+	accID := cfg.AccountID
+
+	var gw Gateway
+	switch strings.ToLower(cfg.Platform) {
+	case "mt4":
+		gw = mt4.New(cfg, log)
+	case "mt5":
+		gw = mt5.New(cfg, log)
+	default:
+		return nil, fmt.Errorf("unknown platform: %s", cfg.Platform)
+	}
+
+	if err := gw.Connect(ctx); err != nil {
+		return nil, fmt.Errorf("connect: %w", err)
+	}
+
+	if err := mgr.AddGateway(ctx, gw, nil); err != nil {
+		return gw, fmt.Errorf("add gateway: %w", err)
+	}
+
+	// Register with Hub BEFORE FetchBrokerInfo so syncHistory can find the session.
+		if deps.Hub != nil {
+			if exec, ok := gw.(mthub.OrderExecutor); ok {
+				deps.Hub.Register(accID,
+					&mthub.Session{AccountID: accID, CreatedAt: Clk.Now()}, exec)
+			}
+		}
+
+	// Fetch broker-level margin thresholds after Hub registration.
+	if deps.OnBrokerInfo != nil {
+		if fetcher, ok := gw.(mdtick.BrokerInfoFetcher); ok {
+			info, _ := fetcher.FetchBrokerInfo(ctx)
+			if info != nil {
+				deps.OnBrokerInfo(accID, cfg.Platform, cfg.Broker, info)
+			}
+		}
+	}
+
+	// Subscribe to tick stream.
+	syms := cfg.Symbols
+	if len(syms) == 0 {
+		syms = defaultQuoteSymbols()
+	}
+	if err := gw.Subscribe(ctx, syms, mgr.HandleTick); err != nil {
+		return gw, fmt.Errorf("tick subscribe: %w", err)
+	}
+
+	// Subscribe to profit and order-update streams.
+	if deps.OnAccountProfit != nil {
+		uid, aid := cfg.UserID, accID
+		gw.SubscribeProfit(ctx, func(p *mdtick.ProfitUpdate) { deps.OnAccountProfit(aid, uid, p) })
+	}
+	if deps.OnOrderUpdate != nil {
+		uid, aid := cfg.UserID, accID
+		gw.SubscribeOrderUpdate(ctx, func(o *mdtick.OrderUpdate) { deps.OnOrderUpdate(aid, uid, o) })
+	}
+
+	log.Info("mdgateway: gateway active", zap.String("account", accID), zap.String("platform", cfg.Platform))
+	return gw, nil
+}
+
+// startAccountEventSubscriber listens for NATS JetStream account lifecycle
+// events and dynamically starts/stops gateways.
+func startAccountEventSubscriber(ctx context.Context, deps RunnerDeps, mgr *Manager, log *zap.Logger) {
+	if deps.NATSConn == nil {
 		return
 	}
-	sub, err := nc.Subscribe("account.>", func(m *nats.Msg) {
+	js, err := deps.NATSConn.JetStream()
+	if err != nil {
+		log.Warn("mdgateway: JetStream not available for account events", zap.Error(err))
+		return
+	}
+
+	// Ensure the stream exists for account events.
+	if err := ensureAccountEventsStream(js, log); err != nil {
+		log.Warn("mdgateway: account events stream ensure failed", zap.Error(err))
+		return
+	}
+
+	// Ephemeral consumer — only active while mdgateway is running.
+	sub, err := js.Subscribe("account.>", func(m *nats.Msg) {
 		log.Info("mdgateway: account event received",
 			zap.String("subject", m.Subject),
 			zap.String("data", string(m.Data)))
-	})
+
+		parts := strings.Split(m.Subject, ".")
+		if len(parts) < 3 {
+			return
+		}
+		action := parts[1]
+		accountID := parts[2]
+
+		switch action {
+		case "connect", "reconnect":
+			cfg, err := loadSingleAccountConfig(ctx, deps.PG, accountID)
+			if err != nil || cfg == nil {
+				log.Warn("mdgateway: load account config failed",
+					zap.String("account", accountID), zap.Error(err))
+				return
+			}
+
+
+			log.Info("mdgateway: dynamically starting gateway",
+				zap.String("account", accountID), zap.String("platform", cfg.Platform))
+
+			if _, err := startGatewayForAccount(ctx, *cfg, deps, mgr, log); err != nil {
+				log.Error("mdgateway: dynamic gateway start failed",
+					zap.String("account", accountID), zap.Error(err))
+			}
+
+		case "disconnect":
+			_ = mgr.RemoveGateway(ctx, accountID)
+			log.Info("mdgateway: dynamically stopped gateway", zap.String("account", accountID))
+		}
+	}, nats.DeliverAll(), nats.AckExplicit())
 	if err != nil {
 		log.Warn("mdgateway: account event subscribe failed", zap.Error(err))
 		return
@@ -416,6 +457,24 @@ func startAccountEventSubscriber(ctx context.Context, nc *nats.Conn, log *zap.Lo
 		<-ctx.Done()
 		sub.Unsubscribe()
 	}()
-	log.Info("mdgateway: account event subscriber started",
-		zap.String("subject", "account.>"))
+	log.Info("mdgateway: account event subscriber started", zap.String("subject", "account.>"))
+}
+
+// ensureAccountEventsStream creates the JetStream stream for account lifecycle events if it doesn't exist.
+func ensureAccountEventsStream(js nats.JetStreamContext, log *zap.Logger) error {
+	_, err := js.StreamInfo("ACCOUNT_EVENTS")
+	if err == nil {
+		return nil // Already exists.
+	}
+	_, err = js.AddStream(&nats.StreamConfig{
+		Name:      "ACCOUNT_EVENTS",
+		Subjects:  []string{"account.>"},
+		Retention: nats.InterestPolicy,
+		MaxAge:    24 * time.Hour,
+	})
+	if err != nil {
+		return fmt.Errorf("add ACCOUNT_EVENTS stream: %w", err)
+	}
+	log.Info("mdgateway: created ACCOUNT_EVENTS JetStream stream")
+	return nil
 }

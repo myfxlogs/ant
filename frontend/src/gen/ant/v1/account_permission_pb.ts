@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file account_permission.proto.
  */
 export const file_account_permission: GenFile = /*@__PURE__*/
-  fileDesc("ChhhY2NvdW50X3Blcm1pc3Npb24ucHJvdG8SBmFudC52MSIqChxWZXJpZnlUcmFkZVBlcm1pc3Npb25SZXF1ZXN0EgoKAmlkGAEgASgJInUKHVZlcmlmeVRyYWRlUGVybWlzc2lvblJlc3BvbnNlEhwKFGhhc190cmFkZV9wZXJtaXNzaW9uGAEgASgIEhMKC2lzX2ludmVzdG9yGAIgASgIEhAKCHZlcmlmaWVkGAMgASgIEg8KB21lc3NhZ2UYBCABKAkiQAocVXBkYXRlVHJhZGluZ1Bhc3N3b3JkUmVxdWVzdBIKCgJpZBgBIAEoCRIUCgxuZXdfcGFzc3dvcmQYAiABKAkidAodVXBkYXRlVHJhZGluZ1Bhc3N3b3JkUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCBIcChRoYXNfdHJhZGVfcGVybWlzc2lvbhgCIAEoCBITCgtpc19pbnZlc3RvchgDIAEoCBIPCgdtZXNzYWdlGAQgASgJQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
+  fileDesc("ChhhY2NvdW50X3Blcm1pc3Npb24ucHJvdG8SBmFudC52MSIqChxWZXJpZnlUcmFkZVBlcm1pc3Npb25SZXF1ZXN0EgoKAmlkGAEgASgJInUKHVZlcmlmeVRyYWRlUGVybWlzc2lvblJlc3BvbnNlEhwKFGhhc190cmFkZV9wZXJtaXNzaW9uGAEgASgIEhMKC2lzX2ludmVzdG9yGAIgASgIEhAKCHZlcmlmaWVkGAMgASgIEg8KB21lc3NhZ2UYBCABKAkiQAocVXBkYXRlVHJhZGluZ1Bhc3N3b3JkUmVxdWVzdBIKCgJpZBgBIAEoCRIUCgxuZXdfcGFzc3dvcmQYAiABKAkidAodVXBkYXRlVHJhZGluZ1Bhc3N3b3JkUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCBIcChRoYXNfdHJhZGVfcGVybWlzc2lvbhgCIAEoCBITCgtpc19pbnZlc3RvchgDIAEoCBIPCgdtZXNzYWdlGAQgASgJIl0KFFZlcmlmeUFjY291bnRSZXF1ZXN0Eg0KBWxvZ2luGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEg8KB210X3R5cGUYAyABKAkSEwoLYnJva2VyX2hvc3QYBCABKAkiugEKFVZlcmlmeUFjY291bnRSZXNwb25zZRIQCgh2ZXJpZmllZBgBIAEoCBIPCgdtZXNzYWdlGAIgASgJEg8KB2JhbGFuY2UYAyABKAESDgoGZXF1aXR5GAQgASgBEg4KBm1hcmdpbhgFIAEoARITCgtmcmVlX21hcmdpbhgGIAEoARIQCghsZXZlcmFnZRgHIAEoBRIQCghjdXJyZW5jeRgIIAEoCRIUCgxhY2NvdW50X3R5cGUYCSABKAlCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw");
 
 /**
  * @generated from message ant.v1.VerifyTradePermissionRequest
@@ -114,4 +114,95 @@ export type UpdateTradingPasswordResponse = Message<"ant.v1.UpdateTradingPasswor
  */
 export const UpdateTradingPasswordResponseSchema: GenMessage<UpdateTradingPasswordResponse> = /*@__PURE__*/
   messageDesc(file_account_permission, 3);
+
+/**
+ * VerifyAccount connects to MT and returns account summary without saving.
+ *
+ * @generated from message ant.v1.VerifyAccountRequest
+ */
+export type VerifyAccountRequest = Message<"ant.v1.VerifyAccountRequest"> & {
+  /**
+   * @generated from field: string login = 1;
+   */
+  login: string;
+
+  /**
+   * @generated from field: string password = 2;
+   */
+  password: string;
+
+  /**
+   * @generated from field: string mt_type = 3;
+   */
+  mtType: string;
+
+  /**
+   * @generated from field: string broker_host = 4;
+   */
+  brokerHost: string;
+};
+
+/**
+ * Describes the message ant.v1.VerifyAccountRequest.
+ * Use `create(VerifyAccountRequestSchema)` to create a new message.
+ */
+export const VerifyAccountRequestSchema: GenMessage<VerifyAccountRequest> = /*@__PURE__*/
+  messageDesc(file_account_permission, 4);
+
+/**
+ * @generated from message ant.v1.VerifyAccountResponse
+ */
+export type VerifyAccountResponse = Message<"ant.v1.VerifyAccountResponse"> & {
+  /**
+   * @generated from field: bool verified = 1;
+   */
+  verified: boolean;
+
+  /**
+   * @generated from field: string message = 2;
+   */
+  message: string;
+
+  /**
+   * @generated from field: double balance = 3;
+   */
+  balance: number;
+
+  /**
+   * @generated from field: double equity = 4;
+   */
+  equity: number;
+
+  /**
+   * @generated from field: double margin = 5;
+   */
+  margin: number;
+
+  /**
+   * @generated from field: double free_margin = 6;
+   */
+  freeMargin: number;
+
+  /**
+   * @generated from field: int32 leverage = 7;
+   */
+  leverage: number;
+
+  /**
+   * @generated from field: string currency = 8;
+   */
+  currency: string;
+
+  /**
+   * @generated from field: string account_type = 9;
+   */
+  accountType: string;
+};
+
+/**
+ * Describes the message ant.v1.VerifyAccountResponse.
+ * Use `create(VerifyAccountResponseSchema)` to create a new message.
+ */
+export const VerifyAccountResponseSchema: GenMessage<VerifyAccountResponse> = /*@__PURE__*/
+  messageDesc(file_account_permission, 5);
 

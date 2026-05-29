@@ -3,6 +3,7 @@ package system
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -14,6 +15,7 @@ import (
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
+	"anttrader/internal/model"
 	"anttrader/internal/mthub"
 	"anttrader/internal/repository"
 	"anttrader/internal/service"
@@ -21,16 +23,17 @@ import (
 
 // MtHubServer implements ant.v1.MtHubServiceHandler.
 type MtHubServer struct {
-	svc           *mthub.MtHubService
-	platform      *service.PlatformService
-	marketData    *repository.MarketDataRepository
-	log           *zap.Logger
+	svc          *mthub.MtHubService
+	platform     *service.PlatformService
+	marketData   *repository.MarketDataRepository
+	tradeRecords *repository.TradeRecordRepository
+	log          *zap.Logger
 }
 
 var _ antv1c.MtHubServiceHandler = (*MtHubServer)(nil)
 
-func NewMtHubServer(svc *mthub.MtHubService, platform *service.PlatformService, marketData *repository.MarketDataRepository, log *zap.Logger) *MtHubServer {
-	return &MtHubServer{svc: svc, platform: platform, marketData: marketData, log: log}
+func NewMtHubServer(svc *mthub.MtHubService, platform *service.PlatformService, marketData *repository.MarketDataRepository, tradeRecords *repository.TradeRecordRepository, log *zap.Logger) *MtHubServer {
+	return &MtHubServer{svc: svc, platform: platform, marketData: marketData, tradeRecords: tradeRecords, log: log}
 }
 
 func (s *MtHubServer) PlaceOrder(ctx context.Context, req *connect.Request[antv1.PlaceOrderRequest]) (*connect.Response[antv1.PlaceOrderResponse], error) {
@@ -147,7 +150,7 @@ func (s *MtHubServer) PriceHistory(ctx context.Context, req *connect.Request[ant
 		limit = 500
 	}
 
-	bars, err := s.marketData.GetKlines(ctx, m.Canonical, period, limit)
+	bars, err := s.marketData.GetKlines(ctx, m.Canonical, "", period, limit)
 	if err != nil {
 		s.log.Warn("PriceHistory: get klines", zap.Error(err))
 		return connect.NewResponse(&antv1.PriceHistoryResponse{}), nil
@@ -162,7 +165,7 @@ func (s *MtHubServer) PriceHistory(ctx context.Context, req *connect.Request[ant
 			High:      fmt.Sprintf("%.5f", b.High),
 			Low:       fmt.Sprintf("%.5f", b.Low),
 			Close:     fmt.Sprintf("%.5f", b.Close),
-			Volume:    float64(b.TickVolume),
+			Volume:    b.Volume,
 		})
 	}
 	return connect.NewResponse(&antv1.PriceHistoryResponse{Bars: out}), nil
@@ -177,12 +180,10 @@ func (s *MtHubServer) GetAccountStatus(ctx context.Context, req *connect.Request
 	if err != nil {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user id"))
 	}
-	// Ownership check: user must own this account.
 	acct, err := s.platform.GetAccount(ctx, uid, req.Msg.AccountId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account not found or not owned by user"))
 	}
-	// Determine state from Hub session + PG account_status.
 	state := s.svc.SessionState(ctx, req.Msg.AccountId)
 	if state == "not_found" {
 		state = acct.Status
@@ -216,6 +217,124 @@ func (s *MtHubServer) StreamOrderEvents(ctx context.Context, req *connect.Reques
 				return fmt.Errorf("send order event to stream: %w", err)
 			}
 		}
+	}
+}
+
+// SyncOrderHistory fetches order history from the MT broker and writes it to trade_records.
+func (s *MtHubServer) SyncOrderHistory(ctx context.Context, req *connect.Request[antv1.SyncOrderHistoryRequest]) (*connect.Response[antv1.SyncOrderHistoryResponse], error) {
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
+	}
+	accountID := req.Msg.AccountId
+	ok, err := s.platform.UserOwnsAccount(ctx, userID, accountID)
+	if err != nil || !ok {
+		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
+	}
+
+	uid, err := uuid.Parse(accountID)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_id"))
+	}
+
+	// Determine time range: from last close_time in trade_records (or 1 year ago) to now.
+	from := time.Now().AddDate(-1, 0, 0)
+	if lastTime, err := s.tradeRecords.GetLastSyncTime(ctx, uid); err == nil && lastTime != nil {
+		from = *lastTime
+	}
+	to := time.Now()
+
+	// Fetch from MT broker.
+	records, err := s.svc.OrderHistory(ctx, accountID, from, to)
+	if err != nil {
+		s.log.Error("SyncOrderHistory: fetch from broker", zap.String("account", accountID), zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	// Determine platform from the active executor.
+	platform := s.svc.Platform(accountID)
+
+	// Convert mthub.OrderRecord → model.TradeRecord.
+	tradeRecs := make([]*model.TradeRecord, 0, len(records))
+	for _, r := range records {
+		tradeRecs = append(tradeRecs, orderRecordToTradeRecord(r, uid, platform))
+	}
+
+	if err := s.tradeRecords.BatchCreate(ctx, tradeRecs); err != nil {
+		s.log.Error("SyncOrderHistory: batch create", zap.String("account", accountID), zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	s.log.Info("SyncOrderHistory: synced",
+		zap.String("account", accountID),
+		zap.Int("records", len(tradeRecs)))
+	return connect.NewResponse(&antv1.SyncOrderHistoryResponse{SyncedRecords: int64(len(tradeRecs))}), nil
+}
+
+// WriteClosedTrade creates a single TradeRecord from an OrderUpdate close event.
+func (s *MtHubServer) WriteClosedTrade(ctx context.Context, accountID, platform, updateOrderType, updateSymbol, updateComment string, updateTicket int64, updateVolume, updateOpenPrice, updateClosePrice, updateProfit, updateSwap, updateCommission, updateSL, updateTP float64, updateOpenTime, updateCloseTime int64) error {
+	uid, err := uuid.Parse(accountID)
+	if err != nil {
+		return err
+	}
+	rec := &model.TradeRecord{
+		AccountID:    uid,
+		Ticket:       updateTicket,
+		Symbol:       updateSymbol,
+		OrderType:    updateOrderType,
+		Volume:       updateVolume,
+		OpenPrice:    updateOpenPrice,
+		ClosePrice:   updateClosePrice,
+		Profit:       updateProfit,
+		Swap:         updateSwap,
+		Commission:   updateCommission,
+		OpenTime:     time.Unix(updateOpenTime, 0),
+		CloseTime:    time.Unix(updateCloseTime, 0),
+		StopLoss:     updateSL,
+		TakeProfit:   updateTP,
+		OrderComment: updateComment,
+		Platform:     platform,
+	}
+	return s.tradeRecords.Create(ctx, rec)
+}
+
+func orderRecordToTradeRecord(r *mthub.OrderRecord, accountID uuid.UUID, platform string) *model.TradeRecord {
+	orderType := mthubSideOrderTypeToString(r.Side, r.OrderType)
+	return &model.TradeRecord{
+		AccountID:    accountID,
+		Ticket:       r.Ticket,
+		Symbol:       r.SymbolRaw,
+		OrderType:    orderType,
+		Volume:       r.Volume.InexactFloat64(),
+		OpenPrice:    r.OpenPrice.InexactFloat64(),
+		ClosePrice:   r.ClosePrice.InexactFloat64(),
+		Profit:       r.Profit.InexactFloat64(),
+		Swap:         r.Swap.InexactFloat64(),
+		Commission:   r.Commission.InexactFloat64(),
+		OpenTime:     r.OpenTime,
+		CloseTime:    r.CloseTime,
+		OrderComment: r.Comment,
+		MagicNumber:  int(r.Magic),
+		Platform:     platform,
+	}
+}
+
+func mthubSideOrderTypeToString(side mthub.Side, ot mthub.OrderType) string {
+	prefix := "BUY"
+	if side == mthub.SideSell {
+		prefix = "SELL"
+	}
+	switch ot {
+	case mthub.OrderMarket:
+		return prefix
+	case mthub.OrderLimit:
+		return prefix + "_LIMIT"
+	case mthub.OrderStop:
+		return prefix + "_STOP"
+	case mthub.OrderStopLimit:
+		return prefix + "_STOP_LIMIT"
+	default:
+		return prefix
 	}
 }
 
