@@ -51,8 +51,22 @@ export const accountApi = {
     });
   },
 
-  delete: async (id: string) => {
-    await accountClient.deleteAccount({ id });
+  delete: async (id: string, password?: string) => {
+    await accountClient.deleteAccount({ id, password: password || '' });
+  },
+
+  verifyAccount: async (params: {
+    login: string;
+    password: string;
+    mtType: string;
+    brokerHost: string;
+  }) => {
+    return await accountClient.verifyAccount({
+      login: params.login,
+      password: params.password,
+      mtType: params.mtType,
+      brokerHost: params.brokerHost,
+    });
   },
 
   connect: async (id: string): Promise<ConnectAccountResult> => {

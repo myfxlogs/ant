@@ -119,9 +119,35 @@ export interface OrderUpdate {
   comment?: string;
 }
 
+/**
+ * Recursively convert all BigInt values in an object to Number.
+ * Protobuf int64 fields are deserialized as BigInt in JS; antd components
+ * (Pagination, Table, Statistic) crash when mixing BigInt with Number.
+ *
+ * Call this on every API response before it reaches React components.
+ */
+export function deepConvertBigIntToNumber<T>(obj: T): T {
+  if (obj === null || obj === undefined) return obj;
+  if (typeof obj === 'bigint') return Number(obj) as T;
+  if (Array.isArray(obj)) return obj.map(deepConvertBigIntToNumber) as T;
+  if (typeof obj === 'object') {
+    const result: Record<string, unknown> = {};
+    for (const key of Object.keys(obj as Record<string, unknown>)) {
+      result[key] = deepConvertBigIntToNumber((obj as Record<string, unknown>)[key]);
+    }
+    return result as T;
+  }
+  return obj;
+}
+
 export function toCamelCase<T>(obj: any): T {
   if (obj === null || obj === undefined) {
     return obj as T;
+  }
+
+  // Convert BigInt (protobuf int64) to Number before any rendering/mixing.
+  if (typeof obj === 'bigint') {
+    return Number(obj) as T;
   }
 
   if (Array.isArray(obj)) {
@@ -145,6 +171,11 @@ export function toCamelCase<T>(obj: any): T {
 export function toSnakeCase<T>(obj: any): T {
   if (obj === null || obj === undefined) {
     return obj as T;
+  }
+
+  // Convert BigInt (protobuf int64) to Number.
+  if (typeof obj === 'bigint') {
+    return Number(obj) as T;
   }
 
   if (Array.isArray(obj)) {

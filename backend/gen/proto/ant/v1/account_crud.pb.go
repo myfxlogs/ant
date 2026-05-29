@@ -308,6 +308,7 @@ func (x *UpdateAccountRequest) GetIsDisabled() bool {
 type DeleteAccountRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -349,6 +350,13 @@ func (x *DeleteAccountRequest) GetId() string {
 	return ""
 }
 
+func (x *DeleteAccountRequest) GetPassword() string {
+	if x != nil {
+		return x.Password
+	}
+	return ""
+}
+
 var File_account_crud_proto protoreflect.FileDescriptor
 
 const file_account_crud_proto_rawDesc = "" +
@@ -378,9 +386,10 @@ const file_account_crud_proto_rawDesc = "" +
 	"\x0f_broker_companyB\x10\n" +
 	"\x0e_broker_serverB\x0e\n" +
 	"\f_broker_hostB\x0e\n" +
-	"\f_is_disabled\"&\n" +
+	"\f_is_disabled\"B\n" +
 	"\x14DeleteAccountRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02idB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpasswordB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_account_crud_proto_rawDescOnce sync.Once

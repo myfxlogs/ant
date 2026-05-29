@@ -28,10 +28,12 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
   const isConnectedRef = useRef(false);
   const [isConnected, setIsConnected] = useState(false);
   const [connectionState, setConnectionState] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
+  const [subVersion, setSubVersion] = useState(0);
   const reconnectTimeoutRef = useRef<number | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const connectTimeoutRef = useRef<number | null>(null);
   const profitUpdateTimeoutRef = useRef<number | null>(null);
+  const profitLastFlushAtRef = useRef<number>(0);
   const pendingProfitUpdates = useRef<Map<string, ProfitUpdate>>(new Map());
 
   const connect = useCallback(() => {
@@ -125,7 +127,13 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
             maxConsecutiveLosses: summary.maxConsecutiveLosses,
             updatedAt: summary.updatedAt,
           });
-        }, () => {});
+        }, () => {
+          if (!mountedRef.current) return;
+          unsubscribeUserSummaryRef.current = null;
+          setIsConnected(false);
+          isConnectedRef.current = false;
+          setConnectionState('disconnected');
+        });
       }
 
       if (!unsubscribeEventsRef.current) {
@@ -249,6 +257,7 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
           },
           onProfit: (profit) => {
             if (!mountedRef.current) return;
+            console.debug('[ConnectProvider] onProfit', profit?.accountId, profit?.balance, profit?.equity, profit?.profit);
 
             // Receiving profit updates implies the account stream is active.
             if (profit?.accountId) {
@@ -259,11 +268,21 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
               pendingProfitUpdates.current.set(profit.accountId, profit);
             }
 
+            // Throttle (not debounce) so a steady stream of profit events still flushes.
+            // Previous debounce starved Account List updates when 2+ accounts each pushed
+            // faster than the timer (per-event clearTimeout never let it fire).
+            const THROTTLE_MS = 300;
+            const now = Date.now();
+            const elapsed = now - profitLastFlushAtRef.current;
             if (profitUpdateTimeoutRef.current) {
-              clearTimeout(profitUpdateTimeoutRef.current);
+              // A trailing flush is already pending — let it fire; do not reset.
+              return;
             }
+            const delay = elapsed >= THROTTLE_MS ? 0 : THROTTLE_MS - elapsed;
 
-            profitUpdateTimeoutRef.current = setTimeout(() => {
+            profitUpdateTimeoutRef.current = window.setTimeout(() => {
+              profitLastFlushAtRef.current = Date.now();
+              profitUpdateTimeoutRef.current = null;
               if (!mountedRef.current) return;
 
               const tradingStore = useTradingStore.getState();
@@ -292,6 +311,7 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
                 if (ml !== undefined) patch.marginLevel = ml;
                 if (cr !== undefined) patch.credit = cr;
                 if (Object.keys(patch).length > 0) {
+                  console.debug('[ConnectProvider] setAccountInfoById', accId, patch);
                   tradingStore.setAccountInfoById(accId, patch);
                   // Sync financial fields to accountStore for unified invalidation (U-5).
                   useAccountStore.getState().patchAccountFinancials(accId, patch as unknown as Record<string, unknown>);
@@ -324,7 +344,7 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
               }
 
               pendingProfitUpdates.current.clear();
-            }, 300);
+            }, delay);
           },
           onStatus: (status: AccountStatusEvent) => {
             if (!mountedRef.current) return;
@@ -382,7 +402,13 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
 
             useTradingStore.getState().setPositions(accountId, final as unknown as Position[]);
           },
-          onError: () => {},
+          onError: () => {
+            if (!mountedRef.current) return;
+            unsubscribeEventsRef.current = null;
+            setIsConnected(false);
+            isConnectedRef.current = false;
+            setConnectionState('disconnected');
+          },
         });
       }
 
@@ -471,10 +497,22 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
         unsubscribeUserSummaryRef.current = null;
       }
     };
-  }, [connect]);
+  }, [connect, subVersion]);
+
+  const reconnect = useCallback(() => {
+    if (unsubscribeEventsRef.current) {
+      unsubscribeEventsRef.current();
+      unsubscribeEventsRef.current = null;
+    }
+    if (unsubscribeUserSummaryRef.current) {
+      unsubscribeUserSummaryRef.current();
+      unsubscribeUserSummaryRef.current = null;
+    }
+    setSubVersion(v => v + 1);
+  }, []);
 
   return (
-    <ConnectContext.Provider value={{ isConnected, connectionState }}>
+    <ConnectContext.Provider value={{ isConnected, connectionState, reconnect }}>
       {children}
     </ConnectContext.Provider>
   );

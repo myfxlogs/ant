@@ -267,9 +267,13 @@ export function useDebateFlow(): UseDebateFlowResult {
 	}, []);
 
 	const startFlow = useCallback(async () => {
+		const keys = selectedAgents.map((a) => a.agentKey || a.type);
+		if (keys.length === 0) {
+			antMessage.warning('Please select at least one agent to start the debate.');
+			return;
+		}
 		setSending(true);
 		try {
-			const keys = selectedAgents.map((a) => a.agentKey || a.type);
 			const resp = await debateV2Api.start({ agents: keys, locale });
 			setSession(resp);
 			setForceSelection(false);

@@ -1,11 +1,12 @@
 import { getDeviceLocale, getDeviceTimeZone } from '@/utils/date';
 
 export const formatTimestamp = (ts: any): string => {
-  if (!ts) return '';
+  if (ts == null || ts === '') return '';
   const locale = getDeviceLocale();
   const timeZone = getDeviceTimeZone();
   if (typeof ts === 'string') return ts;
   if (typeof ts === 'number') {
+    if (ts <= 0) return '';
     const date = new Date(ts * 1000);
     return date.toLocaleString(locale, { timeZone });
   }

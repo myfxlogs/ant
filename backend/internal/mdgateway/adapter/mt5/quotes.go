@@ -325,10 +325,12 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 			var updateCloseTime int64
 			var updateSL float64
 			var updateTP float64
-			if update != nil {
+				var updateOrderType string
+			if update != nil && update.GetOrder() != nil {
 				o := update.GetOrder()
 				updateTicket = o.GetTicket()
 				updateType = mt5UpdateTypeLabel(update.GetType())
+					updateOrderType = mt5OrderTypeLabel(o.GetOrderType())
 				updateSymbol = o.GetSymbol()
 				updateVolume = o.GetLots()
 				updateOpenPrice = o.GetOpenPrice()
@@ -363,12 +365,18 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 				})
 			}
 
-			profit := s.GetEquity() - s.GetBalance()
+			balance := s.GetBalance()
+			profit := s.GetEquity() - balance
+			var profitPct float64
+			if balance > 0 {
+				profitPct = (profit / balance) * 100
+			}
 			handler(&mdtick.OrderUpdate{
 				AccountID:        g.cfg.AccountID,
 				Platform:         "mt5",
 				UpdateTicket:     updateTicket,
 				UpdateType:       updateType,
+					UpdateOrderType:  updateOrderType,
 				UpdateSymbol:     updateSymbol,
 				UpdateVolume:     updateVolume,
 				UpdateOpenPrice:  updateOpenPrice,
@@ -381,12 +389,14 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 				UpdateCloseTime:  updateCloseTime,
 				UpdateSL:         updateSL,
 				UpdateTP:         updateTP,
-				Balance:          s.GetBalance(),
+				Balance:          balance,
+				Credit:           0, // MT5 OrderUpdateSummary lacks GetCredit; credit arrives via OnAccountProfit stream
 				Equity:           s.GetEquity(),
 				Margin:           s.GetMargin(),
 				FreeMargin:       s.GetFreeMargin(),
 				MarginLevel:      s.GetMarginLevel(),
 				Profit:           profit,
+				ProfitPercent:    profitPct,
 				Positions:        positions,
 			})
 		}

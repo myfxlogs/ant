@@ -17,8 +17,8 @@ const accounts = {
       subtitle: 'Enter your trading account and password',
     },
     step3: {
-      title: 'Confirm binding',
-      subtitle: 'Please confirm the following information',
+      title: 'Verify & confirm',
+      subtitle: 'Verify credentials and confirm to complete',
     },
     fields: {
       platform: 'Platform',
@@ -40,7 +40,9 @@ const accounts = {
     },
     actions: {
       search: 'Search',
+      verifyAccount: 'Verify account',
       confirmBind: 'Confirm bind',
+      retryVerify: 'Retry',
     },
     passwordHint: 'Password is transmitted via HTTPS and stored as an Argon2id hash (non-reversible) on the backend',
     summary: {
@@ -49,6 +51,13 @@ const accounts = {
       platform: 'Platform',
       tradingAccount: 'Trading account',
       password: 'Password',
+      verified: 'Account verified',
+      balance: 'Balance',
+      equity: 'Equity',
+      margin: 'Margin',
+      freeMargin: 'Free margin',
+      leverage: 'Leverage',
+      currency: 'Currency',
     },
     messages: {
       enterBrokerName: 'Please enter broker name',
@@ -58,6 +67,7 @@ const accounts = {
       selectServer: 'Please select a server',
       enterTradingAccount: 'Please enter trading account',
       enterPassword: 'Please enter password',
+      verifyFailed: 'Account verification failed',
       bindSuccess: 'Account bound successfully',
       bindFailed: 'Failed to bind account',
     },
@@ -226,6 +236,7 @@ const accounts = {
     historyWithCount: 'History ({{count}})',
     emptyPositions: 'No open positions',
     emptyHistory: 'No order history',
+      syncHistory: 'Sync History',
     table: {
       orderId: 'Order ID',
       symbol: 'Symbol',
@@ -292,6 +303,11 @@ const accounts = {
     actions: {
       enableAccount: 'Enable account',
       disableAccount: 'Disable account',
+      deleteAccount: 'Delete account',
+      deleteConfirm: 'Verify & Delete',
+      deleteWarning: 'This action is irreversible. All account data (trade records, analytics, etc.) will be permanently deleted.',
+      deletePasswordHint: 'Enter the MT trading password or read-only password to verify:',
+      deletePasswordPlaceholder: 'MT trading / read-only password',
       syncHistory: 'Sync history',
     },
     status: {

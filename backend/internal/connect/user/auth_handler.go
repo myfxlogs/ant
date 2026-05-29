@@ -30,6 +30,7 @@ type AuthServer struct {
 	users     *repository.UserRepository
 	jwtSecret string
 	log       *zap.Logger
+	insecure  bool // disables Secure cookie flag for non-TLS dev deployments
 }
 
 var _ antv1c.AuthServiceHandler = (*AuthServer)(nil)
@@ -37,6 +38,10 @@ var _ antv1c.AuthServiceHandler = (*AuthServer)(nil)
 func NewAuthServer(users *repository.UserRepository, jwtSecret string, log *zap.Logger) *AuthServer {
 	return &AuthServer{users: users, jwtSecret: jwtSecret, log: log}
 }
+
+// SetInsecureCookies disables the Secure flag on refresh_token cookies for
+// local/dev deployments without TLS.
+func (s *AuthServer) SetInsecureCookies(v bool) { s.insecure = v }
 
 const (
 	accessTokenTTL  = 15 * time.Minute
@@ -103,12 +108,20 @@ func (s *AuthServer) issueJWT(userID, email string, ttl time.Duration) (string, 
 }
 
 func (s *AuthServer) makeRefreshCookie(token string) string {
-	return fmt.Sprintf("%s=%s; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=%d",
-		refreshCookie, token, int(refreshTokenTTL.Seconds()))
+	secure := "; Secure"
+	if s.insecure {
+		secure = ""
+	}
+	return fmt.Sprintf("%s=%s; HttpOnly%s; SameSite=Strict; Path=/; Max-Age=%d",
+		refreshCookie, token, secure, int(refreshTokenTTL.Seconds()))
 }
 
 func (s *AuthServer) clearRefreshCookie() string {
-	return fmt.Sprintf("%s=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0", refreshCookie)
+	secure := "; Secure"
+	if s.insecure {
+		secure = ""
+	}
+	return fmt.Sprintf("%s=; HttpOnly%s; SameSite=Strict; Path=/; Max-Age=0", refreshCookie, secure)
 }
 
 func (s *AuthServer) Logout(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {

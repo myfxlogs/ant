@@ -30,7 +30,7 @@ export const logApi = {
     });
     return {
       logs: response.logs,
-      total: response.total,
+      total: Number(response.total),
     };
   },
 
@@ -56,7 +56,7 @@ export const logApi = {
     });
     return {
       logs: response.logs,
-      total: response.total,
+      total: Number(response.total),
     };
   },
 
@@ -80,7 +80,7 @@ export const logApi = {
     });
     return {
       orders: response.orders,
-      total: response.total,
+      total: Number(response.total),
     };
   },
 
@@ -106,7 +106,7 @@ export const logApi = {
     });
     return {
       logs: response.logs,
-      total: response.total,
+      total: Number(response.total),
     };
   },
 
@@ -122,7 +122,7 @@ export const logApi = {
     });
     return {
       logs: response.logs,
-      total: response.total,
+      total: Number(response.total),
     };
   },
 };

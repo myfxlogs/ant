@@ -253,6 +253,183 @@ func (x *UpdateTradingPasswordResponse) GetMessage() string {
 	return ""
 }
 
+// VerifyAccount connects to MT and returns account summary without saving.
+type VerifyAccountRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Login         string                 `protobuf:"bytes,1,opt,name=login,proto3" json:"login,omitempty"`
+	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	MtType        string                 `protobuf:"bytes,3,opt,name=mt_type,json=mtType,proto3" json:"mt_type,omitempty"`
+	BrokerHost    string                 `protobuf:"bytes,4,opt,name=broker_host,json=brokerHost,proto3" json:"broker_host,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VerifyAccountRequest) Reset() {
+	*x = VerifyAccountRequest{}
+	mi := &file_account_permission_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VerifyAccountRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifyAccountRequest) ProtoMessage() {}
+
+func (x *VerifyAccountRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_account_permission_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifyAccountRequest.ProtoReflect.Descriptor instead.
+func (*VerifyAccountRequest) Descriptor() ([]byte, []int) {
+	return file_account_permission_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *VerifyAccountRequest) GetLogin() string {
+	if x != nil {
+		return x.Login
+	}
+	return ""
+}
+
+func (x *VerifyAccountRequest) GetPassword() string {
+	if x != nil {
+		return x.Password
+	}
+	return ""
+}
+
+func (x *VerifyAccountRequest) GetMtType() string {
+	if x != nil {
+		return x.MtType
+	}
+	return ""
+}
+
+func (x *VerifyAccountRequest) GetBrokerHost() string {
+	if x != nil {
+		return x.BrokerHost
+	}
+	return ""
+}
+
+type VerifyAccountResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Verified      bool                   `protobuf:"varint,1,opt,name=verified,proto3" json:"verified,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Balance       float64                `protobuf:"fixed64,3,opt,name=balance,proto3" json:"balance,omitempty"`
+	Equity        float64                `protobuf:"fixed64,4,opt,name=equity,proto3" json:"equity,omitempty"`
+	Margin        float64                `protobuf:"fixed64,5,opt,name=margin,proto3" json:"margin,omitempty"`
+	FreeMargin    float64                `protobuf:"fixed64,6,opt,name=free_margin,json=freeMargin,proto3" json:"free_margin,omitempty"`
+	Leverage      int32                  `protobuf:"varint,7,opt,name=leverage,proto3" json:"leverage,omitempty"`
+	Currency      string                 `protobuf:"bytes,8,opt,name=currency,proto3" json:"currency,omitempty"`
+	AccountType   string                 `protobuf:"bytes,9,opt,name=account_type,json=accountType,proto3" json:"account_type,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VerifyAccountResponse) Reset() {
+	*x = VerifyAccountResponse{}
+	mi := &file_account_permission_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VerifyAccountResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifyAccountResponse) ProtoMessage() {}
+
+func (x *VerifyAccountResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_account_permission_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifyAccountResponse.ProtoReflect.Descriptor instead.
+func (*VerifyAccountResponse) Descriptor() ([]byte, []int) {
+	return file_account_permission_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *VerifyAccountResponse) GetVerified() bool {
+	if x != nil {
+		return x.Verified
+	}
+	return false
+}
+
+func (x *VerifyAccountResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *VerifyAccountResponse) GetBalance() float64 {
+	if x != nil {
+		return x.Balance
+	}
+	return 0
+}
+
+func (x *VerifyAccountResponse) GetEquity() float64 {
+	if x != nil {
+		return x.Equity
+	}
+	return 0
+}
+
+func (x *VerifyAccountResponse) GetMargin() float64 {
+	if x != nil {
+		return x.Margin
+	}
+	return 0
+}
+
+func (x *VerifyAccountResponse) GetFreeMargin() float64 {
+	if x != nil {
+		return x.FreeMargin
+	}
+	return 0
+}
+
+func (x *VerifyAccountResponse) GetLeverage() int32 {
+	if x != nil {
+		return x.Leverage
+	}
+	return 0
+}
+
+func (x *VerifyAccountResponse) GetCurrency() string {
+	if x != nil {
+		return x.Currency
+	}
+	return ""
+}
+
+func (x *VerifyAccountResponse) GetAccountType() string {
+	if x != nil {
+		return x.AccountType
+	}
+	return ""
+}
+
 var File_account_permission_proto protoreflect.FileDescriptor
 
 const file_account_permission_proto_rawDesc = "" +
@@ -274,7 +451,24 @@ const file_account_permission_proto_rawDesc = "" +
 	"\x14has_trade_permission\x18\x02 \x01(\bR\x12hasTradePermission\x12\x1f\n" +
 	"\vis_investor\x18\x03 \x01(\bR\n" +
 	"isInvestor\x12\x18\n" +
-	"\amessage\x18\x04 \x01(\tR\amessageB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\amessage\x18\x04 \x01(\tR\amessage\"\x82\x01\n" +
+	"\x14VerifyAccountRequest\x12\x14\n" +
+	"\x05login\x18\x01 \x01(\tR\x05login\x12\x1a\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x17\n" +
+	"\amt_type\x18\x03 \x01(\tR\x06mtType\x12\x1f\n" +
+	"\vbroker_host\x18\x04 \x01(\tR\n" +
+	"brokerHost\"\x93\x02\n" +
+	"\x15VerifyAccountResponse\x12\x1a\n" +
+	"\bverified\x18\x01 \x01(\bR\bverified\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12\x18\n" +
+	"\abalance\x18\x03 \x01(\x01R\abalance\x12\x16\n" +
+	"\x06equity\x18\x04 \x01(\x01R\x06equity\x12\x16\n" +
+	"\x06margin\x18\x05 \x01(\x01R\x06margin\x12\x1f\n" +
+	"\vfree_margin\x18\x06 \x01(\x01R\n" +
+	"freeMargin\x12\x1a\n" +
+	"\bleverage\x18\a \x01(\x05R\bleverage\x12\x1a\n" +
+	"\bcurrency\x18\b \x01(\tR\bcurrency\x12!\n" +
+	"\faccount_type\x18\t \x01(\tR\vaccountTypeB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_account_permission_proto_rawDescOnce sync.Once
@@ -288,12 +482,14 @@ func file_account_permission_proto_rawDescGZIP() []byte {
 	return file_account_permission_proto_rawDescData
 }
 
-var file_account_permission_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_account_permission_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_account_permission_proto_goTypes = []any{
 	(*VerifyTradePermissionRequest)(nil),  // 0: ant.v1.VerifyTradePermissionRequest
 	(*VerifyTradePermissionResponse)(nil), // 1: ant.v1.VerifyTradePermissionResponse
 	(*UpdateTradingPasswordRequest)(nil),  // 2: ant.v1.UpdateTradingPasswordRequest
 	(*UpdateTradingPasswordResponse)(nil), // 3: ant.v1.UpdateTradingPasswordResponse
+	(*VerifyAccountRequest)(nil),          // 4: ant.v1.VerifyAccountRequest
+	(*VerifyAccountResponse)(nil),         // 5: ant.v1.VerifyAccountResponse
 }
 var file_account_permission_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -314,7 +510,7 @@ func file_account_permission_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_account_permission_proto_rawDesc), len(file_account_permission_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

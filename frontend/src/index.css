@@ -154,6 +154,13 @@ body {
   background: transparent !important;
 }
 
+/* Force fixed table layout to prevent column width jitter from value changes.
+   .ant-table-content > table is the actual <table> rendered by Ant Design. */
+.ant-table-content > table,
+.ant-table-container > table {
+  table-layout: fixed !important;
+}
+
 .ant-table-thead > tr > th {
   background: #F5F7F9 !important;
   color: #5A6B75 !important;

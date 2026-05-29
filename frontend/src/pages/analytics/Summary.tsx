@@ -187,7 +187,7 @@ export default function Summary() {
         </Space>
       </div>
 
-      <StatusResult loading={loading && !analytics} error={error} onRetry={fetchAnalytics}>
+      <StatusResult loading={loading && !analytics} error={error} onRetry={refetchAnalytics}>
         <div
           className="rounded-2xl p-6"
           style={{

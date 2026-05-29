@@ -22,4 +22,5 @@ service AccountService {
   rpc SearchBroker(SearchBrokerRequest) returns (SearchBrokerResponse);
   rpc VerifyTradePermission(VerifyTradePermissionRequest) returns (VerifyTradePermissionResponse);
   rpc UpdateTradingPassword(UpdateTradingPasswordRequest) returns (UpdateTradingPasswordResponse);
+  rpc VerifyAccount(VerifyAccountRequest) returns (VerifyAccountResponse);
 }

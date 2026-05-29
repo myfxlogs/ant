@@ -25,7 +25,7 @@ var File_account_proto protoreflect.FileDescriptor
 
 const file_account_proto_rawDesc = "" +
 	"\n" +
-	"\raccount.proto\x12\x06ant.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x14account_entity.proto\x1a\x12account_crud.proto\x1a\x18account_connection.proto\x1a\x18account_permission.proto2\xe0\x06\n" +
+	"\raccount.proto\x12\x06ant.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x14account_entity.proto\x1a\x12account_crud.proto\x1a\x18account_connection.proto\x1a\x18account_permission.proto2\xae\a\n" +
 	"\x0eAccountService\x12I\n" +
 	"\fListAccounts\x12\x1b.ant.v1.ListAccountsRequest\x1a\x1c.ant.v1.ListAccountsResponse\x128\n" +
 	"\n" +
@@ -38,7 +38,8 @@ const file_account_proto_rawDesc = "" +
 	"\x10ReconnectAccount\x12\x1f.ant.v1.ReconnectAccountRequest\x1a\x16.google.protobuf.Empty\x12I\n" +
 	"\fSearchBroker\x12\x1b.ant.v1.SearchBrokerRequest\x1a\x1c.ant.v1.SearchBrokerResponse\x12d\n" +
 	"\x15VerifyTradePermission\x12$.ant.v1.VerifyTradePermissionRequest\x1a%.ant.v1.VerifyTradePermissionResponse\x12d\n" +
-	"\x15UpdateTradingPassword\x12$.ant.v1.UpdateTradingPasswordRequest\x1a%.ant.v1.UpdateTradingPasswordResponseB\"Z anttrader/gen/proto/ant/v1;antv1P\x01P\x02P\x03P\x04b\x06proto3"
+	"\x15UpdateTradingPassword\x12$.ant.v1.UpdateTradingPasswordRequest\x1a%.ant.v1.UpdateTradingPasswordResponse\x12L\n" +
+	"\rVerifyAccount\x12\x1c.ant.v1.VerifyAccountRequest\x1a\x1d.ant.v1.VerifyAccountResponseB\"Z anttrader/gen/proto/ant/v1;antv1P\x01P\x02P\x03P\x04b\x06proto3"
 
 var file_account_proto_goTypes = []any{
 	(*ListAccountsRequest)(nil),           // 0: ant.v1.ListAccountsRequest
@@ -52,13 +53,15 @@ var file_account_proto_goTypes = []any{
 	(*SearchBrokerRequest)(nil),           // 8: ant.v1.SearchBrokerRequest
 	(*VerifyTradePermissionRequest)(nil),  // 9: ant.v1.VerifyTradePermissionRequest
 	(*UpdateTradingPasswordRequest)(nil),  // 10: ant.v1.UpdateTradingPasswordRequest
-	(*ListAccountsResponse)(nil),          // 11: ant.v1.ListAccountsResponse
-	(*Account)(nil),                       // 12: ant.v1.Account
-	(*emptypb.Empty)(nil),                 // 13: google.protobuf.Empty
-	(*ConnectAccountResponse)(nil),        // 14: ant.v1.ConnectAccountResponse
-	(*SearchBrokerResponse)(nil),          // 15: ant.v1.SearchBrokerResponse
-	(*VerifyTradePermissionResponse)(nil), // 16: ant.v1.VerifyTradePermissionResponse
-	(*UpdateTradingPasswordResponse)(nil), // 17: ant.v1.UpdateTradingPasswordResponse
+	(*VerifyAccountRequest)(nil),          // 11: ant.v1.VerifyAccountRequest
+	(*ListAccountsResponse)(nil),          // 12: ant.v1.ListAccountsResponse
+	(*Account)(nil),                       // 13: ant.v1.Account
+	(*emptypb.Empty)(nil),                 // 14: google.protobuf.Empty
+	(*ConnectAccountResponse)(nil),        // 15: ant.v1.ConnectAccountResponse
+	(*SearchBrokerResponse)(nil),          // 16: ant.v1.SearchBrokerResponse
+	(*VerifyTradePermissionResponse)(nil), // 17: ant.v1.VerifyTradePermissionResponse
+	(*UpdateTradingPasswordResponse)(nil), // 18: ant.v1.UpdateTradingPasswordResponse
+	(*VerifyAccountResponse)(nil),         // 19: ant.v1.VerifyAccountResponse
 }
 var file_account_proto_depIdxs = []int32{
 	0,  // 0: ant.v1.AccountService.ListAccounts:input_type -> ant.v1.ListAccountsRequest
@@ -72,19 +75,21 @@ var file_account_proto_depIdxs = []int32{
 	8,  // 8: ant.v1.AccountService.SearchBroker:input_type -> ant.v1.SearchBrokerRequest
 	9,  // 9: ant.v1.AccountService.VerifyTradePermission:input_type -> ant.v1.VerifyTradePermissionRequest
 	10, // 10: ant.v1.AccountService.UpdateTradingPassword:input_type -> ant.v1.UpdateTradingPasswordRequest
-	11, // 11: ant.v1.AccountService.ListAccounts:output_type -> ant.v1.ListAccountsResponse
-	12, // 12: ant.v1.AccountService.GetAccount:output_type -> ant.v1.Account
-	12, // 13: ant.v1.AccountService.CreateAccount:output_type -> ant.v1.Account
-	12, // 14: ant.v1.AccountService.UpdateAccount:output_type -> ant.v1.Account
-	13, // 15: ant.v1.AccountService.DeleteAccount:output_type -> google.protobuf.Empty
-	14, // 16: ant.v1.AccountService.ConnectAccount:output_type -> ant.v1.ConnectAccountResponse
-	13, // 17: ant.v1.AccountService.DisconnectAccount:output_type -> google.protobuf.Empty
-	13, // 18: ant.v1.AccountService.ReconnectAccount:output_type -> google.protobuf.Empty
-	15, // 19: ant.v1.AccountService.SearchBroker:output_type -> ant.v1.SearchBrokerResponse
-	16, // 20: ant.v1.AccountService.VerifyTradePermission:output_type -> ant.v1.VerifyTradePermissionResponse
-	17, // 21: ant.v1.AccountService.UpdateTradingPassword:output_type -> ant.v1.UpdateTradingPasswordResponse
-	11, // [11:22] is the sub-list for method output_type
-	0,  // [0:11] is the sub-list for method input_type
+	11, // 11: ant.v1.AccountService.VerifyAccount:input_type -> ant.v1.VerifyAccountRequest
+	12, // 12: ant.v1.AccountService.ListAccounts:output_type -> ant.v1.ListAccountsResponse
+	13, // 13: ant.v1.AccountService.GetAccount:output_type -> ant.v1.Account
+	13, // 14: ant.v1.AccountService.CreateAccount:output_type -> ant.v1.Account
+	13, // 15: ant.v1.AccountService.UpdateAccount:output_type -> ant.v1.Account
+	14, // 16: ant.v1.AccountService.DeleteAccount:output_type -> google.protobuf.Empty
+	15, // 17: ant.v1.AccountService.ConnectAccount:output_type -> ant.v1.ConnectAccountResponse
+	14, // 18: ant.v1.AccountService.DisconnectAccount:output_type -> google.protobuf.Empty
+	14, // 19: ant.v1.AccountService.ReconnectAccount:output_type -> google.protobuf.Empty
+	16, // 20: ant.v1.AccountService.SearchBroker:output_type -> ant.v1.SearchBrokerResponse
+	17, // 21: ant.v1.AccountService.VerifyTradePermission:output_type -> ant.v1.VerifyTradePermissionResponse
+	18, // 22: ant.v1.AccountService.UpdateTradingPassword:output_type -> ant.v1.UpdateTradingPasswordResponse
+	19, // 23: ant.v1.AccountService.VerifyAccount:output_type -> ant.v1.VerifyAccountResponse
+	12, // [12:24] is the sub-list for method output_type
+	0,  // [0:12] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name

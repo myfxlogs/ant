@@ -75,20 +75,12 @@ export const adminApi = {
     });
     return {
       logs: response.logs,
-      total: response.total,
+      total: Number(response.total),
     };
   },
 
   getLogs: async (params?: LogListParams) => {
     return adminApi.listLogs(params);
-  },
-
-  exportLogs: async (params?: { userId?: string; action?: string }): Promise<Blob> => {
-    const response: any = await adminLogClient.exportLogs({
-      userId: params?.userId,
-      action: params?.action,
-    });
-    return new Blob([new Uint8Array(response.data)], { type: 'application/octet-stream' });
   },
 
   listUsers: async (params?: UserListParams) => {
@@ -101,7 +93,7 @@ export const adminApi = {
     });
     return {
       users: response.users,
-      total: response.total,
+      total: Number(response.total),
     };
   },
 
@@ -156,7 +148,7 @@ export const adminApi = {
     });
     return {
       accounts: response.accounts,
-      total: response.total,
+      total: Number(response.total),
     };
   },
 
@@ -257,7 +249,7 @@ export const adminApi = {
       page: params.page ?? 1,
       pageSize: params.pageSize ?? 20,
     });
-    return { users: resp.users ?? [], total: resp.total ?? 0 };
+    return { users: resp.users ?? [], total: Number(resp.total ?? 0) };
   },
 
   setSanctionedOverride: async (userId: string, override: boolean) => {

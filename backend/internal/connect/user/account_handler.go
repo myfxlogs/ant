@@ -16,14 +16,24 @@ import (
 	"anttrader/internal/interceptor"
 	"anttrader/internal/mdgateway"
 	"anttrader/internal/mdgateway/adapter/brokersearch"
+	"anttrader/internal/mdgateway/adapter/mdtick"
 	"anttrader/internal/service"
+	"fmt"
 )
+
+// MTConnectionTester validates MT account credentials by connecting to the broker.
+type MTConnectionTester interface {
+	Test(ctx context.Context, platform, brokerHost, login, password string) (*mdtick.MTAccountInfo, error)
+	// VerifyPassword only connects to the broker to verify credentials, without fetching account info.
+	VerifyPassword(ctx context.Context, platform, brokerHost, login, password string) error
+}
 
 // AccountServer implements ant.v1.AccountServiceHandler.
 type AccountServer struct {
 	svc       *service.PlatformService
 	searcher  *brokersearch.Searcher
 	publisher *mdgateway.AccountEventPublisher
+	mtTester  MTConnectionTester
 	log       *zap.Logger
 }
 
@@ -39,6 +49,9 @@ func (s *AccountServer) SetSearcher(searcher *brokersearch.Searcher) { s.searche
 // SetPublisher injects the NATS account event publisher (S2.4).
 func (s *AccountServer) SetPublisher(p *mdgateway.AccountEventPublisher) { s.publisher = p }
 
+// SetMTConnectionTester injects the MT connection validator.
+func (s *AccountServer) SetMTConnectionTester(t MTConnectionTester) { s.mtTester = t }
+
 func (s *AccountServer) ListAccounts(ctx context.Context, req *connect.Request[antv1.ListAccountsRequest]) (*connect.Response[antv1.ListAccountsResponse], error) {
 	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
 	accounts, err := s.svc.ListAccounts(ctx, userID)
@@ -52,7 +65,7 @@ func (s *AccountServer) ListAccounts(ctx context.Context, req *connect.Request[a
 			Id: a.ID, UserId: a.UserID, Login: a.Login,
 			MtType: a.Platform, BrokerCompany: a.Broker, BrokerServer: a.Server,
 			IsDisabled: a.IsDisabled, Status: a.Status,
-			Balance: a.Balance, Equity: a.Equity, Margin: a.Margin,
+			Balance: a.Balance, Credit: a.Credit, Equity: a.Equity, Margin: a.Margin,
 			FreeMargin: a.FreeMargin, MarginLevel: a.MarginLevel,
 			Leverage: a.Leverage, Currency: a.Currency,
 			LastError: a.LastError,
@@ -72,32 +85,66 @@ func (s *AccountServer) GetAccount(ctx context.Context, req *connect.Request[ant
 		Id: a.ID, UserId: a.UserID, Login: a.Login,
 		MtType: a.Platform, BrokerCompany: a.Broker, BrokerServer: a.Server,
 		IsDisabled: a.IsDisabled, Status: a.Status,
-		Balance: a.Balance, Equity: a.Equity, Margin: a.Margin,
+		Balance: a.Balance, Credit: a.Credit, Equity: a.Equity, Margin: a.Margin,
 		FreeMargin: a.FreeMargin, MarginLevel: a.MarginLevel,
 		Leverage: a.Leverage, Currency: a.Currency,
 		LastError: a.LastError,
 	}), nil
 }
 
-// CreateAccount inserts a new MT account and returns it.
-// Full connection test and AccountSummary fill require mthub (Phase 2).
+// CreateAccount inserts a new MT account, verifies credentials by connecting to MT,
+// and returns the account with balance/equity/currency filled from AccountSummary.
 func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[antv1.CreateAccountRequest]) (*connect.Response[antv1.Account], error) {
 	r := req.Msg
 	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+
+	// 1. Insert into DB
 	id, err := s.svc.CreateAccount(ctx, userID, r.Login, r.Password, r.MtType, r.BrokerCompany, r.BrokerServer, r.BrokerHost)
 	if err != nil {
 		if errors.Is(err, service.ErrAccountAlreadyBound) {
 			return nil, connect.NewError(connect.CodeAlreadyExists, err)
 		}
-		s.log.Error("CreateAccount", zap.Error(err))
+		s.log.Error("CreateAccount: db insert failed", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	// 2. Test MT connection to validate credentials
+	if s.mtTester != nil {
+		info, err := s.mtTester.Test(ctx, r.MtType, r.BrokerHost, r.Login, r.Password)
+		if err != nil {
+			// Rollback: delete the account since credentials are invalid
+			if delErr := s.svc.DeleteAccount(ctx, userID, id); delErr != nil {
+				s.log.Error("CreateAccount: rollback delete failed", zap.String("id", id), zap.Error(delErr))
+			}
+			s.log.Warn("CreateAccount: MT connection failed", zap.String("login", r.Login), zap.Error(err))
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("account verification failed: %w", err))
+		}
+
+		// Update account with MT info
+		if err := s.svc.UpdateAccountInfo(ctx, userID, id, info.Balance, info.Equity, info.Credit, info.Margin, info.FreeMargin, int64(info.Leverage), info.Currency); err != nil {
+			s.log.Error("CreateAccount: UpdateAccountInfo failed", zap.Error(err))
+		}
+		s.log.Info("CreateAccount: verified and created",
+			zap.String("id", id),
+			zap.String("login", r.Login),
+			zap.Float64("balance", info.Balance),
+		)
+	}
+
+	// Fetch the full account back so the response includes balance/equity/margin/currency.
+	a, err := s.svc.GetAccount(ctx, userID, id)
+	if err != nil {
+		s.log.Error("CreateAccount: get account after create", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.Account{
-		Id:            id,
-		Login:         r.Login,
-		MtType:        r.MtType,
-		BrokerCompany: r.BrokerCompany,
-		BrokerServer:  r.BrokerServer,
+		Id: a.ID, UserId: a.UserID, Login: a.Login,
+		MtType: a.Platform, BrokerCompany: a.Broker, BrokerServer: a.Server,
+		IsDisabled: a.IsDisabled, Status: a.Status,
+		Balance: a.Balance, Credit: a.Credit, Equity: a.Equity, Margin: a.Margin,
+		FreeMargin: a.FreeMargin, MarginLevel: a.MarginLevel,
+		Leverage: a.Leverage, Currency: a.Currency,
+		LastError: a.LastError,
 	}), nil
 }
 
@@ -131,16 +178,34 @@ func (s *AccountServer) UpdateAccount(ctx context.Context, req *connect.Request[
 		Id: a.ID, UserId: a.UserID, Login: a.Login,
 		MtType: a.Platform, BrokerCompany: a.Broker, BrokerServer: a.Server,
 		IsDisabled: a.IsDisabled, Status: a.Status,
-		Balance: a.Balance, Equity: a.Equity, Margin: a.Margin,
+		Balance: a.Balance, Credit: a.Credit, Equity: a.Equity, Margin: a.Margin,
 		FreeMargin: a.FreeMargin, MarginLevel: a.MarginLevel,
 		Leverage: a.Leverage, Currency: a.Currency,
 		LastError: a.LastError,
 	}), nil
 }
 
-// DeleteAccount removes an MT account.
+// DeleteAccount removes an MT account. When a password is provided, it first
+// verifies the credentials against the broker before performing the hard delete.
 func (s *AccountServer) DeleteAccount(ctx context.Context, req *connect.Request[antv1.DeleteAccountRequest]) (*connect.Response[emptypb.Empty], error) {
 	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+
+	// If the user provides a password, verify it against the MT broker first.
+	if req.Msg.Password != "" {
+		creds, err := s.svc.GetAccountCredentials(ctx, userID, req.Msg.Id)
+		if err != nil {
+			s.log.Error("DeleteAccount: get credentials", zap.Error(err))
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to get account info: %w", err))
+		}
+		if s.mtTester == nil {
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("MT connection tester not available"))
+		}
+		if err := s.mtTester.VerifyPassword(ctx, creds.Platform, creds.BrokerHost, creds.Login, req.Msg.Password); err != nil {
+			s.log.Warn("DeleteAccount: password verification failed", zap.String("account", req.Msg.Id), zap.Error(err))
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("密码验证失败：%w", err))
+		}
+	}
+
 	if err := s.svc.DeleteAccount(ctx, userID, req.Msg.Id); err != nil {
 		s.log.Error("DeleteAccount", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -201,11 +266,7 @@ func (s *AccountServer) SearchBroker(ctx context.Context, req *connect.Request[a
 		}
 	}
 	return connect.NewResponse(&antv1.SearchBrokerResponse{
-		Companies: []*antv1.BrokerCompany{
-			{CompanyName: "Exness", Servers: []*antv1.BrokerServer{
-				{Name: "Exness-Real", Access: []string{"mt4", "mt5"}},
-			}},
-		},
+		Companies: nil,
 	}), nil
 }
 
@@ -247,4 +308,31 @@ func (s *AccountServer) UpdateTradingPassword(ctx context.Context, req *connect.
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.UpdateTradingPasswordResponse{Success: true}), nil
+}
+
+// VerifyAccount connects to the MT broker with the given credentials and returns
+// account summary info (balance, equity, etc.) WITHOUT saving anything to the database.
+func (s *AccountServer) VerifyAccount(ctx context.Context, req *connect.Request[antv1.VerifyAccountRequest]) (*connect.Response[antv1.VerifyAccountResponse], error) {
+	r := req.Msg
+	if s.mtTester == nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("MT connection tester not available"))
+	}
+	info, err := s.mtTester.Test(ctx, r.MtType, r.BrokerHost, r.Login, r.Password)
+	if err != nil {
+		s.log.Warn("VerifyAccount: connection failed", zap.String("login", r.Login), zap.Error(err))
+		return connect.NewResponse(&antv1.VerifyAccountResponse{
+			Verified: false,
+			Message:  err.Error(),
+		}), nil
+	}
+	return connect.NewResponse(&antv1.VerifyAccountResponse{
+		Verified:   true,
+		Message:    "account verified",
+		Balance:    info.Balance,
+		Equity:     info.Equity,
+		Margin:     info.Margin,
+		FreeMargin: info.FreeMargin,
+		Leverage:   info.Leverage,
+		Currency:   info.Currency,
+	}), nil
 }

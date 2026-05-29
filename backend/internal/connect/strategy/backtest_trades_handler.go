@@ -29,11 +29,12 @@ func NewBacktestTradesServer(backtestRepo *repository.BacktestRunRepository, log
 
 // backtestMetricsJSON mirrors the Python Metrics dataclass fields we care about.
 type backtestMetricsJSON struct {
-	TotalTrades    int     `json:"total_trades"`
-	WinningTrades  int     `json:"winning_trades"`
-	LosingTrades   int     `json:"losing_trades"`
-	TotalReturn    float64 `json:"total_return"`
-	ProfitFactor   float64 `json:"profit_factor"`
+	TotalTrades   int     `json:"total_trades"`
+	WinningTrades int     `json:"winning_trades"`
+	LosingTrades  int     `json:"losing_trades"`
+	TotalReturn   float64 `json:"total_return"`
+	ProfitFactor  float64 `json:"profit_factor"`
+	NetPnL        float64 `json:"net_pnl"`
 }
 
 func (s *BacktestTradesServer) ListBacktestRunTrades(ctx context.Context, req *connect.Request[antv1.ListBacktestRunTradesRequest]) (*connect.Response[antv1.ListBacktestRunTradesResponse], error) {
@@ -62,16 +63,34 @@ func (s *BacktestTradesServer) ListBacktestRunTrades(ctx context.Context, req *c
 			summary.Count = int32(m.TotalTrades)
 			summary.Wins = int32(m.WinningTrades)
 			summary.Losses = int32(m.LosingTrades)
-			// NetPnl: the Python Metrics type doesn't expose net_pnl directly;
-			// we leave it at 0 until the backtest runner persists per-trade data.
+			summary.NetPnl = m.NetPnL
 		}
 	}
 
-	// Individual trades are not yet persisted to a backtest_run_trades table.
-	// When the Python runner stores trades (BacktestResult.trades) via the
-	// async update path, we can populate the trades list here.
+	// Read per-trade data from backtest_run_trades table (if any).
+	dbTrades, err := s.backtestRepo.ListTradesByRunID(ctx, runID)
+	if err != nil {
+		s.log.Warn("BacktestTrades: list trades", zap.Error(err), zap.String("run_id", req.Msg.RunId))
+	}
+
+	trades := make([]*antv1.BacktestTrade, 0, len(dbTrades))
+	for _, t := range dbTrades {
+		trades = append(trades, &antv1.BacktestTrade{
+			Ticket:     t.Ticket,
+			Side:       t.Side,
+			Volume:     t.Volume,
+			OpenTs:     t.OpenTs,
+			OpenPrice:  t.OpenPrice,
+			CloseTs:    t.CloseTs,
+			ClosePrice: t.ClosePrice,
+			Pnl:        t.PnL,
+			Commission: t.Commission,
+			Reason:     t.Reason,
+		})
+	}
+
 	return connect.NewResponse(&antv1.ListBacktestRunTradesResponse{
-		Trades:  []*antv1.BacktestTrade{},
+		Trades:  trades,
 		Summary: summary,
 	}), nil
 }

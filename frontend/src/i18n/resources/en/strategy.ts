@@ -724,6 +724,20 @@ const strategy = {
       },
     },
   },
+  indicatorCatalog: {
+    title: 'Indicator Catalog',
+    description: 'Technical indicators and risk parameters available in the strategy sandbox. Use only these helpers and parameter keys in your strategy code.',
+    indicatorsTitle: 'Technical Indicators',
+    riskSectionTitle: 'Risk Management Parameters',
+    riskParamsTitle: 'Universal Risk Parameters',
+    riskParamsDesc: 'Every strategy should respect these risk-management parameters regardless of which indicators are selected.',
+    paramKey: 'Key',
+    paramLabel: 'Label',
+    paramType: 'Type',
+    paramDefault: 'Default',
+    paramRange: 'Range',
+    paramDescription: 'Description',
+  },
 } as const;
 
 export default strategy;

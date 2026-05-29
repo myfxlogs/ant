@@ -94,6 +94,13 @@ func Run(ctx context.Context, conn clickhouse.Conn, log *zap.Logger) error {
 		// Apply migration (split on ; for multi-statement files like EXCHANGE TABLES sequences).
 		for i, stmt := range splitSQL(sql) {
 			if err := conn.Exec(ctx, stmt); err != nil {
+				// ClickHouse code 62 (Empty query): no-op DDL like
+				// ADD COLUMN IF NOT EXISTS when column already exists.
+				if strings.Contains(err.Error(), "code: 62") || strings.Contains(err.Error(), "Empty query") {
+					log.Debug("chmigrate: no-op", zap.Int("version", version),
+						zap.String("file", name), zap.Int("stmt", i+1))
+					continue
+				}
 				return fmt.Errorf("chmigrate: exec %s (stmt %d): %w", name, i+1, err)
 			}
 		}

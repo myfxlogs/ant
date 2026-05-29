@@ -12,6 +12,7 @@ service MtHubService {
   rpc PriceHistory(PriceHistoryRequest) returns (PriceHistoryResponse);
   rpc GetAccountStatus(GetAccountStatusRequest) returns (AccountStatus);
   rpc StreamOrderEvents(StreamOrderEventsRequest) returns (stream OrderEvent);
+  rpc SyncOrderHistory(SyncOrderHistoryRequest) returns (SyncOrderHistoryResponse);
 }
 
 message GetAccountStatusRequest { string account_id = 1; }
@@ -79,3 +80,6 @@ message OHLCV {
   string open = 3; string high = 4; string low = 5; string close = 6;
   double volume = 7; uint32 tick_count = 8;
 }
+
+message SyncOrderHistoryRequest { string account_id = 1; }
+message SyncOrderHistoryResponse { int64 synced_records = 1; }

@@ -37,12 +37,18 @@ func (h *DebateV2Server) userID(ctx context.Context) uuid.UUID {
 }
 
 func (h *DebateV2Server) StartDebateV2(ctx context.Context, req *connect.Request[antv1.StartDebateV2Request]) (*connect.Response[antv1.DebateV2Session], error) {
+	h.log.Info("StartDebateV2: entering handler")
 	uid := h.userID(ctx)
+	h.log.Info("StartDebateV2: calling Start", zap.String("user_id", uid.String()))
 	sess, err := h.svc.Start(ctx, uid, req.Msg.Agents, req.Msg.Title)
 	if err != nil {
+		h.log.Error("StartDebateV2 failed", zap.Strings("agents", req.Msg.Agents), zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(toProtoSession(sess)), nil
+	h.log.Info("StartDebateV2 ok", zap.String("session_id", fmt.Sprintf("%v", sess)))
+	rsp := toProtoSession(sess)
+	h.log.Info("StartDebateV2 proto ok")
+	return connect.NewResponse(rsp), nil
 }
 
 func (h *DebateV2Server) ChatDebateV2(ctx context.Context, req *connect.Request[antv1.ChatDebateV2Request]) (*connect.Response[antv1.DebateV2Session], error) {
@@ -137,6 +143,7 @@ func (h *DebateV2Server) BackDebateV2(ctx context.Context, req *connect.Request[
 	uid := h.userID(ctx)
 	sess, err := h.svc.Back(ctx, req.Msg.SessionId, uid)
 	if err != nil {
+		h.log.Error("BackDebateV2 failed", zap.String("session", req.Msg.SessionId), zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(toProtoSession(sess)), nil

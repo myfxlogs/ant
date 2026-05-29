@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { Pagination, Spin, Tabs } from 'antd';
+import { Button, Pagination, Spin, Tabs } from 'antd';
 import type { TabsProps } from 'antd';
 import {
   LineChartOutlined,
   HistoryOutlined,
   UnorderedListOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
 import { analyticsApi } from '@/client/analytics';
+import { tradingApi } from '@/client/trading';
 import { HistoryTradeRow, PendingOrderRow, PositionRow } from './AccountDetail.shared';
 import { useTranslation } from 'react-i18next';
 
@@ -39,7 +41,24 @@ export default function AccountTradeTabs({
 }: Props) {
   const { t } = useTranslation();
   const [localHistoryLoading, setLocalHistoryLoading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const isHistoryLoading = historyLoading || localHistoryLoading;
+
+  const handleSync = async () => {
+    if (!id) return;
+    setSyncing(true);
+    try {
+      const result = await tradingApi.syncOrderHistory(id);
+      // Reload history from DB after sync.
+      const data = await analyticsApi.getRecentTrades(id, historyPage, historyPageSize);
+      onHistoryTradesChange(data?.trades || []);
+      onHistoryTotalChange(Number(data?.total || 0));
+    } catch (err) {
+      console.error('Sync history failed:', err);
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const tradeTabs: TabsProps['items'] = [
     {
@@ -120,6 +139,17 @@ export default function AccountTradeTabs({
           </div>
         ) : (
           <Spin spinning={isHistoryLoading}>
+            <div className="flex items-center justify-between mb-3">
+              <div />
+              <Button
+                icon={<ReloadOutlined spin={syncing} />}
+                onClick={handleSync}
+                loading={syncing}
+                size="small"
+              >
+                {t('accounts.tradeTabs.syncHistory')}
+              </Button>
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -151,7 +181,7 @@ export default function AccountTradeTabs({
                   setLocalHistoryLoading(true);
                   analyticsApi.getRecentTrades(id, page, historyPageSize).then((data) => {
                     onHistoryTradesChange(data?.trades || []);
-                    onHistoryTotalChange(data?.total || 0);
+                    onHistoryTotalChange(Number(data?.total || 0));
                     onHistoryPageChange(page);
                   }).finally(() => {
                     setLocalHistoryLoading(false);

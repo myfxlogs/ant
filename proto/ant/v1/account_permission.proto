@@ -8,3 +8,14 @@ message VerifyTradePermissionRequest { string id = 1; }
 message VerifyTradePermissionResponse { bool has_trade_permission = 1; bool is_investor = 2; bool verified = 3; string message = 4; }
 message UpdateTradingPasswordRequest { string id = 1; string new_password = 2; }
 message UpdateTradingPasswordResponse { bool success = 1; bool has_trade_permission = 2; bool is_investor = 3; string message = 4; }
+
+// VerifyAccount connects to MT and returns account summary without saving.
+message VerifyAccountRequest {
+  string login = 1; string password = 2; string mt_type = 3; string broker_host = 4;
+}
+message VerifyAccountResponse {
+  bool verified = 1;
+  string message = 2;
+  double balance = 3; double equity = 4; double margin = 5; double free_margin = 6;
+  int32 leverage = 7; string currency = 8; string account_type = 9;
+}

@@ -211,6 +211,7 @@ const accounts = {
       historyWithCount: '履歴（{{count}}）',
       emptyPositions: '保有ポジションがありません',
       emptyHistory: '注文履歴がありません',
+      syncHistory: '履歴同期',
       table: {
         orderId: '注文ID',
         symbol: '銘柄',

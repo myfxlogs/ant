@@ -610,6 +610,20 @@ const strategy = {
       saveBlockedNotValidated: '請先點擊「驗證程式碼」，驗證通過後才能儲存。',
     },
   },
+  indicatorCatalog: {
+    title: '指標目錄',
+    description: '策略沙箱中可用的技術指標和風險參數。請在策略代碼中僅使用這些輔助函數和參數鍵。',
+    indicatorsTitle: '技術指標',
+    riskSectionTitle: '風險管理參數',
+    riskParamsTitle: '通用風險參數',
+    riskParamsDesc: '無論選擇哪些指標，每個策略都應遵循這些風險管理參數。',
+    paramKey: '鍵',
+    paramLabel: '標籤',
+    paramType: '類型',
+    paramDefault: '預設值',
+    paramRange: '範圍',
+    paramDescription: '描述',
+  },
 } as const;
 
 export default strategy;

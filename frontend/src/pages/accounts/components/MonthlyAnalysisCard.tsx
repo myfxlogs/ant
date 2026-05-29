@@ -1,35 +1,16 @@
 import type { MouseEvent as ReactMouseEvent } from 'react';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Spin } from 'antd';
-import {
-  ResponsiveContainer,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Bar,
-  Cell,
-  BarChart,
-  Legend,
-  PieChart,
-  Pie,
-} from 'recharts';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { analyticsApi } from '@/client/analytics';
 import MonthlyAnalysisMainChart from './MonthlyAnalysisMainChart';
 import { formatMonthLongName } from '@/utils/date';
 import {
-  type BonusPayload,
   type MetricType,
   type MonthlyAnalysisCardProps,
   type MonthlyAnalysisPoint,
   type MonthlyBarRow,
-  PIE_COLORS,
-  formatSecondsAxis,
   monthFromBarClick,
   monthShortLabels,
-  riskBarVisual,
 } from './MonthlyAnalysisCard.shared';
 
 export default function MonthlyAnalysisCard({ accountId, years, data, currency = 'USD' }: MonthlyAnalysisCardProps) {
@@ -40,39 +21,7 @@ export default function MonthlyAnalysisCard({ accountId, years, data, currency =
   /** Hover preview: follows Recharts tooltip index so summary/highlight match the tooltip without extra API calls. */
   const [hoverMonth, setHoverMonth] = useState<number | null>(null);
   const [selectedMetric, setSelectedMetric] = useState<MetricType>('change');
-  const [bonusLoading, setBonusLoading] = useState(false);
-  const [bonus, setBonus] = useState<BonusPayload | null>(null);
-
   const displayMonth = hoverMonth ?? selectedMonth;
-
-  useLayoutEffect(() => {
-    if (!accountId) {
-      setBonusLoading(false);
-      return;
-    }
-    setBonusLoading(true);
-  }, [accountId, selectedYear, selectedMonth]);
-
-  useEffect(() => {
-    if (!accountId) {
-      setBonus(null);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      try {
-        const b = await analyticsApi.getMonthlyAnalysisBonus(accountId, selectedYear, selectedMonth);
-        if (!cancelled) setBonus(b);
-      } catch {
-        if (!cancelled) setBonus(null);
-      } finally {
-        if (!cancelled) setBonusLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [accountId, selectedYear, selectedMonth]);
 
   const yearData = useMemo(() => {
     const monthMap = new Map<number, MonthlyAnalysisPoint>();
@@ -172,42 +121,11 @@ export default function MonthlyAnalysisCard({ accountId, years, data, currency =
   }, []);
 
   const monthLong = formatMonthLongName(displayMonth);
-  const monthLongBonus = formatMonthLongName(selectedMonth);
   const selectedPeriodLabel = `${monthLong} ${selectedYear}`;
-
-  const pieData = useMemo(() => {
-    if (!bonus?.symbolPopularity?.length) return [];
-    return bonus.symbolPopularity.map((row, i) => ({
-      name: row.symbol === 'Other' ? t('accounts.analytics.monthlyAnalysis.bonus.sliceOther') : row.symbol,
-      rawSymbol: row.symbol,
-      value: row.sharePercent,
-      trades: row.trades,
-      fill: PIE_COLORS[i % PIE_COLORS.length],
-    }));
-  }, [bonus, t]);
-
-  const riskChartData = useMemo(() => {
-    if (!bonus?.symbolRisks?.length) return [];
-    return [...bonus.symbolRisks]
-      .sort((a, b) => a.symbol.localeCompare(b.symbol))
-      .map((r) => ({
-        symbol: r.symbol,
-        risk: riskBarVisual(r.riskRatio),
-        riskRaw: r.riskRatio,
-      }));
-  }, [bonus]);
-
-  const holdingChartData = useMemo(() => {
-    if (!bonus?.symbolHoldingSplit?.length) return [];
-    return [...bonus.symbolHoldingSplit].sort((a, b) => a.symbol.localeCompare(b.symbol));
-  }, [bonus]);
 
   const chartTitleMain = t('accounts.analytics.monthlyAnalysis.chartMainTitle', {
     metric: metricTitleMap[selectedMetric],
   });
-  const chartTitleRisk = t('accounts.analytics.monthlyAnalysis.bonus.chartRiskTitle', { month: monthLongBonus });
-  const chartTitlePopular = t('accounts.analytics.monthlyAnalysis.bonus.chartPopularTitle', { month: monthLongBonus });
-  const chartTitleHolding = t('accounts.analytics.monthlyAnalysis.bonus.chartHoldingTitle', { month: monthLongBonus });
 
   return (
     <div
@@ -276,163 +194,23 @@ export default function MonthlyAnalysisCard({ accountId, years, data, currency =
         </span>
       </div>
 
-      {accountId ? (
-        <div className="relative">
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-            <div className="min-w-0">
-              <div className="text-center text-xs font-semibold mb-1" style={{ color: '#475467' }}>
-                {chartTitleMain}
-              </div>
-              <MonthlyAnalysisMainChart
-                series={series}
-                selectedMetric={selectedMetric}
-                metricTitleMap={metricTitleMap}
-                formatValue={formatValue}
-                renderMetricValue={renderMetricValue}
-                onMouseDown={suppressChartFocus}
-                onMouseMove={handleMainChartMouseMove}
-                onMouseLeave={handleMainChartMouseLeave}
-                onCommitByTooltipIndex={commitMonthByTooltipIndex}
-                onCommitMonthClick={commitMonthClick}
-              />            </div>
-
-            <div className="min-w-0">
-              <div className="text-center text-xs font-semibold mb-1" style={{ color: '#475467', fontStyle: 'italic' }}>
-                {chartTitleRisk}
-              </div>
-              <ResponsiveContainer width="100%" height={240}>
-                {riskChartData.length > 0 ? (
-                  <BarChart layout="vertical" data={riskChartData} margin={{ left: 8, right: 12, top: 4, bottom: 4 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E6EDF5" horizontal />
-                    <XAxis type="number" stroke="#94A3B8" fontSize={10} tickLine={false} axisLine={{ stroke: '#E6EDF5' }} />
-                    <YAxis type="category" dataKey="symbol" width={76} stroke="#94A3B8" fontSize={10} tickLine={false} axisLine={{ stroke: '#E6EDF5' }} />
-                    <Tooltip
-                      cursor={false}
-                      content={({ active, payload }) => {
-                        if (!active || !payload?.length) return null;
-                        const row = payload[0]?.payload as { symbol?: string; risk?: number; riskRaw?: number };
-                        if (!row?.symbol) return null;
-                        const raw = row.riskRaw ?? 0;
-                        const text = raw >= 999.98 ? '>99.99' : raw.toFixed(2);
-                        return (
-                          <div
-                            className="rounded border bg-white px-2 py-1 text-xs shadow"
-                            style={{ borderColor: '#D9E2EC' }}
-                          >
-                            <span className="font-semibold text-slate-700">{row.symbol}</span>
-                            <span className="text-slate-600">
-                              {' '}
-                              · {t('accounts.analytics.stats.profitFactor')}: {text}
-                            </span>
-                          </div>
-                        );
-                      }}
-                    />
-                    <Bar dataKey="risk" fill="#7BA7D9" radius={[0, 2, 2, 0]} barSize={12} isAnimationActive={false} />
-                  </BarChart>
-                ) : (
-                  <div className="flex h-full items-center justify-center text-xs text-slate-400">
-                    {t('accounts.analytics.monthlyAnalysis.bonus.emptyCharts')}
-                  </div>
-                )}
-              </ResponsiveContainer>
-            </div>
-
-            <div className="min-w-0">
-              <div className="text-center text-xs font-semibold mb-1" style={{ color: '#475467', fontStyle: 'italic' }}>
-                {chartTitlePopular}
-              </div>
-              <ResponsiveContainer width="100%" height={240}>
-                {pieData.length > 0 ? (
-                  <PieChart>
-                    <Tooltip
-                      cursor={false}
-                      formatter={(value: number, _name, item) => {
-                        const p = item?.payload as { trades?: number };
-                        return [
-                          `${Number(value).toFixed(1)}% (${p?.trades ?? 0} ${t('accounts.analytics.chartSeries.tradeCount')})`,
-                          t('accounts.analytics.monthlyAnalysis.bonus.popularityShare'),
-                        ];
-                      }}
-                    />
-                    <Pie
-                      data={pieData}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={0}
-                      outerRadius={78}
-                      paddingAngle={1}
-                      label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(1)}%`}
-                      isAnimationActive={false}
-                    >
-                      {pieData.map((entry, index) => (
-                        <Cell key={`cell-${entry.rawSymbol}-${index}`} fill={entry.fill} stroke="#fff" strokeWidth={1} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                ) : (
-                  <div className="flex h-full items-center justify-center text-xs text-slate-400">
-                    {t('accounts.analytics.monthlyAnalysis.bonus.emptyCharts')}
-                  </div>
-                )}
-              </ResponsiveContainer>
-            </div>
-
-            <div className="min-w-0">
-              <div className="text-center text-xs font-semibold mb-1" style={{ color: '#475467', fontStyle: 'italic' }}>
-                {chartTitleHolding}
-              </div>
-              <ResponsiveContainer width="100%" height={240}>
-                {holdingChartData.length > 0 ? (
-                  <BarChart layout="vertical" data={holdingChartData} margin={{ left: 8, right: 12, top: 4, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E6EDF5" horizontal />
-                    <XAxis type="number" stroke="#94A3B8" fontSize={10} tickFormatter={formatSecondsAxis} tickLine={false} axisLine={{ stroke: '#E6EDF5' }} />
-                    <YAxis type="category" dataKey="symbol" width={76} stroke="#94A3B8" fontSize={10} tickLine={false} axisLine={{ stroke: '#E6EDF5' }} />
-                    <Tooltip
-                      cursor={false}
-                      formatter={(value: number) => [formatSecondsAxis(value), '']}
-                    />
-                    <Legend
-                      wrapperStyle={{ fontSize: 11 }}
-                      formatter={(value) =>
-                        value === 'bullsSeconds'
-                          ? t('accounts.analytics.monthlyAnalysis.bonus.legendBulls')
-                          : t('accounts.analytics.monthlyAnalysis.bonus.legendShortTerm')
-                      }
-                    />
-                    <Bar dataKey="bullsSeconds" stackId="hold" fill="#00A651" name="bullsSeconds" barSize={12} isAnimationActive={false} />
-                    <Bar dataKey="shortTermSeconds" stackId="hold" fill="#E53935" name="shortTermSeconds" barSize={12} isAnimationActive={false} />
-                  </BarChart>
-                ) : (
-                  <div className="flex h-full items-center justify-center text-xs text-slate-400">
-                    {t('accounts.analytics.monthlyAnalysis.bonus.emptyCharts')}
-                  </div>
-                )}
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {bonusLoading ? (
-            <div className="absolute top-2 right-2 z-10 flex items-center gap-2 rounded bg-white/90 px-2 py-1 shadow border border-slate-200/80 pointer-events-none">
-              <Spin size="small" />
-            </div>
-          ) : null}
+      <div className="relative">
+        <div className="text-center text-xs font-semibold mb-1" style={{ color: '#475467' }}>
+          {chartTitleMain}
         </div>
-      ) : (
         <MonthlyAnalysisMainChart
-                series={series}
-                selectedMetric={selectedMetric}
-                metricTitleMap={metricTitleMap}
-                formatValue={formatValue}
-                renderMetricValue={renderMetricValue}
-                onMouseDown={suppressChartFocus}
-                onMouseMove={handleMainChartMouseMove}
-                onMouseLeave={handleMainChartMouseLeave}
-                onCommitByTooltipIndex={commitMonthByTooltipIndex}
-                onCommitMonthClick={commitMonthClick}
-              />      )}
+          series={series}
+          selectedMetric={selectedMetric}
+          metricTitleMap={metricTitleMap}
+          formatValue={formatValue}
+          renderMetricValue={renderMetricValue}
+          onMouseDown={suppressChartFocus}
+          onMouseMove={handleMainChartMouseMove}
+          onMouseLeave={handleMainChartMouseLeave}
+          onCommitByTooltipIndex={commitMonthByTooltipIndex}
+          onCommitMonthClick={commitMonthClick}
+        />
+      </div>
     </div>
   );
 }

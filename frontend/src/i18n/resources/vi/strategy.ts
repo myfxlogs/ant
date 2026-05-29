@@ -537,6 +537,20 @@ const strategy = {
       saveBlockedNotValidated: 'Vui lòng nhấn "Xác thực mã" trước. Lưu sẽ bị vô hiệu hóa cho đến khi xác thực thành công.',
     },
   },
+  indicatorCatalog: {
+    title: 'Danh mục chỉ báo',
+    description: 'Các chỉ báo kỹ thuật và tham số rủi ro có sẵn trong sandbox chiến lược. Chỉ sử dụng các helper và khóa tham số này trong mã chiến lược.',
+    indicatorsTitle: 'Chỉ báo kỹ thuật',
+    riskSectionTitle: 'Tham số quản lý rủi ro',
+    riskParamsTitle: 'Tham số rủi ro chung',
+    riskParamsDesc: 'Mọi chiến lược nên tuân thủ các tham số quản lý rủi ro này bất kể chỉ báo nào được chọn.',
+    paramKey: 'Khóa',
+    paramLabel: 'Nhãn',
+    paramType: 'Loại',
+    paramDefault: 'Mặc định',
+    paramRange: 'Phạm vi',
+    paramDescription: 'Mô tả',
+  },
 } as const;
 
 export default strategy;

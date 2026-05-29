@@ -2,11 +2,17 @@ package mdgateway
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"regexp"
 	natsgo "github.com/nats-io/nats.go"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/mdgateway/adapter/mdtick"
 )
+
+// sanitizeNATSSubject replaces characters that are invalid in NATS subjects.
+// NATS subjects: only alphanumeric, `.`, `_`, `-` are allowed; spaces/special chars cause errors.
+var sanitizeNATSSubject = regexp.MustCompile(`[^a-zA-Z0-9._\-]`).ReplaceAllString
 
 type Publisher struct {
 	js natsgo.JetStreamContext
@@ -14,15 +20,41 @@ type Publisher struct {
 
 func NewPublisher(js natsgo.JetStreamContext) *Publisher { return &Publisher{js: js} }
 
+func (p *Publisher) subjectKey(broker string) string {
+	return sanitizeNATSSubject(broker, "_")
+}
+
+// tickPayload is the JSON body published to NATS for each tick.
+// Field names match the antv1.TickMsg json struct tags so the
+// StreamTicks handler can json.Unmarshal directly into TickMsg.
+type tickPayload struct {
+	Broker    string `json:"broker"`
+	Canonical string `json:"canonical"`
+	TsUnixMs  int64  `json:"ts_unix_ms"`
+	Bid       string `json:"bid"`
+	Ask       string `json:"ask"`
+}
+
 func (p *Publisher) PublishTick(ctx context.Context, t *mdtick.Tick) error {
-	subj := fmt.Sprintf("md.tick.%s.%s", t.Broker, t.Canonical)
+	subj := fmt.Sprintf("md.tick.%s.%s", p.subjectKey(t.Broker), t.Canonical)
 	if p.js == nil { return nil }
 	msg := natsgo.NewMsg(subj)
-	msg.Data = []byte(t.Bid.String())
+	payload := tickPayload{
+		Broker:    t.Broker,
+		Canonical: t.Canonical,
+		TsUnixMs:  t.TsUnixMs,
+		Bid:       t.Bid.String(),
+		Ask:       t.Ask.String(),
+	}
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("marshal tick payload: %w", err)
+	}
+	msg.Data = data
 	msg.Header.Set("X-Ant-Replay", boolToStr(t.IsReplay))
-	msg.Header.Set("Nats-Msg-Id", fmt.Sprintf("%s:%s:%d:%x", t.Broker, t.Canonical, t.TsUnixMs, hashTick(t)))
+	msg.Header.Set("Nats-Msg-Id", fmt.Sprintf("%s:%s:%d:%x", p.subjectKey(t.Broker), t.Canonical, t.TsUnixMs, hashTick(t)))
 	interceptor.InjectNATSTraceHeaders(ctx, msg.Header)
-	_, err := p.js.PublishMsg(msg)
+	_, err = p.js.PublishMsg(msg)
 	if err != nil {
 		RecordNATSPublishDropped()
 		return fmt.Errorf("publish tick to NATS: %w", err)
@@ -32,11 +64,11 @@ func (p *Publisher) PublishTick(ctx context.Context, t *mdtick.Tick) error {
 
 func (p *Publisher) PublishBar(ctx context.Context, b *mdtick.Bar) error {
 	if p.js == nil { return nil }
-	subj := fmt.Sprintf("md.bar.%s.%s.%s", b.Broker, b.Canonical, b.Period)
+	subj := fmt.Sprintf("md.bar.%s.%s.%s", p.subjectKey(b.Broker), b.Canonical, b.Period)
 	msg := natsgo.NewMsg(subj)
 	msg.Data = []byte(b.Close.String())
 	msg.Header.Set("X-Ant-Replay", boolToStr(b.IsReplay))
-	msg.Header.Set("Nats-Msg-Id", fmt.Sprintf("%s:%s:%s:%d", b.Broker, b.Canonical, b.Period, b.CloseTsUnixMs))
+	msg.Header.Set("Nats-Msg-Id", fmt.Sprintf("%s:%s:%s:%d", p.subjectKey(b.Broker), b.Canonical, b.Period, b.CloseTsUnixMs))
 	interceptor.InjectNATSTraceHeaders(ctx, msg.Header)
 	_, err := p.js.PublishMsg(msg)
 	if err != nil {
@@ -49,11 +81,11 @@ func (p *Publisher) PublishBar(ctx context.Context, b *mdtick.Bar) error {
 // PublishBarRevision publishes a bar revision event (ADR-0016).
 func (p *Publisher) PublishBarRevision(ctx context.Context, b *mdtick.Bar) error {
 	if p.js == nil { return nil }
-	subj := fmt.Sprintf("md.bar.revision.%s.%s.%s", b.Broker, b.Canonical, b.Period)
+	subj := fmt.Sprintf("md.bar.revision.%s.%s.%s", p.subjectKey(b.Broker), b.Canonical, b.Period)
 	msg := natsgo.NewMsg(subj)
 	msg.Data = []byte(b.Close.String())
 	msg.Header.Set("X-Ant-Bar-Version", "2")
-	msg.Header.Set("Nats-Msg-Id", fmt.Sprintf("rev:%s:%s:%s:%d", b.Broker, b.Canonical, b.Period, b.CloseTsUnixMs))
+	msg.Header.Set("Nats-Msg-Id", fmt.Sprintf("rev:%s:%s:%s:%d", p.subjectKey(b.Broker), b.Canonical, b.Period, b.CloseTsUnixMs))
 	interceptor.InjectNATSTraceHeaders(ctx, msg.Header)
 	_, err := p.js.PublishMsg(msg)
 	if err != nil {

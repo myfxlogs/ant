@@ -157,26 +157,32 @@ func (q *Quality) isOutlier(key string, bid float64) bool {
 
 // trackSpread stores a spread observation for Z-score tracking (M10-BASE-F5).
 func (q *Quality) trackSpread(key string, spreadBps float64) {
+	q.mu.Lock()
 	sk := "spread:" + key
 	q.prices[sk] = append(q.prices[sk], spreadBps)
 	if len(q.prices[sk]) > q.cfg.HistorySize {
 		q.prices[sk] = q.prices[sk][1:]
 	}
+	q.mu.Unlock()
 }
 
 // trackTickRate stores a tick rate observation for Z-score tracking (M10-BASE-F4).
 func (q *Quality) trackTickRate(key string, ratePerSec float64) {
+	q.mu.Lock()
 	tk := "tickrate:" + key
 	q.prices[tk] = append(q.prices[tk], ratePerSec)
 	if len(q.prices[tk]) > q.cfg.HistorySize {
 		q.prices[tk] = q.prices[tk][1:]
 	}
+	q.mu.Unlock()
 }
 
 // SpreadZscore returns the Z-score of the current spread against the symbol's history.
 func (q *Quality) SpreadZscore(key string, spreadBps float64) float64 {
+	q.mu.Lock()
 	sk := "spread:" + key
 	vals := q.prices[sk]
+	q.mu.Unlock()
 	if len(vals) < 10 {
 		return 0
 	}
@@ -185,8 +191,10 @@ func (q *Quality) SpreadZscore(key string, spreadBps float64) float64 {
 
 // TickRateZscore returns the Z-score of the current tick rate against the symbol's history.
 func (q *Quality) TickRateZscore(key string, ratePerSec float64) float64 {
+	q.mu.Lock()
 	tk := "tickrate:" + key
 	vals := q.prices[tk]
+	q.mu.Unlock()
 	if len(vals) < 10 {
 		return 0
 	}

@@ -136,6 +136,39 @@ func (r *AnalyticsRepository) GetAccountInitialBalance(ctx context.Context, acco
 	return balance, err
 }
 
+// GetBalanceAtTime returns the account balance closest to but not after `at`.
+func (r *AnalyticsRepository) GetBalanceAtTime(ctx context.Context, accountID uuid.UUID, at time.Time) (float64, error) {
+	query := `
+		SELECT balance FROM account_balance_history
+		WHERE account_id = $1 AND recorded_at <= $2
+		ORDER BY recorded_at DESC
+		LIMIT 1
+	`
+	var balance float64
+	err := r.db.QueryRow(ctx, query, accountID, at).Scan(&balance)
+	if err == nil {
+		return balance, nil
+	}
+
+	// Fallback: compute from all trade records before `at`.
+	query = `SELECT COALESCE(SUM(profit), 0) FROM trade_records WHERE account_id = $1 AND close_time <= $2`
+	err = r.db.QueryRow(ctx, query, accountID, at).Scan(&balance)
+	if err != nil {
+		return 0, err
+	}
+	return balance, nil
+}
+
+// RecordBalanceSnapshot inserts a periodic equity/balance snapshot.
+func (r *AnalyticsRepository) RecordBalanceSnapshot(ctx context.Context, accountID uuid.UUID, balance, equity, margin, freeMargin float64) error {
+	query := `
+		INSERT INTO account_balance_history (account_id, balance, equity, margin, free_margin, recorded_at)
+		VALUES ($1, $2, $3, $4, $5, NOW())
+	`
+	_, err := r.db.Exec(ctx, query, accountID, balance, equity, margin, freeMargin)
+	return err
+}
+
 func (r *AnalyticsRepository) GetConsecutiveStats(ctx context.Context, accountID uuid.UUID, start, end time.Time) (maxWins, maxLosses int, err error) {
 	query := `
 		WITH profit_signs AS (
@@ -310,7 +343,7 @@ func (r *AnalyticsRepository) GetDailyPnL(ctx context.Context, accountID uuid.UU
 	result := make([]*model.DailyPnL, 0, 7)
 	dayNames := []string{"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"}
 
-	initialBalance, err := r.GetAccountInitialBalance(ctx, accountID)
+	initialBalance, err := r.GetBalanceAtTime(ctx, accountID, start)
 	if err != nil {
 		initialBalance = 0
 	}

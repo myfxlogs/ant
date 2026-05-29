@@ -176,7 +176,6 @@ export default function StrategyExperimentPage() {
 
       <Card title={t('strategy.experiment.submitForm.title')}>
         <Form
-          form={form}
           layout="vertical"
           initialValues={{ parameterSpace: defaultParameterSpace(), searchMethod: 'grid', maxCandidates: 12, objective: 'balanced' }}
           onFinish={handleSubmit}

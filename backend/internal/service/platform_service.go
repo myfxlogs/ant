@@ -109,7 +109,7 @@ type AccountDTO struct {
 	ID, UserID, Platform, Broker, Login, Server string
 	IsDisabled                                   bool
 	Status                                       string
-	Balance, Equity, Margin, FreeMargin          float64
+	Balance, Equity, Credit, Margin, FreeMargin  float64
 	MarginLevel                                  float64
 	Leverage                                     int32
 	Currency                                     string
@@ -121,7 +121,7 @@ type AccountDTO struct {
 func (s *PlatformService) ListAccounts(ctx context.Context, userID uuid.UUID) ([]AccountDTO, error) {
 	rows, err := s.pg.Query(ctx, `
 		SELECT id, user_id, mt_type, broker_company, login, broker_server, is_disabled,
-		       account_status, balance, equity, margin, free_margin, margin_level, leverage, currency, last_error,
+		       account_status, balance, equity, COALESCE(credit, 0), margin, free_margin, margin_level, leverage, currency, COALESCE(last_error, ''),
 		       COALESCE(last_connected_at::text, '')
 		FROM mt_accounts WHERE user_id = $1 ORDER BY mt_type, login
 	`, userID)
@@ -131,7 +131,7 @@ func (s *PlatformService) ListAccounts(ctx context.Context, userID uuid.UUID) ([
 	for rows.Next() {
 		var a AccountDTO
 		if err := rows.Scan(&a.ID, &a.UserID, &a.Platform, &a.Broker, &a.Login, &a.Server, &a.IsDisabled,
-			&a.Status, &a.Balance, &a.Equity, &a.Margin, &a.FreeMargin, &a.MarginLevel, &a.Leverage, &a.Currency, &a.LastError,
+			&a.Status, &a.Balance, &a.Equity, &a.Credit, &a.Margin, &a.FreeMargin, &a.MarginLevel, &a.Leverage, &a.Currency, &a.LastError,
 			&a.LastConnectedAt); err != nil {
 			return nil, fmt.Errorf("service: list accounts: scan: %w", err)
 		}
@@ -154,11 +154,11 @@ func (s *PlatformService) GetAccount(ctx context.Context, userID uuid.UUID, acco
 	var a AccountDTO
 	err := s.pg.QueryRow(ctx, `
 		SELECT id, user_id, mt_type, broker_company, login, broker_server, is_disabled,
-		       account_status, balance, equity, margin, free_margin, margin_level, leverage, currency, last_error,
+		       account_status, balance, equity, COALESCE(credit, 0), margin, free_margin, margin_level, leverage, currency, COALESCE(last_error, ''),
 		       COALESCE(last_connected_at::text, '')
 		FROM mt_accounts WHERE id = $1::uuid AND user_id = $2
 	`, accountID, userID).Scan(&a.ID, &a.UserID, &a.Platform, &a.Broker, &a.Login, &a.Server, &a.IsDisabled,
-		&a.Status, &a.Balance, &a.Equity, &a.Margin, &a.FreeMargin, &a.MarginLevel, &a.Leverage, &a.Currency, &a.LastError,
+		&a.Status, &a.Balance, &a.Equity, &a.Credit, &a.Margin, &a.FreeMargin, &a.MarginLevel, &a.Leverage, &a.Currency, &a.LastError,
 		&a.LastConnectedAt)
 	if err != nil { return nil, err }
 	return &a, nil
@@ -200,8 +200,62 @@ func (s *PlatformService) UpdateAccount(ctx context.Context, userID uuid.UUID, i
 	return nil
 }
 
-// DeleteAccount removes an MT account by ID.
+// UpdateAccountInfo updates balance/equity/margin/leverage/currency + status after MT verification.
+func (s *PlatformService) UpdateAccountInfo(ctx context.Context, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin float64, leverage int64, currency string) error {
+	_, err := s.pg.Exec(ctx, `
+		UPDATE mt_accounts SET
+			balance = COALESCE(NULLIF($3::float8, 0), balance),
+			equity  = COALESCE(NULLIF($4::float8, 0), equity),
+			credit  = COALESCE(NULLIF($5::float8, 0), credit),
+			margin  = COALESCE(NULLIF($6::float8, 0), margin),
+			free_margin = COALESCE(NULLIF($7::float8, 0), free_margin),
+			leverage = COALESCE(NULLIF($8::int4, 0), leverage),
+			currency = COALESCE(NULLIF($9, ''), currency),
+			account_status = 'connected',
+			updated_at = CURRENT_TIMESTAMP
+		WHERE id = $1::uuid AND user_id = $2
+	`, id, userID, balance, equity, credit, margin, freeMargin, leverage, currency)
+	if err != nil {
+		return fmt.Errorf("service: update account info: %w", err)
+	}
+	return nil
+}
+
+// AccountCredentials holds the fields needed to verify an MT account password.
+type AccountCredentials struct {
+	Login      string
+	Platform   string
+	BrokerHost string
+}
+
+// GetAccountCredentials returns the credentials needed for MT password verification.
+func (s *PlatformService) GetAccountCredentials(ctx context.Context, userID uuid.UUID, id string) (*AccountCredentials, error) {
+	var c AccountCredentials
+	err := s.pg.QueryRow(ctx,
+		`SELECT login, mt_type, broker_host FROM mt_accounts WHERE id = $1::uuid AND user_id = $2`,
+		id, userID).Scan(&c.Login, &c.Platform, &c.BrokerHost)
+	if err != nil {
+		return nil, fmt.Errorf("service: get account credentials: %w", err)
+	}
+	return &c, nil
+}
+
+// DeleteAccount removes an MT account and all its related data.
+// Related tables without ON DELETE CASCADE are cleaned up first.
 func (s *PlatformService) DeleteAccount(ctx context.Context, userID uuid.UUID, id string) error {
+	// Delete related rows from tables that lack ON DELETE CASCADE.
+	related := []string{
+		`DELETE FROM account_balance_history WHERE account_id = $1::uuid`,
+		`DELETE FROM account_connection_logs WHERE account_id = $1::uuid`,
+		`DELETE FROM strategy_execution_logs WHERE account_id = $1::uuid`,
+		`DELETE FROM order_history WHERE account_id = $1::uuid`,
+	}
+	for _, q := range related {
+		if _, err := s.pg.Exec(ctx, q, id); err != nil {
+			return fmt.Errorf("service: delete account: cleanup: %w", err)
+		}
+	}
+
 	_, err := s.pg.Exec(ctx, `DELETE FROM mt_accounts WHERE id = $1::uuid AND user_id = $2`, id, userID)
 	if err != nil {
 		return fmt.Errorf("service: delete account: %w", err)

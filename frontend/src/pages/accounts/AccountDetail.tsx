@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { Tag, Button, Spin, Dropdown, Modal } from 'antd';
+import { Tag, Button, Spin, Dropdown, Modal, Input } from 'antd';
 import { showSuccessModal, showErrorModal, showLoadingModal, showSuccess, showError } from '@/utils/message';
 import type { MenuProps } from 'antd';
 import {
@@ -15,7 +15,7 @@ import {
   DollarOutlined,
   PercentageOutlined,
   WarningOutlined,
-  CloudDownloadOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAccount } from '@/hooks/useAccount';
@@ -25,7 +25,6 @@ import { useTradingStore } from '@/stores/tradingStore';
 import { useAccountStore } from '@/stores/accountStore';
 import { useShallow } from 'zustand/react/shallow';
 import { analyticsApi } from '@/client/analytics';
-import { tradingApi } from '@/client/trading';
 import type { ConnectAccountResult } from '@/client/account';
 import AccountTradeTabs from './components/AccountTradeTabs';
 import AccountAnalyticsSection from './components/AccountAnalyticsSection';
@@ -152,8 +151,8 @@ export default function AccountDetail() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { currentAccount, fetchAccount, fetchAccounts, disableAccount, enableAccount, setCurrentAccount } = useAccount();
-  const { connectAccount, positions } = useTrading();
+  const { currentAccount, fetchAccount, fetchAccounts, disableAccount, enableAccount, deleteAccount, setCurrentAccount } = useAccount();
+  const { connectAccount, positions, fetchPositions } = useTrading();
   const setCurrentAccountId = useTradingStore((state) => state.setCurrentAccountId);
   const accountInfo = useTradingStore(useShallow((state) => id ? state.accountInfoMap.get(id) : null));
   const hasReceivedData = useTradingStore((state) => state.hasReceivedData);
@@ -163,21 +162,23 @@ export default function AccountDetail() {
   const isDataReceived = id ? hasReceivedData(id) : true;
   // Show loading only while actively connecting. If already connected but no first stream frame yet,
   // still render snapshot/account values to avoid perpetual "loading..." cards.
-  const isStreamLoading = !isDataReceived && connectionState === 'connecting';
+  const isStreamLoading = !isDataReceived;
   
   const [chartType, setChartType] = useState<'equity' | 'balance' | 'profit'>('equity');
   const [chartPeriod, setChartPeriod] = useState<'day' | 'week' | 'month' | 'all'>('month');
 
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  // selectedYear 已下移到 AccountAnalyticsSection 内部管理，不再在 AccountDetail 层控制
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [analyticsError, setAnalyticsError] = useState<string | null>(null);
   const [analytics, setAnalytics] = useState<AccountAnalyticsData | null>(null);
   const [monthlyPnL, setMonthlyPnL] = useState<AccountMonthlyPnLItem[]>([]);
   const [monthlyAnalysisYears, setMonthlyAnalysisYears] = useState<number[]>([]);
   const [monthlyAnalysisData, setMonthlyAnalysisData] = useState<unknown[]>([]);
-  const [syncingHistory, setSyncingHistory] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [disabling, setDisabling] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleting, setDeleting] = useState(false);
   const [historyTrades, setHistoryTrades] = useState<NonNullable<AccountRecentTradesResponse['trades']>>([]);
   const [historyTotal, setHistoryTotal] = useState(0);
   const [historyPage, setHistoryPage] = useState(1);
@@ -189,7 +190,7 @@ export default function AccountDetail() {
     try {
       const tradesData = await analyticsApi.getRecentTrades(accountId, page, historyPageSize);
       setHistoryTrades((tradesData as AccountRecentTradesResponse).trades || []);
-      setHistoryTotal((tradesData as AccountRecentTradesResponse).total || 0);
+      setHistoryTotal(Number((tradesData as AccountRecentTradesResponse).total || 0));
       setHistoryPage(page);
     } catch (_error) {
       // History fetch errors are non-fatal; analyticsError handles the main section.
@@ -203,24 +204,52 @@ export default function AccountDetail() {
     setAnalyticsError(null);
     try {
       const [analyticsData, tradesData, monthlyData, monthlyAnalysisResp] = await Promise.all([
-        analyticsApi.getAccountAnalytics(accountId),
+        analyticsApi.getAccountAnalytics(accountId, chartPeriod),
         analyticsApi.getRecentTrades(accountId, 1, historyPageSize),
-        analyticsApi.getMonthlyPnL(accountId, selectedYear),
+        analyticsApi.getMonthlyPnL(accountId, new Date().getFullYear()),
         analyticsApi.getMonthlyAnalysis(accountId),
       ]);
       setAnalytics(analyticsData as AccountAnalyticsData);
       setHistoryTrades((tradesData as AccountRecentTradesResponse).trades || []);
-      setHistoryTotal((tradesData as AccountRecentTradesResponse).total || 0);
+      setHistoryTotal(Number((tradesData as AccountRecentTradesResponse).total || 0));
       setHistoryPage(1);
-      setMonthlyPnL((monthlyData as AccountMonthlyPnLResponse).monthlyPnl || []);
       setMonthlyAnalysisYears((monthlyAnalysisResp as AccountMonthlyAnalysisResponse).years || []);
       setMonthlyAnalysisData((monthlyAnalysisResp as AccountMonthlyAnalysisResponse).data || []);
+      // monthlyPnL 已下移到 AccountAnalyticsSection 内部管理
+      setMonthlyPnL((monthlyData as AccountMonthlyPnLResponse).monthlyPnl || []);
     } catch (error) {
       setAnalyticsError(getErrorMessage(error, '加载分析数据失败'));
     } finally {
       setAnalyticsLoading(false);
     }
-  }, [selectedYear, historyPageSize]);
+  }, [historyPageSize]);
+
+  // chartPeriod changes only refresh the equity curve chart, not the full analytics section.
+  const loadAnalyticsForPeriod = useCallback(async (accountId: string) => {
+    try {
+      const analyticsData = await analyticsApi.getAccountAnalytics(accountId, chartPeriod);
+      setAnalytics(analyticsData as AccountAnalyticsData);
+    } catch (_error) {
+      // Keep existing analytics on period-switch error.
+    }
+  }, [chartPeriod]);
+
+  // When stream data first arrives (gateway connected), load analytics/history.
+  // Retry after 5s to cover syncHistory timing gap.
+  // Positions arrive via SSE position_snapshot — no RPC fetchPositions needed.
+  useEffect(() => {
+    if (!id || !isDataReceived) return;
+    loadAllData(id).catch((error) => showError(getErrorMessage(error, '加载分析数据失败')));
+    const timer = setTimeout(() => {
+      loadAllData(id).catch(() => {});
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [id, isDataReceived]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!id) return;
+    loadAnalyticsForPeriod(id);
+  }, [id, chartPeriod, loadAnalyticsForPeriod]);
 
   useEffect(() => {
     if (!id) return;
@@ -241,13 +270,13 @@ export default function AccountDetail() {
         const loaded = await fetchAccount(id, false);
         if (!loaded) {
           showErrorModal(t('accounts.detail.messages.fetchAccountFailed'));
-          navigate('/accounts');
+          navigate('/');
           return;
         }
       }
       
-      // Load analytics data (non-blocking). Positions come from the real-time
-      // stream via position_snapshot events — no RPC fetchPositions needed.
+      // Load analytics data (non-blocking). Positions + history are
+      // triggered by isDataReceived event when gateway connects.
       loadAllData(id).catch((error) => showError(getErrorMessage(error, '加载分析数据失败')));
     };
     
@@ -353,28 +382,24 @@ export default function AccountDetail() {
     }
   }, [currentAccount, enableAccount, disableAccount, fetchAccount, t]);
 
-  const handleSyncHistory = useCallback(async () => {
-    if (!id) return;
-    
-    Modal.confirm({
-      title: t('accounts.detail.syncHistory.title'),
-      content: t('accounts.detail.syncHistory.content'),
-      okText: t('accounts.detail.syncHistory.ok'),
-      cancelText: t('common.cancel'),
-      onOk: async () => {
-        setSyncingHistory(true);
-        try {
-          await tradingApi.syncOrderHistory(id);
-          showSuccess(t('accounts.detail.messages.syncHistorySuccess'));
-          await loadAllData(id);
-        } catch (_error) {
-          showError(t('accounts.detail.messages.syncHistoryFailed'));
-        } finally {
-          setSyncingHistory(false);
-        }
-      },
-    });
-  }, [id, loadAllData, t]);
+  const handleDeleteClick = useCallback(() => {
+    setDeletePassword('');
+    setDeleteModalOpen(true);
+  }, []);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!currentAccount || !deletePassword.trim()) return;
+    setDeleting(true);
+    try {
+      await deleteAccount(currentAccount.id, deletePassword.trim());
+      setDeleteModalOpen(false);
+      navigate('/');
+    } catch {
+      // Error already shown by hook
+    } finally {
+      setDeleting(false);
+    }
+  }, [currentAccount, deletePassword, deleteAccount, navigate]);
 
   const formatCurrency = useCallback((value: number) => {
     const isNegative = value < 0;
@@ -409,27 +434,50 @@ export default function AccountDetail() {
       onClick: handleToggleStatus,
       disabled: disabling,
     },
-  ], [currentAccount?.isDisabled, currentAccount?.id, enablingAccount, disabling, handleToggleStatus, t]);
+    {
+      key: 'delete',
+      label: t('accounts.detail.actions.deleteAccount'),
+      icon: <DeleteOutlined size={16} stroke={1.5} style={{ color: '#E53935' }} />,
+      onClick: handleDeleteClick,
+      danger: true,
+    },
+  ], [currentAccount?.isDisabled, currentAccount?.id, enablingAccount, disabling, handleToggleStatus, handleDeleteClick, t]);
 
   const { equityChartData, profitByMonthData, symbolDistributionData, dailyPnLData, hourlyData, tradeStats, riskMetrics } = useMemo(() => {
-    const equityCurve = analytics?.equityCurve?.map((point) => ({ date: point.date, equity: point.equity, balance: point.balance, profit: point.profit })) || [];
-    // Client-side filter by selected period
-    const filteredEquityCurve = (() => {
-      if (chartPeriod === 'all' || equityCurve.length === 0) return equityCurve;
-      const now = new Date();
-      const cutoff = new Date();
-      if (chartPeriod === 'day') cutoff.setDate(now.getDate() - 1);
-      else if (chartPeriod === 'week') cutoff.setDate(now.getDate() - 7);
-      else if (chartPeriod === 'month') cutoff.setDate(now.getDate() - 30);
-      return equityCurve.filter((p) => new Date(p.date) >= cutoff);
-    })();
+    // Backend returns pre-filtered ISO `YYYY-MM-DD` equity curve per chartPeriod.
+    // Frontend only formats date labels for chart x-axis display (MM/DD).
+    // Period-aware date labels. Data is untouched; only x-axis display format changes.
+    const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const equityCurve = analytics?.equityCurve?.map((point) => {
+      const raw = point.date || '';
+      let label: string;
+      if (raw.indexOf(' ') > 0) {
+        // Hourly: "2026-05-28 14:00" → "14:00"
+        label = raw.slice(raw.indexOf(' ') + 1, raw.indexOf(' ') + 6);
+      } else if (chartPeriod === 'week') {
+        // Daily → day-name: "Mon", "Tue", ...
+        try { label = DAY_NAMES[new Date(raw + 'T00:00:00').getDay()]; } catch { label = raw; }
+      } else {
+        // Day/Month/All: "2026-05-28" → "5/28"
+        const parts = raw.split('-');
+        label = parts.length >= 3
+          ? `${parseInt(parts[1], 10)}/${parseInt(parts[2], 10)}`
+          : raw;
+      }
+      return {
+        date: label,
+        equity: point.equity,
+        balance: point.balance,
+        profit: point.profit,
+      };
+    }) || [];
     const profitByMonth = monthlyPnL
       .map((m) => {
         const monthValue = m?.month ?? m?.monthNum ?? m?.month_num;
         return {
           month: String(monthValue ?? ''),
           profit: m.profit,
-          trades: m.trades,
+          trades: Number(m.trades),
         };
       })
       .filter((m) => m.month);
@@ -438,7 +486,7 @@ export default function AccountDetail() {
       day: d.day,
       date: d.date,
       profit: d.pnl ?? d.profit,
-      trades: d.trades,
+      trades: Number(d.trades),
       lots: d.lots ?? 0,
       balance: d.balance ?? 0,
       profitFactor: d.profitFactor ?? 0,
@@ -458,7 +506,7 @@ export default function AccountDetail() {
       }));
 
     return {
-      equityChartData: filteredEquityCurve,
+      equityChartData: equityCurve,
       profitByMonthData: profitByMonth,
       symbolDistributionData: symbolDistribution,
       dailyPnLData: dailyPnl,
@@ -480,8 +528,8 @@ export default function AccountDetail() {
 
   const { realPositions, pendingOrders } = useMemo(() => {
     const positionsList = Array.isArray(positions) ? positions : [];
-    const real = positionsList.map(p => ({ ...p, open_price: p.openPrice || p.openPrice || 0, current_price: p.closePrice || p.currentPrice || 0, open_time: formatTimestamp(p.openTime || p.openTime) })).filter(p => !isPendingOrder(p.type));
-    const pending = positionsList.map(p => ({ ...p, open_price: p.openPrice || p.openPrice || 0, current_price: p.closePrice || p.currentPrice || 0, open_time: formatTimestamp(p.openTime || p.openTime) })).filter(p => isPendingOrder(p.type));
+    const real = positionsList.map(p => ({ ...p, open_price: p.openPrice || 0, current_price: p.closePrice || p.currentPrice || 0, open_time: formatTimestamp(p.openTime) })).filter(p => !isPendingOrder(p.type));
+    const pending = positionsList.map(p => ({ ...p, open_price: p.openPrice || 0, current_price: p.closePrice || p.currentPrice || 0, open_time: formatTimestamp(p.openTime) })).filter(p => isPendingOrder(p.type));
     return { realPositions: real, pendingOrders: pending };
   }, [positions]);
 
@@ -509,7 +557,7 @@ export default function AccountDetail() {
       <div className="max-w-7xl mx-auto p-4">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Button type="text" icon={<ArrowLeftOutlined size={20} stroke={1.5} />} onClick={() => navigate('/accounts')} style={{ color: '#8A9AA5' }} />
+            <Button type="text" icon={<ArrowLeftOutlined size={20} stroke={1.5} />} onClick={() => navigate('/')} style={{ color: '#8A9AA5' }} />
             <div>
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-bold" style={{ color: '#141D22' }}>{currentAccount.login}</h1>
@@ -523,7 +571,6 @@ export default function AccountDetail() {
           </div>
           <div className="flex items-center gap-2">
             <Button icon={<ReloadOutlined size={16} stroke={1.5} />} onClick={handleRefreshAnalytics} loading={analyticsLoading} style={{ borderRadius: '8px' }}>{t('common.refresh')}</Button>
-            <Button icon={<CloudDownloadOutlined size={16} stroke={1.5} />} onClick={handleSyncHistory} loading={syncingHistory} disabled={currentAccount.status !== 'connected'} style={{ borderRadius: '8px' }}>{t('accounts.detail.actions.syncHistory')}</Button>
             <Dropdown menu={{ items: menuItems }} trigger={['click']}><Button icon={<MoreOutlined size={16} stroke={1.5} />} style={{ borderRadius: '8px' }} /></Dropdown>
           </div>
         </div>
@@ -568,8 +615,6 @@ export default function AccountDetail() {
           setChartType={setChartType}
           chartPeriod={chartPeriod}
           setChartPeriod={setChartPeriod}
-          selectedYear={selectedYear}
-          setSelectedYear={setSelectedYear}
           equityChartData={equityChartData}
           profitByMonthData={profitByMonthData}
           symbolDistributionData={symbolDistributionData}
@@ -582,6 +627,32 @@ export default function AccountDetail() {
           currency={currentAccount?.currency || 'USD'}
           accountId={id}
         />
+
+        <Modal
+          title={t('accounts.detail.actions.deleteAccount')}
+          open={deleteModalOpen}
+          onOk={handleConfirmDelete}
+          onCancel={() => setDeleteModalOpen(false)}
+          confirmLoading={deleting}
+          okText={t('accounts.detail.actions.deleteConfirm')}
+          cancelText={t('common.cancel')}
+          okButtonProps={{ danger: true }}
+          destroyOnClose
+        >
+          <div style={{ marginBottom: 16, color: '#E53935' }}>
+            {t('accounts.detail.actions.deleteWarning')}
+          </div>
+          <div style={{ marginBottom: 8, color: '#8A9AA5' }}>
+            {t('accounts.detail.actions.deletePasswordHint')}
+          </div>
+          <Input
+            placeholder={t('accounts.detail.actions.deletePasswordPlaceholder')}
+            value={deletePassword}
+            onChange={(e) => setDeletePassword(e.target.value)}
+            onPressEnter={handleConfirmDelete}
+            disabled={deleting}
+          />
+        </Modal>
     </div>
   </div>
 );

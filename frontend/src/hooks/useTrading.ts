@@ -104,37 +104,6 @@ export function useTrading() {
     }
   }, [setLoading]);
 
-  const modifyOrder = useCallback(async (params: {
-    accountId: string;
-    ticket: bigint;
-    stopLoss?: number;
-    takeProfit?: number;
-    price?: number;
-  }) => {
-    setLoading(true);
-    try {
-      const result = await tradingApi.orderModify(params);
-      if (result.error) {
-        showError(
-          getTradingRiskToastMessage({
-            riskCode: result.riskError?.code,
-            error: result.error,
-            message: result.message,
-            fallback: translateMaybeI18nKey(result.error, String(result.error)),
-          }),
-        );
-        return null;
-      }
-      showSuccess(i18n.t('trading.messages.orderModifySuccess'));
-      return result.order;
-    } catch (error) {
-      showError(getErrorMessage(error, i18n.t('trading.messages.orderModifyFailed')));
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }, [setLoading]);
-
   const closeOrder = useCallback(async (params: {
     accountId: string;
     ticket: bigint;
@@ -164,16 +133,6 @@ export function useTrading() {
       setLoading(false);
     }
   }, [setLoading]);
-
-  const getPendingOrders = useCallback(async (accountId: string) => {
-    try {
-      const orders = await tradingApi.getPendingOrders(accountId);
-      return orders;
-    } catch (error) {
-      showError(getErrorMessage(error, i18n.t('trading.messages.fetchPendingOrdersFailed')));
-      return [];
-    }
-  }, []);
 
   const getOrderHistory = useCallback(async (params: {
     accountId: string;
@@ -207,9 +166,7 @@ export function useTrading() {
     loading,
     fetchPositions,
     sendOrder,
-    modifyOrder,
     closeOrder,
-    getPendingOrders,
     getOrderHistory,
     connectAccount,
   };

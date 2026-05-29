@@ -23,7 +23,7 @@ type AccountEvent struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-// AccountEventPublisher publishes account lifecycle events to NATS.
+// AccountEventPublisher publishes account lifecycle events to NATS JetStream.
 type AccountEventPublisher struct {
 	js  natsgo.JetStreamContext
 	log *zap.Logger
@@ -43,6 +43,8 @@ func (p *AccountEventPublisher) publish(ctx context.Context, subject string, ev 
 		p.log.Warn("account event marshal failed", zap.Error(err))
 		return
 	}
+	// Ensure the JetStream stream exists (idempotent).
+	tryEnsureAccountEventsStream(p.js, p.log)
 	if _, err := p.js.Publish(subject, data); err != nil {
 		p.log.Warn("account event publish failed",
 			zap.String("subject", subject),
@@ -51,23 +53,46 @@ func (p *AccountEventPublisher) publish(ctx context.Context, subject string, ev 
 	}
 }
 
-// PublishConnect publishes an account.connect event.
+var accountEventsStreamEnsured bool
+
+func tryEnsureAccountEventsStream(js natsgo.JetStreamContext, log *zap.Logger) {
+	if accountEventsStreamEnsured {
+		return
+	}
+	accountEventsStreamEnsured = true
+	_, err := js.StreamInfo("ACCOUNT_EVENTS")
+	if err == nil {
+		return
+	}
+	_, err = js.AddStream(&natsgo.StreamConfig{
+		Name:      "ACCOUNT_EVENTS",
+		Subjects:  []string{"account.>"},
+		Retention: natsgo.InterestPolicy,
+		MaxAge:    24 * time.Hour,
+	})
+	if err != nil {
+		log.Warn("mdgateway: add ACCOUNT_EVENTS stream failed", zap.Error(err))
+		accountEventsStreamEnsured = false
+	}
+}
+
+// PublishConnect publishes an account.connect.<accountID> event.
 func (p *AccountEventPublisher) PublishConnect(ctx context.Context, accountID, userID string) {
-	p.publish(ctx, SubjectAccountConnect, &AccountEvent{
+	p.publish(ctx, SubjectAccountConnect+"."+accountID, &AccountEvent{
 		AccountID: accountID, UserID: userID, Timestamp: time.Now(),
 	})
 }
 
-// PublishDisconnect publishes an account.disconnect event.
+// PublishDisconnect publishes an account.disconnect.<accountID> event.
 func (p *AccountEventPublisher) PublishDisconnect(ctx context.Context, accountID, userID string) {
-	p.publish(ctx, SubjectAccountDisconnect, &AccountEvent{
+	p.publish(ctx, SubjectAccountDisconnect+"."+accountID, &AccountEvent{
 		AccountID: accountID, UserID: userID, Timestamp: time.Now(),
 	})
 }
 
-// PublishReconnect publishes an account.reconnect event.
+// PublishReconnect publishes an account.reconnect.<accountID> event.
 func (p *AccountEventPublisher) PublishReconnect(ctx context.Context, accountID, userID string) {
-	p.publish(ctx, SubjectAccountReconnect, &AccountEvent{
+	p.publish(ctx, SubjectAccountReconnect+"."+accountID, &AccountEvent{
 		AccountID: accountID, UserID: userID, Timestamp: time.Now(),
 	})
 }

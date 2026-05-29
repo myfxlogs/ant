@@ -22,10 +22,11 @@ import {
 } from '@ant-design/icons';
 
 import { CHART_COLORS } from '@/constants/performance';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatHoldingTime } from '@/utils/date';
 import { StatusResult } from '@/components/common/StatusResult';
+import { analyticsApi } from '@/client/analytics';
 
 import { StatCard } from './AccountDetail.shared';
 import MonthlyAnalysisCard from './MonthlyAnalysisCard';
@@ -38,8 +39,6 @@ type Props = {
   setChartType: (value: 'equity' | 'balance' | 'profit') => void;
   chartPeriod: 'day' | 'week' | 'month' | 'all';
   setChartPeriod: (value: 'day' | 'week' | 'month' | 'all') => void;
-  selectedYear: number;
-  setSelectedYear: (value: number) => void;
   equityChartData: any[];
   profitByMonthData: any[];
   symbolDistributionData: any[];
@@ -53,7 +52,7 @@ type Props = {
   accountId?: string;
 };
 
-export default function AccountAnalyticsSection({
+function AccountAnalyticsSection({
   analyticsLoading,
   analyticsError,
   onRetryAnalytics,
@@ -61,10 +60,8 @@ export default function AccountAnalyticsSection({
   setChartType,
   chartPeriod,
   setChartPeriod,
-  selectedYear,
-  setSelectedYear,
   equityChartData,
-  profitByMonthData,
+  profitByMonthData: _initialMonthlyData,
   symbolDistributionData,
   dailyPnLData,
   hourlyData,
@@ -76,6 +73,29 @@ export default function AccountAnalyticsSection({
   accountId,
 }: Props) {
   const { t } = useTranslation();
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  // 初始数据来自父级传入的 prop（首次加载时的快照），后续年份切换由本地 useEffect 写入
+  const [monthlyData, setMonthlyData] = useState<any[]>(() =>
+    (_initialMonthlyData || []).length > 0 ? null : null  // 首次无数据，由 useEffect 获取
+  );
+
+  useEffect(() => {
+    if (!accountId) return;
+    let cancelled = false;
+    analyticsApi.getMonthlyPnL(accountId, selectedYear).then((data: any) => {
+      if (!cancelled) setMonthlyData(data?.monthlyPnl || []);
+    });
+    return () => { cancelled = true; };
+  }, [accountId, selectedYear]);
+
+  const profitByMonthData = (monthlyData || _initialMonthlyData || [])
+    .map((m: any) => ({
+      month: String(m?.month ?? m?.monthNum ?? m?.month_num ?? ''),
+      profit: m.profit,
+      trades: Number(m.trades),
+    }))
+    .filter((m: any) => m.month);
+
   const [timeView, setTimeView] = useState<'hourly' | 'daily'>('hourly');
   const [selectedHourlyIndex, setSelectedHourlyIndex] = useState(0);
   const [selectedDailyIndex, setSelectedDailyIndex] = useState(0);
@@ -153,7 +173,12 @@ export default function AccountAnalyticsSection({
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                <XAxis dataKey="date" stroke="#8A9AA5" fontSize={11} />
+                <XAxis
+                  dataKey="date"
+                  stroke="#8A9AA5"
+                  fontSize={11}
+                  interval={chartPeriod === 'day' ? 1 : 'preserveStartEnd'}
+                />
                 <YAxis stroke="#8A9AA5" fontSize={11} />
                 <Tooltip contentStyle={{ background: '#FFFFFF', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }} />
                 {chartType === 'equity' && (
@@ -462,3 +487,5 @@ export default function AccountAnalyticsSection({
     </StatusResult>
   );
 }
+
+export default React.memo(AccountAnalyticsSection);

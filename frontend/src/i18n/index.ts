@@ -63,6 +63,17 @@ export async function setLanguage(lng: SupportedLanguage) {
   }
 }
 
+// Polyfill: Intl.PluralRules.select() throws on BigInt values (protobuf int64).
+// i18next may receive BigInt counts through interpolation, so we coerce to Number.
+// https://tc39.es/ecma402/#sec-intl.pluralrules.prototype.select
+if (typeof Intl !== 'undefined' && Intl.PluralRules) {
+  const _select = Intl.PluralRules.prototype.select;
+  Intl.PluralRules.prototype.select = function (count: number | bigint) {
+    if (typeof count === 'bigint') count = Number(count);
+    return _select.call(this, count as number);
+  };
+}
+
 if (!i18n.isInitialized) {
   const initial = getInitialLanguage();
 

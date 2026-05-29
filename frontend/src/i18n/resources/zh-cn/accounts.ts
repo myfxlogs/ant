@@ -54,6 +54,7 @@ const accounts = {
       historyWithCount: '历史订单 ({{count}})',
       emptyPositions: '暂无持仓',
       emptyHistory: '暂无历史订单',
+      syncHistory: '同步历史',
       table: {
         orderId: '订单号',
         symbol: '品种',
@@ -236,8 +237,8 @@ const accounts = {
         subtitle: '输入您的交易账号和密码',
       },
       step3: {
-        title: '确认绑定',
-        subtitle: '请确认以下信息无误',
+        title: '验证并确认',
+        subtitle: '验证账户凭据，确认后完成绑定',
       },
       fields: {
         platform: '交易平台',
@@ -259,7 +260,9 @@ const accounts = {
       },
       actions: {
         search: '搜索',
+        verifyAccount: '验证账户',
         confirmBind: '确认绑定',
+        retryVerify: '重新验证',
       },
       passwordHint: '密码将通过 HTTPS 加密传输，后端使用 Argon2id 哈希存储不可回逆',
       summary: {
@@ -268,12 +271,20 @@ const accounts = {
         platform: '交易平台',
         tradingAccount: '交易账号',
         password: '密码',
+        verified: '账户验证通过',
+        balance: '余额',
+        equity: '净值',
+        margin: '已用保证金',
+        freeMargin: '可用保证金',
+        leverage: '杠杆',
+        currency: '货币',
       },
       errorModal: {
         title: '绑定失败',
       },
       messages: {
         enterBrokerName: '请输入经纪商名称',
+        verifyFailed: '账户验证失败',
         foundBrokers: '找到 {{count}} 个经纪商',
         noBrokersFound: '未找到匹配的经纪商，请检查名称',
         searchFailed: '搜索失败，请稍后重试',
@@ -355,6 +366,11 @@ const accounts = {
       actions: {
         enableAccount: '启用账户',
         disableAccount: '停用账户',
+        deleteAccount: '删除账户',
+        deleteConfirm: '验证并删除',
+        deleteWarning: '此操作不可撤销。账户所有数据（交易记录、分析数据等）将被永久删除。',
+        deletePasswordHint: '请输入该账户的 MT 交易密码或只读密码进行验证：',
+        deletePasswordPlaceholder: 'MT 交易密码 / 只读密码',
         syncHistory: '同步历史',
       },
       status: {

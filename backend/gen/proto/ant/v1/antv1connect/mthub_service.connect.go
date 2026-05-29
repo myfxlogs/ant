@@ -55,6 +55,9 @@ const (
 	// MtHubServiceStreamOrderEventsProcedure is the fully-qualified name of the MtHubService's
 	// StreamOrderEvents RPC.
 	MtHubServiceStreamOrderEventsProcedure = "/ant.v1.MtHubService/StreamOrderEvents"
+	// MtHubServiceSyncOrderHistoryProcedure is the fully-qualified name of the MtHubService's
+	// SyncOrderHistory RPC.
+	MtHubServiceSyncOrderHistoryProcedure = "/ant.v1.MtHubService/SyncOrderHistory"
 )
 
 // MtHubServiceClient is a client for the ant.v1.MtHubService service.
@@ -67,6 +70,7 @@ type MtHubServiceClient interface {
 	PriceHistory(context.Context, *connect.Request[v1.PriceHistoryRequest]) (*connect.Response[v1.PriceHistoryResponse], error)
 	GetAccountStatus(context.Context, *connect.Request[v1.GetAccountStatusRequest]) (*connect.Response[v1.AccountStatus], error)
 	StreamOrderEvents(context.Context, *connect.Request[v1.StreamOrderEventsRequest]) (*connect.ServerStreamForClient[v1.OrderEvent], error)
+	SyncOrderHistory(context.Context, *connect.Request[v1.SyncOrderHistoryRequest]) (*connect.Response[v1.SyncOrderHistoryResponse], error)
 }
 
 // NewMtHubServiceClient constructs a client for the ant.v1.MtHubService service. By default, it
@@ -128,6 +132,12 @@ func NewMtHubServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 			connect.WithSchema(mtHubServiceMethods.ByName("StreamOrderEvents")),
 			connect.WithClientOptions(opts...),
 		),
+		syncOrderHistory: connect.NewClient[v1.SyncOrderHistoryRequest, v1.SyncOrderHistoryResponse](
+			httpClient,
+			baseURL+MtHubServiceSyncOrderHistoryProcedure,
+			connect.WithSchema(mtHubServiceMethods.ByName("SyncOrderHistory")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -141,6 +151,7 @@ type mtHubServiceClient struct {
 	priceHistory      *connect.Client[v1.PriceHistoryRequest, v1.PriceHistoryResponse]
 	getAccountStatus  *connect.Client[v1.GetAccountStatusRequest, v1.AccountStatus]
 	streamOrderEvents *connect.Client[v1.StreamOrderEventsRequest, v1.OrderEvent]
+	syncOrderHistory  *connect.Client[v1.SyncOrderHistoryRequest, v1.SyncOrderHistoryResponse]
 }
 
 // PlaceOrder calls ant.v1.MtHubService.PlaceOrder.
@@ -183,6 +194,11 @@ func (c *mtHubServiceClient) StreamOrderEvents(ctx context.Context, req *connect
 	return c.streamOrderEvents.CallServerStream(ctx, req)
 }
 
+// SyncOrderHistory calls ant.v1.MtHubService.SyncOrderHistory.
+func (c *mtHubServiceClient) SyncOrderHistory(ctx context.Context, req *connect.Request[v1.SyncOrderHistoryRequest]) (*connect.Response[v1.SyncOrderHistoryResponse], error) {
+	return c.syncOrderHistory.CallUnary(ctx, req)
+}
+
 // MtHubServiceHandler is an implementation of the ant.v1.MtHubService service.
 type MtHubServiceHandler interface {
 	PlaceOrder(context.Context, *connect.Request[v1.PlaceOrderRequest]) (*connect.Response[v1.PlaceOrderResponse], error)
@@ -193,6 +209,7 @@ type MtHubServiceHandler interface {
 	PriceHistory(context.Context, *connect.Request[v1.PriceHistoryRequest]) (*connect.Response[v1.PriceHistoryResponse], error)
 	GetAccountStatus(context.Context, *connect.Request[v1.GetAccountStatusRequest]) (*connect.Response[v1.AccountStatus], error)
 	StreamOrderEvents(context.Context, *connect.Request[v1.StreamOrderEventsRequest], *connect.ServerStream[v1.OrderEvent]) error
+	SyncOrderHistory(context.Context, *connect.Request[v1.SyncOrderHistoryRequest]) (*connect.Response[v1.SyncOrderHistoryResponse], error)
 }
 
 // NewMtHubServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -250,6 +267,12 @@ func NewMtHubServiceHandler(svc MtHubServiceHandler, opts ...connect.HandlerOpti
 		connect.WithSchema(mtHubServiceMethods.ByName("StreamOrderEvents")),
 		connect.WithHandlerOptions(opts...),
 	)
+	mtHubServiceSyncOrderHistoryHandler := connect.NewUnaryHandler(
+		MtHubServiceSyncOrderHistoryProcedure,
+		svc.SyncOrderHistory,
+		connect.WithSchema(mtHubServiceMethods.ByName("SyncOrderHistory")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.MtHubService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case MtHubServicePlaceOrderProcedure:
@@ -268,6 +291,8 @@ func NewMtHubServiceHandler(svc MtHubServiceHandler, opts ...connect.HandlerOpti
 			mtHubServiceGetAccountStatusHandler.ServeHTTP(w, r)
 		case MtHubServiceStreamOrderEventsProcedure:
 			mtHubServiceStreamOrderEventsHandler.ServeHTTP(w, r)
+		case MtHubServiceSyncOrderHistoryProcedure:
+			mtHubServiceSyncOrderHistoryHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -307,4 +332,8 @@ func (UnimplementedMtHubServiceHandler) GetAccountStatus(context.Context, *conne
 
 func (UnimplementedMtHubServiceHandler) StreamOrderEvents(context.Context, *connect.Request[v1.StreamOrderEventsRequest], *connect.ServerStream[v1.OrderEvent]) error {
 	return connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MtHubService.StreamOrderEvents is not implemented"))
+}
+
+func (UnimplementedMtHubServiceHandler) SyncOrderHistory(context.Context, *connect.Request[v1.SyncOrderHistoryRequest]) (*connect.Response[v1.SyncOrderHistoryResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MtHubService.SyncOrderHistory is not implemented"))
 }

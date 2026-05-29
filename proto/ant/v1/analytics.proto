@@ -11,8 +11,17 @@ service AnalyticsService {
   rpc GetMonthlyAnalysis(GetMonthlyAnalysisRequest) returns (GetMonthlyAnalysisResponse);
 }
 
+enum EquityCurvePeriod {
+  EQUITY_CURVE_PERIOD_UNSPECIFIED = 0;
+  EQUITY_CURVE_PERIOD_DAY = 1;
+  EQUITY_CURVE_PERIOD_WEEK = 2;
+  EQUITY_CURVE_PERIOD_MONTH = 3;
+  EQUITY_CURVE_PERIOD_ALL = 4;
+}
+
 message GetAccountAnalyticsRequest {
   string account_id = 1;
+  EquityCurvePeriod equity_curve_period = 2;
 }
 
 message AccountAnalyticsResponse {

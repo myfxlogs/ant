@@ -1,13 +1,14 @@
 import { analyticsClient, economicDataClient } from './connect';
 import i18n from '@/i18n';
+import { EquityCurvePeriod } from '../gen/ant/v1/analytics_pb';
+import { deepConvertBigIntToNumber } from '@/adapters/dataAdapter';
 
 export type { TradeStats, RiskMetrics, SymbolStat, TradeRecord, MonthlyPnLItem } from '../gen/ant/v1/analytics_pb';
 
 const analyticsService = analyticsClient;
 
-// Analytics service currently uses a stub client (backend handlers not yet
-// fully implemented). The interfaces below document the expected response
-// shapes once the backend is available.
+// Analytics backed by AnalyticsService handler (backend/internal/connect/system/analytics_handler.go).
+// Reads from trade_records PostgreSQL table via AnalyticsRepository.
 interface RecentTradesResponse {
   trades?: unknown[];
   total?: number;
@@ -22,22 +23,23 @@ interface MonthlyAnalysisResponse {
   data?: unknown[];
 }
 
-interface SymbolStatsResponse {
-  stats?: unknown[];
-}
-
-interface MonthlyAnalysisBonusResponse {
-  riskRatio?: number;
-  symbolPopularity?: Array<{ symbol: string; trades: number; sharePercent: number }>;
-  symbolRiskRatios?: Array<{ symbol: string; riskRatio: number }>;
-  symbolHoldingSplit?: Array<{ symbol: string; bullsSeconds: number; shortTermSeconds: number }>;
-  averageHoldingSeconds?: number;
-  totalTrades?: number;
+function toProtoPeriod(p: 'day' | 'week' | 'month' | 'all'): EquityCurvePeriod {
+  switch (p) {
+    case 'day':   return EquityCurvePeriod.DAY;
+    case 'week':  return EquityCurvePeriod.WEEK;
+    case 'month': return EquityCurvePeriod.MONTH;
+    case 'all':   return EquityCurvePeriod.ALL;
+    default:      return EquityCurvePeriod.ALL;
+  }
 }
 
 export const analyticsApi = {
-  getAccountAnalytics: async (accountId: string) => {
-    return await analyticsService.getAccountAnalytics({ accountId });
+  getAccountAnalytics: async (accountId: string, period?: 'day' | 'week' | 'month' | 'all') => {
+    const res = await analyticsService.getAccountAnalytics({
+      accountId,
+      equityCurvePeriod: toProtoPeriod(period || 'all'),
+    });
+    return deepConvertBigIntToNumber(res);
   },
 
   getTradeRecords: async (accountId: string, _params?: { from?: string; to?: string }) => {
@@ -79,49 +81,6 @@ export const analyticsApi = {
       years: response.years || [],
       data: response.data || [],
     };
-  },
-
-  getMonthlyAnalysisBonus: async (accountId: string, year: number, month: number) => {
-    const response = await analyticsService.getMonthlyAnalysisBonus({
-      accountId,
-      year,
-      month,
-    }) as unknown as MonthlyAnalysisBonusResponse;
-    const rows = response.symbolPopularity ?? [];
-    const risks = response.symbolRiskRatios ?? [];
-    const holds = response.symbolHoldingSplit ?? [];
-    return {
-      riskRatio: response.riskRatio ?? 0,
-      symbolPopularity: rows.map((r) => ({
-        symbol: r.symbol,
-        trades: r.trades,
-        sharePercent: r.sharePercent,
-      })),
-      symbolRisks: risks.map((r) => ({
-        symbol: r.symbol,
-        riskRatio: r.riskRatio,
-      })),
-      symbolHoldingSplit: holds.map((r) => ({
-        symbol: r.symbol,
-        bullsSeconds: r.bullsSeconds,
-        shortTermSeconds: r.shortTermSeconds,
-      })),
-      averageHoldingSeconds: response.averageHoldingSeconds ?? 0,
-      totalTrades: response.totalTrades ?? 0,
-    };
-  },
-
-  getSummary: async (accountId: string) => {
-    return await analyticsService.getSummary({ accountId });
-  },
-
-  getRiskMetrics: async (accountId: string) => {
-    return await analyticsService.getRiskMetrics({ accountId });
-  },
-
-  getSymbolStats: async (accountId: string) => {
-    const response = await analyticsService.getSymbolStats({ accountId }) as unknown as SymbolStatsResponse;
-    return response.stats;
   },
 
   getEconomicCalendar: async (params?: {
