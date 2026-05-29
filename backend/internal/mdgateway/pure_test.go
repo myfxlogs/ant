@@ -1100,7 +1100,7 @@ func TestSpillWriter_ShouldRotate(t *testing.T) {
 func TestPublisher_PublishTick_NilJS(t *testing.T) {
 	t.Parallel()
 	pub := NewPublisher(nil)
-	err := pub.PublishTick(&mdtick.Tick{
+	err := pub.PublishTick(context.Background(), &mdtick.Tick{
 		Broker: "broker", Canonical: "EURUSD",
 		TsUnixMs: time.Now().UnixMilli(), ArrivedUnixMs: time.Now().UnixMilli(),
 		Bid: decimal.NewFromFloat(1.1000), Ask: decimal.NewFromFloat(1.1001),
@@ -1113,7 +1113,7 @@ func TestPublisher_PublishTick_NilJS(t *testing.T) {
 func TestPublisher_PublishBar_NilJS(t *testing.T) {
 	t.Parallel()
 	pub := NewPublisher(nil)
-	err := pub.PublishBar(&mdtick.Bar{
+	err := pub.PublishBar(context.Background(), &mdtick.Bar{
 		Broker: "broker", Canonical: "EURUSD", Period: "1h",
 		CloseTsUnixMs: time.Now().UnixMilli(),
 		Open: decimal.NewFromFloat(1.1000), High: decimal.NewFromFloat(1.1050),
@@ -1127,7 +1127,7 @@ func TestPublisher_PublishBar_NilJS(t *testing.T) {
 func TestPublisher_PublishBarRevision_NilJS(t *testing.T) {
 	t.Parallel()
 	pub := NewPublisher(nil)
-	err := pub.PublishBarRevision(&mdtick.Bar{
+	err := pub.PublishBarRevision(context.Background(), &mdtick.Bar{
 		Broker: "broker", Canonical: "EURUSD", Period: "1h",
 		CloseTsUnixMs: time.Now().UnixMilli(),
 		Open: decimal.NewFromFloat(1.1000), High: decimal.NewFromFloat(1.1050),

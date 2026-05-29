@@ -1,6 +1,7 @@
 package mdgateway
 
 import (
+	"context"
 	"testing"
 
 	"anttrader/internal/mdgateway/adapter/mdtick"
@@ -20,7 +21,7 @@ func TestPublishReplayHeader(t *testing.T) {
 	}
 
 	// Should not panic with nil JetStream.
-	err := pub.PublishTick(tick)
+	err := pub.PublishTick(context.Background(), tick)
 	if err != nil {
 		t.Fatalf("PublishTick with nil JetStream: %v", err)
 	}
@@ -33,7 +34,7 @@ func TestPublishReplayHeader(t *testing.T) {
 		Ask:       requireDecimal(t, "1.08003"),
 		IsReplay:  false,
 	}
-	err = pub.PublishTick(tick2)
+	err = pub.PublishTick(context.Background(), tick2)
 	if err != nil {
 		t.Fatalf("PublishTick non-replay: %v", err)
 	}
@@ -47,7 +48,7 @@ func TestPublishReplayHeader(t *testing.T) {
 		Close:     requireDecimal(t, "1.08005"),
 		IsReplay:  true,
 	}
-	err = pub.PublishBar(bar)
+	err = pub.PublishBar(context.Background(), bar)
 	if err != nil {
 		t.Fatalf("PublishBar replay: %v", err)
 	}
@@ -63,7 +64,7 @@ func TestPublisherDedupHeader(t *testing.T) {
 		TsUnixMs: 1000, Bid: requireDecimal(t, "1.08000"),
 		Ask: requireDecimal(t, "1.08002"), IsReplay: true,
 	}
-	err := pub.PublishTick(tick)
+	err := pub.PublishTick(context.Background(), tick)
 	if err != nil {
 		t.Fatalf("PublishTick: %v", err)
 	}
@@ -71,7 +72,7 @@ func TestPublisherDedupHeader(t *testing.T) {
 		Broker: "test-broker", Canonical: "EURUSD", Period: "1m",
 		CloseTsUnixMs: 2000, Close: requireDecimal(t, "1.08005"),
 	}
-	err = pub.PublishBar(bar)
+	err = pub.PublishBar(context.Background(), bar)
 	if err != nil {
 		t.Fatalf("PublishBar: %v", err)
 	}
@@ -124,7 +125,7 @@ func TestPublisherBarWithoutReplay(t *testing.T) {
 		Low:           requireDecimal(t, "1.24700"),
 		Volume:        150.5,
 	}
-	err := pub.PublishBar(bar)
+	err := pub.PublishBar(context.Background(), bar)
 	if err != nil {
 		t.Fatalf("PublishBar non-replay: %v", err)
 	}
@@ -141,7 +142,7 @@ func TestPublisherTickWithoutCanonical(t *testing.T) {
 		Bid:       requireDecimal(t, "1950.50"),
 		Ask:       requireDecimal(t, "1950.80"),
 	}
-	err := pub.PublishTick(tick)
+	err := pub.PublishTick(context.Background(), tick)
 	if err != nil {
 		t.Fatalf("PublishTick metals: %v", err)
 	}

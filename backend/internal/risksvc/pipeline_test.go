@@ -125,7 +125,7 @@ func TestPipeline_PlatformLimitsBlocks(t *testing.T) {
 
 	agg := NewPlatformAggregator()
 	agg.UpdatePosition("a1", &AggregatorPosition{Canonical: "EURUSD", NetVolume: 10, Notional: 15_000_000, Margin: 2_000_000})
-	agg.Recalculate(nil)
+	agg.Recalculate()
 
 	limits := &PlatformLimits{MaxTotalGrossExposure: 10_000_000}
 

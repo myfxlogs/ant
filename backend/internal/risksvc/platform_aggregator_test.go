@@ -13,7 +13,7 @@ func TestPlatformAggregator_NetExposure(t *testing.T) {
 	// Account 2: short 0.1 EURUSD
 	a.UpdatePosition("acc-2", &AggregatorPosition{Canonical: "EURUSD", NetVolume: -0.1, Notional: -108500})
 
-	exposure := a.Recalculate(nil)
+	exposure := a.Recalculate()
 
 	net := exposure.NetExposureBySymbol["EURUSD"]
 	if net != 0 {
@@ -37,7 +37,7 @@ func TestPlatformAggregator_MultipleSymbols(t *testing.T) {
 	a.UpdatePosition("acc-1", &AggregatorPosition{Canonical: "GBPUSD", NetVolume: -0.1, Notional: -126500, Margin: 1265})
 	a.UpdatePosition("acc-2", &AggregatorPosition{Canonical: "EURUSD", NetVolume: -0.1, Notional: -108500, Margin: 1085})
 
-	exposure := a.Recalculate(nil)
+	exposure := a.Recalculate()
 
 	if exposure.AccountCount != 2 {
 		t.Fatalf("want 2 accounts, got %d", exposure.AccountCount)
@@ -61,7 +61,7 @@ func TestPlatformAggregator_ClearAccount(t *testing.T) {
 	a.UpdatePosition("acc-1", &AggregatorPosition{Canonical: "EURUSD", NetVolume: 0.1, Notional: 108500})
 	a.ClearAccount("acc-1")
 
-	exposure := a.Recalculate(nil)
+	exposure := a.Recalculate()
 	if exposure.AccountCount != 0 {
 		t.Fatalf("want 0 accounts after clear, got %d", exposure.AccountCount)
 	}
@@ -75,8 +75,8 @@ func TestPlatformAggregator_BrokerLimits(t *testing.T) {
 	a := NewPlatformAggregator()
 	a.UpdatePosition("acc-1", &AggregatorPosition{Canonical: "EURUSD", NetVolume: 0.1, Notional: 108500, Margin: 1085})
 
-	limits := map[string]float64{"mt5": 10000}
-	exposure := a.Recalculate(limits)
+	_ = map[string]float64{"mt5": 10000} // broker limits test placeholder
+	exposure := a.Recalculate()
 
 	t.Logf("BrokerLimitUsage: %v", exposure.BrokerLimitUsage)
 }
