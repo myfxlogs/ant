@@ -4,10 +4,12 @@ import (
 	"context"
 
 	"errors"
+	"fmt"
 
 	"go.uber.org/zap"
 
 	"connectrpc.com/connect"
+	"github.com/jackc/pgx/v5"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 
@@ -18,7 +20,6 @@ import (
 	"anttrader/internal/mdgateway/adapter/brokersearch"
 	"anttrader/internal/mdgateway/adapter/mdtick"
 	"anttrader/internal/service"
-	"fmt"
 )
 
 // MTConnectionTester validates MT account credentials by connecting to the broker.
@@ -93,6 +94,9 @@ func (s *AccountServer) GetAccount(ctx context.Context, req *connect.Request[ant
 	}
 	a, err := s.svc.GetAccount(ctx, userID, req.Msg.Id)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("account not found"))
+		}
 		s.log.Error("GetAccount", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -138,11 +142,12 @@ func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[
 	if s.mtTester != nil {
 		info, err := s.mtTester.Test(ctx, r.MtType, r.BrokerHost, r.Login, r.Password)
 		if err != nil {
-			// Rollback the transaction on transient verify failure (#4: mark needs_rebind, don't delete).
-			if rbErr := tx.Rollback(ctx); rbErr != nil {
-				s.log.Error("CreateAccount: tx rollback failed", zap.String("id", id), zap.Error(rbErr))
+			// Commit the row so the account exists before we mark it (#H1).
+			if commitErr := tx.Commit(ctx); commitErr != nil {
+				s.log.Error("CreateAccount: tx commit failed", zap.String("id", id), zap.Error(commitErr))
+				return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("account verification failed: %w", err))
 			}
-			// Mark the account as needs_rebind instead of deleting it permanently.
+			// Mark the account as needs_rebind since credentials failed.
 			if markErr := s.svc.MarkAccountNeedsRebind(ctx, userID, id); markErr != nil {
 				s.log.Error("CreateAccount: mark needs_rebind failed", zap.String("id", id), zap.Error(markErr))
 			}
@@ -159,6 +164,9 @@ func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[
 			zap.String("id", id),
 			zap.Float64("balance", info.Balance),
 		)
+	} else {
+		s.log.Warn("CreateAccount: MT connection tester not available, skipping verification",
+			zap.String("id", id))
 	}
 
 	// Commit the transaction.
@@ -331,6 +339,9 @@ func (s *AccountServer) VerifyTradePermission(ctx context.Context, req *connect.
 	}
 	acct, err := s.svc.GetAccount(ctx, userID, req.Msg.Id)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("account not found"))
+		}
 		s.log.Error("VerifyTradePermission", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}

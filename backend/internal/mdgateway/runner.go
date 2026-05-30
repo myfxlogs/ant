@@ -77,7 +77,10 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	// --- Publisher ---
 	var js nats.JetStreamContext
 	if deps.NATSConn != nil {
-		js, _ = deps.NATSConn.JetStream()
+		js, err = deps.NATSConn.JetStream()
+		if err != nil {
+			log.Warn("mdgateway: JetStream not available", zap.Error(err))
+		}
 	}
 	publisher := NewPublisher(js)
 
@@ -391,7 +394,11 @@ func startGatewayForAccount(ctx context.Context, cfg mdtick.AccountConfig, deps 
 	// Fetch broker-level margin thresholds after Hub registration.
 	if deps.OnBrokerInfo != nil {
 		if fetcher, ok := gw.(mdtick.BrokerInfoFetcher); ok {
-			info, _ := fetcher.FetchBrokerInfo(ctx)
+			info, ferr := fetcher.FetchBrokerInfo(ctx)
+			if ferr != nil {
+				log.Warn("mdgateway: FetchBrokerInfo failed",
+					zap.String("account", accID), zap.Error(ferr))
+			}
 			if info != nil {
 				deps.OnBrokerInfo(accID, cfg.Platform, cfg.Broker, info)
 			}
@@ -412,11 +419,17 @@ func startGatewayForAccount(ctx context.Context, cfg mdtick.AccountConfig, deps 
 	// Subscribe to profit and order-update streams.
 	if deps.OnAccountProfit != nil {
 		uid, aid := cfg.UserID, accID
-		gw.SubscribeProfit(ctx, func(p *mdtick.ProfitUpdate) { deps.OnAccountProfit(aid, uid, p) })
+		if err := gw.SubscribeProfit(ctx, func(p *mdtick.ProfitUpdate) { deps.OnAccountProfit(aid, uid, p) }); err != nil {
+			log.Warn("mdgateway: SubscribeProfit failed",
+				zap.String("account", accID), zap.Error(err))
+		}
 	}
 	if deps.OnOrderUpdate != nil {
 		uid, aid := cfg.UserID, accID
-		gw.SubscribeOrderUpdate(ctx, func(o *mdtick.OrderUpdate) { deps.OnOrderUpdate(aid, uid, o) })
+		if err := gw.SubscribeOrderUpdate(ctx, func(o *mdtick.OrderUpdate) { deps.OnOrderUpdate(aid, uid, o) }); err != nil {
+			log.Warn("mdgateway: SubscribeOrderUpdate failed",
+				zap.String("account", accID), zap.Error(err))
+		}
 	}
 
 	log.Info("mdgateway: gateway active", zap.String("account", accID), zap.String("platform", cfg.Platform))

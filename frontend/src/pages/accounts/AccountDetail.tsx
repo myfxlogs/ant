@@ -195,7 +195,7 @@ export default function AccountDetail() {
       setHistoryTotal(Number((tradesData as AccountRecentTradesResponse).total || 0));
       setHistoryPage(page);
     } catch (_error) {
-      if (import.meta.env.DEV) console.debug('[AccountDetail] loadHistory error', _error);
+      console.error('[AccountDetail] loadHistory error', _error);
     } finally {
       setHistoryLoading(false);
     }
@@ -314,8 +314,13 @@ export default function AccountDetail() {
         };
 
         setHistoryTrades((prev) => {
-          const exists = prev.some((t) => t.ticket === order.ticket);
-          if (exists) return prev;
+          const idx = prev.findIndex((t) => t.ticket === order.ticket);
+          if (idx >= 0) {
+            // Update stale trade record with latest data from SSE event.
+            const updated = [...prev];
+            updated[idx] = { ...prev[idx], ...newTrade };
+            return updated;
+          }
           return [newTrade, ...prev];
         });
 

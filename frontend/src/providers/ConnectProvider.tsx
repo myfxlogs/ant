@@ -405,6 +405,11 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
           onError: () => {
             if (!mountedRef.current) return;
             unsubscribeEventsRef.current = null;
+            // Tear down userSummary as well so it is re-established on recovery.
+            if (unsubscribeUserSummaryRef.current) {
+              unsubscribeUserSummaryRef.current();
+              unsubscribeUserSummaryRef.current = null;
+            }
             setIsConnected(false);
             isConnectedRef.current = false;
             setConnectionState('disconnected');

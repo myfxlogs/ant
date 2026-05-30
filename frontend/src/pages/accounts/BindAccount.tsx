@@ -105,7 +105,7 @@ export default function BindAccount() {
       setPassword('');
       // Start the live stream connection for the newly bound account.
       await accountApi.connect(account.id);
-      connectCtx?.reconnect();
+      await connectCtx?.reconnect();
       showSuccess(t('accounts.bind.messages.bindSuccess'));
       navigate(`/accounts/${account.id}`);
     } catch (error) {

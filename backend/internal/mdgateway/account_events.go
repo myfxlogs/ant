@@ -65,15 +65,26 @@ func (p *AccountEventPublisher) publish(ctx context.Context, subject string, ev 
 
 var accountEventsStreamEnsured atomic.Bool
 var streamEnsureFailures atomic.Int32
+var lastStreamEnsureFailure atomic.Int64 // unix timestamp of last failure; 0 means never failed
 
 func tryEnsureAccountEventsStream(js natsgo.JetStreamContext, log *zap.Logger) {
 	// Already ensured — fast path.
 	if accountEventsStreamEnsured.Load() {
 		return
 	}
-	// Give up after 5 consecutive failures to prevent repeated retries.
-	if streamEnsureFailures.Load() >= 5 {
-		return
+	// H3: Reset failure counter after 5 minutes of recovery to prevent
+	// permanent deadlock where NATS recovers but the breaker never resets.
+	failures := streamEnsureFailures.Load()
+	if failures >= 5 {
+		if last := lastStreamEnsureFailure.Load(); last > 0 {
+			if time.Since(time.Unix(last, 0)) > 5*time.Minute {
+				streamEnsureFailures.Store(0)
+				failures = 0
+			}
+		}
+		if failures >= 5 {
+			return
+		}
 	}
 	// CAS ensures only one goroutine attempts creation.
 	if !accountEventsStreamEnsured.CompareAndSwap(false, true) {
@@ -93,6 +104,7 @@ func tryEnsureAccountEventsStream(js natsgo.JetStreamContext, log *zap.Logger) {
 	if err != nil {
 		log.Warn("mdgateway: add ACCOUNT_EVENTS stream failed", zap.Error(err))
 		streamEnsureFailures.Add(1)
+		lastStreamEnsureFailure.Store(time.Now().Unix())
 		accountEventsStreamEnsured.Store(false)
 		return
 	}

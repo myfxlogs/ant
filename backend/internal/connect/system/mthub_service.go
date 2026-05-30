@@ -2,12 +2,14 @@ package system
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"go.uber.org/zap"
 
 	"connectrpc.com/connect"
+	"github.com/jackc/pgx/v5"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -43,7 +45,10 @@ func (s *MtHubServer) PlaceOrder(ctx context.Context, req *connect.Request[antv1
 	}
 	m := req.Msg
 	ok, err := s.platform.UserOwnsAccount(ctx, userID, m.AccountId)
-	if err != nil || !ok {
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if !ok {
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
 	}
 	vol, err := decimal.NewFromString(m.Volume)
@@ -84,7 +89,10 @@ func (s *MtHubServer) CloseOrder(ctx context.Context, req *connect.Request[antv1
 	}
 	m := req.Msg
 	ok, err := s.platform.UserOwnsAccount(ctx, userID, m.AccountId)
-	if err != nil || !ok {
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if !ok {
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
 	}
 	lots := decimal.Zero
@@ -108,7 +116,10 @@ func (s *MtHubServer) OpenedOrders(ctx context.Context, req *connect.Request[ant
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
 	}
 	ok, err := s.platform.UserOwnsAccount(ctx, userID, req.Msg.AccountId)
-	if err != nil || !ok {
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if !ok {
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
 	}
 	list, err := s.svc.OpenedOrders(ctx, req.Msg.AccountId)
@@ -125,7 +136,10 @@ func (s *MtHubServer) OrderHistory(ctx context.Context, req *connect.Request[ant
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
 	}
 	ok, err := s.platform.UserOwnsAccount(ctx, userID, req.Msg.AccountId)
-	if err != nil || !ok {
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if !ok {
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
 	}
 	list, err := s.svc.OrderHistory(ctx, req.Msg.AccountId, req.Msg.From.AsTime(), req.Msg.To.AsTime())
@@ -142,7 +156,10 @@ func (s *MtHubServer) SymbolParams(ctx context.Context, req *connect.Request[ant
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
 	}
 	ok, err := s.platform.UserOwnsAccount(ctx, userID, req.Msg.AccountId)
-	if err != nil || !ok {
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if !ok {
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
 	}
 	list, err := s.svc.SymbolParams(ctx, req.Msg.AccountId, req.Msg.Canonicals)
@@ -201,7 +218,11 @@ func (s *MtHubServer) GetAccountStatus(ctx context.Context, req *connect.Request
 	}
 	acct, err := s.platform.GetAccount(ctx, uid, req.Msg.AccountId)
 	if err != nil {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account not found or not owned by user"))
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("account not found"))
+		}
+		s.log.Error("GetAccountStatus: get account", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	state := s.svc.SessionState(ctx, req.Msg.AccountId)
 	if state == "not_found" {
@@ -253,7 +274,10 @@ func (s *MtHubServer) SyncOrderHistory(ctx context.Context, req *connect.Request
 	}
 	accountID := req.Msg.AccountId
 	ok, err := s.platform.UserOwnsAccount(ctx, userID, accountID)
-	if err != nil || !ok {
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if !ok {
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
 	}
 
@@ -264,7 +288,13 @@ func (s *MtHubServer) SyncOrderHistory(ctx context.Context, req *connect.Request
 
 	// Determine time range: from last close_time in trade_records (or 1 year ago) to now.
 	from := time.Now().AddDate(-1, 0, 0)
-	if lastTime, err := s.tradeRecords.GetLastSyncTime(ctx, uid); err == nil && lastTime != nil {
+	lastTime, err := s.tradeRecords.GetLastSyncTime(ctx, uid)
+	if err != nil {
+		if !errors.Is(err, pgx.ErrNoRows) {
+			s.log.Error("SyncOrderHistory: get last sync time failed", zap.Error(err))
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+	} else if lastTime != nil {
 		from = *lastTime
 	}
 	to := time.Now()

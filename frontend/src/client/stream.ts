@@ -69,6 +69,7 @@ function startSharedStream<T>(
         }
       }
     } finally {
+      state.started = false;
       const current = store.get(key);
       if (current && current.listeners.size === 0) {
         store.delete(key);

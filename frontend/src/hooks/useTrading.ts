@@ -47,8 +47,8 @@ export function useTrading() {
           try {
             const result = await accountApi.connect(accountId);
             if (result?.success !== false) {
-              // Restart the SSE stream so ConnectProvider picks up the reconnected account.
-              connectCtx?.reconnect();
+              // SSE reconnection is handled by ConnectProvider's 30s polling interval;
+              // do not trigger a redundant reconnect here to avoid races.
               const positionsAfterReconnect = await tradingApi.getPositions(accountId);
               const positionsArray = Array.isArray(positionsAfterReconnect) ? positionsAfterReconnect : [];
               setPositions(accountId, positionsArray as Position[]);

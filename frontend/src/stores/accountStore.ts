@@ -99,7 +99,10 @@ export const useAccountStore = create<AccountState>((set) => ({
     set((state) => {
       // O(1) lookup via accountsById map instead of O(n) scan.
       const existing = state.accountsById.get(accountId);
-      if (!existing) return {};
+      if (!existing) {
+        console.warn('[accountStore] patchAccountFinancials: account not found', accountId);
+        return {};
+      }
       const nextById = new Map(state.accountsById);
       const updated = { ...existing, ...patch };
       nextById.set(accountId, updated);

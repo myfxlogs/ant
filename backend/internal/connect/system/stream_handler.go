@@ -34,7 +34,11 @@ func NewStreamServer(svc *mthub.MtHubService, platform *service.PlatformService,
 }
 
 func decToFloat(d decimal.Decimal) float64 {
-	f, _ := d.Float64()
+	f, exact := d.Float64()
+	// When !exact the decimal value exceeds float64 range/precision (e.g.,
+	// extremely large/small values). Financial amounts (profit, margin, etc.)
+	// typically fit within float64; lossy conversion is acceptable for display.
+	_ = exact
 	return f
 }
 
@@ -187,13 +191,18 @@ func (s *StreamServer) SubscribeEvents(
 		snapSubs = append(snapSubs, snapSub{accountID: aid, ch: ch, cancel: cancel})
 	}
 
+	// H2: Create a cancellable context for forwarder goroutines so they
+	// are unblocked when the main loop exits (e.g., on stream.Send error).
+	loopCtx, loopCancel := context.WithCancel(ctx)
+	defer loopCancel()
+
 	profitCh := make(chan *mthub.AccountProfitEvent, 64)
 	for _, ps := range profitSubs {
 		go func(ch <-chan *mthub.AccountProfitEvent) {
 			for ev := range ch {
 				select {
 				case profitCh <- ev:
-				case <-ctx.Done():
+				case <-loopCtx.Done():
 					return
 				}
 			}
@@ -206,7 +215,7 @@ func (s *StreamServer) SubscribeEvents(
 			for ev := range ch {
 				select {
 				case snapCh <- ev:
-				case <-ctx.Done():
+				case <-loopCtx.Done():
 					return
 				}
 			}
@@ -237,6 +246,9 @@ func (s *StreamServer) SubscribeEvents(
 				}
 				recentlyClosed[ev.AccountID][ev.Ticket] = true
 			}
+			if ev.Order == nil {
+				continue
+			}
 			event := &antv1.StreamEvent{
 				Type:      "order_update",
 				AccountId: ev.AccountID,
@@ -252,6 +264,7 @@ func (s *StreamServer) SubscribeEvents(
 			if !ok {
 				// Defensive: profitCh is never closed (goroutines only forward values),
 				// but a nil-or-closed channel would spin in select.
+				profitCh = nil
 				continue
 			}
 			now := timestamppb.Now()
@@ -398,6 +411,7 @@ func (s *StreamServer) sendInitialSnapshot(
 ) (connectedIDs []string) {
 	snapshots, err := s.platform.GetUserAccountSnapshots(ctx, userID)
 	if err != nil {
+		s.log.Warn("sendInitialSnapshot: GetUserAccountSnapshots failed", zap.Error(err))
 		return nil
 	}
 

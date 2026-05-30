@@ -72,9 +72,10 @@ export const accountApi = {
 
   connect: async (id: string): Promise<ConnectAccountResult> => {
     const response = await accountClient.connectAccount({ id });
+    const camel = toCamelCase(response);
     return {
-      success: response.success,
-      message: response.message,
+      success: camel.success,
+      message: camel.message,
     };
   },
 
