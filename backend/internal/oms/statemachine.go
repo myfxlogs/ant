@@ -1,7 +1,7 @@
 // Package oms implements the Order Management System.
 // State machine aligned with NautilusTrader OrderStatus enum (ADR-0012, M11-2).
 //
-// Order lifecycle (15 states):
+// Order lifecycle (16 states):
 //
 //	NEW → VALIDATED → RISK_APPROVED → SUBMITTED
 //	                                    ├── WORKING
@@ -16,6 +16,7 @@
 //	                                    └── MARGIN_CALL
 //	VALIDATED → REJECTED
 //	RISK_APPROVED → REJECTED
+//	RISK_APPROVED → FAILED
 //	UNKNOWN → RECONCILING (reconcile-before-accept gate)
 //	RECONCILING → WORKING | FILLED | CANCELLED | FAILED (resolved by reconciliation)
 package oms
@@ -96,7 +97,7 @@ func TimeoutTransition(current OrderState, submittedAt time.Time) (OrderState, e
 	return StateUnknown, nil
 }
 
-// isValid defines the allowed state transitions (15-state machine).
+// isValid defines the allowed state transitions (16-state machine).
 func isValid(current, next OrderState) bool {
 	transitions := map[OrderState][]OrderState{
 		StateNew: {
@@ -109,6 +110,7 @@ func isValid(current, next OrderState) bool {
 		StateRiskApproved: {
 			StateSubmitted,
 			StateRejected,
+			StateFailed,
 		},
 		StateSubmitted: {
 			StateWorking,

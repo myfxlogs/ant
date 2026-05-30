@@ -42,11 +42,7 @@ func (a *MTBrokerAdapter) Submit(ctx context.Context, req *OrderRequest) (*Broke
 
 	ticket, err := a.executor.PlaceOrder(ctx, mreq)
 	if err != nil {
-		return &BrokerResp{
-			State:     StateFailed,
-			ErrorCode: -1,
-			ErrorMsg:  err.Error(),
-		}, err
+		return nil, err
 	}
 
 	return &BrokerResp{
@@ -61,7 +57,22 @@ func (a *MTBrokerAdapter) Cancel(ctx context.Context, ticket string) error {
 	if err != nil {
 		return fmt.Errorf("adapter_mt: invalid ticket %q: %w", ticket, err)
 	}
-	return a.executor.CloseOrder(ctx, t, decimal.Zero)
+	// Look up the order to get its full volume before closing.
+	orders, err := a.executor.FetchOpenedOrders(ctx)
+	if err != nil {
+		return fmt.Errorf("adapter_mt: cancel fetch orders: %w", err)
+	}
+	var vol decimal.Decimal
+	for _, o := range orders {
+		if o.Ticket == t {
+			vol = o.Volume
+			break
+		}
+	}
+	if vol.IsZero() {
+		return fmt.Errorf("adapter_mt: order %d not found in opened orders", t)
+	}
+	return a.executor.CloseOrder(ctx, t, vol)
 }
 
 // Modify adjusts price and/or stop-loss of an order by ticket.

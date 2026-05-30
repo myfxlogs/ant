@@ -32,13 +32,18 @@ func (r *Repo) Insert(ctx context.Context, o *Order) error {
 	return nil
 }
 
-// UpdateState updates the order state (with transition validation).
-func (r *Repo) UpdateState(ctx context.Context, orderID string, newState OrderState) error {
-	_, err := r.db.Exec(ctx,
-		`UPDATE orders SET state = $1, updated_at = now() WHERE id = $2`,
-		string(newState), orderID)
+// UpdateState updates the order state with optimistic locking.
+// expectedState is the state the order must currently be in for the update to succeed.
+// Returns an error if 0 rows were updated (concurrent state change).
+func (r *Repo) UpdateState(ctx context.Context, orderID string, expectedState, newState OrderState) error {
+	ct, err := r.db.Exec(ctx,
+		`UPDATE orders SET state = $1, updated_at = now() WHERE id = $2 AND state = $3`,
+		string(newState), orderID, string(expectedState))
 	if err != nil {
 		return fmt.Errorf("oms update state %s: %w", orderID, err)
+	}
+	if ct.RowsAffected() == 0 {
+		return fmt.Errorf("oms update state %s: concurrent state change (expected %s)", orderID, expectedState)
 	}
 	return nil
 }

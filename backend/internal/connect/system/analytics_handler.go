@@ -48,17 +48,25 @@ func (s *AnalyticsServer) GetAccountAnalytics(ctx context.Context, req *connect.
 
 	// Consecutive wins/losses (SQL window-function — handler must call separately)
 	maxWins, maxLosses, err := s.repo.GetConsecutiveStats(ctx, accountID, start, now)
-	if err == nil {
+	if err != nil {
+		s.log.Warn("get consecutive stats failed", zap.Error(err))
+	} else {
 		tradeStats.MaxConsecutiveWins = maxWins
 		tradeStats.MaxConsecutiveLosses = maxLosses
 	}
 
 	// Risk metrics — computed from daily percentage returns (not dollar amounts)
-	_, maxDDPercent, _ := s.repo.GetMaxDrawdown(ctx, accountID, start, now)
+	_, maxDDPercent, err := s.repo.GetMaxDrawdown(ctx, accountID, start, now)
+	if err != nil {
+		s.log.Warn("get max drawdown failed", zap.Error(err))
+	}
 	// Get equity curve for computing daily percentage returns.
 	// Uses full 12-month equity (not period-filtered) for stable risk metrics.
-	eqFull, _ := s.repo.GetEquityCurve(ctx, accountID, start, now)
-	dailyReturnPct := dailyReturnsToPercent(nil, eqFull)
+	eqFull, err := s.repo.GetEquityCurve(ctx, accountID, start, now)
+	if err != nil {
+		s.log.Warn("get equity curve for risk metrics failed", zap.Error(err))
+	}
+	dailyReturnPct := dailyReturnsToPercent(eqFull)
 	sharpe, sortino, calmar, volatility, avgDailyReturn := computeRiskMetrics(dailyReturnPct, maxDDPercent)
 
 	// Symbol stats
@@ -309,7 +317,7 @@ func formatDuration(seconds float64) string {
 // Formula: pct[i] = equityCurve[i].Profit / equityCurve[i-1].Equity
 // Uses the equity curve directly because GetDailyReturns returns dollar amounts
 // that don't align day-by-day with the equity timeline.
-func dailyReturnsToPercent(dailyReturns []float64, equityCurve []*model.EquityPoint) []float64 {
+func dailyReturnsToPercent(equityCurve []*model.EquityPoint) []float64 {
 	if len(equityCurve) < 2 {
 		return nil
 	}

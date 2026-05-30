@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"math"
 	"time"
 
@@ -13,7 +14,7 @@ import (
 func (r *AnalyticsRepository) GetEquityCurve(ctx context.Context, accountID uuid.UUID, start, end time.Time) ([]*model.EquityPoint, error) {
 	initialBalance, err := r.GetBalanceAtTime(ctx, accountID, start)
 	if err != nil {
-		initialBalance = 0
+		return nil, fmt.Errorf("get balance at start time: %w", err)
 	}
 
 	// Initialize unrealized P&L from snapshot at or before period start.
@@ -170,7 +171,7 @@ func (r *AnalyticsRepository) GetEquityCurve(ctx context.Context, accountID uuid
 func (r *AnalyticsRepository) GetHourlyEquityCurve(ctx context.Context, accountID uuid.UUID, start, end time.Time) ([]*model.EquityPoint, error) {
 	initialBalance, err := r.GetBalanceAtTime(ctx, accountID, start)
 	if err != nil {
-		initialBalance = 0
+		return nil, fmt.Errorf("get balance at start time: %w", err)
 	}
 
 	// All snapshots in range — drive equity variation hour by hour.

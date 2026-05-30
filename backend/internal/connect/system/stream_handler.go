@@ -150,7 +150,7 @@ func (s *StreamServer) SubscribeEvents(
 		for _, rec := range orders {
 			positions = append(positions, orderRecordToUpdateEvent(rec, aid, "open", rec.Ticket))
 		}
-		stream.Send(&antv1.StreamEvent{
+		if err := stream.Send(&antv1.StreamEvent{
 			Type:      "position_snapshot",
 			AccountId: aid,
 			Timestamp: now,
@@ -160,7 +160,9 @@ func (s *StreamServer) SubscribeEvents(
 					Positions: positions,
 				},
 			},
-		})
+		}); err != nil {
+			s.log.Warn("sendInitialSnapshot: send position_snapshot failed", zap.String("account", aid), zap.Error(err))
+		}
 	}
 
 	type snapSub struct {
@@ -257,7 +259,7 @@ func (s *StreamServer) SubscribeEvents(
 			}
 			now := timestamppb.Now()
 
-			stream.Send(&antv1.StreamEvent{
+			if err := stream.Send(&antv1.StreamEvent{
 				Type:      "account_status",
 				AccountId: snap.AccountID,
 				Timestamp: now,
@@ -267,7 +269,9 @@ func (s *StreamServer) SubscribeEvents(
 						Status:    "connected",
 					},
 				},
-			})
+			}); err != nil {
+				return fmt.Errorf("send account_status event: %w", err)
+			}
 
 			currentTickets := make(map[int64]bool, len(snap.Positions))
 			for _, pos := range snap.Positions {
@@ -276,7 +280,7 @@ func (s *StreamServer) SubscribeEvents(
 			if prev, ok := snapKnownTickets[snap.AccountID]; ok {
 				for ticket := range prev {
 					if !currentTickets[ticket] {
-						stream.Send(&antv1.StreamEvent{
+						if err := stream.Send(&antv1.StreamEvent{
 							Type:      "order_update",
 							AccountId: snap.AccountID,
 							Timestamp: now,
@@ -287,7 +291,9 @@ func (s *StreamServer) SubscribeEvents(
 									Action:    "close",
 								},
 							},
-						})
+						}); err != nil {
+							s.log.Warn("send order_update close event failed", zap.String("account", snap.AccountID), zap.Int64("ticket", ticket), zap.Error(err))
+						}
 					}
 				}
 			}
@@ -313,7 +319,7 @@ func (s *StreamServer) SubscribeEvents(
 					OpenTime:   pos.OpenTime,
 				})
 			}
-			stream.Send(&antv1.StreamEvent{
+			if err := stream.Send(&antv1.StreamEvent{
 				Type:      "position_snapshot",
 				AccountId: snap.AccountID,
 				Timestamp: now,
@@ -323,7 +329,9 @@ func (s *StreamServer) SubscribeEvents(
 						Positions: positions,
 					},
 				},
-			})
+			}); err != nil {
+				return fmt.Errorf("send position_snapshot event: %w", err)
+			}
 		}
 	}
 }
@@ -377,7 +385,7 @@ func (s *StreamServer) sendInitialSnapshot(
 			profitPercent = profit / a.Balance * 100
 		}
 
-		stream.Send(&antv1.StreamEvent{
+		if err := stream.Send(&antv1.StreamEvent{
 			Type:      "profit_update",
 			AccountId: a.ID,
 			Timestamp: now,
@@ -394,9 +402,11 @@ func (s *StreamServer) sendInitialSnapshot(
 					ProfitPercent: profitPercent,
 				},
 			},
-		})
+		}); err != nil {
+			s.log.Warn("sendInitialSnapshot: send profit_update failed", zap.String("account", a.ID), zap.Error(err))
+		}
 
-		stream.Send(&antv1.StreamEvent{
+		if err := stream.Send(&antv1.StreamEvent{
 			Type:      "account_status",
 			AccountId: a.ID,
 			Timestamp: now,
@@ -406,7 +416,9 @@ func (s *StreamServer) sendInitialSnapshot(
 					Status:    a.Status,
 				},
 			},
-		})
+		}); err != nil {
+			s.log.Warn("sendInitialSnapshot: send account_status failed", zap.String("account", a.ID), zap.Error(err))
+		}
 
 		if a.Status == "connected" {
 			connectedIDs = append(connectedIDs, a.ID)
@@ -416,6 +428,9 @@ func (s *StreamServer) sendInitialSnapshot(
 }
 
 // SubscribeHistory replays historical events (bounded).
+// TODO(H15): Deferred — requires event store persistence and replay
+// infrastructure (NATS JetStream consumer) before it can serve historical
+// event replays to newly connected clients.
 func (s *StreamServer) SubscribeHistory(
 	ctx context.Context,
 	req *connect.Request[antv1.SubscribeHistoryRequest],

@@ -131,6 +131,9 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 		log.Warn("mdgateway: spill failed", zap.String("broker", brokerKey), zap.Error(err))
 	})
 
+	// --- Health monitor (start before gateways so accounts with no ticks are caught) ---
+	go healthMonitor(ctx, mgr, chWriter, log, deps.OnAccountDisconnect)
+
 	// --- Load active accounts and start gateways ---
 	cfgs, err := loadAccountConfigs(ctx, deps)
 	if err != nil {
@@ -156,8 +159,6 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 			}
 	}
 
-	// --- Health monitor ---
-	go healthMonitor(ctx, mgr, chWriter, log, deps.OnAccountDisconnect)
 
 	// --- Account event subscriber (NATS: account.connect/disconnect/reconnect) ---
 	startAccountEventSubscriber(ctx, deps, mgr, log)
@@ -201,12 +202,18 @@ func healthMonitor(ctx context.Context, mgr *Manager, chw *CHWriter, log *zap.Lo
 						zap.String("platform", h.Platform))
 				case "dead":
 					dead++
+					mgr.MarkDisconnecting(h.AccountID)
 					if onDisconnect != nil {
-							onDisconnect(h.AccountID)
-						}
-						log.Error("mdgateway: dead account — no ticks for >15 min",
+						onDisconnect(h.AccountID)
+					}
+					log.Error("mdgateway: dead account — no ticks for >15 min",
 						zap.String("account", h.AccountID),
 						zap.String("platform", h.Platform))
+					if err := mgr.RemoveGateway(ctx, h.AccountID); err != nil {
+						log.Warn("mdgateway: remove dead gateway failed",
+							zap.String("account", h.AccountID), zap.Error(err))
+					}
+					mgr.UnmarkDisconnecting(h.AccountID)
 				case "no_data":
 					log.Debug("mdgateway: no data yet",
 						zap.String("account", h.AccountID))
@@ -428,6 +435,11 @@ func startAccountEventSubscriber(ctx context.Context, deps RunnerDeps, mgr *Mana
 
 		switch action {
 		case "connect", "reconnect":
+			if mgr.IsDisconnecting(accountID) {
+				log.Info("mdgateway: skipping reconnect — account is being disconnected by healthMonitor",
+					zap.String("account", accountID))
+				return
+			}
 			cfg, err := loadSingleAccountConfig(ctx, deps.PG, accountID)
 			if err != nil || cfg == nil {
 				log.Warn("mdgateway: load account config failed",

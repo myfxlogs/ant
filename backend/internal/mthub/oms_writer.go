@@ -4,7 +4,7 @@
 // State constants mirror oms.OrderState to avoid a circular dependency
 // (oms/adapter_mt.go imports mthub for OrderExecutor).
 //
-// Order lifecycle (15 states):
+// Order lifecycle (16 states):
 //
 //	NEW → VALIDATED → RISK_APPROVED → SUBMITTED
 //	                                    ├── WORKING → PARTIALLY_FILLED → FILLED
@@ -12,7 +12,15 @@
 //	                                    ├── CANCELLED
 //	                                    ├── EXPIRED
 //	                                    ├── FAILED
-//	                                    └── ...
+//	                                    ├── UNKNOWN (timeout: 30s no response)
+//	                                    ├── REQUOTED
+//	                                    ├── SLIPPAGE_REJECTED
+//	                                    └── MARGIN_CALL
+//	VALIDATED → REJECTED
+//	RISK_APPROVED → REJECTED
+//	RISK_APPROVED → FAILED
+//	UNKNOWN → RECONCILING
+//	RECONCILING → WORKING | FILLED | CANCELLED | FAILED
 package mthub
 
 import (
@@ -34,9 +42,14 @@ const (
 	OMSStatePartiallyFilled OMSState = "PARTIALLY_FILLED"
 	OMSStateFilled          OMSState = "FILLED"
 	OMSStateCancelled       OMSState = "CANCELLED"
-	OMSStateRejected        OMSState = "REJECTED"
-	OMSStateFailed          OMSState = "FAILED"
-	OMSStateExpired         OMSState = "EXPIRED"
+	OMSStateRejected         OMSState = "REJECTED"
+	OMSStateFailed           OMSState = "FAILED"
+	OMSStateExpired          OMSState = "EXPIRED"
+	OMSStateRequoted         OMSState = "REQUOTED"
+	OMSStateSlippageRejected OMSState = "SLIPPAGE_REJECTED"
+	OMSStateUnknown          OMSState = "UNKNOWN"
+	OMSStateReconciling      OMSState = "RECONCILING"
+	OMSStateMarginCall       OMSState = "MARGIN_CALL"
 )
 
 // isValidOMSTransition validates state transitions (mirrors oms.isValid).
@@ -44,10 +57,15 @@ func isValidOMSTransition(current, next OMSState) bool {
 	transitions := map[OMSState][]OMSState{
 		OMSStateNew:          {OMSStateValidated},
 		OMSStateValidated:    {OMSStateRiskApproved, OMSStateRejected},
-		OMSStateRiskApproved: {OMSStateSubmitted, OMSStateRejected},
-		OMSStateSubmitted:    {OMSStateWorking, OMSStatePartiallyFilled, OMSStateFilled, OMSStateCancelled, OMSStateExpired, OMSStateFailed},
-		OMSStateWorking:      {OMSStatePartiallyFilled, OMSStateFilled, OMSStateCancelled, OMSStateExpired, OMSStateFailed},
+		OMSStateRiskApproved: {OMSStateSubmitted, OMSStateRejected, OMSStateFailed},
+		OMSStateSubmitted:    {OMSStateWorking, OMSStatePartiallyFilled, OMSStateFilled, OMSStateCancelled, OMSStateExpired, OMSStateFailed, OMSStateUnknown, OMSStateRequoted, OMSStateSlippageRejected, OMSStateMarginCall},
+		OMSStateWorking:      {OMSStatePartiallyFilled, OMSStateFilled, OMSStateCancelled, OMSStateExpired, OMSStateFailed, OMSStateRequoted},
 		OMSStatePartiallyFilled: {OMSStatePartiallyFilled, OMSStateFilled, OMSStateCancelled, OMSStateExpired, OMSStateFailed},
+		OMSStateRequoted:         {OMSStateRiskApproved, OMSStateCancelled, OMSStateExpired},
+		OMSStateSlippageRejected: {OMSStateRiskApproved, OMSStateCancelled, OMSStateExpired},
+		OMSStateUnknown:          {OMSStateReconciling, OMSStateWorking, OMSStateFilled, OMSStateCancelled, OMSStateFailed, OMSStateExpired},
+		OMSStateReconciling:      {OMSStateWorking, OMSStatePartiallyFilled, OMSStateFilled, OMSStateCancelled, OMSStateFailed, OMSStateExpired},
+		OMSStateMarginCall:       {OMSStateRiskApproved, OMSStateCancelled, OMSStateExpired, OMSStateFailed},
 	}
 	allowed, ok := transitions[current]
 	if !ok {
@@ -63,13 +81,20 @@ func isValidOMSTransition(current, next OMSState) bool {
 
 // OmsWriter records order lifecycle state transitions in PG.
 type OmsWriter struct {
-	pool  *pgxpool.Pool
-	store *TradeEventStore // may be nil
+	pool             *pgxpool.Pool
+	store            *TradeEventStore // may be nil
+	orderEventBroker *OrderEventBroker
 }
 
 // NewOmsWriter creates a state writer backed by PG.
 func NewOmsWriter(pool *pgxpool.Pool, store *TradeEventStore) *OmsWriter {
 	return &OmsWriter{pool: pool, store: store}
+}
+
+// SetOrderEventBroker wires the OrderEventBroker so that state transitions
+// publish events to active subscribers via SubscribeOrderEvents.
+func (w *OmsWriter) SetOrderEventBroker(b *OrderEventBroker) {
+	w.orderEventBroker = b
 }
 
 // InsertOrder inserts a new order with state=NEW.
@@ -91,11 +116,14 @@ func (w *OmsWriter) Transition(ctx context.Context, orderID string, current, nex
 	if !isValidOMSTransition(current, next) {
 		return fmt.Errorf("oms: invalid transition %s → %s", current, next)
 	}
-	_, err := w.pool.Exec(ctx,
-		`UPDATE orders SET state = $1, updated_at = now() WHERE id = $2`,
-		string(next), orderID)
+	tag, err := w.pool.Exec(ctx,
+		`UPDATE orders SET state = $1, updated_at = now() WHERE id = $2 AND state = $3`,
+		string(next), orderID, string(current))
 	if err != nil {
 		return fmt.Errorf("oms update state %s: %w", orderID, err)
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("oms: concurrent conflict on %s (expected state %s)", orderID, current)
 	}
 
 	// Publish state transition event to NATS.
@@ -110,6 +138,16 @@ func (w *OmsWriter) Transition(ctx context.Context, orderID string, current, nex
 			Version:   1,
 		}
 		_ = w.store.Publish(ctx, ev)
+	}
+
+	// Publish event to OrderEventBroker subscribers (H13: wire SubscribeOrderEvents).
+	if w.orderEventBroker != nil {
+		oev := &OrderEvent{
+			AccountID: accountIDFromOrderID(orderID),
+			EventType: fmt.Sprintf("%s→%s", string(current), string(next)),
+			Timestamp: Clk.Now(),
+		}
+		w.orderEventBroker.PublishEvent(oev.AccountID, oev)
 	}
 	return nil
 }

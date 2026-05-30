@@ -50,10 +50,11 @@ type Manager struct {
 	otelTracer       *anttrace.Tracer // L-2: real OTel tracer, nil = no-op
 	log              *zap.Logger
 
-	mu         sync.RWMutex
-	gateways   map[string]Gateway
-	lastTickAt map[string]int64 // accountID -> unix ms
-	baseCtx    context.Context
+	mu            sync.RWMutex
+	gateways      map[string]Gateway
+	lastTickAt    map[string]int64 // accountID -> unix ms
+	disconnecting map[string]bool  // M11: accounts being disconnected by healthMonitor
+	baseCtx       context.Context
 }
 
 // SetOTelTracer injects the OTel tracer for HandleTick span generation.
@@ -96,6 +97,7 @@ func NewManager(deps ManagerDeps) *Manager {
 		breakers:         make(map[string]*CircuitBreaker),
 		gateways:         make(map[string]Gateway),
 		lastTickAt:       make(map[string]int64),
+		disconnecting:    make(map[string]bool),
 		log:              deps.Log,
 	}
 }
@@ -112,13 +114,37 @@ func (m *Manager) AddGateway(ctx context.Context, gw Gateway, syms []string) err
 
 func (m *Manager) RemoveGateway(ctx context.Context, accountID string) error {
 	m.mu.Lock()
-	defer m.mu.Unlock()
 	gw, ok := m.gateways[accountID]
 	if !ok {
+		m.mu.Unlock()
 		return nil
 	}
 	delete(m.gateways, accountID)
+	m.mu.Unlock()
 	return gw.Disconnect(ctx)
+}
+
+// MarkDisconnecting records that an account is being disconnected by the healthMonitor
+// to prevent the NATS subscriber from racing to reconnect it.
+func (m *Manager) MarkDisconnecting(accountID string) {
+	m.mu.Lock()
+	m.disconnecting[accountID] = true
+	m.mu.Unlock()
+}
+
+// UnmarkDisconnecting removes the disconnecting flag for an account.
+func (m *Manager) UnmarkDisconnecting(accountID string) {
+	m.mu.Lock()
+	delete(m.disconnecting, accountID)
+	m.mu.Unlock()
+}
+
+// IsDisconnecting returns true if the account is currently being disconnected
+// by the healthMonitor.
+func (m *Manager) IsDisconnecting(accountID string) bool {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.disconnecting[accountID]
 }
 
 func (m *Manager) HandleTick(t *mdtick.Tick) {

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/shopspring/decimal"
+	"go.uber.org/zap"
 
 	"anttrader/internal/costsvc"
 	"anttrader/internal/risksvc"
@@ -34,12 +35,14 @@ type MtHubService struct {
 	costEstimator  costsvc.CostEstimator // M10-BASE-D2: pre-trade cost estimation
 	killSwitch     KillSwitchGate        // V3-R-5: global kill switch
 
-	// S1.1: pre-trade risk pipeline (capability → hardlimit → platform → engine → sizer)
-	riskPipeline        RiskPipeline
-	accountStateProvider AccountStateProvider
+	// S1.1: pre-trade risk pipeline (capability to hardlimit to platform to engine to sizer)
+	riskPipeline          RiskPipeline
+	accountStateProvider  AccountStateProvider
+	accountOwnerVerifier  AccountOwnerVerifier
 
-	// S1.2: OMS 15-state state machine writer (NEW → VALIDATED → RISK_APPROVED → SUBMITTED).
+	// S1.2: OMS 16-state state machine writer (NEW to VALIDATED to RISK_APPROVED to SUBMITTED).
 	omsWriter *OmsWriter
+	logger    *zap.Logger
 }
 
 // NewMtHubService creates the service with a Hub, event broker, and optional idempotency guard.
@@ -79,6 +82,18 @@ func (s *MtHubService) SetOmsWriter(w *OmsWriter) { s.omsWriter = w }
 // SetKillSwitch injects the global kill switch for emergency stop (V3-R-5).
 func (s *MtHubService) SetKillSwitch(ks KillSwitchGate) { s.killSwitch = ks }
 
+// AccountOwnerVerifier checks that a user owns the given account.
+type AccountOwnerVerifier func(ctx context.Context, userID, accountID string) (bool, error)
+
+// SetAccountOwnerVerifier injects the account ownership checker.
+func (s *MtHubService) SetAccountOwnerVerifier(v AccountOwnerVerifier) { s.accountOwnerVerifier = v }
+
+// SetLogger injects a zap logger for error reporting.
+func (s *MtHubService) SetLogger(l *zap.Logger) { s.logger = l }
+
+// ErrAccountNotOwned is returned when the authenticated user does not own the account.
+var ErrAccountNotOwned = errors.New("mthub: account not owned by authenticated user")
+
 // Platform returns the platform string ("mt4"/"mt5") for the account's executor.
 func (s *MtHubService) Platform(accountID string) string {
 	exec := s.hub.Get(accountID)
@@ -116,6 +131,20 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 		return nil, ErrKillSwitchEngaged
 	}
 
+	// H7: verify the authenticated user owns the accountID.
+	if s.accountOwnerVerifier != nil {
+		uid := usermgr.GetUserID(ctx)
+		if uid != "" {
+			owns, err := s.accountOwnerVerifier(ctx, uid, req.AccountID)
+			if err != nil {
+				return nil, fmt.Errorf("account ownership check: %w", err)
+			}
+			if !owns {
+				return nil, fmt.Errorf("%w: %s", ErrAccountNotOwned, req.AccountID)
+			}
+		}
+	}
+
 	if s.idem != nil && req.ClientID != "" {
 		isDup, existingTicket, err := s.idem.CheckAndSet(ctx, req.AccountID, req.ClientID, 0)
 		if err != nil {
@@ -137,7 +166,7 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 		}
 	}
 
-	// S1.2: OMS — insert order with state=NEW before risk checks.
+	// S1.2: OMS: insert order with state=NEW before risk checks.
 	var orderID string
 	if s.omsWriter != nil {
 		orderID = IdempotencyKey(req.AccountID, req.ClientID)
@@ -148,13 +177,17 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 		}
 	}
 
-	// Pre-trade risk pipeline (S1.1): capability → hardlimit → platform → engine → sizer.
+	// Pre-trade risk pipeline (S1.1): capability to hardlimit to platform to engine to sizer.
 	if s.riskPipeline != nil {
 		// Fetch account state for risk evaluation.
 		var balance, equity, freeMargin, margin float64
 		var positions int
 		if s.accountStateProvider != nil {
-			if state, err := s.accountStateProvider(ctx, req.AccountID); err == nil && state != nil {
+			state, err := s.accountStateProvider(ctx, req.AccountID)
+			if err != nil {
+				return nil, fmt.Errorf("account state fetch: %w", err)
+			}
+			if state != nil {
 				balance, equity, freeMargin, margin = state.Balance, state.Equity, state.FreeMargin, state.Margin
 				positions = state.Positions
 			}
@@ -174,16 +207,40 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 		})
 		if !result.Allowed {
 			// OMS: record rejection if order was inserted.
+			// Two-step: NEW to VALIDATED to REJECTED (no direct NEW to REJECTED edge).
 			if s.omsWriter != nil && orderID != "" {
-				_ = s.omsWriter.Transition(ctx, orderID, OMSStateNew, OMSStateRejected)
+				if err := s.omsWriter.Transition(ctx, orderID, OMSStateNew, OMSStateValidated); err != nil {
+					s.logger.Error("oms transition failed",
+						zap.Error(err),
+						zap.String("orderID", orderID),
+						zap.String("from", string(OMSStateNew)),
+						zap.String("to", string(OMSStateValidated)))
+				}
+				if err := s.omsWriter.Transition(ctx, orderID, OMSStateValidated, OMSStateRejected); err != nil {
+					s.logger.Error("oms transition failed",
+						zap.Error(err),
+						zap.String("orderID", orderID),
+						zap.String("from", string(OMSStateValidated)),
+						zap.String("to", string(OMSStateRejected)))
+				}
 			}
 			return nil, fmt.Errorf("risk rejected at %s: %s", result.Stage, result.Reason)
 		}
 
-		// OMS: pipeline passed → VALIDATED, then RISK_APPROVED.
+		// OMS: pipeline passed: VALIDATED, then RISK_APPROVED.
 		if s.omsWriter != nil && orderID != "" {
-			if err := s.omsWriter.Transition(ctx, orderID, OMSStateNew, OMSStateValidated); err == nil {
-				_ = s.omsWriter.Transition(ctx, orderID, OMSStateValidated, OMSStateRiskApproved)
+			if err := s.omsWriter.Transition(ctx, orderID, OMSStateNew, OMSStateValidated); err != nil {
+				s.logger.Error("oms transition failed",
+					zap.Error(err),
+					zap.String("orderID", orderID),
+					zap.String("from", string(OMSStateNew)),
+					zap.String("to", string(OMSStateValidated)))
+			} else if err := s.omsWriter.Transition(ctx, orderID, OMSStateValidated, OMSStateRiskApproved); err != nil {
+				s.logger.Error("oms transition failed",
+					zap.Error(err),
+					zap.String("orderID", orderID),
+					zap.String("from", string(OMSStateValidated)),
+					zap.String("to", string(OMSStateRiskApproved)))
 			}
 		}
 
@@ -192,10 +249,20 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 			req.Volume = decimal.NewFromFloat(result.Lots)
 		}
 	} else {
-		// No risk pipeline — auto-approve to RISK_APPROVED.
+		// No risk pipeline: auto-approve to RISK_APPROVED.
 		if s.omsWriter != nil && orderID != "" {
-			if err := s.omsWriter.Transition(ctx, orderID, OMSStateNew, OMSStateValidated); err == nil {
-				_ = s.omsWriter.Transition(ctx, orderID, OMSStateValidated, OMSStateRiskApproved)
+			if err := s.omsWriter.Transition(ctx, orderID, OMSStateNew, OMSStateValidated); err != nil {
+				s.logger.Error("oms transition failed",
+					zap.Error(err),
+					zap.String("orderID", orderID),
+					zap.String("from", string(OMSStateNew)),
+					zap.String("to", string(OMSStateValidated)))
+			} else if err := s.omsWriter.Transition(ctx, orderID, OMSStateValidated, OMSStateRiskApproved); err != nil {
+				s.logger.Error("oms transition failed",
+					zap.Error(err),
+					zap.String("orderID", orderID),
+					zap.String("from", string(OMSStateValidated)),
+					zap.String("to", string(OMSStateRiskApproved)))
 			}
 		}
 	}
@@ -219,7 +286,13 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 	if exec == nil {
 		// OMS: record failure if no session.
 		if s.omsWriter != nil && orderID != "" {
-			_ = s.omsWriter.Transition(ctx, orderID, OMSStateRiskApproved, OMSStateFailed)
+			if err := s.omsWriter.Transition(ctx, orderID, OMSStateRiskApproved, OMSStateFailed); err != nil {
+				s.logger.Error("oms transition failed",
+					zap.Error(err),
+					zap.String("orderID", orderID),
+					zap.String("from", string(OMSStateRiskApproved)),
+					zap.String("to", string(OMSStateFailed)))
+			}
 		}
 		return nil, ErrSessionNotFound
 	}
@@ -227,19 +300,37 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 	if err != nil {
 		// OMS: record failure on broker rejection.
 		if s.omsWriter != nil && orderID != "" {
-			_ = s.omsWriter.Transition(ctx, orderID, OMSStateRiskApproved, OMSStateFailed)
+			if err := s.omsWriter.Transition(ctx, orderID, OMSStateRiskApproved, OMSStateFailed); err != nil {
+				s.logger.Error("oms transition failed",
+					zap.Error(err),
+					zap.String("orderID", orderID),
+					zap.String("from", string(OMSStateRiskApproved)),
+					zap.String("to", string(OMSStateFailed)))
+			}
 		}
 		return nil, err
 	}
 
-	// OMS: broker accepted → SUBMITTED.
+	// OMS: broker accepted, transition to SUBMITTED.
 	if s.omsWriter != nil && orderID != "" {
-		_ = s.omsWriter.Transition(ctx, orderID, OMSStateRiskApproved, OMSStateSubmitted)
+		if err := s.omsWriter.Transition(ctx, orderID, OMSStateRiskApproved, OMSStateSubmitted); err != nil {
+			s.logger.Error("oms transition failed",
+				zap.Error(err),
+				zap.String("orderID", orderID),
+				zap.String("from", string(OMSStateRiskApproved)),
+				zap.String("to", string(OMSStateSubmitted)))
+		}
 	}
 
 	// Update the idempotency key with the real ticket after successful placement.
 	if s.idem != nil && req.ClientID != "" {
-		_ = s.idem.SetTicket(ctx, req.AccountID, req.ClientID, ticket)
+		if err := s.idem.SetTicket(ctx, req.AccountID, req.ClientID, ticket); err != nil {
+			s.logger.Error("idempotency set ticket failed",
+				zap.Error(err),
+				zap.String("accountID", req.AccountID),
+				zap.String("clientID", req.ClientID),
+				zap.Int64("ticket", ticket))
+		}
 	}
 
 	// Write ORDER_CREATED event to NATS JetStream (Tier-0) before PG update.
@@ -263,37 +354,88 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 			Version:           1,
 			CostBreakdownJSON: costJSON,
 		}
-		_ = s.eventStore.Publish(ctx, ev)
+		if err := s.eventStore.Publish(ctx, ev); err != nil {
+			s.logger.Error("event store publish failed",
+				zap.Error(err),
+				zap.String("eventID", ev.EventID),
+				zap.String("accountID", ev.AccountID))
+		}
 	}
 
 	return &OrderRecord{Ticket: ticket, AccountID: req.AccountID, State: OrderStatePending}, nil
 }
 
 // CloseOrder closes an existing position.
+// H6: Includes kill switch, reconcile gate, account ownership, and OMS state checks.
 func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket int64, lots decimal.Decimal) error {
+	// Kill switch check.
+	if s.killSwitch != nil && s.killSwitch.IsEngaged() {
+		return ErrKillSwitchEngaged
+	}
+
+	// Reconcile gate check.
+	if s.reconcileGate != nil && !s.reconcileGate.CanAccept(accountID) {
+		return fmt.Errorf("%w: %s", ErrReconciling, accountID)
+	}
+
+	// Account ownership verification.
+	if s.accountOwnerVerifier != nil {
+		uid := usermgr.GetUserID(ctx)
+		if uid != "" {
+			owns, err := s.accountOwnerVerifier(ctx, uid, accountID)
+			if err != nil {
+				return fmt.Errorf("account ownership check: %w", err)
+			}
+			if !owns {
+				return fmt.Errorf("%w: %s", ErrAccountNotOwned, accountID)
+			}
+		}
+	}
+
 	exec := s.hub.Get(accountID)
-	if exec == nil { return ErrSessionNotFound }
+	if exec == nil {
+		return ErrSessionNotFound
+	}
+
+	// OMS: record close attempt state transition.
+	if s.omsWriter != nil {
+		closeOrderID := fmt.Sprintf("close-%s-%d", accountID, ticket)
+		if err := s.omsWriter.Transition(ctx, closeOrderID, OMSStateWorking, OMSStateFilled); err != nil {
+			s.logger.Error("oms close transition failed",
+				zap.Error(err),
+				zap.String("orderID", closeOrderID),
+				zap.String("accountID", accountID),
+				zap.Int64("ticket", ticket))
+		}
+	}
+
 	return exec.CloseOrder(ctx, ticket, lots)
 }
 
 // OpenedOrders returns currently open positions.
 func (s *MtHubService) OpenedOrders(ctx context.Context, accountID string) ([]*OrderRecord, error) {
 	exec := s.hub.Get(accountID)
-	if exec == nil { return nil, ErrSessionNotFound }
+	if exec == nil {
+		return nil, ErrSessionNotFound
+	}
 	return exec.FetchOpenedOrders(ctx)
 }
 
 // OrderHistory returns historical orders for the account.
 func (s *MtHubService) OrderHistory(ctx context.Context, accountID string, from, to time.Time) ([]*OrderRecord, error) {
 	exec := s.hub.Get(accountID)
-	if exec == nil { return nil, ErrSessionNotFound }
+	if exec == nil {
+		return nil, ErrSessionNotFound
+	}
 	return exec.FetchOrderHistory(ctx, from, to)
 }
 
 // SymbolParams returns trading parameters for the given symbols.
 func (s *MtHubService) SymbolParams(ctx context.Context, accountID string, canonicals []string) ([]*SymbolParam, error) {
 	exec := s.hub.Get(accountID)
-	if exec == nil { return nil, ErrSessionNotFound }
+	if exec == nil {
+		return nil, ErrSessionNotFound
+	}
 	return exec.FetchSymbolParams(ctx, canonicals)
 }
 

@@ -50,6 +50,20 @@ func (r *ReconciliationLoop) ReconcileAccount(ctx context.Context, accountID str
 	}
 }
 
+// TriggerReconcile triggers a reconciliation for a specific account.
+// Safe to call from OnBrokerInfo in main.go on broker reconnect events.
+func (r *ReconciliationLoop) TriggerReconcile(accountID string) {
+	r.log.Info("reconciliation: triggered for account", zap.String("accountID", accountID))
+	if r.gate != nil {
+		r.gate.EnterReconciling(accountID)
+	}
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		r.ReconcileAccount(ctx, accountID)
+	}()
+}
+
 func (r *ReconciliationLoop) reconcileAll(ctx context.Context) {
 	accountIDs := r.hub.ActiveAccountIDs()
 	if len(accountIDs) == 0 {

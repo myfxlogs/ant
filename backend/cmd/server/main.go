@@ -171,6 +171,7 @@ func main() {
 	snapshotBroker := mthub.NewPositionSnapshotBroker()
 	idemGuard := mthub.NewIdempotencyGuard(rdb.Client())
 	reconcileGate := mthub.NewReconcileGate()
+	var reconLoop *mthub.ReconciliationLoop // H17: declared early so OnBrokerInfo callback can trigger reconciliation
 	js, err := nc.JetStream()
 	if err != nil {
 		log.Fatal("nats jetstream failed", zap.Error(err))
@@ -468,6 +469,11 @@ func main() {
 			},
 			OnBrokerInfo: func(accountID, platform, broker string, info *mdtick.BrokerInfo) {
 				syncAccountHistory(accountID)
+				// H17: Trigger reconciliation on broker reconnect so ant-side state
+				// stays consistent with broker-side reality (ADR-0013).
+				if reconLoop != nil {
+					reconLoop.ReconcileAccount(context.Background(), accountID)
+				}
 					// Publish initial position snapshot so frontend has data on first load.
 					go func() {
 						sctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -528,7 +534,7 @@ func main() {
 	authServer.SetInsecureCookies(true) // no TLS in Docker deployment
 	mux.Handle(antv1c.NewAuthServiceHandler(authServer, connectrpc.WithInterceptors(rateLimitInterceptor, authInterceptor)))
 
-	reconLoop := mthub.NewReconciliationLoop(hub, pool, rdb.Client(), log, reconcileGate)
+	reconLoop = mthub.NewReconciliationLoop(hub, pool, rdb.Client(), log, reconcileGate)
 
 	mthubServer := system.NewMtHubServer(mthubSvc, platformSvc, marketDataRepo, tradeRecordRepo, log)
 	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, connectrpc.WithInterceptors(authInterceptor)))
@@ -706,6 +712,10 @@ func main() {
 		mthubSvc.SetOmsWriter(omsWriter)
 
 		// D-1: Wire factor subscriber for bar-event DSL evaluation (M10-BASE-B6).
+		// TODO(H16): factorSub is created and started but not yet connected to a
+		// factor evaluation pipeline. Needs: (1) a factor registry that registers DSL
+		// strategies, (2) a bar-stream subscription from the market data gateway,
+		// (3) evaluation results fed back into the signal/order pipeline.
 		factorSub := factor.NewSubscriber(factor.DefaultSubscriberConfig(), log)
 		go factorSub.Start(context.Background())
 

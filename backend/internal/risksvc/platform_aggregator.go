@@ -49,6 +49,7 @@ type AggregatorPosition struct {
 	NetVolume float64
 	Notional  float64
 	Margin    float64
+	Broker    string // broker name for per-broker limit usage tracking
 }
 
 // NewPlatformAggregator creates an aggregator.
@@ -115,6 +116,9 @@ func (a *PlatformAggregator) Recalculate() *PlatformExposure {
 			exposure.TotalGrossExposure += abs(pos.Notional)
 			exposure.TotalNetExposure += pos.Notional
 			exposure.TotalMarginUsed += pos.Margin
+			if pos.Broker != "" {
+				brokerMargins[pos.Broker] += pos.Margin
+			}
 		}
 	}
 

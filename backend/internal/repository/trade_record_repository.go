@@ -46,11 +46,28 @@ func (r *TradeRecordRepository) Create(ctx context.Context, record *model.TradeR
 	).Scan(&record.ID)
 }
 
+const maxBatchSize = 500
+
 func (r *TradeRecordRepository) BatchCreate(ctx context.Context, records []*model.TradeRecord) error {
 	if len(records) == 0 {
 		return nil
 	}
 
+	// Split into chunks of maxBatchSize to avoid oversized transactions
+	// and excessive lock contention.
+	for start := 0; start < len(records); start += maxBatchSize {
+		end := start + maxBatchSize
+		if end > len(records) {
+			end = len(records)
+		}
+		if err := r.batchCreateChunk(ctx, records[start:end]); err != nil {
+			return fmt.Errorf("batch create trade record chunk [%d:%d]: %w", start, end, err)
+		}
+	}
+	return nil
+}
+
+func (r *TradeRecordRepository) batchCreateChunk(ctx context.Context, records []*model.TradeRecord) error {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("batch create trade record: %w", err)
@@ -73,18 +90,20 @@ func (r *TradeRecordRepository) BatchCreate(ctx context.Context, records []*mode
 			close_price = EXCLUDED.close_price,
 			platform = EXCLUDED.platform,
 			updated_at = CURRENT_TIMESTAMP
+		RETURNING id
 	`
 
 	for _, record := range records {
-		_, err := tx.Exec(ctx, query,
+		var returnedID uuid.UUID
+		if err := tx.QueryRow(ctx, query,
 			record.ScheduleID, record.AccountID, record.Ticket, record.Symbol, record.OrderType, record.Volume,
 			record.OpenPrice, record.ClosePrice, record.Profit, record.Swap, record.Commission,
 			record.OpenTime, record.CloseTime, record.StopLoss, record.TakeProfit,
 			record.OrderComment, record.MagicNumber, record.Platform,
-		)
-		if err != nil {
-			return fmt.Errorf("batch create trade record: %w", err)
+		).Scan(&returnedID); err != nil {
+			return fmt.Errorf("batch create trade record ticket=%d: %w", record.Ticket, err)
 		}
+		record.ID = returnedID
 	}
 
 	return tx.Commit(ctx)

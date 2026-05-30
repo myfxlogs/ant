@@ -93,14 +93,14 @@ func NewCapabilityStore() *CapabilityStore {
 	return &CapabilityStore{caps: make(map[string]*Capability)}
 }
 
-// Get returns the capability for a user, or a default Tier3LiveFull entry.
+// Get returns the capability for a user, or a default Tier0ViewOnly entry (deny-by-default).
 func (s *CapabilityStore) Get(userID string) *Capability {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	if c, ok := s.caps[userID]; ok {
 		return c
 	}
-	return &Capability{UserID: userID, Tier: Tier3LiveFull}
+	return &Capability{UserID: userID, Tier: Tier0ViewOnly}
 }
 
 // Set stores a capability entry.

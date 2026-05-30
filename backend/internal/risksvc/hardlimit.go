@@ -72,16 +72,17 @@ type MarginFloorRule struct {
 func (r *MarginFloorRule) Name() string { return "margin_floor" }
 
 func (r *MarginFloorRule) Check(_ context.Context, req *HardLimitRequest) error {
-	if r.FloorRatio <= 0 {
-		r.FloorRatio = 1.0
+	ratio := r.FloorRatio
+	if ratio <= 0 {
+		ratio = 1.0
 	}
 	// Free margin must be >= floor ratio * notional exposure.
 	required := req.Volume * req.Price
-	if req.FreeMargin < r.FloorRatio*required {
+	if req.FreeMargin < ratio*required {
 		return &HardLimitError{
 			Rule:    r.Name(),
 			Reason:  "insufficient free margin",
-			Details: fmt.Sprintf("free_margin=%.2f required=%.2f floor_ratio=%.2f", req.FreeMargin, required, r.FloorRatio),
+			Details: fmt.Sprintf("free_margin=%.2f required=%.2f floor_ratio=%.2f", req.FreeMargin, required, ratio),
 		}
 	}
 	return nil
@@ -91,14 +92,22 @@ func (r *MarginFloorRule) Check(_ context.Context, req *HardLimitRequest) error 
 
 // KillSwitchRule blocks ALL orders when the killswitch is engaged.
 // This is the emergency stop — no exceptions.
-type KillSwitchRule struct{}
+// Enabled should be wired to the CapabilityStore to reflect the current kill-switch state.
+type KillSwitchRule struct {
+	Enabled bool
+}
 
 func (r *KillSwitchRule) Name() string { return "kill_switch" }
 
 func (r *KillSwitchRule) Check(_ context.Context, req *HardLimitRequest) error {
-	// Kill switch status is checked via capability precheck.
-	// If killswitch is on, the capability tier forces Tier 0, blocking all orders.
-	return nil
+	if !r.Enabled {
+		return nil
+	}
+	return &HardLimitError{
+		Rule:    r.Name(),
+		Reason:  "kill switch engaged",
+		Details: fmt.Sprintf("account=%s killswitch is active, all orders blocked", req.AccountID),
+	}
 }
 
 // --- Rule 4: Contract Expiry ---
@@ -117,15 +126,16 @@ func (r *ContractExpiryRule) Check(_ context.Context, req *HardLimitRequest) err
 	if req.ContractExpiry.IsZero() {
 		return nil // spot FX / non-expiring instruments
 	}
-	if r.CoolingOffHours <= 0 {
-		r.CoolingOffHours = 24
+	cooling := r.CoolingOffHours
+	if cooling <= 0 {
+		cooling = 24
 	}
 	remaining := time.Until(req.ContractExpiry)
-	if remaining < time.Duration(r.CoolingOffHours*float64(time.Hour)) {
+	if remaining < time.Duration(cooling*float64(time.Hour)) {
 		return &HardLimitError{
 			Rule:    r.Name(),
 			Reason:  "contract expires within cooling-off window",
-			Details: fmt.Sprintf("expiry=%s remaining=%s window=%.0fh", req.ContractExpiry.Format(time.RFC3339), remaining.Round(time.Minute).String(), r.CoolingOffHours),
+			Details: fmt.Sprintf("expiry=%s remaining=%s window=%.0fh", req.ContractExpiry.Format(time.RFC3339), remaining.Round(time.Minute).String(), cooling),
 		}
 	}
 	return nil

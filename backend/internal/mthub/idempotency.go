@@ -71,7 +71,7 @@ func (g *ThreeLayerGuard) CheckAndSet(ctx context.Context, accountID, clientID s
 		if !ok {
 			existing, err := g.redis.Get(ctx, key).Int64()
 			if err != nil {
-				return true, 0, nil
+				return false, 0, fmt.Errorf("idempotency check failed: %w", err)
 			}
 			return true, existing, nil
 		}
@@ -156,7 +156,7 @@ func (g *IdempotencyGuard) CheckAndSet(ctx context.Context, accountID, clientID 
 	}
 	existing, err := g.rc.Get(ctx, key).Int64()
 	if err != nil {
-		return true, 0, nil
+		return false, 0, fmt.Errorf("idempotency check failed: %w", err)
 	}
 	return true, existing, nil
 }
