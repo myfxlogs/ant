@@ -2,20 +2,25 @@ import { useEffect } from 'react';
 import { Tabs } from 'antd';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAgentStore } from './agentStore';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/queries/queryKeys';
+import { aiApi } from '@/client/ai';
 
 export default function AIAssistantLayout() {
 	const { t } = useTranslation();
 	const location = useLocation();
 	const navigate = useNavigate();
-	const preloadAgents = useAgentStore((s) => s.preload);
+	const queryClient = useQueryClient();
 
-	// 进入任意 /ai/* 页面时，立即在布局级别预加载一次 Agent 定义。
-	// `preload()` 内部做了幂等保护，不会造成重复请求，这样 /ai/debate 与
-	// /ai/agents 之间相互切换时可以瞬间复用数据。
+	// Eagerly prefetch agent definitions so /ai/debate and /ai/agents
+	// have instant data when navigating between tabs.
 	useEffect(() => {
-		void preloadAgents();
-	}, [preloadAgents]);
+		queryClient.prefetchQuery({
+			queryKey: queryKeys.ai.agents.list(),
+			queryFn: () => aiApi.listAgents(),
+			staleTime: 5 * 60_000,
+		});
+	}, [queryClient]);
 
 	const tabItems = [
 		{ key: '/ai/debate', label: t('ai.tabs.debate', { defaultValue: t('ai.debate.title') }) },

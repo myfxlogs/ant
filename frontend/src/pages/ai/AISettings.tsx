@@ -8,11 +8,13 @@ import {
 } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 
-import { aiApi, type AIAgentDefinitionView } from '@/client/ai';
-import { listSystemAIConfigs } from './systemai/api';
+import { type AIAgentDefinitionView } from '@/client/ai';
 import type { AIConfig as SystemAIConfig } from './systemai/model';
-import { useAgentStore } from './agentStore';
+import { useAIAgentsQuery } from '@/queries/useAIAgentsQuery';
+import { useSystemAIConfigsQuery } from '@/queries/useSystemAIConfigsQuery';
+import { queryKeys } from '@/queries/queryKeys';
 import {
   getDefaultAgentTemplates,
   mergeWithDefaultAgentTemplates,
@@ -45,12 +47,26 @@ function buildModelOptions(
 export default function AISettings() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const { data: remoteAgents = [], isLoading: agentsLoading } = useAIAgentsQuery();
+  const { data: systemConfigsData, isLoading: configsLoading } = useSystemAIConfigsQuery();
 
   const [agents, setAgentsState] = useState<AIAgentDefinitionView[]>([]);
-  const [systemConfigs, setSystemConfigs] = useState<SystemAIConfig[]>([]);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [collapsedMap, setCollapsedMap] = useState<Record<string, boolean | undefined>>({});
+  const [initialized, setInitialized] = useState(false);
+
+  // Seed local editing state from remote data on first load
+  useEffect(() => {
+    if (!agentsLoading && !initialized && remoteAgents.length > 0) {
+      setAgentsState(remoteAgents);
+      setInitialized(true);
+    }
+  }, [agentsLoading, initialized, remoteAgents]);
+
+  const systemConfigs = systemConfigsData?.items ?? [];
+  const loading = agentsLoading || configsLoading;
 
   const labelOf = (id: string, dbName?: string) => {
     const key = `ai.settings.providers.${id}` as const;
@@ -63,31 +79,6 @@ export default function AISettings() {
     [systemConfigs],
   );
   const hasUsableModel = modelOptions.length > 0;
-
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      setLoading(true);
-      try {
-        const [list, sysList] = await Promise.all([
-          aiApi.listAgents(),
-          listSystemAIConfigs().then((r) => r.items).catch(() => [] as SystemAIConfig[]),
-        ]);
-        if (!mounted) return;
-        setAgentsState(list);
-        setSystemConfigs(sysList);
-        useAgentStore.getState().setAgents(list);
-      } catch (e: any) {
-        if (!mounted) return;
-        message.error(e?.message || t('ai.settings.agent.messages.saveFailed'));
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [t]);
 
   const handleChange = (idx: number, patch: Partial<AIAgentDefinitionView>) => {
     setAgentsState((prev) => prev.map((a, i) => (i === idx ? { ...a, ...patch } : a)));
@@ -138,7 +129,7 @@ export default function AISettings() {
         modelOverride: (a.modelOverride || '').trim(),
       }));
       setAgentsState(cleaned);
-      useAgentStore.getState().setAgents(cleaned);
+      queryClient.setQueryData(queryKeys.ai.agents.list(), cleaned);
       message.success(t('ai.settings.agent.messages.saveSuccess'));
     } catch (e: any) {
       message.error(e?.message || t('ai.settings.agent.messages.saveFailed'));

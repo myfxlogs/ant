@@ -1,7 +1,10 @@
 import { useEffect } from 'react';
 import { Alert, Button, Card, Space, Steps, Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { useAgentStore } from '../agentStore';
+import { useQueryClient } from '@tanstack/react-query';
+import { useAIAgentsQuery } from '@/queries/useAIAgentsQuery';
+import { queryKeys } from '@/queries/queryKeys';
+import { aiApi } from '@/client/ai';
 import { useDebateFlow } from './flow/useDebateFlow';
 import { AgentSelectionStep, ChatStep, CodeStep } from './DebatePageV2Steps';
 
@@ -20,13 +23,17 @@ const { Text } = Typography;
  */
 export default function DebatePageV2() {
 	const { t } = useTranslation();
-	const agentDefs = useAgentStore((s) => s.agentDefs);
-	const agentsLoading = useAgentStore((s) => s.loading);
-	const preloadAgents = useAgentStore((s) => s.preload);
+	const queryClient = useQueryClient();
+	const { data: agentDefs = [], isLoading: agentsLoading } = useAIAgentsQuery();
 
+	// Eagerly prefetch on mount (replaces agentStore.preload)
 	useEffect(() => {
-		void preloadAgents();
-	}, [preloadAgents]);
+		queryClient.prefetchQuery({
+			queryKey: queryKeys.ai.agents.list(),
+			queryFn: () => aiApi.listAgents(),
+			staleTime: 5 * 60_000,
+		});
+	}, [queryClient]);
 
 	const flow = useDebateFlow();
 	const {
