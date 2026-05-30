@@ -38,7 +38,7 @@ type SpillWriter struct {
 }
 
 func NewSpillWriter(cfg SpillWriterConfig, log *zap.Logger) (*SpillWriter, error) {
-	if err := os.MkdirAll(cfg.Dir, 0755); err != nil {
+	if err := os.MkdirAll(cfg.Dir, 0750); err != nil {
 		return nil, fmt.Errorf("spill: mkdir %s: %w", cfg.Dir, err)
 	}
 	return &SpillWriter{cfg: cfg, log: log}, nil
