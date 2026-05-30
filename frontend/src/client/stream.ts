@@ -112,6 +112,8 @@ export const streamApi = {
     let isAborted = false;
     let currentAbort: AbortController | null = null;
     let transportFailStreak = 0;
+    let lastEventID = '';
+    let localEventCount = 0;
 
     const runStream = async (retryCount = 0) => {
       if (isAborted) return;
@@ -119,12 +121,20 @@ export const streamApi = {
       currentAbort = abortController;
 
       try {
-        const stream = streamClient.subscribeEvents({ accountIds }, { signal: abortController.signal });
+        const stream = streamClient.subscribeEvents(
+          { accountIds },
+          {
+            signal: abortController.signal,
+            ...(lastEventID ? { headers: { 'Last-Event-ID': lastEventID } } : {}),
+          },
+        );
 
         for await (const event of stream) {
           if (isAborted) break;
           transportFailStreak = 0;
           retryCount = 0;
+          localEventCount++;
+          lastEventID = String(localEventCount);
 
           const e = event as StreamEvent;
 

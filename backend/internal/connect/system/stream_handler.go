@@ -3,6 +3,7 @@ package system
 import (
 	"context"
 	"fmt"
+	"sync/atomic"
 	"time"
 
 	"connectrpc.com/connect"
@@ -38,6 +39,23 @@ func (s *StreamServer) SubscribeEvents(
 	userID := interceptor.GetUserID(ctx)
 	if userID == "" {
 		return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
+	}
+
+	lastEventID := req.Header().Get("Last-Event-ID")
+	isReconnect := lastEventID != ""
+	if isReconnect {
+		s.log.Info("SSE reconnect with Last-Event-ID", zap.String("last_id", lastEventID))
+	}
+
+	var eventID atomic.Int64
+
+	sendEvent := func(ev *antv1.StreamEvent) error {
+		id := eventID.Add(1)
+		if err := stream.Send(ev); err != nil {
+			return err
+		}
+		s.log.Debug("sent SSE event", zap.Int64("event_id", id), zap.String("type", ev.GetType()))
+		return nil
 	}
 
 	orderCh, orderCancel := s.svc.SubscribeUserOrderEvents(ctx, userID)
@@ -85,8 +103,11 @@ func (s *StreamServer) SubscribeEvents(
 		}
 	}
 
-	connectedIDs := s.sendInitialSnapshot(ctx, stream, userID, accountSet, filterAll)
-	s.sendInitialPositionSnapshots(ctx, stream, connectedIDs)
+	var connectedIDs []string
+	if !isReconnect {
+		connectedIDs = s.sendInitialSnapshot(ctx, stream, userID, accountSet, filterAll)
+		s.sendInitialPositionSnapshots(ctx, stream, connectedIDs)
+	}
 
 	type snapSub struct {
 		accountID string
@@ -173,7 +194,7 @@ func (s *StreamServer) SubscribeEvents(
 					OrderUpdate: orderRecordToUpdateEvent(ev.Order, ev.AccountID, ev.EventType, ev.Ticket),
 				},
 			}
-			if err := stream.Send(event); err != nil {
+			if err := sendEvent(event); err != nil {
 				return fmt.Errorf("send order update event: %w", err)
 			}
 		case pev, ok := <-profitCh:
@@ -184,7 +205,7 @@ func (s *StreamServer) SubscribeEvents(
 				continue
 			}
 			now := timestamppb.Now()
-			if err := stream.Send(&antv1.StreamEvent{
+			if err := sendEvent(&antv1.StreamEvent{
 				Type:      "profit_update",
 				AccountId: pev.AccountID,
 				Timestamp: now,
@@ -206,7 +227,7 @@ func (s *StreamServer) SubscribeEvents(
 			}
 			now := timestamppb.Now()
 
-			if err := stream.Send(&antv1.StreamEvent{
+			if err := sendEvent(&antv1.StreamEvent{
 				Type:      "account_status",
 				AccountId: snap.AccountID,
 				Timestamp: now,
@@ -234,7 +255,7 @@ func (s *StreamServer) SubscribeEvents(
 								continue
 							}
 						}
-						if err := stream.Send(&antv1.StreamEvent{
+						if err := sendEvent(&antv1.StreamEvent{
 							Type:      "order_update",
 							AccountId: snap.AccountID,
 							Timestamp: now,
@@ -276,7 +297,7 @@ func (s *StreamServer) SubscribeEvents(
 					OpenTime:   pos.OpenTime,
 				})
 			}
-			if err := stream.Send(&antv1.StreamEvent{
+			if err := sendEvent(&antv1.StreamEvent{
 				Type:      "position_snapshot",
 				AccountId: snap.AccountID,
 				Timestamp: now,

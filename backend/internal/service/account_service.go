@@ -4,12 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
+
+	"anttrader/internal/repository"
 )
 
 // ErrAccountAlreadyBound is returned when an MT account is already bound to another user.
@@ -20,13 +24,17 @@ var ErrAccountPasswordMismatch = errors.New("old password does not match")
 
 // AccountService provides account CRUD and lifecycle operations.
 type AccountService struct {
-	db  *pgxpool.Pool
-	log *zap.Logger
+	db      *pgxpool.Pool
+	queries *repository.Queries
+	log     *zap.Logger
 }
 
 // NewAccountService creates an account service backed by the given pool.
 func NewAccountService(db *pgxpool.Pool) *AccountService {
-	return &AccountService{db: db}
+	return &AccountService{
+		db:      db,
+		queries: repository.New(db),
+	}
 }
 
 // SetLogger injects a logger into the service.
@@ -75,27 +83,15 @@ type UserAccountsSummary struct {
 
 // ListAccounts returns all accounts belonging to the given user.
 func (s *AccountService) ListAccounts(ctx context.Context, userID uuid.UUID) ([]AccountDTO, error) {
-	rows, err := s.db.Query(ctx, `
-			SELECT id, user_id, mt_type, broker_company, login, broker_server, is_disabled,
-			       account_status, balance, equity, COALESCE(credit, 0), margin, free_margin, margin_level, leverage, currency, COALESCE(last_error, ''),
-			       COALESCE(last_connected_at::text, '')
-			FROM mt_accounts WHERE user_id = $1 ORDER BY mt_type, login
-		`, userID)
+	rows, err := s.queries.ListAccounts(ctx, uuidToPgUUID(userID))
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	var out []AccountDTO
-	for rows.Next() {
-		var a AccountDTO
-		if err := rows.Scan(&a.ID, &a.UserID, &a.Platform, &a.Broker, &a.Login, &a.Server, &a.IsDisabled,
-			&a.Status, &a.Balance, &a.Equity, &a.Credit, &a.Margin, &a.FreeMargin, &a.MarginLevel, &a.Leverage, &a.Currency, &a.LastError,
-			&a.LastConnectedAt); err != nil {
-			return nil, fmt.Errorf("service: list accounts: scan: %w", err)
-		}
-		out = append(out, a)
+	out := make([]AccountDTO, len(rows))
+	for i, r := range rows {
+		out[i] = mtAccountToDTO(r)
 	}
-	return out, rows.Err()
+	return out, nil
 }
 
 // ConnectAccount marks an account as ready for connection (#36: now sets status to 'connecting').
@@ -114,18 +110,15 @@ func (s *AccountService) ConnectAccount(ctx context.Context, userID uuid.UUID, a
 
 // GetAccount returns a single account by ID.
 func (s *AccountService) GetAccount(ctx context.Context, userID uuid.UUID, accountID string) (*AccountDTO, error) {
-	var a AccountDTO
-	err := s.db.QueryRow(ctx, `
-			SELECT id, user_id, mt_type, broker_company, login, broker_server, is_disabled,
-			       account_status, balance, equity, COALESCE(credit, 0), margin, free_margin, margin_level, leverage, currency, COALESCE(last_error, ''),
-			       COALESCE(last_connected_at::text, '')
-			FROM mt_accounts WHERE id = $1::uuid AND user_id = $2
-		`, accountID, userID).Scan(&a.ID, &a.UserID, &a.Platform, &a.Broker, &a.Login, &a.Server, &a.IsDisabled,
-		&a.Status, &a.Balance, &a.Equity, &a.Credit, &a.Margin, &a.FreeMargin, &a.MarginLevel, &a.Leverage, &a.Currency, &a.LastError,
-		&a.LastConnectedAt)
+	pgID, err := stringToPgUUID(accountID)
+	if err != nil {
+		return nil, fmt.Errorf("service: get account: invalid account id: %w", err)
+	}
+	row, err := s.queries.GetAccount(ctx, repository.GetAccountParams{ID: pgID, UserID: uuidToPgUUID(userID)})
 	if err != nil {
 		return nil, err
 	}
+	a := mtAccountToDTO(row)
 	return &a, nil
 }
 
@@ -241,14 +234,19 @@ func (s *AccountService) MarkAccountNeedsRebind(ctx context.Context, userID uuid
 
 // GetAccountCredentials returns the credentials needed for MT password verification.
 func (s *AccountService) GetAccountCredentials(ctx context.Context, userID uuid.UUID, id string) (*AccountCredentials, error) {
-	var c AccountCredentials
-	err := s.db.QueryRow(ctx,
-		`SELECT login, mt_type, broker_host FROM mt_accounts WHERE id = $1::uuid AND user_id = $2`,
-		id, userID).Scan(&c.Login, &c.Platform, &c.BrokerHost)
+	pgID, err := stringToPgUUID(id)
+	if err != nil {
+		return nil, fmt.Errorf("service: get account credentials: invalid account id: %w", err)
+	}
+	row, err := s.queries.GetAccountCredentials(ctx, repository.GetAccountCredentialsParams{ID: pgID, UserID: uuidToPgUUID(userID)})
 	if err != nil {
 		return nil, fmt.Errorf("service: get account credentials: %w", err)
 	}
-	return &c, nil
+	return &AccountCredentials{
+		Login:      row.Login,
+		Platform:   row.MtType,
+		BrokerHost: row.BrokerHost,
+	}, nil
 }
 
 // DeleteAccount removes an MT account and all its related data within a transaction (#28).
@@ -309,22 +307,20 @@ func (s *AccountService) DisconnectAccountByID(ctx context.Context, id string) e
 // UpdateAccountMetrics updates runtime balance/equity/margin metrics from broker callbacks.
 // Unlike UpdateAccountInfo, this does not overwrite leverage or currency.
 func (s *AccountService) UpdateAccountMetrics(ctx context.Context, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin, marginLevel float64) error {
-	_, err := s.db.Exec(ctx, `
-			UPDATE mt_accounts SET
-				balance = $3,
-				equity  = $4,
-				credit  = $5,
-				margin  = $6,
-				free_margin = $7,
-				margin_level = $8,
-				account_status = 'connected',
-				updated_at = CURRENT_TIMESTAMP
-			WHERE id = $1::uuid AND user_id = $2
-		`, id, userID, balance, equity, credit, margin, freeMargin, marginLevel)
+	pgID, err := stringToPgUUID(id)
 	if err != nil {
-		return fmt.Errorf("service: update account metrics: %w", err)
+		return fmt.Errorf("service: update account metrics: invalid account id: %w", err)
 	}
-	return nil
+	return s.queries.UpdateAccountMetrics(ctx, repository.UpdateAccountMetricsParams{
+		ID:          pgID,
+		UserID:      uuidToPgUUID(userID),
+		Balance:     float64ToPgNumeric(balance),
+		Equity:      float64ToPgNumeric(equity),
+		Credit:      float64ToPgNumeric(credit),
+		Margin:      float64ToPgNumeric(margin),
+		FreeMargin:  float64ToPgNumeric(freeMargin),
+		MarginLevel: float64ToPgNumeric(marginLevel),
+	})
 }
 
 // RecordBalanceSnapshot inserts an hourly equity/balance snapshot row.
@@ -377,12 +373,15 @@ func (s *AccountService) UpdateTradingPassword(ctx context.Context, userID uuid.
 
 // UserOwnsAccount checks if an account belongs to the given user.
 func (s *AccountService) UserOwnsAccount(ctx context.Context, userID, accountID string) (bool, error) {
-	var exists bool
-	err := s.db.QueryRow(ctx,
-		"SELECT EXISTS(SELECT 1 FROM mt_accounts WHERE id = $1 AND user_id = $2)",
-		accountID, userID,
-	).Scan(&exists)
-	return exists, err
+	pgUserID, err := stringToPgUUID(userID)
+	if err != nil {
+		return false, fmt.Errorf("service: user owns account: invalid user id: %w", err)
+	}
+	pgAccountID, err := stringToPgUUID(accountID)
+	if err != nil {
+		return false, fmt.Errorf("service: user owns account: invalid account id: %w", err)
+	}
+	return s.queries.UserOwnsAccount(ctx, repository.UserOwnsAccountParams{ID: pgAccountID, UserID: pgUserID})
 }
 
 // GetUserAccountIDs returns all account IDs belonging to a user.
@@ -405,22 +404,28 @@ func (s *AccountService) GetUserAccountIDs(ctx context.Context, userID string) (
 
 // GetUserAccountSnapshots returns current state for all of a user's MT accounts.
 func (s *AccountService) GetUserAccountSnapshots(ctx context.Context, userID string) ([]AccountSnapshot, error) {
-	rows, err := s.db.Query(ctx,
-		"SELECT id, account_status, balance, equity, credit, margin, free_margin, margin_level FROM mt_accounts WHERE user_id = $1",
-		userID)
+	pgID, err := stringToPgUUID(userID)
+	if err != nil {
+		return nil, fmt.Errorf("service: get account snapshots: invalid user id: %w", err)
+	}
+	rows, err := s.queries.GetAccountSnapshots(ctx, pgID)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	var out []AccountSnapshot
-	for rows.Next() {
-		var a AccountSnapshot
-		if err := rows.Scan(&a.ID, &a.Status, &a.Balance, &a.Equity, &a.Credit, &a.Margin, &a.FreeMargin, &a.MarginLevel); err != nil {
-			return nil, err
+	out := make([]AccountSnapshot, len(rows))
+	for i, r := range rows {
+		out[i] = AccountSnapshot{
+			ID:          pgUUIDToString(r.ID),
+			Status:      r.AccountStatus,
+			Balance:     pgNumericToFloat64(r.Balance),
+			Equity:      pgNumericToFloat64(r.Equity),
+			Credit:      pgNumericToFloat64(r.Credit),
+			Margin:      pgNumericToFloat64(r.Margin),
+			FreeMargin:  pgNumericToFloat64(r.FreeMargin),
+			MarginLevel: pgNumericToFloat64(r.MarginLevel),
 		}
-		out = append(out, a)
 	}
-	return out, rows.Err()
+	return out, nil
 }
 
 // GetUserAccountsSummary computes an aggregated summary of a user's accounts (#30: log scan errors instead of silently skipping).
@@ -451,4 +456,92 @@ func (s *AccountService) GetUserAccountsSummary(ctx context.Context, userID stri
 		}
 	}
 	return &sum, rows.Err()
+}
+
+// --- type conversion helpers (sqlc pgtype <-> Go native) ---
+
+func uuidToPgUUID(id uuid.UUID) pgtype.UUID {
+	return pgtype.UUID{Bytes: id, Valid: true}
+}
+
+func stringToPgUUID(s string) (pgtype.UUID, error) {
+	uid, err := uuid.Parse(s)
+	if err != nil {
+		return pgtype.UUID{}, err
+	}
+	return pgtype.UUID{Bytes: uid, Valid: true}, nil
+}
+
+func pgUUIDToString(u pgtype.UUID) string {
+	if !u.Valid {
+		return ""
+	}
+	return uuid.UUID(u.Bytes).String()
+}
+
+func float64ToPgNumeric(v float64) pgtype.Numeric {
+	// pgtype.Numeric implements sql.Scanner and accepts float64 directly.
+	var n pgtype.Numeric
+	_ = n.Scan(v)
+	return n
+}
+
+func pgNumericToFloat64(n pgtype.Numeric) float64 {
+	if !n.Valid {
+		return 0
+	}
+	f8, err := n.Float64Value()
+	if err != nil || !f8.Valid {
+		return 0
+	}
+	return f8.Float64
+}
+
+func pgInt4ToInt32(i pgtype.Int4) int32 {
+	if !i.Valid {
+		return 0
+	}
+	return i.Int32
+}
+
+func pgTextToString(t pgtype.Text) string {
+	if !t.Valid {
+		return ""
+	}
+	return t.String
+}
+
+func pgTimestampToString(t pgtype.Timestamp) string {
+	if !t.Valid {
+		return ""
+	}
+	return t.Time.UTC().Format(time.RFC3339)
+}
+
+func pgBoolToBool(b pgtype.Bool) bool {
+	return b.Valid && b.Bool
+}
+
+// mtAccountToDTO maps a sqlc-generated MtAccount to the service DTO.
+func mtAccountToDTO(a repository.MtAccount) AccountDTO {
+	return AccountDTO{
+		ID:              pgUUIDToString(a.ID),
+		UserID:          pgUUIDToString(a.UserID),
+		Platform:        a.MtType,
+		Broker:          pgTextToString(a.BrokerCompany),
+		Login:           a.Login,
+		Server:          pgTextToString(a.BrokerServer),
+		IsDisabled:      pgBoolToBool(a.IsDisabled),
+		Status:          a.AccountStatus,
+		Balance:         pgNumericToFloat64(a.Balance),
+		Equity:          pgNumericToFloat64(a.Equity),
+		Credit:          pgNumericToFloat64(a.Credit),
+		Margin:          pgNumericToFloat64(a.Margin),
+		FreeMargin:      pgNumericToFloat64(a.FreeMargin),
+		MarginLevel:     pgNumericToFloat64(a.MarginLevel),
+		Leverage:        pgInt4ToInt32(a.Leverage),
+		Currency:        pgTextToString(a.Currency),
+		LastError:       pgTextToString(a.LastError),
+		LastConnectedAt: pgTimestampToString(a.LastConnectedAt),
+	}
 }

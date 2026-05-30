@@ -12,9 +12,35 @@ import (
 	mt4pb "anttrader/mt4"
 	mt5pb "anttrader/mt5"
 	antv1 "anttrader/gen/proto/ant/v1"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
+
+// staticBrokers is a fallback list of well-known brokers used when the mtapi
+// Search RPC is unavailable or returns no results.
+var staticBrokers = []*antv1.BrokerCompany{
+	{CompanyName: "Exness Technologies Ltd", Servers: []*antv1.BrokerServer{
+		{Name: "Exness-Real", Access: []string{"18.163.85.196:443"}},
+		{Name: "Exness-Demo", Access: []string{"18.163.85.196:443"}},
+	}},
+	{CompanyName: "IC Markets", Servers: []*antv1.BrokerServer{
+		{Name: "ICMarkets-Live", Access: []string{}},
+		{Name: "ICMarkets-Demo", Access: []string{}},
+	}},
+	{CompanyName: "Pepperstone", Servers: []*antv1.BrokerServer{
+		{Name: "Pepperstone-Live", Access: []string{}},
+		{Name: "Pepperstone-Demo", Access: []string{}},
+	}},
+	{CompanyName: "XM", Servers: []*antv1.BrokerServer{
+		{Name: "XM-Real", Access: []string{}},
+		{Name: "XM-Demo", Access: []string{}},
+	}},
+	{CompanyName: "RoboForex", Servers: []*antv1.BrokerServer{
+		{Name: "RoboForex-Pro", Access: []string{}},
+		{Name: "RoboForex-Demo", Access: []string{}},
+	}},
+}
 
 // Searcher calls mtapi Search RPC for MT4 and MT5 broker discovery.
 type Searcher struct {
@@ -36,16 +62,26 @@ func New(mt4Gateway, mt5Gateway string) *Searcher {
 
 // Search returns matching broker companies from mtapi for the given company prefix.
 // mtType can be "mt4", "mt5", or "" (both).
+// When mtapi is unavailable or returns no results, it falls back to a static list of
+// well-known brokers.
 func (s *Searcher) Search(ctx context.Context, company, mtType string) ([]*antv1.BrokerCompany, error) {
 	mtType = strings.ToLower(mtType)
+	var results []*antv1.BrokerCompany
+	var err error
 	switch mtType {
 	case "mt4":
-		return s.searchMT4(ctx, company)
+		results, err = s.searchMT4(ctx, company)
 	case "mt5":
-		return s.searchMT5(ctx, company)
+		results, err = s.searchMT5(ctx, company)
 	default:
-		return s.searchBoth(ctx, company)
+		results, err = s.searchBoth(ctx, company)
 	}
+	if len(results) == 0 && err != nil {
+		zap.L().Warn("broker search: mtapi unavailable, falling back to static list",
+			zap.String("company", company), zap.String("mtType", mtType), zap.Error(err))
+		return staticBrokerFilter(company), nil
+	}
+	return results, err
 }
 
 func (s *Searcher) searchMT4(ctx context.Context, company string) ([]*antv1.BrokerCompany, error) {
@@ -128,4 +164,21 @@ func mapMT5Reply(reply *mt5pb.SearchReply) []*antv1.BrokerCompany {
 		companies = append(companies, bc)
 	}
 	return companies
+}
+
+// staticBrokerFilter returns entries from the static broker list whose
+// CompanyName contains the given prefix (case-insensitive). An empty
+// prefix matches all entries.
+func staticBrokerFilter(prefix string) []*antv1.BrokerCompany {
+	if prefix == "" {
+		return staticBrokers
+	}
+	lower := strings.ToLower(prefix)
+	var out []*antv1.BrokerCompany
+	for _, bc := range staticBrokers {
+		if strings.Contains(strings.ToLower(bc.CompanyName), lower) {
+			out = append(out, bc)
+		}
+	}
+	return out
 }
