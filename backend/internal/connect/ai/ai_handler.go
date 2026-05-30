@@ -64,12 +64,14 @@ func (s *AIServer) Chat(ctx context.Context, req *connect.Request[antv1.ChatRequ
 		uid := s.userID(ctx)
 		cid, err := uuid.Parse(m.ConversationId)
 		if err == nil {
-			now := time.Now()
-			_, _ = s.conversations.AddMessage(ctx, cid, "user", m.Message)
-			_, _ = s.conversations.AddMessage(ctx, cid, "assistant", reply)
-			_ = s.conversations.Touch(ctx, cid)
-			_ = uid // keep import
-			_ = now
+			// Verify conversation belongs to the requesting user before adding messages.
+			if _, err := s.conversations.GetByID(ctx, cid, uid); err == nil {
+				now := time.Now()
+				_, _ = s.conversations.AddMessage(ctx, cid, "user", m.Message)
+				_, _ = s.conversations.AddMessage(ctx, cid, "assistant", reply)
+				_ = s.conversations.Touch(ctx, cid)
+				_ = now
+			}
 		}
 	}
 	return connect.NewResponse(&antv1.ChatResponse{
@@ -179,6 +181,10 @@ func (s *AIServer) DeleteConversation(ctx context.Context, req *connect.Request[
 	cid, err := uuid.Parse(req.Msg.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	// Verify ownership before deleting messages or the conversation itself.
+	if _, err := s.conversations.GetByID(ctx, cid, uid); err != nil {
+		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("conversation not found"))
 	}
 	_ = s.conversations.DeleteMessagesByConversation(ctx, cid)
 	if err := s.conversations.Delete(ctx, cid, uid); err != nil {

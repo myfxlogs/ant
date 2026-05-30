@@ -67,6 +67,18 @@ func ComputeReturnMoments(dailyReturns []float64) ReturnMoments {
 	variance := sumSqDiff / float64(n)
 	stdDev := math.Sqrt(variance)
 
+	// When all returns are identical (zero variance), skewness and kurtosis
+	// are undefined. Return zeros to avoid NaN propagation.
+	if stdDev == 0 {
+		return ReturnMoments{
+			Mean:           mean,
+			StdDev:         0,
+			Skewness:       0,
+			ExcessKurtosis: 0,
+			SharpeRatio:    0,
+		}
+	}
+
 	// Skewness and kurtosis.
 	var sumCube, sumQuad float64
 	for _, r := range dailyReturns {

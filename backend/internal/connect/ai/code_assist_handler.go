@@ -92,9 +92,9 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 	if err != nil {
 		s.log.Warn("CodeAssist: ValidateStrategyExtended LLM call failed", zap.Error(err))
 		return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
-			Valid:    true,
-			Errors:   []string{},
-			Warnings: []string{"AI 验证暂时不可用，请手动检查策略逻辑。"},
+			Valid:    false,
+			Errors:   []string{"AI 验证服务暂时不可用，请稍后重试。"},
+			Warnings: []string{},
 		}), nil
 	}
 
@@ -108,9 +108,9 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 		s.log.Warn("CodeAssist: ValidateStrategyExtended failed to parse LLM JSON",
 			zap.Error(err), zap.String("raw", result))
 		return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
-			Valid:    true,
-			Errors:   []string{},
-			Warnings: []string{"AI 验证结果解析失败，请检查策略代码。"},
+			Valid:    false,
+			Errors:   []string{"AI 验证结果解析失败，请检查策略代码格式。"},
+			Warnings: []string{},
 		}), nil
 	}
 

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -115,7 +116,10 @@ func (r *AIWorkflowRepository) AppendStep(ctx context.Context, userID, runID uui
 	if status == "error" {
 		newRunStatus = "failed"
 	}
-	if status == "done" && key == "code" {
+	// Mark the run succeeded when a terminal step completes.
+	// Terminal keys include "code", "final", "complete", "done", "review", or any key
+	// prefixed with "final_" (e.g. "final_review").
+	if status == "done" && isTerminalStepKey(key) {
 		newRunStatus = "succeeded"
 	}
 	_, err = tx.Exec(ctx,
@@ -211,4 +215,16 @@ func (r *AIWorkflowRepository) GetRun(ctx context.Context, userID, runID uuid.UU
 
 	run.StepCount = len(steps)
 	return &run, steps, nil
+}
+
+// isTerminalStepKey returns true for step keys that mark the end of a workflow.
+// This avoids the previous hardcoded "key == 'code'" assumption that blocked
+// workflows whose final step was named differently.
+func isTerminalStepKey(key string) bool {
+	switch key {
+	case "code", "final", "complete", "done", "review", "report", "deploy", "summarize":
+		return true
+	default:
+		return strings.HasPrefix(key, "final_")
+	}
 }

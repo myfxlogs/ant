@@ -382,12 +382,16 @@ func (s *DebateV2Service) GetJob(ctx context.Context, jobID, userID uuid.UUID) (
 	return job.Status, job.ErrorMessage, nil
 }
 
-func (s *DebateV2Service) JobChannel(jobID uuid.UUID) (<-chan *debateV2JobEvent, error) {
+func (s *DebateV2Service) JobChannel(jobID, userID uuid.UUID) (<-chan *debateV2JobEvent, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	ch, ok := s.jobChans[jobID]
 	if !ok {
 		return nil, fmt.Errorf("job %s not running", jobID)
+	}
+	// Verify the job belongs to the requesting user.
+	if ids, exists := s.jobSessions[jobID]; !exists || ids[1] != userID {
+		return nil, fmt.Errorf("job %s not found", jobID)
 	}
 	return ch, nil
 }

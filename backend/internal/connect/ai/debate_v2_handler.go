@@ -241,11 +241,12 @@ func (h *DebateV2Server) handleJobSSE(w http.ResponseWriter, r *http.Request, au
 		http.Error(w, "invalid job id", http.StatusBadRequest)
 		return
 	}
-	if _, err := authInterceptor.UserIDFromHTTP(r); err != nil {
+	userID, err := authInterceptor.UserIDFromHTTP(r)
+	if err != nil {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
-	ch, err := h.svc.JobChannel(jobID)
+	ch, err := h.svc.JobChannel(jobID, userID)
 	if err != nil {
 		http.Error(w, `{"error":"job not running"}`, http.StatusNotFound)
 		return

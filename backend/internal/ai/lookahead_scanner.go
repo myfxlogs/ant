@@ -59,10 +59,8 @@ func (s *LookAheadScanner) Scan(expression string) LookAheadResult {
 		Expression: expression,
 	}
 
-	normalized := strings.ReplaceAll(expression, " ", "")
-
 	for _, p := range s.patterns {
-		matches := p.re.FindAllStringSubmatchIndex(normalized, -1)
+		matches := p.re.FindAllStringSubmatchIndex(expression, -1)
 		for _, m := range matches {
 			// Extract line/col from original expression.
 			line := 1
@@ -77,7 +75,7 @@ func (s *LookAheadScanner) Scan(expression string) LookAheadResult {
 
 			// Check if the offset is actually positive (future).
 			pattern := expression[m[0]:m[1]]
-			if s.isNegativeRef(pattern, m, normalized) {
+			if s.isNegativeRef(pattern, m, expression) {
 				continue // skip legitimate past references
 			}
 			if s.isGtComparison(pattern, m, expression) {
