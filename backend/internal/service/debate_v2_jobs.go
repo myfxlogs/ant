@@ -67,7 +67,7 @@ func (s *DebateV2Service) RunChatJob(jobID, callerUserID uuid.UUID) error {
 		return fmt.Errorf("job %s not found", jobID)
 	}
 	if pair[1] != callerUserID {
-		return fmt.Errorf("job %s not found", jobID)
+		return fmt.Errorf("job %s unauthorized", jobID)
 	}
 	if _, running := s.jobChans[jobID]; running {
 		return fmt.Errorf("job %s is already running", jobID)

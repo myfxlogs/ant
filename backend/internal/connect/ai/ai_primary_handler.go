@@ -38,7 +38,7 @@ func (s *AIPrimaryServer) GetAIPrimary(ctx context.Context, req *connect.Request
 	}
 	rows, err := s.systemSvc.List(ctx, uid)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("internal error"))
 	}
 	for _, r := range rows {
 		if r.Enabled {

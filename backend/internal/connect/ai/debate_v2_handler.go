@@ -96,7 +96,7 @@ func (h *DebateV2Server) StartDebateV2AdvanceJob(ctx context.Context, req *conne
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	if err := h.svc.RunChatJob(jobID, uid); err != nil {
-		h.log.Error("StartDebateV2AdvanceJob: RunChatJob failed", zap.String("job_id", jobID.String()), zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.StartDebateV2AdvanceJobResponse{
 		JobId: jobID.String(), SessionId: sid,
@@ -223,7 +223,7 @@ func (h *DebateV2Server) StartDebateV2RejectCodeJob(ctx context.Context, req *co
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	if err := h.svc.RunChatJob(jobID, uid); err != nil {
-		h.log.Error("StartDebateV2RejectCodeJob: RunChatJob failed", zap.String("job_id", jobID.String()), zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.StartDebateV2AdvanceJobResponse{
 		JobId: jobID.String(), SessionId: sid,

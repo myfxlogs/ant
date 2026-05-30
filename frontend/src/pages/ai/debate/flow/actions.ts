@@ -41,7 +41,7 @@ export function createStartFlow(ctx: ActionContext) {
   return async () => {
     const keys = ctx.selectedAgents.map((a) => a.agentKey || a.type);
     if (keys.length === 0) {
-      antMessage.warning('Please select at least one agent to start the debate.');
+      antMessage.warning(ctx.t('ai.debate.messages.selectAgentsFirst'));
       return;
     }
     ctx.sendingRef.current = true; ctx.setSending(true);

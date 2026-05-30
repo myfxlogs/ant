@@ -222,7 +222,10 @@ func (r *DebateRepository) DeleteSession(ctx context.Context, id, userID uuid.UU
 		`DELETE FROM debate_sessions WHERE id = $1 AND user_id = $2`,
 		id, userID,
 	)
-	return fmt.Errorf("delete debate session: %w", err)
+	if err != nil {
+		return fmt.Errorf("delete debate session: %w", err)
+	}
+	return nil
 }
 
 // AddTurn inserts a turn and bumps session updated_at.
@@ -285,7 +288,10 @@ func (r *DebateRepository) UpdateTurnStatus(ctx context.Context, id uuid.UUID, s
 		`UPDATE debate_turns SET status = $1 WHERE id = $2`,
 		status, id,
 	)
-	return fmt.Errorf("update debate turn status: %w", err)
+	if err != nil {
+		return fmt.Errorf("update debate turn status: %w", err)
+	}
+	return nil
 }
 
 // -- helpers --

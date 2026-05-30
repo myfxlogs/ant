@@ -78,8 +78,6 @@ func (h *DebateV2Server) handleJobSSE(w http.ResponseWriter, r *http.Request, au
 			if ev.Phase == "completed" || ev.Phase == "failed" {
 				return
 			}
-		default:
-			// Don't block if neither channel nor context is ready.
 		}
 	}
 }

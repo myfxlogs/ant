@@ -85,14 +85,14 @@ export function useSystemAIPage() {
     }
   }, [fetchConfigs, t]);
 
-  const silentReload = async () => {
+  const silentReload = useCallback(async () => {
     try {
       await fetchConfigs();
       if (!mountedRef.current) return;
     } catch {
       if (!mountedRef.current) return;
     }
-  };
+  }, [fetchConfigs]);
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => { return () => { mountedRef.current = false; }; }, []);

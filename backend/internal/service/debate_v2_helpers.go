@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"go.uber.org/zap"
+
 	"anttrader/internal/repository"
 
 	"github.com/google/uuid"
@@ -34,10 +36,10 @@ func (s *DebateV2Service) toV2(ctx context.Context, id, userID uuid.UUID) (*V2Se
 	if err != nil {
 		return nil, err
 	}
-	return sessionToV2(sess, extras)
+	return s.sessionToV2(sess, extras)
 }
 
-func sessionToV2(sess *repository.DebateSession, e *v2Extras) (*V2Session, error) {
+func (s *DebateV2Service) sessionToV2(sess *repository.DebateSession, e *v2Extras) (*V2Session, error) {
 	steps, err := parseStepsFromRaw(e.Steps)
 	if err != nil {
 		return nil, fmt.Errorf("parse steps: %w", err)
@@ -46,14 +48,18 @@ func sessionToV2(sess *repository.DebateSession, e *v2Extras) (*V2Session, error
 	var code *V2Code
 	if len(e.Code) > 0 {
 		var c V2Code
-		if json.Unmarshal(e.Code, &c) == nil {
+		if err := json.Unmarshal(e.Code, &c); err != nil {
+			s.log.Warn("sessionToV2: failed to unmarshal code", zap.Error(err))
+		} else {
 			code = &c
 		}
 	}
 	var usage *V2Usage
 	if len(e.Usage) > 0 {
 		var u V2Usage
-		if json.Unmarshal(e.Usage, &u) == nil {
+		if err := json.Unmarshal(e.Usage, &u); err != nil {
+			s.log.Warn("sessionToV2: failed to unmarshal usage", zap.Error(err))
+		} else {
 			usage = &u
 		}
 	}

@@ -113,7 +113,7 @@ func (s *Service) resolveChatProvider(ctx context.Context, userID uuid.UUID, mod
 	}
 
 	for _, row := range rows {
-		if row == nil {
+		if row == nil || !row.Enabled {
 			continue
 		}
 		sec, secErr := s.GetSecret(ctx, userID, row.ProviderID)

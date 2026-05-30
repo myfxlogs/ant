@@ -115,7 +115,7 @@ export function useProviderSync(params: UseProviderSyncParams) {
       }
     }, 700);
     return () => clearTimeout(timer);
-  }, [draft?.provider_id, secretInput, lastAutoSavedSecretKey]);
+  }, [draft?.provider_id, secretInput, lastAutoSavedSecretKey, isCustomProvider, silentReload, t]);
 
   // Auto-discover effect
   useEffect(() => {
@@ -160,7 +160,7 @@ export function useProviderSync(params: UseProviderSyncParams) {
       }
     }, 700);
     return () => clearTimeout(timer);
-  }, [draft?.provider_id, draft?.base_url, draft?.has_secret, secretInput, lastAutoDiscoverKey]);
+  }, [draft?.provider_id, draft?.base_url, draft?.has_secret, secretInput, lastAutoDiscoverKey, validateBaseURL, persistDraftConfig, t]);
 
   // Auto-validate effect
   useEffect(() => {
@@ -194,7 +194,7 @@ export function useProviderSync(params: UseProviderSyncParams) {
       }
     }, 500);
     return () => clearTimeout(timer);
-  }, [draft?.provider_id, draft?.base_url, draft?.default_model, draft?.has_secret, secretInput, lastAutoValidateKey]);
+  }, [draft?.provider_id, draft?.base_url, draft?.default_model, draft?.has_secret, secretInput, lastAutoValidateKey, validateBaseURL, persistDraftConfig, t]);
 
   return { prevProviderIdRef };
 }

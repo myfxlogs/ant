@@ -134,7 +134,7 @@ func (r *AIConversationRepository) AddMessage(ctx context.Context, userID, conve
 		Content:        content,
 		CreatedAt:      time.Now(),
 	}
-	_, err := r.db.Exec(ctx,
+	ct, err := r.db.Exec(ctx,
 		`INSERT INTO ai_messages (id, conversation_id, role, content, created_at)
 		 SELECT $1, $2, $3, $4, $5
 		 FROM ai_conversations
@@ -143,6 +143,9 @@ func (r *AIConversationRepository) AddMessage(ctx context.Context, userID, conve
 	)
 	if err != nil {
 		return nil, err
+	}
+	if ct.RowsAffected() == 0 {
+		return nil, fmt.Errorf("conversation not found or not owned")
 	}
 	return msg, nil
 }

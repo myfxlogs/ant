@@ -126,7 +126,7 @@ func fetchModelsPage(ctx context.Context, baseURL, secret, after string) ([]stri
 	if payload.Next != "" && payload.HasMore {
 		return ids, payload.Next, true, nil
 	}
-	return ids, last, payload.HasMore, nil
+	return ids, last, payload.HasMore && payload.Next != "", nil
 }
 
 // classifyHTTPError returns "" if the response is OK; otherwise a short

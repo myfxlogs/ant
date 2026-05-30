@@ -132,8 +132,20 @@ func (s *SystemAIServer) UpdateSystemAISecret(ctx context.Context, req *connect.
 		return nil, err
 	}
 	maskedSecret := "***"
-	if len(req.Msg.Secret) > 4 {
-		maskedSecret = req.Msg.Secret[:2] + strings.Repeat("*", len(req.Msg.Secret)-4) + req.Msg.Secret[len(req.Msg.Secret)-2:]
+	n := len(req.Msg.Secret)
+	if n > 0 {
+		// At least 50% masked, minimum 4 masked chars.
+		masked := n / 2
+		if masked < 4 {
+			masked = 4
+		}
+		if masked > n {
+			masked = n
+		}
+		visible := n - masked
+		prefixLen := visible / 2
+		suffixLen := visible - prefixLen
+		maskedSecret = req.Msg.Secret[:prefixLen] + strings.Repeat("*", masked) + req.Msg.Secret[n-suffixLen:]
 	}
 	s.log.Info("UpdateSystemAISecret", zap.String("provider_id", req.Msg.ProviderId), zap.String("secret", maskedSecret))
 	if err := s.systemSvc.UpdateSecret(ctx, uid, req.Msg.ProviderId, req.Msg.Secret, uid.String()); err != nil {
