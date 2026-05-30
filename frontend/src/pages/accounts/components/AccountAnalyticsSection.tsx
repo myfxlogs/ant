@@ -1,26 +1,6 @@
 import { Segmented, Tag } from 'antd';
-import {
-  Area,
-  AreaChart,
-  Bar,
-  CartesianGrid,
-  Cell,
-  ComposedChart,
-  Legend,
-  Line,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
-import {
-  BarChartOutlined,
-  PieChartOutlined,
-  TrophyOutlined,
-} from '@ant-design/icons';
-
+import { Bar, CartesianGrid, ComposedChart, Cell, Legend, Line, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { BarChartOutlined, PieChartOutlined, TrophyOutlined } from '@ant-design/icons';
 import { CHART_COLORS } from '@/constants/performance';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -28,9 +8,10 @@ import { formatHoldingTime } from '@/utils/date';
 import { StatusResult } from '@/components/common/StatusResult';
 import { analyticsApi } from '@/client/analytics';
 import { getErrorMessage } from '@/utils/error';
-
 import { StatCard } from './AccountDetail.shared';
 import MonthlyAnalysisCard from './MonthlyAnalysisCard';
+import { EquityChart } from './EquityChart';
+import { HourlyDailyChart } from './HourlyDailyChart';
 
 type Props = {
   analyticsLoading: boolean;
@@ -40,44 +21,33 @@ type Props = {
   setChartType: (value: 'equity' | 'balance' | 'profit') => void;
   chartPeriod: 'day' | 'week' | 'month' | 'all';
   setChartPeriod: (value: 'day' | 'week' | 'month' | 'all') => void;
-  equityChartData: any[];
-  profitByMonthData: any[];
-  symbolDistributionData: any[];
-  dailyPnLData: any[];
-  hourlyData: any[];
-  tradeStats: any;
-  riskMetrics: any;
+  equityChartData: Record<string, unknown>[];
+  profitByMonthData: Record<string, unknown>[];
+  symbolDistributionData: Record<string, unknown>[];
+  dailyPnLData: Record<string, unknown>[];
+  hourlyData: Record<string, unknown>[];
+  tradeStats: Record<string, number>;
+  riskMetrics: Record<string, number>;
   monthlyAnalysisYears: number[];
-  monthlyAnalysisData: any[];
+  monthlyAnalysisData: Record<string, unknown>[];
   currency?: string;
   accountId?: string;
 };
 
-function AccountAnalyticsSection({
-  analyticsLoading,
-  analyticsError,
-  onRetryAnalytics,
-  chartType,
-  setChartType,
-  chartPeriod,
-  setChartPeriod,
-  equityChartData,
-  profitByMonthData: _initialMonthlyData,
-  symbolDistributionData,
-  dailyPnLData,
-  hourlyData,
-  tradeStats,
-  riskMetrics,
-  monthlyAnalysisYears,
-  monthlyAnalysisData,
-  currency,
-  accountId,
-}: Props) {
+function AccountAnalyticsSection(props: Props) {
+  const {
+    analyticsLoading, analyticsError, onRetryAnalytics,
+    chartType, setChartType, chartPeriod, setChartPeriod,
+    equityChartData, symbolDistributionData, dailyPnLData, hourlyData,
+    tradeStats, riskMetrics, monthlyAnalysisYears, monthlyAnalysisData,
+    currency, accountId,
+  } = props;
+
   const { t } = useTranslation();
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
-  // 初始数据来自父级传入的 prop（首次加载时的快照），后续年份切换由本地 useEffect 写入
-  const [monthlyData, setMonthlyData] = useState<any[]>(() =>
-    (_initialMonthlyData || []).length > 0 ? _initialMonthlyData : null  // 有初始数据则直接使用，否则由 useEffect 获取
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [monthlyData, setMonthlyData] = useState<Record<string, unknown>[] | null>(
+    () => props.profitByMonthData.length > 0 ? props.profitByMonthData : null,
   );
   const [monthlyError, setMonthlyError] = useState<string | null>(null);
 
@@ -85,144 +55,57 @@ function AccountAnalyticsSection({
     if (!accountId) return;
     let cancelled = false;
     setMonthlyError(null);
-    analyticsApi.getMonthlyPnL(accountId, selectedYear).then((data: any) => {
-      if (!cancelled) { setMonthlyData(data?.monthlyPnl || []); setMonthlyError(null); }
-    }).catch((err: unknown) => {
-      if (!cancelled) { setMonthlyError(getErrorMessage(err, 'Failed to load monthly PnL')); setMonthlyData([]); }
-    });
+    analyticsApi.getMonthlyPnL(accountId, selectedYear)
+      .then((data) => { if (!cancelled) { setMonthlyData(data?.monthlyPnl || []); setMonthlyError(null); } })
+      .catch((err) => { if (!cancelled) { setMonthlyError(getErrorMessage(err, 'Failed to load monthly PnL')); setMonthlyData([]); } });
     return () => { cancelled = true; };
   }, [accountId, selectedYear]);
 
-  const profitByMonthData = (monthlyData || _initialMonthlyData || [])
-    .map((m: any) => ({
+  const profitByMonthData = (monthlyData || props.profitByMonthData || [])
+    .map((m: Record<string, unknown>) => ({
       month: String(m?.month ?? m?.monthNum ?? m?.month_num ?? ''),
-      profit: m.profit,
-      trades: Number(m.trades),
+      profit: m.profit, trades: Number(m.trades),
     }))
-    .filter((m: any) => m.month);
+    .filter((m: Record<string, unknown>) => m.month);
 
-  const [timeView, setTimeView] = useState<'hourly' | 'daily'>('hourly');
-  const [selectedHourlyIndex, setSelectedHourlyIndex] = useState(0);
-  const [selectedDailyIndex, setSelectedDailyIndex] = useState(0);
-
-  // 数据长度变化导致旧 index 越界时，直接在渲染期 clamp，
-  // 避免 useEffect 内 setState 触发额外渲染（react-hooks/set-state-in-effect）。
-  const safeHourlyIndex =
-    selectedHourlyIndex < hourlyData.length ? selectedHourlyIndex : 0;
-  const safeDailyIndex =
-    selectedDailyIndex < dailyPnLData.length ? selectedDailyIndex : 0;
-
-  const selectedHourly = hourlyData[safeHourlyIndex] || null;
-  const selectedDaily = dailyPnLData[safeDailyIndex] || null;
-  const selectedTimePoint = timeView === 'hourly' ? selectedHourly : selectedDaily;
-
-  const formatMoney = (value: number) => `${value >= 0 ? '+' : ''}${Number(value || 0).toFixed(2)} ${currency || 'USD'}`;
-  const formatRatio = (value: number) => `${Number(value || 0).toFixed(2)}%`;
-  const preventChartFocus = (e: React.MouseEvent) => e.preventDefault();
-  type RechartsMouseState = { activeTooltipIndex?: number | string };
-  const pickTooltipIndex = (state: RechartsMouseState, len: number): number | null => {
-    const idx = state?.activeTooltipIndex;
-    if (typeof idx !== 'number') return null;
-    if (idx < 0 || idx >= len) return null;
-    return idx;
-  };
+  const stats = tradeStats as Record<string, number>;
+  const risks = riskMetrics as Record<string, number>;
 
   return (
     <StatusResult loading={analyticsLoading} error={analyticsError} onRetry={onRetryAnalytics}>
+      {/* Equity + Monthly Profit */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex gap-1 p-1 rounded-lg" style={{ background: '#F5F7F9' }}>
-              {[{ key: 'equity', label: t('accounts.analytics.chartType.equity') }, { key: 'balance', label: t('accounts.analytics.chartType.balance') }, { key: 'profit', label: t('accounts.analytics.chartType.profit') }].map((item) => (
-                <button
-                  key={item.key}
-                  onClick={() => setChartType(item.key as typeof chartType)}
+              {(['equity', 'balance', 'profit'] as const).map((key) => (
+                <button key={key} onClick={() => setChartType(key)}
                   className="px-4 py-1.5 rounded-md text-sm font-medium transition-all"
-                  style={{
-                    background: chartType === item.key ? '#FFFFFF' : 'transparent',
-                    color: chartType === item.key ? '#141D22' : '#8A9AA5',
-                    boxShadow: chartType === item.key ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none',
-                  }}
-                >
-                  {item.label}
+                  style={{ background: chartType === key ? '#FFFFFF' : 'transparent', color: chartType === key ? '#141D22' : '#8A9AA5', boxShadow: chartType === key ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none' }}>
+                  {t(`accounts.analytics.chartType.${key}`)}
                 </button>
               ))}
             </div>
-            <Segmented
-              value={chartPeriod}
-              onChange={(v) => setChartPeriod(v as typeof chartPeriod)}
+            <Segmented value={chartPeriod} onChange={(v) => setChartPeriod(v as typeof chartPeriod)}
               options={[
                 { label: t('accounts.analytics.chartPeriod.day'), value: 'day' },
                 { label: t('accounts.analytics.chartPeriod.week'), value: 'week' },
                 { label: t('accounts.analytics.chartPeriod.month'), value: 'month' },
                 { label: t('accounts.analytics.chartPeriod.all'), value: 'all' },
-              ]}
-              size="small"
-            />
+              ]} size="small" />
           </div>
-          {equityChartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={280}>
-              <AreaChart data={equityChartData}>
-                <defs>
-                  <linearGradient id="colorEquityGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#D4AF37" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="colorBalanceGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2196F3" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#2196F3" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="colorProfitGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#00A651" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#00A651" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                <XAxis
-                  dataKey="date"
-                  stroke="#8A9AA5"
-                  fontSize={11}
-                  interval={chartPeriod === 'day' ? 1 : 'preserveStartEnd'}
-                />
-                <YAxis stroke="#8A9AA5" fontSize={11} />
-                <Tooltip contentStyle={{ background: '#FFFFFF', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }} />
-                {chartType === 'equity' && (
-                  <Area type="monotone" dataKey="equity" stroke="#D4AF37" strokeWidth={2} fillOpacity={1} fill="url(#colorEquityGradient)" name={t('accounts.analytics.chartSeries.equity')} isAnimationActive={false} />
-                )}
-                {chartType === 'balance' && (
-                  <Area type="monotone" dataKey="balance" stroke="#2196F3" strokeWidth={2} fillOpacity={1} fill="url(#colorBalanceGradient)" name={t('accounts.analytics.chartSeries.balance')} isAnimationActive={false} />
-                )}
-                {chartType === 'profit' && (
-                  <Area type="monotone" dataKey="profit" stroke="#00A651" strokeWidth={2} fillOpacity={1} fill="url(#colorProfitGradient)" name={t('accounts.analytics.chartSeries.profit')} isAnimationActive={false} />
-                )}
-              </AreaChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex items-center justify-center h-[280px]" style={{ color: '#8A9AA5' }}>{t('accounts.analytics.empty.equityCurve')}</div>
-          )}
+          <EquityChart chartType={chartType} chartPeriod={chartPeriod} data={equityChartData} />
         </div>
 
         <div className="rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold flex items-center gap-2" style={{ color: '#141D22' }}>
-              <BarChartOutlined size={18} stroke={1.5} />
-              {t('accounts.analytics.monthlyProfitTitle')}
+              <BarChartOutlined />{t('accounts.analytics.monthlyProfitTitle')}
             </h2>
             <div className="flex items-center gap-2">
-              {[new Date().getFullYear() - 2, new Date().getFullYear() - 1, new Date().getFullYear()].map((year) => (
-                <Tag
-                  key={year}
-                  onClick={() => setSelectedYear(year)}
-                  style={{
-                    cursor: 'pointer',
-                    borderRadius: '6px',
-                    padding: '2px 12px',
-                    background: selectedYear === year ? '#D4AF37' : '#F5F7F9',
-                    color: selectedYear === year ? '#FFFFFF' : '#8A9AA5',
-                    border: 'none',
-                    fontWeight: selectedYear === year ? 600 : 400,
-                  }}
-                >
+              {[currentYear - 2, currentYear - 1, currentYear].map((year) => (
+                <Tag key={year} onClick={() => setSelectedYear(year)}
+                  style={{ cursor: 'pointer', borderRadius: '6px', padding: '2px 12px', background: selectedYear === year ? '#D4AF37' : '#F5F7F9', color: selectedYear === year ? '#FFFFFF' : '#8A9AA5', border: 'none', fontWeight: selectedYear === year ? 600 : 400 }}>
                   {year}
                 </Tag>
               ))}
@@ -247,59 +130,56 @@ function AccountAnalyticsSection({
         </div>
       </div>
 
+      {/* Stats + Symbol Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <div className="lg:col-span-2 rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
           <h2 className="text-lg font-semibold flex items-center gap-2 mb-4" style={{ color: '#141D22' }}>
-            <TrophyOutlined size={18} stroke={1.5} />
-            {t('accounts.analytics.advancedStatsTitle')}
+            <TrophyOutlined />{t('accounts.analytics.advancedStatsTitle')}
           </h2>
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
-            <StatCard icon="🏆" label={t('accounts.analytics.stats.winRate')} value={`${(tradeStats.winRate || 0).toFixed(1)}%`} valueColor="#00A651" />
-            <StatCard icon="🎯" label={t('accounts.analytics.stats.profitFactor')} value={`${(tradeStats.profitFactor || 0).toFixed(2)}`} valueColor="#D4AF37" />
-            <StatCard icon="📉" label={t('accounts.analytics.stats.maxDrawdown')} value={`${(riskMetrics.maxDrawdownPercent || 0).toFixed(2)}%`} valueColor="#E53935" />
-            <StatCard icon="📊" label={t('accounts.analytics.stats.totalTrades')} value={`${tradeStats.totalTrades || 0}`} />
-            <StatCard icon="📈" label={t('accounts.analytics.stats.avgProfit')} value={`+${(tradeStats.averageProfit || 0).toFixed(2)}`} valueColor="#00A651" />
-            <StatCard icon="📉" label={t('accounts.analytics.stats.avgLoss')} value={`${(tradeStats.averageLoss || 0).toFixed(2)}`} valueColor="#E53935" />
-            <StatCard icon="⏱️" label={t('accounts.analytics.stats.avgHolding')} value={formatHoldingTime(tradeStats.averageHoldingTime) || '-'} valueColor="#9C27B0" />
-            <StatCard icon="🔥" label={t('accounts.analytics.stats.consecutiveWinsLosses')} value={`${tradeStats.maxConsecutiveWins || 0}/${tradeStats.maxConsecutiveLosses || 0}`} />
-            <StatCard icon="📈" label={t('accounts.analytics.stats.sharpe')} value={`${(riskMetrics.sharpeRatio || 0).toFixed(2)}`} valueColor="#00A651" />
-            <StatCard icon="📉" label={t('accounts.analytics.stats.sortino')} value={`${(riskMetrics.sortinoRatio || 0).toFixed(2)}`} valueColor="#D4AF37" />
-            <StatCard icon="📊" label={t('accounts.analytics.stats.calmar')} value={`${(riskMetrics.calmarRatio || 0).toFixed(2)}`} valueColor="#FF9800" />
-            <StatCard icon="✨" label={t('accounts.analytics.stats.largestWin')} value={`+${(tradeStats.largestWin || 0).toFixed(2)}`} valueColor="#00A651" background="rgba(212, 175, 55, 0.1)" />
-            <StatCard icon="💥" label={t('accounts.analytics.stats.largestLoss')} value={`${(tradeStats.largestLoss || 0).toFixed(2)}`} valueColor="#E53935" />
-            <StatCard icon="📅" label={t('accounts.analytics.stats.avgDailyReturn')} value={`${(riskMetrics.averageDailyReturn || 0).toFixed(2)}`} />
-            <StatCard icon="📈" label={t('accounts.analytics.stats.volatility')} value={`${(riskMetrics.volatility || 0).toFixed(2)}`} valueColor="#2196F3" />
-            <StatCard icon="📊" label={t('accounts.analytics.stats.netProfit')} value={`${(tradeStats.netProfit || 0).toFixed(2)}`} valueColor={(tradeStats.netProfit || 0) >= 0 ? '#00A651' : '#E53935'} />
-            <StatCard icon="💰" label={t('accounts.analytics.stats.totalDeposit')} value={`+${(tradeStats.totalDeposit || 0).toFixed(2)}`} valueColor="#D4AF37" background="rgba(212, 175, 55, 0.1)" />
-            <StatCard icon="💸" label={t('accounts.analytics.stats.totalWithdrawal')} value={`-${(tradeStats.totalWithdrawal || 0).toFixed(2)}`} valueColor="#E53935" />
-            <StatCard icon="📊" label={t('accounts.analytics.stats.netDeposit')} value={`${(tradeStats.netDeposit || 0).toFixed(2)}`} valueColor={(tradeStats.netDeposit || 0) >= 0 ? '#D4AF37' : '#E53935'} />
+            <StatCard icon="🏆" label={t('accounts.analytics.stats.winRate')} value={`${(stats.winRate || 0).toFixed(1)}%`} valueColor="#00A651" />
+            <StatCard icon="🎯" label={t('accounts.analytics.stats.profitFactor')} value={`${(stats.profitFactor || 0).toFixed(2)}`} valueColor="#D4AF37" />
+            <StatCard icon="📉" label={t('accounts.analytics.stats.maxDrawdown')} value={`${(risks.maxDrawdownPercent || 0).toFixed(2)}%`} valueColor="#E53935" />
+            <StatCard icon="📊" label={t('accounts.analytics.stats.totalTrades')} value={`${stats.totalTrades || 0}`} />
+            <StatCard icon="📈" label={t('accounts.analytics.stats.avgProfit')} value={`+${(stats.averageProfit || 0).toFixed(2)}`} valueColor="#00A651" />
+            <StatCard icon="📉" label={t('accounts.analytics.stats.avgLoss')} value={`${(stats.averageLoss || 0).toFixed(2)}`} valueColor="#E53935" />
+            <StatCard icon="⏱️" label={t('accounts.analytics.stats.avgHolding')} value={formatHoldingTime(stats.averageHoldingTime) || '-'} valueColor="#9C27B0" />
+            <StatCard icon="🔥" label={t('accounts.analytics.stats.consecutiveWinsLosses')} value={`${stats.maxConsecutiveWins || 0}/${stats.maxConsecutiveLosses || 0}`} />
+            <StatCard icon="📈" label={t('accounts.analytics.stats.sharpe')} value={`${(risks.sharpeRatio || 0).toFixed(2)}`} valueColor="#00A651" />
+            <StatCard icon="📉" label={t('accounts.analytics.stats.sortino')} value={`${(risks.sortinoRatio || 0).toFixed(2)}`} valueColor="#D4AF37" />
+            <StatCard icon="📊" label={t('accounts.analytics.stats.calmar')} value={`${(risks.calmarRatio || 0).toFixed(2)}`} valueColor="#FF9800" />
+            <StatCard icon="✨" label={t('accounts.analytics.stats.largestWin')} value={`+${(stats.largestWin || 0).toFixed(2)}`} valueColor="#00A651" background="rgba(212, 175, 55, 0.1)" />
+            <StatCard icon="💥" label={t('accounts.analytics.stats.largestLoss')} value={`${(stats.largestLoss || 0).toFixed(2)}`} valueColor="#E53935" />
+            <StatCard icon="📅" label={t('accounts.analytics.stats.avgDailyReturn')} value={`${(risks.averageDailyReturn || 0).toFixed(2)}`} />
+            <StatCard icon="📈" label={t('accounts.analytics.stats.volatility')} value={`${(risks.volatility || 0).toFixed(2)}`} valueColor="#2196F3" />
+            <StatCard icon="📊" label={t('accounts.analytics.stats.netProfit')} value={`${(stats.netProfit || 0).toFixed(2)}`} valueColor={(stats.netProfit || 0) >= 0 ? '#00A651' : '#E53935'} />
+            <StatCard icon="💰" label={t('accounts.analytics.stats.totalDeposit')} value={`+${(stats.totalDeposit || 0).toFixed(2)}`} valueColor="#D4AF37" background="rgba(212, 175, 55, 0.1)" />
+            <StatCard icon="💸" label={t('accounts.analytics.stats.totalWithdrawal')} value={`-${(stats.totalWithdrawal || 0).toFixed(2)}`} valueColor="#E53935" />
+            <StatCard icon="📊" label={t('accounts.analytics.stats.netDeposit')} value={`${(stats.netDeposit || 0).toFixed(2)}`} valueColor={(stats.netDeposit || 0) >= 0 ? '#D4AF37' : '#E53935'} />
           </div>
         </div>
 
         <div className="rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
           <h2 className="text-lg font-semibold flex items-center gap-2 mb-4" style={{ color: '#141D22' }}>
-            <PieChartOutlined size={18} stroke={1.5} />
-            {t('accounts.analytics.symbolDistributionTitle')}
+            <PieChartOutlined />{t('accounts.analytics.symbolDistributionTitle')}
           </h2>
           {symbolDistributionData.length > 0 ? (
             <div className="flex items-center gap-3">
               <ResponsiveContainer width={120} height={120}>
                 <PieChart>
                   <Pie data={symbolDistributionData} cx={60} cy={60} innerRadius={35} outerRadius={50} paddingAngle={2} dataKey="value" isAnimationActive={false}>
-                    {symbolDistributionData.map((_: any, index: any) => (
-                      <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                    ))}
+                    {symbolDistributionData.map((_: unknown, i: number) => <Cell key={`c-${i}`} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>
               <div className="flex-1">
-                {symbolDistributionData.map((item: any, index: any) => (
-                  <div key={item.name} className="flex items-center justify-between mb-1.5">
+                {symbolDistributionData.map((item: Record<string, unknown>, i: number) => (
+                  <div key={String(item.name)} className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full" style={{ background: CHART_COLORS[index % CHART_COLORS.length] }} />
-                      <span style={{ color: '#141D22', fontSize: '12px' }}>{item.name}</span>
+                      <div className="w-2.5 h-2.5 rounded-full" style={{ background: CHART_COLORS[i % CHART_COLORS.length] }} />
+                      <span style={{ color: '#141D22', fontSize: '12px' }}>{String(item.name)}</span>
                     </div>
-                    <span style={{ color: '#8A9AA5', fontSize: '12px' }}>{item.value}%</span>
+                    <span style={{ color: '#8A9AA5', fontSize: '12px' }}>{String(item.value)}%</span>
                   </div>
                 ))}
               </div>
@@ -310,185 +190,10 @@ function AccountAnalyticsSection({
         </div>
       </div>
 
-      <div className="rounded-2xl p-5 mb-6" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold" style={{ color: '#141D22' }}>
-            {t('accounts.analytics.hourlyTitle')} / {t('accounts.analytics.dailyPnLTitle')}
-          </h2>
-          <div className="inline-flex rounded-lg p-1" style={{ background: '#F5F7F9' }}>
-            {([
-              { key: 'hourly', label: t('accounts.analytics.advancedTabs.hourly') },
-              { key: 'daily', label: t('accounts.analytics.advancedTabs.daily') },
-            ] as const).map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setTimeView(tab.key)}
-                className="px-3 py-1.5 rounded text-xs font-semibold transition-all"
-                style={{
-                  background: timeView === tab.key ? '#FFFFFF' : 'transparent',
-                  color: timeView === tab.key ? '#141D22' : '#8A9AA5',
-                  boxShadow: timeView === tab.key ? '0 1px 3px rgba(0, 0, 0, 0.08)' : 'none',
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
+      {/* Hourly / Daily chart */}
+      <HourlyDailyChart hourlyData={hourlyData} dailyPnLData={dailyPnLData} currency={currency || 'USD'} />
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-          <div className="xl:col-span-2 min-w-0">
-            {timeView === 'hourly' ? (
-              hourlyData.length > 0 ? (
-                <div
-                  className="outline-none [&_.recharts-wrapper]:!outline-none [&_.recharts-surface]:outline-none"
-                  onMouseDown={preventChartFocus}
-                >
-                <ResponsiveContainer width="100%" height={250}>
-                  <ComposedChart
-                    data={hourlyData}
-                    onMouseMove={(state) => {
-                      const idx = pickTooltipIndex(state as RechartsMouseState, hourlyData.length);
-                      if (idx != null) setSelectedHourlyIndex(idx);
-                    }}
-                    onClick={(state) => {
-                      const idx = pickTooltipIndex(state as RechartsMouseState, hourlyData.length);
-                      if (idx != null) setSelectedHourlyIndex(idx);
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                    <XAxis dataKey="hourLabel" stroke="#8A9AA5" fontSize={10} />
-                    <YAxis yAxisId="left" stroke="#8A9AA5" fontSize={10} />
-                    <YAxis yAxisId="right" orientation="right" stroke="#8A9AA5" fontSize={10} />
-                    <Tooltip
-                      cursor={false}
-                      wrapperStyle={{ pointerEvents: 'none' }}
-                      contentStyle={{ background: '#FFFFFF', border: '1px solid #E5E7EB', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)' }}
-                    />
-                    <Bar
-                      yAxisId="left"
-                      dataKey="trades"
-                      radius={[3, 3, 0, 0]}
-                      barSize={18}
-                      isAnimationActive={false}
-                    >
-                      {hourlyData.map((row: any, index: number) => (
-                        <Cell
-                          key={`hour-${index}`}
-                          fill={index === safeHourlyIndex ? '#2B6CB0' : '#64B5F6'}
-                          style={{ cursor: 'pointer' }}
-                          onClick={() => setSelectedHourlyIndex(index)}
-                        />
-                      ))}
-                    </Bar>
-                    <Line
-                      yAxisId="right"
-                      type="monotone"
-                      dataKey="profit"
-                      stroke="#FF9800"
-                      strokeWidth={2}
-                      dot={false}
-                      activeDot={false}
-                      style={{ pointerEvents: 'none' }}
-                      isAnimationActive={false}
-                    />
-                  </ComposedChart>
-                </ResponsiveContainer>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-[250px]" style={{ color: '#8A9AA5' }}>{t('accounts.analytics.empty.hourly')}</div>
-              )
-            ) : (
-              dailyPnLData.length > 0 ? (
-                <div
-                  className="outline-none [&_.recharts-wrapper]:!outline-none [&_.recharts-surface]:outline-none"
-                  onMouseDown={preventChartFocus}
-                >
-                <ResponsiveContainer width="100%" height={250}>
-                  <ComposedChart
-                    data={dailyPnLData}
-                    onMouseMove={(state) => {
-                      const idx = pickTooltipIndex(state as RechartsMouseState, dailyPnLData.length);
-                      if (idx != null) setSelectedDailyIndex(idx);
-                    }}
-                    onClick={(state) => {
-                      const idx = pickTooltipIndex(state as RechartsMouseState, dailyPnLData.length);
-                      if (idx != null) setSelectedDailyIndex(idx);
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                    <XAxis dataKey="date" stroke="#8A9AA5" fontSize={10} />
-                    <YAxis yAxisId="left" stroke="#8A9AA5" fontSize={10} />
-                    <YAxis yAxisId="right" orientation="right" stroke="#8A9AA5" fontSize={10} />
-                    <Tooltip
-                      cursor={false}
-                      wrapperStyle={{ pointerEvents: 'none' }}
-                      contentStyle={{ background: '#FFFFFF', border: '1px solid #E5E7EB', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)' }}
-                    />
-                    <Bar
-                      yAxisId="left"
-                      dataKey="trades"
-                      radius={[3, 3, 0, 0]}
-                      barSize={24}
-                      isAnimationActive={false}
-                    >
-                      {dailyPnLData.map((row: any, index: number) => (
-                        <Cell
-                          key={`day-${index}`}
-                          fill={index === safeDailyIndex ? '#2B6CB0' : '#4DB6AC'}
-                          style={{ cursor: 'pointer' }}
-                          onClick={() => setSelectedDailyIndex(index)}
-                        />
-                      ))}
-                    </Bar>
-                    <Line
-                      yAxisId="right"
-                      type="monotone"
-                      dataKey="profit"
-                      stroke="#FF9800"
-                      strokeWidth={2}
-                      dot={false}
-                      activeDot={false}
-                      style={{ pointerEvents: 'none' }}
-                      isAnimationActive={false}
-                    />
-                  </ComposedChart>
-                </ResponsiveContainer>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-[250px]" style={{ color: '#8A9AA5' }}>{t('accounts.analytics.empty.dailyPnL')}</div>
-              )
-            )}
-          </div>
-
-          <div className="rounded-xl p-3 border" style={{ borderColor: '#E5E7EB', background: '#F8FAFC' }}>
-            <div className="text-sm font-semibold mb-2" style={{ color: '#1F2937' }}>
-              {timeView === 'hourly'
-                ? (selectedTimePoint?.hourLabel || '--')
-                : `${selectedTimePoint?.date || '--'} ${selectedTimePoint?.day || ''}`}
-            </div>
-            <div className="text-xs space-y-1.5" style={{ color: '#475467' }}>
-              <div>{t('accounts.analytics.timeDetail.lots')}: <span className="font-semibold">{Number(selectedTimePoint?.lots || 0).toFixed(2)}</span></div>
-              <div>{t('accounts.analytics.timeDetail.trades')}: <span className="font-semibold">{Number(selectedTimePoint?.trades || 0)}</span></div>
-              <div>{t('accounts.analytics.timeDetail.profitAmount')}: <span className="font-semibold">{formatMoney(Number(selectedTimePoint?.profit || 0))}</span></div>
-              <div>{t('accounts.analytics.timeDetail.balance')}: <span className="font-semibold">{formatMoney(Number(selectedTimePoint?.balance || 0))}</span></div>
-              <div>{t('accounts.analytics.timeDetail.profitFactor')}: <span className="font-semibold">{Number(selectedTimePoint?.profitFactor || 0).toFixed(2)}</span></div>
-              <div>{t('accounts.analytics.timeDetail.maxFloatingLossAmount')}: <span className="font-semibold">{formatMoney(Number(selectedTimePoint?.maxFloatingLossAmount || 0))}</span></div>
-              <div>{t('accounts.analytics.timeDetail.maxFloatingLossRatio')}: <span className="font-semibold">{formatRatio(Number(selectedTimePoint?.maxFloatingLossRatio || 0))}</span></div>
-              <div>{t('accounts.analytics.timeDetail.maxFloatingProfitAmount')}: <span className="font-semibold">{formatMoney(Number(selectedTimePoint?.maxFloatingProfitAmount || 0))}</span></div>
-              <div>{t('accounts.analytics.timeDetail.maxFloatingProfitRatio')}: <span className="font-semibold">{formatRatio(Number(selectedTimePoint?.maxFloatingProfitRatio || 0))}</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <MonthlyAnalysisCard
-        accountId={accountId}
-        years={monthlyAnalysisYears}
-        data={monthlyAnalysisData}
-        currency={currency}
-      />
-
+      <MonthlyAnalysisCard accountId={accountId} years={monthlyAnalysisYears} data={monthlyAnalysisData} currency={currency} />
     </StatusResult>
   );
 }

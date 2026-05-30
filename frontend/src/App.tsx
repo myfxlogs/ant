@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import { useAuthStore } from '@/stores/authStore';
 import { ConnectProvider } from '@/providers/ConnectProvider';
 import { QueryProvider } from '@/providers/QueryProvider';
+import { SSEQueryBridge } from '@/bridge/SSEQueryBridge';
 import i18n, { normalizeLanguage, type SupportedLanguage } from '@/i18n';
 import { useEffect, useState, lazy } from 'react';
 import { PageWrapper } from '@/components/common/PageWrapper';
@@ -77,6 +78,7 @@ function AppContent() {
 
   return (
     <ConnectProvider>
+      <SSEQueryBridge />
       <Routes>
         <Route
           path="/login"
