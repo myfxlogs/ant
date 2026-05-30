@@ -87,7 +87,7 @@ export default function AlgoDashboard() {
       setAlgos(prev => prev.map(a =>
         a.executionId === executionId ? { ...a, state: 'cancelled' } : a
       ));
-    } catch (e: unknown) {
+    } catch (_e: unknown) {
       // ignore — refresh will pick up state
     }
   }, []);

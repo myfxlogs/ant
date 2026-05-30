@@ -26,7 +26,6 @@ return signal
     tags: ['trend', 'turtle'],
     useCount: 0,
     createdAt: new Date().toISOString(),
-  }
 };
 
 export default tpl;

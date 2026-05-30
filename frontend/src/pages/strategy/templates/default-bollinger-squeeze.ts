@@ -33,7 +33,6 @@ return signal
     tags: ['volatility', 'bollinger', 'breakout'],
     useCount: 0,
     createdAt: new Date().toISOString(),
-  }
 };
 
 export default tpl;

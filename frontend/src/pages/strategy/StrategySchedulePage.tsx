@@ -72,7 +72,7 @@ export default function StrategySchedulePage() {
   const [error, setError] = useState<string | null>(null);
   const [schedules, setSchedules] = useState<any[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
-  const { accounts, symbols, symbolsLoading, fetchAccounts, loadSymbols } =
+  const { accounts, symbols, symbolsLoading, fetchAccounts } =
     useAccountsAndSymbols();
 
   const [openEdit, setOpenEdit] = useState(false);

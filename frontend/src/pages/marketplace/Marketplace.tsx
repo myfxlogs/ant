@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   Card, Input, Select, Tag, Button, Space, Typography, Row, Col,
-  Empty, Tooltip, message, Tabs,
+  Tooltip, message, Tabs,
 } from 'antd';
 import {
   SearchOutlined, PlusOutlined, ExperimentOutlined,

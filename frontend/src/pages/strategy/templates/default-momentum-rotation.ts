@@ -16,7 +16,6 @@ signal = {
     tags: ['multi-symbol-required'],
     useCount: 0,
     createdAt: new Date().toISOString(),
-  }
 };
 
 export default tpl;

@@ -44,7 +44,6 @@ if price is not None and upper > lower and grid_count >= 2:
     tags: ['grid', 'market-making'],
     useCount: 0,
     createdAt: new Date().toISOString(),
-  }
 };
 
 export default tpl;

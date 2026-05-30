@@ -1,4 +1,4 @@
-import { createClient, ConnectError, Code } from "@connectrpc/connect";
+import { createClient } from "@connectrpc/connect";
 import { AuthService } from "../gen/ant/v1/auth_pb";
 import { AccountService } from "../gen/ant/v1/account_pb";
 import { MarketService } from "../gen/ant/v1/market_service_pb";

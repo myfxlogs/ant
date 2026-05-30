@@ -41,7 +41,6 @@ return {'signal': 'hold', 'symbol': symbol, 'price': close[-1] if len(close)>0 e
     tags: ['trend', 'MACD', 'divergence'],
     useCount: 0,
     createdAt: new Date().toISOString(),
-  }
 };
 
 export default tpl;

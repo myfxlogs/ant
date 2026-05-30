@@ -78,7 +78,6 @@ else:
     isPublic: true,
     useCount: 0,
     createdAt: new Date().toISOString(),
-  }
 };
 
 export default tpl;

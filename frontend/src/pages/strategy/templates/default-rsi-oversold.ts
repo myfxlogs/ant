@@ -39,7 +39,6 @@ return signal
     tags: ['mean-reversion', 'RSI'],
     useCount: 0,
     createdAt: new Date().toISOString(),
-  }
 };
 
 export default tpl;
