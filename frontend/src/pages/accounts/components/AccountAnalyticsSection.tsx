@@ -77,7 +77,7 @@ function AccountAnalyticsSection({
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   // 初始数据来自父级传入的 prop（首次加载时的快照），后续年份切换由本地 useEffect 写入
   const [monthlyData, setMonthlyData] = useState<any[]>(() =>
-    (_initialMonthlyData || []).length > 0 ? null : null  // 首次无数据，由 useEffect 获取
+    (_initialMonthlyData || []).length > 0 ? _initialMonthlyData : null  // 有初始数据则直接使用，否则由 useEffect 获取
   );
   const [monthlyError, setMonthlyError] = useState<string | null>(null);
 

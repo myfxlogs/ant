@@ -9,6 +9,8 @@ import { getDeviceLocale, getDeviceTimeZone } from '@/utils/date';
 import type { Position } from '@/types/trading';
 import type { AccountStatusEvent } from '@/gen/ant/v1/stream_event_account_pb';
 
+const THROTTLE_MS = 300;
+
 function normalizePositionSide(raw: string): Position['type'] {
   const u = raw.toLowerCase();
   if (u === 'buy' || u === 'sell' || u === 'buy_limit' || u === 'sell_limit' || u === 'buy_stop' || u === 'sell_stop') {
@@ -271,7 +273,6 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
             // Throttle (not debounce) so a steady stream of profit events still flushes.
             // Previous debounce starved Account List updates when 2+ accounts each pushed
             // faster than the timer (per-event clearTimeout never let it fire).
-            const THROTTLE_MS = 300;
             const now = Date.now();
             const elapsed = now - profitLastFlushAtRef.current;
             if (profitUpdateTimeoutRef.current) {
@@ -469,7 +470,6 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
         if (isAuthenticated) {
           connect();
         }
-      } else if (mountedRef.current) {
       }
     }, 30000);
 

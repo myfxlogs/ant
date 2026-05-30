@@ -238,6 +238,9 @@ func (s *StreamServer) SubscribeEvents(
 			if !filterAll && !accountSet[ev.AccountID] {
 				continue
 			}
+			if ev.Order == nil {
+				continue
+			}
 			// Track close events from orderCh so the snapshot diff
 			// does not emit duplicate close events.
 			if ev.EventType == "close" {
@@ -245,9 +248,6 @@ func (s *StreamServer) SubscribeEvents(
 					recentlyClosed[ev.AccountID] = make(map[int64]bool)
 				}
 				recentlyClosed[ev.AccountID][ev.Ticket] = true
-			}
-			if ev.Order == nil {
-				continue
 			}
 			event := &antv1.StreamEvent{
 				Type:      "order_update",
@@ -505,6 +505,9 @@ func (s *StreamServer) SubscribeOrderUpdates(
 				return nil
 			}
 			if accountID != "" && ev.AccountID != accountID {
+				continue
+			}
+			if ev.Order == nil {
 				continue
 			}
 			protoEv := orderRecordToUpdateEvent(ev.Order, ev.AccountID, ev.EventType, ev.Ticket)

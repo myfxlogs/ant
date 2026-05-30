@@ -224,7 +224,7 @@ export default function AccountDetail() {
     } finally {
       setAnalyticsLoading(false);
     }
-  }, [historyPageSize]);
+  }, [historyPageSize, chartPeriod]);
 
   // chartPeriod changes only refresh the equity curve chart, not the full analytics section.
   const loadAnalyticsForPeriod = useCallback(async (accountId: string) => {
