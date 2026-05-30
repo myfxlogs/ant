@@ -171,6 +171,7 @@ func (s *StreamServer) SubscribeUserSummary(
 func (s *StreamServer) computeSummary(ctx context.Context, userID string) *antv1.UserSummaryEvent {
 	summary, err := s.platform.GetUserAccountsSummary(ctx, userID)
 	if err != nil {
+		s.log.Warn("computeSummary: GetUserAccountsSummary failed", zap.String("userID", userID), zap.Error(err))
 		return nil
 	}
 	return &antv1.UserSummaryEvent{
