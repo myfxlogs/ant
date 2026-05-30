@@ -8,30 +8,24 @@ import (
 	"go.uber.org/zap"
 
 	"connectrpc.com/connect"
-	"github.com/google/uuid"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/interceptor"
-	aiSvc "anttrader/internal/service/systemai"
+	systemai "anttrader/internal/service/systemai"
 )
 
 const codeAssistModel = "gpt-4o"
 
 // CodeAssistServer implements ant.v1.CodeAssistServiceHandler.
 type CodeAssistServer struct {
-	systemSvc *aiSvc.Service
+	systemSvc *systemai.Service
 	log       *zap.Logger
 }
 
 var _ antv1c.CodeAssistServiceHandler = (*CodeAssistServer)(nil)
 
-func NewCodeAssistServer(systemSvc *aiSvc.Service, log *zap.Logger) *CodeAssistServer {
+func NewCodeAssistServer(systemSvc *systemai.Service, log *zap.Logger) *CodeAssistServer {
 	return &CodeAssistServer{systemSvc: systemSvc, log: log}
-}
-
-func (s *CodeAssistServer) userID(ctx context.Context) (uuid.UUID, error) {
-	return uuid.Parse(interceptor.GetUserID(ctx))
 }
 
 func (s *CodeAssistServer) ReviseCode(ctx context.Context, req *connect.Request[antv1.ReviseCodeRequest]) (*connect.Response[antv1.ReviseCodeResponse], error) {
@@ -45,9 +39,9 @@ func (s *CodeAssistServer) ReviseCode(ctx context.Context, req *connect.Request[
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("instruction too long: %d bytes", len(instruction)))
 	}
 
-	uid, err := s.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 
 	sysPrompt := "You are an expert quantitative trading strategy developer. " +
@@ -75,9 +69,9 @@ func (s *CodeAssistServer) ExplainCode(ctx context.Context, req *connect.Request
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("code too large: %d bytes", len(code)))
 	}
 
-	uid, err := s.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 
 	sysPrompt := "You are an expert quantitative trading code reviewer. " +
@@ -104,9 +98,9 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("code too large: %d bytes", len(code)))
 	}
 
-	uid, err := s.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 
 	sysPrompt := "You are a trading strategy code validator. " +

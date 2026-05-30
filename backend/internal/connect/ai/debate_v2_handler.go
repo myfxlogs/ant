@@ -13,7 +13,6 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/interceptor"
 	debateV2 "anttrader/internal/service"
 )
 
@@ -29,17 +28,9 @@ func NewDebateV2Server(svc *debateV2.DebateV2Service, log *zap.Logger) *DebateV2
 	return &DebateV2Server{svc: svc, log: log}
 }
 
-func (h *DebateV2Server) userID(ctx context.Context) (uuid.UUID, error) {
-	id, err := uuid.Parse(interceptor.GetUserID(ctx))
-	if err != nil {
-		return uuid.Nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user id"))
-	}
-	return id, nil
-}
-
 func (h *DebateV2Server) StartDebateV2(ctx context.Context, req *connect.Request[antv1.StartDebateV2Request]) (*connect.Response[antv1.DebateV2Session], error) {
 	h.log.Info("StartDebateV2: entering handler")
-	uid, err := h.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +50,7 @@ func (h *DebateV2Server) StartDebateV2(ctx context.Context, req *connect.Request
 }
 
 func (h *DebateV2Server) ChatDebateV2(ctx context.Context, req *connect.Request[antv1.ChatDebateV2Request]) (*connect.Response[antv1.DebateV2Session], error) {
-	uid, err := h.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +62,7 @@ func (h *DebateV2Server) ChatDebateV2(ctx context.Context, req *connect.Request[
 }
 
 func (h *DebateV2Server) AdvanceDebateV2(ctx context.Context, req *connect.Request[antv1.DebateV2SessionRequest]) (*connect.Response[antv1.DebateV2Session], error) {
-	uid, err := h.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +74,7 @@ func (h *DebateV2Server) AdvanceDebateV2(ctx context.Context, req *connect.Reque
 }
 
 func (h *DebateV2Server) StartDebateV2AdvanceJob(ctx context.Context, req *connect.Request[antv1.DebateV2SessionRequest]) (*connect.Response[antv1.StartDebateV2AdvanceJobResponse], error) {
-	uid, err := h.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +95,7 @@ func (h *DebateV2Server) StartDebateV2AdvanceJob(ctx context.Context, req *conne
 }
 
 func (h *DebateV2Server) GetDebateV2AdvanceJob(ctx context.Context, req *connect.Request[antv1.GetDebateV2AdvanceJobRequest]) (*connect.Response[antv1.GetDebateV2AdvanceJobResponse], error) {
-	uid, err := h.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +113,7 @@ func (h *DebateV2Server) GetDebateV2AdvanceJob(ctx context.Context, req *connect
 }
 
 func (h *DebateV2Server) PrepareDebateV2ChatJob(ctx context.Context, req *connect.Request[antv1.ChatDebateV2Request]) (*connect.Response[antv1.StartDebateV2ChatJobResponse], error) {
-	uid, err := h.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +127,7 @@ func (h *DebateV2Server) PrepareDebateV2ChatJob(ctx context.Context, req *connec
 }
 
 func (h *DebateV2Server) RunDebateV2ChatJob(ctx context.Context, req *connect.Request[antv1.RunDebateV2ChatJobRequest]) (*connect.Response[emptypb.Empty], error) {
-	uid, err := h.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +142,7 @@ func (h *DebateV2Server) RunDebateV2ChatJob(ctx context.Context, req *connect.Re
 }
 
 func (h *DebateV2Server) GetDebateV2ChatJob(ctx context.Context, req *connect.Request[antv1.GetDebateV2ChatJobRequest]) (*connect.Response[antv1.GetDebateV2ChatJobResponse], error) {
-	uid, err := h.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +160,7 @@ func (h *DebateV2Server) GetDebateV2ChatJob(ctx context.Context, req *connect.Re
 }
 
 func (h *DebateV2Server) BackDebateV2(ctx context.Context, req *connect.Request[antv1.DebateV2SessionRequest]) (*connect.Response[antv1.DebateV2Session], error) {
-	uid, err := h.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +173,7 @@ func (h *DebateV2Server) BackDebateV2(ctx context.Context, req *connect.Request[
 }
 
 func (h *DebateV2Server) SetDebateV2Params(ctx context.Context, req *connect.Request[antv1.SetDebateV2ParamsRequest]) (*connect.Response[antv1.DebateV2Session], error) {
-	uid, err := h.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +189,7 @@ func (h *DebateV2Server) SetDebateV2Params(ctx context.Context, req *connect.Req
 }
 
 func (h *DebateV2Server) RejectDebateV2Code(ctx context.Context, req *connect.Request[antv1.RejectDebateV2CodeRequest]) (*connect.Response[antv1.DebateV2Session], error) {
-	uid, err := h.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -210,7 +201,7 @@ func (h *DebateV2Server) RejectDebateV2Code(ctx context.Context, req *connect.Re
 }
 
 func (h *DebateV2Server) StartDebateV2RejectCodeJob(ctx context.Context, req *connect.Request[antv1.RejectDebateV2CodeRequest]) (*connect.Response[antv1.StartDebateV2AdvanceJobResponse], error) {
-	uid, err := h.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -231,7 +222,7 @@ func (h *DebateV2Server) StartDebateV2RejectCodeJob(ctx context.Context, req *co
 }
 
 func (h *DebateV2Server) ListDebateV2Sessions(ctx context.Context, req *connect.Request[antv1.ListDebateV2SessionsRequest]) (*connect.Response[antv1.ListDebateV2SessionsResponse], error) {
-	uid, err := h.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -254,7 +245,7 @@ func (h *DebateV2Server) ListDebateV2Sessions(ctx context.Context, req *connect.
 }
 
 func (h *DebateV2Server) GetDebateV2Session(ctx context.Context, req *connect.Request[antv1.GetDebateV2SessionRequest]) (*connect.Response[antv1.DebateV2Session], error) {
-	uid, err := h.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -266,7 +257,7 @@ func (h *DebateV2Server) GetDebateV2Session(ctx context.Context, req *connect.Re
 }
 
 func (h *DebateV2Server) DeleteDebateV2Session(ctx context.Context, req *connect.Request[antv1.DeleteDebateV2SessionRequest]) (*connect.Response[emptypb.Empty], error) {
-	uid, err := h.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}

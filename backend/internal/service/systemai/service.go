@@ -8,9 +8,11 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 
+	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/pkg/secretbox"
 	"anttrader/internal/repository"
 )
@@ -167,6 +169,31 @@ func (s *Service) DiscoverModels(ctx context.Context, userID uuid.UUID, provider
 		}
 	}
 	return fetchOpenAIModels(ctx, base, secret)
+}
+
+// RowToProto converts a repository row into the protobuf config message.
+func RowToProto(r *repository.SystemAIConfigRow) *antv1.SystemAIConfig {
+	if r == nil {
+		return &antv1.SystemAIConfig{}
+	}
+	return &antv1.SystemAIConfig{
+		ProviderId:     r.ProviderID,
+		Name:           r.Name,
+		BaseUrl:        r.BaseURL,
+		Organization:   r.Organization,
+		Models:         r.Models,
+		DefaultModel:   r.DefaultModel,
+		Temperature:    r.Temperature,
+		TimeoutSeconds: int32(r.TimeoutSeconds),
+		MaxTokens:      int32(r.MaxTokens),
+		Purposes:       r.Purposes,
+		PrimaryFor:     r.PrimaryFor,
+		Enabled:        r.Enabled,
+		HasSecret:      r.HasSecret,
+		CreatedAt:      r.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:      r.UpdatedAt.Format(time.RFC3339),
+		UpdatedBy:      r.UpdatedBy,
+	}
 }
 
 // FriendlyError maps internal errors to user-readable Chinese messages so the

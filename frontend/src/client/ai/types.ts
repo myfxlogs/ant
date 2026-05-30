@@ -11,7 +11,7 @@ function protoDate(ts: Timestamp | undefined): Date {
   return ts ? timestampDate(ts) : new Date();
 }
 
-function toConversationRole(role: string): 'user' | 'assistant' | 'system' {
+export function toConversationRole(role: string): 'user' | 'assistant' | 'system' {
   if (role === 'user' || role === 'assistant' || role === 'system') return role;
   return 'user';
 }

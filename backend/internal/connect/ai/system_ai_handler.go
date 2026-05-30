@@ -5,16 +5,13 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
-	"time"
 
 	"go.uber.org/zap"
 
 	"connectrpc.com/connect"
-	"github.com/google/uuid"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/interceptor"
 	"anttrader/internal/repository"
 	systemai "anttrader/internal/service/systemai"
 )
@@ -31,40 +28,8 @@ func NewSystemAIServer(systemSvc *systemai.Service, log *zap.Logger) *SystemAISe
 	return &SystemAIServer{systemSvc: systemSvc, log: log}
 }
 
-func (s *SystemAIServer) userID(ctx context.Context) (uuid.UUID, error) {
-	id, err := uuid.Parse(interceptor.GetUserID(ctx))
-	if err != nil {
-		return uuid.Nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user id"))
-	}
-	return id, nil
-}
-
-func rowToProto(r *repository.SystemAIConfigRow) *antv1.SystemAIConfig {
-	if r == nil {
-		return &antv1.SystemAIConfig{}
-	}
-	return &antv1.SystemAIConfig{
-		ProviderId:     r.ProviderID,
-		Name:           r.Name,
-		BaseUrl:        r.BaseURL,
-		Organization:   r.Organization,
-		Models:         r.Models,
-		DefaultModel:   r.DefaultModel,
-		Temperature:    r.Temperature,
-		TimeoutSeconds: int32(r.TimeoutSeconds),
-		MaxTokens:      int32(r.MaxTokens),
-		Purposes:       r.Purposes,
-		PrimaryFor:     r.PrimaryFor,
-		Enabled:        r.Enabled,
-		HasSecret:      r.HasSecret,
-		CreatedAt:      r.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:      r.UpdatedAt.Format(time.RFC3339),
-		UpdatedBy:      r.UpdatedBy,
-	}
-}
-
 func (s *SystemAIServer) ListSystemAIConfigs(ctx context.Context, req *connect.Request[antv1.ListSystemAIConfigsRequest]) (*connect.Response[antv1.ListSystemAIConfigsResponse], error) {
-	uid, err := s.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -74,13 +39,13 @@ func (s *SystemAIServer) ListSystemAIConfigs(ctx context.Context, req *connect.R
 	}
 	items := make([]*antv1.SystemAIConfig, len(rows))
 	for i, r := range rows {
-		items[i] = rowToProto(r)
+		items[i] = systemai.RowToProto(r)
 	}
 	return connect.NewResponse(&antv1.ListSystemAIConfigsResponse{Items: items}), nil
 }
 
 func (s *SystemAIServer) GetSystemAIConfig(ctx context.Context, req *connect.Request[antv1.GetSystemAIConfigRequest]) (*connect.Response[antv1.GetSystemAIConfigResponse], error) {
-	uid, err := s.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -88,11 +53,11 @@ func (s *SystemAIServer) GetSystemAIConfig(ctx context.Context, req *connect.Req
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(err)))
 	}
-	return connect.NewResponse(&antv1.GetSystemAIConfigResponse{Item: rowToProto(row)}), nil
+	return connect.NewResponse(&antv1.GetSystemAIConfigResponse{Item: systemai.RowToProto(row)}), nil
 }
 
 func (s *SystemAIServer) UpdateSystemAIConfig(ctx context.Context, req *connect.Request[antv1.UpdateSystemAIConfigRequest]) (*connect.Response[antv1.UpdateSystemAIConfigResponse], error) {
-	uid, err := s.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +92,7 @@ func (s *SystemAIServer) UpdateSystemAIConfig(ctx context.Context, req *connect.
 }
 
 func (s *SystemAIServer) UpdateSystemAISecret(ctx context.Context, req *connect.Request[antv1.UpdateSystemAISecretRequest]) (*connect.Response[antv1.UpdateSystemAISecretResponse], error) {
-	uid, err := s.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +123,7 @@ func (s *SystemAIServer) UpdateSystemAISecret(ctx context.Context, req *connect.
 }
 
 func (s *SystemAIServer) DiscoverSystemAIModels(ctx context.Context, req *connect.Request[antv1.DiscoverSystemAIModelsRequest]) (*connect.Response[antv1.DiscoverSystemAIModelsResponse], error) {
-	uid, err := s.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +146,7 @@ func (s *SystemAIServer) DiscoverSystemAIModels(ctx context.Context, req *connec
 }
 
 func (s *SystemAIServer) ValidateSystemAIConnection(ctx context.Context, req *connect.Request[antv1.ValidateSystemAIConnectionRequest]) (*connect.Response[antv1.ValidateSystemAIConnectionResponse], error) {
-	uid, err := s.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}

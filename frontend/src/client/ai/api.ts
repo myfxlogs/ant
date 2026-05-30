@@ -3,6 +3,7 @@ import type { Timestamp } from '@bufbuild/protobuf/wkt';
 import { aiClient, aiPrimaryClient } from '../connect';
 import {
   toAgentView,
+  toConversationRole,
   viewToAgentDefinition,
   mapConversationSummary,
   mapWorkflowRunSummary,
@@ -21,11 +22,6 @@ import type { ConversationMessage as ProtoConversationMessage } from '../../gen/
 
 function protoTs(ts: Timestamp | undefined): Date {
   return ts ? timestampDate(ts) : new Date();
-}
-
-function toConversationRole(role: string): 'user' | 'assistant' | 'system' {
-  if (role === 'user' || role === 'assistant' || role === 'system') return role;
-  return 'user';
 }
 
 export const aiApi = {

@@ -7,11 +7,9 @@ import (
 	"go.uber.org/zap"
 
 	"connectrpc.com/connect"
-	"github.com/google/uuid"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/interceptor"
 	systemai "anttrader/internal/service/systemai"
 )
 
@@ -27,14 +25,10 @@ func NewAIPrimaryServer(systemSvc *systemai.Service, log *zap.Logger) *AIPrimary
 	return &AIPrimaryServer{systemSvc: systemSvc, log: log}
 }
 
-func (s *AIPrimaryServer) userID(ctx context.Context) (uuid.UUID, error) {
-	return uuid.Parse(interceptor.GetUserID(ctx))
-}
-
 func (s *AIPrimaryServer) GetAIPrimary(ctx context.Context, req *connect.Request[antv1.GetAIPrimaryRequest]) (*connect.Response[antv1.AIPrimaryResponse], error) {
-	uid, err := s.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 	rows, err := s.systemSvc.List(ctx, uid)
 	if err != nil {
@@ -65,9 +59,9 @@ func (s *AIPrimaryServer) GetAIPrimary(ctx context.Context, req *connect.Request
 }
 
 func (s *AIPrimaryServer) SetAIPrimary(ctx context.Context, req *connect.Request[antv1.SetAIPrimaryRequest]) (*connect.Response[antv1.AIPrimaryResponse], error) {
-	uid, err := s.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 	if err := s.systemSvc.SetAIPrimary(ctx, uid, req.Msg.ProviderId, req.Msg.Model); err != nil {
 		s.log.Error("SetAIPrimary transaction failed", zap.Error(err))

@@ -12,28 +12,23 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/interceptor"
 	"anttrader/internal/repository"
-	aiSvc "anttrader/internal/service/systemai"
+	systemai "anttrader/internal/service/systemai"
 )
 
 // AIServer implements the ant.v1.AIServiceHandler interface.
 type AIServer struct {
-	systemSvc    *aiSvc.Service
+	systemSvc    *systemai.Service
 	conversations *repository.AIConversationRepository
 	log          *zap.Logger
 }
 
 // NewAIServer creates an AI service ConnectRPC handler.
-func NewAIServer(systemSvc *aiSvc.Service, conversations *repository.AIConversationRepository, log *zap.Logger) *AIServer {
+func NewAIServer(systemSvc *systemai.Service, conversations *repository.AIConversationRepository, log *zap.Logger) *AIServer {
 	return &AIServer{systemSvc: systemSvc, conversations: conversations, log: log}
 }
 
 var _ antv1c.AIServiceHandler = (*AIServer)(nil)
-
-func (s *AIServer) userID(ctx context.Context) (uuid.UUID, error) {
-	return uuid.Parse(interceptor.GetUserID(ctx))
-}
 
 // ── Reports ──
 
@@ -62,7 +57,7 @@ func (s *AIServer) Chat(ctx context.Context, req *connect.Request[antv1.ChatRequ
 	}
 	reply := fmt.Sprintf("收到消息：「%s」。AI 助手正在开发中，这是模拟回复。", m.Message)
 	if m.ConversationId != "" {
-		uid, err := s.userID(ctx)
+		uid, err := userIDFromCtx(ctx)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeUnauthenticated, err)
 		}
@@ -113,9 +108,9 @@ func (s *AIServer) ChatStream(ctx context.Context, req *connect.Request[antv1.Ch
 // ── Conversations ──
 
 func (s *AIServer) ListConversations(ctx context.Context, req *connect.Request[antv1.ListConversationsRequest]) (*connect.Response[antv1.ListConversationsResponse], error) {
-	uid, err := s.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 	convs, err := s.conversations.ListByUser(ctx, uid)
 	if err != nil {
@@ -136,9 +131,9 @@ func (s *AIServer) ListConversations(ctx context.Context, req *connect.Request[a
 }
 
 func (s *AIServer) GetConversation(ctx context.Context, req *connect.Request[antv1.GetConversationRequest]) (*connect.Response[antv1.GetConversationResponse], error) {
-	uid, err := s.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 	cid, err := uuid.Parse(req.Msg.Id)
 	if err != nil {
@@ -175,9 +170,9 @@ func (s *AIServer) GetConversation(ctx context.Context, req *connect.Request[ant
 }
 
 func (s *AIServer) CreateConversation(ctx context.Context, req *connect.Request[antv1.CreateConversationRequest]) (*connect.Response[antv1.CreateConversationResponse], error) {
-	uid, err := s.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 	title := req.Msg.Title
 	if title == "" {
@@ -202,9 +197,9 @@ func (s *AIServer) CreateConversation(ctx context.Context, req *connect.Request[
 }
 
 func (s *AIServer) DeleteConversation(ctx context.Context, req *connect.Request[antv1.DeleteConversationRequest]) (*connect.Response[antv1.DeleteConversationResponse], error) {
-	uid, err := s.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 	cid, err := uuid.Parse(req.Msg.Id)
 	if err != nil {
@@ -226,9 +221,9 @@ func (s *AIServer) DeleteConversation(ctx context.Context, req *connect.Request[
 }
 
 func (s *AIServer) UpdateConversationTitle(ctx context.Context, req *connect.Request[antv1.UpdateConversationTitleRequest]) (*connect.Response[antv1.UpdateConversationTitleResponse], error) {
-	uid, err := s.userID(ctx)
+	uid, err := userIDFromCtx(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 	if len(req.Msg.Title) > 200 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("title too long: %d characters", len(req.Msg.Title)))
@@ -247,33 +242,33 @@ func (s *AIServer) UpdateConversationTitle(ctx context.Context, req *connect.Req
 // ── Workflow ──
 
 func (s *AIServer) CreateWorkflowRun(ctx context.Context, req *connect.Request[antv1.CreateWorkflowRunRequest]) (*connect.Response[antv1.CreateWorkflowRunResponse], error) {
-	_, err := s.userID(ctx)
+	_, err := userIDFromCtx(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 	return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("CreateWorkflowRun not yet implemented"))
 }
 
 func (s *AIServer) AppendWorkflowStep(ctx context.Context, req *connect.Request[antv1.AppendWorkflowStepRequest]) (*connect.Response[antv1.AppendWorkflowStepResponse], error) {
-	_, err := s.userID(ctx)
+	_, err := userIDFromCtx(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 	return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("AppendWorkflowStep not yet implemented"))
 }
 
 func (s *AIServer) ListWorkflowRuns(ctx context.Context, req *connect.Request[antv1.ListWorkflowRunsRequest]) (*connect.Response[antv1.ListWorkflowRunsResponse], error) {
-	_, err := s.userID(ctx)
+	_, err := userIDFromCtx(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 	return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("ListWorkflowRuns not yet implemented"))
 }
 
 func (s *AIServer) GetWorkflowRun(ctx context.Context, req *connect.Request[antv1.GetWorkflowRunRequest]) (*connect.Response[antv1.GetWorkflowRunResponse], error) {
-	_, err := s.userID(ctx)
+	_, err := userIDFromCtx(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 	return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("GetWorkflowRun not yet implemented"))
 }
@@ -292,9 +287,9 @@ func (s *AIServer) ListAgents(ctx context.Context, req *connect.Request[antv1.Li
 }
 
 func (s *AIServer) SetAgents(ctx context.Context, req *connect.Request[antv1.SetAgentsRequest]) (*connect.Response[antv1.SetAgentsResponse], error) {
-	_, err := s.userID(ctx)
+	_, err := userIDFromCtx(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 	return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("SetAgents not yet implemented"))
 }
