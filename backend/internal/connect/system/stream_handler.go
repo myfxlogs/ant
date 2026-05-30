@@ -141,6 +141,8 @@ func (s *StreamServer) SubscribeEvents(
 		orders, err := s.svc.OpenedOrders(rpcCtx, aid)
 		cancel()
 		if err != nil {
+			s.log.Warn("sendInitialSnapshot: OpenedOrders failed, skipping position snapshot",
+				zap.String("account", aid), zap.Error(err))
 			continue
 		}
 		now := timestamppb.Now()

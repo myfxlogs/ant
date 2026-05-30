@@ -457,6 +457,14 @@ func main() {
 			OnAccountDisconnect: func(accountID string) {
 				syncAccountHistory(accountID)
 				platformAgg.ClearAccount(accountID)
+				// Update DB status so frontend doesn't keep showing stale "connected" state.
+				writeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				defer cancel()
+				if _, err := pool.Exec(writeCtx,
+					`UPDATE mt_accounts SET account_status='disconnected', updated_at=CURRENT_TIMESTAMP WHERE id=$1::uuid`,
+					accountID); err != nil {
+					log.Warn("OnAccountDisconnect: failed to update account_status", zap.String("account", accountID), zap.Error(err))
+				}
 			},
 			OnBrokerInfo: func(accountID, platform, broker string, info *mdtick.BrokerInfo) {
 				syncAccountHistory(accountID)
@@ -464,17 +472,21 @@ func main() {
 					go func() {
 						sctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 						defer cancel()
-						if orders, err := mthubSvc.OpenedOrders(sctx, accountID); err == nil {
-							snapshot := &mthub.PositionSnapshot{AccountID: accountID, Positions: make([]mthub.PositionSnapshotItem, 0, len(orders))}
-							for _, o := range orders {
-								snapshot.Positions = append(snapshot.Positions, mthub.PositionSnapshotItem{
-									Ticket: o.Ticket, Symbol: o.SymbolRaw, Type: mapSideToString(o.Side), Volume: o.Volume.InexactFloat64(),
-									OpenPrice: o.OpenPrice.InexactFloat64(), Profit: o.Profit.InexactFloat64(),
-									Swap: o.Swap.InexactFloat64(), Commission: o.Commission.InexactFloat64(), Comment: o.Comment,
-								})
-							}
-							snapshotBroker.Publish(snapshot)
+						orders, err := mthubSvc.OpenedOrders(sctx, accountID)
+						if err != nil {
+							log.Warn("OnBrokerInfo: OpenedOrders failed, initial position snapshot skipped",
+								zap.String("account", accountID), zap.String("platform", platform), zap.Error(err))
+							return
 						}
+						snapshot := &mthub.PositionSnapshot{AccountID: accountID, Positions: make([]mthub.PositionSnapshotItem, 0, len(orders))}
+						for _, o := range orders {
+							snapshot.Positions = append(snapshot.Positions, mthub.PositionSnapshotItem{
+								Ticket: o.Ticket, Symbol: o.SymbolRaw, Type: mapSideToString(o.Side), Volume: o.Volume.InexactFloat64(),
+								OpenPrice: o.OpenPrice.InexactFloat64(), Profit: o.Profit.InexactFloat64(),
+								Swap: o.Swap.InexactFloat64(), Commission: o.Commission.InexactFloat64(), Comment: o.Comment,
+							})
+						}
+						snapshotBroker.Publish(snapshot)
 					}()
 				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 				defer cancel()
