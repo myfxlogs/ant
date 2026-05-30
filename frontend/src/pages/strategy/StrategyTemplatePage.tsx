@@ -14,8 +14,6 @@ import type {
 } from "@/client/strategy";
 import { DEFAULT_TEMPLATES } from "./StrategyTemplatePage.defaults";
 import { copyToClipboard } from "@/utils/clipboard";
-import { accountApi } from "@/client/account";
-import { marketApi, type SymbolInfo } from "@/client/market";
 import { pythonStrategyApi } from "@/client/pythonStrategy";
 import { getDeviceLocale } from "@/utils/date";
 import { codeAssistApi, type RequiredParamSpec } from "@/client/codeAssist";
@@ -32,13 +30,8 @@ import {
   saveRunTitle,
 } from "./StrategyTemplatePage.utils";
 import { useStrategyTemplateRuns } from "./hooks/useStrategyTemplateRuns";
+import { useAccountsAndSymbols } from "./hooks/useAccountsAndSymbols";
 import { buildStrategyTemplateColumns } from "./StrategyTemplateColumns";
-
-// accountApi.list() returns plain objects after toCamelCase transformation.
-interface AccountLike {
-  id: string;
-  [key: string]: unknown;
-}
 
 const StrategyTemplatePage: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -75,16 +68,14 @@ const StrategyTemplatePage: React.FC = () => {
   >({});
   const [form] = Form.useForm();
 
+  const { accounts, symbols, symbolsLoading, fetchAccounts, loadSymbols } =
+    useAccountsAndSymbols();
+
   const [backtestModalOpen, setBacktestModalOpen] = useState(false);
   const [backtestForm] = Form.useForm();
   const [backtestSubmitting, setBacktestSubmitting] = useState(false);
   const [backtestTemplate, setBacktestTemplate] =
     useState<StrategyTemplate | null>(null);
-  const [accounts, setAccounts] = useState<AccountLike[]>([]);
-  const [symbols, setSymbols] = useState<{ value: string; label: string }[]>(
-    [],
-  );
-  const [symbolsLoading, setSymbolsLoading] = useState(false);
 
   const runState = useStrategyTemplateRuns(t);
   const {
@@ -148,46 +139,11 @@ const StrategyTemplatePage: React.FC = () => {
     }
   }, [t]);
 
-  const fetchAccounts = async () => {
-    try {
-      const data = await accountApi.list();
-      setAccounts((data as AccountLike[]) || []);
-    } catch (_e) {
-      setAccounts([]);
-    }
-  };
-
-  const loadSymbols = async (accountId: string) => {
-    if (!accountId) {
-      setSymbols([]);
-      return;
-    }
-    setSymbolsLoading(true);
-    try {
-      const list = await marketApi.getSymbols(accountId);
-      const seen = new Set<string>();
-      const opts = (list || [])
-        .map((s: SymbolInfo) => String(s?.symbol || "").trim())
-        .filter((v) => v)
-        .filter((v) => {
-          if (seen.has(v)) return false;
-          seen.add(v);
-          return true;
-        })
-        .map((v) => ({ value: v, label: v }));
-      setSymbols(opts);
-    } catch (_e) {
-      setSymbols([]);
-    } finally {
-      setSymbolsLoading(false);
-    }
-  };
-
   useEffect(() => {
     fetchTemplates();
     fetchAccounts();
     fetchRuns();
-  }, [fetchTemplates, fetchRuns]);
+  }, [fetchTemplates, fetchAccounts, fetchRuns]);
 
   // Re-fetch templates whenever the UI language changes so backend-provided
   // i18n name/description for preset strategies update in place. Mirrors the

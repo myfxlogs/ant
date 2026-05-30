@@ -3,13 +3,12 @@ import { Button, Card, Form, Space, Typography, message } from "antd";
 import { StatusResult } from "@/components/common/StatusResult";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { timestampDate } from "@bufbuild/protobuf/wkt";
-import { accountApi } from "../../client/account";
-import { marketApi } from "../../client/market";
 import { pythonStrategyApi } from "../../client/pythonStrategy";
 import {
   strategyScheduleV2Api,
   strategyTemplateApi,
 } from "../../client/strategy";
+import { useAccountsAndSymbols } from "./hooks/useAccountsAndSymbols";
 import { tradingApi } from "../../client/trading";
 import { scheduleHealthApi } from "../../client/scheduleHealth";
 import { getTradingRiskToastMessage } from "../../utils/tradingRiskError";
@@ -73,15 +72,11 @@ export default function StrategySchedulePage() {
   const [error, setError] = useState<string | null>(null);
   const [schedules, setSchedules] = useState<any[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
-  const [accounts, setAccounts] = useState<any[]>([]);
+  const { accounts, symbols, symbolsLoading, fetchAccounts, loadSymbols } =
+    useAccountsAndSymbols();
 
   const [openEdit, setOpenEdit] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
-
-  const [symbols, setSymbols] = useState<{ value: string; label: string }[]>(
-    [],
-  );
-  const [symbolsLoading, setSymbolsLoading] = useState(false);
 
   const [triggering, setTriggering] = useState(false);
   const [openTrigger, setOpenTrigger] = useState(false);
@@ -159,17 +154,13 @@ export default function StrategySchedulePage() {
     setLoading(true);
     setError(null);
     try {
-      const result = await Promise.all([
+      const [tpls, schs] = await Promise.all([
         strategyTemplateApi.list(),
-        accountApi.list(),
         strategyScheduleV2Api.list(),
       ]);
-      const tpls: Record<string, unknown>[] = (result?.[0] || []) as Record<string, unknown>[];
-      const accs: Record<string, unknown>[] = (result?.[1] || []) as Record<string, unknown>[];
-      const schs: Record<string, unknown>[] = (result?.[2] || []) as Record<string, unknown>[];
-      setTemplates(tpls);
-      setAccounts(accs);
-      setSchedules(schs);
+      setTemplates(tpls as Record<string, unknown>[]);
+      setSchedules(schs as Record<string, unknown>[]);
+      void fetchAccounts();
     } catch (e: any) {
       const msg = e?.message || t("common.loadingFailed");
       setError(msg);
