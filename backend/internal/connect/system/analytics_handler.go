@@ -22,13 +22,14 @@ import (
 type AnalyticsServer struct {
 	repo     *repository.AnalyticsRepository
 	platform *service.PlatformService
+	cache    *service.AnalyticsCache
 	log      *zap.Logger
 }
 
 var _ antv1c.AnalyticsServiceHandler = (*AnalyticsServer)(nil)
 
-func NewAnalyticsServer(repo *repository.AnalyticsRepository, platform *service.PlatformService, log *zap.Logger) *AnalyticsServer {
-	return &AnalyticsServer{repo: repo, platform: platform, log: log}
+func NewAnalyticsServer(repo *repository.AnalyticsRepository, platform *service.PlatformService, cache *service.AnalyticsCache, log *zap.Logger) *AnalyticsServer {
+	return &AnalyticsServer{repo: repo, platform: platform, cache: cache, log: log}
 }
 
 // verifyAccountOwnership extracts userID and checks account ownership (#19).
@@ -56,6 +57,13 @@ func (s *AnalyticsServer) GetAccountAnalytics(ctx context.Context, req *connect.
 	// #19: Verify account ownership.
 	if err := s.verifyAccountOwnership(ctx, req.Msg.AccountId); err != nil {
 		return nil, err
+	}
+
+	// Check analytics cache — return immediately on hit, bypassing all 7 SQL queries.
+	if s.cache != nil {
+		if cached, err := s.cache.Get(ctx, req.Msg.AccountId); err == nil && cached != nil {
+			return connect.NewResponse(cached), nil
+		}
 	}
 
 	now := time.Now()
