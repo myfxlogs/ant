@@ -39,6 +39,9 @@ func (s *MtHubServer) PlaceOrder(ctx context.Context, req *connect.Request[antv1
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
 	}
 	m := req.Msg
+	if m.Canonical == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("canonical symbol is required"))
+	}
 	ok, err := s.platform.UserOwnsAccount(ctx, userID, m.AccountId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -49,6 +52,9 @@ func (s *MtHubServer) PlaceOrder(ctx context.Context, req *connect.Request[antv1
 	vol, err := decimal.NewFromString(m.Volume)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	if !vol.IsPositive() {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("volume must be positive"))
 	}
 	// Default to decimal.Zero for empty Price/StopLoss/TakeProfit (proto3 default values).
 	price, sl, tp := decimal.Zero, decimal.Zero, decimal.Zero
