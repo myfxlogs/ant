@@ -53,8 +53,8 @@ func (r *SpillReplay) Run(ctx context.Context) (int, error) {
 
 	processedDir := filepath.Join(r.dir, "processed")
 	failedDir := filepath.Join(r.dir, "failed")
-	os.MkdirAll(processedDir, 0755)
-	os.MkdirAll(failedDir, 0755)
+	os.MkdirAll(processedDir, 0750)
+	os.MkdirAll(failedDir, 0750)
 
 	var total int
 	for _, fname := range files {

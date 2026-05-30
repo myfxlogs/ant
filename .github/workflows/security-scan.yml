@@ -55,18 +55,22 @@ jobs:
     strategy:
       matrix:
         include:
-          - dockerfile: backend/Dockerfile
+          - context: backend
+            dockerfile: Dockerfile
             name: backend
-          - dockerfile: frontend/Dockerfile
+          - context: frontend
+            dockerfile: Dockerfile
             name: frontend
-          - dockerfile: strategy-service/Dockerfile
+          - context: strategy-service
+            dockerfile: Dockerfile
             name: strategy-service
     steps:
       - uses: actions/checkout@v4
       - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
-          file: ${{ matrix.dockerfile }}
+          context: ${{ matrix.context }}
+          file: ${{ matrix.context }}/${{ matrix.dockerfile }}
           push: false
           load: true
           tags: ant-image:${{ matrix.name }}
