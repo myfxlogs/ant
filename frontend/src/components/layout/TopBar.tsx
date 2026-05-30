@@ -3,6 +3,7 @@ import { MenuOutlined, UserOutlined, SettingOutlined, LogoutOutlined, LineChartO
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import NotificationCenter from '@/components/notification/NotificationCenter';
+import { isAdmin } from '@/constants/permissions';
 import { useTranslation } from 'react-i18next';
 
 const { Header } = Layout;
@@ -16,12 +17,12 @@ export default function TopBar({ isMobile, onMenuToggle }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const isAdmin = user?.permissions?.includes('admin:view') ?? false;
+  const admin = isAdmin(user?.permissions);
 
   const userMenuItems = [
     { key: 'profile', icon: <UserOutlined size={18} />, label: t('topbar.profile') },
     { key: 'settings', icon: <SettingOutlined size={18} />, label: t('topbar.settings') },
-    ...(isAdmin ? [{ type: 'divider' as const }, { key: 'admin', icon: <LineChartOutlined size={18} />, label: t('topbar.switchToAdmin') }] : []),
+    ...(admin ? [{ type: 'divider' as const }, { key: 'admin', icon: <LineChartOutlined size={18} />, label: t('topbar.switchToAdmin') }] : []),
     { type: 'divider' as const },
     { key: 'logout', icon: <LogoutOutlined size={18} />, label: t('topbar.logout'), danger: true },
   ];

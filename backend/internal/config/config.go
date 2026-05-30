@@ -19,11 +19,12 @@ type Config struct {
 	DBSSLMode  string
 
 	// ClickHouse
-	CHHost     string
-	CHPort     string
-	CHUser     string
-	CHPassword string
-	CHDatabase string
+	CHHost          string
+	CHPort          string
+	CHUser          string
+	CHPassword      string
+	CHDatabase      string
+	CHBufferEnabled bool
 
 	// NATS
 	NATSURL string
@@ -34,7 +35,9 @@ type Config struct {
 	RedisPassword string
 
 	// Secrets / crypto
-	AntMasterKey string
+	AntMasterKey     string
+	AntKeyDir        string
+	AntMasterKeyFile string
 
 	// JWT
 	JWTSecret string
@@ -80,11 +83,12 @@ func Load() *Config {
 		DBName:     getenv("DB_NAME", "ant"),
 		DBSSLMode:  getenv("DB_SSLMODE", "disable"),
 
-		CHHost:     getenv("CH_HOST", "clickhouse"),
-		CHPort:     getenv("CH_PORT", "9000"),
-		CHUser:     getenv("CH_USER", "default"),
-		CHPassword: getenv("CH_PASSWORD", ""),
-		CHDatabase: getenv("CH_DATABASE", "ant"),
+		CHHost:          getenv("CH_HOST", "clickhouse"),
+		CHPort:          getenv("CH_PORT", "9000"),
+		CHUser:          getenv("CH_USER", "default"),
+		CHPassword:      getenv("CH_PASSWORD", ""),
+		CHDatabase:      getenv("CH_DATABASE", "ant"),
+		CHBufferEnabled: getenvBool("ANT_CH_BUFFER_ENABLED", true),
 
 		NATSURL: getenv("NATS_URL", nats.DefaultURL),
 
@@ -92,8 +96,10 @@ func Load() *Config {
 		RedisPort:     getenv("REDIS_PORT", ""),
 		RedisPassword: getenv("REDIS_PASSWORD", ""),
 
-		AntMasterKey: os.Getenv("ANT_MASTER_KEY"),
-		JWTSecret:    os.Getenv("JWT_SECRET"),
+		AntMasterKey:     getenv("ANT_MASTER_KEY", ""),
+		AntKeyDir:        getenv("ANT_KEY_DIR", ""),
+		AntMasterKeyFile: getenv("ANT_MASTER_KEY_FILE", ""),
+		JWTSecret:        getenv("JWT_SECRET", ""),
 
 		Port:        getenv("PORT", "8080"),
 		SpillDir:    getenv("SPILL_DIR", "/var/lib/ant/spill"),
@@ -107,12 +113,12 @@ func Load() *Config {
 
 		MtapiToken: getenv("MTAPI_TOKEN", ""),
 
-		SMTPHost:     os.Getenv("SMTP_HOST"),
+		SMTPHost:     getenv("SMTP_HOST", ""),
 		SMTPPort:     getenv("SMTP_PORT", "587"),
-		SMTPUser:     os.Getenv("SMTP_USER"),
-		SMTPPassword: os.Getenv("SMTP_PASSWORD"),
+		SMTPUser:     getenv("SMTP_USER", ""),
+		SMTPPassword: getenv("SMTP_PASSWORD", ""),
 		SMTPFrom:     getenv("SMTP_FROM", "ant@localhost"),
-		SMTPTo:       os.Getenv("SMTP_TO"),
+		SMTPTo:       getenv("SMTP_TO", ""),
 
 		RateLimitLoginPerMinute: getenvInt("RATE_LIMIT_LOGIN_PER_MINUTE", 10),
 		RateLimitEnabled:        getenvBool("RATE_LIMIT_ENABLED", true),

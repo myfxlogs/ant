@@ -1,77 +1,21 @@
-import { useCallback, useContext } from 'react';
+import { useCallback } from 'react';
 import { useTradingStore } from '@/stores/tradingStore';
 import { tradingApi } from '@/client/trading';
 import { accountApi } from '@/client/account';
 import { getErrorMessage, translateMaybeI18nKey } from '@/utils/error';
 import { showError, showSuccess } from '@/utils/message';
 import i18n from '@/i18n';
-import { Code, ConnectError } from '@connectrpc/connect';
-import { getTradingRiskToastMessage } from '@/utils/tradingRiskError';
-import { ConnectContext } from '@/providers/connectContext';
-
-const reconnectAttemptAtMs = new Map<string, number>();
-const RECONNECT_COOLDOWN_MS = 15_000;
 
 export function useTrading() {
   const positions = useTradingStore((state) => state.positions);
   const tradeLogs = useTradingStore((state) => state.tradeLogs);
   const loading = useTradingStore((state) => state.loading);
   const setLoading = useTradingStore((state) => state.setLoading);
-  const setPositions = useTradingStore((state) => state.setPositions);
-  const connectCtx = useContext(ConnectContext);
 
-  const fetchPositions = useCallback(async (accountId: string, showLoading = true) => {
-    if (!accountId) {
-      return [];
-    }
-    if (showLoading) {
-      setLoading(true);
-    }
-    try {
-      const positions = await tradingApi.getPositions(accountId);
-      const positionsArray = Array.isArray(positions) ? positions : [];
-      setPositions(accountId, positionsArray);
-      return positionsArray;
-    } catch (error) {
-      const isFailedPrecondition = error instanceof ConnectError && error.code === Code.FailedPrecondition;
-      const rawMessage = typeof (error as Error)?.message === 'string' ? (error as Error).message : '';
-      const normalizedMessage = rawMessage.toLowerCase();
-      const isAccountNotConnected = isFailedPrecondition || normalizedMessage.includes('account not connected');
-
-      if (isAccountNotConnected) {
-        const now = Date.now();
-        const lastAttempt = reconnectAttemptAtMs.get(accountId) || 0;
-        if (now - lastAttempt > RECONNECT_COOLDOWN_MS) {
-          reconnectAttemptAtMs.set(accountId, now);
-          try {
-            const result = await accountApi.connect(accountId);
-            if (result?.success !== false) {
-              // SSE reconnection is handled by ConnectProvider's 30s polling interval;
-              // do not trigger a redundant reconnect here to avoid races.
-              const positionsAfterReconnect = await tradingApi.getPositions(accountId);
-              const positionsArray = Array.isArray(positionsAfterReconnect) ? positionsAfterReconnect : [];
-              setPositions(accountId, positionsArray);
-              return positionsArray;
-            }
-          } catch (_e) {
-            // ignore
-          }
-        }
-      }
-
-      if (!isAccountNotConnected) {
-        showError(getErrorMessage(error, i18n.t('trading.messages.fetchPositionsFailed')));
-        setPositions(accountId, []);
-        return [];
-      }
-      const state = useTradingStore.getState();
-      return state.positionsMap.get(accountId) || [];
-    } finally {
-      if (showLoading) {
-        setLoading(false);
-      }
-    }
-  }, [setLoading, setPositions]);
+  // Position data now flows exclusively through SSE → TanStack Query.
+  // No RPC fetchPositions — the SSEQueryBridge handles initial snapshots
+  // and incremental updates. This eliminates the race condition between
+  // SSE and RPC position data.
 
   const sendOrder = useCallback(async (params: {
     accountId: string;
@@ -167,7 +111,6 @@ export function useTrading() {
     positions,
     tradeLogs,
     loading,
-    fetchPositions,
     sendOrder,
     closeOrder,
     getOrderHistory,

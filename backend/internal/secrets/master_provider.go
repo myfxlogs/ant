@@ -28,6 +28,7 @@ type MasterProvider interface {
 type EnvMasterKey struct{}
 
 func (EnvMasterKey) MasterKey(_ context.Context) ([]byte, error) {
+	// ANT_MASTER_KEY is injected by main() via config.Load().AntMasterKey
 	return decodeMasterKey(os.Getenv("ANT_MASTER_KEY"))
 }
 

@@ -2,7 +2,6 @@ import { useEffect, useState, lazy, Suspense } from 'react';
 import { Row, Col, Spin } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useAccount } from '@/hooks/useAccount';
-import { useTrading } from '@/hooks/useTrading';
 import { useTradingStore } from '@/stores/tradingStore';
 import AccountSummaryCard from './components/AccountSummaryCard';
 import PositionsTable from './components/PositionsTable';
@@ -15,13 +14,12 @@ const PriceChart = lazy(() => import('@/components/chart/PriceChart'));
 export default function Trading() {
   const { t } = useTranslation();
   const { fetchAccounts } = useAccount();
-  const { fetchPositions } = useTrading();
   const currentAccountId = useTradingStore((s) => s.currentAccountId);
   const setCurrentAccountId = useTradingStore((s) => s.setCurrentAccountId);
   const [chartSymbol, setChartSymbol] = useState<string>('');
   const [chartTimeframe, setChartTimeframe] = useState('1h');
 
-  // Load accounts on mount.
+  // Load accounts on mount. Positions flow exclusively through SSE.
   useEffect(() => {
     fetchAccounts().then((list) => {
       if (list && list.length > 0 && !currentAccountId) {
@@ -31,13 +29,6 @@ export default function Trading() {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Load positions when account changes.
-  useEffect(() => {
-    if (currentAccountId) {
-      fetchPositions(currentAccountId);
-    }
-  }, [currentAccountId, fetchPositions]);
 
   return (
     <div style={{ padding: '0 0 24px 0' }}>

@@ -3,7 +3,6 @@ package mdgateway
 import (
 	"context"
 	"fmt"
-	"os"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -64,7 +63,7 @@ func NewCHWriter(cfg CHWriterConfig, conn clickhouse.Conn, spill *SpillWriter, l
 		barQ:  make(chan *mdtick.Bar, cfg.QueueSize),
 	}
 	// S-2: init buffer bypass from env; default = buffer enabled.
-	w.bufferEnabled.Store(os.Getenv("ANT_CH_BUFFER_ENABLED") != "false")
+	// CH buffer enabled is now configured via config.Load().CHBufferEnabled
 	return w
 }
 
