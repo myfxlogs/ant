@@ -1,20 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Button,
-  Card,
-  Empty,
-  Input,
-  List,
-  Popconfirm,
-  Select,
-  Space,
   Spin,
-  Switch,
   Typography,
   message,
 } from 'antd';
-import { DownOutlined, RightOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -26,20 +17,10 @@ import {
   getDefaultAgentTemplates,
   mergeWithDefaultAgentTemplates,
 } from './defaultAgentTemplates';
-
-const { Text } = Typography;
-
-// AISettings 自 060 起聚焦在「Agent 编辑」单一职责：
-// - 厂商 Key / 默认模型 / 可用模型清单 全部移交 SystemAI 页（/ai/system）。
-// - 本页只读 system_ai_configs 来填「provider × model」选择器。
-// - 库里没有 Agent 时，由后端 ListAgents 自动 seed 8 个默认 Agent，
-//   前端不再自行写入；首次访问看到的就是已 seed 的列表。
-//
-// 提交路径：aiApi.setAgents() → 整体替换；保存成功后同步进 useAgentStore，
-// debate 页无需再次请求。
+import { AgentEditor, encodeAgentModel, decodeAgentModel } from './components/AgentEditor';
 
 interface ModelOption {
-  value: string; // "providerId|modelId"
+  value: string;
   label: string;
 }
 
@@ -53,28 +34,12 @@ function buildModelOptions(
       const models = Array.from(
         new Set((c.models || []).map((m) => (m || '').trim()).filter(Boolean)),
       );
-      // 没列出 models 时退回 default_model，至少能让用户挑到一个。
       const list = models.length > 0 ? models : (c.default_model ? [c.default_model] : []);
       return list.map((m) => ({
         value: `${c.provider_id}|${m}`,
         label: `${labelOf(c.provider_id, c.name)} · ${m}`,
       }));
     });
-}
-
-function encodeAgentModel(a: AIAgentDefinitionView): string {
-  if (!a.providerId) return '';
-  return `${a.providerId}|${a.modelOverride || ''}`;
-}
-
-function decodeAgentModel(value: string): { providerId: string; modelOverride: string } {
-  if (!value) return { providerId: '', modelOverride: '' };
-  const idx = value.indexOf('|');
-  if (idx < 0) return { providerId: value, modelOverride: '' };
-  return {
-    providerId: value.slice(0, idx),
-    modelOverride: value.slice(idx + 1),
-  };
 }
 
 export default function AISettings() {
@@ -87,9 +52,6 @@ export default function AISettings() {
   const [saving, setSaving] = useState(false);
   const [collapsedMap, setCollapsedMap] = useState<Record<string, boolean | undefined>>({});
 
-  const lastItemRef = useRef<HTMLDivElement | null>(null);
-  const prevCountRef = useRef(0);
-
   const labelOf = (id: string, dbName?: string) => {
     const key = `ai.settings.providers.${id}` as const;
     const tr = t(key);
@@ -98,9 +60,6 @@ export default function AISettings() {
 
   const modelOptions = useMemo(
     () => buildModelOptions(systemConfigs, labelOf),
-    // labelOf 闭包包含 t / i18n，t 切换时仅影响展示，options.value 不变；
-    // 故依赖只列实际数据源即可。
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [systemConfigs],
   );
   const hasUsableModel = modelOptions.length > 0;
@@ -129,13 +88,6 @@ export default function AISettings() {
       mounted = false;
     };
   }, [t]);
-
-  useEffect(() => {
-    if (agents.length > prevCountRef.current && lastItemRef.current) {
-      lastItemRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-    prevCountRef.current = agents.length;
-  }, [agents.length]);
 
   const handleChange = (idx: number, patch: Partial<AIAgentDefinitionView>) => {
     setAgentsState((prev) => prev.map((a, i) => (i === idx ? { ...a, ...patch } : a)));
@@ -196,6 +148,13 @@ export default function AISettings() {
     }
   };
 
+  const handleCollapsedChange = (key: string) => {
+    setCollapsedMap((prev) => ({
+      ...prev,
+      [key]: !(prev[key] ?? true),
+    }));
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -226,148 +185,19 @@ export default function AISettings() {
         />
       ) : null}
 
-      <Card
-        title={t('ai.settings.agent.title')}
-        extra={(
-          <Space wrap>
-            {agents.length === 0 ? (
-              <Button size="small" onClick={handleResetAllToDefaults}>
-                {t('ai.settings.agent.actions.loadDefaults')}
-              </Button>
-            ) : (
-              <Popconfirm
-                title={t('ai.settings.agent.actions.restoreDefaultsConfirmTitle')}
-                description={t('ai.settings.agent.actions.restoreDefaultsConfirmContent')}
-                onConfirm={handleLoadDefaults}
-                okText={t('ai.settings.agent.actions.restoreDefaults')}
-              >
-                <Button size="small">
-                  {t('ai.settings.agent.actions.restoreDefaults')}
-                </Button>
-              </Popconfirm>
-            )}
-            <Button size="small" onClick={handleAdd}>
-              {t('ai.settings.agent.actions.add')}
-            </Button>
-            <Button size="small" type="primary" loading={saving} onClick={handleSave}>
-              {t('ai.settings.agent.actions.save')}
-            </Button>
-          </Space>
-        )}
-      >
-        {agents.length === 0 ? (
-          <Empty description={t('ai.settings.agent.messages.empty')}>
-            <Button type="primary" onClick={handleResetAllToDefaults}>
-              {t('ai.settings.agent.actions.loadDefaults')}
-            </Button>
-          </Empty>
-        ) : (
-          <List
-            dataSource={agents}
-            renderItem={(agent, idx) => {
-              const isSystemAgent = agent.agentKey?.startsWith('default-');
-              const key = agent.agentKey || agent.id || String(idx);
-              const collapsed = collapsedMap[key] ?? true;
-              const cur = encodeAgentModel(agent);
-              const inList = !cur || modelOptions.some((o) => o.value === cur);
-              const opts = inList
-                ? modelOptions
-                : [...modelOptions, { value: cur, label: t('ai.settings.agent.fields.historicalBinding', { value: cur }) }];
-
-              return (
-                <List.Item
-                  ref={idx === agents.length - 1 ? lastItemRef : undefined}
-                  actions={[
-                    <Switch
-                      key="enabled"
-                      checked={agent.enabled}
-                      onChange={(v) => handleChange(idx, { enabled: v })}
-                    />,
-                    <Button
-                      key="remove"
-                      type="link"
-                      danger
-                      size="small"
-                      onClick={() => handleRemove(idx)}
-                    >
-                      {t('ai.settings.agent.actions.remove')}
-                    </Button>,
-                  ]}
-                >
-                  <List.Item.Meta
-                    title={(
-                      <Space wrap>
-                        {isSystemAgent ? (
-                          // 系统内置 8 个 Agent：名字始终用 i18n，不展示 DB 里
-                          // seed 时按当时 locale 烤进去的旧字符串，否则切换语言
-                          // 后会出现「左中文 + 右英文」并存。
-                          <Text strong style={{ minWidth: 180, display: 'inline-block' }}>
-                            {t(`ai.settings.agent.types.${agent.type}`)}
-                          </Text>
-                        ) : (
-                          <Input
-                            style={{ minWidth: 180 }}
-                            value={agent.name}
-                            placeholder={t('ai.settings.agent.fields.namePlaceholder')}
-                            onChange={(e) => handleChange(idx, { name: e.target.value })}
-                          />
-                        )}
-                        <Select
-                          size="small"
-                          style={{ minWidth: 240 }}
-                          allowClear
-                          showSearch
-                          optionFilterProp="label"
-                          value={cur || undefined}
-                          placeholder={
-                            modelOptions.length === 0
-                              ? t('ai.settings.agent.fields.modelProfileEmpty')
-                              : t('ai.settings.agent.fields.modelProfilePlaceholder')
-                          }
-                          options={opts}
-                          notFoundContent={t('ai.settings.agent.fields.modelProfileEmpty')}
-                          onChange={(v) => {
-                            const dec = decodeAgentModel(v || '');
-                            handleChange(idx, dec);
-                          }}
-                        />
-                        <Button
-                          size="small"
-                          type="link"
-                          onClick={() =>
-                            setCollapsedMap((prev) => ({
-                              ...prev,
-                              [key]: !(prev[key] ?? true),
-                            }))
-                          }
-                        >
-                          {collapsed ? <RightOutlined /> : <DownOutlined />}
-                        </Button>
-                      </Space>
-                    )}
-                    description={collapsed ? null : (
-                      <div className="space-y-2" style={{ marginTop: 8 }}>
-                        <Input.TextArea
-                          rows={3}
-                          value={agent.identity}
-                          placeholder={t('ai.settings.agent.fields.identityPlaceholder')}
-                          onChange={(e) => handleChange(idx, { identity: e.target.value })}
-                        />
-                        <Input.TextArea
-                          rows={2}
-                          value={agent.inputHint}
-                          placeholder={t('ai.settings.agent.fields.inputHintPlaceholder')}
-                          onChange={(e) => handleChange(idx, { inputHint: e.target.value })}
-                        />
-                      </div>
-                    )}
-                  />
-                </List.Item>
-              );
-            }}
-          />
-        )}
-      </Card>
+      <AgentEditor
+        agents={agents}
+        modelOptions={modelOptions}
+        saving={saving}
+        collapsedMap={collapsedMap}
+        onCollapsedChange={handleCollapsedChange}
+        onChange={handleChange}
+        onRemove={handleRemove}
+        onAdd={handleAdd}
+        onLoadDefaults={handleLoadDefaults}
+        onResetAllToDefaults={handleResetAllToDefaults}
+        onSave={handleSave}
+      />
     </div>
   );
 }
