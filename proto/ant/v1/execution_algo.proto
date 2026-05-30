@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+// ExecutionAlgoService manages algorithmic order execution (M12-A2).
+// Supports TWAP, VWAP, POV, and Implementation Shortfall algos.
+service ExecutionAlgoService {
+  // StartAlgo begins executing a parent order using the specified algorithm.
+  rpc StartAlgo(StartAlgoRequest) returns (StartAlgoResponse);
+
+  // GetAlgoStatus returns the current execution state and progress.
+  rpc GetAlgoStatus(GetAlgoStatusRequest) returns (GetAlgoStatusResponse);
+
+  // CancelAlgo cancels a running execution. Already-submitted slices are not cancelled.
+  rpc CancelAlgo(CancelAlgoRequest) returns (CancelAlgoResponse);
+
+  // ListAlgos returns the available execution algorithms.
+  rpc ListAlgos(ListAlgosRequest) returns (ListAlgosResponse);
+}
+
+// ── StartAlgo ──
+
+message StartAlgoRequest {
+  // Parent order parameters.
+  string account_id = 1;
+  string symbol = 2;
+  string side = 3;          // "buy" or "sell"
+  double total_volume = 4;
+  google.protobuf.Timestamp start_time = 5;
+  google.protobuf.Timestamp end_time = 6;
+  double limit_price = 7;   // 0 for market orders
+  double arrival_price = 8; // used by Shortfall algo
+
+  // Algo selection.
+  string algo = 9;          // "twap", "vwap", "pov", "shortfall"
+
+  // Algo-specific parameters (optional).
+  google.protobuf.Duration slice_interval = 10; // TWAP: slice spacing (default 1min)
+  double participation_rate = 11;               // POV: 0-1 (default 0.1)
+  double urgency = 12;                          // Shortfall: 0-1 (default 0.5)
+}
+
+message StartAlgoResponse {
+  string execution_id = 1;
+  string algo = 2;
+  int32 total_slices = 3;
+}
+
+// ── GetAlgoStatus ──
+
+message GetAlgoStatusRequest {
+  string execution_id = 1;
+}
+
+message GetAlgoStatusResponse {
+  string execution_id = 1;
+  string algo = 2;
+  string state = 3;          // "pending", "running", "paused", "completed", "cancelled", "failed"
+  int32 submitted_slices = 4;
+  int32 total_slices = 5;
+  int32 failed_slices = 6;
+  string parent_symbol = 7;
+  string parent_side = 8;
+  double parent_volume = 9;
+  // Last submitted slice info.
+  int64 last_ticket = 10;
+  string last_error = 11;
+}
+
+// ── CancelAlgo ──
+
+message CancelAlgoRequest {
+  string execution_id = 1;
+}
+
+message CancelAlgoResponse {
+  string execution_id = 1;
+  string state = 2;          // "cancelled" if successful
+}
+
+// ── ListAlgos ──
+
+message ListAlgosRequest {}
+
+message ListAlgosResponse {
+  repeated AlgoInfo algos = 1;
+}
+
+message AlgoInfo {
+  string name = 1;           // "twap", "vwap", "pov", "shortfall"
+  string description = 2;
+  repeated string parameters = 3; // supported parameter names
+}
