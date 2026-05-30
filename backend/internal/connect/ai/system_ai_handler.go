@@ -2,6 +2,9 @@ package ai
 
 import (
 	"context"
+	"fmt"
+	"net/url"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -28,12 +31,18 @@ func NewSystemAIServer(systemSvc *systemai.Service, log *zap.Logger) *SystemAISe
 	return &SystemAIServer{systemSvc: systemSvc, log: log}
 }
 
-func (s *SystemAIServer) userID(ctx context.Context) uuid.UUID {
-	id, _ := uuid.Parse(interceptor.GetUserID(ctx))
-	return id
+func (s *SystemAIServer) userID(ctx context.Context) (uuid.UUID, error) {
+	id, err := uuid.Parse(interceptor.GetUserID(ctx))
+	if err != nil {
+		return uuid.Nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user id"))
+	}
+	return id, nil
 }
 
 func rowToProto(r *repository.SystemAIConfigRow) *antv1.SystemAIConfig {
+	if r == nil {
+		return &antv1.SystemAIConfig{}
+	}
 	return &antv1.SystemAIConfig{
 		ProviderId:     r.ProviderID,
 		Name:           r.Name,
@@ -55,9 +64,13 @@ func rowToProto(r *repository.SystemAIConfigRow) *antv1.SystemAIConfig {
 }
 
 func (s *SystemAIServer) ListSystemAIConfigs(ctx context.Context, req *connect.Request[antv1.ListSystemAIConfigsRequest]) (*connect.Response[antv1.ListSystemAIConfigsResponse], error) {
-	rows, err := s.systemSvc.List(ctx, s.userID(ctx))
+	uid, err := s.userID(ctx)
 	if err != nil {
 		return nil, err
+	}
+	rows, err := s.systemSvc.List(ctx, uid)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(err)))
 	}
 	items := make([]*antv1.SystemAIConfig, len(rows))
 	for i, r := range rows {
@@ -67,15 +80,31 @@ func (s *SystemAIServer) ListSystemAIConfigs(ctx context.Context, req *connect.R
 }
 
 func (s *SystemAIServer) GetSystemAIConfig(ctx context.Context, req *connect.Request[antv1.GetSystemAIConfigRequest]) (*connect.Response[antv1.GetSystemAIConfigResponse], error) {
-	row, err := s.systemSvc.Get(ctx, s.userID(ctx), req.Msg.ProviderId)
+	uid, err := s.userID(ctx)
 	if err != nil {
 		return nil, err
+	}
+	row, err := s.systemSvc.Get(ctx, uid, req.Msg.ProviderId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(err)))
 	}
 	return connect.NewResponse(&antv1.GetSystemAIConfigResponse{Item: rowToProto(row)}), nil
 }
 
 func (s *SystemAIServer) UpdateSystemAIConfig(ctx context.Context, req *connect.Request[antv1.UpdateSystemAIConfigRequest]) (*connect.Response[antv1.UpdateSystemAIConfigResponse], error) {
-	uid := s.userID(ctx)
+	uid, err := s.userID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	// Validate inputs.
+	if len(req.Msg.Name) > 100 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("name must be 100 characters or fewer"))
+	}
+	if req.Msg.BaseUrl != "" {
+		if _, err := url.Parse(req.Msg.BaseUrl); err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid base_url: %w", err))
+		}
+	}
 	row := &repository.SystemAIConfigRow{
 		UserID:         uid,
 		ProviderID:     req.Msg.ProviderId,
@@ -92,15 +121,23 @@ func (s *SystemAIServer) UpdateSystemAIConfig(ctx context.Context, req *connect.
 		Enabled:        req.Msg.Enabled,
 	}
 	if err := s.systemSvc.UpdateConfig(ctx, row, uid.String()); err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(err)))
 	}
 	return connect.NewResponse(&antv1.UpdateSystemAIConfigResponse{ProviderId: req.Msg.ProviderId}), nil
 }
 
 func (s *SystemAIServer) UpdateSystemAISecret(ctx context.Context, req *connect.Request[antv1.UpdateSystemAISecretRequest]) (*connect.Response[antv1.UpdateSystemAISecretResponse], error) {
-	uid := s.userID(ctx)
-	if err := s.systemSvc.UpdateSecret(ctx, uid, req.Msg.ProviderId, req.Msg.Secret, uid.String()); err != nil {
+	uid, err := s.userID(ctx)
+	if err != nil {
 		return nil, err
+	}
+	maskedSecret := "***"
+	if len(req.Msg.Secret) > 4 {
+		maskedSecret = req.Msg.Secret[:2] + strings.Repeat("*", len(req.Msg.Secret)-4) + req.Msg.Secret[len(req.Msg.Secret)-2:]
+	}
+	s.log.Info("UpdateSystemAISecret", zap.String("provider_id", req.Msg.ProviderId), zap.String("secret", maskedSecret))
+	if err := s.systemSvc.UpdateSecret(ctx, uid, req.Msg.ProviderId, req.Msg.Secret, uid.String()); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(err)))
 	}
 	return connect.NewResponse(&antv1.UpdateSystemAISecretResponse{
 		ProviderId:    req.Msg.ProviderId,
@@ -109,12 +146,16 @@ func (s *SystemAIServer) UpdateSystemAISecret(ctx context.Context, req *connect.
 }
 
 func (s *SystemAIServer) DiscoverSystemAIModels(ctx context.Context, req *connect.Request[antv1.DiscoverSystemAIModelsRequest]) (*connect.Response[antv1.DiscoverSystemAIModelsResponse], error) {
-	models, err := s.systemSvc.DiscoverModels(ctx, s.userID(ctx), req.Msg.ProviderId)
+	uid, err := s.userID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	models, err := s.systemSvc.DiscoverModels(ctx, uid, req.Msg.ProviderId)
 	if err != nil {
 		s.log.Warn("discover models failed",
 			zap.String("provider", req.Msg.ProviderId),
 			zap.String("raw_error", err.Error()))
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(err)))
 	}
 	def := ""
 	if len(models) > 0 {
@@ -128,7 +169,11 @@ func (s *SystemAIServer) DiscoverSystemAIModels(ctx context.Context, req *connec
 }
 
 func (s *SystemAIServer) ValidateSystemAIConnection(ctx context.Context, req *connect.Request[antv1.ValidateSystemAIConnectionRequest]) (*connect.Response[antv1.ValidateSystemAIConnectionResponse], error) {
-	models, err := s.systemSvc.DiscoverModels(ctx, s.userID(ctx), req.Msg.ProviderId)
+	uid, err := s.userID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	models, err := s.systemSvc.DiscoverModels(ctx, uid, req.Msg.ProviderId)
 	if err != nil {
 		s.log.Warn("validate connection failed",
 			zap.String("provider", req.Msg.ProviderId),

@@ -148,7 +148,7 @@ export default function SystemAI() {
   const selectedMeta = draft ? metaOf(draft.provider_id, draft.name) : null
   const defaultCustomConfig = configs.find((cfg) => cfg.provider_id === 'openai_compatible') || null
   const defaultCustomConfigured = !!defaultCustomConfig && (
-    !!defaultCustomConfig.base_url.trim() ||
+    !!(defaultCustomConfig.base_url || '').trim() ||
     defaultCustomConfig.has_secret ||
     (defaultCustomConfig.models || []).length > 0 ||
     defaultCustomConfig.enabled

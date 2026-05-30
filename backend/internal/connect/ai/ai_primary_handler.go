@@ -2,6 +2,7 @@ package ai
 
 import (
 	"context"
+	"fmt"
 
 	"go.uber.org/zap"
 
@@ -26,13 +27,16 @@ func NewAIPrimaryServer(systemSvc *systemai.Service, log *zap.Logger) *AIPrimary
 	return &AIPrimaryServer{systemSvc: systemSvc, log: log}
 }
 
-func (s *AIPrimaryServer) userID(ctx context.Context) uuid.UUID {
-	id, _ := uuid.Parse(interceptor.GetUserID(ctx))
-	return id
+func (s *AIPrimaryServer) userID(ctx context.Context) (uuid.UUID, error) {
+	return uuid.Parse(interceptor.GetUserID(ctx))
 }
 
 func (s *AIPrimaryServer) GetAIPrimary(ctx context.Context, req *connect.Request[antv1.GetAIPrimaryRequest]) (*connect.Response[antv1.AIPrimaryResponse], error) {
-	rows, err := s.systemSvc.List(ctx, s.userID(ctx))
+	uid, err := s.userID(ctx)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+	}
+	rows, err := s.systemSvc.List(ctx, uid)
 	if err != nil {
 		return nil, err
 	}
@@ -57,30 +61,17 @@ func (s *AIPrimaryServer) GetAIPrimary(ctx context.Context, req *connect.Request
 			}), nil
 		}
 	}
-	return connect.NewResponse(&antv1.AIPrimaryResponse{}), nil
+	return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("no enabled AI config"))
 }
 
 func (s *AIPrimaryServer) SetAIPrimary(ctx context.Context, req *connect.Request[antv1.SetAIPrimaryRequest]) (*connect.Response[antv1.AIPrimaryResponse], error) {
-	uid := s.userID(ctx)
-	rows, err := s.systemSvc.List(ctx, uid)
+	uid, err := s.userID(ctx)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeUnauthenticated, err)
 	}
-	// Clear "chat" from all providers, set it on the selected one.
-	for _, r := range rows {
-		newPrimaryFor := make([]string, 0, len(r.PrimaryFor))
-		for _, p := range r.PrimaryFor {
-			if p != "chat" {
-				newPrimaryFor = append(newPrimaryFor, p)
-			}
-		}
-		if r.ProviderID == req.Msg.ProviderId {
-			newPrimaryFor = append(newPrimaryFor, "chat")
-		}
-		r.PrimaryFor = newPrimaryFor
-		if err := s.systemSvc.UpdateConfig(ctx, r, uid.String()); err != nil {
-			return nil, err
-		}
+	if err := s.systemSvc.SetAIPrimary(ctx, uid, req.Msg.ProviderId, req.Msg.Model); err != nil {
+		s.log.Error("SetAIPrimary transaction failed", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("internal error"))
 	}
 	return connect.NewResponse(&antv1.AIPrimaryResponse{
 		ProviderId: req.Msg.ProviderId,

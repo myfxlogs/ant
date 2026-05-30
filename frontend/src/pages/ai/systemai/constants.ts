@@ -31,6 +31,10 @@ export function toFriendlyDiscoverMessage(msg: string, t: TFunction): string {
   if (lower.includes('free-tier exhausted') || lower.includes('freetieronly') || lower.includes('free tier') || lower.includes('free-tier only')) {
     return t(`${DK}.freeTierExhausted`)
   }
+  // Check 403+quota (more specific) before the general quota/429 bucket.
+  if (lower.includes('status 403') && (lower.includes('quota') || lower.includes('exhaust') || lower.includes('allocation'))) {
+    return t(`${DK}.quotaForbidden403`)
+  }
   if (
     lower.includes('quota exhausted') ||
     lower.includes('[resource_exhausted]') ||
@@ -40,16 +44,13 @@ export function toFriendlyDiscoverMessage(msg: string, t: TFunction): string {
   ) {
     return t(`${DK}.quotaOrRateLimit`)
   }
-  if (lower.includes('status 403') && (lower.includes('quota') || lower.includes('exhaust') || lower.includes('allocation'))) {
-    return t(`${DK}.quotaForbidden403`)
-  }
+  if (lower.includes('user location is not supported')) return t(`${DK}.providerRegionBlocked`)
   if (msg.includes('unauthorized')) return t(`${DK}.unauthorized`)
   if (msg.includes('endpoint')) return t(`${DK}.endpoint404`)
   if (msg.includes('timeout')) return t(`${DK}.timeout`)
   if (msg.includes('unreachable')) return t(`${DK}.unreachable`)
   if (msg.includes('invalid /models')) return t(`${DK}.invalidModelsResponse`)
   if (msg.includes('no models returned')) return t(`${DK}.noModelsReturned`)
-  if (lower.includes('user location is not supported')) return t(`${DK}.providerRegionBlocked`)
   const detail = (msg || '').trim()
   return detail ? t(`${DK}.genericDetail`, { detail }) : t(`${DK}.generic`)
 }

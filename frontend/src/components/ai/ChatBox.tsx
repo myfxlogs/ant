@@ -17,10 +17,13 @@ function renderMarkdown(content: string): React.ReactNode {
   // first does not interfere with the regex transformations below.
   let result = escapeHtml(content);
 
-  // Handle code blocks (content already HTML-escaped, no need to re-escape)
-  const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
-  result = result.replace(codeBlockRegex, (_, lang, code) => {
-    return `<pre class="overflow-x-auto my-2"><code class="language-${lang || ''}">${code.trim()}</code></pre>`;
+  // Extract code blocks into placeholders so regex replacements below
+  // never mutate content inside triple-backtick fences.
+  const codeBlocks: string[] = [];
+  result = result.replace(/```(\w+)?\n([\s\S]*?)```/g, (_, lang, code) => {
+    const idx = codeBlocks.length;
+    codeBlocks.push(`<pre class="overflow-x-auto my-2"><code class="language-${lang || ''}">${code.trim()}</code></pre>`);
+    return `\x00CODEBLOCK${idx}\x00`;
   });
 
   // Handle inline code (content already HTML-escaped)
@@ -44,6 +47,9 @@ function renderMarkdown(content: string): React.ReactNode {
   // Handle line breaks
   result = result.replace(/\n\n/g, '</p><p class="my-2">');
   result = result.replace(/\n/g, '<br />');
+
+  // Re-insert code block HTML that was protected above.
+  result = result.replace(/\x00CODEBLOCK(\d+)\x00/g, (_, idx: string) => codeBlocks[Number(idx)] || '');
 
   return <div dangerouslySetInnerHTML={{ __html: result }} />;
 }
@@ -210,7 +216,7 @@ export default function ChatBox({ messages, loading }: ChatBoxProps) {
       {loading && (
         <div className="flex gap-3 justify-start">
           <div
-            className="w-8 h-8 rounded-lg flex items中心 justify-center flex-shrink-0"
+            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
             style={ASSISTANT_AVATAR_STYLE}
           >
             <RobotOutlined size={18} stroke={1.5} color="#FFFFFF" />

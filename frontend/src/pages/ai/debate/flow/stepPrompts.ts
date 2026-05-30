@@ -92,6 +92,8 @@ function placeholderNone(locale: string): string {
 
 export function intentSystemPrompt(locale: string): string {
 	const invitation = invitationFor(locale);
+	// Prompt strings use single-quoted literals (not template literals), so the
+	// backtick characters (```) embedded below are plain data — never parsed by JS.
 	return [
 		'You are the "Intent-Clarification Assistant" of AntTrader, helping a non-technical user describe the trading strategy they want.',
 		'',
@@ -172,6 +174,8 @@ export function codeSystemPrompt(intentPrompt: string, agentPrompts: Array<{ nam
 	].filter(Boolean).join('\n');
 }
 
+// Input is bounded by the LLM's max output tokens (typically < 64 KiB), so
+// the non-greedy [\s\S]*? cannot backtrack catastrophically on real payloads.
 const PYTHON_BLOCK_RE = /```(?:python)?\s*([\s\S]*?)```/i;
 const FENCE_BLOCK_RE = /```[\s\S]*?```/g;
 
@@ -226,12 +230,14 @@ export function serializeTranscript(messages: Array<{ role: string; content: str
 	if (!messages.length) return '';
 	const lines: string[] = ['Conversation so far:'];
 	let total = 0;
+	let truncated = false;
 	for (const m of messages) {
 		const role = m.role === 'user' ? 'USER' : 'ASSISTANT';
 		const entry = `${role}: ${m.content}`;
 		lines.push(entry);
 		total += entry.length;
-		if (total >= MAX_TRANSCRIPT_CHARS) break;
+		if (total >= MAX_TRANSCRIPT_CHARS) { truncated = true; break; }
 	}
+	if (truncated) lines.push('...(truncated)');
 	return lines.join('\n');
 }

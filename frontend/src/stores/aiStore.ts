@@ -116,15 +116,15 @@ export const useAIStore = create<AIState>((set, get) => ({
 			const list = await aiApi.listConversations();
 			const convs = list.map(toConv);
 			set({ conversations: convs, conversationsLoaded: true });
-		} catch {
+		} catch (err) {
+			console.debug('loadConversations failed', err);
 			set({ conversationsLoaded: true });
 		}
 	},
 
 	sendMessageAndGetResponse: async (content, accountId) => {
-		if (get().sending) {
-			return '';
-		}
+		if (get().sending) return '';
+		set({ sending: true }); // atomic guard: set before any await
 		let { activeConversationId } = get();
 		let convReady = !!activeConversationId;
 
@@ -156,12 +156,12 @@ export const useAIStore = create<AIState>((set, get) => ({
 
 		const { messages } = get();
 		const userMessage: Message = {
-			id: `user-${Date.now()}`,
+			id: `user-${crypto.randomUUID()}`,
 			role: 'user',
 			content,
 			timestamp: new Date(),
 		};
-		const aiMessageId = `ai-${Date.now()}`;
+		const aiMessageId = `ai-${crypto.randomUUID()}`;
 		const aiMessage: Message = {
 			id: aiMessageId,
 			role: 'assistant',
@@ -192,7 +192,8 @@ export const useAIStore = create<AIState>((set, get) => ({
 						}));
 					},
 				);
-			} catch {
+			} catch (streamErr) {
+				console.debug('chatStreaming failed, falling back to non-streaming', streamErr);
 				response = await aiApi.chat({
 					message: content,
 					context: buildChatContext(),
@@ -311,12 +312,12 @@ export const useAIStore = create<AIState>((set, get) => ({
 
 		const { messages } = get();
 		const userMessage: Message = {
-			id: `user-${Date.now()}`,
+			id: `user-${crypto.randomUUID()}`,
 			role: 'user',
 			content,
 			timestamp: new Date(),
 		};
-		const aiMessageId = `ai-${Date.now()}`;
+		const aiMessageId = `ai-${crypto.randomUUID()}`;
 		const aiMessage: Message = {
 			id: aiMessageId,
 			role: 'assistant',
@@ -347,7 +348,8 @@ export const useAIStore = create<AIState>((set, get) => ({
 						}));
 					},
 				);
-			} catch {
+			} catch (streamErr) {
+				console.debug('chatStreaming failed, falling back to non-streaming', streamErr);
 				response = await aiApi.chat({
 					message: content,
 					context: buildChatContext(),

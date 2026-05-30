@@ -49,10 +49,11 @@ type GateStatus struct {
 
 // PipelineResult is the aggregate result of running the full 6-gate pipeline.
 type PipelineResult struct {
-	Passed   bool         `json:"passed"`
-	Gates    []GateStatus `json:"gates"`
-	FirstFail GateName    `json:"first_fail,omitempty"`
-	Summary  string       `json:"summary"`
+	Passed        bool          `json:"passed"`
+	Gates         []GateStatus  `json:"gates"`
+	FirstFail     GateName      `json:"first_fail,omitempty"`
+	Summary       string        `json:"summary"`
+	TotalDuration time.Duration `json:"total_duration_ms"`
 }
 
 // PipelineInput bundles all the data needed for gate evaluation.
@@ -97,12 +98,13 @@ func Pipeline(input PipelineInput) PipelineResult {
 			result.Passed = false
 			result.FirstFail = gate
 			result.Summary = status.Reason
+			result.TotalDuration = time.Since(startedAt)
 			return result
 		}
 	}
 
 	result.Summary = "all 6 gates passed"
-	_ = time.Since(startedAt)
+	result.TotalDuration = time.Since(startedAt)
 	return result
 }
 

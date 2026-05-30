@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { message as antMessage } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { toFriendlyAIError, type AIAgentDefinitionView } from '@/client/ai';
@@ -252,6 +252,7 @@ export function useDebateFlow(): UseDebateFlowResult {
 		setSelectedAgentsRaw(agents);
 	}, []);
 
+	// Stub: will be implemented when prompt editing UI is added.
 	const updatePromptDraft = useCallback((_key: StepKey, _text: string) => {}, []);
 
 	const reset = useCallback(() => {
@@ -297,7 +298,6 @@ export function useDebateFlow(): UseDebateFlowResult {
 			beginModelWait(setModelWaitStartedAt, setModelWaitElapsedSeconds);
 			setChatStreamPreview('');
 			setPending({ stepKey: sessionStep, user: userMsg, loading: loadingMsg });
-			sendingRef.current = true;
 			sendingRef.current = true; setSending(true);
 			try {
 				const { jobId } = await debateV2Api.prepareChatJob({ sessionId: session.id, message: trimmed, locale });
@@ -310,13 +310,12 @@ export function useDebateFlow(): UseDebateFlowResult {
 				try {
 					setSession(await debateV2Api.getSession(session.id, locale));
 				} catch {
-					endModelWait(setModelWaitElapsedSeconds);
+					endModelWait(setModelWaitStartedAt, setModelWaitElapsedSeconds);
 					setPending(null);
 				}
 			} finally {
 				setChatStreamPreview('');
 				setPending(null);
-				sendingRef.current = false;
 				sendingRef.current = false; setSending(false);
 				endModelWait(setModelWaitStartedAt, setModelWaitElapsedSeconds);
 			}
@@ -355,8 +354,8 @@ export function useDebateFlow(): UseDebateFlowResult {
 			try {
 				const synced = await debateV2Api.getSession(sessionId, locale);
 				setSession(synced);
-			} catch {
-				// ignore resync failure
+			} catch (resyncErr) {
+				console.debug('resync failed after advance error', resyncErr);
 			}
 		} finally {
 			setAdvanceStreamPreview('');
@@ -384,8 +383,8 @@ export function useDebateFlow(): UseDebateFlowResult {
 			antMessage.error(friendlyError(e));
 			try {
 				setSession(await debateV2Api.getSession(sessionId, locale));
-			} catch {
-				// ignore
+			} catch (resyncErr) {
+				console.debug('resync failed after rejectCode error', resyncErr);
 			}
 		} finally {
 			setAdvanceStreamPreview('');
@@ -432,8 +431,8 @@ export function useDebateFlow(): UseDebateFlowResult {
 			antMessage.error(friendlyError(e));
 			try {
 				setSession(await debateV2Api.getSession(sessionId, locale));
-			} catch {
-				// ignore
+			} catch (resyncErr) {
+				console.debug('resync failed after retryCodeGeneration error', resyncErr);
 			}
 		} finally {
 			setAdvanceStreamPreview('');

@@ -567,7 +567,7 @@ func main() {
 	mux.Handle(antv1c.NewAIServiceHandler(aiServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	// Debate V2 service (multi-expert AI strategy generation).
-	debateV2Svc := service.NewDebateV2Service(pool, jobRepo)
+	debateV2Svc := service.NewDebateV2Service(pool, jobRepo, log)
 	debateV2Server := ai.NewDebateV2Server(debateV2Svc, log)
 	mux.Handle(antv1c.NewDebateV2ServiceHandler(debateV2Server, connectrpc.WithInterceptors(authInterceptor)))
 

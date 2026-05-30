@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Card, Form, Input, InputNumber, Button, Steps, Space, Typography,
   Descriptions, Collapse, Divider, Alert, Tag,
@@ -67,7 +67,13 @@ export default function GateProgressPage() {
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
+  useEffect(() => {
+    return () => { abortRef.current?.abort(); };
+  }, []);
+
   const handleRun = useCallback(async () => {
+    // Abort any in-flight request before starting a new one.
+    abortRef.current?.abort();
     const values = await form.validateFields();
     setLoading(true); setError(null); setGates([]); setSummary(null);
     const token = useAuthStore.getState().accessToken;
@@ -92,7 +98,11 @@ export default function GateProgressPage() {
       const response = await fetch(`${apiBaseUrl}/sse/ai/gate-progress`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(input), signal: controller.signal,
       });
-      if (!response.ok) { setError(await response.text() || `HTTP ${response.status}`); setLoading(false); return; }
+      if (!response.ok) {
+        let errText = `HTTP ${response.status}`;
+        try { errText = await response.text() || errText; } catch { /* body unreadable */ }
+        setError(errText); setLoading(false); return;
+      }
       const reader = response.body?.getReader();
       if (!reader) { setError('Streaming not supported'); setLoading(false); return; }
 
@@ -110,7 +120,7 @@ export default function GateProgressPage() {
               const parsed = JSON.parse(line.slice(6));
               if (eventType === 'gate') setGates(prev => [...prev, parsed as GateStatus]);
               else if (eventType === 'completed') setSummary(parsed as PipelineSummary);
-            } catch { /* skip unparseable frames */ }
+            } catch (parseErr) { console.debug('gate-progress SSE: unparseable frame', parseErr); }
           }
         }
       }

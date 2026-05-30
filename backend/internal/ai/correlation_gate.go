@@ -68,11 +68,6 @@ func CorrelationGate(newSignals []SignalDirection, existing map[string][]SignalD
 		}
 	}
 
-	// If we got through all existing strategies without failing, check if any correlation exceeded.
-	if !result.Passed {
-		return result
-	}
-
 	return result
 }
 

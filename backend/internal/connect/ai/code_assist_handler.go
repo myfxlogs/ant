@@ -30,21 +30,32 @@ func NewCodeAssistServer(systemSvc *aiSvc.Service, log *zap.Logger) *CodeAssistS
 	return &CodeAssistServer{systemSvc: systemSvc, log: log}
 }
 
-func (s *CodeAssistServer) userID(ctx context.Context) uuid.UUID {
-	id, _ := uuid.Parse(interceptor.GetUserID(ctx))
-	return id
+func (s *CodeAssistServer) userID(ctx context.Context) (uuid.UUID, error) {
+	return uuid.Parse(interceptor.GetUserID(ctx))
 }
 
 func (s *CodeAssistServer) ReviseCode(ctx context.Context, req *connect.Request[antv1.ReviseCodeRequest]) (*connect.Response[antv1.ReviseCodeResponse], error) {
 	code := req.Msg.Code
 	instruction := req.Msg.Instruction
 
+	if len(code) > 100*1024 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("code too large: %d bytes", len(code)))
+	}
+	if len(instruction) > 4*1024 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("instruction too long: %d bytes", len(instruction)))
+	}
+
+	uid, err := s.userID(ctx)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+	}
+
 	sysPrompt := "You are an expert quantitative trading strategy developer. " +
 		"Revise the following Python trading strategy code according to the user's instruction. " +
 		"Return ONLY the revised Python code, no explanations or markdown fences."
 	userMsg := fmt.Sprintf("Instruction: %s\n\nCode:\n```python\n%s\n```", instruction, code)
 
-	revised, err := s.systemSvc.ChatCompletion(ctx, s.userID(ctx), sysPrompt, userMsg, codeAssistModel)
+	revised, err := s.systemSvc.ChatCompletion(ctx, uid, sysPrompt, userMsg, codeAssistModel)
 	if err != nil {
 		s.log.Warn("CodeAssist: ReviseCode LLM call failed, falling back to passthrough",
 			zap.Error(err))
@@ -60,13 +71,22 @@ func (s *CodeAssistServer) ReviseCode(ctx context.Context, req *connect.Request[
 func (s *CodeAssistServer) ExplainCode(ctx context.Context, req *connect.Request[antv1.ExplainCodeRequest]) (*connect.Response[antv1.ExplainCodeResponse], error) {
 	code := req.Msg.Code
 
+	if len(code) > 100*1024 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("code too large: %d bytes", len(code)))
+	}
+
+	uid, err := s.userID(ctx)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+	}
+
 	sysPrompt := "You are an expert quantitative trading code reviewer. " +
 		"Explain the following trading strategy code in clear, concise Chinese. " +
 		"Cover: strategy logic, entry/exit conditions, risk management, and potential improvements. " +
 		"Keep the explanation under 300 words."
 	userMsg := fmt.Sprintf("Please explain this trading strategy:\n```python\n%s\n```", code)
 
-	explanation, err := s.systemSvc.ChatCompletion(ctx, s.userID(ctx), sysPrompt, userMsg, codeAssistModel)
+	explanation, err := s.systemSvc.ChatCompletion(ctx, uid, sysPrompt, userMsg, codeAssistModel)
 	if err != nil {
 		s.log.Warn("CodeAssist: ExplainCode LLM call failed", zap.Error(err))
 		explanation = "该策略代码的分析暂时不可用，请稍后重试。"
@@ -80,6 +100,15 @@ func (s *CodeAssistServer) ExplainCode(ctx context.Context, req *connect.Request
 func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *connect.Request[antv1.ValidateStrategyExtendedRequest]) (*connect.Response[antv1.ValidateStrategyExtendedResponse], error) {
 	code := req.Msg.Code
 
+	if len(code) > 100*1024 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("code too large: %d bytes", len(code)))
+	}
+
+	uid, err := s.userID(ctx)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+	}
+
 	sysPrompt := "You are a trading strategy code validator. " +
 		"Review the following Python strategy code and identify issues. " +
 		"Return a JSON object with fields: valid (bool), errors (string array), warnings (string array). " +
@@ -88,7 +117,7 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 		"Respond with ONLY valid JSON, no markdown fences."
 	userMsg := fmt.Sprintf("Validate this trading strategy:\n```python\n%s\n```", code)
 
-	result, err := s.systemSvc.ChatCompletion(ctx, s.userID(ctx), sysPrompt, userMsg, codeAssistModel)
+	result, err := s.systemSvc.ChatCompletion(ctx, uid, sysPrompt, userMsg, codeAssistModel)
 	if err != nil {
 		s.log.Warn("CodeAssist: ValidateStrategyExtended LLM call failed", zap.Error(err))
 		return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
@@ -105,8 +134,12 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 		Warnings []string `json:"warnings"`
 	}
 	if err := json.Unmarshal([]byte(result), &parsed); err != nil {
+		trimmed := result
+		if len(trimmed) > 200 {
+			trimmed = trimmed[:200]
+		}
 		s.log.Warn("CodeAssist: ValidateStrategyExtended failed to parse LLM JSON",
-			zap.Error(err), zap.String("raw", result))
+			zap.Error(err), zap.String("raw", trimmed))
 		return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
 			Valid:    false,
 			Errors:   []string{"AI 验证结果解析失败，请检查策略代码格式。"},

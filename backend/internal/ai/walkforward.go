@@ -67,7 +67,7 @@ type DailyReturn struct {
 // dailyReturns is a chronologically ordered slice of daily P&L values.
 func WalkForward(dailyReturns []float64, cfg WalkForwardConfig) WalkForwardResult {
 	n := len(dailyReturns)
-	if n < cfg.MinTradeCount*2 {
+	if n < cfg.MinTradeCount*(cfg.NumFolds+1) {
 		return WalkForwardResult{
 			Passed: false,
 			Reason: "insufficient data for walk-forward",
@@ -76,6 +76,8 @@ func WalkForward(dailyReturns []float64, cfg WalkForwardConfig) WalkForwardResul
 
 	foldSize := n / (cfg.NumFolds + 1) // +1 for the final test period
 	if foldSize < cfg.MinTradeCount {
+		// foldSize is too small to form a statistically meaningful fold;
+		// clamping to MinTradeCount may cause later folds to be skipped.
 		foldSize = cfg.MinTradeCount
 	}
 
@@ -177,19 +179,21 @@ func computeSharpe(dailyReturns []float64) float64 {
 	}
 	n := float64(len(dailyReturns))
 	mean := sum / n
-	variance := sumSq/n - mean*mean
+	variance := sumSq/n - mean*mean // computeSharpe uses population std (n), consistent with DSR formula.
 	if variance <= 0 {
 		return 0
 	}
 	dailySD := math.Sqrt(variance)
 	if dailySD == 0 {
-		return 0
+		return 0 // Redundant with variance <= 0 check above; kept as defense-in-depth.
 	}
 	return (mean / dailySD) * math.Sqrt(252)
 }
 
 // computeMaxDD calculates the maximum drawdown as a fraction of peak equity.
 // Returns a value in [0, 1] where 0.30 = 30% drawdown.
+// For underwater strategies (cumulative return never positive), returns
+// Abs(cumulativeReturn) as the drawdown fraction.
 func computeMaxDD(returns []float64) float64 {
 	if len(returns) == 0 {
 		return 0
@@ -208,6 +212,11 @@ func computeMaxDD(returns []float64) float64 {
 				maxDD = dd
 			}
 		}
+	}
+	// Underwater strategy: cumulative return never positive.
+	// Return the absolute cumulative loss as a positive drawdown value.
+	if peak == 0 {
+		return math.Abs(cumulative)
 	}
 	return maxDD
 }
@@ -233,9 +242,20 @@ func CPCV(dailyReturns []float64, nGroups int, cfg WalkForwardConfig) float64 {
 
 	// Purged walk-forward: for each group boundary, train on all earlier groups,
 	// test on one future group (with purge gap).
+	// PurgeDays is in calendar days; groupSize is in observations.
+	// We approximate the purge gap as min(2, PurgeDays / groupSize) groups.
+	// When PurgeDays=0 or groupSize is large enough that one group already covers
+	// the purge period, use 1 group as purge; otherwise 2.
+	purgeGroups := 2
+	if cfg.PurgeDays > 0 && groupSize > 0 {
+		obsPerDay := float64(groupSize) / float64(cfg.PurgeDays)
+		if obsPerDay >= 1 {
+			purgeGroups = 1
+		}
+	}
 	for g := 1; g < nGroups; g++ {
 		trainEnd := g * groupSize
-		testStart := trainEnd + 2 // purge 2 groups
+		testStart := trainEnd + purgeGroups
 		if testStart >= n {
 			continue
 		}
@@ -266,6 +286,11 @@ func CPCV(dailyReturns []float64, nGroups int, cfg WalkForwardConfig) float64 {
 
 	sort.Float64s(oosSharpes)
 	// Return median OOS Sharpe (robust to outliers).
-	median := oosSharpes[len(oosSharpes)/2]
+	var median float64
+	if len(oosSharpes)%2 == 0 {
+		median = (oosSharpes[len(oosSharpes)/2-1] + oosSharpes[len(oosSharpes)/2]) / 2
+	} else {
+		median = oosSharpes[len(oosSharpes)/2]
+	}
 	return median
 }

@@ -83,7 +83,7 @@ func (r *SystemAIConfigRepository) ListByUser(ctx context.Context, userID uuid.U
 		return nil, err
 	}
 	defer rows.Close()
-	out := make([]*SystemAIConfigRow, 0, 7)
+	out := make([]*SystemAIConfigRow, 0, 16)
 	for rows.Next() {
 		row, err := scanSystemAIConfigRow(rows)
 		if err != nil {
@@ -202,4 +202,40 @@ func (r *SystemAIConfigRepository) GetSecret(ctx context.Context, userID uuid.UU
 		return nil, err
 	}
 	return &SystemAISecret{Ciphertext: ct, Salt: salt, Nonce: nonce}, nil
+}
+
+// SetAIPrimary atomically reassigns the "chat" primary role to the given
+// provider and persists the chosen default model. All operations run inside
+// a single DB transaction so that a partial failure rolls back cleanly.
+func (r *SystemAIConfigRepository) SetAIPrimary(ctx context.Context, userID uuid.UUID, providerID, defaultModel string) error {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin tx for SetAIPrimary: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	// Remove "chat" from every provider owned by this user.
+	if _, err := tx.Exec(ctx, `
+		UPDATE system_ai_configs
+		SET primary_for = array_remove(primary_for, 'chat'),
+		    updated_at  = NOW(),
+		    updated_by  = $1
+		WHERE user_id = $2 AND 'chat' = ANY(primary_for)`,
+		userID.String(), userID); err != nil {
+		return fmt.Errorf("clear chat primary_for: %w", err)
+	}
+
+	// Assign "chat" to the selected provider and persist the default model.
+	if _, err := tx.Exec(ctx, `
+		UPDATE system_ai_configs
+		SET primary_for   = array_append(COALESCE(array_remove(primary_for, 'chat'), '{}'), 'chat'),
+		    default_model = $1,
+		    updated_at    = NOW(),
+		    updated_by    = $2
+		WHERE user_id = $3 AND provider_id = $4`,
+		defaultModel, userID.String(), userID, providerID); err != nil {
+		return fmt.Errorf("set chat primary_for and default_model: %w", err)
+	}
+
+	return tx.Commit(ctx)
 }

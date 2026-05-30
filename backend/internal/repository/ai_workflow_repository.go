@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -71,13 +72,6 @@ func (r *AIWorkflowRepository) CreateRun(ctx context.Context, userID uuid.UUID, 
 }
 
 func (r *AIWorkflowRepository) AppendStep(ctx context.Context, userID, runID uuid.UUID, key, title, status, input, output, stepErr string, durationMs int64) (*AIWorkflowStep, error) {
-	// authorize run ownership
-	var exists int
-	err := r.db.QueryRow(ctx, `SELECT 1 FROM ai_workflow_runs WHERE id = $1 AND user_id = $2`, runID, userID).Scan(&exists)
-	if err != nil {
-		return nil, ErrAIWorkflowRunNotFound
-	}
-
 	if status == "" {
 		status = "done"
 	}
@@ -99,8 +93,24 @@ func (r *AIWorkflowRepository) AppendStep(ctx context.Context, userID, runID uui
 		return nil, txErr
 	}
 	defer func() {
-		tx.Rollback(ctx) // errcheck excluded; after commit this is a no-op
+		_ = tx.Rollback(ctx)
 	}()
+
+	// authorize run ownership inside transaction
+	var owner uuid.UUID
+	err := tx.QueryRow(ctx, `SELECT user_id FROM ai_workflow_runs WHERE id=$1`, runID).Scan(&owner)
+	if errors.Is(err, pgx.ErrNoRows) {
+		_ = tx.Rollback(ctx)
+		return nil, ErrAIWorkflowRunNotFound
+	}
+	if err != nil {
+		_ = tx.Rollback(ctx)
+		return nil, err
+	}
+	if owner != userID {
+		_ = tx.Rollback(ctx)
+		return nil, ErrAIWorkflowRunNotFound
+	}
 
 	_, err = tx.Exec(ctx,
 		`INSERT INTO ai_workflow_steps (id, run_id, step_key, title, status, input, output, error, duration_ms, created_at)
@@ -187,8 +197,11 @@ func (r *AIWorkflowRepository) GetRun(ctx context.Context, userID, runID uuid.UU
 			 FROM ai_workflow_runs WHERE id = $1 AND user_id = $2`,
 		runID, userID,
 	).Scan(&run.ID, &run.UserID, &run.Title, &run.Status, &run.Context, &run.CreatedAt, &run.UpdatedAt)
-	if err != nil {
+	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, nil, ErrAIWorkflowRunNotFound
+	}
+	if err != nil {
+		return nil, nil, err
 	}
 
 	rows, err := r.db.Query(ctx,

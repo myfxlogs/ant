@@ -84,7 +84,10 @@ func (s *Service) ChatCompletion(ctx context.Context, userID uuid.UUID, systemPr
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(io.LimitReader(resp.Body, 256))
+		body, readErr := io.ReadAll(io.LimitReader(resp.Body, 256))
+		if readErr != nil {
+			return "", fmt.Errorf("chat completion: status %d (body read error: %v)", resp.StatusCode, readErr)
+		}
 		return "", fmt.Errorf("chat completion: status %d: %s", resp.StatusCode, string(body))
 	}
 

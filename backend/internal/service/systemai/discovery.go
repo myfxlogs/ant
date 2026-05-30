@@ -92,9 +92,8 @@ func fetchModelsPage(ctx context.Context, baseURL, secret, after string) ([]stri
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		var ue *url.Error
-		if errors.As(err, &ue) && ue.Timeout() {
-			return nil, "", false, errors.New("upstream timeout while requesting /models")
+		if errors.Is(err, context.DeadlineExceeded) {
+			return nil, "", false, fmt.Errorf("upstream timeout after %v: %w", discoverTimeout, err)
 		}
 		return nil, "", false, fmt.Errorf("upstream unreachable: %w", err)
 	}
@@ -142,7 +141,7 @@ func classifyHTTPError(resp *http.Response) string {
 	case http.StatusNotFound:
 		return "upstream endpoint not found: base_url must be openai-compatible"
 	case http.StatusForbidden, http.StatusTooManyRequests:
-		body := readBodyTrimmed(resp.Body, 1024)
+		body := readBodyTrimmed(resp.Body, 256)
 		low := strings.ToLower(body)
 		switch {
 		case strings.Contains(low, "freetieronly") || strings.Contains(low, "free tier") || strings.Contains(low, "free-tier"):
@@ -155,7 +154,7 @@ func classifyHTTPError(resp *http.Response) string {
 			return fmt.Sprintf("status %d %s", resp.StatusCode, low)
 		}
 	}
-	body := readBodyTrimmed(resp.Body, 512)
+	body := readBodyTrimmed(resp.Body, 256)
 	if body == "" {
 		return fmt.Sprintf("status %d", resp.StatusCode)
 	}
@@ -163,7 +162,10 @@ func classifyHTTPError(resp *http.Response) string {
 }
 
 func readBodyTrimmed(rc io.ReadCloser, n int64) string {
-	b, _ := io.ReadAll(io.LimitReader(rc, n))
+	b, err := io.ReadAll(io.LimitReader(rc, n))
+	if err != nil {
+		return fmt.Sprintf("(read error: %v)", err)
+	}
 	return strings.TrimSpace(string(b))
 }
 
@@ -190,9 +192,12 @@ func fetchZhipuModels(ctx context.Context, baseURL, secret string) ([]string, er
 	}
 	defer resp.Body.Close()
 	if msg := classifyHTTPError(resp); msg != "" {
-		return nil, errors.New(msg)
+		return nil, fmt.Errorf("zhipu models: %s", msg)
 	}
-	body, _ := io.ReadAll(io.LimitReader(resp.Body, maxBodyBytes))
+	body, readErr := io.ReadAll(io.LimitReader(resp.Body, maxBodyBytes))
+	if readErr != nil {
+		return nil, fmt.Errorf("zhipu models: read response body: %w", readErr)
+	}
 
 	type item struct {
 		ID      string `json:"id"`

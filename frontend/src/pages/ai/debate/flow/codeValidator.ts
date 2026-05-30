@@ -124,8 +124,8 @@ export function validatePythonSandbox(raw: string): Violation[] {
 	}
 
 	// 6. 必须存在 top-level `def run(context):`。
-	const runSigRe = /^def\s+run\s*\(\s*context\s*\)\s*:/m;
-	const anyRunRe = /^def\s+run\s*\(/m;
+	const runSigRe = /^\s*def\s+run\s*\(\s*context\s*\)\s*:/m;
+	const anyRunRe = /^\s*def\s+run\s*\(/m;
 	if (!runSigRe.test(stripped)) {
 		if (anyRunRe.test(stripped)) {
 			const m = anyRunRe.exec(stripped);

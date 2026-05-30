@@ -7,6 +7,7 @@ import (
 // AIConfig AI配置结构
 type AIConfig struct {
 	Provider    ProviderType  `yaml:"provider" json:"provider"`
+	// APIKey is stored in plaintext (legacy). New code should use system_ai_configs.secret_ciphertext via systemai.Service.
 	APIKey      string        `yaml:"api_key" json:"api_key"`
 	ModelName   string        `yaml:"model_name" json:"model_name"`
 	MaxTokens   int           `yaml:"max_tokens" json:"max_tokens"`
@@ -22,7 +23,7 @@ const (
 	ProviderDeepSeek ProviderType = "deepseek"
 )
 
-// DefaultAIConfigs 默认AI配置
+// DefaultAIConfigs is read-only after package init. Do not mutate at runtime.
 var DefaultAIConfigs = map[ProviderType]AIConfig{
 	ProviderZhipu: {
 		Provider:    ProviderZhipu,

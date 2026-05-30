@@ -21,9 +21,9 @@ type LookAheadViolation struct {
 
 // LookAheadResult is the outcome of scanning an expression for lookahead bias.
 type LookAheadResult struct {
-	Passed     bool                  `json:"passed"`
-	Violations []LookAheadViolation  `json:"violations,omitempty"`
-	Expression string                `json:"expression"`
+	Passed     bool                 `json:"passed"`
+	Violations []LookAheadViolation `json:"violations,omitempty"`
+	Expression string               `json:"expression"`
 }
 
 // LookAheadScanner detects future references in DSL expressions.
@@ -32,21 +32,25 @@ type LookAheadScanner struct {
 }
 
 type futurePattern struct {
-	re      *regexp.Regexp
-	msg     string
+	re  *regexp.Regexp
+	msg string
 }
+
+// defaultScanner is a package-level singleton to avoid allocations per call in HasLookahead.
+var defaultScanner = NewLookAheadScanner()
 
 // NewLookAheadScanner creates a scanner with standard future-reference patterns.
 func NewLookAheadScanner() *LookAheadScanner {
 	return &LookAheadScanner{
 		patterns: []futurePattern{
-			// close[t+delta] or close[t+1] — explicit future index
+			// close[t+delta] or close[t+delta] — explicit future index.
+			// Capture the digit to exclude t+0 (same-day reference, not lookahead).
 			{re: regexp.MustCompile(`\w+\[t\s*\+\s*(\d+)\]`), msg: "explicit future index: $0"},
 			// ref(source, -delta) where delta is negative offset (lookahead)
 			{re: regexp.MustCompile(`ref\s*\(\s*\w+\s*,\s*(-\d+)\s*\)`), msg: "negative ref offset (future peek): $0"},
 			// high[t+delta], low[t+delta], open[t+delta]
 			{re: regexp.MustCompile(`(?:high|low|open)\s*\[\s*t\s*\+\s*\d+\s*\]`), msg: "future OHLC reference: $0"},
-			// Ternary where condition references future: close[t+1] > close ? ... : ...
+			// Ternary where condition references future: close[t+delta] where delta >= 1.
 			{re: regexp.MustCompile(`\w+\[\s*t\s*\+\s*[1-9]\d*\s*\]`), msg: "future array index: $0"},
 		},
 	}
@@ -59,22 +63,37 @@ func (s *LookAheadScanner) Scan(expression string) LookAheadResult {
 		Expression: expression,
 	}
 
+	// Deduplicate overlapping pattern matches by tracking matched byte ranges.
+	seen := make(map[[2]int]bool)
+
 	for _, p := range s.patterns {
 		matches := p.re.FindAllStringSubmatchIndex(expression, -1)
 		for _, m := range matches {
+			start, end := m[0], m[1]
+
+			// Skip if this byte range was already reported by a previous pattern.
+			key := [2]int{start, end}
+			if seen[key] {
+				continue
+			}
+			seen[key] = true
+
 			// Extract line/col from original expression.
 			line := 1
 			lastNewline := -1
-			for i := 0; i < m[0] && i < len(expression); i++ {
+			for i := 0; i < start && i < len(expression); i++ {
 				if expression[i] == '\n' {
 					line++
 					lastNewline = i
 				}
 			}
-			col := m[0] - lastNewline - 1
+			col := start - lastNewline - 1
 
 			// Check if the offset is actually positive (future).
-			pattern := expression[m[0]:m[1]]
+			pattern := expression[start:end]
+			if isZeroOffset(pattern, m) {
+				continue // skip t+0 (same-day reference, not lookahead)
+			}
 			if s.isNegativeRef(pattern, m, expression) {
 				continue // skip legitimate past references
 			}
@@ -97,24 +116,39 @@ func (s *LookAheadScanner) Scan(expression string) LookAheadResult {
 	return result
 }
 
+// isZeroOffset checks if a matched t+delta pattern has delta=0,
+// which is a same-day reference and not lookahead bias.
+func isZeroOffset(pattern string, match []int) bool {
+	// If we captured group 1 and it equals "0", skip.
+	if len(match) >= 4 {
+		// match[2], match[3] is the start/end of the first capture group.
+		// The first pattern (`\w+\[t\s*\+\s*(\d+)\]`) captures the digit.
+		captured := pattern[match[2]-match[0] : match[3]-match[0]]
+		if captured == "0" {
+			return true
+		}
+	}
+	return false
+}
+
 // isNegativeRef checks if a ref() pattern has a positive offset (legitimate past ref).
+//
+// TODO: implement negative ref detection for ref(source, -delta)
+// Currently always returns false (placeholder).
 func (s *LookAheadScanner) isNegativeRef(pattern string, match []int, expression string) bool {
-	// ref(source, -delta): if delta is negative → future peek
-	// Already matched by the negative ref regex, so this is a pass-through.
 	return false
 }
 
 // isGtComparison checks if the match is part of a legitimate greater-than comparison.
+//
+// TODO: implement greater-than comparison detection for close > close[1]
+// Currently always returns false (placeholder).
 func (s *LookAheadScanner) isGtComparison(pattern string, match []int, expression string) bool {
-	// close[t+1] > close  → this IS lookahead (comparing future close to current)
-	// close > close[1]    → this is OK (comparing current to past)
-	// Our patterns already only match t+N with N>0, so no false positives on past refs.
 	return false
 }
 
 // HasLookahead is a convenience function that returns true if the expression
-// contains any future-looking references.
+// contains any future-looking references. Uses the package-level singleton scanner.
 func HasLookahead(expression string) bool {
-	s := NewLookAheadScanner()
-	return !s.Scan(expression).Passed
+	return !defaultScanner.Scan(expression).Passed
 }

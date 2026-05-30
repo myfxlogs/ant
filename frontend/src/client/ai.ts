@@ -36,9 +36,10 @@ function unwrapProviderMessage(raw: string): string {
   try {
     const obj = JSON.parse(body) as { error?: { message?: unknown }; message?: unknown; error?: unknown };
     const inner = obj?.error?.message ?? obj?.message ?? obj?.error ?? '';
-    const innerStr = typeof inner === 'string' ? inner : typeof inner === 'object' ? JSON.stringify(inner) : '';
+    const innerStr = typeof inner === 'string' ? inner : typeof inner === 'object' && inner !== null ? JSON.stringify(inner) : '';
     return innerStr.trim() || raw;
   } catch {
+    // JSON parse failed — body is not valid JSON; return original raw message.
     return raw;
   }
 }

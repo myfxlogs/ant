@@ -23,8 +23,9 @@ func NewGateProgressServer(log *zap.Logger) *GateProgressServer {
 
 // HandleGateProgressSSE runs the 6-gate pipeline and streams results via SSE.
 func (s *GateProgressServer) HandleGateProgressSSE(w http.ResponseWriter, r *http.Request, authInterceptor *interceptor.AuthInterceptor) {
-	// Auth check.
-	if _, err := authInterceptor.UserIDFromHTTP(r); err != nil {
+	// Auth check — save userID for logging.
+	userID, err := authInterceptor.UserIDFromHTTP(r)
+	if err != nil {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -38,22 +39,35 @@ func (s *GateProgressServer) HandleGateProgressSSE(w http.ResponseWriter, r *htt
 		return
 	}
 
-	// SSE headers.
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("Connection", "keep-alive")
-	w.Header().Set("X-Accel-Buffering", "no")
+	// Flusher check BEFORE SSE headers so Content-Type is not set prematurely.
 	flusher, ok := w.(http.Flusher)
 	if !ok {
 		http.Error(w, "streaming not supported", http.StatusInternalServerError)
 		return
 	}
 
-	// Run pipeline — send SSE event per gate.
+	// SSE headers.
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("X-Accel-Buffering", "no")
+
+	// Run pipeline — send SSE event per gate. Check for client disconnect.
 	result := aigates.Pipeline(input)
 	for _, gate := range result.Gates {
-		data, _ := json.Marshal(gate)
-		fmt.Fprintf(w, "event: gate\ndata: %s\n\n", data)
+		select {
+		case <-r.Context().Done():
+			return
+		default:
+		}
+		data, err := json.Marshal(gate)
+		if err != nil {
+			s.log.Error("HandleGateProgressSSE: json marshal gate failed", zap.Error(err))
+			continue
+		}
+		if _, err := fmt.Fprintf(w, "event: gate\ndata: %s\n\n", data); err != nil {
+			return
+		}
 		flusher.Flush()
 	}
 
@@ -63,9 +77,15 @@ func (s *GateProgressServer) HandleGateProgressSSE(w http.ResponseWriter, r *htt
 		"summary":    result.Summary,
 		"first_fail": result.FirstFail,
 	}
-	data, _ := json.Marshal(summary)
-	fmt.Fprintf(w, "event: completed\ndata: %s\n\n", data)
+	data, err := json.Marshal(summary)
+	if err != nil {
+		s.log.Error("HandleGateProgressSSE: json marshal summary failed", zap.Error(err))
+		return
+	}
+	if _, err := fmt.Fprintf(w, "event: completed\ndata: %s\n\n", data); err != nil {
+		return
+	}
 	flusher.Flush()
 
-	s.log.Info("gate pipeline SSE completed", zap.Bool("passed", result.Passed))
+	s.log.Info("gate pipeline SSE completed", zap.String("user_id", userID.String()), zap.Bool("passed", result.Passed))
 }

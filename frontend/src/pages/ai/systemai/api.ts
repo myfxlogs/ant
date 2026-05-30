@@ -35,7 +35,13 @@ export async function listSystemAIConfigs(): Promise<{ items: AIConfig[] }> {
   }
 }
 
-export async function updateSystemAIConfig(providerId: string, payload: Record<string, unknown>) {
+interface UpdateConfigPayload {
+  name?: string; base_url?: string; organization?: string; models?: string[];
+  default_model?: string; temperature?: number; timeout_seconds?: number;
+  max_tokens?: number; purposes?: string[]; primary_for?: string[]; enabled?: boolean;
+}
+
+export async function updateSystemAIConfig(providerId: string, payload: UpdateConfigPayload) {
   await systemAIClient.updateSystemAIConfig(create(UpdateSystemAIConfigRequestSchema, {
     providerId,
     name: String(payload.name || ''),
@@ -54,6 +60,7 @@ export async function updateSystemAIConfig(providerId: string, payload: Record<s
 }
 
 export async function updateSystemAISecret(providerId: string, secret: string) {
+  // Secret is transmitted over TLS; the backend stores it encrypted at rest.
   await systemAIClient.updateSystemAISecret(create(UpdateSystemAISecretRequestSchema, { providerId, secret }))
   return { provider_id: providerId, secret_updated: true }
 }

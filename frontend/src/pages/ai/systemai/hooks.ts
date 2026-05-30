@@ -93,7 +93,9 @@ export function useSystemAIPage() {
   const silentReload = async () => {
     try {
       await fetchConfigs()
+      if (!mountedRef.current) return
     } catch (err) {
+      if (!mountedRef.current) return
       // silently reloaded configs failed; state is unchanged
     }
   }
@@ -113,12 +115,13 @@ export function useSystemAIPage() {
     prevProviderIdRef.current = nextId
 
     if (!selectedConfig) {
-      setDraft((prev) => prev?.provider_id === selectedProviderId ? prev : null)
+      setDraft((prev) => { if (!prev) return prev; return prev.provider_id === selectedProviderId ? prev : null })
     } else if (providerChanged) {
       const fixedBase = OFFICIAL_PROVIDER_BASE_URLS[selectedConfig.provider_id]
       const enforcedBase = isCustomProvider(selectedConfig.provider_id)
         ? (selectedConfig.base_url || '')
         : (fixedBase || '')
+      console.debug('systemai: providerChanged, resetting base_url to', enforcedBase)
       setDraft({
         ...selectedConfig,
         base_url: enforcedBase,
@@ -139,8 +142,9 @@ export function useSystemAIPage() {
       setValidated(false)
       setLastAutoSavedSecretKey('')
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedConfig])
+    // selectedProviderId is read inside setDraft callback only; it changes
+    // in lockstep with selectedConfig (both are driven by the same user action).
+  }, [selectedConfig, selectedProviderId])
 
   useEffect(() => {
     if (!draft) return
@@ -172,7 +176,9 @@ export function useSystemAIPage() {
       }
     }, 700)
     return () => clearTimeout(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // omitted from deps: draft.name (inside if-guard, serialised via provider_id|secret
+    // key to avoid firing on every keystroke), t / isCustomProvider (stateless helpers,
+    // stable across renders), silentReload (ref-stabilised via fetchConfigs).
   }, [draft?.provider_id, secretInput, lastAutoSavedSecretKey])
 
   useEffect(() => {
@@ -263,7 +269,13 @@ export function useSystemAIPage() {
     setSavingConfig(true)
     try {
       await persistDraftConfig(draft)
-      setConfigs((prev) => prev.some((item) => item.provider_id === draft.provider_id) ? prev.map((item) => item.provider_id === draft.provider_id ? draft : item) : [...prev, draft])
+      setConfigs((prev) => {
+        const exists = prev.some((item) => item.provider_id === draft.provider_id)
+        if (exists) {
+          return prev.map((item) => item.provider_id === draft.provider_id ? draft : item)
+        }
+        return [...prev, draft]
+      })
       setNotice(t('ai.systemAI.messages.configSaved'))
       setError('')
       void silentReload()

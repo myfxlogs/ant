@@ -7,6 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"go.uber.org/zap"
+
 	"anttrader/internal/repository"
 
 	"github.com/google/uuid"
@@ -25,6 +27,7 @@ type DebateV2Service struct {
 	repo        *repository.DebateRepository
 	jobRepo     *repository.JobRepository
 	pg          *pgxpool.Pool
+	log         *zap.Logger
 	mu          sync.Mutex
 	jobChans    map[uuid.UUID]chan *debateV2JobEvent
 	jobSessions map[uuid.UUID][2]uuid.UUID // jobID → {sessionID, userID}
@@ -92,11 +95,12 @@ type v2Extras struct {
 	Usage    []byte
 }
 
-func NewDebateV2Service(pg *pgxpool.Pool, jobRepo *repository.JobRepository) *DebateV2Service {
+func NewDebateV2Service(pg *pgxpool.Pool, jobRepo *repository.JobRepository, log *zap.Logger) *DebateV2Service {
 	return &DebateV2Service{
 		repo:        repository.NewDebateRepository(pg),
 		jobRepo:     jobRepo,
 		pg:          pg,
+		log:         log,
 		jobChans:    make(map[uuid.UUID]chan *debateV2JobEvent),
 		jobSessions: make(map[uuid.UUID][2]uuid.UUID),
 	}
@@ -111,7 +115,18 @@ func (s *DebateV2Service) Start(ctx context.Context, userID uuid.UUID, agents []
 	if title == "" {
 		title = "New Debate"
 	}
-	sess, err := s.repo.CreateSession(ctx, userID, title, agents)
+
+	tx, err := s.pg.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	sessionID := uuid.New()
+	_, err = tx.Exec(ctx,
+		`INSERT INTO debate_sessions (id, user_id, title, status, agents, created_at, updated_at)
+		 VALUES ($1, $2, $3, $4, $5, NOW(), NOW())`,
+		sessionID, userID, title, "idle", agents)
 	if err != nil {
 		return nil, fmt.Errorf("create session: %w", err)
 	}
@@ -124,14 +139,20 @@ func (s *DebateV2Service) Start(ctx context.Context, userID uuid.UUID, agents []
 			Content: "你好！请描述你想要创建的量化策略的目标和需求。",
 		}},
 	}
-	stepsJSON, _ := json.Marshal([]V2Step{intentStep})
-	_, err = s.pg.Exec(ctx,
+	stepsJSON, err := json.Marshal([]V2Step{intentStep})
+	if err != nil {
+		return nil, fmt.Errorf("marshal steps: %w", err)
+	}
+	_, err = tx.Exec(ctx,
 		`UPDATE debate_sessions SET status=$1, steps=$2, updated_at=NOW() WHERE id=$3`,
-		v2status, stepsJSON, sess.ID)
+		v2status, stepsJSON, sessionID)
 	if err != nil {
 		return nil, fmt.Errorf("init v2 session: %w", err)
 	}
-	return s.toV2(ctx, sess.ID, userID)
+	if err := tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("commit tx: %w", err)
+	}
+	return s.toV2(ctx, sessionID, userID)
 }
 
 func (s *DebateV2Service) Get(ctx context.Context, id string, userID uuid.UUID) (*V2Session, error) {
@@ -151,6 +172,7 @@ func (s *DebateV2Service) List(ctx context.Context, userID uuid.UUID, limit int)
 	for _, sess := range sessions {
 		v2, err := s.toV2(ctx, sess.ID, userID)
 		if err != nil {
+			s.log.Warn("List: skip session due to conversion error", zap.String("session_id", sess.ID.String()), zap.Error(err))
 			continue
 		}
 		out = append(out, v2)
@@ -177,11 +199,14 @@ func (s *DebateV2Service) Chat(ctx context.Context, id string, userID uuid.UUID,
 	if err != nil || sess == nil {
 		return nil, fmt.Errorf("session not found")
 	}
-	extras, err := s.loadExtras(ctx, uid)
+	extras, err := s.loadExtras(ctx, uid, userID)
 	if err != nil {
 		return nil, err
 	}
-	steps := s.parseSteps(extras)
+	steps, err := s.parseSteps(extras)
+	if err != nil {
+		return nil, err
+	}
 	if len(steps) == 0 {
 		return nil, fmt.Errorf("session has no steps")
 	}
@@ -196,7 +221,7 @@ func (s *DebateV2Service) Chat(ctx context.Context, id string, userID uuid.UUID,
 		Role:    "assistant",
 		Content: fmt.Sprintf("收到你的消息：%s\n\n（AI 策略引擎正在开发中，此回复为占位响应。）", message),
 	})
-	if err := s.saveSteps(ctx, uid, steps, sess.Status); err != nil {
+	if err := s.saveSteps(ctx, uid, userID, steps, sess.Status); err != nil {
 		return nil, err
 	}
 	return s.toV2(ctx, uid, userID)
@@ -211,11 +236,14 @@ func (s *DebateV2Service) Advance(ctx context.Context, id string, userID uuid.UU
 	if err != nil || sess == nil {
 		return nil, fmt.Errorf("session not found")
 	}
-	extras, err := s.loadExtras(ctx, uid)
+	extras, err := s.loadExtras(ctx, uid, userID)
 	if err != nil {
 		return nil, err
 	}
-	steps := s.parseSteps(extras)
+	steps, err := s.parseSteps(extras)
+	if err != nil {
+		return nil, err
+	}
 	agents := []string(sess.Agents)
 	currentStep := sess.Status
 
@@ -226,7 +254,7 @@ func (s *DebateV2Service) Advance(ctx context.Context, id string, userID uuid.UU
 	if currentStep != nextStep {
 		steps = append(steps, s.initStep(nextStep))
 	}
-	if err := s.saveSteps(ctx, uid, steps, nextStep); err != nil {
+	if err := s.saveSteps(ctx, uid, userID, steps, nextStep); err != nil {
 		return nil, err
 	}
 	return s.toV2(ctx, uid, userID)
@@ -241,11 +269,14 @@ func (s *DebateV2Service) Back(ctx context.Context, id string, userID uuid.UUID)
 	if err != nil || sess == nil {
 		return nil, fmt.Errorf("session not found")
 	}
-	extras, err := s.loadExtras(ctx, uid)
+	extras, err := s.loadExtras(ctx, uid, userID)
 	if err != nil {
 		return nil, err
 	}
-	steps := s.parseSteps(extras)
+	steps, err := s.parseSteps(extras)
+	if err != nil {
+		return nil, err
+	}
 	agents := []string(sess.Agents)
 
 	prevKey := s.prevStepKey(sess.Status, agents)
@@ -255,7 +286,7 @@ func (s *DebateV2Service) Back(ctx context.Context, id string, userID uuid.UUID)
 	if len(steps) > 0 && steps[len(steps)-1].StepKey == sess.Status {
 		steps = steps[:len(steps)-1]
 	}
-	if err := s.saveSteps(ctx, uid, steps, prevKey); err != nil {
+	if err := s.saveSteps(ctx, uid, userID, steps, prevKey); err != nil {
 		return nil, err
 	}
 	return s.toV2(ctx, uid, userID)
@@ -267,8 +298,8 @@ func (s *DebateV2Service) SetParams(ctx context.Context, id string, userID uuid.
 		return nil, fmt.Errorf("invalid session id")
 	}
 	_, err = s.pg.Exec(ctx,
-		`UPDATE debate_sessions SET param_schema=$1, updated_at=NOW() WHERE id=$2`,
-		paramsJSON, uid)
+		`UPDATE debate_sessions SET param_schema=$1, updated_at=NOW() WHERE id=$2 AND user_id=$3`,
+		paramsJSON, uid, userID)
 	if err != nil {
 		return nil, fmt.Errorf("set params: %w", err)
 	}
@@ -286,11 +317,14 @@ func (s *DebateV2Service) PrepareChatJob(ctx context.Context, id string, userID 
 	if err != nil || sess == nil {
 		return uuid.Nil, fmt.Errorf("session not found")
 	}
-	extras, err := s.loadExtras(ctx, uid)
+	extras, err := s.loadExtras(ctx, uid, userID)
 	if err != nil {
 		return uuid.Nil, err
 	}
-	steps := s.parseSteps(extras)
+	steps, err := s.parseSteps(extras)
+	if err != nil {
+		return uuid.Nil, err
+	}
 	if len(steps) == 0 {
 		return uuid.Nil, fmt.Errorf("session has no steps")
 	}
@@ -300,7 +334,7 @@ func (s *DebateV2Service) PrepareChatJob(ctx context.Context, id string, userID 
 		Role:    "user",
 		Content: message,
 	})
-	if err := s.saveSteps(ctx, uid, steps, sess.Status); err != nil {
+	if err := s.saveSteps(ctx, uid, userID, steps, sess.Status); err != nil {
 		return uuid.Nil, err
 	}
 	job := &repository.Job{
@@ -321,22 +355,19 @@ func (s *DebateV2Service) PrepareChatJob(ctx context.Context, id string, userID 
 
 func (s *DebateV2Service) RunChatJob(jobID, callerUserID uuid.UUID) error {
 	s.mu.Lock()
+	defer s.mu.Unlock()
 	pair, exists := s.jobSessions[jobID]
 	if !exists {
-		s.mu.Unlock()
 		return fmt.Errorf("job %s not found", jobID)
 	}
 	if pair[1] != callerUserID {
-		s.mu.Unlock()
 		return fmt.Errorf("job %s not found", jobID)
 	}
 	if _, running := s.jobChans[jobID]; running {
-		s.mu.Unlock()
 		return fmt.Errorf("job %s is already running", jobID)
 	}
 	ch := make(chan *debateV2JobEvent, 64)
 	s.jobChans[jobID] = ch
-	s.mu.Unlock()
 	sessionID := pair[0]
 	userID := pair[1]
 
@@ -363,16 +394,21 @@ func (s *DebateV2Service) RunChatJob(jobID, callerUserID uuid.UUID) error {
 		if sessionID == uuid.Nil || userID == uuid.Nil {
 			return
 		}
-		bgCtx := context.Background()
+		bgCtx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		defer cancel()
 		sess, err := s.repo.GetSession(bgCtx, sessionID, userID)
 		if err != nil || sess == nil {
 			return
 		}
-		extras, err := s.loadExtras(bgCtx, sessionID)
+		extras, err := s.loadExtras(bgCtx, sessionID, userID)
 		if err != nil {
 			return
 		}
-		steps := s.parseSteps(extras)
+		steps, err := s.parseSteps(extras)
+		if err != nil {
+			s.log.Error("RunChatJob goroutine: parseSteps failed", zap.Error(err))
+			return
+		}
 		if len(steps) > 0 {
 			last := &steps[len(steps)-1]
 			last.Messages = append(last.Messages, V2Message{
@@ -380,7 +416,9 @@ func (s *DebateV2Service) RunChatJob(jobID, callerUserID uuid.UUID) error {
 				Role:    "assistant",
 				Content: msg,
 			})
-			_ = s.saveSteps(bgCtx, sessionID, steps, sess.Status)
+			if err := s.saveSteps(bgCtx, sessionID, userID, steps, sess.Status); err != nil {
+				s.log.Error("RunChatJob goroutine: saveSteps failed", zap.String("session_id", sessionID.String()), zap.Error(err))
+			}
 		}
 	}()
 	return nil
@@ -410,11 +448,11 @@ func (s *DebateV2Service) JobChannel(jobID, userID uuid.UUID) (<-chan *debateV2J
 
 // --- helpers ---
 
-func (s *DebateV2Service) loadExtras(ctx context.Context, id uuid.UUID) (*v2Extras, error) {
+func (s *DebateV2Service) loadExtras(ctx context.Context, id, userID uuid.UUID) (*v2Extras, error) {
 	var e v2Extras
 	err := s.pg.QueryRow(ctx,
 		`SELECT steps, code, provider, model, usage
-		 FROM debate_sessions WHERE id=$1`, id,
+		 FROM debate_sessions WHERE id=$1 AND user_id=$2`, id, userID,
 	).Scan(&e.Steps, &e.Code, &e.Provider, &e.Model, &e.Usage)
 	if err != nil {
 		return nil, fmt.Errorf("load v2 extras: %w", err)
@@ -427,15 +465,18 @@ func (s *DebateV2Service) toV2(ctx context.Context, id, userID uuid.UUID) (*V2Se
 	if err != nil || sess == nil {
 		return nil, fmt.Errorf("session not found")
 	}
-	extras, err := s.loadExtras(ctx, id)
+	extras, err := s.loadExtras(ctx, id, userID)
 	if err != nil {
 		return nil, err
 	}
-	return sessionToV2(sess, extras), nil
+	return sessionToV2(sess, extras)
 }
 
-func sessionToV2(sess *repository.DebateSession, e *v2Extras) *V2Session {
-	steps := parseStepsFromRaw(e.Steps)
+func sessionToV2(sess *repository.DebateSession, e *v2Extras) (*V2Session, error) {
+	steps, err := parseStepsFromRaw(e.Steps)
+	if err != nil {
+		return nil, fmt.Errorf("parse steps: %w", err)
+	}
 	agents := []string(sess.Agents)
 	var code *V2Code
 	if len(e.Code) > 0 {
@@ -465,29 +506,31 @@ func sessionToV2(sess *repository.DebateSession, e *v2Extras) *V2Session {
 		Usage:       usage,
 		CreatedAt:   sess.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:   sess.UpdatedAt.Format(time.RFC3339),
-	}
+	}, nil
 }
 
-func (s *DebateV2Service) parseSteps(e *v2Extras) []V2Step {
+func (s *DebateV2Service) parseSteps(e *v2Extras) ([]V2Step, error) {
 	return parseStepsFromRaw(e.Steps)
 }
 
-func parseStepsFromRaw(raw []byte) []V2Step {
+func parseStepsFromRaw(raw []byte) ([]V2Step, error) {
 	var steps []V2Step
 	if len(raw) > 0 {
-		json.Unmarshal(raw, &steps)
+		if err := json.Unmarshal(raw, &steps); err != nil {
+			return nil, fmt.Errorf("unmarshal steps: %w", err)
+		}
 	}
-	return steps
+	return steps, nil
 }
 
-func (s *DebateV2Service) saveSteps(ctx context.Context, id uuid.UUID, steps []V2Step, status string) error {
+func (s *DebateV2Service) saveSteps(ctx context.Context, id, userID uuid.UUID, steps []V2Step, status string) error {
 	b, err := json.Marshal(steps)
 	if err != nil {
 		return fmt.Errorf("marshal steps: %w", err)
 	}
 	_, err = s.pg.Exec(ctx,
-		`UPDATE debate_sessions SET steps=$1, status=$2, updated_at=NOW() WHERE id=$3`,
-		b, status, id)
+		`UPDATE debate_sessions SET steps=$1, status=$2, updated_at=NOW() WHERE id=$3 AND user_id=$4`,
+		b, status, id, userID)
 	return err
 }
 

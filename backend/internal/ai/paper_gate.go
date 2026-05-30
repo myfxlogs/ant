@@ -12,8 +12,9 @@ import "fmt"
 
 // PaperGateConfig holds parameters for paper trading validation.
 type PaperGateConfig struct {
-	MinPaperDays         int     // minimum paper trading days (default 14)
-	MinReturnRatio       float64 // paper_return / backtest_net_return minimum (default 0.5)
+	MinPaperDays   int     // minimum paper trading days (default 14)
+	MinReturnRatio float64 // paper_return / backtest_net_return minimum (default 0.5)
+	MinPaperTrades int     // minimum paper trades for significance (default 5)
 }
 
 // DefaultPaperGateConfig returns standard paper gate parameters.
@@ -21,6 +22,7 @@ func DefaultPaperGateConfig() PaperGateConfig {
 	return PaperGateConfig{
 		MinPaperDays:   14,
 		MinReturnRatio: 0.5,
+		MinPaperTrades: 5,
 	}
 }
 
@@ -60,7 +62,17 @@ func PaperGate(metrics PaperGateMetrics, cfg PaperGateConfig) PaperGateResult {
 	}
 
 	// Check paper return ratio vs backtest.
+	// Skip ratio when both returns are negative (ratio flips sign and could pass incorrectly).
+	// Also skip when backtest return is zero or negative (no meaningful baseline).
 	if metrics.BacktestNetReturn > 0 {
+		if metrics.PaperNetReturn < 0 {
+			result.Passed = false
+			result.Reason = fmt.Sprintf(
+				"paper return %.4f negative while backtest return positive (regime fail)",
+				metrics.PaperNetReturn,
+			)
+			return result
+		}
 		returnRatio := metrics.PaperNetReturn / metrics.BacktestNetReturn
 		if returnRatio < cfg.MinReturnRatio {
 			result.Passed = false
@@ -70,12 +82,15 @@ func PaperGate(metrics PaperGateMetrics, cfg PaperGateConfig) PaperGateResult {
 			)
 			return result
 		}
+	} else if metrics.BacktestNetReturn < 0 {
+		// Both returns negative: ratio check is meaningless (signs cancel).
+		// Already caught by Net P&L check above; skip silently.
 	}
 
 	// Check minimum trade count in paper.
-	if metrics.PaperTradeCount < 5 {
+	if metrics.PaperTradeCount < cfg.MinPaperTrades {
 		result.Passed = false
-		result.Reason = fmt.Sprintf("paper trade count %d insufficient for evaluation", metrics.PaperTradeCount)
+		result.Reason = fmt.Sprintf("paper trade count %d insufficient for evaluation (min %d)", metrics.PaperTradeCount, cfg.MinPaperTrades)
 		return result
 	}
 

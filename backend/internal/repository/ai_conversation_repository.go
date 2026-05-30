@@ -44,8 +44,8 @@ func (r *AIConversationRepository) Create(ctx context.Context, userID uuid.UUID,
 	}
 	_, err := r.db.Exec(ctx,
 		`INSERT INTO ai_conversations (id, user_id, title, created_at, updated_at)
-		 VALUES ($1, $2, $3, $4, $5)`,
-		conv.ID, conv.UserID, conv.Title, conv.CreatedAt, conv.UpdatedAt,
+		 VALUES ($1, $2, $3, NOW(), NOW())`,
+		conv.ID, conv.UserID, conv.Title,
 	)
 	if err != nil {
 		return nil, err
@@ -104,10 +104,10 @@ func (r *AIConversationRepository) UpdateTitle(ctx context.Context, id, userID u
 	return nil
 }
 
-func (r *AIConversationRepository) Touch(ctx context.Context, id uuid.UUID) error {
+func (r *AIConversationRepository) Touch(ctx context.Context, id, userID uuid.UUID) error {
 	_, err := r.db.Exec(ctx,
-		`UPDATE ai_conversations SET updated_at = $1 WHERE id = $2`,
-		time.Now(), id,
+		`UPDATE ai_conversations SET updated_at = $1 WHERE id = $2 AND user_id = $3`,
+		time.Now(), id, userID,
 	)
 	if err != nil {
 		return fmt.Errorf("touch conversation: %w", err)
@@ -126,7 +126,7 @@ func (r *AIConversationRepository) Delete(ctx context.Context, id, userID uuid.U
 	return nil
 }
 
-func (r *AIConversationRepository) AddMessage(ctx context.Context, conversationID uuid.UUID, role, content string) (*AIMessage, error) {
+func (r *AIConversationRepository) AddMessage(ctx context.Context, userID, conversationID uuid.UUID, role, content string) (*AIMessage, error) {
 	msg := &AIMessage{
 		ID:             uuid.New(),
 		ConversationID: conversationID,
@@ -136,8 +136,10 @@ func (r *AIConversationRepository) AddMessage(ctx context.Context, conversationI
 	}
 	_, err := r.db.Exec(ctx,
 		`INSERT INTO ai_messages (id, conversation_id, role, content, created_at)
-		 VALUES ($1, $2, $3, $4, $5)`,
-		msg.ID, msg.ConversationID, msg.Role, msg.Content, msg.CreatedAt,
+		 SELECT $1, $2, $3, $4, $5
+		 FROM ai_conversations
+		 WHERE id = $2 AND user_id = $6`,
+		msg.ID, msg.ConversationID, msg.Role, msg.Content, msg.CreatedAt, userID,
 	)
 	if err != nil {
 		return nil, err
@@ -145,7 +147,17 @@ func (r *AIConversationRepository) AddMessage(ctx context.Context, conversationI
 	return msg, nil
 }
 
-func (r *AIConversationRepository) GetMessages(ctx context.Context, conversationID uuid.UUID) ([]AIMessage, error) {
+func (r *AIConversationRepository) GetMessages(ctx context.Context, userID, conversationID uuid.UUID) ([]AIMessage, error) {
+	// First verify ownership
+	var owner uuid.UUID
+	err := r.db.QueryRow(ctx, `SELECT user_id FROM ai_conversations WHERE id=$1`, conversationID).Scan(&owner)
+	if err != nil {
+		return nil, err
+	}
+	if owner != userID {
+		return nil, fmt.Errorf("conversation not found")
+	}
+
 	rows, err := r.db.Query(ctx,
 		`SELECT id, conversation_id, role, content, created_at
 		 FROM ai_messages WHERE conversation_id = $1 ORDER BY created_at ASC`,
@@ -168,7 +180,15 @@ func (r *AIConversationRepository) GetMessages(ctx context.Context, conversation
 }
 
 // DeleteMessagesByConversation removes all messages for a conversation.
-func (r *AIConversationRepository) DeleteMessagesByConversation(ctx context.Context, conversationID uuid.UUID) error {
-	_, err := r.db.Exec(ctx, `DELETE FROM ai_messages WHERE conversation_id = $1`, conversationID)
+func (r *AIConversationRepository) DeleteMessagesByConversation(ctx context.Context, userID, conversationID uuid.UUID) error {
+	var owner uuid.UUID
+	err := r.db.QueryRow(ctx, `SELECT user_id FROM ai_conversations WHERE id=$1`, conversationID).Scan(&owner)
+	if err != nil {
+		return err
+	}
+	if owner != userID {
+		return fmt.Errorf("conversation not found")
+	}
+	_, err = r.db.Exec(ctx, `DELETE FROM ai_messages WHERE conversation_id = $1`, conversationID)
 	return err
 }

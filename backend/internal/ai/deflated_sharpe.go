@@ -3,7 +3,7 @@
 // DSR adjusts the Sharpe ratio for multiple testing bias using the
 // López de Prado (2014) formula:
 //
-//	DSR = SR * sqrt[(1 - gamma*ln(N)) / (1 - skew*SR + (kurt-1)/4*SR^2)]
+//	DSR = SR * sqrt[(1 - gamma*ln(N)) / (1 - skew*SR + (kurt+2)/4*SR^2)]
 //
 // Where:
 //   - SR = annualized Sharpe ratio
@@ -64,7 +64,7 @@ func ComputeReturnMoments(dailyReturns []float64) ReturnMoments {
 		d := r - mean
 		sumSqDiff += d * d
 	}
-	variance := sumSqDiff / float64(n)
+	variance := sumSqDiff / float64(n) // Using population moments (n denominator, not n-1) — consistent with DSR formula expectations.
 	stdDev := math.Sqrt(variance)
 
 	// When all returns are identical (zero variance), skewness and kurtosis
@@ -86,8 +86,8 @@ func ComputeReturnMoments(dailyReturns []float64) ReturnMoments {
 		sumCube += d * d * d
 		sumQuad += d * d * d * d
 	}
-	skew := sumCube / float64(n)
-	kurt := sumQuad/float64(n) - 3.0 // excess kurtosis
+	skew := sumCube / float64(n)  // Using population moments (n denominator, not n-1) — consistent with DSR formula expectations.
+	kurt := sumQuad/float64(n) - 3.0 // excess kurtosis (using population denominator n, not n-1)
 
 	// Annualized Sharpe.
 	sharpe := 0.0
@@ -106,7 +106,7 @@ func ComputeReturnMoments(dailyReturns []float64) ReturnMoments {
 
 // DeflatedSharpe computes the Deflated Sharpe Ratio per López de Prado (2014).
 //
-// Formula: DSR = SR * sqrt[(1 - gamma*ln(N)) / (1 - skew*SR + (kurt-1)/4*SR^2)]
+// Formula: DSR = SR * sqrt[(1 - gamma*ln(N)) / (1 - skew*SR + (kurt+2)/4*SR^2)]
 //
 // Returns (DSR, passed) where passed = DSR >= confidenceLevel.
 func DeflatedSharpe(moments ReturnMoments, cfg DeflatedSharpeConfig) (float64, bool) {
@@ -133,18 +133,20 @@ func DeflatedSharpe(moments ReturnMoments, cfg DeflatedSharpeConfig) (float64, b
 	// When N=1, ln(1)=0 → numerator=1.
 	numerator := 1.0 - cfg.Gamma*math.Log(N)
 	if numerator <= 0 {
-		return 0, false // too many attempts degrade SR to zero
+		// With gamma=0.5772, numerator goes negative when ln(N) > 1/0.5772 ≈ 1.73,
+		// i.e., N ≥ 6. Clamp to 0 and return — DSR is not meaningful.
+		return 0, false
 	}
 
 	// Denominator: 1 - skew*SR + (kurt+2)/4*SR²
-	// Note: excess kurtosis + 3 = regular kurtosis; the formula uses (kurt-1)/4.
+	// Per López de Prado (2014) eq.7: (kurt+2)/4, not (kurt-1)/4.
 	// When denominator is non-positive, the Edgeworth expansion is invalid.
 	// Fall back to using only the multiple-testing correction (numerator).
-	denominator := 1.0 - skew*SR + (kurt-1.0)/4.0*SR*SR
+	denominator := 1.0 - skew*SR + (kurt+2.0)/4.0*SR*SR
 	if denominator <= 0 {
 		// Edgeworth expansion breaks down for extreme distributions.
 		// Use only the multiple-testing deflation.
-		deflationFactor := math.Sqrt(math.Max(numerator, 0))
+		deflationFactor := math.Sqrt(math.Max(numerator, 0)) // math.Max is a safety net; numerator is already clamped above, but retained for robustness.
 		DSR := SR * deflationFactor
 		passed := DSR >= cfg.ConfidenceLevel
 		return DSR, passed

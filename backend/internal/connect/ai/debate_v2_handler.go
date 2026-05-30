@@ -31,14 +31,23 @@ func NewDebateV2Server(svc *debateV2.DebateV2Service, log *zap.Logger) *DebateV2
 	return &DebateV2Server{svc: svc, log: log}
 }
 
-func (h *DebateV2Server) userID(ctx context.Context) uuid.UUID {
-	id, _ := uuid.Parse(interceptor.GetUserID(ctx))
-	return id
+func (h *DebateV2Server) userID(ctx context.Context) (uuid.UUID, error) {
+	id, err := uuid.Parse(interceptor.GetUserID(ctx))
+	if err != nil {
+		return uuid.Nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user id"))
+	}
+	return id, nil
 }
 
 func (h *DebateV2Server) StartDebateV2(ctx context.Context, req *connect.Request[antv1.StartDebateV2Request]) (*connect.Response[antv1.DebateV2Session], error) {
 	h.log.Info("StartDebateV2: entering handler")
-	uid := h.userID(ctx)
+	uid, err := h.userID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if len(req.Msg.Agents) == 0 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("agents must not be empty"))
+	}
 	h.log.Info("StartDebateV2: calling Start", zap.String("user_id", uid.String()))
 	sess, err := h.svc.Start(ctx, uid, req.Msg.Agents, req.Msg.Title)
 	if err != nil {
@@ -52,7 +61,10 @@ func (h *DebateV2Server) StartDebateV2(ctx context.Context, req *connect.Request
 }
 
 func (h *DebateV2Server) ChatDebateV2(ctx context.Context, req *connect.Request[antv1.ChatDebateV2Request]) (*connect.Response[antv1.DebateV2Session], error) {
-	uid := h.userID(ctx)
+	uid, err := h.userID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	sess, err := h.svc.Chat(ctx, req.Msg.SessionId, uid, req.Msg.Message)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -61,7 +73,10 @@ func (h *DebateV2Server) ChatDebateV2(ctx context.Context, req *connect.Request[
 }
 
 func (h *DebateV2Server) AdvanceDebateV2(ctx context.Context, req *connect.Request[antv1.DebateV2SessionRequest]) (*connect.Response[antv1.DebateV2Session], error) {
-	uid := h.userID(ctx)
+	uid, err := h.userID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	sess, err := h.svc.Advance(ctx, req.Msg.SessionId, uid)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -70,25 +85,31 @@ func (h *DebateV2Server) AdvanceDebateV2(ctx context.Context, req *connect.Reque
 }
 
 func (h *DebateV2Server) StartDebateV2AdvanceJob(ctx context.Context, req *connect.Request[antv1.DebateV2SessionRequest]) (*connect.Response[antv1.StartDebateV2AdvanceJobResponse], error) {
-	uid := h.userID(ctx)
-	sid := req.Msg.SessionId
-	sess, err := h.svc.Advance(ctx, sid, uid)
+	uid, err := h.userID(ctx)
 	if err != nil {
+		return nil, err
+	}
+	sid := req.Msg.SessionId
+	if _, err := h.svc.Advance(ctx, sid, uid); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	_ = sess
 	jobID, err := h.svc.PrepareChatJob(ctx, sid, uid, "advance")
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	_ = h.svc.RunChatJob(jobID, uid)
+	if err := h.svc.RunChatJob(jobID, uid); err != nil {
+		h.log.Error("StartDebateV2AdvanceJob: RunChatJob failed", zap.String("job_id", jobID.String()), zap.Error(err))
+	}
 	return connect.NewResponse(&antv1.StartDebateV2AdvanceJobResponse{
 		JobId: jobID.String(), SessionId: sid,
 	}), nil
 }
 
 func (h *DebateV2Server) GetDebateV2AdvanceJob(ctx context.Context, req *connect.Request[antv1.GetDebateV2AdvanceJobRequest]) (*connect.Response[antv1.GetDebateV2AdvanceJobResponse], error) {
-	uid := h.userID(ctx)
+	uid, err := h.userID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	jid, err := uuid.Parse(req.Msg.JobId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid job id"))
@@ -103,7 +124,10 @@ func (h *DebateV2Server) GetDebateV2AdvanceJob(ctx context.Context, req *connect
 }
 
 func (h *DebateV2Server) PrepareDebateV2ChatJob(ctx context.Context, req *connect.Request[antv1.ChatDebateV2Request]) (*connect.Response[antv1.StartDebateV2ChatJobResponse], error) {
-	uid := h.userID(ctx)
+	uid, err := h.userID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	jobID, err := h.svc.PrepareChatJob(ctx, req.Msg.SessionId, uid, req.Msg.Message)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -114,7 +138,10 @@ func (h *DebateV2Server) PrepareDebateV2ChatJob(ctx context.Context, req *connec
 }
 
 func (h *DebateV2Server) RunDebateV2ChatJob(ctx context.Context, req *connect.Request[antv1.RunDebateV2ChatJobRequest]) (*connect.Response[emptypb.Empty], error) {
-	uid := h.userID(ctx)
+	uid, err := h.userID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	jid, err := uuid.Parse(req.Msg.JobId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid job id"))
@@ -126,7 +153,10 @@ func (h *DebateV2Server) RunDebateV2ChatJob(ctx context.Context, req *connect.Re
 }
 
 func (h *DebateV2Server) GetDebateV2ChatJob(ctx context.Context, req *connect.Request[antv1.GetDebateV2ChatJobRequest]) (*connect.Response[antv1.GetDebateV2ChatJobResponse], error) {
-	uid := h.userID(ctx)
+	uid, err := h.userID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	jid, err := uuid.Parse(req.Msg.JobId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid job id"))
@@ -141,7 +171,10 @@ func (h *DebateV2Server) GetDebateV2ChatJob(ctx context.Context, req *connect.Re
 }
 
 func (h *DebateV2Server) BackDebateV2(ctx context.Context, req *connect.Request[antv1.DebateV2SessionRequest]) (*connect.Response[antv1.DebateV2Session], error) {
-	uid := h.userID(ctx)
+	uid, err := h.userID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	sess, err := h.svc.Back(ctx, req.Msg.SessionId, uid)
 	if err != nil {
 		h.log.Error("BackDebateV2 failed", zap.String("session", req.Msg.SessionId), zap.Error(err))
@@ -151,8 +184,14 @@ func (h *DebateV2Server) BackDebateV2(ctx context.Context, req *connect.Request[
 }
 
 func (h *DebateV2Server) SetDebateV2Params(ctx context.Context, req *connect.Request[antv1.SetDebateV2ParamsRequest]) (*connect.Response[antv1.DebateV2Session], error) {
-	uid := h.userID(ctx)
-	paramsJSON, _ := json.Marshal(req.Msg.Params)
+	uid, err := h.userID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	paramsJSON, err := json.Marshal(req.Msg.Params)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal params: %w", err))
+	}
 	sess, err := h.svc.SetParams(ctx, req.Msg.SessionId, uid, string(paramsJSON))
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -161,8 +200,11 @@ func (h *DebateV2Server) SetDebateV2Params(ctx context.Context, req *connect.Req
 }
 
 func (h *DebateV2Server) RejectDebateV2Code(ctx context.Context, req *connect.Request[antv1.RejectDebateV2CodeRequest]) (*connect.Response[antv1.DebateV2Session], error) {
-	uid := h.userID(ctx)
-	sess, err := h.svc.Back(ctx, req.Msg.SessionId, uid)
+	uid, err := h.userID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	sess, err := h.svc.Chat(ctx, req.Msg.SessionId, uid, req.Msg.Feedback)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -170,28 +212,37 @@ func (h *DebateV2Server) RejectDebateV2Code(ctx context.Context, req *connect.Re
 }
 
 func (h *DebateV2Server) StartDebateV2RejectCodeJob(ctx context.Context, req *connect.Request[antv1.RejectDebateV2CodeRequest]) (*connect.Response[antv1.StartDebateV2AdvanceJobResponse], error) {
-	uid := h.userID(ctx)
-	sid := req.Msg.SessionId
-	sess, err := h.svc.Back(ctx, sid, uid)
+	uid, err := h.userID(ctx)
 	if err != nil {
+		return nil, err
+	}
+	sid := req.Msg.SessionId
+	if _, err := h.svc.Back(ctx, sid, uid); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	_ = sess
 	jobID, err := h.svc.PrepareChatJob(ctx, sid, uid, req.Msg.Feedback)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	_ = h.svc.RunChatJob(jobID, uid)
+	if err := h.svc.RunChatJob(jobID, uid); err != nil {
+		h.log.Error("StartDebateV2RejectCodeJob: RunChatJob failed", zap.String("job_id", jobID.String()), zap.Error(err))
+	}
 	return connect.NewResponse(&antv1.StartDebateV2AdvanceJobResponse{
 		JobId: jobID.String(), SessionId: sid,
 	}), nil
 }
 
 func (h *DebateV2Server) ListDebateV2Sessions(ctx context.Context, req *connect.Request[antv1.ListDebateV2SessionsRequest]) (*connect.Response[antv1.ListDebateV2SessionsResponse], error) {
-	uid := h.userID(ctx)
+	uid, err := h.userID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	limit := int(req.Msg.Limit)
 	if limit <= 0 {
 		limit = 50
+	}
+	if limit > 100 {
+		limit = 100
 	}
 	sessions, err := h.svc.List(ctx, uid, limit)
 	if err != nil {
@@ -205,7 +256,10 @@ func (h *DebateV2Server) ListDebateV2Sessions(ctx context.Context, req *connect.
 }
 
 func (h *DebateV2Server) GetDebateV2Session(ctx context.Context, req *connect.Request[antv1.GetDebateV2SessionRequest]) (*connect.Response[antv1.DebateV2Session], error) {
-	uid := h.userID(ctx)
+	uid, err := h.userID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	sess, err := h.svc.Get(ctx, req.Msg.SessionId, uid)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -214,7 +268,10 @@ func (h *DebateV2Server) GetDebateV2Session(ctx context.Context, req *connect.Re
 }
 
 func (h *DebateV2Server) DeleteDebateV2Session(ctx context.Context, req *connect.Request[antv1.DeleteDebateV2SessionRequest]) (*connect.Response[emptypb.Empty], error) {
-	uid := h.userID(ctx)
+	uid, err := h.userID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	if err := h.svc.Delete(ctx, req.Msg.SessionId, uid); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -272,12 +329,20 @@ func (h *DebateV2Server) handleJobSSE(w http.ResponseWriter, r *http.Request, au
 			if !ok {
 				return
 			}
-			data, _ := json.Marshal(ev)
-			fmt.Fprintf(w, "data: %s\n\n", data)
+			data, err := json.Marshal(ev)
+			if err != nil {
+				h.log.Error("handleJobSSE: json marshal failed", zap.Error(err))
+				continue
+			}
+			if _, err := fmt.Fprintf(w, "data: %s\n\n", data); err != nil {
+				return
+			}
 			flusher.Flush()
 			if ev.Phase == "completed" || ev.Phase == "failed" {
 				return
 			}
+		default:
+			// Don't block if neither channel nor context is ready.
 		}
 	}
 }
@@ -285,6 +350,9 @@ func (h *DebateV2Server) handleJobSSE(w http.ResponseWriter, r *http.Request, au
 // --- proto conversion ---
 
 func toProtoSession(sess *debateV2.V2Session) *antv1.DebateV2Session {
+	if sess == nil {
+		return &antv1.DebateV2Session{}
+	}
 	pb := &antv1.DebateV2Session{
 		Id:          sess.ID,
 		Title:       sess.Title,

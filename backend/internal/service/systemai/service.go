@@ -87,6 +87,13 @@ func (s *Service) UpdateConfig(ctx context.Context, row *repository.SystemAIConf
 	return s.repo.Upsert(ctx, row, updatedBy)
 }
 
+// SetAIPrimary atomically assigns the "chat" primary role to providerID and
+// saves the default model name. All row mutations execute inside a single
+// database transaction.
+func (s *Service) SetAIPrimary(ctx context.Context, userID uuid.UUID, providerID, defaultModel string) error {
+	return s.repo.SetAIPrimary(ctx, userID, providerID, defaultModel)
+}
+
 // UpdateSecret encrypts and stores a provider's API key. Empty secret clears it.
 func (s *Service) UpdateSecret(ctx context.Context, userID uuid.UUID, providerID, secret, updatedBy string) error {
 	if strings.TrimSpace(secret) == "" {
@@ -128,7 +135,7 @@ func (s *Service) GetSecret(ctx context.Context, userID uuid.UUID, providerID st
 	}
 	pt, err := s.box.Open(rec.Ciphertext, rec.Salt, rec.Nonce)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("decrypt secret for provider %s: %w", providerID, err)
 	}
 	return string(pt), nil
 }

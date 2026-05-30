@@ -23,46 +23,45 @@ export function useBacktestRiskEval(params: {
   const { enabled, templateId, accountId, symbol, timeframe, datasetId, backtestSucceeded } = params;
 
   const [risk, setRisk] = useState<BacktestRiskEval>({ loading: false });
-  const inflightRef = useRef(false);
+  const inflightSeqRef = useRef(0);
   const lastKeyRef = useRef('');
 
   useEffect(() => {
-    if (!enabled) return;
     let mounted = true;
-    if (!backtestSucceeded) return () => {
-      mounted = false;
-    };
-    if (!templateId || !accountId || !symbol || !timeframe) return () => {
-      mounted = false;
-    };
+    if (!enabled) {
+      return () => { mounted = false; };
+    }
+    if (!backtestSucceeded) {
+      return () => { mounted = false; };
+    }
+    if (!templateId || !accountId || !symbol || !timeframe) {
+      return () => { mounted = false; };
+    }
 
     const key = [templateId, accountId, symbol, timeframe, datasetId || ''].join('|');
     if (key === lastKeyRef.current) {
-      return () => {
-        mounted = false;
-      };
+      return () => { mounted = false; };
     }
-    if (inflightRef.current) {
-      return () => {
-        mounted = false;
-      };
+    if (inflightSeqRef.current > 0) {
+      return () => { mounted = false; };
     }
     lastKeyRef.current = key;
-    inflightRef.current = true;
+    const seq = ++inflightSeqRef.current;
 
     void (async () => {
       try {
         if (!mounted) return;
+        if (seq !== inflightSeqRef.current) return;
         setRisk((prev) => ({ ...prev, loading: true }));
-        const backtestParams: Parameters<typeof strategyApi.runBacktest>[0] = {
+        const backtestParams: Parameters<typeof strategyApi.runBacktest>[0] & { datasetId?: string } = {
           templateId,
           accountId,
           symbol,
           timeframe,
           parameters: {},
           initialCapital: 10000,
+          ...(datasetId ? { datasetId } : {}),
         };
-        if (datasetId) (backtestParams as Record<string, unknown>).datasetId = datasetId;
         const resp = await strategyApi.runBacktest(backtestParams);
 
         if (!mounted) return;
@@ -85,7 +84,7 @@ export function useBacktestRiskEval(params: {
           warnings: [],
         });
       } finally {
-        inflightRef.current = false;
+        if (seq === inflightSeqRef.current) inflightSeqRef.current = 0;
       }
     })();
     return () => {
@@ -93,7 +92,7 @@ export function useBacktestRiskEval(params: {
     };
   }, [enabled, templateId, accountId, symbol, timeframe, datasetId, backtestSucceeded]);
 
-  const reset = () => { inflightRef.current = false; lastKeyRef.current = ''; setRisk({ loading: false }); };
+  const reset = () => { inflightSeqRef.current = 0; lastKeyRef.current = ''; setRisk({ loading: false }); };
 
   return { risk, reset };
 }

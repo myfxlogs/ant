@@ -213,10 +213,16 @@ func TestDeflatedSharpe_N1_unchanged(t *testing.T) {
 	cfg := DefaultDeflatedSharpeConfig()
 	cfg.NumAttempts = 1
 	dsr, _ := DeflatedSharpe(moments, cfg)
-	// With N=1, ln(1)=0 → numerator=1 → DSR ≈ SR if denominator ≈ 1.
+	// With N=1, ln(1)=0 → numerator=1 → DSR = SR / sqrt(denominator).
+	// The denominator uses (kurt+2)/4 per López de Prado (2014) eq.7,
+	// so DSR may be lower than SR even with N=1 when kurtosis is positive.
+	// DSR must be: positive (still profitable) and ≤ SR (deflation only reduces).
 	t.Logf("N=1: SR=%.4f DSR=%.4f", moments.SharpeRatio, dsr)
-	if math.Abs(dsr-moments.SharpeRatio) > 2.0 {
-		t.Fatalf("N=1: DSR %.4f should be close to SR %.4f", dsr, moments.SharpeRatio)
+	if dsr <= 0 {
+		t.Fatal("N=1: DSR should be positive for a positive-edge strategy")
+	}
+	if dsr > moments.SharpeRatio {
+		t.Fatalf("N=1: DSR %.4f should not exceed SR %.4f (deflation only reduces)", dsr, moments.SharpeRatio)
 	}
 }
 
