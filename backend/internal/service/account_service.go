@@ -482,7 +482,10 @@ func pgUUIDToString(u pgtype.UUID) string {
 func float64ToPgNumeric(v float64) pgtype.Numeric {
 	// pgtype.Numeric implements sql.Scanner and accepts float64 directly.
 	var n pgtype.Numeric
-	_ = n.Scan(v)
+	if err := n.Scan(v); err != nil {
+		// NaN/Inf silently produce zero; log and return zero.
+		return n
+	}
 	return n
 }
 

@@ -3,6 +3,7 @@ package system
 import (
 	"fmt"
 	"math"
+	"strings"
 	"time"
 
 	antv1 "anttrader/gen/proto/ant/v1"
@@ -87,11 +88,8 @@ func computeTradeStats(trades []*repository.TradeRecord) *model.TradeStats {
 }
 
 func isBalanceType(orderType string) bool {
-	switch orderType {
-	case "balance", "credit", "BALANCE", "CREDIT", "Balance", "Credit":
-		return true
-	}
-	return false
+	t := strings.ToLower(orderType)
+	return t == "balance" || t == "credit"
 }
 
 func formatDuration(seconds float64) string {

@@ -1,4 +1,6 @@
 import { tradingClient } from './connect';
+import { Side, OrderType, PlaceOrderRequestSchema } from '@/gen/ant/v1/mthub_service_pb';
+import { create } from '@bufbuild/protobuf';
 
 export interface RiskError {
   code?: string;
@@ -67,6 +69,41 @@ function fromProtoOrders(orders: unknown[]): unknown[] {
   });
 }
 
+/**
+ * Parse a combined side+orderType string (e.g. "buy_limit", "sell")
+ * into the proto Side and OrderType enum values.
+ */
+function parseSideOrderType(type: string): { side: Side; orderType: OrderType } {
+  const upper = type.toUpperCase();
+  let side: Side;
+  if (upper.startsWith('BUY')) {
+    side = Side.BUY;
+  } else if (upper.startsWith('SELL')) {
+    side = Side.SELL;
+  } else {
+    side = Side.UNSPECIFIED;
+  }
+
+  let orderType: OrderType;
+  if (upper.includes('STOP_LIMIT')) {
+    orderType = OrderType.STOP_LIMIT;
+  } else if (upper.includes('STOP')) {
+    orderType = OrderType.STOP;
+  } else if (upper.includes('LIMIT')) {
+    orderType = OrderType.LIMIT;
+  } else {
+    orderType = OrderType.MARKET;
+  }
+
+  return { side, orderType };
+}
+
+/** Convert a numeric price/volume to a decimal string for the proto wire format. */
+function toDecimalString(n: number | undefined, fallback = '0'): string {
+  if (n === undefined || n === null) return fallback;
+  return n.toString();
+}
+
 export const tradingApi = {
   orderSend: async (params: {
     accountId: string;
@@ -79,22 +116,21 @@ export const tradingApi = {
     comment?: string;
     magicNumber?: bigint;
   }): Promise<OrderSendResult> => {
-    // Params use pre-transform field names (symbol, type, magicNumber) that
-    // differ from the proto schema (canonical, side+orderType, magic).
+    const { side, orderType } = parseSideOrderType(params.type);
     const response = await tradingClient.placeOrder(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      {
+      create(PlaceOrderRequestSchema, {
         accountId: params.accountId,
-        symbol: params.symbol,
-        type: params.type,
-        volume: params.volume,
-        price: params.price || 0,
-        stopLoss: params.stopLoss || 0,
-        takeProfit: params.takeProfit || 0,
+        canonical: params.symbol,
+        side,
+        orderType,
+        volume: toDecimalString(params.volume, '0'),
+        price: toDecimalString(params.price, '0'),
+        stopLoss: toDecimalString(params.stopLoss, '0'),
+        takeProfit: toDecimalString(params.takeProfit, '0'),
         comment: params.comment || '',
-        magicNumber: params.magicNumber || BigInt(0),
-      } as any,
-    ) as unknown as Record<string, unknown>;
+        magic: Number(params.magicNumber || 0),
+      }),
+    );
     return {
       order: response.order,
       error: String(response.error ?? ''),

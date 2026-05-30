@@ -135,17 +135,29 @@ func (s *AccountSyncService) SyncAccountHistory(accountID string) {
 		case mthub.OrderStopLimit:
 			ot += "_STOP_LIMIT"
 		}
+		volume, vexact := r.Volume.Float64()
+		openPrice, oexact := r.OpenPrice.Float64()
+		closePrice, cexact := r.ClosePrice.Float64()
+		profit, pexact := r.Profit.Float64()
+		swap, sexact := r.Swap.Float64()
+		commission, cmexact := r.Commission.Float64()
+		if !vexact || !oexact || !cexact || !pexact || !sexact || !cmexact {
+			s.log.Warn("syncHistory: precision loss converting decimal to float64",
+				zap.String("account", accountID),
+				zap.Int64("ticket", r.Ticket),
+			)
+		}
 		tradeRecs = append(tradeRecs, &model.TradeRecord{
 			AccountID:    uid,
 			Ticket:       r.Ticket,
 			Symbol:       r.SymbolRaw,
 			OrderType:    ot,
-			Volume:       r.Volume.InexactFloat64(),
-			OpenPrice:    r.OpenPrice.InexactFloat64(),
-			ClosePrice:   r.ClosePrice.InexactFloat64(),
-			Profit:       r.Profit.InexactFloat64(),
-			Swap:         r.Swap.InexactFloat64(),
-			Commission:   r.Commission.InexactFloat64(),
+			Volume:       volume,
+			OpenPrice:    openPrice,
+			ClosePrice:   closePrice,
+			Profit:       profit,
+			Swap:         swap,
+			Commission:   commission,
 			OpenTime:     r.OpenTime,
 			CloseTime:    r.CloseTime,
 			OrderComment: r.Comment,

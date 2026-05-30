@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"sync"
 	"time"
 
 	goredis "github.com/redis/go-redis/v9"
@@ -26,7 +25,6 @@ type AnalyticsSnapshot struct {
 // AnalyticsCache caches full AccountAnalyticsResponse values keyed by account ID,
 // backed by Redis with a 30‑minute TTL.
 type AnalyticsCache struct {
-	mu    sync.RWMutex
 	redis *goredis.Client
 	log   *zap.Logger
 }

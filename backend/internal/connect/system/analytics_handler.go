@@ -61,7 +61,7 @@ func (s *AnalyticsServer) GetAccountAnalytics(ctx context.Context, req *connect.
 
 	// Check analytics cache — return immediately on hit, bypassing all 7 SQL queries.
 	if s.cache != nil {
-		if cached, err := s.cache.Get(ctx, req.Msg.AccountId); err == nil && cached != nil {
+		if cached, err := s.cache.Get(ctx, req.Msg.AccountId); err == nil {
 			return connect.NewResponse(cached), nil
 		}
 	}

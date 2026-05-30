@@ -40,7 +40,10 @@ func splitAndTrim(s, sep string) []string {
 }
 
 func main() {
-	log, _ := zap.NewProduction()
+	log, err := zap.NewProduction()
+	if err != nil {
+		panic(err)
+	}
 	defer log.Sync()
 
 	cfg := config.Load()

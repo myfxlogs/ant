@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"time"
 
@@ -85,7 +86,10 @@ func startMdGatewayPipeline(
 			// Write latest balance/equity to PG via AccountService.
 			writeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
-			userUID, _ := uuid.Parse(userID)
+			userUID, err := uuid.Parse(userID)
+			if err != nil {
+				log.Warn("OnAccountProfit: invalid user UUID", zap.String("userID", userID), zap.Error(err))
+			}
 			if err := accountSvc.UpdateAccountMetrics(writeCtx, userUID, accountID, p.Balance, p.Equity, p.Credit, p.Margin, p.FreeMargin, p.MarginLevel); err != nil {
 				log.Warn("OnAccountProfit: pg update failed", zap.String("account", accountID), zap.Error(err))
 			}
@@ -110,17 +114,7 @@ func startMdGatewayPipeline(
 				Margin: p.Margin, FreeMargin: p.FreeMargin, MarginLevel: p.MarginLevel,
 				Profit: p.Profit, ProfitPercent: p.ProfitPercent,
 				Status: "connected", Timestamp: time.Now(),
-				Positions: func() []mthub.AccountProfitPosition {
-					out := make([]mthub.AccountProfitPosition, 0, len(p.Positions))
-					for _, pos := range p.Positions {
-						out = append(out, mthub.AccountProfitPosition{
-							Ticket: pos.Ticket, Symbol: pos.Symbol,
-							Profit: pos.Profit, Volume: pos.Volume,
-							CurrentPrice: pos.CurrentPrice,
-						})
-					}
-					return out
-				}(),
+					Positions:     convertProfitPositions(p.Positions),
 			})
 			// B-2.3: 3-level margin call detection with per-broker thresholds.
 			if p.MarginLevel > 0 {
@@ -209,7 +203,7 @@ func startMdGatewayPipeline(
 			}
 
 				// Auto-write closed orders to trade_records.
-				if o.UpdateType == "close" && o.UpdateCloseTime > 0 {
+				if strings.EqualFold(o.UpdateType, "close") && o.UpdateCloseTime > 0 {
 					uid, err := uuid.Parse(accountID)
 					if err == nil {
 						rec := &model.TradeRecord{
@@ -295,4 +289,19 @@ func startMdGatewayPipeline(
 		return err
 	}
 	return nil
+}
+
+// convertProfitPositions converts mdtick.ProfitPosition slice to mthub.AccountProfitPosition slice.
+func convertProfitPositions(positions []mdtick.ProfitPosition) []mthub.AccountProfitPosition {
+	out := make([]mthub.AccountProfitPosition, 0, len(positions))
+	for _, pos := range positions {
+		out = append(out, mthub.AccountProfitPosition{
+			Ticket:       pos.Ticket,
+			Symbol:       pos.Symbol,
+			Profit:       pos.Profit,
+			Volume:       pos.Volume,
+			CurrentPrice: pos.CurrentPrice,
+		})
+	}
+	return out
 }

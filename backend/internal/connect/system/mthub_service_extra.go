@@ -86,7 +86,7 @@ func (s *MtHubServer) GetAccountStatus(ctx context.Context, req *connect.Request
 	return connect.NewResponse(&antv1.AccountStatus{
 		AccountId:  req.Msg.AccountId,
 		State:      state,
-		LastTickAt: timestamppb.Now(),
+		LastTickAt: nil, // gateway knows real last tick; don't fabricate
 	}), nil
 }
 
@@ -164,7 +164,14 @@ func (s *MtHubServer) SyncOrderHistory(ctx context.Context, req *connect.Request
 	// Convert mthub.OrderRecord → model.TradeRecord.
 	tradeRecs := make([]*model.TradeRecord, 0, len(records))
 	for _, r := range records {
-		tradeRecs = append(tradeRecs, orderRecordToTradeRecord(r, uid, platform))
+		rec, warnings := orderRecordToTradeRecord(r, uid, platform)
+		if len(warnings) > 0 {
+			s.log.Warn("SyncOrderHistory: precision loss converting decimal to float64",
+				zap.String("account", accountID),
+				zap.Int64("ticket", r.Ticket),
+				zap.Strings("fields", warnings))
+		}
+		tradeRecs = append(tradeRecs, rec)
 	}
 
 	if err := s.tradeRecords.BatchCreate(ctx, tradeRecs); err != nil {
@@ -206,35 +213,49 @@ func (s *MtHubServer) WriteClosedTrade(ctx context.Context, accountID, platform,
 }
 
 // #14: Use Float64() instead of InexactFloat64() to detect precision loss.
-func orderRecordToTradeRecord(r *mthub.OrderRecord, accountID uuid.UUID, platform string) *model.TradeRecord {
+// Returns the trade record and a list of field names where precision was lost.
+func orderRecordToTradeRecord(r *mthub.OrderRecord, accountID uuid.UUID, platform string) (*model.TradeRecord, []string) {
 	orderType := mthubSideOrderTypeToString(r.Side, r.OrderType)
-	return &model.TradeRecord{
+
+	var warnings []string
+	collect := func(f float64, exact bool, field string) float64 {
+		if !exact {
+			warnings = append(warnings, field)
+		}
+		return f
+	}
+
+	vol, vexact := decimalToFloat64(r.Volume)
+	op, oexact := decimalToFloat64(r.OpenPrice)
+	cp, cexact := decimalToFloat64(r.ClosePrice)
+	pr, pexact := decimalToFloat64(r.Profit)
+	sw, sexact := decimalToFloat64(r.Swap)
+	cm, cmexact := decimalToFloat64(r.Commission)
+
+	rec := &model.TradeRecord{
 		AccountID:    accountID,
 		Ticket:       r.Ticket,
 		Symbol:       r.SymbolRaw,
 		OrderType:    orderType,
-		Volume:       decimalToFloat64(r.Volume),
-		OpenPrice:    decimalToFloat64(r.OpenPrice),
-		ClosePrice:   decimalToFloat64(r.ClosePrice),
-		Profit:       decimalToFloat64(r.Profit),
-		Swap:         decimalToFloat64(r.Swap),
-		Commission:   decimalToFloat64(r.Commission),
+		Volume:       collect(vol, vexact, "volume"),
+		OpenPrice:    collect(op, oexact, "openPrice"),
+		ClosePrice:   collect(cp, cexact, "closePrice"),
+		Profit:       collect(pr, pexact, "profit"),
+		Swap:         collect(sw, sexact, "swap"),
+		Commission:   collect(cm, cmexact, "commission"),
 		OpenTime:     r.OpenTime,
 		CloseTime:    r.CloseTime,
 		OrderComment: r.Comment,
 		MagicNumber:  int(r.Magic),
 		Platform:     platform,
 	}
+	return rec, warnings
 }
 
 // decimalToFloat64 converts a decimal to float64 and detects precision loss (#14).
-func decimalToFloat64(d decimal.Decimal) float64 {
-	f, exact := d.Float64()
-	if !exact {
-		// Precision loss is logged at the call site if a logger is available.
-		// The float64 is still the best available representation.
-	}
-	return f
+// Returns (float64, true) when conversion is exact; (float64, false) on precision loss.
+func decimalToFloat64(d decimal.Decimal) (float64, bool) {
+	return d.Float64()
 }
 
 func mthubSideOrderTypeToString(side mthub.Side, ot mthub.OrderType) string {

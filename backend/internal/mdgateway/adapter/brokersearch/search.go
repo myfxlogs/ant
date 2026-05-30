@@ -76,9 +76,14 @@ func (s *Searcher) Search(ctx context.Context, company, mtType string) ([]*antv1
 	default:
 		results, err = s.searchBoth(ctx, company)
 	}
-	if len(results) == 0 && err != nil {
-		zap.L().Warn("broker search: mtapi unavailable, falling back to static list",
-			zap.String("company", company), zap.String("mtType", mtType), zap.Error(err))
+	if len(results) == 0 {
+		if err != nil {
+			zap.L().Warn("broker search: mtapi error, falling back to static list",
+				zap.String("company", company), zap.String("mtType", mtType), zap.Error(err))
+		} else {
+			zap.L().Debug("broker search: no results, falling back to static list",
+				zap.String("company", company), zap.String("mtType", mtType))
+		}
 		return staticBrokerFilter(company), nil
 	}
 	return results, err

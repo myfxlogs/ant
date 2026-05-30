@@ -110,10 +110,11 @@ export const accountApi = {
   },
 
   // Test-connect with a new password, then persist it and refresh is_investor.
-  updateTradingPassword: async (id: string, newPassword: string) => {
+  updateTradingPassword: async (id: string, newPassword: string, oldPassword?: string) => {
     const response = await accountClient.updateTradingPassword({
       id,
       newPassword,
+      oldPassword: oldPassword || '',
     });
     const camel = toCamelCase(response);
     return {

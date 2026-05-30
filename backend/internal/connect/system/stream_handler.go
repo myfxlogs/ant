@@ -160,6 +160,7 @@ func (s *StreamServer) SubscribeEvents(
 	}
 
 	snapKnownTickets := make(map[string]map[int64]bool)
+	snapCount := make(map[string]int)
 	// recentlyClosed tracks tickets seen as "close" events from orderCh
 	// so the snapshot diff does not emit duplicate close events.
 	recentlyClosed := make(map[string]map[int64]bool)
@@ -239,6 +240,14 @@ func (s *StreamServer) SubscribeEvents(
 				},
 			}); err != nil {
 				return fmt.Errorf("send account_status event: %w", err)
+			}
+
+			snapCount[snap.AccountID]++
+			// Periodic cleanup: after 100 snapshots for an account,
+			// reset known tickets to prevent unbounded growth.
+			if snapCount[snap.AccountID] >= 100 {
+				delete(snapKnownTickets, snap.AccountID)
+				snapCount[snap.AccountID] = 0
 			}
 
 			currentTickets := make(map[int64]bool, len(snap.Positions))

@@ -159,7 +159,7 @@ export default function AccountDetail() {
   const { connectionState } = useRealtimeUpdates(id);
   const enablingAccount = useAccountStore((state) => state.enablingAccount);
   
-  const isDataReceived = id ? hasReceivedData(id) : true;
+  const isDataReceived = id ? hasReceivedData(id) : false;
   // Show loading only while actively connecting. If already connected but no first stream frame yet,
   // still render snapshot/account values to avoid perpetual "loading..." cards.
   const isStreamLoading = !isDataReceived;
@@ -186,6 +186,11 @@ export default function AccountDetail() {
   const historyPageSize = 10;
   const lastAnalyticsReloadRef = useRef(0);
   const ANALYTICS_RELOAD_MIN_INTERVAL_MS = 5000;
+  // Stable refs for position-change handler to prevent re-registration on chart period changes.
+  const idRef = useRef(id);
+  idRef.current = id;
+  const loadAllDataRef = useRef(loadAllData);
+  loadAllDataRef.current = loadAllData;
 
   const loadHistory = useCallback(async (accountId: string, page: number) => {
     setHistoryLoading(true);
@@ -283,12 +288,22 @@ export default function AccountDetail() {
     };
     
     init();
-    
+
+    return () => {
+      setCurrentAccountId(null);
+    };
+  }, [id, loadAllData, fetchAccounts, fetchAccount, setCurrentAccount, navigate, setCurrentAccountId, t]);
+
+  // Position-change listener — registered once per account id, using refs
+  // to avoid re-registration when chartPeriod (and therefore loadAllData) changes.
+  useEffect(() => {
+    if (!id) return;
+
     const throttledReloadAnalytics = () => {
       const now = Date.now();
       if (now - lastAnalyticsReloadRef.current < ANALYTICS_RELOAD_MIN_INTERVAL_MS) return;
       lastAnalyticsReloadRef.current = now;
-      loadAllData(id).catch((error) => showError(getErrorMessage(error, '加载分析数据失败')));
+      loadAllDataRef.current(idRef.current!).catch((error) => showError(getErrorMessage(error, '\u52a0\u8f7d\u5206\u6790\u6570\u636e\u5931\u8d25')));
     };
 
     const handlePositionChange = (event: Event) => {
@@ -328,22 +343,18 @@ export default function AccountDetail() {
         // Throttle analytics reload to max once per 5 seconds.
         throttledReloadAnalytics();
       } else if (action === 'PositionOpen' || action === 'PendingOpen') {
-        if (id) {
+        if (idRef.current) {
           throttledReloadAnalytics();
         }
       }
     };
-    
+
     window.addEventListener('position-change', handlePositionChange);
-    
+
     return () => {
-      // Keep positionsMap[id] intact so navigating back to the detail page
-      // can render cached rows immediately while the next fetch is in flight.
-      // Only detach from the "current" pointer; per-account cache survives.
-      setCurrentAccountId(null);
       window.removeEventListener('position-change', handlePositionChange);
     };
-  }, [id, loadAllData, fetchAccounts, fetchAccount, setCurrentAccount, navigate, setCurrentAccountId, t]);
+  }, [id]); // Only depends on id — refs keep callbacks fresh.
 
   const handleConnect = useCallback(async () => {
     if (!currentAccount || connecting) return;
