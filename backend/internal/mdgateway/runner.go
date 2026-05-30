@@ -16,6 +16,7 @@ import (
 
 	anttrace "anttrader/internal/trace"
 	"anttrader/internal/mdgateway/adapter/mdtick"
+	"anttrader/internal/mdgateway/adapter"
 	"anttrader/internal/mdgateway/adapter/mt4"
 	"anttrader/internal/mdgateway/adapter/mt5"
 	"anttrader/internal/mdgateway/backfiller"
@@ -36,6 +37,7 @@ type RunnerDeps struct {
 	OnAccountDisconnect func(accountID string)                                     // B-1.3: called when gateway stops/fails for an account
 	OnBrokerInfo        func(accountID, platform, broker string, info *mdtick.BrokerInfo) // B-2.2: called once after successful Connect
 	Hub                 *mthub.Hub
+	BrokerRegistry      *adapter.BrokerRegistry // M12-C2: multi-broker registry; gateways registered on start
 }
 
 // Run assembles and starts the full mdgateway pipeline.
@@ -158,6 +160,8 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	if loadErr != nil {
 		return fmt.Errorf("load account configs after retries: %w", loadErr)
 	}
+	var firstMT4 *mt4.Gateway
+	var firstMT5 *mt5.Gateway
 	for _, cfg := range cfgs {
 		accID := cfg.AccountID
 		log.Info("mdgateway: starting gateway",
@@ -175,8 +179,29 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 		if bfSrc, ok := gw.(backfiller.MTAPIBarSource); ok {
 			srcMap.gws[accID] = bfSrc
 		}
+		// M12-C2: collect first gateway of each platform for BrokerRegistry.
+		if firstMT4 == nil {
+			if mt4gw, ok := gw.(*mt4.Gateway); ok {
+				firstMT4 = mt4gw
+			}
+		}
+		if firstMT5 == nil {
+			if mt5gw, ok := gw.(*mt5.Gateway); ok {
+				firstMT5 = mt5gw
+			}
+		}
 	}
 
+	// M12-C2: register collected gateways in the multi-broker registry.
+	if deps.BrokerRegistry != nil {
+		if err := adapter.RegisterDefaults(deps.BrokerRegistry, firstMT4, firstMT5); err != nil {
+			log.Error("mdgateway: failed to register broker defaults", zap.Error(err))
+		} else {
+			log.Info("mdgateway: broker registry populated",
+				zap.Bool("mt4", firstMT4 != nil),
+				zap.Bool("mt5", firstMT5 != nil))
+		}
+	}
 
 	// --- Account event subscriber (NATS: account.connect/disconnect/reconnect) ---
 	startAccountEventSubscriber(ctx, deps, mgr, log)

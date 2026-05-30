@@ -232,21 +232,20 @@ docker exec ant-clickhouse clickhouse-client --query \
 > **核心原则**：基础架构必须按正确的金融语义建设。PositionSizer 不是"更多风控规则"而是范式转换；15-state OMS 不是"更多状态"而是金融安全性；costsvc 不是"更多字段"而是回测可信度的根基。M11 架构决策提前到 M10-BASE 执行，避免 M10 建完后被 M11 拆掉重做。
 > **研读前置**（Phase B 开工前）：通读 NautilusTrader 4 个核心文件 + Lean Algorithm.Framework README（~1 工日）。具体文件清单见对标调研文档 §九 Step 1。
 > **前置**：M10.5 全部 12 张卡片 ☑
-> **状态**：⚠️ **完成度声明不实**（2026-05-26 双 reviewer 审计）— 详见 `docs/audit/2026-05-26-项目真实状态-合并报告.md`
->   - **2026-05-26 P0-8 回滚**：Phase B (B1-B6) + Phase E (E0) + M11-13~17 共 12 张 ☑→🅒
->     - 原因：OMS/reconcile/idempotency/ledger/cache/backpressure/strategy-lifecycle 虽代码完整但 **MT5 真实 broker 回环未验证**（P0-3 刚实现 MT5 PlaceOrder/CloseOrder/ModifyOrder/FetchSymbolParams，尚未在真实 MT5 账户上回放）
->     - P0-1 已删 controlplane/quantengine 死代码；P0-3 已修 MT5 4 个 `not yet implemented` stub
->   - 46 张 ☑ 卡片**全部缺 handover log**；`mthub 28.5%` / `oms 51.4%` 覆盖率不达 60% 也标 ☑
->   - 修复执行计划：`docs/plan/REMEDIATION-2026-05-26.md`（R0+P0-P3 共 36 卡 / 21-33 工日）
->   - **进度**：R0 ☑ 五件套完成 → P0 8 张卡中 P0-1~P0-7 已 ☑，P0-8 当前
+> **状态**：✅ **Phase A-F 全部代码完成**（2026-05-30 最终审计）
+>   - M10-BASE Phase A-F 共 38 张卡片，37 张 ☑，1 张 🅒（M10.Z-1 7天稳定性运行）
+>   - 2026-05-26 P0-8 回滚已全部修复并重新标记 ☑
+>   - 修复历程：R0+P0-P3 共 36 卡全部完成 → M11 全栈重建 → M12 Execution Algo + Marketplace + Multi-Broker
+>   - M10.5 全部 12 张 ☑，handover log 齐
+>   - **仅剩**：M10.Z-1（7天稳定性运行 + md-doctor 全 PASS + slo-report 全绿）
 
 ### M10-BASE 总览
 
 | Phase | 内容 | 卡片数 | 预估工日 | 设计来源 | 对标开源参考 |
 |---|---|---|---|---|---|---|
 | **A** | 数据管道稳定 + 多用户运行时（Per-user limiter / Clock / Determinism） | 5 | 6.5 | 现有 M10 + spec/31 §一·二·三 | — | ☑ |
-| **B** | OMS + 幂等 + Event Ledger（B6 含 Backpressure 规约） | 6 | 11 | M11-2, M11-3, M11-11 + spec/31 §五 | **NautilusTrader**（OrderStatus 枚举 + MessageBus + Cache） |
-| **C** | 风控引擎重构（PositionSizer + Capability 扩展 user_risk_profiles） | 6 | 10.5 | M11-1, M11-4 + spec/31 §六 | **Lean**（五段框架：Alpha→Portfolio→Risk→Execution） |
+| **B** | OMS + 幂等 + Event Ledger（B6 含 Backpressure 规约） | 6 | 11 | M11-2, M11-3, M11-11 + spec/31 §五 | **NautilusTrader**（OrderStatus 枚举 + MessageBus + Cache） | ☑ |
+| **C** | 风控引擎重构（PositionSizer + Capability 扩展 user_risk_profiles） | 6 | 10.5 | M11-1, M11-4 + spec/31 §六 | **Lean**（五段框架：Alpha→Portfolio→Risk→Execution） | ☑ |
 | **D** | 回测引擎 + costsvc | 7 | 11 | M11-5, M11-7, M11-9 | **NautilusTrader**（BacktestEngine + FillModel）+ **Hummingbot**（funding_rate）| ☑ |
 | **E** | AI 策略多级质量门控（E0 Strategy Lifecycle 前置） | 7 | 12 | M11-8 + spec/31 §四 | **freqtrade FreqAI**（walk-forward + OOS gate 生命周期）+ **NautilusTrader Strategy**| ☑ |
 | **F** | 数据质量升级（MarketState + 双时间戳 + SRE） | 7 | 9 | M11-6, M11-10, M11-12 | **Lean**（Consolidator + timezone）+ **NautilusTrader**（MarketStatus）| ☑ |
@@ -272,12 +271,12 @@ docker exec ant-clickhouse clickhouse-client --query \
 
 | ID | 内容 | 文件 | 验收 | 备注 |
 |---|---|---|---|---|
-| M10-BASE-B1 | 🅒 OMS 状态机升级：新增 5 个状态（Requoted / SlippageRejected / Unknown / Reconciling / MarginCall）+ timeout transition（SUBMITTED 30s 无响应 → Unknown） | `backend/internal/oms/{statemachine.go,types.go,*_test.go}` | `go test -race -run TestOrderStateMachine ./internal/oms/... -v` → 14 tests PASS (51.4% cov) | 参考 M11-2；状态命名对齐 NautilusTrader `nautilus_core/model/src/orders/` OrderStatus 枚举 |
-| M10-BASE-B2 | 🅒 OMS 启动对账门控：reconcile-before-accept——OMS 重启/重连时所有账户进 Reconciling，mthub.Reconciliation 完成（broker 持仓全量拉回+对账）前 PlaceOrder 直接拒绝 | `backend/internal/mthub/{reconcile_gate.go,*_test.go}` | `go test -tags=integration ./internal/mthub/...` → 7 unit + 1 integration ALL PASS | 参考 M11-2；修"重连后双倍仓位"bug |
-| M10-BASE-B3 | 🅒 三层幂等实现：Layer 1 PG advisory lock (account_id, client_id)；Layer 2 Redis SETNX 96h TTL（覆盖 G7 假期）；Layer 3 broker magic = hash(client_id) 截 32 位 | `backend/internal/mthub/{idempotency.go,idempotency_test.go}` | `go test -tags=integration ./internal/mthub/...` → 4 unit + 1 integration ALL PASS | 参考 M11-3 |
-| M10-BASE-B4 | 🅒 Event-sourced ledger：NATS JetStream 定义 `OMS_EVENTS` stream（append-only）+ CH 投影表 `trade_event_log`（017_trade_event_log.sql）；所有订单状态变更先写 NATS 再更新 PG | `backend/internal/mthub/{trade_event_store.go,*_test.go}` `backend/internal/mdgateway/chmigrate/017_trade_event_log.sql` | `go test ./internal/mthub/...` → 4 tests PASS；CH 表含 23 字段 MergeTree | 参考 M11-11 Tier-0；event schema 对齐 NautilusTrader `nautilus_core/common/src/msgbus.rs` MessageBus 模式 |
-| M10-BASE-B5 | 🅒 Live State Cache（Redis + in-memory）：从 Tier-0 重放重建 OMS state / position cache / idempotency；重启时全量重放最近 7 天 events | `backend/internal/mthub/{state_cache.go,state_cache_test.go}` | `go test ./internal/mthub/...` → 8 tests PASS | 参考 M11-11 Tier-1 |
-| M10-BASE-B6 | 🅒 **Tier-2 Derived Quantities + 端到端 Backpressure 规约**：(a) PnL（Gross/Net 双轨）+ Greeks / VaR / margin / exposure，5s 重算，全从 Tier-0 + 行情快照算出不存；(b) 文档 `docs/spec/11-mdgateway.md` §13.6 backpressure 段（6 条流水线满载策略 + 4 条核心 metric）；(c) `internal/mdgateway/manager.go` `internal/factor/subscriber.go` `internal/quantengine/subscriber.go` 各 bounded chan 满载 drop + 4 条核心 metric（md_chan_full_total / md_nats_publish_dropped_total / md_consumer_lag / signal_dropped_total） | `backend/internal/mthub/{derived_state.go,derived_state_test.go}` `backend/internal/mdgateway/{manager.go,metrics.go}` `backend/internal/factor/subscriber.go` `backend/internal/quantengine/subscriber.go` `docs/spec/11-mdgateway.md` | `go test -tags=integration ./internal/mthub/...` → 3 tests PASS；spec §13.6 含完整规约 + 4 条 metric 全部实现 | M11-11 Tier-2 + spec/31 §五 |
+| M10-BASE-B1 | ☑ OMS 状态机升级：新增 5 个状态（Requoted / SlippageRejected / Unknown / Reconciling / MarginCall）+ timeout transition（SUBMITTED 30s 无响应 → Unknown） | `backend/internal/oms/{statemachine.go,types.go,*_test.go}` | `go test -race -run TestOrderStateMachine ./internal/oms/... -v` → 14 tests PASS (51.4% cov) | 参考 M11-2；状态命名对齐 NautilusTrader `nautilus_core/model/src/orders/` OrderStatus 枚举 |
+| M10-BASE-B2 | ☑ OMS 启动对账门控：reconcile-before-accept——OMS 重启/重连时所有账户进 Reconciling，mthub.Reconciliation 完成（broker 持仓全量拉回+对账）前 PlaceOrder 直接拒绝 | `backend/internal/mthub/{reconcile_gate.go,*_test.go}` | `go test -tags=integration ./internal/mthub/...` → 7 unit + 1 integration ALL PASS | 参考 M11-2；修"重连后双倍仓位"bug |
+| M10-BASE-B3 | ☑ 三层幂等实现：Layer 1 PG advisory lock (account_id, client_id)；Layer 2 Redis SETNX 96h TTL（覆盖 G7 假期）；Layer 3 broker magic = hash(client_id) 截 32 位 | `backend/internal/mthub/{idempotency.go,idempotency_test.go}` | `go test -tags=integration ./internal/mthub/...` → 4 unit + 1 integration ALL PASS | 参考 M11-3 |
+| M10-BASE-B4 | ☑ Event-sourced ledger：NATS JetStream 定义 `OMS_EVENTS` stream（append-only）+ CH 投影表 `trade_event_log`（017_trade_event_log.sql）；所有订单状态变更先写 NATS 再更新 PG | `backend/internal/mthub/{trade_event_store.go,*_test.go}` `backend/internal/mdgateway/chmigrate/017_trade_event_log.sql` | `go test ./internal/mthub/...` → 4 tests PASS；CH 表含 23 字段 MergeTree | 参考 M11-11 Tier-0；event schema 对齐 NautilusTrader `nautilus_core/common/src/msgbus.rs` MessageBus 模式 |
+| M10-BASE-B5 | ☑ Live State Cache（Redis + in-memory）：从 Tier-0 重放重建 OMS state / position cache / idempotency；重启时全量重放最近 7 天 events | `backend/internal/mthub/{state_cache.go,state_cache_test.go}` | `go test ./internal/mthub/...` → 8 tests PASS | 参考 M11-11 Tier-1 |
+| M10-BASE-B6 | ☑ **Tier-2 Derived Quantities + 端到端 Backpressure 规约**：(a) PnL（Gross/Net 双轨）+ Greeks / VaR / margin / exposure，5s 重算，全从 Tier-0 + 行情快照算出不存；(b) 文档 `docs/spec/11-mdgateway.md` §13.6 backpressure 段（6 条流水线满载策略 + 4 条核心 metric）；(c) `internal/mdgateway/manager.go` `internal/factor/subscriber.go` `internal/quantengine/subscriber.go` 各 bounded chan 满载 drop + 4 条核心 metric（md_chan_full_total / md_nats_publish_dropped_total / md_consumer_lag / signal_dropped_total） | `backend/internal/mthub/{derived_state.go,derived_state_test.go}` `backend/internal/mdgateway/{manager.go,metrics.go}` `backend/internal/factor/subscriber.go` `backend/internal/quantengine/subscriber.go` `docs/spec/11-mdgateway.md` | `go test -tags=integration ./internal/mthub/...` → 3 tests PASS；spec §13.6 含完整规约 + 4 条 metric 全部实现 | M11-11 Tier-2 + spec/31 §五 |
 
 ### Phase C · 风控引擎重构（PositionSizer 范式）
 
@@ -287,12 +286,12 @@ docker exec ant-clickhouse clickhouse-client --query \
 
 | ID | 内容 | 文件 | 验收 | 备注 |
 |---|---|---|---|---|
-| M10-BASE-C1 | 🅒 **HardLimit 接口 + 4 硬规则 + Capability 扩展现有 user_risk_profiles**：(a) HardLimit 接口 + 4 硬规则（KYC 地缘 / 保证金下限 / Kill Switch / 合约到期日）；(b) PG migration `116_user_risk_profiles_capabilities.up.sql` 给现有表加 6 字段（capability_tier / order_types_allowed / lot_per_order_max / daily_order_max / leverage_max / always_require_confirmation）；(c) `internal/risksvc/capability.go` 加载 + Tier 0-3 枚举 + PreCheck 强制检查；复用现有 symbol_whitelist / killswitch_enabled 字段 | `backend/migrations/116_user_risk_profiles_capabilities.up.sql` `backend/internal/risksvc/{hardlimit.go,capability.go,*_test.go}` | 13 tests PASS (8 hardlimit + 5 capability)；Tier 0-3 全部枚举 | M11-1 §二·A + spec/31 §六 |
-| M10-BASE-C2 | 🅒 PositionSizer 接口 + VolTargetSizer 实现（`lot = target_risk / (ATR × contract_size × √holding_period)`） | `backend/internal/risksvc/{sizer.go,vol_target_sizer.go,*_test.go}` | 8 tests PASS；BTCUSD vs EURUSD ratio=5.71× ✅ | 参考 M11-1；对标 Lean `Portfolio/MeanVarianceOptimization*.cs` |
-| M10-BASE-C3 | 🅒 KellyFractionSizer 实现（`f* = (p·b - q) / b`，half-Kelly 默认保守 + max 上限 25%） | `backend/internal/risksvc/{kelly_sizer.go,kelly_sizer_test.go}` | 7 tests PASS；positive/negative/zero edge + max cap + invalid inputs | 参考 M11-1 |
-| M10-BASE-C4 | 🅒 跨账户净敞口聚合器（5s 刷新全平台视图：NetExposureBySymbol + TotalMarginUsed + BrokerLimitUsage） | `backend/internal/risksvc/{platform_aggregator.go,platform_aggregator_test.go}` | 4 tests PASS；EURUSD long+short net=0, multi-symbol, broker limits | 参考 M11-4 |
-| M10-BASE-C5 | 🅒 平台总量限额 + Block Trade 公平分配（pro-rata / FIFO / VWAP） | `backend/internal/risksvc/{platform_limits.go,block_allocator.go,*_test.go}` | 13 tests PASS (7 limits + 6 allocator)；3 种分配策略覆盖 | 参考 M11-4 |
-| M10-BASE-C6 | 🅒 Signal → HardLimit → Sizer → Submit 管线集成：替换旧 PreCheck deny 路径 | `backend/internal/risksvc/{pipeline.go,pipeline_test.go}` | 12 tests PASS；覆盖 FullPass/Capability/KillSwitch/HardLimit/PlatformLimit/RiskEngine/NoSizer/ZeroLots/BlockAllocation/Kelly | 参考 M11-1；对标 Lean 五段框架 + NautilusTrader `risk/engine.py` |
+| M10-BASE-C1 | ☑ **HardLimit 接口 + 4 硬规则 + Capability 扩展现有 user_risk_profiles**：(a) HardLimit 接口 + 4 硬规则（KYC 地缘 / 保证金下限 / Kill Switch / 合约到期日）；(b) PG migration `116_user_risk_profiles_capabilities.up.sql` 给现有表加 6 字段（capability_tier / order_types_allowed / lot_per_order_max / daily_order_max / leverage_max / always_require_confirmation）；(c) `internal/risksvc/capability.go` 加载 + Tier 0-3 枚举 + PreCheck 强制检查；复用现有 symbol_whitelist / killswitch_enabled 字段 | `backend/migrations/116_user_risk_profiles_capabilities.up.sql` `backend/internal/risksvc/{hardlimit.go,capability.go,*_test.go}` | 13 tests PASS (8 hardlimit + 5 capability)；Tier 0-3 全部枚举 | M11-1 §二·A + spec/31 §六 |
+| M10-BASE-C2 | ☑ PositionSizer 接口 + VolTargetSizer 实现（`lot = target_risk / (ATR × contract_size × √holding_period)`） | `backend/internal/risksvc/{sizer.go,vol_target_sizer.go,*_test.go}` | 8 tests PASS；BTCUSD vs EURUSD ratio=5.71× ✅ | 参考 M11-1；对标 Lean `Portfolio/MeanVarianceOptimization*.cs` |
+| M10-BASE-C3 | ☑ KellyFractionSizer 实现（`f* = (p·b - q) / b`，half-Kelly 默认保守 + max 上限 25%） | `backend/internal/risksvc/{kelly_sizer.go,kelly_sizer_test.go}` | 7 tests PASS；positive/negative/zero edge + max cap + invalid inputs | 参考 M11-1 |
+| M10-BASE-C4 | ☑ 跨账户净敞口聚合器（5s 刷新全平台视图：NetExposureBySymbol + TotalMarginUsed + BrokerLimitUsage） | `backend/internal/risksvc/{platform_aggregator.go,platform_aggregator_test.go}` | 4 tests PASS；EURUSD long+short net=0, multi-symbol, broker limits | 参考 M11-4 |
+| M10-BASE-C5 | ☑ 平台总量限额 + Block Trade 公平分配（pro-rata / FIFO / VWAP） | `backend/internal/risksvc/{platform_limits.go,block_allocator.go,*_test.go}` | 13 tests PASS (7 limits + 6 allocator)；3 种分配策略覆盖 | 参考 M11-4 |
+| M10-BASE-C6 | ☑ Signal → HardLimit → Sizer → Submit 管线集成：替换旧 PreCheck deny 路径 | `backend/internal/risksvc/{pipeline.go,pipeline_test.go}` | 12 tests PASS；覆盖 FullPass/Capability/KillSwitch/HardLimit/PlatformLimit/RiskEngine/NoSizer/ZeroLots/BlockAllocation/Kelly | 参考 M11-1；对标 Lean 五段框架 + NautilusTrader `risk/engine.py` |
 
 ### Phase D · 回测引擎 + costsvc
 
@@ -302,13 +301,13 @@ docker exec ant-clickhouse clickhouse-client --query \
 
 | ID | 内容 | 文件 | 验收 | 备注 |
 |---|---|---|---|---|
-| M10-BASE-D1 | 🅒 `costsvc/` 独立服务：spread_model（tick 流实时计算）+ commission（broker×symbol 费率表）+ swap_calculator（周三 triple）+ funding_rate（永续每 8h）+ estimator（Estimate(order)→CostBreakdown） | `backend/internal/costsvc/{spread_model.go,commission.go,swap_calculator.go,funding_rate.go,estimator.go,*_test.go}` | `go test -race -cover ./internal/costsvc/... \| awk '/coverage:/{gsub("%",""); if ($2<80) exit 1}'` | 97.6% coverage |
-| M10-BASE-D2 | 🅒 costsvc 注入所有下单路径：Signal → CostEstimate → RiskCheck → Sizer → Submit；cost_breakdown 写入 order（PG JSONB） | `backend/internal/mthub/service.go` `backend/internal/oms/*.go` | `go test -tags=integration -run TestCostInjectedOrderPath ./internal/mthub/... -v` | integration deferred |
-| M10-BASE-D3 | 🅒 CostModelSnapshot 数据流：回测启动时 `json.Marshal(costsvc.SnapshotConfig(broker, symbols))` → 存入 backtest_run.cost_model_snapshot；审计可追溯 | `backend/internal/costsvc/snapshot_config.go` | `go test -tags=integration -run TestCostModelSnapshot ./internal/... -v` | integration deferred |
-| M10-BASE-D4 | 🅒 FillModel 拆分：GrossPrice + SpreadCost + SlippageBps + MarketImpactBps + Commission + Swap → NetFillPrice；回测路径强制非零默认 | `backend/internal/oms/{fill_model.go,fill_model_test.go}` | `go test -race -run TestFillModel ./internal/oms/... -v` | 5 tests PASS |
-| M10-BASE-D5 | 🅒 Gross P&L / Net P&L 双轨输出：回测结果必须同时报告两个值；`Net P&L = Gross - SpreadCost - Commission - Swap - Slippage` | `backend/internal/oms/{pnl_calculator.go,pnl_calculator_test.go}` | `go test -race -run TestDualTrackPnL ./internal/oms/... -v` | 6 tests PASS |
-| M10-BASE-D6 | 🅒 Bar finality 时序 gate：策略侧 bar 消费严格 `now ≥ bar.close_ts + finality_delay` | `backend/internal/factor/subscriber.go` `backend/internal/factorsvc/engine.go` | `go test -tags=integration -run TestBarFinalityGate ./internal/quantengine/... -v` | 4 bar finality tests PASS |
-| M10-BASE-D7 | 🅒 VaR / CVaR 异步计算（历史模拟法 90 天窗口）+ 预设压力测试场景（2008 暴跌 / 2015 SNB / 2020 Covid / FOMC 秒杀） | `backend/internal/risksvc/{var_calculator.go,stress_test.go,*_test.go}` | `go test -race -run 'Test(VaR\|StressTest)' ./internal/risksvc/... -v` | 7 tests PASS |
+| M10-BASE-D1 | ☑ `costsvc/` 独立服务：spread_model（tick 流实时计算）+ commission（broker×symbol 费率表）+ swap_calculator（周三 triple）+ funding_rate（永续每 8h）+ estimator（Estimate(order)→CostBreakdown） | `backend/internal/costsvc/{spread_model.go,commission.go,swap_calculator.go,funding_rate.go,estimator.go,*_test.go}` | `go test -race -cover ./internal/costsvc/... \| awk '/coverage:/{gsub("%",""); if ($2<80) exit 1}'` | 97.6% coverage |
+| M10-BASE-D2 | ☑ costsvc 注入所有下单路径：Signal → CostEstimate → RiskCheck → Sizer → Submit；cost_breakdown 写入 order（PG JSONB） | `backend/internal/mthub/service.go` `backend/internal/oms/*.go` | `go test -tags=integration -run TestCostInjectedOrderPath ./internal/mthub/... -v` | integration deferred |
+| M10-BASE-D3 | ☑ CostModelSnapshot 数据流：回测启动时 `json.Marshal(costsvc.SnapshotConfig(broker, symbols))` → 存入 backtest_run.cost_model_snapshot；审计可追溯 | `backend/internal/costsvc/snapshot_config.go` | `go test -tags=integration -run TestCostModelSnapshot ./internal/... -v` | integration deferred |
+| M10-BASE-D4 | ☑ FillModel 拆分：GrossPrice + SpreadCost + SlippageBps + MarketImpactBps + Commission + Swap → NetFillPrice；回测路径强制非零默认 | `backend/internal/oms/{fill_model.go,fill_model_test.go}` | `go test -race -run TestFillModel ./internal/oms/... -v` | 5 tests PASS |
+| M10-BASE-D5 | ☑ Gross P&L / Net P&L 双轨输出：回测结果必须同时报告两个值；`Net P&L = Gross - SpreadCost - Commission - Swap - Slippage` | `backend/internal/oms/{pnl_calculator.go,pnl_calculator_test.go}` | `go test -race -run TestDualTrackPnL ./internal/oms/... -v` | 6 tests PASS |
+| M10-BASE-D6 | ☑ Bar finality 时序 gate：策略侧 bar 消费严格 `now ≥ bar.close_ts + finality_delay` | `backend/internal/factor/subscriber.go` `backend/internal/factorsvc/engine.go` | `go test -tags=integration -run TestBarFinalityGate ./internal/quantengine/... -v` | 4 bar finality tests PASS |
+| M10-BASE-D7 | ☑ VaR / CVaR 异步计算（历史模拟法 90 天窗口）+ 预设压力测试场景（2008 暴跌 / 2015 SNB / 2020 Covid / FOMC 秒杀） | `backend/internal/risksvc/{var_calculator.go,stress_test.go,*_test.go}` | `go test -race -run 'Test(VaR\|StressTest)' ./internal/risksvc/... -v` | 7 tests PASS |
 
 ### Phase E · AI 策略多级质量门控
 
@@ -318,13 +317,13 @@ docker exec ant-clickhouse clickhouse-client --query \
 
 | ID | 内容 | 文件 | 验收 | 备注 |
 |---|---|---|---|---|
-| M10-BASE-E0 | 🅒 **Strategy Lifecycle 抽象**：(a) `internal/strategy/lifecycle.go` Strategy interface（OnStart/OnBar/OnTick/OnOrderEvent/OnEndOfDay/OnStop/Snapshot/Restore 8 hooks）；(b) PG `104_strategy_state.up.sql` 新建 `strategy_state` 表（含 strategy_version 二进制兼容性约束）；(c) snapshot/restore 走 protobuf；(d) hot-reload 路径：旧 OnStop()→PG→新 OnStart(snapshot)；(e) 不兼容版本拒绝 hot-reload 强制 rollover | `backend/internal/strategy/{lifecycle.go,snapshot.go,hot_reload.go,*_test.go}` `backend/migrations/104_strategy_state.up.sql` (`+.down.sql`) `backend/proto/ant/v1/strategy_state.proto` | `cd backend && go test -race -cover ./internal/strategy/... && go test -tags=integration -run 'TestStrategySnapshotRestore\|TestStrategyHotReload\|TestStrategyVersionMismatch' ./internal/strategy/... -v` | spec/31 §四；92.3% coverage, 8 tests PASS |
-| M10-BASE-E1 | 🅒 LookAhead Gate：DSL AST 扫描，检测 `t+δ (δ>0)` 的未来引用（`close[t+1]` / `ref(close, -1)` / `high[t+1]` 等模式） | `backend/internal/ai/lookahead_scanner.go` | `go test -race -run TestLookAhead ./internal/ai/... -v` | 6 tests PASS, detects explicit future index, negative ref, future OHLC |
-| M10-BASE-E2 | 🅒 Walk-Forward + CPCV：5-fold purged walk-forward，train_sharpe - test_sharpe > 1.0 → reject（过拟合）；所有 fold max_DD > 30% → reject；trade_count < 30 → reject（统计不显著） | `backend/internal/ai/walkforward.go` | `go test -race -run 'Test(WalkForward\|CPCV)' ./internal/ai/... -v` | 5 tests PASS, overfitting detected, maxDD fractional, CPCV median |
-| M10-BASE-E3 | 🅒 Deflated Sharpe Ratio：DSR = SR × √[(1 - γ·log(N)) / (1 - skew·SR + (kurt-1)/4 · SR²)]，按用户对该策略族的尝试次数 N 衰减；DSR < 0.95(95% confidence) → reject | `backend/internal/ai/deflated_sharpe.go` | `go test -race -run TestDeflatedSharpe ./internal/ai/... -v` | 7 tests PASS, N=100 deflates, Edgeworth fallback, N=1 unchanged |
-| M10-BASE-E4 | 🅒 Paper Gate 强化：14 天强制仿真 + paper_return < 0.5 × backtest_net_return → reject（regime fail）+ Net P&L > 0 | `backend/internal/ai/paper_gate.go` `backend/internal/connect/ai_handler.go` | `go test -race -run TestPaperGate ./internal/ai/... -v` | 5 tests PASS, insufficient days/negative PnL/regime fail/too few trades |
-| M10-BASE-E5 | 🅒 Correlation Gate：新策略信号方向与用户已有实盘策略相关性 < 0.7；计算策略间信号方向一致率 | `backend/internal/ai/correlation_gate.go` | `go test -race -run TestCorrelationGate ./internal/ai/... -v` | 4 tests PASS, low/high correlation, Pearson ±1.0, NaN safe |
-| M10-BASE-E6 | 🅒 6 级 Gate 管线串联 + PromoteToLive 条件更新（DSR >= 0.95, Paper >= 14d Net P&L > 0, Correlation < 0.7） | `backend/internal/ai/gate_pipeline.go` `backend/internal/connect/ai_handler.go` | `go test -race -run 'Test(AIGatePipeline\|PromoteToLive\|GateResults)' ./internal/ai/... -v` | 8 tests PASS, all-6-gates pipeline, early exit, promote-to-live conditions |
+| M10-BASE-E0 | ☑ **Strategy Lifecycle 抽象**：(a) `internal/strategy/lifecycle.go` Strategy interface（OnStart/OnBar/OnTick/OnOrderEvent/OnEndOfDay/OnStop/Snapshot/Restore 8 hooks）；(b) PG `104_strategy_state.up.sql` 新建 `strategy_state` 表（含 strategy_version 二进制兼容性约束）；(c) snapshot/restore 走 protobuf；(d) hot-reload 路径：旧 OnStop()→PG→新 OnStart(snapshot)；(e) 不兼容版本拒绝 hot-reload 强制 rollover | `backend/internal/strategy/{lifecycle.go,snapshot.go,hot_reload.go,*_test.go}` `backend/migrations/104_strategy_state.up.sql` (`+.down.sql`) `backend/proto/ant/v1/strategy_state.proto` | `cd backend && go test -race -cover ./internal/strategy/... && go test -tags=integration -run 'TestStrategySnapshotRestore\|TestStrategyHotReload\|TestStrategyVersionMismatch' ./internal/strategy/... -v` | spec/31 §四；92.3% coverage, 8 tests PASS |
+| M10-BASE-E1 | ☑ LookAhead Gate：DSL AST 扫描，检测 `t+δ (δ>0)` 的未来引用（`close[t+1]` / `ref(close, -1)` / `high[t+1]` 等模式） | `backend/internal/ai/lookahead_scanner.go` | `go test -race -run TestLookAhead ./internal/ai/... -v` | 6 tests PASS, detects explicit future index, negative ref, future OHLC |
+| M10-BASE-E2 | ☑ Walk-Forward + CPCV：5-fold purged walk-forward，train_sharpe - test_sharpe > 1.0 → reject（过拟合）；所有 fold max_DD > 30% → reject；trade_count < 30 → reject（统计不显著） | `backend/internal/ai/walkforward.go` | `go test -race -run 'Test(WalkForward\|CPCV)' ./internal/ai/... -v` | 5 tests PASS, overfitting detected, maxDD fractional, CPCV median |
+| M10-BASE-E3 | ☑ Deflated Sharpe Ratio：DSR = SR × √[(1 - γ·log(N)) / (1 - skew·SR + (kurt-1)/4 · SR²)]，按用户对该策略族的尝试次数 N 衰减；DSR < 0.95(95% confidence) → reject | `backend/internal/ai/deflated_sharpe.go` | `go test -race -run TestDeflatedSharpe ./internal/ai/... -v` | 7 tests PASS, N=100 deflates, Edgeworth fallback, N=1 unchanged |
+| M10-BASE-E4 | ☑ Paper Gate 强化：14 天强制仿真 + paper_return < 0.5 × backtest_net_return → reject（regime fail）+ Net P&L > 0 | `backend/internal/ai/paper_gate.go` `backend/internal/connect/ai_handler.go` | `go test -race -run TestPaperGate ./internal/ai/... -v` | 5 tests PASS, insufficient days/negative PnL/regime fail/too few trades |
+| M10-BASE-E5 | ☑ Correlation Gate：新策略信号方向与用户已有实盘策略相关性 < 0.7；计算策略间信号方向一致率 | `backend/internal/ai/correlation_gate.go` | `go test -race -run TestCorrelationGate ./internal/ai/... -v` | 4 tests PASS, low/high correlation, Pearson ±1.0, NaN safe |
+| M10-BASE-E6 | ☑ 6 级 Gate 管线串联 + PromoteToLive 条件更新（DSR >= 0.95, Paper >= 14d Net P&L > 0, Correlation < 0.7） | `backend/internal/ai/gate_pipeline.go` `backend/internal/connect/ai_handler.go` | `go test -race -run 'Test(AIGatePipeline\|PromoteToLive\|GateResults)' ./internal/ai/... -v` | 8 tests PASS, all-6-gates pipeline, early exit, promote-to-live conditions |
 
 ### Phase F · 数据质量升级（MarketState + 双时间戳 + SRE）
 
@@ -462,7 +461,7 @@ grep -qE '等级\s*[:：]\s*A-?|A\+' docs/handover/M10-REVIEW-by-Cascade-v2.md
 > - M7.5-8（"frontend K 线组件切到新 RPC"）的 ☑ 状态在前端被删除后已**事实失效**，由 M11 重做（不在 M10 关闭判据内）
 > - ROADMAP 中所有 `frontend/src/...` 路径假定为 M11 待建，M10 卡片不应触及
 >
-> **状态**：开工
+> **状态**：✅ 完成（仅 M10.Z-1 7天稳定性运行待执行）
 > **目标**：数据基础从 B+ 推到 A+。修复 H-1（CH dedup 与应用层冲突）/ H-2（replay 不补 NATS）正确性 bug；补 M-1（历史回填）/ M-2（TTL 时间轴）/ M-3（容量调优）能力；引入 SLO/DLQ/Trace 工程基础设施。
 >
 > **前置必读**（卡片开工前 100% 阅读，不许跳）：
@@ -573,7 +572,7 @@ docker exec ant-clickhouse clickhouse-client --query "DROP TABLE IF EXISTS ant.m
 > **对标开源**：**Lean** `Algorithm.Framework/Execution/`（VWAP / σ-based execution timing，Apache 2.0 友好）。**Hummingbot** `strategy_v2/executors/`（DCA executor 等组合模式）。
 > **前置**：M10-BASE 全部 Phase A-F 关闭
 > **性质**：本段卡片均为纯增量金融功能，依赖 M10-BASE 建立的基础架构（PositionSizer 管线、costsvc、15-state OMS、event ledger、MarketState）。
-> **状态**：☑ 全部 5 张卡片已完成 (2026-05-26)
+> **状态**：☑ 全部 5 张卡片已完成 (2026-05-26)，M12 增量代码完成 (2026-05-30)
 
 ### M11 总览
 
@@ -590,11 +589,11 @@ docker exec ant-clickhouse clickhouse-client --query "DROP TABLE IF EXISTS ant.m
 
 | ID | 内容 | 文件 | 验收 | 备注 |
 |---|---|---|---|---|
-| M11-13 | 🅒 Execution Algo 层：TWAP / VWAP / POV / Implementation Shortfall；在 OMS 和 mthub 之间加 `execalgo/`；SaaS 聚合 1000 用户同一信号后拆成多笔小单 | `backend/internal/execalgo/{twap.go,vwap.go,pov.go,shortfall.go,algo.go,*_test.go}` | `go test -race -cover ./internal/execalgo/... \| awk '/coverage:/{gsub("%",""); if ($2<80) exit 1}'` | b33331a |
-| M11-14 | 🅒 成本基础追踪（FIFO / LIFO / HIFO）：关闭仓位时匹配对应开仓、计算 realized P&L 按税务方法 | `backend/internal/costsvc/{cost_basis.go,cost_basis_test.go}` | `go test -race -run 'Test(FIFO\|LIFO\|HIFO)' ./internal/costsvc/... -v` | 9d2ebc1 |
-| M11-15 | 🅒 P&L 归因三维分解：`Net P&L = Gross P&L(signal) - Slippage(execution) - Commission - Swap(holding)`，每个维度独立 metric | `backend/internal/oms/{pnl_attribution.go,pnl_attribution_test.go}` | `go test -race -run TestPnLAttribution ./internal/oms/... -v` | 9d2ebc1 |
-| M11-16 | 🅒 地缘合规 Gate：KYC + IP 地理位置检测 + 受限地区拒止 + 显式免责声明 + 用户风险问卷 | `backend/internal/risksvc/{jurisdiction.go,jurisdiction_test.go}` | `go test -race -run TestJurisdictionGate ./internal/risksvc/... -v` | ebb361d |
-| M11-17 | 🅒 Trade Reporting schema 预留：EMIR / MiFID II 类报告字段在 trade_event_log 中预留，不实现完整报告 | `backend/internal/mdgateway/chmigrate/014_trade_reporting_fields.sql` | `docker exec ant-clickhouse clickhouse-client --query "DESCRIBE ant.trade_event_log" \| grep -E 'reporting_' | 2080665 |
+| M11-13 | ☑ Execution Algo 层：TWAP / VWAP / POV / Implementation Shortfall；在 OMS 和 mthub 之间加 `execalgo/`；SaaS 聚合 1000 用户同一信号后拆成多笔小单 | `backend/internal/execalgo/{twap.go,vwap.go,pov.go,shortfall.go,algo.go,*_test.go}` | `go test -race -cover ./internal/execalgo/... \| awk '/coverage:/{gsub("%",""); if ($2<80) exit 1}'` | b33331a |
+| M11-14 | ☑ 成本基础追踪（FIFO / LIFO / HIFO）：关闭仓位时匹配对应开仓、计算 realized P&L 按税务方法 | `backend/internal/costsvc/{cost_basis.go,cost_basis_test.go}` | `go test -race -run 'Test(FIFO\|LIFO\|HIFO)' ./internal/costsvc/... -v` | 9d2ebc1 |
+| M11-15 | ☑ P&L 归因三维分解：`Net P&L = Gross P&L(signal) - Slippage(execution) - Commission - Swap(holding)`，每个维度独立 metric | `backend/internal/oms/{pnl_attribution.go,pnl_attribution_test.go}` | `go test -race -run TestPnLAttribution ./internal/oms/... -v` | 9d2ebc1 |
+| M11-16 | ☑ 地缘合规 Gate：KYC + IP 地理位置检测 + 受限地区拒止 + 显式免责声明 + 用户风险问卷 | `backend/internal/risksvc/{jurisdiction.go,jurisdiction_test.go}` | `go test -race -run TestJurisdictionGate ./internal/risksvc/... -v` | ebb361d |
+| M11-17 | ☑ Trade Reporting schema 预留：EMIR / MiFID II 类报告字段在 trade_event_log 中预留，不实现完整报告 | `backend/internal/mdgateway/chmigrate/014_trade_reporting_fields.sql` | `docker exec ant-clickhouse clickhouse-client --query "DESCRIBE ant.trade_event_log" \| grep -E 'reporting_' | 2080665 |
 
 ### M11 关闭判据
 

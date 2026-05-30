@@ -17,6 +17,7 @@ import (
 
 	"anttrader/internal/config"
 	"anttrader/internal/interceptor"
+	"anttrader/internal/mdgateway/adapter"
 	"anttrader/internal/mdgateway/chmigrate"
 	"anttrader/internal/mthub"
 	"anttrader/internal/notifier"
@@ -174,10 +175,15 @@ func main() {
 	var emailNotifier *notifier.EmailNotifier             // set after creation; referenced by OnAccountProfit closure
 	var platformAgg *risksvc.PlatformAggregator           // set after creation; referenced by OnOrderUpdate closure
 
-	go startMdGatewayPipeline(pipelineCtx, log, pool, ch, nc, spillDir, secClient, hub, accountSvc, mthubSvc, accountSyncSvc, tradeRecordRepo, snapshotBroker, accountBroker, eventStore, &emailNotifier, &platformAgg, &reconLoop)
+	// M12-C2: multi-broker registry created early so both handler wiring
+	// and the mdgateway pipeline can reference the same instance.
+	brokerReg := adapter.NewBrokerRegistry()
+	mthubSvc.SetBrokerRegistry(brokerReg)
+
+	go startMdGatewayPipeline(pipelineCtx, log, pool, ch, nc, spillDir, secClient, hub, accountSvc, mthubSvc, accountSyncSvc, tradeRecordRepo, snapshotBroker, accountBroker, eventStore, &emailNotifier, &platformAgg, &reconLoop, brokerReg)
 
 	mux := http.NewServeMux()
-	reconLoop, emailNotifier, platformAgg = registerHandlers(mux, log, pool, ch, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate, analyticsCache)
+	reconLoop, emailNotifier, platformAgg = registerHandlers(mux, log, pool, ch, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate, analyticsCache, brokerReg)
 
 	// Graceful shutdown
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)

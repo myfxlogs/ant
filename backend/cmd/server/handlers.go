@@ -14,6 +14,7 @@ import (
 	"anttrader/internal/config"
 	"anttrader/internal/connect/admin"
 	"anttrader/internal/connect/ai"
+	algo "anttrader/internal/connect/algo"
 	mktplace "anttrader/internal/connect/marketplace"
 	"anttrader/internal/connect/strategy"
 	"anttrader/internal/connect/system"
@@ -23,6 +24,7 @@ import (
 	"anttrader/internal/interceptor"
 	"anttrader/internal/marketplace"
 	"anttrader/internal/mdgateway"
+	"anttrader/internal/mdgateway/adapter"
 	"anttrader/internal/mdgateway/adapter/brokersearch"
 	"anttrader/internal/mthub"
 	"anttrader/internal/notifier"
@@ -59,6 +61,7 @@ func registerHandlers(
 	eventStore *mthub.TradeEventStore,
 	reconcileGate *mthub.ReconcileGate,
 	analyticsCache *service.AnalyticsCache,
+	brokerReg *adapter.BrokerRegistry,
 ) (*mthub.ReconciliationLoop, *notifier.EmailNotifier, *risksvc.PlatformAggregator) {
 
 	// ConnectRPC handlers
@@ -90,6 +93,12 @@ func registerHandlers(
 	mktplaceSvc := marketplace.New(pool)
 	mktplaceHandler := mktplace.NewMarketplaceServer(mktplaceSvc, log)
 	mux.Handle(antv1c.NewMarketplaceServiceHandler(mktplaceHandler, connectrpc.WithInterceptors(authInterceptor)))
+
+	// M12-A2: Execution Algo handler (TWAP/VWAP/POV/Shortfall).
+	// brokerReg is created in main.go before the pipeline starts; gateways register
+	// via adapter.RegisterDefaults inside the mdgateway runner after connection.
+	algoServer := algo.NewExecutionAlgoServer(brokerReg, log)
+	mux.Handle(antv1c.NewExecutionAlgoServiceHandler(algoServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	logRepo := repository.NewLogRepository(pool)
 	logSvc := service.NewLogService(logRepo)

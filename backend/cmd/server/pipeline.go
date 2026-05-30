@@ -13,6 +13,7 @@ import (
 	"go.uber.org/zap"
 
 	"anttrader/internal/mdgateway"
+	"anttrader/internal/mdgateway/adapter"
 	"anttrader/internal/mdgateway/adapter/mdtick"
 	"anttrader/internal/model"
 	"anttrader/internal/mthub"
@@ -42,6 +43,7 @@ func startMdGatewayPipeline(
 	emailNotifier **notifier.EmailNotifier,
 	platformAgg **risksvc.PlatformAggregator,
 	reconLoop **mthub.ReconciliationLoop,
+	brokerReg *adapter.BrokerRegistry,
 ) error {
 	// B-2.3: Per-broker 3-level margin call detection.
 	// Level 1 (预警): margin_level <= call_pct * 1.5 → SSE only
@@ -81,7 +83,8 @@ func startMdGatewayPipeline(
 		NATSConn: nc,
 		SpillDir: spillDir,
 		Secrets:  secClient,
-		Hub:      hub,
+		Hub:            hub,
+		BrokerRegistry: brokerReg,
 		OnAccountProfit: func(accountID, userID string, p *mdtick.ProfitUpdate) {
 			// Write latest balance/equity to PG via AccountService.
 			writeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
