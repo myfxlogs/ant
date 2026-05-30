@@ -50,18 +50,25 @@ func (s *MtHubServer) PlaceOrder(ctx context.Context, req *connect.Request[antv1
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	// #10: Check decimal parse errors for Price/SL/TP.
-	price, err := decimal.NewFromString(m.Price)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid price: %w", err))
+	// Default to decimal.Zero for empty Price/StopLoss/TakeProfit (proto3 default values).
+	price, sl, tp := decimal.Zero, decimal.Zero, decimal.Zero
+	if m.Price != "" {
+		price, err = decimal.NewFromString(m.Price)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid price: %w", err))
+		}
 	}
-	sl, err := decimal.NewFromString(m.StopLoss)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid stop_loss: %w", err))
+	if m.StopLoss != "" {
+		sl, err = decimal.NewFromString(m.StopLoss)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid stop_loss: %w", err))
+		}
 	}
-	tp, err := decimal.NewFromString(m.TakeProfit)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid take_profit: %w", err))
+	if m.TakeProfit != "" {
+		tp, err = decimal.NewFromString(m.TakeProfit)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid take_profit: %w", err))
+		}
 	}
 
 	rec, err := s.svc.PlaceOrder(ctx, &mthub.OrderRequest{

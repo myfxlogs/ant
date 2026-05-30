@@ -36,6 +36,8 @@ func (s *MtHubServer) PriceHistory(ctx context.Context, req *connect.Request[ant
 		limit = 500
 	}
 
+	// NOTE: GetKlines currently fetches latest-N bars regardless of From/To time range.
+	// Time-range filtering is not yet implemented in the repository layer.
 	bars, err := s.marketData.GetKlines(ctx, m.Canonical, "", period, limit)
 	if err != nil {
 		s.log.Warn("PriceHistory: get klines", zap.Error(err))
