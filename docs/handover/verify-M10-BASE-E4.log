@@ -1,0 +1,222 @@
+=== M10-BASE-E4: Paper Gate 14d ===
+Verification: go test -race ./internal/ai/... -v
+Description: 14-day forced paper trading, paper_return<0.5×backtest_net→reject
+
+--- Targeted tests ---
+=== RUN   TestPaperGate_Passing
+=== PAUSE TestPaperGate_Passing
+=== RUN   TestPaperGate_InsufficientDays
+=== PAUSE TestPaperGate_InsufficientDays
+=== RUN   TestPaperGate_NegativePnL
+=== PAUSE TestPaperGate_NegativePnL
+=== RUN   TestPaperGate_RegimeFail
+=== PAUSE TestPaperGate_RegimeFail
+=== RUN   TestPaperGate_TooFewTrades
+=== PAUSE TestPaperGate_TooFewTrades
+=== CONT  TestPaperGate_Passing
+=== CONT  TestPaperGate_RegimeFail
+--- PASS: TestPaperGate_Passing (0.00s)
+=== CONT  TestPaperGate_InsufficientDays
+--- PASS: TestPaperGate_RegimeFail (0.00s)
+=== CONT  TestPaperGate_NegativePnL
+=== CONT  TestPaperGate_TooFewTrades
+--- PASS: TestPaperGate_InsufficientDays (0.00s)
+--- PASS: TestPaperGate_TooFewTrades (0.00s)
+--- PASS: TestPaperGate_NegativePnL (0.00s)
+PASS
+ok  	anttrader/internal/ai	1.035s
+
+--- Full test suite ---
+=== RUN   TestLookAheadScanner_CleanExpression
+=== PAUSE TestLookAheadScanner_CleanExpression
+=== RUN   TestLookAheadScanner_ExplicitFutureIndex
+=== PAUSE TestLookAheadScanner_ExplicitFutureIndex
+=== RUN   TestLookAheadScanner_NegativeRefOffset
+=== PAUSE TestLookAheadScanner_NegativeRefOffset
+=== RUN   TestLookAheadScanner_FutureHighReference
+=== PAUSE TestLookAheadScanner_FutureHighReference
+=== RUN   TestLookAheadScanner_PositiveRefOK
+=== PAUSE TestLookAheadScanner_PositiveRefOK
+=== RUN   TestLookAheadScanner_ComplexExpression
+=== PAUSE TestLookAheadScanner_ComplexExpression
+=== RUN   TestHasLookahead
+=== PAUSE TestHasLookahead
+=== RUN   TestWalkForward_Passing
+=== PAUSE TestWalkForward_Passing
+=== RUN   TestWalkForward_InsufficientData
+=== PAUSE TestWalkForward_InsufficientData
+=== RUN   TestWalkForward_OverfittingDetected
+=== PAUSE TestWalkForward_OverfittingDetected
+=== RUN   TestCPCV
+=== PAUSE TestCPCV
+=== RUN   TestCPCV_EmptyReturns
+=== PAUSE TestCPCV_EmptyReturns
+=== RUN   TestDeflatedSharpe_PositiveEdge
+=== PAUSE TestDeflatedSharpe_PositiveEdge
+=== RUN   TestDeflatedSharpe_N100_Deflates
+=== PAUSE TestDeflatedSharpe_N100_Deflates
+=== RUN   TestDeflatedSharpe_ZeroSharpe
+=== PAUSE TestDeflatedSharpe_ZeroSharpe
+=== RUN   TestDeflatedSharpe_NegativeSharpe
+=== PAUSE TestDeflatedSharpe_NegativeSharpe
+=== RUN   TestDeflatedSharpe_N1_unchanged
+=== PAUSE TestDeflatedSharpe_N1_unchanged
+=== RUN   TestComputeReturnMoments
+=== PAUSE TestComputeReturnMoments
+=== RUN   TestDeflatedSharpeFromReturns
+=== PAUSE TestDeflatedSharpeFromReturns
+=== RUN   TestPaperGate_Passing
+=== PAUSE TestPaperGate_Passing
+=== RUN   TestPaperGate_InsufficientDays
+=== PAUSE TestPaperGate_InsufficientDays
+=== RUN   TestPaperGate_NegativePnL
+=== PAUSE TestPaperGate_NegativePnL
+=== RUN   TestPaperGate_RegimeFail
+=== PAUSE TestPaperGate_RegimeFail
+=== RUN   TestPaperGate_TooFewTrades
+=== PAUSE TestPaperGate_TooFewTrades
+=== RUN   TestCorrelationGate_LowCorrelation
+=== PAUSE TestCorrelationGate_LowCorrelation
+=== RUN   TestCorrelationGate_HighCorrelation
+=== PAUSE TestCorrelationGate_HighCorrelation
+=== RUN   TestCorrelationGate_InsufficientObservations
+=== PAUSE TestCorrelationGate_InsufficientObservations
+=== RUN   TestPearsonCorrelation
+=== PAUSE TestPearsonCorrelation
+=== RUN   TestAIGatePipeline_AllPass
+=== PAUSE TestAIGatePipeline_AllPass
+=== RUN   TestAIGatePipeline_LookAheadFails
+=== PAUSE TestAIGatePipeline_LookAheadFails
+=== RUN   TestAIGatePipeline_EmptyExpressionFails
+=== PAUSE TestAIGatePipeline_EmptyExpressionFails
+=== RUN   TestAIGatePipeline_OrderIsCorrect
+=== PAUSE TestAIGatePipeline_OrderIsCorrect
+=== RUN   TestPromoteToLive_AllPass
+=== PAUSE TestPromoteToLive_AllPass
+=== RUN   TestPromoteToLive_MissingDays
+=== PAUSE TestPromoteToLive_MissingDays
+=== RUN   TestPromoteToLive_NegativePnL
+=== PAUSE TestPromoteToLive_NegativePnL
+=== RUN   TestPromoteToLive_LowDSR
+=== PAUSE TestPromoteToLive_LowDSR
+=== RUN   TestPromoteToLive_HighCorrelation
+=== PAUSE TestPromoteToLive_HighCorrelation
+=== RUN   TestGateResultsSummary
+=== PAUSE TestGateResultsSummary
+=== RUN   TestComputeSharpe
+=== PAUSE TestComputeSharpe
+=== RUN   TestComputeMaxDD_Simple
+=== PAUSE TestComputeMaxDD_Simple
+=== CONT  TestLookAheadScanner_CleanExpression
+=== CONT  TestPaperGate_Passing
+--- PASS: TestPaperGate_Passing (0.00s)
+=== CONT  TestWalkForward_OverfittingDetected
+=== CONT  TestDeflatedSharpeFromReturns
+=== CONT  TestComputeReturnMoments
+    gates_test.go:236: Moments: mean=0.0060 std=0.0116 skew=-0.2437 kurt=-1.6031 SR=8.2281
+--- PASS: TestLookAheadScanner_CleanExpression (0.00s)
+=== NAME  TestDeflatedSharpeFromReturns
+    gates_test.go:244: DSR from returns: 1.8315 passed=true
+=== CONT  TestPaperGate_InsufficientDays
+=== CONT  TestDeflatedSharpe_ZeroSharpe
+=== NAME  TestWalkForward_OverfittingDetected
+    gates_test.go:132: Overfitting test: SharpeDiff=121.3417 MaxDD=74.0000 Passed=false
+=== CONT  TestDeflatedSharpe_NegativeSharpe
+=== CONT  TestCPCV_EmptyReturns
+=== CONT  TestDeflatedSharpe_PositiveEdge
+=== CONT  TestLookAheadScanner_PositiveRefOK
+=== CONT  TestDeflatedSharpe_N100_Deflates
+    gates_test.go:185: N=100: SR=5.2915 DSR=0.0000
+=== NAME  TestDeflatedSharpe_PositiveEdge
+    gates_test.go:171: SR=2.6268 DSR=1.4176 Passed=true
+=== CONT  TestWalkForward_InsufficientData
+=== CONT  TestCPCV
+    gates_test.go:143: CPCV OOS median Sharpe: 82.2562
+=== CONT  TestDeflatedSharpe_N1_unchanged
+    gates_test.go:220: N=1: SR=4.4217 DSR=1.8315
+--- PASS: TestComputeReturnMoments (0.00s)
+=== CONT  TestWalkForward_Passing
+    gates_test.go:99: SharpeDiff=0.0000 MaxFoldDD=0.0000 MinTrades=78 Folds=5
+--- PASS: TestWalkForward_Passing (0.00s)
+=== CONT  TestComputeMaxDD_Simple
+--- PASS: TestComputeMaxDD_Simple (0.00s)
+=== CONT  TestLookAheadScanner_ComplexExpression
+--- PASS: TestDeflatedSharpeFromReturns (0.00s)
+=== CONT  TestPromoteToLive_AllPass
+--- PASS: TestWalkForward_OverfittingDetected (0.00s)
+--- PASS: TestDeflatedSharpe_NegativeSharpe (0.00s)
+--- PASS: TestDeflatedSharpe_ZeroSharpe (0.00s)
+--- PASS: TestPaperGate_InsufficientDays (0.00s)
+=== NAME  TestPromoteToLive_AllPass
+    gates_test.go:516: PromoteToLive: ready for live deployment
+=== CONT  TestGateResultsSummary
+=== CONT  TestComputeSharpe
+=== CONT  TestPromoteToLive_HighCorrelation
+--- PASS: TestCPCV_EmptyReturns (0.00s)
+=== CONT  TestPromoteToLive_LowDSR
+=== CONT  TestAIGatePipeline_LookAheadFails
+--- PASS: TestDeflatedSharpe_N100_Deflates (0.00s)
+=== CONT  TestPromoteToLive_NegativePnL
+--- PASS: TestPromoteToLive_NegativePnL (0.00s)
+=== CONT  TestPromoteToLive_MissingDays
+=== CONT  TestAIGatePipeline_OrderIsCorrect
+--- PASS: TestPromoteToLive_MissingDays (0.00s)
+--- PASS: TestDeflatedSharpe_PositiveEdge (0.00s)
+--- PASS: TestWalkForward_InsufficientData (0.00s)
+=== CONT  TestAIGatePipeline_EmptyExpressionFails
+=== CONT  TestPearsonCorrelation
+--- PASS: TestCPCV (0.00s)
+=== CONT  TestAIGatePipeline_AllPass
+=== CONT  TestCorrelationGate_InsufficientObservations
+=== CONT  TestCorrelationGate_HighCorrelation
+    gates_test.go:380: High correlation: max=0.9245 strategy=strat_similar
+=== CONT  TestPaperGate_TooFewTrades
+=== CONT  TestCorrelationGate_LowCorrelation
+    gates_test.go:353: Low correlation: max=0.0000
+=== CONT  TestPaperGate_NegativePnL
+=== CONT  TestPaperGate_RegimeFail
+=== CONT  TestLookAheadScanner_FutureHighReference
+=== CONT  TestHasLookahead
+=== NAME  TestAIGatePipeline_AllPass
+    gates_test.go:442: Pipeline: passed=true first_fail= summary=all 6 gates passed
+    gates_test.go:444:   Gate compliance: passed=true score=0.0000 reason=
+    gates_test.go:444:   Gate lookahead: passed=true score=0.0000 reason=
+    gates_test.go:444:   Gate walkforward: passed=true score=-0.4154 reason=
+    gates_test.go:444:   Gate deflated_sharpe: passed=true score=2.2686 reason=
+    gates_test.go:444:   Gate paper: passed=true score=0.0800 reason=
+=== CONT  TestLookAheadScanner_NegativeRefOffset
+=== CONT  TestLookAheadScanner_ExplicitFutureIndex
+=== NAME  TestAIGatePipeline_AllPass
+    gates_test.go:444:   Gate correlation: passed=true score=0.0000 reason=
+--- PASS: TestDeflatedSharpe_N1_unchanged (0.00s)
+--- PASS: TestPromoteToLive_AllPass (0.00s)
+--- PASS: TestLookAheadScanner_PositiveRefOK (0.00s)
+--- PASS: TestComputeSharpe (0.00s)
+--- PASS: TestGateResultsSummary (0.00s)
+--- PASS: TestPromoteToLive_LowDSR (0.00s)
+--- PASS: TestPromoteToLive_HighCorrelation (0.00s)
+--- PASS: TestAIGatePipeline_EmptyExpressionFails (0.00s)
+--- PASS: TestPearsonCorrelation (0.00s)
+--- PASS: TestAIGatePipeline_LookAheadFails (0.00s)
+--- PASS: TestCorrelationGate_InsufficientObservations (0.00s)
+--- PASS: TestCorrelationGate_HighCorrelation (0.00s)
+--- PASS: TestPaperGate_TooFewTrades (0.00s)
+--- PASS: TestCorrelationGate_LowCorrelation (0.00s)
+--- PASS: TestPaperGate_NegativePnL (0.00s)
+--- PASS: TestPaperGate_RegimeFail (0.00s)
+--- PASS: TestLookAheadScanner_ComplexExpression (0.00s)
+--- PASS: TestAIGatePipeline_OrderIsCorrect (0.00s)
+--- PASS: TestLookAheadScanner_FutureHighReference (0.00s)
+--- PASS: TestHasLookahead (0.00s)
+--- PASS: TestAIGatePipeline_AllPass (0.00s)
+--- PASS: TestLookAheadScanner_NegativeRefOffset (0.00s)
+=== NAME  TestLookAheadScanner_ExplicitFutureIndex
+    gates_test.go:29: Violation: explicit future index: close[t+1]
+--- PASS: TestLookAheadScanner_ExplicitFutureIndex (0.00s)
+PASS
+ok  	anttrader/internal/ai	(cached)
+
+--- Coverage ---
+ok  	anttrader/internal/ai	(cached)	coverage: 87.1% of statements
+
+VERIFIED: 2026-05-30 — 14-day forced paper trading, paper_return<0.5×backtest_net→reject

@@ -1,0 +1,44 @@
+=== M10-BASE-B5: Live State Cache ===
+Verification: go test -race -run TestStateCache ./internal/mthub/... -v
+Expected: 8 tests PASS
+
+=== RUN   TestStateCache_GetSetOrder
+=== PAUSE TestStateCache_GetSetOrder
+=== RUN   TestStateCache_GetOrdersByAccount
+=== PAUSE TestStateCache_GetOrdersByAccount
+=== RUN   TestStateCache_PositionTracking
+=== PAUSE TestStateCache_PositionTracking
+=== RUN   TestStateCache_NonFillEventsDontUpdatePosition
+=== PAUSE TestStateCache_NonFillEventsDontUpdatePosition
+=== RUN   TestStateCache_Stats
+=== PAUSE TestStateCache_Stats
+=== RUN   TestStateCache_LoadFromRedis_NoRedis
+=== PAUSE TestStateCache_LoadFromRedis_NoRedis
+=== RUN   TestStateCache_PositionKey
+=== PAUSE TestStateCache_PositionKey
+=== RUN   TestStateCache_GetPositionsByAccount
+=== PAUSE TestStateCache_GetPositionsByAccount
+=== CONT  TestStateCache_NonFillEventsDontUpdatePosition
+=== CONT  TestStateCache_LoadFromRedis_NoRedis
+--- PASS: TestStateCache_NonFillEventsDontUpdatePosition (0.00s)
+=== CONT  TestStateCache_GetSetOrder
+--- PASS: TestStateCache_LoadFromRedis_NoRedis (0.00s)
+=== CONT  TestStateCache_PositionKey
+=== CONT  TestStateCache_GetOrdersByAccount
+=== CONT  TestStateCache_GetPositionsByAccount
+=== CONT  TestStateCache_PositionTracking
+=== CONT  TestStateCache_Stats
+--- PASS: TestStateCache_GetSetOrder (0.00s)
+--- PASS: TestStateCache_PositionKey (0.00s)
+--- PASS: TestStateCache_Stats (0.00s)
+--- PASS: TestStateCache_PositionTracking (0.00s)
+--- PASS: TestStateCache_GetOrdersByAccount (0.00s)
+--- PASS: TestStateCache_GetPositionsByAccount (0.00s)
+PASS
+ok  	anttrader/internal/mthub	(cached)
+
+--- State cache coverage ---
+ok  	anttrader/internal/mthub	1.047s	coverage: 8.7% of statements
+
+State cache rebuilds from Tier-0 NATS replay on restart (7-day event window)
+VERIFIED: 2026-05-30 — Redis+in-memory state cache, full rebuild from event log

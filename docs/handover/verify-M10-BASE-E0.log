@@ -1,0 +1,52 @@
+=== M10-BASE-E0: Strategy Lifecycle ===
+Verification: go test -race ./internal/strategy/... -v
+Description: 8 hooks (OnStart/OnBar/OnTick/OnOrderEvent/OnEndOfDay/OnStop/Snapshot/Restore)
+
+--- Targeted tests ---
+=== RUN   TestSnapshotStrategy_Roundtrip
+=== PAUSE TestSnapshotStrategy_Roundtrip
+=== CONT  TestSnapshotStrategy_Roundtrip
+--- PASS: TestSnapshotStrategy_Roundtrip (0.00s)
+PASS
+ok  	anttrader/internal/strategy	1.039s
+
+--- Full test suite ---
+=== RUN   TestBaseStrategy_Defaults
+=== PAUSE TestBaseStrategy_Defaults
+=== RUN   TestSnapshotStrategy_Roundtrip
+=== PAUSE TestSnapshotStrategy_Roundtrip
+=== RUN   TestCheckVersionCompatibility
+=== PAUSE TestCheckVersionCompatibility
+=== RUN   TestReloader_ValidateUpgrade
+=== PAUSE TestReloader_ValidateUpgrade
+=== RUN   TestReloader_Reload_MinorBump
+=== PAUSE TestReloader_Reload_MinorBump
+=== RUN   TestReloader_Reload_MajorBumpRejected
+=== PAUSE TestReloader_Reload_MajorBumpRejected
+=== RUN   TestStateMetrics_AllFields
+=== PAUSE TestStateMetrics_AllFields
+=== RUN   TestParseSemver
+=== PAUSE TestParseSemver
+=== CONT  TestBaseStrategy_Defaults
+--- PASS: TestBaseStrategy_Defaults (0.00s)
+=== CONT  TestReloader_ValidateUpgrade
+--- PASS: TestReloader_ValidateUpgrade (0.00s)
+=== CONT  TestSnapshotStrategy_Roundtrip
+--- PASS: TestSnapshotStrategy_Roundtrip (0.00s)
+=== CONT  TestCheckVersionCompatibility
+--- PASS: TestCheckVersionCompatibility (0.00s)
+=== CONT  TestReloader_Reload_MinorBump
+=== CONT  TestParseSemver
+--- PASS: TestParseSemver (0.00s)
+=== CONT  TestStateMetrics_AllFields
+--- PASS: TestStateMetrics_AllFields (0.00s)
+=== CONT  TestReloader_Reload_MajorBumpRejected
+--- PASS: TestReloader_Reload_MajorBumpRejected (0.00s)
+--- PASS: TestReloader_Reload_MinorBump (0.00s)
+PASS
+ok  	anttrader/internal/strategy	1.038s
+
+--- Coverage ---
+ok  	anttrader/internal/strategy	1.037s	coverage: 92.3% of statements
+
+VERIFIED: 2026-05-30 — 8 hooks (OnStart/OnBar/OnTick/OnOrderEvent/OnEndOfDay/OnStop/Snapshot/Restore)

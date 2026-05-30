@@ -1,0 +1,238 @@
+=== M10-BASE-D4: FillModel split ===
+Verification: go test -race ./internal/oms/... -v
+Description: GrossPrice + SpreadCost + Slippage + MarketImpact + Commission + Swap → NetFillPrice
+
+--- Targeted tests ---
+=== RUN   TestFillModel_Buy_NetHigherThanGross
+=== PAUSE TestFillModel_Buy_NetHigherThanGross
+=== RUN   TestFillModel_Sell_NetLowerThanGross
+=== PAUSE TestFillModel_Sell_NetLowerThanGross
+=== RUN   TestFillModel_Backtest_EnforcesNonZeroCosts
+=== PAUSE TestFillModel_Backtest_EnforcesNonZeroCosts
+=== RUN   TestFillModel_ComputeNet
+=== PAUSE TestFillModel_ComputeNet
+=== RUN   TestFillModel_ZeroVolume
+=== PAUSE TestFillModel_ZeroVolume
+=== CONT  TestFillModel_Backtest_EnforcesNonZeroCosts
+=== CONT  TestFillModel_ZeroVolume
+=== NAME  TestFillModel_Backtest_EnforcesNonZeroCosts
+    fill_model_test.go:65: Backtest fill: gross=1.085000 net=1.085267 costs: spread=5.0000 comm=10.8500 slip=10.8500
+=== CONT  TestFillModel_ComputeNet
+=== CONT  TestFillModel_Sell_NetLowerThanGross
+--- PASS: TestFillModel_ZeroVolume (0.00s)
+--- PASS: TestFillModel_Backtest_EnforcesNonZeroCosts (0.00s)
+--- PASS: TestFillModel_ComputeNet (0.00s)
+=== CONT  TestFillModel_Buy_NetHigherThanGross
+--- PASS: TestFillModel_Buy_NetHigherThanGross (0.00s)
+--- PASS: TestFillModel_Sell_NetLowerThanGross (0.00s)
+PASS
+ok  	anttrader/internal/oms	1.048s
+
+--- Full test suite ---
+=== RUN   TestFillModel_Buy_NetHigherThanGross
+=== PAUSE TestFillModel_Buy_NetHigherThanGross
+=== RUN   TestFillModel_Sell_NetLowerThanGross
+=== PAUSE TestFillModel_Sell_NetLowerThanGross
+=== RUN   TestFillModel_Backtest_EnforcesNonZeroCosts
+=== PAUSE TestFillModel_Backtest_EnforcesNonZeroCosts
+=== RUN   TestFillModel_ComputeNet
+=== PAUSE TestFillModel_ComputeNet
+=== RUN   TestFillModel_ZeroVolume
+=== PAUSE TestFillModel_ZeroVolume
+=== RUN   TestPnLAttribution_BuyProfitable
+=== PAUSE TestPnLAttribution_BuyProfitable
+=== RUN   TestPnLAttribution_SellProfitable
+=== PAUSE TestPnLAttribution_SellProfitable
+=== RUN   TestPnLAttribution_LosingTrade
+=== PAUSE TestPnLAttribution_LosingTrade
+=== RUN   TestPnLAttribution_FlatTrade
+=== PAUSE TestPnLAttribution_FlatTrade
+=== RUN   TestPnLAttribution_ValidateIdentityHolds
+=== PAUSE TestPnLAttribution_ValidateIdentityHolds
+=== RUN   TestPnLAttribution_AddAggregation
+=== PAUSE TestPnLAttribution_AddAggregation
+=== RUN   TestPnLAttribution_ThreeDimensionsIndependent
+=== PAUSE TestPnLAttribution_ThreeDimensionsIndependent
+=== RUN   TestPnLAttribution_SwapScalesWithHoldingDays
+=== PAUSE TestPnLAttribution_SwapScalesWithHoldingDays
+=== RUN   TestPnLAttribution_ZeroHoldingDays
+=== PAUSE TestPnLAttribution_ZeroHoldingDays
+=== RUN   TestPnLAttribution_BpsConsistency
+=== PAUSE TestPnLAttribution_BpsConsistency
+=== RUN   TestPnLAttribution_SmallSize
+=== PAUSE TestPnLAttribution_SmallSize
+=== RUN   TestPnLAttribution_ValidateAllCostsNonNegative
+=== PAUSE TestPnLAttribution_ValidateAllCostsNonNegative
+=== RUN   TestPnLAttribution_LongHoldingSwap
+=== PAUSE TestPnLAttribution_LongHoldingSwap
+=== RUN   TestPnLAttribution_SideIsPreserved
+=== PAUSE TestPnLAttribution_SideIsPreserved
+=== RUN   TestPnLAttribution_CostModelAccessor
+=== PAUSE TestPnLAttribution_CostModelAccessor
+=== RUN   TestPnLAttribution_ValidateErrorFormat
+=== PAUSE TestPnLAttribution_ValidateErrorFormat
+=== RUN   TestPnLCalculator_Buy_Profitable
+=== PAUSE TestPnLCalculator_Buy_Profitable
+=== RUN   TestPnLCalculator_Sell_Profitable
+=== PAUSE TestPnLCalculator_Sell_Profitable
+=== RUN   TestPnLCalculator_Losing
+=== PAUSE TestPnLCalculator_Losing
+=== RUN   TestPnLCalculator_ZeroHoldingDays
+=== PAUSE TestPnLCalculator_ZeroHoldingDays
+=== RUN   TestPnLCalculator_GrossNetSeparation
+=== PAUSE TestPnLCalculator_GrossNetSeparation
+=== RUN   TestDualTrackPnL
+=== PAUSE TestDualTrackPnL
+=== RUN   TestOrderStateMachine_All15States
+=== PAUSE TestOrderStateMachine_All15States
+=== RUN   TestStateTransitions
+=== PAUSE TestStateTransitions
+=== RUN   TestInvalidTransitions
+=== PAUSE TestInvalidTransitions
+=== RUN   TestIsTerminal
+=== PAUSE TestIsTerminal
+=== RUN   TestTransitionRoundTrip
+=== PAUSE TestTransitionRoundTrip
+=== RUN   TestRequotedPath
+=== PAUSE TestRequotedPath
+=== RUN   TestSlippageRejectedPath
+=== PAUSE TestSlippageRejectedPath
+=== RUN   TestUnknownToReconcilingPath
+=== PAUSE TestUnknownToReconcilingPath
+=== RUN   TestMarginCallPath
+=== PAUSE TestMarginCallPath
+=== RUN   TestSubmittedToUnknownPath
+=== PAUSE TestSubmittedToUnknownPath
+=== RUN   TestReconcilingAllResolutions
+=== PAUSE TestReconcilingAllResolutions
+=== RUN   TestTimeoutTransition
+=== PAUSE TestTimeoutTransition
+=== RUN   TestTimeoutTransition_OnlyFromSubmitted
+=== PAUSE TestTimeoutTransition_OnlyFromSubmitted
+=== RUN   TestShouldTimeout
+=== PAUSE TestShouldTimeout
+=== CONT  TestFillModel_Sell_NetLowerThanGross
+--- PASS: TestFillModel_Sell_NetLowerThanGross (0.00s)
+=== CONT  TestPnLAttribution_ValidateErrorFormat
+--- PASS: TestPnLAttribution_ValidateErrorFormat (0.00s)
+=== CONT  TestPnLAttribution_CostModelAccessor
+=== CONT  TestPnLCalculator_Buy_Profitable
+--- PASS: TestPnLAttribution_CostModelAccessor (0.00s)
+=== CONT  TestPnLAttribution_SwapScalesWithHoldingDays
+=== NAME  TestPnLCalculator_Buy_Profitable
+    pnl_calculator_test.go:31: Buy trade: gross=921.66 net=890.26 (costs: spread=10.00 comm=14.00 swap=-3.50 slip=10.90)
+=== CONT  TestPnLAttribution_FlatTrade
+=== CONT  TestPnLAttribution_BuyProfitable
+=== CONT  TestPnLAttribution_SellProfitable
+=== CONT  TestPnLAttribution_LosingTrade
+=== NAME  TestPnLAttribution_SellProfitable
+    pnl_attribution_test.go:83: Sell: Gross=1000.00 Exec=20.90 Hold=14.50 Net=964.60
+=== NAME  TestPnLAttribution_LosingTrade
+    pnl_attribution_test.go:110: Loss: Gross=-1000.00 Exec=20.90 Hold=10.50 Net=-1031.40 | Signal=-91.3bps Net=-94.2bps
+=== NAME  TestPnLAttribution_BuyProfitable
+    pnl_attribution_test.go:58: Buy: Gross=1000.00 Exec=20.90 Hold=10.50 Net=968.60 | Signal=92.2bps Exec=1.9bps Hold=1.0bps Net=89.3bps
+=== CONT  TestFillModel_ComputeNet
+=== CONT  TestFillModel_ZeroVolume
+=== NAME  TestPnLAttribution_FlatTrade
+    pnl_attribution_test.go:143: Flat: Gross=0.00 Exec=20.85 Hold=14.00 Net=-34.85
+=== CONT  TestFillModel_Buy_NetHigherThanGross
+=== CONT  TestTransitionRoundTrip
+=== CONT  TestShouldTimeout
+=== CONT  TestTimeoutTransition_OnlyFromSubmitted
+=== CONT  TestTimeoutTransition
+--- PASS: TestPnLAttribution_SwapScalesWithHoldingDays (0.00s)
+=== CONT  TestFillModel_Backtest_EnforcesNonZeroCosts
+=== CONT  TestUnknownToReconcilingPath
+=== CONT  TestMarginCallPath
+=== CONT  TestSubmittedToUnknownPath
+=== CONT  TestRequotedPath
+=== CONT  TestSlippageRejectedPath
+=== CONT  TestIsTerminal
+=== CONT  TestReconcilingAllResolutions
+=== CONT  TestStateTransitions
+=== CONT  TestOrderStateMachine_All15States
+--- PASS: TestPnLCalculator_Buy_Profitable (0.00s)
+=== NAME  TestOrderStateMachine_All15States
+    statemachine_test.go:27: All 15 OMS states enumerated (PASS)
+--- PASS: TestPnLAttribution_SellProfitable (0.00s)
+--- PASS: TestPnLAttribution_LosingTrade (0.00s)
+=== CONT  TestDualTrackPnL
+=== NAME  TestFillModel_Backtest_EnforcesNonZeroCosts
+    fill_model_test.go:65: Backtest fill: gross=1.085000 net=1.085267 costs: spread=5.0000 comm=10.8500 slip=10.8500
+--- PASS: TestPnLAttribution_BuyProfitable (0.00s)
+--- PASS: TestFillModel_ZeroVolume (0.00s)
+--- PASS: TestFillModel_Buy_NetHigherThanGross (0.00s)
+=== CONT  TestPnLAttribution_BpsConsistency
+=== NAME  TestDualTrackPnL
+    pnl_calculator_test.go:117: Gross=921.66 Net=890.26
+=== CONT  TestInvalidTransitions
+--- PASS: TestStateTransitions (0.00s)
+=== CONT  TestPnLAttribution_LongHoldingSwap
+=== CONT  TestPnLAttribution_SideIsPreserved
+--- PASS: TestShouldTimeout (0.00s)
+--- PASS: TestTransitionRoundTrip (0.00s)
+=== NAME  TestPnLAttribution_LongHoldingSwap
+    pnl_attribution_test.go:365: 30d hold: Gross=-500.00 Exec=20.88 Hold=29.00 (swap=15.00) Net=-549.88
+=== CONT  TestPnLAttribution_ValidateAllCostsNonNegative
+=== CONT  TestPnLAttribution_ZeroHoldingDays
+--- PASS: TestFillModel_ComputeNet (0.00s)
+--- PASS: TestTimeoutTransition_OnlyFromSubmitted (0.00s)
+--- PASS: TestPnLAttribution_FlatTrade (0.00s)
+=== CONT  TestPnLAttribution_SmallSize
+--- PASS: TestTimeoutTransition (0.00s)
+--- PASS: TestUnknownToReconcilingPath (0.00s)
+--- PASS: TestMarginCallPath (0.00s)
+=== NAME  TestPnLAttribution_SmallSize
+    pnl_attribution_test.go:323: Micro: Gross=10.0000 Exec=0.2090 Hold=0.1050 Net=9.6860 | NetBps=89.27
+--- PASS: TestSubmittedToUnknownPath (0.00s)
+--- PASS: TestRequotedPath (0.00s)
+--- PASS: TestSlippageRejectedPath (0.00s)
+=== CONT  TestPnLAttribution_ThreeDimensionsIndependent
+--- PASS: TestIsTerminal (0.00s)
+--- PASS: TestOrderStateMachine_All15States (0.00s)
+=== CONT  TestPnLCalculator_Losing
+--- PASS: TestReconcilingAllResolutions (0.00s)
+--- PASS: TestFillModel_Backtest_EnforcesNonZeroCosts (0.00s)
+--- PASS: TestDualTrackPnL (0.00s)
+=== CONT  TestPnLCalculator_GrossNetSeparation
+=== CONT  TestPnLCalculator_ZeroHoldingDays
+=== NAME  TestPnLAttribution_ThreeDimensionsIndependent
+    pnl_attribution_test.go:246: Signal=1000.00 Exec=20.9000 Hold=-3.5000 Net=982.60
+=== CONT  TestPnLAttribution_AddAggregation
+=== CONT  TestPnLCalculator_Sell_Profitable
+=== CONT  TestPnLAttribution_ValidateIdentityHolds
+=== NAME  TestPnLAttribution_AddAggregation
+    pnl_attribution_test.go:209: Combined: Gross=500.00 Net=468.60
+--- PASS: TestPnLAttribution_BpsConsistency (0.00s)
+--- PASS: TestPnLAttribution_SideIsPreserved (0.00s)
+--- PASS: TestPnLAttribution_LongHoldingSwap (0.00s)
+=== RUN   TestPnLAttribution_ValidateIdentityHolds/profitable_buy
+--- PASS: TestInvalidTransitions (0.00s)
+--- PASS: TestPnLAttribution_ValidateAllCostsNonNegative (0.00s)
+--- PASS: TestPnLAttribution_ZeroHoldingDays (0.00s)
+--- PASS: TestPnLAttribution_SmallSize (0.00s)
+--- PASS: TestPnLCalculator_Losing (0.00s)
+--- PASS: TestPnLCalculator_ZeroHoldingDays (0.00s)
+=== RUN   TestPnLAttribution_ValidateIdentityHolds/profitable_sell
+--- PASS: TestPnLAttribution_ThreeDimensionsIndependent (0.00s)
+--- PASS: TestPnLCalculator_Sell_Profitable (0.00s)
+--- PASS: TestPnLAttribution_AddAggregation (0.00s)
+--- PASS: TestPnLCalculator_GrossNetSeparation (0.00s)
+=== RUN   TestPnLAttribution_ValidateIdentityHolds/losing_buy
+=== RUN   TestPnLAttribution_ValidateIdentityHolds/flat_trade
+=== RUN   TestPnLAttribution_ValidateIdentityHolds/micro_size
+=== RUN   TestPnLAttribution_ValidateIdentityHolds/long_hold
+--- PASS: TestPnLAttribution_ValidateIdentityHolds (0.00s)
+    --- PASS: TestPnLAttribution_ValidateIdentityHolds/profitable_buy (0.00s)
+    --- PASS: TestPnLAttribution_ValidateIdentityHolds/profitable_sell (0.00s)
+    --- PASS: TestPnLAttribution_ValidateIdentityHolds/losing_buy (0.00s)
+    --- PASS: TestPnLAttribution_ValidateIdentityHolds/flat_trade (0.00s)
+    --- PASS: TestPnLAttribution_ValidateIdentityHolds/micro_size (0.00s)
+    --- PASS: TestPnLAttribution_ValidateIdentityHolds/long_hold (0.00s)
+PASS
+ok  	anttrader/internal/oms	(cached)
+
+--- Coverage ---
+ok  	anttrader/internal/oms	(cached)	coverage: 57.0% of statements
+
+VERIFIED: 2026-05-30 — GrossPrice + SpreadCost + Slippage + MarketImpact + Commission + Swap → NetFillPrice

@@ -1,0 +1,71 @@
+=== M10-BASE-B2: Reconcile Gate ===
+Verification: go test -race -run TestReconcileGate ./internal/mthub/... -v
+Expected: 7 unit + 1 integration ALL PASS
+
+=== RUN   TestReconcileGate_DefaultAccept
+=== PAUSE TestReconcileGate_DefaultAccept
+=== RUN   TestReconcileGate_EnterBlocks
+=== PAUSE TestReconcileGate_EnterBlocks
+=== RUN   TestReconcileGate_MarkReconciledUnblocks
+=== PAUSE TestReconcileGate_MarkReconciledUnblocks
+=== RUN   TestReconcileGate_IndependentAccounts
+=== PAUSE TestReconcileGate_IndependentAccounts
+=== RUN   TestReconcileGate_EnterAll
+=== PAUSE TestReconcileGate_EnterAll
+=== RUN   TestReconcileGate_Count
+=== PAUSE TestReconcileGate_Count
+=== RUN   TestReconcileGate_Concurrent
+=== PAUSE TestReconcileGate_Concurrent
+=== CONT  TestReconcileGate_DefaultAccept
+=== CONT  TestReconcileGate_IndependentAccounts
+=== CONT  TestReconcileGate_EnterAll
+--- PASS: TestReconcileGate_DefaultAccept (0.00s)
+=== CONT  TestReconcileGate_MarkReconciledUnblocks
+--- PASS: TestReconcileGate_IndependentAccounts (0.00s)
+=== CONT  TestReconcileGate_Count
+=== CONT  TestReconcileGate_Concurrent
+=== CONT  TestReconcileGate_EnterBlocks
+--- PASS: TestReconcileGate_MarkReconciledUnblocks (0.00s)
+--- PASS: TestReconcileGate_EnterAll (0.00s)
+--- PASS: TestReconcileGate_Count (0.00s)
+--- PASS: TestReconcileGate_EnterBlocks (0.00s)
+--- PASS: TestReconcileGate_Concurrent (0.00s)
+PASS
+ok  	anttrader/internal/mthub	(cached)
+
+--- Integration test ---
+=== RUN   TestReconcileGate_DefaultAccept
+=== PAUSE TestReconcileGate_DefaultAccept
+=== RUN   TestReconcileGate_EnterBlocks
+=== PAUSE TestReconcileGate_EnterBlocks
+=== RUN   TestReconcileGate_MarkReconciledUnblocks
+=== PAUSE TestReconcileGate_MarkReconciledUnblocks
+=== RUN   TestReconcileGate_IndependentAccounts
+=== PAUSE TestReconcileGate_IndependentAccounts
+=== RUN   TestReconcileGate_EnterAll
+=== PAUSE TestReconcileGate_EnterAll
+=== RUN   TestReconcileGate_Count
+=== PAUSE TestReconcileGate_Count
+=== RUN   TestReconcileGate_Concurrent
+=== PAUSE TestReconcileGate_Concurrent
+=== CONT  TestReconcileGate_DefaultAccept
+--- PASS: TestReconcileGate_DefaultAccept (0.00s)
+=== CONT  TestReconcileGate_Concurrent
+=== CONT  TestReconcileGate_Count
+=== CONT  TestReconcileGate_EnterAll
+--- PASS: TestReconcileGate_EnterAll (0.00s)
+=== CONT  TestReconcileGate_IndependentAccounts
+=== CONT  TestReconcileGate_MarkReconciledUnblocks
+--- PASS: TestReconcileGate_Concurrent (0.00s)
+=== CONT  TestReconcileGate_EnterBlocks
+--- PASS: TestReconcileGate_EnterBlocks (0.00s)
+--- PASS: TestReconcileGate_Count (0.00s)
+--- PASS: TestReconcileGate_IndependentAccounts (0.00s)
+--- PASS: TestReconcileGate_MarkReconciledUnblocks (0.00s)
+PASS
+ok  	anttrader/internal/mthub	0.017s
+
+--- Full mthub reconcil gate coverage ---
+ok  	anttrader/internal/mthub	1.049s	coverage: 3.6% of statements
+
+VERIFIED: 2026-05-30 — reconcile-before-accept gate, PlaceOrder blocked during Reconciling

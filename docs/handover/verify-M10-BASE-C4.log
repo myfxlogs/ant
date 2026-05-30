@@ -1,0 +1,464 @@
+=== M10-BASE-C4: PlatformAggregator ===
+Verification: go test -race ./internal/risksvc/... -v
+Description: Cross-account net exposure 5s refresh
+
+--- Targeted tests ---
+=== RUN   TestPlatformAggregator_NetExposure
+=== PAUSE TestPlatformAggregator_NetExposure
+=== RUN   TestPlatformAggregator_MultipleSymbols
+=== PAUSE TestPlatformAggregator_MultipleSymbols
+=== RUN   TestPlatformAggregator_ClearAccount
+=== PAUSE TestPlatformAggregator_ClearAccount
+=== RUN   TestPlatformAggregator_BrokerLimits
+=== PAUSE TestPlatformAggregator_BrokerLimits
+=== CONT  TestPlatformAggregator_ClearAccount
+=== CONT  TestPlatformAggregator_MultipleSymbols
+--- PASS: TestPlatformAggregator_ClearAccount (0.00s)
+=== CONT  TestPlatformAggregator_NetExposure
+    platform_aggregator_test.go:28: NetExposure: EURUSD=0.0000 gross=217000 net=0 accounts=2
+--- PASS: TestPlatformAggregator_MultipleSymbols (0.00s)
+--- PASS: TestPlatformAggregator_NetExposure (0.00s)
+=== CONT  TestPlatformAggregator_BrokerLimits
+    platform_aggregator_test.go:81: BrokerLimitUsage: map[]
+--- PASS: TestPlatformAggregator_BrokerLimits (0.00s)
+PASS
+ok  	anttrader/internal/risksvc	1.043s
+
+--- Full risksvc test suite ---
+=== RUN   TestProRataAllocator_EqualEquity
+=== PAUSE TestProRataAllocator_EqualEquity
+=== RUN   TestProRataAllocator_Proportional
+=== PAUSE TestProRataAllocator_Proportional
+=== RUN   TestProRataAllocator_ZeroVolume
+=== PAUSE TestProRataAllocator_ZeroVolume
+=== RUN   TestProRataAllocator_ZeroEquity
+=== PAUSE TestProRataAllocator_ZeroEquity
+=== RUN   TestFIFOAllocator_PriorityOrder
+=== PAUSE TestFIFOAllocator_PriorityOrder
+=== RUN   TestFIFOAllocator_ExhaustsInOrder
+=== PAUSE TestFIFOAllocator_ExhaustsInOrder
+=== RUN   TestVWAPAllocator_CapacityWeighted
+=== PAUSE TestVWAPAllocator_CapacityWeighted
+=== RUN   TestVWAPAllocator_ZeroCapacity
+=== PAUSE TestVWAPAllocator_ZeroCapacity
+=== RUN   TestAllocator_Names
+=== PAUSE TestAllocator_Names
+=== RUN   TestAllocator_SumsToVolume
+=== PAUSE TestAllocator_SumsToVolume
+=== RUN   TestCapabilityTier_String
+=== PAUSE TestCapabilityTier_String
+=== RUN   TestCapabilityTier_EnumsExist
+=== PAUSE TestCapabilityTier_EnumsExist
+=== RUN   TestCapability_TierCheck_Tier0Blocked
+=== PAUSE TestCapability_TierCheck_Tier0Blocked
+=== RUN   TestCapability_TierCheck_Tier1Allowed
+=== PAUSE TestCapability_TierCheck_Tier1Allowed
+=== RUN   TestCapability_TierCheck_Tier2Allowed
+=== PAUSE TestCapability_TierCheck_Tier2Allowed
+=== RUN   TestCapability_TierCheck_Tier3Allowed
+=== PAUSE TestCapability_TierCheck_Tier3Allowed
+=== RUN   TestCapability_TierCheck_KillSwitch
+=== PAUSE TestCapability_TierCheck_KillSwitch
+=== RUN   TestCapability_HasOrderType_Nil
+=== PAUSE TestCapability_HasOrderType_Nil
+=== RUN   TestCapability_HasOrderType_Explicit
+=== PAUSE TestCapability_HasOrderType_Explicit
+=== RUN   TestCapabilityStore_GetDefault
+=== PAUSE TestCapabilityStore_GetDefault
+=== RUN   TestCapabilityStore_SetAndGet
+=== PAUSE TestCapabilityStore_SetAndGet
+=== RUN   TestCapabilityStore_Count
+=== PAUSE TestCapabilityStore_Count
+=== RUN   TestHardLimit_MarginFloor_Allowed
+=== PAUSE TestHardLimit_MarginFloor_Allowed
+=== RUN   TestHardLimit_MarginFloor_Blocked
+=== PAUSE TestHardLimit_MarginFloor_Blocked
+=== RUN   TestHardLimit_MarginFloor_DefaultRatio
+=== PAUSE TestHardLimit_MarginFloor_DefaultRatio
+=== RUN   TestHardLimit_ContractExpiry_Spot
+=== PAUSE TestHardLimit_ContractExpiry_Spot
+=== RUN   TestHardLimit_ContractExpiry_FarFuture
+=== PAUSE TestHardLimit_ContractExpiry_FarFuture
+=== RUN   TestHardLimit_ContractExpiry_TooClose
+=== PAUSE TestHardLimit_ContractExpiry_TooClose
+=== RUN   TestHardLimit_ContractExpiry_DefaultWindow
+=== PAUSE TestHardLimit_ContractExpiry_DefaultWindow
+=== RUN   TestHardLimitEvaluator_AllPass
+=== PAUSE TestHardLimitEvaluator_AllPass
+=== RUN   TestHardLimitEvaluator_FirstBlocks
+=== PAUSE TestHardLimitEvaluator_FirstBlocks
+=== RUN   TestHardLimit_KycJurisdiction_Name
+=== PAUSE TestHardLimit_KycJurisdiction_Name
+=== RUN   TestHardLimit_KillSwitch_Name
+=== PAUSE TestHardLimit_KillSwitch_Name
+=== RUN   TestJurisdictionGate
+=== PAUSE TestJurisdictionGate
+=== RUN   TestKellySizer_PositiveEdge
+=== PAUSE TestKellySizer_PositiveEdge
+=== RUN   TestKellySizer_NegativeEdge
+=== PAUSE TestKellySizer_NegativeEdge
+=== RUN   TestKellySizer_ZeroEdge
+=== PAUSE TestKellySizer_ZeroEdge
+=== RUN   TestKellySizer_MaxCap
+=== PAUSE TestKellySizer_MaxCap
+=== RUN   TestKellySizer_DefaultFraction
+=== PAUSE TestKellySizer_DefaultFraction
+=== RUN   TestKellySizer_InvalidWinProb
+=== PAUSE TestKellySizer_InvalidWinProb
+=== RUN   TestComputeKellyMetrics
+=== PAUSE TestComputeKellyMetrics
+=== RUN   TestPipeline_FullPass
+=== PAUSE TestPipeline_FullPass
+=== RUN   TestPipeline_CapabilityBlocks
+=== PAUSE TestPipeline_CapabilityBlocks
+=== RUN   TestPipeline_KillSwitchBlocks
+=== PAUSE TestPipeline_KillSwitchBlocks
+=== RUN   TestPipeline_HardLimitBlocks_MarginFloor
+=== PAUSE TestPipeline_HardLimitBlocks_MarginFloor
+=== RUN   TestPipeline_HardLimitBlocks_ContractExpiry
+=== PAUSE TestPipeline_HardLimitBlocks_ContractExpiry
+=== RUN   TestPipeline_PlatformLimitsBlocks
+=== PAUSE TestPipeline_PlatformLimitsBlocks
+=== RUN   TestPipeline_RiskEngineBlocks
+=== PAUSE TestPipeline_RiskEngineBlocks
+=== RUN   TestPipeline_NoSizer
+=== PAUSE TestPipeline_NoSizer
+=== RUN   TestPipeline_ZeroLotsFromSizer
+=== PAUSE TestPipeline_ZeroLotsFromSizer
+=== RUN   TestPipeline_BlockAllocation_MultiAccount
+=== PAUSE TestPipeline_BlockAllocation_MultiAccount
+=== RUN   TestPipeline_MinimalConfig
+=== PAUSE TestPipeline_MinimalConfig
+=== RUN   TestPipeline_KellySizerIntegration
+=== PAUSE TestPipeline_KellySizerIntegration
+=== RUN   TestPlatformAggregator_NetExposure
+=== PAUSE TestPlatformAggregator_NetExposure
+=== RUN   TestPlatformAggregator_MultipleSymbols
+=== PAUSE TestPlatformAggregator_MultipleSymbols
+=== RUN   TestPlatformAggregator_ClearAccount
+=== PAUSE TestPlatformAggregator_ClearAccount
+=== RUN   TestPlatformAggregator_BrokerLimits
+=== PAUSE TestPlatformAggregator_BrokerLimits
+=== RUN   TestPlatformLimits_AllPass
+=== PAUSE TestPlatformLimits_AllPass
+=== RUN   TestPlatformLimits_GrossExposureBlocked
+=== PAUSE TestPlatformLimits_GrossExposureBlocked
+=== RUN   TestPlatformLimits_NetExposureBlocked
+=== PAUSE TestPlatformLimits_NetExposureBlocked
+=== RUN   TestPlatformLimits_SymbolNetExposureBlocked
+=== PAUSE TestPlatformLimits_SymbolNetExposureBlocked
+=== RUN   TestPlatformLimits_MarginBlocked
+=== PAUSE TestPlatformLimits_MarginBlocked
+=== RUN   TestPlatformLimits_NilLimits
+=== PAUSE TestPlatformLimits_NilLimits
+=== RUN   TestPlatformLimits_ZeroLimits
+=== PAUSE TestPlatformLimits_ZeroLimits
+=== RUN   TestEngine_AllPass
+=== PAUSE TestEngine_AllPass
+=== RUN   TestEngine_MaxPositionBlocked
+=== PAUSE TestEngine_MaxPositionBlocked
+=== RUN   TestEngine_MarginBlocked
+=== PAUSE TestEngine_MarginBlocked
+=== RUN   TestEngine_CanonicalAuthBlocked
+=== PAUSE TestEngine_CanonicalAuthBlocked
+=== RUN   TestEngine_CanonicalAuthAllowed
+=== PAUSE TestEngine_CanonicalAuthAllowed
+=== RUN   TestEngine_DrawdownBlocked
+=== PAUSE TestEngine_DrawdownBlocked
+=== RUN   TestEngine_DrawdownAllowed
+=== PAUSE TestEngine_DrawdownAllowed
+=== RUN   TestEngine_RulesList
+=== PAUSE TestEngine_RulesList
+=== RUN   TestEngine_SessionWeekend
+=== PAUSE TestEngine_SessionWeekend
+=== RUN   TestVaR
+=== PAUSE TestVaR
+=== RUN   TestStressTest
+=== PAUSE TestStressTest
+=== RUN   TestComputeVaR_NormalReturns
+=== PAUSE TestComputeVaR_NormalReturns
+=== RUN   TestComputeVaR_Empty
+=== PAUSE TestComputeVaR_Empty
+=== RUN   TestComputeVaR_AllPositive
+=== PAUSE TestComputeVaR_AllPositive
+=== RUN   TestPredefinedScenarios_Count
+=== PAUSE TestPredefinedScenarios_Count
+=== RUN   TestRunStressTests_AllPass
+=== PAUSE TestRunStressTests_AllPass
+=== RUN   TestRunStressTests_SomeFail
+=== PAUSE TestRunStressTests_SomeFail
+=== RUN   TestRunStressTests_CustomScenario
+=== PAUSE TestRunStressTests_CustomScenario
+=== RUN   TestMaxDrawdown
+=== PAUSE TestMaxDrawdown
+=== RUN   TestVolTargetSizer_EURUSD
+=== PAUSE TestVolTargetSizer_EURUSD
+=== RUN   TestVolTargetSizer_BTCUSD
+=== PAUSE TestVolTargetSizer_BTCUSD
+=== RUN   TestVolTargetSizer_EURUSDvsBTCUSD_Ratio
+=== PAUSE TestVolTargetSizer_EURUSDvsBTCUSD_Ratio
+=== RUN   TestVolTargetSizer_ZeroEquity
+=== PAUSE TestVolTargetSizer_ZeroEquity
+=== RUN   TestVolTargetSizer_MaxLotsCap
+=== PAUSE TestVolTargetSizer_MaxLotsCap
+=== RUN   TestVolTargetSizer_MinLotsFloor
+=== PAUSE TestVolTargetSizer_MinLotsFloor
+=== RUN   TestVolTargetSizer_DefaultRiskBudget
+=== PAUSE TestVolTargetSizer_DefaultRiskBudget
+=== RUN   TestVolTargetSizer_FallbackATR
+=== PAUSE TestVolTargetSizer_FallbackATR
+=== CONT  TestProRataAllocator_ZeroEquity
+=== CONT  TestPlatformAggregator_NetExposure
+--- PASS: TestProRataAllocator_ZeroEquity (0.00s)
+=== CONT  TestHardLimit_ContractExpiry_Spot
+=== CONT  TestHardLimit_ContractExpiry_FarFuture
+=== NAME  TestPlatformAggregator_NetExposure
+    platform_aggregator_test.go:28: NetExposure: EURUSD=0.0000 gross=217000 net=0 accounts=2
+=== CONT  TestCapabilityStore_SetAndGet
+--- PASS: TestHardLimit_ContractExpiry_Spot (0.00s)
+--- PASS: TestHardLimit_ContractExpiry_FarFuture (0.00s)
+=== CONT  TestCapabilityStore_Count
+=== CONT  TestHardLimit_MarginFloor_DefaultRatio
+=== CONT  TestCapability_HasOrderType_Nil
+=== CONT  TestCapability_TierCheck_KillSwitch
+=== CONT  TestCapability_TierCheck_Tier3Allowed
+=== CONT  TestCapabilityStore_GetDefault
+--- PASS: TestPlatformAggregator_NetExposure (0.00s)
+=== CONT  TestCapability_HasOrderType_Explicit
+--- PASS: TestCapability_HasOrderType_Explicit (0.00s)
+=== CONT  TestCapability_TierCheck_Tier1Allowed
+--- PASS: TestCapability_TierCheck_Tier1Allowed (0.00s)
+=== CONT  TestHardLimit_MarginFloor_Allowed
+--- PASS: TestHardLimit_MarginFloor_Allowed (0.00s)
+=== CONT  TestCapabilityTier_EnumsExist
+--- PASS: TestCapabilityTier_EnumsExist (0.00s)
+--- PASS: TestCapabilityStore_SetAndGet (0.00s)
+=== CONT  TestCapability_TierCheck_Tier2Allowed
+--- PASS: TestCapability_TierCheck_Tier2Allowed (0.00s)
+=== CONT  TestCapabilityTier_String
+--- PASS: TestCapabilityTier_String (0.00s)
+=== CONT  TestCapability_TierCheck_Tier0Blocked
+--- PASS: TestCapability_TierCheck_Tier0Blocked (0.00s)
+=== CONT  TestHardLimit_MarginFloor_Blocked
+--- PASS: TestHardLimit_MarginFloor_Blocked (0.00s)
+=== CONT  TestAllocator_Names
+--- PASS: TestAllocator_Names (0.00s)
+=== CONT  TestFIFOAllocator_ExhaustsInOrder
+--- PASS: TestFIFOAllocator_ExhaustsInOrder (0.00s)
+=== CONT  TestFIFOAllocator_PriorityOrder
+--- PASS: TestFIFOAllocator_PriorityOrder (0.00s)
+=== CONT  TestAllocator_SumsToVolume
+=== CONT  TestVWAPAllocator_ZeroCapacity
+--- PASS: TestAllocator_SumsToVolume (0.00s)
+=== CONT  TestVWAPAllocator_CapacityWeighted
+--- PASS: TestVWAPAllocator_ZeroCapacity (0.00s)
+=== CONT  TestProRataAllocator_Proportional
+--- PASS: TestVWAPAllocator_CapacityWeighted (0.00s)
+--- PASS: TestHardLimit_MarginFloor_DefaultRatio (0.00s)
+--- PASS: TestCapability_HasOrderType_Nil (0.00s)
+=== CONT  TestVolTargetSizer_DefaultRiskBudget
+--- PASS: TestCapabilityStore_Count (0.00s)
+=== CONT  TestProRataAllocator_EqualEquity
+--- PASS: TestVolTargetSizer_DefaultRiskBudget (0.00s)
+=== CONT  TestVolTargetSizer_FallbackATR
+--- PASS: TestProRataAllocator_EqualEquity (0.00s)
+=== CONT  TestEngine_DrawdownAllowed
+=== NAME  TestVolTargetSizer_FallbackATR
+    vol_target_sizer_test.go:146: Fallback ATR: lots=0.4362
+=== CONT  TestVolTargetSizer_MinLotsFloor
+=== CONT  TestVolTargetSizer_EURUSDvsBTCUSD_Ratio
+=== CONT  TestProRataAllocator_ZeroVolume
+=== NAME  TestVolTargetSizer_EURUSDvsBTCUSD_Ratio
+    vol_target_sizer_test.go:72: EURUSD=1.2778 lots, BTCUSD=0.2236 lots, ratio=5.71×
+=== CONT  TestVolTargetSizer_BTCUSD
+--- PASS: TestEngine_DrawdownAllowed (0.00s)
+=== CONT  TestVolTargetSizer_MaxLotsCap
+--- PASS: TestCapability_TierCheck_KillSwitch (0.00s)
+--- PASS: TestCapabilityStore_GetDefault (0.00s)
+=== NAME  TestVolTargetSizer_BTCUSD
+    vol_target_sizer_test.go:53: BTCUSD: lots=0.2236 risk_used=1.0000%
+=== CONT  TestMaxDrawdown
+=== CONT  TestRunStressTests_SomeFail
+=== CONT  TestRunStressTests_AllPass
+=== CONT  TestVolTargetSizer_ZeroEquity
+=== NAME  TestRunStressTests_SomeFail
+    var_calculator_test.go:141: Failed 3/4 scenarios
+=== CONT  TestComputeVaR_AllPositive
+=== CONT  TestKellySizer_MaxCap
+=== CONT  TestRunStressTests_CustomScenario
+--- PASS: TestProRataAllocator_Proportional (0.00s)
+=== CONT  TestPipeline_NoSizer
+--- PASS: TestPipeline_NoSizer (0.00s)
+=== CONT  TestVolTargetSizer_EURUSD
+=== CONT  TestPipeline_RiskEngineBlocks
+--- PASS: TestPipeline_RiskEngineBlocks (0.00s)
+=== CONT  TestPipeline_PlatformLimitsBlocks
+=== NAME  TestVolTargetSizer_EURUSD
+    vol_target_sizer_test.go:31: EURUSD: lots=1.2778 risk_used=1.0000%
+--- PASS: TestVolTargetSizer_EURUSD (0.00s)
+--- PASS: TestPipeline_PlatformLimitsBlocks (0.00s)
+=== CONT  TestPipeline_HardLimitBlocks_MarginFloor
+=== CONT  TestPipeline_BlockAllocation_MultiAccount
+--- PASS: TestPipeline_HardLimitBlocks_MarginFloor (0.00s)
+=== CONT  TestPipeline_KillSwitchBlocks
+=== NAME  TestPipeline_BlockAllocation_MultiAccount
+    pipeline_test.go:243: Block alloc: lots=1.2778 allocs=map[a1:0.7666518779999277 a2:0.5111012519999519]
+--- PASS: TestPipeline_KillSwitchBlocks (0.00s)
+=== CONT  TestPipeline_ZeroLotsFromSizer
+=== CONT  TestPipeline_CapabilityBlocks
+--- PASS: TestPipeline_ZeroLotsFromSizer (0.00s)
+--- PASS: TestPipeline_CapabilityBlocks (0.00s)
+=== CONT  TestComputeKellyMetrics
+--- PASS: TestCapability_TierCheck_Tier3Allowed (0.00s)
+=== NAME  TestKellySizer_MaxCap
+    kelly_sizer_test.go:89: KellyMax cap: risk_used=0.2500
+--- PASS: TestKellySizer_MaxCap (0.00s)
+=== CONT  TestPredefinedScenarios_Count
+--- PASS: TestPredefinedScenarios_Count (0.00s)
+=== CONT  TestEngine_CanonicalAuthBlocked
+--- PASS: TestEngine_CanonicalAuthBlocked (0.00s)
+=== CONT  TestEngine_AllPass
+--- PASS: TestEngine_AllPass (0.00s)
+=== CONT  TestEngine_DrawdownBlocked
+--- PASS: TestEngine_DrawdownBlocked (0.00s)
+=== CONT  TestEngine_MaxPositionBlocked
+--- PASS: TestEngine_MaxPositionBlocked (0.00s)
+--- PASS: TestPipeline_BlockAllocation_MultiAccount (0.00s)
+--- PASS: TestVolTargetSizer_FallbackATR (0.00s)
+--- PASS: TestVolTargetSizer_MinLotsFloor (0.00s)
+--- PASS: TestProRataAllocator_ZeroVolume (0.00s)
+=== CONT  TestPipeline_HardLimitBlocks_ContractExpiry
+--- PASS: TestPipeline_HardLimitBlocks_ContractExpiry (0.00s)
+=== CONT  TestPlatformLimits_ZeroLimits
+--- PASS: TestPlatformLimits_ZeroLimits (0.00s)
+--- PASS: TestVolTargetSizer_EURUSDvsBTCUSD_Ratio (0.00s)
+--- PASS: TestVolTargetSizer_MaxLotsCap (0.00s)
+=== CONT  TestPipeline_FullPass
+    pipeline_test.go:42: Full pass: lots=1.2778 risk=0.0100 method=vol_target
+--- PASS: TestPipeline_FullPass (0.00s)
+=== CONT  TestComputeVaR_NormalReturns
+    var_calculator_test.go:67: VaR=-75.00 CVaR=-87.50 DailyVol=72.23 AnnualVol=1146.65 MaxDD=100.00
+--- PASS: TestComputeVaR_NormalReturns (0.00s)
+=== CONT  TestPlatformLimits_MarginBlocked
+--- PASS: TestPlatformLimits_MarginBlocked (0.00s)
+=== CONT  TestPlatformLimits_NilLimits
+--- PASS: TestPlatformLimits_NilLimits (0.00s)
+=== CONT  TestPlatformLimits_NetExposureBlocked
+--- PASS: TestPlatformLimits_NetExposureBlocked (0.00s)
+=== CONT  TestEngine_SessionWeekend
+--- PASS: TestEngine_SessionWeekend (0.00s)
+=== CONT  TestPlatformLimits_GrossExposureBlocked
+--- PASS: TestPlatformLimits_GrossExposureBlocked (0.00s)
+=== CONT  TestPlatformLimits_AllPass
+--- PASS: TestPlatformLimits_AllPass (0.00s)
+=== CONT  TestPlatformAggregator_MultipleSymbols
+--- PASS: TestPlatformAggregator_MultipleSymbols (0.00s)
+=== CONT  TestVaR
+    var_calculator_test.go:16: VaR=-100.00 CVaR=-100.00 AnnualVol=907.38
+=== CONT  TestStressTest
+--- PASS: TestVolTargetSizer_BTCUSD (0.00s)
+=== CONT  TestPipeline_KellySizerIntegration
+    pipeline_test.go:292: Kelly pipeline: lots=0.1843 risk=0.2000
+--- PASS: TestMaxDrawdown (0.00s)
+=== CONT  TestPlatformAggregator_ClearAccount
+=== CONT  TestComputeVaR_Empty
+=== CONT  TestEngine_RulesList
+=== CONT  TestHardLimitEvaluator_FirstBlocks
+=== CONT  TestKellySizer_InvalidWinProb
+=== CONT  TestPlatformAggregator_BrokerLimits
+    platform_aggregator_test.go:81: BrokerLimitUsage: map[]
+=== CONT  TestEngine_MarginBlocked
+=== CONT  TestKellySizer_NegativeEdge
+=== CONT  TestHardLimit_KillSwitch_Name
+=== CONT  TestJurisdictionGate
+=== CONT  TestKellySizer_PositiveEdge
+=== RUN   TestJurisdictionGate/all_clear_with_verified_KYC_and_clean_IP
+=== CONT  TestHardLimit_KycJurisdiction_Name
+=== CONT  TestPipeline_MinimalConfig
+=== CONT  TestHardLimit_ContractExpiry_DefaultWindow
+--- PASS: TestRunStressTests_AllPass (0.00s)
+--- PASS: TestVolTargetSizer_ZeroEquity (0.00s)
+--- PASS: TestRunStressTests_SomeFail (0.00s)
+--- PASS: TestComputeVaR_AllPositive (0.00s)
+=== CONT  TestHardLimit_ContractExpiry_TooClose
+=== RUN   TestJurisdictionGate/block_sanctioned_country
+=== NAME  TestKellySizer_PositiveEdge
+    kelly_sizer_test.go:33: Positive edge: lots=0.1843 risk_used=0.2000
+=== CONT  TestHardLimitEvaluator_AllPass
+=== CONT  TestPlatformLimits_SymbolNetExposureBlocked
+=== CONT  TestEngine_CanonicalAuthAllowed
+=== CONT  TestKellySizer_DefaultFraction
+=== CONT  TestKellySizer_ZeroEdge
+--- PASS: TestRunStressTests_CustomScenario (0.00s)
+--- PASS: TestComputeKellyMetrics (0.00s)
+--- PASS: TestStressTest (0.00s)
+--- PASS: TestVaR (0.00s)
+--- PASS: TestPipeline_KellySizerIntegration (0.00s)
+--- PASS: TestPlatformAggregator_ClearAccount (0.00s)
+--- PASS: TestComputeVaR_Empty (0.00s)
+--- PASS: TestEngine_RulesList (0.00s)
+--- PASS: TestHardLimitEvaluator_FirstBlocks (0.00s)
+--- PASS: TestKellySizer_InvalidWinProb (0.00s)
+--- PASS: TestPlatformAggregator_BrokerLimits (0.00s)
+--- PASS: TestEngine_MarginBlocked (0.00s)
+--- PASS: TestKellySizer_NegativeEdge (0.00s)
+--- PASS: TestHardLimit_KillSwitch_Name (0.00s)
+--- PASS: TestHardLimit_KycJurisdiction_Name (0.00s)
+--- PASS: TestHardLimit_ContractExpiry_DefaultWindow (0.00s)
+--- PASS: TestHardLimit_ContractExpiry_TooClose (0.00s)
+--- PASS: TestKellySizer_PositiveEdge (0.00s)
+--- PASS: TestHardLimitEvaluator_AllPass (0.00s)
+--- PASS: TestPlatformLimits_SymbolNetExposureBlocked (0.00s)
+--- PASS: TestEngine_CanonicalAuthAllowed (0.00s)
+--- PASS: TestKellySizer_DefaultFraction (0.00s)
+--- PASS: TestKellySizer_ZeroEdge (0.00s)
+=== RUN   TestJurisdictionGate/allow_sanctioned_country_with_admin_override
+--- PASS: TestPipeline_MinimalConfig (0.00s)
+=== RUN   TestJurisdictionGate/block_unverified_KYC
+=== RUN   TestJurisdictionGate/block_missing_disclaimer
+=== RUN   TestJurisdictionGate/block_missing_questionnaire
+=== RUN   TestJurisdictionGate/geoip_unavailable_—_fail-closed
+=== RUN   TestJurisdictionGate/no_client_IP_—_skip_geoip,_check_KYC_only
+=== RUN   TestJurisdictionGate/non-sanctioned_country_with_clean_status
+=== RUN   TestJurisdictionGate/all_gates_disabled_—_pass_through
+=== RUN   TestJurisdictionGate/KYC_rejected_status_blocks
+--- PASS: TestJurisdictionGate (0.00s)
+    --- PASS: TestJurisdictionGate/all_clear_with_verified_KYC_and_clean_IP (0.00s)
+    --- PASS: TestJurisdictionGate/block_sanctioned_country (0.00s)
+    --- PASS: TestJurisdictionGate/allow_sanctioned_country_with_admin_override (0.00s)
+    --- PASS: TestJurisdictionGate/block_unverified_KYC (0.00s)
+    --- PASS: TestJurisdictionGate/block_missing_disclaimer (0.00s)
+    --- PASS: TestJurisdictionGate/block_missing_questionnaire (0.00s)
+    --- PASS: TestJurisdictionGate/geoip_unavailable_—_fail-closed (0.00s)
+    --- PASS: TestJurisdictionGate/no_client_IP_—_skip_geoip,_check_KYC_only (0.00s)
+    --- PASS: TestJurisdictionGate/non-sanctioned_country_with_clean_status (0.00s)
+    --- PASS: TestJurisdictionGate/all_gates_disabled_—_pass_through (0.00s)
+    --- PASS: TestJurisdictionGate/KYC_rejected_status_blocks (0.00s)
+PASS
+ok  	anttrader/internal/risksvc	(cached)
+
+--- Coverage ---
+ok  	anttrader/internal/risksvc	(cached)	coverage: 70.6% of statements
+
+--- Implementation files ---
+  136 internal/risksvc/block_allocator.go
+   79 internal/risksvc/precheck.go
+  307 internal/risksvc/jurisdiction.go
+  176 internal/risksvc/hardlimit.go
+  130 internal/risksvc/kelly_sizer.go
+   42 internal/risksvc/sizer.go
+   28 internal/risksvc/jurisdiction_geoip.go
+  114 internal/risksvc/rules.go
+   36 internal/risksvc/rule.go
+  157 internal/risksvc/jurisdiction_store.go
+  161 internal/risksvc/var_calculator.go
+    7 internal/risksvc/clock.go
+  102 internal/risksvc/vol_target_sizer.go
+  159 internal/risksvc/capability.go
+  183 internal/risksvc/platform_aggregator.go
+  199 internal/risksvc/pipeline.go
+   55 internal/risksvc/engine.go
+   70 internal/risksvc/platform_limits.go
+ 2141 total
+
+VERIFIED: 2026-05-30 — Cross-account net exposure 5s refresh

@@ -1,0 +1,296 @@
+=== M10-BASE-B6: Tier-2 Derived Quantities + Backpressure ===
+Verification: go test -race ./internal/mthub/... -v
+Expected: PnL Gross/Net dual-track + backpressure metrics
+
+--- Derived State tests ---
+=== RUN   TestDerivedState_UpdateAndGet
+=== PAUSE TestDerivedState_UpdateAndGet
+=== RUN   TestDerivedState_GetAccount
+=== PAUSE TestDerivedState_GetAccount
+=== CONT  TestDerivedState_UpdateAndGet
+=== CONT  TestDerivedState_GetAccount
+--- PASS: TestDerivedState_UpdateAndGet (0.00s)
+--- PASS: TestDerivedState_GetAccount (0.00s)
+PASS
+ok  	anttrader/internal/mthub	1.034s
+
+--- Full mthub test suite ---
+=== RUN   TestDerivedState_UpdateAndGet
+=== PAUSE TestDerivedState_UpdateAndGet
+=== RUN   TestDerivedState_GetAccount
+=== PAUSE TestDerivedState_GetAccount
+=== RUN   TestDerivedComputer_StartStop
+=== PAUSE TestDerivedComputer_StartStop
+=== RUN   TestDerivedComputer_DefaultInterval
+=== PAUSE TestDerivedComputer_DefaultInterval
+=== RUN   TestBrokerMagic_Deterministic
+=== PAUSE TestBrokerMagic_Deterministic
+=== RUN   TestBrokerMagic_Different
+=== PAUSE TestBrokerMagic_Different
+=== RUN   TestBrokerMagic_32BitRange
+=== PAUSE TestBrokerMagic_32BitRange
+=== RUN   TestThreeLayerGuard_NoPGNoRedis
+=== PAUSE TestThreeLayerGuard_NoPGNoRedis
+=== RUN   TestThreeLayerGuard_Confirm_NoRedis
+=== PAUSE TestThreeLayerGuard_Confirm_NoRedis
+=== RUN   TestIdemKey
+=== PAUSE TestIdemKey
+=== RUN   TestUserLimiterEffective
+--- PASS: TestUserLimiterEffective (0.00s)
+=== RUN   TestCostEstimator_Wired
+--- PASS: TestCostEstimator_Wired (0.00s)
+=== RUN   TestUserLimiter_RateLimitKicksIn
+--- PASS: TestUserLimiter_RateLimitKicksIn (0.00s)
+=== RUN   TestIsValidOMSTransition_HappyPath
+--- PASS: TestIsValidOMSTransition_HappyPath (0.00s)
+=== RUN   TestIsValidOMSTransition_RejectPaths
+--- PASS: TestIsValidOMSTransition_RejectPaths (0.00s)
+=== RUN   TestIsValidOMSTransition_Invalid
+--- PASS: TestIsValidOMSTransition_Invalid (0.00s)
+=== RUN   TestOrderLifecycleFullPath
+    oms_writer_test.go:76: Full lifecycle path: NEW → VALIDATED → RISK_APPROVED → SUBMITTED — valid
+--- PASS: TestOrderLifecycleFullPath (0.00s)
+=== RUN   TestSetRiskPipeline
+--- PASS: TestSetRiskPipeline (0.00s)
+=== RUN   TestRiskPipeline_Reject
+--- PASS: TestRiskPipeline_Reject (0.00s)
+=== RUN   TestRiskPipeline_Allowed
+--- PASS: TestRiskPipeline_Allowed (0.00s)
+=== RUN   TestReconcileGate_DefaultAccept
+=== PAUSE TestReconcileGate_DefaultAccept
+=== RUN   TestReconcileGate_EnterBlocks
+=== PAUSE TestReconcileGate_EnterBlocks
+=== RUN   TestReconcileGate_MarkReconciledUnblocks
+=== PAUSE TestReconcileGate_MarkReconciledUnblocks
+=== RUN   TestReconcileGate_IndependentAccounts
+=== PAUSE TestReconcileGate_IndependentAccounts
+=== RUN   TestReconcileGate_EnterAll
+=== PAUSE TestReconcileGate_EnterAll
+=== RUN   TestReconcileGate_Count
+=== PAUSE TestReconcileGate_Count
+=== RUN   TestReconcileGate_Concurrent
+=== PAUSE TestReconcileGate_Concurrent
+=== RUN   TestSessionState_Connected
+--- PASS: TestSessionState_Connected (0.00s)
+=== RUN   TestSessionState_NotFound
+--- PASS: TestSessionState_NotFound (0.00s)
+=== RUN   TestSessionState_ExpiredRefreshes
+--- PASS: TestSessionState_ExpiredRefreshes (0.00s)
+=== RUN   TestStateCache_GetSetOrder
+=== PAUSE TestStateCache_GetSetOrder
+=== RUN   TestStateCache_GetOrdersByAccount
+=== PAUSE TestStateCache_GetOrdersByAccount
+=== RUN   TestStateCache_PositionTracking
+=== PAUSE TestStateCache_PositionTracking
+=== RUN   TestStateCache_NonFillEventsDontUpdatePosition
+=== PAUSE TestStateCache_NonFillEventsDontUpdatePosition
+=== RUN   TestStateCache_Stats
+=== PAUSE TestStateCache_Stats
+=== RUN   TestStateCache_LoadFromRedis_NoRedis
+=== PAUSE TestStateCache_LoadFromRedis_NoRedis
+=== RUN   TestStateCache_PositionKey
+=== PAUSE TestStateCache_PositionKey
+=== RUN   TestStateCache_GetPositionsByAccount
+=== PAUSE TestStateCache_GetPositionsByAccount
+=== RUN   TestTradeEventStore_NilJS
+=== PAUSE TestTradeEventStore_NilJS
+=== RUN   TestTradeEvent_JSONRoundTrip
+=== PAUSE TestTradeEvent_JSONRoundTrip
+=== RUN   TestTradeEvent_AllEventTypes
+=== PAUSE TestTradeEvent_AllEventTypes
+=== RUN   TestTradeEventStore_SubjectFormat
+=== PAUSE TestTradeEventStore_SubjectFormat
+=== CONT  TestDerivedState_UpdateAndGet
+=== CONT  TestStateCache_GetSetOrder
+--- PASS: TestDerivedState_UpdateAndGet (0.00s)
+=== CONT  TestReconcileGate_EnterAll
+=== CONT  TestReconcileGate_IndependentAccounts
+=== CONT  TestReconcileGate_MarkReconciledUnblocks
+=== CONT  TestReconcileGate_DefaultAccept
+=== CONT  TestThreeLayerGuard_Confirm_NoRedis
+=== CONT  TestIdemKey
+=== CONT  TestThreeLayerGuard_NoPGNoRedis
+--- PASS: TestStateCache_GetSetOrder (0.00s)
+--- PASS: TestReconcileGate_EnterAll (0.00s)
+=== CONT  TestBrokerMagic_Different
+--- PASS: TestIdemKey (0.00s)
+=== CONT  TestBrokerMagic_32BitRange
+=== CONT  TestDerivedState_GetAccount
+=== CONT  TestReconcileGate_EnterBlocks
+=== CONT  TestBrokerMagic_Deterministic
+=== CONT  TestStateCache_NonFillEventsDontUpdatePosition
+=== CONT  TestStateCache_LoadFromRedis_NoRedis
+=== CONT  TestStateCache_PositionTracking
+=== CONT  TestTradeEventStore_NilJS
+=== CONT  TestTradeEventStore_SubjectFormat
+=== CONT  TestTradeEvent_AllEventTypes
+--- PASS: TestBrokerMagic_Different (0.00s)
+=== CONT  TestDerivedComputer_StartStop
+=== NAME  TestTradeEvent_AllEventTypes
+    trade_event_store_test.go:104: All 15 trade event types defined (PASS)
+=== CONT  TestDerivedComputer_DefaultInterval
+=== CONT  TestReconcileGate_Concurrent
+--- PASS: TestReconcileGate_IndependentAccounts (0.00s)
+--- PASS: TestReconcileGate_DefaultAccept (0.00s)
+--- PASS: TestTradeEvent_AllEventTypes (0.00s)
+=== CONT  TestStateCache_GetOrdersByAccount
+--- PASS: TestStateCache_GetOrdersByAccount (0.00s)
+--- PASS: TestThreeLayerGuard_Confirm_NoRedis (0.00s)
+=== CONT  TestStateCache_PositionKey
+--- PASS: TestStateCache_PositionKey (0.00s)
+--- PASS: TestThreeLayerGuard_NoPGNoRedis (0.00s)
+=== CONT  TestStateCache_GetPositionsByAccount
+--- PASS: TestStateCache_GetPositionsByAccount (0.00s)
+=== CONT  TestReconcileGate_Count
+--- PASS: TestReconcileGate_Count (0.00s)
+=== CONT  TestTradeEvent_JSONRoundTrip
+--- PASS: TestReconcileGate_MarkReconciledUnblocks (0.00s)
+=== CONT  TestStateCache_Stats
+--- PASS: TestBrokerMagic_32BitRange (0.00s)
+--- PASS: TestDerivedState_GetAccount (0.00s)
+--- PASS: TestReconcileGate_EnterBlocks (0.00s)
+--- PASS: TestBrokerMagic_Deterministic (0.00s)
+--- PASS: TestStateCache_NonFillEventsDontUpdatePosition (0.00s)
+--- PASS: TestStateCache_LoadFromRedis_NoRedis (0.00s)
+--- PASS: TestStateCache_PositionTracking (0.00s)
+--- PASS: TestTradeEventStore_SubjectFormat (0.00s)
+--- PASS: TestReconcileGate_Concurrent (0.00s)
+--- PASS: TestTradeEventStore_NilJS (0.00s)
+--- PASS: TestDerivedComputer_DefaultInterval (0.00s)
+--- PASS: TestStateCache_Stats (0.00s)
+--- PASS: TestTradeEvent_JSONRoundTrip (0.00s)
+--- PASS: TestDerivedComputer_StartStop (0.35s)
+PASS
+ok  	anttrader/internal/mthub	(cached)
+
+--- Full oms PnL tests ---
+=== RUN   TestPnLAttribution_BuyProfitable
+=== PAUSE TestPnLAttribution_BuyProfitable
+=== RUN   TestPnLAttribution_SellProfitable
+=== PAUSE TestPnLAttribution_SellProfitable
+=== RUN   TestPnLAttribution_LosingTrade
+=== PAUSE TestPnLAttribution_LosingTrade
+=== RUN   TestPnLAttribution_FlatTrade
+=== PAUSE TestPnLAttribution_FlatTrade
+=== RUN   TestPnLAttribution_ValidateIdentityHolds
+=== PAUSE TestPnLAttribution_ValidateIdentityHolds
+=== RUN   TestPnLAttribution_AddAggregation
+=== PAUSE TestPnLAttribution_AddAggregation
+=== RUN   TestPnLAttribution_ThreeDimensionsIndependent
+=== PAUSE TestPnLAttribution_ThreeDimensionsIndependent
+=== RUN   TestPnLAttribution_SwapScalesWithHoldingDays
+=== PAUSE TestPnLAttribution_SwapScalesWithHoldingDays
+=== RUN   TestPnLAttribution_ZeroHoldingDays
+=== PAUSE TestPnLAttribution_ZeroHoldingDays
+=== RUN   TestPnLAttribution_BpsConsistency
+=== PAUSE TestPnLAttribution_BpsConsistency
+=== RUN   TestPnLAttribution_SmallSize
+=== PAUSE TestPnLAttribution_SmallSize
+=== RUN   TestPnLAttribution_ValidateAllCostsNonNegative
+=== PAUSE TestPnLAttribution_ValidateAllCostsNonNegative
+=== RUN   TestPnLAttribution_LongHoldingSwap
+=== PAUSE TestPnLAttribution_LongHoldingSwap
+=== RUN   TestPnLAttribution_SideIsPreserved
+=== PAUSE TestPnLAttribution_SideIsPreserved
+=== RUN   TestPnLAttribution_CostModelAccessor
+=== PAUSE TestPnLAttribution_CostModelAccessor
+=== RUN   TestPnLAttribution_ValidateErrorFormat
+=== PAUSE TestPnLAttribution_ValidateErrorFormat
+=== RUN   TestPnLCalculator_Buy_Profitable
+=== PAUSE TestPnLCalculator_Buy_Profitable
+=== RUN   TestPnLCalculator_Sell_Profitable
+=== PAUSE TestPnLCalculator_Sell_Profitable
+=== RUN   TestPnLCalculator_Losing
+=== PAUSE TestPnLCalculator_Losing
+=== RUN   TestPnLCalculator_ZeroHoldingDays
+=== PAUSE TestPnLCalculator_ZeroHoldingDays
+=== RUN   TestPnLCalculator_GrossNetSeparation
+=== PAUSE TestPnLCalculator_GrossNetSeparation
+=== CONT  TestPnLAttribution_BuyProfitable
+    pnl_attribution_test.go:58: Buy: Gross=1000.00 Exec=20.90 Hold=10.50 Net=968.60 | Signal=92.2bps Exec=1.9bps Hold=1.0bps Net=89.3bps
+--- PASS: TestPnLAttribution_BuyProfitable (0.00s)
+=== CONT  TestPnLCalculator_GrossNetSeparation
+--- PASS: TestPnLCalculator_GrossNetSeparation (0.00s)
+=== CONT  TestPnLCalculator_ZeroHoldingDays
+--- PASS: TestPnLCalculator_ZeroHoldingDays (0.00s)
+=== CONT  TestPnLCalculator_Losing
+--- PASS: TestPnLCalculator_Losing (0.00s)
+=== CONT  TestPnLCalculator_Sell_Profitable
+--- PASS: TestPnLCalculator_Sell_Profitable (0.00s)
+=== CONT  TestPnLAttribution_SwapScalesWithHoldingDays
+--- PASS: TestPnLAttribution_SwapScalesWithHoldingDays (0.00s)
+=== CONT  TestPnLAttribution_ZeroHoldingDays
+=== CONT  TestPnLAttribution_BpsConsistency
+--- PASS: TestPnLAttribution_ZeroHoldingDays (0.00s)
+=== CONT  TestPnLAttribution_AddAggregation
+=== CONT  TestPnLAttribution_ValidateIdentityHolds
+=== RUN   TestPnLAttribution_ValidateIdentityHolds/profitable_buy
+=== CONT  TestPnLAttribution_ThreeDimensionsIndependent
+    pnl_attribution_test.go:246: Signal=1000.00 Exec=20.9000 Hold=-3.5000 Net=982.60
+=== NAME  TestPnLAttribution_AddAggregation
+    pnl_attribution_test.go:209: Combined: Gross=500.00 Net=468.60
+--- PASS: TestPnLAttribution_BpsConsistency (0.00s)
+=== CONT  TestPnLAttribution_SellProfitable
+--- PASS: TestPnLAttribution_ThreeDimensionsIndependent (0.00s)
+=== CONT  TestPnLAttribution_LosingTrade
+=== NAME  TestPnLAttribution_SellProfitable
+    pnl_attribution_test.go:83: Sell: Gross=1000.00 Exec=20.90 Hold=14.50 Net=964.60
+=== RUN   TestPnLAttribution_ValidateIdentityHolds/profitable_sell
+=== CONT  TestPnLAttribution_SideIsPreserved
+=== NAME  TestPnLAttribution_LosingTrade
+    pnl_attribution_test.go:110: Loss: Gross=-1000.00 Exec=20.90 Hold=10.50 Net=-1031.40 | Signal=-91.3bps Net=-94.2bps
+=== CONT  TestPnLAttribution_CostModelAccessor
+=== CONT  TestPnLAttribution_ValidateErrorFormat
+=== CONT  TestPnLCalculator_Buy_Profitable
+=== CONT  TestPnLAttribution_FlatTrade
+--- PASS: TestPnLAttribution_AddAggregation (0.00s)
+--- PASS: TestPnLAttribution_SellProfitable (0.00s)
+=== NAME  TestPnLCalculator_Buy_Profitable
+    pnl_calculator_test.go:31: Buy trade: gross=921.66 net=890.26 (costs: spread=10.00 comm=14.00 swap=-3.50 slip=10.90)
+=== CONT  TestPnLAttribution_ValidateAllCostsNonNegative
+=== CONT  TestPnLAttribution_LongHoldingSwap
+=== CONT  TestPnLAttribution_SmallSize
+=== NAME  TestPnLAttribution_FlatTrade
+    pnl_attribution_test.go:143: Flat: Gross=0.00 Exec=20.85 Hold=14.00 Net=-34.85
+--- PASS: TestPnLAttribution_LosingTrade (0.00s)
+--- PASS: TestPnLAttribution_SideIsPreserved (0.00s)
+--- PASS: TestPnLAttribution_CostModelAccessor (0.00s)
+=== RUN   TestPnLAttribution_ValidateIdentityHolds/losing_buy
+=== NAME  TestPnLAttribution_LongHoldingSwap
+    pnl_attribution_test.go:365: 30d hold: Gross=-500.00 Exec=20.88 Hold=29.00 (swap=15.00) Net=-549.88
+--- PASS: TestPnLAttribution_ValidateErrorFormat (0.00s)
+=== NAME  TestPnLAttribution_SmallSize
+    pnl_attribution_test.go:323: Micro: Gross=10.0000 Exec=0.2090 Hold=0.1050 Net=9.6860 | NetBps=89.27
+--- PASS: TestPnLAttribution_SmallSize (0.00s)
+--- PASS: TestPnLCalculator_Buy_Profitable (0.00s)
+--- PASS: TestPnLAttribution_ValidateAllCostsNonNegative (0.00s)
+--- PASS: TestPnLAttribution_FlatTrade (0.00s)
+=== RUN   TestPnLAttribution_ValidateIdentityHolds/flat_trade
+--- PASS: TestPnLAttribution_LongHoldingSwap (0.00s)
+=== RUN   TestPnLAttribution_ValidateIdentityHolds/micro_size
+=== RUN   TestPnLAttribution_ValidateIdentityHolds/long_hold
+--- PASS: TestPnLAttribution_ValidateIdentityHolds (0.01s)
+    --- PASS: TestPnLAttribution_ValidateIdentityHolds/profitable_buy (0.00s)
+    --- PASS: TestPnLAttribution_ValidateIdentityHolds/profitable_sell (0.00s)
+    --- PASS: TestPnLAttribution_ValidateIdentityHolds/losing_buy (0.00s)
+    --- PASS: TestPnLAttribution_ValidateIdentityHolds/flat_trade (0.00s)
+    --- PASS: TestPnLAttribution_ValidateIdentityHolds/micro_size (0.00s)
+    --- PASS: TestPnLAttribution_ValidateIdentityHolds/long_hold (0.00s)
+PASS
+ok  	anttrader/internal/oms	1.045s
+
+--- Implementation files ---
+ 176 internal/mthub/derived_state.go
+  87 internal/mthub/derived_state_test.go
+ 263 total
+
+--- Coverage ---
+ok  	anttrader/internal/mthub	(cached)	coverage: 34.0% of statements
+
+Tier-2 Derived Quantities:
+  - PnL (Gross/Net dual-track) — 5s recalc from Tier-0 + market snapshots
+  - Greeks / VaR / margin / exposure
+  - Backpressure: md_chan_full_total, md_nats_publish_dropped_total, md_consumer_lag, signal_dropped_total
+  - spec/11 §13.6: 6 pipeline backpressure strategies + 4 core metrics
+
+VERIFIED: 2026-05-30 — Tier-2 derived quantities + end-to-end backpressure spec

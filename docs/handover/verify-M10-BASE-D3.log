@@ -1,0 +1,217 @@
+=== M10-BASE-D3: CostModelSnapshot ===
+Verification: go test -race ./internal/costsvc/... -v
+Description: backtest_run.cost_model_snapshot JSONB audit trail
+
+--- Targeted tests ---
+=== RUN   TestSnapshot_Roundtrip
+=== PAUSE TestSnapshot_Roundtrip
+=== RUN   TestSnapshot_FrozenAtClock
+=== PAUSE TestSnapshot_FrozenAtClock
+=== RUN   TestSnapshotConfig
+=== PAUSE TestSnapshotConfig
+=== RUN   TestSnapshotFromList
+=== PAUSE TestSnapshotFromList
+=== CONT  TestSnapshotConfig
+=== CONT  TestSnapshot_FrozenAtClock
+--- PASS: TestSnapshot_FrozenAtClock (0.00s)
+=== CONT  TestSnapshotFromList
+=== CONT  TestSnapshot_Roundtrip
+--- PASS: TestSnapshot_Roundtrip (0.00s)
+--- PASS: TestSnapshotConfig (0.00s)
+--- PASS: TestSnapshotFromList (0.00s)
+PASS
+ok  	anttrader/internal/costsvc	1.029s
+
+--- Full test suite ---
+=== RUN   TestFIFO_SingleOpenFullClose
+=== PAUSE TestFIFO_SingleOpenFullClose
+=== RUN   TestFIFO_MultiOpenFIFOOrder
+=== PAUSE TestFIFO_MultiOpenFIFOOrder
+=== RUN   TestFIFO_PartialCloseThenRemaining
+=== PAUSE TestFIFO_PartialCloseThenRemaining
+=== RUN   TestFIFO_CloseMoreThanOpen
+=== PAUSE TestFIFO_CloseMoreThanOpen
+=== RUN   TestFIFO_ShortPositions
+=== PAUSE TestFIFO_ShortPositions
+=== RUN   TestFIFO_MixedSidesDontCross
+=== PAUSE TestFIFO_MixedSidesDontCross
+=== RUN   TestFIFO_EmptyOpenings
+=== PAUSE TestFIFO_EmptyOpenings
+=== RUN   TestFIFO_RealizedPnLMatchesVolume
+=== PAUSE TestFIFO_RealizedPnLMatchesVolume
+=== RUN   TestLIFO_NewestMatchedFirst
+=== PAUSE TestLIFO_NewestMatchedFirst
+=== RUN   TestLIFO_PartialCloseAcrossMultiple
+=== PAUSE TestLIFO_PartialCloseAcrossMultiple
+=== RUN   TestHIFO_LongHighestCostFirst
+=== PAUSE TestHIFO_LongHighestCostFirst
+=== RUN   TestHIFO_ShortLowestPriceFirst
+=== PAUSE TestHIFO_ShortLowestPriceFirst
+=== RUN   TestHIFO_SamePriceFallsBackToFIFO
+=== PAUSE TestHIFO_SamePriceFallsBackToFIFO
+=== RUN   TestAllMethods_FullCloseSameResult
+=== PAUSE TestAllMethods_FullCloseSameResult
+=== RUN   TestAllMethods_DifferentOrdering
+=== PAUSE TestAllMethods_DifferentOrdering
+=== RUN   TestOpenPositionCount
+=== PAUSE TestOpenPositionCount
+=== RUN   TestCloseLoss
+=== PAUSE TestCloseLoss
+=== RUN   TestSpreadCost_Forex
+=== PAUSE TestSpreadCost_Forex
+=== RUN   TestSpreadCost_ZeroSpread
+=== PAUSE TestSpreadCost_ZeroSpread
+=== RUN   TestCommission_PerLot
+=== PAUSE TestCommission_PerLot
+=== RUN   TestCommission_PerNotional
+=== PAUSE TestCommission_PerNotional
+=== RUN   TestCommission_MinFloor
+=== PAUSE TestCommission_MinFloor
+=== RUN   TestSwapCost_Long
+=== PAUSE TestSwapCost_Long
+=== RUN   TestSwapCost_Short
+=== PAUSE TestSwapCost_Short
+=== RUN   TestSwapCost_ZeroHolding
+=== PAUSE TestSwapCost_ZeroHolding
+=== RUN   TestFundingCost
+=== PAUSE TestFundingCost
+=== RUN   TestSlippageCost
+=== PAUSE TestSlippageCost
+=== RUN   TestEstimate_Forex_Buy
+=== PAUSE TestEstimate_Forex_Buy
+=== RUN   TestEstimate_Crypto
+=== PAUSE TestEstimate_Crypto
+=== RUN   TestGrossToNetFillPrice_Buy
+=== PAUSE TestGrossToNetFillPrice_Buy
+=== RUN   TestGrossToNetFillPrice_Sell
+=== PAUSE TestGrossToNetFillPrice_Sell
+=== RUN   TestSnapshot_Roundtrip
+=== PAUSE TestSnapshot_Roundtrip
+=== RUN   TestCostModel_ZeroNotional
+=== PAUSE TestCostModel_ZeroNotional
+=== RUN   TestEffectiveSwapDays_NoWednesday
+=== PAUSE TestEffectiveSwapDays_NoWednesday
+=== RUN   TestEffectiveSwapDays_Wednesday
+=== PAUSE TestEffectiveSwapDays_Wednesday
+=== RUN   TestEffectiveSwapDays_Zero
+=== PAUSE TestEffectiveSwapDays_Zero
+=== RUN   TestSwapCostDate_TripleWednesday
+=== PAUSE TestSwapCostDate_TripleWednesday
+=== RUN   TestSnapshot_FrozenAtClock
+=== PAUSE TestSnapshot_FrozenAtClock
+=== RUN   TestSnapshotConfig
+=== PAUSE TestSnapshotConfig
+=== RUN   TestSnapshotFromList
+=== PAUSE TestSnapshotFromList
+=== RUN   TestStaticEstimator
+=== PAUSE TestStaticEstimator
+=== RUN   TestMultiModelEstimator_KnownSymbol
+=== PAUSE TestMultiModelEstimator_KnownSymbol
+=== RUN   TestMultiModelEstimator_FallbackDefault
+=== PAUSE TestMultiModelEstimator_FallbackDefault
+=== RUN   TestMultiModelEstimator_NoModel
+=== PAUSE TestMultiModelEstimator_NoModel
+=== CONT  TestFIFO_MultiOpenFIFOOrder
+=== CONT  TestCommission_MinFloor
+--- PASS: TestFIFO_MultiOpenFIFOOrder (0.00s)
+=== CONT  TestSwapCost_Long
+--- PASS: TestCommission_MinFloor (0.00s)
+=== CONT  TestCommission_PerNotional
+--- PASS: TestSwapCost_Long (0.00s)
+--- PASS: TestCommission_PerNotional (0.00s)
+=== CONT  TestCommission_PerLot
+=== CONT  TestOpenPositionCount
+--- PASS: TestCommission_PerLot (0.00s)
+=== CONT  TestSpreadCost_ZeroSpread
+=== CONT  TestAllMethods_DifferentOrdering
+--- PASS: TestSpreadCost_ZeroSpread (0.00s)
+=== CONT  TestHIFO_SamePriceFallsBackToFIFO
+--- PASS: TestHIFO_SamePriceFallsBackToFIFO (0.00s)
+=== CONT  TestHIFO_ShortLowestPriceFirst
+=== RUN   TestAllMethods_DifferentOrdering/FIFO
+--- PASS: TestHIFO_ShortLowestPriceFirst (0.00s)
+=== CONT  TestSpreadCost_Forex
+=== CONT  TestAllMethods_FullCloseSameResult
+=== CONT  TestCloseLoss
+=== CONT  TestFIFO_RealizedPnLMatchesVolume
+=== CONT  TestLIFO_NewestMatchedFirst
+=== CONT  TestFIFO_EmptyOpenings
+=== CONT  TestLIFO_PartialCloseAcrossMultiple
+--- PASS: TestOpenPositionCount (0.00s)
+=== CONT  TestFIFO_MixedSidesDontCross
+=== CONT  TestFIFO_CloseMoreThanOpen
+--- PASS: TestFIFO_CloseMoreThanOpen (0.00s)
+=== RUN   TestAllMethods_DifferentOrdering/LIFO
+--- PASS: TestFIFO_MixedSidesDontCross (0.00s)
+=== CONT  TestFIFO_PartialCloseThenRemaining
+=== CONT  TestFIFO_ShortPositions
+=== CONT  TestHIFO_LongHighestCostFirst
+--- PASS: TestSpreadCost_Forex (0.00s)
+--- PASS: TestCloseLoss (0.00s)
+--- PASS: TestFIFO_ShortPositions (0.00s)
+=== CONT  TestSnapshotConfig
+=== CONT  TestFIFO_SingleOpenFullClose
+--- PASS: TestFIFO_RealizedPnLMatchesVolume (0.00s)
+=== CONT  TestMultiModelEstimator_KnownSymbol
+--- PASS: TestMultiModelEstimator_KnownSymbol (0.00s)
+=== CONT  TestMultiModelEstimator_FallbackDefault
+--- PASS: TestMultiModelEstimator_FallbackDefault (0.00s)
+=== CONT  TestStaticEstimator
+--- PASS: TestStaticEstimator (0.00s)
+=== CONT  TestEffectiveSwapDays_Zero
+--- PASS: TestEffectiveSwapDays_Zero (0.00s)
+=== CONT  TestSnapshotFromList
+=== CONT  TestMultiModelEstimator_NoModel
+--- PASS: TestMultiModelEstimator_NoModel (0.00s)
+=== CONT  TestSwapCostDate_TripleWednesday
+--- PASS: TestSwapCostDate_TripleWednesday (0.00s)
+=== CONT  TestEstimate_Crypto
+    costsvc_test.go:140: Crypto estimate: total=80.0000 bps=16.00
+--- PASS: TestEstimate_Crypto (0.00s)
+=== CONT  TestEffectiveSwapDays_Wednesday
+--- PASS: TestEffectiveSwapDays_Wednesday (0.00s)
+=== CONT  TestGrossToNetFillPrice_Sell
+--- PASS: TestGrossToNetFillPrice_Sell (0.00s)
+=== CONT  TestSnapshot_Roundtrip
+--- PASS: TestSnapshotConfig (0.00s)
+=== CONT  TestGrossToNetFillPrice_Buy
+--- PASS: TestGrossToNetFillPrice_Buy (0.00s)
+=== CONT  TestSlippageCost
+=== CONT  TestEstimate_Forex_Buy
+--- PASS: TestSlippageCost (0.00s)
+=== CONT  TestFundingCost
+--- PASS: TestFundingCost (0.00s)
+--- PASS: TestSnapshotFromList (0.00s)
+--- PASS: TestSnapshot_Roundtrip (0.00s)
+=== NAME  TestEstimate_Forex_Buy
+    costsvc_test.go:122: Forex buy estimate: total=13.9250 bps=1.28 spread=5.00 comm=7.00 slip=5.42 swap=-3.50
+--- PASS: TestFIFO_EmptyOpenings (0.00s)
+=== CONT  TestSnapshot_FrozenAtClock
+--- PASS: TestLIFO_NewestMatchedFirst (0.00s)
+--- PASS: TestSnapshot_FrozenAtClock (0.00s)
+=== CONT  TestEffectiveSwapDays_NoWednesday
+=== RUN   TestAllMethods_DifferentOrdering/HIFO
+--- PASS: TestEffectiveSwapDays_NoWednesday (0.00s)
+=== CONT  TestSwapCost_ZeroHolding
+=== CONT  TestCostModel_ZeroNotional
+--- PASS: TestAllMethods_FullCloseSameResult (0.00s)
+=== CONT  TestSwapCost_Short
+--- PASS: TestFIFO_PartialCloseThenRemaining (0.00s)
+--- PASS: TestHIFO_LongHighestCostFirst (0.00s)
+--- PASS: TestFIFO_SingleOpenFullClose (0.00s)
+--- PASS: TestEstimate_Forex_Buy (0.00s)
+--- PASS: TestLIFO_PartialCloseAcrossMultiple (0.00s)
+--- PASS: TestSwapCost_ZeroHolding (0.00s)
+--- PASS: TestCostModel_ZeroNotional (0.00s)
+--- PASS: TestSwapCost_Short (0.00s)
+--- PASS: TestAllMethods_DifferentOrdering (0.00s)
+    --- PASS: TestAllMethods_DifferentOrdering/FIFO (0.00s)
+    --- PASS: TestAllMethods_DifferentOrdering/LIFO (0.00s)
+    --- PASS: TestAllMethods_DifferentOrdering/HIFO (0.00s)
+PASS
+ok  	anttrader/internal/costsvc	(cached)
+
+--- Coverage ---
+ok  	anttrader/internal/costsvc	(cached)	coverage: 97.7% of statements
+
+VERIFIED: 2026-05-30 — backtest_run.cost_model_snapshot JSONB audit trail

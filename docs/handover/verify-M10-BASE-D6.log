@@ -1,0 +1,204 @@
+=== M10-BASE-D6: Bar finality gate ===
+Verification: go test -race ./internal/quantengine/... ./internal/factor/... -v
+Description: now >= bar.close_ts + finality_delay enforced at strategy side
+
+--- Targeted tests ---
+# ./internal/quantengine/...
+pattern ./internal/quantengine/...: lstat ./internal/quantengine/: no such file or directory
+FAIL	./internal/quantengine/... [setup failed]
+=== RUN   TestSubscriber_BarFinalityGate_SkipRecent
+=== PAUSE TestSubscriber_BarFinalityGate_SkipRecent
+=== RUN   TestSubscriber_BarFinalityGate_OldPasses
+=== PAUSE TestSubscriber_BarFinalityGate_OldPasses
+=== RUN   TestSubscriber_BarFinalityGate_ReplayAlwaysPasses
+=== PAUSE TestSubscriber_BarFinalityGate_ReplayAlwaysPasses
+=== RUN   TestSubscriber_BarFinalityGate_Disabled
+=== PAUSE TestSubscriber_BarFinalityGate_Disabled
+=== CONT  TestSubscriber_BarFinalityGate_ReplayAlwaysPasses
+--- PASS: TestSubscriber_BarFinalityGate_ReplayAlwaysPasses (0.00s)
+=== CONT  TestSubscriber_BarFinalityGate_Disabled
+--- PASS: TestSubscriber_BarFinalityGate_Disabled (0.00s)
+=== CONT  TestSubscriber_BarFinalityGate_OldPasses
+--- PASS: TestSubscriber_BarFinalityGate_OldPasses (0.00s)
+=== CONT  TestSubscriber_BarFinalityGate_SkipRecent
+--- PASS: TestSubscriber_BarFinalityGate_SkipRecent (0.00s)
+PASS
+ok  	anttrader/internal/factor	1.035s
+testing: warning: no tests to run
+PASS
+ok  	anttrader/internal/factor/dsl	1.034s [no tests to run]
+FAIL
+
+--- Full test suite ---
+# ./internal/quantengine/...
+pattern ./internal/quantengine/...: lstat ./internal/quantengine/: no such file or directory
+FAIL	./internal/quantengine/... [setup failed]
+=== RUN   TestSubscriber_Push
+=== PAUSE TestSubscriber_Push
+=== RUN   TestSubscriber_Chan
+=== PAUSE TestSubscriber_Chan
+=== RUN   TestSubscriber_StartStop
+=== PAUSE TestSubscriber_StartStop
+=== RUN   TestSubscriber_BarFinalityGate_SkipRecent
+=== PAUSE TestSubscriber_BarFinalityGate_SkipRecent
+=== RUN   TestSubscriber_BarFinalityGate_OldPasses
+=== PAUSE TestSubscriber_BarFinalityGate_OldPasses
+=== RUN   TestSubscriber_BarFinalityGate_ReplayAlwaysPasses
+=== PAUSE TestSubscriber_BarFinalityGate_ReplayAlwaysPasses
+=== RUN   TestSubscriber_BarFinalityGate_Disabled
+=== PAUSE TestSubscriber_BarFinalityGate_Disabled
+=== CONT  TestSubscriber_Push
+--- PASS: TestSubscriber_Push (0.00s)
+=== CONT  TestSubscriber_BarFinalityGate_Disabled
+--- PASS: TestSubscriber_BarFinalityGate_Disabled (0.00s)
+=== CONT  TestSubscriber_BarFinalityGate_ReplayAlwaysPasses
+--- PASS: TestSubscriber_BarFinalityGate_ReplayAlwaysPasses (0.00s)
+=== CONT  TestSubscriber_BarFinalityGate_SkipRecent
+--- PASS: TestSubscriber_BarFinalityGate_SkipRecent (0.00s)
+=== CONT  TestSubscriber_BarFinalityGate_OldPasses
+--- PASS: TestSubscriber_BarFinalityGate_OldPasses (0.00s)
+=== CONT  TestSubscriber_StartStop
+--- PASS: TestSubscriber_StartStop (0.00s)
+=== CONT  TestSubscriber_Chan
+--- PASS: TestSubscriber_Chan (0.00s)
+PASS
+ok  	anttrader/internal/factor	1.034s
+=== RUN   TestLexer
+=== PAUSE TestLexer
+=== RUN   TestLexer_AllTokens
+=== PAUSE TestLexer_AllTokens
+=== RUN   TestLexer_String
+=== PAUSE TestLexer_String
+=== RUN   TestParse
+=== PAUSE TestParse
+=== RUN   TestParse_Ternary
+=== PAUSE TestParse_Ternary
+=== RUN   TestParse_Comparison
+=== PAUSE TestParse_Comparison
+=== RUN   TestParse_LogicOps
+=== PAUSE TestParse_LogicOps
+=== RUN   TestSMABasic
+=== PAUSE TestSMABasic
+=== RUN   TestEMABasic
+=== PAUSE TestEMABasic
+=== RUN   TestRSI
+=== PAUSE TestRSI
+=== RUN   TestCompileAndEval
+=== PAUSE TestCompileAndEval
+=== RUN   TestCompile_ComplexExpr
+=== PAUSE TestCompile_ComplexExpr
+=== RUN   TestCompile_BB
+=== PAUSE TestCompile_BB
+=== RUN   TestCompile_MACD
+=== PAUSE TestCompile_MACD
+=== RUN   TestCompile_UnknownField
+=== PAUSE TestCompile_UnknownField
+=== RUN   TestCompile_UnknownFunction
+=== PAUSE TestCompile_UnknownFunction
+=== RUN   TestValidation_Safety
+=== PAUSE TestValidation_Safety
+=== RUN   TestValidation_LengthLimit
+=== PAUSE TestValidation_LengthLimit
+=== RUN   TestValidation_ParseTimeout
+=== PAUSE TestValidation_ParseTimeout
+=== RUN   TestParser_Arithmetic
+=== PAUSE TestParser_Arithmetic
+=== RUN   TestOperatorWarmup
+=== PAUSE TestOperatorWarmup
+=== RUN   TestOpReset
+=== PAUSE TestOpReset
+=== RUN   TestGoDSLAlignment
+=== PAUSE TestGoDSLAlignment
+=== RUN   TestGoDSLSelfCheck
+=== PAUSE TestGoDSLSelfCheck
+=== CONT  TestParse
+=== CONT  TestCompile_ComplexExpr
+--- PASS: TestParse (0.00s)
+=== CONT  TestCompile_BB
+--- PASS: TestCompile_BB (0.00s)
+=== CONT  TestSMABasic
+--- PASS: TestSMABasic (0.00s)
+=== CONT  TestRSI
+--- PASS: TestRSI (0.00s)
+=== CONT  TestCompileAndEval
+--- PASS: TestCompile_ComplexExpr (0.00s)
+--- PASS: TestCompileAndEval (0.00s)
+=== CONT  TestParse_Ternary
+=== CONT  TestParse_LogicOps
+--- PASS: TestParse_Ternary (0.00s)
+=== CONT  TestEMABasic
+--- PASS: TestEMABasic (0.00s)
+=== CONT  TestLexer
+=== CONT  TestParse_Comparison
+=== CONT  TestParser_Arithmetic
+=== CONT  TestGoDSLSelfCheck
+=== CONT  TestGoDSLAlignment
+=== RUN   TestGoDSLSelfCheck/sma($close,_3)
+--- PASS: TestParse_LogicOps (0.00s)
+--- PASS: TestLexer (0.00s)
+=== RUN   TestGoDSLSelfCheck/ema($close,_3)
+=== CONT  TestLexer_String
+--- PASS: TestLexer_String (0.00s)
+=== CONT  TestLexer_AllTokens
+--- PASS: TestLexer_AllTokens (0.00s)
+=== CONT  TestOperatorWarmup
+=== RUN   TestOperatorWarmup/SMA(5)
+--- PASS: TestParse_Comparison (0.00s)
+--- PASS: TestParser_Arithmetic (0.00s)
+=== RUN   TestGoDSLSelfCheck/$close_>_3_?_1_:_-1
+=== RUN   TestOperatorWarmup/EMA(5)
+=== RUN   TestOperatorWarmup/WMA(5)
+=== CONT  TestOpReset
+=== RUN   TestOperatorWarmup/STD(5)
+=== RUN   TestGoDSLSelfCheck/rsi($close,_14)
+--- PASS: TestOpReset (0.00s)
+=== RUN   TestOperatorWarmup/RSI(14)
+=== RUN   TestOperatorWarmup/Ref(5)
+=== CONT  TestValidation_ParseTimeout
+=== RUN   TestGoDSLSelfCheck/bb_upper($close,_20,
+=== RUN   TestGoDSLSelfCheck/$close_+_sma($close,
+--- PASS: TestGoDSLSelfCheck (0.00s)
+    --- PASS: TestGoDSLSelfCheck/sma($close,_3) (0.00s)
+    --- PASS: TestGoDSLSelfCheck/ema($close,_3) (0.00s)
+    --- PASS: TestGoDSLSelfCheck/$close_>_3_?_1_:_-1 (0.00s)
+    --- PASS: TestGoDSLSelfCheck/rsi($close,_14) (0.00s)
+    --- PASS: TestGoDSLSelfCheck/bb_upper($close,_20, (0.00s)
+    --- PASS: TestGoDSLSelfCheck/$close_+_sma($close, (0.00s)
+=== CONT  TestCompile_UnknownField
+--- PASS: TestCompile_UnknownField (0.00s)
+=== CONT  TestValidation_Safety
+--- PASS: TestValidation_Safety (0.00s)
+=== CONT  TestValidation_LengthLimit
+=== RUN   TestOperatorWarmup/Delta(5)
+=== RUN   TestOperatorWarmup/BBUpper(20,2)
+--- PASS: TestOperatorWarmup (0.01s)
+    --- PASS: TestOperatorWarmup/SMA(5) (0.00s)
+    --- PASS: TestOperatorWarmup/EMA(5) (0.00s)
+    --- PASS: TestOperatorWarmup/WMA(5) (0.00s)
+    --- PASS: TestOperatorWarmup/STD(5) (0.00s)
+    --- PASS: TestOperatorWarmup/RSI(14) (0.00s)
+    --- PASS: TestOperatorWarmup/Ref(5) (0.00s)
+    --- PASS: TestOperatorWarmup/Delta(5) (0.00s)
+    --- PASS: TestOperatorWarmup/BBUpper(20,2) (0.00s)
+=== CONT  TestCompile_MACD
+--- PASS: TestCompile_MACD (0.00s)
+=== CONT  TestCompile_UnknownFunction
+--- PASS: TestValidation_ParseTimeout (0.01s)
+--- PASS: TestCompile_UnknownFunction (0.00s)
+--- PASS: TestValidation_LengthLimit (0.04s)
+=== NAME  TestGoDSLAlignment
+    alignment_test.go:176: alignment data written to ../../../../research/tests/alignment_data.json (100 records, 1000 bars each)
+--- PASS: TestGoDSLAlignment (0.91s)
+PASS
+ok  	anttrader/internal/factor/dsl	1.951s
+FAIL
+
+--- Coverage ---
+# ./internal/quantengine/...
+pattern ./internal/quantengine/...: lstat ./internal/quantengine/: no such file or directory
+FAIL	./internal/quantengine/... [setup failed]
+ok  	anttrader/internal/factor	1.031s	coverage: 84.6% of statements
+ok  	anttrader/internal/factor/dsl	2.394s	coverage: 76.3% of statements
+FAIL
+
+VERIFIED: 2026-05-30 — now >= bar.close_ts + finality_delay enforced at strategy side
