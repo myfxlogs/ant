@@ -576,13 +576,13 @@ docker exec ant-clickhouse clickhouse-client --query "DROP TABLE IF EXISTS ant.m
 
 ### M11 总览
 
-| 卡片 | 内容 | 优先级 | 预估工日 |
-|---|---|---|---|
-| M11-13 | Execution Algo（TWAP/VWAP/POV/Implementation Shortfall，在 OMS 和 mthub 之间加 `execalgo/` 层） | P3 | 5 |
-| M11-14 | FIFO/LIFO/HIFO 成本基础追踪（税务报告+精确 P&L 归因） | P3 | 2 |
-| M11-15 | P&L 归因三维分解（信号质量 / 执行质量 / 持有成本，独立 metric + 时间序列） | P3 | 2 |
-| M11-16 | Jurisdictional Gate（KYC + IP 检测 + 投顾牌照合规 + 免责声明 + 风险问卷） | P1 | 3 |
-| M11-17 | Trade Reporting 预留（EMIR / MiFID II schema 预留，不实现完整报告） | P3 | 1 |
+| 卡片 | 内容 | 优先级 | 预估工日 | 状态 |
+|---|---|---|---|---|
+| M11-13 | Execution Algo（TWAP/VWAP/POV/Implementation Shortfall，在 OMS 和 mthub 之间加 `execalgo/` 层） | P3 | 5 | ☑ |
+| M11-14 | FIFO/LIFO/HIFO 成本基础追踪（税务报告+精确 P&L 归因） | P3 | 2 | ☑ |
+| M11-15 | P&L 归因三维分解（信号质量 / 执行质量 / 持有成本，独立 metric + 时间序列） | P3 | 2 | ☑ |
+| M11-16 | Jurisdictional Gate（KYC + IP 检测 + 投顾牌照合规 + 免责声明 + 风险问卷） | P1 | 3 | ☑ |
+| M11-17 | Trade Reporting 预留（EMIR / MiFID II schema 预留，不实现完整报告） | P3 | 1 | ☑ |
 | **总计** | | | **~13 工日** |
 
 ### M11 卡片详表

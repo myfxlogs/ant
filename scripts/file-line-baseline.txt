@@ -1,6 +1,5 @@
 # Existing non-generated files over 800 lines. New oversized non-MD source files are forbidden.
 frontend/src/gen/ant/v1/mthub_service_pb.ts
-backend/cmd/server/main.go
 backend/internal/mdgateway/adapter/mt4/mt4_test.go
 backend/internal/mdgateway/adapter/mt5/mt5_test.go
 backend/internal/mdgateway/pure_test.go
