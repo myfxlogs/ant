@@ -31,7 +31,7 @@ type MTConnectionTester interface {
 
 // AccountServer implements ant.v1.AccountServiceHandler.
 type AccountServer struct {
-	svc       *service.PlatformService
+	svc       *service.AccountService
 	searcher  *brokersearch.Searcher
 	publisher *mdgateway.AccountEventPublisher
 	mtTester  MTConnectionTester
@@ -40,18 +40,9 @@ type AccountServer struct {
 
 var _ antv1c.AccountServiceHandler = (*AccountServer)(nil)
 
-func NewAccountServer(svc *service.PlatformService, log *zap.Logger) *AccountServer {
-	return &AccountServer{svc: svc, log: log}
+func NewAccountServer(svc *service.AccountService, searcher *brokersearch.Searcher, publisher *mdgateway.AccountEventPublisher, tester MTConnectionTester, log *zap.Logger) *AccountServer {
+	return &AccountServer{svc: svc, searcher: searcher, publisher: publisher, mtTester: tester, log: log}
 }
-
-// SetSearcher injects the mtapi broker searcher (S2.2).
-func (s *AccountServer) SetSearcher(searcher *brokersearch.Searcher) { s.searcher = searcher }
-
-// SetPublisher injects the NATS account event publisher (S2.4).
-func (s *AccountServer) SetPublisher(p *mdgateway.AccountEventPublisher) { s.publisher = p }
-
-// SetMTConnectionTester injects the MT connection validator.
-func (s *AccountServer) SetMTConnectionTester(t MTConnectionTester) { s.mtTester = t }
 
 // parseUserID extracts and validates the user ID from the request context (#1).
 func parseUserID(ctx context.Context) (uuid.UUID, error) {

@@ -39,7 +39,7 @@ func TestResetUserPasswordNoPlaintextInResponse(t *testing.T) {
 
 	adminRepo := repository.NewAdminRepository(pool)
 	resetRepo := repository.NewPasswordResetRepo(pool)
-	platformSvc := service.NewPlatformService(pool)
+	platformSvc := service.NewPlatformService(pool, nil)
 
 	// Create test user
 	userID := uuid.New()

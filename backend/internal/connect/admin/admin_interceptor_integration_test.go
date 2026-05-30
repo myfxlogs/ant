@@ -56,7 +56,7 @@ func TestAdminRequiresAdminRole(t *testing.T) {
 	log := zap.NewNop()
 
 	jwtSecret := "test-integration-secret-32-bytes!!"
-	platformSvc := service.NewPlatformService(pool)
+	platformSvc := service.NewPlatformService(pool, nil)
 	authInterceptor := interceptor.NewAuthInterceptor(jwtSecret, nil)
 	adminInterceptor := interceptor.NewAdminInterceptor(platformSvc, log)
 

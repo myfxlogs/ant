@@ -11,7 +11,7 @@ import (
 )
 
 func TestSearchBroker_NilSearcher(t *testing.T) {
-	srv := &AccountServer{log: zap.NewNop()} // searcher is nil
+	srv := NewAccountServer(nil, nil, nil, nil, zap.NewNop()) // searcher is nil
 	req := connect.NewRequest(&antv1.SearchBrokerRequest{Company: "Test"})
 	_, err := srv.SearchBroker(t.Context(), req)
 	if err == nil {
@@ -19,17 +19,15 @@ func TestSearchBroker_NilSearcher(t *testing.T) {
 	}
 }
 
-func TestSetPublisher(t *testing.T) {
-	srv := &AccountServer{log: zap.NewNop()}
-	pub := mdgateway.NewAccountEventPublisher(nil, zap.NewNop())
-	srv.SetPublisher(pub)
-	if srv.publisher != pub {
-		t.Error("SetPublisher did not set publisher")
-	}
-	// SetPublisher with a nil-safe publisher: no panic.
-	srv.SetPublisher(nil)
+func TestPublisher(t *testing.T) {
+	srv := NewAccountServer(nil, nil, nil, nil, zap.NewNop())
 	if srv.publisher != nil {
-		t.Error("expected nil publisher after setting nil")
+		t.Error("expected nil publisher from constructor")
+	}
+	pub := mdgateway.NewAccountEventPublisher(nil, zap.NewNop())
+	srv.publisher = pub
+	if srv.publisher != pub {
+		t.Error("publisher not set")
 	}
 }
 

@@ -155,7 +155,9 @@ func main() {
 	}
 
 	// Services
-	platformSvc := service.NewPlatformService(pool)
+	accountSvc := service.NewAccountService(pool)
+	accountSvc.SetLogger(log)
+	platformSvc := service.NewPlatformService(pool, accountSvc)
 	platformSvc.SetLogger(log)
 	jwtSecret := cfg.JWTSecret
 	if jwtSecret == "" {
@@ -181,68 +183,8 @@ func main() {
 	mthubSvc := mthub.NewMtHubService(hub, eventBroker, accountBroker, snapshotBroker, idemGuard, reconcileGate, eventStore)
 	// --- mdgateway pipeline (M10 runner) ---
 	tradeRecordRepo := repository.NewTradeRecordRepository(pool)
+	accountSyncSvc := service.NewAccountSyncService(tradeRecordRepo, mthubSvc, log)
 
-	// syncAccountHistory fetches closed orders from MT broker and writes them to trade_records.
-	syncAccountHistory := func(accountID string) {
-		uid, err := uuid.Parse(accountID)
-		if err != nil {
-			return
-		}
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
-
-		from := time.Now().AddDate(-1, 0, 0)
-		if t, err := tradeRecordRepo.GetLastSyncTime(ctx, uid); err == nil && t != nil {
-			from = *t
-		}
-		to := time.Now()
-
-		records, err := mthubSvc.OrderHistory(ctx, accountID, from, to)
-		if err != nil {
-			log.Warn("syncHistory: fetch failed", zap.String("account", accountID), zap.Error(err))
-			return
-		}
-
-		platform := mthubSvc.Platform(accountID)
-		tradeRecs := make([]*model.TradeRecord, 0, len(records))
-		for _, r := range records {
-			ot := "BUY"
-			if r.Side == mthub.SideSell {
-				ot = "SELL"
-			}
-			switch r.OrderType {
-			case mthub.OrderMarket:
-			case mthub.OrderLimit:
-				ot += "_LIMIT"
-			case mthub.OrderStop:
-				ot += "_STOP"
-			case mthub.OrderStopLimit:
-				ot += "_STOP_LIMIT"
-			}
-			tradeRecs = append(tradeRecs, &model.TradeRecord{
-				AccountID:    uid,
-				Ticket:       r.Ticket,
-				Symbol:       r.SymbolRaw,
-				OrderType:    ot,
-				Volume:       r.Volume.InexactFloat64(),
-				OpenPrice:    r.OpenPrice.InexactFloat64(),
-				ClosePrice:   r.ClosePrice.InexactFloat64(),
-				Profit:       r.Profit.InexactFloat64(),
-				Swap:         r.Swap.InexactFloat64(),
-				Commission:   r.Commission.InexactFloat64(),
-				OpenTime:     r.OpenTime,
-				CloseTime:    r.CloseTime,
-				OrderComment: r.Comment,
-				MagicNumber:  int(r.Magic),
-				Platform:     platform,
-			})
-		}
-		if err := tradeRecordRepo.BatchCreate(ctx, tradeRecs); err != nil {
-			log.Warn("syncHistory: batch create failed", zap.String("account", accountID), zap.Error(err))
-		} else {
-			log.Info("syncHistory: synced", zap.String("account", accountID), zap.Int("count", len(tradeRecs)))
-		}
-	}
 	spillDir := cfg.SpillDir
 	pipelineCtx, pipelineCancel := context.WithCancel(context.Background())
 	defer pipelineCancel()
@@ -251,12 +193,6 @@ func main() {
 	// Level 1 (预警): margin_level <= call_pct * 1.5 → SSE only
 	// Level 2 (警告): margin_level <= call_pct → SSE + Email
 	// Level 3 (危急): margin_level <= call_pct * 0.7 → SSE + Email (1min cooldown)
-	type marginLevel int
-	const (
-		mLevelWarn marginLevel = 1
-		mLevelCall marginLevel = 2
-		mLevelCrit marginLevel = 3
-	)
 	var marginCallMu sync.Mutex
 	marginCallLastSent := make(map[string]map[int]time.Time)
 	// Per-account broker thresholds loaded from mt_accounts.
@@ -296,12 +232,11 @@ func main() {
 			Secrets:  secClient,
 			Hub:      hub,
 			OnAccountProfit: func(accountID, userID string, p *mdtick.ProfitUpdate) {
-				// Write latest balance/equity to PG.
+				// Write latest balance/equity to PG via AccountService.
 				writeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 				defer cancel()
-				if _, err := pool.Exec(writeCtx,
-					`UPDATE mt_accounts SET balance=$1, equity=$2, credit=$3, margin=$4, free_margin=$5, margin_level=$6, account_status='connected', updated_at=CURRENT_TIMESTAMP WHERE id=$7::uuid`,
-					p.Balance, p.Equity, p.Credit, p.Margin, p.FreeMargin, p.MarginLevel, accountID); err != nil {
+				userUID, _ := uuid.Parse(userID)
+				if err := accountSvc.UpdateAccountMetrics(writeCtx, userUID, accountID, p.Balance, p.Equity, p.Credit, p.Margin, p.FreeMargin, p.MarginLevel); err != nil {
 					log.Warn("OnAccountProfit: pg update failed", zap.String("account", accountID), zap.Error(err))
 				}
 				// Record hourly equity snapshot (throttled).
@@ -314,11 +249,7 @@ func main() {
 					}
 					lastSnapshot[accountID] = time.Now()
 					snapshotMu.Unlock()
-					_, err := pool.Exec(writeCtx,
-						`INSERT INTO account_balance_history (account_id, balance, equity, margin, free_margin, recorded_at)
-						 VALUES ($1, $2, $3, $4, $5, NOW())`,
-						accountID, p.Balance, p.Equity, p.Margin, p.FreeMargin)
-					if err != nil {
+					if err := accountSvc.RecordBalanceSnapshot(writeCtx, accountID, p.Balance, p.Equity, p.Margin, p.FreeMargin); err != nil {
 						log.Debug("OnAccountProfit: snapshot insert failed", zap.String("account", accountID), zap.Error(err))
 					}
 				}()
@@ -347,16 +278,15 @@ func main() {
 					if callPct <= 0 {
 						callPct = 100.0
 					}
-					checkMarginCall(accountID, userID, p.MarginLevel, p.Margin, p.Equity, callPct, &marginCallMu, marginCallLastSent, eventStore, emailNotifier)
+					service.CheckMarginCall(accountID, userID, p.MarginLevel, p.Margin, p.Equity, callPct, &marginCallMu, marginCallLastSent, eventStore, emailNotifier)
 				}
 			},
 			OnOrderUpdate: func(accountID, userID string, o *mdtick.OrderUpdate) {
-				// Update PG with latest account metrics.
+				// Update PG with latest account metrics via AccountService.
 				writeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 				defer cancel()
-				if _, err := pool.Exec(writeCtx,
-					"UPDATE mt_accounts SET balance=$1, equity=$2, credit=$3, margin=$4, free_margin=$5, margin_level=$6, account_status='connected', updated_at=CURRENT_TIMESTAMP WHERE id=$7::uuid",
-					o.Balance, o.Equity, o.Credit, o.Margin, o.FreeMargin, o.MarginLevel, accountID); err != nil {
+				userUID, _ := uuid.Parse(userID)
+				if err := accountSvc.UpdateAccountMetrics(writeCtx, userUID, accountID, o.Balance, o.Equity, o.Credit, o.Margin, o.FreeMargin, o.MarginLevel); err != nil {
 					log.Warn("OnOrderUpdate: pg update failed", zap.String("account", accountID), zap.Error(err))
 				}
 
@@ -457,19 +387,17 @@ func main() {
 					}
 			},
 			OnAccountDisconnect: func(accountID string) {
-				syncAccountHistory(accountID)
+				accountSyncSvc.SyncAccountHistory(accountID)
 				platformAgg.ClearAccount(accountID)
 				// Update DB status so frontend doesn't keep showing stale "connected" state.
 				writeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 				defer cancel()
-				if _, err := pool.Exec(writeCtx,
-					`UPDATE mt_accounts SET account_status='disconnected', updated_at=CURRENT_TIMESTAMP WHERE id=$1::uuid`,
-					accountID); err != nil {
+				if err := accountSvc.DisconnectAccountByID(writeCtx, accountID); err != nil {
 					log.Warn("OnAccountDisconnect: failed to update account_status", zap.String("account", accountID), zap.Error(err))
 				}
 			},
 			OnBrokerInfo: func(accountID, platform, broker string, info *mdtick.BrokerInfo) {
-				syncAccountHistory(accountID)
+				accountSyncSvc.SyncAccountHistory(accountID)
 				// H17: Trigger reconciliation on broker reconnect so ant-side state
 				// stays consistent with broker-side reality (ADR-0013).
 				if reconLoop != nil {
@@ -488,7 +416,7 @@ func main() {
 						snapshot := &mthub.PositionSnapshot{AccountID: accountID, Positions: make([]mthub.PositionSnapshotItem, 0, len(orders))}
 						for _, o := range orders {
 							snapshot.Positions = append(snapshot.Positions, mthub.PositionSnapshotItem{
-								Ticket: o.Ticket, Symbol: o.SymbolRaw, Type: mapSideToString(o.Side), Volume: o.Volume.InexactFloat64(),
+								Ticket: o.Ticket, Symbol: o.SymbolRaw, Type: service.MapSideToString(o.Side), Volume: o.Volume.InexactFloat64(),
 								OpenPrice: o.OpenPrice.InexactFloat64(), Profit: o.Profit.InexactFloat64(),
 								Swap: o.Swap.InexactFloat64(), Commission: o.Commission.InexactFloat64(), Comment: o.Comment,
 							})
@@ -501,11 +429,7 @@ func main() {
 				stop := info.StopOutPct
 				// Zero values mean "proto doesn't expose these yet" — keep the schema DEFAULTs.
 				if pct > 0 || stop > 0 {
-					_, err := pool.Exec(ctx,
-						`UPDATE mt_accounts SET broker_margin_call_pct=$1, broker_stop_out_pct=$2,
-						 updated_at=CURRENT_TIMESTAMP WHERE id=$3`,
-						pct, stop, accountID)
-					if err != nil {
+					if err := accountSvc.UpdateBrokerThresholds(ctx, accountID, pct, stop); err != nil {
 						log.Warn("failed to persist broker margin info",
 							zap.String("account", accountID), zap.Error(err))
 					} else {
@@ -540,15 +464,10 @@ func main() {
 	mthubServer := system.NewMtHubServer(mthubSvc, platformSvc, marketDataRepo, tradeRecordRepo, log)
 	mux.Handle(antv1c.NewMtHubServiceHandler(mthubServer, connectrpc.WithInterceptors(authInterceptor)))
 
-	accountServer := user.NewAccountServer(platformSvc, log)
-	// S2.2: wire mtapi broker searcher for real broker discovery.
-	accountServer.SetSearcher(brokersearch.New("", ""))
-	// S2.4: wire NATS account event publisher for Connect/Disconnect/Reconnect.
+	searcher := brokersearch.New("", "")
 	accountEventPub := mdgateway.NewAccountEventPublisher(js, log)
-	accountServer.SetPublisher(accountEventPub)
-	// Wire MT connection tester so CreateAccount validates credentials against broker.
 	mtTester := user.NewMTConnectionTester(cfg.MtapiToken, log)
-	accountServer.SetMTConnectionTester(mtTester)
+	accountServer := user.NewAccountServer(accountSvc, searcher, accountEventPub, mtTester, log)
 	mux.Handle(antv1c.NewAccountServiceHandler(accountServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	mktServer := mktplace.NewMarketServer(platformSvc, marketDataRepo, nc, log)
@@ -862,64 +781,3 @@ func main() {
 
 }
 
-// checkMarginCall evaluates margin level against per-broker thresholds and publishes
-// events + sends emails at 3 severity levels with independent cooldowns.
-func checkMarginCall(
-	accountID, userID string,
-	marginLevel, margin, equity, callPct float64,
-	mu *sync.Mutex,
-	lastSent map[string]map[int]time.Time,
-	eventStore *mthub.TradeEventStore,
-	notifier *notifier.EmailNotifier,
-) {
-	mu.Lock()
-	defer mu.Unlock()
-
-	if lastSent[accountID] == nil {
-		lastSent[accountID] = make(map[int]time.Time)
-	}
-
-	now := time.Now()
-
-	// Determine current severity level.
-	var curLevel int
-	switch {
-	case marginLevel <= callPct*0.7:
-		curLevel = 3
-	case marginLevel <= callPct:
-		curLevel = 2
-	case marginLevel <= callPct*1.5:
-		curLevel = 1
-	default:
-		delete(lastSent, accountID)
-		return
-	}
-
-	cooldown := 5 * time.Minute
-	if curLevel == 3 {
-		cooldown = 1 * time.Minute
-	}
-
-	if since := now.Sub(lastSent[accountID][curLevel]); since < cooldown {
-		return
-	}
-	lastSent[accountID][curLevel] = now
-
-	eventStore.Publish(context.Background(), &mthub.TradeEvent{
-		EventID:   fmt.Sprintf("mc-%s-%d-%d", accountID, now.Unix(), curLevel),
-		EventType: mthub.TradeEventOrderMarginCall,
-		AccountID: accountID,
-		UserID:    userID,
-	})
-
-	if curLevel >= 2 && notifier != nil {
-		notifier.MarginCallAlert(accountID, userID, margin, equity)
-	}
-}
-
-
-func mapSideToString(s mthub.Side) string {
-	if s == mthub.SideBuy { return "buy" }
-	if s == mthub.SideSell { return "sell" }
-	return "buy"
-}
