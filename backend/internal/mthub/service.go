@@ -21,6 +21,26 @@ type KillSwitchGate interface {
 	IsEngaged() bool
 }
 
+// BrokerRegistry resolves broker names to order execution capabilities.
+// M12-C2: Enables multi-broker routing. Concrete implementation in
+// mdgateway/adapter registers MT4/MT5 adapters and satisfies this interface.
+type BrokerRegistry interface {
+	// Resolve returns the BrokerExecutor registered under the given name
+	// (e.g. "mt4", "mt5"). Returns an error if no adapter is found.
+	Resolve(name string) (BrokerExecutor, error)
+
+	// List returns all registered broker names.
+	List() []string
+}
+
+// BrokerExecutor is a narrow order execution interface used by components
+// that need broker-agnostic order submission (e.g. AlgoExecutor).
+// It is a subset of the full OrderExecutor interface.
+type BrokerExecutor interface {
+	SubmitOrder(ctx context.Context, req *OrderRequest) (int64, error)
+	Platform() string
+}
+
 // MtHubService is the business-layer facade for order operations.
 // All MT account interactions go through this service.
 type MtHubService struct {
@@ -41,8 +61,9 @@ type MtHubService struct {
 	accountOwnerVerifier  AccountOwnerVerifier
 
 	// S1.2: OMS 16-state state machine writer (NEW to VALIDATED to RISK_APPROVED to SUBMITTED).
-	omsWriter *OmsWriter
-	logger    *zap.Logger
+	omsWriter      *OmsWriter
+	brokerRegistry BrokerRegistry // M12-C2: multi-broker registry (optional)
+	logger         *zap.Logger
 }
 
 // NewMtHubService creates the service with a Hub, event broker, and optional idempotency guard.
@@ -81,6 +102,14 @@ func (s *MtHubService) SetOmsWriter(w *OmsWriter) { s.omsWriter = w }
 
 // SetKillSwitch injects the global kill switch for emergency stop (V3-R-5).
 func (s *MtHubService) SetKillSwitch(ks KillSwitchGate) { s.killSwitch = ks }
+
+// SetBrokerRegistry injects the multi-broker registry (M12-C2).
+// When configured, external components (e.g. AlgoExecutor) can resolve
+// broker adapters by platform name. Existing PlaceOrder flow is unaffected.
+func (s *MtHubService) SetBrokerRegistry(r BrokerRegistry) { s.brokerRegistry = r }
+
+// BrokerRegistry returns the configured multi-broker registry, or nil.
+func (s *MtHubService) BrokerRegistry() BrokerRegistry { return s.brokerRegistry }
 
 // AccountOwnerVerifier checks that a user owns the given account.
 type AccountOwnerVerifier func(ctx context.Context, userID, accountID string) (bool, error)
