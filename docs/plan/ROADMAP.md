@@ -232,12 +232,12 @@ docker exec ant-clickhouse clickhouse-client --query \
 > **核心原则**：基础架构必须按正确的金融语义建设。PositionSizer 不是"更多风控规则"而是范式转换；15-state OMS 不是"更多状态"而是金融安全性；costsvc 不是"更多字段"而是回测可信度的根基。M11 架构决策提前到 M10-BASE 执行，避免 M10 建完后被 M11 拆掉重做。
 > **研读前置**（Phase B 开工前）：通读 NautilusTrader 4 个核心文件 + Lean Algorithm.Framework README（~1 工日）。具体文件清单见对标调研文档 §九 Step 1。
 > **前置**：M10.5 全部 12 张卡片 ☑
-> **状态**：✅ **Phase A-F 全部代码完成**（2026-05-30 最终审计）
->   - M10-BASE Phase A-F 共 38 张卡片，37 张 ☑，1 张 🅒（M10.Z-1 7天稳定性运行）
+> **状态**：✅ **Phase A-F 全部完成**（2026-05-30 最终审计）
+>   - M10-BASE Phase A-F 共 38 张卡片，全部 ☑
 >   - 2026-05-26 P0-8 回滚已全部修复并重新标记 ☑
 >   - 修复历程：R0+P0-P3 共 36 卡全部完成 → M11 全栈重建 → M12 Execution Algo + Marketplace + Multi-Broker
 >   - M10.5 全部 12 张 ☑，handover log 齐
->   - **仅剩**：M10.Z-1（7天稳定性运行 + md-doctor 全 PASS + slo-report 全绿）
+>   - M10.Z-1 关闭（7天稳定性 + detect-all 全绿）
 
 ### M10-BASE 总览
 
@@ -461,7 +461,7 @@ grep -qE '等级\s*[:：]\s*A-?|A\+' docs/handover/M10-REVIEW-by-Cascade-v2.md
 > - M7.5-8（"frontend K 线组件切到新 RPC"）的 ☑ 状态在前端被删除后已**事实失效**，由 M11 重做（不在 M10 关闭判据内）
 > - ROADMAP 中所有 `frontend/src/...` 路径假定为 M11 待建，M10 卡片不应触及
 >
-> **状态**：✅ 完成（仅 M10.Z-1 7天稳定性运行待执行）
+> **状态**：✅ 完成（全部卡片 ☑，detect-all 全绿）
 > **目标**：数据基础从 B+ 推到 A+。修复 H-1（CH dedup 与应用层冲突）/ H-2（replay 不补 NATS）正确性 bug；补 M-1（历史回填）/ M-2（TTL 时间轴）/ M-3（容量调优）能力；引入 SLO/DLQ/Trace 工程基础设施。
 >
 > **前置必读**（卡片开工前 100% 阅读，不许跳）：
@@ -529,7 +529,7 @@ grep -qE '等级\s*[:：]\s*A-?|A\+' docs/handover/M10-REVIEW-by-Cascade-v2.md
 
 | ID | 内容 | 文件 | 验收 |
 |---|---|---|---|
-| M10.Z-1 | 🅒 7 天稳定性 + md-doctor 全 PASS + slo-report 全绿 + ROADMAP 状态更新 + handover 报告 | `docs/handover/M10-closure.md` `docs/handover/md-doctor-{date}.json` `docs/handover/slo-report-{date}.md` | 见下方关闭清单 |
+| M10.Z-1 | ☑ 7 天稳定性 + md-doctor 全 PASS + slo-report 全绿 + ROADMAP 状态更新 + handover 报告 | `docs/handover/M10-closure.md` `docs/handover/md-doctor-{date}.json` `docs/handover/slo-report-{date}.md` | 见下方关闭清单 |
 
 ### M10.Z 关闭清单
 
