@@ -25,6 +25,11 @@ import { useTradingStore } from '@/stores/tradingStore';
 import { useAccountStore } from '@/stores/accountStore';
 import { useShallow } from 'zustand/react/shallow';
 import { analyticsApi } from '@/client/analytics';
+import type {
+  AccountAnalyticsData,
+  RecentTradesData,
+  TradeRecordItem,
+} from '@/client/analytics';
 import type { ConnectAccountResult } from '@/client/account';
 import AccountTradeTabs from './components/AccountTradeTabs';
 import AccountAnalyticsSection from './components/AccountAnalyticsSection';
@@ -36,100 +41,7 @@ import { formatTimestamp, isPendingOrder } from './components/AccountDetail.util
 import { getErrorMessage, translateMaybeI18nKey } from '@/utils/error';
 import { useTranslation } from 'react-i18next';
 
-// Analytics proto types are not yet generated (backend stubs).
-// Define local interfaces matching the expected API response shapes.
-interface AccountAnalyticsData {
-  tradeStats?: AccountTradeStats;
-  riskMetrics?: AccountRiskMetrics;
-  symbolStats?: AccountSymbolStat[];
-  equityCurve?: AccountEquityPoint[];
-  dailyPnl?: AccountDailyPnlItem[];
-  hourlyStats?: AccountHourlyStat[];
-}
-
-interface AccountTradeStats {
-  totalTrades?: number;
-  winRate?: number;
-  profitFactor?: number;
-  averageProfit?: number;
-  averageLoss?: number;
-  largestWin?: number;
-  largestLoss?: number;
-  maxConsecutiveWins?: number;
-  maxConsecutiveLosses?: number;
-  averageHoldingTime?: string;
-  netProfit?: number;
-  totalDeposit?: number;
-  totalWithdrawal?: number;
-  netDeposit?: number;
-}
-
-interface AccountRiskMetrics {
-  maxDrawdownPercent?: number;
-  sharpeRatio?: number;
-  sortinoRatio?: number;
-  calmarRatio?: number;
-  volatility?: number;
-  averageDailyReturn?: number;
-}
-
-interface AccountSymbolStat {
-  symbol: string;
-  profit: number;
-  tradeSharePercent?: number;
-}
-
-interface AccountEquityPoint {
-  date: string;
-  equity: number;
-  balance: number;
-  profit: number;
-}
-
-interface AccountDailyPnlItem {
-  day: string;
-  date: string;
-  pnl?: number;
-  profit?: number;
-  trades: number;
-  lots?: number;
-  balance?: number;
-  profitFactor?: number;
-  maxFloatingLossAmount?: number;
-  maxFloatingLossRatio?: number;
-  maxFloatingProfitAmount?: number;
-  maxFloatingProfitRatio?: number;
-}
-
-interface AccountHourlyStat {
-  hour?: string;
-  lots?: number;
-  balance?: number;
-  profitFactor?: number;
-  maxFloatingLossAmount?: number;
-  maxFloatingLossRatio?: number;
-  maxFloatingProfitAmount?: number;
-  maxFloatingProfitRatio?: number;
-}
-
-interface AccountRecentTradesResponse {
-  trades?: Array<{
-    ticket: bigint | number;
-    symbol: string;
-    type: string;
-    volume: number;
-    openPrice: number;
-    closePrice: number;
-    profit: number;
-    openTime?: string | Date;
-    closeTime?: string | Date;
-    swap?: number;
-    commission?: number;
-    comment?: string;
-  }>;
-  total?: number;
-}
-
+/** Legacy monthly PnL item shape for backward compatibility. */
 interface AccountMonthlyPnLItem {
   month?: string;
   monthNum?: number;
@@ -138,13 +50,24 @@ interface AccountMonthlyPnLItem {
   trades: number;
 }
 
-interface AccountMonthlyPnLResponse {
-  monthlyPnl?: AccountMonthlyPnLItem[];
+interface PositionChangeOrder {
+  ticket: number;
+  symbol: string;
+  type: string;
+  volume: number;
+  openPrice: number;
+  closePrice: number;
+  profit: number;
+  openTime: number;
+  closeTime: number;
+  swap: number;
+  commission: number;
+  comment: string;
 }
 
-interface AccountMonthlyAnalysisResponse {
-  years?: number[];
-  data?: unknown[];
+interface PositionChangeDetail {
+  action: string;
+  order: PositionChangeOrder;
 }
 
 export default function AccountDetail() {
@@ -179,7 +102,7 @@ export default function AccountDetail() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [deleting, setDeleting] = useState(false);
-  const [historyTrades, setHistoryTrades] = useState<NonNullable<AccountRecentTradesResponse['trades']>>([]);
+  const [historyTrades, setHistoryTrades] = useState<TradeRecordItem[]>([]);
   const [historyTotal, setHistoryTotal] = useState(0);
   const [historyPage, setHistoryPage] = useState(1);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -195,9 +118,9 @@ export default function AccountDetail() {
   const loadHistory = useCallback(async (accountId: string, page: number) => {
     setHistoryLoading(true);
     try {
-      const tradesData = await analyticsApi.getRecentTrades(accountId, page, historyPageSize);
-      setHistoryTrades((tradesData as AccountRecentTradesResponse).trades || []);
-      setHistoryTotal(Number((tradesData as AccountRecentTradesResponse).total || 0));
+      const tradesData: RecentTradesData = await analyticsApi.getRecentTrades(accountId, page, historyPageSize);
+      setHistoryTrades(tradesData.trades);
+      setHistoryTotal(tradesData.total);
       setHistoryPage(page);
     } catch (_error) {
       console.error('[AccountDetail] loadHistory error', _error);
@@ -216,14 +139,20 @@ export default function AccountDetail() {
         analyticsApi.getMonthlyPnL(accountId, new Date().getFullYear()),
         analyticsApi.getMonthlyAnalysis(accountId),
       ]);
-      setAnalytics(analyticsData as AccountAnalyticsData);
-      setHistoryTrades((tradesData as AccountRecentTradesResponse).trades || []);
-      setHistoryTotal(Number((tradesData as AccountRecentTradesResponse).total || 0));
+      setAnalytics(analyticsData);
+      setHistoryTrades(tradesData.trades);
+      setHistoryTotal(tradesData.total);
       setHistoryPage(1);
-      setMonthlyAnalysisYears((monthlyAnalysisResp as AccountMonthlyAnalysisResponse).years || []);
-      setMonthlyAnalysisData((monthlyAnalysisResp as AccountMonthlyAnalysisResponse).data || []);
-      // monthlyPnL 已下移到 AccountAnalyticsSection 内部管理
-      setMonthlyPnL((monthlyData as AccountMonthlyPnLResponse).monthlyPnl || []);
+      setMonthlyAnalysisYears(monthlyAnalysisResp.years);
+      setMonthlyAnalysisData(Array.isArray(monthlyAnalysisResp.data) ? monthlyAnalysisResp.data : []);
+      // monthlyPnL mapped to legacy interface for downstream compatibility.
+      setMonthlyPnL(monthlyData.monthlyPnl.map((item) => ({
+        month: String(item.month),
+        monthNum: item.month,
+        month_num: item.month,
+        profit: item.profit,
+        trades: item.trades,
+      })));
     } catch (error) {
       setAnalyticsError(getErrorMessage(error, '加载分析数据失败'));
     } finally {
@@ -235,7 +164,7 @@ export default function AccountDetail() {
   const loadAnalyticsForPeriod = useCallback(async (accountId: string) => {
     try {
       const analyticsData = await analyticsApi.getAccountAnalytics(accountId, chartPeriod);
-      setAnalytics(analyticsData as AccountAnalyticsData);
+      setAnalytics(analyticsData);
     } catch (_error) {
       // Keep existing analytics on period-switch error.
     }
@@ -307,13 +236,13 @@ export default function AccountDetail() {
     };
 
     const handlePositionChange = (event: Event) => {
-      const customEvent = event as CustomEvent;
-      const { action, order } = customEvent.detail;
+      const detail = (event as CustomEvent<PositionChangeDetail>).detail;
+      const { action, order } = detail;
 
       if (action === 'PositionClose' && order) {
         // Positions come from SSE stream (position_snapshot). Only refresh
         // analytics / trade history on position changes.
-        const newTrade = {
+        const newTrade: TradeRecordItem = {
           ticket: order.ticket,
           symbol: order.symbol,
           type: order.type,
@@ -321,8 +250,8 @@ export default function AccountDetail() {
           openPrice: order.openPrice,
           closePrice: order.closePrice,
           profit: order.profit,
-          openTime: order.openTime,
-          closeTime: order.closeTime,
+          openTime: String(order.openTime ?? ''),
+          closeTime: String(order.closeTime ?? ''),
           swap: order.swap || 0,
           commission: order.commission || 0,
           comment: order.comment || '',
@@ -514,15 +443,15 @@ export default function AccountDetail() {
     const dailyPnl = dailyPnlRaw.map((d) => ({
       day: d.day,
       date: d.date,
-      profit: d.pnl ?? d.profit,
-      trades: Number(d.trades),
-      lots: d.lots ?? 0,
-      balance: d.balance ?? 0,
-      profitFactor: d.profitFactor ?? 0,
-      maxFloatingLossAmount: d.maxFloatingLossAmount ?? 0,
-      maxFloatingLossRatio: d.maxFloatingLossRatio ?? 0,
-      maxFloatingProfitAmount: d.maxFloatingProfitAmount ?? 0,
-      maxFloatingProfitRatio: d.maxFloatingProfitRatio ?? 0,
+      profit: d.pnl,
+      trades: d.trades,
+      lots: d.lots,
+      balance: d.balance,
+      profitFactor: d.profitFactor,
+      maxFloatingLossAmount: d.maxFloatingLossAmount,
+      maxFloatingLossRatio: d.maxFloatingLossRatio,
+      maxFloatingProfitAmount: d.maxFloatingProfitAmount,
+      maxFloatingProfitRatio: d.maxFloatingProfitRatio,
     }));
 
     const symbolStats = analytics?.symbolStats || [];
@@ -530,7 +459,7 @@ export default function AccountDetail() {
       .slice(0, 6)
       .map((s) => ({
         name: s.symbol,
-        value: Math.round(Number(s.tradeSharePercent || 0)),
+        value: Math.round(s.tradeSharePercent),
         profit: s.profit,
       }));
 
@@ -541,14 +470,7 @@ export default function AccountDetail() {
       dailyPnLData: dailyPnl,
       hourlyData: (analytics?.hourlyStats || []).map((h) => ({
         ...h,
-        hourLabel: `${String(Number(h.hour ?? 0)).padStart(2, '0')}:00`,
-        lots: h.lots ?? 0,
-        balance: h.balance ?? 0,
-        profitFactor: h.profitFactor ?? 0,
-        maxFloatingLossAmount: h.maxFloatingLossAmount ?? 0,
-        maxFloatingLossRatio: h.maxFloatingLossRatio ?? 0,
-        maxFloatingProfitAmount: h.maxFloatingProfitAmount ?? 0,
-        maxFloatingProfitRatio: h.maxFloatingProfitRatio ?? 0,
+        hourLabel: `${String(h.hour).padStart(2, '0')}:00`,
       })),
       tradeStats: analytics?.tradeStats || { totalTrades: 0, winRate: 0, profitFactor: 0, averageProfit: 0, averageLoss: 0, largestWin: 0, largestLoss: 0, maxConsecutiveWins: 0, maxConsecutiveLosses: 0, averageHoldingTime: '-', netProfit: 0, totalDeposit: 0, totalWithdrawal: 0, netDeposit: 0 },
       riskMetrics: analytics?.riskMetrics || { maxDrawdownPercent: 0, sharpeRatio: 0, sortinoRatio: 0, calmarRatio: 0, volatility: 0, averageDailyReturn: 0 },

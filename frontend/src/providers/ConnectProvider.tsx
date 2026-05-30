@@ -315,7 +315,7 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
                   if (import.meta.env.DEV) console.debug('[ConnectProvider] setAccountInfoById', accId, patch);
                   tradingStore.setAccountInfoById(accId, patch);
                   // Sync financial fields to accountStore for unified invalidation (U-5).
-                  useAccountStore.getState().patchAccountFinancials(accId, patch as unknown as Record<string, unknown>);
+                  useAccountStore.getState().patchAccountFinancials(accId, patch);
                 }
                 tradingStore.touchStreamProfitAt(accId);
 
@@ -366,7 +366,7 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
 
             // Map positions into the store's Position shape, then batch-replace
             // all at once (no per-position flicker).
-            const mapped = positions.map((o) => ({
+            const mapped: Position[] = positions.map((o) => ({
               ticket: Number(o.ticket),
               symbol: o.symbol || '',
               type: normalizePositionSide(o.type || 'buy'),
@@ -392,16 +392,16 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
             const store = useTradingStore.getState();
             const existing = store.positionsMap.get(accountId) || [];
             // Preserve currentPrice from existing positions.
-            const existingByTicket = new Map(existing.map((p) => [Number((p as { ticket: number }).ticket), p]));
-            const final = mapped.map((pos) => {
+            const existingByTicket = new Map(existing.map((p) => [p.ticket, p]));
+            const final: Position[] = mapped.map((pos) => {
               const old = existingByTicket.get(pos.ticket);
               if (old) {
-                return { ...pos, currentPrice: (old as { currentPrice?: number }).currentPrice ?? pos.openPrice };
+                return { ...pos, currentPrice: old.currentPrice ?? pos.openPrice };
               }
               return { ...pos, currentPrice: pos.openPrice };
             });
 
-            useTradingStore.getState().setPositions(accountId, final as unknown as Position[]);
+            useTradingStore.getState().setPositions(accountId, final);
           },
           onError: () => {
             if (!mountedRef.current) return;

@@ -1,6 +1,30 @@
 import { tradingClient } from './connect';
-import { Side, OrderType, PlaceOrderRequestSchema } from '@/gen/ant/v1/mthub_service_pb';
+import { Side, OrderType, PlaceOrderRequestSchema, CloseOrderRequestSchema } from '@/gen/ant/v1/mthub_service_pb';
 import { create } from '@bufbuild/protobuf';
+import type { PlaceOrderResponse } from '@/gen/ant/v1/mthub_service_pb';
+import type { OrderRecord } from '@/gen/ant/v1/mthub_service_pb';
+import type { OpenedOrdersResponse } from '@/gen/ant/v1/mthub_service_pb';
+import type { OrderHistoryResponse } from '@/gen/ant/v1/mthub_service_pb';
+
+/**
+ * Intermediate position shape returned by fromProtoOrders.
+ * The Position fields in @/types/trading are a superset; these objects
+ * have the subset that comes directly from the OrderRecord proto.
+ */
+export interface ProtoPosition {
+  ticket: number;
+  symbol: string;
+  type: string;
+  volume: number;
+  openPrice: number;
+  closePrice: number;
+  profit: number;
+  commission: number;
+  swap: number;
+  magic: number;
+  openTime: number;
+  closeTime: number;
+}
 
 export interface RiskError {
   code?: string;
@@ -8,6 +32,21 @@ export interface RiskError {
   userMessage?: string;
   retryable?: boolean;
   contextJson?: string;
+}
+
+/**
+ * Backend enriches the proto PlaceOrderResponse / CloseOrderResponse with
+ * additional fields (error, retcode, message, requestId, riskError, order).
+ * These fields are NOT defined in the proto schema. We type them here
+ * so consumers can access them without casts.
+ */
+interface EnrichedOrderResponse {
+  error?: unknown;
+  retcode?: number;
+  message?: string;
+  requestId?: string;
+  riskError?: RiskError;
+  order?: OrderRecord | undefined;
 }
 
 export interface OrderSendResult {
@@ -37,10 +76,8 @@ export interface OrderHistoryResult {
 
 // Proto OrderRecord uses string for decimal fields and Timestamp for time fields;
 // frontend expects number. Convert orders from proto wire format to JS-friendly format.
-function fromProtoOrders(orders: unknown[]): unknown[] {
-  return (orders || []).map((o: Record<string, unknown>) => {
-    // @bufbuild/protobuf Timestamp is {seconds: bigint, nanos: number}.
-    // Convert to unix seconds (number) for downstream consumers.
+function fromProtoOrders(orders: OrderRecord[]): ProtoPosition[] {
+  return (orders || []).map((o): ProtoPosition => {
     const toUnixSeconds = (ts: unknown): number => {
       if (ts == null) return 0;
       if (typeof ts === 'number') return ts;
@@ -54,8 +91,9 @@ function fromProtoOrders(orders: unknown[]): unknown[] {
       return 0;
     };
     return {
-      ...o,
       ticket: Number(o.ticket),
+      symbol: o.symbolRaw || o.canonical || '',
+      type: o.side === Side.BUY ? 'buy' : o.side === Side.SELL ? 'sell' : '',
       volume: Number(o.volume),
       openPrice: Number(o.openPrice),
       closePrice: Number(o.closePrice || 0),
@@ -131,13 +169,15 @@ export const tradingApi = {
         magic: Number(params.magicNumber || 0),
       }),
     );
+    // Backend enriches the response with fields beyond the proto schema.
+    const enriched = response as PlaceOrderResponse & EnrichedOrderResponse;
     return {
-      order: response.order,
-      error: String(response.error ?? ''),
-      retcode: response.retcode as number | undefined,
-      message: response.message as string | undefined,
-      requestId: response.requestId as string | undefined,
-      riskError: response.riskError as RiskError | undefined,
+      order: enriched.order,
+      error: String(enriched.error ?? ''),
+      retcode: enriched.retcode,
+      message: enriched.message,
+      requestId: enriched.requestId,
+      riskError: enriched.riskError,
     };
   },
 
@@ -147,35 +187,34 @@ export const tradingApi = {
     volume?: number;
     price?: number;
   }): Promise<OrderCloseResult> => {
-    // Params use pre-transform field names; proto CloseOrderRequest uses lots (string).
     const response = await tradingClient.closeOrder(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      {
+      create(CloseOrderRequestSchema, {
         accountId: params.accountId,
         ticket: params.ticket,
-        volume: params.volume || 0,
-        price: params.price || 0,
-      } as any,
-    ) as unknown as Record<string, unknown>;
+        lots: String(params.volume || 0),
+      }),
+    );
+    // Backend enriches the response with fields beyond the proto schema.
+    const enriched = response as PlaceOrderResponse & EnrichedOrderResponse;
     return {
-      order: response.order,
-      error: String(response.error ?? ''),
-      retcode: response.retcode as number | undefined,
-      message: response.message as string | undefined,
-      requestId: response.requestId as string | undefined,
-      riskError: response.riskError as RiskError | undefined,
+      order: enriched.order,
+      error: String(enriched.error ?? ''),
+      retcode: enriched.retcode,
+      message: enriched.message,
+      requestId: enriched.requestId,
+      riskError: enriched.riskError,
     };
   },
 
   getPositions: async (accountId: string) => {
-    const response = await tradingClient.openedOrders({ accountId });
-    return fromProtoOrders(response.orders as unknown[]);
+    const response: OpenedOrdersResponse = await tradingClient.openedOrders({ accountId });
+    return fromProtoOrders(response.orders);
   },
 
-	syncOrderHistory: async (accountId: string) => {
-		const response = await tradingClient.syncOrderHistory({ accountId });
-		return { syncedRecords: Number(response.syncedRecords ?? 0) };
-	},
+  syncOrderHistory: async (accountId: string) => {
+    const response = await tradingClient.syncOrderHistory({ accountId });
+    return { syncedRecords: Number(response.syncedRecords ?? 0) };
+  },
 
   getOrderHistory: async (params: {
     accountId: string;
@@ -184,24 +223,25 @@ export const tradingApi = {
     page?: number;
     pageSize?: number;
   }): Promise<OrderHistoryResult> => {
-    // Proto OrderHistoryRequest uses Timestamp for from/to and does not
-    // include page/pageSize. The backend handles string-to-Timestamp
-    // conversion and pagination.
-    const response = await tradingClient.orderHistory(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      {
-        accountId: params.accountId,
-        from: params.from || '',
-        to: params.to || '',
-        page: params.page || 1,
-        pageSize: params.pageSize || 50,
-      } as any,
-    ) as unknown as Record<string, unknown>;
+    // Proto OrderHistoryRequest only has accountId, from, to.
+    // Backend handles pagination via an envelope that adds page/pageSize/total
+    // to the response. Pass the known proto fields as-is.
+    const response = await tradingClient.orderHistory({
+      accountId: params.accountId,
+      from: undefined,
+      to: undefined,
+    });
+    // Backend enriches response with pagination fields beyond proto schema.
+    const enriched = response as OrderHistoryResponse & {
+      page?: number;
+      pageSize?: number;
+      total?: bigint;
+    };
     return {
-      orders: fromProtoOrders(response.orders as unknown[]),
-      total: Number(response.total ?? 0),
-      page: Number(response.page ?? 1),
-      pageSize: Number(response.pageSize ?? 50),
+      orders: fromProtoOrders(enriched.orders),
+      total: Number(enriched.total ?? 0),
+      page: Number(enriched.page ?? 1),
+      pageSize: Number(enriched.pageSize ?? 50),
     };
   },
 

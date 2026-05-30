@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 import { useAccountStore } from '@/stores/accountStore';
 import { accountApi } from '@/client/account';
-import type { Account } from '@/types/account';
 import { getErrorMessage } from '@/utils/error';
 import { showSuccess, showError } from '@/utils/message';
 import i18n from '@/i18n';
@@ -30,7 +29,7 @@ export function useAccount() {
     try {
       const accountList = await accountApi.list();
       const accounts = Array.isArray(accountList) ? accountList : [];
-      setAccounts(accounts as Account[]);
+      setAccounts(accounts);
       return accounts;
     } catch (error) {
       showError(getErrorMessage(error, i18n.t('accounts.messages.fetchListFailed')));
@@ -47,7 +46,7 @@ export function useAccount() {
     }
     try {
       const account = await accountApi.get(id);
-      setCurrentAccount(account as Account);
+      setCurrentAccount(account);
       return account;
     } catch (error) {
       showError(getErrorMessage(error, i18n.t('accounts.messages.fetchAccountFailed')));
@@ -70,7 +69,7 @@ export function useAccount() {
     setLoading(true);
     try {
       const account = await accountApi.create(data);
-      addAccount(account as Account);
+      addAccount(account);
       // Success toast is shown by the caller (e.g., BindAccount) to avoid duplicates.
       return account;
     } catch (error) {
@@ -97,7 +96,7 @@ export function useAccount() {
       const result = await accountApi.connect(id);
       // Success toast is shown by the caller (e.g., AccountDetail) to avoid duplicates.
       const account = await accountApi.get(id);
-      updateAccount(account as Account);
+      updateAccount(account);
       return account;
     } catch (error) {
       showError(getErrorMessage(error, i18n.t('accounts.messages.connectFailed')));
@@ -109,7 +108,7 @@ export function useAccount() {
     try {
       await accountApi.disconnect(id);
       const account = await accountApi.get(id);
-      updateAccount(account as Account);
+      updateAccount(account);
     } catch (error) {
       showError(getErrorMessage(error, i18n.t('accounts.messages.disconnectFailed')));
       throw error;
@@ -122,13 +121,13 @@ export function useAccount() {
       useAccountStore.getState().updateAccountStatus(id, 'disconnected');
       await accountApi.update({ id, isDisabled: true });
       const account = await accountApi.get(id);
-      updateAccount(account as Account);
+      updateAccount(account);
     } catch (error) {
       showError(getErrorMessage(error, i18n.t('accounts.messages.disableFailed')));
       // Rollback by refetching account state.
       try {
         const account = await accountApi.get(id);
-        updateAccount(account as Account);
+        updateAccount(account);
       } catch {
         // ignore
       }
@@ -143,14 +142,14 @@ export function useAccount() {
       useAccountStore.getState().updateAccountStatus(id, 'connecting');
       await accountApi.update({ id, isDisabled: false });
       const account = await accountApi.get(id);
-      updateAccount(account as Account);
+      updateAccount(account);
       return account;
     } catch (error) {
       showError(getErrorMessage(error, i18n.t('accounts.messages.enableFailed')));
       // Rollback by refetching account state to avoid stale optimistic UI.
       try {
         const account = await accountApi.get(id);
-        updateAccount(account as Account);
+        updateAccount(account);
       } catch {
         // ignore
       }

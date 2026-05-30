@@ -1,5 +1,6 @@
 import { accountClient } from './connect';
 import { toCamelCase } from '../adapters/dataAdapter';
+import type { Account } from '@/types/account';
 
 export interface ConnectAccountResult {
   success: boolean;
@@ -7,14 +8,14 @@ export interface ConnectAccountResult {
 }
 
 export const accountApi = {
-  list: async () => {
+  list: async (): Promise<Account[]> => {
     const response = await accountClient.listAccounts({});
-    return toCamelCase(response.accounts);
+    return toCamelCase<Account[]>(response.accounts);
   },
 
-  get: async (id: string) => {
+  get: async (id: string): Promise<Account> => {
     const response = await accountClient.getAccount({ id });
-    return toCamelCase(response);
+    return toCamelCase<Account>(response);
   },
 
   create: async (data: {
@@ -24,7 +25,7 @@ export const accountApi = {
     brokerCompany: string;
     brokerServer: string;
     brokerHost: string;
-  }) => {
+  }): Promise<Account> => {
     const response = await accountClient.createAccount({
       login: data.login,
       password: data.password,
@@ -33,7 +34,7 @@ export const accountApi = {
       brokerServer: data.brokerServer,
       brokerHost: data.brokerHost,
     });
-    return toCamelCase(response);
+    return toCamelCase<Account>(response);
   },
 
   update: async (params: {
@@ -42,14 +43,15 @@ export const accountApi = {
     brokerServer?: string;
     brokerHost?: string;
     isDisabled?: boolean;
-  }) => {
-    return await accountClient.updateAccount({
+  }): Promise<Account> => {
+    const response = await accountClient.updateAccount({
       id: params.id,
       brokerCompany: params.brokerCompany,
       brokerServer: params.brokerServer,
       brokerHost: params.brokerHost,
       isDisabled: params.isDisabled,
     });
+    return toCamelCase<Account>(response);
   },
 
   delete: async (id: string, password?: string) => {

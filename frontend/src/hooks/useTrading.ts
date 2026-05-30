@@ -1,7 +1,6 @@
 import { useCallback, useContext } from 'react';
 import { useTradingStore } from '@/stores/tradingStore';
 import { tradingApi } from '@/client/trading';
-import type { Position } from '@/types/trading';
 import { accountApi } from '@/client/account';
 import { getErrorMessage, translateMaybeI18nKey } from '@/utils/error';
 import { showError, showSuccess } from '@/utils/message';
@@ -31,7 +30,7 @@ export function useTrading() {
     try {
       const positions = await tradingApi.getPositions(accountId);
       const positionsArray = Array.isArray(positions) ? positions : [];
-      setPositions(accountId, positionsArray as Position[]);
+      setPositions(accountId, positionsArray);
       return positionsArray;
     } catch (error) {
       const isFailedPrecondition = error instanceof ConnectError && error.code === Code.FailedPrecondition;
@@ -51,7 +50,7 @@ export function useTrading() {
               // do not trigger a redundant reconnect here to avoid races.
               const positionsAfterReconnect = await tradingApi.getPositions(accountId);
               const positionsArray = Array.isArray(positionsAfterReconnect) ? positionsAfterReconnect : [];
-              setPositions(accountId, positionsArray as Position[]);
+              setPositions(accountId, positionsArray);
               return positionsArray;
             }
           } catch (_e) {

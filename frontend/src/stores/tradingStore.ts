@@ -48,7 +48,7 @@ interface TradingState {
   lastStreamProfitAtByAccount: Map<string, number>;
   currentAccountId: string | null;
   loading: boolean;
-  setPositions: (_accountId: string, _positions: Position[], _opts?: SetPositionsOptions) => void;
+  setPositions: (_accountId: string, _positions: readonly Record<string, unknown>[], _opts?: SetPositionsOptions) => void;
   touchStreamProfitAt: (_accountId: string) => void;
   addPosition: (_accountId: string, _position: Position) => void;
   updatePosition: (_accountId: string, _ticket: number, _updates: Partial<Position>) => void;
@@ -132,17 +132,17 @@ export const useTradingStore = create<TradingState>((set, get) => ({
     const camelPosition = toCamelCase<Position>(position);
     // Dedup: skip if a position with the same ticket already exists
     // (e.g. initial stream snapshot may arrive after fetchPositions RPC).
-    const ticket = Number((camelPosition as any).ticket);
-    if (accountPositions.some((p) => Number((p as any).ticket) === ticket)) {
+    const ticket = camelPosition.ticket;
+    if (accountPositions.some((p) => p.ticket === ticket)) {
       return {};
     }
     newMap.set(accountId, [...accountPositions, camelPosition]);
-    
+
     let newPositions = state.positions;
     if (state.currentAccountId === accountId) {
       newPositions = [...accountPositions, camelPosition];
     }
-    
+
     return {
       positionsMap: newMap,
       positions: newPositions
@@ -151,14 +151,14 @@ export const useTradingStore = create<TradingState>((set, get) => ({
   updatePosition: (accountId, ticket, updates) => set((state) => {
     const newMap = new Map(state.positionsMap);
     const accountPositions = newMap.get(accountId) || [];
-    const updatedPositions = accountPositions.map((p) => (Number((p as any).ticket) === ticket ? { ...p, ...updates } : p));
+    const updatedPositions = accountPositions.map((p) => (p.ticket === ticket ? { ...p, ...updates } : p));
     newMap.set(accountId, updatedPositions);
-    
+
     let newPositions = state.positions;
     if (state.currentAccountId === accountId) {
       newPositions = updatedPositions;
     }
-    
+
     return {
       positionsMap: newMap,
       positions: newPositions
@@ -167,16 +167,16 @@ export const useTradingStore = create<TradingState>((set, get) => ({
   removePosition: (accountId, ticket) => set((state) => {
     const newMap = new Map(state.positionsMap);
     const accountPositions = newMap.get(accountId) || [];
-    const exists = accountPositions.some((p) => Number((p as any).ticket) === ticket);
+    const exists = accountPositions.some((p) => p.ticket === ticket);
     if (!exists) return {};
-    const filteredPositions = accountPositions.filter((p) => Number((p as any).ticket) !== ticket);
+    const filteredPositions = accountPositions.filter((p) => p.ticket !== ticket);
     newMap.set(accountId, filteredPositions);
-    
+
     let newPositions = state.positions;
     if (state.currentAccountId === accountId) {
       newPositions = filteredPositions;
     }
-    
+
     return {
       positionsMap: newMap,
       positions: newPositions
@@ -187,11 +187,11 @@ export const useTradingStore = create<TradingState>((set, get) => ({
   setAccountInfo: (info) => {
     const state = get();
     const newInfo = { ...state.accountInfo, ...info };
-    
+
     if (state.currentAccountId) {
       const newMap = new Map(state.accountInfoMap);
       newMap.set(state.currentAccountId, newInfo);
-      set({ 
+      set({
         accountInfo: newInfo,
         accountInfoMap: newMap,
       });
@@ -202,15 +202,15 @@ export const useTradingStore = create<TradingState>((set, get) => ({
   setAccountInfoById: (accountId, info) => set((state) => {
     const existingInfo = state.accountInfoMap.get(accountId);
     const newInfo = { ...(existingInfo || { ...defaultAccountInfo }), ...info };
-    
+
     const newMap = new Map(state.accountInfoMap);
     newMap.set(accountId, newInfo);
-    
+
     const newReceivedData = new Set(state.accountReceivedData);
     newReceivedData.add(accountId);
-    
+
     if (state.currentAccountId === accountId) {
-      return { 
+      return {
         accountInfo: newInfo,
         accountInfoMap: newMap,
         accountReceivedData: newReceivedData,
@@ -227,15 +227,15 @@ export const useTradingStore = create<TradingState>((set, get) => ({
     if (accountId) {
       newPositions = state.positionsMap.get(accountId) || [];
     }
-    
+
     if (accountId && state.accountInfoMap.has(accountId)) {
-      return { 
+      return {
         currentAccountId: accountId,
         accountInfo: state.accountInfoMap.get(accountId) || { ...defaultAccountInfo },
         positions: newPositions
       };
     }
-    return { 
+    return {
       currentAccountId: accountId,
       accountInfo: { ...defaultAccountInfo },
       positions: newPositions

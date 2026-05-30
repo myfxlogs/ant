@@ -1,27 +1,126 @@
 import { analyticsClient, economicDataClient } from './connect';
 import i18n from '@/i18n';
 import { EquityCurvePeriod } from '../gen/ant/v1/analytics_pb';
-import { deepConvertBigIntToNumber } from '@/adapters/dataAdapter';
+import {
+  mapAccountAnalytics,
+  mapRecentTradesResponse,
+  mapMonthlyPnLResponse,
+  mapMonthlyAnalysisResponse,
+} from './analyticsMappers';
 
-export type { TradeStats, RiskMetrics, SymbolStat, TradeRecord, MonthlyPnLItem } from '../gen/ant/v1/analytics_pb';
+export type { TradeRecord, MonthlyPnLItem } from '../gen/ant/v1/analytics_pb';
+
+// ──────────────────────────────────────────────
+// Frontend-friendly types (after BigInt→Number conversion)
+// ──────────────────────────────────────────────
+
+export interface TradeStats {
+  totalTrades: number;
+  winRate: number;
+  profitFactor: number;
+  averageProfit: number;
+  averageLoss: number;
+  largestWin: number;
+  largestLoss: number;
+  maxConsecutiveWins: number;
+  maxConsecutiveLosses: number;
+  averageHoldingTime: string;
+  netProfit: number;
+  totalDeposit: number;
+  totalWithdrawal: number;
+  netDeposit: number;
+}
+
+export interface RiskMetrics {
+  maxDrawdownPercent: number;
+  sharpeRatio: number;
+  sortinoRatio: number;
+  calmarRatio: number;
+  volatility: number;
+  averageDailyReturn: number;
+}
+
+export interface SymbolStat {
+  symbol: string;
+  profit: number;
+  tradeSharePercent: number;
+}
+
+export interface EquityPoint {
+  date: string;
+  equity: number;
+  balance: number;
+  profit: number;
+}
+
+export interface DailyPnL {
+  day: string;
+  date: string;
+  pnl: number;
+  trades: number;
+  lots: number;
+  balance: number;
+  profitFactor: number;
+  maxFloatingLossAmount: number;
+  maxFloatingLossRatio: number;
+  maxFloatingProfitAmount: number;
+  maxFloatingProfitRatio: number;
+}
+
+export interface HourlyStat {
+  hour: number;
+  lots: number;
+  balance: number;
+  profitFactor: number;
+  maxFloatingLossAmount: number;
+  maxFloatingLossRatio: number;
+  maxFloatingProfitAmount: number;
+  maxFloatingProfitRatio: number;
+}
+
+export interface AccountAnalyticsData {
+  tradeStats: TradeStats;
+  riskMetrics: RiskMetrics;
+  symbolStats: SymbolStat[];
+  equityCurve: EquityPoint[];
+  dailyPnl: DailyPnL[];
+  hourlyStats: HourlyStat[];
+}
+
+export interface TradeRecordItem {
+  ticket: number;
+  symbol: string;
+  type: string;
+  volume: number;
+  openPrice: number;
+  closePrice: number;
+  profit: number;
+  openTime: string;
+  closeTime: string;
+  swap: number;
+  commission: number;
+  comment: string;
+}
+
+export interface RecentTradesData {
+  trades: TradeRecordItem[];
+  total: number;
+}
+
+export interface MonthlyPnLData {
+  monthlyPnl: Array<{
+    month: number;
+    profit: number;
+    trades: number;
+  }>;
+}
+
+export interface MonthlyAnalysisData {
+  years: number[];
+  data: unknown;
+}
 
 const analyticsService = analyticsClient;
-
-// Analytics backed by AnalyticsService handler (backend/internal/connect/system/analytics_handler.go).
-// Reads from trade_records PostgreSQL table via AnalyticsRepository.
-interface RecentTradesResponse {
-  trades?: unknown[];
-  total?: number;
-}
-
-interface MonthlyPnLResponse {
-  monthlyPnl?: unknown[];
-}
-
-interface MonthlyAnalysisResponse {
-  years?: number[];
-  data?: unknown[];
-}
 
 function toProtoPeriod(p: 'day' | 'week' | 'month' | 'all'): EquityCurvePeriod {
   switch (p) {
@@ -34,12 +133,12 @@ function toProtoPeriod(p: 'day' | 'week' | 'month' | 'all'): EquityCurvePeriod {
 }
 
 export const analyticsApi = {
-  getAccountAnalytics: async (accountId: string, period?: 'day' | 'week' | 'month' | 'all') => {
+  getAccountAnalytics: async (accountId: string, period?: 'day' | 'week' | 'month' | 'all'): Promise<AccountAnalyticsData> => {
     const res = await analyticsService.getAccountAnalytics({
       accountId,
       equityCurvePeriod: toProtoPeriod(period || 'all'),
     });
-    return deepConvertBigIntToNumber(res);
+    return mapAccountAnalytics(res);
   },
 
   getTradeRecords: async (accountId: string, _params?: { from?: string; to?: string }) => {
@@ -47,40 +146,32 @@ export const analyticsApi = {
       accountId,
       page: 1,
       pageSize: 100,
-    }) as unknown as RecentTradesResponse;
-    return response.trades;
+    });
+    return mapRecentTradesResponse(response).trades;
   },
 
-  getRecentTrades: async (accountId: string, page?: number, pageSize?: number) => {
+  getRecentTrades: async (accountId: string, page?: number, pageSize?: number): Promise<RecentTradesData> => {
     const response = await analyticsService.getRecentTrades({
       accountId,
       page: page || 1,
       pageSize: pageSize || 10,
-    }) as unknown as RecentTradesResponse;
-    return {
-      trades: response.trades,
-      total: response.total,
-    };
+    });
+    return mapRecentTradesResponse(response);
   },
 
-  getMonthlyPnL: async (accountId: string, year?: number) => {
+  getMonthlyPnL: async (accountId: string, year?: number): Promise<MonthlyPnLData> => {
     const response = await analyticsService.getMonthlyPnL({
       accountId,
       year: year || new Date().getFullYear(),
-    }) as unknown as MonthlyPnLResponse;
-    return {
-      monthlyPnl: response.monthlyPnl,
-    };
+    });
+    return mapMonthlyPnLResponse(response);
   },
 
-  getMonthlyAnalysis: async (accountId: string) => {
+  getMonthlyAnalysis: async (accountId: string): Promise<MonthlyAnalysisData> => {
     const response = await analyticsService.getMonthlyAnalysis({
       accountId,
-    }) as unknown as MonthlyAnalysisResponse;
-    return {
-      years: response.years || [],
-      data: response.data || [],
-    };
+    });
+    return mapMonthlyAnalysisResponse(response);
   },
 
   getEconomicCalendar: async (params?: {
