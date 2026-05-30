@@ -533,7 +533,11 @@ func (s *StreamServer) SubscribeProfitUpdates(
 		return connect.NewError(connect.CodeInvalidArgument, errors.New("account_id is required"))
 	}
 	ok, err := s.platform.UserOwnsAccount(ctx, userID, accountID)
-	if err != nil || !ok {
+	if err != nil {
+		s.log.Error("SubscribeProfitUpdates: UserOwnsAccount DB error", zap.String("account", accountID), zap.Error(err))
+		return connect.NewError(connect.CodeInternal, err)
+	}
+	if !ok {
 		return connect.NewError(connect.CodePermissionDenied, errors.New("account does not belong to user"))
 	}
 
