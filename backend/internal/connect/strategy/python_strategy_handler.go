@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"context"
+	"fmt"
 	"encoding/json"
 	"time"
 
@@ -34,7 +35,21 @@ func NewPythonStrategyServer(backtestRepo *repository.BacktestRunRepository, log
 
 func (s *PythonStrategyServer) SetClient(c *strategysvc.PythonClient) { s.client = c }
 
+// userIDRequire extracts and validates the authenticated user ID from context.
+func userIDRequire(ctx context.Context) (uuid.UUID, error) {
+	id, err := uuid.Parse(interceptor.GetUserID(ctx))
+	if err != nil || id == uuid.Nil {
+		return uuid.Nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
+	}
+	return id, nil
+}
+
 func (s *PythonStrategyServer) Execute(ctx context.Context, req *connect.Request[antv1.ExecuteStrategyRequest]) (*connect.Response[antv1.ExecuteStrategyResponse], error) {
+	uid, err := userIDRequire(ctx)
+	if err != nil {
+		return nil, err
+	}
+	_ = uid // authorization verified; downstream uses AccountId directly
 	if s.client != nil {
 		result, err := s.client.Execute(ctx, &strategysvc.ExecuteRequest{
 			Code:      req.Msg.Code,
@@ -67,6 +82,11 @@ func (s *PythonStrategyServer) Execute(ctx context.Context, req *connect.Request
 }
 
 func (s *PythonStrategyServer) Validate(ctx context.Context, req *connect.Request[antv1.ValidateStrategyRequest]) (*connect.Response[antv1.ValidateStrategyResponse], error) {
+	uid, err := userIDRequire(ctx)
+	if err != nil {
+		return nil, err
+	}
+	_ = uid
 	if s.client != nil {
 		result, err := s.client.Validate(ctx, &strategysvc.ValidateRequest{Code: req.Msg.Code})
 		if err != nil {
@@ -85,6 +105,11 @@ func (s *PythonStrategyServer) Validate(ctx context.Context, req *connect.Reques
 }
 
 func (s *PythonStrategyServer) Backtest(ctx context.Context, req *connect.Request[antv1.BacktestStrategyRequest]) (*connect.Response[antv1.BacktestStrategyResponse], error) {
+	uid, err := userIDRequire(ctx)
+	if err != nil {
+		return nil, err
+	}
+	_ = uid
 	if s.client != nil {
 		result, err := s.client.Backtest(ctx, &strategysvc.BacktestRequest{
 			Code:      req.Msg.Code,

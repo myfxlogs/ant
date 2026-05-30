@@ -40,8 +40,8 @@ func (s *MtHubServer) PriceHistory(ctx context.Context, req *connect.Request[ant
 	// Time-range filtering is not yet implemented in the repository layer.
 	bars, err := s.marketData.GetKlines(ctx, m.Canonical, "", period, limit)
 	if err != nil {
-		s.log.Warn("PriceHistory: get klines", zap.Error(err))
-		return connect.NewResponse(&antv1.PriceHistoryResponse{}), nil
+		s.log.Error("PriceHistory: get klines", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to fetch price history: %w", err))
 	}
 
 	out := make([]*antv1.OHLCV, 0, len(bars))
@@ -112,7 +112,7 @@ func (s *MtHubServer) StreamOrderEvents(ctx context.Context, req *connect.Reques
 				continue
 			}
 			if err := stream.Send(toProtoOrderEvent(ev)); err != nil {
-				return fmt.Errorf("send order event to stream: %w", err)
+				return connect.NewError(connect.CodeInternal, fmt.Errorf("send order event to stream: %w", err))
 			}
 		}
 	}

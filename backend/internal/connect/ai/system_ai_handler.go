@@ -49,6 +49,9 @@ func (s *SystemAIServer) GetSystemAIConfig(ctx context.Context, req *connect.Req
 	if err != nil {
 		return nil, err
 	}
+	if req.Msg.ProviderId == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("provider_id is required"))
+	}
 	row, err := s.systemSvc.Get(ctx, uid, req.Msg.ProviderId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(err)))
@@ -60,6 +63,9 @@ func (s *SystemAIServer) UpdateSystemAIConfig(ctx context.Context, req *connect.
 	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
+	}
+	if req.Msg.ProviderId == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("provider_id is required"))
 	}
 	// Validate inputs.
 	if len(req.Msg.Name) > 100 {
@@ -96,6 +102,9 @@ func (s *SystemAIServer) UpdateSystemAISecret(ctx context.Context, req *connect.
 	if err != nil {
 		return nil, err
 	}
+	if req.Msg.ProviderId == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("provider_id is required"))
+	}
 	maskedSecret := "***"
 	n := len(req.Msg.Secret)
 	if n > 0 {
@@ -127,6 +136,9 @@ func (s *SystemAIServer) DiscoverSystemAIModels(ctx context.Context, req *connec
 	if err != nil {
 		return nil, err
 	}
+	if req.Msg.ProviderId == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("provider_id is required"))
+	}
 	models, err := s.systemSvc.DiscoverModels(ctx, uid, req.Msg.ProviderId)
 	if err != nil {
 		s.log.Warn("discover models failed",
@@ -149,6 +161,9 @@ func (s *SystemAIServer) ValidateSystemAIConnection(ctx context.Context, req *co
 	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
+	}
+	if req.Msg.ProviderId == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("provider_id is required"))
 	}
 	models, err := s.systemSvc.DiscoverModels(ctx, uid, req.Msg.ProviderId)
 	if err != nil {

@@ -71,7 +71,7 @@ func (s *StrategyAssetServer) ListStrategyAssets(ctx context.Context, req *conne
 	offset := int(req.Msg.Offset)
 	rows, err := s.repo.List(ctx, s.userID(ctx), limit, offset)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	items := make([]*antv1.StrategyAsset, len(rows))
 	for i := range rows {
@@ -88,7 +88,7 @@ func (s *StrategyAssetServer) GetStrategyAsset(ctx context.Context, req *connect
 	}
 	a, err := s.repo.Get(ctx, uid, id)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(assetToProto(a)), nil
 }
@@ -112,7 +112,7 @@ func (s *StrategyAssetServer) SubmitAssetReview(ctx context.Context, req *connec
 		ReviewStatus:     "pending_review",
 	}
 	if err := s.repo.Create(ctx, row); err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(assetToProto(row)), nil
 }
@@ -124,7 +124,7 @@ func (s *StrategyAssetServer) ReviewStrategyAsset(ctx context.Context, req *conn
 	}
 	a, err := s.repo.Review(ctx, id, req.Msg.ReviewStatus, req.Msg.RatingSummary)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(assetToProto(a)), nil
 }
@@ -138,7 +138,7 @@ func (s *StrategyAssetServer) CloneStrategyAsset(ctx context.Context, req *conne
 	// Get source asset to determine current version.
 	src, err := s.repo.Get(ctx, uid, assetID)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	clone := &repository.StrategyAssetClone{
 		AssetID:          assetID,
@@ -147,7 +147,7 @@ func (s *StrategyAssetServer) CloneStrategyAsset(ctx context.Context, req *conne
 		SourceVersion:    src.SourceVersion,
 	}
 	if err := s.repo.CreateClone(ctx, clone); err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.CloneStrategyAssetResponse{
 		TemplateId: clone.ClonedTemplateID.String(),
@@ -163,7 +163,7 @@ func (s *StrategyAssetServer) CheckAssetUpdate(ctx context.Context, req *connect
 	}
 	clone, err := s.repo.GetClone(ctx, uid, id)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(cloneToProto(clone)), nil
 }
@@ -176,12 +176,12 @@ func (s *StrategyAssetServer) SyncStrategyAsset(ctx context.Context, req *connec
 	}
 	clone, err := s.repo.GetClone(ctx, uid, id)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	// Sync bumps the source version by 1 and marks not available.
 	updated, err := s.repo.UpdateCloneSync(ctx, id, clone.SourceVersion+1, false)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(cloneToProto(updated)), nil
 }
@@ -194,7 +194,7 @@ func (s *StrategyAssetServer) ListAssetClones(ctx context.Context, req *connect.
 	}
 	rows, err := s.repo.ListClones(ctx, uid, assetID)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	items := make([]*antv1.StrategyAssetClone, len(rows))
 	for i := range rows {

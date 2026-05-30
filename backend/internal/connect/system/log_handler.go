@@ -128,7 +128,7 @@ func (s *LogServiceServer) GetConnectionLogs(ctx context.Context, req *connect.R
 	}
 	logs, total, err := s.logSvc.GetConnectionLogs(ctx, s.userID(ctx), params)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	items := make([]*antv1.ConnectionLog, len(logs))
 	for i, l := range logs {
@@ -150,7 +150,7 @@ func (s *LogServiceServer) GetExecutionLogs(ctx context.Context, req *connect.Re
 	}
 	logs, total, err := s.logSvc.GetExecutionLogs(ctx, s.userID(ctx), params)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	items := make([]*antv1.ExecutionLog, len(logs))
 	for i, l := range logs {
@@ -171,7 +171,7 @@ func (s *LogServiceServer) GetOrderLogHistory(ctx context.Context, req *connect.
 	}
 	orders, total, err := s.logSvc.GetOrderHistory(ctx, s.userID(ctx), params)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	items := make([]*antv1.OrderHistoryRecord, len(orders))
 	for i, o := range orders {
@@ -193,7 +193,7 @@ func (s *LogServiceServer) GetOperationLogs(ctx context.Context, req *connect.Re
 	}
 	logs, total, err := s.logSvc.GetOperationLogs(ctx, s.userID(ctx), params)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	items := make([]*antv1.OperationLog, len(logs))
 	for i, l := range logs {
@@ -210,7 +210,7 @@ func (s *LogServiceServer) GetScheduleRunLogs(ctx context.Context, req *connect.
 	}
 	logs, total, err := s.logSvc.GetScheduleRunLogs(ctx, uid, scheduleID, int(req.Msg.Page), int(req.Msg.PageSize))
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	items := make([]*antv1.ScheduleRunLog, len(logs))
 	for i, l := range logs {

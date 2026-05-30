@@ -53,8 +53,8 @@ func (s *AIServer) Chat(ctx context.Context, req *connect.Request[antv1.ChatRequ
 	if m.ConversationId != "" {
 		cid, parseErr := uuid.Parse(m.ConversationId)
 		if parseErr != nil {
-			s.log.Warn("Chat: invalid conversation id", zap.String("raw", m.ConversationId), zap.Error(parseErr))
-		} else {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid conversation_id: %w", parseErr))
+		}
 			if _, lookupErr := s.conversations.GetByID(ctx, cid, uid); lookupErr == nil {
 				if _, aErr := s.conversations.AddMessage(ctx, uid, cid, "user", m.Message); aErr != nil {
 					s.log.Warn("Chat: AddMessage user failed", zap.Error(aErr))
@@ -63,7 +63,6 @@ func (s *AIServer) Chat(ctx context.Context, req *connect.Request[antv1.ChatRequ
 					s.log.Warn("Chat: AddMessage assistant failed", zap.Error(aErr))
 				}
 				_ = s.conversations.Touch(ctx, cid, uid)
-			}
 		}
 	}
 
@@ -100,7 +99,7 @@ func (s *AIServer) ChatStream(ctx context.Context, req *connect.Request[antv1.Ch
 			chunk.CompletionTokens = int32(len(runes) / 4)
 		}
 		if sendErr := stream.Send(chunk); sendErr != nil {
-			return fmt.Errorf("send chat stream chunk: %w", sendErr)
+			return connect.NewError(connect.CodeInternal, fmt.Errorf("send chat stream chunk: %w", sendErr))
 		}
 	}
 
@@ -108,8 +107,8 @@ func (s *AIServer) ChatStream(ctx context.Context, req *connect.Request[antv1.Ch
 	if m.ConversationId != "" {
 		cid, parseErr := uuid.Parse(m.ConversationId)
 		if parseErr != nil {
-			s.log.Warn("ChatStream: invalid conversation id", zap.String("raw", m.ConversationId), zap.Error(parseErr))
-		} else {
+			return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid conversation_id: %w", parseErr))
+		}
 			if _, lookupErr := s.conversations.GetByID(ctx, cid, uid); lookupErr == nil {
 				if _, aErr := s.conversations.AddMessage(ctx, uid, cid, "user", m.Message); aErr != nil {
 					s.log.Warn("ChatStream: AddMessage user failed", zap.Error(aErr))
@@ -118,7 +117,6 @@ func (s *AIServer) ChatStream(ctx context.Context, req *connect.Request[antv1.Ch
 					s.log.Warn("ChatStream: AddMessage assistant failed", zap.Error(aErr))
 				}
 				_ = s.conversations.Touch(ctx, cid, uid)
-			}
 		}
 	}
 

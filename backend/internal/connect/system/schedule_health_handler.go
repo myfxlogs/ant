@@ -69,7 +69,7 @@ func (s *ScheduleHealthServer) GetScheduleHealth(ctx context.Context, req *conne
 	totalRuns, successRuns, failedRuns, successRate, lastRunAt, latestError, err :=
 		s.repo.GetScheduleStats(ctx, uid, scheduleID)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	latestOrderTicket, latestOrderProfit, hasLatestOrderProfit :=
@@ -99,7 +99,7 @@ func (s *ScheduleHealthServer) GetScheduleHealth(ctx context.Context, req *conne
 
 	runLogs, err := s.repo.ListRunLogs(ctx, uid, scheduleID, runLimit)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	protoRunLogs := make([]*antv1.ScheduleHealthRunLog, 0, len(runLogs))
 	for _, l := range runLogs {
@@ -112,7 +112,7 @@ func (s *ScheduleHealthServer) GetScheduleHealth(ctx context.Context, req *conne
 
 	orders, err := s.repo.ListOrders(ctx, uid, scheduleID, orderLimit)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	protoOrders := make([]*antv1.ScheduleHealthOrder, 0, len(orders))
 	for _, o := range orders {

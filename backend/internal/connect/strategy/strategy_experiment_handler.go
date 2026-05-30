@@ -116,7 +116,7 @@ func (s *StrategyExperimentServer) SubmitStrategyExperiment(ctx context.Context,
 		exp.ParameterSpace = b
 	}
 	if err := s.repo.Create(ctx, exp); err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.SubmitStrategyExperimentResponse{
 		Experiment: expToProto(exp),
@@ -132,7 +132,7 @@ func (s *StrategyExperimentServer) GetStrategyExperiment(ctx context.Context, re
 	}
 	exp, err := s.repo.Get(ctx, uid, id)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(expToProto(exp)), nil
 }
@@ -142,7 +142,7 @@ func (s *StrategyExperimentServer) ListStrategyExperiments(ctx context.Context, 
 	offset := int(req.Msg.Offset)
 	rows, err := s.repo.List(ctx, s.userID(ctx), limit, offset)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	items := make([]*antv1.StrategyExperiment, len(rows))
 	for i := range rows {
@@ -159,7 +159,7 @@ func (s *StrategyExperimentServer) CancelStrategyExperiment(ctx context.Context,
 	}
 	exp, err := s.repo.Cancel(ctx, uid, id)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(expToProto(exp)), nil
 }
@@ -172,7 +172,7 @@ func (s *StrategyExperimentServer) ListExperimentCandidates(ctx context.Context,
 	}
 	rows, err := s.repo.ListCandidates(ctx, uid, expID)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	items := make([]*antv1.StrategyExperimentCandidate, len(rows))
 	for i := range rows {
@@ -189,7 +189,7 @@ func (s *StrategyExperimentServer) GetExperimentCandidate(ctx context.Context, r
 	}
 	c, err := s.repo.GetCandidate(ctx, uid, id)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(candidateToProto(c)), nil
 }
@@ -202,10 +202,10 @@ func (s *StrategyExperimentServer) PromoteCandidateToDraft(ctx context.Context, 
 	}
 	c, err := s.repo.GetCandidate(ctx, uid, candID)
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	if err := s.repo.SetBestCandidate(ctx, c.ExperimentID, candID); err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.PromoteCandidateToDraftResponse{TemplateId: c.DraftCodeRef}), nil
 }

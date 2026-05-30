@@ -63,6 +63,12 @@ func (s *AIPrimaryServer) SetAIPrimary(ctx context.Context, req *connect.Request
 	if err != nil {
 		return nil, err
 	}
+	if req.Msg.ProviderId == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("provider_id is required"))
+	}
+	if req.Msg.Model == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("model is required"))
+	}
 	if err := s.systemSvc.SetAIPrimary(ctx, uid, req.Msg.ProviderId, req.Msg.Model); err != nil {
 		s.log.Error("SetAIPrimary transaction failed", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("internal error"))

@@ -44,7 +44,7 @@ func (s *StrategyServer) userID(ctx context.Context) uuid.UUID {
 func (s *StrategyServer) ListTemplates(ctx context.Context, req *connect.Request[antv1.ListTemplatesRequest]) (*connect.Response[antv1.ListTemplatesResponse], error) {
 	rows, err := s.svc.ListTemplates(ctx, s.userID(ctx))
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	templates := make([]*antv1.StrategyTemplate, len(rows))
 	for i, r := range rows {
@@ -60,7 +60,7 @@ func (s *StrategyServer) GetTemplate(ctx context.Context, req *connect.Request[a
 	}
 	row, err := s.svc.GetTemplate(ctx, id, s.userID(ctx))
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(templateRowToProto(row)), nil
 }
@@ -78,7 +78,7 @@ func (s *StrategyServer) CreateTemplate(ctx context.Context, req *connect.Reques
 		Tags:        m.Tags,
 	}
 	if err := s.svc.CreateTemplate(ctx, &t); err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(templateRowToProto(&t)), nil
 }
@@ -91,7 +91,7 @@ func (s *StrategyServer) UpdateTemplate(ctx context.Context, req *connect.Reques
 	}
 	existing, err := s.svc.GetTemplate(ctx, id, s.userID(ctx))
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	if m.Name != nil {
 		existing.Name = *m.Name
@@ -112,7 +112,7 @@ func (s *StrategyServer) UpdateTemplate(ctx context.Context, req *connect.Reques
 		existing.Tags = m.Tags
 	}
 	if err := s.svc.UpdateTemplate(ctx, existing); err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(templateRowToProto(existing)), nil
 }
@@ -123,7 +123,7 @@ func (s *StrategyServer) DeleteTemplate(ctx context.Context, req *connect.Reques
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	if err := s.svc.DeleteTemplate(ctx, id, s.userID(ctx)); err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&emptypb.Empty{}), nil
 }
@@ -137,7 +137,7 @@ func (s *StrategyServer) CreateTemplateDraft(ctx context.Context, req *connect.R
 		Tags:       []string{},
 	}
 	if err := s.svc.CreateTemplate(ctx, &t); err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(templateRowToProto(&t)), nil
 }
@@ -150,7 +150,7 @@ func (s *StrategyServer) UpdateTemplateDraft(ctx context.Context, req *connect.R
 	}
 	existing, err := s.svc.GetTemplate(ctx, id, s.userID(ctx))
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	if m.Name != nil {
 		existing.Name = *m.Name
@@ -168,7 +168,7 @@ func (s *StrategyServer) UpdateTemplateDraft(ctx context.Context, req *connect.R
 		existing.Tags = m.Tags
 	}
 	if err := s.svc.UpdateTemplate(ctx, existing); err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(templateRowToProto(existing)), nil
 }
@@ -180,7 +180,7 @@ func (s *StrategyServer) PublishTemplateDraft(ctx context.Context, req *connect.
 	}
 	existing, err := s.svc.GetTemplate(ctx, id, s.userID(ctx))
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	if err := s.svc.SetTemplateStatus(ctx, id, s.userID(ctx), "published"); err != nil {
 		return nil, err
@@ -205,7 +205,7 @@ func (s *StrategyServer) CancelTemplateDraft(ctx context.Context, req *connect.R
 func (s *StrategyServer) ListSchedules(ctx context.Context, req *connect.Request[antv1.ListSchedulesRequest]) (*connect.Response[antv1.ListSchedulesResponse], error) {
 	rows, err := s.svc.ListSchedules(ctx, s.userID(ctx))
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	schedules := make([]*antv1.StrategySchedule, len(rows))
 	for i, r := range rows {
@@ -221,7 +221,7 @@ func (s *StrategyServer) GetSchedule(ctx context.Context, req *connect.Request[a
 	}
 	row, err := s.svc.GetSchedule(ctx, id, s.userID(ctx))
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(scheduleRowToProto(row)), nil
 }
@@ -249,7 +249,7 @@ func (s *StrategyServer) CreateSchedule(ctx context.Context, req *connect.Reques
 		RiskWarnings:   []byte("[]"),
 	}
 	if err := s.svc.CreateSchedule(ctx, &r); err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(scheduleRowToProto(&r)), nil
 }
@@ -262,7 +262,7 @@ func (s *StrategyServer) UpdateSchedule(ctx context.Context, req *connect.Reques
 	}
 	existing, err := s.svc.GetSchedule(ctx, id, s.userID(ctx))
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	if m.Name != nil {
 		existing.Name = *m.Name
@@ -283,7 +283,7 @@ func (s *StrategyServer) UpdateSchedule(ctx context.Context, req *connect.Reques
 		existing.ScheduleConfig, _ = json.Marshal(scheduleConfigToMap(m.ScheduleConfig))
 	}
 	if err := s.svc.UpdateSchedule(ctx, existing); err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(scheduleRowToProto(existing)), nil
 }
@@ -310,7 +310,7 @@ func (s *StrategyServer) ToggleSchedule(ctx context.Context, req *connect.Reques
 	}
 	row, err := s.svc.GetSchedule(ctx, id, s.userID(ctx))
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(scheduleRowToProto(row)), nil
 }
@@ -385,7 +385,7 @@ func (s *StrategyServer) ExecuteSignal(ctx context.Context, req *connect.Request
 	}
 	row, err := s.svc.ExecuteSignal(ctx, id, s.userID(ctx))
 	if err != nil {
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	resp := &antv1.ExecuteSignalResponse{
 		Ticket: row.Ticket,

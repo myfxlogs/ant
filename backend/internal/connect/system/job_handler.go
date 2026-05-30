@@ -61,7 +61,7 @@ func (s *JobServer) GetJob(ctx context.Context, req *connect.Request[antv1.GetJo
 		if errors.Is(err, repository.ErrJobNotFound) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(jobToProto(j)), nil
 }
@@ -76,7 +76,7 @@ func (s *JobServer) CancelJob(ctx context.Context, req *connect.Request[antv1.Ca
 		if errors.Is(err, repository.ErrJobNotFound) {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
-		return nil, err
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(jobToProto(j)), nil
 }
@@ -97,7 +97,7 @@ func (s *JobServer) SubscribeJob(ctx context.Context, req *connect.Request[antv1
 
 		events, qerr := s.jobs.ListEvents(ctx, jobID, afterSeq, 100)
 		if qerr != nil {
-			return qerr
+			return connect.NewError(connect.CodeInternal, qerr)
 		}
 
 		if len(events) == 0 {

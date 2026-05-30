@@ -196,7 +196,7 @@ func (s *StreamServer) SubscribeEvents(
 				},
 			}
 			if err := sendEvent(event); err != nil {
-				return fmt.Errorf("send order update event: %w", err)
+				return connect.NewError(connect.CodeInternal, fmt.Errorf("send order update event: %w", err))
 			}
 		case pev, ok := <-profitCh:
 			if !ok {
@@ -214,7 +214,7 @@ func (s *StreamServer) SubscribeEvents(
 					ProfitUpdate: profitEventToProto(pev),
 				},
 			}); err != nil {
-				return fmt.Errorf("send profit update event: %w", err)
+				return connect.NewError(connect.CodeInternal, fmt.Errorf("send profit update event: %w", err))
 			}
 		case snap, ok := <-snapCh:
 			if !ok {
@@ -239,7 +239,7 @@ func (s *StreamServer) SubscribeEvents(
 					},
 				},
 			}); err != nil {
-				return fmt.Errorf("send account_status event: %w", err)
+				return connect.NewError(connect.CodeInternal, fmt.Errorf("send account_status event: %w", err))
 			}
 
 			snapCount[snap.AccountID]++
@@ -276,7 +276,7 @@ func (s *StreamServer) SubscribeEvents(
 								},
 							},
 						}); err != nil {
-							return fmt.Errorf("send order_update close event: %w", err)
+							return connect.NewError(connect.CodeInternal, fmt.Errorf("send order_update close event: %w", err))
 						}
 					}
 				}
@@ -317,7 +317,7 @@ func (s *StreamServer) SubscribeEvents(
 					},
 				},
 			}); err != nil {
-				return fmt.Errorf("send position_snapshot event: %w", err)
+				return connect.NewError(connect.CodeInternal, fmt.Errorf("send position_snapshot event: %w", err))
 			}
 		}
 	}

@@ -47,7 +47,7 @@ func (s *StreamServer) SubscribeOrderUpdates(
 			}
 			protoEv := orderRecordToUpdateEvent(ev.Order, ev.AccountID, ev.EventType, ev.Ticket)
 			if err := stream.Send(protoEv); err != nil {
-				return fmt.Errorf("send order update event to single-account stream: %w", err)
+				return connect.NewError(connect.CodeInternal, fmt.Errorf("send order update event to single-account stream: %w", err))
 			}
 		}
 	}
@@ -88,7 +88,7 @@ func (s *StreamServer) SubscribeProfitUpdates(
 				return nil
 			}
 			if err := stream.Send(profitEventToProto(ev)); err != nil {
-				return fmt.Errorf("send profit update to single-account stream: %w", err)
+				return connect.NewError(connect.CodeInternal, fmt.Errorf("send profit update to single-account stream: %w", err))
 			}
 		}
 	}
@@ -112,7 +112,7 @@ func (s *StreamServer) SubscribeUserSummary(
 
 	if ev := s.computeSummary(ctx, userID); ev != nil {
 		if err := stream.Send(ev); err != nil {
-			return fmt.Errorf("send initial user summary: %w", err)
+			return connect.NewError(connect.CodeInternal, fmt.Errorf("send initial user summary: %w", err))
 		}
 	}
 
@@ -160,7 +160,7 @@ func (s *StreamServer) SubscribeUserSummary(
 			}
 			if ev := s.computeSummary(ctx, userID); ev != nil {
 				if err := stream.Send(ev); err != nil {
-					return fmt.Errorf("send recomputed user summary: %w", err)
+					return connect.NewError(connect.CodeInternal, fmt.Errorf("send recomputed user summary: %w", err))
 				}
 				lastSummary = time.Now()
 			}
