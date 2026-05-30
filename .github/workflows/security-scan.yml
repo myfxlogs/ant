@@ -26,7 +26,7 @@ jobs:
           cache: true
           cache-dependency-path: backend/go.sum
       - name: Install gosec
-        run: go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
       - name: Run gosec
         run: gosec -quiet -severity medium ./...
 
@@ -54,24 +54,27 @@ jobs:
     timeout-minutes: 20
     strategy:
       matrix:
-        image:
-          - backend/Dockerfile
-          - frontend/Dockerfile
-          - strategy-service/Dockerfile
+        include:
+          - dockerfile: backend/Dockerfile
+            name: backend
+          - dockerfile: frontend/Dockerfile
+            name: frontend
+          - dockerfile: strategy-service/Dockerfile
+            name: strategy-service
     steps:
       - uses: actions/checkout@v4
       - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
-          file: ${{ matrix.image }}
+          file: ${{ matrix.dockerfile }}
           push: false
           load: true
-          tags: ant-image:${{ matrix.image }}
+          tags: ant-image:${{ matrix.name }}
       - name: Run trivy image scan
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: image
-          image-ref: ant-image:${{ matrix.image }}
+          image-ref: ant-image:${{ matrix.name }}
           scanners: vuln
           severity: HIGH,CRITICAL
           exit-code: 1
