@@ -23,9 +23,19 @@ const (
 )
 
 type PublishStrategyRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	StrategyId    string                 `protobuf:"bytes,2,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	UserId     string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	StrategyId string                 `protobuf:"bytes,2,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`
+	// Rich metadata (M12-B1: unified with marketplace.Strategy model).
+	Title         string   `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	Description   string   `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	PriceModel    string   `protobuf:"bytes,5,opt,name=price_model,json=priceModel,proto3" json:"price_model,omitempty"`
+	PriceAmount   float64  `protobuf:"fixed64,6,opt,name=price_amount,json=priceAmount,proto3" json:"price_amount,omitempty"`
+	AssetClass    string   `protobuf:"bytes,7,opt,name=asset_class,json=assetClass,proto3" json:"asset_class,omitempty"`
+	Symbols       []string `protobuf:"bytes,8,rep,name=symbols,proto3" json:"symbols,omitempty"`
+	Timeframe     string   `protobuf:"bytes,9,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
+	RiskLevel     string   `protobuf:"bytes,10,opt,name=risk_level,json=riskLevel,proto3" json:"risk_level,omitempty"`
+	Tags          []string `protobuf:"bytes,11,rep,name=tags,proto3" json:"tags,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -72,6 +82,69 @@ func (x *PublishStrategyRequest) GetStrategyId() string {
 		return x.StrategyId
 	}
 	return ""
+}
+
+func (x *PublishStrategyRequest) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *PublishStrategyRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *PublishStrategyRequest) GetPriceModel() string {
+	if x != nil {
+		return x.PriceModel
+	}
+	return ""
+}
+
+func (x *PublishStrategyRequest) GetPriceAmount() float64 {
+	if x != nil {
+		return x.PriceAmount
+	}
+	return 0
+}
+
+func (x *PublishStrategyRequest) GetAssetClass() string {
+	if x != nil {
+		return x.AssetClass
+	}
+	return ""
+}
+
+func (x *PublishStrategyRequest) GetSymbols() []string {
+	if x != nil {
+		return x.Symbols
+	}
+	return nil
+}
+
+func (x *PublishStrategyRequest) GetTimeframe() string {
+	if x != nil {
+		return x.Timeframe
+	}
+	return ""
+}
+
+func (x *PublishStrategyRequest) GetRiskLevel() string {
+	if x != nil {
+		return x.RiskLevel
+	}
+	return ""
+}
+
+func (x *PublishStrategyRequest) GetTags() []string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
 }
 
 type PublishStrategyResponse struct {
@@ -322,6 +395,7 @@ type ListPublishedRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	AssetClass    string                 `protobuf:"bytes,3,opt,name=asset_class,json=assetClass,proto3" json:"asset_class,omitempty"` // M12-B1: optional filter by asset class
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -368,6 +442,13 @@ func (x *ListPublishedRequest) GetLimit() int32 {
 		return x.Limit
 	}
 	return 0
+}
+
+func (x *ListPublishedRequest) GetAssetClass() string {
+	if x != nil {
+		return x.AssetClass
+	}
+	return ""
 }
 
 type ListPublishedResponse struct {
@@ -421,8 +502,21 @@ type PublishedStrategy struct {
 	StrategyName    string                 `protobuf:"bytes,3,opt,name=strategy_name,json=strategyName,proto3" json:"strategy_name,omitempty"`
 	PublisherUserId string                 `protobuf:"bytes,4,opt,name=publisher_user_id,json=publisherUserId,proto3" json:"publisher_user_id,omitempty"`
 	PublishedAt     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	// M12-B1: rich marketplace fields from marketplace_strategies table.
+	Title            string   `protobuf:"bytes,6,opt,name=title,proto3" json:"title,omitempty"`
+	Description      string   `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"`
+	PriceModel       string   `protobuf:"bytes,8,opt,name=price_model,json=priceModel,proto3" json:"price_model,omitempty"`
+	PriceAmount      float64  `protobuf:"fixed64,9,opt,name=price_amount,json=priceAmount,proto3" json:"price_amount,omitempty"`
+	AssetClass       string   `protobuf:"bytes,10,opt,name=asset_class,json=assetClass,proto3" json:"asset_class,omitempty"`
+	Symbols          []string `protobuf:"bytes,11,rep,name=symbols,proto3" json:"symbols,omitempty"`
+	Timeframe        string   `protobuf:"bytes,12,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
+	RiskLevel        string   `protobuf:"bytes,13,opt,name=risk_level,json=riskLevel,proto3" json:"risk_level,omitempty"`
+	Tags             []string `protobuf:"bytes,14,rep,name=tags,proto3" json:"tags,omitempty"`
+	TotalSubscribers int32    `protobuf:"varint,15,opt,name=total_subscribers,json=totalSubscribers,proto3" json:"total_subscribers,omitempty"`
+	WinRate          float64  `protobuf:"fixed64,16,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
+	TotalPnl         float64  `protobuf:"fixed64,17,opt,name=total_pnl,json=totalPnl,proto3" json:"total_pnl,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *PublishedStrategy) Reset() {
@@ -488,6 +582,90 @@ func (x *PublishedStrategy) GetPublishedAt() *timestamppb.Timestamp {
 		return x.PublishedAt
 	}
 	return nil
+}
+
+func (x *PublishedStrategy) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *PublishedStrategy) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *PublishedStrategy) GetPriceModel() string {
+	if x != nil {
+		return x.PriceModel
+	}
+	return ""
+}
+
+func (x *PublishedStrategy) GetPriceAmount() float64 {
+	if x != nil {
+		return x.PriceAmount
+	}
+	return 0
+}
+
+func (x *PublishedStrategy) GetAssetClass() string {
+	if x != nil {
+		return x.AssetClass
+	}
+	return ""
+}
+
+func (x *PublishedStrategy) GetSymbols() []string {
+	if x != nil {
+		return x.Symbols
+	}
+	return nil
+}
+
+func (x *PublishedStrategy) GetTimeframe() string {
+	if x != nil {
+		return x.Timeframe
+	}
+	return ""
+}
+
+func (x *PublishedStrategy) GetRiskLevel() string {
+	if x != nil {
+		return x.RiskLevel
+	}
+	return ""
+}
+
+func (x *PublishedStrategy) GetTags() []string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+func (x *PublishedStrategy) GetTotalSubscribers() int32 {
+	if x != nil {
+		return x.TotalSubscribers
+	}
+	return 0
+}
+
+func (x *PublishedStrategy) GetWinRate() float64 {
+	if x != nil {
+		return x.WinRate
+	}
+	return 0
+}
+
+func (x *PublishedStrategy) GetTotalPnl() float64 {
+	if x != nil {
+		return x.TotalPnl
+	}
+	return 0
 }
 
 type ListSubscriptionsRequest struct {
@@ -666,11 +844,24 @@ var File_marketplace_service_proto protoreflect.FileDescriptor
 
 const file_marketplace_service_proto_rawDesc = "" +
 	"\n" +
-	"\x19marketplace_service.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"R\n" +
+	"\x19marketplace_service.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xda\x02\n" +
 	"\x16PublishStrategyRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1f\n" +
 	"\vstrategy_id\x18\x02 \x01(\tR\n" +
-	"strategyId\"8\n" +
+	"strategyId\x12\x14\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\x12 \n" +
+	"\vdescription\x18\x04 \x01(\tR\vdescription\x12\x1f\n" +
+	"\vprice_model\x18\x05 \x01(\tR\n" +
+	"priceModel\x12!\n" +
+	"\fprice_amount\x18\x06 \x01(\x01R\vpriceAmount\x12\x1f\n" +
+	"\vasset_class\x18\a \x01(\tR\n" +
+	"assetClass\x12\x18\n" +
+	"\asymbols\x18\b \x03(\tR\asymbols\x12\x1c\n" +
+	"\ttimeframe\x18\t \x01(\tR\ttimeframe\x12\x1d\n" +
+	"\n" +
+	"risk_level\x18\n" +
+	" \x01(\tR\triskLevel\x12\x12\n" +
+	"\x04tags\x18\v \x03(\tR\x04tags\"8\n" +
 	"\x17PublishStrategyResponse\x12\x1d\n" +
 	"\n" +
 	"publish_id\x18\x01 \x01(\tR\tpublishId\"\x8c\x01\n" +
@@ -685,14 +876,16 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x12UnsubscribeRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12'\n" +
 	"\x0fsubscription_id\x18\x02 \x01(\tR\x0esubscriptionId\"\x15\n" +
-	"\x13UnsubscribeResponse\"E\n" +
+	"\x13UnsubscribeResponse\"f\n" +
 	"\x14ListPublishedRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
-	"\x05limit\x18\x02 \x01(\x05R\x05limit\"R\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x1f\n" +
+	"\vasset_class\x18\x03 \x01(\tR\n" +
+	"assetClass\"R\n" +
 	"\x15ListPublishedResponse\x129\n" +
 	"\n" +
 	"strategies\x18\x01 \x03(\v2\x19.ant.v1.PublishedStrategyR\n" +
-	"strategies\"\xe3\x01\n" +
+	"strategies\"\xd0\x04\n" +
 	"\x11PublishedStrategy\x12\x1d\n" +
 	"\n" +
 	"publish_id\x18\x01 \x01(\tR\tpublishId\x12\x1f\n" +
@@ -700,7 +893,23 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"strategyId\x12#\n" +
 	"\rstrategy_name\x18\x03 \x01(\tR\fstrategyName\x12*\n" +
 	"\x11publisher_user_id\x18\x04 \x01(\tR\x0fpublisherUserId\x12=\n" +
-	"\fpublished_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\vpublishedAt\"3\n" +
+	"\fpublished_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\vpublishedAt\x12\x14\n" +
+	"\x05title\x18\x06 \x01(\tR\x05title\x12 \n" +
+	"\vdescription\x18\a \x01(\tR\vdescription\x12\x1f\n" +
+	"\vprice_model\x18\b \x01(\tR\n" +
+	"priceModel\x12!\n" +
+	"\fprice_amount\x18\t \x01(\x01R\vpriceAmount\x12\x1f\n" +
+	"\vasset_class\x18\n" +
+	" \x01(\tR\n" +
+	"assetClass\x12\x18\n" +
+	"\asymbols\x18\v \x03(\tR\asymbols\x12\x1c\n" +
+	"\ttimeframe\x18\f \x01(\tR\ttimeframe\x12\x1d\n" +
+	"\n" +
+	"risk_level\x18\r \x01(\tR\triskLevel\x12\x12\n" +
+	"\x04tags\x18\x0e \x03(\tR\x04tags\x12+\n" +
+	"\x11total_subscribers\x18\x0f \x01(\x05R\x10totalSubscribers\x12\x19\n" +
+	"\bwin_rate\x18\x10 \x01(\x01R\awinRate\x12\x1b\n" +
+	"\ttotal_pnl\x18\x11 \x01(\x01R\btotalPnl\"3\n" +
 	"\x18ListSubscriptionsRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"[\n" +
 	"\x19ListSubscriptionsResponse\x12>\n" +

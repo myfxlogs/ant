@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file marketplace_service.proto.
  */
 export const file_marketplace_service: GenFile = /*@__PURE__*/
-  fileDesc("ChltYXJrZXRwbGFjZV9zZXJ2aWNlLnByb3RvEgZhbnQudjEiPgoWUHVibGlzaFN0cmF0ZWd5UmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJEhMKC3N0cmF0ZWd5X2lkGAIgASgJIi0KF1B1Ymxpc2hTdHJhdGVneVJlc3BvbnNlEhIKCnB1Ymxpc2hfaWQYASABKAkiYQoQU3Vic2NyaWJlUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJEhkKEXB1Ymxpc2hlcl91c2VyX2lkGAIgASgJEhMKC3N0cmF0ZWd5X2lkGAMgASgJEgwKBGtpbmQYBCABKAkiLAoRU3Vic2NyaWJlUmVzcG9uc2USFwoPc3Vic2NyaXB0aW9uX2lkGAEgASgJIj4KElVuc3Vic2NyaWJlUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJEhcKD3N1YnNjcmlwdGlvbl9pZBgCIAEoCSIVChNVbnN1YnNjcmliZVJlc3BvbnNlIjYKFExpc3RQdWJsaXNoZWRSZXF1ZXN0Eg8KB3VzZXJfaWQYASABKAkSDQoFbGltaXQYAiABKAUiRgoVTGlzdFB1Ymxpc2hlZFJlc3BvbnNlEi0KCnN0cmF0ZWdpZXMYASADKAsyGS5hbnQudjEuUHVibGlzaGVkU3RyYXRlZ3kioAEKEVB1Ymxpc2hlZFN0cmF0ZWd5EhIKCnB1Ymxpc2hfaWQYASABKAkSEwoLc3RyYXRlZ3lfaWQYAiABKAkSFQoNc3RyYXRlZ3lfbmFtZRgDIAEoCRIZChFwdWJsaXNoZXJfdXNlcl9pZBgEIAEoCRIwCgxwdWJsaXNoZWRfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIisKGExpc3RTdWJzY3JpcHRpb25zUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJIkwKGUxpc3RTdWJzY3JpcHRpb25zUmVzcG9uc2USLwoNc3Vic2NyaXB0aW9ucxgBIAMoCzIYLmFudC52MS5TdWJzY3JpcHRpb25JdGVtIqYBChBTdWJzY3JpcHRpb25JdGVtEhcKD3N1YnNjcmlwdGlvbl9pZBgBIAEoCRIWCg50YXJnZXRfdXNlcl9pZBgCIAEoCRITCgtzdHJhdGVneV9pZBgDIAEoCRIMCgRraW5kGAQgASgJEg4KBmFjdGl2ZRgFIAEoCBIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcDKaAwoSTWFya2V0cGxhY2VTZXJ2aWNlElIKD1B1Ymxpc2hTdHJhdGVneRIeLmFudC52MS5QdWJsaXNoU3RyYXRlZ3lSZXF1ZXN0Gh8uYW50LnYxLlB1Ymxpc2hTdHJhdGVneVJlc3BvbnNlEkAKCVN1YnNjcmliZRIYLmFudC52MS5TdWJzY3JpYmVSZXF1ZXN0GhkuYW50LnYxLlN1YnNjcmliZVJlc3BvbnNlEkYKC1Vuc3Vic2NyaWJlEhouYW50LnYxLlVuc3Vic2NyaWJlUmVxdWVzdBobLmFudC52MS5VbnN1YnNjcmliZVJlc3BvbnNlEkwKDUxpc3RQdWJsaXNoZWQSHC5hbnQudjEuTGlzdFB1Ymxpc2hlZFJlcXVlc3QaHS5hbnQudjEuTGlzdFB1Ymxpc2hlZFJlc3BvbnNlElgKEUxpc3RTdWJzY3JpcHRpb25zEiAuYW50LnYxLkxpc3RTdWJzY3JpcHRpb25zUmVxdWVzdBohLmFudC52MS5MaXN0U3Vic2NyaXB0aW9uc1Jlc3BvbnNlQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("ChltYXJrZXRwbGFjZV9zZXJ2aWNlLnByb3RvEgZhbnQudjEi6AEKFlB1Ymxpc2hTdHJhdGVneVJlcXVlc3QSDwoHdXNlcl9pZBgBIAEoCRITCgtzdHJhdGVneV9pZBgCIAEoCRINCgV0aXRsZRgDIAEoCRITCgtkZXNjcmlwdGlvbhgEIAEoCRITCgtwcmljZV9tb2RlbBgFIAEoCRIUCgxwcmljZV9hbW91bnQYBiABKAESEwoLYXNzZXRfY2xhc3MYByABKAkSDwoHc3ltYm9scxgIIAMoCRIRCgl0aW1lZnJhbWUYCSABKAkSEgoKcmlza19sZXZlbBgKIAEoCRIMCgR0YWdzGAsgAygJIi0KF1B1Ymxpc2hTdHJhdGVneVJlc3BvbnNlEhIKCnB1Ymxpc2hfaWQYASABKAkiYQoQU3Vic2NyaWJlUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJEhkKEXB1Ymxpc2hlcl91c2VyX2lkGAIgASgJEhMKC3N0cmF0ZWd5X2lkGAMgASgJEgwKBGtpbmQYBCABKAkiLAoRU3Vic2NyaWJlUmVzcG9uc2USFwoPc3Vic2NyaXB0aW9uX2lkGAEgASgJIj4KElVuc3Vic2NyaWJlUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJEhcKD3N1YnNjcmlwdGlvbl9pZBgCIAEoCSIVChNVbnN1YnNjcmliZVJlc3BvbnNlIksKFExpc3RQdWJsaXNoZWRSZXF1ZXN0Eg8KB3VzZXJfaWQYASABKAkSDQoFbGltaXQYAiABKAUSEwoLYXNzZXRfY2xhc3MYAyABKAkiRgoVTGlzdFB1Ymxpc2hlZFJlc3BvbnNlEi0KCnN0cmF0ZWdpZXMYASADKAsyGS5hbnQudjEuUHVibGlzaGVkU3RyYXRlZ3kiigMKEVB1Ymxpc2hlZFN0cmF0ZWd5EhIKCnB1Ymxpc2hfaWQYASABKAkSEwoLc3RyYXRlZ3lfaWQYAiABKAkSFQoNc3RyYXRlZ3lfbmFtZRgDIAEoCRIZChFwdWJsaXNoZXJfdXNlcl9pZBgEIAEoCRIwCgxwdWJsaXNoZWRfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg0KBXRpdGxlGAYgASgJEhMKC2Rlc2NyaXB0aW9uGAcgASgJEhMKC3ByaWNlX21vZGVsGAggASgJEhQKDHByaWNlX2Ftb3VudBgJIAEoARITCgthc3NldF9jbGFzcxgKIAEoCRIPCgdzeW1ib2xzGAsgAygJEhEKCXRpbWVmcmFtZRgMIAEoCRISCgpyaXNrX2xldmVsGA0gASgJEgwKBHRhZ3MYDiADKAkSGQoRdG90YWxfc3Vic2NyaWJlcnMYDyABKAUSEAoId2luX3JhdGUYECABKAESEQoJdG90YWxfcG5sGBEgASgBIisKGExpc3RTdWJzY3JpcHRpb25zUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJIkwKGUxpc3RTdWJzY3JpcHRpb25zUmVzcG9uc2USLwoNc3Vic2NyaXB0aW9ucxgBIAMoCzIYLmFudC52MS5TdWJzY3JpcHRpb25JdGVtIqYBChBTdWJzY3JpcHRpb25JdGVtEhcKD3N1YnNjcmlwdGlvbl9pZBgBIAEoCRIWCg50YXJnZXRfdXNlcl9pZBgCIAEoCRITCgtzdHJhdGVneV9pZBgDIAEoCRIMCgRraW5kGAQgASgJEg4KBmFjdGl2ZRgFIAEoCBIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcDKaAwoSTWFya2V0cGxhY2VTZXJ2aWNlElIKD1B1Ymxpc2hTdHJhdGVneRIeLmFudC52MS5QdWJsaXNoU3RyYXRlZ3lSZXF1ZXN0Gh8uYW50LnYxLlB1Ymxpc2hTdHJhdGVneVJlc3BvbnNlEkAKCVN1YnNjcmliZRIYLmFudC52MS5TdWJzY3JpYmVSZXF1ZXN0GhkuYW50LnYxLlN1YnNjcmliZVJlc3BvbnNlEkYKC1Vuc3Vic2NyaWJlEhouYW50LnYxLlVuc3Vic2NyaWJlUmVxdWVzdBobLmFudC52MS5VbnN1YnNjcmliZVJlc3BvbnNlEkwKDUxpc3RQdWJsaXNoZWQSHC5hbnQudjEuTGlzdFB1Ymxpc2hlZFJlcXVlc3QaHS5hbnQudjEuTGlzdFB1Ymxpc2hlZFJlc3BvbnNlElgKEUxpc3RTdWJzY3JpcHRpb25zEiAuYW50LnYxLkxpc3RTdWJzY3JpcHRpb25zUmVxdWVzdBohLmFudC52MS5MaXN0U3Vic2NyaXB0aW9uc1Jlc3BvbnNlQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ant.v1.PublishStrategyRequest
@@ -27,6 +27,53 @@ export type PublishStrategyRequest = Message<"ant.v1.PublishStrategyRequest"> & 
    * @generated from field: string strategy_id = 2;
    */
   strategyId: string;
+
+  /**
+   * Rich metadata (M12-B1: unified with marketplace.Strategy model).
+   *
+   * @generated from field: string title = 3;
+   */
+  title: string;
+
+  /**
+   * @generated from field: string description = 4;
+   */
+  description: string;
+
+  /**
+   * @generated from field: string price_model = 5;
+   */
+  priceModel: string;
+
+  /**
+   * @generated from field: double price_amount = 6;
+   */
+  priceAmount: number;
+
+  /**
+   * @generated from field: string asset_class = 7;
+   */
+  assetClass: string;
+
+  /**
+   * @generated from field: repeated string symbols = 8;
+   */
+  symbols: string[];
+
+  /**
+   * @generated from field: string timeframe = 9;
+   */
+  timeframe: string;
+
+  /**
+   * @generated from field: string risk_level = 10;
+   */
+  riskLevel: string;
+
+  /**
+   * @generated from field: repeated string tags = 11;
+   */
+  tags: string[];
 };
 
 /**
@@ -150,6 +197,13 @@ export type ListPublishedRequest = Message<"ant.v1.ListPublishedRequest"> & {
    * @generated from field: int32 limit = 2;
    */
   limit: number;
+
+  /**
+   * M12-B1: optional filter by asset class
+   *
+   * @generated from field: string asset_class = 3;
+   */
+  assetClass: string;
 };
 
 /**
@@ -204,6 +258,68 @@ export type PublishedStrategy = Message<"ant.v1.PublishedStrategy"> & {
    * @generated from field: google.protobuf.Timestamp published_at = 5;
    */
   publishedAt?: Timestamp | undefined;
+
+  /**
+   * M12-B1: rich marketplace fields from marketplace_strategies table.
+   *
+   * @generated from field: string title = 6;
+   */
+  title: string;
+
+  /**
+   * @generated from field: string description = 7;
+   */
+  description: string;
+
+  /**
+   * @generated from field: string price_model = 8;
+   */
+  priceModel: string;
+
+  /**
+   * @generated from field: double price_amount = 9;
+   */
+  priceAmount: number;
+
+  /**
+   * @generated from field: string asset_class = 10;
+   */
+  assetClass: string;
+
+  /**
+   * @generated from field: repeated string symbols = 11;
+   */
+  symbols: string[];
+
+  /**
+   * @generated from field: string timeframe = 12;
+   */
+  timeframe: string;
+
+  /**
+   * @generated from field: string risk_level = 13;
+   */
+  riskLevel: string;
+
+  /**
+   * @generated from field: repeated string tags = 14;
+   */
+  tags: string[];
+
+  /**
+   * @generated from field: int32 total_subscribers = 15;
+   */
+  totalSubscribers: number;
+
+  /**
+   * @generated from field: double win_rate = 16;
+   */
+  winRate: number;
+
+  /**
+   * @generated from field: double total_pnl = 17;
+   */
+  totalPnl: number;
 };
 
 /**

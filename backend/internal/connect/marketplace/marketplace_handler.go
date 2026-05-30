@@ -27,7 +27,19 @@ func NewMarketplaceServer(svc *marketplace.Service, log *zap.Logger) *Marketplac
 
 func (s *MarketplaceServer) PublishStrategy(ctx context.Context, req *connect.Request[antv1.PublishStrategyRequest]) (*connect.Response[antv1.PublishStrategyResponse], error) {
 	m := req.Msg
-	id, err := s.svc.Publish(ctx, m.UserId, m.StrategyId)
+	id, err := s.svc.Publish(ctx, marketplace.PublishParams{
+		UserID:      m.UserId,
+		StrategyID:  m.StrategyId,
+		Title:       m.Title,
+		Description: m.Description,
+		PriceModel:  m.PriceModel,
+		PriceAmount: m.PriceAmount,
+		AssetClass:  m.AssetClass,
+		Symbols:     m.Symbols,
+		Timeframe:   m.Timeframe,
+		RiskLevel:   m.RiskLevel,
+		Tags:        m.Tags,
+	})
 	if err != nil {
 		s.log.Error("PublishStrategy", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -56,18 +68,41 @@ func (s *MarketplaceServer) Unsubscribe(ctx context.Context, req *connect.Reques
 
 func (s *MarketplaceServer) ListPublished(ctx context.Context, req *connect.Request[antv1.ListPublishedRequest]) (*connect.Response[antv1.ListPublishedResponse], error) {
 	m := req.Msg
-	list, err := s.svc.ListPublished(ctx, m.UserId, int(m.Limit))
+	list, err := s.svc.ListPublished(ctx, m.UserId, int(m.Limit), m.AssetClass)
 	if err != nil {
 		s.log.Error("ListPublished", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	resp := &antv1.ListPublishedResponse{}
 	for _, p := range list {
-		resp.Strategies = append(resp.Strategies, &antv1.PublishedStrategy{
-			PublishId: p.PublishID, StrategyId: p.StrategyID,
-			StrategyName: p.StrategyName, PublisherUserId: p.PublisherUserID,
-			PublishedAt: timestamppb.New(p.PublishedAt),
-		})
+		item := &antv1.PublishedStrategy{
+			PublishId:        p.PublishID,
+			StrategyId:       p.StrategyID,
+			StrategyName:     p.StrategyName,
+			PublisherUserId:  p.PublisherUserID,
+			PublishedAt:      timestamppb.New(p.PublishedAt),
+			Title:            p.Title,
+			Description:      p.Description,
+			PriceModel:       p.PriceModel,
+			AssetClass:       p.AssetClass,
+			Symbols:          p.Symbols,
+			RiskLevel:        p.RiskLevel,
+			Tags:             p.Tags,
+			TotalSubscribers: int32(p.TotalSubscribers),
+		}
+		if p.PriceAmount != nil {
+			item.PriceAmount = *p.PriceAmount
+		}
+		if p.Timeframe != nil {
+			item.Timeframe = *p.Timeframe
+		}
+		if p.WinRate != nil {
+			item.WinRate = *p.WinRate
+		}
+		if p.TotalPnL != nil {
+			item.TotalPnl = *p.TotalPnL
+		}
+		resp.Strategies = append(resp.Strategies, item)
 	}
 	return connect.NewResponse(resp), nil
 }
