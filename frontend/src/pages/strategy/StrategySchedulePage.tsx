@@ -82,11 +82,11 @@ export default function StrategySchedulePage() {
   const [openTrigger, setOpenTrigger] = useState(false);
   const [triggerResult, setTriggerResult] = useState<{
     logs: string[];
-    signal: any;
-    meta: any;
+    signal: { signalId?: string; direction?: string; confidence?: number } | null;
+    meta: Record<string, unknown>;
   } | null>(null);
   const [triggerContext, setTriggerContext] = useState<{
-    schedule: any;
+    schedule: { id?: string; name?: string; status?: string; isActive?: boolean };
     accountId: string;
   } | null>(null);
   const [healthOpen, setHealthOpen] = useState(false);
@@ -133,12 +133,12 @@ export default function StrategySchedulePage() {
   };
 
   const loadScheduleHealth = useCallback(
-    async (row: any) => {
+    async (row: StrategySchedule) => {
       if (!row?.id) return;
       setHealthLoading(true);
       try {
         setHealthSummary(await scheduleHealthApi.getScheduleHealth(row.id));
-      } catch (e: any) {
+      } catch (e) {
         message.error(
           e?.message || t("strategy.schedules.health.messages.loadFailed"),
         );
@@ -161,7 +161,7 @@ export default function StrategySchedulePage() {
       setTemplates(tpls as Record<string, unknown>[]);
       setSchedules(schs as Record<string, unknown>[]);
       void fetchAccounts();
-    } catch (e: any) {
+    } catch (e) {
       const msg = e?.message || t("common.loadingFailed");
       setError(msg);
       message.error(msg);
@@ -184,12 +184,12 @@ export default function StrategySchedulePage() {
   const templatesForSelect = useMemo(() => {
     const out: any[] = [];
     const seen = new Set<string>();
-    (templates || []).forEach((t: any) => {
+    (templates || []).forEach((t: StrategyTemplate) => {
       if (!t?.id) return;
       seen.add(String(t.id));
       out.push(t);
     });
-    (DEFAULT_TEMPLATES || []).forEach((t: any) => {
+    (DEFAULT_TEMPLATES || []).forEach((t: StrategyTemplate) => {
       if (!t?.id) return;
       const id = String(t.id);
       if (seen.has(id)) return;
@@ -260,7 +260,7 @@ export default function StrategySchedulePage() {
     if (symbol) form.setFieldValue("symbol", symbol);
   }, [form, openCreate, loadSymbols]);
 
-  const openUpdate = (row: any) => {
+  const openUpdate = (row: StrategySchedule) => {
     setEditing(row);
     const conf = row?.scheduleConfig || {};
     // 归一化后端 scheduleType → 前端三选一：interval | kline_close | hf_quote。
@@ -331,7 +331,7 @@ export default function StrategySchedulePage() {
     let params: Record<string, string> = {};
     try {
       params = parseParameters(v.parametersJson);
-    } catch (e: any) {
+    } catch (e) {
       message.error(
         e?.message || t("strategy.schedules.messages.parametersParseFailed"),
       );
@@ -390,7 +390,7 @@ export default function StrategySchedulePage() {
           templateId.startsWith("default-")
         ) {
           const def = (DEFAULT_TEMPLATES || []).find(
-            (t: any) => String(t?.id) === String(templateId),
+            (t: StrategyTemplate) => String(t?.id) === String(templateId),
           );
           if (!def) {
             throw new Error(
@@ -434,40 +434,40 @@ export default function StrategySchedulePage() {
       setEditing(null);
       form.resetFields();
       await refresh();
-    } catch (e: any) {
+    } catch (e) {
       message.error(e?.message || t("common.saveFailed"));
     } finally {
       setLoading(false);
     }
   };
 
-  const onToggleActive = async (row: any, next: boolean) => {
+  const onToggleActive = async (row: StrategySchedule, next: boolean) => {
     setLoading(true);
     try {
       await strategyScheduleV2Api.toggle(row.id, next);
       message.success(next ? t("common.enabled") : t("common.disabled"));
       await refresh();
-    } catch (e: any) {
+    } catch (e) {
       message.error(e?.message || t("common.operationFailed"));
     } finally {
       setLoading(false);
     }
   };
 
-  const onDelete = async (row: any) => {
+  const onDelete = async (row: StrategySchedule) => {
     setLoading(true);
     try {
       await strategyScheduleV2Api.delete(row.id);
       message.success(t("common.deleted"));
       await refresh();
-    } catch (e: any) {
+    } catch (e) {
       message.error(e?.message || t("common.deleteFailed"));
     } finally {
       setLoading(false);
     }
   };
 
-  const onManualTrigger = async (row: any) => {
+  const onManualTrigger = async (row: StrategySchedule) => {
     setTriggering(true);
     setTriggerResult(null);
     setTriggerContext({ schedule: row, accountId: row.accountId });
@@ -497,7 +497,7 @@ export default function StrategySchedulePage() {
         signal: exec.signal,
         meta: { templateId: row.templateId, scheduleId: row.id },
       });
-    } catch (e: any) {
+    } catch (e) {
       setTriggerResult({
         logs: [],
         signal: null,
@@ -599,7 +599,7 @@ export default function StrategySchedulePage() {
       setOpenTrigger(false);
       setTriggerContext(null);
       setTriggerResult(null);
-    } catch (e: any) {
+    } catch (e) {
       message.error(e?.message || t("strategy.schedules.messages.orderFailed"));
     } finally {
       setTriggering(false);

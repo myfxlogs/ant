@@ -22,7 +22,7 @@ export type ScheduleFlowState = {
 // 上层 StrategyTemplatePage.createScheduleFromRun 据此构造 CreateScheduleRequest。
 export type CreateScheduleInput = {
 	templateId: string;
-	run: any;
+	run: { metrics?: Record<string, unknown>; templateId?: string; templateDraftId?: string; status?: unknown };
 	form: ScheduleLaunchFormValues;
 	parameters: Record<string, string>;
 };
@@ -50,19 +50,19 @@ export type StrategyTemplateScheduleLaunchModalProps = {
 //   - Sharpe → 保留 3 位小数
 //   - 计数类（total_trades）→ 整数
 // 源值可能是 number | string | undefined，兼容处理。
-function formatPercent(v: any): string {
+function formatPercent(v: unknown): string {
 	if (v === undefined || v === null || v === '') return '-';
 	const n = typeof v === 'number' ? v : Number(v);
 	if (!Number.isFinite(n)) return String(v);
 	return `${(n * 100).toFixed(2)}%`;
 }
-function formatFloat(v: any, digits = 3): string {
+function formatFloat(v: unknown, digits = 3): string {
 	if (v === undefined || v === null || v === '') return '-';
 	const n = typeof v === 'number' ? v : Number(v);
 	if (!Number.isFinite(n)) return String(v);
 	return n.toFixed(digits);
 }
-function formatInt(v: any): string {
+function formatInt(v: unknown): string {
 	if (v === undefined || v === null || v === '') return '-';
 	const n = typeof v === 'number' ? v : Number(v);
 	if (!Number.isFinite(n)) return String(v);
@@ -147,12 +147,12 @@ export const StrategyTemplateScheduleLaunchModal: React.FC<StrategyTemplateSched
 			}
 			setScheduleFlow((p) => ({ ...p, templateId: tid }));
 			setRuns((prev) =>
-				(prev || []).map((it: any) =>
+				(prev || []).map((it) =>
 					String(it?.id || '') === String(scoreRunId || '') ? { ...it, templateId: tid } : it,
 				),
 			);
 			message.success(t('strategy.templates.messages.templatePublished'));
-		} catch (e: any) {
+		} catch (e: unknown) {
 			if (isErrTemplateNotDraft(e)) {
 				try {
 					const tpl: any = await strategyApi.getTemplate(draftId);
@@ -188,7 +188,7 @@ export const StrategyTemplateScheduleLaunchModal: React.FC<StrategyTemplateSched
 						}
 						setScheduleFlow((p) => ({ ...p, templateId: tid }));
 						setRuns((prev) =>
-							(prev || []).map((it: any) =>
+							(prev || []).map((it) =>
 								String(it?.id || '') === String(scoreRunId || '')
 									? { ...it, templateId: tid }
 									: it,
@@ -199,7 +199,7 @@ export const StrategyTemplateScheduleLaunchModal: React.FC<StrategyTemplateSched
 					}
 					setScheduleFlow((p) => ({ ...p, templateId: draftId }));
 					setRuns((prev) =>
-						(prev || []).map((it: any) =>
+						(prev || []).map((it) =>
 							String(it?.id || '') === String(scoreRunId || '')
 								? { ...it, templateId: draftId }
 								: it,

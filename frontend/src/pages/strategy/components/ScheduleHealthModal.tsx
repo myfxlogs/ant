@@ -19,10 +19,10 @@ type Props = {
   summary: any | null;
   onRefresh: () => void;
   onClose: () => void;
-  formatTime: (v: any) => string;
+  formatTime: (v: unknown) => string;
 };
 
-const toNumber = (v: any): number => {
+const toNumber = (v: unknown): number => {
   if (typeof v === "number") return v;
   if (typeof v === "bigint") return Number(v);
   const n = Number(v);
@@ -149,7 +149,7 @@ export default function ScheduleHealthModal({
               title: t("strategy.scheduleLogs.execTable.time"),
               key: "createdAt",
               width: 180,
-              render: (_: any, row: any) => formatTime(row?.createdAt),
+              render: (_: unknown, row: { createdAt?: string | Date }) => formatTime(row?.createdAt),
             },
             {
               title: t("strategy.scheduleLogs.execTable.status"),
@@ -168,7 +168,7 @@ export default function ScheduleHealthModal({
               dataIndex: "durationMs",
               key: "durationMs",
               width: 110,
-              render: (v: any) => toNumber(v),
+              render: (v: unknown) => toNumber(v),
             },
             {
               title: t("strategy.scheduleLogs.execTable.error"),

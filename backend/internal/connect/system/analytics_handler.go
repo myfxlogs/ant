@@ -256,7 +256,7 @@ func (s *AnalyticsServer) GetMonthlyAnalysis(ctx context.Context, req *connect.R
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("get monthly analysis raw: %w", err))
 	}
 
-	data, err := json.Marshal(monthlyAnalysisToJSON(points))
+	data, err := json.Marshal(points)
 	if err != nil {
 		// #20: Use connect.NewError.
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal monthly analysis: %w", err))

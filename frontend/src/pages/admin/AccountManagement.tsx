@@ -107,12 +107,12 @@ export default function AccountManagement() {
       return <Tag color={color}>{v}</Tag>;
     }},
     { title: '余额', dataIndex: 'balance', key: 'balance', width: 100, render: (v: number) => v?.toFixed(2) },
-    { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', width: 150, render: (_v: any, record: AccountWithUser) => formatDateTime(record.createdAt) },
+    { title: '创建时间', dataIndex: 'createdAt', key: 'createdAt', width: 150, render: (_v: unknown, record: AccountWithUser) => formatDateTime(record.createdAt) },
     {
       title: '操作',
       key: 'action',
       width: 150,
-      render: (_: any, record: AccountWithUser) => (
+      render: (_: unknown, record: AccountWithUser) => (
         <Space>
           <Button size="small" onClick={() => { setCurrentAccount(record); setDetailDrawerVisible(true); }}>
             详情

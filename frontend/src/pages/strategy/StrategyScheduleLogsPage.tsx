@@ -61,7 +61,7 @@ function formatTime(v: unknown) {
   }
 }
 
-function renderExecStatus(v: any, t: (key: string, opts?: any) => string) {
+function renderExecStatus(v: unknown, t: (key: string, opts?: unknown) => string) {
   const s = String(v || '').trim().toLowerCase();
   const text = (() => {
     if (s === 'pending') return t('strategy.scheduleLogs.execStatus.pending');
@@ -77,7 +77,7 @@ function renderExecStatus(v: any, t: (key: string, opts?: any) => string) {
   return <Tag>{text}</Tag>;
 }
 
-function renderMs(v: any) {
+function renderMs(v: unknown) {
   if (typeof v === 'number') return <Text>{v}</Text>;
   if (typeof v === 'bigint') return <Text>{Number(v)}</Text>;
   if (typeof v === 'string') {
@@ -87,14 +87,14 @@ function renderMs(v: any) {
   return <Text>-</Text>;
 }
 
-function renderOperationAction(v: any, t: (key: string, opts?: any) => string) {
+function renderOperationAction(v: unknown, t: (key: string, opts?: unknown) => string) {
   const s = String(v || '').trim().toLowerCase();
   if (s === 'enable') return <Text>{t('common.enable')}</Text>;
   if (s === 'disable') return <Text>{t('common.disable')}</Text>;
   return <Text>{String(v || '-')}</Text>;
 }
 
-function renderOperationStatus(v: any, t: (key: string, opts?: any) => string) {
+function renderOperationStatus(v: unknown, t: (key: string, opts?: unknown) => string) {
   const s = String(v || '').trim().toLowerCase();
   const text = (() => {
     if (s === 'success' || s === 'completed') return t('strategy.scheduleLogs.operationStatus.success');
@@ -108,7 +108,7 @@ function renderOperationStatus(v: any, t: (key: string, opts?: any) => string) {
   return <Tag>{text}</Tag>;
 }
 
-function renderOrderTypeTag(value: string, t: (key: string, opts?: any) => string) {
+function renderOrderTypeTag(value: string, t: (key: string, opts?: unknown) => string) {
   const s = String(value || '').toLowerCase();
   if (s === 'close') return <Tag color="gold">{t('strategy.scheduleLogs.orderSide.close')}</Tag>;
   if (s.includes('buy_stop_limit')) return <Tag color="cyan">{t('strategy.scheduleLogs.orderSide.buyStopLimit')}</Tag>;
@@ -190,7 +190,7 @@ export default function StrategyScheduleLogsPage() {
         refreshExec(),
         refreshOrders(),
       ]);
-    } catch (e: any) {
+    } catch (e: unknown) {
       const msg = e?.message || t('common.loadingFailed');
       setError(msg);
       message.error(msg);
@@ -217,13 +217,13 @@ export default function StrategyScheduleLogsPage() {
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 180,
-      render: (_v: any, row: any) => <Text>{formatTime(row?.createdAt)}</Text>,
+      render: (_v: unknown, row: ScheduleRunLog) => <Text>{formatTime(row?.createdAt)}</Text>,
     },
     {
       title: t('strategy.scheduleLogs.execTable.action'),
       key: 'action',
       width: 160,
-      render: (_: any, row: any) => {
+      render: (_: unknown, row: ScheduleRunLog) => {
         if (String(row?.kind || '').toLowerCase() === 'operation') return renderOperationAction(row?.action, t);
         const st = String(row?.signalType || row?.action || '').toLowerCase();
         if (st === 'close') return <Text>{t('strategy.scheduleLogs.orderSide.close')}</Text>;
@@ -235,7 +235,7 @@ export default function StrategyScheduleLogsPage() {
       dataIndex: 'status',
       key: 'status',
       width: 120,
-      render: (_: any, row: any) => {
+      render: (_: unknown, row: ScheduleRunLog) => {
         if (String(row?.kind || '').toLowerCase() === 'operation') return renderOperationStatus(row?.status, t);
         return renderExecStatus(row?.status, t);
       },
@@ -244,7 +244,7 @@ export default function StrategyScheduleLogsPage() {
       title: t('strategy.scheduleLogs.execTable.durationMs'),
       key: 'duration',
       width: 110,
-      render: (_: any, row: any) => {
+      render: (_: unknown, row: ScheduleRunLog) => {
         return renderMs(row?.durationMs);
       },
     },
@@ -252,7 +252,7 @@ export default function StrategyScheduleLogsPage() {
       title: t('strategy.scheduleLogs.execTable.error'),
       dataIndex: 'errorMessage',
       key: 'errorMessage',
-      render: (v: any) => {
+      render: (v: unknown) => {
         const s = String(v || '').trim();
         if (!s) return <Text type="secondary">{t('common.none')}</Text>;
         return (
@@ -269,49 +269,49 @@ export default function StrategyScheduleLogsPage() {
       title: t('strategy.scheduleLogs.ordersTable.time'),
       key: 'time',
       width: 180,
-      render: (_: any, row: any) => <Text>{formatTime(row?.closeTime || row?.openTime)}</Text>,
+      render: (_: unknown, row: ScheduleRunLog) => <Text>{formatTime(row?.closeTime || row?.openTime)}</Text>,
     },
     {
       title: t('strategy.scheduleLogs.ordersTable.side'),
       dataIndex: 'orderType',
       key: 'orderType',
       width: 100,
-      render: (v: any) => renderOrderTypeTag(String(v || ''), t),
+      render: (v: unknown) => renderOrderTypeTag(String(v || ''), t),
     },
     {
       title: t('strategy.scheduleLogs.ordersTable.symbol'),
       dataIndex: 'symbol',
       key: 'symbol',
       width: 120,
-      render: (v: any) => <Text>{String(v || '-')}</Text>,
+      render: (v: unknown) => <Text>{String(v || '-')}</Text>,
     },
     {
       title: t('strategy.scheduleLogs.ordersTable.lots'),
       dataIndex: 'lots',
       key: 'lots',
       width: 90,
-      render: (v: any) => <Text>{typeof v === 'number' ? v : '-'}</Text>,
+      render: (v: unknown) => <Text>{typeof v === 'number' ? v : '-'}</Text>,
     },
     {
       title: t('strategy.scheduleLogs.ordersTable.openPrice'),
       dataIndex: 'openPrice',
       key: 'openPrice',
       width: 120,
-      render: (v: any) => <Text>{typeof v === 'number' ? v : '-'}</Text>,
+      render: (v: unknown) => <Text>{typeof v === 'number' ? v : '-'}</Text>,
     },
     {
       title: t('strategy.scheduleLogs.ordersTable.closePrice'),
       dataIndex: 'closePrice',
       key: 'closePrice',
       width: 120,
-      render: (v: any) => <Text>{typeof v === 'number' ? v : '-'}</Text>,
+      render: (v: unknown) => <Text>{typeof v === 'number' ? v : '-'}</Text>,
     },
     {
       title: t('strategy.scheduleLogs.ordersTable.profit'),
       dataIndex: 'profit',
       key: 'profit',
       width: 120,
-      render: (v: any) => {
+      render: (v: unknown) => {
         const n = typeof v === 'number' ? v : Number(v);
         if (!Number.isFinite(n)) return <Text>-</Text>;
         if (n > 0) return <Text style={{ color: '#00A651' }}>{n.toFixed(2)}</Text>;
@@ -324,7 +324,7 @@ export default function StrategyScheduleLogsPage() {
       dataIndex: 'ticket',
       key: 'ticket',
       width: 110,
-      render: (v: any) => <Text>{typeof v === 'number' ? v : '-'}</Text>,
+      render: (v: unknown) => <Text>{typeof v === 'number' ? v : '-'}</Text>,
     },
   ];
 

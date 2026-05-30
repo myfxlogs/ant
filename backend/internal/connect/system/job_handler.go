@@ -19,6 +19,21 @@ import (
 	"anttrader/internal/repository"
 )
 
+// jsonbToStruct converts JSONB bytes to a proto Struct.
+// structpb.NewStruct requires map[string]any — this is the canonical
+// conversion point, encapsulated to contain the dynamic type boundary.
+func jsonbToStruct(raw []byte) *structpb.Struct {
+	if len(raw) == 0 {
+		return nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal(raw, &m); err != nil {
+		return nil
+	}
+	s, _ := structpb.NewStruct(m)
+	return s
+}
+
 // JobServer implements ant.v1.JobServiceHandler.
 type JobServer struct {
 	jobs *repository.JobRepository
@@ -95,17 +110,10 @@ func (s *JobServer) SubscribeJob(ctx context.Context, req *connect.Request[antv1
 		}
 
 		for _, ev := range events {
-			var payload *structpb.Struct
-			if len(ev.Payload) > 0 {
-				var m map[string]interface{}
-				if json.Unmarshal(ev.Payload, &m) == nil {
-					payload, _ = structpb.NewStruct(m)
-				}
-			}
 			stream.Send(&antv1.JobEvent{
 				JobId: ev.JobID.String(), Seq: ev.Seq, Type: ev.Type,
 				Status: ev.Status, Progress: ev.Progress, Stage: ev.Stage,
-				Message: payloadToMsg(ev), Payload: payload,
+				Message: payloadToMsg(ev), Payload: jsonbToStruct(ev.Payload),
 				CreatedAt: timestamppb.New(ev.CreatedAt),
 			})
 			afterSeq = ev.Seq

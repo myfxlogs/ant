@@ -89,7 +89,7 @@ export default function AdminDashboard() {
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 180,
-      render: (_text: any, record: AdminLog) => formatDateTime(record.createdAt),
+      render: (_text: unknown, record: AdminLog) => formatDateTime(record.createdAt),
     },
     {
       title: t('admin.dashboard.logs.module'),

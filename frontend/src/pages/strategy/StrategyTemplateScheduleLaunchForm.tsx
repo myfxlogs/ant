@@ -191,7 +191,7 @@ export const StrategyTemplateScheduleLaunchForm: React.FC<Props> = ({
 					verified: r.verified,
 					message: r.message,
 				});
-			} catch (e: any) {
+			} catch (e: unknown) {
 				if (cancelled) return;
 				setTradePermission({
 					loading: false,
@@ -625,7 +625,7 @@ const TradePasswordModal: React.FC<TradePasswordModalProps> = ({ open, accountId
 				);
 			}
 			onSuccess(res);
-		} catch (e: any) {
+		} catch (e: unknown) {
 			message.error(String(e?.message || e));
 		} finally {
 			setSubmitting(false);

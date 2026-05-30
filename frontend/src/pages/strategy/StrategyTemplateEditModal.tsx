@@ -20,7 +20,7 @@ export type StrategyTemplateEditModalProps = {
 	lastValidatedCode?: string;
 	onCancel: () => void;
 	onValidate: () => void;
-	onSubmit: (values: any) => void;
+	onSubmit: (values: Record<string, unknown>) => void;
 };
 
 export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps> = ({

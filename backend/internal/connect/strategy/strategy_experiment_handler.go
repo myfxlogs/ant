@@ -17,6 +17,21 @@ import (
 	"anttrader/internal/repository"
 )
 
+// jsonbToStruct converts JSONB bytes to a proto Struct.
+// structpb.NewStruct requires map[string]any — this is the canonical
+// conversion point, encapsulated to contain the dynamic type boundary.
+func jsonbToStruct(raw []byte) *structpb.Struct {
+	if len(raw) == 0 {
+		return nil
+	}
+	var m map[string]any
+	if err := json.Unmarshal(raw, &m); err != nil {
+		return nil
+	}
+	s, _ := structpb.NewStruct(m)
+	return s
+}
+
 // StrategyExperimentServer implements ant.v1.StrategyExperimentServiceHandler.
 type StrategyExperimentServer struct {
 	repo *repository.StrategyExperimentRepository
@@ -57,12 +72,7 @@ func expToProto(e *repository.StrategyExperiment) *antv1.StrategyExperiment {
 	if e.FinishedAt != nil {
 		p.FinishedAt = timestamppb.New(*e.FinishedAt)
 	}
-	if len(e.ParameterSpace) > 0 {
-		var m map[string]interface{}
-		if json.Unmarshal(e.ParameterSpace, &m) == nil {
-			p.ParameterSpace, _ = structpb.NewStruct(m)
-		}
-	}
+	p.ParameterSpace = jsonbToStruct(e.ParameterSpace)
 	return p
 }
 
@@ -81,18 +91,8 @@ func candidateToProto(c *repository.StrategyExperimentCandidate) *antv1.Strategy
 	if c.BacktestRunID != nil {
 		p.BacktestRunId = c.BacktestRunID.String()
 	}
-	if len(c.Parameters) > 0 {
-		var m map[string]interface{}
-		if json.Unmarshal(c.Parameters, &m) == nil {
-			p.Parameters, _ = structpb.NewStruct(m)
-		}
-	}
-	if len(c.ScoreComponents) > 0 {
-		var m map[string]interface{}
-		if json.Unmarshal(c.ScoreComponents, &m) == nil {
-			p.ScoreComponents, _ = structpb.NewStruct(m)
-		}
-	}
+	p.Parameters = jsonbToStruct(c.Parameters)
+	p.ScoreComponents = jsonbToStruct(c.ScoreComponents)
 	return p
 }
 

@@ -131,7 +131,7 @@ export default function AISettings() {
       setAgentsState(cleaned);
       queryClient.setQueryData(queryKeys.ai.agents.list(), cleaned);
       message.success(t('ai.settings.agent.messages.saveSuccess'));
-    } catch (e: any) {
+    } catch (e: unknown) {
       message.error(e?.message || t('ai.settings.agent.messages.saveFailed'));
     } finally {
       setSaving(false);

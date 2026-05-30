@@ -90,7 +90,7 @@ export default function DefaultPrimaryModelCard({
 			const saved = await aiApi.setPrimary({ providerId: dec.providerId, model: dec.model });
 			setValue(saved.providerId ? `${saved.providerId}|${saved.model || ''}` : '');
 			message.success(t('common.saveSuccess', { defaultValue: 'Saved' }));
-		} catch (e: any) {
+		} catch (e: unknown) {
 			message.error(e?.message || t('common.saveFailed', { defaultValue: 'Save failed' }));
 		} finally {
 			setSaving(false);

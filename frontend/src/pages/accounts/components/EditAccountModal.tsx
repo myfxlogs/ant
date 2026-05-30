@@ -105,7 +105,7 @@ export default function EditAccountModal({ open, account, onClose }: Props) {
               onClick={() => {
                 try {
                   handleSavePassword();
-                } catch (e: any) {
+                } catch (e: unknown) {
                   showError(e?.message || t('common.saveFailed'));
                 }
               }}

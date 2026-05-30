@@ -151,13 +151,13 @@ export const pythonStrategyApi = {
 			templateDraftId: params.templateDraftId,
 			extraSymbols: (params.extraSymbols ?? []).filter((s) => !!s && s !== params.symbol),
 		});
-		const resp: any = await pythonStrategyService.startBacktestRun(msg as any);
+		const resp = await pythonStrategyService.startBacktestRun(msg);
 		return { runId: resp.runId };
 	},
 
 	getBacktestRun: async (runId: string) => {
 		const msg = create(GetBacktestRunRequestSchema, { runId });
-		return (await pythonStrategyService.getBacktestRun(msg as any)) as any;
+		return (await pythonStrategyService.getBacktestRun(msg));
 	},
 
 	listBacktestRuns: async (params: { accountId?: string; limit?: number; offset?: number }) => {
@@ -166,17 +166,17 @@ export const pythonStrategyApi = {
 			limit: params.limit ?? 50,
 			offset: params.offset ?? 0,
 		});
-		return (await pythonStrategyService.listBacktestRuns(msg as any)) as any;
+		return (await pythonStrategyService.listBacktestRuns(msg));
 	},
 
 	cancelBacktestRun: async (runId: string) => {
 		const msg = create(CancelBacktestRunRequestSchema, { runId });
-		return (await pythonStrategyService.cancelBacktestRun(msg as any)) as any;
+		return (await pythonStrategyService.cancelBacktestRun(msg));
 	},
 
 	deleteBacktestRun: async (runId: string) => {
 		const msg = create(DeleteBacktestRunRequestSchema, { runId });
-		return (await pythonStrategyService.deleteBacktestRun(msg as any)) as any;
+		return (await pythonStrategyService.deleteBacktestRun(msg));
 	},
 
 	watchBacktestRun: (runId: string, onUpdate: (u: any) => void, onError?: (e: any) => void) => {
@@ -184,13 +184,13 @@ export const pythonStrategyApi = {
 		(async () => {
 			try {
 				const msg = create(WatchBacktestRunRequestSchema, { runId });
-				const stream: any = pythonStrategyStreamService.watchBacktestRun(msg as any, { signal: abortController.signal });
+				const stream = pythonStrategyStreamService.watchBacktestRun(msg, { signal: abortController.signal });
 				for await (const u of stream) {
 					onUpdate(u);
 				}
 			} catch (e) {
 				const errorStr = String(e);
-				if ((e as any)?.name === 'AbortError' || errorStr.includes('canceled') || errorStr.includes('aborted')) {
+				if ((e as { name?: string })?.name === 'AbortError' || errorStr.includes('canceled') || errorStr.includes('aborted')) {
 					return;
 				}
 				onError?.(e);

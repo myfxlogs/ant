@@ -198,7 +198,7 @@ export const CodeExplainPanel: React.FC<CodeExplainPanelProps> = ({ code, autoOn
 		try {
 			const out = await codeAssistApi.explain({ code, locale: i18n.language });
 			setText(out || '');
-		} catch (e: any) {
+		} catch (e: unknown) {
 			setError(String(e?.message || e || 'failed'));
 		} finally {
 			setLoading(false);
@@ -295,7 +295,7 @@ export const AICodeReviseChat: React.FC<AICodeReviseChatProps> = ({ code, onAppl
 					defaultValue: 'AI did not return a Python block. Try rephrasing.',
 				}));
 			}
-		} catch (e: any) {
+		} catch (e: unknown) {
 			message.error(String(e?.message || e || 'failed'));
 		} finally {
 			setLoading(false);

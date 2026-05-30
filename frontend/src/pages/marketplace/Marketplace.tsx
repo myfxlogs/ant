@@ -25,6 +25,7 @@ interface MarketStrategy {
   strategyName: string;
   publisherUserId: string;
   publishedAt?: string;
+  riskLevel?: string; // backend will provide real risk data when available
 }
 
 type TabKey = 'marketplace' | 'subscriptions';
@@ -110,7 +111,7 @@ export default function MarketplacePage() {
   const renderStrategyCard = (s: MarketStrategy) => {
     const isSub = isSubscribed(s.strategyId);
     const metaKey = `marketplace.strategies.${s.strategyId}`;
-    const riskLevel = (s as any).riskLevel || '-'; // backend will provide real risk data when available
+    const riskLevel = s.riskLevel || '-'; // backend will provide real risk data when available
 
     return (
       <Col xs={24} sm={12} lg={8} xl={6} key={s.publishId || s.strategyId}>
@@ -144,7 +145,7 @@ export default function MarketplacePage() {
           <Space size={4} wrap style={{ marginBottom: 8 }}>
             <Tag color="blue">{t('marketplace.card.forex', { defaultValue: 'Forex' })}</Tag>
             {riskLevel !== '-' && (
-              <Tag color={(RISK_COLORS as any)[riskLevel] || 'default'} style={{ background: (RISK_BG as any)[riskLevel] || undefined, border: 'none' }}>
+              <Tag color={RISK_COLORS[riskLevel] || 'default'} style={{ background: RISK_BG[riskLevel] || undefined, border: 'none' }}>
                 {t(`marketplace.risk.${riskLevel}`, { defaultValue: riskLevel })}
               </Tag>
             )}

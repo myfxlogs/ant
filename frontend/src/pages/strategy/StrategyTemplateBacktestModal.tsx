@@ -79,7 +79,7 @@ export const StrategyTemplateBacktestModal: React.FC<StrategyTemplateBacktestMod
 						</Typography.Text>
 						<div style={{ marginTop: 6 }}>
 							<Space size={[6, 6]} wrap>
-								{template.parameters.map((p: any) => (
+								{template.parameters.map((p: { name?: string; label?: string; type?: string; default?: unknown }) => (
 									<Tag key={String(p?.name || '')} color="blue" style={{ marginInlineEnd: 0 }}>
 										<span style={{ fontWeight: 500 }}>{String(p?.label || p?.name || '')}</span>
 										<span style={{ opacity: 0.65 }}> ({String(p?.name || '')})</span>
@@ -109,7 +109,7 @@ export const StrategyTemplateBacktestModal: React.FC<StrategyTemplateBacktestMod
 									form.setFieldsValue({ symbol: '' });
 									await onAccountChange(String(v));
 								}}
-								options={(accounts || []).map((a: any) => ({
+								options={(accounts || []).map((a: { id?: string; login?: string; brokerCompany?: string }) => ({
 									value: String(a.id),
 									label: `${a.login ?? a.id} (${a.mtType ?? ''})${a.isDisabled ? t('strategy.templates.backtest.accountDisabledSuffix') : ''}`,
 									disabled: !!a.isDisabled,

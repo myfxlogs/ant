@@ -189,7 +189,7 @@ export default function UserManagement() {
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 180,
-      render: (_text: any, record: UserWithAccounts) => formatDateTime(record.createdAt),
+      render: (_text: unknown, record: UserWithAccounts) => formatDateTime(record.createdAt),
     },
     {
       title: t('admin.userManagement.table.actions'),

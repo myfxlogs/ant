@@ -6,7 +6,7 @@ export const clamp01 = (x: number) => {
   return x;
 };
 
-export const pickNum = (v: any): number | undefined => {
+export const pickNum = (v: unknown): number | undefined => {
   if (v === null || v === undefined) return undefined;
   if (typeof v === 'number' && Number.isFinite(v)) return v;
   if (typeof v === 'string' && v.trim() !== '') {
@@ -16,7 +16,7 @@ export const pickNum = (v: any): number | undefined => {
   return undefined;
 };
 
-export const pickMetric = (metrics: any, keys: string[]): number | undefined => {
+export const pickMetric = (metrics: Record<string, unknown> | undefined, keys: string[]): number | undefined => {
   for (const k of keys) {
     const n = pickNum(metrics?.[k]);
     if (typeof n === 'number') return n;
@@ -39,20 +39,20 @@ export const quickRangeLabel = (t: (key: string) => string, key: QuickRangeKey) 
   }
 };
 
-export const isTerminalRun = (run: any) => {
+export const isTerminalRun = (run: { status?: unknown }) => {
   return Boolean(run?.isTerminal || run?.is_terminal);
 };
 
-export const isSucceededRun = (run: any) => {
+export const isSucceededRun = (run: { status?: unknown }) => {
   return Boolean(run?.isSucceeded || run?.is_succeeded);
 };
 
-export const isErrTemplateNotDraft = (e: any): boolean => {
+export const isErrTemplateNotDraft = (e: unknown): boolean => {
   const msg = String(e?.rawMessage || e?.message || e || '');
   return msg.toLowerCase().includes('not a draft') || msg.toLowerCase().includes('template is not a draft');
 };
 
-export const getRunTemplateRef = (run: any): { templateId?: string; templateDraftId?: string } => {
+export const getRunTemplateRef = (run: { templateId?: string; templateDraftId?: string }): { templateId?: string; templateDraftId?: string } => {
   const templateId = String(run?.templateId || run?.template_id || '').trim();
   const templateDraftId = String(run?.templateDraftId || run?.template_draft_id || '').trim();
   return {

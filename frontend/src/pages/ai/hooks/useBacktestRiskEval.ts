@@ -73,7 +73,7 @@ export function useBacktestRiskEval(params: {
           reasons: resp.riskReasons || [],
           warnings: resp.riskWarnings || [],
         });
-      } catch (e: any) {
+      } catch (e: unknown) {
         if (!mounted) return;
         setRisk({
           loading: false,

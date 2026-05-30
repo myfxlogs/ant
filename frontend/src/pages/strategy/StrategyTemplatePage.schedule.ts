@@ -8,7 +8,7 @@ import { pickMetric } from './StrategyTemplatePage.utils';
 // 单纯是为了让主文件保持在 800 行内。它们不是独立 hook —— 依然由主组件持有
 // 状态 setters，这里只是纯函数壳子。
 
-export const buildScheduleName = (run: any, t: TFunction): string => {
+export const buildScheduleName = (run: { metrics?: Record<string, unknown>; status?: unknown }, t: TFunction): string => {
 	const symbol = String(run?.symbol || '').trim();
 	const timeframe = String(run?.timeframe || '').trim();
 	const title = String(run?.title || '').trim();
@@ -42,7 +42,7 @@ export type CreateScheduleFromRunDeps = {
 
 export type CreateScheduleFromRunParams = {
 	templateId: string;
-	run: any;
+	run: { metrics?: Record<string, unknown>; templateId?: string; templateDraftId?: string; status?: unknown };
 	enableAfterCreate: boolean;
 	form?: {
 		accountId: string;
@@ -109,7 +109,7 @@ export async function createScheduleFromRun(
 		return;
 	}
 
-	setScheduleFlow((p: any) => ({ ...p, creating: true }));
+	setScheduleFlow((p) => ({ ...p, creating: true }));
 	try {
 		const resp: any = await strategyApi.createSchedule({
 			templateId: params.templateId,
@@ -135,9 +135,9 @@ export async function createScheduleFromRun(
 		void fetchTemplates();
 		void fetchRuns();
 		onClose();
-	} catch (e: any) {
+	} catch (e: unknown) {
 		message.error(String(e?.message || e || t('strategy.templates.messages.createScheduleFailed')));
 	} finally {
-		setScheduleFlow((p: any) => ({ ...p, creating: false }));
+		setScheduleFlow((p) => ({ ...p, creating: false }));
 	}
 }

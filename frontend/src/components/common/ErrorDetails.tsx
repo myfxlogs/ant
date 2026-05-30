@@ -67,7 +67,7 @@ export default function ErrorDetails(props: ErrorDetailsProps) {
                   const out = await translateTextWithLLM({ text: detail, purpose: 'error_detail' });
                   setTranslatedDetail(out);
                   setShowOriginalDetail(false);
-                } catch (e: any) {
+                } catch (e: unknown) {
                   const msg = String(e?.message || e || '').trim();
                   if (msg === 'errors.ai.not_configured') {
                     message.warning(t('errors.ai.not_configured'));

@@ -41,9 +41,10 @@ export function getInitialLanguage(): SupportedLanguage {
     // ignore
   }
 
+  const nav = navigator as { languages?: readonly string[]; language?: string };
   const navLang =
     (typeof navigator !== 'undefined' &&
-      ((Array.isArray((navigator as any).languages) && (navigator as any).languages[0]) || (navigator as any).language)) ||
+      ((Array.isArray(nav.languages) && nav.languages[0]) || nav.language)) ||
     '';
 
   return normalizeLanguage(navLang);
@@ -107,7 +108,7 @@ if (!i18n.isInitialized) {
 }
 
 if (typeof window !== 'undefined') {
-  (window as any).__ANTTRADER_I18N__ = i18n;
+  (window as Window & { __ANTTRADER_I18N__?: typeof i18n }).__ANTTRADER_I18N__ = i18n;
 }
 
 export default i18n;

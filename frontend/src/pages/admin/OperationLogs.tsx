@@ -57,7 +57,7 @@ export default function OperationLogs() {
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 180,
-      render: (_text: any, record: AdminLog) => formatDateTime(record.createdAt),
+      render: (_text: unknown, record: AdminLog) => formatDateTime(record.createdAt),
     },
     {
       title: 'IP地址',

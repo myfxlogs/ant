@@ -124,8 +124,16 @@ export async function translateTextWithLLM(params: TranslateWithLLMParams): Prom
   return out;
 }
 
+interface ErrorLike {
+  rawMessage?: string;
+  details?: string;
+  cause?: { message?: string };
+  message?: string;
+  toString?: () => string;
+}
+
 export function extractErrorDetail(err: unknown): string {
-  const e: any = err as any;
+  const e = err as ErrorLike;
   const candidates = [e?.rawMessage, e?.details, e?.cause?.message, e?.message, e?.toString?.()];
   for (const c of candidates) {
     const s = String(c || '').trim();

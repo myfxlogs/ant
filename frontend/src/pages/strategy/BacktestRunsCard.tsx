@@ -13,11 +13,11 @@ type Props = {
   onRefresh: () => void;
   onView: (runId: string) => void;
   onViewScore?: (runId: string) => void;
-  onAddToSchedule?: (run: any) => void;
+  onAddToSchedule?: (run: BacktestRun) => void;
   onDelete: (runId: string) => void;
 };
 
-function statusText(s: any, t: (key: string) => string) {
+function statusText(s: unknown, t: (key: string) => string) {
   switch (Number(s)) {
     case 1:
       return t('strategy.templates.backtestRuns.status.queued');
@@ -45,7 +45,7 @@ const BacktestRunsCard: React.FC<Props> = ({ runs, loading, onRefresh, onView, o
       key: 'title',
       width: 260,
       ellipsis: true,
-      render: (t: any, r: any) => {
+      render: (_text: unknown, r: BacktestRun) => {
         const base = String(t || '').trim();
         const fallback = [
           formatDateTime(r?.createdAt),
@@ -67,7 +67,7 @@ const BacktestRunsCard: React.FC<Props> = ({ runs, loading, onRefresh, onView, o
       dataIndex: 'status',
       key: 'status',
       width: 120,
-      render: (s: any) => <Tag>{statusText(s, t)}</Tag>,
+      render: (s: unknown) => <Tag>{statusText(s, t)}</Tag>,
     },
     {
       title: t('strategy.templates.backtestRuns.table.symbol'),
@@ -86,14 +86,14 @@ const BacktestRunsCard: React.FC<Props> = ({ runs, loading, onRefresh, onView, o
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 180,
-      render: (v: any) => formatDateTime(v),
+      render: (v: unknown) => formatDateTime(v as string),
     },
     {
       title: t('strategy.templates.backtestRuns.table.actions'),
       key: 'action',
       width: 220,
       fixed: 'right',
-      render: (_: any, r: any) => (
+      render: (_: unknown, r: BacktestRun) => (
         <Space size="small">
           <Button type="link" size="small" onClick={() => onView(String(r.id || ''))}>
             {t('strategy.templates.backtestRuns.actions.view')}

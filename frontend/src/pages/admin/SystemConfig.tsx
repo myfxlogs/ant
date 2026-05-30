@@ -33,7 +33,7 @@ export default function SystemConfigPage() {
     try {
       const result = await adminApi.listConfigs();
       setConfigs(
-        (result || []).filter((c: any) =>
+        (result || []).filter((c) =>
           c?.key === 'max_accounts_per_user' ||
           c?.key === 'ai.provider_catalog' ||
           c?.key === 'econ.translation.ai_config' ||
@@ -91,7 +91,7 @@ export default function SystemConfigPage() {
     setEditModalVisible(true);
   };
 
-  const handleSave = async (values: any) => {
+  const handleSave = async (values: Record<string, unknown>) => {
     if (!currentConfig) return;
     try {
 			if (isAIProviderCatalog) {
@@ -112,7 +112,7 @@ export default function SystemConfigPage() {
 					message.error(t('admin.config.validation.jsonEmpty'));
 					return;
 				}
-				let parsed: any;
+				let parsed: unknown;
 				try {
 					parsed = JSON.parse(raw);
 				} catch {
@@ -280,7 +280,7 @@ export default function SystemConfigPage() {
       dataIndex: 'updated_at',
       key: 'updated_at',
       width: 180,
-      render: (_text: any, record: AdminConfigType) => formatDateTime(record.updated_at),
+      render: (_text: unknown, record: AdminConfigType) => formatDateTime(record.updated_at),
     },
     {
       title: t('common.edit'),

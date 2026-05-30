@@ -279,18 +279,3 @@ func tradeRecordToProto(r *model.TradeRecord) *antv1.TradeRecord {
 	}
 }
 
-func monthlyAnalysisToJSON(points []*model.MonthlyAnalysisPoint) []map[string]interface{} {
-	result := make([]map[string]interface{}, 0, len(points))
-	for _, p := range points {
-		result = append(result, map[string]interface{}{
-			"year":   p.Year,
-			"month":  p.Month,
-			"profit": p.Profit,
-			"lots":   p.Lots,
-			"pips":   p.Pips,
-			"trades": p.Trades,
-			"change": p.Change,
-		})
-	}
-	return result
-}

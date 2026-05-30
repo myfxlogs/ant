@@ -72,12 +72,8 @@ func (s *GateProgressServer) HandleGateProgressSSE(w http.ResponseWriter, r *htt
 	}
 
 	// Send final event.
-	summary := map[string]interface{}{
-		"passed":     result.Passed,
-		"summary":    result.Summary,
-		"first_fail": result.FirstFail,
-	}
-	data, err := json.Marshal(summary)
+	// PipelineResult already carries json tags matching the SSE contract.
+	data, err := json.Marshal(result)
 	if err != nil {
 		s.log.Error("HandleGateProgressSSE: json marshal summary failed", zap.Error(err))
 		return

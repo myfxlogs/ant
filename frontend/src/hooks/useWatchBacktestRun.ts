@@ -10,7 +10,7 @@ export type WatchBacktestState = {
 	isTerminal: boolean;
 };
 
-function isTerminalRun(run: any): boolean {
+function isTerminalRun(run: { status?: unknown }): boolean {
 	return Boolean(run?.isTerminal || run?.is_terminal);
 }
 
@@ -83,7 +83,7 @@ export function useWatchBacktestRun(runId?: string | null): WatchBacktestState {
 
 				unsubscribe = pythonStrategyApi.watchBacktestRun(
 					runId,
-					(u: any) => {
+					(u: unknown) => {
 						if (stoppedRef.current) return;
 						setRun(u?.run ?? null);
 						setMetrics(u?.metrics ?? null);
@@ -95,7 +95,7 @@ export function useWatchBacktestRun(runId?: string | null): WatchBacktestState {
 							stopPolling();
 						}
 					},
-					(e: any) => {
+					(e: unknown) => {
 						if (stoppedRef.current) return;
 						setError(String(e));
 						startPolling();
