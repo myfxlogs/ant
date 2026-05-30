@@ -3,6 +3,7 @@ package mdgateway
 import (
 	"context"
 	"fmt"
+	"os"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -62,8 +63,10 @@ func NewCHWriter(cfg CHWriterConfig, conn clickhouse.Conn, spill *SpillWriter, l
 		tickQ: make(chan *mdtick.Tick, cfg.QueueSize),
 		barQ:  make(chan *mdtick.Bar, cfg.QueueSize),
 	}
-	// S-2: init buffer bypass from env; default = buffer enabled.
-	// CH buffer enabled is now configured via config.Load().CHBufferEnabled
+	// S-2: init buffer from env ANT_CH_BUFFER_ENABLED (default true).
+	// Set to "false" to bypass Buffer engine and write directly to md_ticks.
+	bufEnabled := os.Getenv("ANT_CH_BUFFER_ENABLED") != "false"
+	w.bufferEnabled.Store(bufEnabled)
 	return w
 }
 
