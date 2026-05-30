@@ -4,6 +4,8 @@ package user
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -491,4 +493,48 @@ func TestPasswordChangeWithOldPassword(t *testing.T) {
 			}
 		}
 	})
+}
+
+// TestErrorRecovery_PGUnavailable verifies handlers return proper ConnectRPC
+// errors (not panics, not nil responses) when the database is unavailable.
+func TestErrorRecovery_PGUnavailable(t *testing.T) {
+	pool := getTestPG(t)
+	
+
+	userID := uuid.New()
+	insertTestUser(t, pool, userID, fmt.Sprintf("err-recov-%d@test.io", time.Now().UnixNano()))
+	srv := newTestAccountServer(t, pool, nil)
+	userCtx := authCtx(userID)
+
+	// Verify normal operation works first.
+	req := connect.NewRequest(&antv1.ListAccountsRequest{})
+	resp, err := srv.ListAccounts(userCtx, req)
+	if err != nil {
+		t.Fatalf("ListAccounts should succeed with live DB: %v", err)
+	}
+	t.Logf("Normal: %d accounts listed", len(resp.Msg.Accounts))
+
+	// Close the pool to simulate PG outage.
+	pool.Close()
+
+	// Same request after PG is down — should get Internal error, not panic.
+	_, err = srv.ListAccounts(userCtx, req)
+	if err == nil {
+		t.Error("ListAccounts should return error when PG is unavailable")
+	}
+	var connectErr *connect.Error
+	if !errors.As(err, &connectErr) {
+		t.Errorf("expected ConnectRPC error, got %T: %v", err, err)
+	} else {
+		t.Logf("PG unavailable: correctly returned %v", connectErr.Code())
+	}
+
+	// Also verify GetAccount returns error, not nil response.
+	req2 := connect.NewRequest(&antv1.GetAccountRequest{Id: uuid.New().String()})
+	_, err = srv.GetAccount(userCtx, req2)
+	if err == nil {
+		t.Error("GetAccount should return error when PG is unavailable")
+	} else {
+		t.Logf("GetAccount with PG down: correctly returned %v", err)
+	}
 }
