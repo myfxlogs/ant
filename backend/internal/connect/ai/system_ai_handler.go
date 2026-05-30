@@ -111,6 +111,9 @@ func (s *SystemAIServer) UpdateSystemAISecret(ctx context.Context, req *connect.
 func (s *SystemAIServer) DiscoverSystemAIModels(ctx context.Context, req *connect.Request[antv1.DiscoverSystemAIModelsRequest]) (*connect.Response[antv1.DiscoverSystemAIModelsResponse], error) {
 	models, err := s.systemSvc.DiscoverModels(ctx, s.userID(ctx), req.Msg.ProviderId)
 	if err != nil {
+		s.log.Warn("discover models failed",
+			zap.String("provider", req.Msg.ProviderId),
+			zap.String("raw_error", err.Error()))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	def := ""
@@ -127,6 +130,9 @@ func (s *SystemAIServer) DiscoverSystemAIModels(ctx context.Context, req *connec
 func (s *SystemAIServer) ValidateSystemAIConnection(ctx context.Context, req *connect.Request[antv1.ValidateSystemAIConnectionRequest]) (*connect.Response[antv1.ValidateSystemAIConnectionResponse], error) {
 	models, err := s.systemSvc.DiscoverModels(ctx, s.userID(ctx), req.Msg.ProviderId)
 	if err != nil {
+		s.log.Warn("validate connection failed",
+			zap.String("provider", req.Msg.ProviderId),
+			zap.String("raw_error", err.Error()))
 		return connect.NewResponse(&antv1.ValidateSystemAIConnectionResponse{
 			ProviderId: req.Msg.ProviderId,
 			Ok:         false,
