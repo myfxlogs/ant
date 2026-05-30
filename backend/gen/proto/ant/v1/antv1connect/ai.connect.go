@@ -33,11 +33,6 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// AIServiceGetAIReportsProcedure is the fully-qualified name of the AIService's GetAIReports RPC.
-	AIServiceGetAIReportsProcedure = "/ant.v1.AIService/GetAIReports"
-	// AIServiceGenerateReportProcedure is the fully-qualified name of the AIService's GenerateReport
-	// RPC.
-	AIServiceGenerateReportProcedure = "/ant.v1.AIService/GenerateReport"
 	// AIServiceChatProcedure is the fully-qualified name of the AIService's Chat RPC.
 	AIServiceChatProcedure = "/ant.v1.AIService/Chat"
 	// AIServiceChatStreamProcedure is the fully-qualified name of the AIService's ChatStream RPC.
@@ -57,28 +52,12 @@ const (
 	// AIServiceUpdateConversationTitleProcedure is the fully-qualified name of the AIService's
 	// UpdateConversationTitle RPC.
 	AIServiceUpdateConversationTitleProcedure = "/ant.v1.AIService/UpdateConversationTitle"
-	// AIServiceCreateWorkflowRunProcedure is the fully-qualified name of the AIService's
-	// CreateWorkflowRun RPC.
-	AIServiceCreateWorkflowRunProcedure = "/ant.v1.AIService/CreateWorkflowRun"
-	// AIServiceAppendWorkflowStepProcedure is the fully-qualified name of the AIService's
-	// AppendWorkflowStep RPC.
-	AIServiceAppendWorkflowStepProcedure = "/ant.v1.AIService/AppendWorkflowStep"
-	// AIServiceListWorkflowRunsProcedure is the fully-qualified name of the AIService's
-	// ListWorkflowRuns RPC.
-	AIServiceListWorkflowRunsProcedure = "/ant.v1.AIService/ListWorkflowRuns"
-	// AIServiceGetWorkflowRunProcedure is the fully-qualified name of the AIService's GetWorkflowRun
-	// RPC.
-	AIServiceGetWorkflowRunProcedure = "/ant.v1.AIService/GetWorkflowRun"
 	// AIServiceListAgentsProcedure is the fully-qualified name of the AIService's ListAgents RPC.
 	AIServiceListAgentsProcedure = "/ant.v1.AIService/ListAgents"
-	// AIServiceSetAgentsProcedure is the fully-qualified name of the AIService's SetAgents RPC.
-	AIServiceSetAgentsProcedure = "/ant.v1.AIService/SetAgents"
 )
 
 // AIServiceClient is a client for the ant.v1.AIService service.
 type AIServiceClient interface {
-	GetAIReports(context.Context, *connect.Request[v1.GetAIReportsRequest]) (*connect.Response[v1.GetAIReportsResponse], error)
-	GenerateReport(context.Context, *connect.Request[v1.GenerateReportRequest]) (*connect.Response[v1.GenerateReportResponse], error)
 	Chat(context.Context, *connect.Request[v1.ChatRequest]) (*connect.Response[v1.ChatResponse], error)
 	// Server-streaming assistant reply; see docs/AI对话体验与可靠性优化.md
 	ChatStream(context.Context, *connect.Request[v1.ChatRequest]) (*connect.ServerStreamForClient[v1.ChatStreamChunk], error)
@@ -87,12 +66,7 @@ type AIServiceClient interface {
 	CreateConversation(context.Context, *connect.Request[v1.CreateConversationRequest]) (*connect.Response[v1.CreateConversationResponse], error)
 	DeleteConversation(context.Context, *connect.Request[v1.DeleteConversationRequest]) (*connect.Response[v1.DeleteConversationResponse], error)
 	UpdateConversationTitle(context.Context, *connect.Request[v1.UpdateConversationTitleRequest]) (*connect.Response[v1.UpdateConversationTitleResponse], error)
-	CreateWorkflowRun(context.Context, *connect.Request[v1.CreateWorkflowRunRequest]) (*connect.Response[v1.CreateWorkflowRunResponse], error)
-	AppendWorkflowStep(context.Context, *connect.Request[v1.AppendWorkflowStepRequest]) (*connect.Response[v1.AppendWorkflowStepResponse], error)
-	ListWorkflowRuns(context.Context, *connect.Request[v1.ListWorkflowRunsRequest]) (*connect.Response[v1.ListWorkflowRunsResponse], error)
-	GetWorkflowRun(context.Context, *connect.Request[v1.GetWorkflowRunRequest]) (*connect.Response[v1.GetWorkflowRunResponse], error)
 	ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error)
-	SetAgents(context.Context, *connect.Request[v1.SetAgentsRequest]) (*connect.Response[v1.SetAgentsResponse], error)
 }
 
 // NewAIServiceClient constructs a client for the ant.v1.AIService service. By default, it uses the
@@ -106,18 +80,6 @@ func NewAIServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...c
 	baseURL = strings.TrimRight(baseURL, "/")
 	aIServiceMethods := v1.File_ai_proto.Services().ByName("AIService").Methods()
 	return &aIServiceClient{
-		getAIReports: connect.NewClient[v1.GetAIReportsRequest, v1.GetAIReportsResponse](
-			httpClient,
-			baseURL+AIServiceGetAIReportsProcedure,
-			connect.WithSchema(aIServiceMethods.ByName("GetAIReports")),
-			connect.WithClientOptions(opts...),
-		),
-		generateReport: connect.NewClient[v1.GenerateReportRequest, v1.GenerateReportResponse](
-			httpClient,
-			baseURL+AIServiceGenerateReportProcedure,
-			connect.WithSchema(aIServiceMethods.ByName("GenerateReport")),
-			connect.WithClientOptions(opts...),
-		),
 		chat: connect.NewClient[v1.ChatRequest, v1.ChatResponse](
 			httpClient,
 			baseURL+AIServiceChatProcedure,
@@ -160,40 +122,10 @@ func NewAIServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...c
 			connect.WithSchema(aIServiceMethods.ByName("UpdateConversationTitle")),
 			connect.WithClientOptions(opts...),
 		),
-		createWorkflowRun: connect.NewClient[v1.CreateWorkflowRunRequest, v1.CreateWorkflowRunResponse](
-			httpClient,
-			baseURL+AIServiceCreateWorkflowRunProcedure,
-			connect.WithSchema(aIServiceMethods.ByName("CreateWorkflowRun")),
-			connect.WithClientOptions(opts...),
-		),
-		appendWorkflowStep: connect.NewClient[v1.AppendWorkflowStepRequest, v1.AppendWorkflowStepResponse](
-			httpClient,
-			baseURL+AIServiceAppendWorkflowStepProcedure,
-			connect.WithSchema(aIServiceMethods.ByName("AppendWorkflowStep")),
-			connect.WithClientOptions(opts...),
-		),
-		listWorkflowRuns: connect.NewClient[v1.ListWorkflowRunsRequest, v1.ListWorkflowRunsResponse](
-			httpClient,
-			baseURL+AIServiceListWorkflowRunsProcedure,
-			connect.WithSchema(aIServiceMethods.ByName("ListWorkflowRuns")),
-			connect.WithClientOptions(opts...),
-		),
-		getWorkflowRun: connect.NewClient[v1.GetWorkflowRunRequest, v1.GetWorkflowRunResponse](
-			httpClient,
-			baseURL+AIServiceGetWorkflowRunProcedure,
-			connect.WithSchema(aIServiceMethods.ByName("GetWorkflowRun")),
-			connect.WithClientOptions(opts...),
-		),
 		listAgents: connect.NewClient[v1.ListAgentsRequest, v1.ListAgentsResponse](
 			httpClient,
 			baseURL+AIServiceListAgentsProcedure,
 			connect.WithSchema(aIServiceMethods.ByName("ListAgents")),
-			connect.WithClientOptions(opts...),
-		),
-		setAgents: connect.NewClient[v1.SetAgentsRequest, v1.SetAgentsResponse](
-			httpClient,
-			baseURL+AIServiceSetAgentsProcedure,
-			connect.WithSchema(aIServiceMethods.ByName("SetAgents")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -201,8 +133,6 @@ func NewAIServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...c
 
 // aIServiceClient implements AIServiceClient.
 type aIServiceClient struct {
-	getAIReports            *connect.Client[v1.GetAIReportsRequest, v1.GetAIReportsResponse]
-	generateReport          *connect.Client[v1.GenerateReportRequest, v1.GenerateReportResponse]
 	chat                    *connect.Client[v1.ChatRequest, v1.ChatResponse]
 	chatStream              *connect.Client[v1.ChatRequest, v1.ChatStreamChunk]
 	listConversations       *connect.Client[v1.ListConversationsRequest, v1.ListConversationsResponse]
@@ -210,22 +140,7 @@ type aIServiceClient struct {
 	createConversation      *connect.Client[v1.CreateConversationRequest, v1.CreateConversationResponse]
 	deleteConversation      *connect.Client[v1.DeleteConversationRequest, v1.DeleteConversationResponse]
 	updateConversationTitle *connect.Client[v1.UpdateConversationTitleRequest, v1.UpdateConversationTitleResponse]
-	createWorkflowRun       *connect.Client[v1.CreateWorkflowRunRequest, v1.CreateWorkflowRunResponse]
-	appendWorkflowStep      *connect.Client[v1.AppendWorkflowStepRequest, v1.AppendWorkflowStepResponse]
-	listWorkflowRuns        *connect.Client[v1.ListWorkflowRunsRequest, v1.ListWorkflowRunsResponse]
-	getWorkflowRun          *connect.Client[v1.GetWorkflowRunRequest, v1.GetWorkflowRunResponse]
 	listAgents              *connect.Client[v1.ListAgentsRequest, v1.ListAgentsResponse]
-	setAgents               *connect.Client[v1.SetAgentsRequest, v1.SetAgentsResponse]
-}
-
-// GetAIReports calls ant.v1.AIService.GetAIReports.
-func (c *aIServiceClient) GetAIReports(ctx context.Context, req *connect.Request[v1.GetAIReportsRequest]) (*connect.Response[v1.GetAIReportsResponse], error) {
-	return c.getAIReports.CallUnary(ctx, req)
-}
-
-// GenerateReport calls ant.v1.AIService.GenerateReport.
-func (c *aIServiceClient) GenerateReport(ctx context.Context, req *connect.Request[v1.GenerateReportRequest]) (*connect.Response[v1.GenerateReportResponse], error) {
-	return c.generateReport.CallUnary(ctx, req)
 }
 
 // Chat calls ant.v1.AIService.Chat.
@@ -263,40 +178,13 @@ func (c *aIServiceClient) UpdateConversationTitle(ctx context.Context, req *conn
 	return c.updateConversationTitle.CallUnary(ctx, req)
 }
 
-// CreateWorkflowRun calls ant.v1.AIService.CreateWorkflowRun.
-func (c *aIServiceClient) CreateWorkflowRun(ctx context.Context, req *connect.Request[v1.CreateWorkflowRunRequest]) (*connect.Response[v1.CreateWorkflowRunResponse], error) {
-	return c.createWorkflowRun.CallUnary(ctx, req)
-}
-
-// AppendWorkflowStep calls ant.v1.AIService.AppendWorkflowStep.
-func (c *aIServiceClient) AppendWorkflowStep(ctx context.Context, req *connect.Request[v1.AppendWorkflowStepRequest]) (*connect.Response[v1.AppendWorkflowStepResponse], error) {
-	return c.appendWorkflowStep.CallUnary(ctx, req)
-}
-
-// ListWorkflowRuns calls ant.v1.AIService.ListWorkflowRuns.
-func (c *aIServiceClient) ListWorkflowRuns(ctx context.Context, req *connect.Request[v1.ListWorkflowRunsRequest]) (*connect.Response[v1.ListWorkflowRunsResponse], error) {
-	return c.listWorkflowRuns.CallUnary(ctx, req)
-}
-
-// GetWorkflowRun calls ant.v1.AIService.GetWorkflowRun.
-func (c *aIServiceClient) GetWorkflowRun(ctx context.Context, req *connect.Request[v1.GetWorkflowRunRequest]) (*connect.Response[v1.GetWorkflowRunResponse], error) {
-	return c.getWorkflowRun.CallUnary(ctx, req)
-}
-
 // ListAgents calls ant.v1.AIService.ListAgents.
 func (c *aIServiceClient) ListAgents(ctx context.Context, req *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error) {
 	return c.listAgents.CallUnary(ctx, req)
 }
 
-// SetAgents calls ant.v1.AIService.SetAgents.
-func (c *aIServiceClient) SetAgents(ctx context.Context, req *connect.Request[v1.SetAgentsRequest]) (*connect.Response[v1.SetAgentsResponse], error) {
-	return c.setAgents.CallUnary(ctx, req)
-}
-
 // AIServiceHandler is an implementation of the ant.v1.AIService service.
 type AIServiceHandler interface {
-	GetAIReports(context.Context, *connect.Request[v1.GetAIReportsRequest]) (*connect.Response[v1.GetAIReportsResponse], error)
-	GenerateReport(context.Context, *connect.Request[v1.GenerateReportRequest]) (*connect.Response[v1.GenerateReportResponse], error)
 	Chat(context.Context, *connect.Request[v1.ChatRequest]) (*connect.Response[v1.ChatResponse], error)
 	// Server-streaming assistant reply; see docs/AI对话体验与可靠性优化.md
 	ChatStream(context.Context, *connect.Request[v1.ChatRequest], *connect.ServerStream[v1.ChatStreamChunk]) error
@@ -305,12 +193,7 @@ type AIServiceHandler interface {
 	CreateConversation(context.Context, *connect.Request[v1.CreateConversationRequest]) (*connect.Response[v1.CreateConversationResponse], error)
 	DeleteConversation(context.Context, *connect.Request[v1.DeleteConversationRequest]) (*connect.Response[v1.DeleteConversationResponse], error)
 	UpdateConversationTitle(context.Context, *connect.Request[v1.UpdateConversationTitleRequest]) (*connect.Response[v1.UpdateConversationTitleResponse], error)
-	CreateWorkflowRun(context.Context, *connect.Request[v1.CreateWorkflowRunRequest]) (*connect.Response[v1.CreateWorkflowRunResponse], error)
-	AppendWorkflowStep(context.Context, *connect.Request[v1.AppendWorkflowStepRequest]) (*connect.Response[v1.AppendWorkflowStepResponse], error)
-	ListWorkflowRuns(context.Context, *connect.Request[v1.ListWorkflowRunsRequest]) (*connect.Response[v1.ListWorkflowRunsResponse], error)
-	GetWorkflowRun(context.Context, *connect.Request[v1.GetWorkflowRunRequest]) (*connect.Response[v1.GetWorkflowRunResponse], error)
 	ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error)
-	SetAgents(context.Context, *connect.Request[v1.SetAgentsRequest]) (*connect.Response[v1.SetAgentsResponse], error)
 }
 
 // NewAIServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -320,18 +203,6 @@ type AIServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewAIServiceHandler(svc AIServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	aIServiceMethods := v1.File_ai_proto.Services().ByName("AIService").Methods()
-	aIServiceGetAIReportsHandler := connect.NewUnaryHandler(
-		AIServiceGetAIReportsProcedure,
-		svc.GetAIReports,
-		connect.WithSchema(aIServiceMethods.ByName("GetAIReports")),
-		connect.WithHandlerOptions(opts...),
-	)
-	aIServiceGenerateReportHandler := connect.NewUnaryHandler(
-		AIServiceGenerateReportProcedure,
-		svc.GenerateReport,
-		connect.WithSchema(aIServiceMethods.ByName("GenerateReport")),
-		connect.WithHandlerOptions(opts...),
-	)
 	aIServiceChatHandler := connect.NewUnaryHandler(
 		AIServiceChatProcedure,
 		svc.Chat,
@@ -374,48 +245,14 @@ func NewAIServiceHandler(svc AIServiceHandler, opts ...connect.HandlerOption) (s
 		connect.WithSchema(aIServiceMethods.ByName("UpdateConversationTitle")),
 		connect.WithHandlerOptions(opts...),
 	)
-	aIServiceCreateWorkflowRunHandler := connect.NewUnaryHandler(
-		AIServiceCreateWorkflowRunProcedure,
-		svc.CreateWorkflowRun,
-		connect.WithSchema(aIServiceMethods.ByName("CreateWorkflowRun")),
-		connect.WithHandlerOptions(opts...),
-	)
-	aIServiceAppendWorkflowStepHandler := connect.NewUnaryHandler(
-		AIServiceAppendWorkflowStepProcedure,
-		svc.AppendWorkflowStep,
-		connect.WithSchema(aIServiceMethods.ByName("AppendWorkflowStep")),
-		connect.WithHandlerOptions(opts...),
-	)
-	aIServiceListWorkflowRunsHandler := connect.NewUnaryHandler(
-		AIServiceListWorkflowRunsProcedure,
-		svc.ListWorkflowRuns,
-		connect.WithSchema(aIServiceMethods.ByName("ListWorkflowRuns")),
-		connect.WithHandlerOptions(opts...),
-	)
-	aIServiceGetWorkflowRunHandler := connect.NewUnaryHandler(
-		AIServiceGetWorkflowRunProcedure,
-		svc.GetWorkflowRun,
-		connect.WithSchema(aIServiceMethods.ByName("GetWorkflowRun")),
-		connect.WithHandlerOptions(opts...),
-	)
 	aIServiceListAgentsHandler := connect.NewUnaryHandler(
 		AIServiceListAgentsProcedure,
 		svc.ListAgents,
 		connect.WithSchema(aIServiceMethods.ByName("ListAgents")),
 		connect.WithHandlerOptions(opts...),
 	)
-	aIServiceSetAgentsHandler := connect.NewUnaryHandler(
-		AIServiceSetAgentsProcedure,
-		svc.SetAgents,
-		connect.WithSchema(aIServiceMethods.ByName("SetAgents")),
-		connect.WithHandlerOptions(opts...),
-	)
 	return "/ant.v1.AIService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case AIServiceGetAIReportsProcedure:
-			aIServiceGetAIReportsHandler.ServeHTTP(w, r)
-		case AIServiceGenerateReportProcedure:
-			aIServiceGenerateReportHandler.ServeHTTP(w, r)
 		case AIServiceChatProcedure:
 			aIServiceChatHandler.ServeHTTP(w, r)
 		case AIServiceChatStreamProcedure:
@@ -430,18 +267,8 @@ func NewAIServiceHandler(svc AIServiceHandler, opts ...connect.HandlerOption) (s
 			aIServiceDeleteConversationHandler.ServeHTTP(w, r)
 		case AIServiceUpdateConversationTitleProcedure:
 			aIServiceUpdateConversationTitleHandler.ServeHTTP(w, r)
-		case AIServiceCreateWorkflowRunProcedure:
-			aIServiceCreateWorkflowRunHandler.ServeHTTP(w, r)
-		case AIServiceAppendWorkflowStepProcedure:
-			aIServiceAppendWorkflowStepHandler.ServeHTTP(w, r)
-		case AIServiceListWorkflowRunsProcedure:
-			aIServiceListWorkflowRunsHandler.ServeHTTP(w, r)
-		case AIServiceGetWorkflowRunProcedure:
-			aIServiceGetWorkflowRunHandler.ServeHTTP(w, r)
 		case AIServiceListAgentsProcedure:
 			aIServiceListAgentsHandler.ServeHTTP(w, r)
-		case AIServiceSetAgentsProcedure:
-			aIServiceSetAgentsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -450,14 +277,6 @@ func NewAIServiceHandler(svc AIServiceHandler, opts ...connect.HandlerOption) (s
 
 // UnimplementedAIServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedAIServiceHandler struct{}
-
-func (UnimplementedAIServiceHandler) GetAIReports(context.Context, *connect.Request[v1.GetAIReportsRequest]) (*connect.Response[v1.GetAIReportsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AIService.GetAIReports is not implemented"))
-}
-
-func (UnimplementedAIServiceHandler) GenerateReport(context.Context, *connect.Request[v1.GenerateReportRequest]) (*connect.Response[v1.GenerateReportResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AIService.GenerateReport is not implemented"))
-}
 
 func (UnimplementedAIServiceHandler) Chat(context.Context, *connect.Request[v1.ChatRequest]) (*connect.Response[v1.ChatResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AIService.Chat is not implemented"))
@@ -487,26 +306,6 @@ func (UnimplementedAIServiceHandler) UpdateConversationTitle(context.Context, *c
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AIService.UpdateConversationTitle is not implemented"))
 }
 
-func (UnimplementedAIServiceHandler) CreateWorkflowRun(context.Context, *connect.Request[v1.CreateWorkflowRunRequest]) (*connect.Response[v1.CreateWorkflowRunResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AIService.CreateWorkflowRun is not implemented"))
-}
-
-func (UnimplementedAIServiceHandler) AppendWorkflowStep(context.Context, *connect.Request[v1.AppendWorkflowStepRequest]) (*connect.Response[v1.AppendWorkflowStepResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AIService.AppendWorkflowStep is not implemented"))
-}
-
-func (UnimplementedAIServiceHandler) ListWorkflowRuns(context.Context, *connect.Request[v1.ListWorkflowRunsRequest]) (*connect.Response[v1.ListWorkflowRunsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AIService.ListWorkflowRuns is not implemented"))
-}
-
-func (UnimplementedAIServiceHandler) GetWorkflowRun(context.Context, *connect.Request[v1.GetWorkflowRunRequest]) (*connect.Response[v1.GetWorkflowRunResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AIService.GetWorkflowRun is not implemented"))
-}
-
 func (UnimplementedAIServiceHandler) ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AIService.ListAgents is not implemented"))
-}
-
-func (UnimplementedAIServiceHandler) SetAgents(context.Context, *connect.Request[v1.SetAgentsRequest]) (*connect.Response[v1.SetAgentsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AIService.SetAgents is not implemented"))
 }

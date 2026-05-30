@@ -21,8 +21,6 @@ interface AIState {
   newConversation: () => Promise<void>;
   selectConversation: (_id: string) => Promise<void>;
   deleteConversation: (_id: string) => Promise<void>;
-  getReports: (_accountId?: string) => Promise<any[]>;
-  generateReport: (_accountId: string, _reportType: string, _period: string) => Promise<any>;
   setLoading: (loading: boolean) => void;
 }
 
@@ -127,31 +125,6 @@ export const useAIStore = create<AIState>((set, get) => {
     clearMessages: () => {
       set({ messages: [] });
       message.success(i18n.t('ai.store.messages.clearedLocalOnly'));
-    },
-
-    getReports: async (accountId) => {
-      try {
-        const reports = await aiApi.getReports({ accountId });
-        return reports;
-      } catch {
-        message.error(i18n.t('ai.store.messages.getReportsFailed'));
-        return [];
-      }
-    },
-
-    generateReport: async (accountId, reportType, period) => {
-      try {
-        const report = await aiApi.generateReport({
-          accountId,
-          reportType,
-          period,
-        });
-        message.success(i18n.t('ai.store.messages.generateReportSuccess'));
-        return report;
-      } catch {
-        message.error(i18n.t('ai.store.messages.generateReportFailed'));
-        return null;
-      }
     },
 
     setLoading: (loading) => set({ loading }),

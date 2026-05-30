@@ -58,6 +58,7 @@ func registerHandlers(
 	js nats.JetStreamContext,
 	eventStore *mthub.TradeEventStore,
 	reconcileGate *mthub.ReconcileGate,
+	analyticsCache *service.AnalyticsCache,
 ) (*mthub.ReconciliationLoop, *notifier.EmailNotifier, *risksvc.PlatformAggregator) {
 
 	// ConnectRPC handlers
@@ -260,6 +261,7 @@ func registerHandlers(
 		authInterceptor, platformSvc, mthubSvc,
 		authServer, debateV2Server, gateProgressServer,
 		strategyExperimentRepo, strategyAssetRepo, schedHealthRepo,
+		analyticsCache,
 	)
 
 	return reconLoop, emailNotifier, platformAgg

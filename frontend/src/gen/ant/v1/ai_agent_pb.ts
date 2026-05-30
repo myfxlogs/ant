@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file ai_agent.proto.
  */
 export const file_ai_agent: GenFile = /*@__PURE__*/
-  fileDesc("Cg5haV9hZ2VudC5wcm90bxIGYW50LnYxIsQBChFBSUFnZW50RGVmaW5pdGlvbhIKCgJpZBgBIAEoCRIRCglhZ2VudF9rZXkYAiABKAkSDAoEdHlwZRgDIAEoCRIMCgRuYW1lGAQgASgJEhAKCGlkZW50aXR5GAUgASgJEhIKCmlucHV0X2hpbnQYBiABKAkSDwoHZW5hYmxlZBgHIAEoCBIQCghwb3NpdGlvbhgIIAEoBRITCgtwcm92aWRlcl9pZBgJIAEoCRIWCg5tb2RlbF9vdmVycmlkZRgKIAEoCSITChFMaXN0QWdlbnRzUmVxdWVzdCI/ChJMaXN0QWdlbnRzUmVzcG9uc2USKQoGYWdlbnRzGAEgAygLMhkuYW50LnYxLkFJQWdlbnREZWZpbml0aW9uIj0KEFNldEFnZW50c1JlcXVlc3QSKQoGYWdlbnRzGAEgAygLMhkuYW50LnYxLkFJQWdlbnREZWZpbml0aW9uIj4KEVNldEFnZW50c1Jlc3BvbnNlEikKBmFnZW50cxgBIAMoCzIZLmFudC52MS5BSUFnZW50RGVmaW5pdGlvbkIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z");
+  fileDesc("Cg5haV9hZ2VudC5wcm90bxIGYW50LnYxIsQBChFBSUFnZW50RGVmaW5pdGlvbhIKCgJpZBgBIAEoCRIRCglhZ2VudF9rZXkYAiABKAkSDAoEdHlwZRgDIAEoCRIMCgRuYW1lGAQgASgJEhAKCGlkZW50aXR5GAUgASgJEhIKCmlucHV0X2hpbnQYBiABKAkSDwoHZW5hYmxlZBgHIAEoCBIQCghwb3NpdGlvbhgIIAEoBRITCgtwcm92aWRlcl9pZBgJIAEoCRIWCg5tb2RlbF9vdmVycmlkZRgKIAEoCSITChFMaXN0QWdlbnRzUmVxdWVzdCI/ChJMaXN0QWdlbnRzUmVzcG9uc2USKQoGYWdlbnRzGAEgAygLMhkuYW50LnYxLkFJQWdlbnREZWZpbml0aW9uQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
 
 /**
  * @generated from message ant.v1.AIAgentDefinition
@@ -103,38 +103,4 @@ export type ListAgentsResponse = Message<"ant.v1.ListAgentsResponse"> & {
  */
 export const ListAgentsResponseSchema: GenMessage<ListAgentsResponse> = /*@__PURE__*/
   messageDesc(file_ai_agent, 2);
-
-/**
- * @generated from message ant.v1.SetAgentsRequest
- */
-export type SetAgentsRequest = Message<"ant.v1.SetAgentsRequest"> & {
-  /**
-   * @generated from field: repeated ant.v1.AIAgentDefinition agents = 1;
-   */
-  agents: AIAgentDefinition[];
-};
-
-/**
- * Describes the message ant.v1.SetAgentsRequest.
- * Use `create(SetAgentsRequestSchema)` to create a new message.
- */
-export const SetAgentsRequestSchema: GenMessage<SetAgentsRequest> = /*@__PURE__*/
-  messageDesc(file_ai_agent, 3);
-
-/**
- * @generated from message ant.v1.SetAgentsResponse
- */
-export type SetAgentsResponse = Message<"ant.v1.SetAgentsResponse"> & {
-  /**
-   * @generated from field: repeated ant.v1.AIAgentDefinition agents = 1;
-   */
-  agents: AIAgentDefinition[];
-};
-
-/**
- * Describes the message ant.v1.SetAgentsResponse.
- * Use `create(SetAgentsResponseSchema)` to create a new message.
- */
-export const SetAgentsResponseSchema: GenMessage<SetAgentsResponse> = /*@__PURE__*/
-  messageDesc(file_ai_agent, 4);
 

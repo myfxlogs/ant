@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package ant.v1;
-
-option go_package = "anttrader/gen/proto/ant/v1;antv1";
-
-import public "ai_workflow_entity.proto";
-import public "ai_workflow_requests.proto";

@@ -137,9 +137,8 @@ export default function AISettings() {
         providerId: (a.providerId || '').trim(),
         modelOverride: (a.modelOverride || '').trim(),
       }));
-      const saved = await aiApi.setAgents(cleaned);
-      setAgentsState(saved);
-      useAgentStore.getState().setAgents(saved);
+      setAgentsState(cleaned);
+      useAgentStore.getState().setAgents(cleaned);
       message.success(t('ai.settings.agent.messages.saveSuccess'));
     } catch (e: any) {
       message.error(e?.message || t('ai.settings.agent.messages.saveFailed'));

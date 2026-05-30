@@ -30,24 +30,6 @@ func NewAIServer(systemSvc *systemai.Service, conversations *repository.AIConver
 
 var _ antv1c.AIServiceHandler = (*AIServer)(nil)
 
-// ── Reports ──
-
-func (s *AIServer) GetAIReports(ctx context.Context, req *connect.Request[antv1.GetAIReportsRequest]) (*connect.Response[antv1.GetAIReportsResponse], error) {
-	return connect.NewResponse(&antv1.GetAIReportsResponse{
-		Reports: []*antv1.AIReport{},
-	}), nil
-}
-
-func (s *AIServer) GenerateReport(ctx context.Context, req *connect.Request[antv1.GenerateReportRequest]) (*connect.Response[antv1.GenerateReportResponse], error) {
-	return connect.NewResponse(&antv1.GenerateReportResponse{
-		Report: &antv1.AIReport{
-			Id:         uuid.New().String(),
-			Title:      "Mock Report",
-			ReportType: "market_analysis",
-		},
-	}), nil
-}
-
 // ── Chat ──
 
 func (s *AIServer) Chat(ctx context.Context, req *connect.Request[antv1.ChatRequest]) (*connect.Response[antv1.ChatResponse], error) {
@@ -55,30 +37,36 @@ func (s *AIServer) Chat(ctx context.Context, req *connect.Request[antv1.ChatRequ
 	if len(m.Message) > 10000 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("message too long: %d bytes", len(m.Message)))
 	}
-	reply := fmt.Sprintf("收到消息：「%s」。AI 助手正在开发中，这是模拟回复。", m.Message)
+
+	uid, err := userIDFromCtx(ctx)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+	}
+
+	systemPrompt := "You are a helpful quantitative trading assistant."
+	reply, err := s.systemSvc.ChatCompletion(ctx, uid, systemPrompt, m.Message, "")
+	if err != nil {
+		s.log.Error("Chat: ChatCompletion failed", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("AI service temporarily unavailable"))
+	}
+
 	if m.ConversationId != "" {
-		uid, err := userIDFromCtx(ctx)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeUnauthenticated, err)
-		}
-		cid, err := uuid.Parse(m.ConversationId)
-		if err != nil {
-			s.log.Warn("Chat: invalid conversation id", zap.String("raw", m.ConversationId), zap.Error(err))
+		cid, parseErr := uuid.Parse(m.ConversationId)
+		if parseErr != nil {
+			s.log.Warn("Chat: invalid conversation id", zap.String("raw", m.ConversationId), zap.Error(parseErr))
 		} else {
-			// Verify conversation belongs to the requesting user before adding messages.
-			if _, err := s.conversations.GetByID(ctx, cid, uid); err == nil {
-				_, aErr := s.conversations.AddMessage(ctx, uid, cid, "user", m.Message)
-				if aErr != nil {
+			if _, lookupErr := s.conversations.GetByID(ctx, cid, uid); lookupErr == nil {
+				if _, aErr := s.conversations.AddMessage(ctx, uid, cid, "user", m.Message); aErr != nil {
 					s.log.Warn("Chat: AddMessage user failed", zap.Error(aErr))
 				}
-				_, aErr = s.conversations.AddMessage(ctx, uid, cid, "assistant", reply)
-				if aErr != nil {
+				if _, aErr := s.conversations.AddMessage(ctx, uid, cid, "assistant", reply); aErr != nil {
 					s.log.Warn("Chat: AddMessage assistant failed", zap.Error(aErr))
 				}
 				_ = s.conversations.Touch(ctx, cid, uid)
 			}
 		}
 	}
+
 	return connect.NewResponse(&antv1.ChatResponse{
 		Message:     reply,
 		Suggestions: []string{"分析当前持仓风险", "推荐交易策略", "解释技术指标"},
@@ -86,11 +74,24 @@ func (s *AIServer) Chat(ctx context.Context, req *connect.Request[antv1.ChatRequ
 }
 
 func (s *AIServer) ChatStream(ctx context.Context, req *connect.Request[antv1.ChatRequest], stream *connect.ServerStream[antv1.ChatStreamChunk]) error {
-	if len(req.Msg.Message) > 10000 {
-		return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("message too long: %d bytes", len(req.Msg.Message)))
+	m := req.Msg
+	if len(m.Message) > 10000 {
+		return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("message too long: %d bytes", len(m.Message)))
 	}
-	text := fmt.Sprintf("收到消息：「%s」。AI 助手正在开发中。", req.Msg.Message)
-	runes := []rune(text)
+
+	uid, err := userIDFromCtx(ctx)
+	if err != nil {
+		return connect.NewError(connect.CodeUnauthenticated, err)
+	}
+
+	systemPrompt := "You are a helpful quantitative trading assistant."
+	reply, err := s.systemSvc.ChatCompletion(ctx, uid, systemPrompt, m.Message, "")
+	if err != nil {
+		s.log.Error("ChatStream: ChatCompletion failed", zap.Error(err))
+		return connect.NewError(connect.CodeInternal, fmt.Errorf("AI service temporarily unavailable"))
+	}
+
+	runes := []rune(reply)
 	for i, c := range runes {
 		chunk := &antv1.ChatStreamChunk{Delta: string(c), Done: false}
 		if i == len(runes)-1 {
@@ -98,10 +99,29 @@ func (s *AIServer) ChatStream(ctx context.Context, req *connect.Request[antv1.Ch
 			chunk.PromptTokens = 10
 			chunk.CompletionTokens = int32(len(runes) / 4)
 		}
-		if err := stream.Send(chunk); err != nil {
-			return fmt.Errorf("send chat stream chunk: %w", err)
+		if sendErr := stream.Send(chunk); sendErr != nil {
+			return fmt.Errorf("send chat stream chunk: %w", sendErr)
 		}
 	}
+
+	// Persist messages to conversation after streaming completes.
+	if m.ConversationId != "" {
+		cid, parseErr := uuid.Parse(m.ConversationId)
+		if parseErr != nil {
+			s.log.Warn("ChatStream: invalid conversation id", zap.String("raw", m.ConversationId), zap.Error(parseErr))
+		} else {
+			if _, lookupErr := s.conversations.GetByID(ctx, cid, uid); lookupErr == nil {
+				if _, aErr := s.conversations.AddMessage(ctx, uid, cid, "user", m.Message); aErr != nil {
+					s.log.Warn("ChatStream: AddMessage user failed", zap.Error(aErr))
+				}
+				if _, aErr := s.conversations.AddMessage(ctx, uid, cid, "assistant", reply); aErr != nil {
+					s.log.Warn("ChatStream: AddMessage assistant failed", zap.Error(aErr))
+				}
+				_ = s.conversations.Touch(ctx, cid, uid)
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -239,40 +259,6 @@ func (s *AIServer) UpdateConversationTitle(ctx context.Context, req *connect.Req
 	return connect.NewResponse(&antv1.UpdateConversationTitleResponse{}), nil
 }
 
-// ── Workflow ──
-
-func (s *AIServer) CreateWorkflowRun(ctx context.Context, req *connect.Request[antv1.CreateWorkflowRunRequest]) (*connect.Response[antv1.CreateWorkflowRunResponse], error) {
-	_, err := userIDFromCtx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("CreateWorkflowRun not yet implemented"))
-}
-
-func (s *AIServer) AppendWorkflowStep(ctx context.Context, req *connect.Request[antv1.AppendWorkflowStepRequest]) (*connect.Response[antv1.AppendWorkflowStepResponse], error) {
-	_, err := userIDFromCtx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("AppendWorkflowStep not yet implemented"))
-}
-
-func (s *AIServer) ListWorkflowRuns(ctx context.Context, req *connect.Request[antv1.ListWorkflowRunsRequest]) (*connect.Response[antv1.ListWorkflowRunsResponse], error) {
-	_, err := userIDFromCtx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("ListWorkflowRuns not yet implemented"))
-}
-
-func (s *AIServer) GetWorkflowRun(ctx context.Context, req *connect.Request[antv1.GetWorkflowRunRequest]) (*connect.Response[antv1.GetWorkflowRunResponse], error) {
-	_, err := userIDFromCtx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("GetWorkflowRun not yet implemented"))
-}
-
 // ── Agents ──
 
 var defaultAgents = []*antv1.AIAgentDefinition{
@@ -284,12 +270,4 @@ var defaultAgents = []*antv1.AIAgentDefinition{
 
 func (s *AIServer) ListAgents(ctx context.Context, req *connect.Request[antv1.ListAgentsRequest]) (*connect.Response[antv1.ListAgentsResponse], error) {
 	return connect.NewResponse(&antv1.ListAgentsResponse{Agents: defaultAgents}), nil
-}
-
-func (s *AIServer) SetAgents(ctx context.Context, req *connect.Request[antv1.SetAgentsRequest]) (*connect.Response[antv1.SetAgentsResponse], error) {
-	_, err := userIDFromCtx(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("SetAgents not yet implemented"))
 }

@@ -141,14 +141,23 @@ func (s *AnalyticsServer) GetAccountAnalytics(ctx context.Context, req *connect.
 		s.log.Warn("get hourly stats failed", zap.Error(err))
 	}
 
-	return connect.NewResponse(&antv1.AccountAnalyticsResponse{
+	resp := &antv1.AccountAnalyticsResponse{
 		TradeStats:  tradeStatsToProto(tradeStats),
 		RiskMetrics: riskMetricsToProto(sharpe, sortino, calmar, volatility, avgDailyReturn, maxDDPercent),
 		SymbolStats: symbolStatsToProto(symbolStats),
 		EquityCurve: equityCurveToProto(equityCurve),
 		DailyPnl:    dailyPnLToProto(dailyPnL),
 		HourlyStats: hourlyStatsToProto(hourlyStats),
-	}), nil
+	}
+
+	// Cache the computed response so subsequent requests skip SQL queries.
+	if s.cache != nil {
+		if err := s.cache.Set(ctx, req.Msg.AccountId, resp); err != nil {
+			s.log.Warn("analytics cache: set failed", zap.Error(err))
+		}
+	}
+
+	return connect.NewResponse(resp), nil
 }
 
 func (s *AnalyticsServer) GetRecentTrades(ctx context.Context, req *connect.Request[antv1.GetRecentTradesRequest]) (*connect.Response[antv1.GetRecentTradesResponse], error) {

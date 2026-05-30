@@ -157,9 +157,12 @@ func main() {
 	}
 	eventStore := mthub.NewTradeEventStore(js)
 	mthubSvc := mthub.NewMtHubService(hub, eventBroker, accountBroker, snapshotBroker, idemGuard, reconcileGate, eventStore)
+	// --- Analytics cache ---
+	analyticsCache := service.NewAnalyticsCache(rdb.Client(), log)
+
 	// --- mdgateway pipeline (M10 runner) ---
 	tradeRecordRepo := repository.NewTradeRecordRepository(pool)
-	accountSyncSvc := service.NewAccountSyncService(tradeRecordRepo, mthubSvc, log)
+	accountSyncSvc := service.NewAccountSyncService(tradeRecordRepo, mthubSvc, analyticsCache, log)
 
 	spillDir := cfg.SpillDir
 	pipelineCtx, pipelineCancel := context.WithCancel(context.Background())
@@ -171,7 +174,7 @@ func main() {
 	go startMdGatewayPipeline(pipelineCtx, log, pool, ch, nc, spillDir, secClient, hub, accountSvc, mthubSvc, accountSyncSvc, tradeRecordRepo, snapshotBroker, accountBroker, eventStore, &emailNotifier, &platformAgg, &reconLoop)
 
 	mux := http.NewServeMux()
-	reconLoop, emailNotifier, platformAgg = registerHandlers(mux, log, pool, ch, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate)
+	reconLoop, emailNotifier, platformAgg = registerHandlers(mux, log, pool, ch, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate, analyticsCache)
 
 	// Graceful shutdown
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)

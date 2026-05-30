@@ -217,94 +217,6 @@ func (x *ListAgentsResponse) GetAgents() []*AIAgentDefinition {
 	return nil
 }
 
-type SetAgentsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Agents        []*AIAgentDefinition   `protobuf:"bytes,1,rep,name=agents,proto3" json:"agents,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *SetAgentsRequest) Reset() {
-	*x = SetAgentsRequest{}
-	mi := &file_ai_agent_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *SetAgentsRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SetAgentsRequest) ProtoMessage() {}
-
-func (x *SetAgentsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_agent_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SetAgentsRequest.ProtoReflect.Descriptor instead.
-func (*SetAgentsRequest) Descriptor() ([]byte, []int) {
-	return file_ai_agent_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *SetAgentsRequest) GetAgents() []*AIAgentDefinition {
-	if x != nil {
-		return x.Agents
-	}
-	return nil
-}
-
-type SetAgentsResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Agents        []*AIAgentDefinition   `protobuf:"bytes,1,rep,name=agents,proto3" json:"agents,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *SetAgentsResponse) Reset() {
-	*x = SetAgentsResponse{}
-	mi := &file_ai_agent_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *SetAgentsResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SetAgentsResponse) ProtoMessage() {}
-
-func (x *SetAgentsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ai_agent_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SetAgentsResponse.ProtoReflect.Descriptor instead.
-func (*SetAgentsResponse) Descriptor() ([]byte, []int) {
-	return file_ai_agent_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *SetAgentsResponse) GetAgents() []*AIAgentDefinition {
-	if x != nil {
-		return x.Agents
-	}
-	return nil
-}
-
 var File_ai_agent_proto protoreflect.FileDescriptor
 
 const file_ai_agent_proto_rawDesc = "" +
@@ -326,10 +238,6 @@ const file_ai_agent_proto_rawDesc = "" +
 	" \x01(\tR\rmodelOverride\"\x13\n" +
 	"\x11ListAgentsRequest\"G\n" +
 	"\x12ListAgentsResponse\x121\n" +
-	"\x06agents\x18\x01 \x03(\v2\x19.ant.v1.AIAgentDefinitionR\x06agents\"E\n" +
-	"\x10SetAgentsRequest\x121\n" +
-	"\x06agents\x18\x01 \x03(\v2\x19.ant.v1.AIAgentDefinitionR\x06agents\"F\n" +
-	"\x11SetAgentsResponse\x121\n" +
 	"\x06agents\x18\x01 \x03(\v2\x19.ant.v1.AIAgentDefinitionR\x06agentsB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
@@ -344,23 +252,19 @@ func file_ai_agent_proto_rawDescGZIP() []byte {
 	return file_ai_agent_proto_rawDescData
 }
 
-var file_ai_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_ai_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_ai_agent_proto_goTypes = []any{
 	(*AIAgentDefinition)(nil),  // 0: ant.v1.AIAgentDefinition
 	(*ListAgentsRequest)(nil),  // 1: ant.v1.ListAgentsRequest
 	(*ListAgentsResponse)(nil), // 2: ant.v1.ListAgentsResponse
-	(*SetAgentsRequest)(nil),   // 3: ant.v1.SetAgentsRequest
-	(*SetAgentsResponse)(nil),  // 4: ant.v1.SetAgentsResponse
 }
 var file_ai_agent_proto_depIdxs = []int32{
 	0, // 0: ant.v1.ListAgentsResponse.agents:type_name -> ant.v1.AIAgentDefinition
-	0, // 1: ant.v1.SetAgentsRequest.agents:type_name -> ant.v1.AIAgentDefinition
-	0, // 2: ant.v1.SetAgentsResponse.agents:type_name -> ant.v1.AIAgentDefinition
-	3, // [3:3] is the sub-list for method output_type
-	3, // [3:3] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	1, // [1:1] is the sub-list for method output_type
+	1, // [1:1] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_ai_agent_proto_init() }
@@ -374,7 +278,7 @@ func file_ai_agent_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ai_agent_proto_rawDesc), len(file_ai_agent_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

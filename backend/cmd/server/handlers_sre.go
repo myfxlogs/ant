@@ -46,6 +46,7 @@ func registerSREHandlers(
 	strategyExperimentRepo *repository.StrategyExperimentRepository,
 	strategyAssetRepo *repository.StrategyAssetRepository,
 	schedHealthRepo *repository.ScheduleHealthRepository,
+	analyticsCache *service.AnalyticsCache,
 ) *notifier.EmailNotifier {
 	// --- SRE control plane ---
 	sreKillSwitch := controlplane.NewKillSwitch()
@@ -63,7 +64,7 @@ func registerSREHandlers(
 	sreHandler := admin.NewSREHandler(sreKillSwitch, sreBreakers, sreCanary, platformSvc, emailNotifier, log)
 
 	analyticsRepo := repository.NewAnalyticsRepository(pool)
-	analyticsServer := system.NewAnalyticsServer(analyticsRepo, platformSvc, log)
+	analyticsServer := system.NewAnalyticsServer(analyticsRepo, platformSvc, analyticsCache, log)
 	mux.Handle(antv1c.NewAnalyticsServiceHandler(analyticsServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	marketRegimeRepo := repository.NewMarketRegimeRepository(pool)

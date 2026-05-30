@@ -2,41 +2,18 @@ import { aiClient, aiPrimaryClient } from '../connect';
 import {
   toAgentView,
   toConversationRole,
-  viewToAgentDefinition,
   mapConversationSummary,
-  mapWorkflowRunSummary,
-  mapWorkflowStep,
   protoDate,
 } from './types';
 import type {
   ChatResult,
   ConversationSummary,
   ConversationDetail,
-  WorkflowRunSummary,
-  WorkflowStep,
-  WorkflowRunDetail,
   AIAgentDefinitionView,
 } from './types';
 import type { ConversationMessage as ProtoConversationMessage } from '../../gen/ant/v1/ai_conversation_pb';
 
 export const aiApi = {
-  getReports: async (params?: { accountId?: string; limit?: number }) => {
-    const response = await aiClient.getAIReports({
-      accountId: params?.accountId || '',
-      limit: params?.limit || 10,
-    });
-    return response.reports;
-  },
-
-  generateReport: async (params: { accountId: string; reportType: string; period: string }) => {
-    const response = await aiClient.generateReport({
-      accountId: params.accountId,
-      reportType: params.reportType,
-      period: params.period,
-    });
-    return response.report;
-  },
-
   chat: async (params: {
     message: string;
     context?: string;
@@ -90,13 +67,6 @@ export const aiApi = {
 
   listAgents: async (): Promise<AIAgentDefinitionView[]> => {
     const response = await aiClient.listAgents({});
-    return (response.agents || []).map(toAgentView);
-  },
-
-  setAgents: async (agents: AIAgentDefinitionView[]): Promise<AIAgentDefinitionView[]> => {
-    const response = await aiClient.setAgents({
-      agents: agents.map(viewToAgentDefinition),
-    });
     return (response.agents || []).map(toAgentView);
   },
 
@@ -161,71 +131,5 @@ export const aiApi = {
   updateConversationTitle: async (id: string, title: string): Promise<boolean> => {
     const response = await aiClient.updateConversationTitle({ id, title });
     return !!response.success;
-  },
-
-  createWorkflowRun: async (params: { title?: string; contextJson?: string }): Promise<WorkflowRunSummary> => {
-    const response = await aiClient.createWorkflowRun({
-      title: params.title || 'New workflow run',
-      contextJson: params.contextJson || '',
-    });
-    const r = response.run;
-    if (!r) {
-      throw new Error('createWorkflowRun: empty run');
-    }
-    return mapWorkflowRunSummary(r);
-  },
-
-  appendWorkflowStep: async (params: {
-    runId: string;
-    key: string;
-    title: string;
-    status: string;
-    input?: string;
-    output?: string;
-    error?: string;
-    durationMs?: number;
-  }): Promise<WorkflowStep> => {
-    const response = await aiClient.appendWorkflowStep({
-      runId: params.runId,
-      key: params.key,
-      title: params.title,
-      status: params.status,
-      input: params.input || '',
-      output: params.output || '',
-      error: params.error || '',
-      durationMs: BigInt(params.durationMs ?? 0),
-    });
-    const s = response.step;
-    if (!s) {
-      throw new Error('appendWorkflowStep: empty step');
-    }
-    return mapWorkflowStep(s);
-  },
-
-  listWorkflowRuns: async (params?: { limit?: number; offset?: number }): Promise<WorkflowRunSummary[]> => {
-    const response = await aiClient.listWorkflowRuns({
-      limit: params?.limit || 20,
-      offset: params?.offset || 0,
-    });
-    return (response.runs || []).map(mapWorkflowRunSummary);
-  },
-
-  getWorkflowRun: async (id: string): Promise<WorkflowRunDetail> => {
-    const response = await aiClient.getWorkflowRun({ id });
-    const r = response.run;
-    return {
-      run: r
-        ? mapWorkflowRunSummary(r)
-        : {
-            id,
-            title: '',
-            status: '',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            stepCount: 0,
-          },
-      steps: (response.steps || []).map(mapWorkflowStep),
-      contextJson: response.contextJson || '',
-    };
   },
 };

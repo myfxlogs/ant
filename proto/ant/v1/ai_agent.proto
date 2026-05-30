@@ -23,10 +23,3 @@ message ListAgentsResponse {
   repeated AIAgentDefinition agents = 1;
 }
 
-message SetAgentsRequest {
-  repeated AIAgentDefinition agents = 1;
-}
-
-message SetAgentsResponse {
-  repeated AIAgentDefinition agents = 1;
-}

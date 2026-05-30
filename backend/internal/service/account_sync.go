@@ -84,14 +84,16 @@ func CheckMarginCall(
 type AccountSyncService struct {
 	tradeRecordRepo *repository.TradeRecordRepository
 	mthubSvc        *mthub.MtHubService
+	analyticsCache  *AnalyticsCache
 	log             *zap.Logger
 }
 
 // NewAccountSyncService creates a new AccountSyncService.
-func NewAccountSyncService(tradeRecordRepo *repository.TradeRecordRepository, mthubSvc *mthub.MtHubService, log *zap.Logger) *AccountSyncService {
+func NewAccountSyncService(tradeRecordRepo *repository.TradeRecordRepository, mthubSvc *mthub.MtHubService, analyticsCache *AnalyticsCache, log *zap.Logger) *AccountSyncService {
 	return &AccountSyncService{
 		tradeRecordRepo: tradeRecordRepo,
 		mthubSvc:        mthubSvc,
+		analyticsCache:  analyticsCache,
 		log:             log,
 	}
 }
@@ -155,6 +157,10 @@ func (s *AccountSyncService) SyncAccountHistory(accountID string) {
 		s.log.Warn("syncHistory: batch create failed", zap.String("account", accountID), zap.Error(err))
 	} else {
 		s.log.Info("syncHistory: synced", zap.String("account", accountID), zap.Int("count", len(tradeRecs)))
+		// Invalidate analytics cache so the next request computes fresh data.
+		if s.analyticsCache != nil {
+			s.analyticsCache.Invalidate(ctx, accountID)
+		}
 	}
 }
 
