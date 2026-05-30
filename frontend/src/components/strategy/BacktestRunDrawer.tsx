@@ -176,6 +176,7 @@ const BacktestRunDrawer: React.FC<Props> = ({ open, runId, onClose, onCancel, ca
 		[t],
 	);
 
+
 	return (
 		<Modal
 			title={t('strategy.backtestRun.title')}
@@ -187,98 +188,27 @@ const BacktestRunDrawer: React.FC<Props> = ({ open, runId, onClose, onCancel, ca
 			footer={
 				<Space>
 					{watched.isTerminal ? (
-						<Button disabled>
-							{statusText || t('strategy.backtestRun.status.ended')}
-						</Button>
+						<Button disabled>{statusText || t('strategy.backtestRun.status.ended')}</Button>
 					) : (
 						<Button onClick={onCancel} loading={!!canceling} disabled={!runId || watched.isTerminal}>
 							{t('strategy.backtestRun.actions.cancel')}
 						</Button>
 					)}
-					<Button type="primary" onClick={onClose}>
-						{t('common.close', { defaultValue: 'Close' })}
-					</Button>
+					<Button type="primary" onClick={onClose}>{t('common.close', { defaultValue: 'Close' })}</Button>
 				</Space>
 			}
 		>
-			{watched.loading ? (
-				<Alert type="info" title={t('common.loading')} />
-			) : watched.error ? (
-				<Alert type="error" title={watched.error} />
-			) : (
-				<>
-					{watched.run?.status === 1 ? (
-						<Alert type="info" title={t('strategy.backtestRun.hints.queued')} />
-					) : watched.run?.status === 2 ? (
-						<Alert type="info" title={t('strategy.backtestRun.hints.running')} />
-					) : watched.run?.status === 5 ? (
-						<Alert type="warning" title={t('strategy.backtestRun.hints.canceling')} />
-					) : null}
-					<Descriptions size="small" column={1} bordered>
-						<Descriptions.Item label={t('strategy.backtestRun.fields.status')}>{statusText}</Descriptions.Item>
-						<Descriptions.Item label={t('strategy.backtestRun.fields.error')}>{watched.run?.error || '-'}</Descriptions.Item>
-					</Descriptions>
-					<div className="mt-4" />
-					<Descriptions size="small" column={2} bordered>
-						<Descriptions.Item label={t('strategy.backtestRun.metrics.totalReturn')}>
-							{isCompleted ? watched.metrics?.totalReturn ?? '-' : '-'}
-						</Descriptions.Item>
-						<Descriptions.Item label={t('strategy.backtestRun.metrics.annualReturn')}>
-							{isCompleted ? watched.metrics?.annualReturn ?? '-' : '-'}
-						</Descriptions.Item>
-						<Descriptions.Item label={t('strategy.backtestRun.metrics.maxDrawdown')}>
-							{isCompleted ? watched.metrics?.maxDrawdown ?? '-' : '-'}
-						</Descriptions.Item>
-						<Descriptions.Item label={t('strategy.backtestRun.metrics.sharpe')}>
-							{isCompleted ? watched.metrics?.sharpeRatio ?? '-' : '-'}
-						</Descriptions.Item>
-						<Descriptions.Item label={t('strategy.backtestRun.metrics.winRate')}>
-							{isCompleted ? watched.metrics?.winRate ?? '-' : '-'}
-						</Descriptions.Item>
-						<Descriptions.Item label={t('strategy.backtestRun.metrics.totalTrades')}>
-							{isCompleted ? watched.metrics?.totalTrades ?? '-' : '-'}
-						</Descriptions.Item>
-					</Descriptions>
-					<div className="mt-4" />
-					<Descriptions size="small" column={1} bordered>
-						<Descriptions.Item label={t('strategy.backtestRun.metrics.equityCurvePoints')}>
-							{isCompleted && Array.isArray(watched.equityCurve) ? watched.equityCurve.length : 0}
-						</Descriptions.Item>
-					</Descriptions>
-
-					{isCompleted && (
-						<>
-							<div className="mt-4" />
-							<Typography.Title level={5} style={{ marginBottom: 8 }}>
-								{t('strategy.backtestRun.trades.title')}
-							</Typography.Title>
-							{visibleTradesError ? (
-								<Alert type="error" message={t('strategy.backtestRun.trades.loadFailed')} description={visibleTradesError} />
-							) : (
-								<>
-									{summary && (
-										<Typography.Paragraph type="secondary" style={{ marginBottom: 8 }}>
-											{summary}
-										</Typography.Paragraph>
-									)}
-									<Table<BacktestTrade>
-										size="small"
-										rowKey="ticket"
-										loading={tradesLoading}
-										columns={columns}
-										dataSource={visibleTrades}
-										locale={{ emptyText: t('strategy.backtestRun.trades.empty') }}
-										pagination={{ pageSize: 20, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'] }}
-										scroll={{ x: 'max-content' }}
-									/>
-								</>
-							)}
-						</>
-					)}
-				</>
-			)}
+			<BacktestRunDrawerContent
+				watched={watched}
+				statusText={statusText}
+				trades={visibleTrades}
+				summary={summary}
+				tradesLoading={tradesLoading}
+				tradesError={visibleTradesError}
+				columns={columns}
+			/>
 		</Modal>
 	);
-};
+}
 
 export default BacktestRunDrawer;
