@@ -29,6 +29,7 @@ import { AdminJurisdictionService } from "../gen/ant/v1/admin_jurisdiction_pb";
 import { JobService } from "../gen/ant/v1/job_pb";
 import { ScheduleHealthService } from "../gen/ant/v1/schedule_health_pb";
 import { IndicatorCatalogService } from "../gen/ant/v1/indicator_catalog_pb";
+import { ExecutionAlgoService } from "../gen/ant/v1/execution_algo_pb";
 import { streamTransport, transport } from "./transport";
 
 export const authClient = createClient(AuthService, transport);
@@ -75,3 +76,4 @@ export const adminJurisdictionClient = createClient(AdminJurisdictionService, tr
 export const jobClient = createClient(JobService, transport);
 export const jobStreamClient = createClient(JobService, streamTransport);
 export const indicatorCatalogClient = createClient(IndicatorCatalogService, transport);
+export const executionAlgoClient = createClient(ExecutionAlgoService, transport);
