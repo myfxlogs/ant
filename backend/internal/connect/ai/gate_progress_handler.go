@@ -29,10 +29,12 @@ func (s *GateProgressServer) HandleGateProgressSSE(w http.ResponseWriter, r *htt
 		return
 	}
 
-	// Parse body.
+	// Parse body with size limit (1 MB max) to prevent memory exhaustion.
+	const maxBodySize = 1 << 20
+	r.Body = http.MaxBytesReader(w, r.Body, maxBodySize)
 	var input aigates.PipelineInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		http.Error(w, `{"error":"invalid input"}`, http.StatusBadRequest)
+		http.Error(w, `{"error":"invalid input or body too large"}`, http.StatusBadRequest)
 		return
 	}
 

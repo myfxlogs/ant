@@ -45,7 +45,7 @@ type ChatCompletionResponse struct {
 // It picks the first provider that has a configured API secret and a known model,
 // falling back to the given modelHint if the provider has no model preference set.
 func (s *Service) ChatCompletion(ctx context.Context, userID uuid.UUID, systemPrompt, userMessage, modelHint string) (string, error) {
-	providerID, model, baseURL, secret, err := s.resolveChatProvider(ctx, userID, modelHint)
+	_, model, baseURL, secret, err := s.resolveChatProvider(ctx, userID, modelHint)
 	if err != nil {
 		return "", err
 	}
@@ -84,8 +84,8 @@ func (s *Service) ChatCompletion(ctx context.Context, userID uuid.UUID, systemPr
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
-		return "", fmt.Errorf("chat completion: status %d from %s: %s", resp.StatusCode, providerID, string(body))
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 256))
+		return "", fmt.Errorf("chat completion: status %d: %s", resp.StatusCode, string(body))
 	}
 
 	var cr ChatCompletionResponse

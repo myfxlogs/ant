@@ -13,6 +13,7 @@ import type { AIConfig } from './model'
 
 export function useSystemAIPage() {
   const { t } = useTranslation()
+  const mountedRef = useRef(true)
   const [configs, setConfigs] = useState<AIConfig[]>([])
   const [loading, setLoading] = useState(true)
   const [savingConfig, setSavingConfig] = useState(false)
@@ -79,11 +80,12 @@ export function useSystemAIPage() {
     setLoading(true)
     try {
       await fetchConfigs()
+      if (!mountedRef.current) return
     } catch (err) {
-      console.error('failed to load ai configs', err)
+      if (!mountedRef.current) return
       setError(t('ai.systemAI.messages.loadConfigFailed'))
     } finally {
-      setLoading(false)
+      if (mountedRef.current) setLoading(false)
     }
   }, [fetchConfigs])
 
@@ -92,11 +94,12 @@ export function useSystemAIPage() {
     try {
       await fetchConfigs()
     } catch (err) {
-      console.error('failed to silently reload ai configs', err)
+      // silently reloaded configs failed; state is unchanged
     }
   }
 
   useEffect(() => { load() }, [load])
+  useEffect(() => { return () => { mountedRef.current = false } }, [])
 
   const selectedConfig = useMemo(
     () => configs.find((c) => c.provider_id === selectedProviderId) || null,

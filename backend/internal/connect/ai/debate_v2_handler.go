@@ -81,7 +81,7 @@ func (h *DebateV2Server) StartDebateV2AdvanceJob(ctx context.Context, req *conne
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	_ = h.svc.RunChatJob(jobID)
+	_ = h.svc.RunChatJob(jobID, uid)
 	return connect.NewResponse(&antv1.StartDebateV2AdvanceJobResponse{
 		JobId: jobID.String(), SessionId: sid,
 	}), nil
@@ -114,11 +114,12 @@ func (h *DebateV2Server) PrepareDebateV2ChatJob(ctx context.Context, req *connec
 }
 
 func (h *DebateV2Server) RunDebateV2ChatJob(ctx context.Context, req *connect.Request[antv1.RunDebateV2ChatJobRequest]) (*connect.Response[emptypb.Empty], error) {
+	uid := h.userID(ctx)
 	jid, err := uuid.Parse(req.Msg.JobId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid job id"))
 	}
-	if err := h.svc.RunChatJob(jid); err != nil {
+	if err := h.svc.RunChatJob(jid, uid); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&emptypb.Empty{}), nil
@@ -180,7 +181,7 @@ func (h *DebateV2Server) StartDebateV2RejectCodeJob(ctx context.Context, req *co
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	_ = h.svc.RunChatJob(jobID)
+	_ = h.svc.RunChatJob(jobID, uid)
 	return connect.NewResponse(&antv1.StartDebateV2AdvanceJobResponse{
 		JobId: jobID.String(), SessionId: sid,
 	}), nil

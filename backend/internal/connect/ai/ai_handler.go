@@ -186,7 +186,9 @@ func (s *AIServer) DeleteConversation(ctx context.Context, req *connect.Request[
 	if _, err := s.conversations.GetByID(ctx, cid, uid); err != nil {
 		return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("conversation not found"))
 	}
-	_ = s.conversations.DeleteMessagesByConversation(ctx, cid)
+	if err := s.conversations.DeleteMessagesByConversation(ctx, cid); err != nil {
+		s.log.Warn("DeleteConversation: failed to delete messages", zap.String("cid", cid.String()), zap.Error(err))
+	}
 	if err := s.conversations.Delete(ctx, cid, uid); err != nil {
 		s.log.Error("DeleteConversation", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)

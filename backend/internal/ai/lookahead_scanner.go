@@ -64,14 +64,14 @@ func (s *LookAheadScanner) Scan(expression string) LookAheadResult {
 		for _, m := range matches {
 			// Extract line/col from original expression.
 			line := 1
-			col := m[0]
-			// Count newlines to get line number.
+			lastNewline := -1
 			for i := 0; i < m[0] && i < len(expression); i++ {
 				if expression[i] == '\n' {
 					line++
-					col -= i + 1
+					lastNewline = i
 				}
 			}
+			col := m[0] - lastNewline - 1
 
 			// Check if the offset is actually positive (future).
 			pattern := expression[m[0]:m[1]]

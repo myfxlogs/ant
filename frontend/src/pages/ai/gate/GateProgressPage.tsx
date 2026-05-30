@@ -89,8 +89,8 @@ export default function GateProgressPage() {
     };
 
     try {
-      const response = await fetch(`${apiBaseUrl}/sse/ai/gate-progress?access_token=${encodeURIComponent(token)}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input), signal: controller.signal,
+      const response = await fetch(`${apiBaseUrl}/sse/ai/gate-progress`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(input), signal: controller.signal,
       });
       if (!response.ok) { setError(await response.text() || `HTTP ${response.status}`); setLoading(false); return; }
       const reader = response.body?.getReader();

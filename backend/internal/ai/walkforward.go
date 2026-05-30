@@ -215,9 +215,13 @@ func computeMaxDD(returns []float64) float64 {
 // CPCV performs Combinatorial Purged Cross-Validation on daily returns.
 // Returns the average out-of-sample Sharpe ratio across all combinatorial splits.
 // nGroups is the number of chronological groups to split into (default 6).
-func CPCV(dailyReturns []float64, nGroups int) float64 {
+// cfg controls the overfitting penalty threshold.
+func CPCV(dailyReturns []float64, nGroups int, cfg WalkForwardConfig) float64 {
 	if nGroups < 2 {
 		nGroups = 6
+	}
+	if cfg.MaxSharpeDiff <= 0 {
+		cfg.MaxSharpeDiff = 1.0
 	}
 	n := len(dailyReturns)
 	if n < nGroups*2 {
@@ -250,7 +254,7 @@ func CPCV(dailyReturns []float64, nGroups int) float64 {
 		testSharpe := computeSharpe(test)
 		// Penalize when train Sharpe is much higher (overfitting signal).
 		trainSharpe := computeSharpe(train)
-		if trainSharpe-testSharpe > 1.0 {
+		if trainSharpe-testSharpe > cfg.MaxSharpeDiff {
 			testSharpe *= 0.5 // penalty for overfitting
 		}
 		oosSharpes = append(oosSharpes, testSharpe)

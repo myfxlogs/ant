@@ -139,7 +139,7 @@ func TestCPCV(t *testing.T) {
 	for i := range returns {
 		returns[i] = 1.0 + float64(i%20)*0.05
 	}
-	oosSharpe := CPCV(returns, 6)
+	oosSharpe := CPCV(returns, 6, DefaultWalkForwardConfig())
 	t.Logf("CPCV OOS median Sharpe: %.4f", oosSharpe)
 	// Should return a valid Sharpe.
 	if math.IsNaN(oosSharpe) {
@@ -149,7 +149,7 @@ func TestCPCV(t *testing.T) {
 
 func TestCPCV_EmptyReturns(t *testing.T) {
 	t.Parallel()
-	oosSharpe := CPCV([]float64{}, 6)
+	oosSharpe := CPCV([]float64{}, 6, DefaultWalkForwardConfig())
 	if oosSharpe != 0 {
 		t.Fatalf("empty returns: want 0, got %.4f", oosSharpe)
 	}

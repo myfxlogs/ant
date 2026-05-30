@@ -220,12 +220,18 @@ export function kickoffUserMessage(agentName: string, agentType: string, locale:
 }
 
 /** 把对话历史序列化为 transcript，用于放进 aiApi.chat 的 context 字段，维持多轮语义。 */
+const MAX_TRANSCRIPT_CHARS = 32000; // guard against exceeding model context window
+
 export function serializeTranscript(messages: Array<{ role: string; content: string }>): string {
 	if (!messages.length) return '';
 	const lines: string[] = ['Conversation so far:'];
+	let total = 0;
 	for (const m of messages) {
 		const role = m.role === 'user' ? 'USER' : 'ASSISTANT';
-		lines.push(`${role}: ${m.content}`);
+		const entry = `${role}: ${m.content}`;
+		lines.push(entry);
+		total += entry.length;
+		if (total >= MAX_TRANSCRIPT_CHARS) break;
 	}
 	return lines.join('\n');
 }

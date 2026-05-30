@@ -109,6 +109,7 @@ export function useDebateFlow(): UseDebateFlowResult {
 	const [pending, setPending] = useState<{ stepKey: StepKey; user?: ChatMessage; loading: ChatMessage } | null>(null);
 	const [codeLoading, setCodeLoading] = useState(false);
 	const [sending, setSending] = useState(false);
+  const sendingRef = useRef(false);
 	const [forceSelection, setForceSelection] = useState(false);
 
 	const [modelWaitStartedAt, setModelWaitStartedAt] = useState<number | null>(null);
@@ -258,7 +259,7 @@ export function useDebateFlow(): UseDebateFlowResult {
 		setSelectedAgentsRaw([]);
 		setPending(null);
 		setCodeLoading(false);
-		setSending(false);
+		sendingRef.current = false; setSending(false);
 		setForceSelection(true);
 		setOptimisticDisplayStep(null);
 		setAdvanceStreamPreview('');
@@ -272,7 +273,7 @@ export function useDebateFlow(): UseDebateFlowResult {
 			antMessage.warning('Please select at least one agent to start the debate.');
 			return;
 		}
-		setSending(true);
+		sendingRef.current = true; setSending(true);
 		try {
 			const resp = await debateV2Api.start({ agents: keys, locale });
 			setSession(resp);
@@ -280,7 +281,7 @@ export function useDebateFlow(): UseDebateFlowResult {
 		} catch (e) {
 			antMessage.error(friendlyError(e));
 		} finally {
-			setSending(false);
+			sendingRef.current = false; setSending(false);
 		}
 	}, [selectedAgents, locale]);
 
@@ -288,7 +289,7 @@ export function useDebateFlow(): UseDebateFlowResult {
 		async (text: string) => {
 			const trimmed = String(text || '').trim();
 			if (!trimmed || !session) return;
-			if (sending) return;
+			if (sendingRef.current) return;
 			if (sessionStep === 'agent_selection' || sessionStep === 'code') return;
 
 			const userMsg: ChatMessage = { id: mkId('u'), role: 'user', content: trimmed };
@@ -296,7 +297,8 @@ export function useDebateFlow(): UseDebateFlowResult {
 			beginModelWait(setModelWaitStartedAt, setModelWaitElapsedSeconds);
 			setChatStreamPreview('');
 			setPending({ stepKey: sessionStep, user: userMsg, loading: loadingMsg });
-			setSending(true);
+			sendingRef.current = true;
+			sendingRef.current = true; setSending(true);
 			try {
 				const { jobId } = await debateV2Api.prepareChatJob({ sessionId: session.id, message: trimmed, locale });
 				const waitP = waitChatJob(jobId, { onChunk: mergeChatStreamChunk });
@@ -308,12 +310,14 @@ export function useDebateFlow(): UseDebateFlowResult {
 				try {
 					setSession(await debateV2Api.getSession(session.id, locale));
 				} catch {
-					// ignore resync failure
+					endModelWait(setModelWaitElapsedSeconds);
+					setPending(null);
 				}
 			} finally {
 				setChatStreamPreview('');
 				setPending(null);
-				setSending(false);
+				sendingRef.current = false;
+				sendingRef.current = false; setSending(false);
 				endModelWait(setModelWaitStartedAt, setModelWaitElapsedSeconds);
 			}
 		},
@@ -322,7 +326,7 @@ export function useDebateFlow(): UseDebateFlowResult {
 
 	const advance = useCallback(async () => {
 		if (!session) return;
-		if (sending) return;
+		if (sendingRef.current) return;
 		const sessionId = session.id;
 		const idx = stepLabels.findIndex((s) => s.key === sessionStep);
 		const nextStepKey = idx >= 0 ? stepLabels[idx + 1]?.key : undefined;
@@ -336,7 +340,7 @@ export function useDebateFlow(): UseDebateFlowResult {
 			setCodeLoading(true);
 		}
 		beginModelWait(setModelWaitStartedAt, setModelWaitElapsedSeconds);
-		setSending(true);
+		sendingRef.current = true; setSending(true);
 		setAdvanceStreamPreview('');
 		try {
 			if (willAsyncAdvance) {
@@ -357,7 +361,7 @@ export function useDebateFlow(): UseDebateFlowResult {
 		} finally {
 			setAdvanceStreamPreview('');
 			setCodeLoading(false);
-			setSending(false);
+			sendingRef.current = false; setSending(false);
 			endModelWait(setModelWaitStartedAt, setModelWaitElapsedSeconds);
 			setOptimisticDisplayStep(null);
 		}
@@ -370,7 +374,7 @@ export function useDebateFlow(): UseDebateFlowResult {
 		if (!fb) return;
 		setCodeLoading(true);
 		beginModelWait(setModelWaitStartedAt, setModelWaitElapsedSeconds);
-		setSending(true);
+		sendingRef.current = true; setSending(true);
 		setAdvanceStreamPreview('');
 		try {
 			const { jobId } = await debateV2Api.startRejectCodeJob({ sessionId, feedback: fb, locale });
@@ -386,15 +390,15 @@ export function useDebateFlow(): UseDebateFlowResult {
 		} finally {
 			setAdvanceStreamPreview('');
 			setCodeLoading(false);
-			setSending(false);
+			sendingRef.current = false; setSending(false);
 			endModelWait(setModelWaitStartedAt, setModelWaitElapsedSeconds);
 		}
 	}, [session, locale, mergeAdvanceStreamChunk]);
 
 	const retryCodeGeneration = useCallback(async () => {
-		if (!session?.id || sending) return;
+		if (!session?.id || sendingRef.current) return;
 		const sessionId = session.id;
-		setSending(true);
+		sendingRef.current = true; setSending(true);
 		setCodeLoading(true);
 		beginModelWait(setModelWaitStartedAt, setModelWaitElapsedSeconds);
 		try {
@@ -434,21 +438,21 @@ export function useDebateFlow(): UseDebateFlowResult {
 		} finally {
 			setAdvanceStreamPreview('');
 			setCodeLoading(false);
-			setSending(false);
+			sendingRef.current = false; setSending(false);
 			endModelWait(setModelWaitStartedAt, setModelWaitElapsedSeconds);
 		}
 	}, [session, sending, locale, t, mergeAdvanceStreamChunk]);
 
 	const back = useCallback(async () => {
 		if (!session) return;
-		setSending(true);
+		sendingRef.current = true; setSending(true);
 		try {
 			const next = await debateV2Api.back({ sessionId: session.id, locale });
 			setSession(next);
 		} catch (e) {
 			antMessage.error(friendlyError(e));
 		} finally {
-			setSending(false);
+			sendingRef.current = false; setSending(false);
 			setOptimisticDisplayStep(null);
 		}
 	}, [session, locale]);

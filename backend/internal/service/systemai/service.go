@@ -148,7 +148,10 @@ func (s *Service) DiscoverModels(ctx context.Context, userID uuid.UUID, provider
 	if perr := validateBaseURL(base); perr != nil {
 		return nil, perr
 	}
-	secret, _ := s.GetSecret(ctx, userID, providerID)
+	secret, secErr := s.GetSecret(ctx, userID, providerID)
+	if secErr != nil {
+		return nil, fmt.Errorf("get secret: %w", secErr)
+	}
 
 	// Zhipu uses non-standard pagination; try its dedicated path first.
 	if providerID == "zhipu" {

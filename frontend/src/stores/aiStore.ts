@@ -170,7 +170,7 @@ export const useAIStore = create<AIState>((set, get) => ({
 			isLoading: true,
 		};
 
-		set({ messages: [...messages, userMessage, aiMessage], sending: true });
+		set({ messages: [...messages, userMessage, aiMessage] });
 
 		try {
 			let response: { message: string; suggestions: string[] };
@@ -278,9 +278,8 @@ export const useAIStore = create<AIState>((set, get) => ({
 	},
 
 	sendMessage: async (content, accountId) => {
-		if (get().sending) {
-			return;
-		}
+		if (get().sending) return;
+		set({ sending: true }); // atomic guard: set before any await
 		let { activeConversationId } = get();
 		let convReady = !!activeConversationId;
 
@@ -326,7 +325,7 @@ export const useAIStore = create<AIState>((set, get) => ({
 			isLoading: true,
 		};
 
-		set({ messages: [...messages, userMessage, aiMessage], sending: true });
+		set({ messages: [...messages, userMessage, aiMessage] });
 
 		try {
 			let response: { message: string; suggestions: string[] };

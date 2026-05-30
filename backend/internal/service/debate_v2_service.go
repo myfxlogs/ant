@@ -319,11 +319,23 @@ func (s *DebateV2Service) PrepareChatJob(ctx context.Context, id string, userID 
 	return job.ID, nil
 }
 
-func (s *DebateV2Service) RunChatJob(jobID uuid.UUID) error {
+func (s *DebateV2Service) RunChatJob(jobID, callerUserID uuid.UUID) error {
 	s.mu.Lock()
+	pair, exists := s.jobSessions[jobID]
+	if !exists {
+		s.mu.Unlock()
+		return fmt.Errorf("job %s not found", jobID)
+	}
+	if pair[1] != callerUserID {
+		s.mu.Unlock()
+		return fmt.Errorf("job %s not found", jobID)
+	}
+	if _, running := s.jobChans[jobID]; running {
+		s.mu.Unlock()
+		return fmt.Errorf("job %s is already running", jobID)
+	}
 	ch := make(chan *debateV2JobEvent, 64)
 	s.jobChans[jobID] = ch
-	pair := s.jobSessions[jobID]
 	s.mu.Unlock()
 	sessionID := pair[0]
 	userID := pair[1]

@@ -117,6 +117,10 @@ func pearsonCorrelation(x, y []float64) float64 {
 	denY := n*sumY2 - sumY*sumY
 
 	if denX <= 0 || denY <= 0 {
+		// Zero variance: identical constant signals → perfect correlation.
+		if denX <= 0 && denY <= 0 {
+			return 1
+		}
 		return 0
 	}
 

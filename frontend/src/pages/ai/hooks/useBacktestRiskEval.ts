@@ -81,7 +81,7 @@ export function useBacktestRiskEval(params: {
           score: undefined,
           level: 'unknown',
           isReliable: false,
-          reasons: [String(e?.message || e || i18n.t('ai.riskEval.failed'))],
+          reasons: [e instanceof Error ? e.message : (typeof e === 'string' ? e : i18n.t('ai.riskEval.failed'))],
           warnings: [],
         });
       } finally {
@@ -93,7 +93,7 @@ export function useBacktestRiskEval(params: {
     };
   }, [enabled, templateId, accountId, symbol, timeframe, datasetId, backtestSucceeded]);
 
-  const reset = () => setRisk({ loading: false });
+  const reset = () => { inflightRef.current = false; lastKeyRef.current = ''; setRisk({ loading: false }); };
 
   return { risk, reset };
 }

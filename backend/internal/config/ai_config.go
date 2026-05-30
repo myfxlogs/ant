@@ -58,10 +58,5 @@ func (c *AIConfig) IsValid() bool {
 
 // ProviderType的IsValid方法
 func (p ProviderType) IsValid() bool {
-	switch p {
-	case ProviderZhipu, ProviderDeepSeek:
-		return true
-	default:
-		return false
-	}
+	return p != "" // any non-empty provider is valid (validation is at the systemai layer)
 }

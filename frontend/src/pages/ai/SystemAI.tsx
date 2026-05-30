@@ -118,8 +118,6 @@ export default function SystemAI() {
   const hasSecret = !!(secretInput.trim() || draft?.has_secret)
   const isCustomProvider = (providerId: string) => providerId === 'openai_compatible' || providerId.startsWith('openai_compatible_')
 
-  void validateConnection
-
   const urlDiagnostics = useMemo(() => {
     const value = (draft?.base_url || '').trim()
     if (!value) return { ok: false, https: false }

@@ -142,7 +142,7 @@ export function validatePythonSandbox(raw: string): Violation[] {
 		}
 	}
 	// 忽略 lines 便于 TS 不告警
-	void lines;
+	void lines as unknown; // suppress TS noUnusedLocals
 
 	return violations;
 }
