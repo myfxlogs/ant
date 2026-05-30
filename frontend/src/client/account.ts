@@ -62,12 +62,13 @@ export const accountApi = {
     mtType: string;
     brokerHost: string;
   }) => {
-    return await accountClient.verifyAccount({
+    const response = await accountClient.verifyAccount({
       login: params.login,
       password: params.password,
       mtType: params.mtType,
       brokerHost: params.brokerHost,
     });
+    return toCamelCase(response);
   },
 
   connect: async (id: string): Promise<ConnectAccountResult> => {
@@ -92,18 +93,19 @@ export const accountApi = {
       company,
       mtType: mtType || 'MT5',
     });
-    return response.companies;
+    return toCamelCase(response.companies);
   },
 
   // Lightweight probe to check whether the account has trade permissions
   // (not investor read-only mode).
   verifyTradePermission: async (id: string) => {
     const response = await accountClient.verifyTradePermission({ id });
+    const camel = toCamelCase(response);
     return {
-      hasTradePermission: response.hasTradePermission,
-      isInvestor: response.isInvestor,
-      verified: response.verified,
-      message: response.message,
+      hasTradePermission: camel.hasTradePermission,
+      isInvestor: camel.isInvestor,
+      verified: camel.verified,
+      message: camel.message,
     };
   },
 
@@ -113,11 +115,12 @@ export const accountApi = {
       id,
       newPassword,
     });
+    const camel = toCamelCase(response);
     return {
-      success: response.success,
-      hasTradePermission: response.hasTradePermission,
-      isInvestor: response.isInvestor,
-      message: response.message,
+      success: camel.success,
+      hasTradePermission: camel.hasTradePermission,
+      isInvestor: camel.isInvestor,
+      message: camel.message,
     };
   },
 };

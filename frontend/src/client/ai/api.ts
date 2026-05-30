@@ -1,5 +1,3 @@
-import { timestampDate } from '@bufbuild/protobuf/wkt';
-import type { Timestamp } from '@bufbuild/protobuf/wkt';
 import { aiClient, aiPrimaryClient } from '../connect';
 import {
   toAgentView,
@@ -8,6 +6,7 @@ import {
   mapConversationSummary,
   mapWorkflowRunSummary,
   mapWorkflowStep,
+  protoDate,
 } from './types';
 import type {
   ChatResult,
@@ -19,10 +18,6 @@ import type {
   AIAgentDefinitionView,
 } from './types';
 import type { ConversationMessage as ProtoConversationMessage } from '../../gen/ant/v1/ai_conversation_pb';
-
-function protoTs(ts: Timestamp | undefined): Date {
-  return ts ? timestampDate(ts) : new Date();
-}
 
 export const aiApi = {
   getReports: async (params?: { accountId?: string; limit?: number }) => {
@@ -142,7 +137,7 @@ export const aiApi = {
         id: m.id,
         role: toConversationRole(m.role),
         content: m.content,
-        createdAt: protoTs(m.createdAt),
+        createdAt: protoDate(m.createdAt),
       })),
     };
   },

@@ -45,18 +45,32 @@ func NewAccountServer(svc *service.AccountService, searcher *brokersearch.Search
 }
 
 // parseUserID extracts and validates the user ID from the request context (#1).
+// Returns a connect.Error(CodeUnauthenticated) on failure, matching AI's userIDFromCtx pattern.
 func parseUserID(ctx context.Context) (uuid.UUID, error) {
-	uid, err := uuid.Parse(interceptor.GetUserID(ctx))
+	id, err := uuid.Parse(interceptor.GetUserID(ctx))
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("invalid user id: %w", err)
+		return uuid.Nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user id"))
 	}
-	return uid, nil
+	return id, nil
+}
+
+// accountToProto converts a service.AccountDTO to a protobuf Account message.
+func accountToProto(a *service.AccountDTO) *antv1.Account {
+	return &antv1.Account{
+		Id: a.ID, UserId: a.UserID, Login: a.Login,
+		MtType: a.Platform, BrokerCompany: a.Broker, BrokerServer: a.Server,
+		IsDisabled: a.IsDisabled, Status: a.Status,
+		Balance: a.Balance, Credit: a.Credit, Equity: a.Equity, Margin: a.Margin,
+		FreeMargin: a.FreeMargin, MarginLevel: a.MarginLevel,
+		Leverage: a.Leverage, Currency: a.Currency,
+		LastError: a.LastError,
+	}
 }
 
 func (s *AccountServer) ListAccounts(ctx context.Context, req *connect.Request[antv1.ListAccountsRequest]) (*connect.Response[antv1.ListAccountsResponse], error) {
 	userID, err := parseUserID(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 	accounts, err := s.svc.ListAccounts(ctx, userID)
 	if err != nil {
@@ -65,15 +79,7 @@ func (s *AccountServer) ListAccounts(ctx context.Context, req *connect.Request[a
 	}
 	out := &antv1.ListAccountsResponse{}
 	for _, a := range accounts {
-		out.Accounts = append(out.Accounts, &antv1.Account{
-			Id: a.ID, UserId: a.UserID, Login: a.Login,
-			MtType: a.Platform, BrokerCompany: a.Broker, BrokerServer: a.Server,
-			IsDisabled: a.IsDisabled, Status: a.Status,
-			Balance: a.Balance, Credit: a.Credit, Equity: a.Equity, Margin: a.Margin,
-			FreeMargin: a.FreeMargin, MarginLevel: a.MarginLevel,
-			Leverage: a.Leverage, Currency: a.Currency,
-			LastError: a.LastError,
-		})
+		out.Accounts = append(out.Accounts, accountToProto(&a))
 	}
 	return connect.NewResponse(out), nil
 }
@@ -81,7 +87,7 @@ func (s *AccountServer) ListAccounts(ctx context.Context, req *connect.Request[a
 func (s *AccountServer) GetAccount(ctx context.Context, req *connect.Request[antv1.GetAccountRequest]) (*connect.Response[antv1.Account], error) {
 	userID, err := parseUserID(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 	a, err := s.svc.GetAccount(ctx, userID, req.Msg.Id)
 	if err != nil {
@@ -91,15 +97,7 @@ func (s *AccountServer) GetAccount(ctx context.Context, req *connect.Request[ant
 		s.log.Error("GetAccount", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(&antv1.Account{
-		Id: a.ID, UserId: a.UserID, Login: a.Login,
-		MtType: a.Platform, BrokerCompany: a.Broker, BrokerServer: a.Server,
-		IsDisabled: a.IsDisabled, Status: a.Status,
-		Balance: a.Balance, Credit: a.Credit, Equity: a.Equity, Margin: a.Margin,
-		FreeMargin: a.FreeMargin, MarginLevel: a.MarginLevel,
-		Leverage: a.Leverage, Currency: a.Currency,
-		LastError: a.LastError,
-	}), nil
+	return connect.NewResponse(accountToProto(a)), nil
 }
 
 // CreateAccount inserts a new MT account, verifies credentials by connecting to MT,
@@ -108,7 +106,7 @@ func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[
 	r := req.Msg
 	userID, err := parseUserID(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 
 	// Begin transaction for the create + verify + update flow (#2).
@@ -172,15 +170,7 @@ func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[
 		s.log.Error("CreateAccount: get account after create", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(&antv1.Account{
-		Id: a.ID, UserId: a.UserID, Login: a.Login,
-		MtType: a.Platform, BrokerCompany: a.Broker, BrokerServer: a.Server,
-		IsDisabled: a.IsDisabled, Status: a.Status,
-		Balance: a.Balance, Credit: a.Credit, Equity: a.Equity, Margin: a.Margin,
-		FreeMargin: a.FreeMargin, MarginLevel: a.MarginLevel,
-		Leverage: a.Leverage, Currency: a.Currency,
-		LastError: a.LastError,
-	}), nil
+	return connect.NewResponse(accountToProto(a)), nil
 }
 
 // UpdateAccount updates broker fields and disabled status.
@@ -200,7 +190,7 @@ func (s *AccountServer) UpdateAccount(ctx context.Context, req *connect.Request[
 	}
 	userID, err := parseUserID(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 	if err := s.svc.UpdateAccount(ctx, userID, r.Id, brokerCompany, brokerServer, brokerHost, r.IsDisabled); err != nil {
 		s.log.Error("UpdateAccount", zap.Error(err))
@@ -212,15 +202,7 @@ func (s *AccountServer) UpdateAccount(ctx context.Context, req *connect.Request[
 		s.log.Error("UpdateAccount", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(&antv1.Account{
-		Id: a.ID, UserId: a.UserID, Login: a.Login,
-		MtType: a.Platform, BrokerCompany: a.Broker, BrokerServer: a.Server,
-		IsDisabled: a.IsDisabled, Status: a.Status,
-		Balance: a.Balance, Credit: a.Credit, Equity: a.Equity, Margin: a.Margin,
-		FreeMargin: a.FreeMargin, MarginLevel: a.MarginLevel,
-		Leverage: a.Leverage, Currency: a.Currency,
-		LastError: a.LastError,
-	}), nil
+	return connect.NewResponse(accountToProto(a)), nil
 }
 
 // DeleteAccount removes an MT account. When a password is provided, it first
@@ -228,7 +210,7 @@ func (s *AccountServer) UpdateAccount(ctx context.Context, req *connect.Request[
 func (s *AccountServer) DeleteAccount(ctx context.Context, req *connect.Request[antv1.DeleteAccountRequest]) (*connect.Response[emptypb.Empty], error) {
 	userID, err := parseUserID(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 
 	// If the user provides a password, verify it against the MT broker first.
@@ -264,7 +246,7 @@ func (s *AccountServer) DeleteAccount(ctx context.Context, req *connect.Request[
 func (s *AccountServer) ConnectAccount(ctx context.Context, req *connect.Request[antv1.ConnectAccountRequest]) (*connect.Response[antv1.ConnectAccountResponse], error) {
 	userID, err := parseUserID(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 	if err := s.svc.ConnectAccount(ctx, userID, req.Msg.Id); err != nil {
 		s.log.Error("ConnectAccount", zap.Error(err))
@@ -281,7 +263,7 @@ func (s *AccountServer) ConnectAccount(ctx context.Context, req *connect.Request
 func (s *AccountServer) DisconnectAccount(ctx context.Context, req *connect.Request[antv1.DisconnectAccountRequest]) (*connect.Response[emptypb.Empty], error) {
 	userID, err := parseUserID(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 	if err := s.svc.DisconnectAccount(ctx, userID, req.Msg.Id); err != nil {
 		s.log.Error("DisconnectAccount", zap.Error(err))
@@ -297,7 +279,7 @@ func (s *AccountServer) DisconnectAccount(ctx context.Context, req *connect.Requ
 func (s *AccountServer) ReconnectAccount(ctx context.Context, req *connect.Request[antv1.ReconnectAccountRequest]) (*connect.Response[emptypb.Empty], error) {
 	userID, err := parseUserID(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 	if err := s.svc.ReconnectAccount(ctx, userID, req.Msg.Id); err != nil {
 		s.log.Error("ReconnectAccount", zap.Error(err))
@@ -326,7 +308,7 @@ func (s *AccountServer) SearchBroker(ctx context.Context, req *connect.Request[a
 func (s *AccountServer) VerifyTradePermission(ctx context.Context, req *connect.Request[antv1.VerifyTradePermissionRequest]) (*connect.Response[antv1.VerifyTradePermissionResponse], error) {
 	userID, err := parseUserID(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 	acct, err := s.svc.GetAccount(ctx, userID, req.Msg.Id)
 	if err != nil {
@@ -362,7 +344,7 @@ func (s *AccountServer) VerifyTradePermission(ctx context.Context, req *connect.
 func (s *AccountServer) UpdateTradingPassword(ctx context.Context, req *connect.Request[antv1.UpdateTradingPasswordRequest]) (*connect.Response[antv1.UpdateTradingPasswordResponse], error) {
 	userID, err := parseUserID(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+		return nil, err
 	}
 	if err := s.svc.UpdateTradingPassword(ctx, userID, req.Msg.Id, req.Msg.OldPassword, req.Msg.NewPassword); err != nil {
 		if errors.Is(err, service.ErrAccountPasswordMismatch) {

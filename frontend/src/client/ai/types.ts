@@ -7,7 +7,7 @@ import type { WorkflowRunSummary as ProtoWorkflowRunSummary, WorkflowStep as Pro
 
 export type { AIReport } from '../../gen/ant/v1/ai_pb';
 
-function protoDate(ts: Timestamp | undefined): Date {
+export function protoDate(ts: Timestamp | undefined): Date {
   return ts ? timestampDate(ts) : new Date();
 }
 
