@@ -4,6 +4,7 @@ package system
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -624,6 +625,85 @@ func (m *mockStreamConn) Send(msg any) error {
 	case <-m.ctx.Done():
 		return m.ctx.Err()
 	}
+}
+
+// ===========================================================================
+// Test 9: SymbolParams — with session and without session
+// ===========================================================================
+
+func TestMtHub_SymbolParams(t *testing.T) {
+	harness := newMtHubTestHarness(t)
+	ctx, cancel := harness.ctxWithTimeout()
+	defer cancel()
+
+	// SymbolParams with valid account + session should succeed (mock returns nil).
+	req := connect.NewRequest(&antv1.SymbolParamsRequest{
+		AccountId:  harness.accountID,
+		Canonicals: []string{"EURUSD", "GBPUSD"},
+	})
+	resp, err := harness.server.SymbolParams(ctx, req)
+	if err != nil {
+		t.Fatalf("SymbolParams with valid session: %v", err)
+	}
+	if resp.Msg == nil {
+		t.Fatal("expected non-nil response")
+	}
+	t.Logf("SymbolParams returned %d params (mock returns empty)", len(resp.Msg.Params))
+}
+
+func TestMtHub_SymbolParamsNoSession(t *testing.T) {
+	harness := newMtHubTestHarness(t)
+	ctx, cancel := harness.ctxWithTimeout()
+	defer cancel()
+
+	// SymbolParams for an account that has no session should fail.
+	req := connect.NewRequest(&antv1.SymbolParamsRequest{
+		AccountId:  uuid.New().String(),
+		Canonicals: []string{"EURUSD"},
+	})
+	_, err := harness.server.SymbolParams(ctx, req)
+	if err == nil {
+		t.Fatal("expected error for account with no session")
+	}
+	var ce *connect.Error
+	if !errors.As(err, &ce) {
+		t.Fatalf("expected connect.Error, got %T: %v", err, err)
+	}
+	if ce.Code() != connect.CodeNotFound {
+		t.Errorf("expected NotFound, got %v", ce.Code())
+	}
+	t.Logf("SymbolParams without session correctly returned %v", ce.Code())
+}
+
+// ===========================================================================
+// Test 10: Error recovery — PlaceOrder with unknown account
+// ===========================================================================
+
+func TestMtHub_PlaceOrderUnknownAccount(t *testing.T) {
+	harness := newMtHubTestHarness(t)
+	ctx, cancel := harness.ctxWithTimeout()
+	defer cancel()
+
+	req := connect.NewRequest(&antv1.PlaceOrderRequest{
+		AccountId: uuid.New().String(),
+		Canonical: "EURUSD",
+		Side:      antv1.Side_SIDE_BUY,
+		OrderType: antv1.OrderType_ORDER_TYPE_MARKET,
+		Volume:    "0.1",
+		Price:     "1.08500",
+	})
+	_, err := harness.server.PlaceOrder(ctx, req)
+	if err == nil {
+		t.Fatal("expected error for unknown account")
+	}
+	var ce *connect.Error
+	if !errors.As(err, &ce) {
+		t.Fatalf("expected connect.Error, got %T", err)
+	}
+	if ce.Code() != connect.CodeNotFound {
+		t.Errorf("expected NotFound, got %v", ce.Code())
+	}
+	t.Logf("PlaceOrder with unknown account correctly returned %v", ce.Code())
 }
 
 // newTestServerStream creates a *connect.ServerStream backed by a mock connection.
