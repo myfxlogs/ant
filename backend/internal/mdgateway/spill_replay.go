@@ -73,6 +73,7 @@ func (r *SpillReplay) Run(ctx context.Context) (int, error) {
 }
 
 func (r *SpillReplay) replayFile(ctx context.Context, path string) (int, error) {
+	// #nosec G304 — path is constructed from r.dir (fixed spill directory), not user input
 	f, err := os.Open(path)
 	if err != nil {
 		return 0, err

@@ -110,6 +110,7 @@ func (s *SpillWriter) rotate() error {
 		s.cur.Close()
 	}
 	fname := filepath.Join(s.cfg.Dir, fmt.Sprintf("spill-%d.jsonl", Clk.Now().UnixMilli()))
+	// #nosec G304 — fname derived from cfg.Dir (fixed spill directory), not user input
 	f, err := os.Create(fname)
 	if err != nil {
 		return fmt.Errorf("spill: create %s: %w", fname, err)
