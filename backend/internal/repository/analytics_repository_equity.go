@@ -18,7 +18,9 @@ func (r *AnalyticsRepository) GetEquityCurve(ctx context.Context, accountID uuid
 	}
 
 	// Initialize unrealized P&L from snapshot at or before period start.
+	// hasInitSnap distinguishes "no snapshot found" from "legitimate zero PnL".
 	var unrealizedPnL float64
+	hasInitSnap := false
 	initSnapQuery := `
 		SELECT equity FROM account_balance_history
 		WHERE account_id = $1 AND recorded_at <= $2
@@ -27,14 +29,15 @@ func (r *AnalyticsRepository) GetEquityCurve(ctx context.Context, accountID uuid
 	var initSnapEquity float64
 	if err := r.db.QueryRow(ctx, initSnapQuery, accountID, start).Scan(&initSnapEquity); err == nil {
 		unrealizedPnL = initSnapEquity - initialBalance
+		hasInitSnap = true
 	}
 
 	// Daily trade P&L.
 	tradeQuery := `
 		SELECT
 			DATE(close_time) as date,
-			COALESCE(SUM(CASE WHEN order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit') THEN profit ELSE 0 END), 0) as profit,
-			COALESCE(SUM(CASE WHEN order_type IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit') THEN profit ELSE 0 END), 0) as deposit_withdrawal
+			COALESCE(SUM(CASE WHEN LOWER(order_type) NOT IN ('balance', 'credit') THEN profit ELSE 0 END), 0) as profit,
+			COALESCE(SUM(CASE WHEN LOWER(order_type) IN ('balance', 'credit') THEN profit ELSE 0 END), 0) as deposit_withdrawal
 		FROM trade_records
 		WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3
 		GROUP BY DATE(close_time)
@@ -94,7 +97,7 @@ func (r *AnalyticsRepository) GetEquityCurve(ctx context.Context, accountID uuid
 
 	// If no snapshot at period start, seed unrealizedPnL from the first
 	// snapshot within the period so the equity line is meaningful from day 1.
-	if unrealizedPnL == 0 && len(snapshots) > 0 {
+	if !hasInitSnap && len(snapshots) > 0 {
 		firstSnap := snapshots[0]
 		firstSnapDate := time.Date(firstSnap.Date.Year(), firstSnap.Date.Month(), firstSnap.Date.Day(), 0, 0, 0, 0, start.Location())
 		balAtSnap := initialBalance
@@ -205,8 +208,8 @@ func (r *AnalyticsRepository) GetHourlyEquityCurve(ctx context.Context, accountI
 	query := `
 		SELECT
 			DATE_TRUNC('hour', close_time) as hour,
-			COALESCE(SUM(CASE WHEN order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit') THEN profit ELSE 0 END), 0) as profit,
-			COALESCE(SUM(CASE WHEN order_type IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit') THEN profit ELSE 0 END), 0) as deposit_withdrawal
+			COALESCE(SUM(CASE WHEN LOWER(order_type) NOT IN ('balance', 'credit') THEN profit ELSE 0 END), 0) as profit,
+			COALESCE(SUM(CASE WHEN LOWER(order_type) IN ('balance', 'credit') THEN profit ELSE 0 END), 0) as deposit_withdrawal
 		FROM trade_records
 		WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3
 		GROUP BY DATE_TRUNC('hour', close_time)

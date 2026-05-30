@@ -156,6 +156,7 @@ func main() {
 
 	// Services
 	platformSvc := service.NewPlatformService(pool)
+	platformSvc.SetLogger(log)
 	jwtSecret := cfg.JWTSecret
 	if jwtSecret == "" {
 		log.Fatal("JWT_SECRET is required")
@@ -738,7 +739,7 @@ func main() {
 	sreHandler := admin.NewSREHandler(sreKillSwitch, sreBreakers, sreCanary, platformSvc, emailNotifier, log)
 
 	analyticsRepo := repository.NewAnalyticsRepository(pool)
-	analyticsServer := system.NewAnalyticsServer(analyticsRepo, log)
+	analyticsServer := system.NewAnalyticsServer(analyticsRepo, platformSvc, log)
 	mux.Handle(antv1c.NewAnalyticsServiceHandler(analyticsServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	marketRegimeRepo := repository.NewMarketRegimeRepository(pool)

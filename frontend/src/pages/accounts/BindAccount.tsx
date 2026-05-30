@@ -77,9 +77,10 @@ export default function BindAccount() {
     if (!selectedCompany || !selectedServer) { showWarning(t('accounts.bind.messages.selectServer')); return; }
     if (!login.trim()) { showWarning(t('accounts.bind.messages.enterTradingAccount')); return; }
     if (!password.trim()) { showWarning(t('accounts.bind.messages.enterPassword')); return; }
+    if (!selectedServer.access || selectedServer.access.length === 0) { showError(t('accounts.bind.messages.noAccessHosts')); return; }
     setVerifying(true); setVerifyError(''); setVerifyResult(null);
     try {
-      const host = selectedServer.access[0] || '';
+      const host = selectedServer.access[0];
       const result = await accountApi.verifyAccount({ login: login.trim(), password, mtType, brokerHost: host });
       setVerifyResult(result);
       if (!result.verified) setVerifyError(result.message || t('accounts.bind.messages.verifyFailed'));
@@ -92,7 +93,8 @@ export default function BindAccount() {
     if (!selectedCompany || !selectedServer) return;
     setLoading(true);
     try {
-      const host = selectedServer.access[0] || '';
+      if (!selectedServer.access || selectedServer.access.length === 0) { showError(t('accounts.bind.messages.noAccessHosts')); return; }
+      const host = selectedServer.access[0];
       const request: BindAccountRequest = {
         alias: alias || selectedServer.name, mtType,
         login: login.trim(), password,
@@ -211,7 +213,7 @@ export default function BindAccount() {
       </div>
       <div>
         <label className="block mb-2 font-medium" style={{ color: '#141D22' }}>{t('accounts.bind.fields.password')}</label>
-        <input type="text" value={password} onChange={(e) => setPassword(e.target.value)}
+        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
           placeholder={t('accounts.bind.placeholders.password')} className="w-full outline-none transition-all"
           style={{ background: '#FFFFFF', border: '1px solid rgba(185, 201, 223, 0.4)', borderRadius: '10px', padding: '14px 16px', fontSize: '16px', color: '#141D22', height: '48px' }} />
         <p className="mt-2 text-sm" style={{ color: '#8A9AA5' }}>{t('accounts.bind.passwordHint')}</p>

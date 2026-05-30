@@ -75,7 +75,10 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	chWriter := NewCHWriter(chCfg, deps.CH, spillWriter, log)
 
 	// --- Publisher ---
-	js, _ := deps.NATSConn.JetStream()
+	var js nats.JetStreamContext
+	if deps.NATSConn != nil {
+		js, _ = deps.NATSConn.JetStream()
+	}
 	publisher := NewPublisher(js)
 
 	// --- SpillReplay (runs first, dual-write NATS + CH) ---
@@ -135,28 +138,40 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	go healthMonitor(ctx, mgr, chWriter, log, deps.OnAccountDisconnect)
 
 	// --- Load active accounts and start gateways ---
-	cfgs, err := loadAccountConfigs(ctx, deps)
-	if err != nil {
-		log.Warn("mdgateway: load account configs failed", zap.Error(err))
-	} else {
-		for _, cfg := range cfgs {
-			accID := cfg.AccountID
-			log.Info("mdgateway: starting gateway",
-				zap.String("account", accID),
-				zap.String("platform", cfg.Platform),
-				zap.String("broker", cfg.Broker))
+	// Retry up to 5 times with exponential backoff if PG is unreachable,
+	// rather than silently running with zero accounts.
+	var cfgs []mdtick.AccountConfig
+	var loadErr error
+	for attempt := 0; attempt < 5; attempt++ {
+		cfgs, loadErr = loadAccountConfigs(ctx, deps)
+		if loadErr == nil {
+			break
+		}
+		log.Warn("mdgateway: load account configs failed, retrying",
+			zap.Int("attempt", attempt+1),
+			zap.Error(loadErr))
+		time.Sleep(time.Duration(1<<attempt) * time.Second)
+	}
+	if loadErr != nil {
+		return fmt.Errorf("load account configs after retries: %w", loadErr)
+	}
+	for _, cfg := range cfgs {
+		accID := cfg.AccountID
+		log.Info("mdgateway: starting gateway",
+			zap.String("account", accID),
+			zap.String("platform", cfg.Platform),
+			zap.String("broker", cfg.Broker))
 
-			gw, err := startGatewayForAccount(ctx, cfg, deps, mgr, log)
-			if err != nil {
-				log.Error("mdgateway: gateway start failed",
-					zap.String("account", accID), zap.Error(err))
-				continue
-			}
-			// Register as backfiller bar source.
-			if bfSrc, ok := gw.(backfiller.MTAPIBarSource); ok {
-				srcMap.gws[accID] = bfSrc
-			}
-			}
+		gw, err := startGatewayForAccount(ctx, cfg, deps, mgr, log)
+		if err != nil {
+			log.Error("mdgateway: gateway start failed",
+				zap.String("account", accID), zap.Error(err))
+			continue
+		}
+		// Register as backfiller bar source.
+		if bfSrc, ok := gw.(backfiller.MTAPIBarSource); ok {
+			srcMap.gws[accID] = bfSrc
+		}
 	}
 
 
@@ -214,6 +229,9 @@ func healthMonitor(ctx context.Context, mgr *Manager, chw *CHWriter, log *zap.Lo
 							zap.String("account", h.AccountID), zap.Error(err))
 					}
 					mgr.UnmarkDisconnecting(h.AccountID)
+					// Brief pause to let in-flight NATS messages drain
+					// before reconnects are allowed for this account.
+					time.Sleep(100 * time.Millisecond)
 				case "no_data":
 					log.Debug("mdgateway: no data yet",
 						zap.String("account", h.AccountID))
@@ -358,6 +376,7 @@ func startGatewayForAccount(ctx context.Context, cfg mdtick.AccountConfig, deps 
 	}
 
 	if err := mgr.AddGateway(ctx, gw, nil); err != nil {
+		gw.Disconnect(ctx)
 		return gw, fmt.Errorf("add gateway: %w", err)
 	}
 
@@ -385,6 +404,8 @@ func startGatewayForAccount(ctx context.Context, cfg mdtick.AccountConfig, deps 
 		syms = defaultQuoteSymbols()
 	}
 	if err := gw.Subscribe(ctx, syms, mgr.HandleTick); err != nil {
+		mgr.RemoveGateway(ctx, accID)
+		gw.Disconnect(ctx)
 		return gw, fmt.Errorf("tick subscribe: %w", err)
 	}
 
@@ -422,6 +443,7 @@ func startAccountEventSubscriber(ctx context.Context, deps RunnerDeps, mgr *Mana
 
 	// Ephemeral consumer — only active while mdgateway is running.
 	sub, err := js.Subscribe("account.>", func(m *nats.Msg) {
+		m.Ack()
 		log.Info("mdgateway: account event received",
 			zap.String("subject", m.Subject),
 			zap.String("data", string(m.Data)))

@@ -71,7 +71,7 @@ export function useAccount() {
     try {
       const account = await accountApi.create(data);
       addAccount(account as Account);
-      showSuccess(i18n.t('accounts.messages.createdSuccess'));
+      // Success toast is shown by the caller (e.g., BindAccount) to avoid duplicates.
       return account;
     } catch (error) {
       showError(getErrorMessage(error, i18n.t('accounts.messages.createFailed')));
@@ -95,9 +95,7 @@ export function useAccount() {
   const connectAccount = useCallback(async (id: string) => {
     try {
       const result = await accountApi.connect(id);
-      if (result.success) {
-        showSuccess(i18n.t('accounts.messages.connectSuccess'));
-      }
+      // Success toast is shown by the caller (e.g., AccountDetail) to avoid duplicates.
       const account = await accountApi.get(id);
       updateAccount(account as Account);
       return account;
@@ -147,6 +145,16 @@ export function useAccount() {
       const account = await accountApi.get(id);
       updateAccount(account as Account);
       return account;
+    } catch (error) {
+      showError(getErrorMessage(error, i18n.t('accounts.messages.enableFailed')));
+      // Rollback by refetching account state to avoid stale optimistic UI.
+      try {
+        const account = await accountApi.get(id);
+        updateAccount(account as Account);
+      } catch {
+        // ignore
+      }
+      throw error;
     } finally {
       setEnablingAccount(null);
     }

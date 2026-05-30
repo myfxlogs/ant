@@ -103,8 +103,8 @@ export const PositionRow = memo(({ position }: { position: any }) => {
         orderType={position.type}
       />
     </td>
-    <td className="text-right p-3 font-medium" style={{ color: position.profit >= 0 ? '#00A651' : '#E53935' }}>
-      {position.profit >= 0 ? '+' : ''}{position.profit.toFixed(2)}
+    <td className="text-right p-3 font-medium" style={{ color: (position.profit ?? 0) >= 0 ? '#00A651' : '#E53935' }}>
+      {(position.profit ?? 0) >= 0 ? '+' : ''}{(position.profit ?? 0).toFixed(2)}
     </td>
     <td className="p-3" style={{ color: '#8A9AA5', fontSize: '12px' }}>{formatTimestamp(position.openTime)}</td>
     </tr>
@@ -152,9 +152,9 @@ export const HistoryTradeRow = memo(({ trade }: { trade: any }) => {
   const { t } = useTranslation();
   const rawType = trade.type || trade.orderType || trade.order_type || '';
   const orderType = rawType.replace(/^Op_Op_/, '').replace(/^Op_/, '').toLowerCase();
-  const closePrice = trade.closePrice || trade.closePrice || 0;
-  const closeTime = trade.closeTime || trade.closeTime || '';
-  const openPrice = trade.openPrice || trade.openPrice || 0;
+  const closePrice = trade.closePrice ?? trade.close_price ?? 0;
+  const closeTime = trade.closeTime ?? trade.close_time ?? '';
+  const openPrice = trade.openPrice ?? trade.open_price ?? 0;
   const volume = trade.volume || trade.lots || 0;
   const isBalanceRecord = orderType === 'balance' || orderType === 'credit';
   const isDeposit = trade.profit >= 0;
@@ -179,7 +179,7 @@ export const HistoryTradeRow = memo(({ trade }: { trade: any }) => {
       <td className="text-right p-3" style={{ color: '#141D22' }}>{isBalanceRecord ? '-' : volume}</td>
       <td className="text-right p-3" style={{ color: '#141D22' }}>{isBalanceRecord ? '-' : formatPrice(openPrice, trade.symbol)}</td>
       <td className="text-right p-3" style={{ color: '#141D22' }}>{isBalanceRecord ? '-' : formatPrice(closePrice, trade.symbol)}</td>
-      <td className="text-right p-3 font-medium" style={{ color: trade.profit >= 0 ? '#00A651' : '#E53935' }}>{trade.profit >= 0 ? '+' : ''}{trade.profit.toFixed(2)}</td>
+      <td className="text-right p-3 font-medium" style={{ color: (trade.profit ?? 0) >= 0 ? '#00A651' : '#E53935' }}>{(trade.profit ?? 0) >= 0 ? '+' : ''}{(trade.profit ?? 0).toFixed(2)}</td>
       <td className="p-3" style={{ color: '#8A9AA5', fontSize: '12px' }}>{formatTimestamp(closeTime)}</td>
     </tr>
   );

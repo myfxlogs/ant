@@ -257,7 +257,7 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
           },
           onProfit: (profit) => {
             if (!mountedRef.current) return;
-            console.debug('[ConnectProvider] onProfit', profit?.accountId, profit?.balance, profit?.equity, profit?.profit);
+            if (import.meta.env.DEV) console.debug('[ConnectProvider] onProfit', profit?.accountId, profit?.balance, profit?.equity, profit?.profit);
 
             // Receiving profit updates implies the account stream is active.
             if (profit?.accountId) {
@@ -311,7 +311,7 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
                 if (ml !== undefined) patch.marginLevel = ml;
                 if (cr !== undefined) patch.credit = cr;
                 if (Object.keys(patch).length > 0) {
-                  console.debug('[ConnectProvider] setAccountInfoById', accId, patch);
+                  if (import.meta.env.DEV) console.debug('[ConnectProvider] setAccountInfoById', accId, patch);
                   tradingStore.setAccountInfoById(accId, patch);
                   // Sync financial fields to accountStore for unified invalidation (U-5).
                   useAccountStore.getState().patchAccountFinancials(accId, patch as unknown as Record<string, unknown>);
@@ -429,7 +429,7 @@ export function ConnectProvider({ children }: { children: ReactNode }) {
     mountedRef.current = true;
 
     const unsubscribeAuth = useAuthStore.subscribe((state, prevState) => {
-      if (state.isAuthenticated !== prevState.isAuthenticated) {
+      if (state.isAuthenticated !== prevState.isAuthenticated || state.accessToken !== prevState.accessToken) {
         setIsConnected(false);
         isConnectedRef.current = false;
         setConnectionState('disconnected');

@@ -3,6 +3,7 @@ package mdgateway
 import (
 	"context"
 	"encoding/json"
+	"sync/atomic"
 	"time"
 
 	natsgo "github.com/nats-io/nats.go"
@@ -45,23 +46,42 @@ func (p *AccountEventPublisher) publish(ctx context.Context, subject string, ev 
 	}
 	// Ensure the JetStream stream exists (idempotent).
 	tryEnsureAccountEventsStream(p.js, p.log)
+
+	// Retry once with backoff on transient publish failures.
 	if _, err := p.js.Publish(subject, data); err != nil {
-		p.log.Warn("account event publish failed",
+		p.log.Warn("account event publish failed, retrying",
 			zap.String("subject", subject),
 			zap.String("account_id", ev.AccountID),
 			zap.Error(err))
+		time.Sleep(100 * time.Millisecond)
+		if _, err := p.js.Publish(subject, data); err != nil {
+			p.log.Warn("account event publish failed after retry",
+				zap.String("subject", subject),
+				zap.String("account_id", ev.AccountID),
+				zap.Error(err))
+		}
 	}
 }
 
-var accountEventsStreamEnsured bool
+var accountEventsStreamEnsured atomic.Bool
+var streamEnsureFailures atomic.Int32
 
 func tryEnsureAccountEventsStream(js natsgo.JetStreamContext, log *zap.Logger) {
-	if accountEventsStreamEnsured {
+	// Already ensured — fast path.
+	if accountEventsStreamEnsured.Load() {
 		return
 	}
-	accountEventsStreamEnsured = true
+	// Give up after 5 consecutive failures to prevent repeated retries.
+	if streamEnsureFailures.Load() >= 5 {
+		return
+	}
+	// CAS ensures only one goroutine attempts creation.
+	if !accountEventsStreamEnsured.CompareAndSwap(false, true) {
+		return
+	}
 	_, err := js.StreamInfo("ACCOUNT_EVENTS")
 	if err == nil {
+		streamEnsureFailures.Store(0)
 		return
 	}
 	_, err = js.AddStream(&natsgo.StreamConfig{
@@ -72,8 +92,11 @@ func tryEnsureAccountEventsStream(js natsgo.JetStreamContext, log *zap.Logger) {
 	})
 	if err != nil {
 		log.Warn("mdgateway: add ACCOUNT_EVENTS stream failed", zap.Error(err))
-		accountEventsStreamEnsured = false
+		streamEnsureFailures.Add(1)
+		accountEventsStreamEnsured.Store(false)
+		return
 	}
+	streamEnsureFailures.Store(0)
 }
 
 // PublishConnect publishes an account.connect.<accountID> event.

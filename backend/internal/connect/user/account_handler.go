@@ -52,8 +52,20 @@ func (s *AccountServer) SetPublisher(p *mdgateway.AccountEventPublisher) { s.pub
 // SetMTConnectionTester injects the MT connection validator.
 func (s *AccountServer) SetMTConnectionTester(t MTConnectionTester) { s.mtTester = t }
 
+// parseUserID extracts and validates the user ID from the request context (#1).
+func parseUserID(ctx context.Context) (uuid.UUID, error) {
+	uid, err := uuid.Parse(interceptor.GetUserID(ctx))
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("invalid user id: %w", err)
+	}
+	return uid, nil
+}
+
 func (s *AccountServer) ListAccounts(ctx context.Context, req *connect.Request[antv1.ListAccountsRequest]) (*connect.Response[antv1.ListAccountsResponse], error) {
-	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	userID, err := parseUserID(ctx)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+	}
 	accounts, err := s.svc.ListAccounts(ctx, userID)
 	if err != nil {
 		s.log.Error("ListAccounts", zap.Error(err))
@@ -75,7 +87,10 @@ func (s *AccountServer) ListAccounts(ctx context.Context, req *connect.Request[a
 }
 
 func (s *AccountServer) GetAccount(ctx context.Context, req *connect.Request[antv1.GetAccountRequest]) (*connect.Response[antv1.Account], error) {
-	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	userID, err := parseUserID(ctx)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+	}
 	a, err := s.svc.GetAccount(ctx, userID, req.Msg.Id)
 	if err != nil {
 		s.log.Error("GetAccount", zap.Error(err))
@@ -93,13 +108,24 @@ func (s *AccountServer) GetAccount(ctx context.Context, req *connect.Request[ant
 }
 
 // CreateAccount inserts a new MT account, verifies credentials by connecting to MT,
-// and returns the account with balance/equity/currency filled from AccountSummary.
+// and returns the account with balance/equity/currency filled from AccountSummary (#2: transactional).
 func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[antv1.CreateAccountRequest]) (*connect.Response[antv1.Account], error) {
 	r := req.Msg
-	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	userID, err := parseUserID(ctx)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+	}
 
-	// 1. Insert into DB
-	id, err := s.svc.CreateAccount(ctx, userID, r.Login, r.Password, r.MtType, r.BrokerCompany, r.BrokerServer, r.BrokerHost)
+	// Begin transaction for the create + verify + update flow (#2).
+	tx, err := s.svc.BeginTx(ctx)
+	if err != nil {
+		s.log.Error("CreateAccount: begin tx failed", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	defer tx.Rollback(ctx) // no-op after successful Commit
+
+	// 1. Insert into DB within the transaction.
+	id, err := s.svc.CreateAccountTx(ctx, tx, userID, r.Login, r.Password, r.MtType, r.BrokerCompany, r.BrokerServer, r.BrokerHost)
 	if err != nil {
 		if errors.Is(err, service.ErrAccountAlreadyBound) {
 			return nil, connect.NewError(connect.CodeAlreadyExists, err)
@@ -112,23 +138,33 @@ func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[
 	if s.mtTester != nil {
 		info, err := s.mtTester.Test(ctx, r.MtType, r.BrokerHost, r.Login, r.Password)
 		if err != nil {
-			// Rollback: delete the account since credentials are invalid
-			if delErr := s.svc.DeleteAccount(ctx, userID, id); delErr != nil {
-				s.log.Error("CreateAccount: rollback delete failed", zap.String("id", id), zap.Error(delErr))
+			// Rollback the transaction on transient verify failure (#4: mark needs_rebind, don't delete).
+			if rbErr := tx.Rollback(ctx); rbErr != nil {
+				s.log.Error("CreateAccount: tx rollback failed", zap.String("id", id), zap.Error(rbErr))
 			}
-			s.log.Warn("CreateAccount: MT connection failed", zap.String("login", r.Login), zap.Error(err))
+			// Mark the account as needs_rebind instead of deleting it permanently.
+			if markErr := s.svc.MarkAccountNeedsRebind(ctx, userID, id); markErr != nil {
+				s.log.Error("CreateAccount: mark needs_rebind failed", zap.String("id", id), zap.Error(markErr))
+			}
+			s.log.Warn("CreateAccount: MT connection failed", zap.String("accountId", id), zap.Error(err))
 			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("account verification failed: %w", err))
 		}
 
-		// Update account with MT info
-		if err := s.svc.UpdateAccountInfo(ctx, userID, id, info.Balance, info.Equity, info.Credit, info.Margin, info.FreeMargin, int64(info.Leverage), info.Currency); err != nil {
+		// Update account with MT info within the transaction (#3: propagate error).
+		if err := s.svc.UpdateAccountInfoTx(ctx, tx, userID, id, info.Balance, info.Equity, info.Credit, info.Margin, info.FreeMargin, int64(info.Leverage), info.Currency); err != nil {
 			s.log.Error("CreateAccount: UpdateAccountInfo failed", zap.Error(err))
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("update account info: %w", err))
 		}
 		s.log.Info("CreateAccount: verified and created",
 			zap.String("id", id),
-			zap.String("login", r.Login),
 			zap.Float64("balance", info.Balance),
 		)
+	}
+
+	// Commit the transaction.
+	if err := tx.Commit(ctx); err != nil {
+		s.log.Error("CreateAccount: tx commit failed", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("commit transaction: %w", err))
 	}
 
 	// Fetch the full account back so the response includes balance/equity/margin/currency.
@@ -163,7 +199,10 @@ func (s *AccountServer) UpdateAccount(ctx context.Context, req *connect.Request[
 	if r.BrokerHost != nil {
 		brokerHost = *r.BrokerHost
 	}
-	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	userID, err := parseUserID(ctx)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+	}
 	if err := s.svc.UpdateAccount(ctx, userID, r.Id, brokerCompany, brokerServer, brokerHost, r.IsDisabled); err != nil {
 		s.log.Error("UpdateAccount", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -188,7 +227,10 @@ func (s *AccountServer) UpdateAccount(ctx context.Context, req *connect.Request[
 // DeleteAccount removes an MT account. When a password is provided, it first
 // verifies the credentials against the broker before performing the hard delete.
 func (s *AccountServer) DeleteAccount(ctx context.Context, req *connect.Request[antv1.DeleteAccountRequest]) (*connect.Response[emptypb.Empty], error) {
-	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	userID, err := parseUserID(ctx)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+	}
 
 	// If the user provides a password, verify it against the MT broker first.
 	if req.Msg.Password != "" {
@@ -197,12 +239,17 @@ func (s *AccountServer) DeleteAccount(ctx context.Context, req *connect.Request[
 			s.log.Error("DeleteAccount: get credentials", zap.Error(err))
 			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to get account info: %w", err))
 		}
-		if s.mtTester == nil {
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("MT connection tester not available"))
-		}
-		if err := s.mtTester.VerifyPassword(ctx, creds.Platform, creds.BrokerHost, creds.Login, req.Msg.Password); err != nil {
-			s.log.Warn("DeleteAccount: password verification failed", zap.String("account", req.Msg.Id), zap.Error(err))
-			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("密码验证失败：%w", err))
+		// #7: Skip password verification when BrokerHost is empty.
+		if creds.BrokerHost == "" {
+			s.log.Warn("DeleteAccount: skipping password verification (empty broker host)", zap.String("accountId", req.Msg.Id))
+		} else {
+			if s.mtTester == nil {
+				return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("MT connection tester not available"))
+			}
+			if err := s.mtTester.VerifyPassword(ctx, creds.Platform, creds.BrokerHost, creds.Login, req.Msg.Password); err != nil {
+				s.log.Warn("DeleteAccount: password verification failed", zap.String("accountId", req.Msg.Id), zap.Error(err))
+				return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("password verification failed: %w", err))
+			}
 		}
 	}
 
@@ -216,7 +263,10 @@ func (s *AccountServer) DeleteAccount(ctx context.Context, req *connect.Request[
 // ConnectAccount connects an account to the broker and publishes a NATS event
 // so the mdgateway runner reloads and connects the account.
 func (s *AccountServer) ConnectAccount(ctx context.Context, req *connect.Request[antv1.ConnectAccountRequest]) (*connect.Response[antv1.ConnectAccountResponse], error) {
-	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	userID, err := parseUserID(ctx)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+	}
 	if err := s.svc.ConnectAccount(ctx, userID, req.Msg.Id); err != nil {
 		s.log.Error("ConnectAccount", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -230,7 +280,10 @@ func (s *AccountServer) ConnectAccount(ctx context.Context, req *connect.Request
 
 // DisconnectAccount marks the account as disconnected and publishes a NATS event.
 func (s *AccountServer) DisconnectAccount(ctx context.Context, req *connect.Request[antv1.DisconnectAccountRequest]) (*connect.Response[emptypb.Empty], error) {
-	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	userID, err := parseUserID(ctx)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+	}
 	if err := s.svc.DisconnectAccount(ctx, userID, req.Msg.Id); err != nil {
 		s.log.Error("DisconnectAccount", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -243,7 +296,10 @@ func (s *AccountServer) DisconnectAccount(ctx context.Context, req *connect.Requ
 
 // ReconnectAccount marks the account for re-connection and publishes a NATS event.
 func (s *AccountServer) ReconnectAccount(ctx context.Context, req *connect.Request[antv1.ReconnectAccountRequest]) (*connect.Response[emptypb.Empty], error) {
-	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	userID, err := parseUserID(ctx)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+	}
 	if err := s.svc.ReconnectAccount(ctx, userID, req.Msg.Id); err != nil {
 		s.log.Error("ReconnectAccount", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -254,25 +310,25 @@ func (s *AccountServer) ReconnectAccount(ctx context.Context, req *connect.Reque
 	return connect.NewResponse(&emptypb.Empty{}), nil
 }
 
-// SearchBroker calls mtapi Search RPC for real broker discovery.
-// Falls back to a static Exness entry when the searcher is unavailable or the call fails.
+// SearchBroker calls mtapi Search RPC for real broker discovery (#6: return error on failure).
 func (s *AccountServer) SearchBroker(ctx context.Context, req *connect.Request[antv1.SearchBrokerRequest]) (*connect.Response[antv1.SearchBrokerResponse], error) {
-	if s.searcher != nil {
-		companies, err := s.searcher.Search(ctx, req.Msg.Company, req.Msg.MtType)
-		if err != nil {
-			s.log.Warn("broker search failed, falling back to mock", zap.Error(err))
-		} else if len(companies) > 0 {
-			return connect.NewResponse(&antv1.SearchBrokerResponse{Companies: companies}), nil
-		}
+	if s.searcher == nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("broker search is not available"))
 	}
-	return connect.NewResponse(&antv1.SearchBrokerResponse{
-		Companies: nil,
-	}), nil
+	companies, err := s.searcher.Search(ctx, req.Msg.Company, req.Msg.MtType)
+	if err != nil {
+		s.log.Error("broker search failed", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("broker search failed: %w", err))
+	}
+	return connect.NewResponse(&antv1.SearchBrokerResponse{Companies: companies}), nil
 }
 
 // VerifyTradePermission checks whether the account can trade based on PG state.
 func (s *AccountServer) VerifyTradePermission(ctx context.Context, req *connect.Request[antv1.VerifyTradePermissionRequest]) (*connect.Response[antv1.VerifyTradePermissionResponse], error) {
-	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	userID, err := parseUserID(ctx)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+	}
 	acct, err := s.svc.GetAccount(ctx, userID, req.Msg.Id)
 	if err != nil {
 		s.log.Error("VerifyTradePermission", zap.Error(err))
@@ -300,10 +356,16 @@ func (s *AccountServer) VerifyTradePermission(ctx context.Context, req *connect.
 	}), nil
 }
 
-// UpdateTradingPassword updates the trading password for an account.
+// UpdateTradingPassword updates the trading password for an account (#38: old password verification).
 func (s *AccountServer) UpdateTradingPassword(ctx context.Context, req *connect.Request[antv1.UpdateTradingPasswordRequest]) (*connect.Response[antv1.UpdateTradingPasswordResponse], error) {
-	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
-	if err := s.svc.UpdateTradingPassword(ctx, userID, req.Msg.Id, req.Msg.NewPassword); err != nil {
+	userID, err := parseUserID(ctx)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+	}
+	if err := s.svc.UpdateTradingPassword(ctx, userID, req.Msg.Id, req.Msg.OldPassword, req.Msg.NewPassword); err != nil {
+		if errors.Is(err, service.ErrAccountPasswordMismatch) {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("old password does not match"))
+		}
 		s.log.Error("UpdateTradingPassword", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
@@ -319,7 +381,8 @@ func (s *AccountServer) VerifyAccount(ctx context.Context, req *connect.Request[
 	}
 	info, err := s.mtTester.Test(ctx, r.MtType, r.BrokerHost, r.Login, r.Password)
 	if err != nil {
-		s.log.Warn("VerifyAccount: connection failed", zap.String("login", r.Login), zap.Error(err))
+		// #9: Mask login value in warning logs.
+		s.log.Warn("VerifyAccount: connection failed", zap.String("accountLogin", maskLogin(r.Login)), zap.Error(err))
 		return connect.NewResponse(&antv1.VerifyAccountResponse{
 			Verified: false,
 			Message:  err.Error(),
@@ -335,4 +398,12 @@ func (s *AccountServer) VerifyAccount(ctx context.Context, req *connect.Request[
 		Leverage:   info.Leverage,
 		Currency:   info.Currency,
 	}), nil
+}
+
+// maskLogin masks a login value for safe logging (#9).
+func maskLogin(login string) string {
+	if len(login) <= 3 {
+		return "***"
+	}
+	return login[:3] + "***"
 }

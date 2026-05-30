@@ -13,13 +13,9 @@ import (
 func TestSearchBroker_NilSearcher(t *testing.T) {
 	srv := &AccountServer{log: zap.NewNop()} // searcher is nil
 	req := connect.NewRequest(&antv1.SearchBrokerRequest{Company: "Test"})
-	resp, err := srv.SearchBroker(t.Context(), req)
-	if err != nil {
-		t.Fatalf("SearchBroker: %v", err)
-	}
-	companies := resp.Msg.Companies
-	if companies != nil {
-		t.Errorf("expected nil companies when searcher is nil, got %d", len(companies))
+	_, err := srv.SearchBroker(t.Context(), req)
+	if err == nil {
+		t.Fatal("expected error when searcher is nil, got nil")
 	}
 }
 

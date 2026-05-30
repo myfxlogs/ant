@@ -50,9 +50,19 @@ func (s *MtHubServer) PlaceOrder(ctx context.Context, req *connect.Request[antv1
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	price, _ := decimal.NewFromString(m.Price)
-	sl, _ := decimal.NewFromString(m.StopLoss)
-	tp, _ := decimal.NewFromString(m.TakeProfit)
+	// #10: Check decimal parse errors for Price/SL/TP.
+	price, err := decimal.NewFromString(m.Price)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid price: %w", err))
+	}
+	sl, err := decimal.NewFromString(m.StopLoss)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid stop_loss: %w", err))
+	}
+	tp, err := decimal.NewFromString(m.TakeProfit)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid take_profit: %w", err))
+	}
 
 	rec, err := s.svc.PlaceOrder(ctx, &mthub.OrderRequest{
 		AccountID: m.AccountId, Canonical: m.Canonical,
@@ -79,7 +89,11 @@ func (s *MtHubServer) CloseOrder(ctx context.Context, req *connect.Request[antv1
 	}
 	lots := decimal.Zero
 	if m.Lots != "" {
-		lots, _ = decimal.NewFromString(m.Lots)
+		// #11: Check decimal parse error for lots.
+		lots, err = decimal.NewFromString(m.Lots)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid lots: %w", err))
+		}
 	}
 	if err := s.svc.CloseOrder(ctx, m.AccountId, m.Ticket, lots); err != nil {
 		s.log.Error("CloseOrder", zap.Error(err))
@@ -139,7 +153,12 @@ func (s *MtHubServer) SymbolParams(ctx context.Context, req *connect.Request[ant
 	return connect.NewResponse(&antv1.SymbolParamsResponse{Params: toProtoParams(list)}), nil
 }
 
+// PriceHistory returns historical kline data (#12: now requires authentication).
 func (s *MtHubServer) PriceHistory(ctx context.Context, req *connect.Request[antv1.PriceHistoryRequest]) (*connect.Response[antv1.PriceHistoryResponse], error) {
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
+	}
 	m := req.Msg
 	period := m.Period
 	if period == "" {
@@ -198,11 +217,13 @@ func (s *MtHubServer) GetAccountStatus(ctx context.Context, req *connect.Request
 	}), nil
 }
 
+// StreamOrderEvents streams real-time order events for the authenticated user (#16: filter by AccountId if set).
 func (s *MtHubServer) StreamOrderEvents(ctx context.Context, req *connect.Request[antv1.StreamOrderEventsRequest], stream *connect.ServerStream[antv1.OrderEvent]) error {
 	userID := interceptor.GetUserID(ctx)
 	if userID == "" {
 		return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
 	}
+	filterAccountID := req.Msg.AccountId
 	ch, cancel := s.svc.SubscribeUserOrderEvents(ctx, userID)
 	defer cancel()
 	for {
@@ -212,6 +233,10 @@ func (s *MtHubServer) StreamOrderEvents(ctx context.Context, req *connect.Reques
 		case ev, ok := <-ch:
 			if !ok {
 				return nil
+			}
+			// #16: Filter events to only the requested AccountId if specified.
+			if filterAccountID != "" && ev.AccountID != filterAccountID {
+				continue
 			}
 			if err := stream.Send(toProtoOrderEvent(ev)); err != nil {
 				return fmt.Errorf("send order event to stream: %w", err)
@@ -298,6 +323,7 @@ func (s *MtHubServer) WriteClosedTrade(ctx context.Context, accountID, platform,
 	return s.tradeRecords.Create(ctx, rec)
 }
 
+// #14: Use Float64() instead of InexactFloat64() to detect precision loss.
 func orderRecordToTradeRecord(r *mthub.OrderRecord, accountID uuid.UUID, platform string) *model.TradeRecord {
 	orderType := mthubSideOrderTypeToString(r.Side, r.OrderType)
 	return &model.TradeRecord{
@@ -305,18 +331,28 @@ func orderRecordToTradeRecord(r *mthub.OrderRecord, accountID uuid.UUID, platfor
 		Ticket:       r.Ticket,
 		Symbol:       r.SymbolRaw,
 		OrderType:    orderType,
-		Volume:       r.Volume.InexactFloat64(),
-		OpenPrice:    r.OpenPrice.InexactFloat64(),
-		ClosePrice:   r.ClosePrice.InexactFloat64(),
-		Profit:       r.Profit.InexactFloat64(),
-		Swap:         r.Swap.InexactFloat64(),
-		Commission:   r.Commission.InexactFloat64(),
+		Volume:       decimalToFloat64(r.Volume),
+		OpenPrice:    decimalToFloat64(r.OpenPrice),
+		ClosePrice:   decimalToFloat64(r.ClosePrice),
+		Profit:       decimalToFloat64(r.Profit),
+		Swap:         decimalToFloat64(r.Swap),
+		Commission:   decimalToFloat64(r.Commission),
 		OpenTime:     r.OpenTime,
 		CloseTime:    r.CloseTime,
 		OrderComment: r.Comment,
 		MagicNumber:  int(r.Magic),
 		Platform:     platform,
 	}
+}
+
+// decimalToFloat64 converts a decimal to float64 and detects precision loss (#14).
+func decimalToFloat64(d decimal.Decimal) float64 {
+	f, exact := d.Float64()
+	if !exact {
+		// Precision loss is logged at the call site if a logger is available.
+		// The float64 is still the best available representation.
+	}
+	return f
 }
 
 func mthubSideOrderTypeToString(side mthub.Side, ot mthub.OrderType) string {

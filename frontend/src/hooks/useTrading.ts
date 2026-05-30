@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useContext } from 'react';
 import { useTradingStore } from '@/stores/tradingStore';
 import { tradingApi } from '@/client/trading';
 import type { Position } from '@/types/trading';
@@ -8,6 +8,7 @@ import { showError, showSuccess } from '@/utils/message';
 import i18n from '@/i18n';
 import { Code, ConnectError } from '@connectrpc/connect';
 import { getTradingRiskToastMessage } from '@/utils/tradingRiskError';
+import { ConnectContext } from '@/providers/connectContext';
 
 const reconnectAttemptAtMs = new Map<string, number>();
 const RECONNECT_COOLDOWN_MS = 15_000;
@@ -18,6 +19,7 @@ export function useTrading() {
   const loading = useTradingStore((state) => state.loading);
   const setLoading = useTradingStore((state) => state.setLoading);
   const setPositions = useTradingStore((state) => state.setPositions);
+  const connectCtx = useContext(ConnectContext);
 
   const fetchPositions = useCallback(async (accountId: string, showLoading = true) => {
     if (!accountId) {
@@ -45,6 +47,8 @@ export function useTrading() {
           try {
             const result = await accountApi.connect(accountId);
             if (result?.success !== false) {
+              // Restart the SSE stream so ConnectProvider picks up the reconnected account.
+              connectCtx?.reconnect();
               const positionsAfterReconnect = await tradingApi.getPositions(accountId);
               const positionsArray = Array.isArray(positionsAfterReconnect) ? positionsAfterReconnect : [];
               setPositions(accountId, positionsArray as Position[]);

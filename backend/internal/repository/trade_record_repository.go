@@ -34,6 +34,10 @@ func (r *TradeRecordRepository) Create(ctx context.Context, record *model.TradeR
 			swap = EXCLUDED.swap,
 			commission = EXCLUDED.commission,
 			close_price = EXCLUDED.close_price,
+			stop_loss = EXCLUDED.stop_loss,
+			take_profit = EXCLUDED.take_profit,
+			volume = EXCLUDED.volume,
+			open_price = EXCLUDED.open_price,
 			platform = EXCLUDED.platform,
 			updated_at = CURRENT_TIMESTAMP
 		RETURNING id
@@ -88,11 +92,20 @@ func (r *TradeRecordRepository) batchCreateChunk(ctx context.Context, records []
 			swap = EXCLUDED.swap,
 			commission = EXCLUDED.commission,
 			close_price = EXCLUDED.close_price,
+			stop_loss = EXCLUDED.stop_loss,
+			take_profit = EXCLUDED.take_profit,
+			volume = EXCLUDED.volume,
+			open_price = EXCLUDED.open_price,
 			platform = EXCLUDED.platform,
 			updated_at = CURRENT_TIMESTAMP
 		RETURNING id
 	`
 
+	// NOTE: This uses N individual QueryRow calls inside a single transaction
+	// rather than pgx.CopyFrom. CopyFrom with ON CONFLICT requires table-level
+	// FROM clause syntax (non-standard in pgx v5.5+) and is not directly
+	// compatible with the upsert pattern used here. For typical batch sizes
+	// (<=500), individual QueryRow calls are acceptable.
 	for _, record := range records {
 		var returnedID uuid.UUID
 		if err := tx.QueryRow(ctx, query,

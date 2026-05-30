@@ -14,25 +14,49 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
+	"anttrader/internal/interceptor"
 	"anttrader/internal/model"
 	"anttrader/internal/repository"
+	"anttrader/internal/service"
 )
 
 type AnalyticsServer struct {
-	repo *repository.AnalyticsRepository
-	log  *zap.Logger
+	repo     *repository.AnalyticsRepository
+	platform *service.PlatformService
+	log      *zap.Logger
 }
 
 var _ antv1c.AnalyticsServiceHandler = (*AnalyticsServer)(nil)
 
-func NewAnalyticsServer(repo *repository.AnalyticsRepository, log *zap.Logger) *AnalyticsServer {
-	return &AnalyticsServer{repo: repo, log: log}
+func NewAnalyticsServer(repo *repository.AnalyticsRepository, platform *service.PlatformService, log *zap.Logger) *AnalyticsServer {
+	return &AnalyticsServer{repo: repo, platform: platform, log: log}
+}
+
+// verifyAccountOwnership extracts userID and checks account ownership (#19).
+func (s *AnalyticsServer) verifyAccountOwnership(ctx context.Context, accountID string) error {
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
+	}
+	ok, err := s.platform.UserOwnsAccount(ctx, userID, accountID)
+	if err != nil {
+		s.log.Error("verifyAccountOwnership: check failed", zap.String("accountId", accountID), zap.Error(err))
+		return connect.NewError(connect.CodeInternal, fmt.Errorf("ownership check failed: %w", err))
+	}
+	if !ok {
+		return connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
+	}
+	return nil
 }
 
 func (s *AnalyticsServer) GetAccountAnalytics(ctx context.Context, req *connect.Request[antv1.GetAccountAnalyticsRequest]) (*connect.Response[antv1.AccountAnalyticsResponse], error) {
 	accountID, err := uuid.Parse(req.Msg.AccountId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_id: %w", err))
+	}
+	// #19: Verify account ownership.
+	if err := s.verifyAccountOwnership(ctx, req.Msg.AccountId); err != nil {
+		return nil, err
 	}
 
 	now := time.Now()
@@ -41,7 +65,8 @@ func (s *AnalyticsServer) GetAccountAnalytics(ctx context.Context, req *connect.
 	// Trade stats from raw records
 	trades, err := s.repo.GetTradeRecords(ctx, accountID, start, now)
 	if err != nil {
-		return nil, fmt.Errorf("get trade records: %w", err)
+		// #20: Use connect.NewError instead of raw fmt.Errorf.
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("get trade records: %w", err))
 	}
 
 	tradeStats := computeTradeStats(trades)
@@ -55,16 +80,17 @@ func (s *AnalyticsServer) GetAccountAnalytics(ctx context.Context, req *connect.
 		tradeStats.MaxConsecutiveLosses = maxLosses
 	}
 
-	// Risk metrics — computed from daily percentage returns (not dollar amounts)
+	// Risk metrics — computed from daily percentage returns (not dollar amounts).
+	// #23: Propagate critical errors (getMaxDrawdown, getEquityCurve) instead of silently zeroing.
 	_, maxDDPercent, err := s.repo.GetMaxDrawdown(ctx, accountID, start, now)
 	if err != nil {
-		s.log.Warn("get max drawdown failed", zap.Error(err))
+		s.log.Error("get max drawdown failed", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("get max drawdown: %w", err))
 	}
-	// Get equity curve for computing daily percentage returns.
-	// Uses full 12-month equity (not period-filtered) for stable risk metrics.
 	eqFull, err := s.repo.GetEquityCurve(ctx, accountID, start, now)
 	if err != nil {
-		s.log.Warn("get equity curve for risk metrics failed", zap.Error(err))
+		s.log.Error("get equity curve for risk metrics failed", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("get equity curve: %w", err))
 	}
 	dailyReturnPct := dailyReturnsToPercent(eqFull)
 	sharpe, sortino, calmar, volatility, avgDailyReturn := computeRiskMetrics(dailyReturnPct, maxDDPercent)
@@ -123,6 +149,10 @@ func (s *AnalyticsServer) GetRecentTrades(ctx context.Context, req *connect.Requ
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_id: %w", err))
 	}
+	// #19: Verify account ownership.
+	if err := s.verifyAccountOwnership(ctx, req.Msg.AccountId); err != nil {
+		return nil, err
+	}
 
 	page := int(req.Msg.Page)
 	pageSize := int(req.Msg.PageSize)
@@ -138,7 +168,8 @@ func (s *AnalyticsServer) GetRecentTrades(ctx context.Context, req *connect.Requ
 
 	records, total, err := s.repo.GetTradeRecordsPaginated(ctx, accountID, start, end, page, pageSize)
 	if err != nil {
-		return nil, fmt.Errorf("get trade records paginated: %w", err)
+		// #20: Use connect.NewError.
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("get trade records paginated: %w", err))
 	}
 
 	protoTrades := make([]*antv1.TradeRecord, 0, len(records))
@@ -157,6 +188,10 @@ func (s *AnalyticsServer) GetMonthlyPnL(ctx context.Context, req *connect.Reques
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_id: %w", err))
 	}
+	// #19: Verify account ownership.
+	if err := s.verifyAccountOwnership(ctx, req.Msg.AccountId); err != nil {
+		return nil, err
+	}
 
 	year := int(req.Msg.Year)
 	if year <= 0 {
@@ -165,7 +200,8 @@ func (s *AnalyticsServer) GetMonthlyPnL(ctx context.Context, req *connect.Reques
 
 	monthlyData, err := s.repo.GetMonthlyPnL(ctx, accountID, year)
 	if err != nil {
-		return nil, fmt.Errorf("get monthly pnl: %w", err)
+		// #20: Use connect.NewError.
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("get monthly pnl: %w", err))
 	}
 
 	items := make([]*antv1.MonthlyPnLItem, 0, len(monthlyData))
@@ -187,20 +223,27 @@ func (s *AnalyticsServer) GetMonthlyAnalysis(ctx context.Context, req *connect.R
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_id: %w", err))
 	}
+	// #19: Verify account ownership.
+	if err := s.verifyAccountOwnership(ctx, req.Msg.AccountId); err != nil {
+		return nil, err
+	}
 
 	years, err := s.repo.GetMonthlyAnalysisYears(ctx, accountID)
 	if err != nil {
-		return nil, fmt.Errorf("get monthly analysis years: %w", err)
+		// #20: Use connect.NewError.
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("get monthly analysis years: %w", err))
 	}
 
 	points, err := s.repo.GetMonthlyAnalysisRaw(ctx, accountID)
 	if err != nil {
-		return nil, fmt.Errorf("get monthly analysis raw: %w", err)
+		// #20: Use connect.NewError.
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("get monthly analysis raw: %w", err))
 	}
 
 	data, err := json.Marshal(monthlyAnalysisToJSON(points))
 	if err != nil {
-		return nil, fmt.Errorf("marshal monthly analysis: %w", err)
+		// #20: Use connect.NewError.
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal monthly analysis: %w", err))
 	}
 
 	protoYears := make([]int32, len(years))
@@ -317,6 +360,11 @@ func formatDuration(seconds float64) string {
 // Formula: pct[i] = equityCurve[i].Profit / equityCurve[i-1].Equity
 // Uses the equity curve directly because GetDailyReturns returns dollar amounts
 // that don't align day-by-day with the equity timeline.
+//
+// #25: Zero-profit days are intentionally excluded — days with zero profit indicate
+// no trading activity, and including them would dilute daily-return-based risk
+// metrics (Sharpe, Sortino, Calmar ratios) by adding zero-return periods that
+// do not represent actual trading performance.
 func dailyReturnsToPercent(equityCurve []*model.EquityPoint) []float64 {
 	if len(equityCurve) < 2 {
 		return nil
@@ -328,8 +376,9 @@ func dailyReturnsToPercent(equityCurve []*model.EquityPoint) []float64 {
 			continue
 		}
 		profit := equityCurve[i].Profit
+		// #25: Zero-profit days are excluded intentionally (see doc comment above).
 		if profit == 0 {
-			continue // skip no-trade days
+			continue
 		}
 		result = append(result, profit/prev)
 	}
@@ -422,7 +471,7 @@ func riskMetricsToProto(sharpe, sortino, calmar, volatility, avgDailyReturn, max
 func symbolStatsToProto(stats []*model.SymbolStats) []*antv1.SymbolStat {
 	result := make([]*antv1.SymbolStat, 0, len(stats))
 
-	// 计算总交易笔数，用于计算占比
+	// calculate total trades for share percentage
 	var totalTrades int
 	for _, s := range stats {
 		totalTrades += s.TotalTrades
@@ -492,7 +541,16 @@ func hourlyStatsToProto(stats []*model.HourlyStats) []*antv1.HourlyStat {
 	return result
 }
 
+// #26: Check CloseTime is not zero before formatting to avoid "0001-01-01" output.
 func tradeRecordToProto(r *model.TradeRecord) *antv1.TradeRecord {
+	closeTimeStr := ""
+	if !r.CloseTime.IsZero() {
+		closeTimeStr = r.CloseTime.Format(time.RFC3339)
+	}
+	openTimeStr := ""
+	if !r.OpenTime.IsZero() {
+		openTimeStr = r.OpenTime.Format(time.RFC3339)
+	}
 	return &antv1.TradeRecord{
 		Ticket:     fmt.Sprintf("%d", r.Ticket),
 		Symbol:     r.Symbol,
@@ -501,8 +559,8 @@ func tradeRecordToProto(r *model.TradeRecord) *antv1.TradeRecord {
 		OpenPrice:  r.OpenPrice,
 		ClosePrice: r.ClosePrice,
 		Profit:     r.Profit,
-		OpenTime:   r.OpenTime.Format(time.RFC3339),
-		CloseTime:  r.CloseTime.Format(time.RFC3339),
+		OpenTime:   openTimeStr,
+		CloseTime:  closeTimeStr,
 		Swap:       r.Swap,
 		Commission: r.Commission,
 		Comment:    r.OrderComment,

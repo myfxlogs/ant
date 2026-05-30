@@ -25,7 +25,7 @@ export const accountApi = {
     brokerServer: string;
     brokerHost: string;
   }) => {
-    return await accountClient.createAccount({
+    const response = await accountClient.createAccount({
       login: data.login,
       password: data.password,
       mtType: data.mtType,
@@ -33,6 +33,7 @@ export const accountApi = {
       brokerServer: data.brokerServer,
       brokerHost: data.brokerHost,
     });
+    return toCamelCase(response);
   },
 
   update: async (params: {

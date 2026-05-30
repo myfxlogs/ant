@@ -137,6 +137,7 @@ type UpdateTradingPasswordRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	NewPassword   string                 `protobuf:"bytes,2,opt,name=new_password,json=newPassword,proto3" json:"new_password,omitempty"`
+	OldPassword   string                 `protobuf:"bytes,3,opt,name=old_password,json=oldPassword,proto3" json:"old_password,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -181,6 +182,13 @@ func (x *UpdateTradingPasswordRequest) GetId() string {
 func (x *UpdateTradingPasswordRequest) GetNewPassword() string {
 	if x != nil {
 		return x.NewPassword
+	}
+	return ""
+}
+
+func (x *UpdateTradingPasswordRequest) GetOldPassword() string {
+	if x != nil {
+		return x.OldPassword
 	}
 	return ""
 }
@@ -442,10 +450,11 @@ const file_account_permission_proto_rawDesc = "" +
 	"\vis_investor\x18\x02 \x01(\bR\n" +
 	"isInvestor\x12\x1a\n" +
 	"\bverified\x18\x03 \x01(\bR\bverified\x12\x18\n" +
-	"\amessage\x18\x04 \x01(\tR\amessage\"Q\n" +
+	"\amessage\x18\x04 \x01(\tR\amessage\"t\n" +
 	"\x1cUpdateTradingPasswordRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
-	"\fnew_password\x18\x02 \x01(\tR\vnewPassword\"\xa6\x01\n" +
+	"\fnew_password\x18\x02 \x01(\tR\vnewPassword\x12!\n" +
+	"\fold_password\x18\x03 \x01(\tR\voldPassword\"\xa6\x01\n" +
 	"\x1dUpdateTradingPasswordResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x120\n" +
 	"\x14has_trade_permission\x18\x02 \x01(\bR\x12hasTradePermission\x12\x1f\n" +

@@ -4,6 +4,8 @@ import { toCamelCase } from '../adapters/dataAdapter';
 
 interface AccountState {
   accounts: Account[];
+  /** O(1) lookup map maintained in sync with accounts array. */
+  accountsById: Map<string, Account>;
   currentAccount: Account | null;
   loading: boolean;
   enablingAccount: string | null;
@@ -18,14 +20,21 @@ interface AccountState {
   removeAccount: (_id: string) => void;
 }
 
+function buildById(accounts: Account[]): Map<string, Account> {
+  const m = new Map<string, Account>();
+  for (const a of accounts) m.set(a.id, a);
+  return m;
+}
+
 export const useAccountStore = create<AccountState>((set) => ({
   accounts: [],
+  accountsById: new Map(),
   currentAccount: null,
   loading: false,
   enablingAccount: null,
   setAccounts: (accounts) => {
     const camelAccounts = Array.isArray(accounts) ? toCamelCase(accounts) : [];
-    set({ accounts: camelAccounts });
+    set({ accounts: camelAccounts, accountsById: buildById(camelAccounts) });
   },
   setCurrentAccount: (account) => {
     const camelAccount = account ? toCamelCase(account) : null;
@@ -38,39 +47,74 @@ export const useAccountStore = create<AccountState>((set) => ({
     set({ enablingAccount: accountId });
   },
   addAccount: (account) => {
-    set((state) => ({ accounts: [...state.accounts, toCamelCase(account)] }));
+    set((state) => {
+      const camel = toCamelCase(account);
+      const next = [...state.accounts, camel];
+      const nextById = new Map(state.accountsById);
+      nextById.set(camel.id, camel);
+      return { accounts: next, accountsById: nextById };
+    });
   },
   updateAccount: (account) => {
-    set((state) => ({
-      accounts: state.accounts.map((a) => (a.id === account.id ? toCamelCase(account) : a)),
-      currentAccount: state.currentAccount?.id === account.id ? toCamelCase(account) : state.currentAccount,
-    }));
+    set((state) => {
+      const camel = toCamelCase(account);
+      const next = state.accounts.map((a) => (a.id === camel.id ? camel : a));
+      const nextById = new Map(state.accountsById);
+      nextById.set(camel.id, camel);
+      return {
+        accounts: next,
+        accountsById: nextById,
+        currentAccount: state.currentAccount?.id === camel.id ? camel : state.currentAccount,
+      };
+    });
   },
   updateAccountStatus: (accountId, status) => {
-    set((state) => ({
-      accounts: state.accounts.map((a) => 
-        a.id === accountId ? { ...a, status } : a
-      ),
-      currentAccount: state.currentAccount?.id === accountId 
-        ? { ...state.currentAccount, status } 
-        : state.currentAccount,
-    }));
+    set((state) => {
+      const nextById = new Map(state.accountsById);
+      const existing = nextById.get(accountId);
+      if (existing) nextById.set(accountId, { ...existing, status });
+      return {
+        accounts: state.accounts.map((a) =>
+          a.id === accountId ? { ...a, status } : a
+        ),
+        accountsById: nextById,
+        currentAccount: state.currentAccount?.id === accountId
+          ? { ...state.currentAccount, status }
+          : state.currentAccount,
+      };
+    });
   },
   removeAccount: (id) => {
-    set((state) => ({
-      accounts: state.accounts.filter((a) => a.id !== id),
-      currentAccount: state.currentAccount?.id === id ? null : state.currentAccount,
-    }));
+    set((state) => {
+      const nextById = new Map(state.accountsById);
+      nextById.delete(id);
+      return {
+        accounts: state.accounts.filter((a) => a.id !== id),
+        accountsById: nextById,
+        currentAccount: state.currentAccount?.id === id ? null : state.currentAccount,
+      };
+    });
   },
   patchAccountFinancials: (accountId, patch) => {
-    set((state) => ({
-      accounts: state.accounts.map((a) =>
-        a.id === accountId ? { ...a, ...patch } : a,
-      ),
-      currentAccount:
-        state.currentAccount?.id === accountId
-          ? { ...state.currentAccount, ...patch }
-          : state.currentAccount,
-    }));
+    set((state) => {
+      // O(1) lookup via accountsById map instead of O(n) scan.
+      const existing = state.accountsById.get(accountId);
+      if (!existing) return {};
+      const nextById = new Map(state.accountsById);
+      const updated = { ...existing, ...patch };
+      nextById.set(accountId, updated);
+      // Rebuild accounts array with the single changed entry for O(n) render but O(1) find.
+      const nextAccounts = state.accounts.map((a) =>
+        a.id === accountId ? updated : a,
+      );
+      return {
+        accounts: nextAccounts,
+        accountsById: nextById,
+        currentAccount:
+          state.currentAccount?.id === accountId
+            ? { ...state.currentAccount, ...patch }
+            : state.currentAccount,
+      };
+    });
   },
 }));

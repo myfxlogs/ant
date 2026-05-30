@@ -166,6 +166,9 @@ export const streamApi = {
         }
         if (isLikelyStreamTransportFailure(error)) {
           transportFailStreak++;
+          if (transportFailStreak >= STREAM_TRANSPORT_FAILURE_CAP - 2) {
+            console.warn(`[stream] transport failures approaching cap: ${transportFailStreak}/${STREAM_TRANSPORT_FAILURE_CAP}`);
+          }
           if (transportFailStreak >= STREAM_TRANSPORT_FAILURE_CAP) {
             callbacks.onError?.(new Error('stream transport failure cap reached'));
             return;
@@ -252,6 +255,9 @@ export const streamApi = {
         }
         if (isLikelyStreamTransportFailure(error)) {
           transportFailStreak++;
+          if (transportFailStreak >= STREAM_TRANSPORT_FAILURE_CAP - 2) {
+            console.warn(`[stream] transport failures approaching cap: ${transportFailStreak}/${STREAM_TRANSPORT_FAILURE_CAP}`);
+          }
           if (transportFailStreak >= STREAM_TRANSPORT_FAILURE_CAP) {
             onError?.(new Error('stream transport failure cap reached'));
             return;

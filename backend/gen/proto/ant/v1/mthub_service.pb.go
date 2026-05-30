@@ -1026,6 +1026,7 @@ func (x *PriceHistoryResponse) GetBars() []*OHLCV {
 
 type StreamOrderEventsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1058,6 +1059,13 @@ func (x *StreamOrderEventsRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use StreamOrderEventsRequest.ProtoReflect.Descriptor instead.
 func (*StreamOrderEventsRequest) Descriptor() ([]byte, []int) {
 	return file_mthub_service_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *StreamOrderEventsRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
 }
 
 type OrderEvent struct {
@@ -1695,8 +1703,10 @@ const file_mthub_service_proto_rawDesc = "" +
 	"\x02to\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\x02to\x12\x14\n" +
 	"\x05limit\x18\x06 \x01(\x05R\x05limit\"9\n" +
 	"\x14PriceHistoryResponse\x12!\n" +
-	"\x04bars\x18\x01 \x03(\v2\r.ant.v1.OHLCVR\x04bars\"\x1a\n" +
-	"\x18StreamOrderEventsRequest\"\xc7\x01\n" +
+	"\x04bars\x18\x01 \x03(\v2\r.ant.v1.OHLCVR\x04bars\"9\n" +
+	"\x18StreamOrderEventsRequest\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\x01 \x01(\tR\taccountId\"\xc7\x01\n" +
 	"\n" +
 	"OrderEvent\x12\x1d\n" +
 	"\n" +

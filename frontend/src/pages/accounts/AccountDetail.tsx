@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Tag, Button, Spin, Dropdown, Modal, Input } from 'antd';
 import { showSuccessModal, showErrorModal, showLoadingModal, showSuccess, showError } from '@/utils/message';
 import type { MenuProps } from 'antd';
@@ -184,6 +184,8 @@ export default function AccountDetail() {
   const [historyPage, setHistoryPage] = useState(1);
   const [historyLoading, setHistoryLoading] = useState(false);
   const historyPageSize = 10;
+  const lastAnalyticsReloadRef = useRef(0);
+  const ANALYTICS_RELOAD_MIN_INTERVAL_MS = 5000;
 
   const loadHistory = useCallback(async (accountId: string, page: number) => {
     setHistoryLoading(true);
@@ -193,7 +195,7 @@ export default function AccountDetail() {
       setHistoryTotal(Number((tradesData as AccountRecentTradesResponse).total || 0));
       setHistoryPage(page);
     } catch (_error) {
-      // History fetch errors are non-fatal; analyticsError handles the main section.
+      if (import.meta.env.DEV) console.debug('[AccountDetail] loadHistory error', _error);
     } finally {
       setHistoryLoading(false);
     }
@@ -282,10 +284,17 @@ export default function AccountDetail() {
     
     init();
     
+    const throttledReloadAnalytics = () => {
+      const now = Date.now();
+      if (now - lastAnalyticsReloadRef.current < ANALYTICS_RELOAD_MIN_INTERVAL_MS) return;
+      lastAnalyticsReloadRef.current = now;
+      loadAllData(id).catch((error) => showError(getErrorMessage(error, '加载分析数据失败')));
+    };
+
     const handlePositionChange = (event: Event) => {
       const customEvent = event as CustomEvent;
       const { action, order } = customEvent.detail;
-      
+
       if (action === 'PositionClose' && order) {
         // Positions come from SSE stream (position_snapshot). Only refresh
         // analytics / trade history on position changes.
@@ -303,7 +312,7 @@ export default function AccountDetail() {
           commission: order.commission || 0,
           comment: order.comment || '',
         };
-        
+
         setHistoryTrades((prev) => {
           const exists = prev.some((t) => t.ticket === order.ticket);
           if (exists) return prev;
@@ -311,11 +320,11 @@ export default function AccountDetail() {
         });
 
         // Keep all business metrics authoritative from backend.
-        // Re-fetch analytics + recent trades/total instead of client-side accumulation.
-        loadAllData(id).catch((error) => showError(getErrorMessage(error, '加载分析数据失败')));
+        // Throttle analytics reload to max once per 5 seconds.
+        throttledReloadAnalytics();
       } else if (action === 'PositionOpen' || action === 'PendingOpen') {
         if (id) {
-          loadAllData(id).catch((error) => showError(getErrorMessage(error, '加载分析数据失败')));
+          throttledReloadAnalytics();
         }
       }
     };
@@ -352,6 +361,10 @@ export default function AccountDetail() {
   const handleRefreshAnalytics = useCallback(async () => {
     if (!id) return;
     await loadAllData(id);
+  }, [id, loadAllData]);
+
+  const handleRetryAnalytics = useCallback(() => {
+    if (id) loadAllData(id);
   }, [id, loadAllData]);
 
   const handleToggleStatus = useCallback(async () => {
@@ -610,7 +623,7 @@ export default function AccountDetail() {
         <AccountAnalyticsSection
           analyticsLoading={analyticsLoading}
           analyticsError={analyticsError}
-          onRetryAnalytics={() => id && loadAllData(id)}
+          onRetryAnalytics={handleRetryAnalytics}
           chartType={chartType}
           setChartType={setChartType}
           chartPeriod={chartPeriod}

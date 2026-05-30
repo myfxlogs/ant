@@ -27,6 +27,7 @@ import { useTranslation } from 'react-i18next';
 import { formatHoldingTime } from '@/utils/date';
 import { StatusResult } from '@/components/common/StatusResult';
 import { analyticsApi } from '@/client/analytics';
+import { getErrorMessage } from '@/utils/error';
 
 import { StatCard } from './AccountDetail.shared';
 import MonthlyAnalysisCard from './MonthlyAnalysisCard';
@@ -78,12 +79,16 @@ function AccountAnalyticsSection({
   const [monthlyData, setMonthlyData] = useState<any[]>(() =>
     (_initialMonthlyData || []).length > 0 ? null : null  // 首次无数据，由 useEffect 获取
   );
+  const [monthlyError, setMonthlyError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!accountId) return;
     let cancelled = false;
+    setMonthlyError(null);
     analyticsApi.getMonthlyPnL(accountId, selectedYear).then((data: any) => {
-      if (!cancelled) setMonthlyData(data?.monthlyPnl || []);
+      if (!cancelled) { setMonthlyData(data?.monthlyPnl || []); setMonthlyError(null); }
+    }).catch((err: unknown) => {
+      if (!cancelled) { setMonthlyError(getErrorMessage(err, 'Failed to load monthly PnL')); setMonthlyData([]); }
     });
     return () => { cancelled = true; };
   }, [accountId, selectedYear]);
@@ -204,7 +209,7 @@ function AccountAnalyticsSection({
               {t('accounts.analytics.monthlyProfitTitle')}
             </h2>
             <div className="flex items-center gap-2">
-              {[2024, 2025, 2026].map((year) => (
+              {[new Date().getFullYear() - 2, new Date().getFullYear() - 1, new Date().getFullYear()].map((year) => (
                 <Tag
                   key={year}
                   onClick={() => setSelectedYear(year)}

@@ -49,9 +49,8 @@ func (s *Searcher) Search(ctx context.Context, company, mtType string) ([]*antv1
 }
 
 func (s *Searcher) searchMT4(ctx context.Context, company string) ([]*antv1.BrokerCompany, error) {
-	conn, err := grpc.DialContext(ctx, s.mt4Gateway,
+	conn, err := grpc.NewClient(s.mt4Gateway,
 		grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})),
-		grpc.WithBlock(),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("brokersearch mt4 dial: %w", err)
@@ -67,9 +66,8 @@ func (s *Searcher) searchMT4(ctx context.Context, company string) ([]*antv1.Brok
 }
 
 func (s *Searcher) searchMT5(ctx context.Context, company string) ([]*antv1.BrokerCompany, error) {
-	conn, err := grpc.DialContext(ctx, s.mt5Gateway,
+	conn, err := grpc.NewClient(s.mt5Gateway,
 		grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})),
-		grpc.WithBlock(),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("brokersearch mt5 dial: %w", err)
@@ -86,10 +84,13 @@ func (s *Searcher) searchMT5(ctx context.Context, company string) ([]*antv1.Brok
 
 func (s *Searcher) searchBoth(ctx context.Context, company string) ([]*antv1.BrokerCompany, error) {
 	var all []*antv1.BrokerCompany
-	mt4Results, _ := s.searchMT4(ctx, company)
+	mt4Results, err4 := s.searchMT4(ctx, company)
 	all = append(all, mt4Results...)
-	mt5Results, _ := s.searchMT5(ctx, company)
+	mt5Results, err5 := s.searchMT5(ctx, company)
 	all = append(all, mt5Results...)
+	if err4 != nil && err5 != nil {
+		return nil, fmt.Errorf("searchBoth: mt4: %w; mt5: %w", err4, err5)
+	}
 	return all, nil
 }
 

@@ -113,7 +113,10 @@ func (s *StreamServer) SubscribeEvents(
 		}
 	}()
 
-	accountIDs, _ := s.platform.GetUserAccountIDs(ctx, userID)
+	accountIDs, err := s.platform.GetUserAccountIDs(ctx, userID)
+	if err != nil {
+		s.log.Warn("GetUserAccountIDs failed in SubscribeEvents", zap.Error(err))
+	}
 	for _, aid := range accountIDs {
 		if !filterAll && !accountSet[aid] {
 			continue
@@ -211,6 +214,9 @@ func (s *StreamServer) SubscribeEvents(
 	}
 
 	snapKnownTickets := make(map[string]map[int64]bool)
+	// recentlyClosed tracks tickets seen as "close" events from orderCh
+	// so the snapshot diff does not emit duplicate close events.
+	recentlyClosed := make(map[string]map[int64]bool)
 
 	for {
 		select {
@@ -222,6 +228,14 @@ func (s *StreamServer) SubscribeEvents(
 			}
 			if !filterAll && !accountSet[ev.AccountID] {
 				continue
+			}
+			// Track close events from orderCh so the snapshot diff
+			// does not emit duplicate close events.
+			if ev.EventType == "close" {
+				if recentlyClosed[ev.AccountID] == nil {
+					recentlyClosed[ev.AccountID] = make(map[int64]bool)
+				}
+				recentlyClosed[ev.AccountID][ev.Ticket] = true
 			}
 			event := &antv1.StreamEvent{
 				Type:      "order_update",
@@ -236,6 +250,8 @@ func (s *StreamServer) SubscribeEvents(
 			}
 		case pev, ok := <-profitCh:
 			if !ok {
+				// Defensive: profitCh is never closed (goroutines only forward values),
+				// but a nil-or-closed channel would spin in select.
 				continue
 			}
 			now := timestamppb.Now()
@@ -251,6 +267,8 @@ func (s *StreamServer) SubscribeEvents(
 			}
 		case snap, ok := <-snapCh:
 			if !ok {
+				// Defensive: snapCh is never closed; nil assignment prevents
+				// future selects on this channel branch.
 				snapCh = nil
 				continue
 			}
@@ -280,6 +298,13 @@ func (s *StreamServer) SubscribeEvents(
 			if prev, ok := snapKnownTickets[snap.AccountID]; ok {
 				for ticket := range prev {
 					if !currentTickets[ticket] {
+						// Skip tickets already reported as "close" via orderCh
+						// to avoid duplicate close events.
+						if closedForAccount := recentlyClosed[snap.AccountID]; closedForAccount != nil {
+							if closedForAccount[ticket] {
+								continue
+							}
+						}
 						if err := stream.Send(&antv1.StreamEvent{
 							Type:      "order_update",
 							AccountId: snap.AccountID,
@@ -292,12 +317,15 @@ func (s *StreamServer) SubscribeEvents(
 								},
 							},
 						}); err != nil {
-							s.log.Warn("send order_update close event failed", zap.String("account", snap.AccountID), zap.Int64("ticket", ticket), zap.Error(err))
+							return fmt.Errorf("send order_update close event: %w", err)
 						}
 					}
 				}
 			}
 			snapKnownTickets[snap.AccountID] = currentTickets
+			// Clear recently-closed tickets for this account after snapshot
+			// processing to avoid unbounded growth.
+			delete(recentlyClosed, snap.AccountID)
 
 			positions := make([]*antv1.OrderUpdateEvent, 0, len(snap.Positions))
 			for _, pos := range snap.Positions {
@@ -521,7 +549,10 @@ func (s *StreamServer) SubscribeUserSummary(
 		return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
 	}
 
-	accountIDs, _ := s.platform.GetUserAccountIDs(ctx, userID)
+	accountIDs, err := s.platform.GetUserAccountIDs(ctx, userID)
+	if err != nil {
+		s.log.Warn("GetUserAccountIDs failed in SubscribeUserSummary", zap.Error(err))
+	}
 
 	if ev := s.computeSummary(ctx, userID); ev != nil {
 		if err := stream.Send(ev); err != nil {
@@ -556,18 +587,26 @@ func (s *StreamServer) SubscribeUserSummary(
 		}(ch)
 	}
 
+	var lastSummary time.Time
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
 		case _, ok := <-profitCh:
 			if !ok {
+				// Defensive: profitCh is never closed; goroutines only forward values.
+				continue
+			}
+			// Throttle: recompute summary at most once every 5 seconds
+			// to avoid flooding the DB with redundant aggregate queries.
+			if time.Since(lastSummary) < 5*time.Second {
 				continue
 			}
 			if ev := s.computeSummary(ctx, userID); ev != nil {
 				if err := stream.Send(ev); err != nil {
 					return fmt.Errorf("send recomputed user summary: %w", err)
 				}
+				lastSummary = time.Now()
 			}
 		}
 	}

@@ -10,22 +10,31 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.uber.org/zap"
 )
 
 // ErrAccountAlreadyBound is returned when an MT account is already bound to another user.
 var ErrAccountAlreadyBound = errors.New("this trading account is already bound to another user")
 
+// ErrAccountPasswordMismatch is returned when the old password does not match.
+var ErrAccountPasswordMismatch = errors.New("old password does not match")
+
 // PlatformService provides read access to platform + user strategy/factor/ai data.
 type PlatformService struct {
-	pg *pgxpool.Pool
+	pg  *pgxpool.Pool
+	log *zap.Logger
 }
 
 // NewPlatformService creates a platform service backed by the given pool.
 func NewPlatformService(pg *pgxpool.Pool) *PlatformService {
 	return &PlatformService{pg: pg}
 }
+
+// SetLogger injects a logger into the service.
+func (s *PlatformService) SetLogger(log *zap.Logger) { s.log = log }
 
 // Strategy represents a strategy visible to a user (platform ∪ user-private).
 type Strategy struct {
@@ -140,12 +149,17 @@ func (s *PlatformService) ListAccounts(ctx context.Context, userID uuid.UUID) ([
 	return out, rows.Err()
 }
 
-// ConnectAccount marks an account as ready for connection.
+// ConnectAccount marks an account as ready for connection (#36: now sets status to 'connecting').
 func (s *PlatformService) ConnectAccount(ctx context.Context, userID uuid.UUID, accountID string) error {
-	var exists bool
-	err := s.pg.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM mt_accounts WHERE id = $1::uuid AND user_id = $2)", accountID, userID).Scan(&exists)
-	if err != nil { return err }
-	if !exists { return fmt.Errorf("account not found: %s", accountID) }
+	tag, err := s.pg.Exec(ctx,
+		"UPDATE mt_accounts SET account_status = 'connecting', updated_at = CURRENT_TIMESTAMP WHERE id = $1::uuid AND user_id = $2",
+		accountID, userID)
+	if err != nil {
+		return fmt.Errorf("service: connect account: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("account not found: %s", accountID)
+	}
 	return nil
 }
 
@@ -164,11 +178,15 @@ func (s *PlatformService) GetAccount(ctx context.Context, userID uuid.UUID, acco
 	return &a, nil
 }
 
-// IsAdmin checks if a user has admin privileges.
-// CreateAccount inserts a new MT account row and returns the generated ID.
-func (s *PlatformService) CreateAccount(ctx context.Context, userID uuid.UUID, login, password, mtType, brokerCompany, brokerServer, brokerHost string) (string, error) {
+// BeginTx starts a new database transaction (for #2, #28).
+func (s *PlatformService) BeginTx(ctx context.Context) (pgx.Tx, error) {
+	return s.pg.Begin(ctx)
+}
+
+// CreateAccountTx inserts a new MT account row within a transaction (#2).
+func (s *PlatformService) CreateAccountTx(ctx context.Context, tx pgx.Tx, userID uuid.UUID, login, password, mtType, brokerCompany, brokerServer, brokerHost string) (string, error) {
 	var id string
-	err := s.pg.QueryRow(ctx, `
+	err := tx.QueryRow(ctx, `
 		INSERT INTO mt_accounts (user_id, login, password, mt_type, broker_company, broker_server, broker_host, account_status)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, 'connecting')
 		RETURNING id::text
@@ -179,6 +197,23 @@ func (s *PlatformService) CreateAccount(ctx context.Context, userID uuid.UUID, l
 			return "", ErrAccountAlreadyBound
 		}
 		return "", fmt.Errorf("service: create account: %w", err)
+	}
+	return id, nil
+}
+
+// CreateAccount inserts a new MT account row and returns the generated ID.
+func (s *PlatformService) CreateAccount(ctx context.Context, userID uuid.UUID, login, password, mtType, brokerCompany, brokerServer, brokerHost string) (string, error) {
+	tx, err := s.BeginTx(ctx)
+	if err != nil {
+		return "", fmt.Errorf("service: begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx)
+	id, err := s.CreateAccountTx(ctx, tx, userID, login, password, mtType, brokerCompany, brokerServer, brokerHost)
+	if err != nil {
+		return "", err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return "", fmt.Errorf("service: commit tx: %w", err)
 	}
 	return id, nil
 }
@@ -200,23 +235,55 @@ func (s *PlatformService) UpdateAccount(ctx context.Context, userID uuid.UUID, i
 	return nil
 }
 
-// UpdateAccountInfo updates balance/equity/margin/leverage/currency + status after MT verification.
-func (s *PlatformService) UpdateAccountInfo(ctx context.Context, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin float64, leverage int64, currency string) error {
-	_, err := s.pg.Exec(ctx, `
+// UpdateAccountInfoTx updates balance/equity/margin/leverage/currency + status within a transaction (#2, #32).
+func (s *PlatformService) UpdateAccountInfoTx(ctx context.Context, tx pgx.Tx, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin float64, leverage int64, currency string) error {
+	_, err := tx.Exec(ctx, `
 		UPDATE mt_accounts SET
-			balance = COALESCE(NULLIF($3::float8, 0), balance),
-			equity  = COALESCE(NULLIF($4::float8, 0), equity),
-			credit  = COALESCE(NULLIF($5::float8, 0), credit),
-			margin  = COALESCE(NULLIF($6::float8, 0), margin),
-			free_margin = COALESCE(NULLIF($7::float8, 0), free_margin),
-			leverage = COALESCE(NULLIF($8::int4, 0), leverage),
-			currency = COALESCE(NULLIF($9, ''), currency),
+			balance = $3,
+			equity  = $4,
+			credit  = $5,
+			margin  = $6,
+			free_margin = $7,
+			leverage = $8,
+			currency = $9,
 			account_status = 'connected',
 			updated_at = CURRENT_TIMESTAMP
 		WHERE id = $1::uuid AND user_id = $2
 	`, id, userID, balance, equity, credit, margin, freeMargin, leverage, currency)
 	if err != nil {
 		return fmt.Errorf("service: update account info: %w", err)
+	}
+	return nil
+}
+
+// UpdateAccountInfo updates balance/equity/margin/leverage/currency + status after MT verification (#32: removed COALESCE(NULLIF(0)) to allow zero-balance).
+func (s *PlatformService) UpdateAccountInfo(ctx context.Context, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin float64, leverage int64, currency string) error {
+	_, err := s.pg.Exec(ctx, `
+		UPDATE mt_accounts SET
+			balance = $3,
+			equity  = $4,
+			credit  = $5,
+			margin  = $6,
+			free_margin = $7,
+			leverage = $8,
+			currency = $9,
+			account_status = 'connected',
+			updated_at = CURRENT_TIMESTAMP
+		WHERE id = $1::uuid AND user_id = $2
+	`, id, userID, balance, equity, credit, margin, freeMargin, leverage, currency)
+	if err != nil {
+		return fmt.Errorf("service: update account info: %w", err)
+	}
+	return nil
+}
+
+// MarkAccountNeedsRebind marks an account as needing rebind instead of deleting it (#4).
+func (s *PlatformService) MarkAccountNeedsRebind(ctx context.Context, userID uuid.UUID, id string) error {
+	_, err := s.pg.Exec(ctx,
+		`UPDATE mt_accounts SET account_status = 'needs_rebind', updated_at = CURRENT_TIMESTAMP WHERE id = $1::uuid AND user_id = $2`,
+		id, userID)
+	if err != nil {
+		return fmt.Errorf("service: mark account needs_rebind: %w", err)
 	}
 	return nil
 }
@@ -240,9 +307,15 @@ func (s *PlatformService) GetAccountCredentials(ctx context.Context, userID uuid
 	return &c, nil
 }
 
-// DeleteAccount removes an MT account and all its related data.
+// DeleteAccount removes an MT account and all its related data within a transaction (#28).
 // Related tables without ON DELETE CASCADE are cleaned up first.
 func (s *PlatformService) DeleteAccount(ctx context.Context, userID uuid.UUID, id string) error {
+	tx, err := s.pg.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("service: delete account: begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
 	// Delete related rows from tables that lack ON DELETE CASCADE.
 	related := []string{
 		`DELETE FROM account_balance_history WHERE account_id = $1::uuid`,
@@ -251,14 +324,17 @@ func (s *PlatformService) DeleteAccount(ctx context.Context, userID uuid.UUID, i
 		`DELETE FROM order_history WHERE account_id = $1::uuid`,
 	}
 	for _, q := range related {
-		if _, err := s.pg.Exec(ctx, q, id); err != nil {
+		if _, err := tx.Exec(ctx, q, id); err != nil {
 			return fmt.Errorf("service: delete account: cleanup: %w", err)
 		}
 	}
 
-	_, err := s.pg.Exec(ctx, `DELETE FROM mt_accounts WHERE id = $1::uuid AND user_id = $2`, id, userID)
-	if err != nil {
+	if _, err := tx.Exec(ctx, `DELETE FROM mt_accounts WHERE id = $1::uuid AND user_id = $2`, id, userID); err != nil {
 		return fmt.Errorf("service: delete account: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("service: delete account: commit tx: %w", err)
 	}
 	return nil
 }
@@ -285,13 +361,16 @@ func (s *PlatformService) ReconnectAccount(ctx context.Context, userID uuid.UUID
 	return nil
 }
 
-// UpdateTradingPassword updates the trading password for an account.
-func (s *PlatformService) UpdateTradingPassword(ctx context.Context, userID uuid.UUID, id, newPassword string) error {
-	_, err := s.pg.Exec(ctx, `
-		UPDATE mt_accounts SET password = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $1::uuid AND user_id = $2
-	`, id, userID, newPassword)
+// UpdateTradingPassword updates the trading password for an account (#38: old password verification).
+func (s *PlatformService) UpdateTradingPassword(ctx context.Context, userID uuid.UUID, id, oldPassword, newPassword string) error {
+	tag, err := s.pg.Exec(ctx, `
+		UPDATE mt_accounts SET password = $4, updated_at = CURRENT_TIMESTAMP WHERE id = $1::uuid AND user_id = $2 AND password = $3
+	`, id, userID, oldPassword, newPassword)
 	if err != nil {
 		return fmt.Errorf("service: update trading password: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrAccountPasswordMismatch
 	}
 	return nil
 }
@@ -371,7 +450,7 @@ type UserAccountsSummary struct {
 	ConnectedCount int32
 }
 
-// GetUserAccountsSummary computes an aggregated summary of a user's accounts.
+// GetUserAccountsSummary computes an aggregated summary of a user's accounts (#30: log scan errors instead of silently skipping).
 func (s *PlatformService) GetUserAccountsSummary(ctx context.Context, userID string) (*UserAccountsSummary, error) {
 	rows, err := s.pg.Query(ctx,
 		"SELECT balance, equity, account_status FROM mt_accounts WHERE user_id = $1", userID)
@@ -385,6 +464,9 @@ func (s *PlatformService) GetUserAccountsSummary(ctx context.Context, userID str
 		var balance, equity float64
 		var status string
 		if err := rows.Scan(&balance, &equity, &status); err != nil {
+			if s.log != nil {
+				s.log.Warn("GetUserAccountsSummary: scan error, skipping row", zap.Error(err))
+			}
 			continue
 		}
 		sum.TotalBalance += balance
