@@ -2,8 +2,10 @@ package service
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/google/uuid"
@@ -463,7 +465,7 @@ func (s *AccountService) GetUserAccountsSummary(ctx context.Context, userID stri
 
 	var sum UserAccountsSummary
 	for rows.Next() {
-		var balance, equity float64
+		var balance, equity sql.NullFloat64
 		var status string
 		if err := rows.Scan(&balance, &equity, &status); err != nil {
 			if s.log != nil {
@@ -471,9 +473,9 @@ func (s *AccountService) GetUserAccountsSummary(ctx context.Context, userID stri
 			}
 			continue
 		}
-		sum.TotalBalance += balance
-		sum.TotalEquity += equity
-		sum.TotalProfit += equity - balance
+		sum.TotalBalance += balance.Float64
+		sum.TotalEquity += equity.Float64
+		sum.TotalProfit += equity.Float64 - balance.Float64
 		sum.AccountCount++
 		if status == "connected" {
 			sum.ConnectedCount++
@@ -504,8 +506,11 @@ func pgUUIDToString(u pgtype.UUID) string {
 }
 
 func float64ToPgNumeric(v float64) (pgtype.Numeric, error) {
+	if math.IsNaN(v) || math.IsInf(v, 0) {
+		return pgtype.Numeric{}, fmt.Errorf("float64ToPgNumeric: cannot convert NaN or Inf")
+	}
 	var n pgtype.Numeric
-	if err := n.Scan(v); err != nil {
+	if err := n.Scan(fmt.Sprintf("%.8f", v)); err != nil {
 		return n, fmt.Errorf("float64ToPgNumeric: %w", err)
 	}
 	return n, nil
