@@ -26,11 +26,12 @@ package mthub
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// OMSState represents an order state in the 15-state machine.
+// OMSState represents an order state in the 16-state machine.
 type OMSState string
 
 const (
@@ -99,17 +100,22 @@ func (w *OmsWriter) SetOrderEventBroker(b *OrderEventBroker) {
 
 // InsertOrder inserts a new order with state=NEW.
 // Uses ON CONFLICT DO NOTHING to handle idempotent re-insertion.
-func (w *OmsWriter) InsertOrder(ctx context.Context, orderID, accountID, symbol string, orderType int16, volume, price, stopLoss, takeProfit float64) error {
+// platform must be "MT4" or "MT5".
+func (w *OmsWriter) InsertOrder(ctx context.Context, orderID, accountID, platform, symbol string, orderType int16, volume, price, stopLoss, takeProfit float64) error {
+	if platform == "" {
+		platform = "MT5"
+	}
 	_, err := w.pool.Exec(ctx, `
 		INSERT INTO orders (id, mt_account_id, platform, ticket, symbol, order_type, volume, price, stop_loss, take_profit, state)
-		VALUES ($1, $2, 'MT5', '0', $3, $4, $5, $6, $7, $8, $9)
+		VALUES ($1, $2, $3, '0', $4, $5, $6, $7, $8, $9, $10)
 		ON CONFLICT (id) DO NOTHING
-	`, orderID, accountID, symbol, orderType, volume, price, stopLoss, takeProfit, string(OMSStateNew))
+	`, orderID, accountID, platform, symbol, orderType, volume, price, stopLoss, takeProfit, string(OMSStateNew))
 	if err != nil {
 		return fmt.Errorf("oms insert order: %w", err)
 	}
 	return nil
 }
+
 
 // Transition validates and persists a state transition to PG.
 func (w *OmsWriter) Transition(ctx context.Context, orderID string, current, next OMSState) error {
@@ -158,12 +164,17 @@ func IdempotencyKey(accountID, clientID string) string {
 }
 
 // accountIDFromOrderID extracts the account ID from the idempotent order key.
+// format: "ord-<accountID>-<clientID>"
+// Uses LastIndex to handle account IDs that contain hyphens (e.g. UUIDs).
 func accountIDFromOrderID(orderID string) string {
-	// format: "ord-<accountID>-<clientID>"
-	for i := 4; i < len(orderID); i++ {
-		if orderID[i] == '-' {
-			return orderID[4:i]
-		}
+	if !strings.HasPrefix(orderID, "ord-") {
+		return orderID
 	}
-	return orderID
+	// Find the LAST hyphen — only the clientID follows it.
+	rest := orderID[4:]
+	idx := strings.LastIndex(rest, "-")
+	if idx < 0 {
+		return rest
+	}
+	return rest[:idx]
 }

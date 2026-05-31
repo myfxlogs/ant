@@ -42,11 +42,13 @@ type KellyFractionSizer struct {
 func (s *KellyFractionSizer) Name() string { return "kelly_fraction" }
 
 func (s *KellyFractionSizer) Size(_ context.Context, req *SizerRequest) (*SizerResult, error) {
-	if s.Fraction <= 0 {
-		s.Fraction = 0.5 // half-Kelly default
+	fraction := s.Fraction
+	if fraction <= 0 {
+		fraction = 0.5 // half-Kelly default
 	}
-	if s.KellyMax <= 0 {
-		s.KellyMax = 0.25 // max 25% equity
+	kellyMax := s.KellyMax
+	if kellyMax <= 0 {
+		kellyMax = 0.25 // max 25% equity
 	}
 
 	p := s.WinProb
@@ -67,11 +69,11 @@ func (s *KellyFractionSizer) Size(_ context.Context, req *SizerRequest) (*SizerR
 	}
 
 	// Apply half-Kelly fraction.
-	fStar *= s.Fraction
+	fStar *= fraction
 
 	// Cap at KellyMax.
-	if fStar > s.KellyMax {
-		fStar = s.KellyMax
+	if fStar > kellyMax {
+		fStar = kellyMax
 	}
 
 	// Convert fraction of equity to lots.

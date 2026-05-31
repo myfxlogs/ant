@@ -151,7 +151,7 @@ func TestHardLimit_KycJurisdiction_Name(t *testing.T) {
 
 func TestHardLimit_KillSwitch_Name(t *testing.T) {
 	t.Parallel()
-	rule := &KillSwitchRule{}
+	rule := &KillSwitchRule{Enabled: func() bool { return true }}
 	if rule.Name() != "kill_switch" {
 		t.Fatalf("expected kill_switch, got %s", rule.Name())
 	}

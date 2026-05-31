@@ -58,6 +58,8 @@ func (r *ReconciliationLoop) TriggerReconcile(accountID string) {
 		r.gate.EnterReconciling(accountID)
 	}
 	go func() {
+		// Use a standalone context with timeout. The defer in reconcileAccount
+		// will release the gate regardless of success/failure.
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 		r.ReconcileAccount(ctx, accountID)

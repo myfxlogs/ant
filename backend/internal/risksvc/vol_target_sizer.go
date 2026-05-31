@@ -43,11 +43,13 @@ type VolTargetSizer struct {
 func (s *VolTargetSizer) Name() string { return "vol_target" }
 
 func (s *VolTargetSizer) Size(_ context.Context, req *SizerRequest) (*SizerResult, error) {
-	if s.RiskBudgetPct <= 0 {
-		s.RiskBudgetPct = 0.01 // default 1% risk per trade
+	riskBudgetPct := s.RiskBudgetPct
+	if riskBudgetPct <= 0 {
+		riskBudgetPct = 0.01 // default 1% risk per trade
 	}
-	if s.MaxLots <= 0 {
-		s.MaxLots = 100 // generous cap
+	maxLots := s.MaxLots
+	if maxLots <= 0 {
+		maxLots = 100 // generous cap
 	}
 
 	// Compute ATR in account currency terms: ATR × contract_size.
@@ -67,7 +69,7 @@ func (s *VolTargetSizer) Size(_ context.Context, req *SizerRequest) (*SizerResul
 	}
 
 	// Target risk in account currency.
-	targetRisk := req.Equity * s.RiskBudgetPct
+	targetRisk := req.Equity * riskBudgetPct
 	if targetRisk <= 0 {
 		return &SizerResult{Lots: 0, RiskUsed: 0, Method: s.Name()}, nil
 	}
@@ -88,10 +90,13 @@ func (s *VolTargetSizer) Size(_ context.Context, req *SizerRequest) (*SizerResul
 	if lots < s.MinLots {
 		lots = 0
 	}
-	if lots > s.MaxLots {
-		lots = s.MaxLots
+	if lots > maxLots {
+		lots = maxLots
 	}
 
+	if req.Equity <= 0 {
+		return &SizerResult{Lots: 0, RiskUsed: 0, Method: s.Name()}, nil
+	}
 	riskUsed := lots * riskPerLot / req.Equity
 
 	return &SizerResult{

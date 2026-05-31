@@ -170,9 +170,16 @@ func (a *PlatformAggregator) StartRefreshLoop(interval time.Duration) {
 }
 
 // Shutdown stops the refresh loop. After Shutdown, callers should not
-// call UpdatePosition or ClearAccount.
+// call UpdatePosition or ClearAccount. Safe to call multiple times.
 func (a *PlatformAggregator) Shutdown() {
-	close(a.stopCh)
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	select {
+	case <-a.stopCh:
+		// Already closed.
+	default:
+		close(a.stopCh)
+	}
 }
 
 func abs(f float64) float64 {

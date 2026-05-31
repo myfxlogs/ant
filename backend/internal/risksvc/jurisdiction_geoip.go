@@ -1,6 +1,7 @@
 package risksvc
 
 import (
+	"fmt"
 	"net"
 
 	"github.com/oschwald/geoip2-golang"
@@ -17,7 +18,7 @@ func openMaxMindDB(dbPath string) (func(ipStr string) (string, error), error) {
 	return func(ipStr string) (string, error) {
 		ip := net.ParseIP(ipStr)
 		if ip == nil {
-			return "", nil
+			return "", fmt.Errorf("geoip lookup: %w", err)
 		}
 		record, err := db.Country(ip)
 		if err != nil {

@@ -92,15 +92,16 @@ func (r *MarginFloorRule) Check(_ context.Context, req *HardLimitRequest) error 
 
 // KillSwitchRule blocks ALL orders when the killswitch is engaged.
 // This is the emergency stop — no exceptions.
-// Enabled should be wired to the CapabilityStore to reflect the current kill-switch state.
+// Enabled is a function so the kill-switch state can be toggled at runtime
+// without replacing the rule. Return nil to use a static value.
 type KillSwitchRule struct {
-	Enabled bool
+	Enabled func() bool
 }
 
 func (r *KillSwitchRule) Name() string { return "kill_switch" }
 
 func (r *KillSwitchRule) Check(_ context.Context, req *HardLimitRequest) error {
-	if !r.Enabled {
+	if r.Enabled == nil || !r.Enabled() {
 		return nil
 	}
 	return &HardLimitError{

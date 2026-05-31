@@ -155,6 +155,16 @@ var ErrReconciling = errors.New("mthub: account reconciling, order rejected")
 // If an IdempotencyGuard is configured, duplicate client IDs are rejected before broker submission.
 var ErrKillSwitchEngaged = errors.New("mthub: global kill switch engaged")
 
+
+// platform resolves the account's broker platform name from the Hub.
+func platform(accountID string, hub *Hub) string {
+	exec := hub.Get(accountID)
+	if exec == nil {
+		return ""
+	}
+	return exec.Platform()
+}
+
 func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*OrderRecord, error) {
 	if s.killSwitch != nil && s.killSwitch.IsEngaged() {
 		return nil, ErrKillSwitchEngaged
@@ -199,7 +209,7 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 	var orderID string
 	if s.omsWriter != nil {
 		orderID = IdempotencyKey(req.AccountID, req.ClientID)
-		if err := s.omsWriter.InsertOrder(ctx, orderID, req.AccountID, req.Canonical,
+		if err := s.omsWriter.InsertOrder(ctx, orderID, req.AccountID, platform(req.AccountID, s.hub), req.Canonical,
 			int16(req.OrderType), lossyFloat64(req.Volume), lossyFloat64(req.Price),
 			lossyFloat64(req.StopLoss), lossyFloat64(req.TakeProfit)); err != nil {
 			return nil, fmt.Errorf("oms insert: %w", err)
