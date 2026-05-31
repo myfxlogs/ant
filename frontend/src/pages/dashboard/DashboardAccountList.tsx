@@ -63,8 +63,8 @@ function AccountCard({ item, navigate, t }: { item: Account; navigate: (path: st
         {getStatusTag(item, t)}
       </div>
 
-      {/* Broker */}
-      <div className="text-xs mb-3 truncate" style={{ color: '#8A9AA5' }}>{item.brokerCompany || '—'}</div>
+      {/* Server — more specific than company name */}
+      <div className="text-xs mb-3 truncate" style={{ color: '#8A9AA5' }}>{item.brokerServer || '—'}</div>
 
       {/* Financials — 3 columns */}
       <div className="grid grid-cols-3 gap-2 text-center">
