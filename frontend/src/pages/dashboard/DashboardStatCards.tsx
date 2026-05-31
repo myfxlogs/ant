@@ -34,7 +34,7 @@ export default function DashboardStatCards({ stats, loading }: Props) {
               <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: c.bg }}>{c.icon}</div>
               {i === 3 ? <ArrowUpOutlined size={16} style={{ color: c.valueColor, transform: stats.totalProfit < 0 ? 'rotate(180deg)' : undefined }} /> : i === 0 ? <ArrowUpOutlined size={16} color="#00A651" /> : null}
             </div>
-            <Statistic title={<span style={{ color: '#8A9AA5', fontSize: '14px' }}>{c.title}</span>} value={c.value} precision={2} prefix="$" styles={{ content: { color: c.valueColor, fontSize: '24px', fontWeight: 600 } }} />
+            <Statistic title={<span style={{ color: '#8A9AA5', fontSize: '14px' }}>{c.title}</span>} value={c.value} precision={2} styles={{ content: { color: c.valueColor, fontSize: '24px', fontWeight: 600 } }} />
           </div>
         </Col>
       ))}
