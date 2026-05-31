@@ -2,6 +2,8 @@ const dashboard = {
   dashboard: {
     welcome: 'Chào mừng trở lại, {{name}}',
     subtitle: 'Xem tổng quan tài khoản của bạn',
+    templates: "Mẫu",
+    logs: "Nhật ký",
     bindAccount: 'Liên kết tài khoản',
     accountOverview: 'Tổng quan tài khoản',
     accountList: 'Danh sách tài khoản',
@@ -32,6 +34,8 @@ const dashboard = {
       market: 'Thị trường',
       accounts: 'Tài khoản',
       analytics: 'Phân tích',
+    templates: "Mẫu",
+    logs: "Nhật ký",
       bindAccount: 'Liên kết',
       closePosition: 'Đóng lệnh',
     },

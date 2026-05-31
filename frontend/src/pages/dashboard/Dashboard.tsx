@@ -18,10 +18,10 @@ import DashboardStatCards from './DashboardStatCards';
 import DashboardAccountList from './DashboardAccountList';
 
 const quickActions = [
-  { key: 'bind', label: '', path: '/accounts/bind', icon: <PlusOutlined size={22} />, color: 'rgba(212,175,55,0.1)' },
-  { key: 'templates', label: '', path: '/strategy/templates', icon: <PieChartOutlined size={22} />, color: 'rgba(0,166,81,0.1)' },
-  { key: 'analytics', label: '', path: '/analytics', icon: <BarChartOutlined size={22} />, color: 'rgba(33,150,243,0.1)' },
-  { key: 'logs', label: '', path: '/logs', icon: <BarChartOutlined size={22} />, color: 'rgba(156,39,176,0.1)' },
+  { key: 'bind', label: 'dashboard.quickActions.bindAccount', path: '/accounts/bind', icon: <PlusOutlined size={22} />, color: 'rgba(212,175,55,0.1)' },
+  { key: 'templates', label: 'dashboard.quickActions.templates', path: '/strategy/templates', icon: <PieChartOutlined size={22} />, color: 'rgba(0,166,81,0.1)' },
+  { key: 'analytics', label: 'dashboard.quickActions.analytics', path: '/analytics', icon: <BarChartOutlined size={22} />, color: 'rgba(33,150,243,0.1)' },
+  { key: 'logs', label: 'dashboard.quickActions.logs', path: '/logs', icon: <BarChartOutlined size={22} />, color: 'rgba(156,39,176,0.1)' },
 ];
 
 export default function Dashboard() {
@@ -114,7 +114,7 @@ export default function Dashboard() {
                   onMouseEnter={(e) => { e.currentTarget.style.background = '#E8ECF0'; e.currentTarget.style.borderColor = 'rgba(212,175,55,0.2)'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = '#F5F7F9'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.05)'; }}>
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3" style={{ background: action.color }}>{action.icon}</div>
-                  <span style={{ color: '#141D22', fontWeight: 500 }}>{action.label}</span>
+                  <span style={{ color: '#141D22', fontWeight: 500, fontSize: '13px' }}>{t(action.label)}</span>
                 </div>
               ))}
             </div>

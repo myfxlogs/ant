@@ -2,6 +2,8 @@ const dashboard = {
   dashboard: {
     welcome: 'おかえりなさい、{{name}}',
     subtitle: '口座の概要を確認できます',
+    templates: "テンプレート",
+    logs: "ログ",
     bindAccount: '口座を連携',
     accountOverview: '口座概要',
     accountList: '口座一覧',
@@ -32,6 +34,8 @@ const dashboard = {
       market: '相場',
       accounts: '口座',
       analytics: '分析',
+    templates: "テンプレート",
+    logs: "ログ",
       bindAccount: '連携',
       closePosition: '決済',
     },

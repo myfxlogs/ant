@@ -65,7 +65,6 @@ export default function DashboardAccountList({ accounts, loading, error, onRetry
                       </div>
                     </div>
                   ))}
-                  <div className="text-xs hidden sm:block" style={{ color: '#8A9AA5' }}>{item.currency || 'USD'}</div>
                 </div>
               </div>
             );

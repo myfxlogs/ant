@@ -2,6 +2,8 @@ const dashboard = {
   dashboard: {
     welcome: '欢迎回来, {{name}}',
     subtitle: '查看您的账户总览',
+    templates: "策略模板",
+    logs: "日志",
     bindAccount: '绑定账户',
     accountOverview: '账户总览',
     accountList: '账户列表',
@@ -32,6 +34,8 @@ const dashboard = {
     market: '行情',
     accounts: '账户',
     analytics: '分析',
+    templates: "策略模板",
+    logs: "日志",
     bindAccount: '绑账户',
     closePosition: '平仓',
   },

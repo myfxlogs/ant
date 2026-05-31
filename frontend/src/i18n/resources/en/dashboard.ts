@@ -2,6 +2,8 @@ const dashboard = {
   dashboard: {
     welcome: 'Welcome back, {{name}}',
     subtitle: 'View your account overview',
+    templates: "Templates",
+    logs: "Logs",
     bindAccount: 'Bind Account',
     accountOverview: 'Account Overview',
     accountList: 'Account List',
@@ -32,6 +34,8 @@ const dashboard = {
     market: 'Market',
     accounts: 'Accounts',
     analytics: 'Analytics',
+    templates: "Templates",
+    logs: "Logs",
     bindAccount: 'Bind',
     closePosition: 'Close',
   },
