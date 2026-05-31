@@ -108,6 +108,7 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	dedup := NewTickDedup(0) // default size (1000)
 
 	// --- Start CHWriter background loop ---
+	// #nosec G118 — pipeline ctx is the correct lifecycle scope for CHWriter
 	go chWriter.Start(ctx)
 
 	// --- Backfiller (initial scan + 6h cron) ---
@@ -140,6 +141,7 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	})
 
 	// --- Health monitor (start before gateways so accounts with no ticks are caught) ---
+	// #nosec G118 — pipeline ctx is the correct lifecycle scope for health monitor
 	go healthMonitor(ctx, mgr, chWriter, log, deps.OnAccountDisconnect)
 
 	// --- Load active accounts and start gateways ---
