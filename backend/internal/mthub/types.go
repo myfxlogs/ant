@@ -81,7 +81,8 @@ func NewAccountProfitBroker() *AccountProfitBroker {
 }
 func (b *AccountProfitBroker) Publish(ev *AccountProfitEvent) {
 	b.mu.RLock()
-	chs := b.subscribers[ev.AccountID]
+	chs := make([]chan *AccountProfitEvent, len(b.subscribers[ev.AccountID]))
+	copy(chs, b.subscribers[ev.AccountID])
 	b.mu.RUnlock()
 	for _, ch := range chs {
 		select {
@@ -152,7 +153,8 @@ type OrderEventBroker struct {
 }
 func NewOrderEventBroker() *OrderEventBroker { return &OrderEventBroker{subscribers: map[string][]chan *OrderEvent{}} }
 func (b *OrderEventBroker) PublishEvent(userID string, ev *OrderEvent) {
-	b.mu.RLock(); chs := b.subscribers[userID]; b.mu.RUnlock()
+	b.mu.RLock(); src := b.subscribers[userID]; b.mu.RUnlock()
+	chs := make([]chan *OrderEvent, len(src)); copy(chs, src)
 	for _, ch := range chs { select { case ch <- ev: default: } }
 }
 func (b *OrderEventBroker) Subscribe(userID string) (<-chan *OrderEvent, func()) {
@@ -210,7 +212,9 @@ func NewPositionSnapshotBroker() *PositionSnapshotBroker {
 
 func (b *PositionSnapshotBroker) Publish(ev *PositionSnapshot) {
 	b.mu.RLock()
-	chs := b.subscribers[ev.AccountID]
+	src := b.subscribers[ev.AccountID]
+	chs := make([]chan *PositionSnapshot, len(src))
+	copy(chs, src)
 	b.mu.RUnlock()
 	for _, ch := range chs {
 		select {

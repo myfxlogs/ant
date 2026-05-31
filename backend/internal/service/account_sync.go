@@ -184,5 +184,5 @@ func MapSideToString(s mthub.Side) string {
 	if s == mthub.SideSell {
 		return "sell"
 	}
-	return "buy"
+	return "unknown"
 }

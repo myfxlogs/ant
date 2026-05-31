@@ -204,8 +204,10 @@ func startMdGatewayPipeline(
 				(*platformAgg).UpdatePosition(accountID, &risksvc.AggregatorPosition{
 					Canonical: pos.Symbol,
 					NetVolume: netVol,
-					Notional:  pos.Volume * pos.CurrentPrice * 100000,
-					Margin:    0,
+					// TODO: use actual contract_size from SymbolParam.LotSize instead of 100000.
+					// 100000 is correct for standard forex lots but wrong for indices/crypto/metals.
+					Notional: pos.Volume * pos.CurrentPrice * 100000,
+					Margin:   0,
 				})
 			}
 
