@@ -11,7 +11,7 @@ export const BUILTIN_AGENT_TYPES = new Set([
   'style', 'signals', 'risk', 'macro', 'sentiment', 'portfolio', 'execution', 'code',
 ]);
 
-/** 返回一对 (name, hint)：内置类型优先取 i18n，自定义类型用用户存的。 */
+/** Returns (name, hint) pair: built-in types use i18n, custom types use user-stored values. */
 export function useAgentLabel() {
   const { t } = useTranslation();
   return (a: AIAgentDefinitionView) => {
@@ -39,13 +39,14 @@ export function looksLikeNextIntent(raw: string): boolean {
   if (!t || t.length > 16) return false;
   const stripped = t.toLowerCase().replace(/[\s。.,，！!?？~～、:：;；"'""''`]+/g, '');
   const keywords = new Set([
-    '下一步', '下一个', '下一环节', '下一阶段', '下一位', '下一轮',
-    '下一个agent', '下一个智能体', '下一位agent', '下一位智能体',
-    '下一位专家', '下一个专家', '下一位能手', '换下一位',
-    '继续', '进入下一步', '进入下一个', '进入下一环节', '进入下一阶段',
-    '可以了', '可以了下一步', '好的下一步', '好了下一步', '没问题下一步',
-    'ok', 'ok下一步', '好下一步', 'next', 'nextstep', 'nextagent',
-    'continue', 'proceed', 'goon', 'goahead', '确定下一步', '行下一步',
+    // English
+    'next', 'next step', 'nextstage', 'nextagent', 'continue', 'proceed', 'go on', 'go ahead',
+    // Chinese (zh-cn)
+    '下一步', '下一个', '下一环节', '下一阶段', '下一位', '下一轮', '继续',
+    // Chinese (zh-tw)
+    '下一步', '下一個', '下一環節', '下一階段', '下一位', '下一輪', '繼續',
+    // Japanese
+    '次へ', '次に', '続ける',
   ]);
   return keywords.has(stripped);
 }

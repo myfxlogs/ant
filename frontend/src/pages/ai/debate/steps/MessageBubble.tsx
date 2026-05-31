@@ -4,8 +4,8 @@ import type { ChatMessage } from '../flow/useDebateFlow';
 const { Text } = Typography;
 
 export function MessageBubble({ m, waitHint }: { m: ChatMessage; waitHint?: string }) {
-  // 系统衔接消息仅用于提示 LLM，不展示给最终用户——保持对话干净，
-  // 直接由 Agent 的自我介绍开场即可。
+  // System bridge messages are only for prompting the LLM, never shown to end users.
+  // Let the Agent start with its own introduction.
   if (m.kind === 'kickoff') {
     return null;
   }

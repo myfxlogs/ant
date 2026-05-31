@@ -7,20 +7,20 @@ import type { AIConfig as SystemAIConfig } from '@/pages/ai/systemai/model';
 
 const { Text } = Typography;
 
-// Default Primary Model 卡片：独立组件，自给自足。
-// 之所以单独抽出，是为了让 SystemAI / AISettings 都能复用，且不会把
-// 主模型的 state 和 Agent 列表 state 搅在一起。
+// Default Primary Model card: standalone self-contained component.
+// Extracted so both SystemAI and AISettings can reuse it without mixing
+// primary model state with Agent list state.
 //
-// 数据流：
-//   挂载 → aiApi.getPrimary() 拉一次
-//   保存 → aiApi.setPrimary({providerId, model}) → 回填
-// modelOptions 来自父级传入的 systemConfigs（已启用 + has_secret 的行）。
+// Data flow:
+//   mount → aiApi.getPrimary() fetch once
+//   save → aiApi.setPrimary({providerId, model}) → refill
+// modelOptions come from parent systemConfigs (enabled + has_secret rows).
 //
-// 值的编码与 Agent 选择器对齐："providerId|model"，方便共享 Select options。
+// Value encoding matches Agent selector: "providerId|model" for shared Select options.
 
 export interface DefaultPrimaryModelCardProps {
 	systemConfigs: SystemAIConfig[];
-	/** provider_id → 本地化显示名（en/zh-cn/...）；调用方注入。 */
+	/** provider_id → localized display name (en/zh-cn/...); injected by caller. */
 	labelOf: (providerId: string, fallbackName?: string) => string;
 }
 
@@ -60,7 +60,7 @@ export default function DefaultPrimaryModelCard({
 
 	const options = useMemo(
 		() => buildOptions(systemConfigs, labelOf),
-		// labelOf 的 i18n 切换只影响显示，value 不变；依赖列表只跟 configs。
+		// i18n locale switch only affects display; value is stable; deps tied to configs only.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[systemConfigs],
 	);
@@ -73,7 +73,7 @@ export default function DefaultPrimaryModelCard({
 				if (!mounted) return;
 				setValue(r.providerId ? `${r.providerId}|${r.model || ''}` : '');
 			} catch {
-				/* 拿不到就当未设置，UI 仍可让用户选择并保存 */
+				/* Treat fetch failure as unset — UI still allows user selection and save */
 			} finally {
 				if (mounted) setLoaded(true);
 			}

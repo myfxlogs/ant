@@ -22,7 +22,7 @@ function localeDisplayName(locale: string): string {
 	switch (localeKey(locale)) {
 		case 'zh-cn': return 'Simplified Chinese (zh-CN / 简体中文)';
 		case 'zh-tw': return 'Traditional Chinese (zh-TW / 繁體中文)';
-		case 'ja': return 'Japanese (ja / 日本語)';
+		case 'ja': return 'Japanese (ja)';
 		case 'vi': return 'Vietnamese (vi / Tiếng Việt)';
 		default: return 'English (en)';
 	}
@@ -44,7 +44,7 @@ function languageHint(locale: string): string {
 	].join('\n');
 }
 
-/** 各语种的问候模板、邀请短语、"尚未产出"/"未提供"占位。 */
+/** Locale-specific greeting templates, invitation phrases, placeholder text. */
 function greetingFor(locale: string, name: string): string {
 	switch (localeKey(locale)) {
 		case 'zh-cn': return `你好，我是您的${name}。`;
@@ -179,7 +179,7 @@ export function codeSystemPrompt(intentPrompt: string, agentPrompts: Array<{ nam
 const PYTHON_BLOCK_RE = /```(?:python)?\s*([\s\S]*?)```/i;
 const FENCE_BLOCK_RE = /```[\s\S]*?```/g;
 
-/** 从代码生成的回复里抽取 ```python ...``` 块。 */
+/** Extract ```python ...``` blocks from code generation responses. */
 export function extractPythonBlock(text: string): string {
 	const m = String(text || '').match(PYTHON_BLOCK_RE);
 	return m && m[1] ? m[1].trim() : '';
@@ -223,7 +223,7 @@ export function kickoffUserMessage(agentName: string, agentType: string, locale:
 	return lines.join('\n');
 }
 
-/** 把对话历史序列化为 transcript，用于放进 aiApi.chat 的 context 字段，维持多轮语义。 */
+/** Serialize conversation history into a transcript for aiApi.chat context, preserving multi-turn semantics. */
 const MAX_TRANSCRIPT_CHARS = 32000; // guard against exceeding model context window
 
 export function serializeTranscript(messages: Array<{ role: string; content: string }>): string {

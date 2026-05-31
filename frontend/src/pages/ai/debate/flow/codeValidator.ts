@@ -16,7 +16,7 @@ export type ViolationCode =
 
 export interface Violation {
 	code: ViolationCode;
-	// Original (English) messages for LLM feedback; i18n translation handled by display layer via t(`ai.debate.v2.validation.codes.${code}`)责。
+	// Original (English) messages for LLM feedback; i18n translation handled by display layer via t(`ai.debate.v2.validation.codes.${code}`).
 	message: string;
 	// Matched literal (optional), e.g. "open" / "import pandas" / "__import__", used for highlighting in Alert.
 	hit?: string;

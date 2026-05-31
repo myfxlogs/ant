@@ -13,7 +13,7 @@ export function buildAgentPrompts(
 	const buildFor = (key: AgentKey): { title: string; prompt: string } => {
 		const ov = overrides?.[key];
 		const title = ov?.name || t(`ai.agentPrompts.${key}.title`);
-		// 默认模板仍然保留，用户自定义 identity 优先，其后补充 baseInfo 作为上下文。
+		// Default templates are preserved; user-defined identity takes priority, with baseInfo appended as context.
 		const defaultPrompt = t(`ai.agentPrompts.${key}.prompt`, { baseInfo });
 		const identity = (ov?.identity || '').trim();
 		const prompt = identity
