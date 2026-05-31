@@ -62,7 +62,7 @@ export function useProviderActions(params: UseProviderActionsParams) {
     } catch (e) {
       const msg = e instanceof Error ? e.message : t('ai.systemAI.messages.configSaveFailed');
       setError(msg);
-      throw e;
+      console.error('saveConfig failed', e);
     } finally {
       setSavingConfig(false);
     }
@@ -179,7 +179,7 @@ export function useProviderActions(params: UseProviderActionsParams) {
       void silentReload();
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      if (removeCustomProvider && (msg.includes('404') || msg.toLowerCase().includes('not found'))) {
+      if (removeCustomProvider && (msg.toLowerCase().includes('status 404') || msg.toLowerCase().includes('not found'))) {
         removeLocalCustomProvider();
         return;
       }

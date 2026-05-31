@@ -11,7 +11,16 @@ interface ChatBoxProps {
   loading?: boolean;
 }
 
+// Maximum content length before truncation. Prevents DOM overload from
+// extremely long AI responses while being generous enough for normal use.
+const MAX_MARKDOWN_INPUT = 50_000;
+
 function renderMarkdown(content: string): React.ReactNode {
+  // Guard against excessively long content that could overload the DOM.
+  if (content.length > MAX_MARKDOWN_INPUT) {
+    content = content.slice(0, MAX_MARKDOWN_INPUT) + '\n\n... *(content truncated)*';
+  }
+
   // Escape ALL HTML first to prevent XSS. Markdown syntax characters
   // (*, _, #, `, -, etc.) are not HTML special characters, so escaping
   // first does not interfere with the regex transformations below.

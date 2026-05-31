@@ -64,7 +64,9 @@ func (s *AIServer) Chat(ctx context.Context, req *connect.Request[antv1.ChatRequ
 				if _, aErr := s.conversations.AddMessage(ctx, uid, cid, "assistant", reply); aErr != nil {
 					s.log.Warn("Chat: AddMessage assistant failed", zap.Error(aErr))
 				}
-				_ = s.conversations.Touch(ctx, cid, uid)
+				if err := s.conversations.Touch(ctx, cid, uid); err != nil {
+				s.log.Warn("Chat: Touch conversation failed", zap.String("cid", cid.String()), zap.Error(err))
+			}
 		}
 	}
 
@@ -115,7 +117,9 @@ func (s *AIServer) ChatStream(ctx context.Context, req *connect.Request[antv1.Ch
 			if _, aErr := s.conversations.AddMessage(ctx, uid, cid, "assistant", reply); aErr != nil {
 				s.log.Warn("ChatStream: AddMessage assistant failed", zap.Error(aErr))
 			}
-			_ = s.conversations.Touch(ctx, cid, uid)
+			if err := s.conversations.Touch(ctx, cid, uid); err != nil {
+				s.log.Warn("Chat: Touch conversation failed", zap.String("cid", cid.String()), zap.Error(err))
+			}
 		}
 	}
 

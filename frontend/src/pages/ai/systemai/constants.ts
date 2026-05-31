@@ -46,7 +46,7 @@ export function toFriendlyDiscoverMessage(msg: string, t: TFunction): string {
   }
   if (lower.includes('user location is not supported')) return t(`${DK}.providerRegionBlocked`)
   if (msg.includes('unauthorized')) return t(`${DK}.unauthorized`)
-  if (msg.includes('endpoint')) return t(`${DK}.endpoint404`)
+  if (lower.includes('endpoint not found') || lower.includes('status 404')) return t(`${DK}.endpoint404`)
   if (msg.includes('timeout')) return t(`${DK}.timeout`)
   if (msg.includes('unreachable')) return t(`${DK}.unreachable`)
   if (msg.includes('invalid /models')) return t(`${DK}.invalidModelsResponse`)
