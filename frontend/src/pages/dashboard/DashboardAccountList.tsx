@@ -5,10 +5,11 @@ import { useTranslation } from 'react-i18next';
 import { StatusResult } from '@/components/common/StatusResult';
 import type { Account } from '@/types/account';
 
+interface AccountInfo { balance?: number; equity?: number; profit?: number; }
 
 interface Props {
   accounts: Account[];
-  accounts: Account[];
+  accountInfoValues: Record<string, AccountInfo>;
   loading: boolean;
   error: string | null;
   onRetry: () => void;
@@ -22,7 +23,7 @@ function getStatusTag(item: Account) {
   return <Tag color={colors[s] || 'default'}>{labels[s] || s}</Tag>;
 }
 
-export default function DashboardAccountList({ accounts, loading, error, onRetry }: Props) {
+export default function DashboardAccountList({ accounts, accountInfoValues, loading, error, onRetry }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   return (
@@ -30,9 +31,10 @@ export default function DashboardAccountList({ accounts, loading, error, onRetry
       <StatusResult loading={loading} error={error} onRetry={onRetry} empty={!loading && !error && (!accounts || accounts.length === 0)} emptyText={t('dashboard.noAccounts')}>
         <div className="space-y-3">
           {(accounts || []).slice(0, 4).map((item) => {
-            const rowBalance = item.balance;
-            const rowEquity = item.equity;
-            const rowFloating = item.profit ?? 0;
+            const live = accountInfoValues[item.id];
+            const rowBalance = live?.balance ?? item.balance;
+            const rowEquity = live?.equity ?? item.equity;
+            const rowFloating = live?.profit ?? item.profit ?? 0;
             return (
               <div key={item.id} onClick={() => navigate(`/accounts/${item.id}`)}
                 className="flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all"
