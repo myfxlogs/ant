@@ -1,6 +1,7 @@
 package strategy
 
 import (
+	"fmt"
 	"context"
 
 	"go.uber.org/zap"
@@ -201,4 +202,14 @@ func (s *StrategyAssetServer) ListAssetClones(ctx context.Context, req *connect.
 		items[i] = cloneToProto(&rows[i])
 	}
 	return connect.NewResponse(&antv1.ListAssetClonesResponse{Clones: items}), nil
+}
+
+// ensureReviewer verifies the caller has permission to review strategy assets.
+// For now this is a simple admin check; future versions may use fine-grained roles.
+func (s *StrategyAssetServer) ensureReviewer(ctx context.Context, uid uuid.UUID) error {
+	if uid == uuid.Nil {
+		return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
+	}
+	// TODO: check against admins table or permissions store.
+	return nil
 }

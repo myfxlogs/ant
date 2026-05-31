@@ -56,7 +56,10 @@ func (r *StrategyTemplateRepository) Create(ctx context.Context, template *model
 		template.UseCount, template.CreatedAt, template.UpdatedAt,
 	)
 
-	return fmt.Errorf("create template: %w", err)
+	if err != nil {
+		return fmt.Errorf("create template: %w", err)
+	}
+	return nil
 }
 
 func (r *StrategyTemplateRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.StrategyTemplate, error) {
@@ -176,7 +179,10 @@ func (r *StrategyTemplateRepository) Update(ctx context.Context, template *model
 		template.Parameters, template.I18n, template.IsPublic, template.Tags, template.UpdatedAt,
 	)
 
-	return fmt.Errorf("update template: %w", err)
+	if err != nil {
+		return fmt.Errorf("update template: %w", err)
+	}
+	return nil
 }
 
 // Delete removes a user-owned template. System templates (is_system = true)

@@ -150,7 +150,7 @@ func (s *StrategySvc) ListSchedules(ctx context.Context, userID uuid.UUID) ([]Sc
 		`SELECT id, user_id, template_id, account_id, name, symbol, timeframe, parameters, schedule_type, schedule_config,
 		 backtest_metrics, risk_score, risk_level, risk_reasons, risk_warnings, last_backtest_at,
 		 is_active, last_run_at, next_run_at, run_count, last_error, enable_count, created_at, updated_at
-		 FROM strategy_schedules WHERE user_id = $1 ORDER BY created_at DESC`, userID)
+		 FROM strategy_schedules WHERE user_id = $1 ORDER BY created_at DESC LIMIT 100`, userID)
 	if err != nil {
 		return nil, fmt.Errorf("ListSchedules: %w", err)
 	}
@@ -263,17 +263,19 @@ type SignalRow struct {
 	CreatedAt  time.Time
 }
 
-func (s *StrategySvc) ListSignals(ctx context.Context, accountID uuid.UUID, status string) ([]SignalRow, error) {
+func (s *StrategySvc) ListSignals(ctx context.Context, userID, accountID uuid.UUID, status string) ([]SignalRow, error) {
 	var rows pgx.Rows
 	var err error
+	// Always JOIN mt_accounts to verify ownership — prevents IDOR.
+	signalsCols := `SELECT s.id, s.account_id, s.symbol, s.signal_type, s.volume, s.price, s.stop_loss, s.take_profit, s.reason, s.status, s.executed_at, s.ticket, s.profit, s.created_at FROM strategy_signals s JOIN mt_accounts a ON s.account_id = a.id`
 	if accountID == uuid.Nil && status == "" {
-		rows, err = s.pg.Query(ctx, `SELECT id, account_id, symbol, signal_type, volume, price, stop_loss, take_profit, reason, status, executed_at, ticket, profit, created_at FROM strategy_signals ORDER BY created_at DESC LIMIT 100`)
+		rows, err = s.pg.Query(ctx, signalsCols+` WHERE a.user_id = $1 ORDER BY s.created_at DESC LIMIT 100`, userID)
 	} else if status == "" {
-		rows, err = s.pg.Query(ctx, `SELECT id, account_id, symbol, signal_type, volume, price, stop_loss, take_profit, reason, status, executed_at, ticket, profit, created_at FROM strategy_signals WHERE account_id = $1 ORDER BY created_at DESC LIMIT 100`, accountID)
+		rows, err = s.pg.Query(ctx, signalsCols+` WHERE s.account_id = $1 AND a.user_id = $2 ORDER BY s.created_at DESC LIMIT 100`, accountID, userID)
 	} else if accountID == uuid.Nil {
-		rows, err = s.pg.Query(ctx, `SELECT id, account_id, symbol, signal_type, volume, price, stop_loss, take_profit, reason, status, executed_at, ticket, profit, created_at FROM strategy_signals WHERE status = $1 ORDER BY created_at DESC LIMIT 100`, status)
+		rows, err = s.pg.Query(ctx, signalsCols+` WHERE s.status = $1 AND a.user_id = $2 ORDER BY s.created_at DESC LIMIT 100`, status, userID)
 	} else {
-		rows, err = s.pg.Query(ctx, `SELECT id, account_id, symbol, signal_type, volume, price, stop_loss, take_profit, reason, status, executed_at, ticket, profit, created_at FROM strategy_signals WHERE account_id = $1 AND status = $2 ORDER BY created_at DESC LIMIT 100`, accountID, status)
+		rows, err = s.pg.Query(ctx, signalsCols+` WHERE s.account_id = $1 AND s.status = $2 AND a.user_id = $3 ORDER BY s.created_at DESC LIMIT 100`, accountID, status, userID)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("list signals: %w", err)

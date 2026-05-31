@@ -126,14 +126,21 @@ func (r *StrategyAssetRepository) CreateClone(ctx context.Context, row *Strategy
 	if row.CreatedAt.IsZero() {
 		row.CreatedAt = time.Now().UTC()
 	}
-	_, err := r.db.Exec(ctx, `INSERT INTO strategy_asset_clones (id,asset_id,user_id,cloned_template_id,source_version,sync_available,last_sync_check_at,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`, row.ID, row.AssetID, row.UserID, row.ClonedTemplateID, row.SourceVersion, row.SyncAvailable, row.LastSyncCheckAt, row.CreatedAt)
-	if err == nil {
-		_, _ = r.db.Exec(ctx, `UPDATE strategy_assets SET clone_count = clone_count + 1 WHERE id = $1`, row.AssetID)
+	// Wrap INSERT + clone_count increment in a transaction.
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("create asset clone: begin tx: %w", err)
 	}
+	defer tx.Rollback(ctx)
+
+	_, err = tx.Exec(ctx, `INSERT INTO strategy_asset_clones (id,asset_id,user_id,cloned_template_id,source_version,sync_available,last_sync_check_at,created_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`, row.ID, row.AssetID, row.UserID, row.ClonedTemplateID, row.SourceVersion, row.SyncAvailable, row.LastSyncCheckAt, row.CreatedAt)
 	if err != nil {
 		return fmt.Errorf("create asset clone: %w", err)
 	}
-	return nil
+	if _, err := tx.Exec(ctx, `UPDATE strategy_assets SET clone_count = clone_count + 1 WHERE id = $1`, row.AssetID); err != nil {
+		return fmt.Errorf("create asset clone: update count: %w", err)
+	}
+	return tx.Commit(ctx)
 }
 
 func (r *StrategyAssetRepository) GetClone(ctx context.Context, userID, id uuid.UUID) (*StrategyAssetClone, error) {

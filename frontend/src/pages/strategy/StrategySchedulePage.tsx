@@ -72,7 +72,7 @@ export default function StrategySchedulePage() {
   const [error, setError] = useState<string | null>(null);
   const [schedules, setSchedules] = useState<any[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
-  const { accounts, symbols, symbolsLoading, fetchAccounts } =
+  const { accounts, symbols, symbolsLoading, fetchAccounts, loadSymbols } =
     useAccountsAndSymbols();
 
   const [openEdit, setOpenEdit] = useState(false);
@@ -198,38 +198,137 @@ export default function StrategySchedulePage() {
     return out;
   }, [templates]);
 
-  const loadSymbols = useCallback(
-    async (accountId: string, keepSymbol?: string) => {
-      if (!accountId) {
-        setSymbols([]);
-        form.setFieldValue("symbol", "");
-        return;
-      }
+  
+  const { t } = useTranslation();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [schedules, setSchedules] = useState<any[]>([]);
+  const [templates, setTemplates] = useState<any[]>([]);
+  const { accounts, symbols, symbolsLoading, fetchAccounts, loadSymbols } =
+    useAccountsAndSymbols();
 
-      setSymbolsLoading(true);
-      setSymbols([]);
-      if (!keepSymbol) {
-        form.setFieldValue("symbol", "");
-      }
-      try {
-        const list = await marketApi.getSymbols(accountId);
-        const opts = buildSymbolOptions(list);
-        setSymbols(opts);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [editing, setEditing] = useState<any | null>(null);
 
-        const nextSymbol = keepSymbol || form.getFieldValue("symbol");
-        const exists = opts.some((o) => o.value === nextSymbol);
-        if (opts.length > 0 && (!nextSymbol || !exists)) {
-          form.setFieldValue("symbol", opts[0].value);
+  const [triggering, setTriggering] = useState(false);
+  const [openTrigger, setOpenTrigger] = useState(false);
+  const [triggerResult, setTriggerResult] = useState<{
+    logs: string[];
+    signal: { signalId?: string; direction?: string; confidence?: number } | null;
+    meta: Record<string, unknown>;
+  } | null>(null);
+  const [triggerContext, setTriggerContext] = useState<{
+    schedule: { id?: string; name?: string; status?: string; isActive?: boolean };
+    accountId: string;
+  } | null>(null);
+  const [healthOpen, setHealthOpen] = useState(false);
+  const [healthLoading, setHealthLoading] = useState(false);
+  const [healthTarget, setHealthTarget] = useState<any | null>(null);
+  const [healthSummary, setHealthSummary] = useState<any | null>(null);
+
+  const [form] = Form.useForm<ScheduleFormValues>();
+
+  const formatTime = (v: unknown) => {
+    if (!v) return "-";
+    const locale = getDeviceLocale();
+    const timeZone = getDeviceTimeZone();
+    if (typeof v === "object") {
+      // Check for @bufbuild/protobuf Timestamp-like ({ seconds, nanos })
+      const ts = v as Partial<Timestamp>;
+      const seconds = ts.seconds;
+      const secNum =
+        typeof seconds === "number"
+          ? seconds
+          : typeof seconds === "bigint"
+            ? Number(seconds)
+            : undefined;
+      if (typeof secNum === "number" && Number.isFinite(secNum)) {
+        try {
+          const d = timestampDate(v as Timestamp);
+          if (d instanceof Date && !Number.isNaN(d.getTime())) {
+            return d.toLocaleString(locale, { timeZone, hour12: false });
+          }
+        } catch (_e) {
+          // ignore
         }
-      } catch (_e) {
-        setSymbols([]);
-        form.setFieldValue("symbol", "");
+      }
+    }
+    if (v instanceof Date) {
+      return v.toLocaleString(locale, { timeZone, hour12: false });
+    }
+    const s = String(v);
+    const d = new Date(s);
+    if (!Number.isNaN(d.getTime())) {
+      return d.toLocaleString(locale, { timeZone, hour12: false });
+    }
+    return s;
+  };
+
+  const loadScheduleHealth = useCallback(
+    async (row: StrategySchedule) => {
+      if (!row?.id) return;
+      setHealthLoading(true);
+      try {
+        setHealthSummary(await scheduleHealthApi.getScheduleHealth(row.id));
+      } catch (e) {
+        message.error(
+          e?.message || t("strategy.schedules.health.messages.loadFailed"),
+        );
+        setHealthSummary(null);
       } finally {
-        setSymbolsLoading(false);
+        setHealthLoading(false);
       }
     },
-    [form],
+    [t],
   );
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [tpls, schs] = await Promise.all([
+        strategyTemplateApi.list(),
+        strategyScheduleV2Api.list(),
+      ]);
+      setTemplates(tpls as Record<string, unknown>[]);
+      setSchedules(schs as Record<string, unknown>[]);
+      void fetchAccounts();
+    } catch (e) {
+      const msg = e?.message || t("common.loadingFailed");
+      setError(msg);
+      message.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  }, [t]);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      void refresh();
+    }, 10_000);
+    return () => clearInterval(t);
+  }, [refresh]);
+
+  const templatesForSelect = useMemo(() => {
+    const out: any[] = [];
+    const seen = new Set<string>();
+    (templates || []).forEach((t: StrategyTemplate) => {
+      if (!t?.id) return;
+      seen.add(String(t.id));
+      out.push(t);
+    });
+    (DEFAULT_TEMPLATES || []).forEach((t: StrategyTemplate) => {
+      if (!t?.id) return;
+      const id = String(t.id);
+      if (seen.has(id)) return;
+      out.push(t);
+    });
+    return out;
+  }, [templates]);
 
   const openCreate = useCallback(() => {
     setEditing(null);
@@ -243,7 +342,6 @@ export default function StrategySchedulePage() {
       hfCooldownMs: 1_000,
       parametersJson: "{}",
     });
-    setSymbols([]);
     setOpenEdit(true);
   }, [form]);
 
@@ -256,7 +354,7 @@ export default function StrategySchedulePage() {
     openCreate();
     if (accountId) form.setFieldValue("accountId", accountId);
     if (timeframe) form.setFieldValue("timeframe", timeframe);
-    if (accountId) void loadSymbols(accountId, symbol);
+    if (accountId) void loadSymbols(accountId);
     if (symbol) form.setFieldValue("symbol", symbol);
   }, [form, openCreate, loadSymbols]);
 

@@ -23,7 +23,7 @@ const SaveTemplateModal: React.FC<Props> = ({ open, confirmLoading, form, onCanc
 			cancelText={t('common.cancel')}
 			confirmLoading={confirmLoading}
 			afterOpenChange={afterOpenChange}
-			destroyOnHidden
+			destroyOnClose
 		>
 			<Form form={form} layout="vertical">
 				<Form.Item name="name" label={t('strategy.templateModal.fields.name')} rules={[{ required: true }]}>

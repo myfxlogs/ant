@@ -2,8 +2,9 @@ package strategy
 
 import (
 	"context"
-
 	"encoding/json"
+	"fmt"
+	"strings"
 
 	"go.uber.org/zap"
 
@@ -228,8 +229,23 @@ func (s *StrategyServer) GetSchedule(ctx context.Context, req *connect.Request[a
 
 func (s *StrategyServer) CreateSchedule(ctx context.Context, req *connect.Request[antv1.CreateScheduleRequest]) (*connect.Response[antv1.StrategySchedule], error) {
 	m := req.Msg
-	paramsJSON, _ := json.Marshal(m.Parameters)
-	cfgJSON, _ := json.Marshal(scheduleConfigToMap(m.ScheduleConfig))
+	if strings.TrimSpace(m.Symbol) == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("symbol is required"))
+	}
+	if strings.TrimSpace(m.Timeframe) == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("timeframe is required"))
+	}
+	if !validScheduleType(m.ScheduleType) {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid schedule type: %s", m.ScheduleType))
+	}
+	paramsJSON, err := json.Marshal(m.Parameters)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("marshal parameters: %w", err))
+	}
+	cfgJSON, err := json.Marshal(scheduleConfigToMap(m.ScheduleConfig))
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal schedule config: %w", err))
+	}
 
 	uid := s.userID(ctx)
 	templateID, _ := uuid.Parse(m.TemplateId)
@@ -274,13 +290,21 @@ func (s *StrategyServer) UpdateSchedule(ctx context.Context, req *connect.Reques
 		existing.Timeframe = *m.Timeframe
 	}
 	if m.Parameters != nil {
-		existing.Parameters, _ = json.Marshal(m.Parameters)
+		if b, err := json.Marshal(m.Parameters); err == nil {
+		existing.Parameters = b
+	} else {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal parameters: %w", err))
+	}
 	}
 	if m.ScheduleType != nil {
 		existing.ScheduleType = *m.ScheduleType
 	}
 	if m.ScheduleConfig != nil {
-		existing.ScheduleConfig, _ = json.Marshal(scheduleConfigToMap(m.ScheduleConfig))
+		if b, err := json.Marshal(scheduleConfigToMap(m.ScheduleConfig)); err == nil {
+		existing.ScheduleConfig = b
+	} else {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal schedule config: %w", err))
+	}
 	}
 	if err := s.svc.UpdateSchedule(ctx, existing); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -367,7 +391,8 @@ func (s *StrategyServer) RunBacktest(ctx context.Context, req *connect.Request[a
 func (s *StrategyServer) ListSignals(ctx context.Context, req *connect.Request[antv1.ListSignalsRequest]) (*connect.Response[antv1.ListSignalsResponse], error) {
 	m := req.Msg
 	accountID, _ := uuid.Parse(m.AccountId)
-	rows, err := s.svc.ListSignals(ctx, accountID, m.Status)
+	uid := s.userID(ctx)
+	rows, err := s.svc.ListSignals(ctx, uid, accountID, m.Status)
 	if err != nil {
 		return nil, err
 	}
@@ -543,7 +568,10 @@ func paramsToJSON(params []*antv1.TemplateParameter) []byte {
 	if len(params) == 0 {
 		return []byte("[]")
 	}
-	b, _ := json.Marshal(params)
+	b, err := json.Marshal(params)
+	if err != nil {
+		return nil
+	}
 	return b
 }
 
@@ -556,4 +584,12 @@ func mustParseJSON[T any](raw []byte, fallback T) T {
 		return fallback
 	}
 	return out
+}
+
+func validScheduleType(t string) bool {
+	switch t {
+	case "cron", "interval", "event":
+		return true
+	}
+	return false
 }

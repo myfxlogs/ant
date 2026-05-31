@@ -91,7 +91,7 @@ export const StrategyTemplateEditModal: React.FC<StrategyTemplateEditModalProps>
 				layout="vertical"
 				onFinish={onSubmit}
 				initialValues={{ isPublic: false }}
-				onValuesChange={(_, all) => setCode(all?.code || '')}
+				onValuesChange={undefined}
 			>
 				<Form.Item
 					name="name"

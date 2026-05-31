@@ -46,7 +46,7 @@ const BacktestRunsCard: React.FC<Props> = ({ runs, loading, onRefresh, onView, o
       width: 260,
       ellipsis: true,
       render: (_text: unknown, r: BacktestRun) => {
-        const base = String(t || '').trim();
+        const base = String(_text || '').trim();
         const fallback = [
           formatDateTime(r?.createdAt),
           String(r?.symbol || '').trim(),
