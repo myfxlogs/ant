@@ -229,14 +229,11 @@ func (r *BacktestDatasetRepository) ListBars(ctx context.Context, datasetID uuid
 func withTx(ctx context.Context, db *pgxpool.Pool, fn func(tx pgx.Tx) error) error {
 	tx, err := db.Begin(ctx)
 	if err != nil {
-		return fmt.Errorf("list dataset bars: %w", err)
+		return fmt.Errorf("withTx begin: %w", err)
 	}
 	defer tx.Rollback(ctx)
 	if err := fn(tx); err != nil {
-		if err != nil {
-			return fmt.Errorf("list dataset bars: %w", err)
-		}
-		return nil
+		return fmt.Errorf("withTx: %w", err)
 	}
 	return tx.Commit(ctx)
 }

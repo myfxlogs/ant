@@ -41,6 +41,9 @@ func NewThreeLayerGuard(pg *pgxpool.Pool, redis *goredis.Client) *ThreeLayerGuar
 func BrokerMagic(clientID string) int32 {
 	h := fnv.New64a()
 	h.Write([]byte(clientID))
+	// NOTE: FNV64a truncated to 32 bits. Expected 50% collision probability
+	// after ~77K unique clientIDs. Acceptable for a defensive third layer
+	// (broker-side dedup) but not suitable as the primary idempotency mechanism.
 	return int32(h.Sum64() & 0xFFFFFFFF)
 }
 

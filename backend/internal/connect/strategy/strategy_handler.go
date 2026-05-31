@@ -36,7 +36,16 @@ func NewStrategyServer(svc *service.StrategySvc, log *zap.Logger) *StrategyServe
 func (s *StrategyServer) SetClient(c *strategysvc.PythonClient) { s.client = c }
 
 func (s *StrategyServer) userID(ctx context.Context) uuid.UUID {
-	id, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	raw := interceptor.GetUserID(ctx)
+	if raw == "" {
+		s.log.Warn("strategy: userID called but no user in context")
+		return uuid.Nil
+	}
+	id, err := uuid.Parse(raw)
+	if err != nil {
+		s.log.Warn("strategy: userID parse failed", zap.String("raw", raw), zap.Error(err))
+		return uuid.Nil
+	}
 	return id
 }
 
@@ -362,7 +371,10 @@ func (s *StrategyServer) RunBacktest(ctx context.Context, req *connect.Request[a
 				if err != nil {
 					s.log.Warn("RunBacktest: python backtest failed, falling back", zap.Error(err))
 				} else if result.Success {
-					riskLevel := "medium"
+					// NOTE: risk level is conservatively set to "medium" until the
+	// risk assessment engine (Sharpe/Sortino/drawdown analysis) is completed.
+	// See ADR-0031: Strategy Risk Assessment.
+	riskLevel := "medium"
 					reliable := result.TradeCount >= 10
 					return connect.NewResponse(&antv1.RunBacktestResponse{
 						Success: true,

@@ -152,6 +152,9 @@ func (r *AdminRepository) Ping(ctx context.Context) error {
 	return r.db.Ping(ctx)
 }
 
+// HasPermission checks if a role has a specific permission.
+// Currently implements a simplified model where "admin" has all permissions.
+// TODO: implement fine-grained permission matrix when RBAC is introduced.
 func (r *AdminRepository) HasPermission(ctx context.Context, role, permissionCode string) (bool, error) {
 	return role == "admin", nil
 }
