@@ -60,7 +60,7 @@ func (h *Hub) WaitSession(id string) <-chan struct{} {
 
 func (h *Hub) Get(id string) OrderExecutor { h.mu.RLock(); defer h.mu.RUnlock(); return h.executors[id] }
 func (h *Hub) EnsureSession(ctx context.Context, id string) (*Session, error) {
-	h.mu.RLock(); s := h.sessions[id]; h.mu.RUnlock()
+	h.mu.Lock(); s := h.sessions[id]; h.mu.Unlock()
 	if s == nil { return nil, ErrSessionNotFound }
 	if s.IsExpired() { s.CreatedAt = Clk.Now() }
 	return s, nil

@@ -136,13 +136,13 @@ func (g *Gateway) FetchOpenedOrders(ctx context.Context) ([]*mthub.OrderRecord, 
 			ot = mthub.OrderLimit
 		case pb.Op_Op_BuyStop:
 			ot = mthub.OrderStop
-		case pb.Op_Op_SellStop:
-	case pb.Op_Op_Balance:
-		ot = mthub.OrderBalance
-	case pb.Op_Op_Credit:
-		ot = mthub.OrderCredit
-			side = mthub.SideSell
-			ot = mthub.OrderStop
+			case pb.Op_Op_SellStop:
+				side = mthub.SideSell
+				ot = mthub.OrderStop
+			case pb.Op_Op_Balance:
+				ot = mthub.OrderBalance
+			case pb.Op_Op_Credit:
+				ot = mthub.OrderCredit
 		}
 		out = append(out, &mthub.OrderRecord{
 			Ticket:     int64(o.GetTicket()),
@@ -200,13 +200,13 @@ func (g *Gateway) FetchOrderHistory(ctx context.Context, from, to time.Time) ([]
 			ot = mthub.OrderLimit
 		case pb.Op_Op_BuyStop:
 			ot = mthub.OrderStop
-		case pb.Op_Op_SellStop:
-	case pb.Op_Op_Balance:
-		ot = mthub.OrderBalance
-	case pb.Op_Op_Credit:
-		ot = mthub.OrderCredit
-			side = mthub.SideSell
-			ot = mthub.OrderStop
+			case pb.Op_Op_SellStop:
+				side = mthub.SideSell
+				ot = mthub.OrderStop
+			case pb.Op_Op_Balance:
+				ot = mthub.OrderBalance
+			case pb.Op_Op_Credit:
+				ot = mthub.OrderCredit
 		}
 		state := mthub.OrderStateClosed
 		if o.GetCloseTime().GetSeconds() == 0 {

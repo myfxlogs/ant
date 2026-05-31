@@ -364,6 +364,14 @@ var (
 func (s *AccountService) RecordBalanceSnapshot(ctx context.Context, id string, balance, equity, margin, freeMargin float64) error {
 	snapshotThrottleMu.Lock()
 	last, ok := snapshotThrottle[id]
+	// Sweep stale entries (> 2h idle) every ~100 calls to bound map growth.
+	if len(snapshotThrottle)%100 == 0 {
+		for k, v := range snapshotThrottle {
+			if time.Since(v) > 2*time.Hour {
+				delete(snapshotThrottle, k)
+			}
+		}
+	}
 	snapshotThrottleMu.Unlock()
 	if ok && time.Since(last) < time.Hour {
 		return nil // throttled

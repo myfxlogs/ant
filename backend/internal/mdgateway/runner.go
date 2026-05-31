@@ -490,7 +490,8 @@ func startAccountEventSubscriber(ctx context.Context, deps RunnerDeps, mgr *Mana
 
 	// Ephemeral consumer — only active while mdgateway is running.
 	sub, err := js.Subscribe("account.>", func(m *nats.Msg) {
-		m.Ack()
+		// Defer ack so failed processing triggers NATS redelivery.
+			defer m.Ack()
 		log.Info("mdgateway: account event received",
 			zap.String("subject", m.Subject),
 			zap.String("data", string(m.Data)))

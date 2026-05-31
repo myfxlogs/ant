@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { showError } from '@/utils/message';
 import { getErrorMessage } from '@/utils/error';
@@ -88,10 +88,7 @@ export function useAccountAnalytics(
     );
   }, [id, queryClient]);
 
-  const setHistoryPage = useCallback((page: number) => {
-    // Page is tracked by AccountTradeTabs internally; no-op on the cache.
-    void page;
-  }, []);
+  const [historyPage, setHistoryPage] = useState(1);
 
   const monthlyPnL: AccountMonthlyPnLItem[] = (monthlyPnLQ.data?.monthlyPnl ?? []).map((item) => ({
     month: String(item.month), monthNum: item.month, month_num: item.month,
@@ -149,7 +146,7 @@ export function useAccountAnalytics(
 
   return {
     analyticsLoading, analyticsError,
-    historyTrades, historyTotal, historyPage: 1, historyLoading,
+    historyTrades, historyTotal, historyPage, historyLoading,
     setHistoryTrades, setHistoryTotal, setHistoryPage,
     handleRefresh: () => {
       analyticsQ.refetch();
