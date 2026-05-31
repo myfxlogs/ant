@@ -3,7 +3,9 @@ package repository
 import (
 	"context"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"time"
 
@@ -49,10 +51,13 @@ func (r *PasswordResetRepo) CreateResetToken(ctx context.Context, userID uuid.UU
 	if err != nil {
 		return "", err
 	}
+	// Store SHA-256 hash of the token, not the plaintext.
+	hashed := sha256.Sum256([]byte(token))
+	hashedHex := hex.EncodeToString(hashed[:])
 	_, err = r.db.Exec(ctx,
 		`INSERT INTO password_reset_tokens (user_id, token, expires_at)
 		 VALUES ($1, $2, $3)`,
-		userID, token, time.Now().Add(24*time.Hour),
+		userID, hashedHex, time.Now().Add(24*time.Hour),
 	)
 	if err != nil {
 		return "", fmt.Errorf("create reset token: %w", err)
@@ -65,9 +70,12 @@ func (r *PasswordResetRepo) ValidateResetToken(ctx context.Context, token string
 	var userID uuid.UUID
 	var consumed bool
 	var expiresAt time.Time
+	// Compare against stored hash.
+	hashed := sha256.Sum256([]byte(token))
+	hashedHex := hex.EncodeToString(hashed[:])
 	err := r.db.QueryRow(ctx,
 		`SELECT user_id, consumed, expires_at FROM password_reset_tokens WHERE token = $1`,
-		token,
+		hashedHex,
 	).Scan(&userID, &consumed, &expiresAt)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("validate reset token: %w", err)
@@ -83,9 +91,11 @@ func (r *PasswordResetRepo) ValidateResetToken(ctx context.Context, token string
 
 // ConsumeResetToken marks a token as consumed after successful password reset.
 func (r *PasswordResetRepo) ConsumeResetToken(ctx context.Context, token string) error {
+	hashed := sha256.Sum256([]byte(token))
+	hashedHex := hex.EncodeToString(hashed[:])
 	_, err := r.db.Exec(ctx,
 		`UPDATE password_reset_tokens SET consumed = TRUE WHERE token = $1`,
-		token,
+		hashedHex,
 	)
 	return err
 }

@@ -111,13 +111,20 @@ func (r *AdminRepository) CreateUser(ctx context.Context, user *model.User) erro
 }
 
 func (r *AdminRepository) UpdateUser(ctx context.Context, user *model.User) error {
-	return r.db.QueryRow(ctx,
-		`UPDATE users
-		 SET nickname = $2, avatar = $3, role = $4, status = $5, updated_at = CURRENT_TIMESTAMP
-		 WHERE id = $1
-		 RETURNING updated_at`,
-		user.ID, user.Nickname, user.Avatar, user.Role, user.Status,
-	).Scan(&user.UpdatedAt)
+		return r.db.QueryRow(ctx,
+			`UPDATE users
+			 SET email = $2, nickname = $3, avatar = $4, role = $5, status = $6, updated_at = CURRENT_TIMESTAMP
+			 WHERE id = $1
+			 RETURNING updated_at`,
+			user.ID, user.Email, user.Nickname, user.Avatar, user.Role, user.Status,
+		).Scan(&user.UpdatedAt)
+	}
+
+// CountAdmins returns the number of users with the "admin" role.
+func (r *AdminRepository) CountAdmins(ctx context.Context) (int32, error) {
+	var count int32
+	err := r.db.QueryRow(ctx, `SELECT COUNT(*) FROM users WHERE role = 'admin'`).Scan(&count)
+	return count, err
 }
 
 func (r *AdminRepository) DeleteUser(ctx context.Context, id uuid.UUID) error {

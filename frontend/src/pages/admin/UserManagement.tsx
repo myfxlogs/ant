@@ -106,8 +106,16 @@ export default function UserManagement() {
   const handleUpdatePassword = async (_values: { newPassword: string }) => {
     if (!currentUser) return;
     try {
-      await adminApi.resetUserPassword(currentUser.id);
-      showSuccess(t('admin.userManagement.messages.passwordUpdatedSuccess'));
+      const result = await adminApi.resetUserPassword(currentUser.id);
+      const newPass = (result as any)?.newPassword;
+      if (newPass) {
+        Modal.success({
+          title: t('admin.userManagement.messages.passwordUpdatedSuccess'),
+          content: t('admin.userManagement.messages.newPasswordIs', { password: newPass }),
+        });
+      } else {
+        showSuccess(t('admin.userManagement.messages.passwordUpdatedSuccess'));
+      }
       setPasswordModalVisible(false);
       passwordForm.resetFields();
     } catch (_error) {

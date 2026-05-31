@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"context"
 	"time"
 )
@@ -190,13 +191,8 @@ func (r *AdminRepository) RecordCountry(ctx context.Context, userID, countryCode
 
 // paramNum is a helper for numbered query parameters.
 func paramNum(n int) string {
-	digits := []byte{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
-	if n < 10 {
-		return string(digits[n])
-	}
-	return string([]byte{digits[n/10], digits[n%10]})
+	return fmt.Sprintf("$%d", n)
 }
-
 // --- Repository-level model types (used by admin handler) ---
 
 type JurisdictionStatus struct {

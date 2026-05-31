@@ -3,6 +3,7 @@ package admin
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
@@ -15,6 +16,7 @@ import (
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/model"
 	"anttrader/internal/repository"
+	antinterceptor "anttrader/internal/interceptor"
 )
 
 type AdminUserServer struct {
@@ -87,21 +89,43 @@ func (s *AdminUserServer) ListUsers(ctx context.Context, req *connect.Request[an
 }
 
 func (s *AdminUserServer) CreateUser(ctx context.Context, req *connect.Request[antv1.CreateUserRequest]) (*connect.Response[antv1.CreateUserResponse], error) {
+	email := strings.TrimSpace(req.Msg.Username)
+	if email == "" || !strings.Contains(email, "@") {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid email address"))
+	}
+	password := req.Msg.Password
+	if len(password) < 8 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("password must be at least 8 characters"))
+	}
+	role := req.Msg.Role
+	if role == "" {
+		role = "user"
+	}
+	if !validRole(role) {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid role: %s", role))
+	}
+
 	user := &model.User{
-		Email: req.Msg.Username, // username maps to email in this system
-		Role:  req.Msg.Role,
+		Email: email,
+		Role:  role,
 	}
-	if user.Role == "" {
-		user.Role = "user"
-	}
-	hashed, err := bcrypt.GenerateFromPassword([]byte(req.Msg.Password), bcrypt.DefaultCost)
+	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("hash password: %w", err))
 	}
 	user.PasswordHash = string(hashed)
 	if err := s.repo.CreateUser(ctx, user); err != nil {
+		// Detect duplicate email from unique constraint violation.
+		if strings.Contains(err.Error(), "duplicate key") || strings.Contains(err.Error(), "unique constraint") {
+			return nil, connect.NewError(connect.CodeAlreadyExists, fmt.Errorf("email already registered"))
+		}
 		return nil, err
 	}
+	s.log.Info("admin: user created",
+		zap.String("actor", getActorID(ctx).String()),
+		zap.String("target", user.ID.String()),
+		zap.String("email", email),
+		zap.String("role", role))
 	return connect.NewResponse(&antv1.CreateUserResponse{Id: user.ID.String()}), nil
 }
 
@@ -118,6 +142,10 @@ func (s *AdminUserServer) UpdateUser(ctx context.Context, req *connect.Request[a
 		existing.Email = req.Msg.Email
 	}
 	if req.Msg.Role != "" {
+		// Validate role against allowlist.
+		if !validRole(req.Msg.Role) {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid role: %s", req.Msg.Role))
+		}
 		existing.Role = req.Msg.Role
 	}
 	if req.Msg.Status != "" {
@@ -129,6 +157,11 @@ func (s *AdminUserServer) UpdateUser(ctx context.Context, req *connect.Request[a
 	if err := s.repo.UpdateUser(ctx, existing); err != nil {
 		return nil, err
 	}
+	s.log.Info("admin: user updated",
+		zap.String("actor", getActorID(ctx).String()),
+		zap.String("target", id.String()),
+		zap.String("role", existing.Role),
+		zap.String("status", existing.Status))
 	return connect.NewResponse(&antv1.UpdateUserResponse{}), nil
 }
 
@@ -137,9 +170,29 @@ func (s *AdminUserServer) DeleteUser(ctx context.Context, req *connect.Request[a
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
+	// Prevent self-deletion.
+	actorID := getActorID(ctx)
+	if actorID != uuid.Nil && actorID == id {
+		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("cannot delete yourself"))
+	}
+	// Prevent deleting the last admin.
+	adminCount, err := s.repo.CountAdmins(ctx)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	target, err := s.repo.GetUserByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if target != nil && target.Role == "admin" && adminCount <= 1 {
+		return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("cannot delete the last admin"))
+	}
 	if err := s.repo.DeleteUser(ctx, id); err != nil {
 		return nil, err
 	}
+	s.log.Info("admin: user deleted",
+		zap.String("actor", getActorID(ctx).String()),
+		zap.String("target", id.String()))
 	return connect.NewResponse(&antv1.DeleteUserResponse{}), nil
 }
 
@@ -151,6 +204,9 @@ func (s *AdminUserServer) DisableUser(ctx context.Context, req *connect.Request[
 	if err := s.repo.SetUserStatus(ctx, id, "disabled"); err != nil {
 		return nil, err
 	}
+	s.log.Info("admin: user disabled",
+		zap.String("actor", getActorID(ctx).String()),
+		zap.String("target", id.String()))
 	return connect.NewResponse(&antv1.DisableUserResponse{}), nil
 }
 
@@ -162,6 +218,9 @@ func (s *AdminUserServer) EnableUser(ctx context.Context, req *connect.Request[a
 	if err := s.repo.SetUserStatus(ctx, id, "active"); err != nil {
 		return nil, err
 	}
+	s.log.Info("admin: user enabled",
+		zap.String("actor", getActorID(ctx).String()),
+		zap.String("target", id.String()))
 	return connect.NewResponse(&antv1.EnableUserResponse{}), nil
 }
 
@@ -191,4 +250,26 @@ func (s *AdminUserServer) ResetUserPassword(ctx context.Context, req *connect.Re
 
 	// Response does not include the plaintext password.
 	return connect.NewResponse(&antv1.ResetUserPasswordResponse{}), nil
+}
+
+// validRole returns true if the role string is a recognized user role.
+func validRole(role string) bool {
+	switch role {
+	case "user", "admin", "super_admin", "operation", "audit", "customer_service":
+		return true
+	}
+	return false
+}
+
+// getActorID extracts the authenticated user ID from the request context.
+func getActorID(ctx context.Context) uuid.UUID {
+	raw := antinterceptor.GetUserID(ctx)
+	if raw == "" {
+		return uuid.Nil
+	}
+	id, err := uuid.Parse(raw)
+	if err != nil {
+		return uuid.Nil
+	}
+	return id
 }
