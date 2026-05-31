@@ -22,6 +22,24 @@ interface BrokerSearchResult {
   servers: BrokerServer[];
 }
 
+/** Translate raw mtapi errors into user-friendly messages. */
+function friendlyError(msg: string | undefined): string {
+  if (!msg) return '';
+  if (msg.includes('SERVICE_NOT_AVAILABLE') || msg.includes('code=11')) {
+    return 'Broker server temporarily unavailable, please try again later';
+  }
+  if (msg.includes('INVALID_ACCOUNT') || msg.includes('code=1001')) {
+    return 'Invalid account number or password';
+  }
+  if (msg.includes('connection failed') || msg.includes('connect')) {
+    return 'Unable to connect to broker server, please check your network';
+  }
+  if (msg.includes('timeout') || msg.includes('Timed out')) {
+    return 'Connection timed out, please try again';
+  }
+  return msg;
+}
+
 export default function BindAccount() {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
@@ -82,9 +100,9 @@ export default function BindAccount() {
       const host = selectedServer.access[0];
       const result = await accountApi.verifyAccount({ login: login.trim(), password, mtType, brokerHost: host });
       setVerifyResult(result);
-      if (!result.verified) setVerifyError(result.message || t('accounts.bind.messages.verifyFailed'));
+      if (!result.verified) setVerifyError(friendlyError(result.message) || t('accounts.bind.messages.verifyFailed'));
     } catch (error) {
-      setVerifyError(getErrorMessage(error, t('accounts.bind.messages.verifyFailed')));
+      setVerifyError(friendlyError(getErrorMessage(error, '')) || t('accounts.bind.messages.verifyFailed'));
     } finally { setVerifying(false); }
   };
 
@@ -108,7 +126,7 @@ export default function BindAccount() {
       showSuccess(t('accounts.bind.messages.bindSuccess'));
       navigate(`/accounts/${account.id}`);
     } catch (error) {
-      showError(getErrorMessage(error, t('accounts.bind.messages.bindFailed')));
+      showError(friendlyError(getErrorMessage(error, '')) || t('accounts.bind.messages.bindFailed'));
     } finally { setLoading(false); }
   };
 
