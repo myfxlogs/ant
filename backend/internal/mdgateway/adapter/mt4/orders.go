@@ -290,6 +290,9 @@ func (g *Gateway) SubscribeOrderEvents(ctx context.Context, h mthub.OrderEventHa
 	if err != nil {
 		return fmt.Errorf("mt4 OnOrderUpdate: %w", err)
 	}
+	if g.cancelOrderUpdateSub != nil {
+		g.cancelOrderUpdateSub()
+	}
 	ctx, g.cancelOrderUpdateSub = context.WithCancel(ctx)
 	go func() {
 		defer func() {

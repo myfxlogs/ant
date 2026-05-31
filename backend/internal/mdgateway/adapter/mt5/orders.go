@@ -340,6 +340,10 @@ func (g *Gateway) SubscribeOrderEvents(ctx context.Context, h mthub.OrderEventHa
 	if err != nil {
 		return fmt.Errorf("mt5 OnOrderUpdate: %w", err)
 	}
+	// Cancel previous subscription to avoid goroutine leak on reconnect.
+	if g.cancelOrderUpdateSub != nil {
+		g.cancelOrderUpdateSub()
+	}
 	ctx, g.cancelOrderUpdateSub = context.WithCancel(ctx)
 	go func() {
 		defer func() {
