@@ -196,6 +196,10 @@ const aiSettings = {
           portfolio: '组合',
           execution: '执行',
           code: '代码',
+          strategist: '策略分析师',
+          risk_manager: '风控经理',
+          executor: '执行顾问',
+          researcher: '市场研究员',
         },
         defaults: {
           style: {
@@ -237,6 +241,18 @@ const aiSettings = {
             identity:
               '你是 AntTrader Python 策略代码工程师。请生成一份可直接执行的策略代码，严格遵守沙箱校验：禁止 import、禁止 dunder 访问、禁止 open/eval/exec/compile/__import__/globals/locals/vars/dir，仅使用平台提供的 API（on_tick / on_kline / 内置 np、math、datetime、calculate_rsi 等）。必须定义 run(context)（且只能有 1 个 context 参数），返回 dict 至少包含 signal(buy/sell/hold)、symbol、confidence(0~1)、risk_level(low/medium/high)、reason；参数一律从 context["params"] 读取。严格输出：只允许一个 ```python 代码块```，代码块内不得出现 Markdown 符号、中文全形标点或三反引号围栏。',
             inputHint: '示例：目标范式=趋势跟随；指标=EMA(fast)/EMA(slow)+ATR 过滤；参数=fast,slow,atr_period,risk_per_trade。',
+          },
+          strategist: {
+            identity: '资深量化交易策略师 — 根据账户和市场状况推荐策略范式。',
+          },
+          risk_manager: {
+            identity: '严格的风险控制专家 — 设计仓位管理、止损、回撤限制。',
+          },
+          executor: {
+            identity: '交易执行优化专家 — 最小化滑点和执行成本。',
+          },
+          researcher: {
+            identity: '宏观经济和行业研究员 — 分析宏观事件和行业趋势。',
           },
         },
       },

@@ -196,6 +196,10 @@ const aiSettings = {
           portfolio: 'Portfolio',
           execution: 'Execution',
           code: 'Code',
+          strategist: 'Strategy Analyst',
+          risk_manager: 'Risk Manager',
+          executor: 'Execution Advisor',
+          researcher: 'Market Researcher',
         },
         defaults: {
           style: {
@@ -237,6 +241,18 @@ const aiSettings = {
             identity:
               'You are an AntTrader Python strategy code engineer. Generate directly executable strategy code, strictly following sandbox validation: no import, no dunder access, no open/eval/exec/compile/__import__/globals/locals/vars/dir, only use platform-provided APIs (on_tick / on_kline / built-in np, math, datetime, calculate_rsi, etc.). Must define run(context) (only 1 context parameter), return dict with at least signal(buy/sell/hold), symbol, confidence(0~1), risk_level(low/medium/high), reason; read params from context["params"]. Strict output: only one ```python code block```, no Markdown symbols, Chinese punctuation, or nested code fences inside the block.',
             inputHint: 'Example: target paradigm=trend following; indicators=EMA(fast)/EMA(slow)+ATR filter; params=fast,slow,atr_period,risk_per_trade.',
+          },
+          strategist: {
+            identity: 'Senior quantitative strategy analyst — recommends strategy paradigms based on account/market conditions.',
+          },
+          risk_manager: {
+            identity: 'Strict risk control expert — designs position sizing, stop-loss, drawdown limits.',
+          },
+          executor: {
+            identity: 'Trade execution optimization expert — minimizes slippage and execution costs.',
+          },
+          researcher: {
+            identity: 'Macroeconomic and industry researcher — analyzes macro events and sector trends.',
           },
         },
       },

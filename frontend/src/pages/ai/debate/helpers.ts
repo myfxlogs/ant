@@ -11,14 +11,27 @@ export const BUILTIN_AGENT_TYPES = new Set([
   'style', 'signals', 'risk', 'macro', 'sentiment', 'portfolio', 'execution', 'code',
 ]);
 
-/** Returns (name, hint) pair: built-in types use i18n, custom types use user-stored values. */
+/** AgentKeys from the backend ListAgents RPC that have i18n translations. */
+export const BUILTIN_AGENT_KEYS = new Set([
+  'strategist', 'risk_manager', 'executor', 'researcher',
+]);
+
+/** Returns (name, hint) pair: built-in types/keys use i18n, custom types use user-stored values. */
 export function useAgentLabel() {
   const { t } = useTranslation();
   return (a: AIAgentDefinitionView) => {
+    // 8 frontend agent types (style, signals, risk, etc.)
     if (BUILTIN_AGENT_TYPES.has(a.type)) {
       const name = t(`ai.settings.agent.types.${a.type}`, { defaultValue: a.type });
       const hint = t(`ai.settings.agent.defaults.${a.type}.inputHint`, { defaultValue: '' });
       return { name, hint };
+    }
+    // 4 backend agent keys (strategist, risk_manager, executor, researcher)
+    const key = a.agentKey || a.type;
+    if (BUILTIN_AGENT_KEYS.has(key)) {
+      const name = t(`ai.settings.agent.types.${key}`, { defaultValue: a.name || key });
+      const identity = t(`ai.settings.agent.defaults.${key}.identity`, { defaultValue: a.identity || '' });
+      return { name, hint: identity };
     }
     return { name: a.name || a.type, hint: a.inputHint || a.identity || '' };
   };
