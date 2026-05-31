@@ -26,11 +26,11 @@ export function useDeleteAccountMutation() {
         if (context?.prevTq) queryClient.setQueryData(queryKeys.accounts.list(), context.prevTq);
         if (context?.prevZustand) useAccountStore.getState().setAccounts(context.prevZustand);
       },
-      onSettled: (_data, _err, vars) => {
+      onSettled: () => {
+        // Refetch list to confirm with server. Per-account caches
+        // (detail, financials, positions) are garbage-collected when
+        // the component unmounts on navigation — no need to remove here.
         queryClient.invalidateQueries({ queryKey: queryKeys.accounts.list() });
-        queryClient.removeQueries({ queryKey: queryKeys.accounts.detail(vars.id) });
-        queryClient.removeQueries({ queryKey: queryKeys.accounts.financials(vars.id) });
-        queryClient.removeQueries({ queryKey: queryKeys.positions.byAccount(vars.id) });
       },
     },
   );
