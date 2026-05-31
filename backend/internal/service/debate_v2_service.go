@@ -117,6 +117,7 @@ func (s *DebateV2Service) Chat(ctx context.Context, id string, userID uuid.UUID,
 	if err != nil || sess == nil {
 		return nil, fmt.Errorf("session not found")
 	}
+	updatedAt := sess.UpdatedAt // capture for optimistic locking
 	extras, err := s.loadExtras(ctx, uid, userID)
 	if err != nil {
 		return nil, err
@@ -139,7 +140,7 @@ func (s *DebateV2Service) Chat(ctx context.Context, id string, userID uuid.UUID,
 		Role:    "assistant",
 		Content: fmt.Sprintf("收到你的消息：%s\n\n（AI 策略引擎正在开发中，此回复为占位响应。）", message),
 	})
-	if err := s.saveSteps(ctx, uid, userID, steps, sess.Status); err != nil {
+	if err := s.saveStepsOptimistic(ctx, uid, userID, steps, sess.Status, updatedAt); err != nil {
 		return nil, err
 	}
 	return s.toV2(ctx, uid, userID)
@@ -154,6 +155,7 @@ func (s *DebateV2Service) Advance(ctx context.Context, id string, userID uuid.UU
 	if err != nil || sess == nil {
 		return nil, fmt.Errorf("session not found")
 	}
+	updatedAt := sess.UpdatedAt // capture for optimistic locking
 	extras, err := s.loadExtras(ctx, uid, userID)
 	if err != nil {
 		return nil, err
@@ -172,7 +174,7 @@ func (s *DebateV2Service) Advance(ctx context.Context, id string, userID uuid.UU
 	if currentStep != nextStep {
 		steps = append(steps, s.initStep(nextStep))
 	}
-	if err := s.saveSteps(ctx, uid, userID, steps, nextStep); err != nil {
+	if err := s.saveStepsOptimistic(ctx, uid, userID, steps, nextStep, updatedAt); err != nil {
 		return nil, err
 	}
 	return s.toV2(ctx, uid, userID)
@@ -187,6 +189,7 @@ func (s *DebateV2Service) Back(ctx context.Context, id string, userID uuid.UUID)
 	if err != nil || sess == nil {
 		return nil, fmt.Errorf("session not found")
 	}
+	updatedAt := sess.UpdatedAt // capture for optimistic locking
 	extras, err := s.loadExtras(ctx, uid, userID)
 	if err != nil {
 		return nil, err
@@ -204,7 +207,7 @@ func (s *DebateV2Service) Back(ctx context.Context, id string, userID uuid.UUID)
 	if len(steps) > 0 && steps[len(steps)-1].StepKey == sess.Status {
 		steps = steps[:len(steps)-1]
 	}
-	if err := s.saveSteps(ctx, uid, userID, steps, prevKey); err != nil {
+	if err := s.saveStepsOptimistic(ctx, uid, userID, steps, prevKey, updatedAt); err != nil {
 		return nil, err
 	}
 	return s.toV2(ctx, uid, userID)

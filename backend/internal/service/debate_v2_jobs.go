@@ -67,6 +67,8 @@ func (s *DebateV2Service) RunChatJob(jobID, callerUserID uuid.UUID) error {
 		return fmt.Errorf("job %s not found", jobID)
 	}
 	if pair[1] != callerUserID {
+		// Clean up orphaned mapping — this job will never run.
+		delete(s.jobSessions, jobID)
 		return fmt.Errorf("job %s unauthorized", jobID)
 	}
 	if _, running := s.jobChans[jobID]; running {

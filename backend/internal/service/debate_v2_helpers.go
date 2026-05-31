@@ -105,6 +105,26 @@ func (s *DebateV2Service) saveSteps(ctx context.Context, id, userID uuid.UUID, s
 	return err
 }
 
+// saveStepsOptimistic updates steps only if updated_at hasn't changed since
+// expectedAt. Returns an error if the row was modified concurrently.
+func (s *DebateV2Service) saveStepsOptimistic(ctx context.Context, id, userID uuid.UUID, steps []V2Step, status string, expectedAt time.Time) error {
+	b, err := json.Marshal(steps)
+	if err != nil {
+		return fmt.Errorf("marshal steps: %w", err)
+	}
+	tag, err := s.pg.Exec(ctx,
+		`UPDATE debate_sessions SET steps=$1, status=$2, updated_at=NOW()
+		 WHERE id=$3 AND user_id=$4 AND updated_at=$5`,
+		b, status, id, userID, expectedAt)
+	if err != nil {
+		return fmt.Errorf("save steps optimistic: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("concurrent modification detected: session modified by another request, please retry")
+	}
+	return nil
+}
+
 func (s *DebateV2Service) nextStepKey(current string, agents []string) string {
 	switch {
 	case current == stepKeyIntent:

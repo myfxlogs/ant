@@ -3,6 +3,7 @@ package ai
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"go.uber.org/zap"
 
@@ -46,7 +47,8 @@ func (s *AIServer) Chat(ctx context.Context, req *connect.Request[antv1.ChatRequ
 	systemPrompt := "You are a helpful quantitative trading assistant."
 	reply, err := s.systemSvc.ChatCompletion(ctx, uid, systemPrompt, m.Message, "")
 	if err != nil {
-		s.log.Error("Chat: ChatCompletion failed", zap.Error(err))
+		// Sanitize: do NOT log the raw error — it may contain upstream response body.
+		s.log.Error("Chat: ChatCompletion failed", zap.String("user_id", uid.String()))
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("AI service temporarily unavailable"))
 	}
 
@@ -84,23 +86,19 @@ func (s *AIServer) ChatStream(ctx context.Context, req *connect.Request[antv1.Ch
 	}
 
 	systemPrompt := "You are a helpful quantitative trading assistant."
-	reply, err := s.systemSvc.ChatCompletion(ctx, uid, systemPrompt, m.Message, "")
-	if err != nil {
-		s.log.Error("ChatStream: ChatCompletion failed", zap.Error(err))
-		return connect.NewError(connect.CodeInternal, fmt.Errorf("AI service temporarily unavailable"))
-	}
+	var fullReply strings.Builder
 
-	runes := []rune(reply)
-	for i, c := range runes {
-		chunk := &antv1.ChatStreamChunk{Delta: string(c), Done: false}
-		if i == len(runes)-1 {
-			chunk.Done = true
-			chunk.PromptTokens = 10
-			chunk.CompletionTokens = int32(len(runes) / 4)
-		}
-		if sendErr := stream.Send(chunk); sendErr != nil {
-			return connect.NewError(connect.CodeInternal, fmt.Errorf("send chat stream chunk: %w", sendErr))
-		}
+	err = s.systemSvc.ChatCompletionStream(ctx, uid, systemPrompt, m.Message, "", func(chunk systemai.ChatStreamChunk) error {
+		fullReply.WriteString(chunk.Content)
+		sendChunk := &antv1.ChatStreamChunk{Delta: chunk.Content, Done: chunk.Done}
+		return stream.Send(sendChunk)
+	})
+	if err != nil {
+		// Sanitize: don't log the raw error which may leak API response details.
+		s.log.Error("ChatStream: streaming failed",
+			zap.String("user_id", uid.String()),
+		)
+		return connect.NewError(connect.CodeInternal, fmt.Errorf("AI streaming temporarily unavailable"))
 	}
 
 	// Persist messages to conversation after streaming completes.
@@ -109,14 +107,15 @@ func (s *AIServer) ChatStream(ctx context.Context, req *connect.Request[antv1.Ch
 		if parseErr != nil {
 			return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid conversation_id: %w", parseErr))
 		}
-			if _, lookupErr := s.conversations.GetByID(ctx, cid, uid); lookupErr == nil {
-				if _, aErr := s.conversations.AddMessage(ctx, uid, cid, "user", m.Message); aErr != nil {
-					s.log.Warn("ChatStream: AddMessage user failed", zap.Error(aErr))
-				}
-				if _, aErr := s.conversations.AddMessage(ctx, uid, cid, "assistant", reply); aErr != nil {
-					s.log.Warn("ChatStream: AddMessage assistant failed", zap.Error(aErr))
-				}
-				_ = s.conversations.Touch(ctx, cid, uid)
+		reply := fullReply.String()
+		if _, lookupErr := s.conversations.GetByID(ctx, cid, uid); lookupErr == nil {
+			if _, aErr := s.conversations.AddMessage(ctx, uid, cid, "user", m.Message); aErr != nil {
+				s.log.Warn("ChatStream: AddMessage user failed", zap.Error(aErr))
+			}
+			if _, aErr := s.conversations.AddMessage(ctx, uid, cid, "assistant", reply); aErr != nil {
+				s.log.Warn("ChatStream: AddMessage assistant failed", zap.Error(aErr))
+			}
+			_ = s.conversations.Touch(ctx, cid, uid)
 		}
 	}
 
