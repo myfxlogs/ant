@@ -100,10 +100,12 @@ export function useAccountDetailData(id: string | undefined) {
   const handleDelete = useCallback(async () => {
     if (!currentAccount || !deletePassword.trim()) return;
     setDeleting(true);
+    setDeleteModalOpen(false);
+    // Navigate first to unmount active queries, then delete.
+    // Prevents 404/403 refetches from queries still observing the deleted account.
+    navigate('/');
     try {
       await deleteMut.mutateAsync({ id: currentAccount.id, password: deletePassword.trim() });
-      setDeleteModalOpen(false);
-      navigate('/');
     } catch { /* mutation handles error */ }
     finally { setDeleting(false); }
   }, [currentAccount, deletePassword, deleteMut, navigate]);
