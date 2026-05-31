@@ -79,7 +79,7 @@ func PaperGate(metrics PaperGateMetrics, cfg PaperGateConfig) PaperGateResult {
 		if metrics.PaperNetReturn < 0 {
 			result.Passed = false
 			result.Reason = fmt.Sprintf(
-				"paper return %.4f negative while backtest return positive (regime fail)",
+"paper return negative (%.4f) while backtest return positive — regime mismatch",
 				metrics.PaperNetReturn,
 			)
 			return result
@@ -88,7 +88,7 @@ func PaperGate(metrics PaperGateMetrics, cfg PaperGateConfig) PaperGateResult {
 		if returnRatio < cfg.MinReturnRatio {
 			result.Passed = false
 			result.Reason = fmt.Sprintf(
-				"paper return %.4f is < %.0f%% of backtest return %.4f (regime fail)",
+				"paper return %.4f below %.0f%% threshold of backtest return %.4f — insufficient paper performance",
 				metrics.PaperNetReturn, cfg.MinReturnRatio*100, metrics.BacktestNetReturn,
 			)
 			return result
