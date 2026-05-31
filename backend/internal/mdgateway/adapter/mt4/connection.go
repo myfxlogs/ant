@@ -235,11 +235,17 @@ func (g *Gateway) FetchAccountInfo(ctx context.Context) (*mdtick.MTAccountInfo, 
 		return nil, fmt.Errorf("mt4 AccountSummary: %w", err)
 	}
 	if resp.GetResult() == nil {
-		g.log.Warn("mt4: AccountSummary returned nil result with error",
-			zap.Int32("code", int32(resp.GetError().GetCode())),
-			zap.String("msg", resp.GetError().GetMessage()),
+		code := int32(0)
+		msg := "no error details"
+		if errInfo := resp.GetError(); errInfo != nil {
+			code = int32(errInfo.GetCode())
+			msg = errInfo.GetMessage()
+		}
+		g.log.Warn("mt4: AccountSummary returned nil result",
+			zap.Int32("code", code),
+			zap.String("msg", msg),
 		)
-		return &mdtick.MTAccountInfo{}, nil
+		return &mdtick.MTAccountInfo{}, fmt.Errorf("mt4 AccountSummary: result nil, error code=%d msg=%s", code, msg)
 	}
 
 	s := resp.GetResult()

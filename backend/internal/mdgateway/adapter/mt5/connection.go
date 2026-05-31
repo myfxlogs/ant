@@ -202,7 +202,11 @@ func (g *Gateway) FetchBrokerInfo(ctx context.Context) (*mdtick.BrokerInfo, erro
 		return nil, fmt.Errorf("mt5 AccountSummary: %w", err)
 	}
 	if resp.GetResult() == nil {
-		return &mdtick.BrokerInfo{}, nil
+		msg := "no error details"
+		if errInfo := resp.GetError(); errInfo != nil {
+			msg = errInfo.GetMessage()
+		}
+		return nil, fmt.Errorf("mt5 AccountSummary: result nil, msg=%s", msg)
 	}
 
 	// Proto v2.x AccountSummary does not carry MarginCallLevel / StopOutLevel.
@@ -247,6 +251,7 @@ func (g *Gateway) FetchAccountInfo(ctx context.Context) (*mdtick.MTAccountInfo, 
 	}
 	if resp.GetResult() == nil {
 		// Investor/read-only accounts may not expose AccountSummary.
+		// Return zero-value account info (caller handles gracefully).
 		return &mdtick.MTAccountInfo{}, nil
 	}
 
