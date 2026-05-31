@@ -199,6 +199,7 @@ func (s *AuthServer) HandleTokenRefresh(w http.ResponseWriter, r *http.Request) 
 	}
 	w.Header().Set("Set-Cookie", s.makeRefreshCookie(refreshToken))
 	w.Header().Set("Content-Type", "application/json")
+	// #nosec G705 — accessToken is a server-generated JWT, not user-provided content
 	w.Write([]byte(fmt.Sprintf(`{"access_token":"%s"}`, accessToken)))
 }
 

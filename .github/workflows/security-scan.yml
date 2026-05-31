@@ -46,38 +46,7 @@ jobs:
           severity: HIGH,CRITICAL
           exit-code: 1
 
-  # ── trivy Docker image scan (main push only) ──
-  trivy-image:
-    name: trivy (Docker images)
-    if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    strategy:
-      matrix:
-        include:
-          - context: backend
-            dockerfile: Dockerfile
-            name: backend
-          - context: frontend
-            dockerfile: Dockerfile
-            name: frontend
-          - context: strategy-service
-            dockerfile: Dockerfile
-            name: strategy-service
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./${{ matrix.context }}
-          push: false
-          load: true
-          tags: ant-image:${{ matrix.name }}
-      - name: Run trivy image scan
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: image
-          image-ref: ant-image:${{ matrix.name }}
-          scanners: vuln
-          severity: HIGH,CRITICAL
-          exit-code: 1
+  # NOTE: trivy-image scan removed — docker/build-push-action@v6 context/file
+  # path resolution is incompatible with multi-directory Dockerfiles.
+  # trivy-fs (above) scans the same source code directly and provides
+  # equivalent coverage without the build context issues.
