@@ -61,7 +61,7 @@ export default function DashboardAccountList({ accounts, loading, error, onRetry
                       <span className="text-xs sm:hidden" style={{ color: '#8A9AA5' }}>{f.label}</span>
                       <div className="hidden sm:block text-xs mb-1" style={{ color: '#8A9AA5' }}>{f.label}</div>
                       <div className="font-medium" style={{ color: f.color || '#141D22' }}>
-                        {f.value != null && Number.isFinite(f.value) ? f.value.toFixed(2) : '0.00'}
+                        {'$'}{f.value != null && Number.isFinite(f.value) ? f.value.toFixed(2) : '0.00'}
                       </div>
                     </div>
                   ))}
