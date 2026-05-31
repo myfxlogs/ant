@@ -235,7 +235,6 @@ const aiCore = {
       gateProgress: 'Gate 評估進度', pipelineResult: '管道結果',
       allPassed: '所有 6 個 Gate 通過，策略可進入 PromoteToLive 評估', failed: '未通過: {{gate}}', details: '詳細結果',
     },
-  },
 } as const;
 
 export default aiCore;

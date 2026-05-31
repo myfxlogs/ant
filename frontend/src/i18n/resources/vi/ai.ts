@@ -579,7 +579,6 @@ const ai = {
       failed: 'Failed: {{gate}}',
       details: 'Details',
     },
-  },
 } as const;
 
 export default ai;

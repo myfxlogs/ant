@@ -254,7 +254,6 @@ const aiCore = {
       failed: 'Failed: {{gate}}',
       details: 'Details',
     },
-  },
 } as const;
 
 export default aiCore;
