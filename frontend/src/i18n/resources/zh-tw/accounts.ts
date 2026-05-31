@@ -234,7 +234,7 @@ const accounts = {
         password: '密碼',
       },
       placeholders: {
-        brokerName: '輸入經紀商名稱，例如：Exness',
+        brokerName: '輸入經紀商名稱，如：XMGlobal、ICMarkets',
         company: '請選擇經紀商公司',
         server: '請選擇伺服器',
         tradingAccount: '輸入交易帳號',

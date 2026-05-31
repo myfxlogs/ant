@@ -234,7 +234,7 @@ const accounts = {
         password: 'Mật khẩu',
       },
       placeholders: {
-        brokerName: 'Nhập tên môi giới, ví dụ: Exness',
+        brokerName: "Nhập tên môi giới, ví dụ: XM, IC Markets",
         company: 'Chọn công ty môi giới',
         server: 'Chọn máy chủ',
         tradingAccount: 'Nhập tài khoản giao dịch',

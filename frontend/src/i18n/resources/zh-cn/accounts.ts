@@ -249,7 +249,7 @@ const accounts = {
         password: '密码',
       },
       placeholders: {
-        brokerName: '输入经纪商名称，如：Exness',
+        brokerName: '输入经纪商名称，如：XMGlobal、ICMarkets',
         company: '请选择经纪商公司',
         server: '请选择服务器',
         tradingAccount: '输入交易账号',

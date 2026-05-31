@@ -29,7 +29,7 @@ const accounts = {
       password: 'Password',
     },
     placeholders: {
-      brokerName: 'Enter broker name (e.g., Exness)',
+      brokerName: "Enter broker name, e.g. XM, IC Markets",
       company: 'Select company',
       server: 'Select server',
       tradingAccount: 'Enter trading account',

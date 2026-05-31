@@ -22,14 +22,14 @@ const accounts = {
       },
       fields: {
         platform: 'プラットフォーム',
-        brokerName: 'ブローカー名',
+        brokerName: "ブローカー名",
         company: '会社名',
         server: 'サーバー',
         tradingAccount: '取引口座',
         password: 'パスワード',
       },
       placeholders: {
-        brokerName: 'ブローカー名を入力（例：Exness）',
+        brokerName: "ブローカー名を入力（例：XM、IC Markets）",
         company: '会社を選択',
         server: 'サーバーを選択',
         tradingAccount: '取引口座を入力',
