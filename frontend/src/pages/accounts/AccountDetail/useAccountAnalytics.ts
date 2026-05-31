@@ -1,7 +1,9 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { showError } from '@/utils/message';
 import { getErrorMessage } from '@/utils/error';
 import { analyticsApi } from '@/client/analytics';
+import { queryKeys } from '@/queries/queryKeys';
 import type { TradeRecordItem, AccountAnalyticsData } from '@/client/analytics';
 
 interface AccountMonthlyPnLItem {
@@ -22,12 +24,21 @@ interface PositionChangeDetail { action: string; order: PositionChangeOrder; }
  */
 export function useAccountAnalytics(
   id: string | undefined,
-  isDataReceived: boolean,
+  _isDataReceived: boolean,
   chartPeriod: 'day' | 'week' | 'month' | 'all',
 ) {
-  const [analyticsLoading, setAnalyticsLoading] = useState(false);
-  const [analyticsError, setAnalyticsError] = useState<string | null>(null);
-  const [analytics, setAnalytics] = useState<AccountAnalyticsData | null>(null);
+  // Main analytics data via TanStack Query — auto-fetches on mount/key change.
+  const analyticsQ = useQuery<AccountAnalyticsData>({
+    queryKey: ['analytics', id ?? '', chartPeriod] as const,
+    queryFn: () => analyticsApi.getAccountAnalytics(id!, chartPeriod),
+    enabled: !!id,
+    staleTime: 30_000,
+  });
+
+  const analytics = analyticsQ.data ?? null;
+  const analyticsLoading = analyticsQ.isLoading;
+  const analyticsError = analyticsQ.error ? getErrorMessage(analyticsQ.error, '加载分析数据失败') : null;
+
   const [monthlyPnL, setMonthlyPnL] = useState<AccountMonthlyPnLItem[]>([]);
   const [monthlyAnalysisYears, setMonthlyAnalysisYears] = useState<number[]>([]);
   const [monthlyAnalysisData, setMonthlyAnalysisData] = useState<unknown[]>([]);
@@ -42,16 +53,13 @@ export function useAccountAnalytics(
   idRef.current = id;
 
   const loadAllData = useCallback(async (accountId: string) => {
-    setAnalyticsLoading(true);
-    setAnalyticsError(null);
+    setHistoryLoading(true);
     try {
-      const [analyticsData, tradesData, monthlyData, monthlyAnalysisResp] = await Promise.all([
-        analyticsApi.getAccountAnalytics(accountId, chartPeriod),
+      const [tradesData, monthlyData, monthlyAnalysisResp] = await Promise.all([
         analyticsApi.getRecentTrades(accountId, 1, 10),
         analyticsApi.getMonthlyPnL(accountId, new Date().getFullYear()),
         analyticsApi.getMonthlyAnalysis(accountId),
       ]);
-      setAnalytics(analyticsData);
       setHistoryTrades(tradesData.trades);
       setHistoryTotal(tradesData.total);
       setHistoryPage(1);
@@ -61,31 +69,15 @@ export function useAccountAnalytics(
         month: String(item.month), monthNum: item.month, month_num: item.month,
         profit: item.profit, trades: item.trades,
       })));
-    } catch (error) {
-      setAnalyticsError(getErrorMessage(error, '加载分析数据失败'));
-    } finally {
-      setAnalyticsLoading(false);
-    }
-  }, [chartPeriod]);
+    } catch { /* non-critical, keep existing */ }
+    finally { setHistoryLoading(false); }
+  }, []);
 
-  // chartPeriod-only refresh
-  const loadForPeriod = useCallback(async (accountId: string) => {
-    try {
-      setAnalytics(await analyticsApi.getAccountAnalytics(accountId, chartPeriod));
-    } catch { /* keep existing */ }
-  }, [chartPeriod]);
-
-  // Initial load — independent of SSE/financials. Analytics API is self-contained.
+  // Load non-analytics data on mount (trades, monthly, etc.)
   useEffect(() => {
     if (!id) return;
-    loadAllData(id).catch((err) => showError(getErrorMessage(err, '加载分析数据失败')));
-  }, [id, loadAllData]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // chartPeriod change
-  useEffect(() => {
-    if (!id) return;
-    loadForPeriod(id);
-  }, [id, chartPeriod, loadForPeriod]);
+    loadAllData(id);
+  }, [id, loadAllData]);
 
   // Position-change side-channel (SSE → throttle analytics reload)
   useEffect(() => {
@@ -169,8 +161,8 @@ export function useAccountAnalytics(
     analyticsLoading, analyticsError,
     historyTrades, historyTotal, historyPage, historyLoading,
     setHistoryTrades, setHistoryTotal, setHistoryPage,
-    handleRefresh: () => id && loadAllData(id),
-    handleRetry: () => id && loadAllData(id),
+    handleRefresh: () => { analyticsQ.refetch(); id && loadAllData(id); },
+    handleRetry: () => { analyticsQ.refetch(); id && loadAllData(id); },
     ...derived,
   };
 }
