@@ -17,7 +17,7 @@ export function AgentSelectionStep(props: {
   const labelOf = useAgentLabel();
   const { agentDefs, agentsLoading, selectedAgents, onChange, onNext } = props;
 
-  // 隐藏 code 类型：代码生成器固定参与最终步骤，不需要用户勾选。
+  // Hide code type: code generator always participates in the final step, no user selection needed.
   const selectable = useMemo(() => agentDefs.filter((a) => a.type !== 'code'), [agentDefs]);
 
   const selectedKeys = useMemo(() => new Set(selectedAgents.map((a) => a.agentKey || a.type)), [selectedAgents]);

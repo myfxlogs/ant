@@ -172,6 +172,12 @@ func computeSharpe(dailyReturns []float64) float64 {
 	if len(dailyReturns) < 2 {
 		return 0
 	}
+	// Reject NaN/Inf inputs — they silently bypass downstream checks.
+	for _, r := range dailyReturns {
+		if math.IsNaN(r) || math.IsInf(r, 0) {
+			return 0
+		}
+	}
 	var sum, sumSq float64
 	for _, r := range dailyReturns {
 		sum += r
@@ -192,8 +198,8 @@ func computeSharpe(dailyReturns []float64) float64 {
 
 // computeMaxDD calculates the maximum drawdown as a fraction of peak equity.
 // Returns a value in [0, 1] where 0.30 = 30% drawdown.
-// For underwater strategies (cumulative return never positive), returns
-// Abs(cumulativeReturn) as the drawdown fraction.
+// For underwater strategies (cumulative return never positive), returns 1.0
+// (total loss).
 func computeMaxDD(returns []float64) float64 {
 	if len(returns) == 0 {
 		return 0

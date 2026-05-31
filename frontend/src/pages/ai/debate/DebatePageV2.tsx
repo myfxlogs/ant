@@ -13,13 +13,13 @@ const { Text } = Typography;
 /**
  * Phase 1 skeleton of the redesigned debate flow:
  *
- *   Step 1 - 选 Agent
- *   Step 2 - 意图澄清对话
- *   Step 3..N - 按顺序与每个 Agent 对话
- *   Step N+1 - 代码生成
+ *   Step 1 - Select Agents
+ *   Step 2 - Intent clarification chat
+ *   Step 3..N - Chat with each Agent in sequence
+ *   Step N+1 - Code generation
  *
- * 所有状态都在前端内存中，LLM 调用走现成的 aiApi.chat。
- * 后端 DebateSession 持久化与真正的 Agent 身份注入会在 phase 2 补齐。
+ * All state is in frontend memory; LLM calls use existing aiApi.chat.
+ * Backend DebateSession persistence and real Agent identity injection planned for phase 2.
  */
 export default function DebatePageV2() {
 	const { t } = useTranslation();

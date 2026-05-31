@@ -4,9 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { listSystemAIConfigs } from '@/pages/ai/systemai/api';
 import { useTranslation } from 'react-i18next';
 
-// 自 060 起：「是否配好了 AI」唯一信源是 system_ai_configs。任意一行
-// `enabled && has_secret && default_model 非空` 即视为可用，路由/Debate 等
-// 入口只看这一个条件。
+// Since 060: system_ai_configs is the single source of truth for AI readiness.
+// Any row with enabled && has_secret && non-empty default_model is considered ready.
+// Route/Debate entry points check this condition only.
 export default function RequireAIConfig(props: { children: React.ReactNode }) {
   const { t } = useTranslation();
   const navigate = useNavigate();

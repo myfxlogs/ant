@@ -71,7 +71,7 @@ export default function SignalCard({ signal, onConfirm, onCancel, onExecute }: S
       }}
     >
       <div className="space-y-3">
-        {/* 头部 */}
+        {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
             {signal.type === 'buy' ? (
@@ -103,7 +103,7 @@ export default function SignalCard({ signal, onConfirm, onCancel, onExecute }: S
           </div>
         </div>
 
-        {/* 价格信息 */}
+        {/* Price info */}
         <div className="grid grid-cols-3 gap-2">
           <div
             className="p-2 rounded-lg"
@@ -151,7 +151,7 @@ export default function SignalCard({ signal, onConfirm, onCancel, onExecute }: S
           </div>
         </div>
 
-        {/* 止损止盈 */}
+        {/* SL/TP */}
         {(signal.stop_loss || signal.take_profit) && (
           <div className="flex gap-4">
             {signal.stop_loss && (
@@ -171,7 +171,7 @@ export default function SignalCard({ signal, onConfirm, onCancel, onExecute }: S
           </div>
         )}
 
-        {/* 原因 */}
+        {/* Reason */}
         <div
           className="text-sm p-2 rounded-lg"
           style={{ background: '#F5F7F9', color: '#5A6B75' }}
@@ -182,13 +182,13 @@ export default function SignalCard({ signal, onConfirm, onCancel, onExecute }: S
           {signal.reason}
         </div>
 
-        {/* 底部 */}
+        {/* Footer */}
         <div className="flex items-center justify-between pt-2" style={{ borderTop: '1px solid rgba(0, 0, 0, 0.08)' }}>
           <div className="text-xs" style={{ color: '#8A9AA5' }}>
             {formatDate(signal.created_at)}
           </div>
 
-          {/* 操作按钮 */}
+          {/* Action buttons */}
           <Space size="small">
             {isPending && (
               <>

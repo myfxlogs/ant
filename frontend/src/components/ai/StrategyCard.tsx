@@ -76,7 +76,7 @@ export default function StrategyCard({ strategy, onEnable, onDisable, onDelete }
       }}
     >
       <div className="space-y-3">
-        {/* 头部 */}
+        {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
@@ -97,14 +97,14 @@ export default function StrategyCard({ strategy, onEnable, onDisable, onDelete }
           </div>
         </div>
 
-        {/* 描述 */}
+        {/* Description */}
         {strategy.description && (
           <p className="text-sm" style={{ color: '#5A6B75' }}>
             {strategy.description}
           </p>
         )}
 
-        {/* 条件 */}
+        {/* Conditions */}
         <div>
           <div className="text-xs font-medium mb-2" style={{ color: '#8A9AA5' }}>
             {t('ai.strategyCard.sections.conditions')}
@@ -123,7 +123,7 @@ export default function StrategyCard({ strategy, onEnable, onDisable, onDelete }
           </div>
         </div>
 
-        {/* 动作 */}
+        {/* Actions */}
         <div>
           <div className="text-xs font-medium mb-2" style={{ color: '#8A9AA5' }}>
             {t('ai.strategyCard.sections.actions')}
@@ -142,7 +142,7 @@ export default function StrategyCard({ strategy, onEnable, onDisable, onDelete }
           </div>
         </div>
 
-        {/* 底部信息 */}
+        {/* Footer */}
         <div className="flex items-center justify-between pt-2" style={{ borderTop: '1px solid rgba(0, 0, 0, 0.08)' }}>
           <div className="flex items-center gap-4 text-xs" style={{ color: '#8A9AA5' }}>
             <Tooltip title={t('ai.strategyCard.tooltips.createdAt')}>
@@ -158,7 +158,7 @@ export default function StrategyCard({ strategy, onEnable, onDisable, onDelete }
             )}
           </div>
 
-          {/* 操作按钮 */}
+          {/* Action buttons */}
           <Space size="small">
             {strategy.status === 'active' ? (
               <Button

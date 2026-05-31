@@ -158,7 +158,7 @@ export async function sendMessageCore(
         context: buildChatContext(),
         accountId,
         conversationId: convReady ? activeConversationId : '',
-      });
+      }, { signal });
     }
 
     accessors.setState((prev) => ({

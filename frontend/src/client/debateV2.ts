@@ -217,6 +217,8 @@ export const debateV2Api = {
  * After repeated failures or overall deadline: **one** `Get*Job` call to read terminal phase only.
  */
 export type WaitAdvanceJobOptions = {
+	/** AbortSignal to cancel the SSE connection and reject the promise. */
+	signal?: AbortSignal;
 	/** Fired for each LLM delta (`event: chunk`), QuantDinger-style incremental UI. */
 	onChunk?: (delta: string) => void;
 };
@@ -247,6 +249,16 @@ async function waitDebateV2Job(
 		let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 		let reconnectAttempt = 0;
 		let sseErrorStreak = 0;
+
+		// Wire AbortSignal so callers can cancel the SSE connection.
+		if (opts?.signal) {
+			if (opts.signal.aborted) {
+				return reject(new DOMException('Aborted', 'AbortError'));
+			}
+			opts.signal.addEventListener('abort', () => {
+				finish(() => reject(new DOMException('Aborted', 'AbortError')));
+			}, { once: true });
+		}
 
 		const clearReconnect = () => {
 			if (reconnectTimer != null) {

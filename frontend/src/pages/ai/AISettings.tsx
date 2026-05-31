@@ -130,7 +130,9 @@ export default function AISettings() {
       }));
       setAgentsState(cleaned);
       queryClient.setQueryData(queryKeys.ai.agents.list(), cleaned);
-      message.success(t('ai.settings.agent.messages.saveSuccess'));
+      // NOTE: Agent CRUD API not yet wired — changes are session-only.
+      // See https://github.com/myfxlogs/ant/issues for tracking.
+      message.warning(t('ai.settings.agent.messages.saveSessionOnly', { defaultValue: 'Agent settings saved for this session only (server API pending).' }));
     } catch (e: unknown) {
       message.error(e?.message || t('ai.settings.agent.messages.saveFailed'));
     } finally {

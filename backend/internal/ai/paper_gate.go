@@ -8,7 +8,10 @@
 
 package ai
 
-import "fmt"
+import (
+	"fmt"
+	"math"
+)
 
 // PaperGateConfig holds parameters for paper trading validation.
 type PaperGateConfig struct {
@@ -51,6 +54,14 @@ func PaperGate(metrics PaperGateMetrics, cfg PaperGateConfig) PaperGateResult {
 	if metrics.PaperDays < cfg.MinPaperDays {
 		result.Passed = false
 		result.Reason = fmt.Sprintf("paper days %d < minimum %d", metrics.PaperDays, cfg.MinPaperDays)
+		return result
+	}
+
+	// Reject NaN/Inf in critical metric fields.
+	if math.IsNaN(metrics.PaperNetPnL) || math.IsInf(metrics.PaperNetPnL, 0) ||
+		math.IsNaN(metrics.PaperNetReturn) || math.IsInf(metrics.PaperNetReturn, 0) {
+		result.Passed = false
+		result.Reason = "paper metrics contain invalid values (NaN/Inf)"
 		return result
 	}
 

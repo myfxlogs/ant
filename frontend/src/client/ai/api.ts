@@ -19,13 +19,13 @@ export const aiApi = {
     context?: string;
     accountId?: string;
     conversationId?: string;
-  }): Promise<ChatResult> => {
+  }, opts?: { signal?: AbortSignal }): Promise<ChatResult> => {
     const response = await aiClient.chat({
       message: params.message,
       context: params.context || '',
       accountId: params.accountId || '',
       conversationId: params.conversationId || '',
-    });
+    }, { signal: opts?.signal });
     return {
       message: response.message,
       suggestions: response.suggestions || [],

@@ -1,8 +1,8 @@
-// codeValidator.ts — 前端沙箱代码校验
+// codeValidator.ts — Frontend sandbox code validation
 //
-// 规则镜像 backend/internal/service/debate_v2_prompts.go 里的
-// `[Hard sandbox constraints]`。生成代码若不满足这些规则，
-// 前端禁止"保存为模板"，并把违规项作为反馈送回 LLM 重写。
+// Rules mirror backend/internal/service/debate_v2_prompts.go
+// [Hard sandbox constraints]. If generated code violates these rules,
+// the frontend blocks "save as template" and sends violations back to LLM for rewrite.
 
 export type ViolationCode =
 	| 'import'
@@ -16,9 +16,9 @@ export type ViolationCode =
 
 export interface Violation {
 	code: ViolationCode;
-	// 原文（英文）消息，面向 LLM 的反馈；i18n 翻译由展示层用 t(`ai.debate.v2.validation.codes.${code}`) 负责。
+	// Original (English) messages for LLM feedback; i18n translation handled by display layer via t(`ai.debate.v2.validation.codes.${code}`)责。
 	message: string;
-	// 命中的字面量（可选），例如 "open" / "import pandas" / "__import__"，用于在 Alert 里高亮。
+	// Matched literal (optional), e.g. "open" / "import pandas" / "__import__", used for highlighting in Alert.
 	hit?: string;
 }
 
@@ -34,14 +34,14 @@ const FORBIDDEN_PACKAGES = [
 	'shutil', 'multiprocessing', 'threading', 'asyncio',
 ];
 
-// 每行拆分时先去掉 # 注释和三引号字符串里的内容，避免注释里的关键字误判。
+// Strip # comments and triple-quoted strings before line analysis to avoid false positives.
 function stripPythonComments(src: string): string {
-	// 删除三引号字符串（简化处理：贪婪匹配 """...""" 与 '''...'''）。
+	// Remove triple-quoted strings (simplified: greedy match for """...""" and '''...''').
 	let s = src.replace(/"""[\s\S]*?"""/g, '""')
 	            .replace(/'''[\s\S]*?'''/g, "''");
-	// 删除单行 # 注释。
+	// Remove single-line # comments.
 	s = s.split('\n').map((line) => {
-		// 保留引号内的 #。这里做的是快速判断，不用完整 tokenizer。
+		// Preserve # inside quotes. This is a fast heuristic, not a full tokenizer.
 		let inS = false;
 		let inD = false;
 		for (let i = 0; i < line.length; i++) {
@@ -56,7 +56,7 @@ function stripPythonComments(src: string): string {
 	return s;
 }
 
-/** 检查 Python 代码是否满足 AntTrader 的沙箱约束。 */
+/** Check if Python code satisfies AntTrader sandbox constraints. */
 export function validatePythonSandbox(raw: string): Violation[] {
 	const violations: Violation[] = [];
 	const code = String(raw || '');
@@ -65,7 +65,7 @@ export function validatePythonSandbox(raw: string): Violation[] {
 		return violations;
 	}
 
-	// 1. 代码块里不能再嵌套 ``` 围栏（模型若这么写说明输出被污染）。
+	// 1. No nested ``` fences inside code block (indicates corrupted model output).
 	if (code.includes('```')) {
 		violations.push({ code: 'fence_inside', message: 'The code body still contains ``` fences.' });
 	}
@@ -73,7 +73,7 @@ export function validatePythonSandbox(raw: string): Violation[] {
 	const stripped = stripPythonComments(code);
 	const lines = stripped.split('\n');
 
-	// 2. 禁止 import。
+	// 2. No import statements.
 	const importRe = /^\s*(?:import\s+\S+|from\s+\S+\s+import\s+)/m;
 	const imMatch = importRe.exec(stripped);
 	if (imMatch) {
@@ -84,7 +84,7 @@ export function validatePythonSandbox(raw: string): Violation[] {
 		});
 	}
 
-	// 3. 禁止 dunder（__xxx__ 形式的访问）。
+	// 3. No dunder access (__xxx__ patterns).
 	const dunderRe = /__[A-Za-z_]+__/;
 	const duMatch = dunderRe.exec(stripped);
 	if (duMatch) {
@@ -95,8 +95,8 @@ export function validatePythonSandbox(raw: string): Violation[] {
 		});
 	}
 
-	// 4. 禁止 banned identifier 作为"调用"形式：`name(` 或 `= name`。
-	//    放宽判断：只要作为一个独立单词出现即视为命中，避免模型偷用 builtins。
+	// 4. No banned identifiers used as call patterns: name( or = name.
+	//    Relaxed: any standalone occurrence is flagged to prevent builtin abuse.
 	for (const id of BANNED_IDENTIFIERS) {
 		const re = new RegExp(`(^|[^A-Za-z0-9_])${id}\\s*\\(`);
 		if (re.test(stripped)) {
@@ -105,12 +105,12 @@ export function validatePythonSandbox(raw: string): Violation[] {
 				message: `Calling the banned builtin \`${id}(...)\` is not allowed.`,
 				hit: id,
 			});
-			break; // 报一条即可
+			break; // Report one violation per category
 		}
 	}
 
-	// 5. 禁止第三方包（即便漏过了 import 过滤，裸用也要拦）。
-	//    注意这里匹配 ` pandas.` / `numpy(` 等调用形式，避免对注释/字符串误判。
+	// 5. No third-party packages (even if import filter missed, bare usage is blocked).
+	//    Matches call patterns like pandas. / numpy(, avoiding comment/string false positives.
 	for (const pkg of FORBIDDEN_PACKAGES) {
 		const re = new RegExp(`(^|[^A-Za-z0-9_])${pkg}\\s*[\\.\\(]`);
 		if (re.test(stripped)) {
@@ -123,7 +123,7 @@ export function validatePythonSandbox(raw: string): Violation[] {
 		}
 	}
 
-	// 6. 必须存在 top-level `def run(context):`。
+	// 6. Must have top-level def run(context):.
 	const runSigRe = /^\s*def\s+run\s*\(\s*context\s*\)\s*:/m;
 	const anyRunRe = /^\s*def\s+run\s*\(/m;
 	if (!runSigRe.test(stripped)) {
@@ -141,13 +141,13 @@ export function validatePythonSandbox(raw: string): Violation[] {
 			});
 		}
 	}
-	// 忽略 lines 便于 TS 不告警
+	// Ignore lines to satisfy TS unused-variable lint
 	void lines as unknown; // suppress TS noUnusedLocals
 
 	return violations;
 }
 
-/** 把违规项序列化为中文/英文混排的反馈，送回 LLM 作为 rejectCode 的 feedback。 */
+/** Serialize violations as feedback for LLM, used as rejectCode feedback. */
 export function violationsToFeedback(violations: Violation[]): string {
 	if (violations.length === 0) return '';
 	const head = 'The previous code failed the sandbox validator. Please rewrite so that ALL of the following are fixed:';
