@@ -2,10 +2,10 @@ import { useTranslation } from 'react-i18next';
 import type { AIAgentDefinitionView } from '@/client/ai';
 
 /**
- * 8 个系统内置 Agent 类型：它们的展示名与描述会跟随 i18n 语系切换，
- * 读取 `ai.settings.agent.types.<type>` 与
- * `ai.settings.agent.defaults.<type>.inputHint`，而不是用户在 AI 设置里
- * 保存的固定字符串（存库值会在创建时冻结为某一语言）。
+ * 8 system built-in Agent types: their display names and descriptions follow i18n locale,
+ * reading `ai.settings.agent.types.<type>` and
+ * `ai.settings.agent.defaults.<type>.inputHint`, not the fixed string
+ * saved by the user in AI settings (stored values are frozen to a language at creation time).
  */
 export const BUILTIN_AGENT_TYPES = new Set([
   'style', 'signals', 'risk', 'macro', 'sentiment', 'portfolio', 'execution', 'code',
@@ -31,8 +31,8 @@ export function formatElapsed(seconds: number): string {
 }
 
 /**
- * 识别"要求进入下一步"类短语——用户若发这种消息，直接触发 onNext 而不发给模型。
- * 过滤条件：长度 ≤ 16 字符，去空白和常见标点后，命中关键词集合之一。
+ * Detect "request to advance" phrases — if the user sends such a message, trigger onNext directly without sending to the model.
+ * Filter: length ≤ 16 chars, strip whitespace/common punctuation, match against keyword set.
  */
 export function looksLikeNextIntent(raw: string): boolean {
   const t = (raw || '').trim();

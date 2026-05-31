@@ -20,31 +20,45 @@ interface PipelineSummary { passed: boolean; summary: string; first_fail: string
 
 const GATE_ORDER = ['compliance', 'lookahead', 'walkforward', 'deflated_sharpe', 'paper', 'correlation'];
 
-const GATE_LABELS: Record<string, string> = {
-  compliance: '合规检查', lookahead: '前视偏差', walkforward: 'Walk-Forward',
-  deflated_sharpe: 'Deflated Sharpe', paper: '模拟交易', correlation: '相关性',
-};
-
-const GATE_DESCRIPTIONS: Record<string, string> = {
-  compliance: 'DSL 表达式非空验证',
-  lookahead: '扫描未来函数引用 (close[t+N], ref 负偏移)',
-  walkforward: 'Purged Walk-Forward 交叉验证',
-  deflated_sharpe: 'Lopez de Prado 紧缩夏普比率',
-  paper: '≥14 天模拟交易验证',
-  correlation: '与现有策略信号相关性检查',
-};
-
-function buildGateIcon(idx: number, gates: GateStatus[], loading: boolean): [React.ReactNode, string, 'wait' | 'process' | 'finish' | 'error'] {
-  const gs = gates[idx];
-  const isCurrent = loading && idx === gates.length;
-  if (isCurrent) return [<LoadingOutlined style={{ color: '#1677ff' }} />, 'process', '评估中...'];
-  if (!gs) return [<ClockCircleFilled style={{ color: '#d9d9d9' }} />, 'wait', GATE_DESCRIPTIONS[GATE_ORDER[idx]]];
-  if (gs.passed) return [<CheckCircleFilled style={{ color: '#52c41a' }} />, 'finish', buildDesc(gs)];
-  return [<CloseCircleFilled style={{ color: '#ff4d4f' }} />, 'error', buildDesc(gs)];
+function useGateI18n() {
+  const { t } = useTranslation();
+  return {
+    label: (gate: string) => t(`ai.gate.labels.${gate}`),
+    description: (gate: string) => t(`ai.gate.descriptions.${gate}`),
+    evaluating: t('ai.gate.status.evaluating', { defaultValue: 'Evaluating...' }),
+    pipelineDesc: t('ai.gate.pipelineDesc', { defaultValue: '6-stage Gate pipeline: Compliance → LookAhead → Walk-Forward → DeflatedSharpe → Paper → Correlation' }),
+    strategyParams: t('ai.gate.strategyParams', { defaultValue: 'Strategy Parameters' }),
+    dslExpression: t('ai.gate.dslExpression', { defaultValue: 'DSL Expression' }),
+    dailyReturns: t('ai.gate.dailyReturns', { defaultValue: 'Daily Returns (comma or newline separated)' }),
+    numAttempts: t('ai.gate.numAttempts', { defaultValue: 'Strategy Attempts' }),
+    paperMetrics: t('ai.gate.paperMetrics', { defaultValue: 'Paper Trading Metrics' }),
+    paperDays: t('ai.gate.paperDays', { defaultValue: 'Paper Days' }),
+    paperNetPnL: t('ai.gate.paperNetPnL', { defaultValue: 'Paper Net P&L' }),
+    paperNetReturn: t('ai.gate.paperNetReturn', { defaultValue: 'Paper Net Return' }),
+    paperTradeCount: t('ai.gate.paperTradeCount', { defaultValue: 'Paper Trade Count' }),
+    backtestNetReturn: t('ai.gate.backtestNetReturn', { defaultValue: 'Backtest Net Return' }),
+    backtestGrossReturn: t('ai.gate.backtestGrossReturn', { defaultValue: 'Backtest Gross Return' }),
+    runPipeline: t('ai.gate.runPipeline', { defaultValue: 'Run Gate Pipeline' }),
+    retry: t('ai.gate.retry', { defaultValue: 'Retry' }),
+    gateProgress: t('ai.gate.gateProgress', { defaultValue: 'Gate Evaluation Progress' }),
+    pipelineResult: t('ai.gate.pipelineResult', { defaultValue: 'Pipeline Result' }),
+    allPassed: t('ai.gate.allPassed', { defaultValue: 'All 6 gates passed — strategy eligible for PromoteToLive evaluation' }),
+    failed: (gate: string) => t('ai.gate.failed', { defaultValue: `Failed: ${gate}` }),
+    details: t('ai.gate.details', { defaultValue: 'Details' }),
+  };
 }
 
-function buildDesc(gs: GateStatus): string {
-  const parts = [GATE_DESCRIPTIONS[gs.gate] || ''];
+function buildGateIcon(idx: number, gates: GateStatus[], loading: boolean, i18n: ReturnType<typeof useGateI18n>): [React.ReactNode, string, 'wait' | 'process' | 'finish' | 'error'] {
+  const gs = gates[idx];
+  const isCurrent = loading && idx === gates.length;
+  if (isCurrent) return [<LoadingOutlined style={{ color: '#1677ff' }} />, 'process', i18n.evaluating];
+  if (!gs) return [<ClockCircleFilled style={{ color: '#d9d9d9' }} />, 'wait', i18n.description(GATE_ORDER[idx])];
+  if (gs.passed) return [<CheckCircleFilled style={{ color: '#52c41a' }} />, 'finish', buildDesc(gs, i18n)];
+  return [<CloseCircleFilled style={{ color: '#ff4d4f' }} />, 'error', buildDesc(gs, i18n)];
+}
+
+function buildDesc(gs: GateStatus, i18n: ReturnType<typeof useGateI18n>): string {
+  const parts = [i18n.description(gs.gate)];
   if (gs.score !== undefined && gs.score !== 0) parts.push(`Score: ${gs.score.toFixed(4)}`);
   parts.push(`${gs.duration_ms}ms`);
   if (!gs.passed && gs.reason) parts.push(`❌ ${gs.reason}`);
@@ -66,13 +80,13 @@ export default function GateProgressPage() {
   const [summary, setSummary] = useState<PipelineSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const i18n = useGateI18n();
 
   useEffect(() => {
     return () => { abortRef.current?.abort(); };
   }, []);
 
   const handleRun = useCallback(async () => {
-    // Abort any in-flight request before starting a new one.
     abortRef.current?.abort();
     const values = await form.validateFields();
     setLoading(true); setError(null); setGates([]); setSummary(null);
@@ -137,38 +151,38 @@ export default function GateProgressPage() {
     <div style={{ padding: 16, maxWidth: 960, margin: '0 auto' }}>
       <Title level={4} style={{ marginBottom: 0 }}>
         <ThunderboltOutlined style={{ marginRight: 8 }} />
-        {t('ai.gate.title', { defaultValue: 'AI Gate 进度面板' })}
+        {t('ai.gate.title', { defaultValue: 'AI Gate Progress' })}
       </Title>
       <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
-        6 级 Gate 管道: Compliance → LookAhead → Walk-Forward → DeflatedSharpe → Paper → Correlation
+        {i18n.pipelineDesc}
       </Text>
 
-      <Card size="small" title="策略参数" style={{ marginBottom: 16 }}>
+      <Card size="small" title={i18n.strategyParams} style={{ marginBottom: 16 }}>
         <Form form={form} layout="vertical" size="small" initialValues={INITIAL_VALUES}>
-          <Form.Item name="expression" label="DSL 表达式">
+          <Form.Item name="expression" label={i18n.dslExpression}>
             <Input.TextArea rows={2} placeholder="close[1] > close[2] * 1.01" />
           </Form.Item>
-          <Form.Item name="dailyReturns" label="日收益率 (逗号或换行分隔)">
+          <Form.Item name="dailyReturns" label={i18n.dailyReturns}>
             <Input.TextArea rows={3} placeholder="0.01, -0.005, 0.02, ..." />
           </Form.Item>
-          <Form.Item name="numAttempts" label="策略尝试次数">
+          <Form.Item name="numAttempts" label={i18n.numAttempts}>
             <InputNumber min={1} max={1000} />
           </Form.Item>
-          <Divider plain style={{ fontSize: 13 }}>模拟交易指标</Divider>
+          <Divider plain style={{ fontSize: 13 }}>{i18n.paperMetrics}</Divider>
           <Space wrap>
-            <Form.Item name="paperDays" label="模拟天数"><InputNumber min={1} max={365} /></Form.Item>
-            <Form.Item name="paperNetPnL" label="模拟 Net P&L"><InputNumber style={{ width: 120 }} /></Form.Item>
-            <Form.Item name="paperNetReturn" label="模拟净收益"><InputNumber min={-1} max={10} step={0.01} /></Form.Item>
-            <Form.Item name="paperTradeCount" label="模拟交易数"><InputNumber min={0} max={10000} /></Form.Item>
-            <Form.Item name="backtestNetReturn" label="回测净收益"><InputNumber min={-1} max={10} step={0.01} /></Form.Item>
-            <Form.Item name="backtestGrossReturn" label="回测毛收益"><InputNumber min={-1} max={10} step={0.01} /></Form.Item>
+            <Form.Item name="paperDays" label={i18n.paperDays}><InputNumber min={1} max={365} /></Form.Item>
+            <Form.Item name="paperNetPnL" label={i18n.paperNetPnL}><InputNumber style={{ width: 120 }} /></Form.Item>
+            <Form.Item name="paperNetReturn" label={i18n.paperNetReturn}><InputNumber min={-1} max={10} step={0.01} /></Form.Item>
+            <Form.Item name="paperTradeCount" label={i18n.paperTradeCount}><InputNumber min={0} max={10000} /></Form.Item>
+            <Form.Item name="backtestNetReturn" label={i18n.backtestNetReturn}><InputNumber min={-1} max={10} step={0.01} /></Form.Item>
+            <Form.Item name="backtestGrossReturn" label={i18n.backtestGrossReturn}><InputNumber min={-1} max={10} step={0.01} /></Form.Item>
           </Space>
           <div style={{ marginTop: 12 }}>
             <Space>
               <Button type="primary" icon={loading ? <LoadingOutlined /> : <PlayCircleOutlined />} onClick={handleRun} loading={loading}>
-                运行 Gate 管道
+                {i18n.runPipeline}
               </Button>
-              <Button icon={<ReloadOutlined />} onClick={handleRetry} disabled={!loading && gates.length === 0}>重试</Button>
+              <Button icon={<ReloadOutlined />} onClick={handleRetry} disabled={!loading && gates.length === 0}>{i18n.retry}</Button>
             </Space>
           </div>
         </Form>
@@ -177,14 +191,14 @@ export default function GateProgressPage() {
       {error && <Alert type="error" message={error} closable style={{ marginBottom: 16 }} onClose={() => setError(null)} />}
 
       {(gates.length > 0 || loading) && (
-        <Card size="small" title="Gate 评估进度" style={{ marginBottom: 16 }}>
+        <Card size="small" title={i18n.gateProgress} style={{ marginBottom: 16 }}>
           <Steps direction="vertical" size="small"
             current={loading && gates.length === 0 ? -1 : currentStep}
             status={!loading && summary && !summary.passed ? 'error' : !loading && summary?.passed ? 'finish' : 'process'}
             items={GATE_ORDER.map((gate, idx) => {
-              const [icon, status, desc] = buildGateIcon(idx, gates, loading);
+              const [icon, status, desc] = buildGateIcon(idx, gates, loading, i18n);
               return {
-                title: <span>{icon}<span style={{ marginLeft: 8, fontWeight: 600 }}>{GATE_LABELS[gate]}</span><Tag style={{ marginLeft: 8, fontSize: 11 }}>{gate}</Tag></span>,
+                title: <span>{icon}<span style={{ marginLeft: 8, fontWeight: 600 }}>{i18n.label(gate)}</span><Tag style={{ marginLeft: 8, fontSize: 11 }}>{gate}</Tag></span>,
                 description: <Text type={status === 'error' ? 'danger' : 'secondary'} style={{ fontSize: 12 }}>{desc}</Text>,
                 status,
               };
@@ -194,19 +208,19 @@ export default function GateProgressPage() {
       )}
 
       {summary && (
-        <Card size="small" title="管道结果">
+        <Card size="small" title={i18n.pipelineResult}>
           {summary.passed
-            ? <Alert type="success" message="所有 6 个 Gate 通过，策略可进入 PromoteToLive 评估" showIcon />
-            : <Alert type="error" message={`未通过: ${GATE_LABELS[summary.first_fail] || summary.first_fail}`} description={summary.summary} showIcon />
+            ? <Alert type="success" message={i18n.allPassed} showIcon />
+            : <Alert type="error" message={i18n.failed(summary.first_fail)} description={summary.summary} showIcon />
           }
           {gates.length > 0 && (
             <Collapse size="small" style={{ marginTop: 12 }} items={[{
-              key: 'details', label: '详细结果',
+              key: 'details', label: i18n.details,
               children: (
                 <Descriptions size="small" column={1}>
                   {gates.map(gs => (
                     <Descriptions.Item key={gs.gate}
-                      label={<span>{gs.passed ? <CheckCircleFilled style={{ color: '#52c41a', marginRight: 4 }} /> : <CloseCircleFilled style={{ color: '#ff4d4f', marginRight: 4 }} />}{GATE_LABELS[gs.gate] || gs.gate}</span>}
+                      label={<span>{gs.passed ? <CheckCircleFilled style={{ color: '#52c41a', marginRight: 4 }} /> : <CloseCircleFilled style={{ color: '#ff4d4f', marginRight: 4 }} />}{i18n.label(gs.gate)}</span>}
                     >
                       {gs.passed ? 'PASS' : `FAIL — ${gs.reason || 'unknown'}`}
                       {gs.score !== undefined && gs.score !== 0 ? ` (score: ${gs.score.toFixed(4)})` : ''}

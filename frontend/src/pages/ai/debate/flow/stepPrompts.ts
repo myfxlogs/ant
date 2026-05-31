@@ -1,10 +1,10 @@
 import type { AIAgentDefinitionView } from '@/client/ai';
 
 /**
- * 会话流程中每一步使用的 system 级提示词构造器。
+ * System-level prompt builder for each step in the debate flow.
  *
- * 所有 prompt 都强制模型使用自然语言回复，并在末尾复述当前环节的规范理解，
- * 以便用户确认、前端在"下一步"时作为上下文传入下一环节。
+ * All prompts force the model to reply in natural language and restate its understanding
+ * of the current stage — for user confirmation and context-passing to the next step.
  */
 
 type LocaleKey = 'zh-cn' | 'zh-tw' | 'en' | 'ja' | 'vi';
@@ -29,10 +29,10 @@ function localeDisplayName(locale: string): string {
 }
 
 /**
- * 返回给 LLM 的语言指令，bilingual（英文为主 + 当地提示）。
- * 规则：优先以"用户当前消息使用的语言"回复；若用户消息语言不明，
- * 再以页面界面语言（locale）回复。所有强制回显的短语会在其他规则里
- * 以对应语言给出，避免中英混用。
+ * Language instructions for the LLM, bilingual (English primary + local hints).
+ * Rule: prioritize reply in the language of the user message; if unclear,
+ * fall back to the page UI locale. All mandatory echo phrases are given
+ * in the corresponding language to avoid mixed Chinese-English.
  */
 function languageHint(locale: string): string {
 	const name = localeDisplayName(locale);
@@ -186,8 +186,8 @@ export function extractPythonBlock(text: string): string {
 }
 
 /**
- * 去除所有 ``` ``` 围栏代码块，并把连续的多空行合并成一个。
- * 用于意图澄清 / Agent 对话阶段：即便模型不守规矩输出了代码，也不会显示给用户。
+ * Strip all ``` ``` fenced code blocks and collapse consecutive blank lines.
+ * Used in intent-clarification / agent dialogue phases: even if the model outputs code, it won't be shown to the user.
  */
 export function stripCodeBlocks(text: string): string {
 	if (!text) return '';
@@ -199,8 +199,8 @@ export function stripCodeBlocks(text: string): string {
 }
 
 /**
- * 当流程进入到某个 Agent 步时，系统自动"替用户"发给 Agent 的衔接消息。
- * 该消息仅用于触发模型的第一次开口，不会展示给最终用户。
+ * When the flow enters an Agent step, the system auto-sends a bridging message to the Agent on behalf of the user.
+ * This message only triggers the model's first response; it is never shown to the end user.
  */
 export function kickoffUserMessage(agentName: string, agentType: string, locale: string): string {
 	const greeting = greetingFor(locale, agentName);

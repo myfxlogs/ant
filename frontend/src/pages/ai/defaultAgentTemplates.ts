@@ -2,18 +2,18 @@ import type { TFunction } from 'i18next';
 import type { AIAgentDefinitionView } from '@/client/ai';
 
 /**
- * 系统内置的 8 个量化交易 Agent 默认身份定义。
+ * 8 built-in quantitative trading Agent default identity definitions.
  *
- * - 每个 Agent 的 agentKey 固定（用于前后端识别，避免重复）。
- * - identity 按量化交易行业常见职责划分撰写，作为 system-prompt 片段；
- *   用户可在设置页自由修改。
- * - inputHint 用于提示使用者"喂给该 Agent 什么信息效果最好"。
+ * - Each Agent's agentKey is fixed (for frontend/backend identification, avoiding duplicates).
+ * - identity is written according to common quant trading industry role divisions, used as system-prompt fragments;
+ *   Users can freely modify on the settings page.
+ * - inputHint prompts the user on what information works best to feed to this Agent.
  *
- * 覆盖类型：style / signals / risk / macro / sentiment / portfolio / execution / code
+ * Coverage types: style / signals / risk / macro / sentiment / portfolio / execution / code
  */
 
-// 自 060 起 Agent 不再依附「ai_config_profiles 档」；模板里也不再包含
-// id / providerId / modelOverride，由调用方在合并 / 提交时按需补齐。
+// Since 060, Agents no longer depend on ai_config_profiles; templates also no longer contain
+// id / providerId / modelOverride — filled by caller on merge/submit as needed.
 export type DefaultAgentTemplate = Omit<AIAgentDefinitionView, 'id' | 'providerId' | 'modelOverride'>;
 
 export function getDefaultAgentTemplates(t: TFunction): AIAgentDefinitionView[] {
@@ -96,10 +96,10 @@ export function getDefaultAgentTemplates(t: TFunction): AIAgentDefinitionView[] 
 }
 
 /**
- * 将系统默认 8 个 Agent 合并进当前 agents 列表：
- * - 命中同 agentKey：按默认模板覆盖 identity/inputHint/name/type/position（保留已有 id）
- * - 未命中：追加
- * - 用户自己新增的非默认 agentKey：原样保留
+ * Merge 8 system default Agents into the current agents list:
+ * - Matching agentKey: overwrite identity/inputHint/name/type/position with defaults (preserve existing id)
+ * - No match: append
+ * - User-added non-default agentKey: keep as-is
  */
 export function mergeWithDefaultAgentTemplates(
 	current: AIAgentDefinitionView[],
@@ -114,7 +114,7 @@ export function mergeWithDefaultAgentTemplates(
 			...existing,
 			...d,
 			id: existing?.id || '',
-			// 保留用户已选的 provider/model，不被默认模板覆盖。
+			// Preserve user-selected provider/model — don't overwrite with defaults.
 			providerId: existing?.providerId || '',
 			modelOverride: existing?.modelOverride || '',
 		});
