@@ -311,15 +311,39 @@ func (s *AccountService) UpdateAccountMetrics(ctx context.Context, userID uuid.U
 	if err != nil {
 		return fmt.Errorf("service: update account metrics: invalid account id: %w", err)
 	}
+	balN, err := float64ToPgNumeric(balance)
+	if err != nil {
+		return fmt.Errorf("service: update account metrics: balance: %w", err)
+	}
+	eqN, err := float64ToPgNumeric(equity)
+	if err != nil {
+		return fmt.Errorf("service: update account metrics: equity: %w", err)
+	}
+	crN, err := float64ToPgNumeric(credit)
+	if err != nil {
+		return fmt.Errorf("service: update account metrics: credit: %w", err)
+	}
+	marginN, err := float64ToPgNumeric(margin)
+	if err != nil {
+		return fmt.Errorf("service: update account metrics: margin: %w", err)
+	}
+	fmN, err := float64ToPgNumeric(freeMargin)
+	if err != nil {
+		return fmt.Errorf("service: update account metrics: free_margin: %w", err)
+	}
+	mlN, err := float64ToPgNumeric(marginLevel)
+	if err != nil {
+		return fmt.Errorf("service: update account metrics: margin_level: %w", err)
+	}
 	return s.queries.UpdateAccountMetrics(ctx, repository.UpdateAccountMetricsParams{
 		ID:          pgID,
 		UserID:      uuidToPgUUID(userID),
-		Balance:     float64ToPgNumeric(balance),
-		Equity:      float64ToPgNumeric(equity),
-		Credit:      float64ToPgNumeric(credit),
-		Margin:      float64ToPgNumeric(margin),
-		FreeMargin:  float64ToPgNumeric(freeMargin),
-		MarginLevel: float64ToPgNumeric(marginLevel),
+		Balance:     balN,
+		Equity:      eqN,
+		Credit:      crN,
+		Margin:      marginN,
+		FreeMargin:  fmN,
+		MarginLevel: mlN,
 	})
 }
 
@@ -479,14 +503,12 @@ func pgUUIDToString(u pgtype.UUID) string {
 	return uuid.UUID(u.Bytes).String()
 }
 
-func float64ToPgNumeric(v float64) pgtype.Numeric {
-	// pgtype.Numeric implements sql.Scanner and accepts float64 directly.
+func float64ToPgNumeric(v float64) (pgtype.Numeric, error) {
 	var n pgtype.Numeric
 	if err := n.Scan(v); err != nil {
-		// NaN/Inf silently produce zero; log and return zero.
-		return n
+		return n, fmt.Errorf("float64ToPgNumeric: %w", err)
 	}
-	return n
+	return n, nil
 }
 
 func pgNumericToFloat64(n pgtype.Numeric) float64 {

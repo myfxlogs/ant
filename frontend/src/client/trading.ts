@@ -139,7 +139,9 @@ function parseSideOrderType(type: string): { side: Side; orderType: OrderType } 
 /** Convert a numeric price/volume to a decimal string for the proto wire format. */
 function toDecimalString(n: number | undefined, fallback = '0'): string {
   if (n === undefined || n === null) return fallback;
-  return n.toString();
+  // toLocaleString with fullwide avoids scientific notation (1e-7)
+  // which would fail to parse as decimal on the backend.
+  return n.toLocaleString('en-US', { useGrouping: false, maximumFractionDigits: 20 });
 }
 
 export const tradingApi = {

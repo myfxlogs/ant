@@ -132,7 +132,11 @@ func startMdGatewayPipeline(
 			// Update PG with latest account metrics via AccountService.
 			writeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
-			userUID, _ := uuid.Parse(userID)
+			userUID, parseErr := uuid.Parse(userID)
+			if parseErr != nil {
+				log.Warn("OnOrderUpdate: invalid user UUID", zap.String("userID", userID), zap.Error(parseErr))
+				return
+			}
 			if err := accountSvc.UpdateAccountMetrics(writeCtx, userUID, accountID, o.Balance, o.Equity, o.Credit, o.Margin, o.FreeMargin, o.MarginLevel); err != nil {
 				log.Warn("OnOrderUpdate: pg update failed", zap.String("account", accountID), zap.Error(err))
 			}

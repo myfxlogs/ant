@@ -213,25 +213,27 @@ func (s *AccountServer) DeleteAccount(ctx context.Context, req *connect.Request[
 		return nil, err
 	}
 
-	// If the user provides a password, verify it against the MT broker first.
-	if req.Msg.Password != "" {
-		creds, err := s.svc.GetAccountCredentials(ctx, userID, req.Msg.Id)
-		if err != nil {
-			s.log.Error("DeleteAccount: get credentials", zap.Error(err))
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to get account info: %w", err))
+	// DeleteAccount requires password verification for safety.
+	// The only exception is accounts in needs_rebind state that never successfully
+	// connected (no broker host in DB).
+	creds, err := s.svc.GetAccountCredentials(ctx, userID, req.Msg.Id)
+	if err != nil {
+		s.log.Error("DeleteAccount: get credentials", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to get account info: %w", err))
+	}
+	if creds.BrokerHost != "" {
+		if req.Msg.Password == "" {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("password is required to delete a verified account"))
 		}
-		// #7: Skip password verification when BrokerHost is empty.
-		if creds.BrokerHost == "" {
-			s.log.Warn("DeleteAccount: skipping password verification (empty broker host)", zap.String("accountId", req.Msg.Id))
-		} else {
-			if s.mtTester == nil {
-				return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("MT connection tester not available"))
-			}
-			if err := s.mtTester.VerifyPassword(ctx, creds.Platform, creds.BrokerHost, creds.Login, req.Msg.Password); err != nil {
-				s.log.Warn("DeleteAccount: password verification failed", zap.String("accountId", req.Msg.Id), zap.Error(err))
-				return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("password verification failed: %w", err))
-			}
+		if s.mtTester == nil {
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("MT connection tester not available"))
 		}
+		if err := s.mtTester.VerifyPassword(ctx, creds.Platform, creds.BrokerHost, creds.Login, req.Msg.Password); err != nil {
+			s.log.Warn("DeleteAccount: password verification failed", zap.String("accountId", req.Msg.Id), zap.Error(err))
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("password verification failed: %w", err))
+		}
+	} else {
+		s.log.Warn("DeleteAccount: skipping password verification (needs_rebind, no broker host)", zap.String("accountId", req.Msg.Id))
 	}
 
 	if err := s.svc.DeleteAccount(ctx, userID, req.Msg.Id); err != nil {

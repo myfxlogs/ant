@@ -62,6 +62,7 @@ func loadAccountConfigs(ctx context.Context, deps RunnerDeps) ([]mdtick.AccountC
 		)
 		if err := rows.Scan(&id, &userID, &platform, &broker, &mtapiHost, &mtapiPort,
 			&login, &password, &mtToken, &brokerHost, &server, &symbols); err != nil {
+			deps.Log.Error("mdgateway: scan account config failed, skipping row", zap.Error(err))
 			continue
 		}
 
