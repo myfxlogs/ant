@@ -44,7 +44,7 @@ const accounts = {
       confirmBind: 'Confirm bind',
       retryVerify: 'Retry',
     },
-    passwordHint: 'Password transmitted via HTTPS. Stored AES-256-GCM encrypted on backend (required in plaintext for broker authentication)',
+    passwordHint: 'Password is transmitted via HTTPS and stored as an Argon2id hash (non-reversible) on the backend',
     summary: {
       broker: 'Broker',
       server: 'Server',

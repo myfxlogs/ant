@@ -264,7 +264,7 @@ const accounts = {
         confirmBind: '确认绑定',
         retryVerify: '重新验证',
       },
-      passwordHint: "密码通过 HTTPS 加密传输，后端 AES-256-GCM 加密存储（需明文发送至经纪商验证）",
+      passwordHint: '密码将通过 HTTPS 加密传输，后端使用 Argon2id 哈希存储不可回逆',
       summary: {
         broker: '经纪商',
         server: '服务器',

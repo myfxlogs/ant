@@ -42,7 +42,7 @@ const accounts = {
         search: '検索',
         confirmBind: '連携を確定',
       },
-      passwordHint: "パスワードは HTTPS で送信され、バックエンドで AES-256-GCM 暗号化で保存されます（ブローカー認証に平文が必要です）",
+      passwordHint: 'パスワードは HTTPS で送信され、バックエンドで Argon2id ハッシュとして保存されます（復元不可）。',
       summary: {
         broker: 'ブローカー',
         server: 'サーバー',
