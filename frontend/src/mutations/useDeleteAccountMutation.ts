@@ -10,10 +10,21 @@ export function useDeleteAccountMutation() {
     ({ id, password }: { id: string; password?: string }) =>
       accountApi.delete(id, password),
     {
-      onSuccess: (_data, vars) => {
-        // Remove from Zustand (Dashboard reads this immediately)
+      onMutate: async (vars) => {
+        // Optimistic: remove from Zustand immediately so UI updates instantly.
+        const prev = useAccountStore.getState().accounts;
         useAccountStore.getState().removeAccount(vars.id);
-        // Remove from TanStack Query cache
+        // Cancel active queries to prevent 404 refetches.
+        await queryClient.cancelQueries({ queryKey: queryKeys.accounts.detail(vars.id) });
+        await queryClient.cancelQueries({ queryKey: queryKeys.accounts.financials(vars.id) });
+        await queryClient.cancelQueries({ queryKey: queryKeys.positions.byAccount(vars.id) });
+        return { prev };
+      },
+      onError: (_err, vars, context) => {
+        // Rollback: restore account list if delete failed.
+        if (context?.prev) useAccountStore.getState().setAccounts(context.prev);
+      },
+      onSuccess: (_data, vars) => {
         queryClient.removeQueries({ queryKey: queryKeys.accounts.detail(vars.id) });
         queryClient.removeQueries({ queryKey: queryKeys.accounts.financials(vars.id) });
         queryClient.removeQueries({ queryKey: queryKeys.positions.byAccount(vars.id) });

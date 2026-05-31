@@ -101,11 +101,11 @@ export function useAccountDetailData(id: string | undefined) {
     if (!currentAccount || !deletePassword.trim()) return;
     setDeleting(true);
     setDeleteModalOpen(false);
-    // Navigate first to unmount active queries, then delete.
-    // Prevents 404/403 refetches from queries still observing the deleted account.
-    navigate('/');
     try {
       await deleteMut.mutateAsync({ id: currentAccount.id, password: deletePassword.trim() });
+      // Navigate after mutation — onSuccess already removed from Zustand,
+      // so Dashboard won't show the deleted account even briefly.
+      navigate('/');
     } catch { /* mutation handles error */ }
     finally { setDeleting(false); }
   }, [currentAccount, deletePassword, deleteMut, navigate]);
