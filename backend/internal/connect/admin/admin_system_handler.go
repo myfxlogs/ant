@@ -52,16 +52,18 @@ func (s *AdminSystemServer) GetMetrics(ctx context.Context, _ *connect.Request[a
 }
 
 func (s *AdminSystemServer) ResolveAlert(_ context.Context, req *connect.Request[antv1.ResolveAlertRequest]) (*connect.Response[antv1.ResolveAlertResponse], error) {
-	s.log.Info("alert resolved", zap.String("alert_id", req.Msg.GetAlertId()))
+	s.log.Warn("admin: ResolveAlert is a stub — no alert resolution implemented",
+		zap.String("alert_id", req.Msg.GetAlertId()))
 	return connect.NewResponse(&antv1.ResolveAlertResponse{}), nil
 }
 
 func (s *AdminSystemServer) ClearCache(_ context.Context, _ *connect.Request[antv1.ClearCacheRequest]) (*connect.Response[antv1.ClearCacheResponse], error) {
-	s.log.Info("cache cleared")
+	s.log.Warn("admin: ClearCache is a stub — no cache clearing implemented")
 	return connect.NewResponse(&antv1.ClearCacheResponse{}), nil
 }
 
 func (s *AdminSystemServer) InvalidateCache(_ context.Context, req *connect.Request[antv1.InvalidateCacheRequest]) (*connect.Response[antv1.InvalidateCacheResponse], error) {
-	s.log.Info("cache invalidated", zap.Strings("tags", req.Msg.GetTags()))
+	s.log.Warn("admin: InvalidateCache is a stub — no cache invalidation implemented",
+		zap.Strings("tags", req.Msg.GetTags()))
 	return connect.NewResponse(&antv1.InvalidateCacheResponse{}), nil
 }

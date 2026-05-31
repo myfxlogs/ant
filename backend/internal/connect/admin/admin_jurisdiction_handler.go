@@ -2,6 +2,7 @@ package admin
 
 import (
 	"context"
+	"fmt"
 
 	"connectrpc.com/connect"
 	"go.uber.org/zap"
@@ -9,6 +10,7 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
+	"github.com/google/uuid"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/repository"
 )
@@ -40,6 +42,9 @@ func (s *AdminJurisdictionServer) GetJurisdictionStatus(ctx context.Context, req
 }
 
 func (s *AdminJurisdictionServer) SetKYCStatus(ctx context.Context, req *connect.Request[antv1.SetKYCStatusRequest]) (*connect.Response[antv1.SetKYCStatusResponse], error) {
+	if !validKYCStatus(req.Msg.KycStatus) {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid kyc status: %s", req.Msg.KycStatus))
+	}
 	verifiedBy := interceptor.GetUserID(ctx)
 	if err := s.repo.SetKYCStatus(ctx, req.Msg.UserId, req.Msg.KycStatus, verifiedBy); err != nil {
 		return nil, err
@@ -109,9 +114,16 @@ func (s *AdminJurisdictionServer) ListUsersByKYCStatus(ctx context.Context, req 
 }
 
 func (s *AdminJurisdictionServer) SetSanctionedOverride(ctx context.Context, req *connect.Request[antv1.SetSanctionedOverrideRequest]) (*connect.Response[antv1.SetSanctionedOverrideResponse], error) {
+	if _, err := uuid.Parse(req.Msg.UserId); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid user id: %w", err))
+	}
 	if err := s.repo.SetSanctionedOverride(ctx, req.Msg.UserId, req.Msg.Override); err != nil {
 		return nil, err
 	}
+	s.log.Info("admin: sanctioned override",
+		zap.String("actor", interceptor.GetUserID(ctx)),
+		zap.String("target", req.Msg.UserId),
+		zap.Bool("override", req.Msg.Override))
 	return connect.NewResponse(&antv1.SetSanctionedOverrideResponse{}), nil
 }
 
@@ -136,4 +148,13 @@ func repoJurisdictionToProto(st *repository.JurisdictionStatus) *antv1.Jurisdict
 		p.QuestionnaireCompletedAt = timestamppb.New(*st.QuestionnaireDoneAt)
 	}
 	return p
+}
+
+// validKYCStatus returns true for recognized KYC status values.
+func validKYCStatus(status string) bool {
+	switch status {
+	case "verified", "unverified", "rejected", "pending":
+		return true
+	}
+	return false
 }

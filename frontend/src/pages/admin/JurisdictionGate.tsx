@@ -162,12 +162,20 @@ export default function JurisdictionGate() {
           >
             {t('admin.jurisdiction.setKYC')}
           </Button>
-          <Button
-            size="small"
-            onClick={() => handleOverride(row)}
+          <Popconfirm
+            title={row.sanctionedOverride ? t('admin.jurisdiction.confirmRevokeOverride') : t('admin.jurisdiction.confirmGrantOverride')}
+            description={t('admin.jurisdiction.overrideWarning')}
+            onConfirm={() => handleOverride(row)}
+            okText={t('common.confirm')}
+            cancelText={t('common.cancel')}
+            okButtonProps={{ danger: true }}
           >
-            {row.sanctionedOverride ? t('admin.jurisdiction.revokeOverride') : t('admin.jurisdiction.grantOverride')}
-          </Button>
+            <Button
+              size="small"
+            >
+              {row.sanctionedOverride ? t('admin.jurisdiction.revokeOverride') : t('admin.jurisdiction.grantOverride')}
+            </Button>
+          </Popconfirm>
         </Space>
       ),
     },

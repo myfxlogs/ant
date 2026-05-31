@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"github.com/jackc/pgx/v5"
+	"errors"
 	"fmt"
 	"context"
 	"time"
@@ -32,7 +34,7 @@ func (r *AdminRepository) GetJurisdictionStatus(ctx context.Context, userID stri
 		&s.KYCVerifiedAt, &s.DisclaimerAcceptedAt, &s.QuestionnaireDoneAt,
 	)
 	if err != nil {
-		if err.Error() == "no rows in result set" {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return &JurisdictionStatus{UserID: userID, KYCStatus: "unverified"}, nil
 		}
 		return nil, err
