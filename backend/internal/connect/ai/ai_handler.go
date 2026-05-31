@@ -263,10 +263,10 @@ func (s *AIServer) UpdateConversationTitle(ctx context.Context, req *connect.Req
 // ── Agents ──
 
 var defaultAgents = []*antv1.AIAgentDefinition{
-	{AgentKey: "strategist", Type: "primary", Name: "策略分析师", Identity: "资深量化交易策略师", Enabled: true, Position: 1},
-	{AgentKey: "risk_manager", Type: "secondary", Name: "风控经理", Identity: "严格的风险控制专家", Enabled: true, Position: 2},
-	{AgentKey: "executor", Type: "secondary", Name: "执行顾问", Identity: "交易执行优化专家", Enabled: false, Position: 3},
-	{AgentKey: "researcher", Type: "secondary", Name: "市场研究员", Identity: "宏观经济和行业研究员", Enabled: false, Position: 4},
+	{AgentKey: "strategist", Type: "primary", Name: "Strategy Analyst", Identity: "Senior quantitative strategy analyst", Enabled: true, Position: 1},
+	{AgentKey: "risk_manager", Type: "secondary", Name: "Risk Manager", Identity: "Strict risk control expert", Enabled: true, Position: 2},
+	{AgentKey: "executor", Type: "secondary", Name: "Execution Advisor", Identity: "Trade execution optimization expert", Enabled: false, Position: 3},
+	{AgentKey: "researcher", Type: "secondary", Name: "Market Researcher", Identity: "Macroeconomic and industry researcher", Enabled: false, Position: 4},
 }
 
 func (s *AIServer) ListAgents(ctx context.Context, req *connect.Request[antv1.ListAgentsRequest]) (*connect.Response[antv1.ListAgentsResponse], error) {
