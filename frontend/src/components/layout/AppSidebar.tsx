@@ -90,7 +90,6 @@ export default function AppSidebar({
       width={240}>
       <div className="h-16 flex items-center justify-center" style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}><BrandLogo /></div>
       <SidebarMenu items={menuItems} />
-      <div className="absolute bottom-0 left-0 right-0 p-4" style={{ borderTop: '1px solid rgba(0,0,0,0.08)' }}>{langDropdown}</div>
     </Layout.Sider>
   );
 }

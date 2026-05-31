@@ -65,7 +65,7 @@ export default function MainLayout() {
         onMenuClick={(key) => { /* handled by SidebarMenu internally via navigate */ }}
       />
       <Layout style={{ background: 'transparent', marginLeft: isMobile ? 0 : 240 }}>
-        <TopBar isMobile={isMobile} onMenuToggle={() => setDrawerVisible(true)} />
+        <TopBar isMobile={isMobile} onMenuToggle={() => setDrawerVisible(true)} language={language} languages={languages} languageMenu={languageMenu} />
         <Content className="pt-14 sm:pt-16 px-0">
           <ContentContainer>
             <Outlet />

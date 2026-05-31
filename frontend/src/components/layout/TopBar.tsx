@@ -1,19 +1,28 @@
 import { Layout, Avatar, Dropdown } from 'antd';
-import { MenuOutlined, UserOutlined, SettingOutlined, LogoutOutlined, LineChartOutlined } from '@ant-design/icons';
+import { MenuOutlined, UserOutlined, SettingOutlined, LogoutOutlined, LineChartOutlined, GlobalOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import NotificationCenter from '@/components/notification/NotificationCenter';
 import { isAdmin } from '@/constants/permissions';
 import { useTranslation } from 'react-i18next';
+import type { SupportedLanguage } from '@/i18n';
 
 const { Header } = Layout;
+
+interface LanguageOption {
+  key: SupportedLanguage;
+  labelKey: string;
+}
 
 interface Props {
   isMobile: boolean;
   onMenuToggle: () => void;
+  language: SupportedLanguage;
+  languages: LanguageOption[];
+  languageMenu: { items: { key: string; label: string; icon: React.ReactNode | null }[]; onClick: (info: { key: string }) => void };
 }
 
-export default function TopBar({ isMobile, onMenuToggle }: Props) {
+export default function TopBar({ isMobile, onMenuToggle, language, languages, languageMenu }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -50,6 +59,12 @@ export default function TopBar({ isMobile, onMenuToggle }: Props) {
         )}
       </div>
       <div className="flex items-center gap-1 sm:gap-3">
+        <Dropdown menu={languageMenu} placement="bottomRight" trigger={['click']}>
+          <div className="flex items-center gap-1.5 p-2 rounded-lg cursor-pointer transition-colors" style={{ background: '#F5F7F9' }}>
+            <GlobalOutlined size={18} />
+            <span className="hidden sm:inline text-sm" style={{ color: '#5A6B75' }}>{languages.find(l => l.key === language)?.key.toUpperCase()}</span>
+          </div>
+        </Dropdown>
         <NotificationCenter />
         <Dropdown menu={{ items: userMenuItems, onClick: handleUserMenu }} placement="bottomRight" trigger={['click']}>
           <div className="flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors" style={{ background: '#F5F7F9' }}>
