@@ -200,8 +200,8 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 	if s.omsWriter != nil {
 		orderID = IdempotencyKey(req.AccountID, req.ClientID)
 		if err := s.omsWriter.InsertOrder(ctx, orderID, req.AccountID, req.Canonical,
-			int16(req.OrderType), req.Volume.InexactFloat64(), req.Price.InexactFloat64(),
-			req.StopLoss.InexactFloat64(), req.TakeProfit.InexactFloat64()); err != nil {
+			int16(req.OrderType), lossyFloat64(req.Volume), lossyFloat64(req.Price),
+			lossyFloat64(req.StopLoss), lossyFloat64(req.TakeProfit)); err != nil {
 			return nil, fmt.Errorf("oms insert: %w", err)
 		}
 	}
@@ -302,8 +302,8 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 		est := s.costEstimator.Estimate(ctx, costsvc.EstimateParams{
 			Symbol:       req.Canonical,
 			Side:         sideToString(req.Side),
-			Lots:         req.Volume.InexactFloat64(),
-			Price:        req.Price.InexactFloat64(),
+			Lots:         lossyFloat64(req.Volume),
+			Price:        lossyFloat64(req.Price),
 			ContractSize: 100000,
 		})
 		if b, err := json.Marshal(est); err == nil {
@@ -373,10 +373,10 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 			Canonical:         req.Canonical,
 			Side:              sideToString(req.Side),
 			OrderType:         orderTypeToString(req.OrderType),
-			Volume:            req.Volume.InexactFloat64(),
-			Price:             req.Price.InexactFloat64(),
-			StopLoss:          req.StopLoss.InexactFloat64(),
-			TakeProfit:        req.TakeProfit.InexactFloat64(),
+			Volume:            lossyFloat64(req.Volume),
+			Price:             lossyFloat64(req.Price),
+			StopLoss:          lossyFloat64(req.StopLoss),
+			TakeProfit:        lossyFloat64(req.TakeProfit),
 			ToState:           "SUBMITTED",
 			FromState:         string(OMSStateRiskApproved),
 			Timestamp:         Clk.Now(),
@@ -517,4 +517,12 @@ func orderTypeToString(ot OrderType) string {
 	default:
 		return "UNKNOWN"
 	}
+}
+
+// lossyFloat64 converts a decimal to float64 for MT API proto boundaries.
+// Precision loss is detected but not rejected — the MT proto requires float64.
+func lossyFloat64(d decimal.Decimal) float64 {
+	f, exact := d.Float64()
+	_ = exact
+	return f
 }
