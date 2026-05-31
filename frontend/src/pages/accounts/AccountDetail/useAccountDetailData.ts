@@ -7,7 +7,6 @@ import type { ConnectAccountResult } from '@/client/account';
 import { useAccountDetailQuery } from '@/queries/useAccountDetailQuery';
 import { useAccountFinancials } from '@/queries/useAccountFinancials';
 import { usePositionsQuery } from '@/queries/usePositionsQuery';
-import { useAccountStore } from '@/stores/accountStore';
 import { useConnectAccountMutation } from '@/mutations/useConnectAccountMutation';
 import { useEnableDisableAccountMutation } from '@/mutations/useEnableDisableAccountMutation';
 import { useDeleteAccountMutation } from '@/mutations/useDeleteAccountMutation';
@@ -98,22 +97,17 @@ export function useAccountDetailData(id: string | undefined) {
     }
   }, [currentAccount, toggleMut, t]);
 
-  const handleDelete = useCallback(() => {
+  const handleDelete = useCallback(async () => {
     if (!currentAccount || !deletePassword.trim()) return;
     setDeleting(true);
     setDeleteModalOpen(false);
-    // Remove from Zustand immediately — Dashboard won't show it.
-    useAccountStore.getState().removeAccount(currentAccount.id);
-    // Navigate away to unmount all active queries BEFORE the mutation fires.
-    navigate('/');
-    // Fire-and-forget: mutation onSuccess cleans TQ cache, onError rolls back.
-    deleteMut.mutate({ id: currentAccount.id, password: deletePassword.trim() }, {
-      onError: () => {
-        // Rollback Zustand if mutation fails.
-        useAccountStore.getState().addAccount(currentAccount);
-      },
-      onSettled: () => setDeleting(false),
-    });
+    try {
+      // onMutate optimistically removes from TanStack Query cache.
+      // Dashboard reads from TQ — account disappears instantly.
+      await deleteMut.mutateAsync({ id: currentAccount.id, password: deletePassword.trim() });
+      navigate('/');
+    } catch { /* onError handles rollback */ }
+    finally { setDeleting(false); }
   }, [currentAccount, deletePassword, deleteMut, navigate]);
 
   // ── Position filtering ──
