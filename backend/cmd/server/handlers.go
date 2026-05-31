@@ -113,8 +113,13 @@ func registerHandlers(
 		aiBox = secretbox.New([]byte(mk))
 	}
 	aiSvc := systemai.NewService(aiRepo, aiBox)
+	agentDefRepo := repository.NewAIAgentDefinitionRepository(pool)
 	aiServer := ai.NewAIServer(aiSvc, convRepo, log)
+	aiServer.SetAgentDefRepo(agentDefRepo)
 	mux.Handle(antv1c.NewAIServiceHandler(aiServer, connectrpc.WithInterceptors(authInterceptor)))
+	// Agent definition CRUD (no proto RPC yet — raw HTTP).
+	mux.HandleFunc("POST /api/ai/agents", aiServer.BatchSetAgents)
+	mux.HandleFunc("GET /api/ai/agents", aiServer.ListAgentDefs)
 
 	// Debate V2 service (multi-expert AI strategy generation).
 	debateV2Svc := service.NewDebateV2Service(pool, jobRepo, log)

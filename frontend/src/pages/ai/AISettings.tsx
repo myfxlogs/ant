@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { type AIAgentDefinitionView } from '@/client/ai';
+import { type AIAgentDefinitionView, aiApi } from '@/client/ai';
 import type { AIConfig as SystemAIConfig } from './systemai/model';
 import { useAIAgentsQuery } from '@/queries/useAIAgentsQuery';
 import { useSystemAIConfigsQuery } from '@/queries/useSystemAIConfigsQuery';
@@ -119,8 +119,17 @@ export default function AISettings() {
   const handleSave = async () => {
     setSaving(true);
     try {
+      // Map backend agent types to valid DB types.
+      const mapType = (a: AIAgentDefinitionView) => {
+        if (a.agentKey === 'strategist') return 'style';
+        if (a.agentKey === 'risk_manager') return 'risk';
+        if (a.agentKey === 'executor') return 'execution';
+        if (a.agentKey === 'researcher') return 'macro';
+        return a.type;
+      };
       const cleaned = agents.map((a, i) => ({
         ...a,
+        type: mapType(a),
         position: i,
         name: (a.name || '').trim(),
         identity: (a.identity || '').trim(),
@@ -130,9 +139,8 @@ export default function AISettings() {
       }));
       setAgentsState(cleaned);
       queryClient.setQueryData(queryKeys.ai.agents.list(), cleaned);
-      // NOTE: Agent CRUD API not yet wired — changes are session-only.
-      // See https://github.com/myfxlogs/ant/issues for tracking.
-      message.warning(t('ai.settings.agent.messages.saveSessionOnly', { defaultValue: 'Agent settings saved for this session only (server API pending).' }));
+      await aiApi.batchSetAgents(cleaned);
+      message.success(t('ai.settings.agent.messages.saveSuccess', { defaultValue: 'Agent settings saved.' }));
     } catch (e: unknown) {
       message.error(e?.message || t('ai.settings.agent.messages.saveFailed'));
     } finally {

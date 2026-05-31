@@ -1,4 +1,6 @@
 import { aiClient, aiPrimaryClient } from '../connect';
+import { apiBaseUrl } from '../transport';
+import { useAuthStore } from '@/stores/authStore';
 import {
   toAgentView,
   toConversationRole,
@@ -68,6 +70,21 @@ export const aiApi = {
   listAgents: async (): Promise<AIAgentDefinitionView[]> => {
     const response = await aiClient.listAgents({});
     return (response.agents || []).map(toAgentView);
+  },
+
+  /** Persist agent definitions. */
+  batchSetAgents: async (agents: AIAgentDefinitionView[]): Promise<void> => {
+    const token = useAuthStore.getState().accessToken;
+    if (!token) throw new Error('Not authenticated');
+    const resp = await fetch(`${apiBaseUrl}/api/ai/agents`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ agents }),
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ error: resp.statusText }));
+      throw new Error((err as any).error || 'Save failed');
+    }
   },
 
   getPrimary: async (): Promise<{ providerId: string; model: string }> => {

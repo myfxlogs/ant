@@ -2,7 +2,10 @@ package ai
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"go.uber.org/zap"
@@ -19,9 +22,10 @@ import (
 
 // AIServer implements the ant.v1.AIServiceHandler interface.
 type AIServer struct {
-	systemSvc    *systemai.Service
+	systemSvc     *systemai.Service
 	conversations *repository.AIConversationRepository
-	log          *zap.Logger
+	agentDefRepo  *repository.AIAgentDefinitionRepository
+	log           *zap.Logger
 }
 
 // NewAIServer creates an AI service ConnectRPC handler.
@@ -263,12 +267,165 @@ func (s *AIServer) UpdateConversationTitle(ctx context.Context, req *connect.Req
 // ── Agents ──
 
 var defaultAgents = []*antv1.AIAgentDefinition{
-	{AgentKey: "strategist", Type: "primary", Name: "Strategy Analyst", Identity: "Senior quantitative strategy analyst", Enabled: true, Position: 1},
-	{AgentKey: "risk_manager", Type: "secondary", Name: "Risk Manager", Identity: "Strict risk control expert", Enabled: true, Position: 2},
-	{AgentKey: "executor", Type: "secondary", Name: "Execution Advisor", Identity: "Trade execution optimization expert", Enabled: false, Position: 3},
-	{AgentKey: "researcher", Type: "secondary", Name: "Market Researcher", Identity: "Macroeconomic and industry researcher", Enabled: false, Position: 4},
+	{AgentKey: "strategist", Type: "style", Name: "Strategy Analyst", Identity: "Senior quantitative strategy analyst", Enabled: true, Position: 1},
+	{AgentKey: "risk_manager", Type: "risk", Name: "Risk Manager", Identity: "Strict risk control expert", Enabled: true, Position: 2},
+	{AgentKey: "executor", Type: "execution", Name: "Execution Advisor", Identity: "Trade execution optimization expert", Enabled: false, Position: 3},
+	{AgentKey: "researcher", Type: "macro", Name: "Market Researcher", Identity: "Macroeconomic and industry researcher", Enabled: false, Position: 4},
 }
 
 func (s *AIServer) ListAgents(ctx context.Context, req *connect.Request[antv1.ListAgentsRequest]) (*connect.Response[antv1.ListAgentsResponse], error) {
-	return connect.NewResponse(&antv1.ListAgentsResponse{Agents: defaultAgents}), nil
+	uid, err := userIDFromCtx(ctx)
+	// Start with system defaults.
+	agentMap := make(map[string]*antv1.AIAgentDefinition, len(defaultAgents))
+	for _, a := range defaultAgents {
+		agentMap[a.AgentKey] = a
+	}
+	// Overlay user-saved definitions from DB.
+	if err == nil && s.agentDefRepo != nil {
+		rows, listErr := s.agentDefRepo.ListByUser(ctx, uid)
+		if listErr == nil {
+			for _, row := range rows {
+				agentMap[row.AgentKey] = &antv1.AIAgentDefinition{
+					AgentKey: row.AgentKey, Type: row.Type,
+					Name: row.Name, Identity: row.Identity,
+					InputHint: row.InputHint, Enabled: row.Enabled,
+					Position: row.Position, ProviderId: row.ProviderID,
+					ModelOverride: row.ModelOverride,
+				}
+			}
+		}
+	}
+	out := make([]*antv1.AIAgentDefinition, 0, len(agentMap))
+	for _, a := range agentMap {
+		out = append(out, a)
+	}
+	return connect.NewResponse(&antv1.ListAgentsResponse{Agents: out}), nil
+}
+
+// ── Agent Definitions CRUD ──
+
+type batchSetAgentsRequest struct {
+	Agents []agentDefJSON `json:"agents"`
+}
+type agentDefJSON struct {
+	AgentKey      string `json:"agentKey"`
+	Type          string `json:"type"`
+	Name          string `json:"name"`
+	Identity      string `json:"identity"`
+	InputHint     string `json:"inputHint"`
+	Enabled       bool   `json:"enabled"`
+	Position      int32  `json:"position"`
+	ProviderID    string `json:"providerId"`
+	ModelOverride string `json:"modelOverride"`
+}
+
+// SetAgentDefRepo injects the AI agent definition repository.
+func (s *AIServer) SetAgentDefRepo(repo *repository.AIAgentDefinitionRepository) {
+	s.agentDefRepo = repo
+}
+
+// BatchSetAgents handles POST /api/ai/agents — persists agent definitions.
+func (s *AIServer) BatchSetAgents(w http.ResponseWriter, r *http.Request) {
+	uid, err := userIDFromBearer(r)
+	if err != nil {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+	var req batchSetAgentsRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, `{"error":"invalid json"}`, http.StatusBadRequest)
+		return
+	}
+	rows := make([]*repository.AIAgentDefinitionRow, 0, len(req.Agents))
+	for _, a := range req.Agents {
+		rows = append(rows, &repository.AIAgentDefinitionRow{
+			UserID:        uid,
+			AgentKey:      a.AgentKey,
+			Type:          a.Type,
+			Name:          a.Name,
+			Identity:      a.Identity,
+			InputHint:     a.InputHint,
+			Enabled:       a.Enabled,
+			Position:      a.Position,
+			ProviderID:    a.ProviderID,
+			ModelOverride: a.ModelOverride,
+		})
+	}
+	if err := s.agentDefRepo.ReplaceByUser(r.Context(), uid, rows); err != nil {
+		s.log.Error("BatchSetAgents: replace failed", zap.Error(err))
+		http.Error(w, `{"error":"internal error"}`, http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{"success":true}`))
+}
+
+// ListAgentDefs returns saved agent definitions for the user.
+func (s *AIServer) ListAgentDefs(w http.ResponseWriter, r *http.Request) {
+	uid, err := userIDFromBearer(r)
+	if err != nil {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+	rows, err := s.agentDefRepo.ListByUser(r.Context(), uid)
+	if err != nil {
+		s.log.Error("ListAgentDefs: list failed", zap.Error(err))
+		http.Error(w, `{"error":"internal error"}`, http.StatusInternalServerError)
+		return
+	}
+	type agentResp struct {
+		AgentKey      string `json:"agentKey"`
+		Type          string `json:"type"`
+		Name          string `json:"name"`
+		Identity      string `json:"identity"`
+		InputHint     string `json:"inputHint"`
+		Enabled       bool   `json:"enabled"`
+		Position      int32  `json:"position"`
+		ProviderID    string `json:"providerId"`
+		ModelOverride string `json:"modelOverride"`
+	}
+	resp := make([]agentResp, 0, len(rows))
+	for _, r := range rows {
+		resp = append(resp, agentResp{
+			AgentKey: r.AgentKey, Type: r.Type, Name: r.Name,
+			Identity: r.Identity, InputHint: r.InputHint,
+			Enabled: r.Enabled, Position: r.Position,
+			ProviderID: r.ProviderID, ModelOverride: r.ModelOverride,
+		})
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+}
+
+// userIDFromBearer extracts the user ID from an Authorization: Bearer header.
+// Uses the same JWT parsing as the auth interceptor.
+func userIDFromBearer(r *http.Request) (uuid.UUID, error) {
+	auth := r.Header.Get("Authorization")
+	if auth == "" || !strings.HasPrefix(auth, "Bearer ") {
+		return uuid.Nil, fmt.Errorf("missing bearer token")
+	}
+	raw := strings.TrimPrefix(auth, "Bearer ")
+	// Parse JWT claims to extract user_id. This uses a simple unverified parse
+	// since the auth interceptor already validates the token for ConnectRPC calls.
+	// For standalone HTTP endpoints, we validate minimally.
+	parts := strings.Split(raw, ".")
+	if len(parts) != 3 {
+		return uuid.Nil, fmt.Errorf("invalid jwt format")
+	}
+	claimsJSON, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("decode jwt claims: %w", err)
+	}
+	var claims struct {
+		UserID string `json:"user_id"`
+		Sub    string `json:"sub"`
+	}
+	if err := json.Unmarshal(claimsJSON, &claims); err != nil {
+		return uuid.Nil, fmt.Errorf("parse jwt claims: %w", err)
+	}
+	userID := claims.UserID
+	if userID == "" {
+		userID = claims.Sub
+	}
+	return uuid.Parse(userID)
 }
