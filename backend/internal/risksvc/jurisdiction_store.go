@@ -1,6 +1,7 @@
 package risksvc
 
 import (
+	"fmt"
 	"context"
 	"time"
 
@@ -42,7 +43,7 @@ func (s *PgJurisdictionStore) GetStatus(ctx context.Context, userID string) (*Ju
 		&st.KYCVerifiedAt, &st.DisclaimerAcceptedAt, &st.QuestionnaireDoneAt,
 	)
 	if err != nil {
-		return &JurisdictionStatus{UserID: userID, KYCStatus: "unverified"}, nil
+		return nil, fmt.Errorf("jurisdiction: get status: %w", err)
 	}
 	return &st, nil
 }

@@ -24,6 +24,7 @@ func (r *Repo) Insert(ctx context.Context, o *Order) error {
 			INSERT INTO orders (id, mt_account_id, platform, ticket, symbol, broker_symbol_raw,
 				order_type, volume, price, stop_loss, take_profit, state)
 			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+			ON CONFLICT (id) DO NOTHING
 		`, o.ID, o.AccountID, o.Platform, o.Ticket, o.Symbol, o.BrokerSymbolRaw,
 		o.OrderType, o.Volume, o.Price, o.StopLoss, o.TakeProfit, o.State)
 	if err != nil {

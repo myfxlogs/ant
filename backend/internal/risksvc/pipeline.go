@@ -93,6 +93,10 @@ func NewSignalPipeline(cfg PipelineConfig) *SignalPipeline {
 // Process runs the full signal-to-decision pipeline.
 func (p *SignalPipeline) Process(ctx context.Context, sig *SignalRequest) *SignalResult {
 	// Stage 1: Capability tier check
+	if p.capStore == nil {
+		// All users treated as Tier3LiveFull when CapStore is not wired.
+		// This should only happen in dev/test — production must wire CapStore.
+	}
 	if p.capStore != nil {
 		cap := p.capStore.Get(sig.UserID)
 		pre := cap.TierCheck()

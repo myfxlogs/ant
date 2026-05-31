@@ -407,9 +407,29 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 // CloseOrder closes an existing position.
 // H6: Includes kill switch, reconcile gate, account ownership, and OMS state checks.
 func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket int64, lots decimal.Decimal) error {
+	// Rate limit check (same per-user limiter as PlaceOrder).
+	if s.userLimiter != nil {
+		uid := usermgr.GetUserID(ctx)
+		if uid != "" && !s.userLimiter.AllowOrder(uid) {
+			return ErrRateLimited
+		}
+	}
+
 	// Kill switch check.
 	if s.killSwitch != nil && s.killSwitch.IsEngaged() {
 		return ErrKillSwitchEngaged
+	}
+
+	// Idempotency check — prevent duplicate close requests.
+	if s.idem != nil {
+		clientID := fmt.Sprintf("close-%s-%d", accountID, ticket)
+		isDup, _, err := s.idem.CheckAndSet(ctx, accountID, clientID, ticket)
+		if err != nil {
+			return fmt.Errorf("idempotency check: %w", err)
+		}
+		if isDup {
+			return nil // Already being closed — idempotent.
+		}
 	}
 
 	// Reconcile gate check.
