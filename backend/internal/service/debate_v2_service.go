@@ -27,9 +27,7 @@ func NewDebateV2Service(pg *pgxpool.Pool, jobRepo *repository.JobRepository, log
 // --- Session CRUD ---
 
 func (s *DebateV2Service) Start(ctx context.Context, userID uuid.UUID, agents []string, title string) (*V2Session, error) {
-	if len(agents) == 0 {
-		return nil, fmt.Errorf("at least one agent is required")
-	}
+	// Empty agents is valid — user chose the intent → code path without expert discussion.
 	if title == "" {
 		title = "New Debate"
 	}
@@ -41,9 +39,10 @@ func (s *DebateV2Service) Start(ctx context.Context, userID uuid.UUID, agents []
 	defer tx.Rollback(ctx)
 
 	sessionID := uuid.New()
+	// pgx serializes empty []string{} as NULL; use COALESCE to fall back to empty array.
 	_, err = tx.Exec(ctx,
 		`INSERT INTO debate_sessions (id, user_id, title, status, agents, created_at, updated_at)
-		 VALUES ($1, $2, $3, $4, $5, NOW(), NOW())`,
+		 VALUES ($1, $2, $3, $4, COALESCE($5::text[], ARRAY[]::text[]), NOW(), NOW())`,
 		sessionID, userID, title, "idle", agents)
 	if err != nil {
 		return nil, fmt.Errorf("create session: %w", err)

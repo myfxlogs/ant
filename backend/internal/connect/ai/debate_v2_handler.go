@@ -34,9 +34,7 @@ func (h *DebateV2Server) StartDebateV2(ctx context.Context, req *connect.Request
 	if err != nil {
 		return nil, err
 	}
-	if len(req.Msg.Agents) == 0 {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("agents must not be empty"))
-	}
+	// Empty agents is valid — user opts for intent → code path without expert discussion.
 	h.log.Info("StartDebateV2: calling Start", zap.String("user_id", uid.String()))
 	sess, err := h.svc.Start(ctx, uid, req.Msg.Agents, req.Msg.Title)
 	if err != nil {

@@ -39,11 +39,8 @@ function getModelWaitSetters(s: { setStartedAt: (n: number) => void; setElapsed:
 
 export function createStartFlow(ctx: ActionContext) {
   return async () => {
+    // Empty agents is valid — user chose intent → code path without experts.
     const keys = ctx.selectedAgents.map((a) => a.agentKey || a.type);
-    if (keys.length === 0) {
-      antMessage.warning(ctx.t('ai.debate.messages.selectAgentsFirst'));
-      return;
-    }
     ctx.sendingRef.current = true; ctx.setSending(true);
     try {
       const resp = await debateV2Api.start({ agents: keys, locale: ctx.locale });
