@@ -45,49 +45,20 @@ function languageHint(locale: string): string {
 }
 
 /** Locale-specific greeting templates, invitation phrases, placeholder text. */
-function greetingFor(locale: string, name: string): string {
-	switch (localeKey(locale)) {
-		case 'zh-cn': return `你好，我是您的${name}。`;
-		case 'zh-tw': return `您好，我是您的${name}。`;
-		case 'ja': return `こんにちは、あなたの${name}です。`;
-		case 'vi': return `Xin chào, tôi là ${name} của bạn.`;
-		default: return `Hello, I'm your ${name}.`;
-	}
+function greetingFor(_locale: string, name: string): string {
+	return `Hello, I'm your ${name}.`;
 }
 
-function invitationFor(locale: string): string {
-	switch (localeKey(locale)) {
-		case 'zh-cn':
-			return '请问以上理解是否准确？还有没有要补充的？如果没有，可以直接点击下方「下一步」按钮，或在对话框中发送「下一步」继续。';
-		case 'zh-tw':
-			return '請問以上理解是否準確？還有沒有要補充的？如果沒有，可以直接點擊下方「下一步」按鈕，或在對話框中發送「下一步」繼續。';
-		case 'ja':
-			return '以上の理解で合っていますか？他に補足することはありますか？なければ、下の「次へ」ボタンを押すか、チャット欄に「次へ」と入力して進んでください。';
-		case 'vi':
-			return 'Bạn thấy phần tóm tắt trên đã chính xác chưa? Còn điều gì cần bổ sung không? Nếu không, hãy bấm nút "Tiếp theo" bên dưới hoặc gửi "tiếp theo" trong khung chat để tiếp tục.';
-		default:
-			return 'Does this match what you want? Anything to add or correct? If not, click the "Next" button below, or send "next" in the chat to continue.';
-	}
+function invitationFor(_locale: string): string {
+	return 'Does this match what you want? Anything to add or correct? If not, click the "Next" button below, or send "next" in the chat to continue.';
 }
 
-function placeholderNotYet(locale: string): string {
-	switch (localeKey(locale)) {
-		case 'zh-cn': return '(尚未产出)';
-		case 'zh-tw': return '(尚未產出)';
-		case 'ja': return '(まだ出力されていません)';
-		case 'vi': return '(chưa có)';
-		default: return '(not available yet)';
-	}
+function placeholderNotYet(_locale: string): string {
+	return '(not available yet)';
 }
 
-function placeholderNone(locale: string): string {
-	switch (localeKey(locale)) {
-		case 'zh-cn': return '(未提供)';
-		case 'zh-tw': return '(未提供)';
-		case 'ja': return '(未提供)';
-		case 'vi': return '(chưa cung cấp)';
-		default: return '(not provided)';
-	}
+function placeholderNone(_locale: string): string {
+	return '(not provided)';
 }
 
 export function intentSystemPrompt(locale: string): string {

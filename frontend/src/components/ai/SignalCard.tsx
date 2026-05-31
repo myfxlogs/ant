@@ -1,3 +1,4 @@
+/** DEPRECATED: This component is not used by any active route. Preserved for reference only. */
 import { Card, Tag, Button, Space, Progress, Popconfirm } from 'antd';
 import {
   RiseOutlined,

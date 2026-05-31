@@ -96,7 +96,13 @@ export default function GateProgressPage() {
     abortRef.current = controller;
 
     const dailyReturnsStr: string = values.dailyReturns || '';
-    const dailyReturns = dailyReturnsStr.split(/[\n,]+/).map(s => s.trim()).filter(s => s.length > 0).map(Number).filter(n => !isNaN(n));
+    const dailyReturns = dailyReturnsStr.split(/[
+,]+/).map(s => s.trim()).filter(s => s.length > 0).map(Number).filter(n => !isNaN(n));
+    const rawCount = dailyReturnsStr.split(/[
+,]+/).filter((s: string) => s.trim().length > 0).length;
+    if (dailyReturns.length < rawCount) {
+      console.debug(`gate-progress: ${rawCount - dailyReturns.length} invalid daily-return entries filtered out`);
+    }
 
     const input = {
       expression: values.expression || '', daily_returns: dailyReturns, num_attempts: values.numAttempts || 1,
