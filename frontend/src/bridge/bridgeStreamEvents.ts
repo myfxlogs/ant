@@ -6,7 +6,6 @@ import type { QueryClient } from '@tanstack/react-query';
 import type { OrderUpdate, ProfitUpdate, OrderProfitItem } from '@/adapters/dataAdapter';
 import type { AccountStatusEvent } from '@/gen/ant/v1/stream_event_account_pb';
 import { queryKeys } from '@/queries/queryKeys';
-import { useTradingStore } from '@/stores/tradingStore';
 import type { Position } from '@/types/trading';
 import type { Account } from '@/types/account';
 
@@ -50,17 +49,6 @@ function flushProfitUpdates(queryClient: QueryClient) {
     typeof v === 'number' && Number.isFinite(v) ? v : undefined;
 
   for (const [accId, profit] of pendingProfit) {
-    // Also update Zustand tradingStore so Dashboard accountInfoMap has live data.
-    const pickNum = (v: unknown): number | undefined =>
-      typeof v === "number" && Number.isFinite(v) ? v : undefined;
-    useTradingStore.getState().setAccountInfoById(accId, {
-      balance: pickNum(profit.balance),
-      equity: pickNum(profit.equity),
-      profit: pickNum(profit.profit),
-      margin: pickNum(profit.margin),
-      freeMargin: pickNum(profit.freeMargin),
-      marginLevel: pickNum(profit.marginLevel),
-    });
     // Update financials cache
     queryClient.setQueryData<Record<string, number>>(
       queryKeys.accounts.financials(accId),

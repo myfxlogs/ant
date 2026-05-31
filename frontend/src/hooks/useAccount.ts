@@ -1,11 +1,14 @@
 import { useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAccountStore } from '@/stores/accountStore';
 import { accountApi } from '@/client/account';
 import { getErrorMessage } from '@/utils/error';
 import { showSuccess, showError } from '@/utils/message';
+import { queryKeys } from '@/queries/queryKeys';
 import i18n from '@/i18n';
 
 export function useAccount() {
+  const queryClient = useQueryClient();
   const accounts = useAccountStore((state) => state.accounts);
   const currentAccount = useAccountStore((state) => state.currentAccount);
   const loading = useAccountStore((state) => state.loading);
@@ -30,6 +33,7 @@ export function useAccount() {
       const accountList = await accountApi.list();
       const accounts = Array.isArray(accountList) ? accountList : [];
       setAccounts(accounts);
+      queryClient.setQueryData(queryKeys.accounts.list(), accounts);
       return accounts;
     } catch (error) {
       showError(getErrorMessage(error, i18n.t('accounts.messages.fetchListFailed')));
