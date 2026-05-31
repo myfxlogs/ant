@@ -7,6 +7,7 @@ import type { ConnectAccountResult } from '@/client/account';
 import { useAccountDetailQuery } from '@/queries/useAccountDetailQuery';
 import { useAccountFinancials } from '@/queries/useAccountFinancials';
 import { usePositionsQuery } from '@/queries/usePositionsQuery';
+import { useAccountStore } from '@/stores/accountStore';
 import { useConnectAccountMutation } from '@/mutations/useConnectAccountMutation';
 import { useEnableDisableAccountMutation } from '@/mutations/useEnableDisableAccountMutation';
 import { useDeleteAccountMutation } from '@/mutations/useDeleteAccountMutation';
@@ -97,17 +98,22 @@ export function useAccountDetailData(id: string | undefined) {
     }
   }, [currentAccount, toggleMut, t]);
 
-  const handleDelete = useCallback(async () => {
+  const handleDelete = useCallback(() => {
     if (!currentAccount || !deletePassword.trim()) return;
     setDeleting(true);
     setDeleteModalOpen(false);
-    try {
-      await deleteMut.mutateAsync({ id: currentAccount.id, password: deletePassword.trim() });
-      // Navigate after mutation — onSuccess already removed from Zustand,
-      // so Dashboard won't show the deleted account even briefly.
-      navigate('/');
-    } catch { /* mutation handles error */ }
-    finally { setDeleting(false); }
+    // Remove from Zustand immediately — Dashboard won't show it.
+    useAccountStore.getState().removeAccount(currentAccount.id);
+    // Navigate away to unmount all active queries BEFORE the mutation fires.
+    navigate('/');
+    // Fire-and-forget: mutation onSuccess cleans TQ cache, onError rolls back.
+    deleteMut.mutate({ id: currentAccount.id, password: deletePassword.trim() }, {
+      onError: () => {
+        // Rollback Zustand if mutation fails.
+        useAccountStore.getState().addAccount(currentAccount);
+      },
+      onSettled: () => setDeleting(false),
+    });
   }, [currentAccount, deletePassword, deleteMut, navigate]);
 
   // ── Position filtering ──
