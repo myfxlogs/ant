@@ -75,13 +75,11 @@ export function useAccountAnalytics(
     } catch { /* keep existing */ }
   }, [chartPeriod]);
 
-  // Initial load when SSE data arrives
+  // Initial load — independent of SSE/financials. Analytics API is self-contained.
   useEffect(() => {
-    if (!id || !isDataReceived) return;
+    if (!id) return;
     loadAllData(id).catch((err) => showError(getErrorMessage(err, '加载分析数据失败')));
-    const timer = setTimeout(() => { loadAllData(id).catch(() => {}); }, 5000);
-    return () => clearTimeout(timer);
-  }, [id, isDataReceived]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [id, loadAllData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // chartPeriod change
   useEffect(() => {
