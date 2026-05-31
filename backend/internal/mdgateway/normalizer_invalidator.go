@@ -85,8 +85,10 @@ func (ni *NormalizerInvalidator) Start(ctx context.Context, pgListener PGListene
 	ctx, ni.cancel = context.WithCancel(ctx)
 
 	if pgListener != nil {
+		// #nosec G118 — listenLoop runs for full pipeline lifetime
 		go ni.listenLoop(ctx, pgListener)
 	} else {
+		// #nosec G118 — tickerLoop runs for full pipeline lifetime
 		go ni.tickerLoop(ctx)
 	}
 }
@@ -115,6 +117,7 @@ func (ni *NormalizerInvalidator) listenLoop(ctx context.Context, listener PGList
 		payload, err := listener.WaitForNotification(ctx)
 		if err != nil {
 			ni.log.Warn("normalizer_invalidator: LISTEN lost, falling back to ticker", zap.Error(err))
+			// #nosec G118 — tickerLoop fallback runs for pipeline lifetime
 			go ni.tickerLoop(ctx)
 			return
 		}
