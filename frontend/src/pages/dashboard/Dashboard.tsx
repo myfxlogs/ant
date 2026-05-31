@@ -8,9 +8,11 @@ import { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
 import { useNavigate } from 'react-router-dom';
 import { useAccount } from '@/hooks/useAccount';
 import { useAuthStore } from '@/stores/authStore';
-import { useTradingStore } from '@/stores/tradingStore';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/queries/queryKeys';
 import { ConnectContext } from '@/providers/connectContext';
 import { useTranslation } from 'react-i18next';
+import type { Account } from '@/types/account';
 import DashboardStatCards from './DashboardStatCards';
 import DashboardAccountList from './DashboardAccountList';
 
@@ -26,41 +28,51 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { accounts, fetchAccounts } = useAccount();
   const { user } = useAuthStore();
-  const accountInfoMap = useTradingStore((s) => s.accountInfoMap);
   const [localLoading, setLocalLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const connectCtx = useContext(ConnectContext);
   const streamConnected = connectCtx?.isConnected ?? false;
 
-  const localConnectedCount = useMemo(
-    () => (accounts || []).filter((a) => !a.isDisabled && a.status === 'connected').length,
-    [accounts]);
+  // Read live account data from TanStack Query (patched by SSE bridge), not Zustand.
+  const { data: liveAccounts } = useQuery<Account[]>({
+    queryKey: queryKeys.accounts.list(),
+    enabled: false, // seeded by fetchAccounts below, live-patched by SSE
+    staleTime: Infinity,
+  });
 
-  const accountInfoValues = useMemo(() => {
-    const result: Record<string, { balance: number; equity: number; profit: number }> = {};
-    for (const [key, value] of accountInfoMap.entries()) {
-      if (value) result[key] = { balance: value.balance, equity: value.equity, profit: value.profit };
+  // Merge Zustand accounts (source of truth for account metadata) with
+  // TanStack Query live data (balance/equity/profit from SSE).
+  const mergedAccounts = useMemo(() => {
+    const liveMap = new Map<string, Account>();
+    if (liveAccounts) {
+      for (const a of liveAccounts) liveMap.set(a.id, a);
     }
-    return result;
-  }, [accountInfoMap]);
+    return (accounts || []).map((a) => {
+      const live = liveMap.get(a.id);
+      if (!live) return a;
+      return { ...a, balance: live.balance ?? a.balance, equity: live.equity ?? a.equity, profit: live.profit ?? a.profit, status: live.status || a.status };
+    });
+  }, [accounts, liveAccounts]);
+
+  const localConnectedCount = useMemo(
+    () => mergedAccounts.filter((a) => !a.isDisabled && a.status === 'connected').length,
+    [mergedAccounts]);
 
   const totalEquity = useMemo(() => {
     let sum = 0;
-    for (const a of accounts || []) {
-      const live = accountInfoValues[a.id];
-      sum += (live?.equity ?? a.equity ?? a.balance ?? 0);
+    for (const a of mergedAccounts) {
+      sum += (a.equity ?? a.balance ?? 0);
     }
     return sum;
-  }, [accounts, accountInfoValues]);
+  }, [mergedAccounts]);
 
   const totalProfit = useMemo(() => {
     let sum = 0;
-    for (const a of accounts || []) {
-      const live = accountInfoValues[a.id];
-      sum += (live?.profit ?? 0);
+    for (const a of mergedAccounts) {
+      sum += (a.profit ?? 0);
     }
     return sum;
-  }, [accounts, accountInfoValues]);
+  }, [mergedAccounts]);
 
   useEffect(() => {
     let cancelled = false;
@@ -72,7 +84,7 @@ export default function Dashboard() {
     return () => { cancelled = true; };
   }, [fetchAccounts]);
 
-  const stats = { totalEquity, connectedCount: localConnectedCount, accountCount: (accounts || []).length, totalProfit };
+  const stats = { totalEquity, connectedCount: localConnectedCount, accountCount: mergedAccounts.length, totalProfit };
 
   const getDisplayName = () => user?.email?.split('@')[0] || user?.username || t('dashboard.defaultName');
 
@@ -102,7 +114,7 @@ export default function Dashboard() {
 
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={16}>
-          <DashboardAccountList accounts={accounts} accountInfoValues={accountInfoValues} loading={localLoading} error={loadError} onRetry={() => fetchAccounts()} />
+          <DashboardAccountList accounts={mergedAccounts} loading={localLoading} error={loadError} onRetry={() => fetchAccounts()} />
         </Col>
         <Col xs={24} lg={8}>
           <Card title={<span style={{ color: '#141D22', fontWeight: 500 }}>{t('dashboard.quickActions.title')}</span>} className="glass-card h-full">
