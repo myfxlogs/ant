@@ -156,14 +156,16 @@ export const HistoryTradeRow = memo(({ trade }: { trade: any }) => {
   const closeTime = trade.closeTime ?? trade.close_time ?? '';
   const openPrice = trade.openPrice ?? trade.open_price ?? 0;
   const volume = trade.volume || trade.lots || 0;
-  const isBalanceRecord = orderType === 'balance' || orderType === 'credit';
+  const symbol = trade.symbol || '';
+  // Balance/credit records may have empty symbol and/or balance/credit order type.
+  const isBalanceRecord = !symbol || orderType === 'balance' || orderType === 'credit';
   const isDeposit = trade.profit >= 0;
   
   return (
     <tr className="border-b" style={{ borderColor: 'rgba(0, 0, 0, 0.06)', background: isBalanceRecord ? 'rgba(212, 175, 55, 0.05)' : 'transparent' }}>
       <td className="p-3 font-medium" style={{ color: '#141D22' }}>{trade.ticket}</td>
       <td className="p-3" style={{ color: '#141D22' }}>
-        {isBalanceRecord ? (isDeposit ? t('accounts.detail.balanceRecord.depositIconText') : t('accounts.detail.balanceRecord.withdrawIconText')) : trade.symbol}
+        {isBalanceRecord ? (isDeposit ? t('accounts.detail.balanceRecord.depositIconText') : t('accounts.detail.balanceRecord.withdrawIconText')) : (trade.symbol || '--')}
       </td>
       <td className="p-3">
         {isBalanceRecord ? (

@@ -53,6 +53,7 @@ type AccountDTO struct {
 	Currency                                     string
 	LastError                                    string
 	LastConnectedAt                              string
+	IsInvestor                                   bool
 }
 
 // AccountCredentials holds the fields needed to verify an MT account password.
@@ -182,7 +183,7 @@ func (s *AccountService) UpdateAccount(ctx context.Context, userID uuid.UUID, id
 }
 
 // UpdateAccountInfoTx updates balance/equity/margin/leverage/currency + status within a transaction (#2, #32).
-func (s *AccountService) UpdateAccountInfoTx(ctx context.Context, tx pgx.Tx, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin float64, leverage int64, currency string) error {
+func (s *AccountService) UpdateAccountInfoTx(ctx context.Context, tx pgx.Tx, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin float64, leverage int64, currency string, isInvestor bool) error {
 	_, err := tx.Exec(ctx, `
 			UPDATE mt_accounts SET
 				balance = $3,
@@ -192,10 +193,11 @@ func (s *AccountService) UpdateAccountInfoTx(ctx context.Context, tx pgx.Tx, use
 				free_margin = $7,
 				leverage = $8,
 				currency = $9,
+				is_investor = $10,
 				account_status = 'connected',
 				updated_at = CURRENT_TIMESTAMP
 			WHERE id = $1::uuid AND user_id = $2
-		`, id, userID, balance, equity, credit, margin, freeMargin, leverage, currency)
+		`, id, userID, balance, equity, credit, margin, freeMargin, leverage, currency, isInvestor)
 	if err != nil {
 		return fmt.Errorf("service: update account info: %w", err)
 	}
@@ -573,5 +575,6 @@ func mtAccountToDTO(a repository.MtAccount) AccountDTO {
 		Currency:        pgTextToString(a.Currency),
 		LastError:       pgTextToString(a.LastError),
 		LastConnectedAt: pgTimestampToString(a.LastConnectedAt),
+		IsInvestor:      pgBoolToBool(a.IsInvestor),
 	}
 }

@@ -285,3 +285,24 @@ func (r *AnalyticsRepository) GetHourlyEquityCurve(ctx context.Context, accountI
 
 	return result, nil
 }
+
+// CurrentAccountMetrics holds the live balance/equity/profit from mt_accounts.
+type CurrentAccountMetrics struct {
+	Balance float64
+	Equity  float64
+	Profit  float64
+}
+
+// GetCurrentAccountMetrics returns the current live balance, equity, and profit
+// for an account directly from mt_accounts.
+func (r *AnalyticsRepository) GetCurrentAccountMetrics(ctx context.Context, accountID uuid.UUID) (*CurrentAccountMetrics, error) {
+	var m CurrentAccountMetrics
+	err := r.db.QueryRow(ctx,
+		`SELECT COALESCE(balance, 0), COALESCE(equity, 0), COALESCE(profit, 0)
+		 FROM mt_accounts WHERE id = $1`, accountID,
+	).Scan(&m.Balance, &m.Equity, &m.Profit)
+	if err != nil {
+		return nil, err
+	}
+	return &m, nil
+}

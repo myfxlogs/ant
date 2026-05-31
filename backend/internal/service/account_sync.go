@@ -133,6 +133,10 @@ func (s *AccountSyncService) SyncAccountHistory(accountID string) {
 		case mthub.OrderStop:
 			ot += "_STOP"
 		case mthub.OrderStopLimit:
+			case mthub.OrderBalance:
+				ot = "BALANCE"
+			case mthub.OrderCredit:
+				ot = "CREDIT"
 			ot += "_STOP_LIMIT"
 		}
 		volume, vexact := r.Volume.Float64()

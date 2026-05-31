@@ -266,8 +266,15 @@ const accounts = {
         selectServer: '請選擇伺服器',
         enterTradingAccount: '請輸入交易帳號',
         enterPassword: '請輸入密碼',
+        noAccessHosts: '無可用伺服器位址',
         bindSuccess: '帳戶綁定成功',
         bindFailed: '帳戶綁定失敗',
+      },
+      errors: {
+        brokerUnavailable: '連線伺服器錯誤或密碼不正確',
+        invalidCredentials: '帳號或密碼錯誤，未找到該交易帳戶',
+        connectionFailed: '無法連線到經紀商伺服器，請檢查網路',
+        timeout: '連線超時，請稍後重試',
       },
     },
     card: {

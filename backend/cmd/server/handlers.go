@@ -84,7 +84,8 @@ func registerHandlers(
 	searcher := brokersearch.New("", "")
 	accountEventPub := mdgateway.NewAccountEventPublisher(js, log)
 	mtTester := user.NewMTConnectionTester(cfg.MtapiToken, log)
-	accountServer := user.NewAccountServer(accountSvc, searcher, accountEventPub, mtTester, log)
+	accountServer := user.NewAccountServer(accountSvc, searcher, accountEventPub, mtTester, log).
+		WithSessionWaiter(hub)
 	mux.Handle(antv1c.NewAccountServiceHandler(accountServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	mktServer := mktplace.NewMarketServer(platformSvc, marketDataRepo, nc, log)

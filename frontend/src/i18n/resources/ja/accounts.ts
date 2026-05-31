@@ -58,8 +58,15 @@ const accounts = {
         selectServer: 'サーバーを選択してください',
         enterTradingAccount: '取引口座を入力してください',
         enterPassword: 'パスワードを入力してください',
+        noAccessHosts: '利用可能なアクセスホストがありません',
         bindSuccess: '口座を連携しました',
         bindFailed: '口座の連携に失敗しました',
+      },
+      errors: {
+        brokerUnavailable: 'サーバーエラーまたはパスワードが正しくありません',
+        invalidCredentials: '口座が見つからないか、パスワードが無効です',
+        connectionFailed: 'ブローカーサーバーに接続できません。ネットワークを確認してください',
+        timeout: '接続がタイムアウトしました。再試行してください',
       },
     },
     empty: {

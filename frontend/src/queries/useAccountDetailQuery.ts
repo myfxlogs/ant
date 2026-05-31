@@ -7,6 +7,8 @@ export function useAccountDetailQuery(id: string) {
   return useRpcQuery<Account>(
     queryKeys.accounts.detail(id),
     () => accountApi.get(id),
-    { enabled: !!id },
+    // staleTime=0 — account status changes frequently (connecting/connected/error);
+    // always fetch fresh on mount to avoid showing stale state.
+    { enabled: !!id, staleTime: 0 },
   );
 }

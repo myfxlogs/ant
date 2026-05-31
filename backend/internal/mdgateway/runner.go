@@ -405,6 +405,13 @@ func startGatewayForAccount(ctx context.Context, cfg mdtick.AccountConfig, deps 
 		return nil, fmt.Errorf("connect: %w", err)
 	}
 
+	// Persist connected status so the frontend stops showing "Connecting".
+	if deps.PG != nil {
+		_, _ = deps.PG.Exec(ctx,
+			`UPDATE mt_accounts SET account_status = 'connected', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+			accID)
+	}
+
 	if err := mgr.AddGateway(ctx, gw, nil); err != nil {
 		gw.Disconnect(ctx)
 		return gw, fmt.Errorf("add gateway: %w", err)

@@ -16,10 +16,48 @@ func (s *Session) IsExpired() bool {
 }
 
 type Hub struct {
-	mu sync.RWMutex; sessions map[string]*Session; executors map[string]OrderExecutor
+	mu        sync.RWMutex
+	sessions  map[string]*Session
+	executors map[string]OrderExecutor
+	waiters   map[string][]chan struct{} // signaled on Register
 }
-func NewHub() *Hub { return &Hub{sessions: map[string]*Session{}, executors: map[string]OrderExecutor{}} }
-func (h *Hub) Register(id string, s *Session, e OrderExecutor) { h.mu.Lock(); defer h.mu.Unlock(); h.sessions[id]=s; h.executors[id]=e }
+
+func NewHub() *Hub {
+	return &Hub{
+		sessions:  map[string]*Session{},
+		executors: map[string]OrderExecutor{},
+		waiters:   map[string][]chan struct{}{},
+	}
+}
+
+// Register adds a session and signals any WaitSession callers for this account.
+func (h *Hub) Register(id string, s *Session, e OrderExecutor) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.sessions[id] = s
+	h.executors[id] = e
+	for _, ch := range h.waiters[id] {
+		close(ch)
+	}
+	delete(h.waiters, id)
+}
+
+// WaitSession returns a channel that closes when a session is registered for id,
+// or immediately if the session already exists. The caller should select on the
+// returned channel and ctx.Done() — no polling needed.
+func (h *Hub) WaitSession(id string) <-chan struct{} {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	if _, ok := h.sessions[id]; ok {
+		ch := make(chan struct{})
+		close(ch) // already ready
+		return ch
+	}
+	ch := make(chan struct{})
+	h.waiters[id] = append(h.waiters[id], ch)
+	return ch
+}
+
 func (h *Hub) Get(id string) OrderExecutor { h.mu.RLock(); defer h.mu.RUnlock(); return h.executors[id] }
 func (h *Hub) EnsureSession(ctx context.Context, id string) (*Session, error) {
 	h.mu.RLock(); s := h.sessions[id]; h.mu.RUnlock()
@@ -128,7 +166,7 @@ type SymbolParam struct {
 type Side int8
 const (SideBuy Side=1; SideSell Side=-1)
 type OrderType int8
-const (OrderMarket OrderType=iota; OrderLimit; OrderStop; OrderStopLimit)
+const (OrderMarket OrderType=iota; OrderLimit; OrderStop; OrderStopLimit; OrderBalance; OrderCredit)
 type OrderState int8
 const (OrderStatePending OrderState=iota; OrderStateOpen; OrderStateClosed; OrderStateCancelled; OrderStateRejected)
 

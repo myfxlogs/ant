@@ -1,117 +1,107 @@
-import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useCallback, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { showError } from '@/utils/message';
 import { getErrorMessage } from '@/utils/error';
 import { analyticsApi } from '@/client/analytics';
 import { queryKeys } from '@/queries/queryKeys';
-import type { TradeRecordItem, AccountAnalyticsData } from '@/client/analytics';
+import type { TradeRecordItem, AccountAnalyticsData, RecentTradesData } from '@/client/analytics';
 
 interface AccountMonthlyPnLItem {
   month?: string; monthNum?: number; month_num?: number;
   profit: number; trades: number;
 }
 
-interface PositionChangeOrder {
-  ticket: number; symbol: string; type: string; volume: number;
-  openPrice: number; closePrice: number; profit: number;
-  openTime: number; closeTime: number; swap: number; commission: number; comment: string;
-}
-interface PositionChangeDetail { action: string; order: PositionChangeOrder; }
-
 /**
- * Analytics data loading + SSE position-change side-channel handler.
- * Keeps analytics state, history pagination, and chart data transforms in one place.
+ * Analytics data loading. History trades are backed by TanStack Query so the
+ * SSE bridge can push close events directly into the cache via setQueryData —
+ * no CustomEvent side-channel needed.
  */
 export function useAccountAnalytics(
   id: string | undefined,
   _isDataReceived: boolean,
   chartPeriod: 'day' | 'week' | 'month' | 'all',
 ) {
-  // Main analytics data via TanStack Query — auto-fetches on mount/key change.
+  const queryClient = useQueryClient();
+
+  // Main analytics data (equity curve, stats, distributions).
+  // staleTime=0 — analytics depend on trade_records which may be empty
+  // until SyncHistory completes; always fetch fresh on mount.
   const analyticsQ = useQuery<AccountAnalyticsData>({
-    queryKey: ['analytics', id ?? '', chartPeriod] as const,
+    queryKey: queryKeys.analytics.detail(id!, chartPeriod),
     queryFn: () => analyticsApi.getAccountAnalytics(id!, chartPeriod),
     enabled: !!id,
-    staleTime: 30_000,
+    staleTime: 0,
+    refetchOnMount: true,
+    retry: 2,
+  });
+
+  // Recent trades (history) — initial load + SSE bridge appends via setQueryData.
+  // refetchOnMount ensures a fresh fetch on every navigation, not just when
+  // the query key changes (TanStack Query may serve stale cache otherwise).
+  const recentTradesQ = useQuery<RecentTradesData>({
+    queryKey: queryKeys.analytics.recentTrades(id!),
+    queryFn: () => analyticsApi.getRecentTrades(id!, 1, 10),
+    enabled: !!id,
+    staleTime: 0,           // always fetch fresh on mount
+    refetchOnMount: true,
+    retry: 2,
+  });
+
+  // Monthly PnL (static, long cache)
+  const monthlyPnLQ = useQuery({
+    queryKey: queryKeys.analytics.monthlyPnL(id!, new Date().getFullYear()),
+    queryFn: () => analyticsApi.getMonthlyPnL(id!, new Date().getFullYear()),
+    enabled: !!id,
+    staleTime: 5 * 60_000,
+  });
+
+  // Monthly analysis (static, long cache)
+  const monthlyAnalysisQ = useQuery({
+    queryKey: queryKeys.analytics.monthlyAnalysis(id!),
+    queryFn: () => analyticsApi.getMonthlyAnalysis(id!),
+    enabled: !!id,
+    staleTime: 5 * 60_000,
   });
 
   const analytics = analyticsQ.data ?? null;
   const analyticsLoading = analyticsQ.isLoading;
-  const analyticsError = analyticsQ.error ? getErrorMessage(analyticsQ.error, '加载分析数据失败') : null;
+  const analyticsError = analyticsQ.error ? getErrorMessage(analyticsQ.error, '') : null;
 
-  const [monthlyPnL, setMonthlyPnL] = useState<AccountMonthlyPnLItem[]>([]);
-  const [monthlyAnalysisYears, setMonthlyAnalysisYears] = useState<number[]>([]);
-  const [monthlyAnalysisData, setMonthlyAnalysisData] = useState<unknown[]>([]);
-  const [historyTrades, setHistoryTrades] = useState<TradeRecordItem[]>([]);
-  const [historyTotal, setHistoryTotal] = useState(0);
-  const [historyPage, setHistoryPage] = useState(1);
-  const [historyLoading, setHistoryLoading] = useState(false);
+  const historyTrades: TradeRecordItem[] = recentTradesQ.data?.trades ?? [];
+  const historyTotal = recentTradesQ.data?.total ?? 0;
+  const historyLoading = recentTradesQ.isLoading;
 
-  const lastReloadRef = useRef(0);
-  const RELOAD_MIN_MS = 5000;
-  const idRef = useRef(id);
-  idRef.current = id;
+  // Setters update the TanStack Query cache directly so SSE bridge writes
+  // (setQueryData on close) and pagination writes (via AccountTradeTabs)
+  // share the same single source of truth.
+  const setHistoryTrades = useCallback((trades: TradeRecordItem[]) => {
+    queryClient.setQueryData<RecentTradesData>(
+      queryKeys.analytics.recentTrades(id!),
+      (old) => (old ? { ...old, trades } : { trades, total: trades.length }),
+    );
+  }, [id, queryClient]);
 
-  const loadAllData = useCallback(async (accountId: string) => {
-    setHistoryLoading(true);
-    try {
-      const [tradesData, monthlyData, monthlyAnalysisResp] = await Promise.all([
-        analyticsApi.getRecentTrades(accountId, 1, 10),
-        analyticsApi.getMonthlyPnL(accountId, new Date().getFullYear()),
-        analyticsApi.getMonthlyAnalysis(accountId),
-      ]);
-      setHistoryTrades(tradesData.trades);
-      setHistoryTotal(tradesData.total);
-      setHistoryPage(1);
-      setMonthlyAnalysisYears(monthlyAnalysisResp.years);
-      setMonthlyAnalysisData(Array.isArray(monthlyAnalysisResp.data) ? monthlyAnalysisResp.data : []);
-      setMonthlyPnL(monthlyData.monthlyPnl.map((item) => ({
-        month: String(item.month), monthNum: item.month, month_num: item.month,
-        profit: item.profit, trades: item.trades,
-      })));
-    } catch { /* non-critical, keep existing */ }
-    finally { setHistoryLoading(false); }
+  const setHistoryTotal = useCallback((total: number) => {
+    queryClient.setQueryData<RecentTradesData>(
+      queryKeys.analytics.recentTrades(id!),
+      (old) => (old ? { ...old, total } : { trades: [], total }),
+    );
+  }, [id, queryClient]);
+
+  const setHistoryPage = useCallback((page: number) => {
+    // Page is tracked by AccountTradeTabs internally; no-op on the cache.
+    void page;
   }, []);
 
-  // Load non-analytics data on mount (trades, monthly, etc.)
-  useEffect(() => {
-    if (!id) return;
-    loadAllData(id);
-  }, [id, loadAllData]);
+  const monthlyPnL: AccountMonthlyPnLItem[] = (monthlyPnLQ.data?.monthlyPnl ?? []).map((item) => ({
+    month: String(item.month), monthNum: item.month, month_num: item.month,
+    profit: item.profit, trades: item.trades,
+  }));
 
-  // Position-change side-channel (SSE → throttle analytics reload)
-  useEffect(() => {
-    if (!id) return;
-    const throttled = () => {
-      const now = Date.now();
-      if (now - lastReloadRef.current < RELOAD_MIN_MS) return;
-      lastReloadRef.current = now;
-      loadAllData(idRef.current!).catch(() => {});
-    };
-    const handler = (event: Event) => {
-      const detail = (event as CustomEvent<PositionChangeDetail>).detail;
-      const { action, order } = detail;
-      if (action === 'PositionClose' && order) {
-        const newTrade: TradeRecordItem = {
-          ticket: order.ticket, symbol: order.symbol, type: order.type,
-          volume: order.volume, openPrice: order.openPrice, closePrice: order.closePrice,
-          profit: order.profit, openTime: String(order.openTime ?? ''),
-          closeTime: String(order.closeTime ?? ''), swap: order.swap || 0,
-          commission: order.commission || 0, comment: order.comment || '',
-        };
-        setHistoryTrades((prev) => {
-          const idx = prev.findIndex((t) => t.ticket === order.ticket);
-          if (idx >= 0) { const u = [...prev]; u[idx] = { ...prev[idx], ...newTrade }; return u; }
-          return [newTrade, ...prev];
-        });
-        throttled();
-      } else if (action === 'PositionOpen' || action === 'PendingOpen') {
-        throttled();
-      }
-    };
-    window.addEventListener('position-change', handler);
-    return () => window.removeEventListener('position-change', handler);
-  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+  const monthlyAnalysisYears: number[] = monthlyAnalysisQ.data?.years ?? [];
+  const monthlyAnalysisData: unknown[] = Array.isArray(monthlyAnalysisQ.data?.data)
+    ? (monthlyAnalysisQ.data!.data as unknown[])
+    : [];
 
   // ── Derived chart data ──
   const derived = useMemo(() => {
@@ -159,10 +149,18 @@ export function useAccountAnalytics(
 
   return {
     analyticsLoading, analyticsError,
-    historyTrades, historyTotal, historyPage, historyLoading,
+    historyTrades, historyTotal, historyPage: 1, historyLoading,
     setHistoryTrades, setHistoryTotal, setHistoryPage,
-    handleRefresh: () => { analyticsQ.refetch(); id && loadAllData(id); },
-    handleRetry: () => { analyticsQ.refetch(); id && loadAllData(id); },
+    handleRefresh: () => {
+      analyticsQ.refetch();
+      recentTradesQ.refetch();
+      monthlyPnLQ.refetch();
+      monthlyAnalysisQ.refetch();
+    },
+    handleRetry: () => {
+      analyticsQ.refetch();
+      recentTradesQ.refetch();
+    },
     ...derived,
   };
 }

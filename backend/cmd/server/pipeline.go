@@ -272,6 +272,7 @@ func startMdGatewayPipeline(
 							Ticket: o.Ticket, Symbol: o.SymbolRaw, Type: service.MapSideToString(o.Side), Volume: o.Volume.InexactFloat64(),
 							OpenPrice: o.OpenPrice.InexactFloat64(), Profit: o.Profit.InexactFloat64(),
 							Swap: o.Swap.InexactFloat64(), Commission: o.Commission.InexactFloat64(), Comment: o.Comment,
+							OpenTime: o.OpenTime.Unix(),
 						})
 					}
 					snapshotBroker.Publish(snapshot)

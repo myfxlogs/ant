@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/google/uuid"
@@ -129,6 +130,11 @@ func (s *AnalyticsServer) GetAccountAnalytics(ctx context.Context, req *connect.
 	if err != nil {
 		s.log.Warn("get equity curve failed", zap.Error(err))
 	}
+	// Append live balance/equity/profit as the final point.
+	if err == nil {
+		equityCurve = appendLiveEquity(ctx, s.repo, accountID, equityCurve)
+	}
+
 	// Daily PnL
 	dailyPnL, err := s.repo.GetDailyPnL(ctx, accountID, start, now)
 	if err != nil {
@@ -314,4 +320,30 @@ func hourlyStatsToProto(stats []*model.HourlyStats) []*antv1.HourlyStat {
 		})
 	}
 	return result
+}
+
+// appendLiveEquity updates the last equity-curve point with the current live
+// balance/equity/profit from mt_accounts so the chart always reaches the
+// real-time value.  Essential for newly-bound accounts that have few historical
+// snapshots in account_balance_history.
+func appendLiveEquity(ctx context.Context, repo *repository.AnalyticsRepository, accountID uuid.UUID, curve []*model.EquityPoint) []*model.EquityPoint {
+	live, err := repo.GetCurrentAccountMetrics(ctx, accountID)
+	if err != nil || live == nil {
+		return curve
+	}
+	today := time.Now().Format("2006-01-02")
+
+	if len(curve) > 0 && curve[len(curve)-1].Date == today {
+		curve[len(curve)-1].Equity = math.Round(live.Equity*100) / 100
+		curve[len(curve)-1].Balance = math.Round(live.Balance*100) / 100
+		curve[len(curve)-1].Profit = math.Round(live.Profit*100) / 100
+	} else {
+		curve = append(curve, &model.EquityPoint{
+			Date:    today,
+			Equity:  math.Round(live.Equity*100) / 100,
+			Balance: math.Round(live.Balance*100) / 100,
+			Profit:  math.Round(live.Profit*100) / 100,
+		})
+	}
+	return curve
 }

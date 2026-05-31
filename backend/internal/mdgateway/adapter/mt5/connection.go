@@ -264,6 +264,7 @@ func (g *Gateway) FetchAccountInfo(ctx context.Context) (*mdtick.MTAccountInfo, 
 		FreeMargin: s.GetFreeMargin(),
 		Leverage:   int32(s.GetLeverage()),
 		Currency:   s.GetCurrency(),
+		IsInvestor: s.GetIsInvestor(),
 	}, nil
 }
 

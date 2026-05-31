@@ -46,6 +46,7 @@ type MTAccountInfo struct {
 	FreeMargin float64
 	Leverage   int32
 	Currency   string
+	IsInvestor bool // true = read-only / investor password
 }
 
 // ProfitUpdate represents an account profit/financial snapshot from mtapi OnOrderProfit.

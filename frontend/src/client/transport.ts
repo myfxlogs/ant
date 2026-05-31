@@ -116,6 +116,13 @@ const interceptors: Interceptor[] = [
         if (isStreamServiceProcedure(proc) && isLikelyStreamTransportFailure(error)) {
           throw error;
         }
+        // Skip global toast for user-input validation errors — the caller
+        // (e.g. BindAccount, AccountDetail) handles display with friendly messages.
+        if (error instanceof ConnectError &&
+            (error.code === Code.InvalidArgument || error.code === Code.AlreadyExists)) {
+          throw error;
+        }
+
         const now = Date.now();
         if (now - lastBizErrorAt > 800) {
           lastBizErrorAt = now;

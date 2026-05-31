@@ -275,13 +275,15 @@ func mt5OrderTypeToSideAndOrderType(ot pb.OrderType) (mthub.Side, mthub.OrderTyp
 		return mthub.SideBuy, mthub.OrderStop
 	case pb.OrderType_OrderType_SellStop:
 		return mthub.SideSell, mthub.OrderStop
-	case pb.OrderType_OrderType_BuyStopLimit:
-		return mthub.SideBuy, mthub.OrderStopLimit
-	case pb.OrderType_OrderType_SellStopLimit:
-		return mthub.SideSell, mthub.OrderStopLimit
-	default:
-		return mthub.SideBuy, mthub.OrderMarket
-	}
+		case pb.OrderType_OrderType_SellStopLimit:
+			return mthub.SideSell, mthub.OrderStopLimit
+		case pb.OrderType_OrderType_Balance:
+			return mthub.SideBuy, mthub.OrderBalance
+		case pb.OrderType_OrderType_Credit:
+			return mthub.SideBuy, mthub.OrderCredit
+		default:
+			return mthub.SideBuy, mthub.OrderMarket
+		}
 }
 
 func (g *Gateway) FetchSymbolParams(ctx context.Context, canonicals []string) ([]*mthub.SymbolParam, error) {

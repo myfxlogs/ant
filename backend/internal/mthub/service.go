@@ -442,19 +442,23 @@ func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket 
 }
 
 // OpenedOrders returns currently open positions.
+// When the session hasn't been established yet (e.g. just after binding),
+// returns an empty list instead of an error — no session = no data.
 func (s *MtHubService) OpenedOrders(ctx context.Context, accountID string) ([]*OrderRecord, error) {
 	exec := s.hub.Get(accountID)
 	if exec == nil {
-		return nil, ErrSessionNotFound
+		return []*OrderRecord{}, nil
 	}
 	return exec.FetchOpenedOrders(ctx)
 }
 
 // OrderHistory returns historical orders for the account.
+// When the session hasn't been established yet, returns an empty list
+// instead of an error — the SSE stream will push data once connected.
 func (s *MtHubService) OrderHistory(ctx context.Context, accountID string, from, to time.Time) ([]*OrderRecord, error) {
 	exec := s.hub.Get(accountID)
 	if exec == nil {
-		return nil, ErrSessionNotFound
+		return []*OrderRecord{}, nil
 	}
 	return exec.FetchOrderHistory(ctx, from, to)
 }

@@ -266,8 +266,15 @@ const accounts = {
         selectServer: 'Vui lòng chọn máy chủ',
         enterTradingAccount: 'Vui lòng nhập tài khoản giao dịch',
         enterPassword: 'Vui lòng nhập mật khẩu',
+        noAccessHosts: 'Không có máy chủ khả dụng',
         bindSuccess: 'Liên kết tài khoản thành công',
         bindFailed: 'Liên kết tài khoản thất bại',
+      },
+      errors: {
+        brokerUnavailable: 'Lỗi máy chủ hoặc mật khẩu không đúng',
+        invalidCredentials: 'Không tìm thấy tài khoản hoặc mật khẩu không đúng',
+        connectionFailed: 'Không thể kết nối đến máy chủ môi giới, vui lòng kiểm tra mạng',
+        timeout: 'Kết nối quá thời gian, vui lòng thử lại sau',
       },
     },
     card: {

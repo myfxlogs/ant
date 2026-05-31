@@ -8,6 +8,7 @@ import type { AccountStatusEvent } from '@/gen/ant/v1/stream_event_account_pb';
 import { queryKeys } from '@/queries/queryKeys';
 import type { Position } from '@/types/trading';
 import type { Account } from '@/types/account';
+import type { TradeRecordItem, RecentTradesData } from '@/client/analytics';
 
 const THROTTLE_MS = 300;
 let profitTimeout: number | null = null;
@@ -154,6 +155,30 @@ export function handleOrderUpdate(
     queryClient.setQueryData<Position[]>(
       queryKeys.positions.byAccount(accountId),
       (old = []) => old.filter((p) => p.ticket !== ticket),
+    );
+    // Append closed order to the history trades cache so the History tab
+    // updates reactively — no polling, no CustomEvent, single source of truth.
+    queryClient.setQueryData<RecentTradesData>(
+      queryKeys.analytics.recentTrades(accountId),
+      (old) => {
+        const trade: TradeRecordItem = {
+          ticket: pos.ticket,
+          symbol: pos.symbol,
+          type: pos.type,
+          volume: pos.volume,
+          openPrice: pos.openPrice,
+          closePrice: pos.closePrice ?? 0,
+          profit: pos.profit,
+          openTime: pos.openTime,
+          closeTime: pos.closeTime ?? '',
+          swap: pos.swap,
+          commission: pos.commission,
+          comment: pos.comment,
+        };
+        if (!old) return { trades: [trade], total: 1 };
+        const filtered = old.trades.filter((t) => t.ticket !== trade.ticket);
+        return { trades: [trade, ...filtered], total: old.total + 1 };
+      },
     );
     return;
   }

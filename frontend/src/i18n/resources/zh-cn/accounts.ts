@@ -291,8 +291,15 @@ const accounts = {
         selectServer: '请选择服务器',
         enterTradingAccount: '请输入交易账号',
         enterPassword: '请输入密码',
+        noAccessHosts: '无可用服务器地址',
         bindSuccess: '账户绑定成功',
         bindFailed: '账户绑定失败',
+      },
+      errors: {
+        brokerUnavailable: '连接服务器错误或者密码不正确',
+        invalidCredentials: '账号或密码错误，未找到该交易账户',
+        connectionFailed: '无法连接到经纪商服务器，请检查网络',
+        timeout: '连接超时，请稍后重试',
       },
     },
     card: {

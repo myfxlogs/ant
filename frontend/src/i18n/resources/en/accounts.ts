@@ -67,9 +67,16 @@ const accounts = {
       selectServer: 'Please select a server',
       enterTradingAccount: 'Please enter trading account',
       enterPassword: 'Please enter password',
+      noAccessHosts: 'No server addresses available for the selected broker',
       verifyFailed: 'Account verification failed',
       bindSuccess: 'Account bound successfully',
       bindFailed: 'Failed to bind account',
+    },
+    errors: {
+      brokerUnavailable: 'Server error or incorrect password',
+      invalidCredentials: 'Account not found or invalid password',
+      connectionFailed: 'Unable to connect to broker server, please check your network',
+      timeout: 'Connection timed out, please try again later',
     },
   },
   empty: {

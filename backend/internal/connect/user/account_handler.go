@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"time"
 
 	"errors"
 	"fmt"
@@ -29,19 +30,34 @@ type MTConnectionTester interface {
 	VerifyPassword(ctx context.Context, platform, brokerHost, login, password string) error
 }
 
+// SessionReadyWaiter provides an event-driven (channel-based) way to wait for
+// an MT session to be established — no polling. Implemented by mthub.Hub.
+type SessionReadyWaiter interface {
+	WaitSession(accountID string) <-chan struct{}
+}
+
 // AccountServer implements ant.v1.AccountServiceHandler.
 type AccountServer struct {
-	svc       *service.AccountService
-	searcher  *brokersearch.Searcher
-	publisher *mdgateway.AccountEventPublisher
-	mtTester  MTConnectionTester
-	log       *zap.Logger
+	svc          *service.AccountService
+	searcher     *brokersearch.Searcher
+	publisher    *mdgateway.AccountEventPublisher
+	mtTester     MTConnectionTester
+	sessionWaiter SessionReadyWaiter // may be nil
+	log          *zap.Logger
 }
 
 var _ antv1c.AccountServiceHandler = (*AccountServer)(nil)
 
 func NewAccountServer(svc *service.AccountService, searcher *brokersearch.Searcher, publisher *mdgateway.AccountEventPublisher, tester MTConnectionTester, log *zap.Logger) *AccountServer {
 	return &AccountServer{svc: svc, searcher: searcher, publisher: publisher, mtTester: tester, log: log}
+}
+
+// WithSessionWaiter sets an optional readiness waiter used by ConnectAccount to
+// block until the MT session is actually established (instead of returning early
+// and causing "session not found" races on the detail page).
+func (s *AccountServer) WithSessionWaiter(w SessionReadyWaiter) *AccountServer {
+	s.sessionWaiter = w
+	return s
 }
 
 // parseUserID extracts and validates the user ID from the request context (#1).
@@ -63,7 +79,7 @@ func accountToProto(a *service.AccountDTO) *antv1.Account {
 		Balance: a.Balance, Credit: a.Credit, Equity: a.Equity, Margin: a.Margin,
 		FreeMargin: a.FreeMargin, MarginLevel: a.MarginLevel,
 		Leverage: a.Leverage, Currency: a.Currency,
-		LastError: a.LastError,
+		IsInvestor: a.IsInvestor, LastError: a.LastError,
 	}
 }
 
@@ -137,7 +153,7 @@ func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[
 		}
 
 		// Update account with MT info within the transaction (#3: propagate error).
-		if err := s.svc.UpdateAccountInfoTx(ctx, tx, userID, id, info.Balance, info.Equity, info.Credit, info.Margin, info.FreeMargin, int64(info.Leverage), info.Currency); err != nil {
+		if err := s.svc.UpdateAccountInfoTx(ctx, tx, userID, id, info.Balance, info.Equity, info.Credit, info.Margin, info.FreeMargin, int64(info.Leverage), info.Currency, info.IsInvestor); err != nil {
 			s.log.Error("CreateAccount: UpdateAccountInfo failed", zap.Error(err))
 			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("update account info: %w", err))
 		}
@@ -237,6 +253,8 @@ func (s *AccountServer) DeleteAccount(ctx context.Context, req *connect.Request[
 
 // ConnectAccount connects an account to the broker and publishes a NATS event
 // so the mdgateway runner reloads and connects the account.
+// When a SessionReadyWaiter is configured, blocks on a channel (not polling)
+// until the runner calls Hub.Register — eliminating "session not found" races.
 func (s *AccountServer) ConnectAccount(ctx context.Context, req *connect.Request[antv1.ConnectAccountRequest]) (*connect.Response[antv1.ConnectAccountResponse], error) {
 	userID, err := parseUserID(ctx)
 	if err != nil {
@@ -249,6 +267,20 @@ func (s *AccountServer) ConnectAccount(ctx context.Context, req *connect.Request
 	// Publish NATS event to trigger mdgateway runner to connect this account.
 	if s.publisher != nil {
 		s.publisher.PublishConnect(ctx, req.Msg.Id, userID.String())
+	}
+
+	// Event-driven wait: block on a channel that Register() closes — zero CPU.
+	if s.sessionWaiter != nil {
+		select {
+		case <-s.sessionWaiter.WaitSession(req.Msg.Id):
+			s.log.Info("ConnectAccount: session ready", zap.String("accountId", req.Msg.Id))
+		case <-ctx.Done():
+			s.log.Warn("ConnectAccount: context cancelled while waiting for session",
+				zap.String("accountId", req.Msg.Id), zap.Error(ctx.Err()))
+		case <-time.After(5 * time.Second):
+			s.log.Warn("ConnectAccount: timed out waiting for session",
+				zap.String("accountId", req.Msg.Id))
+		}
 	}
 	return connect.NewResponse(&antv1.ConnectAccountResponse{Success: true, Message: "connected"}), nil
 }

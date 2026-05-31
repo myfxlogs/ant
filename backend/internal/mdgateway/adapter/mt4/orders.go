@@ -137,6 +137,10 @@ func (g *Gateway) FetchOpenedOrders(ctx context.Context) ([]*mthub.OrderRecord, 
 		case pb.Op_Op_BuyStop:
 			ot = mthub.OrderStop
 		case pb.Op_Op_SellStop:
+	case pb.Op_Op_Balance:
+		ot = mthub.OrderBalance
+	case pb.Op_Op_Credit:
+		ot = mthub.OrderCredit
 			side = mthub.SideSell
 			ot = mthub.OrderStop
 		}
@@ -197,6 +201,10 @@ func (g *Gateway) FetchOrderHistory(ctx context.Context, from, to time.Time) ([]
 		case pb.Op_Op_BuyStop:
 			ot = mthub.OrderStop
 		case pb.Op_Op_SellStop:
+	case pb.Op_Op_Balance:
+		ot = mthub.OrderBalance
+	case pb.Op_Op_Credit:
+		ot = mthub.OrderCredit
 			side = mthub.SideSell
 			ot = mthub.OrderStop
 		}

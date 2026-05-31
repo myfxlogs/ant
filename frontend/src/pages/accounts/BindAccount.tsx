@@ -10,6 +10,7 @@ import { getErrorMessage } from '@/utils/error';
 import type { BindAccountRequest } from '@/types/account';
 import type { Account } from '@/types/account';
 import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n';
 import { ConnectContext } from '@/providers/connectContext';
 
 interface BrokerServer {
@@ -22,20 +23,20 @@ interface BrokerSearchResult {
   servers: BrokerServer[];
 }
 
-/** Translate raw mtapi errors into user-friendly messages. */
+/** Translate raw MT broker errors into user-friendly messages via i18n. */
 function friendlyError(msg: string | undefined): string {
   if (!msg) return '';
   if (msg.includes('SERVICE_NOT_AVAILABLE') || msg.includes('code=11')) {
-    return 'Broker server temporarily unavailable, please try again later';
+    return i18n.t('accounts.bind.errors.brokerUnavailable');
   }
   if (msg.includes('INVALID_ACCOUNT') || msg.includes('code=1001')) {
-    return 'Invalid account number or password';
+    return i18n.t('accounts.bind.errors.invalidCredentials');
   }
   if (msg.includes('connection failed') || msg.includes('connect')) {
-    return 'Unable to connect to broker server, please check your network';
+    return i18n.t('accounts.bind.errors.connectionFailed');
   }
   if (msg.includes('timeout') || msg.includes('Timed out')) {
-    return 'Connection timed out, please try again';
+    return i18n.t('accounts.bind.errors.timeout');
   }
   return msg;
 }
@@ -120,7 +121,8 @@ export default function BindAccount() {
       };
       const account = await bindAccount(request) as Account;
       setPassword('');
-      // Start the live stream connection for the newly bound account.
+      // ConnectAccount now blocks until the MT session is ready (backend polls Hub).
+      // No frontend delay needed — safe to navigate immediately.
       await accountApi.connect(account.id);
       await connectCtx?.reconnect();
       showSuccess(t('accounts.bind.messages.bindSuccess'));
@@ -193,7 +195,11 @@ export default function BindAccount() {
           <div>
             <label className="block mb-2 font-medium" style={{ color: '#141D22' }}>{t('accounts.bind.fields.server')}</label>
             <Select placeholder={t('accounts.bind.placeholders.server')} value={selectedServer?.name}
-              onChange={handleServerChange} style={{ width: '100%' }} size="large" optionLabelProp="label">
+              onChange={handleServerChange} style={{ width: '100%' }} size="large"
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label as string || '').toLowerCase().includes(input.toLowerCase())
+              }>
               {[...selectedCompany.servers].sort((a, b) => a.name.localeCompare(b.name)).map((s) => (
                 <Select.Option key={s.name} value={s.name} label={s.name}>
                   <div className="flex items-center justify-between"><span>{s.name}</span><Tag color={mtType === 'MT4' ? 'blue' : 'purple'}>{mtType}</Tag></div>
@@ -257,19 +263,23 @@ export default function BindAccount() {
         </div>
       </div>
 
-      {!verifyResult && (
-        <GradientButton loading={verifying} onClick={handleVerify} block style={{ padding: '12px 0' }}>
-          {t('accounts.bind.actions.verifyAccount')}
-        </GradientButton>
-      )}
+      {!verifyResult && (<>
+        <div className="flex justify-between pt-4">
+          <Button onClick={() => setStep(2)} style={{ borderRadius: '10px' }}>{t('common.previous')}</Button>
+          <GradientButton loading={verifying} onClick={handleVerify} style={{ padding: '0 32px' }}>
+            {t('accounts.bind.actions.verifyAccount')}
+          </GradientButton>
+        </div>
+      </>)}
 
       {verifyError && (
         <div className="p-3 rounded-xl text-center" style={{ background: 'rgba(229, 57, 53, 0.05)', border: '1px solid rgba(229, 57, 53, 0.15)' }}>
           <ExclamationCircleOutlined style={{ fontSize: 16, color: '#E53935' }} />
           <p className="mt-1 text-sm" style={{ color: '#E53935' }}>{verifyError}</p>
-          <Button size="small" onClick={() => { setVerifyError(''); setVerifyResult(null); }} style={{ marginTop: 8 }}>
-            {t('accounts.bind.actions.retryVerify')}
-          </Button>
+          <div className="flex justify-center gap-2 mt-3">
+            <Button size="small" onClick={() => setStep(2)}>{t('common.previous')}</Button>
+            <Button size="small" onClick={() => { setVerifyError(''); setVerifyResult(null); }}>{t('accounts.bind.actions.retryVerify')}</Button>
+          </div>
         </div>
       )}
 
