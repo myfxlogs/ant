@@ -40,8 +40,12 @@ export function useEnableDisableAccountMutation() {
           queryClient.setQueryData(queryKeys.accounts.list(), ctx.previous);
         }
       },
-      onSettled: () => {
+      onSettled: (_data, _err, vars) => {
         queryClient.invalidateQueries({ queryKey: queryKeys.accounts.list() });
+        // When re-enabling, force-refetch positions so stale cache is replaced.
+        if (!vars?.isDisabled) {
+          queryClient.invalidateQueries({ queryKey: queryKeys.positions.byAccount(vars.id) });
+        }
       },
     },
   );

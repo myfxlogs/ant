@@ -37,9 +37,11 @@ export default function AccountDetail() {
     togglePending,
   } = useAccountDetailData(id);
 
+  const disabled = !!currentAccount?.isDisabled;
   const { balance, equity, margin, freeMargin, marginLevel, profit, profitPercent, credit } = financials;
 
   const formatCurrency = (value: number) => {
+    if (disabled) return '--';
     const isNegative = value < 0;
     return `${isNegative ? '-' : ''}${Math.abs(value).toFixed(2)} ${currentAccount?.currency || 'USD'}`;
   };
@@ -140,19 +142,26 @@ export default function AccountDetail() {
 
         {/* Trade tabs */}
         <div className="rounded-2xl overflow-hidden mb-6" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
-          <AccountTradeTabs
-            id={id}
-            realPositions={positions}
-            pendingOrders={pendingOrders}
-            historyTrades={historyTrades}
-            historyTotal={historyTotal}
-            historyPage={historyPage}
-            historyPageSize={10}
-            onHistoryTradesChange={setHistoryTrades}
-            onHistoryTotalChange={setHistoryTotal}
-            onHistoryPageChange={setHistoryPage}
-            historyLoading={historyLoading}
-          />
+          {disabled ? (
+            <div className="text-center py-12" style={{ color: '#8A9AA5' }}>
+              <PauseCircleOutlined style={{ fontSize: 48, opacity: 0.3 }} />
+              <p className="mt-4">{t('accounts.detail.status.disabled')}</p>
+            </div>
+          ) : (
+            <AccountTradeTabs
+              id={id}
+              realPositions={positions}
+              pendingOrders={pendingOrders}
+              historyTrades={historyTrades}
+              historyTotal={historyTotal}
+              historyPage={historyPage}
+              historyPageSize={10}
+              onHistoryTradesChange={setHistoryTrades}
+              onHistoryTotalChange={setHistoryTotal}
+              onHistoryPageChange={setHistoryPage}
+              historyLoading={historyLoading}
+            />
+          )}
         </div>
 
         {/* Analytics */}

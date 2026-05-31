@@ -30,10 +30,15 @@ function getStatusTag(item: Account, t: (key: string) => string) {
 }
 
 function AccountCard({ item, navigate, t }: { item: Account; navigate: (path: string) => void; t: (key: string) => string }) {
+  const isDisabled = item.isDisabled;
   const balance = item.balance;
   const equity = item.equity;
   const floating = item.profit ?? 0;
   const isMT4 = item.mtType === 'MT4';
+  const fmt = (v: number, prefix = '') => {
+    if (isDisabled) return '--';
+    return `${prefix}${Number.isFinite(v) ? v.toFixed(2) : '0.00'}`;
+  };
 
   return (
     <div
@@ -73,16 +78,18 @@ function AccountCard({ item, navigate, t }: { item: Account; navigate: (path: st
       <div className="grid grid-cols-3 gap-2 text-center">
         <div>
           <div className="text-xs mb-0.5" style={{ color: '#8A9AA5' }}>{t('dashboard.fields.balance')}</div>
-          <div className="text-sm font-semibold" style={{ color: '#141D22' }}>
-            ${balance != null && Number.isFinite(balance) ? balance.toFixed(2) : '0.00'}
-          </div>
+          <div className="text-sm font-semibold" style={{ color: isDisabled ? '#8A9AA5' : '#141D22' }}>{fmt(balance, '$')}</div>
         </div>
         <div>
           <div className="text-xs mb-0.5" style={{ color: '#8A9AA5' }}>{t('dashboard.fields.equity')}</div>
-          <div className="text-sm font-semibold" style={{ color: '#141D22' }}>
-            ${equity != null && Number.isFinite(equity) ? equity.toFixed(2) : '0.00'}
-          </div>
+          <div className="text-sm font-semibold" style={{ color: isDisabled ? '#8A9AA5' : '#141D22' }}>{fmt(equity, '$')}</div>
         </div>
+        {isDisabled ? (
+          <div>
+            <div className="text-xs mb-0.5" style={{ color: '#8A9AA5' }}>{t('dashboard.fields.floating')}</div>
+            <div className="text-sm font-semibold" style={{ color: '#8A9AA5' }}>--</div>
+          </div>
+        ) : (
         <div>
           <div className="text-xs mb-0.5" style={{ color: '#8A9AA5' }}>{t('dashboard.fields.floating')}</div>
           <div
@@ -97,6 +104,7 @@ function AccountCard({ item, navigate, t }: { item: Account; navigate: (path: st
             {(Number.isFinite(floating) ? floating : 0) >= 0 ? '+' : ''}{(Number.isFinite(floating) ? floating : 0).toFixed(2)}
           </div>
         </div>
+        )}
       </div>
     </div>
   );
