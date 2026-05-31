@@ -13,6 +13,7 @@ import { queryKeys } from '@/queries/queryKeys';
 import { ConnectContext } from '@/providers/connectContext';
 import { useTranslation } from 'react-i18next';
 import type { Account } from '@/types/account';
+import type { UserSummaryData } from '@/bridge/bridgeUserSummary';
 import DashboardStatCards from './DashboardStatCards';
 import DashboardAccountList from './DashboardAccountList';
 
@@ -33,13 +34,19 @@ export default function Dashboard() {
   const connectCtx = useContext(ConnectContext);
   const streamConnected = connectCtx?.isConnected ?? false;
 
-  // Live data from SSE via TanStack Query — single source of truth.
+  // Aggregated totals come from backend SubscribeUserSummary SSE (pre-computed).
+  const { data: summary } = useQuery<UserSummaryData>({
+    queryKey: queryKeys.userSummary.all,
+    staleTime: 1000,
+  });
+
+  // Live per-account financials from SSE via TanStack Query.
   const { data: liveAccounts } = useQuery<Account[]>({
     queryKey: queryKeys.accounts.list(),
     staleTime: Infinity,
   });
 
-  // Merge Zustand metadata with TanStack Query live financials.
+  // Merge Zustand metadata with TanStack Query live financials — display only, no math.
   const merged = useMemo(() => {
     const liveMap = new Map<string, Account>();
     if (liveAccounts) for (const a of liveAccounts) liveMap.set(a.id, a);
@@ -49,22 +56,6 @@ export default function Dashboard() {
       return { ...a, balance: live.balance ?? a.balance, equity: live.equity ?? a.equity, profit: live.profit ?? a.profit, status: live.status || a.status };
     });
   }, [accounts, liveAccounts]);
-
-  const localConnectedCount = useMemo(
-    () => merged.filter((a) => !a.isDisabled && a.status === 'connected').length,
-    [merged]);
-
-  const totalEquity = useMemo(() => {
-    let sum = 0;
-    for (const a of merged) sum += (a.equity ?? a.balance ?? 0);
-    return sum;
-  }, [merged]);
-
-  const totalProfit = useMemo(() => {
-    let sum = 0;
-    for (const a of merged) sum += (a.profit ?? 0);
-    return sum;
-  }, [merged]);
 
   useEffect(() => {
     let cancelled = false;
@@ -76,7 +67,12 @@ export default function Dashboard() {
     return () => { cancelled = true; };
   }, [fetchAccounts]);
 
-  const stats = { totalEquity, connectedCount: localConnectedCount, accountCount: merged.length, totalProfit };
+  const stats = {
+    totalEquity: summary?.totalEquity ?? 0,
+    totalProfit: summary?.totalProfit ?? 0,
+    connectedCount: summary?.connectedCount ?? 0,
+    accountCount: summary?.accountCount ?? (accounts || []).length,
+  };
 
   const getDisplayName = () => user?.email?.split('@')[0] || user?.username || t('dashboard.defaultName');
 
