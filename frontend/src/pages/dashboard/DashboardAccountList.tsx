@@ -13,6 +13,10 @@ interface Props {
 }
 
 function getStatusTag(item: Account, t: (key: string) => string) {
+  // Disabled overrides MT connection status — the account is inactive regardless.
+  if (item?.isDisabled) {
+    return <Tag color="default">{t('accounts.card.status.disabled')}</Tag>;
+  }
   const s = item?.status || item?.accountStatus;
   if (!s || s === 'unknown') return null;
   const colors: Record<string, string> = { connected: 'green', disconnected: 'red', error: 'red', connecting: 'blue' };
