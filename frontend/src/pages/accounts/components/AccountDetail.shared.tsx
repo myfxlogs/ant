@@ -103,8 +103,8 @@ export const PositionRow = memo(({ position }: { position: any }) => {
         orderType={position.type}
       />
     </td>
-    <td className="text-right p-3 font-medium" style={{ color: (position.profit ?? 0) >= 0 ? '#00A651' : '#E53935' }}>
-      {(position.profit ?? 0) >= 0 ? '+' : ''}{(position.profit ?? 0).toFixed(2)}
+    <td className="text-right p-3 font-medium" style={{ color: (Number(position.profit) || 0) >= 0 ? '#00A651' : '#E53935' }}>
+      {(Number(position.profit) || 0) >= 0 ? '+' : ''}{(Number(position.profit) || 0).toFixed(2)}
     </td>
     <td className="p-3" style={{ color: '#8A9AA5', fontSize: '12px' }}>{formatTimestamp(position.openTime)}</td>
     </tr>
@@ -181,7 +181,7 @@ export const HistoryTradeRow = memo(({ trade }: { trade: any }) => {
       <td className="text-right p-3" style={{ color: '#141D22' }}>{isBalanceRecord ? '-' : volume}</td>
       <td className="text-right p-3" style={{ color: '#141D22' }}>{isBalanceRecord ? '-' : formatPrice(openPrice, trade.symbol)}</td>
       <td className="text-right p-3" style={{ color: '#141D22' }}>{isBalanceRecord ? '-' : formatPrice(closePrice, trade.symbol)}</td>
-      <td className="text-right p-3 font-medium" style={{ color: (trade.profit ?? 0) >= 0 ? '#00A651' : '#E53935' }}>{(trade.profit ?? 0) >= 0 ? '+' : ''}{(trade.profit ?? 0).toFixed(2)}</td>
+      <td className="text-right p-3 font-medium" style={{ color: (Number(trade.profit) || 0) >= 0 ? '#00A651' : '#E53935' }}>{(Number(trade.profit) || 0) >= 0 ? '+' : ''}{(Number(trade.profit) || 0).toFixed(2)}</td>
       <td className="p-3" style={{ color: '#8A9AA5', fontSize: '12px' }}>{formatTimestamp(closeTime)}</td>
     </tr>
   );

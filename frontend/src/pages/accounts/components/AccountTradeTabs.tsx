@@ -74,13 +74,13 @@ export default function AccountTradeTabs({
 
   // Auto-sync: if history is empty and not loading, trigger a one-time sync
   // from the MT broker. Covers new accounts that haven't synced yet.
+  // Only mark done on success — allows retry on next mount if it fails.
   useEffect(() => {
     if (!id) return;
     if (autoSyncDone.current) return;
     if (historyLoading) return;
-    if (historyTrades.length > 0) return;
-    autoSyncDone.current = true;
-    doSync();
+    if (historyTrades.length > 0) { autoSyncDone.current = true; return; }
+    doSync().then(() => { autoSyncDone.current = true; }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, historyLoading, historyTrades.length]);
 

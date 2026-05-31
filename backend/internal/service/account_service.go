@@ -168,7 +168,7 @@ func (s *AccountService) CreateAccount(ctx context.Context, userID uuid.UUID, lo
 
 // UpdateAccount updates broker fields and disabled status for an account.
 func (s *AccountService) UpdateAccount(ctx context.Context, userID uuid.UUID, id, brokerCompany, brokerServer, brokerHost string, isDisabled *bool) error {
-	_, err := s.db.Exec(ctx, `
+	tag, err := s.db.Exec(ctx, `
 			UPDATE mt_accounts SET
 				broker_company = COALESCE(NULLIF($3, ''), broker_company),
 				broker_server  = COALESCE(NULLIF($4, ''), broker_server),
@@ -179,6 +179,9 @@ func (s *AccountService) UpdateAccount(ctx context.Context, userID uuid.UUID, id
 		`, id, userID, brokerCompany, brokerServer, brokerHost, isDisabled)
 	if err != nil {
 		return fmt.Errorf("service: update account: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return pgx.ErrNoRows
 	}
 	return nil
 }

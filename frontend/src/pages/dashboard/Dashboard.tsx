@@ -102,7 +102,7 @@ export default function Dashboard() {
 
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={16}>
-          <DashboardAccountList accounts={merged} loading={localLoading} error={loadError} onRetry={() => fetchAccounts()} />
+          <DashboardAccountList accounts={merged} loading={localLoading} error={loadError} onRetry={fetchAccounts} />
         </Col>
         <Col xs={24} lg={8}>
           <Card title={<span style={{ color: '#141D22', fontWeight: 500 }}>{t('dashboard.quickActions.title')}</span>} className="glass-card h-full">

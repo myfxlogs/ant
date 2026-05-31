@@ -37,8 +37,11 @@ function AccountCard({ item, navigate, t }: { item: Account; navigate: (path: st
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={() => navigate(`/accounts/${item.id}`)}
-      className="p-4 rounded-xl cursor-pointer transition-all"
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/accounts/${item.id}`); } }}
+      className="p-4 rounded-xl cursor-pointer transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#D4AF37]"
       style={{ background: '#F5F7F9', border: '1px solid rgba(0,0,0,0.05)' }}
       onMouseEnter={(e) => {
         e.currentTarget.style.background = '#E8ECF0';
@@ -84,14 +87,14 @@ function AccountCard({ item, navigate, t }: { item: Account; navigate: (path: st
           <div className="text-xs mb-0.5" style={{ color: '#8A9AA5' }}>{t('dashboard.fields.floating')}</div>
           <div
             className="text-sm font-semibold flex items-center justify-center gap-1"
-            style={{ color: floating >= 0 ? '#00A651' : '#E53935' }}
+            style={{ color: (Number.isFinite(floating) ? floating : 0) >= 0 ? '#00A651' : '#E53935' }}
           >
-            {floating >= 0 ? (
+            {(Number.isFinite(floating) ? floating : 0) >= 0 ? (
               <RiseOutlined style={{ fontSize: 12 }} />
             ) : (
               <FallOutlined style={{ fontSize: 12 }} />
             )}
-            {floating >= 0 ? '+' : ''}{floating.toFixed(2)}
+            {(Number.isFinite(floating) ? floating : 0) >= 0 ? '+' : ''}{(Number.isFinite(floating) ? floating : 0).toFixed(2)}
           </div>
         </div>
       </div>

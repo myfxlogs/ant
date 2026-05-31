@@ -71,11 +71,15 @@ export function useAccountDetailData(id: string | undefined) {
     setConnecting(true);
     try {
       const result: ConnectAccountResult = await connectMut.mutateAsync(currentAccount.id);
-      const msg = translateMaybeI18nKey(result?.message, t('common.operationFailed'));
-      if (result?.success === false) showError(msg);
-      else if (result?.message) showSuccess(msg);
-      reconnect();
-    } finally { setConnecting(false); }
+      if (result?.success) {
+        const msg = translateMaybeI18nKey(result?.message, '');
+        if (msg) showSuccess(msg);
+        reconnect();
+      } else {
+        showError(translateMaybeI18nKey(result?.message, t('accounts.messages.connectFailed')));
+      }
+    } catch { /* mutation onError handles toast */ }
+    finally { setConnecting(false); }
   }, [currentAccount, connecting, connectMut, reconnect, t]);
 
   const handleToggleStatus = useCallback(async () => {
@@ -100,14 +104,14 @@ export function useAccountDetailData(id: string | undefined) {
   const handleDelete = useCallback(async () => {
     if (!currentAccount || !deletePassword.trim()) return;
     setDeleting(true);
-    setDeleteModalOpen(false);
     try {
-      // onMutate optimistically removes from TanStack Query cache.
-      // Dashboard reads from TQ — account disappears instantly.
       await deleteMut.mutateAsync({ id: currentAccount.id, password: deletePassword.trim() });
+      setDeleteModalOpen(false);
       navigate('/');
-    } catch { /* onError handles rollback */ }
-    finally { setDeleting(false); }
+    } catch {
+      // onError handler in useDeleteAccountMutation rolls back optimistic update.
+      // Keep modal open so user can retry.
+    } finally { setDeleting(false); }
   }, [currentAccount, deletePassword, deleteMut, navigate]);
 
   // ── Position filtering ──
