@@ -12,11 +12,17 @@ interface Props {
   onRetry: () => void;
 }
 
-function getStatusTag(item: Account) {
+function getStatusTag(item: Account, t: (key: string) => string) {
   const s = item?.status || item?.accountStatus;
   if (!s || s === 'unknown') return null;
-  const colors: Record<string, string> = { connected: 'green', disconnected: 'red', error: 'red' };
-  const labels: Record<string, string> = {};
+  const colors: Record<string, string> = { connected: 'green', disconnected: 'red', error: 'red', connecting: 'blue' };
+  const labels: Record<string, string> = {
+    connected: t('accounts.card.status.connected'),
+    connecting: t('accounts.card.status.connecting'),
+    disconnected: t('accounts.card.status.disconnected'),
+    error: t('accounts.card.status.error'),
+    disabled: t('accounts.card.status.disabled'),
+  };
   return <Tag color={colors[s] || 'default'}>{labels[s] || s}</Tag>;
 }
 
@@ -46,7 +52,7 @@ export default function DashboardAccountList({ accounts, loading, error, onRetry
                     <div className="flex items-center gap-2">
                       <span style={{ color: '#141D22', fontWeight: 500 }}>{item.login}</span>
                       <Tag color={item.mtType === 'MT4' ? 'blue' : 'gold'} className="!text-xs">{item.mtType}</Tag>
-                      {getStatusTag(item)}
+                      {getStatusTag(item, t)}
                     </div>
                     <div className="text-sm mt-1" style={{ color: '#8A9AA5' }}>{item.brokerCompany}</div>
                   </div>
