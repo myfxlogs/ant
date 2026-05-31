@@ -98,28 +98,67 @@ func NewAccountSyncService(tradeRecordRepo *repository.TradeRecordRepository, mt
 	}
 }
 
-// SyncAccountHistory fetches closed orders from MT broker and writes them to trade_records.
+// SyncAccountHistory fetches closed orders from MT broker in monthly chunks and
+// writes them to trade_records.  Each chunk is committed independently — if a
+// chunk fails (network timeout, broker error), earlier chunks are already saved
+// and the next sync resumes from the last successful month.
 func (s *AccountSyncService) SyncAccountHistory(accountID string) {
 	uid, err := uuid.Parse(accountID)
 	if err != nil {
 		return
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
 
+	// Determine start: last successful sync time or 1 year ago.
 	from := time.Now().AddDate(-1, 0, 0)
-	if t, err := s.tradeRecordRepo.GetLastSyncTime(ctx, uid); err == nil && t != nil {
+	if t, err := s.tradeRecordRepo.GetLastSyncTime(context.Background(), uid); err == nil && t != nil {
 		from = *t
 	}
-	to := time.Now()
 
-	records, err := s.mthubSvc.OrderHistory(ctx, accountID, from, to)
-	if err != nil {
-		s.log.Warn("syncHistory: fetch failed", zap.String("account", accountID), zap.Error(err))
-		return
+	// Sync in 3-month chunks to bound per-request latency and fault blast radius.
+	chunkStart := from
+	now := time.Now()
+	total := 0
+	for chunkStart.Before(now) {
+		chunkEnd := chunkStart.AddDate(0, 3, 0)
+		if chunkEnd.After(now) {
+			chunkEnd = now
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		records, err := s.mthubSvc.OrderHistory(ctx, accountID, chunkStart, chunkEnd)
+		cancel()
+		if err != nil {
+			s.log.Warn("syncHistory: chunk fetch failed",
+				zap.String("account", accountID),
+				zap.Time("chunkStart", chunkStart),
+				zap.Error(err))
+			return // resume from chunkStart next time
+		}
+
+		if len(records) > 0 {
+			platform := s.mthubSvc.Platform(accountID)
+			tradeRecs := s.convertRecords(accountID, uid, platform, records)
+			if err := s.tradeRecordRepo.BatchCreate(context.Background(), tradeRecs); err != nil {
+				s.log.Warn("syncHistory: chunk insert failed",
+					zap.String("account", accountID),
+					zap.Time("chunkStart", chunkStart),
+					zap.Error(err))
+				return // resume from chunkStart next time
+			}
+			total += len(records)
+		}
+
+		// Update checkpoint so next sync resumes after this chunk.
+		chunkStart = chunkEnd
 	}
 
-	platform := s.mthubSvc.Platform(accountID)
+	if total > 0 {
+		s.log.Info("syncHistory: synced", zap.String("account", accountID), zap.Int("count", total))
+	}
+}
+
+// convertRecords maps mthub OrderRecords to model TradeRecords.
+func (s *AccountSyncService) convertRecords(accountID string, uid uuid.UUID, platform string, records []*mthub.OrderRecord) []*model.TradeRecord {
 	tradeRecs := make([]*model.TradeRecord, 0, len(records))
 	for _, r := range records {
 		ot := "BUY"
@@ -133,11 +172,11 @@ func (s *AccountSyncService) SyncAccountHistory(accountID string) {
 		case mthub.OrderStop:
 			ot += "_STOP"
 		case mthub.OrderStopLimit:
-				ot += "_STOP_LIMIT"
-			case mthub.OrderBalance:
-				ot = "BALANCE"
-			case mthub.OrderCredit:
-				ot = "CREDIT"
+			ot += "_STOP_LIMIT"
+		case mthub.OrderBalance:
+			ot = "BALANCE"
+		case mthub.OrderCredit:
+			ot = "CREDIT"
 		}
 		volume, vexact := r.Volume.Float64()
 		openPrice, oexact := r.OpenPrice.Float64()
@@ -169,15 +208,7 @@ func (s *AccountSyncService) SyncAccountHistory(accountID string) {
 			Platform:     platform,
 		})
 	}
-	if err := s.tradeRecordRepo.BatchCreate(ctx, tradeRecs); err != nil {
-		s.log.Warn("syncHistory: batch create failed", zap.String("account", accountID), zap.Error(err))
-	} else {
-		s.log.Info("syncHistory: synced", zap.String("account", accountID), zap.Int("count", len(tradeRecs)))
-		// Invalidate analytics cache so the next request computes fresh data.
-		if s.analyticsCache != nil {
-			s.analyticsCache.Invalidate(ctx, accountID)
-		}
-	}
+	return tradeRecs
 }
 
 // MapSideToString converts an mthub.Side to a display string.

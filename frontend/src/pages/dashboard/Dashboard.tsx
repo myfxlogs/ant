@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Button, Card, Col, Row } from 'antd';
 import {
   BarChartOutlined, PieChartOutlined, PlusOutlined,
@@ -27,7 +27,7 @@ const quickActions = [
 export default function Dashboard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { accounts, fetchAccounts } = useAccount();
+  const { fetchAccounts } = useAccount();
   const { user } = useAuthStore();
   const [localLoading, setLocalLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -37,26 +37,18 @@ export default function Dashboard() {
   // Aggregated totals come from backend SubscribeUserSummary SSE (pre-computed).
   const { data: summary } = useQuery<UserSummaryData>({
     queryKey: queryKeys.userSummary.all,
-    staleTime: 1000,
+    staleTime: Infinity, // SSE keeps this fresh
   });
 
-  // Live per-account financials from SSE via TanStack Query.
-  const { data: liveAccounts } = useQuery<Account[]>({
+  // Single source of truth: SSE bridge writes balance/equity/profit/status
+  // into the TQ cache; initial fetch populates metadata (login/broker, etc).
+  const { data: accounts } = useQuery<Account[]>({
     queryKey: queryKeys.accounts.list(),
     staleTime: Infinity,
   });
 
-  // Merge Zustand metadata with TanStack Query live financials — display only, no math.
-  const merged = useMemo(() => {
-    const liveMap = new Map<string, Account>();
-    if (liveAccounts) for (const a of liveAccounts) liveMap.set(a.id, a);
-    return (accounts || []).map((a) => {
-      const live = liveMap.get(a.id);
-      if (!live) return a;
-      return { ...a, balance: live.balance ?? a.balance, equity: live.equity ?? a.equity, profit: live.profit ?? a.profit, status: live.status || a.status };
-    });
-  }, [accounts, liveAccounts]);
-
+  // Initial or forced refresh — populates TQ cache (Zustand kept in sync
+  // for delete/create optimistic updates elsewhere).
   useEffect(() => {
     let cancelled = false;
     setLocalLoading(true);
@@ -67,11 +59,13 @@ export default function Dashboard() {
     return () => { cancelled = true; };
   }, [fetchAccounts]);
 
+  const accts = accounts ?? [];
+
   const stats = {
     totalEquity: summary?.totalEquity ?? 0,
     totalProfit: summary?.totalProfit ?? 0,
     connectedCount: summary?.connectedCount ?? 0,
-    accountCount: summary?.accountCount ?? (accounts || []).length,
+    accountCount: summary?.accountCount ?? accts.length,
   };
 
   const getDisplayName = () => user?.email?.split('@')[0] || user?.username || t('dashboard.defaultName');
@@ -102,7 +96,7 @@ export default function Dashboard() {
 
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={16}>
-          <DashboardAccountList accounts={merged} loading={localLoading} error={loadError} onRetry={fetchAccounts} />
+          <DashboardAccountList accounts={accts} loading={localLoading} error={loadError} onRetry={fetchAccounts} />
         </Col>
         <Col xs={24} lg={8}>
           <Card title={<span style={{ color: '#141D22', fontWeight: 500 }}>{t('dashboard.quickActions.title')}</span>} className="glass-card h-full">
