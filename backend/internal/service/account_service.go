@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -351,8 +352,23 @@ func (s *AccountService) UpdateAccountMetrics(ctx context.Context, userID uuid.U
 	})
 }
 
-// RecordBalanceSnapshot inserts an hourly equity/balance snapshot row.
+// snapshotThrottle prevents writing more than one balance snapshot per account per hour.
+var (
+	snapshotThrottleMu sync.Mutex
+	snapshotThrottle   = map[string]time.Time{}
+)
+
+// RecordBalanceSnapshot inserts a throttled equity/balance snapshot row.
+// Writes at most once per hour per account to bound disk growth
+// (unthrottled profit updates can fire every few seconds).
 func (s *AccountService) RecordBalanceSnapshot(ctx context.Context, id string, balance, equity, margin, freeMargin float64) error {
+	snapshotThrottleMu.Lock()
+	last, ok := snapshotThrottle[id]
+	snapshotThrottleMu.Unlock()
+	if ok && time.Since(last) < time.Hour {
+		return nil // throttled
+	}
+
 	_, err := s.db.Exec(ctx,
 		`INSERT INTO account_balance_history (account_id, balance, equity, margin, free_margin, recorded_at)
 		 VALUES ($1, $2, $3, $4, $5, NOW())`,
@@ -360,7 +376,28 @@ func (s *AccountService) RecordBalanceSnapshot(ctx context.Context, id string, b
 	if err != nil {
 		return fmt.Errorf("service: record balance snapshot: %w", err)
 	}
+
+	snapshotThrottleMu.Lock()
+	snapshotThrottle[id] = time.Now()
+	snapshotThrottleMu.Unlock()
 	return nil
+}
+
+// CleanupOldSnapshots deletes account_balance_history rows older than retention
+// (default 90 days) and trade_records older than 2 years — keeps disk bounded.
+// Designed to run as a daily background job.
+func (s *AccountService) CleanupOldSnapshots(ctx context.Context, log *zap.Logger) {
+	// Keep 90 days of hourly snapshots (≈ 2160 rows per account).
+	if _, err := s.db.Exec(ctx,
+		`DELETE FROM account_balance_history WHERE recorded_at < NOW() - INTERVAL '90 days'`); err != nil {
+		log.Warn("cleanup: account_balance_history", zap.Error(err))
+	}
+
+	// Keep 2 years of trade records.
+	if _, err := s.db.Exec(ctx,
+		`DELETE FROM trade_records WHERE close_time < NOW() - INTERVAL '2 years'`); err != nil {
+		log.Warn("cleanup: trade_records", zap.Error(err))
+	}
 }
 
 // UpdateBrokerThresholds updates broker margin_call/stop_out thresholds on an account.

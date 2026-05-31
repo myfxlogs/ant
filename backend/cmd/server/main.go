@@ -192,6 +192,22 @@ func main() {
 	// Start reconciliation loop (cancelled on shutdown)
 	go reconLoop.Start(ctx)
 
+	// Daily data retention cleanup — prevents unbounded disk growth.
+	go func() {
+		ticker := time.NewTicker(24 * time.Hour)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				cleanCtx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+				accountSvc.CleanupOldSnapshots(cleanCtx, log)
+				cancel()
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+
 	port := cfg.Port
 	log.Info("ant v2 starting", zap.String("port", port), zap.String("ch", chHost), zap.String("nats", natsURL))
 
