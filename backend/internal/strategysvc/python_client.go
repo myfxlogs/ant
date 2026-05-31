@@ -155,7 +155,12 @@ func (c *PythonClient) post(ctx context.Context, path string, reqBody, respBody 
 	}
 
 	if resp.StatusCode >= 400 {
-		return fmt.Errorf("post %s: status %d: %s", path, resp.StatusCode, string(respBytes))
+		// Truncate response body to prevent traceback leakage to clients.
+	body := string(respBytes)
+	if len(body) > 200 {
+		body = body[:200] + "..."
+	}
+	return fmt.Errorf("post %s: status %d: %s", path, resp.StatusCode, body)
 	}
 
 	if err := json.Unmarshal(respBytes, respBody); err != nil {

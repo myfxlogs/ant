@@ -34,7 +34,7 @@ export default function ScheduleHealthContent({ summary, loading, formatTime }: 
       <Alert
         type={grade.level === 'red' ? 'error' : grade.level === 'yellow' ? 'warning' : 'success'}
         showIcon
-        message={summary ? t('strategy.schedules.health.summaryBanner', { grade: grade.label, totalRuns: summary.totalRuns, successRate: (summary.successRate as number).toFixed(1) }) : t('strategy.schedules.health.messages.clickRefresh')}
+        message={summary ? t('strategy.schedules.health.summaryBanner', { grade: grade.label, totalRuns: summary.totalRuns, successRate: Number(summary.successRate).toFixed(1) }) : t('strategy.schedules.health.messages.clickRefresh')}
         description={summary ? grade.note : undefined}
       />
 

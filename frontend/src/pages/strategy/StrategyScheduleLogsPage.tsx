@@ -37,7 +37,10 @@ export default function StrategyScheduleLogsPage() {
     try {
       const resp = await scheduleHealthApi.getScheduleOrders({ scheduleId, page: 1, pageSize: 200 });
       setOrderLogs((resp?.orders || []) as OrderHistoryRecord[]);
-    } catch { /* non-critical */ }
+    } catch (err) {
+      console.error('refreshOrders failed', err);
+      // non-critical; execution logs are the primary data
+    }
   }, [scheduleId]);
 
   const refresh = useCallback(async () => {

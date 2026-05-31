@@ -187,6 +187,8 @@ func (r *StrategyExperimentRepository) GetCandidate(ctx context.Context, userID,
 	return &row, err
 }
 
+// NOTE: caller (strategy_experiment_handler) verifies ownership via GetCandidate.
+// This UPDATE has no user_id check — relies on caller for authorization.
 func (r *StrategyExperimentRepository) SetBestCandidate(ctx context.Context, experimentID, candidateID uuid.UUID) error {
 	_, err := r.db.Exec(ctx, `UPDATE strategy_experiments SET best_candidate_id = $2 WHERE id = $1`, experimentID, candidateID)
 	if err != nil {
