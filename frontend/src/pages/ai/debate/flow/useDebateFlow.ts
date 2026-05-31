@@ -37,6 +37,7 @@ export function useDebateFlow(): UseDebateFlowResult {
   const [optimisticDisplayStep, setOptimisticDisplayStep] = useState<StepKey | null>(null);
   const [advanceStreamPreview, setAdvanceStreamPreview] = useState('');
   const [chatStreamPreview, setChatStreamPreview] = useState('');
+  const [promptDrafts, setPromptDrafts] = useState<Record<StepKey, string>>({});
 
   const mergeAdvanceStreamChunk = useCallback(createStreamMerger(setAdvanceStreamPreview), []);
   const mergeChatStreamChunk = useCallback(createStreamMerger(setChatStreamPreview), []);
@@ -100,10 +101,11 @@ export function useDebateFlow(): UseDebateFlowResult {
         id: m.id, role: m.role, content: m.content,
         kind: m.kind === 'kickoff' ? 'kickoff' : undefined,
       }));
-      out[s.stepKey] = { messages, extractedPrompt: '', promptDraft: '' };
+      out[s.stepKey] = { messages, extractedPrompt: '', promptDraft: promptDrafts[s.stepKey] || '' };
     }
     return out;
-  }, [session]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, promptDrafts]);
 
   const stepState = useCallback((key: StepKey): StepState => {
     const base = stepsByKey[key] || emptyStep();
@@ -119,7 +121,9 @@ export function useDebateFlow(): UseDebateFlowResult {
   }, [session, codeLoading, modelWaitElapsedSeconds, advanceStreamPreview]);
 
   const setSelectedAgents = useCallback((agents: AIAgentDefinitionView[]) => { setSelectedAgentsRaw(agents); }, []);
-  const updatePromptDraft = useCallback((_key: StepKey, _text: string) => {}, []);
+  const updatePromptDraft = useCallback((key: StepKey, text: string) => {
+    setPromptDrafts((prev) => ({ ...prev, [key]: text }));
+  }, []);
 
   const actionCtx = useMemo(() => ({
     session, selectedAgents, sessionStep, stepLabels, locale, t,

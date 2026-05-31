@@ -54,6 +54,19 @@ function renderMarkdown(content: string): React.ReactNode {
   return <div dangerouslySetInnerHTML={{ __html: result }} />;
 }
 
+/**
+ * Truncate a string to at most `max` Unicode code points without
+ * splitting surrogate pairs. `String.prototype.slice` operates on
+ * UTF-16 code units and can break emoji / supplementary-plane chars.
+ */
+function safeTruncate(text: string, max: number): string {
+  if (text.length <= max) return text;
+  // Walk code points (not code units) so we never split a surrogate pair.
+  const chars = Array.from(text);
+  if (chars.length <= max) return text;
+  return chars.slice(0, max).join('');
+}
+
 function escapeHtml(text: string): string {
   const map: Record<string, string> = {
     '&': '&amp;',
@@ -166,7 +179,7 @@ export default function ChatBox({ messages, loading }: ChatBoxProps) {
                     >
                       {renderMarkdown(
                         assistantTooLong[msg.id] && !expanded[msg.id]
-                          ? msg.content.slice(0, maxCollapsedChars) + `\n\n...(${t('ai.chatBox.truncated')})`
+                          ? safeTruncate(msg.content, maxCollapsedChars) + `\n\n...(${t('ai.chatBox.truncated')})`
                           : msg.content
                       )}
                     </div>

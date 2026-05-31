@@ -54,6 +54,8 @@ func (r *AIConversationRepository) Create(ctx context.Context, userID uuid.UUID,
 }
 
 func (r *AIConversationRepository) ListByUser(ctx context.Context, userID uuid.UUID) ([]AIConversation, error) {
+	// Capped at 100 rows — prevents unbounded result sets.
+	// TODO: add cursor-based pagination when frontend needs it.
 	rows, err := r.db.Query(ctx,
 		`SELECT c.id, c.user_id, c.title, c.created_at, c.updated_at,
 		        COALESCE(m.cnt, 0) AS message_count
@@ -61,7 +63,8 @@ func (r *AIConversationRepository) ListByUser(ctx context.Context, userID uuid.U
 		 LEFT JOIN (SELECT conversation_id, COUNT(*) AS cnt FROM ai_messages GROUP BY conversation_id) m
 		   ON m.conversation_id = c.id
 		 WHERE c.user_id = $1
-		 ORDER BY c.updated_at DESC`,
+		 ORDER BY c.updated_at DESC
+		 LIMIT 100`,
 		userID,
 	)
 	if err != nil {
@@ -151,20 +154,15 @@ func (r *AIConversationRepository) AddMessage(ctx context.Context, userID, conve
 }
 
 func (r *AIConversationRepository) GetMessages(ctx context.Context, userID, conversationID uuid.UUID) ([]AIMessage, error) {
-	// First verify ownership
-	var owner uuid.UUID
-	err := r.db.QueryRow(ctx, `SELECT user_id FROM ai_conversations WHERE id=$1`, conversationID).Scan(&owner)
-	if err != nil {
-		return nil, err
-	}
-	if owner != userID {
-		return nil, fmt.Errorf("conversation not found")
-	}
-
+	// Single JOIN query atomically verifies ownership AND fetches messages.
+	// Eliminates the TOCTOU window between the old two-step approach.
 	rows, err := r.db.Query(ctx,
-		`SELECT id, conversation_id, role, content, created_at
-		 FROM ai_messages WHERE conversation_id = $1 ORDER BY created_at ASC`,
-		conversationID,
+		`SELECT m.id, m.conversation_id, m.role, m.content, m.created_at
+		 FROM ai_messages m
+		 JOIN ai_conversations c ON c.id = m.conversation_id
+		 WHERE m.conversation_id = $1 AND c.user_id = $2
+		 ORDER BY m.created_at ASC`,
+		conversationID, userID,
 	)
 	if err != nil {
 		return nil, err
@@ -183,15 +181,13 @@ func (r *AIConversationRepository) GetMessages(ctx context.Context, userID, conv
 }
 
 // DeleteMessagesByConversation removes all messages for a conversation.
+// Ownership is verified atomically via the EXISTS subquery.
 func (r *AIConversationRepository) DeleteMessagesByConversation(ctx context.Context, userID, conversationID uuid.UUID) error {
-	var owner uuid.UUID
-	err := r.db.QueryRow(ctx, `SELECT user_id FROM ai_conversations WHERE id=$1`, conversationID).Scan(&owner)
-	if err != nil {
-		return err
-	}
-	if owner != userID {
-		return fmt.Errorf("conversation not found")
-	}
-	_, err = r.db.Exec(ctx, `DELETE FROM ai_messages WHERE conversation_id = $1`, conversationID)
+	_, err := r.db.Exec(ctx,
+		`DELETE FROM ai_messages
+		 WHERE conversation_id = $1
+		   AND EXISTS (SELECT 1 FROM ai_conversations WHERE id = $1 AND user_id = $2)`,
+		conversationID, userID,
+	)
 	return err
 }

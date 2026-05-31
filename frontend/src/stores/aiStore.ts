@@ -6,6 +6,14 @@ import type { ConversationSummary } from '@/client/ai';
 import i18n from '@/i18n';
 import { sendMessageCore, toConv, type Message, type Conversation } from './aiMessageSender';
 
+type StatePatch = {
+  sending?: boolean;
+  conversations?: Conversation[];
+  activeConversationId?: string;
+  messages?: Message[];
+  loading?: boolean;
+};
+
 interface AIState {
   conversations: Conversation[];
   activeConversationId: string;
@@ -31,13 +39,9 @@ export const useAIStore = create<AIState>((set, get) => {
       getActiveConversationId: () => get().activeConversationId,
       getConversations: () => get().conversations,
       getMessages: () => get().messages,
-      setState: (partial: {
-        sending?: boolean;
-        conversations?: Conversation[];
-        activeConversationId?: string;
-        messages?: Message[];
-        loading?: boolean;
-      }) => set(partial),
+      setState: (
+        updater: StatePatch | ((prev: { messages: Message[]; conversations: Conversation[] }) => StatePatch),
+      ) => set(updater as StatePatch),
     };
   }
 
@@ -55,7 +59,7 @@ export const useAIStore = create<AIState>((set, get) => {
         const convs = list.map(toConv);
         set({ conversations: convs, conversationsLoaded: true });
       } catch (err) {
-        console.debug('loadConversations failed', err);
+        console.error('loadConversations failed', err);
         set({ conversationsLoaded: true });
       }
     },
@@ -78,7 +82,8 @@ export const useAIStore = create<AIState>((set, get) => {
           activeConversationId: conv.id,
           messages: [],
         });
-      } catch {
+      } catch (err) {
+        console.error('newConversation failed', err);
         message.error(i18n.t('ai.store.messages.createConversationFailed'));
       }
     },
@@ -94,8 +99,9 @@ export const useAIStore = create<AIState>((set, get) => {
           timestamp: new Date(m.createdAt),
         }));
         set({ messages: msgs, loading: false });
-      } catch {
+      } catch (err) {
         set({ loading: false });
+        console.error('selectConversation failed', err);
         message.error(i18n.t('ai.store.messages.loadConversationFailed'));
       }
     },
@@ -112,12 +118,13 @@ export const useAIStore = create<AIState>((set, get) => {
             messages: [],
           });
           if (cur[0]) {
-            get().selectConversation(cur[0].id);
+            await get().selectConversation(cur[0].id);
           }
         } else {
           set({ conversations: cur });
         }
-      } catch {
+      } catch (err) {
+        console.error('deleteConversation failed', err);
         message.error(i18n.t('ai.store.messages.deleteConversationFailed'));
       }
     },

@@ -31,19 +31,25 @@ export function toConv(c: ConversationSummary): Conversation {
   };
 }
 
+type StatePatch = {
+  sending?: boolean;
+  conversations?: Conversation[];
+  activeConversationId?: string;
+  messages?: Message[];
+  loading?: boolean;
+};
+
 interface StoreAccessors {
   getSending: () => boolean;
   getActiveConversationId: () => string;
   getConversations: () => Conversation[];
   getMessages: () => Message[];
-  setState: (partial: {
-    sending?: boolean;
-    conversations?: Conversation[];
-    activeConversationId?: string;
-    messages?: Message[];
-    loading?: boolean;
-  }) => void;
+  setState: (updater: StatePatch | ((prev: { messages: Message[]; conversations: Conversation[] }) => StatePatch)) => void;
 }
+
+// Track the active stream controller so we can abort when a new send starts
+// or the component unmounts.
+let activeAbortController: AbortController | null = null;
 
 /**
  * Core message sending logic shared by sendMessage and sendMessageAndGetResponse.
@@ -55,6 +61,16 @@ export async function sendMessageCore(
   accessors: StoreAccessors,
 ): Promise<string> {
   if (accessors.getSending()) return '';
+
+  // Abort any in-flight streaming request so deltas don't land
+  // on the wrong conversation.
+  if (activeAbortController) {
+    activeAbortController.abort();
+    activeAbortController = null;
+  }
+  activeAbortController = new AbortController();
+  const signal = activeAbortController.signal;
+
   accessors.setState({ sending: true });
 
   let activeConversationId = accessors.getActiveConversationId();
@@ -81,7 +97,8 @@ export async function sendMessageCore(
         activeConversationId: conv.id,
         messages: [],
       });
-    } catch {
+    } catch (createErr) {
+      console.error('sendMessageCore: createConversation failed', createErr);
       convReady = false;
     }
   }
@@ -102,7 +119,10 @@ export async function sendMessageCore(
     isLoading: true,
   };
 
-  accessors.setState({ messages: [...getMessages(), userMessage, aiMessage] });
+  // Functional update — reads latest state, no race with streaming deltas.
+  accessors.setState((prev) => ({
+    messages: [...prev.messages, userMessage, aiMessage],
+  }));
 
   try {
     let response: { message: string; suggestions: string[] };
@@ -117,15 +137,22 @@ export async function sendMessageCore(
         },
         (delta) => {
           acc += delta;
-          accessors.setState({
-            messages: accessors.getMessages().map((m) =>
+          // Functional update avoids race with the outer setState.
+          accessors.setState((prev) => ({
+            messages: prev.messages.map((m) =>
               m.id === aiMessageId ? { ...m, content: acc, isLoading: true } : m,
             ),
-          });
+          }));
         },
+        { signal },
       );
     } catch (streamErr) {
-      console.debug('chatStreaming failed, falling back to non-streaming', streamErr);
+      // Don't fall back if the request was intentionally aborted.
+      if (signal.aborted) {
+        console.debug('chatStreaming aborted');
+        return '';
+      }
+      console.error('chatStreaming failed, falling back to non-streaming', streamErr);
       response = await aiApi.chat({
         message: content,
         context: buildChatContext(),
@@ -134,10 +161,11 @@ export async function sendMessageCore(
       });
     }
 
-    const curMsgs = accessors.getMessages().map((m) =>
-      m.id === aiMessageId ? { ...m, content: response.message, isLoading: false } : m,
-    );
-    accessors.setState({ messages: curMsgs });
+    accessors.setState((prev) => ({
+      messages: prev.messages.map((m) =>
+        m.id === aiMessageId ? { ...m, content: response.message, isLoading: false } : m,
+      ),
+    }));
 
     if (convReady) {
       const list = await aiApi.listConversations();
@@ -145,13 +173,18 @@ export async function sendMessageCore(
     }
     return response.message || '';
   } catch (e: unknown) {
-    const curMsgs = accessors.getMessages().map((m) =>
-      m.id === aiMessageId ? { ...m, content: i18n.t('ai.store.messages.sendFailedInline'), isLoading: false } : m,
-    );
-    accessors.setState({ messages: curMsgs });
+    console.error('sendMessageCore: send failed', e);
+    accessors.setState((prev) => ({
+      messages: prev.messages.map((m) =>
+        m.id === aiMessageId ? { ...m, content: i18n.t('ai.store.messages.sendFailedInline'), isLoading: false } : m,
+      ),
+    }));
     message.error(toFriendlyAIChatError(e) || i18n.t('ai.store.messages.sendFailedToast'));
     return '';
   } finally {
+    if (activeAbortController?.signal === signal) {
+      activeAbortController = null;
+    }
     accessors.setState({ sending: false });
   }
 }

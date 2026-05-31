@@ -21,6 +21,18 @@ const (
 var (
 	errBaseURLEmpty = errors.New("base_url is empty")
 	errBaseURLBad   = errors.New("base url format invalid")
+
+	// shared HTTP client with sensible transport defaults.
+	// Each request carries its own context deadline via http.NewRequestWithContext.
+	httpClient = &http.Client{
+		Timeout: 0, // no blanket timeout — per-request context handles it
+		Transport: &http.Transport{
+			MaxIdleConns:        20,
+			MaxConnsPerHost:     5,
+			IdleConnTimeout:     90 * time.Second,
+			DisableKeepAlives:   false,
+		},
+	}
 )
 
 func validateBaseURL(s string) error {
@@ -90,7 +102,7 @@ func fetchModelsPage(ctx context.Context, baseURL, secret, after string) ([]stri
 	}
 	authHeader(req, secret)
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
 			return nil, "", false, fmt.Errorf("upstream timeout after %v: %w", discoverTimeout, err)
@@ -186,7 +198,7 @@ func fetchZhipuModels(ctx context.Context, baseURL, secret string) ([]string, er
 	}
 	authHeader(req, secret)
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
