@@ -131,16 +131,8 @@ func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[
 	if s.mtTester != nil {
 		info, err := s.mtTester.Test(ctx, r.MtType, r.BrokerHost, r.Login, r.Password)
 		if err != nil {
-			// Commit the row so the account exists before we mark it (#H1).
-			if commitErr := tx.Commit(ctx); commitErr != nil {
-				s.log.Error("CreateAccount: tx commit failed", zap.String("id", id), zap.Error(commitErr))
-				return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("account verification failed: %w", err))
-			}
-			// Mark the account as needs_rebind since credentials failed.
-			if markErr := s.svc.MarkAccountNeedsRebind(ctx, userID, id); markErr != nil {
-				s.log.Error("CreateAccount: mark needs_rebind failed", zap.String("id", id), zap.Error(markErr))
-			}
-			s.log.Warn("CreateAccount: MT connection failed", zap.String("accountId", id), zap.Error(err))
+			s.log.Warn("CreateAccount: MT verification failed, rolling back",
+				zap.String("accountId", id), zap.Error(err))
 			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("account verification failed: %w", err))
 		}
 
