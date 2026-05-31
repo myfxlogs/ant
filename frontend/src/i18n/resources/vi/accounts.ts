@@ -247,7 +247,7 @@ const accounts = {
         search: 'Tìm kiếm',
         confirmBind: 'Xác nhận',
       },
-      passwordHint: 'Mật khẩu được truyền qua HTTPS. Backend lưu dưới dạng băm Argon2id không thể đảo ngược.',
+      passwordHint: 'Mật khẩu truyền qua HTTPS. Lưu trữ mã hóa AES-256-GCM trên backend (cần plaintext để xác thực broker)',
       summary: {
         broker: 'Môi giới',
         server: 'Máy chủ',

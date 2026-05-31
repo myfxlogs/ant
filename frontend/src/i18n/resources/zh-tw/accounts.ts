@@ -247,7 +247,7 @@ const accounts = {
         search: '搜尋',
         confirmBind: '確認綁定',
       },
-      passwordHint: '密碼將透過 HTTPS 加密傳輸，後端使用 Argon2id 雜湊儲存不可回逆',
+      passwordHint: "密碼通過 HTTPS 加密傳輸，後端 AES-256-GCM 加密存儲（需明文發送至經紀商驗證）",
       summary: {
         broker: '經紀商',
         server: '伺服器',
