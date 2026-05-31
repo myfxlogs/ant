@@ -26,8 +26,8 @@ export default function DashboardAccountList({ accounts, loading, error, onRetry
   return (
     <Card title={<span style={{ color: '#141D22', fontWeight: 500 }}>{t('dashboard.accountList')}</span>} className="glass-card">
       <StatusResult loading={loading} error={error} onRetry={onRetry} empty={!loading && !error && (!accounts || accounts.length === 0)} emptyText={t('dashboard.noAccounts')}>
-        <div className="space-y-3">
-          {(accounts || []).slice(0, 4).map((item) => {
+        <div className="space-y-3" style={{ maxHeight: 480, overflowY: 'auto' }}>
+          {(accounts || []).map((item) => {
             // Live data already merged by Dashboard — no separate lookup needed.
             const rowBalance = item.balance;
             const rowEquity = item.equity;
