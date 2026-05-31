@@ -110,6 +110,7 @@ func (s *Subscriber) Start(ctx context.Context) {
 	}
 	s.running = true
 	ctx, s.cancel = context.WithCancel(ctx)
+	// #nosec G118 — subscriber loop runs for pipeline lifetime
 	go s.loop(ctx)
 }
 

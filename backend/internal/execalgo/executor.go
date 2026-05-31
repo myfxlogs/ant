@@ -150,6 +150,7 @@ func (e *Executor) Start(ctx context.Context) {
 	ctx, cancel := context.WithCancel(ctx)
 	e.cancel = cancel
 
+	// #nosec G118 — executor runs for algo execution lifetime
 	go e.run(ctx)
 }
 
