@@ -76,9 +76,9 @@ export function useAccount() {
       addAccount(account);
       // Success toast is shown by the caller (e.g., BindAccount) to avoid duplicates.
       return account;
-    } catch (error) {
-      showError(getErrorMessage(error, i18n.t('accounts.messages.createFailed')));
-      throw error;
+    } catch (_e) {
+      // Error toast shown by caller (BindAccount), not duplicated here.
+      throw _e;
     } finally {
       setLoading(false);
     }
@@ -102,9 +102,8 @@ export function useAccount() {
       const account = await accountApi.get(id);
       updateAccount(account);
       return account;
-    } catch (error) {
-      showError(getErrorMessage(error, i18n.t('accounts.messages.connectFailed')));
-      throw error;
+    } catch (_e) {
+      throw _e;
     }
   }, [updateAccount]);
 
