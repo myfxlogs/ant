@@ -81,7 +81,10 @@ export function useDebateFlow(): UseDebateFlowResult {
     ];
     for (const a of effectiveAgents) {
       const builtin = ['style', 'signals', 'risk', 'macro', 'sentiment', 'portfolio', 'execution', 'code'].includes(a.type);
-      const label = builtin ? t(`ai.settings.agent.types.${a.type}`, { defaultValue: a.type }) : a.name || a.type;
+      const backendAgent = ['strategist', 'risk_manager', 'executor', 'researcher'].includes(a.agentKey || a.type);
+      const label = builtin || backendAgent
+        ? t(`ai.settings.agent.types.${backendAgent ? (a.agentKey || a.type) : a.type}`, { defaultValue: a.name || a.type })
+        : a.name || a.type;
       list.push({ key: stepKeyForAgent(a), label });
     }
     list.push({ key: 'code', label: t('ai.debate.v2.steps.code', { defaultValue: 'Generate code' }) });
