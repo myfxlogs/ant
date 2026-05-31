@@ -1,3 +1,8 @@
+/**
+ * @deprecated This file contains legacy types from the v1 chat flow.
+ * Active code uses types from aiMessageSender.ts and client/ai/types.ts.
+ * Preserved for reference; zombie components (StrategyCard, SignalCard) depend on it.
+ */
 // AI消息类型
 export interface Message {
   id: string;

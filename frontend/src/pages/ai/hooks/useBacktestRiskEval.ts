@@ -11,6 +11,9 @@ export type BacktestRiskEval = {
   warnings?: string[];
 };
 
+// NOTE: API requests are not abortable. If the component mounts/unmounts
+// rapidly, a stale response may update setRisk. The mounted flag and seq
+// counter prevent most races, but the backend still processes cancelled requests.
 export function useBacktestRiskEval(params: {
   enabled: boolean;
   templateId: string;

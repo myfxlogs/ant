@@ -128,6 +128,7 @@ export const aiApi = {
     return !!response.success;
   },
 
+  /** @deprecated Not used by any active UI — preserved for API completeness. */
   updateConversationTitle: async (id: string, title: string): Promise<boolean> => {
     const response = await aiClient.updateConversationTitle({ id, title });
     return !!response.success;

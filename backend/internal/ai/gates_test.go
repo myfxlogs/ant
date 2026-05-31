@@ -354,6 +354,9 @@ func TestCorrelationGate_LowCorrelation(t *testing.T) {
 	t.Logf("Low correlation: max=%.4f", result.MaxCorrelation)
 }
 
+// TestCorrelationGate_HighCorrelation verifies that highly correlated signals
+// are detected. The test perturbs a single element to break perfect correlation;
+// the exact value depends on the signal-generation pattern.
 func TestCorrelationGate_HighCorrelation(t *testing.T) {
 	t.Parallel()
 	// Strongly correlated signals (same direction pattern but with slight noise).
