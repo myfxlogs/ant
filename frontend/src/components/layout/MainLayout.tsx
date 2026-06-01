@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Layout } from 'antd';
-import { HomeOutlined, RobotOutlined, ThunderboltOutlined, HistoryOutlined, UnorderedListOutlined, FolderOutlined } from '@ant-design/icons';
+import { HomeOutlined, RobotOutlined, ThunderboltOutlined, HistoryOutlined, UnorderedListOutlined, FolderOutlined, CodeOutlined } from '@ant-design/icons';
 import { Outlet } from 'react-router-dom';
 import ContentContainer from '@/components/layout/ContentContainer';
 import { useTranslation } from 'react-i18next';
@@ -41,6 +41,7 @@ export default function MainLayout() {
     { key: '/', icon: <HomeOutlined size={20} stroke={1.5} />, label: t('menu.dashboard') },
     { key: '/ai', icon: <RobotOutlined size={20} stroke={1.5} />, label: t('menu.aiAssistant') },
     { key: '/strategy/templates', icon: <UnorderedListOutlined size={20} stroke={1.5} />, label: t('menu.strategies') },
+    { key: '/strategy/workspace', icon: <CodeOutlined size={20} stroke={1.5} />, label: t('menu.strategyWorkspace') },
     { key: '/strategy/assets', icon: <FolderOutlined size={20} stroke={1.5} />, label: t('menu.assets') },
     { key: '/strategy/schedules', icon: <ThunderboltOutlined size={20} stroke={1.5} />, label: t('menu.schedules') },
     { key: '/logs', icon: <HistoryOutlined size={20} stroke={1.5} />, label: t('menu.logs') },

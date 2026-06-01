@@ -28,6 +28,7 @@ const StrategyAssetPage = lazy(() => import('@/pages/strategy/StrategyAssetPage'
 const StrategySchedulePage = lazy(() => import('@/pages/strategy/StrategySchedulePage'));
 const StrategyScheduleLogsPage = lazy(() => import('@/pages/strategy/StrategyScheduleLogsPage'));
 const IndicatorCatalogPage = lazy(() => import('@/pages/strategy/IndicatorCatalogPage'));
+const StrategyWorkspacePage = lazy(() => import('@/pages/strategy/StrategyWorkspacePage'));
 const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'));
 const LogManagement = lazy(() => import('@/pages/logs/LogManagement'));
 const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
@@ -70,6 +71,7 @@ const mainRoutes = (
       <Route path="gate" element={wrap(<GateProgressPage />)} />
     </Route>
     <Route path="strategy/templates" element={wrap(<StrategyTemplatePage />)} />
+    <Route path="strategy/workspace" element={wrap(<StrategyWorkspacePage />)} />
     <Route path="strategy/assets" element={wrap(<StrategyAssetPage />)} />
     <Route path="strategy/schedules" element={wrap(<StrategySchedulePage />)} />
     <Route path="strategy/schedules/:id/logs" element={wrap(<StrategyScheduleLogsPage />)} />

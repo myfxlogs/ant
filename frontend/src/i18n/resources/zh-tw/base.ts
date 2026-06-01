@@ -102,6 +102,7 @@ const base = {
     vietnamese: 'Tiếng Việt',
   },
   menu: {
+    strategyWorkspace: '策略工作台',
     dashboard: '儀表板',
     accounts: '帳戶管理',
     aiAssistant: 'AI助手',

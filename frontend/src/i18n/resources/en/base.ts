@@ -104,6 +104,7 @@ const base = {
     },
   },
   menu: {
+    strategyWorkspace: 'Strategy Workspace',
     dashboard: 'Dashboard',
     accounts: 'Accounts',
     aiAssistant: 'AI Assistant',

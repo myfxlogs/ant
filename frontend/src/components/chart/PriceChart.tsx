@@ -1,8 +1,9 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { Radio, Spin, Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
-import { createChart, CandlestickSeries, HistogramSeries, type IChartApi, type ISeriesApi, type CandlestickData, type HistogramData, type Time, ColorType } from 'lightweight-charts';
-import { marketApi, type KlineData } from '@/client/market';
+import { init, dispose, type KLineData } from 'klinecharts';
+import type { Chart } from 'klinecharts';
+import { marketApi, type KlineData as ApiKlineData } from '@/client/market';
 
 const TIMEFRAMES = [
   { label: '1m', value: '1m' },
@@ -24,40 +25,30 @@ interface PriceChartProps {
   height?: number;
 }
 
-function toCandleData(bar: KlineData): CandlestickData {
+function toKLineData(bar: ApiKlineData): KLineData {
   return {
-    time: bar.time as Time,
+    timestamp: bar.time * 1000, // seconds → milliseconds
     open: bar.open,
     high: bar.high,
     low: bar.low,
     close: bar.close,
-  };
-}
-
-function toVolumeData(bar: KlineData): HistogramData {
-  return {
-    time: bar.time as Time,
-    value: bar.volume,
-    color: bar.close >= bar.open ? 'rgba(38,166,154,0.5)' : 'rgba(239,83,80,0.5)',
+    volume: bar.volume,
   };
 }
 
 export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange, height = 500 }: PriceChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const chartRef = useRef<IChartApi | null>(null);
-  const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
-  const volumeSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null);
-  const [bars, setBars] = useState<KlineData[]>([]);
+  const chartRef = useRef<Chart | null>(null);
+  const [bars, setBars] = useState<ApiKlineData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tooNarrow, setTooNarrow] = useState(false);
   const loadingMore = useRef(false);
   const loadedAll = useRef(false);
-  const handleVisibleRangeChangeRef = useRef<((range: { from: number } | null) => void) | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // B-4.5: responsive — hide chart below 1280px viewport width.
+  // responsive — hide chart below 1280px viewport width
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 1279px)');
     setTooNarrow(mq.matches);
@@ -66,7 +57,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  // Fetch klines on symbol/timeframe change + poll for updates.
+  // Fetch klines on symbol/timeframe change + poll
   useEffect(() => {
     if (!symbol) return;
     let cancelled = false;
@@ -75,7 +66,6 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     loadedAll.current = false;
     loadingMore.current = false;
 
-    // Clear any existing poll interval.
     if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
 
     const doFetch = (count: number) =>
@@ -93,14 +83,14 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
         setLoading(false);
       });
 
-    // Poll for new bars every 5s to keep the chart live.
+    // Poll every 5s for live data
     pollRef.current = setInterval(() => {
       if (cancelled) return;
       doFetch(5)
         .then((latest) => {
           if (cancelled || latest.length === 0) return;
           setBars((prev) => {
-            const index = new Map<number, KlineData>();
+            const index = new Map<number, ApiKlineData>();
             for (const b of prev) index.set(b.time, b);
             for (const b of latest) index.set(b.time, b);
             return [...index.values()].sort((a, b) => a.time - b.time);
@@ -115,90 +105,63 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     };
   }, [symbol, timeframe]);
 
-  // Create chart on mount.
+  // Create chart on mount
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const chart = createChart(containerRef.current, {
-      layout: {
-        background: { type: ColorType.Solid, color: 'transparent' },
-        textColor: '#d1d5db',
+    const chart = init(containerRef.current, {
+      styles: {
+        grid: {
+          horizontal: { color: 'rgba(255,255,255,0.06)', style: 'dash' as const },
+          vertical: { color: 'rgba(255,255,255,0.06)', style: 'dash' as const },
+        },
+        candle: {
+          bar: {
+            upColor: '#26a69a',
+            downColor: '#ef5350',
+            upBorderColor: '#26a69a',
+            downBorderColor: '#ef5350',
+            upWickColor: '#26a69a',
+            downWickColor: '#ef5350',
+          },
+        },
+        xAxis: {
+          axisLine: { color: 'rgba(255,255,255,0.1)' },
+          tickText: { color: '#d1d5db' },
+        },
+        yAxis: {
+          axisLine: { color: 'rgba(255,255,255,0.1)' },
+          tickText: { color: '#d1d5db' },
+        },
+        separator: { color: 'rgba(255,255,255,0.06)' },
+        crosshair: {
+          horizontal: { line: { color: 'rgba(255,255,255,0.3)' } },
+          vertical: { line: { color: 'rgba(255,255,255,0.3)' } },
+        },
       },
-      grid: {
-        vertLines: { color: 'rgba(255,255,255,0.06)' },
-        horzLines: { color: 'rgba(255,255,255,0.06)' },
-      },
-      crosshair: { mode: 0 },
-      rightPriceScale: {
-        borderColor: 'rgba(255,255,255,0.1)',
-      },
-      timeScale: {
-        borderColor: 'rgba(255,255,255,0.1)',
-        timeVisible: true,
-        secondsVisible: false,
-      },
-      width: containerRef.current.clientWidth,
-      height,
-    });
-
-    const candleSeries = chart.addSeries(CandlestickSeries, {
-      upColor: '#26a69a',
-      downColor: '#ef5350',
-      borderUpColor: '#26a69a',
-      borderDownColor: '#ef5350',
-      wickUpColor: '#26a69a',
-      wickDownColor: '#ef5350',
-    });
-
-    const volumeSeries = chart.addSeries(HistogramSeries, {
-      priceFormat: { type: 'volume' },
-      priceScaleId: '',
-    });
-    volumeSeries.priceScale().applyOptions({
-      scaleMargins: { top: 0.8, bottom: 0 },
     });
 
     chartRef.current = chart;
-    candleSeriesRef.current = candleSeries;
-    volumeSeriesRef.current = volumeSeries;
-
-    const handleResize = () => {
-      if (containerRef.current && chartRef.current) {
-        chartRef.current.applyOptions({ width: containerRef.current.clientWidth });
-      }
-    };
-    const observer = new ResizeObserver(handleResize);
-    observer.observe(containerRef.current);
-
-    const rangeHandler = (range: { from: number } | null) => {
-      handleVisibleRangeChangeRef.current?.(range);
-    };
-    chart.timeScale().subscribeVisibleLogicalRangeChange(rangeHandler);
 
     return () => {
-      chart.timeScale().unsubscribeVisibleLogicalRangeChange(rangeHandler);
-      observer.disconnect();
-      chart.remove();
+      dispose(chart);
       chartRef.current = null;
-      candleSeriesRef.current = null;
-      volumeSeriesRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update chart data when bars change.
+  // Update chart data when bars change
   useEffect(() => {
-    if (!candleSeriesRef.current || !volumeSeriesRef.current || bars.length === 0) return;
-    candleSeriesRef.current.setData(bars.map(toCandleData));
-    volumeSeriesRef.current.setData(bars.map(toVolumeData));
+    if (!chartRef.current || bars.length === 0) return;
+    chartRef.current.applyNewData(bars.map(toKLineData));
   }, [bars]);
 
-  // Load more bars when user scrolls/drags to the left edge.
-  const handleVisibleRangeChange = useCallback((range: { from: number } | null) => {
-    if (!range || bars.length === 0) return;
+  // Load more bars when user scrolls left
+  const handleLoadMore = useCallback((timestamp: number | null) => {
+    if (!timestamp || bars.length === 0) return;
     if (loadingMore.current || loadedAll.current) return;
+    // klinecharts passes the timestamp of the leftmost visible bar
     const firstBarTime = bars[0].time;
-    if (range.from >= firstBarTime - 60) return;
+    if (timestamp >= firstBarTime) return;
     loadingMore.current = true;
     marketApi.getKlines({ symbol, timeframe, count: INITIAL_BARS, before: firstBarTime })
       .then((older) => {
@@ -208,16 +171,50 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
       .catch(() => { /* silent */ })
       .finally(() => { loadingMore.current = false; });
   }, [bars, symbol, timeframe]);
-  handleVisibleRangeChangeRef.current = handleVisibleRangeChange;
 
-  // Update chart height when prop changes.
+  // Wire load-more listener
   useEffect(() => {
-    if (chartRef.current) {
-      chartRef.current.applyOptions({ height });
+    const chart = chartRef.current;
+    if (!chart) return;
+    // klinecharts fires onVisibleRangeChange — but v9 doesn't expose this directly.
+    // Instead, listen for mouse/touch interactions and check visible range.
+    // For simplicity, use a MutationObserver-free approach: check on wheel/pointer.
+    const container = containerRef.current;
+    if (!container) return;
+
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const onInteraction = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        try {
+          // Access visible data range through chart internals
+          const range = (chart as any).getVisibleRange?.() as { from?: number; to?: number } | null;
+          if (range?.from != null) {
+            handleLoadMore(range.from);
+          }
+        } catch { /* ignore */ }
+      }, 300);
+    };
+
+    container.addEventListener('wheel', onInteraction, { passive: true });
+    container.addEventListener('pointerdown', onInteraction, { passive: true });
+
+    return () => {
+      container.removeEventListener('wheel', onInteraction);
+      container.removeEventListener('pointerdown', onInteraction);
+      if (timer) clearTimeout(timer);
+    };
+  }, [handleLoadMore]);
+
+  // Update chart height
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (chart && containerRef.current) {
+      containerRef.current.style.height = `${height}px`;
+      chart.resize();
     }
   }, [height]);
 
-  // B-4.5: hide chart on narrow viewports (< 1280px) to prevent layout breakage.
   if (tooNarrow) {
     return (
       <div ref={wrapperRef} style={{
@@ -232,7 +229,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
 
   return (
     <div ref={wrapperRef} style={{ position: 'relative' }}>
-      {/* Timeframe switcher + delay tooltip */}
+      {/* Timeframe switcher */}
       <div style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         marginBottom: 8,
@@ -285,7 +282,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
             Select a symbol to view chart
           </div>
         )}
-        <div ref={containerRef} style={{ width: '100%' }} />
+        <div ref={containerRef} style={{ width: '100%', height }} />
       </div>
     </div>
   );

@@ -37,7 +37,7 @@ export default defineConfig({
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-antd': ['antd'],
-          'vendor-charts': ['recharts', 'lightweight-charts'],
+          'vendor-charts': ['recharts', 'klinecharts'],
           'vendor-protobuf': ['@bufbuild/protobuf', '@connectrpc/connect', '@connectrpc/connect-web'],
         },
       },
