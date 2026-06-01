@@ -30,23 +30,28 @@ function toUnixSeconds(ts: Timestamp | undefined): number {
 }
 
 export const marketApi = {
-  // getSymbols returns the full real broker symbol list with params.
-  // 1. SymbolList → all available symbol names from the connected broker
-  // 2. SymbolParams → batch-fetch params for all symbols
+  // getSymbols returns all available symbol names from the connected broker.
+  // Uses SymbolList RPC (fast, returns just names).
   getSymbols: async (accountId: string): Promise<SymbolInfo[]> => {
     try {
-      // Step 1: get all symbol names from the broker.
-      const listResp = await tradingClient.symbolList({ accountId });
-      const symbols = listResp.symbols || [];
-      if (symbols.length === 0) return [];
+      const resp = await tradingClient.symbolList({ accountId });
+      return (resp.symbols || []).map((s) => ({ symbol: s }));
+    } catch {
+      return [];
+    }
+  },
 
-      // Step 2: batch-fetch params for all symbols.
-      const paramsResp = await tradingClient.symbolParams({
-        accountId,
-        canonicals: symbols,
-      });
-      const params = paramsResp.params || [];
-      return params.map((p) => ({
+  // resolveSymbol passthrough (broker symbols used directly for K-line queries).
+  resolveSymbol: (name: string): string => name,
+
+  // clearSymbolCache no-op.
+  clearSymbolCache: () => {},
+
+  // getSymbolParams fetches detailed trading params for a batch of symbols.
+  getSymbolParams: async (accountId: string, canonicals: string[]): Promise<SymbolInfo[]> => {
+    try {
+      const resp = await tradingClient.symbolParams({ accountId, canonicals });
+      return (resp.params || []).map((p) => ({
         symbol: p.canonical,
         description: p.symbolRaw !== p.canonical ? p.symbolRaw : undefined,
         digits: p.digits,
@@ -61,23 +66,28 @@ export const marketApi = {
     }
   },
 
-  getKlines: async (params: { symbol: string; timeframe: string; count?: number; before?: number }): Promise<KlineData[]> => {
-    const req: Record<string, unknown> = {
-      canonical: params.symbol,
-      period: params.timeframe,
-      limit: params.count ?? 300,
-    };
-    if (params.before) {
-      req.to = { seconds: BigInt(params.before), nanos: 0 };
+  getKlines: async (params: { symbol: string; timeframe: string; count?: number; before?: number; accountId?: string }): Promise<KlineData[]> => {
+    try {
+      const req: Record<string, unknown> = {
+        canonical: params.symbol,
+        period: params.timeframe,
+        limit: params.count ?? 300,
+      };
+      if (params.before) {
+        req.to = { seconds: BigInt(params.before), nanos: 0 };
+      }
+      // Use MarketService.GetKlines (ClickHouse) — broker PriceHistory returns sparse data.
+      const response: any = await marketClient.getKlines(req);
+      return ((response.bars || []) as OHLCV[]).map((bar) => ({
+        time: toUnixSeconds(bar.openTime),
+        open: Number(bar.open ?? '0'),
+        high: Number(bar.high ?? '0'),
+        low: Number(bar.low ?? '0'),
+        close: Number(bar.close ?? '0'),
+        volume: Number(bar.volume ?? 0),
+      }));
+    } catch {
+      return [];
     }
-    const response: any = await marketClient.getKlines(req);
-    return ((response.bars || []) as OHLCV[]).map((bar) => ({
-      time: toUnixSeconds(bar.openTime),
-      open: Number(bar.open ?? '0'),
-      high: Number(bar.high ?? '0'),
-      low: Number(bar.low ?? '0'),
-      close: Number(bar.close ?? '0'),
-      volume: Number(bar.volume ?? 0),
-    }));
   },
 };

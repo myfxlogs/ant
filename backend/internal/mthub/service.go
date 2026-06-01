@@ -502,6 +502,15 @@ func (s *MtHubService) SymbolParams(ctx context.Context, accountID string, canon
 	return exec.FetchSymbolParams(ctx, canonicals)
 }
 
+// PriceHistory fetches K-line bars from the connected broker.
+func (s *MtHubService) PriceHistory(ctx context.Context, accountID, symbol, period string, from, to int64, count int) ([]*Bar, error) {
+	exec := s.hub.Get(accountID)
+	if exec == nil {
+		return nil, ErrSessionNotFound
+	}
+	return exec.FetchPriceHistory(ctx, symbol, period, from, to, count)
+}
+
 // SymbolList returns all available symbol names for a connected MT account.
 func (s *MtHubService) SymbolList(ctx context.Context, accountID string) ([]string, error) {
 	exec := s.hub.Get(accountID)

@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback, Suspense, lazy } from 'react';
-import { Tabs, Button, Collapse, message, Spin, Form } from 'antd';
+import { Tabs, Button, Collapse, message, Form } from 'antd';
 import {
-  MenuFoldOutlined, MenuUnfoldOutlined, RobotOutlined,
+  RobotOutlined, DoubleLeftOutlined, DoubleRightOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useAccount } from '@/hooks/useAccount';
 import { strategyApi, type StrategyTemplate } from '@/client/strategy';
 import { codeAssistApi, type ValidateExtendedResult } from '@/client/codeAssist';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
+import { marketApi } from '@/client/market';
 import WorkspaceCodePanel from './components/workspace/WorkspaceCodePanel';
 import WorkspaceChartTab from './components/workspace/WorkspaceChartTab';
 import WorkspaceBacktestPanel from './components/workspace/WorkspaceBacktestPanel';
@@ -32,6 +33,12 @@ export default function StrategyWorkspacePage() {
   const [symbol, setSymbol] = useState('');
   const [timeframe, setTimeframe] = useState('1h');
 
+  const handleAccountChange = useCallback((id: string) => {
+    setAccountId(id);
+    setSymbol('');
+    marketApi.clearSymbolCache();
+  }, []);
+
   // Validation
   const [validating, setValidating] = useState(false);
   const [validationResult, setValidationResult] = useState<ValidateExtendedResult | null>(null);
@@ -51,14 +58,14 @@ export default function StrategyWorkspacePage() {
   const [backtestError, setBacktestError] = useState('');
 
   // UI
-  const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
+  const [codePanelVisible, setCodePanelVisible] = useState(true);
   const [activeRightTab, setActiveRightTab] = useState('chart');
 
   // Load accounts & templates on mount
   useEffect(() => {
     fetchAccounts().then((list) => {
       const enabled = (list || []).filter((a) => !a.isDisabled);
-      if (enabled.length > 0 && !accountId) setAccountId(enabled[0].id);
+      if (enabled.length > 0 && !accountId) handleAccountChange(enabled[0].id);
     });
     loadTemplates();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -79,9 +86,7 @@ export default function StrategyWorkspacePage() {
     try {
       const tpl = await strategyApi.getTemplate(id);
       if (tpl?.code) setCode(tpl.code);
-      if (tpl?.name) {
-        setLoadedTemplate(tpl as StrategyTemplate);
-      }
+      if (tpl?.name) setLoadedTemplate(tpl as StrategyTemplate);
       setLastValidatedCode('');
       setValidationResult(null);
     } catch (e: any) {
@@ -108,18 +113,12 @@ export default function StrategyWorkspacePage() {
     setBacktestSubmitting(true);
     try {
       const result = await pythonStrategyApi.startBacktestRun({
-        code,
-        accountId,
-        symbol,
-        timeframe,
-        initialCapital: 10000,
+        code, accountId, symbol, timeframe, initialCapital: 10000,
       });
       const runId = result.runId;
       if (!runId) throw new Error('No run ID returned');
       setBacktestStatus('running');
       setActiveRightTab('backtest');
-
-      // Watch for updates
       const stopWatching = await pythonStrategyApi.watchBacktestRun(runId, (update: any) => {
         if (update.status === 'SUCCEEDED' || update.status === 'FAILED' || update.status === 'CANCELED') {
           setBacktestStatus(update.status === 'SUCCEEDED' ? 'completed' : 'error');
@@ -147,12 +146,7 @@ export default function StrategyWorkspacePage() {
     if (loadedTemplate) {
       setSaveLoading(true);
       try {
-        await strategyApi.updateTemplate({
-          id: loadedTemplate.id,
-          name: loadedTemplate.name,
-          description: loadedTemplate.description || '',
-          code,
-        });
+        await strategyApi.updateTemplate({ id: loadedTemplate.id, name: loadedTemplate.name, description: loadedTemplate.description || '', code });
         message.success(t('strategy.workspace.saveSuccess', 'Saved'));
         loadTemplates();
       } catch (e: any) {
@@ -174,11 +168,7 @@ export default function StrategyWorkspacePage() {
     try {
       const values = await saveForm.validateFields();
       setSaveLoading(true);
-      await strategyApi.createTemplate({
-        name: values.name,
-        description: values.description || '',
-        code,
-      });
+      await strategyApi.createTemplate({ name: values.name, description: values.description || '', code });
       message.success(t('strategy.workspace.saveSuccess', 'Saved'));
       setSaveModalOpen(false);
       loadTemplates();
@@ -208,32 +198,56 @@ export default function StrategyWorkspacePage() {
         padding: '8px 0 12px 0',
       }}>
         <h2 style={{ margin: 0 }}>{t('strategy.workspace.title', 'Strategy Workspace')}</h2>
-        <Button
-          type="text"
-          icon={leftPanelCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-          onClick={() => setLeftPanelCollapsed(!leftPanelCollapsed)}
-        />
       </div>
 
-      {/* Main split */}
-      <div style={{ display: 'flex', flex: 1, gap: 16, overflow: 'hidden' }}>
-        {/* Left panel */}
-        {!leftPanelCollapsed && (
+      {/* Main split — QuantDinger layout */}
+      <div style={{ display: 'flex', flex: 1, gap: 12, overflow: 'hidden' }}>
+        {/* Code rail (visible when left panel collapsed) — matches QuantDinger ide-code-rail */}
+        {!codePanelVisible && (
+          <div
+            onClick={() => setCodePanelVisible(true)}
+            role="button"
+            tabIndex={0}
+            onKeyUp={(e) => e.key === 'Enter' && setCodePanelVisible(true)}
+            style={{
+              width: 40, minWidth: 40, display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center', gap: 8,
+              cursor: 'pointer', background: '#fafafa', borderRadius: 8,
+              border: '1px solid rgba(0,0,0,0.08)', color: '#595959',
+            }}
+          >
+            <DoubleRightOutlined style={{ fontSize: 14 }} />
+            <span style={{ fontSize: 10, writingMode: 'vertical-rl' }}>
+              Code
+            </span>
+          </div>
+        )}
+
+        {/* Left panel (collapsible) — code + AI + template */}
+        {codePanelVisible && (
           <div style={{
-            width: 480, minWidth: 480, overflowY: 'auto',
-            borderRight: '1px solid rgba(0,0,0,0.08)',
-            paddingRight: 12,
+            width: 460, minWidth: 460, overflowY: 'auto',
+            borderRight: '1px solid rgba(0,0,0,0.06)',
+            paddingRight: 12, display: 'flex', flexDirection: 'column', gap: 12,
           }}>
+            {/* Hide code drawer handle — matches QuantDinger ide-code-drawer-handle */}
+            <div
+              onClick={() => setCodePanelVisible(false)}
+              role="button"
+              tabIndex={0}
+              onKeyUp={(e) => e.key === 'Enter' && setCodePanelVisible(false)}
+              style={{
+                cursor: 'pointer', color: '#8c8c8c', fontSize: 12,
+                display: 'flex', alignItems: 'center', gap: 4,
+              }}
+            >
+              <DoubleLeftOutlined />
+              <span>{t('strategy.workspace.hideCode', 'Hide Code')}</span>
+            </div>
+
             <WorkspaceCodePanel
               code={code}
               onCodeChange={setCode}
-              accounts={activeAccounts}
-              accountId={accountId}
-              onAccountIdChange={setAccountId}
-              symbol={symbol}
-              onSymbolChange={setSymbol}
-              timeframe={timeframe}
-              onTimeframeChange={setTimeframe}
               validating={validating}
               onValidate={handleValidate}
               validationResult={validationResult}
@@ -244,50 +258,51 @@ export default function StrategyWorkspacePage() {
               onCopy={handleCopy}
             />
 
-            <Collapse
-              ghost
-              size="small"
-              style={{ marginTop: 16 }}
-              items={[
-                {
-                  key: 'ai',
-                  label: <span><RobotOutlined /> {t('strategy.workspace.aiAssist', 'AI Assistant')}</span>,
-                  children: (
-<AICodeReviseChat code={code} onApply={setCode} />
-                  ),
-                },
-                {
-                  key: 'template',
-                  label: t('strategy.workspace.template.title', 'Template'),
-                  children: (
-                    <WorkspaceTemplateManager
-                      templates={templates}
-                      loading={templatesLoading}
-                      loadedTemplate={loadedTemplate}
-                      onLoad={handleLoadTemplate}
-                      onSaveAs={handleSaveAs}
-                    />
-                  ),
-                },
-              ]}
-            />
+            <Collapse ghost size="small" items={[
+              {
+                key: 'ai',
+                label: <span><RobotOutlined /> {t('strategy.workspace.aiAssist', 'AI Assistant')}</span>,
+                children: <AICodeReviseChat code={code} onApply={setCode} />,
+              },
+              {
+                key: 'template',
+                label: t('strategy.workspace.template.title', 'Template'),
+                children: (
+                  <WorkspaceTemplateManager
+                    templates={templates}
+                    loading={templatesLoading}
+                    loadedTemplate={loadedTemplate}
+                    onLoad={handleLoadTemplate}
+                    onSaveAs={handleSaveAs}
+                  />
+                ),
+              },
+            ]} />
           </div>
         )}
 
-        {/* Right panel */}
+        {/* Right panel — workspace tabs */}
         <div style={{ flex: 1, overflowY: 'auto' }}>
           <Tabs
             activeKey={activeRightTab}
             onChange={setActiveRightTab}
+            type="card"
+            size="small"
             items={[
               {
                 key: 'chart',
-                label: t('strategy.workspace.chart', 'K-line'),
+                label: t('strategy.workspace.chart', 'Chart'),
                 children: (
                   <WorkspaceChartTab
+                    accounts={activeAccounts}
+                    accountId={accountId}
+                    onAccountChange={handleAccountChange}
                     symbol={symbol}
+                    onSymbolChange={setSymbol}
                     timeframe={timeframe}
                     onTimeframeChange={setTimeframe}
+                    codePanelVisible={codePanelVisible}
+                    onToggleCodePanel={() => setCodePanelVisible(!codePanelVisible)}
                   />
                 ),
               },
@@ -305,9 +320,7 @@ export default function StrategyWorkspacePage() {
               {
                 key: 'ai',
                 label: t('strategy.workspace.ai', 'AI'),
-                children: (
-<CodeExplainPanel code={code} />
-                ),
+                children: <CodeExplainPanel code={code} />,
               },
             ]}
           />

@@ -23,6 +23,7 @@ interface PriceChartProps {
   timeframe?: string;
   onTimeframeChange?: (tf: string) => void;
   height?: number;
+  accountId?: string;
 }
 
 function toKLineData(bar: ApiKlineData): KLineData {
@@ -36,7 +37,7 @@ function toKLineData(bar: ApiKlineData): KLineData {
   };
 }
 
-export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange, height = 500 }: PriceChartProps) {
+export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange, height = 500, accountId }: PriceChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<Chart | null>(null);
@@ -68,8 +69,9 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
 
     if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
 
+    const canonical = marketApi.resolveSymbol(symbol);
     const doFetch = (count: number) =>
-      marketApi.getKlines({ symbol, timeframe, count });
+      marketApi.getKlines({ symbol: canonical, timeframe, count, accountId });
 
     doFetch(INITIAL_BARS)
       .then((data) => {
@@ -109,42 +111,56 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const chart = init(containerRef.current, {
+    // Ensure container has explicit dimensions before init
+    const el = containerRef.current;
+    el.style.width = '100%';
+    el.style.height = `${height}px`;
+
+    const chart = init(el, {
       styles: {
+        backgroundColor: '#131722',
         grid: {
-          horizontal: { color: 'rgba(255,255,255,0.06)', style: 'dash' as const },
-          vertical: { color: 'rgba(255,255,255,0.06)', style: 'dash' as const },
+          show: true,
+          horizontal: { show: true, color: 'rgba(255,255,255,0.06)', style: 'dashed' as const, size: 1, dashedValue: [] },
+          vertical: { show: true, color: 'rgba(255,255,255,0.06)', style: 'dashed' as const, size: 1, dashedValue: [] },
         },
         candle: {
           bar: {
             upColor: '#26a69a',
             downColor: '#ef5350',
+            noChangeColor: '#888888',
             upBorderColor: '#26a69a',
             downBorderColor: '#ef5350',
+            noChangeBorderColor: '#888888',
             upWickColor: '#26a69a',
             downWickColor: '#ef5350',
+            noChangeWickColor: '#888888',
           },
         },
         xAxis: {
-          axisLine: { color: 'rgba(255,255,255,0.1)' },
+          axisLine: { show: true, color: 'rgba(255,255,255,0.1)' },
           tickText: { color: '#d1d5db' },
         },
         yAxis: {
-          axisLine: { color: 'rgba(255,255,255,0.1)' },
+          axisLine: { show: true, color: 'rgba(255,255,255,0.1)' },
           tickText: { color: '#d1d5db' },
         },
-        separator: { color: 'rgba(255,255,255,0.06)' },
         crosshair: {
-          horizontal: { line: { color: 'rgba(255,255,255,0.3)' } },
-          vertical: { line: { color: 'rgba(255,255,255,0.3)' } },
+          show: true,
+          horizontal: { show: true, line: { show: true, color: 'rgba(255,255,255,0.3)', style: 'dashed' as const, size: 1, dashedValue: [] } },
+          vertical: { show: true, line: { show: true, color: 'rgba(255,255,255,0.3)', style: 'dashed' as const, size: 1, dashedValue: [] } },
         },
       },
     });
 
+    if (!chart) {
+      console.error('klinecharts init returned null');
+      return;
+    }
     chartRef.current = chart;
 
     return () => {
-      dispose(chart);
+      dispose(el);
       chartRef.current = null;
     };
   }, []);
@@ -163,7 +179,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     const firstBarTime = bars[0].time;
     if (timestamp >= firstBarTime) return;
     loadingMore.current = true;
-    marketApi.getKlines({ symbol, timeframe, count: INITIAL_BARS, before: firstBarTime })
+    marketApi.getKlines({ symbol: canonical, timeframe, count: INITIAL_BARS, before: firstBarTime, accountId })
       .then((older) => {
         if (older.length === 0) { loadedAll.current = true; return; }
         setBars((prev) => [...older, ...prev]);

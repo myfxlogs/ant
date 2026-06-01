@@ -328,6 +328,41 @@ func (g *Gateway) FetchSymbolParams(ctx context.Context, canonicals []string) ([
 	return out, nil
 }
 
+func periodToMT5TF(period string) string {
+	switch period {
+	case "1m": return "1"
+	case "5m": return "5"
+	case "15m": return "15"
+	case "30m": return "30"
+	case "1h": return "60"
+	case "4h": return "240"
+	case "1d": return "1440"
+	case "1w": return "10080"
+	default: return "60"
+	}
+}
+
+// FetchPriceHistory fetches K-line bars from the broker (MT5 PriceHistory RPC).
+// FetchPriceHistory delegates to the existing broker PriceHistory implementation in quotes.go.
+func (g *Gateway) FetchPriceHistory(ctx context.Context, symbol, period string, from, to int64, count int) ([]*mthub.Bar, error) {
+	bars, err := g.GetPriceHistory(ctx, "", symbol, period, from, to)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*mthub.Bar, 0, len(bars))
+	for _, b := range bars {
+		o, _ := b.Open.Float64()
+		h, _ := b.High.Float64()
+		l, _ := b.Low.Float64()
+		c, _ := b.Close.Float64()
+		out = append(out, &mthub.Bar{
+			Time: time.UnixMilli(b.OpenTsUnixMs),
+			Open: o, High: h, Low: l, Close: c, Volume: b.Volume,
+		})
+	}
+	return out, nil
+}
+
 // FetchAllSymbols returns all available symbol names from the broker (MT5 SymbolList RPC).
 func (g *Gateway) FetchAllSymbols(ctx context.Context) ([]string, error) {
 	g.mu.RLock()

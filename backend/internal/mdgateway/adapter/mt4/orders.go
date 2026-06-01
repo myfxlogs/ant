@@ -284,6 +284,57 @@ func (g *Gateway) FetchSymbolParams(ctx context.Context, canonicals []string) ([
 	return out, nil
 }
 
+func periodToMT4TF(period string) pb.Timeframe {
+	switch period {
+	case "1m": return pb.Timeframe_Timeframe_M1
+	case "5m": return pb.Timeframe_Timeframe_M5
+	case "15m": return pb.Timeframe_Timeframe_M15
+	case "30m": return pb.Timeframe_Timeframe_M30
+	case "1h": return pb.Timeframe_Timeframe_H1
+	case "4h": return pb.Timeframe_Timeframe_H4
+	case "1d": return pb.Timeframe_Timeframe_D1
+	case "1w": return pb.Timeframe_Timeframe_W1
+	default: return pb.Timeframe_Timeframe_H1
+	}
+}
+
+// FetchPriceHistory fetches K-line bars from the broker (MT4 QuoteHistory RPC).
+func (g *Gateway) FetchPriceHistory(ctx context.Context, symbol, period string, from, to int64, count int) ([]*mthub.Bar, error) {
+	g.mu.RLock()
+	client := g.client
+	sid := g.sessionID
+	g.mu.RUnlock()
+	if client == nil || sid == "" {
+		return nil, fmt.Errorf("mt4 FetchPriceHistory: not connected")
+	}
+	fromStr := time.Unix(from, 0).Format("2006-01-02T15:04:05")
+	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
+	ctx2 := metadata.NewOutgoingContext(ctx, md)
+	resp, err := client.QuoteHistory(ctx2, &pb.QuoteHistoryRequest{
+		Id:        sid,
+		Symbol:    symbol,
+		Timeframe: periodToMT4TF(period),
+		From:      fromStr,
+		Count:     int32(count),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("mt4 QuoteHistory: %w", err)
+	}
+	if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
+		return nil, fmt.Errorf("mt4 QuoteHistory: code=%d msg=%s", resp.GetError().GetCode(), resp.GetError().GetMessage())
+	}
+	bars := resp.GetResult()
+	out := make([]*mthub.Bar, 0, len(bars))
+	for _, b := range bars {
+		out = append(out, &mthub.Bar{
+			Time: b.GetTime().AsTime(), Open: b.GetOpen(),
+			High: b.GetHigh(), Low: b.GetLow(), Close: b.GetClose(),
+			Volume: b.GetVolume(),
+		})
+	}
+	return out, nil
+}
+
 // FetchAllSymbols returns all available symbol names from the broker (MT4 Symbols RPC).
 func (g *Gateway) FetchAllSymbols(ctx context.Context) ([]string, error) {
 	g.mu.RLock()
