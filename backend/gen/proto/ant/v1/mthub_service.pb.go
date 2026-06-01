@@ -1716,6 +1716,94 @@ func (x *SyncOrderHistoryResponse) GetSyncedRecords() int64 {
 	return 0
 }
 
+type SubscribeBarsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	Symbol        string                 `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SubscribeBarsRequest) Reset() {
+	*x = SubscribeBarsRequest{}
+	mi := &file_mthub_service_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SubscribeBarsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SubscribeBarsRequest) ProtoMessage() {}
+
+func (x *SubscribeBarsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_mthub_service_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SubscribeBarsRequest.ProtoReflect.Descriptor instead.
+func (*SubscribeBarsRequest) Descriptor() ([]byte, []int) {
+	return file_mthub_service_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *SubscribeBarsRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+
+func (x *SubscribeBarsRequest) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+type SubscribeBarsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SubscribeBarsResponse) Reset() {
+	*x = SubscribeBarsResponse{}
+	mi := &file_mthub_service_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SubscribeBarsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SubscribeBarsResponse) ProtoMessage() {}
+
+func (x *SubscribeBarsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_mthub_service_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SubscribeBarsResponse.ProtoReflect.Descriptor instead.
+func (*SubscribeBarsResponse) Descriptor() ([]byte, []int) {
+	return file_mthub_service_proto_rawDescGZIP(), []int{24}
+}
+
 var File_mthub_service_proto protoreflect.FileDescriptor
 
 const file_mthub_service_proto_rawDesc = "" +
@@ -1868,7 +1956,12 @@ const file_mthub_service_proto_rawDesc = "" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\"A\n" +
 	"\x18SyncOrderHistoryResponse\x12%\n" +
-	"\x0esynced_records\x18\x01 \x01(\x03R\rsyncedRecords*9\n" +
+	"\x0esynced_records\x18\x01 \x01(\x03R\rsyncedRecords\"M\n" +
+	"\x14SubscribeBarsRequest\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\x01 \x01(\tR\taccountId\x12\x16\n" +
+	"\x06symbol\x18\x02 \x01(\tR\x06symbol\"\x17\n" +
+	"\x15SubscribeBarsResponse*9\n" +
 	"\x04Side\x12\x14\n" +
 	"\x10SIDE_UNSPECIFIED\x10\x00\x12\f\n" +
 	"\bSIDE_BUY\x10\x01\x12\r\n" +
@@ -1886,7 +1979,7 @@ const file_mthub_service_proto_rawDesc = "" +
 	"\x10ORDER_STATE_OPEN\x10\x02\x12\x16\n" +
 	"\x12ORDER_STATE_CLOSED\x10\x03\x12\x19\n" +
 	"\x15ORDER_STATE_CANCELLED\x10\x04\x12\x18\n" +
-	"\x14ORDER_STATE_REJECTED\x10\x052\xf9\x05\n" +
+	"\x14ORDER_STATE_REJECTED\x10\x052\xc7\x06\n" +
 	"\fMtHubService\x12C\n" +
 	"\n" +
 	"PlaceOrder\x12\x19.ant.v1.PlaceOrderRequest\x1a\x1a.ant.v1.PlaceOrderResponse\x12C\n" +
@@ -1900,7 +1993,8 @@ const file_mthub_service_proto_rawDesc = "" +
 	"\fPriceHistory\x12\x1b.ant.v1.PriceHistoryRequest\x1a\x1c.ant.v1.PriceHistoryResponse\x12J\n" +
 	"\x10GetAccountStatus\x12\x1f.ant.v1.GetAccountStatusRequest\x1a\x15.ant.v1.AccountStatus\x12K\n" +
 	"\x11StreamOrderEvents\x12 .ant.v1.StreamOrderEventsRequest\x1a\x12.ant.v1.OrderEvent0\x01\x12U\n" +
-	"\x10SyncOrderHistory\x12\x1f.ant.v1.SyncOrderHistoryRequest\x1a .ant.v1.SyncOrderHistoryResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x10SyncOrderHistory\x12\x1f.ant.v1.SyncOrderHistoryRequest\x1a .ant.v1.SyncOrderHistoryResponse\x12L\n" +
+	"\rSubscribeBars\x12\x1c.ant.v1.SubscribeBarsRequest\x1a\x1d.ant.v1.SubscribeBarsResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_mthub_service_proto_rawDescOnce sync.Once
@@ -1915,7 +2009,7 @@ func file_mthub_service_proto_rawDescGZIP() []byte {
 }
 
 var file_mthub_service_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_mthub_service_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
+var file_mthub_service_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
 var file_mthub_service_proto_goTypes = []any{
 	(Side)(0),                        // 0: ant.v1.Side
 	(OrderType)(0),                   // 1: ant.v1.OrderType
@@ -1943,29 +2037,31 @@ var file_mthub_service_proto_goTypes = []any{
 	(*OHLCV)(nil),                    // 23: ant.v1.OHLCV
 	(*SyncOrderHistoryRequest)(nil),  // 24: ant.v1.SyncOrderHistoryRequest
 	(*SyncOrderHistoryResponse)(nil), // 25: ant.v1.SyncOrderHistoryResponse
-	(*timestamppb.Timestamp)(nil),    // 26: google.protobuf.Timestamp
+	(*SubscribeBarsRequest)(nil),     // 26: ant.v1.SubscribeBarsRequest
+	(*SubscribeBarsResponse)(nil),    // 27: ant.v1.SubscribeBarsResponse
+	(*timestamppb.Timestamp)(nil),    // 28: google.protobuf.Timestamp
 }
 var file_mthub_service_proto_depIdxs = []int32{
-	26, // 0: ant.v1.AccountStatus.last_tick_at:type_name -> google.protobuf.Timestamp
+	28, // 0: ant.v1.AccountStatus.last_tick_at:type_name -> google.protobuf.Timestamp
 	0,  // 1: ant.v1.PlaceOrderRequest.side:type_name -> ant.v1.Side
 	1,  // 2: ant.v1.PlaceOrderRequest.order_type:type_name -> ant.v1.OrderType
 	21, // 3: ant.v1.OpenedOrdersResponse.orders:type_name -> ant.v1.OrderRecord
-	26, // 4: ant.v1.OrderHistoryRequest.from:type_name -> google.protobuf.Timestamp
-	26, // 5: ant.v1.OrderHistoryRequest.to:type_name -> google.protobuf.Timestamp
+	28, // 4: ant.v1.OrderHistoryRequest.from:type_name -> google.protobuf.Timestamp
+	28, // 5: ant.v1.OrderHistoryRequest.to:type_name -> google.protobuf.Timestamp
 	21, // 6: ant.v1.OrderHistoryResponse.orders:type_name -> ant.v1.OrderRecord
 	22, // 7: ant.v1.SymbolParamsResponse.params:type_name -> ant.v1.SymbolParam
-	26, // 8: ant.v1.PriceHistoryRequest.from:type_name -> google.protobuf.Timestamp
-	26, // 9: ant.v1.PriceHistoryRequest.to:type_name -> google.protobuf.Timestamp
+	28, // 8: ant.v1.PriceHistoryRequest.from:type_name -> google.protobuf.Timestamp
+	28, // 9: ant.v1.PriceHistoryRequest.to:type_name -> google.protobuf.Timestamp
 	23, // 10: ant.v1.PriceHistoryResponse.bars:type_name -> ant.v1.OHLCV
 	21, // 11: ant.v1.OrderEvent.order:type_name -> ant.v1.OrderRecord
-	26, // 12: ant.v1.OrderEvent.timestamp:type_name -> google.protobuf.Timestamp
+	28, // 12: ant.v1.OrderEvent.timestamp:type_name -> google.protobuf.Timestamp
 	0,  // 13: ant.v1.OrderRecord.side:type_name -> ant.v1.Side
 	1,  // 14: ant.v1.OrderRecord.order_type:type_name -> ant.v1.OrderType
-	26, // 15: ant.v1.OrderRecord.open_time:type_name -> google.protobuf.Timestamp
-	26, // 16: ant.v1.OrderRecord.close_time:type_name -> google.protobuf.Timestamp
+	28, // 15: ant.v1.OrderRecord.open_time:type_name -> google.protobuf.Timestamp
+	28, // 16: ant.v1.OrderRecord.close_time:type_name -> google.protobuf.Timestamp
 	2,  // 17: ant.v1.OrderRecord.state:type_name -> ant.v1.OrderState
-	26, // 18: ant.v1.OHLCV.open_time:type_name -> google.protobuf.Timestamp
-	26, // 19: ant.v1.OHLCV.close_time:type_name -> google.protobuf.Timestamp
+	28, // 18: ant.v1.OHLCV.open_time:type_name -> google.protobuf.Timestamp
+	28, // 19: ant.v1.OHLCV.close_time:type_name -> google.protobuf.Timestamp
 	5,  // 20: ant.v1.MtHubService.PlaceOrder:input_type -> ant.v1.PlaceOrderRequest
 	7,  // 21: ant.v1.MtHubService.CloseOrder:input_type -> ant.v1.CloseOrderRequest
 	9,  // 22: ant.v1.MtHubService.OpenedOrders:input_type -> ant.v1.OpenedOrdersRequest
@@ -1976,18 +2072,20 @@ var file_mthub_service_proto_depIdxs = []int32{
 	3,  // 27: ant.v1.MtHubService.GetAccountStatus:input_type -> ant.v1.GetAccountStatusRequest
 	19, // 28: ant.v1.MtHubService.StreamOrderEvents:input_type -> ant.v1.StreamOrderEventsRequest
 	24, // 29: ant.v1.MtHubService.SyncOrderHistory:input_type -> ant.v1.SyncOrderHistoryRequest
-	6,  // 30: ant.v1.MtHubService.PlaceOrder:output_type -> ant.v1.PlaceOrderResponse
-	8,  // 31: ant.v1.MtHubService.CloseOrder:output_type -> ant.v1.CloseOrderResponse
-	10, // 32: ant.v1.MtHubService.OpenedOrders:output_type -> ant.v1.OpenedOrdersResponse
-	12, // 33: ant.v1.MtHubService.OrderHistory:output_type -> ant.v1.OrderHistoryResponse
-	14, // 34: ant.v1.MtHubService.SymbolParams:output_type -> ant.v1.SymbolParamsResponse
-	16, // 35: ant.v1.MtHubService.SymbolList:output_type -> ant.v1.SymbolListResponse
-	18, // 36: ant.v1.MtHubService.PriceHistory:output_type -> ant.v1.PriceHistoryResponse
-	4,  // 37: ant.v1.MtHubService.GetAccountStatus:output_type -> ant.v1.AccountStatus
-	20, // 38: ant.v1.MtHubService.StreamOrderEvents:output_type -> ant.v1.OrderEvent
-	25, // 39: ant.v1.MtHubService.SyncOrderHistory:output_type -> ant.v1.SyncOrderHistoryResponse
-	30, // [30:40] is the sub-list for method output_type
-	20, // [20:30] is the sub-list for method input_type
+	26, // 30: ant.v1.MtHubService.SubscribeBars:input_type -> ant.v1.SubscribeBarsRequest
+	6,  // 31: ant.v1.MtHubService.PlaceOrder:output_type -> ant.v1.PlaceOrderResponse
+	8,  // 32: ant.v1.MtHubService.CloseOrder:output_type -> ant.v1.CloseOrderResponse
+	10, // 33: ant.v1.MtHubService.OpenedOrders:output_type -> ant.v1.OpenedOrdersResponse
+	12, // 34: ant.v1.MtHubService.OrderHistory:output_type -> ant.v1.OrderHistoryResponse
+	14, // 35: ant.v1.MtHubService.SymbolParams:output_type -> ant.v1.SymbolParamsResponse
+	16, // 36: ant.v1.MtHubService.SymbolList:output_type -> ant.v1.SymbolListResponse
+	18, // 37: ant.v1.MtHubService.PriceHistory:output_type -> ant.v1.PriceHistoryResponse
+	4,  // 38: ant.v1.MtHubService.GetAccountStatus:output_type -> ant.v1.AccountStatus
+	20, // 39: ant.v1.MtHubService.StreamOrderEvents:output_type -> ant.v1.OrderEvent
+	25, // 40: ant.v1.MtHubService.SyncOrderHistory:output_type -> ant.v1.SyncOrderHistoryResponse
+	27, // 41: ant.v1.MtHubService.SubscribeBars:output_type -> ant.v1.SubscribeBarsResponse
+	31, // [31:42] is the sub-list for method output_type
+	20, // [20:31] is the sub-list for method input_type
 	20, // [20:20] is the sub-list for extension type_name
 	20, // [20:20] is the sub-list for extension extendee
 	0,  // [0:20] is the sub-list for field type_name
@@ -2004,7 +2102,7 @@ func file_mthub_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_mthub_service_proto_rawDesc), len(file_mthub_service_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   23,
+			NumMessages:   25,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -20,7 +20,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stream.proto.
  */
 export const file_stream: GenFile = /*@__PURE__*/
-  fileDesc("CgxzdHJlYW0ucHJvdG8SBmFudC52MSLkBQoLU3RyZWFtRXZlbnQSDAoEdHlwZRgBIAEoCRISCgphY2NvdW50X2lkGAIgASgJEi0KCXRpbWVzdGFtcBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEAoIZXZlbnRfaWQYCiABKAkSMAoMb3JkZXJfdXBkYXRlGAUgASgLMhguYW50LnYxLk9yZGVyVXBkYXRlRXZlbnRIABIyCg1wcm9maXRfdXBkYXRlGAYgASgLMhkuYW50LnYxLlByb2ZpdFVwZGF0ZUV2ZW50SAASNAoOYWNjb3VudF9zdGF0dXMYByABKAsyGi5hbnQudjEuQWNjb3VudFN0YXR1c0V2ZW50SAASPAoSc3RyYXRlZ3lfZXhlY3V0aW9uGAggASgLMh4uYW50LnYxLlN0cmF0ZWd5RXhlY3V0aW9uRXZlbnRIABIsCgpyaXNrX2FsZXJ0GAkgASgLMhYuYW50LnYxLlJpc2tBbGVydEV2ZW50SAASIQoEc3luYxgLIAEoCzIRLmFudC52MS5TeW5jRXZlbnRIABIuCgtkZWFsX3VwZGF0ZRgMIAEoCzIXLmFudC52MS5EZWFsVXBkYXRlRXZlbnRIABI2Cg9wb3NpdGlvbl91cGRhdGUYDSABKAsyGy5hbnQudjEuUG9zaXRpb25VcGRhdGVFdmVudEgAEjAKDGxlZGdlcl9lbnRyeRgOIAEoCzIYLmFudC52MS5MZWRnZXJFbnRyeUV2ZW50SAASMgoNdHJhZGVfY29tbWFuZBgPIAEoCzIZLmFudC52MS5UcmFkZUNvbW1hbmRFdmVudEgAEjIKDXRyYWRlX3JlY2VpcHQYECABKAsyGS5hbnQudjEuVHJhZGVSZWNlaXB0RXZlbnRIABI6ChFwb3NpdGlvbl9zbmFwc2hvdBgRIAEoCzIdLmFudC52MS5Qb3NpdGlvblNuYXBzaG90RXZlbnRIAEIJCgdwYXlsb2FkIi0KFlN1YnNjcmliZUV2ZW50c1JlcXVlc3QSEwoLYWNjb3VudF9pZHMYASADKAkiaAoXU3Vic2NyaWJlSGlzdG9yeVJlcXVlc3QSEwoLYWNjb3VudF9pZHMYASADKAkSDQoFbGltaXQYAiABKAUSKQoFc2luY2UYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIjIKHFN1YnNjcmliZU9yZGVyVXBkYXRlc1JlcXVlc3QSEgoKYWNjb3VudF9pZBgBIAEoCSIzCh1TdWJzY3JpYmVQcm9maXRVcGRhdGVzUmVxdWVzdBISCgphY2NvdW50X2lkGAEgASgJMqoDCg1TdHJlYW1TZXJ2aWNlEkgKD1N1YnNjcmliZUV2ZW50cxIeLmFudC52MS5TdWJzY3JpYmVFdmVudHNSZXF1ZXN0GhMuYW50LnYxLlN0cmVhbUV2ZW50MAESSgoQU3Vic2NyaWJlSGlzdG9yeRIfLmFudC52MS5TdWJzY3JpYmVIaXN0b3J5UmVxdWVzdBoTLmFudC52MS5TdHJlYW1FdmVudDABElkKFVN1YnNjcmliZU9yZGVyVXBkYXRlcxIkLmFudC52MS5TdWJzY3JpYmVPcmRlclVwZGF0ZXNSZXF1ZXN0GhguYW50LnYxLk9yZGVyVXBkYXRlRXZlbnQwARJcChZTdWJzY3JpYmVQcm9maXRVcGRhdGVzEiUuYW50LnYxLlN1YnNjcmliZVByb2ZpdFVwZGF0ZXNSZXF1ZXN0GhkuYW50LnYxLlByb2ZpdFVwZGF0ZUV2ZW50MAESSgoUU3Vic2NyaWJlVXNlclN1bW1hcnkSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaGC5hbnQudjEuVXNlclN1bW1hcnlFdmVudDABQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_empty, file_google_protobuf_timestamp, file_stream_event_account, file_stream_event_trade, file_stream_event_sync, file_stream_event_command]);
+  fileDesc("CgxzdHJlYW0ucHJvdG8SBmFudC52MSKSBgoLU3RyZWFtRXZlbnQSDAoEdHlwZRgBIAEoCRISCgphY2NvdW50X2lkGAIgASgJEi0KCXRpbWVzdGFtcBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEAoIZXZlbnRfaWQYCiABKAkSMAoMb3JkZXJfdXBkYXRlGAUgASgLMhguYW50LnYxLk9yZGVyVXBkYXRlRXZlbnRIABIyCg1wcm9maXRfdXBkYXRlGAYgASgLMhkuYW50LnYxLlByb2ZpdFVwZGF0ZUV2ZW50SAASNAoOYWNjb3VudF9zdGF0dXMYByABKAsyGi5hbnQudjEuQWNjb3VudFN0YXR1c0V2ZW50SAASPAoSc3RyYXRlZ3lfZXhlY3V0aW9uGAggASgLMh4uYW50LnYxLlN0cmF0ZWd5RXhlY3V0aW9uRXZlbnRIABIsCgpyaXNrX2FsZXJ0GAkgASgLMhYuYW50LnYxLlJpc2tBbGVydEV2ZW50SAASIQoEc3luYxgLIAEoCzIRLmFudC52MS5TeW5jRXZlbnRIABIuCgtkZWFsX3VwZGF0ZRgMIAEoCzIXLmFudC52MS5EZWFsVXBkYXRlRXZlbnRIABI2Cg9wb3NpdGlvbl91cGRhdGUYDSABKAsyGy5hbnQudjEuUG9zaXRpb25VcGRhdGVFdmVudEgAEjAKDGxlZGdlcl9lbnRyeRgOIAEoCzIYLmFudC52MS5MZWRnZXJFbnRyeUV2ZW50SAASMgoNdHJhZGVfY29tbWFuZBgPIAEoCzIZLmFudC52MS5UcmFkZUNvbW1hbmRFdmVudEgAEjIKDXRyYWRlX3JlY2VpcHQYECABKAsyGS5hbnQudjEuVHJhZGVSZWNlaXB0RXZlbnRIABI6ChFwb3NpdGlvbl9zbmFwc2hvdBgRIAEoCzIdLmFudC52MS5Qb3NpdGlvblNuYXBzaG90RXZlbnRIABIsCgpiYXJfdXBkYXRlGBIgASgLMhYuYW50LnYxLkJhclVwZGF0ZUV2ZW50SABCCQoHcGF5bG9hZCLLAQoOQmFyVXBkYXRlRXZlbnQSEgoKYWNjb3VudF9pZBgBIAEoCRIOCgZzeW1ib2wYAiABKAkSDgoGcGVyaW9kGAMgASgJEi0KCW9wZW5fdGltZRgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDAoEb3BlbhgFIAEoCRIMCgRoaWdoGAYgASgJEgsKA2xvdxgHIAEoCRINCgVjbG9zZRgIIAEoCRIOCgZ2b2x1bWUYCSABKAESDgoGY2xvc2VkGAogASgIIi0KFlN1YnNjcmliZUV2ZW50c1JlcXVlc3QSEwoLYWNjb3VudF9pZHMYASADKAkiaAoXU3Vic2NyaWJlSGlzdG9yeVJlcXVlc3QSEwoLYWNjb3VudF9pZHMYASADKAkSDQoFbGltaXQYAiABKAUSKQoFc2luY2UYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIjIKHFN1YnNjcmliZU9yZGVyVXBkYXRlc1JlcXVlc3QSEgoKYWNjb3VudF9pZBgBIAEoCSIzCh1TdWJzY3JpYmVQcm9maXRVcGRhdGVzUmVxdWVzdBISCgphY2NvdW50X2lkGAEgASgJMqoDCg1TdHJlYW1TZXJ2aWNlEkgKD1N1YnNjcmliZUV2ZW50cxIeLmFudC52MS5TdWJzY3JpYmVFdmVudHNSZXF1ZXN0GhMuYW50LnYxLlN0cmVhbUV2ZW50MAESSgoQU3Vic2NyaWJlSGlzdG9yeRIfLmFudC52MS5TdWJzY3JpYmVIaXN0b3J5UmVxdWVzdBoTLmFudC52MS5TdHJlYW1FdmVudDABElkKFVN1YnNjcmliZU9yZGVyVXBkYXRlcxIkLmFudC52MS5TdWJzY3JpYmVPcmRlclVwZGF0ZXNSZXF1ZXN0GhguYW50LnYxLk9yZGVyVXBkYXRlRXZlbnQwARJcChZTdWJzY3JpYmVQcm9maXRVcGRhdGVzEiUuYW50LnYxLlN1YnNjcmliZVByb2ZpdFVwZGF0ZXNSZXF1ZXN0GhkuYW50LnYxLlByb2ZpdFVwZGF0ZUV2ZW50MAESSgoUU3Vic2NyaWJlVXNlclN1bW1hcnkSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaGC5hbnQudjEuVXNlclN1bW1hcnlFdmVudDABQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_empty, file_google_protobuf_timestamp, file_stream_event_account, file_stream_event_trade, file_stream_event_sync, file_stream_event_command]);
 
 /**
  * StreamEvent is the union event type pushed via SubscribeEvents.
@@ -123,6 +123,12 @@ export type StreamEvent = Message<"ant.v1.StreamEvent"> & {
      */
     value: PositionSnapshotEvent;
     case: "positionSnapshot";
+  } | {
+    /**
+     * @generated from field: ant.v1.BarUpdateEvent bar_update = 18;
+     */
+    value: BarUpdateEvent;
+    case: "barUpdate";
   } | { case: undefined; value?: undefined };
 };
 
@@ -132,6 +138,72 @@ export type StreamEvent = Message<"ant.v1.StreamEvent"> & {
  */
 export const StreamEventSchema: GenMessage<StreamEvent> = /*@__PURE__*/
   messageDesc(file_stream, 0);
+
+/**
+ * BarUpdateEvent is pushed when a K-line bar is finalized or updated.
+ *
+ * @generated from message ant.v1.BarUpdateEvent
+ */
+export type BarUpdateEvent = Message<"ant.v1.BarUpdateEvent"> & {
+  /**
+   * @generated from field: string account_id = 1;
+   */
+  accountId: string;
+
+  /**
+   * @generated from field: string symbol = 2;
+   */
+  symbol: string;
+
+  /**
+   * @generated from field: string period = 3;
+   */
+  period: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp open_time = 4;
+   */
+  openTime?: Timestamp | undefined;
+
+  /**
+   * @generated from field: string open = 5;
+   */
+  open: string;
+
+  /**
+   * @generated from field: string high = 6;
+   */
+  high: string;
+
+  /**
+   * @generated from field: string low = 7;
+   */
+  low: string;
+
+  /**
+   * @generated from field: string close = 8;
+   */
+  close: string;
+
+  /**
+   * @generated from field: double volume = 9;
+   */
+  volume: number;
+
+  /**
+   * true=finalized bar, false=in-progress candle
+   *
+   * @generated from field: bool closed = 10;
+   */
+  closed: boolean;
+};
+
+/**
+ * Describes the message ant.v1.BarUpdateEvent.
+ * Use `create(BarUpdateEventSchema)` to create a new message.
+ */
+export const BarUpdateEventSchema: GenMessage<BarUpdateEvent> = /*@__PURE__*/
+  messageDesc(file_stream, 1);
 
 /**
  * @generated from message ant.v1.SubscribeEventsRequest
@@ -148,7 +220,7 @@ export type SubscribeEventsRequest = Message<"ant.v1.SubscribeEventsRequest"> & 
  * Use `create(SubscribeEventsRequestSchema)` to create a new message.
  */
 export const SubscribeEventsRequestSchema: GenMessage<SubscribeEventsRequest> = /*@__PURE__*/
-  messageDesc(file_stream, 1);
+  messageDesc(file_stream, 2);
 
 /**
  * @generated from message ant.v1.SubscribeHistoryRequest
@@ -175,7 +247,7 @@ export type SubscribeHistoryRequest = Message<"ant.v1.SubscribeHistoryRequest"> 
  * Use `create(SubscribeHistoryRequestSchema)` to create a new message.
  */
 export const SubscribeHistoryRequestSchema: GenMessage<SubscribeHistoryRequest> = /*@__PURE__*/
-  messageDesc(file_stream, 2);
+  messageDesc(file_stream, 3);
 
 /**
  * @generated from message ant.v1.SubscribeOrderUpdatesRequest
@@ -192,7 +264,7 @@ export type SubscribeOrderUpdatesRequest = Message<"ant.v1.SubscribeOrderUpdates
  * Use `create(SubscribeOrderUpdatesRequestSchema)` to create a new message.
  */
 export const SubscribeOrderUpdatesRequestSchema: GenMessage<SubscribeOrderUpdatesRequest> = /*@__PURE__*/
-  messageDesc(file_stream, 3);
+  messageDesc(file_stream, 4);
 
 /**
  * @generated from message ant.v1.SubscribeProfitUpdatesRequest
@@ -209,7 +281,7 @@ export type SubscribeProfitUpdatesRequest = Message<"ant.v1.SubscribeProfitUpdat
  * Use `create(SubscribeProfitUpdatesRequestSchema)` to create a new message.
  */
 export const SubscribeProfitUpdatesRequestSchema: GenMessage<SubscribeProfitUpdatesRequest> = /*@__PURE__*/
-  messageDesc(file_stream, 4);
+  messageDesc(file_stream, 5);
 
 /**
  * StreamService provides server-streaming endpoints for real-time data.

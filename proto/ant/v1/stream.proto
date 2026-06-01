@@ -30,7 +30,22 @@ message StreamEvent {
     TradeCommandEvent trade_command = 15;
     TradeReceiptEvent trade_receipt = 16;
     PositionSnapshotEvent position_snapshot = 17;
+    BarUpdateEvent bar_update = 18;
   }
+}
+
+// BarUpdateEvent is pushed when a K-line bar is finalized or updated.
+message BarUpdateEvent {
+  string account_id = 1;
+  string symbol = 2;
+  string period = 3;
+  google.protobuf.Timestamp open_time = 4;
+  string open = 5;
+  string high = 6;
+  string low = 7;
+  string close = 8;
+  double volume = 9;
+  bool closed = 10;  // true=finalized bar, false=in-progress candle
 }
 
 message SubscribeEventsRequest {

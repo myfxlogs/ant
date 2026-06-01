@@ -6,35 +6,18 @@ import (
 	"fmt"
 	"time"
 
-	"go.uber.org/zap"
-
 	"connectrpc.com/connect"
 	"github.com/jackc/pgx/v5"
 	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/interceptor"
-	"anttrader/internal/model"
-	"anttrader/internal/mthub"
 )
 
-func periodSeconds(period string) int64 {
-	switch period {
-	case "1m": return 60
-	case "5m": return 5 * 60
-	case "15m": return 15 * 60
-	case "30m": return 30 * 60
-	case "1h": return 3600
-	case "4h": return 4 * 3600
-	case "1d": return 86400
-	case "1w": return 7 * 86400
-	default: return 3600
-	}
-}
-
-// PriceHistory returns historical kline data, broker-first with ClickHouse fallback.
+// PriceHistory returns K-line data from ClickHouse — the single source of truth.
+// Broker symbol is resolved to canonical before querying.
 func (s *MtHubServer) PriceHistory(ctx context.Context, req *connect.Request[antv1.PriceHistoryRequest]) (*connect.Response[antv1.PriceHistoryResponse], error) {
 	userID := interceptor.GetUserID(ctx)
 	if userID == "" {
@@ -50,40 +33,42 @@ func (s *MtHubServer) PriceHistory(ctx context.Context, req *connect.Request[ant
 		limit = 300
 	}
 
-	// Try broker path first for real-time data.
-	var bars []*mthub.Bar
-	if m.AccountId != "" {
-		ok, err := s.platform.UserOwnsAccount(ctx, userID, m.AccountId)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		if ok {
-			now := time.Now().Unix()
-			from := now - int64(limit)*periodSeconds(period)
-			bars, _ = s.svc.PriceHistory(ctx, m.AccountId, m.Canonical, period, from, now, int(limit))
-		}
+	var chFrom, chTo *time.Time
+	if m.From != nil {
+		t := m.From.AsTime()
+		chFrom = &t
+	}
+	if m.To != nil {
+		t := m.To.AsTime()
+		chTo = &t
+	}
+	resolved := s.platform.ResolveSymbol(ctx, m.AccountId, m.Canonical)
+	chBars, err := s.marketData.GetKlines(ctx, resolved, "", period, chFrom, chTo, limit)
+	s.log.Info("PriceHistory",
+		zap.String("input", m.Canonical),
+		zap.String("resolved", resolved),
+		zap.String("period", period),
+		zap.String("account", m.AccountId),
+		zap.Int("bars", len(chBars)),
+		zap.Error(err),
+	)
+	if err != nil {
+		s.log.Error("PriceHistory: get klines", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to fetch price history"))
 	}
 
-	if len(bars) == 0 {
-		// Fallback: ClickHouse cached data.
-		chBars, chErr := s.marketData.GetKlines(ctx, m.Canonical, "", period, limit)
-		if chErr != nil {
-			s.log.Error("PriceHistory: get klines", zap.Error(chErr))
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to fetch price history: %w", chErr))
-		}
-		for _, b := range chBars {
-			bars = append(bars, &mthub.Bar{
-				Time: b.OpenTime(), Open: b.Open, High: b.High,
-				Low: b.Low, Close: b.Close, Volume: b.Volume,
-			})
-		}
+	// CH data insufficient — fetch directly from broker for this period.
+	// Async backfill will populate CH for subsequent timeframe switches.
+	// Threshold: CH has <50 bars means stale/missing data; go to broker.
+	if len(chBars) < 50 && m.AccountId != "" {
+		chBars = s.brokerFallback(ctx, m.AccountId, resolved, period, int(limit))
 	}
 
-	out := make([]*antv1.OHLCV, 0, len(bars))
-	for _, b := range bars {
+	out := make([]*antv1.OHLCV, 0, len(chBars))
+	for _, b := range chBars {
 		out = append(out, &antv1.OHLCV{
-			OpenTime:  timestamppb.New(b.Time),
-			CloseTime: timestamppb.New(b.Time),
+			OpenTime:  timestamppb.New(b.OpenTime()),
+			CloseTime: timestamppb.New(b.OpenTime()),
 			Open:      fmt.Sprintf("%.5f", b.Open),
 			High:      fmt.Sprintf("%.5f", b.High),
 			Low:       fmt.Sprintf("%.5f", b.Low),
@@ -126,191 +111,34 @@ func (s *MtHubServer) GetAccountStatus(ctx context.Context, req *connect.Request
 	}), nil
 }
 
-// StreamOrderEvents streams real-time order events for the authenticated user.
-func (s *MtHubServer) StreamOrderEvents(ctx context.Context, req *connect.Request[antv1.StreamOrderEventsRequest], stream *connect.ServerStream[antv1.OrderEvent]) error {
-	userID := interceptor.GetUserID(ctx)
-	if userID == "" {
-		return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
-	}
-	filterAccountID := req.Msg.AccountId
-	ch, cancel := s.svc.SubscribeUserOrderEvents(ctx, userID)
-	defer cancel()
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		case ev, ok := <-ch:
-			if !ok {
-				return nil
-			}
-			if filterAccountID != "" && ev.AccountID != filterAccountID {
-				continue
-			}
-			if err := stream.Send(toProtoOrderEvent(ev)); err != nil {
-				return connect.NewError(connect.CodeInternal, fmt.Errorf("send order event to stream: %w", err))
-			}
-		}
-	}
-}
-
-// SyncOrderHistory fetches order history from the MT broker and writes it to trade_records.
-func (s *MtHubServer) SyncOrderHistory(ctx context.Context, req *connect.Request[antv1.SyncOrderHistoryRequest]) (*connect.Response[antv1.SyncOrderHistoryResponse], error) {
+// SubscribeBars dynamically subscribes the gateway to a symbol's ticks and triggers
+// a historical backfill from the broker into ClickHouse so the symbol has immediate
+// K-line data.
+func (s *MtHubServer) SubscribeBars(ctx context.Context, req *connect.Request[antv1.SubscribeBarsRequest]) (*connect.Response[antv1.SubscribeBarsResponse], error) {
 	userID := interceptor.GetUserID(ctx)
 	if userID == "" {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
 	}
-	accountID := req.Msg.AccountId
-	ok, err := s.platform.UserOwnsAccount(ctx, userID, accountID)
+	m := req.Msg
+	if m.AccountId == "" || m.Symbol == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("account_id and symbol required"))
+	}
+	ok, err := s.platform.UserOwnsAccount(ctx, userID, m.AccountId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	if !ok {
 		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
 	}
-
-	uid, err := uuid.Parse(accountID)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_id"))
+	if err := s.svc.SubscribeSymbols(ctx, m.AccountId, []string{m.Symbol}); err != nil {
+		s.log.Warn("SubscribeBars: failed to subscribe symbols",
+			zap.String("account", m.AccountId), zap.String("symbol", m.Symbol), zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to subscribe bars"))
 	}
 
-	from := time.Now().AddDate(-1, 0, 0)
-	lastTime, err := s.tradeRecords.GetLastSyncTime(ctx, uid)
-	if err != nil {
-		if !errors.Is(err, pgx.ErrNoRows) {
-			s.log.Error("SyncOrderHistory: get last sync time failed", zap.Error(err))
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-	} else if lastTime != nil {
-		from = *lastTime
-	}
-	to := time.Now()
+	// Backfill historical bars asynchronously — PriceHistory fallback handles
+	// immediate needs for the requested period via direct broker fetch.
+	go s.backfillKlines(m.AccountId, m.Symbol)
 
-	records, err := s.svc.OrderHistory(ctx, accountID, from, to)
-	if err != nil {
-		s.log.Error("SyncOrderHistory: fetch from broker", zap.String("account", accountID), zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
-	platform := s.svc.Platform(accountID)
-
-	tradeRecs := make([]*model.TradeRecord, 0, len(records))
-	for _, r := range records {
-		rec, warnings := orderRecordToTradeRecord(r, uid, platform)
-		if len(warnings) > 0 {
-			s.log.Warn("SyncOrderHistory: precision loss converting decimal to float64",
-				zap.String("account", accountID),
-				zap.Int64("ticket", r.Ticket),
-				zap.Strings("fields", warnings))
-		}
-		tradeRecs = append(tradeRecs, rec)
-	}
-
-	if err := s.tradeRecords.BatchCreate(ctx, tradeRecs); err != nil {
-		s.log.Error("SyncOrderHistory: batch create", zap.String("account", accountID), zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-
-	s.log.Info("SyncOrderHistory: synced",
-		zap.String("account", accountID),
-		zap.Int("records", len(tradeRecs)))
-	return connect.NewResponse(&antv1.SyncOrderHistoryResponse{SyncedRecords: int64(len(tradeRecs))}), nil
-}
-
-func (s *MtHubServer) WriteClosedTrade(ctx context.Context, accountID, platform, updateOrderType, updateSymbol, updateComment string, updateTicket int64, updateVolume, updateOpenPrice, updateClosePrice, updateProfit, updateSwap, updateCommission, updateSL, updateTP float64, updateOpenTime, updateCloseTime int64) error {
-	uid, err := uuid.Parse(accountID)
-	if err != nil {
-		return err
-	}
-	rec := &model.TradeRecord{
-		AccountID:    uid,
-		Ticket:       updateTicket,
-		Symbol:       updateSymbol,
-		OrderType:    updateOrderType,
-		Volume:       updateVolume,
-		OpenPrice:    updateOpenPrice,
-		ClosePrice:   updateClosePrice,
-		Profit:       updateProfit,
-		Swap:         updateSwap,
-		Commission:   updateCommission,
-		OpenTime:     time.Unix(updateOpenTime, 0),
-		CloseTime:    time.Unix(updateCloseTime, 0),
-		StopLoss:     updateSL,
-		TakeProfit:   updateTP,
-		OrderComment: updateComment,
-		Platform:     platform,
-	}
-	return s.tradeRecords.Create(ctx, rec)
-}
-
-func orderRecordToTradeRecord(r *mthub.OrderRecord, accountID uuid.UUID, platform string) (*model.TradeRecord, []string) {
-	orderType := mthubSideOrderTypeToString(r.Side, r.OrderType)
-
-	var warnings []string
-	collect := func(f float64, exact bool, field string) float64 {
-		if !exact {
-			warnings = append(warnings, field)
-		}
-		return f
-	}
-
-	vol, vexact := decimalToFloat64(r.Volume)
-	op, oexact := decimalToFloat64(r.OpenPrice)
-	cp, cexact := decimalToFloat64(r.ClosePrice)
-	pr, pexact := decimalToFloat64(r.Profit)
-	sw, sexact := decimalToFloat64(r.Swap)
-	cm, cmexact := decimalToFloat64(r.Commission)
-
-	rec := &model.TradeRecord{
-		AccountID:    accountID,
-		Ticket:       r.Ticket,
-		Symbol:       r.SymbolRaw,
-		OrderType:    orderType,
-		Volume:       collect(vol, vexact, "volume"),
-		OpenPrice:    collect(op, oexact, "openPrice"),
-		ClosePrice:   collect(cp, cexact, "closePrice"),
-		Profit:       collect(pr, pexact, "profit"),
-		Swap:         collect(sw, sexact, "swap"),
-		Commission:   collect(cm, cmexact, "commission"),
-		OpenTime:     r.OpenTime,
-		CloseTime:    r.CloseTime,
-		OrderComment: r.Comment,
-		MagicNumber:  int(r.Magic),
-		Platform:     platform,
-	}
-	return rec, warnings
-}
-
-func decimalToFloat64(d decimal.Decimal) (float64, bool) {
-	return d.Float64()
-}
-
-func mthubSideOrderTypeToString(side mthub.Side, ot mthub.OrderType) string {
-	prefix := "BUY"
-	if side == mthub.SideSell {
-		prefix = "SELL"
-	}
-	switch ot {
-	case mthub.OrderMarket:
-		return prefix
-	case mthub.OrderLimit:
-		return prefix + "_LIMIT"
-	case mthub.OrderStop:
-		return prefix + "_STOP"
-	case mthub.OrderStopLimit:
-		return prefix + "_STOP_LIMIT"
-	default:
-		return prefix
-	}
-}
-
-func toProtoOrderEvent(ev *mthub.OrderEvent) *antv1.OrderEvent {
-	order := &antv1.OrderRecord{}
-	if ev.Order != nil {
-		order.Ticket = ev.Order.Ticket
-	}
-	return &antv1.OrderEvent{
-		AccountId: ev.AccountID, Ticket: ev.Ticket,
-		EventType: ev.EventType, Timestamp: timestamppb.New(ev.Timestamp),
-		Order: order,
-	}
+	return connect.NewResponse(&antv1.SubscribeBarsResponse{}), nil
 }

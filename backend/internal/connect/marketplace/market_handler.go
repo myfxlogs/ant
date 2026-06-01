@@ -44,10 +44,20 @@ func (s *MarketServer) GetKlines(ctx context.Context, req *connect.Request[antv1
 		period = "M1"
 	}
 
-	bars, err := s.marketData.GetKlines(ctx, m.Canonical, m.Broker, period, limit)
+	var from, to *time.Time
+	if m.From != nil {
+		t := m.From.AsTime()
+		from = &t
+	}
+	if m.To != nil {
+		t := m.To.AsTime()
+		to = &t
+	}
+
+	bars, err := s.marketData.GetKlines(ctx, m.Canonical, m.Broker, period, from, to, limit)
 	if err != nil {
 		s.log.Error("GetKlines", zap.Error(err))
-		return connect.NewResponse(&antv1.GetKlinesResponse{}), nil
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("failed to get klines"))
 	}
 
 	var out []*antv1.OHLCV

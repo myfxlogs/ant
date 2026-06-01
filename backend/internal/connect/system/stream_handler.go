@@ -165,10 +165,62 @@ func (s *StreamServer) SubscribeEvents(
 	// so the snapshot diff does not emit duplicate close events.
 	recentlyClosed := make(map[string]map[int64]bool)
 
+	// --- bar subscriptions ---
+	type barSub struct{ ch <-chan *mthub.BarUpdate; cancel func() }
+	barSubs := make([]barSub, 0, len(accountIDs))
+	for _, aid := range accountIDs {
+		if !filterAll && !accountSet[aid] {
+			continue
+		}
+		ch, cancel := s.svc.SubscribeBarUpdates(aid)
+		barSubs = append(barSubs, barSub{ch, cancel})
+	}
+	barCh := make(chan *mthub.BarUpdate, 64)
+	for _, bs := range barSubs {
+		go func(ch <-chan *mthub.BarUpdate) {
+			for ev := range ch {
+				select {
+				case barCh <- ev:
+				case <-loopCtx.Done():
+					return
+				}
+			}
+		}(bs.ch)
+	}
+
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
+		case b, ok := <-barCh:
+			if !ok {
+				continue
+			}
+			if !filterAll && !accountSet[b.AccountID] {
+				continue
+			}
+			t := time.UnixMilli(b.OpenTime)
+			if err := sendEvent(&antv1.StreamEvent{
+				Type:      "bar_update",
+				AccountId: b.AccountID,
+				Timestamp: timestamppb.New(t),
+				Payload: &antv1.StreamEvent_BarUpdate{
+					BarUpdate: &antv1.BarUpdateEvent{
+						AccountId: b.AccountID,
+						Symbol:    b.Symbol,
+						Period:    b.Period,
+						OpenTime:  timestamppb.New(t),
+						Open:      fmt.Sprintf("%.5f", b.Open),
+						High:      fmt.Sprintf("%.5f", b.High),
+						Low:       fmt.Sprintf("%.5f", b.Low),
+						Close:     fmt.Sprintf("%.5f", b.Close),
+						Volume:    b.Volume,
+						Closed:    b.Closed,
+					},
+				},
+			}); err != nil {
+				return connect.NewError(connect.CodeInternal, fmt.Errorf("send bar_update event: %w", err))
+			}
 		case ev, ok := <-orderCh:
 			if !ok {
 				return nil

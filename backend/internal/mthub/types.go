@@ -247,6 +247,7 @@ type OrderExecutor interface {
 	FetchSymbolParams(ctx context.Context, canonicals []string) ([]*SymbolParam, error)
 	FetchAllSymbols(ctx context.Context) ([]string, error)
 	FetchPriceHistory(ctx context.Context, symbol, period string, from, to int64, count int) ([]*Bar, error)
+	AddSymbols(ctx context.Context, symbols []string) error
 	SubscribeOrderEvents(ctx context.Context, h OrderEventHandler) error
 }
 
@@ -349,6 +350,62 @@ func (b *PositionSnapshotBroker) Publish(ev *PositionSnapshot) {
 
 func (b *PositionSnapshotBroker) Subscribe(accountID string) (<-chan *PositionSnapshot, func()) {
 	ch := make(chan *PositionSnapshot, 8)
+	b.mu.Lock()
+	b.subscribers[accountID] = append(b.subscribers[accountID], ch)
+	b.mu.Unlock()
+	return ch, func() {
+		b.mu.Lock()
+		defer b.mu.Unlock()
+		for i, c := range b.subscribers[accountID] {
+			if c == ch {
+				b.subscribers[accountID] = append(b.subscribers[accountID][:i], b.subscribers[accountID][i+1:]...)
+				close(ch)
+				return
+			}
+		}
+	}
+}
+
+// --- Bar updates (real-time K-line bar push) ---
+
+// BarUpdate is a single OHLCV bar update pushed from the bar aggregator.
+type BarUpdate struct {
+	AccountID string
+	Symbol    string
+	Period    string
+	OpenTime  int64  // unix milliseconds
+	Open      float64
+	High      float64
+	Low       float64
+	Close     float64
+	Volume    float64
+	Closed    bool // true=finalized bar, false=in-progress candle
+}
+
+// BarBroker broadcasts bar updates per accountID.
+type BarBroker struct {
+	mu          sync.RWMutex
+	subscribers map[string][]chan *BarUpdate
+}
+
+func NewBarBroker() *BarBroker {
+	return &BarBroker{subscribers: map[string][]chan *BarUpdate{}}
+}
+func (b *BarBroker) Publish(ev *BarUpdate) {
+	b.mu.RLock()
+	src := b.subscribers[ev.AccountID]
+	b.mu.RUnlock()
+	chs := make([]chan *BarUpdate, len(src))
+	copy(chs, src)
+	for _, ch := range chs {
+		select {
+		case ch <- ev:
+		default:
+		}
+	}
+}
+func (b *BarBroker) Subscribe(accountID string) (<-chan *BarUpdate, func()) {
+	ch := make(chan *BarUpdate, 64)
 	b.mu.Lock()
 	b.subscribers[accountID] = append(b.subscribers[accountID], ch)
 	b.mu.Unlock()

@@ -33,6 +33,7 @@ type ManagerDeps struct {
 	SpillWriter      *SpillWriter
 	MarketState      *MarketStateTracker  // M10-BASE-F1
 	StuffingDetector *StuffingDetector    // M10-BASE-F4
+	OnBar            func(*mdtick.Bar)    // called when a bar is finalized (for real-time push)
 	Log              *zap.Logger
 }
 
@@ -46,6 +47,7 @@ type Manager struct {
 	spillWriter      *SpillWriter
 	marketState      *MarketStateTracker
 	stuffingDetector *StuffingDetector
+	onBar            func(*mdtick.Bar)
 	breakers         map[string]*CircuitBreaker
 	otelTracer       *anttrace.Tracer // L-2: real OTel tracer, nil = no-op
 	log              *zap.Logger
@@ -94,6 +96,7 @@ func NewManager(deps ManagerDeps) *Manager {
 		spillWriter:      deps.SpillWriter,
 		marketState:      deps.MarketState,
 		stuffingDetector: deps.StuffingDetector,
+		onBar:            deps.OnBar,
 		breakers:         make(map[string]*CircuitBreaker),
 		gateways:         make(map[string]Gateway),
 		lastTickAt:       make(map[string]int64),
@@ -215,6 +218,9 @@ func (m *Manager) HandleTick(t *mdtick.Tick) {
 	for _, b := range bars {
 		if err := m.publisher.PublishBar(ctx, b); err != nil && m.log != nil {
 			m.log.Warn("mdgateway: PublishBar failed", zap.String("account", b.AccountID), zap.String("symbol", b.Canonical), zap.Error(err))
+		}
+		if m.onBar != nil {
+			m.onBar(b)
 		}
 	}
 	span5.End()

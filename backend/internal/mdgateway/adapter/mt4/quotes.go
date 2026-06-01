@@ -35,6 +35,30 @@ func (g *Gateway) Subscribe(ctx context.Context, syms []string, handler mdtick.T
 	return nil
 }
 
+// AddSymbols subscribes to additional symbols on the existing MT4 session
+// without starting a new quote stream. The existing recvLoop OnQuote stream
+// will automatically deliver ticks for the newly added symbols.
+func (g *Gateway) AddSymbols(ctx context.Context, symbols []string) error {
+	g.mu.RLock()
+	sub := g.subCli
+	sid := g.sessionID
+	g.mu.RUnlock()
+	if sub == nil || sid == "" {
+		return fmt.Errorf("mt4 AddSymbols: not connected")
+	}
+	if len(symbols) == 0 {
+		return nil
+	}
+	subMd := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
+	subCtx := metadata.NewOutgoingContext(ctx, subMd)
+	_, err := sub.SubscribeMany(subCtx, &pb.SubscribeManyRequest{Id: sid, Symbols: symbols})
+	if err != nil {
+		return fmt.Errorf("mt4 AddSymbols: %w", err)
+	}
+	g.log.Info("mt4: added symbols", zap.Strings("syms", symbols))
+	return nil
+}
+
 func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 	const maxBackoff = 5 * time.Minute
 	backoff := time.Second
@@ -400,14 +424,14 @@ func (g *Gateway) GetPriceHistory(ctx context.Context, accountID, symbolRaw, per
 		return nil, fmt.Errorf("mt4 GetPriceHistory: unsupported period %q", period)
 	}
 
-	count := int32((to - from) / periodMs(period))
+	count := int32(((to - from) * 1000) / periodMs(period))
 	if count <= 0 {
 		count = 100
 	}
 	if count > 5000 {
 		count = 5000
 	}
-	fromStr := time.UnixMilli(to).UTC().Format("2006-01-02T15:04:05")
+	fromStr := time.Unix(to, 0).UTC().Format("2006-01-02T15:04:05")
 
 	resp, err := client.QuoteHistory(ctx, &pb.QuoteHistoryRequest{
 		Id: sid, Symbol: symbolRaw, Timeframe: tf, From: fromStr, Count: count,
@@ -438,6 +462,8 @@ func mt4PeriodToTimeframe(period string) (pb.Timeframe, bool) {
 		return pb.Timeframe_Timeframe_H4, true
 	case "1d":
 		return pb.Timeframe_Timeframe_D1, true
+	case "1w":
+		return pb.Timeframe_Timeframe_W1, true
 	default:
 		return 0, false
 	}
@@ -470,12 +496,16 @@ func periodMs(period string) int64 {
 		return 300_000
 	case "15m":
 		return 900_000
+	case "30m":
+		return 1_800_000
 	case "1h":
 		return 3_600_000
 	case "4h":
 		return 14_400_000
 	case "1d":
 		return 86_400_000
+	case "1w":
+		return 604_800_000
 	default:
 		return 60_000
 	}

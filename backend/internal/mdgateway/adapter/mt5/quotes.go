@@ -35,6 +35,30 @@ func (g *Gateway) Subscribe(ctx context.Context, syms []string, handler mdtick.T
 	return nil
 }
 
+// AddSymbols subscribes to additional symbols on the existing MT5 session
+// without starting a new quote stream. The existing recvLoop OnQuote stream
+// will automatically deliver ticks for the newly added symbols.
+func (g *Gateway) AddSymbols(ctx context.Context, symbols []string) error {
+	g.mu.RLock()
+	sub := g.subCli
+	sid := g.sessionID
+	g.mu.RUnlock()
+	if sub == nil || sid == "" {
+		return fmt.Errorf("mt5 AddSymbols: not connected")
+	}
+	if len(symbols) == 0 {
+		return nil
+	}
+	subMd := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
+	subCtx := metadata.NewOutgoingContext(ctx, subMd)
+	_, err := sub.SubscribeMany(subCtx, &pb.SubscribeManyRequest{Id: sid, Symbols: symbols})
+	if err != nil {
+		return fmt.Errorf("mt5 AddSymbols: %w", err)
+	}
+	g.log.Info("mt5: added symbols", zap.Strings("syms", symbols))
+	return nil
+}
+
 func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 	const maxBackoff = 5 * time.Minute
 	backoff := time.Second
@@ -449,6 +473,10 @@ func mt5OrderTypeLabel(ot pb.OrderType) string {
 }
 
 // GetPriceHistory implements backfiller.MTAPIBarSource via MT5 PriceHistory RPC.
+// Tries the raw symbol first, then retries without the "m" suffix — some MT5
+// brokers use clean symbols for QuoteHistory even though live quotes use suffixed.
+// GetPriceHistory implements backfiller.MTAPIBarSource via MT5 PriceHistory RPC.
+// Requires gRPC metadata with session token for authorization on the mtapi proxy.
 func (g *Gateway) GetPriceHistory(ctx context.Context, accountID, symbolRaw, period string, from, to int64) ([]*mdtick.Bar, error) {
 	g.mu.RLock()
 	qhCli := g.qhCli
@@ -459,22 +487,40 @@ func (g *Gateway) GetPriceHistory(ctx context.Context, accountID, symbolRaw, per
 		return nil, fmt.Errorf("mt5 GetPriceHistory: not connected")
 	}
 
-	tf := mt5PeriodToTimeframe(period)
-	fromStr := time.UnixMilli(from).UTC().Format("2006-01-02T15:04:05")
-	toStr := time.UnixMilli(to).UTC().Format("2006-01-02T15:04:05")
+	// Build gRPC metadata with session token — required by mtapi for authorization.
+	authMd := make(map[string]string, 2)
+	authMd["id"] = sid
+	if tok := g.token(); tok != "" {
+		authMd["authorization"] = "Bearer " + tok
+	}
+	authCtx := metadata.NewOutgoingContext(ctx, metadata.New(authMd))
 
-	resp, err := qhCli.PriceHistory(ctx, &pb.PriceHistoryRequest{
+	tf := mt5PeriodToTimeframe(period)
+	fromStr := time.Unix(from, 0).UTC().Format("2006-01-02T15:04:05")
+	toStr := time.Unix(to, 0).UTC().Format("2006-01-02T15:04:05")
+
+	resp, err := qhCli.PriceHistory(authCtx, &pb.PriceHistoryRequest{
 		Id: sid, Symbol: symbolRaw, From: fromStr, To: toStr, TimeFrame: tf,
 	})
 	if err != nil {
+		g.log.Error("mt5 GetPriceHistory: RPC failed",
+			zap.String("symbol", symbolRaw), zap.Error(err))
 		return nil, fmt.Errorf("mt5 PriceHistory: %w", err)
 	}
 	if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
+		g.log.Error("mt5 GetPriceHistory: broker error",
+			zap.String("symbol", symbolRaw), zap.Int32("code", int32(resp.GetError().GetCode())),
+			zap.String("msg", resp.GetError().GetMessage()))
 		return nil, fmt.Errorf("mt5 PriceHistory: code=%d msg=%s",
 			resp.GetError().GetCode(), resp.GetError().GetMessage())
 	}
-	return convertMT5Bars(resp.GetResult(), accountID, period), nil
+	bars := convertMT5Bars(resp.GetResult(), accountID, period)
+	g.log.Info("mt5 GetPriceHistory: response",
+		zap.String("symbol", symbolRaw), zap.Int("bars", len(bars)),
+		zap.String("from", fromStr), zap.String("to", toStr), zap.Int32("tf", tf))
+	return bars, nil
 }
+
 
 func mt5PeriodToTimeframe(period string) int32 {
 	switch period {
@@ -492,6 +538,8 @@ func mt5PeriodToTimeframe(period string) int32 {
 		return 240
 	case "1d":
 		return 1440
+	case "1w":
+		return 10080 // MT5 PERIOD_W1
 	default:
 		return 60
 	}

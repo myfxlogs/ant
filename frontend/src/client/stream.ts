@@ -1,7 +1,7 @@
 import { streamClient } from './connect';
 import type { OrderUpdate, ProfitUpdate } from '../adapters/dataAdapter';
 import type { AccountStatusEvent } from '../gen/ant/v1/stream_event_account_pb';
-import type { StreamEvent } from '../gen/ant/v1/stream_pb';
+import type { StreamEvent, BarUpdateEvent } from '../gen/ant/v1/stream_pb';
 import { toCamelCase } from '../adapters/dataAdapter';
 import { isLikelyStreamTransportFailure } from '../utils/streamErrors';
 import type { UserSummary } from '../stores/tradingStore';
@@ -18,6 +18,7 @@ export interface StreamCallbacks {
   onProfit?: (profit: ProfitUpdate) => void;
   onStatus?: (status: AccountStatusEvent) => void;
   onPositionSnapshot?: (accountId: string, positions: OrderUpdate[]) => void;
+  onBar?: (bar: BarUpdateEvent) => void;
   onError?: (error: Error) => void;
 }
 
@@ -154,6 +155,11 @@ export const streamApi = {
               const snap = toCamelCase<{ accountId: string; positions: Record<string, unknown>[] }>(e.payload.value);
               const orders = (snap.positions || []).map((o) => toCamelCase<OrderUpdate>(o));
               callbacks.onPositionSnapshot?.(snap.accountId, orders);
+              break;
+            }
+            case 'barUpdate': {
+              const bar = toCamelCase<BarUpdateEvent>(e.payload.value);
+              callbacks.onBar?.(bar);
               break;
             }
             default:

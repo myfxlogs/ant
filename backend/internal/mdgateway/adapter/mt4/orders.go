@@ -307,15 +307,24 @@ func (g *Gateway) FetchPriceHistory(ctx context.Context, symbol, period string, 
 	if client == nil || sid == "" {
 		return nil, fmt.Errorf("mt4 FetchPriceHistory: not connected")
 	}
-	fromStr := time.Unix(from, 0).Format("2006-01-02T15:04:05")
+	// MT4 QuoteHistory: From=end date, Count=bars going backward.
+	// Use `to` as From so we get bars in [from, to].
+	barCount := int32(((to - from) * 1000) / periodMs(period))
+	if barCount <= 0 {
+		barCount = 100
+	}
+	if barCount > 5000 {
+		barCount = 5000
+	}
+	toStr := time.Unix(to, 0).Format("2006-01-02T15:04:05")
 	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
 	ctx2 := metadata.NewOutgoingContext(ctx, md)
 	resp, err := client.QuoteHistory(ctx2, &pb.QuoteHistoryRequest{
 		Id:        sid,
 		Symbol:    symbol,
 		Timeframe: periodToMT4TF(period),
-		From:      fromStr,
-		Count:     int32(count),
+		From:      toStr,
+		Count:     barCount,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("mt4 QuoteHistory: %w", err)

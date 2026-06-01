@@ -4,6 +4,8 @@ import { InfoCircleOutlined } from '@ant-design/icons';
 import { init, dispose, type KLineData } from 'klinecharts';
 import type { Chart } from 'klinecharts';
 import { marketApi, type KlineData as ApiKlineData } from '@/client/market';
+import { subscribeEvents } from '@/client/stream';
+import type { BarUpdateEvent } from '@/gen/ant/v1/stream_pb';
 
 const TIMEFRAMES = [
   { label: '1m', value: '1m' },
@@ -47,7 +49,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
   const [tooNarrow, setTooNarrow] = useState(false);
   const loadingMore = useRef(false);
   const loadedAll = useRef(false);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const unsubRef = useRef<(() => void) | null>(null);
 
   // responsive — hide chart below 1280px viewport width
   useEffect(() => {
@@ -58,54 +60,78 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  // Fetch klines on symbol/timeframe change + poll
+  // Fetch initial historical bars + subscribe to real-time bar SSE
   useEffect(() => {
-    if (!symbol) return;
+    if (!symbol || !accountId) return;
     let cancelled = false;
     setLoading(true);
     setError(null);
     loadedAll.current = false;
     loadingMore.current = false;
 
-    if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+    // Unsubscribe previous SSE bar listener
+    if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
 
-    const canonical = marketApi.resolveSymbol(symbol);
-    const doFetch = (count: number) =>
-      marketApi.getKlines({ symbol: canonical, timeframe, count, accountId });
-
-    doFetch(INITIAL_BARS)
-      .then((data) => {
-        if (cancelled) return;
-        setBars(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        setError(err.message || 'Failed to load chart data');
-        setLoading(false);
-      });
-
-    // Poll every 5s for live data
-    pollRef.current = setInterval(() => {
+    // Subscribe gateway to this symbol's ticks and wait for backfill.
+    // Must await before getKlines — otherwise ClickHouse won't have the data yet.
+    marketApi.subscribeBars({ accountId, symbol }).then(() => {
       if (cancelled) return;
-      doFetch(5)
-        .then((latest) => {
-          if (cancelled || latest.length === 0) return;
-          setBars((prev) => {
-            const index = new Map<number, ApiKlineData>();
-            for (const b of prev) index.set(b.time, b);
-            for (const b of latest) index.set(b.time, b);
-            return [...index.values()].sort((a, b) => a.time - b.time);
-          });
+      // Fetch initial historical bars AFTER backfill completes.
+      const canonical = marketApi.resolveSymbol(symbol);
+      marketApi.getKlines({ symbol: canonical, timeframe, count: INITIAL_BARS, accountId })
+        .then((data) => {
+          if (cancelled) return;
+          setBars(data);
+          setLoading(false);
         })
-        .catch(() => { /* silent */ });
-    }, 5000);
+        .catch((err) => {
+          if (cancelled) return;
+          setError(err.message || 'Failed to load chart data');
+          setLoading(false);
+        });
+    });
+
+    // Subscribe to real-time bar updates via SSE
+    unsubRef.current = subscribeEvents([], {
+      onBar: (ev: BarUpdateEvent) => {
+        if (cancelled) return;
+        if (ev.accountId !== accountId || ev.symbol !== symbol || ev.period !== timeframe) return;
+
+        const bar: ApiKlineData = {
+          time: ev.openTime ? Number(ev.openTime.seconds ?? 0n) : 0,
+          open: Number(ev.open ?? '0'),
+          high: Number(ev.high ?? '0'),
+          low: Number(ev.low ?? '0'),
+          close: Number(ev.close ?? '0'),
+          volume: Number(ev.volume ?? 0),
+        };
+        if (bar.time === 0) return;
+
+        setBars((prev) => {
+          const index = new Map<number, ApiKlineData>();
+          for (const b of prev) index.set(b.time, b);
+          if (ev.closed) {
+            // Closed bar — replace or add
+            index.set(bar.time, bar);
+          } else {
+            // In-progress candle — update if exists, otherwise add
+            const existing = index.get(bar.time);
+            if (existing) {
+              index.set(bar.time, { ...existing, high: Math.max(existing.high, bar.high), low: Math.min(existing.low, bar.low), close: bar.close, volume: bar.volume });
+            } else {
+              index.set(bar.time, bar);
+            }
+          }
+          return [...index.values()].sort((a, b) => a.time - b.time);
+        });
+      },
+    });
 
     return () => {
       cancelled = true;
-      if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+      if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
     };
-  }, [symbol, timeframe]);
+  }, [symbol, timeframe, accountId]);
 
   // Create chart on mount
   useEffect(() => {
@@ -167,7 +193,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
 
   // Update chart data when bars change
   useEffect(() => {
-    if (!chartRef.current || bars.length === 0) return;
+    if (!chartRef.current) return;
     chartRef.current.applyNewData(bars.map(toKLineData));
   }, [bars]);
 
@@ -179,7 +205,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     const firstBarTime = bars[0].time;
     if (timestamp >= firstBarTime) return;
     loadingMore.current = true;
-    marketApi.getKlines({ symbol: canonical, timeframe, count: INITIAL_BARS, before: firstBarTime, accountId })
+    marketApi.getKlines({ symbol: marketApi.resolveSymbol(symbol), timeframe, count: INITIAL_BARS, before: firstBarTime, accountId })
       .then((older) => {
         if (older.length === 0) { loadedAll.current = true; return; }
         setBars((prev) => [...older, ...prev]);
@@ -261,10 +287,10 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
             <Radio.Button key={tf.value} value={tf.value}>{tf.label}</Radio.Button>
           ))}
         </Radio.Group>
-        <Tooltip title="OHLC data — approximately 5s delay. No real-time Bid/Ask spread.">
+        <Tooltip title="OHLC data — real-time bar push via SSE. No Bid/Ask spread.">
           <span style={{ color: '#6b7280', fontSize: 12, cursor: 'help', userSelect: 'none' }}>
             <InfoCircleOutlined style={{ marginRight: 4 }} />
-            ~5s delay
+            real-time
           </span>
         </Tooltip>
       </div>

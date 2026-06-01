@@ -36,6 +36,7 @@ type RunnerDeps struct {
 	OnOrderUpdate       func(accountID, userID string, o *mdtick.OrderUpdate)     // receives real-time order/position changes from mtapi OnOrderUpdate
 	OnAccountDisconnect func(accountID string)                                     // B-1.3: called when gateway stops/fails for an account
 	OnBrokerInfo        func(accountID, platform, broker string, info *mdtick.BrokerInfo) // B-2.2: called once after successful Connect
+	OnBar               func(bar *mdtick.Bar)                                               // called when a bar is finalized (for realtime SSE push)
 	Hub                 *mthub.Hub
 	BrokerRegistry      *adapter.BrokerRegistry // M12-C2: multi-broker registry; gateways registered on start
 }
@@ -129,6 +130,7 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 		Publisher:   publisher,
 		CHWriter:    chWriter,
 		SpillWriter: spillWriter,
+		OnBar:       deps.OnBar,
 		Log:         log,
 	})
 	// L-2: wire real OTel tracer into pipeline spans.

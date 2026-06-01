@@ -152,6 +152,7 @@ func main() {
 	eventBroker := mthub.NewOrderEventBroker()
 	accountBroker := mthub.NewAccountProfitBroker()
 	snapshotBroker := mthub.NewPositionSnapshotBroker()
+	barBroker := mthub.NewBarBroker()
 	idemGuard := mthub.NewIdempotencyGuard(rdb.Client())
 	reconcileGate := mthub.NewReconcileGate()
 	var reconLoop *mthub.ReconciliationLoop // H17: declared early so OnBrokerInfo callback can trigger reconciliation
@@ -161,6 +162,7 @@ func main() {
 	}
 	eventStore := mthub.NewTradeEventStore(js)
 	mthubSvc := mthub.NewMtHubService(hub, eventBroker, accountBroker, snapshotBroker, idemGuard, reconcileGate, eventStore)
+	mthubSvc.SetBarBroker(barBroker)
 	// --- Analytics cache ---
 	analyticsCache := service.NewAnalyticsCache(rdb.Client(), log)
 
@@ -180,7 +182,7 @@ func main() {
 	brokerReg := adapter.NewBrokerRegistry()
 	mthubSvc.SetBrokerRegistry(brokerReg)
 
-	go startMdGatewayPipeline(pipelineCtx, log, pool, ch, nc, spillDir, secClient, hub, accountSvc, mthubSvc, accountSyncSvc, tradeRecordRepo, snapshotBroker, accountBroker, eventStore, &emailNotifier, &platformAgg, &reconLoop, brokerReg)
+	go startMdGatewayPipeline(pipelineCtx, log, pool, ch, nc, spillDir, secClient, hub, accountSvc, mthubSvc, accountSyncSvc, tradeRecordRepo, snapshotBroker, accountBroker, barBroker, eventStore, &emailNotifier, &platformAgg, &reconLoop, brokerReg)
 
 	mux := http.NewServeMux()
 	reconLoop, emailNotifier, platformAgg = registerHandlers(mux, log, pool, ch, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate, analyticsCache, brokerReg)

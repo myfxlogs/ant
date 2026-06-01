@@ -2,7 +2,6 @@ package mdgateway
 
 import (
 	"context"
-	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -50,8 +49,10 @@ func (n *Normalizer) Resolve(ctx context.Context, broker, raw string) string {
 		}
 	}
 
-	// Algorithmic fallback: strip common suffixes
-	canonical := stripSuffix(raw)
+	// No algorithmic fallback — raw symbol IS the canonical.
+	// Suffix stripping caused mismatches: brokers use symbols like "XAUUSDm"
+	// and don't recognize the stripped form "XAUUSD" for historical queries.
+	canonical := raw
 	n.cache[key] = canonical
 	return canonical
 }
@@ -61,32 +62,4 @@ func (n *Normalizer) Resolve(ctx context.Context, broker, raw string) string {
 func (n *Normalizer) InvalidateCache(broker, symbolRaw string) {
 	key := broker + ":" + symbolRaw
 	delete(n.cache, key)
-}
-
-// stripSuffix removes known MT symbol suffixes per alfq Q-005 + Q-006.
-func stripSuffix(raw string) string {
-	s := strings.ToLower(raw)
-
-	// Dot-delimited suffixes: e.g. "EURUSD.m" → "EURUSD"
-	if idx := strings.IndexByte(s, '.'); idx >= 0 {
-		base := s[:idx]
-		suffix := s[idx+1:]
-		switch suffix {
-		case "m", "pro", "x", "c":
-			return strings.ToUpper(base)
-		default:
-			return strings.ToUpper(s)
-		}
-	}
-
-	// Known MT5 suffixes appended without delimiter (case-insensitive).
-	// e.g. "XAUUSDm" → "XAUUSD", "BTCUSDpro" → "BTCUSD"
-	// Sorted longest-first so "EURUSD_r" matches "_r" before "r".
-	suffixes := []string{"_institutional", "_retail", "_i", "_r", "pro", "m", "x", "c", "t", "r"}
-	for _, suf := range suffixes {
-		if strings.HasSuffix(s, suf) {
-			return strings.ToUpper(strings.TrimSuffix(s, suf))
-		}
-	}
-	return strings.ToUpper(s)
 }

@@ -44,6 +44,7 @@ type StreamEvent struct {
 	//	*StreamEvent_TradeCommand
 	//	*StreamEvent_TradeReceipt
 	//	*StreamEvent_PositionSnapshot
+	//	*StreamEvent_BarUpdate
 	Payload       isStreamEvent_Payload `protobuf_oneof:"payload"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -222,6 +223,15 @@ func (x *StreamEvent) GetPositionSnapshot() *PositionSnapshotEvent {
 	return nil
 }
 
+func (x *StreamEvent) GetBarUpdate() *BarUpdateEvent {
+	if x != nil {
+		if x, ok := x.Payload.(*StreamEvent_BarUpdate); ok {
+			return x.BarUpdate
+		}
+	}
+	return nil
+}
+
 type isStreamEvent_Payload interface {
 	isStreamEvent_Payload()
 }
@@ -274,6 +284,10 @@ type StreamEvent_PositionSnapshot struct {
 	PositionSnapshot *PositionSnapshotEvent `protobuf:"bytes,17,opt,name=position_snapshot,json=positionSnapshot,proto3,oneof"`
 }
 
+type StreamEvent_BarUpdate struct {
+	BarUpdate *BarUpdateEvent `protobuf:"bytes,18,opt,name=bar_update,json=barUpdate,proto3,oneof"`
+}
+
 func (*StreamEvent_OrderUpdate) isStreamEvent_Payload() {}
 
 func (*StreamEvent_ProfitUpdate) isStreamEvent_Payload() {}
@@ -298,6 +312,125 @@ func (*StreamEvent_TradeReceipt) isStreamEvent_Payload() {}
 
 func (*StreamEvent_PositionSnapshot) isStreamEvent_Payload() {}
 
+func (*StreamEvent_BarUpdate) isStreamEvent_Payload() {}
+
+// BarUpdateEvent is pushed when a K-line bar is finalized or updated.
+type BarUpdateEvent struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	Symbol        string                 `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Period        string                 `protobuf:"bytes,3,opt,name=period,proto3" json:"period,omitempty"`
+	OpenTime      *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=open_time,json=openTime,proto3" json:"open_time,omitempty"`
+	Open          string                 `protobuf:"bytes,5,opt,name=open,proto3" json:"open,omitempty"`
+	High          string                 `protobuf:"bytes,6,opt,name=high,proto3" json:"high,omitempty"`
+	Low           string                 `protobuf:"bytes,7,opt,name=low,proto3" json:"low,omitempty"`
+	Close         string                 `protobuf:"bytes,8,opt,name=close,proto3" json:"close,omitempty"`
+	Volume        float64                `protobuf:"fixed64,9,opt,name=volume,proto3" json:"volume,omitempty"`
+	Closed        bool                   `protobuf:"varint,10,opt,name=closed,proto3" json:"closed,omitempty"` // true=finalized bar, false=in-progress candle
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BarUpdateEvent) Reset() {
+	*x = BarUpdateEvent{}
+	mi := &file_stream_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BarUpdateEvent) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BarUpdateEvent) ProtoMessage() {}
+
+func (x *BarUpdateEvent) ProtoReflect() protoreflect.Message {
+	mi := &file_stream_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BarUpdateEvent.ProtoReflect.Descriptor instead.
+func (*BarUpdateEvent) Descriptor() ([]byte, []int) {
+	return file_stream_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *BarUpdateEvent) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+
+func (x *BarUpdateEvent) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *BarUpdateEvent) GetPeriod() string {
+	if x != nil {
+		return x.Period
+	}
+	return ""
+}
+
+func (x *BarUpdateEvent) GetOpenTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.OpenTime
+	}
+	return nil
+}
+
+func (x *BarUpdateEvent) GetOpen() string {
+	if x != nil {
+		return x.Open
+	}
+	return ""
+}
+
+func (x *BarUpdateEvent) GetHigh() string {
+	if x != nil {
+		return x.High
+	}
+	return ""
+}
+
+func (x *BarUpdateEvent) GetLow() string {
+	if x != nil {
+		return x.Low
+	}
+	return ""
+}
+
+func (x *BarUpdateEvent) GetClose() string {
+	if x != nil {
+		return x.Close
+	}
+	return ""
+}
+
+func (x *BarUpdateEvent) GetVolume() float64 {
+	if x != nil {
+		return x.Volume
+	}
+	return 0
+}
+
+func (x *BarUpdateEvent) GetClosed() bool {
+	if x != nil {
+		return x.Closed
+	}
+	return false
+}
+
 type SubscribeEventsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AccountIds    []string               `protobuf:"bytes,1,rep,name=account_ids,json=accountIds,proto3" json:"account_ids,omitempty"`
@@ -307,7 +440,7 @@ type SubscribeEventsRequest struct {
 
 func (x *SubscribeEventsRequest) Reset() {
 	*x = SubscribeEventsRequest{}
-	mi := &file_stream_proto_msgTypes[1]
+	mi := &file_stream_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -319,7 +452,7 @@ func (x *SubscribeEventsRequest) String() string {
 func (*SubscribeEventsRequest) ProtoMessage() {}
 
 func (x *SubscribeEventsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stream_proto_msgTypes[1]
+	mi := &file_stream_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -332,7 +465,7 @@ func (x *SubscribeEventsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeEventsRequest.ProtoReflect.Descriptor instead.
 func (*SubscribeEventsRequest) Descriptor() ([]byte, []int) {
-	return file_stream_proto_rawDescGZIP(), []int{1}
+	return file_stream_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *SubscribeEventsRequest) GetAccountIds() []string {
@@ -353,7 +486,7 @@ type SubscribeHistoryRequest struct {
 
 func (x *SubscribeHistoryRequest) Reset() {
 	*x = SubscribeHistoryRequest{}
-	mi := &file_stream_proto_msgTypes[2]
+	mi := &file_stream_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -365,7 +498,7 @@ func (x *SubscribeHistoryRequest) String() string {
 func (*SubscribeHistoryRequest) ProtoMessage() {}
 
 func (x *SubscribeHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stream_proto_msgTypes[2]
+	mi := &file_stream_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -378,7 +511,7 @@ func (x *SubscribeHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeHistoryRequest.ProtoReflect.Descriptor instead.
 func (*SubscribeHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_stream_proto_rawDescGZIP(), []int{2}
+	return file_stream_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *SubscribeHistoryRequest) GetAccountIds() []string {
@@ -411,7 +544,7 @@ type SubscribeOrderUpdatesRequest struct {
 
 func (x *SubscribeOrderUpdatesRequest) Reset() {
 	*x = SubscribeOrderUpdatesRequest{}
-	mi := &file_stream_proto_msgTypes[3]
+	mi := &file_stream_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -423,7 +556,7 @@ func (x *SubscribeOrderUpdatesRequest) String() string {
 func (*SubscribeOrderUpdatesRequest) ProtoMessage() {}
 
 func (x *SubscribeOrderUpdatesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stream_proto_msgTypes[3]
+	mi := &file_stream_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -436,7 +569,7 @@ func (x *SubscribeOrderUpdatesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeOrderUpdatesRequest.ProtoReflect.Descriptor instead.
 func (*SubscribeOrderUpdatesRequest) Descriptor() ([]byte, []int) {
-	return file_stream_proto_rawDescGZIP(), []int{3}
+	return file_stream_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *SubscribeOrderUpdatesRequest) GetAccountId() string {
@@ -455,7 +588,7 @@ type SubscribeProfitUpdatesRequest struct {
 
 func (x *SubscribeProfitUpdatesRequest) Reset() {
 	*x = SubscribeProfitUpdatesRequest{}
-	mi := &file_stream_proto_msgTypes[4]
+	mi := &file_stream_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -467,7 +600,7 @@ func (x *SubscribeProfitUpdatesRequest) String() string {
 func (*SubscribeProfitUpdatesRequest) ProtoMessage() {}
 
 func (x *SubscribeProfitUpdatesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stream_proto_msgTypes[4]
+	mi := &file_stream_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -480,7 +613,7 @@ func (x *SubscribeProfitUpdatesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscribeProfitUpdatesRequest.ProtoReflect.Descriptor instead.
 func (*SubscribeProfitUpdatesRequest) Descriptor() ([]byte, []int) {
-	return file_stream_proto_rawDescGZIP(), []int{4}
+	return file_stream_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *SubscribeProfitUpdatesRequest) GetAccountId() string {
@@ -494,7 +627,7 @@ var File_stream_proto protoreflect.FileDescriptor
 
 const file_stream_proto_rawDesc = "" +
 	"\n" +
-	"\fstream.proto\x12\x06ant.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1astream_event_account.proto\x1a\x18stream_event_trade.proto\x1a\x17stream_event_sync.proto\x1a\x1astream_event_command.proto\"\xae\a\n" +
+	"\fstream.proto\x12\x06ant.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1astream_event_account.proto\x1a\x18stream_event_trade.proto\x1a\x17stream_event_sync.proto\x1a\x1astream_event_command.proto\"\xe7\a\n" +
 	"\vStreamEvent\x12\x12\n" +
 	"\x04type\x18\x01 \x01(\tR\x04type\x12\x1d\n" +
 	"\n" +
@@ -515,8 +648,23 @@ const file_stream_proto_rawDesc = "" +
 	"\fledger_entry\x18\x0e \x01(\v2\x18.ant.v1.LedgerEntryEventH\x00R\vledgerEntry\x12@\n" +
 	"\rtrade_command\x18\x0f \x01(\v2\x19.ant.v1.TradeCommandEventH\x00R\ftradeCommand\x12@\n" +
 	"\rtrade_receipt\x18\x10 \x01(\v2\x19.ant.v1.TradeReceiptEventH\x00R\ftradeReceipt\x12L\n" +
-	"\x11position_snapshot\x18\x11 \x01(\v2\x1d.ant.v1.PositionSnapshotEventH\x00R\x10positionSnapshotB\t\n" +
-	"\apayload\"9\n" +
+	"\x11position_snapshot\x18\x11 \x01(\v2\x1d.ant.v1.PositionSnapshotEventH\x00R\x10positionSnapshot\x127\n" +
+	"\n" +
+	"bar_update\x18\x12 \x01(\v2\x16.ant.v1.BarUpdateEventH\x00R\tbarUpdateB\t\n" +
+	"\apayload\"\x98\x02\n" +
+	"\x0eBarUpdateEvent\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\x01 \x01(\tR\taccountId\x12\x16\n" +
+	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12\x16\n" +
+	"\x06period\x18\x03 \x01(\tR\x06period\x127\n" +
+	"\topen_time\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\bopenTime\x12\x12\n" +
+	"\x04open\x18\x05 \x01(\tR\x04open\x12\x12\n" +
+	"\x04high\x18\x06 \x01(\tR\x04high\x12\x10\n" +
+	"\x03low\x18\a \x01(\tR\x03low\x12\x14\n" +
+	"\x05close\x18\b \x01(\tR\x05close\x12\x16\n" +
+	"\x06volume\x18\t \x01(\x01R\x06volume\x12\x16\n" +
+	"\x06closed\x18\n" +
+	" \x01(\bR\x06closed\"9\n" +
 	"\x16SubscribeEventsRequest\x12\x1f\n" +
 	"\vaccount_ids\x18\x01 \x03(\tR\n" +
 	"accountIds\"\x82\x01\n" +
@@ -550,59 +698,62 @@ func file_stream_proto_rawDescGZIP() []byte {
 	return file_stream_proto_rawDescData
 }
 
-var file_stream_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_stream_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_stream_proto_goTypes = []any{
 	(*StreamEvent)(nil),                   // 0: ant.v1.StreamEvent
-	(*SubscribeEventsRequest)(nil),        // 1: ant.v1.SubscribeEventsRequest
-	(*SubscribeHistoryRequest)(nil),       // 2: ant.v1.SubscribeHistoryRequest
-	(*SubscribeOrderUpdatesRequest)(nil),  // 3: ant.v1.SubscribeOrderUpdatesRequest
-	(*SubscribeProfitUpdatesRequest)(nil), // 4: ant.v1.SubscribeProfitUpdatesRequest
-	(*timestamppb.Timestamp)(nil),         // 5: google.protobuf.Timestamp
-	(*OrderUpdateEvent)(nil),              // 6: ant.v1.OrderUpdateEvent
-	(*ProfitUpdateEvent)(nil),             // 7: ant.v1.ProfitUpdateEvent
-	(*AccountStatusEvent)(nil),            // 8: ant.v1.AccountStatusEvent
-	(*StrategyExecutionEvent)(nil),        // 9: ant.v1.StrategyExecutionEvent
-	(*RiskAlertEvent)(nil),                // 10: ant.v1.RiskAlertEvent
-	(*SyncEvent)(nil),                     // 11: ant.v1.SyncEvent
-	(*DealUpdateEvent)(nil),               // 12: ant.v1.DealUpdateEvent
-	(*PositionUpdateEvent)(nil),           // 13: ant.v1.PositionUpdateEvent
-	(*LedgerEntryEvent)(nil),              // 14: ant.v1.LedgerEntryEvent
-	(*TradeCommandEvent)(nil),             // 15: ant.v1.TradeCommandEvent
-	(*TradeReceiptEvent)(nil),             // 16: ant.v1.TradeReceiptEvent
-	(*PositionSnapshotEvent)(nil),         // 17: ant.v1.PositionSnapshotEvent
-	(*emptypb.Empty)(nil),                 // 18: google.protobuf.Empty
-	(*UserSummaryEvent)(nil),              // 19: ant.v1.UserSummaryEvent
+	(*BarUpdateEvent)(nil),                // 1: ant.v1.BarUpdateEvent
+	(*SubscribeEventsRequest)(nil),        // 2: ant.v1.SubscribeEventsRequest
+	(*SubscribeHistoryRequest)(nil),       // 3: ant.v1.SubscribeHistoryRequest
+	(*SubscribeOrderUpdatesRequest)(nil),  // 4: ant.v1.SubscribeOrderUpdatesRequest
+	(*SubscribeProfitUpdatesRequest)(nil), // 5: ant.v1.SubscribeProfitUpdatesRequest
+	(*timestamppb.Timestamp)(nil),         // 6: google.protobuf.Timestamp
+	(*OrderUpdateEvent)(nil),              // 7: ant.v1.OrderUpdateEvent
+	(*ProfitUpdateEvent)(nil),             // 8: ant.v1.ProfitUpdateEvent
+	(*AccountStatusEvent)(nil),            // 9: ant.v1.AccountStatusEvent
+	(*StrategyExecutionEvent)(nil),        // 10: ant.v1.StrategyExecutionEvent
+	(*RiskAlertEvent)(nil),                // 11: ant.v1.RiskAlertEvent
+	(*SyncEvent)(nil),                     // 12: ant.v1.SyncEvent
+	(*DealUpdateEvent)(nil),               // 13: ant.v1.DealUpdateEvent
+	(*PositionUpdateEvent)(nil),           // 14: ant.v1.PositionUpdateEvent
+	(*LedgerEntryEvent)(nil),              // 15: ant.v1.LedgerEntryEvent
+	(*TradeCommandEvent)(nil),             // 16: ant.v1.TradeCommandEvent
+	(*TradeReceiptEvent)(nil),             // 17: ant.v1.TradeReceiptEvent
+	(*PositionSnapshotEvent)(nil),         // 18: ant.v1.PositionSnapshotEvent
+	(*emptypb.Empty)(nil),                 // 19: google.protobuf.Empty
+	(*UserSummaryEvent)(nil),              // 20: ant.v1.UserSummaryEvent
 }
 var file_stream_proto_depIdxs = []int32{
-	5,  // 0: ant.v1.StreamEvent.timestamp:type_name -> google.protobuf.Timestamp
-	6,  // 1: ant.v1.StreamEvent.order_update:type_name -> ant.v1.OrderUpdateEvent
-	7,  // 2: ant.v1.StreamEvent.profit_update:type_name -> ant.v1.ProfitUpdateEvent
-	8,  // 3: ant.v1.StreamEvent.account_status:type_name -> ant.v1.AccountStatusEvent
-	9,  // 4: ant.v1.StreamEvent.strategy_execution:type_name -> ant.v1.StrategyExecutionEvent
-	10, // 5: ant.v1.StreamEvent.risk_alert:type_name -> ant.v1.RiskAlertEvent
-	11, // 6: ant.v1.StreamEvent.sync:type_name -> ant.v1.SyncEvent
-	12, // 7: ant.v1.StreamEvent.deal_update:type_name -> ant.v1.DealUpdateEvent
-	13, // 8: ant.v1.StreamEvent.position_update:type_name -> ant.v1.PositionUpdateEvent
-	14, // 9: ant.v1.StreamEvent.ledger_entry:type_name -> ant.v1.LedgerEntryEvent
-	15, // 10: ant.v1.StreamEvent.trade_command:type_name -> ant.v1.TradeCommandEvent
-	16, // 11: ant.v1.StreamEvent.trade_receipt:type_name -> ant.v1.TradeReceiptEvent
-	17, // 12: ant.v1.StreamEvent.position_snapshot:type_name -> ant.v1.PositionSnapshotEvent
-	5,  // 13: ant.v1.SubscribeHistoryRequest.since:type_name -> google.protobuf.Timestamp
-	1,  // 14: ant.v1.StreamService.SubscribeEvents:input_type -> ant.v1.SubscribeEventsRequest
-	2,  // 15: ant.v1.StreamService.SubscribeHistory:input_type -> ant.v1.SubscribeHistoryRequest
-	3,  // 16: ant.v1.StreamService.SubscribeOrderUpdates:input_type -> ant.v1.SubscribeOrderUpdatesRequest
-	4,  // 17: ant.v1.StreamService.SubscribeProfitUpdates:input_type -> ant.v1.SubscribeProfitUpdatesRequest
-	18, // 18: ant.v1.StreamService.SubscribeUserSummary:input_type -> google.protobuf.Empty
-	0,  // 19: ant.v1.StreamService.SubscribeEvents:output_type -> ant.v1.StreamEvent
-	0,  // 20: ant.v1.StreamService.SubscribeHistory:output_type -> ant.v1.StreamEvent
-	6,  // 21: ant.v1.StreamService.SubscribeOrderUpdates:output_type -> ant.v1.OrderUpdateEvent
-	7,  // 22: ant.v1.StreamService.SubscribeProfitUpdates:output_type -> ant.v1.ProfitUpdateEvent
-	19, // 23: ant.v1.StreamService.SubscribeUserSummary:output_type -> ant.v1.UserSummaryEvent
-	19, // [19:24] is the sub-list for method output_type
-	14, // [14:19] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	6,  // 0: ant.v1.StreamEvent.timestamp:type_name -> google.protobuf.Timestamp
+	7,  // 1: ant.v1.StreamEvent.order_update:type_name -> ant.v1.OrderUpdateEvent
+	8,  // 2: ant.v1.StreamEvent.profit_update:type_name -> ant.v1.ProfitUpdateEvent
+	9,  // 3: ant.v1.StreamEvent.account_status:type_name -> ant.v1.AccountStatusEvent
+	10, // 4: ant.v1.StreamEvent.strategy_execution:type_name -> ant.v1.StrategyExecutionEvent
+	11, // 5: ant.v1.StreamEvent.risk_alert:type_name -> ant.v1.RiskAlertEvent
+	12, // 6: ant.v1.StreamEvent.sync:type_name -> ant.v1.SyncEvent
+	13, // 7: ant.v1.StreamEvent.deal_update:type_name -> ant.v1.DealUpdateEvent
+	14, // 8: ant.v1.StreamEvent.position_update:type_name -> ant.v1.PositionUpdateEvent
+	15, // 9: ant.v1.StreamEvent.ledger_entry:type_name -> ant.v1.LedgerEntryEvent
+	16, // 10: ant.v1.StreamEvent.trade_command:type_name -> ant.v1.TradeCommandEvent
+	17, // 11: ant.v1.StreamEvent.trade_receipt:type_name -> ant.v1.TradeReceiptEvent
+	18, // 12: ant.v1.StreamEvent.position_snapshot:type_name -> ant.v1.PositionSnapshotEvent
+	1,  // 13: ant.v1.StreamEvent.bar_update:type_name -> ant.v1.BarUpdateEvent
+	6,  // 14: ant.v1.BarUpdateEvent.open_time:type_name -> google.protobuf.Timestamp
+	6,  // 15: ant.v1.SubscribeHistoryRequest.since:type_name -> google.protobuf.Timestamp
+	2,  // 16: ant.v1.StreamService.SubscribeEvents:input_type -> ant.v1.SubscribeEventsRequest
+	3,  // 17: ant.v1.StreamService.SubscribeHistory:input_type -> ant.v1.SubscribeHistoryRequest
+	4,  // 18: ant.v1.StreamService.SubscribeOrderUpdates:input_type -> ant.v1.SubscribeOrderUpdatesRequest
+	5,  // 19: ant.v1.StreamService.SubscribeProfitUpdates:input_type -> ant.v1.SubscribeProfitUpdatesRequest
+	19, // 20: ant.v1.StreamService.SubscribeUserSummary:input_type -> google.protobuf.Empty
+	0,  // 21: ant.v1.StreamService.SubscribeEvents:output_type -> ant.v1.StreamEvent
+	0,  // 22: ant.v1.StreamService.SubscribeHistory:output_type -> ant.v1.StreamEvent
+	7,  // 23: ant.v1.StreamService.SubscribeOrderUpdates:output_type -> ant.v1.OrderUpdateEvent
+	8,  // 24: ant.v1.StreamService.SubscribeProfitUpdates:output_type -> ant.v1.ProfitUpdateEvent
+	20, // 25: ant.v1.StreamService.SubscribeUserSummary:output_type -> ant.v1.UserSummaryEvent
+	21, // [21:26] is the sub-list for method output_type
+	16, // [16:21] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_stream_proto_init() }
@@ -627,6 +778,7 @@ func file_stream_proto_init() {
 		(*StreamEvent_TradeCommand)(nil),
 		(*StreamEvent_TradeReceipt)(nil),
 		(*StreamEvent_PositionSnapshot)(nil),
+		(*StreamEvent_BarUpdate)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -634,7 +786,7 @@ func file_stream_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stream_proto_rawDesc), len(file_stream_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

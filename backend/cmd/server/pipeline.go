@@ -39,6 +39,7 @@ func startMdGatewayPipeline(
 	tradeRecordRepo *repository.TradeRecordRepository,
 	snapshotBroker *mthub.PositionSnapshotBroker,
 	accountBroker *mthub.AccountProfitBroker,
+	barBroker *mthub.BarBroker,
 	eventStore *mthub.TradeEventStore,
 	emailNotifier **notifier.EmailNotifier,
 	platformAgg **risksvc.PlatformAggregator,
@@ -293,6 +294,24 @@ func startMdGatewayPipeline(
 						zap.Float64("stop_out_pct", stop))
 				}
 			}
+		},
+		OnBar: func(b *mdtick.Bar) {
+			o, _ := b.Open.Float64()
+			h, _ := b.High.Float64()
+			l, _ := b.Low.Float64()
+			c, _ := b.Close.Float64()
+			mthubSvc.PublishBar(&mthub.BarUpdate{
+				AccountID: b.AccountID,
+				Symbol:    b.Canonical,
+				Period:    b.Period,
+				OpenTime:  b.OpenTsUnixMs,
+				Open:      o,
+				High:      h,
+				Low:       l,
+				Close:     c,
+				Volume:    b.Volume,
+				Closed:    true,
+			})
 		},
 	}); err != nil {
 		log.Error("mdgateway pipeline exited with error", zap.Error(err))

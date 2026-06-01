@@ -124,6 +124,42 @@ func (s *PlatformService) GetAccount(ctx context.Context, userID uuid.UUID, acco
 	return s.accountSvc.GetAccount(ctx, userID, accountID)
 }
 
+// GetAccountBroker returns the broker company name for an account (no user ownership check).
+func (s *PlatformService) GetAccountBroker(ctx context.Context, accountID string) (string, error) {
+	var broker string
+	err := s.pg.QueryRow(ctx,
+		`SELECT broker_company FROM mt_accounts WHERE id=$1`, accountID,
+	).Scan(&broker)
+	return broker, err
+}
+
+// ResolveSymbol returns the symbol to use for ClickHouse queries.
+// Raw broker symbol IS the canonical — no suffix stripping.
+// Only uses broker_symbols mapping if explicitly defined, otherwise passthrough.
+func (s *PlatformService) ResolveSymbol(ctx context.Context, accountID, rawSymbol string) string {
+	if s.pg == nil || accountID == "" {
+		return rawSymbol
+	}
+	// Look up the account's broker.
+	var broker string
+	err := s.pg.QueryRow(ctx,
+		`SELECT broker_company FROM mt_accounts WHERE id=$1`, accountID,
+	).Scan(&broker)
+	if err != nil || broker == "" {
+		return rawSymbol
+	}
+	// Only remap if broker_symbols has an explicit entry.
+	var canonical string
+	err = s.pg.QueryRow(ctx,
+		`SELECT canonical FROM broker_symbols WHERE broker=$1 AND symbol_raw=$2 LIMIT 1`,
+		broker, rawSymbol,
+	).Scan(&canonical)
+	if err != nil || canonical == "" {
+		return rawSymbol
+	}
+	return canonical
+}
+
 // GetUserAccountIDs returns all account IDs belonging to a user.
 func (s *PlatformService) GetUserAccountIDs(ctx context.Context, userID string) ([]string, error) {
 	return s.accountSvc.GetUserAccountIDs(ctx, userID)

@@ -1,4 +1,4 @@
-import { marketClient, tradingClient } from './connect';
+import { tradingClient } from './connect';
 import type { OHLCV } from '../gen/ant/v1/mthub_service_pb';
 import type { Timestamp } from '@bufbuild/protobuf/wkt';
 
@@ -66,38 +66,44 @@ export const marketApi = {
     }
   },
 
-  getKlines: async (params: { symbol: string; timeframe: string; count?: number; before?: number; accountId?: string }): Promise<KlineData[]> => {
-    // MT5 brokers often append suffixes (m, ., etc). Try variants to find data.
-    const candidates = [params.symbol];
-    const stripped = params.symbol.replace(/[m.]$/, '');
-    if (stripped !== params.symbol) candidates.push(stripped);
-
-    for (const canonical of candidates) {
-      try {
-        const req: Record<string, unknown> = {
-          canonical,
-          period: params.timeframe,
-          limit: params.count ?? 300,
-        };
-        if (params.before) {
-          req.to = { seconds: BigInt(params.before), nanos: 0 };
-        }
-        const response: any = await marketClient.getKlines(req);
-        const bars = (response.bars || []) as OHLCV[];
-        if (bars.length > 0) {
-          return bars.map((bar) => ({
-            time: toUnixSeconds(bar.openTime),
-            open: Number(bar.open ?? '0'),
-            high: Number(bar.high ?? '0'),
-            low: Number(bar.low ?? '0'),
-            close: Number(bar.close ?? '0'),
-            volume: Number(bar.volume ?? 0),
-          }));
-        }
-      } catch {
-        // try next candidate
-      }
+  // subscribeBars tells the backend to subscribe the gateway to this symbol's ticks,
+  // enabling real-time bar aggregation and SSE push.
+  subscribeBars: async (params: { accountId: string; symbol: string }): Promise<void> => {
+    try {
+      await tradingClient.subscribeBars({ accountId: params.accountId, symbol: params.symbol });
+    } catch {
+      // Silent — subscription is best-effort; PriceHistory will still work.
     }
-    return [];
+  },
+
+  // getKlines fetches OHLCV kline bars — broker-first via PriceHistory with ClickHouse fallback.
+  // Requires accountId to locate the broker session; returns [] without it.
+  getKlines: async (params: { symbol: string; timeframe: string; count?: number; before?: number; accountId?: string }): Promise<KlineData[]> => {
+    if (!params.accountId) return [];
+
+    const req: Record<string, unknown> = {
+      accountId: params.accountId,
+      canonical: params.symbol,
+      period: params.timeframe,
+      limit: params.count ?? 300,
+    };
+    if (params.before) {
+      req.to = { seconds: BigInt(params.before), nanos: 0 };
+    }
+
+    try {
+      const resp: any = await tradingClient.priceHistory(req);
+      const bars = (resp.bars || []) as OHLCV[];
+      return bars.map((bar) => ({
+        time: toUnixSeconds(bar.openTime),
+        open: Number(bar.open ?? '0'),
+        high: Number(bar.high ?? '0'),
+        low: Number(bar.low ?? '0'),
+        close: Number(bar.close ?? '0'),
+        volume: Number(bar.volume ?? 0),
+      }));
+    } catch {
+      return [];
+    }
   },
 };

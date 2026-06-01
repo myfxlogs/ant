@@ -3,6 +3,7 @@ package system
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"go.uber.org/zap"
 
@@ -25,12 +26,14 @@ type MtHubServer struct {
 	marketData   *repository.MarketDataRepository
 	tradeRecords *repository.TradeRecordRepository
 	log          *zap.Logger
+	backfillMu   sync.Mutex
+	backfilling  map[string]bool // key: "accountID:symbol"
 }
 
 var _ antv1c.MtHubServiceHandler = (*MtHubServer)(nil)
 
 func NewMtHubServer(svc *mthub.MtHubService, platform *service.PlatformService, marketData *repository.MarketDataRepository, tradeRecords *repository.TradeRecordRepository, log *zap.Logger) *MtHubServer {
-	return &MtHubServer{svc: svc, platform: platform, marketData: marketData, tradeRecords: tradeRecords, log: log}
+	return &MtHubServer{svc: svc, platform: platform, marketData: marketData, tradeRecords: tradeRecords, log: log, backfilling: make(map[string]bool)}
 }
 
 func (s *MtHubServer) PlaceOrder(ctx context.Context, req *connect.Request[antv1.PlaceOrderRequest]) (*connect.Response[antv1.PlaceOrderResponse], error) {

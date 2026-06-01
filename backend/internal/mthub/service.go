@@ -63,6 +63,7 @@ type MtHubService struct {
 	// S1.2: OMS 16-state state machine writer (NEW to VALIDATED to RISK_APPROVED to SUBMITTED).
 	omsWriter      *OmsWriter
 	brokerRegistry BrokerRegistry // M12-C2: multi-broker registry (optional)
+	barBroker      *BarBroker
 	logger         *zap.Logger
 }
 
@@ -119,6 +120,26 @@ func (s *MtHubService) SetAccountOwnerVerifier(v AccountOwnerVerifier) { s.accou
 
 // SetLogger injects a zap logger for error reporting.
 func (s *MtHubService) SetLogger(l *zap.Logger) { s.logger = l }
+
+// SetBarBroker injects the bar update broker for real-time K-line push.
+func (s *MtHubService) SetBarBroker(b *BarBroker) { s.barBroker = b }
+
+// PublishBar publishes a bar update to all subscribers for the given account.
+func (s *MtHubService) PublishBar(ev *BarUpdate) {
+	if s.barBroker != nil {
+		s.barBroker.Publish(ev)
+	}
+}
+
+// SubscribeBarUpdates returns a channel of bar updates for the given account.
+func (s *MtHubService) SubscribeBarUpdates(accountID string) (<-chan *BarUpdate, func()) {
+	if s.barBroker == nil {
+		ch := make(chan *BarUpdate)
+		close(ch)
+		return ch, func() {}
+	}
+	return s.barBroker.Subscribe(accountID)
+}
 
 // ErrAccountNotOwned is returned when the authenticated user does not own the account.
 var ErrAccountNotOwned = errors.New("mthub: account not owned by authenticated user")
@@ -518,6 +539,17 @@ func (s *MtHubService) SymbolList(ctx context.Context, accountID string) ([]stri
 		return nil, ErrSessionNotFound
 	}
 	return exec.FetchAllSymbols(ctx)
+}
+
+// SubscribeSymbols dynamically subscribes the gateway to additional symbols
+// for the given account. Newly added symbols start receiving ticks through
+// the existing quote stream without reconnection.
+func (s *MtHubService) SubscribeSymbols(ctx context.Context, accountID string, symbols []string) error {
+	exec := s.hub.Get(accountID)
+	if exec == nil {
+		return ErrSessionNotFound
+	}
+	return exec.AddSymbols(ctx, symbols)
 }
 
 // SubscribeUserOrderEvents subscribes to all order events for a user.
