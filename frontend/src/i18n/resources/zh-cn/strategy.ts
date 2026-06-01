@@ -750,6 +750,7 @@ const strategy = {
       title: '策略工作台',
       account: '账户',
       accountPlaceholder: '账户 ID',
+      noAccounts: '暂无可用账户',
       selectSymbol: '品种',
       code: '策略代码',
       codePlaceholder: '# Python 策略代码...\ndef run(context):\n    return {"signal": "hold"}',

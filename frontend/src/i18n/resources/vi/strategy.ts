@@ -554,6 +554,7 @@ const strategy = {
       title: 'Không gian chiến lược',
       account: 'Tài khoản',
       accountPlaceholder: 'ID tài khoản',
+      noAccounts: 'Không có tài khoản khả dụng',
       selectSymbol: 'Mã',
       code: 'Mã chiến lược',
       codePlaceholder: '# Mã Python...\ndef run(context):\n    return {"signal": "hold"}',

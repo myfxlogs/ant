@@ -554,6 +554,7 @@ const strategy = {
       title: '戦略ワークスペース',
       account: '口座',
       accountPlaceholder: '口座 ID',
+      noAccounts: '利用可能な口座がありません',
       selectSymbol: '銘柄',
       code: '戦略コード',
       codePlaceholder: '# Python 戦略コード...\ndef run(context):\n    return {"signal": "hold"}',

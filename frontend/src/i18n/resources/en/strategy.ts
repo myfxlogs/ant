@@ -726,6 +726,7 @@ const strategy = {
       title: 'Strategy Workspace',
       account: 'Account',
       accountPlaceholder: 'Account ID',
+      noAccounts: 'No available accounts',
       selectSymbol: 'Symbol',
       code: 'Strategy Code',
       codePlaceholder: '# Python strategy code...\ndef run(context):\n    return {"signal": "hold"}',

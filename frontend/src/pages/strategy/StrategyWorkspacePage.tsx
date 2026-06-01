@@ -26,7 +26,8 @@ export default function StrategyWorkspacePage() {
   const [lastValidatedCode, setLastValidatedCode] = useState('');
 
   // Account / Symbol / Timeframe
-  const { accounts, fetchAccounts } = useAccount();
+  const { accounts: allAccounts, fetchAccounts } = useAccount();
+  const activeAccounts = allAccounts.filter((a) => !a.isDisabled);
   const [accountId, setAccountId] = useState('');
   const [symbol, setSymbol] = useState('');
   const [timeframe, setTimeframe] = useState('1h');
@@ -56,7 +57,8 @@ export default function StrategyWorkspacePage() {
   // Load accounts & templates on mount
   useEffect(() => {
     fetchAccounts().then((list) => {
-      if (list?.length && !accountId) setAccountId(list[0].id);
+      const enabled = (list || []).filter((a) => !a.isDisabled);
+      if (enabled.length > 0 && !accountId) setAccountId(enabled[0].id);
     });
     loadTemplates();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -225,6 +227,7 @@ export default function StrategyWorkspacePage() {
             <WorkspaceCodePanel
               code={code}
               onCodeChange={setCode}
+              accounts={activeAccounts}
               accountId={accountId}
               onAccountIdChange={setAccountId}
               symbol={symbol}

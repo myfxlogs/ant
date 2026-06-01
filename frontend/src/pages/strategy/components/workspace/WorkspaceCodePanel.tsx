@@ -1,7 +1,8 @@
-import { Button, Space, Input, Alert, Tag, Tooltip } from 'antd';
+import { Button, Space, Input, Select, Alert, Tag, Tooltip } from 'antd';
 import { CheckCircleOutlined, PlayCircleOutlined, CopyOutlined, SaveOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import SymbolPicker from '@/components/chart/SymbolPicker';
+import type { Account } from '@/types/account';
 
 const TIMEFRAMES = [
   { label: 'M1', value: '1m' },
@@ -23,6 +24,7 @@ interface ValidationResult {
 interface Props {
   code: string;
   onCodeChange: (code: string) => void;
+  accounts: Account[];
   accountId: string;
   onAccountIdChange: (id: string) => void;
   symbol: string;
@@ -40,7 +42,7 @@ interface Props {
 }
 
 export default function WorkspaceCodePanel({
-  code, onCodeChange, accountId, onAccountIdChange,
+  code, onCodeChange, accounts, accountId, onAccountIdChange,
   symbol, onSymbolChange, timeframe, onTimeframeChange,
   validating, onValidate, validationResult,
   onRunBacktest, backtestSubmitting, canSave, onSave, onCopy,
@@ -49,8 +51,22 @@ export default function WorkspaceCodePanel({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '0 4px' }}>
-      {/* Symbol selection row */}
-      <Space wrap size="small">
+      {/* Account + Symbol + Timeframe row */}
+      <Space wrap size="small" style={{ alignItems: 'center' }}>
+        <Select
+          size="small"
+          style={{ minWidth: 180 }}
+          value={accountId || undefined}
+          onChange={onAccountIdChange}
+          placeholder={t('strategy.workspace.accountPlaceholder', 'Select account')}
+          showSearch
+          optionFilterProp="label"
+          notFoundContent={t('strategy.workspace.noAccounts', 'No available accounts')}
+          options={accounts.map((a) => ({
+            value: a.id,
+            label: a.alias || `${a.brokerCompany} · ${a.login}`,
+          }))}
+        />
         <SymbolPicker
           accountId={accountId}
           value={symbol}
@@ -58,29 +74,12 @@ export default function WorkspaceCodePanel({
           placeholder={t('strategy.workspace.selectSymbol', 'Symbol')}
           style={{ width: 140 }}
         />
-        <select
+        <Select
+          size="small"
+          style={{ width: 80 }}
           value={timeframe}
-          onChange={(e) => onTimeframeChange(e.target.value)}
-          style={{
-            padding: '4px 8px', borderRadius: 6, border: '1px solid #d9d9d9',
-            fontSize: 13, background: '#fff', cursor: 'pointer',
-          }}
-        >
-          {TIMEFRAMES.map((tf) => (
-            <option key={tf.value} value={tf.value}>{tf.label}</option>
-          ))}
-        </select>
-        <span style={{ fontSize: 12, color: '#8c8c8c' }}>
-          {t('strategy.workspace.account', 'Account')}:
-        </span>
-        <input
-          value={accountId}
-          onChange={(e) => onAccountIdChange(e.target.value)}
-          placeholder={t('strategy.workspace.accountPlaceholder', 'Account ID')}
-          style={{
-            padding: '4px 8px', borderRadius: 6, border: '1px solid #d9d9d9',
-            fontSize: 13, width: 120,
-          }}
+          onChange={onTimeframeChange}
+          options={TIMEFRAMES.map((tf) => ({ value: tf.value, label: tf.label }))}
         />
       </Space>
 

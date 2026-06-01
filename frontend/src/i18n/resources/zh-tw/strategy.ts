@@ -627,6 +627,7 @@ const strategy = {
       title: '策略工作台',
       account: '賬戶',
       accountPlaceholder: '賬戶 ID',
+      noAccounts: '暫無可用賬戶',
       selectSymbol: '品種',
       code: '策略程式碼',
       codePlaceholder: '# Python 策略程式碼...\ndef run(context):\n    return {"signal": "hold"}',
