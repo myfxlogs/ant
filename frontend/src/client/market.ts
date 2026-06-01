@@ -67,27 +67,37 @@ export const marketApi = {
   },
 
   getKlines: async (params: { symbol: string; timeframe: string; count?: number; before?: number; accountId?: string }): Promise<KlineData[]> => {
-    try {
-      const req: Record<string, unknown> = {
-        canonical: params.symbol,
-        period: params.timeframe,
-        limit: params.count ?? 300,
-      };
-      if (params.before) {
-        req.to = { seconds: BigInt(params.before), nanos: 0 };
+    // MT5 brokers often append suffixes (m, ., etc). Try variants to find data.
+    const candidates = [params.symbol];
+    const stripped = params.symbol.replace(/[m.]$/, '');
+    if (stripped !== params.symbol) candidates.push(stripped);
+
+    for (const canonical of candidates) {
+      try {
+        const req: Record<string, unknown> = {
+          canonical,
+          period: params.timeframe,
+          limit: params.count ?? 300,
+        };
+        if (params.before) {
+          req.to = { seconds: BigInt(params.before), nanos: 0 };
+        }
+        const response: any = await marketClient.getKlines(req);
+        const bars = (response.bars || []) as OHLCV[];
+        if (bars.length > 0) {
+          return bars.map((bar) => ({
+            time: toUnixSeconds(bar.openTime),
+            open: Number(bar.open ?? '0'),
+            high: Number(bar.high ?? '0'),
+            low: Number(bar.low ?? '0'),
+            close: Number(bar.close ?? '0'),
+            volume: Number(bar.volume ?? 0),
+          }));
+        }
+      } catch {
+        // try next candidate
       }
-      // Use MarketService.GetKlines (ClickHouse) — broker PriceHistory returns sparse data.
-      const response: any = await marketClient.getKlines(req);
-      return ((response.bars || []) as OHLCV[]).map((bar) => ({
-        time: toUnixSeconds(bar.openTime),
-        open: Number(bar.open ?? '0'),
-        high: Number(bar.high ?? '0'),
-        low: Number(bar.low ?? '0'),
-        close: Number(bar.close ?? '0'),
-        volume: Number(bar.volume ?? 0),
-      }));
-    } catch {
-      return [];
     }
+    return [];
   },
 };
