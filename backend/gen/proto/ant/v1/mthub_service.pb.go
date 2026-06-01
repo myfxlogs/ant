@@ -896,6 +896,94 @@ func (x *SymbolParamsResponse) GetParams() []*SymbolParam {
 	return nil
 }
 
+type SymbolListRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SymbolListRequest) Reset() {
+	*x = SymbolListRequest{}
+	mi := &file_mthub_service_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SymbolListRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SymbolListRequest) ProtoMessage() {}
+
+func (x *SymbolListRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_mthub_service_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SymbolListRequest.ProtoReflect.Descriptor instead.
+func (*SymbolListRequest) Descriptor() ([]byte, []int) {
+	return file_mthub_service_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *SymbolListRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+
+type SymbolListResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Symbols       []string               `protobuf:"bytes,1,rep,name=symbols,proto3" json:"symbols,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SymbolListResponse) Reset() {
+	*x = SymbolListResponse{}
+	mi := &file_mthub_service_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SymbolListResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SymbolListResponse) ProtoMessage() {}
+
+func (x *SymbolListResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_mthub_service_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SymbolListResponse.ProtoReflect.Descriptor instead.
+func (*SymbolListResponse) Descriptor() ([]byte, []int) {
+	return file_mthub_service_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *SymbolListResponse) GetSymbols() []string {
+	if x != nil {
+		return x.Symbols
+	}
+	return nil
+}
+
 type PriceHistoryRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
@@ -910,7 +998,7 @@ type PriceHistoryRequest struct {
 
 func (x *PriceHistoryRequest) Reset() {
 	*x = PriceHistoryRequest{}
-	mi := &file_mthub_service_proto_msgTypes[12]
+	mi := &file_mthub_service_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -922,7 +1010,7 @@ func (x *PriceHistoryRequest) String() string {
 func (*PriceHistoryRequest) ProtoMessage() {}
 
 func (x *PriceHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mthub_service_proto_msgTypes[12]
+	mi := &file_mthub_service_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -935,7 +1023,7 @@ func (x *PriceHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceHistoryRequest.ProtoReflect.Descriptor instead.
 func (*PriceHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_mthub_service_proto_rawDescGZIP(), []int{12}
+	return file_mthub_service_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *PriceHistoryRequest) GetAccountId() string {
@@ -989,7 +1077,7 @@ type PriceHistoryResponse struct {
 
 func (x *PriceHistoryResponse) Reset() {
 	*x = PriceHistoryResponse{}
-	mi := &file_mthub_service_proto_msgTypes[13]
+	mi := &file_mthub_service_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1001,7 +1089,7 @@ func (x *PriceHistoryResponse) String() string {
 func (*PriceHistoryResponse) ProtoMessage() {}
 
 func (x *PriceHistoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mthub_service_proto_msgTypes[13]
+	mi := &file_mthub_service_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1014,7 +1102,7 @@ func (x *PriceHistoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PriceHistoryResponse.ProtoReflect.Descriptor instead.
 func (*PriceHistoryResponse) Descriptor() ([]byte, []int) {
-	return file_mthub_service_proto_rawDescGZIP(), []int{13}
+	return file_mthub_service_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *PriceHistoryResponse) GetBars() []*OHLCV {
@@ -1033,7 +1121,7 @@ type StreamOrderEventsRequest struct {
 
 func (x *StreamOrderEventsRequest) Reset() {
 	*x = StreamOrderEventsRequest{}
-	mi := &file_mthub_service_proto_msgTypes[14]
+	mi := &file_mthub_service_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1045,7 +1133,7 @@ func (x *StreamOrderEventsRequest) String() string {
 func (*StreamOrderEventsRequest) ProtoMessage() {}
 
 func (x *StreamOrderEventsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mthub_service_proto_msgTypes[14]
+	mi := &file_mthub_service_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1058,7 +1146,7 @@ func (x *StreamOrderEventsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StreamOrderEventsRequest.ProtoReflect.Descriptor instead.
 func (*StreamOrderEventsRequest) Descriptor() ([]byte, []int) {
-	return file_mthub_service_proto_rawDescGZIP(), []int{14}
+	return file_mthub_service_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *StreamOrderEventsRequest) GetAccountId() string {
@@ -1081,7 +1169,7 @@ type OrderEvent struct {
 
 func (x *OrderEvent) Reset() {
 	*x = OrderEvent{}
-	mi := &file_mthub_service_proto_msgTypes[15]
+	mi := &file_mthub_service_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1093,7 +1181,7 @@ func (x *OrderEvent) String() string {
 func (*OrderEvent) ProtoMessage() {}
 
 func (x *OrderEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_mthub_service_proto_msgTypes[15]
+	mi := &file_mthub_service_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1106,7 +1194,7 @@ func (x *OrderEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderEvent.ProtoReflect.Descriptor instead.
 func (*OrderEvent) Descriptor() ([]byte, []int) {
-	return file_mthub_service_proto_rawDescGZIP(), []int{15}
+	return file_mthub_service_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *OrderEvent) GetAccountId() string {
@@ -1169,7 +1257,7 @@ type OrderRecord struct {
 
 func (x *OrderRecord) Reset() {
 	*x = OrderRecord{}
-	mi := &file_mthub_service_proto_msgTypes[16]
+	mi := &file_mthub_service_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1181,7 +1269,7 @@ func (x *OrderRecord) String() string {
 func (*OrderRecord) ProtoMessage() {}
 
 func (x *OrderRecord) ProtoReflect() protoreflect.Message {
-	mi := &file_mthub_service_proto_msgTypes[16]
+	mi := &file_mthub_service_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1194,7 +1282,7 @@ func (x *OrderRecord) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderRecord.ProtoReflect.Descriptor instead.
 func (*OrderRecord) Descriptor() ([]byte, []int) {
-	return file_mthub_service_proto_rawDescGZIP(), []int{16}
+	return file_mthub_service_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *OrderRecord) GetTicket() int64 {
@@ -1335,7 +1423,7 @@ type SymbolParam struct {
 
 func (x *SymbolParam) Reset() {
 	*x = SymbolParam{}
-	mi := &file_mthub_service_proto_msgTypes[17]
+	mi := &file_mthub_service_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1347,7 +1435,7 @@ func (x *SymbolParam) String() string {
 func (*SymbolParam) ProtoMessage() {}
 
 func (x *SymbolParam) ProtoReflect() protoreflect.Message {
-	mi := &file_mthub_service_proto_msgTypes[17]
+	mi := &file_mthub_service_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1360,7 +1448,7 @@ func (x *SymbolParam) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SymbolParam.ProtoReflect.Descriptor instead.
 func (*SymbolParam) Descriptor() ([]byte, []int) {
-	return file_mthub_service_proto_rawDescGZIP(), []int{17}
+	return file_mthub_service_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *SymbolParam) GetCanonical() string {
@@ -1456,7 +1544,7 @@ type OHLCV struct {
 
 func (x *OHLCV) Reset() {
 	*x = OHLCV{}
-	mi := &file_mthub_service_proto_msgTypes[18]
+	mi := &file_mthub_service_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1468,7 +1556,7 @@ func (x *OHLCV) String() string {
 func (*OHLCV) ProtoMessage() {}
 
 func (x *OHLCV) ProtoReflect() protoreflect.Message {
-	mi := &file_mthub_service_proto_msgTypes[18]
+	mi := &file_mthub_service_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1481,7 +1569,7 @@ func (x *OHLCV) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OHLCV.ProtoReflect.Descriptor instead.
 func (*OHLCV) Descriptor() ([]byte, []int) {
-	return file_mthub_service_proto_rawDescGZIP(), []int{18}
+	return file_mthub_service_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *OHLCV) GetOpenTime() *timestamppb.Timestamp {
@@ -1549,7 +1637,7 @@ type SyncOrderHistoryRequest struct {
 
 func (x *SyncOrderHistoryRequest) Reset() {
 	*x = SyncOrderHistoryRequest{}
-	mi := &file_mthub_service_proto_msgTypes[19]
+	mi := &file_mthub_service_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1561,7 +1649,7 @@ func (x *SyncOrderHistoryRequest) String() string {
 func (*SyncOrderHistoryRequest) ProtoMessage() {}
 
 func (x *SyncOrderHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_mthub_service_proto_msgTypes[19]
+	mi := &file_mthub_service_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1574,7 +1662,7 @@ func (x *SyncOrderHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SyncOrderHistoryRequest.ProtoReflect.Descriptor instead.
 func (*SyncOrderHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_mthub_service_proto_rawDescGZIP(), []int{19}
+	return file_mthub_service_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *SyncOrderHistoryRequest) GetAccountId() string {
@@ -1593,7 +1681,7 @@ type SyncOrderHistoryResponse struct {
 
 func (x *SyncOrderHistoryResponse) Reset() {
 	*x = SyncOrderHistoryResponse{}
-	mi := &file_mthub_service_proto_msgTypes[20]
+	mi := &file_mthub_service_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1605,7 +1693,7 @@ func (x *SyncOrderHistoryResponse) String() string {
 func (*SyncOrderHistoryResponse) ProtoMessage() {}
 
 func (x *SyncOrderHistoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_mthub_service_proto_msgTypes[20]
+	mi := &file_mthub_service_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1618,7 +1706,7 @@ func (x *SyncOrderHistoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SyncOrderHistoryResponse.ProtoReflect.Descriptor instead.
 func (*SyncOrderHistoryResponse) Descriptor() ([]byte, []int) {
-	return file_mthub_service_proto_rawDescGZIP(), []int{20}
+	return file_mthub_service_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *SyncOrderHistoryResponse) GetSyncedRecords() int64 {
@@ -1693,7 +1781,12 @@ const file_mthub_service_proto_rawDesc = "" +
 	"canonicals\x18\x02 \x03(\tR\n" +
 	"canonicals\"C\n" +
 	"\x14SymbolParamsResponse\x12+\n" +
-	"\x06params\x18\x01 \x03(\v2\x13.ant.v1.SymbolParamR\x06params\"\xdc\x01\n" +
+	"\x06params\x18\x01 \x03(\v2\x13.ant.v1.SymbolParamR\x06params\"2\n" +
+	"\x11SymbolListRequest\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\x01 \x01(\tR\taccountId\".\n" +
+	"\x12SymbolListResponse\x12\x18\n" +
+	"\asymbols\x18\x01 \x03(\tR\asymbols\"\xdc\x01\n" +
 	"\x13PriceHistoryRequest\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x1c\n" +
@@ -1793,7 +1886,7 @@ const file_mthub_service_proto_rawDesc = "" +
 	"\x10ORDER_STATE_OPEN\x10\x02\x12\x16\n" +
 	"\x12ORDER_STATE_CLOSED\x10\x03\x12\x19\n" +
 	"\x15ORDER_STATE_CANCELLED\x10\x04\x12\x18\n" +
-	"\x14ORDER_STATE_REJECTED\x10\x052\xb4\x05\n" +
+	"\x14ORDER_STATE_REJECTED\x10\x052\xf9\x05\n" +
 	"\fMtHubService\x12C\n" +
 	"\n" +
 	"PlaceOrder\x12\x19.ant.v1.PlaceOrderRequest\x1a\x1a.ant.v1.PlaceOrderResponse\x12C\n" +
@@ -1801,7 +1894,9 @@ const file_mthub_service_proto_rawDesc = "" +
 	"CloseOrder\x12\x19.ant.v1.CloseOrderRequest\x1a\x1a.ant.v1.CloseOrderResponse\x12I\n" +
 	"\fOpenedOrders\x12\x1b.ant.v1.OpenedOrdersRequest\x1a\x1c.ant.v1.OpenedOrdersResponse\x12I\n" +
 	"\fOrderHistory\x12\x1b.ant.v1.OrderHistoryRequest\x1a\x1c.ant.v1.OrderHistoryResponse\x12I\n" +
-	"\fSymbolParams\x12\x1b.ant.v1.SymbolParamsRequest\x1a\x1c.ant.v1.SymbolParamsResponse\x12I\n" +
+	"\fSymbolParams\x12\x1b.ant.v1.SymbolParamsRequest\x1a\x1c.ant.v1.SymbolParamsResponse\x12C\n" +
+	"\n" +
+	"SymbolList\x12\x19.ant.v1.SymbolListRequest\x1a\x1a.ant.v1.SymbolListResponse\x12I\n" +
 	"\fPriceHistory\x12\x1b.ant.v1.PriceHistoryRequest\x1a\x1c.ant.v1.PriceHistoryResponse\x12J\n" +
 	"\x10GetAccountStatus\x12\x1f.ant.v1.GetAccountStatusRequest\x1a\x15.ant.v1.AccountStatus\x12K\n" +
 	"\x11StreamOrderEvents\x12 .ant.v1.StreamOrderEventsRequest\x1a\x12.ant.v1.OrderEvent0\x01\x12U\n" +
@@ -1820,7 +1915,7 @@ func file_mthub_service_proto_rawDescGZIP() []byte {
 }
 
 var file_mthub_service_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_mthub_service_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
+var file_mthub_service_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
 var file_mthub_service_proto_goTypes = []any{
 	(Side)(0),                        // 0: ant.v1.Side
 	(OrderType)(0),                   // 1: ant.v1.OrderType
@@ -1837,58 +1932,62 @@ var file_mthub_service_proto_goTypes = []any{
 	(*OrderHistoryResponse)(nil),     // 12: ant.v1.OrderHistoryResponse
 	(*SymbolParamsRequest)(nil),      // 13: ant.v1.SymbolParamsRequest
 	(*SymbolParamsResponse)(nil),     // 14: ant.v1.SymbolParamsResponse
-	(*PriceHistoryRequest)(nil),      // 15: ant.v1.PriceHistoryRequest
-	(*PriceHistoryResponse)(nil),     // 16: ant.v1.PriceHistoryResponse
-	(*StreamOrderEventsRequest)(nil), // 17: ant.v1.StreamOrderEventsRequest
-	(*OrderEvent)(nil),               // 18: ant.v1.OrderEvent
-	(*OrderRecord)(nil),              // 19: ant.v1.OrderRecord
-	(*SymbolParam)(nil),              // 20: ant.v1.SymbolParam
-	(*OHLCV)(nil),                    // 21: ant.v1.OHLCV
-	(*SyncOrderHistoryRequest)(nil),  // 22: ant.v1.SyncOrderHistoryRequest
-	(*SyncOrderHistoryResponse)(nil), // 23: ant.v1.SyncOrderHistoryResponse
-	(*timestamppb.Timestamp)(nil),    // 24: google.protobuf.Timestamp
+	(*SymbolListRequest)(nil),        // 15: ant.v1.SymbolListRequest
+	(*SymbolListResponse)(nil),       // 16: ant.v1.SymbolListResponse
+	(*PriceHistoryRequest)(nil),      // 17: ant.v1.PriceHistoryRequest
+	(*PriceHistoryResponse)(nil),     // 18: ant.v1.PriceHistoryResponse
+	(*StreamOrderEventsRequest)(nil), // 19: ant.v1.StreamOrderEventsRequest
+	(*OrderEvent)(nil),               // 20: ant.v1.OrderEvent
+	(*OrderRecord)(nil),              // 21: ant.v1.OrderRecord
+	(*SymbolParam)(nil),              // 22: ant.v1.SymbolParam
+	(*OHLCV)(nil),                    // 23: ant.v1.OHLCV
+	(*SyncOrderHistoryRequest)(nil),  // 24: ant.v1.SyncOrderHistoryRequest
+	(*SyncOrderHistoryResponse)(nil), // 25: ant.v1.SyncOrderHistoryResponse
+	(*timestamppb.Timestamp)(nil),    // 26: google.protobuf.Timestamp
 }
 var file_mthub_service_proto_depIdxs = []int32{
-	24, // 0: ant.v1.AccountStatus.last_tick_at:type_name -> google.protobuf.Timestamp
+	26, // 0: ant.v1.AccountStatus.last_tick_at:type_name -> google.protobuf.Timestamp
 	0,  // 1: ant.v1.PlaceOrderRequest.side:type_name -> ant.v1.Side
 	1,  // 2: ant.v1.PlaceOrderRequest.order_type:type_name -> ant.v1.OrderType
-	19, // 3: ant.v1.OpenedOrdersResponse.orders:type_name -> ant.v1.OrderRecord
-	24, // 4: ant.v1.OrderHistoryRequest.from:type_name -> google.protobuf.Timestamp
-	24, // 5: ant.v1.OrderHistoryRequest.to:type_name -> google.protobuf.Timestamp
-	19, // 6: ant.v1.OrderHistoryResponse.orders:type_name -> ant.v1.OrderRecord
-	20, // 7: ant.v1.SymbolParamsResponse.params:type_name -> ant.v1.SymbolParam
-	24, // 8: ant.v1.PriceHistoryRequest.from:type_name -> google.protobuf.Timestamp
-	24, // 9: ant.v1.PriceHistoryRequest.to:type_name -> google.protobuf.Timestamp
-	21, // 10: ant.v1.PriceHistoryResponse.bars:type_name -> ant.v1.OHLCV
-	19, // 11: ant.v1.OrderEvent.order:type_name -> ant.v1.OrderRecord
-	24, // 12: ant.v1.OrderEvent.timestamp:type_name -> google.protobuf.Timestamp
+	21, // 3: ant.v1.OpenedOrdersResponse.orders:type_name -> ant.v1.OrderRecord
+	26, // 4: ant.v1.OrderHistoryRequest.from:type_name -> google.protobuf.Timestamp
+	26, // 5: ant.v1.OrderHistoryRequest.to:type_name -> google.protobuf.Timestamp
+	21, // 6: ant.v1.OrderHistoryResponse.orders:type_name -> ant.v1.OrderRecord
+	22, // 7: ant.v1.SymbolParamsResponse.params:type_name -> ant.v1.SymbolParam
+	26, // 8: ant.v1.PriceHistoryRequest.from:type_name -> google.protobuf.Timestamp
+	26, // 9: ant.v1.PriceHistoryRequest.to:type_name -> google.protobuf.Timestamp
+	23, // 10: ant.v1.PriceHistoryResponse.bars:type_name -> ant.v1.OHLCV
+	21, // 11: ant.v1.OrderEvent.order:type_name -> ant.v1.OrderRecord
+	26, // 12: ant.v1.OrderEvent.timestamp:type_name -> google.protobuf.Timestamp
 	0,  // 13: ant.v1.OrderRecord.side:type_name -> ant.v1.Side
 	1,  // 14: ant.v1.OrderRecord.order_type:type_name -> ant.v1.OrderType
-	24, // 15: ant.v1.OrderRecord.open_time:type_name -> google.protobuf.Timestamp
-	24, // 16: ant.v1.OrderRecord.close_time:type_name -> google.protobuf.Timestamp
+	26, // 15: ant.v1.OrderRecord.open_time:type_name -> google.protobuf.Timestamp
+	26, // 16: ant.v1.OrderRecord.close_time:type_name -> google.protobuf.Timestamp
 	2,  // 17: ant.v1.OrderRecord.state:type_name -> ant.v1.OrderState
-	24, // 18: ant.v1.OHLCV.open_time:type_name -> google.protobuf.Timestamp
-	24, // 19: ant.v1.OHLCV.close_time:type_name -> google.protobuf.Timestamp
+	26, // 18: ant.v1.OHLCV.open_time:type_name -> google.protobuf.Timestamp
+	26, // 19: ant.v1.OHLCV.close_time:type_name -> google.protobuf.Timestamp
 	5,  // 20: ant.v1.MtHubService.PlaceOrder:input_type -> ant.v1.PlaceOrderRequest
 	7,  // 21: ant.v1.MtHubService.CloseOrder:input_type -> ant.v1.CloseOrderRequest
 	9,  // 22: ant.v1.MtHubService.OpenedOrders:input_type -> ant.v1.OpenedOrdersRequest
 	11, // 23: ant.v1.MtHubService.OrderHistory:input_type -> ant.v1.OrderHistoryRequest
 	13, // 24: ant.v1.MtHubService.SymbolParams:input_type -> ant.v1.SymbolParamsRequest
-	15, // 25: ant.v1.MtHubService.PriceHistory:input_type -> ant.v1.PriceHistoryRequest
-	3,  // 26: ant.v1.MtHubService.GetAccountStatus:input_type -> ant.v1.GetAccountStatusRequest
-	17, // 27: ant.v1.MtHubService.StreamOrderEvents:input_type -> ant.v1.StreamOrderEventsRequest
-	22, // 28: ant.v1.MtHubService.SyncOrderHistory:input_type -> ant.v1.SyncOrderHistoryRequest
-	6,  // 29: ant.v1.MtHubService.PlaceOrder:output_type -> ant.v1.PlaceOrderResponse
-	8,  // 30: ant.v1.MtHubService.CloseOrder:output_type -> ant.v1.CloseOrderResponse
-	10, // 31: ant.v1.MtHubService.OpenedOrders:output_type -> ant.v1.OpenedOrdersResponse
-	12, // 32: ant.v1.MtHubService.OrderHistory:output_type -> ant.v1.OrderHistoryResponse
-	14, // 33: ant.v1.MtHubService.SymbolParams:output_type -> ant.v1.SymbolParamsResponse
-	16, // 34: ant.v1.MtHubService.PriceHistory:output_type -> ant.v1.PriceHistoryResponse
-	4,  // 35: ant.v1.MtHubService.GetAccountStatus:output_type -> ant.v1.AccountStatus
-	18, // 36: ant.v1.MtHubService.StreamOrderEvents:output_type -> ant.v1.OrderEvent
-	23, // 37: ant.v1.MtHubService.SyncOrderHistory:output_type -> ant.v1.SyncOrderHistoryResponse
-	29, // [29:38] is the sub-list for method output_type
-	20, // [20:29] is the sub-list for method input_type
+	15, // 25: ant.v1.MtHubService.SymbolList:input_type -> ant.v1.SymbolListRequest
+	17, // 26: ant.v1.MtHubService.PriceHistory:input_type -> ant.v1.PriceHistoryRequest
+	3,  // 27: ant.v1.MtHubService.GetAccountStatus:input_type -> ant.v1.GetAccountStatusRequest
+	19, // 28: ant.v1.MtHubService.StreamOrderEvents:input_type -> ant.v1.StreamOrderEventsRequest
+	24, // 29: ant.v1.MtHubService.SyncOrderHistory:input_type -> ant.v1.SyncOrderHistoryRequest
+	6,  // 30: ant.v1.MtHubService.PlaceOrder:output_type -> ant.v1.PlaceOrderResponse
+	8,  // 31: ant.v1.MtHubService.CloseOrder:output_type -> ant.v1.CloseOrderResponse
+	10, // 32: ant.v1.MtHubService.OpenedOrders:output_type -> ant.v1.OpenedOrdersResponse
+	12, // 33: ant.v1.MtHubService.OrderHistory:output_type -> ant.v1.OrderHistoryResponse
+	14, // 34: ant.v1.MtHubService.SymbolParams:output_type -> ant.v1.SymbolParamsResponse
+	16, // 35: ant.v1.MtHubService.SymbolList:output_type -> ant.v1.SymbolListResponse
+	18, // 36: ant.v1.MtHubService.PriceHistory:output_type -> ant.v1.PriceHistoryResponse
+	4,  // 37: ant.v1.MtHubService.GetAccountStatus:output_type -> ant.v1.AccountStatus
+	20, // 38: ant.v1.MtHubService.StreamOrderEvents:output_type -> ant.v1.OrderEvent
+	25, // 39: ant.v1.MtHubService.SyncOrderHistory:output_type -> ant.v1.SyncOrderHistoryResponse
+	30, // [30:40] is the sub-list for method output_type
+	20, // [20:30] is the sub-list for method input_type
 	20, // [20:20] is the sub-list for extension type_name
 	20, // [20:20] is the sub-list for extension extendee
 	0,  // [0:20] is the sub-list for field type_name
@@ -1905,7 +2004,7 @@ func file_mthub_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_mthub_service_proto_rawDesc), len(file_mthub_service_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   21,
+			NumMessages:   23,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

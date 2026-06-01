@@ -178,6 +178,26 @@ func (s *MtHubServer) SymbolParams(ctx context.Context, req *connect.Request[ant
 	return connect.NewResponse(&antv1.SymbolParamsResponse{Params: toProtoParams(list)}), nil
 }
 
+func (s *MtHubServer) SymbolList(ctx context.Context, req *connect.Request[antv1.SymbolListRequest]) (*connect.Response[antv1.SymbolListResponse], error) {
+	userID := interceptor.GetUserID(ctx)
+	if userID == "" {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
+	}
+	ok, err := s.platform.UserOwnsAccount(ctx, userID, req.Msg.AccountId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if !ok {
+		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
+	}
+	symbols, err := s.svc.SymbolList(ctx, req.Msg.AccountId)
+	if err != nil {
+		s.log.Error("SymbolList", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.SymbolListResponse{Symbols: symbols}), nil
+}
+
 func sideFromProto(s antv1.Side) mthub.Side {
 	if s == antv1.Side_SIDE_SELL {
 		return mthub.SideSell

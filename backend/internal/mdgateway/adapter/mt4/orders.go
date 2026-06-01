@@ -284,6 +284,27 @@ func (g *Gateway) FetchSymbolParams(ctx context.Context, canonicals []string) ([
 	return out, nil
 }
 
+// FetchAllSymbols returns all available symbol names from the broker (MT4 Symbols RPC).
+func (g *Gateway) FetchAllSymbols(ctx context.Context) ([]string, error) {
+	g.mu.RLock()
+	client := g.client
+	sid := g.sessionID
+	g.mu.RUnlock()
+	if client == nil || sid == "" {
+		return nil, fmt.Errorf("mt4 FetchAllSymbols: not connected")
+	}
+	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
+	ctx2 := metadata.NewOutgoingContext(ctx, md)
+	resp, err := client.Symbols(ctx2, &pb.SymbolsRequest{Id: sid})
+	if err != nil {
+		return nil, fmt.Errorf("mt4 Symbols: %w", err)
+	}
+	if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
+		return nil, fmt.Errorf("mt4 Symbols: code=%d msg=%s", resp.GetError().GetCode(), resp.GetError().GetMessage())
+	}
+	return resp.GetResult(), nil
+}
+
 func (g *Gateway) SubscribeOrderEvents(ctx context.Context, h mthub.OrderEventHandler) error {
 	g.mu.RLock()
 	streamCli := g.streamCli

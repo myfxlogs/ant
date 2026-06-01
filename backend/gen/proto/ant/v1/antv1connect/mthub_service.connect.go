@@ -46,6 +46,8 @@ const (
 	// MtHubServiceSymbolParamsProcedure is the fully-qualified name of the MtHubService's SymbolParams
 	// RPC.
 	MtHubServiceSymbolParamsProcedure = "/ant.v1.MtHubService/SymbolParams"
+	// MtHubServiceSymbolListProcedure is the fully-qualified name of the MtHubService's SymbolList RPC.
+	MtHubServiceSymbolListProcedure = "/ant.v1.MtHubService/SymbolList"
 	// MtHubServicePriceHistoryProcedure is the fully-qualified name of the MtHubService's PriceHistory
 	// RPC.
 	MtHubServicePriceHistoryProcedure = "/ant.v1.MtHubService/PriceHistory"
@@ -67,6 +69,7 @@ type MtHubServiceClient interface {
 	OpenedOrders(context.Context, *connect.Request[v1.OpenedOrdersRequest]) (*connect.Response[v1.OpenedOrdersResponse], error)
 	OrderHistory(context.Context, *connect.Request[v1.OrderHistoryRequest]) (*connect.Response[v1.OrderHistoryResponse], error)
 	SymbolParams(context.Context, *connect.Request[v1.SymbolParamsRequest]) (*connect.Response[v1.SymbolParamsResponse], error)
+	SymbolList(context.Context, *connect.Request[v1.SymbolListRequest]) (*connect.Response[v1.SymbolListResponse], error)
 	PriceHistory(context.Context, *connect.Request[v1.PriceHistoryRequest]) (*connect.Response[v1.PriceHistoryResponse], error)
 	GetAccountStatus(context.Context, *connect.Request[v1.GetAccountStatusRequest]) (*connect.Response[v1.AccountStatus], error)
 	StreamOrderEvents(context.Context, *connect.Request[v1.StreamOrderEventsRequest]) (*connect.ServerStreamForClient[v1.OrderEvent], error)
@@ -114,6 +117,12 @@ func NewMtHubServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 			connect.WithSchema(mtHubServiceMethods.ByName("SymbolParams")),
 			connect.WithClientOptions(opts...),
 		),
+		symbolList: connect.NewClient[v1.SymbolListRequest, v1.SymbolListResponse](
+			httpClient,
+			baseURL+MtHubServiceSymbolListProcedure,
+			connect.WithSchema(mtHubServiceMethods.ByName("SymbolList")),
+			connect.WithClientOptions(opts...),
+		),
 		priceHistory: connect.NewClient[v1.PriceHistoryRequest, v1.PriceHistoryResponse](
 			httpClient,
 			baseURL+MtHubServicePriceHistoryProcedure,
@@ -148,6 +157,7 @@ type mtHubServiceClient struct {
 	openedOrders      *connect.Client[v1.OpenedOrdersRequest, v1.OpenedOrdersResponse]
 	orderHistory      *connect.Client[v1.OrderHistoryRequest, v1.OrderHistoryResponse]
 	symbolParams      *connect.Client[v1.SymbolParamsRequest, v1.SymbolParamsResponse]
+	symbolList        *connect.Client[v1.SymbolListRequest, v1.SymbolListResponse]
 	priceHistory      *connect.Client[v1.PriceHistoryRequest, v1.PriceHistoryResponse]
 	getAccountStatus  *connect.Client[v1.GetAccountStatusRequest, v1.AccountStatus]
 	streamOrderEvents *connect.Client[v1.StreamOrderEventsRequest, v1.OrderEvent]
@@ -179,6 +189,11 @@ func (c *mtHubServiceClient) SymbolParams(ctx context.Context, req *connect.Requ
 	return c.symbolParams.CallUnary(ctx, req)
 }
 
+// SymbolList calls ant.v1.MtHubService.SymbolList.
+func (c *mtHubServiceClient) SymbolList(ctx context.Context, req *connect.Request[v1.SymbolListRequest]) (*connect.Response[v1.SymbolListResponse], error) {
+	return c.symbolList.CallUnary(ctx, req)
+}
+
 // PriceHistory calls ant.v1.MtHubService.PriceHistory.
 func (c *mtHubServiceClient) PriceHistory(ctx context.Context, req *connect.Request[v1.PriceHistoryRequest]) (*connect.Response[v1.PriceHistoryResponse], error) {
 	return c.priceHistory.CallUnary(ctx, req)
@@ -206,6 +221,7 @@ type MtHubServiceHandler interface {
 	OpenedOrders(context.Context, *connect.Request[v1.OpenedOrdersRequest]) (*connect.Response[v1.OpenedOrdersResponse], error)
 	OrderHistory(context.Context, *connect.Request[v1.OrderHistoryRequest]) (*connect.Response[v1.OrderHistoryResponse], error)
 	SymbolParams(context.Context, *connect.Request[v1.SymbolParamsRequest]) (*connect.Response[v1.SymbolParamsResponse], error)
+	SymbolList(context.Context, *connect.Request[v1.SymbolListRequest]) (*connect.Response[v1.SymbolListResponse], error)
 	PriceHistory(context.Context, *connect.Request[v1.PriceHistoryRequest]) (*connect.Response[v1.PriceHistoryResponse], error)
 	GetAccountStatus(context.Context, *connect.Request[v1.GetAccountStatusRequest]) (*connect.Response[v1.AccountStatus], error)
 	StreamOrderEvents(context.Context, *connect.Request[v1.StreamOrderEventsRequest], *connect.ServerStream[v1.OrderEvent]) error
@@ -249,6 +265,12 @@ func NewMtHubServiceHandler(svc MtHubServiceHandler, opts ...connect.HandlerOpti
 		connect.WithSchema(mtHubServiceMethods.ByName("SymbolParams")),
 		connect.WithHandlerOptions(opts...),
 	)
+	mtHubServiceSymbolListHandler := connect.NewUnaryHandler(
+		MtHubServiceSymbolListProcedure,
+		svc.SymbolList,
+		connect.WithSchema(mtHubServiceMethods.ByName("SymbolList")),
+		connect.WithHandlerOptions(opts...),
+	)
 	mtHubServicePriceHistoryHandler := connect.NewUnaryHandler(
 		MtHubServicePriceHistoryProcedure,
 		svc.PriceHistory,
@@ -285,6 +307,8 @@ func NewMtHubServiceHandler(svc MtHubServiceHandler, opts ...connect.HandlerOpti
 			mtHubServiceOrderHistoryHandler.ServeHTTP(w, r)
 		case MtHubServiceSymbolParamsProcedure:
 			mtHubServiceSymbolParamsHandler.ServeHTTP(w, r)
+		case MtHubServiceSymbolListProcedure:
+			mtHubServiceSymbolListHandler.ServeHTTP(w, r)
 		case MtHubServicePriceHistoryProcedure:
 			mtHubServicePriceHistoryHandler.ServeHTTP(w, r)
 		case MtHubServiceGetAccountStatusProcedure:
@@ -320,6 +344,10 @@ func (UnimplementedMtHubServiceHandler) OrderHistory(context.Context, *connect.R
 
 func (UnimplementedMtHubServiceHandler) SymbolParams(context.Context, *connect.Request[v1.SymbolParamsRequest]) (*connect.Response[v1.SymbolParamsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MtHubService.SymbolParams is not implemented"))
+}
+
+func (UnimplementedMtHubServiceHandler) SymbolList(context.Context, *connect.Request[v1.SymbolListRequest]) (*connect.Response[v1.SymbolListResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MtHubService.SymbolList is not implemented"))
 }
 
 func (UnimplementedMtHubServiceHandler) PriceHistory(context.Context, *connect.Request[v1.PriceHistoryRequest]) (*connect.Response[v1.PriceHistoryResponse], error) {

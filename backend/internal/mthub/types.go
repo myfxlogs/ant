@@ -183,6 +183,7 @@ type OrderExecutor interface {
 	FetchOpenedOrders(ctx context.Context) ([]*OrderRecord, error)
 	FetchOrderHistory(ctx context.Context, from, to time.Time) ([]*OrderRecord, error)
 	FetchSymbolParams(ctx context.Context, canonicals []string) ([]*SymbolParam, error)
+	FetchAllSymbols(ctx context.Context) ([]string, error)
 	SubscribeOrderEvents(ctx context.Context, h OrderEventHandler) error
 }
 

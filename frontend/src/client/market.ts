@@ -29,25 +29,24 @@ function toUnixSeconds(ts: Timestamp | undefined): number {
   return Number(ts.seconds ?? BigInt(0));
 }
 
-const COMMON_SYMBOLS = [
-  'EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'NZDUSD', 'USDCAD', 'USDCHF',
-  'EURGBP', 'EURJPY', 'GBPJPY', 'AUDJPY', 'NZDJPY', 'CADJPY', 'CHFJPY',
-  'XAUUSD', 'XAGUSD', 'BTCUSD', 'ETHUSD', 'US30', 'US100', 'GER40',
-  'EURCHF', 'EURAUD', 'EURNZD', 'GBPCHF', 'GBPAUD', 'GBPNZD',
-  'GBPCAD', 'AUDCAD', 'AUDCHF', 'AUDNZD', 'NZDCAD', 'NZDCHF',
-  'CADCHF', 'XAUJPY',
-];
-
 export const marketApi = {
+  // getSymbols returns the full real broker symbol list with params.
+  // 1. SymbolList → all available symbol names from the connected broker
+  // 2. SymbolParams → batch-fetch params for all symbols
   getSymbols: async (accountId: string): Promise<SymbolInfo[]> => {
-    // Use SymbolParams RPC on MtHubService to get real broker symbols.
-    // Pass common canonicals; the broker returns params only for known ones.
     try {
-      const resp = await tradingClient.symbolParams({
+      // Step 1: get all symbol names from the broker.
+      const listResp = await tradingClient.symbolList({ accountId });
+      const symbols = listResp.symbols || [];
+      if (symbols.length === 0) return [];
+
+      // Step 2: batch-fetch params for all symbols.
+      const paramsResp = await tradingClient.symbolParams({
         accountId,
-        canonicals: COMMON_SYMBOLS,
+        canonicals: symbols,
       });
-      return (resp.params || []).map((p) => ({
+      const params = paramsResp.params || [];
+      return params.map((p) => ({
         symbol: p.canonical,
         description: p.symbolRaw !== p.canonical ? p.symbolRaw : undefined,
         digits: p.digits,
@@ -58,8 +57,7 @@ export const marketApi = {
         maxLot: Number(p.lotMax ?? '0'),
       }));
     } catch {
-      // Fallback: return common symbols with no broker params.
-      return COMMON_SYMBOLS.map((s) => ({ symbol: s }));
+      return [];
     }
   },
 

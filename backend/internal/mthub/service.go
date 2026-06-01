@@ -502,6 +502,15 @@ func (s *MtHubService) SymbolParams(ctx context.Context, accountID string, canon
 	return exec.FetchSymbolParams(ctx, canonicals)
 }
 
+// SymbolList returns all available symbol names for a connected MT account.
+func (s *MtHubService) SymbolList(ctx context.Context, accountID string) ([]string, error) {
+	exec := s.hub.Get(accountID)
+	if exec == nil {
+		return nil, ErrSessionNotFound
+	}
+	return exec.FetchAllSymbols(ctx)
+}
+
 // SubscribeUserOrderEvents subscribes to all order events for a user.
 func (s *MtHubService) SubscribeUserOrderEvents(ctx context.Context, userID string) (<-chan *OrderEvent, func()) {
 	return s.broker.Subscribe(userID)

@@ -9,6 +9,7 @@ service MtHubService {
   rpc OpenedOrders(OpenedOrdersRequest) returns (OpenedOrdersResponse);
   rpc OrderHistory(OrderHistoryRequest) returns (OrderHistoryResponse);
   rpc SymbolParams(SymbolParamsRequest) returns (SymbolParamsResponse);
+  rpc SymbolList(SymbolListRequest) returns (SymbolListResponse);
   rpc PriceHistory(PriceHistoryRequest) returns (PriceHistoryResponse);
   rpc GetAccountStatus(GetAccountStatusRequest) returns (AccountStatus);
   rpc StreamOrderEvents(StreamOrderEventsRequest) returns (stream OrderEvent);
@@ -42,6 +43,9 @@ message OrderHistoryResponse { repeated OrderRecord orders = 1; }
 
 message SymbolParamsRequest { string account_id = 1; repeated string canonicals = 2; }
 message SymbolParamsResponse { repeated SymbolParam params = 1; }
+
+message SymbolListRequest { string account_id = 1; }
+message SymbolListResponse { repeated string symbols = 1; }
 
 message PriceHistoryRequest {
   string account_id = 1; string canonical = 2; string period = 3;
