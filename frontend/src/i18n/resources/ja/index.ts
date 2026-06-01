@@ -3,7 +3,6 @@ import trading from './trading';
 import dashboard from './dashboard';
 import accounts from './accounts';
 import aiCore from './ai';
-import aiDebate from './ai_debate';
 import aiWizard from './ai_wizard';
 import aiSettings from './ai_settings';
 import aiStore from './ai_store';
@@ -20,7 +19,6 @@ const ja = mergeResources(
   dashboard,
   accounts,
   aiCore,
-  aiDebate,
   aiWizard,
   aiSettings,
   aiStore,

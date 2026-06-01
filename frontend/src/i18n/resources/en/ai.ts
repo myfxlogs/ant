@@ -13,7 +13,7 @@ const aiCore = {
         regionNotSupported: 'The selected provider is not available in your region/country. Switch to a different provider.',
         providerInternalError: 'The provider returned a server-side error (5xx). Wait a moment or switch to another provider.',
         edgeGatewayTimeout:
-          'The edge gateway timed out (often HTTP 524 on Cloudflare): the browser never received the app response, which is common for long “generate code” calls. On the debate code step use “Try generating code again”, or go back one step and advance again; if it keeps happening, raise proxy/origin timeouts with ops.',
+          'The edge gateway timed out (often HTTP 524 on Cloudflare): the browser never received the app response, which is common for long-running operations. Try again; if the issue persists, raise proxy/origin timeouts with ops.',
         networkUnreachable: 'Gateway timed out or is unreachable. Check the Base URL, network connectivity, or try again later.',
         gatewayTimeoutOrUnreachable: 'Gateway timeout or unreachable.',
         gatewayUnauthorized401: 'Gateway unauthorized (401).',
@@ -302,7 +302,6 @@ const aiCore = {
       },
     },
     tabs: {
-      debate: 'Expert Discussion',
       settings: 'Settings',
       agentSettings: 'Agent Settings',
       gate: 'AI Gate',

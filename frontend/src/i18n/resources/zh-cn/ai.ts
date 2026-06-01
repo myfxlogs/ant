@@ -302,7 +302,6 @@ const aiCore = {
       },
     },
     tabs: {
-      debate: '专家讨论',
       settings: '设置',
       agentSettings: '专家设置',
       gate: 'AI Gate',

@@ -147,8 +147,7 @@ const StrategyTemplatePage: React.FC = () => {
 
   // Re-fetch templates whenever the UI language changes so backend-provided
   // i18n name/description for preset strategies update in place. Mirrors the
-  // pattern used by ai/debate where `locale = i18n.language` is re-read per
-  // request; here we refresh the cached list instead.
+  // pattern used by ai/settings where locale-dependent labels are refetched.
   useEffect(() => {
     const onLang = () => {
       void fetchTemplates();
@@ -197,7 +196,7 @@ const StrategyTemplatePage: React.FC = () => {
       setRunDrawerOpen(true);
       if (!deepLinkNotifiedRef.current) {
         deepLinkNotifiedRef.current = true;
-        message.info(t("strategy.templates.messages.navigatedFromDebate"));
+        message.info(t("strategy.templates.messages.deepLinkNavigate"));
       }
       return;
     }
@@ -216,7 +215,7 @@ const StrategyTemplatePage: React.FC = () => {
         }
         if (!deepLinkNotifiedRef.current) {
           deepLinkNotifiedRef.current = true;
-          message.info(t("strategy.templates.messages.navigatedFromDebate"));
+          message.info(t("strategy.templates.messages.deepLinkNavigate"));
         }
       }, 300);
       return () => window.clearTimeout(timer);

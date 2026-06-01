@@ -41,7 +41,6 @@ func registerSREHandlers(
 	platformSvc *service.PlatformService,
 	mthubSvc *mthub.MtHubService,
 	authServer *user.AuthServer,
-	debateV2Server *ai.DebateV2Server,
 	gateProgressServer *ai.GateProgressServer,
 	strategyExperimentRepo *repository.StrategyExperimentRepository,
 	strategyAssetRepo *repository.StrategyAssetRepository,
@@ -95,14 +94,6 @@ func registerSREHandlers(
 	// Auth cookie endpoints — refresh token via httpOnly cookie.
 	mux.HandleFunc("/api/auth/refresh", authServer.HandleTokenRefresh)
 	mux.HandleFunc("/api/auth/logout", authServer.HandleLogout)
-
-	// SSE endpoints for Debate V2 async jobs.
-	mux.HandleFunc("/sse/debate-v2/advance-jobs/", func(w http.ResponseWriter, r *http.Request) {
-		debateV2Server.HandleDebateV2AdvanceJobSSE(w, r, authInterceptor)
-	})
-	mux.HandleFunc("/sse/debate-v2/chat-jobs/", func(w http.ResponseWriter, r *http.Request) {
-		debateV2Server.HandleDebateV2ChatJobSSE(w, r, authInterceptor)
-	})
 
 	// SSE endpoint for AI gate pipeline progress.
 	mux.HandleFunc("/sse/ai/gate-progress", func(w http.ResponseWriter, r *http.Request) {

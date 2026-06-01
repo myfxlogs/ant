@@ -12,7 +12,7 @@ export default function AIAssistantLayout() {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 
-	// Eagerly prefetch agent definitions so /ai/debate and /ai/agents
+	// Eagerly prefetch agent definitions so /ai/agents has instant data
 	// have instant data when navigating between tabs.
 	useEffect(() => {
 		queryClient.prefetchQuery({
@@ -23,7 +23,6 @@ export default function AIAssistantLayout() {
 	}, [queryClient]);
 
 	const tabItems = [
-		{ key: '/ai/debate', label: t('ai.tabs.debate', { defaultValue: t('ai.debate.title') }) },
 		{ key: '/ai/settings', label: t('ai.tabs.settings', { defaultValue: t('ai.settings.pageTitle') }) },
 		{ key: '/ai/agents', label: t('ai.tabs.agentSettings', { defaultValue: t('ai.settings.agent.title') }) },
 		{ key: '/ai/gate', label: t('ai.tabs.gate', { defaultValue: 'AI Gate' }) },
@@ -31,11 +30,10 @@ export default function AIAssistantLayout() {
 
 	const activeKey = (() => {
 		const p = location.pathname || '';
-		if (p.startsWith('/ai/debate')) return '/ai/debate';
 		if (p.startsWith('/ai/agents')) return '/ai/agents';
 		if (p.startsWith('/ai/settings')) return '/ai/settings';
 		if (p.startsWith('/ai/gate')) return '/ai/gate';
-		return '/ai/debate';
+		return '/ai/settings';
 	})();
 
 	return (

@@ -20,7 +20,6 @@ const PrivacyPolicy = lazy(() => import('@/pages/legal/PrivacyPolicy'));
 const Dashboard = lazy(() => import('@/pages/dashboard/Dashboard'));
 const AccountDetail = lazy(() => import('@/pages/accounts/AccountDetail'));
 const BindAccount = lazy(() => import('@/pages/accounts/BindAccount'));
-const DebatePage = lazy(() => import('@/pages/ai/debate/DebatePageV2'));
 const AISettings = lazy(() => import('@/pages/ai/AISettings'));
 const SystemAI = lazy(() => import('@/pages/ai/SystemAI'));
 const GateProgressPage = lazy(() => import('@/pages/ai/gate/GateProgressPage'));
@@ -65,8 +64,7 @@ const mainRoutes = (
     <Route path="accounts/bind" element={wrap(<BindAccount />)} />
     <Route path="profile" element={wrap(<ProfilePage />)} />
     <Route path="ai" element={<AIAssistantLayout />}>
-      <Route index element={<Navigate to="/ai/debate" replace />} />
-      <Route path="debate" element={<RequireAIConfig>{wrap(<DebatePage />)}</RequireAIConfig>} />
+      <Route index element={<Navigate to="/ai/settings" replace />} />
       <Route path="settings" element={wrap(<SystemAI />)} />
       <Route path="agents" element={wrap(<AISettings mode="agents" />)} />
       <Route path="gate" element={wrap(<GateProgressPage />)} />

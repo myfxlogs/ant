@@ -126,7 +126,7 @@ const strategy = {
         },
       },
       messages: {
-        navigatedFromDebate: 'Navigated from Expert discussion: highlighted template and opened latest run details',
+        deepLinkNavigate: 'Opened template and latest run details from external link',
         missingScheduleInfo: 'Missing schedule info',
         templateNotPublishedCannotCreateSchedule: 'Template is not published. Cannot create schedule.',
         readTemplateStatusFailed: 'Failed to read template status',

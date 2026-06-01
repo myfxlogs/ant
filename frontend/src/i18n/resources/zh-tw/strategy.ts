@@ -439,7 +439,7 @@ const strategy = {
       },
       messages: {
         fetchTemplateListFailed: '獲取模板列表失敗',
-        navigatedFromDebate: '已從專家討論跳轉，已為你定位模板與回測詳情',
+        deepLinkNavigate: '已為你定位模板與回測詳情',
         enterStrategyCode: '請輸入策略代碼',
         codeValidationPassed: '代碼驗證通過',
         codeValidationNotPassed: '代碼未通過驗證',

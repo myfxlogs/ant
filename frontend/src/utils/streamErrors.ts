@@ -33,5 +33,5 @@ export function isLikelyStreamTransportFailure(error: unknown): boolean {
 }
 
 export function isStreamServiceProcedure(procLower: string): boolean {
-  return procLower.includes('streamservice') || procLower.includes('debatev2streamservice');
+  return procLower.includes('streamservice');
 }

@@ -12,7 +12,6 @@ import { LogService } from "../gen/ant/v1/log_pb";
 import { PythonStrategyService } from "../gen/ant/v1/python_strategy_pb";
 import { BacktestTradesService } from "../gen/ant/v1/backtest_trades_pb";
 import { MtHubService } from "../gen/ant/v1/mthub_service_pb";
-import { DebateV2Service } from "../gen/ant/v1/debate_v2_service_pb";
 import { EconomicDataService } from "../gen/ant/v1/economic_data_pb";
 import { StrategyExperimentService } from "../gen/ant/v1/strategy_experiment_pb";
 import { StrategyAssetService } from "../gen/ant/v1/strategy_asset_pb";
@@ -61,7 +60,6 @@ export const backtestTradesClient = createClient(
   BacktestTradesService,
   transport,
 );
-export const debateV2Client = createClient(DebateV2Service, transport);
 export const scheduleHealthClient = createClient(ScheduleHealthService, transport);
 export const economicDataClient = createClient(EconomicDataService, transport);
 export const logClient = createClient(LogService, transport);

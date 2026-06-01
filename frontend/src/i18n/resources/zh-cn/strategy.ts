@@ -450,7 +450,7 @@ const strategy = {
       },
       messages: {
         fetchTemplateListFailed: '获取模板列表失败',
-        navigatedFromDebate: '已从专家讨论跳转，已为你定位模板与回测详情',
+        deepLinkNavigate: '已为你定位模板与回测详情',
         enterStrategyCode: '请输入策略代码',
         codeValidationPassed: '代码验证通过',
         codeValidationNotPassed: '代码未通过验证',

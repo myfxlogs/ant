@@ -121,11 +121,6 @@ func registerHandlers(
 	mux.HandleFunc("POST /api/ai/agents", aiServer.BatchSetAgents)
 	mux.HandleFunc("GET /api/ai/agents", aiServer.ListAgentDefs)
 
-	// Debate V2 service (multi-expert AI strategy generation).
-	debateV2Svc := service.NewDebateV2Service(pool, jobRepo, log)
-	debateV2Server := ai.NewDebateV2Server(debateV2Svc, log)
-	mux.Handle(antv1c.NewDebateV2ServiceHandler(debateV2Server, connectrpc.WithInterceptors(authInterceptor)))
-
 	gateProgressServer := ai.NewGateProgressServer(log)
 
 	streamServer := system.NewStreamServer(mthubSvc, platformSvc, log)
@@ -136,7 +131,7 @@ func registerHandlers(
 	mux.Handle(antv1c.NewStrategyServiceHandler(strategyServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	// Mock/stub handlers — return mock data for services not yet connected to real backends.
-	// Real: SystemAI, AIPrimary, Job, ScheduleHealth, DebateV2
+	// Real: SystemAI, AIPrimary, Job, ScheduleHealth
 	// Mock: PythonStrategy, CodeAssist, BacktestTrades, EconomicData
 	pythonStrategyServer := strategy.NewPythonStrategyServer(backtestRunRepo, log)
 	if cfg.StrategyServiceURL != "" {
@@ -274,7 +269,7 @@ func registerHandlers(
 	emailNotifier := registerSREHandlers(
 		mux, log, pool, ch, nc, rdb, cfg,
 		authInterceptor, platformSvc, mthubSvc,
-		authServer, debateV2Server, gateProgressServer,
+		authServer, gateProgressServer,
 		strategyExperimentRepo, strategyAssetRepo, schedHealthRepo,
 		analyticsCache,
 	)
