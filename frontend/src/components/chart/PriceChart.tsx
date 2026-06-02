@@ -1,13 +1,14 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { Radio, Spin, Tooltip, Button, Space } from 'antd';
-import { InfoCircleOutlined, BarChartOutlined, LineChartOutlined, AreaChartOutlined, StockOutlined } from '@ant-design/icons';
+import { Radio, Spin, Tooltip, Button, Space, Tag } from 'antd';
+import { InfoCircleOutlined, BarChartOutlined, LineChartOutlined, AreaChartOutlined, StockOutlined, SettingOutlined, CloseOutlined } from '@ant-design/icons';
 import { init, dispose, type KLineData } from 'klinecharts';
 import type { Chart } from 'klinecharts';
 import DARK_THEME from './chartTheme';
 import DrawingToolbar from './DrawingToolbar';
 import IndicatorPicker from './IndicatorPicker';
-import ActiveIndicatorsBar from './ActiveIndicatorsBar';
 import { useChartData } from './useChartData';
+import { useChartIndicatorsStore, KLINECHARTS_MAP } from '@/stores/chartIndicatorsStore';
+import IndicatorSettingsModal from './IndicatorSettingsModal';
 import './BidAskIndicator';
 
 const TIMEFRAMES = [
@@ -47,6 +48,55 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
   const [chartType, setChartType] = useState<ChartType>('candle_solid');
 
   const { bars, loading, error, loadingMore, loadedAll, loadMore } = useChartData(symbol, timeframe, accountId);
+  const activeIndicators = useChartIndicatorsStore((s) => s.active);
+  const getDef = useChartIndicatorsStore((s) => s.getDef);
+  const removeIndicator = useChartIndicatorsStore((s) => s.removeIndicator);
+  const [editingIndId, setEditingIndId] = useState<string | null>(null);
+  const createdRef = useRef<Map<string, { paneId: string; name: string; paramsKey: string }>>(new Map());
+
+  // Sync Zustand active indicators → klinecharts chart.
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+    const prev = createdRef.current;
+    const next = new Map<string, { paneId: string; name: string; paramsKey: string }>();
+
+    for (const ind of activeIndicators) {
+      const km = KLINECHARTS_MAP[ind.defId];
+      if (!km) continue;
+
+      const paramsKey = JSON.stringify(ind.params);
+      const existing = prev.get(ind.instanceId);
+
+      if (existing && existing.name === km.name && existing.paramsKey === paramsKey) {
+        next.set(ind.instanceId, existing);
+        prev.delete(ind.instanceId);
+        continue;
+      }
+
+      // Remove old instance if params changed.
+      if (existing) {
+        try { chart.removeIndicator(existing.paneId, existing.name); } catch { /* */ }
+      }
+
+      const isStack = ind.defId === 'SMA' || ind.defId === 'EMA' || ind.defId === 'BOLL';
+      const calcParams = km.buildParams(ind.params);
+      try {
+        const paneId = chart.createIndicator(km.name, isStack, { id: `ind_${ind.instanceId}` }) as unknown as string;
+        if (paneId) {
+          if (calcParams.length > 0) {
+            try { (chart as any).setIndicatorCalcParams?.(paneId, km.name, calcParams); } catch { /* */ }
+          }
+          next.set(ind.instanceId, { paneId, name: km.name, paramsKey });
+        }
+      } catch { /* indicator not supported */ }
+    }
+
+    for (const [id, info] of prev) {
+      try { chart.removeIndicator(info.paneId, info.name); } catch { /* */ }
+    }
+    createdRef.current = next;
+  }, [activeIndicators]);
 
   // Responsive
   useEffect(() => {
@@ -159,7 +209,41 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
         </Space>
       </div>
 
-      <ActiveIndicatorsBar style={{ marginBottom: 6 }} />
+      {/* Active indicator chips */}
+      {activeIndicators.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 6, alignItems: 'center' }}>
+          {activeIndicators.map((ind) => {
+            const def = getDef(ind.defId);
+            const paramsStr = def?.params?.length
+              ? '(' + def.params.map(p => ind.params[p.key] ?? p.default).join(',') + ')'
+              : '';
+            return (
+              <Tag key={ind.instanceId} color="processing" style={{ margin: 0, cursor: 'pointer' }}>
+                <Space size={2}>
+                  <span style={{ fontSize: 11 }} onClick={() => setEditingIndId(ind.instanceId)}>
+                    {def?.name || ind.defId}{paramsStr}
+                  </span>
+                  <Button type="text" size="small" icon={<SettingOutlined />}
+                    onClick={(e) => { e.stopPropagation(); setEditingIndId(ind.instanceId); }}
+                    style={{ padding: 0, minWidth: 12, height: 12, lineHeight: 1, color: 'inherit' }} />
+                  <Button type="text" size="small" danger icon={<CloseOutlined />}
+                    onClick={(e) => { e.stopPropagation(); removeIndicator(ind.instanceId); }}
+                    style={{ padding: 0, minWidth: 12, height: 12, lineHeight: 1 }} />
+                </Space>
+              </Tag>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Indicator settings modal */}
+      {editingIndId && (() => {
+        const ind = activeIndicators.find(a => a.instanceId === editingIndId);
+        const def = ind ? getDef(ind.defId) : undefined;
+        return ind && def ? (
+          <IndicatorSettingsModal visible={true} indicator={ind} def={def} onClose={() => setEditingIndId(null)} />
+        ) : null;
+      })()}
 
       {/* Chart */}
       <div style={{ position: 'relative', minHeight: height, background: '#131722', borderRadius: 4, overflow: 'hidden' }}>

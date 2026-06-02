@@ -4,7 +4,6 @@ import { ThunderboltOutlined, CodeOutlined, FullscreenOutlined } from '@ant-desi
 import { useTranslation } from 'react-i18next';
 import SymbolPicker from '@/components/chart/SymbolPicker';
 import PriceChart from '@/components/chart/PriceChart';
-import IndicatorPicker from '@/components/chart/IndicatorPicker';
 import QuickTradePanel from '@/components/chart/QuickTradePanel';
 import type { Account } from '@/types/account';
 
@@ -88,17 +87,12 @@ export default function WorkspaceChartTab({
                 value={accountId || undefined} onChange={onAccountChange}
                 placeholder="Select account" showSearch optionFilterProp="label"
                 notFoundContent="No accounts"
-                options={accounts.map((a) => ({ value: a.id, label: a.alias || `${a.brokerCompany} · ${a.login}` }))}
+                options={accounts.map((a) => ({ value: a.id, label: `${a.brokerServer} · ${a.login}` }))}
               />
               <SymbolPicker accountId={accountId} value={symbol} onChange={onSymbolChange} style={{ width: 120 }} />
             </Space>
           </div>
 
-          {/* Indicator group — matches .ide-toolbar-group--indicator */}
-          <div style={{ ...groupStyle, flex: '1 1 240px' }}>
-            <div style={groupLabelStyle}>Indicators</div>
-            <IndicatorPicker />
-          </div>
         </div>
       </div>
 

@@ -61,6 +61,22 @@ const INDICATOR_REGISTRY: IndicatorDef[] = [
   { id: 'VOL', name: 'Volume', kind: 'sub', params: [], defaults: {} },
 ];
 
+// Maps store defId → klinecharts built-in indicator name + calcParams builder.
+// Only indicators supported by klinecharts v9.8 are listed here.
+export const KLINECHARTS_MAP: Record<string, { name: string; buildParams: (p: Record<string, number>) => number[] }> = {
+  SMA:   { name: 'MA',   buildParams: (p) => [p.length] },
+  EMA:   { name: 'EMA',  buildParams: (p) => [p.length] },
+  BOLL:  { name: 'BOLL', buildParams: (p) => [p.length, p.mult] },
+  RSI:   { name: 'RSI',  buildParams: (p) => [p.length] },
+  MACD:  { name: 'MACD', buildParams: (p) => [p.fast, p.slow, p.signal] },
+  KDJ:   { name: 'KDJ',  buildParams: (p) => [p.period, p.k, p.d] },
+  CCI:   { name: 'CCI',  buildParams: (p) => [p.length] },
+  WILLR: { name: 'WR',   buildParams: (p) => [p.length] },
+  OBV:   { name: 'OBV',  buildParams: () => [] },
+  ADX:   { name: 'DMI',  buildParams: (p) => [p.length] },
+  VOL:   { name: 'VOL',  buildParams: () => [] },
+};
+
 // ── Store ──
 
 interface ChartIndicatorsState {
