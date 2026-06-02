@@ -247,7 +247,7 @@ func TestMT4PeriodToTimeframe(t *testing.T) {
 		{"4h", pb.Timeframe_Timeframe_H4, true},
 		{"1d", pb.Timeframe_Timeframe_D1, true},
 		{"2m", 0, false},
-		{"1w", 0, false},
+		{"1w", pb.Timeframe_Timeframe_W1, true},
 		{"", 0, false},
 	}
 	for _, tt := range tests {

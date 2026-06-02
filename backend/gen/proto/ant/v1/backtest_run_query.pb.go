@@ -71,6 +71,7 @@ type GetBacktestRunResponse struct {
 	Metrics       *BacktestMetrics       `protobuf:"bytes,2,opt,name=metrics,proto3" json:"metrics,omitempty"`
 	EquityCurve   []float64              `protobuf:"fixed64,3,rep,packed,name=equity_curve,json=equityCurve,proto3" json:"equity_curve,omitempty"`
 	DatasetId     *string                `protobuf:"bytes,4,opt,name=dataset_id,json=datasetId,proto3,oneof" json:"dataset_id,omitempty"`
+	Risk          *BacktestRisk          `protobuf:"bytes,5,opt,name=risk,proto3" json:"risk,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -133,6 +134,13 @@ func (x *GetBacktestRunResponse) GetDatasetId() string {
 	return ""
 }
 
+func (x *GetBacktestRunResponse) GetRisk() *BacktestRisk {
+	if x != nil {
+		return x.Risk
+	}
+	return nil
+}
+
 type WatchBacktestRunRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RunId         string                 `protobuf:"bytes,1,opt,name=run_id,json=runId,proto3" json:"run_id,omitempty"`
@@ -182,6 +190,7 @@ type BacktestRunUpdate struct {
 	Run           *BacktestRun           `protobuf:"bytes,1,opt,name=run,proto3" json:"run,omitempty"`
 	Metrics       *BacktestMetrics       `protobuf:"bytes,2,opt,name=metrics,proto3" json:"metrics,omitempty"`
 	EquityCurve   []float64              `protobuf:"fixed64,3,rep,packed,name=equity_curve,json=equityCurve,proto3" json:"equity_curve,omitempty"`
+	Risk          *BacktestRisk          `protobuf:"bytes,4,opt,name=risk,proto3" json:"risk,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -233,6 +242,13 @@ func (x *BacktestRunUpdate) GetMetrics() *BacktestMetrics {
 func (x *BacktestRunUpdate) GetEquityCurve() []float64 {
 	if x != nil {
 		return x.EquityCurve
+	}
+	return nil
+}
+
+func (x *BacktestRunUpdate) GetRisk() *BacktestRisk {
+	if x != nil {
+		return x.Risk
 	}
 	return nil
 }
@@ -347,20 +363,22 @@ const file_backtest_run_query_proto_rawDesc = "" +
 	"\n" +
 	"\x18backtest_run_query.proto\x12\x06ant.v1\x1a\fcommon.proto\x1a\x12backtest_run.proto\".\n" +
 	"\x15GetBacktestRunRequest\x12\x15\n" +
-	"\x06run_id\x18\x01 \x01(\tR\x05runId\"\xc8\x01\n" +
+	"\x06run_id\x18\x01 \x01(\tR\x05runId\"\xf2\x01\n" +
 	"\x16GetBacktestRunResponse\x12%\n" +
 	"\x03run\x18\x01 \x01(\v2\x13.ant.v1.BacktestRunR\x03run\x121\n" +
 	"\ametrics\x18\x02 \x01(\v2\x17.ant.v1.BacktestMetricsR\ametrics\x12!\n" +
 	"\fequity_curve\x18\x03 \x03(\x01R\vequityCurve\x12\"\n" +
 	"\n" +
-	"dataset_id\x18\x04 \x01(\tH\x00R\tdatasetId\x88\x01\x01B\r\n" +
+	"dataset_id\x18\x04 \x01(\tH\x00R\tdatasetId\x88\x01\x01\x12(\n" +
+	"\x04risk\x18\x05 \x01(\v2\x14.ant.v1.BacktestRiskR\x04riskB\r\n" +
 	"\v_dataset_id\"0\n" +
 	"\x17WatchBacktestRunRequest\x12\x15\n" +
-	"\x06run_id\x18\x01 \x01(\tR\x05runId\"\x90\x01\n" +
+	"\x06run_id\x18\x01 \x01(\tR\x05runId\"\xba\x01\n" +
 	"\x11BacktestRunUpdate\x12%\n" +
 	"\x03run\x18\x01 \x01(\v2\x13.ant.v1.BacktestRunR\x03run\x121\n" +
 	"\ametrics\x18\x02 \x01(\v2\x17.ant.v1.BacktestMetricsR\ametrics\x12!\n" +
-	"\fequity_curve\x18\x03 \x03(\x01R\vequityCurve\"z\n" +
+	"\fequity_curve\x18\x03 \x03(\x01R\vequityCurve\x12(\n" +
+	"\x04risk\x18\x04 \x01(\v2\x14.ant.v1.BacktestRiskR\x04risk\"z\n" +
 	"\x17ListBacktestRunsRequest\x12\"\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tH\x00R\taccountId\x88\x01\x01\x12\x14\n" +
@@ -392,18 +410,21 @@ var file_backtest_run_query_proto_goTypes = []any{
 	(*ListBacktestRunsResponse)(nil), // 5: ant.v1.ListBacktestRunsResponse
 	(*BacktestRun)(nil),              // 6: ant.v1.BacktestRun
 	(*BacktestMetrics)(nil),          // 7: ant.v1.BacktestMetrics
+	(*BacktestRisk)(nil),             // 8: ant.v1.BacktestRisk
 }
 var file_backtest_run_query_proto_depIdxs = []int32{
 	6, // 0: ant.v1.GetBacktestRunResponse.run:type_name -> ant.v1.BacktestRun
 	7, // 1: ant.v1.GetBacktestRunResponse.metrics:type_name -> ant.v1.BacktestMetrics
-	6, // 2: ant.v1.BacktestRunUpdate.run:type_name -> ant.v1.BacktestRun
-	7, // 3: ant.v1.BacktestRunUpdate.metrics:type_name -> ant.v1.BacktestMetrics
-	6, // 4: ant.v1.ListBacktestRunsResponse.runs:type_name -> ant.v1.BacktestRun
-	5, // [5:5] is the sub-list for method output_type
-	5, // [5:5] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	8, // 2: ant.v1.GetBacktestRunResponse.risk:type_name -> ant.v1.BacktestRisk
+	6, // 3: ant.v1.BacktestRunUpdate.run:type_name -> ant.v1.BacktestRun
+	7, // 4: ant.v1.BacktestRunUpdate.metrics:type_name -> ant.v1.BacktestMetrics
+	8, // 5: ant.v1.BacktestRunUpdate.risk:type_name -> ant.v1.BacktestRisk
+	6, // 6: ant.v1.ListBacktestRunsResponse.runs:type_name -> ant.v1.BacktestRun
+	7, // [7:7] is the sub-list for method output_type
+	7, // [7:7] is the sub-list for method input_type
+	7, // [7:7] is the sub-list for extension type_name
+	7, // [7:7] is the sub-list for extension extendee
+	0, // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_backtest_run_query_proto_init() }

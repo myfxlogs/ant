@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { Tabs, Button, Collapse, message, Form } from 'antd';
-import {
-  RobotOutlined, DoubleLeftOutlined, DoubleRightOutlined,
-} from '@ant-design/icons';
+import { RobotOutlined, DoubleLeftOutlined, DoubleRightOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useAccount } from '@/hooks/useAccount';
 import { strategyApi, type StrategyTemplate } from '@/client/strategy';
@@ -22,11 +20,9 @@ type BacktestStatus = 'idle' | 'running' | 'completed' | 'error';
 export default function StrategyWorkspacePage() {
   const { t } = useTranslation();
 
-  // Code
   const [code, setCode] = useState('');
   const [lastValidatedCode, setLastValidatedCode] = useState('');
 
-  // Account / Symbol / Timeframe
   const { accounts: allAccounts, fetchAccounts } = useAccount();
   const activeAccounts = allAccounts.filter((a) => !a.isDisabled);
   const [accountId, setAccountId] = useState('');
@@ -34,16 +30,11 @@ export default function StrategyWorkspacePage() {
   const [timeframe, setTimeframe] = useState('1h');
 
   const handleAccountChange = useCallback((id: string) => {
-    setAccountId(id);
-    setSymbol('');
-    marketApi.clearSymbolCache();
+    setAccountId(id); setSymbol(''); marketApi.clearSymbolCache();
   }, []);
 
-  // Validation
   const [validating, setValidating] = useState(false);
   const [validationResult, setValidationResult] = useState<ValidateExtendedResult | null>(null);
-
-  // Template
   const [templates, setTemplates] = useState<StrategyTemplate[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(false);
   const [loadedTemplate, setLoadedTemplate] = useState<StrategyTemplate | null>(null);
@@ -51,35 +42,24 @@ export default function StrategyWorkspacePage() {
   const [saveLoading, setSaveLoading] = useState(false);
   const [saveForm] = Form.useForm();
 
-  // Backtest
   const [backtestSubmitting, setBacktestSubmitting] = useState(false);
   const [backtestStatus, setBacktestStatus] = useState<BacktestStatus>('idle');
   const [backtestMetrics, setBacktestMetrics] = useState<any>(null);
   const [backtestError, setBacktestError] = useState('');
 
-  // UI
-  const [codePanelVisible, setCodePanelVisible] = useState(true);
+  const [codeDrawerVisible, setCodeDrawerVisible] = useState(true);
   const [activeRightTab, setActiveRightTab] = useState('chart');
 
-  // Load accounts & templates on mount
   useEffect(() => {
-    fetchAccounts().then((list) => {
-      const enabled = (list || []).filter((a) => !a.isDisabled);
-      if (enabled.length > 0 && !accountId) handleAccountChange(enabled[0].id);
-    });
+    fetchAccounts();
     loadTemplates();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const loadTemplates = useCallback(async () => {
     setTemplatesLoading(true);
-    try {
-      const list = await strategyApi.listTemplates();
-      setTemplates(list || []);
-    } catch {
-      // silent
-    } finally {
-      setTemplatesLoading(false);
-    }
+    try { const list = await strategyApi.listTemplates(); setTemplates(list || []); }
+    catch { /* silent */ }
+    finally { setTemplatesLoading(false); }
   }, []);
 
   const handleLoadTemplate = useCallback(async (id: string) => {
@@ -87,256 +67,180 @@ export default function StrategyWorkspacePage() {
       const tpl = await strategyApi.getTemplate(id);
       if (tpl?.code) setCode(tpl.code);
       if (tpl?.name) setLoadedTemplate(tpl as StrategyTemplate);
-      setLastValidatedCode('');
-      setValidationResult(null);
-    } catch (e: any) {
-      message.error(e?.message || 'Failed to load template');
-    }
+      setLastValidatedCode(''); setValidationResult(null);
+    } catch (e: any) { message.error(e?.message || 'Failed to load template'); }
   }, []);
 
   const handleValidate = useCallback(async () => {
     if (!code.trim()) return;
     setValidating(true);
-    try {
-      const result = await codeAssistApi.validateExtended(code);
-      setValidationResult(result);
-      if (result.valid) setLastValidatedCode(code);
-    } catch (e: any) {
-      message.error(e?.message || 'Validation failed');
-    } finally {
-      setValidating(false);
-    }
+    try { const result = await codeAssistApi.validateExtended(code); setValidationResult(result); if (result.valid) setLastValidatedCode(code); }
+    catch (e: any) { message.error(e?.message || 'Validation failed'); }
+    finally { setValidating(false); }
   }, [code]);
 
   const handleRunBacktest = useCallback(async () => {
     if (!code || !symbol) return;
     setBacktestSubmitting(true);
     try {
-      const result = await pythonStrategyApi.startBacktestRun({
-        code, accountId, symbol, timeframe, initialCapital: 10000,
-      });
+      const result = await pythonStrategyApi.startBacktestRun({ code, accountId, symbol, timeframe, initialCapital: 10000 });
       const runId = result.runId;
       if (!runId) throw new Error('No run ID returned');
-      setBacktestStatus('running');
-      setActiveRightTab('backtest');
+      setBacktestStatus('running'); setActiveRightTab('backtest');
       const stopWatching = await pythonStrategyApi.watchBacktestRun(runId, (update: any) => {
         if (update.status === 'SUCCEEDED' || update.status === 'FAILED' || update.status === 'CANCELED') {
           setBacktestStatus(update.status === 'SUCCEEDED' ? 'completed' : 'error');
-          setBacktestMetrics(update.metrics || null);
-          setBacktestError(update.error || '');
-          stopWatching();
-        } else {
-          setBacktestMetrics(update.metrics || null);
-        }
+          setBacktestMetrics(update.metrics || null); setBacktestError(update.error || ''); stopWatching();
+        } else { setBacktestMetrics(update.metrics || null); }
       });
-    } catch (e: any) {
-      message.error(e?.message || 'Backtest failed');
-      setBacktestStatus('error');
-      setBacktestError(e?.message || 'Unknown error');
-    } finally {
-      setBacktestSubmitting(false);
-    }
+    } catch (e: any) { message.error(e?.message || 'Backtest failed'); setBacktestStatus('error'); setBacktestError(e?.message || 'Unknown error'); }
+    finally { setBacktestSubmitting(false); }
   }, [code, symbol, accountId, timeframe]);
 
   const handleSave = useCallback(async () => {
-    if (!code || !lastValidatedCode || code !== lastValidatedCode) {
-      message.warning(t('strategy.workspace.validateBeforeSave', 'Please validate code before saving'));
-      return;
-    }
-    if (loadedTemplate) {
-      setSaveLoading(true);
-      try {
-        await strategyApi.updateTemplate({ id: loadedTemplate.id, name: loadedTemplate.name, description: loadedTemplate.description || '', code });
-        message.success(t('strategy.workspace.saveSuccess', 'Saved'));
-        loadTemplates();
-      } catch (e: any) {
-        message.error(e?.message || 'Save failed');
-      } finally {
-        setSaveLoading(false);
-      }
-    } else {
-      setSaveModalOpen(true);
-    }
+    if (!code || !lastValidatedCode || code !== lastValidatedCode) { message.warning(t('strategy.workspace.validateBeforeSave')); return; }
+    if (loadedTemplate) { setSaveLoading(true); try { await strategyApi.updateTemplate({ id: loadedTemplate.id, name: loadedTemplate.name, description: loadedTemplate.description || '', code }); message.success(t('strategy.workspace.saveSuccess')); loadTemplates(); } catch (e: any) { message.error(e?.message || 'Save failed'); } finally { setSaveLoading(false); } }
+    else { setSaveModalOpen(true); }
   }, [code, lastValidatedCode, loadedTemplate, t, loadTemplates]);
 
-  const handleSaveAs = useCallback(() => {
-    saveForm.resetFields();
-    setSaveModalOpen(true);
-  }, [saveForm]);
-
+  const handleSaveAs = useCallback(() => { saveForm.resetFields(); setSaveModalOpen(true); }, [saveForm]);
   const handleSaveModalOk = useCallback(async () => {
-    try {
-      const values = await saveForm.validateFields();
-      setSaveLoading(true);
-      await strategyApi.createTemplate({ name: values.name, description: values.description || '', code });
-      message.success(t('strategy.workspace.saveSuccess', 'Saved'));
-      setSaveModalOpen(false);
-      loadTemplates();
-    } catch (e: any) {
-      if (e?.message) message.error(e.message);
-    } finally {
-      setSaveLoading(false);
-    }
+    try { const values = await saveForm.validateFields(); setSaveLoading(true); await strategyApi.createTemplate({ name: values.name, description: values.description || '', code }); message.success(t('strategy.workspace.saveSuccess')); setSaveModalOpen(false); loadTemplates(); }
+    catch (e: any) { if (e?.message) message.error(e.message); }
+    finally { setSaveLoading(false); }
   }, [code, saveForm, t, loadTemplates]);
 
   const handleCopy = useCallback(() => {
     if (!code) return;
-    navigator.clipboard.writeText(code).then(() => {
-      message.success(t('strategy.workspace.copySuccess', 'Copied'));
-    }).catch(() => {
-      message.error(t('strategy.workspace.copyFailed', 'Copy failed'));
-    });
+    navigator.clipboard.writeText(code).then(() => message.success(t('strategy.workspace.copySuccess'))).catch(() => message.error(t('strategy.workspace.copyFailed')));
   }, [code, t]);
 
   const canSave = code.length > 0 && lastValidatedCode.length > 0 && code === lastValidatedCode;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 112px)' }}>
-      {/* Header */}
-      <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        padding: '8px 0 12px 0',
-      }}>
-        <h2 style={{ margin: 0 }}>{t('strategy.workspace.title', 'Strategy Workspace')}</h2>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 112px)', background: '#fff' }}>
+      {/* Title bar */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0 12px' }}>
+        <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{t('strategy.workspace.title', 'Strategy Workspace')}</h2>
       </div>
 
-      {/* Main split — QuantDinger layout */}
-      <div style={{ display: 'flex', flex: 1, gap: 12, overflow: 'hidden' }}>
-        {/* Code rail (visible when left panel collapsed) — matches QuantDinger ide-code-rail */}
-        {!codePanelVisible && (
-          <div
-            onClick={() => setCodePanelVisible(true)}
-            role="button"
-            tabIndex={0}
-            onKeyUp={(e) => e.key === 'Enter' && setCodePanelVisible(true)}
+      {/* Main split — matches QuantDinger .ide-main */}
+      <div style={{ display: 'flex', flex: '1 1 auto', gap: 0, overflow: 'hidden' }}>
+        {/* Code rail (collapsed) — matches QuantDinger .ide-code-rail */}
+        {!codeDrawerVisible && (
+          <div onClick={() => setCodeDrawerVisible(true)} role="button" tabIndex={0}
+            onKeyUp={(e) => e.key === 'Enter' && setCodeDrawerVisible(true)}
             style={{
-              width: 40, minWidth: 40, display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center', gap: 8,
-              cursor: 'pointer', background: '#fafafa', borderRadius: 8,
-              border: '1px solid rgba(0,0,0,0.08)', color: '#595959',
+              width: 32, minWidth: 32, flex: '0 0 32px', display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer',
+              background: 'linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%)',
+              borderRight: '1px solid #e2e8f0', boxShadow: '2px 0 8px rgba(15,23,42,0.04)',
+              padding: '14px 0', transition: 'background 0.2s',
             }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'linear-gradient(180deg, #e8f4ff 0%, #dbeafe 100%)'; e.currentTarget.style.color = '#1890ff'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%)'; e.currentTarget.style.color = ''; }}
           >
             <DoubleRightOutlined style={{ fontSize: 14 }} />
-            <span style={{ fontSize: 10, writingMode: 'vertical-rl' }}>
-              Code
-            </span>
+            <span style={{ fontSize: 10, writingMode: 'vertical-rl', fontWeight: 500 }}>Code</span>
           </div>
         )}
 
-        {/* Left panel (collapsible) — code + AI + template */}
-        {codePanelVisible && (
+        {/* Left panel — matches QuantDinger .ide-left */}
+        {codeDrawerVisible && (
           <div style={{
-            width: 460, minWidth: 460, overflowY: 'auto',
-            borderRight: '1px solid rgba(0,0,0,0.06)',
-            paddingRight: 12, display: 'flex', flexDirection: 'column', gap: 12,
+            width: '30%', minWidth: 280, maxWidth: 400,
+            height: 'calc(100vh - 112px - 52px)', overflowY: 'auto',
+            borderRight: '1px solid #eee', background: '#fcfcfd',
+            position: 'sticky', top: 0, alignSelf: 'flex-start',
+            padding: '12px 12px 0 0', display: 'flex', flexDirection: 'column', gap: 12,
           }}>
-            {/* Hide code drawer handle — matches QuantDinger ide-code-drawer-handle */}
-            <div
-              onClick={() => setCodePanelVisible(false)}
-              role="button"
-              tabIndex={0}
-              onKeyUp={(e) => e.key === 'Enter' && setCodePanelVisible(false)}
+            {/* Hide code handle — matches .ide-code-drawer-handle */}
+            <div onClick={() => setCodeDrawerVisible(false)} role="button" tabIndex={0}
+              onKeyUp={(e) => e.key === 'Enter' && setCodeDrawerVisible(false)}
               style={{
-                cursor: 'pointer', color: '#8c8c8c', fontSize: 12,
+                cursor: 'pointer', color: '#64748b', fontSize: 11, fontWeight: 600,
                 display: 'flex', alignItems: 'center', gap: 4,
+                background: 'linear-gradient(180deg, #f1f5f9 0%, #e8eef5 100%)',
+                borderRadius: 6, padding: '6px 10px', marginBottom: 4,
               }}
             >
-              <DoubleLeftOutlined />
-              <span>{t('strategy.workspace.hideCode', 'Hide Code')}</span>
+              <DoubleLeftOutlined /> {t('strategy.workspace.hideCode', 'Hide Code')}
             </div>
 
             <WorkspaceCodePanel
-              code={code}
-              onCodeChange={setCode}
-              validating={validating}
-              onValidate={handleValidate}
-              validationResult={validationResult}
-              onRunBacktest={handleRunBacktest}
-              backtestSubmitting={backtestSubmitting}
-              canSave={canSave}
-              onSave={handleSave}
-              onCopy={handleCopy}
+              code={code} onCodeChange={setCode} validating={validating} onValidate={handleValidate}
+              validationResult={validationResult} onRunBacktest={handleRunBacktest}
+              backtestSubmitting={backtestSubmitting} canSave={canSave} onSave={handleSave} onCopy={handleCopy}
             />
 
-            <Collapse ghost size="small" items={[
-              {
-                key: 'ai',
-                label: <span><RobotOutlined /> {t('strategy.workspace.aiAssist', 'AI Assistant')}</span>,
-                children: <AICodeReviseChat code={code} onApply={setCode} />,
-              },
-              {
-                key: 'template',
-                label: t('strategy.workspace.template.title', 'Template'),
-                children: (
-                  <WorkspaceTemplateManager
-                    templates={templates}
-                    loading={templatesLoading}
-                    loadedTemplate={loadedTemplate}
-                    onLoad={handleLoadTemplate}
-                    onSaveAs={handleSaveAs}
-                  />
-                ),
-              },
+            <Collapse ghost size="small" style={{ background: 'transparent' }} items={[
+              { key: 'ai', label: <span><RobotOutlined style={{ marginRight: 6 }} />{t('strategy.workspace.aiAssist', 'AI Assistant')}</span>, children: <AICodeReviseChat code={code} onApply={setCode} /> },
+              { key: 'template', label: t('strategy.workspace.template.title', 'Template'), children: <WorkspaceTemplateManager templates={templates} loading={templatesLoading} loadedTemplate={loadedTemplate} onLoad={handleLoadTemplate} onSaveAs={handleSaveAs} /> },
             ]} />
           </div>
         )}
 
-        {/* Right panel — workspace tabs */}
-        <div style={{ flex: 1, overflowY: 'auto' }}>
+        {/* Right panel — matches QuantDinger .ide-right.ide-right--workspace */}
+        <div style={{ flex: '1 1 0', height: 'calc(100vh - 112px - 52px)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <Tabs
-            activeKey={activeRightTab}
-            onChange={setActiveRightTab}
-            type="card"
-            size="small"
+            activeKey={activeRightTab} onChange={setActiveRightTab} type="card" size="small"
+            style={{
+              marginBottom: 0,
+              // Pill-style tabs
+              '.ant-tabs-nav': {
+                background: 'linear-gradient(180deg, #fafbfc 0%, #f4f6f9 100%)',
+                borderBottom: '1px solid #e8e8e8', marginBottom: 0, padding: '6px 12px 0',
+              },
+            } as any}
+            className="ide-workspace-tabs"
+            tabBarStyle={{ background: 'linear-gradient(180deg, #fafbfc 0%, #f4f6f9 100%)', borderBottom: '1px solid #e8e8e8', padding: '6px 12px 0', marginBottom: 0 }}
             items={[
               {
-                key: 'chart',
-                label: t('strategy.workspace.chart', 'Chart'),
+                key: 'chart', label: t('strategy.workspace.chart', 'Chart & Trade'),
                 children: (
-                  <WorkspaceChartTab
-                    accounts={activeAccounts}
-                    accountId={accountId}
-                    onAccountChange={handleAccountChange}
-                    symbol={symbol}
-                    onSymbolChange={setSymbol}
-                    timeframe={timeframe}
-                    onTimeframeChange={setTimeframe}
-                    codePanelVisible={codePanelVisible}
-                    onToggleCodePanel={() => setCodePanelVisible(!codePanelVisible)}
-                  />
+                  <div style={{ flex: 1, overflow: 'auto', padding: 12, background: '#fff', borderRadius: '0 0 10px 10px', border: '1px solid #e8e8e8', borderTop: 'none', marginTop: -1 }}>
+                    <WorkspaceChartTab
+                      accounts={activeAccounts} accountId={accountId} onAccountChange={handleAccountChange}
+                      symbol={symbol} onSymbolChange={setSymbol} timeframe={timeframe}
+                      onTimeframeChange={setTimeframe} codePanelVisible={codeDrawerVisible}
+                      onToggleCodePanel={() => setCodeDrawerVisible(!codeDrawerVisible)}
+                    />
+                  </div>
                 ),
               },
               {
-                key: 'backtest',
-                label: t('strategy.workspace.backtest', 'Backtest'),
+                key: 'backtest', label: t('strategy.workspace.backtest', 'Backtest & Results'),
                 children: (
-                  <WorkspaceBacktestPanel
-                    status={backtestStatus}
-                    metrics={backtestMetrics}
-                    errorMessage={backtestError}
-                  />
+                  <div style={{ flex: 1, overflow: 'auto', background: '#fff', borderRadius: '0 0 10px 10px', border: '1px solid #e8e8e8', borderTop: 'none', marginTop: -1, padding: 16 }}>
+                    <WorkspaceBacktestPanel status={backtestStatus} metrics={backtestMetrics} errorMessage={backtestError} />
+                  </div>
                 ),
               },
               {
-                key: 'ai',
-                label: t('strategy.workspace.ai', 'AI'),
-                children: <CodeExplainPanel code={code} />,
+                key: 'ai', label: t('strategy.workspace.ai', 'AI'),
+                children: (
+                  <div style={{ flex: 1, overflow: 'auto', background: '#fff', borderRadius: '0 0 10px 10px', border: '1px solid #e8e8e8', borderTop: 'none', marginTop: -1, padding: 16 }}>
+                    <CodeExplainPanel code={code} />
+                  </div>
+                ),
               },
             ]}
           />
         </div>
       </div>
 
-      {/* Save modal */}
       <Suspense fallback={null}>
-        <SaveTemplateModal
-          open={saveModalOpen}
-          confirmLoading={saveLoading}
-          form={saveForm}
-          onCancel={() => setSaveModalOpen(false)}
-          onOk={handleSaveModalOk}
-        />
+        <SaveTemplateModal open={saveModalOpen} confirmLoading={saveLoading} form={saveForm}
+          onCancel={() => setSaveModalOpen(false)} onOk={handleSaveModalOk} />
       </Suspense>
+
+      {/* Pill-style tab CSS injection */}
+      <style>{`
+        .ide-workspace-tabs .ant-tabs-nav { background: linear-gradient(180deg, #fafbfc 0%, #f4f6f9 100%) !important; border-bottom: 1px solid #e8e8e8 !important; margin-bottom: 0 !important; padding: 6px 12px 0 !important; }
+        .ide-workspace-tabs .ant-tabs-tab { font-size: 12px !important; font-weight: 600 !important; padding: 7px 18px !important; border-radius: 10px 10px 0 0 !important; border: 1px solid #e2e8f0 !important; border-bottom: none !important; background: #fff !important; color: #64748b !important; }
+        .ide-workspace-tabs .ant-tabs-tab-active { color: #1890ff !important; background: linear-gradient(180deg, #ffffff 0%, #f0f7ff 100%) !important; border-color: #bae0ff !important; box-shadow: 0 -2px 10px rgba(24,144,255,0.12) !important; }
+        .ide-workspace-tabs .ant-tabs-nav-list { gap: 2px !important; }
+      `}</style>
     </div>
   );
 }

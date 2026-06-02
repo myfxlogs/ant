@@ -197,3 +197,8 @@ func (r *MarketDataRepository) GetLatestTick(ctx context.Context, canonical, bro
 func (b *KlineBar) OpenTime() time.Time {
 	return time.UnixMilli(int64(b.OpenTsUnixMs))
 }
+
+// CloseTime converts the close unix millisecond timestamp to time.Time.
+func (b *KlineBar) CloseTime() time.Time {
+	return time.UnixMilli(int64(b.CloseTsUnixMs))
+}

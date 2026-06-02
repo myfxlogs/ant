@@ -1,329 +1,172 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { Radio, Spin, Tooltip } from 'antd';
-import { InfoCircleOutlined } from '@ant-design/icons';
+import { Radio, Spin, Tooltip, Button, Space } from 'antd';
+import { InfoCircleOutlined, BarChartOutlined, LineChartOutlined, AreaChartOutlined, StockOutlined } from '@ant-design/icons';
 import { init, dispose, type KLineData } from 'klinecharts';
 import type { Chart } from 'klinecharts';
-import { marketApi, type KlineData as ApiKlineData } from '@/client/market';
-import { subscribeEvents } from '@/client/stream';
-import type { BarUpdateEvent } from '@/gen/ant/v1/stream_pb';
+import DARK_THEME from './chartTheme';
+import DrawingToolbar from './DrawingToolbar';
+import IndicatorPicker from './IndicatorPicker';
+import ActiveIndicatorsBar from './ActiveIndicatorsBar';
+import { useChartData } from './useChartData';
+import './BidAskIndicator';
 
 const TIMEFRAMES = [
-  { label: '1m', value: '1m' },
-  { label: '5m', value: '5m' },
-  { label: '15m', value: '15m' },
-  { label: '30m', value: '30m' },
-  { label: '1h', value: '1h' },
-  { label: '4h', value: '4h' },
-  { label: '1d', value: '1d' },
-  { label: '1w', value: '1w' },
+  { label: '1m', value: '1m' }, { label: '5m', value: '5m' },
+  { label: '15m', value: '15m' }, { label: '30m', value: '30m' },
+  { label: '1h', value: '1h' }, { label: '4h', value: '4h' },
+  { label: '1d', value: '1d' }, { label: '1w', value: '1w' },
 ];
 
-const INITIAL_BARS = 300;
+type ChartType = 'candle_solid' | 'ohlc' | 'area' | 'line';
 
-interface PriceChartProps {
+const CHART_TYPES: { key: ChartType; icon: React.ReactNode; label: string }[] = [
+  { key: 'candle_solid', icon: <StockOutlined />, label: 'Candle' },
+  { key: 'ohlc', icon: <BarChartOutlined />, label: 'OHLC' },
+  { key: 'area', icon: <AreaChartOutlined />, label: 'Area' },
+  { key: 'line', icon: <LineChartOutlined />, label: 'Line' },
+];
+
+function toKLineData(bar: { time: number; open: number; high: number; low: number; close: number; volume: number }): KLineData {
+  return { timestamp: bar.time * 1000, open: bar.open, high: bar.high, low: bar.low, close: bar.close, volume: bar.volume };
+}
+
+interface Props {
   symbol: string;
   timeframe?: string;
   onTimeframeChange?: (tf: string) => void;
   height?: number;
   accountId?: string;
+  onChartReady?: (chart: Chart | null) => void;
 }
 
-function toKLineData(bar: ApiKlineData): KLineData {
-  return {
-    timestamp: bar.time * 1000, // seconds → milliseconds
-    open: bar.open,
-    high: bar.high,
-    low: bar.low,
-    close: bar.close,
-    volume: bar.volume,
-  };
-}
-
-export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange, height = 500, accountId }: PriceChartProps) {
+export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange, height = 500, accountId, onChartReady }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<Chart | null>(null);
-  const [bars, setBars] = useState<ApiKlineData[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [tooNarrow, setTooNarrow] = useState(false);
-  const loadingMore = useRef(false);
-  const loadedAll = useRef(false);
-  const unsubRef = useRef<(() => void) | null>(null);
+  const [chartType, setChartType] = useState<ChartType>('candle_solid');
 
-  // responsive — hide chart below 1280px viewport width
+  const { bars, loading, error, loadingMore, loadedAll, loadMore } = useChartData(symbol, timeframe, accountId);
+
+  // Responsive
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 1279px)');
+    const mq = window.matchMedia('(max-width: 767px)');
     setTooNarrow(mq.matches);
     const handler = (e: MediaQueryListEvent) => setTooNarrow(e.matches);
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  // Fetch initial historical bars + subscribe to real-time bar SSE
-  useEffect(() => {
-    if (!symbol || !accountId) return;
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    loadedAll.current = false;
-    loadingMore.current = false;
-
-    // Unsubscribe previous SSE bar listener
-    if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
-
-    // Subscribe gateway to this symbol's ticks and wait for backfill.
-    // Must await before getKlines — otherwise ClickHouse won't have the data yet.
-    marketApi.subscribeBars({ accountId, symbol }).then(() => {
-      if (cancelled) return;
-      // Fetch initial historical bars AFTER backfill completes.
-      const canonical = marketApi.resolveSymbol(symbol);
-      marketApi.getKlines({ symbol: canonical, timeframe, count: INITIAL_BARS, accountId })
-        .then((data) => {
-          if (cancelled) return;
-          setBars(data);
-          setLoading(false);
-        })
-        .catch((err) => {
-          if (cancelled) return;
-          setError(err.message || 'Failed to load chart data');
-          setLoading(false);
-        });
-    });
-
-    // Subscribe to real-time bar updates via SSE
-    unsubRef.current = subscribeEvents([], {
-      onBar: (ev: BarUpdateEvent) => {
-        if (cancelled) return;
-        if (ev.accountId !== accountId || ev.symbol !== symbol || ev.period !== timeframe) return;
-
-        const bar: ApiKlineData = {
-          time: ev.openTime ? Number(ev.openTime.seconds ?? 0n) : 0,
-          open: Number(ev.open ?? '0'),
-          high: Number(ev.high ?? '0'),
-          low: Number(ev.low ?? '0'),
-          close: Number(ev.close ?? '0'),
-          volume: Number(ev.volume ?? 0),
-        };
-        if (bar.time === 0) return;
-
-        setBars((prev) => {
-          const index = new Map<number, ApiKlineData>();
-          for (const b of prev) index.set(b.time, b);
-          if (ev.closed) {
-            // Closed bar — replace or add
-            index.set(bar.time, bar);
-          } else {
-            // In-progress candle — update if exists, otherwise add
-            const existing = index.get(bar.time);
-            if (existing) {
-              index.set(bar.time, { ...existing, high: Math.max(existing.high, bar.high), low: Math.min(existing.low, bar.low), close: bar.close, volume: bar.volume });
-            } else {
-              index.set(bar.time, bar);
-            }
-          }
-          return [...index.values()].sort((a, b) => a.time - b.time);
-        });
-      },
-    });
-
-    return () => {
-      cancelled = true;
-      if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
-    };
-  }, [symbol, timeframe, accountId]);
-
-  // Create chart on mount
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    // Ensure container has explicit dimensions before init
-    const el = containerRef.current;
-    el.style.width = '100%';
-    el.style.height = `${height}px`;
-
-    const chart = init(el, {
-      styles: {
-        backgroundColor: '#131722',
-        grid: {
-          show: true,
-          horizontal: { show: true, color: 'rgba(255,255,255,0.06)', style: 'dashed' as const, size: 1, dashedValue: [] },
-          vertical: { show: true, color: 'rgba(255,255,255,0.06)', style: 'dashed' as const, size: 1, dashedValue: [] },
-        },
-        candle: {
-          bar: {
-            upColor: '#26a69a',
-            downColor: '#ef5350',
-            noChangeColor: '#888888',
-            upBorderColor: '#26a69a',
-            downBorderColor: '#ef5350',
-            noChangeBorderColor: '#888888',
-            upWickColor: '#26a69a',
-            downWickColor: '#ef5350',
-            noChangeWickColor: '#888888',
-          },
-        },
-        xAxis: {
-          axisLine: { show: true, color: 'rgba(255,255,255,0.1)' },
-          tickText: { color: '#d1d5db' },
-        },
-        yAxis: {
-          axisLine: { show: true, color: 'rgba(255,255,255,0.1)' },
-          tickText: { color: '#d1d5db' },
-        },
-        crosshair: {
-          show: true,
-          horizontal: { show: true, line: { show: true, color: 'rgba(255,255,255,0.3)', style: 'dashed' as const, size: 1, dashedValue: [] } },
-          vertical: { show: true, line: { show: true, color: 'rgba(255,255,255,0.3)', style: 'dashed' as const, size: 1, dashedValue: [] } },
-        },
-      },
-    });
-
-    if (!chart) {
-      console.error('klinecharts init returned null');
-      return;
-    }
-    chartRef.current = chart;
-
-    return () => {
-      dispose(el);
-      chartRef.current = null;
-    };
-  }, []);
-
-  // Update chart data when bars change
+  // applyNewData when bars change.
   useEffect(() => {
     if (!chartRef.current) return;
     chartRef.current.applyNewData(bars.map(toKLineData));
   }, [bars]);
 
-  // Load more bars when user scrolls left
-  const handleLoadMore = useCallback((timestamp: number | null) => {
-    if (!timestamp || bars.length === 0) return;
-    if (loadingMore.current || loadedAll.current) return;
-    // klinecharts passes the timestamp of the leftmost visible bar
-    const firstBarTime = bars[0].time;
-    if (timestamp >= firstBarTime) return;
-    loadingMore.current = true;
-    marketApi.getKlines({ symbol: marketApi.resolveSymbol(symbol), timeframe, count: INITIAL_BARS, before: firstBarTime, accountId })
-      .then((older) => {
-        if (older.length === 0) { loadedAll.current = true; return; }
-        setBars((prev) => [...older, ...prev]);
-      })
-      .catch(() => { /* silent */ })
-      .finally(() => { loadingMore.current = false; });
-  }, [bars, symbol, timeframe]);
+  // Create chart on mount.
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const el = containerRef.current;
+    el.style.width = '100%';
+    el.style.height = `${height}px`;
 
-  // Wire load-more listener
+    const chart = init(el, { styles: DARK_THEME });
+    if (!chart) { console.error('klinecharts init returned null'); return; }
+    chartRef.current = chart;
+
+    try {
+      chart.createIndicator('VOL', false, {
+        id: 'volume_pane',
+        styles: { bars: { upColor: 'rgba(38,166,154,0.6)', downColor: 'rgba(239,83,80,0.6)' }, lines: [] },
+      });
+    } catch { /* ignore */ }
+
+    try { chart.createIndicator('BIDASK', true, { id: 'candle_pane' }); } catch (e) { console.error('BIDASK createIndicator failed', e); }
+
+    onChartReady?.(chart);
+    return () => { onChartReady?.(null); dispose(el); chartRef.current = null; };
+  }, []);
+
+  // Chart type.
   useEffect(() => {
     const chart = chartRef.current;
     if (!chart) return;
-    // klinecharts fires onVisibleRangeChange — but v9 doesn't expose this directly.
-    // Instead, listen for mouse/touch interactions and check visible range.
-    // For simplicity, use a MutationObserver-free approach: check on wheel/pointer.
-    const container = containerRef.current;
-    if (!container) return;
+    try { (chart as any).setCandleStickChartType?.(chartType); } catch { /* ignore */ }
+  }, [chartType]);
 
+  const applyChartType = useCallback((type: ChartType) => {
+    setChartType(type);
+    const chart = chartRef.current;
+    if (!chart) return;
+    try { (chart as any).setCandleStickChartType?.(type); } catch {
+      chart.setStyleOptions({ candle: { ...DARK_THEME.candle, type: type === 'ohlc' ? 'ohlc' as const : 'candle_solid' as const } });
+    }
+  }, []);
+
+  // Load more on scroll-left.
+  const handleLoadMore = useCallback((timestamp: number | null) => {
+    if (!timestamp || bars.length === 0 || loadingMore.current || loadedAll.current) return;
+    if (timestamp >= bars[0].time) return;
+    loadingMore.current = true;
+    loadMore(bars[0].time).finally(() => { loadingMore.current = false; });
+  }, [bars, loadMore, loadingMore, loadedAll]);
+
+  // Listen for scroll/pan to trigger load-more.
+  useEffect(() => {
+    const chart = chartRef.current;
+    const container = containerRef.current;
+    if (!chart || !container) return;
     let timer: ReturnType<typeof setTimeout> | null = null;
     const onInteraction = () => {
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
-        try {
-          // Access visible data range through chart internals
-          const range = (chart as any).getVisibleRange?.() as { from?: number; to?: number } | null;
-          if (range?.from != null) {
-            handleLoadMore(range.from);
-          }
-        } catch { /* ignore */ }
+        try { const r = (chart as any).getVisibleRange?.() as { from?: number } | null; if (r?.from != null) handleLoadMore(r.from); } catch { /* */ }
       }, 300);
     };
-
     container.addEventListener('wheel', onInteraction, { passive: true });
     container.addEventListener('pointerdown', onInteraction, { passive: true });
-
-    return () => {
-      container.removeEventListener('wheel', onInteraction);
-      container.removeEventListener('pointerdown', onInteraction);
-      if (timer) clearTimeout(timer);
-    };
+    return () => { container.removeEventListener('wheel', onInteraction); container.removeEventListener('pointerdown', onInteraction); if (timer) clearTimeout(timer); };
   }, [handleLoadMore]);
 
-  // Update chart height
+  // Resize.
   useEffect(() => {
-    const chart = chartRef.current;
-    if (chart && containerRef.current) {
-      containerRef.current.style.height = `${height}px`;
-      chart.resize();
-    }
+    if (chartRef.current && containerRef.current) { containerRef.current.style.height = `${height}px`; chartRef.current.resize(); }
   }, [height]);
 
   if (tooNarrow) {
-    return (
-      <div ref={wrapperRef} style={{
-        padding: 24, textAlign: 'center', color: '#6b7280',
-        border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8,
-        background: 'rgba(0,0,0,0.02)',
-      }}>
-        Chart hidden on narrow screens — switch to a wider viewport to see price data.
-      </div>
-    );
+    return <div ref={wrapperRef} style={{ padding: 24, textAlign: 'center', color: '#6b7280', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, background: 'rgba(0,0,0,0.02)' }}>Chart hidden on narrow screens — switch to a wider viewport to see price data.</div>;
   }
 
   return (
     <div ref={wrapperRef} style={{ position: 'relative' }}>
-      {/* Timeframe switcher */}
-      <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        marginBottom: 8,
-      }}>
-        <Radio.Group
-          value={timeframe}
-          onChange={(e) => onTimeframeChange?.(e.target.value)}
-          size="small"
-          optionType="button"
-          buttonStyle="solid"
-        >
-          {TIMEFRAMES.map((tf) => (
-            <Radio.Button key={tf.value} value={tf.value}>{tf.label}</Radio.Button>
+      {/* Toolbar */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 4 }}>
+        <Space size="small" wrap>
+          <Radio.Group value={timeframe} onChange={e => onTimeframeChange?.(e.target.value)} size="small" optionType="button" buttonStyle="solid">
+            {TIMEFRAMES.map(tf => <Radio.Button key={tf.value} value={tf.value}>{tf.label}</Radio.Button>)}
+          </Radio.Group>
+        </Space>
+        <Space size={4}>
+          {CHART_TYPES.map(ct => (
+            <Tooltip key={ct.key} title={ct.label}>
+              <Button size="small" type={chartType === ct.key ? 'primary' : 'default'} icon={ct.icon} onClick={() => applyChartType(ct.key)} />
+            </Tooltip>
           ))}
-        </Radio.Group>
-        <Tooltip title="OHLC data — real-time bar push via SSE. No Bid/Ask spread.">
-          <span style={{ color: '#6b7280', fontSize: 12, cursor: 'help', userSelect: 'none' }}>
-            <InfoCircleOutlined style={{ marginRight: 4 }} />
-            real-time
-          </span>
-        </Tooltip>
+          <Tooltip title="Mid-price OHLC candles + BIDASK indicator">
+            <span style={{ color: '#6b7280', fontSize: 12, cursor: 'help', userSelect: 'none', marginLeft: 4 }}><InfoCircleOutlined style={{ marginRight: 4 }} />real-time</span>
+          </Tooltip>
+          <IndicatorPicker style={{ marginLeft: 4 }} />
+        </Space>
       </div>
 
-      {/* Chart container */}
-      <div style={{ position: 'relative', minHeight: height }}>
-        {loading && (
-          <div style={{
-            position: 'absolute', inset: 0, display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
-            zIndex: 10, background: 'rgba(0,0,0,0.3)',
-          }}>
-            <Spin />
-          </div>
-        )}
-        {error && !loading && (
-          <div style={{
-            position: 'absolute', inset: 0, display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
-            color: '#ef5350', zIndex: 10,
-          }}>
-            {error}
-          </div>
-        )}
-        {!symbol && !loading && !error && (
-          <div style={{
-            position: 'absolute', inset: 0, display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
-            color: '#6b7280', zIndex: 10,
-          }}>
-            Select a symbol to view chart
-          </div>
-        )}
+      <ActiveIndicatorsBar style={{ marginBottom: 6 }} />
+
+      {/* Chart */}
+      <div style={{ position: 'relative', minHeight: height, background: '#131722', borderRadius: 4, overflow: 'hidden' }}>
+        <DrawingToolbar chart={chartRef.current} />
+        {loading && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10, background: 'rgba(0,0,0,0.3)' }}><Spin /></div>}
+        {error && !loading && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef5350', zIndex: 10 }}>{error}</div>}
+        {!symbol && !loading && !error && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', zIndex: 10 }}>Select a symbol to view chart</div>}
         <div ref={containerRef} style={{ width: '100%', height }} />
       </div>
     </div>

@@ -101,8 +101,12 @@ proto:
 	@PATH="$(CURDIR)/tools/proto-gen/bin:$(CURDIR)/frontend/node_modules/.bin:$(CURDIR)/tools/proto-gen/node_modules/.bin:$$PATH" buf generate
 
 check-lines:
-	@echo "Checking file line limits..."
+	@echo "Checking file line limits (flat 800 + baseline)..."
 	@python3 scripts/check-file-lines.py
+
+check-lines-strict:
+	@echo "Checking file line limits (Go 300 / TS 250, gen+test 50% over)..."
+	@python3 scripts/check-file-lines.py --strict
 
 verify:
 	@echo "Verifying repo (proto + line limits + go test)..."

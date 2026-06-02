@@ -300,6 +300,8 @@ func startMdGatewayPipeline(
 			h, _ := b.High.Float64()
 			l, _ := b.Low.Float64()
 			c, _ := b.Close.Float64()
+			bid, _ := b.Bid.Float64()
+			ask, _ := b.Ask.Float64()
 			mthubSvc.PublishBar(&mthub.BarUpdate{
 				AccountID: b.AccountID,
 				Symbol:    b.Canonical,
@@ -309,8 +311,10 @@ func startMdGatewayPipeline(
 				High:      h,
 				Low:       l,
 				Close:     c,
+				Bid:       bid,
+				Ask:       ask,
 				Volume:    b.Volume,
-				Closed:    true,
+				Closed:    b.IsClosed,
 			})
 		},
 	}); err != nil {

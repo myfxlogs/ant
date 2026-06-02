@@ -145,6 +145,82 @@ func (x *BacktestMetrics) GetAverageLoss() float64 {
 	return 0
 }
 
+type BacktestRisk struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Score         int32                  `protobuf:"varint,1,opt,name=score,proto3" json:"score,omitempty"` // 0–100, higher = lower risk
+	Level         string                 `protobuf:"bytes,2,opt,name=level,proto3" json:"level,omitempty"`  // "low" / "medium" / "high"
+	Reasons       []string               `protobuf:"bytes,3,rep,name=reasons,proto3" json:"reasons,omitempty"`
+	Warnings      []string               `protobuf:"bytes,4,rep,name=warnings,proto3" json:"warnings,omitempty"`
+	IsReliable    bool                   `protobuf:"varint,5,opt,name=is_reliable,json=isReliable,proto3" json:"is_reliable,omitempty"` // true when total_trades >= 10
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BacktestRisk) Reset() {
+	*x = BacktestRisk{}
+	mi := &file_common_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BacktestRisk) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BacktestRisk) ProtoMessage() {}
+
+func (x *BacktestRisk) ProtoReflect() protoreflect.Message {
+	mi := &file_common_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BacktestRisk.ProtoReflect.Descriptor instead.
+func (*BacktestRisk) Descriptor() ([]byte, []int) {
+	return file_common_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *BacktestRisk) GetScore() int32 {
+	if x != nil {
+		return x.Score
+	}
+	return 0
+}
+
+func (x *BacktestRisk) GetLevel() string {
+	if x != nil {
+		return x.Level
+	}
+	return ""
+}
+
+func (x *BacktestRisk) GetReasons() []string {
+	if x != nil {
+		return x.Reasons
+	}
+	return nil
+}
+
+func (x *BacktestRisk) GetWarnings() []string {
+	if x != nil {
+		return x.Warnings
+	}
+	return nil
+}
+
+func (x *BacktestRisk) GetIsReliable() bool {
+	if x != nil {
+		return x.IsReliable
+	}
+	return false
+}
+
 var File_common_proto protoreflect.FileDescriptor
 
 const file_common_proto_rawDesc = "" +
@@ -162,7 +238,14 @@ const file_common_proto_rawDesc = "" +
 	"\rlosing_trades\x18\t \x01(\x05R\flosingTrades\x12%\n" +
 	"\x0eaverage_profit\x18\n" +
 	" \x01(\x01R\raverageProfit\x12!\n" +
-	"\faverage_loss\x18\v \x01(\x01R\vaverageLossB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\faverage_loss\x18\v \x01(\x01R\vaverageLoss\"\x91\x01\n" +
+	"\fBacktestRisk\x12\x14\n" +
+	"\x05score\x18\x01 \x01(\x05R\x05score\x12\x14\n" +
+	"\x05level\x18\x02 \x01(\tR\x05level\x12\x18\n" +
+	"\areasons\x18\x03 \x03(\tR\areasons\x12\x1a\n" +
+	"\bwarnings\x18\x04 \x03(\tR\bwarnings\x12\x1f\n" +
+	"\vis_reliable\x18\x05 \x01(\bR\n" +
+	"isReliableB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_common_proto_rawDescOnce sync.Once
@@ -176,9 +259,10 @@ func file_common_proto_rawDescGZIP() []byte {
 	return file_common_proto_rawDescData
 }
 
-var file_common_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_common_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_common_proto_goTypes = []any{
 	(*BacktestMetrics)(nil), // 0: ant.v1.BacktestMetrics
+	(*BacktestRisk)(nil),    // 1: ant.v1.BacktestRisk
 }
 var file_common_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -199,7 +283,7 @@ func file_common_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_common_proto_rawDesc), len(file_common_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

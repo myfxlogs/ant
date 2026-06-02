@@ -327,6 +327,8 @@ type BarUpdateEvent struct {
 	Close         string                 `protobuf:"bytes,8,opt,name=close,proto3" json:"close,omitempty"`
 	Volume        float64                `protobuf:"fixed64,9,opt,name=volume,proto3" json:"volume,omitempty"`
 	Closed        bool                   `protobuf:"varint,10,opt,name=closed,proto3" json:"closed,omitempty"` // true=finalized bar, false=in-progress candle
+	Bid           string                 `protobuf:"bytes,11,opt,name=bid,proto3" json:"bid,omitempty"`        // latest bid price for real-time quote
+	Ask           string                 `protobuf:"bytes,12,opt,name=ask,proto3" json:"ask,omitempty"`        // latest ask price for real-time quote
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -429,6 +431,20 @@ func (x *BarUpdateEvent) GetClosed() bool {
 		return x.Closed
 	}
 	return false
+}
+
+func (x *BarUpdateEvent) GetBid() string {
+	if x != nil {
+		return x.Bid
+	}
+	return ""
+}
+
+func (x *BarUpdateEvent) GetAsk() string {
+	if x != nil {
+		return x.Ask
+	}
+	return ""
 }
 
 type SubscribeEventsRequest struct {
@@ -651,7 +667,7 @@ const file_stream_proto_rawDesc = "" +
 	"\x11position_snapshot\x18\x11 \x01(\v2\x1d.ant.v1.PositionSnapshotEventH\x00R\x10positionSnapshot\x127\n" +
 	"\n" +
 	"bar_update\x18\x12 \x01(\v2\x16.ant.v1.BarUpdateEventH\x00R\tbarUpdateB\t\n" +
-	"\apayload\"\x98\x02\n" +
+	"\apayload\"\xbc\x02\n" +
 	"\x0eBarUpdateEvent\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x16\n" +
@@ -664,7 +680,9 @@ const file_stream_proto_rawDesc = "" +
 	"\x05close\x18\b \x01(\tR\x05close\x12\x16\n" +
 	"\x06volume\x18\t \x01(\x01R\x06volume\x12\x16\n" +
 	"\x06closed\x18\n" +
-	" \x01(\bR\x06closed\"9\n" +
+	" \x01(\bR\x06closed\x12\x10\n" +
+	"\x03bid\x18\v \x01(\tR\x03bid\x12\x10\n" +
+	"\x03ask\x18\f \x01(\tR\x03ask\"9\n" +
 	"\x16SubscribeEventsRequest\x12\x1f\n" +
 	"\vaccount_ids\x18\x01 \x03(\tR\n" +
 	"accountIds\"\x82\x01\n" +

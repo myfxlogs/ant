@@ -66,7 +66,19 @@ func (p *Publisher) PublishBar(ctx context.Context, b *mdtick.Bar) error {
 	if p.js == nil { return nil }
 	subj := fmt.Sprintf("md.bar.%s.%s.%s", p.subjectKey(b.Broker), b.Canonical, b.Period)
 	msg := natsgo.NewMsg(subj)
-	msg.Data = []byte(b.Close.String())
+	// Publish full OHLCV as JSON for downstream consumers.
+	payload, _ := json.Marshal(map[string]interface{}{
+		"open":  b.Open.String(),
+		"high":  b.High.String(),
+		"low":   b.Low.String(),
+		"close": b.Close.String(),
+		"volume": b.Volume,
+		"tick_count": b.TickCount,
+		"open_ts": b.OpenTsUnixMs,
+		"close_ts": b.CloseTsUnixMs,
+		"period": b.Period,
+	})
+	msg.Data = payload
 	msg.Header.Set("X-Ant-Replay", boolToStr(b.IsReplay))
 	msg.Header.Set("Nats-Msg-Id", fmt.Sprintf("%s:%s:%s:%d", p.subjectKey(b.Broker), b.Canonical, b.Period, b.CloseTsUnixMs))
 	interceptor.InjectNATSTraceHeaders(ctx, msg.Header)
@@ -83,7 +95,19 @@ func (p *Publisher) PublishBarRevision(ctx context.Context, b *mdtick.Bar) error
 	if p.js == nil { return nil }
 	subj := fmt.Sprintf("md.bar.revision.%s.%s.%s", p.subjectKey(b.Broker), b.Canonical, b.Period)
 	msg := natsgo.NewMsg(subj)
-	msg.Data = []byte(b.Close.String())
+	// Publish full OHLCV as JSON for downstream consumers.
+	payload, _ := json.Marshal(map[string]interface{}{
+		"open":  b.Open.String(),
+		"high":  b.High.String(),
+		"low":   b.Low.String(),
+		"close": b.Close.String(),
+		"volume": b.Volume,
+		"tick_count": b.TickCount,
+		"open_ts": b.OpenTsUnixMs,
+		"close_ts": b.CloseTsUnixMs,
+		"period": b.Period,
+	})
+	msg.Data = payload
 	msg.Header.Set("X-Ant-Bar-Version", "2")
 	msg.Header.Set("Nats-Msg-Id", fmt.Sprintf("rev:%s:%s:%s:%d", p.subjectKey(b.Broker), b.Canonical, b.Period, b.CloseTsUnixMs))
 	interceptor.InjectNATSTraceHeaders(ctx, msg.Header)

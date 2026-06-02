@@ -2,9 +2,11 @@ package system
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 
 	"anttrader/internal/repository"
 )
@@ -76,43 +78,57 @@ func (s *MtHubServer) backfillKlines(accountID, rawSymbol string) {
 		zap.Int("total", len(allBars)), zap.Int("periods", gotCount))
 }
 
-// fetchAllPeriods calls broker PriceHistory for each timeframe and returns
-// ClickHouse-ready bars. Each period gets a lookback of ~300 bars.
+// fetchAllPeriods calls broker PriceHistory for each timeframe in parallel
+// and returns ClickHouse-ready bars. Each period gets a lookback of ~300 bars.
 func (s *MtHubServer) fetchAllPeriods(
 	ctx context.Context, accountID, symbol, broker string,
 ) ([]repository.KlineBar, int) {
 	now := time.Now().Unix()
 	periods := []string{"1m", "5m", "15m", "30m", "1h", "4h", "1d", "1w"}
-	var all []repository.KlineBar
-	got := 0
+
+	var (
+		mu   sync.Mutex
+		all  []repository.KlineBar
+		got  int
+		eg   errgroup.Group
+	)
 
 	for _, period := range periods {
-		from := now - 300*periodSeconds(period)
-		bars, err := s.svc.PriceHistory(ctx, accountID, symbol, period, from, now, 500)
-		if err != nil {
-			s.log.Warn("backfill: period failed",
-				zap.String("period", period), zap.String("symbol", symbol), zap.Error(err))
-			continue
-		}
-		if len(bars) == 0 {
-			continue
-		}
-		for _, b := range bars {
-			all = append(all, repository.KlineBar{
-				Broker:        broker,
-				Canonical:     symbol,
-				Period:        period,
-				OpenTsUnixMs:  uint64(b.Time.UnixMilli()),
-				CloseTsUnixMs: uint64(b.Time.UnixMilli()),
-				Open:          b.Open,
-				High:          b.High,
-				Low:           b.Low,
-				Close:         b.Close,
-				Volume:        b.Volume,
-			})
-		}
-		got++
+		p := period // capture for closure
+		eg.Go(func() error {
+			from := now - 300*periodSeconds(p)
+			bars, err := s.svc.PriceHistory(ctx, accountID, symbol, p, from, now, 500)
+			if err != nil {
+				s.log.Warn("backfill: period failed",
+					zap.String("period", p), zap.String("symbol", symbol), zap.Error(err))
+				return nil // one period failing shouldn't block others
+			}
+			if len(bars) == 0 {
+				return nil
+			}
+			mu.Lock()
+			closeMs := uint64(periodSeconds(p) * 1000)
+			for _, b := range bars {
+				all = append(all, repository.KlineBar{
+					Broker:        broker,
+					Canonical:     symbol,
+					Period:        p,
+					OpenTsUnixMs:  uint64(b.Time.UnixMilli()),
+					CloseTsUnixMs: uint64(b.Time.UnixMilli()) + closeMs,
+					Open:          b.Open,
+					High:          b.High,
+					Low:           b.Low,
+					Close:         b.Close,
+					Volume:        b.Volume,
+				})
+			}
+			got++
+			mu.Unlock()
+			return nil
+		})
 	}
+
+	_ = eg.Wait() // errors are logged individually; always return what we have
 	return all, got
 }
 
@@ -133,11 +149,12 @@ func (s *MtHubServer) brokerFallback(
 		zap.Int("bars", len(bars)))
 	out := make([]repository.KlineBar, 0, len(bars))
 	for _, b := range bars {
+		closeMs := uint64(b.Time.UnixMilli()) + uint64(periodSeconds(period)*1000)
 		out = append(out, repository.KlineBar{
 			Canonical:     symbol,
 			Period:        period,
 			OpenTsUnixMs:  uint64(b.Time.UnixMilli()),
-			CloseTsUnixMs: uint64(b.Time.UnixMilli()),
+			CloseTsUnixMs: closeMs,
 			Open:          b.Open,
 			High:          b.High,
 			Low:           b.Low,

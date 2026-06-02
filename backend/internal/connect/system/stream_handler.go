@@ -17,6 +17,21 @@ import (
 	"anttrader/internal/service"
 )
 
+// formatPrice formats a float64 price with dynamic decimal precision:
+// - Price > 100:  3 digits (JPY pairs, e.g. 149.250)
+// - Price > 1:    5 digits (standard forex, e.g. 1.12345)
+// - Price <= 1:   6 digits (crypto or fractional assets)
+func formatPrice(p float64) string {
+	switch {
+	case p > 100:
+		return fmt.Sprintf("%.3f", p)
+	case p > 1:
+		return fmt.Sprintf("%.5f", p)
+	default:
+		return fmt.Sprintf("%.6f", p)
+	}
+}
+
 // StreamServer implements the ant.v1.StreamServiceHandler interface.
 type StreamServer struct {
 	svc      *mthub.MtHubService
@@ -30,7 +45,7 @@ func NewStreamServer(svc *mthub.MtHubService, platform *service.PlatformService,
 	return &StreamServer{svc: svc, platform: platform, log: log}
 }
 
-// SubscribeEvents streams aggregated events (order updates, profit, status) for given accounts.
+// SubscribeEvents streams aggregated events (order updates, profit, status, bars) for given accounts.
 func (s *StreamServer) SubscribeEvents(
 	ctx context.Context,
 	req *connect.Request[antv1.SubscribeEventsRequest],
@@ -48,7 +63,6 @@ func (s *StreamServer) SubscribeEvents(
 	}
 
 	var eventID atomic.Int64
-
 	sendEvent := func(ev *antv1.StreamEvent) error {
 		id := eventID.Add(1)
 		if err := stream.Send(ev); err != nil {
@@ -67,11 +81,7 @@ func (s *StreamServer) SubscribeEvents(
 	}
 	filterAll := len(accountSet) == 0
 
-	type profitSub struct {
-		accountID string
-		ch        <-chan *mthub.AccountProfitEvent
-		cancel    func()
-	}
+	// Profit subscriptions.
 	var profitSubs []profitSub
 	defer func() {
 		for _, ps := range profitSubs {
@@ -109,11 +119,7 @@ func (s *StreamServer) SubscribeEvents(
 		s.sendInitialPositionSnapshots(ctx, stream, connectedIDs)
 	}
 
-	type snapSub struct {
-		accountID string
-		ch        <-chan *mthub.PositionSnapshot
-		cancel    func()
-	}
+	// Position snapshot subscriptions.
 	var snapSubs []snapSub
 	defer func() {
 		for _, ss := range snapSubs {
@@ -128,45 +134,75 @@ func (s *StreamServer) SubscribeEvents(
 		snapSubs = append(snapSubs, snapSub{accountID: aid, ch: ch, cancel: cancel})
 	}
 
-	// H2: Create a cancellable context for forwarder goroutines so they
-	// are unblocked when the main loop exits (e.g., on stream.Send error).
+	// Cancellable context so forwarder goroutines unblock on exit.
 	loopCtx, loopCancel := context.WithCancel(ctx)
 	defer loopCancel()
 
-	profitCh := make(chan *mthub.AccountProfitEvent, 64)
-	for _, ps := range profitSubs {
-		go func(ch <-chan *mthub.AccountProfitEvent) {
-			for ev := range ch {
-				select {
-				case profitCh <- ev:
-				case <-loopCtx.Done():
-					return
-				}
-			}
-		}(ps.ch)
-	}
-
-	snapCh := make(chan *mthub.PositionSnapshot, 64)
-	for _, ss := range snapSubs {
-		go func(ch <-chan *mthub.PositionSnapshot) {
-			for ev := range ch {
-				select {
-				case snapCh <- ev:
-				case <-loopCtx.Done():
-					return
-				}
-			}
-		}(ss.ch)
-	}
+	profitCh := s.forwardProfitEvents(loopCtx, profitSubs)
+	snapCh := s.forwardSnapEvents(loopCtx, snapSubs)
 
 	snapKnownTickets := make(map[string]map[int64]bool)
 	snapCount := make(map[string]int)
-	// recentlyClosed tracks tickets seen as "close" events from orderCh
-	// so the snapshot diff does not emit duplicate close events.
 	recentlyClosed := make(map[string]map[int64]bool)
 
-	// --- bar subscriptions ---
-	type barSub struct{ ch <-chan *mthub.BarUpdate; cancel func() }
+	barCh, barCancel := s.forwardBarEvents(loopCtx, accountIDs, filterAll, accountSet)
+	defer barCancel()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+
+		case b, ok := <-barCh:
+			if !ok {
+				continue
+			}
+			if err := s.handleBarEvent(b, filterAll, accountSet, sendEvent); err != nil {
+				return err
+			}
+
+		case ev, ok := <-orderCh:
+			if !ok {
+				return nil
+			}
+			if err := s.handleOrderEvent(ev, filterAll, accountSet, recentlyClosed, sendEvent); err != nil {
+				return err
+			}
+
+		case pev, ok := <-profitCh:
+			if !ok {
+				profitCh = nil
+				continue
+			}
+			if err := s.handleProfitEvent(pev, sendEvent); err != nil {
+				return err
+			}
+
+		case snap, ok := <-snapCh:
+			if !ok {
+				snapCh = nil
+				continue
+			}
+			if err := s.handleSnapEvent(snap, filterAll, accountSet,
+				snapKnownTickets, snapCount, recentlyClosed, sendEvent); err != nil {
+				return err
+			}
+		}
+	}
+}
+
+// --- Bar subscription and event handling ---
+
+func (s *StreamServer) forwardBarEvents(
+	loopCtx context.Context,
+	accountIDs []string,
+	filterAll bool,
+	accountSet map[string]bool,
+) (chan *mthub.BarUpdate, func()) {
+	type barSub struct {
+		ch     <-chan *mthub.BarUpdate
+		cancel func()
+	}
 	barSubs := make([]barSub, 0, len(accountIDs))
 	for _, aid := range accountIDs {
 		if !filterAll && !accountSet[aid] {
@@ -187,190 +223,46 @@ func (s *StreamServer) SubscribeEvents(
 			}
 		}(bs.ch)
 	}
-
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		case b, ok := <-barCh:
-			if !ok {
-				continue
-			}
-			if !filterAll && !accountSet[b.AccountID] {
-				continue
-			}
-			t := time.UnixMilli(b.OpenTime)
-			if err := sendEvent(&antv1.StreamEvent{
-				Type:      "bar_update",
-				AccountId: b.AccountID,
-				Timestamp: timestamppb.New(t),
-				Payload: &antv1.StreamEvent_BarUpdate{
-					BarUpdate: &antv1.BarUpdateEvent{
-						AccountId: b.AccountID,
-						Symbol:    b.Symbol,
-						Period:    b.Period,
-						OpenTime:  timestamppb.New(t),
-						Open:      fmt.Sprintf("%.5f", b.Open),
-						High:      fmt.Sprintf("%.5f", b.High),
-						Low:       fmt.Sprintf("%.5f", b.Low),
-						Close:     fmt.Sprintf("%.5f", b.Close),
-						Volume:    b.Volume,
-						Closed:    b.Closed,
-					},
-				},
-			}); err != nil {
-				return connect.NewError(connect.CodeInternal, fmt.Errorf("send bar_update event: %w", err))
-			}
-		case ev, ok := <-orderCh:
-			if !ok {
-				return nil
-			}
-			if !filterAll && !accountSet[ev.AccountID] {
-				continue
-			}
-			if ev.Order == nil {
-				continue
-			}
-			// Track close events from orderCh so the snapshot diff
-			// does not emit duplicate close events.
-			if ev.EventType == "close" {
-				if recentlyClosed[ev.AccountID] == nil {
-					recentlyClosed[ev.AccountID] = make(map[int64]bool)
-				}
-				recentlyClosed[ev.AccountID][ev.Ticket] = true
-			}
-			event := &antv1.StreamEvent{
-				Type:      "order_update",
-				AccountId: ev.AccountID,
-				Timestamp: timestamppb.New(ev.Timestamp),
-				Payload: &antv1.StreamEvent_OrderUpdate{
-					OrderUpdate: orderRecordToUpdateEvent(ev.Order, ev.AccountID, ev.EventType, ev.Ticket),
-				},
-			}
-			if err := sendEvent(event); err != nil {
-				return connect.NewError(connect.CodeInternal, fmt.Errorf("send order update event: %w", err))
-			}
-		case pev, ok := <-profitCh:
-			if !ok {
-				// Defensive: profitCh is never closed (goroutines only forward values),
-				// but a nil-or-closed channel would spin in select.
-				profitCh = nil
-				continue
-			}
-			now := timestamppb.Now()
-			if err := sendEvent(&antv1.StreamEvent{
-				Type:      "profit_update",
-				AccountId: pev.AccountID,
-				Timestamp: now,
-				Payload: &antv1.StreamEvent_ProfitUpdate{
-					ProfitUpdate: profitEventToProto(pev),
-				},
-			}); err != nil {
-				return connect.NewError(connect.CodeInternal, fmt.Errorf("send profit update event: %w", err))
-			}
-		case snap, ok := <-snapCh:
-			if !ok {
-				// Defensive: snapCh is never closed; nil assignment prevents
-				// future selects on this channel branch.
-				snapCh = nil
-				continue
-			}
-			if !filterAll && !accountSet[snap.AccountID] {
-				continue
-			}
-			now := timestamppb.Now()
-
-			if err := sendEvent(&antv1.StreamEvent{
-				Type:      "account_status",
-				AccountId: snap.AccountID,
-				Timestamp: now,
-				Payload: &antv1.StreamEvent_AccountStatus{
-					AccountStatus: &antv1.AccountStatusEvent{
-						AccountId: snap.AccountID,
-						Status:    "connected",
-					},
-				},
-			}); err != nil {
-				return connect.NewError(connect.CodeInternal, fmt.Errorf("send account_status event: %w", err))
-			}
-
-			snapCount[snap.AccountID]++
-			// Periodic cleanup: after 100 snapshots for an account,
-			// reset known tickets to prevent unbounded growth.
-			if snapCount[snap.AccountID] >= 100 {
-				delete(snapKnownTickets, snap.AccountID)
-				snapCount[snap.AccountID] = 0
-			}
-
-			currentTickets := make(map[int64]bool, len(snap.Positions))
-			for _, pos := range snap.Positions {
-				currentTickets[pos.Ticket] = true
-			}
-			if prev, ok := snapKnownTickets[snap.AccountID]; ok {
-				for ticket := range prev {
-					if !currentTickets[ticket] {
-						// Skip tickets already reported as "close" via orderCh
-						// to avoid duplicate close events.
-						if closedForAccount := recentlyClosed[snap.AccountID]; closedForAccount != nil {
-							if closedForAccount[ticket] {
-								continue
-							}
-						}
-						if err := sendEvent(&antv1.StreamEvent{
-							Type:      "order_update",
-							AccountId: snap.AccountID,
-							Timestamp: now,
-							Payload: &antv1.StreamEvent_OrderUpdate{
-								OrderUpdate: &antv1.OrderUpdateEvent{
-									AccountId: snap.AccountID,
-									Ticket:    ticket,
-									Action:    "close",
-								},
-							},
-						}); err != nil {
-							return connect.NewError(connect.CodeInternal, fmt.Errorf("send order_update close event: %w", err))
-						}
-					}
-				}
-			}
-			snapKnownTickets[snap.AccountID] = currentTickets
-			// Clear recently-closed tickets for this account after snapshot
-			// processing to avoid unbounded growth.
-			delete(recentlyClosed, snap.AccountID)
-
-			positions := make([]*antv1.OrderUpdateEvent, 0, len(snap.Positions))
-			for _, pos := range snap.Positions {
-				positions = append(positions, &antv1.OrderUpdateEvent{
-					AccountId:  snap.AccountID,
-					Ticket:     pos.Ticket,
-					Symbol:     pos.Symbol,
-					Type:       pos.Type,
-					Volume:     pos.Volume,
-					OpenPrice:  pos.OpenPrice,
-					ClosePrice: pos.CurrentPrice,
-					Profit:     pos.Profit,
-					StopLoss:   pos.StopLoss,
-					TakeProfit: pos.TakeProfit,
-					Swap:       pos.Swap,
-					Commission: pos.Commission,
-					Comment:    pos.Comment,
-					Action:     "open",
-					OpenTime:   pos.OpenTime,
-				})
-			}
-			if err := sendEvent(&antv1.StreamEvent{
-				Type:      "position_snapshot",
-				AccountId: snap.AccountID,
-				Timestamp: now,
-				Payload: &antv1.StreamEvent_PositionSnapshot{
-					PositionSnapshot: &antv1.PositionSnapshotEvent{
-						AccountId: snap.AccountID,
-						Positions: positions,
-					},
-				},
-			}); err != nil {
-				return connect.NewError(connect.CodeInternal, fmt.Errorf("send position_snapshot event: %w", err))
-			}
+	cancelAll := func() {
+		for _, bs := range barSubs {
+			bs.cancel()
 		}
 	}
+	return barCh, cancelAll
+}
+
+func (s *StreamServer) handleBarEvent(
+	b *mthub.BarUpdate,
+	filterAll bool,
+	accountSet map[string]bool,
+	sendEvent func(*antv1.StreamEvent) error,
+) error {
+	if !filterAll && !accountSet[b.AccountID] {
+		return nil
+	}
+	t := time.UnixMilli(b.OpenTime)
+	if err := sendEvent(&antv1.StreamEvent{
+		Type:      "bar_update",
+		AccountId: b.AccountID,
+		Timestamp: timestamppb.New(t),
+		Payload: &antv1.StreamEvent_BarUpdate{
+			BarUpdate: &antv1.BarUpdateEvent{
+				AccountId: b.AccountID,
+				Symbol:    b.Symbol,
+				Period:    b.Period,
+				OpenTime:  timestamppb.New(t),
+				Open:      formatPrice(b.Open),
+				High:      formatPrice(b.High),
+				Low:       formatPrice(b.Low),
+				Close:     formatPrice(b.Close),
+				Bid:       formatPrice(b.Bid),
+				Ask:       formatPrice(b.Ask),
+				Volume:    b.Volume,
+				Closed:    b.Closed,
+			},
+		},
+	}); err != nil {
+		return connect.NewError(connect.CodeInternal, fmt.Errorf("send bar_update event: %w", err))
+	}
+	return nil
 }

@@ -4,7 +4,7 @@
 
 import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
-import type { BacktestMetrics } from "./common_pb";
+import type { BacktestMetrics, BacktestRisk } from "./common_pb";
 import { file_common } from "./common_pb";
 import type { BacktestRun } from "./backtest_run_pb";
 import { file_backtest_run } from "./backtest_run_pb";
@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file backtest_run_query.proto.
  */
 export const file_backtest_run_query: GenFile = /*@__PURE__*/
-  fileDesc("ChhiYWNrdGVzdF9ydW5fcXVlcnkucHJvdG8SBmFudC52MSInChVHZXRCYWNrdGVzdFJ1blJlcXVlc3QSDgoGcnVuX2lkGAEgASgJIqIBChZHZXRCYWNrdGVzdFJ1blJlc3BvbnNlEiAKA3J1bhgBIAEoCzITLmFudC52MS5CYWNrdGVzdFJ1bhIoCgdtZXRyaWNzGAIgASgLMhcuYW50LnYxLkJhY2t0ZXN0TWV0cmljcxIUCgxlcXVpdHlfY3VydmUYAyADKAESFwoKZGF0YXNldF9pZBgEIAEoCUgAiAEBQg0KC19kYXRhc2V0X2lkIikKF1dhdGNoQmFja3Rlc3RSdW5SZXF1ZXN0Eg4KBnJ1bl9pZBgBIAEoCSJ1ChFCYWNrdGVzdFJ1blVwZGF0ZRIgCgNydW4YASABKAsyEy5hbnQudjEuQmFja3Rlc3RSdW4SKAoHbWV0cmljcxgCIAEoCzIXLmFudC52MS5CYWNrdGVzdE1ldHJpY3MSFAoMZXF1aXR5X2N1cnZlGAMgAygBImAKF0xpc3RCYWNrdGVzdFJ1bnNSZXF1ZXN0EhcKCmFjY291bnRfaWQYASABKAlIAIgBARINCgVsaW1pdBgCIAEoBRIOCgZvZmZzZXQYAyABKAVCDQoLX2FjY291bnRfaWQiPQoYTGlzdEJhY2t0ZXN0UnVuc1Jlc3BvbnNlEiEKBHJ1bnMYASADKAsyEy5hbnQudjEuQmFja3Rlc3RSdW5CIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_common, file_backtest_run]);
+  fileDesc("ChhiYWNrdGVzdF9ydW5fcXVlcnkucHJvdG8SBmFudC52MSInChVHZXRCYWNrdGVzdFJ1blJlcXVlc3QSDgoGcnVuX2lkGAEgASgJIsYBChZHZXRCYWNrdGVzdFJ1blJlc3BvbnNlEiAKA3J1bhgBIAEoCzITLmFudC52MS5CYWNrdGVzdFJ1bhIoCgdtZXRyaWNzGAIgASgLMhcuYW50LnYxLkJhY2t0ZXN0TWV0cmljcxIUCgxlcXVpdHlfY3VydmUYAyADKAESFwoKZGF0YXNldF9pZBgEIAEoCUgAiAEBEiIKBHJpc2sYBSABKAsyFC5hbnQudjEuQmFja3Rlc3RSaXNrQg0KC19kYXRhc2V0X2lkIikKF1dhdGNoQmFja3Rlc3RSdW5SZXF1ZXN0Eg4KBnJ1bl9pZBgBIAEoCSKZAQoRQmFja3Rlc3RSdW5VcGRhdGUSIAoDcnVuGAEgASgLMhMuYW50LnYxLkJhY2t0ZXN0UnVuEigKB21ldHJpY3MYAiABKAsyFy5hbnQudjEuQmFja3Rlc3RNZXRyaWNzEhQKDGVxdWl0eV9jdXJ2ZRgDIAMoARIiCgRyaXNrGAQgASgLMhQuYW50LnYxLkJhY2t0ZXN0UmlzayJgChdMaXN0QmFja3Rlc3RSdW5zUmVxdWVzdBIXCgphY2NvdW50X2lkGAEgASgJSACIAQESDQoFbGltaXQYAiABKAUSDgoGb2Zmc2V0GAMgASgFQg0KC19hY2NvdW50X2lkIj0KGExpc3RCYWNrdGVzdFJ1bnNSZXNwb25zZRIhCgRydW5zGAEgAygLMhMuYW50LnYxLkJhY2t0ZXN0UnVuQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_common, file_backtest_run]);
 
 /**
  * @generated from message ant.v1.GetBacktestRunRequest
@@ -56,6 +56,11 @@ export type GetBacktestRunResponse = Message<"ant.v1.GetBacktestRunResponse"> & 
    * @generated from field: optional string dataset_id = 4;
    */
   datasetId?: string | undefined;
+
+  /**
+   * @generated from field: ant.v1.BacktestRisk risk = 5;
+   */
+  risk?: BacktestRisk | undefined;
 };
 
 /**
@@ -100,6 +105,11 @@ export type BacktestRunUpdate = Message<"ant.v1.BacktestRunUpdate"> & {
    * @generated from field: repeated double equity_curve = 3;
    */
   equityCurve: number[];
+
+  /**
+   * @generated from field: ant.v1.BacktestRisk risk = 4;
+   */
+  risk?: BacktestRisk | undefined;
 };
 
 /**

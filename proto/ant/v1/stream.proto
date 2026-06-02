@@ -46,6 +46,8 @@ message BarUpdateEvent {
   string close = 8;
   double volume = 9;
   bool closed = 10;  // true=finalized bar, false=in-progress candle
+  string bid = 11;   // latest bid price for real-time quote
+  string ask = 12;   // latest ask price for real-time quote
 }
 
 message SubscribeEventsRequest {

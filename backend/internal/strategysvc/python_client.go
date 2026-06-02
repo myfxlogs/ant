@@ -11,14 +11,26 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
+	"strings"
+	"sync"
 	"time"
+)
+
+const (
+	circuitThreshold = 5                 // consecutive failures before opening circuit
+	circuitCooldown  = 30 * time.Second  // how long circuit stays open
+	maxRetries       = 3                 // max retry attempts for transient errors
 )
 
 // PythonClient communicates with the Python strategy backtest/execution engine.
 type PythonClient struct {
-	baseURL string
-	httpc   *http.Client
+	baseURL             string
+	httpc               *http.Client
+	mu                  sync.Mutex
+	consecutiveFailures int
+	circuitOpenUntil    time.Time
 }
 
 // NewPythonClient creates a client for the given strategy-service base URL.
@@ -27,6 +39,35 @@ func NewPythonClient(baseURL string) *PythonClient {
 		baseURL: baseURL,
 		httpc:   &http.Client{Timeout: 60 * time.Second},
 	}
+}
+
+// isCircuitOpen returns true if the circuit breaker is currently open.
+func (c *PythonClient) isCircuitOpen() bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.consecutiveFailures >= circuitThreshold {
+		if time.Now().Before(c.circuitOpenUntil) {
+			return true
+		}
+		// Half-open: allow one request through.
+		c.consecutiveFailures = circuitThreshold - 1
+	}
+	return false
+}
+
+func (c *PythonClient) recordSuccess() {
+	c.mu.Lock()
+	c.consecutiveFailures = 0
+	c.mu.Unlock()
+}
+
+func (c *PythonClient) recordFailure() {
+	c.mu.Lock()
+	c.consecutiveFailures++
+	if c.consecutiveFailures >= circuitThreshold {
+		c.circuitOpenUntil = time.Now().Add(circuitCooldown)
+	}
+	c.mu.Unlock()
 }
 
 // BacktestRequest mirrors the Python service's /api/backtest payload.
@@ -42,14 +83,27 @@ type BacktestRequest struct {
 
 // BacktestResult is the response from the Python backtest engine.
 type BacktestResult struct {
-	Success      bool      `json:"success"`
-	EquityCurve  []float64 `json:"equity_curve"`
-	TotalReturn  float64   `json:"total_return"`
-	SharpeRatio  float64   `json:"sharpe_ratio"`
-	MaxDrawdown  float64   `json:"max_drawdown"`
-	WinRate      float64   `json:"win_rate"`
-	TradeCount   int32     `json:"trade_count"`
-	Error        string    `json:"error,omitempty"`
+	Success        bool      `json:"success"`
+	EquityCurve    []float64 `json:"equity_curve"`
+	TotalReturn    float64   `json:"total_return"`
+	AnnualReturn   float64   `json:"annual_return"`
+	MaxDrawdown    float64   `json:"max_drawdown"`
+	SharpeRatio    float64   `json:"sharpe_ratio"`
+	WinRate        float64   `json:"win_rate"`
+	ProfitFactor   float64   `json:"profit_factor"`
+	TotalTrades    int32     `json:"total_trades"`
+	WinningTrades  int32     `json:"winning_trades"`
+	LosingTrades   int32     `json:"losing_trades"`
+	AverageProfit  float64   `json:"average_profit"`
+	AverageLoss    float64   `json:"average_loss"`
+	TradeCount     int32     `json:"trade_count"`
+	// Risk assessment
+	RiskScore   int32    `json:"risk_score"`
+	RiskLevel   string   `json:"risk_level"`
+	RiskReasons []string `json:"risk_reasons"`
+	RiskWarnings []string `json:"risk_warnings"`
+	IsReliable  bool     `json:"is_reliable"`
+	Error       string   `json:"error,omitempty"`
 }
 
 // ExecuteRequest mirrors the Python service's /api/execute payload.
@@ -87,13 +141,49 @@ type ValidateResult struct {
 	Warnings []string `json:"warnings"`
 }
 
-// Backtest sends a strategy to the Python backtest engine.
+// Backtest sends a strategy to the Python backtest engine with retry + circuit breaker.
 func (c *PythonClient) Backtest(ctx context.Context, req *BacktestRequest) (*BacktestResult, error) {
-	var result BacktestResult
-	if err := c.post(ctx, "/api/backtest", req, &result); err != nil {
-		return nil, fmt.Errorf("strategysvc backtest: %w", err)
+	if c.isCircuitOpen() {
+		return nil, fmt.Errorf("strategysvc backtest: circuit breaker open, service unavailable")
 	}
-	return &result, nil
+	var result BacktestResult
+	var lastErr error
+	for attempt := 0; attempt <= maxRetries; attempt++ {
+		if attempt > 0 {
+			// Exponential backoff: 1s, 2s, 4s.
+			backoff := time.Duration(math.Pow(2, float64(attempt-1))) * time.Second
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			case <-time.After(backoff):
+			}
+		}
+		lastErr = c.post(ctx, "/api/backtest", req, &result)
+		if lastErr == nil {
+			c.recordSuccess()
+			return &result, nil
+		}
+		// Only retry on transient errors (connection refused, timeout, 5xx).
+		if !isTransient(lastErr) {
+			break
+		}
+	}
+	c.recordFailure()
+	return nil, fmt.Errorf("strategysvc backtest: %w", lastErr)
+}
+
+// isTransient returns true for network-level or 5xx errors that are worth retrying.
+func isTransient(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := err.Error()
+	return strings.Contains(msg, "connection refused") ||
+		strings.Contains(msg, "timeout") ||
+		strings.Contains(msg, "status 5") ||
+		strings.Contains(msg, "EOF") ||
+		strings.Contains(msg, "broken pipe") ||
+		strings.Contains(msg, "reset by peer")
 }
 
 // Execute runs a strategy live or in paper mode on the Python engine.

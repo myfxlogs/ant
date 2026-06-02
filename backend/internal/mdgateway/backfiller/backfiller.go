@@ -143,15 +143,19 @@ func (b *Backfiller) backfillAccount(ctx context.Context, acc ActiveAccount) err
 	return nil
 }
 
-var defaultPeriods = []struct {
-	name     string
-	lookback time.Duration
-}{
-	{"1m", 30 * 24 * time.Hour},
-	{"1h", 90 * 24 * time.Hour},
-	{"1d", 365 * 24 * time.Hour},
-}
-
+	var defaultPeriods = []struct {
+		name     string
+		lookback time.Duration
+	}{
+		{ "1m", 30 * 24 * time.Hour},
+		{ "5m", 60 * 24 * time.Hour},
+		{ "15m", 90 * 24 * time.Hour},
+		{ "30m", 120 * 24 * time.Hour},
+		{ "1h", 90 * 24 * time.Hour},
+		{ "4h", 180 * 24 * time.Hour},
+		{ "1d", 365 * 24 * time.Hour},
+		{ "1w", 730 * 24 * time.Hour},
+	}
 func (b *Backfiller) backfillSymbol(ctx context.Context, acc ActiveAccount, canon string) error {
 	for _, dp := range defaultPeriods {
 		from, err := b.chMax.MaxCloseTs(ctx, acc.Broker, canon, dp.name)
@@ -162,7 +166,7 @@ func (b *Backfiller) backfillSymbol(ctx context.Context, acc ActiveAccount, cano
 			from = Clk.Now().Add(-dp.lookback).UnixMilli()
 		}
 		to := Clk.Now().UnixMilli()
-		if to-from < periodMs(dp.name)*2 {
+		if to-from < mdtick.PeriodMs(dp.name)*2 {
 			continue // gap < 2 periods, not worth the API call
 		}
 
@@ -211,23 +215,4 @@ func (b *Backfiller) backfillRange(ctx context.Context, acc ActiveAccount, canon
 		from = bars[len(bars)-1].CloseTsUnixMs + 1
 	}
 	return nil
-}
-
-func periodMs(period string) int64 {
-	switch period {
-	case "1m":
-		return 60_000
-	case "5m":
-		return 300_000
-	case "15m":
-		return 900_000
-	case "1h":
-		return 3_600_000
-	case "4h":
-		return 14_400_000
-	case "1d":
-		return 86_400_000
-	default:
-		return 60_000
-	}
 }

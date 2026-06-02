@@ -126,8 +126,17 @@ func (s *PythonStrategyServer) Backtest(ctx context.Context, req *connect.Reques
 				Success:     true,
 				EquityCurve: result.EquityCurve,
 				Metrics: &antv1.BacktestMetrics{
-					SharpeRatio: result.SharpeRatio,
-					MaxDrawdown: result.MaxDrawdown,
+					TotalReturn:   result.TotalReturn,
+					AnnualReturn:  result.AnnualReturn,
+					MaxDrawdown:   result.MaxDrawdown,
+					SharpeRatio:   result.SharpeRatio,
+					WinRate:       result.WinRate,
+					ProfitFactor:  result.ProfitFactor,
+					TotalTrades:   result.TotalTrades,
+					WinningTrades: result.WinningTrades,
+					LosingTrades:  result.LosingTrades,
+					AverageProfit: result.AverageProfit,
+					AverageLoss:   result.AverageLoss,
 				},
 			}), nil
 		}
@@ -203,6 +212,7 @@ func (s *PythonStrategyServer) GetBacktestRun(ctx context.Context, req *connect.
 		Run:         toProtoBacktestRun(run),
 		Metrics:     parseMetrics(run.Metrics),
 		EquityCurve: parseEquityCurve(run.EquityCurve),
+		Risk:        parseRisk(run.Metrics),
 	}), nil
 }
 
@@ -259,6 +269,7 @@ func (s *PythonStrategyServer) WatchBacktestRun(ctx context.Context, req *connec
 			Run:         toProtoBacktestRun(run),
 			Metrics:     parseMetrics(run.Metrics),
 			EquityCurve: parseEquityCurve(run.EquityCurve),
+			Risk:        parseRisk(run.Metrics),
 		}); err != nil {
 			return err
 		}
@@ -379,6 +390,17 @@ func parseMetrics(raw []byte) *antv1.BacktestMetrics {
 		return nil
 	}
 	return &m
+}
+
+func parseRisk(raw []byte) *antv1.BacktestRisk {
+	if len(raw) == 0 {
+		return nil
+	}
+	var r antv1.BacktestRisk
+	if err := json.Unmarshal(raw, &r); err != nil {
+		return nil
+	}
+	return &r
 }
 
 func parseEquityCurve(raw []byte) []float64 {

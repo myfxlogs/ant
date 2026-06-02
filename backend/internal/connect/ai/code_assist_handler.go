@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"go.uber.org/zap"
 
@@ -122,13 +123,15 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 	}
 
 	// Parse JSON response from LLM.
+	// LLMs often wrap JSON in markdown fences despite being told not to.
 	var parsed struct {
 		Valid    bool     `json:"valid"`
 		Errors   []string `json:"errors"`
 		Warnings []string `json:"warnings"`
 	}
-	if err := json.Unmarshal([]byte(result), &parsed); err != nil {
-		trimmed := result
+	cleaned := stripMarkdownFences(result)
+	if err := json.Unmarshal([]byte(cleaned), &parsed); err != nil {
+		trimmed := cleaned
 		if len(trimmed) > 200 {
 			trimmed = trimmed[:200]
 		}
@@ -146,4 +149,21 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 		Errors:   parsed.Errors,
 		Warnings: parsed.Warnings,
 	}), nil
+}
+
+// stripMarkdownFences removes markdown code fences from an LLM response.
+// LLMs often wrap JSON in ```json ... ``` or ``` ... ``` despite system prompts
+// requesting raw JSON only.
+func stripMarkdownFences(s string) string {
+	for _, fence := range []string{"```json", "```"} {
+		t := strings.TrimSpace(s)
+		if strings.HasPrefix(t, fence) {
+			t = t[len(fence):]
+			if idx := strings.LastIndex(t, "```"); idx >= 0 {
+				t = t[:idx]
+			}
+			return strings.TrimSpace(t)
+		}
+	}
+	return s
 }

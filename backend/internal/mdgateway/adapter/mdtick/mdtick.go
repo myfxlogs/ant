@@ -155,9 +155,37 @@ type Bar struct {
 	High          decimal.Decimal
 	Low           decimal.Decimal
 	Close         decimal.Decimal
+	Bid           decimal.Decimal // latest bid for real-time quote
+	Ask           decimal.Decimal // latest ask for real-time quote
 	Volume        float64
 	TickCount     uint32
+	IsClosed      bool   // true when bar is finalized by AddTick; false for open bar snapshots
 	IsReplay      bool   // true when bar originates from spill_replay or backfiller (ADR-0009)
+}
+
+// PeriodMs returns the duration of a timeframe in milliseconds.
+// This is the single source of truth for timeframe durations across the codebase.
+func PeriodMs(period string) int64 {
+	switch period {
+	case "1m":
+		return 60_000
+	case "5m":
+		return 300_000
+	case "15m":
+		return 900_000
+	case "30m":
+		return 1_800_000
+	case "1h":
+		return 3_600_000
+	case "4h":
+		return 14_400_000
+	case "1d":
+		return 86_400_000
+	case "1w":
+		return 604_800_000
+	default:
+		return 60_000
+	}
 }
 
 // AccountConfig comes from PG mt_accounts_v2 view; runner decrypts and passes to adapter.

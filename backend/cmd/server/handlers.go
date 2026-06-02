@@ -138,6 +138,7 @@ func registerHandlers(
 		pythonClient := strategysvc.NewPythonClient(cfg.StrategyServiceURL)
 		pythonStrategyServer.SetClient(pythonClient)
 		strategyServer.SetClient(pythonClient) // S2.5: real RunBacktest
+			pythonStrategyServer.StartBacktestWorker(context.Background()) // Background worker for async backtest runs
 		log.Info("Python strategy client configured", zap.String("url", cfg.StrategyServiceURL))
 	}
 	mux.Handle(antv1c.NewPythonStrategyServiceHandler(pythonStrategyServer, connectrpc.WithInterceptors(authInterceptor)))

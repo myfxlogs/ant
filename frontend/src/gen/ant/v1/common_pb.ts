@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file common.proto.
  */
 export const file_common: GenFile = /*@__PURE__*/
-  fileDesc("Cgxjb21tb24ucHJvdG8SBmFudC52MSKGAgoPQmFja3Rlc3RNZXRyaWNzEhQKDHRvdGFsX3JldHVybhgBIAEoARIVCg1hbm51YWxfcmV0dXJuGAIgASgBEhQKDG1heF9kcmF3ZG93bhgDIAEoARIUCgxzaGFycGVfcmF0aW8YBCABKAESEAoId2luX3JhdGUYBSABKAESFQoNcHJvZml0X2ZhY3RvchgGIAEoARIUCgx0b3RhbF90cmFkZXMYByABKAUSFgoOd2lubmluZ190cmFkZXMYCCABKAUSFQoNbG9zaW5nX3RyYWRlcxgJIAEoBRIWCg5hdmVyYWdlX3Byb2ZpdBgKIAEoARIUCgxhdmVyYWdlX2xvc3MYCyABKAFCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw");
+  fileDesc("Cgxjb21tb24ucHJvdG8SBmFudC52MSKGAgoPQmFja3Rlc3RNZXRyaWNzEhQKDHRvdGFsX3JldHVybhgBIAEoARIVCg1hbm51YWxfcmV0dXJuGAIgASgBEhQKDG1heF9kcmF3ZG93bhgDIAEoARIUCgxzaGFycGVfcmF0aW8YBCABKAESEAoId2luX3JhdGUYBSABKAESFQoNcHJvZml0X2ZhY3RvchgGIAEoARIUCgx0b3RhbF90cmFkZXMYByABKAUSFgoOd2lubmluZ190cmFkZXMYCCABKAUSFQoNbG9zaW5nX3RyYWRlcxgJIAEoBRIWCg5hdmVyYWdlX3Byb2ZpdBgKIAEoARIUCgxhdmVyYWdlX2xvc3MYCyABKAEiZAoMQmFja3Rlc3RSaXNrEg0KBXNjb3JlGAEgASgFEg0KBWxldmVsGAIgASgJEg8KB3JlYXNvbnMYAyADKAkSEAoId2FybmluZ3MYBCADKAkSEwoLaXNfcmVsaWFibGUYBSABKAhCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw");
 
 /**
  * @generated from message ant.v1.BacktestMetrics
@@ -78,4 +78,47 @@ export type BacktestMetrics = Message<"ant.v1.BacktestMetrics"> & {
  */
 export const BacktestMetricsSchema: GenMessage<BacktestMetrics> = /*@__PURE__*/
   messageDesc(file_common, 0);
+
+/**
+ * @generated from message ant.v1.BacktestRisk
+ */
+export type BacktestRisk = Message<"ant.v1.BacktestRisk"> & {
+  /**
+   * 0–100, higher = lower risk
+   *
+   * @generated from field: int32 score = 1;
+   */
+  score: number;
+
+  /**
+   * "low" / "medium" / "high"
+   *
+   * @generated from field: string level = 2;
+   */
+  level: string;
+
+  /**
+   * @generated from field: repeated string reasons = 3;
+   */
+  reasons: string[];
+
+  /**
+   * @generated from field: repeated string warnings = 4;
+   */
+  warnings: string[];
+
+  /**
+   * true when total_trades >= 10
+   *
+   * @generated from field: bool is_reliable = 5;
+   */
+  isReliable: boolean;
+};
+
+/**
+ * Describes the message ant.v1.BacktestRisk.
+ * Use `create(BacktestRiskSchema)` to create a new message.
+ */
+export const BacktestRiskSchema: GenMessage<BacktestRisk> = /*@__PURE__*/
+  messageDesc(file_common, 1);
 

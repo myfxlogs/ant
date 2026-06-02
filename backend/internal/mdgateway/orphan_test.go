@@ -119,9 +119,11 @@ func TestNormalizer(t *testing.T) {
 	if result == "" {
 		t.Error("normalizer should produce non-empty result")
 	}
-	// Undotted 'm' suffix IS stripped — stripSuffix handles both ".m" and "m".
-	if result != "EURUSD" {
-		t.Errorf("expected EURUSD (m suffix stripped), got %s", result)
+	// K-line suffix fix (98918d7): raw broker symbol IS canonical.
+	// Suffix stripping caused mismatches — brokers don't recognize
+	// stripped forms for historical queries.
+	if result != "EURUSDm" {
+		t.Errorf("expected EURUSDm (raw symbol preserved), got %s", result)
 	}
 	t.Logf("normalizer: EURUSDm → %s", result)
 }

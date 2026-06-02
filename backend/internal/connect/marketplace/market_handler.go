@@ -64,10 +64,10 @@ func (s *MarketServer) GetKlines(ctx context.Context, req *connect.Request[antv1
 	for _, b := range bars {
 		out = append(out, &antv1.OHLCV{
 			OpenTime:  timestamppb.New(b.OpenTime()),
-			Open:      decimalFromFloat(b.Open),
-			High:      decimalFromFloat(b.High),
-			Low:       decimalFromFloat(b.Low),
-			Close:     decimalFromFloat(b.Close),
+			Open:      formatPrice(b.Open),
+			High:      formatPrice(b.High),
+			Low:       formatPrice(b.Low),
+			Close:     formatPrice(b.Close),
 			Volume:    b.Volume,
 			TickCount: b.TickCount,
 		})
@@ -95,7 +95,7 @@ func (s *MarketServer) GetSymbolStats(ctx context.Context, req *connect.Request[
 	bidF, _ := decimalToFloat(tick.Bid)
 	askF, _ := decimalToFloat(tick.Ask)
 	if bidF > 0 && askF > 0 {
-		spread = fmt.Sprintf("%.5f", askF-bidF)
+		spread = formatPrice(askF-bidF)
 	}
 	return connect.NewResponse(&antv1.GetSymbolStatsResponse{
 		CurrentBid: tick.Bid,
@@ -148,8 +148,19 @@ func (s *MarketServer) StreamTicks(ctx context.Context, req *connect.Request[ant
 	}
 }
 
-func decimalFromFloat(f float64) string {
-	return fmt.Sprintf("%.5f", f)
+// formatPrice formats a float64 price with dynamic decimal precision:
+// - Price > 100:  3 digits (JPY pairs, e.g. 149.250)
+// - Price > 1:    5 digits (standard forex, e.g. 1.12345)
+// - Price <= 1:   6 digits (crypto or fractional assets)
+func formatPrice(p float64) string {
+	switch {
+	case p > 100:
+		return fmt.Sprintf("%.3f", p)
+	case p > 1:
+		return fmt.Sprintf("%.5f", p)
+	default:
+		return fmt.Sprintf("%.6f", p)
+	}
 }
 
 func decimalToFloat(s string) (float64, error) {

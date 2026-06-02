@@ -19,8 +19,8 @@ func loadFinalizedBars(ctx context.Context, ch clickhouse.Conn, log *zap.Logger)
 	result := make(map[finalizedKey][]int64)
 	rows, err := ch.Query(ctx, `
 		SELECT broker, canonical, period, close_ts_unix_ms
-		FROM md_bars FINAL
-	`)
+		FROM md_bars WHERE close_ts_unix_ms >= ?
+	`, Clk.Now().Add(-30*24*time.Hour).UnixMilli())
 	if err != nil {
 		log.Error("mdgateway: load finalized bars FAILED — CH unreachable, refusing to start", zap.Error(err))
 		return nil, err
@@ -167,9 +167,10 @@ type chMaxCloseTs struct {
 func (c *chMaxCloseTs) MaxCloseTs(ctx context.Context, broker, canonical, period string) (int64, error) {
 	var ts int64
 	err := c.conn.QueryRow(ctx, `
-		SELECT max(close_ts_unix_ms) FROM md_bars FINAL
+		SELECT max(close_ts_unix_ms) FROM md_bars
 		WHERE broker = ? AND canonical = ? AND period = ?
-	`, broker, canonical, period).Scan(&ts)
+			  AND close_ts_unix_ms >= ?
+		`, broker, canonical, period, Clk.Now().Add(-90*24*time.Hour).UnixMilli()).Scan(&ts)
 	if err != nil {
 		return 0, nil
 	}

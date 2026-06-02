@@ -17,15 +17,16 @@ import (
 
 // SpillReplay reads spill JSONL files and replays them through the publisher and CH writer.
 type SpillReplay struct {
-	dir       string
-	publisher *Publisher
-	ch        *CHWriter
-	log       *zap.Logger
+	dir        string
+	publisher  *Publisher
+	ch         *CHWriter
+	aggregator *BarAggregator // finality check for bar dedup (ADR-0009 §2.2)
+	log        *zap.Logger
 }
 
 // NewSpillReplay creates a replay engine.
-func NewSpillReplay(dir string, pub *Publisher, ch *CHWriter, log *zap.Logger) *SpillReplay {
-	return &SpillReplay{dir: dir, publisher: pub, ch: ch, log: log}
+func NewSpillReplay(dir string, pub *Publisher, ch *CHWriter, aggregator *BarAggregator, log *zap.Logger) *SpillReplay {
+	return &SpillReplay{dir: dir, publisher: pub, ch: ch, aggregator: aggregator, log: log}
 }
 
 // Run scans the spill directory for *.jsonl files and replays them in
@@ -94,13 +95,18 @@ func (r *SpillReplay) replayFile(ctx context.Context, path string) (int, error) 
 		// UserID/AccountID/SymbolRaw are empty — fine for replay).
 		switch e.Kind {
 		case "tick":
+			bidDec, errBid := decimal.NewFromString(e.Bid)
+			askDec, errAsk := decimal.NewFromString(e.Ask)
+			if errBid != nil || errAsk != nil {
+				continue // skip malformed spill entries instead of panic
+			}
 			tick := &mdtick.Tick{
 				Broker:        e.Broker,
 				Canonical:     e.Canonical,
 				TsUnixMs:      e.Ts,
 				ArrivedUnixMs: e.Ts,
-				Bid:           decimal.RequireFromString(e.Bid),
-				Ask:           decimal.RequireFromString(e.Ask),
+				Bid:           bidDec,
+				Ask:           askDec,
 				BidVolume:     e.BidVol,
 				AskVolume:     e.AskVol,
 				IsReplay:      true,
@@ -112,28 +118,43 @@ func (r *SpillReplay) replayFile(ctx context.Context, path string) (int, error) 
 				r.ch.EnqueueTick(tick)
 			}
 		case "bar":
+			// Compute bar open time from close time and period.
+			openTs := e.Ts
+			for _, p := range Periods {
+				if p.Name == e.Period {
+					openTs = e.Ts - p.Ms
+					break
+				}
+			}
+			openDec, errOpen := decimal.NewFromString(e.Open)
+			highDec, errHigh := decimal.NewFromString(e.High)
+			lowDec, errLow := decimal.NewFromString(e.Low)
+			closeDec, errClose := decimal.NewFromString(e.Close)
+			if errOpen != nil || errHigh != nil || errLow != nil || errClose != nil {
+				continue // skip malformed spill entries instead of panic
+			}
 			bar := &mdtick.Bar{
 				Broker:        e.Broker,
 				Canonical:     e.Canonical,
 				Period:        e.Period,
-				OpenTsUnixMs:  e.Ts,
+				OpenTsUnixMs:  openTs,
 				CloseTsUnixMs: e.Ts,
-				Open:          decimal.RequireFromString(e.Open),
-				High:          decimal.RequireFromString(e.High),
-				Low:           decimal.RequireFromString(e.Low),
-				Close:         decimal.RequireFromString(e.Close),
+				Open:          openDec,
+				High:          highDec,
+				Low:           lowDec,
+				Close:         closeDec,
 				Volume:        e.Volume,
 				TickCount:     e.Count,
+				IsClosed:      true,
 				IsReplay:      true,
 			}
-			// ADR-0009 §2.2: skip bar if already finalized (prevents overwrite).
-			// Note: SpillReplay does not own a BarAggregator; finality is
-			// enforced by the backfiller path in production. For spill_replay,
-			// CHWriter's INSERT goes through ReplacingMergeTree which deduplicates
-			// on (broker, canonical, period, close_ts_unix_ms) — the v2 ORDER BY
-			// already provides correctness. The IngestExternalBar check is
-			// stronger (prevents the INSERT entirely) and is exercised in the
-			// backfiller path.
+			// ADR-0009 §2.2: check finality before replay to prevent
+			// duplicate NATS publishes. Aggregator's finalized set is
+			// loaded from CH before replay starts, so bars already in CH
+			// are skipped entirely.
+			if r.aggregator != nil && !r.aggregator.IngestExternalBar(bar) {
+				continue // already finalized in CH
+			}
 			if r.publisher != nil {
 				_ = r.publisher.PublishBar(ctx, bar)
 			}

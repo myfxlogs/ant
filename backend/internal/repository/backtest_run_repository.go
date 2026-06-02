@@ -3,11 +3,9 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -146,65 +144,47 @@ func (r *BacktestRunRepository) ListByUser(ctx context.Context, userID uuid.UUID
 		offset = 0
 	}
 
-	items := []*BacktestRun{}
 	if accountID == nil || *accountID == uuid.Nil {
-		rows, err := r.db.Query(ctx,
-			`SELECT
-				id, user_id, account_id, symbol, timeframe, dataset_id, template_id, template_draft_id,
-				mode, from_ts, to_ts,
-				cancel_requested_at, lease_until,
-				strategy_code_hash, python_service_version,
-				cost_model_snapshot, metrics, equity_curve,
-				status, error, started_at, finished_at, strategy_code, initial_capital,
-				extra_symbols,
-				created_at
-			FROM backtest_runs
-			WHERE user_id = $1
-			ORDER BY created_at DESC
-			LIMIT $2 OFFSET $3`,
-			userID, limit, offset)
-		if err != nil {
-			return nil, err
-		}
-		defer rows.Close()
-		for rows.Next() {
-			var out BacktestRun
-			if err := rows.Scan(
-				&out.ID, &out.UserID, &out.AccountID, &out.Symbol, &out.Timeframe, &out.DatasetID, &out.TemplateID, &out.TemplateDraftID,
-				&out.Mode, &out.FromTs, &out.ToTs,
-				&out.CancelRequestedAt, &out.LeaseUntil,
-				&out.StrategyCodeHash, &out.PythonServiceVersion,
-				&out.CostModelSnapshot, &out.Metrics, &out.EquityCurve,
-				&out.Status, &out.Error, &out.StartedAt, &out.FinishedAt, &out.StrategyCode, &out.InitialCapital,
-				&out.ExtraSymbols,
-				&out.CreatedAt,
-			); err != nil {
-				return nil, err
-			}
-			items = append(items, &out)
-		}
-		return items, rows.Err()
+		return r.listByUserAll(ctx, userID, limit, offset)
 	}
+	return r.listByUserAccount(ctx, userID, *accountID, limit, offset)
+}
 
-	rows, err := r.db.Query(ctx,
-		`SELECT
-			id, user_id, account_id, symbol, timeframe, dataset_id, template_id, template_draft_id,
-			mode, from_ts, to_ts,
-			cancel_requested_at, lease_until,
+func (r *BacktestRunRepository) listByUserAll(ctx context.Context, userID uuid.UUID, limit, offset int) ([]*BacktestRun, error) {
+	return r.scanBacktestRunRows(ctx,
+		`SELECT id, user_id, account_id, symbol, timeframe, dataset_id, template_id, template_draft_id,
+			mode, from_ts, to_ts, cancel_requested_at, lease_until,
 			strategy_code_hash, python_service_version,
 			cost_model_snapshot, metrics, equity_curve,
 			status, error, started_at, finished_at, strategy_code, initial_capital,
-			extra_symbols,
-			created_at
+			extra_symbols, created_at
+		FROM backtest_runs
+		WHERE user_id = $1
+		ORDER BY created_at DESC
+		LIMIT $2 OFFSET $3`, userID, limit, offset)
+}
+
+func (r *BacktestRunRepository) listByUserAccount(ctx context.Context, userID, accountID uuid.UUID, limit, offset int) ([]*BacktestRun, error) {
+	return r.scanBacktestRunRows(ctx,
+		`SELECT id, user_id, account_id, symbol, timeframe, dataset_id, template_id, template_draft_id,
+			mode, from_ts, to_ts, cancel_requested_at, lease_until,
+			strategy_code_hash, python_service_version,
+			cost_model_snapshot, metrics, equity_curve,
+			status, error, started_at, finished_at, strategy_code, initial_capital,
+			extra_symbols, created_at
 		FROM backtest_runs
 		WHERE user_id = $1 AND account_id = $2
 		ORDER BY created_at DESC
-		LIMIT $3 OFFSET $4`,
-		userID, *accountID, limit, offset)
+		LIMIT $3 OFFSET $4`, userID, accountID, limit, offset)
+}
+
+func (r *BacktestRunRepository) scanBacktestRunRows(ctx context.Context, query string, args ...interface{}) ([]*BacktestRun, error) {
+	rows, err := r.db.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
+	var items []*BacktestRun
 	for rows.Next() {
 		var out BacktestRun
 		if err := rows.Scan(
@@ -224,100 +204,6 @@ func (r *BacktestRunRepository) ListByUser(ctx context.Context, userID uuid.UUID
 	return items, rows.Err()
 }
 
-func (r *BacktestRunRepository) ClaimNextForWork(ctx context.Context, leaseUntil time.Time) (*BacktestRun, error) {
-	if r == nil || r.db == nil {
-		return nil, errors.New("repository not initialized")
-	}
-	var out BacktestRun
-	// Claim a single run that is pending or a stale running lease.
-	// Also claim cancel-requested runs so the worker can finalize cancellation.
-	query := `
-		WITH candidate AS (
-			SELECT b.id
-			FROM backtest_runs b
-			WHERE
-				(status = 'PENDING')
-				OR (status = 'CANCEL_REQUESTED' AND finished_at IS NULL)
-				OR (
-					status = 'RUNNING'
-					AND finished_at IS NULL
-					AND lease_until IS NOT NULL
-					AND lease_until < CURRENT_TIMESTAMP
-				)
-			ORDER BY (status = 'CANCEL_REQUESTED') DESC, created_at ASC
-			LIMIT 1
-			FOR UPDATE SKIP LOCKED
-		)
-		UPDATE backtest_runs b
-		SET
-			status = 'RUNNING',
-			started_at = COALESCE(b.started_at, CURRENT_TIMESTAMP),
-			lease_until = $1
-		FROM candidate c
-		WHERE b.id = c.id
-		RETURNING
-			b.id, b.user_id, b.account_id, b.symbol, b.timeframe, b.dataset_id, b.template_id, b.template_draft_id,
-			b.mode, b.from_ts, b.to_ts,
-			b.cancel_requested_at, b.lease_until,
-			b.strategy_code_hash, b.python_service_version,
-			b.cost_model_snapshot, b.metrics, b.equity_curve,
-			b.status, b.error, b.started_at, b.finished_at, b.strategy_code, b.initial_capital,
-			b.extra_symbols,
-			b.created_at
-	`
-	err := r.db.QueryRow(ctx, query, leaseUntil).Scan(
-		&out.ID, &out.UserID, &out.AccountID, &out.Symbol, &out.Timeframe, &out.DatasetID, &out.TemplateID, &out.TemplateDraftID,
-		&out.Mode, &out.FromTs, &out.ToTs,
-		&out.CancelRequestedAt, &out.LeaseUntil,
-		&out.StrategyCodeHash, &out.PythonServiceVersion,
-		&out.CostModelSnapshot, &out.Metrics, &out.EquityCurve,
-		&out.Status, &out.Error, &out.StartedAt, &out.FinishedAt, &out.StrategyCode, &out.InitialCapital,
-		&out.ExtraSymbols,
-		&out.CreatedAt,
-	)
-	if err != nil {
-		return nil, err
-	}
-	return &out, nil
-}
-
-func (r *BacktestRunRepository) ExtendLease(ctx context.Context, userID, runID uuid.UUID, leaseUntil time.Time) error {
-	if r == nil || r.db == nil {
-		return errors.New("repository not initialized")
-	}
-	query := `
-		UPDATE backtest_runs
-		SET lease_until = $3
-		WHERE id = $1 AND user_id = $2 AND finished_at IS NULL
-	`
-	_, err := r.db.Exec(ctx, query, runID, userID, leaseUntil)
-	if err != nil {
-		return fmt.Errorf("extend lease: %w", err)
-	}
-	return nil
-}
-
-func (r *BacktestRunRepository) RequestCancel(ctx context.Context, userID, runID uuid.UUID) error {
-	if r == nil || r.db == nil {
-		return errors.New("repository not initialized")
-	}
-	query := `
-		UPDATE backtest_runs
-		SET
-			status = CASE
-				WHEN status IN ('SUCCEEDED','FAILED','CANCELED') THEN status
-				ELSE 'CANCEL_REQUESTED'
-			END,
-			cancel_requested_at = COALESCE(cancel_requested_at, CURRENT_TIMESTAMP)
-		WHERE id = $1 AND user_id = $2
-	`
-	_, err := r.db.Exec(ctx, query, runID, userID)
-	if err != nil {
-		return fmt.Errorf("request cancel: %w", err)
-	}
-	return nil
-}
-
 func (r *BacktestRunRepository) Delete(ctx context.Context, userID, runID uuid.UUID) (bool, error) {
 	if r == nil || r.db == nil {
 		return false, errors.New("repository not initialized")
@@ -331,172 +217,4 @@ func (r *BacktestRunRepository) Delete(ctx context.Context, userID, runID uuid.U
 		return false, err
 	}
 	return ct.RowsAffected() > 0, nil
-}
-
-func (r *BacktestRunRepository) CountActiveByUser(ctx context.Context, userID uuid.UUID) (int, error) {
-	if r == nil || r.db == nil {
-		return 0, errors.New("repository not initialized")
-	}
-	var n int
-	query := `
-		SELECT COUNT(1)
-		FROM backtest_runs
-		WHERE user_id = $1 AND status IN ('PENDING','RUNNING','CANCEL_REQUESTED')
-	`
-	err := r.db.QueryRow(ctx, query, userID).Scan(&n)
-	return n, err
-}
-
-func (r *BacktestRunRepository) CountPendingByUser(ctx context.Context, userID uuid.UUID) (int, error) {
-	if r == nil || r.db == nil {
-		return 0, errors.New("repository not initialized")
-	}
-	var n int
-	query := `
-		SELECT COUNT(1)
-		FROM backtest_runs
-		WHERE user_id = $1 AND status = 'PENDING'
-	`
-	err := r.db.QueryRow(ctx, query, userID).Scan(&n)
-	return n, err
-}
-
-func (r *BacktestRunRepository) CountRecentStartsByUser(ctx context.Context, userID uuid.UUID, since time.Time) (int, error) {
-	if r == nil || r.db == nil {
-		return 0, errors.New("repository not initialized")
-	}
-	var n int
-	query := `
-		SELECT COUNT(1)
-		FROM backtest_runs
-		WHERE user_id = $1 AND created_at >= $2
-	`
-	err := r.db.QueryRow(ctx, query, userID, since).Scan(&n)
-	return n, err
-}
-
-func (r *BacktestRunRepository) CountActiveByAccount(ctx context.Context, userID, accountID uuid.UUID) (int, error) {
-	if r == nil || r.db == nil {
-		return 0, errors.New("repository not initialized")
-	}
-	var n int
-	query := `
-		SELECT COUNT(1)
-		FROM backtest_runs
-		WHERE user_id = $1 AND account_id = $2 AND status IN ('PENDING','RUNNING','CANCEL_REQUESTED')
-	`
-	err := r.db.QueryRow(ctx, query, userID, accountID).Scan(&n)
-	return n, err
-}
-
-func (r *BacktestRunRepository) CountPendingByAccount(ctx context.Context, userID, accountID uuid.UUID) (int, error) {
-	if r == nil || r.db == nil {
-		return 0, errors.New("repository not initialized")
-	}
-	var n int
-	query := `
-		SELECT COUNT(1)
-		FROM backtest_runs
-		WHERE user_id = $1 AND account_id = $2 AND status = 'PENDING'
-	`
-	err := r.db.QueryRow(ctx, query, userID, accountID).Scan(&n)
-	return n, err
-}
-
-func (r *BacktestRunRepository) GetStatusAndCancelRequestedAt(ctx context.Context, userID, runID uuid.UUID) (string, *time.Time, error) {
-	if r == nil || r.db == nil {
-		return "", nil, errors.New("repository not initialized")
-	}
-	var status string
-	var cancelAt *time.Time
-	query := `
-		SELECT status, cancel_requested_at
-		FROM backtest_runs
-		WHERE id = $1 AND user_id = $2
-	`
-	err := r.db.QueryRow(ctx, query, runID, userID).Scan(&status, &cancelAt)
-	return status, cancelAt, err
-}
-
-func (r *BacktestRunRepository) UpdateAsyncFields(ctx context.Context, userID, runID uuid.UUID, status string, errMsg string, startedAt, finishedAt *time.Time, metrics, equityCurve []byte) error {
-	if r == nil || r.db == nil {
-		return errors.New("repository not initialized")
-	}
-	query := `
-		UPDATE backtest_runs
-		SET
-			status = COALESCE(NULLIF($3, ''), status),
-			error = $4,
-			started_at = COALESCE($5, started_at),
-			finished_at = COALESCE($6, finished_at),
-			lease_until = CASE
-				WHEN COALESCE(NULLIF($3, ''), status) IN ('SUCCEEDED','FAILED','CANCELED') THEN NULL
-				ELSE lease_until
-			END,
-			metrics = COALESCE($7, metrics),
-			equity_curve = COALESCE($8, equity_curve)
-		WHERE id = $1 AND user_id = $2
-	`
-	_, err := r.db.Exec(ctx, query, runID, userID, status, errMsg, startedAt, finishedAt, metrics, equityCurve)
-	if err != nil {
-		return fmt.Errorf("update async fields: %w", err)
-	}
-	return nil
-}
-
-// BacktestRunTrade mirrors the backtest_run_trades table row.
-type BacktestRunTrade struct {
-	RunID      uuid.UUID
-	Ticket     int64
-	Side       string
-	Volume     float64
-	OpenTs     int64
-	OpenPrice  float64
-	CloseTs    int64
-	ClosePrice float64
-	PnL        float64
-	Commission float64
-	Reason     string
-}
-
-// BatchCreateTrades inserts backtest trades with (run_id, ticket) upsert.
-func (r *BacktestRunRepository) BatchCreateTrades(ctx context.Context, trades []*BacktestRunTrade) error {
-	batch := &pgx.Batch{}
-	for _, t := range trades {
-		batch.Queue(
-			`INSERT INTO backtest_run_trades (run_id, ticket, side, volume, open_ts, open_price, close_ts, close_price, pnl, commission, reason)
-			 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
-			 ON CONFLICT (run_id, ticket) DO UPDATE SET
-			   side=$3, volume=$4, open_ts=$5, open_price=$6, close_ts=$7, close_price=$8, pnl=$9, commission=$10, reason=$11`,
-			t.RunID, t.Ticket, t.Side, t.Volume, t.OpenTs, t.OpenPrice, t.CloseTs, t.ClosePrice, t.PnL, t.Commission, t.Reason,
-		)
-	}
-	br := r.db.SendBatch(ctx, batch)
-	defer br.Close()
-	for i := 0; i < len(trades); i++ {
-		if _, err := br.Exec(); err != nil {
-			return fmt.Errorf("backtest run trade batch insert row %d: %w", i, err)
-		}
-	}
-	return nil
-}
-
-// ListTradesByRunID returns all trades for a backtest run, ordered by open_ts.
-func (r *BacktestRunRepository) ListTradesByRunID(ctx context.Context, runID uuid.UUID) ([]*BacktestRunTrade, error) {
-	rows, err := r.db.Query(ctx,
-		`SELECT run_id, ticket, side, volume, open_ts, open_price, close_ts, close_price, pnl, commission, reason
-		 FROM backtest_run_trades WHERE run_id = $1 ORDER BY open_ts`, runID)
-	if err != nil {
-		return nil, fmt.Errorf("list backtest run trades: %w", err)
-	}
-	defer rows.Close()
-	var out []*BacktestRunTrade
-	for rows.Next() {
-		t := &BacktestRunTrade{}
-		if err := rows.Scan(&t.RunID, &t.Ticket, &t.Side, &t.Volume, &t.OpenTs, &t.OpenPrice, &t.CloseTs, &t.ClosePrice, &t.PnL, &t.Commission, &t.Reason); err != nil {
-			return nil, fmt.Errorf("scan backtest run trade: %w", err)
-		}
-		out = append(out, t)
-	}
-	return out, nil
 }

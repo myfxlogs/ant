@@ -182,9 +182,23 @@ func (s *Service) ChatCompletion(ctx context.Context, userID uuid.UUID, systemPr
 	authHeader(httpReq, secret)
 
 	client := &http.Client{Timeout: chatTimeout}
-	resp, err := client.Do(httpReq)
-	if err != nil {
-		return "", fmt.Errorf("chat completion http: %w", err)
+	var resp *http.Response
+	var doErr error
+	for attempt := 0; attempt <= 1; attempt++ {
+		if attempt > 0 {
+			time.Sleep(1 * time.Second)
+		}
+		resp, doErr = client.Do(httpReq)
+		if doErr == nil {
+			break
+		}
+		// Only retry on transient connection errors.
+		if !isTransientChatErr(doErr) {
+			break
+		}
+	}
+	if doErr != nil {
+		return "", fmt.Errorf("chat completion http: %w", doErr)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
@@ -236,4 +250,17 @@ func (s *Service) resolveChatProvider(ctx context.Context, userID uuid.UUID, mod
 		return row.ProviderID, m, base, sec, nil
 	}
 	return "", "", "", "", fmt.Errorf("no configured AI provider with a valid API key and model")
+}
+
+// isTransientChatErr returns true for network errors worth retrying once.
+func isTransientChatErr(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := err.Error()
+	return strings.Contains(msg, "connection refused") ||
+		strings.Contains(msg, "timeout") ||
+		strings.Contains(msg, "EOF") ||
+		strings.Contains(msg, "broken pipe") ||
+		strings.Contains(msg, "reset by peer")
 }

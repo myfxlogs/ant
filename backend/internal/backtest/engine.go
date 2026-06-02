@@ -3,6 +3,9 @@ package backtest
 import (
 	"math/rand"
 	"sort"
+
+	"anttrader/internal/costsvc"
+	"anttrader/internal/oms"
 )
 
 // Bar represents an OHLCV bar for backtesting.
@@ -23,45 +26,92 @@ type StrategyFunc func(bar Bar, currentPosition float64) (direction int, volume 
 // Engine runs bar-replay backtests.
 type Engine struct {
 	InitialCapital float64
-	FillModel      *FillModel
 	Bars           []Bar
+
+	// Simulation parameters (backtest-specific, not part of oms.FillModel)
+	SlippagePips    float64
+	PartialFillProb float64
+	PartialFillRatio float64
+	ContractSize    float64
+
+	// Cost decomposition via shared oms.FillModel
+	omsFillModel *oms.FillModel
 
 	equity      []float64
 	trades      []Trade
 	position    float64
 	entryPrice  float64
 	entryTime   int64
-	contractSize float64
 	rng         *rand.Rand
 }
 
-// NewEngine creates a backtest engine.
-func NewEngine(bars []Bar, initialCapital float64, fillModel *FillModel) *Engine {
+// NewEngine creates a backtest engine with the given bars, capital, and cost model.
+func NewEngine(bars []Bar, initialCapital float64, cm *costsvc.CostModel) *Engine {
 	sorted := make([]Bar, len(bars))
 	copy(sorted, bars)
 	sort.Slice(sorted, func(i, j int) bool {
 		return sorted[i].OpenTime < sorted[j].OpenTime
 	})
 
-	cs := 100000.0
-	if fillModel != nil && fillModel.ContractSize > 0 {
-		cs = fillModel.ContractSize
-	}
-
 	return &Engine{
-		InitialCapital: initialCapital,
-		FillModel:      fillModel,
-		Bars:           sorted,
-		equity:         make([]float64, 0, len(bars)),
-		trades:         make([]Trade, 0),
-		contractSize:   cs,
-		rng:            rand.New(rand.NewSource(42)),
+		InitialCapital:   initialCapital,
+		Bars:             sorted,
+		SlippagePips:     0.5,
+		PartialFillProb:  0,
+		PartialFillRatio: 0.8,
+		ContractSize:     100000,
+		omsFillModel:     oms.NewFillModel(cm),
+		equity:           make([]float64, 0, len(bars)),
+		trades:           make([]Trade, 0),
+		rng:              rand.New(rand.NewSource(42)),
 	}
 }
 
 // SetSeed sets the random seed for reproducible runs.
 func (e *Engine) SetSeed(seed int64) {
 	e.rng = rand.New(rand.NewSource(seed))
+}
+
+// simulateFill applies random slippage + partial fill simulation, then delegates
+// cost decomposition to oms.FillModel.Compute().
+func (e *Engine) simulateFill(direction int, volume, barClose float64, holdingDays float64) oms.FillResult {
+	grossPrice := barClose
+
+	// Random slippage — biased against the trader
+	slippagePips := e.SlippagePips
+	if e.rng != nil && slippagePips > 0 {
+		slippagePips = e.SlippagePips * (0.5 + e.rng.Float64())
+	}
+	pipSize := 0.0001
+	if e.omsFillModel != nil {
+		// pipSize is internal to costsvc; use a reasonable default
+	}
+	slippagePrice := slippagePips * pipSize
+	if direction > 0 {
+		grossPrice += slippagePrice
+	} else {
+		grossPrice -= slippagePrice
+	}
+
+	// Partial fill
+	filledVol := volume
+	if e.PartialFillProb > 0 && e.rng != nil && e.rng.Float64() < e.PartialFillProb {
+		filledVol = volume * e.PartialFillRatio
+	}
+
+	side := "buy"
+	if direction < 0 {
+		side = "sell"
+	}
+
+	fillResult := e.omsFillModel.Compute(grossPrice, costsvc.EstimateParams{
+		Side:         side,
+		Lots:         filledVol,
+		ContractSize: e.ContractSize,
+		HoldingDays:  holdingDays,
+	}, true)
+
+	return fillResult
 }
 
 // Run executes the backtest across all bars.
@@ -80,7 +130,7 @@ func (e *Engine) Run(strategy StrategyFunc) *Metrics {
 		direction, volume := strategy(bar, e.position)
 
 		if e.position == 0 && direction != 0 && volume > 0 {
-			fill := e.FillModel.SimulateFill(direction, volume, bar.Close, 0, e.rng)
+			fill := e.simulateFill(direction, volume, bar.Close, 0)
 			e.position = float64(direction) * fill.FilledVolume
 			e.entryPrice = fill.GrossPrice
 			e.entryTime = bar.CloseTime
@@ -92,12 +142,10 @@ func (e *Engine) Run(strategy StrategyFunc) *Metrics {
 			}
 			if direction != 0 && direction != currentDir {
 				posVolume := absFloat(e.position)
-				exitFill := e.FillModel.SimulateFill(-currentDir, posVolume, bar.Close, 0, e.rng)
-
-				// PnL = volume(lots) * contractSize * (exitPrice - entryPrice) for long
-				grossPnL := posVolume * e.contractSize * (exitFill.GrossPrice - e.entryPrice)
+				exitFill := e.simulateFill(-currentDir, posVolume, bar.Close, 0)
+				grossPnL := posVolume * e.ContractSize * (exitFill.GrossPrice - e.entryPrice)
 				if currentDir < 0 {
-					grossPnL = posVolume * e.contractSize * (e.entryPrice - exitFill.GrossPrice)
+					grossPnL = posVolume * e.ContractSize * (e.entryPrice - exitFill.GrossPrice)
 				}
 				netPnL := grossPnL - exitFill.TotalCost
 
@@ -119,7 +167,7 @@ func (e *Engine) Run(strategy StrategyFunc) *Metrics {
 				e.entryPrice = 0
 
 				if direction != 0 && volume > 0 {
-					fill := e.FillModel.SimulateFill(direction, volume, bar.Close, 0, e.rng)
+					fill := e.simulateFill(direction, volume, bar.Close, 0)
 					e.position = float64(direction) * fill.FilledVolume
 					e.entryPrice = fill.GrossPrice
 					e.entryTime = bar.CloseTime
@@ -140,11 +188,10 @@ func (e *Engine) Run(strategy StrategyFunc) *Metrics {
 			dir = -1
 		}
 		posVolume := absFloat(e.position)
-		exitFill := e.FillModel.SimulateFill(-dir, posVolume, lastBar.Close, 0, e.rng)
-
-		grossPnL := posVolume * e.contractSize * (exitFill.GrossPrice - e.entryPrice)
+		exitFill := e.simulateFill(-dir, posVolume, lastBar.Close, 0)
+		grossPnL := posVolume * e.ContractSize * (exitFill.GrossPrice - e.entryPrice)
 		if dir < 0 {
-			grossPnL = posVolume * e.contractSize * (e.entryPrice - exitFill.GrossPrice)
+			grossPnL = posVolume * e.ContractSize * (e.entryPrice - exitFill.GrossPrice)
 		}
 		netPnL := grossPnL - exitFill.TotalCost
 
@@ -175,9 +222,9 @@ func (e *Engine) unrealizedPnL(currentPrice float64) float64 {
 	}
 	posVolume := absFloat(e.position)
 	if e.position > 0 {
-		return posVolume * e.contractSize * (currentPrice - e.entryPrice)
+		return posVolume * e.ContractSize * (currentPrice - e.entryPrice)
 	}
-	return posVolume * e.contractSize * (e.entryPrice - currentPrice)
+	return posVolume * e.ContractSize * (e.entryPrice - currentPrice)
 }
 
 // Trades returns the completed trades from the last run.

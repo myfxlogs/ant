@@ -111,4 +111,9 @@ func (m *mockExecutor) ModifyOrder(_ context.Context, _ int64, _, _, _ decimal.D
 func (m *mockExecutor) FetchOpenedOrders(_ context.Context) ([]*OrderRecord, error)  { return nil, nil }
 func (m *mockExecutor) FetchOrderHistory(_ context.Context, _, _ time.Time) ([]*OrderRecord, error) { return nil, nil }
 func (m *mockExecutor) FetchSymbolParams(_ context.Context, _ []string) ([]*SymbolParam, error) { return nil, nil }
+func (m *mockExecutor) FetchAllSymbols(_ context.Context) ([]string, error)               { return nil, nil }
+func (m *mockExecutor) FetchPriceHistory(_ context.Context, _, _ string, _, _ int64, _ int) ([]*Bar, error) {
+	return nil, nil
+}
+func (m *mockExecutor) AddSymbols(_ context.Context, _ []string) error                  { return nil }
 func (m *mockExecutor) SubscribeOrderEvents(_ context.Context, _ OrderEventHandler) error { return nil }

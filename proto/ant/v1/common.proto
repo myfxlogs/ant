@@ -17,3 +17,11 @@ message BacktestMetrics {
   double average_profit = 10;
   double average_loss = 11;
 }
+
+message BacktestRisk {
+  int32 score = 1;           // 0–100, higher = lower risk
+  string level = 2;          // "low" / "medium" / "high"
+  repeated string reasons = 3;
+  repeated string warnings = 4;
+  bool is_reliable = 5;      // true when total_trades >= 10
+}

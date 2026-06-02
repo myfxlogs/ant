@@ -1,0 +1,161 @@
+package strategy
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"strings"
+
+	"connectrpc.com/connect"
+	"github.com/google/uuid"
+	"google.golang.org/protobuf/types/known/emptypb"
+
+	antv1 "anttrader/gen/proto/ant/v1"
+	"anttrader/internal/service"
+)
+
+// --- Schedules ---
+
+func (s *StrategyServer) ListSchedules(ctx context.Context, req *connect.Request[antv1.ListSchedulesRequest]) (*connect.Response[antv1.ListSchedulesResponse], error) {
+	rows, err := s.svc.ListSchedules(ctx, s.userID(ctx))
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	schedules := make([]*antv1.StrategySchedule, len(rows))
+	for i, r := range rows {
+		schedules[i] = scheduleRowToProto(&r)
+	}
+	return connect.NewResponse(&antv1.ListSchedulesResponse{Schedules: schedules}), nil
+}
+
+func (s *StrategyServer) GetSchedule(ctx context.Context, req *connect.Request[antv1.GetScheduleRequest]) (*connect.Response[antv1.StrategySchedule], error) {
+	id, err := uuid.Parse(req.Msg.Id)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	row, err := s.svc.GetSchedule(ctx, id, s.userID(ctx))
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(scheduleRowToProto(row)), nil
+}
+
+func (s *StrategyServer) CreateSchedule(ctx context.Context, req *connect.Request[antv1.CreateScheduleRequest]) (*connect.Response[antv1.StrategySchedule], error) {
+	m := req.Msg
+	if strings.TrimSpace(m.Symbol) == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("symbol is required"))
+	}
+	if strings.TrimSpace(m.Timeframe) == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("timeframe is required"))
+	}
+	if !validScheduleType(m.ScheduleType) {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid schedule type: %s", m.ScheduleType))
+	}
+	paramsJSON, err := json.Marshal(m.Parameters)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("marshal parameters: %w", err))
+	}
+	cfgJSON, err := json.Marshal(scheduleConfigToMap(m.ScheduleConfig))
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal schedule config: %w", err))
+	}
+
+	uid := s.userID(ctx)
+	templateID, _ := uuid.Parse(m.TemplateId)
+	accountID, _ := uuid.Parse(m.AccountId)
+
+	r := service.ScheduleRow{
+		UserID:         uid,
+		TemplateID:     templateID,
+		AccountID:      accountID,
+		Name:           m.Name,
+		Symbol:         m.Symbol,
+		Timeframe:      m.Timeframe,
+		Parameters:     paramsJSON,
+		ScheduleType:   m.ScheduleType,
+		ScheduleConfig: cfgJSON,
+		RiskReasons:    []byte("[]"),
+		RiskWarnings:   []byte("[]"),
+	}
+	if err := s.svc.CreateSchedule(ctx, &r); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(scheduleRowToProto(&r)), nil
+}
+
+func (s *StrategyServer) UpdateSchedule(ctx context.Context, req *connect.Request[antv1.UpdateScheduleRequest]) (*connect.Response[antv1.StrategySchedule], error) {
+	m := req.Msg
+	id, err := uuid.Parse(m.Id)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	existing, err := s.svc.GetSchedule(ctx, id, s.userID(ctx))
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if m.Name != nil {
+		existing.Name = *m.Name
+	}
+	if m.Symbol != nil {
+		existing.Symbol = *m.Symbol
+	}
+	if m.Timeframe != nil {
+		existing.Timeframe = *m.Timeframe
+	}
+	if m.Parameters != nil {
+		if b, err := json.Marshal(m.Parameters); err == nil {
+			existing.Parameters = b
+		} else {
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal parameters: %w", err))
+		}
+	}
+	if m.ScheduleType != nil {
+		existing.ScheduleType = *m.ScheduleType
+	}
+	if m.ScheduleConfig != nil {
+		if b, err := json.Marshal(scheduleConfigToMap(m.ScheduleConfig)); err == nil {
+			existing.ScheduleConfig = b
+		} else {
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal schedule config: %w", err))
+		}
+	}
+	if err := s.svc.UpdateSchedule(ctx, existing); err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(scheduleRowToProto(existing)), nil
+}
+
+func (s *StrategyServer) DeleteSchedule(ctx context.Context, req *connect.Request[antv1.DeleteScheduleRequest]) (*connect.Response[emptypb.Empty], error) {
+	id, err := uuid.Parse(req.Msg.Id)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	if err := s.svc.DeleteSchedule(ctx, id, s.userID(ctx)); err != nil {
+		return nil, err
+	}
+	return connect.NewResponse(&emptypb.Empty{}), nil
+}
+
+func (s *StrategyServer) ToggleSchedule(ctx context.Context, req *connect.Request[antv1.ToggleScheduleRequest]) (*connect.Response[antv1.StrategySchedule], error) {
+	m := req.Msg
+	id, err := uuid.Parse(m.Id)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	if err := s.svc.SetScheduleActive(ctx, id, s.userID(ctx), m.Active); err != nil {
+		return nil, err
+	}
+	row, err := s.svc.GetSchedule(ctx, id, s.userID(ctx))
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(scheduleRowToProto(row)), nil
+}
+
+func validScheduleType(t string) bool {
+	switch t {
+	case "cron", "interval", "event":
+		return true
+	}
+	return false
+}

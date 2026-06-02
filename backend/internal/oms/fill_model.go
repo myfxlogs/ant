@@ -30,22 +30,33 @@ type FillResult struct {
 	SwapCost       float64 `json:"swap_cost"`
 	FundingCost    float64 `json:"funding_cost"`
 	NetFillPrice   float64 `json:"net_fill_price"`
+	TotalCost      float64 `json:"total_cost"`
+	FilledVolume   float64 `json:"filled_volume"`
 }
 
 // Compute calculates the net fill price from the gross price.
 // For backtest mode (isBacktest=true), commission/slippage/spread are forced to non-zero defaults.
+// The receiver's costModel is never mutated — backtest defaults are applied to a local copy.
 func (f *FillModel) Compute(grossPrice float64, p costsvc.EstimateParams, isBacktest bool) FillResult {
-	if isBacktest && f.costModel.CommissionPerLot == 0 && f.costModel.CommissionBps == 0 {
-		f.costModel.CommissionBps = 1.0 // force 1 bps commission in backtest
+	if f == nil || f.costModel == nil {
+		return FillResult{GrossPrice: grossPrice, NetFillPrice: grossPrice, FilledVolume: p.Lots}
 	}
-	if isBacktest && f.costModel.SlippageBps == 0 {
-		f.costModel.SlippageBps = 1.0 // force 1 bps slippage in backtest
-	}
-	if isBacktest && f.costModel.SpreadPips == 0 {
-		f.costModel.SpreadPips = 1.0 // force 1 pip spread in backtest
+	cm := f.costModel // use directly for live; clone for backtest to avoid mutating shared state
+	if isBacktest {
+		cloned := *f.costModel
+		if cloned.CommissionPerLot == 0 && cloned.CommissionBps == 0 {
+			cloned.CommissionBps = 1.0
+		}
+		if cloned.SlippageBps == 0 {
+			cloned.SlippageBps = 1.0
+		}
+		if cloned.SpreadPips == 0 {
+			cloned.SpreadPips = 1.0
+		}
+		cm = &cloned
 	}
 
-	breakdown := f.costModel.Estimate(p)
+	breakdown := cm.Estimate(p)
 	lots := p.Lots
 	contractSize := p.ContractSize
 
@@ -69,6 +80,8 @@ func (f *FillModel) Compute(grossPrice float64, p costsvc.EstimateParams, isBack
 		SwapCost:     breakdown.SwapCost,
 		FundingCost:  breakdown.FundingCost,
 		NetFillPrice: netPrice,
+		TotalCost:    breakdown.TotalCost,
+		FilledVolume: p.Lots,
 	}
 }
 
