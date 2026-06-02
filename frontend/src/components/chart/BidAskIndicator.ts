@@ -17,6 +17,7 @@ export function setBidAsk(tsSec: number, bid: number, ask: number) {
 export function clearBidAsk() {
   liveMap.clear();
   latest = null;
+  precision = 5;
 }
 
 export function setBidAskPrecision(digits: number) {

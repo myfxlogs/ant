@@ -77,10 +77,5 @@ export function useChartData(symbol: string, timeframe: string, accountId?: stri
     return () => { cancelled = true; if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; } };
   }, [symbol, timeframe, accountId]);
 
-  const loadMore = (before: number) =>
-    marketApi.getKlines({ symbol: marketApi.resolveSymbol(symbol), timeframe, count: INITIAL_BARS, before, accountId })
-      .then((older) => { if (older.length === 0) { loadedAll.current = true; } else { setBars(prev => [...older, ...prev]); } })
-      .catch(() => { /* silent */ });
-
-  return { bars, loading, error, barsRef, loadingMore, loadedAll, loadMore };
+  return { bars, loading, error, barsRef, loadingMore, loadedAll };
 }

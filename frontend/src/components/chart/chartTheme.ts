@@ -12,7 +12,7 @@ const DARK_THEME = {
       upBorderColor: '#26a69a', downBorderColor: '#ef5350', noChangeBorderColor: '#888888',
       upWickColor: '#26a69a', downWickColor: '#ef5350', noChangeWickColor: '#888888',
     },
-    priceMark: { show: true, high: { show: true, color: '#26a69a', textMargin: 4 }, low: { show: true, color: '#ef5350', textMargin: 4 } },
+    priceMark: { show: true, high: { show: true, color: '#26a69a', textMargin: 4 }, low: { show: true, color: '#ef5350', textMargin: 4 }, last: { show: false } },
   },
   xAxis: {
     axisLine: { show: true, color: 'rgba(255,255,255,0.1)' },

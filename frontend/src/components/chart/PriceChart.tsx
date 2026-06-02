@@ -1,11 +1,12 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { Radio, Spin, Tooltip, Button, Space, Tag } from 'antd';
-import { InfoCircleOutlined, BarChartOutlined, LineChartOutlined, AreaChartOutlined, StockOutlined, SettingOutlined, CloseOutlined } from '@ant-design/icons';
+import { InfoCircleOutlined, BarChartOutlined, AreaChartOutlined, StockOutlined, SettingOutlined, CloseOutlined } from '@ant-design/icons';
 import { init, dispose, type KLineData } from 'klinecharts';
 import type { Chart } from 'klinecharts';
 import DARK_THEME from './chartTheme';
 import DrawingToolbar from './DrawingToolbar';
 import IndicatorPicker from './IndicatorPicker';
+import { marketApi } from '@/client/market';
 import { useChartData } from './useChartData';
 import { useChartIndicatorsStore, KLINECHARTS_MAP } from '@/stores/chartIndicatorsStore';
 import IndicatorSettingsModal from './IndicatorSettingsModal';
@@ -18,13 +19,12 @@ const TIMEFRAMES = [
   { label: '1d', value: '1d' }, { label: '1w', value: '1w' },
 ];
 
-type ChartType = 'candle_solid' | 'ohlc' | 'area' | 'line';
+type ChartType = 'candle_solid' | 'ohlc' | 'area';
 
 const CHART_TYPES: { key: ChartType; icon: React.ReactNode; label: string }[] = [
   { key: 'candle_solid', icon: <StockOutlined />, label: 'Candle' },
   { key: 'ohlc', icon: <BarChartOutlined />, label: 'OHLC' },
   { key: 'area', icon: <AreaChartOutlined />, label: 'Area' },
-  { key: 'line', icon: <LineChartOutlined />, label: 'Line' },
 ];
 
 function toKLineData(bar: { time: number; open: number; high: number; low: number; close: number; volume: number }): KLineData {
@@ -47,7 +47,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
   const [tooNarrow, setTooNarrow] = useState(false);
   const [chartType, setChartType] = useState<ChartType>('candle_solid');
 
-  const { bars, loading, error, loadingMore, loadedAll, loadMore } = useChartData(symbol, timeframe, accountId);
+  const { bars, loading, error, loadingMore, loadedAll } = useChartData(symbol, timeframe, accountId);
   const activeIndicators = useChartIndicatorsStore((s) => s.active);
   const getDef = useChartIndicatorsStore((s) => s.getDef);
   const removeIndicator = useChartIndicatorsStore((s) => s.removeIndicator);
@@ -79,7 +79,8 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
         try { chart.removeIndicator(existing.paneId, existing.name); } catch { /* */ }
       }
 
-      const isStack = ind.defId === 'SMA' || ind.defId === 'EMA' || ind.defId === 'BOLL';
+      const def = getDef(ind.defId);
+      const isStack = def?.kind === 'overlay';
       const calcParams = km.buildParams(ind.params);
       try {
         const paneId = chart.createIndicator(km.name, isStack, { id: `ind_${ind.instanceId}` }) as unknown as string;
@@ -141,20 +142,26 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
   useEffect(() => {
     const chart = chartRef.current;
     if (!chart) return;
-    // klinecharts v9 valid types: candle_solid | candle_stroke | ohlc | area
-    const kType = chartType === 'line' ? 'area' : chartType;
-    chart.setStyles({ candle: { ...DARK_THEME.candle, type: kType as any } });
+    // klinecharts v9 valid types: candle_solid | ohlc | area
+    chart.setStyles({ candle: { ...DARK_THEME.candle, type: chartType } });
   }, [chartType]);
 
   const applyChartType = useCallback((type: ChartType) => setChartType(type), []);
 
-  // Load more on scroll-left.
+  // Load more on scroll-left — directly append to chart, skip setBars.
   const handleLoadMore = useCallback((timestamp: number | null) => {
-    if (!timestamp || bars.length === 0 || loadingMore.current || loadedAll.current) return;
+    const chart = chartRef.current;
+    if (!chart || !timestamp || bars.length === 0 || loadingMore.current || loadedAll.current) return;
     if (timestamp >= bars[0].time) return;
     loadingMore.current = true;
-    loadMore(bars[0].time).finally(() => { loadingMore.current = false; });
-  }, [bars, loadMore, loadingMore, loadedAll]);
+    marketApi.getKlines({ symbol: marketApi.resolveSymbol(symbol), timeframe, count: 300, before: bars[0].time, accountId })
+      .then((older) => {
+        if (older.length === 0) { loadedAll.current = true; return; }
+        chart.applyNewData(older.map(toKLineData), true);
+      })
+      .catch(() => { /* silent */ })
+      .finally(() => { loadingMore.current = false; });
+  }, [bars, symbol, timeframe, accountId, loadingMore, loadedAll]);
 
   // Listen for scroll/pan to trigger load-more.
   useEffect(() => {
