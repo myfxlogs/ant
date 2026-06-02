@@ -141,17 +141,12 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
   useEffect(() => {
     const chart = chartRef.current;
     if (!chart) return;
-    try { (chart as any).setCandleStickChartType?.(chartType); } catch { /* ignore */ }
+    // klinecharts v9 valid types: candle_solid | candle_stroke | ohlc | area
+    const kType = chartType === 'line' ? 'area' : chartType;
+    chart.setStyles({ candle: { ...DARK_THEME.candle, type: kType as any } });
   }, [chartType]);
 
-  const applyChartType = useCallback((type: ChartType) => {
-    setChartType(type);
-    const chart = chartRef.current;
-    if (!chart) return;
-    try { (chart as any).setCandleStickChartType?.(type); } catch {
-      chart.setStyleOptions({ candle: { ...DARK_THEME.candle, type: type === 'ohlc' ? 'ohlc' as const : 'candle_solid' as const } });
-    }
-  }, []);
+  const applyChartType = useCallback((type: ChartType) => setChartType(type), []);
 
   // Load more on scroll-left.
   const handleLoadMore = useCallback((timestamp: number | null) => {
