@@ -1,22 +1,30 @@
 import { registerIndicator, type KLineData } from 'klinecharts';
 import type { IndicatorCreate } from 'klinecharts';
 
-// Module-level bid/ask store — written by SSE handler, read by indicator calc.
-// Key = bar open-time in unix seconds, matching KLineData.timestamp / 1000.
+// Module-level state for real-time bid/ask.
 const liveMap = new Map<number, { bid: number; ask: number }>();
+let latest: { bid: number; ask: number } | null = null;
+let precision = 5;
 
-/** Called from PriceChart onBar to feed live bid/ask into the indicator. */
 export function setBidAsk(tsSec: number, bid: number, ask: number) {
   const cur = liveMap.get(tsSec);
-  liveMap.set(tsSec, {
-    bid: bid > 0 ? bid : cur?.bid ?? 0,
-    ask: ask > 0 ? ask : cur?.ask ?? 0,
-  });
+  const nb = bid > 0 ? bid : cur?.bid ?? 0;
+  const na = ask > 0 ? ask : cur?.ask ?? 0;
+  liveMap.set(tsSec, { bid: nb, ask: na });
+  latest = { bid: nb || latest?.bid || 0, ask: na || latest?.ask || 0 };
 }
 
-/** Clear all stored bid/ask (e.g. on symbol/account change). */
 export function clearBidAsk() {
   liveMap.clear();
+  latest = null;
+}
+
+export function setBidAskPrecision(digits: number) {
+  if (digits > 0) precision = digits;
+}
+
+function fmt(p: number): string {
+  return p > 0 ? p.toFixed(precision) : '';
 }
 
 const BIDASK_INDICATOR: IndicatorCreate = {
@@ -34,17 +42,58 @@ const BIDASK_INDICATOR: IndicatorCreate = {
       { color: '#26a69a', size: 1.5, style: 'solid' as any, smooth: false, dashedValue: [2, 2] as any },
     ],
   },
+
   calc: (list: KLineData[]) => {
     if (!list || list.length === 0) return [];
-    return list.map((k: any) => {
-      const ts = k.timestamp != null ? Math.floor(k.timestamp / 1000) : 0;
-      const ba = ts > 0 ? liveMap.get(ts) : undefined;
-      const b = ba?.bid != null ? ba.bid : k.close;
-      const a = ba?.ask != null ? ba.ask : k.close;
-      return { bid: b ?? 0, ask: a ?? 0 };
-    });
+    const bv = latest?.bid || 0;
+    const av = latest?.ask || 0;
+    return list.map((k: any) => ({
+      bid: bv > 0 ? bv : k.close,
+      ask: av > 0 ? av : k.close,
+    }));
   },
-  draw: () => true,
+
+  draw: ({ ctx, bounding, yAxis, kLineDataList }: any) => {
+    const line = (price: number, color: string) => {
+      if (!(price > 0)) return;
+      const y = yAxis.convertToPixel(price);
+      if (y == null || y < 0 || y > bounding.height) return;
+
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(bounding.width, y);
+      ctx.stroke();
+
+      // Right-side label pill.
+      const label = fmt(price);
+      if (label) {
+        ctx.setLineDash([]);
+        ctx.font = '10px sans-serif';
+        const tw = ctx.measureText(label).width + 8;
+        const lx = bounding.width - tw;
+        ctx.fillStyle = color;
+        ctx.fillRect(lx, y - 7, tw, 14);
+        ctx.fillStyle = '#fff';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, lx + 4, y);
+      }
+      ctx.restore();
+    };
+
+    if (latest && (latest.bid > 0 || latest.ask > 0)) {
+      line(latest.bid, '#ef5350');
+      line(latest.ask, '#26a69a');
+    } else {
+      // Fallback: gray line at last close.
+      const last = kLineDataList?.[kLineDataList.length - 1];
+      if (last?.close > 0) line(last.close, '#888888');
+    }
+    return true; // skip default per-bar rendering
+  },
 };
 
 try { registerIndicator(BIDASK_INDICATOR); } catch { /* ok */ }

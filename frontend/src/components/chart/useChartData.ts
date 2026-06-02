@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { marketApi, type KlineData } from '@/client/market';
 import { subscribeEvents } from '@/client/stream';
 import type { BarUpdateEvent } from '@/gen/ant/v1/stream_pb';
-import { setBidAsk, clearBidAsk } from './BidAskIndicator';
+import { setBidAsk, clearBidAsk, setBidAskPrecision } from './BidAskIndicator';
 
 const INITIAL_BARS = 300;
 
@@ -25,6 +25,10 @@ export function useChartData(symbol: string, timeframe: string, accountId?: stri
     loadingMore.current = false;
     clearBidAsk();
     if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
+
+    marketApi.getSymbolParams(accountId, [marketApi.resolveSymbol(symbol)]).then((infos) => {
+      if (!cancelled && infos.length > 0 && infos[0].digits != null) setBidAskPrecision(infos[0].digits);
+    }).catch(() => {});
 
     marketApi.subscribeBars({ accountId, symbol }).then(() => {
       if (cancelled) return;
