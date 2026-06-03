@@ -68,8 +68,8 @@ export function useStrategyWorkspaceState() {
     if (!aiPrompt.trim()) return;
     setAiGenerating(true);
     try {
-      const revised = await codeAssistApi.revise({ code: codeCtx.code, prompt: aiPrompt });
-      if (revised?.code) codeCtx.setCode(revised.code);
+      const revised = await codeAssistApi.revise({ code: codeCtx.code, instruction: aiPrompt });
+      if (revised?.python) codeCtx.setCode(revised.python);
     } catch (e: any) { message.error(e?.message || 'AI generation failed'); }
     finally { setAiGenerating(false); }
   }, [codeCtx.code, aiPrompt]);
