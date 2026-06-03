@@ -18,6 +18,7 @@ interface Props {
   symbol: string;
   accountInfo?: AccountInfo | null;
   accountMeta?: AccountMeta | null;
+  allPositions?: PositionItem[];
   positions?: PositionItem[];
   recentTrades?: TradeItem[];
   onClosePosition?: (ticket: number) => void;
@@ -47,7 +48,8 @@ function BalanceRow({ label, value }: { label: string; value: string }) {
   </div>;
 }
 
-export default function QuickTradePanel({ accountId, symbol, accountInfo, accountMeta, positions = [], recentTrades = [], onClosePosition }: Props) {
+export default function QuickTradePanel({ accountId, symbol, accountInfo, accountMeta, allPositions = [], positions = [], recentTrades = [], onClosePosition }: Props) {
+  const totalLots = (allPositions || []).reduce((s, p) => s + (p.volume || 0), 0);
   const [side, setSide] = useState<OrderSide>('buy');
   const [orderKind, setOrderKind] = useState<OrderKind>('MARKET');
   const [volume, setVolume] = useState<number | null>(0.01);
@@ -173,6 +175,14 @@ export default function QuickTradePanel({ accountId, symbol, accountInfo, accoun
       <div style={{ ...cardBox, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={labelSm}>Leverage</span>
         <span style={{ fontSize: 13, fontWeight: 700, color: '#262626' }}>1:{leverage}</span>
+      </div>
+
+      {/* Position summary — total lots + count across all symbols */}
+      <div style={{ ...cardBox, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={labelSm}>Open Positions</span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: '#262626' }}>
+          {totalLots.toFixed(2)} lots · {allPositions.length}
+        </span>
       </div>
 
       {/* Margin Mode — MT5 supports cross/isolated; MT4 only cross */}

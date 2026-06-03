@@ -7,7 +7,6 @@ import WorkspaceCodePanel from './components/workspace/WorkspaceCodePanel';
 import WorkspaceBacktestPanel from './components/workspace/WorkspaceBacktestPanel';
 import WorkspaceTemplateManager from './components/workspace/WorkspaceTemplateManager';
 import WorkspaceToolbar from './components/workspace/WorkspaceToolbar';
-import MiniPositionsTable from './components/workspace/MiniPositionsTable';
 import BacktestParamsCard from './components/workspace/BacktestParamsCard';
 import { AICodeReviseChat } from '@/components/strategy/CodeAssist';
 import PriceChart from '@/components/chart/PriceChart';
@@ -34,9 +33,6 @@ export default function StrategyWorkspacePage() {
         codePanelVisible={ws.codePanelVisible} onToggleCodePanel={() => ws.setCodePanelVisible(!ws.codePanelVisible)}
         quickTradeVisible={ws.quickTradeVisible} onToggleQuickTrade={() => ws.setQuickTradeVisible(!ws.quickTradeVisible)}
       />
-
-      {/* Mini positions table — all open positions for selected account */}
-      <MiniPositionsTable positions={ws.allPositions} onClosePosition={ws.handleClosePosition} />
 
       {/* ═══ THREE-COLUMN BODY ═══ */}
       <div style={{ display: 'flex', flex: '1 1 auto', overflow: 'hidden', minHeight: 0 }}>
@@ -203,6 +199,7 @@ export default function StrategyWorkspacePage() {
                   accountId={ws.accountId} symbol={ws.symbol}
                   accountInfo={ws.accountInfo}
                   accountMeta={ws.selectedAccountMeta}
+                  allPositions={ws.allPositions}
                   positions={ws.qtPositions}
                   recentTrades={ws.qtRecentTrades}
                   onClosePosition={ws.handleClosePosition}
