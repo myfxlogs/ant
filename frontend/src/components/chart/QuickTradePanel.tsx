@@ -62,7 +62,6 @@ export default function QuickTradePanel({ accountId, symbol, accountInfo, accoun
 
   const isLimitOrStop = orderKind === 'LIMIT' || orderKind === 'STOP';
   const freeMargin = accountInfo?.freeMargin ?? 0;
-  const leverage = accountMeta?.leverage ?? 100;
   const isMT5 = accountMeta?.mtType === 'MT5';
 
   const canSubmit = Boolean(symbol && accountId && (volume || 0) > 0 && !submitting);
@@ -132,6 +131,8 @@ export default function QuickTradePanel({ accountId, symbol, accountInfo, accoun
         </div>
       )}
 
+      {/* Order form — only when symbol is selected */}
+      {symbol && (<>
       {/* Side toggle */}
       <div style={{ display: 'flex', gap: 0 }}>
         <Button block type={side === 'buy' ? 'primary' : 'default'}
@@ -170,12 +171,6 @@ export default function QuickTradePanel({ accountId, symbol, accountInfo, accoun
             value={price} onChange={(v) => setPrice(v)} placeholder="0.00000" />
         </div>
       )}
-
-      {/* Leverage — read-only from broker account settings */}
-      <div style={{ ...cardBox, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={labelSm}>Leverage</span>
-        <span style={{ fontSize: 13, fontWeight: 700, color: '#262626' }}>1:{leverage}</span>
-      </div>
 
       {/* Position summary — total lots + count across all symbols */}
       <div style={{ ...cardBox, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -228,7 +223,7 @@ export default function QuickTradePanel({ accountId, symbol, accountInfo, accoun
         }}>
         {side === 'buy' ? 'Buy' : 'Sell'} {symbol || '—'}
       </Button>
-
+      </>)}
       {/* Position Section */}
       <PositionSection symbol={symbol} positions={positions}
         closingTicket={closingTicket} onClosePosition={handleClosePos} />

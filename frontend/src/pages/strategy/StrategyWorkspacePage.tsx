@@ -190,21 +190,15 @@ export default function StrategyWorkspacePage() {
             </div>
             {/* Body */}
             <div style={{ flex: 1, overflowY: 'auto', padding: 12 }}>
-              {!ws.symbol ? (
-                <div style={{ fontSize: 12, color: '#8c8c8c', textAlign: 'center', padding: '24px 0' }}>
-                  Select a symbol first
-                </div>
-              ) : (
-                <QuickTradePanel
-                  accountId={ws.accountId} symbol={ws.symbol}
-                  accountInfo={ws.accountInfo}
-                  accountMeta={ws.selectedAccountMeta}
-                  allPositions={ws.allPositions}
-                  positions={ws.qtPositions}
-                  recentTrades={ws.qtRecentTrades}
-                  onClosePosition={ws.handleClosePosition}
-                />
-              )}
+              <QuickTradePanel
+                accountId={ws.accountId} symbol={ws.symbol}
+                accountInfo={ws.accountInfo}
+                accountMeta={ws.selectedAccountMeta}
+                allPositions={ws.allPositions}
+                positions={ws.qtPositions}
+                recentTrades={ws.qtRecentTrades}
+                onClosePosition={ws.handleClosePosition}
+              />
             </div>
           </div>
         )}
