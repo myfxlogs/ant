@@ -3,6 +3,7 @@ import { message } from 'antd';
 import { useAccount } from '@/hooks/useAccount';
 import { useTradingStore } from '@/stores/tradingStore';
 import { useAccountFinancials } from '@/queries/useAccountFinancials';
+import { usePositionsQuery } from '@/queries/usePositionsQuery';
 import { marketApi } from '@/client/market';
 import { tradingApi } from '@/client/trading';
 import { codeAssistApi } from '@/client/codeAssist';
@@ -79,25 +80,25 @@ export function useStrategyWorkspaceState() {
   // tradingStore.setAccountInfoById is a dead path with zero callers — use the live query instead.
   const { data: accountInfo } = useAccountFinancials(accountId);
 
-  // Total open positions across all symbols for the selected account
-  const positionCount = useMemo(() => {
-    if (!accountId) return 0;
-    return (tradingStore.positionsMap.get(accountId) || []).length;
-  }, [accountId, tradingStore.positionsMap]);
+  // Positions — reuse account detail page's TanStack Query cache (SSE-backed).
+  // Same queryKey → same cache → zero extra RPC. SSE bridge writes to this cache.
+  const { data: rawPositions } = usePositionsQuery(accountId);
+
+  const positionCount = rawPositions?.length ?? 0;
 
   // All open positions for the selected account (unfiltered by symbol)
   const allPositions: QuickTradePosition[] = useMemo(() => {
-    if (!accountId) return [];
-    return (tradingStore.positionsMap.get(accountId) || []).map(p => ({
+    if (!rawPositions) return [];
+    return rawPositions.map(p => ({
       ticket: p.ticket, side: p.type.startsWith('buy') ? 'long' : 'short',
       symbol: p.symbol, volume: p.volume || 0, openPrice: p.openPrice || 0,
       markPrice: p.currentPrice, profit: p.profit || 0,
     }));
-  }, [accountId, tradingStore.positionsMap]);
+  }, [rawPositions]);
 
   const qtPositions: QuickTradePosition[] = useMemo(() => {
-    if (!accountId || !symbol) return [];
-    return (tradingStore.positionsMap.get(accountId) || [])
+    if (!symbol) return [];
+    return (rawPositions || [])
       .filter(p => p.symbol === symbol)
       .map(p => ({
         ticket: p.ticket, side: p.type.startsWith('buy') ? 'long' : 'short',
@@ -105,7 +106,7 @@ export function useStrategyWorkspaceState() {
         markPrice: p.currentPrice, profit: p.profit || 0,
         leverage: undefined,
       }));
-  }, [accountId, symbol, tradingStore.positionsMap]);
+  }, [symbol, rawPositions]);
 
   const [qtRecentTrades, setQtRecentTrades] = useState<RecentTrade[]>([]);
   const fetchTradeHistory = useCallback(async () => {
