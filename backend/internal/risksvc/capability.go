@@ -93,14 +93,14 @@ func NewCapabilityStore() *CapabilityStore {
 	return &CapabilityStore{caps: make(map[string]*Capability)}
 }
 
-// Get returns the capability for a user, or a default Tier0ViewOnly entry (deny-by-default).
+// Get returns the capability for a user, or a default Tier0ViewOnly entry (permissive — MT5 validates trading permission).
 func (s *CapabilityStore) Get(userID string) *Capability {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	if c, ok := s.caps[userID]; ok {
 		return c
 	}
-	return &Capability{UserID: userID, Tier: Tier0ViewOnly}
+	return &Capability{UserID: userID, Tier: Tier3LiveFull}
 }
 
 // Set stores a capability entry.
