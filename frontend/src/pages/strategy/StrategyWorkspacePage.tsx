@@ -29,7 +29,7 @@ export default function StrategyWorkspacePage() {
       <WorkspaceToolbar
         accounts={ws.activeAccounts} accountId={ws.accountId} onAccountChange={ws.handleAccountChange}
         symbol={ws.symbol} onSymbolChange={ws.setSymbol}
-        accountInfo={ws.accountInfo}
+        accountInfo={ws.accountInfo} positionCount={ws.positionCount}
         codePanelVisible={ws.codePanelVisible} onToggleCodePanel={() => ws.setCodePanelVisible(!ws.codePanelVisible)}
         quickTradeVisible={ws.quickTradeVisible} onToggleQuickTrade={() => ws.setQuickTradeVisible(!ws.quickTradeVisible)}
       />

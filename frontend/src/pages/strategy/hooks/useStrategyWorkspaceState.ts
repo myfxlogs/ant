@@ -79,6 +79,12 @@ export function useStrategyWorkspaceState() {
   // tradingStore.setAccountInfoById is a dead path with zero callers — use the live query instead.
   const { data: accountInfo } = useAccountFinancials(accountId);
 
+  // Total open positions across all symbols for the selected account
+  const positionCount = useMemo(() => {
+    if (!accountId) return 0;
+    return (tradingStore.positionsMap.get(accountId) || []).length;
+  }, [accountId, tradingStore.positionsMap]);
+
   const qtPositions: QuickTradePosition[] = useMemo(() => {
     if (!accountId || !symbol) return [];
     return (tradingStore.positionsMap.get(accountId) || [])
@@ -148,7 +154,7 @@ export function useStrategyWorkspaceState() {
     enabledSweepDims: btCtx.enabledSweepDims, cartesianSize: btCtx.cartesianSize,
     tuningRunning: btCtx.tuningRunning, handleRunTuning: btCtx.runTuning,
     aiPrompt, setAiPrompt, aiGenerating, handleGenerateCode,
-    accountInfo, selectedAccountMeta, qtPositions, qtRecentTrades, handleClosePosition,
+    accountInfo, selectedAccountMeta, positionCount, qtPositions, qtRecentTrades, handleClosePosition,
     codePanelVisible, setCodePanelVisible, quickTradeVisible, setQuickTradeVisible,
   };
 }

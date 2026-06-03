@@ -1,5 +1,5 @@
 import { Select, Space, Button, Tooltip, Tag } from 'antd';
-import { ThunderboltOutlined, CodeOutlined, RiseOutlined, FallOutlined, BankOutlined, AimOutlined, ApartmentOutlined } from '@ant-design/icons';
+import { ThunderboltOutlined, CodeOutlined, RiseOutlined, FallOutlined, BankOutlined, AimOutlined, KeyOutlined, EyeOutlined } from '@ant-design/icons';
 import SymbolPicker from '@/components/chart/SymbolPicker';
 import type { AccountInfo } from '@/stores/tradingStore';
 import type { Account } from '@/types/account';
@@ -9,6 +9,7 @@ interface Props {
   accountId: string; onAccountChange: (id: string) => void;
   symbol: string; onSymbolChange: (s: string) => void;
   accountInfo?: AccountInfo | null;
+  positionCount?: number;
   codePanelVisible: boolean; onToggleCodePanel: () => void;
   quickTradeVisible: boolean; onToggleQuickTrade: () => void;
 }
@@ -49,7 +50,7 @@ function SummaryChip({ label, value, color, icon }: { label: string; value: stri
 
 export default function WorkspaceToolbar({
   accounts, accountId, onAccountChange,
-  symbol, onSymbolChange, accountInfo,
+  symbol, onSymbolChange, accountInfo, positionCount,
   codePanelVisible, onToggleCodePanel, quickTradeVisible, onToggleQuickTrade,
 }: Props) {
   const hasData = accountInfo != null;
@@ -95,6 +96,11 @@ export default function WorkspaceToolbar({
         </div>
       )}
 
+      {/* Position count */}
+      {positionCount != null && positionCount > 0 && hasData && (
+        <SummaryChip label="Positions" value={String(positionCount)} />
+      )}
+
       {/* Account Metadata — platform, broker, server, mode, investor, leverage */}
       {selectedAccount && (
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -108,7 +114,9 @@ export default function WorkspaceToolbar({
             {selectedAccount.brokerServer}
           </Tag>
           {/* Connection method: Master (full trading) vs Investor (read-only) */}
-          <Tag icon={<ApartmentOutlined style={{ fontSize: 10 }} />}
+          <Tag icon={selectedAccount.isInvestor
+              ? <EyeOutlined style={{ fontSize: 10 }} />
+              : <KeyOutlined style={{ fontSize: 10 }} />}
             color={selectedAccount.isInvestor ? 'orange' : 'green'}
             style={{ fontSize: 10, margin: 0, lineHeight: '18px' }}>
             {selectedAccount.isInvestor ? 'Investor (Read-only)' : 'Master (Trading)'}
