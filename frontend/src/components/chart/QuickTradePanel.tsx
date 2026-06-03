@@ -172,14 +172,6 @@ export default function QuickTradePanel({ accountId, symbol, accountInfo, accoun
         </div>
       )}
 
-      {/* Position summary — total lots + count across all symbols */}
-      <div style={{ ...cardBox, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={labelSm}>Open Positions</span>
-        <span style={{ fontSize: 13, fontWeight: 700, color: '#262626' }}>
-          {totalLots.toFixed(2)} lots · {allPositions.length}
-        </span>
-      </div>
-
       {/* Margin Mode — MT5 supports cross/isolated; MT4 only cross */}
       <div>
         <div style={labelSm}>Margin Mode</div>
@@ -224,6 +216,15 @@ export default function QuickTradePanel({ accountId, symbol, accountInfo, accoun
         {side === 'buy' ? 'Buy' : 'Sell'} {symbol || '—'}
       </Button>
       </>)}
+
+      {/* Position summary — total lots + count across all symbols */}
+      <div style={{ ...cardBox, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={labelSm}>Open Positions</span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: '#262626' }}>
+          {totalLots.toFixed(2)} lots · {allPositions.length}
+        </span>
+      </div>
+
       {/* Position Section */}
       <PositionSection symbol={symbol} positions={positions}
         closingTicket={closingTicket} onClosePosition={handleClosePos} />
