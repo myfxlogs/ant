@@ -1,6 +1,8 @@
 import { Button, Space, Input, Alert, Tag, Tooltip } from 'antd';
-import { CheckCircleOutlined, PlayCircleOutlined, CopyOutlined, SaveOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, PlayCircleOutlined, CopyOutlined, SaveOutlined, SettingOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
+import AISettingsModal from './AISettingsModal';
 
 interface ValidationResult {
   valid: boolean;
@@ -17,12 +19,16 @@ interface Props {
   canSave: boolean; onSave: () => void; onCopy: () => void;
 }
 
+const btnStyle: React.CSSProperties = { width: 30, height: 30, borderRadius: 6, padding: 0,
+  display: 'flex', alignItems: 'center', justifyContent: 'center' };
+
 export default function WorkspaceCodePanel({
   code, onCodeChange,
   validating, onValidate, validationResult,
   onRunBacktest, backtestSubmitting, canSave, onSave, onCopy,
 }: Props) {
   const { t } = useTranslation();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -32,20 +38,23 @@ export default function WorkspaceCodePanel({
           <span style={{ fontSize: 13, fontWeight: 500, color: '#595959' }}>
             {t('strategy.workspace.code', 'Strategy Code')}
           </span>
-          <Space size="small">
+          <Space size={4}>
             <Tooltip title={t('strategy.workspace.copy', 'Copy')}>
-              <Button size="small" icon={<CopyOutlined />} onClick={onCopy} disabled={!code} />
+              <Button size="small" icon={<CopyOutlined />} onClick={onCopy} disabled={!code} style={btnStyle} />
             </Tooltip>
-            <Button size="small" icon={<CheckCircleOutlined />} loading={validating} onClick={onValidate}>
-              {t('strategy.workspace.validate', 'Validate')}
-            </Button>
-            <Button size="small" type="primary" icon={<SaveOutlined />} onClick={onSave} disabled={!canSave}>
-              {t('strategy.workspace.save', 'Save')}
-            </Button>
-            <Button size="small" type="primary" icon={<PlayCircleOutlined />}
-              loading={backtestSubmitting} onClick={onRunBacktest} disabled={!code}>
-              {t('strategy.workspace.runBacktest', 'Run Backtest')}
-            </Button>
+            <Tooltip title={t('strategy.workspace.validate', 'Validate')}>
+              <Button size="small" icon={<CheckCircleOutlined />} loading={validating} onClick={onValidate} style={btnStyle} />
+            </Tooltip>
+            <Tooltip title={t('strategy.workspace.save', 'Save')}>
+              <Button size="small" type="primary" icon={<SaveOutlined />} onClick={onSave} disabled={!canSave} style={btnStyle} />
+            </Tooltip>
+            <Tooltip title={t('strategy.workspace.runBacktest', 'Run Backtest')}>
+              <Button size="small" type="primary" icon={<PlayCircleOutlined />}
+                loading={backtestSubmitting} onClick={onRunBacktest} disabled={!code} style={btnStyle} />
+            </Tooltip>
+            <Tooltip title={t('strategy.ai.settings', 'AI Settings')}>
+              <Button size="small" icon={<SettingOutlined />} onClick={() => setSettingsOpen(true)} style={btnStyle} />
+            </Tooltip>
           </Space>
         </div>
         <Input.TextArea value={code} onChange={(e) => onCodeChange(e.target.value)}
@@ -73,6 +82,7 @@ export default function WorkspaceCodePanel({
           )} />
       )}
 
+      <AISettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 }
