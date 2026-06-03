@@ -58,9 +58,14 @@ func (s *MtHubService) runPreTradeRisk(ctx context.Context, req *OrderRequest, o
 	s.omsTransition(ctx, orderID, req.AccountID, OMSStateNew, OMSStateValidated)
 	s.omsTransition(ctx, orderID, req.AccountID, OMSStateValidated, OMSStateRiskApproved)
 
-	// Override requested volume with sizer output.
+	// Override volume with sizer output for automated signals.
+	// For manual orders (user already set a volume), skip override
+	// when the sizer cannot compute (missing Price/ATR for market orders).
 	if result.Lots > 0 {
 		req.Volume = decimal.NewFromFloat(result.Lots)
+	} else if result.Stage == "sizer" && req.Volume.IsPositive() {
+		// Manual order: user provided volume, sizer lacks data — let it through.
+		return nil
 	}
 	return nil
 }

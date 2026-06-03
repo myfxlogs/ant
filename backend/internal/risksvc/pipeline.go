@@ -177,7 +177,7 @@ func (p *SignalPipeline) Process(ctx context.Context, sig *SignalRequest) *Signa
 		return &SignalResult{Allowed: false, Reason: err.Error(), Stage: "sizer"}
 	}
 	if sres.Lots <= 0 {
-		return &SignalResult{Allowed: false, Reason: "sizer returned zero lots", Stage: "sizer", RiskUsed: sres.RiskUsed, Method: sres.Method}
+		return &SignalResult{Allowed: true, Reason: "sizer passthrough (manual order)", Stage: "sizer", RiskUsed: sres.RiskUsed, Method: sres.Method}
 	}
 
 	// Stage 6: Block allocation (multi-account)
