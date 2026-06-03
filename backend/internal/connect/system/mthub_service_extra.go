@@ -60,7 +60,7 @@ func (s *MtHubServer) PriceHistory(ctx context.Context, req *connect.Request[ant
 	// CH data insufficient — fetch directly from broker for this period.
 	// Async backfill will populate CH for subsequent timeframe switches.
 	// Threshold: CH has <50 bars means stale/missing data; go to broker.
-	if len(chBars) < 50 && m.AccountId != "" {
+	if m.AccountId != "" && s.needsBrokerFallback(chBars, period, int(limit)) {
 		chBars = s.brokerFallback(ctx, m.AccountId, resolved, period, int(limit))
 	}
 

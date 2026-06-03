@@ -164,3 +164,33 @@ func (s *MtHubServer) brokerFallback(
 	}
 	return out
 }
+
+// needsBrokerFallback returns true when ClickHouse data is insufficient or has
+// large discontinuities (e.g., account disconnected for days — old cached bars
+// + new bars pass the count check but span a gap). Broker fallback fills the gap.
+func (s *MtHubServer) needsBrokerFallback(bars []repository.KlineBar, period string, limit int) bool {
+	if len(bars) < 50 {
+		return true
+	}
+	if period == "" || len(bars) == 0 {
+		return false
+	}
+	secs := periodSeconds(period)
+	if secs <= 0 {
+		return false
+	}
+	now := time.Now().Unix()
+	// Stale check: latest bar close > 2x period behind now
+	lastClose := int64(bars[len(bars)-1].CloseTsUnixMs / 1000)
+	if now-lastClose > 2*secs {
+		return true
+	}
+	// Internal gap check: any adjacent bars with gap > 2x period
+	for i := 1; i < len(bars); i++ {
+		gap := int64(bars[i].OpenTsUnixMs/1000) - int64(bars[i-1].CloseTsUnixMs/1000)
+		if gap > 2*secs {
+			return true
+		}
+	}
+	return false
+}
