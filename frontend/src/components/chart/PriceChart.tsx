@@ -1,13 +1,13 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { Radio, Spin, Tooltip, Button, Space, Tag } from 'antd';
-import { InfoCircleOutlined, BarChartOutlined, AreaChartOutlined, StockOutlined, SettingOutlined, CloseOutlined } from '@ant-design/icons';
-import { init, dispose, type KLineData } from 'klinecharts';
+import { BarChartOutlined, AreaChartOutlined, StockOutlined, SettingOutlined, CloseOutlined } from '@ant-design/icons';
+import { init, dispose } from 'klinecharts';
 import type { Chart } from 'klinecharts';
 import DARK_THEME from './chartTheme';
 import DrawingToolbar from './DrawingToolbar';
 import IndicatorPicker from './IndicatorPicker';
 import { marketApi } from '@/client/market';
-import { useChartData } from './useChartData';
+import { useChartData, toChartBar } from './useChartData';
 import { useChartIndicatorsStore, KLINECHARTS_MAP } from '@/stores/chartIndicatorsStore';
 import IndicatorSettingsModal from './IndicatorSettingsModal';
 import './BidAskIndicator';
@@ -27,10 +27,6 @@ const CHART_TYPES: { key: ChartType; icon: React.ReactNode; label: string }[] = 
   { key: 'area', icon: <AreaChartOutlined />, label: 'Area' },
 ];
 
-function toKLineData(bar: { time: number; open: number; high: number; low: number; close: number; volume: number }): KLineData {
-  return { timestamp: bar.time * 1000, open: bar.open, high: bar.high, low: bar.low, close: bar.close, volume: bar.volume };
-}
-
 interface Props {
   symbol: string;
   timeframe?: string;
@@ -47,7 +43,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
   const [tooNarrow, setTooNarrow] = useState(false);
   const [chartType, setChartType] = useState<ChartType>('candle_solid');
 
-  const { bars, loading, error, loadingMore, loadedAll } = useChartData(symbol, timeframe, accountId);
+  const { bars, loading, error, streamActive, loadingMore, loadedAll } = useChartData(symbol, timeframe, accountId, chartRef);
   const activeIndicators = useChartIndicatorsStore((s) => s.active);
   const getDef = useChartIndicatorsStore((s) => s.getDef);
   const removeIndicator = useChartIndicatorsStore((s) => s.removeIndicator);
@@ -103,52 +99,43 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)');
     setTooNarrow(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setTooNarrow(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
+    const h = (e: MediaQueryListEvent) => setTooNarrow(e.matches);
+    mq.addEventListener('change', h);
+    return () => mq.removeEventListener('change', h);
   }, []);
 
-  // applyNewData when bars change.
+  // applyNewData when bars change
   useEffect(() => {
     if (!chartRef.current) return;
-    chartRef.current.applyNewData(bars.map(toKLineData));
+    chartRef.current.applyNewData(bars.map(toChartBar));
   }, [bars]);
 
-  // Create chart on mount.
+  // Create chart on mount
   useEffect(() => {
     if (!containerRef.current) return;
     const el = containerRef.current;
     el.style.width = '100%';
     el.style.height = `${height}px`;
-
     const chart = init(el, { styles: DARK_THEME });
     if (!chart) { console.error('klinecharts init returned null'); return; }
     chartRef.current = chart;
-
-    try {
-      chart.createIndicator('VOL', false, {
-        id: 'volume_pane',
-        styles: { bars: { upColor: 'rgba(38,166,154,0.6)', downColor: 'rgba(239,83,80,0.6)' }, lines: [] },
-      });
+    try { chart.createIndicator('VOL', false, { id: 'volume_pane',
+      styles: { bars: { upColor: 'rgba(38,166,154,0.6)', downColor: 'rgba(239,83,80,0.6)' }, lines: [] } });
     } catch { /* ignore */ }
-
-    try { chart.createIndicator('BIDASK', true, { id: 'candle_pane' }); } catch (e) { console.error('BIDASK createIndicator failed', e); }
-
+    try { chart.createIndicator('BIDASK', true, { id: 'candle_pane' }); } catch { /* */ }
     onChartReady?.(chart);
     return () => { onChartReady?.(null); dispose(el); chartRef.current = null; };
   }, []);
 
-  // Chart type.
+  // Chart type
   useEffect(() => {
-    const chart = chartRef.current;
-    if (!chart) return;
-    // klinecharts v9 valid types: candle_solid | ohlc | area
-    chart.setStyles({ candle: { ...DARK_THEME.candle, type: chartType } });
+    if (!chartRef.current) return;
+    chartRef.current.setStyles({ candle: { ...DARK_THEME.candle, type: chartType } });
   }, [chartType]);
 
   const applyChartType = useCallback((type: ChartType) => setChartType(type), []);
 
-  // Load more on scroll-left — directly append to chart, skip setBars.
+  // Load more on scroll-left — directly append to chart
   const handleLoadMore = useCallback((timestamp: number | null) => {
     const chart = chartRef.current;
     if (!chart || !timestamp || bars.length === 0 || loadingMore.current || loadedAll.current) return;
@@ -157,30 +144,27 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     marketApi.getKlines({ symbol: marketApi.resolveSymbol(symbol), timeframe, count: 300, before: bars[0].time, accountId })
       .then((older) => {
         if (older.length === 0) { loadedAll.current = true; return; }
-        chart.applyNewData(older.map(toKLineData), true);
-      })
-      .catch(() => { /* silent */ })
-      .finally(() => { loadingMore.current = false; });
+        chart.applyNewData(older.map(toChartBar), true);
+      }).catch(() => { /* silent */ }).finally(() => { loadingMore.current = false; });
   }, [bars, symbol, timeframe, accountId, loadingMore, loadedAll]);
 
-  // Listen for scroll/pan to trigger load-more.
+  // Listen for scroll/pan to trigger load-more
   useEffect(() => {
-    const chart = chartRef.current;
-    const container = containerRef.current;
+    const chart = chartRef.current, container = containerRef.current;
     if (!chart || !container) return;
-    let timer: ReturnType<typeof setTimeout> | null = null;
+    let timer: number | null = null;
     const onInteraction = () => {
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(() => {
+      if (timer != null) window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
         try { const r = (chart as any).getVisibleRange?.() as { from?: number } | null; if (r?.from != null) handleLoadMore(r.from); } catch { /* */ }
       }, 300);
     };
     container.addEventListener('wheel', onInteraction, { passive: true });
     container.addEventListener('pointerdown', onInteraction, { passive: true });
-    return () => { container.removeEventListener('wheel', onInteraction); container.removeEventListener('pointerdown', onInteraction); if (timer) clearTimeout(timer); };
+    return () => { container.removeEventListener('wheel', onInteraction); container.removeEventListener('pointerdown', onInteraction); if (timer != null) window.clearTimeout(timer); };
   }, [handleLoadMore]);
 
-  // Resize.
+  // Resize
   useEffect(() => {
     if (chartRef.current && containerRef.current) { containerRef.current.style.height = `${height}px`; chartRef.current.resize(); }
   }, [height]);
@@ -193,19 +177,23 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     <div ref={wrapperRef} style={{ position: 'relative' }}>
       {/* Toolbar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 4 }}>
-        <Space size="small" wrap>
-          <Radio.Group value={timeframe} onChange={e => onTimeframeChange?.(e.target.value)} size="small" optionType="button" buttonStyle="solid">
-            {TIMEFRAMES.map(tf => <Radio.Button key={tf.value} value={tf.value}>{tf.label}</Radio.Button>)}
-          </Radio.Group>
-        </Space>
+        <Radio.Group value={timeframe} onChange={e => onTimeframeChange?.(e.target.value)} size="small" optionType="button" buttonStyle="solid">
+          {TIMEFRAMES.map(tf => <Radio.Button key={tf.value} value={tf.value}>{tf.label}</Radio.Button>)}
+        </Radio.Group>
         <Space size={4}>
           {CHART_TYPES.map(ct => (
             <Tooltip key={ct.key} title={ct.label}>
               <Button size="small" type={chartType === ct.key ? 'primary' : 'default'} icon={ct.icon} onClick={() => applyChartType(ct.key)} />
             </Tooltip>
           ))}
-          <Tooltip title="Mid-price OHLC candles + BIDASK indicator">
-            <span style={{ color: '#6b7280', fontSize: 12, cursor: 'help', userSelect: 'none', marginLeft: 4 }}><InfoCircleOutlined style={{ marginRight: 4 }} />real-time</span>
+          <Tooltip title={streamActive ? 'Live bar stream active' : error || 'Stream unavailable — historical data only'}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, marginLeft: 4 }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: streamActive ? '#22c55e' : '#ef5350',
+                boxShadow: streamActive ? '0 0 4px #22c55e' : '0 0 4px #ef5350' }} />
+              <span style={{ color: streamActive ? '#22c55e' : '#ef5350', fontWeight: 600 }}>
+                {streamActive ? 'LIVE' : error ? 'ERROR' : 'STATIC'}
+              </span>
+            </span>
           </Tooltip>
           <IndicatorPicker style={{ marginLeft: 4 }} />
         </Space>
@@ -217,8 +205,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
           {activeIndicators.map((ind) => {
             const def = getDef(ind.defId);
             const paramsStr = def?.params?.length
-              ? '(' + def.params.map(p => ind.params[p.key] ?? p.default).join(',') + ')'
-              : '';
+              ? '(' + def.params.map(p => ind.params[p.key] ?? p.default).join(',') + ')' : '';
             return (
               <Tag key={ind.instanceId} color="processing" style={{ margin: 0, cursor: 'pointer' }}>
                 <Space size={2}>
@@ -230,21 +217,17 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
                     style={{ padding: 0, minWidth: 12, height: 12, lineHeight: 1, color: 'inherit' }} />
                   <Button type="text" size="small" danger icon={<CloseOutlined />}
                     onClick={(e) => { e.stopPropagation(); removeIndicator(ind.instanceId); }}
-                    style={{ padding: 0, minWidth: 12, height: 12, lineHeight: 1 }} />
-                </Space>
-              </Tag>
-            );
+                    style={{ padding: 0, minWidth: 12, height: 12, lineHeight: 1 }} /></Space></Tag>);
           })}
-        </div>
-      )}
+        </div>)}
 
       {/* Indicator settings modal */}
       {editingIndId && (() => {
         const ind = activeIndicators.find(a => a.instanceId === editingIndId);
         const def = ind ? getDef(ind.defId) : undefined;
-        return ind && def ? (
-          <IndicatorSettingsModal visible={true} indicator={ind} def={def} onClose={() => setEditingIndId(null)} />
-        ) : null;
+        return ind && def
+          ? <IndicatorSettingsModal visible={true} indicator={ind} def={def} onClose={() => setEditingIndId(null)} />
+          : null;
       })()}
 
       {/* Chart */}

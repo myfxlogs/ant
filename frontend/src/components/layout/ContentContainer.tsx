@@ -1,16 +1,18 @@
-import type { ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
 
-interface ContentContainerProps {
-  children: ReactNode;
-}
+const FLUID_ROUTES = ['/strategy/workspace'];
 
-export default function ContentContainer({ children }: ContentContainerProps) {
+export default function ContentContainer({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  const isFluid = FLUID_ROUTES.some(route => location.pathname.startsWith(route));
+
   return (
     <div
       style={{
-        maxWidth: 1360,
+        maxWidth: isFluid ? undefined : 1360,
         margin: '0 auto',
         width: '100%',
+        padding: isFluid ? '0 12px' : undefined,
       }}
     >
       {children}

@@ -1,121 +1,36 @@
-import { useState, useEffect, useCallback, Suspense, lazy } from 'react';
-import { Tabs, Button, Collapse, message, Form } from 'antd';
+import { Suspense, lazy, useRef, useState, useEffect } from 'react';
+import { Collapse } from 'antd';
 import { RobotOutlined, DoubleLeftOutlined, DoubleRightOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { useAccount } from '@/hooks/useAccount';
-import { strategyApi, type StrategyTemplate } from '@/client/strategy';
-import { codeAssistApi, type ValidateExtendedResult } from '@/client/codeAssist';
-import { pythonStrategyApi } from '@/client/pythonStrategy';
-import { marketApi } from '@/client/market';
+import { useStrategyWorkspaceState } from './hooks/useStrategyWorkspaceState';
 import WorkspaceCodePanel from './components/workspace/WorkspaceCodePanel';
-import WorkspaceChartTab from './components/workspace/WorkspaceChartTab';
 import WorkspaceBacktestPanel from './components/workspace/WorkspaceBacktestPanel';
 import WorkspaceTemplateManager from './components/workspace/WorkspaceTemplateManager';
-import { AICodeReviseChat, CodeExplainPanel } from '@/components/strategy/CodeAssist';
+import WorkspaceToolbar from './components/workspace/WorkspaceToolbar';
+import BacktestParamsCard from './components/workspace/BacktestParamsCard';
+import { AICodeReviseChat } from '@/components/strategy/CodeAssist';
+import PriceChart from '@/components/chart/PriceChart';
+import QuickTradePanel from '@/components/chart/QuickTradePanel';
 
 const SaveTemplateModal = lazy(() => import('@/components/strategy/SaveTemplateModal'));
 
-type BacktestStatus = 'idle' | 'running' | 'completed' | 'error';
-
 export default function StrategyWorkspacePage() {
   const { t } = useTranslation();
+  const ws = useStrategyWorkspaceState();
 
-  const [code, setCode] = useState('');
-  const [lastValidatedCode, setLastValidatedCode] = useState('');
-
-  const { accounts: allAccounts, fetchAccounts } = useAccount();
-  const activeAccounts = allAccounts.filter((a) => !a.isDisabled);
-  const [accountId, setAccountId] = useState('');
-  const [symbol, setSymbol] = useState('');
-  const [timeframe, setTimeframe] = useState('1h');
-
-  const handleAccountChange = useCallback((id: string) => {
-    setAccountId(id); setSymbol(''); marketApi.clearSymbolCache();
-  }, []);
-
-  const [validating, setValidating] = useState(false);
-  const [validationResult, setValidationResult] = useState<ValidateExtendedResult | null>(null);
-  const [templates, setTemplates] = useState<StrategyTemplate[]>([]);
-  const [templatesLoading, setTemplatesLoading] = useState(false);
-  const [loadedTemplate, setLoadedTemplate] = useState<StrategyTemplate | null>(null);
-  const [saveModalOpen, setSaveModalOpen] = useState(false);
-  const [saveLoading, setSaveLoading] = useState(false);
-  const [saveForm] = Form.useForm();
-
-  const [backtestSubmitting, setBacktestSubmitting] = useState(false);
-  const [backtestStatus, setBacktestStatus] = useState<BacktestStatus>('idle');
-  const [backtestMetrics, setBacktestMetrics] = useState<any>(null);
-  const [backtestError, setBacktestError] = useState('');
-
-  const [codeDrawerVisible, setCodeDrawerVisible] = useState(true);
-  const [activeRightTab, setActiveRightTab] = useState('chart');
-
+  // Measure chart container to pass dynamic height to PriceChart (default 500px is too short)
+  const chartAreaRef = useRef<HTMLDivElement>(null);
+  const [chartHeight, setChartHeight] = useState(500);
   useEffect(() => {
-    fetchAccounts();
-    loadTemplates();
+    const el = chartAreaRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const h = entry?.contentRect?.height;
+      if (h && h > 0) setChartHeight(h);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
   }, []);
-
-  const loadTemplates = useCallback(async () => {
-    setTemplatesLoading(true);
-    try { const list = await strategyApi.listTemplates(); setTemplates(list || []); }
-    catch { /* silent */ }
-    finally { setTemplatesLoading(false); }
-  }, []);
-
-  const handleLoadTemplate = useCallback(async (id: string) => {
-    try {
-      const tpl = await strategyApi.getTemplate(id);
-      if (tpl?.code) setCode(tpl.code);
-      if (tpl?.name) setLoadedTemplate(tpl as StrategyTemplate);
-      setLastValidatedCode(''); setValidationResult(null);
-    } catch (e: any) { message.error(e?.message || 'Failed to load template'); }
-  }, []);
-
-  const handleValidate = useCallback(async () => {
-    if (!code.trim()) return;
-    setValidating(true);
-    try { const result = await codeAssistApi.validateExtended(code); setValidationResult(result); if (result.valid) setLastValidatedCode(code); }
-    catch (e: any) { message.error(e?.message || 'Validation failed'); }
-    finally { setValidating(false); }
-  }, [code]);
-
-  const handleRunBacktest = useCallback(async () => {
-    if (!code || !symbol) return;
-    setBacktestSubmitting(true);
-    try {
-      const result = await pythonStrategyApi.startBacktestRun({ code, accountId, symbol, timeframe, initialCapital: 10000 });
-      const runId = result.runId;
-      if (!runId) throw new Error('No run ID returned');
-      setBacktestStatus('running'); setActiveRightTab('backtest');
-      const stopWatching = await pythonStrategyApi.watchBacktestRun(runId, (update: any) => {
-        if (update.status === 'SUCCEEDED' || update.status === 'FAILED' || update.status === 'CANCELED') {
-          setBacktestStatus(update.status === 'SUCCEEDED' ? 'completed' : 'error');
-          setBacktestMetrics(update.metrics || null); setBacktestError(update.error || ''); stopWatching();
-        } else { setBacktestMetrics(update.metrics || null); }
-      });
-    } catch (e: any) { message.error(e?.message || 'Backtest failed'); setBacktestStatus('error'); setBacktestError(e?.message || 'Unknown error'); }
-    finally { setBacktestSubmitting(false); }
-  }, [code, symbol, accountId, timeframe]);
-
-  const handleSave = useCallback(async () => {
-    if (!code || !lastValidatedCode || code !== lastValidatedCode) { message.warning(t('strategy.workspace.validateBeforeSave')); return; }
-    if (loadedTemplate) { setSaveLoading(true); try { await strategyApi.updateTemplate({ id: loadedTemplate.id, name: loadedTemplate.name, description: loadedTemplate.description || '', code }); message.success(t('strategy.workspace.saveSuccess')); loadTemplates(); } catch (e: any) { message.error(e?.message || 'Save failed'); } finally { setSaveLoading(false); } }
-    else { setSaveModalOpen(true); }
-  }, [code, lastValidatedCode, loadedTemplate, t, loadTemplates]);
-
-  const handleSaveAs = useCallback(() => { saveForm.resetFields(); setSaveModalOpen(true); }, [saveForm]);
-  const handleSaveModalOk = useCallback(async () => {
-    try { const values = await saveForm.validateFields(); setSaveLoading(true); await strategyApi.createTemplate({ name: values.name, description: values.description || '', code }); message.success(t('strategy.workspace.saveSuccess')); setSaveModalOpen(false); loadTemplates(); }
-    catch (e: any) { if (e?.message) message.error(e.message); }
-    finally { setSaveLoading(false); }
-  }, [code, saveForm, t, loadTemplates]);
-
-  const handleCopy = useCallback(() => {
-    if (!code) return;
-    navigator.clipboard.writeText(code).then(() => message.success(t('strategy.workspace.copySuccess'))).catch(() => message.error(t('strategy.workspace.copyFailed')));
-  }, [code, t]);
-
-  const canSave = code.length > 0 && lastValidatedCode.length > 0 && code === lastValidatedCode;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 112px)', background: '#fff' }}>
@@ -124,123 +39,193 @@ export default function StrategyWorkspacePage() {
         <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{t('strategy.workspace.title', 'Strategy Workspace')}</h2>
       </div>
 
-      {/* Main split — matches QuantDinger .ide-main */}
-      <div style={{ display: 'flex', flex: '1 1 auto', gap: 0, overflow: 'hidden' }}>
-        {/* Code rail (collapsed) — matches QuantDinger .ide-code-rail */}
-        {!codeDrawerVisible && (
-          <div onClick={() => setCodeDrawerVisible(true)} role="button" tabIndex={0}
-            onKeyUp={(e) => e.key === 'Enter' && setCodeDrawerVisible(true)}
+      {/* ═══ TOP TOOLBAR ═══ */}
+      <WorkspaceToolbar
+        accounts={ws.activeAccounts} accountId={ws.accountId} onAccountChange={ws.handleAccountChange}
+        symbol={ws.symbol} onSymbolChange={ws.setSymbol}
+        accountInfo={ws.accountInfo}
+        codePanelVisible={ws.codePanelVisible} onToggleCodePanel={() => ws.setCodePanelVisible(!ws.codePanelVisible)}
+        quickTradeVisible={ws.quickTradeVisible} onToggleQuickTrade={() => ws.setQuickTradeVisible(!ws.quickTradeVisible)}
+      />
+
+      {/* ═══ THREE-COLUMN BODY ═══ */}
+      <div style={{ display: 'flex', flex: '1 1 auto', overflow: 'hidden', minHeight: 0 }}>
+        {/* ── LEFT: Code Panel ── */}
+        {!ws.codePanelVisible ? (
+          <div onClick={() => ws.setCodePanelVisible(true)} role="button" tabIndex={0}
+            onKeyUp={(e) => e.key === 'Enter' && ws.setCodePanelVisible(true)}
             style={{
               width: 32, minWidth: 32, flex: '0 0 32px', display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer',
               background: 'linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%)',
               borderRight: '1px solid #e2e8f0', boxShadow: '2px 0 8px rgba(15,23,42,0.04)',
               padding: '14px 0', transition: 'background 0.2s',
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'linear-gradient(180deg, #e8f4ff 0%, #dbeafe 100%)'; e.currentTarget.style.color = '#1890ff'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%)'; e.currentTarget.style.color = ''; }}
-          >
+            }}>
             <DoubleRightOutlined style={{ fontSize: 14 }} />
             <span style={{ fontSize: 10, writingMode: 'vertical-rl', fontWeight: 500 }}>Code</span>
           </div>
-        )}
-
-        {/* Left panel — matches QuantDinger .ide-left */}
-        {codeDrawerVisible && (
+        ) : (
           <div style={{
-            width: '30%', minWidth: 280, maxWidth: 400,
-            height: 'calc(100vh - 112px - 52px)', overflowY: 'auto',
+            width: '1%', minWidth: 280, flexShrink: 0,
+            height: '100%', overflowY: 'auto',
             borderRight: '1px solid #eee', background: '#fcfcfd',
-            position: 'sticky', top: 0, alignSelf: 'flex-start',
-            padding: '12px 12px 0 0', display: 'flex', flexDirection: 'column', gap: 12,
+            padding: '12px 12px 12px 0', display: 'flex', flexDirection: 'column', gap: 12,
           }}>
-            {/* Hide code handle — matches .ide-code-drawer-handle */}
-            <div onClick={() => setCodeDrawerVisible(false)} role="button" tabIndex={0}
-              onKeyUp={(e) => e.key === 'Enter' && setCodeDrawerVisible(false)}
+            {/* Hide code handle */}
+            <div onClick={() => ws.setCodePanelVisible(false)} role="button" tabIndex={0}
+              onKeyUp={(e) => e.key === 'Enter' && ws.setCodePanelVisible(false)}
               style={{
                 cursor: 'pointer', color: '#64748b', fontSize: 11, fontWeight: 600,
                 display: 'flex', alignItems: 'center', gap: 4,
                 background: 'linear-gradient(180deg, #f1f5f9 0%, #e8eef5 100%)',
                 borderRadius: 6, padding: '6px 10px', marginBottom: 4,
-              }}
-            >
+              }}>
               <DoubleLeftOutlined /> {t('strategy.workspace.hideCode', 'Hide Code')}
             </div>
 
             <WorkspaceCodePanel
-              code={code} onCodeChange={setCode} validating={validating} onValidate={handleValidate}
-              validationResult={validationResult} onRunBacktest={handleRunBacktest}
-              backtestSubmitting={backtestSubmitting} canSave={canSave} onSave={handleSave} onCopy={handleCopy}
+              code={ws.code} onCodeChange={ws.setCode}
+              validating={ws.validating} onValidate={ws.handleValidate}
+              validationResult={ws.validationResult}
+              onRunBacktest={ws.handleRunBacktest} backtestSubmitting={ws.btSubmitting}
+              canSave={ws.canSave} onSave={ws.handleSave} onCopy={ws.handleCopy}
+              aiPrompt={ws.aiPrompt} onAiPromptChange={ws.setAiPrompt}
+              aiGenerating={ws.aiGenerating} onGenerateCode={ws.handleGenerateCode}
             />
 
             <Collapse ghost size="small" style={{ background: 'transparent' }} items={[
-              { key: 'ai', label: <span><RobotOutlined style={{ marginRight: 6 }} />{t('strategy.workspace.aiAssist', 'AI Assistant')}</span>, children: <AICodeReviseChat code={code} onApply={setCode} /> },
-              { key: 'template', label: t('strategy.workspace.template.title', 'Template'), children: <WorkspaceTemplateManager templates={templates} loading={templatesLoading} loadedTemplate={loadedTemplate} onLoad={handleLoadTemplate} onSaveAs={handleSaveAs} /> },
+              { key: 'ai', label: <span><RobotOutlined style={{ marginRight: 6 }} />{t('strategy.workspace.aiAssist', 'AI Assistant')}</span>, children: <AICodeReviseChat code={ws.code} onApply={ws.setCode} /> },
+              { key: 'template', label: t('strategy.workspace.template.title', 'Template'), children: <WorkspaceTemplateManager templates={ws.templates} loading={ws.templatesLoading} loadedTemplate={ws.loadedTemplate} onLoad={ws.handleLoadTemplate} onSaveAs={ws.handleSaveAs} /> },
             ]} />
           </div>
         )}
 
-        {/* Right panel — matches QuantDinger .ide-right.ide-right--workspace */}
-        <div style={{ flex: '1 1 0', height: 'calc(100vh - 112px - 52px)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          <Tabs
-            activeKey={activeRightTab} onChange={setActiveRightTab} type="card" size="small"
-            style={{
-              marginBottom: 0,
-              // Pill-style tabs
-              '.ant-tabs-nav': {
-                background: 'linear-gradient(180deg, #fafbfc 0%, #f4f6f9 100%)',
-                borderBottom: '1px solid #e8e8e8', marginBottom: 0, padding: '6px 12px 0',
-              },
-            } as any}
-            className="ide-workspace-tabs"
-            tabBarStyle={{ background: 'linear-gradient(180deg, #fafbfc 0%, #f4f6f9 100%)', borderBottom: '1px solid #e8e8e8', padding: '6px 12px 0', marginBottom: 0 }}
-            items={[
-              {
-                key: 'chart', label: t('strategy.workspace.chart', 'Chart & Trade'),
-                children: (
-                  <div style={{ flex: 1, overflow: 'auto', padding: 12, background: '#fff', borderRadius: '0 0 10px 10px', border: '1px solid #e8e8e8', borderTop: 'none', marginTop: -1 }}>
-                    <WorkspaceChartTab
-                      accounts={activeAccounts} accountId={accountId} onAccountChange={handleAccountChange}
-                      symbol={symbol} onSymbolChange={setSymbol} timeframe={timeframe}
-                      onTimeframeChange={setTimeframe} codePanelVisible={codeDrawerVisible}
-                      onToggleCodePanel={() => setCodeDrawerVisible(!codeDrawerVisible)}
-                    />
-                  </div>
-                ),
-              },
-              {
-                key: 'backtest', label: t('strategy.workspace.backtest', 'Backtest & Results'),
-                children: (
-                  <div style={{ flex: 1, overflow: 'auto', background: '#fff', borderRadius: '0 0 10px 10px', border: '1px solid #e8e8e8', borderTop: 'none', marginTop: -1, padding: 16 }}>
-                    <WorkspaceBacktestPanel status={backtestStatus} metrics={backtestMetrics} errorMessage={backtestError} />
-                  </div>
-                ),
-              },
-              {
-                key: 'ai', label: t('strategy.workspace.ai', 'AI'),
-                children: (
-                  <div style={{ flex: 1, overflow: 'auto', background: '#fff', borderRadius: '0 0 10px 10px', border: '1px solid #e8e8e8', borderTop: 'none', marginTop: -1, padding: 16 }}>
-                    <CodeExplainPanel code={code} />
-                  </div>
-                ),
-              },
-            ]}
-          />
+        {/* ── MIDDLE: Chart + Backtest ── */}
+        <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          {/* Chart area (PriceChart handles timeframe + indicator toolbar internally) */}
+          <div ref={chartAreaRef} style={{ flex: '1 1 0', minHeight: 0, position: 'relative', overflow: 'hidden' }}>
+            {ws.symbol ? (
+              <PriceChart
+                symbol={ws.symbol} timeframe={ws.timeframe} onTimeframeChange={ws.setTimeframe}
+                accountId={ws.accountId} height={Math.max(300, chartHeight - 52)}
+              />
+            ) : (
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                height: '100%', color: '#6b7280',
+                border: '1px dashed rgba(0,0,0,0.12)', borderRadius: 8, margin: 12,
+              }}>
+                {t('strategy.workspace.selectSymbolHint', 'Select a trading account and symbol to view chart')}
+              </div>
+            )}
+          </div>
+
+          {/* Backtest Section — content-height only; chart gets all remaining space */}
+          <div style={{
+            flexShrink: 0, borderTop: '1px solid #e8e8e8', overflowY: 'auto',
+          }}>
+            {/* Backtest Parameters Card */}
+            <div style={{ marginBottom: 6 }}>
+            <BacktestParamsCard
+              initialCapital={ws.btInitialCapital} onInitialCapitalChange={ws.setBtInitialCapital}
+              leverage={ws.btLeverage} onLeverageChange={ws.setBtLeverage}
+              commission={ws.btCommission} onCommissionChange={ws.setBtCommission}
+              slippage={ws.btSlippage} onSlippageChange={ws.setBtSlippage}
+              startDate={ws.btStartDate} onStartDateChange={ws.setBtStartDate}
+              endDate={ws.btEndDate} onEndDateChange={ws.setBtEndDate}
+              tradeDirection={ws.btTradeDirection} onTradeDirectionChange={ws.setBtTradeDirection}
+              highPrecision={ws.btHighPrecision} onHighPrecisionChange={ws.setBtHighPrecision}
+              canRun={Boolean(ws.code && ws.symbol)}
+              running={ws.btSubmitting} onRunBacktest={ws.handleRunBacktest}
+              datePresets={ws.DATE_PRESETS} datePresetKey={ws.btDatePreset}
+              onApplyDatePreset={ws.applyDatePreset}
+              expanded={ws.btParamsExpanded} onExpandedChange={ws.setBtParamsExpanded}
+            />
+            </div>
+
+            {/* Backtest Results / Smart Tuning — collapsed until results arrive */}
+            <div style={{
+              borderTop: '1px solid #e8e8e8', background: '#fafbfc',
+            }}>
+              <div onClick={() => ws.setBtResultsExpanded(!ws.btResultsExpanded)} role="button" tabIndex={0}
+                onKeyUp={e => e.key === 'Enter' && ws.setBtResultsExpanded(!ws.btResultsExpanded)}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '8px 14px', cursor: 'pointer', userSelect: 'none',
+                  background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
+                }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#262626' }}>
+                  {ws.backtestSubTab === 'tuning' ? 'Smart Tuning' : 'Backtest Results'}
+                  {ws.btStatus === 'running' && <span style={{ color: '#1890ff', marginLeft: 8, fontSize: 11 }}>Running...</span>}
+                  {ws.btStatus === 'completed' && <span style={{ color: '#26a69a', marginLeft: 8, fontSize: 11 }}>Completed</span>}
+                </span>
+                <span style={{ fontSize: 10, color: '#8c8c8c' }}>{ws.btResultsExpanded ? '▲' : '▼'}</span>
+              </div>
+              {ws.btResultsExpanded && (
+                <div style={{ padding: '8px 14px' }}>
+                  <WorkspaceBacktestPanel
+                    status={ws.btStatus} metrics={ws.btMetrics}
+                    errorMessage={ws.btError}
+                    subTab={ws.backtestSubTab} onSubTabChange={ws.setBacktestSubTab}
+                    tuneMethod={ws.tuneMethod} onTuneMethodChange={ws.setTuneMethod}
+                    sweepDimensions={ws.sweepDimensions} onToggleDimension={ws.toggleDimension}
+                    enabledSweepDims={ws.enabledSweepDims} cartesianSize={ws.cartesianSize}
+                    tuningRunning={ws.tuningRunning} canRunTuning={Boolean(ws.code && ws.symbol)}
+                    onRunTuning={ws.handleRunTuning}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
         </div>
+
+        {/* ── RIGHT: Quick Trade ── */}
+        {ws.quickTradeVisible && (
+          <div style={{
+            width: '1%', minWidth: 300, flexShrink: 0,
+            borderLeft: '1px solid #e8e8e8', background: '#f8fafc',
+            display: 'flex', flexDirection: 'column', overflow: 'hidden',
+          }}>
+            {/* Header */}
+            <div style={{
+              padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              background: 'linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%)',
+              borderBottom: '1px solid #e8e8e8', flexShrink: 0,
+            }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>
+                ⚡ Quick Trade
+              </span>
+              <span onClick={() => ws.setQuickTradeVisible(false)} role="button" tabIndex={0}
+                onKeyUp={(e) => e.key === 'Enter' && ws.setQuickTradeVisible(false)}
+                style={{ cursor: 'pointer', color: '#94a3b8', fontSize: 16, lineHeight: 1 }}>
+                ✕
+              </span>
+            </div>
+            {/* Body */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: 12 }}>
+              {!ws.symbol ? (
+                <div style={{ fontSize: 12, color: '#8c8c8c', textAlign: 'center', padding: '24px 0' }}>
+                  Select a symbol first
+                </div>
+              ) : (
+                <QuickTradePanel
+                  accountId={ws.accountId} symbol={ws.symbol}
+                  accountInfo={ws.accountInfo}
+                  accountMeta={ws.selectedAccountMeta}
+                  positions={ws.qtPositions}
+                  recentTrades={ws.qtRecentTrades}
+                  onClosePosition={ws.handleClosePosition}
+                />
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <Suspense fallback={null}>
-        <SaveTemplateModal open={saveModalOpen} confirmLoading={saveLoading} form={saveForm}
-          onCancel={() => setSaveModalOpen(false)} onOk={handleSaveModalOk} />
+        <SaveTemplateModal open={ws.saveModalOpen} confirmLoading={ws.saveLoading} form={ws.saveForm}
+          onCancel={() => ws.setSaveModalOpen(false)} onOk={ws.handleSaveModalOk} />
       </Suspense>
-
-      {/* Pill-style tab CSS injection */}
-      <style>{`
-        .ide-workspace-tabs .ant-tabs-nav { background: linear-gradient(180deg, #fafbfc 0%, #f4f6f9 100%) !important; border-bottom: 1px solid #e8e8e8 !important; margin-bottom: 0 !important; padding: 6px 12px 0 !important; }
-        .ide-workspace-tabs .ant-tabs-tab { font-size: 12px !important; font-weight: 600 !important; padding: 7px 18px !important; border-radius: 10px 10px 0 0 !important; border: 1px solid #e2e8f0 !important; border-bottom: none !important; background: #fff !important; color: #64748b !important; }
-        .ide-workspace-tabs .ant-tabs-tab-active { color: #1890ff !important; background: linear-gradient(180deg, #ffffff 0%, #f0f7ff 100%) !important; border-color: #bae0ff !important; box-shadow: 0 -2px 10px rgba(24,144,255,0.12) !important; }
-        .ide-workspace-tabs .ant-tabs-nav-list { gap: 2px !important; }
-      `}</style>
     </div>
   );
 }

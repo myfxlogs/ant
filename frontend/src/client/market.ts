@@ -68,12 +68,9 @@ export const marketApi = {
 
   // subscribeBars tells the backend to subscribe the gateway to this symbol's ticks,
   // enabling real-time bar aggregation and SSE push.
+  // Errors are thrown so callers can surface subscription failures to the user.
   subscribeBars: async (params: { accountId: string; symbol: string }): Promise<void> => {
-    try {
-      await tradingClient.subscribeBars({ accountId: params.accountId, symbol: params.symbol });
-    } catch {
-      // Silent — subscription is best-effort; PriceHistory will still work.
-    }
+    await tradingClient.subscribeBars({ accountId: params.accountId, symbol: params.symbol });
   },
 
   // getKlines fetches OHLCV kline bars — broker-first via PriceHistory with ClickHouse fallback.

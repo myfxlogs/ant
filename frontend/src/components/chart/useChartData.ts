@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import type { Chart } from 'klinecharts';
 import { marketApi, type KlineData } from '@/client/market';
 import { subscribeEvents } from '@/client/stream';
 import type { BarUpdateEvent } from '@/gen/ant/v1/stream_pb';
@@ -6,76 +7,112 @@ import { setBidAsk, clearBidAsk, setBidAskPrecision } from './BidAskIndicator';
 
 const INITIAL_BARS = 300;
 
-export function useChartData(symbol: string, timeframe: string, accountId?: string) {
+/** Convert internal bar (time=seconds) → klinecharts format (timestamp=ms). Shared export for PriceChart. */
+export function toChartBar(bar: KlineData) {
+  return { timestamp: bar.time * 1000, open: bar.open, high: bar.high, low: bar.low, close: bar.close, volume: bar.volume };
+}
+
+function mergeBar(prev: KlineData[], bar: KlineData): { merged: KlineData[]; changed: KlineData } {
+  const idx = prev.findIndex(b => b.time === bar.time);
+  if (idx >= 0) {
+    const old = prev[idx], copy = [...prev];
+    copy[idx] = {
+      ...old,
+      high: Math.max(old.high, bar.high),
+      low: Math.min(old.low ?? old.high, bar.low ?? bar.high),  // guard undefined low
+      close: bar.close,
+      volume: bar.volume,
+    };
+    return { merged: copy, changed: copy[idx] };
+  }
+  const merged = [...prev, bar].sort((a, b) => a.time - b.time);
+  return { merged, changed: bar };
+}
+
+export function useChartData(
+  symbol: string, timeframe: string, accountId: string | undefined,
+  chartRef: React.MutableRefObject<Chart | null>,
+) {
   const [bars, setBars] = useState<KlineData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [streamActive, setStreamActive] = useState(false);
   const barsRef = useRef<KlineData[]>([]);
   const loadingMore = useRef(false);
   const loadedAll = useRef(false);
+  const cancelledRef = useRef(false);
   const unsubRef = useRef<(() => void) | null>(null);
+  // Refs for current symbol/timeframe to avoid closure staleness in SSE handler
+  const symbolRef = useRef(symbol);
+  const timeframeRef = useRef(timeframe);
+  symbolRef.current = symbol;
+  timeframeRef.current = timeframe;
 
+  // ── Effect 1: SSE subscription (re-created only on accountId change) ──
+  useEffect(() => {
+    if (!accountId) return;
+    cancelledRef.current = false;
+    unsubRef.current?.();
+    unsubRef.current = subscribeEvents([], {
+      onBar: (ev: BarUpdateEvent) => {
+        if (cancelledRef.current) return;
+        // Use refs (not closure) to always filter against the latest symbol/timeframe
+        if (ev.accountId !== accountId || ev.symbol !== symbolRef.current || ev.period !== timeframeRef.current) return;
+        // Guard against interleaving with handleLoadMore (applyNewData may replace dataset)
+        if (loadingMore.current) return;
+
+        const barTime = ev.openTime ? Number(ev.openTime.seconds ?? 0n) : 0;
+        if (barTime === 0) return;
+
+        const b = Number(ev.bid || '0'), a = Number(ev.ask || '0');
+        if (b > 0 || a > 0) setBidAsk(barTime * 1000, b, a);
+
+        const bar: KlineData = {
+          time: barTime, open: Number(ev.open ?? '0'), high: Number(ev.high ?? '0'),
+          low: Number(ev.low ?? '0'), close: Number(ev.close ?? '0'), volume: Number(ev.volume ?? 0),
+        };
+        const { merged, changed } = mergeBar(barsRef.current, bar);
+        barsRef.current = merged;
+        chartRef.current?.updateData(toChartBar(changed));
+      },
+    });
+    return () => { cancelledRef.current = true; unsubRef.current?.(); unsubRef.current = null; };
+  }, [accountId]);
+
+  // ── Effect 2: subscribeBars (only on symbol or account change) ──
+  useEffect(() => {
+    if (!symbol || !accountId) return;
+    setStreamActive(false);
+    marketApi.subscribeBars({ accountId, symbol })
+      .then(() => { if (!cancelledRef.current) setStreamActive(true); })
+      .catch((err: Error) => {
+        if (!cancelledRef.current) setError(`Live stream unavailable: ${err.message || 'subscription failed'}`);
+      });
+  }, [symbol, accountId]);
+
+  // ── Effect 3: fetch initial bars (symbol/timeframe/account change) ──
   useEffect(() => {
     if (!symbol || !accountId) return;
     let cancelled = false;
-
-    setLoading(true);
-    setError(null);
-    loadedAll.current = false;
-    loadingMore.current = false;
+    setLoading(true); setError(null);
+    loadedAll.current = false; loadingMore.current = false;
+    barsRef.current = [];  // clear stale bars from previous symbol
     clearBidAsk();
-    if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
 
     marketApi.getSymbolParams(accountId, [marketApi.resolveSymbol(symbol)]).then((infos) => {
       if (!cancelled && infos.length > 0 && infos[0].digits != null) setBidAskPrecision(infos[0].digits);
     }).catch(() => {});
 
-    marketApi.subscribeBars({ accountId, symbol }).then(() => {
-      if (cancelled) return;
-      const canonical = marketApi.resolveSymbol(symbol);
-      marketApi.getKlines({ symbol: canonical, timeframe, count: INITIAL_BARS, accountId })
-        .then((data) => { if (!cancelled) { barsRef.current = data; setBars(data); setLoading(false); } })
-        .catch((err: Error) => { if (!cancelled) { setError(err.message || 'Failed to load chart data'); setLoading(false); } });
-    });
+    marketApi.getKlines({ symbol: marketApi.resolveSymbol(symbol), timeframe, count: INITIAL_BARS, accountId })
+      .then((data) => {
+        if (!cancelled) { barsRef.current = data ?? []; setBars(data ?? []); setLoading(false); }
+      })
+      .catch((err: Error) => {
+        if (!cancelled) { setError(err.message || 'Failed to load chart data'); setLoading(false); }
+      });
 
-    unsubRef.current = subscribeEvents([], {
-      onBar: (ev: BarUpdateEvent) => {
-        if (cancelled) return;
-
-        const b = Number(ev.bid || '0');
-        const a = Number(ev.ask || '0');
-
-        if (ev.accountId !== accountId || ev.symbol !== symbol || ev.period !== timeframe) return;
-
-        const barTime = ev.openTime ? Number(ev.openTime.seconds ?? 0n) : 0;
-        if (barTime === 0) return;
-
-        if (b > 0 || a > 0) setBidAsk(barTime, b, a);
-
-        const bar: KlineData = {
-          time: barTime,
-          open: Number(ev.open ?? '0'), high: Number(ev.high ?? '0'),
-          low: Number(ev.low ?? '0'), close: Number(ev.close ?? '0'),
-          volume: Number(ev.volume ?? 0),
-        };
-
-        const prev = barsRef.current;
-        const idx = prev.findIndex(b2 => b2.time === barTime);
-        let merged: KlineData[];
-        if (idx >= 0) {
-          const old = prev[idx];
-          merged = [...prev];
-          merged[idx] = { ...old, high: Math.max(old.high, bar.high), low: Math.min(old.low, bar.low), close: bar.close, volume: bar.volume };
-        } else {
-          merged = [...prev, bar].sort((x, y) => x.time - y.time);
-        }
-        barsRef.current = merged;
-        setBars(merged);
-      },
-    });
-
-    return () => { cancelled = true; if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; } };
+    return () => { cancelled = true; };
   }, [symbol, timeframe, accountId]);
 
-  return { bars, loading, error, barsRef, loadingMore, loadedAll };
+  return { bars, loading, error, streamActive, barsRef, loadingMore, loadedAll };
 }
