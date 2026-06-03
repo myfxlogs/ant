@@ -10,13 +10,15 @@ type PlatformLimits struct {
 	MaxTotalMarginUsed    float64
 }
 
-// DefaultPlatformLimits returns sensible platform-wide defaults.
+// DefaultPlatformLimits returns liberal platform-wide defaults.
+// These are high-water safety nets, not daily trading gates.
+// Individual account limits are enforced by the broker (MT5).
 func DefaultPlatformLimits() *PlatformLimits {
 	return &PlatformLimits{
-		MaxTotalGrossExposure:  10_000_000,
-		MaxTotalNetExposure:    5_000_000,
-		MaxNetExposurePerSymbol: 2_000_000,
-		MaxTotalMarginUsed:     1_000_000,
+		MaxTotalGrossExposure:   500_000_000,
+		MaxTotalNetExposure:     250_000_000,
+		MaxNetExposurePerSymbol: 100_000_000,
+		MaxTotalMarginUsed:      10_000_000,
 	}
 }
 
