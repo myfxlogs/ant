@@ -37,6 +37,12 @@ type BrokerInfoFetcher interface {
 	FetchBrokerInfo(ctx context.Context) (*BrokerInfo, error)
 }
 
+// AccountInfoProvider is implemented by gateway adapters that can return
+// account-level metadata (investor flag, etc.) after connection.
+type AccountInfoProvider interface {
+	GetAccountInfo(ctx context.Context) (*MTAccountInfo, error)
+}
+
 // MTAccountInfo holds basic account details from AccountSummary.
 type MTAccountInfo struct {
 	Balance    float64

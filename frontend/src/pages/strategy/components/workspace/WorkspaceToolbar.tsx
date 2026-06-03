@@ -107,13 +107,12 @@ export default function WorkspaceToolbar({
           <Tag icon={<AimOutlined style={{ fontSize: 10 }} />} color="default" style={{ fontSize: 10, margin: 0, lineHeight: '18px' }}>
             {selectedAccount.brokerServer}
           </Tag>
-          <Tag icon={<ApartmentOutlined style={{ fontSize: 10 }} />} color={selectedAccount.accountType === 'real' ? 'red' : selectedAccount.accountType === 'demo' ? 'green' : 'default'}
+          {/* Connection method: Master (full trading) vs Investor (read-only) */}
+          <Tag icon={<ApartmentOutlined style={{ fontSize: 10 }} />}
+            color={selectedAccount.isInvestor ? 'orange' : 'green'}
             style={{ fontSize: 10, margin: 0, lineHeight: '18px' }}>
-            {selectedAccount.accountType === 'real' ? 'Real' : selectedAccount.accountType === 'demo' ? 'Demo' : selectedAccount.accountType || 'Unknown'}
+            {selectedAccount.isInvestor ? 'Investor (Read-only)' : 'Master (Trading)'}
           </Tag>
-          {selectedAccount.isInvestor && (
-            <Tag color="purple" style={{ fontSize: 10, margin: 0, lineHeight: '18px' }}>Investor</Tag>
-          )}
           {selectedAccount.leverage && selectedAccount.leverage > 0 && (
             <SummaryChip label="Leverage" value={`1:${selectedAccount.leverage}`} />
           )}

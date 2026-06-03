@@ -37,6 +37,34 @@ services:
     networks:
       - ant-network
 
+  frontend-vue:
+    container_name: ant-frontend-vue
+    build:
+      context: ./frontend-vue
+      dockerfile: Dockerfile
+    image: ant-prod-frontend-vue
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
+    ports:
+      - "${ANT_VUE_PORT:-8023}:8080"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ant-network
+
   backend:
     container_name: ant-backend
     build:

@@ -227,11 +227,22 @@ func startGatewayForAccount(ctx context.Context, cfg mdtick.AccountConfig, deps 
 		return nil, fmt.Errorf("connect: %w", err)
 	}
 
-	// Persist connected status so the frontend stops showing "Connecting".
+	// Persist connected status + account metadata (investor flag, method).
 	if deps.PG != nil {
+		isInvestor := false
+		if infoProvider, ok := gw.(mdtick.AccountInfoProvider); ok {
+			if info, err := infoProvider.GetAccountInfo(ctx); err == nil && info != nil {
+				isInvestor = info.IsInvestor
+			}
+		}
+		accountMethod := "master"
+		if isInvestor {
+			accountMethod = "investor"
+		}
 		if _, err := deps.PG.Exec(ctx,
-			`UPDATE mt_accounts SET account_status = 'connected', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
-			accID); err != nil {
+			`UPDATE mt_accounts SET account_status = 'connected', is_investor = $2,
+			 account_method = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+			accID, isInvestor, accountMethod); err != nil {
 			log.Warn("mdgateway: failed to update account status to connected",
 				zap.String("account", accID), zap.Error(err))
 		}

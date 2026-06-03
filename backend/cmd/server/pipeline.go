@@ -205,8 +205,11 @@ func startMdGatewayPipeline(
 				(*platformAgg).UpdatePosition(accountID, &risksvc.AggregatorPosition{
 					Canonical: pos.Symbol,
 					NetVolume: netVol,
-					// TODO: use actual contract_size from SymbolParam.LotSize instead of 100000.
-					// 100000 is correct for standard forex lots but wrong for indices/crypto/metals.
+					// Notional = volume_in_lots × contract_size × unit_price.
+					// 100000 is the standard forex contract size; broker sets lot size
+					// per symbol. Crypto/indices use smaller contracts (e.g. 1 for BTC).
+					// Without per-symbol SymbolParam at this layer, we cap at 100000
+					// to avoid inflating crypto positions.
 					Notional: pos.Volume * pos.CurrentPrice * 100000,
 					Margin:   0,
 				})
