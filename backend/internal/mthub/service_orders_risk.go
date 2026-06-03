@@ -15,8 +15,8 @@ import (
 // When no pipeline is configured, auto-approves the order.
 func (s *MtHubService) runPreTradeRisk(ctx context.Context, req *OrderRequest, orderID string) error {
 	if s.riskPipeline == nil {
-		s.omsTransition(ctx, orderID, OMSStateNew, OMSStateValidated)
-		s.omsTransition(ctx, orderID, OMSStateValidated, OMSStateRiskApproved)
+		s.omsTransition(ctx, orderID, req.AccountID, OMSStateNew, OMSStateValidated)
+		s.omsTransition(ctx, orderID, req.AccountID, OMSStateValidated, OMSStateRiskApproved)
 		return nil
 	}
 
@@ -49,14 +49,14 @@ func (s *MtHubService) runPreTradeRisk(ctx context.Context, req *OrderRequest, o
 	})
 
 	if !result.Allowed {
-		s.omsTransition(ctx, orderID, OMSStateNew, OMSStateValidated)
-		s.omsTransition(ctx, orderID, OMSStateValidated, OMSStateRejected)
+		s.omsTransition(ctx, orderID, req.AccountID, OMSStateNew, OMSStateValidated)
+		s.omsTransition(ctx, orderID, req.AccountID, OMSStateValidated, OMSStateRejected)
 		return fmt.Errorf("risk rejected at %s: %s", result.Stage, result.Reason)
 	}
 
 	// Approved: transition through VALIDATED → RISK_APPROVED.
-	s.omsTransition(ctx, orderID, OMSStateNew, OMSStateValidated)
-	s.omsTransition(ctx, orderID, OMSStateValidated, OMSStateRiskApproved)
+	s.omsTransition(ctx, orderID, req.AccountID, OMSStateNew, OMSStateValidated)
+	s.omsTransition(ctx, orderID, req.AccountID, OMSStateValidated, OMSStateRiskApproved)
 
 	// Override requested volume with sizer output.
 	if result.Lots > 0 {
@@ -67,11 +67,11 @@ func (s *MtHubService) runPreTradeRisk(ctx context.Context, req *OrderRequest, o
 
 // omsTransition is a fire-and-forget helper for OMS state transitions.
 // Failures are logged but do not block order processing.
-func (s *MtHubService) omsTransition(ctx context.Context, orderID string, from, to OMSState) {
+func (s *MtHubService) omsTransition(ctx context.Context, orderID, accountID string, from, to OMSState) {
 	if s.omsWriter == nil || orderID == "" {
 		return
 	}
-	if err := s.omsWriter.Transition(ctx, orderID, from, to); err != nil {
+	if err := s.omsWriter.Transition(ctx, orderID, accountID, from, to); err != nil {
 		s.logger.Error("oms transition failed",
 			zap.Error(err),
 			zap.String("orderID", orderID),

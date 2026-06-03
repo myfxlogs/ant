@@ -100,15 +100,15 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 func (s *MtHubService) submitToBroker(ctx context.Context, req *OrderRequest, orderID string) (int64, error) {
 	exec := s.hub.Get(req.AccountID)
 	if exec == nil {
-		s.omsTransition(ctx, orderID, OMSStateRiskApproved, OMSStateFailed)
+		s.omsTransition(ctx, orderID, req.AccountID, OMSStateRiskApproved, OMSStateFailed)
 		return 0, ErrSessionNotFound
 	}
 	ticket, err := exec.PlaceOrder(ctx, req)
 	if err != nil {
-		s.omsTransition(ctx, orderID, OMSStateRiskApproved, OMSStateFailed)
+		s.omsTransition(ctx, orderID, req.AccountID, OMSStateRiskApproved, OMSStateFailed)
 		return 0, err
 	}
-	s.omsTransition(ctx, orderID, OMSStateRiskApproved, OMSStateSubmitted)
+	s.omsTransition(ctx, orderID, req.AccountID, OMSStateRiskApproved, OMSStateSubmitted)
 	return ticket, nil
 }
 
@@ -207,7 +207,7 @@ func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket 
 
 	// OMS: record close attempt.
 	closeOrderID := fmt.Sprintf("close-%s-%d", accountID, ticket)
-	s.omsTransition(ctx, closeOrderID, OMSStateWorking, OMSStateFilled)
+	s.omsTransition(ctx, closeOrderID, accountID, OMSStateWorking, OMSStateFilled)
 
 	return exec.CloseOrder(ctx, ticket, lots)
 }

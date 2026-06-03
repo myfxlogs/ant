@@ -26,8 +26,8 @@ package mthub
 import (
 	"context"
 	"fmt"
-	"strings"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -118,7 +118,7 @@ func (w *OmsWriter) InsertOrder(ctx context.Context, orderID, accountID, platfor
 
 
 // Transition validates and persists a state transition to PG.
-func (w *OmsWriter) Transition(ctx context.Context, orderID string, current, next OMSState) error {
+func (w *OmsWriter) Transition(ctx context.Context, orderID, accountID string, current, next OMSState) error {
 	if !isValidOMSTransition(current, next) {
 		return fmt.Errorf("oms: invalid transition %s → %s", current, next)
 	}
@@ -137,7 +137,7 @@ func (w *OmsWriter) Transition(ctx context.Context, orderID string, current, nex
 		ev := &TradeEvent{
 			EventID:   fmt.Sprintf("oms-%s-%s", orderID, next),
 			EventType: TradeEventOrderCreated,
-			AccountID: accountIDFromOrderID(orderID),
+			AccountID: accountID,
 			ToState:   string(next),
 			FromState: string(current),
 			Timestamp: Clk.Now(),
@@ -149,7 +149,7 @@ func (w *OmsWriter) Transition(ctx context.Context, orderID string, current, nex
 	// Publish event to OrderEventBroker subscribers (H13: wire SubscribeOrderEvents).
 	if w.orderEventBroker != nil {
 		oev := &OrderEvent{
-			AccountID: accountIDFromOrderID(orderID),
+			AccountID: accountID,
 			EventType: fmt.Sprintf("%s→%s", string(current), string(next)),
 			Timestamp: Clk.Now(),
 		}
@@ -158,23 +158,14 @@ func (w *OmsWriter) Transition(ctx context.Context, orderID string, current, nex
 	return nil
 }
 
-// IdempotencyKey generates a deterministic order ID from account + client for idempotent insertion.
+// IdempotencyKey generates a deterministic UUID for idempotent order insertion.
+// Uses MD5 namespace hashing so same account+clientID always resolves to the same UUID.
+// When clientID is empty (frontend didn't send one), a random UUID is used —
+// no idempotency guarantee without a client-provided key.
 func IdempotencyKey(accountID, clientID string) string {
-	return fmt.Sprintf("ord-%s-%s", accountID, clientID)
+	if clientID == "" {
+		return uuid.New().String()
+	}
+	return uuid.NewMD5(uuid.NameSpaceOID, []byte(fmt.Sprintf("ord-%s-%s", accountID, clientID))).String()
 }
 
-// accountIDFromOrderID extracts the account ID from the idempotent order key.
-// format: "ord-<accountID>-<clientID>"
-// Uses LastIndex to handle account IDs that contain hyphens (e.g. UUIDs).
-func accountIDFromOrderID(orderID string) string {
-	if !strings.HasPrefix(orderID, "ord-") {
-		return orderID
-	}
-	// Find the LAST hyphen — only the clientID follows it.
-	rest := orderID[4:]
-	idx := strings.LastIndex(rest, "-")
-	if idx < 0 {
-		return rest
-	}
-	return rest[:idx]
-}
