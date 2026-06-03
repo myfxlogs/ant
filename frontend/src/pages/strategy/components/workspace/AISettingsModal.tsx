@@ -47,8 +47,11 @@ export default function AISettingsModal({ open, onClose }: Props) {
             options={modelOptions} allowClear showSearch optionFilterProp="label" />
         </div>
 
-        {/* Full SystemAI page — force 2-column provider cards for modal width */}
-        <style>{`.aisettings-modal .grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }`}</style>
+        {/* Grid overrides for modal width: provider cards 2-col, advanced params 3-col */}
+        <style>{`
+          .aisettings-modal .grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+          .aisettings-modal .space-y-6 > .grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+        `}</style>
         <div className="aisettings-modal">
         <Suspense fallback={<div style={{ textAlign: 'center', padding: 40 }}><Spin /></div>}>
           {open && <SystemAI />}
