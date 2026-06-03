@@ -1,11 +1,9 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Button, Select, InputNumber, Radio, message, Row, Col, Tag } from 'antd';
-import { SendOutlined, RiseOutlined, FallOutlined, BankOutlined } from '@ant-design/icons';
+import { Button, Select, InputNumber, Radio, message, Row, Col } from 'antd';
+import { SendOutlined, RiseOutlined, FallOutlined } from '@ant-design/icons';
 import { tradingApi } from '@/client/trading';
 import PositionSection, { type PositionItem } from './PositionSection';
 import TradeHistorySection, { type TradeItem } from './TradeHistorySection';
-import type { AccountInfo } from '@/stores/tradingStore';
-
 interface AccountMeta {
   brokerCompany: string;
   brokerServer: string;
@@ -16,7 +14,6 @@ interface AccountMeta {
 interface Props {
   accountId: string;
   symbol: string;
-  accountInfo?: AccountInfo | null;
   accountMeta?: AccountMeta | null;
   allPositions?: PositionItem[];
   positions?: PositionItem[];
@@ -36,19 +33,7 @@ const ORDER_KINDS: { value: OrderKind; label: string }[] = [
 const cardBox: React.CSSProperties = { background: '#f6f9fc', border: '1px solid #e0e8f0', borderRadius: 6, padding: '6px 10px' };
 const labelSm: React.CSSProperties = { fontSize: 10, color: '#64748b', fontWeight: 600 };
 
-function fmtMoney(v: number | undefined | null): string {
-  if (v == null) return '0.00';
-  return v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function BalanceRow({ label, value }: { label: string; value: string }) {
-  return <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-    <span style={{ fontSize: 10, color: '#64748b' }}>{label}</span>
-    <span style={{ fontSize: 11, fontWeight: 700, color: '#262626' }}>{value}</span>
-  </div>;
-}
-
-export default function QuickTradePanel({ accountId, symbol, accountInfo, accountMeta, allPositions = [], positions = [], recentTrades = [], onClosePosition }: Props) {
+export default function QuickTradePanel({ accountId, symbol, accountMeta, allPositions = [], positions = [], recentTrades = [], onClosePosition }: Props) {
   const totalLots = (allPositions || []).reduce((s, p) => s + (p.volume || 0), 0);
   const [side, setSide] = useState<OrderSide>('buy');
   const [orderKind, setOrderKind] = useState<OrderKind>('MARKET');
@@ -61,7 +46,6 @@ export default function QuickTradePanel({ accountId, symbol, accountInfo, accoun
   const [marginMode, setMarginMode] = useState<'cross' | 'isolated'>('cross');
 
   const isLimitOrStop = orderKind === 'LIMIT' || orderKind === 'STOP';
-  const freeMargin = accountInfo?.freeMargin ?? 0;
   const isMT5 = accountMeta?.mtType === 'MT5';
 
   const canSubmit = Boolean(symbol && accountId && (volume || 0) > 0 && !submitting);
@@ -101,36 +85,6 @@ export default function QuickTradePanel({ accountId, symbol, accountInfo, accoun
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '8px 0' }}>
-      {/* Account Balance */}
-      {accountInfo && (
-        <div style={{ ...cardBox, display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <BalanceRow label="Free Margin" value={`$${fmtMoney(freeMargin)}`} />
-          {accountInfo.equity != null && <BalanceRow label="Equity" value={`$${fmtMoney(accountInfo.equity)}`} />}
-          {accountInfo.balance != null && <BalanceRow label="Balance" value={`$${fmtMoney(accountInfo.balance)}`} />}
-        </div>
-      )}
-
-      {/* Exchange / Broker info — account is selected in toolbar */}
-      {accountMeta && (
-        <div style={{
-          background: '#f0f5ff', border: '1px solid #d6e4ff', borderRadius: 6,
-          padding: '6px 10px', display: 'flex', alignItems: 'center', gap: 8,
-        }}>
-          <BankOutlined style={{ color: '#1890ff', fontSize: 14 }} />
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#262626' }}>
-              {accountMeta.brokerCompany}
-            </div>
-            <div style={{ fontSize: 9, color: '#8c8c8c' }}>
-              {accountMeta.brokerServer} · {accountMeta.mtType}
-            </div>
-          </div>
-          <Tag color="blue" style={{ fontSize: 9, margin: 0, lineHeight: '18px' }}>
-            {accountMeta.mtType}
-          </Tag>
-        </div>
-      )}
-
       {/* Order form — only when symbol is selected */}
       {symbol && (<>
       {/* Side toggle */}

@@ -192,7 +192,6 @@ export default function StrategyWorkspacePage() {
             <div style={{ flex: 1, overflowY: 'auto', padding: 12 }}>
               <QuickTradePanel
                 accountId={ws.accountId} symbol={ws.symbol}
-                accountInfo={ws.accountInfo}
                 accountMeta={ws.selectedAccountMeta}
                 allPositions={ws.allPositions}
                 positions={ws.qtPositions}
