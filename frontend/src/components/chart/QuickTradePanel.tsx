@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { Button, Select, InputNumber, Radio, message, Row, Col, Tag } from 'antd';
 import { SendOutlined, RiseOutlined, FallOutlined, BankOutlined } from '@ant-design/icons';
 import { tradingApi } from '@/client/trading';
@@ -55,7 +55,6 @@ export default function QuickTradePanel({ accountId, symbol, accountInfo, accoun
   const [stopLoss, setStopLoss] = useState<number | null>(null);
   const [takeProfit, setTakeProfit] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [amountPercent, setAmountPercent] = useState(0);
   const [closingTicket, setClosingTicket] = useState<number | null>(null);
   const [marginMode, setMarginMode] = useState<'cross' | 'isolated'>('cross');
 
@@ -64,28 +63,17 @@ export default function QuickTradePanel({ accountId, symbol, accountInfo, accoun
   const leverage = accountMeta?.leverage ?? 100;
   const isMT5 = accountMeta?.mtType === 'MT5';
 
-  // Volume from %: approximate lots = freeMargin × pct% / marginPerLot
-  // marginPerLot ≈ 1000 for standard forex (100k contract / 100:1 leverage)
-  const displayVolume = useMemo(() => {
-    if (amountPercent > 0 && freeMargin > 0) {
-      const marginPerLot = leverage > 0 ? 100000 / leverage : 1000;
-      const margin = freeMargin * amountPercent / 100;
-      return +Math.max(0.01, margin / marginPerLot).toFixed(2);
-    }
-    return volume || 0;
-  }, [volume, amountPercent, freeMargin, leverage]);
-
-  const canSubmit = Boolean(symbol && accountId && displayVolume > 0 && !submitting);
+  const canSubmit = Boolean(symbol && accountId && (volume || 0) > 0 && !submitting);
 
   const handleSubmit = useCallback(async () => {
     if (!symbol || !accountId) { message.warning('Select a symbol first'); return; }
-    if (!displayVolume || displayVolume <= 0) { message.warning('Enter a valid volume'); return; }
+    if (!volume || volume <= 0) { message.warning('Enter a valid volume'); return; }
     if (isLimitOrStop && (!price || price <= 0)) { message.warning('Price is required for Limit/Stop orders'); return; }
     setSubmitting(true);
     try {
       const typeStr = `${side}${isLimitOrStop ? `_${orderKind.toLowerCase()}` : ''}`;
       const result = await tradingApi.orderSend({
-        accountId, symbol, type: typeStr, volume: displayVolume,
+        accountId, symbol, type: typeStr, volume: volume,
         price: isLimitOrStop ? price : undefined,
         stopLoss: stopLoss ?? undefined, takeProfit: takeProfit ?? undefined,
       });
@@ -94,17 +82,13 @@ export default function QuickTradePanel({ accountId, symbol, accountInfo, accoun
       } else { message.success(`${side === 'buy' ? 'Buy' : 'Sell'} order placed`); }
     } catch (e: any) { message.error(e?.message || 'Order failed'); }
     finally { setSubmitting(false); }
-  }, [accountId, symbol, side, orderKind, displayVolume, price, stopLoss, takeProfit, isLimitOrStop]);
+  }, [accountId, symbol, side, orderKind, volume, price, stopLoss, takeProfit, isLimitOrStop]);
 
   const handleClosePos = useCallback((ticket: number) => {
     setClosingTicket(ticket);
     onClosePosition?.(ticket);
     setTimeout(() => setClosingTicket(null), 5000);
   }, [onClosePosition]);
-
-  const setPct = useCallback((pct: number) => {
-    setAmountPercent(pct); setVolume(0);
-  }, []);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '8px 0' }}>
@@ -165,17 +149,7 @@ export default function QuickTradePanel({ accountId, symbol, accountInfo, accoun
       <div>
         <div style={labelSm}>Amount (lots)</div>
         <InputNumber size="small" style={{ width: '100%' }} min={0.01} step={0.01}
-          value={displayVolume} onChange={(v) => { setVolume(v ?? 0.01); setAmountPercent(0); }} placeholder="0.01" />
-        <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
-          {[10, 25, 50, 75, 100].map(pct => (
-            <Button key={pct} size="small" disabled={freeMargin <= 0}
-              type={amountPercent === pct ? 'primary' : 'default'}
-              onClick={() => setPct(pct)}
-              style={{ flex: 1, fontSize: 10, fontWeight: 600, padding: '2px 0', height: 24 }}>
-              {pct}%
-            </Button>
-          ))}
-        </div>
+          value={volume} onChange={(v) => setVolume(v ?? 0.01)} placeholder="0.01" />
       </div>
 
       {/* Price (Limit/Stop only) */}
