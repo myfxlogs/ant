@@ -52,7 +52,7 @@ export default function WorkspaceToolbar({
   symbol, onSymbolChange, accountInfo,
   codePanelVisible, onToggleCodePanel, quickTradeVisible, onToggleQuickTrade,
 }: Props) {
-  const hasData = accountInfo && accountInfo.equity > 0;
+  const hasData = accountInfo != null;
   const profitColor = accountInfo && accountInfo.profit >= 0 ? '#26a69a' : '#ef5350';
   const selectedAccount = (accounts || []).find(a => a.id === accountId);
 
