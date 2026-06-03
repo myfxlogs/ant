@@ -85,6 +85,16 @@ export function useStrategyWorkspaceState() {
     return (tradingStore.positionsMap.get(accountId) || []).length;
   }, [accountId, tradingStore.positionsMap]);
 
+  // All open positions for the selected account (unfiltered by symbol)
+  const allPositions: QuickTradePosition[] = useMemo(() => {
+    if (!accountId) return [];
+    return (tradingStore.positionsMap.get(accountId) || []).map(p => ({
+      ticket: p.ticket, side: p.type.startsWith('buy') ? 'long' : 'short',
+      symbol: p.symbol, volume: p.volume || 0, openPrice: p.openPrice || 0,
+      markPrice: p.currentPrice, profit: p.profit || 0,
+    }));
+  }, [accountId, tradingStore.positionsMap]);
+
   const qtPositions: QuickTradePosition[] = useMemo(() => {
     if (!accountId || !symbol) return [];
     return (tradingStore.positionsMap.get(accountId) || [])
@@ -154,7 +164,7 @@ export function useStrategyWorkspaceState() {
     enabledSweepDims: btCtx.enabledSweepDims, cartesianSize: btCtx.cartesianSize,
     tuningRunning: btCtx.tuningRunning, handleRunTuning: btCtx.runTuning,
     aiPrompt, setAiPrompt, aiGenerating, handleGenerateCode,
-    accountInfo, selectedAccountMeta, positionCount, qtPositions, qtRecentTrades, handleClosePosition,
+    accountInfo, selectedAccountMeta, positionCount, allPositions, qtPositions, qtRecentTrades, handleClosePosition,
     codePanelVisible, setCodePanelVisible, quickTradeVisible, setQuickTradeVisible,
   };
 }
