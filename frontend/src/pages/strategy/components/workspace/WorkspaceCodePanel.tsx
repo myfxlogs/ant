@@ -1,5 +1,5 @@
 import { Button, Space, Input, Alert, Tag, Tooltip } from 'antd';
-import { CheckCircleOutlined, PlayCircleOutlined, CopyOutlined, SaveOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, PlayCircleOutlined, CopyOutlined, SaveOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 
 interface ValidationResult {
@@ -15,16 +15,12 @@ interface Props {
   validationResult: ValidationResult | null;
   onRunBacktest: () => void; backtestSubmitting: boolean;
   canSave: boolean; onSave: () => void; onCopy: () => void;
-  // AI Generate (optional)
-  aiPrompt?: string; onAiPromptChange?: (v: string) => void;
-  aiGenerating?: boolean; onGenerateCode?: () => void;
 }
 
 export default function WorkspaceCodePanel({
   code, onCodeChange,
   validating, onValidate, validationResult,
   onRunBacktest, backtestSubmitting, canSave, onSave, onCopy,
-  aiPrompt, onAiPromptChange, aiGenerating, onGenerateCode,
 }: Props) {
   const { t } = useTranslation();
 
@@ -77,32 +73,6 @@ export default function WorkspaceCodePanel({
           )} />
       )}
 
-      {/* AI Generate section */}
-      {onGenerateCode && (
-        <div style={{
-          borderTop: '1px solid #e8e8e8', paddingTop: 8,
-          background: '#fafbfc', borderRadius: 6,
-          border: '1px solid #e8e8e8',
-        }}>
-          <div style={{ padding: '6px 12px', borderBottom: '1px solid #e8e8e8', background: 'linear-gradient(180deg, #f0f7ff 0%, #e6f4ff 100%)' }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#262626' }}>
-              <ThunderboltOutlined style={{ marginRight: 4, color: '#1890ff' }} />
-              AI Generate
-            </span>
-          </div>
-          <div style={{ padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <Input.TextArea
-              value={aiPrompt} onChange={(e) => onAiPromptChange?.(e.target.value)}
-              rows={3} size="small" placeholder="Describe the strategy you want to generate..."
-              spellCheck={false} />
-            <Button type="primary" block size="small" loading={aiGenerating}
-              disabled={!aiPrompt?.trim()} onClick={onGenerateCode}
-              style={{ borderRadius: 6, fontWeight: 600, boxShadow: '0 2px 8px rgba(24,144,255,0.25)' }}>
-              ⚡ Generate Code
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

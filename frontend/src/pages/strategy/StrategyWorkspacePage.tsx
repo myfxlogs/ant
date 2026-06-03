@@ -1,6 +1,6 @@
 import { Suspense, lazy } from 'react';
 import { Collapse } from 'antd';
-import { RobotOutlined, DoubleLeftOutlined, DoubleRightOutlined } from '@ant-design/icons';
+import { DoubleLeftOutlined, DoubleRightOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useStrategyWorkspaceState } from './hooks/useStrategyWorkspaceState';
 import WorkspaceCodePanel from './components/workspace/WorkspaceCodePanel';
@@ -75,12 +75,12 @@ export default function StrategyWorkspacePage() {
               validationResult={ws.validationResult}
               onRunBacktest={ws.handleRunBacktest} backtestSubmitting={ws.btSubmitting}
               canSave={ws.canSave} onSave={ws.handleSave} onCopy={ws.handleCopy}
-              aiPrompt={ws.aiPrompt} onAiPromptChange={ws.setAiPrompt}
-              aiGenerating={ws.aiGenerating} onGenerateCode={ws.handleGenerateCode}
             />
 
+            {/* AI Chat — inline below code editor, replaces old AI Generate + Collapse AI Assistant */}
+            <AICodeReviseChat code={ws.code} onApply={ws.setCode} />
+
             <Collapse ghost size="small" style={{ background: 'transparent' }} items={[
-              { key: 'ai', label: <span><RobotOutlined style={{ marginRight: 6 }} />{t('strategy.workspace.aiAssist', 'AI Assistant')}</span>, children: <AICodeReviseChat code={ws.code} onApply={ws.setCode} /> },
               { key: 'template', label: t('strategy.workspace.template.title', 'Template'), children: <WorkspaceTemplateManager templates={ws.templates} loading={ws.templatesLoading} loadedTemplate={ws.loadedTemplate} onLoad={ws.handleLoadTemplate} onSaveAs={ws.handleSaveAs} /> },
             ]} />
           </div>

@@ -6,7 +6,6 @@ import { useAccountFinancials } from '@/queries/useAccountFinancials';
 import { usePositionsQuery } from '@/queries/usePositionsQuery';
 import { marketApi } from '@/client/market';
 import { tradingApi } from '@/client/trading';
-import { codeAssistApi } from '@/client/codeAssist';
 import { useStrategyCode } from './useStrategyCode';
 import { useBacktestParams, DATE_PRESETS } from './useBacktestParams';
 import type { SweepDimension, BacktestMetrics } from './useBacktestParams';
@@ -60,19 +59,6 @@ export function useStrategyWorkspaceState() {
     btCtx.setSubTab('results');
     btCtx.runBacktest({ code: codeCtx.code, accountId, symbol, timeframe });
   }, [btCtx, codeCtx.code, accountId, symbol, timeframe]);
-
-  // AI Generate
-  const [aiPrompt, setAiPrompt] = useState('');
-  const [aiGenerating, setAiGenerating] = useState(false);
-  const handleGenerateCode = useCallback(async () => {
-    if (!aiPrompt.trim()) return;
-    setAiGenerating(true);
-    try {
-      const revised = await codeAssistApi.revise({ code: codeCtx.code, instruction: aiPrompt });
-      if (revised?.python) codeCtx.setCode(revised.python);
-    } catch (e: any) { message.error(e?.message || 'AI generation failed'); }
-    finally { setAiGenerating(false); }
-  }, [codeCtx.code, aiPrompt]);
 
   // Quick Trade data
   const tradingStore = useTradingStore();
@@ -167,7 +153,6 @@ export function useStrategyWorkspaceState() {
     sweepDimensions: btCtx.sweepDimensions, toggleDimension: btCtx.toggleDimension,
     enabledSweepDims: btCtx.enabledSweepDims, cartesianSize: btCtx.cartesianSize,
     tuningRunning: btCtx.tuningRunning, handleRunTuning: btCtx.runTuning,
-    aiPrompt, setAiPrompt, aiGenerating, handleGenerateCode,
     accountInfo, selectedAccountMeta, positionCount, allPositions, qtPositions, qtRecentTrades, handleClosePosition,
     codePanelVisible, setCodePanelVisible, quickTradeVisible, setQuickTradeVisible,
   };
