@@ -234,19 +234,16 @@ func (g *Gateway) FetchAccountInfo(ctx context.Context) (*mdtick.MTAccountInfo, 
 	if err != nil {
 		return nil, fmt.Errorf("mt4 AccountSummary: %w", err)
 	}
-	if resp.GetResult() == nil {
-		code := int32(0)
-		msg := "no error details"
-		if errInfo := resp.GetError(); errInfo != nil {
-			code = int32(errInfo.GetCode())
-			msg = errInfo.GetMessage()
+		if resp.GetResult() == nil {
+			// MT4 returns nil AccountSummary for investor (read-only) accounts.
+			// Fall back to the dedicated IsInvestor RPC for confirmation.
+			g.log.Info("mt4: AccountSummary returned nil — checking IsInvestor RPC")
+			if isInv, err := client.IsInvestor(asCtx, &pb.IsInvestorRequest{Id: sid}); err == nil {
+				return &mdtick.MTAccountInfo{IsInvestor: isInv.GetResult()}, nil
+			}
+			// Cannot confirm — assume investor to be safe (deny trading).
+			return &mdtick.MTAccountInfo{IsInvestor: true}, nil
 		}
-		g.log.Warn("mt4: AccountSummary returned nil result",
-			zap.Int32("code", code),
-			zap.String("msg", msg),
-		)
-		return &mdtick.MTAccountInfo{}, fmt.Errorf("mt4 AccountSummary: result nil, error code=%d msg=%s", code, msg)
-	}
 
 	s := resp.GetResult()
 	return &mdtick.MTAccountInfo{
@@ -261,6 +258,11 @@ func (g *Gateway) FetchAccountInfo(ctx context.Context) (*mdtick.MTAccountInfo, 
 	}, nil
 }
 
+
+// GetAccountInfo implements mdtick.AccountInfoProvider.
+func (g *Gateway) GetAccountInfo(ctx context.Context) (*mdtick.MTAccountInfo, error) {
+	return g.FetchAccountInfo(ctx)
+}
 func (g *Gateway) HealthCheck(ctx context.Context) error {
 	g.mu.RLock()
 	defer g.mu.RUnlock()
