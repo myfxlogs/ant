@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { message } from 'antd';
 import { useAccount } from '@/hooks/useAccount';
 import { useTradingStore } from '@/stores/tradingStore';
@@ -88,7 +88,7 @@ export function useStrategyWorkspaceState() {
 
   // All open positions for the selected account (unfiltered by symbol)
   const allPositions: QuickTradePosition[] = useMemo(() => {
-    if (!rawPositions) return [];
+    if (!accountId || !rawPositions) return [];
     return rawPositions.map(p => ({
       ticket: p.ticket, side: p.type.startsWith('buy') ? 'long' : 'short',
       symbol: p.symbol, volume: p.volume || 0, openPrice: p.openPrice || 0,
@@ -108,11 +108,14 @@ export function useStrategyWorkspaceState() {
       }));
   }, [symbol, rawPositions]);
 
+  const tradeCacheRef = useRef<Set<string>>(new Set());
   const [qtRecentTrades, setQtRecentTrades] = useState<RecentTrade[]>([]);
   const fetchTradeHistory = useCallback(async () => {
     if (!accountId) return;
-    // Only fetch if account has received data (connected)
     if (!tradingStore.hasReceivedData(accountId)) return;
+    // Skip if already fetched for this account (trades are static history)
+    if (tradeCacheRef.current.has(accountId)) return;
+    tradeCacheRef.current.add(accountId);
     try {
       const result = await tradingApi.getOrderHistory({ accountId, pageSize: 5 });
       const trades: RecentTrade[] = (result.orders as any[] || []).slice(0, 5).map((o: any) => ({

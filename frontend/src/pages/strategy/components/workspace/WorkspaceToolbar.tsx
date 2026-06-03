@@ -30,7 +30,7 @@ function fmtCompact(v: number | undefined | null): string {
   const abs = Math.abs(v);
   if (abs >= 1_000_000) return (v / 1_000_000).toFixed(2) + 'M';
   if (abs >= 1_000) return (v / 1_000).toFixed(1) + 'K';
-  return v.toFixed(0);
+  return v.toFixed(2);
 }
 
 function SummaryChip({ label, value, color, icon }: { label: string; value: string | number; color?: string; icon?: React.ReactNode }) {

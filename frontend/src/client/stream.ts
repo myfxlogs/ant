@@ -113,8 +113,6 @@ export const streamApi = {
     let isAborted = false;
     let currentAbort: AbortController | null = null;
     let transportFailStreak = 0;
-    let lastEventID = '';
-    let localEventCount = 0;
 
     const runStream = async (retryCount = 0) => {
       if (isAborted) return;
@@ -122,20 +120,18 @@ export const streamApi = {
       currentAbort = abortController;
 
       try {
+        // Note: Last-Event-ID is not sent because the backend SSE handler
+        // does not support event replay. When it does, read the event ID
+        // from the stream's `id:` field and pass it on reconnect.
         const stream = streamClient.subscribeEvents(
           { accountIds },
-          {
-            signal: abortController.signal,
-            ...(lastEventID ? { headers: { 'Last-Event-ID': lastEventID } } : {}),
-          },
+          { signal: abortController.signal },
         );
 
         for await (const event of stream) {
           if (isAborted) break;
           transportFailStreak = 0;
           retryCount = 0;
-          localEventCount++;
-          lastEventID = String(localEventCount);
 
           const e = event as StreamEvent;
 

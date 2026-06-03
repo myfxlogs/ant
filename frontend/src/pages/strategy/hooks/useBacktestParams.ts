@@ -104,6 +104,8 @@ export function useBacktestParams() {
     setSweepDimensions(prev => prev.map(d => d.key === key ? { ...d, enabled: !d.enabled } : d));
   }, []);
 
+  // Placeholder: backend Smart Tuning API not yet available.
+  // Replace setTimeout with pythonStrategyApi.startTuningRun when wired.
   const runTuning = useCallback(() => {
     setTuningRunning(true);
     setTimeout(() => setTuningRunning(false), 3000);
