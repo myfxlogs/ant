@@ -1,7 +1,8 @@
 import { Button, Space, Input, Alert, Tag, Tooltip } from 'antd';
-import { CheckCircleOutlined, PlayCircleOutlined, CopyOutlined, SaveOutlined, SettingOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, PlayCircleOutlined, CopyOutlined, SaveOutlined, SettingOutlined, RobotOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useSystemAIConfigsQuery } from '@/queries/useSystemAIConfigsQuery';
 import AISettingsModal from './AISettingsModal';
 
 interface ValidationResult {
@@ -29,6 +30,20 @@ export default function WorkspaceCodePanel({
 }: Props) {
   const { t } = useTranslation();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const { data } = useSystemAIConfigsQuery();
+  const configs = data?.items ?? [];
+
+  // Resolve saved workspace model to a display label
+  const modelLabel = useMemo(() => {
+    try {
+      const key = localStorage.getItem('workspace_ai_model');
+      if (!key) return null;
+      const [providerId, model] = key.split('|');
+      const cfg = configs.find(c => c.provider_id === providerId);
+      const name = cfg?.name || providerId;
+      return `${name} · ${model}`;
+    } catch { return null; }
+  }, [configs]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -57,6 +72,13 @@ export default function WorkspaceCodePanel({
             </Tooltip>
           </Space>
         </div>
+        {/* Selected model indicator */}
+        {modelLabel && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2, marginBottom: 6 }}>
+            <RobotOutlined style={{ fontSize: 10, color: '#8c8c8c' }} />
+            <span style={{ fontSize: 10, color: '#8c8c8c' }}>{modelLabel}</span>
+          </div>
+        )}
         <Input.TextArea value={code} onChange={(e) => onCodeChange(e.target.value)}
           rows={18} style={{ fontFamily: "'Fira Code', 'Cascadia Code', 'Consolas', monospace", fontSize: 13 }}
           placeholder={t('strategy.workspace.codePlaceholder', '# Python strategy code...\ndef run(context):\n    return {"signal": "hold"}')}
