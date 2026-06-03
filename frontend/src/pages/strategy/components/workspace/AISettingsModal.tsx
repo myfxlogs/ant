@@ -35,8 +35,8 @@ export default function AISettingsModal({ open, onClose }: Props) {
 
   return (
     <Modal title={<><SettingOutlined style={{ marginRight: 8 }} />{t('ai.settings.pageTitle', 'AI Settings')}</>}
-      open={open} onCancel={onClose} footer={null} width={680} style={{ top: 16 }}>
-      <div style={{ maxHeight: '75vh', overflowY: 'auto', paddingRight: 4 }}>
+      open={open} onCancel={onClose} footer={null} width={900} style={{ top: 8 }}>
+      <div style={{ maxHeight: '80vh', overflowY: 'auto' }}>
         {/* Inline workspace model selector */}
         <div style={{ marginBottom: 12, padding: '8px 12px', background: '#f0f5ff', borderRadius: 6, border: '1px solid #d6e4ff' }}>
           <div style={{ fontSize: 11, fontWeight: 600, color: '#262626', marginBottom: 4 }}>
