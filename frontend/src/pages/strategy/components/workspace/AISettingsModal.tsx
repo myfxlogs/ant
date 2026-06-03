@@ -31,12 +31,13 @@ export default function AISettingsModal({ open, onClose }: Props) {
   const [temperature, setTemperature] = useState(saved.temperature ?? 0.3);
   const [maxTokens, setMaxTokens] = useState(saved.maxTokens ?? 4096);
 
-  // Build model options from system configs
-  const options = (configs || [])
-    .filter(c => c.enabled && c.has_secret)
-    .flatMap(c => {
+  // listSystemAIConfigs returns { items: AIConfig[] }, unwrap here
+  const list = Array.isArray(configs) ? configs : (configs as any)?.items || [];
+  const options = list
+    .filter((c: any) => c.enabled && c.has_secret)
+    .flatMap((c: any) => {
       const models = (c.models?.length ? c.models : c.default_model ? [c.default_model] : []);
-      return models.map(m => ({
+      return models.map((m: string) => ({
         value: `${c.provider_id}|${m}`,
         label: `${c.name || c.provider_id} · ${m}`,
       }));
