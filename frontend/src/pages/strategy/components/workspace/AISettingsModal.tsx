@@ -47,10 +47,13 @@ export default function AISettingsModal({ open, onClose }: Props) {
             options={modelOptions} allowClear showSearch optionFilterProp="label" />
         </div>
 
-        {/* Full SystemAI page embedded — providers, keys, base URL, models, advanced */}
+        {/* Full SystemAI page — force 2-column provider cards for modal width */}
+        <style>{`.aisettings-modal .grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }`}</style>
+        <div className="aisettings-modal">
         <Suspense fallback={<div style={{ textAlign: 'center', padding: 40 }}><Spin /></div>}>
           {open && <SystemAI />}
         </Suspense>
+        </div>
       </div>
     </Modal>
   );
