@@ -1,4 +1,4 @@
-import { Suspense, lazy, useRef, useState, useEffect } from 'react';
+import { Suspense, lazy } from 'react';
 import { Collapse } from 'antd';
 import { RobotOutlined, DoubleLeftOutlined, DoubleRightOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -17,20 +17,6 @@ const SaveTemplateModal = lazy(() => import('@/components/strategy/SaveTemplateM
 export default function StrategyWorkspacePage() {
   const { t } = useTranslation();
   const ws = useStrategyWorkspaceState();
-
-  // Measure chart container to pass dynamic height to PriceChart (default 500px is too short)
-  const chartAreaRef = useRef<HTMLDivElement>(null);
-  const [chartHeight, setChartHeight] = useState(500);
-  useEffect(() => {
-    const el = chartAreaRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(([entry]) => {
-      const h = entry?.contentRect?.height;
-      if (h && h > 0) setChartHeight(h);
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 112px)', background: '#fff' }}>
@@ -103,11 +89,12 @@ export default function StrategyWorkspacePage() {
         {/* ── MIDDLE: Chart + Backtest ── */}
         <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           {/* Chart area (PriceChart handles timeframe + indicator toolbar internally) */}
-          <div ref={chartAreaRef} style={{ flex: '1 1 0', minHeight: 0, position: 'relative', overflow: 'hidden' }}>
+          {/* Chart area: flex column gives PriceChart 100% height via CSS */}
+          <div style={{ flex: '1 1 0', minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             {ws.symbol ? (
               <PriceChart
                 symbol={ws.symbol} timeframe={ws.timeframe} onTimeframeChange={ws.setTimeframe}
-                accountId={ws.accountId} height={Math.max(300, chartHeight - 52)}
+                accountId={ws.accountId}
               />
             ) : (
               <div style={{

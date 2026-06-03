@@ -42,6 +42,8 @@ export function useChartData(
   const loadedAll = useRef(false);
   const cancelledRef = useRef(false);
   const unsubRef = useRef<(() => void) | null>(null);
+  // Client-side bar cache: avoid re-fetching recently viewed symbol+timeframe combos
+  const barCache = useRef<Map<string, KlineData[]>>(new Map());
   // Refs for current symbol/timeframe to avoid closure staleness in SSE handler
   const symbolRef = useRef(symbol);
   const timeframeRef = useRef(timeframe);
@@ -93,6 +95,13 @@ export function useChartData(
   // ── Effect 3: fetch initial bars (symbol/timeframe/account change) ──
   useEffect(() => {
     if (!symbol || !accountId) return;
+    const cacheKey = `${symbol}|${timeframe}`;
+    const cached = barCache.current.get(cacheKey);
+    if (cached && cached.length > 0) {
+      barsRef.current = cached; setBars(cached); setLoading(false);
+      return;
+    }
+
     let cancelled = false;
     setLoading(true); setError(null);
     loadedAll.current = false; loadingMore.current = false;
@@ -105,7 +114,7 @@ export function useChartData(
 
     marketApi.getKlines({ symbol: marketApi.resolveSymbol(symbol), timeframe, count: INITIAL_BARS, accountId })
       .then((data) => {
-        if (!cancelled) { barsRef.current = data ?? []; setBars(data ?? []); setLoading(false); }
+        if (!cancelled) { barsRef.current = data ?? []; setBars(data ?? []); barCache.current.set(cacheKey, data ?? []); setLoading(false); }
       })
       .catch((err: Error) => {
         if (!cancelled) { setError(err.message || 'Failed to load chart data'); setLoading(false); }

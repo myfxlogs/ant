@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Button, Select, InputNumber, Radio, message, Row, Col, Tag } from 'antd';
 import { SendOutlined, RiseOutlined, FallOutlined, BankOutlined } from '@ant-design/icons';
 import { tradingApi } from '@/client/trading';
@@ -66,14 +66,18 @@ export default function QuickTradePanel({ accountId, symbol, accountInfo, accoun
   const canSubmit = Boolean(symbol && accountId && (volume || 0) > 0 && !submitting);
 
   const handleSubmit = useCallback(async () => {
+    if (submitting) return; // prevent double-click
     if (!symbol || !accountId) { message.warning('Select a symbol first'); return; }
     if (!volume || volume <= 0) { message.warning('Enter a valid volume'); return; }
     if (isLimitOrStop && (!price || price <= 0)) { message.warning('Price is required for Limit/Stop orders'); return; }
     setSubmitting(true);
     try {
       const typeStr = `${side}${isLimitOrStop ? `_${orderKind.toLowerCase()}` : ''}`;
+      // Generate client-supplied idempotency key so the backend can dedup
+      // accidental double-submissions (network retry, button double-click).
+      const clientId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const result = await tradingApi.orderSend({
-        accountId, symbol, type: typeStr, volume: volume,
+        accountId, symbol, type: typeStr, volume: volume, clientId,
         price: isLimitOrStop ? price : undefined,
         stopLoss: stopLoss ?? undefined, takeProfit: takeProfit ?? undefined,
       });
@@ -84,10 +88,14 @@ export default function QuickTradePanel({ accountId, symbol, accountInfo, accoun
     finally { setSubmitting(false); }
   }, [accountId, symbol, side, orderKind, volume, price, stopLoss, takeProfit, isLimitOrStop]);
 
+  const closeTimerRef = useRef<number | null>(null);
+  useEffect(() => () => { if (closeTimerRef.current != null) window.clearTimeout(closeTimerRef.current); }, []);
+
   const handleClosePos = useCallback((ticket: number) => {
     setClosingTicket(ticket);
     onClosePosition?.(ticket);
-    setTimeout(() => setClosingTicket(null), 5000);
+    if (closeTimerRef.current != null) window.clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = window.setTimeout(() => setClosingTicket(null), 5000);
   }, [onClosePosition]);
 
   return (

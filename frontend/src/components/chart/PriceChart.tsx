@@ -31,12 +31,11 @@ interface Props {
   symbol: string;
   timeframe?: string;
   onTimeframeChange?: (tf: string) => void;
-  height?: number;
   accountId?: string;
   onChartReady?: (chart: Chart | null) => void;
 }
 
-export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange, height = 500, accountId, onChartReady }: Props) {
+export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange, accountId, onChartReady }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<Chart | null>(null);
@@ -110,12 +109,12 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     chartRef.current.applyNewData(bars.map(toChartBar));
   }, [bars]);
 
-  // Create chart on mount
+  // Create chart on mount — CSS flex gives the container its height
   useEffect(() => {
     if (!containerRef.current) return;
     const el = containerRef.current;
     el.style.width = '100%';
-    el.style.height = `${height}px`;
+    el.style.height = '100%';
     const chart = init(el, { styles: DARK_THEME });
     if (!chart) { console.error('klinecharts init returned null'); return; }
     chartRef.current = chart;
@@ -124,7 +123,10 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     } catch { /* ignore */ }
     try { chart.createIndicator('BIDASK', true, { id: 'candle_pane' }); } catch { /* */ }
     onChartReady?.(chart);
-    return () => { onChartReady?.(null); dispose(el); chartRef.current = null; };
+    // ResizeObserver: keep chart canvas in sync with container size
+    const ro = new ResizeObserver(() => chartRef.current?.resize());
+    ro.observe(el);
+    return () => { ro.disconnect(); onChartReady?.(null); dispose(el); chartRef.current = null; };
   }, []);
 
   // Chart type
@@ -138,15 +140,16 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
   // Load more on scroll-left — directly append to chart
   const handleLoadMore = useCallback((timestamp: number | null) => {
     const chart = chartRef.current;
-    if (!chart || !timestamp || bars.length === 0 || loadingMore.current || loadedAll.current) return;
-    if (timestamp >= bars[0].time) return;
+    const oldest = barsRef.current[0];
+    if (!chart || !timestamp || !oldest || loadingMore.current || loadedAll.current) return;
+    if (timestamp >= oldest.time) return;
     loadingMore.current = true;
-    marketApi.getKlines({ symbol: marketApi.resolveSymbol(symbol), timeframe, count: 300, before: bars[0].time, accountId })
+    marketApi.getKlines({ symbol: marketApi.resolveSymbol(symbol), timeframe, count: 300, before: oldest.time, accountId })
       .then((older) => {
         if (older.length === 0) { loadedAll.current = true; return; }
         chart.applyNewData(older.map(toChartBar), true);
       }).catch(() => { /* silent */ }).finally(() => { loadingMore.current = false; });
-  }, [bars, symbol, timeframe, accountId, loadingMore, loadedAll]);
+  }, [symbol, timeframe, accountId, loadingMore, loadedAll]);
 
   // Listen for scroll/pan to trigger load-more
   useEffect(() => {
@@ -164,19 +167,14 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     return () => { container.removeEventListener('wheel', onInteraction); container.removeEventListener('pointerdown', onInteraction); if (timer != null) window.clearTimeout(timer); };
   }, [handleLoadMore]);
 
-  // Resize
-  useEffect(() => {
-    if (chartRef.current && containerRef.current) { containerRef.current.style.height = `${height}px`; chartRef.current.resize(); }
-  }, [height]);
-
   if (tooNarrow) {
     return <div ref={wrapperRef} style={{ padding: 24, textAlign: 'center', color: '#6b7280', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, background: 'rgba(0,0,0,0.02)' }}>Chart hidden on narrow screens — switch to a wider viewport to see price data.</div>;
   }
 
   return (
-    <div ref={wrapperRef} style={{ position: 'relative' }}>
+    <div ref={wrapperRef} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Toolbar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 4 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 4, flexShrink: 0 }}>
         <Radio.Group value={timeframe} onChange={e => onTimeframeChange?.(e.target.value)} size="small" optionType="button" buttonStyle="solid">
           {TIMEFRAMES.map(tf => <Radio.Button key={tf.value} value={tf.value}>{tf.label}</Radio.Button>)}
         </Radio.Group>
@@ -201,7 +199,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
 
       {/* Active indicator chips */}
       {activeIndicators.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 6, alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 6, alignItems: 'center', flexShrink: 0 }}>
           {activeIndicators.map((ind) => {
             const def = getDef(ind.defId);
             const paramsStr = def?.params?.length
@@ -231,12 +229,12 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
       })()}
 
       {/* Chart */}
-      <div style={{ position: 'relative', minHeight: height, background: '#131722', borderRadius: 4, overflow: 'hidden' }}>
+      <div style={{ flex: '1 1 0', minHeight: 0, position: 'relative', background: '#131722', borderRadius: 4, overflow: 'hidden' }}>
         <DrawingToolbar chart={chartRef.current} />
         {loading && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10, background: 'rgba(0,0,0,0.3)' }}><Spin /></div>}
         {error && !loading && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef5350', zIndex: 10 }}>{error}</div>}
         {!symbol && !loading && !error && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', zIndex: 10 }}>Select a symbol to view chart</div>}
-        <div ref={containerRef} style={{ width: '100%', height }} />
+        <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
       </div>
     </div>
   );

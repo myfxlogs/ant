@@ -113,14 +113,10 @@ function fromProtoOrders(orders: OrderRecord[]): ProtoPosition[] {
  */
 function parseSideOrderType(type: string): { side: Side; orderType: OrderType } {
   const upper = type.toUpperCase();
-  let side: Side;
-  if (upper.startsWith('BUY')) {
-    side = Side.BUY;
-  } else if (upper.startsWith('SELL')) {
-    side = Side.SELL;
-  } else {
-    side = Side.UNSPECIFIED;
+  if (!upper.startsWith('BUY') && !upper.startsWith('SELL')) {
+    console.warn('[trading] unknown side in order type:', type);
   }
+  const side = upper.startsWith('SELL') ? Side.SELL : Side.BUY;
 
   let orderType: OrderType;
   if (upper.includes('STOP_LIMIT')) {
@@ -154,6 +150,7 @@ export const tradingApi = {
     stopLoss?: number;
     takeProfit?: number;
     comment?: string;
+    clientId?: string;
     magicNumber?: bigint;
   }): Promise<OrderSendResult> => {
     const { side, orderType } = parseSideOrderType(params.type);
@@ -168,6 +165,7 @@ export const tradingApi = {
         stopLoss: toDecimalString(params.stopLoss, '0'),
         takeProfit: toDecimalString(params.takeProfit, '0'),
         comment: params.comment || '',
+        clientId: params.clientId || '',
         magic: Number(params.magicNumber || 0),
       }),
     );

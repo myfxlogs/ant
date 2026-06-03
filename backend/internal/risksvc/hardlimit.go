@@ -77,6 +77,12 @@ func (r *MarginFloorRule) Check(_ context.Context, req *HardLimitRequest) error 
 		ratio = 1.0
 	}
 	// Free margin must be >= floor ratio * notional exposure.
+		// Skip check when price is unknown (MARKET orders): the broker determines
+		// fill price, and the sizer already validated account equity.
+		if req.Price <= 0 {
+			return nil
+		}
+
 	required := req.Volume * req.Price
 	if req.FreeMargin < ratio*required {
 		return &HardLimitError{
