@@ -101,15 +101,26 @@ func (w *OmsWriter) SetOrderEventBroker(b *OrderEventBroker) {
 // InsertOrder inserts a new order with state=NEW.
 // Uses ON CONFLICT DO NOTHING to handle idempotent re-insertion.
 // platform must be "MT4" or "MT5".
+// hashToNegative converts a UUID string to a unique negative int64 placeholder
+// for the orders.ticket column. Negative values never collide with real MT
+// broker tickets (always positive).
+func hashToNegative(id string) int64 {
+	h := uint64(0)
+	for _, c := range id {
+		h = h*31 + uint64(c)
+	}
+	return -int64(h&0x7FFFFFFFFFFFFFFF) - 1
+}
+
 func (w *OmsWriter) InsertOrder(ctx context.Context, orderID, accountID, platform, symbol string, orderType int16, volume, price, stopLoss, takeProfit float64) error {
 	if platform == "" {
 		platform = "MT5"
 	}
 	_, err := w.pool.Exec(ctx, `
 		INSERT INTO orders (id, mt_account_id, platform, ticket, symbol, order_type, volume, price, stop_loss, take_profit, state)
-		VALUES ($1, $2, $3, '0', $4, $5, $6, $7, $8, $9, $10)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 		ON CONFLICT (id) DO NOTHING
-	`, orderID, accountID, platform, symbol, orderType, volume, price, stopLoss, takeProfit, string(OMSStateNew))
+	`, orderID, accountID, platform, hashToNegative(orderID), symbol, orderType, volume, price, stopLoss, takeProfit, string(OMSStateNew))
 	if err != nil {
 		return fmt.Errorf("oms insert order: %w", err)
 	}
