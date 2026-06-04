@@ -9,8 +9,7 @@ import WorkspaceTemplateManager from './components/workspace/WorkspaceTemplateMa
 import WorkspaceToolbar from './components/workspace/WorkspaceToolbar';
 import BacktestParamsCard from './components/workspace/BacktestParamsCard';
 import MiniPositionsTable from './components/workspace/MiniPositionsTable';
-import { AICodeReviseChat } from '@/components/strategy/CodeAssist';
-import StrategyGenChat from '@/components/strategy/StrategyGenChat';
+import AIChatPanel from '@/components/strategy/AIChatPanel';
 import PriceChart from '@/components/chart/PriceChart';
 import QuickTradePanel from '@/components/chart/QuickTradePanel';
 
@@ -79,8 +78,7 @@ export default function StrategyWorkspacePage() {
               onRunBacktest={ws.handleRunBacktest} backtestSubmitting={ws.btSubmitting}
               canSave={ws.canSave} onSave={ws.handleSave} onCopy={ws.handleCopy}
             />
-            <StrategyGenChat symbol={ws.symbol} timeframe={ws.timeframe} onApply={ws.setCode} />
-            <AICodeReviseChat code={ws.code} onApply={ws.setCode} />
+            <AIChatPanel code={ws.code} symbol={ws.symbol} timeframe={ws.timeframe} onApply={ws.setCode} />
             <Collapse ghost size="small" style={{ background: 'transparent' }} items={[
               { key: 'template', label: t('strategy.workspace.template.title', 'Template'), children: <WorkspaceTemplateManager templates={ws.templates} loading={ws.templatesLoading} loadedTemplate={ws.loadedTemplate} onLoad={ws.handleLoadTemplate} onSaveAs={ws.handleSaveAs} /> },
             ]} />

@@ -1,0 +1,202 @@
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { Button, Input, Space, Tag, Typography, message } from 'antd';
+import { ThunderboltOutlined, SendOutlined, LoadingOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
+import { generateStrategyStream } from '@/client/strategyGen';
+import { codeAssistApi, type CodeChatMessage } from '@/client/codeAssist';
+
+const { TextArea } = Input;
+
+interface Props {
+  code: string;
+  onApply: (code: string) => void;
+  symbol?: string;
+  timeframe?: string;
+}
+
+// Detect user intent from message + context.
+function detectMode(msg: string, hasCode: boolean): 'generate' | 'revise' | 'optimize' {
+  if (!hasCode) return 'generate';
+  const phase1Kw = ['改成', '改为', '换成', '加上', '添加', '增加', '去掉', '删除', '移除', '做空', '做多', '换品种', 'replace', 'add ', 'remove', 'change '];
+  const phase2Kw = ['太激进', '太保守', '风险太大', '太高了', '太低了', '稳健一点', '保守一点', '激进一点', '回撤太大', '降低仓位', '减少仓位', '收紧止损', '收益太低'];
+  const lower = msg.toLowerCase();
+  if (phase2Kw.some(k => lower.includes(k))) return 'optimize';
+  if (phase1Kw.some(k => lower.includes(k))) return 'revise';
+  return 'revise'; // default: revise existing code
+}
+
+export default function AIChatPanel({ code, onApply, symbol, timeframe }: Props) {
+  const { t, i18n } = useTranslation();
+  const [draft, setDraft] = useState('');
+  const [mode, setMode] = useState<'idle' | 'clarifying' | 'streaming' | 'done'>('idle');
+  const [streamText, setStreamText] = useState('');
+  const [questions, setQuestions] = useState<string[]>([]);
+  const [genCode, setGenCode] = useState('');
+  const [error, setError] = useState('');
+  const [phase, setPhase] = useState('');
+  const [backtestId, setBacktestId] = useState('');
+  const [clarifyRound, setClarifyRound] = useState(0);
+  const [history, setHistory] = useState<CodeChatMessage[]>([]);
+  const abortRef = useRef<(() => void) | null>(null);
+  const streamRef = useRef('');
+
+  useEffect(() => () => abortRef.current?.(), []);
+
+  const reset = useCallback(() => {
+    abortRef.current?.();
+    setMode('idle'); setStreamText(''); setQuestions([]);
+    setGenCode(''); setError(''); setPhase(''); setBacktestId('');
+  }, []);
+
+  const handleGenerate = useCallback((msg: string, round: number) => {
+    setMode('streaming'); setStreamText(''); setError(''); setGenCode('');
+    const abort = generateStrategyStream(
+      { message: msg, symbol, timeframe, clarificationRound: round },
+      {
+        onPhase: (p) => {
+          if (p === 'clarifying') setMode('clarifying');
+          else if (p === 'generating') setMode('streaming');
+          else setPhase(p);
+        },
+        onDelta: (d) => { setStreamText(p => p + d); streamRef.current += d; },
+        onQuestions: (q) => setQuestions(q),
+        onTemplate: (n) => setPhase('template: ' + n),
+        onCode: (c) => { setGenCode(c); onApply(c); },
+        onBacktestId: (id) => setBacktestId(id),
+        onError: (e) => setError(e),
+        onDone: () => setMode('done'),
+      },
+    );
+    abortRef.current = abort;
+  }, [symbol, timeframe, onApply]);
+
+  const handleRevise = useCallback((msg: string) => {
+    setMode('streaming'); setStreamText(''); setError('');
+    streamRef.current = '';
+    const abort = codeAssistApi.reviseStream(
+      { code, instruction: msg, history, locale: i18n.language },
+      {
+        onDelta: (d) => { setStreamText(p => p + d); streamRef.current += d; },
+        onResult: (python) => {
+          setMode('done');
+          setHistory(prev => [...prev,
+            { role: 'user', content: msg },
+            { role: 'assistant', content: streamRef.current || python },
+          ]);
+          streamRef.current = ''; setStreamText('');
+          if (python) { onApply(python); message.success(t('strategy.codeAssist.codeUpdated', 'Code updated.')); }
+        },
+        onError: (e) => {
+          setMode('done'); setError(String((e as Error)?.message || e));
+        },
+      },
+    );
+    abortRef.current = abort;
+  }, [code, history, i18n.language, onApply, t]);
+
+  const handleSend = useCallback(() => {
+    const msg = draft.trim();
+    if (!msg) return;
+    setDraft(''); setClarifyRound(0); setHistory([]); setQuestions([]);
+    const intent = detectMode(msg, !!code.trim());
+    if (intent === 'generate') handleGenerate(msg, 0);
+    else handleRevise(msg);
+  }, [draft, code, handleGenerate, handleRevise]);
+
+  const handleClarifyAnswer = useCallback((answer: string) => {
+    const next = clarifyRound + 1;
+    setClarifyRound(next); setQuestions([]);
+    handleGenerate(answer, next);
+  }, [clarifyRound, handleGenerate]);
+
+  const isBusy = mode === 'streaming';
+
+  // Message history view
+  const messagesView = useMemo(() => history.map((m, i) => (
+    <div key={i} style={{ margin: '6px 0', padding: '6px 10px', borderRadius: 6,
+      background: m.role === 'user' ? '#e6f4ff' : '#f6ffed', fontSize: 12, whiteSpace: 'pre-wrap' }}>
+      <b style={{ color: m.role === 'user' ? '#1677ff' : '#389e0d' }}>
+        {m.role === 'user' ? 'You' : 'AI'}
+      </b>
+      <div>{m.content}</div>
+    </div>
+  )), [history]);
+
+  // Clarification mode
+  if (questions.length > 0) {
+    return (
+      <div style={{ padding: 12, background: '#fffbe6', borderRadius: 6, border: '1px solid #ffe58f' }}>
+        <Typography.Text strong style={{ fontSize: 13 }}>
+          {t('strategy.gen.clarifyTitle', '需要确认几个细节：')}
+        </Typography.Text>
+        <Space direction="vertical" size={6} style={{ width: '100%', marginTop: 8 }}>
+          {questions.map((q, i) => (
+            <Button key={i} block size="small" type="dashed" onClick={() => handleClarifyAnswer(q)}
+              disabled={clarifyRound >= 3}>{q}</Button>
+          ))}
+          {clarifyRound >= 3 && (
+            <Button block size="small" type="primary" onClick={() => { setQuestions([]); handleGenerate('使用默认参数', clarifyRound); }}>
+              {t('strategy.gen.useDefaults', '使用默认设置继续')}
+            </Button>
+          )}
+        </Space>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ border: '1px solid #f0f0f0', borderRadius: 6, padding: 10, background: '#fafafa' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+        <ThunderboltOutlined style={{ color: '#faad14' }} />
+        <Typography.Text strong style={{ fontSize: 13 }}>AI Chat</Typography.Text>
+        <Space size={4} wrap style={{ marginLeft: 8 }}>
+          {!code.trim() && <Tag color="blue">{t('strategy.gen.title', '策略生成')}</Tag>}
+          {!!code.trim() && <Tag color="green">revise</Tag>}
+          {isBusy && <Tag icon={<LoadingOutlined />} color="processing">streaming</Tag>}
+          {phase && !isBusy && phase !== 'done' && <Tag>{phase}</Tag>}
+          {backtestId && <Tag color="success">backtest: {backtestId.slice(0, 8)}</Tag>}
+        </Space>
+        {mode !== 'idle' && !isBusy && (
+          <Button size="small" type="link" onClick={reset} style={{ marginLeft: 'auto' }}>reset</Button>
+        )}
+      </div>
+
+      {/* Messages + streaming */}
+      <div style={{ maxHeight: 200, overflow: 'auto', marginBottom: 6 }}>
+        {messagesView}
+        {streamText && (
+          <div style={{ margin: '6px 0', padding: '6px 10px', borderRadius: 6,
+            background: '#f6ffed', fontSize: 12, whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
+            <b style={{ color: '#389e0d' }}>AI</b>
+            <div>{streamText}</div>
+          </div>
+        )}
+      </div>
+
+      {/* Error */}
+      {error && (
+        <div style={{ padding: 4, marginBottom: 6, background: '#fff2f0', borderRadius: 4,
+          fontSize: 11, color: '#cf1322' }}>{error}</div>
+      )}
+
+      {/* Input */}
+      <TextArea rows={2} value={draft} onChange={e => setDraft(e.target.value)}
+        disabled={isBusy}
+        placeholder={
+          !code.trim()
+            ? t('strategy.gen.placeholder', '描述你想创建的交易策略，例如："做一个 EURUSD 的布林带均值回归策略"')
+            : t('strategy.codeAssist.reviseInputPlaceholder', 'e.g. Replace SMA(20) with EMA(50) and add a 1% stop-loss.')
+        }
+        onPressEnter={e => { if (!e.shiftKey) { e.preventDefault(); handleSend(); } }}
+        style={{ fontSize: 13, marginBottom: 8 }}
+      />
+      <div style={{ textAlign: 'right' }}>
+        <Button type="primary" icon={<SendOutlined />} loading={isBusy}
+          onClick={handleSend} disabled={!draft.trim()}>
+          {t('strategy.codeAssist.reviseSend', 'Send to AI')}
+        </Button>
+      </div>
+    </div>
+  );
+}
