@@ -44,11 +44,18 @@ async def _parse_request(request: Request, req_cls):
 
 
 def _respond(proto_resp, request: Request) -> Response:
-    """Return proto binary or JSON based on request's Content-Type."""
+    """Return proto binary with ConnectRPC headers."""
     ct = request.headers.get("content-type", "")
-    if "application/proto" in ct:
-        return Response(content=proto_resp.SerializeToString(), media_type="application/proto")
-    return JSONResponse(content=MessageToDict(proto_resp, preserving_proto_field_name=True))
+    if "application/proto" in ct or "application/grpc" in ct:
+        return Response(
+            content=proto_resp.SerializeToString(),
+            media_type="application/proto",
+            headers={"Connect-Protocol-Version": "1"},
+        )
+    return JSONResponse(
+        content=MessageToDict(proto_resp, preserving_proto_field_name=True),
+        headers={"Connect-Protocol-Version": "1"},
+    )
 
 
 @router.post("/ant.v1.BacktestService/RunBacktest")
@@ -107,6 +114,12 @@ def _build_engine_request(req: ExecuteBacktestRequest) -> EngineBacktestRequest:
                   open=k.open, high=k.high, low=k.low, close=k.close, volume=k.volume)
         for k in req.klines
     ]
+    # Parse strategy_params from JSON if provided
+    strategy_params = {}
+    if req.strategy_params_json:
+        try: strategy_params = json.loads(req.strategy_params_json)
+        except: pass
+
     return EngineBacktestRequest(
         run_id=req.strategy_id or "",
         user_id=0, account_id=0,
@@ -116,6 +129,7 @@ def _build_engine_request(req: ExecuteBacktestRequest) -> EngineBacktestRequest:
         end=_to_dt(req.end_date_ms) if req.end_date_ms else datetime.now(timezone.utc),
         initial_cash=req.initial_capital or 10000.0,
         strategy_code=req.strategy_code or "",
+        strategy_params=strategy_params,
         bars=bars,
         bars_by_symbol={s: bars for s in req.extra_symbols} if req.extra_symbols else {},
     )

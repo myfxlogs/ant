@@ -174,7 +174,7 @@ func (w *ExperimentWorker) backtestAndScore(
 	ctx context.Context, code string, overrides map[string]interface{},
 	exp *repository.StrategyExperiment,
 ) (candidateResult, error) {
-	modifiedCode := ai.ApplyOverrides(code, overrides)
+	modifiedCode := code
 	run := &repository.BacktestRun{
 		ID:               uuid.New(),
 		UserID:           exp.UserID,

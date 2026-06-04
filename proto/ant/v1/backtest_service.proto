@@ -58,6 +58,7 @@ message ExecuteBacktestRequest {
   int32 slippage_seed = 16;
   repeated ExecuteKlineBar klines = 17;
   repeated string extra_symbols = 18;
+  string strategy_params_json = 19;
 }
 
 message ExecuteBacktestTrade {

@@ -454,27 +454,28 @@ func (x *ExecuteKlineBar) GetVolume() float64 {
 }
 
 type ExecuteBacktestRequest struct {
-	state             protoimpl.MessageState `protogen:"open.v1"`
-	StrategyId        string                 `protobuf:"bytes,1,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`       // unique run identifier
-	StrategyCode      string                 `protobuf:"bytes,2,opt,name=strategy_code,json=strategyCode,proto3" json:"strategy_code,omitempty"` // Python strategy source
-	Symbol            string                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty"`
-	Timeframe         string                 `protobuf:"bytes,4,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
-	StartDateMs       int64                  `protobuf:"varint,5,opt,name=start_date_ms,json=startDateMs,proto3" json:"start_date_ms,omitempty"` // Unix milliseconds
-	EndDateMs         int64                  `protobuf:"varint,6,opt,name=end_date_ms,json=endDateMs,proto3" json:"end_date_ms,omitempty"`       // Unix milliseconds
-	InitialCapital    float64                `protobuf:"fixed64,7,opt,name=initial_capital,json=initialCapital,proto3" json:"initial_capital,omitempty"`
-	Commission        float64                `protobuf:"fixed64,8,opt,name=commission,proto3" json:"commission,omitempty"`
-	Spread            float64                `protobuf:"fixed64,9,opt,name=spread,proto3" json:"spread,omitempty"`
-	SwapRate          float64                `protobuf:"fixed64,10,opt,name=swap_rate,json=swapRate,proto3" json:"swap_rate,omitempty"`
-	ServerTimezone    string                 `protobuf:"bytes,11,opt,name=server_timezone,json=serverTimezone,proto3" json:"server_timezone,omitempty"`
-	RolloverHour      int32                  `protobuf:"varint,12,opt,name=rollover_hour,json=rolloverHour,proto3" json:"rollover_hour,omitempty"`
-	TripleSwapWeekday int32                  `protobuf:"varint,13,opt,name=triple_swap_weekday,json=tripleSwapWeekday,proto3" json:"triple_swap_weekday,omitempty"`
-	SlippageMode      string                 `protobuf:"bytes,14,opt,name=slippage_mode,json=slippageMode,proto3" json:"slippage_mode,omitempty"`
-	SlippageRate      float64                `protobuf:"fixed64,15,opt,name=slippage_rate,json=slippageRate,proto3" json:"slippage_rate,omitempty"`
-	SlippageSeed      int32                  `protobuf:"varint,16,opt,name=slippage_seed,json=slippageSeed,proto3" json:"slippage_seed,omitempty"`
-	Klines            []*ExecuteKlineBar     `protobuf:"bytes,17,rep,name=klines,proto3" json:"klines,omitempty"`
-	ExtraSymbols      []string               `protobuf:"bytes,18,rep,name=extra_symbols,json=extraSymbols,proto3" json:"extra_symbols,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	StrategyId         string                 `protobuf:"bytes,1,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`       // unique run identifier
+	StrategyCode       string                 `protobuf:"bytes,2,opt,name=strategy_code,json=strategyCode,proto3" json:"strategy_code,omitempty"` // Python strategy source
+	Symbol             string                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Timeframe          string                 `protobuf:"bytes,4,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
+	StartDateMs        int64                  `protobuf:"varint,5,opt,name=start_date_ms,json=startDateMs,proto3" json:"start_date_ms,omitempty"` // Unix milliseconds
+	EndDateMs          int64                  `protobuf:"varint,6,opt,name=end_date_ms,json=endDateMs,proto3" json:"end_date_ms,omitempty"`       // Unix milliseconds
+	InitialCapital     float64                `protobuf:"fixed64,7,opt,name=initial_capital,json=initialCapital,proto3" json:"initial_capital,omitempty"`
+	Commission         float64                `protobuf:"fixed64,8,opt,name=commission,proto3" json:"commission,omitempty"`
+	Spread             float64                `protobuf:"fixed64,9,opt,name=spread,proto3" json:"spread,omitempty"`
+	SwapRate           float64                `protobuf:"fixed64,10,opt,name=swap_rate,json=swapRate,proto3" json:"swap_rate,omitempty"`
+	ServerTimezone     string                 `protobuf:"bytes,11,opt,name=server_timezone,json=serverTimezone,proto3" json:"server_timezone,omitempty"`
+	RolloverHour       int32                  `protobuf:"varint,12,opt,name=rollover_hour,json=rolloverHour,proto3" json:"rollover_hour,omitempty"`
+	TripleSwapWeekday  int32                  `protobuf:"varint,13,opt,name=triple_swap_weekday,json=tripleSwapWeekday,proto3" json:"triple_swap_weekday,omitempty"`
+	SlippageMode       string                 `protobuf:"bytes,14,opt,name=slippage_mode,json=slippageMode,proto3" json:"slippage_mode,omitempty"`
+	SlippageRate       float64                `protobuf:"fixed64,15,opt,name=slippage_rate,json=slippageRate,proto3" json:"slippage_rate,omitempty"`
+	SlippageSeed       int32                  `protobuf:"varint,16,opt,name=slippage_seed,json=slippageSeed,proto3" json:"slippage_seed,omitempty"`
+	Klines             []*ExecuteKlineBar     `protobuf:"bytes,17,rep,name=klines,proto3" json:"klines,omitempty"`
+	ExtraSymbols       []string               `protobuf:"bytes,18,rep,name=extra_symbols,json=extraSymbols,proto3" json:"extra_symbols,omitempty"`
+	StrategyParamsJson string                 `protobuf:"bytes,19,opt,name=strategy_params_json,json=strategyParamsJson,proto3" json:"strategy_params_json,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *ExecuteBacktestRequest) Reset() {
@@ -631,6 +632,13 @@ func (x *ExecuteBacktestRequest) GetExtraSymbols() []string {
 		return x.ExtraSymbols
 	}
 	return nil
+}
+
+func (x *ExecuteBacktestRequest) GetStrategyParamsJson() string {
+	if x != nil {
+		return x.StrategyParamsJson
+	}
+	return ""
 }
 
 type ExecuteBacktestTrade struct {
@@ -1075,7 +1083,7 @@ const file_backtest_service_proto_rawDesc = "" +
 	"\x04high\x18\x04 \x01(\x01R\x04high\x12\x10\n" +
 	"\x03low\x18\x05 \x01(\x01R\x03low\x12\x14\n" +
 	"\x05close\x18\x06 \x01(\x01R\x05close\x12\x16\n" +
-	"\x06volume\x18\a \x01(\x01R\x06volume\"\x99\x05\n" +
+	"\x06volume\x18\a \x01(\x01R\x06volume\"\xcb\x05\n" +
 	"\x16ExecuteBacktestRequest\x12\x1f\n" +
 	"\vstrategy_id\x18\x01 \x01(\tR\n" +
 	"strategyId\x12#\n" +
@@ -1098,7 +1106,8 @@ const file_backtest_service_proto_rawDesc = "" +
 	"\rslippage_rate\x18\x0f \x01(\x01R\fslippageRate\x12#\n" +
 	"\rslippage_seed\x18\x10 \x01(\x05R\fslippageSeed\x12/\n" +
 	"\x06klines\x18\x11 \x03(\v2\x17.ant.v1.ExecuteKlineBarR\x06klines\x12#\n" +
-	"\rextra_symbols\x18\x12 \x03(\tR\fextraSymbols\"\xa2\x02\n" +
+	"\rextra_symbols\x18\x12 \x03(\tR\fextraSymbols\x120\n" +
+	"\x14strategy_params_json\x18\x13 \x01(\tR\x12strategyParamsJson\"\xa2\x02\n" +
 	"\x14ExecuteBacktestTrade\x12\x16\n" +
 	"\x06ticket\x18\x01 \x01(\x03R\x06ticket\x12\x12\n" +
 	"\x04side\x18\x02 \x01(\tR\x04side\x12\x16\n" +

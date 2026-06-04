@@ -146,6 +146,7 @@ func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repo
 			StartDateMs: fromMs, EndDateMs: toMs,
 			InitialCapital: initialCapital, Commission: 0,
 			Klines: klines,
+			StrategyParamsJson: string(run.ParameterOverrides),
 		}))
 	if err != nil {
 		if execCtx.Err() != nil {
