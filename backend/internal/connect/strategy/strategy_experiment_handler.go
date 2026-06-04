@@ -103,6 +103,7 @@ func (s *StrategyExperimentServer) SubmitStrategyExperiment(ctx context.Context,
 		SearchMethod:  req.Msg.SearchMethod,
 		MaxCandidates: int(req.Msg.MaxCandidates),
 		Objective:     req.Msg.Objective,
+		StrategyCode:  req.Msg.StrategyCode,
 	}
 	if req.Msg.BaseTemplateId != "" {
 		tid, err := uuid.Parse(req.Msg.BaseTemplateId)

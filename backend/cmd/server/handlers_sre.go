@@ -70,7 +70,8 @@ func registerSREHandlers(
 
 	strategyExperimentServer := strategy.NewStrategyExperimentServer(strategyExperimentRepo, log)
 	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, connectrpc.WithInterceptors(authInterceptor)))
-	experimentWorker := strategy.NewExperimentWorker(strategyExperimentRepo, log)
+	backtestRunRepo := repository.NewBacktestRunRepository(pool)
+	experimentWorker := strategy.NewExperimentWorker(strategyExperimentRepo, backtestRunRepo, log)
 	experimentWorker.Start(context.Background())
 	strategyAssetServer := strategy.NewStrategyAssetServer(strategyAssetRepo, log)
 	mux.Handle(antv1c.NewStrategyAssetServiceHandler(strategyAssetServer, connectrpc.WithInterceptors(authInterceptor)))

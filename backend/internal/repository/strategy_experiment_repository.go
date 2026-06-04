@@ -28,6 +28,7 @@ type StrategyExperiment struct {
 	MarketRegimeRef string     `db:"market_regime_ref"`
 	BestCandidateID *uuid.UUID `db:"best_candidate_id"`
 	JobID           *uuid.UUID `db:"job_id"`
+	StrategyCode    string     `db:"strategy_code"`
 	CreatedAt       time.Time  `db:"created_at"`
 	FinishedAt      *time.Time `db:"finished_at"`
 }

@@ -31,6 +31,17 @@ message StrategyExperiment {
   string job_id = 11;
   google.protobuf.Timestamp created_at = 12;
   google.protobuf.Timestamp finished_at = 13;
+  string strategy_code = 14;
+}
+
+message SubmitStrategyExperimentRequest {
+  string base_template_id = 1;
+  google.protobuf.Struct parameter_space = 2;
+  string search_method = 3;
+  int32 max_candidates = 4;
+  string objective = 5;
+  string idempotency_key = 6;
+  string strategy_code = 7;
 }
 
 message StrategyExperimentCandidate {
@@ -46,15 +57,6 @@ message StrategyExperimentCandidate {
   string summary = 10;
   string recommendation = 11;
   google.protobuf.Timestamp created_at = 12;
-}
-
-message SubmitStrategyExperimentRequest {
-  string base_template_id = 1;
-  google.protobuf.Struct parameter_space = 2;
-  string search_method = 3;
-  int32 max_candidates = 4;
-  string objective = 5;
-  string idempotency_key = 6;
 }
 
 message SubmitStrategyExperimentResponse {

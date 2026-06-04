@@ -1,7 +1,3 @@
-// strategy_experiment_worker.go: background worker that processes PENDING experiments.
-// Extracts @params, runs grid/random search, creates candidates with placeholder scores.
-// Full backtest execution deferred to Phase 2b (DE/TPE + backtest integration).
-
 package strategy
 
 import (
@@ -19,26 +15,33 @@ import (
 
 // ExperimentWorker polls for PENDING experiments and processes them.
 type ExperimentWorker struct {
-	repo   *repository.StrategyExperimentRepository
-	log    *zap.Logger
-	stopCh chan struct{}
+	repo        *repository.StrategyExperimentRepository
+	backtestRepo *repository.BacktestRunRepository
+	log         *zap.Logger
+	stopCh      chan struct{}
 }
 
-func NewExperimentWorker(repo *repository.StrategyExperimentRepository, log *zap.Logger) *ExperimentWorker {
-	return &ExperimentWorker{repo: repo, log: log, stopCh: make(chan struct{})}
+func NewExperimentWorker(
+	repo *repository.StrategyExperimentRepository,
+	backtestRepo *repository.BacktestRunRepository,
+	log *zap.Logger,
+) *ExperimentWorker {
+	return &ExperimentWorker{
+		repo:         repo,
+		backtestRepo: backtestRepo,
+		log:          log,
+		stopCh:       make(chan struct{}),
+	}
 }
 
-// Start begins the worker loop in a background goroutine.
 func (w *ExperimentWorker) Start(ctx context.Context) {
 	go func() {
 		ticker := time.NewTicker(10 * time.Second)
 		defer ticker.Stop()
 		for {
 			select {
-			case <-w.stopCh:
-				return
-			case <-ctx.Done():
-				return
+			case <-w.stopCh: return
+			case <-ctx.Done(): return
 			case <-ticker.C:
 				if err := w.processOne(ctx); err != nil {
 					w.log.Warn("experiment worker error", zap.Error(err))
@@ -48,91 +51,194 @@ func (w *ExperimentWorker) Start(ctx context.Context) {
 	}()
 }
 
-// Stop signals the worker to shut down.
 func (w *ExperimentWorker) Stop() { close(w.stopCh) }
 
 // processOne claims and processes a single PENDING experiment.
 func (w *ExperimentWorker) processOne(ctx context.Context) error {
 	exp, err := w.repo.ClaimPendingExperiment(ctx)
-	if err != nil {
-		return err
-	}
-	if exp == nil {
-		return nil // no pending experiments
-	}
-	w.log.Info("Processing experiment", zap.String("id", exp.ID.String()))
+	if err != nil { return err }
+	if exp == nil { return nil }
 
-	// Get strategy code (from template or directly)
-	code, err := w.getStrategyCode(ctx, exp)
-	if err != nil {
+	w.log.Info("Processing experiment", zap.String("id", exp.ID.String()),
+		zap.String("method", exp.SearchMethod), zap.Int("maxCandidates", exp.MaxCandidates))
+
+	code := exp.StrategyCode
+	if code == "" {
 		_ = w.repo.UpdateExperimentStatus(ctx, exp.ID, "FAILED")
-		return fmt.Errorf("get code: %w", err)
+		return fmt.Errorf("experiment %s has no strategy_code", exp.ID)
 	}
 
-	// Extract tunable params from @param annotations
 	params := ai.ExtractParams(code)
 	if len(params) == 0 {
 		_ = w.repo.UpdateExperimentStatus(ctx, exp.ID, "COMPLETED")
-		w.log.Info("No tunable params found", zap.String("id", exp.ID.String()))
+		w.log.Info("No @params found", zap.String("id", exp.ID.String()))
 		return nil
 	}
 
-	// Run optimizer
-	var candidates []map[string]interface{}
 	space := ai.NormalizeSpace(params)
-	switch exp.SearchMethod {
-	case "random":
-		candidates = ai.RandomSearch(params, exp.MaxCandidates)
-	case "de":
-		candidates = runIterativeOptimizer(ai.NewDEOptimizer(space, exp.MaxCandidates), space)
-	case "tpe":
-		candidates = runIterativeOptimizer(ai.NewTPEOptimizer(space, exp.MaxCandidates), space)
-	default:
-		candidates = ai.GridSearch(params, exp.MaxCandidates)
+	candidates, err := w.runOptimizer(ctx, exp, params, space, code)
+	if err != nil {
+		w.log.Error("optimizer failed", zap.Error(err))
+		_ = w.repo.UpdateExperimentStatus(ctx, exp.ID, "FAILED")
+		return err
 	}
 
-	// Create candidate records
-	for i, combo := range candidates {
-		paramJSON, _ := json.Marshal(combo)
-		c := &repository.StrategyExperimentCandidate{
-			ID:           uuid.New(),
-			ExperimentID: exp.ID,
-			Parameters:   paramJSON,
-			Rank:         i + 1,
-			Summary:      fmt.Sprintf("Candidate %d", i+1),
-			Grade:        "C", // placeholder — real grade comes after backtest
+	// Create candidate records with scores
+	for i, c := range candidates {
+		paramJSON, _ := json.Marshal(c.Overrides)
+		scoreComponents, _ := json.Marshal(c.ScoreComponents)
+		record := &repository.StrategyExperimentCandidate{
+			ID:              uuid.New(),
+			ExperimentID:    exp.ID,
+			Parameters:      paramJSON,
+			Rank:            i + 1,
+			Score:           c.Score,
+			Grade:           c.Grade,
+			ScoreComponents: scoreComponents,
+			Summary:         fmt.Sprintf("%s score=%.1f grade=%s", c.Summary, c.Score, c.Grade),
 		}
-		if err := w.repo.CreateCandidate(ctx, c); err != nil {
+		if err := w.repo.CreateCandidate(ctx, record); err != nil {
 			w.log.Warn("create candidate failed", zap.Error(err), zap.Int("idx", i))
 		}
 	}
 
 	_ = w.repo.UpdateExperimentStatus(ctx, exp.ID, "COMPLETED")
-	w.log.Info("Experiment completed", zap.String("id", exp.ID.String()), zap.Int("candidates", len(candidates)))
+	w.log.Info("Experiment completed", zap.String("id", exp.ID.String()),
+		zap.Int("candidates", len(candidates)))
 	return nil
 }
 
-// getStrategyCode retrieves strategy code. Template-based experiments are not yet supported.
-func (w *ExperimentWorker) getStrategyCode(ctx context.Context, exp *repository.StrategyExperiment) (string, error) {
-	// TODO: support experiments with base_template_id by fetching code from template service
-	if exp.BaseTemplateID != nil && *exp.BaseTemplateID != uuid.Nil {
-		return "", fmt.Errorf("template-based experiments not yet supported (template_id=%s)", exp.BaseTemplateID)
-	}
-	return "", fmt.Errorf("no code source for experiment %s", exp.ID)
+type candidateResult struct {
+	Overrides       map[string]interface{}
+	Score           float64
+	Grade           string
+	ScoreComponents map[string]float64
+	Summary         string
 }
 
-// runIterativeOptimizer drives an ask/tell optimizer, converting index vectors to overrides.
-// Full backtest scoring is deferred to Phase 2b — currently generates candidates with placeholder scores.
-func runIterativeOptimizer(opt ai.Optimizer, space ai.ResolvedSpace) []map[string]interface{} {
-	var candidates []map[string]interface{}
+func (w *ExperimentWorker) runOptimizer(
+	ctx context.Context, exp *repository.StrategyExperiment,
+	params []ai.TunableParam, space ai.ResolvedSpace, code string,
+) ([]candidateResult, error) {
+	switch exp.SearchMethod {
+	case "de":
+		return w.runIterative(ctx, ai.NewDEOptimizer(space, exp.MaxCandidates), space, code, exp)
+	case "tpe":
+		return w.runIterative(ctx, ai.NewTPEOptimizer(space, exp.MaxCandidates), space, code, exp)
+	case "random":
+		return w.runOneShot(ai.RandomSearch(params, exp.MaxCandidates), code, exp)
+	default:
+		return w.runOneShot(ai.GridSearch(params, exp.MaxCandidates), code, exp)
+	}
+}
+
+// runOneShot processes a batch of candidates from grid/random search.
+func (w *ExperimentWorker) runOneShot(overridesList []map[string]interface{}, code string, exp *repository.StrategyExperiment) ([]candidateResult, error) {
+	var results []candidateResult
+	for _, overrides := range overridesList {
+		r, err := w.backtestAndScore(context.Background(), code, overrides, exp)
+		if err != nil {
+			w.log.Warn("backtest failed", zap.Error(err))
+			continue
+		}
+		results = append(results, r)
+	}
+	return results, nil
+}
+
+// runIterative drives an ask/tell optimizer (DE/TPE) with real backtest scoring.
+func (w *ExperimentWorker) runIterative(
+	ctx context.Context, opt ai.Optimizer, space ai.ResolvedSpace,
+	code string, exp *repository.StrategyExperiment,
+) ([]candidateResult, error) {
+	var results []candidateResult
 	for !opt.Done() {
-		batch := opt.Ask(0) // 0 = optimizer decides batch size
+		batch := opt.Ask(0)
 		for _, indices := range batch {
 			overrides := ai.IndexToOverrides(indices, space)
-			candidates = append(candidates, overrides)
-			// Placeholder: real score comes from backtest execution
-			opt.Tell([]ai.OptimizerResult{{Indices: indices, Score: 0}})
+			r, err := w.backtestAndScore(ctx, code, overrides, exp)
+			if err != nil {
+				w.log.Warn("backtest failed", zap.Error(err))
+				opt.Tell([]ai.OptimizerResult{{Indices: indices, Score: 0}})
+				continue
+			}
+			opt.Tell([]ai.OptimizerResult{{Indices: indices, Score: r.Score}})
+			results = append(results, r)
 		}
 	}
-	return candidates
+	return results, nil
 }
+
+// backtestAndScore executes a single backtest with parameter overrides applied.
+func (w *ExperimentWorker) backtestAndScore(
+	ctx context.Context, code string, overrides map[string]interface{},
+	exp *repository.StrategyExperiment,
+) (candidateResult, error) {
+	modifiedCode := ai.ApplyOverrides(code, overrides)
+	run := &repository.BacktestRun{
+		ID:               uuid.New(),
+		UserID:           exp.UserID,
+		AccountID:        uuid.Nil,
+		Symbol:           "",
+		Timeframe:        "",
+		Mode:             "KLINE_RANGE",
+		Status:           "PENDING",
+		StrategyCode:     &modifiedCode,
+		InitialCapital:   f64Ptr(10000),
+		StrategyCodeHash: "",
+		Error:            "",
+		ExtraSymbols:     []string{},
+		ParameterOverrides: marshalOverrides(overrides),
+	}
+
+	runID, err := w.backtestRepo.Create(ctx, run)
+	if err != nil {
+		return candidateResult{}, fmt.Errorf("create backtest: %w", err)
+	}
+
+	// Poll for completion
+	for i := 0; i < 120; i++ { // 10 minutes timeout
+		time.Sleep(5 * time.Second)
+		bt, err := w.backtestRepo.GetByID(ctx, exp.UserID, runID)
+		if err != nil {
+			return candidateResult{}, fmt.Errorf("get backtest: %w", err)
+		}
+		if bt.Status == "SUCCEEDED" || bt.Status == "FAILED" {
+			if bt.Status == "FAILED" {
+				return candidateResult{}, fmt.Errorf("backtest failed: %s", bt.Error)
+			}
+			return w.scoreFromBacktest(bt, overrides), nil
+		}
+	}
+	return candidateResult{}, fmt.Errorf("backtest %s timed out", runID)
+}
+
+func (w *ExperimentWorker) scoreFromBacktest(bt *repository.BacktestRun, overrides map[string]interface{}) candidateResult {
+	metrics := parseBacktestMetrics(bt.Metrics)
+	regime := ai.RegimeTransition
+	scored := ai.Score(metrics, regime)
+
+	summary := "param search"
+	if scored.Trades < 5 { summary = fmt.Sprintf("only %d trades", scored.Trades) }
+
+	return candidateResult{
+		Overrides: overrides, Score: scored.Score, Grade: scored.Grade,
+		ScoreComponents: scored.Components, Summary: summary,
+	}
+}
+
+func parseBacktestMetrics(raw []byte) *ai.BacktestMetrics {
+	if len(raw) == 0 { return &ai.BacktestMetrics{TotalTrades: 0} }
+	var m struct {
+		TotalReturn, AnnualReturn, SharpeRatio, MaxDrawdown, WinRate, ProfitFactor float64
+		TotalTrades int `json:"trade_count"`
+	}
+	_ = json.Unmarshal(raw, &m)
+	return &ai.BacktestMetrics{
+		TotalReturn: m.TotalReturn, AnnualReturn: m.AnnualReturn,
+		SharpeRatio: m.SharpeRatio, MaxDrawdown: m.MaxDrawdown,
+		WinRate: m.WinRate, ProfitFactor: m.ProfitFactor, TotalTrades: m.TotalTrades,
+	}
+}
+
+func marshalOverrides(overrides map[string]interface{}) []byte { b, _ := json.Marshal(overrides); return b }

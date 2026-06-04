@@ -12,7 +12,7 @@ import type { JsonObject, Message } from "@bufbuild/protobuf";
  * Describes the file strategy_experiment.proto.
  */
 export const file_strategy_experiment: GenFile = /*@__PURE__*/
-  fileDesc("ChlzdHJhdGVneV9leHBlcmltZW50LnByb3RvEgZhbnQudjEi9gIKElN0cmF0ZWd5RXhwZXJpbWVudBIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEhgKEGJhc2VfdGVtcGxhdGVfaWQYAyABKAkSDgoGc3RhdHVzGAQgASgJEjAKD3BhcmFtZXRlcl9zcGFjZRgFIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSFQoNc2VhcmNoX21ldGhvZBgGIAEoCRIWCg5tYXhfY2FuZGlkYXRlcxgHIAEoBRIRCglvYmplY3RpdmUYCCABKAkSGQoRbWFya2V0X3JlZ2ltZV9yZWYYCSABKAkSGQoRYmVzdF9jYW5kaWRhdGVfaWQYCiABKAkSDgoGam9iX2lkGAsgASgJEi4KCmNyZWF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi8KC2ZpbmlzaGVkX2F0GA0gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCLWAgobU3RyYXRlZ3lFeHBlcmltZW50Q2FuZGlkYXRlEgoKAmlkGAEgASgJEhUKDWV4cGVyaW1lbnRfaWQYAiABKAkSKwoKcGFyYW1ldGVycxgDIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSFgoOZHJhZnRfY29kZV9yZWYYBCABKAkSFwoPYmFja3Rlc3RfcnVuX2lkGAUgASgJEg0KBXNjb3JlGAYgASgBEg0KBWdyYWRlGAcgASgJEjEKEHNjb3JlX2NvbXBvbmVudHMYCCABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0EgwKBHJhbmsYCSABKAUSDwoHc3VtbWFyeRgKIAEoCRIWCg5yZWNvbW1lbmRhdGlvbhgLIAEoCRIuCgpjcmVhdGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCLIAQofU3VibWl0U3RyYXRlZ3lFeHBlcmltZW50UmVxdWVzdBIYChBiYXNlX3RlbXBsYXRlX2lkGAEgASgJEjAKD3BhcmFtZXRlcl9zcGFjZRgCIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSFQoNc2VhcmNoX21ldGhvZBgDIAEoCRIWCg5tYXhfY2FuZGlkYXRlcxgEIAEoBRIRCglvYmplY3RpdmUYBSABKAkSFwoPaWRlbXBvdGVuY3lfa2V5GAYgASgJImIKIFN1Ym1pdFN0cmF0ZWd5RXhwZXJpbWVudFJlc3BvbnNlEi4KCmV4cGVyaW1lbnQYASABKAsyGi5hbnQudjEuU3RyYXRlZ3lFeHBlcmltZW50Eg4KBmpvYl9pZBgCIAEoCSI1ChxHZXRTdHJhdGVneUV4cGVyaW1lbnRSZXF1ZXN0EhUKDWV4cGVyaW1lbnRfaWQYASABKAkiPwoeTGlzdFN0cmF0ZWd5RXhwZXJpbWVudHNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgFEg4KBm9mZnNldBgCIAEoBSJSCh9MaXN0U3RyYXRlZ3lFeHBlcmltZW50c1Jlc3BvbnNlEi8KC2V4cGVyaW1lbnRzGAEgAygLMhouYW50LnYxLlN0cmF0ZWd5RXhwZXJpbWVudCI4Ch9DYW5jZWxTdHJhdGVneUV4cGVyaW1lbnRSZXF1ZXN0EhUKDWV4cGVyaW1lbnRfaWQYASABKAkiOAofTGlzdEV4cGVyaW1lbnRDYW5kaWRhdGVzUmVxdWVzdBIVCg1leHBlcmltZW50X2lkGAEgASgJIlsKIExpc3RFeHBlcmltZW50Q2FuZGlkYXRlc1Jlc3BvbnNlEjcKCmNhbmRpZGF0ZXMYASADKAsyIy5hbnQudjEuU3RyYXRlZ3lFeHBlcmltZW50Q2FuZGlkYXRlIjUKHUdldEV4cGVyaW1lbnRDYW5kaWRhdGVSZXF1ZXN0EhQKDGNhbmRpZGF0ZV9pZBgBIAEoCSJECh5Qcm9tb3RlQ2FuZGlkYXRlVG9EcmFmdFJlcXVlc3QSFAoMY2FuZGlkYXRlX2lkGAEgASgJEgwKBG5hbWUYAiABKAkiNgofUHJvbW90ZUNhbmRpZGF0ZVRvRHJhZnRSZXNwb25zZRITCgt0ZW1wbGF0ZV9pZBgBIAEoCTLzBQoZU3RyYXRlZ3lFeHBlcmltZW50U2VydmljZRJtChhTdWJtaXRTdHJhdGVneUV4cGVyaW1lbnQSJy5hbnQudjEuU3VibWl0U3RyYXRlZ3lFeHBlcmltZW50UmVxdWVzdBooLmFudC52MS5TdWJtaXRTdHJhdGVneUV4cGVyaW1lbnRSZXNwb25zZRJZChVHZXRTdHJhdGVneUV4cGVyaW1lbnQSJC5hbnQudjEuR2V0U3RyYXRlZ3lFeHBlcmltZW50UmVxdWVzdBoaLmFudC52MS5TdHJhdGVneUV4cGVyaW1lbnQSagoXTGlzdFN0cmF0ZWd5RXhwZXJpbWVudHMSJi5hbnQudjEuTGlzdFN0cmF0ZWd5RXhwZXJpbWVudHNSZXF1ZXN0GicuYW50LnYxLkxpc3RTdHJhdGVneUV4cGVyaW1lbnRzUmVzcG9uc2USXwoYQ2FuY2VsU3RyYXRlZ3lFeHBlcmltZW50EicuYW50LnYxLkNhbmNlbFN0cmF0ZWd5RXhwZXJpbWVudFJlcXVlc3QaGi5hbnQudjEuU3RyYXRlZ3lFeHBlcmltZW50Em0KGExpc3RFeHBlcmltZW50Q2FuZGlkYXRlcxInLmFudC52MS5MaXN0RXhwZXJpbWVudENhbmRpZGF0ZXNSZXF1ZXN0GiguYW50LnYxLkxpc3RFeHBlcmltZW50Q2FuZGlkYXRlc1Jlc3BvbnNlEmQKFkdldEV4cGVyaW1lbnRDYW5kaWRhdGUSJS5hbnQudjEuR2V0RXhwZXJpbWVudENhbmRpZGF0ZVJlcXVlc3QaIy5hbnQudjEuU3RyYXRlZ3lFeHBlcmltZW50Q2FuZGlkYXRlEmoKF1Byb21vdGVDYW5kaWRhdGVUb0RyYWZ0EiYuYW50LnYxLlByb21vdGVDYW5kaWRhdGVUb0RyYWZ0UmVxdWVzdBonLmFudC52MS5Qcm9tb3RlQ2FuZGlkYXRlVG9EcmFmdFJlc3BvbnNlQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_struct, file_google_protobuf_timestamp]);
+  fileDesc("ChlzdHJhdGVneV9leHBlcmltZW50LnByb3RvEgZhbnQudjEijQMKElN0cmF0ZWd5RXhwZXJpbWVudBIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEhgKEGJhc2VfdGVtcGxhdGVfaWQYAyABKAkSDgoGc3RhdHVzGAQgASgJEjAKD3BhcmFtZXRlcl9zcGFjZRgFIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSFQoNc2VhcmNoX21ldGhvZBgGIAEoCRIWCg5tYXhfY2FuZGlkYXRlcxgHIAEoBRIRCglvYmplY3RpdmUYCCABKAkSGQoRbWFya2V0X3JlZ2ltZV9yZWYYCSABKAkSGQoRYmVzdF9jYW5kaWRhdGVfaWQYCiABKAkSDgoGam9iX2lkGAsgASgJEi4KCmNyZWF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi8KC2ZpbmlzaGVkX2F0GA0gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIVCg1zdHJhdGVneV9jb2RlGA4gASgJIt8BCh9TdWJtaXRTdHJhdGVneUV4cGVyaW1lbnRSZXF1ZXN0EhgKEGJhc2VfdGVtcGxhdGVfaWQYASABKAkSMAoPcGFyYW1ldGVyX3NwYWNlGAIgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdBIVCg1zZWFyY2hfbWV0aG9kGAMgASgJEhYKDm1heF9jYW5kaWRhdGVzGAQgASgFEhEKCW9iamVjdGl2ZRgFIAEoCRIXCg9pZGVtcG90ZW5jeV9rZXkYBiABKAkSFQoNc3RyYXRlZ3lfY29kZRgHIAEoCSLWAgobU3RyYXRlZ3lFeHBlcmltZW50Q2FuZGlkYXRlEgoKAmlkGAEgASgJEhUKDWV4cGVyaW1lbnRfaWQYAiABKAkSKwoKcGFyYW1ldGVycxgDIAEoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSFgoOZHJhZnRfY29kZV9yZWYYBCABKAkSFwoPYmFja3Rlc3RfcnVuX2lkGAUgASgJEg0KBXNjb3JlGAYgASgBEg0KBWdyYWRlGAcgASgJEjEKEHNjb3JlX2NvbXBvbmVudHMYCCABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0EgwKBHJhbmsYCSABKAUSDwoHc3VtbWFyeRgKIAEoCRIWCg5yZWNvbW1lbmRhdGlvbhgLIAEoCRIuCgpjcmVhdGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJiCiBTdWJtaXRTdHJhdGVneUV4cGVyaW1lbnRSZXNwb25zZRIuCgpleHBlcmltZW50GAEgASgLMhouYW50LnYxLlN0cmF0ZWd5RXhwZXJpbWVudBIOCgZqb2JfaWQYAiABKAkiNQocR2V0U3RyYXRlZ3lFeHBlcmltZW50UmVxdWVzdBIVCg1leHBlcmltZW50X2lkGAEgASgJIj8KHkxpc3RTdHJhdGVneUV4cGVyaW1lbnRzUmVxdWVzdBINCgVsaW1pdBgBIAEoBRIOCgZvZmZzZXQYAiABKAUiUgofTGlzdFN0cmF0ZWd5RXhwZXJpbWVudHNSZXNwb25zZRIvCgtleHBlcmltZW50cxgBIAMoCzIaLmFudC52MS5TdHJhdGVneUV4cGVyaW1lbnQiOAofQ2FuY2VsU3RyYXRlZ3lFeHBlcmltZW50UmVxdWVzdBIVCg1leHBlcmltZW50X2lkGAEgASgJIjgKH0xpc3RFeHBlcmltZW50Q2FuZGlkYXRlc1JlcXVlc3QSFQoNZXhwZXJpbWVudF9pZBgBIAEoCSJbCiBMaXN0RXhwZXJpbWVudENhbmRpZGF0ZXNSZXNwb25zZRI3CgpjYW5kaWRhdGVzGAEgAygLMiMuYW50LnYxLlN0cmF0ZWd5RXhwZXJpbWVudENhbmRpZGF0ZSI1Ch1HZXRFeHBlcmltZW50Q2FuZGlkYXRlUmVxdWVzdBIUCgxjYW5kaWRhdGVfaWQYASABKAkiRAoeUHJvbW90ZUNhbmRpZGF0ZVRvRHJhZnRSZXF1ZXN0EhQKDGNhbmRpZGF0ZV9pZBgBIAEoCRIMCgRuYW1lGAIgASgJIjYKH1Byb21vdGVDYW5kaWRhdGVUb0RyYWZ0UmVzcG9uc2USEwoLdGVtcGxhdGVfaWQYASABKAky8wUKGVN0cmF0ZWd5RXhwZXJpbWVudFNlcnZpY2USbQoYU3VibWl0U3RyYXRlZ3lFeHBlcmltZW50EicuYW50LnYxLlN1Ym1pdFN0cmF0ZWd5RXhwZXJpbWVudFJlcXVlc3QaKC5hbnQudjEuU3VibWl0U3RyYXRlZ3lFeHBlcmltZW50UmVzcG9uc2USWQoVR2V0U3RyYXRlZ3lFeHBlcmltZW50EiQuYW50LnYxLkdldFN0cmF0ZWd5RXhwZXJpbWVudFJlcXVlc3QaGi5hbnQudjEuU3RyYXRlZ3lFeHBlcmltZW50EmoKF0xpc3RTdHJhdGVneUV4cGVyaW1lbnRzEiYuYW50LnYxLkxpc3RTdHJhdGVneUV4cGVyaW1lbnRzUmVxdWVzdBonLmFudC52MS5MaXN0U3RyYXRlZ3lFeHBlcmltZW50c1Jlc3BvbnNlEl8KGENhbmNlbFN0cmF0ZWd5RXhwZXJpbWVudBInLmFudC52MS5DYW5jZWxTdHJhdGVneUV4cGVyaW1lbnRSZXF1ZXN0GhouYW50LnYxLlN0cmF0ZWd5RXhwZXJpbWVudBJtChhMaXN0RXhwZXJpbWVudENhbmRpZGF0ZXMSJy5hbnQudjEuTGlzdEV4cGVyaW1lbnRDYW5kaWRhdGVzUmVxdWVzdBooLmFudC52MS5MaXN0RXhwZXJpbWVudENhbmRpZGF0ZXNSZXNwb25zZRJkChZHZXRFeHBlcmltZW50Q2FuZGlkYXRlEiUuYW50LnYxLkdldEV4cGVyaW1lbnRDYW5kaWRhdGVSZXF1ZXN0GiMuYW50LnYxLlN0cmF0ZWd5RXhwZXJpbWVudENhbmRpZGF0ZRJqChdQcm9tb3RlQ2FuZGlkYXRlVG9EcmFmdBImLmFudC52MS5Qcm9tb3RlQ2FuZGlkYXRlVG9EcmFmdFJlcXVlc3QaJy5hbnQudjEuUHJvbW90ZUNhbmRpZGF0ZVRvRHJhZnRSZXNwb25zZUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_struct, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ant.v1.StrategyExperiment
@@ -82,6 +82,11 @@ export type StrategyExperiment = Message<"ant.v1.StrategyExperiment"> & {
    * @generated from field: google.protobuf.Timestamp finished_at = 13;
    */
   finishedAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: string strategy_code = 14;
+   */
+  strategyCode: string;
 };
 
 /**
@@ -90,6 +95,53 @@ export type StrategyExperiment = Message<"ant.v1.StrategyExperiment"> & {
  */
 export const StrategyExperimentSchema: GenMessage<StrategyExperiment> = /*@__PURE__*/
   messageDesc(file_strategy_experiment, 0);
+
+/**
+ * @generated from message ant.v1.SubmitStrategyExperimentRequest
+ */
+export type SubmitStrategyExperimentRequest = Message<"ant.v1.SubmitStrategyExperimentRequest"> & {
+  /**
+   * @generated from field: string base_template_id = 1;
+   */
+  baseTemplateId: string;
+
+  /**
+   * @generated from field: google.protobuf.Struct parameter_space = 2;
+   */
+  parameterSpace?: JsonObject | undefined;
+
+  /**
+   * @generated from field: string search_method = 3;
+   */
+  searchMethod: string;
+
+  /**
+   * @generated from field: int32 max_candidates = 4;
+   */
+  maxCandidates: number;
+
+  /**
+   * @generated from field: string objective = 5;
+   */
+  objective: string;
+
+  /**
+   * @generated from field: string idempotency_key = 6;
+   */
+  idempotencyKey: string;
+
+  /**
+   * @generated from field: string strategy_code = 7;
+   */
+  strategyCode: string;
+};
+
+/**
+ * Describes the message ant.v1.SubmitStrategyExperimentRequest.
+ * Use `create(SubmitStrategyExperimentRequestSchema)` to create a new message.
+ */
+export const SubmitStrategyExperimentRequestSchema: GenMessage<SubmitStrategyExperimentRequest> = /*@__PURE__*/
+  messageDesc(file_strategy_experiment, 1);
 
 /**
  * @generated from message ant.v1.StrategyExperimentCandidate
@@ -161,48 +213,6 @@ export type StrategyExperimentCandidate = Message<"ant.v1.StrategyExperimentCand
  * Use `create(StrategyExperimentCandidateSchema)` to create a new message.
  */
 export const StrategyExperimentCandidateSchema: GenMessage<StrategyExperimentCandidate> = /*@__PURE__*/
-  messageDesc(file_strategy_experiment, 1);
-
-/**
- * @generated from message ant.v1.SubmitStrategyExperimentRequest
- */
-export type SubmitStrategyExperimentRequest = Message<"ant.v1.SubmitStrategyExperimentRequest"> & {
-  /**
-   * @generated from field: string base_template_id = 1;
-   */
-  baseTemplateId: string;
-
-  /**
-   * @generated from field: google.protobuf.Struct parameter_space = 2;
-   */
-  parameterSpace?: JsonObject | undefined;
-
-  /**
-   * @generated from field: string search_method = 3;
-   */
-  searchMethod: string;
-
-  /**
-   * @generated from field: int32 max_candidates = 4;
-   */
-  maxCandidates: number;
-
-  /**
-   * @generated from field: string objective = 5;
-   */
-  objective: string;
-
-  /**
-   * @generated from field: string idempotency_key = 6;
-   */
-  idempotencyKey: string;
-};
-
-/**
- * Describes the message ant.v1.SubmitStrategyExperimentRequest.
- * Use `create(SubmitStrategyExperimentRequestSchema)` to create a new message.
- */
-export const SubmitStrategyExperimentRequestSchema: GenMessage<SubmitStrategyExperimentRequest> = /*@__PURE__*/
   messageDesc(file_strategy_experiment, 2);
 
 /**
