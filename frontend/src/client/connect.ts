@@ -29,6 +29,8 @@ import { JobService } from "../gen/ant/v1/job_pb";
 import { ScheduleHealthService } from "../gen/ant/v1/schedule_health_pb";
 import { IndicatorCatalogService } from "../gen/ant/v1/indicator_catalog_pb";
 import { ExecutionAlgoService } from "../gen/ant/v1/execution_algo_pb";
+import { GateService } from "../gen/ant/v1/ai_gate_pb";
+import { StrategyGenerationService } from "../gen/ant/v1/strategy_generation_pb";
 import { streamTransport, transport } from "./transport";
 
 export const authClient = createClient(AuthService, transport);
@@ -75,3 +77,5 @@ export const jobClient = createClient(JobService, transport);
 export const jobStreamClient = createClient(JobService, streamTransport);
 export const indicatorCatalogClient = createClient(IndicatorCatalogService, transport);
 export const executionAlgoClient = createClient(ExecutionAlgoService, transport);
+export const gateClient = createClient(GateService, streamTransport);
+export const strategyGenClient = createClient(StrategyGenerationService, streamTransport);

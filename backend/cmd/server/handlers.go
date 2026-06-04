@@ -68,6 +68,7 @@ func registerHandlers(
 	// Repositories for handler→service→repository layering (P1-2).
 	userRepo := repository.NewUserRepository(pool)
 	convRepo := repository.NewAIConversationRepository(pool)
+	templatesRepo := repository.NewAIStrategyTemplatesRepository(pool)
 	jobRepo := repository.NewJobRepository(pool)
 	schedHealthRepo := repository.NewScheduleHealthRepository(pool)
 	marketDataRepo := repository.NewMarketDataRepository(ch, log)
@@ -121,8 +122,6 @@ func registerHandlers(
 	mux.HandleFunc("POST /api/ai/agents", aiServer.BatchSetAgents)
 	mux.HandleFunc("GET /api/ai/agents", aiServer.ListAgentDefs)
 
-	gateProgressServer := ai.NewGateProgressServer(log)
-
 	streamServer := system.NewStreamServer(mthubSvc, platformSvc, log)
 	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, connectrpc.WithInterceptors(authInterceptor)))
 
@@ -150,6 +149,10 @@ func registerHandlers(
 	mux.Handle(antv1c.NewAIPrimaryServiceHandler(aiPrimaryServer, connectrpc.WithInterceptors(authInterceptor)))
 	backtestTradesServer := strategy.NewBacktestTradesServer(backtestRunRepo, log)
 	mux.Handle(antv1c.NewBacktestTradesServiceHandler(backtestTradesServer, connectrpc.WithInterceptors(authInterceptor)))
+	gateEvalServer := ai.NewGateEvalServer(backtestRunRepo, log)
+	mux.Handle(antv1c.NewGateServiceHandler(gateEvalServer, connectrpc.WithInterceptors(authInterceptor)))
+	strategyGenServer := ai.NewStrategyGenServer(aiSvc, templatesRepo, convRepo, backtestRunRepo, log)
+	mux.Handle(antv1c.NewStrategyGenerationServiceHandler(strategyGenServer, connectrpc.WithInterceptors(authInterceptor)))
 	economicDataServer := system.NewEconomicDataServer(log)
 	mux.Handle(antv1c.NewEconomicDataServiceHandler(economicDataServer, connectrpc.WithInterceptors(authInterceptor)))
 	jobServer := system.NewJobServer(jobRepo, log)
@@ -270,7 +273,7 @@ func registerHandlers(
 	emailNotifier := registerSREHandlers(
 		mux, log, pool, ch, nc, rdb, cfg,
 		authInterceptor, platformSvc, mthubSvc,
-		authServer, gateProgressServer,
+		authServer,
 		strategyExperimentRepo, strategyAssetRepo, schedHealthRepo,
 		analyticsCache,
 	)
