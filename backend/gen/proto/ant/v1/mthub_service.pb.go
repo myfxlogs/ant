@@ -567,6 +567,8 @@ func (x *CloseOrderRequest) GetLots() string {
 type CloseOrderResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Status        string                 `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
+	Ticket        int64                  `protobuf:"varint,2,opt,name=ticket,proto3" json:"ticket,omitempty"`
+	Message       string                 `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -604,6 +606,20 @@ func (*CloseOrderResponse) Descriptor() ([]byte, []int) {
 func (x *CloseOrderResponse) GetStatus() string {
 	if x != nil {
 		return x.Status
+	}
+	return ""
+}
+
+func (x *CloseOrderResponse) GetTicket() int64 {
+	if x != nil {
+		return x.Ticket
+	}
+	return 0
+}
+
+func (x *CloseOrderResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
 	}
 	return ""
 }
@@ -1847,9 +1863,11 @@ const file_mthub_service_proto_rawDesc = "" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x16\n" +
 	"\x06ticket\x18\x02 \x01(\x03R\x06ticket\x12\x12\n" +
-	"\x04lots\x18\x03 \x01(\tR\x04lots\",\n" +
+	"\x04lots\x18\x03 \x01(\tR\x04lots\"^\n" +
 	"\x12CloseOrderResponse\x12\x16\n" +
-	"\x06status\x18\x01 \x01(\tR\x06status\"4\n" +
+	"\x06status\x18\x01 \x01(\tR\x06status\x12\x16\n" +
+	"\x06ticket\x18\x02 \x01(\x03R\x06ticket\x12\x18\n" +
+	"\amessage\x18\x03 \x01(\tR\amessage\"4\n" +
 	"\x13OpenedOrdersRequest\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\"C\n" +

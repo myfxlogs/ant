@@ -8,8 +8,6 @@ import { PageWrapper } from '@/components/common/PageWrapper';
 import { PrivateRoute, PublicRoute, AdminRoute } from '@/components/auth/RouteGuards';
 import MainLayout from '@/components/layout/MainLayout';
 import AdminLayout from '@/components/layout/AdminLayout';
-import AIAssistantLayout from '@/pages/ai/AIAssistantLayout';
-import RequireAIConfig from '@/pages/ai/components/RequireAIConfig';
 
 // ── Lazy page imports ──
 const Login = lazy(() => import('@/pages/auth/Login'));
@@ -20,9 +18,7 @@ const PrivacyPolicy = lazy(() => import('@/pages/legal/PrivacyPolicy'));
 const Dashboard = lazy(() => import('@/pages/dashboard/Dashboard'));
 const AccountDetail = lazy(() => import('@/pages/accounts/AccountDetail'));
 const BindAccount = lazy(() => import('@/pages/accounts/BindAccount'));
-const AISettings = lazy(() => import('@/pages/ai/AISettings'));
 const SystemAI = lazy(() => import('@/pages/ai/SystemAI'));
-const GateProgressPage = lazy(() => import('@/pages/ai/gate/GateProgressPage'));
 const StrategyTemplatePage = lazy(() => import('@/pages/strategy/StrategyTemplatePage'));
 const StrategyAssetPage = lazy(() => import('@/pages/strategy/StrategyAssetPage'));
 const StrategySchedulePage = lazy(() => import('@/pages/strategy/StrategySchedulePage'));
@@ -64,12 +60,6 @@ const mainRoutes = (
     <Route path="accounts/:id" element={wrap(<AccountDetail />)} />
     <Route path="accounts/bind" element={wrap(<BindAccount />)} />
     <Route path="profile" element={wrap(<ProfilePage />)} />
-    <Route path="ai" element={<AIAssistantLayout />}>
-      <Route index element={<Navigate to="/ai/settings" replace />} />
-      <Route path="settings" element={wrap(<SystemAI />)} />
-      <Route path="agents" element={wrap(<AISettings mode="agents" />)} />
-      <Route path="gate" element={wrap(<GateProgressPage />)} />
-    </Route>
     <Route path="strategy/templates" element={wrap(<StrategyTemplatePage />)} />
     <Route path="strategy/workspace" element={wrap(<StrategyWorkspacePage />)} />
     <Route path="strategy/assets" element={wrap(<StrategyAssetPage />)} />

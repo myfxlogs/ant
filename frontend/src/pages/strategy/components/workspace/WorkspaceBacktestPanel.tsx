@@ -3,7 +3,9 @@ import { RiseOutlined, FallOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import SmartTuningPanel from './SmartTuningPanel';
+import GatePanel from './GatePanel';
 import type { SweepDimension } from '../../hooks/useBacktestParams';
+import type { GateResult, GatePipelineSummary } from '@/gen/ant/v1/ai_gate_pb';
 
 interface BacktestMetrics {
   totalReturn?: number; annualReturn?: number; maxDrawdown?: number;
@@ -21,12 +23,16 @@ interface Props {
   metrics: BacktestMetrics | null;
   errorMessage?: string;
   // Sub-tab
-  subTab: 'results' | 'tuning'; onSubTabChange: (tab: string) => void;
+  subTab: 'results' | 'tuning' | 'gate'; onSubTabChange: (tab: string) => void;
   // Smart tuning
   tuneMethod: 'grid' | 'random'; onTuneMethodChange: (m: string) => void;
   sweepDimensions: SweepDimension[]; onToggleDimension: (key: string) => void;
   enabledSweepDims: SweepDimension[]; cartesianSize: number;
   tuningRunning: boolean; canRunTuning: boolean; onRunTuning: () => void;
+  // Gate
+  gateLoading: boolean; gateGates: GateResult[];
+  gateSummary: GatePipelineSummary | null; gateError: string;
+  onRunGate: () => void;
 }
 
 function pct(v: number | undefined): string {
@@ -53,6 +59,7 @@ export default function WorkspaceBacktestPanel({
   sweepDimensions, onToggleDimension,
   enabledSweepDims, cartesianSize,
   tuningRunning, canRunTuning, onRunTuning,
+  gateLoading, gateGates, gateSummary, gateError, onRunGate,
 }: Props) {
   const { t } = useTranslation();
 
@@ -70,6 +77,11 @@ export default function WorkspaceBacktestPanel({
           color: subTab === 'tuning' ? '#1890ff' : '#8c8c8c',
           borderBottomColor: subTab === 'tuning' ? '#1890ff' : 'transparent',
         }}>Smart Tuning</div>
+        <div onClick={() => onSubTabChange('gate')} style={{
+          ...tabStyle,
+          color: subTab === 'gate' ? '#1890ff' : '#8c8c8c',
+          borderBottomColor: subTab === 'gate' ? '#1890ff' : 'transparent',
+        }}>Gate</div>
       </div>
 
       {/* Results Tab */}
@@ -184,6 +196,15 @@ export default function WorkspaceBacktestPanel({
           sweepDimensions={sweepDimensions} onToggleDimension={onToggleDimension}
           enabledSweepDims={enabledSweepDims} cartesianSize={cartesianSize}
           tuningRunning={tuningRunning} canRun={canRunTuning} onRunTuning={onRunTuning}
+        />
+      )}
+
+      {/* Gate Tab */}
+      {subTab === 'gate' && (
+        <GatePanel
+          loading={gateLoading} gates={gateGates} summary={gateSummary}
+          error={gateError} status={status} canRun={status === 'completed'}
+          onRun={onRunGate}
         />
       )}
     </div>

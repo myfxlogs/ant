@@ -12,7 +12,8 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-// --- OrderExecutor interface (mthub) ---
+
+const orderTimeout = 30 * time.Second
 
 func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int64, error) {
 	g.mu.RLock()
@@ -25,8 +26,10 @@ func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int6
 	ot := mt5OrderType(req.Side, req.OrderType)
 	price := req.Price.InexactFloat64()
 	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
-	ctx = metadata.NewOutgoingContext(ctx, md)
-	resp, err := tc.OrderSend(ctx, &pb.OrderSendRequest{
+	callCtx, cancel := context.WithTimeout(ctx, orderTimeout)
+	defer cancel()
+	callCtx = metadata.NewOutgoingContext(callCtx, md)
+	resp, err := tc.OrderSend(callCtx, &pb.OrderSendRequest{
 		Id: sid, Symbol: req.Canonical, Operation: ot,
 		Volume:    req.Volume.InexactFloat64(),
 		Price:     &price,
@@ -47,9 +50,7 @@ func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int6
 	return resp.GetResult().GetTicket(), nil
 }
 
-// openTimeFromOrder extracts the open time from an MT5 Order, falling back
-// to OpenTimestampUTC when the proto Timestamp is nil or zero (some MT5
-// brokers only populate the int64 field).
+// openTimeFromOrder extracts open time from MT5 Order, falling back to OpenTimestampUTC.
 func openTimeFromOrder(o *pb.Order) time.Time {
 	if t := o.GetOpenTime(); t != nil && t.GetSeconds() > 0 {
 		return t.AsTime()
@@ -60,8 +61,7 @@ func openTimeFromOrder(o *pb.Order) time.Time {
 	return time.Time{}
 }
 
-// closeTimeFromOrder extracts the close time from an MT5 Order, falling back
-// to CloseTimestampUTC when the proto Timestamp is nil or zero.
+// closeTimeFromOrder extracts close time from MT5 Order, falling back to CloseTimestampUTC.
 func closeTimeFromOrder(o *pb.Order) time.Time {
 	if t := o.GetCloseTime(); t != nil && t.GetSeconds() > 0 {
 		return t.AsTime()
@@ -116,18 +116,25 @@ func (g *Gateway) CloseOrder(ctx context.Context, ticket int64, lots decimal.Dec
 	sid := g.sessionID
 	g.mu.RUnlock()
 	if tc == nil || sid == "" {
+		g.log.Warn("mt5 CloseOrder: not connected", zap.Bool("hasCli", tc != nil), zap.Bool("hasSid", sid != ""))
 		return fmt.Errorf("mt5 CloseOrder: not connected")
 	}
 	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
-	ctx = metadata.NewOutgoingContext(ctx, md)
+	callCtx, cancel := context.WithTimeout(ctx, orderTimeout)
+	defer cancel()
+	callCtx = metadata.NewOutgoingContext(callCtx, md)
 	l := lots.InexactFloat64()
-	resp, err := tc.OrderClose(ctx, &pb.OrderCloseRequest{Id: sid, Ticket: ticket, Lots: &l})
+	g.log.Info("mt5 CloseOrder: sending", zap.Int64("ticket", ticket), zap.Float64("lots", l), zap.String("sid", sid[:8]+"..."))
+	resp, err := tc.OrderClose(callCtx, &pb.OrderCloseRequest{Id: sid, Ticket: ticket, Lots: &l})
 	if err != nil {
+		g.log.Error("mt5 OrderClose: gRPC error", zap.Error(err))
 		return fmt.Errorf("mt5 OrderClose: %w", err)
 	}
 	if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
+		g.log.Error("mt5 OrderClose: broker error", zap.Int32("code", int32(resp.GetError().GetCode())), zap.String("msg", resp.GetError().GetMessage()))
 		return fmt.Errorf("mt5 OrderClose: code=%d msg=%s", resp.GetError().GetCode(), resp.GetError().GetMessage())
 	}
+	g.log.Info("mt5 CloseOrder: success", zap.Int64("ticket", ticket))
 	return nil
 }
 
@@ -140,8 +147,10 @@ func (g *Gateway) ModifyOrder(ctx context.Context, ticket int64, sl, tp, price d
 		return fmt.Errorf("mt5 ModifyOrder: not connected")
 	}
 	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
-	ctx = metadata.NewOutgoingContext(ctx, md)
-	resp, err := tc.OrderModify(ctx, &pb.OrderModifyRequest{
+	callCtx, cancel := context.WithTimeout(ctx, orderTimeout)
+	defer cancel()
+	callCtx = metadata.NewOutgoingContext(callCtx, md)
+	resp, err := tc.OrderModify(callCtx, &pb.OrderModifyRequest{
 		Id: sid, Ticket: ticket,
 		Stoploss: sl.InexactFloat64(), Takeprofit: tp.InexactFloat64(),
 	})
@@ -196,8 +205,7 @@ func (g *Gateway) FetchSymbolParams(ctx context.Context, canonicals []string) ([
 	return out, nil
 }
 
-// FetchPriceHistory fetches K-line bars from the broker (MT5 PriceHistory RPC).
-// FetchPriceHistory delegates to the existing broker PriceHistory implementation in quotes.go.
+// FetchPriceHistory fetches K-line bars via the broker PriceHistory RPC in quotes.go.
 func (g *Gateway) FetchPriceHistory(ctx context.Context, symbol, period string, from, to int64, count int) ([]*mthub.Bar, error) {
 	bars, err := g.GetPriceHistory(ctx, "", symbol, period, from, to)
 	if err != nil {
@@ -217,7 +225,7 @@ func (g *Gateway) FetchPriceHistory(ctx context.Context, symbol, period string, 
 	return out, nil
 }
 
-// FetchAllSymbols returns all available symbol names from the broker (MT5 SymbolList RPC).
+// FetchAllSymbols returns all available symbol names from the broker.
 func (g *Gateway) FetchAllSymbols(ctx context.Context) ([]string, error) {
 	g.mu.RLock()
 	client := g.client
@@ -252,22 +260,17 @@ func (g *Gateway) SubscribeOrderEvents(ctx context.Context, h mthub.OrderEventHa
 	if err != nil {
 		return fmt.Errorf("mt5 OnOrderUpdate: %w", err)
 	}
-	// Cancel previous subscription to avoid goroutine leak on reconnect.
+	g.mu.Lock()
 	if g.cancelOrderUpdateSub != nil {
 		g.cancelOrderUpdateSub()
 	}
 	ctx, g.cancelOrderUpdateSub = context.WithCancel(ctx)
+	g.mu.Unlock()
 	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				g.log.Error("mt5 order event recv panic", zap.Any("panic", r))
-			}
-		}()
+		defer func() { recover() }()
 		for {
-			select {
-			case <-ctx.Done():
+			if ctx.Err() != nil {
 				return
-			default:
 			}
 			msg, err := stream.Recv()
 			if err != nil {

@@ -18,12 +18,13 @@ function loadWatchlist(): string[] {
 interface SymbolPickerProps {
   value?: string;
   onChange?: (symbol: string) => void;
+  onDropdownVisibleChange?: (open: boolean) => void;
   accountId: string;
   placeholder?: string;
   style?: React.CSSProperties;
 }
 
-export default function SymbolPicker({ value, onChange, accountId, placeholder = 'Select symbol', style }: SymbolPickerProps) {
+export default function SymbolPicker({ value, onChange, onDropdownVisibleChange, accountId, placeholder = 'Select symbol', style }: SymbolPickerProps) {
   const [symbols, setSymbols] = useState<SymbolInfo[]>([]);
   const [watchlist, setWatchlist] = useState<string[]>(loadWatchlist);
   const [loading, setLoading] = useState(false);
@@ -107,6 +108,7 @@ export default function SymbolPicker({ value, onChange, accountId, placeholder =
       showSearch
       value={value || undefined}
       onChange={(v) => onChange?.(v)}
+      onDropdownVisibleChange={onDropdownVisibleChange}
       loading={loading}
       placeholder={placeholder}
       style={{ minWidth: 120, ...style }}

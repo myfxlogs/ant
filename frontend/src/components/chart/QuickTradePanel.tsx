@@ -18,7 +18,8 @@ interface Props {
   allPositions?: PositionItem[];
   positions?: PositionItem[];
   recentTrades?: TradeItem[];
-  onClosePosition?: (ticket: number) => void;
+  onClosePosition?: (ticket: number, volume?: number) => void;
+  onToggleAllPositions?: () => void;
 }
 
 type OrderSide = 'buy' | 'sell';
@@ -33,7 +34,7 @@ const ORDER_KINDS: { value: OrderKind; label: string }[] = [
 const cardBox: React.CSSProperties = { background: '#f6f9fc', border: '1px solid #e0e8f0', borderRadius: 6, padding: '6px 10px' };
 const labelSm: React.CSSProperties = { fontSize: 10, color: '#64748b', fontWeight: 600 };
 
-export default function QuickTradePanel({ accountId, symbol, accountMeta, allPositions = [], positions = [], recentTrades = [], onClosePosition }: Props) {
+export default function QuickTradePanel({ accountId, symbol, accountMeta, allPositions = [], positions = [], recentTrades = [], onClosePosition, onToggleAllPositions }: Props) {
   const totalLots = (allPositions || []).reduce((s, p) => s + (p.volume || 0), 0);
   const [side, setSide] = useState<OrderSide>('buy');
   const [orderKind, setOrderKind] = useState<OrderKind>('MARKET');
@@ -76,11 +77,14 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
   const closeTimerRef = useRef<number | null>(null);
   useEffect(() => () => { if (closeTimerRef.current != null) window.clearTimeout(closeTimerRef.current); }, []);
 
-  const handleClosePos = useCallback((ticket: number) => {
+  const handleClosePos = useCallback(async (ticket: number, volume?: number) => {
     setClosingTicket(ticket);
-    onClosePosition?.(ticket);
-    if (closeTimerRef.current != null) window.clearTimeout(closeTimerRef.current);
-    closeTimerRef.current = window.setTimeout(() => setClosingTicket(null), 5000);
+    try {
+      await onClosePosition?.(ticket, volume);
+    } finally {
+      if (closeTimerRef.current != null) window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = window.setTimeout(() => setClosingTicket(null), 5000);
+    }
   }, [onClosePosition]);
 
   return (
@@ -171,11 +175,13 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
       </Button>
       </>)}
 
-      {/* Position summary — total lots + count across all symbols */}
-      <div style={{ ...cardBox, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      {/* Position summary — click to expand all positions overlay */}
+      <div onClick={onToggleAllPositions} role="button" tabIndex={0}
+        onKeyUp={e => e.key === 'Enter' && onToggleAllPositions?.()}
+        style={{ ...cardBox, display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
         <span style={labelSm}>Open Positions</span>
         <span style={{ fontSize: 13, fontWeight: 700, color: '#262626' }}>
-          {totalLots.toFixed(2)} lots · {allPositions.length}
+          {totalLots.toFixed(2)} lots · {allPositions.length} &gt;
         </span>
       </div>
 

@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file code_assist.proto.
  */
 export const file_code_assist: GenFile = /*@__PURE__*/
-  fileDesc("ChFjb2RlX2Fzc2lzdC5wcm90bxIGYW50LnYxIjAKD0NvZGVDaGF0TWVzc2FnZRIMCgRyb2xlGAEgASgJEg8KB2NvbnRlbnQYAiABKAkicAoRUmV2aXNlQ29kZVJlcXVlc3QSDAoEY29kZRgBIAEoCRITCgtpbnN0cnVjdGlvbhgCIAEoCRIoCgdoaXN0b3J5GAMgAygLMhcuYW50LnYxLkNvZGVDaGF0TWVzc2FnZRIOCgZsb2NhbGUYBCABKAkiMgoSUmV2aXNlQ29kZVJlc3BvbnNlEgwKBHRleHQYASABKAkSDgoGcHl0aG9uGAIgASgJIjIKEkV4cGxhaW5Db2RlUmVxdWVzdBIMCgRjb2RlGAEgASgJEg4KBmxvY2FsZRgCIAEoCSIqChNFeHBsYWluQ29kZVJlc3BvbnNlEhMKC2V4cGxhbmF0aW9uGAEgASgJIi8KH1ZhbGlkYXRlU3RyYXRlZ3lFeHRlbmRlZFJlcXVlc3QSDAoEY29kZRgBIAEoCSKCAQogVmFsaWRhdGVTdHJhdGVneUV4dGVuZGVkUmVzcG9uc2USDQoFdmFsaWQYASABKAgSDgoGZXJyb3JzGAIgAygJEhAKCHdhcm5pbmdzGAMgAygJEi0KCnBhcmFtZXRlcnMYBCADKAsyGS5hbnQudjEuUmVxdWlyZWRQYXJhbVNwZWMicAoRUmVxdWlyZWRQYXJhbVNwZWMSCwoDa2V5GAEgASgJEhAKCHJlcXVpcmVkGAIgASgIEhUKDWRlZmF1bHRfdmFsdWUYAyABKAkSDAoEdHlwZRgEIAEoCRIXCg9zdWdnZXN0ZWRfdmFsdWUYBSABKAkyjwIKEUNvZGVBc3Npc3RTZXJ2aWNlEkMKClJldmlzZUNvZGUSGS5hbnQudjEuUmV2aXNlQ29kZVJlcXVlc3QaGi5hbnQudjEuUmV2aXNlQ29kZVJlc3BvbnNlEkYKC0V4cGxhaW5Db2RlEhouYW50LnYxLkV4cGxhaW5Db2RlUmVxdWVzdBobLmFudC52MS5FeHBsYWluQ29kZVJlc3BvbnNlEm0KGFZhbGlkYXRlU3RyYXRlZ3lFeHRlbmRlZBInLmFudC52MS5WYWxpZGF0ZVN0cmF0ZWd5RXh0ZW5kZWRSZXF1ZXN0GiguYW50LnYxLlZhbGlkYXRlU3RyYXRlZ3lFeHRlbmRlZFJlc3BvbnNlQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
+  fileDesc("ChFjb2RlX2Fzc2lzdC5wcm90bxIGYW50LnYxIjAKD0NvZGVDaGF0TWVzc2FnZRIMCgRyb2xlGAEgASgJEg8KB2NvbnRlbnQYAiABKAkicAoRUmV2aXNlQ29kZVJlcXVlc3QSDAoEY29kZRgBIAEoCRITCgtpbnN0cnVjdGlvbhgCIAEoCRIoCgdoaXN0b3J5GAMgAygLMhcuYW50LnYxLkNvZGVDaGF0TWVzc2FnZRIOCgZsb2NhbGUYBCABKAkiMgoSUmV2aXNlQ29kZVJlc3BvbnNlEgwKBHRleHQYASABKAkSDgoGcHl0aG9uGAIgASgJIkQKFVJldmlzZUNvZGVTdHJlYW1DaHVuaxINCgVkZWx0YRgBIAEoCRIOCgZweXRob24YAiABKAkSDAoEZG9uZRgDIAEoCCIyChJFeHBsYWluQ29kZVJlcXVlc3QSDAoEY29kZRgBIAEoCRIOCgZsb2NhbGUYAiABKAkiKgoTRXhwbGFpbkNvZGVSZXNwb25zZRITCgtleHBsYW5hdGlvbhgBIAEoCSIvCh9WYWxpZGF0ZVN0cmF0ZWd5RXh0ZW5kZWRSZXF1ZXN0EgwKBGNvZGUYASABKAkiggEKIFZhbGlkYXRlU3RyYXRlZ3lFeHRlbmRlZFJlc3BvbnNlEg0KBXZhbGlkGAEgASgIEg4KBmVycm9ycxgCIAMoCRIQCgh3YXJuaW5ncxgDIAMoCRItCgpwYXJhbWV0ZXJzGAQgAygLMhkuYW50LnYxLlJlcXVpcmVkUGFyYW1TcGVjInAKEVJlcXVpcmVkUGFyYW1TcGVjEgsKA2tleRgBIAEoCRIQCghyZXF1aXJlZBgCIAEoCBIVCg1kZWZhdWx0X3ZhbHVlGAMgASgJEgwKBHR5cGUYBCABKAkSFwoPc3VnZ2VzdGVkX3ZhbHVlGAUgASgJMt8CChFDb2RlQXNzaXN0U2VydmljZRJDCgpSZXZpc2VDb2RlEhkuYW50LnYxLlJldmlzZUNvZGVSZXF1ZXN0GhouYW50LnYxLlJldmlzZUNvZGVSZXNwb25zZRJOChBSZXZpc2VDb2RlU3RyZWFtEhkuYW50LnYxLlJldmlzZUNvZGVSZXF1ZXN0Gh0uYW50LnYxLlJldmlzZUNvZGVTdHJlYW1DaHVuazABEkYKC0V4cGxhaW5Db2RlEhouYW50LnYxLkV4cGxhaW5Db2RlUmVxdWVzdBobLmFudC52MS5FeHBsYWluQ29kZVJlc3BvbnNlEm0KGFZhbGlkYXRlU3RyYXRlZ3lFeHRlbmRlZBInLmFudC52MS5WYWxpZGF0ZVN0cmF0ZWd5RXh0ZW5kZWRSZXF1ZXN0GiguYW50LnYxLlZhbGlkYXRlU3RyYXRlZ3lFeHRlbmRlZFJlc3BvbnNlQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
 
 /**
  * @generated from message ant.v1.CodeChatMessage
@@ -89,6 +89,39 @@ export const ReviseCodeResponseSchema: GenMessage<ReviseCodeResponse> = /*@__PUR
   messageDesc(file_code_assist, 2);
 
 /**
+ * @generated from message ant.v1.ReviseCodeStreamChunk
+ */
+export type ReviseCodeStreamChunk = Message<"ant.v1.ReviseCodeStreamChunk"> & {
+  /**
+   * incremental text delta
+   *
+   * @generated from field: string delta = 1;
+   */
+  delta: string;
+
+  /**
+   * extracted python code (only on final chunk)
+   *
+   * @generated from field: string python = 2;
+   */
+  python: string;
+
+  /**
+   * true on final chunk
+   *
+   * @generated from field: bool done = 3;
+   */
+  done: boolean;
+};
+
+/**
+ * Describes the message ant.v1.ReviseCodeStreamChunk.
+ * Use `create(ReviseCodeStreamChunkSchema)` to create a new message.
+ */
+export const ReviseCodeStreamChunkSchema: GenMessage<ReviseCodeStreamChunk> = /*@__PURE__*/
+  messageDesc(file_code_assist, 3);
+
+/**
  * @generated from message ant.v1.ExplainCodeRequest
  */
 export type ExplainCodeRequest = Message<"ant.v1.ExplainCodeRequest"> & {
@@ -108,7 +141,7 @@ export type ExplainCodeRequest = Message<"ant.v1.ExplainCodeRequest"> & {
  * Use `create(ExplainCodeRequestSchema)` to create a new message.
  */
 export const ExplainCodeRequestSchema: GenMessage<ExplainCodeRequest> = /*@__PURE__*/
-  messageDesc(file_code_assist, 3);
+  messageDesc(file_code_assist, 4);
 
 /**
  * @generated from message ant.v1.ExplainCodeResponse
@@ -125,7 +158,7 @@ export type ExplainCodeResponse = Message<"ant.v1.ExplainCodeResponse"> & {
  * Use `create(ExplainCodeResponseSchema)` to create a new message.
  */
 export const ExplainCodeResponseSchema: GenMessage<ExplainCodeResponse> = /*@__PURE__*/
-  messageDesc(file_code_assist, 4);
+  messageDesc(file_code_assist, 5);
 
 /**
  * @generated from message ant.v1.ValidateStrategyExtendedRequest
@@ -142,7 +175,7 @@ export type ValidateStrategyExtendedRequest = Message<"ant.v1.ValidateStrategyEx
  * Use `create(ValidateStrategyExtendedRequestSchema)` to create a new message.
  */
 export const ValidateStrategyExtendedRequestSchema: GenMessage<ValidateStrategyExtendedRequest> = /*@__PURE__*/
-  messageDesc(file_code_assist, 5);
+  messageDesc(file_code_assist, 6);
 
 /**
  * @generated from message ant.v1.ValidateStrategyExtendedResponse
@@ -174,7 +207,7 @@ export type ValidateStrategyExtendedResponse = Message<"ant.v1.ValidateStrategyE
  * Use `create(ValidateStrategyExtendedResponseSchema)` to create a new message.
  */
 export const ValidateStrategyExtendedResponseSchema: GenMessage<ValidateStrategyExtendedResponse> = /*@__PURE__*/
-  messageDesc(file_code_assist, 6);
+  messageDesc(file_code_assist, 7);
 
 /**
  * @generated from message ant.v1.RequiredParamSpec
@@ -211,7 +244,7 @@ export type RequiredParamSpec = Message<"ant.v1.RequiredParamSpec"> & {
  * Use `create(RequiredParamSpecSchema)` to create a new message.
  */
 export const RequiredParamSpecSchema: GenMessage<RequiredParamSpec> = /*@__PURE__*/
-  messageDesc(file_code_assist, 7);
+  messageDesc(file_code_assist, 8);
 
 /**
  * @generated from service ant.v1.CodeAssistService
@@ -224,6 +257,14 @@ export const CodeAssistService: GenService<{
     methodKind: "unary";
     input: typeof ReviseCodeRequestSchema;
     output: typeof ReviseCodeResponseSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.CodeAssistService.ReviseCodeStream
+   */
+  reviseCodeStream: {
+    methodKind: "server_streaming";
+    input: typeof ReviseCodeRequestSchema;
+    output: typeof ReviseCodeStreamChunkSchema;
   },
   /**
    * @generated from rpc ant.v1.CodeAssistService.ExplainCode

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Button, Form, Input, InputNumber, Space, Spin, Switch, Tag, message } from 'antd';
 import { BulbOutlined, RobotOutlined, SendOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -243,108 +243,6 @@ export const CodeExplainPanel: React.FC<CodeExplainPanelProps> = ({ code, autoOn
 	);
 };
 
-// --- 3. AI revise chat (modal-side panel) --------------------------------
 
-export interface AICodeReviseChatProps {
-	code: string;
-	onApply: (newCode: string) => void;
-}
-
-export const AICodeReviseChat: React.FC<AICodeReviseChatProps> = ({ code, onApply }) => {
-	const { t, i18n } = useTranslation();
-	const [history, setHistory] = useState<CodeChatMessage[]>([]);
-	const [draft, setDraft] = useState('');
-	const [loading, setLoading] = useState(false);
-
-	const send = async () => {
-		const instr = draft.trim();
-		if (!instr) {
-			message.warning(t('strategy.codeAssist.enterInstruction', {
-				defaultValue: 'Please describe what you want to change.',
-			}));
-			return;
-		}
-		if (!code.trim()) {
-			message.warning(t('strategy.codeAssist.codeEmpty', {
-				defaultValue: 'There is no code to revise yet.',
-			}));
-			return;
-		}
-		setLoading(true);
-		try {
-			const out = await codeAssistApi.revise({
-				code,
-				instruction: instr,
-				history,
-				locale: i18n.language,
-			});
-			const newHistory = [
-				...history,
-				{ role: 'user' as const, content: instr },
-				{ role: 'assistant' as const, content: out.text },
-			];
-			setHistory(newHistory);
-			setDraft('');
-			if (out.python) {
-				onApply(out.python);
-				message.success(t('strategy.codeAssist.codeUpdated', {
-					defaultValue: 'Code updated. Please re-run validation before saving.',
-				}));
-			} else {
-				message.warning(t('strategy.codeAssist.noPython', {
-					defaultValue: 'AI did not return a Python block. Try rephrasing.',
-				}));
-			}
-		} catch (e: unknown) {
-			message.error(String(e?.message || e || 'failed'));
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	const messagesView = useMemo(
-		() =>
-			history.map((m, i) => (
-				<div
-					key={i}
-					style={{
-						margin: '6px 0',
-						padding: '6px 10px',
-						borderRadius: 6,
-						background: m.role === 'user' ? '#e6f4ff' : '#f6ffed',
-						fontSize: 12,
-						whiteSpace: 'pre-wrap',
-					}}
-				>
-					<b style={{ color: m.role === 'user' ? '#1677ff' : '#389e0d' }}>
-						{m.role === 'user' ? t('common.you', { defaultValue: 'You' }) : 'AI'}
-					</b>
-					<div>{m.content}</div>
-				</div>
-			)),
-		[history, t],
-	);
-
-	return (
-		<div style={{ border: '1px solid #f0f0f0', borderRadius: 6, padding: 8, background: '#fff' }}>
-			<Space style={{ marginBottom: 6 }}>
-				<RobotOutlined />
-				<span>{t('strategy.codeAssist.aiReviseTitle', { defaultValue: 'AI assistant — revise code' })}</span>
-			</Space>
-			<div style={{ maxHeight: 200, overflow: 'auto', marginBottom: 6 }}>{messagesView}</div>
-			<TextArea
-				rows={2}
-				value={draft}
-				onChange={(e) => setDraft(e.target.value)}
-				placeholder={t('strategy.codeAssist.reviseInputPlaceholder', {
-					defaultValue: 'e.g. Replace SMA(20) with EMA(50) and add a 1% stop-loss.',
-				})}
-			/>
-			<div style={{ marginTop: 6, textAlign: 'right' }}>
-				<Button type="primary" icon={<SendOutlined />} loading={loading} onClick={() => void send()}>
-					{t('strategy.codeAssist.reviseSend', { defaultValue: 'Send to AI' })}
-				</Button>
-			</div>
-		</div>
-	);
-};
+// AICodeReviseChat extracted to its own file for size compliance.
+export { AICodeReviseChat, type AICodeReviseChatProps } from "./AICodeReviseChat";

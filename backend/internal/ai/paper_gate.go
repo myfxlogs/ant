@@ -31,19 +31,64 @@ func DefaultPaperGateConfig() PaperGateConfig {
 
 // PaperGateMetrics holds the paper trading performance metrics.
 type PaperGateMetrics struct {
-	PaperDays         int     `json:"paper_days"`
-	BacktestNetReturn float64 `json:"backtest_net_return"`
+	PaperDays          int     `json:"paper_days"`
+	BacktestNetReturn  float64 `json:"backtest_net_return"`
 	BacktestGrossReturn float64 `json:"backtest_gross_return"`
-	PaperNetReturn    float64 `json:"paper_net_return"`
-	PaperNetPnL       float64 `json:"paper_net_pnl"`
-	PaperTradeCount   int     `json:"paper_trade_count"`
+	PaperNetReturn     float64 `json:"paper_net_return"`
+	PaperNetPnL        float64 `json:"paper_net_pnl"`
+	PaperTradeCount    int     `json:"paper_trade_count"`
 }
 
 // PaperGateResult is the outcome of the paper trading gate.
 type PaperGateResult struct {
-	Passed     bool              `json:"passed"`
-	Metrics    PaperGateMetrics  `json:"metrics"`
-	Reason     string            `json:"reason,omitempty"`
+	Passed  bool             `json:"passed"`
+	Metrics PaperGateMetrics `json:"metrics"`
+	Reason  string           `json:"reason,omitempty"`
+}
+
+// validatePaperMetrics checks for NaN/Inf in critical paper metric fields.
+func validatePaperMetrics(m PaperGateMetrics) bool {
+	if math.IsNaN(m.PaperNetPnL) || math.IsInf(m.PaperNetPnL, 0) {
+		return false
+	}
+	if math.IsNaN(m.PaperNetReturn) || math.IsInf(m.PaperNetReturn, 0) {
+		return false
+	}
+	return true
+}
+
+// checkPaperPerformance validates paper trading performance against thresholds.
+func checkPaperPerformance(metrics PaperGateMetrics, cfg PaperGateConfig) (bool, string) {
+	// Net P&L must be positive.
+	if metrics.PaperNetPnL <= 0 {
+		return false, fmt.Sprintf("paper Net P&L %.2f <= 0 (must be profitable)", metrics.PaperNetPnL)
+	}
+
+	// Paper return ratio vs backtest.
+	if metrics.BacktestNetReturn > 0 {
+		if metrics.PaperNetReturn < 0 {
+			return false, fmt.Sprintf(
+				"paper return negative (%.4f) while backtest return positive — regime mismatch",
+				metrics.PaperNetReturn,
+			)
+		}
+		returnRatio := metrics.PaperNetReturn / metrics.BacktestNetReturn
+		if returnRatio < cfg.MinReturnRatio {
+			return false, fmt.Sprintf(
+				"paper return %.4f below %.0f%% threshold of backtest return %.4f",
+				metrics.PaperNetReturn, cfg.MinReturnRatio*100, metrics.BacktestNetReturn,
+			)
+		}
+	}
+
+	// Minimum trade count in paper.
+	if metrics.PaperTradeCount < cfg.MinPaperTrades {
+		return false, fmt.Sprintf(
+			"paper trade count %d insufficient (min %d)",
+			metrics.PaperTradeCount, cfg.MinPaperTrades,
+		)
+	}
+	return true, ""
 }
 
 // PaperGate evaluates paper trading performance against backtest expectations.
@@ -58,50 +103,16 @@ func PaperGate(metrics PaperGateMetrics, cfg PaperGateConfig) PaperGateResult {
 	}
 
 	// Reject NaN/Inf in critical metric fields.
-	if math.IsNaN(metrics.PaperNetPnL) || math.IsInf(metrics.PaperNetPnL, 0) ||
-		math.IsNaN(metrics.PaperNetReturn) || math.IsInf(metrics.PaperNetReturn, 0) {
+	if !validatePaperMetrics(metrics) {
 		result.Passed = false
 		result.Reason = "paper metrics contain invalid values (NaN/Inf)"
 		return result
 	}
 
-	// Check Net P&L > 0.
-	if metrics.PaperNetPnL <= 0 {
+	// Performance checks.
+	if passed, reason := checkPaperPerformance(metrics, cfg); !passed {
 		result.Passed = false
-		result.Reason = fmt.Sprintf("paper Net P&L %.2f <= 0 (must be profitable)", metrics.PaperNetPnL)
-		return result
-	}
-
-	// Check paper return ratio vs backtest.
-	// Skip ratio when both returns are negative (ratio flips sign and could pass incorrectly).
-	// Also skip when backtest return is zero or negative (no meaningful baseline).
-	if metrics.BacktestNetReturn > 0 {
-		if metrics.PaperNetReturn < 0 {
-			result.Passed = false
-			result.Reason = fmt.Sprintf(
-"paper return negative (%.4f) while backtest return positive — regime mismatch",
-				metrics.PaperNetReturn,
-			)
-			return result
-		}
-		returnRatio := metrics.PaperNetReturn / metrics.BacktestNetReturn
-		if returnRatio < cfg.MinReturnRatio {
-			result.Passed = false
-			result.Reason = fmt.Sprintf(
-				"paper return %.4f below %.0f%% threshold of backtest return %.4f — insufficient paper performance",
-				metrics.PaperNetReturn, cfg.MinReturnRatio*100, metrics.BacktestNetReturn,
-			)
-			return result
-		}
-	} else if metrics.BacktestNetReturn < 0 {
-		// Both returns negative: ratio check is meaningless (signs cancel).
-		// Already caught by Net P&L check above; skip silently.
-	}
-
-	// Check minimum trade count in paper.
-	if metrics.PaperTradeCount < cfg.MinPaperTrades {
-		result.Passed = false
-		result.Reason = fmt.Sprintf("paper trade count %d insufficient for evaluation (min %d)", metrics.PaperTradeCount, cfg.MinPaperTrades)
+		result.Reason = reason
 		return result
 	}
 

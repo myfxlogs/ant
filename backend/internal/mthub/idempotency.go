@@ -167,3 +167,8 @@ func (g *IdempotencyGuard) CheckAndSet(ctx context.Context, accountID, clientID 
 func (g *IdempotencyGuard) SetTicket(ctx context.Context, accountID, clientID string, ticket int64) error {
 	return g.rc.Set(ctx, idemKey(accountID, clientID), ticket, DefaultIdempotencyTTL).Err()
 }
+
+// DeleteKey removes an idempotency key, allowing a retry of the operation.
+func (g *IdempotencyGuard) DeleteKey(ctx context.Context, accountID, clientID string) {
+	g.rc.Del(ctx, idemKey(accountID, clientID))
+}

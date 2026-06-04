@@ -9,7 +9,7 @@ interface Props {
   symbol: string;
   positions: PositionItem[];
   closingTicket: number | null;
-  onClosePosition: (ticket: number) => void;
+  onClosePosition: (ticket: number, volume?: number) => void;
 }
 
 function num(v: number | undefined | null): string {
@@ -66,7 +66,7 @@ export default function PositionSection({ symbol, positions, closingTicket, onCl
               </span>
             </Row>
             <Button danger size="small" block ghost loading={closingTicket === pos.ticket}
-              style={{ marginTop: 4 }} onClick={() => onClosePosition(pos.ticket)}>
+              style={{ marginTop: 4 }} onClick={() => onClosePosition(pos.ticket, pos.volume)}>
               Close Position
             </Button>
           </div>

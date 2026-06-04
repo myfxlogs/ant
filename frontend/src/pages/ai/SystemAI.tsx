@@ -11,7 +11,6 @@ import {
 import { useTranslation } from 'react-i18next';
 import { Button, Empty } from 'antd';
 import { useSystemAIPage } from './systemai/hooks';
-import DefaultPrimaryModelCard from './components/DefaultPrimaryModelCard';
 import type { ProviderMeta } from './systemai/types';
 import { StatusBanner } from './systemai/components/SharedComponents';
 import { ProviderCardsSection } from './systemai/components/ProviderCards';
@@ -114,13 +113,14 @@ export default function SystemAI() {
   }, [draft, error, validated, hasSecret, urlDiagnostics.ok, t, providerLabel]);
 
   const selectedMeta = draft ? metaOf(draft.provider_id, draft.name) : null;
-  const customCfg = configs.find((cfg) => cfg.provider_id === 'openai_compatible');
-  const customConfigured = !!customCfg && (!!(customCfg.base_url || '').trim() || customCfg.has_secret || (customCfg.models || []).length > 0 || customCfg.enabled);
+  // Base template is never shown — only user-created custom providers appear.
   const newCustomCard = { provider_id: '__new_openai_compatible__', name: '', base_url: '', organization: '', models: [] as string[], default_model: '', temperature: 0.2, timeout_seconds: 300, max_tokens: 4096, purposes: [] as string[], primary_for: [] as string[], enabled: false, has_secret: false, updated_at: '' };
   const providerCards = useMemo(() => {
-    const cards = configs.filter((cfg) => customConfigured || cfg.provider_id !== 'openai_compatible');
+    const cards = configs.filter((cfg) =>
+      cfg.provider_id !== 'openai_compatible' // never show the empty base template
+    );
     return [...cards, newCustomCard];
-  }, [configs, customConfigured]);
+  }, [configs]);
 
   const handleSelectProvider = (id: string) => { setSelectedProviderId(id); setValidated(false); };
 
@@ -166,10 +166,6 @@ export default function SystemAI() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12">
           <Empty description={t('ai.systemAI.emptyConfigs', { defaultValue: '暂无 AI Provider 配置（系统启动时会自动创建默认 Provider）' })} />
         </div>
-      )}
-
-      {!loading && configs.length > 0 && (
-        <DefaultPrimaryModelCard systemConfigs={configs} labelOf={providerLabel} />
       )}
 
       {!loading && configs.length > 0 && (

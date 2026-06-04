@@ -1,4 +1,6 @@
 import { useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/queries/queryKeys';
 import { useTradingStore } from '@/stores/tradingStore';
 import { tradingApi } from '@/client/trading';
 import { accountApi } from '@/client/account';
@@ -51,6 +53,8 @@ export function useTrading() {
     }
   }, [setLoading]);
 
+  const queryClient = useQueryClient();
+
   const closeOrder = useCallback(async (params: {
     accountId: string;
     ticket: bigint;
@@ -72,6 +76,7 @@ export function useTrading() {
         return null;
       }
       showSuccess(i18n.t('trading.messages.orderCloseSuccess'));
+      queryClient.invalidateQueries({ queryKey: queryKeys.positions.byAccount(params.accountId) });
       return result.order;
     } catch (error) {
       showError(getErrorMessage(error, i18n.t('trading.messages.orderCloseFailed')));

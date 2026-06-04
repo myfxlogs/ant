@@ -36,21 +36,29 @@ func NewMtHubServer(svc *mthub.MtHubService, platform *service.PlatformService, 
 	return &MtHubServer{svc: svc, platform: platform, marketData: marketData, tradeRecords: tradeRecords, log: log, backfilling: make(map[string]bool)}
 }
 
-func (s *MtHubServer) PlaceOrder(ctx context.Context, req *connect.Request[antv1.PlaceOrderRequest]) (*connect.Response[antv1.PlaceOrderResponse], error) {
+// validateAccountAccess checks that the caller is authenticated and owns the given account.
+func (s *MtHubServer) validateAccountAccess(ctx context.Context, accountID string) error {
 	userID := interceptor.GetUserID(ctx)
 	if userID == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
+		return connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
 	}
-	m := req.Msg
-	if m.Canonical == "" {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("canonical symbol is required"))
-	}
-	ok, err := s.platform.UserOwnsAccount(ctx, userID, m.AccountId)
+	ok, err := s.platform.UserOwnsAccount(ctx, userID, accountID)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return connect.NewError(connect.CodeInternal, err)
 	}
 	if !ok {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
+		return connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
+	}
+	return nil
+}
+
+func (s *MtHubServer) PlaceOrder(ctx context.Context, req *connect.Request[antv1.PlaceOrderRequest]) (*connect.Response[antv1.PlaceOrderResponse], error) {
+	m := req.Msg
+	if err := s.validateAccountAccess(ctx, m.AccountId); err != nil {
+		return nil, err
+	}
+	if m.Canonical == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("canonical symbol is required"))
 	}
 	vol, err := decimal.NewFromString(m.Volume)
 	if err != nil {
@@ -94,19 +102,12 @@ func (s *MtHubServer) PlaceOrder(ctx context.Context, req *connect.Request[antv1
 }
 
 func (s *MtHubServer) CloseOrder(ctx context.Context, req *connect.Request[antv1.CloseOrderRequest]) (*connect.Response[antv1.CloseOrderResponse], error) {
-	userID := interceptor.GetUserID(ctx)
-	if userID == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
-	}
 	m := req.Msg
-	ok, err := s.platform.UserOwnsAccount(ctx, userID, m.AccountId)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	if !ok {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
+	if err := s.validateAccountAccess(ctx, m.AccountId); err != nil {
+		return nil, err
 	}
 	lots := decimal.Zero
+	var err error
 	if m.Lots != "" {
 		// #11: Check decimal parse error for lots.
 		lots, err = decimal.NewFromString(m.Lots)
@@ -114,24 +115,21 @@ func (s *MtHubServer) CloseOrder(ctx context.Context, req *connect.Request[antv1
 			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid lots: %w", err))
 		}
 	}
+	s.log.Info("CloseOrder", zap.String("account_id", m.AccountId), zap.Int64("ticket", m.Ticket), zap.String("lots", m.Lots), zap.String("lots_dec", lots.String()))
 	if err := s.svc.CloseOrder(ctx, m.AccountId, m.Ticket, lots); err != nil {
 		s.log.Error("CloseOrder", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(&antv1.CloseOrderResponse{Status: "closed"}), nil
+	return connect.NewResponse(&antv1.CloseOrderResponse{
+		Status:  "closed",
+		Ticket:  m.Ticket,
+		Message: "Position closed",
+	}), nil
 }
 
 func (s *MtHubServer) OpenedOrders(ctx context.Context, req *connect.Request[antv1.OpenedOrdersRequest]) (*connect.Response[antv1.OpenedOrdersResponse], error) {
-	userID := interceptor.GetUserID(ctx)
-	if userID == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
-	}
-	ok, err := s.platform.UserOwnsAccount(ctx, userID, req.Msg.AccountId)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	if !ok {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
+	if err := s.validateAccountAccess(ctx, req.Msg.AccountId); err != nil {
+		return nil, err
 	}
 	list, err := s.svc.OpenedOrders(ctx, req.Msg.AccountId)
 	if err != nil {
@@ -142,16 +140,8 @@ func (s *MtHubServer) OpenedOrders(ctx context.Context, req *connect.Request[ant
 }
 
 func (s *MtHubServer) OrderHistory(ctx context.Context, req *connect.Request[antv1.OrderHistoryRequest]) (*connect.Response[antv1.OrderHistoryResponse], error) {
-	userID := interceptor.GetUserID(ctx)
-	if userID == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
-	}
-	ok, err := s.platform.UserOwnsAccount(ctx, userID, req.Msg.AccountId)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	if !ok {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
+	if err := s.validateAccountAccess(ctx, req.Msg.AccountId); err != nil {
+		return nil, err
 	}
 	list, err := s.svc.OrderHistory(ctx, req.Msg.AccountId, req.Msg.From.AsTime(), req.Msg.To.AsTime())
 	if err != nil {
@@ -162,16 +152,8 @@ func (s *MtHubServer) OrderHistory(ctx context.Context, req *connect.Request[ant
 }
 
 func (s *MtHubServer) SymbolParams(ctx context.Context, req *connect.Request[antv1.SymbolParamsRequest]) (*connect.Response[antv1.SymbolParamsResponse], error) {
-	userID := interceptor.GetUserID(ctx)
-	if userID == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
-	}
-	ok, err := s.platform.UserOwnsAccount(ctx, userID, req.Msg.AccountId)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	if !ok {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
+	if err := s.validateAccountAccess(ctx, req.Msg.AccountId); err != nil {
+		return nil, err
 	}
 	list, err := s.svc.SymbolParams(ctx, req.Msg.AccountId, req.Msg.Canonicals)
 	if err != nil {
@@ -182,16 +164,8 @@ func (s *MtHubServer) SymbolParams(ctx context.Context, req *connect.Request[ant
 }
 
 func (s *MtHubServer) SymbolList(ctx context.Context, req *connect.Request[antv1.SymbolListRequest]) (*connect.Response[antv1.SymbolListResponse], error) {
-	userID := interceptor.GetUserID(ctx)
-	if userID == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("not authenticated"))
-	}
-	ok, err := s.platform.UserOwnsAccount(ctx, userID, req.Msg.AccountId)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	if !ok {
-		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("account does not belong to user"))
+	if err := s.validateAccountAccess(ctx, req.Msg.AccountId); err != nil {
+		return nil, err
 	}
 	symbols, err := s.svc.SymbolList(ctx, req.Msg.AccountId)
 	if err != nil {

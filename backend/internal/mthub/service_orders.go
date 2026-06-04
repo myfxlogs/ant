@@ -159,33 +159,12 @@ func (s *MtHubService) publishOrderCreatedEvent(ctx context.Context, req *OrderR
 			zap.String("accountID", ev.AccountID))
 	}
 }
-
 // CloseOrder closes an existing position.
+// Gate order matches PlaceOrder: killSwitch → ownership → idempotency → reconcile → rateLimit.
 func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket int64, lots decimal.Decimal) error {
-	if s.userLimiter != nil {
-		uid := usermgr.GetUserID(ctx)
-		if uid != "" && !s.userLimiter.AllowOrder(uid) {
-			return ErrRateLimited
-		}
-	}
+	// Pre-trade gates — unified order matching PlaceOrder.
 	if s.killSwitch != nil && s.killSwitch.IsEngaged() {
 		return ErrKillSwitchEngaged
-	}
-
-	// Idempotency check — prevent duplicate close requests.
-	if s.idem != nil {
-		clientID := fmt.Sprintf("close-%s-%d", accountID, ticket)
-		isDup, _, err := s.idem.CheckAndSet(ctx, accountID, clientID, ticket)
-		if err != nil {
-			return fmt.Errorf("idempotency check: %w", err)
-		}
-		if isDup {
-			return nil // Already being closed — idempotent.
-		}
-	}
-
-	if s.reconcileGate != nil && !s.reconcileGate.CanAccept(accountID) {
-		return fmt.Errorf("%w: %s", ErrReconciling, accountID)
 	}
 	if s.accountOwnerVerifier != nil {
 		uid := usermgr.GetUserID(ctx)
@@ -200,16 +179,88 @@ func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket 
 		}
 	}
 
+	// Idempotency check: key is cleaned up after execution so retries work.
+	closeOrderID := fmt.Sprintf("close-%s-%d", accountID, ticket)
+	if s.idem != nil {
+		isDup, _, err := s.idem.CheckAndSet(ctx, accountID, closeOrderID, ticket)
+		if err != nil {
+			return fmt.Errorf("idempotency check: %w", err)
+		}
+		if isDup {
+			return nil // Concurrent close attempt — already being processed.
+		}
+		defer s.idem.DeleteKey(ctx, accountID, closeOrderID)
+	}
+
+	if s.reconcileGate != nil && !s.reconcileGate.CanAccept(accountID) {
+		return fmt.Errorf("%w: %s", ErrReconciling, accountID)
+	}
+	if s.userLimiter != nil {
+		uid := usermgr.GetUserID(ctx)
+		if uid != "" && !s.userLimiter.AllowOrder(uid) {
+			return ErrRateLimited
+		}
+	}
+
 	exec := s.hub.Get(accountID)
 	if exec == nil {
+		if s.logger != nil {
+			s.logger.Warn("CloseOrder: session not found", zap.String("accountID", accountID), zap.Int64("ticket", ticket))
+		}
 		return ErrSessionNotFound
 	}
 
-	// OMS: record close attempt.
-	closeOrderID := fmt.Sprintf("close-%s-%d", accountID, ticket)
-	s.omsTransition(ctx, closeOrderID, accountID, OMSStateWorking, OMSStateFilled)
+	if s.logger != nil {
+		s.logger.Info("CloseOrder: calling executor", zap.String("accountID", accountID), zap.Int64("ticket", ticket), zap.String("lots", lots.String()))
+	}
 
-	return exec.CloseOrder(ctx, ticket, lots)
+	// OMS: insert close order row first (mirrors PlaceOrder), then transition.
+	if s.omsWriter != nil {
+		pf := platform(accountID, s.hub)
+		if err := s.omsWriter.InsertOrder(ctx, closeOrderID, accountID, pf, "",
+			int16(OrderMarket), lossyFloat64(lots), 0, 0, 0); err != nil {
+			if s.logger != nil {
+				s.logger.Warn("CloseOrder: OMS insert skipped", zap.Error(err))
+			}
+		} else {
+			s.omsTransition(ctx, closeOrderID, accountID, OMSStateNew, OMSStateRiskApproved)
+			s.omsTransition(ctx, closeOrderID, accountID, OMSStateRiskApproved, OMSStateSubmitted)
+		}
+	}
+
+	err := exec.CloseOrder(ctx, ticket, lots)
+	if err != nil {
+		if s.logger != nil {
+			s.logger.Error("CloseOrder: executor failed", zap.Error(err), zap.String("accountID", accountID), zap.Int64("ticket", ticket))
+		}
+		if s.omsWriter != nil {
+			s.omsTransition(ctx, closeOrderID, accountID, OMSStateSubmitted, OMSStateFailed)
+		}
+		return err
+	}
+
+	if s.logger != nil {
+		s.logger.Info("CloseOrder: executor success", zap.String("accountID", accountID), zap.Int64("ticket", ticket))
+	}
+	if s.omsWriter != nil {
+		s.omsTransition(ctx, closeOrderID, accountID, OMSStateSubmitted, OMSStateFilled)
+	}
+
+	// Publish ORDER_FILLED event to NATS JetStream (mirrors PlaceOrder's event publishing).
+	if s.eventStore != nil {
+		ev := &TradeEvent{
+			EventID:   fmt.Sprintf("close-%s-%d", accountID, ticket),
+			EventType: TradeEventOrderFilled,
+			AccountID: accountID, Ticket: ticket,
+			ToState: string(OMSStateFilled), FromState: string(OMSStateSubmitted),
+			Timestamp: Clk.Now(), Version: 1,
+		}
+		if err := s.eventStore.Publish(ctx, ev); err != nil && s.logger != nil {
+			s.logger.Error("close order event publish failed", zap.Error(err),
+				zap.String("accountID", accountID), zap.Int64("ticket", ticket))
+		}
+	}
+	return nil
 }
 
 // --- Helpers ---

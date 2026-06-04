@@ -11,12 +11,11 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
 	"github.com/google/uuid"
 )
 
 const chatTimeout = 60 * time.Second
-
+const secretCacheTTL = 30 * time.Minute
 // ChatMessage is a single message in a chat completion request.
 type ChatMessage struct {
 	Role    string `json:"role"`
@@ -31,7 +30,6 @@ type ChatCompletionRequest struct {
 	Temperature float64       `json:"temperature,omitempty"`
 	Stream      bool          `json:"stream"`
 }
-
 // ChatCompletionResponse mirrors the OpenAI /v1/chat/completions response shape (non-streaming).
 type ChatCompletionResponse struct {
 	Choices []struct {
@@ -48,48 +46,79 @@ type ChatStreamChunk struct {
 	Content string
 	Done    bool
 }
+// buildChatMessages builds messages with system + history + user.
+func BuildChatMessages(systemPrompt, userMessage string, history []ChatMessage) []ChatMessage {
+	msgs := make([]ChatMessage, 0, 2+len(history))
+	msgs = append(msgs, ChatMessage{Role: "system", Content: systemPrompt})
+	for _, h := range history {
+		msgs = append(msgs, h)
+	}
+	msgs = append(msgs, ChatMessage{Role: "user", Content: userMessage})
+	return msgs
+}
 
-// ChatCompletionStream sends a streaming chat completion request (stream: true)
-// and calls onChunk for each delta as it arrives from the provider's SSE stream.
-// It returns when the stream ends or an unrecoverable error occurs.
-// The caller is responsible for context cancellation — cancelling ctx aborts the
-// underlying HTTP request and causes the next read to fail.
-func (s *Service) ChatCompletionStream(ctx context.Context, userID uuid.UUID, systemPrompt, userMessage, modelHint string, onChunk func(chunk ChatStreamChunk) error) error {
-	_, model, baseURL, secret, err := s.resolveChatProvider(ctx, userID, modelHint)
+// getCachedSecret returns a decrypted secret from the in-memory cache,
+func (s *Service) getCachedSecret(ctx context.Context, userID uuid.UUID, providerID string) (string, error) {
+	key := userID.String() + "|" + providerID
+	if v, ok := s.secretCache.Load(key); ok {
+		entry := v.(secretCacheEntry)
+		if time.Now().Before(entry.expiresAt) {
+			return entry.secret, nil
+		}
+	}
+	secret, err := s.GetSecret(ctx, userID, providerID)
 	if err != nil {
-		return err
+		return "", err
 	}
+	s.secretCache.Store(key, secretCacheEntry{secret: secret, expiresAt: time.Now().Add(secretCacheTTL)})
+	return secret, nil
+}
 
-	messages := []ChatMessage{
-		{Role: "system", Content: systemPrompt},
-		{Role: "user", Content: userMessage},
-	}
-
+// doChatRequest builds the HTTP request body and creates an authenticated request.
+func doChatRequest(model string, messages []ChatMessage, stream bool, endpoint, secret string) (*http.Request, error) {
 	reqBody := ChatCompletionRequest{
 		Model:       model,
 		Messages:    messages,
 		MaxTokens:   4096,
 		Temperature: 0.3,
-		Stream:      true,
+		Stream:      stream,
 	}
-
 	bodyBytes, err := json.Marshal(reqBody)
 	if err != nil {
-		return fmt.Errorf("marshal chat request: %w", err)
+		return nil, fmt.Errorf("marshal chat request: %w", err)
 	}
-
-	endpoint := strings.TrimRight(baseURL, "/") + "/v1/chat/completions"
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(bodyBytes))
+	httpReq, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewReader(bodyBytes))
 	if err != nil {
-		return fmt.Errorf("create chat request: %w", err)
+		return nil, fmt.Errorf("create chat request: %w", err)
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
-	httpReq.Header.Set("Accept", "text/event-stream")
 	authHeader(httpReq, secret)
-	httpReq.Header.Set("Cache-Control", "no-cache")
+	if stream {
+		httpReq.Header.Set("Accept", "text/event-stream")
+		httpReq.Header.Set("Cache-Control", "no-cache")
+	}
+	return httpReq, nil
+}
 
-	// streaming has unbounded duration — no client timeout
-	client := &http.Client{Timeout: 0}
+func (s *Service) ChatCompletionStream(
+	ctx context.Context,
+	userID uuid.UUID,
+	messages []ChatMessage,
+	modelHint string,
+	onChunk func(chunk ChatStreamChunk) error,
+) error {
+	providerID, model, baseURL, secret, err := s.resolveChatProvider(ctx, userID, modelHint)
+	if err != nil {
+		return err
+	}
+
+	endpoint := chatEndpoint(providerID, baseURL)
+	httpReq, err := doChatRequest(model, messages, true, endpoint, secret)
+	if err != nil {
+		return err
+	}
+	httpReq = httpReq.WithContext(ctx)
+	client := &http.Client{Timeout: 0} 
 	resp, err := client.Do(httpReq)
 	if err != nil {
 		return fmt.Errorf("chat completion stream http: %w", err)
@@ -99,10 +128,7 @@ func (s *Service) ChatCompletionStream(ctx context.Context, userID uuid.UUID, sy
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("chat completion stream: status %d", resp.StatusCode)
 	}
-
 	scanner := bufio.NewScanner(resp.Body)
-	// Most SSE chunks are small; bump the initial buffer so we don't
-	// reallocate on every line.
 	scanner.Buffer(make([]byte, 0, 64*1024), 2*1024*1024)
 
 	for scanner.Scan() {
@@ -114,7 +140,6 @@ func (s *Service) ChatCompletionStream(ctx context.Context, userID uuid.UUID, sy
 		if data == "[DONE]" {
 			break
 		}
-
 		var streamResp struct {
 			Choices []struct {
 				Delta struct {
@@ -124,9 +149,8 @@ func (s *Service) ChatCompletionStream(ctx context.Context, userID uuid.UUID, sy
 			} `json:"choices"`
 		}
 		if err := json.Unmarshal([]byte(data), &streamResp); err != nil {
-			continue // skip unparseable keepalive/comment lines
+			continue
 		}
-
 		if len(streamResp.Choices) == 0 {
 			continue
 		}
@@ -139,47 +163,29 @@ func (s *Service) ChatCompletionStream(ctx context.Context, userID uuid.UUID, sy
 			break
 		}
 	}
-
 	if err := scanner.Err(); err != nil && !errors.Is(err, context.Canceled) {
 		return fmt.Errorf("read stream: %w", err)
 	}
 	return nil
 }
 
-// ChatCompletion sends a chat completion request to the user's configured LLM provider.
-// It picks the first provider that has a configured API secret and a known model,
-// falling back to the given modelHint if the provider has no model preference set.
-func (s *Service) ChatCompletion(ctx context.Context, userID uuid.UUID, systemPrompt, userMessage, modelHint string) (string, error) {
-	_, model, baseURL, secret, err := s.resolveChatProvider(ctx, userID, modelHint)
+
+func (s *Service) ChatCompletion(
+	ctx context.Context,
+	userID uuid.UUID,
+	messages []ChatMessage,
+	modelHint string,
+) (string, error) {
+	providerID, model, baseURL, secret, err := s.resolveChatProvider(ctx, userID, modelHint)
 	if err != nil {
 		return "", err
 	}
-
-	messages := []ChatMessage{
-		{Role: "system", Content: systemPrompt},
-		{Role: "user", Content: userMessage},
-	}
-
-	reqBody := ChatCompletionRequest{
-		Model:       model,
-		Messages:    messages,
-		MaxTokens:   4096,
-		Temperature: 0.3,
-		Stream:      false,
-	}
-
-	bodyBytes, err := json.Marshal(reqBody)
+	endpoint := chatEndpoint(providerID, baseURL)
+	httpReq, err := doChatRequest(model, messages, false, endpoint, secret)
 	if err != nil {
-		return "", fmt.Errorf("marshal chat request: %w", err)
+		return "", err
 	}
-
-	endpoint := strings.TrimRight(baseURL, "/") + "/v1/chat/completions"
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(bodyBytes))
-	if err != nil {
-		return "", fmt.Errorf("create chat request: %w", err)
-	}
-	httpReq.Header.Set("Content-Type", "application/json")
-	authHeader(httpReq, secret)
+	httpReq = httpReq.WithContext(ctx)
 
 	client := &http.Client{Timeout: chatTimeout}
 	var resp *http.Response
@@ -192,7 +198,6 @@ func (s *Service) ChatCompletion(ctx context.Context, userID uuid.UUID, systemPr
 		if doErr == nil {
 			break
 		}
-		// Only retry on transient connection errors.
 		if !isTransientChatErr(doErr) {
 			break
 		}
@@ -202,8 +207,6 @@ func (s *Service) ChatCompletion(ctx context.Context, userID uuid.UUID, systemPr
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		// Sanitize: do NOT include raw response body in the error – it may
-		// contain the API key echoed by the provider.
 		return "", fmt.Errorf("chat completion: status %d", resp.StatusCode)
 	}
 
@@ -219,40 +222,60 @@ func (s *Service) ChatCompletion(ctx context.Context, userID uuid.UUID, systemPr
 	}
 	return strings.TrimSpace(cr.Choices[0].Message.Content), nil
 }
+// chatEndpoint constructs the chat completion API endpoint from a provider's base URL.
+func chatEndpoint(providerID, baseURL string) string {
+	base := strings.TrimRight(baseURL, "/")
+	if providerID == "zhipu" {
+		return base + "/chat/completions"
+	}
+	base = strings.TrimSuffix(base, "/v1")
+	return base + "/v1/chat/completions"
+}
 
 // resolveChatProvider picks a provider, model, base URL, and secret for the given user.
-// It iterates configured providers and picks the first one that has a secret set.
+// It prefers the provider marked as primary for "chat", then falls back to any enabled provider.
 func (s *Service) resolveChatProvider(ctx context.Context, userID uuid.UUID, modelHint string) (providerID, model, baseURL, secret string, err error) {
 	rows, err := s.List(ctx, userID)
 	if err != nil {
 		return "", "", "", "", fmt.Errorf("list AI providers: %w", err)
 	}
-
-	for _, row := range rows {
-		if row == nil || !row.Enabled {
-			continue
+	for _, preferPrimary := range []bool{true, false} {
+		for _, row := range rows {
+			if row == nil || !row.Enabled {
+				continue
+			}
+			if preferPrimary && !hasPrimaryChat(row.PrimaryFor) {
+				continue
+			}
+			sec, secErr := s.getCachedSecret(ctx, userID, row.ProviderID)
+			if secErr != nil || sec == "" {
+				continue
+			}
+			base := strings.TrimRight(strings.TrimSpace(row.BaseURL), "/")
+			if base == "" {
+				continue
+			}
+			m := strings.TrimSpace(row.DefaultModel)
+			if m == "" {
+				m = modelHint
+			}
+			if m == "" {
+				continue
+			}
+			return row.ProviderID, m, base, sec, nil
 		}
-		sec, secErr := s.GetSecret(ctx, userID, row.ProviderID)
-		if secErr != nil || sec == "" {
-			continue
-		}
-		base := strings.TrimRight(strings.TrimSpace(row.BaseURL), "/")
-		if base == "" {
-			continue
-		}
-		m := strings.TrimSpace(row.DefaultModel)
-		if m == "" {
-			m = modelHint
-		}
-		if m == "" {
-			continue
-		}
-		return row.ProviderID, m, base, sec, nil
 	}
-	return "", "", "", "", fmt.Errorf("no configured AI provider with a valid API key and model")
+	return "", "", "", "", fmt.Errorf("AI 未配置：请在 workspace 中点击 ⚙ 进入 AI Settings，选择一个厂商（如 DeepSeek）填写 API Key 和模型名称后启用")
 }
 
-// isTransientChatErr returns true for network errors worth retrying once.
+func hasPrimaryChat(primaryFor []string) bool {
+	for _, p := range primaryFor {
+		if p == "chat" {
+			return true
+		}
+	}
+	return false
+}
 func isTransientChatErr(err error) bool {
 	if err == nil {
 		return false

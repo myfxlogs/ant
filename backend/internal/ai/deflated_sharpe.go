@@ -44,6 +44,19 @@ type ReturnMoments struct {
 	SharpeRatio float64 // annualized Sharpe ratio
 }
 
+// calcDistributionMoments computes skewness and excess kurtosis from standardized returns.
+// Uses population moments (n denominator) — consistent with DSR formula expectations.
+func calcDistributionMoments(returns []float64, mean, stdDev float64) (skewness, excessKurtosis float64) {
+	n := float64(len(returns))
+	var sumCube, sumQuad float64
+	for _, r := range returns {
+		d := (r - mean) / stdDev
+		sumCube += d * d * d
+		sumQuad += d * d * d * d
+	}
+	return sumCube / n, sumQuad/n - 3.0
+}
+
 // ComputeReturnMoments calculates the first four moments from daily returns.
 func ComputeReturnMoments(dailyReturns []float64) ReturnMoments {
 	n := len(dailyReturns)
@@ -58,49 +71,29 @@ func ComputeReturnMoments(dailyReturns []float64) ReturnMoments {
 	}
 	mean := sum / float64(n)
 
-	// Standard deviation.
+	// Standard deviation (population moments, n denominator).
 	var sumSqDiff float64
 	for _, r := range dailyReturns {
 		d := r - mean
 		sumSqDiff += d * d
 	}
-	variance := sumSqDiff / float64(n) // Using population moments (n denominator, not n-1) — consistent with DSR formula expectations.
-	stdDev := math.Sqrt(variance)
+	stdDev := math.Sqrt(sumSqDiff / float64(n))
 
-	// When all returns are identical (zero variance), skewness and kurtosis
-	// are undefined. Return zeros to avoid NaN propagation.
+	// Zero variance: skewness and kurtosis are undefined.
 	if stdDev == 0 {
-		return ReturnMoments{
-			Mean:           mean,
-			StdDev:         0,
-			Skewness:       0,
-			ExcessKurtosis: 0,
-			SharpeRatio:    0,
-		}
+		return ReturnMoments{Mean: mean, StdDev: 0, Skewness: 0, ExcessKurtosis: 0, SharpeRatio: 0}
 	}
 
-	// Skewness and kurtosis.
-	var sumCube, sumQuad float64
-	for _, r := range dailyReturns {
-		d := (r - mean) / stdDev
-		sumCube += d * d * d
-		sumQuad += d * d * d * d
-	}
-	skew := sumCube / float64(n)  // Using population moments (n denominator, not n-1) — consistent with DSR formula expectations.
-	kurt := sumQuad/float64(n) - 3.0 // excess kurtosis (using population denominator n, not n-1)
-
-	// Annualized Sharpe.
+	skew, kurt := calcDistributionMoments(dailyReturns, mean, stdDev)
 	sharpe := 0.0
 	if stdDev > 0 {
 		sharpe = (mean / stdDev) * math.Sqrt(252)
 	}
 
 	return ReturnMoments{
-		Mean:           mean,
-		StdDev:         stdDev,
-		Skewness:       skew,
-		ExcessKurtosis: kurt,
-		SharpeRatio:    sharpe,
+		Mean: mean, StdDev: stdDev,
+		Skewness: skew, ExcessKurtosis: kurt,
+		SharpeRatio: sharpe,
 	}
 }
 

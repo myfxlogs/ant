@@ -11,6 +11,8 @@ interface Props {
   accountInfo?: AccountInfo | null;
   positionCount?: number;
   codePanelVisible: boolean; onToggleCodePanel: () => void;
+  onCloseCodePanel?: () => void;
+  positionsCount?: number; onTogglePositionsPanel?: () => void;
   quickTradeVisible: boolean; onToggleQuickTrade: () => void;
 }
 
@@ -51,11 +53,14 @@ function SummaryChip({ label, value, color, icon }: { label: string; value: stri
 export default function WorkspaceToolbar({
   accounts, accountId, onAccountChange,
   symbol, onSymbolChange, accountInfo, positionCount,
-  codePanelVisible, onToggleCodePanel, quickTradeVisible, onToggleQuickTrade,
+  codePanelVisible, onToggleCodePanel, onCloseCodePanel,
+  positionsCount, onTogglePositionsPanel,
+  quickTradeVisible, onToggleQuickTrade,
 }: Props) {
   const hasData = accountInfo != null;
   const profitColor = accountInfo && accountInfo.profit >= 0 ? '#26a69a' : '#ef5350';
   const selectedAccount = (accounts || []).find(a => a.id === accountId);
+  const maybeCloseCode = (open: boolean) => { if (open && codePanelVisible) onCloseCodePanel?.(); };
 
   return (
     <div style={{
@@ -69,10 +74,12 @@ export default function WorkspaceToolbar({
         <Space size={4}>
           <Select size="small" style={{ minWidth: 120, width: 220, maxWidth: '36vw' }}
             value={accountId || undefined} onChange={onAccountChange}
+            onDropdownVisibleChange={maybeCloseCode}
             placeholder="Select account" showSearch optionFilterProp="label"
             notFoundContent="No accounts"
             options={(accounts || []).map((a) => ({ value: a.id, label: `${a.brokerServer} · ${a.login}` }))} />
-          <SymbolPicker accountId={accountId} value={symbol} onChange={onSymbolChange} style={{ width: 120 }} />
+          <SymbolPicker accountId={accountId} value={symbol} onChange={onSymbolChange}
+            onDropdownVisibleChange={maybeCloseCode} style={{ width: 120 }} />
         </Space>
       </div>
 
@@ -96,10 +103,13 @@ export default function WorkspaceToolbar({
         </div>
       )}
 
-      {/* Position count */}
-      {positionCount != null && positionCount > 0 && hasData && (
-        <SummaryChip label="Positions" value={String(positionCount)} />
-      )}
+      {/* Open Positions — always visible, opens overlay panel */}
+      <div onClick={onTogglePositionsPanel} role="button" tabIndex={0}
+        onKeyUp={e => e.key === 'Enter' && onTogglePositionsPanel?.()}
+        style={{ cursor: 'pointer' }}>
+        <SummaryChip label="Positions" value={positionCount != null ? String(positionCount) : '0'}
+          color={positionCount != null && positionCount > 0 ? '#1677ff' : undefined} />
+      </div>
 
       {/* Account Metadata — platform, broker, server, mode, investor, leverage */}
       {selectedAccount && (

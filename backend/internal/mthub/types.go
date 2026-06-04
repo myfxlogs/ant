@@ -73,9 +73,21 @@ func (h *Hub) EnsureSession(ctx context.Context, id string) (*Session, error) {
 	s := h.sessions[id]
 	h.mu.RUnlock()
 	if s != nil {
+		if s.IsExpired() {
+			return nil, ErrSessionNotFound
+		}
 		return s, nil
 	}
 	return nil, ErrSessionNotFound
+}
+
+// RemoveSession closes a session and removes its executor.
+// Called by the gateway manager on disconnect.
+func (h *Hub) RemoveSession(id string) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	delete(h.sessions, id)
+	delete(h.executors, id)
 }
 
 func (h *Hub) CloseSession(ctx context.Context, id string) error {

@@ -1,4 +1,9 @@
 import { codeAssistClient } from './connect';
+import { create } from '@bufbuild/protobuf';
+import {
+  ReviseCodeRequestSchema,
+  type ReviseCodeStreamChunk,
+} from '../gen/ant/v1/code_assist_pb';
 
 // Client for the lightweight code-assist ConnectRPC service.
 
@@ -49,6 +54,12 @@ const parseParamValue = (value: string, type?: RequiredParamSpec['type']) => {
   return value;
 };
 
+export interface ReviseStreamCallbacks {
+  onDelta: (delta: string, done: boolean) => void;
+  onResult: (python: string) => void;
+  onError?: (err: unknown) => void;
+}
+
 export const codeAssistApi = {
   revise: async (input: ReviseCodeInput): Promise<ReviseCodeResult> => {
     const data = await codeAssistClient.reviseCode({
@@ -58,6 +69,38 @@ export const codeAssistApi = {
       locale: input.locale || '',
     });
     return { text: data.text || '', python: data.python || '' };
+  },
+
+  /** Streaming revise — shows LLM output in real-time. Returns an abort function. */
+  reviseStream: (
+    input: ReviseCodeInput,
+    callbacks: ReviseStreamCallbacks,
+  ): (() => void) => {
+    const abortController = new AbortController();
+    (async () => {
+      try {
+        const msg = create(ReviseCodeRequestSchema, {
+          code: input.code,
+          instruction: input.instruction,
+          history: input.history || [],
+          locale: input.locale || '',
+        });
+        const stream = codeAssistClient.reviseCodeStream(msg, { signal: abortController.signal });
+        for await (const chunk of stream) {
+          if (chunk.python) {
+            callbacks.onDelta(chunk.delta, true);
+            callbacks.onResult(chunk.python);
+            break;
+          }
+          callbacks.onDelta(chunk.delta || '', chunk.done || false);
+        }
+      } catch (e: unknown) {
+        const s = String(e);
+        if ((e as { name?: string })?.name === 'AbortError' || s.includes('canceled')) return;
+        callbacks.onError?.(e);
+      }
+    })();
+    return () => abortController.abort();
   },
 
   explain: async (input: ExplainCodeInput): Promise<string> => {

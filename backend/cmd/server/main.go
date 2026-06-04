@@ -162,6 +162,7 @@ func main() {
 	}
 	eventStore := mthub.NewTradeEventStore(js)
 	mthubSvc := mthub.NewMtHubService(hub, eventBroker, accountBroker, snapshotBroker, idemGuard, reconcileGate, eventStore)
+	mthubSvc.SetLogger(log)
 	mthubSvc.SetBarBroker(barBroker)
 	// --- Analytics cache ---
 	analyticsCache := service.NewAnalyticsCache(rdb.Client(), log)
@@ -186,6 +187,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	reconLoop, emailNotifier, platformAgg = registerHandlers(mux, log, pool, ch, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate, analyticsCache, brokerReg)
+
 
 	// Graceful shutdown
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)

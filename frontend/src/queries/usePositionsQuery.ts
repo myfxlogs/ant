@@ -18,5 +18,6 @@ export function usePositionsQuery(accountId: string) {
     staleTime: 120_000, // SSE keeps position state fresh
     retry: 2,
     refetchOnWindowFocus: false,
+    refetchInterval: 60_000, // fallback polling if SSE stream disconnected
   });
 }

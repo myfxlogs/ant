@@ -246,6 +246,7 @@ func startMdGatewayPipeline(
 		OnAccountDisconnect: func(accountID string) {
 			accountSyncSvc.SyncAccountHistory(accountID)
 			(*platformAgg).ClearAccount(accountID)
+			hub.RemoveSession(accountID) // BUG-2: clean Hub executors map on disconnect
 			// Update DB status so frontend doesn't keep showing stale "connected" state.
 			writeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()

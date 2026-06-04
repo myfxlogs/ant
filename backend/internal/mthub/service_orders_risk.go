@@ -77,10 +77,12 @@ func (s *MtHubService) omsTransition(ctx context.Context, orderID, accountID str
 		return
 	}
 	if err := s.omsWriter.Transition(ctx, orderID, accountID, from, to); err != nil {
-		s.logger.Error("oms transition failed",
+		if s.logger != nil {
+			s.logger.Error("oms transition failed",
 			zap.Error(err),
 			zap.String("orderID", orderID),
 			zap.String("from", string(from)),
 			zap.String("to", string(to)))
+		}
 	}
 }

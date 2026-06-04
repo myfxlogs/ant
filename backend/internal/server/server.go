@@ -11,10 +11,10 @@ import (
 )
 
 // Run starts the ant v2 HTTP server and blocks until ctx is cancelled or a listen error occurs.
-func Run(ctx context.Context, mux *http.ServeMux, port string, log *zap.Logger) error {
+func Run(ctx context.Context, handler http.Handler, port string, log *zap.Logger) error {
 	srv := &http.Server{
 		Addr:         ":" + port,
-		Handler:      mux,
+		Handler:      handler,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 0, // disabled: streaming endpoints (SSE/ConnectRPC server-stream) hold writes open indefinitely
 		IdleTimeout:  120 * time.Second,

@@ -1,3 +1,4 @@
+import { message } from 'antd';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -61,6 +62,7 @@ export function useProviderActions(params: UseProviderActionsParams) {
       void silentReload();
     } catch (e) {
       const msg = e instanceof Error ? e.message : t('ai.systemAI.messages.configSaveFailed');
+      message.error(msg, 3);
       setError(msg);
       console.error('saveConfig failed', e);
     } finally {
@@ -110,6 +112,7 @@ export function useProviderActions(params: UseProviderActionsParams) {
     } catch (e) {
       setDraft((prev) => prev ? { ...prev, enabled: !next } : prev);
       const msg = e instanceof Error ? e.message : t('ai.systemAI.messages.toggleEnabledFailed');
+      message.error(msg, 3);
       setError(msg);
     } finally {
       setSavingConfig(false);

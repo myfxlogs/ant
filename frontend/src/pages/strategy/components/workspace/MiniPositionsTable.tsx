@@ -5,7 +5,7 @@ import type { QuickTradePosition } from '../../hooks/useStrategyWorkspaceState';
 
 interface Props {
   positions: QuickTradePosition[];
-  onClosePosition?: (ticket: number) => void;
+  onClosePosition?: (ticket: number, volume?: number) => void;
 }
 
 function fmtNum(v: number, d = 2) { return v.toFixed(d); }
@@ -54,7 +54,7 @@ export default function MiniPositionsTable({ positions, onClosePosition }: Props
                   </td>
                   <td style={td}>
                     <Button size="small" danger type="link"
-                      onClick={e => { e.stopPropagation(); onClosePosition?.(p.ticket); }}
+                      onClick={e => { e.stopPropagation(); onClosePosition?.(p.ticket, p.volume); }}
                       style={{ fontSize: 10, padding: 0, height: 20 }}>Close</Button>
                   </td>
                 </tr>

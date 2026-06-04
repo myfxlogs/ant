@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+// GateService evaluates AI-generated strategies through the 6-gate pipeline.
+// Only strategies that pass all 6 gates are eligible for PromoteToLive.
+service GateService {
+  // RunEvaluation runs the 6-gate pipeline and streams progress via SSE.
+  rpc RunEvaluation(RunGateEvaluationRequest) returns (stream GateEvaluationUpdate);
+}
+
+message RunGateEvaluationRequest {
+  // backtest_run_id from a completed backtest run (PythonStrategyService.StartBacktestRun).
+  string backtest_run_id = 1;
+  // Optional: DSL expression override (defaults to empty — skips lookahead gate).
+  string expression = 2;
+  // Optional: number of strategy attempts (for deflated Sharpe; default 1).
+  int32 num_attempts = 3;
+  // Optional: paper trading days completed (gate skipped if 0).
+  int32 paper_days = 4;
+  // Optional: paper trading Net P&L (gate skipped if paper_days == 0).
+  double paper_net_pnl = 5;
+  // Optional: paper trading net return (gate skipped if paper_days == 0).
+  double paper_net_return = 6;
+  // Optional: backtest net return for paper ratio comparison.
+  double backtest_net_return = 7;
+  // Optional: paper trade count for significance check.
+  int32 paper_trade_count = 8;
+}
+
+// GateEvaluationUpdate streams one gate result at a time, then the final summary.
+message GateEvaluationUpdate {
+  // Single gate result (sent for each of the 6 gates).
+  GateResult gate = 1;
+  // Pipeline summary (sent as the final event; gate is nil for this event).
+  GatePipelineSummary completed = 2;
+}
+
+message GateResult {
+  string gate = 1;         // compliance | lookahead | walkforward | deflated_sharpe | paper | correlation
+  bool passed = 2;
+  string reason = 3;       // failure reason (empty if passed)
+  double score = 4;        // numeric score (DSR, correlation coeff, etc.)
+  int64 duration_ms = 5;   // evaluation time in ms
+  bool skipped = 6;        // true if gate was skipped due to missing data
+}
+
+message GatePipelineSummary {
+  bool passed = 1;           // true if all non-skipped gates passed
+  string first_fail = 2;     // first failing gate name (empty if passed)
+  string summary = 3;        // human-readable summary
+  int64 total_duration_ms = 4;
+}

@@ -141,7 +141,7 @@ export function useProviderSync(params: UseProviderSyncParams) {
           setDiscoveredModels(models);
           setDraft((prev) => {
             if (!prev) return prev;
-            const next = { ...prev };
+            const next = { ...prev, models };
             if (!(next.default_model || '').trim()) {
               next.default_model = body?.default_model || models[0];
             }
@@ -150,6 +150,14 @@ export function useProviderSync(params: UseProviderSyncParams) {
           setNotice(t('ai.systemAI.messages.autoDiscoveredModels', { count: models.length }));
           setError('');
           setValidated(false);
+            void updateSystemAIConfig(draft.provider_id, {
+                models: models || [],
+                name: draft.name, base_url: draft.base_url, default_model: draft.default_model,
+                enabled: draft.enabled, temperature: draft.temperature,
+                timeout_seconds: draft.timeout_seconds, max_tokens: draft.max_tokens,
+                purposes: draft.purposes, primary_for: draft.primary_for,
+                organization: draft.organization,
+              }).catch(() => {});
           setLastAutoDiscoverKey(key);
         }
       } catch (e) {

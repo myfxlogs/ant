@@ -140,12 +140,15 @@ func (s *SystemAIServer) DiscoverSystemAIModels(ctx context.Context, req *connec
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("provider_id is required"))
 	}
 	models, err := s.systemSvc.DiscoverModels(ctx, uid, req.Msg.ProviderId)
-	if err != nil {
-		s.log.Warn("discover models failed",
-			zap.String("provider", req.Msg.ProviderId),
-			zap.String("raw_error", err.Error()))
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(err)))
-	}
+		if err != nil {
+			s.log.Warn("discover models failed",
+				zap.String("provider", req.Msg.ProviderId),
+				zap.String("raw_error", err.Error()))
+			// Return empty models instead of 500 to avoid console noise.
+			return connect.NewResponse(&antv1.DiscoverSystemAIModelsResponse{
+				ProviderId: req.Msg.ProviderId,
+			}), nil
+		}
 	def := ""
 	if len(models) > 0 {
 		def = models[0]

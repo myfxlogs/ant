@@ -6,6 +6,7 @@ option go_package = "anttrader/gen/proto/ant/v1;antv1";
 
 service CodeAssistService {
   rpc ReviseCode(ReviseCodeRequest) returns (ReviseCodeResponse);
+  rpc ReviseCodeStream(ReviseCodeRequest) returns (stream ReviseCodeStreamChunk);
   rpc ExplainCode(ExplainCodeRequest) returns (ExplainCodeResponse);
   rpc ValidateStrategyExtended(ValidateStrategyExtendedRequest) returns (ValidateStrategyExtendedResponse);
 }
@@ -25,6 +26,12 @@ message ReviseCodeRequest {
 message ReviseCodeResponse {
   string text = 1;
   string python = 2;
+}
+
+message ReviseCodeStreamChunk {
+  string delta = 1;   // incremental text delta
+  string python = 2;  // extracted python code (only on final chunk)
+  bool done = 3;      // true on final chunk
 }
 
 message ExplainCodeRequest {

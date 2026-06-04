@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,24 +19,32 @@ import (
 )
 
 // defaultProviderSeeds 描述每个用户首次进 /ai/settings 时应自动创建的
-// provider 空行。
+// provider 空行。BaseURL 预设值减少用户手动输入。
 var defaultProviderSeeds = []struct {
 	ProviderID string
 	Name       string
+	BaseURL    string
 }{
-	{"openai", "OpenAI"},
-	{"anthropic", "Anthropic (Claude)"},
-	{"deepseek", "DeepSeek"},
-	{"qwen", "通义千问"},
-	{"moonshot", "月之暗面 (Kimi)"},
-	{"zhipu", "智谱 GLM"},
-	{"openai_compatible", "自定义 (OpenAI 兼容)"},
+	{"openai", "OpenAI", "https://api.openai.com/v1"},
+	{"anthropic", "Anthropic (Claude)", "https://api.anthropic.com/v1"},
+	{"deepseek", "DeepSeek", "https://api.deepseek.com/v1"},
+	{"qwen", "通义千问", "https://dashscope.aliyuncs.com/compatible-mode/v1"},
+	{"moonshot", "月之暗面 (Kimi)", "https://api.moonshot.cn/v1"},
+	{"zhipu", "智谱 GLM", "https://open.bigmodel.cn/api/paas/v4"},
+	{"openai_compatible", "自定义 (OpenAI 兼容)", ""},
 }
 
 // Service exposes high-level operations consumed by the connect handler.
 type Service struct {
-	repo *repository.SystemAIConfigRepository
-	box  *secretbox.Box
+	repo        *repository.SystemAIConfigRepository
+	box         *secretbox.Box
+	secretCache sync.Map // key: "userID|providerID" → secretCacheEntry{secret, expiresAt}
+}
+
+// secretCacheEntry holds a decrypted secret with expiry.
+type secretCacheEntry struct {
+	secret    string
+	expiresAt time.Time
 }
 
 func NewService(repo *repository.SystemAIConfigRepository, box *secretbox.Box) *Service {
@@ -66,6 +75,8 @@ func (s *Service) EnsureSeed(ctx context.Context, userID uuid.UUID) error {
 			UserID:     userID,
 			ProviderID: p.ProviderID,
 			Name:       p.Name,
+			BaseURL:    p.BaseURL,
+			Enabled:    p.BaseURL != "",
 		}
 		if err := s.repo.Upsert(ctx, row, tag); err != nil {
 			return fmt.Errorf("upsert AI config seed row: %w", err)
@@ -98,6 +109,9 @@ func (s *Service) SetAIPrimary(ctx context.Context, userID uuid.UUID, providerID
 
 // UpdateSecret encrypts and stores a provider's API key. Empty secret clears it.
 func (s *Service) UpdateSecret(ctx context.Context, userID uuid.UUID, providerID, secret, updatedBy string) error {
+	cacheKey := userID.String() + "|" + providerID
+	s.secretCache.Delete(cacheKey) // invalidate cache on any change
+
 	if strings.TrimSpace(secret) == "" {
 		if strings.HasPrefix(providerID, "openai_compatible_") {
 			if err := s.repo.Delete(ctx, userID, providerID); err != nil {
@@ -216,7 +230,7 @@ func FriendlyError(err error) string {
 	case strings.Contains(low, "endpoint not found") || strings.Contains(low, "status 404"):
 		return "模型端点不存在：请确认 Base URL 与服务协议匹配（部分服务需要 /v1）。"
 	case strings.Contains(low, "timeout"):
-		return "请求超时：请检查网络连通性或稍后重试。"
+		return "请求超时：模型服务未在 60s 内响应，请检查网络或切换到其他厂商（如 DeepSeek）"
 	case strings.Contains(low, "unreachable"):
 		return "无法连接到模型服务：请检查 Base URL、网络或网关。"
 	case strings.Contains(low, "invalid /models response") || strings.Contains(low, "cannot parse json"):

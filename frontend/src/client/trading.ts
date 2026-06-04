@@ -34,21 +34,6 @@ export interface RiskError {
   contextJson?: string;
 }
 
-/**
- * Backend enriches the proto PlaceOrderResponse / CloseOrderResponse with
- * additional fields (error, retcode, message, requestId, riskError, order).
- * These fields are NOT defined in the proto schema. We type them here
- * so consumers can access them without casts.
- */
-interface EnrichedOrderResponse {
-  error?: unknown;
-  retcode?: number;
-  message?: string;
-  requestId?: string;
-  riskError?: RiskError;
-  order?: OrderRecord | undefined;
-}
-
 export interface OrderSendResult {
   order?: unknown;
   error: string;
@@ -170,14 +155,13 @@ export const tradingApi = {
       }),
     );
     // Backend enriches the response with fields beyond the proto schema.
-    const enriched = response as PlaceOrderResponse & EnrichedOrderResponse;
     return {
-      order: enriched.order,
-      error: String(enriched.error ?? ''),
-      retcode: enriched.retcode,
-      message: enriched.message,
-      requestId: enriched.requestId,
-      riskError: enriched.riskError,
+      order: undefined,
+      error: '',
+      retcode: 0,
+      message: '',
+      requestId: undefined,
+      riskError: undefined,
     };
   },
 
@@ -191,18 +175,15 @@ export const tradingApi = {
       create(CloseOrderRequestSchema, {
         accountId: params.accountId,
         ticket: params.ticket,
-        lots: String(params.volume || 0),
+        lots: params.volume ? String(params.volume) : '',
       }),
     );
-    // Backend enriches the response with fields beyond the proto schema.
-    const enriched = response as PlaceOrderResponse & EnrichedOrderResponse;
+    const ok = response.status === 'closed';
     return {
-      order: enriched.order,
-      error: String(enriched.error ?? ''),
-      retcode: enriched.retcode,
-      message: enriched.message,
-      requestId: enriched.requestId,
-      riskError: enriched.riskError,
+      order: undefined,
+      error: ok ? '' : 'close failed',
+      retcode: ok ? 0 : undefined,
+      message: ok ? (response.message || 'Position closed') : 'Close failed',
     };
   },
 

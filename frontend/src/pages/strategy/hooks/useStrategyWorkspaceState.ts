@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { message } from 'antd';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/queries/queryKeys';
 import { useAccount } from '@/hooks/useAccount';
 import { useTradingStore } from '@/stores/tradingStore';
 import { useAccountFinancials } from '@/queries/useAccountFinancials';
@@ -114,14 +116,24 @@ export function useStrategyWorkspaceState() {
     } catch { /* silent */ }
   }, [accountId, tradingStore]);
 
-  const handleClosePosition = useCallback(async (ticket: number) => {
+  const queryClient = useQueryClient();
+
+  const handleClosePosition = useCallback(async (ticket: number, volume?: number) => {
     if (!accountId) return;
-    try { await tradingApi.orderClose({ accountId, ticket: BigInt(ticket) }); }
-    catch (e: any) { message.error(e?.message || 'Close failed'); }
-  }, [accountId]);
+    try {
+      const result = await tradingApi.orderClose({ accountId, ticket: BigInt(ticket), volume });
+      if (result.error) {
+        message.error(result.message || result.error);
+      } else {
+        message.success(result.message || 'Position closed');
+        queryClient.invalidateQueries({ queryKey: queryKeys.positions.byAccount(accountId) });
+      }
+    } catch (e: any) { message.error(e?.message || 'Close failed'); }
+  }, [accountId, queryClient]);
 
   // Layout
   const [codePanelVisible, setCodePanelVisible] = useState(true);
+  const [positionsPanelVisible, setPositionsPanelVisible] = useState(false);
   const [quickTradeVisible, setQuickTradeVisible] = useState(true);
 
   // Init
@@ -153,7 +165,10 @@ export function useStrategyWorkspaceState() {
     sweepDimensions: btCtx.sweepDimensions, toggleDimension: btCtx.toggleDimension,
     enabledSweepDims: btCtx.enabledSweepDims, cartesianSize: btCtx.cartesianSize,
     tuningRunning: btCtx.tuningRunning, handleRunTuning: btCtx.runTuning,
+    backtestRunId: btCtx.backtestRunId, gateLoading: btCtx.gateLoading,
+    gateGates: btCtx.gateGates, gateSummary: btCtx.gateSummary,
+    gateError: btCtx.gateError, handleRunGate: btCtx.runGate,
     accountInfo, selectedAccountMeta, positionCount, allPositions, qtPositions, qtRecentTrades, handleClosePosition,
-    codePanelVisible, setCodePanelVisible, quickTradeVisible, setQuickTradeVisible,
+    codePanelVisible, setCodePanelVisible, positionsPanelVisible, setPositionsPanelVisible, quickTradeVisible, setQuickTradeVisible,
   };
 }

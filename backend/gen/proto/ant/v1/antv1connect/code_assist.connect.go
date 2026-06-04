@@ -36,6 +36,9 @@ const (
 	// CodeAssistServiceReviseCodeProcedure is the fully-qualified name of the CodeAssistService's
 	// ReviseCode RPC.
 	CodeAssistServiceReviseCodeProcedure = "/ant.v1.CodeAssistService/ReviseCode"
+	// CodeAssistServiceReviseCodeStreamProcedure is the fully-qualified name of the CodeAssistService's
+	// ReviseCodeStream RPC.
+	CodeAssistServiceReviseCodeStreamProcedure = "/ant.v1.CodeAssistService/ReviseCodeStream"
 	// CodeAssistServiceExplainCodeProcedure is the fully-qualified name of the CodeAssistService's
 	// ExplainCode RPC.
 	CodeAssistServiceExplainCodeProcedure = "/ant.v1.CodeAssistService/ExplainCode"
@@ -47,6 +50,7 @@ const (
 // CodeAssistServiceClient is a client for the ant.v1.CodeAssistService service.
 type CodeAssistServiceClient interface {
 	ReviseCode(context.Context, *connect.Request[v1.ReviseCodeRequest]) (*connect.Response[v1.ReviseCodeResponse], error)
+	ReviseCodeStream(context.Context, *connect.Request[v1.ReviseCodeRequest]) (*connect.ServerStreamForClient[v1.ReviseCodeStreamChunk], error)
 	ExplainCode(context.Context, *connect.Request[v1.ExplainCodeRequest]) (*connect.Response[v1.ExplainCodeResponse], error)
 	ValidateStrategyExtended(context.Context, *connect.Request[v1.ValidateStrategyExtendedRequest]) (*connect.Response[v1.ValidateStrategyExtendedResponse], error)
 }
@@ -68,6 +72,12 @@ func NewCodeAssistServiceClient(httpClient connect.HTTPClient, baseURL string, o
 			connect.WithSchema(codeAssistServiceMethods.ByName("ReviseCode")),
 			connect.WithClientOptions(opts...),
 		),
+		reviseCodeStream: connect.NewClient[v1.ReviseCodeRequest, v1.ReviseCodeStreamChunk](
+			httpClient,
+			baseURL+CodeAssistServiceReviseCodeStreamProcedure,
+			connect.WithSchema(codeAssistServiceMethods.ByName("ReviseCodeStream")),
+			connect.WithClientOptions(opts...),
+		),
 		explainCode: connect.NewClient[v1.ExplainCodeRequest, v1.ExplainCodeResponse](
 			httpClient,
 			baseURL+CodeAssistServiceExplainCodeProcedure,
@@ -86,6 +96,7 @@ func NewCodeAssistServiceClient(httpClient connect.HTTPClient, baseURL string, o
 // codeAssistServiceClient implements CodeAssistServiceClient.
 type codeAssistServiceClient struct {
 	reviseCode               *connect.Client[v1.ReviseCodeRequest, v1.ReviseCodeResponse]
+	reviseCodeStream         *connect.Client[v1.ReviseCodeRequest, v1.ReviseCodeStreamChunk]
 	explainCode              *connect.Client[v1.ExplainCodeRequest, v1.ExplainCodeResponse]
 	validateStrategyExtended *connect.Client[v1.ValidateStrategyExtendedRequest, v1.ValidateStrategyExtendedResponse]
 }
@@ -93,6 +104,11 @@ type codeAssistServiceClient struct {
 // ReviseCode calls ant.v1.CodeAssistService.ReviseCode.
 func (c *codeAssistServiceClient) ReviseCode(ctx context.Context, req *connect.Request[v1.ReviseCodeRequest]) (*connect.Response[v1.ReviseCodeResponse], error) {
 	return c.reviseCode.CallUnary(ctx, req)
+}
+
+// ReviseCodeStream calls ant.v1.CodeAssistService.ReviseCodeStream.
+func (c *codeAssistServiceClient) ReviseCodeStream(ctx context.Context, req *connect.Request[v1.ReviseCodeRequest]) (*connect.ServerStreamForClient[v1.ReviseCodeStreamChunk], error) {
+	return c.reviseCodeStream.CallServerStream(ctx, req)
 }
 
 // ExplainCode calls ant.v1.CodeAssistService.ExplainCode.
@@ -108,6 +124,7 @@ func (c *codeAssistServiceClient) ValidateStrategyExtended(ctx context.Context, 
 // CodeAssistServiceHandler is an implementation of the ant.v1.CodeAssistService service.
 type CodeAssistServiceHandler interface {
 	ReviseCode(context.Context, *connect.Request[v1.ReviseCodeRequest]) (*connect.Response[v1.ReviseCodeResponse], error)
+	ReviseCodeStream(context.Context, *connect.Request[v1.ReviseCodeRequest], *connect.ServerStream[v1.ReviseCodeStreamChunk]) error
 	ExplainCode(context.Context, *connect.Request[v1.ExplainCodeRequest]) (*connect.Response[v1.ExplainCodeResponse], error)
 	ValidateStrategyExtended(context.Context, *connect.Request[v1.ValidateStrategyExtendedRequest]) (*connect.Response[v1.ValidateStrategyExtendedResponse], error)
 }
@@ -123,6 +140,12 @@ func NewCodeAssistServiceHandler(svc CodeAssistServiceHandler, opts ...connect.H
 		CodeAssistServiceReviseCodeProcedure,
 		svc.ReviseCode,
 		connect.WithSchema(codeAssistServiceMethods.ByName("ReviseCode")),
+		connect.WithHandlerOptions(opts...),
+	)
+	codeAssistServiceReviseCodeStreamHandler := connect.NewServerStreamHandler(
+		CodeAssistServiceReviseCodeStreamProcedure,
+		svc.ReviseCodeStream,
+		connect.WithSchema(codeAssistServiceMethods.ByName("ReviseCodeStream")),
 		connect.WithHandlerOptions(opts...),
 	)
 	codeAssistServiceExplainCodeHandler := connect.NewUnaryHandler(
@@ -141,6 +164,8 @@ func NewCodeAssistServiceHandler(svc CodeAssistServiceHandler, opts ...connect.H
 		switch r.URL.Path {
 		case CodeAssistServiceReviseCodeProcedure:
 			codeAssistServiceReviseCodeHandler.ServeHTTP(w, r)
+		case CodeAssistServiceReviseCodeStreamProcedure:
+			codeAssistServiceReviseCodeStreamHandler.ServeHTTP(w, r)
 		case CodeAssistServiceExplainCodeProcedure:
 			codeAssistServiceExplainCodeHandler.ServeHTTP(w, r)
 		case CodeAssistServiceValidateStrategyExtendedProcedure:
@@ -156,6 +181,10 @@ type UnimplementedCodeAssistServiceHandler struct{}
 
 func (UnimplementedCodeAssistServiceHandler) ReviseCode(context.Context, *connect.Request[v1.ReviseCodeRequest]) (*connect.Response[v1.ReviseCodeResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.CodeAssistService.ReviseCode is not implemented"))
+}
+
+func (UnimplementedCodeAssistServiceHandler) ReviseCodeStream(context.Context, *connect.Request[v1.ReviseCodeRequest], *connect.ServerStream[v1.ReviseCodeStreamChunk]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.CodeAssistService.ReviseCodeStream is not implemented"))
 }
 
 func (UnimplementedCodeAssistServiceHandler) ExplainCode(context.Context, *connect.Request[v1.ExplainCodeRequest]) (*connect.Response[v1.ExplainCodeResponse], error) {

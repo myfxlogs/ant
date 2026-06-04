@@ -193,6 +193,66 @@ func (x *ReviseCodeResponse) GetPython() string {
 	return ""
 }
 
+type ReviseCodeStreamChunk struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Delta         string                 `protobuf:"bytes,1,opt,name=delta,proto3" json:"delta,omitempty"`   // incremental text delta
+	Python        string                 `protobuf:"bytes,2,opt,name=python,proto3" json:"python,omitempty"` // extracted python code (only on final chunk)
+	Done          bool                   `protobuf:"varint,3,opt,name=done,proto3" json:"done,omitempty"`    // true on final chunk
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReviseCodeStreamChunk) Reset() {
+	*x = ReviseCodeStreamChunk{}
+	mi := &file_code_assist_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReviseCodeStreamChunk) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReviseCodeStreamChunk) ProtoMessage() {}
+
+func (x *ReviseCodeStreamChunk) ProtoReflect() protoreflect.Message {
+	mi := &file_code_assist_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReviseCodeStreamChunk.ProtoReflect.Descriptor instead.
+func (*ReviseCodeStreamChunk) Descriptor() ([]byte, []int) {
+	return file_code_assist_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *ReviseCodeStreamChunk) GetDelta() string {
+	if x != nil {
+		return x.Delta
+	}
+	return ""
+}
+
+func (x *ReviseCodeStreamChunk) GetPython() string {
+	if x != nil {
+		return x.Python
+	}
+	return ""
+}
+
+func (x *ReviseCodeStreamChunk) GetDone() bool {
+	if x != nil {
+		return x.Done
+	}
+	return false
+}
+
 type ExplainCodeRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Code          string                 `protobuf:"bytes,1,opt,name=code,proto3" json:"code,omitempty"`
@@ -203,7 +263,7 @@ type ExplainCodeRequest struct {
 
 func (x *ExplainCodeRequest) Reset() {
 	*x = ExplainCodeRequest{}
-	mi := &file_code_assist_proto_msgTypes[3]
+	mi := &file_code_assist_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -215,7 +275,7 @@ func (x *ExplainCodeRequest) String() string {
 func (*ExplainCodeRequest) ProtoMessage() {}
 
 func (x *ExplainCodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_code_assist_proto_msgTypes[3]
+	mi := &file_code_assist_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -228,7 +288,7 @@ func (x *ExplainCodeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExplainCodeRequest.ProtoReflect.Descriptor instead.
 func (*ExplainCodeRequest) Descriptor() ([]byte, []int) {
-	return file_code_assist_proto_rawDescGZIP(), []int{3}
+	return file_code_assist_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ExplainCodeRequest) GetCode() string {
@@ -254,7 +314,7 @@ type ExplainCodeResponse struct {
 
 func (x *ExplainCodeResponse) Reset() {
 	*x = ExplainCodeResponse{}
-	mi := &file_code_assist_proto_msgTypes[4]
+	mi := &file_code_assist_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -266,7 +326,7 @@ func (x *ExplainCodeResponse) String() string {
 func (*ExplainCodeResponse) ProtoMessage() {}
 
 func (x *ExplainCodeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_code_assist_proto_msgTypes[4]
+	mi := &file_code_assist_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -279,7 +339,7 @@ func (x *ExplainCodeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExplainCodeResponse.ProtoReflect.Descriptor instead.
 func (*ExplainCodeResponse) Descriptor() ([]byte, []int) {
-	return file_code_assist_proto_rawDescGZIP(), []int{4}
+	return file_code_assist_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ExplainCodeResponse) GetExplanation() string {
@@ -298,7 +358,7 @@ type ValidateStrategyExtendedRequest struct {
 
 func (x *ValidateStrategyExtendedRequest) Reset() {
 	*x = ValidateStrategyExtendedRequest{}
-	mi := &file_code_assist_proto_msgTypes[5]
+	mi := &file_code_assist_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -310,7 +370,7 @@ func (x *ValidateStrategyExtendedRequest) String() string {
 func (*ValidateStrategyExtendedRequest) ProtoMessage() {}
 
 func (x *ValidateStrategyExtendedRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_code_assist_proto_msgTypes[5]
+	mi := &file_code_assist_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -323,7 +383,7 @@ func (x *ValidateStrategyExtendedRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ValidateStrategyExtendedRequest.ProtoReflect.Descriptor instead.
 func (*ValidateStrategyExtendedRequest) Descriptor() ([]byte, []int) {
-	return file_code_assist_proto_rawDescGZIP(), []int{5}
+	return file_code_assist_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ValidateStrategyExtendedRequest) GetCode() string {
@@ -345,7 +405,7 @@ type ValidateStrategyExtendedResponse struct {
 
 func (x *ValidateStrategyExtendedResponse) Reset() {
 	*x = ValidateStrategyExtendedResponse{}
-	mi := &file_code_assist_proto_msgTypes[6]
+	mi := &file_code_assist_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -357,7 +417,7 @@ func (x *ValidateStrategyExtendedResponse) String() string {
 func (*ValidateStrategyExtendedResponse) ProtoMessage() {}
 
 func (x *ValidateStrategyExtendedResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_code_assist_proto_msgTypes[6]
+	mi := &file_code_assist_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -370,7 +430,7 @@ func (x *ValidateStrategyExtendedResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ValidateStrategyExtendedResponse.ProtoReflect.Descriptor instead.
 func (*ValidateStrategyExtendedResponse) Descriptor() ([]byte, []int) {
-	return file_code_assist_proto_rawDescGZIP(), []int{6}
+	return file_code_assist_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ValidateStrategyExtendedResponse) GetValid() bool {
@@ -414,7 +474,7 @@ type RequiredParamSpec struct {
 
 func (x *RequiredParamSpec) Reset() {
 	*x = RequiredParamSpec{}
-	mi := &file_code_assist_proto_msgTypes[7]
+	mi := &file_code_assist_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -426,7 +486,7 @@ func (x *RequiredParamSpec) String() string {
 func (*RequiredParamSpec) ProtoMessage() {}
 
 func (x *RequiredParamSpec) ProtoReflect() protoreflect.Message {
-	mi := &file_code_assist_proto_msgTypes[7]
+	mi := &file_code_assist_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -439,7 +499,7 @@ func (x *RequiredParamSpec) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequiredParamSpec.ProtoReflect.Descriptor instead.
 func (*RequiredParamSpec) Descriptor() ([]byte, []int) {
-	return file_code_assist_proto_rawDescGZIP(), []int{7}
+	return file_code_assist_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *RequiredParamSpec) GetKey() string {
@@ -492,7 +552,11 @@ const file_code_assist_proto_rawDesc = "" +
 	"\x06locale\x18\x04 \x01(\tR\x06locale\"@\n" +
 	"\x12ReviseCodeResponse\x12\x12\n" +
 	"\x04text\x18\x01 \x01(\tR\x04text\x12\x16\n" +
-	"\x06python\x18\x02 \x01(\tR\x06python\"@\n" +
+	"\x06python\x18\x02 \x01(\tR\x06python\"Y\n" +
+	"\x15ReviseCodeStreamChunk\x12\x14\n" +
+	"\x05delta\x18\x01 \x01(\tR\x05delta\x12\x16\n" +
+	"\x06python\x18\x02 \x01(\tR\x06python\x12\x12\n" +
+	"\x04done\x18\x03 \x01(\bR\x04done\"@\n" +
 	"\x12ExplainCodeRequest\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\tR\x04code\x12\x16\n" +
 	"\x06locale\x18\x02 \x01(\tR\x06locale\"7\n" +
@@ -512,10 +576,11 @@ const file_code_assist_proto_rawDesc = "" +
 	"\brequired\x18\x02 \x01(\bR\brequired\x12#\n" +
 	"\rdefault_value\x18\x03 \x01(\tR\fdefaultValue\x12\x12\n" +
 	"\x04type\x18\x04 \x01(\tR\x04type\x12'\n" +
-	"\x0fsuggested_value\x18\x05 \x01(\tR\x0esuggestedValue2\x8f\x02\n" +
+	"\x0fsuggested_value\x18\x05 \x01(\tR\x0esuggestedValue2\xdf\x02\n" +
 	"\x11CodeAssistService\x12C\n" +
 	"\n" +
-	"ReviseCode\x12\x19.ant.v1.ReviseCodeRequest\x1a\x1a.ant.v1.ReviseCodeResponse\x12F\n" +
+	"ReviseCode\x12\x19.ant.v1.ReviseCodeRequest\x1a\x1a.ant.v1.ReviseCodeResponse\x12N\n" +
+	"\x10ReviseCodeStream\x12\x19.ant.v1.ReviseCodeRequest\x1a\x1d.ant.v1.ReviseCodeStreamChunk0\x01\x12F\n" +
 	"\vExplainCode\x12\x1a.ant.v1.ExplainCodeRequest\x1a\x1b.ant.v1.ExplainCodeResponse\x12m\n" +
 	"\x18ValidateStrategyExtended\x12'.ant.v1.ValidateStrategyExtendedRequest\x1a(.ant.v1.ValidateStrategyExtendedResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
@@ -531,28 +596,31 @@ func file_code_assist_proto_rawDescGZIP() []byte {
 	return file_code_assist_proto_rawDescData
 }
 
-var file_code_assist_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_code_assist_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_code_assist_proto_goTypes = []any{
 	(*CodeChatMessage)(nil),                  // 0: ant.v1.CodeChatMessage
 	(*ReviseCodeRequest)(nil),                // 1: ant.v1.ReviseCodeRequest
 	(*ReviseCodeResponse)(nil),               // 2: ant.v1.ReviseCodeResponse
-	(*ExplainCodeRequest)(nil),               // 3: ant.v1.ExplainCodeRequest
-	(*ExplainCodeResponse)(nil),              // 4: ant.v1.ExplainCodeResponse
-	(*ValidateStrategyExtendedRequest)(nil),  // 5: ant.v1.ValidateStrategyExtendedRequest
-	(*ValidateStrategyExtendedResponse)(nil), // 6: ant.v1.ValidateStrategyExtendedResponse
-	(*RequiredParamSpec)(nil),                // 7: ant.v1.RequiredParamSpec
+	(*ReviseCodeStreamChunk)(nil),            // 3: ant.v1.ReviseCodeStreamChunk
+	(*ExplainCodeRequest)(nil),               // 4: ant.v1.ExplainCodeRequest
+	(*ExplainCodeResponse)(nil),              // 5: ant.v1.ExplainCodeResponse
+	(*ValidateStrategyExtendedRequest)(nil),  // 6: ant.v1.ValidateStrategyExtendedRequest
+	(*ValidateStrategyExtendedResponse)(nil), // 7: ant.v1.ValidateStrategyExtendedResponse
+	(*RequiredParamSpec)(nil),                // 8: ant.v1.RequiredParamSpec
 }
 var file_code_assist_proto_depIdxs = []int32{
 	0, // 0: ant.v1.ReviseCodeRequest.history:type_name -> ant.v1.CodeChatMessage
-	7, // 1: ant.v1.ValidateStrategyExtendedResponse.parameters:type_name -> ant.v1.RequiredParamSpec
+	8, // 1: ant.v1.ValidateStrategyExtendedResponse.parameters:type_name -> ant.v1.RequiredParamSpec
 	1, // 2: ant.v1.CodeAssistService.ReviseCode:input_type -> ant.v1.ReviseCodeRequest
-	3, // 3: ant.v1.CodeAssistService.ExplainCode:input_type -> ant.v1.ExplainCodeRequest
-	5, // 4: ant.v1.CodeAssistService.ValidateStrategyExtended:input_type -> ant.v1.ValidateStrategyExtendedRequest
-	2, // 5: ant.v1.CodeAssistService.ReviseCode:output_type -> ant.v1.ReviseCodeResponse
-	4, // 6: ant.v1.CodeAssistService.ExplainCode:output_type -> ant.v1.ExplainCodeResponse
-	6, // 7: ant.v1.CodeAssistService.ValidateStrategyExtended:output_type -> ant.v1.ValidateStrategyExtendedResponse
-	5, // [5:8] is the sub-list for method output_type
-	2, // [2:5] is the sub-list for method input_type
+	1, // 3: ant.v1.CodeAssistService.ReviseCodeStream:input_type -> ant.v1.ReviseCodeRequest
+	4, // 4: ant.v1.CodeAssistService.ExplainCode:input_type -> ant.v1.ExplainCodeRequest
+	6, // 5: ant.v1.CodeAssistService.ValidateStrategyExtended:input_type -> ant.v1.ValidateStrategyExtendedRequest
+	2, // 6: ant.v1.CodeAssistService.ReviseCode:output_type -> ant.v1.ReviseCodeResponse
+	3, // 7: ant.v1.CodeAssistService.ReviseCodeStream:output_type -> ant.v1.ReviseCodeStreamChunk
+	5, // 8: ant.v1.CodeAssistService.ExplainCode:output_type -> ant.v1.ExplainCodeResponse
+	7, // 9: ant.v1.CodeAssistService.ValidateStrategyExtended:output_type -> ant.v1.ValidateStrategyExtendedResponse
+	6, // [6:10] is the sub-list for method output_type
+	2, // [2:6] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
 	2, // [2:2] is the sub-list for extension extendee
 	0, // [0:2] is the sub-list for field type_name
@@ -569,7 +637,7 @@ func file_code_assist_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_code_assist_proto_rawDesc), len(file_code_assist_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

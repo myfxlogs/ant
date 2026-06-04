@@ -148,10 +148,19 @@ func (s *StreamServer) SubscribeEvents(
 	barCh, barCancel := s.forwardBarEvents(loopCtx, accountIDs, filterAll, accountSet)
 	defer barCancel()
 
+	keepalive := time.NewTicker(15 * time.Second)
+	defer keepalive.Stop()
+
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
+
+		case <-keepalive.C:
+			// Keepalive ping prevents Cloudflare/proxy from closing idle HTTP/2 streams.
+			if err := sendEvent(&antv1.StreamEvent{Type: "ping"}); err != nil {
+				return err
+			}
 
 		case b, ok := <-barCh:
 			if !ok {

@@ -49,7 +49,8 @@ func (s *AIServer) Chat(ctx context.Context, req *connect.Request[antv1.ChatRequ
 	}
 
 	systemPrompt := "You are a helpful quantitative trading assistant."
-	reply, err := s.systemSvc.ChatCompletion(ctx, uid, systemPrompt, m.Message, "")
+	messages := systemai.BuildChatMessages(systemPrompt, m.Message, nil)
+		reply, err := s.systemSvc.ChatCompletion(ctx, uid, messages, "")
 	if err != nil {
 		// Sanitize: do NOT log the raw error — it may contain upstream response body.
 		s.log.Error("Chat: ChatCompletion failed", zap.String("user_id", uid.String()))
@@ -94,7 +95,7 @@ func (s *AIServer) ChatStream(ctx context.Context, req *connect.Request[antv1.Ch
 	systemPrompt := "You are a helpful quantitative trading assistant."
 	var fullReply strings.Builder
 
-	err = s.systemSvc.ChatCompletionStream(ctx, uid, systemPrompt, m.Message, "", func(chunk systemai.ChatStreamChunk) error {
+	err = s.systemSvc.ChatCompletionStream(ctx, uid, systemai.BuildChatMessages(systemPrompt, m.Message, nil), "", func(chunk systemai.ChatStreamChunk) error {
 		fullReply.WriteString(chunk.Content)
 		sendChunk := &antv1.ChatStreamChunk{Delta: chunk.Content, Done: chunk.Done}
 		return stream.Send(sendChunk)

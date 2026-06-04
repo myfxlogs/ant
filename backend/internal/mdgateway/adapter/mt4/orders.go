@@ -12,6 +12,8 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+const orderTimeout = 30 * time.Second
+
 func mt4Op(side mthub.Side, ot mthub.OrderType) pb.Op {
 	switch {
 	case side == mthub.SideBuy && ot == mthub.OrderMarket:
@@ -42,8 +44,10 @@ func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int6
 	op := mt4Op(req.Side, req.OrderType)
 	price := req.Price.InexactFloat64()
 	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
-	ctx = metadata.NewOutgoingContext(ctx, md)
-	resp, err := tc.OrderSend(ctx, &pb.OrderSendRequest{
+	callCtx, cancel := context.WithTimeout(ctx, orderTimeout)
+	defer cancel()
+	callCtx = metadata.NewOutgoingContext(callCtx, md)
+	resp, err := tc.OrderSend(callCtx, &pb.OrderSendRequest{
 		Id: sid, Symbol: req.Canonical, Operation: op,
 		Volume:     req.Volume.InexactFloat64(),
 		Price:      price,
@@ -68,18 +72,25 @@ func (g *Gateway) CloseOrder(ctx context.Context, ticket int64, lots decimal.Dec
 	sid := g.sessionID
 	g.mu.RUnlock()
 	if tc == nil || sid == "" {
+		g.log.Warn("mt4 CloseOrder: not connected", zap.Bool("hasCli", tc != nil), zap.Bool("hasSid", sid != ""))
 		return fmt.Errorf("mt4 CloseOrder: not connected")
 	}
 	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
-	ctx = metadata.NewOutgoingContext(ctx, md)
+	callCtx, cancel := context.WithTimeout(ctx, orderTimeout)
+	defer cancel()
+	callCtx = metadata.NewOutgoingContext(callCtx, md)
 	l := lots.InexactFloat64()
-	resp, err := tc.OrderClose(ctx, &pb.OrderCloseRequest{Id: sid, Ticket: int32(ticket), Lots: l})
+	g.log.Info("mt4 CloseOrder: sending", zap.Int64("ticket", ticket), zap.Float64("lots", l), zap.String("sid", sid[:8]+"..."))
+	resp, err := tc.OrderClose(callCtx, &pb.OrderCloseRequest{Id: sid, Ticket: int32(ticket), Lots: l})
 	if err != nil {
+		g.log.Error("mt4 OrderClose: gRPC error", zap.Error(err))
 		return fmt.Errorf("mt4 OrderClose: %w", err)
 	}
 	if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
+		g.log.Error("mt4 OrderClose: broker error", zap.Int32("code", int32(resp.GetError().GetCode())), zap.String("msg", resp.GetError().GetMessage()))
 		return fmt.Errorf("mt4 OrderClose: code=%d msg=%s", resp.GetError().GetCode(), resp.GetError().GetMessage())
 	}
+	g.log.Info("mt4 CloseOrder: success", zap.Int64("ticket", ticket))
 	return nil
 }
 
@@ -92,8 +103,10 @@ func (g *Gateway) ModifyOrder(ctx context.Context, ticket int64, sl, tp, price d
 		return fmt.Errorf("mt4 ModifyOrder: not connected")
 	}
 	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
-	ctx = metadata.NewOutgoingContext(ctx, md)
-	resp, err := tc.OrderModify(ctx, &pb.OrderModifyRequest{
+	callCtx, cancel := context.WithTimeout(ctx, orderTimeout)
+	defer cancel()
+	callCtx = metadata.NewOutgoingContext(callCtx, md)
+	resp, err := tc.OrderModify(callCtx, &pb.OrderModifyRequest{
 		Id: sid, Ticket: int32(ticket),
 		Stoploss: sl.InexactFloat64(), Takeprofit: tp.InexactFloat64(),
 		Price: price.InexactFloat64(),
@@ -213,10 +226,12 @@ func (g *Gateway) SubscribeOrderEvents(ctx context.Context, h mthub.OrderEventHa
 	if err != nil {
 		return fmt.Errorf("mt4 OnOrderUpdate: %w", err)
 	}
+	g.mu.Lock()
 	if g.cancelOrderUpdateSub != nil {
 		g.cancelOrderUpdateSub()
 	}
 	ctx, g.cancelOrderUpdateSub = context.WithCancel(ctx)
+	g.mu.Unlock()
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
