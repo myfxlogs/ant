@@ -12,7 +12,6 @@ import (
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/config"
 	"anttrader/internal/connect/admin"
-	"anttrader/internal/connect/ai"
 	mktplace "anttrader/internal/connect/marketplace"
 	"anttrader/internal/connect/strategy"
 	"anttrader/internal/connect/system"
@@ -41,7 +40,6 @@ func registerSREHandlers(
 	platformSvc *service.PlatformService,
 	mthubSvc *mthub.MtHubService,
 	authServer *user.AuthServer,
-	gateProgressServer *ai.GateProgressServer,
 	strategyExperimentRepo *repository.StrategyExperimentRepository,
 	strategyAssetRepo *repository.StrategyAssetRepository,
 	schedHealthRepo *repository.ScheduleHealthRepository,
@@ -72,6 +70,8 @@ func registerSREHandlers(
 
 	strategyExperimentServer := strategy.NewStrategyExperimentServer(strategyExperimentRepo, log)
 	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, connectrpc.WithInterceptors(authInterceptor)))
+	experimentWorker := strategy.NewExperimentWorker(strategyExperimentRepo, log)
+	experimentWorker.Start(context.Background())
 	strategyAssetServer := strategy.NewStrategyAssetServer(strategyAssetRepo, log)
 	mux.Handle(antv1c.NewStrategyAssetServiceHandler(strategyAssetServer, connectrpc.WithInterceptors(authInterceptor)))
 	scheduleHealthServer := system.NewScheduleHealthServer(schedHealthRepo, log)
@@ -94,11 +94,6 @@ func registerSREHandlers(
 	// Auth cookie endpoints — refresh token via httpOnly cookie.
 	mux.HandleFunc("/api/auth/refresh", authServer.HandleTokenRefresh)
 	mux.HandleFunc("/api/auth/logout", authServer.HandleLogout)
-
-	// SSE endpoint for AI gate pipeline progress.
-	mux.HandleFunc("/sse/ai/gate-progress", func(w http.ResponseWriter, r *http.Request) {
-		gateProgressServer.HandleGateProgressSSE(w, r, authInterceptor)
-	})
 
 	// SRE control plane HTTP endpoints.
 	mux.HandleFunc("/api/admin/sre/killswitch/status", func(w http.ResponseWriter, r *http.Request) {

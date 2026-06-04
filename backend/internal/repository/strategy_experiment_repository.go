@@ -189,6 +189,42 @@ func (r *StrategyExperimentRepository) GetCandidate(ctx context.Context, userID,
 
 // NOTE: caller (strategy_experiment_handler) verifies ownership via GetCandidate.
 // This UPDATE has no user_id check — relies on caller for authorization.
+// ClaimPendingExperiment atomically claims the oldest PENDING experiment.
+// Returns nil if no PENDING experiments exist.
+func (r *StrategyExperimentRepository) ClaimPendingExperiment(ctx context.Context) (*StrategyExperiment, error) {
+	rows, err := r.db.Query(ctx,
+		`SELECT id, user_id, base_template_id, status, parameter_space, search_method,
+		        max_candidates, objective, market_regime_ref, best_candidate_id, job_id,
+		        created_at, finished_at
+		 FROM strategy_experiments WHERE status = 'PENDING'
+		 ORDER BY created_at ASC LIMIT 1`)
+	if err != nil {
+		return nil, fmt.Errorf("claim pending: %w", err)
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return nil, nil
+	}
+	var e StrategyExperiment
+	if err := rows.Scan(&e.ID, &e.UserID, &e.BaseTemplateID, &e.Status, &e.ParameterSpace,
+		&e.SearchMethod, &e.MaxCandidates, &e.Objective, &e.MarketRegimeRef,
+		&e.BestCandidateID, &e.JobID, &e.CreatedAt, &e.FinishedAt); err != nil {
+		return nil, fmt.Errorf("scan pending: %w", err)
+	}
+	// Mark as PROCESSING
+	_, err = r.db.Exec(ctx, `UPDATE strategy_experiments SET status = 'PROCESSING' WHERE id = $1`, e.ID)
+	if err != nil {
+		return nil, fmt.Errorf("claim experiment: %w", err)
+	}
+	e.Status = "PROCESSING"
+	return &e, nil
+}
+
+func (r *StrategyExperimentRepository) UpdateExperimentStatus(ctx context.Context, id uuid.UUID, status string) error {
+	_, err := r.db.Exec(ctx, `UPDATE strategy_experiments SET status = $2, finished_at = NOW() WHERE id = $1`, id, status)
+	return err
+}
+
 func (r *StrategyExperimentRepository) SetBestCandidate(ctx context.Context, experimentID, candidateID uuid.UUID) error {
 	_, err := r.db.Exec(ctx, `UPDATE strategy_experiments SET best_candidate_id = $2 WHERE id = $1`, experimentID, candidateID)
 	if err != nil {
