@@ -79,9 +79,14 @@ func (w *ExperimentWorker) processOne(ctx context.Context) error {
 
 	// Run optimizer
 	var candidates []map[string]interface{}
+	space := ai.NormalizeSpace(params)
 	switch exp.SearchMethod {
 	case "random":
 		candidates = ai.RandomSearch(params, exp.MaxCandidates)
+	case "de":
+		candidates = runIterativeOptimizer(ai.NewDEOptimizer(space, exp.MaxCandidates), space)
+	case "tpe":
+		candidates = runIterativeOptimizer(ai.NewTPEOptimizer(space, exp.MaxCandidates), space)
 	default:
 		candidates = ai.GridSearch(params, exp.MaxCandidates)
 	}
@@ -114,4 +119,20 @@ func (w *ExperimentWorker) getStrategyCode(ctx context.Context, exp *repository.
 		return "", fmt.Errorf("template-based experiments not yet supported (template_id=%s)", exp.BaseTemplateID)
 	}
 	return "", fmt.Errorf("no code source for experiment %s", exp.ID)
+}
+
+// runIterativeOptimizer drives an ask/tell optimizer, converting index vectors to overrides.
+// Full backtest scoring is deferred to Phase 2b — currently generates candidates with placeholder scores.
+func runIterativeOptimizer(opt ai.Optimizer, space ai.ResolvedSpace) []map[string]interface{} {
+	var candidates []map[string]interface{}
+	for !opt.Done() {
+		batch := opt.Ask(0) // 0 = optimizer decides batch size
+		for _, indices := range batch {
+			overrides := ai.IndexToOverrides(indices, space)
+			candidates = append(candidates, overrides)
+			// Placeholder: real score comes from backtest execution
+			opt.Tell([]ai.OptimizerResult{{Indices: indices, Score: 0}})
+		}
+	}
+	return candidates
 }

@@ -10,16 +10,16 @@ import (
 
 const rngSeed = 0xC0DE
 
-// resolvedSpace holds the resolved discrete values for each parameter key.
-type resolvedSpace struct {
+// ResolvedSpace holds the resolved discrete values for each parameter key.
+type ResolvedSpace struct {
 	Keys        []string
 	ValuesByKey map[string][]float64
 }
 
-// normalizeSpace converts TunableParam definitions into a resolved discrete space.
+// NormalizeSpace converts TunableParam definitions into a resolved discrete space.
 // For "int" and "float" types, values are generated via min:step:max.
 // For "choice" types, values come from the Choices slice (converted to float64 indices).
-func normalizeSpace(params []TunableParam) resolvedSpace {
+func NormalizeSpace(params []TunableParam) ResolvedSpace {
 	keys := make([]string, 0, len(params))
 	vals := make(map[string][]float64, len(params))
 	for _, p := range params {
@@ -42,11 +42,11 @@ func normalizeSpace(params []TunableParam) resolvedSpace {
 		}
 		vals[p.Name] = out
 	}
-	return resolvedSpace{Keys: keys, ValuesByKey: vals}
+	return ResolvedSpace{Keys: keys, ValuesByKey: vals}
 }
 
 // cartesianSize returns the total number of unique parameter combinations.
-func cartesianSize(space resolvedSpace) int {
+func cartesianSize(space ResolvedSpace) int {
 	size := 1
 	for _, k := range space.Keys {
 		size *= len(space.ValuesByKey[k])
@@ -61,7 +61,7 @@ func GridSearch(params []TunableParam, maxCandidates int) []map[string]interface
 	if len(params) == 0 {
 		return nil
 	}
-	space := normalizeSpace(params)
+	space := NormalizeSpace(params)
 	total := cartesianSize(space)
 	rng := rand.New(rand.NewSource(rngSeed))
 
@@ -88,7 +88,7 @@ func RandomSearch(params []TunableParam, maxCandidates int) []map[string]interfa
 	if len(params) == 0 {
 		return nil
 	}
-	space := normalizeSpace(params)
+	space := NormalizeSpace(params)
 	rng := rand.New(rand.NewSource(rngSeed))
 	out := make([]map[string]interface{}, 0, maxCandidates)
 	for i := 0; i < maxCandidates; i++ {
@@ -109,7 +109,7 @@ type paramCombo struct {
 }
 
 // buildCartesian recursively builds all index combinations, capped at maxSize.
-func buildCartesian(space resolvedSpace, depth int, indices []int, out *[]paramCombo, rng *rand.Rand, maxSize int) {
+func buildCartesian(space ResolvedSpace, depth int, indices []int, out *[]paramCombo, rng *rand.Rand, maxSize int) {
 	if len(*out) >= maxSize {
 		return
 	}
