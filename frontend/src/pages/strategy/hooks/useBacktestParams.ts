@@ -1,9 +1,11 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { message } from 'antd';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
+import { gateApi } from '@/client/gate';
+import type { GateResult, GatePipelineSummary } from '@/gen/ant/v1/ai_gate_pb';
 
 export type BacktestStatus = 'idle' | 'running' | 'completed' | 'error';
-export type BacktestSubTab = 'results' | 'tuning';
+export type BacktestSubTab = 'results' | 'tuning' | 'gate';
 
 export interface SweepDimension {
   key: string; label: string; source: 'code' | 'risk';
@@ -78,7 +80,8 @@ export function useBacktestParams() {
         code, accountId, symbol, timeframe, initialCapital,
       });
       if (!result.runId) throw new Error('No run ID');
-      setStatus('running');
+      setBacktestRunId(result.runId);
+      setStatus('running'); setGateGates([]); setGateSummary(null); setGateError('');
       const stopWatching = await pythonStrategyApi.watchBacktestRun(result.runId, (update: any) => {
         if (update.status === 'SUCCEEDED' || update.status === 'FAILED' || update.status === 'CANCELED') {
           setStatus(update.status === 'SUCCEEDED' ? 'completed' : 'error');
@@ -96,6 +99,14 @@ export function useBacktestParams() {
   const [tuneMethod, setTuneMethod] = useState<'grid' | 'random'>('grid');
   const [sweepDimensions, setSweepDimensions] = useState<SweepDimension[]>(DEFAULT_SWEEP_DIMS);
   const [tuningRunning, setTuningRunning] = useState(false);
+  const [backtestRunId, setBacktestRunId] = useState('');
+
+  // Gate evaluation
+  const [gateLoading, setGateLoading] = useState(false);
+  const [gateGates, setGateGates] = useState<GateResult[]>([]);
+  const [gateSummary, setGateSummary] = useState<GatePipelineSummary | null>(null);
+  const [gateError, setGateError] = useState('');
+  const gateStopRef = useRef<(() => void) | null>(null);
 
   const enabledSweepDims = useMemo(() => sweepDimensions.filter(d => d.enabled), [sweepDimensions]);
   const cartesianSize = useMemo(() => enabledSweepDims.reduce((acc, d) => acc * d.values.length, 1), [enabledSweepDims]);
@@ -104,12 +115,46 @@ export function useBacktestParams() {
     setSweepDimensions(prev => prev.map(d => d.key === key ? { ...d, enabled: !d.enabled } : d));
   }, []);
 
-  // Placeholder: backend Smart Tuning API not yet available.
-  // Replace setTimeout with pythonStrategyApi.startTuningRun when wired.
-  const runTuning = useCallback(() => {
+  const runTuning = useCallback(async () => {
     setTuningRunning(true);
-    setTimeout(() => setTuningRunning(false), 3000);
-  }, []);
+    try {
+      // Map enabled sweep dimensions to parameter space
+      const paramSpace: Record<string, number[]> = {};
+      const enabled = sweepDimensions.filter(d => d.enabled);
+      for (const dim of enabled) {
+        if (dim.values && dim.values.length > 0) paramSpace[dim.key] = dim.values as number[];
+        else paramSpace[dim.key] = [0.01, 0.02, 0.03, 0.05, 0.10];
+      }
+      // Create experiment via API (templateId is optional; code-based tuning uses empty string)
+      const { strategyExperimentApi } = await import('@/client/strategyExperiment');
+      await strategyExperimentApi.submit({
+        baseTemplateId: '',
+        parameterSpace: paramSpace as Record<string, unknown>,
+        searchMethod: tuneMethod === 'grid' ? 'grid' : 'random',
+        maxCandidates: Math.min(cartesianSize || 24, 48),
+        objective: 'balanced',
+      });
+      // TODO: poll for experiment completion and display candidates
+    } finally {
+      setTuningRunning(false);
+    }
+  }, [sweepDimensions, tuneMethod, cartesianSize]);
+
+  const runGate = useCallback(() => {
+    if (!backtestRunId) return;
+    gateStopRef.current?.();
+    setGateLoading(true); setGateGates([]); setGateSummary(null); setGateError('');
+    setSubTab('gate');
+    const stop = gateApi.runEvaluation(
+      { backtestRunId },
+      {
+        onGate: (g) => setGateGates(prev => [...prev, g]),
+        onCompleted: (s) => { setGateSummary(s); setGateLoading(false); },
+        onError: (e) => { setGateError(String(e?.message ?? e ?? 'Unknown error')); setGateLoading(false); },
+      },
+    );
+    gateStopRef.current = stop;
+  }, [backtestRunId]);
 
   return {
     submitting, status, metrics, errorMsg,
@@ -124,5 +169,6 @@ export function useBacktestParams() {
     subTab, setSubTab, tuneMethod, setTuneMethod,
     sweepDimensions, toggleDimension, enabledSweepDims, cartesianSize,
     tuningRunning, runTuning,
+    backtestRunId, gateLoading, gateGates, gateSummary, gateError, runGate,
   };
 }

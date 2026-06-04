@@ -39,6 +39,7 @@ type BacktestRun struct {
 	StrategyCode        *string    `db:"strategy_code"`
 	InitialCapital      *float64   `db:"initial_capital"`
 	ExtraSymbols        []string   `db:"extra_symbols"`
+	ParameterOverrides  []byte     `db:"parameter_overrides"`
 	CreatedAt           time.Time  `db:"created_at"`
 }
 
@@ -58,7 +59,7 @@ func (r *BacktestRunRepository) Create(ctx context.Context, run *BacktestRun) (u
 			extra_symbols,
 			created_at
 		)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,CURRENT_TIMESTAMP)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,CURRENT_TIMESTAMP)
 		RETURNING id
 	`
 	id := run.ID
