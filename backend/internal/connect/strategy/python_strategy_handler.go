@@ -22,9 +22,14 @@ import (
 
 // PythonStrategyServer implements ant.v1.PythonStrategyServiceHandler.
 type PythonStrategyServer struct {
-	backtestRepo *repository.BacktestRunRepository
-	log          *zap.Logger
-	client       *strategysvc.PythonClient
+	backtestRepo  *repository.BacktestRunRepository
+	log           *zap.Logger
+	client        *strategysvc.PythonClient
+	marketDataRepo *repository.MarketDataRepository
+}
+
+func (s *PythonStrategyServer) SetMarketDataRepo(r *repository.MarketDataRepository) {
+	s.marketDataRepo = r
 }
 
 var _ antv1c.PythonStrategyServiceHandler = (*PythonStrategyServer)(nil)

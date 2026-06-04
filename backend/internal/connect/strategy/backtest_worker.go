@@ -68,8 +68,8 @@ func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repo
 		return
 	}
 
-	startDate := ""
-	endDate := ""
+	startDate := time.Now().AddDate(0, -3, 0).Format("2006-01-02")
+	endDate := time.Now().Format("2006-01-02")
 	if run.FromTs != nil {
 		startDate = run.FromTs.Format("2006-01-02")
 	}
@@ -129,13 +129,28 @@ func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repo
 	}()
 
 	// Call Python engine with cancellable context.
+	// Fetch K-lines from ClickHouse md_bars.
+	klines := []strategysvc.KlineBar{}
+	if s.marketDataRepo != nil && run.Symbol != "" && run.Timeframe != "" {
+		chBars, _ := s.marketDataRepo.GetKlines(ctx, run.Symbol, "", run.Timeframe, run.FromTs, run.ToTs, 2000)
+		for _, b := range chBars {
+			klines = append(klines, strategysvc.KlineBar{
+				OpenTime: time.UnixMilli(int64(b.OpenTsUnixMs)).Format(time.RFC3339),
+				CloseTime: time.UnixMilli(int64(b.CloseTsUnixMs)).Format(time.RFC3339),
+				Open: b.Open, High: b.High, Low: b.Low, Close: b.Close, Volume: b.Volume,
+			})
+		}
+	}
+
 	result, err := s.client.Backtest(execCtx, &strategysvc.BacktestRequest{
-		Code:      code,
+		Code:       code,
 		Symbol:    run.Symbol,
 		Timeframe: run.Timeframe,
 		StartDate: startDate,
 		EndDate:   endDate,
 		Capital:   initialCapital,
+		Commission: 0,
+		Klines:     klines,
 	})
 	if err != nil {
 		if execCtx.Err() != nil {

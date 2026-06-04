@@ -179,7 +179,7 @@ func (w *ExperimentWorker) backtestAndScore(
 		ID:               uuid.New(),
 		UserID:           exp.UserID,
 		AccountID:        uuid.Nil,
-		Symbol:           "EURUSD",
+		Symbol:           "XAUUSDm",
 		Timeframe:        "1h",
 		FromTs:           timePtr(time.Now().AddDate(0, -1, 0)),
 		ToTs:             timePtr(time.Now()),

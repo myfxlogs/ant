@@ -136,6 +136,7 @@ func registerHandlers(
 	if cfg.StrategyServiceURL != "" {
 		pythonClient := strategysvc.NewPythonClient(cfg.StrategyServiceURL)
 		pythonStrategyServer.SetClient(pythonClient)
+			pythonStrategyServer.SetMarketDataRepo(marketDataRepo)
 		strategyServer.SetClient(pythonClient) // S2.5: real RunBacktest
 			pythonStrategyServer.StartBacktestWorker(context.Background()) // Background worker for async backtest runs
 		log.Info("Python strategy client configured", zap.String("url", cfg.StrategyServiceURL))
