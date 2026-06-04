@@ -10,7 +10,7 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/repository"
-	"anttrader/internal/strategysvc"
+	"connectrpc.com/connect"
 	"go.uber.org/zap"
 )
 
@@ -55,7 +55,7 @@ func (s *PythonStrategyServer) backtestWorker(ctx context.Context, workerID int)
 }
 
 func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repository.BacktestRun, leaseFor time.Duration) {
-	if s.client == nil {
+	if s.backtestClient == nil {
 		s.failRun(ctx, run.ID, "Python strategy service not available")
 		return
 	}
@@ -68,14 +68,8 @@ func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repo
 		return
 	}
 
-	startDate := time.Now().AddDate(0, -3, 0).Format("2006-01-02")
-	endDate := time.Now().Format("2006-01-02")
-	if run.FromTs != nil {
-		startDate = run.FromTs.Format("2006-01-02")
-	}
-	if run.ToTs != nil {
-		endDate = run.ToTs.Format("2006-01-02")
-	}
+	_ = time.Now() // dates now passed as Unix ms via fromMs/toMs
+	
 
 	initialCapital := 10000.0
 	if run.InitialCapital != nil {
@@ -128,76 +122,75 @@ func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repo
 		}
 	}()
 
-	// Call Python engine with cancellable context.
-	// Fetch K-lines from ClickHouse md_bars.
-	klines := []strategysvc.KlineBar{}
+	// Call Python backtest via ConnectRPC (proto contract).
+	klines := make([]*antv1.ExecuteKlineBar, 0)
 	if s.marketDataRepo != nil && run.Symbol != "" && run.Timeframe != "" {
 		chBars, _ := s.marketDataRepo.GetKlines(ctx, run.Symbol, "", run.Timeframe, run.FromTs, run.ToTs, 2000)
 		for _, b := range chBars {
-			klines = append(klines, strategysvc.KlineBar{
-				OpenTime: time.UnixMilli(int64(b.OpenTsUnixMs)).Format(time.RFC3339),
-				CloseTime: time.UnixMilli(int64(b.CloseTsUnixMs)).Format(time.RFC3339),
+			klines = append(klines, &antv1.ExecuteKlineBar{
+				OpenTimeMs: int64(b.OpenTsUnixMs), CloseTimeMs: int64(b.CloseTsUnixMs),
 				Open: b.Open, High: b.High, Low: b.Low, Close: b.Close, Volume: b.Volume,
 			})
 		}
 	}
 
-	result, err := s.client.Backtest(execCtx, &strategysvc.BacktestRequest{
-		Code:       code,
-		Symbol:    run.Symbol,
-		Timeframe: run.Timeframe,
-		StartDate: startDate,
-		EndDate:   endDate,
-		Capital:   initialCapital,
-		Commission: 0,
-		Klines:     klines,
-	})
+	fromMs := int64(0)
+	toMs := int64(0)
+	if run.FromTs != nil { fromMs = run.FromTs.UnixMilli() }
+	if run.ToTs != nil { toMs = run.ToTs.UnixMilli() }
+
+	resp, err := s.backtestClient.RunBacktest(execCtx,
+		connect.NewRequest(&antv1.ExecuteBacktestRequest{
+			StrategyId: run.ID.String(), StrategyCode: code,
+			Symbol: run.Symbol, Timeframe: run.Timeframe,
+			StartDateMs: fromMs, EndDateMs: toMs,
+			InitialCapital: initialCapital, Commission: 0,
+			Klines: klines,
+		}))
 	if err != nil {
 		if execCtx.Err() != nil {
-			// Cancelled by user — mark as cancelled not failed.
-			s.log.Info("backtest worker: run cancelled",
-				zap.String("run_id", run.ID.String()))
+			s.log.Info("backtest worker: run cancelled", zap.String("run_id", run.ID.String()))
 			now := time.Now()
-			status := "CANCELED"
-			_ = s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, status, "cancelled by user", nil, &now, nil, nil)
+			_ = s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, "CANCELED", "cancelled by user", nil, &now, nil, nil)
 			return
 		}
-		s.log.Error("backtest worker: python backtest failed",
-			zap.String("run_id", run.ID.String()), zap.Error(err))
+		s.log.Error("backtest worker: python backtest failed", zap.String("run_id", run.ID.String()), zap.Error(err))
 		s.failRun(ctx, run.ID, fmt.Sprintf("backtest execution failed: %v", err))
 		return
 	}
 
-	if !result.Success {
-		s.failRun(ctx, run.ID, result.Error)
+	result := resp.Msg
+	if !result.GetSuccess() {
+		s.failRun(ctx, run.ID, result.GetError())
 		return
 	}
 
 	// Build metrics JSON for storage
+	m := result.Metrics
 	metricsDoc := map[string]interface{}{
-		"total_return":    result.TotalReturn,
-		"annual_return":   result.AnnualReturn,
-		"max_drawdown":    result.MaxDrawdown,
-		"sharpe_ratio":    result.SharpeRatio,
-		"win_rate":        result.WinRate,
-		"profit_factor":   result.ProfitFactor,
-		"total_trades":    result.TotalTrades,
-		"winning_trades":  result.WinningTrades,
-		"losing_trades":   result.LosingTrades,
-		"average_profit":  result.AverageProfit,
-		"average_loss":    result.AverageLoss,
-		"risk_score":      result.RiskScore,
-		"risk_level":      result.RiskLevel,
-		"risk_reasons":    result.RiskReasons,
-		"risk_warnings":   result.RiskWarnings,
-		"is_reliable":     result.IsReliable,
+		"total_return":    m.TotalReturn,
+		"annual_return":   m.AnnualReturn,
+		"max_drawdown":    m.MaxDrawdown,
+		"sharpe_ratio":    m.SharpeRatio,
+		"win_rate":        m.WinRate,
+		"profit_factor":   m.ProfitFactor,
+		"total_trades":    m.TotalTrades,
+		"winning_trades":  m.WinningTrades,
+		"losing_trades":   m.LosingTrades,
+		"average_profit":  m.AverageProfit,
+		"average_loss":    m.AverageLoss,
+		"risk_score":      result.GetRisk().GetScore(),
+		"risk_level":      result.GetRisk().GetLevel(),
+		"risk_reasons":    result.GetRisk().GetReasons(),
+		"risk_warnings":   result.GetRisk().GetWarnings(),
+		"is_reliable":     result.GetRisk().GetIsReliable(),
 	}
 	metricsJSON, err := json.Marshal(metricsDoc)
 	if err != nil {
 		s.failRun(ctx, run.ID, fmt.Sprintf("metrics marshal failed: %v", err))
 		return
 	}
-	equityJSON, _ := json.Marshal(result.EquityCurve)
+	equityJSON, _ := json.Marshal(result.GetEquityCurve())
 
 	// Validate metrics can round-trip through proto types — catch schema drift early
 	var checkMetrics antv1.BacktestMetrics
@@ -225,8 +218,8 @@ func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repo
 
 	s.log.Info("backtest worker: run completed",
 		zap.String("run_id", run.ID.String()),
-		zap.Float64("total_return", result.TotalReturn),
-		zap.Float64("sharpe", result.SharpeRatio))
+		zap.Float64("total_return", result.GetMetrics().GetTotalReturn()),
+		zap.Float64("sharpe", m.SharpeRatio))
 }
 
 func (s *PythonStrategyServer) failRun(ctx context.Context, runID uuid.UUID, errMsg string) {
@@ -242,7 +235,7 @@ func (s *PythonStrategyServer) failRun(ctx context.Context, runID uuid.UUID, err
 // runs and execute them via the Python strategy engine. Call this once during server startup.
 // Defaults to 3 concurrent workers; each claims a run via SKIP LOCKED.
 func (s *PythonStrategyServer) StartBacktestWorker(ctx context.Context) {
-	if s.client == nil {
+	if s.backtestClient == nil {
 		s.log.Warn("backtest worker: Python client not configured, workers will not start")
 		return
 	}

@@ -1,5 +1,8 @@
 # Python 3.14 基线（运行时主版本通过 ADR 锁版；以下依赖需兼容 3.14）
 
+# Proto + ConnectRPC
+protobuf>=5.26,<6
+
 # 基础依赖
 fastapi>=0.115,<0.120
 uvicorn[standard]>=0.32,<1

@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+// BacktestService runs strategy backtests via the Python engine.
+// Replaces the previous FastAPI JSON /api/backtest endpoint.
+service BacktestService {
+  // RunBacktest executes a single backtest and returns metrics.
+  rpc RunBacktest(ExecuteBacktestRequest) returns (ExecuteBacktestResponse);
+}
+
+message ExecuteKlineBar {
+  int64 open_time_ms = 1;   // Unix milliseconds
+  int64 close_time_ms = 2;  // Unix milliseconds
+  double open = 3;
+  double high = 4;
+  double low = 5;
+  double close = 6;
+  double volume = 7;
+}
+
+message ExecuteBacktestRequest {
+  string strategy_id = 1;   // unique run identifier
+  string strategy_code = 2; // Python strategy source
+  string symbol = 3;
+  string timeframe = 4;
+  int64 start_date_ms = 5;  // Unix milliseconds
+  int64 end_date_ms = 6;    // Unix milliseconds
+  double initial_capital = 7;
+  double commission = 8;
+  double spread = 9;
+  double swap_rate = 10;
+  string server_timezone = 11;
+  int32 rollover_hour = 12;
+  int32 triple_swap_weekday = 13;
+  string slippage_mode = 14;
+  double slippage_rate = 15;
+  int32 slippage_seed = 16;
+  repeated ExecuteKlineBar klines = 17;
+  repeated string extra_symbols = 18;
+}
+
+message ExecuteBacktestTrade {
+  int64 ticket = 1;
+  string side = 2;
+  double volume = 3;
+  int64 open_ts_ms = 4;
+  double open_price = 5;
+  int64 close_ts_ms = 6;
+  double close_price = 7;
+  double pnl = 8;
+  double commission = 9;
+  string reason = 10;
+}
+
+message ExecuteBacktestResponse {
+  bool success = 1;
+  ExecuteBacktestMetrics metrics = 2;
+  ExecuteRiskAssessment risk = 3;
+  repeated double equity_curve = 4;
+  repeated ExecuteBacktestTrade trades = 5;
+  string error = 6;
+}
+
+message ExecuteBacktestMetrics {
+  double total_return = 1;
+  double annual_return = 2;
+  double max_drawdown = 3;
+  double sharpe_ratio = 4;
+  double win_rate = 5;
+  double profit_factor = 6;
+  int32 total_trades = 7;
+  int32 winning_trades = 8;
+  int32 losing_trades = 9;
+  double average_profit = 10;
+  double average_loss = 11;
+}
+
+message ExecuteRiskAssessment {
+  int32 score = 1;
+  string level = 2;
+  repeated string reasons = 3;
+  repeated string warnings = 4;
+  bool is_reliable = 5;
+}

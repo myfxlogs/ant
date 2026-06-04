@@ -136,6 +136,8 @@ func registerHandlers(
 	if cfg.StrategyServiceURL != "" {
 		pythonClient := strategysvc.NewPythonClient(cfg.StrategyServiceURL)
 		pythonStrategyServer.SetClient(pythonClient)
+			backtestClient := antv1c.NewBacktestServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
+			pythonStrategyServer.SetBacktestClient(backtestClient)
 			pythonStrategyServer.SetMarketDataRepo(marketDataRepo)
 		strategyServer.SetClient(pythonClient) // S2.5: real RunBacktest
 			pythonStrategyServer.StartBacktestWorker(context.Background()) // Background worker for async backtest runs

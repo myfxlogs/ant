@@ -25,6 +25,7 @@ type PythonStrategyServer struct {
 	backtestRepo  *repository.BacktestRunRepository
 	log           *zap.Logger
 	client        *strategysvc.PythonClient
+	backtestClient antv1c.BacktestServiceClient
 	marketDataRepo *repository.MarketDataRepository
 }
 
@@ -39,6 +40,7 @@ func NewPythonStrategyServer(backtestRepo *repository.BacktestRunRepository, log
 }
 
 func (s *PythonStrategyServer) SetClient(c *strategysvc.PythonClient) { s.client = c }
+func (s *PythonStrategyServer) SetBacktestClient(c antv1c.BacktestServiceClient) { s.backtestClient = c }
 
 // userIDRequire extracts and validates the authenticated user ID from context.
 func userIDRequire(ctx context.Context) (uuid.UUID, error) {
