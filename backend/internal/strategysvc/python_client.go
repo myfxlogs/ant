@@ -72,13 +72,14 @@ func (c *PythonClient) recordFailure() {
 
 // BacktestRequest mirrors the Python service's /api/backtest payload.
 type BacktestRequest struct {
-	Code               string            `json:"code"`
-	Symbol             string            `json:"symbol"`
-	Timeframe          string            `json:"timeframe"`
-	StartDate          string            `json:"start_date,omitempty"`
-	EndDate            string            `json:"end_date,omitempty"`
-	Balance            float64           `json:"initial_balance"`
-	Leverage           int32             `json:"leverage,omitempty"`
+	StrategyID         string                 `json:"strategy_id"`
+	Code               string                 `json:"strategy_code"`
+	Symbol             string                 `json:"symbol"`
+	Timeframe          string                 `json:"timeframe"`
+	StartDate          string                 `json:"start_date"`
+	EndDate            string                 `json:"end_date"`
+	Balance            float64                `json:"initial_balance"`
+	Leverage           int32                  `json:"leverage,omitempty"`
 	ParameterOverrides map[string]interface{} `json:"parameter_overrides,omitempty"`
 }
 

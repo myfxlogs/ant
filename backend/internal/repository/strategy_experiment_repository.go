@@ -88,7 +88,7 @@ func (r *StrategyExperimentRepository) Create(ctx context.Context, exp *Strategy
 func (r *StrategyExperimentRepository) Get(ctx context.Context, userID, id uuid.UUID) (*StrategyExperiment, error) {
 	var exp StrategyExperiment
 	err := r.db.QueryRow(ctx, `SELECT id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,strategy_code,created_at,finished_at FROM strategy_experiments WHERE id = $1 AND user_id = $2`, id, userID).Scan(
-		&exp.ID, &exp.UserID, &exp.BaseTemplateID, &exp.Status, &exp.ParameterSpace, &exp.SearchMethod, &exp.MaxCandidates, &exp.Objective, &exp.MarketRegimeRef, &exp.BestCandidateID, &exp.JobID, &exp.CreatedAt, &exp.FinishedAt,
+		&exp.ID, &exp.UserID, &exp.BaseTemplateID, &exp.Status, &exp.ParameterSpace, &exp.SearchMethod, &exp.MaxCandidates, &exp.Objective, &exp.MarketRegimeRef, &exp.BestCandidateID, &exp.JobID, &exp.StrategyCode, &exp.CreatedAt, &exp.FinishedAt,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrStrategyExperimentNotFound
@@ -124,7 +124,7 @@ func (r *StrategyExperimentRepository) List(ctx context.Context, userID uuid.UUI
 func (r *StrategyExperimentRepository) Cancel(ctx context.Context, userID, id uuid.UUID) (*StrategyExperiment, error) {
 	var exp StrategyExperiment
 	err := r.db.QueryRow(ctx, `UPDATE strategy_experiments SET status = 'CANCELLED', finished_at = COALESCE(finished_at, now()) WHERE id = $1 AND user_id = $2 AND status IN ('QUEUED','RUNNING') RETURNING id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,strategy_code,created_at,finished_at`, id, userID).Scan(
-		&exp.ID, &exp.UserID, &exp.BaseTemplateID, &exp.Status, &exp.ParameterSpace, &exp.SearchMethod, &exp.MaxCandidates, &exp.Objective, &exp.MarketRegimeRef, &exp.BestCandidateID, &exp.JobID, &exp.CreatedAt, &exp.FinishedAt,
+		&exp.ID, &exp.UserID, &exp.BaseTemplateID, &exp.Status, &exp.ParameterSpace, &exp.SearchMethod, &exp.MaxCandidates, &exp.Objective, &exp.MarketRegimeRef, &exp.BestCandidateID, &exp.JobID, &exp.StrategyCode, &exp.CreatedAt, &exp.FinishedAt,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return r.Get(ctx, userID, id)

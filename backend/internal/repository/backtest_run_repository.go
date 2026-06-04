@@ -56,7 +56,7 @@ func (r *BacktestRunRepository) Create(ctx context.Context, run *BacktestRun) (u
 			strategy_code_hash, python_service_version,
 			cost_model_snapshot, metrics, equity_curve,
 			status, error, started_at, finished_at, strategy_code, initial_capital,
-			extra_symbols,
+			extra_symbols, parameter_overrides,
 			created_at
 		)
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,CURRENT_TIMESTAMP)
@@ -93,6 +93,7 @@ func (r *BacktestRunRepository) Create(ctx context.Context, run *BacktestRun) (u
 		run.StrategyCode,
 		run.InitialCapital,
 		run.ExtraSymbols,
+		run.ParameterOverrides,
 	).Scan(&out)
 	return out, err
 }
@@ -110,7 +111,7 @@ func (r *BacktestRunRepository) GetByID(ctx context.Context, userID, runID uuid.
 			strategy_code_hash, python_service_version,
 			cost_model_snapshot, metrics, equity_curve,
 			status, error, started_at, finished_at, strategy_code, initial_capital,
-			extra_symbols,
+			extra_symbols, parameter_overrides,
 			created_at
 		FROM backtest_runs
 		WHERE id = $1 AND user_id = $2`,

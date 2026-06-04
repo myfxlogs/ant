@@ -179,9 +179,11 @@ func (w *ExperimentWorker) backtestAndScore(
 		ID:               uuid.New(),
 		UserID:           exp.UserID,
 		AccountID:        uuid.Nil,
-		Symbol:           "",
-		Timeframe:        "",
+		Symbol:           "EURUSD",
+		Timeframe:        "1h",
 		Mode:             "KLINE_RANGE",
+		FromTs:           timePtr(time.Now().AddDate(0, -3, 0)),
+		ToTs:             timePtr(time.Now()),
 		Status:           "PENDING",
 		StrategyCode:     &modifiedCode,
 		InitialCapital:   f64Ptr(10000),
@@ -242,3 +244,5 @@ func parseBacktestMetrics(raw []byte) *ai.BacktestMetrics {
 }
 
 func marshalOverrides(overrides map[string]interface{}) []byte { b, _ := json.Marshal(overrides); return b }
+
+func timePtr(t time.Time) *time.Time { return &t }
