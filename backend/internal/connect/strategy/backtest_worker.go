@@ -135,7 +135,7 @@ func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repo
 		Timeframe: run.Timeframe,
 		StartDate: startDate,
 		EndDate:   endDate,
-		Balance:   initialCapital,
+		Capital:   initialCapital,
 	})
 	if err != nil {
 		if execCtx.Err() != nil {

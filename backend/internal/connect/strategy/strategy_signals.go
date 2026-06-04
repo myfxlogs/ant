@@ -33,7 +33,7 @@ func (s *StrategyServer) RunBacktest(ctx context.Context, req *connect.Request[a
 					Code:      tmpl.Code,
 					Symbol:    m.Symbol,
 					Timeframe: m.Timeframe,
-					Balance:   balance,
+					Capital:   balance,
 				})
 				if err != nil {
 					s.log.Warn("RunBacktest: python backtest failed, falling back", zap.Error(err))

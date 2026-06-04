@@ -70,17 +70,28 @@ func (c *PythonClient) recordFailure() {
 	c.mu.Unlock()
 }
 
+// KlineBar mirrors the Python service's KlineData schema.
+type KlineBar struct {
+	OpenTime  string  `json:"open_time"`
+	CloseTime string  `json:"close_time"`
+	Open      float64 `json:"open_price"`
+	High      float64 `json:"high_price"`
+	Low       float64 `json:"low_price"`
+	Close     float64 `json:"close_price"`
+	Volume    float64 `json:"volume"`
+}
+
 // BacktestRequest mirrors the Python service's /api/backtest payload.
 type BacktestRequest struct {
-	StrategyID         string                 `json:"strategy_id"`
-	Code               string                 `json:"strategy_code"`
-	Symbol             string                 `json:"symbol"`
-	Timeframe          string                 `json:"timeframe"`
-	StartDate          string                 `json:"start_date"`
-	EndDate            string                 `json:"end_date"`
-	Balance            float64                `json:"initial_balance"`
-	Leverage           int32                  `json:"leverage,omitempty"`
-	ParameterOverrides map[string]interface{} `json:"parameter_overrides,omitempty"`
+	StrategyID  string     `json:"strategy_id"`
+	Code        string     `json:"strategy_code"`
+	Symbol      string     `json:"symbol"`
+	Timeframe   string     `json:"timeframe"`
+	StartDate   string     `json:"start_date"`
+	EndDate     string     `json:"end_date"`
+	Capital     float64    `json:"initial_capital"`
+	Commission  float64    `json:"commission"`
+	Klines      []KlineBar `json:"klines"`
 }
 
 // BacktestResult is the response from the Python backtest engine.

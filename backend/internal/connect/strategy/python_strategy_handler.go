@@ -115,7 +115,7 @@ func (s *PythonStrategyServer) Backtest(ctx context.Context, req *connect.Reques
 			Code:      req.Msg.Code,
 			Symbol:    req.Msg.Symbol,
 			Timeframe: req.Msg.Timeframe,
-			Balance:   10000,
+			Capital:   10000,
 		})
 		if err != nil {
 			s.log.Warn("python backtest failed", zap.Error(err))
