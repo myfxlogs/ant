@@ -8,7 +8,7 @@ import logging
 import os
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Response
 from fastapi.responses import JSONResponse
 from google.protobuf.json_format import MessageToDict, Parse
 
@@ -34,18 +34,27 @@ def _to_dt(ms: int) -> datetime:
     return datetime.fromtimestamp(ms / 1000.0, tz=timezone.utc)
 
 
+async def _parse_request(request: Request, req_cls):
+    """Parse request body as proto binary or JSON based on Content-Type."""
+    ct = request.headers.get("content-type", "")
+    if "application/proto" in ct or "application/grpc" in ct:
+        return req_cls.FromString(await request.body())
+    body = await request.json()
+    return Parse(json.dumps(body), req_cls(), ignore_unknown_fields=True)
+
+
+def _respond(proto_resp, request: Request) -> Response:
+    """Return proto binary or JSON based on request's Content-Type."""
+    ct = request.headers.get("content-type", "")
+    if "application/proto" in ct:
+        return Response(content=proto_resp.SerializeToString(), media_type="application/proto")
+    return JSONResponse(content=MessageToDict(proto_resp, preserving_proto_field_name=True))
+
+
 @router.post("/ant.v1.BacktestService/RunBacktest")
 async def run_backtest_connect(request: Request):
-    """ConnectRPC handler: supports JSON + protobuf binary."""
-    content_type = request.headers.get("content-type", "")
-    req = ExecuteBacktestRequest()
-
-    if "application/proto" in content_type or "application/grpc" in content_type:
-        body = await request.body()
-        req.ParseFromString(body)
-    else:
-        body = await request.json()
-        Parse(json.dumps(body), req, ignore_unknown_fields=True)
+    """ConnectRPC handler: proto binary → engine → proto binary."""
+    req = await _parse_request(request, ExecuteBacktestRequest)
 
     async with backtest_semaphore:
         engine_req = _build_engine_request(req)
@@ -58,7 +67,7 @@ async def run_backtest_connect(request: Request):
         resp = ExecuteBacktestResponse(success=result.success)
         if not result.success:
             resp.error = result.error or "backtest failed"
-            return JSONResponse(content=MessageToDict(resp, preserving_proto_field_name=True))
+            return _respond(resp, request)
 
         m = result.metrics
         resp.metrics.CopyFrom(ExecuteBacktestMetrics(
@@ -88,7 +97,7 @@ async def run_backtest_connect(request: Request):
                 reason=str(t.reason.value if hasattr(t.reason, "value") else t.reason),
             ))
 
-        return JSONResponse(content=MessageToDict(resp, preserving_proto_field_name=True))
+        return _respond(resp, request)
 
 
 def _build_engine_request(req: ExecuteBacktestRequest) -> EngineBacktestRequest:

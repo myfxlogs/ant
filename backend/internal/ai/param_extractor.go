@@ -81,11 +81,13 @@ func ApplyOverrides(code string, overrides map[string]interface{}) string {
 	out := make([]string, 0, len(lines))
 	for _, line := range lines {
 		trimmed := strings.TrimSpace(line)
-		if !strings.HasPrefix(trimmed, "@param") {
+		cleaned := strings.TrimPrefix(trimmed, "# ")
+		cleaned = strings.TrimPrefix(cleaned, "#")
+		if !strings.HasPrefix(cleaned, "@param") {
 			out = append(out, line)
 			continue
 		}
-		m := paramPattern.FindStringSubmatch(trimmed)
+		m := paramPattern.FindStringSubmatch(cleaned)
 		if m == nil {
 			out = append(out, line)
 			continue
