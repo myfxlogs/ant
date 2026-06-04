@@ -10,7 +10,167 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file backtest_service.proto.
  */
 export const file_backtest_service: GenFile = /*@__PURE__*/
-  fileDesc("ChZiYWNrdGVzdF9zZXJ2aWNlLnByb3RvEgZhbnQudjEihgEKD0V4ZWN1dGVLbGluZUJhchIUCgxvcGVuX3RpbWVfbXMYASABKAMSFQoNY2xvc2VfdGltZV9tcxgCIAEoAxIMCgRvcGVuGAMgASgBEgwKBGhpZ2gYBCABKAESCwoDbG93GAUgASgBEg0KBWNsb3NlGAYgASgBEg4KBnZvbHVtZRgHIAEoASK1AwoWRXhlY3V0ZUJhY2t0ZXN0UmVxdWVzdBITCgtzdHJhdGVneV9pZBgBIAEoCRIVCg1zdHJhdGVneV9jb2RlGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkSFQoNc3RhcnRfZGF0ZV9tcxgFIAEoAxITCgtlbmRfZGF0ZV9tcxgGIAEoAxIXCg9pbml0aWFsX2NhcGl0YWwYByABKAESEgoKY29tbWlzc2lvbhgIIAEoARIOCgZzcHJlYWQYCSABKAESEQoJc3dhcF9yYXRlGAogASgBEhcKD3NlcnZlcl90aW1lem9uZRgLIAEoCRIVCg1yb2xsb3Zlcl9ob3VyGAwgASgFEhsKE3RyaXBsZV9zd2FwX3dlZWtkYXkYDSABKAUSFQoNc2xpcHBhZ2VfbW9kZRgOIAEoCRIVCg1zbGlwcGFnZV9yYXRlGA8gASgBEhUKDXNsaXBwYWdlX3NlZWQYECABKAUSJwoGa2xpbmVzGBEgAygLMhcuYW50LnYxLkV4ZWN1dGVLbGluZUJhchIVCg1leHRyYV9zeW1ib2xzGBIgAygJIscBChRFeGVjdXRlQmFja3Rlc3RUcmFkZRIOCgZ0aWNrZXQYASABKAMSDAoEc2lkZRgCIAEoCRIOCgZ2b2x1bWUYAyABKAESEgoKb3Blbl90c19tcxgEIAEoAxISCgpvcGVuX3ByaWNlGAUgASgBEhMKC2Nsb3NlX3RzX21zGAYgASgDEhMKC2Nsb3NlX3ByaWNlGAcgASgBEgsKA3BubBgIIAEoARISCgpjb21taXNzaW9uGAkgASgBEg4KBnJlYXNvbhgKIAEoCSLbAQoXRXhlY3V0ZUJhY2t0ZXN0UmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCBIvCgdtZXRyaWNzGAIgASgLMh4uYW50LnYxLkV4ZWN1dGVCYWNrdGVzdE1ldHJpY3MSKwoEcmlzaxgDIAEoCzIdLmFudC52MS5FeGVjdXRlUmlza0Fzc2Vzc21lbnQSFAoMZXF1aXR5X2N1cnZlGAQgAygBEiwKBnRyYWRlcxgFIAMoCzIcLmFudC52MS5FeGVjdXRlQmFja3Rlc3RUcmFkZRINCgVlcnJvchgGIAEoCSKNAgoWRXhlY3V0ZUJhY2t0ZXN0TWV0cmljcxIUCgx0b3RhbF9yZXR1cm4YASABKAESFQoNYW5udWFsX3JldHVybhgCIAEoARIUCgxtYXhfZHJhd2Rvd24YAyABKAESFAoMc2hhcnBlX3JhdGlvGAQgASgBEhAKCHdpbl9yYXRlGAUgASgBEhUKDXByb2ZpdF9mYWN0b3IYBiABKAESFAoMdG90YWxfdHJhZGVzGAcgASgFEhYKDndpbm5pbmdfdHJhZGVzGAggASgFEhUKDWxvc2luZ190cmFkZXMYCSABKAUSFgoOYXZlcmFnZV9wcm9maXQYCiABKAESFAoMYXZlcmFnZV9sb3NzGAsgASgBIm0KFUV4ZWN1dGVSaXNrQXNzZXNzbWVudBINCgVzY29yZRgBIAEoBRINCgVsZXZlbBgCIAEoCRIPCgdyZWFzb25zGAMgAygJEhAKCHdhcm5pbmdzGAQgAygJEhMKC2lzX3JlbGlhYmxlGAUgASgIMmEKD0JhY2t0ZXN0U2VydmljZRJOCgtSdW5CYWNrdGVzdBIeLmFudC52MS5FeGVjdXRlQmFja3Rlc3RSZXF1ZXN0Gh8uYW50LnYxLkV4ZWN1dGVCYWNrdGVzdFJlc3BvbnNlQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
+  fileDesc("ChZiYWNrdGVzdF9zZXJ2aWNlLnByb3RvEgZhbnQudjEiLgoVRW5naW5lVmFsaWRhdGVSZXF1ZXN0EhUKDXN0cmF0ZWd5X2NvZGUYASABKAkiSQoWRW5naW5lVmFsaWRhdGVSZXNwb25zZRINCgV2YWxpZBgBIAEoCBIOCgZlcnJvcnMYAiADKAkSEAoId2FybmluZ3MYAyADKAkikgEKGEVuZ2luZVJ1blN0cmF0ZWd5UmVxdWVzdBITCgtzdHJhdGVneV9pZBgBIAEoCRIVCg1zdHJhdGVneV9jb2RlGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkSJwoGa2xpbmVzGAUgAygLMhcuYW50LnYxLkV4ZWN1dGVLbGluZUJhciJmChlFbmdpbmVSdW5TdHJhdGVneVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSKQoGc2lnbmFsGAIgASgLMhkuYW50LnYxLkVuZ2luZVRyYWRlU2lnbmFsEg0KBWVycm9yGAMgASgJIp4BChFFbmdpbmVUcmFkZVNpZ25hbBIOCgZzaWduYWwYASABKAkSDgoGc3ltYm9sGAIgASgJEg0KBXByaWNlGAMgASgBEg4KBnZvbHVtZRgEIAEoARIRCglzdG9wX2xvc3MYBSABKAESEwoLdGFrZV9wcm9maXQYBiABKAESEgoKY29uZmlkZW5jZRgHIAEoARIOCgZyZWFzb24YCCABKAkihgEKD0V4ZWN1dGVLbGluZUJhchIUCgxvcGVuX3RpbWVfbXMYASABKAMSFQoNY2xvc2VfdGltZV9tcxgCIAEoAxIMCgRvcGVuGAMgASgBEgwKBGhpZ2gYBCABKAESCwoDbG93GAUgASgBEg0KBWNsb3NlGAYgASgBEg4KBnZvbHVtZRgHIAEoASK1AwoWRXhlY3V0ZUJhY2t0ZXN0UmVxdWVzdBITCgtzdHJhdGVneV9pZBgBIAEoCRIVCg1zdHJhdGVneV9jb2RlGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkSFQoNc3RhcnRfZGF0ZV9tcxgFIAEoAxITCgtlbmRfZGF0ZV9tcxgGIAEoAxIXCg9pbml0aWFsX2NhcGl0YWwYByABKAESEgoKY29tbWlzc2lvbhgIIAEoARIOCgZzcHJlYWQYCSABKAESEQoJc3dhcF9yYXRlGAogASgBEhcKD3NlcnZlcl90aW1lem9uZRgLIAEoCRIVCg1yb2xsb3Zlcl9ob3VyGAwgASgFEhsKE3RyaXBsZV9zd2FwX3dlZWtkYXkYDSABKAUSFQoNc2xpcHBhZ2VfbW9kZRgOIAEoCRIVCg1zbGlwcGFnZV9yYXRlGA8gASgBEhUKDXNsaXBwYWdlX3NlZWQYECABKAUSJwoGa2xpbmVzGBEgAygLMhcuYW50LnYxLkV4ZWN1dGVLbGluZUJhchIVCg1leHRyYV9zeW1ib2xzGBIgAygJIscBChRFeGVjdXRlQmFja3Rlc3RUcmFkZRIOCgZ0aWNrZXQYASABKAMSDAoEc2lkZRgCIAEoCRIOCgZ2b2x1bWUYAyABKAESEgoKb3Blbl90c19tcxgEIAEoAxISCgpvcGVuX3ByaWNlGAUgASgBEhMKC2Nsb3NlX3RzX21zGAYgASgDEhMKC2Nsb3NlX3ByaWNlGAcgASgBEgsKA3BubBgIIAEoARISCgpjb21taXNzaW9uGAkgASgBEg4KBnJlYXNvbhgKIAEoCSLbAQoXRXhlY3V0ZUJhY2t0ZXN0UmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCBIvCgdtZXRyaWNzGAIgASgLMh4uYW50LnYxLkV4ZWN1dGVCYWNrdGVzdE1ldHJpY3MSKwoEcmlzaxgDIAEoCzIdLmFudC52MS5FeGVjdXRlUmlza0Fzc2Vzc21lbnQSFAoMZXF1aXR5X2N1cnZlGAQgAygBEiwKBnRyYWRlcxgFIAMoCzIcLmFudC52MS5FeGVjdXRlQmFja3Rlc3RUcmFkZRINCgVlcnJvchgGIAEoCSKNAgoWRXhlY3V0ZUJhY2t0ZXN0TWV0cmljcxIUCgx0b3RhbF9yZXR1cm4YASABKAESFQoNYW5udWFsX3JldHVybhgCIAEoARIUCgxtYXhfZHJhd2Rvd24YAyABKAESFAoMc2hhcnBlX3JhdGlvGAQgASgBEhAKCHdpbl9yYXRlGAUgASgBEhUKDXByb2ZpdF9mYWN0b3IYBiABKAESFAoMdG90YWxfdHJhZGVzGAcgASgFEhYKDndpbm5pbmdfdHJhZGVzGAggASgFEhUKDWxvc2luZ190cmFkZXMYCSABKAUSFgoOYXZlcmFnZV9wcm9maXQYCiABKAESFAoMYXZlcmFnZV9sb3NzGAsgASgBIm0KFUV4ZWN1dGVSaXNrQXNzZXNzbWVudBINCgVzY29yZRgBIAEoBRINCgVsZXZlbBgCIAEoCRIPCgdyZWFzb25zGAMgAygJEhAKCHdhcm5pbmdzGAQgAygJEhMKC2lzX3JlbGlhYmxlGAUgASgIMogCCg9CYWNrdGVzdFNlcnZpY2USTgoLUnVuQmFja3Rlc3QSHi5hbnQudjEuRXhlY3V0ZUJhY2t0ZXN0UmVxdWVzdBofLmFudC52MS5FeGVjdXRlQmFja3Rlc3RSZXNwb25zZRJRChBWYWxpZGF0ZVN0cmF0ZWd5Eh0uYW50LnYxLkVuZ2luZVZhbGlkYXRlUmVxdWVzdBoeLmFudC52MS5FbmdpbmVWYWxpZGF0ZVJlc3BvbnNlElIKC1J1blN0cmF0ZWd5EiAuYW50LnYxLkVuZ2luZVJ1blN0cmF0ZWd5UmVxdWVzdBohLmFudC52MS5FbmdpbmVSdW5TdHJhdGVneVJlc3BvbnNlQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
+
+/**
+ * @generated from message ant.v1.EngineValidateRequest
+ */
+export type EngineValidateRequest = Message<"ant.v1.EngineValidateRequest"> & {
+  /**
+   * @generated from field: string strategy_code = 1;
+   */
+  strategyCode: string;
+};
+
+/**
+ * Describes the message ant.v1.EngineValidateRequest.
+ * Use `create(EngineValidateRequestSchema)` to create a new message.
+ */
+export const EngineValidateRequestSchema: GenMessage<EngineValidateRequest> = /*@__PURE__*/
+  messageDesc(file_backtest_service, 0);
+
+/**
+ * @generated from message ant.v1.EngineValidateResponse
+ */
+export type EngineValidateResponse = Message<"ant.v1.EngineValidateResponse"> & {
+  /**
+   * @generated from field: bool valid = 1;
+   */
+  valid: boolean;
+
+  /**
+   * @generated from field: repeated string errors = 2;
+   */
+  errors: string[];
+
+  /**
+   * @generated from field: repeated string warnings = 3;
+   */
+  warnings: string[];
+};
+
+/**
+ * Describes the message ant.v1.EngineValidateResponse.
+ * Use `create(EngineValidateResponseSchema)` to create a new message.
+ */
+export const EngineValidateResponseSchema: GenMessage<EngineValidateResponse> = /*@__PURE__*/
+  messageDesc(file_backtest_service, 1);
+
+/**
+ * @generated from message ant.v1.EngineRunStrategyRequest
+ */
+export type EngineRunStrategyRequest = Message<"ant.v1.EngineRunStrategyRequest"> & {
+  /**
+   * @generated from field: string strategy_id = 1;
+   */
+  strategyId: string;
+
+  /**
+   * @generated from field: string strategy_code = 2;
+   */
+  strategyCode: string;
+
+  /**
+   * @generated from field: string symbol = 3;
+   */
+  symbol: string;
+
+  /**
+   * @generated from field: string timeframe = 4;
+   */
+  timeframe: string;
+
+  /**
+   * @generated from field: repeated ant.v1.ExecuteKlineBar klines = 5;
+   */
+  klines: ExecuteKlineBar[];
+};
+
+/**
+ * Describes the message ant.v1.EngineRunStrategyRequest.
+ * Use `create(EngineRunStrategyRequestSchema)` to create a new message.
+ */
+export const EngineRunStrategyRequestSchema: GenMessage<EngineRunStrategyRequest> = /*@__PURE__*/
+  messageDesc(file_backtest_service, 2);
+
+/**
+ * @generated from message ant.v1.EngineRunStrategyResponse
+ */
+export type EngineRunStrategyResponse = Message<"ant.v1.EngineRunStrategyResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+
+  /**
+   * @generated from field: ant.v1.EngineTradeSignal signal = 2;
+   */
+  signal?: EngineTradeSignal | undefined;
+
+  /**
+   * @generated from field: string error = 3;
+   */
+  error: string;
+};
+
+/**
+ * Describes the message ant.v1.EngineRunStrategyResponse.
+ * Use `create(EngineRunStrategyResponseSchema)` to create a new message.
+ */
+export const EngineRunStrategyResponseSchema: GenMessage<EngineRunStrategyResponse> = /*@__PURE__*/
+  messageDesc(file_backtest_service, 3);
+
+/**
+ * @generated from message ant.v1.EngineTradeSignal
+ */
+export type EngineTradeSignal = Message<"ant.v1.EngineTradeSignal"> & {
+  /**
+   * @generated from field: string signal = 1;
+   */
+  signal: string;
+
+  /**
+   * @generated from field: string symbol = 2;
+   */
+  symbol: string;
+
+  /**
+   * @generated from field: double price = 3;
+   */
+  price: number;
+
+  /**
+   * @generated from field: double volume = 4;
+   */
+  volume: number;
+
+  /**
+   * @generated from field: double stop_loss = 5;
+   */
+  stopLoss: number;
+
+  /**
+   * @generated from field: double take_profit = 6;
+   */
+  takeProfit: number;
+
+  /**
+   * @generated from field: double confidence = 7;
+   */
+  confidence: number;
+
+  /**
+   * @generated from field: string reason = 8;
+   */
+  reason: string;
+};
+
+/**
+ * Describes the message ant.v1.EngineTradeSignal.
+ * Use `create(EngineTradeSignalSchema)` to create a new message.
+ */
+export const EngineTradeSignalSchema: GenMessage<EngineTradeSignal> = /*@__PURE__*/
+  messageDesc(file_backtest_service, 4);
 
 /**
  * @generated from message ant.v1.ExecuteKlineBar
@@ -61,7 +221,7 @@ export type ExecuteKlineBar = Message<"ant.v1.ExecuteKlineBar"> & {
  * Use `create(ExecuteKlineBarSchema)` to create a new message.
  */
 export const ExecuteKlineBarSchema: GenMessage<ExecuteKlineBar> = /*@__PURE__*/
-  messageDesc(file_backtest_service, 0);
+  messageDesc(file_backtest_service, 5);
 
 /**
  * @generated from message ant.v1.ExecuteBacktestRequest
@@ -171,7 +331,7 @@ export type ExecuteBacktestRequest = Message<"ant.v1.ExecuteBacktestRequest"> & 
  * Use `create(ExecuteBacktestRequestSchema)` to create a new message.
  */
 export const ExecuteBacktestRequestSchema: GenMessage<ExecuteBacktestRequest> = /*@__PURE__*/
-  messageDesc(file_backtest_service, 1);
+  messageDesc(file_backtest_service, 6);
 
 /**
  * @generated from message ant.v1.ExecuteBacktestTrade
@@ -233,7 +393,7 @@ export type ExecuteBacktestTrade = Message<"ant.v1.ExecuteBacktestTrade"> & {
  * Use `create(ExecuteBacktestTradeSchema)` to create a new message.
  */
 export const ExecuteBacktestTradeSchema: GenMessage<ExecuteBacktestTrade> = /*@__PURE__*/
-  messageDesc(file_backtest_service, 2);
+  messageDesc(file_backtest_service, 7);
 
 /**
  * @generated from message ant.v1.ExecuteBacktestResponse
@@ -275,7 +435,7 @@ export type ExecuteBacktestResponse = Message<"ant.v1.ExecuteBacktestResponse"> 
  * Use `create(ExecuteBacktestResponseSchema)` to create a new message.
  */
 export const ExecuteBacktestResponseSchema: GenMessage<ExecuteBacktestResponse> = /*@__PURE__*/
-  messageDesc(file_backtest_service, 3);
+  messageDesc(file_backtest_service, 8);
 
 /**
  * @generated from message ant.v1.ExecuteBacktestMetrics
@@ -342,7 +502,7 @@ export type ExecuteBacktestMetrics = Message<"ant.v1.ExecuteBacktestMetrics"> & 
  * Use `create(ExecuteBacktestMetricsSchema)` to create a new message.
  */
 export const ExecuteBacktestMetricsSchema: GenMessage<ExecuteBacktestMetrics> = /*@__PURE__*/
-  messageDesc(file_backtest_service, 4);
+  messageDesc(file_backtest_service, 9);
 
 /**
  * @generated from message ant.v1.ExecuteRiskAssessment
@@ -379,7 +539,7 @@ export type ExecuteRiskAssessment = Message<"ant.v1.ExecuteRiskAssessment"> & {
  * Use `create(ExecuteRiskAssessmentSchema)` to create a new message.
  */
 export const ExecuteRiskAssessmentSchema: GenMessage<ExecuteRiskAssessment> = /*@__PURE__*/
-  messageDesc(file_backtest_service, 5);
+  messageDesc(file_backtest_service, 10);
 
 /**
  * BacktestService runs strategy backtests via the Python engine.
@@ -389,14 +549,28 @@ export const ExecuteRiskAssessmentSchema: GenMessage<ExecuteRiskAssessment> = /*
  */
 export const BacktestService: GenService<{
   /**
-   * RunBacktest executes a single backtest and returns metrics.
-   *
    * @generated from rpc ant.v1.BacktestService.RunBacktest
    */
   runBacktest: {
     methodKind: "unary";
     input: typeof ExecuteBacktestRequestSchema;
     output: typeof ExecuteBacktestResponseSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.BacktestService.ValidateStrategy
+   */
+  validateStrategy: {
+    methodKind: "unary";
+    input: typeof EngineValidateRequestSchema;
+    output: typeof EngineValidateResponseSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.BacktestService.RunStrategy
+   */
+  runStrategy: {
+    methodKind: "unary";
+    input: typeof EngineRunStrategyRequestSchema;
+    output: typeof EngineRunStrategyResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_backtest_service, 0);

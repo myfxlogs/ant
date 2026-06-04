@@ -36,12 +36,19 @@ const (
 	// BacktestServiceRunBacktestProcedure is the fully-qualified name of the BacktestService's
 	// RunBacktest RPC.
 	BacktestServiceRunBacktestProcedure = "/ant.v1.BacktestService/RunBacktest"
+	// BacktestServiceValidateStrategyProcedure is the fully-qualified name of the BacktestService's
+	// ValidateStrategy RPC.
+	BacktestServiceValidateStrategyProcedure = "/ant.v1.BacktestService/ValidateStrategy"
+	// BacktestServiceRunStrategyProcedure is the fully-qualified name of the BacktestService's
+	// RunStrategy RPC.
+	BacktestServiceRunStrategyProcedure = "/ant.v1.BacktestService/RunStrategy"
 )
 
 // BacktestServiceClient is a client for the ant.v1.BacktestService service.
 type BacktestServiceClient interface {
-	// RunBacktest executes a single backtest and returns metrics.
 	RunBacktest(context.Context, *connect.Request[v1.ExecuteBacktestRequest]) (*connect.Response[v1.ExecuteBacktestResponse], error)
+	ValidateStrategy(context.Context, *connect.Request[v1.EngineValidateRequest]) (*connect.Response[v1.EngineValidateResponse], error)
+	RunStrategy(context.Context, *connect.Request[v1.EngineRunStrategyRequest]) (*connect.Response[v1.EngineRunStrategyResponse], error)
 }
 
 // NewBacktestServiceClient constructs a client for the ant.v1.BacktestService service. By default,
@@ -61,12 +68,26 @@ func NewBacktestServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(backtestServiceMethods.ByName("RunBacktest")),
 			connect.WithClientOptions(opts...),
 		),
+		validateStrategy: connect.NewClient[v1.EngineValidateRequest, v1.EngineValidateResponse](
+			httpClient,
+			baseURL+BacktestServiceValidateStrategyProcedure,
+			connect.WithSchema(backtestServiceMethods.ByName("ValidateStrategy")),
+			connect.WithClientOptions(opts...),
+		),
+		runStrategy: connect.NewClient[v1.EngineRunStrategyRequest, v1.EngineRunStrategyResponse](
+			httpClient,
+			baseURL+BacktestServiceRunStrategyProcedure,
+			connect.WithSchema(backtestServiceMethods.ByName("RunStrategy")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // backtestServiceClient implements BacktestServiceClient.
 type backtestServiceClient struct {
-	runBacktest *connect.Client[v1.ExecuteBacktestRequest, v1.ExecuteBacktestResponse]
+	runBacktest      *connect.Client[v1.ExecuteBacktestRequest, v1.ExecuteBacktestResponse]
+	validateStrategy *connect.Client[v1.EngineValidateRequest, v1.EngineValidateResponse]
+	runStrategy      *connect.Client[v1.EngineRunStrategyRequest, v1.EngineRunStrategyResponse]
 }
 
 // RunBacktest calls ant.v1.BacktestService.RunBacktest.
@@ -74,10 +95,21 @@ func (c *backtestServiceClient) RunBacktest(ctx context.Context, req *connect.Re
 	return c.runBacktest.CallUnary(ctx, req)
 }
 
+// ValidateStrategy calls ant.v1.BacktestService.ValidateStrategy.
+func (c *backtestServiceClient) ValidateStrategy(ctx context.Context, req *connect.Request[v1.EngineValidateRequest]) (*connect.Response[v1.EngineValidateResponse], error) {
+	return c.validateStrategy.CallUnary(ctx, req)
+}
+
+// RunStrategy calls ant.v1.BacktestService.RunStrategy.
+func (c *backtestServiceClient) RunStrategy(ctx context.Context, req *connect.Request[v1.EngineRunStrategyRequest]) (*connect.Response[v1.EngineRunStrategyResponse], error) {
+	return c.runStrategy.CallUnary(ctx, req)
+}
+
 // BacktestServiceHandler is an implementation of the ant.v1.BacktestService service.
 type BacktestServiceHandler interface {
-	// RunBacktest executes a single backtest and returns metrics.
 	RunBacktest(context.Context, *connect.Request[v1.ExecuteBacktestRequest]) (*connect.Response[v1.ExecuteBacktestResponse], error)
+	ValidateStrategy(context.Context, *connect.Request[v1.EngineValidateRequest]) (*connect.Response[v1.EngineValidateResponse], error)
+	RunStrategy(context.Context, *connect.Request[v1.EngineRunStrategyRequest]) (*connect.Response[v1.EngineRunStrategyResponse], error)
 }
 
 // NewBacktestServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -93,10 +125,26 @@ func NewBacktestServiceHandler(svc BacktestServiceHandler, opts ...connect.Handl
 		connect.WithSchema(backtestServiceMethods.ByName("RunBacktest")),
 		connect.WithHandlerOptions(opts...),
 	)
+	backtestServiceValidateStrategyHandler := connect.NewUnaryHandler(
+		BacktestServiceValidateStrategyProcedure,
+		svc.ValidateStrategy,
+		connect.WithSchema(backtestServiceMethods.ByName("ValidateStrategy")),
+		connect.WithHandlerOptions(opts...),
+	)
+	backtestServiceRunStrategyHandler := connect.NewUnaryHandler(
+		BacktestServiceRunStrategyProcedure,
+		svc.RunStrategy,
+		connect.WithSchema(backtestServiceMethods.ByName("RunStrategy")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.BacktestService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case BacktestServiceRunBacktestProcedure:
 			backtestServiceRunBacktestHandler.ServeHTTP(w, r)
+		case BacktestServiceValidateStrategyProcedure:
+			backtestServiceValidateStrategyHandler.ServeHTTP(w, r)
+		case BacktestServiceRunStrategyProcedure:
+			backtestServiceRunStrategyHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -108,4 +156,12 @@ type UnimplementedBacktestServiceHandler struct{}
 
 func (UnimplementedBacktestServiceHandler) RunBacktest(context.Context, *connect.Request[v1.ExecuteBacktestRequest]) (*connect.Response[v1.ExecuteBacktestResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.BacktestService.RunBacktest is not implemented"))
+}
+
+func (UnimplementedBacktestServiceHandler) ValidateStrategy(context.Context, *connect.Request[v1.EngineValidateRequest]) (*connect.Response[v1.EngineValidateResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.BacktestService.ValidateStrategy is not implemented"))
+}
+
+func (UnimplementedBacktestServiceHandler) RunStrategy(context.Context, *connect.Request[v1.EngineRunStrategyRequest]) (*connect.Response[v1.EngineRunStrategyResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.BacktestService.RunStrategy is not implemented"))
 }

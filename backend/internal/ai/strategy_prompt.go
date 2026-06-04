@@ -41,36 +41,30 @@ func (b *StrategyPromptBuilder) BuildSystemPrompt(p *PromptParams) string {
 	sb.WriteString("你是一位专业的量化交易策略工程师。")
 	sb.WriteString("你的任务是根据用户的自然语言描述，生成符合规范的 Python 策略代码。\n\n")
 
-	// Strategy contract
+	// Strategy contract — Python engine uses run(context) → signal dict
 	sb.WriteString("## 策略代码规范\n\n")
-	sb.WriteString("生成的代码必须包含以下两个函数：\n\n")
+	sb.WriteString("你必须定义一个 run(context) 函数，返回交易信号字典：\n\n")
 	sb.WriteString("```python\n")
-	sb.WriteString("def initialize(state):\n")
-	sb.WriteString("    # 初始化策略参数：仓位、止损、止盈等\n")
-	sb.WriteString("    pass\n\n")
-	sb.WriteString("def on_bar(state, bar, history):\n")
-	sb.WriteString("    # 每根 K 线调用一次，实现交易逻辑\n")
-	sb.WriteString("    # bar: 当前 K 线 (open, high, low, close, volume, time)\n")
-	sb.WriteString("    # history: 历史 K 线列表，history[-1] 是上一个 bar\n")
-	sb.WriteString("    # state: 策略状态\n")
-	sb.WriteString("    #   state.position > 0: 多头持仓\n")
-	sb.WriteString("    #   state.position < 0: 空头持仓\n")
-	sb.WriteString("    #   state.position == 0: 空仓\n")
-	sb.WriteString("    pass\n")
+	sb.WriteString("def run(context):\n")
+	sb.WriteString("    # context 是字典，包含以下键：\n")
+	sb.WriteString("    #   context['open']/['high']/['low']/['close']: 价格列表\n")
+	sb.WriteString("    #   context['volume']: 成交量列表\n")
+	sb.WriteString("    #   context['position']: 当前持仓 (1=long,-1=short,0=none)\n")
+	sb.WriteString("    #   context['balance']: 当前余额\n\n")
+	sb.WriteString("    # 返回信号字典：\n")
+	sb.WriteString("    return {\n")
+	sb.WriteString("        'signal': 'buy',     # 'buy','sell','hold'\n")
+	sb.WriteString("        'volume': 1.0,      # 交易手数\n")
+	sb.WriteString("        'stop_loss': 0.0,   # 止损价格(可选)\n")
+	sb.WriteString("        'take_profit': 0.0, # 止盈价格(可选)\n")
+	sb.WriteString("    }\n")
 	sb.WriteString("```\n\n")
 
-	// State API
-	sb.WriteString("可用的 state 方法：\n")
-	sb.WriteString("- `state.open_long(price, entry_pct=1.0)`: 开多仓\n")
-	sb.WriteString("- `state.open_short(price, entry_pct=1.0)`: 开空仓\n")
-	sb.WriteString("- `state.close_position(price)`: 平仓\n")
-	sb.WriteString("- `state.close_partial(price, pct)`: 部分平仓\n\n")
-
-	// Annotation rules
-	sb.WriteString("可调参数必须使用 @param 装饰器标注：\n")
+	// Annotation rules — comments, not decorators
+	sb.WriteString("可调参数使用 Python 注释标注（引擎会从注释中提取）：\n")
 	sb.WriteString("```python\n")
-	sb.WriteString("@param period 20 range=10:50:5\n")
-	sb.WriteString("@param entry_pct 0.95 range=0.5:1.0:0.05\n")
+	sb.WriteString("# @param fast_period 10 range=5:50:5\n")
+	sb.WriteString("# @param slow_period 30 range=20:100:10\n")
 	sb.WriteString("```\n\n")
 
 	// Forbidden patterns

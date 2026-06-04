@@ -21,6 +21,346 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type EngineValidateRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StrategyCode  string                 `protobuf:"bytes,1,opt,name=strategy_code,json=strategyCode,proto3" json:"strategy_code,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EngineValidateRequest) Reset() {
+	*x = EngineValidateRequest{}
+	mi := &file_backtest_service_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EngineValidateRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EngineValidateRequest) ProtoMessage() {}
+
+func (x *EngineValidateRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_backtest_service_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EngineValidateRequest.ProtoReflect.Descriptor instead.
+func (*EngineValidateRequest) Descriptor() ([]byte, []int) {
+	return file_backtest_service_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *EngineValidateRequest) GetStrategyCode() string {
+	if x != nil {
+		return x.StrategyCode
+	}
+	return ""
+}
+
+type EngineValidateResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Valid         bool                   `protobuf:"varint,1,opt,name=valid,proto3" json:"valid,omitempty"`
+	Errors        []string               `protobuf:"bytes,2,rep,name=errors,proto3" json:"errors,omitempty"`
+	Warnings      []string               `protobuf:"bytes,3,rep,name=warnings,proto3" json:"warnings,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EngineValidateResponse) Reset() {
+	*x = EngineValidateResponse{}
+	mi := &file_backtest_service_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EngineValidateResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EngineValidateResponse) ProtoMessage() {}
+
+func (x *EngineValidateResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_backtest_service_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EngineValidateResponse.ProtoReflect.Descriptor instead.
+func (*EngineValidateResponse) Descriptor() ([]byte, []int) {
+	return file_backtest_service_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *EngineValidateResponse) GetValid() bool {
+	if x != nil {
+		return x.Valid
+	}
+	return false
+}
+
+func (x *EngineValidateResponse) GetErrors() []string {
+	if x != nil {
+		return x.Errors
+	}
+	return nil
+}
+
+func (x *EngineValidateResponse) GetWarnings() []string {
+	if x != nil {
+		return x.Warnings
+	}
+	return nil
+}
+
+type EngineRunStrategyRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StrategyId    string                 `protobuf:"bytes,1,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`
+	StrategyCode  string                 `protobuf:"bytes,2,opt,name=strategy_code,json=strategyCode,proto3" json:"strategy_code,omitempty"`
+	Symbol        string                 `protobuf:"bytes,3,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Timeframe     string                 `protobuf:"bytes,4,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
+	Klines        []*ExecuteKlineBar     `protobuf:"bytes,5,rep,name=klines,proto3" json:"klines,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EngineRunStrategyRequest) Reset() {
+	*x = EngineRunStrategyRequest{}
+	mi := &file_backtest_service_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EngineRunStrategyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EngineRunStrategyRequest) ProtoMessage() {}
+
+func (x *EngineRunStrategyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_backtest_service_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EngineRunStrategyRequest.ProtoReflect.Descriptor instead.
+func (*EngineRunStrategyRequest) Descriptor() ([]byte, []int) {
+	return file_backtest_service_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *EngineRunStrategyRequest) GetStrategyId() string {
+	if x != nil {
+		return x.StrategyId
+	}
+	return ""
+}
+
+func (x *EngineRunStrategyRequest) GetStrategyCode() string {
+	if x != nil {
+		return x.StrategyCode
+	}
+	return ""
+}
+
+func (x *EngineRunStrategyRequest) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *EngineRunStrategyRequest) GetTimeframe() string {
+	if x != nil {
+		return x.Timeframe
+	}
+	return ""
+}
+
+func (x *EngineRunStrategyRequest) GetKlines() []*ExecuteKlineBar {
+	if x != nil {
+		return x.Klines
+	}
+	return nil
+}
+
+type EngineRunStrategyResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Signal        *EngineTradeSignal     `protobuf:"bytes,2,opt,name=signal,proto3" json:"signal,omitempty"`
+	Error         string                 `protobuf:"bytes,3,opt,name=error,proto3" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EngineRunStrategyResponse) Reset() {
+	*x = EngineRunStrategyResponse{}
+	mi := &file_backtest_service_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EngineRunStrategyResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EngineRunStrategyResponse) ProtoMessage() {}
+
+func (x *EngineRunStrategyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_backtest_service_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EngineRunStrategyResponse.ProtoReflect.Descriptor instead.
+func (*EngineRunStrategyResponse) Descriptor() ([]byte, []int) {
+	return file_backtest_service_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *EngineRunStrategyResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *EngineRunStrategyResponse) GetSignal() *EngineTradeSignal {
+	if x != nil {
+		return x.Signal
+	}
+	return nil
+}
+
+func (x *EngineRunStrategyResponse) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
+
+type EngineTradeSignal struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Signal        string                 `protobuf:"bytes,1,opt,name=signal,proto3" json:"signal,omitempty"`
+	Symbol        string                 `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Price         float64                `protobuf:"fixed64,3,opt,name=price,proto3" json:"price,omitempty"`
+	Volume        float64                `protobuf:"fixed64,4,opt,name=volume,proto3" json:"volume,omitempty"`
+	StopLoss      float64                `protobuf:"fixed64,5,opt,name=stop_loss,json=stopLoss,proto3" json:"stop_loss,omitempty"`
+	TakeProfit    float64                `protobuf:"fixed64,6,opt,name=take_profit,json=takeProfit,proto3" json:"take_profit,omitempty"`
+	Confidence    float64                `protobuf:"fixed64,7,opt,name=confidence,proto3" json:"confidence,omitempty"`
+	Reason        string                 `protobuf:"bytes,8,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EngineTradeSignal) Reset() {
+	*x = EngineTradeSignal{}
+	mi := &file_backtest_service_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EngineTradeSignal) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EngineTradeSignal) ProtoMessage() {}
+
+func (x *EngineTradeSignal) ProtoReflect() protoreflect.Message {
+	mi := &file_backtest_service_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EngineTradeSignal.ProtoReflect.Descriptor instead.
+func (*EngineTradeSignal) Descriptor() ([]byte, []int) {
+	return file_backtest_service_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *EngineTradeSignal) GetSignal() string {
+	if x != nil {
+		return x.Signal
+	}
+	return ""
+}
+
+func (x *EngineTradeSignal) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *EngineTradeSignal) GetPrice() float64 {
+	if x != nil {
+		return x.Price
+	}
+	return 0
+}
+
+func (x *EngineTradeSignal) GetVolume() float64 {
+	if x != nil {
+		return x.Volume
+	}
+	return 0
+}
+
+func (x *EngineTradeSignal) GetStopLoss() float64 {
+	if x != nil {
+		return x.StopLoss
+	}
+	return 0
+}
+
+func (x *EngineTradeSignal) GetTakeProfit() float64 {
+	if x != nil {
+		return x.TakeProfit
+	}
+	return 0
+}
+
+func (x *EngineTradeSignal) GetConfidence() float64 {
+	if x != nil {
+		return x.Confidence
+	}
+	return 0
+}
+
+func (x *EngineTradeSignal) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
 type ExecuteKlineBar struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	OpenTimeMs    int64                  `protobuf:"varint,1,opt,name=open_time_ms,json=openTimeMs,proto3" json:"open_time_ms,omitempty"`    // Unix milliseconds
@@ -36,7 +376,7 @@ type ExecuteKlineBar struct {
 
 func (x *ExecuteKlineBar) Reset() {
 	*x = ExecuteKlineBar{}
-	mi := &file_backtest_service_proto_msgTypes[0]
+	mi := &file_backtest_service_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -48,7 +388,7 @@ func (x *ExecuteKlineBar) String() string {
 func (*ExecuteKlineBar) ProtoMessage() {}
 
 func (x *ExecuteKlineBar) ProtoReflect() protoreflect.Message {
-	mi := &file_backtest_service_proto_msgTypes[0]
+	mi := &file_backtest_service_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61,7 +401,7 @@ func (x *ExecuteKlineBar) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteKlineBar.ProtoReflect.Descriptor instead.
 func (*ExecuteKlineBar) Descriptor() ([]byte, []int) {
-	return file_backtest_service_proto_rawDescGZIP(), []int{0}
+	return file_backtest_service_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ExecuteKlineBar) GetOpenTimeMs() int64 {
@@ -139,7 +479,7 @@ type ExecuteBacktestRequest struct {
 
 func (x *ExecuteBacktestRequest) Reset() {
 	*x = ExecuteBacktestRequest{}
-	mi := &file_backtest_service_proto_msgTypes[1]
+	mi := &file_backtest_service_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -151,7 +491,7 @@ func (x *ExecuteBacktestRequest) String() string {
 func (*ExecuteBacktestRequest) ProtoMessage() {}
 
 func (x *ExecuteBacktestRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_backtest_service_proto_msgTypes[1]
+	mi := &file_backtest_service_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -164,7 +504,7 @@ func (x *ExecuteBacktestRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteBacktestRequest.ProtoReflect.Descriptor instead.
 func (*ExecuteBacktestRequest) Descriptor() ([]byte, []int) {
-	return file_backtest_service_proto_rawDescGZIP(), []int{1}
+	return file_backtest_service_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ExecuteBacktestRequest) GetStrategyId() string {
@@ -311,7 +651,7 @@ type ExecuteBacktestTrade struct {
 
 func (x *ExecuteBacktestTrade) Reset() {
 	*x = ExecuteBacktestTrade{}
-	mi := &file_backtest_service_proto_msgTypes[2]
+	mi := &file_backtest_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -323,7 +663,7 @@ func (x *ExecuteBacktestTrade) String() string {
 func (*ExecuteBacktestTrade) ProtoMessage() {}
 
 func (x *ExecuteBacktestTrade) ProtoReflect() protoreflect.Message {
-	mi := &file_backtest_service_proto_msgTypes[2]
+	mi := &file_backtest_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -336,7 +676,7 @@ func (x *ExecuteBacktestTrade) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteBacktestTrade.ProtoReflect.Descriptor instead.
 func (*ExecuteBacktestTrade) Descriptor() ([]byte, []int) {
-	return file_backtest_service_proto_rawDescGZIP(), []int{2}
+	return file_backtest_service_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ExecuteBacktestTrade) GetTicket() int64 {
@@ -423,7 +763,7 @@ type ExecuteBacktestResponse struct {
 
 func (x *ExecuteBacktestResponse) Reset() {
 	*x = ExecuteBacktestResponse{}
-	mi := &file_backtest_service_proto_msgTypes[3]
+	mi := &file_backtest_service_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -435,7 +775,7 @@ func (x *ExecuteBacktestResponse) String() string {
 func (*ExecuteBacktestResponse) ProtoMessage() {}
 
 func (x *ExecuteBacktestResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_backtest_service_proto_msgTypes[3]
+	mi := &file_backtest_service_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -448,7 +788,7 @@ func (x *ExecuteBacktestResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteBacktestResponse.ProtoReflect.Descriptor instead.
 func (*ExecuteBacktestResponse) Descriptor() ([]byte, []int) {
-	return file_backtest_service_proto_rawDescGZIP(), []int{3}
+	return file_backtest_service_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ExecuteBacktestResponse) GetSuccess() bool {
@@ -512,7 +852,7 @@ type ExecuteBacktestMetrics struct {
 
 func (x *ExecuteBacktestMetrics) Reset() {
 	*x = ExecuteBacktestMetrics{}
-	mi := &file_backtest_service_proto_msgTypes[4]
+	mi := &file_backtest_service_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -524,7 +864,7 @@ func (x *ExecuteBacktestMetrics) String() string {
 func (*ExecuteBacktestMetrics) ProtoMessage() {}
 
 func (x *ExecuteBacktestMetrics) ProtoReflect() protoreflect.Message {
-	mi := &file_backtest_service_proto_msgTypes[4]
+	mi := &file_backtest_service_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -537,7 +877,7 @@ func (x *ExecuteBacktestMetrics) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteBacktestMetrics.ProtoReflect.Descriptor instead.
 func (*ExecuteBacktestMetrics) Descriptor() ([]byte, []int) {
-	return file_backtest_service_proto_rawDescGZIP(), []int{4}
+	return file_backtest_service_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ExecuteBacktestMetrics) GetTotalReturn() float64 {
@@ -630,7 +970,7 @@ type ExecuteRiskAssessment struct {
 
 func (x *ExecuteRiskAssessment) Reset() {
 	*x = ExecuteRiskAssessment{}
-	mi := &file_backtest_service_proto_msgTypes[5]
+	mi := &file_backtest_service_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -642,7 +982,7 @@ func (x *ExecuteRiskAssessment) String() string {
 func (*ExecuteRiskAssessment) ProtoMessage() {}
 
 func (x *ExecuteRiskAssessment) ProtoReflect() protoreflect.Message {
-	mi := &file_backtest_service_proto_msgTypes[5]
+	mi := &file_backtest_service_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -655,7 +995,7 @@ func (x *ExecuteRiskAssessment) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteRiskAssessment.ProtoReflect.Descriptor instead.
 func (*ExecuteRiskAssessment) Descriptor() ([]byte, []int) {
-	return file_backtest_service_proto_rawDescGZIP(), []int{5}
+	return file_backtest_service_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ExecuteRiskAssessment) GetScore() int32 {
@@ -697,7 +1037,36 @@ var File_backtest_service_proto protoreflect.FileDescriptor
 
 const file_backtest_service_proto_rawDesc = "" +
 	"\n" +
-	"\x16backtest_service.proto\x12\x06ant.v1\"\xbf\x01\n" +
+	"\x16backtest_service.proto\x12\x06ant.v1\"<\n" +
+	"\x15EngineValidateRequest\x12#\n" +
+	"\rstrategy_code\x18\x01 \x01(\tR\fstrategyCode\"b\n" +
+	"\x16EngineValidateResponse\x12\x14\n" +
+	"\x05valid\x18\x01 \x01(\bR\x05valid\x12\x16\n" +
+	"\x06errors\x18\x02 \x03(\tR\x06errors\x12\x1a\n" +
+	"\bwarnings\x18\x03 \x03(\tR\bwarnings\"\xc7\x01\n" +
+	"\x18EngineRunStrategyRequest\x12\x1f\n" +
+	"\vstrategy_id\x18\x01 \x01(\tR\n" +
+	"strategyId\x12#\n" +
+	"\rstrategy_code\x18\x02 \x01(\tR\fstrategyCode\x12\x16\n" +
+	"\x06symbol\x18\x03 \x01(\tR\x06symbol\x12\x1c\n" +
+	"\ttimeframe\x18\x04 \x01(\tR\ttimeframe\x12/\n" +
+	"\x06klines\x18\x05 \x03(\v2\x17.ant.v1.ExecuteKlineBarR\x06klines\"~\n" +
+	"\x19EngineRunStrategyResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x121\n" +
+	"\x06signal\x18\x02 \x01(\v2\x19.ant.v1.EngineTradeSignalR\x06signal\x12\x14\n" +
+	"\x05error\x18\x03 \x01(\tR\x05error\"\xe7\x01\n" +
+	"\x11EngineTradeSignal\x12\x16\n" +
+	"\x06signal\x18\x01 \x01(\tR\x06signal\x12\x16\n" +
+	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12\x14\n" +
+	"\x05price\x18\x03 \x01(\x01R\x05price\x12\x16\n" +
+	"\x06volume\x18\x04 \x01(\x01R\x06volume\x12\x1b\n" +
+	"\tstop_loss\x18\x05 \x01(\x01R\bstopLoss\x12\x1f\n" +
+	"\vtake_profit\x18\x06 \x01(\x01R\n" +
+	"takeProfit\x12\x1e\n" +
+	"\n" +
+	"confidence\x18\a \x01(\x01R\n" +
+	"confidence\x12\x16\n" +
+	"\x06reason\x18\b \x01(\tR\x06reason\"\xbf\x01\n" +
 	"\x0fExecuteKlineBar\x12 \n" +
 	"\fopen_time_ms\x18\x01 \x01(\x03R\n" +
 	"openTimeMs\x12\"\n" +
@@ -773,9 +1142,11 @@ const file_backtest_service_proto_rawDesc = "" +
 	"\areasons\x18\x03 \x03(\tR\areasons\x12\x1a\n" +
 	"\bwarnings\x18\x04 \x03(\tR\bwarnings\x12\x1f\n" +
 	"\vis_reliable\x18\x05 \x01(\bR\n" +
-	"isReliable2a\n" +
+	"isReliable2\x88\x02\n" +
 	"\x0fBacktestService\x12N\n" +
-	"\vRunBacktest\x12\x1e.ant.v1.ExecuteBacktestRequest\x1a\x1f.ant.v1.ExecuteBacktestResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\vRunBacktest\x12\x1e.ant.v1.ExecuteBacktestRequest\x1a\x1f.ant.v1.ExecuteBacktestResponse\x12Q\n" +
+	"\x10ValidateStrategy\x12\x1d.ant.v1.EngineValidateRequest\x1a\x1e.ant.v1.EngineValidateResponse\x12R\n" +
+	"\vRunStrategy\x12 .ant.v1.EngineRunStrategyRequest\x1a!.ant.v1.EngineRunStrategyResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_backtest_service_proto_rawDescOnce sync.Once
@@ -789,27 +1160,38 @@ func file_backtest_service_proto_rawDescGZIP() []byte {
 	return file_backtest_service_proto_rawDescData
 }
 
-var file_backtest_service_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_backtest_service_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_backtest_service_proto_goTypes = []any{
-	(*ExecuteKlineBar)(nil),         // 0: ant.v1.ExecuteKlineBar
-	(*ExecuteBacktestRequest)(nil),  // 1: ant.v1.ExecuteBacktestRequest
-	(*ExecuteBacktestTrade)(nil),    // 2: ant.v1.ExecuteBacktestTrade
-	(*ExecuteBacktestResponse)(nil), // 3: ant.v1.ExecuteBacktestResponse
-	(*ExecuteBacktestMetrics)(nil),  // 4: ant.v1.ExecuteBacktestMetrics
-	(*ExecuteRiskAssessment)(nil),   // 5: ant.v1.ExecuteRiskAssessment
+	(*EngineValidateRequest)(nil),     // 0: ant.v1.EngineValidateRequest
+	(*EngineValidateResponse)(nil),    // 1: ant.v1.EngineValidateResponse
+	(*EngineRunStrategyRequest)(nil),  // 2: ant.v1.EngineRunStrategyRequest
+	(*EngineRunStrategyResponse)(nil), // 3: ant.v1.EngineRunStrategyResponse
+	(*EngineTradeSignal)(nil),         // 4: ant.v1.EngineTradeSignal
+	(*ExecuteKlineBar)(nil),           // 5: ant.v1.ExecuteKlineBar
+	(*ExecuteBacktestRequest)(nil),    // 6: ant.v1.ExecuteBacktestRequest
+	(*ExecuteBacktestTrade)(nil),      // 7: ant.v1.ExecuteBacktestTrade
+	(*ExecuteBacktestResponse)(nil),   // 8: ant.v1.ExecuteBacktestResponse
+	(*ExecuteBacktestMetrics)(nil),    // 9: ant.v1.ExecuteBacktestMetrics
+	(*ExecuteRiskAssessment)(nil),     // 10: ant.v1.ExecuteRiskAssessment
 }
 var file_backtest_service_proto_depIdxs = []int32{
-	0, // 0: ant.v1.ExecuteBacktestRequest.klines:type_name -> ant.v1.ExecuteKlineBar
-	4, // 1: ant.v1.ExecuteBacktestResponse.metrics:type_name -> ant.v1.ExecuteBacktestMetrics
-	5, // 2: ant.v1.ExecuteBacktestResponse.risk:type_name -> ant.v1.ExecuteRiskAssessment
-	2, // 3: ant.v1.ExecuteBacktestResponse.trades:type_name -> ant.v1.ExecuteBacktestTrade
-	1, // 4: ant.v1.BacktestService.RunBacktest:input_type -> ant.v1.ExecuteBacktestRequest
-	3, // 5: ant.v1.BacktestService.RunBacktest:output_type -> ant.v1.ExecuteBacktestResponse
-	5, // [5:6] is the sub-list for method output_type
-	4, // [4:5] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	5,  // 0: ant.v1.EngineRunStrategyRequest.klines:type_name -> ant.v1.ExecuteKlineBar
+	4,  // 1: ant.v1.EngineRunStrategyResponse.signal:type_name -> ant.v1.EngineTradeSignal
+	5,  // 2: ant.v1.ExecuteBacktestRequest.klines:type_name -> ant.v1.ExecuteKlineBar
+	9,  // 3: ant.v1.ExecuteBacktestResponse.metrics:type_name -> ant.v1.ExecuteBacktestMetrics
+	10, // 4: ant.v1.ExecuteBacktestResponse.risk:type_name -> ant.v1.ExecuteRiskAssessment
+	7,  // 5: ant.v1.ExecuteBacktestResponse.trades:type_name -> ant.v1.ExecuteBacktestTrade
+	6,  // 6: ant.v1.BacktestService.RunBacktest:input_type -> ant.v1.ExecuteBacktestRequest
+	0,  // 7: ant.v1.BacktestService.ValidateStrategy:input_type -> ant.v1.EngineValidateRequest
+	2,  // 8: ant.v1.BacktestService.RunStrategy:input_type -> ant.v1.EngineRunStrategyRequest
+	8,  // 9: ant.v1.BacktestService.RunBacktest:output_type -> ant.v1.ExecuteBacktestResponse
+	1,  // 10: ant.v1.BacktestService.ValidateStrategy:output_type -> ant.v1.EngineValidateResponse
+	3,  // 11: ant.v1.BacktestService.RunStrategy:output_type -> ant.v1.EngineRunStrategyResponse
+	9,  // [9:12] is the sub-list for method output_type
+	6,  // [6:9] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_backtest_service_proto_init() }
@@ -823,7 +1205,7 @@ func file_backtest_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_backtest_service_proto_rawDesc), len(file_backtest_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

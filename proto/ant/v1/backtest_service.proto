@@ -7,8 +7,26 @@ option go_package = "anttrader/gen/proto/ant/v1;antv1";
 // BacktestService runs strategy backtests via the Python engine.
 // Replaces the previous FastAPI JSON /api/backtest endpoint.
 service BacktestService {
-  // RunBacktest executes a single backtest and returns metrics.
   rpc RunBacktest(ExecuteBacktestRequest) returns (ExecuteBacktestResponse);
+  rpc ValidateStrategy(EngineValidateRequest) returns (EngineValidateResponse);
+  rpc RunStrategy(EngineRunStrategyRequest) returns (EngineRunStrategyResponse);
+}
+
+message EngineValidateRequest { string strategy_code = 1; }
+message EngineValidateResponse { bool valid = 1; repeated string errors = 2; repeated string warnings = 3; }
+
+message EngineRunStrategyRequest {
+  string strategy_id = 1; string strategy_code = 2;
+  string symbol = 3; string timeframe = 4;
+  repeated ExecuteKlineBar klines = 5;
+}
+message EngineRunStrategyResponse {
+  bool success = 1; EngineTradeSignal signal = 2; string error = 3;
+}
+message EngineTradeSignal {
+  string signal = 1; string symbol = 2; double price = 3;
+  double volume = 4; double stop_loss = 5; double take_profit = 6;
+  double confidence = 7; string reason = 8;
 }
 
 message ExecuteKlineBar {
