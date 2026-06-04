@@ -71,6 +71,8 @@ type DEOptimizer struct {
 
 	pop       [][]int
 	scores    []float64
+	trials     [][]int
+	trialTargets []int
 	evalsUsed int
 	bestIdx   int
 	bestScore float64
@@ -142,16 +144,37 @@ func (d *DEOptimizer) evolve(batchSize int) [][]int {
 }
 
 func (d *DEOptimizer) Tell(results []OptimizerResult) {
-	for _, r := range results {
+	if !d.seeded {
+		// Seed phase: match by index equality
+		for _, r := range results {
+			if len(r.Indices) != d.dims { continue }
+			for i := range d.pop {
+				if indicesEqual(d.pop[i], r.Indices) {
+					if r.Score >= d.scores[i] { d.scores[i] = r.Score }
+					if r.Score > d.bestScore { d.bestScore = r.Score; d.bestIdx = i }
+					break
+				}
+			}
+		}
+		return
+	}
+	// Evolve phase: greedy selection via trial-target pairs
+	for i, r := range results {
 		if len(r.Indices) != d.dims { continue }
-		for i := range d.pop {
-			if indicesEqual(d.pop[i], r.Indices) {
-				if r.Score >= d.scores[i] { d.scores[i] = r.Score }
-				if r.Score > d.bestScore { d.bestScore = r.Score; d.bestIdx = i }
-				break
+		if i < len(d.trialTargets) {
+			target := d.trialTargets[i]
+			if r.Score >= d.scores[target] {
+				d.pop[target] = d.trials[i]
+				d.scores[target] = r.Score
+			}
+			if r.Score > d.bestScore {
+				d.bestScore = r.Score
+				d.bestIdx = target
 			}
 		}
 	}
+	d.trials = d.trials[:0]
+	d.trialTargets = d.trialTargets[:0]
 }
 
 func (d *DEOptimizer) Best() ([]int, float64) {

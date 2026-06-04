@@ -64,7 +64,7 @@ func (r *StrategyExperimentRepository) Create(ctx context.Context, exp *Strategy
 		exp.CreatedAt = time.Now().UTC()
 	}
 	if exp.Status == "" {
-		exp.Status = "SUCCEEDED"
+		exp.Status = "PENDING"
 	}
 	if exp.SearchMethod == "" {
 		exp.SearchMethod = "grid"
@@ -76,9 +76,9 @@ func (r *StrategyExperimentRepository) Create(ctx context.Context, exp *Strategy
 		exp.ParameterSpace = []byte(`{}`)
 	}
 	_, err := r.db.Exec(ctx, `
-		INSERT INTO strategy_experiments (id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,created_at,finished_at)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
-	`, exp.ID, exp.UserID, exp.BaseTemplateID, exp.Status, exp.ParameterSpace, exp.SearchMethod, exp.MaxCandidates, exp.Objective, exp.MarketRegimeRef, exp.BestCandidateID, exp.JobID, exp.CreatedAt, exp.FinishedAt)
+		INSERT INTO strategy_experiments (id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,strategy_code,created_at,finished_at)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+	`, exp.ID, exp.UserID, exp.BaseTemplateID, exp.Status, exp.ParameterSpace, exp.SearchMethod, exp.MaxCandidates, exp.Objective, exp.MarketRegimeRef, exp.BestCandidateID, exp.JobID, exp.StrategyCode, exp.CreatedAt, exp.FinishedAt)
 	if err != nil {
 		return fmt.Errorf("create experiment: %w", err)
 	}
@@ -87,7 +87,7 @@ func (r *StrategyExperimentRepository) Create(ctx context.Context, exp *Strategy
 
 func (r *StrategyExperimentRepository) Get(ctx context.Context, userID, id uuid.UUID) (*StrategyExperiment, error) {
 	var exp StrategyExperiment
-	err := r.db.QueryRow(ctx, `SELECT id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,created_at,finished_at FROM strategy_experiments WHERE id = $1 AND user_id = $2`, id, userID).Scan(
+	err := r.db.QueryRow(ctx, `SELECT id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,strategy_code,created_at,finished_at FROM strategy_experiments WHERE id = $1 AND user_id = $2`, id, userID).Scan(
 		&exp.ID, &exp.UserID, &exp.BaseTemplateID, &exp.Status, &exp.ParameterSpace, &exp.SearchMethod, &exp.MaxCandidates, &exp.Objective, &exp.MarketRegimeRef, &exp.BestCandidateID, &exp.JobID, &exp.CreatedAt, &exp.FinishedAt,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -103,7 +103,7 @@ func (r *StrategyExperimentRepository) List(ctx context.Context, userID uuid.UUI
 	if offset < 0 {
 		offset = 0
 	}
-	rows, err := r.db.Query(ctx, `SELECT id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,created_at,finished_at FROM strategy_experiments WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`, userID, limit, offset)
+	rows, err := r.db.Query(ctx, `SELECT id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,strategy_code,created_at,finished_at FROM strategy_experiments WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`, userID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +112,7 @@ func (r *StrategyExperimentRepository) List(ctx context.Context, userID uuid.UUI
 	for rows.Next() {
 		var exp StrategyExperiment
 		if err := rows.Scan(
-			&exp.ID, &exp.UserID, &exp.BaseTemplateID, &exp.Status, &exp.ParameterSpace, &exp.SearchMethod, &exp.MaxCandidates, &exp.Objective, &exp.MarketRegimeRef, &exp.BestCandidateID, &exp.JobID, &exp.CreatedAt, &exp.FinishedAt,
+			&exp.ID, &exp.UserID, &exp.BaseTemplateID, &exp.Status, &exp.ParameterSpace, &exp.SearchMethod, &exp.MaxCandidates, &exp.Objective, &exp.MarketRegimeRef, &exp.BestCandidateID, &exp.JobID, &exp.StrategyCode, &exp.CreatedAt, &exp.FinishedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -123,7 +123,7 @@ func (r *StrategyExperimentRepository) List(ctx context.Context, userID uuid.UUI
 
 func (r *StrategyExperimentRepository) Cancel(ctx context.Context, userID, id uuid.UUID) (*StrategyExperiment, error) {
 	var exp StrategyExperiment
-	err := r.db.QueryRow(ctx, `UPDATE strategy_experiments SET status = 'CANCELLED', finished_at = COALESCE(finished_at, now()) WHERE id = $1 AND user_id = $2 AND status IN ('QUEUED','RUNNING') RETURNING id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,created_at,finished_at`, id, userID).Scan(
+	err := r.db.QueryRow(ctx, `UPDATE strategy_experiments SET status = 'CANCELLED', finished_at = COALESCE(finished_at, now()) WHERE id = $1 AND user_id = $2 AND status IN ('QUEUED','RUNNING') RETURNING id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,strategy_code,created_at,finished_at`, id, userID).Scan(
 		&exp.ID, &exp.UserID, &exp.BaseTemplateID, &exp.Status, &exp.ParameterSpace, &exp.SearchMethod, &exp.MaxCandidates, &exp.Objective, &exp.MarketRegimeRef, &exp.BestCandidateID, &exp.JobID, &exp.CreatedAt, &exp.FinishedAt,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -195,7 +195,7 @@ func (r *StrategyExperimentRepository) GetCandidate(ctx context.Context, userID,
 func (r *StrategyExperimentRepository) ClaimPendingExperiment(ctx context.Context) (*StrategyExperiment, error) {
 	rows, err := r.db.Query(ctx,
 		`SELECT id, user_id, base_template_id, status, parameter_space, search_method,
-		        max_candidates, objective, market_regime_ref, best_candidate_id, job_id,
+		        max_candidates, objective, market_regime_ref, best_candidate_id, job_id, strategy_code,
 		        created_at, finished_at
 		 FROM strategy_experiments WHERE status = 'PENDING'
 		 ORDER BY created_at ASC LIMIT 1`)
@@ -209,7 +209,7 @@ func (r *StrategyExperimentRepository) ClaimPendingExperiment(ctx context.Contex
 	var e StrategyExperiment
 	if err := rows.Scan(&e.ID, &e.UserID, &e.BaseTemplateID, &e.Status, &e.ParameterSpace,
 		&e.SearchMethod, &e.MaxCandidates, &e.Objective, &e.MarketRegimeRef,
-		&e.BestCandidateID, &e.JobID, &e.CreatedAt, &e.FinishedAt); err != nil {
+		&e.BestCandidateID, &e.JobID, &e.StrategyCode, &e.CreatedAt, &e.FinishedAt); err != nil {
 		return nil, fmt.Errorf("scan pending: %w", err)
 	}
 	// Mark as PROCESSING
