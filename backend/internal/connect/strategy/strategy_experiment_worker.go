@@ -139,7 +139,9 @@ func (w *ExperimentWorker) runOptimizer(
 		return w.runIterative(ctx, ai.NewDEOptimizer(space, exp.MaxCandidates), space, code, exp)
 	case "ai":
 		return w.runAIProposal(ctx, params, code, exp)
-	case "tpe", "ags":
+	case "tpe":
+		return w.runIterative(ctx, ai.NewTPEOptimizer(space, exp.MaxCandidates), space, code, exp)
+	case "ags":
 		return w.runIterative(ctx, ai.NewAnnealedGaussianOptimizer(space, exp.MaxCandidates), space, code, exp)
 	case "random":
 		return w.runOneShot(ai.RandomSearch(params, exp.MaxCandidates), code, exp)
