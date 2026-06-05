@@ -14,6 +14,7 @@ import (
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/ai"
 	"anttrader/internal/repository"
+	systemai "anttrader/internal/service/systemai"
 )
 
 // ExperimentWorker polls for PENDING experiments and processes them.
@@ -21,7 +22,7 @@ type ExperimentWorker struct {
 	repo         *repository.StrategyExperimentRepository
 	backtestRepo *repository.BacktestRunRepository
 	log          *zap.Logger
-	aiProposer   ai.AIProposer // optional: enables AI multi-round proposal
+	systemAISvc  *systemai.Service // optional: enables AI multi-round proposal
 	stopCh       chan struct{}
 }
 
@@ -59,7 +60,8 @@ func (w *ExperimentWorker) Start(ctx context.Context) {
 
 func (w *ExperimentWorker) Stop() { close(w.stopCh) }
 
-func (w *ExperimentWorker) SetAIProposer(p ai.AIProposer) { w.aiProposer = p }
+// SetAIService injects the system AI service for AI multi-round proposal (search_method="ai").
+func (w *ExperimentWorker) SetAIService(svc *systemai.Service) { w.systemAISvc = svc }
 
 // processOne claims and processes a single PENDING experiment.
 func (w *ExperimentWorker) processOne(ctx context.Context) error {
@@ -347,9 +349,10 @@ func scoreComponentsToProto(components map[string]float64) *antv1.ScoreComponent
 	return &antv1.ScoreComponents{Components: components}
 }
 func (w *ExperimentWorker) runAIProposal(ctx context.Context, params []ai.TunableParam, code string, exp *repository.StrategyExperiment) ([]candidateResult, error) {
-	if w.aiProposer == nil {
+	if w.systemAISvc == nil {
 		return nil, fmt.Errorf("AI proposer not configured")
 	}
+	proposer := &systemAIAdapter{svc: w.systemAISvc, userID: exp.UserID}
 	var results []candidateResult
 	maxRounds := 3
 	for round := 1; round <= maxRounds; round++ {
@@ -365,7 +368,7 @@ func (w *ExperimentWorker) runAIProposal(ctx context.Context, params []ai.Tunabl
 				Params: r.Overrides, Score: r.Score, Grade: r.Grade,
 			}
 		}
-		proposed, err := ai.ProposeParams(ctx, w.aiProposer, req)
+		proposed, err := ai.ProposeParams(ctx, proposer, req)
 		if err != nil {
 			w.log.Warn("AI proposal failed", zap.Error(err), zap.Int("round", round))
 			continue

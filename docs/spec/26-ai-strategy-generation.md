@@ -650,9 +650,9 @@ grep -c "Grid\|Random\|DE\|TPE" backend/internal/ai/optimizers.go | grep -q "4"
 | 2026-06-04 | JSON→proto 全线重构 | 消除 16 个 JSON 使用点 |
 | 2026-06-04 | failRun uuid.Nil 修复 | SQL UPDATE 不再静默失败 |
 | 2026-06-04 | ClaimNextForWork 缺 parameter_overrides | DE 分数从相同→有区分度 |
+| 2026-06-06 | LLM Client 实现 + AIProposer 注入 | AI 管线全链路打通: NL→LLM→代码→回测→优化 |
 
 ### 待做
 
-- AIProposer 注入 experiment worker (接口已定义, 待 service 注入)
 - strategy_schedules/templates Go 代码 proto 适配 (部分完成)
 - Backtest legacy JSONB 列清理

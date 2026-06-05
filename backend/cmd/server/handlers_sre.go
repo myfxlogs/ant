@@ -24,6 +24,7 @@ import (
 	"anttrader/internal/pglisten"
 	"anttrader/internal/repository"
 	"anttrader/internal/service"
+	systemai "anttrader/internal/service/systemai"
 	antredis "anttrader/internal/storage/redis"
 
 	connectrpc "connectrpc.com/connect"
@@ -45,6 +46,7 @@ func registerSREHandlers(
 	strategyAssetRepo *repository.StrategyAssetRepository,
 	schedHealthRepo *repository.ScheduleHealthRepository,
 	analyticsCache *service.AnalyticsCache,
+	aiSvc *systemai.Service,
 ) *notifier.EmailNotifier {
 	// --- SRE control plane ---
 	sreKillSwitch := controlplane.NewKillSwitch()
@@ -76,6 +78,9 @@ func registerSREHandlers(
 	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, connectrpc.WithInterceptors(authInterceptor)))
 	backtestRunRepo := repository.NewBacktestRunRepository(pool)
 	experimentWorker := strategy.NewExperimentWorker(strategyExperimentRepo, backtestRunRepo, log)
+	if aiSvc != nil {
+		experimentWorker.SetAIService(aiSvc)
+	}
 	experimentWorker.Start(context.Background())
 	strategyAssetServer := strategy.NewStrategyAssetServer(strategyAssetRepo, log)
 	mux.Handle(antv1c.NewStrategyAssetServiceHandler(strategyAssetServer, connectrpc.WithInterceptors(authInterceptor)))

@@ -282,6 +282,7 @@ func registerHandlers(
 		authServer,
 		strategyExperimentRepo, strategyAssetRepo, schedHealthRepo,
 		analyticsCache,
+		aiSvc,
 	)
 
 	return reconLoop, emailNotifier, platformAgg
