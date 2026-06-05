@@ -152,11 +152,12 @@ type BacktestRun struct {
 	TemplateDraftId      *string                `protobuf:"bytes,16,opt,name=template_draft_id,json=templateDraftId,proto3,oneof" json:"template_draft_id,omitempty"`
 	// Phase B2: secondary symbols available to the strategy as features.
 	// Trading execution still targets “symbol“.
-	ExtraSymbols  []string `protobuf:"bytes,17,rep,name=extra_symbols,json=extraSymbols,proto3" json:"extra_symbols,omitempty"`
-	IsTerminal    bool     `protobuf:"varint,18,opt,name=is_terminal,json=isTerminal,proto3" json:"is_terminal,omitempty"`
-	IsSucceeded   bool     `protobuf:"varint,19,opt,name=is_succeeded,json=isSucceeded,proto3" json:"is_succeeded,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	ExtraSymbols    []string                 `protobuf:"bytes,17,rep,name=extra_symbols,json=extraSymbols,proto3" json:"extra_symbols,omitempty"`
+	IsTerminal      bool                     `protobuf:"varint,18,opt,name=is_terminal,json=isTerminal,proto3" json:"is_terminal,omitempty"`
+	IsSucceeded     bool                     `protobuf:"varint,19,opt,name=is_succeeded,json=isSucceeded,proto3" json:"is_succeeded,omitempty"`
+	ExecutionConfig *BacktestExecutionConfig `protobuf:"bytes,20,opt,name=execution_config,json=executionConfig,proto3,oneof" json:"execution_config,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *BacktestRun) Reset() {
@@ -322,11 +323,18 @@ func (x *BacktestRun) GetIsSucceeded() bool {
 	return false
 }
 
+func (x *BacktestRun) GetExecutionConfig() *BacktestExecutionConfig {
+	if x != nil {
+		return x.ExecutionConfig
+	}
+	return nil
+}
+
 var File_backtest_run_proto protoreflect.FileDescriptor
 
 const file_backtest_run_proto_rawDesc = "" +
 	"\n" +
-	"\x12backtest_run.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa9\a\n" +
+	"\x12backtest_run.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1fbacktest_execution_config.proto\"\x8f\b\n" +
 	"\vBacktestRun\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
@@ -354,7 +362,8 @@ const file_backtest_run_proto_rawDesc = "" +
 	"\rextra_symbols\x18\x11 \x03(\tR\fextraSymbols\x12\x1f\n" +
 	"\vis_terminal\x18\x12 \x01(\bR\n" +
 	"isTerminal\x12!\n" +
-	"\fis_succeeded\x18\x13 \x01(\bR\visSucceededB\r\n" +
+	"\fis_succeeded\x18\x13 \x01(\bR\visSucceeded\x12O\n" +
+	"\x10execution_config\x18\x14 \x01(\v2\x1f.ant.v1.BacktestExecutionConfigH\bR\x0fexecutionConfig\x88\x01\x01B\r\n" +
 	"\v_dataset_idB\a\n" +
 	"\x05_fromB\x05\n" +
 	"\x03_toB\x19\n" +
@@ -362,7 +371,8 @@ const file_backtest_run_proto_rawDesc = "" +
 	"\v_started_atB\x0e\n" +
 	"\f_finished_atB\x0e\n" +
 	"\f_template_idB\x14\n" +
-	"\x12_template_draft_id*v\n" +
+	"\x12_template_draft_idB\x13\n" +
+	"\x11_execution_config*v\n" +
 	"\x0fBacktestRunMode\x12!\n" +
 	"\x1dBACKTEST_RUN_MODE_UNSPECIFIED\x10\x00\x12!\n" +
 	"\x1dBACKTEST_RUN_MODE_KLINE_RANGE\x10\x01\x12\x1d\n" +
@@ -391,10 +401,11 @@ func file_backtest_run_proto_rawDescGZIP() []byte {
 var file_backtest_run_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
 var file_backtest_run_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_backtest_run_proto_goTypes = []any{
-	(BacktestRunMode)(0),          // 0: ant.v1.BacktestRunMode
-	(BacktestRunStatus)(0),        // 1: ant.v1.BacktestRunStatus
-	(*BacktestRun)(nil),           // 2: ant.v1.BacktestRun
-	(*timestamppb.Timestamp)(nil), // 3: google.protobuf.Timestamp
+	(BacktestRunMode)(0),            // 0: ant.v1.BacktestRunMode
+	(BacktestRunStatus)(0),          // 1: ant.v1.BacktestRunStatus
+	(*BacktestRun)(nil),             // 2: ant.v1.BacktestRun
+	(*timestamppb.Timestamp)(nil),   // 3: google.protobuf.Timestamp
+	(*BacktestExecutionConfig)(nil), // 4: ant.v1.BacktestExecutionConfig
 }
 var file_backtest_run_proto_depIdxs = []int32{
 	0, // 0: ant.v1.BacktestRun.mode:type_name -> ant.v1.BacktestRunMode
@@ -404,11 +415,12 @@ var file_backtest_run_proto_depIdxs = []int32{
 	3, // 4: ant.v1.BacktestRun.created_at:type_name -> google.protobuf.Timestamp
 	3, // 5: ant.v1.BacktestRun.started_at:type_name -> google.protobuf.Timestamp
 	3, // 6: ant.v1.BacktestRun.finished_at:type_name -> google.protobuf.Timestamp
-	7, // [7:7] is the sub-list for method output_type
-	7, // [7:7] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	4, // 7: ant.v1.BacktestRun.execution_config:type_name -> ant.v1.BacktestExecutionConfig
+	8, // [8:8] is the sub-list for method output_type
+	8, // [8:8] is the sub-list for method input_type
+	8, // [8:8] is the sub-list for extension type_name
+	8, // [8:8] is the sub-list for extension extendee
+	0, // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_backtest_run_proto_init() }
@@ -416,6 +428,7 @@ func file_backtest_run_proto_init() {
 	if File_backtest_run_proto != nil {
 		return
 	}
+	file_backtest_execution_config_proto_init()
 	file_backtest_run_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

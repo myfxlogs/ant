@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useWatchBacktestRun } from '@/hooks/useWatchBacktestRun';
 import { backtestRunsApi, type BacktestTrade, type BacktestTradeSummary } from '@/client/backtestRuns';
 import { isSucceededRun } from '@/pages/strategy/StrategyTemplatePage.utils';
+import BacktestRunDrawerContent from './BacktestRunDrawerContent';
 
 type Props = {
 	open: boolean;

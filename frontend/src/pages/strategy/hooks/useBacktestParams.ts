@@ -3,14 +3,20 @@ import { message } from 'antd';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
 import { gateApi } from '@/client/gate';
 import type { GateResult, GatePipelineSummary } from '@/gen/ant/v1/ai_gate_pb';
+import {
+  parseStrategyDirectives, parseParamsFromCode,
+  PRESETS, DATE_PRESETS, DEFAULT_SWEEP_DIMS, dateFromPreset,
+  TIMEFRAME_MAX_MONTHS, OPTIMIZER_INFO,
+} from './backtestParamHelpers';
+import type {
+  StrategyDirective, SweepDimension, PresetKey, TuneMethod,
+} from './backtestParamHelpers';
+
+export type { StrategyDirective, SweepDimension, PresetKey, TuneMethod };
+export { PRESETS, DATE_PRESETS, parseStrategyDirectives, OPTIMIZER_INFO };
 
 export type BacktestStatus = 'idle' | 'running' | 'completed' | 'error';
-export type TuneMethod = 'grid' | 'random' | 'de' | 'tpe' | 'ags' | 'ai';
-
-export interface SweepDimension {
-  key: string; label: string; source: 'code' | 'risk';
-  enabled: boolean; values: number[];
-}
+export type BacktestSubTab = 'results' | 'tuning' | 'gate';
 
 export interface BacktestMetrics {
   totalReturn?: number; annualReturn?: number; maxDrawdown?: number;
@@ -19,90 +25,26 @@ export interface BacktestMetrics {
   trades?: Array<{ id: string; time: number; side: string; price: number; volume: number; pnl?: number }>;
 }
 
-
-// parseParamsFromCode extracts @param annotations from strategy Python code.
-// Aligns with backend param_extractor.go: @param name default [range=min:max:step]
-// The range= clause is optional; without it, the param has a single default value.
-function parseParamsFromCode(code: string): SweepDimension[] {
-  if (!code) return [];
-  // Match backend pattern exactly: @param\s+(\w+)\s+([\d.]+)(?:\s+range=([\d.]+):([\d.]+):([\d.]+))?
-  const re = /@param\s+(\w+)\s+([\d.]+)(?:\s+range=([\d.]+):([\d.]+):([\d.]+))?/g;
-  const dims: SweepDimension[] = [];
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(code)) !== null) {
-    const [, name, defVal, minStr, maxStr, stepStr] = m;
-    if (minStr !== undefined && maxStr !== undefined && stepStr !== undefined) {
-      const min = parseFloat(minStr);
-      const max = parseFloat(maxStr);
-      const step = parseFloat(stepStr);
-      if (isNaN(min) || isNaN(max) || isNaN(step)) continue;
-      const values: number[] = [];
-      for (let v = min; v <= max + step * 0.5; v += step) {
-        values.push(Math.round(v * 1e10) / 1e10);
-      }
-      if (values.length === 0) values.push(parseFloat(defVal));
-      dims.push({
-        key: name, label: name, source: 'code' as const,
-        enabled: values.length <= 20,
-        values: values.length > 100 ? values.slice(0, 100) : values,
-      });
-    } else {
-      // No range — single fixed value (not a sweep dimension, skip)
-    }
-  }
-  return dims;
-}
-
-const DEFAULT_SWEEP_DIMS: SweepDimension[] = [
-  { key: 'length', label: 'Period / Length', source: 'code', enabled: true, values: [10, 14, 20, 30, 50, 100] },
-  { key: 'mult', label: 'Multiplier', source: 'code', enabled: true, values: [1.5, 2.0, 2.5, 3.0] },
-  { key: 'stopLoss', label: 'Stop Loss %', source: 'risk', enabled: false, values: [2, 5, 8, 10, 15] },
-  { key: 'takeProfit', label: 'Take Profit %', source: 'risk', enabled: false, values: [3, 5, 10, 15, 20] },
-  { key: 'maxPositions', label: 'Max Positions', source: 'risk', enabled: false, values: [1, 3, 5, 10] },
-];
-
-function dateFromPreset(months: number): { start: string; end: string } {
-  const end = new Date(); const start = new Date();
-  start.setMonth(start.getMonth() - months);
-  return { start: start.toISOString().slice(0, 10), end: end.toISOString().slice(0, 10) };
-}
-
-export const DATE_PRESETS = [
-  { key: '1M', label: '1M', months: 1 },
-  { key: '3M', label: '3M', months: 3 },
-  { key: '6M', label: '6M', months: 6 },
-  { key: '1Y', label: '1Y', months: 12 },
-];
-
-
-export const OPTIMIZER_INFO: Record<TuneMethod, { label: string; desc: string }> = {
-  grid:    { label: 'Grid Search',     desc: 'Exhaustive Cartesian product. Best for ≤3 params.' },
-  random:  { label: 'Random Search',   desc: 'Uniform random sampling. Good for exploration.' },
-  de:      { label: 'Differential Evolution', desc: 'rand/1/bin mutation. Converges fast on smooth landscapes.' },
-  tpe:     { label: 'TPE (KDE)',       desc: 'Tree-structured Parzen Estimator. KDE models good/bad distributions.' },
-  ags:     { label: 'Annealed Gaussian', desc: 'Gaussian jitter with sigma annealing. Lightweight alternative to TPE.' },
-  ai:      { label: 'AI Optimizer',    desc: 'LLM multi-round proposal. Learns from previous results over 3 rounds.' },
-};
-
 export function useBacktestParams() {
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<BacktestStatus>('idle');
   const [metrics, setMetrics] = useState<BacktestMetrics | null>(null);
+  const [executionAssumptions, setExecutionAssumptions] = useState<any>(null);
   const [errorMsg, setErrorMsg] = useState('');
 
   const [initialCapital, setInitialCapital] = useState<number>(10000);
   const [leverage, setLeverage] = useState<number>(1);
   const [commission, setCommission] = useState<number>(0.001);
-  const [slippage, setSlippage] = useState<number>(0.0005);
+  const [slippage, setSlippage] = useState<number>(0.0);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [datePreset, setDatePreset] = useState('3M');
   const [tradeDirection, setTradeDirection] = useState('both');
-  const [highPrecision, setHighPrecision] = useState(false);
+  const [strictMode, setStrictMode] = useState(true);
   const [paramsExpanded, setParamsExpanded] = useState(true);
   const [resultsExpanded, setResultsExpanded] = useState(false);
+  const [strategyDirectives, setStrategyDirectives] = useState<StrategyDirective[]>([]);
 
-  // Auto-expand results when backtest completes
   useEffect(() => {
     if (status === 'completed') setResultsExpanded(true);
   }, [status]);
@@ -113,52 +55,89 @@ export function useBacktestParams() {
     setStartDate(dates.start); setEndDate(dates.end);
   }, []);
 
+  const applyPreset = useCallback((key: PresetKey) => {
+    const p = PRESETS[key];
+    setCommission(p.commission);
+    setSlippage(p.slippage);
+  }, []);
+
+  const updateStrategyDirectivesFromCode = useCallback((code: string) => {
+    setStrategyDirectives(parseStrategyDirectives(code));
+  }, []);
+
+  const getTimeframeWarning = useCallback((timeframe: string, presetMonths: number): string | null => {
+    const maxMonths = TIMEFRAME_MAX_MONTHS[timeframe];
+    if (maxMonths && presetMonths > maxMonths) {
+      return `${timeframe} timeframe recommends max ${maxMonths} month${maxMonths > 1 ? 's' : ''}`;
+    }
+    return null;
+  }, []);
+
   const runBacktest = useCallback(async (params: {
     code: string; accountId: string; symbol: string; timeframe: string;
   }) => {
     const { code, accountId, symbol, timeframe } = params;
-    if (!code || !symbol) return;
+    if (!code || !symbol) { message.warning('Please enter strategy code and select a symbol'); return; }
     setSubmitting(true);
     try {
       const result = await pythonStrategyApi.startBacktestRun({
         code, accountId, symbol, timeframe, initialCapital,
+        mode: 'KLINE_RANGE',
+        from: startDate ? new Date(startDate) : undefined,
+        to: endDate ? new Date(endDate) : undefined,
+        executionConfig: {
+          commission, slippage, leverage,
+          tradeDirection: tradeDirection as 'long' | 'short' | 'both',
+          strictMode,
+        },
       });
       if (!result.runId) throw new Error('No run ID');
       setBacktestRunId(result.runId);
       setStatus('running'); setGateGates([]); setGateSummary(null); setGateError('');
+      setExecutionAssumptions(null);
+      // Stop previous watch before starting a new one.
+      backtestWatchRef.current?.();
       const stopWatching = await pythonStrategyApi.watchBacktestRun(result.runId, (update: any) => {
         if (update.status === 'SUCCEEDED' || update.status === 'FAILED' || update.status === 'CANCELED') {
           setStatus(update.status === 'SUCCEEDED' ? 'completed' : 'error');
-          setMetrics(update.metrics || null); setErrorMsg(update.error || ''); stopWatching();
+          setMetrics(update.metrics || null);
+          setExecutionAssumptions(update.executionAssumptions || null);
+          setErrorMsg(update.error || ''); stopWatching();
+          backtestWatchRef.current = null;
         } else { setMetrics(update.metrics || null); }
       });
+      backtestWatchRef.current = stopWatching;
     } catch (e: any) {
       message.error(e?.message || 'Backtest failed');
       setStatus('error'); setErrorMsg(e?.message || 'Unknown error');
     } finally { setSubmitting(false); }
-  }, [initialCapital]);
+  }, [initialCapital, commission, slippage, leverage, tradeDirection, strictMode, startDate, endDate]);
 
-  // Smart Tuning
+  // Smart Tuning.
   const [subTab, setSubTab] = useState<BacktestSubTab>('results');
   const [tuneMethod, setTuneMethod] = useState<TuneMethod>('grid');
   const [sweepDimensions, setSweepDimensions] = useState<SweepDimension[]>(DEFAULT_SWEEP_DIMS);
 
-  // Update sweep dimensions when strategy code changes (parse @param annotations).
   const updateSweepFromCode = useCallback((code: string) => {
     const extracted = parseParamsFromCode(code);
-    if (extracted.length > 0) {
-      setSweepDimensions(extracted);
-    }
+    if (extracted.length > 0) { setSweepDimensions(extracted); }
   }, []);
   const [tuningRunning, setTuningRunning] = useState(false);
   const [backtestRunId, setBacktestRunId] = useState('');
 
-  // Gate evaluation
+  // Gate evaluation.
   const [gateLoading, setGateLoading] = useState(false);
   const [gateGates, setGateGates] = useState<GateResult[]>([]);
   const [gateSummary, setGateSummary] = useState<GatePipelineSummary | null>(null);
   const [gateError, setGateError] = useState('');
   const gateStopRef = useRef<(() => void) | null>(null);
+  const backtestWatchRef = useRef<(() => void) | null>(null);
+
+  // Cleanup all SSE/watch connections on unmount.
+  useEffect(() => () => {
+    gateStopRef.current?.();
+    backtestWatchRef.current?.();
+  }, []);
 
   const enabledSweepDims = useMemo(() => sweepDimensions.filter(d => d.enabled), [sweepDimensions]);
   const cartesianSize = useMemo(() => enabledSweepDims.reduce((acc, d) => acc * d.values.length, 1), [enabledSweepDims]);
@@ -167,29 +146,37 @@ export function useBacktestParams() {
     setSweepDimensions(prev => prev.map(d => d.key === key ? { ...d, enabled: !d.enabled } : d));
   }, []);
 
-  const runTuning = useCallback(async () => {
+  const runTuning = useCallback(async (params: {
+    code: string; symbol: string; timeframe: string;
+    startDate: string; endDate: string;
+  }) => {
     setTuningRunning(true);
     try {
-      // Map enabled sweep dimensions to parameter space
       const paramSpace: Record<string, number[]> = {};
       const enabled = sweepDimensions.filter(d => d.enabled);
       for (const dim of enabled) {
         if (dim.values && dim.values.length > 0) paramSpace[dim.key] = dim.values as number[];
         else paramSpace[dim.key] = [0.01, 0.02, 0.03, 0.05, 0.10];
       }
-      // Create experiment via API (templateId is optional; code-based tuning uses empty string)
       const { strategyExperimentApi } = await import('@/client/strategyExperiment');
+      const fromMs = params.startDate ? new Date(params.startDate).getTime() : 0;
+      const toMs = params.endDate ? new Date(params.endDate).getTime() : 0;
       await strategyExperimentApi.submit({
         baseTemplateId: '',
         parameterSpace: paramSpace as Record<string, unknown>,
         searchMethod: tuneMethod === 'grid' ? 'grid' : 'random',
         maxCandidates: Math.min(cartesianSize || 24, 48),
         objective: 'balanced',
+        strategyCode: params.code || '',
+        symbol: params.symbol || '',
+        timeframe: params.timeframe || '',
+        fromTsUnixMs: BigInt(fromMs),
+        toTsUnixMs: BigInt(toMs),
       });
-      // TODO: poll for experiment completion and display candidates
-    } finally {
-      setTuningRunning(false);
-    }
+      message.success('Smart Tuning started');
+    } catch (e: any) {
+      message.error(e?.message || 'Tuning failed');
+    } finally { setTuningRunning(false); }
   }, [sweepDimensions, tuneMethod, cartesianSize]);
 
   const runGate = useCallback(() => {
@@ -208,19 +195,33 @@ export function useBacktestParams() {
     gateStopRef.current = stop;
   }, [backtestRunId]);
 
+  // applyDefaults bulk-sets multiple params at once (for Settings → Load/Reset).
+  const applyDefaults = useCallback((d: {
+    commission: number; slippage: number; leverage: number;
+    tradeDirection: string; strictMode: boolean;
+  }) => {
+    setCommission(d.commission);
+    setSlippage(d.slippage);
+    setLeverage(d.leverage);
+    setTradeDirection(d.tradeDirection);
+    setStrictMode(d.strictMode);
+  }, []);
+
   return {
-    submitting, status, metrics, errorMsg,
+    submitting, status, metrics, executionAssumptions, errorMsg,
     initialCapital, setInitialCapital, leverage, setLeverage,
     commission, setCommission, slippage, setSlippage,
     startDate, setStartDate, endDate, setEndDate,
-    datePreset, tradeDirection, setTradeDirection, highPrecision, setHighPrecision,
+    datePreset, tradeDirection, setTradeDirection,
+    strictMode, setStrictMode,
     paramsExpanded, setParamsExpanded,
     resultsExpanded, setResultsExpanded,
-    applyDatePreset,
+    strategyDirectives, updateStrategyDirectivesFromCode,
+    applyDefaults, applyPreset, applyDatePreset, getTimeframeWarning,
     runBacktest,
     subTab, setSubTab, tuneMethod, setTuneMethod,
     sweepDimensions, updateSweepFromCode, toggleDimension, enabledSweepDims, cartesianSize,
     tuningRunning, runTuning,
-    tuneMethod, setTuneMethod, backtestRunId, gateLoading, gateGates, gateSummary, gateError, runGate,
+    backtestRunId, gateLoading, gateGates, gateSummary, gateError, runGate,
   };
 }

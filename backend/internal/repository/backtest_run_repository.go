@@ -40,6 +40,12 @@ type BacktestRun struct {
 	ParameterOverrides   []byte     `db:"parameter_overrides"`
 	ProtoResponse        []byte     `db:"proto_response"`
 	CreatedAt            time.Time  `db:"created_at"`
+	Commission           *float64   `db:"commission"`
+	Slippage             *float64   `db:"slippage"`
+	Leverage             *float64   `db:"leverage"`
+	TradeDirection       *string    `db:"trade_direction"`
+	StrictMode           *bool      `db:"strict_mode"`
+	ConfigSnapshot       []byte     `db:"config_snapshot"`
 }
 
 func NewBacktestRunRepository(db *pgxpool.Pool) *BacktestRunRepository {
@@ -56,9 +62,10 @@ func (r *BacktestRunRepository) Create(ctx context.Context, run *BacktestRun) (u
 			cost_model_snapshot,
 			status, error, started_at, finished_at, strategy_code, initial_capital,
 			extra_symbols, parameter_overrides, proto_response,
+			commission, slippage, leverage, trade_direction, strict_mode, config_snapshot,
 			created_at
 		)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,CURRENT_TIMESTAMP)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,CURRENT_TIMESTAMP)
 		RETURNING id
 	`
 	id := run.ID
@@ -92,6 +99,12 @@ func (r *BacktestRunRepository) Create(ctx context.Context, run *BacktestRun) (u
 		run.ExtraSymbols,
 		run.ParameterOverrides,
 		run.ProtoResponse,
+		run.Commission,
+		run.Slippage,
+		run.Leverage,
+		run.TradeDirection,
+		run.StrictMode,
+		run.ConfigSnapshot,
 	).Scan(&out)
 	return out, err
 }
@@ -110,6 +123,7 @@ func (r *BacktestRunRepository) GetByID(ctx context.Context, userID, runID uuid.
 			cost_model_snapshot,
 			status, error, started_at, finished_at, strategy_code, initial_capital,
 			extra_symbols, parameter_overrides, proto_response,
+			commission, slippage, leverage, trade_direction, strict_mode, config_snapshot,
 			created_at
 		FROM backtest_runs
 		WHERE id = $1 AND user_id = $2`,
@@ -122,6 +136,7 @@ func (r *BacktestRunRepository) GetByID(ctx context.Context, userID, runID uuid.
 		&out.CostModelSnapshot,
 		&out.Status, &out.Error, &out.StartedAt, &out.FinishedAt, &out.StrategyCode, &out.InitialCapital,
 		&out.ExtraSymbols, &out.ParameterOverrides, &out.ProtoResponse,
+		&out.Commission, &out.Slippage, &out.Leverage, &out.TradeDirection, &out.StrictMode, &out.ConfigSnapshot,
 		&out.CreatedAt,
 	)
 	if err != nil {
@@ -157,7 +172,9 @@ func (r *BacktestRunRepository) listByUserAll(ctx context.Context, userID uuid.U
 			strategy_code_hash, python_service_version,
 			cost_model_snapshot,
 			status, error, started_at, finished_at, strategy_code, initial_capital,
-			extra_symbols, parameter_overrides, proto_response, created_at
+			extra_symbols, parameter_overrides, proto_response,
+			commission, slippage, leverage, trade_direction, strict_mode, config_snapshot,
+			created_at
 		FROM backtest_runs
 		WHERE user_id = $1
 		ORDER BY created_at DESC
@@ -171,7 +188,9 @@ func (r *BacktestRunRepository) listByUserAccount(ctx context.Context, userID, a
 			strategy_code_hash, python_service_version,
 			cost_model_snapshot,
 			status, error, started_at, finished_at, strategy_code, initial_capital,
-			extra_symbols, parameter_overrides, proto_response, created_at
+			extra_symbols, parameter_overrides, proto_response,
+			commission, slippage, leverage, trade_direction, strict_mode, config_snapshot,
+			created_at
 		FROM backtest_runs
 		WHERE user_id = $1 AND account_id = $2
 		ORDER BY created_at DESC
@@ -195,6 +214,7 @@ func (r *BacktestRunRepository) scanBacktestRunRows(ctx context.Context, query s
 			&out.CostModelSnapshot,
 			&out.Status, &out.Error, &out.StartedAt, &out.FinishedAt, &out.StrategyCode, &out.InitialCapital,
 			&out.ExtraSymbols, &out.ParameterOverrides, &out.ProtoResponse,
+			&out.Commission, &out.Slippage, &out.Leverage, &out.TradeDirection, &out.StrictMode, &out.ConfigSnapshot,
 			&out.CreatedAt,
 		); err != nil {
 			return nil, err

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Button, Space, Input, Alert, Tag, Tooltip, Select, message } from 'antd';
+import { Button, Space, Alert, Tooltip, Select, message } from 'antd';
 import {
   CheckCircleOutlined, PlayCircleOutlined, CopyOutlined,
   SaveOutlined, SettingOutlined, RobotOutlined,
@@ -8,21 +8,20 @@ import { useTranslation } from 'react-i18next';
 import { useSystemAIConfigsQuery } from '@/queries/useSystemAIConfigsQuery';
 import { aiApi } from '@/client/ai';
 import { discoverSystemAIModels } from '@/pages/ai/systemai/api';
+import type { ValidateExtendedResult } from '@/client/codeAssist';
+import StrategyCodeEditor from '@/components/strategy/StrategyCodeEditor';
 import AISettingsModal from './AISettingsModal';
-
-interface ValidationResult {
-  valid: boolean;
-  errors?: string[];
-  warnings?: string[];
-}
 
 interface Props {
   code: string;
   onCodeChange: (code: string) => void;
   validating: boolean; onValidate: () => void;
-  validationResult: ValidationResult | null;
+  validationResult: ValidateExtendedResult | null;
   onRunBacktest: () => void; backtestSubmitting: boolean;
   canSave: boolean; onSave: () => void; onCopy: () => void;
+  onAskAI?: () => void;
+  onAutoFix?: () => void;
+  autoFixing?: boolean;
 }
 
 const btnStyle: React.CSSProperties = { width: 30, height: 30, borderRadius: 6, padding: 0,
@@ -39,6 +38,7 @@ export default function WorkspaceCodePanel({
   code, onCodeChange,
   validating, onValidate, validationResult,
   onRunBacktest, backtestSubmitting, canSave, onSave, onCopy,
+  onAskAI, onAutoFix, autoFixing,
 }: Props) {
   const { t } = useTranslation();
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -184,10 +184,11 @@ export default function WorkspaceCodePanel({
           </div>
         )}
 
-        <Input.TextArea value={code} onChange={(e) => onCodeChange(e.target.value)}
-          rows={28} style={{ fontFamily: "'Fira Code', 'Cascadia Code', 'Consolas', monospace", fontSize: 13 }}
-          placeholder={t('strategy.workspace.codePlaceholder', '# Python strategy code...\ndef run(context):\n    return {"signal": "hold"}')}
-          spellCheck={false} />
+        <StrategyCodeEditor
+          value={code}
+          onChange={onCodeChange}
+          style={{ height: 420 }}
+        />
       </div>
 
       {/* Validation result */}
@@ -197,16 +198,56 @@ export default function WorkspaceCodePanel({
           message={validationResult.valid
             ? t('strategy.workspace.validatePass', 'Validation passed')
             : t('strategy.workspace.validateFailed', 'Validation failed')}
-          description={(
-            <div style={{ marginTop: 4 }}>
-              {validationResult.errors?.map((e, i) => (
-                <Tag key={`err-${i}`} color="error" style={{ marginBottom: 4 }}>{e}</Tag>
-              ))}
-              {validationResult.warnings?.map((w, i) => (
-                <Tag key={`warn-${i}`} color="warning" style={{ marginBottom: 4 }}>{w}</Tag>
-              ))}
-            </div>
-          )} />
+          description={
+            !validationResult.valid ? (
+              <div style={{
+                maxHeight: 220, overflowY: 'auto',
+                marginTop: 4, padding: '6px 8px',
+                background: '#fff', borderRadius: 4,
+                border: '1px solid #f0f0f0',
+              }}>
+                {validationResult.errors?.map((e, i) => (
+                  <div key={`err-${i}`} style={{
+                    fontSize: 11, lineHeight: '1.6', color: '#cf1322',
+                    padding: '2px 0', borderBottom: '1px solid #fff1f0',
+                    wordBreak: 'break-word',
+                  }}>
+                    <span style={{ fontWeight: 600, marginRight: 4 }}>✕</span>
+                    {e}
+                  </div>
+                ))}
+                {validationResult.warnings?.map((w, i) => (
+                  <div key={`warn-${i}`} style={{
+                    fontSize: 11, lineHeight: '1.6', color: '#ad6800',
+                    padding: '2px 0', borderBottom: '1px solid #fffbe6',
+                    wordBreak: 'break-word',
+                  }}>
+                    <span style={{ fontWeight: 600, marginRight: 4 }}>⚠</span>
+                    {w}
+                  </div>
+                ))}
+              </div>
+            ) : undefined
+          }
+          action={
+            !validationResult.valid ? (
+              <Space direction="vertical" size={4}>
+                {onAutoFix && (
+                  <Button size="small" type="primary" icon={<RobotOutlined />}
+                    loading={autoFixing} onClick={onAutoFix}>
+                    {autoFixing ? 'Fixing...' : 'Auto Fix'}
+                  </Button>
+                )}
+                {onAskAI && (
+                  <Button size="small" type="primary" ghost icon={<RobotOutlined />}
+                    onClick={onAskAI}>
+                    Ask AI
+                  </Button>
+                )}
+              </Space>
+            ) : undefined
+          }
+        />
       )}
 
       <AISettingsModal open={settingsOpen} onClose={handleSettingsClose} />

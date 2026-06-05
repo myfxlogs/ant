@@ -53,7 +53,7 @@ export interface OrderCloseResult {
 }
 
 export interface OrderHistoryResult {
-  orders: unknown[];
+  orders: ProtoPosition[];
   total: number;
   page: number;
   pageSize: number;
@@ -154,12 +154,12 @@ export const tradingApi = {
         magic: Number(params.magicNumber || 0),
       }),
     );
-    // Backend enriches the response with fields beyond the proto schema.
+    const ticketNum = response.ticket ? Number(response.ticket) : 0;
     return {
-      order: undefined,
-      error: '',
-      retcode: 0,
-      message: '',
+      order: ticketNum ? { ticket: ticketNum } : undefined,
+      error: ticketNum ? '' : 'no ticket returned',
+      retcode: ticketNum ? 0 : undefined,
+      message: response.status || 'submitted',
       requestId: undefined,
       riskError: undefined,
     };

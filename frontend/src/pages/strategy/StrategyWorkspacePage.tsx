@@ -2,7 +2,7 @@ import { Suspense, lazy } from 'react';
 import { Collapse } from 'antd';
 import { DoubleRightOutlined, DoubleLeftOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { useStrategyWorkspaceState } from './hooks/useStrategyWorkspaceState';
+import { useStrategyWorkspaceState, DATE_PRESETS } from './hooks/useStrategyWorkspaceState';
 import WorkspaceCodePanel from './components/workspace/WorkspaceCodePanel';
 import WorkspaceBacktestPanel from './components/workspace/WorkspaceBacktestPanel';
 import WorkspaceTemplateManager from './components/workspace/WorkspaceTemplateManager';
@@ -12,6 +12,7 @@ import MiniPositionsTable from './components/workspace/MiniPositionsTable';
 import AIChatPanel from '@/components/strategy/AIChatPanel';
 import PriceChart from '@/components/chart/PriceChart';
 import QuickTradePanel from '@/components/chart/QuickTradePanel';
+import BacktestRunDrawer from '@/components/strategy/BacktestRunDrawer';
 
 const SaveTemplateModal = lazy(() => import('@/components/strategy/SaveTemplateModal'));
 
@@ -77,8 +78,11 @@ export default function StrategyWorkspacePage() {
               validationResult={ws.validationResult}
               onRunBacktest={ws.handleRunBacktest} backtestSubmitting={ws.btSubmitting}
               canSave={ws.canSave} onSave={ws.handleSave} onCopy={ws.handleCopy}
+              onAskAI={ws.handleAskAIForValidation}
+              onAutoFix={ws.handleAutoFix}
+              autoFixing={ws.autoFixing}
             />
-            <AIChatPanel code={ws.code} symbol={ws.symbol} timeframe={ws.timeframe} onApply={ws.setCode} />
+            <AIChatPanel code={ws.code} symbol={ws.symbol} timeframe={ws.timeframe} onApply={ws.setCode} initialPrompt={ws.aiOptimizePrompt} autoApply={ws.chatAutoApply} />
             <Collapse ghost size="small" style={{ background: 'transparent' }} items={[
               { key: 'template', label: t('strategy.workspace.template.title', 'Template'), children: <WorkspaceTemplateManager templates={ws.templates} loading={ws.templatesLoading} loadedTemplate={ws.loadedTemplate} onLoad={ws.handleLoadTemplate} onSaveAs={ws.handleSaveAs} /> },
             ]} />
@@ -126,6 +130,10 @@ export default function StrategyWorkspacePage() {
               <PriceChart
                 symbol={ws.symbol} timeframe={ws.timeframe} onTimeframeChange={ws.setTimeframe}
                 accountId={ws.accountId}
+                trades={ws.btMetrics?.trades?.map((t: any) => ({
+                  side: t.side, openPrice: t.price, openTime: t.time,
+                  pnl: t.pnl,
+                }))}
               />
             ) : (
               <div style={{
@@ -148,12 +156,18 @@ export default function StrategyWorkspacePage() {
               startDate={ws.btStartDate} onStartDateChange={ws.setBtStartDate}
               endDate={ws.btEndDate} onEndDateChange={ws.setBtEndDate}
               tradeDirection={ws.btTradeDirection} onTradeDirectionChange={ws.setBtTradeDirection}
-              highPrecision={ws.btHighPrecision} onHighPrecisionChange={ws.setBtHighPrecision}
+              strictMode={ws.btStrictMode} onStrictModeChange={ws.setBtStrictMode}
               canRun={Boolean(ws.code && ws.symbol)}
               running={ws.btSubmitting} onRunBacktest={ws.handleRunBacktest}
-              datePresets={ws.DATE_PRESETS} datePresetKey={ws.btDatePreset}
+              datePresets={DATE_PRESETS} datePresetKey={ws.btDatePreset}
               onApplyDatePreset={ws.applyDatePreset}
               expanded={ws.btParamsExpanded} onExpandedChange={ws.setBtParamsExpanded}
+              strategyDirectives={ws.btStrategyDirectives}
+              onApplyPreset={ws.applyPreset}
+              timeframeWarning={ws.getTimeframeWarning(ws.timeframe, DATE_PRESETS.find(p => p.key === ws.btDatePreset)?.months ?? 3)}
+              timeframe={ws.timeframe} onTimeframeChange={ws.setTimeframe}
+              onApplyDefaults={ws.applyDefaults}
+              onOpenHistory={ws.handleOpenHistory}
             />
             </div>
 
@@ -176,7 +190,10 @@ export default function StrategyWorkspacePage() {
                 <div style={{ padding: '8px 14px' }}>
                   <WorkspaceBacktestPanel
                     status={ws.btStatus} metrics={ws.btMetrics}
+                    executionAssumptions={ws.btExecutionAssumptions}
                     errorMessage={ws.btError}
+                    onAIOptimize={ws.handleAIOptimize}
+                    code={ws.code} onApplyTunedParams={ws.handleApplyTunedParams}
                     subTab={ws.backtestSubTab} onSubTabChange={ws.setBacktestSubTab}
                     tuneMethod={ws.tuneMethod} onTuneMethodChange={ws.setTuneMethod}
                     sweepDimensions={ws.sweepDimensions} onToggleDimension={ws.toggleDimension}
@@ -229,6 +246,11 @@ export default function StrategyWorkspacePage() {
         <SaveTemplateModal open={ws.saveModalOpen} confirmLoading={ws.saveLoading} form={ws.saveForm}
           onCancel={() => ws.setSaveModalOpen(false)} onOk={ws.handleSaveModalOk} />
       </Suspense>
+      <BacktestRunDrawer
+        open={ws.historyDrawerOpen} runId={ws.historyRunId}
+        onClose={ws.handleCloseHistory}
+        onCancel={ws.handleCloseHistory}
+      />
     </div>
   );
 }

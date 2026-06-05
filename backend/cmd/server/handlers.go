@@ -127,6 +127,7 @@ func registerHandlers(
 
 	strategySvc := service.NewStrategySvc(pool)
 	strategyServer := strategy.NewStrategyServer(strategySvc, log)
+	strategy.SetProtoLog(log)
 	pgListen := pglisten.New(pool, log)
 	strategyServer.SetPgListen(pgListen)
 	mux.Handle(antv1c.NewStrategyServiceHandler(strategyServer, connectrpc.WithInterceptors(authInterceptor)))

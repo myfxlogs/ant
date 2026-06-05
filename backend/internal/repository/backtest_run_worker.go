@@ -46,7 +46,8 @@ func (r *BacktestRunRepository) ClaimNextForWork(ctx context.Context, leaseUntil
 			b.strategy_code_hash, b.python_service_version,
 			b.cost_model_snapshot,
 			b.status, b.error, b.started_at, b.finished_at, b.strategy_code, b.initial_capital,
-			b.extra_symbols, b.parameter_overrides,
+			b.extra_symbols, b.parameter_overrides, b.proto_response,
+			b.commission, b.slippage, b.leverage, b.trade_direction, b.strict_mode, b.config_snapshot,
 			b.created_at
 	`
 	err := r.db.QueryRow(ctx, query, leaseUntil).Scan(
@@ -56,7 +57,8 @@ func (r *BacktestRunRepository) ClaimNextForWork(ctx context.Context, leaseUntil
 		&out.StrategyCodeHash, &out.PythonServiceVersion,
 		&out.CostModelSnapshot,
 		&out.Status, &out.Error, &out.StartedAt, &out.FinishedAt, &out.StrategyCode, &out.InitialCapital,
-		&out.ExtraSymbols, &out.ParameterOverrides,
+		&out.ExtraSymbols, &out.ParameterOverrides, &out.ProtoResponse,
+		&out.Commission, &out.Slippage, &out.Leverage, &out.TradeDirection, &out.StrictMode, &out.ConfigSnapshot,
 		&out.CreatedAt,
 	)
 	if err != nil {

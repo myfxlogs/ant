@@ -11,6 +11,7 @@ import { useChartData, toChartBar } from './useChartData';
 import { useChartIndicatorsStore, KLINECHARTS_MAP } from '@/stores/chartIndicatorsStore';
 import IndicatorSettingsModal from './IndicatorSettingsModal';
 import './BidAskIndicator';
+import './BacktestTradeOverlay';
 
 const TIMEFRAMES = [
   { label: '1m', value: '1m' }, { label: '5m', value: '5m' },
@@ -33,9 +34,13 @@ interface Props {
   onTimeframeChange?: (tf: string) => void;
   accountId?: string;
   onChartReady?: (chart: Chart | null) => void;
+  trades?: Array<{
+    side: string; openPrice: number; closePrice?: number;
+    openTime: number; closeTime?: number; pnl?: number;
+  }>;
 }
 
-export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange, accountId, onChartReady }: Props) {
+export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange, accountId, onChartReady, trades }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<Chart | null>(null);
@@ -134,6 +139,50 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     if (!chartRef.current) return;
     chartRef.current.setStyles({ candle: { ...DARK_THEME.candle, type: chartType } });
   }, [chartType]);
+
+  const tradeOverlayRef = useRef<string | null>(null);
+
+  // Trade markers overlay — show buy/sell arrows on chart.
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+
+    // Remove previous overlay.
+    if (tradeOverlayRef.current) {
+      try { chart.removeOverlay(tradeOverlayRef.current); } catch { /* */ }
+      tradeOverlayRef.current = null;
+    }
+
+    if (!trades?.length) return;
+
+    // Map trade times to bar indices in the chart's current data.
+    const chartData = (chart as any).getDataList?.() || [];
+    const timeToIdx = new Map<number, number>();
+    chartData.forEach((d: any, i: number) => {
+      if (d?.timestamp) timeToIdx.set(Math.floor(d.timestamp / 1000), i);
+    });
+
+    const tradePoints = trades
+      .filter((t) => timeToIdx.has(t.openTime))
+      .map((t) => ({
+        ...t,
+        entryIndex: timeToIdx.get(t.openTime) ?? -1,
+        exitIndex: t.closeTime ? timeToIdx.get(t.closeTime) ?? -1 : -1,
+      }))
+      .filter((t) => t.entryIndex >= 0);
+
+    if (!tradePoints.length) return;
+
+    try {
+      const id = chart.createOverlay({
+        name: 'backtest_trades',
+        points: tradePoints.map((t) => ({ dataIndex: t.entryIndex })),
+        extendData: tradePoints,
+        lock: true,
+      } as any) as unknown as string;
+      if (id) tradeOverlayRef.current = id;
+    } catch { /* */ }
+  }, [trades, bars]);
 
   const applyChartType = useCallback((type: ChartType) => setChartType(type), []);
 

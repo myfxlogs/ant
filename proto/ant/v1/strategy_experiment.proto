@@ -35,6 +35,10 @@ message StrategyExperiment {
   google.protobuf.Timestamp created_at = 12;
   google.protobuf.Timestamp finished_at = 13;
   string strategy_code = 14;
+  string symbol = 15;
+  string timeframe = 16;
+  int64 from_ts_unix_ms = 17;
+  int64 to_ts_unix_ms = 18;
 }
 
 message SubmitStrategyExperimentRequest {
@@ -45,6 +49,10 @@ message SubmitStrategyExperimentRequest {
   string objective = 5;
   string idempotency_key = 6;
   string strategy_code = 7;
+  string symbol = 8;
+  string timeframe = 9;
+  int64 from_ts_unix_ms = 10;
+  int64 to_ts_unix_ms = 11;
 }
 
 message StrategyExperimentCandidate {
@@ -60,6 +68,12 @@ message StrategyExperimentCandidate {
   string summary = 10;
   string recommendation = 11;
   google.protobuf.Timestamp created_at = 12;
+  // OOS (out-of-sample) validation fields.
+  optional double oos_score = 15;
+  optional double oos_total_return = 16;
+  optional double oos_sharpe_ratio = 17;
+  optional double degradation_pct = 18;
+  bool is_overfit = 19;
 }
 
 message SubmitStrategyExperimentResponse {

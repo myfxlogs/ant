@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap"
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
+	"google.golang.org/protobuf/proto"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/interceptor"
@@ -34,6 +35,44 @@ func (s *PythonStrategyServer) StartBacktestRun(ctx context.Context, req *connec
 	if req.Msg.InitialCapital <= 0 {
 		run.InitialCapital = f64Ptr(10000)
 	}
+	// Extract execution config with safe defaults.
+	cfg := req.Msg.GetExecutionConfig()
+	if cfg != nil {
+		run.Commission = f64Ptr(cfg.GetCommission())
+		run.Slippage = f64Ptr(cfg.GetSlippage())
+		run.Leverage = f64Ptr(cfg.GetLeverage())
+		run.TradeDirection = strPtr(tradeDirectionToString(cfg.GetTradeDirection()))
+		sMode := cfg.GetStrictMode()
+		run.StrictMode = &sMode
+	}
+	// Validate & clamp: backend is the final authority on value ranges.
+	if run.Commission == nil || *run.Commission == 0 {
+		run.Commission = f64Ptr(0.001)
+	}
+	if run.Commission != nil && (*run.Commission < 0 || *run.Commission > 10) {
+		run.Commission = f64Ptr(0.001)
+	}
+	if run.Slippage != nil && (*run.Slippage < 0 || *run.Slippage > 10) {
+		run.Slippage = f64Ptr(0)
+	}
+	if run.Leverage == nil || *run.Leverage == 0 {
+		run.Leverage = f64Ptr(1)
+	}
+	if run.Leverage != nil && (*run.Leverage < 1 || *run.Leverage > 125) {
+		run.Leverage = f64Ptr(1)
+	}
+	if run.TradeDirection == nil || *run.TradeDirection == "" {
+		run.TradeDirection = strPtr("both")
+	}
+	if run.StrictMode == nil {
+		t := true
+		run.StrictMode = &t
+	}
+	// Serialize full config snapshot for reproducibility.
+	if cfg != nil {
+		snap, _ := proto.Marshal(cfg)
+		run.ConfigSnapshot = snap
+	}
 	if req.Msg.From != nil {
 		t := req.Msg.From.AsTime()
 		run.FromTs = &t
@@ -43,6 +82,9 @@ func (s *PythonStrategyServer) StartBacktestRun(ctx context.Context, req *connec
 		run.ToTs = &t
 	}
 	run.ExtraSymbols = req.Msg.ExtraSymbols
+	if run.ExtraSymbols == nil {
+		run.ExtraSymbols = []string{}
+	}
 	if req.Msg.DatasetId != nil {
 		id, _ := uuid.Parse(*req.Msg.DatasetId)
 		if id != uuid.Nil {
@@ -76,10 +118,11 @@ func (s *PythonStrategyServer) GetBacktestRun(ctx context.Context, req *connect.
 		return nil, connect.NewError(connect.CodeNotFound, err)
 	}
 	return connect.NewResponse(&antv1.GetBacktestRunResponse{
-		Run:         toProtoBacktestRun(run),
-		Metrics:     parseMetrics(run.ProtoResponse),
-		EquityCurve: parseEquityCurve(run.ProtoResponse),
-		Risk:        parseRisk(run.ProtoResponse),
+		Run:                   toProtoBacktestRun(run),
+		Metrics:               parseMetrics(run.ProtoResponse),
+		EquityCurve:           parseEquityCurve(run.ProtoResponse),
+		Risk:                  parseRisk(run.ProtoResponse),
+		ExecutionAssumptions:  parseExecutionAssumptions(run.ProtoResponse),
 	}), nil
 }
 
@@ -139,10 +182,11 @@ func (s *PythonStrategyServer) WatchBacktestRun(ctx context.Context, req *connec
 		}
 		prevStatus = run.Status
 		if err := stream.Send(&antv1.BacktestRunUpdate{
-			Run:         toProtoBacktestRun(run),
-			Metrics:     parseMetrics(run.ProtoResponse),
-			EquityCurve: parseEquityCurve(run.ProtoResponse),
-			Risk:        parseRisk(run.ProtoResponse),
+			Run:                  toProtoBacktestRun(run),
+			Metrics:              parseMetrics(run.ProtoResponse),
+			EquityCurve:          parseEquityCurve(run.ProtoResponse),
+			Risk:                 parseRisk(run.ProtoResponse),
+			ExecutionAssumptions: parseExecutionAssumptions(run.ProtoResponse),
 		}); err != nil {
 			return err
 		}

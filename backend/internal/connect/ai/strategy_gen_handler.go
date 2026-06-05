@@ -286,6 +286,11 @@ func (s *StrategyGenServer) triggerBacktest(ctx context.Context, userID uuid.UUI
 		Status:        "PENDING",
 		StrategyCode:  &code,
 		InitialCapital: f64Ptr(10000),
+			Commission:       f64Ptr(0.001),
+			Slippage:         f64Ptr(0),
+			Leverage:         f64Ptr(1),
+			TradeDirection:   strPtr("both"),
+			StrictMode:       bPtr(true),
 		StrategyCodeHash: "",
 		Error:         "",
 		ExtraSymbols:  []string{},
@@ -298,3 +303,5 @@ func (s *StrategyGenServer) triggerBacktest(ctx context.Context, userID uuid.UUI
 }
 
 func f64Ptr(v float64) *float64 { return &v }
+func strPtr(s string) *string { if s == "" { return nil }; return &s }
+func bPtr(v bool) *bool { return &v }

@@ -5,6 +5,7 @@ package ant.v1;
 option go_package = "anttrader/gen/proto/ant/v1;antv1";
 
 import "google/protobuf/timestamp.proto";
+import "backtest_execution_config.proto";
 
 enum BacktestRunMode {
   BACKTEST_RUN_MODE_UNSPECIFIED = 0;
@@ -44,4 +45,5 @@ message BacktestRun {
   repeated string extra_symbols = 17;
   bool is_terminal = 18;
   bool is_succeeded = 19;
+  optional BacktestExecutionConfig execution_config = 20;
 }

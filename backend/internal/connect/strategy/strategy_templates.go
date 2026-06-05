@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"context"
+	"errors"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -155,7 +156,10 @@ func (s *StrategyServer) PublishTemplateDraft(ctx context.Context, req *connect.
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	if err := s.svc.SetTemplateStatus(ctx, id, s.userID(ctx), "published"); err != nil {
-		return nil, err
+		if errors.Is(err, service.ErrTemplateNotFound) {
+			return nil, connect.NewError(connect.CodeNotFound, err)
+		}
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	existing.Status = "published"
 	return connect.NewResponse(templateRowToProto(existing)), nil
@@ -167,7 +171,10 @@ func (s *StrategyServer) CancelTemplateDraft(ctx context.Context, req *connect.R
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	if err := s.svc.SetTemplateStatus(ctx, id, s.userID(ctx), "canceled"); err != nil {
-		return nil, err
+		if errors.Is(err, service.ErrTemplateNotFound) {
+			return nil, connect.NewError(connect.CodeNotFound, err)
+		}
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&emptypb.Empty{}), nil
 }

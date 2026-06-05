@@ -2,6 +2,7 @@ import { pythonStrategyClient, pythonStrategyStreamClient } from './connect';
 import { create } from '@bufbuild/protobuf';
 import type { Timestamp } from '@bufbuild/protobuf/wkt';
 import { BacktestRunMode } from '../gen/ant/v1/backtest_run_pb';
+import { TradeDirection } from '../gen/ant/v1/backtest_execution_config_pb';
 import {
   StartBacktestRunRequestSchema,
 } from '../gen/ant/v1/backtest_run_start_pb';
@@ -53,11 +54,11 @@ function toTimestamp(d?: Date): Timestamp | undefined {
 }
 
 export const pythonStrategyApi = {
-  execute: async (params: { 
-    code: string; 
-    accountId: string; 
-    symbol: string; 
-    timeframe?: string 
+  execute: async (params: {
+    code: string;
+    accountId: string;
+    symbol: string;
+    timeframe?: string
   }): Promise<ExecuteStrategyResult> => {
     const response: any = await pythonStrategyService.execute({
       code: params.code,
@@ -73,12 +74,12 @@ export const pythonStrategyApi = {
     };
   },
 
-  backtest: async (params: { 
-    code: string; 
-    accountId: string; 
-    symbol: string; 
-    timeframe: string; 
-    initialCapital?: number 
+  backtest: async (params: {
+    code: string;
+    accountId: string;
+    symbol: string;
+    timeframe: string;
+    initialCapital?: number
   }): Promise<BacktestResult> => {
     const response: any = await pythonStrategyService.backtest(
       {
@@ -118,84 +119,99 @@ export const pythonStrategyApi = {
     };
   },
 
-	startBacktestRun: async (params: {
-		code: string;
-		accountId: string;
-		symbol: string;
-		timeframe: string;
-		initialCapital?: number;
-		mode: 'KLINE_RANGE' | 'DATASET';
-		from?: Date;
-		to?: Date;
-		datasetId?: string;
-		templateId?: string;
-		templateDraftId?: string;
-		// Phase B2: secondary symbols (same timeframe/account) whose K-lines
-		// are fetched and exposed to the strategy as features.
-		extraSymbols?: string[];
-	}): Promise<{ runId: string }> => {
-		const msg = create(StartBacktestRunRequestSchema, {
-			code: params.code,
-			accountId: params.accountId,
-			symbol: params.symbol,
-			timeframe: params.timeframe,
-			initialCapital: params.initialCapital ?? 10000,
-			mode:
-				params.mode === 'DATASET'
-					? BacktestRunMode.DATASET
-					: BacktestRunMode.KLINE_RANGE,
-			from: params.mode === 'KLINE_RANGE' ? toTimestamp(params.from) : undefined,
-			to: params.mode === 'KLINE_RANGE' ? toTimestamp(params.to) : undefined,
-			datasetId: params.mode === 'DATASET' ? params.datasetId : undefined,
-			templateId: params.templateId,
-			templateDraftId: params.templateDraftId,
-			extraSymbols: (params.extraSymbols ?? []).filter((s) => !!s && s !== params.symbol),
-		});
-		const resp = await pythonStrategyService.startBacktestRun(msg);
-		return { runId: resp.runId };
-	},
+  startBacktestRun: async (params: {
+    code: string;
+    accountId: string;
+    symbol: string;
+    timeframe: string;
+    initialCapital?: number;
+    mode: 'KLINE_RANGE' | 'DATASET';
+    from?: Date;
+    to?: Date;
+    datasetId?: string;
+    templateId?: string;
+    templateDraftId?: string;
+    extraSymbols?: string[];
+    executionConfig?: {
+      commission: number;
+      slippage: number;
+      leverage: number;
+      tradeDirection: 'long' | 'short' | 'both';
+      strictMode: boolean;
+    };
+  }): Promise<{ runId: string }> => {
+    const msg = create(StartBacktestRunRequestSchema, {
+      code: params.code,
+      accountId: params.accountId,
+      symbol: params.symbol,
+      timeframe: params.timeframe,
+      initialCapital: params.initialCapital ?? 10000,
+      mode:
+        params.mode === 'DATASET'
+          ? BacktestRunMode.DATASET
+          : BacktestRunMode.KLINE_RANGE,
+      from: params.mode === 'KLINE_RANGE' ? toTimestamp(params.from) : undefined,
+      to: params.mode === 'KLINE_RANGE' ? toTimestamp(params.to) : undefined,
+      datasetId: params.mode === 'DATASET' ? params.datasetId : undefined,
+      templateId: params.templateId,
+      templateDraftId: params.templateDraftId,
+      extraSymbols: (params.extraSymbols ?? []).filter((s) => !!s && s !== params.symbol),
+      executionConfig: params.executionConfig ? {
+        commission: params.executionConfig.commission,
+        slippage: params.executionConfig.slippage,
+        leverage: params.executionConfig.leverage,
+        tradeDirection:
+          params.executionConfig.tradeDirection === 'long' ? TradeDirection.LONG
+          : params.executionConfig.tradeDirection === 'short' ? TradeDirection.SHORT
+          : TradeDirection.BOTH,
+        strictMode: params.executionConfig.strictMode,
+      } : undefined,
+    });
+    const resp = await pythonStrategyService.startBacktestRun(msg);
+    return { runId: resp.runId };
+  },
 
-	getBacktestRun: async (runId: string) => {
-		const msg = create(GetBacktestRunRequestSchema, { runId });
-		return (await pythonStrategyService.getBacktestRun(msg));
-	},
+  getBacktestRun: async (runId: string) => {
+    const msg = create(GetBacktestRunRequestSchema, { runId });
+    return (await pythonStrategyService.getBacktestRun(msg));
+  },
 
-	listBacktestRuns: async (params: { accountId?: string; limit?: number; offset?: number }) => {
-		const msg = create(ListBacktestRunsRequestSchema, {
-			accountId: params.accountId,
-			limit: params.limit ?? 50,
-			offset: params.offset ?? 0,
-		});
-		return (await pythonStrategyService.listBacktestRuns(msg));
-	},
+  listBacktestRuns: async (params: { accountId?: string; limit?: number; offset?: number }) => {
+    const msg = create(ListBacktestRunsRequestSchema, {
+      accountId: params.accountId,
+      limit: params.limit ?? 50,
+      offset: params.offset ?? 0,
+    });
+    return (await pythonStrategyService.listBacktestRuns(msg));
+  },
 
-	cancelBacktestRun: async (runId: string) => {
-		const msg = create(CancelBacktestRunRequestSchema, { runId });
-		return (await pythonStrategyService.cancelBacktestRun(msg));
-	},
+  cancelBacktestRun: async (runId: string) => {
+    const msg = create(CancelBacktestRunRequestSchema, { runId });
+    return (await pythonStrategyService.cancelBacktestRun(msg));
+  },
 
-	deleteBacktestRun: async (runId: string) => {
-		const msg = create(DeleteBacktestRunRequestSchema, { runId });
-		return (await pythonStrategyService.deleteBacktestRun(msg));
-	},
+  deleteBacktestRun: async (runId: string) => {
+    const msg = create(DeleteBacktestRunRequestSchema, { runId });
+    return (await pythonStrategyService.deleteBacktestRun(msg));
+  },
 
-	watchBacktestRun: (runId: string, onUpdate: (u: any) => void, onError?: (e: any) => void) => {
-		const abortController = new AbortController();
-		(async () => {
-			try {
-				const msg = create(WatchBacktestRunRequestSchema, { runId });
-				const stream = pythonStrategyStreamService.watchBacktestRun(msg, { signal: abortController.signal });
-				for await (const u of stream) {
-					onUpdate(u);
-				}
-			} catch (e) {
-				const errorStr = String(e);
-				if ((e as { name?: string })?.name === 'AbortError' || errorStr.includes('canceled') || errorStr.includes('aborted')) {
-					return;
-				}
-				onError?.(e);
-			}
-		})();
-		return () => abortController.abort();
-	},
+  watchBacktestRun: (runId: string, onUpdate: (u: any) => void, onError?: (e: any) => void) => {
+    const abortController = new AbortController();
+    (async () => {
+      try {
+        const msg = create(WatchBacktestRunRequestSchema, { runId });
+        const stream = pythonStrategyStreamService.watchBacktestRun(msg, { signal: abortController.signal });
+        for await (const u of stream) {
+          onUpdate(u);
+        }
+      } catch (e) {
+        const errorStr = String(e);
+        if ((e as { name?: string })?.name === 'AbortError' || errorStr.includes('canceled') || errorStr.includes('aborted')) {
+          return;
+        }
+        onError?.(e);
+      }
+    })();
+    return () => abortController.abort();
+  },
 };

@@ -18,6 +18,11 @@ export function usePositionsQuery(accountId: string) {
     staleTime: 120_000, // SSE keeps position state fresh
     retry: 2,
     refetchOnWindowFocus: false,
-    refetchInterval: 60_000, // fallback polling if SSE stream disconnected
+    refetchInterval: (query) => {
+      // Only poll if SSE hasn't updated the cache recently.
+      // SSE updates come via bridgeStreamEvents → setQueryData every few seconds.
+      const last = query.state.dataUpdatedAt;
+      return Date.now() - last > 90_000 ? 60_000 : false;
+    },
   });
 }

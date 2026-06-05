@@ -2,6 +2,7 @@ package marketplace
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -12,18 +13,20 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
+	"anttrader/internal/ai"
 	"anttrader/internal/repository"
 )
 
 type MarketRegimeServer struct {
-	repo *repository.MarketRegimeRepository
-	log  *zap.Logger
+	repo           *repository.MarketRegimeRepository
+	marketDataRepo *repository.MarketDataRepository
+	log            *zap.Logger
 }
 
 var _ antv1c.MarketRegimeServiceHandler = (*MarketRegimeServer)(nil)
 
-func NewMarketRegimeServer(repo *repository.MarketRegimeRepository, log *zap.Logger) *MarketRegimeServer {
-	return &MarketRegimeServer{repo: repo, log: log}
+func NewMarketRegimeServer(repo *repository.MarketRegimeRepository, marketDataRepo *repository.MarketDataRepository, log *zap.Logger) *MarketRegimeServer {
+	return &MarketRegimeServer{repo: repo, marketDataRepo: marketDataRepo, log: log}
 }
 
 func (s *MarketRegimeServer) DetectMarketRegime(ctx context.Context, req *connect.Request[antv1.DetectMarketRegimeRequest]) (*connect.Response[antv1.DetectMarketRegimeResponse], error) {
@@ -48,6 +51,27 @@ func (s *MarketRegimeServer) DetectMarketRegime(ctx context.Context, req *connec
 	if req.Msg.To != nil {
 		t := req.Msg.To.AsTime()
 		row.ToTime = &t
+	}
+
+	// Fetch K-lines and detect actual market regime.
+	if s.marketDataRepo != nil && req.Msg.Symbol != "" && req.Msg.Timeframe != "" {
+		bars, err := s.marketDataRepo.GetKlines(ctx, req.Msg.Symbol, "", req.Msg.Timeframe, row.FromTime, row.ToTime, 2000)
+		if err != nil {
+			s.log.Warn("market regime: failed to fetch klines", zap.Error(err))
+		} else if len(bars) >= 30 {
+			ohlc := make([]ai.OHLCBar, len(bars))
+			// GetKlines returns DESC; reverse to ASC for regime detection.
+			for i := 0; i < len(bars); i++ {
+				b := bars[len(bars)-1-i]
+				ohlc[i] = ai.OHLCBar{Open: b.Open, High: b.High, Low: b.Low, Close: b.Close, Volume: b.Volume}
+			}
+			result := ai.DetectRegime(ohlc)
+			row.Regime = result.Regime.String()
+			row.Confidence = result.Confidence
+			if featJSON, err := json.Marshal(result.Features); err == nil {
+				row.Features = featJSON
+			}
+		}
 	}
 
 	if err := s.repo.Create(ctx, row); err != nil {
@@ -103,4 +127,3 @@ func marketRegimeToProto(r *repository.MarketRegime) *antv1.MarketRegime {
 	}
 	return p
 }
-

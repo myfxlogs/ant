@@ -74,6 +74,34 @@ func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repo
 		initialCapital = *run.InitialCapital
 	}
 
+	commission := 0.0
+	if run.Commission != nil {
+		commission = *run.Commission
+	}
+	slippage := 0.0
+	if run.Slippage != nil {
+		slippage = *run.Slippage
+	}
+	leverage := 1.0
+	if run.Leverage != nil && *run.Leverage > 0 {
+		leverage = *run.Leverage
+	}
+	tradeDir := antv1.TradeDirection_TRADE_DIRECTION_BOTH
+	if run.TradeDirection != nil {
+		tradeDir = stringToTradeDirection(*run.TradeDirection)
+	}
+	strictMode := true
+	if run.StrictMode != nil {
+		strictMode = *run.StrictMode
+	}
+	var strategyCfg *antv1.StrategyConfig
+	if len(run.ConfigSnapshot) > 0 {
+		var ec antv1.BacktestExecutionConfig
+		if err := proto.Unmarshal(run.ConfigSnapshot, &ec); err == nil {
+			strategyCfg = ec.GetStrategyConfig()
+		}
+	}
+
 	// Cancellable context: lease heartbeat + cancel polling share a derived context.
 	execCtx, execCancel := context.WithCancel(ctx)
 	defer execCancel()
@@ -157,7 +185,14 @@ func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repo
 			StartDateMs:       fromMs,
 			EndDateMs:         toMs,
 			InitialCapital:    initialCapital,
-			Commission:        0,
+			Commission:        commission,
+			SlippageRate:      slippage,
+			SlippageMode:      "fixed",
+			SlippageSeed:      42,
+			Leverage:          leverage,
+			TradeDirection:    tradeDir,
+			StrictMode:        strictMode,
+			StrategyConfig:    strategyCfg,
 			Klines:            klines,
 			StrategyParamsJson: paramsProtoToJSON(run.ParameterOverrides),
 		}))

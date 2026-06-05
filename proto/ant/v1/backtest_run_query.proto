@@ -6,6 +6,7 @@ option go_package = "anttrader/gen/proto/ant/v1;antv1";
 
 import "common.proto";
 import "backtest_run.proto";
+import "backtest_execution_config.proto";
 
 message GetBacktestRunRequest {
   string run_id = 1;
@@ -17,6 +18,7 @@ message GetBacktestRunResponse {
   repeated double equity_curve = 3;
   optional string dataset_id = 4;
   BacktestRisk risk = 5;
+  ExecutionAssumptions execution_assumptions = 6;
 }
 
 message WatchBacktestRunRequest {
@@ -28,6 +30,7 @@ message BacktestRunUpdate {
   BacktestMetrics metrics = 2;
   repeated double equity_curve = 3;
   BacktestRisk risk = 4;
+  ExecutionAssumptions execution_assumptions = 5;
 }
 
 message ListBacktestRunsRequest {

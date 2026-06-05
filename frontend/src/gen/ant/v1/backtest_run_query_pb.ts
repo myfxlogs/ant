@@ -8,13 +8,15 @@ import type { BacktestMetrics, BacktestRisk } from "./common_pb";
 import { file_common } from "./common_pb";
 import type { BacktestRun } from "./backtest_run_pb";
 import { file_backtest_run } from "./backtest_run_pb";
+import type { ExecutionAssumptions } from "./backtest_execution_config_pb";
+import { file_backtest_execution_config } from "./backtest_execution_config_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file backtest_run_query.proto.
  */
 export const file_backtest_run_query: GenFile = /*@__PURE__*/
-  fileDesc("ChhiYWNrdGVzdF9ydW5fcXVlcnkucHJvdG8SBmFudC52MSInChVHZXRCYWNrdGVzdFJ1blJlcXVlc3QSDgoGcnVuX2lkGAEgASgJIsYBChZHZXRCYWNrdGVzdFJ1blJlc3BvbnNlEiAKA3J1bhgBIAEoCzITLmFudC52MS5CYWNrdGVzdFJ1bhIoCgdtZXRyaWNzGAIgASgLMhcuYW50LnYxLkJhY2t0ZXN0TWV0cmljcxIUCgxlcXVpdHlfY3VydmUYAyADKAESFwoKZGF0YXNldF9pZBgEIAEoCUgAiAEBEiIKBHJpc2sYBSABKAsyFC5hbnQudjEuQmFja3Rlc3RSaXNrQg0KC19kYXRhc2V0X2lkIikKF1dhdGNoQmFja3Rlc3RSdW5SZXF1ZXN0Eg4KBnJ1bl9pZBgBIAEoCSKZAQoRQmFja3Rlc3RSdW5VcGRhdGUSIAoDcnVuGAEgASgLMhMuYW50LnYxLkJhY2t0ZXN0UnVuEigKB21ldHJpY3MYAiABKAsyFy5hbnQudjEuQmFja3Rlc3RNZXRyaWNzEhQKDGVxdWl0eV9jdXJ2ZRgDIAMoARIiCgRyaXNrGAQgASgLMhQuYW50LnYxLkJhY2t0ZXN0UmlzayJgChdMaXN0QmFja3Rlc3RSdW5zUmVxdWVzdBIXCgphY2NvdW50X2lkGAEgASgJSACIAQESDQoFbGltaXQYAiABKAUSDgoGb2Zmc2V0GAMgASgFQg0KC19hY2NvdW50X2lkIj0KGExpc3RCYWNrdGVzdFJ1bnNSZXNwb25zZRIhCgRydW5zGAEgAygLMhMuYW50LnYxLkJhY2t0ZXN0UnVuQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_common, file_backtest_run]);
+  fileDesc("ChhiYWNrdGVzdF9ydW5fcXVlcnkucHJvdG8SBmFudC52MSInChVHZXRCYWNrdGVzdFJ1blJlcXVlc3QSDgoGcnVuX2lkGAEgASgJIoMCChZHZXRCYWNrdGVzdFJ1blJlc3BvbnNlEiAKA3J1bhgBIAEoCzITLmFudC52MS5CYWNrdGVzdFJ1bhIoCgdtZXRyaWNzGAIgASgLMhcuYW50LnYxLkJhY2t0ZXN0TWV0cmljcxIUCgxlcXVpdHlfY3VydmUYAyADKAESFwoKZGF0YXNldF9pZBgEIAEoCUgAiAEBEiIKBHJpc2sYBSABKAsyFC5hbnQudjEuQmFja3Rlc3RSaXNrEjsKFWV4ZWN1dGlvbl9hc3N1bXB0aW9ucxgGIAEoCzIcLmFudC52MS5FeGVjdXRpb25Bc3N1bXB0aW9uc0INCgtfZGF0YXNldF9pZCIpChdXYXRjaEJhY2t0ZXN0UnVuUmVxdWVzdBIOCgZydW5faWQYASABKAki1gEKEUJhY2t0ZXN0UnVuVXBkYXRlEiAKA3J1bhgBIAEoCzITLmFudC52MS5CYWNrdGVzdFJ1bhIoCgdtZXRyaWNzGAIgASgLMhcuYW50LnYxLkJhY2t0ZXN0TWV0cmljcxIUCgxlcXVpdHlfY3VydmUYAyADKAESIgoEcmlzaxgEIAEoCzIULmFudC52MS5CYWNrdGVzdFJpc2sSOwoVZXhlY3V0aW9uX2Fzc3VtcHRpb25zGAUgASgLMhwuYW50LnYxLkV4ZWN1dGlvbkFzc3VtcHRpb25zImAKF0xpc3RCYWNrdGVzdFJ1bnNSZXF1ZXN0EhcKCmFjY291bnRfaWQYASABKAlIAIgBARINCgVsaW1pdBgCIAEoBRIOCgZvZmZzZXQYAyABKAVCDQoLX2FjY291bnRfaWQiPQoYTGlzdEJhY2t0ZXN0UnVuc1Jlc3BvbnNlEiEKBHJ1bnMYASADKAsyEy5hbnQudjEuQmFja3Rlc3RSdW5CIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_common, file_backtest_run, file_backtest_execution_config]);
 
 /**
  * @generated from message ant.v1.GetBacktestRunRequest
@@ -61,6 +63,11 @@ export type GetBacktestRunResponse = Message<"ant.v1.GetBacktestRunResponse"> & 
    * @generated from field: ant.v1.BacktestRisk risk = 5;
    */
   risk?: BacktestRisk | undefined;
+
+  /**
+   * @generated from field: ant.v1.ExecutionAssumptions execution_assumptions = 6;
+   */
+  executionAssumptions?: ExecutionAssumptions | undefined;
 };
 
 /**
@@ -110,6 +117,11 @@ export type BacktestRunUpdate = Message<"ant.v1.BacktestRunUpdate"> & {
    * @generated from field: ant.v1.BacktestRisk risk = 4;
    */
   risk?: BacktestRisk | undefined;
+
+  /**
+   * @generated from field: ant.v1.ExecutionAssumptions execution_assumptions = 5;
+   */
+  executionAssumptions?: ExecutionAssumptions | undefined;
 };
 
 /**

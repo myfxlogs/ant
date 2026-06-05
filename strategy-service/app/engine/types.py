@@ -188,6 +188,19 @@ class RiskAssessment:
 
 
 @dataclass
+class ExecutionAssumptions:
+    """Transparency info describing what the engine actually did."""
+    simulation_mode: str = "KLINE_RANGE"
+    signal_timing: str = "next_bar_open"
+    fill_rule: str = "next_bar_open"
+    mtf_fallback_reason: str = ""
+    actual_commission: float = 0.0
+    actual_slippage: float = 0.0
+    actual_leverage: float = 1.0
+    trade_direction: str = "both"
+
+
+@dataclass
 class RunSnapshot:
     code_sha256: str = ""
     params: dict = field(default_factory=dict)
@@ -216,6 +229,9 @@ class BacktestRequest:
     end: datetime
     initial_cash: float
     leverage: float = 0.0
+    trade_direction: str = "both"   # "long" | "short" | "both"
+    strict_mode: bool = True        # True = next-bar-open, False = same-bar-close + MTF
+    strategy_config: Optional[dict] = None  # parsed from @strategy annotations
     source: Literal["MT_LIVE", "DATASET"] = "MT_LIVE"
     dataset_id: Optional[str] = None
     strategy_code: str = ""
@@ -246,6 +262,7 @@ class BacktestResult:
     risk_assessment: RiskAssessment = field(default_factory=RiskAssessment)
     trades: List[Trade] = field(default_factory=list)
     snapshot: Optional[RunSnapshot] = None
+    execution_assumptions: Optional[ExecutionAssumptions] = None
     error: Optional[str] = None
 
 

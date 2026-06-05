@@ -19,23 +19,26 @@ import (
 
 // ExperimentWorker polls for PENDING experiments and processes them.
 type ExperimentWorker struct {
-	repo         *repository.StrategyExperimentRepository
-	backtestRepo *repository.BacktestRunRepository
-	log          *zap.Logger
-	systemAISvc  *systemai.Service // optional: enables AI multi-round proposal
-	stopCh       chan struct{}
+	repo           *repository.StrategyExperimentRepository
+	backtestRepo   *repository.BacktestRunRepository
+	marketDataRepo *repository.MarketDataRepository
+	log            *zap.Logger
+	systemAISvc    *systemai.Service // optional: enables AI multi-round proposal
+	stopCh         chan struct{}
 }
 
 func NewExperimentWorker(
 	repo *repository.StrategyExperimentRepository,
 	backtestRepo *repository.BacktestRunRepository,
+	marketDataRepo *repository.MarketDataRepository,
 	log *zap.Logger,
 ) *ExperimentWorker {
 	return &ExperimentWorker{
-		repo:         repo,
-		backtestRepo: backtestRepo,
-		log:          log,
-		stopCh:       make(chan struct{}),
+		repo:           repo,
+		backtestRepo:   backtestRepo,
+		marketDataRepo: marketDataRepo,
+		log:            log,
+		stopCh:         make(chan struct{}),
 	}
 }
 
@@ -144,17 +147,17 @@ func (w *ExperimentWorker) runOptimizer(
 	case "ags":
 		return w.runIterative(ctx, ai.NewAnnealedGaussianOptimizer(space, exp.MaxCandidates), space, code, exp)
 	case "random":
-		return w.runOneShot(ai.RandomSearch(params, exp.MaxCandidates), code, exp)
+		return w.runOneShot(ctx, ai.RandomSearch(params, exp.MaxCandidates), code, exp)
 	default:
-		return w.runOneShot(ai.GridSearch(params, exp.MaxCandidates), code, exp)
+		return w.runOneShot(ctx, ai.GridSearch(params, exp.MaxCandidates), code, exp)
 	}
 }
 
 // runOneShot processes a batch of candidates from grid/random search.
-func (w *ExperimentWorker) runOneShot(overridesList []map[string]interface{}, code string, exp *repository.StrategyExperiment) ([]candidateResult, error) {
+func (w *ExperimentWorker) runOneShot(ctx context.Context, overridesList []map[string]interface{}, code string, exp *repository.StrategyExperiment) ([]candidateResult, error) {
 	var results []candidateResult
 	for _, overrides := range overridesList {
-		r, err := w.backtestAndScore(context.Background(), code, overrides, exp)
+		r, err := w.backtestAndScore(ctx, code, overrides, exp)
 		if err != nil {
 			w.log.Warn("backtest failed", zap.Error(err))
 			continue
@@ -193,18 +196,48 @@ func (w *ExperimentWorker) backtestAndScore(
 	exp *repository.StrategyExperiment,
 ) (candidateResult, error) {
 	modifiedCode := code
+	symbol := exp.Symbol
+	if symbol == "" {
+		symbol = "XAUUSDm" // backward compat for experiments created before migration
+	}
+	tf := exp.Timeframe
+	if tf == "" {
+		tf = "1h"
+	}
+	var fromTs, toTs *time.Time
+	if exp.FromTsUnixMs > 0 {
+		ft := time.UnixMilli(exp.FromTsUnixMs)
+		fromTs = &ft
+	}
+	if exp.ToTsUnixMs > 0 {
+		tt := time.UnixMilli(exp.ToTsUnixMs)
+		toTs = &tt
+	}
+	if fromTs == nil {
+		ft := time.Now().AddDate(0, -1, 0)
+		fromTs = &ft
+	}
+	if toTs == nil {
+		tt := time.Now()
+		toTs = &tt
+	}
 	run := &repository.BacktestRun{
 		ID:                 uuid.New(),
 		UserID:             exp.UserID,
 		AccountID:          uuid.Nil,
-		Symbol:             "XAUUSDm",
-		Timeframe:          "1h",
-		FromTs:             timePtr(time.Now().AddDate(0, -1, 0)),
-		ToTs:               timePtr(time.Now()),
+		Symbol:             symbol,
+		Timeframe:          tf,
+		FromTs:             fromTs,
+		ToTs:               toTs,
 		Mode:               "KLINE_RANGE",
 		Status:             "PENDING",
 		StrategyCode:       &modifiedCode,
 		InitialCapital:     f64Ptr(10000),
+			Commission:        f64Ptr(0.001),
+			Slippage:          f64Ptr(0),
+			Leverage:          f64Ptr(1),
+			TradeDirection:    strPtr("both"),
+			StrictMode:        boolPtr(true),
 		StrategyCodeHash:   "",
 		Error:              "",
 		ExtraSymbols:       []string{},
@@ -227,16 +260,16 @@ func (w *ExperimentWorker) backtestAndScore(
 			if bt.Status == "FAILED" {
 				return candidateResult{}, fmt.Errorf("backtest failed: %s", bt.Error)
 			}
-			return w.scoreFromBacktest(bt, overrides), nil
+			return w.scoreFromBacktest(ctx, bt, overrides), nil
 		}
 	}
 	return candidateResult{}, fmt.Errorf("backtest %s timed out", runID)
 }
 
 // scoreFromBacktest extracts metrics from proto binary and scores with regime-aware weights.
-func (w *ExperimentWorker) scoreFromBacktest(bt *repository.BacktestRun, overrides map[string]interface{}) candidateResult {
+func (w *ExperimentWorker) scoreFromBacktest(ctx context.Context, bt *repository.BacktestRun, overrides map[string]interface{}) candidateResult {
 	btMetrics := extractBacktestMetrics(bt.ProtoResponse)
-	regime := ai.RegimeTransition
+	regime := w.detectRegime(ctx, bt)
 	scored := ai.Score(btMetrics, regime)
 
 	summary := "param search"
@@ -273,6 +306,27 @@ func extractBacktestMetrics(protoResp []byte) *ai.BacktestMetrics {
 		TotalTrades:  int(m.GetTotalTrades()),
 		Stability:    computeStability(eq),
 	}
+}
+
+// detectRegime fetches K-lines for the backtest run and detects market regime.
+// Falls back to Transition if data is insufficient or unavailable.
+func (w *ExperimentWorker) detectRegime(ctx context.Context, bt *repository.BacktestRun) ai.MarketRegime {
+	if w.marketDataRepo == nil || bt.Symbol == "" || bt.Timeframe == "" {
+		return ai.RegimeTransition
+	}
+	bars, err := w.marketDataRepo.GetKlines(
+		ctx, bt.Symbol, "", bt.Timeframe, bt.FromTs, bt.ToTs, 2000,
+	)
+	if err != nil || len(bars) < 30 {
+		return ai.RegimeTransition
+	}
+	ohlc := make([]ai.OHLCBar, len(bars))
+	for i := 0; i < len(bars); i++ {
+		b := bars[len(bars)-1-i] // reverse DESC→ASC
+		ohlc[i] = ai.OHLCBar{Open: b.Open, High: b.High, Low: b.Low, Close: b.Close, Volume: b.Volume}
+	}
+	result := ai.DetectRegime(ohlc)
+	return result.Regime
 }
 
 func marshalOverrides(overrides map[string]interface{}) []byte {

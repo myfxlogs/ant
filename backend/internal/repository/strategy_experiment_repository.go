@@ -29,6 +29,10 @@ type StrategyExperiment struct {
 	BestCandidateID *uuid.UUID `db:"best_candidate_id"`
 	JobID           *uuid.UUID `db:"job_id"`
 	StrategyCode    string     `db:"strategy_code"`
+	Symbol          string     `db:"symbol"`
+	Timeframe       string     `db:"timeframe"`
+	FromTsUnixMs    int64      `db:"from_ts_unix_ms"`
+	ToTsUnixMs      int64      `db:"to_ts_unix_ms"`
 	CreatedAt       time.Time  `db:"created_at"`
 	FinishedAt      *time.Time `db:"finished_at"`
 }
@@ -76,9 +80,9 @@ func (r *StrategyExperimentRepository) Create(ctx context.Context, exp *Strategy
 		exp.ParameterSpace = nil
 	}
 	_, err := r.db.Exec(ctx, `
-		INSERT INTO strategy_experiments (id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,strategy_code,created_at,finished_at)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
-	`, exp.ID, exp.UserID, exp.BaseTemplateID, exp.Status, exp.ParameterSpace, exp.SearchMethod, exp.MaxCandidates, exp.Objective, exp.MarketRegimeRef, exp.BestCandidateID, exp.JobID, exp.StrategyCode, exp.CreatedAt, exp.FinishedAt)
+		INSERT INTO strategy_experiments (id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,strategy_code,symbol,timeframe,from_ts_unix_ms,to_ts_unix_ms,created_at,finished_at)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+	`, exp.ID, exp.UserID, exp.BaseTemplateID, exp.Status, exp.ParameterSpace, exp.SearchMethod, exp.MaxCandidates, exp.Objective, exp.MarketRegimeRef, exp.BestCandidateID, exp.JobID, exp.StrategyCode, exp.Symbol, exp.Timeframe, exp.FromTsUnixMs, exp.ToTsUnixMs, exp.CreatedAt, exp.FinishedAt)
 	if err != nil {
 		return fmt.Errorf("create experiment: %w", err)
 	}
@@ -87,8 +91,8 @@ func (r *StrategyExperimentRepository) Create(ctx context.Context, exp *Strategy
 
 func (r *StrategyExperimentRepository) Get(ctx context.Context, userID, id uuid.UUID) (*StrategyExperiment, error) {
 	var exp StrategyExperiment
-	err := r.db.QueryRow(ctx, `SELECT id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,strategy_code,created_at,finished_at FROM strategy_experiments WHERE id = $1 AND user_id = $2`, id, userID).Scan(
-		&exp.ID, &exp.UserID, &exp.BaseTemplateID, &exp.Status, &exp.ParameterSpace, &exp.SearchMethod, &exp.MaxCandidates, &exp.Objective, &exp.MarketRegimeRef, &exp.BestCandidateID, &exp.JobID, &exp.StrategyCode, &exp.CreatedAt, &exp.FinishedAt,
+	err := r.db.QueryRow(ctx, `SELECT id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,strategy_code,symbol,timeframe,from_ts_unix_ms,to_ts_unix_ms,created_at,finished_at FROM strategy_experiments WHERE id = $1 AND user_id = $2`, id, userID).Scan(
+		&exp.ID, &exp.UserID, &exp.BaseTemplateID, &exp.Status, &exp.ParameterSpace, &exp.SearchMethod, &exp.MaxCandidates, &exp.Objective, &exp.MarketRegimeRef, &exp.BestCandidateID, &exp.JobID, &exp.StrategyCode, &exp.Symbol, &exp.Timeframe, &exp.FromTsUnixMs, &exp.ToTsUnixMs, &exp.CreatedAt, &exp.FinishedAt,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrStrategyExperimentNotFound
@@ -103,7 +107,7 @@ func (r *StrategyExperimentRepository) List(ctx context.Context, userID uuid.UUI
 	if offset < 0 {
 		offset = 0
 	}
-	rows, err := r.db.Query(ctx, `SELECT id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,strategy_code,created_at,finished_at FROM strategy_experiments WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`, userID, limit, offset)
+	rows, err := r.db.Query(ctx, `SELECT id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,strategy_code,symbol,timeframe,from_ts_unix_ms,to_ts_unix_ms,created_at,finished_at FROM strategy_experiments WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`, userID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +116,7 @@ func (r *StrategyExperimentRepository) List(ctx context.Context, userID uuid.UUI
 	for rows.Next() {
 		var exp StrategyExperiment
 		if err := rows.Scan(
-			&exp.ID, &exp.UserID, &exp.BaseTemplateID, &exp.Status, &exp.ParameterSpace, &exp.SearchMethod, &exp.MaxCandidates, &exp.Objective, &exp.MarketRegimeRef, &exp.BestCandidateID, &exp.JobID, &exp.StrategyCode, &exp.CreatedAt, &exp.FinishedAt,
+			&exp.ID, &exp.UserID, &exp.BaseTemplateID, &exp.Status, &exp.ParameterSpace, &exp.SearchMethod, &exp.MaxCandidates, &exp.Objective, &exp.MarketRegimeRef, &exp.BestCandidateID, &exp.JobID, &exp.StrategyCode, &exp.Symbol, &exp.Timeframe, &exp.FromTsUnixMs, &exp.ToTsUnixMs, &exp.CreatedAt, &exp.FinishedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -123,8 +127,8 @@ func (r *StrategyExperimentRepository) List(ctx context.Context, userID uuid.UUI
 
 func (r *StrategyExperimentRepository) Cancel(ctx context.Context, userID, id uuid.UUID) (*StrategyExperiment, error) {
 	var exp StrategyExperiment
-	err := r.db.QueryRow(ctx, `UPDATE strategy_experiments SET status = 'CANCELLED', finished_at = COALESCE(finished_at, now()) WHERE id = $1 AND user_id = $2 AND status IN ('QUEUED','RUNNING') RETURNING id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,strategy_code,created_at,finished_at`, id, userID).Scan(
-		&exp.ID, &exp.UserID, &exp.BaseTemplateID, &exp.Status, &exp.ParameterSpace, &exp.SearchMethod, &exp.MaxCandidates, &exp.Objective, &exp.MarketRegimeRef, &exp.BestCandidateID, &exp.JobID, &exp.StrategyCode, &exp.CreatedAt, &exp.FinishedAt,
+	err := r.db.QueryRow(ctx, `UPDATE strategy_experiments SET status = 'CANCELLED', finished_at = COALESCE(finished_at, now()) WHERE id = $1 AND user_id = $2 AND status IN ('QUEUED','RUNNING') RETURNING id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,strategy_code,symbol,timeframe,from_ts_unix_ms,to_ts_unix_ms,created_at,finished_at`, id, userID).Scan(
+		&exp.ID, &exp.UserID, &exp.BaseTemplateID, &exp.Status, &exp.ParameterSpace, &exp.SearchMethod, &exp.MaxCandidates, &exp.Objective, &exp.MarketRegimeRef, &exp.BestCandidateID, &exp.JobID, &exp.StrategyCode, &exp.Symbol, &exp.Timeframe, &exp.FromTsUnixMs, &exp.ToTsUnixMs, &exp.CreatedAt, &exp.FinishedAt,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return r.Get(ctx, userID, id)
@@ -208,11 +212,11 @@ func (r *StrategyExperimentRepository) ClaimPendingExperiment(ctx context.Contex
 		RETURNING
 			s.id, s.user_id, s.base_template_id, s.status, s.parameter_space, s.search_method,
 			s.max_candidates, s.objective, s.market_regime_ref, s.best_candidate_id, s.job_id,
-			s.strategy_code, s.created_at, s.finished_at`,
+			s.strategy_code, s.symbol, s.timeframe, s.from_ts_unix_ms, s.to_ts_unix_ms, s.created_at, s.finished_at`,
 	).Scan(
 		&e.ID, &e.UserID, &e.BaseTemplateID, &e.Status, &e.ParameterSpace,
 		&e.SearchMethod, &e.MaxCandidates, &e.Objective, &e.MarketRegimeRef,
-		&e.BestCandidateID, &e.JobID, &e.StrategyCode, &e.CreatedAt, &e.FinishedAt,
+		&e.BestCandidateID, &e.JobID, &e.StrategyCode, &e.Symbol, &e.Timeframe, &e.FromTsUnixMs, &e.ToTsUnixMs, &e.CreatedAt, &e.FinishedAt,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

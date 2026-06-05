@@ -9,6 +9,11 @@ type SubmitStrategyExperimentParams = {
   searchMethod?: string;
   maxCandidates?: number;
   objective?: string;
+  strategyCode?: string;
+  symbol?: string;
+  timeframe?: string;
+  fromTsUnixMs?: bigint;
+  toTsUnixMs?: bigint;
 };
 
 export const strategyExperimentApi = {
@@ -20,6 +25,11 @@ export const strategyExperimentApi = {
       maxCandidates: params.maxCandidates ?? 12,
       objective: params.objective ?? 'balanced',
       idempotencyKey: `ui-${Date.now()}`,
+      strategyCode: params.strategyCode ?? '',
+      symbol: params.symbol ?? '',
+      timeframe: params.timeframe ?? '',
+      fromTsUnixMs: params.fromTsUnixMs ?? 0n,
+      toTsUnixMs: params.toTsUnixMs ?? 0n,
     }),
 
   list: async () => {
@@ -40,6 +50,16 @@ export const strategyExperimentApi = {
     strategyExperimentClient.promoteCandidateToDraft({ candidateId, name }),
 
   // SSE streaming — push-first architecture, replaces polling.
-  watchExperiment: (experimentId: string) =>
-    strategyExperimentClient.watchExperiment({ experimentId }),
+  // Returns { stream, abort } so callers can clean up on unmount.
+  watchExperiment: (experimentId: string) => {
+    const abortController = new AbortController();
+    const stream = strategyExperimentClient.watchExperiment(
+      { experimentId },
+      { signal: abortController.signal },
+    );
+    return {
+      stream,
+      abort: () => abortController.abort(),
+    };
+  },
 };

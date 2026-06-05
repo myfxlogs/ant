@@ -158,7 +158,7 @@ func (s *CodeAssistServer) ExplainCode(ctx context.Context, req *connect.Request
 	explanation, err := s.systemSvc.ChatCompletion(ctx, uid, messages, codeAssistModel)
 	if err != nil {
 		s.log.Warn("CodeAssist: ExplainCode LLM call failed", zap.Error(err))
-		explanation = "该策略代码的分析暂时不可用，请稍后重试。"
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("AI explanation unavailable: %s", systemai.FriendlyError(err)))
 	}
 
 	return connect.NewResponse(&antv1.ExplainCodeResponse{Explanation: explanation}), nil
@@ -178,7 +178,10 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 
 	sysPrompt := "You are a trading strategy code validator. " +
 		"Review the following Python strategy code and identify issues. " +
-		"Return a JSON object with fields: valid (bool), errors (string array), warnings (string array). " +
+		"Return a JSON object with fields: valid (bool), errors (string array), warnings (string array), " +
+		"parameters (array of objects with keys: key (str), required (bool), type (str: int|float|str|bool), " +
+		"default_value (str, optional), suggested_value (str, optional)). " +
+		"Extract all @param annotations from the code into the parameters array. " +
 		"Check for: missing stop-loss, missing take-profit, position sizing, error handling, " +
 		"indicator usage correctness, and data boundary handling. " +
 		"Respond with ONLY valid JSON, no markdown fences."
@@ -188,15 +191,20 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 	result, err := s.systemSvc.ChatCompletion(ctx, uid, messages, codeAssistModel)
 	if err != nil {
 		s.log.Warn("CodeAssist: ValidateStrategyExtended LLM call failed", zap.Error(err))
-		return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
-			Valid: false, Errors: []string{"AI 验证服务暂时不可用，请稍后重试。"}, Warnings: []string{},
-		}), nil
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("AI validation unavailable: %s", systemai.FriendlyError(err)))
 	}
 
 	var parsed struct {
 		Valid    bool     `json:"valid"`
 		Errors   []string `json:"errors"`
 		Warnings []string `json:"warnings"`
+		Params   []struct {
+			Key      string `json:"key"`
+			Required bool   `json:"required"`
+			Type     string `json:"type"`
+			Default  string `json:"default_value"`
+			Suggest  string `json:"suggested_value"`
+		} `json:"parameters"`
 	}
 	cleaned := stripMarkdownFences(result)
 	if err := json.Unmarshal([]byte(cleaned), &parsed); err != nil {
@@ -207,8 +215,17 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 		}), nil
 	}
 
+	params := make([]*antv1.RequiredParamSpec, len(parsed.Params))
+	for i, p := range parsed.Params {
+		params[i] = &antv1.RequiredParamSpec{
+			Key: p.Key, Required: p.Required, Type: p.Type,
+			DefaultValue: p.Default, SuggestedValue: p.Suggest,
+		}
+	}
+
 	return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
 		Valid: parsed.Valid, Errors: parsed.Errors, Warnings: parsed.Warnings,
+		Parameters: params,
 	}), nil
 }
 

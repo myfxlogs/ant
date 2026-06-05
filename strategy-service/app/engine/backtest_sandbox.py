@@ -58,10 +58,16 @@ class BacktestSandbox(BaseSandbox):
             validate_strategy_code,
         )
         from app.engine.types import StrategyCompileError
+        from app.sandbox_scan import scan_code
 
         validation = validate_strategy_code(source)
         if not validation.valid:
             raise StrategyCompileError("; ".join(validation.errors))
+
+        # M5-2: static scan for banned modules/builtins/dynamic execution.
+        scan = scan_code(source)
+        if not scan.passed:
+            raise StrategyCompileError("security scan failed: " + "; ".join(scan.violations))
 
         self._source = source
         self._timeout_ms = timeout_ms
@@ -142,6 +148,9 @@ def _backtest_worker(conn, serialized_code: bytes) -> None:
     except Exception:
         pass
 
+    # M5-2: resource limits — prevent user code from exhausting system memory/CPU.
+    _apply_resource_limits()
+
     result = None
     try:
         ctx = conn.recv()  # blocking wait for parent's context
@@ -155,6 +164,33 @@ def _backtest_worker(conn, serialized_code: bytes) -> None:
             pass
         conn.close()
 
+
+# -- Resource limits -----------------------------------------------------------
+
+_MAX_MEMORY_MB = 2048  # 2 GB address space limit per backtest child process.
+_MAX_CPU_SECONDS = 300  # 5 minutes CPU time (backed by parent's deadline as well).
+
+def _apply_resource_limits() -> None:
+    """Apply OS-enforced resource limits in the child process.
+
+    This is the last-resort defense: even if RestrictedPython and static scanning
+    miss a violation, the kernel will terminate the process when limits are exceeded.
+    Aligned with live_sandbox.py:164-170.
+    """
+    try:
+        import resource
+        mem_bytes = _MAX_MEMORY_MB * 1024 * 1024
+        resource.setrlimit(resource.RLIMIT_AS, (mem_bytes, mem_bytes))
+        resource.setrlimit(resource.RLIMIT_CPU, (_MAX_CPU_SECONDS, _MAX_CPU_SECONDS))
+        resource.setrlimit(resource.RLIMIT_NOFILE, (64, 64))
+    except Exception as exc:
+        # Log but don't crash — the parent's hard-timeout (Process.terminate)
+        # remains as the ultimate guard, and some environments don't support
+        # rlimit (e.g. certain container profiles).
+        import sys
+        print(f"[backtest_sandbox] WARNING: failed to set rlimit: {exc}", file=sys.stderr)
+
+# -- Child execution -----------------------------------------------------------
 
 def _exec_in_child(serialized_code: bytes, ctx: dict) -> Optional[dict]:
     """Deserialize pre-compiled bytecode and execute in the child process."""

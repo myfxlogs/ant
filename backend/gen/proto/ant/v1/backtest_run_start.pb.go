@@ -37,9 +37,12 @@ type StartBacktestRunRequest struct {
 	TemplateDraftId *string                `protobuf:"bytes,11,opt,name=template_draft_id,json=templateDraftId,proto3,oneof" json:"template_draft_id,omitempty"`
 	// Phase B2: secondary symbols (same timeframe/account) whose K-lines are
 	// fetched and exposed to the strategy via context['closes_by_symbol'].
-	ExtraSymbols  []string `protobuf:"bytes,12,rep,name=extra_symbols,json=extraSymbols,proto3" json:"extra_symbols,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	ExtraSymbols []string `protobuf:"bytes,12,rep,name=extra_symbols,json=extraSymbols,proto3" json:"extra_symbols,omitempty"`
+	// Execution config carries commission/slippage/leverage/direction/strict_mode
+	// and parsed @strategy directives. Optional; safe defaults when absent.
+	ExecutionConfig *BacktestExecutionConfig `protobuf:"bytes,13,opt,name=execution_config,json=executionConfig,proto3" json:"execution_config,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *StartBacktestRunRequest) Reset() {
@@ -156,6 +159,13 @@ func (x *StartBacktestRunRequest) GetExtraSymbols() []string {
 	return nil
 }
 
+func (x *StartBacktestRunRequest) GetExecutionConfig() *BacktestExecutionConfig {
+	if x != nil {
+		return x.ExecutionConfig
+	}
+	return nil
+}
+
 type StartBacktestRunResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RunId         string                 `protobuf:"bytes,1,opt,name=run_id,json=runId,proto3" json:"run_id,omitempty"`
@@ -204,7 +214,7 @@ var File_backtest_run_start_proto protoreflect.FileDescriptor
 
 const file_backtest_run_start_proto_rawDesc = "" +
 	"\n" +
-	"\x18backtest_run_start.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x12backtest_run.proto\"\xa3\x04\n" +
+	"\x18backtest_run_start.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x12backtest_run.proto\x1a\x1fbacktest_execution_config.proto\"\xef\x04\n" +
 	"\x17StartBacktestRunRequest\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\tR\x04code\x12\x1d\n" +
 	"\n" +
@@ -221,7 +231,8 @@ const file_backtest_run_start_proto_rawDesc = "" +
 	" \x01(\tH\x03R\n" +
 	"templateId\x88\x01\x01\x12/\n" +
 	"\x11template_draft_id\x18\v \x01(\tH\x04R\x0ftemplateDraftId\x88\x01\x01\x12#\n" +
-	"\rextra_symbols\x18\f \x03(\tR\fextraSymbolsB\a\n" +
+	"\rextra_symbols\x18\f \x03(\tR\fextraSymbols\x12J\n" +
+	"\x10execution_config\x18\r \x01(\v2\x1f.ant.v1.BacktestExecutionConfigR\x0fexecutionConfigB\a\n" +
 	"\x05_fromB\x05\n" +
 	"\x03_toB\r\n" +
 	"\v_dataset_idB\x0e\n" +
@@ -248,16 +259,18 @@ var file_backtest_run_start_proto_goTypes = []any{
 	(*StartBacktestRunResponse)(nil), // 1: ant.v1.StartBacktestRunResponse
 	(BacktestRunMode)(0),             // 2: ant.v1.BacktestRunMode
 	(*timestamppb.Timestamp)(nil),    // 3: google.protobuf.Timestamp
+	(*BacktestExecutionConfig)(nil),  // 4: ant.v1.BacktestExecutionConfig
 }
 var file_backtest_run_start_proto_depIdxs = []int32{
 	2, // 0: ant.v1.StartBacktestRunRequest.mode:type_name -> ant.v1.BacktestRunMode
 	3, // 1: ant.v1.StartBacktestRunRequest.from:type_name -> google.protobuf.Timestamp
 	3, // 2: ant.v1.StartBacktestRunRequest.to:type_name -> google.protobuf.Timestamp
-	3, // [3:3] is the sub-list for method output_type
-	3, // [3:3] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	4, // 3: ant.v1.StartBacktestRunRequest.execution_config:type_name -> ant.v1.BacktestExecutionConfig
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_backtest_run_start_proto_init() }
@@ -266,6 +279,7 @@ func file_backtest_run_start_proto_init() {
 		return
 	}
 	file_backtest_run_proto_init()
+	file_backtest_execution_config_proto_init()
 	file_backtest_run_start_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

@@ -1,4 +1,4 @@
-import { Card, Row, Col, Statistic, Table, Tag, Empty, Spin } from 'antd';
+import { Button, Card, Row, Col, Statistic, Table, Tag, Empty, Spin } from 'antd';
 import { RiseOutlined, FallOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
@@ -21,7 +21,11 @@ type BacktestStatus = 'idle' | 'running' | 'completed' | 'error';
 interface Props {
   status: BacktestStatus;
   metrics: BacktestMetrics | null;
+  executionAssumptions?: any;
   errorMessage?: string;
+  onAIOptimize?: () => void;
+  code?: string;
+  onApplyTunedParams?: (code: string) => void;
   // Sub-tab
   subTab: 'results' | 'tuning' | 'gate'; onSubTabChange: (tab: string) => void;
   // Smart tuning
@@ -53,11 +57,12 @@ const tabStyle: React.CSSProperties = {
 };
 
 export default function WorkspaceBacktestPanel({
-  status, metrics, errorMessage,
+  status, metrics, executionAssumptions, errorMessage, onAIOptimize,
   subTab, onSubTabChange,
   tuneMethod, onTuneMethodChange,
   sweepDimensions, onToggleDimension,
   enabledSweepDims, cartesianSize,
+  code, onApplyTunedParams,
   tuningRunning, canRunTuning, onRunTuning,
   gateLoading, gateGates, gateSummary, gateError, onRunGate,
 }: Props) {
@@ -102,10 +107,41 @@ export default function WorkspaceBacktestPanel({
             {status === 'completed' && (
               <Tag color="success">{t('strategy.workspace.backtestCompleted', 'Completed')}</Tag>
             )}
+            {status === 'completed' && onAIOptimize && metrics && (
+              <Button size="small" type="dashed" onClick={onAIOptimize}
+                style={{ marginLeft: 8, fontSize: 11 }}>
+                🤖 AI Optimize
+              </Button>
+            )}
             {status === 'error' && (
               <Tag color="error">{errorMessage || t('strategy.workspace.backtestError', 'Backtest failed')}</Tag>
             )}
           </div>
+
+          {/* Execution Assumptions — transparency panel */}
+          {executionAssumptions && status === 'completed' && (
+            <div style={{
+              marginBottom: 12, padding: '8px 12px',
+              border: '1px solid #e6f4ff', borderRadius: 8,
+              background: 'linear-gradient(180deg, #f8fbff 0%, #f4f9ff 100%)',
+            }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: '#1677ff', marginBottom: 6 }}>
+                ℹ Execution Assumptions
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '4px 12px', fontSize: 11 }}>
+                <div><span style={{ color: '#8c8c8c' }}>Mode:</span> <strong>{executionAssumptions.simulationMode || '-'}</strong></div>
+                <div><span style={{ color: '#8c8c8c' }}>Timing:</span> <strong>{executionAssumptions.signalTiming || '-'}</strong></div>
+                <div><span style={{ color: '#8c8c8c' }}>Fill Rule:</span> <strong>{executionAssumptions.fillRule || '-'}</strong></div>
+                <div><span style={{ color: '#8c8c8c' }}>Direction:</span> <strong>{executionAssumptions.tradeDirection || '-'}</strong></div>
+                <div><span style={{ color: '#8c8c8c' }}>Commission:</span> <strong>{executionAssumptions.actualCommission != null ? (executionAssumptions.actualCommission * 100).toFixed(4) + '%' : '-'}</strong></div>
+                <div><span style={{ color: '#8c8c8c' }}>Slippage:</span> <strong>{executionAssumptions.actualSlippage != null ? (executionAssumptions.actualSlippage * 100).toFixed(4) + '%' : '-'}</strong></div>
+                <div><span style={{ color: '#8c8c8c' }}>Leverage:</span> <strong>{executionAssumptions.actualLeverage || '-'}x</strong></div>
+                {executionAssumptions.mtfFallbackReason && (
+                  <div style={{ gridColumn: '1 / -1' }}><span style={{ color: '#fa8c16' }}>MTF Fallback:</span> <strong>{executionAssumptions.mtfFallbackReason}</strong></div>
+                )}
+              </div>
+            </div>
+          )}
 
           {metrics && (
             <>
@@ -196,6 +232,7 @@ export default function WorkspaceBacktestPanel({
           sweepDimensions={sweepDimensions} onToggleDimension={onToggleDimension}
           enabledSweepDims={enabledSweepDims} cartesianSize={cartesianSize}
           tuningRunning={tuningRunning} canRun={canRunTuning} onRunTuning={onRunTuning}
+          code={code} onApplyToCode={onApplyTunedParams}
         />
       )}
 

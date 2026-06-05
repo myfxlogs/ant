@@ -18,7 +18,7 @@ export function useStrategyCode() {
       const result = await codeAssistApi.validateExtended(code);
       setValidationResult(result);
       if (result.valid) setLastValidatedCode(code);
-    } catch (e: any) { message.error(e?.message || 'Validation failed'); }
+    } catch (e: unknown) { message.error((e as Error)?.message || 'Validation failed'); }
     finally { setValidating(false); }
   }, [code]);
 
@@ -29,7 +29,7 @@ export function useStrategyCode() {
   const loadTemplates = useCallback(async () => {
     setTemplatesLoading(true);
     try { const list = await strategyApi.listTemplates(); setTemplates(list || []); }
-    catch { /* silent */ }
+    catch (e: unknown) { message.error((e as Error)?.message || 'Failed to load templates'); }
     finally { setTemplatesLoading(false); }
   }, []);
 
@@ -37,9 +37,9 @@ export function useStrategyCode() {
     try {
       const tpl = await strategyApi.getTemplate(id);
       if (tpl?.code) setCode(tpl.code);
-      if (tpl?.name) setLoadedTemplate(tpl as StrategyTemplate);
+      if (tpl?.name) setLoadedTemplate(tpl);
       setLastValidatedCode(''); setValidationResult(null);
-    } catch (e: any) { message.error(e?.message || 'Failed to load template'); }
+    } catch (e: unknown) { message.error((e as Error)?.message || 'Failed to load template'); }
   }, []);
 
   const [saveModalOpen, setSaveModalOpen] = useState(false);
@@ -52,9 +52,9 @@ export function useStrategyCode() {
     if (loadedTemplate) {
       setSaveLoading(true);
       try {
-        await strategyApi.updateTemplate({ id: loadedTemplate.id, name: loadedTemplate.name, description: loadedTemplate.description || '', code });
+        await strategyApi.updateTemplate({ id: loadedTemplate.id, code });
         message.success(t('strategy.workspace.saveSuccess')); loadTemplates();
-      } catch (e: any) { message.error(e?.message || 'Save failed'); }
+      } catch (e: unknown) { message.error((e as Error)?.message || 'Save failed'); }
       finally { setSaveLoading(false); }
     } else { setSaveModalOpen(true); }
   }, [code, canSave, loadedTemplate, t, loadTemplates]);
@@ -65,7 +65,12 @@ export function useStrategyCode() {
       const values = await saveForm.validateFields(); setSaveLoading(true);
       await strategyApi.createTemplate({ name: values.name, description: values.description || '', code });
       message.success(t('strategy.workspace.saveSuccess')); setSaveModalOpen(false); loadTemplates();
-    } catch (e: any) { if (e?.message) message.error(e.message); }
+    } catch (e: unknown) {
+      // Ant Design validateFields rejects with errorFields, not message.
+      const err = e as { message?: string; errorFields?: unknown[] };
+      if (err?.errorFields?.length) return; // form validation failure — Ant Design shows inline errors
+      if (err?.message) message.error(err.message);
+    }
     finally { setSaveLoading(false); }
   }, [code, saveForm, t, loadTemplates]);
 
@@ -74,7 +79,8 @@ export function useStrategyCode() {
     navigator.clipboard.writeText(code).then(() => message.success(t('strategy.workspace.copySuccess'))).catch(() => message.error(t('strategy.workspace.copyFailed')));
   }, [code, t]);
 
-  return { code, setCode, validating, validationResult, handleValidate, lastValidatedCode,
+  return { code, setCode, validating, validationResult, setValidationResult,
+    lastValidatedCode, setLastValidatedCode, handleValidate,
     templates, templatesLoading, loadedTemplate, loadTemplates, handleLoadTemplate,
     saveModalOpen, setSaveModalOpen, saveLoading, saveForm, canSave,
     handleSave, handleSaveAs, handleSaveModalOk, handleCopy };

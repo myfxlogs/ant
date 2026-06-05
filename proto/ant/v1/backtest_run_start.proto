@@ -6,6 +6,7 @@ option go_package = "anttrader/gen/proto/ant/v1;antv1";
 
 import "google/protobuf/timestamp.proto";
 import "backtest_run.proto";
+import "backtest_execution_config.proto";
 
 message StartBacktestRunRequest {
   string code = 1;
@@ -22,6 +23,9 @@ message StartBacktestRunRequest {
   // Phase B2: secondary symbols (same timeframe/account) whose K-lines are
   // fetched and exposed to the strategy via context['closes_by_symbol'].
   repeated string extra_symbols = 12;
+  // Execution config carries commission/slippage/leverage/direction/strict_mode
+  // and parsed @strategy directives. Optional; safe defaults when absent.
+  BacktestExecutionConfig execution_config = 13;
 }
 
 message StartBacktestRunResponse {

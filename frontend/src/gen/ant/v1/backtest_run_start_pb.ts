@@ -8,13 +8,15 @@ import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { BacktestRunMode } from "./backtest_run_pb";
 import { file_backtest_run } from "./backtest_run_pb";
+import type { BacktestExecutionConfig } from "./backtest_execution_config_pb";
+import { file_backtest_execution_config } from "./backtest_execution_config_pb";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file backtest_run_start.proto.
  */
 export const file_backtest_run_start: GenFile = /*@__PURE__*/
-  fileDesc("ChhiYWNrdGVzdF9ydW5fc3RhcnQucHJvdG8SBmFudC52MSKpAwoXU3RhcnRCYWNrdGVzdFJ1blJlcXVlc3QSDAoEY29kZRgBIAEoCRISCgphY2NvdW50X2lkGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkSFwoPaW5pdGlhbF9jYXBpdGFsGAUgASgBEiUKBG1vZGUYBiABKA4yFy5hbnQudjEuQmFja3Rlc3RSdW5Nb2RlEi0KBGZyb20YByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wSACIAQESKwoCdG8YCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wSAGIAQESFwoKZGF0YXNldF9pZBgJIAEoCUgCiAEBEhgKC3RlbXBsYXRlX2lkGAogASgJSAOIAQESHgoRdGVtcGxhdGVfZHJhZnRfaWQYCyABKAlIBIgBARIVCg1leHRyYV9zeW1ib2xzGAwgAygJQgcKBV9mcm9tQgUKA190b0INCgtfZGF0YXNldF9pZEIOCgxfdGVtcGxhdGVfaWRCFAoSX3RlbXBsYXRlX2RyYWZ0X2lkIioKGFN0YXJ0QmFja3Rlc3RSdW5SZXNwb25zZRIOCgZydW5faWQYASABKAlCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_timestamp, file_backtest_run]);
+  fileDesc("ChhiYWNrdGVzdF9ydW5fc3RhcnQucHJvdG8SBmFudC52MSLkAwoXU3RhcnRCYWNrdGVzdFJ1blJlcXVlc3QSDAoEY29kZRgBIAEoCRISCgphY2NvdW50X2lkGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkSFwoPaW5pdGlhbF9jYXBpdGFsGAUgASgBEiUKBG1vZGUYBiABKA4yFy5hbnQudjEuQmFja3Rlc3RSdW5Nb2RlEi0KBGZyb20YByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wSACIAQESKwoCdG8YCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wSAGIAQESFwoKZGF0YXNldF9pZBgJIAEoCUgCiAEBEhgKC3RlbXBsYXRlX2lkGAogASgJSAOIAQESHgoRdGVtcGxhdGVfZHJhZnRfaWQYCyABKAlIBIgBARIVCg1leHRyYV9zeW1ib2xzGAwgAygJEjkKEGV4ZWN1dGlvbl9jb25maWcYDSABKAsyHy5hbnQudjEuQmFja3Rlc3RFeGVjdXRpb25Db25maWdCBwoFX2Zyb21CBQoDX3RvQg0KC19kYXRhc2V0X2lkQg4KDF90ZW1wbGF0ZV9pZEIUChJfdGVtcGxhdGVfZHJhZnRfaWQiKgoYU3RhcnRCYWNrdGVzdFJ1blJlc3BvbnNlEg4KBnJ1bl9pZBgBIAEoCUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_timestamp, file_backtest_run, file_backtest_execution_config]);
 
 /**
  * @generated from message ant.v1.StartBacktestRunRequest
@@ -82,6 +84,14 @@ export type StartBacktestRunRequest = Message<"ant.v1.StartBacktestRunRequest"> 
    * @generated from field: repeated string extra_symbols = 12;
    */
   extraSymbols: string[];
+
+  /**
+   * Execution config carries commission/slippage/leverage/direction/strict_mode
+   * and parsed @strategy directives. Optional; safe defaults when absent.
+   *
+   * @generated from field: ant.v1.BacktestExecutionConfig execution_config = 13;
+   */
+  executionConfig?: BacktestExecutionConfig | undefined;
 };
 
 /**

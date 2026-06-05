@@ -32,6 +32,31 @@ func toProtoBacktestRun(r *repository.BacktestRun) *antv1.BacktestRun {
 		out.FinishedAt = timestamppb.New(*r.FinishedAt)
 	}
 	out.CreatedAt = timestamppb.New(r.CreatedAt)
+	if r.FromTs != nil {
+		out.From = timestamppb.New(*r.FromTs)
+	}
+	if r.ToTs != nil {
+		out.To = timestamppb.New(*r.ToTs)
+	}
+	if r.TemplateID != nil {
+		out.TemplateId = proto.String(r.TemplateID.String())
+	}
+	if r.TemplateDraftID != nil {
+		out.TemplateDraftId = proto.String(r.TemplateDraftID.String())
+	}
+	out.ExtraSymbols = r.ExtraSymbols
+	if r.DatasetID != nil {
+		out.DatasetId = proto.String(r.DatasetID.String())
+	}
+	out.IsTerminal = r.Status == "SUCCEEDED" || r.Status == "FAILED" || r.Status == "CANCELED"
+	out.IsSucceeded = r.Status == "SUCCEEDED"
+	// Deserialize config snapshot to proto.
+	if len(r.ConfigSnapshot) > 0 {
+		var ec antv1.BacktestExecutionConfig
+		if err := proto.Unmarshal(r.ConfigSnapshot, &ec); err == nil {
+			out.ExecutionConfig = &ec
+		}
+	}
 	return out
 }
 
@@ -127,6 +152,14 @@ func parseEquityCurve(raw []byte) []float64 {
 	return resp.GetEquityCurve()
 }
 
+func parseExecutionAssumptions(raw []byte) *antv1.ExecutionAssumptions {
+	resp := parseProtoResponse(raw)
+	if resp == nil {
+		return nil
+	}
+	return resp.GetExecutionAssumptions()
+}
+
 func strPtr(s string) *string {
 	if s == "" {
 		return nil
@@ -135,3 +168,32 @@ func strPtr(s string) *string {
 }
 
 func f64Ptr(v float64) *float64 { return &v }
+func boolPtr(v bool) *bool { return &v }
+
+// tradeDirectionToString converts proto TradeDirection enum to DB string.
+func tradeDirectionToString(d antv1.TradeDirection) string {
+	switch d {
+	case antv1.TradeDirection_TRADE_DIRECTION_LONG:
+		return "long"
+	case antv1.TradeDirection_TRADE_DIRECTION_SHORT:
+		return "short"
+	case antv1.TradeDirection_TRADE_DIRECTION_BOTH:
+		return "both"
+	default:
+		return "both"
+	}
+}
+
+// stringToTradeDirection converts DB string to proto TradeDirection enum.
+func stringToTradeDirection(s string) antv1.TradeDirection {
+	switch s {
+	case "long":
+		return antv1.TradeDirection_TRADE_DIRECTION_LONG
+	case "short":
+		return antv1.TradeDirection_TRADE_DIRECTION_SHORT
+	case "both":
+		return antv1.TradeDirection_TRADE_DIRECTION_BOTH
+	default:
+		return antv1.TradeDirection_TRADE_DIRECTION_BOTH
+	}
+}

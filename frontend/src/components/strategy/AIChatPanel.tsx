@@ -12,6 +12,9 @@ interface Props {
   onApply: (code: string) => void;
   symbol?: string;
   timeframe?: string;
+  initialPrompt?: string | null;
+  /** When false, AI responses are shown in chat but do NOT replace the code editor. Default true. */
+  autoApply?: boolean;
 }
 
 // Detect user intent from message + context.
@@ -25,13 +28,14 @@ function detectMode(msg: string, hasCode: boolean): 'generate' | 'revise' | 'opt
   return 'revise'; // default: revise existing code
 }
 
-export default function AIChatPanel({ code, onApply, symbol, timeframe }: Props) {
+export default function AIChatPanel({ code, onApply, symbol, timeframe, initialPrompt, autoApply = true }: Props) {
   const { t, i18n } = useTranslation();
   const [draft, setDraft] = useState('');
   const [mode, setMode] = useState<'idle' | 'clarifying' | 'streaming' | 'done'>('idle');
   const [streamText, setStreamText] = useState('');
   const [questions, setQuestions] = useState<string[]>([]);
   const [genCode, setGenCode] = useState('');
+  const [pendingCode, setPendingCode] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [phase, setPhase] = useState('');
   const [backtestId, setBacktestId] = useState('');
@@ -41,6 +45,11 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe }: Props)
   const streamRef = useRef('');
 
   useEffect(() => () => abortRef.current?.(), []);
+
+  // Auto-trigger on AI Optimize prompt.
+  useEffect(() => {
+    if (initialPrompt) { setDraft(initialPrompt); }
+  }, [initialPrompt]);
 
   const reset = useCallback(() => {
     abortRef.current?.();
@@ -61,7 +70,11 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe }: Props)
         onDelta: (d) => { setStreamText(p => p + d); streamRef.current += d; },
         onQuestions: (q) => setQuestions(q),
         onTemplate: (n) => setPhase('template: ' + n),
-        onCode: (c) => { setGenCode(c); onApply(c); },
+        onCode: (c) => {
+          setGenCode(c);
+          if (autoApply) onApply(c);
+          else setPendingCode(c);
+        },
         onBacktestId: (id) => setBacktestId(id),
         onError: (e) => setError(e),
         onDone: () => setMode('done'),
@@ -84,7 +97,14 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe }: Props)
             { role: 'assistant', content: streamRef.current || python },
           ]);
           streamRef.current = ''; setStreamText('');
-          if (python) { onApply(python); message.success(t('strategy.codeAssist.codeUpdated', 'Code updated.')); }
+          if (python) {
+            if (autoApply) {
+              onApply(python);
+              message.success(t('strategy.codeAssist.codeUpdated', 'Code updated.'));
+            } else {
+              setPendingCode(python);
+            }
+          }
         },
         onError: (e) => {
           setMode('done'); setError(String((e as Error)?.message || e));
@@ -178,6 +198,22 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe }: Props)
       {error && (
         <div style={{ padding: 4, marginBottom: 6, background: '#fff2f0', borderRadius: 4,
           fontSize: 11, color: '#cf1322' }}>{error}</div>
+      )}
+
+      {/* Pending code — shown when autoApply=false, AI returned code but it was not applied */}
+      {pendingCode && !autoApply && (
+        <div style={{ padding: 8, marginBottom: 8, background: '#f6ffed', borderRadius: 6,
+          border: '1px solid #b7eb8f', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 12, flex: 1 }}>
+            AI generated code — review the chat above before applying.
+          </span>
+          <Space size={6}>
+            <Button size="small" onClick={() => { onApply(pendingCode); setPendingCode(null); message.success(t('strategy.codeAssist.codeUpdated', 'Code updated.')); }}>
+              Apply Code
+            </Button>
+            <Button size="small" onClick={() => setPendingCode(null)}>Dismiss</Button>
+          </Space>
+        </div>
       )}
 
       {/* Input */}

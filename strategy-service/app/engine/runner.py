@@ -35,6 +35,7 @@ from app.engine.types import (
     BacktestResult,
     CloseReason,
     EngineError,
+    ExecutionAssumptions,
     Fill,
     Order,
     OrderType,
@@ -56,6 +57,9 @@ _PENDING_TYPES = {
     "buy_stop_limit": OrderType.BUY_STOP_LIMIT,
     "sell_stop_limit": OrderType.SELL_STOP_LIMIT,
 }
+
+_BUY_ACTIONS = frozenset({"buy", "buy_limit", "buy_stop", "buy_stop_limit"})
+_SELL_ACTIONS = frozenset({"sell", "sell_limit", "sell_stop", "sell_stop_limit"})
 
 
 def _tick_side_for_close(pos: Position, tick: Tick) -> float:
@@ -155,6 +159,7 @@ class BacktestRunner:
             risk_assessment=risk,
             trades=list(self._portfolio.closed_trades),
             snapshot=self._build_snapshot(),
+            execution_assumptions=self._build_execution_assumptions(),
             error=error,
         )
 
@@ -243,6 +248,13 @@ class BacktestRunner:
             return
         action = str(signal.get("signal") or "hold").lower()
         if action in ("hold", ""):
+            return
+        # Trade direction filter: suppress signals that don't match the
+        # configured direction (e.g. ignore sell actions when trade_direction=long).
+        td = self._req.trade_direction
+        if td == "long" and action in _SELL_ACTIONS:
+            return
+        if td == "short" and action in _BUY_ACTIONS:
             return
         if action == "cancel_pending":
             self._fill.cancel_all()
@@ -337,6 +349,22 @@ class BacktestRunner:
             dataset_id=req.dataset_id,
             bars_count=len(self._primary_bars),
             ticks_count=len(self._ticks),
+        )
+
+    def _build_execution_assumptions(self) -> ExecutionAssumptions:
+        """Describe what the engine actually did for post-backtest transparency."""
+        req = self._req
+        signal_timing = "next_bar_open" if req.strict_mode else "same_bar_close"
+        cp = req.cost_profile
+        return ExecutionAssumptions(
+            simulation_mode=req.source,
+            signal_timing=signal_timing,
+            fill_rule=signal_timing,
+            mtf_fallback_reason="",
+            actual_commission=cp.commission_per_lot,
+            actual_slippage=cp.slippage_rate,
+            actual_leverage=req.leverage if req.leverage > 0 else 1.0,
+            trade_direction=req.trade_direction,
         )
 
 

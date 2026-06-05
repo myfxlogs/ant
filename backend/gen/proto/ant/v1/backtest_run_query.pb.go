@@ -66,14 +66,15 @@ func (x *GetBacktestRunRequest) GetRunId() string {
 }
 
 type GetBacktestRunResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Run           *BacktestRun           `protobuf:"bytes,1,opt,name=run,proto3" json:"run,omitempty"`
-	Metrics       *BacktestMetrics       `protobuf:"bytes,2,opt,name=metrics,proto3" json:"metrics,omitempty"`
-	EquityCurve   []float64              `protobuf:"fixed64,3,rep,packed,name=equity_curve,json=equityCurve,proto3" json:"equity_curve,omitempty"`
-	DatasetId     *string                `protobuf:"bytes,4,opt,name=dataset_id,json=datasetId,proto3,oneof" json:"dataset_id,omitempty"`
-	Risk          *BacktestRisk          `protobuf:"bytes,5,opt,name=risk,proto3" json:"risk,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	Run                  *BacktestRun           `protobuf:"bytes,1,opt,name=run,proto3" json:"run,omitempty"`
+	Metrics              *BacktestMetrics       `protobuf:"bytes,2,opt,name=metrics,proto3" json:"metrics,omitempty"`
+	EquityCurve          []float64              `protobuf:"fixed64,3,rep,packed,name=equity_curve,json=equityCurve,proto3" json:"equity_curve,omitempty"`
+	DatasetId            *string                `protobuf:"bytes,4,opt,name=dataset_id,json=datasetId,proto3,oneof" json:"dataset_id,omitempty"`
+	Risk                 *BacktestRisk          `protobuf:"bytes,5,opt,name=risk,proto3" json:"risk,omitempty"`
+	ExecutionAssumptions *ExecutionAssumptions  `protobuf:"bytes,6,opt,name=execution_assumptions,json=executionAssumptions,proto3" json:"execution_assumptions,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *GetBacktestRunResponse) Reset() {
@@ -141,6 +142,13 @@ func (x *GetBacktestRunResponse) GetRisk() *BacktestRisk {
 	return nil
 }
 
+func (x *GetBacktestRunResponse) GetExecutionAssumptions() *ExecutionAssumptions {
+	if x != nil {
+		return x.ExecutionAssumptions
+	}
+	return nil
+}
+
 type WatchBacktestRunRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RunId         string                 `protobuf:"bytes,1,opt,name=run_id,json=runId,proto3" json:"run_id,omitempty"`
@@ -186,13 +194,14 @@ func (x *WatchBacktestRunRequest) GetRunId() string {
 }
 
 type BacktestRunUpdate struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Run           *BacktestRun           `protobuf:"bytes,1,opt,name=run,proto3" json:"run,omitempty"`
-	Metrics       *BacktestMetrics       `protobuf:"bytes,2,opt,name=metrics,proto3" json:"metrics,omitempty"`
-	EquityCurve   []float64              `protobuf:"fixed64,3,rep,packed,name=equity_curve,json=equityCurve,proto3" json:"equity_curve,omitempty"`
-	Risk          *BacktestRisk          `protobuf:"bytes,4,opt,name=risk,proto3" json:"risk,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	Run                  *BacktestRun           `protobuf:"bytes,1,opt,name=run,proto3" json:"run,omitempty"`
+	Metrics              *BacktestMetrics       `protobuf:"bytes,2,opt,name=metrics,proto3" json:"metrics,omitempty"`
+	EquityCurve          []float64              `protobuf:"fixed64,3,rep,packed,name=equity_curve,json=equityCurve,proto3" json:"equity_curve,omitempty"`
+	Risk                 *BacktestRisk          `protobuf:"bytes,4,opt,name=risk,proto3" json:"risk,omitempty"`
+	ExecutionAssumptions *ExecutionAssumptions  `protobuf:"bytes,5,opt,name=execution_assumptions,json=executionAssumptions,proto3" json:"execution_assumptions,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *BacktestRunUpdate) Reset() {
@@ -249,6 +258,13 @@ func (x *BacktestRunUpdate) GetEquityCurve() []float64 {
 func (x *BacktestRunUpdate) GetRisk() *BacktestRisk {
 	if x != nil {
 		return x.Risk
+	}
+	return nil
+}
+
+func (x *BacktestRunUpdate) GetExecutionAssumptions() *ExecutionAssumptions {
+	if x != nil {
+		return x.ExecutionAssumptions
 	}
 	return nil
 }
@@ -361,24 +377,26 @@ var File_backtest_run_query_proto protoreflect.FileDescriptor
 
 const file_backtest_run_query_proto_rawDesc = "" +
 	"\n" +
-	"\x18backtest_run_query.proto\x12\x06ant.v1\x1a\fcommon.proto\x1a\x12backtest_run.proto\".\n" +
+	"\x18backtest_run_query.proto\x12\x06ant.v1\x1a\fcommon.proto\x1a\x12backtest_run.proto\x1a\x1fbacktest_execution_config.proto\".\n" +
 	"\x15GetBacktestRunRequest\x12\x15\n" +
-	"\x06run_id\x18\x01 \x01(\tR\x05runId\"\xf2\x01\n" +
+	"\x06run_id\x18\x01 \x01(\tR\x05runId\"\xc5\x02\n" +
 	"\x16GetBacktestRunResponse\x12%\n" +
 	"\x03run\x18\x01 \x01(\v2\x13.ant.v1.BacktestRunR\x03run\x121\n" +
 	"\ametrics\x18\x02 \x01(\v2\x17.ant.v1.BacktestMetricsR\ametrics\x12!\n" +
 	"\fequity_curve\x18\x03 \x03(\x01R\vequityCurve\x12\"\n" +
 	"\n" +
 	"dataset_id\x18\x04 \x01(\tH\x00R\tdatasetId\x88\x01\x01\x12(\n" +
-	"\x04risk\x18\x05 \x01(\v2\x14.ant.v1.BacktestRiskR\x04riskB\r\n" +
+	"\x04risk\x18\x05 \x01(\v2\x14.ant.v1.BacktestRiskR\x04risk\x12Q\n" +
+	"\x15execution_assumptions\x18\x06 \x01(\v2\x1c.ant.v1.ExecutionAssumptionsR\x14executionAssumptionsB\r\n" +
 	"\v_dataset_id\"0\n" +
 	"\x17WatchBacktestRunRequest\x12\x15\n" +
-	"\x06run_id\x18\x01 \x01(\tR\x05runId\"\xba\x01\n" +
+	"\x06run_id\x18\x01 \x01(\tR\x05runId\"\x8d\x02\n" +
 	"\x11BacktestRunUpdate\x12%\n" +
 	"\x03run\x18\x01 \x01(\v2\x13.ant.v1.BacktestRunR\x03run\x121\n" +
 	"\ametrics\x18\x02 \x01(\v2\x17.ant.v1.BacktestMetricsR\ametrics\x12!\n" +
 	"\fequity_curve\x18\x03 \x03(\x01R\vequityCurve\x12(\n" +
-	"\x04risk\x18\x04 \x01(\v2\x14.ant.v1.BacktestRiskR\x04risk\"z\n" +
+	"\x04risk\x18\x04 \x01(\v2\x14.ant.v1.BacktestRiskR\x04risk\x12Q\n" +
+	"\x15execution_assumptions\x18\x05 \x01(\v2\x1c.ant.v1.ExecutionAssumptionsR\x14executionAssumptions\"z\n" +
 	"\x17ListBacktestRunsRequest\x12\"\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tH\x00R\taccountId\x88\x01\x01\x12\x14\n" +
@@ -411,20 +429,23 @@ var file_backtest_run_query_proto_goTypes = []any{
 	(*BacktestRun)(nil),              // 6: ant.v1.BacktestRun
 	(*BacktestMetrics)(nil),          // 7: ant.v1.BacktestMetrics
 	(*BacktestRisk)(nil),             // 8: ant.v1.BacktestRisk
+	(*ExecutionAssumptions)(nil),     // 9: ant.v1.ExecutionAssumptions
 }
 var file_backtest_run_query_proto_depIdxs = []int32{
 	6, // 0: ant.v1.GetBacktestRunResponse.run:type_name -> ant.v1.BacktestRun
 	7, // 1: ant.v1.GetBacktestRunResponse.metrics:type_name -> ant.v1.BacktestMetrics
 	8, // 2: ant.v1.GetBacktestRunResponse.risk:type_name -> ant.v1.BacktestRisk
-	6, // 3: ant.v1.BacktestRunUpdate.run:type_name -> ant.v1.BacktestRun
-	7, // 4: ant.v1.BacktestRunUpdate.metrics:type_name -> ant.v1.BacktestMetrics
-	8, // 5: ant.v1.BacktestRunUpdate.risk:type_name -> ant.v1.BacktestRisk
-	6, // 6: ant.v1.ListBacktestRunsResponse.runs:type_name -> ant.v1.BacktestRun
-	7, // [7:7] is the sub-list for method output_type
-	7, // [7:7] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	9, // 3: ant.v1.GetBacktestRunResponse.execution_assumptions:type_name -> ant.v1.ExecutionAssumptions
+	6, // 4: ant.v1.BacktestRunUpdate.run:type_name -> ant.v1.BacktestRun
+	7, // 5: ant.v1.BacktestRunUpdate.metrics:type_name -> ant.v1.BacktestMetrics
+	8, // 6: ant.v1.BacktestRunUpdate.risk:type_name -> ant.v1.BacktestRisk
+	9, // 7: ant.v1.BacktestRunUpdate.execution_assumptions:type_name -> ant.v1.ExecutionAssumptions
+	6, // 8: ant.v1.ListBacktestRunsResponse.runs:type_name -> ant.v1.BacktestRun
+	9, // [9:9] is the sub-list for method output_type
+	9, // [9:9] is the sub-list for method input_type
+	9, // [9:9] is the sub-list for extension type_name
+	9, // [9:9] is the sub-list for extension extendee
+	0, // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_backtest_run_query_proto_init() }
@@ -434,6 +455,7 @@ func file_backtest_run_query_proto_init() {
 	}
 	file_common_proto_init()
 	file_backtest_run_proto_init()
+	file_backtest_execution_config_proto_init()
 	file_backtest_run_query_proto_msgTypes[1].OneofWrappers = []any{}
 	file_backtest_run_query_proto_msgTypes[4].OneofWrappers = []any{}
 	type x struct{}

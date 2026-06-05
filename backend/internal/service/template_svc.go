@@ -59,9 +59,6 @@ func (s *StrategySvc) CreateTemplate(ctx context.Context, t *TemplateRow) error 
 	now := time.Now()
 	t.CreatedAt = now
 	t.UpdatedAt = now
-	if t.Parameters == nil {
-		t.Parameters = []byte("[]")
-	}
 	if t.Tags == nil {
 		t.Tags = []string{}
 	}
@@ -98,9 +95,12 @@ func (s *StrategySvc) DeleteTemplate(ctx context.Context, id, userID uuid.UUID) 
 }
 
 func (s *StrategySvc) SetTemplateStatus(ctx context.Context, id, userID uuid.UUID, status string) error {
-	_, err := s.pg.Exec(ctx, `UPDATE strategy_templates SET status=$2, updated_at=$3 WHERE id=$1 AND user_id=$4`, id, status, time.Now(), userID)
+	ct, err := s.pg.Exec(ctx, `UPDATE strategy_templates SET status=$2, updated_at=$3 WHERE id=$1 AND user_id=$4`, id, status, time.Now(), userID)
 	if err != nil {
 		return fmt.Errorf("SetTemplateStatus: %w", err)
+	}
+	if ct.RowsAffected() == 0 {
+		return ErrTemplateNotFound
 	}
 	return nil
 }

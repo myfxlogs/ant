@@ -18,6 +18,9 @@ from app.backtest_service_pb2 import (
     EngineValidateRequest, EngineValidateResponse,
     EngineRunStrategyRequest, EngineRunStrategyResponse, EngineTradeSignal,
 )
+from app.backtest_execution_config_pb2 import (
+    TradeDirection, ExecutionAssumptions as ProtoExecutionAssumptions,
+)
 
 from app.engine import (
     BacktestRequest as EngineBacktestRequest,
@@ -32,6 +35,16 @@ backtest_semaphore = asyncio.Semaphore(int(os.getenv("MAX_BACKTEST_WORKERS", "2"
 
 def _to_dt(ms: int) -> datetime:
     return datetime.fromtimestamp(ms / 1000.0, tz=timezone.utc)
+
+
+def _trade_dir_str(td: int) -> str:
+    """Convert proto TradeDirection enum to string."""
+    m = {
+        TradeDirection.TRADE_DIRECTION_LONG: "long",
+        TradeDirection.TRADE_DIRECTION_SHORT: "short",
+        TradeDirection.TRADE_DIRECTION_BOTH: "both",
+    }
+    return m.get(td, "both")
 
 
 async def _parse_request(request: Request, req_cls):
@@ -60,7 +73,7 @@ def _respond(proto_resp, request: Request) -> Response:
 
 @router.post("/ant.v1.BacktestService/RunBacktest")
 async def run_backtest_connect(request: Request):
-    """ConnectRPC handler: proto binary → engine → proto binary."""
+    """ConnectRPC handler: proto binary -> engine -> proto binary."""
     req = await _parse_request(request, ExecuteBacktestRequest)
 
     async with backtest_semaphore:
@@ -104,11 +117,25 @@ async def run_backtest_connect(request: Request):
                 reason=str(t.reason.value if hasattr(t.reason, "value") else t.reason),
             ))
 
+        # Populate execution assumptions for post-backtest transparency.
+        if result.execution_assumptions:
+            ea = result.execution_assumptions
+            resp.execution_assumptions.CopyFrom(ProtoExecutionAssumptions(
+                simulation_mode=ea.simulation_mode,
+                signal_timing=ea.signal_timing,
+                fill_rule=ea.fill_rule,
+                mtf_fallback_reason=ea.mtf_fallback_reason,
+                actual_commission=ea.actual_commission,
+                actual_slippage=ea.actual_slippage,
+                actual_leverage=ea.actual_leverage,
+                trade_direction=ea.trade_direction,
+            ))
+
         return _respond(resp, request)
 
 
 def _build_engine_request(req: ExecuteBacktestRequest) -> EngineBacktestRequest:
-    """Convert proto ExecuteBacktestRequest → engine BacktestRequest."""
+    """Convert proto ExecuteBacktestRequest -> engine BacktestRequest."""
     bars = [
         EngineBar(open_time=k.open_time_ms, close_time=k.close_time_ms,
                   open=k.open, high=k.high, low=k.low, close=k.close, volume=k.volume)
@@ -120,6 +147,20 @@ def _build_engine_request(req: ExecuteBacktestRequest) -> EngineBacktestRequest:
         try: strategy_params = json.loads(req.strategy_params_json)
         except: pass
 
+    # Extract nested strategy config if present.
+    strategy_cfg = None
+    if req.HasField("strategy_config"):
+        strategy_cfg = MessageToDict(req.strategy_config, preserving_proto_field_name=True)
+
+    # Build cost profile from proto request fields (commission, slippage).
+    from app.engine.types import CostProfile, SlippageMode
+    cost = CostProfile(
+        commission_per_lot=req.commission if req.commission > 0 else 0.0,
+        slippage_mode=SlippageMode.FIXED if req.slippage_mode == "fixed" else SlippageMode.RANDOM,
+        slippage_rate=req.slippage_rate if req.slippage_rate > 0 else 0.0,
+        slippage_seed=req.slippage_seed if req.slippage_seed > 0 else 42,
+    )
+
     return EngineBacktestRequest(
         run_id=req.strategy_id or "",
         user_id=0, account_id=0,
@@ -128,13 +169,18 @@ def _build_engine_request(req: ExecuteBacktestRequest) -> EngineBacktestRequest:
         start=_to_dt(req.start_date_ms) if req.start_date_ms else datetime(2024, 1, 1, tzinfo=timezone.utc),
         end=_to_dt(req.end_date_ms) if req.end_date_ms else datetime.now(timezone.utc),
         initial_cash=req.initial_capital or 10000.0,
+        leverage=req.leverage if req.leverage > 0 else 1.0,
+        trade_direction=_trade_dir_str(req.trade_direction) if req.HasField("trade_direction") else "both",
+        strict_mode=req.strict_mode if req.HasField("strict_mode") else True,
+        strategy_config=strategy_cfg,
         strategy_code=req.strategy_code or "",
         strategy_params=strategy_params,
+        cost_profile=cost,
         bars=bars,
         bars_by_symbol={s: bars for s in req.extra_symbols} if req.extra_symbols else {},
     )
 
-# ── ValidateStrategy ──
+# --- ValidateStrategy ---
 
 @router.post("/ant.v1.BacktestService/ValidateStrategy")
 async def validate_strategy_connect(request: Request):
@@ -158,7 +204,7 @@ async def validate_strategy_connect(request: Request):
     return JSONResponse(content=MessageToDict(resp, preserving_proto_field_name=True))
 
 
-# ── RunStrategy (live/paper execution) ──
+# --- RunStrategy (live/paper execution) ---
 
 @router.post("/ant.v1.BacktestService/RunStrategy")
 async def run_strategy_connect(request: Request):

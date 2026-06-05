@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+// TradeDirection restricts which sides the strategy can take.
+enum TradeDirection {
+  TRADE_DIRECTION_UNSPECIFIED = 0;
+  TRADE_DIRECTION_LONG = 1;
+  TRADE_DIRECTION_SHORT = 2;
+  TRADE_DIRECTION_BOTH = 3;
+}
+
+// BacktestExecutionConfig captures all cost, risk, and execution parameters
+// for a single backtest run. Stored as proto binary snapshot (config_snapshot
+// column) for full reproducibility.
+message BacktestExecutionConfig {
+  double commission = 1;       // ratio, e.g. 0.001 = 0.10%
+  double slippage = 2;         // ratio, e.g. 0.0005 = 0.05%
+  double leverage = 3;         // e.g. 1, 10, 100
+  TradeDirection trade_direction = 4;
+  bool strict_mode = 5;        // true = next-bar-open, false = same-bar-close + MTF 1m
+  StrategyConfig strategy_config = 6;  // parsed from @strategy annotations
+}
+
+// StrategyConfig is the runtime execution behavior derived from @strategy
+// annotations in the strategy code. All fields are optional — the engine
+// uses safe defaults when absent.
+message StrategyConfig {
+  StrategyRiskConfig risk = 1;
+  PositionConfig position = 2;
+  ScaleConfig scale = 3;
+  ExecutionConfig execution = 4;
+}
+
+message StrategyRiskConfig {
+  optional double stop_loss_pct = 1;    // ratio, e.g. 0.02 = 2%
+  optional double take_profit_pct = 2;  // ratio
+  TrailingConfig trailing = 3;
+}
+
+message TrailingConfig {
+  bool enabled = 1;
+  optional double pct = 2;           // trailing stop distance (ratio)
+  optional double activation_pct = 3; // profit threshold before activation (ratio)
+}
+
+message PositionConfig {
+  optional double entry_pct = 1; // ratio of capital per entry, e.g. 0.25 = 25%
+}
+
+message ScaleConfig {
+  ScaleRule trend_add = 1;
+  ScaleRule dca_add = 2;
+  ScaleRule trend_reduce = 3;
+  ScaleRule adverse_reduce = 4;
+}
+
+message ScaleRule {
+  bool enabled = 1;
+  optional double step_pct = 2;   // price movement ratio to trigger
+  optional double size_pct = 3;   // ratio of capital to add/reduce
+  optional int32 max_times = 4;   // max scaling actions (0 = unlimited)
+}
+
+message ExecutionConfig {
+  string signal_timing = 1;  // "next_bar_open" or "same_bar_close"
+}
+
+// ExecutionAssumptions describes what the engine actually did during the run.
+// Returned in the backtest response for the post-backtest transparency panel.
+message ExecutionAssumptions {
+  string simulation_mode = 1;      // "KLINE_RANGE" or "DATASET"
+  string signal_timing = 2;        // "next_bar_open" or "same_bar_close"
+  string fill_rule = 3;            // fill semantics used
+  string mtf_fallback_reason = 4;  // empty if MTF sub-resolution was active
+  double actual_commission = 5;
+  double actual_slippage = 6;
+  double actual_leverage = 7;
+  string trade_direction = 8;
+}

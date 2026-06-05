@@ -70,15 +70,16 @@ func registerSREHandlers(
 	analyticsServer := system.NewAnalyticsServer(analyticsRepo, platformSvc, analyticsCache, log)
 	mux.Handle(antv1c.NewAnalyticsServiceHandler(analyticsServer, connectrpc.WithInterceptors(authInterceptor)))
 
+	marketDataRepo := repository.NewMarketDataRepository(ch, log)
 	marketRegimeRepo := repository.NewMarketRegimeRepository(pool)
-	marketRegimeServer := mktplace.NewMarketRegimeServer(marketRegimeRepo, log)
+	marketRegimeServer := mktplace.NewMarketRegimeServer(marketRegimeRepo, marketDataRepo, log)
 	mux.Handle(antv1c.NewMarketRegimeServiceHandler(marketRegimeServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	strategyExperimentServer := strategy.NewStrategyExperimentServer(strategyExperimentRepo, log)
 	strategyExperimentServer.SetPgListen(pglisten.New(pool, log))
 	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, connectrpc.WithInterceptors(authInterceptor)))
 	backtestRunRepo := repository.NewBacktestRunRepository(pool)
-	experimentWorker := strategy.NewExperimentWorker(strategyExperimentRepo, backtestRunRepo, log)
+	experimentWorker := strategy.NewExperimentWorker(strategyExperimentRepo, backtestRunRepo, marketDataRepo, log)
 	if aiSvc != nil {
 		experimentWorker.SetAIService(aiSvc)
 	}

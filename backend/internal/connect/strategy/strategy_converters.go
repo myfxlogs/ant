@@ -3,6 +3,7 @@ package strategy
 import (
 	"encoding/json"
 
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -10,6 +11,18 @@ import (
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/service"
 )
+
+// protoLog is a package-level logger for proto marshal/unmarshal diagnostics.
+// Set via SetProtoLog during server init. If nil, errors are silent.
+var protoLog *zap.Logger
+
+func SetProtoLog(log *zap.Logger) { protoLog = log }
+
+func logProtoErr(op, name string, err error) {
+	if protoLog != nil {
+		protoLog.Warn("strategy: proto "+op+" failed", zap.String("msg", name), zap.Error(err))
+	}
+}
 
 // --- Proto conversion helpers ---
 
@@ -72,10 +85,6 @@ func scheduleRowToProto(r *service.ScheduleRow) *antv1.StrategySchedule {
 	if r.NextRunAt != nil {
 		s.NextRunAt = timestamppb.New(*r.NextRunAt)
 	}
-	if r.LastBacktestAt != nil {
-		// not directly mapped in proto, skip
-		_ = r.LastBacktestAt
-	}
 	return s
 }
 
@@ -89,6 +98,7 @@ func unmarshalScheduleParams(raw []byte) map[string]string {
 	}
 	var sp structpb.Struct
 	if err := proto.Unmarshal(raw, &sp); err != nil {
+		logProtoErr("unmarshal", "schedule_params", err)
 		return map[string]string{}
 	}
 	out := make(map[string]string, len(sp.Fields))
@@ -105,6 +115,7 @@ func unmarshalScheduleConfig(raw []byte) *antv1.ScheduleConfig {
 	}
 	var cfg antv1.ScheduleConfig
 	if err := proto.Unmarshal(raw, &cfg); err != nil {
+		logProtoErr("unmarshal", "schedule_config", err)
 		return &antv1.ScheduleConfig{}
 	}
 	return &cfg
@@ -121,6 +132,8 @@ func unmarshalTemplateParams(raw []byte) []*antv1.TemplateParameter {
 	var wrapper antv1.StrategyTemplate
 	if err := proto.Unmarshal(raw, &wrapper); err == nil && len(wrapper.Parameters) > 0 {
 		return wrapper.Parameters
+	} else if err != nil {
+		logProtoErr("unmarshal", "template_params", err)
 	}
 	// Fallback: legacy JSON format.
 	return unmarshalJSONTemplateParams(raw)
@@ -133,6 +146,7 @@ func unmarshalProtoBacktestMetrics(raw []byte) *antv1.BacktestMetrics {
 	}
 	var m antv1.BacktestMetrics
 	if err := proto.Unmarshal(raw, &m); err != nil {
+		logProtoErr("unmarshal", "backtest_metrics", err)
 		return nil
 	}
 	return &m
@@ -152,6 +166,8 @@ func unmarshalProtoStringList(raw []byte) []string {
 			out = append(out, v.GetStringValue())
 		}
 		return out
+	} else {
+		logProtoErr("unmarshal", "string_list", err)
 	}
 	// Fallback: legacy JSON array.
 	return mustParseJSON[[]string](raw, []string{})
@@ -178,11 +194,12 @@ func mustParseJSON[T any](raw []byte, fallback T) T {
 // Uses a StrategyTemplate wrapper to encode the repeated field.
 func templateParamsToProto(params []*antv1.TemplateParameter) []byte {
 	if len(params) == 0 {
-		return []byte{}
+		return nil
 	}
 	wrapper := &antv1.StrategyTemplate{Parameters: params}
 	b, err := proto.Marshal(wrapper)
 	if err != nil {
+		logProtoErr("marshal", "template_params", err)
 		return nil
 	}
 	return b
@@ -191,7 +208,7 @@ func templateParamsToProto(params []*antv1.TemplateParameter) []byte {
 // scheduleParamsToProto marshals a map[string]string as structpb.Struct proto binary.
 func scheduleParamsToProto(params map[string]string) []byte {
 	if len(params) == 0 {
-		return []byte{}
+		return nil
 	}
 	fields := make(map[string]*structpb.Value, len(params))
 	for k, v := range params {
@@ -199,6 +216,7 @@ func scheduleParamsToProto(params map[string]string) []byte {
 	}
 	b, err := proto.Marshal(&structpb.Struct{Fields: fields})
 	if err != nil {
+		logProtoErr("marshal", "schedule_params", err)
 		return nil
 	}
 	return b
@@ -207,7 +225,7 @@ func scheduleParamsToProto(params map[string]string) []byte {
 // stringListToProto marshals []string as structpb.ListValue proto binary.
 func stringListToProto(items []string) []byte {
 	if len(items) == 0 {
-		return []byte{}
+		return nil
 	}
 	vals := make([]*structpb.Value, len(items))
 	for i, s := range items {
@@ -215,6 +233,7 @@ func stringListToProto(items []string) []byte {
 	}
 	b, err := proto.Marshal(&structpb.ListValue{Values: vals})
 	if err != nil {
+		logProtoErr("marshal", "string_list", err)
 		return nil
 	}
 	return b

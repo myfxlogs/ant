@@ -4,6 +4,8 @@ package ant.v1;
 
 option go_package = "anttrader/gen/proto/ant/v1;antv1";
 
+import "backtest_execution_config.proto";
+
 // BacktestService runs strategy backtests via the Python engine.
 // Replaces the previous FastAPI JSON /api/backtest endpoint.
 service BacktestService {
@@ -59,6 +61,10 @@ message ExecuteBacktestRequest {
   repeated ExecuteKlineBar klines = 17;
   repeated string extra_symbols = 18;
   string strategy_params_json = 19;
+  double leverage = 20;                // e.g. 1, 10, 100
+  TradeDirection trade_direction = 21; // long / short / both
+  bool strict_mode = 22;              // true = next-bar-open, false = same-bar-close + MTF
+  StrategyConfig strategy_config = 23; // parsed from @strategy annotations
 }
 
 message ExecuteBacktestTrade {
@@ -81,6 +87,7 @@ message ExecuteBacktestResponse {
   repeated double equity_curve = 4;
   repeated ExecuteBacktestTrade trades = 5;
   string error = 6;
+  ExecutionAssumptions execution_assumptions = 7;
 }
 
 message ExecuteBacktestMetrics {

@@ -39,6 +39,10 @@ type StrategyExperiment struct {
 	CreatedAt       *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	FinishedAt      *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=finished_at,json=finishedAt,proto3" json:"finished_at,omitempty"`
 	StrategyCode    string                 `protobuf:"bytes,14,opt,name=strategy_code,json=strategyCode,proto3" json:"strategy_code,omitempty"`
+	Symbol          string                 `protobuf:"bytes,15,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Timeframe       string                 `protobuf:"bytes,16,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
+	FromTsUnixMs    int64                  `protobuf:"varint,17,opt,name=from_ts_unix_ms,json=fromTsUnixMs,proto3" json:"from_ts_unix_ms,omitempty"`
+	ToTsUnixMs      int64                  `protobuf:"varint,18,opt,name=to_ts_unix_ms,json=toTsUnixMs,proto3" json:"to_ts_unix_ms,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -171,6 +175,34 @@ func (x *StrategyExperiment) GetStrategyCode() string {
 	return ""
 }
 
+func (x *StrategyExperiment) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *StrategyExperiment) GetTimeframe() string {
+	if x != nil {
+		return x.Timeframe
+	}
+	return ""
+}
+
+func (x *StrategyExperiment) GetFromTsUnixMs() int64 {
+	if x != nil {
+		return x.FromTsUnixMs
+	}
+	return 0
+}
+
+func (x *StrategyExperiment) GetToTsUnixMs() int64 {
+	if x != nil {
+		return x.ToTsUnixMs
+	}
+	return 0
+}
+
 type SubmitStrategyExperimentRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	BaseTemplateId string                 `protobuf:"bytes,1,opt,name=base_template_id,json=baseTemplateId,proto3" json:"base_template_id,omitempty"`
@@ -180,6 +212,10 @@ type SubmitStrategyExperimentRequest struct {
 	Objective      string                 `protobuf:"bytes,5,opt,name=objective,proto3" json:"objective,omitempty"`
 	IdempotencyKey string                 `protobuf:"bytes,6,opt,name=idempotency_key,json=idempotencyKey,proto3" json:"idempotency_key,omitempty"`
 	StrategyCode   string                 `protobuf:"bytes,7,opt,name=strategy_code,json=strategyCode,proto3" json:"strategy_code,omitempty"`
+	Symbol         string                 `protobuf:"bytes,8,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Timeframe      string                 `protobuf:"bytes,9,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
+	FromTsUnixMs   int64                  `protobuf:"varint,10,opt,name=from_ts_unix_ms,json=fromTsUnixMs,proto3" json:"from_ts_unix_ms,omitempty"`
+	ToTsUnixMs     int64                  `protobuf:"varint,11,opt,name=to_ts_unix_ms,json=toTsUnixMs,proto3" json:"to_ts_unix_ms,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -263,6 +299,34 @@ func (x *SubmitStrategyExperimentRequest) GetStrategyCode() string {
 	return ""
 }
 
+func (x *SubmitStrategyExperimentRequest) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *SubmitStrategyExperimentRequest) GetTimeframe() string {
+	if x != nil {
+		return x.Timeframe
+	}
+	return ""
+}
+
+func (x *SubmitStrategyExperimentRequest) GetFromTsUnixMs() int64 {
+	if x != nil {
+		return x.FromTsUnixMs
+	}
+	return 0
+}
+
+func (x *SubmitStrategyExperimentRequest) GetToTsUnixMs() int64 {
+	if x != nil {
+		return x.ToTsUnixMs
+	}
+	return 0
+}
+
 type StrategyExperimentCandidate struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -277,8 +341,14 @@ type StrategyExperimentCandidate struct {
 	Summary         string                 `protobuf:"bytes,10,opt,name=summary,proto3" json:"summary,omitempty"`
 	Recommendation  string                 `protobuf:"bytes,11,opt,name=recommendation,proto3" json:"recommendation,omitempty"`
 	CreatedAt       *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	// OOS (out-of-sample) validation fields.
+	OosScore       *float64 `protobuf:"fixed64,15,opt,name=oos_score,json=oosScore,proto3,oneof" json:"oos_score,omitempty"`
+	OosTotalReturn *float64 `protobuf:"fixed64,16,opt,name=oos_total_return,json=oosTotalReturn,proto3,oneof" json:"oos_total_return,omitempty"`
+	OosSharpeRatio *float64 `protobuf:"fixed64,17,opt,name=oos_sharpe_ratio,json=oosSharpeRatio,proto3,oneof" json:"oos_sharpe_ratio,omitempty"`
+	DegradationPct *float64 `protobuf:"fixed64,18,opt,name=degradation_pct,json=degradationPct,proto3,oneof" json:"degradation_pct,omitempty"`
+	IsOverfit      bool     `protobuf:"varint,19,opt,name=is_overfit,json=isOverfit,proto3" json:"is_overfit,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *StrategyExperimentCandidate) Reset() {
@@ -393,6 +463,41 @@ func (x *StrategyExperimentCandidate) GetCreatedAt() *timestamppb.Timestamp {
 		return x.CreatedAt
 	}
 	return nil
+}
+
+func (x *StrategyExperimentCandidate) GetOosScore() float64 {
+	if x != nil && x.OosScore != nil {
+		return *x.OosScore
+	}
+	return 0
+}
+
+func (x *StrategyExperimentCandidate) GetOosTotalReturn() float64 {
+	if x != nil && x.OosTotalReturn != nil {
+		return *x.OosTotalReturn
+	}
+	return 0
+}
+
+func (x *StrategyExperimentCandidate) GetOosSharpeRatio() float64 {
+	if x != nil && x.OosSharpeRatio != nil {
+		return *x.OosSharpeRatio
+	}
+	return 0
+}
+
+func (x *StrategyExperimentCandidate) GetDegradationPct() float64 {
+	if x != nil && x.DegradationPct != nil {
+		return *x.DegradationPct
+	}
+	return 0
+}
+
+func (x *StrategyExperimentCandidate) GetIsOverfit() bool {
+	if x != nil {
+		return x.IsOverfit
+	}
+	return false
 }
 
 type SubmitStrategyExperimentResponse struct {
@@ -983,7 +1088,7 @@ var File_strategy_experiment_proto protoreflect.FileDescriptor
 
 const file_strategy_experiment_proto_rawDesc = "" +
 	"\n" +
-	"\x19strategy_experiment.proto\x12\x06ant.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb7\x04\n" +
+	"\x19strategy_experiment.proto\x12\x06ant.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb7\x05\n" +
 	"\x12StrategyExperiment\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12(\n" +
@@ -1001,7 +1106,12 @@ const file_strategy_experiment_proto_rawDesc = "" +
 	"created_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12;\n" +
 	"\vfinished_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"finishedAt\x12#\n" +
-	"\rstrategy_code\x18\x0e \x01(\tR\fstrategyCode\"\xc5\x02\n" +
+	"\rstrategy_code\x18\x0e \x01(\tR\fstrategyCode\x12\x16\n" +
+	"\x06symbol\x18\x0f \x01(\tR\x06symbol\x12\x1c\n" +
+	"\ttimeframe\x18\x10 \x01(\tR\ttimeframe\x12%\n" +
+	"\x0ffrom_ts_unix_ms\x18\x11 \x01(\x03R\ffromTsUnixMs\x12!\n" +
+	"\rto_ts_unix_ms\x18\x12 \x01(\x03R\n" +
+	"toTsUnixMs\"\xc5\x03\n" +
 	"\x1fSubmitStrategyExperimentRequest\x12(\n" +
 	"\x10base_template_id\x18\x01 \x01(\tR\x0ebaseTemplateId\x12@\n" +
 	"\x0fparameter_space\x18\x02 \x01(\v2\x17.google.protobuf.StructR\x0eparameterSpace\x12#\n" +
@@ -1009,7 +1119,13 @@ const file_strategy_experiment_proto_rawDesc = "" +
 	"\x0emax_candidates\x18\x04 \x01(\x05R\rmaxCandidates\x12\x1c\n" +
 	"\tobjective\x18\x05 \x01(\tR\tobjective\x12'\n" +
 	"\x0fidempotency_key\x18\x06 \x01(\tR\x0eidempotencyKey\x12#\n" +
-	"\rstrategy_code\x18\a \x01(\tR\fstrategyCode\"\xda\x03\n" +
+	"\rstrategy_code\x18\a \x01(\tR\fstrategyCode\x12\x16\n" +
+	"\x06symbol\x18\b \x01(\tR\x06symbol\x12\x1c\n" +
+	"\ttimeframe\x18\t \x01(\tR\ttimeframe\x12%\n" +
+	"\x0ffrom_ts_unix_ms\x18\n" +
+	" \x01(\x03R\ffromTsUnixMs\x12!\n" +
+	"\rto_ts_unix_ms\x18\v \x01(\x03R\n" +
+	"toTsUnixMs\"\xf3\x05\n" +
 	"\x1bStrategyExperimentCandidate\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12#\n" +
 	"\rexperiment_id\x18\x02 \x01(\tR\fexperimentId\x127\n" +
@@ -1026,7 +1142,18 @@ const file_strategy_experiment_proto_rawDesc = "" +
 	" \x01(\tR\asummary\x12&\n" +
 	"\x0erecommendation\x18\v \x01(\tR\x0erecommendation\x129\n" +
 	"\n" +
-	"created_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"u\n" +
+	"created_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12 \n" +
+	"\toos_score\x18\x0f \x01(\x01H\x00R\boosScore\x88\x01\x01\x12-\n" +
+	"\x10oos_total_return\x18\x10 \x01(\x01H\x01R\x0eoosTotalReturn\x88\x01\x01\x12-\n" +
+	"\x10oos_sharpe_ratio\x18\x11 \x01(\x01H\x02R\x0eoosSharpeRatio\x88\x01\x01\x12,\n" +
+	"\x0fdegradation_pct\x18\x12 \x01(\x01H\x03R\x0edegradationPct\x88\x01\x01\x12\x1d\n" +
+	"\n" +
+	"is_overfit\x18\x13 \x01(\bR\tisOverfitB\f\n" +
+	"\n" +
+	"_oos_scoreB\x13\n" +
+	"\x11_oos_total_returnB\x13\n" +
+	"\x11_oos_sharpe_ratioB\x12\n" +
+	"\x10_degradation_pct\"u\n" +
 	" SubmitStrategyExperimentResponse\x12:\n" +
 	"\n" +
 	"experiment\x18\x01 \x01(\v2\x1a.ant.v1.StrategyExperimentR\n" +
@@ -1147,6 +1274,7 @@ func file_strategy_experiment_proto_init() {
 	if File_strategy_experiment_proto != nil {
 		return
 	}
+	file_strategy_experiment_proto_msgTypes[2].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

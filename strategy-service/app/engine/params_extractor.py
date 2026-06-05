@@ -13,11 +13,15 @@ Heuristics:
 
 `params` is whatever name the user assigns from `context.get('params') or {}`.
 We track those aliases by walking simple `Assign` patterns.
+
+Also exports `extract_strategy_directives()` for parsing `# @strategy key value`
+annotations from strategy code comments (QuantDinger compatibility).
 """
 
 from __future__ import annotations
 
 import ast
+import re
 from dataclasses import dataclass, asdict
 from typing import Any, Dict, List, Optional, Set
 
@@ -196,3 +200,59 @@ def extract_required_params(code: str) -> List[Dict[str, Any]]:
     required = [found[k].to_dict() for k in visible_order if found[k].required]
     optional = [found[k].to_dict() for k in visible_order if not found[k].required]
     return required + optional
+
+
+# --- @strategy directive extraction (QuantDinger compatibility) -------------
+
+_STRATEGY_DIRECTIVE_RE = re.compile(
+    r"^#\s*@strategy\s+(\w+)\s*:?\s*(\S+)",
+    re.MULTILINE | re.IGNORECASE,
+)
+
+# Recognized keys and their value type.
+_STRATEGY_KEY_TYPES: Dict[str, str] = {
+    "stopLossPct": "float",
+    "takeProfitPct": "float",
+    "entryPct": "float",
+    "trailingEnabled": "bool",
+    "trailingStopPct": "float",
+    "trailingActivationPct": "float",
+    "tradeDirection": "str",
+}
+
+
+def _coerce_strategy_value(key: str, raw: str) -> Any:
+    """Convert raw annotation value to the appropriate Python type."""
+    kt = _STRATEGY_KEY_TYPES.get(key)
+    if kt is None:
+        return raw
+    if kt == "bool":
+        return raw.lower() in ("true", "1", "yes", "on")
+    if kt == "float":
+        try:
+            return float(raw)
+        except ValueError:
+            return None
+    if kt == "str":
+        return raw
+    return raw
+
+
+def extract_strategy_directives(code: str) -> Dict[str, Any]:
+    """Parse ``# @strategy key value`` annotations from strategy code.
+
+    Returns a dict mapping directive keys to their typed values.
+    Only recognized keys (from _STRATEGY_KEY_TYPES) are included.
+    Duplicate keys: last one wins.
+    """
+    directives: Dict[str, Any] = {}
+    if not code:
+        return directives
+    for m in _STRATEGY_DIRECTIVE_RE.finditer(code):
+        key = m.group(1)
+        raw = m.group(2)
+        if key in _STRATEGY_KEY_TYPES:
+            val = _coerce_strategy_value(key, raw)
+            if val is not None:
+                directives[key] = val
+    return directives
