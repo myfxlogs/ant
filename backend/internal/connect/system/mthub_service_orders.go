@@ -87,8 +87,9 @@ func (s *MtHubServer) SyncOrderHistory(ctx context.Context, req *connect.Request
 	platform := s.svc.Platform(accountID)
 
 	tradeRecs := make([]*model.TradeRecord, 0, len(records))
+	parsedUID, _ = uuid.Parse(userID)
 	for _, r := range records {
-		rec, warnings := orderRecordToTradeRecord(r, uid, platform)
+		rec, warnings := orderRecordToTradeRecord(r, uid, parsedUID, platform)
 		if len(warnings) > 0 {
 			s.log.Warn("SyncOrderHistory: precision loss converting decimal to float64",
 				zap.String("account", accountID),
@@ -115,6 +116,7 @@ func (s *MtHubServer) WriteClosedTrade(ctx context.Context, accountID, platform,
 		return err
 	}
 	rec := &model.TradeRecord{
+		UserID:		uuid.Nil,
 		AccountID:    uid,
 		Ticket:       updateTicket,
 		Symbol:       updateSymbol,
@@ -135,7 +137,7 @@ func (s *MtHubServer) WriteClosedTrade(ctx context.Context, accountID, platform,
 	return s.tradeRecords.Create(ctx, rec)
 }
 
-func orderRecordToTradeRecord(r *mthub.OrderRecord, accountID uuid.UUID, platform string) (*model.TradeRecord, []string) {
+func orderRecordToTradeRecord(r *mthub.OrderRecord, accountID, userID uuid.UUID, platform string) (*model.TradeRecord, []string) {
 	orderType := mthubSideOrderTypeToString(r.Side, r.OrderType)
 
 	var warnings []string
@@ -154,6 +156,7 @@ func orderRecordToTradeRecord(r *mthub.OrderRecord, accountID uuid.UUID, platfor
 	cm, cmexact := decimalToFloat64(r.Commission)
 
 	rec := &model.TradeRecord{
+		UserID:		uuid.Nil,
 		AccountID:    accountID,
 		Ticket:       r.Ticket,
 		Symbol:       r.SymbolRaw,

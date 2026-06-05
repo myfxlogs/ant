@@ -139,7 +139,7 @@ func (s *AccountSyncService) SyncAccountHistory(accountID, userID string) {
 
 		if len(records) > 0 {
 			platform := s.mthubSvc.Platform(accountID)
-			tradeRecs := s.convertRecords(accountID, uid, platform, records)
+			tradeRecs := s.convertRecords(accountID, uid, userUUID, platform, records)
 			if err := s.tradeRecordRepo.BatchCreate(context.Background(), tradeRecs); err != nil {
 				s.log.Warn("syncHistory: chunk insert failed",
 					zap.String("account", accountID),
@@ -160,7 +160,7 @@ func (s *AccountSyncService) SyncAccountHistory(accountID, userID string) {
 }
 
 // convertRecords maps mthub OrderRecords to model TradeRecords.
-func (s *AccountSyncService) convertRecords(accountID string, uid uuid.UUID, platform string, records []*mthub.OrderRecord) []*model.TradeRecord {
+func (s *AccountSyncService) convertRecords(accountID string, uid, userID uuid.UUID, platform string, records []*mthub.OrderRecord) []*model.TradeRecord {
 	tradeRecs := make([]*model.TradeRecord, 0, len(records))
 	for _, r := range records {
 		ot := "BUY"
@@ -193,6 +193,7 @@ func (s *AccountSyncService) convertRecords(accountID string, uid uuid.UUID, pla
 			)
 		}
 		tradeRecs = append(tradeRecs, &model.TradeRecord{
+			UserID:       userID,
 			AccountID:    uid,
 			Ticket:       r.Ticket,
 			Symbol:       r.SymbolRaw,

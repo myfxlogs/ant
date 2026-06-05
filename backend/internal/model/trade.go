@@ -24,6 +24,7 @@ type TradeLog struct {
 
 type TradeRecord struct {
 	ID           uuid.UUID  `json:"id" db:"id"`
+	UserID       uuid.UUID  `json:"user_id" db:"user_id"`
 	ScheduleID   *uuid.UUID `json:"schedule_id" db:"schedule_id"`
 	AccountID    uuid.UUID  `json:"account_id" db:"account_id"`
 	Ticket       int64      `json:"ticket" db:"ticket"`

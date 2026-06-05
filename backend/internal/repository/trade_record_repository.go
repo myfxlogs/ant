@@ -22,13 +22,14 @@ func NewTradeRecordRepository(db *pgxpool.Pool) *TradeRecordRepository {
 func (r *TradeRecordRepository) Create(ctx context.Context, record *model.TradeRecord) error {
 	query := `
 		INSERT INTO trade_records (
-			schedule_id, account_id, ticket, symbol, order_type, volume,
+			user_id, schedule_id, account_id, ticket, symbol, order_type, volume,
 			open_price, close_price, profit, swap, commission,
 			open_time, close_time, stop_loss, take_profit,
 			order_comment, magic_number, platform
 		) VALUES (
-			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18
+			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
 		) ON CONFLICT (account_id, ticket, close_time) DO UPDATE SET
+			user_id = EXCLUDED.user_id,
 			schedule_id = COALESCE(EXCLUDED.schedule_id, trade_records.schedule_id),
 			profit = EXCLUDED.profit,
 			swap = EXCLUDED.swap,
@@ -43,7 +44,7 @@ func (r *TradeRecordRepository) Create(ctx context.Context, record *model.TradeR
 		RETURNING id
 	`
 	return r.db.QueryRow(ctx, query,
-		record.ScheduleID, record.AccountID, record.Ticket, record.Symbol, record.OrderType, record.Volume,
+		record.UserID, record.ScheduleID, record.AccountID, record.Ticket, record.Symbol, record.OrderType, record.Volume,
 		record.OpenPrice, record.ClosePrice, record.Profit, record.Swap, record.Commission,
 		record.OpenTime, record.CloseTime, record.StopLoss, record.TakeProfit,
 		record.OrderComment, record.MagicNumber, record.Platform,
@@ -80,13 +81,14 @@ func (r *TradeRecordRepository) batchCreateChunk(ctx context.Context, records []
 
 	query := `
 		INSERT INTO trade_records (
-			schedule_id, account_id, ticket, symbol, order_type, volume,
+			user_id, schedule_id, account_id, ticket, symbol, order_type, volume,
 			open_price, close_price, profit, swap, commission,
 			open_time, close_time, stop_loss, take_profit,
 			order_comment, magic_number, platform
 		) VALUES (
-			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18
+			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
 		) ON CONFLICT (account_id, ticket, close_time) DO UPDATE SET
+			user_id = EXCLUDED.user_id,
 			schedule_id = COALESCE(EXCLUDED.schedule_id, trade_records.schedule_id),
 			profit = EXCLUDED.profit,
 			swap = EXCLUDED.swap,
@@ -109,7 +111,7 @@ func (r *TradeRecordRepository) batchCreateChunk(ctx context.Context, records []
 	for _, record := range records {
 		var returnedID uuid.UUID
 		if err := tx.QueryRow(ctx, query,
-			record.ScheduleID, record.AccountID, record.Ticket, record.Symbol, record.OrderType, record.Volume,
+			record.UserID, record.ScheduleID, record.AccountID, record.Ticket, record.Symbol, record.OrderType, record.Volume,
 			record.OpenPrice, record.ClosePrice, record.Profit, record.Swap, record.Commission,
 			record.OpenTime, record.CloseTime, record.StopLoss, record.TakeProfit,
 			record.OrderComment, record.MagicNumber, record.Platform,
