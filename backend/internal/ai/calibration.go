@@ -180,15 +180,75 @@ func (s *CalibrationService) RecordPrediction(ctx context.Context, userID uuid.U
 	})
 }
 
-// Recalibrate recomputes thresholds per confidence bucket to maximize accuracy.
+// Recalibrate recomputes thresholds per confidence bucket via grid search
+// over candidate thresholds, maximizing accuracy while maintaining coverage.
 // Algorithm from QuantDinger ai_calibration.py:
-//   For each bucket, compute accuracy. If accuracy < bucket/100,
-//   raise the effective threshold (require higher confidence).
+//   1. Search candidate thresholds (grid: 0.10–0.30 step 0.02)
+//   2. For each threshold, compute accuracy and coverage (BUY+SELL ratio)
+//   3. Pick threshold maximizing accuracy, tie-break by coverage
 func (s *CalibrationService) Recalibrate(ctx context.Context, userID uuid.UUID) error {
 	stats, err := s.repo.GetPredictionStats(ctx, userID)
 	if err != nil {
 		return err
 	}
+
+	// Build flat list of (confidence, was_correct) pairs from validated predictions.
+	type pred struct {
+		confidence float64
+		correct    bool
+	}
+	var all []pred
+	for bucket, counts := range stats {
+		total := counts[0]
+		correct := counts[1]
+		if total == 0 {
+			continue
+		}
+		// Approximate: distribute predictions evenly within the bucket.
+		conf := float64(bucket)/100.0 + 0.05
+		for i := 0; i < correct; i++ {
+			all = append(all, pred{confidence: conf, correct: true})
+		}
+		for i := 0; i < total-correct; i++ {
+			all = append(all, pred{confidence: conf, correct: false})
+		}
+	}
+	if len(all) < 10 {
+		return nil // not enough data
+	}
+
+	// Grid search over candidate absolute thresholds.
+	candidates := []float64{0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.22, 0.25, 0.30}
+	bestThreshold := 0.20
+	bestAccuracy := 0.0
+	bestCoverage := 0
+
+	for _, thresh := range candidates {
+		correctCnt := 0
+		actionCnt := 0 // BUY + SELL count (non-HOLD)
+		for _, p := range all {
+			if p.confidence >= thresh {
+				actionCnt++
+				if p.correct {
+					correctCnt++
+				}
+			}
+		}
+		if actionCnt == 0 {
+			continue
+		}
+		acc := float64(correctCnt) / float64(actionCnt)
+		coverage := actionCnt
+
+		// Maximize accuracy; if tied, prefer higher coverage (avoids always-HOLD).
+		if acc > bestAccuracy || (math.Abs(acc-bestAccuracy) < 0.01 && coverage > bestCoverage) {
+			bestAccuracy = acc
+			bestCoverage = coverage
+			bestThreshold = thresh
+		}
+	}
+
+	// Persist calibration results per bucket.
 	for bucket := 10; bucket <= 100; bucket += 10 {
 		counts := stats[bucket]
 		total := counts[0]
@@ -197,25 +257,12 @@ func (s *CalibrationService) Recalibrate(ctx context.Context, userID uuid.UUID) 
 		if total > 0 {
 			accuracy = float64(correct) / float64(total)
 		}
-		// Calibrated threshold: raise if accuracy < nominal confidence
-		nominal := float64(bucket) / 100.0
-		calibrated := accuracy
-		if calibrated > 1.0 {
-			calibrated = 1.0
-		}
-		// If accuracy is significantly below nominal, push threshold up
-		if nominal-accuracy > 0.15 && total >= 5 {
-			calibrated = nominal + (nominal-accuracy)*0.5
-			if calibrated > 1.0 {
-				calibrated = 1.0
-			}
-		}
 		if err := s.repo.UpsertCalibration(ctx, userID, CalibrationBucket{
 			ConfidenceBucket:    bucket,
 			TotalPredictions:    total,
 			CorrectPredictions:  correct,
 			Accuracy:            math.Round(accuracy*1000) / 1000,
-			CalibratedThreshold: math.Round(calibrated*1000) / 1000,
+			CalibratedThreshold: math.Round(bestThreshold*1000) / 1000,
 		}); err != nil {
 			return err
 		}

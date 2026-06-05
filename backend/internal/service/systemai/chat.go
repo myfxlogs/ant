@@ -139,11 +139,17 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 	client := &http.Client{Timeout: 0} 
 	resp, err := client.Do(httpReq)
 	if err != nil {
+		if isTransientChatErr(err) {
+			recordProviderFailure(p.userID, p.providerID)
+		}
 		return &failoverErr{msg: fmt.Sprintf("chat completion stream http: %v", err), transient: isTransientChatErr(err)}
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		if isFailoverStatus(resp.StatusCode) {
+			recordProviderFailure(p.userID, p.providerID)
+		}
 		return &failoverErr{msg: fmt.Sprintf("chat completion stream: status %d", resp.StatusCode), transient: isFailoverStatus(resp.StatusCode)}
 	}
 	scanner := bufio.NewScanner(resp.Body)
@@ -241,11 +247,17 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 		}
 	}
 	if doErr != nil {
-		return "", &failoverErr{msg: fmt.Sprintf("chat completion http: %v", doErr), transient: isTransientChatErr(doErr)}
+		if isTransientChatErr(doErr) {
+		recordProviderFailure(p.userID, p.providerID)
+	}
+	return "", &failoverErr{msg: fmt.Sprintf("chat completion http: %v", doErr), transient: isTransientChatErr(doErr)}
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return "", &failoverErr{msg: fmt.Sprintf("chat completion: status %d", resp.StatusCode), transient: isFailoverStatus(resp.StatusCode)}
+		if isFailoverStatus(resp.StatusCode) {
+		recordProviderFailure(p.userID, p.providerID)
+	}
+	return "", &failoverErr{msg: fmt.Sprintf("chat completion: status %d", resp.StatusCode), transient: isFailoverStatus(resp.StatusCode)}
 	}
 
 	var cr ChatCompletionResponse
@@ -253,11 +265,13 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 		return "", fmt.Errorf("decode chat response: %w", err)
 	}
 	if cr.Error != nil {
-		return "", &failoverErr{msg: fmt.Sprintf("chat completion api error: %s", cr.Error.Message), transient: true}
+		recordProviderFailure(p.userID, p.providerID)
+	return "", &failoverErr{msg: fmt.Sprintf("chat completion api error: %s", cr.Error.Message), transient: true}
 	}
 	if len(cr.Choices) == 0 {
 		return "", fmt.Errorf("chat completion returned no choices")
 	}
+	recordProviderSuccess(p.userID, p.providerID)
 	return strings.TrimSpace(cr.Choices[0].Message.Content), nil
 }
 

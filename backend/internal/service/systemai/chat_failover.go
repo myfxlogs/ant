@@ -4,9 +4,58 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/google/uuid"
 )
+
+// ── Circuit breaker ──
+
+const (
+	cbFailThreshold = 3           // consecutive failures before opening
+	cbCooldown      = 30 * time.Second // skip provider for this long after threshold
+)
+
+var cbState sync.Map // key: "userID|providerID" → *circuitBreaker
+
+type circuitBreaker struct {
+	consecutiveFails int
+	openedAt         time.Time
+}
+
+func (cb *circuitBreaker) isOpen() bool {
+	if cb.consecutiveFails < cbFailThreshold {
+		return false
+	}
+	return time.Since(cb.openedAt) < cbCooldown
+}
+
+func recordProviderSuccess(userID uuid.UUID, providerID string) {
+	key := userID.String() + "|" + providerID
+	cbState.Delete(key)
+}
+
+func recordProviderFailure(userID uuid.UUID, providerID string) {
+	key := userID.String() + "|" + providerID
+	v, _ := cbState.LoadOrStore(key, &circuitBreaker{})
+	cb := v.(*circuitBreaker)
+	cb.consecutiveFails++
+	if cb.consecutiveFails >= cbFailThreshold {
+		cb.openedAt = time.Now()
+	}
+	cbState.Store(key, cb)
+}
+
+func isCircuitOpen(userID uuid.UUID, providerID string) bool {
+	v, ok := cbState.Load(userID.String() + "|" + providerID)
+	if !ok {
+		return false
+	}
+	return v.(*circuitBreaker).isOpen()
+}
+
+// ── Failover ──
 
 // failoverErr wraps an error with a transient flag for provider failover decisions.
 type failoverErr struct {
@@ -49,6 +98,7 @@ func chatEndpoint(providerID, baseURL string) string {
 
 // chatProvider holds resolved provider info for a single candidate.
 type chatProvider struct {
+	userID     uuid.UUID
 	providerID string
 	model      string
 	baseURL    string
@@ -88,7 +138,11 @@ func (s *Service) resolveAllChatProviders(ctx context.Context, userID uuid.UUID,
 			if m == "" {
 				continue
 			}
+			if isCircuitOpen(userID, row.ProviderID) {
+				continue // skip provider in cooldown
+			}
 			out = append(out, chatProvider{
+				userID:     userID,
 				providerID: row.ProviderID,
 				model:      m,
 				baseURL:    base,
