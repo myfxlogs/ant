@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+// Market data events published via NATS (replaces JSON payloads).
+// Price fields are string-encoded decimal to maintain precision (NUMERIC(20,8)).
+
+message TickPayload {
+  string broker = 1;
+  string canonical = 2;
+  int64 ts_unix_ms = 3;
+  string bid = 4;   // decimal string
+  string ask = 5;   // decimal string
+}
+
+message BarPayload {
+  string broker = 1;
+  string canonical = 2;
+  string period = 3;
+  int64 open_ts_unix_ms = 4;
+  int64 close_ts_unix_ms = 5;
+  string open = 6;   // decimal string
+  string high = 7;   // decimal string
+  string low = 8;    // decimal string
+  string close = 9;  // decimal string
+  double volume = 10;
+  uint32 tick_count = 11;
+  bool is_replay = 12;
+}
+
+message TradeEventPayload {
+  string event_id = 1;
+  string event_type = 2;
+  string account_id = 3;
+  string user_id = 4;
+  string broker = 5;
+  int64 ticket = 6;
+  string client_id = 7;
+  string canonical = 8;
+  string side = 9;
+  string order_type = 10;
+  double volume = 11;
+  double price = 12;
+  double stop_loss = 13;
+  double take_profit = 14;
+  string from_state = 15;
+  string to_state = 16;
+  string error = 17;
+  string cost_json = 18; // temporary — until CostEstimate proto
+  int64 ts_unix_ms = 19;
+}
+
+message AccountEventPayload {
+  string account_id = 1;
+  string user_id = 2;
+  int64 ts_unix_ms = 3;
+  string event_type = 4; // connected, disconnected, reconnected
+}
+
+// MonthlyAnalysisPoint for analytics cache (replaces JSON in proto bytes field).
+message MonthlyAnalysisPoint {
+  int32 year = 1;
+  int32 month = 2;
+  double change = 3;
+  double profit = 4;
+  double lots = 5;
+  double pips = 6;
+  int32 trades = 7;
+}
+
+message MonthlyAnalysisPoints {
+  repeated MonthlyAnalysisPoint points = 1;
+}
+
+// OrderCacheEntry stores minimal order state in Redis (replaces JSON).
+message OrderCacheEntry {
+  int64 ticket = 1;
+  string symbol = 2;
+  string side = 3;
+  double volume = 4;
+  double price = 5;
+  double stop_loss = 6;
+  double take_profit = 7;
+}
