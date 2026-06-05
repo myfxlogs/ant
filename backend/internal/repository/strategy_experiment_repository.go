@@ -73,7 +73,7 @@ func (r *StrategyExperimentRepository) Create(ctx context.Context, exp *Strategy
 		exp.MaxCandidates = 20
 	}
 	if len(exp.ParameterSpace) == 0 {
-		exp.ParameterSpace = []byte(`{}`)
+		exp.ParameterSpace = nil
 	}
 	_, err := r.db.Exec(ctx, `
 		INSERT INTO strategy_experiments (id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,strategy_code,created_at,finished_at)
@@ -140,10 +140,10 @@ func (r *StrategyExperimentRepository) CreateCandidate(ctx context.Context, cand
 		candidate.CreatedAt = time.Now().UTC()
 	}
 	if len(candidate.Parameters) == 0 {
-		candidate.Parameters = []byte(`{}`)
+		candidate.Parameters = nil
 	}
 	if len(candidate.ScoreComponents) == 0 {
-		candidate.ScoreComponents = []byte(`{}`)
+		candidate.ScoreComponents = nil
 	}
 	_, err := r.db.Exec(ctx, `
 		INSERT INTO strategy_experiment_candidates (id,experiment_id,parameters,draft_code_ref,backtest_run_id,score,grade,score_components,rank,summary,recommendation,created_at)
@@ -188,36 +188,38 @@ func (r *StrategyExperimentRepository) GetCandidate(ctx context.Context, userID,
 	return &row, err
 }
 
-// NOTE: caller (strategy_experiment_handler) verifies ownership via GetCandidate.
-// This UPDATE has no user_id check — relies on caller for authorization.
-// ClaimPendingExperiment atomically claims the oldest PENDING experiment.
+// ClaimPendingExperiment atomically claims the oldest PENDING experiment using
+// FOR UPDATE SKIP LOCKED to prevent concurrent workers from claiming the same row.
 // Returns nil if no PENDING experiments exist.
 func (r *StrategyExperimentRepository) ClaimPendingExperiment(ctx context.Context) (*StrategyExperiment, error) {
-	rows, err := r.db.Query(ctx,
-		`SELECT id, user_id, base_template_id, status, parameter_space, search_method,
-		        max_candidates, objective, market_regime_ref, best_candidate_id, job_id, strategy_code,
-		        created_at, finished_at
-		 FROM strategy_experiments WHERE status = 'PENDING'
-		 ORDER BY created_at ASC LIMIT 1`)
+	var e StrategyExperiment
+	err := r.db.QueryRow(ctx,
+		`WITH candidate AS (
+			SELECT id FROM strategy_experiments
+			WHERE status = 'PENDING'
+			ORDER BY created_at ASC
+			LIMIT 1
+			FOR UPDATE SKIP LOCKED
+		)
+		UPDATE strategy_experiments s
+		SET status = 'PROCESSING'
+		FROM candidate c
+		WHERE s.id = c.id
+		RETURNING
+			s.id, s.user_id, s.base_template_id, s.status, s.parameter_space, s.search_method,
+			s.max_candidates, s.objective, s.market_regime_ref, s.best_candidate_id, s.job_id,
+			s.strategy_code, s.created_at, s.finished_at`,
+	).Scan(
+		&e.ID, &e.UserID, &e.BaseTemplateID, &e.Status, &e.ParameterSpace,
+		&e.SearchMethod, &e.MaxCandidates, &e.Objective, &e.MarketRegimeRef,
+		&e.BestCandidateID, &e.JobID, &e.StrategyCode, &e.CreatedAt, &e.FinishedAt,
+	)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
 		return nil, fmt.Errorf("claim pending: %w", err)
 	}
-	defer rows.Close()
-	if !rows.Next() {
-		return nil, nil
-	}
-	var e StrategyExperiment
-	if err := rows.Scan(&e.ID, &e.UserID, &e.BaseTemplateID, &e.Status, &e.ParameterSpace,
-		&e.SearchMethod, &e.MaxCandidates, &e.Objective, &e.MarketRegimeRef,
-		&e.BestCandidateID, &e.JobID, &e.StrategyCode, &e.CreatedAt, &e.FinishedAt); err != nil {
-		return nil, fmt.Errorf("scan pending: %w", err)
-	}
-	// Mark as PROCESSING
-	_, err = r.db.Exec(ctx, `UPDATE strategy_experiments SET status = 'PROCESSING' WHERE id = $1`, e.ID)
-	if err != nil {
-		return nil, fmt.Errorf("claim experiment: %w", err)
-	}
-	e.Status = "PROCESSING"
 	return &e, nil
 }
 

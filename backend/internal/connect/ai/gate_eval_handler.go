@@ -2,8 +2,9 @@ package ai
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+
+	"google.golang.org/protobuf/proto"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -71,7 +72,7 @@ func (s *GateEvalServer) fetchRun(ctx context.Context, userID uuid.UUID, rawID s
 
 // buildGateInput converts a backtest run into pipeline input.
 func buildGateInput(run *repository.BacktestRun, req *antv1.RunGateEvaluationRequest) (aigates.PipelineInput, error) {
-	dailyReturns := equityCurveToDailyReturns(run.EquityCurve)
+	dailyReturns := equityCurveToDailyReturns(run.ProtoResponse)
 	if len(dailyReturns) < 10 {
 		return aigates.PipelineInput{},
 			fmt.Errorf("insufficient data: need 10+ daily returns, got %d", len(dailyReturns))
@@ -133,15 +134,16 @@ func toProtoSummary(r aigates.PipelineResult) *antv1.GatePipelineSummary {
 	}
 }
 
-// equityCurveToDailyReturns converts cumulative equity curve to daily returns.
-func equityCurveToDailyReturns(raw []byte) []float64 {
-	if len(raw) == 0 {
+// equityCurveToDailyReturns extracts equity curve from proto binary ExecuteBacktestResponse.
+func equityCurveToDailyReturns(protoResp []byte) []float64 {
+	if len(protoResp) == 0 {
 		return nil
 	}
-	var equity []float64
-	if err := json.Unmarshal(raw, &equity); err != nil {
+	var resp antv1.ExecuteBacktestResponse
+	if err := proto.Unmarshal(protoResp, &resp); err != nil {
 		return nil
 	}
+	equity := resp.GetEquityCurve()
 	if len(equity) < 2 {
 		return nil
 	}

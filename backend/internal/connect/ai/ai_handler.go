@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/repository"
@@ -303,100 +304,69 @@ func (s *AIServer) ListAgents(ctx context.Context, req *connect.Request[antv1.Li
 	return connect.NewResponse(&antv1.ListAgentsResponse{Agents: out}), nil
 }
 
-// ── Agent Definitions CRUD ──
+// ── Agent Definitions CRUD (ConnectRPC + proto binary) ──
 
-type batchSetAgentsRequest struct {
-	Agents []agentDefJSON `json:"agents"`
-}
-type agentDefJSON struct {
-	AgentKey      string `json:"agentKey"`
-	Type          string `json:"type"`
-	Name          string `json:"name"`
-	Identity      string `json:"identity"`
-	InputHint     string `json:"inputHint"`
-	Enabled       bool   `json:"enabled"`
-	Position      int32  `json:"position"`
-	ProviderID    string `json:"providerId"`
-	ModelOverride string `json:"modelOverride"`
-}
+	// SetAgentDefRepo injects the AI agent definition repository.
+	func (s *AIServer) SetAgentDefRepo(repo *repository.AIAgentDefinitionRepository) {
+		s.agentDefRepo = repo
+	}
 
-// SetAgentDefRepo injects the AI agent definition repository.
-func (s *AIServer) SetAgentDefRepo(repo *repository.AIAgentDefinitionRepository) {
-	s.agentDefRepo = repo
-}
+	// BatchSetAgents persists agent definitions via ConnectRPC (proto binary).
+	func (s *AIServer) BatchSetAgents(ctx context.Context, req *connect.Request[antv1.BatchSetAgentsRequest]) (*connect.Response[antv1.BatchSetAgentsResponse], error) {
+		uid, err := userIDFromCtx(ctx)
+		if err != nil {
+			return nil, err
+		}
+		entries := req.Msg.GetAgents()
+		rows := make([]*repository.AIAgentDefinitionRow, 0, len(entries))
+		for _, a := range entries {
+			rows = append(rows, &repository.AIAgentDefinitionRow{
+				UserID:        uid,
+				AgentKey:      a.GetAgentKey(),
+				Type:          a.GetType(),
+				Name:          a.GetName(),
+				Identity:      a.GetIdentity(),
+				InputHint:     a.GetInputHint(),
+				Enabled:       a.GetEnabled(),
+				Position:      a.GetPosition(),
+				ProviderID:    a.GetProviderId(),
+				ModelOverride: a.GetModelOverride(),
+			})
+		}
+		if err := s.agentDefRepo.ReplaceByUser(ctx, uid, rows); err != nil {
+			s.log.Error("BatchSetAgents: replace failed", zap.Error(err))
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		return connect.NewResponse(&antv1.BatchSetAgentsResponse{Success: true}), nil
+	}
 
-// BatchSetAgents handles POST /api/ai/agents — persists agent definitions.
-func (s *AIServer) BatchSetAgents(w http.ResponseWriter, r *http.Request) {
-	uid, err := userIDFromBearer(r)
-	if err != nil {
-		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
-		return
+	// ListAgentDefs returns saved agent definitions via ConnectRPC (proto binary).
+	func (s *AIServer) ListAgentDefs(ctx context.Context, req *connect.Request[antv1.ListAgentDefsRequest]) (*connect.Response[antv1.ListAgentDefsResponse], error) {
+		uid, err := userIDFromCtx(ctx)
+		if err != nil {
+			return nil, err
+		}
+		rows, err := s.agentDefRepo.ListByUser(ctx, uid)
+		if err != nil {
+			s.log.Error("ListAgentDefs: list failed", zap.Error(err))
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		agents := make([]*antv1.AIAgentDefinition, 0, len(rows))
+		for _, r := range rows {
+			agents = append(agents, &antv1.AIAgentDefinition{
+				AgentKey:      r.AgentKey,
+				Type:          r.Type,
+				Name:          r.Name,
+				Identity:      r.Identity,
+				InputHint:     r.InputHint,
+				Enabled:       r.Enabled,
+				Position:      r.Position,
+				ProviderId:    r.ProviderID,
+				ModelOverride: r.ModelOverride,
+			})
+		}
+		return connect.NewResponse(&antv1.ListAgentDefsResponse{Agents: agents}), nil
 	}
-	var req batchSetAgentsRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, `{"error":"invalid json"}`, http.StatusBadRequest)
-		return
-	}
-	rows := make([]*repository.AIAgentDefinitionRow, 0, len(req.Agents))
-	for _, a := range req.Agents {
-		rows = append(rows, &repository.AIAgentDefinitionRow{
-			UserID:        uid,
-			AgentKey:      a.AgentKey,
-			Type:          a.Type,
-			Name:          a.Name,
-			Identity:      a.Identity,
-			InputHint:     a.InputHint,
-			Enabled:       a.Enabled,
-			Position:      a.Position,
-			ProviderID:    a.ProviderID,
-			ModelOverride: a.ModelOverride,
-		})
-	}
-	if err := s.agentDefRepo.ReplaceByUser(r.Context(), uid, rows); err != nil {
-		s.log.Error("BatchSetAgents: replace failed", zap.Error(err))
-		http.Error(w, `{"error":"internal error"}`, http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"success":true}`))
-}
-
-// ListAgentDefs returns saved agent definitions for the user.
-func (s *AIServer) ListAgentDefs(w http.ResponseWriter, r *http.Request) {
-	uid, err := userIDFromBearer(r)
-	if err != nil {
-		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
-		return
-	}
-	rows, err := s.agentDefRepo.ListByUser(r.Context(), uid)
-	if err != nil {
-		s.log.Error("ListAgentDefs: list failed", zap.Error(err))
-		http.Error(w, `{"error":"internal error"}`, http.StatusInternalServerError)
-		return
-	}
-	type agentResp struct {
-		AgentKey      string `json:"agentKey"`
-		Type          string `json:"type"`
-		Name          string `json:"name"`
-		Identity      string `json:"identity"`
-		InputHint     string `json:"inputHint"`
-		Enabled       bool   `json:"enabled"`
-		Position      int32  `json:"position"`
-		ProviderID    string `json:"providerId"`
-		ModelOverride string `json:"modelOverride"`
-	}
-	resp := make([]agentResp, 0, len(rows))
-	for _, r := range rows {
-		resp = append(resp, agentResp{
-			AgentKey: r.AgentKey, Type: r.Type, Name: r.Name,
-			Identity: r.Identity, InputHint: r.InputHint,
-			Enabled: r.Enabled, Position: r.Position,
-			ProviderID: r.ProviderID, ModelOverride: r.ModelOverride,
-		})
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
-}
 
 // userIDFromBearer extracts the user ID from an Authorization: Bearer header.
 // Uses the same JWT parsing as the auth interceptor.

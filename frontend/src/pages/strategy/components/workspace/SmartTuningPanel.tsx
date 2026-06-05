@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Radio, Button, Tag, Table, Typography } from 'antd';
 import { ExperimentOutlined, TrophyOutlined } from '@ant-design/icons';
 import type { SweepDimension } from '../../hooks/useBacktestParams';
@@ -54,10 +54,13 @@ export default function SmartTuningPanel({
     }
   }, [experimentId]);
 
-  // Auto-poll every 5s when running
-  if (pollingRunning) {
-    setTimeout(handlePoll, 5000);
-  }
+  // Auto-poll every 5s when running (useEffect with cleanup)
+  const pollRef = useRef<ReturnType<typeof setInterval>>();
+  useEffect(() => {
+    if (!pollingRunning || !experimentId) return;
+    pollRef.current = setInterval(handlePoll, 5000);
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, [pollingRunning, experimentId, handlePoll]);
 
   const gradeColors: Record<string, string> = { A: 'green', B: 'blue', C: 'gold', D: 'orange', E: 'red' };
 
@@ -139,7 +142,7 @@ export default function SmartTuningPanel({
                 render: (p: unknown) => {
                   if (!p) return '-';
                   try {
-                    const obj = typeof p === 'string' ? JSON.parse(p) : p;
+                    const obj = p;
                     return Object.entries(obj as Record<string, unknown>).map(
                       ([k, v]) => `${k}=${v}`).join(', ');
                   } catch { return String(p); }

@@ -2,10 +2,10 @@ package strategy
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 
 	"connectrpc.com/connect"
 
@@ -27,14 +27,27 @@ func NewBacktestTradesServer(backtestRepo *repository.BacktestRunRepository, log
 	return &BacktestTradesServer{backtestRepo: backtestRepo, log: log}
 }
 
-// backtestMetricsJSON mirrors the Python Metrics dataclass fields we care about.
-type backtestMetricsJSON struct {
-	TotalTrades   int     `json:"total_trades"`
-	WinningTrades int     `json:"winning_trades"`
-	LosingTrades  int     `json:"losing_trades"`
-	TotalReturn   float64 `json:"total_return"`
-	ProfitFactor  float64 `json:"profit_factor"`
-	NetPnL        float64 `json:"net_pnl"`
+// extractTradeSummary reads trade counts from proto binary ExecuteBacktestResponse.
+func extractTradeSummary(protoResp []byte) *antv1.BacktestTradeSummary {
+	if len(protoResp) == 0 {
+		return &antv1.BacktestTradeSummary{}
+	}
+	var resp antv1.ExecuteBacktestResponse
+	if err := proto.Unmarshal(protoResp, &resp); err != nil {
+		return &antv1.BacktestTradeSummary{}
+	}
+	m := resp.GetMetrics()
+	trades := resp.GetTrades()
+	var netPnl float64
+	for _, t := range trades {
+		netPnl += t.GetPnl()
+	}
+	return &antv1.BacktestTradeSummary{
+		Count:  m.GetTotalTrades(),
+		Wins:   m.GetWinningTrades(),
+		Losses: m.GetLosingTrades(),
+		NetPnl: netPnl,
+	}
 }
 
 func (s *BacktestTradesServer) ListBacktestRunTrades(ctx context.Context, req *connect.Request[antv1.ListBacktestRunTradesRequest]) (*connect.Response[antv1.ListBacktestRunTradesResponse], error) {
@@ -56,16 +69,7 @@ func (s *BacktestTradesServer) ListBacktestRunTrades(ctx context.Context, req *c
 		}), nil
 	}
 
-	summary := &antv1.BacktestTradeSummary{}
-	if len(run.Metrics) > 0 {
-		var m backtestMetricsJSON
-		if err := json.Unmarshal(run.Metrics, &m); err == nil {
-			summary.Count = int32(m.TotalTrades)
-			summary.Wins = int32(m.WinningTrades)
-			summary.Losses = int32(m.LosingTrades)
-			summary.NetPnl = m.NetPnL
-		}
-	}
+	summary := extractTradeSummary(run.ProtoResponse)
 
 	// Read per-trade data from backtest_run_trades table (if any).
 	dbTrades, err := s.backtestRepo.ListTradesByRunID(ctx, runID)

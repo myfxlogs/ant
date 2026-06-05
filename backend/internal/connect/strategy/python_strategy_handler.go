@@ -319,9 +319,90 @@ func (s *PythonStrategyServer) DeleteBacktestRun(ctx context.Context, req *conne
 func (s *PythonStrategyServer) GetTemplates(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[antv1.GetPythonTemplatesResponse], error) {
 	return connect.NewResponse(&antv1.GetPythonTemplatesResponse{
 		Templates: []*antv1.PythonTemplate{
-			{Name: "MA Crossover", Description: "SMA crossover generates buy/sell signals", Code: "def run(bar, portfolio):\n    if bar.close > bar.sma(20):\n        return signal('BUY', 0.1)\n"},
-			{Name: "RSI Mean Reversion", Description: "RSI overbought/oversold reversal signals", Code: "def run(bar, portfolio):\n    rsi = bar.rsi(14)\n    if rsi < 30:\n        return signal('BUY', 0.1)\n    if rsi > 70:\n        return signal('SELL', 0.1)\n"},
-			{Name: "Bollinger Breakout", Description: "Upper/lower band breakout signals", Code: "def run(bar, portfolio):\n    upper, lower = bar.bollinger(20, 2)\n    if bar.close > upper:\n        return signal('BUY', 0.1)\n    if bar.close < lower:\n        return signal('SELL', 0.1)\n"},
+			{Name: "MA Crossover", Description: "双均线交叉策略", Code: `# @param fast_period 10 range=5:50:5
+# @param slow_period 30 range=10:100:10
+def run(context):
+    p = context.get('params', {})
+    fast_period = int(p.get('fast_period', 10))
+    slow_period = int(p.get('slow_period', 30))
+    prices = context['close']
+    if len(prices) < slow_period + 1:
+        return {'signal': 'hold', 'volume': 0}
+    fast_ma = sum(prices[-fast_period:]) / fast_period
+    slow_ma = sum(prices[-slow_period:]) / slow_period
+    pos = context.get('position')
+    if fast_ma > slow_ma:
+        if pos and pos.get('side') == 'buy':
+            return {'signal': 'hold', 'volume': 0}
+        if pos:
+            return {'signal': 'close', 'volume': 0}
+        return {'signal': 'buy', 'volume': 1.0}
+    elif fast_ma < slow_ma:
+        if pos and pos.get('side') == 'sell':
+            return {'signal': 'hold', 'volume': 0}
+        if pos:
+            return {'signal': 'close', 'volume': 0}
+        return {'signal': 'sell', 'volume': 1.0}
+    return {'signal': 'hold', 'volume': 0}`},
+		{Name: "RSI Mean Reversion", Description: "RSI超买超卖反转策略", Code: `# @param rsi_period 14 range=7:28:7
+# @param oversold 30 range=20:40:5
+# @param overbought 70 range=60:80:5
+def run(context):
+    p = context.get('params', {})
+    rsi_period = int(p.get('rsi_period', 14))
+    oversold = int(p.get('oversold', 30))
+    overbought = int(p.get('overbought', 70))
+    prices = context['close']
+    if len(prices) < rsi_period + 1:
+        return {'signal': 'hold', 'volume': 0}
+    deltas = [prices[i] - prices[i-1] for i in range(1, len(prices))]
+    gains = [d if d > 0 else 0 for d in deltas[-rsi_period:]]
+    losses = [-d if d < 0 else 0 for d in deltas[-rsi_period:]]
+    avg_gain = sum(gains) / rsi_period if gains else 0
+    avg_loss = sum(losses) / rsi_period if losses else 1e-10
+    rs = avg_gain / avg_loss
+    rsi = 100 - (100 / (1 + rs))
+    pos = context.get('position')
+    if rsi < oversold:
+        if pos and pos.get('side') == 'sell':
+            return {'signal': 'close', 'volume': 0}
+        if not pos:
+            return {'signal': 'buy', 'volume': 1.0}
+    elif rsi > overbought:
+        if pos and pos.get('side') == 'buy':
+            return {'signal': 'close', 'volume': 0}
+        if not pos:
+            return {'signal': 'sell', 'volume': 1.0}
+    return {'signal': 'hold', 'volume': 0}`},
+		{Name: "Bollinger Breakout", Description: "布林带突破策略", Code: `# @param bb_period 20 range=10:50:10
+# @param bb_std 2.0 range=1.0:4.0:0.5
+def run(context):
+    p = context.get('params', {})
+    bb_period = int(p.get('bb_period', 20))
+    bb_std = float(p.get('bb_std', 2.0))
+    import math
+    prices = context['close']
+    if len(prices) < bb_period + 1:
+        return {'signal': 'hold', 'volume': 0}
+    window = prices[-bb_period:]
+    ma = sum(window) / bb_period
+    variance = sum((x - ma) ** 2 for x in window) / bb_period
+    std = math.sqrt(variance)
+    upper = ma + bb_std * std
+    lower = ma - bb_std * std
+    last_price = prices[-1]
+    pos = context.get('position')
+    if last_price > upper:
+        if pos and pos.get('side') == 'sell':
+            return {'signal': 'close', 'volume': 0}
+        if not pos:
+            return {'signal': 'buy', 'volume': 1.0}
+    elif last_price < lower:
+        if pos and pos.get('side') == 'buy':
+            return {'signal': 'close', 'volume': 0}
+        if not pos:
+            return {'signal': 'sell', 'volume': 1.0}
+    return {'signal': 'hold', 'volume': 0}`},
 		},
 	}), nil
 }

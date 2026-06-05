@@ -2,37 +2,52 @@ package repository
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"google.golang.org/protobuf/proto"
+
+	antv1 "anttrader/gen/proto/ant/v1"
 )
 
 // AIStrategyTemplate is a system-seeded strategy template for AI generation.
 type AIStrategyTemplate struct {
-	ID             uuid.UUID       `db:"id"`
-	Category       string          `db:"category"`
-	Name           string          `db:"name"`
-	DescriptionZh  string          `db:"description_zh"`
-	PythonSkeleton string          `db:"python_skeleton"`
-	ParameterSlots json.RawMessage `db:"parameter_slots"`
-	RiskLevel      string          `db:"risk_level"`
-	IsActive       bool            `db:"is_active"`
-	CreatedAt      time.Time       `db:"created_at"`
-	UpdatedAt      time.Time       `db:"updated_at"`
+	ID             uuid.UUID `db:"id"`
+	Category       string    `db:"category"`
+	Name           string    `db:"name"`
+	DescriptionZh  string    `db:"description_zh"`
+	PythonSkeleton string    `db:"python_skeleton"`
+	ParameterSlots []byte    `db:"parameter_slots"` // proto binary TemplateParameterSlots
+	RiskLevel      string    `db:"risk_level"`
+	IsActive       bool      `db:"is_active"`
+	CreatedAt      time.Time `db:"created_at"`
+	UpdatedAt      time.Time `db:"updated_at"`
 }
 
-// ParameterSlot describes a tunable parameter in a strategy template.
-type ParameterSlot struct {
-	Name          string  `json:"name"`
-	Type          string  `json:"type"`
-	Default       float64 `json:"default"`
-	Min           float64 `json:"min"`
-	Max           float64 `json:"max"`
-	Step          float64 `json:"step"`
-	DescriptionZh string  `json:"description_zh"`
+// ParameterSlotsString returns a human-readable description of the parameter slots
+// for AI prompt injection (legacy callers expecting string format).
+func (t *AIStrategyTemplate) ParameterSlotsString() string {
+	if len(t.ParameterSlots) == 0 {
+		return ""
+	}
+	var slots antv1.TemplateParameterSlots
+	if err := proto.Unmarshal(t.ParameterSlots, &slots); err != nil {
+		return ""
+	}
+	var s string
+	for _, p := range slots.GetSlots() {
+		s += fmt.Sprintf("%s(%s): default=%.1f range=%.1f:%.1f:%.1f %s\n",
+			p.GetName(), p.GetType(), p.GetDefaultValue(),
+			p.GetMin(), p.GetMax(), p.GetStep(), p.GetDescription())
+	}
+	return s
+}
+
+// ParameterSlotMarshal serializes a TemplateParameterSlots proto to bytes.
+func ParameterSlotMarshal(slots *antv1.TemplateParameterSlots) ([]byte, error) {
+	return proto.Marshal(slots)
 }
 
 // AIStrategyTemplatesRepository provides read access to platform strategy templates.

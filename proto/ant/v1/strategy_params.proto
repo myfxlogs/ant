@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+// StrategyParams holds parameter key→value overrides for backtest execution.
+// Replaces the JSONB parameter_overrides column and strategy_params_json string.
+message StrategyParams {
+  map<string, double> values = 1;
+}
+
+// ParameterDef describes a single tunable parameter in the search space.
+message ParameterDef {
+  string name = 1;
+  string type = 2; // "int", "float", or "choice"
+  double default_value = 3;
+  double min = 4;
+  double max = 5;
+  double step = 6;
+  repeated string choices = 7;
+}
+
+// ParameterSpace is the search space definition (replaces parameter_space JSONB).
+message ParameterSpace {
+  repeated ParameterDef params = 1;
+}
+
+// CandidateParameters holds the parameter values for a single experiment candidate.
+message CandidateParameters {
+  map<string, double> values = 1;
+}
+
+// ScoreComponents holds the breakdown of a candidate's score (replaces score_components JSONB).
+message ScoreComponents {
+  map<string, double> components = 1;
+}
+
+// TemplateParameterSlot describes a tunable parameter in a strategy template.
+message TemplateParameterSlot {
+  string name = 1;
+  string type = 2;   // "int", "float", "choice"
+  string label = 3;   // display name
+  double default_value = 4;
+  double min = 5;
+  double max = 6;
+  double step = 7;
+  repeated string choices = 8;
+  string description = 9;  // Chinese description
+}
+
+// TemplateParameterSlots is a list of parameter slots (replaces JSONB parameter_slots).
+message TemplateParameterSlots {
+  repeated TemplateParameterSlot slots = 1;
+}

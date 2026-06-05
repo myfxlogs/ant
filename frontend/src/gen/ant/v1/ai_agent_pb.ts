@@ -2,15 +2,15 @@
 // @generated from file ai_agent.proto (package ant.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file ai_agent.proto.
  */
 export const file_ai_agent: GenFile = /*@__PURE__*/
-  fileDesc("Cg5haV9hZ2VudC5wcm90bxIGYW50LnYxIsQBChFBSUFnZW50RGVmaW5pdGlvbhIKCgJpZBgBIAEoCRIRCglhZ2VudF9rZXkYAiABKAkSDAoEdHlwZRgDIAEoCRIMCgRuYW1lGAQgASgJEhAKCGlkZW50aXR5GAUgASgJEhIKCmlucHV0X2hpbnQYBiABKAkSDwoHZW5hYmxlZBgHIAEoCBIQCghwb3NpdGlvbhgIIAEoBRITCgtwcm92aWRlcl9pZBgJIAEoCRIWCg5tb2RlbF9vdmVycmlkZRgKIAEoCSITChFMaXN0QWdlbnRzUmVxdWVzdCI/ChJMaXN0QWdlbnRzUmVzcG9uc2USKQoGYWdlbnRzGAEgAygLMhkuYW50LnYxLkFJQWdlbnREZWZpbml0aW9uQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
+  fileDesc("Cg5haV9hZ2VudC5wcm90bxIGYW50LnYxIsQBChFBSUFnZW50RGVmaW5pdGlvbhIKCgJpZBgBIAEoCRIRCglhZ2VudF9rZXkYAiABKAkSDAoEdHlwZRgDIAEoCRIMCgRuYW1lGAQgASgJEhAKCGlkZW50aXR5GAUgASgJEhIKCmlucHV0X2hpbnQYBiABKAkSDwoHZW5hYmxlZBgHIAEoCBIQCghwb3NpdGlvbhgIIAEoBRITCgtwcm92aWRlcl9pZBgJIAEoCRIWCg5tb2RlbF9vdmVycmlkZRgKIAEoCSK0AQoNQWdlbnREZWZFbnRyeRIRCglhZ2VudF9rZXkYASABKAkSDAoEdHlwZRgCIAEoCRIMCgRuYW1lGAMgASgJEhAKCGlkZW50aXR5GAQgASgJEhIKCmlucHV0X2hpbnQYBSABKAkSDwoHZW5hYmxlZBgGIAEoCBIQCghwb3NpdGlvbhgHIAEoBRITCgtwcm92aWRlcl9pZBgIIAEoCRIWCg5tb2RlbF9vdmVycmlkZRgJIAEoCSI+ChVCYXRjaFNldEFnZW50c1JlcXVlc3QSJQoGYWdlbnRzGAEgAygLMhUuYW50LnYxLkFnZW50RGVmRW50cnkiKQoWQmF0Y2hTZXRBZ2VudHNSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIhYKFExpc3RBZ2VudERlZnNSZXF1ZXN0IkIKFUxpc3RBZ2VudERlZnNSZXNwb25zZRIpCgZhZ2VudHMYASADKAsyGS5hbnQudjEuQUlBZ2VudERlZmluaXRpb24iEwoRTGlzdEFnZW50c1JlcXVlc3QiPwoSTGlzdEFnZW50c1Jlc3BvbnNlEikKBmFnZW50cxgBIAMoCzIZLmFudC52MS5BSUFnZW50RGVmaW5pdGlvbjK3AQoWQWdlbnREZWZpbml0aW9uU2VydmljZRJPCg5CYXRjaFNldEFnZW50cxIdLmFudC52MS5CYXRjaFNldEFnZW50c1JlcXVlc3QaHi5hbnQudjEuQmF0Y2hTZXRBZ2VudHNSZXNwb25zZRJMCg1MaXN0QWdlbnREZWZzEhwuYW50LnYxLkxpc3RBZ2VudERlZnNSZXF1ZXN0Gh0uYW50LnYxLkxpc3RBZ2VudERlZnNSZXNwb25zZUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z");
 
 /**
  * @generated from message ant.v1.AIAgentDefinition
@@ -75,6 +75,129 @@ export const AIAgentDefinitionSchema: GenMessage<AIAgentDefinition> = /*@__PURE_
   messageDesc(file_ai_agent, 0);
 
 /**
+ * @generated from message ant.v1.AgentDefEntry
+ */
+export type AgentDefEntry = Message<"ant.v1.AgentDefEntry"> & {
+  /**
+   * @generated from field: string agent_key = 1;
+   */
+  agentKey: string;
+
+  /**
+   * @generated from field: string type = 2;
+   */
+  type: string;
+
+  /**
+   * @generated from field: string name = 3;
+   */
+  name: string;
+
+  /**
+   * @generated from field: string identity = 4;
+   */
+  identity: string;
+
+  /**
+   * @generated from field: string input_hint = 5;
+   */
+  inputHint: string;
+
+  /**
+   * @generated from field: bool enabled = 6;
+   */
+  enabled: boolean;
+
+  /**
+   * @generated from field: int32 position = 7;
+   */
+  position: number;
+
+  /**
+   * @generated from field: string provider_id = 8;
+   */
+  providerId: string;
+
+  /**
+   * @generated from field: string model_override = 9;
+   */
+  modelOverride: string;
+};
+
+/**
+ * Describes the message ant.v1.AgentDefEntry.
+ * Use `create(AgentDefEntrySchema)` to create a new message.
+ */
+export const AgentDefEntrySchema: GenMessage<AgentDefEntry> = /*@__PURE__*/
+  messageDesc(file_ai_agent, 1);
+
+/**
+ * @generated from message ant.v1.BatchSetAgentsRequest
+ */
+export type BatchSetAgentsRequest = Message<"ant.v1.BatchSetAgentsRequest"> & {
+  /**
+   * @generated from field: repeated ant.v1.AgentDefEntry agents = 1;
+   */
+  agents: AgentDefEntry[];
+};
+
+/**
+ * Describes the message ant.v1.BatchSetAgentsRequest.
+ * Use `create(BatchSetAgentsRequestSchema)` to create a new message.
+ */
+export const BatchSetAgentsRequestSchema: GenMessage<BatchSetAgentsRequest> = /*@__PURE__*/
+  messageDesc(file_ai_agent, 2);
+
+/**
+ * @generated from message ant.v1.BatchSetAgentsResponse
+ */
+export type BatchSetAgentsResponse = Message<"ant.v1.BatchSetAgentsResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+};
+
+/**
+ * Describes the message ant.v1.BatchSetAgentsResponse.
+ * Use `create(BatchSetAgentsResponseSchema)` to create a new message.
+ */
+export const BatchSetAgentsResponseSchema: GenMessage<BatchSetAgentsResponse> = /*@__PURE__*/
+  messageDesc(file_ai_agent, 3);
+
+/**
+ * @generated from message ant.v1.ListAgentDefsRequest
+ */
+export type ListAgentDefsRequest = Message<"ant.v1.ListAgentDefsRequest"> & {
+};
+
+/**
+ * Describes the message ant.v1.ListAgentDefsRequest.
+ * Use `create(ListAgentDefsRequestSchema)` to create a new message.
+ */
+export const ListAgentDefsRequestSchema: GenMessage<ListAgentDefsRequest> = /*@__PURE__*/
+  messageDesc(file_ai_agent, 4);
+
+/**
+ * @generated from message ant.v1.ListAgentDefsResponse
+ */
+export type ListAgentDefsResponse = Message<"ant.v1.ListAgentDefsResponse"> & {
+  /**
+   * @generated from field: repeated ant.v1.AIAgentDefinition agents = 1;
+   */
+  agents: AIAgentDefinition[];
+};
+
+/**
+ * Describes the message ant.v1.ListAgentDefsResponse.
+ * Use `create(ListAgentDefsResponseSchema)` to create a new message.
+ */
+export const ListAgentDefsResponseSchema: GenMessage<ListAgentDefsResponse> = /*@__PURE__*/
+  messageDesc(file_ai_agent, 5);
+
+/**
+ * Compatibility aliases for ai.proto ListAgents RPC.
+ *
  * @generated from message ant.v1.ListAgentsRequest
  */
 export type ListAgentsRequest = Message<"ant.v1.ListAgentsRequest"> & {
@@ -85,7 +208,7 @@ export type ListAgentsRequest = Message<"ant.v1.ListAgentsRequest"> & {
  * Use `create(ListAgentsRequestSchema)` to create a new message.
  */
 export const ListAgentsRequestSchema: GenMessage<ListAgentsRequest> = /*@__PURE__*/
-  messageDesc(file_ai_agent, 1);
+  messageDesc(file_ai_agent, 6);
 
 /**
  * @generated from message ant.v1.ListAgentsResponse
@@ -102,5 +225,30 @@ export type ListAgentsResponse = Message<"ant.v1.ListAgentsResponse"> & {
  * Use `create(ListAgentsResponseSchema)` to create a new message.
  */
 export const ListAgentsResponseSchema: GenMessage<ListAgentsResponse> = /*@__PURE__*/
-  messageDesc(file_ai_agent, 2);
+  messageDesc(file_ai_agent, 7);
+
+/**
+ * AgentDefinitionService manages per-user AI agent definitions.
+ *
+ * @generated from service ant.v1.AgentDefinitionService
+ */
+export const AgentDefinitionService: GenService<{
+  /**
+   * @generated from rpc ant.v1.AgentDefinitionService.BatchSetAgents
+   */
+  batchSetAgents: {
+    methodKind: "unary";
+    input: typeof BatchSetAgentsRequestSchema;
+    output: typeof BatchSetAgentsResponseSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.AgentDefinitionService.ListAgentDefs
+   */
+  listAgentDefs: {
+    methodKind: "unary";
+    input: typeof ListAgentDefsRequestSchema;
+    output: typeof ListAgentDefsResponseSchema;
+  },
+}> = /*@__PURE__*/
+  serviceDesc(file_ai_agent, 0);
 

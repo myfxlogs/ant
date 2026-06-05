@@ -119,8 +119,7 @@ func registerHandlers(
 	aiServer.SetAgentDefRepo(agentDefRepo)
 	mux.Handle(antv1c.NewAIServiceHandler(aiServer, connectrpc.WithInterceptors(authInterceptor)))
 	// Agent definition CRUD (no proto RPC yet — raw HTTP).
-	mux.HandleFunc("POST /api/ai/agents", aiServer.BatchSetAgents)
-	mux.HandleFunc("GET /api/ai/agents", aiServer.ListAgentDefs)
+		mux.Handle(antv1c.NewAgentDefinitionServiceHandler(aiServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	streamServer := system.NewStreamServer(mthubSvc, platformSvc, log)
 	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, connectrpc.WithInterceptors(authInterceptor)))

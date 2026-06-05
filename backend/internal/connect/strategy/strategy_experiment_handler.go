@@ -2,7 +2,7 @@ package strategy
 
 import (
 	"context"
-	"encoding/json"
+	"google.golang.org/protobuf/proto"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -20,16 +20,51 @@ import (
 // jsonbToStruct converts JSONB bytes to a proto Struct.
 // structpb.NewStruct requires map[string]any — this is the canonical
 // conversion point, encapsulated to contain the dynamic type boundary.
-func jsonbToStruct(raw []byte) *structpb.Struct {
+// paramsProtoToStruct converts proto binary CandidateParameters/StrategyParams to proto Struct.
+func paramsProtoToStruct(raw []byte) *structpb.Struct {
 	if len(raw) == 0 {
 		return nil
 	}
-	var m map[string]any
-	if err := json.Unmarshal(raw, &m); err != nil {
+	var sp antv1.StrategyParams
+	if err := proto.Unmarshal(raw, &sp); err != nil {
 		return nil
+	}
+	m := make(map[string]any, len(sp.GetValues()))
+	for k, v := range sp.GetValues() {
+		m[k] = v
 	}
 	s, _ := structpb.NewStruct(m)
 	return s
+}
+
+// scoreProtoToStruct converts proto binary ScoreComponents to proto Struct.
+func scoreProtoToStruct(raw []byte) *structpb.Struct {
+	if len(raw) == 0 {
+		return nil
+	}
+	var sc antv1.ScoreComponents
+	if err := proto.Unmarshal(raw, &sc); err != nil {
+		return nil
+	}
+	m := make(map[string]any, len(sc.GetComponents()))
+	for k, v := range sc.GetComponents() {
+		m[k] = v
+	}
+	s, _ := structpb.NewStruct(m)
+	return s
+}
+
+// spaceProtoToStruct converts proto binary ParameterSpace to proto Struct.
+// spaceProtoToStruct reads proto binary structpb.Struct (stored as BYTEA).
+func spaceProtoToStruct(raw []byte) *structpb.Struct {
+	if len(raw) == 0 {
+		return nil
+	}
+	var ps structpb.Struct
+	if err := proto.Unmarshal(raw, &ps); err != nil {
+		return nil
+	}
+	return &ps
 }
 
 // StrategyExperimentServer implements ant.v1.StrategyExperimentServiceHandler.
@@ -72,7 +107,7 @@ func expToProto(e *repository.StrategyExperiment) *antv1.StrategyExperiment {
 	if e.FinishedAt != nil {
 		p.FinishedAt = timestamppb.New(*e.FinishedAt)
 	}
-	p.ParameterSpace = jsonbToStruct(e.ParameterSpace)
+	p.ParameterSpace = spaceProtoToStruct(e.ParameterSpace)
 	return p
 }
 
@@ -91,8 +126,8 @@ func candidateToProto(c *repository.StrategyExperimentCandidate) *antv1.Strategy
 	if c.BacktestRunID != nil {
 		p.BacktestRunId = c.BacktestRunID.String()
 	}
-	p.Parameters = jsonbToStruct(c.Parameters)
-	p.ScoreComponents = jsonbToStruct(c.ScoreComponents)
+	p.Parameters = paramsProtoToStruct(c.Parameters)
+	p.ScoreComponents = scoreProtoToStruct(c.ScoreComponents)
 	return p
 }
 
@@ -113,7 +148,7 @@ func (s *StrategyExperimentServer) SubmitStrategyExperiment(ctx context.Context,
 		exp.BaseTemplateID = &tid
 	}
 	if req.Msg.ParameterSpace != nil {
-		b, _ := json.Marshal(req.Msg.ParameterSpace.AsMap())
+		b, _ := proto.Marshal(req.Msg.ParameterSpace)
 		exp.ParameterSpace = b
 	}
 	if err := s.repo.Create(ctx, exp); err != nil {

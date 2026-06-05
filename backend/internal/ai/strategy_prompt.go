@@ -49,7 +49,7 @@ func (b *StrategyPromptBuilder) BuildSystemPrompt(p *PromptParams) string {
 	sb.WriteString("    # context 是字典，包含以下键：\n")
 	sb.WriteString("    #   context['open']/['high']/['low']/['close']: 价格列表\n")
 	sb.WriteString("    #   context['volume']: 成交量列表\n")
-	sb.WriteString("    #   context['position']: 当前持仓 (1=long,-1=short,0=none)\n")
+	sb.WriteString("    #   context['position']: 当前持仓 dict {'side':'buy'/'sell',...} 或 None\n")
 	sb.WriteString("    #   context['balance']: 当前余额\n\n")
 	sb.WriteString("    # 返回信号字典：\n")
 	sb.WriteString("    return {\n")
@@ -101,7 +101,7 @@ func (b *StrategyPromptBuilder) BuildUserPrompt(p *PromptParams) string {
 		sb.WriteString(fmt.Sprintf("【策略模板参考 (%s)】\n", p.Template.Name))
 		sb.WriteString(fmt.Sprintf("类别: %s\n", p.Template.Category))
 		sb.WriteString(fmt.Sprintf("描述: %s\n", p.Template.DescriptionZh))
-		sb.WriteString(fmt.Sprintf("参数说明: %s\n\n", string(p.Template.ParameterSlots)))
+		sb.WriteString(fmt.Sprintf("参数说明: %s\n\n", p.Template.ParameterSlotsString()))
 	}
 
 	if p.Symbol != "" || p.Timeframe != "" {

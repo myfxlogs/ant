@@ -4,6 +4,7 @@
 package ai
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -117,6 +118,6 @@ func formatValue(v interface{}) string {
 	case string:
 		return val
 	default:
-		return strconv.FormatFloat(val.(float64), 'f', -1, 64)
+		return fmt.Sprintf("%%v", v)
 	}
 }

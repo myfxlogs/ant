@@ -2,23 +2,24 @@ package strategy
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 
+	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/ai"
 	"anttrader/internal/repository"
 )
 
 // ExperimentWorker polls for PENDING experiments and processes them.
 type ExperimentWorker struct {
-	repo        *repository.StrategyExperimentRepository
+	repo         *repository.StrategyExperimentRepository
 	backtestRepo *repository.BacktestRunRepository
-	log         *zap.Logger
-	stopCh      chan struct{}
+	log          *zap.Logger
+	stopCh       chan struct{}
 }
 
 func NewExperimentWorker(
@@ -40,8 +41,10 @@ func (w *ExperimentWorker) Start(ctx context.Context) {
 		defer ticker.Stop()
 		for {
 			select {
-			case <-w.stopCh: return
-			case <-ctx.Done(): return
+			case <-w.stopCh:
+				return
+			case <-ctx.Done():
+				return
 			case <-ticker.C:
 				if err := w.processOne(ctx); err != nil {
 					w.log.Warn("experiment worker error", zap.Error(err))
@@ -56,8 +59,12 @@ func (w *ExperimentWorker) Stop() { close(w.stopCh) }
 // processOne claims and processes a single PENDING experiment.
 func (w *ExperimentWorker) processOne(ctx context.Context) error {
 	exp, err := w.repo.ClaimPendingExperiment(ctx)
-	if err != nil { return err }
-	if exp == nil { return nil }
+	if err != nil {
+		return err
+	}
+	if exp == nil {
+		return nil
+	}
 
 	w.log.Info("Processing experiment", zap.String("id", exp.ID.String()),
 		zap.String("method", exp.SearchMethod), zap.Int("maxCandidates", exp.MaxCandidates))
@@ -85,16 +92,16 @@ func (w *ExperimentWorker) processOne(ctx context.Context) error {
 
 	// Create candidate records with scores
 	for i, c := range candidates {
-		paramJSON, _ := json.Marshal(c.Overrides)
-		scoreComponents, _ := json.Marshal(c.ScoreComponents)
+		paramProto, _ := proto.Marshal(paramsToProto(c.Overrides))
+		scoreProto, _ := proto.Marshal(scoreComponentsToProto(c.ScoreComponents))
 		record := &repository.StrategyExperimentCandidate{
 			ID:              uuid.New(),
 			ExperimentID:    exp.ID,
-			Parameters:      paramJSON,
+			Parameters:      paramProto,
 			Rank:            i + 1,
 			Score:           c.Score,
 			Grade:           c.Grade,
-			ScoreComponents: scoreComponents,
+			ScoreComponents: scoreProto,
 			Summary:         fmt.Sprintf("%s score=%.1f grade=%s", c.Summary, c.Score, c.Grade),
 		}
 		if err := w.repo.CreateCandidate(ctx, record); err != nil {
@@ -176,20 +183,20 @@ func (w *ExperimentWorker) backtestAndScore(
 ) (candidateResult, error) {
 	modifiedCode := code
 	run := &repository.BacktestRun{
-		ID:               uuid.New(),
-		UserID:           exp.UserID,
-		AccountID:        uuid.Nil,
-		Symbol:           "XAUUSDm",
-		Timeframe:        "1h",
-		FromTs:           timePtr(time.Now().AddDate(0, -1, 0)),
-		ToTs:             timePtr(time.Now()),
-		Mode:             "KLINE_RANGE",
-		Status:           "PENDING",
-		StrategyCode:     &modifiedCode,
-		InitialCapital:   f64Ptr(10000),
-		StrategyCodeHash: "",
-		Error:            "",
-		ExtraSymbols:     []string{},
+		ID:                 uuid.New(),
+		UserID:             exp.UserID,
+		AccountID:          uuid.Nil,
+		Symbol:             "XAUUSDm",
+		Timeframe:          "1h",
+		FromTs:             timePtr(time.Now().AddDate(0, -1, 0)),
+		ToTs:               timePtr(time.Now()),
+		Mode:               "KLINE_RANGE",
+		Status:             "PENDING",
+		StrategyCode:       &modifiedCode,
+		InitialCapital:     f64Ptr(10000),
+		StrategyCodeHash:   "",
+		Error:              "",
+		ExtraSymbols:       []string{},
 		ParameterOverrides: marshalOverrides(overrides),
 	}
 
@@ -215,34 +222,103 @@ func (w *ExperimentWorker) backtestAndScore(
 	return candidateResult{}, fmt.Errorf("backtest %s timed out", runID)
 }
 
+// scoreFromBacktest extracts metrics from proto binary ExecuteBacktestResponse.
 func (w *ExperimentWorker) scoreFromBacktest(bt *repository.BacktestRun, overrides map[string]interface{}) candidateResult {
-	metrics := parseBacktestMetrics(bt.Metrics)
+	btMetrics := extractBacktestMetrics(bt.ProtoResponse)
 	regime := ai.RegimeTransition
-	scored := ai.Score(metrics, regime)
+	scored := ai.Score(btMetrics, regime)
 
 	summary := "param search"
-	if scored.Trades < 5 { summary = fmt.Sprintf("only %d trades", scored.Trades) }
+	if scored.Trades < 5 {
+		summary = fmt.Sprintf("only %d trades", scored.Trades)
+	}
 
 	return candidateResult{
-		Overrides: overrides, Score: scored.Score, Grade: scored.Grade,
-		ScoreComponents: scored.Components, Summary: summary,
+		Overrides:       overrides,
+		Score:           scored.Score,
+		Grade:           scored.Grade,
+		ScoreComponents: scored.Components,
+		Summary:         summary,
 	}
 }
 
-func parseBacktestMetrics(raw []byte) *ai.BacktestMetrics {
-	if len(raw) == 0 { return &ai.BacktestMetrics{TotalTrades: 0} }
-	var m struct {
-		TotalReturn, AnnualReturn, SharpeRatio, MaxDrawdown, WinRate, ProfitFactor float64
-		TotalTrades int `json:"trade_count"`
+// extractBacktestMetrics parses proto binary ExecuteBacktestResponse → BacktestMetrics.
+func extractBacktestMetrics(protoResp []byte) *ai.BacktestMetrics {
+	if len(protoResp) == 0 {
+		return &ai.BacktestMetrics{TotalTrades: 0}
 	}
-	_ = json.Unmarshal(raw, &m)
+	var resp antv1.ExecuteBacktestResponse
+	if err := proto.Unmarshal(protoResp, &resp); err != nil {
+		return &ai.BacktestMetrics{TotalTrades: 0}
+	}
+	m := resp.GetMetrics(); eq := resp.GetEquityCurve()
 	return &ai.BacktestMetrics{
-		TotalReturn: m.TotalReturn, AnnualReturn: m.AnnualReturn,
-		SharpeRatio: m.SharpeRatio, MaxDrawdown: m.MaxDrawdown,
-		WinRate: m.WinRate, ProfitFactor: m.ProfitFactor, TotalTrades: m.TotalTrades,
+		TotalReturn:  m.GetTotalReturn(),
+		AnnualReturn: m.GetAnnualReturn(),
+		SharpeRatio:  m.GetSharpeRatio(),
+		MaxDrawdown:  m.GetMaxDrawdown(),
+		WinRate:      m.GetWinRate(),
+		ProfitFactor: m.GetProfitFactor(),
+		TotalTrades:  int(m.GetTotalTrades()),
+		Stability:    computeStability(eq),
 	}
 }
 
-func marshalOverrides(overrides map[string]interface{}) []byte { b, _ := json.Marshal(overrides); return b }
+func marshalOverrides(overrides map[string]interface{}) []byte {
+	b, _ := proto.Marshal(paramsToProto(overrides))
+	return b
+}
 
 func timePtr(t time.Time) *time.Time { return &t }
+
+// computeStability returns the R² of linear regression on the equity curve (0–1).
+// A value near 1 means the equity curve is close to a straight line (stable growth).
+func computeStability(equity []float64) float64 {
+	if len(equity) < 2 {
+		return 0
+	}
+	n := float64(len(equity))
+	var sumX, sumY, sumXY, sumX2, sumY2 float64
+	for i, y := range equity {
+		x := float64(i)
+		sumX += x
+		sumY += y
+		sumXY += x * y
+		sumX2 += x * x
+		sumY2 += y * y
+	}
+	denom := (n*sumX2 - sumX*sumX) * (n*sumY2 - sumY*sumY)
+	if denom <= 0 {
+		return 0
+	}
+	r := (n*sumXY - sumX*sumY) / denom // Pearson's r
+	// Clamp to [0,1]; negative r (declining equity) → 0 stability.
+	if r < 0 {
+		return 0
+	}
+	if r > 1 {
+		return 1
+	}
+	return r
+}
+
+// paramsToProto converts a map of parameter overrides to StrategyParams proto.
+func paramsToProto(overrides map[string]interface{}) *antv1.StrategyParams {
+	p := &antv1.StrategyParams{Values: make(map[string]float64)}
+	for k, v := range overrides {
+		switch val := v.(type) {
+		case float64:
+			p.Values[k] = val
+		case int:
+			p.Values[k] = float64(val)
+		case int64:
+			p.Values[k] = float64(val)
+		}
+	}
+	return p
+}
+
+// scoreComponentsToProto converts a score components map to ScoreComponents proto.
+func scoreComponentsToProto(components map[string]float64) *antv1.ScoreComponents {
+	return &antv1.ScoreComponents{Components: components}
+}

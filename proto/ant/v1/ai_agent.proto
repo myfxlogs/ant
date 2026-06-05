@@ -4,6 +4,12 @@ package ant.v1;
 
 option go_package = "anttrader/gen/proto/ant/v1;antv1";
 
+// AgentDefinitionService manages per-user AI agent definitions.
+service AgentDefinitionService {
+  rpc BatchSetAgents(BatchSetAgentsRequest) returns (BatchSetAgentsResponse);
+  rpc ListAgentDefs(ListAgentDefsRequest) returns (ListAgentDefsResponse);
+}
+
 message AIAgentDefinition {
   string id = 1;
   string agent_key = 2;
@@ -17,8 +23,34 @@ message AIAgentDefinition {
   string model_override = 10;
 }
 
-message ListAgentsRequest {}
+message AgentDefEntry {
+  string agent_key = 1;
+  string type = 2;
+  string name = 3;
+  string identity = 4;
+  string input_hint = 5;
+  bool enabled = 6;
+  int32 position = 7;
+  string provider_id = 8;
+  string model_override = 9;
+}
 
+message BatchSetAgentsRequest {
+  repeated AgentDefEntry agents = 1;
+}
+
+message BatchSetAgentsResponse {
+  bool success = 1;
+}
+
+message ListAgentDefsRequest {}
+
+message ListAgentDefsResponse {
+  repeated AIAgentDefinition agents = 1;
+}
+
+// Compatibility aliases for ai.proto ListAgents RPC.
+message ListAgentsRequest {}
 message ListAgentsResponse {
   repeated AIAgentDefinition agents = 1;
 }
