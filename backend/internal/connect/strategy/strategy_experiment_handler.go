@@ -2,10 +2,10 @@ package strategy
 
 import (
 	"context"
+	"time"
 	"google.golang.org/protobuf/proto"
 
 	"go.uber.org/zap"
-	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"connectrpc.com/connect"
@@ -16,56 +16,6 @@ import (
 	"anttrader/internal/interceptor"
 	"anttrader/internal/repository"
 )
-
-// jsonbToStruct converts JSONB bytes to a proto Struct.
-// structpb.NewStruct requires map[string]any — this is the canonical
-// conversion point, encapsulated to contain the dynamic type boundary.
-// paramsProtoToStruct converts proto binary CandidateParameters/StrategyParams to proto Struct.
-func paramsProtoToStruct(raw []byte) *structpb.Struct {
-	if len(raw) == 0 {
-		return nil
-	}
-	var sp antv1.StrategyParams
-	if err := proto.Unmarshal(raw, &sp); err != nil {
-		return nil
-	}
-	m := make(map[string]any, len(sp.GetValues()))
-	for k, v := range sp.GetValues() {
-		m[k] = v
-	}
-	s, _ := structpb.NewStruct(m)
-	return s
-}
-
-// scoreProtoToStruct converts proto binary ScoreComponents to proto Struct.
-func scoreProtoToStruct(raw []byte) *structpb.Struct {
-	if len(raw) == 0 {
-		return nil
-	}
-	var sc antv1.ScoreComponents
-	if err := proto.Unmarshal(raw, &sc); err != nil {
-		return nil
-	}
-	m := make(map[string]any, len(sc.GetComponents()))
-	for k, v := range sc.GetComponents() {
-		m[k] = v
-	}
-	s, _ := structpb.NewStruct(m)
-	return s
-}
-
-// spaceProtoToStruct converts proto binary ParameterSpace to proto Struct.
-// spaceProtoToStruct reads proto binary structpb.Struct (stored as BYTEA).
-func spaceProtoToStruct(raw []byte) *structpb.Struct {
-	if len(raw) == 0 {
-		return nil
-	}
-	var ps structpb.Struct
-	if err := proto.Unmarshal(raw, &ps); err != nil {
-		return nil
-	}
-	return &ps
-}
 
 // StrategyExperimentServer implements ant.v1.StrategyExperimentServiceHandler.
 type StrategyExperimentServer struct {
@@ -244,4 +194,66 @@ func (s *StrategyExperimentServer) PromoteCandidateToDraft(ctx context.Context, 
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.PromoteCandidateToDraftResponse{TemplateId: c.DraftCodeRef}), nil
+}
+
+// WatchExperiment streams experiment status changes until completion.
+// Push-first architecture: replaces client-side polling with SSE stream.
+func (s *StrategyExperimentServer) WatchExperiment(ctx context.Context, req *connect.Request[antv1.WatchExperimentRequest], stream *connect.ServerStream[antv1.WatchExperimentEvent]) error {
+	uid := s.userID(ctx)
+	expID, err := uuid.Parse(req.Msg.ExperimentId)
+	if err != nil {
+		return connect.NewError(connect.CodeInvalidArgument, err)
+	}
+
+	prevStatus := ""
+	ticker := time.NewTicker(2 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-ticker.C:
+		}
+
+		exp, err := s.repo.Get(ctx, uid, expID)
+		if err != nil || exp == nil {
+			continue
+		}
+		if exp.Status == prevStatus {
+			continue
+		}
+		prevStatus = exp.Status
+
+		event := &antv1.WatchExperimentEvent{
+			ExperimentId: expID.String(),
+			Status:       exp.Status,
+		}
+
+		// On completion, include all candidates
+		if exp.Status == "COMPLETED" {
+			candidates, err := s.repo.ListCandidates(ctx, uid, expID)
+			if err == nil {
+				protoCands := make([]*antv1.StrategyExperimentCandidate, 0, len(candidates))
+				for _, c := range candidates {
+					protoCands = append(protoCands, candidateToProto(&c))
+				}
+				event.Candidates = protoCands
+				event.CandidatesReady = int32(len(protoCands))
+			}
+		}
+
+		if exp.Status == "FAILED" {
+			event.Error = "experiment failed"
+		}
+
+		if err := stream.Send(event); err != nil {
+			return err
+		}
+
+		// Terminal states — close the stream
+		if exp.Status == "COMPLETED" || exp.Status == "FAILED" {
+			return nil
+		}
+	}
 }

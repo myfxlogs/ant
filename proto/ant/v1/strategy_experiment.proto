@@ -15,6 +15,9 @@ service StrategyExperimentService {
   rpc ListExperimentCandidates(ListExperimentCandidatesRequest) returns (ListExperimentCandidatesResponse);
   rpc GetExperimentCandidate(GetExperimentCandidateRequest) returns (StrategyExperimentCandidate);
   rpc PromoteCandidateToDraft(PromoteCandidateToDraftRequest) returns (PromoteCandidateToDraftResponse);
+  // WatchExperiment streams experiment status + candidates as the experiment runs.
+  // Replaces client-side polling — push-first architecture.
+  rpc WatchExperiment(WatchExperimentRequest) returns (stream WatchExperimentEvent);
 }
 
 message StrategyExperiment {
@@ -100,4 +103,16 @@ message PromoteCandidateToDraftRequest {
 
 message PromoteCandidateToDraftResponse {
   string template_id = 1;
+}
+
+message WatchExperimentRequest {
+  string experiment_id = 1;
+}
+
+message WatchExperimentEvent {
+  string experiment_id = 1;
+  string status = 2;       // PENDING, PROCESSING, COMPLETED, FAILED
+  int32 candidates_ready = 3; // number of candidates scored so far
+  repeated StrategyExperimentCandidate candidates = 4; // all candidates (sent on COMPLETED)
+  string error = 5;        // set when status = FAILED
 }

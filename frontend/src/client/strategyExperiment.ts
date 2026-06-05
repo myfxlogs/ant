@@ -38,4 +38,8 @@ export const strategyExperimentApi = {
 
   promoteCandidateToDraft: (candidateId: string, name: string) =>
     strategyExperimentClient.promoteCandidateToDraft({ candidateId, name }),
+
+  // SSE streaming — push-first architecture, replaces polling.
+  watchExperiment: (experimentId: string) =>
+    strategyExperimentClient.watchExperiment({ experimentId }),
 };

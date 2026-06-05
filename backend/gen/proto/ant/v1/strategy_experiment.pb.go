@@ -859,6 +859,126 @@ func (x *PromoteCandidateToDraftResponse) GetTemplateId() string {
 	return ""
 }
 
+type WatchExperimentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ExperimentId  string                 `protobuf:"bytes,1,opt,name=experiment_id,json=experimentId,proto3" json:"experiment_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WatchExperimentRequest) Reset() {
+	*x = WatchExperimentRequest{}
+	mi := &file_strategy_experiment_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WatchExperimentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WatchExperimentRequest) ProtoMessage() {}
+
+func (x *WatchExperimentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_strategy_experiment_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WatchExperimentRequest.ProtoReflect.Descriptor instead.
+func (*WatchExperimentRequest) Descriptor() ([]byte, []int) {
+	return file_strategy_experiment_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *WatchExperimentRequest) GetExperimentId() string {
+	if x != nil {
+		return x.ExperimentId
+	}
+	return ""
+}
+
+type WatchExperimentEvent struct {
+	state           protoimpl.MessageState         `protogen:"open.v1"`
+	ExperimentId    string                         `protobuf:"bytes,1,opt,name=experiment_id,json=experimentId,proto3" json:"experiment_id,omitempty"`
+	Status          string                         `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`                                           // PENDING, PROCESSING, COMPLETED, FAILED
+	CandidatesReady int32                          `protobuf:"varint,3,opt,name=candidates_ready,json=candidatesReady,proto3" json:"candidates_ready,omitempty"` // number of candidates scored so far
+	Candidates      []*StrategyExperimentCandidate `protobuf:"bytes,4,rep,name=candidates,proto3" json:"candidates,omitempty"`                                   // all candidates (sent on COMPLETED)
+	Error           string                         `protobuf:"bytes,5,opt,name=error,proto3" json:"error,omitempty"`                                             // set when status = FAILED
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *WatchExperimentEvent) Reset() {
+	*x = WatchExperimentEvent{}
+	mi := &file_strategy_experiment_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WatchExperimentEvent) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WatchExperimentEvent) ProtoMessage() {}
+
+func (x *WatchExperimentEvent) ProtoReflect() protoreflect.Message {
+	mi := &file_strategy_experiment_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WatchExperimentEvent.ProtoReflect.Descriptor instead.
+func (*WatchExperimentEvent) Descriptor() ([]byte, []int) {
+	return file_strategy_experiment_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *WatchExperimentEvent) GetExperimentId() string {
+	if x != nil {
+		return x.ExperimentId
+	}
+	return ""
+}
+
+func (x *WatchExperimentEvent) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *WatchExperimentEvent) GetCandidatesReady() int32 {
+	if x != nil {
+		return x.CandidatesReady
+	}
+	return 0
+}
+
+func (x *WatchExperimentEvent) GetCandidates() []*StrategyExperimentCandidate {
+	if x != nil {
+		return x.Candidates
+	}
+	return nil
+}
+
+func (x *WatchExperimentEvent) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
+
 var File_strategy_experiment_proto protoreflect.FileDescriptor
 
 const file_strategy_experiment_proto_rawDesc = "" +
@@ -934,7 +1054,17 @@ const file_strategy_experiment_proto_rawDesc = "" +
 	"\x04name\x18\x02 \x01(\tR\x04name\"B\n" +
 	"\x1fPromoteCandidateToDraftResponse\x12\x1f\n" +
 	"\vtemplate_id\x18\x01 \x01(\tR\n" +
-	"templateId2\xf3\x05\n" +
+	"templateId\"=\n" +
+	"\x16WatchExperimentRequest\x12#\n" +
+	"\rexperiment_id\x18\x01 \x01(\tR\fexperimentId\"\xd9\x01\n" +
+	"\x14WatchExperimentEvent\x12#\n" +
+	"\rexperiment_id\x18\x01 \x01(\tR\fexperimentId\x12\x16\n" +
+	"\x06status\x18\x02 \x01(\tR\x06status\x12)\n" +
+	"\x10candidates_ready\x18\x03 \x01(\x05R\x0fcandidatesReady\x12C\n" +
+	"\n" +
+	"candidates\x18\x04 \x03(\v2#.ant.v1.StrategyExperimentCandidateR\n" +
+	"candidates\x12\x14\n" +
+	"\x05error\x18\x05 \x01(\tR\x05error2\xc6\x06\n" +
 	"\x19StrategyExperimentService\x12m\n" +
 	"\x18SubmitStrategyExperiment\x12'.ant.v1.SubmitStrategyExperimentRequest\x1a(.ant.v1.SubmitStrategyExperimentResponse\x12Y\n" +
 	"\x15GetStrategyExperiment\x12$.ant.v1.GetStrategyExperimentRequest\x1a\x1a.ant.v1.StrategyExperiment\x12j\n" +
@@ -942,7 +1072,8 @@ const file_strategy_experiment_proto_rawDesc = "" +
 	"\x18CancelStrategyExperiment\x12'.ant.v1.CancelStrategyExperimentRequest\x1a\x1a.ant.v1.StrategyExperiment\x12m\n" +
 	"\x18ListExperimentCandidates\x12'.ant.v1.ListExperimentCandidatesRequest\x1a(.ant.v1.ListExperimentCandidatesResponse\x12d\n" +
 	"\x16GetExperimentCandidate\x12%.ant.v1.GetExperimentCandidateRequest\x1a#.ant.v1.StrategyExperimentCandidate\x12j\n" +
-	"\x17PromoteCandidateToDraft\x12&.ant.v1.PromoteCandidateToDraftRequest\x1a'.ant.v1.PromoteCandidateToDraftResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x17PromoteCandidateToDraft\x12&.ant.v1.PromoteCandidateToDraftRequest\x1a'.ant.v1.PromoteCandidateToDraftResponse\x12Q\n" +
+	"\x0fWatchExperiment\x12\x1e.ant.v1.WatchExperimentRequest\x1a\x1c.ant.v1.WatchExperimentEvent0\x01B\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_strategy_experiment_proto_rawDescOnce sync.Once
@@ -956,7 +1087,7 @@ func file_strategy_experiment_proto_rawDescGZIP() []byte {
 	return file_strategy_experiment_proto_rawDescData
 }
 
-var file_strategy_experiment_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_strategy_experiment_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_strategy_experiment_proto_goTypes = []any{
 	(*StrategyExperiment)(nil),               // 0: ant.v1.StrategyExperiment
 	(*SubmitStrategyExperimentRequest)(nil),  // 1: ant.v1.SubmitStrategyExperimentRequest
@@ -971,39 +1102,44 @@ var file_strategy_experiment_proto_goTypes = []any{
 	(*GetExperimentCandidateRequest)(nil),    // 10: ant.v1.GetExperimentCandidateRequest
 	(*PromoteCandidateToDraftRequest)(nil),   // 11: ant.v1.PromoteCandidateToDraftRequest
 	(*PromoteCandidateToDraftResponse)(nil),  // 12: ant.v1.PromoteCandidateToDraftResponse
-	(*structpb.Struct)(nil),                  // 13: google.protobuf.Struct
-	(*timestamppb.Timestamp)(nil),            // 14: google.protobuf.Timestamp
+	(*WatchExperimentRequest)(nil),           // 13: ant.v1.WatchExperimentRequest
+	(*WatchExperimentEvent)(nil),             // 14: ant.v1.WatchExperimentEvent
+	(*structpb.Struct)(nil),                  // 15: google.protobuf.Struct
+	(*timestamppb.Timestamp)(nil),            // 16: google.protobuf.Timestamp
 }
 var file_strategy_experiment_proto_depIdxs = []int32{
-	13, // 0: ant.v1.StrategyExperiment.parameter_space:type_name -> google.protobuf.Struct
-	14, // 1: ant.v1.StrategyExperiment.created_at:type_name -> google.protobuf.Timestamp
-	14, // 2: ant.v1.StrategyExperiment.finished_at:type_name -> google.protobuf.Timestamp
-	13, // 3: ant.v1.SubmitStrategyExperimentRequest.parameter_space:type_name -> google.protobuf.Struct
-	13, // 4: ant.v1.StrategyExperimentCandidate.parameters:type_name -> google.protobuf.Struct
-	13, // 5: ant.v1.StrategyExperimentCandidate.score_components:type_name -> google.protobuf.Struct
-	14, // 6: ant.v1.StrategyExperimentCandidate.created_at:type_name -> google.protobuf.Timestamp
+	15, // 0: ant.v1.StrategyExperiment.parameter_space:type_name -> google.protobuf.Struct
+	16, // 1: ant.v1.StrategyExperiment.created_at:type_name -> google.protobuf.Timestamp
+	16, // 2: ant.v1.StrategyExperiment.finished_at:type_name -> google.protobuf.Timestamp
+	15, // 3: ant.v1.SubmitStrategyExperimentRequest.parameter_space:type_name -> google.protobuf.Struct
+	15, // 4: ant.v1.StrategyExperimentCandidate.parameters:type_name -> google.protobuf.Struct
+	15, // 5: ant.v1.StrategyExperimentCandidate.score_components:type_name -> google.protobuf.Struct
+	16, // 6: ant.v1.StrategyExperimentCandidate.created_at:type_name -> google.protobuf.Timestamp
 	0,  // 7: ant.v1.SubmitStrategyExperimentResponse.experiment:type_name -> ant.v1.StrategyExperiment
 	0,  // 8: ant.v1.ListStrategyExperimentsResponse.experiments:type_name -> ant.v1.StrategyExperiment
 	2,  // 9: ant.v1.ListExperimentCandidatesResponse.candidates:type_name -> ant.v1.StrategyExperimentCandidate
-	1,  // 10: ant.v1.StrategyExperimentService.SubmitStrategyExperiment:input_type -> ant.v1.SubmitStrategyExperimentRequest
-	4,  // 11: ant.v1.StrategyExperimentService.GetStrategyExperiment:input_type -> ant.v1.GetStrategyExperimentRequest
-	5,  // 12: ant.v1.StrategyExperimentService.ListStrategyExperiments:input_type -> ant.v1.ListStrategyExperimentsRequest
-	7,  // 13: ant.v1.StrategyExperimentService.CancelStrategyExperiment:input_type -> ant.v1.CancelStrategyExperimentRequest
-	8,  // 14: ant.v1.StrategyExperimentService.ListExperimentCandidates:input_type -> ant.v1.ListExperimentCandidatesRequest
-	10, // 15: ant.v1.StrategyExperimentService.GetExperimentCandidate:input_type -> ant.v1.GetExperimentCandidateRequest
-	11, // 16: ant.v1.StrategyExperimentService.PromoteCandidateToDraft:input_type -> ant.v1.PromoteCandidateToDraftRequest
-	3,  // 17: ant.v1.StrategyExperimentService.SubmitStrategyExperiment:output_type -> ant.v1.SubmitStrategyExperimentResponse
-	0,  // 18: ant.v1.StrategyExperimentService.GetStrategyExperiment:output_type -> ant.v1.StrategyExperiment
-	6,  // 19: ant.v1.StrategyExperimentService.ListStrategyExperiments:output_type -> ant.v1.ListStrategyExperimentsResponse
-	0,  // 20: ant.v1.StrategyExperimentService.CancelStrategyExperiment:output_type -> ant.v1.StrategyExperiment
-	9,  // 21: ant.v1.StrategyExperimentService.ListExperimentCandidates:output_type -> ant.v1.ListExperimentCandidatesResponse
-	2,  // 22: ant.v1.StrategyExperimentService.GetExperimentCandidate:output_type -> ant.v1.StrategyExperimentCandidate
-	12, // 23: ant.v1.StrategyExperimentService.PromoteCandidateToDraft:output_type -> ant.v1.PromoteCandidateToDraftResponse
-	17, // [17:24] is the sub-list for method output_type
-	10, // [10:17] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	2,  // 10: ant.v1.WatchExperimentEvent.candidates:type_name -> ant.v1.StrategyExperimentCandidate
+	1,  // 11: ant.v1.StrategyExperimentService.SubmitStrategyExperiment:input_type -> ant.v1.SubmitStrategyExperimentRequest
+	4,  // 12: ant.v1.StrategyExperimentService.GetStrategyExperiment:input_type -> ant.v1.GetStrategyExperimentRequest
+	5,  // 13: ant.v1.StrategyExperimentService.ListStrategyExperiments:input_type -> ant.v1.ListStrategyExperimentsRequest
+	7,  // 14: ant.v1.StrategyExperimentService.CancelStrategyExperiment:input_type -> ant.v1.CancelStrategyExperimentRequest
+	8,  // 15: ant.v1.StrategyExperimentService.ListExperimentCandidates:input_type -> ant.v1.ListExperimentCandidatesRequest
+	10, // 16: ant.v1.StrategyExperimentService.GetExperimentCandidate:input_type -> ant.v1.GetExperimentCandidateRequest
+	11, // 17: ant.v1.StrategyExperimentService.PromoteCandidateToDraft:input_type -> ant.v1.PromoteCandidateToDraftRequest
+	13, // 18: ant.v1.StrategyExperimentService.WatchExperiment:input_type -> ant.v1.WatchExperimentRequest
+	3,  // 19: ant.v1.StrategyExperimentService.SubmitStrategyExperiment:output_type -> ant.v1.SubmitStrategyExperimentResponse
+	0,  // 20: ant.v1.StrategyExperimentService.GetStrategyExperiment:output_type -> ant.v1.StrategyExperiment
+	6,  // 21: ant.v1.StrategyExperimentService.ListStrategyExperiments:output_type -> ant.v1.ListStrategyExperimentsResponse
+	0,  // 22: ant.v1.StrategyExperimentService.CancelStrategyExperiment:output_type -> ant.v1.StrategyExperiment
+	9,  // 23: ant.v1.StrategyExperimentService.ListExperimentCandidates:output_type -> ant.v1.ListExperimentCandidatesResponse
+	2,  // 24: ant.v1.StrategyExperimentService.GetExperimentCandidate:output_type -> ant.v1.StrategyExperimentCandidate
+	12, // 25: ant.v1.StrategyExperimentService.PromoteCandidateToDraft:output_type -> ant.v1.PromoteCandidateToDraftResponse
+	14, // 26: ant.v1.StrategyExperimentService.WatchExperiment:output_type -> ant.v1.WatchExperimentEvent
+	19, // [19:27] is the sub-list for method output_type
+	11, // [11:19] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_strategy_experiment_proto_init() }
@@ -1017,7 +1153,7 @@ func file_strategy_experiment_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_strategy_experiment_proto_rawDesc), len(file_strategy_experiment_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

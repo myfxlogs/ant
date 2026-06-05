@@ -55,6 +55,9 @@ const (
 	// StrategyExperimentServicePromoteCandidateToDraftProcedure is the fully-qualified name of the
 	// StrategyExperimentService's PromoteCandidateToDraft RPC.
 	StrategyExperimentServicePromoteCandidateToDraftProcedure = "/ant.v1.StrategyExperimentService/PromoteCandidateToDraft"
+	// StrategyExperimentServiceWatchExperimentProcedure is the fully-qualified name of the
+	// StrategyExperimentService's WatchExperiment RPC.
+	StrategyExperimentServiceWatchExperimentProcedure = "/ant.v1.StrategyExperimentService/WatchExperiment"
 )
 
 // StrategyExperimentServiceClient is a client for the ant.v1.StrategyExperimentService service.
@@ -66,6 +69,9 @@ type StrategyExperimentServiceClient interface {
 	ListExperimentCandidates(context.Context, *connect.Request[v1.ListExperimentCandidatesRequest]) (*connect.Response[v1.ListExperimentCandidatesResponse], error)
 	GetExperimentCandidate(context.Context, *connect.Request[v1.GetExperimentCandidateRequest]) (*connect.Response[v1.StrategyExperimentCandidate], error)
 	PromoteCandidateToDraft(context.Context, *connect.Request[v1.PromoteCandidateToDraftRequest]) (*connect.Response[v1.PromoteCandidateToDraftResponse], error)
+	// WatchExperiment streams experiment status + candidates as the experiment runs.
+	// Replaces client-side polling — push-first architecture.
+	WatchExperiment(context.Context, *connect.Request[v1.WatchExperimentRequest]) (*connect.ServerStreamForClient[v1.WatchExperimentEvent], error)
 }
 
 // NewStrategyExperimentServiceClient constructs a client for the ant.v1.StrategyExperimentService
@@ -121,6 +127,12 @@ func NewStrategyExperimentServiceClient(httpClient connect.HTTPClient, baseURL s
 			connect.WithSchema(strategyExperimentServiceMethods.ByName("PromoteCandidateToDraft")),
 			connect.WithClientOptions(opts...),
 		),
+		watchExperiment: connect.NewClient[v1.WatchExperimentRequest, v1.WatchExperimentEvent](
+			httpClient,
+			baseURL+StrategyExperimentServiceWatchExperimentProcedure,
+			connect.WithSchema(strategyExperimentServiceMethods.ByName("WatchExperiment")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -133,6 +145,7 @@ type strategyExperimentServiceClient struct {
 	listExperimentCandidates *connect.Client[v1.ListExperimentCandidatesRequest, v1.ListExperimentCandidatesResponse]
 	getExperimentCandidate   *connect.Client[v1.GetExperimentCandidateRequest, v1.StrategyExperimentCandidate]
 	promoteCandidateToDraft  *connect.Client[v1.PromoteCandidateToDraftRequest, v1.PromoteCandidateToDraftResponse]
+	watchExperiment          *connect.Client[v1.WatchExperimentRequest, v1.WatchExperimentEvent]
 }
 
 // SubmitStrategyExperiment calls ant.v1.StrategyExperimentService.SubmitStrategyExperiment.
@@ -170,6 +183,11 @@ func (c *strategyExperimentServiceClient) PromoteCandidateToDraft(ctx context.Co
 	return c.promoteCandidateToDraft.CallUnary(ctx, req)
 }
 
+// WatchExperiment calls ant.v1.StrategyExperimentService.WatchExperiment.
+func (c *strategyExperimentServiceClient) WatchExperiment(ctx context.Context, req *connect.Request[v1.WatchExperimentRequest]) (*connect.ServerStreamForClient[v1.WatchExperimentEvent], error) {
+	return c.watchExperiment.CallServerStream(ctx, req)
+}
+
 // StrategyExperimentServiceHandler is an implementation of the ant.v1.StrategyExperimentService
 // service.
 type StrategyExperimentServiceHandler interface {
@@ -180,6 +198,9 @@ type StrategyExperimentServiceHandler interface {
 	ListExperimentCandidates(context.Context, *connect.Request[v1.ListExperimentCandidatesRequest]) (*connect.Response[v1.ListExperimentCandidatesResponse], error)
 	GetExperimentCandidate(context.Context, *connect.Request[v1.GetExperimentCandidateRequest]) (*connect.Response[v1.StrategyExperimentCandidate], error)
 	PromoteCandidateToDraft(context.Context, *connect.Request[v1.PromoteCandidateToDraftRequest]) (*connect.Response[v1.PromoteCandidateToDraftResponse], error)
+	// WatchExperiment streams experiment status + candidates as the experiment runs.
+	// Replaces client-side polling — push-first architecture.
+	WatchExperiment(context.Context, *connect.Request[v1.WatchExperimentRequest], *connect.ServerStream[v1.WatchExperimentEvent]) error
 }
 
 // NewStrategyExperimentServiceHandler builds an HTTP handler from the service implementation. It
@@ -231,6 +252,12 @@ func NewStrategyExperimentServiceHandler(svc StrategyExperimentServiceHandler, o
 		connect.WithSchema(strategyExperimentServiceMethods.ByName("PromoteCandidateToDraft")),
 		connect.WithHandlerOptions(opts...),
 	)
+	strategyExperimentServiceWatchExperimentHandler := connect.NewServerStreamHandler(
+		StrategyExperimentServiceWatchExperimentProcedure,
+		svc.WatchExperiment,
+		connect.WithSchema(strategyExperimentServiceMethods.ByName("WatchExperiment")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.StrategyExperimentService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case StrategyExperimentServiceSubmitStrategyExperimentProcedure:
@@ -247,6 +274,8 @@ func NewStrategyExperimentServiceHandler(svc StrategyExperimentServiceHandler, o
 			strategyExperimentServiceGetExperimentCandidateHandler.ServeHTTP(w, r)
 		case StrategyExperimentServicePromoteCandidateToDraftProcedure:
 			strategyExperimentServicePromoteCandidateToDraftHandler.ServeHTTP(w, r)
+		case StrategyExperimentServiceWatchExperimentProcedure:
+			strategyExperimentServiceWatchExperimentHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -282,4 +311,8 @@ func (UnimplementedStrategyExperimentServiceHandler) GetExperimentCandidate(cont
 
 func (UnimplementedStrategyExperimentServiceHandler) PromoteCandidateToDraft(context.Context, *connect.Request[v1.PromoteCandidateToDraftRequest]) (*connect.Response[v1.PromoteCandidateToDraftResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyExperimentService.PromoteCandidateToDraft is not implemented"))
+}
+
+func (UnimplementedStrategyExperimentServiceHandler) WatchExperiment(context.Context, *connect.Request[v1.WatchExperimentRequest], *connect.ServerStream[v1.WatchExperimentEvent]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyExperimentService.WatchExperiment is not implemented"))
 }

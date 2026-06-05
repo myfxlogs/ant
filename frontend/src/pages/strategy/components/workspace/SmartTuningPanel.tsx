@@ -20,7 +20,7 @@ export default function SmartTuningPanel({
 }: Props) {
   const [candidates, setCandidates] = useState<StrategyExperimentCandidate[]>([]);
   const [experimentId, setExperimentId] = useState('');
-  const [pollingRunning, setPollingRunning] = useState(false);
+  const [watching, setPollingRunning] = useState(false);
 
   const handleRunTuning = useCallback(async () => {
     setCandidates([]); setPollingRunning(true);
@@ -57,10 +57,10 @@ export default function SmartTuningPanel({
   // Auto-poll every 5s when running (useEffect with cleanup)
   const pollRef = useRef<ReturnType<typeof setInterval>>();
   useEffect(() => {
-    if (!pollingRunning || !experimentId) return;
+    if (!watching || !experimentId) return;
     pollRef.current = setInterval(handlePoll, 5000);
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
-  }, [pollingRunning, experimentId, handlePoll]);
+  }, [watching, experimentId, handlePoll]);
 
   const gradeColors: Record<string, string> = { A: 'green', B: 'blue', C: 'gold', D: 'orange', E: 'red' };
 
@@ -89,9 +89,9 @@ export default function SmartTuningPanel({
             <Radio.Button value="grid">Grid</Radio.Button>
             <Radio.Button value="random">Random</Radio.Button>
           </Radio.Group>
-          <Button type="primary" size="small" loading={tuningRunning || pollingRunning}
+          <Button type="primary" size="small" loading={tuningRunning || watching}
             disabled={!canRun} onClick={handleRunTuning} style={{ borderRadius: 6, fontWeight: 600 }}>
-            {(tuningRunning || pollingRunning) ? 'Running...' : '▶ Run Smart Tuning'}
+            {(tuningRunning || watching) ? 'Running...' : '▶ Run Smart Tuning'}
           </Button>
         </div>
 
@@ -155,7 +155,7 @@ export default function SmartTuningPanel({
       )}
 
       {/* Polling indicator */}
-      {pollingRunning && (
+      {watching && (
         <div style={{ textAlign: 'center', padding: 4, fontSize: 10, color: '#8c8c8c' }}>
           Waiting for experiment to complete... (auto-refreshing every 5s)
         </div>
