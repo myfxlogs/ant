@@ -84,7 +84,7 @@ func NewDEOptimizer(space ResolvedSpace, maxEvals int) *DEOptimizer {
 	dims := len(space.Keys)
 	popSize := maxEvals / 3
 	if popSize < 4 { popSize = 4 }
-	if popSize > 12 { popSize = 12 }
+	if popSize > 30 { popSize = 30 }
 	if popSize > maxEvals { popSize = maxEvals }
 	return &DEOptimizer{
 		space: space, dims: dims, popSize: popSize,
@@ -128,7 +128,7 @@ func (d *DEOptimizer) evolve(batchSize int) [][]int {
 		R := d.rng.Intn(d.dims)
 		for j := 0; j < d.dims; j++ {
 			if d.rng.Float64() < d.CR || j == R {
-				mut := d.pop[a][j] + int(d.F*float64(d.pop[b][j]-d.pop[c][j]))
+				mut := int(math.Round(float64(d.pop[a][j]) + d.F*float64(d.pop[b][j]-d.pop[c][j])))
 				hi := len(d.space.ValuesByKey[d.space.Keys[j]]) - 1
 				if mut < 0 { mut = -mut }
 				if mut > hi { mut = 2*hi - mut }

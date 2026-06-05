@@ -3,6 +3,8 @@ package strategy
 import (
 	"context"
 	"fmt"
+	"sort"
+	"math"
 	"time"
 
 	"github.com/google/uuid"
@@ -130,8 +132,8 @@ func (w *ExperimentWorker) runOptimizer(
 	switch exp.SearchMethod {
 	case "de":
 		return w.runIterative(ctx, ai.NewDEOptimizer(space, exp.MaxCandidates), space, code, exp)
-	case "tpe":
-		return w.runIterative(ctx, ai.NewTPEOptimizer(space, exp.MaxCandidates), space, code, exp)
+	case "tpe", "ags":
+		return w.runIterative(ctx, ai.NewAnnealedGaussianOptimizer(space, exp.MaxCandidates), space, code, exp)
 	case "random":
 		return w.runOneShot(ai.RandomSearch(params, exp.MaxCandidates), code, exp)
 	default:
@@ -222,7 +224,7 @@ func (w *ExperimentWorker) backtestAndScore(
 	return candidateResult{}, fmt.Errorf("backtest %s timed out", runID)
 }
 
-// scoreFromBacktest extracts metrics from proto binary ExecuteBacktestResponse.
+// scoreFromBacktest extracts metrics from proto binary and scores with regime-aware weights.
 func (w *ExperimentWorker) scoreFromBacktest(bt *repository.BacktestRun, overrides map[string]interface{}) candidateResult {
 	btMetrics := extractBacktestMetrics(bt.ProtoResponse)
 	regime := ai.RegimeTransition
@@ -273,26 +275,43 @@ func timePtr(t time.Time) *time.Time { return &t }
 
 // computeStability returns the R² of linear regression on the equity curve (0–1).
 // A value near 1 means the equity curve is close to a straight line (stable growth).
+// computeStability returns Spearman rank correlation (0-1) of the equity curve.
+// Spearman is optimal for equity monotonicity: it detects any consistent upward trend
+// regardless of shape, and is robust to outliers.
 func computeStability(equity []float64) float64 {
 	if len(equity) < 2 {
 		return 0
 	}
-	n := float64(len(equity))
-	var sumX, sumY, sumXY, sumX2, sumY2 float64
-	for i, y := range equity {
-		x := float64(i)
-		sumX += x
-		sumY += y
-		sumXY += x * y
-		sumX2 += x * x
-		sumY2 += y * y
+	n := len(equity)
+	// Compute ranks of equity values
+	ranks := make([]float64, n)
+	type pair struct{ val float64; idx int }
+	pairs := make([]pair, n)
+	for i, v := range equity {
+		pairs[i] = pair{v, i}
 	}
-	denom := (n*sumX2 - sumX*sumX) * (n*sumY2 - sumY*sumY)
-	if denom <= 0 {
+	// Sort by value to assign ranks
+	sort.Slice(pairs, func(i, j int) bool { return pairs[i].val < pairs[j].val })
+	for r, p := range pairs {
+		ranks[p.idx] = float64(r + 1)
+	}
+	// Spearman: correlation of ranks vs time indices (1..n)
+	var sumX, sumY, sumXY, sumX2, sumY2 float64
+	for i, r := range ranks {
+		x := float64(i + 1)
+		sumX += x
+		sumY += r
+		sumXY += x * r
+		sumX2 += x * x
+		sumY2 += r * r
+	}
+	nf := float64(n)
+	num := nf*sumXY - sumX*sumY
+	den := (nf*sumX2 - sumX*sumX) * (nf*sumY2 - sumY*sumY)
+	if den <= 0 {
 		return 0
 	}
-	r := (n*sumXY - sumX*sumY) / denom // Pearson's r
-	// Clamp to [0,1]; negative r (declining equity) → 0 stability.
+	r := num / math.Sqrt(den)
 	if r < 0 {
 		return 0
 	}

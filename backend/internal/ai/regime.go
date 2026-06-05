@@ -69,21 +69,22 @@ func DetectRegime(bars []OHLCBar) *RegimeResult {
 		if f.PriceChangePct > 1.0 {
 			return &RegimeResult{
 				Regime: RegimeBullTrend,
-				Confidence: clamp01(0.55 + f.EMAGapPct*0.12 + f.DirectionalEfficiency*0.3),
+				Confidence: clamp01(0.5 + f.EMAGapPct*0.04 + f.DirectionalEfficiency*0.2),
 				Features: f,
 			}
 		}
 		if f.PriceChangePct < -1.0 {
 			return &RegimeResult{
 				Regime: RegimeBearTrend,
-				Confidence: clamp01(0.55 + f.EMAGapPct*0.12 + f.DirectionalEfficiency*0.3),
+				Confidence: clamp01(0.5 + f.EMAGapPct*0.04 + f.DirectionalEfficiency*0.2),
 				Features: f,
 			}
 		}
-	case f.RealizedVolPct >= 4.5 || f.ATRPct >= 3.5:
+	// High volatility: realized vol >= 75th percentile (gold ~18%) OR ATR > 3.5%
+		case f.RealizedVolPct >= 18.0 || f.ATRPct >= 3.5:
 		return &RegimeResult{
 			Regime:     RegimeHighVolatility,
-			Confidence: clamp01(0.5 + f.RealizedVolPct/10 + f.ATRPct/7),
+			Confidence: clamp01(0.5 + f.RealizedVolPct/30 + f.ATRPct/10),
 			Features:   f,
 		}
 	case f.EMAGapPct <= 0.45 && f.DirectionalEfficiency <= 0.38 && f.ATRPct <= 2.0:
