@@ -7,6 +7,7 @@ package ai
 
 import (
 	"encoding/json"
+	"context"
 	"fmt"
 	"strings"
 )
@@ -146,3 +147,26 @@ const EarlyStopScore = 82.0
 
 // MaxAIRounds is the maximum number of AI optimization rounds.
 const MaxAIRounds = 3
+
+// AIProposer defines the LLM calling interface for parameter proposal.
+type AIProposer interface {
+	ChatCompletion(ctx context.Context, systemPrompt, userPrompt string) (string, error)
+}
+
+// ProposeParams calls the LLM to propose candidate parameter sets.
+// Returns parsed parameter maps ready for backtesting.
+func ProposeParams(ctx context.Context, llm AIProposer, req *ProposeRequest) ([]map[string]interface{}, error) {
+	sysPrompt, userPrompt := BuildProposePrompt(req)
+	raw, err := llm.ChatCompletion(ctx, sysPrompt, userPrompt)
+	if err != nil {
+		return nil, fmt.Errorf("propose: LLM call failed: %w", err)
+	}
+	params, err := ParseProposeResponse(raw)
+	if err != nil {
+		return nil, fmt.Errorf("propose: parse response: %w", err)
+	}
+	if len(params) == 0 {
+		return nil, fmt.Errorf("propose: LLM returned no valid candidates")
+	}
+	return params, nil
+}

@@ -21,6 +21,7 @@ type ExperimentWorker struct {
 	repo         *repository.StrategyExperimentRepository
 	backtestRepo *repository.BacktestRunRepository
 	log          *zap.Logger
+	aiProposer   ai.AIProposer // optional: enables AI multi-round proposal
 	stopCh       chan struct{}
 }
 
@@ -57,6 +58,8 @@ func (w *ExperimentWorker) Start(ctx context.Context) {
 }
 
 func (w *ExperimentWorker) Stop() { close(w.stopCh) }
+
+func (w *ExperimentWorker) SetAIProposer(p ai.AIProposer) { w.aiProposer = p }
 
 // processOne claims and processes a single PENDING experiment.
 func (w *ExperimentWorker) processOne(ctx context.Context) error {
@@ -132,6 +135,8 @@ func (w *ExperimentWorker) runOptimizer(
 	switch exp.SearchMethod {
 	case "de":
 		return w.runIterative(ctx, ai.NewDEOptimizer(space, exp.MaxCandidates), space, code, exp)
+	case "ai":
+		return w.runAIProposal(ctx, params, code, exp)
 	case "tpe", "ags":
 		return w.runIterative(ctx, ai.NewAnnealedGaussianOptimizer(space, exp.MaxCandidates), space, code, exp)
 	case "random":
@@ -340,4 +345,39 @@ func paramsToProto(overrides map[string]interface{}) *antv1.StrategyParams {
 // scoreComponentsToProto converts a score components map to ScoreComponents proto.
 func scoreComponentsToProto(components map[string]float64) *antv1.ScoreComponents {
 	return &antv1.ScoreComponents{Components: components}
+}
+func (w *ExperimentWorker) runAIProposal(ctx context.Context, params []ai.TunableParam, code string, exp *repository.StrategyExperiment) ([]candidateResult, error) {
+	if w.aiProposer == nil {
+		return nil, fmt.Errorf("AI proposer not configured")
+	}
+	var results []candidateResult
+	maxRounds := 3
+	for round := 1; round <= maxRounds; round++ {
+		req := &ai.ProposeRequest{
+			IndicatorCode: code,
+			Params:        params,
+			Round:         round,
+			MaxCandidates: exp.MaxCandidates / maxRounds,
+			PrevResults:   make([]ai.ProposePrevResult, len(results)),
+		}
+		for i, r := range results {
+			req.PrevResults[i] = ai.ProposePrevResult{
+				Params: r.Overrides, Score: r.Score, Grade: r.Grade,
+			}
+		}
+		proposed, err := ai.ProposeParams(ctx, w.aiProposer, req)
+		if err != nil {
+			w.log.Warn("AI proposal failed", zap.Error(err), zap.Int("round", round))
+			continue
+		}
+		for _, overrides := range proposed {
+			r, err := w.backtestAndScore(ctx, code, overrides, exp)
+			if err != nil {
+				w.log.Warn("AI backtest failed", zap.Error(err))
+				continue
+			}
+			results = append(results, r)
+		}
+	}
+	return results, nil
 }

@@ -3,7 +3,8 @@ package strategy
 import (
 	"context"
 	"time"
-	"encoding/json"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/structpb"
 	"fmt"
 	"strings"
 
@@ -52,11 +53,11 @@ func (s *StrategyServer) CreateSchedule(ctx context.Context, req *connect.Reques
 	if !validScheduleType(m.ScheduleType) {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid schedule type: %s", m.ScheduleType))
 	}
-	paramsJSON, err := json.Marshal(m.Parameters)
+	paramsJSON, err := proto.Marshal(mapToStruct(m.Parameters))
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("marshal parameters: %w", err))
 	}
-	cfgJSON, err := json.Marshal(scheduleConfigToMap(m.ScheduleConfig))
+	cfgJSON, err := proto.Marshal(m.ScheduleConfig)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal schedule config: %w", err))
 	}
@@ -104,7 +105,7 @@ func (s *StrategyServer) UpdateSchedule(ctx context.Context, req *connect.Reques
 		existing.Timeframe = *m.Timeframe
 	}
 	if m.Parameters != nil {
-		if b, err := json.Marshal(m.Parameters); err == nil {
+		if b, err := proto.Marshal(mapToStruct(m.Parameters)); err == nil {
 			existing.Parameters = b
 		} else {
 			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal parameters: %w", err))
@@ -114,7 +115,7 @@ func (s *StrategyServer) UpdateSchedule(ctx context.Context, req *connect.Reques
 		existing.ScheduleType = *m.ScheduleType
 	}
 	if m.ScheduleConfig != nil {
-		if b, err := json.Marshal(scheduleConfigToMap(m.ScheduleConfig)); err == nil {
+		if b, err := proto.Marshal(m.ScheduleConfig); err == nil {
 			existing.ScheduleConfig = b
 		} else {
 			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal schedule config: %w", err))
@@ -206,4 +207,10 @@ func (s *StrategyServer) WatchSchedules(ctx context.Context, req *connect.Reques
 			return err
 		}
 	}
+}
+func mapToStruct(m map[string]string) *structpb.Struct {
+	if m == nil { return nil }
+	fields := make(map[string]*structpb.Value, len(m))
+	for k, v := range m { fields[k] = structpb.NewStringValue(v) }
+	return &structpb.Struct{Fields: fields}
 }

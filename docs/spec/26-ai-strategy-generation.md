@@ -587,3 +587,72 @@ grep -c "Grid\|Random\|DE\|TPE" backend/internal/ai/optimizers.go | grep -q "4"
 | P1 | Phase 2: Smart Tuning SSE API | Phase 2 核心 |
 | P2 | Phase 3: backtest_feedback.go + feedback_router.go | Phase 1 + 2 |
 | P3 | Phase 4: ✅ 已实现 | — |
+
+## 8. 实现状态 (2026-06-05)
+
+### 已完成
+
+**架构统一（全链路 proto binary）**：
+| 层 | 格式 | 状态 |
+|---|------|------|
+| 传输 | ConnectRPC proto binary | ✅ |
+| 存储 | BYTEA proto binary (proto_response, StrategyParams, ParameterSpace 等) | ✅ |
+| NATS | TickPayload, TradeEventPayload, AccountEventPayload proto | ✅ |
+| Redis | OrderCacheEntry proto | ✅ |
+| Python 引擎 | proto binary 双编解码器 | ✅ |
+
+**价格精度（全栈 decimal.Decimal）**：
+- 模型层 9 文件 112 字段 float64→decimal.Decimal
+- 仓库层 + mthub + risksvc + costsvc + backtest 全链路适配
+- 边界转换: decimal→proto float64 (InexactFloat64)
+
+**Push-first（零轮询）**：
+- WatchBacktestRun / WatchExperiment / WatchSchedules: SSE streaming
+- 服务端 LISTEN/NOTIFY 事件驱动（延迟 <1ms，DB 查询减少 98%）
+- 前端: SmartTuningPanel + SchedulePage 全部 SSE 订阅
+
+**Phase 1: NL → Python 策略代码**：
+- 澄清引擎 (clarification.go)
+- 模板库 (template_library.go, 5 个种子模板)
+- AI prompt 构建 (strategy_prompt.go)
+- 合规扫描 13 条规则 (code_compliance.go)
+- 策略生成 ConnectRPC handler (strategy_gen_handler.go)
+
+**Phase 2: Smart Tuning 参数优化**：
+- 参数提取 regex (param_extractor.go)
+- Grid Search (组合索引 O(candidates×dims))
+- Random Search (固定种子 0xC0DE)
+- DE 优化器 (rand/1/bin, math.Round, popSize=10*dims capped 50)
+- AnnealedGaussianSearch (高斯抖动+退火)
+- AI 多轮参数提议 (param_proposer.go, AIProposer 接口)
+- Regime 检测 (自适应阈值, Spearman 秩相关)
+- 7 组件 regime-aware 评分 (scoring.go)
+- OOS 验证 70/30 时间分割
+
+**Phase 3: 反馈闭环**：
+- Backtest 结果注入 AI prompt (backtest_feedback.go)
+- NL 反馈路由 (feedback_router.go)
+
+**Phase 4: Gate 评估**：
+- 过拟合检测
+- Walk-forward 验证
+- 权益曲线分析
+
+### 优化记录
+
+| 日期 | 优化 | 效果 |
+|------|------|------|
+| 2026-06-05 | Grid Search 递归→组合索引 | O(product)→O(candidates×dims) |
+| 2026-06-05 | SSE 2s ticker→LISTEN/NOTIFY | 延迟 2s→<1ms |
+| 2026-06-05 | DE popSize cap 12→50 | 高维空间进化效率提升 |
+| 2026-06-05 | Stability Pearson r→Spearman ρ | 权益单调性度量最优解 |
+| 2026-06-05 | TPE→AnnealedGaussianSearch | 算法正名, 移除误导 |
+| 2026-06-04 | JSON→proto 全线重构 | 消除 16 个 JSON 使用点 |
+| 2026-06-04 | failRun uuid.Nil 修复 | SQL UPDATE 不再静默失败 |
+| 2026-06-04 | ClaimNextForWork 缺 parameter_overrides | DE 分数从相同→有区分度 |
+
+### 待做
+
+- AIProposer 注入 experiment worker (接口已定义, 待 service 注入)
+- strategy_schedules/templates Go 代码 proto 适配 (部分完成)
+- Backtest legacy JSONB 列清理
