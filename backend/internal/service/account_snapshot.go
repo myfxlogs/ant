@@ -21,7 +21,7 @@ var (
 // RecordBalanceSnapshot inserts a throttled equity/balance snapshot row.
 // Writes at most once per hour per account to bound disk growth
 // (unthrottled profit updates can fire every few seconds).
-func (s *AccountService) RecordBalanceSnapshot(ctx context.Context, id string, balance, equity, margin, freeMargin float64) error {
+func (s *AccountService) RecordBalanceSnapshot(ctx context.Context, id string, userID string, balance, equity, margin, freeMargin float64) error {
 	snapshotThrottleMu.Lock()
 	last, ok := snapshotThrottle[id]
 	// Sweep stale entries (> 2h idle) every ~100 calls to bound map growth.
@@ -38,9 +38,9 @@ func (s *AccountService) RecordBalanceSnapshot(ctx context.Context, id string, b
 	}
 
 	_, err := s.db.Exec(ctx,
-		`INSERT INTO account_balance_history (account_id, balance, equity, margin, free_margin, recorded_at)
-		 VALUES ($1, $2, $3, $4, $5, NOW())`,
-		id, balance, equity, margin, freeMargin)
+		`INSERT INTO account_balance_history (account_id, user_id, balance, equity, margin, free_margin, recorded_at)
+		 VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+		id, userID, balance, equity, margin, freeMargin)
 	if err != nil {
 		return fmt.Errorf("service: record balance snapshot: %w", err)
 	}

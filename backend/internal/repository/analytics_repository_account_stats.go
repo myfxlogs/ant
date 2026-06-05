@@ -160,12 +160,12 @@ func (r *AnalyticsRepository) GetBalanceAtTime(ctx context.Context, accountID uu
 }
 
 // RecordBalanceSnapshot inserts a periodic equity/balance snapshot.
-func (r *AnalyticsRepository) RecordBalanceSnapshot(ctx context.Context, accountID uuid.UUID, balance, equity, margin, freeMargin float64) error {
+func (r *AnalyticsRepository) RecordBalanceSnapshot(ctx context.Context, accountID, userID uuid.UUID, balance, equity, margin, freeMargin float64) error {
 	query := `
-		INSERT INTO account_balance_history (account_id, balance, equity, margin, free_margin, recorded_at)
-		VALUES ($1, $2, $3, $4, $5, NOW())
+		INSERT INTO account_balance_history (account_id, user_id, balance, equity, margin, free_margin, recorded_at)
+		VALUES ($1, $2, $3, $4, $5, $6, NOW())
 	`
-	_, err := r.db.Exec(ctx, query, accountID, balance, equity, margin, freeMargin)
+	_, err := r.db.Exec(ctx, query, accountID, userID, balance, equity, margin, freeMargin)
 	return err
 }
 

@@ -108,7 +108,7 @@ func startMdGatewayPipeline(
 				}
 				lastSnapshot[accountID] = time.Now()
 				snapshotMu.Unlock()
-				if err := accountSvc.RecordBalanceSnapshot(writeCtx, accountID, p.Balance, p.Equity, p.Margin, p.FreeMargin); err != nil {
+				if err := accountSvc.RecordBalanceSnapshot(writeCtx, accountID, userID, p.Balance, p.Equity, p.Margin, p.FreeMargin); err != nil {
 					log.Debug("OnAccountProfit: snapshot insert failed", zap.String("account", accountID), zap.Error(err))
 				}
 			}()
