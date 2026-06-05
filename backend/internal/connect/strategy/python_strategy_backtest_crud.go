@@ -115,13 +115,19 @@ func (s *PythonStrategyServer) WatchBacktestRun(ctx context.Context, req *connec
 		return err
 	}
 	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
-	ticker := time.NewTicker(2 * time.Second)
+	// LISTEN for status changes (push-first), fallback to 30s ticker
+	notifCh, listenCancel, _ := s.pgListen.Listen(ctx, "backtest_status")
+	if listenCancel != nil {
+		defer listenCancel()
+	}
+	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 	prevStatus := ""
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
+		case <-notifCh:
 		case <-ticker.C:
 		}
 		run, err := s.backtestRepo.GetByID(ctx, userID, runID)

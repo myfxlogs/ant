@@ -203,5 +203,8 @@ func (r *BacktestRunRepository) UpdateAsyncFields(ctx context.Context, userID, r
 	if err != nil {
 		return fmt.Errorf("update async fields: %w", err)
 	}
+	if status == "SUCCEEDED" || status == "FAILED" || status == "CANCELED" {
+		_, _ = r.db.Exec(ctx, "SELECT pg_notify('backtest_status', $1)", runID.String())
+	}
 	return nil
 }

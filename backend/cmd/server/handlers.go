@@ -28,6 +28,7 @@ import (
 	"anttrader/internal/mdgateway/adapter/brokersearch"
 	"anttrader/internal/mthub"
 	"anttrader/internal/notifier"
+	"anttrader/internal/pglisten"
 	"anttrader/internal/pkg/secretbox"
 	"anttrader/internal/repository"
 	"anttrader/internal/risksvc"
@@ -126,12 +127,15 @@ func registerHandlers(
 
 	strategySvc := service.NewStrategySvc(pool)
 	strategyServer := strategy.NewStrategyServer(strategySvc, log)
+	pgListen := pglisten.New(pool, log)
+	strategyServer.SetPgListen(pgListen)
 	mux.Handle(antv1c.NewStrategyServiceHandler(strategyServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	// Mock/stub handlers — return mock data for services not yet connected to real backends.
 	// Real: SystemAI, AIPrimary, Job, ScheduleHealth
 	// Mock: PythonStrategy, CodeAssist, BacktestTrades, EconomicData
 	pythonStrategyServer := strategy.NewPythonStrategyServer(backtestRunRepo, log)
+		pythonStrategyServer.SetPgListen(pgListen)
 	if cfg.StrategyServiceURL != "" {
 		pythonClient := strategysvc.NewPythonClient(cfg.StrategyServiceURL)
 		pythonStrategyServer.SetClient(pythonClient)

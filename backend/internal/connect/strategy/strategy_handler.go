@@ -10,6 +10,7 @@ import (
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/service"
+	"anttrader/internal/pglisten"
 	"anttrader/internal/strategysvc"
 )
 
@@ -17,6 +18,7 @@ type StrategyServer struct {
 	svc    *service.StrategySvc
 	client *strategysvc.PythonClient // S2.5: real Python backtest
 	log    *zap.Logger
+	pgListen    *pglisten.Listener
 }
 
 var _ antv1c.StrategyServiceHandler = (*StrategyServer)(nil)
@@ -41,3 +43,5 @@ func (s *StrategyServer) userID(ctx context.Context) uuid.UUID {
 	}
 	return id
 }
+
+func (s *StrategyServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }

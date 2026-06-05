@@ -21,6 +21,7 @@ import (
 	"anttrader/internal/mdgateway"
 	"anttrader/internal/mthub"
 	"anttrader/internal/notifier"
+	"anttrader/internal/pglisten"
 	"anttrader/internal/repository"
 	"anttrader/internal/service"
 	antredis "anttrader/internal/storage/redis"
@@ -71,6 +72,7 @@ func registerSREHandlers(
 	mux.Handle(antv1c.NewMarketRegimeServiceHandler(marketRegimeServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	strategyExperimentServer := strategy.NewStrategyExperimentServer(strategyExperimentRepo, log)
+	strategyExperimentServer.SetPgListen(pglisten.New(pool, log))
 	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, connectrpc.WithInterceptors(authInterceptor)))
 	backtestRunRepo := repository.NewBacktestRunRepository(pool)
 	experimentWorker := strategy.NewExperimentWorker(strategyExperimentRepo, backtestRunRepo, log)

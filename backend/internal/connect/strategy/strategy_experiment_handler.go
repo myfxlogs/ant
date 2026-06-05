@@ -15,12 +15,14 @@ import (
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/repository"
+	"anttrader/internal/pglisten"
 )
 
 // StrategyExperimentServer implements ant.v1.StrategyExperimentServiceHandler.
 type StrategyExperimentServer struct {
 	repo *repository.StrategyExperimentRepository
 	log  *zap.Logger
+	pgListen *pglisten.Listener
 }
 
 var _ antv1c.StrategyExperimentServiceHandler = (*StrategyExperimentServer)(nil)
@@ -206,13 +208,18 @@ func (s *StrategyExperimentServer) WatchExperiment(ctx context.Context, req *con
 	}
 
 	prevStatus := ""
-	ticker := time.NewTicker(2 * time.Second)
+	notifCh, listenCancel, _ := s.pgListen.Listen(ctx, "experiment_status")
+	if listenCancel != nil {
+		defer listenCancel()
+	}
+	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
+		case <-notifCh:
 		case <-ticker.C:
 		}
 
@@ -257,3 +264,5 @@ func (s *StrategyExperimentServer) WatchExperiment(ctx context.Context, req *con
 		}
 	}
 }
+
+func (s *StrategyExperimentServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }

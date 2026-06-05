@@ -166,13 +166,18 @@ func validScheduleType(t string) bool {
 func (s *StrategyServer) WatchSchedules(ctx context.Context, req *connect.Request[antv1.WatchSchedulesRequest], stream *connect.ServerStream[antv1.WatchSchedulesEvent]) error {
 	uid := s.userID(ctx)
 	var prevHash string
-	ticker := time.NewTicker(2 * time.Second)
+	notifCh, listenCancel, _ := s.pgListen.Listen(ctx, "schedule_change")
+	if listenCancel != nil {
+		defer listenCancel()
+	}
+	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
+		case <-notifCh:
 		case <-ticker.C:
 		}
 

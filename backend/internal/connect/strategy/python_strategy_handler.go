@@ -15,6 +15,7 @@ import (
 	"anttrader/internal/interceptor"
 	"anttrader/internal/repository"
 	"anttrader/internal/strategysvc"
+	"anttrader/internal/pglisten"
 )
 
 // PythonStrategyServer implements ant.v1.PythonStrategyServiceHandler.
@@ -24,6 +25,7 @@ type PythonStrategyServer struct {
 	client        *strategysvc.PythonClient
 	backtestClient antv1c.BacktestServiceClient
 	marketDataRepo *repository.MarketDataRepository
+	pgListen       *pglisten.Listener
 }
 
 func (s *PythonStrategyServer) SetMarketDataRepo(r *repository.MarketDataRepository) {
@@ -241,3 +243,5 @@ def run(context):
 		},
 	}), nil
 }
+
+func (s *PythonStrategyServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
