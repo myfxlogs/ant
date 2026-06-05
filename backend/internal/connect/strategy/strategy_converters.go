@@ -3,6 +3,8 @@ package strategy
 import (
 	"encoding/json"
 
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	antv1 "anttrader/gen/proto/ant/v1"
@@ -12,7 +14,7 @@ import (
 // --- Proto conversion helpers ---
 
 func templateRowToProto(r *service.TemplateRow) *antv1.StrategyTemplate {
-	params := mustParseJSON[[]*antv1.TemplateParameter](r.Parameters, nil)
+	params := unmarshalTemplateParams(r.Parameters)
 	return &antv1.StrategyTemplate{
 		Id:          r.ID.String(),
 		UserId:      r.UserID.String(),
@@ -31,30 +33,25 @@ func templateRowToProto(r *service.TemplateRow) *antv1.StrategyTemplate {
 }
 
 func scheduleRowToProto(r *service.ScheduleRow) *antv1.StrategySchedule {
-	params := mustParseJSON[map[string]string](r.Parameters, map[string]string{})
-	cfg := mustParseJSON[scheduleConfigMap](r.ScheduleConfig, scheduleConfigMap{})
-	metrics := mustParseJSON[*antv1.BacktestMetrics](r.BacktestMetrics, nil)
-	reasons := mustParseJSON[[]string](r.RiskReasons, []string{})
-	warnings := mustParseJSON[[]string](r.RiskWarnings, []string{})
+	// Parameters stored as proto binary (structpb.Struct → map[string]string).
+	params := unmarshalScheduleParams(r.Parameters)
+	// ScheduleConfig stored as proto binary.
+	cfg := unmarshalScheduleConfig(r.ScheduleConfig)
+	metrics := unmarshalProtoBacktestMetrics(r.BacktestMetrics)
+	reasons := unmarshalProtoStringList(r.RiskReasons)
+	warnings := unmarshalProtoStringList(r.RiskWarnings)
 
 	s := &antv1.StrategySchedule{
-		Id:           r.ID.String(),
-		UserId:       r.UserID.String(),
-		TemplateId:   r.TemplateID.String(),
-		AccountId:    r.AccountID.String(),
-		Name:         r.Name,
-		Symbol:       r.Symbol,
-		Timeframe:    r.Timeframe,
-		Parameters:   params,
-		ScheduleType: r.ScheduleType,
-		ScheduleConfig: &antv1.ScheduleConfig{
-			CronExpression:           cfg.CronExpression,
-			IntervalMs:               cfg.IntervalMs,
-			EventTrigger:             cfg.EventTrigger,
-			TriggerMode:              cfg.TriggerMode,
-			StableOverrideIntervalMs: cfg.StableOverrideIntervalMs,
-			HfCooldownMs:             cfg.HfCooldownMs,
-		},
+		Id:             r.ID.String(),
+		UserId:         r.UserID.String(),
+		TemplateId:     r.TemplateID.String(),
+		AccountId:      r.AccountID.String(),
+		Name:           r.Name,
+		Symbol:         r.Symbol,
+		Timeframe:      r.Timeframe,
+		Parameters:     params,
+		ScheduleType:   r.ScheduleType,
+		ScheduleConfig: cfg,
 		BacktestMetrics: metrics,
 		RiskLevel:       r.RiskLevel,
 		RiskReasons:     reasons,
@@ -82,27 +79,145 @@ func scheduleRowToProto(r *service.ScheduleRow) *antv1.StrategySchedule {
 	return s
 }
 
-type scheduleConfigMap struct {
-	CronExpression           string `json:"cron_expression"`
-	IntervalMs               int64  `json:"interval_ms"`
-	EventTrigger             string `json:"event_trigger"`
-	TriggerMode              string `json:"trigger_mode"`
-	StableOverrideIntervalMs int64  `json:"stable_override_interval_ms"`
-	HfCooldownMs             int64  `json:"hf_cooldown_ms"`
+// --- Proto binary read helpers ---
+
+// unmarshalScheduleParams unmarshals proto binary Parameters (stored as
+// structpb.Struct) into a map[string]string.
+func unmarshalScheduleParams(raw []byte) map[string]string {
+	if len(raw) == 0 {
+		return map[string]string{}
+	}
+	var sp structpb.Struct
+	if err := proto.Unmarshal(raw, &sp); err != nil {
+		return map[string]string{}
+	}
+	out := make(map[string]string, len(sp.Fields))
+	for k, v := range sp.Fields {
+		out[k] = v.GetStringValue()
+	}
+	return out
 }
 
-func scheduleConfigToMap(cfg *antv1.ScheduleConfig) scheduleConfigMap {
-	if cfg == nil {
-		return scheduleConfigMap{}
+// unmarshalScheduleConfig unmarshals proto binary ScheduleConfig.
+func unmarshalScheduleConfig(raw []byte) *antv1.ScheduleConfig {
+	if len(raw) == 0 {
+		return &antv1.ScheduleConfig{}
 	}
-	return scheduleConfigMap{
-		CronExpression:           cfg.CronExpression,
-		IntervalMs:               cfg.IntervalMs,
-		EventTrigger:             cfg.EventTrigger,
-		TriggerMode:              cfg.TriggerMode,
-		StableOverrideIntervalMs: cfg.StableOverrideIntervalMs,
-		HfCooldownMs:             cfg.HfCooldownMs,
+	var cfg antv1.ScheduleConfig
+	if err := proto.Unmarshal(raw, &cfg); err != nil {
+		return &antv1.ScheduleConfig{}
 	}
+	return &cfg
+}
+
+// unmarshalTemplateParams unmarshals proto binary template parameters.
+// Stored by marshaling a StrategyTemplate wrapper containing only the
+// parameters field — decoding the wrapper recovers the repeated field.
+func unmarshalTemplateParams(raw []byte) []*antv1.TemplateParameter {
+	if len(raw) == 0 {
+		return nil
+	}
+	// Try proto first (new format): unmarshal as StrategyTemplate wrapper.
+	var wrapper antv1.StrategyTemplate
+	if err := proto.Unmarshal(raw, &wrapper); err == nil && len(wrapper.Parameters) > 0 {
+		return wrapper.Parameters
+	}
+	// Fallback: legacy JSON format.
+	return unmarshalJSONTemplateParams(raw)
+}
+
+// unmarshalProtoBacktestMetrics unmarshals proto binary BacktestMetrics.
+func unmarshalProtoBacktestMetrics(raw []byte) *antv1.BacktestMetrics {
+	if len(raw) == 0 {
+		return nil
+	}
+	var m antv1.BacktestMetrics
+	if err := proto.Unmarshal(raw, &m); err != nil {
+		return nil
+	}
+	return &m
+}
+
+// unmarshalProtoStringList unmarshals proto binary repeated string (stored as
+// structpb.ListValue or JSON fallback).
+func unmarshalProtoStringList(raw []byte) []string {
+	if len(raw) == 0 {
+		return []string{}
+	}
+	// Try proto: structpb.ListValue
+	var lv structpb.ListValue
+	if err := proto.Unmarshal(raw, &lv); err == nil {
+		out := make([]string, 0, len(lv.Values))
+		for _, v := range lv.Values {
+			out = append(out, v.GetStringValue())
+		}
+		return out
+	}
+	// Fallback: legacy JSON array.
+	return mustParseJSON[[]string](raw, []string{})
+}
+
+// unmarshalJSONTemplateParams is a JSON fallback for legacy template parameter data.
+func unmarshalJSONTemplateParams(raw []byte) []*antv1.TemplateParameter {
+	return mustParseJSON[[]*antv1.TemplateParameter](raw, nil)
+}
+
+// mustParseJSON attempts to parse raw as JSON into T. Returns fallback on failure.
+func mustParseJSON[T any](raw []byte, fallback T) T {
+	if len(raw) == 0 {
+		return fallback
+	}
+	var out T
+	if err := json.Unmarshal(raw, &out); err != nil {
+		return fallback
+	}
+	return out
+}
+
+// paramsToProto marshals template parameters as proto binary.
+// Uses a StrategyTemplate wrapper to encode the repeated field.
+func templateParamsToProto(params []*antv1.TemplateParameter) []byte {
+	if len(params) == 0 {
+		return []byte{}
+	}
+	wrapper := &antv1.StrategyTemplate{Parameters: params}
+	b, err := proto.Marshal(wrapper)
+	if err != nil {
+		return nil
+	}
+	return b
+}
+
+// scheduleParamsToProto marshals a map[string]string as structpb.Struct proto binary.
+func scheduleParamsToProto(params map[string]string) []byte {
+	if len(params) == 0 {
+		return []byte{}
+	}
+	fields := make(map[string]*structpb.Value, len(params))
+	for k, v := range params {
+		fields[k] = structpb.NewStringValue(v)
+	}
+	b, err := proto.Marshal(&structpb.Struct{Fields: fields})
+	if err != nil {
+		return nil
+	}
+	return b
+}
+
+// stringListToProto marshals []string as structpb.ListValue proto binary.
+func stringListToProto(items []string) []byte {
+	if len(items) == 0 {
+		return []byte{}
+	}
+	vals := make([]*structpb.Value, len(items))
+	for i, s := range items {
+		vals[i] = structpb.NewStringValue(s)
+	}
+	b, err := proto.Marshal(&structpb.ListValue{Values: vals})
+	if err != nil {
+		return nil
+	}
+	return b
 }
 
 func signalRowToProto(r *service.SignalRow) *antv1.StrategySignal {
@@ -124,15 +239,4 @@ func signalRowToProto(r *service.SignalRow) *antv1.StrategySignal {
 		s.ExecutedAt = timestamppb.New(*r.ExecutedAt)
 	}
 	return s
-}
-
-func mustParseJSON[T any](raw []byte, fallback T) T {
-	if len(raw) == 0 {
-		return fallback
-	}
-	var out T
-	if err := json.Unmarshal(raw, &out); err != nil {
-		return fallback
-	}
-	return out
 }

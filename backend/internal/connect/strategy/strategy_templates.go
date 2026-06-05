@@ -2,7 +2,6 @@ package strategy
 
 import (
 	"context"
-	"encoding/json"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -46,7 +45,7 @@ func (s *StrategyServer) CreateTemplate(ctx context.Context, req *connect.Reques
 		Description: m.Description,
 		Code:        m.Code,
 		Status:      "published",
-		Parameters:  paramsToJSON(m.Parameters),
+		Parameters:  templateParamsToProto(m.Parameters),
 		IsPublic:    m.IsPublic,
 		Tags:        m.Tags,
 	}
@@ -76,7 +75,7 @@ func (s *StrategyServer) UpdateTemplate(ctx context.Context, req *connect.Reques
 		existing.Code = *m.Code
 	}
 	if len(m.Parameters) > 0 {
-		existing.Parameters = paramsToJSON(m.Parameters)
+		existing.Parameters = templateParamsToProto(m.Parameters)
 	}
 	if m.IsPublic != nil {
 		existing.IsPublic = *m.IsPublic
@@ -135,7 +134,7 @@ func (s *StrategyServer) UpdateTemplateDraft(ctx context.Context, req *connect.R
 		existing.Code = *m.Code
 	}
 	if len(m.Parameters) > 0 {
-		existing.Parameters = paramsToJSON(m.Parameters)
+		existing.Parameters = templateParamsToProto(m.Parameters)
 	}
 	if m.Tags != nil {
 		existing.Tags = m.Tags
@@ -171,15 +170,4 @@ func (s *StrategyServer) CancelTemplateDraft(ctx context.Context, req *connect.R
 		return nil, err
 	}
 	return connect.NewResponse(&emptypb.Empty{}), nil
-}
-
-func paramsToJSON(params []*antv1.TemplateParameter) []byte {
-	if len(params) == 0 {
-		return []byte("[]")
-	}
-	b, err := json.Marshal(params)
-	if err != nil {
-		return nil
-	}
-	return b
 }

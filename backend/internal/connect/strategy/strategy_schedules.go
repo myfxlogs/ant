@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/structpb"
 	"fmt"
 	"strings"
 
@@ -53,11 +52,7 @@ func (s *StrategyServer) CreateSchedule(ctx context.Context, req *connect.Reques
 	if !validScheduleType(m.ScheduleType) {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid schedule type: %s", m.ScheduleType))
 	}
-	paramsJSON, err := proto.Marshal(mapToStruct(m.Parameters))
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("marshal parameters: %w", err))
-	}
-	cfgJSON, err := proto.Marshal(m.ScheduleConfig)
+	cfgBytes, err := proto.Marshal(m.ScheduleConfig)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal schedule config: %w", err))
 	}
@@ -73,11 +68,11 @@ func (s *StrategyServer) CreateSchedule(ctx context.Context, req *connect.Reques
 		Name:           m.Name,
 		Symbol:         m.Symbol,
 		Timeframe:      m.Timeframe,
-		Parameters:     paramsJSON,
+		Parameters:     scheduleParamsToProto(m.Parameters),
 		ScheduleType:   m.ScheduleType,
-		ScheduleConfig: cfgJSON,
-		RiskReasons:    []byte("[]"),
-		RiskWarnings:   []byte("[]"),
+		ScheduleConfig: cfgBytes,
+		RiskReasons:    stringListToProto(nil),
+		RiskWarnings:   stringListToProto(nil),
 	}
 	if err := s.svc.CreateSchedule(ctx, &r); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -105,11 +100,7 @@ func (s *StrategyServer) UpdateSchedule(ctx context.Context, req *connect.Reques
 		existing.Timeframe = *m.Timeframe
 	}
 	if m.Parameters != nil {
-		if b, err := proto.Marshal(mapToStruct(m.Parameters)); err == nil {
-			existing.Parameters = b
-		} else {
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal parameters: %w", err))
-		}
+		existing.Parameters = scheduleParamsToProto(m.Parameters)
 	}
 	if m.ScheduleType != nil {
 		existing.ScheduleType = *m.ScheduleType
@@ -207,10 +198,4 @@ func (s *StrategyServer) WatchSchedules(ctx context.Context, req *connect.Reques
 			return err
 		}
 	}
-}
-func mapToStruct(m map[string]string) *structpb.Struct {
-	if m == nil { return nil }
-	fields := make(map[string]*structpb.Value, len(m))
-	for k, v := range m { fields[k] = structpb.NewStringValue(v) }
-	return &structpb.Struct{Fields: fields}
 }
