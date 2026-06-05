@@ -57,7 +57,7 @@ func TestTPEOptimization(t *testing.T) {
 		{Name: "slow", Type: "int", Default: 30, Min: 20, Max: 100, Step: 10},
 	}
 	space := NormalizeSpace(params)
-	tpe := NewTPEOptimizer(space, 30)
+	tpe := NewAnnealedGaussianOptimizer(space, 30)
 
 	// Objective: optimum at fast=20, slow=40
 	objective := func(overrides map[string]interface{}) float64 {
