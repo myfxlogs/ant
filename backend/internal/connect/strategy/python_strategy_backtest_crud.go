@@ -1,0 +1,177 @@
+package strategy
+
+import (
+	"context"
+	"time"
+
+	"go.uber.org/zap"
+	"connectrpc.com/connect"
+	"github.com/google/uuid"
+
+	antv1 "anttrader/gen/proto/ant/v1"
+	"anttrader/internal/interceptor"
+	"anttrader/internal/repository"
+)
+
+func (s *PythonStrategyServer) StartBacktestRun(ctx context.Context, req *connect.Request[antv1.StartBacktestRunRequest]) (*connect.Response[antv1.StartBacktestRunResponse], error) {
+	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	accountID, _ := uuid.Parse(req.Msg.AccountId)
+	mode := backtestModeToString(req.Msg.Mode)
+	run := &repository.BacktestRun{
+		ID:            uuid.New(),
+		UserID:        userID,
+		AccountID:     accountID,
+		Symbol:        req.Msg.Symbol,
+		Timeframe:     req.Msg.Timeframe,
+		Mode:          mode,
+		Status:        "PENDING",
+		StrategyCode:  strPtr(req.Msg.Code),
+		InitialCapital: f64Ptr(req.Msg.InitialCapital),
+	}
+	if run.Mode == "" {
+		run.Mode = "KLINE_RANGE"
+	}
+	if req.Msg.InitialCapital <= 0 {
+		run.InitialCapital = f64Ptr(10000)
+	}
+	if req.Msg.From != nil {
+		t := req.Msg.From.AsTime()
+		run.FromTs = &t
+	}
+	if req.Msg.To != nil {
+		t := req.Msg.To.AsTime()
+		run.ToTs = &t
+	}
+	run.ExtraSymbols = req.Msg.ExtraSymbols
+	if req.Msg.DatasetId != nil {
+		id, _ := uuid.Parse(*req.Msg.DatasetId)
+		if id != uuid.Nil {
+			run.DatasetID = &id
+		}
+	}
+	if req.Msg.TemplateId != nil {
+		id, _ := uuid.Parse(*req.Msg.TemplateId)
+		if id != uuid.Nil {
+			run.TemplateID = &id
+		}
+	}
+	runID, err := s.backtestRepo.Create(ctx, run)
+	if err != nil {
+		s.log.Error("StartBacktestRun: create", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.StartBacktestRunResponse{
+		RunId: runID.String(),
+	}), nil
+}
+
+func (s *PythonStrategyServer) GetBacktestRun(ctx context.Context, req *connect.Request[antv1.GetBacktestRunRequest]) (*connect.Response[antv1.GetBacktestRunResponse], error) {
+	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	runID, err := uuid.Parse(req.Msg.RunId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	run, err := s.backtestRepo.GetByID(ctx, userID, runID)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeNotFound, err)
+	}
+	return connect.NewResponse(&antv1.GetBacktestRunResponse{
+		Run:         toProtoBacktestRun(run),
+		Metrics:     parseMetrics(run.ProtoResponse),
+		EquityCurve: parseEquityCurve(run.ProtoResponse),
+		Risk:        parseRisk(run.ProtoResponse),
+	}), nil
+}
+
+func (s *PythonStrategyServer) ListBacktestRuns(ctx context.Context, req *connect.Request[antv1.ListBacktestRunsRequest]) (*connect.Response[antv1.ListBacktestRunsResponse], error) {
+	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	var accountID *uuid.UUID
+	if req.Msg.AccountId != nil && *req.Msg.AccountId != "" {
+		id, err := uuid.Parse(*req.Msg.AccountId)
+		if err == nil {
+			accountID = &id
+		}
+	}
+	limit := int(req.Msg.Limit)
+	if limit <= 0 {
+		limit = 50
+	}
+	offset := int(req.Msg.Offset)
+	runs, err := s.backtestRepo.ListByUser(ctx, userID, accountID, limit, offset)
+	if err != nil {
+		s.log.Error("ListBacktestRuns", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	out := make([]*antv1.BacktestRun, 0, len(runs))
+	for _, r := range runs {
+		out = append(out, toProtoBacktestRun(r))
+	}
+	return connect.NewResponse(&antv1.ListBacktestRunsResponse{Runs: out}), nil
+}
+
+func (s *PythonStrategyServer) WatchBacktestRun(ctx context.Context, req *connect.Request[antv1.WatchBacktestRunRequest], stream *connect.ServerStream[antv1.BacktestRunUpdate]) error {
+	runID, err := uuid.Parse(req.Msg.RunId)
+	if err != nil {
+		return err
+	}
+	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	ticker := time.NewTicker(2 * time.Second)
+	defer ticker.Stop()
+	prevStatus := ""
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-ticker.C:
+		}
+		run, err := s.backtestRepo.GetByID(ctx, userID, runID)
+		if err != nil || run == nil {
+			continue
+		}
+		if run.Status == prevStatus {
+			continue
+		}
+		prevStatus = run.Status
+		if err := stream.Send(&antv1.BacktestRunUpdate{
+			Run:         toProtoBacktestRun(run),
+			Metrics:     parseMetrics(run.ProtoResponse),
+			EquityCurve: parseEquityCurve(run.ProtoResponse),
+			Risk:        parseRisk(run.ProtoResponse),
+		}); err != nil {
+			return err
+		}
+		if run.Status == "SUCCEEDED" || run.Status == "FAILED" || run.Status == "CANCELED" {
+			return nil
+		}
+	}
+}
+
+func (s *PythonStrategyServer) CancelBacktestRun(ctx context.Context, req *connect.Request[antv1.CancelBacktestRunRequest]) (*connect.Response[antv1.CancelBacktestRunResponse], error) {
+	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	runID, err := uuid.Parse(req.Msg.RunId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	if err := s.backtestRepo.RequestCancel(ctx, userID, runID); err != nil {
+		s.log.Error("CancelBacktestRun", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	run, _ := s.backtestRepo.GetByID(ctx, userID, runID)
+	return connect.NewResponse(&antv1.CancelBacktestRunResponse{
+		Run: toProtoBacktestRun(run),
+	}), nil
+}
+
+func (s *PythonStrategyServer) DeleteBacktestRun(ctx context.Context, req *connect.Request[antv1.DeleteBacktestRunRequest]) (*connect.Response[antv1.DeleteBacktestRunResponse], error) {
+	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	runID, err := uuid.Parse(req.Msg.RunId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	deleted, err := s.backtestRepo.Delete(ctx, userID, runID)
+	if err != nil {
+		s.log.Error("DeleteBacktestRun", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.DeleteBacktestRunResponse{Deleted: deleted}), nil
+}
