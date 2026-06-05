@@ -152,9 +152,9 @@ func (dc *DerivedComputer) recalculate() {
 		ads := &AccountDerivedState{AccountID: accountID}
 		positions := cache.GetPositionsByAccount(accountID)
 		for _, pos := range positions {
-			notional := math.Abs(pos.NetVolume * pos.AvgPrice)
+			notional := pos.NetVolume.Mul(pos.AvgPrice).Abs().InexactFloat64()
 			ads.Exposure += notional
-			ads.GrossPnL += pos.PnL
+			ads.GrossPnL += pos.PnL.InexactFloat64()
 			// Net = Gross - commissions - swap (accumulated from order fills).
 			ads.NetPnL = ads.GrossPnL - ads.Commission - ads.Swap
 			// Simplified margin: 1% of notional as initial margin proxy.

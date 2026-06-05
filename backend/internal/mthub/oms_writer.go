@@ -24,6 +24,7 @@
 package mthub
 
 import (
+	"github.com/shopspring/decimal"
 	"context"
 	"fmt"
 
@@ -112,7 +113,7 @@ func hashToNegative(id string) int64 {
 	return -int64(h&0x7FFFFFFFFFFFFFFF) - 1
 }
 
-func (w *OmsWriter) InsertOrder(ctx context.Context, orderID, accountID, platform, symbol string, orderType int16, volume, price, stopLoss, takeProfit float64) error {
+func (w *OmsWriter) InsertOrder(ctx context.Context, orderID, accountID, platform, symbol string, orderType int16, volume, price, stopLoss, takeProfit decimal.Decimal) error {
 	if platform == "" {
 		platform = "MT5"
 	}

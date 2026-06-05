@@ -9,6 +9,7 @@
 package mthub
 
 import (
+	"github.com/shopspring/decimal"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -53,10 +54,10 @@ type TradeEvent struct {
 	Canonical         string         `json:"canonical"`
 	Side              string         `json:"side"`
 	OrderType         string         `json:"order_type"`
-	Volume            float64        `json:"volume"`
-	Price             float64        `json:"price"`
-	StopLoss          float64        `json:"stop_loss"`
-	TakeProfit        float64        `json:"take_profit"`
+	Volume            decimal.Decimal        `json:"volume"`
+	Price             decimal.Decimal        `json:"price"`
+	StopLoss          decimal.Decimal        `json:"stop_loss"`
+	TakeProfit        decimal.Decimal        `json:"take_profit"`
 	FromState         string         `json:"from_state"`
 	ToState           string         `json:"to_state"`
 	Timestamp         time.Time      `json:"timestamp"`

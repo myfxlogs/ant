@@ -56,8 +56,8 @@ func (s *MtHubService) PlaceOrder(ctx context.Context, req *OrderRequest) (*Orde
 	if s.omsWriter != nil {
 		orderID = IdempotencyKey(req.AccountID, req.ClientID)
 		if err := s.omsWriter.InsertOrder(ctx, orderID, req.AccountID, platform(req.AccountID, s.hub), req.Canonical,
-			int16(req.OrderType), lossyFloat64(req.Volume), lossyFloat64(req.Price),
-			lossyFloat64(req.StopLoss), lossyFloat64(req.TakeProfit)); err != nil {
+			int16(req.OrderType), req.Volume, req.Price,
+			req.StopLoss, req.TakeProfit); err != nil {
 			return nil, fmt.Errorf("oms insert: %w", err)
 		}
 	}
@@ -117,8 +117,8 @@ func (s *MtHubService) estimateOrderCost(ctx context.Context, req *OrderRequest)
 	est := s.costEstimator.Estimate(ctx, costsvc.EstimateParams{
 		Symbol:       req.Canonical,
 		Side:         sideToString(req.Side),
-		Lots:         lossyFloat64(req.Volume),
-		Price:        lossyFloat64(req.Price),
+		Lots:         req.Volume.InexactFloat64(),
+		Price:        req.Price.InexactFloat64(),
 		ContractSize: 100000,
 	})
 	b, err := json.Marshal(est)
@@ -142,10 +142,10 @@ func (s *MtHubService) publishOrderCreatedEvent(ctx context.Context, req *OrderR
 		Canonical:         req.Canonical,
 		Side:              sideToString(req.Side),
 		OrderType:         orderTypeToString(req.OrderType),
-		Volume:            lossyFloat64(req.Volume),
-		Price:             lossyFloat64(req.Price),
-		StopLoss:          lossyFloat64(req.StopLoss),
-		TakeProfit:        lossyFloat64(req.TakeProfit),
+		Volume:            req.Volume,
+		Price:             req.Price,
+		StopLoss:          req.StopLoss,
+		TakeProfit:        req.TakeProfit,
 		ToState:           "SUBMITTED",
 		FromState:         string(OMSStateRiskApproved),
 		Timestamp:         Clk.Now(),
@@ -218,7 +218,7 @@ func (s *MtHubService) CloseOrder(ctx context.Context, accountID string, ticket 
 	if s.omsWriter != nil {
 		pf := platform(accountID, s.hub)
 		if err := s.omsWriter.InsertOrder(ctx, closeOrderID, accountID, pf, "",
-			int16(OrderMarket), lossyFloat64(lots), 0, 0, 0); err != nil {
+			int16(OrderMarket), lots, decimal.Zero, decimal.Zero, decimal.Zero); err != nil {
 			if s.logger != nil {
 				s.logger.Warn("CloseOrder: OMS insert skipped", zap.Error(err))
 			}

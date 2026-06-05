@@ -12,10 +12,10 @@
 package mthub
 
 import (
+	"github.com/shopspring/decimal"
 	"context"
 	"encoding/json"
 	"fmt"
-	"math"
 	"sync"
 	"time"
 
@@ -36,8 +36,8 @@ type OrderStateCacheEntry struct {
 	State     string    `json:"state"`
 	Canonical string    `json:"canonical"`
 	Side      string    `json:"side"`
-	Volume    float64   `json:"volume"`
-	Price     float64   `json:"price"`
+	Volume    decimal.Decimal   `json:"volume"`
+	Price     decimal.Decimal   `json:"price"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
@@ -45,9 +45,9 @@ type OrderStateCacheEntry struct {
 type PositionCacheEntry struct {
 	AccountID    string    `json:"account_id"`
 	Canonical    string    `json:"canonical"`
-	NetVolume    float64   `json:"net_volume"`
-	AvgPrice     float64   `json:"avg_price"`
-	PnL          float64   `json:"pnl"`
+	NetVolume    decimal.Decimal   `json:"net_volume"`
+	AvgPrice     decimal.Decimal   `json:"avg_price"`
+	PnL          decimal.Decimal   `json:"pnl"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
@@ -144,17 +144,17 @@ func (c *StateCache) ApplyEvent(ev *TradeEvent) {
 		if ev.Side == "SELL" {
 			multiplier = -1.0
 		}
-		absOld := math.Abs(pos.NetVolume)
-		pos.NetVolume += ev.Volume * multiplier
-		absNew := math.Abs(pos.NetVolume)
-		if ev.Price > 0 {
-			if absOld == 0 {
+		absOld := pos.NetVolume.Abs()
+		pos.NetVolume = pos.NetVolume.Add(ev.Volume).Mul(decimal.NewFromFloat(multiplier))
+		absNew := pos.NetVolume.Abs()
+		if ev.Price.GreaterThan(decimal.Zero) {
+			if absOld.IsZero() {
 				pos.AvgPrice = ev.Price
-			} else if absNew > absOld {
+			} else if absNew.GreaterThan(absOld) {
 				// Position increased: weighted average of new fill.
-				increaseVol := absNew - absOld
-				if increaseVol > 0 {
-					pos.AvgPrice = (pos.AvgPrice*absOld + ev.Price*increaseVol) / absNew
+				increaseVol := absNew.Sub(absOld)
+				if increaseVol.GreaterThan(decimal.Zero) {
+					pos.AvgPrice = (pos.AvgPrice.Mul(absOld).Add(ev.Price.Mul(increaseVol))).Div(absNew)
 				}
 			}
 			// Position reduced: AvgPrice unchanged.
