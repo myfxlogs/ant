@@ -30,8 +30,6 @@ type BacktestRun struct {
 	StrategyCodeHash     string     `db:"strategy_code_hash"`
 	PythonServiceVersion *string    `db:"python_service_version"`
 	CostModelSnapshot    []byte     `db:"cost_model_snapshot"`
-	Metrics              []byte     `db:"metrics"`
-	EquityCurve          []byte     `db:"equity_curve"`
 	Status               string     `db:"status"`
 	Error                string     `db:"error"`
 	StartedAt            *time.Time `db:"started_at"`
@@ -55,7 +53,7 @@ func (r *BacktestRunRepository) Create(ctx context.Context, run *BacktestRun) (u
 			mode, from_ts, to_ts,
 			cancel_requested_at, lease_until,
 			strategy_code_hash, python_service_version,
-			cost_model_snapshot, metrics, equity_curve,
+			cost_model_snapshot,
 			status, error, started_at, finished_at, strategy_code, initial_capital,
 			extra_symbols, parameter_overrides, proto_response,
 			created_at
@@ -85,8 +83,6 @@ func (r *BacktestRunRepository) Create(ctx context.Context, run *BacktestRun) (u
 		run.StrategyCodeHash,
 		run.PythonServiceVersion,
 		run.CostModelSnapshot,
-		run.Metrics,
-		run.EquityCurve,
 		run.Status,
 		run.Error,
 		run.StartedAt,
@@ -111,7 +107,7 @@ func (r *BacktestRunRepository) GetByID(ctx context.Context, userID, runID uuid.
 			mode, from_ts, to_ts,
 			cancel_requested_at, lease_until,
 			strategy_code_hash, python_service_version,
-			cost_model_snapshot, metrics, equity_curve,
+			cost_model_snapshot,
 			status, error, started_at, finished_at, strategy_code, initial_capital,
 			extra_symbols, parameter_overrides, proto_response,
 			created_at
@@ -123,7 +119,7 @@ func (r *BacktestRunRepository) GetByID(ctx context.Context, userID, runID uuid.
 		&out.Mode, &out.FromTs, &out.ToTs,
 		&out.CancelRequestedAt, &out.LeaseUntil,
 		&out.StrategyCodeHash, &out.PythonServiceVersion,
-		&out.CostModelSnapshot, &out.Metrics, &out.EquityCurve,
+		&out.CostModelSnapshot,
 		&out.Status, &out.Error, &out.StartedAt, &out.FinishedAt, &out.StrategyCode, &out.InitialCapital,
 		&out.ExtraSymbols, &out.ParameterOverrides, &out.ProtoResponse,
 		&out.CreatedAt,
@@ -159,7 +155,7 @@ func (r *BacktestRunRepository) listByUserAll(ctx context.Context, userID uuid.U
 		`SELECT id, user_id, account_id, symbol, timeframe, dataset_id, template_id, template_draft_id,
 			mode, from_ts, to_ts, cancel_requested_at, lease_until,
 			strategy_code_hash, python_service_version,
-			cost_model_snapshot, metrics, equity_curve,
+			cost_model_snapshot,
 			status, error, started_at, finished_at, strategy_code, initial_capital,
 			extra_symbols, parameter_overrides, proto_response, created_at
 		FROM backtest_runs
@@ -173,7 +169,7 @@ func (r *BacktestRunRepository) listByUserAccount(ctx context.Context, userID, a
 		`SELECT id, user_id, account_id, symbol, timeframe, dataset_id, template_id, template_draft_id,
 			mode, from_ts, to_ts, cancel_requested_at, lease_until,
 			strategy_code_hash, python_service_version,
-			cost_model_snapshot, metrics, equity_curve,
+			cost_model_snapshot,
 			status, error, started_at, finished_at, strategy_code, initial_capital,
 			extra_symbols, parameter_overrides, proto_response, created_at
 		FROM backtest_runs
@@ -196,7 +192,7 @@ func (r *BacktestRunRepository) scanBacktestRunRows(ctx context.Context, query s
 			&out.Mode, &out.FromTs, &out.ToTs,
 			&out.CancelRequestedAt, &out.LeaseUntil,
 			&out.StrategyCodeHash, &out.PythonServiceVersion,
-			&out.CostModelSnapshot, &out.Metrics, &out.EquityCurve,
+			&out.CostModelSnapshot,
 			&out.Status, &out.Error, &out.StartedAt, &out.FinishedAt, &out.StrategyCode, &out.InitialCapital,
 			&out.ExtraSymbols, &out.ParameterOverrides, &out.ProtoResponse,
 			&out.CreatedAt,

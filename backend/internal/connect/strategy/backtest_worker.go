@@ -165,7 +165,7 @@ func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repo
 		if execCtx.Err() != nil {
 			s.log.Info("backtest worker: run cancelled", zap.String("run_id", run.ID.String()))
 			now := time.Now()
-			_ = s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, "CANCELED", "cancelled by user", nil, &now, nil, nil, nil)
+			_ = s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, "CANCELED", "cancelled by user", nil, &now, nil)
 			return
 		}
 		s.log.Error("backtest worker: python backtest failed", zap.String("run_id", run.ID.String()), zap.Error(err))
@@ -188,7 +188,7 @@ func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repo
 
 	now := time.Now()
 	status := "SUCCEEDED"
-	if err := s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, status, "", &now, &now, nil, nil, protoResp); err != nil {
+	if err := s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, status, "", &now, &now, protoResp); err != nil {
 		s.log.Error("backtest worker: UpdateAsyncFields failed",
 			zap.String("run_id", run.ID.String()), zap.Error(err))
 		return
@@ -203,7 +203,7 @@ func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repo
 func (s *PythonStrategyServer) failRun(ctx context.Context, run *repository.BacktestRun, errMsg string) {
 	now := time.Now()
 	status := "FAILED"
-	if err := s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, status, errMsg, nil, &now, nil, nil, nil); err != nil {
+	if err := s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, status, errMsg, nil, &now, nil); err != nil {
 		s.log.Error("backtest worker: failRun UpdateAsyncFields",
 			zap.String("run_id", run.ID.String()), zap.Error(err))
 	}

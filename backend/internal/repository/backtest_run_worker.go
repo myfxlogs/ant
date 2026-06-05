@@ -44,7 +44,7 @@ func (r *BacktestRunRepository) ClaimNextForWork(ctx context.Context, leaseUntil
 			b.mode, b.from_ts, b.to_ts,
 			b.cancel_requested_at, b.lease_until,
 			b.strategy_code_hash, b.python_service_version,
-			b.cost_model_snapshot, b.metrics, b.equity_curve,
+			b.cost_model_snapshot,
 			b.status, b.error, b.started_at, b.finished_at, b.strategy_code, b.initial_capital,
 			b.extra_symbols, b.parameter_overrides,
 			b.created_at
@@ -54,7 +54,7 @@ func (r *BacktestRunRepository) ClaimNextForWork(ctx context.Context, leaseUntil
 		&out.Mode, &out.FromTs, &out.ToTs,
 		&out.CancelRequestedAt, &out.LeaseUntil,
 		&out.StrategyCodeHash, &out.PythonServiceVersion,
-		&out.CostModelSnapshot, &out.Metrics, &out.EquityCurve,
+		&out.CostModelSnapshot,
 		&out.Status, &out.Error, &out.StartedAt, &out.FinishedAt, &out.StrategyCode, &out.InitialCapital,
 		&out.ExtraSymbols, &out.ParameterOverrides,
 		&out.CreatedAt,
@@ -179,7 +179,7 @@ func (r *BacktestRunRepository) GetStatusAndCancelRequestedAt(ctx context.Contex
 
 // UpdateAsyncFields updates status, error, timestamps, and optional columns atomically.
 // protoResponse is the serialized ant.v1.ExecuteBacktestResponse proto binary (canonical wire format).
-func (r *BacktestRunRepository) UpdateAsyncFields(ctx context.Context, userID, runID uuid.UUID, status string, errMsg string, startedAt, finishedAt *time.Time, metrics, equityCurve, protoResponse []byte) error {
+func (r *BacktestRunRepository) UpdateAsyncFields(ctx context.Context, userID, runID uuid.UUID, status string, errMsg string, startedAt, finishedAt *time.Time, protoResponse []byte) error {
 	if r == nil || r.db == nil {
 		return errors.New("repository not initialized")
 	}
@@ -194,12 +194,10 @@ func (r *BacktestRunRepository) UpdateAsyncFields(ctx context.Context, userID, r
 				WHEN COALESCE(NULLIF($3, ''), status) IN ('SUCCEEDED','FAILED','CANCELED') THEN NULL
 				ELSE lease_until
 			END,
-			metrics = COALESCE($7, metrics),
-			equity_curve = COALESCE($8, equity_curve),
-			proto_response = COALESCE($9, proto_response)
+			proto_response = COALESCE($7, proto_response)
 		WHERE id = $1 AND user_id = $2
 	`
-	_, err := r.db.Exec(ctx, query, runID, userID, status, errMsg, startedAt, finishedAt, metrics, equityCurve, protoResponse)
+	_, err := r.db.Exec(ctx, query, runID, userID, status, errMsg, startedAt, finishedAt, protoResponse)
 	if err != nil {
 		return fmt.Errorf("update async fields: %w", err)
 	}
