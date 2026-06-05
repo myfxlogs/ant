@@ -3,10 +3,10 @@ package strategy
 import (
 	"context"
 	"fmt"
-	"encoding/json"
 	"time"
 
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -217,9 +217,9 @@ func (s *PythonStrategyServer) GetBacktestRun(ctx context.Context, req *connect.
 	}
 	return connect.NewResponse(&antv1.GetBacktestRunResponse{
 		Run:         toProtoBacktestRun(run),
-		Metrics:     parseMetrics(run.Metrics),
-		EquityCurve: parseEquityCurve(run.EquityCurve),
-		Risk:        parseRisk(run.Metrics),
+		Metrics:     parseMetrics(run.ProtoResponse),
+		EquityCurve: parseEquityCurve(run.ProtoResponse),
+		Risk:        parseRisk(run.ProtoResponse),
 	}), nil
 }
 
@@ -274,9 +274,9 @@ func (s *PythonStrategyServer) WatchBacktestRun(ctx context.Context, req *connec
 		prevStatus = run.Status
 		if err := stream.Send(&antv1.BacktestRunUpdate{
 			Run:         toProtoBacktestRun(run),
-			Metrics:     parseMetrics(run.Metrics),
-			EquityCurve: parseEquityCurve(run.EquityCurve),
-			Risk:        parseRisk(run.Metrics),
+			Metrics:     parseMetrics(run.ProtoResponse),
+			EquityCurve: parseEquityCurve(run.ProtoResponse),
+			Risk:        parseRisk(run.ProtoResponse),
 		}); err != nil {
 			return err
 		}
@@ -469,37 +469,59 @@ func stringToBacktestMode(s string) antv1.BacktestRunMode {
 	}
 }
 
-func parseMetrics(raw []byte) *antv1.BacktestMetrics {
+func parseProtoResponse(raw []byte) *antv1.ExecuteBacktestResponse {
 	if len(raw) == 0 {
 		return nil
 	}
-	var m antv1.BacktestMetrics
-	if err := json.Unmarshal(raw, &m); err != nil {
+	var resp antv1.ExecuteBacktestResponse
+	if err := proto.Unmarshal(raw, &resp); err != nil {
 		return nil
 	}
-	return &m
+	return &resp
+}
+
+func parseMetrics(raw []byte) *antv1.BacktestMetrics {
+	resp := parseProtoResponse(raw)
+	if resp == nil || !resp.GetSuccess() {
+		return nil
+	}
+	m := resp.GetMetrics()
+	return &antv1.BacktestMetrics{
+		TotalReturn:   m.GetTotalReturn(),
+		AnnualReturn:  m.GetAnnualReturn(),
+		MaxDrawdown:   m.GetMaxDrawdown(),
+		SharpeRatio:   m.GetSharpeRatio(),
+		WinRate:       m.GetWinRate(),
+		ProfitFactor:  m.GetProfitFactor(),
+		TotalTrades:   m.GetTotalTrades(),
+		WinningTrades: m.GetWinningTrades(),
+		LosingTrades:  m.GetLosingTrades(),
+		AverageProfit: m.GetAverageProfit(),
+		AverageLoss:   m.GetAverageLoss(),
+	}
 }
 
 func parseRisk(raw []byte) *antv1.BacktestRisk {
-	if len(raw) == 0 {
+	resp := parseProtoResponse(raw)
+	if resp == nil || !resp.GetSuccess() {
 		return nil
 	}
-	var r antv1.BacktestRisk
-	if err := json.Unmarshal(raw, &r); err != nil {
-		return nil
+	r := resp.GetRisk()
+	return &antv1.BacktestRisk{
+		Score:      int32(r.GetScore()),
+		Level:      r.GetLevel(),
+		Reasons:    r.GetReasons(),
+		Warnings:   r.GetWarnings(),
+		IsReliable: r.GetIsReliable(),
 	}
-	return &r
 }
 
 func parseEquityCurve(raw []byte) []float64 {
-	if len(raw) == 0 {
+	resp := parseProtoResponse(raw)
+	if resp == nil {
 		return nil
 	}
-	var ec []float64
-	if err := json.Unmarshal(raw, &ec); err != nil {
-		return nil
-	}
-	return ec
+	return resp.GetEquityCurve()
 }
 
 func strPtr(s string) *string {

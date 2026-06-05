@@ -118,6 +118,6 @@ func formatValue(v interface{}) string {
 	case string:
 		return val
 	default:
-		return fmt.Sprintf("%%v", v)
+		return fmt.Sprintf("%v", v)
 	}
 }
