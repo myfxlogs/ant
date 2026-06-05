@@ -158,7 +158,9 @@ func (s *CodeAssistServer) ExplainCode(ctx context.Context, req *connect.Request
 	explanation, err := s.systemSvc.ChatCompletion(ctx, uid, messages, codeAssistModel)
 	if err != nil {
 		s.log.Warn("CodeAssist: ExplainCode LLM call failed", zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("AI explanation unavailable: %s", systemai.FriendlyError(err)))
+		return connect.NewResponse(&antv1.ExplainCodeResponse{
+			Explanation: "Code analysis unavailable — AI service is temporarily down. Please try again later.",
+		}), nil
 	}
 
 	return connect.NewResponse(&antv1.ExplainCodeResponse{Explanation: explanation}), nil
@@ -190,8 +192,10 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 
 	result, err := s.systemSvc.ChatCompletion(ctx, uid, messages, codeAssistModel)
 	if err != nil {
-		s.log.Warn("CodeAssist: ValidateStrategyExtended LLM call failed", zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("AI validation unavailable: %s", systemai.FriendlyError(err)))
+		s.log.Warn("CodeAssist: ValidateStrategyExtended LLM call failed, falling back to basic check", zap.Error(err))
+		return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
+			Valid: true, Warnings: []string{"AI validation unavailable — basic syntax check only. Run backtest to verify logic."},
+		}), nil
 	}
 
 	var parsed struct {
