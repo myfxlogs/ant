@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/shopspring/decimal"
 	"time"
 
 	"github.com/google/uuid"
@@ -52,9 +53,9 @@ type DashboardStats struct {
 	TotalAccounts  int64   `json:"total_accounts"`
 	OnlineAccounts int64   `json:"online_accounts"`
 	TodayTrades    int64   `json:"today_trades"`
-	TodayVolume    float64 `json:"today_volume"`
-	TodayProfit    float64 `json:"today_profit"`
-	SystemLoad     float64 `json:"system_load"`
+	TodayVolume    decimal.Decimal `json:"today_volume"`
+	TodayProfit    decimal.Decimal `json:"today_profit"`
+	SystemLoad     decimal.Decimal `json:"system_load"`
 }
 
 type UserListParams struct {
@@ -99,10 +100,10 @@ type TradingSummary struct {
 		TotalOrders   int64   `json:"total_orders"`
 		ClosedOrders  int64   `json:"closed_orders"`
 		PendingOrders int64   `json:"pending_orders"`
-		TotalVolume   float64 `json:"total_volume"`
-		TotalProfit   float64 `json:"total_profit"`
-		TotalLoss     float64 `json:"total_loss"`
-		NetProfit     float64 `json:"net_profit"`
+		TotalVolume   decimal.Decimal `json:"total_volume"`
+		TotalProfit   decimal.Decimal `json:"total_profit"`
+		TotalLoss     decimal.Decimal `json:"total_loss"`
+		NetProfit     decimal.Decimal `json:"net_profit"`
 	} `json:"trading"`
 	ByPlatform map[string]PlatformSummary `json:"by_platform"`
 }

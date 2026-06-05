@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/shopspring/decimal"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -75,16 +76,16 @@ type ExecutionSignal struct {
 	SignalID   uuid.UUID        `json:"signal_id"`
 	Symbol     string           `json:"symbol"`
 	Type       string           `json:"type"`
-	Volume     float64          `json:"volume"`
-	Price      float64          `json:"price"`
-	StopLoss   float64          `json:"stop_loss"`
-	TakeProfit float64          `json:"take_profit"`
+	Volume     decimal.Decimal          `json:"volume"`
+	Price      decimal.Decimal          `json:"price"`
+	StopLoss   decimal.Decimal          `json:"stop_loss"`
+	TakeProfit decimal.Decimal          `json:"take_profit"`
 	Result     *ExecutionResult `json:"result,omitempty"`
 }
 
 type ExecutionResult struct {
 	Ticket int64   `json:"ticket"`
-	Profit float64 `json:"profit"`
+	Profit decimal.Decimal `json:"profit"`
 	Error  string  `json:"error,omitempty"`
 }
 
@@ -129,11 +130,11 @@ type RiskConfig struct {
 	UserID              uuid.UUID `json:"user_id" db:"user_id"`
 	AccountID           uuid.UUID `json:"account_id" db:"account_id"`
 	MaxRiskPercent      float64   `json:"max_risk_percent" db:"max_risk_percent"`
-	MaxDailyLoss        float64   `json:"max_daily_loss" db:"max_daily_loss"`
+	MaxDailyLoss        decimal.Decimal   `json:"max_daily_loss" db:"max_daily_loss"`
 	MaxDrawdownPercent  float64   `json:"max_drawdown_percent" db:"max_drawdown_percent"`
 	MaxPositions        int       `json:"max_positions" db:"max_positions"`
 	MaxLotSize          float64   `json:"max_lot_size" db:"max_lot_size"`
-	DailyLossUsed       float64   `json:"daily_loss_used" db:"daily_loss_used"`
+	DailyLossUsed       decimal.Decimal   `json:"daily_loss_used" db:"daily_loss_used"`
 	TrailingStopEnabled bool      `json:"trailing_stop_enabled" db:"trailing_stop_enabled"`
 	TrailingStopPips    float64   `json:"trailing_stop_pips" db:"trailing_stop_pips"`
 	CreatedAt           time.Time `json:"created_at" db:"created_at"`
@@ -150,7 +151,7 @@ type GlobalSettings struct {
 	MaxRiskPercent      float64   `json:"max_risk_percent" db:"max_risk_percent"`
 	MaxPositions        int       `json:"max_positions" db:"max_positions"`
 	MaxLotSize          float64   `json:"max_lot_size" db:"max_lot_size"`
-	MaxDailyLoss        float64   `json:"max_daily_loss" db:"max_daily_loss"`
+	MaxDailyLoss        decimal.Decimal   `json:"max_daily_loss" db:"max_daily_loss"`
 	MaxDrawdownPercent  float64   `json:"max_drawdown_percent" db:"max_drawdown_percent"`
 	CreatedAt           time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt           time.Time `json:"updated_at" db:"updated_at"`
@@ -165,10 +166,10 @@ type TradingLog struct {
 	Action     string    `json:"action" db:"action"`
 	Symbol     string    `json:"symbol" db:"symbol"`
 	Details    string    `json:"details" db:"details"`
-	Volume     float64   `json:"volume" db:"volume"`
-	Price      float64   `json:"price" db:"price"`
+	Volume     decimal.Decimal   `json:"volume" db:"volume"`
+	Price      decimal.Decimal   `json:"price" db:"price"`
 	Ticket     int64     `json:"ticket" db:"ticket"`
-	Profit     float64   `json:"profit" db:"profit"`
+	Profit     decimal.Decimal   `json:"profit" db:"profit"`
 	Message    string    `json:"message" db:"message"`
 	CreatedAt  time.Time `json:"created_at" db:"created_at"`
 }
@@ -194,7 +195,7 @@ type PositionSizingRequest struct {
 }
 
 type PositionSizingResult struct {
-	Volume     float64 `json:"volume"`
+	Volume     decimal.Decimal `json:"volume"`
 	RiskAmount float64 `json:"risk_amount"`
 	PipValue   float64 `json:"pip_value"`
 	LotSize    float64 `json:"lot_size"`
@@ -205,7 +206,7 @@ type PositionSizingResult struct {
 type RiskCheckRequest struct {
 	AccountID      uuid.UUID `json:"account_id"`
 	Symbol         string    `json:"symbol"`
-	Volume         float64   `json:"volume"`
+	Volume         decimal.Decimal   `json:"volume"`
 	CurrentBalance float64   `json:"current_balance"`
 	CurrentEquity  float64   `json:"current_equity"`
 	OpenPositions  int       `json:"open_positions"`
@@ -216,7 +217,7 @@ type RiskCheckResult struct {
 	Reason             string        `json:"reason,omitempty"`
 	CurrentRisk        float64       `json:"current_risk"`
 	MaxAllowedRisk     float64       `json:"max_allowed_risk"`
-	DailyLossUsed      float64       `json:"daily_loss_used"`
+	DailyLossUsed      decimal.Decimal       `json:"daily_loss_used"`
 	DailyLossLimit     float64       `json:"daily_loss_limit"`
 	PositionCount      int           `json:"position_count"`
 	MaxPositions       int           `json:"max_positions"`
@@ -236,7 +237,7 @@ type AutoTradingStatus struct {
 }
 
 type RiskStatusSummary struct {
-	DailyLossUsed      float64 `json:"daily_loss_used"`
+	DailyLossUsed      decimal.Decimal `json:"daily_loss_used"`
 	DailyLossLimit     float64 `json:"daily_loss_limit"`
 	DrawdownPercent    float64 `json:"drawdown_percent"`
 	MaxDrawdownPercent float64 `json:"max_drawdown_percent"`
@@ -314,7 +315,7 @@ func NewGlobalSettings(userID uuid.UUID) *GlobalSettings {
 		MaxRiskPercent:      2.0,
 		MaxPositions:        10,
 		MaxLotSize:          100.0,
-		MaxDailyLoss:        5000.0,
+		MaxDailyLoss:        decimal.NewFromFloat(5000),
 		MaxDrawdownPercent:  10.0,
 		CreatedAt:           time.Now(),
 		UpdatedAt:           time.Now(),

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/shopspring/decimal"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,16 +14,16 @@ type Position struct {
 	Ticket       int64     `json:"ticket" db:"ticket"`
 	Symbol       string    `json:"symbol" db:"symbol"`
 	OrderType    int16     `json:"order_type" db:"order_type"`
-	Volume       float64   `json:"volume" db:"volume"`
-	OpenPrice    float64   `json:"open_price" db:"open_price"`
-	CurrentPrice float64   `json:"current_price" db:"current_price"`
-	StopLoss     float64   `json:"stop_loss" db:"stop_loss"`
-	TakeProfit   float64   `json:"take_profit" db:"take_profit"`
+	Volume       decimal.Decimal   `json:"volume" db:"volume"`
+	OpenPrice    decimal.Decimal   `json:"open_price" db:"open_price"`
+	CurrentPrice decimal.Decimal   `json:"current_price" db:"current_price"`
+	StopLoss     decimal.Decimal   `json:"stop_loss" db:"stop_loss"`
+	TakeProfit   decimal.Decimal   `json:"take_profit" db:"take_profit"`
 	OpenTime     time.Time `json:"open_time" db:"open_time"`
-	Profit       float64   `json:"profit" db:"profit"`
-	Swap         float64   `json:"swap" db:"swap"`
-	Commission   float64   `json:"commission" db:"commission"`
-	Fee          float64   `json:"fee" db:"fee"`
+	Profit       decimal.Decimal   `json:"profit" db:"profit"`
+	Swap         decimal.Decimal   `json:"swap" db:"swap"`
+	Commission   decimal.Decimal   `json:"commission" db:"commission"`
+	Fee          decimal.Decimal   `json:"fee" db:"fee"`
 	OrderComment string    `json:"order_comment" db:"order_comment"`
 	MagicNumber  int       `json:"magic_number" db:"magic_number"`
 	CloseReason  string    `json:"close_reason" db:"close_reason"`
@@ -37,11 +38,11 @@ type Order struct {
 	Ticket         int64      `json:"ticket" db:"ticket"`
 	Symbol         string     `json:"symbol" db:"symbol"`
 	OrderType      int16      `json:"order_type" db:"order_type"`
-	Volume         float64    `json:"volume" db:"volume"`
-	Price          float64    `json:"price" db:"price"`
-	StopLimitPrice float64    `json:"stop_limit_price" db:"stop_limit_price"`
-	StopLoss       float64    `json:"stop_loss" db:"stop_loss"`
-	TakeProfit     float64    `json:"take_profit" db:"take_profit"`
+	Volume         decimal.Decimal    `json:"volume" db:"volume"`
+	Price          decimal.Decimal    `json:"price" db:"price"`
+	StopLimitPrice decimal.Decimal    `json:"stop_limit_price" db:"stop_limit_price"`
+	StopLoss       decimal.Decimal    `json:"stop_loss" db:"stop_loss"`
+	TakeProfit     decimal.Decimal    `json:"take_profit" db:"take_profit"`
 	Expiration     *time.Time `json:"expiration" db:"expiration"`
 	ExpirationType string     `json:"expiration_type" db:"expiration_type"`
 	PlacedType     string     `json:"placed_type" db:"placed_type"`

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/shopspring/decimal"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -39,17 +40,17 @@ type StrategySchedule struct {
 }
 
 type BacktestMetrics struct {
-	TotalReturn   float64 `json:"total_return"`
-	AnnualReturn  float64 `json:"annual_return"`
-	MaxDrawdown   float64 `json:"max_drawdown"`
-	SharpeRatio   float64 `json:"sharpe_ratio"`
-	WinRate       float64 `json:"win_rate"`
-	ProfitFactor  float64 `json:"profit_factor"`
+	TotalReturn   decimal.Decimal `json:"total_return"`
+	AnnualReturn  decimal.Decimal `json:"annual_return"`
+	MaxDrawdown   decimal.Decimal `json:"max_drawdown"`
+	SharpeRatio   decimal.Decimal `json:"sharpe_ratio"`
+	WinRate       decimal.Decimal `json:"win_rate"`
+	ProfitFactor  decimal.Decimal `json:"profit_factor"`
 	TotalTrades   int     `json:"total_trades"`
 	WinningTrades int     `json:"winning_trades"`
 	LosingTrades  int     `json:"losing_trades"`
-	AverageProfit float64 `json:"average_profit"`
-	AverageLoss   float64 `json:"average_loss"`
+	AverageProfit decimal.Decimal `json:"average_profit"`
+	AverageLoss   decimal.Decimal `json:"average_loss"`
 }
 
 type RiskAssessment struct {

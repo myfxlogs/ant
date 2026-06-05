@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/shopspring/decimal"
 	"time"
 
 	"github.com/google/uuid"
@@ -80,14 +81,14 @@ type StrategyExecutionLog struct {
 	Timeframe        string                         `db:"timeframe" json:"timeframe"`
 	Status           StrategyExecutionLogStatus     `db:"status" json:"status"`
 	SignalType       StrategyExecutionLogSignalType `db:"signal_type" json:"signal_type,omitempty"`
-	SignalPrice      float64                        `db:"signal_price" json:"signal_price,omitempty"`
-	SignalVolume     float64                        `db:"signal_volume" json:"signal_volume,omitempty"`
-	SignalStopLoss   float64                        `db:"signal_stop_loss" json:"signal_stop_loss,omitempty"`
-	SignalTakeProfit float64                        `db:"signal_take_profit" json:"signal_take_profit,omitempty"`
+	SignalPrice      decimal.Decimal                        `db:"signal_price" json:"signal_price,omitempty"`
+	SignalVolume     decimal.Decimal                        `db:"signal_volume" json:"signal_volume,omitempty"`
+	SignalStopLoss   decimal.Decimal                        `db:"signal_stop_loss" json:"signal_stop_loss,omitempty"`
+	SignalTakeProfit decimal.Decimal                        `db:"signal_take_profit" json:"signal_take_profit,omitempty"`
 	ExecutedOrderID  string                         `db:"executed_order_id" json:"executed_order_id,omitempty"`
-	ExecutedPrice    float64                        `db:"executed_price" json:"executed_price,omitempty"`
-	ExecutedVolume   float64                        `db:"executed_volume" json:"executed_volume,omitempty"`
-	Profit           float64                        `db:"profit" json:"profit,omitempty"`
+	ExecutedPrice    decimal.Decimal                        `db:"executed_price" json:"executed_price,omitempty"`
+	ExecutedVolume   decimal.Decimal                        `db:"executed_volume" json:"executed_volume,omitempty"`
+	Profit           decimal.Decimal                        `db:"profit" json:"profit,omitempty"`
 	ErrorMessage     string                         `db:"error_message" json:"error_message,omitempty"`
 	ExecutionTimeMs  int64                          `db:"execution_time_ms" json:"execution_time_ms"`
 	KlineData        interface{}                    `db:"kline_data" json:"kline_data,omitempty"`
@@ -127,16 +128,16 @@ type OrderHistory struct {
 	Ticket      int64            `db:"ticket" json:"ticket"`
 	OrderType   OrderHistoryType `db:"order_type" json:"order_type"`
 	Symbol      string           `db:"symbol" json:"symbol"`
-	Volume      float64          `db:"volume" json:"volume"`
-	OpenPrice   float64          `db:"open_price" json:"open_price"`
-	ClosePrice  float64          `db:"close_price" json:"close_price,omitempty"`
+	Volume      decimal.Decimal          `db:"volume" json:"volume"`
+	OpenPrice   decimal.Decimal          `db:"open_price" json:"open_price"`
+	ClosePrice  decimal.Decimal          `db:"close_price" json:"close_price,omitempty"`
 	OpenTime    time.Time        `db:"open_time" json:"open_time"`
 	CloseTime   *time.Time       `db:"close_time" json:"close_time,omitempty"`
-	StopLoss    float64          `db:"stop_loss" json:"stop_loss,omitempty"`
-	TakeProfit  float64          `db:"take_profit" json:"take_profit,omitempty"`
-	Profit      float64          `db:"profit" json:"profit"`
-	Commission  float64          `db:"commission" json:"commission"`
-	Swap        float64          `db:"swap" json:"swap"`
+	StopLoss    decimal.Decimal          `db:"stop_loss" json:"stop_loss,omitempty"`
+	TakeProfit  decimal.Decimal          `db:"take_profit" json:"take_profit,omitempty"`
+	Profit      decimal.Decimal          `db:"profit" json:"profit"`
+	Commission  decimal.Decimal          `db:"commission" json:"commission"`
+	Swap        decimal.Decimal          `db:"swap" json:"swap"`
 	Comment     string           `db:"comment" json:"comment,omitempty"`
 	MagicNumber int64            `db:"magic_number" json:"magic_number,omitempty"`
 	IsAutoTrade bool             `db:"is_auto_trade" json:"is_auto_trade"`
