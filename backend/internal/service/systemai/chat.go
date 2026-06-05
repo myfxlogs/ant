@@ -176,12 +176,32 @@ func (s *Service) ChatCompletion(
 	messages []ChatMessage,
 	modelHint string,
 ) (string, error) {
-	providerID, model, baseURL, secret, err := s.resolveChatProvider(ctx, userID, modelHint)
+	providers, err := s.resolveAllChatProviders(ctx, userID, modelHint)
 	if err != nil {
 		return "", err
 	}
-	endpoint := chatEndpoint(providerID, baseURL)
-	httpReq, err := doChatRequest(model, messages, false, endpoint, secret)
+
+	var lastErr error
+	for _, p := range providers {
+		result, err := s.tryChatCompletion(ctx, p, messages)
+		if err == nil {
+			return result, nil
+		}
+		lastErr = err
+		if !isFailoverErr(err) {
+			return "", err // non-transient: don't try more providers
+		}
+	}
+	if lastErr != nil {
+		return "", lastErr
+	}
+	return "", fmt.Errorf("AI 未配置：请在 workspace 中点击 ⚙ 进入 AI Settings")
+}
+
+// tryChatCompletion attempts a single chat completion against one provider.
+func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, messages []ChatMessage) (string, error) {
+	endpoint := chatEndpoint(p.providerID, p.baseURL)
+	httpReq, err := doChatRequest(p.model, messages, false, endpoint, p.secret)
 	if err != nil {
 		return "", err
 	}
@@ -203,11 +223,11 @@ func (s *Service) ChatCompletion(
 		}
 	}
 	if doErr != nil {
-		return "", fmt.Errorf("chat completion http: %w", doErr)
+		return "", &failoverErr{msg: fmt.Sprintf("chat completion http: %v", doErr), transient: isTransientChatErr(doErr)}
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("chat completion: status %d", resp.StatusCode)
+		return "", &failoverErr{msg: fmt.Sprintf("chat completion: status %d", resp.StatusCode), transient: isFailoverStatus(resp.StatusCode)}
 	}
 
 	var cr ChatCompletionResponse
@@ -215,24 +235,14 @@ func (s *Service) ChatCompletion(
 		return "", fmt.Errorf("decode chat response: %w", err)
 	}
 	if cr.Error != nil {
-		return "", fmt.Errorf("chat completion api error: %s", cr.Error.Message)
+		return "", &failoverErr{msg: fmt.Sprintf("chat completion api error: %s", cr.Error.Message), transient: true}
 	}
 	if len(cr.Choices) == 0 {
 		return "", fmt.Errorf("chat completion returned no choices")
 	}
 	return strings.TrimSpace(cr.Choices[0].Message.Content), nil
 }
-// chatEndpoint constructs the chat completion API endpoint from a provider's base URL.
-func chatEndpoint(providerID, baseURL string) string {
-	base := strings.TrimRight(baseURL, "/")
-	if providerID == "zhipu" {
-		return base + "/chat/completions"
-	}
-	base = strings.TrimSuffix(base, "/v1")
-	return base + "/v1/chat/completions"
-}
 
-// resolveChatProvider picks a provider, model, base URL, and secret for the given user.
 // It prefers the provider marked as primary for "chat", then falls back to any enabled provider.
 func (s *Service) resolveChatProvider(ctx context.Context, userID uuid.UUID, modelHint string) (providerID, model, baseURL, secret string, err error) {
 	rows, err := s.List(ctx, userID)

@@ -1,0 +1,105 @@
+package systemai
+
+import (
+	"context"
+	"fmt"
+	"strings"
+
+	"github.com/google/uuid"
+)
+
+// failoverErr wraps an error with a transient flag for provider failover decisions.
+type failoverErr struct {
+	msg       string
+	transient bool
+}
+
+func (e *failoverErr) Error() string { return e.msg }
+
+func isFailoverErr(err error) bool {
+	if fe, ok := err.(*failoverErr); ok {
+		return fe.transient
+	}
+	return false
+}
+
+// isFailoverStatus returns true for HTTP status codes that indicate a
+// provider-level issue (try next) rather than a request-level issue (stop).
+func isFailoverStatus(code int) bool {
+	switch code {
+	case 401:
+		return false // bad API key — don't retry
+	case 403, 429:
+		return true // quota/rate-limit/region-block → try next
+	case 502, 503, 504:
+		return true // provider infrastructure down → try next
+	default:
+		return code >= 500 // other server errors → try next
+	}
+}
+// chatEndpoint constructs the chat completion API endpoint from a provider's base URL.
+func chatEndpoint(providerID, baseURL string) string {
+	base := strings.TrimRight(baseURL, "/")
+	if providerID == "zhipu" {
+		return base + "/chat/completions"
+	}
+	base = strings.TrimSuffix(base, "/v1")
+	return base + "/v1/chat/completions"
+}
+
+// chatProvider holds resolved provider info for a single candidate.
+type chatProvider struct {
+	providerID string
+	model      string
+	baseURL    string
+	secret     string
+}
+
+// resolveAllChatProviders returns all enabled providers with valid secrets,
+// ordered by preference (primary first, then others). Used for multi-provider
+// failover: if the first provider fails with a transient error, the caller
+// can try the next one without re-resolving.
+func (s *Service) resolveAllChatProviders(ctx context.Context, userID uuid.UUID, modelHint string) ([]chatProvider, error) {
+	rows, err := s.List(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("list AI providers: %w", err)
+	}
+	var out []chatProvider
+	for _, preferPrimary := range []bool{true, false} {
+		for _, row := range rows {
+			if row == nil || !row.Enabled {
+				continue
+			}
+			if preferPrimary && !hasPrimaryChat(row.PrimaryFor) {
+				continue
+			}
+			sec, secErr := s.getCachedSecret(ctx, userID, row.ProviderID)
+			if secErr != nil || sec == "" {
+				continue
+			}
+			base := strings.TrimRight(strings.TrimSpace(row.BaseURL), "/")
+			if base == "" {
+				continue
+			}
+			m := strings.TrimSpace(row.DefaultModel)
+			if m == "" {
+				m = modelHint
+			}
+			if m == "" {
+				continue
+			}
+			out = append(out, chatProvider{
+				providerID: row.ProviderID,
+				model:      m,
+				baseURL:    base,
+				secret:     sec,
+			})
+		}
+	}
+	if len(out) == 0 {
+		return nil, fmt.Errorf("AI 未配置：请在 workspace 中点击 ⚙ 进入 AI Settings，选择一个厂商（如 DeepSeek）填写 API Key 和模型名称后启用")
+	}
+	return out, nil
+}
+
+// resolveChatProvider picks a provider, model, base URL, and secret for the given user.

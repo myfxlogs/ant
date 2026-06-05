@@ -11,6 +11,7 @@ import (
 
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/config"
+	"anttrader/internal/ai"
 	"anttrader/internal/connect/admin"
 	mktplace "anttrader/internal/connect/marketplace"
 	"anttrader/internal/connect/strategy"
@@ -82,6 +83,12 @@ func registerSREHandlers(
 		experimentWorker.SetAIService(aiSvc)
 	}
 	experimentWorker.Start(context.Background())
+
+	// AI reflection loop: validates historical predictions → recalibrates confidence.
+	calRepo := ai.NewCalibrationRepository(pool)
+	calSvc := ai.NewCalibrationService(calRepo)
+	reflectionWorker := ai.NewReflectionWorker(calSvc, pool, log)
+	reflectionWorker.Start(context.Background())
 	strategyAssetServer := strategy.NewStrategyAssetServer(strategyAssetRepo, log)
 	mux.Handle(antv1c.NewStrategyAssetServiceHandler(strategyAssetServer, connectrpc.WithInterceptors(authInterceptor)))
 	scheduleHealthServer := system.NewScheduleHealthServer(schedHealthRepo, log)
