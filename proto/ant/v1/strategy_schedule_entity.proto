@@ -41,3 +41,10 @@ message ScheduleConfig {
   int64 stable_override_interval_ms = 5;
   int64 hf_cooldown_ms = 6;
 }
+
+// SSE streaming — push-first, replaces client polling.
+message WatchSchedulesRequest {}
+
+message WatchSchedulesEvent {
+  repeated StrategySchedule schedules = 1;
+}

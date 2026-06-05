@@ -25,7 +25,7 @@ var File_strategy_proto protoreflect.FileDescriptor
 
 const file_strategy_proto_rawDesc = "" +
 	"\n" +
-	"\x0estrategy.proto\x12\x06ant.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x17strategy_messages.proto2\xfe\v\n" +
+	"\x0estrategy.proto\x12\x06ant.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x17strategy_messages.proto2\xce\f\n" +
 	"\x0fStrategyService\x12L\n" +
 	"\rListTemplates\x12\x1c.ant.v1.ListTemplatesRequest\x1a\x1d.ant.v1.ListTemplatesResponse\x12C\n" +
 	"\vGetTemplate\x12\x1a.ant.v1.GetTemplateRequest\x1a\x18.ant.v1.StrategyTemplate\x12I\n" +
@@ -41,7 +41,8 @@ const file_strategy_proto_rawDesc = "" +
 	"\x0eCreateSchedule\x12\x1d.ant.v1.CreateScheduleRequest\x1a\x18.ant.v1.StrategySchedule\x12I\n" +
 	"\x0eUpdateSchedule\x12\x1d.ant.v1.UpdateScheduleRequest\x1a\x18.ant.v1.StrategySchedule\x12G\n" +
 	"\x0eDeleteSchedule\x12\x1d.ant.v1.DeleteScheduleRequest\x1a\x16.google.protobuf.Empty\x12I\n" +
-	"\x0eToggleSchedule\x12\x1d.ant.v1.ToggleScheduleRequest\x1a\x18.ant.v1.StrategySchedule\x12F\n" +
+	"\x0eToggleSchedule\x12\x1d.ant.v1.ToggleScheduleRequest\x1a\x18.ant.v1.StrategySchedule\x12N\n" +
+	"\x0eWatchSchedules\x12\x1d.ant.v1.WatchSchedulesRequest\x1a\x1b.ant.v1.WatchSchedulesEvent0\x01\x12F\n" +
 	"\vRunBacktest\x12\x1a.ant.v1.RunBacktestRequest\x1a\x1b.ant.v1.RunBacktestResponse\x12F\n" +
 	"\vListSignals\x12\x1a.ant.v1.ListSignalsRequest\x1a\x1b.ant.v1.ListSignalsResponse\x12L\n" +
 	"\rExecuteSignal\x12\x1c.ant.v1.ExecuteSignalRequest\x1a\x1d.ant.v1.ExecuteSignalResponse\x12E\n" +
@@ -64,19 +65,21 @@ var file_strategy_proto_goTypes = []any{
 	(*UpdateScheduleRequest)(nil),       // 12: ant.v1.UpdateScheduleRequest
 	(*DeleteScheduleRequest)(nil),       // 13: ant.v1.DeleteScheduleRequest
 	(*ToggleScheduleRequest)(nil),       // 14: ant.v1.ToggleScheduleRequest
-	(*RunBacktestRequest)(nil),          // 15: ant.v1.RunBacktestRequest
-	(*ListSignalsRequest)(nil),          // 16: ant.v1.ListSignalsRequest
-	(*ExecuteSignalRequest)(nil),        // 17: ant.v1.ExecuteSignalRequest
-	(*ConfirmSignalRequest)(nil),        // 18: ant.v1.ConfirmSignalRequest
-	(*CancelSignalRequest)(nil),         // 19: ant.v1.CancelSignalRequest
-	(*ListTemplatesResponse)(nil),       // 20: ant.v1.ListTemplatesResponse
-	(*StrategyTemplate)(nil),            // 21: ant.v1.StrategyTemplate
-	(*emptypb.Empty)(nil),               // 22: google.protobuf.Empty
-	(*ListSchedulesResponse)(nil),       // 23: ant.v1.ListSchedulesResponse
-	(*StrategySchedule)(nil),            // 24: ant.v1.StrategySchedule
-	(*RunBacktestResponse)(nil),         // 25: ant.v1.RunBacktestResponse
-	(*ListSignalsResponse)(nil),         // 26: ant.v1.ListSignalsResponse
-	(*ExecuteSignalResponse)(nil),       // 27: ant.v1.ExecuteSignalResponse
+	(*WatchSchedulesRequest)(nil),       // 15: ant.v1.WatchSchedulesRequest
+	(*RunBacktestRequest)(nil),          // 16: ant.v1.RunBacktestRequest
+	(*ListSignalsRequest)(nil),          // 17: ant.v1.ListSignalsRequest
+	(*ExecuteSignalRequest)(nil),        // 18: ant.v1.ExecuteSignalRequest
+	(*ConfirmSignalRequest)(nil),        // 19: ant.v1.ConfirmSignalRequest
+	(*CancelSignalRequest)(nil),         // 20: ant.v1.CancelSignalRequest
+	(*ListTemplatesResponse)(nil),       // 21: ant.v1.ListTemplatesResponse
+	(*StrategyTemplate)(nil),            // 22: ant.v1.StrategyTemplate
+	(*emptypb.Empty)(nil),               // 23: google.protobuf.Empty
+	(*ListSchedulesResponse)(nil),       // 24: ant.v1.ListSchedulesResponse
+	(*StrategySchedule)(nil),            // 25: ant.v1.StrategySchedule
+	(*WatchSchedulesEvent)(nil),         // 26: ant.v1.WatchSchedulesEvent
+	(*RunBacktestResponse)(nil),         // 27: ant.v1.RunBacktestResponse
+	(*ListSignalsResponse)(nil),         // 28: ant.v1.ListSignalsResponse
+	(*ExecuteSignalResponse)(nil),       // 29: ant.v1.ExecuteSignalResponse
 }
 var file_strategy_proto_depIdxs = []int32{
 	0,  // 0: ant.v1.StrategyService.ListTemplates:input_type -> ant.v1.ListTemplatesRequest
@@ -94,33 +97,35 @@ var file_strategy_proto_depIdxs = []int32{
 	12, // 12: ant.v1.StrategyService.UpdateSchedule:input_type -> ant.v1.UpdateScheduleRequest
 	13, // 13: ant.v1.StrategyService.DeleteSchedule:input_type -> ant.v1.DeleteScheduleRequest
 	14, // 14: ant.v1.StrategyService.ToggleSchedule:input_type -> ant.v1.ToggleScheduleRequest
-	15, // 15: ant.v1.StrategyService.RunBacktest:input_type -> ant.v1.RunBacktestRequest
-	16, // 16: ant.v1.StrategyService.ListSignals:input_type -> ant.v1.ListSignalsRequest
-	17, // 17: ant.v1.StrategyService.ExecuteSignal:input_type -> ant.v1.ExecuteSignalRequest
-	18, // 18: ant.v1.StrategyService.ConfirmSignal:input_type -> ant.v1.ConfirmSignalRequest
-	19, // 19: ant.v1.StrategyService.CancelSignal:input_type -> ant.v1.CancelSignalRequest
-	20, // 20: ant.v1.StrategyService.ListTemplates:output_type -> ant.v1.ListTemplatesResponse
-	21, // 21: ant.v1.StrategyService.GetTemplate:output_type -> ant.v1.StrategyTemplate
-	21, // 22: ant.v1.StrategyService.CreateTemplate:output_type -> ant.v1.StrategyTemplate
-	21, // 23: ant.v1.StrategyService.UpdateTemplate:output_type -> ant.v1.StrategyTemplate
-	22, // 24: ant.v1.StrategyService.DeleteTemplate:output_type -> google.protobuf.Empty
-	21, // 25: ant.v1.StrategyService.CreateTemplateDraft:output_type -> ant.v1.StrategyTemplate
-	21, // 26: ant.v1.StrategyService.UpdateTemplateDraft:output_type -> ant.v1.StrategyTemplate
-	21, // 27: ant.v1.StrategyService.PublishTemplateDraft:output_type -> ant.v1.StrategyTemplate
-	22, // 28: ant.v1.StrategyService.CancelTemplateDraft:output_type -> google.protobuf.Empty
-	23, // 29: ant.v1.StrategyService.ListSchedules:output_type -> ant.v1.ListSchedulesResponse
-	24, // 30: ant.v1.StrategyService.GetSchedule:output_type -> ant.v1.StrategySchedule
-	24, // 31: ant.v1.StrategyService.CreateSchedule:output_type -> ant.v1.StrategySchedule
-	24, // 32: ant.v1.StrategyService.UpdateSchedule:output_type -> ant.v1.StrategySchedule
-	22, // 33: ant.v1.StrategyService.DeleteSchedule:output_type -> google.protobuf.Empty
-	24, // 34: ant.v1.StrategyService.ToggleSchedule:output_type -> ant.v1.StrategySchedule
-	25, // 35: ant.v1.StrategyService.RunBacktest:output_type -> ant.v1.RunBacktestResponse
-	26, // 36: ant.v1.StrategyService.ListSignals:output_type -> ant.v1.ListSignalsResponse
-	27, // 37: ant.v1.StrategyService.ExecuteSignal:output_type -> ant.v1.ExecuteSignalResponse
-	22, // 38: ant.v1.StrategyService.ConfirmSignal:output_type -> google.protobuf.Empty
-	22, // 39: ant.v1.StrategyService.CancelSignal:output_type -> google.protobuf.Empty
-	20, // [20:40] is the sub-list for method output_type
-	0,  // [0:20] is the sub-list for method input_type
+	15, // 15: ant.v1.StrategyService.WatchSchedules:input_type -> ant.v1.WatchSchedulesRequest
+	16, // 16: ant.v1.StrategyService.RunBacktest:input_type -> ant.v1.RunBacktestRequest
+	17, // 17: ant.v1.StrategyService.ListSignals:input_type -> ant.v1.ListSignalsRequest
+	18, // 18: ant.v1.StrategyService.ExecuteSignal:input_type -> ant.v1.ExecuteSignalRequest
+	19, // 19: ant.v1.StrategyService.ConfirmSignal:input_type -> ant.v1.ConfirmSignalRequest
+	20, // 20: ant.v1.StrategyService.CancelSignal:input_type -> ant.v1.CancelSignalRequest
+	21, // 21: ant.v1.StrategyService.ListTemplates:output_type -> ant.v1.ListTemplatesResponse
+	22, // 22: ant.v1.StrategyService.GetTemplate:output_type -> ant.v1.StrategyTemplate
+	22, // 23: ant.v1.StrategyService.CreateTemplate:output_type -> ant.v1.StrategyTemplate
+	22, // 24: ant.v1.StrategyService.UpdateTemplate:output_type -> ant.v1.StrategyTemplate
+	23, // 25: ant.v1.StrategyService.DeleteTemplate:output_type -> google.protobuf.Empty
+	22, // 26: ant.v1.StrategyService.CreateTemplateDraft:output_type -> ant.v1.StrategyTemplate
+	22, // 27: ant.v1.StrategyService.UpdateTemplateDraft:output_type -> ant.v1.StrategyTemplate
+	22, // 28: ant.v1.StrategyService.PublishTemplateDraft:output_type -> ant.v1.StrategyTemplate
+	23, // 29: ant.v1.StrategyService.CancelTemplateDraft:output_type -> google.protobuf.Empty
+	24, // 30: ant.v1.StrategyService.ListSchedules:output_type -> ant.v1.ListSchedulesResponse
+	25, // 31: ant.v1.StrategyService.GetSchedule:output_type -> ant.v1.StrategySchedule
+	25, // 32: ant.v1.StrategyService.CreateSchedule:output_type -> ant.v1.StrategySchedule
+	25, // 33: ant.v1.StrategyService.UpdateSchedule:output_type -> ant.v1.StrategySchedule
+	23, // 34: ant.v1.StrategyService.DeleteSchedule:output_type -> google.protobuf.Empty
+	25, // 35: ant.v1.StrategyService.ToggleSchedule:output_type -> ant.v1.StrategySchedule
+	26, // 36: ant.v1.StrategyService.WatchSchedules:output_type -> ant.v1.WatchSchedulesEvent
+	27, // 37: ant.v1.StrategyService.RunBacktest:output_type -> ant.v1.RunBacktestResponse
+	28, // 38: ant.v1.StrategyService.ListSignals:output_type -> ant.v1.ListSignalsResponse
+	29, // 39: ant.v1.StrategyService.ExecuteSignal:output_type -> ant.v1.ExecuteSignalResponse
+	23, // 40: ant.v1.StrategyService.ConfirmSignal:output_type -> google.protobuf.Empty
+	23, // 41: ant.v1.StrategyService.CancelSignal:output_type -> google.protobuf.Empty
+	21, // [21:42] is the sub-list for method output_type
+	0,  // [0:21] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name

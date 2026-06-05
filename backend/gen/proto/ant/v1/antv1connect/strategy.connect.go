@@ -79,6 +79,9 @@ const (
 	// StrategyServiceToggleScheduleProcedure is the fully-qualified name of the StrategyService's
 	// ToggleSchedule RPC.
 	StrategyServiceToggleScheduleProcedure = "/ant.v1.StrategyService/ToggleSchedule"
+	// StrategyServiceWatchSchedulesProcedure is the fully-qualified name of the StrategyService's
+	// WatchSchedules RPC.
+	StrategyServiceWatchSchedulesProcedure = "/ant.v1.StrategyService/WatchSchedules"
 	// StrategyServiceRunBacktestProcedure is the fully-qualified name of the StrategyService's
 	// RunBacktest RPC.
 	StrategyServiceRunBacktestProcedure = "/ant.v1.StrategyService/RunBacktest"
@@ -113,6 +116,7 @@ type StrategyServiceClient interface {
 	UpdateSchedule(context.Context, *connect.Request[v1.UpdateScheduleRequest]) (*connect.Response[v1.StrategySchedule], error)
 	DeleteSchedule(context.Context, *connect.Request[v1.DeleteScheduleRequest]) (*connect.Response[emptypb.Empty], error)
 	ToggleSchedule(context.Context, *connect.Request[v1.ToggleScheduleRequest]) (*connect.Response[v1.StrategySchedule], error)
+	WatchSchedules(context.Context, *connect.Request[v1.WatchSchedulesRequest]) (*connect.ServerStreamForClient[v1.WatchSchedulesEvent], error)
 	RunBacktest(context.Context, *connect.Request[v1.RunBacktestRequest]) (*connect.Response[v1.RunBacktestResponse], error)
 	ListSignals(context.Context, *connect.Request[v1.ListSignalsRequest]) (*connect.Response[v1.ListSignalsResponse], error)
 	ExecuteSignal(context.Context, *connect.Request[v1.ExecuteSignalRequest]) (*connect.Response[v1.ExecuteSignalResponse], error)
@@ -221,6 +225,12 @@ func NewStrategyServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(strategyServiceMethods.ByName("ToggleSchedule")),
 			connect.WithClientOptions(opts...),
 		),
+		watchSchedules: connect.NewClient[v1.WatchSchedulesRequest, v1.WatchSchedulesEvent](
+			httpClient,
+			baseURL+StrategyServiceWatchSchedulesProcedure,
+			connect.WithSchema(strategyServiceMethods.ByName("WatchSchedules")),
+			connect.WithClientOptions(opts...),
+		),
 		runBacktest: connect.NewClient[v1.RunBacktestRequest, v1.RunBacktestResponse](
 			httpClient,
 			baseURL+StrategyServiceRunBacktestProcedure,
@@ -271,6 +281,7 @@ type strategyServiceClient struct {
 	updateSchedule       *connect.Client[v1.UpdateScheduleRequest, v1.StrategySchedule]
 	deleteSchedule       *connect.Client[v1.DeleteScheduleRequest, emptypb.Empty]
 	toggleSchedule       *connect.Client[v1.ToggleScheduleRequest, v1.StrategySchedule]
+	watchSchedules       *connect.Client[v1.WatchSchedulesRequest, v1.WatchSchedulesEvent]
 	runBacktest          *connect.Client[v1.RunBacktestRequest, v1.RunBacktestResponse]
 	listSignals          *connect.Client[v1.ListSignalsRequest, v1.ListSignalsResponse]
 	executeSignal        *connect.Client[v1.ExecuteSignalRequest, v1.ExecuteSignalResponse]
@@ -353,6 +364,11 @@ func (c *strategyServiceClient) ToggleSchedule(ctx context.Context, req *connect
 	return c.toggleSchedule.CallUnary(ctx, req)
 }
 
+// WatchSchedules calls ant.v1.StrategyService.WatchSchedules.
+func (c *strategyServiceClient) WatchSchedules(ctx context.Context, req *connect.Request[v1.WatchSchedulesRequest]) (*connect.ServerStreamForClient[v1.WatchSchedulesEvent], error) {
+	return c.watchSchedules.CallServerStream(ctx, req)
+}
+
 // RunBacktest calls ant.v1.StrategyService.RunBacktest.
 func (c *strategyServiceClient) RunBacktest(ctx context.Context, req *connect.Request[v1.RunBacktestRequest]) (*connect.Response[v1.RunBacktestResponse], error) {
 	return c.runBacktest.CallUnary(ctx, req)
@@ -395,6 +411,7 @@ type StrategyServiceHandler interface {
 	UpdateSchedule(context.Context, *connect.Request[v1.UpdateScheduleRequest]) (*connect.Response[v1.StrategySchedule], error)
 	DeleteSchedule(context.Context, *connect.Request[v1.DeleteScheduleRequest]) (*connect.Response[emptypb.Empty], error)
 	ToggleSchedule(context.Context, *connect.Request[v1.ToggleScheduleRequest]) (*connect.Response[v1.StrategySchedule], error)
+	WatchSchedules(context.Context, *connect.Request[v1.WatchSchedulesRequest], *connect.ServerStream[v1.WatchSchedulesEvent]) error
 	RunBacktest(context.Context, *connect.Request[v1.RunBacktestRequest]) (*connect.Response[v1.RunBacktestResponse], error)
 	ListSignals(context.Context, *connect.Request[v1.ListSignalsRequest]) (*connect.Response[v1.ListSignalsResponse], error)
 	ExecuteSignal(context.Context, *connect.Request[v1.ExecuteSignalRequest]) (*connect.Response[v1.ExecuteSignalResponse], error)
@@ -499,6 +516,12 @@ func NewStrategyServiceHandler(svc StrategyServiceHandler, opts ...connect.Handl
 		connect.WithSchema(strategyServiceMethods.ByName("ToggleSchedule")),
 		connect.WithHandlerOptions(opts...),
 	)
+	strategyServiceWatchSchedulesHandler := connect.NewServerStreamHandler(
+		StrategyServiceWatchSchedulesProcedure,
+		svc.WatchSchedules,
+		connect.WithSchema(strategyServiceMethods.ByName("WatchSchedules")),
+		connect.WithHandlerOptions(opts...),
+	)
 	strategyServiceRunBacktestHandler := connect.NewUnaryHandler(
 		StrategyServiceRunBacktestProcedure,
 		svc.RunBacktest,
@@ -561,6 +584,8 @@ func NewStrategyServiceHandler(svc StrategyServiceHandler, opts ...connect.Handl
 			strategyServiceDeleteScheduleHandler.ServeHTTP(w, r)
 		case StrategyServiceToggleScheduleProcedure:
 			strategyServiceToggleScheduleHandler.ServeHTTP(w, r)
+		case StrategyServiceWatchSchedulesProcedure:
+			strategyServiceWatchSchedulesHandler.ServeHTTP(w, r)
 		case StrategyServiceRunBacktestProcedure:
 			strategyServiceRunBacktestHandler.ServeHTTP(w, r)
 		case StrategyServiceListSignalsProcedure:
@@ -638,6 +663,10 @@ func (UnimplementedStrategyServiceHandler) DeleteSchedule(context.Context, *conn
 
 func (UnimplementedStrategyServiceHandler) ToggleSchedule(context.Context, *connect.Request[v1.ToggleScheduleRequest]) (*connect.Response[v1.StrategySchedule], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyService.ToggleSchedule is not implemented"))
+}
+
+func (UnimplementedStrategyServiceHandler) WatchSchedules(context.Context, *connect.Request[v1.WatchSchedulesRequest], *connect.ServerStream[v1.WatchSchedulesEvent]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StrategyService.WatchSchedules is not implemented"))
 }
 
 func (UnimplementedStrategyServiceHandler) RunBacktest(context.Context, *connect.Request[v1.RunBacktestRequest]) (*connect.Response[v1.RunBacktestResponse], error) {

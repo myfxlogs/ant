@@ -66,6 +66,7 @@ function normalizeScheduleConfig(cfg: PartialMessage<ScheduleConfig> | undefined
 }
 
 export const strategyApi = {
+  watchSchedules: (signal?: AbortSignal) => strategyClient.watchSchedules({}, { signal }),
   listTemplates: async () => {
     const response = await strategyClient.listTemplates({});
     return response.templates;
@@ -274,6 +275,7 @@ export const strategyTemplateApi = {
 };
 
 export const strategyScheduleV2Api = {
+  watch: (signal?: AbortSignal) => strategyClient.watchSchedules({}, { signal }),
   list: strategyApi.listSchedules,
   get: strategyApi.getSchedule,
   create: strategyApi.createSchedule,

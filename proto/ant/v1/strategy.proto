@@ -25,6 +25,7 @@ service StrategyService {
   rpc UpdateSchedule(UpdateScheduleRequest) returns (StrategySchedule);
   rpc DeleteSchedule(DeleteScheduleRequest) returns (google.protobuf.Empty);
   rpc ToggleSchedule(ToggleScheduleRequest) returns (StrategySchedule);
+  rpc WatchSchedules(WatchSchedulesRequest) returns (stream WatchSchedulesEvent);
   rpc RunBacktest(RunBacktestRequest) returns (RunBacktestResponse);
 
   rpc ListSignals(ListSignalsRequest) returns (ListSignalsResponse);

@@ -326,6 +326,87 @@ func (x *ScheduleConfig) GetHfCooldownMs() int64 {
 	return 0
 }
 
+// SSE streaming — push-first, replaces client polling.
+type WatchSchedulesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WatchSchedulesRequest) Reset() {
+	*x = WatchSchedulesRequest{}
+	mi := &file_strategy_schedule_entity_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WatchSchedulesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WatchSchedulesRequest) ProtoMessage() {}
+
+func (x *WatchSchedulesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_strategy_schedule_entity_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WatchSchedulesRequest.ProtoReflect.Descriptor instead.
+func (*WatchSchedulesRequest) Descriptor() ([]byte, []int) {
+	return file_strategy_schedule_entity_proto_rawDescGZIP(), []int{2}
+}
+
+type WatchSchedulesEvent struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Schedules     []*StrategySchedule    `protobuf:"bytes,1,rep,name=schedules,proto3" json:"schedules,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WatchSchedulesEvent) Reset() {
+	*x = WatchSchedulesEvent{}
+	mi := &file_strategy_schedule_entity_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WatchSchedulesEvent) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WatchSchedulesEvent) ProtoMessage() {}
+
+func (x *WatchSchedulesEvent) ProtoReflect() protoreflect.Message {
+	mi := &file_strategy_schedule_entity_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WatchSchedulesEvent.ProtoReflect.Descriptor instead.
+func (*WatchSchedulesEvent) Descriptor() ([]byte, []int) {
+	return file_strategy_schedule_entity_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *WatchSchedulesEvent) GetSchedules() []*StrategySchedule {
+	if x != nil {
+		return x.Schedules
+	}
+	return nil
+}
+
 var File_strategy_schedule_entity_proto protoreflect.FileDescriptor
 
 const file_strategy_schedule_entity_proto_rawDesc = "" +
@@ -375,7 +456,10 @@ const file_strategy_schedule_entity_proto_rawDesc = "" +
 	"\revent_trigger\x18\x03 \x01(\tR\feventTrigger\x12!\n" +
 	"\ftrigger_mode\x18\x04 \x01(\tR\vtriggerMode\x12=\n" +
 	"\x1bstable_override_interval_ms\x18\x05 \x01(\x03R\x18stableOverrideIntervalMs\x12$\n" +
-	"\x0ehf_cooldown_ms\x18\x06 \x01(\x03R\fhfCooldownMsB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x0ehf_cooldown_ms\x18\x06 \x01(\x03R\fhfCooldownMs\"\x17\n" +
+	"\x15WatchSchedulesRequest\"M\n" +
+	"\x13WatchSchedulesEvent\x126\n" +
+	"\tschedules\x18\x01 \x03(\v2\x18.ant.v1.StrategyScheduleR\tschedulesB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_strategy_schedule_entity_proto_rawDescOnce sync.Once
@@ -389,27 +473,30 @@ func file_strategy_schedule_entity_proto_rawDescGZIP() []byte {
 	return file_strategy_schedule_entity_proto_rawDescData
 }
 
-var file_strategy_schedule_entity_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_strategy_schedule_entity_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_strategy_schedule_entity_proto_goTypes = []any{
 	(*StrategySchedule)(nil),      // 0: ant.v1.StrategySchedule
 	(*ScheduleConfig)(nil),        // 1: ant.v1.ScheduleConfig
-	nil,                           // 2: ant.v1.StrategySchedule.ParametersEntry
-	(*BacktestMetrics)(nil),       // 3: ant.v1.BacktestMetrics
-	(*timestamppb.Timestamp)(nil), // 4: google.protobuf.Timestamp
+	(*WatchSchedulesRequest)(nil), // 2: ant.v1.WatchSchedulesRequest
+	(*WatchSchedulesEvent)(nil),   // 3: ant.v1.WatchSchedulesEvent
+	nil,                           // 4: ant.v1.StrategySchedule.ParametersEntry
+	(*BacktestMetrics)(nil),       // 5: ant.v1.BacktestMetrics
+	(*timestamppb.Timestamp)(nil), // 6: google.protobuf.Timestamp
 }
 var file_strategy_schedule_entity_proto_depIdxs = []int32{
-	2, // 0: ant.v1.StrategySchedule.parameters:type_name -> ant.v1.StrategySchedule.ParametersEntry
+	4, // 0: ant.v1.StrategySchedule.parameters:type_name -> ant.v1.StrategySchedule.ParametersEntry
 	1, // 1: ant.v1.StrategySchedule.schedule_config:type_name -> ant.v1.ScheduleConfig
-	3, // 2: ant.v1.StrategySchedule.backtest_metrics:type_name -> ant.v1.BacktestMetrics
-	4, // 3: ant.v1.StrategySchedule.last_run_at:type_name -> google.protobuf.Timestamp
-	4, // 4: ant.v1.StrategySchedule.next_run_at:type_name -> google.protobuf.Timestamp
-	4, // 5: ant.v1.StrategySchedule.created_at:type_name -> google.protobuf.Timestamp
-	4, // 6: ant.v1.StrategySchedule.updated_at:type_name -> google.protobuf.Timestamp
-	7, // [7:7] is the sub-list for method output_type
-	7, // [7:7] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	5, // 2: ant.v1.StrategySchedule.backtest_metrics:type_name -> ant.v1.BacktestMetrics
+	6, // 3: ant.v1.StrategySchedule.last_run_at:type_name -> google.protobuf.Timestamp
+	6, // 4: ant.v1.StrategySchedule.next_run_at:type_name -> google.protobuf.Timestamp
+	6, // 5: ant.v1.StrategySchedule.created_at:type_name -> google.protobuf.Timestamp
+	6, // 6: ant.v1.StrategySchedule.updated_at:type_name -> google.protobuf.Timestamp
+	0, // 7: ant.v1.WatchSchedulesEvent.schedules:type_name -> ant.v1.StrategySchedule
+	8, // [8:8] is the sub-list for method output_type
+	8, // [8:8] is the sub-list for method input_type
+	8, // [8:8] is the sub-list for extension type_name
+	8, // [8:8] is the sub-list for extension extendee
+	0, // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_strategy_schedule_entity_proto_init() }
@@ -424,7 +511,7 @@ func file_strategy_schedule_entity_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_strategy_schedule_entity_proto_rawDesc), len(file_strategy_schedule_entity_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

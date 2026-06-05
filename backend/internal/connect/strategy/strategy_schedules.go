@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"context"
+	"time"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -158,4 +159,46 @@ func validScheduleType(t string) bool {
 		return true
 	}
 	return false
+}
+
+// WatchSchedules streams the full schedule list whenever it changes.
+// Push-first architecture: replaces client-side polling with SSE stream.
+func (s *StrategyServer) WatchSchedules(ctx context.Context, req *connect.Request[antv1.WatchSchedulesRequest], stream *connect.ServerStream[antv1.WatchSchedulesEvent]) error {
+	uid := s.userID(ctx)
+	var prevHash string
+	ticker := time.NewTicker(2 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-ticker.C:
+		}
+
+		rows, err := s.svc.ListSchedules(ctx, uid)
+		if err != nil {
+			continue
+		}
+		// Compute a simple hash to detect changes
+		var sb strings.Builder
+		for _, r := range rows {
+			sb.WriteString(r.ID.String())
+			if r.IsActive { sb.WriteByte('1') } else { sb.WriteByte('0') }
+		}
+		hash := sb.String()
+		if hash == prevHash {
+			continue
+		}
+		prevHash = hash
+
+		schedules := make([]*antv1.StrategySchedule, len(rows))
+		for i, r := range rows {
+			schedules[i] = scheduleRowToProto(&r)
+		}
+
+		if err := stream.Send(&antv1.WatchSchedulesEvent{Schedules: schedules}); err != nil {
+			return err
+		}
+	}
 }

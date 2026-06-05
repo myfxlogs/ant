@@ -87,7 +87,18 @@ export function useStrategySchedulePage() {
   }, [t, fetchAccounts]);
 
   useEffect(() => { void refresh(); }, [refresh]);
-  useEffect(() => { const tmr = setInterval(() => { void refresh(); }, 10_000); return () => clearInterval(tmr); }, [refresh]);
+  // SSE streaming — push-first, replaces 10s polling
+  useEffect(() => {
+    const ctrl = new AbortController();
+    (async () => {
+      try {
+        for await (const event of strategyScheduleV2Api.watch(ctrl.signal)) {
+          setSchedules(event.schedules as any[] || []);
+        }
+      } catch { /* stream closed */ }
+    })();
+    return () => ctrl.abort();
+  }, []);
 
   const templatesForSelect = useMemo(() => {
     const out: any[] = []; const seen = new Set<string>();
