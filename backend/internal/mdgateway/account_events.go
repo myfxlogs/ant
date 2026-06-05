@@ -3,6 +3,7 @@ package mdgateway
 import (
 	"context"
 	"google.golang.org/protobuf/proto"
+	antv1 "anttrader/gen/proto/ant/v1"
 	"sync/atomic"
 	"time"
 
@@ -39,7 +40,7 @@ func (p *AccountEventPublisher) publish(ctx context.Context, subject string, ev 
 	if p.js == nil {
 		return
 	}
-	data, err := json.Marshal(ev)
+	data, err := proto.Marshal(&antv1.AccountEventPayload{AccountId: ev.AccountID, UserId: ev.UserID, TsUnixMs: ev.Timestamp.UnixMilli()})
 	if err != nil {
 		p.log.Warn("account event marshal failed", zap.Error(err))
 		return
