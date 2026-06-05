@@ -107,13 +107,31 @@ func (s *Service) ChatCompletionStream(
 	modelHint string,
 	onChunk func(chunk ChatStreamChunk) error,
 ) error {
-	providerID, model, baseURL, secret, err := s.resolveChatProvider(ctx, userID, modelHint)
+	providers, err := s.resolveAllChatProviders(ctx, userID, modelHint)
 	if err != nil {
 		return err
 	}
 
-	endpoint := chatEndpoint(providerID, baseURL)
-	httpReq, err := doChatRequest(model, messages, true, endpoint, secret)
+	var lastErr error
+	for _, p := range providers {
+		err := s.tryChatCompletionStream(ctx, p, messages, onChunk)
+		if err == nil {
+			return nil
+		}
+		lastErr = err
+		if !isFailoverErr(err) {
+			return err
+		}
+	}
+	if lastErr != nil {
+		return lastErr
+	}
+	return fmt.Errorf("AI 未配置")
+}
+
+func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, messages []ChatMessage, onChunk func(chunk ChatStreamChunk) error) error {
+	endpoint := chatEndpoint(p.providerID, p.baseURL)
+	httpReq, err := doChatRequest(p.model, messages, true, endpoint, p.secret)
 	if err != nil {
 		return err
 	}
@@ -121,12 +139,12 @@ func (s *Service) ChatCompletionStream(
 	client := &http.Client{Timeout: 0} 
 	resp, err := client.Do(httpReq)
 	if err != nil {
-		return fmt.Errorf("chat completion stream http: %w", err)
+		return &failoverErr{msg: fmt.Sprintf("chat completion stream http: %v", err), transient: isTransientChatErr(err)}
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("chat completion stream: status %d", resp.StatusCode)
+		return &failoverErr{msg: fmt.Sprintf("chat completion stream: status %d", resp.StatusCode), transient: isFailoverStatus(resp.StatusCode)}
 	}
 	scanner := bufio.NewScanner(resp.Body)
 	scanner.Buffer(make([]byte, 0, 64*1024), 2*1024*1024)

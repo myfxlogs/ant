@@ -12,11 +12,10 @@ package ai
 import (
 	"context"
 	"fmt"
-
-	"github.com/google/uuid"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/ClickHouse/clickhouse-go/v2"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -30,15 +29,15 @@ const (
 // triggers confidence recalibration.
 type ReflectionWorker struct {
 	calibration *CalibrationService
-	db          *pgxpool.Pool
+	ch          clickhouse.Conn
 	log         *zap.Logger
 	stopCh      chan struct{}
 }
 
-func NewReflectionWorker(cal *CalibrationService, db *pgxpool.Pool, log *zap.Logger) *ReflectionWorker {
+func NewReflectionWorker(cal *CalibrationService, ch clickhouse.Conn, log *zap.Logger) *ReflectionWorker {
 	return &ReflectionWorker{
 		calibration: cal,
-		db:          db,
+		ch:          ch,
 		log:         log,
 		stopCh:      make(chan struct{}),
 	}
@@ -90,7 +89,8 @@ func (w *ReflectionWorker) run(ctx context.Context) {
 				zap.Error(err))
 			continue
 		}
-		correct := ValidateOutcome(p.Decision, actualReturn)
+		buyT, sellT, holdT := w.calibration.GetDecisionThresholds(ctx, p.UserID)
+		correct := ValidateOutcome(p.Decision, actualReturn, buyT, sellT, holdT)
 		if err := w.calibration.repo.ValidatePrediction(ctx, p.ID, actualReturn, correct); err != nil {
 			w.log.Warn("reflection: validate prediction", zap.Error(err))
 			continue
@@ -117,21 +117,19 @@ func (w *ReflectionWorker) run(ctx context.Context) {
 	}
 }
 
-// fetchActualReturn queries CH/PG for the price change between predicted_at
-// and predicted_at+7d for the given symbol. Returns fractional return.
+// fetchActualReturn queries ClickHouse for the 7-day price return after predicted_at.
 func (w *ReflectionWorker) fetchActualReturn(ctx context.Context, symbol string, predictedAt time.Time) (float64, error) {
 	start := predictedAt
 	end := predictedAt.Add(7 * 24 * time.Hour)
 
 	var openPrice, closePrice float64
-	err := w.db.QueryRow(ctx,
-		`SELECT COALESCE(
-			(SELECT open::double precision FROM md_bars
+	err := w.ch.QueryRow(ctx,
+		`SELECT
+			COALESCE((SELECT open FROM md_bars
 			  WHERE canonical = $1 AND period = '1d'
 			    AND open_ts_unix_ms >= $2 AND open_ts_unix_ms < $3
 			  ORDER BY open_ts_unix_ms ASC LIMIT 1), 0),
-			COALESCE(
-			(SELECT close::double precision FROM md_bars
+			COALESCE((SELECT close FROM md_bars
 			  WHERE canonical = $1 AND period = '1d'
 			    AND close_ts_unix_ms <= $4
 			  ORDER BY close_ts_unix_ms DESC LIMIT 1), 0)`,

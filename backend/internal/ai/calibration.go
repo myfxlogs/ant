@@ -246,17 +246,61 @@ func (s *CalibrationService) GetCalibratedConfidence(ctx context.Context, userID
 	return rawConfidence
 }
 
-// ValidateOutcome checks whether a prediction was correct and records the result.
-// BUY correct if actualReturn > +2%, SELL correct if < -2%, HOLD correct if |return| <= 5%.
-func ValidateOutcome(decision string, actualReturn float64) bool {
+// ValidateOutcome checks whether a prediction was correct given actual return.
+// Uses calibrated thresholds when available, falling back to defaults:
+// BUY correct if return > +2%, SELL if < -2%, HOLD if |return| <= 5%.
+// When calibrated thresholds exist, they replace the hardcoded values.
+func ValidateOutcome(decision string, actualReturn float64, calibratedThresholds ...float64) bool {
+	buyThreshold := 0.02
+	sellThreshold := -0.02
+	holdThreshold := 0.05
+	if len(calibratedThresholds) >= 3 {
+		buyThreshold = calibratedThresholds[0]
+		sellThreshold = calibratedThresholds[1]
+		holdThreshold = calibratedThresholds[2]
+	}
 	switch decision {
 	case "BUY":
-		return actualReturn > 0.02
+		return actualReturn > buyThreshold
 	case "SELL":
-		return actualReturn < -0.02
+		return actualReturn < sellThreshold
 	case "HOLD":
-		return math.Abs(actualReturn) <= 0.05
+		return math.Abs(actualReturn) <= holdThreshold
 	default:
 		return false
 	}
+}
+
+// GetDecisionThresholds returns calibrated BUY/SELL/HOLD thresholds for a user.
+// Falls back to defaults (0.02 / -0.02 / 0.05) if no calibration data exists.
+func (s *CalibrationService) GetDecisionThresholds(ctx context.Context, userID uuid.UUID) (buy, sell, hold float64) {
+	buy, sell, hold = 0.02, -0.02, 0.05
+	buckets, err := s.repo.GetCalibrations(ctx, userID)
+	if err != nil || len(buckets) == 0 {
+		return
+	}
+	// Use calibration from mid-range buckets (50-70) which represent
+	// the typical confidence level for actionable decisions.
+	var sumAcc float64
+	var count int
+	for _, b := range buckets {
+		if b.ConfidenceBucket >= 50 && b.ConfidenceBucket <= 70 && b.TotalPredictions >= 5 {
+			sumAcc += b.Accuracy
+			count++
+		}
+	}
+	if count < 2 {
+		return
+	}
+	avgAcc := sumAcc / float64(count)
+	// Tighten thresholds proportionally to calibration accuracy.
+	// Higher accuracy → keep defaults. Lower accuracy → widen thresholds.
+	scale := 1.0 + (1.0-avgAcc)*0.5
+	if scale > 2.0 {
+		scale = 2.0
+	}
+	buy = 0.02 * scale
+	sell = -0.02 * scale
+	hold = 0.05 * scale
+	return
 }

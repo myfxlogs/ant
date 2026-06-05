@@ -87,7 +87,7 @@ func registerSREHandlers(
 	// AI reflection loop: validates historical predictions → recalibrates confidence.
 	calRepo := ai.NewCalibrationRepository(pool)
 	calSvc := ai.NewCalibrationService(calRepo)
-	reflectionWorker := ai.NewReflectionWorker(calSvc, pool, log)
+	reflectionWorker := ai.NewReflectionWorker(calSvc, ch, log)
 	reflectionWorker.Start(context.Background())
 	strategyAssetServer := strategy.NewStrategyAssetServer(strategyAssetRepo, log)
 	mux.Handle(antv1c.NewStrategyAssetServiceHandler(strategyAssetServer, connectrpc.WithInterceptors(authInterceptor)))
