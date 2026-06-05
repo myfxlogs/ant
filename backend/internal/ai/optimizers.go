@@ -64,22 +64,39 @@ func GridSearch(params []TunableParam, maxCandidates int) []map[string]interface
 	space := NormalizeSpace(params)
 	total := cartesianSize(space)
 	rng := rand.New(rand.NewSource(rngSeed))
-
-	candidates := make([]paramCombo, 0, min(total, maxCandidates*8+64))
-	buildCartesian(space, 0, make([]int, len(space.Keys)), &candidates, rng, maxCandidates*8+64)
-
-	// Deterministic shuffle
-	rng.Shuffle(len(candidates), func(i, j int) {
-		candidates[i], candidates[j] = candidates[j], candidates[i]
-	})
-
-	// Truncate and build result
-	limit := min(maxCandidates, len(candidates))
-	out := make([]map[string]interface{}, 0, limit)
-	for i := 0; i < limit; i++ {
-		out = append(out, candidates[i].params)
+	n := maxCandidates
+	if total < n {
+		n = total
+	}
+	// Generate random indices via mixed-radix conversion: O(candidates*dims)
+	// vs old recursive buildCartesian which was O(product_of_all_dims).
+	indices := make([]int, n)
+	if total <= n*10 {
+		all := make([]int, total)
+		for i := range all { all[i] = i }
+		rng.Shuffle(len(all), func(i, j int) { all[i], all[j] = all[j], all[i] })
+		copy(indices, all[:n])
+	} else {
+		for i := 0; i < n; i++ { indices[i] = rng.Intn(total) }
+	}
+	out := make([]map[string]interface{}, 0, n)
+	for _, idx := range indices {
+		idxs := cartesianNth(space, idx)
+		pm := make(map[string]interface{}, len(idxs))
+		for j, k := range space.Keys { pm[k] = space.ValuesByKey[k][idxs[j]] }
+		out = append(out, pm)
 	}
 	return out
+}
+
+func cartesianNth(space ResolvedSpace, n int) []int {
+	idxs := make([]int, len(space.Keys))
+	for i := len(space.Keys) - 1; i >= 0; i-- {
+		size := len(space.ValuesByKey[space.Keys[i]])
+		idxs[i] = n % size
+		n /= size
+	}
+	return idxs
 }
 
 // RandomSearch generates random parameter combinations by independently sampling

@@ -84,7 +84,7 @@ func NewDEOptimizer(space ResolvedSpace, maxEvals int) *DEOptimizer {
 	dims := len(space.Keys)
 	popSize := maxEvals / 3
 	if popSize < 4 { popSize = 4 }
-	if popSize > 30 { popSize = 30 }
+	if popSize > 50 { popSize = 50 }
 	if popSize > maxEvals { popSize = maxEvals }
 	return &DEOptimizer{
 		space: space, dims: dims, popSize: popSize,
