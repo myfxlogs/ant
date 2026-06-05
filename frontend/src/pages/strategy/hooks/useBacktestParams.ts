@@ -5,7 +5,7 @@ import { gateApi } from '@/client/gate';
 import type { GateResult, GatePipelineSummary } from '@/gen/ant/v1/ai_gate_pb';
 
 export type BacktestStatus = 'idle' | 'running' | 'completed' | 'error';
-export type BacktestSubTab = 'results' | 'tuning' | 'gate';
+export type TuneMethod = 'grid' | 'random' | 'de' | 'tpe' | 'ags' | 'ai';
 
 export interface SweepDimension {
   key: string; label: string; source: 'code' | 'risk';
@@ -17,6 +17,40 @@ export interface BacktestMetrics {
   sharpeRatio?: number; winRate?: number; totalTrades?: number;
   equityCurve?: Array<{ time: number; equity: number }>;
   trades?: Array<{ id: string; time: number; side: string; price: number; volume: number; pnl?: number }>;
+}
+
+
+// parseParamsFromCode extracts @param annotations from strategy Python code.
+// Aligns with backend param_extractor.go: @param name default [range=min:max:step]
+// The range= clause is optional; without it, the param has a single default value.
+function parseParamsFromCode(code: string): SweepDimension[] {
+  if (!code) return [];
+  // Match backend pattern exactly: @param\s+(\w+)\s+([\d.]+)(?:\s+range=([\d.]+):([\d.]+):([\d.]+))?
+  const re = /@param\s+(\w+)\s+([\d.]+)(?:\s+range=([\d.]+):([\d.]+):([\d.]+))?/g;
+  const dims: SweepDimension[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(code)) !== null) {
+    const [, name, defVal, minStr, maxStr, stepStr] = m;
+    if (minStr !== undefined && maxStr !== undefined && stepStr !== undefined) {
+      const min = parseFloat(minStr);
+      const max = parseFloat(maxStr);
+      const step = parseFloat(stepStr);
+      if (isNaN(min) || isNaN(max) || isNaN(step)) continue;
+      const values: number[] = [];
+      for (let v = min; v <= max + step * 0.5; v += step) {
+        values.push(Math.round(v * 1e10) / 1e10);
+      }
+      if (values.length === 0) values.push(parseFloat(defVal));
+      dims.push({
+        key: name, label: name, source: 'code' as const,
+        enabled: values.length <= 20,
+        values: values.length > 100 ? values.slice(0, 100) : values,
+      });
+    } else {
+      // No range — single fixed value (not a sweep dimension, skip)
+    }
+  }
+  return dims;
 }
 
 const DEFAULT_SWEEP_DIMS: SweepDimension[] = [
@@ -39,6 +73,16 @@ export const DATE_PRESETS = [
   { key: '6M', label: '6M', months: 6 },
   { key: '1Y', label: '1Y', months: 12 },
 ];
+
+
+export const OPTIMIZER_INFO: Record<TuneMethod, { label: string; desc: string }> = {
+  grid:    { label: 'Grid Search',     desc: 'Exhaustive Cartesian product. Best for ≤3 params.' },
+  random:  { label: 'Random Search',   desc: 'Uniform random sampling. Good for exploration.' },
+  de:      { label: 'Differential Evolution', desc: 'rand/1/bin mutation. Converges fast on smooth landscapes.' },
+  tpe:     { label: 'TPE (KDE)',       desc: 'Tree-structured Parzen Estimator. KDE models good/bad distributions.' },
+  ags:     { label: 'Annealed Gaussian', desc: 'Gaussian jitter with sigma annealing. Lightweight alternative to TPE.' },
+  ai:      { label: 'AI Optimizer',    desc: 'LLM multi-round proposal. Learns from previous results over 3 rounds.' },
+};
 
 export function useBacktestParams() {
   const [submitting, setSubmitting] = useState(false);
@@ -96,8 +140,16 @@ export function useBacktestParams() {
 
   // Smart Tuning
   const [subTab, setSubTab] = useState<BacktestSubTab>('results');
-  const [tuneMethod, setTuneMethod] = useState<'grid' | 'random'>('grid');
+  const [tuneMethod, setTuneMethod] = useState<TuneMethod>('grid');
   const [sweepDimensions, setSweepDimensions] = useState<SweepDimension[]>(DEFAULT_SWEEP_DIMS);
+
+  // Update sweep dimensions when strategy code changes (parse @param annotations).
+  const updateSweepFromCode = useCallback((code: string) => {
+    const extracted = parseParamsFromCode(code);
+    if (extracted.length > 0) {
+      setSweepDimensions(extracted);
+    }
+  }, []);
   const [tuningRunning, setTuningRunning] = useState(false);
   const [backtestRunId, setBacktestRunId] = useState('');
 
@@ -167,8 +219,8 @@ export function useBacktestParams() {
     applyDatePreset,
     runBacktest,
     subTab, setSubTab, tuneMethod, setTuneMethod,
-    sweepDimensions, toggleDimension, enabledSweepDims, cartesianSize,
+    sweepDimensions, updateSweepFromCode, toggleDimension, enabledSweepDims, cartesianSize,
     tuningRunning, runTuning,
-    backtestRunId, gateLoading, gateGates, gateSummary, gateError, runGate,
+    tuneMethod, setTuneMethod, backtestRunId, gateLoading, gateGates, gateSummary, gateError, runGate,
   };
 }

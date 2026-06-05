@@ -57,6 +57,9 @@ export function useStrategyWorkspaceState() {
   // Backtest + Smart Tuning
   const btCtx = useBacktestParams();
 
+  // Dynamically extract sweep dimensions from @param annotations in code.
+  useEffect(() => { btCtx.updateSweepFromCode(codeCtx.code); }, [codeCtx.code, btCtx.updateSweepFromCode]);
+
   const handleRunBacktest = useCallback(() => {
     btCtx.setSubTab('results');
     btCtx.runBacktest({ code: codeCtx.code, accountId, symbol, timeframe });
