@@ -1,49 +1,44 @@
-import { useAuthStore } from '@/stores/authStore';
-import { apiBaseUrl } from '@/client/transport';
-
-async function sreFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const token = useAuthStore.getState().accessToken;
-  const url = `${apiBaseUrl}/api/admin/sre/${path}`;
-  const res = await fetch(url, {
-    ...init,
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...init?.headers },
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || `HTTP ${res.status}`);
-  }
-  return res.json();
-}
+import { adminSREClient } from '@/client/connect';
 
 export interface KillSwitchStatus {
   engaged: boolean; reason?: string; operator?: string; engaged_at?: string;
 }
 
 export interface BreakerStatus {
-  strategy_id: string; state: 'closed' | 'open' | 'half_open';
+  strategy_id: string; state: string;
   total_pnl: number; loss_percent: number; trade_count: number;
   tripped_at?: string; trip_reason?: string; allow_probe_trade?: boolean;
 }
 
-export interface CanaryConfig {
-  strategy_id: string; version_tag: string; account_ids: string[];
-  start_at: string; duration_days: number; promoted: boolean;
-}
-
 export const sreApi = {
-  killSwitchStatus: () => sreFetch<KillSwitchStatus>('killswitch/status'),
-  killSwitchEngage: (reason: string, operator: string) =>
-    sreFetch<KillSwitchStatus>('killswitch/engage', { method: 'POST', body: JSON.stringify({ reason, operator }) }),
-  killSwitchDisengage: () =>
-    sreFetch<KillSwitchStatus>('killswitch/disengage', { method: 'POST' }),
-
-  breakersList: () => sreFetch<BreakerStatus[]>('breakers'),
-  breakerReset: (strategyId: string) =>
-    sreFetch<{ status: string; strategy_id: string }>(`breakers/reset?strategy_id=${encodeURIComponent(strategyId)}`, { method: 'POST' }),
-
-  canaryList: () => sreFetch<CanaryConfig[]>('canary'),
-  canarySet: (cfg: Partial<CanaryConfig>) =>
-    sreFetch<CanaryConfig>('canary/set', { method: 'POST', body: JSON.stringify(cfg) }),
-  canaryDelete: (strategyId: string) =>
-    sreFetch<{ status: string; strategy_id: string }>(`canary/delete?strategy_id=${encodeURIComponent(strategyId)}`, { method: 'POST' }),
+  killSwitchStatus: async (): Promise<KillSwitchStatus> => {
+    const r = await adminSREClient.getKillSwitch({});
+    return { engaged: r.enabled, reason: r.reason, operator: r.setBy, engaged_at: r.setAtUnixMs ? new Date(r.setAtUnixMs).toISOString() : undefined };
+  },
+  killSwitchEngage: async (reason: string, operator: string): Promise<KillSwitchStatus> => {
+    const r = await adminSREClient.setKillSwitch({ enabled: true, reason });
+    return { engaged: r.enabled, reason: r.reason, operator: r.setBy, engaged_at: r.setAtUnixMs ? new Date(r.setAtUnixMs).toISOString() : undefined };
+  },
+  killSwitchDisengage: async (): Promise<KillSwitchStatus> => {
+    const r = await adminSREClient.setKillSwitch({ enabled: false, reason: '' });
+    return { engaged: r.enabled, reason: r.reason, operator: r.setBy, engaged_at: r.setAtUnixMs ? new Date(r.setAtUnixMs).toISOString() : undefined };
+  },
+  breakersList: async (): Promise<BreakerStatus[]> => {
+    const r = await adminSREClient.listBreakers({});
+    return r.breakers.map(b => ({
+      strategy_id: b.name, state: b.open ? 'open' : 'closed',
+      total_pnl: 0, loss_percent: 0, trade_count: b.failureCount,
+    }));
+  },
+  breakerReset: async (name: string): Promise<BreakerStatus> => {
+    const r = await adminSREClient.resetBreaker({ name });
+    return { strategy_id: r.name, state: r.open ? 'open' : 'closed', total_pnl: 0, loss_percent: 0, trade_count: 0 };
+  },
+  canaryList: async (): Promise<{ strategy_id: string; version_tag: string }[]> => {
+    const r = await adminSREClient.getCanary({});
+    return r.targetVersion ? [{ strategy_id: '', version_tag: r.targetVersion }] : [];
+  },
+  canarySet: async (strategyId: string, versionTag: string, durationDays: number) => {
+    await adminSREClient.setCanary({ enabled: true, targetVersion: versionTag, trafficPercent: durationDays });
+  },
 };

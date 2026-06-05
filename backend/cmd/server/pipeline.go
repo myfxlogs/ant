@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/shopspring/decimal"
 	"context"
 	"strings"
 	"sync"
@@ -224,16 +225,16 @@ func startMdGatewayPipeline(
 							Ticket:       o.UpdateTicket,
 							Symbol:       o.UpdateSymbol,
 							OrderType:    o.UpdateOrderType,
-							Volume:       o.UpdateVolume,
-							OpenPrice:    o.UpdateOpenPrice,
-							ClosePrice:   o.UpdateClosePrice,
-							Profit:       o.UpdateProfit,
-							Swap:         o.UpdateSwap,
-							Commission:   o.UpdateCommission,
+							Volume:       decimal.NewFromFloat(o.UpdateVolume),
+							OpenPrice:    decimal.NewFromFloat(o.UpdateOpenPrice),
+							ClosePrice:   decimal.NewFromFloat(o.UpdateClosePrice),
+							Profit:       decimal.NewFromFloat(o.UpdateProfit),
+							Swap:         decimal.NewFromFloat(o.UpdateSwap),
+							Commission:   decimal.NewFromFloat(o.UpdateCommission),
 							OpenTime:     time.Unix(o.UpdateOpenTime, 0),
 							CloseTime:    time.Unix(o.UpdateCloseTime, 0),
-							StopLoss:     o.UpdateSL,
-							TakeProfit:   o.UpdateTP,
+							StopLoss:     decimal.NewFromFloat(o.UpdateSL),
+							TakeProfit:   decimal.NewFromFloat(o.UpdateTP),
 							OrderComment: o.UpdateComment,
 							Platform:     o.Platform,
 						}
@@ -244,7 +245,9 @@ func startMdGatewayPipeline(
 				}
 		},
 		OnAccountDisconnect: func(accountID string) {
-			accountSyncSvc.SyncAccountHistory(accountID)
+			if userID, err := getUserIDFromPool(context.Background(), pool, accountID); err == nil {
+				accountSyncSvc.SyncAccountHistory(accountID, userID)
+			}
 			(*platformAgg).ClearAccount(accountID)
 			hub.RemoveSession(accountID) // BUG-2: clean Hub executors map on disconnect
 			// Update DB status so frontend doesn't keep showing stale "connected" state.
@@ -255,7 +258,9 @@ func startMdGatewayPipeline(
 			}
 		},
 		OnBrokerInfo: func(accountID, platform, broker string, info *mdtick.BrokerInfo) {
-			accountSyncSvc.SyncAccountHistory(accountID)
+			if userID, err := getUserIDFromPool(context.Background(), pool, accountID); err == nil {
+				accountSyncSvc.SyncAccountHistory(accountID, userID)
+			}
 			// H17: Trigger reconciliation on broker reconnect so ant-side state
 			// stays consistent with broker-side reality (ADR-0013).
 			if *reconLoop != nil {
@@ -341,4 +346,10 @@ func convertProfitPositions(positions []mdtick.ProfitPosition) []mthub.AccountPr
 		})
 	}
 	return out
+}
+
+func getUserIDFromPool(ctx context.Context, pool *pgxpool.Pool, accountID string) (string, error) {
+	var userID string
+	err := pool.QueryRow(ctx, "SELECT user_id::text FROM mt_accounts WHERE id = $1", accountID).Scan(&userID)
+	return userID, err
 }

@@ -122,7 +122,7 @@ func (r *TradeRecordRepository) batchCreateChunk(ctx context.Context, records []
 	return tx.Commit(ctx)
 }
 
-func (r *TradeRecordRepository) GetByAccountID(ctx context.Context, accountID uuid.UUID, start, end time.Time, limit int) ([]*model.TradeRecord, error) {
+func (r *TradeRecordRepository) GetByAccountID(ctx context.Context, userID, accountID uuid.UUID, start, end time.Time, limit int) ([]*model.TradeRecord, error) {
 	query := `
 		SELECT
 			id, schedule_id, account_id, ticket, symbol, order_type, volume,
@@ -130,13 +130,13 @@ func (r *TradeRecordRepository) GetByAccountID(ctx context.Context, accountID uu
 			open_time, close_time, stop_loss, take_profit, order_comment, magic_number, platform,
 			created_at, updated_at
 		FROM trade_records
-		WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3
+		WHERE user_id = $1 AND account_id = $2 AND close_time >= $2 AND close_time <= $3
 		ORDER BY close_time DESC
 	`
-	args := []interface{}{accountID, start, end}
+	args := []interface{}{userID, accountID, start, end}
 
 	if limit > 0 {
-		query += " LIMIT $4"
+		query += " LIMIT $5"
 		args = append(args, limit)
 	}
 
@@ -163,28 +163,28 @@ func (r *TradeRecordRepository) GetByAccountID(ctx context.Context, accountID uu
 	return records, rows.Err()
 }
 
-func (r *TradeRecordRepository) GetLastSyncTime(ctx context.Context, accountID uuid.UUID) (*time.Time, error) {
+func (r *TradeRecordRepository) GetLastSyncTime(ctx context.Context, userID, accountID uuid.UUID) (*time.Time, error) {
 	query := `
-		SELECT MAX(close_time) FROM trade_records WHERE account_id = $1
+		SELECT MAX(close_time) FROM trade_records WHERE user_id = $1 AND account_id = $2
 	`
 	var lastTime *time.Time
-	err := r.db.QueryRow(ctx, query, accountID).Scan(&lastTime)
+	err := r.db.QueryRow(ctx, query, userID, accountID).Scan(&lastTime)
 	if err != nil {
 		return nil, err
 	}
 	return lastTime, nil
 }
 
-func (r *TradeRecordRepository) CountByAccount(ctx context.Context, accountID uuid.UUID) (int, error) {
-	query := `SELECT COUNT(*) FROM trade_records WHERE account_id = $1`
+func (r *TradeRecordRepository) CountByAccount(ctx context.Context, userID, accountID uuid.UUID) (int, error) {
+	query := `SELECT COUNT(*) FROM trade_records WHERE user_id = $1 AND account_id = $2`
 	var count int
-	err := r.db.QueryRow(ctx, query, accountID).Scan(&count)
+	err := r.db.QueryRow(ctx, query, userID, accountID).Scan(&count)
 	return count, err
 }
 
-func (r *TradeRecordRepository) DeleteByAccount(ctx context.Context, accountID uuid.UUID) error {
-	query := `DELETE FROM trade_records WHERE account_id = $1`
-	_, err := r.db.Exec(ctx, query, accountID)
+func (r *TradeRecordRepository) DeleteByAccount(ctx context.Context, userID, accountID uuid.UUID) error {
+	query := `DELETE FROM trade_records WHERE user_id = $1 AND account_id = $2`
+	_, err := r.db.Exec(ctx, query, userID, accountID)
 	if err != nil {
 		return fmt.Errorf("delete trade records by account: %w", err)
 	}

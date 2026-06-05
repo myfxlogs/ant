@@ -103,15 +103,16 @@ func NewAccountSyncService(tradeRecordRepo *repository.TradeRecordRepository, mt
 // writes them to trade_records.  Each chunk is committed independently — if a
 // chunk fails (network timeout, broker error), earlier chunks are already saved
 // and the next sync resumes from the last successful month.
-func (s *AccountSyncService) SyncAccountHistory(accountID string) {
+func (s *AccountSyncService) SyncAccountHistory(accountID, userID string) {
 	uid, err := uuid.Parse(accountID)
 	if err != nil {
 		return
 	}
 
 	// Determine start: last successful sync time or 1 year ago.
+	userUUID, _ := uuid.Parse(userID)
 	from := time.Now().AddDate(-1, 0, 0)
-	if t, err := s.tradeRecordRepo.GetLastSyncTime(context.Background(), uid); err == nil && t != nil {
+	if t, err := s.tradeRecordRepo.GetLastSyncTime(context.Background(), userUUID, uid); err == nil && t != nil {
 		from = *t
 	}
 

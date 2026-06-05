@@ -67,7 +67,7 @@ func (s *MtHubServer) SyncOrderHistory(ctx context.Context, req *connect.Request
 	}
 
 	from := time.Now().AddDate(-1, 0, 0)
-	lastTime, err := s.tradeRecords.GetLastSyncTime(ctx, uid)
+	parsedUID, _ := uuid.Parse(userID); lastTime, err := s.tradeRecords.GetLastSyncTime(ctx, parsedUID, uid)
 	if err != nil {
 		if !errors.Is(err, pgx.ErrNoRows) {
 			s.log.Error("SyncOrderHistory: get last sync time failed", zap.Error(err))

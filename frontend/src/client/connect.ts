@@ -1,6 +1,7 @@
 import { createClient } from "@connectrpc/connect";
 import { AuthService } from "../gen/ant/v1/auth_pb";
 import { AccountService } from "../gen/ant/v1/account_pb";
+import { AdminSREService } from "../gen/ant/v1/admin_sre_pb";
 import { MarketService } from "../gen/ant/v1/market_service_pb";
 import { StreamService } from "../gen/ant/v1/stream_pb";
 import { StrategyService } from "../gen/ant/v1/strategy_pb";
@@ -42,6 +43,7 @@ export const strategyClient = createClient(StrategyService, transport);
 export const aiClient = createClient(AIService, transport);
 export const systemAIClient = createClient(SystemAIService, transport);
 export const aiPrimaryClient = createClient(AIPrimaryService, transport);
+export const adminSREClient = createClient(AdminSREService, transport);
 export const codeAssistClient = createClient(CodeAssistService, transport);
 export const adminUserClient = createClient(AdminUserService, transport);
 export const adminAccountClient = createClient(AdminAccountService, transport);
