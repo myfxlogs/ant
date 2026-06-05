@@ -20,10 +20,10 @@ export default function SmartTuningPanel({
 }: Props) {
   const [candidates, setCandidates] = useState<StrategyExperimentCandidate[]>([]);
   const [experimentId, setExperimentId] = useState('');
-  const [watching, setPollingRunning] = useState(false);
+  const [watching, setWatching] = useState(false);
 
   const handleRunTuning = useCallback(async () => {
-    setCandidates([]); setPollingRunning(true);
+    setCandidates([]); setWatching(true);
     try {
       const paramSpace: Record<string, number[]> = {};
       for (const dim of enabledSweepDims) {
@@ -38,29 +38,33 @@ export default function SmartTuningPanel({
       });
       setExperimentId(resp.experiment?.id || '');
       onRunTuning();
-    } catch { setPollingRunning(false); }
+    } catch { setWatching(false); }
   }, [enabledSweepDims, tuneMethod, cartesianSize, onRunTuning]);
 
-  const handlePoll = useCallback(async () => {
-    if (!experimentId) return;
-    const exps = await strategyExperimentApi.list();
-    const exp = exps.find(e => e.id === experimentId);
-    if (exp?.status === 'COMPLETED' || exp?.status === 'FAILED') {
-      setPollingRunning(false);
-      if (exp.status === 'COMPLETED') {
-        const cands = await strategyExperimentApi.listCandidates(experimentId);
-        setCandidates(cands);
-      }
-    }
-  }, [experimentId]);
-
-  // Auto-poll every 5s when running (useEffect with cleanup)
-  const pollRef = useRef<ReturnType<typeof setInterval>>();
+  // SSE streaming -- push-first architecture, replaces polling
+  const abortRef = useRef<AbortController | null>(null);
   useEffect(() => {
     if (!watching || !experimentId) return;
-    pollRef.current = setInterval(handlePoll, 5000);
-    return () => { if (pollRef.current) clearInterval(pollRef.current); };
-  }, [watching, experimentId, handlePoll]);
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+    (async () => {
+      try {
+        for await (const event of strategyExperimentApi.watchExperiment(experimentId)) {
+          if (ctrl.signal.aborted) break;
+          if (event.status === 'COMPLETED') {
+            setCandidates(event.candidates || []);
+            setWatching(false);
+            break;
+          }
+          if (event.status === 'FAILED') {
+            setWatching(false);
+            break;
+          }
+        }
+      } catch { setWatching(false); }
+    })();
+    return () => { ctrl.abort(); };
+  }, [watching, experimentId]);
 
   const gradeColors: Record<string, string> = { A: 'green', B: 'blue', C: 'gold', D: 'orange', E: 'red' };
 
