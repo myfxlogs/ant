@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"encoding/json"
+	"google.golang.org/protobuf/proto"
 	"time"
 
 	goredis "github.com/redis/go-redis/v9"
@@ -41,7 +41,7 @@ func (c *AnalyticsCache) Get(ctx context.Context, accountID string) (*antv1.Acco
 		return nil, nil // cache miss
 	}
 	var resp antv1.AccountAnalyticsResponse
-	if err := json.Unmarshal(data, &resp); err != nil {
+	if err := proto.Unmarshal(data, &resp); err != nil {
 		c.log.Warn("analytics cache: unmarshal failed",
 			zap.String("account", accountID), zap.Error(err))
 		return nil, nil
@@ -51,7 +51,7 @@ func (c *AnalyticsCache) Get(ctx context.Context, accountID string) (*antv1.Acco
 
 // Set stores an analytics response in Redis with a 30‑minute TTL.
 func (c *AnalyticsCache) Set(ctx context.Context, accountID string, resp *antv1.AccountAnalyticsResponse) error {
-	data, err := json.Marshal(resp)
+	data, err := proto.Marshal(resp)
 	if err != nil {
 		return err
 	}
