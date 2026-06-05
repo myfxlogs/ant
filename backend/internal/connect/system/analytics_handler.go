@@ -1,6 +1,7 @@
 package system
 
 import (
+	"github.com/shopspring/decimal"
 	"context"
 	"fmt"
 	"math"
@@ -222,9 +223,9 @@ func equityCurveToProto(points []*model.EquityPoint) []*antv1.EquityPoint {
 	for _, p := range points {
 		result = append(result, &antv1.EquityPoint{
 			Date:    p.Date,
-			Equity:  p.Equity,
-			Balance: p.Balance,
-			Profit:  p.Profit,
+			Equity:  p.Equity.InexactFloat64(),
+			Balance: p.Balance.InexactFloat64(),
+			Profit:  p.Profit.InexactFloat64(),
 		})
 	}
 	return result
@@ -235,9 +236,9 @@ func hourlyStatsToProto(stats []*model.HourlyStats) []*antv1.HourlyStat {
 	for _, h := range stats {
 		result = append(result, &antv1.HourlyStat{
 			Hour:                   int32(h.HourStart),
-			Lots:                   h.Lots,
-			Balance:                h.Balance,
-			ProfitFactor:           h.ProfitFactor,
+			Lots:                   h.Lots.InexactFloat64(),
+			Balance:                h.Balance.InexactFloat64(),
+			ProfitFactor:           h.ProfitFactor.InexactFloat64(),
 			MaxFloatingLossAmount:  h.MaxFloatingLossAmount,
 			MaxFloatingLossRatio:   h.MaxFloatingLossRatio,
 			MaxFloatingProfitAmount: h.MaxFloatingProfitAmount,
@@ -259,15 +260,15 @@ func appendLiveEquity(ctx context.Context, repo *repository.AnalyticsRepository,
 	today := time.Now().Format("2006-01-02")
 
 	if len(curve) > 0 && curve[len(curve)-1].Date == today {
-		curve[len(curve)-1].Equity = math.Round(live.Equity*100) / 100
-		curve[len(curve)-1].Balance = math.Round(live.Balance*100) / 100
-		curve[len(curve)-1].Profit = math.Round(live.Profit*100) / 100
+		curve[len(curve)-1].Equity = decimal.NewFromFloat(live.Equity)
+		curve[len(curve)-1].Balance = decimal.NewFromFloat(live.Balance)
+		curve[len(curve)-1].Profit = decimal.NewFromFloat(live.Profit)
 	} else {
 		curve = append(curve, &model.EquityPoint{
 			Date:    today,
-			Equity:  math.Round(live.Equity*100) / 100,
-			Balance: math.Round(live.Balance*100) / 100,
-			Profit:  math.Round(live.Profit*100) / 100,
+			Equity:  decimal.NewFromFloat(math.Round(live.Equity*100) / 100),
+			Balance: decimal.NewFromFloat(math.Round(live.Balance*100) / 100),
+			Profit:  decimal.NewFromFloat(math.Round(live.Profit*100) / 100),
 		})
 	}
 	return curve

@@ -715,6 +715,83 @@ func (x *OrderCacheEntry) GetTakeProfit() float64 {
 	return 0
 }
 
+// CostEstimate holds pre-trade cost breakdown (replaces JSON string in service_orders.go).
+type CostEstimate struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SpreadCost    float64                `protobuf:"fixed64,1,opt,name=spread_cost,json=spreadCost,proto3" json:"spread_cost,omitempty"`
+	Commission    float64                `protobuf:"fixed64,2,opt,name=commission,proto3" json:"commission,omitempty"`
+	SlippageCost  float64                `protobuf:"fixed64,3,opt,name=slippage_cost,json=slippageCost,proto3" json:"slippage_cost,omitempty"`
+	SwapCost      float64                `protobuf:"fixed64,4,opt,name=swap_cost,json=swapCost,proto3" json:"swap_cost,omitempty"`
+	TotalCost     float64                `protobuf:"fixed64,5,opt,name=total_cost,json=totalCost,proto3" json:"total_cost,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CostEstimate) Reset() {
+	*x = CostEstimate{}
+	mi := &file_market_events_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CostEstimate) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CostEstimate) ProtoMessage() {}
+
+func (x *CostEstimate) ProtoReflect() protoreflect.Message {
+	mi := &file_market_events_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CostEstimate.ProtoReflect.Descriptor instead.
+func (*CostEstimate) Descriptor() ([]byte, []int) {
+	return file_market_events_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *CostEstimate) GetSpreadCost() float64 {
+	if x != nil {
+		return x.SpreadCost
+	}
+	return 0
+}
+
+func (x *CostEstimate) GetCommission() float64 {
+	if x != nil {
+		return x.Commission
+	}
+	return 0
+}
+
+func (x *CostEstimate) GetSlippageCost() float64 {
+	if x != nil {
+		return x.SlippageCost
+	}
+	return 0
+}
+
+func (x *CostEstimate) GetSwapCost() float64 {
+	if x != nil {
+		return x.SwapCost
+	}
+	return 0
+}
+
+func (x *CostEstimate) GetTotalCost() float64 {
+	if x != nil {
+		return x.TotalCost
+	}
+	return 0
+}
+
 var File_market_events_proto protoreflect.FileDescriptor
 
 const file_market_events_proto_rawDesc = "" +
@@ -796,7 +873,17 @@ const file_market_events_proto_rawDesc = "" +
 	"\x05price\x18\x05 \x01(\x01R\x05price\x12\x1b\n" +
 	"\tstop_loss\x18\x06 \x01(\x01R\bstopLoss\x12\x1f\n" +
 	"\vtake_profit\x18\a \x01(\x01R\n" +
-	"takeProfitB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"takeProfit\"\xb0\x01\n" +
+	"\fCostEstimate\x12\x1f\n" +
+	"\vspread_cost\x18\x01 \x01(\x01R\n" +
+	"spreadCost\x12\x1e\n" +
+	"\n" +
+	"commission\x18\x02 \x01(\x01R\n" +
+	"commission\x12#\n" +
+	"\rslippage_cost\x18\x03 \x01(\x01R\fslippageCost\x12\x1b\n" +
+	"\tswap_cost\x18\x04 \x01(\x01R\bswapCost\x12\x1d\n" +
+	"\n" +
+	"total_cost\x18\x05 \x01(\x01R\ttotalCostB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_market_events_proto_rawDescOnce sync.Once
@@ -810,7 +897,7 @@ func file_market_events_proto_rawDescGZIP() []byte {
 	return file_market_events_proto_rawDescData
 }
 
-var file_market_events_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_market_events_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_market_events_proto_goTypes = []any{
 	(*TickPayload)(nil),           // 0: ant.v1.TickPayload
 	(*BarPayload)(nil),            // 1: ant.v1.BarPayload
@@ -819,6 +906,7 @@ var file_market_events_proto_goTypes = []any{
 	(*MonthlyAnalysisPoint)(nil),  // 4: ant.v1.MonthlyAnalysisPoint
 	(*MonthlyAnalysisPoints)(nil), // 5: ant.v1.MonthlyAnalysisPoints
 	(*OrderCacheEntry)(nil),       // 6: ant.v1.OrderCacheEntry
+	(*CostEstimate)(nil),          // 7: ant.v1.CostEstimate
 }
 var file_market_events_proto_depIdxs = []int32{
 	4, // 0: ant.v1.MonthlyAnalysisPoints.points:type_name -> ant.v1.MonthlyAnalysisPoint
@@ -840,7 +928,7 @@ func file_market_events_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_market_events_proto_rawDesc), len(file_market_events_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

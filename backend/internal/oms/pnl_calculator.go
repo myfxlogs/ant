@@ -56,15 +56,15 @@ func (c *PnLCalculator) Calculate(side string, openPrice, closePrice, lots, cont
 
 	swapCost := c.fillModel.costModel.SwapCost(side, lots, closePrice, contractSize, holdingDays)
 	spreadCost := entryBreakdown.SpreadCost + exitBreakdown.SpreadCost
-	commission := entryBreakdown.Commission + exitBreakdown.Commission
+	commission := entryBreakdown.Commission.Add(exitBreakdown.Commission)
 	slippage := entryBreakdown.SlippageCost + exitBreakdown.SlippageCost
 
-	netPnL := grossPnL - spreadCost - commission - swapCost - slippage
+	netPnL := grossPnL - spreadCost - commission.InexactFloat64() - swapCost - slippage
 
 	return PnLResult{
 		GrossPnL:     grossPnL,
 		SpreadCost:   spreadCost,
-		Commission:   commission,
+		Commission:   commission.InexactFloat64(),
 		SwapCost:     swapCost,
 		SlippageCost: slippage,
 		NetPnL:       netPnL,

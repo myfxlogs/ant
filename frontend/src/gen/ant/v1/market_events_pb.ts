@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file market_events.proto.
  */
 export const file_market_events: GenFile = /*@__PURE__*/
-  fileDesc("ChNtYXJrZXRfZXZlbnRzLnByb3RvEgZhbnQudjEiXgoLVGlja1BheWxvYWQSDgoGYnJva2VyGAEgASgJEhEKCWNhbm9uaWNhbBgCIAEoCRISCgp0c191bml4X21zGAMgASgDEgsKA2JpZBgEIAEoCRILCgNhc2sYBSABKAki4QEKCkJhclBheWxvYWQSDgoGYnJva2VyGAEgASgJEhEKCWNhbm9uaWNhbBgCIAEoCRIOCgZwZXJpb2QYAyABKAkSFwoPb3Blbl90c191bml4X21zGAQgASgDEhgKEGNsb3NlX3RzX3VuaXhfbXMYBSABKAMSDAoEb3BlbhgGIAEoCRIMCgRoaWdoGAcgASgJEgsKA2xvdxgIIAEoCRINCgVjbG9zZRgJIAEoCRIOCgZ2b2x1bWUYCiABKAESEgoKdGlja19jb3VudBgLIAEoDRIRCglpc19yZXBsYXkYDCABKAgi6QIKEVRyYWRlRXZlbnRQYXlsb2FkEhAKCGV2ZW50X2lkGAEgASgJEhIKCmV2ZW50X3R5cGUYAiABKAkSEgoKYWNjb3VudF9pZBgDIAEoCRIPCgd1c2VyX2lkGAQgASgJEg4KBmJyb2tlchgFIAEoCRIOCgZ0aWNrZXQYBiABKAMSEQoJY2xpZW50X2lkGAcgASgJEhEKCWNhbm9uaWNhbBgIIAEoCRIMCgRzaWRlGAkgASgJEhIKCm9yZGVyX3R5cGUYCiABKAkSDgoGdm9sdW1lGAsgASgBEg0KBXByaWNlGAwgASgBEhEKCXN0b3BfbG9zcxgNIAEoARITCgt0YWtlX3Byb2ZpdBgOIAEoARISCgpmcm9tX3N0YXRlGA8gASgJEhAKCHRvX3N0YXRlGBAgASgJEg0KBWVycm9yGBEgASgJEhEKCWNvc3RfanNvbhgSIAEoCRISCgp0c191bml4X21zGBMgASgDImIKE0FjY291bnRFdmVudFBheWxvYWQSEgoKYWNjb3VudF9pZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEhIKCnRzX3VuaXhfbXMYAyABKAMSEgoKZXZlbnRfdHlwZRgEIAEoCSJ/ChRNb250aGx5QW5hbHlzaXNQb2ludBIMCgR5ZWFyGAEgASgFEg0KBW1vbnRoGAIgASgFEg4KBmNoYW5nZRgDIAEoARIOCgZwcm9maXQYBCABKAESDAoEbG90cxgFIAEoARIMCgRwaXBzGAYgASgBEg4KBnRyYWRlcxgHIAEoBSJFChVNb250aGx5QW5hbHlzaXNQb2ludHMSLAoGcG9pbnRzGAEgAygLMhwuYW50LnYxLk1vbnRobHlBbmFseXNpc1BvaW50IoYBCg9PcmRlckNhY2hlRW50cnkSDgoGdGlja2V0GAEgASgDEg4KBnN5bWJvbBgCIAEoCRIMCgRzaWRlGAMgASgJEg4KBnZvbHVtZRgEIAEoARINCgVwcmljZRgFIAEoARIRCglzdG9wX2xvc3MYBiABKAESEwoLdGFrZV9wcm9maXQYByABKAFCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw");
+  fileDesc("ChNtYXJrZXRfZXZlbnRzLnByb3RvEgZhbnQudjEiXgoLVGlja1BheWxvYWQSDgoGYnJva2VyGAEgASgJEhEKCWNhbm9uaWNhbBgCIAEoCRISCgp0c191bml4X21zGAMgASgDEgsKA2JpZBgEIAEoCRILCgNhc2sYBSABKAki4QEKCkJhclBheWxvYWQSDgoGYnJva2VyGAEgASgJEhEKCWNhbm9uaWNhbBgCIAEoCRIOCgZwZXJpb2QYAyABKAkSFwoPb3Blbl90c191bml4X21zGAQgASgDEhgKEGNsb3NlX3RzX3VuaXhfbXMYBSABKAMSDAoEb3BlbhgGIAEoCRIMCgRoaWdoGAcgASgJEgsKA2xvdxgIIAEoCRINCgVjbG9zZRgJIAEoCRIOCgZ2b2x1bWUYCiABKAESEgoKdGlja19jb3VudBgLIAEoDRIRCglpc19yZXBsYXkYDCABKAgi6QIKEVRyYWRlRXZlbnRQYXlsb2FkEhAKCGV2ZW50X2lkGAEgASgJEhIKCmV2ZW50X3R5cGUYAiABKAkSEgoKYWNjb3VudF9pZBgDIAEoCRIPCgd1c2VyX2lkGAQgASgJEg4KBmJyb2tlchgFIAEoCRIOCgZ0aWNrZXQYBiABKAMSEQoJY2xpZW50X2lkGAcgASgJEhEKCWNhbm9uaWNhbBgIIAEoCRIMCgRzaWRlGAkgASgJEhIKCm9yZGVyX3R5cGUYCiABKAkSDgoGdm9sdW1lGAsgASgBEg0KBXByaWNlGAwgASgBEhEKCXN0b3BfbG9zcxgNIAEoARITCgt0YWtlX3Byb2ZpdBgOIAEoARISCgpmcm9tX3N0YXRlGA8gASgJEhAKCHRvX3N0YXRlGBAgASgJEg0KBWVycm9yGBEgASgJEhEKCWNvc3RfanNvbhgSIAEoCRISCgp0c191bml4X21zGBMgASgDImIKE0FjY291bnRFdmVudFBheWxvYWQSEgoKYWNjb3VudF9pZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEhIKCnRzX3VuaXhfbXMYAyABKAMSEgoKZXZlbnRfdHlwZRgEIAEoCSJ/ChRNb250aGx5QW5hbHlzaXNQb2ludBIMCgR5ZWFyGAEgASgFEg0KBW1vbnRoGAIgASgFEg4KBmNoYW5nZRgDIAEoARIOCgZwcm9maXQYBCABKAESDAoEbG90cxgFIAEoARIMCgRwaXBzGAYgASgBEg4KBnRyYWRlcxgHIAEoBSJFChVNb250aGx5QW5hbHlzaXNQb2ludHMSLAoGcG9pbnRzGAEgAygLMhwuYW50LnYxLk1vbnRobHlBbmFseXNpc1BvaW50IoYBCg9PcmRlckNhY2hlRW50cnkSDgoGdGlja2V0GAEgASgDEg4KBnN5bWJvbBgCIAEoCRIMCgRzaWRlGAMgASgJEg4KBnZvbHVtZRgEIAEoARINCgVwcmljZRgFIAEoARIRCglzdG9wX2xvc3MYBiABKAESEwoLdGFrZV9wcm9maXQYByABKAEidQoMQ29zdEVzdGltYXRlEhMKC3NwcmVhZF9jb3N0GAEgASgBEhIKCmNvbW1pc3Npb24YAiABKAESFQoNc2xpcHBhZ2VfY29zdBgDIAEoARIRCglzd2FwX2Nvc3QYBCABKAESEgoKdG90YWxfY29zdBgFIAEoAUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z");
 
 /**
  * @generated from message ant.v1.TickPayload
@@ -390,4 +390,43 @@ export type OrderCacheEntry = Message<"ant.v1.OrderCacheEntry"> & {
  */
 export const OrderCacheEntrySchema: GenMessage<OrderCacheEntry> = /*@__PURE__*/
   messageDesc(file_market_events, 6);
+
+/**
+ * CostEstimate holds pre-trade cost breakdown (replaces JSON string in service_orders.go).
+ *
+ * @generated from message ant.v1.CostEstimate
+ */
+export type CostEstimate = Message<"ant.v1.CostEstimate"> & {
+  /**
+   * @generated from field: double spread_cost = 1;
+   */
+  spreadCost: number;
+
+  /**
+   * @generated from field: double commission = 2;
+   */
+  commission: number;
+
+  /**
+   * @generated from field: double slippage_cost = 3;
+   */
+  slippageCost: number;
+
+  /**
+   * @generated from field: double swap_cost = 4;
+   */
+  swapCost: number;
+
+  /**
+   * @generated from field: double total_cost = 5;
+   */
+  totalCost: number;
+};
+
+/**
+ * Describes the message ant.v1.CostEstimate.
+ * Use `create(CostEstimateSchema)` to create a new message.
+ */
+export const CostEstimateSchema: GenMessage<CostEstimate> = /*@__PURE__*/
+  messageDesc(file_market_events, 7);
 

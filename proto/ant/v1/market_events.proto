@@ -84,3 +84,12 @@ message OrderCacheEntry {
   double stop_loss = 6;
   double take_profit = 7;
 }
+
+// CostEstimate holds pre-trade cost breakdown (replaces JSON string in service_orders.go).
+message CostEstimate {
+  double spread_cost = 1;
+  double commission = 2;
+  double slippage_cost = 3;
+  double swap_cost = 4;
+  double total_cost = 5;
+}

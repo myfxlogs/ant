@@ -1,8 +1,9 @@
 package system
 
 import (
+	"anttrader/internal/model"
 	"context"
-	"encoding/json"
+	"google.golang.org/protobuf/proto"
 	"fmt"
 	"time"
 
@@ -36,7 +37,7 @@ func (s *AnalyticsServer) GetMonthlyPnL(ctx context.Context, req *connect.Reques
 	for _, m := range monthlyData {
 		items = append(items, &antv1.MonthlyPnLItem{
 			Month:  int32(m.MonthNum),
-			Profit: m.Profit,
+			Profit: m.Profit.InexactFloat64(),
 			Trades: int64(m.Trades),
 		})
 	}
@@ -65,7 +66,7 @@ func (s *AnalyticsServer) GetMonthlyAnalysis(ctx context.Context, req *connect.R
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("get monthly analysis raw: %w", err))
 	}
 
-	data, err := json.Marshal(points)
+	data, err := proto.Marshal(pointsToMonthlyProto(points))
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal monthly analysis: %w", err))
 	}
@@ -79,4 +80,15 @@ func (s *AnalyticsServer) GetMonthlyAnalysis(ctx context.Context, req *connect.R
 		Years: protoYears,
 		Data:  data,
 	}), nil
+}
+
+func pointsToMonthlyProto(points []*model.MonthlyAnalysisPoint) *antv1.MonthlyAnalysisPoints {
+	pb := &antv1.MonthlyAnalysisPoints{Points: make([]*antv1.MonthlyAnalysisPoint, len(points))}
+	for i, p := range points {
+		pb.Points[i] = &antv1.MonthlyAnalysisPoint{
+			Year: int32(p.Year), Month: int32(p.Month),
+			Change: p.Change.InexactFloat64(), Profit: p.Profit.InexactFloat64(), Lots: p.Lots.InexactFloat64(), Pips: p.Pips.InexactFloat64(), Trades: int32(p.Trades),
+		}
+	}
+	return pb
 }

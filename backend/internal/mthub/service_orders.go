@@ -2,10 +2,11 @@ package mthub
 
 import (
 	"context"
-	"encoding/json"
+	"google.golang.org/protobuf/proto"
 	"fmt"
 
 	"github.com/shopspring/decimal"
+	antv1 "anttrader/gen/proto/ant/v1"
 	"go.uber.org/zap"
 
 	"anttrader/internal/costsvc"
@@ -121,7 +122,7 @@ func (s *MtHubService) estimateOrderCost(ctx context.Context, req *OrderRequest)
 		Price:        req.Price.InexactFloat64(),
 		ContractSize: 100000,
 	})
-	b, err := json.Marshal(est)
+	b, err := proto.Marshal(costToProto(&est))
 	if err != nil {
 		return ""
 	}
@@ -293,8 +294,10 @@ func orderTypeToString(ot OrderType) string {
 
 // lossyFloat64 converts a decimal to float64 for MT API proto boundaries.
 // Precision loss is detected but not rejected — the MT proto requires float64.
-func lossyFloat64(d decimal.Decimal) float64 {
-	f, exact := d.Float64()
-	_ = exact
-	return f
+func costToProto(est *costsvc.CostBreakdown) *antv1.CostEstimate {
+	return &antv1.CostEstimate{
+		SpreadCost: est.SpreadCost, Commission: est.Commission.InexactFloat64(),
+		SlippageCost: est.SlippageCost, SwapCost: est.SwapCost,
+		TotalCost: est.TotalCost,
+	}
 }

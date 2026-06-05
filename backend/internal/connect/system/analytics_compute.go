@@ -1,6 +1,7 @@
 package system
 
 import (
+	"github.com/shopspring/decimal"
 	"fmt"
 	"math"
 	"strings"
@@ -36,8 +37,8 @@ func computeTradeStats(trades []*repository.TradeRecord) *model.TradeStats {
 		}
 
 		s.TotalTrades++
-		s.TotalVolume += t.Volume
-		s.NetProfit += t.Profit
+		s.TotalVolume = s.TotalVolume.Add(decimal.NewFromFloat(t.Volume))
+		s.NetProfit = s.NetProfit.Add(decimal.NewFromFloat(t.Profit))
 
 		if t.Profit > 0 {
 			winCount++
@@ -61,21 +62,21 @@ func computeTradeStats(trades []*repository.TradeRecord) *model.TradeStats {
 
 	s.WinningTrades = winCount
 	s.LosingTrades = lossCount
-	s.TotalProfit = totalProfit
-	s.TotalLoss = totalLoss
+	s.TotalProfit = decimal.NewFromFloat(totalProfit)
+	s.TotalLoss = decimal.NewFromFloat(totalLoss)
 
 	if s.TotalTrades > 0 {
-		s.WinRate = float64(winCount) / float64(s.TotalTrades) * 100
-		s.AverageTrade = s.NetProfit / float64(s.TotalTrades)
+		s.WinRate = decimal.NewFromFloat(float64(winCount) / float64(s.TotalTrades) * 100)
+		s.AverageTrade = s.NetProfit.InexactFloat64() / float64(s.TotalTrades)
 	}
 	if winCount > 0 {
-		s.AverageProfit = totalProfit / float64(winCount)
+		s.AverageProfit = decimal.NewFromFloat(totalProfit / float64(winCount))
 	}
 	if lossCount > 0 {
-		s.AverageLoss = totalLoss / float64(lossCount)
+		s.AverageLoss = decimal.NewFromFloat(totalLoss / float64(lossCount))
 	}
 	if totalLoss > 0 {
-		s.ProfitFactor = totalProfit / totalLoss
+		s.ProfitFactor = decimal.NewFromFloat(totalProfit / totalLoss)
 	}
 	if holdingCount > 0 {
 		avgSec := sumHoldingSeconds / float64(holdingCount)
@@ -123,15 +124,15 @@ func dailyReturnsToPercent(equityCurve []*model.EquityPoint) []float64 {
 	result := make([]float64, 0, len(equityCurve)-1)
 	for i := 1; i < len(equityCurve); i++ {
 		prev := equityCurve[i-1].Equity
-		if prev <= 0 {
+		if prev.LessThanOrEqual(decimal.Zero) {
 			continue
 		}
 		profit := equityCurve[i].Profit
 		// #25: Zero-profit days are excluded intentionally (see doc comment above).
-		if profit == 0 {
+		if profit.IsZero() {
 			continue
 		}
-		result = append(result, profit/prev)
+		result = append(result, profit.InexactFloat64()/prev.InexactFloat64())
 	}
 	return result
 }
@@ -194,16 +195,16 @@ func tradeStatsToProto(s *model.TradeStats) *antv1.TradeStats {
 	}
 	return &antv1.TradeStats{
 		TotalTrades:          int64(s.TotalTrades),
-		WinRate:              s.WinRate,
-		ProfitFactor:         s.ProfitFactor,
-		AverageProfit:        s.AverageProfit,
-		AverageLoss:          s.AverageLoss,
+		WinRate:              s.WinRate.InexactFloat64(),
+		ProfitFactor:         s.ProfitFactor.InexactFloat64(),
+		AverageProfit:        s.AverageProfit.InexactFloat64(),
+		AverageLoss:          s.AverageLoss.InexactFloat64(),
 		LargestWin:           s.LargestWin,
 		LargestLoss:          s.LargestLoss,
 		MaxConsecutiveWins:   int64(s.MaxConsecutiveWins),
 		MaxConsecutiveLosses: int64(s.MaxConsecutiveLosses),
 		AverageHoldingTime:   s.AverageHoldingTime,
-		NetProfit:            s.NetProfit,
+		NetProfit:            s.NetProfit.InexactFloat64(),
 		TotalDeposit:         s.TotalDeposit,
 		TotalWithdrawal:      s.TotalWithdrawal,
 		NetDeposit:           s.NetDeposit,
@@ -226,7 +227,7 @@ func symbolStatsToProto(stats []*model.SymbolStats) []*antv1.SymbolStat {
 		}
 		result = append(result, &antv1.SymbolStat{
 			Symbol:            s.Symbol,
-			Profit:            s.NetProfit,
+			Profit:            s.NetProfit.InexactFloat64(),
 			TradeSharePercent: tradeSharePct,
 		})
 	}
@@ -239,11 +240,11 @@ func dailyPnLToProto(items []*model.DailyPnL) []*antv1.DailyPnL {
 		result = append(result, &antv1.DailyPnL{
 			Day:                    d.Day,
 			Date:                   d.Date,
-			Pnl:                    d.PnL,
+			Pnl:                    d.PnL.InexactFloat64(),
 			Trades:                 int64(d.Trades),
-			Lots:                   d.Lots,
-			Balance:                d.Balance,
-			ProfitFactor:           d.ProfitFactor,
+			Lots:                   d.Lots.InexactFloat64(),
+			Balance:                d.Balance.InexactFloat64(),
+			ProfitFactor:           d.ProfitFactor.InexactFloat64(),
 			MaxFloatingLossAmount:  d.MaxFloatingLossAmount,
 			MaxFloatingLossRatio:   d.MaxFloatingLossRatio,
 			MaxFloatingProfitAmount: d.MaxFloatingProfitAmount,
@@ -267,14 +268,14 @@ func tradeRecordToProto(r *model.TradeRecord) *antv1.TradeRecord {
 		Ticket:     fmt.Sprintf("%d", r.Ticket),
 		Symbol:     r.Symbol,
 		Type:       r.OrderType,
-		Volume:     r.Volume,
-		OpenPrice:  r.OpenPrice,
-		ClosePrice: r.ClosePrice,
-		Profit:     r.Profit,
+		Volume:     r.Volume.InexactFloat64(),
+		OpenPrice:  r.OpenPrice.InexactFloat64(),
+		ClosePrice: r.ClosePrice.InexactFloat64(),
+		Profit:     r.Profit.InexactFloat64(),
 		OpenTime:   openTimeStr,
 		CloseTime:  closeTimeStr,
-		Swap:       r.Swap,
-		Commission: r.Commission,
+		Swap:       r.Swap.InexactFloat64(),
+		Commission: r.Commission.InexactFloat64(),
 		Comment:    r.OrderComment,
 	}
 }
