@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/shopspring/decimal"
 	"context"
 	"time"
 
@@ -118,7 +119,7 @@ func (r *AnalyticsRepository) GetMonthlyPnL(ctx context.Context, accountID uuid.
 		result[i] = &model.MonthlyPnL{
 			Month:      monthNames[i],
 			MonthNum:   i + 1,
-			Profit:     0,
+			Profit:     decimal.Zero,
 			Trades:     0,
 			WinTrades:  0,
 			LossTrades: 0,
@@ -126,7 +127,7 @@ func (r *AnalyticsRepository) GetMonthlyPnL(ctx context.Context, accountID uuid.
 	}
 	for _, s := range stats {
 		idx := s.MonthNum - 1
-		result[idx].Profit = s.Profit
+		result[idx].Profit = decimal.NewFromFloat(s.Profit)
 		result[idx].Trades = s.Trades
 		result[idx].WinTrades = s.WinTrades
 		result[idx].LossTrades = s.LossTrades

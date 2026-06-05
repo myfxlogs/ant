@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/shopspring/decimal"
 	"context"
 	"fmt"
 	"time"
@@ -134,12 +135,12 @@ func (r *AnalyticsRepository) GetHourlyStats(ctx context.Context, accountID uuid
 			Hour:                  fmt.Sprintf("%02d:00", h),
 			HourStart:             h,
 			Trades:                0,
-			Profit:                0,
-			WinRate:               0,
+			Profit:                decimal.Zero,
+			WinRate:               decimal.Zero,
 			AvgPnL:                0,
-			Lots:                  0,
-			Balance:               0,
-			ProfitFactor:          0,
+			Lots:                  decimal.Zero,
+			Balance:               decimal.Zero,
+			ProfitFactor:          decimal.Zero,
 			MaxFloatingLossAmount: 0,
 			MaxFloatingLossRatio:  0,
 			MaxFloatingProfitAmount: 0,
@@ -149,14 +150,14 @@ func (r *AnalyticsRepository) GetHourlyStats(ctx context.Context, accountID uuid
 	for _, s := range stats {
 		if s.HourStart >= 0 && s.HourStart < 24 {
 			result[s.HourStart].Trades = s.Trades
-			result[s.HourStart].Lots = s.Lots
-			result[s.HourStart].Profit = s.Profit
-			result[s.HourStart].WinRate = s.WinRate
+			result[s.HourStart].Lots = decimal.NewFromFloat(s.Lots)
+			result[s.HourStart].Profit = decimal.NewFromFloat(s.Profit)
+			result[s.HourStart].WinRate = decimal.NewFromFloat(s.WinRate)
 			if s.Trades > 0 {
 				result[s.HourStart].AvgPnL = s.Profit / float64(s.Trades)
 			}
 			if s.GrossLoss > 0 {
-				result[s.HourStart].ProfitFactor = s.GrossProfit / s.GrossLoss
+				result[s.HourStart].ProfitFactor = decimal.NewFromFloat(s.GrossProfit / s.GrossLoss)
 			}
 		}
 	}

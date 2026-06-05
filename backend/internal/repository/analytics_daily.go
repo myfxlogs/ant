@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/shopspring/decimal"
 	"context"
 	"time"
 
@@ -111,11 +112,11 @@ func computeDailyPnLResult(stats []dailyTradeStat, initialBalance float64) []*mo
 			Day:                     dayNames[int(s.Date.Weekday())],
 			DayNum:                  dayNum,
 			Date:                    s.Date.Format("01-02"),
-			PnL:                     s.PnL,
+			PnL:                     decimal.NewFromFloat(s.PnL),
 			Trades:                  s.Trades,
-			Lots:                    s.Lots,
-			Balance:                 s.Balance,
-			ProfitFactor:            pf,
+			Lots:                    decimal.NewFromFloat(s.Lots),
+			Balance:                 decimal.NewFromFloat(s.Balance),
+			ProfitFactor:            decimal.NewFromFloat(pf),
 			MaxFloatingLossAmount:   0,
 			MaxFloatingLossRatio:    0,
 			MaxFloatingProfitAmount: 0,

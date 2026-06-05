@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/shopspring/decimal"
 	"context"
 	"fmt"
 	"math"
@@ -145,9 +146,9 @@ func (r *AnalyticsRepository) GetEquityCurve(ctx context.Context, accountID uuid
 
 		result = append(result, &model.EquityPoint{
 			Date:    dayCursor.Format("2006-01-02"),
-			Equity:  math.Round((runningBalance+unrealizedPnL)*100) / 100,
-			Balance: math.Round(runningBalance*100) / 100,
-			Profit:  math.Round(profit*100) / 100,
+			Equity:  decimal.NewFromFloat(math.Round((runningBalance+unrealizedPnL)*100) / 100),
+			Balance:  decimal.NewFromFloat(math.Round(runningBalance*100) / 100),
+			Profit:  decimal.NewFromFloat(math.Round(profit*100) / 100),
 		})
 		dayCursor = dayCursor.AddDate(0, 0, 1)
 	}
@@ -161,9 +162,9 @@ func (r *AnalyticsRepository) GetEquityCurve(ctx context.Context, accountID uuid
 		}
 		result = append(result, &model.EquityPoint{
 			Date:    time.Now().Format("2006-01-02"),
-			Equity:  math.Round(eq*100) / 100,
-			Balance: math.Round(initialBalance*100) / 100,
-			Profit:  0,
+			Equity:  decimal.NewFromFloat(math.Round(eq*100) / 100),
+			Balance:  decimal.NewFromFloat(math.Round(initialBalance*100) / 100),
+			Profit:  decimal.Zero,
 		})
 	}
 
@@ -267,9 +268,9 @@ func (r *AnalyticsRepository) GetHourlyEquityCurve(ctx context.Context, accountI
 
 		result = append(result, &model.EquityPoint{
 			Date:    hourCursor.Format("2006-01-02 15:04"),
-			Equity:  math.Round(currentEquity*100) / 100,
-			Balance: math.Round(runningBalance*100) / 100,
-			Profit:  math.Round(profit*100) / 100,
+			Equity:  decimal.NewFromFloat(math.Round(currentEquity*100) / 100),
+			Balance:  decimal.NewFromFloat(math.Round(runningBalance*100) / 100),
+			Profit:  decimal.NewFromFloat(math.Round(profit*100) / 100),
 		})
 		hourCursor = hourCursor.Add(time.Hour)
 	}
@@ -277,9 +278,9 @@ func (r *AnalyticsRepository) GetHourlyEquityCurve(ctx context.Context, accountI
 	if len(result) == 0 {
 		result = append(result, &model.EquityPoint{
 			Date:    time.Now().Format("2006-01-02 15:04"),
-			Equity:  math.Round(initialBalance*100) / 100,
-			Balance: math.Round(initialBalance*100) / 100,
-			Profit:  0,
+			Equity:  decimal.NewFromFloat(math.Round(initialBalance*100) / 100),
+			Balance:  decimal.NewFromFloat(math.Round(initialBalance*100) / 100),
+			Profit:  decimal.Zero,
 		})
 	}
 

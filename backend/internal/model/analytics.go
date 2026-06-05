@@ -95,7 +95,7 @@ type DailyPnL struct {
 	Day                    string  `json:"day"`
 	DayNum                 int     `json:"day_num"`
 	Date                   string  `json:"date"`
-	PnL                    float64 `json:"pnl"`
+	PnL                    decimal.Decimal `json:"pnl"`
 	Trades                 int     `json:"trades"`
 	Lots                   decimal.Decimal `json:"lots"`
 	Balance                decimal.Decimal `json:"balance"`

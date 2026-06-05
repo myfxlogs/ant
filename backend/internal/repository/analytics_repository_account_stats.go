@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/shopspring/decimal"
 	"context"
 	"time"
 
@@ -103,9 +104,9 @@ func (r *AnalyticsRepository) GetDailyEquity(ctx context.Context, accountID uuid
 		runningBalance += dp.Profit
 		result = append(result, &model.DailyEquity{
 			Date:     dp.Date.Format("2006-01-02"),
-			Profit:   dp.Profit,
-			Balance:  runningBalance,
-			Equity:   runningBalance,
+			Profit:   decimal.NewFromFloat(dp.Profit),
+			Balance:  decimal.NewFromFloat(runningBalance),
+			Equity:   decimal.NewFromFloat(runningBalance),
 			Drawdown: 0,
 		})
 	}

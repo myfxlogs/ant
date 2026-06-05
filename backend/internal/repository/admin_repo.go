@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/shopspring/decimal"
 	"context"
 	"database/sql"
 	"errors"
@@ -73,7 +74,7 @@ func (r *AdminRepository) GetDashboardStats(ctx context.Context) (*model.Dashboa
 		return nil, err
 	}
 
-	stats.SystemLoad = 0.0
+	stats.SystemLoad = decimal.Zero
 
 	return stats, nil
 }
@@ -124,7 +125,7 @@ func (r *AdminRepository) GetTradingSummary(ctx context.Context, startDate, endD
 		WHERE DATE(close_time) BETWEEN $1 AND $2`, startDate, endDate,
 	).Scan(&summary.Trading.TotalOrders)
 
-	summary.Trading.NetProfit = summary.Trading.TotalProfit + summary.Trading.TotalLoss
+	summary.Trading.NetProfit = summary.Trading.TotalProfit.Add(summary.Trading.TotalLoss)
 
 	// ByPlatform breakdown
 	rows, err := r.db.Query(ctx, `
