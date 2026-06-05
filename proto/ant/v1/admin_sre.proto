@@ -1,0 +1,42 @@
+syntax = "proto3";
+package ant.v1;
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+service AdminSREService {
+  rpc GetKillSwitch(GetKillSwitchRequest) returns (KillSwitchStatus);
+  rpc SetKillSwitch(SetKillSwitchRequest) returns (KillSwitchStatus);
+  rpc ListBreakers(ListBreakersRequest) returns (ListBreakersResponse);
+  rpc ResetBreaker(ResetBreakerRequest) returns (BreakerStatus);
+  rpc GetCanary(GetCanaryRequest) returns (CanaryStatus);
+  rpc SetCanary(SetCanaryRequest) returns (CanaryStatus);
+}
+
+message KillSwitchStatus {
+  bool enabled = 1;
+  string reason = 2;
+  int64 set_at_unix_ms = 3;
+  string set_by = 4;
+}
+
+message GetKillSwitchRequest {}
+message SetKillSwitchRequest { bool enabled = 1; string reason = 2; }
+
+message BreakerStatus {
+  string name = 1;
+  bool open = 2;
+  int32 failure_count = 3;
+  int64 last_failure_unix_ms = 4;
+}
+
+message ListBreakersRequest {}
+message ListBreakersResponse { repeated BreakerStatus breakers = 1; }
+message ResetBreakerRequest { string name = 1; }
+
+message CanaryStatus {
+  bool enabled = 1;
+  int32 traffic_percent = 2;
+  string target_version = 3;
+}
+
+message GetCanaryRequest {}
+message SetCanaryRequest { bool enabled = 1; int32 traffic_percent = 2; string target_version = 3; }

@@ -59,6 +59,8 @@ func registerSREHandlers(
 		To:       splitAndTrim(cfg.SMTPTo, ","),
 	}, log)
 	sreHandler := admin.NewSREHandler(sreKillSwitch, sreBreakers, sreCanary, platformSvc, emailNotifier, log)
+\t// ConnectRPC handler (proto binary) — eventually replaces REST endpoints below
+\tmux.Handle(antv1c.NewAdminSREServiceHandler(sreHandler, connectrpc.WithInterceptors(adminInterceptor)))
 
 	analyticsRepo := repository.NewAnalyticsRepository(pool)
 	analyticsServer := system.NewAnalyticsServer(analyticsRepo, platformSvc, analyticsCache, log)
