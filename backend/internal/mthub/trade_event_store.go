@@ -11,7 +11,8 @@ package mthub
 import (
 	"github.com/shopspring/decimal"
 	"context"
-	"encoding/json"
+	antv1 "anttrader/gen/proto/ant/v1"
+	"google.golang.org/protobuf/proto"
 	"fmt"
 	"time"
 
@@ -86,7 +87,7 @@ func (s *TradeEventStore) Publish(ctx context.Context, ev *TradeEvent) error {
 
 	ev.ArrivedUnixMs = Clk.Now().UnixMilli()
 
-	payload, err := json.Marshal(ev)
+	payload, err := proto.Marshal(eventToPayload(ev))
 	if err != nil {
 		return fmt.Errorf("trade_event_store: marshal: %w", err)
 	}
@@ -107,4 +108,16 @@ func (s *TradeEventStore) Publish(ctx context.Context, ev *TradeEvent) error {
 		return fmt.Errorf("trade_event_store: publish: %w", err)
 	}
 	return nil
+}
+func eventToPayload(ev *TradeEvent) *antv1.TradeEventPayload {
+	return &antv1.TradeEventPayload{
+		EventId: ev.EventID, EventType: string(ev.EventType),
+		AccountId: ev.AccountID, UserId: ev.UserID, Broker: ev.Broker,
+		Ticket: ev.Ticket, ClientId: ev.ClientID, Canonical: ev.Canonical,
+		Side: ev.Side, OrderType: ev.OrderType,
+		Volume: ev.Volume.InexactFloat64(), Price: ev.Price.InexactFloat64(),
+		StopLoss: ev.StopLoss.InexactFloat64(), TakeProfit: ev.TakeProfit.InexactFloat64(),
+		FromState: ev.FromState, ToState: ev.ToState,
+		CostJson: ev.CostBreakdownJSON, TsUnixMs: ev.Timestamp.UnixMilli(),
+	}
 }

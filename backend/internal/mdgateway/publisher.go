@@ -1,8 +1,9 @@
 package mdgateway
 
 import (
+	antv1 "anttrader/gen/proto/ant/v1"
 	"context"
-	"encoding/json"
+	"google.golang.org/protobuf/proto"
 	"fmt"
 	"regexp"
 	natsgo "github.com/nats-io/nats.go"
@@ -24,28 +25,15 @@ func (p *Publisher) subjectKey(broker string) string {
 	return sanitizeNATSSubject(broker, "_")
 }
 
-// tickPayload is the JSON body published to NATS for each tick.
-// Field names match the antv1.TickMsg json struct tags so the
-// StreamTicks handler can json.Unmarshal directly into TickMsg.
-type tickPayload struct {
-	Broker    string `json:"broker"`
-	Canonical string `json:"canonical"`
-	TsUnixMs  int64  `json:"ts_unix_ms"`
-	Bid       string `json:"bid"`
-	Ask       string `json:"ask"`
-}
 
 func (p *Publisher) PublishTick(ctx context.Context, t *mdtick.Tick) error {
 	subj := fmt.Sprintf("md.tick.%s.%s", p.subjectKey(t.Broker), t.Canonical)
 	if p.js == nil { return nil }
 	msg := natsgo.NewMsg(subj)
-	payload := tickPayload{
-		Broker:    t.Broker,
-		Canonical: t.Canonical,
-		TsUnixMs:  t.TsUnixMs,
-		Bid:       t.Bid.String(),
-		Ask:       t.Ask.String(),
-	}
+	payload, _ := proto.Marshal(&antv1.TickPayload{
+		Broker: t.Broker, Canonical: t.Canonical,
+		TsUnixMs: t.TsUnixMs, Bid: t.Bid.String(), Ask: t.Ask.String(),
+	})
 	data, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("marshal tick payload: %w", err)

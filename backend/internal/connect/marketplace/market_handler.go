@@ -2,7 +2,7 @@ package marketplace
 
 import (
 	"context"
-	"encoding/json"
+	"google.golang.org/protobuf/proto"
 	"fmt"
 	"time"
 
@@ -138,8 +138,8 @@ func (s *MarketServer) StreamTicks(ctx context.Context, req *connect.Request[ant
 			continue
 		}
 		tick := antv1.TickMsg{}
-		if err := json.Unmarshal(msg.Data, &tick); err != nil {
-			s.log.Warn("SubscribeTicks json unmarshal failed", zap.Error(err))
+		if err := proto.Unmarshal(msg.Data, &tick); err != nil {
+			s.log.Warn("SubscribeTicks proto unmarshal failed", zap.Error(err))
 			continue
 		}
 		if err := stream.Send(&tick); err != nil {

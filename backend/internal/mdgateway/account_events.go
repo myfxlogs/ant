@@ -2,7 +2,7 @@ package mdgateway
 
 import (
 	"context"
-	"encoding/json"
+	"google.golang.org/protobuf/proto"
 	"sync/atomic"
 	"time"
 

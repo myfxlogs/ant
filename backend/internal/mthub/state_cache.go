@@ -14,9 +14,10 @@ package mthub
 import (
 	"github.com/shopspring/decimal"
 	"context"
-	"encoding/json"
+	"google.golang.org/protobuf/proto"
 	"fmt"
 	"sync"
+	antv1 "anttrader/gen/proto/ant/v1"
 	"time"
 
 	goredis "github.com/redis/go-redis/v9"
@@ -169,7 +170,7 @@ func (c *StateCache) ApplyEvent(ev *TradeEvent) {
 }
 
 func (c *StateCache) persistToRedis(ev *TradeEvent) {
-	data, err := json.Marshal(c.orders[ev.Ticket])
+	data, err := proto.Marshal(orderToCacheProto(c.orders[ev.Ticket]))
 	if err != nil {
 		c.log.Warn("statecache: redis marshal failed", zap.Error(err))
 		return
@@ -192,12 +193,12 @@ func (c *StateCache) LoadFromRedis(ctx context.Context) error {
 	defer c.mu.Unlock()
 
 	for iter.Next(ctx) {
-		var entry OrderStateCacheEntry
-		if err := json.Unmarshal([]byte(iter.Val()), &entry); err != nil {
+		var protoEntry antv1.OrderCacheEntry
+		if err := proto.Unmarshal([]byte(iter.Val()), &protoEntry); err != nil {
 			c.log.Warn("statecache: redis unmarshal failed", zap.Error(err))
 			continue
 		}
-		c.orders[entry.Ticket] = &entry
+		c.orders[protoEntry.Ticket] = &OrderStateCacheEntry{Ticket: protoEntry.Ticket, AccountID: protoEntry.AccountId, State: protoEntry.State, Canonical: protoEntry.Canonical, Side: protoEntry.Side, Volume: decimal.NewFromFloat(protoEntry.Volume), Price: decimal.NewFromFloat(protoEntry.Price), UpdatedAt: time.UnixMilli(protoEntry.UpdatedAtUnixMs)}
 	}
 	return iter.Err()
 }
@@ -211,4 +212,12 @@ func (c *StateCache) Stats() (orders, positions int) {
 
 func positionKey(accountID, canonical string) string {
 	return accountID + ":" + canonical
+}
+func orderToCacheProto(o *OrderStateCacheEntry) *antv1.OrderCacheEntry {
+	return &antv1.OrderCacheEntry{
+		Ticket: o.Ticket, AccountId: o.AccountID, State: o.State,
+		Canonical: o.Canonical, Side: o.Side,
+		Volume: o.Volume.InexactFloat64(), Price: o.Price.InexactFloat64(),
+		UpdatedAtUnixMs: o.UpdatedAt.UnixMilli(),
+	}
 }

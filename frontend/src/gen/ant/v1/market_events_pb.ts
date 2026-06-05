@@ -10,21 +10,21 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file market_events.proto.
  */
 export const file_market_events: GenFile = /*@__PURE__*/
-  fileDesc("ChNtYXJrZXRfZXZlbnRzLnByb3RvEgZhbnQudjEiXgoLVGlja1BheWxvYWQSDgoGYnJva2VyGAEgASgJEhEKCWNhbm9uaWNhbBgCIAEoCRISCgp0c191bml4X21zGAMgASgDEgsKA2JpZBgEIAEoCRILCgNhc2sYBSABKAki4QEKCkJhclBheWxvYWQSDgoGYnJva2VyGAEgASgJEhEKCWNhbm9uaWNhbBgCIAEoCRIOCgZwZXJpb2QYAyABKAkSFwoPb3Blbl90c191bml4X21zGAQgASgDEhgKEGNsb3NlX3RzX3VuaXhfbXMYBSABKAMSDAoEb3BlbhgGIAEoCRIMCgRoaWdoGAcgASgJEgsKA2xvdxgIIAEoCRINCgVjbG9zZRgJIAEoCRIOCgZ2b2x1bWUYCiABKAESEgoKdGlja19jb3VudBgLIAEoDRIRCglpc19yZXBsYXkYDCABKAgi6QIKEVRyYWRlRXZlbnRQYXlsb2FkEhAKCGV2ZW50X2lkGAEgASgJEhIKCmV2ZW50X3R5cGUYAiABKAkSEgoKYWNjb3VudF9pZBgDIAEoCRIPCgd1c2VyX2lkGAQgASgJEg4KBmJyb2tlchgFIAEoCRIOCgZ0aWNrZXQYBiABKAMSEQoJY2xpZW50X2lkGAcgASgJEhEKCWNhbm9uaWNhbBgIIAEoCRIMCgRzaWRlGAkgASgJEhIKCm9yZGVyX3R5cGUYCiABKAkSDgoGdm9sdW1lGAsgASgBEg0KBXByaWNlGAwgASgBEhEKCXN0b3BfbG9zcxgNIAEoARITCgt0YWtlX3Byb2ZpdBgOIAEoARISCgpmcm9tX3N0YXRlGA8gASgJEhAKCHRvX3N0YXRlGBAgASgJEg0KBWVycm9yGBEgASgJEhEKCWNvc3RfanNvbhgSIAEoCRISCgp0c191bml4X21zGBMgASgDImIKE0FjY291bnRFdmVudFBheWxvYWQSEgoKYWNjb3VudF9pZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEhIKCnRzX3VuaXhfbXMYAyABKAMSEgoKZXZlbnRfdHlwZRgEIAEoCSJ/ChRNb250aGx5QW5hbHlzaXNQb2ludBIMCgR5ZWFyGAEgASgFEg0KBW1vbnRoGAIgASgFEg4KBmNoYW5nZRgDIAEoARIOCgZwcm9maXQYBCABKAESDAoEbG90cxgFIAEoARIMCgRwaXBzGAYgASgBEg4KBnRyYWRlcxgHIAEoBSJFChVNb250aGx5QW5hbHlzaXNQb2ludHMSLAoGcG9pbnRzGAEgAygLMhwuYW50LnYxLk1vbnRobHlBbmFseXNpc1BvaW50IoYBCg9PcmRlckNhY2hlRW50cnkSDgoGdGlja2V0GAEgASgDEg4KBnN5bWJvbBgCIAEoCRIMCgRzaWRlGAMgASgJEg4KBnZvbHVtZRgEIAEoARINCgVwcmljZRgFIAEoARIRCglzdG9wX2xvc3MYBiABKAESEwoLdGFrZV9wcm9maXQYByABKAEidQoMQ29zdEVzdGltYXRlEhMKC3NwcmVhZF9jb3N0GAEgASgBEhIKCmNvbW1pc3Npb24YAiABKAESFQoNc2xpcHBhZ2VfY29zdBgDIAEoARIRCglzd2FwX2Nvc3QYBCABKAESEgoKdG90YWxfY29zdBgFIAEoAUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z");
+  fileDesc("ChNtYXJrZXRfZXZlbnRzLnByb3RvEgZhbnQudjEiXgoLVGlja1BheWxvYWQSEQoJY2Fub25pY2FsGAEgASgJEg4KBmJyb2tlchgCIAEoCRISCgp0c191bml4X21zGAMgASgDEgsKA2JpZBgEIAEoCRILCgNhc2sYBSABKAki4QEKCkJhclBheWxvYWQSDgoGYnJva2VyGAEgASgJEhEKCWNhbm9uaWNhbBgCIAEoCRIOCgZwZXJpb2QYAyABKAkSFwoPb3Blbl90c191bml4X21zGAQgASgDEhgKEGNsb3NlX3RzX3VuaXhfbXMYBSABKAMSDAoEb3BlbhgGIAEoCRIMCgRoaWdoGAcgASgJEgsKA2xvdxgIIAEoCRINCgVjbG9zZRgJIAEoCRIOCgZ2b2x1bWUYCiABKAESEgoKdGlja19jb3VudBgLIAEoDRIRCglpc19yZXBsYXkYDCABKAgi6QIKEVRyYWRlRXZlbnRQYXlsb2FkEhAKCGV2ZW50X2lkGAEgASgJEhIKCmV2ZW50X3R5cGUYAiABKAkSEgoKYWNjb3VudF9pZBgDIAEoCRIPCgd1c2VyX2lkGAQgASgJEg4KBmJyb2tlchgFIAEoCRIOCgZ0aWNrZXQYBiABKAMSEQoJY2xpZW50X2lkGAcgASgJEhEKCWNhbm9uaWNhbBgIIAEoCRIMCgRzaWRlGAkgASgJEhIKCm9yZGVyX3R5cGUYCiABKAkSDgoGdm9sdW1lGAsgASgBEg0KBXByaWNlGAwgASgBEhEKCXN0b3BfbG9zcxgNIAEoARITCgt0YWtlX3Byb2ZpdBgOIAEoARISCgpmcm9tX3N0YXRlGA8gASgJEhAKCHRvX3N0YXRlGBAgASgJEg0KBWVycm9yGBEgASgJEhEKCWNvc3RfanNvbhgSIAEoCRISCgp0c191bml4X21zGBMgASgDImIKE0FjY291bnRFdmVudFBheWxvYWQSEgoKYWNjb3VudF9pZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEhIKCnRzX3VuaXhfbXMYAyABKAMSEgoKZXZlbnRfdHlwZRgEIAEoCSJ/ChRNb250aGx5QW5hbHlzaXNQb2ludBIMCgR5ZWFyGAEgASgFEg0KBW1vbnRoGAIgASgFEg4KBmNoYW5nZRgDIAEoARIOCgZwcm9maXQYBCABKAESDAoEbG90cxgFIAEoARIMCgRwaXBzGAYgASgBEg4KBnRyYWRlcxgHIAEoBSJFChVNb250aGx5QW5hbHlzaXNQb2ludHMSLAoGcG9pbnRzGAEgAygLMhwuYW50LnYxLk1vbnRobHlBbmFseXNpc1BvaW50IqABCg9PcmRlckNhY2hlRW50cnkSDgoGdGlja2V0GAEgASgDEhIKCmFjY291bnRfaWQYAiABKAkSDQoFc3RhdGUYAyABKAkSEQoJY2Fub25pY2FsGAQgASgJEgwKBHNpZGUYBSABKAkSDgoGdm9sdW1lGAYgASgBEg0KBXByaWNlGAcgASgBEhoKEnVwZGF0ZWRfYXRfdW5peF9tcxgIIAEoAyJ1CgxDb3N0RXN0aW1hdGUSEwoLc3ByZWFkX2Nvc3QYASABKAESEgoKY29tbWlzc2lvbhgCIAEoARIVCg1zbGlwcGFnZV9jb3N0GAMgASgBEhEKCXN3YXBfY29zdBgEIAEoARISCgp0b3RhbF9jb3N0GAUgASgBQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
 
 /**
  * @generated from message ant.v1.TickPayload
  */
 export type TickPayload = Message<"ant.v1.TickPayload"> & {
   /**
-   * @generated from field: string broker = 1;
-   */
-  broker: string;
-
-  /**
-   * @generated from field: string canonical = 2;
+   * @generated from field: string canonical = 1;
    */
   canonical: string;
+
+  /**
+   * @generated from field: string broker = 2;
+   */
+  broker: string;
 
   /**
    * @generated from field: int64 ts_unix_ms = 3;
@@ -354,34 +354,39 @@ export type OrderCacheEntry = Message<"ant.v1.OrderCacheEntry"> & {
   ticket: bigint;
 
   /**
-   * @generated from field: string symbol = 2;
+   * @generated from field: string account_id = 2;
    */
-  symbol: string;
+  accountId: string;
 
   /**
-   * @generated from field: string side = 3;
+   * @generated from field: string state = 3;
+   */
+  state: string;
+
+  /**
+   * @generated from field: string canonical = 4;
+   */
+  canonical: string;
+
+  /**
+   * @generated from field: string side = 5;
    */
   side: string;
 
   /**
-   * @generated from field: double volume = 4;
+   * @generated from field: double volume = 6;
    */
   volume: number;
 
   /**
-   * @generated from field: double price = 5;
+   * @generated from field: double price = 7;
    */
   price: number;
 
   /**
-   * @generated from field: double stop_loss = 6;
+   * @generated from field: int64 updated_at_unix_ms = 8;
    */
-  stopLoss: number;
-
-  /**
-   * @generated from field: double take_profit = 7;
-   */
-  takeProfit: number;
+  updatedAtUnixMs: bigint;
 };
 
 /**

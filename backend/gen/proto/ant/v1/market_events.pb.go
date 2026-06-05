@@ -23,8 +23,8 @@ const (
 
 type TickPayload struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Broker        string                 `protobuf:"bytes,1,opt,name=broker,proto3" json:"broker,omitempty"`
-	Canonical     string                 `protobuf:"bytes,2,opt,name=canonical,proto3" json:"canonical,omitempty"`
+	Canonical     string                 `protobuf:"bytes,1,opt,name=canonical,proto3" json:"canonical,omitempty"`
+	Broker        string                 `protobuf:"bytes,2,opt,name=broker,proto3" json:"broker,omitempty"`
 	TsUnixMs      int64                  `protobuf:"varint,3,opt,name=ts_unix_ms,json=tsUnixMs,proto3" json:"ts_unix_ms,omitempty"`
 	Bid           string                 `protobuf:"bytes,4,opt,name=bid,proto3" json:"bid,omitempty"` // decimal string
 	Ask           string                 `protobuf:"bytes,5,opt,name=ask,proto3" json:"ask,omitempty"` // decimal string
@@ -62,16 +62,16 @@ func (*TickPayload) Descriptor() ([]byte, []int) {
 	return file_market_events_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *TickPayload) GetBroker() string {
+func (x *TickPayload) GetCanonical() string {
 	if x != nil {
-		return x.Broker
+		return x.Canonical
 	}
 	return ""
 }
 
-func (x *TickPayload) GetCanonical() string {
+func (x *TickPayload) GetBroker() string {
 	if x != nil {
-		return x.Canonical
+		return x.Broker
 	}
 	return ""
 }
@@ -624,16 +624,17 @@ func (x *MonthlyAnalysisPoints) GetPoints() []*MonthlyAnalysisPoint {
 
 // OrderCacheEntry stores minimal order state in Redis (replaces JSON).
 type OrderCacheEntry struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Ticket        int64                  `protobuf:"varint,1,opt,name=ticket,proto3" json:"ticket,omitempty"`
-	Symbol        string                 `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`
-	Side          string                 `protobuf:"bytes,3,opt,name=side,proto3" json:"side,omitempty"`
-	Volume        float64                `protobuf:"fixed64,4,opt,name=volume,proto3" json:"volume,omitempty"`
-	Price         float64                `protobuf:"fixed64,5,opt,name=price,proto3" json:"price,omitempty"`
-	StopLoss      float64                `protobuf:"fixed64,6,opt,name=stop_loss,json=stopLoss,proto3" json:"stop_loss,omitempty"`
-	TakeProfit    float64                `protobuf:"fixed64,7,opt,name=take_profit,json=takeProfit,proto3" json:"take_profit,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Ticket          int64                  `protobuf:"varint,1,opt,name=ticket,proto3" json:"ticket,omitempty"`
+	AccountId       string                 `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	State           string                 `protobuf:"bytes,3,opt,name=state,proto3" json:"state,omitempty"`
+	Canonical       string                 `protobuf:"bytes,4,opt,name=canonical,proto3" json:"canonical,omitempty"`
+	Side            string                 `protobuf:"bytes,5,opt,name=side,proto3" json:"side,omitempty"`
+	Volume          float64                `protobuf:"fixed64,6,opt,name=volume,proto3" json:"volume,omitempty"`
+	Price           float64                `protobuf:"fixed64,7,opt,name=price,proto3" json:"price,omitempty"`
+	UpdatedAtUnixMs int64                  `protobuf:"varint,8,opt,name=updated_at_unix_ms,json=updatedAtUnixMs,proto3" json:"updated_at_unix_ms,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *OrderCacheEntry) Reset() {
@@ -673,9 +674,23 @@ func (x *OrderCacheEntry) GetTicket() int64 {
 	return 0
 }
 
-func (x *OrderCacheEntry) GetSymbol() string {
+func (x *OrderCacheEntry) GetAccountId() string {
 	if x != nil {
-		return x.Symbol
+		return x.AccountId
+	}
+	return ""
+}
+
+func (x *OrderCacheEntry) GetState() string {
+	if x != nil {
+		return x.State
+	}
+	return ""
+}
+
+func (x *OrderCacheEntry) GetCanonical() string {
+	if x != nil {
+		return x.Canonical
 	}
 	return ""
 }
@@ -701,16 +716,9 @@ func (x *OrderCacheEntry) GetPrice() float64 {
 	return 0
 }
 
-func (x *OrderCacheEntry) GetStopLoss() float64 {
+func (x *OrderCacheEntry) GetUpdatedAtUnixMs() int64 {
 	if x != nil {
-		return x.StopLoss
-	}
-	return 0
-}
-
-func (x *OrderCacheEntry) GetTakeProfit() float64 {
-	if x != nil {
-		return x.TakeProfit
+		return x.UpdatedAtUnixMs
 	}
 	return 0
 }
@@ -797,9 +805,9 @@ var File_market_events_proto protoreflect.FileDescriptor
 const file_market_events_proto_rawDesc = "" +
 	"\n" +
 	"\x13market_events.proto\x12\x06ant.v1\"\x85\x01\n" +
-	"\vTickPayload\x12\x16\n" +
-	"\x06broker\x18\x01 \x01(\tR\x06broker\x12\x1c\n" +
-	"\tcanonical\x18\x02 \x01(\tR\tcanonical\x12\x1c\n" +
+	"\vTickPayload\x12\x1c\n" +
+	"\tcanonical\x18\x01 \x01(\tR\tcanonical\x12\x16\n" +
+	"\x06broker\x18\x02 \x01(\tR\x06broker\x12\x1c\n" +
 	"\n" +
 	"ts_unix_ms\x18\x03 \x01(\x03R\btsUnixMs\x12\x10\n" +
 	"\x03bid\x18\x04 \x01(\tR\x03bid\x12\x10\n" +
@@ -864,16 +872,17 @@ const file_market_events_proto_rawDesc = "" +
 	"\x04pips\x18\x06 \x01(\x01R\x04pips\x12\x16\n" +
 	"\x06trades\x18\a \x01(\x05R\x06trades\"M\n" +
 	"\x15MonthlyAnalysisPoints\x124\n" +
-	"\x06points\x18\x01 \x03(\v2\x1c.ant.v1.MonthlyAnalysisPointR\x06points\"\xc1\x01\n" +
+	"\x06points\x18\x01 \x03(\v2\x1c.ant.v1.MonthlyAnalysisPointR\x06points\"\xeb\x01\n" +
 	"\x0fOrderCacheEntry\x12\x16\n" +
-	"\x06ticket\x18\x01 \x01(\x03R\x06ticket\x12\x16\n" +
-	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12\x12\n" +
-	"\x04side\x18\x03 \x01(\tR\x04side\x12\x16\n" +
-	"\x06volume\x18\x04 \x01(\x01R\x06volume\x12\x14\n" +
-	"\x05price\x18\x05 \x01(\x01R\x05price\x12\x1b\n" +
-	"\tstop_loss\x18\x06 \x01(\x01R\bstopLoss\x12\x1f\n" +
-	"\vtake_profit\x18\a \x01(\x01R\n" +
-	"takeProfit\"\xb0\x01\n" +
+	"\x06ticket\x18\x01 \x01(\x03R\x06ticket\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\x02 \x01(\tR\taccountId\x12\x14\n" +
+	"\x05state\x18\x03 \x01(\tR\x05state\x12\x1c\n" +
+	"\tcanonical\x18\x04 \x01(\tR\tcanonical\x12\x12\n" +
+	"\x04side\x18\x05 \x01(\tR\x04side\x12\x16\n" +
+	"\x06volume\x18\x06 \x01(\x01R\x06volume\x12\x14\n" +
+	"\x05price\x18\a \x01(\x01R\x05price\x12+\n" +
+	"\x12updated_at_unix_ms\x18\b \x01(\x03R\x0fupdatedAtUnixMs\"\xb0\x01\n" +
 	"\fCostEstimate\x12\x1f\n" +
 	"\vspread_cost\x18\x01 \x01(\x01R\n" +
 	"spreadCost\x12\x1e\n" +
