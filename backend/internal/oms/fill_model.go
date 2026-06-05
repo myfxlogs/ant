@@ -75,7 +75,7 @@ func (f *FillModel) Compute(grossPrice float64, p costsvc.EstimateParams, isBack
 	return FillResult{
 		GrossPrice:   grossPrice,
 		SpreadCost:   breakdown.SpreadCost,
-		Commission:   breakdown.Commission,
+		Commission:   breakdown.Commission.InexactFloat64(),
 		SlippageCost: breakdown.SlippageCost,
 		SwapCost:     breakdown.SwapCost,
 		FundingCost:  breakdown.FundingCost,

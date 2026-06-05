@@ -45,8 +45,8 @@ func (s *AdminSystemServer) GetMetrics(ctx context.Context, _ *connect.Request[a
 		{Name: "total_accounts", Value: float64(stats.TotalAccounts)},
 		{Name: "online_accounts", Value: float64(stats.OnlineAccounts)},
 		{Name: "today_trades", Value: float64(stats.TodayTrades)},
-		{Name: "today_volume", Value: stats.TodayVolume},
-		{Name: "today_profit", Value: stats.TodayProfit},
+		{Name: "today_volume", Value: stats.TodayVolume.InexactFloat64()},
+		{Name: "today_profit", Value: stats.TodayProfit.InexactFloat64()},
 	}
 	return connect.NewResponse(&antv1.GetMetricsResponse{Metrics: metrics}), nil
 }

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/shopspring/decimal"
 	"context"
 	"fmt"
 	"sync"
@@ -195,12 +196,12 @@ func (s *AccountSyncService) convertRecords(accountID string, uid uuid.UUID, pla
 			Ticket:       r.Ticket,
 			Symbol:       r.SymbolRaw,
 			OrderType:    ot,
-			Volume:       volume,
-			OpenPrice:    openPrice,
-			ClosePrice:   closePrice,
-			Profit:       profit,
-			Swap:         swap,
-			Commission:   commission,
+			Volume:       decimal.NewFromFloat(volume),
+			OpenPrice:    decimal.NewFromFloat(openPrice),
+			ClosePrice:   decimal.NewFromFloat(closePrice),
+			Profit:       decimal.NewFromFloat(profit),
+			Swap:         decimal.NewFromFloat(swap),
+			Commission:   decimal.NewFromFloat(commission),
 			OpenTime:     r.OpenTime,
 			CloseTime:    r.CloseTime,
 			OrderComment: r.Comment,

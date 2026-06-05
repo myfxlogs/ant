@@ -3,6 +3,7 @@
 // Rules are evaluated in order; first BLOCK stops the pipeline.
 package risksvc
 
+
 import "context"
 
 // RiskRule is a single risk check rule. Name must be unique.

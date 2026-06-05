@@ -62,9 +62,9 @@ func (s *AdminUserServer) GetDashboard(ctx context.Context, _ *connect.Request[a
 			TotalAccounts:  stats.TotalAccounts,
 			OnlineAccounts: stats.OnlineAccounts,
 			TodayTrades:    stats.TodayTrades,
-			TodayVolume:    stats.TodayVolume,
-			TodayProfit:    stats.TodayProfit,
-			SystemLoad:     stats.SystemLoad,
+			TodayVolume:    stats.TodayVolume.InexactFloat64(),
+			TodayProfit:    stats.TodayProfit.InexactFloat64(),
+			SystemLoad:     stats.SystemLoad.InexactFloat64(),
 		},
 	}), nil
 }

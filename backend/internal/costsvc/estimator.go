@@ -1,11 +1,14 @@
 package costsvc
 
-import "time"
+import (
+	"time"
+	"github.com/shopspring/decimal"
+)
 
 // CostBreakdown is the full pre-trade cost estimate for an order.
 type CostBreakdown struct {
 	SpreadCost    float64 `json:"spread_cost"`
-	Commission    float64 `json:"commission"`
+	Commission    decimal.Decimal `json:"commission"`
 	SlippageCost  float64 `json:"slippage_cost"`
 	SwapCost      float64 `json:"swap_cost"`
 	FundingCost   float64 `json:"funding_cost"`
@@ -41,7 +44,7 @@ func (m *CostModel) Estimate(p EstimateParams) CostBreakdown {
 
 	return CostBreakdown{
 		SpreadCost:   spread,
-		Commission:   comm,
+		Commission:   decimal.NewFromFloat(comm),
 		SlippageCost: slip,
 		SwapCost:     swap,
 		FundingCost:  funding,

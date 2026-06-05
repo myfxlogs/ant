@@ -7,6 +7,7 @@
 package risksvc
 
 import (
+	"github.com/shopspring/decimal"
 	"math"
 	"sort"
 )
@@ -29,9 +30,9 @@ func DefaultVaRConfig() VaRConfig {
 type VaRResult struct {
 	VaR          float64 `json:"var"`
 	CVaR         float64 `json:"cvar"`
-	MaxDrawdown  float64 `json:"max_drawdown"`
+	MaxDrawdown  decimal.Decimal `json:"max_drawdown"`
 	DailyVol     float64 `json:"daily_vol"`
-	AnnualVol    float64 `json:"annual_vol"`
+	AnnualVol    decimal.Decimal `json:"annual_vol"`
 	Confidence   float64 `json:"confidence"`
 	WindowDays   int     `json:"window_days"`
 	NumReturns   int     `json:"num_returns"`
@@ -89,9 +90,9 @@ func ComputeVaR(dailyReturns []float64, cfg VaRConfig) VaRResult {
 	return VaRResult{
 		VaR:         vr,
 		CVaR:        cvar,
-		MaxDrawdown: maxDD,
+		MaxDrawdown: decimal.NewFromFloat(maxDD),
 		DailyVol:    dailyVol,
-		AnnualVol:   dailyVol * math.Sqrt(252),
+		AnnualVol:   decimal.NewFromFloat(dailyVol * math.Sqrt(252)),
 		Confidence:  cfg.ConfidenceLevel,
 		WindowDays:  cfg.WindowDays,
 		NumReturns:  len(dailyReturns),
