@@ -43,8 +43,6 @@ export function useStrategySchedulePage() {
 
   const symbolsOpts = useMemo(() => buildSymbolOptions(symbols), [symbols]);
 
-  };
-
   const loadScheduleHealth = useCallback(async (row: any) => {
     if (!row?.id) return; setHealthLoading(true);
     try { setHealthSummary(await scheduleHealthApi.getScheduleHealth(row.id)); }
