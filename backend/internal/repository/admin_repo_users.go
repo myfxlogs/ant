@@ -20,67 +20,46 @@ func (r *AdminRepository) ListUsers(ctx context.Context, params *model.UserListP
 	page, pageSize := normalizePage(params.Page, params.PageSize)
 	offset := (page - 1) * pageSize
 
-	countQuery := `SELECT COUNT(*) FROM users WHERE 1=1`
-	query := `SELECT u.id, u.email, u.password_hash, u.nickname, u.avatar,
-		       u.role, u.status, u.last_login_at, u.created_at, u.updated_at,
-		       COUNT(ma.id) as mt_account_count
-		FROM users u
-		LEFT JOIN mt_accounts ma ON u.id = ma.user_id
-		WHERE 1=1`
-
-	var conds []string
-	var args []interface{}
-
-	addCond := func(field, col string, val string) {
-		if val == "" {
-			return
-		}
-		i := len(args) + 1
-		conds = append(conds, fmt.Sprintf(" %s = $%d", col, i))
-		args = append(args, val)
-	}
-
-	if params.Search != "" {
-		i := len(args) + 1
-		conds = append(conds, fmt.Sprintf(" (email ILIKE $%d OR nickname ILIKE $%d)", i, i))
-		args = append(args, "%"+params.Search+"%")
-	}
-	addCond("status", "u.status", params.Status)
-	addCond("role", "u.role", params.Role)
-
-	for _, c := range conds {
-		countQuery += " AND" + c
-		query += " AND" + c
-	}
-
+	countQ, query, args := buildUserListFilters(params)
 	var total int64
-	if err := r.db.QueryRow(ctx, countQuery, args...).Scan(&total); err != nil {
-		return nil, 0, err
-	}
+	if err := r.db.QueryRow(ctx, countQ, args...).Scan(&total); err != nil { return nil, 0, err }
 
 	i := len(args) + 1
 	query += fmt.Sprintf(" GROUP BY u.id ORDER BY u.created_at DESC LIMIT $%d OFFSET $%d", i, i+1)
 	args = append(args, pageSize, offset)
 
 	rows, err := r.db.Query(ctx, query, args...)
-	if err != nil {
-		return nil, 0, err
-	}
+	if err != nil { return nil, 0, err }
 	defer rows.Close()
-
 	var users []*UserWithAccounts
 	for rows.Next() {
 		var u UserWithAccounts
-		if err := rows.Scan(
-			&u.ID, &u.Email, &u.PasswordHash, &u.Nickname, &u.Avatar,
-			&u.Role, &u.Status, &u.LastLoginAt, &u.CreatedAt, &u.UpdatedAt,
-			&u.MTAccountCount,
-		); err != nil {
+		if err := rows.Scan(&u.ID, &u.Email, &u.PasswordHash, &u.Nickname, &u.Avatar,
+			&u.Role, &u.Status, &u.LastLoginAt, &u.CreatedAt, &u.UpdatedAt, &u.MTAccountCount); err != nil {
 			return nil, 0, err
 		}
 		users = append(users, &u)
 	}
 	return users, total, nil
+}
+
+func buildUserListFilters(params *model.UserListParams) (countQ, query string, args []interface{}) {
+	countQ = `SELECT COUNT(*) FROM users WHERE 1=1`
+	query = `SELECT u.id, u.email, u.password_hash, u.nickname, u.avatar, u.role, u.status, u.last_login_at, u.created_at, u.updated_at, COUNT(ma.id) as mt_account_count FROM users u LEFT JOIN mt_accounts ma ON u.id = ma.user_id WHERE 1=1`
+	var conds []string
+	addCond := func(col, val string) {
+		if val == "" { return }
+		conds = append(conds, fmt.Sprintf(" %s = $%d", col, len(args)+1))
+		args = append(args, val)
+	}
+	if params.Search != "" {
+		conds = append(conds, fmt.Sprintf(" (email ILIKE $%d OR nickname ILIKE $%d)", len(args)+1, len(args)+1))
+		args = append(args, "%"+params.Search+"%")
+	}
+	addCond("u.status", params.Status)
+	addCond("u.role", params.Role)
+	for _, c := range conds { countQ += " AND" + c; query += " AND" + c }
+	return
 }
 
 func (r *AdminRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
