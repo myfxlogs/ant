@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	"connectrpc.com/connect"
@@ -49,110 +50,77 @@ func (s *StrategyGenServer) GenerateStrategy(
 	stream *connect.ServerStream[antv1.GenerateStrategyChunk],
 ) error {
 	userID, err := userIDFromCtx(ctx)
-	if err != nil {
-		return err
-	}
+	if err != nil { return err }
 	m := req.Msg
 
-	// Phase 1a: Clarification
 	if result := s.runClarification(m); result != nil {
-		return stream.Send(&antv1.GenerateStrategyChunk{
-			Phase:     "clarifying",
-			Questions: result.Questions,
-		})
+		return stream.Send(&antv1.GenerateStrategyChunk{Phase: "clarifying", Questions: result.Questions})
 	}
 
-	// Phase 1b: Template selection
+	tmpl, sysPrompt, userPrompt := s.buildStrategyPrompt(ctx, userID, m)
+	if err := s.sendTemplateInfo(stream, tmpl); err != nil { return err }
+
+	code, err := s.streamLLMCode(ctx, userID, sysPrompt, userPrompt, stream)
+	if err != nil {
+		s.log.Error("LLM stream failed", zap.Error(err))
+		return stream.Send(&antv1.GenerateStrategyChunk{Phase: "done", Error: systemai.FriendlyError(err)})
+	}
+
+	if issues := s.runComplianceCheck(code); len(issues) > 0 {
+		return stream.Send(&antv1.GenerateStrategyChunk{Phase: "compliance", Code: code, ComplianceIssues: issues})
+	}
+
+	runID, btErr := s.finalizeWithBacktest(ctx, userID, code, m.Symbol, m.Timeframe)
+	return stream.Send(&antv1.GenerateStrategyChunk{Phase: "done", Code: code, BacktestRunId: runID, Error: btErr})
+}
+
+func (s *StrategyGenServer) buildStrategyPrompt(ctx context.Context, userID uuid.UUID, m *antv1.GenerateStrategyRequest) (*repository.AIStrategyTemplate, string, string) {
 	templates, _ := s.templatesRepo.ListActive(ctx)
 	lib := ai.NewTemplateLibrary(templates)
 	tmpl := lib.Match(m.Message)
-
-	// Phase 1c: Build prompt
-	paramMap := s.buildParamMap(m)
 	builder := ai.NewStrategyPromptBuilder()
 	pp := &ai.PromptParams{
-		Template:  tmpl,
-		Message:   m.Message,
-		Symbol:    m.Symbol,
-		Timeframe: m.Timeframe,
-		ParamMap:  paramMap,
-		History:   s.loadHistory(ctx, userID, m.ConversationId),
+		Template: tmpl, Message: m.Message, Symbol: m.Symbol, Timeframe: m.Timeframe,
+		ParamMap: s.buildParamMap(m), History: s.loadHistory(ctx, userID, m.ConversationId),
 	}
-	sysPrompt := builder.BuildSystemPrompt(pp)
-	userPrompt := builder.BuildUserPrompt(pp)
+	return tmpl, builder.BuildSystemPrompt(pp), builder.BuildUserPrompt(pp)
+}
 
-	// Phase 1d: Template info
+func (s *StrategyGenServer) sendTemplateInfo(stream *connect.ServerStream[antv1.GenerateStrategyChunk], tmpl *repository.AIStrategyTemplate) error {
 	tmplName := ""
-	if tmpl != nil {
-		tmplName = tmpl.Name
-	}
-	if err := stream.Send(&antv1.GenerateStrategyChunk{
-		Phase:        "generating",
-		TemplateName: tmplName,
-	}); err != nil {
-		return err
-	}
+	if tmpl != nil { tmplName = tmpl.Name }
+	return stream.Send(&antv1.GenerateStrategyChunk{Phase: "generating", TemplateName: tmplName})
+}
 
-	// Phase 1d: LLM stream
+func (s *StrategyGenServer) streamLLMCode(ctx context.Context, userID uuid.UUID, sysPrompt, userPrompt string, stream *connect.ServerStream[antv1.GenerateStrategyChunk]) (string, error) {
 	var codeBuf strings.Builder
-	err = s.systemSvc.ChatCompletionStream(ctx, userID,
-		[]systemai.ChatMessage{
-			{Role: "system", Content: sysPrompt},
-			{Role: "user", Content: userPrompt},
-		}, "",
-		func(chunk systemai.ChatStreamChunk) error {
-			if err := stream.Send(&antv1.GenerateStrategyChunk{
-				Phase: "generating",
-				Delta: chunk.Content,
-			}); err != nil {
+	err := s.systemSvc.ChatCompletionStream(ctx, userID,
+		[]systemai.ChatMessage{{Role: "system", Content: sysPrompt}, {Role: "user", Content: userPrompt}},
+		"", func(chunk systemai.ChatStreamChunk) error {
+			if err := stream.Send(&antv1.GenerateStrategyChunk{Phase: "generating", Delta: chunk.Content}); err != nil {
 				return err
 			}
 			codeBuf.WriteString(chunk.Content)
 			return nil
 		})
-	if err != nil {
-		s.log.Error("LLM stream failed", zap.Error(err))
-		return stream.Send(&antv1.GenerateStrategyChunk{
-			Phase: "done",
-			Error: systemai.FriendlyError(err),
-		})
-	}
+	if err != nil { return "", err }
+	return s.extractCode(codeBuf.String()), nil
+}
 
-	code := s.extractCode(codeBuf.String())
-
-	// Phase 1e: Compliance
+func (s *StrategyGenServer) runComplianceCheck(code string) []string {
 	scanner := ai.NewCodeComplianceScanner()
 	blocks, _ := scanner.Scan(code)
 	_, missingSigs := scanner.HasRequiredSignature(code)
+	return s.collectComplianceIssues(blocks, missingSigs)
+}
 
-	allIssues := s.collectComplianceIssues(blocks, missingSigs)
-	if len(allIssues) > 0 {
-		return stream.Send(&antv1.GenerateStrategyChunk{
-			Phase:             "compliance",
-			Code:              code,
-			ComplianceIssues:  allIssues,
-		})
-	}
-
-	// Phase 1f: Auto-backtest
-	runID, err := s.triggerBacktest(ctx, userID, code, m.Symbol, m.Timeframe)
-	phase := "done"
-	var btErr string
+func (s *StrategyGenServer) finalizeWithBacktest(ctx context.Context, userID uuid.UUID, code, symbol, timeframe string) (string, string) {
+	runID, err := s.triggerBacktest(ctx, userID, code, symbol, timeframe)
 	if err != nil {
 		s.log.Warn("auto-backtest trigger failed", zap.Error(err))
-		btErr = "backtest trigger failed: " + err.Error()
-		phase = "backtest"
+		return "", "backtest trigger failed: " + err.Error()
 	}
-	if runID == "" && err == nil {
-		btErr = ""
-	}
-
-	return stream.Send(&antv1.GenerateStrategyChunk{
-		Phase:         phase,
-		Code:          code,
-		BacktestRunId: runID,
-		Error:         btErr,
-	})
+	return runID, ""
 }
 
 func (s *StrategyGenServer) runClarification(m *antv1.GenerateStrategyRequest) *ai.ClarificationResult {
