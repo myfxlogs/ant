@@ -1,7 +1,7 @@
 import { useState, useContext } from 'react';
-import { Button, Select, Tag } from 'antd';
+import { Button } from 'antd';
 import { showSuccess, showError, showWarning, showInfo } from '@/utils/message';
-import { ArrowLeftOutlined, CloudServerOutlined, CheckOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, CheckOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import GradientButton, { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
 import { useAccount } from '@/hooks/useAccount';
@@ -12,13 +12,14 @@ import type { Account } from '@/types/account';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/i18n';
 import { ConnectContext } from '@/providers/connectContext';
+import { Step1SearchBroker, Step2Credentials, Step3Verify } from './BindAccountSteps';
 
-interface BrokerServer {
+export interface BrokerServer {
   name: string;
   access: string[];
 }
 
-interface BrokerSearchResult {
+export interface BrokerSearchResult {
   companyName: string;
   servers: BrokerServer[];
 }
@@ -121,8 +122,6 @@ export default function BindAccount() {
       };
       const account = await bindAccount(request) as Account;
       setPassword('');
-      // ConnectAccount now blocks until the MT session is ready (backend polls Hub).
-      // No frontend delay needed — safe to navigate immediately.
       await accountApi.connect(account.id);
       await connectCtx?.reconnect();
       showSuccess(t('accounts.bind.messages.bindSuccess'));
@@ -146,168 +145,6 @@ export default function BindAccount() {
     </div>
   );
 
-  const renderStep1 = () => (
-    <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h2 className="text-xl font-semibold" style={{ color: '#141D22' }}>{t('accounts.bind.step1.title')}</h2>
-        <p className="mt-2" style={{ color: '#8A9AA5' }}>{t('accounts.bind.step1.subtitle')}</p>
-      </div>
-      <div>
-        <label className="block mb-3 font-medium" style={{ color: '#141D22' }}>{t('accounts.bind.fields.platform')}</label>
-        <div className="flex gap-4">
-          {(['MT4', 'MT5'] as const).map((p) => (
-            <div key={p} onClick={() => { setMtType(p); setSearchResults([]); setSelectedCompany(null); setSelectedServer(null); }}
-              className="flex-1 p-4 rounded-xl cursor-pointer transition-all"
-              style={{ background: mtType === p ? 'rgba(212, 175, 55, 0.1)' : '#F5F7F9', border: `2px solid ${mtType === p ? '#D4AF37' : 'transparent'}` }}>
-              <div className="text-center">
-                <div className="text-2xl font-bold" style={{ color: mtType === p ? '#D4AF37' : '#141D22' }}>{p}</div>
-                <div className="text-sm mt-1" style={{ color: '#8A9AA5' }}>MetaTrader {p === 'MT4' ? '4' : '5'}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div>
-        <label className="block mb-3 font-medium" style={{ color: '#141D22' }}>{t('accounts.bind.fields.brokerName')}</label>
-        <div className="flex gap-2">
-          <input type="text" value={companySearch} onChange={(e) => setCompanySearch(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()} placeholder={t('accounts.bind.placeholders.brokerName')}
-            className="flex-1 outline-none transition-all"
-            style={{ background: '#FFFFFF', border: '1px solid rgba(185, 201, 223, 0.4)', borderRadius: '10px', padding: '14px 16px', fontSize: '16px', color: '#141D22', height: '48px' }} />
-          <GradientButton onClick={handleSearch} loading={searching} style={{ padding: '0 24px', height: '48px' }}>
-            {t('accounts.bind.actions.search')}
-          </GradientButton>
-        </div>
-      </div>
-      {searchResults.length > 0 && (<>
-        <div>
-          <label className="block mb-2 font-medium" style={{ color: '#141D22' }}>{t('accounts.bind.fields.company')}</label>
-          <Select placeholder={t('accounts.bind.placeholders.company')} value={selectedCompany?.companyName}
-            onChange={handleCompanyChange} style={{ width: '100%' }} size="large" optionLabelProp="label">
-            {searchResults.map((c) => (
-              <Select.Option key={c.companyName} value={c.companyName} label={c.companyName}>
-                <div className="flex items-center justify-between"><span>{c.companyName}</span><Tag color="blue">{t('accounts.bind.labels.serverCount', { count: c.servers.length })}</Tag></div>
-              </Select.Option>
-            ))}
-          </Select>
-        </div>
-        {selectedCompany && (
-          <div>
-            <label className="block mb-2 font-medium" style={{ color: '#141D22' }}>{t('accounts.bind.fields.server')}</label>
-            <Select placeholder={t('accounts.bind.placeholders.server')} value={selectedServer?.name}
-              onChange={handleServerChange} style={{ width: '100%' }} size="large"
-              showSearch
-              filterOption={(input, option) =>
-                (option?.label as string || '').toLowerCase().includes(input.toLowerCase())
-              }>
-              {[...selectedCompany.servers].sort((a, b) => a.name.localeCompare(b.name)).map((s) => (
-                <Select.Option key={s.name} value={s.name} label={s.name}>
-                  <div className="flex items-center justify-between"><span>{s.name}</span><Tag color={mtType === 'MT4' ? 'blue' : 'purple'}>{mtType}</Tag></div>
-                </Select.Option>
-              ))}
-            </Select>
-          </div>
-        )}
-      </>)}
-      <div className="flex justify-end pt-4">
-        <GradientButton disabled={!selectedServer} onClick={() => setStep(2)} style={{ padding: '0 32px' }}>{t('common.next')}</GradientButton>
-      </div>
-    </div>
-  );
-
-  const renderStep2 = () => (
-    <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h2 className="text-xl font-semibold" style={{ color: '#141D22' }}>{t('accounts.bind.step2.title')}</h2>
-        <p className="mt-2" style={{ color: '#8A9AA5' }}>{t('accounts.bind.step2.subtitle')}</p>
-      </div>
-      <div className="p-4 rounded-xl" style={{ background: '#F5F7F9' }}>
-        <div className="flex items-center gap-3">
-          <CloudServerOutlined style={{ fontSize: 20, color: '#D4AF37' }} />
-          <div><div className="font-medium" style={{ color: '#141D22' }}>{selectedServer?.name}</div>
-            <div className="text-sm" style={{ color: '#8A9AA5' }}>{selectedCompany?.companyName} · {mtType}</div></div>
-        </div>
-      </div>
-      <div>
-        <label className="block mb-2 font-medium" style={{ color: '#141D22' }}>{t('accounts.bind.fields.tradingAccount')}</label>
-        <input type="text" value={login} onChange={(e) => setLogin(e.target.value)}
-          placeholder={t('accounts.bind.placeholders.tradingAccount')} className="w-full outline-none transition-all"
-          style={{ background: '#FFFFFF', border: '1px solid rgba(185, 201, 223, 0.4)', borderRadius: '10px', padding: '14px 16px', fontSize: '16px', color: '#141D22', height: '48px' }} />
-      </div>
-      <div>
-        <label className="block mb-2 font-medium" style={{ color: '#141D22' }}>{t('accounts.bind.fields.password')}</label>
-        <input type="text" value={password} onChange={(e) => setPassword(e.target.value)}
-          placeholder={t('accounts.bind.placeholders.password')} className="w-full outline-none transition-all"
-          style={{ background: '#FFFFFF', border: '1px solid rgba(185, 201, 223, 0.4)', borderRadius: '10px', padding: '14px 16px', fontSize: '16px', color: '#141D22', height: '48px' }} />
-        <p className="mt-2 text-sm" style={{ color: '#8A9AA5' }}>{t('accounts.bind.passwordHint')}</p>
-      </div>
-      <div className="flex justify-between pt-4">
-        <Button onClick={() => setStep(1)} style={{ borderRadius: '10px' }}>{t('common.previous')}</Button>
-        <GradientButton disabled={!login.trim() || !password.trim()} onClick={() => setStep(3)} style={{ padding: '0 32px' }}>{t('common.next')}</GradientButton>
-      </div>
-    </div>
-  );
-
-  const renderStep3 = () => (
-    <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h2 className="text-xl font-semibold" style={{ color: '#141D22' }}>{t('accounts.bind.step3.title')}</h2>
-        <p className="mt-2" style={{ color: '#8A9AA5' }}>{t('accounts.bind.step3.subtitle')}</p>
-      </div>
-
-      <div className="p-4 rounded-xl" style={{ background: '#F5F7F9' }}>
-        <div className="flex items-center gap-3">
-          <CloudServerOutlined style={{ fontSize: 20, color: '#D4AF37' }} />
-          <div><div className="font-medium" style={{ color: '#141D22' }}>{selectedServer?.name}</div>
-            <div className="text-sm" style={{ color: '#8A9AA5' }}>{selectedCompany?.companyName} · {mtType} · {login}</div></div>
-        </div>
-      </div>
-
-      {!verifyResult && (<>
-        <div className="flex justify-between pt-4">
-          <Button onClick={() => setStep(2)} style={{ borderRadius: '10px' }}>{t('common.previous')}</Button>
-          <GradientButton loading={verifying} onClick={handleVerify} style={{ padding: '0 32px' }}>
-            {t('accounts.bind.actions.verifyAccount')}
-          </GradientButton>
-        </div>
-      </>)}
-
-      {verifyError && (
-        <div className="p-3 rounded-xl text-center" style={{ background: 'rgba(229, 57, 53, 0.05)', border: '1px solid rgba(229, 57, 53, 0.15)' }}>
-          <ExclamationCircleOutlined style={{ fontSize: 16, color: '#E53935' }} />
-          <p className="mt-1 text-sm" style={{ color: '#E53935' }}>{verifyError}</p>
-          <div className="flex justify-center gap-2 mt-3">
-            <Button size="small" onClick={() => setStep(2)}>{t('common.previous')}</Button>
-            <Button size="small" onClick={() => { setVerifyError(''); setVerifyResult(null); }}>{t('accounts.bind.actions.retryVerify')}</Button>
-          </div>
-        </div>
-      )}
-
-      {verifyResult?.verified && (<>
-        <div className="p-4 rounded-xl" style={{ background: 'rgba(0, 166, 81, 0.05)', border: '1px solid rgba(0, 166, 81, 0.15)' }}>
-          <div className="flex items-center gap-2 mb-3">
-            <CheckOutlined style={{ color: '#00A651' }} />
-            <span className="font-medium" style={{ color: '#00A651' }}>{t('accounts.bind.summary.verified')}</span>
-          </div>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between"><span style={{ color: '#8A9AA5' }}>{t('accounts.bind.summary.balance')}</span><span className="font-medium" style={{ color: '#141D22' }}>{Number(verifyResult.balance || 0).toFixed(2)} {verifyResult.currency || ''}</span></div>
-            <div className="flex justify-between"><span style={{ color: '#8A9AA5' }}>{t('accounts.bind.summary.equity')}</span><span className="font-medium" style={{ color: '#141D22' }}>{Number(verifyResult.equity || 0).toFixed(2)} {verifyResult.currency || ''}</span></div>
-            <div className="flex justify-between"><span style={{ color: '#8A9AA5' }}>{t('accounts.bind.summary.margin')}</span><span className="font-medium" style={{ color: '#141D22' }}>{Number(verifyResult.margin || 0).toFixed(2)} {verifyResult.currency || ''}</span></div>
-            <div className="flex justify-between"><span style={{ color: '#8A9AA5' }}>{t('accounts.bind.summary.freeMargin')}</span><span className="font-medium" style={{ color: '#141D22' }}>{Number(verifyResult.freeMargin || 0).toFixed(2)} {verifyResult.currency || ''}</span></div>
-            {verifyResult.leverage > 0 && <div className="flex justify-between"><span style={{ color: '#8A9AA5' }}>{t('accounts.bind.summary.leverage')}</span><span className="font-medium" style={{ color: '#141D22' }}>1:{verifyResult.leverage}</span></div>}
-            <div className="flex justify-between"><span style={{ color: '#8A9AA5' }}>{t('accounts.bind.summary.currency')}</span><span className="font-medium" style={{ color: '#141D22' }}>{verifyResult.currency || '-'}</span></div>
-          </div>
-        </div>
-        <div className="flex justify-between pt-4">
-          <Button onClick={() => { setVerifyResult(null); setVerifyError(''); setStep(2); }} style={{ borderRadius: '10px' }}>{t('common.previous')}</Button>
-          <GradientButton loading={loading} onClick={handleBind} style={{ padding: '0 32px' }}>
-            {t('accounts.bind.actions.confirmBind')}
-          </GradientButton>
-        </div>
-      </>)}
-    </div>
-  );
-
   return (
     <div className="min-h-screen" style={{ background: '#F5F7F9' }}>
       <div className="max-w-xl mx-auto p-4">
@@ -317,9 +154,9 @@ export default function BindAccount() {
         </div>
         <div className="rounded-2xl p-6" style={{ background: '#FFFFFF', boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)' }}>
           {renderStepIndicator()}
-          {step === 1 && renderStep1()}
-          {step === 2 && renderStep2()}
-          {step === 3 && renderStep3()}
+          {step === 1 && <Step1SearchBroker mtType={mtType} setMtType={setMtType} companySearch={companySearch} setCompanySearch={setCompanySearch} searching={searching} searchResults={searchResults} setSearchResults={setSearchResults} selectedCompany={selectedCompany} selectedServer={selectedServer} setSelectedCompany={setSelectedCompany} setSelectedServer={setSelectedServer} alias={alias} setAlias={setAlias} handleSearch={handleSearch} handleCompanyChange={handleCompanyChange} handleServerChange={handleServerChange} onNext={() => setStep(2)} />}
+          {step === 2 && <Step2Credentials mtType={mtType} selectedServer={selectedServer} selectedCompany={selectedCompany} login={login} setLogin={setLogin} password={password} setPassword={setPassword} onBack={() => setStep(1)} onNext={() => setStep(3)} />}
+          {step === 3 && <Step3Verify mtType={mtType} selectedServer={selectedServer} selectedCompany={selectedCompany} login={login} verifying={verifying} verifyResult={verifyResult} verifyError={verifyError} loading={loading} setVerifyResult={setVerifyResult} setVerifyError={setVerifyError} handleVerify={handleVerify} handleBind={handleBind} onBack={() => setStep(2)} />}
         </div>
       </div>
     </div>

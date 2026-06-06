@@ -5,13 +5,20 @@ import type { StreamEvent, BarUpdateEvent } from '../gen/ant/v1/stream_pb';
 import { toCamelCase } from '../adapters/dataAdapter';
 import { isLikelyStreamTransportFailure } from '../utils/streamErrors';
 import type { UserSummary } from '../stores/tradingStore';
-
-/** Stop reconnecting after repeated proxy/HTTP2-style failures (reduces browser network error spam). */
-const STREAM_TRANSPORT_FAILURE_CAP = 12;
+import {
+  startSharedStream,
+  subscribeShared,
+  sharedProfitStreams,
+  sharedOrderStreams,
+} from './sharedStream';
+import type { SharedStreamState } from './sharedStream';
 
 export type { StreamEvent } from '../gen/ant/v1/stream_pb';
 export type { OrderUpdateEvent } from '../gen/ant/v1/stream_event_trade_pb';
 export type { ProfitUpdateEvent, UserSummaryEvent } from '../gen/ant/v1/stream_event_account_pb';
+
+/** Stop reconnecting after repeated proxy/HTTP2-style failures (reduces browser network error spam). */
+const STREAM_TRANSPORT_FAILURE_CAP = 12;
 
 export interface StreamCallbacks {
   onOrder?: (order: OrderUpdate) => void;
@@ -26,87 +33,6 @@ type Listener<T> = {
   onData: (v: T) => void;
   onError?: (error: unknown) => void;
 };
-
-type SharedStreamState<T> = {
-  abortController: AbortController;
-  listeners: Map<string, Listener<T>>;
-  started: boolean;
-};
-
-const sharedProfitStreams = new Map<string, SharedStreamState<ProfitUpdate>>();
-const sharedOrderStreams = new Map<string, SharedStreamState<OrderUpdate>>();
-
-function startSharedStream<T>(
-  state: SharedStreamState<T>,
-  start: (signal: AbortSignal) => AsyncIterable<T>,
-  key: string,
-  store: Map<string, SharedStreamState<T>>,
-) {
-  if (state.started) return;
-  state.started = true;
-  (async () => {
-    try {
-      const stream = start(state.abortController.signal);
-      for await (const item of stream) {
-        const val = toCamelCase(item) as T;
-        for (const l of state.listeners.values()) {
-          try {
-            l.onData(val);
-          } catch {
-            // ignore listener errors
-          }
-        }
-      }
-    } catch (error) {
-      const errorStr = String(error);
-      if ((error as Error).name === 'AbortError' || errorStr.includes('canceled')) {
-        return;
-      }
-      for (const l of state.listeners.values()) {
-        try {
-          l.onError?.(error);
-        } catch {
-          // ignore
-        }
-      }
-    } finally {
-      state.started = false;
-      const current = store.get(key);
-      if (current && current.listeners.size === 0) {
-        store.delete(key);
-      }
-    }
-  })();
-}
-
-function subscribeShared<T>(
-  store: Map<string, SharedStreamState<T>>,
-  key: string,
-  start: (signal: AbortSignal) => AsyncIterable<T>,
-  listener: Listener<T>,
-) {
-  let state = store.get(key);
-  if (!state) {
-    state = {
-      abortController: new AbortController(),
-      listeners: new Map(),
-      started: false,
-    };
-    store.set(key, state);
-  }
-  const id = Math.random().toString(36).slice(2);
-  state.listeners.set(id, listener);
-  startSharedStream(state, start, key, store);
-  return () => {
-    const cur = store.get(key);
-    if (!cur) return;
-    cur.listeners.delete(id);
-    if (cur.listeners.size === 0) {
-      cur.abortController.abort();
-      store.delete(key);
-    }
-  };
-}
 
 export const streamApi = {
   subscribeEvents: (accountIds: string[], callbacks: StreamCallbacks) => {

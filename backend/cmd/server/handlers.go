@@ -37,7 +37,6 @@ import (
 	"anttrader/internal/service"
 	systemai "anttrader/internal/service/systemai"
 	antredis "anttrader/internal/storage/redis"
-	"anttrader/internal/strategysvc"
 	"anttrader/internal/usermgr"
 
 	connectrpc "connectrpc.com/connect"
@@ -140,15 +139,16 @@ func registerHandlers(
 	pythonStrategyServer := strategy.NewPythonStrategyServer(backtestRunRepo, log)
 		pythonStrategyServer.SetPgListen(pgListen)
 	if cfg.StrategyServiceURL != "" {
-		pythonClient := strategysvc.NewPythonClient(cfg.StrategyServiceURL)
-		pythonStrategyServer.SetClient(pythonClient)
+			connectClient := antv1c.NewPythonStrategyServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
+			pythonStrategyServer.SetConnectClient(connectClient)
 			backtestClient := antv1c.NewBacktestServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
 			pythonStrategyServer.SetBacktestClient(backtestClient)
 			pythonStrategyServer.SetMarketDataRepo(marketDataRepo)
 		strategyServer.SetBacktestClient(backtestClient)
 			strategyServer.SetMarketDataRepo(marketDataRepo)
 			pythonStrategyServer.StartBacktestWorker(context.Background()) // Background worker for async backtest runs
-			objectiveScoreServer := strategy.NewObjectiveScoreServer(cfg.StrategyServiceURL, log)
+			objScoreClient := antv1c.NewObjectiveScoreServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
+			objectiveScoreServer := strategy.NewObjectiveScoreServer(objScoreClient, log)
 			mux.Handle(antv1c.NewObjectiveScoreServiceHandler(objectiveScoreServer, connectrpc.WithInterceptors(authInterceptor)))
 		log.Info("Python strategy client configured", zap.String("url", cfg.StrategyServiceURL))
 	}

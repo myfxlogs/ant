@@ -9,7 +9,6 @@ package antv1
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	reflect "reflect"
 	unsafe "unsafe"
 )
@@ -25,7 +24,7 @@ var File_auto_trading_proto protoreflect.FileDescriptor
 
 const file_auto_trading_proto_rawDesc = "" +
 	"\n" +
-	"\x12auto_trading.proto\x12\x06ant.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x17strategy_messages.proto\x1a\x1bauto_trading_settings.proto\x1a\x17auto_trading_risk.proto\x1a\x17auto_trading_logs.proto2\xcd\t\n" +
+	"\x12auto_trading.proto\x12\x06ant.v1\x1a\x1bauto_trading_settings.proto\x1a\x17auto_trading_risk.proto\x1a\x17auto_trading_logs.proto2\xde\x06\n" +
 	"\x12AutoTradingService\x12M\n" +
 	"\x11GetGlobalSettings\x12 .ant.v1.GetGlobalSettingsRequest\x1a\x16.ant.v1.GlobalSettings\x12S\n" +
 	"\x14UpdateGlobalSettings\x12#.ant.v1.UpdateGlobalSettingsRequest\x1a\x16.ant.v1.GlobalSettings\x12R\n" +
@@ -34,14 +33,9 @@ const file_auto_trading_proto_rawDesc = "" +
 	"\x10UpdateRiskConfig\x12\x1f.ant.v1.UpdateRiskConfigRequest\x1a\x12.ant.v1.RiskConfig\x12R\n" +
 	"\x0fCheckRiskLimits\x12\x1e.ant.v1.CheckRiskLimitsRequest\x1a\x1f.ant.v1.CheckRiskLimitsResponse\x12d\n" +
 	"\x15CalculatePositionSize\x12$.ant.v1.CalculatePositionSizeRequest\x1a%.ant.v1.CalculatePositionSizeResponse\x12V\n" +
-	"\x14GetAutoTradingStatus\x12#.ant.v1.GetAutoTradingStatusRequest\x1a\x19.ant.v1.AutoTradingStatus\x12I\n" +
-	"\x0eCreateSchedule\x12\x1d.ant.v1.CreateScheduleRequest\x1a\x18.ant.v1.StrategySchedule\x12C\n" +
-	"\vGetSchedule\x12\x1a.ant.v1.GetScheduleRequest\x1a\x18.ant.v1.StrategySchedule\x12I\n" +
-	"\x0eUpdateSchedule\x12\x1d.ant.v1.UpdateScheduleRequest\x1a\x18.ant.v1.StrategySchedule\x12G\n" +
-	"\x0eDeleteSchedule\x12\x1d.ant.v1.DeleteScheduleRequest\x1a\x16.google.protobuf.Empty\x12I\n" +
-	"\x0eToggleSchedule\x12\x1d.ant.v1.ToggleScheduleRequest\x1a\x18.ant.v1.StrategySchedule\x12O\n" +
+	"\x14GetAutoTradingStatus\x12#.ant.v1.GetAutoTradingStatusRequest\x1a\x19.ant.v1.AutoTradingStatus\x12O\n" +
 	"\x0eGetTradingLogs\x12\x1d.ant.v1.GetTradingLogsRequest\x1a\x1e.ant.v1.GetTradingLogsResponse\x12a\n" +
-	"\x14GetRecentTradingLogs\x12#.ant.v1.GetRecentTradingLogsRequest\x1a$.ant.v1.GetRecentTradingLogsResponseB\"Z anttrader/gen/proto/ant/v1;antv1P\x01P\x02P\x03P\x04b\x06proto3"
+	"\x14GetRecentTradingLogs\x12#.ant.v1.GetRecentTradingLogsRequest\x1a$.ant.v1.GetRecentTradingLogsResponseB\"Z anttrader/gen/proto/ant/v1;antv1P\x00P\x01P\x02b\x06proto3"
 
 var file_auto_trading_proto_goTypes = []any{
 	(*GetGlobalSettingsRequest)(nil),      // 0: ant.v1.GetGlobalSettingsRequest
@@ -52,23 +46,16 @@ var file_auto_trading_proto_goTypes = []any{
 	(*CheckRiskLimitsRequest)(nil),        // 5: ant.v1.CheckRiskLimitsRequest
 	(*CalculatePositionSizeRequest)(nil),  // 6: ant.v1.CalculatePositionSizeRequest
 	(*GetAutoTradingStatusRequest)(nil),   // 7: ant.v1.GetAutoTradingStatusRequest
-	(*CreateScheduleRequest)(nil),         // 8: ant.v1.CreateScheduleRequest
-	(*GetScheduleRequest)(nil),            // 9: ant.v1.GetScheduleRequest
-	(*UpdateScheduleRequest)(nil),         // 10: ant.v1.UpdateScheduleRequest
-	(*DeleteScheduleRequest)(nil),         // 11: ant.v1.DeleteScheduleRequest
-	(*ToggleScheduleRequest)(nil),         // 12: ant.v1.ToggleScheduleRequest
-	(*GetTradingLogsRequest)(nil),         // 13: ant.v1.GetTradingLogsRequest
-	(*GetRecentTradingLogsRequest)(nil),   // 14: ant.v1.GetRecentTradingLogsRequest
-	(*GlobalSettings)(nil),                // 15: ant.v1.GlobalSettings
-	(*ToggleAutoTradeResponse)(nil),       // 16: ant.v1.ToggleAutoTradeResponse
-	(*RiskConfig)(nil),                    // 17: ant.v1.RiskConfig
-	(*CheckRiskLimitsResponse)(nil),       // 18: ant.v1.CheckRiskLimitsResponse
-	(*CalculatePositionSizeResponse)(nil), // 19: ant.v1.CalculatePositionSizeResponse
-	(*AutoTradingStatus)(nil),             // 20: ant.v1.AutoTradingStatus
-	(*StrategySchedule)(nil),              // 21: ant.v1.StrategySchedule
-	(*emptypb.Empty)(nil),                 // 22: google.protobuf.Empty
-	(*GetTradingLogsResponse)(nil),        // 23: ant.v1.GetTradingLogsResponse
-	(*GetRecentTradingLogsResponse)(nil),  // 24: ant.v1.GetRecentTradingLogsResponse
+	(*GetTradingLogsRequest)(nil),         // 8: ant.v1.GetTradingLogsRequest
+	(*GetRecentTradingLogsRequest)(nil),   // 9: ant.v1.GetRecentTradingLogsRequest
+	(*GlobalSettings)(nil),                // 10: ant.v1.GlobalSettings
+	(*ToggleAutoTradeResponse)(nil),       // 11: ant.v1.ToggleAutoTradeResponse
+	(*RiskConfig)(nil),                    // 12: ant.v1.RiskConfig
+	(*CheckRiskLimitsResponse)(nil),       // 13: ant.v1.CheckRiskLimitsResponse
+	(*CalculatePositionSizeResponse)(nil), // 14: ant.v1.CalculatePositionSizeResponse
+	(*AutoTradingStatus)(nil),             // 15: ant.v1.AutoTradingStatus
+	(*GetTradingLogsResponse)(nil),        // 16: ant.v1.GetTradingLogsResponse
+	(*GetRecentTradingLogsResponse)(nil),  // 17: ant.v1.GetRecentTradingLogsResponse
 }
 var file_auto_trading_proto_depIdxs = []int32{
 	0,  // 0: ant.v1.AutoTradingService.GetGlobalSettings:input_type -> ant.v1.GetGlobalSettingsRequest
@@ -79,30 +66,20 @@ var file_auto_trading_proto_depIdxs = []int32{
 	5,  // 5: ant.v1.AutoTradingService.CheckRiskLimits:input_type -> ant.v1.CheckRiskLimitsRequest
 	6,  // 6: ant.v1.AutoTradingService.CalculatePositionSize:input_type -> ant.v1.CalculatePositionSizeRequest
 	7,  // 7: ant.v1.AutoTradingService.GetAutoTradingStatus:input_type -> ant.v1.GetAutoTradingStatusRequest
-	8,  // 8: ant.v1.AutoTradingService.CreateSchedule:input_type -> ant.v1.CreateScheduleRequest
-	9,  // 9: ant.v1.AutoTradingService.GetSchedule:input_type -> ant.v1.GetScheduleRequest
-	10, // 10: ant.v1.AutoTradingService.UpdateSchedule:input_type -> ant.v1.UpdateScheduleRequest
-	11, // 11: ant.v1.AutoTradingService.DeleteSchedule:input_type -> ant.v1.DeleteScheduleRequest
-	12, // 12: ant.v1.AutoTradingService.ToggleSchedule:input_type -> ant.v1.ToggleScheduleRequest
-	13, // 13: ant.v1.AutoTradingService.GetTradingLogs:input_type -> ant.v1.GetTradingLogsRequest
-	14, // 14: ant.v1.AutoTradingService.GetRecentTradingLogs:input_type -> ant.v1.GetRecentTradingLogsRequest
-	15, // 15: ant.v1.AutoTradingService.GetGlobalSettings:output_type -> ant.v1.GlobalSettings
-	15, // 16: ant.v1.AutoTradingService.UpdateGlobalSettings:output_type -> ant.v1.GlobalSettings
-	16, // 17: ant.v1.AutoTradingService.ToggleAutoTrade:output_type -> ant.v1.ToggleAutoTradeResponse
-	17, // 18: ant.v1.AutoTradingService.GetRiskConfig:output_type -> ant.v1.RiskConfig
-	17, // 19: ant.v1.AutoTradingService.UpdateRiskConfig:output_type -> ant.v1.RiskConfig
-	18, // 20: ant.v1.AutoTradingService.CheckRiskLimits:output_type -> ant.v1.CheckRiskLimitsResponse
-	19, // 21: ant.v1.AutoTradingService.CalculatePositionSize:output_type -> ant.v1.CalculatePositionSizeResponse
-	20, // 22: ant.v1.AutoTradingService.GetAutoTradingStatus:output_type -> ant.v1.AutoTradingStatus
-	21, // 23: ant.v1.AutoTradingService.CreateSchedule:output_type -> ant.v1.StrategySchedule
-	21, // 24: ant.v1.AutoTradingService.GetSchedule:output_type -> ant.v1.StrategySchedule
-	21, // 25: ant.v1.AutoTradingService.UpdateSchedule:output_type -> ant.v1.StrategySchedule
-	22, // 26: ant.v1.AutoTradingService.DeleteSchedule:output_type -> google.protobuf.Empty
-	21, // 27: ant.v1.AutoTradingService.ToggleSchedule:output_type -> ant.v1.StrategySchedule
-	23, // 28: ant.v1.AutoTradingService.GetTradingLogs:output_type -> ant.v1.GetTradingLogsResponse
-	24, // 29: ant.v1.AutoTradingService.GetRecentTradingLogs:output_type -> ant.v1.GetRecentTradingLogsResponse
-	15, // [15:30] is the sub-list for method output_type
-	0,  // [0:15] is the sub-list for method input_type
+	8,  // 8: ant.v1.AutoTradingService.GetTradingLogs:input_type -> ant.v1.GetTradingLogsRequest
+	9,  // 9: ant.v1.AutoTradingService.GetRecentTradingLogs:input_type -> ant.v1.GetRecentTradingLogsRequest
+	10, // 10: ant.v1.AutoTradingService.GetGlobalSettings:output_type -> ant.v1.GlobalSettings
+	10, // 11: ant.v1.AutoTradingService.UpdateGlobalSettings:output_type -> ant.v1.GlobalSettings
+	11, // 12: ant.v1.AutoTradingService.ToggleAutoTrade:output_type -> ant.v1.ToggleAutoTradeResponse
+	12, // 13: ant.v1.AutoTradingService.GetRiskConfig:output_type -> ant.v1.RiskConfig
+	12, // 14: ant.v1.AutoTradingService.UpdateRiskConfig:output_type -> ant.v1.RiskConfig
+	13, // 15: ant.v1.AutoTradingService.CheckRiskLimits:output_type -> ant.v1.CheckRiskLimitsResponse
+	14, // 16: ant.v1.AutoTradingService.CalculatePositionSize:output_type -> ant.v1.CalculatePositionSizeResponse
+	15, // 17: ant.v1.AutoTradingService.GetAutoTradingStatus:output_type -> ant.v1.AutoTradingStatus
+	16, // 18: ant.v1.AutoTradingService.GetTradingLogs:output_type -> ant.v1.GetTradingLogsResponse
+	17, // 19: ant.v1.AutoTradingService.GetRecentTradingLogs:output_type -> ant.v1.GetRecentTradingLogsResponse
+	10, // [10:20] is the sub-list for method output_type
+	0,  // [0:10] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name
@@ -113,7 +90,6 @@ func file_auto_trading_proto_init() {
 	if File_auto_trading_proto != nil {
 		return
 	}
-	file_strategy_messages_proto_init()
 	file_auto_trading_settings_proto_init()
 	file_auto_trading_risk_proto_init()
 	file_auto_trading_logs_proto_init()

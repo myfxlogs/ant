@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"connectrpc.com/connect"
 	"go.uber.org/zap"
 
@@ -78,14 +79,18 @@ func (s *AutoTradingServer) CheckRiskLimits(
 		Positions: int(m.OpenPositions),
 	}
 	result := s.riskPipe.Process(ctx, sig)
+
+	// Resolve effective risk limits: account-level RiskConfig → user-level GlobalSettings → defaults.
+	limits := s.resolveRiskLimit(ctx, m.AccountId)
+
 	return connect.NewResponse(&antv1.CheckRiskLimitsResponse{
-		Allowed:          result.Allowed,
-		IsWithinLimits:   result.Allowed,
-		Reason:           result.Reason,
-		MaxPositions:     int32(sig.Positions),
-		PositionCount:    int32(sig.Positions),
-		DrawdownPercent:  0,
-		MaxDrawdownPercent: 10.0,
+		Allowed:            result.Allowed,
+		IsWithinLimits:     result.Allowed,
+		Reason:             result.Reason,
+		MaxPositions:       int32(limits.maxPositions),
+		PositionCount:      int32(sig.Positions),
+		DrawdownPercent:    0,
+		MaxDrawdownPercent: limits.maxDrawdownPercent,
 	}), nil
 }
 
@@ -95,8 +100,8 @@ func (s *AutoTradingServer) CalculatePositionSize(
 	req *connect.Request[antv1.CalculatePositionSizeRequest],
 ) (*connect.Response[antv1.CalculatePositionSizeResponse], error) {
 	m := req.Msg
-	balance := m.AccountBalance
-	if balance <= 0 {
+	balanceDec := decimal.NewFromFloat(m.AccountBalance)
+	if balanceDec.LessThanOrEqual(decimal.Zero) {
 		return nil, connect.NewError(connect.CodeInvalidArgument,
 			fmt.Errorf("account_balance must be positive"))
 	}
@@ -108,14 +113,94 @@ func (s *AutoTradingServer) CalculatePositionSize(
 	if slPips <= 0 {
 		slPips = 20
 	}
-	pipValue := 10.0 // default for standard lots
-	riskAmount := balance * riskPct / 100.0
-	volume := riskAmount / (slPips * pipValue)
+
+	// Perform position size calculation in decimal.Decimal to preserve precision.
+	// float64 is only used at the proto transport boundary where protobuf
+	// has no decimal wire type (precision loss ≤1e-15).
+	riskPctDec := decimal.NewFromFloat(riskPct)
+	slPipsDec := decimal.NewFromFloat(slPips)
+	pipValueDec := decimal.NewFromFloat(10.0) // standard lots
+	hundred := decimal.NewFromInt(100)
+
+	riskAmountDec := balanceDec.Mul(riskPctDec).Div(hundred)
+	volumeDec := riskAmountDec.Div(slPipsDec.Mul(pipValueDec))
+
+	riskAmountF, _ := riskAmountDec.Float64()
+	volumeF, _ := volumeDec.Float64()
+	pipValueF, _ := pipValueDec.Float64()
+
 	return connect.NewResponse(&antv1.CalculatePositionSizeResponse{
-		Volume:     volume,
-		RiskAmount: riskAmount,
-		PipValue:   pipValue,
+		Volume:     volumeF,
+		RiskAmount: riskAmountF,
+		PipValue:   pipValueF,
 		MinVolume:  0.01,
 		MaxVolume:  100.0,
 	}), nil
+}
+
+// --- effective risk limits with fallback chain ---
+
+// effectiveLimits holds resolved risk parameters after the fallback chain:
+// account RiskConfig → user GlobalSettings → system defaults.
+type effectiveLimits struct {
+	maxRiskPercent     float64
+	maxDrawdownPercent float64
+	maxPositions       int
+	maxLotSize         float64
+}
+
+// resolveRiskLimit loads the effective risk limits for an account.
+// Returns defaults if neither RiskConfig nor GlobalSettings exist.
+func (s *AutoTradingServer) resolveRiskLimit(ctx context.Context, accountID string) *effectiveLimits {
+	defaults := &effectiveLimits{
+		maxRiskPercent:     2.0,
+		maxDrawdownPercent: 10.0,
+		maxPositions:       5,
+		maxLotSize:         100.0,
+	}
+
+	aid, err := parseUUID(accountID)
+	if err != nil {
+		return defaults
+	}
+
+	rc, _ := s.autoRepo.GetRiskConfigByAccountID(ctx, aid)
+	uid := s.userID(ctx)
+	gs, _ := s.autoRepo.GetGlobalSettingsByUserID(ctx, uid)
+
+	limits := *defaults // copy
+
+	// Account-level RiskConfig takes precedence.
+	if rc != nil {
+		if rc.MaxRiskPercent > 0 {
+			limits.maxRiskPercent = rc.MaxRiskPercent
+		}
+		if rc.MaxDrawdownPercent > 0 {
+			limits.maxDrawdownPercent = rc.MaxDrawdownPercent
+		}
+		if rc.MaxPositions > 0 {
+			limits.maxPositions = rc.MaxPositions
+		}
+		if rc.MaxLotSize > 0 {
+			limits.maxLotSize = rc.MaxLotSize
+		}
+	}
+
+	// Fallback to user-level GlobalSettings for any remaining zero/default values.
+	if gs != nil {
+		if limits.maxRiskPercent == defaults.maxRiskPercent && gs.MaxRiskPercent > 0 {
+			limits.maxRiskPercent = gs.MaxRiskPercent
+		}
+		if limits.maxDrawdownPercent == defaults.maxDrawdownPercent && gs.MaxDrawdownPercent > 0 {
+			limits.maxDrawdownPercent = gs.MaxDrawdownPercent
+		}
+		if limits.maxPositions == defaults.maxPositions && gs.MaxPositions > 0 {
+			limits.maxPositions = gs.MaxPositions
+		}
+		if limits.maxLotSize == defaults.maxLotSize && gs.MaxLotSize > 0 {
+			limits.maxLotSize = gs.MaxLotSize
+		}
+	}
+
+	return &limits
 }

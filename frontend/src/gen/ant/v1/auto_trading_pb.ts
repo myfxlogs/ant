@@ -4,9 +4,6 @@
 
 import type { GenFile, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import type { EmptySchema } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_empty } from "@bufbuild/protobuf/wkt";
-import { file_strategy_messages } from "./strategy_messages_pb";
 import type { AutoTradingStatusSchema, GetAutoTradingStatusRequestSchema, GetGlobalSettingsRequestSchema, GlobalSettingsSchema, ToggleAutoTradeRequestSchema, ToggleAutoTradeResponseSchema, UpdateGlobalSettingsRequestSchema } from "./auto_trading_settings_pb";
 import { file_auto_trading_settings } from "./auto_trading_settings_pb";
 import { file_auto_trading_risk } from "./auto_trading_risk_pb";
@@ -15,15 +12,12 @@ import { file_auto_trading_logs } from "./auto_trading_logs_pb";
 import type { GetRiskConfigRequestSchema, RiskConfigSchema, UpdateRiskConfigRequestSchema } from "./auto_trading_risk_config_pb";
 import type { CheckRiskLimitsRequestSchema, CheckRiskLimitsResponseSchema } from "./auto_trading_risk_check_pb";
 import type { CalculatePositionSizeRequestSchema, CalculatePositionSizeResponseSchema } from "./auto_trading_position_size_pb";
-import type { CreateScheduleRequestSchema, DeleteScheduleRequestSchema, ToggleScheduleRequestSchema, UpdateScheduleRequestSchema } from "./strategy_schedule_control_pb";
-import type { StrategyScheduleSchema } from "./strategy_schedule_entity_pb";
-import type { GetScheduleRequestSchema } from "./strategy_schedule_query_pb";
 
 /**
  * Describes the file auto_trading.proto.
  */
 export const file_auto_trading: GenFile = /*@__PURE__*/
-  fileDesc("ChJhdXRvX3RyYWRpbmcucHJvdG8SBmFudC52MTLNCQoSQXV0b1RyYWRpbmdTZXJ2aWNlEk0KEUdldEdsb2JhbFNldHRpbmdzEiAuYW50LnYxLkdldEdsb2JhbFNldHRpbmdzUmVxdWVzdBoWLmFudC52MS5HbG9iYWxTZXR0aW5ncxJTChRVcGRhdGVHbG9iYWxTZXR0aW5ncxIjLmFudC52MS5VcGRhdGVHbG9iYWxTZXR0aW5nc1JlcXVlc3QaFi5hbnQudjEuR2xvYmFsU2V0dGluZ3MSUgoPVG9nZ2xlQXV0b1RyYWRlEh4uYW50LnYxLlRvZ2dsZUF1dG9UcmFkZVJlcXVlc3QaHy5hbnQudjEuVG9nZ2xlQXV0b1RyYWRlUmVzcG9uc2USQQoNR2V0Umlza0NvbmZpZxIcLmFudC52MS5HZXRSaXNrQ29uZmlnUmVxdWVzdBoSLmFudC52MS5SaXNrQ29uZmlnEkcKEFVwZGF0ZVJpc2tDb25maWcSHy5hbnQudjEuVXBkYXRlUmlza0NvbmZpZ1JlcXVlc3QaEi5hbnQudjEuUmlza0NvbmZpZxJSCg9DaGVja1Jpc2tMaW1pdHMSHi5hbnQudjEuQ2hlY2tSaXNrTGltaXRzUmVxdWVzdBofLmFudC52MS5DaGVja1Jpc2tMaW1pdHNSZXNwb25zZRJkChVDYWxjdWxhdGVQb3NpdGlvblNpemUSJC5hbnQudjEuQ2FsY3VsYXRlUG9zaXRpb25TaXplUmVxdWVzdBolLmFudC52MS5DYWxjdWxhdGVQb3NpdGlvblNpemVSZXNwb25zZRJWChRHZXRBdXRvVHJhZGluZ1N0YXR1cxIjLmFudC52MS5HZXRBdXRvVHJhZGluZ1N0YXR1c1JlcXVlc3QaGS5hbnQudjEuQXV0b1RyYWRpbmdTdGF0dXMSSQoOQ3JlYXRlU2NoZWR1bGUSHS5hbnQudjEuQ3JlYXRlU2NoZWR1bGVSZXF1ZXN0GhguYW50LnYxLlN0cmF0ZWd5U2NoZWR1bGUSQwoLR2V0U2NoZWR1bGUSGi5hbnQudjEuR2V0U2NoZWR1bGVSZXF1ZXN0GhguYW50LnYxLlN0cmF0ZWd5U2NoZWR1bGUSSQoOVXBkYXRlU2NoZWR1bGUSHS5hbnQudjEuVXBkYXRlU2NoZWR1bGVSZXF1ZXN0GhguYW50LnYxLlN0cmF0ZWd5U2NoZWR1bGUSRwoORGVsZXRlU2NoZWR1bGUSHS5hbnQudjEuRGVsZXRlU2NoZWR1bGVSZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EkkKDlRvZ2dsZVNjaGVkdWxlEh0uYW50LnYxLlRvZ2dsZVNjaGVkdWxlUmVxdWVzdBoYLmFudC52MS5TdHJhdGVneVNjaGVkdWxlEk8KDkdldFRyYWRpbmdMb2dzEh0uYW50LnYxLkdldFRyYWRpbmdMb2dzUmVxdWVzdBoeLmFudC52MS5HZXRUcmFkaW5nTG9nc1Jlc3BvbnNlEmEKFEdldFJlY2VudFRyYWRpbmdMb2dzEiMuYW50LnYxLkdldFJlY2VudFRyYWRpbmdMb2dzUmVxdWVzdBokLmFudC52MS5HZXRSZWNlbnRUcmFkaW5nTG9nc1Jlc3BvbnNlQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxUAFQAlADUARiBnByb3RvMw", [file_google_protobuf_empty, file_strategy_messages, file_auto_trading_settings, file_auto_trading_risk, file_auto_trading_logs]);
+  fileDesc("ChJhdXRvX3RyYWRpbmcucHJvdG8SBmFudC52MTLeBgoSQXV0b1RyYWRpbmdTZXJ2aWNlEk0KEUdldEdsb2JhbFNldHRpbmdzEiAuYW50LnYxLkdldEdsb2JhbFNldHRpbmdzUmVxdWVzdBoWLmFudC52MS5HbG9iYWxTZXR0aW5ncxJTChRVcGRhdGVHbG9iYWxTZXR0aW5ncxIjLmFudC52MS5VcGRhdGVHbG9iYWxTZXR0aW5nc1JlcXVlc3QaFi5hbnQudjEuR2xvYmFsU2V0dGluZ3MSUgoPVG9nZ2xlQXV0b1RyYWRlEh4uYW50LnYxLlRvZ2dsZUF1dG9UcmFkZVJlcXVlc3QaHy5hbnQudjEuVG9nZ2xlQXV0b1RyYWRlUmVzcG9uc2USQQoNR2V0Umlza0NvbmZpZxIcLmFudC52MS5HZXRSaXNrQ29uZmlnUmVxdWVzdBoSLmFudC52MS5SaXNrQ29uZmlnEkcKEFVwZGF0ZVJpc2tDb25maWcSHy5hbnQudjEuVXBkYXRlUmlza0NvbmZpZ1JlcXVlc3QaEi5hbnQudjEuUmlza0NvbmZpZxJSCg9DaGVja1Jpc2tMaW1pdHMSHi5hbnQudjEuQ2hlY2tSaXNrTGltaXRzUmVxdWVzdBofLmFudC52MS5DaGVja1Jpc2tMaW1pdHNSZXNwb25zZRJkChVDYWxjdWxhdGVQb3NpdGlvblNpemUSJC5hbnQudjEuQ2FsY3VsYXRlUG9zaXRpb25TaXplUmVxdWVzdBolLmFudC52MS5DYWxjdWxhdGVQb3NpdGlvblNpemVSZXNwb25zZRJWChRHZXRBdXRvVHJhZGluZ1N0YXR1cxIjLmFudC52MS5HZXRBdXRvVHJhZGluZ1N0YXR1c1JlcXVlc3QaGS5hbnQudjEuQXV0b1RyYWRpbmdTdGF0dXMSTwoOR2V0VHJhZGluZ0xvZ3MSHS5hbnQudjEuR2V0VHJhZGluZ0xvZ3NSZXF1ZXN0Gh4uYW50LnYxLkdldFRyYWRpbmdMb2dzUmVzcG9uc2USYQoUR2V0UmVjZW50VHJhZGluZ0xvZ3MSIy5hbnQudjEuR2V0UmVjZW50VHJhZGluZ0xvZ3NSZXF1ZXN0GiQuYW50LnYxLkdldFJlY2VudFRyYWRpbmdMb2dzUmVzcG9uc2VCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFQAFABUAJiBnByb3RvMw", [file_auto_trading_settings, file_auto_trading_risk, file_auto_trading_logs]);
 
 /**
  * @generated from service ant.v1.AutoTradingService
@@ -92,46 +86,6 @@ export const AutoTradingService: GenService<{
     methodKind: "unary";
     input: typeof GetAutoTradingStatusRequestSchema;
     output: typeof AutoTradingStatusSchema;
-  },
-  /**
-   * @generated from rpc ant.v1.AutoTradingService.CreateSchedule
-   */
-  createSchedule: {
-    methodKind: "unary";
-    input: typeof CreateScheduleRequestSchema;
-    output: typeof StrategyScheduleSchema;
-  },
-  /**
-   * @generated from rpc ant.v1.AutoTradingService.GetSchedule
-   */
-  getSchedule: {
-    methodKind: "unary";
-    input: typeof GetScheduleRequestSchema;
-    output: typeof StrategyScheduleSchema;
-  },
-  /**
-   * @generated from rpc ant.v1.AutoTradingService.UpdateSchedule
-   */
-  updateSchedule: {
-    methodKind: "unary";
-    input: typeof UpdateScheduleRequestSchema;
-    output: typeof StrategyScheduleSchema;
-  },
-  /**
-   * @generated from rpc ant.v1.AutoTradingService.DeleteSchedule
-   */
-  deleteSchedule: {
-    methodKind: "unary";
-    input: typeof DeleteScheduleRequestSchema;
-    output: typeof EmptySchema;
-  },
-  /**
-   * @generated from rpc ant.v1.AutoTradingService.ToggleSchedule
-   */
-  toggleSchedule: {
-    methodKind: "unary";
-    input: typeof ToggleScheduleRequestSchema;
-    output: typeof StrategyScheduleSchema;
   },
   /**
    * @generated from rpc ant.v1.AutoTradingService.GetTradingLogs

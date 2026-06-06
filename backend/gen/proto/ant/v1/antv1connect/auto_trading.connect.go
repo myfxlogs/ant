@@ -9,7 +9,6 @@ import (
 	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	http "net/http"
 	strings "strings"
 )
@@ -58,21 +57,6 @@ const (
 	// AutoTradingServiceGetAutoTradingStatusProcedure is the fully-qualified name of the
 	// AutoTradingService's GetAutoTradingStatus RPC.
 	AutoTradingServiceGetAutoTradingStatusProcedure = "/ant.v1.AutoTradingService/GetAutoTradingStatus"
-	// AutoTradingServiceCreateScheduleProcedure is the fully-qualified name of the AutoTradingService's
-	// CreateSchedule RPC.
-	AutoTradingServiceCreateScheduleProcedure = "/ant.v1.AutoTradingService/CreateSchedule"
-	// AutoTradingServiceGetScheduleProcedure is the fully-qualified name of the AutoTradingService's
-	// GetSchedule RPC.
-	AutoTradingServiceGetScheduleProcedure = "/ant.v1.AutoTradingService/GetSchedule"
-	// AutoTradingServiceUpdateScheduleProcedure is the fully-qualified name of the AutoTradingService's
-	// UpdateSchedule RPC.
-	AutoTradingServiceUpdateScheduleProcedure = "/ant.v1.AutoTradingService/UpdateSchedule"
-	// AutoTradingServiceDeleteScheduleProcedure is the fully-qualified name of the AutoTradingService's
-	// DeleteSchedule RPC.
-	AutoTradingServiceDeleteScheduleProcedure = "/ant.v1.AutoTradingService/DeleteSchedule"
-	// AutoTradingServiceToggleScheduleProcedure is the fully-qualified name of the AutoTradingService's
-	// ToggleSchedule RPC.
-	AutoTradingServiceToggleScheduleProcedure = "/ant.v1.AutoTradingService/ToggleSchedule"
 	// AutoTradingServiceGetTradingLogsProcedure is the fully-qualified name of the AutoTradingService's
 	// GetTradingLogs RPC.
 	AutoTradingServiceGetTradingLogsProcedure = "/ant.v1.AutoTradingService/GetTradingLogs"
@@ -91,11 +75,6 @@ type AutoTradingServiceClient interface {
 	CheckRiskLimits(context.Context, *connect.Request[v1.CheckRiskLimitsRequest]) (*connect.Response[v1.CheckRiskLimitsResponse], error)
 	CalculatePositionSize(context.Context, *connect.Request[v1.CalculatePositionSizeRequest]) (*connect.Response[v1.CalculatePositionSizeResponse], error)
 	GetAutoTradingStatus(context.Context, *connect.Request[v1.GetAutoTradingStatusRequest]) (*connect.Response[v1.AutoTradingStatus], error)
-	CreateSchedule(context.Context, *connect.Request[v1.CreateScheduleRequest]) (*connect.Response[v1.StrategySchedule], error)
-	GetSchedule(context.Context, *connect.Request[v1.GetScheduleRequest]) (*connect.Response[v1.StrategySchedule], error)
-	UpdateSchedule(context.Context, *connect.Request[v1.UpdateScheduleRequest]) (*connect.Response[v1.StrategySchedule], error)
-	DeleteSchedule(context.Context, *connect.Request[v1.DeleteScheduleRequest]) (*connect.Response[emptypb.Empty], error)
-	ToggleSchedule(context.Context, *connect.Request[v1.ToggleScheduleRequest]) (*connect.Response[v1.StrategySchedule], error)
 	GetTradingLogs(context.Context, *connect.Request[v1.GetTradingLogsRequest]) (*connect.Response[v1.GetTradingLogsResponse], error)
 	GetRecentTradingLogs(context.Context, *connect.Request[v1.GetRecentTradingLogsRequest]) (*connect.Response[v1.GetRecentTradingLogsResponse], error)
 }
@@ -159,36 +138,6 @@ func NewAutoTradingServiceClient(httpClient connect.HTTPClient, baseURL string, 
 			connect.WithSchema(autoTradingServiceMethods.ByName("GetAutoTradingStatus")),
 			connect.WithClientOptions(opts...),
 		),
-		createSchedule: connect.NewClient[v1.CreateScheduleRequest, v1.StrategySchedule](
-			httpClient,
-			baseURL+AutoTradingServiceCreateScheduleProcedure,
-			connect.WithSchema(autoTradingServiceMethods.ByName("CreateSchedule")),
-			connect.WithClientOptions(opts...),
-		),
-		getSchedule: connect.NewClient[v1.GetScheduleRequest, v1.StrategySchedule](
-			httpClient,
-			baseURL+AutoTradingServiceGetScheduleProcedure,
-			connect.WithSchema(autoTradingServiceMethods.ByName("GetSchedule")),
-			connect.WithClientOptions(opts...),
-		),
-		updateSchedule: connect.NewClient[v1.UpdateScheduleRequest, v1.StrategySchedule](
-			httpClient,
-			baseURL+AutoTradingServiceUpdateScheduleProcedure,
-			connect.WithSchema(autoTradingServiceMethods.ByName("UpdateSchedule")),
-			connect.WithClientOptions(opts...),
-		),
-		deleteSchedule: connect.NewClient[v1.DeleteScheduleRequest, emptypb.Empty](
-			httpClient,
-			baseURL+AutoTradingServiceDeleteScheduleProcedure,
-			connect.WithSchema(autoTradingServiceMethods.ByName("DeleteSchedule")),
-			connect.WithClientOptions(opts...),
-		),
-		toggleSchedule: connect.NewClient[v1.ToggleScheduleRequest, v1.StrategySchedule](
-			httpClient,
-			baseURL+AutoTradingServiceToggleScheduleProcedure,
-			connect.WithSchema(autoTradingServiceMethods.ByName("ToggleSchedule")),
-			connect.WithClientOptions(opts...),
-		),
 		getTradingLogs: connect.NewClient[v1.GetTradingLogsRequest, v1.GetTradingLogsResponse](
 			httpClient,
 			baseURL+AutoTradingServiceGetTradingLogsProcedure,
@@ -214,11 +163,6 @@ type autoTradingServiceClient struct {
 	checkRiskLimits       *connect.Client[v1.CheckRiskLimitsRequest, v1.CheckRiskLimitsResponse]
 	calculatePositionSize *connect.Client[v1.CalculatePositionSizeRequest, v1.CalculatePositionSizeResponse]
 	getAutoTradingStatus  *connect.Client[v1.GetAutoTradingStatusRequest, v1.AutoTradingStatus]
-	createSchedule        *connect.Client[v1.CreateScheduleRequest, v1.StrategySchedule]
-	getSchedule           *connect.Client[v1.GetScheduleRequest, v1.StrategySchedule]
-	updateSchedule        *connect.Client[v1.UpdateScheduleRequest, v1.StrategySchedule]
-	deleteSchedule        *connect.Client[v1.DeleteScheduleRequest, emptypb.Empty]
-	toggleSchedule        *connect.Client[v1.ToggleScheduleRequest, v1.StrategySchedule]
 	getTradingLogs        *connect.Client[v1.GetTradingLogsRequest, v1.GetTradingLogsResponse]
 	getRecentTradingLogs  *connect.Client[v1.GetRecentTradingLogsRequest, v1.GetRecentTradingLogsResponse]
 }
@@ -263,31 +207,6 @@ func (c *autoTradingServiceClient) GetAutoTradingStatus(ctx context.Context, req
 	return c.getAutoTradingStatus.CallUnary(ctx, req)
 }
 
-// CreateSchedule calls ant.v1.AutoTradingService.CreateSchedule.
-func (c *autoTradingServiceClient) CreateSchedule(ctx context.Context, req *connect.Request[v1.CreateScheduleRequest]) (*connect.Response[v1.StrategySchedule], error) {
-	return c.createSchedule.CallUnary(ctx, req)
-}
-
-// GetSchedule calls ant.v1.AutoTradingService.GetSchedule.
-func (c *autoTradingServiceClient) GetSchedule(ctx context.Context, req *connect.Request[v1.GetScheduleRequest]) (*connect.Response[v1.StrategySchedule], error) {
-	return c.getSchedule.CallUnary(ctx, req)
-}
-
-// UpdateSchedule calls ant.v1.AutoTradingService.UpdateSchedule.
-func (c *autoTradingServiceClient) UpdateSchedule(ctx context.Context, req *connect.Request[v1.UpdateScheduleRequest]) (*connect.Response[v1.StrategySchedule], error) {
-	return c.updateSchedule.CallUnary(ctx, req)
-}
-
-// DeleteSchedule calls ant.v1.AutoTradingService.DeleteSchedule.
-func (c *autoTradingServiceClient) DeleteSchedule(ctx context.Context, req *connect.Request[v1.DeleteScheduleRequest]) (*connect.Response[emptypb.Empty], error) {
-	return c.deleteSchedule.CallUnary(ctx, req)
-}
-
-// ToggleSchedule calls ant.v1.AutoTradingService.ToggleSchedule.
-func (c *autoTradingServiceClient) ToggleSchedule(ctx context.Context, req *connect.Request[v1.ToggleScheduleRequest]) (*connect.Response[v1.StrategySchedule], error) {
-	return c.toggleSchedule.CallUnary(ctx, req)
-}
-
 // GetTradingLogs calls ant.v1.AutoTradingService.GetTradingLogs.
 func (c *autoTradingServiceClient) GetTradingLogs(ctx context.Context, req *connect.Request[v1.GetTradingLogsRequest]) (*connect.Response[v1.GetTradingLogsResponse], error) {
 	return c.getTradingLogs.CallUnary(ctx, req)
@@ -308,11 +227,6 @@ type AutoTradingServiceHandler interface {
 	CheckRiskLimits(context.Context, *connect.Request[v1.CheckRiskLimitsRequest]) (*connect.Response[v1.CheckRiskLimitsResponse], error)
 	CalculatePositionSize(context.Context, *connect.Request[v1.CalculatePositionSizeRequest]) (*connect.Response[v1.CalculatePositionSizeResponse], error)
 	GetAutoTradingStatus(context.Context, *connect.Request[v1.GetAutoTradingStatusRequest]) (*connect.Response[v1.AutoTradingStatus], error)
-	CreateSchedule(context.Context, *connect.Request[v1.CreateScheduleRequest]) (*connect.Response[v1.StrategySchedule], error)
-	GetSchedule(context.Context, *connect.Request[v1.GetScheduleRequest]) (*connect.Response[v1.StrategySchedule], error)
-	UpdateSchedule(context.Context, *connect.Request[v1.UpdateScheduleRequest]) (*connect.Response[v1.StrategySchedule], error)
-	DeleteSchedule(context.Context, *connect.Request[v1.DeleteScheduleRequest]) (*connect.Response[emptypb.Empty], error)
-	ToggleSchedule(context.Context, *connect.Request[v1.ToggleScheduleRequest]) (*connect.Response[v1.StrategySchedule], error)
 	GetTradingLogs(context.Context, *connect.Request[v1.GetTradingLogsRequest]) (*connect.Response[v1.GetTradingLogsResponse], error)
 	GetRecentTradingLogs(context.Context, *connect.Request[v1.GetRecentTradingLogsRequest]) (*connect.Response[v1.GetRecentTradingLogsResponse], error)
 }
@@ -372,36 +286,6 @@ func NewAutoTradingServiceHandler(svc AutoTradingServiceHandler, opts ...connect
 		connect.WithSchema(autoTradingServiceMethods.ByName("GetAutoTradingStatus")),
 		connect.WithHandlerOptions(opts...),
 	)
-	autoTradingServiceCreateScheduleHandler := connect.NewUnaryHandler(
-		AutoTradingServiceCreateScheduleProcedure,
-		svc.CreateSchedule,
-		connect.WithSchema(autoTradingServiceMethods.ByName("CreateSchedule")),
-		connect.WithHandlerOptions(opts...),
-	)
-	autoTradingServiceGetScheduleHandler := connect.NewUnaryHandler(
-		AutoTradingServiceGetScheduleProcedure,
-		svc.GetSchedule,
-		connect.WithSchema(autoTradingServiceMethods.ByName("GetSchedule")),
-		connect.WithHandlerOptions(opts...),
-	)
-	autoTradingServiceUpdateScheduleHandler := connect.NewUnaryHandler(
-		AutoTradingServiceUpdateScheduleProcedure,
-		svc.UpdateSchedule,
-		connect.WithSchema(autoTradingServiceMethods.ByName("UpdateSchedule")),
-		connect.WithHandlerOptions(opts...),
-	)
-	autoTradingServiceDeleteScheduleHandler := connect.NewUnaryHandler(
-		AutoTradingServiceDeleteScheduleProcedure,
-		svc.DeleteSchedule,
-		connect.WithSchema(autoTradingServiceMethods.ByName("DeleteSchedule")),
-		connect.WithHandlerOptions(opts...),
-	)
-	autoTradingServiceToggleScheduleHandler := connect.NewUnaryHandler(
-		AutoTradingServiceToggleScheduleProcedure,
-		svc.ToggleSchedule,
-		connect.WithSchema(autoTradingServiceMethods.ByName("ToggleSchedule")),
-		connect.WithHandlerOptions(opts...),
-	)
 	autoTradingServiceGetTradingLogsHandler := connect.NewUnaryHandler(
 		AutoTradingServiceGetTradingLogsProcedure,
 		svc.GetTradingLogs,
@@ -432,16 +316,6 @@ func NewAutoTradingServiceHandler(svc AutoTradingServiceHandler, opts ...connect
 			autoTradingServiceCalculatePositionSizeHandler.ServeHTTP(w, r)
 		case AutoTradingServiceGetAutoTradingStatusProcedure:
 			autoTradingServiceGetAutoTradingStatusHandler.ServeHTTP(w, r)
-		case AutoTradingServiceCreateScheduleProcedure:
-			autoTradingServiceCreateScheduleHandler.ServeHTTP(w, r)
-		case AutoTradingServiceGetScheduleProcedure:
-			autoTradingServiceGetScheduleHandler.ServeHTTP(w, r)
-		case AutoTradingServiceUpdateScheduleProcedure:
-			autoTradingServiceUpdateScheduleHandler.ServeHTTP(w, r)
-		case AutoTradingServiceDeleteScheduleProcedure:
-			autoTradingServiceDeleteScheduleHandler.ServeHTTP(w, r)
-		case AutoTradingServiceToggleScheduleProcedure:
-			autoTradingServiceToggleScheduleHandler.ServeHTTP(w, r)
 		case AutoTradingServiceGetTradingLogsProcedure:
 			autoTradingServiceGetTradingLogsHandler.ServeHTTP(w, r)
 		case AutoTradingServiceGetRecentTradingLogsProcedure:
@@ -485,26 +359,6 @@ func (UnimplementedAutoTradingServiceHandler) CalculatePositionSize(context.Cont
 
 func (UnimplementedAutoTradingServiceHandler) GetAutoTradingStatus(context.Context, *connect.Request[v1.GetAutoTradingStatusRequest]) (*connect.Response[v1.AutoTradingStatus], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AutoTradingService.GetAutoTradingStatus is not implemented"))
-}
-
-func (UnimplementedAutoTradingServiceHandler) CreateSchedule(context.Context, *connect.Request[v1.CreateScheduleRequest]) (*connect.Response[v1.StrategySchedule], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AutoTradingService.CreateSchedule is not implemented"))
-}
-
-func (UnimplementedAutoTradingServiceHandler) GetSchedule(context.Context, *connect.Request[v1.GetScheduleRequest]) (*connect.Response[v1.StrategySchedule], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AutoTradingService.GetSchedule is not implemented"))
-}
-
-func (UnimplementedAutoTradingServiceHandler) UpdateSchedule(context.Context, *connect.Request[v1.UpdateScheduleRequest]) (*connect.Response[v1.StrategySchedule], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AutoTradingService.UpdateSchedule is not implemented"))
-}
-
-func (UnimplementedAutoTradingServiceHandler) DeleteSchedule(context.Context, *connect.Request[v1.DeleteScheduleRequest]) (*connect.Response[emptypb.Empty], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AutoTradingService.DeleteSchedule is not implemented"))
-}
-
-func (UnimplementedAutoTradingServiceHandler) ToggleSchedule(context.Context, *connect.Request[v1.ToggleScheduleRequest]) (*connect.Response[v1.StrategySchedule], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AutoTradingService.ToggleSchedule is not implemented"))
 }
 
 func (UnimplementedAutoTradingServiceHandler) GetTradingLogs(context.Context, *connect.Request[v1.GetTradingLogsRequest]) (*connect.Response[v1.GetTradingLogsResponse], error) {

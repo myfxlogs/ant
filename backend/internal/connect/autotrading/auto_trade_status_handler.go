@@ -27,15 +27,31 @@ func (s *AutoTradingServer) GetAutoTradingStatus(
 	if err == nil && gs != nil {
 		globalEnabled = gs.AutoTradeEnabled
 	}
-	// Active strategies / pending signals / today executions are
-	// sourced from the existing strategy & trade subsystems in a
-	// future enhancement. For now, return the global toggle state.
+
+	// Resolve live metrics from existing tables; degrade to 0 on any query failure.
+	activeStrategies := 0
+	if n, err := s.autoRepo.CountActiveSchedules(ctx, uid); err == nil {
+		activeStrategies = n
+	}
+	pendingSignals := 0
+	if n, err := s.autoRepo.CountPendingExecutions(ctx, uid); err == nil {
+		pendingSignals = n
+	}
+	todayExecutions := 0
+	if n, err := s.autoRepo.CountTodayExecutionsByUser(ctx, uid); err == nil {
+		todayExecutions = n
+	}
+	todayProfit := 0.0
+	if p, err := s.autoRepo.GetTodayProfitByUser(ctx, uid); err == nil {
+		todayProfit = p
+	}
+
 	return connect.NewResponse(&antv1.AutoTradingStatus{
 		GlobalEnabled:    globalEnabled,
-		ActiveStrategies: 0,
-		PendingSignals:   0,
-		TodayExecutions:  0,
-		TodayProfit:      0,
+		ActiveStrategies: int32(activeStrategies),
+		PendingSignals:   int32(pendingSignals),
+		TodayExecutions:  int32(todayExecutions),
+		TodayProfit:      todayProfit,
 	}), nil
 }
 

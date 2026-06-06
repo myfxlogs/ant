@@ -4,12 +4,9 @@ package ant.v1;
 
 option go_package = "anttrader/gen/proto/ant/v1;antv1";
 
-// Deferred — no handler implementation exists.
-// 14 RPC schema defined as API contract for future P2 milestone.
-// Supporting proto files: auto_trading_settings, auto_trading_risk*, auto_trading_logs.
+// AutoTradingService — auto-trading configuration, risk, and status.
+// Schedule RPCs are handled exclusively by StrategyService (strategy.proto).
 
-import "google/protobuf/empty.proto";
-import public "strategy_messages.proto";
 import public "auto_trading_settings.proto";
 import public "auto_trading_risk.proto";
 import public "auto_trading_logs.proto";
@@ -23,11 +20,6 @@ service AutoTradingService {
   rpc CheckRiskLimits(CheckRiskLimitsRequest) returns (CheckRiskLimitsResponse);
   rpc CalculatePositionSize(CalculatePositionSizeRequest) returns (CalculatePositionSizeResponse);
   rpc GetAutoTradingStatus(GetAutoTradingStatusRequest) returns (AutoTradingStatus);
-  rpc CreateSchedule(CreateScheduleRequest) returns (StrategySchedule);
-  rpc GetSchedule(GetScheduleRequest) returns (StrategySchedule);
-  rpc UpdateSchedule(UpdateScheduleRequest) returns (StrategySchedule);
-  rpc DeleteSchedule(DeleteScheduleRequest) returns (google.protobuf.Empty);
-  rpc ToggleSchedule(ToggleScheduleRequest) returns (StrategySchedule);
   rpc GetTradingLogs(GetTradingLogsRequest) returns (GetTradingLogsResponse);
   rpc GetRecentTradingLogs(GetRecentTradingLogsRequest) returns (GetRecentTradingLogsResponse);
 }

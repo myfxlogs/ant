@@ -9,55 +9,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type StrategyScheduleLegacy struct {
-	ID             uuid.UUID  `json:"id" db:"id"`
-	StrategyID     uuid.UUID  `json:"strategy_id" db:"strategy_id"`
-	UserID         uuid.UUID  `json:"user_id" db:"user_id"`
-	TemplateID     uuid.UUID  `json:"template_id" db:"template_id"`
-	AccountID      uuid.UUID  `json:"account_id" db:"account_id"`
-	Name           string     `json:"name" db:"name"`
-	Symbol         string     `json:"symbol" db:"symbol"`
-	Timeframe      string     `json:"timeframe" db:"timeframe"`
-	Parameters     JSONB      `json:"parameters" db:"parameters"`
-	ScheduleType   string     `json:"schedule_type" db:"schedule_type"`
-	ScheduleConfig JSONB      `json:"schedule_config" db:"schedule_config"`
-	IsActive       bool       `json:"is_active" db:"is_active"`
-	LastRunAt      *time.Time `json:"last_run_at" db:"last_run_at"`
-	NextRunAt      *time.Time `json:"next_run_at" db:"next_run_at"`
-	LastError      string     `json:"last_error" db:"last_error"`
-	RunCount       int        `json:"run_count" db:"run_count"`
-	CreatedAt      time.Time  `json:"created_at" db:"created_at"`
-	UpdatedAt      time.Time  `json:"updated_at" db:"updated_at"`
-}
-
-type ScheduleConfig struct {
-	CronExpression string `json:"cron_expression,omitempty"` // cron表达式
-	IntervalMs     int64  `json:"interval_ms,omitempty"`     // 间隔毫秒数
-	EventTrigger   string `json:"event_trigger,omitempty"`   // 事件触发类型
-}
-
-func (s *StrategyScheduleLegacy) GetScheduleConfig() (*ScheduleConfig, error) {
-	if len(s.ScheduleConfig) == 0 {
-		return nil, nil
-	}
-	var config ScheduleConfig
-	err := json.Unmarshal(s.ScheduleConfig, &config)
-	return &config, err
-}
-
-func (s *StrategyScheduleLegacy) SetScheduleConfig(config *ScheduleConfig) error {
-	if config == nil {
-		s.ScheduleConfig = nil
-		return nil
-	}
-	data, err := json.Marshal(config)
-	if err != nil {
-		return fmt.Errorf("marshal schedule config: %w", err)
-	}
-	s.ScheduleConfig = data
-	return nil
-}
-
 type StrategyExecution struct {
 	ID           uuid.UUID  `json:"id" db:"id"`
 	UserID       uuid.UUID  `json:"user_id" db:"user_id"`
@@ -261,24 +212,6 @@ const (
 	LogTypeError  = "error"
 	LogTypeSystem = "system"
 )
-
-func NewStrategyScheduleLegacy(userID, templateID, accountID uuid.UUID, scheduleType string, config *ScheduleConfig) *StrategyScheduleLegacy {
-	schedule := &StrategyScheduleLegacy{
-		ID:           uuid.New(),
-		UserID:       userID,
-		TemplateID:   templateID,
-		AccountID:    accountID,
-		ScheduleType: scheduleType,
-		IsActive:     false,
-		RunCount:     0,
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
-	}
-	if config != nil {
-		schedule.SetScheduleConfig(config)
-	}
-	return schedule
-}
 
 func NewStrategyExecution(userID, templateID, accountID uuid.UUID) *StrategyExecution {
 	return &StrategyExecution{

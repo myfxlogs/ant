@@ -14,15 +14,14 @@ import (
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/repository"
-	"anttrader/internal/strategysvc"
 	"anttrader/internal/pglisten"
 )
 
 // PythonStrategyServer implements ant.v1.PythonStrategyServiceHandler.
 type PythonStrategyServer struct {
-	backtestRepo  *repository.BacktestRunRepository
-	log           *zap.Logger
-	client        *strategysvc.PythonClient
+	backtestRepo   *repository.BacktestRunRepository
+	log            *zap.Logger
+	connectClient  antv1c.PythonStrategyServiceClient // ConnectRPC to Python service
 	backtestClient antv1c.BacktestServiceClient
 	marketDataRepo *repository.MarketDataRepository
 	pgListen       *pglisten.Listener
@@ -38,8 +37,8 @@ func NewPythonStrategyServer(backtestRepo *repository.BacktestRunRepository, log
 	return &PythonStrategyServer{backtestRepo: backtestRepo, log: log}
 }
 
-func (s *PythonStrategyServer) SetClient(c *strategysvc.PythonClient) { s.client = c }
-func (s *PythonStrategyServer) SetBacktestClient(c antv1c.BacktestServiceClient) { s.backtestClient = c }
+func (s *PythonStrategyServer) SetConnectClient(c antv1c.PythonStrategyServiceClient) { s.connectClient = c }
+func (s *PythonStrategyServer) SetBacktestClient(c antv1c.BacktestServiceClient)     { s.backtestClient = c }
 
 // userIDRequire extracts and validates the authenticated user ID from context.
 func userIDRequire(ctx context.Context) (uuid.UUID, error) {
@@ -56,31 +55,19 @@ func (s *PythonStrategyServer) Execute(ctx context.Context, req *connect.Request
 		return nil, err
 	}
 	_ = uid // authorization verified; downstream uses AccountId directly
-	if s.client != nil {
-		result, err := s.client.Execute(ctx, &strategysvc.ExecuteRequest{
+
+	if s.connectClient != nil {
+		resp, err := s.connectClient.Execute(ctx, connect.NewRequest(&antv1.ExecuteStrategyRequest{
 			Code:      req.Msg.Code,
-			AccountID: req.Msg.AccountId,
+			AccountId: req.Msg.AccountId,
 			Symbol:    req.Msg.Symbol,
 			Timeframe: req.Msg.Timeframe,
-			Mode:      "paper",
-		})
+		}))
 		if err != nil {
 			s.log.Warn("python execute failed", zap.Error(err))
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
-		if result.Success && result.Signal != nil {
-			return connect.NewResponse(&antv1.ExecuteStrategyResponse{
-				Success: true,
-				Signal: &antv1.StrategySignal{
-					SignalType: result.Signal.Side,
-					Volume:     result.Signal.Lots,
-					Price:      result.Signal.Price,
-					StopLoss:   result.Signal.StopLoss,
-					TakeProfit: result.Signal.TakeProfit,
-					Reason:     result.Signal.Reason,
-				},
-			}), nil
-		}
+		return connect.NewResponse(resp.Msg), nil
 	}
 	return connect.NewResponse(&antv1.ExecuteStrategyResponse{
 		Success: false,
@@ -93,17 +80,16 @@ func (s *PythonStrategyServer) Validate(ctx context.Context, req *connect.Reques
 		return nil, err
 	}
 	_ = uid
-	if s.client != nil {
-		result, err := s.client.Validate(ctx, &strategysvc.ValidateRequest{Code: req.Msg.Code})
+
+	if s.connectClient != nil {
+		resp, err := s.connectClient.Validate(ctx, connect.NewRequest(&antv1.ValidateStrategyRequest{
+			Code: req.Msg.Code,
+		}))
 		if err != nil {
 			s.log.Warn("python validate failed", zap.Error(err))
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
-		return connect.NewResponse(&antv1.ValidateStrategyResponse{
-			Valid:    result.Valid,
-			Errors:   result.Errors,
-			Warnings: result.Warnings,
-		}), nil
+		return connect.NewResponse(resp.Msg), nil
 	}
 	return connect.NewResponse(&antv1.ValidateStrategyResponse{
 		Valid: true,

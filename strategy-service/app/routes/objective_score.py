@@ -1,11 +1,8 @@
+"""ObjectiveScore REST endpoint superseded by ConnectRPC.
+CalculateObjectiveScore: POST /ant.v1.ObjectiveScoreService/CalculateObjectiveScore (objective_score_connect.py)"""
+
 from fastapi import APIRouter
 
-from app.schemas import ObjectiveScoreRequest, ObjectiveScoreResponse
-from app.services.objective_score import calculate_objective_score
-
 router = APIRouter()
-
-
-@router.post("/api/objective-score", response_model=ObjectiveScoreResponse)
-async def objective_score(req: ObjectiveScoreRequest):
-    return calculate_objective_score(req)
+# The /api/objective-score REST endpoint has been migrated to ConnectRPC.
+# See objective_score_connect.py for the ConnectRPC handler.
