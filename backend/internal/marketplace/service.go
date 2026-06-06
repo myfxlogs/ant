@@ -127,74 +127,43 @@ func (s *Service) Publish(ctx context.Context, params PublishParams) (string, er
 // ListPublished returns strategies published to the marketplace with full
 // metadata from marketplace_strategies (M12-B1). Optionally filters by asset_class.
 func (s *Service) ListPublished(ctx context.Context, userID string, limit int, assetClass string) ([]PublishedStrategy, error) {
-	if limit <= 0 {
-		limit = 50
-	}
-
-	query := `
-		SELECT
-			usp.id,
-			usp.platform_strategy_id,
-			COALESCE(ms.title, ps.name, usp.platform_strategy_id::text),
-			usp.user_id,
-			usp.published_at,
-			COALESCE(ms.title, ''),
-			COALESCE(ms.description, ''),
-			COALESCE(ms.price_model, ''),
-			ms.price_amount,
-			COALESCE(ms.asset_class, ''),
-			COALESCE(ms.symbols, '[]'),
-			ms.timeframe,
-			COALESCE(ms.risk_level, ''),
-			COALESCE(ms.tags, '[]'),
-			COALESCE(ms.total_subscribers, 0),
-			ms.win_rate,
-			ms.total_pnl
-		FROM user_strategy_publishes usp
-		LEFT JOIN marketplace_strategies ms ON ms.strategy_id = usp.id
-		LEFT JOIN platform_strategies ps ON ps.id::text = usp.platform_strategy_id::text
-		WHERE 1=1`
-	args := []interface{}{}
-	argIdx := 1
-
-	if userID != "" {
-		query += fmt.Sprintf(" AND usp.user_id::text = $%d", argIdx)
-		args = append(args, userID)
-		argIdx++
-	}
-	if assetClass != "" {
-		query += fmt.Sprintf(" AND ms.asset_class = $%d", argIdx)
-		args = append(args, assetClass)
-		argIdx++
-	}
-
-	query += fmt.Sprintf(" ORDER BY usp.published_at DESC LIMIT $%d", argIdx)
-	args = append(args, limit)
-
+	if limit <= 0 { limit = 50 }
+	query, args := buildPublishedQuery(userID, assetClass, limit)
 	rows, err := s.pg.Query(ctx, query, args...)
-	if err != nil {
-		return nil, err
-	}
+	if err != nil { return nil, err }
 	defer rows.Close()
-
 	var out []PublishedStrategy
 	for rows.Next() {
 		var p PublishedStrategy
 		var symbolsRaw, tagsRaw string
-		if err := rows.Scan(
-			&p.PublishID, &p.StrategyID, &p.StrategyName, &p.PublisherUserID, &p.PublishedAt,
+		if err := rows.Scan(&p.PublishID, &p.StrategyID, &p.StrategyName, &p.PublisherUserID, &p.PublishedAt,
 			&p.Title, &p.Description, &p.PriceModel, &p.PriceAmount,
 			&p.AssetClass, &symbolsRaw, &p.Timeframe, &p.RiskLevel, &tagsRaw,
-			&p.TotalSubscribers, &p.WinRate, &p.TotalPnL,
-		); err != nil {
+			&p.TotalSubscribers, &p.WinRate, &p.TotalPnL); err != nil {
 			return nil, err
 		}
-		// Parse JSON arrays (stored as text/varchar in some schemas).
 		p.Symbols = parseJSONStringArray(symbolsRaw)
 		p.Tags = parseJSONStringArray(tagsRaw)
 		out = append(out, p)
 	}
 	return out, rows.Err()
+}
+
+func buildPublishedQuery(userID, assetClass string, limit int) (string, []interface{}) {
+	query := `SELECT usp.id, usp.platform_strategy_id, COALESCE(ms.title,ps.name,usp.platform_strategy_id::text),
+		usp.user_id, usp.published_at, COALESCE(ms.title,''), COALESCE(ms.description,''),
+		COALESCE(ms.price_model,''), ms.price_amount, COALESCE(ms.asset_class,''),
+		COALESCE(ms.symbols,'[]'), ms.timeframe, COALESCE(ms.risk_level,''),
+		COALESCE(ms.tags,'[]'), COALESCE(ms.total_subscribers,0), ms.win_rate, ms.total_pnl
+	 FROM user_strategy_publishes usp
+	 LEFT JOIN marketplace_strategies ms ON ms.strategy_id=usp.id
+	 LEFT JOIN platform_strategies ps ON ps.id::text=usp.platform_strategy_id::text WHERE 1=1`
+	args := []interface{}{}
+	if userID != "" { query += fmt.Sprintf(" AND usp.user_id::text = $%d", len(args)+1); args = append(args, userID) }
+	if assetClass != "" { query += fmt.Sprintf(" AND ms.asset_class = $%d", len(args)+1); args = append(args, assetClass) }
+	query += fmt.Sprintf(" ORDER BY usp.published_at DESC LIMIT $%d", len(args)+1)
+	args = append(args, limit)
+	return query, args
 }
 
 // ListSubscriptions returns active subscriptions for a user.

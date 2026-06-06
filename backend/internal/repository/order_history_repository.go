@@ -44,81 +44,37 @@ func (r *LogRepository) UpdateOrderHistoryClose(ctx context.Context, userID, acc
 }
 
 func (r *LogRepository) GetOrderHistory(ctx context.Context, userID uuid.UUID, params *model.LogQueryParams) ([]*model.OrderHistory, int, error) {
-	baseQuery := `FROM order_history WHERE user_id = $1`
-	args := []interface{}{userID}
-	argIndex := 2
-
-	if params != nil {
-		if params.ScheduleID != "" {
-			baseQuery += fmt.Sprintf(` AND schedule_id = $%d`, argIndex)
-			scheduleID, _ := uuid.Parse(params.ScheduleID)
-			args = append(args, scheduleID)
-			argIndex++
-		}
-		if params.AccountID != "" {
-			baseQuery += fmt.Sprintf(` AND account_id = $%d`, argIndex)
-			accountID, _ := uuid.Parse(params.AccountID)
-			args = append(args, accountID)
-			argIndex++
-		}
-		if params.Symbol != "" {
-			baseQuery += fmt.Sprintf(` AND symbol = $%d`, argIndex)
-			args = append(args, params.Symbol)
-			argIndex++
-		}
-		if params.Type != "" {
-			baseQuery += fmt.Sprintf(` AND order_type = $%d`, argIndex)
-			args = append(args, params.Type)
-			argIndex++
-		}
-		if params.StartDate != "" {
-			baseQuery += fmt.Sprintf(` AND open_time >= $%d`, argIndex)
-			args = append(args, params.StartDate)
-			argIndex++
-		}
-		if params.EndDate != "" {
-			baseQuery += fmt.Sprintf(` AND open_time <= $%d`, argIndex)
-			args = append(args, params.EndDate)
-			argIndex++
-		}
-	}
-
-	countQuery := `SELECT COUNT(*) ` + baseQuery
+	baseQ, args, idx := buildOrderHistoryFilters(userID, params)
 	var total int
-	if err := r.db.QueryRow(ctx, countQuery, args...).Scan(&total); err != nil {
-		return nil, 0, err
-	}
-
-	page := 1
-	pageSize := 20
-	if params != nil {
-		if params.Page > 0 {
-			page = params.Page
-		}
-		if params.PageSize > 0 {
-			pageSize = params.PageSize
-		}
-	}
-
-	offset := (page - 1) * pageSize
-	dataQuery := fmt.Sprintf(`SELECT * %s ORDER BY open_time DESC LIMIT $%d OFFSET $%d`, baseQuery, argIndex, argIndex+1)
-	args = append(args, pageSize, offset)
-
-	queryRows, err := r.db.Query(ctx, dataQuery, args...)
-	if err != nil {
-		return nil, 0, err
-	}
-	defer queryRows.Close()
+	if err := r.db.QueryRow(ctx, `SELECT COUNT(*) `+baseQ, args...).Scan(&total); err != nil { return nil, 0, err }
+	page, pageSize := normalizeOpLogPagination(params)
+	dataQ := fmt.Sprintf(`SELECT * %s ORDER BY open_time DESC LIMIT $%d OFFSET $%d`, baseQ, idx, idx+1)
+	args = append(args, pageSize, (page-1)*pageSize)
+	rows, err := r.db.Query(ctx, dataQ, args...)
+	if err != nil { return nil, 0, err }
+	defer rows.Close()
 	var orders []*model.OrderHistory
-	for queryRows.Next() {
-		var order model.OrderHistory
-		if err := queryRows.Scan(&order.ID, &order.UserID, &order.AccountID, &order.Ticket, &order.OrderType, &order.Symbol, &order.Volume, &order.OpenPrice, &order.ClosePrice, &order.OpenTime, &order.CloseTime, &order.StopLoss, &order.TakeProfit, &order.Profit, &order.Commission, &order.Swap, &order.Comment, &order.MagicNumber, &order.IsAutoTrade, &order.ScheduleID, &order.CreatedAt); err != nil {
+	for rows.Next() {
+		var o model.OrderHistory
+		if err := rows.Scan(&o.ID, &o.UserID, &o.AccountID, &o.Ticket, &o.OrderType, &o.Symbol, &o.Volume, &o.OpenPrice, &o.ClosePrice, &o.OpenTime, &o.CloseTime, &o.StopLoss, &o.TakeProfit, &o.Profit, &o.Commission, &o.Swap, &o.Comment, &o.MagicNumber, &o.IsAutoTrade, &o.ScheduleID, &o.CreatedAt); err != nil {
 			return nil, 0, err
 		}
-		orders = append(orders, &order)
+		orders = append(orders, &o)
 	}
-	if err := queryRows.Err(); err != nil {
-		return nil, 0, err
-	}
-	return orders, total, nil
+	return orders, total, rows.Err()
+}
+
+func buildOrderHistoryFilters(userID uuid.UUID, params *model.LogQueryParams) (baseQ string, args []interface{}, idx int) {
+	baseQ = `FROM order_history WHERE user_id = $1`
+	args = []interface{}{userID}
+	idx = 2
+	if params == nil { return }
+	addFilter := func(col, val string) { baseQ += fmt.Sprintf(` AND %s = $%d`, col, idx); args = append(args, val); idx++ }
+	if params.ScheduleID != "" { sid, _ := uuid.Parse(params.ScheduleID); addFilter("schedule_id", ""); args[len(args)-1] = sid }
+	if params.AccountID != "" { aid, _ := uuid.Parse(params.AccountID); addFilter("account_id", ""); args[len(args)-1] = aid }
+	if params.Symbol != "" { addFilter("symbol", params.Symbol) }
+	if params.Type != "" { addFilter("order_type", params.Type) }
+	if params.StartDate != "" { addFilter("open_time >=", params.StartDate) }
+	if params.EndDate != "" { addFilter("open_time <=", params.EndDate) }
+	return
 }

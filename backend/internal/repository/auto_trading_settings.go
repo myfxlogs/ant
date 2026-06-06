@@ -101,56 +101,16 @@ func (r *AutoTradingRepository) CreateTradingLog(ctx context.Context, log *model
 }
 
 func (r *AutoTradingRepository) GetTradingLogs(ctx context.Context, userID uuid.UUID, params *model.LogListParams) ([]*model.TradingLog, int, error) {
-	baseQuery := `FROM trade_logs WHERE user_id = $1`
-	args := []interface{}{userID}
-	argIndex := 2
-
-	if params != nil {
-		if params.Module != "" {
-			baseQuery += ` AND order_type = $` + string(rune('0'+argIndex))
-			args = append(args, params.Module)
-			argIndex++
-		}
-		if params.StartDate != "" {
-			baseQuery += ` AND created_at >= $` + string(rune('0'+argIndex))
-			args = append(args, params.StartDate)
-			argIndex++
-		}
-		if params.EndDate != "" {
-			baseQuery += ` AND created_at <= $` + string(rune('0'+argIndex))
-			args = append(args, params.EndDate)
-			argIndex++
-		}
-	}
-
-	countQuery := `SELECT COUNT(*) ` + baseQuery
+	baseQ, args, idx := buildTradingLogFilters(userID, params)
 	var total int
-	err := r.db.QueryRow(ctx, countQuery, args...).Scan(&total)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	pageSize := 20
-	page := 1
-	if params != nil {
-		if params.PageSize > 0 {
-			pageSize = params.PageSize
-		}
-		if params.Page > 0 {
-			page = params.Page
-		}
-	}
-	offset := (page - 1) * pageSize
-
-	dataQuery := `SELECT id, user_id, account_id, action, symbol, order_type as log_type, volume, price, ticket, profit, message, created_at ` + baseQuery + ` ORDER BY created_at DESC LIMIT $` + string(rune('0'+argIndex)) + ` OFFSET $` + string(rune('0'+argIndex+1))
-	args = append(args, pageSize, offset)
-
-	rows, err := r.db.Query(ctx, dataQuery, args...)
-	if err != nil {
-		return nil, 0, err
-	}
+	if err := r.db.QueryRow(ctx, `SELECT COUNT(*) `+baseQ, args...).Scan(&total); err != nil { return nil, 0, err }
+	page, pageSize := 1, 20
+	if params != nil { if params.Page > 0 { page = params.Page }; if params.PageSize > 0 { pageSize = params.PageSize } }
+	dataQ := fmt.Sprintf(`SELECT id, user_id, account_id, action, symbol, order_type as log_type, volume, price, ticket, profit, message, created_at %s ORDER BY created_at DESC LIMIT $%d OFFSET $%d`, baseQ, idx, idx+1)
+	args = append(args, pageSize, (page-1)*pageSize)
+	rows, err := r.db.Query(ctx, dataQ, args...)
+	if err != nil { return nil, 0, err }
 	defer rows.Close()
-
 	var logs []*model.TradingLog
 	for rows.Next() {
 		var l model.TradingLog
@@ -159,10 +119,19 @@ func (r *AutoTradingRepository) GetTradingLogs(ctx context.Context, userID uuid.
 		}
 		logs = append(logs, &l)
 	}
-	if err := rows.Err(); err != nil {
-		return nil, 0, err
-	}
-	return logs, total, nil
+	return logs, total, rows.Err()
+}
+
+func buildTradingLogFilters(userID uuid.UUID, params *model.LogListParams) (baseQ string, args []interface{}, idx int) {
+	baseQ = `FROM trade_logs WHERE user_id = $1`
+	args = []interface{}{userID}
+	idx = 2
+	if params == nil { return }
+	addFilter := func(col, val string) { baseQ += fmt.Sprintf(` AND %s = $%d`, col, idx); args = append(args, val); idx++ }
+	if params.Module != "" { addFilter("order_type", params.Module) }
+	if params.StartDate != "" { addFilter("created_at >=", params.StartDate) }
+	if params.EndDate != "" { addFilter("created_at <=", params.EndDate) }
+	return
 }
 
 func (r *AutoTradingRepository) GetRecentTradingLogs(ctx context.Context, userID uuid.UUID, limit int) ([]*model.TradingLog, error) {
