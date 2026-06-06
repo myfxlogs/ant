@@ -7,11 +7,10 @@ import type { StrategyTemplate } from "@/client/strategy";
 import { strategyTemplateApi, type CreateTemplateRequest } from "@/client/strategy-schedules";
 import { DEFAULT_TEMPLATES } from "./StrategyTemplatePage.defaults";
 import { copyToClipboard } from "@/utils/clipboard";
-import { pythonStrategyApi } from "@/client/pythonStrategy";
 import { getDeviceLocale } from "@/utils/date";
 import { codeAssistApi, type RequiredParamSpec } from "@/client/codeAssist";
-import { wrapStrategyCodeWithParams } from "./backtestParamInjection";
-import { type QuickRangeKey, quickRangeLabel, saveRunTitle } from "./StrategyTemplatePage.utils";
+import { type QuickRangeKey, quickRangeLabel } from "./StrategyTemplatePage.utils";
+import { applyQuickRange, doSubmitBacktest, openBacktestModal } from "./submitBacktest";
 import { useStrategyTemplateRuns } from "./hooks/useStrategyTemplateRuns";
 import { useAccountsAndSymbols } from "./hooks/useAccountsAndSymbols";
 import { buildStrategyTemplateColumns } from "./StrategyTemplateColumns";
@@ -175,62 +174,22 @@ export function useStrategyTemplatePage() {
     catch { message.error(t("strategy.templates.messages.readStrategyCodeFailed")); }
   };
 
-  const openBacktestModal = async (template: StrategyTemplate) => {
-    let full: StrategyTemplate;
-    try { full = await fetchTemplateCodeIfNeeded(template); setBacktestTemplate(full); }
-    catch { message.error(t("strategy.templates.messages.readStrategyCodeFailed")); return; }
-    setBacktestRequiredParams([]); setBacktestParamValues({});
-    try { const ext = await codeAssistApi.validateExtended(String(full?.code || "")); if (ext.valid) setBacktestRequiredParams(ext.parameters || []); }
-    catch { /* ignore */ }
-    setBacktestModalOpen(true); setQuickRange("1D");
-    const defaultAccountId = accounts?.[0]?.id ? String(accounts[0].id) : "";
-    const defaultTo = dayjs(); const defaultFrom = dayjs().add(-1, "day");
-    backtestForm.setFieldsValue({
-      title: `${dayjs().format("YYYY-MM-DD HH:mm")} ${quickRangeLabel(t, "1D")}`,
-      accountId: defaultAccountId, symbol: "", timeframe: "H1", initialCapital: 10000,
-      range: [defaultFrom, defaultTo], extraSymbols: [],
-    });
-    if (defaultAccountId) await loadSymbols(defaultAccountId);
+  const handleOpenBacktestModal = async (template: StrategyTemplate) => {
+    await openBacktestModal(t, template, fetchTemplateCodeIfNeeded, accounts, loadSymbols, backtestForm, setBacktestTemplate, setBacktestRequiredParams, setBacktestParamValues, setBacktestModalOpen, setQuickRange);
   };
 
-  const applyQuickRange = (key: QuickRangeKey) => {
-    setQuickRange(key);
-    if (key === "CUSTOM") return;
-    const to = dayjs();
-    const from = key === "1D" ? to.subtract(1, "day") : key === "3D" ? to.subtract(3, "day") : key === "1W" ? to.subtract(1, "week") : to.subtract(1, "year");
-    backtestForm.setFieldsValue({ range: [from, to] });
+  const handleApplyQuickRange = (key: QuickRangeKey) => {
+    applyQuickRange(key, setQuickRange, backtestForm);
   };
 
   const submitBacktest = async () => {
-    if (!backtestTemplate) return;
-    const values = await backtestForm.validateFields();
     setBacktestSubmitting(true);
     try {
-      const fullTemplate = await fetchTemplateCodeIfNeeded(backtestTemplate);
-      if (!String(fullTemplate?.code || "")) { message.error(t("strategy.templates.messages.strategyCodeEmptyCannotBacktest")); return; }
-      const range = values.range as [dayjs.Dayjs, dayjs.Dayjs] | undefined;
-      if (!range?.[0] || !range?.[1] || typeof range[0].toDate !== "function") { message.error(t("strategy.templates.messages.selectBacktestRange")); return; }
-      const fromDate = range[0].toDate(); const toDate = range[1].toDate();
-      if (!(fromDate instanceof Date) || isNaN(fromDate.getTime()) || !(toDate instanceof Date) || isNaN(toDate.getTime())) { message.error(t("strategy.templates.messages.backtestRangeInvalid")); return; }
-      const extraSymbols = Array.isArray(values.extraSymbols) ? (values.extraSymbols as string[]).map((s) => String(s)).filter((s) => !!s && s !== String(values.symbol)) : [];
-      const missingParams = backtestRequiredParams.filter((p) => p.required).filter((p) => { const v = backtestParamValues[p.key]; return v === undefined || v === null || v === ""; });
-      if (missingParams.length > 0) { message.error(t("strategy.codeAssist.fillRequiredParams", { defaultValue: "Please fill the required parameters: {{keys}}", keys: missingParams.map((m) => m.key).join(", ") })); return; }
-      const codeToSubmit = wrapStrategyCodeWithParams(String(fullTemplate?.code || ""), backtestParamValues);
-      const resp = await pythonStrategyApi.startBacktestRun({
-        code: codeToSubmit, accountId: String(values.accountId), symbol: String(values.symbol),
-        timeframe: String(values.timeframe), initialCapital: Number(values.initialCapital || 10000),
-        mode: "KLINE_RANGE", from: fromDate, to: toDate,
-        templateId: String(backtestTemplate?.id || "").startsWith("default-") ? undefined : String(backtestTemplate?.id || ""),
-        extraSymbols,
-      });
-      saveRunTitle(String(resp?.runId || ""), String(values.title || dayjs().format("YYYY-MM-DD")));
-      message.success(t("strategy.templates.messages.backtestSubmitted"));
-      setBacktestModalOpen(false); setSelectedRunId(resp.runId); setRunDrawerOpen(true);
-      await fetchRuns();
+      const runId = await doSubmitBacktest(t, backtestTemplate, backtestForm, backtestRequiredParams, backtestParamValues, accounts, loadSymbols);
+      if (runId) { setBacktestModalOpen(false); setSelectedRunId(runId); setRunDrawerOpen(true); await fetchRuns(); }
     } catch (e: unknown) {
       const err = e as { rawMessage?: string; code?: string | number; message?: string };
-      const errMsg = String(err?.rawMessage || (err?.code !== undefined ? `code=${String(err.code)} ` : "") + (err?.message || "") || e) || t("strategy.templates.messages.backtestSubmitFailed");
-      message.error(errMsg);
+      message.error(String(err?.rawMessage || (err?.code !== undefined ? `code=${String(err.code)} ` : "") + (err?.message || "") || e) || t("strategy.templates.messages.backtestSubmitFailed"));
     } finally { setBacktestSubmitting(false); }
   };
 
@@ -241,7 +200,7 @@ export function useStrategyTemplatePage() {
   };
 
   const columns = useMemo(() => buildStrategyTemplateColumns({
-    t, onBacktest: openBacktestModal, onViewCode: handleViewCode,
+    t, onBacktest: handleOpenBacktestModal, onViewCode: handleViewCode,
     onCopyToCreate: (record) => { form.setFieldsValue({ name: record.name + t("strategy.templates.copySuffix"), description: record.description, code: record.code, isPublic: false }); setEditingTemplate(null); setModalVisible(true); },
     onEdit: (record) => { void (async () => { try { const full = await fetchTemplateCodeIfNeeded(record); handleEdit(full); } catch { message.error(t("strategy.templates.messages.readStrategyCodeFailed")); } })(); },
     onDelete: handleDelete,
@@ -257,7 +216,7 @@ export function useStrategyTemplatePage() {
   const dialogProps = {
     edit: { modalVisible, editingTemplate, form, codeValidating, lastValidatedCode, setModalVisible, setLastValidatedCode, validateTemplateCode, handleSave },
     schedule: { scoreOpen, scoreLoading, scoreRunId, scoreSnapshot, scoreValue, scheduleFlow, setScheduleFlow, setRuns, accounts, symbols, symbolsLoading, loadSymbols, setScoreOpen, setScoreRunId, setScoreSnapshot, fetchTemplates, fetchRuns },
-    backtest: { backtestModalOpen, backtestTemplate, backtestForm, backtestSubmitting, accounts, symbols, symbolsLoading, quickRange, watchedRange, backtestRequiredParams, backtestParamValues, setBacktestModalOpen, setBacktestRequiredParams, setBacktestParamValues, submitBacktest, applyQuickRange, setQuickRange, loadSymbols },
+    backtest: { backtestModalOpen, backtestTemplate, backtestForm, backtestSubmitting, accounts, symbols, symbolsLoading, quickRange, watchedRange, backtestRequiredParams, backtestParamValues, setBacktestModalOpen, setBacktestRequiredParams, setBacktestParamValues, submitBacktest, applyQuickRange: handleApplyQuickRange, setQuickRange, loadSymbols },
     drawer: { runDrawerOpen, selectedRunId, setRunDrawerOpen, cancelRun, canceling },
     code: { codeModalVisible, viewingCode, setCodeModalVisible, handleCopyCode },
     runPanelActions: { setSelectedRunId, setRunDrawerOpen, setScoreRunId, setScoreOpen, setScoreLoading, setScoreSnapshot, setScheduleFlow, setRuns },
