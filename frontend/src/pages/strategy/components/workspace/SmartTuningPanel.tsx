@@ -169,7 +169,7 @@ export default function SmartTuningPanel({
             <TrophyOutlined style={{ color: '#faad14' }} />
             <Typography.Text strong style={{ fontSize: 12 }}>Results ({candidates.length})</Typography.Text>
           </div>
-          <Table dataSource={candidates} rowKey="id" size="small" pagination={false} scroll={{ x: 400 }}
+          <Table dataSource={candidates} rowKey="id" size="small" pagination={false} scroll={{ x: 700 }}
             columns={[
               { title: '#', dataIndex: 'rank', width: 40, render: (v: number) => v || '-' },
               { title: 'Grade', dataIndex: 'grade', width: 60,
@@ -185,6 +185,16 @@ export default function SmartTuningPanel({
                 }},
               { title: 'Summary', dataIndex: 'summary', ellipsis: true, width: 150,
                 render: (s: string) => s || '-' },
+              { title: 'OOS Score', dataIndex: 'oosScore', width: 70,
+                render: (s: number | undefined) => s != null ? s.toFixed(1) : '-' },
+              { title: 'Degradation', dataIndex: 'degradationPct', width: 90,
+                render: (pct: number | undefined) => {
+                  if (pct == null) return '-';
+                  const color = pct < 20 ? 'green' : pct < 40 ? 'orange' : 'red';
+                  return <Tag color={color} style={{ fontSize: 9, margin: 0 }}>{pct.toFixed(1)}%</Tag>;
+                }},
+              { title: 'Overfit', dataIndex: 'isOverfit', width: 70,
+                render: (v: boolean) => v ? <Tag color="red" style={{ fontSize: 9, margin: 0 }}>⚠ OVERFIT</Tag> : <span style={{ color: '#bfbfbf', fontSize: 10 }}>-</span> },
               ...(onApplyToCode ? [{
                 title: '', width: 60,
                 render: (_: any, record: StrategyExperimentCandidate) => (
@@ -193,6 +203,11 @@ export default function SmartTuningPanel({
                 ),
               }] : []),
             ]} />
+            {candidates.some(c => c.oosScore != null) && (
+              <Typography.Text type="secondary" style={{ fontSize: 9, display: 'block', marginTop: 4 }}>
+                OOS validation run on top-5 candidates (by IS score). Green degradation &lt;20%, orange 20-40%, red &gt;40%.
+              </Typography.Text>
+            )}
         </div>
       )}
 
