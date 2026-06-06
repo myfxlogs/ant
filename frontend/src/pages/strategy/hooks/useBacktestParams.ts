@@ -164,7 +164,7 @@ export function useBacktestParams() {
       const result = await strategyExperimentApi.submit({
         baseTemplateId: '',
         parameterSpace: paramSpace as Record<string, unknown>,
-        searchMethod: tuneMethod === 'grid' ? 'grid' : 'random',
+        searchMethod: tuneMethod,
         maxCandidates: Math.min(cartesianSize || 24, 48),
         objective: 'balanced',
         strategyCode: params.code || '',
