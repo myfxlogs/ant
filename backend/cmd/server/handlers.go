@@ -11,6 +11,7 @@ import (
 
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/config"
+	internalai "anttrader/internal/ai"
 	"anttrader/internal/connect/admin"
 	"anttrader/internal/connect/ai"
 	algo "anttrader/internal/connect/algo"
@@ -66,6 +67,7 @@ func registerHandlers(
 	// Repositories for handler→service→repository layering (P1-2).
 	userRepo := repository.NewUserRepository(pool)
 	convRepo := repository.NewAIConversationRepository(pool)
+	session := internalai.NewConversationSession(convRepo)
 	templatesRepo := repository.NewAIStrategyTemplatesRepository(pool)
 	jobRepo := repository.NewJobRepository(pool)
 	schedHealthRepo := repository.NewScheduleHealthRepository(pool)
@@ -113,7 +115,7 @@ func registerHandlers(
 	}
 	aiSvc := systemai.NewService(aiRepo, aiBox)
 	agentDefRepo := repository.NewAIAgentDefinitionRepository(pool)
-	aiServer := ai.NewAIServer(aiSvc, convRepo, log)
+	aiServer := ai.NewAIServer(aiSvc, convRepo, session, log)
 	aiServer.SetAgentDefRepo(agentDefRepo)
 	mux.Handle(antv1c.NewAIServiceHandler(aiServer, connectrpc.WithInterceptors(authInterceptor)))
 	// Agent definition CRUD (no proto RPC yet — raw HTTP).
@@ -149,7 +151,7 @@ func registerHandlers(
 		log.Info("Python strategy client configured", zap.String("url", cfg.StrategyServiceURL))
 	}
 	mux.Handle(antv1c.NewPythonStrategyServiceHandler(pythonStrategyServer, connectrpc.WithInterceptors(authInterceptor)))
-	codeAssistServer := ai.NewCodeAssistServer(aiSvc, log)
+	codeAssistServer := ai.NewCodeAssistServer(aiSvc, session, log)
 	mux.Handle(antv1c.NewCodeAssistServiceHandler(codeAssistServer, connectrpc.WithInterceptors(authInterceptor)))
 	systemAIServer := ai.NewSystemAIServer(aiSvc, log)
 	mux.Handle(antv1c.NewSystemAIServiceHandler(systemAIServer, connectrpc.WithInterceptors(authInterceptor)))
