@@ -98,8 +98,16 @@ func (w *ExperimentWorker) processOne(ctx context.Context) error {
 		return nil
 	}
 
+	// Detect and persist regime once per experiment
+	regime := w.detectRegimeForExperiment(ctx, exp)
+	if exp.MarketRegimeRef == "" {
+		if err := w.repo.UpdateMarketRegime(ctx, exp.ID, regime.String()); err != nil {
+			w.log.Warn("failed to persist regime", zap.Error(err))
+		}
+	}
+
 	space := ai.NormalizeSpace(params)
-	candidates, err := w.runOptimizer(ctx, exp, params, space, code)
+	candidates, err := w.runOptimizer(ctx, exp, params, space, code, regime)
 	if err != nil {
 		w.log.Error("optimizer failed", zap.Error(err))
 		if err := w.repo.UpdateExperimentStatus(ctx, exp.ID, StatusFailed); err != nil {
@@ -108,6 +116,50 @@ func (w *ExperimentWorker) processOne(ctx context.Context) error {
 		ExperimentRunsTotal.WithLabelValues(StatusFailed).Inc()
 		return err
 	}
+
+		// ── OOS validation for top-K candidates ──
+		const oosTopK = 5
+		oosVal := ai.DefaultOOSValidator()
+		symbol := exp.Symbol
+		if symbol == "" {
+			symbol = "XAUUSDm"
+		}
+		tf := exp.Timeframe
+		if tf == "" {
+			tf = "1h"
+		}
+		fromTs := time.UnixMilli(exp.FromTsUnixMs)
+		toTs := time.UnixMilli(exp.ToTsUnixMs)
+		if exp.FromTsUnixMs == 0 {
+			fromTs = time.Now().AddDate(0, -1, 0)
+		}
+		if exp.ToTsUnixMs == 0 {
+			toTs = time.Now()
+		}
+		windows := oosVal.ComputeWindows(fromTs, toTs)
+		if windows != nil && len(candidates) > 0 {
+			topIndices := selectTopK(candidates, oosTopK)
+			for _, idx := range topIndices {
+				c := &candidates[idx]
+				oosScored, err := w.runSingleBacktest(
+					ctx, code, c.Overrides, exp.UserID, symbol, tf,
+					windows.OOSStart, windows.OOSEnd, regime,
+				)
+				if err != nil {
+					w.log.Warn("OOS backtest failed",
+						zap.Error(err),
+						zap.Int("candidateIdx", idx),
+						zap.Float64("isScore", c.Score))
+					continue
+				}
+				validation := oosVal.Validate(c.Score, oosScored.Score)
+				c.OOSScore = &oosScored.Score
+				c.OOSTotalReturn = &oosScored.TotalReturn
+				c.OOSSharpeRatio = &oosScored.SharpeRatio
+				c.DegradationPct = &validation.Degradation
+				c.IsOverfit = validation.IsOverfit
+			}
+		}
 
 	// Create candidate records with scores
 	for i, c := range candidates {
@@ -130,6 +182,11 @@ func (w *ExperimentWorker) processOne(ctx context.Context) error {
 			Grade:           c.Grade,
 			ScoreComponents: scoreProto,
 			Summary:         fmt.Sprintf("%s score=%.1f grade=%s", c.Summary, c.Score, c.Grade),
+				OOSScore:        c.OOSScore,
+				OOSTotalReturn:  c.OOSTotalReturn,
+				OOSSharpeRatio:  c.OOSSharpeRatio,
+				DegradationPct:  c.DegradationPct,
+				IsOverfit:       c.IsOverfit,
 		}
 		if err := w.repo.CreateCandidate(ctx, record); err != nil {
 			w.log.Warn("create candidate failed", zap.Error(err), zap.Int("idx", i))
@@ -150,33 +207,40 @@ type candidateResult struct {
 	Grade           string
 	ScoreComponents map[string]float64
 	Summary         string
+	// OOS validation (nil when not in top-K or window too short)
+	OOSScore        *float64
+	OOSTotalReturn  *float64
+	OOSSharpeRatio  *float64
+	DegradationPct  *float64
+	IsOverfit       bool
 }
 
 func (w *ExperimentWorker) runOptimizer(
 	ctx context.Context, exp *repository.StrategyExperiment,
 	params []ai.TunableParam, space ai.ResolvedSpace, code string,
+	regime ai.MarketRegime,
 ) ([]candidateResult, error) {
 	switch exp.SearchMethod {
 	case "de":
-		return w.runIterative(ctx, ai.NewDEOptimizer(space, exp.MaxCandidates), space, code, exp)
+		return w.runIterative(ctx, ai.NewDEOptimizer(space, exp.MaxCandidates), space, code, exp, regime)
 	case "ai":
-		return w.runAIProposal(ctx, params, code, exp)
+		return w.runAIProposal(ctx, params, code, exp, regime)
 	case "tpe":
-		return w.runIterative(ctx, ai.NewTPEOptimizer(space, exp.MaxCandidates), space, code, exp)
+		return w.runIterative(ctx, ai.NewTPEOptimizer(space, exp.MaxCandidates), space, code, exp, regime)
 	case "ags":
-		return w.runIterative(ctx, ai.NewAnnealedGaussianOptimizer(space, exp.MaxCandidates), space, code, exp)
+		return w.runIterative(ctx, ai.NewAnnealedGaussianOptimizer(space, exp.MaxCandidates), space, code, exp, regime)
 	case "random":
-		return w.runOneShot(ctx, ai.RandomSearch(params, exp.MaxCandidates), code, exp)
+		return w.runOneShot(ctx, ai.RandomSearch(params, exp.MaxCandidates), code, exp, regime)
 	default:
-		return w.runOneShot(ctx, ai.GridSearch(params, exp.MaxCandidates), code, exp)
+		return w.runOneShot(ctx, ai.GridSearch(params, exp.MaxCandidates), code, exp, regime)
 	}
 }
 
 // runOneShot processes a batch of candidates from grid/random search.
-func (w *ExperimentWorker) runOneShot(ctx context.Context, overridesList []map[string]interface{}, code string, exp *repository.StrategyExperiment) ([]candidateResult, error) {
+func (w *ExperimentWorker) runOneShot(ctx context.Context, overridesList []map[string]interface{}, code string, exp *repository.StrategyExperiment, regime ai.MarketRegime) ([]candidateResult, error) {
 	var results []candidateResult
 	for _, overrides := range overridesList {
-		r, err := w.backtestAndScore(ctx, code, overrides, exp)
+		r, err := w.backtestAndScore(ctx, code, overrides, exp, regime)
 		if err != nil {
 			w.log.Warn("backtest failed", zap.Error(err))
 			continue
@@ -189,14 +253,14 @@ func (w *ExperimentWorker) runOneShot(ctx context.Context, overridesList []map[s
 // runIterative drives an ask/tell optimizer (DE/TPE) with real backtest scoring.
 func (w *ExperimentWorker) runIterative(
 	ctx context.Context, opt ai.Optimizer, space ai.ResolvedSpace,
-	code string, exp *repository.StrategyExperiment,
+	code string, exp *repository.StrategyExperiment, regime ai.MarketRegime,
 ) ([]candidateResult, error) {
 	var results []candidateResult
 	for !opt.Done() {
 		batch := opt.Ask(0)
 		for _, indices := range batch {
 			overrides := ai.IndexToOverrides(indices, space)
-			r, err := w.backtestAndScore(ctx, code, overrides, exp)
+			r, err := w.backtestAndScore(ctx, code, overrides, exp, regime)
 			if err != nil {
 				w.log.Warn("backtest failed", zap.Error(err))
 				opt.Tell([]ai.OptimizerResult{{Indices: indices, Score: 0}})

@@ -78,11 +78,11 @@ func (w *ExperimentWorker) runSingleBacktest(
 	return nil, fmt.Errorf("backtest %s timed out", runID)
 }
 
+// backtestAndScore executes an in-sample backtest on the full experiment time window.
 func (w *ExperimentWorker) backtestAndScore(
 	ctx context.Context, code string, overrides map[string]interface{},
-	exp *repository.StrategyExperiment,
+	exp *repository.StrategyExperiment, regime ai.MarketRegime,
 ) (candidateResult, error) {
-	modifiedCode := code
 	symbol := exp.Symbol
 	if symbol == "" {
 		symbol = "XAUUSDm" // backward compat for experiments created before migration
@@ -91,80 +91,37 @@ func (w *ExperimentWorker) backtestAndScore(
 	if tf == "" {
 		tf = "1h"
 	}
-	var fromTs, toTs *time.Time
-	if exp.FromTsUnixMs > 0 {
-		ft := time.UnixMilli(exp.FromTsUnixMs)
-		fromTs = &ft
+	fromTs := time.UnixMilli(exp.FromTsUnixMs)
+	toTs := time.UnixMilli(exp.ToTsUnixMs)
+	if exp.FromTsUnixMs == 0 {
+		fromTs = time.Now().AddDate(0, -1, 0)
 	}
-	if exp.ToTsUnixMs > 0 {
-		tt := time.UnixMilli(exp.ToTsUnixMs)
-		toTs = &tt
-	}
-	if fromTs == nil {
-		ft := time.Now().AddDate(0, -1, 0)
-		fromTs = &ft
-	}
-	if toTs == nil {
-		tt := time.Now()
-		toTs = &tt
-	}
-	overridesBytes, err := marshalOverrides(overrides)
-	if err != nil {
-		return candidateResult{}, fmt.Errorf("marshal overrides: %w", err)
-	}
-	run := &repository.BacktestRun{
-		ID:                 uuid.New(),
-		UserID:             exp.UserID,
-		AccountID:          uuid.Nil,
-		Symbol:             symbol,
-		Timeframe:          tf,
-		FromTs:             fromTs,
-		ToTs:               toTs,
-		Mode:               "KLINE_RANGE",
-		Status:             StatusPending,
-		StrategyCode:       &modifiedCode,
-		InitialCapital:     f64Ptr(10000),
-			Commission:        f64Ptr(0.001),
-			Slippage:          f64Ptr(0),
-			Leverage:          f64Ptr(1),
-			TradeDirection:    strPtr("both"),
-			StrictMode:        boolPtr(true),
-		StrategyCodeHash:   "",
-		Error:              "",
-		ExtraSymbols:       []string{},
-		ParameterOverrides: overridesBytes,
+	if exp.ToTsUnixMs == 0 {
+		toTs = time.Now()
 	}
 
-	runID, err := w.backtestRepo.Create(ctx, run)
+	scored, err := w.runSingleBacktest(ctx, code, overrides, exp.UserID, symbol, tf, fromTs, toTs, regime)
 	if err != nil {
-		return candidateResult{}, fmt.Errorf("create backtest: %w", err)
+		return candidateResult{}, err
 	}
 
-	// Poll for completion
-	for i := 0; i < 120; i++ { // 10 minutes max timeout
-		select {
-		case <-ctx.Done():
-			return candidateResult{}, fmt.Errorf("backtest %s cancelled: %w", runID, ctx.Err())
-		case <-time.After(5 * time.Second):
-		}
-		bt, err := w.backtestRepo.GetByID(ctx, exp.UserID, runID)
-		if err != nil {
-			return candidateResult{}, fmt.Errorf("get backtest: %w", err)
-		}
-		if bt.Status == StatusSucceeded || bt.Status == StatusFailed {
-			if bt.Status == StatusFailed {
-				return candidateResult{}, fmt.Errorf("backtest failed: %s", bt.Error)
-			}
-			return w.scoreFromBacktest(ctx, bt, overrides), nil
-		}
+	summary := "param search"
+	if scored.Trades < 5 {
+		summary = fmt.Sprintf("only %d trades", scored.Trades)
 	}
-	return candidateResult{}, fmt.Errorf("backtest %s timed out", runID)
+
+	return candidateResult{
+		Overrides:       overrides,
+		Score:           scored.Score,
+		Grade:           scored.Grade,
+		ScoreComponents: scored.Components,
+		Summary:         summary,
+	}, nil
 }
 
-// scoreFromBacktest extracts metrics from proto binary and scores with regime-aware weights.
-func (w *ExperimentWorker) scoreFromBacktest(ctx context.Context, bt *repository.BacktestRun, overrides map[string]interface{}) candidateResult {
+// scoreFromBacktest extracts metrics from proto binary and scores with the given regime.
+func (w *ExperimentWorker) scoreFromBacktest(bt *repository.BacktestRun, overrides map[string]interface{}, regime ai.MarketRegime) candidateResult {
 	btMetrics := extractBacktestMetrics(bt.ProtoResponse)
-	regime := w.detectRegime(ctx, bt)
 	scored := ai.Score(btMetrics, regime)
 
 	summary := "param search"

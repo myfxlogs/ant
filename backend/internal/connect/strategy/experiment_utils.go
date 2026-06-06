@@ -93,7 +93,7 @@ func paramsToProto(overrides map[string]interface{}) *antv1.StrategyParams {
 func scoreComponentsToProto(components map[string]float64) *antv1.ScoreComponents {
 	return &antv1.ScoreComponents{Components: components}
 }
-func (w *ExperimentWorker) runAIProposal(ctx context.Context, params []ai.TunableParam, code string, exp *repository.StrategyExperiment) ([]candidateResult, error) {
+func (w *ExperimentWorker) runAIProposal(ctx context.Context, params []ai.TunableParam, code string, exp *repository.StrategyExperiment, regime ai.MarketRegime) ([]candidateResult, error) {
 	if w.systemAISvc == nil {
 		return nil, fmt.Errorf("AI proposer not configured")
 	}
@@ -119,7 +119,7 @@ func (w *ExperimentWorker) runAIProposal(ctx context.Context, params []ai.Tunabl
 			continue
 		}
 		for _, overrides := range proposed {
-			r, err := w.backtestAndScore(ctx, code, overrides, exp)
+			r, err := w.backtestAndScore(ctx, code, overrides, exp, regime)
 			if err != nil {
 				w.log.Warn("AI backtest failed", zap.Error(err))
 				continue
