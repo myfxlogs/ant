@@ -77,90 +77,58 @@ func (r *AnalyticsRepository) GetMonthlyAnalysisYears(ctx context.Context, accou
 	return years, rows.Err()
 }
 
+type hourlyRawStat struct {
+	HourStart, Trades int
+	Lots, Profit, GrossProfit, GrossLoss, WinRate float64
+}
+
 func (r *AnalyticsRepository) GetHourlyStats(ctx context.Context, accountID uuid.UUID, start, end time.Time) ([]*model.HourlyStats, error) {
-	query := `
-		SELECT
-			EXTRACT(HOUR FROM close_time)::int AS hour_start,
-			COUNT(*)::int AS trades,
-			COALESCE(SUM(volume), 0) AS lots,
-			COALESCE(SUM(profit), 0) AS profit,
-			COALESCE(SUM(CASE WHEN profit > 0 THEN profit ELSE 0 END), 0) AS gross_profit,
-			COALESCE(SUM(CASE WHEN profit < 0 THEN ABS(profit) ELSE 0 END), 0) AS gross_loss,
-			CASE WHEN COUNT(*) > 0
-				THEN SUM(CASE WHEN profit > 0 THEN 1 ELSE 0 END)::float / COUNT(*) * 100
-				ELSE 0
-			END AS win_rate
-		FROM trade_records
-		WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3
-			AND order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit')
-		GROUP BY EXTRACT(HOUR FROM close_time)
-		ORDER BY hour_start
-	`
-	rows, err := r.db.Query(ctx, query, accountID, start, end)
-	if err != nil {
-		return nil, err
-	}
+	raw, err := r.queryHourlyStats(ctx, accountID, start, end)
+	if err != nil { return nil, err }
+	return buildHourlyStatsResult(raw), nil
+}
+
+func (r *AnalyticsRepository) queryHourlyStats(ctx context.Context, accountID uuid.UUID, start, end time.Time) ([]*hourlyRawStat, error) {
+	rows, err := r.db.Query(ctx,
+		`SELECT EXTRACT(HOUR FROM close_time)::int, COUNT(*)::int,
+		        COALESCE(SUM(volume),0), COALESCE(SUM(profit),0),
+		        COALESCE(SUM(CASE WHEN profit>0 THEN profit ELSE 0 END),0),
+		        COALESCE(SUM(CASE WHEN profit<0 THEN ABS(profit) ELSE 0 END),0),
+		        CASE WHEN COUNT(*)>0 THEN SUM(CASE WHEN profit>0 THEN 1 ELSE 0 END)::float/COUNT(*)*100 ELSE 0 END
+		 FROM trade_records WHERE account_id=$1 AND close_time>=$2 AND close_time<=$3
+		   AND order_type NOT IN ('balance','credit','BALANCE','CREDIT','Balance','Credit')
+		 GROUP BY EXTRACT(HOUR FROM close_time) ORDER BY hour_start`,
+		accountID, start, end)
+	if err != nil { return nil, err }
 	defer rows.Close()
-	var stats []*struct {
-		HourStart   int     `db:"hour_start"`
-		Trades      int     `db:"trades"`
-		Lots        float64 `db:"lots"`
-		Profit      float64 `db:"profit"`
-		GrossProfit float64 `db:"gross_profit"`
-		GrossLoss   float64 `db:"gross_loss"`
-		WinRate     float64 `db:"win_rate"`
-	}
+	var stats []*hourlyRawStat
 	for rows.Next() {
-		s := &struct {
-			HourStart   int     `db:"hour_start"`
-			Trades      int     `db:"trades"`
-			Lots        float64 `db:"lots"`
-			Profit      float64 `db:"profit"`
-			GrossProfit float64 `db:"gross_profit"`
-			GrossLoss   float64 `db:"gross_loss"`
-			WinRate     float64 `db:"win_rate"`
-		}{}
+		s := &hourlyRawStat{}
 		if err := rows.Scan(&s.HourStart, &s.Trades, &s.Lots, &s.Profit, &s.GrossProfit, &s.GrossLoss, &s.WinRate); err != nil {
 			return nil, err
 		}
 		stats = append(stats, s)
 	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
+	return stats, rows.Err()
+}
 
+func buildHourlyStatsResult(raw []*hourlyRawStat) []*model.HourlyStats {
 	result := make([]*model.HourlyStats, 24)
 	for h := 0; h < 24; h++ {
 		result[h] = &model.HourlyStats{
-			Hour:                  fmt.Sprintf("%02d:00", h),
-			HourStart:             h,
-			Trades:                0,
-			Profit:                decimal.Zero,
-			WinRate:               decimal.Zero,
-			AvgPnL:                0,
-			Lots:                  decimal.Zero,
-			Balance:               decimal.Zero,
-			ProfitFactor:          decimal.Zero,
-			MaxFloatingLossAmount: 0,
-			MaxFloatingLossRatio:  0,
-			MaxFloatingProfitAmount: 0,
-			MaxFloatingProfitRatio:  0,
+			Hour: fmt.Sprintf("%02d:00", h), HourStart: h,
+			Profit: decimal.Zero, WinRate: decimal.Zero, Lots: decimal.Zero, Balance: decimal.Zero,
+			ProfitFactor: decimal.Zero,
 		}
 	}
-	for _, s := range stats {
-		if s.HourStart >= 0 && s.HourStart < 24 {
-			result[s.HourStart].Trades = s.Trades
-			result[s.HourStart].Lots = decimal.NewFromFloat(s.Lots)
-			result[s.HourStart].Profit = decimal.NewFromFloat(s.Profit)
-			result[s.HourStart].WinRate = decimal.NewFromFloat(s.WinRate)
-			if s.Trades > 0 {
-				result[s.HourStart].AvgPnL = s.Profit / float64(s.Trades)
-			}
-			if s.GrossLoss > 0 {
-				result[s.HourStart].ProfitFactor = decimal.NewFromFloat(s.GrossProfit / s.GrossLoss)
-			}
-		}
+	for _, s := range raw {
+		if s.HourStart < 0 || s.HourStart >= 24 { continue }
+		result[s.HourStart].Trades = s.Trades
+		result[s.HourStart].Lots = decimal.NewFromFloat(s.Lots)
+		result[s.HourStart].Profit = decimal.NewFromFloat(s.Profit)
+		result[s.HourStart].WinRate = decimal.NewFromFloat(s.WinRate)
+		if s.Trades > 0 { result[s.HourStart].AvgPnL = s.Profit / float64(s.Trades) }
+		if s.GrossLoss > 0 { result[s.HourStart].ProfitFactor = decimal.NewFromFloat(s.GrossProfit/s.GrossLoss) }
 	}
-
-	return result, nil
+	return result
 }
