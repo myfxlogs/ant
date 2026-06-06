@@ -27,56 +27,42 @@ func NewAdminRepository(db *pgxpool.Pool) *AdminRepository {
 }
 
 func (r *AdminRepository) GetDashboardStats(ctx context.Context) (*model.DashboardStats, error) {
-	stats := &model.DashboardStats{}
-
-	err := r.db.QueryRow(ctx, `SELECT COUNT(*) FROM users`).Scan(&stats.TotalUsers)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.db.QueryRow(ctx, `SELECT COUNT(*) FROM users WHERE status = 'active'`).Scan(&stats.ActiveUsers)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.db.QueryRow(ctx, `SELECT COUNT(*) FROM mt_accounts`).Scan(&stats.TotalAccounts)
-	if err != nil {
-		return nil, err
-	}
-
-	err = r.db.QueryRow(ctx, `SELECT COUNT(*) FROM mt_accounts WHERE account_status = 'connected'`).Scan(&stats.OnlineAccounts)
-	if err != nil {
-		return nil, err
-	}
-
-	today := time.Now().Format("2006-01-02")
-	err = r.db.QueryRow(ctx, `
-		SELECT COUNT(*) FROM trade_records 
-		WHERE DATE(close_time) = $1
-	`, today).Scan(&stats.TodayTrades)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, err
-	}
-
-	err = r.db.QueryRow(ctx, `
-		SELECT COALESCE(SUM(volume), 0) FROM trade_records 
-		WHERE DATE(close_time) = $1
-	`, today).Scan(&stats.TodayVolume)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, err
-	}
-
-	err = r.db.QueryRow(ctx, `
-		SELECT COALESCE(SUM(profit), 0) FROM trade_records 
-		WHERE DATE(close_time) = $1
-	`, today).Scan(&stats.TodayProfit)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, err
-	}
-
-	stats.SystemLoad = decimal.Zero
-
+	stats := &model.DashboardStats{SystemLoad: decimal.Zero}
+	if err := r.fetchDashboardUsers(ctx, stats); err != nil { return nil, err }
+	if err := r.fetchDashboardAccounts(ctx, stats); err != nil { return nil, err }
+	if err := r.fetchDashboardToday(ctx, stats); err != nil { return nil, err }
 	return stats, nil
+}
+
+func (r *AdminRepository) fetchDashboardUsers(ctx context.Context, s *model.DashboardStats) error {
+	if err := r.db.QueryRow(ctx, `SELECT COUNT(*) FROM users`).Scan(&s.TotalUsers); err != nil { return err }
+	return r.db.QueryRow(ctx, `SELECT COUNT(*) FROM users WHERE status='active'`).Scan(&s.ActiveUsers)
+}
+
+func (r *AdminRepository) fetchDashboardAccounts(ctx context.Context, s *model.DashboardStats) error {
+	if err := r.db.QueryRow(ctx, `SELECT COUNT(*) FROM mt_accounts`).Scan(&s.TotalAccounts); err != nil { return err }
+	return r.db.QueryRow(ctx, `SELECT COUNT(*) FROM mt_accounts WHERE account_status='connected'`).Scan(&s.OnlineAccounts)
+}
+
+func (r *AdminRepository) fetchDashboardToday(ctx context.Context, s *model.DashboardStats) error {
+	today := time.Now().Format("2006-01-02")
+	qInt := func(query string, dest *int64) error {
+		err := r.db.QueryRow(ctx, query, today).Scan(dest)
+		if errors.Is(err, sql.ErrNoRows) { return nil }
+		return err
+	}
+	qDec := func(query string, dest *decimal.Decimal) error {
+		var v float64
+		err := r.db.QueryRow(ctx, query, today).Scan(&v)
+		if errors.Is(err, sql.ErrNoRows) { return nil }
+		if err != nil { return err }
+		*dest = decimal.NewFromFloat(v)
+		return nil
+	}
+	if err := qInt(`SELECT COUNT(*) FROM trade_records WHERE DATE(close_time)=$1`, &s.TodayTrades); err != nil { return err }
+	if err := qDec(`SELECT COALESCE(SUM(volume),0) FROM trade_records WHERE DATE(close_time)=$1`, &s.TodayVolume); err != nil { return err }
+	if err := qDec(`SELECT COALESCE(SUM(profit),0) FROM trade_records WHERE DATE(close_time)=$1`, &s.TodayProfit); err != nil { return err }
+	return nil
 }
 
 func normalizePage(page, pageSize int) (int, int) {

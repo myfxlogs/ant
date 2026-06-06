@@ -63,62 +63,32 @@ type PublishedStrategy struct {
 // (rich listing metadata). Uses a transaction for atomicity.
 func (s *Service) Publish(ctx context.Context, params PublishParams) (string, error) {
 	tx, err := s.pg.Begin(ctx)
-	if err != nil {
-		return "", fmt.Errorf("marketplace: publish begin tx: %w", err)
-	}
+	if err != nil { return "", fmt.Errorf("marketplace: publish begin tx: %w", err) }
 	defer tx.Rollback(ctx)
 
-	publishID := uuid.New()
-	stratID := uuid.New()
+	publishID, stratID := uuid.New(), uuid.New()
+	_, err = tx.Exec(ctx, `INSERT INTO user_strategy_publishes (id, user_id, platform_strategy_id, published_at) VALUES ($1,$2,$3,now())`,
+		publishID, params.UserID, params.StrategyID)
+	if err != nil { return "", fmt.Errorf("marketplace: insert publish: %w", err) }
 
-	// Insert into user_strategy_publishes (ownership + publish tracking).
-	_, err = tx.Exec(ctx, `
-		INSERT INTO user_strategy_publishes (id, user_id, platform_strategy_id, published_at)
-		VALUES ($1, $2, $3, now())
-	`, publishID, params.UserID, params.StrategyID)
-	if err != nil {
-		return "", fmt.Errorf("marketplace: insert publish: %w", err)
-	}
-
-	// Insert into marketplace_strategies (rich listing metadata).
-	symbolsJSON := "[]"
-	if len(params.Symbols) > 0 {
-		symbolsJSON = "["
-		for i, s := range params.Symbols {
-			if i > 0 {
-				symbolsJSON += ","
-			}
-			symbolsJSON += `"` + s + `"`
-		}
-		symbolsJSON += "]"
-	}
-	tagsJSON := "[]"
-	if len(params.Tags) > 0 {
-		tagsJSON = "["
-		for i, t := range params.Tags {
-			if i > 0 {
-				tagsJSON += ","
-			}
-			tagsJSON += `"` + t + `"`
-		}
-		tagsJSON += "]"
-	}
-	_, err = tx.Exec(ctx, `
-		INSERT INTO marketplace_strategies
-			(id, strategy_id, publisher_id, title, description, price_model, price_amount,
-			 asset_class, symbols, timeframe, risk_level, tags, status, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'published', now(), now())
-	`, stratID, publishID, params.UserID, params.Title, params.Description,
+	_, err = tx.Exec(ctx, `INSERT INTO marketplace_strategies (id, strategy_id, publisher_id, title, description, price_model, price_amount, asset_class, symbols, timeframe, risk_level, tags, status, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'published',now(),now())`,
+		stratID, publishID, params.UserID, params.Title, params.Description,
 		params.PriceModel, params.PriceAmount, params.AssetClass,
-		symbolsJSON, params.Timeframe, params.RiskLevel, tagsJSON)
-	if err != nil {
-		return "", fmt.Errorf("marketplace: insert listing: %w", err)
-	}
+		jsonArray(params.Symbols), params.Timeframe, params.RiskLevel, jsonArray(params.Tags))
+	if err != nil { return "", fmt.Errorf("marketplace: insert listing: %w", err) }
 
-	if err := tx.Commit(ctx); err != nil {
-		return "", fmt.Errorf("marketplace: publish commit: %w", err)
-	}
+	if err := tx.Commit(ctx); err != nil { return "", fmt.Errorf("marketplace: publish commit: %w", err) }
 	return publishID.String(), nil
+}
+
+func jsonArray(items []string) string {
+	if len(items) == 0 { return "[]" }
+	out := "["
+	for i, s := range items {
+		if i > 0 { out += "," }
+		out += `"` + s + `"`
+	}
+	return out + "]"
 }
 
 
