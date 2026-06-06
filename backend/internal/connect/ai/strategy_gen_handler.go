@@ -71,6 +71,23 @@ func (s *StrategyGenServer) GenerateStrategy(
 	}
 
 	runID, btErr := s.finalizeWithBacktest(ctx, userID, code, m.Symbol, m.Timeframe)
+
+	// Auto-persist exchange to strategy session
+	if m.ConversationId != "" {
+		cid, parseErr := uuid.Parse(m.ConversationId)
+		if parseErr == nil {
+			if _, err := s.convRepo.AddMessage(ctx, userID, cid, "user", m.Message); err != nil {
+				s.log.Warn("persist user msg failed", zap.Error(err))
+			}
+			if _, err := s.convRepo.AddMessage(ctx, userID, cid, "assistant", code); err != nil {
+				s.log.Warn("persist assistant msg failed", zap.Error(err))
+			}
+			if err := s.convRepo.Touch(ctx, cid, userID); err != nil {
+				s.log.Warn("touch session failed", zap.Error(err))
+			}
+		}
+	}
+
 	return stream.Send(&antv1.GenerateStrategyChunk{Phase: "done", Code: code, BacktestRunId: runID, Error: btErr})
 }
 
