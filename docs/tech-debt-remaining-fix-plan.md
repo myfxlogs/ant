@@ -1,7 +1,7 @@
 # 剩余技术债修复方案
 
 **日期**: 2026-06-06  
-**状态**: A组✅ D组✅ E组✅ | B组 7/14 | C组 待开工  
+**状态**: A组✅ D组✅ E组✅ | B组 11/14 | C组 待开工  
 **前提**: 第一轮（`61286be`）7项管线修复 + 第二轮（`abd5697`）空REST router清理
 
 ---
@@ -32,7 +32,7 @@
 
 ---
 
-### B 组：TS 文件拆分 ⏳ 7/14 完成
+### B 组：TS 文件拆分 ⏳ 11/14 完成
 
 **已完成：**
 
@@ -41,12 +41,16 @@
 | strategy.ts | 295→153 | + strategy-schedules.ts (115) |
 | admin.ts | 258→223 | + admin-jurisdiction.ts (37) |
 | bridgeStreamEvents.ts | 256→119 | + bridgeProfitEvents.ts (93) |
-| TradeConfirmModal.tsx | 258→36 | + AutoTrade + RiskConfig + StrategyExecute (3文件 ~190) |
+| TradeConfirmModal.tsx | 258→36 | 拆为4个独立确认组件 |
 | NotificationCenter.tsx | 276→100 | + NotificationList.tsx (105) |
 | PriceChart.tsx | 290→115 | + ChartToolbar.tsx (92) |
 | useStrategySchedulePage.ts | 271→247 | + scheduleUtils.ts (24) |
+| WorkspaceCodePanel.tsx | 256→199 | + ValidationResultAlert.tsx (62) |
+| BacktestParamsCard.tsx | 261→? | + BacktestConfigSection.tsx (73) |
+| StrategyWorkspacePage.tsx | 269→233 | + WorkspaceLayout.tsx (83) |
+| useStrategyTemplatePage.ts | 271→230 | + submitBacktest.ts (72) |
 
-**剩余 7 个：**
+**剩余 3 个：**
 
 | 文件 | 行数 | 计划拆分方式 |
 |------|------|-------------|
