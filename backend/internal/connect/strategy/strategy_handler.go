@@ -9,16 +9,17 @@ import (
 
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
+	"anttrader/internal/repository"
 	"anttrader/internal/service"
 	"anttrader/internal/pglisten"
-	"anttrader/internal/strategysvc"
 )
 
 type StrategyServer struct {
-	svc    *service.StrategySvc
-	client *strategysvc.PythonClient // S2.5: real Python backtest
-	log    *zap.Logger
-	pgListen    *pglisten.Listener
+	svc            *service.StrategySvc
+	backtestClient antv1c.BacktestServiceClient   // ConnectRPC to Python BacktestService
+	marketDataRepo *repository.MarketDataRepository
+	log            *zap.Logger
+	pgListen       *pglisten.Listener
 }
 
 var _ antv1c.StrategyServiceHandler = (*StrategyServer)(nil)
@@ -27,8 +28,11 @@ func NewStrategyServer(svc *service.StrategySvc, log *zap.Logger) *StrategyServe
 	return &StrategyServer{svc: svc, log: log}
 }
 
-// SetClient injects the Python strategy-service client (S2.5).
-func (s *StrategyServer) SetClient(c *strategysvc.PythonClient) { s.client = c }
+// SetBacktestClient injects the ConnectRPC backtest client for RunBacktest.
+func (s *StrategyServer) SetBacktestClient(c antv1c.BacktestServiceClient) { s.backtestClient = c }
+
+// SetMarketDataRepo injects the ClickHouse market data repo for fetching K-lines.
+func (s *StrategyServer) SetMarketDataRepo(r *repository.MarketDataRepository) { s.marketDataRepo = r }
 
 func (s *StrategyServer) userID(ctx context.Context) uuid.UUID {
 	raw := interceptor.GetUserID(ctx)

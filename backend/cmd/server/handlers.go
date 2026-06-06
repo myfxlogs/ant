@@ -16,11 +16,12 @@ import (
 	"anttrader/internal/connect/ai"
 	algo "anttrader/internal/connect/algo"
 	mktplace "anttrader/internal/connect/marketplace"
+	"anttrader/internal/connect/notification"
 	"anttrader/internal/connect/strategy"
 	"anttrader/internal/connect/system"
 	"anttrader/internal/connect/user"
 	"anttrader/internal/costsvc"
-	"anttrader/internal/factor"
+
 	"anttrader/internal/interceptor"
 	"anttrader/internal/marketplace"
 	"anttrader/internal/mdgateway"
@@ -143,8 +144,11 @@ func registerHandlers(
 			backtestClient := antv1c.NewBacktestServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
 			pythonStrategyServer.SetBacktestClient(backtestClient)
 			pythonStrategyServer.SetMarketDataRepo(marketDataRepo)
-		strategyServer.SetClient(pythonClient) // S2.5: real RunBacktest
+		strategyServer.SetBacktestClient(backtestClient)
+			strategyServer.SetMarketDataRepo(marketDataRepo)
 			pythonStrategyServer.StartBacktestWorker(context.Background()) // Background worker for async backtest runs
+			objectiveScoreServer := strategy.NewObjectiveScoreServer(cfg.StrategyServiceURL, log)
+			mux.Handle(antv1c.NewObjectiveScoreServiceHandler(objectiveScoreServer, connectrpc.WithInterceptors(authInterceptor)))
 		log.Info("Python strategy client configured", zap.String("url", cfg.StrategyServiceURL))
 	}
 	mux.Handle(antv1c.NewPythonStrategyServiceHandler(pythonStrategyServer, connectrpc.WithInterceptors(authInterceptor)))
@@ -166,6 +170,9 @@ func registerHandlers(
 	mux.Handle(antv1c.NewJobServiceHandler(jobServer, connectrpc.WithInterceptors(authInterceptor)))
 	logServiceServer := system.NewLogServiceServer(logSvc, log)
 	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, connectrpc.WithInterceptors(authInterceptor)))
+	notifRepo := repository.NewNotificationRepository(pool)
+	notifServer := notification.NewNotificationServer(notifRepo, log)
+	mux.Handle(antv1c.NewNotificationServiceHandler(notifServer, connectrpc.WithInterceptors(authInterceptor)))
 	adminRepo := repository.NewAdminRepository(pool)
 	passwordResetRepo := repository.NewPasswordResetRepo(pool)
 	adminTradingServer := admin.NewAdminTradingServer(adminRepo, log)
@@ -266,13 +273,14 @@ func registerHandlers(
 	omsWriter := mthub.NewOmsWriter(pool, eventStore)
 	mthubSvc.SetOmsWriter(omsWriter)
 
-	// D-1: Wire factor subscriber for bar-event DSL evaluation (M10-BASE-B6).
-	// TODO(H16): factorSub is created and started but not yet connected to a
-	// factor evaluation pipeline. Needs: (1) a factor registry that registers DSL
-	// strategies, (2) a bar-stream subscription from the market data gateway,
-	// (3) evaluation results fed back into the signal/order pipeline.
-	factorSub := factor.NewSubscriber(factor.DefaultSubscriberConfig(), log)
-	go factorSub.Start(context.Background())
+	// Factor subscriber activation prerequisites (M10-BASE-B6):
+	// When ready to wire, create and start:
+	//   factorSub := factor.NewSubscriber(factor.DefaultSubscriberConfig(), log)
+	//   go factorSub.Start(pipelineCtx)
+	// Required before activation:
+	//   (1) Factor registry that registers DSL strategies
+	//   (2) Bar-stream subscription from mdgateway → factorSub.Push()
+	//   (3) Evaluation results → signal/order pipeline
 
 	adminJurisdictionServer := admin.NewAdminJurisdictionServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(authInterceptor, adminInterceptor)))

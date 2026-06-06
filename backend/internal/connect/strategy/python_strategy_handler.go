@@ -116,40 +116,46 @@ func (s *PythonStrategyServer) Backtest(ctx context.Context, req *connect.Reques
 		return nil, err
 	}
 	_ = uid
-	if s.client != nil {
-		result, err := s.client.Backtest(ctx, &strategysvc.BacktestRequest{
-			Code:      req.Msg.Code,
-			Symbol:    req.Msg.Symbol,
-			Timeframe: req.Msg.Timeframe,
-			Capital:   10000,
-		})
-		if err != nil {
-			s.log.Warn("python backtest failed", zap.Error(err))
-			return nil, connect.NewError(connect.CodeInternal, err)
-		}
-		if result.Success {
-			return connect.NewResponse(&antv1.BacktestStrategyResponse{
-				Success:     true,
-				EquityCurve: result.EquityCurve,
-				Metrics: &antv1.BacktestMetrics{
-					TotalReturn:   result.TotalReturn,
-					AnnualReturn:  result.AnnualReturn,
-					MaxDrawdown:   result.MaxDrawdown,
-					SharpeRatio:   result.SharpeRatio,
-					WinRate:       result.WinRate,
-					ProfitFactor:  result.ProfitFactor,
-					TotalTrades:   result.TotalTrades,
-					WinningTrades: result.WinningTrades,
-					LosingTrades:  result.LosingTrades,
-					AverageProfit: result.AverageProfit,
-					AverageLoss:   result.AverageLoss,
-				},
-			}), nil
-		}
+	if s.backtestClient == nil {
+		return connect.NewResponse(&antv1.BacktestStrategyResponse{Success: false}), nil
 	}
+	klines, _ := fetchKlines(ctx, s.marketDataRepo, req.Msg.Symbol, req.Msg.Timeframe)
+	resp, err := s.backtestClient.RunBacktest(ctx, connect.NewRequest(
+		&antv1.ExecuteBacktestRequest{
+			StrategyCode:   req.Msg.Code,
+			Symbol:         req.Msg.Symbol,
+			Timeframe:      req.Msg.Timeframe,
+			InitialCapital: 10000,
+			Klines:         klines,
+		}))
+	if err != nil {
+		s.log.Warn("python backtest failed", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	if !resp.Msg.GetSuccess() {
+		return connect.NewResponse(&antv1.BacktestStrategyResponse{Success: false}), nil
+	}
+	met := resp.Msg.GetMetrics()
 	return connect.NewResponse(&antv1.BacktestStrategyResponse{
-		Success: false,
+		Success:     true,
+		EquityCurve: resp.Msg.GetEquityCurve(),
+		Metrics:     mapMetrics(met),
 	}), nil
+}
+
+// mapMetrics converts ExecuteBacktestMetrics → BacktestMetrics.
+func mapMetrics(met *antv1.ExecuteBacktestMetrics) *antv1.BacktestMetrics {
+	if met == nil {
+		return &antv1.BacktestMetrics{}
+	}
+	return &antv1.BacktestMetrics{
+		TotalReturn: met.GetTotalReturn(), AnnualReturn: met.GetAnnualReturn(),
+		MaxDrawdown: met.GetMaxDrawdown(), SharpeRatio: met.GetSharpeRatio(),
+		WinRate: met.GetWinRate(), ProfitFactor: met.GetProfitFactor(),
+		TotalTrades: met.GetTotalTrades(), WinningTrades: met.GetWinningTrades(),
+		LosingTrades: met.GetLosingTrades(), AverageProfit: met.GetAverageProfit(),
+		AverageLoss: met.GetAverageLoss(),
+	}
 }
 
 

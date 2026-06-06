@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.memory import get_backtest_memory
-from app.routes import backtest, backtest_connect, external, memory, objective_score, strategy
+from app.routes import backtest_connect, external, memory, objective_score, strategy
 
 load_dotenv()
 
@@ -30,7 +30,6 @@ app.add_middleware(
 )
 
 app.include_router(strategy.router)
-app.include_router(backtest.router)
 app.include_router(backtest_connect.router, prefix="")
 app.include_router(memory.router)
 app.include_router(external.router)

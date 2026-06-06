@@ -1,0 +1,109 @@
+package notification
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/google/uuid"
+	"go.uber.org/zap"
+	"connectrpc.com/connect"
+
+	antv1 "anttrader/gen/proto/ant/v1"
+	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
+	"anttrader/internal/interceptor"
+	"anttrader/internal/repository"
+)
+
+// NotificationServer implements the NotificationService ConnectRPC handler.
+type NotificationServer struct {
+	repo *repository.NotificationRepository
+	log  *zap.Logger
+}
+
+var _ antv1c.NotificationServiceHandler = (*NotificationServer)(nil)
+
+// NewNotificationServer creates a NotificationService handler.
+func NewNotificationServer(repo *repository.NotificationRepository, log *zap.Logger) *NotificationServer {
+	return &NotificationServer{repo: repo, log: log}
+}
+
+func (s *NotificationServer) userID(ctx context.Context) uuid.UUID {
+	raw := interceptor.GetUserID(ctx)
+	if raw == "" {
+		return uuid.Nil
+	}
+	id, err := uuid.Parse(raw)
+	if err != nil {
+		s.log.Warn("notification: userID parse failed", zap.String("raw", raw), zap.Error(err))
+		return uuid.Nil
+	}
+	return id
+}
+
+func (s *NotificationServer) ListNotifications(
+	ctx context.Context,
+	req *connect.Request[antv1.ListNotificationsRequest],
+) (*connect.Response[antv1.ListNotificationsResponse], error) {
+	uid := s.userID(ctx)
+	if uid == uuid.Nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated,
+			fmt.Errorf("authentication required"))
+	}
+	limit := req.Msg.Limit
+	if limit <= 0 {
+		limit = 50
+	}
+	rows, totalUnread, err := s.repo.ListByUser(ctx, uid, limit, req.Msg.Offset, req.Msg.UnreadOnly)
+	if err != nil {
+		s.log.Error("list notifications failed", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	notifs := make([]*antv1.Notification, len(rows))
+	for i, r := range rows {
+		notifs[i] = &antv1.Notification{
+			Id:        r.ID.String(),
+			UserId:    r.UserID.String(),
+			Type:      r.Type,
+			Title:     r.Title,
+			Message:   r.Message,
+			DataJson:  r.DataJSON,
+			IsRead:    r.IsRead,
+			CreatedAt: r.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		}
+	}
+	return connect.NewResponse(&antv1.ListNotificationsResponse{
+		Notifications: notifs,
+		TotalUnread:   totalUnread,
+	}), nil
+}
+
+func (s *NotificationServer) MarkRead(
+	ctx context.Context,
+	req *connect.Request[antv1.MarkReadRequest],
+) (*connect.Response[antv1.MarkReadResponse], error) {
+	id, err := uuid.Parse(req.Msg.Id)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	if err := s.repo.MarkRead(ctx, id); err != nil {
+		s.log.Error("mark read failed", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.MarkReadResponse{}), nil
+}
+
+func (s *NotificationServer) MarkAllRead(
+	ctx context.Context,
+	_ *connect.Request[antv1.MarkAllReadRequest],
+) (*connect.Response[antv1.MarkAllReadResponse], error) {
+	uid := s.userID(ctx)
+	if uid == uuid.Nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated,
+			fmt.Errorf("authentication required"))
+	}
+	if err := s.repo.MarkAllRead(ctx, uid); err != nil {
+		s.log.Error("mark all read failed", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.MarkAllReadResponse{}), nil
+}
