@@ -3,7 +3,6 @@ package system
 import (
 	"context"
 	"fmt"
-	"sync/atomic"
 	"time"
 
 	"connectrpc.com/connect"
@@ -62,15 +61,7 @@ func (s *StreamServer) SubscribeEvents(
 		s.log.Info("SSE reconnect with Last-Event-ID", zap.String("last_id", lastEventID))
 	}
 
-	var eventID atomic.Int64
-	sendEvent := func(ev *antv1.StreamEvent) error {
-		id := eventID.Add(1)
-		if err := stream.Send(ev); err != nil {
-			return err
-		}
-		s.log.Debug("sent SSE event", zap.Int64("event_id", id), zap.String("type", ev.GetType()))
-		return nil
-	}
+	sendEvent := buildSendEvent(stream, s.log)
 
 	orderCh, orderCancel := s.svc.SubscribeUserOrderEvents(ctx, userID)
 	defer orderCancel()
@@ -81,36 +72,23 @@ func (s *StreamServer) SubscribeEvents(
 	}
 	filterAll := len(accountSet) == 0
 
-	// Profit subscriptions.
-	var profitSubs []profitSub
-	defer func() {
-		for _, ps := range profitSubs {
-			ps.cancel()
-		}
-	}()
-
 	accountIDs, err := s.platform.GetUserAccountIDs(ctx, userID)
 	if err != nil {
 		s.log.Warn("GetUserAccountIDs failed in SubscribeEvents", zap.Error(err))
 	}
-	for _, aid := range accountIDs {
-		if !filterAll && !accountSet[aid] {
-			continue
-		}
-		ch, cancel := s.svc.SubscribeAccountProfit(ctx, aid)
-		profitSubs = append(profitSubs, profitSub{accountID: aid, ch: ch, cancel: cancel})
+
+	profitSubs, err := s.setupProfitSubscriptions(ctx, userID, accountIDs, filterAll, accountSet)
+	if err != nil {
+		return connect.NewError(connect.CodeInternal, err)
 	}
+	defer func() {
+		for _, ps := range profitSubs { ps.cancel() }
+	}()
 
 	if filterAll && len(profitSubs) == 0 {
 		ticker := time.NewTicker(30 * time.Second)
 		defer ticker.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return nil
-			case <-ticker.C:
-			}
-		}
+		for { select { case <-ctx.Done(): return nil; case <-ticker.C: } }
 	}
 
 	var connectedIDs []string
@@ -119,34 +97,23 @@ func (s *StreamServer) SubscribeEvents(
 		s.sendInitialPositionSnapshots(ctx, stream, connectedIDs)
 	}
 
-	// Position snapshot subscriptions.
-	var snapSubs []snapSub
-	defer func() {
-		for _, ss := range snapSubs {
-			ss.cancel()
-		}
-	}()
-	for _, aid := range accountIDs {
-		if !filterAll && !accountSet[aid] {
-			continue
-		}
-		ch, cancel := s.svc.SubscribePositionSnapshots(ctx, aid)
-		snapSubs = append(snapSubs, snapSub{accountID: aid, ch: ch, cancel: cancel})
+	snapSubs, err := s.setupSnapSubscriptions(ctx, userID, accountIDs, filterAll, accountSet)
+	if err != nil {
+		s.log.Warn("snapSubs setup failed", zap.Error(err))
 	}
+	defer func() {
+		for _, ss := range snapSubs { ss.cancel() }
+	}()
 
-	// Cancellable context so forwarder goroutines unblock on exit.
 	loopCtx, loopCancel := context.WithCancel(ctx)
 	defer loopCancel()
 
-	profitCh := s.forwardProfitEvents(loopCtx, profitSubs)
-	snapCh := s.forwardSnapEvents(loopCtx, snapSubs)
+	profitCh, snapCh, barCh, barCancel := s.initEventChannels(loopCtx, profitSubs, snapSubs, accountIDs, filterAll, accountSet)
+	defer barCancel()
 
 	snapKnownTickets := make(map[string]map[int64]bool)
 	snapCount := make(map[string]int)
 	recentlyClosed := make(map[string]map[int64]bool)
-
-	barCh, barCancel := s.forwardBarEvents(loopCtx, accountIDs, filterAll, accountSet)
-	defer barCancel()
 
 	keepalive := time.NewTicker(15 * time.Second)
 	defer keepalive.Stop()
