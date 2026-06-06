@@ -53,93 +53,51 @@ func (r *AdminRepository) CreateLog(ctx context.Context, log *model.AdminLog) er
 	).Scan(&log.ID, &log.CreatedAt)
 }
 
-func (r *AdminRepository) ListLogs(ctx context.Context, params *model.LogListParams) ([]*model.AdminLog, int64, error) {
-	if params.Page <= 0 {
-		params.Page = 1
-	}
-	if params.PageSize <= 0 {
-		params.PageSize = 20
-	}
-	if params.PageSize > 100 {
-		params.PageSize = 100
-	}
-
-	offset := (params.Page - 1) * params.PageSize
-
-	countQuery := `SELECT COUNT(*) FROM admin_logs WHERE 1=1`
-	query := `SELECT * FROM admin_logs WHERE 1=1`
-	args := []interface{}{}
-	argIndex := 1
-
-	if params.Module != "" {
-		countQuery += fmt.Sprintf(" AND module = $%d", argIndex)
-		query += fmt.Sprintf(" AND module = $%d", argIndex)
-		args = append(args, params.Module)
-		argIndex++
-	}
-
-	if params.ActionType != "" {
-		countQuery += fmt.Sprintf(" AND action_type = $%d", argIndex)
-		query += fmt.Sprintf(" AND action_type = $%d", argIndex)
-		args = append(args, params.ActionType)
-		argIndex++
-	}
-
-	if params.StartDate != "" {
-		countQuery += fmt.Sprintf(" AND created_at >= $%d", argIndex)
-		query += fmt.Sprintf(" AND created_at >= $%d", argIndex)
-		args = append(args, params.StartDate+" 00:00:00")
-		argIndex++
-	}
-
-	if params.EndDate != "" {
-		countQuery += fmt.Sprintf(" AND created_at <= $%d", argIndex)
-		query += fmt.Sprintf(" AND created_at <= $%d", argIndex)
-		args = append(args, params.EndDate+" 23:59:59")
-		argIndex++
-	}
-
-	if params.AdminID != "" {
-		countQuery += fmt.Sprintf(" AND admin_id = $%d", argIndex)
-		query += fmt.Sprintf(" AND admin_id = $%d", argIndex)
-		args = append(args, params.AdminID)
-		argIndex++
-	}
-
+func (r *AdminRepository) ListLogs(ctx context.Context, p *model.LogListParams) ([]*model.AdminLog, int64, error) {
+	normalizeLogParams(p)
+	countQuery, query, args := buildLogQueries(p)
 	var total int64
-	err := r.db.QueryRow(ctx, countQuery, args...).Scan(&total)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	query += fmt.Sprintf(" ORDER BY created_at DESC LIMIT $%d OFFSET $%d", argIndex, argIndex+1)
-	args = append(args, params.PageSize, offset)
-
+	if err := r.db.QueryRow(ctx, countQuery, args...).Scan(&total); err != nil { return nil, 0, err }
+	query += fmt.Sprintf(" ORDER BY created_at DESC LIMIT $%d OFFSET $%d", len(args)+1, len(args)+2)
+	args = append(args, p.PageSize, (p.Page-1)*p.PageSize)
 	rows, err := r.db.Query(ctx, query, args...)
-	if err != nil {
-		return nil, 0, err
-	}
+	if err != nil { return nil, 0, err }
 	defer rows.Close()
-
 	var logs []*model.AdminLog
 	for rows.Next() {
 		var l model.AdminLog
 		var detailsJSON []byte
-		err := rows.Scan(
-			&l.ID, &l.AdminID, &l.Module, &l.ActionType, &l.TargetType,
+		if err := rows.Scan(&l.ID, &l.AdminID, &l.Module, &l.ActionType, &l.TargetType,
 			&l.TargetID, &l.IPAddress, &l.UserAgent, &l.RequestMethod,
-			&l.RequestPath, &detailsJSON, &l.Success, &l.ErrorMessage, &l.CreatedAt,
-		)
-		if err != nil {
+			&l.RequestPath, &detailsJSON, &l.Success, &l.ErrorMessage, &l.CreatedAt); err != nil {
 			return nil, 0, err
 		}
-		if detailsJSON != nil {
-			json.Unmarshal(detailsJSON, &l.Details)
-		}
+		if detailsJSON != nil { json.Unmarshal(detailsJSON, &l.Details) }
 		logs = append(logs, &l)
 	}
-
 	return logs, total, nil
+}
+
+func normalizeLogParams(p *model.LogListParams) {
+	if p.Page <= 0 { p.Page = 1 }
+	if p.PageSize <= 0 { p.PageSize = 20 }
+	if p.PageSize > 100 { p.PageSize = 100 }
+}
+
+func buildLogQueries(p *model.LogListParams) (countQ, query string, args []interface{}) {
+	countQ, query = `SELECT COUNT(*) FROM admin_logs WHERE 1=1`, `SELECT * FROM admin_logs WHERE 1=1`
+	var idx int
+	applyFilter := func(cond, val string) {
+		countQ += fmt.Sprintf(" AND %s = $%d", cond, idx+1)
+		query += fmt.Sprintf(" AND %s = $%d", cond, idx+1)
+		args = append(args, val); idx++
+	}
+	if p.Module != "" { applyFilter("module", p.Module) }
+	if p.ActionType != "" { applyFilter("action_type", p.ActionType) }
+	if p.StartDate != "" { applyFilter("created_at >=", p.StartDate+" 00:00:00") }
+	if p.EndDate != "" { applyFilter("created_at <=", p.EndDate+" 23:59:59") }
+	if p.AdminID != "" { applyFilter("admin_id", p.AdminID) }
+	return
 }
 
 func (r *AdminRepository) GetRiskMetricsWindows(ctx context.Context, windows []int, topN int) ([]RiskMetricsWindow, error) {
