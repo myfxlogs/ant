@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"sync"
-	"time"
 
 	"go.uber.org/zap"
 
@@ -32,9 +31,9 @@ type ManagerDeps struct {
 	Publisher        *Publisher
 	CHWriter         *CHWriter
 	SpillWriter      *SpillWriter
-	MarketState      *MarketStateTracker  // M10-BASE-F1
-	StuffingDetector *StuffingDetector    // M10-BASE-F4
-	OnBar            func(*mdtick.Bar)    // called when a bar is finalized (for real-time push)
+	MarketState      *MarketStateTracker
+	StuffingDetector *StuffingDetector
+	OnBar            func(*mdtick.Bar)
 	Log              *zap.Logger
 }
 
@@ -50,40 +49,14 @@ type Manager struct {
 	stuffingDetector *StuffingDetector
 	onBar            func(*mdtick.Bar)
 	breakers         map[string]*CircuitBreaker
-	otelTracer       *anttrace.Tracer // L-2: real OTel tracer, nil = no-op
+	otelTracer       *anttrace.Tracer
 	log              *zap.Logger
 
 	mu            sync.RWMutex
 	gateways      map[string]Gateway
-	lastTickAt    map[string]int64 // accountID -> unix ms
-	disconnecting map[string]bool  // M11: accounts being disconnected by healthMonitor
+	lastTickAt    map[string]int64
+	disconnecting map[string]bool
 	baseCtx       context.Context
-}
-
-// SetOTelTracer injects the OTel tracer for HandleTick span generation.
-// Pass nil to disable tracing. L-2: replaces the old SetTracer(bool) stub.
-func (m *Manager) SetOTelTracer(t *anttrace.Tracer) {
-	m.otelTracer = t
-}
-
-// SetBaseContext sets the base context for tick processing. If not set,
-// context.Background() is used (acceptable for the background pipeline).
-func (m *Manager) SetBaseContext(ctx context.Context) {
-	m.baseCtx = ctx
-}
-
-func (m *Manager) baseContext() context.Context {
-	if m.baseCtx != nil {
-		return m.baseCtx
-	}
-	return context.Background()
-}
-
-func (m *Manager) startTrace(ctx context.Context, name string) (context.Context, *anttrace.Span) {
-	if m.otelTracer == nil {
-		return ctx, &anttrace.Span{}
-	}
-	return m.otelTracer.StartSpan(ctx, name)
 }
 
 func NewManager(deps ManagerDeps) *Manager {
@@ -105,6 +78,28 @@ func NewManager(deps ManagerDeps) *Manager {
 		log:              deps.Log,
 	}
 }
+
+// SetOTelTracer injects the OTel tracer for HandleTick span generation.
+func (m *Manager) SetOTelTracer(t *anttrace.Tracer) { m.otelTracer = t }
+
+// SetBaseContext sets the base context for tick processing.
+func (m *Manager) SetBaseContext(ctx context.Context) { m.baseCtx = ctx }
+
+func (m *Manager) baseContext() context.Context {
+	if m.baseCtx != nil {
+		return m.baseCtx
+	}
+	return context.Background()
+}
+
+func (m *Manager) startTrace(ctx context.Context, name string) (context.Context, *anttrace.Span) {
+	if m.otelTracer == nil {
+		return ctx, &anttrace.Span{}
+	}
+	return m.otelTracer.StartSpan(ctx, name)
+}
+
+// --- Gateway management ---
 
 func (m *Manager) AddGateway(ctx context.Context, gw Gateway, syms []string) error {
 	m.mu.Lock()
@@ -128,8 +123,8 @@ func (m *Manager) RemoveGateway(ctx context.Context, accountID string) error {
 	return gw.Disconnect(ctx)
 }
 
-// MarkDisconnecting records that an account is being disconnected by the healthMonitor
-// to prevent the NATS subscriber from racing to reconnect it.
+// MarkDisconnecting records that an account is being disconnected by the
+// healthMonitor to prevent the NATS subscriber from racing to reconnect it.
 func (m *Manager) MarkDisconnecting(accountID string) {
 	m.mu.Lock()
 	m.disconnecting[accountID] = true
@@ -143,169 +138,9 @@ func (m *Manager) UnmarkDisconnecting(accountID string) {
 	m.mu.Unlock()
 }
 
-// IsDisconnecting returns true if the account is currently being disconnected
-// by the healthMonitor.
+// IsDisconnecting returns true if the account is currently being disconnected.
 func (m *Manager) IsDisconnecting(accountID string) bool {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	return m.disconnecting[accountID]
-}
-
-func (m *Manager) HandleTick(t *mdtick.Tick) {
-	ctx := m.baseContext()
-
-	// M10-BASE-F4: quote stuffing check before full pipeline.
-	if m.stuffingDetector != nil {
-		if m.stuffingDetector.IsPaused(t.Broker, t.Canonical) {
-			return // symbol paused due to stuffing
-		}
-	}
-
-	// ADR-0010 §2.3: OTel trace spans for the 6-stage tick pipeline.
-	_, span1 := m.startTrace(ctx, "normalize")
-	t.Canonical = m.normalizer.Resolve(ctx, t.Broker, t.SymbolRaw)
-	span1.End()
-
-	_, span2 := m.startTrace(ctx, "quality")
-	qr := m.quality.Check(ctx, t)
-	span2.End()
-	if qr.Dropped {
-		return
-	}
-
-	// M10-BASE-F4: track tick rate for stuffing detection.
-	if m.stuffingDetector != nil {
-		if stuffed, _ := m.stuffingDetector.Observe(t.Broker, t.Canonical); stuffed {
-			return // just stuffed — drop this tick
-		}
-	}
-
-	// M10-BASE-F5: spread anomaly detection.
-	if qr.SpreadBps > 0 && m.quality != nil {
-		key := t.Broker + ":" + t.Canonical
-		m.quality.trackSpread(key, qr.SpreadBps)
-		z := m.quality.SpreadZscore(key, qr.SpreadBps)
-		if z > m.quality.cfg.MaxSpreadZscore {
-			RecordSpreadAnomaly()
-		}
-	}
-
-	_, span3 := m.startTrace(ctx, "dedup")
-	seen := m.dedup.Seen(t)
-	span3.End()
-	if seen {
-		return
-	}
-
-	// Record last tick time for staleness detection.
-	m.mu.Lock()
-	m.lastTickAt[t.AccountID] = Clk.Now().UnixMilli()
-	m.mu.Unlock()
-
-	// M10-BASE-F1: update market state for tradability.
-	if m.marketState != nil {
-		m.marketState.Update(t)
-	}
-
-	_, span4 := m.startTrace(ctx, "aggregate")
-	var bars []*mdtick.Bar
-	m.aggregator.AddTick(t, func(b *mdtick.Bar) { bars = append(bars, b) })
-	span4.End()
-
-	_, span5 := m.startTrace(ctx, "publish")
-	if err := m.publisher.PublishTick(ctx, t); err != nil && m.log != nil {
-		m.log.Warn("mdgateway: PublishTick failed", zap.String("account", t.AccountID), zap.String("symbol", t.Canonical), zap.Error(err))
-	}
-	for _, b := range bars {
-		if err := m.publisher.PublishBar(ctx, b); err != nil && m.log != nil {
-			m.log.Warn("mdgateway: PublishBar failed", zap.String("account", b.AccountID), zap.String("symbol", b.Canonical), zap.Error(err))
-		}
-		if m.onBar != nil {
-			m.onBar(b)
-		}
-	}
-	span5.End()
-
-	_, span6 := m.startTrace(ctx, "enqueue")
-	m.chWriter.EnqueueTick(t)
-	for _, b := range bars {
-		m.chWriter.EnqueueBar(b)
-	}
-	span6.End()
-}
-
-// StartOpenBarTicker periodically pushes in-progress bar snapshots for
-// real-time chart updates. Runs every 500ms — fast enough for smooth
-// price display, slow enough to avoid CPU pressure.
-func (m *Manager) StartOpenBarTicker(ctx context.Context) {
-	ticker := Clk.NewTicker(500 * time.Millisecond)
-	defer ticker.Stop()
-	logTicker := Clk.NewTicker(10 * time.Second)
-	defer logTicker.Stop()
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-logTicker.C():
-			if m.onBar == nil {
-				m.log.Warn("open_bar_ticker: onBar nil, skipping")
-				continue
-			}
-			bars := m.aggregator.GetOpenBars()
-			if len(bars) == 0 {
-				m.log.Warn("open_bar_ticker: no open bars")
-			} else {
-				sample := bars[0]
-				m.log.Info("open_bar_ticker",
-					zap.Int("open_bars", len(bars)),
-					zap.String("sample_account", sample.AccountID),
-					zap.String("sample_symbol", sample.Canonical),
-					zap.String("sample_period", sample.Period),
-				)
-			}
-		case <-ticker.C():
-			if m.onBar == nil {
-				continue
-			}
-			for _, b := range m.aggregator.GetOpenBars() {
-				b.IsReplay = false
-				m.onBar(b)
-			}
-		}
-	}
-}
-
-func (m *Manager) Health() []AccountHealth {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-	now := Clk.Now().UnixMilli()
-	var result []AccountHealth
-	for _, gw := range m.gateways {
-		lastAt := m.lastTickAt[gw.AccountID()]
-		state := "healthy"
-		if lastAt == 0 {
-			state = "no_data"
-		} else if now-lastAt > 15*60*1000 {
-			state = "dead"
-		} else if now-lastAt > 5*60*1000 {
-			state = "stale"
-		}
-		result = append(result, AccountHealth{
-			AccountID:  gw.AccountID(),
-			Platform:   gw.Platform(),
-			State:      state,
-			LastTickAt: lastAt,
-		})
-	}
-	return result
-}
-
-type AccountHealth struct {
-	AccountID    string
-	Broker       string
-	Platform     string
-	State        string
-	LastTickAt   int64
-	CircuitState string
-	TickRate1m   float64
 }
