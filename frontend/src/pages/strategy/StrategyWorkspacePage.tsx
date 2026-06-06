@@ -11,14 +11,10 @@ import BacktestParamsCard from './components/workspace/BacktestParamsCard';
 import MiniPositionsTable from './components/workspace/MiniPositionsTable';
 import AIChatPanel from '@/components/strategy/AIChatPanel';
 import PriceChart from '@/components/chart/PriceChart';
-import QuickTradePanel from '@/components/chart/QuickTradePanel';
 import BacktestRunDrawer from '@/components/strategy/BacktestRunDrawer';
+import { CODE_PANEL_WIDTH, POSITIONS_PANEL_WIDTH, C, QuickTradeSection, SaveTemplateWrapper } from './WorkspaceLayout';
 
 const SaveTemplateModal = lazy(() => import('@/components/strategy/SaveTemplateModal'));
-
-const CODE_PANEL_WIDTH = 750;
-const POSITIONS_PANEL_WIDTH = 520;
-const C = { border: "#e8e8e8", bg: "#f8fafc", bgAlt: "#f1f5f9", muted: "#8c8c8c", accent: "#1677ff" };
 
 // Lightweight error boundary to prevent chart/editor crashes from taking down the entire workspace.
 class WorkspaceErrorBoundary extends React.Component<{ children: React.ReactNode; fallback: React.ReactNode }, { hasError: boolean }> {
@@ -223,42 +219,10 @@ export default function StrategyWorkspacePage() {
           </div>
         </div>
 
-        {/* ── RIGHT: Quick Trade ── */}
-        {ws.layout.quickTradeVisible && (
-          <div style={{
-            width: '1%', minWidth: 300, flexShrink: 0,
-            borderLeft: '1px solid #e8e8e8', background: C.bg,
-            display: 'flex', flexDirection: 'column', overflow: 'hidden',
-          }}>
-            <div style={{
-              padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              background: 'linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%)',
-              borderBottom: '1px solid #e8e8e8', flexShrink: 0,
-            }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>⚡ Quick Trade</span>
-              <span onClick={() => ws.layout.setQuickTradeVisible(false)} role="button" tabIndex={0}
-                onKeyUp={(e) => e.key === 'Enter' && ws.layout.setQuickTradeVisible(false)}
-                style={{ cursor: 'pointer', color: '#94a3b8', fontSize: 16, lineHeight: 1 }}>✕</span>
-            </div>
-            <div style={{ flex: 1, overflowY: 'auto', padding: 12 }}>
-              <QuickTradePanel
-                accountId={ws.account.accountId} symbol={ws.account.symbol}
-                accountMeta={ws.account.selectedAccountMeta}
-                allPositions={ws.quickTrade.allPositions}
-                positions={ws.quickTrade.qtPositions}
-                recentTrades={ws.quickTrade.qtRecentTrades}
-                onClosePosition={ws.quickTrade.handleClosePosition}
-                onToggleAllPositions={() => ws.layout.setPositionsPanelVisible(!ws.layout.positionsPanelVisible)}
-              />
-            </div>
-          </div>
-        )}
+        <QuickTradeSection visible={ws.layout.quickTradeVisible} ws={ws} />
       </div>
 
-      <Suspense fallback={null}>
-        <SaveTemplateModal open={ws.code.saveModalOpen} confirmLoading={ws.code.saveLoading} form={ws.code.saveForm}
-          onCancel={() => ws.code.setSaveModalOpen(false)} onOk={ws.code.handleSaveModalOk} />
-      </Suspense>
+      <SaveTemplateWrapper ws={ws} />
       <BacktestRunDrawer
         open={ws.history.drawerOpen} runId={ws.history.runId}
         onClose={ws.history.close}
