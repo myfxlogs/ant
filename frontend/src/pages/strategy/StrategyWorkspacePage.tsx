@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useMemo } from 'react';
+import React, { Suspense, lazy, useMemo, useState, useEffect } from 'react';
 import { Collapse } from 'antd';
 import { DoubleRightOutlined, DoubleLeftOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +10,9 @@ import WorkspaceToolbar from './components/workspace/WorkspaceToolbar';
 import BacktestParamsCard from './components/workspace/BacktestParamsCard';
 import MiniPositionsTable from './components/workspace/MiniPositionsTable';
 import AIChatPanel from '@/components/strategy/AIChatPanel';
+import { aiClient } from '@/client/connect';
+import { useAuthStore } from '@/stores/authStore';
+import type { CodeChatMessage } from '@/client/codeAssist';
 import PriceChart from '@/components/chart/PriceChart';
 import BacktestRunDrawer from '@/components/strategy/BacktestRunDrawer';
 import { CODE_PANEL_WIDTH, POSITIONS_PANEL_WIDTH, C, QuickTradeSection, SaveTemplateWrapper } from './WorkspaceLayout';
@@ -26,6 +29,21 @@ class WorkspaceErrorBoundary extends React.Component<{ children: React.ReactNode
 export default function StrategyWorkspacePage() {
   const { t } = useTranslation();
   const ws = useStrategyWorkspaceState();
+  const userId = useAuthStore(s => s.user?.id);
+
+  // Resolve AI session on workspace mount — enables cross-device chat history sync
+  const [sessionId, setSessionId] = useState<string>('');
+  const [chatHistory, setChatHistory] = useState<CodeChatMessage[]>([]);
+  useEffect(() => {
+    if (!userId) return;
+    const strategyKey = `draft:${userId}:${ws.account.symbol || ''}:${ws.account.timeframe || ''}`;
+    aiClient.resolveSession({ strategyKey }).then(res => {
+      setSessionId(res.sessionId);
+      setChatHistory(res.messages || []);
+    }).catch(err => {
+      console.warn('ResolveSession failed, AI chat will work without persistence:', err);
+    });
+  }, [userId, ws.account.symbol, ws.account.timeframe]);
 
   const chartTrades = useMemo(() =>
     ws.backtest.metrics?.trades?.map((t: any) => ({
@@ -92,7 +110,7 @@ export default function StrategyWorkspacePage() {
               onAutoFix={ws.ai.autoFix}
               autoFixing={ws.ai.autoFixing}
             />
-            <AIChatPanel code={ws.code.code} symbol={ws.account.symbol} timeframe={ws.account.timeframe} onApply={ws.code.setCode} initialPrompt={ws.ai.optimizePrompt} autoApply={ws.ai.chatAutoApply} />
+            <AIChatPanel code={ws.code.code} symbol={ws.account.symbol} timeframe={ws.account.timeframe} onApply={ws.code.setCode} initialPrompt={ws.ai.optimizePrompt} autoApply={ws.ai.chatAutoApply} sessionId={sessionId} chatHistory={chatHistory} />
             <Collapse ghost size="small" style={{ background: 'transparent' }} items={[
               { key: 'template', label: t('strategy.workspace.template.title', 'Template'), children: <WorkspaceTemplateManager templates={ws.code.templates} loading={ws.code.templatesLoading} loadedTemplate={ws.code.loadedTemplate} onLoad={ws.code.handleLoadTemplate} onSaveAs={ws.code.handleSaveAs} /> },
             ]} />
