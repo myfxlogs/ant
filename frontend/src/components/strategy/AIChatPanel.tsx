@@ -15,20 +15,34 @@ interface Props {
   initialPrompt?: string | null;
   /** When false, AI responses are shown in chat but do NOT replace the code editor. Default true. */
   autoApply?: boolean;
+  sessionId?: string;
+  chatHistory?: CodeChatMessage[];
 }
 
-// Detect user intent from message + context.
-function detectMode(msg: string, hasCode: boolean): 'generate' | 'revise' | 'optimize' {
+// 4-mode intent classification — keyword tables match backend classifyIntent exactly.
+function detectMode(msg: string, hasCode: boolean): 'generate' | 'revise' | 'repair' | 'discuss' {
   if (!hasCode) return 'generate';
-  const phase1Kw = ['改成', '改为', '换成', '加上', '添加', '增加', '去掉', '删除', '移除', '做空', '做多', '换品种', 'replace', 'add ', 'remove', 'change '];
-  const phase2Kw = ['太激进', '太保守', '风险太大', '太高了', '太低了', '稳健一点', '保守一点', '激进一点', '回撤太大', '降低仓位', '减少仓位', '收紧止损', '收益太低'];
   const lower = msg.toLowerCase();
-  if (phase2Kw.some(k => lower.includes(k))) return 'optimize';
-  if (phase1Kw.some(k => lower.includes(k))) return 'revise';
-  return 'revise'; // default: revise existing code
+  // Repair (highest priority — error keywords)
+  const repairKw = ['报错','error','错误','traceback','缺少参数','missing',
+    '验证失败','syntax error','syntaxerror','undefined','未定义',
+    '缺少 required','参数不足','attributeerror','typeerror'];
+  if (repairKw.some(k => lower.includes(k))) return 'repair';
+  // Discuss (question/analysis keywords)
+  const discussKw = ['为什么','什么意思','怎么样','对吗','分析','解释',
+    'what','why','how','explain','对不对'];
+  if (discussKw.some(k => lower.includes(k))) return 'discuss';
+  return 'revise';
 }
 
-export default function AIChatPanel({ code, onApply, symbol, timeframe, initialPrompt, autoApply = true }: Props) {
+const MODE_TAGS: Record<string, { color: string; label: string }> = {
+  generate: { color: 'blue',   label: '⚡ 生成' },
+  revise:   { color: 'green',  label: '✏️ 修改' },
+  repair:   { color: 'orange', label: '🔧 修复' },
+  discuss:  { color: 'purple', label: '💬 分析' },
+};
+
+export default function AIChatPanel({ code, onApply, symbol, timeframe, initialPrompt, autoApply = true, sessionId, chatHistory }: Props) {
   const { t, i18n } = useTranslation();
   const [draft, setDraft] = useState('');
   const [mode, setMode] = useState<'idle' | 'clarifying' | 'streaming' | 'done'>('idle');
@@ -40,7 +54,7 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
   const [phase, setPhase] = useState('');
   const [backtestId, setBacktestId] = useState('');
   const [clarifyRound, setClarifyRound] = useState(0);
-  const [history, setHistory] = useState<CodeChatMessage[]>([]);
+  const [history, setHistory] = useState<CodeChatMessage[]>(chatHistory || []);
   const abortRef = useRef<(() => void) | null>(null);
   const streamRef = useRef('');
 
@@ -60,7 +74,7 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
   const handleGenerate = useCallback((msg: string, round: number) => {
     setMode('streaming'); setStreamText(''); setError(''); setGenCode('');
     const abort = generateStrategyStream(
-      { message: msg, symbol, timeframe, clarificationRound: round },
+      { message: msg, symbol, timeframe, clarificationRound: round, conversationId: sessionId || '' },
       {
         onPhase: (p) => {
           if (p === 'clarifying') setMode('clarifying');
@@ -81,13 +95,13 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
       },
     );
     abortRef.current = abort;
-  }, [symbol, timeframe, onApply]);
+  }, [symbol, timeframe, sessionId, onApply]);
 
   const handleRevise = useCallback((msg: string) => {
     setMode('streaming'); setStreamText(''); setError('');
     streamRef.current = '';
     const abort = codeAssistApi.reviseStream(
-      { code, instruction: msg, history, locale: i18n.language },
+      { code, instruction: msg, history, locale: i18n.language, sessionId },
       {
         onDelta: (d) => { setStreamText(p => p + d); streamRef.current += d; },
         onResult: (python) => {
@@ -112,12 +126,12 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
       },
     );
     abortRef.current = abort;
-  }, [code, history, i18n.language, onApply, t]);
+  }, [code, history, i18n.language, sessionId, onApply, t]);
 
   const handleSend = useCallback(() => {
     const msg = draft.trim();
     if (!msg) return;
-    setDraft(''); setClarifyRound(0); setHistory([]); setQuestions([]);
+    setDraft(''); setClarifyRound(0); setQuestions([]);
     const intent = detectMode(msg, !!code.trim());
     if (intent === 'generate') handleGenerate(msg, 0);
     else handleRevise(msg);
@@ -227,7 +241,17 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
         onPressEnter={e => { if (!e.shiftKey) { e.preventDefault(); handleSend(); } }}
         style={{ fontSize: 13, marginBottom: 8 }}
       />
-      <div style={{ textAlign: 'right' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        {draft.trim() && MODE_TAGS[detectMode(draft, !!code.trim())] && (
+          <Tag color={MODE_TAGS[detectMode(draft, !!code.trim())].color}>
+            {MODE_TAGS[detectMode(draft, !!code.trim())].label}
+          </Tag>
+        )}
+        {!draft.trim() && MODE_TAGS[code.trim() ? 'revise' : 'generate'] && (
+          <Tag color={MODE_TAGS[code.trim() ? 'revise' : 'generate'].color}>
+            {MODE_TAGS[code.trim() ? 'revise' : 'generate'].label}
+          </Tag>
+        )}
         <Button type="primary" icon={<SendOutlined />} loading={isBusy}
           onClick={handleSend} disabled={!draft.trim()}>
           {t('strategy.codeAssist.reviseSend', 'Send to AI')}
