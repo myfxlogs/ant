@@ -45,6 +45,7 @@ export function useStrategyCode() {
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const [saveForm] = Form.useForm();
+  const [lastSavedId, setLastSavedId] = useState<string | null>(null);
   const canSave = code.length > 0 && lastValidatedCode.length > 0 && code === lastValidatedCode;
 
   const handleSave = useCallback(async () => {
@@ -63,7 +64,8 @@ export function useStrategyCode() {
   const handleSaveModalOk = useCallback(async () => {
     try {
       const values = await saveForm.validateFields(); setSaveLoading(true);
-      await strategyApi.createTemplate({ name: values.name, description: values.description || '', code });
+      const tpl = await strategyApi.createTemplate({ name: values.name, description: values.description || '', code });
+      if (tpl?.id) setLastSavedId(tpl.id);
       message.success(t('strategy.workspace.saveSuccess')); setSaveModalOpen(false); loadTemplates();
     } catch (e: unknown) {
       // Ant Design validateFields rejects with errorFields, not message.
@@ -83,5 +85,5 @@ export function useStrategyCode() {
     lastValidatedCode, setLastValidatedCode, handleValidate,
     templates, templatesLoading, loadedTemplate, loadTemplates, handleLoadTemplate,
     saveModalOpen, setSaveModalOpen, saveLoading, saveForm, canSave,
-    handleSave, handleSaveAs, handleSaveModalOk, handleCopy };
+    handleSave, handleSaveAs, handleSaveModalOk, handleCopy, lastSavedId };
 }

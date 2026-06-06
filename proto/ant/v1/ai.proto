@@ -19,4 +19,5 @@ service AIService {
   rpc ListAgents(ListAgentsRequest) returns (ListAgentsResponse);
   rpc BatchSetAgents(BatchSetAgentsRequest) returns (BatchSetAgentsResponse);
   rpc ResolveSession(ResolveSessionRequest) returns (ResolveSessionResponse);
+  rpc UpdateSessionStrategyKey(UpdateSessionStrategyKeyRequest) returns (UpdateSessionStrategyKeyResponse);
 }

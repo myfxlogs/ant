@@ -78,3 +78,12 @@ message ResolveSessionResponse {
   repeated ConversationMessage messages = 2;
   bool created = 3;
 }
+
+message UpdateSessionStrategyKeyRequest {
+  string session_id = 1;
+  string strategy_key = 2;
+}
+
+message UpdateSessionStrategyKeyResponse {
+  bool success = 1;
+}

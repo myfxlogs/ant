@@ -66,3 +66,8 @@ func (s *ConversationSession) AppendExchange(ctx context.Context, sessionID, use
 func (s *ConversationSession) GetMessages(ctx context.Context, sessionID, userID uuid.UUID) ([]repository.AIMessage, error) {
 	return s.repo.GetMessages(ctx, userID, sessionID)
 }
+
+// UpdateStrategyKey migrates a session to a new strategy_key (e.g. draft:* → strategy:<id>).
+func (s *ConversationSession) UpdateStrategyKey(ctx context.Context, sessionID, userID uuid.UUID, newKey string) error {
+	return s.repo.UpdateStrategyKey(ctx, userID, sessionID, newKey)
+}

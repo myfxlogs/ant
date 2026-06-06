@@ -95,3 +95,23 @@ func (s *AIServer) ResolveSession(ctx context.Context, req *connect.Request[antv
 		Created:   len(sess.Messages) == 0,
 	}), nil
 }
+
+// UpdateSessionStrategyKey migrates a session's strategy_key (e.g. draft:* → strategy:<id>).
+func (s *AIServer) UpdateSessionStrategyKey(ctx context.Context, req *connect.Request[antv1.UpdateSessionStrategyKeyRequest]) (*connect.Response[antv1.UpdateSessionStrategyKeyResponse], error) {
+	uid, err := userIDFromCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	sid, err := uuid.Parse(req.Msg.SessionId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid session_id"))
+	}
+	if req.Msg.StrategyKey == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("strategy_key is required"))
+	}
+	if err := s.session.UpdateStrategyKey(ctx, sid, uid, req.Msg.StrategyKey); err != nil {
+		s.log.Warn("UpdateSessionStrategyKey failed", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("internal error"))
+	}
+	return connect.NewResponse(&antv1.UpdateSessionStrategyKeyResponse{Success: true}), nil
+}

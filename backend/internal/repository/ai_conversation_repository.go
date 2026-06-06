@@ -226,3 +226,13 @@ func (r *AIConversationRepository) CreateWithStrategyKey(ctx context.Context, us
 	}
 	return conv, nil
 }
+
+// UpdateStrategyKey migrates a conversation's strategy_key (e.g. draft:* → strategy:<id>).
+func (r *AIConversationRepository) UpdateStrategyKey(ctx context.Context, userID, sessionID uuid.UUID, newKey string) error {
+	_, err := r.db.Exec(ctx,
+		`UPDATE ai_conversations SET strategy_key = $1, updated_at = NOW()
+		 WHERE id = $2 AND user_id = $3`,
+		newKey, sessionID, userID,
+	)
+	return err
+}

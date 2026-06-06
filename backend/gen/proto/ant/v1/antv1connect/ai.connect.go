@@ -60,6 +60,9 @@ const (
 	// AIServiceResolveSessionProcedure is the fully-qualified name of the AIService's ResolveSession
 	// RPC.
 	AIServiceResolveSessionProcedure = "/ant.v1.AIService/ResolveSession"
+	// AIServiceUpdateSessionStrategyKeyProcedure is the fully-qualified name of the AIService's
+	// UpdateSessionStrategyKey RPC.
+	AIServiceUpdateSessionStrategyKeyProcedure = "/ant.v1.AIService/UpdateSessionStrategyKey"
 )
 
 // AIServiceClient is a client for the ant.v1.AIService service.
@@ -75,6 +78,7 @@ type AIServiceClient interface {
 	ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error)
 	BatchSetAgents(context.Context, *connect.Request[v1.BatchSetAgentsRequest]) (*connect.Response[v1.BatchSetAgentsResponse], error)
 	ResolveSession(context.Context, *connect.Request[v1.ResolveSessionRequest]) (*connect.Response[v1.ResolveSessionResponse], error)
+	UpdateSessionStrategyKey(context.Context, *connect.Request[v1.UpdateSessionStrategyKeyRequest]) (*connect.Response[v1.UpdateSessionStrategyKeyResponse], error)
 }
 
 // NewAIServiceClient constructs a client for the ant.v1.AIService service. By default, it uses the
@@ -148,21 +152,28 @@ func NewAIServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...c
 			connect.WithSchema(aIServiceMethods.ByName("ResolveSession")),
 			connect.WithClientOptions(opts...),
 		),
+		updateSessionStrategyKey: connect.NewClient[v1.UpdateSessionStrategyKeyRequest, v1.UpdateSessionStrategyKeyResponse](
+			httpClient,
+			baseURL+AIServiceUpdateSessionStrategyKeyProcedure,
+			connect.WithSchema(aIServiceMethods.ByName("UpdateSessionStrategyKey")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // aIServiceClient implements AIServiceClient.
 type aIServiceClient struct {
-	chat                    *connect.Client[v1.ChatRequest, v1.ChatResponse]
-	chatStream              *connect.Client[v1.ChatRequest, v1.ChatStreamChunk]
-	listConversations       *connect.Client[v1.ListConversationsRequest, v1.ListConversationsResponse]
-	getConversation         *connect.Client[v1.GetConversationRequest, v1.GetConversationResponse]
-	createConversation      *connect.Client[v1.CreateConversationRequest, v1.CreateConversationResponse]
-	deleteConversation      *connect.Client[v1.DeleteConversationRequest, v1.DeleteConversationResponse]
-	updateConversationTitle *connect.Client[v1.UpdateConversationTitleRequest, v1.UpdateConversationTitleResponse]
-	listAgents              *connect.Client[v1.ListAgentsRequest, v1.ListAgentsResponse]
-	batchSetAgents          *connect.Client[v1.BatchSetAgentsRequest, v1.BatchSetAgentsResponse]
-	resolveSession          *connect.Client[v1.ResolveSessionRequest, v1.ResolveSessionResponse]
+	chat                     *connect.Client[v1.ChatRequest, v1.ChatResponse]
+	chatStream               *connect.Client[v1.ChatRequest, v1.ChatStreamChunk]
+	listConversations        *connect.Client[v1.ListConversationsRequest, v1.ListConversationsResponse]
+	getConversation          *connect.Client[v1.GetConversationRequest, v1.GetConversationResponse]
+	createConversation       *connect.Client[v1.CreateConversationRequest, v1.CreateConversationResponse]
+	deleteConversation       *connect.Client[v1.DeleteConversationRequest, v1.DeleteConversationResponse]
+	updateConversationTitle  *connect.Client[v1.UpdateConversationTitleRequest, v1.UpdateConversationTitleResponse]
+	listAgents               *connect.Client[v1.ListAgentsRequest, v1.ListAgentsResponse]
+	batchSetAgents           *connect.Client[v1.BatchSetAgentsRequest, v1.BatchSetAgentsResponse]
+	resolveSession           *connect.Client[v1.ResolveSessionRequest, v1.ResolveSessionResponse]
+	updateSessionStrategyKey *connect.Client[v1.UpdateSessionStrategyKeyRequest, v1.UpdateSessionStrategyKeyResponse]
 }
 
 // Chat calls ant.v1.AIService.Chat.
@@ -215,6 +226,11 @@ func (c *aIServiceClient) ResolveSession(ctx context.Context, req *connect.Reque
 	return c.resolveSession.CallUnary(ctx, req)
 }
 
+// UpdateSessionStrategyKey calls ant.v1.AIService.UpdateSessionStrategyKey.
+func (c *aIServiceClient) UpdateSessionStrategyKey(ctx context.Context, req *connect.Request[v1.UpdateSessionStrategyKeyRequest]) (*connect.Response[v1.UpdateSessionStrategyKeyResponse], error) {
+	return c.updateSessionStrategyKey.CallUnary(ctx, req)
+}
+
 // AIServiceHandler is an implementation of the ant.v1.AIService service.
 type AIServiceHandler interface {
 	Chat(context.Context, *connect.Request[v1.ChatRequest]) (*connect.Response[v1.ChatResponse], error)
@@ -228,6 +244,7 @@ type AIServiceHandler interface {
 	ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error)
 	BatchSetAgents(context.Context, *connect.Request[v1.BatchSetAgentsRequest]) (*connect.Response[v1.BatchSetAgentsResponse], error)
 	ResolveSession(context.Context, *connect.Request[v1.ResolveSessionRequest]) (*connect.Response[v1.ResolveSessionResponse], error)
+	UpdateSessionStrategyKey(context.Context, *connect.Request[v1.UpdateSessionStrategyKeyRequest]) (*connect.Response[v1.UpdateSessionStrategyKeyResponse], error)
 }
 
 // NewAIServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -297,6 +314,12 @@ func NewAIServiceHandler(svc AIServiceHandler, opts ...connect.HandlerOption) (s
 		connect.WithSchema(aIServiceMethods.ByName("ResolveSession")),
 		connect.WithHandlerOptions(opts...),
 	)
+	aIServiceUpdateSessionStrategyKeyHandler := connect.NewUnaryHandler(
+		AIServiceUpdateSessionStrategyKeyProcedure,
+		svc.UpdateSessionStrategyKey,
+		connect.WithSchema(aIServiceMethods.ByName("UpdateSessionStrategyKey")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.AIService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AIServiceChatProcedure:
@@ -319,6 +342,8 @@ func NewAIServiceHandler(svc AIServiceHandler, opts ...connect.HandlerOption) (s
 			aIServiceBatchSetAgentsHandler.ServeHTTP(w, r)
 		case AIServiceResolveSessionProcedure:
 			aIServiceResolveSessionHandler.ServeHTTP(w, r)
+		case AIServiceUpdateSessionStrategyKeyProcedure:
+			aIServiceUpdateSessionStrategyKeyHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -366,4 +391,8 @@ func (UnimplementedAIServiceHandler) BatchSetAgents(context.Context, *connect.Re
 
 func (UnimplementedAIServiceHandler) ResolveSession(context.Context, *connect.Request[v1.ResolveSessionRequest]) (*connect.Response[v1.ResolveSessionResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AIService.ResolveSession is not implemented"))
+}
+
+func (UnimplementedAIServiceHandler) UpdateSessionStrategyKey(context.Context, *connect.Request[v1.UpdateSessionStrategyKeyRequest]) (*connect.Response[v1.UpdateSessionStrategyKeyResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AIService.UpdateSessionStrategyKey is not implemented"))
 }

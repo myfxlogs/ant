@@ -45,6 +45,22 @@ export default function StrategyWorkspacePage() {
     });
   }, [userId, ws.account.symbol, ws.account.timeframe]);
 
+  // Migrate session key when strategy is saved: draft:* → strategy:<id>
+  const lastSavedId = ws.code.lastSavedId;
+  useEffect(() => {
+    if (!lastSavedId || !sessionId) return;
+    const newKey = `strategy:${lastSavedId}`;
+    aiClient.updateSessionStrategyKey({ sessionId, strategyKey: newKey }).then(() => {
+      // Re-resolve with the new strategy key so future loads use strategy:<id>
+      aiClient.resolveSession({ strategyKey: newKey }).then(res => {
+        setSessionId(res.sessionId);
+        setChatHistory(res.messages || []);
+      }).catch(() => {});
+    }).catch(err => {
+      console.warn('Session key migration failed:', err);
+    });
+  }, [lastSavedId, sessionId]);
+
   const chartTrades = useMemo(() =>
     ws.backtest.metrics?.trades?.map((t: any) => ({
       side: t.side, openPrice: t.price, openTime: t.time, pnl: t.pnl,
