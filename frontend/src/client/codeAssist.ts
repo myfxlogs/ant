@@ -17,6 +17,7 @@ export interface ReviseCodeInput {
   instruction: string;
   history?: CodeChatMessage[];
   locale?: string;
+  sessionId?: string;
 }
 
 export interface ReviseCodeResult {
@@ -84,6 +85,7 @@ export const codeAssistApi = {
           instruction: input.instruction,
           history: input.history || [],
           locale: input.locale || '',
+          sessionId: input.sessionId || '',
         });
         const stream = codeAssistClient.reviseCodeStream(msg, { signal: abortController.signal });
         for await (const chunk of stream) {
