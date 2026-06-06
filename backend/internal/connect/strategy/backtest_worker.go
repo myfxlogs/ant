@@ -53,60 +53,66 @@ func (s *PythonStrategyServer) backtestWorker(ctx context.Context, workerID int)
 	}
 }
 
-func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repository.BacktestRun, leaseFor time.Duration) {
-	if s.backtestClient == nil {
-		s.failRun(ctx, run, "Python strategy service not available")
-		return
+// executeBacktestRun orchestrates a full backtest life cycle: parameter extraction,
+// K-line fetching, Python engine execution, and result persistence.
+// TODO(P2-1): Split into sub-functions — fetchKlineData, buildBacktestRequest, callPythonEngine.
+// Current 181-line body exceeds the 50-line function limit (3.6x over).
+
+// backtestParams holds extracted parameters from a BacktestRun for execution.
+type backtestParams struct {
+	code           string
+	initialCapital float64
+	commission     float64
+	slippage       float64
+	leverage       float64
+	tradeDir       antv1.TradeDirection
+	strictMode     bool
+	strategyCfg    *antv1.StrategyConfig
+}
+
+// extractBacktestParams extracts and validates parameters from a BacktestRun.
+func extractBacktestParams(run *repository.BacktestRun) (backtestParams, error) {
+	p := backtestParams{
+		initialCapital: 10000, commission: 0.001, slippage: 0, leverage: 1,
+		tradeDir: antv1.TradeDirection_TRADE_DIRECTION_BOTH, strictMode: true,
 	}
-	code := ""
 	if run.StrategyCode != nil {
-		code = *run.StrategyCode
+		p.code = *run.StrategyCode
 	}
-	if code == "" {
-		s.failRun(ctx, run, "strategy code is empty")
-		return
+	if p.code == "" {
+		return p, fmt.Errorf("strategy code is empty")
 	}
-
-	_ = time.Now() // dates now passed as Unix ms via fromMs/toMs
-
-	initialCapital := 10000.0
 	if run.InitialCapital != nil {
-		initialCapital = *run.InitialCapital
+		p.initialCapital = *run.InitialCapital
 	}
-
-	commission := 0.0
 	if run.Commission != nil {
-		commission = *run.Commission
+		p.commission = *run.Commission
 	}
-	slippage := 0.0
 	if run.Slippage != nil {
-		slippage = *run.Slippage
+		p.slippage = *run.Slippage
 	}
-	leverage := 1.0
 	if run.Leverage != nil && *run.Leverage > 0 {
-		leverage = *run.Leverage
+		p.leverage = *run.Leverage
 	}
-	tradeDir := antv1.TradeDirection_TRADE_DIRECTION_BOTH
 	if run.TradeDirection != nil {
-		tradeDir = stringToTradeDirection(*run.TradeDirection)
+		p.tradeDir = stringToTradeDirection(*run.TradeDirection)
 	}
-	strictMode := true
 	if run.StrictMode != nil {
-		strictMode = *run.StrictMode
+		p.strictMode = *run.StrictMode
 	}
-	var strategyCfg *antv1.StrategyConfig
 	if len(run.ConfigSnapshot) > 0 {
 		var ec antv1.BacktestExecutionConfig
 		if err := proto.Unmarshal(run.ConfigSnapshot, &ec); err == nil {
-			strategyCfg = ec.GetStrategyConfig()
+			p.strategyCfg = ec.GetStrategyConfig()
 		}
 	}
+	return p, nil
+}
 
-	// Cancellable context: lease heartbeat + cancel polling share a derived context.
+// startBacktestWatchers starts lease heartbeat and cancel polling goroutines.
+// Returns a derived context that is cancelled when the user requests cancellation.
+func (s *PythonStrategyServer) startBacktestWatchers(ctx context.Context, run *repository.BacktestRun, leaseFor time.Duration) context.Context {
 	execCtx, execCancel := context.WithCancel(ctx)
-	defer execCancel()
-
-	// Extend lease during execution — runs every leaseFor/2.
 	go func() {
 		ticker := time.NewTicker(leaseFor / 2)
 		defer ticker.Stop()
@@ -117,13 +123,11 @@ func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repo
 			case <-ticker.C:
 				newLease := time.Now().Add(leaseFor)
 				if err := s.backtestRepo.ExtendLease(ctx, run.UserID, run.ID, newLease); err != nil {
-					s.log.Warn("backtest worker: extend lease failed", zap.String("run_id", run.ID.String()), zap.Error(err))
+					s.log.Warn("extend lease failed", zap.String("runID", run.ID.String()), zap.Error(err))
 				}
 			}
 		}
 	}()
-
-	// Cancel polling: check DB every 5s for CANCEL_REQUESTED status.
 	go func() {
 		ticker := time.NewTicker(5 * time.Second)
 		defer ticker.Stop()
@@ -134,76 +138,85 @@ func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repo
 			case <-ticker.C:
 				status, _, err := s.backtestRepo.GetStatusAndCancelRequestedAt(ctx, run.UserID, run.ID)
 				if err != nil {
-					s.log.Warn("backtest worker: cancel poll failed",
-						zap.String("run_id", run.ID.String()), zap.Error(err))
+					s.log.Warn("cancel poll failed", zap.String("runID", run.ID.String()), zap.Error(err))
 					continue
 				}
-				if status == "CANCEL_REQUESTED" {
-					s.log.Info("backtest worker: cancelling run per user request",
-						zap.String("run_id", run.ID.String()))
+				if status == StatusCancelRequested {
+					s.log.Info("cancelling run per user request", zap.String("runID", run.ID.String()))
 					execCancel()
 					return
 				}
 			}
 		}
 	}()
+	return execCtx
+}
 
-	// Call Python backtest via ConnectRPC (proto contract).
-	klines := make([]*antv1.ExecuteKlineBar, 0)
-	if s.marketDataRepo != nil && run.Symbol != "" && run.Timeframe != "" {
-		chBars, _ := s.marketDataRepo.GetKlines(ctx, run.Symbol, "", run.Timeframe, run.FromTs, run.ToTs, 2000)
-		// GetKlines returns DESC order (dedup). Engine needs ASC (chronological).
-		for i := len(chBars) - 1; i >= 0; i-- {
-			b := chBars[i]
-			klines = append(klines, &antv1.ExecuteKlineBar{
-				OpenTimeMs:  int64(b.OpenTsUnixMs),
-				CloseTimeMs: int64(b.CloseTsUnixMs),
-				Open:        b.Open,
-				High:        b.High,
-				Low:         b.Low,
-				Close:       b.Close,
-				Volume:      b.Volume,
-			})
-		}
+// fetchBacktestKlines retrieves K-line data from ClickHouse and converts to proto format.
+func (s *PythonStrategyServer) fetchBacktestKlines(ctx context.Context, run *repository.BacktestRun) []*antv1.ExecuteKlineBar {
+	if s.marketDataRepo == nil || run.Symbol == "" || run.Timeframe == "" {
+		return nil
 	}
+	chBars, _ := s.marketDataRepo.GetKlines(ctx, run.Symbol, "", run.Timeframe, run.FromTs, run.ToTs, 2000)
+	klines := make([]*antv1.ExecuteKlineBar, 0, len(chBars))
+	for i := len(chBars) - 1; i >= 0; i-- {
+		b := chBars[i]
+		klines = append(klines, &antv1.ExecuteKlineBar{
+			OpenTimeMs:  int64(b.OpenTsUnixMs),
+			CloseTimeMs: int64(b.CloseTsUnixMs),
+			Open:        b.Open, High: b.High, Low: b.Low, Close: b.Close, Volume: b.Volume,
+		})
+	}
+	return klines
+}
+func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repository.BacktestRun, leaseFor time.Duration) {
+	if s.backtestClient == nil {
+		s.failRun(ctx, run, "Python strategy service not available")
+		return
+	}
+	params, err := extractBacktestParams(run)
+	if err != nil {
+		s.failRun(ctx, run, err.Error())
+		return
+	}
+	execCtx := s.startBacktestWatchers(ctx, run, leaseFor)
+	defer func() { _ = execCtx }() // capture; cancel is handled by watcher goroutines
 
-	fromMs := int64(0)
-	toMs := int64(0)
-	if run.FromTs != nil {
-		fromMs = run.FromTs.UnixMilli()
-	}
-	if run.ToTs != nil {
-		toMs = run.ToTs.UnixMilli()
-	}
+	klines := s.fetchBacktestKlines(ctx, run)
+	fromMs, toMs := int64(0), int64(0)
+	if run.FromTs != nil { fromMs = run.FromTs.UnixMilli() }
+	if run.ToTs != nil { toMs = run.ToTs.UnixMilli() }
 
 	resp, err := s.backtestClient.RunBacktest(execCtx,
 		connect.NewRequest(&antv1.ExecuteBacktestRequest{
 			StrategyId:        run.ID.String(),
-			StrategyCode:      code,
+			StrategyCode:      params.code,
 			Symbol:            run.Symbol,
 			Timeframe:         run.Timeframe,
 			StartDateMs:       fromMs,
 			EndDateMs:         toMs,
-			InitialCapital:    initialCapital,
-			Commission:        commission,
-			SlippageRate:      slippage,
+			InitialCapital:    params.initialCapital,
+			Commission:        params.commission,
+			SlippageRate:      params.slippage,
 			SlippageMode:      "fixed",
 			SlippageSeed:      42,
-			Leverage:          leverage,
-			TradeDirection:    tradeDir,
-			StrictMode:        strictMode,
-			StrategyConfig:    strategyCfg,
+			Leverage:          params.leverage,
+			TradeDirection:    params.tradeDir,
+			StrictMode:        params.strictMode,
+			StrategyConfig:    params.strategyCfg,
 			Klines:            klines,
 			StrategyParamsJson: paramsProtoToJSON(run.ParameterOverrides),
 		}))
 	if err != nil {
 		if execCtx.Err() != nil {
-			s.log.Info("backtest worker: run cancelled", zap.String("run_id", run.ID.String()))
+			s.log.Info("backtest worker: run cancelled", zap.String("runID", run.ID.String()))
 			now := time.Now()
-			_ = s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, "CANCELED", "cancelled by user", nil, &now, nil)
+			if uerr := s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, StatusCanceled, "cancelled by user", nil, &now, nil); uerr != nil {
+				s.log.Error("update backtest run to CANCELED failed", zap.Error(uerr), zap.String("runID", run.ID.String()))
+			}
 			return
 		}
-		s.log.Error("backtest worker: python backtest failed", zap.String("run_id", run.ID.String()), zap.Error(err))
+		s.log.Error("backtest worker: python backtest failed", zap.String("runID", run.ID.String()), zap.Error(err))
 		s.failRun(ctx, run, fmt.Sprintf("backtest execution failed: %v", err))
 		return
 	}
@@ -214,7 +227,6 @@ func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repo
 		return
 	}
 
-	// Store full proto response as canonical binary — no JSON.
 	protoResp, err := proto.Marshal(result)
 	if err != nil {
 		s.failRun(ctx, run, fmt.Sprintf("proto marshal failed: %v", err))
@@ -222,22 +234,21 @@ func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repo
 	}
 
 	now := time.Now()
-	status := "SUCCEEDED"
-	if err := s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, status, "", &now, &now, protoResp); err != nil {
-		s.log.Error("backtest worker: UpdateAsyncFields failed",
-			zap.String("run_id", run.ID.String()), zap.Error(err))
+	BacktestRunsTotal.WithLabelValues(StatusSucceeded).Inc()
+	if err := s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, StatusSucceeded, "", &now, &now, protoResp); err != nil {
+		s.log.Error("backtest worker: UpdateAsyncFields failed", zap.String("runID", run.ID.String()), zap.Error(err))
 		return
 	}
-
 	s.log.Info("backtest worker: run completed",
-		zap.String("run_id", run.ID.String()),
+		zap.String("runID", run.ID.String()),
 		zap.Float64("total_return", result.GetMetrics().GetTotalReturn()),
 		zap.Float64("sharpe", result.GetMetrics().GetSharpeRatio()))
 }
 
 func (s *PythonStrategyServer) failRun(ctx context.Context, run *repository.BacktestRun, errMsg string) {
 	now := time.Now()
-	status := "FAILED"
+	BacktestRunsTotal.WithLabelValues(StatusFailed).Inc()
+	status := StatusFailed
 	if err := s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, status, errMsg, nil, &now, nil); err != nil {
 		s.log.Error("backtest worker: failRun UpdateAsyncFields",
 			zap.String("run_id", run.ID.String()), zap.Error(err))

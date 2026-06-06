@@ -36,7 +36,7 @@ export const marketApi = {
     try {
       const resp = await tradingClient.symbolList({ accountId });
       return (resp.symbols || []).map((s) => ({ symbol: s }));
-    } catch {
+    } catch (e) { console.warn('market API call failed', e);
       return [];
     }
   },
@@ -61,7 +61,7 @@ export const marketApi = {
         minLot: Number(p.lotMin ?? '0'),
         maxLot: Number(p.lotMax ?? '0'),
       }));
-    } catch {
+    } catch (e) { console.warn('market API call failed', e);
       return [];
     }
   },
@@ -99,7 +99,7 @@ export const marketApi = {
         close: Number(bar.close ?? '0'),
         volume: Number(bar.volume ?? 0),
       }));
-    } catch {
+    } catch (e) { console.warn('market API call failed', e);
       return [];
     }
   },

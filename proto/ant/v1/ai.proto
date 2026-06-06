@@ -17,4 +17,5 @@ service AIService {
   rpc DeleteConversation(DeleteConversationRequest) returns (DeleteConversationResponse);
   rpc UpdateConversationTitle(UpdateConversationTitleRequest) returns (UpdateConversationTitleResponse);
   rpc ListAgents(ListAgentsRequest) returns (ListAgentsResponse);
+  rpc BatchSetAgents(BatchSetAgentsRequest) returns (BatchSetAgentsResponse);
 }

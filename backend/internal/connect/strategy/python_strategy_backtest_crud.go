@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"go.uber.org/zap"
@@ -14,38 +15,13 @@ import (
 	"anttrader/internal/repository"
 )
 
-func (s *PythonStrategyServer) StartBacktestRun(ctx context.Context, req *connect.Request[antv1.StartBacktestRunRequest]) (*connect.Response[antv1.StartBacktestRunResponse], error) {
-	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
-	accountID, _ := uuid.Parse(req.Msg.AccountId)
-	mode := backtestModeToString(req.Msg.Mode)
-	run := &repository.BacktestRun{
-		ID:            uuid.New(),
-		UserID:        userID,
-		AccountID:     accountID,
-		Symbol:        req.Msg.Symbol,
-		Timeframe:     req.Msg.Timeframe,
-		Mode:          mode,
-		Status:        "PENDING",
-		StrategyCode:  strPtr(req.Msg.Code),
-		InitialCapital: f64Ptr(req.Msg.InitialCapital),
-	}
+
+// validateBacktestRun clamps backtest run parameters to safe ranges.
+// Backend is the final authority on value validation.
+func validateBacktestRun(run *repository.BacktestRun) {
 	if run.Mode == "" {
 		run.Mode = "KLINE_RANGE"
 	}
-	if req.Msg.InitialCapital <= 0 {
-		run.InitialCapital = f64Ptr(10000)
-	}
-	// Extract execution config with safe defaults.
-	cfg := req.Msg.GetExecutionConfig()
-	if cfg != nil {
-		run.Commission = f64Ptr(cfg.GetCommission())
-		run.Slippage = f64Ptr(cfg.GetSlippage())
-		run.Leverage = f64Ptr(cfg.GetLeverage())
-		run.TradeDirection = strPtr(tradeDirectionToString(cfg.GetTradeDirection()))
-		sMode := cfg.GetStrictMode()
-		run.StrictMode = &sMode
-	}
-	// Validate & clamp: backend is the final authority on value ranges.
 	if run.Commission == nil || *run.Commission == 0 {
 		run.Commission = f64Ptr(0.001)
 	}
@@ -68,9 +44,49 @@ func (s *PythonStrategyServer) StartBacktestRun(ctx context.Context, req *connec
 		t := true
 		run.StrictMode = &t
 	}
+	if run.ExtraSymbols == nil {
+		run.ExtraSymbols = []string{}
+	}
+}
+
+func (s *PythonStrategyServer) StartBacktestRun(ctx context.Context, req *connect.Request[antv1.StartBacktestRunRequest]) (*connect.Response[antv1.StartBacktestRunResponse], error) {
+	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	accountID, _ := uuid.Parse(req.Msg.AccountId)
+	mode := backtestModeToString(req.Msg.Mode)
+	run := &repository.BacktestRun{
+		ID:            uuid.New(),
+		UserID:        userID,
+		AccountID:     accountID,
+		Symbol:        req.Msg.Symbol,
+		Timeframe:     req.Msg.Timeframe,
+		Mode:          mode,
+		Status:        StatusPending,
+		StrategyCode:  strPtr(req.Msg.Code),
+		InitialCapital: f64Ptr(req.Msg.InitialCapital),
+	}
+	if run.Mode == "" {
+		run.Mode = "KLINE_RANGE"
+	}
+	if req.Msg.InitialCapital <= 0 {
+		run.InitialCapital = f64Ptr(10000)
+	}
+	// Extract execution config with safe defaults.
+	cfg := req.Msg.GetExecutionConfig()
+	if cfg != nil {
+		run.Commission = f64Ptr(cfg.GetCommission())
+		run.Slippage = f64Ptr(cfg.GetSlippage())
+		run.Leverage = f64Ptr(cfg.GetLeverage())
+		run.TradeDirection = strPtr(tradeDirectionToString(cfg.GetTradeDirection()))
+		sMode := cfg.GetStrictMode()
+		run.StrictMode = &sMode
+	}
+	validateBacktestRun(run)
 	// Serialize full config snapshot for reproducibility.
 	if cfg != nil {
-		snap, _ := proto.Marshal(cfg)
+		snap, err := proto.Marshal(cfg)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal config snapshot: %w", err))
+		}
 		run.ConfigSnapshot = snap
 	}
 	if req.Msg.From != nil {
@@ -80,10 +96,6 @@ func (s *PythonStrategyServer) StartBacktestRun(ctx context.Context, req *connec
 	if req.Msg.To != nil {
 		t := req.Msg.To.AsTime()
 		run.ToTs = &t
-	}
-	run.ExtraSymbols = req.Msg.ExtraSymbols
-	if run.ExtraSymbols == nil {
-		run.ExtraSymbols = []string{}
 	}
 	if req.Msg.DatasetId != nil {
 		id, _ := uuid.Parse(*req.Msg.DatasetId)
@@ -174,7 +186,12 @@ func (s *PythonStrategyServer) WatchBacktestRun(ctx context.Context, req *connec
 		case <-ticker.C:
 		}
 		run, err := s.backtestRepo.GetByID(ctx, userID, runID)
-		if err != nil || run == nil {
+		if err != nil {
+			s.log.Warn("WatchBacktestRun: transient DB error", zap.Error(err), zap.String("runID", runID.String()))
+			continue
+		}
+		if run == nil {
+			s.log.Warn("WatchBacktestRun: run not found", zap.String("runID", runID.String()))
 			continue
 		}
 		if run.Status == prevStatus {

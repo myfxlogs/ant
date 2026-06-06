@@ -149,7 +149,7 @@ export function useBacktestParams() {
   const runTuning = useCallback(async (params: {
     code: string; symbol: string; timeframe: string;
     startDate: string; endDate: string;
-  }) => {
+  }): Promise<string> => {
     setTuningRunning(true);
     try {
       const paramSpace: Record<string, number[]> = {};
@@ -161,7 +161,7 @@ export function useBacktestParams() {
       const { strategyExperimentApi } = await import('@/client/strategyExperiment');
       const fromMs = params.startDate ? new Date(params.startDate).getTime() : 0;
       const toMs = params.endDate ? new Date(params.endDate).getTime() : 0;
-      await strategyExperimentApi.submit({
+      const result = await strategyExperimentApi.submit({
         baseTemplateId: '',
         parameterSpace: paramSpace as Record<string, unknown>,
         searchMethod: tuneMethod === 'grid' ? 'grid' : 'random',
@@ -174,8 +174,10 @@ export function useBacktestParams() {
         toTsUnixMs: BigInt(toMs),
       });
       message.success('Smart Tuning started');
+      return result.experiment?.id || result.jobId || '';
     } catch (e: any) {
       message.error(e?.message || 'Tuning failed');
+      return '';
     } finally { setTuningRunning(false); }
   }, [sweepDimensions, tuneMethod, cartesianSize]);
 

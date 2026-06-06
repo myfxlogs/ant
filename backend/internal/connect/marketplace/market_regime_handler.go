@@ -14,6 +14,7 @@ import (
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/ai"
+	"anttrader/internal/interceptor"
 	"anttrader/internal/repository"
 )
 
@@ -35,7 +36,13 @@ func (s *MarketRegimeServer) DetectMarketRegime(ctx context.Context, req *connec
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_id: %w", err))
 	}
 
+	userID, err := uuid.Parse(interceptor.GetUserID(ctx))
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user_id: %w", err))
+	}
+
 	row := &repository.MarketRegime{
+		UserID:     userID,
 		AccountID:  accountID,
 		Symbol:     req.Msg.Symbol,
 		Timeframe:  req.Msg.Timeframe,

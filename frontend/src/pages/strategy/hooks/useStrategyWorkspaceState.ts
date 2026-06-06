@@ -64,9 +64,9 @@ export function useStrategyWorkspaceState() {
     btCtx.runBacktest({ code: codeCtx.code, accountId, symbol, timeframe });
   }, [btCtx, codeCtx.code, accountId, symbol, timeframe]);
 
-  const handleRunTuning = useCallback(() => {
+  const handleRunTuning = useCallback(async (): Promise<string> => {
     btCtx.setSubTab('tuning');
-    btCtx.runTuning({
+    return btCtx.runTuning({
       code: codeCtx.code,
       symbol,
       timeframe,
@@ -112,7 +112,7 @@ export function useStrategyWorkspaceState() {
         closeTime: o.closeTime ? new Date(o.closeTime * 1000).toISOString() : undefined,
         created_at: o.openTime ? new Date(o.openTime * 1000).toISOString() : undefined,
       })));
-    } catch { /* silent */ }
+    } catch (e) { console.warn('fetch trade history failed', e); }
   }, [accountId, financialsReady]);
 
   const queryClient = useQueryClient();
@@ -132,7 +132,8 @@ export function useStrategyWorkspaceState() {
   const setCodePanelVisible = wsStore.setCodePanelVisible;
   const quickTradeVisible = wsStore.quickTradeVisible;
   const setQuickTradeVisible = wsStore.setQuickTradeVisible;
-  const [positionsPanelVisible, setPositionsPanelVisible] = useState(false);
+  const positionsPanelVisible = wsStore.positionsPanelVisible;
+  const setPositionsPanelVisible = wsStore.setPositionsPanelVisible;
 
   // History drawer.
   const [historyDrawerOpen, setHistoryDrawerOpen] = useState(false);
@@ -144,7 +145,7 @@ export function useStrategyWorkspaceState() {
       const resp = await pythonStrategyApi.listBacktestRuns({ accountId, limit: 1 });
       const runs = resp.runs || [];
       if (runs.length > 0) setHistoryRunId(runs[0].id);
-    } catch { /* no history available */ }
+    } catch (e) { console.warn('fetch history run failed', e); }
     setHistoryDrawerOpen(true);
   }, [accountId]);
   const handleCloseHistory = useCallback(() => { setHistoryDrawerOpen(false); setHistoryRunId(''); }, []);
@@ -285,37 +286,41 @@ export function useStrategyWorkspaceState() {
   }, []);
 
   return {
-    activeAccounts, accountId, setAccountId, symbol, setSymbol, timeframe, setTimeframe, handleAccountChange,
-    ...codeCtx,
-    btSubmitting: btCtx.submitting, btStatus: btCtx.status, btMetrics: btCtx.metrics,
-    btExecutionAssumptions: btCtx.executionAssumptions, btError: btCtx.errorMsg,
-    btInitialCapital: btCtx.initialCapital, setBtInitialCapital: btCtx.setInitialCapital,
-    btLeverage: btCtx.leverage, setBtLeverage: btCtx.setLeverage,
-    btCommission: btCtx.commission, setBtCommission: btCtx.setCommission,
-    btSlippage: btCtx.slippage, setBtSlippage: btCtx.setSlippage,
-    btStartDate: btCtx.startDate, setBtStartDate: btCtx.setStartDate,
-    btEndDate: btCtx.endDate, setBtEndDate: btCtx.setEndDate,
-    btDatePreset: btCtx.datePreset, btTradeDirection: btCtx.tradeDirection, setBtTradeDirection: btCtx.setTradeDirection,
-    btStrictMode: btCtx.strictMode, setBtStrictMode: btCtx.setStrictMode,
-    btParamsExpanded: btCtx.paramsExpanded, setBtParamsExpanded: btCtx.setParamsExpanded,
-    btResultsExpanded: btCtx.resultsExpanded, setBtResultsExpanded: btCtx.setResultsExpanded,
-    btStrategyDirectives: btCtx.strategyDirectives,
-    applyDatePreset: btCtx.applyDatePreset, applyPreset: btCtx.applyPreset,
-    applyDefaults: btCtx.applyDefaults, getTimeframeWarning: btCtx.getTimeframeWarning,
-    handleRunBacktest,
-    backtestSubTab: btCtx.subTab, setBacktestSubTab: btCtx.setSubTab,
-    tuneMethod: btCtx.tuneMethod, setTuneMethod: btCtx.setTuneMethod,
-    sweepDimensions: btCtx.sweepDimensions, toggleDimension: btCtx.toggleDimension,
-    enabledSweepDims: btCtx.enabledSweepDims, cartesianSize: btCtx.cartesianSize,
-    tuningRunning: btCtx.tuningRunning, handleRunTuning,
-    backtestRunId: btCtx.backtestRunId, gateLoading: btCtx.gateLoading,
-    gateGates: btCtx.gateGates, gateSummary: btCtx.gateSummary,
-    gateError: btCtx.gateError, handleRunGate: btCtx.runGate,
-    accountInfo, selectedAccountMeta, positionCount, allPositions, qtPositions, qtRecentTrades, handleClosePosition,
-    codePanelVisible, setCodePanelVisible, positionsPanelVisible, setPositionsPanelVisible, quickTradeVisible, setQuickTradeVisible,
-    historyDrawerOpen, historyRunId, handleOpenHistory, handleCloseHistory, handleViewHistoryRun,
-    handleAIOptimize, aiOptimizePrompt, handleAskAIForValidation, chatAutoApply,
-    autoFixing, handleAutoFix,
-    handleApplyTunedParams: (modifiedCode: string) => { codeCtx.setCode(modifiedCode); },
+    account: { activeAccounts, accountId, setAccountId, symbol, setSymbol, timeframe, setTimeframe, handleAccountChange, accountInfo, selectedAccountMeta },
+    code: codeCtx,
+    backtest: {
+      submitting: btCtx.submitting, status: btCtx.status, metrics: btCtx.metrics,
+      executionAssumptions: btCtx.executionAssumptions, error: btCtx.errorMsg,
+      initialCapital: btCtx.initialCapital, setInitialCapital: btCtx.setInitialCapital,
+      leverage: btCtx.leverage, setLeverage: btCtx.setLeverage,
+      commission: btCtx.commission, setCommission: btCtx.setCommission,
+      slippage: btCtx.slippage, setSlippage: btCtx.setSlippage,
+      startDate: btCtx.startDate, setStartDate: btCtx.setStartDate,
+      endDate: btCtx.endDate, setEndDate: btCtx.setEndDate,
+      datePreset: btCtx.datePreset, tradeDirection: btCtx.tradeDirection, setTradeDirection: btCtx.setTradeDirection,
+      strictMode: btCtx.strictMode, setStrictMode: btCtx.setStrictMode,
+      paramsExpanded: btCtx.paramsExpanded, setParamsExpanded: btCtx.setParamsExpanded,
+      resultsExpanded: btCtx.resultsExpanded, setResultsExpanded: btCtx.setResultsExpanded,
+      strategyDirectives: btCtx.strategyDirectives,
+      applyDatePreset: btCtx.applyDatePreset, applyPreset: btCtx.applyPreset,
+      applyDefaults: btCtx.applyDefaults, getTimeframeWarning: btCtx.getTimeframeWarning,
+      runId: btCtx.backtestRunId, run: handleRunBacktest,
+    },
+    tuning: {
+      subTab: btCtx.subTab, setSubTab: btCtx.setSubTab,
+      method: btCtx.tuneMethod, setMethod: btCtx.setTuneMethod,
+      sweepDimensions: btCtx.sweepDimensions, toggleDimension: btCtx.toggleDimension,
+      enabledDims: btCtx.enabledSweepDims, cartesianSize: btCtx.cartesianSize,
+      running: btCtx.tuningRunning, run: handleRunTuning,
+    },
+    gate: {
+      loading: btCtx.gateLoading, gates: btCtx.gateGates,
+      summary: btCtx.gateSummary, error: btCtx.gateError,
+      run: btCtx.runGate,
+    },
+    quickTrade: { positionCount, allPositions, qtPositions, qtRecentTrades, handleClosePosition },
+    layout: { codePanelVisible, setCodePanelVisible, positionsPanelVisible, setPositionsPanelVisible, quickTradeVisible, setQuickTradeVisible },
+    history: { drawerOpen: historyDrawerOpen, runId: historyRunId, open: handleOpenHistory, close: handleCloseHistory },
+    ai: { optimize: handleAIOptimize, optimizePrompt: aiOptimizePrompt, askForValidation: handleAskAIForValidation, chatAutoApply, autoFixing, autoFix: handleAutoFix, applyTunedParams: (code: string) => { codeCtx.setCode(code); } },
   };
 }

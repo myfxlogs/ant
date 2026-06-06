@@ -2,6 +2,17 @@ package mthub
 
 import "sync"
 
+// Precision note: financial fields in SSE push types (PositionSnapshot, BarUpdate)
+// use float64 for display efficiency. These are real-time visual updates, NOT used
+// for trading calculations or persistent storage. For price-sensitive operations:
+//   - Trading execution: uses decimal.Decimal (mthub/service.go PlaceOrder)
+//   - Persistent storage: PG NUMERIC(20,8) / CH Decimal(18,6)
+//   - Backtest computation: Python decimal.Decimal
+// float64 provides ~15 significant digits — sufficient for Forex price display
+// (typical quote: 1.12345 has 6 significant digits, well within safe range).
+// Cumulative rounding errors could appear for large trade counts (>10^6) shown
+// in position summaries; use PG/CH for authoritative P&L computation.
+
 // --- Position snapshots (full OpenedOrders list from OnOrderUpdate) ---
 
 // PositionSnapshot is a complete account position list pushed from OnOrderUpdate stream.

@@ -54,6 +54,9 @@ const (
 	AIServiceUpdateConversationTitleProcedure = "/ant.v1.AIService/UpdateConversationTitle"
 	// AIServiceListAgentsProcedure is the fully-qualified name of the AIService's ListAgents RPC.
 	AIServiceListAgentsProcedure = "/ant.v1.AIService/ListAgents"
+	// AIServiceBatchSetAgentsProcedure is the fully-qualified name of the AIService's BatchSetAgents
+	// RPC.
+	AIServiceBatchSetAgentsProcedure = "/ant.v1.AIService/BatchSetAgents"
 )
 
 // AIServiceClient is a client for the ant.v1.AIService service.
@@ -67,6 +70,7 @@ type AIServiceClient interface {
 	DeleteConversation(context.Context, *connect.Request[v1.DeleteConversationRequest]) (*connect.Response[v1.DeleteConversationResponse], error)
 	UpdateConversationTitle(context.Context, *connect.Request[v1.UpdateConversationTitleRequest]) (*connect.Response[v1.UpdateConversationTitleResponse], error)
 	ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error)
+	BatchSetAgents(context.Context, *connect.Request[v1.BatchSetAgentsRequest]) (*connect.Response[v1.BatchSetAgentsResponse], error)
 }
 
 // NewAIServiceClient constructs a client for the ant.v1.AIService service. By default, it uses the
@@ -128,6 +132,12 @@ func NewAIServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...c
 			connect.WithSchema(aIServiceMethods.ByName("ListAgents")),
 			connect.WithClientOptions(opts...),
 		),
+		batchSetAgents: connect.NewClient[v1.BatchSetAgentsRequest, v1.BatchSetAgentsResponse](
+			httpClient,
+			baseURL+AIServiceBatchSetAgentsProcedure,
+			connect.WithSchema(aIServiceMethods.ByName("BatchSetAgents")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -141,6 +151,7 @@ type aIServiceClient struct {
 	deleteConversation      *connect.Client[v1.DeleteConversationRequest, v1.DeleteConversationResponse]
 	updateConversationTitle *connect.Client[v1.UpdateConversationTitleRequest, v1.UpdateConversationTitleResponse]
 	listAgents              *connect.Client[v1.ListAgentsRequest, v1.ListAgentsResponse]
+	batchSetAgents          *connect.Client[v1.BatchSetAgentsRequest, v1.BatchSetAgentsResponse]
 }
 
 // Chat calls ant.v1.AIService.Chat.
@@ -183,6 +194,11 @@ func (c *aIServiceClient) ListAgents(ctx context.Context, req *connect.Request[v
 	return c.listAgents.CallUnary(ctx, req)
 }
 
+// BatchSetAgents calls ant.v1.AIService.BatchSetAgents.
+func (c *aIServiceClient) BatchSetAgents(ctx context.Context, req *connect.Request[v1.BatchSetAgentsRequest]) (*connect.Response[v1.BatchSetAgentsResponse], error) {
+	return c.batchSetAgents.CallUnary(ctx, req)
+}
+
 // AIServiceHandler is an implementation of the ant.v1.AIService service.
 type AIServiceHandler interface {
 	Chat(context.Context, *connect.Request[v1.ChatRequest]) (*connect.Response[v1.ChatResponse], error)
@@ -194,6 +210,7 @@ type AIServiceHandler interface {
 	DeleteConversation(context.Context, *connect.Request[v1.DeleteConversationRequest]) (*connect.Response[v1.DeleteConversationResponse], error)
 	UpdateConversationTitle(context.Context, *connect.Request[v1.UpdateConversationTitleRequest]) (*connect.Response[v1.UpdateConversationTitleResponse], error)
 	ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error)
+	BatchSetAgents(context.Context, *connect.Request[v1.BatchSetAgentsRequest]) (*connect.Response[v1.BatchSetAgentsResponse], error)
 }
 
 // NewAIServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -251,6 +268,12 @@ func NewAIServiceHandler(svc AIServiceHandler, opts ...connect.HandlerOption) (s
 		connect.WithSchema(aIServiceMethods.ByName("ListAgents")),
 		connect.WithHandlerOptions(opts...),
 	)
+	aIServiceBatchSetAgentsHandler := connect.NewUnaryHandler(
+		AIServiceBatchSetAgentsProcedure,
+		svc.BatchSetAgents,
+		connect.WithSchema(aIServiceMethods.ByName("BatchSetAgents")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.AIService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AIServiceChatProcedure:
@@ -269,6 +292,8 @@ func NewAIServiceHandler(svc AIServiceHandler, opts ...connect.HandlerOption) (s
 			aIServiceUpdateConversationTitleHandler.ServeHTTP(w, r)
 		case AIServiceListAgentsProcedure:
 			aIServiceListAgentsHandler.ServeHTTP(w, r)
+		case AIServiceBatchSetAgentsProcedure:
+			aIServiceBatchSetAgentsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -308,4 +333,8 @@ func (UnimplementedAIServiceHandler) UpdateConversationTitle(context.Context, *c
 
 func (UnimplementedAIServiceHandler) ListAgents(context.Context, *connect.Request[v1.ListAgentsRequest]) (*connect.Response[v1.ListAgentsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AIService.ListAgents is not implemented"))
+}
+
+func (UnimplementedAIServiceHandler) BatchSetAgents(context.Context, *connect.Request[v1.BatchSetAgentsRequest]) (*connect.Response[v1.BatchSetAgentsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AIService.BatchSetAgents is not implemented"))
 }

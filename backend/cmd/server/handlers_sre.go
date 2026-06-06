@@ -48,7 +48,7 @@ func registerSREHandlers(
 	schedHealthRepo *repository.ScheduleHealthRepository,
 	analyticsCache *service.AnalyticsCache,
 	aiSvc *systemai.Service,
-) *notifier.EmailNotifier {
+) (*notifier.EmailNotifier, func()) {
 	// --- SRE control plane ---
 	sreKillSwitch := controlplane.NewKillSwitch()
 	mthubSvc.SetKillSwitch(sreKillSwitch) // V3-R-5: PlaceOrder blocked when kill switch engaged
@@ -168,5 +168,9 @@ func registerSREHandlers(
 		w.Write([]byte("ant ok"))
 	})
 
-	return emailNotifier
+	workerCleanup := func() {
+		experimentWorker.Stop()
+		reflectionWorker.Stop()
+	}
+	return emailNotifier, workerCleanup
 }

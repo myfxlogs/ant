@@ -12,12 +12,14 @@ interface WorkspaceState {
   timeframe: string;
   codePanelVisible: boolean;
   quickTradeVisible: boolean;
+  positionsPanelVisible: boolean;
   _hasHydrated: boolean;
   setAccountId: (v: string) => void;
   setSymbol: (v: string) => void;
   setTimeframe: (v: string) => void;
   setCodePanelVisible: (v: boolean) => void;
   setQuickTradeVisible: (v: boolean) => void;
+  setPositionsPanelVisible: (v: boolean) => void;
 }
 
 export const useWorkspaceStore = create<WorkspaceState>()(
@@ -28,12 +30,14 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       timeframe: '1h',
       codePanelVisible: true,
       quickTradeVisible: true,
+      positionsPanelVisible: false,
       _hasHydrated: false,
       setAccountId: (v) => set({ accountId: v }),
       setSymbol: (v) => set({ symbol: v }),
       setTimeframe: (v) => set({ timeframe: v }),
       setCodePanelVisible: (v) => set({ codePanelVisible: v }),
       setQuickTradeVisible: (v) => set({ quickTradeVisible: v }),
+      setPositionsPanelVisible: (v) => set({ positionsPanelVisible: v }),
     }),
     {
       name: 'ant-workspace-state',
@@ -44,6 +48,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         timeframe: state.timeframe,
         codePanelVisible: state.codePanelVisible,
         quickTradeVisible: state.quickTradeVisible,
+        positionsPanelVisible: state.positionsPanelVisible,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) state._hasHydrated = true;

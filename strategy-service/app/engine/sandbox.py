@@ -270,7 +270,16 @@ def compile_and_serialize(source: str) -> bytes:
 
     The resulting bytes can be passed to :func:`exec_serialized` in a child
     process, avoiding redundant RestrictedPython compilation.
+
+    Performs static security scan before compilation to reject banned imports
+    and dangerous patterns at the earliest possible point.
     """
+    from app.sandbox_scan import scan_code
+    scan_result = scan_code(source)
+    if scan_result.violations:
+        msg = "; ".join(scan_result.violations)
+        raise ValueError(f"code rejected by security scan: {msg}")
+
     env = _RestrictedEnv.get()
     code = env.compile_restricted(source, "<strategy>", "exec")
     return marshal.dumps(code)

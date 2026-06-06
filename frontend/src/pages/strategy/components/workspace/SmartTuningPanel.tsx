@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { Radio, Button, Tag, Table, Typography, Tooltip } from 'antd';
+import { useState, useCallback, useEffect } from 'react';
+import { Radio, Button, Checkbox, Tag, Table, Typography, Tooltip } from 'antd';
 import { ExperimentOutlined, TrophyOutlined, ThunderboltOutlined, RobotOutlined } from '@ant-design/icons';
 import type { SweepDimension, TuneMethod } from '../../hooks/useBacktestParams';
 import { OPTIMIZER_INFO } from '../../hooks/useBacktestParams';
@@ -10,7 +10,7 @@ interface Props {
   tuneMethod: TuneMethod; onTuneMethodChange: (m: TuneMethod) => void;
   sweepDimensions: SweepDimension[]; onToggleDimension: (key: string) => void;
   enabledSweepDims: SweepDimension[]; cartesianSize: number;
-  tuningRunning: boolean; canRun: boolean; onRunTuning: () => void;
+  tuningRunning: boolean; canRun: boolean; onRunTuning: () => Promise<string>;
   code?: string; onApplyToCode?: (code: string) => void;
 }
 
@@ -48,23 +48,30 @@ export default function SmartTuningPanel({
     onApplyToCode(modified);
   }, [code, onApplyToCode]);
 
-  // Submit tuning job → SSE watch.
+  // Submit tuning job → receive experiment ID → SSE watch.
   const handleRunTuning = useCallback(async () => {
     if (!canRun || tuningRunning) return;
-    setCandidates([]); setExperimentId(''); setWatching(true); onRunTuning();
+    setCandidates([]); setExperimentId(''); setWatching(true);
+    const eid = await onRunTuning();
+    if (eid) { setExperimentId(eid); } else { setWatching(false); }
   }, [canRun, tuningRunning, onRunTuning]);
 
-  // SSE watch for experiment completion (via useRef-based polling from parent).
+  // SSE watch for experiment completion.
   useEffect(() => {
     if (!watching || !experimentId) return;
     const ctrl = new AbortController();
     (async () => {
-      for await (const event of strategyExperimentApi.watchExperiment(experimentId)) {
-        if (event.status === 'COMPLETED') {
-          setCandidates(event.candidates || []);
-          setWatching(false); break;
+      try {
+        const { stream } = strategyExperimentApi.watchExperiment(experimentId);
+        for await (const event of stream) {
+          if (event.status === 'COMPLETED') {
+            setCandidates(event.candidates || []);
+            setWatching(false); break;
+          }
+          if (event.status === 'FAILED') { setWatching(false); break; }
         }
-        if (event.status === 'FAILED') { setWatching(false); break; }
+      } catch (e: unknown) {
+        if ((e as { name?: string })?.name !== 'AbortError') { setWatching(false); }
       }
     })();
     return () => { ctrl.abort(); };
@@ -129,7 +136,7 @@ export default function SmartTuningPanel({
             <label key={d.key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 8px',
               fontSize: 10, borderRadius: 4, marginBottom: 2, cursor: 'pointer',
               background: d.enabled ? 'rgba(24,144,255,0.06)' : 'transparent', opacity: d.enabled ? 1 : 0.4 }}>
-              <input type="checkbox" checked={d.enabled} onChange={() => onToggleDimension(d.key)} />
+              <Checkbox checked={d.enabled} onChange={() => onToggleDimension(d.key)} />
               <span style={{ flex: 1, fontWeight: 500, color: '#262626' }}>{d.label}</span>
               <Tag color={d.source === 'code' ? 'blue' : 'orange'} style={{ fontSize: 8, lineHeight: '14px', margin: 0 }}>
                 {d.source.toUpperCase()}</Tag>

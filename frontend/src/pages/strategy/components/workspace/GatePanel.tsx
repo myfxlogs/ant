@@ -1,4 +1,4 @@
-import { Button, Steps, Alert, Spin, Tag } from 'antd';
+import { Button, Steps, Alert, Select, Tag } from 'antd';
 import { ThunderboltOutlined, CheckCircleFilled, CloseCircleFilled, LoadingOutlined, ClockCircleFilled, MinusCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { GateResult, GatePipelineSummary } from '@/gen/ant/v1/ai_gate_pb';
@@ -7,6 +7,9 @@ interface Props {
   loading: boolean; gates: GateResult[];
   summary: GatePipelineSummary | null; error: string;
   status: string; canRun: boolean; onRun: () => void;
+  runId?: string;
+  availableRunIds?: string[];
+  onSelectRun?: (runId: string) => void;
 }
 
 const GATE_ORDER = ['compliance', 'lookahead', 'walkforward', 'deflated_sharpe', 'paper', 'correlation'];
@@ -17,15 +20,20 @@ const GATE_LABELS: Record<string, string> = {
   paper: 'Paper (14d)', correlation: 'Correlation',
 };
 
-export default function GatePanel({ loading, gates, summary, error, status, canRun, onRun }: Props) {
+export default function GatePanel({ loading, gates, summary, error, status, canRun, onRun, runId, availableRunIds, onSelectRun }: Props) {
   const { t } = useTranslation();
 
   const gateMap = new Map(gates.map(g => [g.gate, g]));
 
   return (
     <div>
-      {/* Run button */}
-      <div style={{ marginBottom: 16 }}>
+      {/* Run selector + button */}
+      <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+        {availableRunIds && availableRunIds.length > 0 && onSelectRun && (
+          <Select size="small" style={{ minWidth: 240 }} placeholder="Select backtest run..."
+            value={runId || undefined} onChange={onSelectRun}
+            options={availableRunIds.map(id => ({ label: id.slice(0, 8) + '...', value: id }))} />
+        )}
         <Button type="primary" icon={<ThunderboltOutlined />} loading={loading}
           onClick={onRun} disabled={!canRun || status !== 'completed'}>
           {t('ai.gate.runPipeline', 'Run Gate Evaluation')}

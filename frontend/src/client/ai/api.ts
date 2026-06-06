@@ -1,8 +1,9 @@
+import { create } from '@bufbuild/protobuf';
 import { aiClient, aiPrimaryClient } from '../connect';
-import { apiBaseUrl } from '../transport';
-import { useAuthStore } from '@/stores/authStore';
+import { BatchSetAgentsRequestSchema } from '../../gen/ant/v1/ai_agent_pb';
 import {
   toAgentView,
+  fromAgentView,
   toConversationRole,
   mapConversationSummary,
   protoDate,
@@ -72,19 +73,13 @@ export const aiApi = {
     return (response.agents || []).map(toAgentView);
   },
 
-  /** Persist agent definitions. */
+  /** Persist agent definitions via ConnectRPC (replaces REST /api/ai/agents). */
   batchSetAgents: async (agents: AIAgentDefinitionView[]): Promise<void> => {
-    const token = useAuthStore.getState().accessToken;
-    if (!token) throw new Error('Not authenticated');
-    const resp = await fetch(`${apiBaseUrl}/api/ai/agents`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ agents }),
-    });
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({ error: resp.statusText }));
-      throw new Error((err as any).error || 'Save failed');
-    }
+    await aiClient.batchSetAgents(
+      create(BatchSetAgentsRequestSchema, {
+        agents: agents.map(fromAgentView),
+      }),
+    );
   },
 
   getPrimary: async (): Promise<{ providerId: string; model: string }> => {

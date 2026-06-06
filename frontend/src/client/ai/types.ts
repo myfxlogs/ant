@@ -64,6 +64,21 @@ export function toAgentView(a: AIAgentDefinition): AIAgentDefinitionView {
   };
 }
 
+export function fromAgentView(v: AIAgentDefinitionView): AIAgentDefinition {
+  return {
+    id: v.id,
+    agentKey: v.agentKey,
+    type: v.type,
+    name: v.name,
+    identity: v.identity,
+    inputHint: v.inputHint,
+    enabled: v.enabled,
+    position: v.position,
+    providerId: v.providerId,
+    modelOverride: v.modelOverride,
+  } as AIAgentDefinition;
+}
+
 export function mapConversationSummary(c: ProtoConversationSummary): ConversationSummary {
   return {
     id: c.id,

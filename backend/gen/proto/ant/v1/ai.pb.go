@@ -24,7 +24,7 @@ var File_ai_proto protoreflect.FileDescriptor
 
 const file_ai_proto_rawDesc = "" +
 	"\n" +
-	"\bai.proto\x12\x06ant.v1\x1a\rai_chat.proto\x1a\x0eai_agent.proto2\x95\x05\n" +
+	"\bai.proto\x12\x06ant.v1\x1a\rai_chat.proto\x1a\x0eai_agent.proto2\xe6\x05\n" +
 	"\tAIService\x121\n" +
 	"\x04Chat\x12\x13.ant.v1.ChatRequest\x1a\x14.ant.v1.ChatResponse\x12<\n" +
 	"\n" +
@@ -35,7 +35,8 @@ const file_ai_proto_rawDesc = "" +
 	"\x12DeleteConversation\x12!.ant.v1.DeleteConversationRequest\x1a\".ant.v1.DeleteConversationResponse\x12j\n" +
 	"\x17UpdateConversationTitle\x12&.ant.v1.UpdateConversationTitleRequest\x1a'.ant.v1.UpdateConversationTitleResponse\x12C\n" +
 	"\n" +
-	"ListAgents\x12\x19.ant.v1.ListAgentsRequest\x1a\x1a.ant.v1.ListAgentsResponseB\"Z anttrader/gen/proto/ant/v1;antv1P\x00P\x01b\x06proto3"
+	"ListAgents\x12\x19.ant.v1.ListAgentsRequest\x1a\x1a.ant.v1.ListAgentsResponse\x12O\n" +
+	"\x0eBatchSetAgents\x12\x1d.ant.v1.BatchSetAgentsRequest\x1a\x1e.ant.v1.BatchSetAgentsResponseB\"Z anttrader/gen/proto/ant/v1;antv1P\x00P\x01b\x06proto3"
 
 var file_ai_proto_goTypes = []any{
 	(*ChatRequest)(nil),                     // 0: ant.v1.ChatRequest
@@ -45,14 +46,16 @@ var file_ai_proto_goTypes = []any{
 	(*DeleteConversationRequest)(nil),       // 4: ant.v1.DeleteConversationRequest
 	(*UpdateConversationTitleRequest)(nil),  // 5: ant.v1.UpdateConversationTitleRequest
 	(*ListAgentsRequest)(nil),               // 6: ant.v1.ListAgentsRequest
-	(*ChatResponse)(nil),                    // 7: ant.v1.ChatResponse
-	(*ChatStreamChunk)(nil),                 // 8: ant.v1.ChatStreamChunk
-	(*ListConversationsResponse)(nil),       // 9: ant.v1.ListConversationsResponse
-	(*GetConversationResponse)(nil),         // 10: ant.v1.GetConversationResponse
-	(*CreateConversationResponse)(nil),      // 11: ant.v1.CreateConversationResponse
-	(*DeleteConversationResponse)(nil),      // 12: ant.v1.DeleteConversationResponse
-	(*UpdateConversationTitleResponse)(nil), // 13: ant.v1.UpdateConversationTitleResponse
-	(*ListAgentsResponse)(nil),              // 14: ant.v1.ListAgentsResponse
+	(*BatchSetAgentsRequest)(nil),           // 7: ant.v1.BatchSetAgentsRequest
+	(*ChatResponse)(nil),                    // 8: ant.v1.ChatResponse
+	(*ChatStreamChunk)(nil),                 // 9: ant.v1.ChatStreamChunk
+	(*ListConversationsResponse)(nil),       // 10: ant.v1.ListConversationsResponse
+	(*GetConversationResponse)(nil),         // 11: ant.v1.GetConversationResponse
+	(*CreateConversationResponse)(nil),      // 12: ant.v1.CreateConversationResponse
+	(*DeleteConversationResponse)(nil),      // 13: ant.v1.DeleteConversationResponse
+	(*UpdateConversationTitleResponse)(nil), // 14: ant.v1.UpdateConversationTitleResponse
+	(*ListAgentsResponse)(nil),              // 15: ant.v1.ListAgentsResponse
+	(*BatchSetAgentsResponse)(nil),          // 16: ant.v1.BatchSetAgentsResponse
 }
 var file_ai_proto_depIdxs = []int32{
 	0,  // 0: ant.v1.AIService.Chat:input_type -> ant.v1.ChatRequest
@@ -63,16 +66,18 @@ var file_ai_proto_depIdxs = []int32{
 	4,  // 5: ant.v1.AIService.DeleteConversation:input_type -> ant.v1.DeleteConversationRequest
 	5,  // 6: ant.v1.AIService.UpdateConversationTitle:input_type -> ant.v1.UpdateConversationTitleRequest
 	6,  // 7: ant.v1.AIService.ListAgents:input_type -> ant.v1.ListAgentsRequest
-	7,  // 8: ant.v1.AIService.Chat:output_type -> ant.v1.ChatResponse
-	8,  // 9: ant.v1.AIService.ChatStream:output_type -> ant.v1.ChatStreamChunk
-	9,  // 10: ant.v1.AIService.ListConversations:output_type -> ant.v1.ListConversationsResponse
-	10, // 11: ant.v1.AIService.GetConversation:output_type -> ant.v1.GetConversationResponse
-	11, // 12: ant.v1.AIService.CreateConversation:output_type -> ant.v1.CreateConversationResponse
-	12, // 13: ant.v1.AIService.DeleteConversation:output_type -> ant.v1.DeleteConversationResponse
-	13, // 14: ant.v1.AIService.UpdateConversationTitle:output_type -> ant.v1.UpdateConversationTitleResponse
-	14, // 15: ant.v1.AIService.ListAgents:output_type -> ant.v1.ListAgentsResponse
-	8,  // [8:16] is the sub-list for method output_type
-	0,  // [0:8] is the sub-list for method input_type
+	7,  // 8: ant.v1.AIService.BatchSetAgents:input_type -> ant.v1.BatchSetAgentsRequest
+	8,  // 9: ant.v1.AIService.Chat:output_type -> ant.v1.ChatResponse
+	9,  // 10: ant.v1.AIService.ChatStream:output_type -> ant.v1.ChatStreamChunk
+	10, // 11: ant.v1.AIService.ListConversations:output_type -> ant.v1.ListConversationsResponse
+	11, // 12: ant.v1.AIService.GetConversation:output_type -> ant.v1.GetConversationResponse
+	12, // 13: ant.v1.AIService.CreateConversation:output_type -> ant.v1.CreateConversationResponse
+	13, // 14: ant.v1.AIService.DeleteConversation:output_type -> ant.v1.DeleteConversationResponse
+	14, // 15: ant.v1.AIService.UpdateConversationTitle:output_type -> ant.v1.UpdateConversationTitleResponse
+	15, // 16: ant.v1.AIService.ListAgents:output_type -> ant.v1.ListAgentsResponse
+	16, // 17: ant.v1.AIService.BatchSetAgents:output_type -> ant.v1.BatchSetAgentsResponse
+	9,  // [9:18] is the sub-list for method output_type
+	0,  // [0:9] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name

@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useMemo } from 'react';
 import { Collapse } from 'antd';
 import { DoubleRightOutlined, DoubleLeftOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -20,9 +20,22 @@ const CODE_PANEL_WIDTH = 750;
 const POSITIONS_PANEL_WIDTH = 520;
 const C = { border: "#e8e8e8", bg: "#f8fafc", bgAlt: "#f1f5f9", muted: "#8c8c8c", accent: "#1677ff" };
 
+// Lightweight error boundary to prevent chart/editor crashes from taking down the entire workspace.
+class WorkspaceErrorBoundary extends React.Component<{ children: React.ReactNode; fallback: React.ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: React.ReactNode; fallback: React.ReactNode }) { super(props); this.state = { hasError: false }; }
+  static getDerivedStateFromError() { return { hasError: true }; }
+  render() { return this.state.hasError ? this.props.fallback : this.props.children; }
+}
+
 export default function StrategyWorkspacePage() {
   const { t } = useTranslation();
   const ws = useStrategyWorkspaceState();
+
+  const chartTrades = useMemo(() =>
+    ws.backtest.metrics?.trades?.map((t: any) => ({
+      side: t.side, openPrice: t.price, openTime: t.time, pnl: t.pnl,
+    })), [ws.backtest.metrics?.trades],
+  );
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 112px)', background: '#fff' }}>
@@ -33,38 +46,39 @@ export default function StrategyWorkspacePage() {
 
       {/* ═══ TOP TOOLBAR ═══ */}
       <WorkspaceToolbar
-        accounts={ws.activeAccounts} accountId={ws.accountId} onAccountChange={ws.handleAccountChange}
-        symbol={ws.symbol} onSymbolChange={ws.setSymbol}
-        accountInfo={ws.accountInfo} positionCount={ws.positionCount}
-        codePanelVisible={ws.codePanelVisible} onToggleCodePanel={() => ws.setCodePanelVisible(!ws.codePanelVisible)}
-        onCloseCodePanel={() => ws.setCodePanelVisible(false)}
-        quickTradeVisible={ws.quickTradeVisible} onToggleQuickTrade={() => ws.setQuickTradeVisible(!ws.quickTradeVisible)}
+        accounts={ws.account.activeAccounts} accountId={ws.account.accountId} onAccountChange={ws.account.handleAccountChange}
+        symbol={ws.account.symbol} onSymbolChange={ws.account.setSymbol}
+        accountInfo={ws.account.accountInfo} positionCount={ws.quickTrade.positionCount}
+        busy={ws.backtest.submitting || ws.tuning.running}
+        codePanelVisible={ws.layout.codePanelVisible} onToggleCodePanel={() => ws.layout.setCodePanelVisible(!ws.layout.codePanelVisible)}
+        onCloseCodePanel={() => ws.layout.setCodePanelVisible(false)}
+        quickTradeVisible={ws.layout.quickTradeVisible} onToggleQuickTrade={() => ws.layout.setQuickTradeVisible(!ws.layout.quickTradeVisible)}
       />
 
       {/* ═══ BODY: Chart + Backtest (code overlays chart when open) ═══ */}
       <div style={{ display: 'flex', flex: '1 1 auto', overflow: 'hidden', minHeight: 0, position: 'relative' }}>
         {/* ── Code toggle strip (always in flow) ── */}
-        <div onClick={() => ws.setCodePanelVisible(!ws.codePanelVisible)} role="button" tabIndex={0}
-          onKeyUp={(e) => e.key === 'Enter' && ws.setCodePanelVisible(!ws.codePanelVisible)}
+        <div onClick={() => ws.layout.setCodePanelVisible(!ws.layout.codePanelVisible)} role="button" tabIndex={0}
+          onKeyUp={(e) => e.key === 'Enter' && ws.layout.setCodePanelVisible(!ws.layout.codePanelVisible)}
           style={{
             width: 32, minWidth: 32, flex: '0 0 32px', display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer', zIndex: 10,
-            background: ws.codePanelVisible
+            background: ws.layout.codePanelVisible
               ? 'linear-gradient(180deg, #1677ff 0%, #0958d9 100%)'
               : 'linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%)',
             borderRight: '1px solid #e2e8f0',
             padding: '14px 0', transition: 'background 0.2s',
           }}>
-          {ws.codePanelVisible
+          {ws.layout.codePanelVisible
             ? <DoubleLeftOutlined style={{ fontSize: 14, color: '#fff' }} />
             : <DoubleRightOutlined style={{ fontSize: 14 }} />
           }
           <span style={{ fontSize: 10, writingMode: 'vertical-rl', fontWeight: 500,
-            color: ws.codePanelVisible ? '#fff' : 'inherit' }}>Code</span>
+            color: ws.layout.codePanelVisible ? '#fff' : 'inherit' }}>Code</span>
         </div>
 
         {/* ── Expanded code panel (overlays chart, stays within workspace) ── */}
-        {ws.codePanelVisible && (
+        {ws.layout.codePanelVisible && (
           <div style={{
             position: 'absolute', left: 32, top: 0, bottom: 0, zIndex: 100,
             width: CODE_PANEL_WIDTH, overflowY: 'auto',
@@ -73,26 +87,26 @@ export default function StrategyWorkspacePage() {
             padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 12,
           }}>
             <WorkspaceCodePanel
-              code={ws.code} onCodeChange={ws.setCode}
-              validating={ws.validating} onValidate={ws.handleValidate}
-              validationResult={ws.validationResult}
-              onRunBacktest={ws.handleRunBacktest} backtestSubmitting={ws.btSubmitting}
-              canSave={ws.canSave} onSave={ws.handleSave} onCopy={ws.handleCopy}
-              onAskAI={ws.handleAskAIForValidation}
-              onAutoFix={ws.handleAutoFix}
-              autoFixing={ws.autoFixing}
+              code={ws.code.code} onCodeChange={ws.code.setCode}
+              validating={ws.code.validating} onValidate={ws.code.handleValidate}
+              validationResult={ws.code.validationResult}
+              onRunBacktest={ws.backtest.run} backtestSubmitting={ws.backtest.submitting}
+              canSave={ws.code.canSave} onSave={ws.code.handleSave} onCopy={ws.code.handleCopy}
+              onAskAI={ws.ai.askForValidation}
+              onAutoFix={ws.ai.autoFix}
+              autoFixing={ws.ai.autoFixing}
             />
-            <AIChatPanel code={ws.code} symbol={ws.symbol} timeframe={ws.timeframe} onApply={ws.setCode} initialPrompt={ws.aiOptimizePrompt} autoApply={ws.chatAutoApply} />
+            <AIChatPanel code={ws.code.code} symbol={ws.account.symbol} timeframe={ws.account.timeframe} onApply={ws.code.setCode} initialPrompt={ws.ai.optimizePrompt} autoApply={ws.ai.chatAutoApply} />
             <Collapse ghost size="small" style={{ background: 'transparent' }} items={[
-              { key: 'template', label: t('strategy.workspace.template.title', 'Template'), children: <WorkspaceTemplateManager templates={ws.templates} loading={ws.templatesLoading} loadedTemplate={ws.loadedTemplate} onLoad={ws.handleLoadTemplate} onSaveAs={ws.handleSaveAs} /> },
+              { key: 'template', label: t('strategy.workspace.template.title', 'Template'), children: <WorkspaceTemplateManager templates={ws.code.templates} loading={ws.code.templatesLoading} loadedTemplate={ws.code.loadedTemplate} onLoad={ws.code.handleLoadTemplate} onSaveAs={ws.code.handleSaveAs} /> },
             ]} />
           </div>
         )}
 
         {/* ── Positions overlay panel (right side, next to Quick Trade) ── */}
-        {ws.positionsPanelVisible && (
+        {ws.layout.positionsPanelVisible && (
           <div style={{
-            position: 'absolute', right: ws.quickTradeVisible ? 310 : 0, top: 0, bottom: 0, zIndex: 100,
+            position: 'absolute', right: ws.layout.quickTradeVisible ? 310 : 0, top: 0, bottom: 0, zIndex: 100,
             width: POSITIONS_PANEL_WIDTH, overflowY: 'auto',
             background: '#fcfdfd', borderLeft: '1px solid ' + C.border,
             boxShadow: '-4px 0 24px rgba(0,0,0,0.1)',
@@ -105,15 +119,15 @@ export default function StrategyWorkspacePage() {
               borderBottom: '1px solid ' + C.border,
             }}>
               <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>
-                Open Positions ({ws.allPositions.length})
+                Open Positions ({ws.quickTrade.allPositions.length})
               </span>
-              <span onClick={() => ws.setPositionsPanelVisible(false)} role="button" tabIndex={0}
-                onKeyUp={e => e.key === 'Enter' && ws.setPositionsPanelVisible(false)}
+              <span onClick={() => ws.layout.setPositionsPanelVisible(false)} role="button" tabIndex={0}
+                onKeyUp={e => e.key === 'Enter' && ws.layout.setPositionsPanelVisible(false)}
                 style={{ cursor: 'pointer', color: '#94a3b8', fontSize: 16, lineHeight: 1 }}>✕</span>
             </div>
             <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px' }}>
-              {ws.allPositions.length > 0 ? (
-                <MiniPositionsTable positions={ws.allPositions} onClosePosition={ws.handleClosePosition} />
+              {ws.quickTrade.allPositions.length > 0 ? (
+                <MiniPositionsTable positions={ws.quickTrade.allPositions} onClosePosition={ws.quickTrade.handleClosePosition} />
               ) : (
                 <div style={{ textAlign: 'center', padding: 40, color: '#8c8c8c', fontSize: 13 }}>
                   No open positions for this account
@@ -126,15 +140,14 @@ export default function StrategyWorkspacePage() {
         {/* ── MIDDLE: Chart + Backtest ── */}
         <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <div style={{ flex: '1 1 0', minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            {ws.symbol ? (
-              <PriceChart
-                symbol={ws.symbol} timeframe={ws.timeframe} onTimeframeChange={ws.setTimeframe}
-                accountId={ws.accountId}
-                trades={ws.btMetrics?.trades?.map((t: any) => ({
-                  side: t.side, openPrice: t.price, openTime: t.time,
-                  pnl: t.pnl,
-                }))}
-              />
+            {ws.account.symbol ? (
+              <WorkspaceErrorBoundary fallback={<div style={{ display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'#8c8c8c' }}>Chart error — try refreshing</div>}>
+                <PriceChart
+                  symbol={ws.account.symbol} timeframe={ws.account.timeframe} onTimeframeChange={ws.account.setTimeframe}
+                  accountId={ws.account.accountId}
+                  trades={chartTrades}
+                />
+              </WorkspaceErrorBoundary>
             ) : (
               <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -149,60 +162,60 @@ export default function StrategyWorkspacePage() {
           <div style={{ flexShrink: 0, borderTop: '1px solid #e8e8e8', overflowY: 'auto' }}>
             <div style={{ marginBottom: 6 }}>
             <BacktestParamsCard
-              initialCapital={ws.btInitialCapital} onInitialCapitalChange={ws.setBtInitialCapital}
-              leverage={ws.btLeverage} onLeverageChange={ws.setBtLeverage}
-              commission={ws.btCommission} onCommissionChange={ws.setBtCommission}
-              slippage={ws.btSlippage} onSlippageChange={ws.setBtSlippage}
-              startDate={ws.btStartDate} onStartDateChange={ws.setBtStartDate}
-              endDate={ws.btEndDate} onEndDateChange={ws.setBtEndDate}
-              tradeDirection={ws.btTradeDirection} onTradeDirectionChange={ws.setBtTradeDirection}
-              strictMode={ws.btStrictMode} onStrictModeChange={ws.setBtStrictMode}
-              canRun={Boolean(ws.code && ws.symbol)}
-              running={ws.btSubmitting} onRunBacktest={ws.handleRunBacktest}
-              datePresets={DATE_PRESETS} datePresetKey={ws.btDatePreset}
-              onApplyDatePreset={ws.applyDatePreset}
-              expanded={ws.btParamsExpanded} onExpandedChange={ws.setBtParamsExpanded}
-              strategyDirectives={ws.btStrategyDirectives}
-              onApplyPreset={ws.applyPreset}
-              timeframeWarning={ws.getTimeframeWarning(ws.timeframe, DATE_PRESETS.find(p => p.key === ws.btDatePreset)?.months ?? 3)}
-              timeframe={ws.timeframe} onTimeframeChange={ws.setTimeframe}
-              onApplyDefaults={ws.applyDefaults}
-              onOpenHistory={ws.handleOpenHistory}
+              initialCapital={ws.backtest.initialCapital} onInitialCapitalChange={ws.backtest.setInitialCapital}
+              leverage={ws.backtest.leverage} onLeverageChange={ws.backtest.setLeverage}
+              commission={ws.backtest.commission} onCommissionChange={ws.backtest.setCommission}
+              slippage={ws.backtest.slippage} onSlippageChange={ws.backtest.setSlippage}
+              startDate={ws.backtest.startDate} onStartDateChange={ws.backtest.setStartDate}
+              endDate={ws.backtest.endDate} onEndDateChange={ws.backtest.setEndDate}
+              tradeDirection={ws.backtest.tradeDirection} onTradeDirectionChange={ws.backtest.setTradeDirection}
+              strictMode={ws.backtest.strictMode} onStrictModeChange={ws.backtest.setStrictMode}
+              canRun={Boolean(ws.code.code && ws.account.symbol)}
+              running={ws.backtest.submitting} onRunBacktest={ws.backtest.run}
+              datePresets={DATE_PRESETS} datePresetKey={ws.backtest.datePreset}
+              onApplyDatePreset={ws.backtest.applyDatePreset}
+              expanded={ws.backtest.paramsExpanded} onExpandedChange={ws.backtest.setParamsExpanded}
+              strategyDirectives={ws.backtest.strategyDirectives}
+              onApplyPreset={ws.backtest.applyPreset}
+              timeframeWarning={ws.backtest.getTimeframeWarning(ws.account.timeframe, DATE_PRESETS.find(p => p.key === ws.backtest.datePreset)?.months ?? 3)}
+              timeframe={ws.account.timeframe} onTimeframeChange={ws.account.setTimeframe}
+              onApplyDefaults={ws.backtest.applyDefaults}
+              onOpenHistory={ws.history.open}
             />
             </div>
 
             <div style={{ borderTop: '1px solid #e8e8e8', background: '#fafbfc' }}>
-              <div onClick={() => ws.setBtResultsExpanded(!ws.btResultsExpanded)} role="button" tabIndex={0}
-                onKeyUp={e => e.key === 'Enter' && ws.setBtResultsExpanded(!ws.btResultsExpanded)}
+              <div onClick={() => ws.backtest.setResultsExpanded(!ws.backtest.resultsExpanded)} role="button" tabIndex={0}
+                onKeyUp={e => e.key === 'Enter' && ws.backtest.setResultsExpanded(!ws.backtest.resultsExpanded)}
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   padding: '8px 14px', cursor: 'pointer', userSelect: 'none',
                   background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
                 }}>
                 <span style={{ fontSize: 12, fontWeight: 700, color: '#262626' }}>
-                  {ws.backtestSubTab === 'tuning' ? 'Smart Tuning' : 'Backtest Results'}
-                  {ws.btStatus === 'running' && <span style={{ color: '#1890ff', marginLeft: 8, fontSize: 11 }}>Running...</span>}
-                  {ws.btStatus === 'completed' && <span style={{ color: '#26a69a', marginLeft: 8, fontSize: 11 }}>Completed</span>}
+                  {ws.tuning.subTab === 'tuning' ? 'Smart Tuning' : 'Backtest Results'}
+                  {ws.backtest.status === 'running' && <span style={{ color: '#1890ff', marginLeft: 8, fontSize: 11 }}>Running...</span>}
+                  {ws.backtest.status === 'completed' && <span style={{ color: '#26a69a', marginLeft: 8, fontSize: 11 }}>Completed</span>}
                 </span>
-                <span style={{ fontSize: 10, color: C.muted }}>{ws.btResultsExpanded ? '▲' : '▼'}</span>
+                <span style={{ fontSize: 10, color: C.muted }}>{ws.backtest.resultsExpanded ? '▲' : '▼'}</span>
               </div>
-              {ws.btResultsExpanded && (
+              {ws.backtest.resultsExpanded && (
                 <div style={{ padding: '8px 14px' }}>
                   <WorkspaceBacktestPanel
-                    status={ws.btStatus} metrics={ws.btMetrics}
-                    executionAssumptions={ws.btExecutionAssumptions}
-                    errorMessage={ws.btError}
-                    onAIOptimize={ws.handleAIOptimize}
-                    code={ws.code} onApplyTunedParams={ws.handleApplyTunedParams}
-                    subTab={ws.backtestSubTab} onSubTabChange={ws.setBacktestSubTab}
-                    tuneMethod={ws.tuneMethod} onTuneMethodChange={ws.setTuneMethod}
-                    sweepDimensions={ws.sweepDimensions} onToggleDimension={ws.toggleDimension}
-                    enabledSweepDims={ws.enabledSweepDims} cartesianSize={ws.cartesianSize}
-                    tuningRunning={ws.tuningRunning} canRunTuning={Boolean(ws.code && ws.symbol)}
-                    onRunTuning={ws.handleRunTuning}
-                    gateLoading={ws.gateLoading} gateGates={ws.gateGates}
-                    gateSummary={ws.gateSummary} gateError={ws.gateError}
-                    onRunGate={ws.handleRunGate}
+                    status={ws.backtest.status} metrics={ws.backtest.metrics}
+                    executionAssumptions={ws.backtest.executionAssumptions}
+                    errorMessage={ws.backtest.error}
+                    onAIOptimize={ws.ai.optimize}
+                    code={ws.code.code} onApplyTunedParams={ws.ai.applyTunedParams}
+                    subTab={ws.tuning.subTab} onSubTabChange={ws.tuning.setSubTab}
+                    tuneMethod={ws.tuning.method} onTuneMethodChange={ws.tuning.setMethod}
+                    sweepDimensions={ws.tuning.sweepDimensions} onToggleDimension={ws.tuning.toggleDimension}
+                    enabledSweepDims={ws.tuning.enabledDims} cartesianSize={ws.tuning.cartesianSize}
+                    tuningRunning={ws.tuning.running} canRunTuning={Boolean(ws.code.code && ws.account.symbol)}
+                    onRunTuning={ws.tuning.run}
+                    gateLoading={ws.gate.loading} gateGates={ws.gate.gates}
+                    gateSummary={ws.gate.summary} gateError={ws.gate.error}
+                    onRunGate={ws.gate.run}
                   />
                 </div>
               )}
@@ -211,7 +224,7 @@ export default function StrategyWorkspacePage() {
         </div>
 
         {/* ── RIGHT: Quick Trade ── */}
-        {ws.quickTradeVisible && (
+        {ws.layout.quickTradeVisible && (
           <div style={{
             width: '1%', minWidth: 300, flexShrink: 0,
             borderLeft: '1px solid #e8e8e8', background: C.bg,
@@ -223,19 +236,19 @@ export default function StrategyWorkspacePage() {
               borderBottom: '1px solid #e8e8e8', flexShrink: 0,
             }}>
               <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>⚡ Quick Trade</span>
-              <span onClick={() => ws.setQuickTradeVisible(false)} role="button" tabIndex={0}
-                onKeyUp={(e) => e.key === 'Enter' && ws.setQuickTradeVisible(false)}
+              <span onClick={() => ws.layout.setQuickTradeVisible(false)} role="button" tabIndex={0}
+                onKeyUp={(e) => e.key === 'Enter' && ws.layout.setQuickTradeVisible(false)}
                 style={{ cursor: 'pointer', color: '#94a3b8', fontSize: 16, lineHeight: 1 }}>✕</span>
             </div>
             <div style={{ flex: 1, overflowY: 'auto', padding: 12 }}>
               <QuickTradePanel
-                accountId={ws.accountId} symbol={ws.symbol}
-                accountMeta={ws.selectedAccountMeta}
-                allPositions={ws.allPositions}
-                positions={ws.qtPositions}
-                recentTrades={ws.qtRecentTrades}
-                onClosePosition={ws.handleClosePosition}
-                onToggleAllPositions={() => ws.setPositionsPanelVisible(!ws.positionsPanelVisible)}
+                accountId={ws.account.accountId} symbol={ws.account.symbol}
+                accountMeta={ws.account.selectedAccountMeta}
+                allPositions={ws.quickTrade.allPositions}
+                positions={ws.quickTrade.qtPositions}
+                recentTrades={ws.quickTrade.qtRecentTrades}
+                onClosePosition={ws.quickTrade.handleClosePosition}
+                onToggleAllPositions={() => ws.layout.setPositionsPanelVisible(!ws.layout.positionsPanelVisible)}
               />
             </div>
           </div>
@@ -243,13 +256,13 @@ export default function StrategyWorkspacePage() {
       </div>
 
       <Suspense fallback={null}>
-        <SaveTemplateModal open={ws.saveModalOpen} confirmLoading={ws.saveLoading} form={ws.saveForm}
-          onCancel={() => ws.setSaveModalOpen(false)} onOk={ws.handleSaveModalOk} />
+        <SaveTemplateModal open={ws.code.saveModalOpen} confirmLoading={ws.code.saveLoading} form={ws.code.saveForm}
+          onCancel={() => ws.code.setSaveModalOpen(false)} onOk={ws.code.handleSaveModalOk} />
       </Suspense>
       <BacktestRunDrawer
-        open={ws.historyDrawerOpen} runId={ws.historyRunId}
-        onClose={ws.handleCloseHistory}
-        onCancel={ws.handleCloseHistory}
+        open={ws.history.drawerOpen} runId={ws.history.runId}
+        onClose={ws.history.close}
+        onCancel={ws.history.close}
       />
     </div>
   );

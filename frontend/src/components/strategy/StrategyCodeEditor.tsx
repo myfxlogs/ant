@@ -10,7 +10,7 @@ import { EditorState, Compartment } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
 import { python } from '@codemirror/lang-python';
 import { syntaxHighlighting, defaultHighlightStyle, bracketMatching, indentOnInput } from '@codemirror/language';
-import { closeBrackets } from '@codemirror/autocomplete';
+import { closeBrackets, autocompletion } from '@codemirror/autocomplete';
 
 export interface Diagnostic {
   line: number;    // 1-based line number
@@ -43,6 +43,7 @@ export default function StrategyCodeEditor({ value, onChange, readOnly, diagnost
     rectangularSelection(),
     bracketMatching(),
     closeBrackets(),
+    autocompletion(),
     indentOnInput(),
     python(),
     syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
@@ -97,14 +98,19 @@ export default function StrategyCodeEditor({ value, onChange, readOnly, diagnost
   }, [readOnly]);
 
   // Sync external value changes (e.g. template load, AI apply).
+  // Preserve cursor/scroll position to avoid jarring jumps.
   useEffect(() => {
     const view = viewRef.current;
     if (!view) return;
     const current = view.state.doc.toString();
     if (value !== current) {
+      const pos = view.state.selection.main.head;
+      const scroll = view.scrollDOM.scrollTop;
       view.dispatch({
         changes: { from: 0, to: current.length, insert: value },
+        selection: { anchor: Math.min(pos, value.length) },
       });
+      requestAnimationFrame(() => { view.scrollDOM.scrollTop = Math.min(scroll, view.scrollDOM.scrollHeight); });
     }
   }, [value]);
 

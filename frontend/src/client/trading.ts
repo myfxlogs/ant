@@ -154,14 +154,13 @@ export const tradingApi = {
         magic: Number(params.magicNumber || 0),
       }),
     );
-    const ticketNum = response.ticket ? Number(response.ticket) : 0;
+    const ticket = response.ticket ? Number(response.ticket) : 0;
+    const errorMsg = ticket ? '' : (response.status || 'order rejected');
     return {
-      order: ticketNum ? { ticket: ticketNum } : undefined,
-      error: ticketNum ? '' : 'no ticket returned',
-      retcode: ticketNum ? 0 : undefined,
-      message: response.status || 'submitted',
-      requestId: undefined,
-      riskError: undefined,
+      order: ticket ? { ticket } : undefined,
+      error: errorMsg,
+      retcode: ticket ? 0 : undefined,
+      message: response.status || '',
     };
   },
 

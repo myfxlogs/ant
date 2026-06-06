@@ -76,7 +76,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
 
       // Remove old instance if params changed.
       if (existing) {
-        try { chart.removeIndicator(existing.paneId, existing.name); } catch { /* */ }
+        try { chart.removeIndicator(existing.paneId, existing.name); } catch { /* indicator may already be removed */ }
       }
 
       const def = getDef(ind.defId);
@@ -86,7 +86,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
         const paneId = chart.createIndicator(km.name, isStack, { id: `ind_${ind.instanceId}` }) as unknown as string;
         if (paneId) {
           if (calcParams.length > 0) {
-            try { (chart as any).setIndicatorCalcParams?.(paneId, km.name, calcParams); } catch { /* */ }
+            try { (chart as any).setIndicatorCalcParams?.(paneId, km.name, calcParams); } catch { /* chart API best-effort */ }
           }
           next.set(ind.instanceId, { paneId, name: km.name, paramsKey });
         }
@@ -94,7 +94,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     }
 
     for (const [id, info] of prev) {
-      try { chart.removeIndicator(info.paneId, info.name); } catch { /* */ }
+      try { chart.removeIndicator(info.paneId, info.name); } catch { /* chart API best-effort */ }
     }
     createdRef.current = next;
   }, [activeIndicators]);
@@ -126,7 +126,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     try { chart.createIndicator('VOL', false, { id: 'volume_pane',
       styles: { bars: { upColor: 'rgba(38,166,154,0.6)', downColor: 'rgba(239,83,80,0.6)' }, lines: [] } });
     } catch { /* ignore */ }
-    try { chart.createIndicator('BIDASK', true, { id: 'candle_pane' }); } catch { /* */ }
+    try { chart.createIndicator('BIDASK', true, { id: 'candle_pane' }); } catch { /* chart API best-effort */ }
     onChartReady?.(chart);
     // ResizeObserver: keep chart canvas in sync with container size
     const ro = new ResizeObserver(() => chartRef.current?.resize());
@@ -149,7 +149,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
 
     // Remove previous overlay.
     if (tradeOverlayRef.current) {
-      try { chart.removeOverlay(tradeOverlayRef.current); } catch { /* */ }
+      try { chart.removeOverlay(tradeOverlayRef.current); } catch { /* chart API best-effort */ }
       tradeOverlayRef.current = null;
     }
 
@@ -181,7 +181,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
         lock: true,
       } as any) as unknown as string;
       if (id) tradeOverlayRef.current = id;
-    } catch { /* */ }
+    } catch { /* chart API best-effort */ }
   }, [trades, bars]);
 
   const applyChartType = useCallback((type: ChartType) => setChartType(type), []);
@@ -208,7 +208,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     const onInteraction = () => {
       if (timer != null) window.clearTimeout(timer);
       timer = window.setTimeout(() => {
-        try { const r = (chart as any).getVisibleRange?.() as { from?: number } | null; if (r?.from != null) handleLoadMore(r.from); } catch { /* */ }
+        try { const r = (chart as any).getVisibleRange?.() as { from?: number } | null; if (r?.from != null) handleLoadMore(r.from); } catch { /* chart API best-effort */ }
       }, 300);
     };
     container.addEventListener('wheel', onInteraction, { passive: true });

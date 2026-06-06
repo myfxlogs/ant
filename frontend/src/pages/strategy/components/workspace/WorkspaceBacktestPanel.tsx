@@ -101,7 +101,7 @@ export default function WorkspaceBacktestPanel({
           <div style={{ marginBottom: 12 }}>
             {status === 'running' && (
               <Tag color="processing" icon={<Spin size="small" />}>
-                {t('strategy.workspace.backtestRunning', 'Backtest running...')}
+                {t('strategy.workspace.backtestRunning', 'Backtest running')}{metrics?.processedBars != null ? ` — ${metrics.processedBars} bars processed` : '...'}
               </Tag>
             )}
             {status === 'completed' && (

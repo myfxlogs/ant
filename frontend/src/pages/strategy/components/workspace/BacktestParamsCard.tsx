@@ -8,6 +8,8 @@ import { StrategyDirectivesCard } from './StrategyDirectivesCard';
 
 const TIMEFRAMES = ['1m', '5m', '15m', '30m', '1h', '4h', '1d', '1w'];
 const DEFAULTS_KEY = 'ant_backtest_defaults';
+// TODO(P3-6): Fetch factory defaults from server (GET /api/user/preferences or proto RPC).
+// Currently localStorage takes precedence; FACTORY_DEFAULTS are the fallback.
 const FACTORY_DEFAULTS = {
   commission: 0.001, slippage: 0.0, leverage: 1,
   tradeDirection: 'both', strictMode: true,

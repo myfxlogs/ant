@@ -63,7 +63,7 @@ func registerHandlers(
 	reconcileGate *mthub.ReconcileGate,
 	analyticsCache *service.AnalyticsCache,
 	brokerReg *adapter.BrokerRegistry,
-) (*mthub.ReconciliationLoop, *notifier.EmailNotifier, *risksvc.PlatformAggregator) {
+) (*mthub.ReconciliationLoop, *notifier.EmailNotifier, *risksvc.PlatformAggregator, func()) {
 
 	// ConnectRPC handlers
 	// Repositories for handler→service→repository layering (P1-2).
@@ -277,7 +277,7 @@ func registerHandlers(
 	adminJurisdictionServer := admin.NewAdminJurisdictionServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(authInterceptor, adminInterceptor)))
 
-	emailNotifier := registerSREHandlers(
+	emailNotifier, workerCleanup := registerSREHandlers(
 		mux, log, pool, ch, nc, rdb, cfg,
 		authInterceptor, platformSvc, mthubSvc,
 		authServer,
@@ -286,5 +286,5 @@ func registerHandlers(
 		aiSvc,
 	)
 
-	return reconLoop, emailNotifier, platformAgg
+	return reconLoop, emailNotifier, platformAgg, workerCleanup
 }

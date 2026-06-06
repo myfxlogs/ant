@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"context"
+	"fmt"
 	"time"
 	"google.golang.org/protobuf/proto"
 
@@ -104,7 +105,10 @@ func (s *StrategyExperimentServer) SubmitStrategyExperiment(ctx context.Context,
 		exp.BaseTemplateID = &tid
 	}
 	if req.Msg.ParameterSpace != nil {
-		b, _ := proto.Marshal(req.Msg.ParameterSpace)
+		b, err := proto.Marshal(req.Msg.ParameterSpace)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal parameter space: %w", err))
+		}
 		exp.ParameterSpace = b
 	}
 	if err := s.repo.Create(ctx, exp); err != nil {
@@ -228,7 +232,12 @@ func (s *StrategyExperimentServer) WatchExperiment(ctx context.Context, req *con
 		}
 
 		exp, err := s.repo.Get(ctx, uid, expID)
-		if err != nil || exp == nil {
+		if err != nil {
+			s.log.Warn("WatchExperiment: transient DB error", zap.Error(err), zap.String("expID", expID.String()))
+			continue
+		}
+		if exp == nil {
+			s.log.Warn("WatchExperiment: experiment not found", zap.String("expID", expID.String()))
 			continue
 		}
 		if exp.Status == prevStatus {
@@ -254,7 +263,7 @@ func (s *StrategyExperimentServer) WatchExperiment(ctx context.Context, req *con
 			}
 		}
 
-		if exp.Status == "FAILED" {
+		if exp.Status == StatusFailed {
 			event.Error = "experiment failed"
 		}
 
@@ -263,7 +272,7 @@ func (s *StrategyExperimentServer) WatchExperiment(ctx context.Context, req *con
 		}
 
 		// Terminal states — close the stream
-		if exp.Status == "COMPLETED" || exp.Status == "FAILED" {
+		if exp.Status == StatusCompleted || exp.Status == StatusFailed {
 			return nil
 		}
 	}

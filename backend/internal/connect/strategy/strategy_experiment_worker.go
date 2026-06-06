@@ -76,18 +76,27 @@ func (w *ExperimentWorker) processOne(ctx context.Context) error {
 		return nil
 	}
 
-	w.log.Info("Processing experiment", zap.String("id", exp.ID.String()),
-		zap.String("method", exp.SearchMethod), zap.Int("maxCandidates", exp.MaxCandidates))
+	w.log.Info("Processing experiment",
+		zap.String("expID", exp.ID.String()),
+		zap.String("userID", exp.UserID.String()),
+		zap.String("method", exp.SearchMethod),
+		zap.Int("maxCandidates", exp.MaxCandidates))
 
 	code := exp.StrategyCode
 	if code == "" {
-		_ = w.repo.UpdateExperimentStatus(ctx, exp.ID, "FAILED")
+		if err := w.repo.UpdateExperimentStatus(ctx, exp.ID, StatusFailed); err != nil {
+			w.log.Error("update experiment status to FAILED failed", zap.Error(err), zap.String("expID", exp.ID.String()))
+		}
+		ExperimentRunsTotal.WithLabelValues(StatusFailed).Inc()
 		return fmt.Errorf("experiment %s has no strategy_code", exp.ID)
 	}
 
 	params := ai.ExtractParams(code)
 	if len(params) == 0 {
-		_ = w.repo.UpdateExperimentStatus(ctx, exp.ID, "COMPLETED")
+		if err := w.repo.UpdateExperimentStatus(ctx, exp.ID, StatusCompleted); err != nil {
+		w.log.Error("update experiment status to COMPLETED failed", zap.Error(err), zap.String("expID", exp.ID.String()))
+	}
+	ExperimentRunsTotal.WithLabelValues(StatusCompleted).Inc()
 		w.log.Info("No @params found", zap.String("id", exp.ID.String()))
 		return nil
 	}
@@ -96,14 +105,25 @@ func (w *ExperimentWorker) processOne(ctx context.Context) error {
 	candidates, err := w.runOptimizer(ctx, exp, params, space, code)
 	if err != nil {
 		w.log.Error("optimizer failed", zap.Error(err))
-		_ = w.repo.UpdateExperimentStatus(ctx, exp.ID, "FAILED")
+		if err := w.repo.UpdateExperimentStatus(ctx, exp.ID, StatusFailed); err != nil {
+			w.log.Error("update experiment status to FAILED failed", zap.Error(err), zap.String("expID", exp.ID.String()))
+		}
+		ExperimentRunsTotal.WithLabelValues(StatusFailed).Inc()
 		return err
 	}
 
 	// Create candidate records with scores
 	for i, c := range candidates {
-		paramProto, _ := proto.Marshal(paramsToProto(c.Overrides))
-		scoreProto, _ := proto.Marshal(scoreComponentsToProto(c.ScoreComponents))
+		paramProto, err := proto.Marshal(paramsToProto(c.Overrides))
+		if err != nil {
+			w.log.Error("marshal candidate params failed", zap.Error(err), zap.String("expID", exp.ID.String()), zap.Int("idx", i))
+			continue
+		}
+		scoreProto, err := proto.Marshal(scoreComponentsToProto(c.ScoreComponents))
+		if err != nil {
+			w.log.Error("marshal candidate score failed", zap.Error(err), zap.String("expID", exp.ID.String()), zap.Int("idx", i))
+			continue
+		}
 		record := &repository.StrategyExperimentCandidate{
 			ID:              uuid.New(),
 			ExperimentID:    exp.ID,
@@ -119,7 +139,9 @@ func (w *ExperimentWorker) processOne(ctx context.Context) error {
 		}
 	}
 
-	_ = w.repo.UpdateExperimentStatus(ctx, exp.ID, "COMPLETED")
+	if err := w.repo.UpdateExperimentStatus(ctx, exp.ID, StatusCompleted); err != nil {
+		w.log.Error("update experiment status to COMPLETED failed", zap.Error(err), zap.String("expID", exp.ID.String()))
+	}
 	w.log.Info("Experiment completed", zap.String("id", exp.ID.String()),
 		zap.Int("candidates", len(candidates)))
 	return nil
@@ -221,6 +243,10 @@ func (w *ExperimentWorker) backtestAndScore(
 		tt := time.Now()
 		toTs = &tt
 	}
+	overridesBytes, err := marshalOverrides(overrides)
+	if err != nil {
+		return candidateResult{}, fmt.Errorf("marshal overrides: %w", err)
+	}
 	run := &repository.BacktestRun{
 		ID:                 uuid.New(),
 		UserID:             exp.UserID,
@@ -230,7 +256,7 @@ func (w *ExperimentWorker) backtestAndScore(
 		FromTs:             fromTs,
 		ToTs:               toTs,
 		Mode:               "KLINE_RANGE",
-		Status:             "PENDING",
+		Status:             StatusPending,
 		StrategyCode:       &modifiedCode,
 		InitialCapital:     f64Ptr(10000),
 			Commission:        f64Ptr(0.001),
@@ -241,7 +267,7 @@ func (w *ExperimentWorker) backtestAndScore(
 		StrategyCodeHash:   "",
 		Error:              "",
 		ExtraSymbols:       []string{},
-		ParameterOverrides: marshalOverrides(overrides),
+		ParameterOverrides: overridesBytes,
 	}
 
 	runID, err := w.backtestRepo.Create(ctx, run)
@@ -250,14 +276,18 @@ func (w *ExperimentWorker) backtestAndScore(
 	}
 
 	// Poll for completion
-	for i := 0; i < 120; i++ { // 10 minutes timeout
-		time.Sleep(5 * time.Second)
+	for i := 0; i < 120; i++ { // 10 minutes max timeout
+		select {
+		case <-ctx.Done():
+			return candidateResult{}, fmt.Errorf("backtest %s cancelled: %w", runID, ctx.Err())
+		case <-time.After(5 * time.Second):
+		}
 		bt, err := w.backtestRepo.GetByID(ctx, exp.UserID, runID)
 		if err != nil {
 			return candidateResult{}, fmt.Errorf("get backtest: %w", err)
 		}
-		if bt.Status == "SUCCEEDED" || bt.Status == "FAILED" {
-			if bt.Status == "FAILED" {
+		if bt.Status == StatusSucceeded || bt.Status == StatusFailed {
+			if bt.Status == StatusFailed {
 				return candidateResult{}, fmt.Errorf("backtest failed: %s", bt.Error)
 			}
 			return w.scoreFromBacktest(ctx, bt, overrides), nil
@@ -329,9 +359,12 @@ func (w *ExperimentWorker) detectRegime(ctx context.Context, bt *repository.Back
 	return result.Regime
 }
 
-func marshalOverrides(overrides map[string]interface{}) []byte {
-	b, _ := proto.Marshal(paramsToProto(overrides))
-	return b
+func marshalOverrides(overrides map[string]interface{}) ([]byte, error) {
+	b, err := proto.Marshal(paramsToProto(overrides))
+	if err != nil {
+		return nil, fmt.Errorf("proto.Marshal overrides: %w", err)
+	}
+	return b, nil
 }
 
 func timePtr(t time.Time) *time.Time { return &t }

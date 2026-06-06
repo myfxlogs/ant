@@ -1,4 +1,6 @@
+import { create } from '@bufbuild/protobuf';
 import { strategyExperimentClient } from './connect';
+import { SubmitStrategyExperimentRequestSchema } from '../gen/ant/v1/strategy_experiment_pb';
 import type { StrategyExperiment, StrategyExperimentCandidate } from '../gen/ant/v1/strategy_experiment_pb';
 
 export type { StrategyExperiment, StrategyExperimentCandidate };
@@ -18,19 +20,21 @@ type SubmitStrategyExperimentParams = {
 
 export const strategyExperimentApi = {
   submit: (params: SubmitStrategyExperimentParams) =>
-    strategyExperimentClient.submitStrategyExperiment({
-      baseTemplateId: params.baseTemplateId,
-      parameterSpace: params.parameterSpace,
-      searchMethod: params.searchMethod ?? 'grid',
-      maxCandidates: params.maxCandidates ?? 12,
-      objective: params.objective ?? 'balanced',
-      idempotencyKey: `ui-${Date.now()}`,
-      strategyCode: params.strategyCode ?? '',
-      symbol: params.symbol ?? '',
-      timeframe: params.timeframe ?? '',
-      fromTsUnixMs: params.fromTsUnixMs ?? 0n,
-      toTsUnixMs: params.toTsUnixMs ?? 0n,
-    }),
+    strategyExperimentClient.submitStrategyExperiment(
+      create(SubmitStrategyExperimentRequestSchema, {
+        baseTemplateId: params.baseTemplateId,
+        parameterSpace: params.parameterSpace,
+        searchMethod: params.searchMethod ?? 'grid',
+        maxCandidates: params.maxCandidates ?? 12,
+        objective: params.objective ?? 'balanced',
+        idempotencyKey: `ui-${Date.now()}`,
+        strategyCode: params.strategyCode ?? '',
+        symbol: params.symbol ?? '',
+        timeframe: params.timeframe ?? '',
+        fromTsUnixMs: params.fromTsUnixMs ?? 0n,
+        toTsUnixMs: params.toTsUnixMs ?? 0n,
+      }),
+    ),
 
   list: async () => {
     const res = await strategyExperimentClient.listStrategyExperiments({ limit: 50, offset: 0 });

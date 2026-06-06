@@ -10,6 +10,7 @@ interface Props {
   symbol: string; onSymbolChange: (s: string) => void;
   accountInfo?: AccountInfo | null;
   positionCount?: number;
+  busy?: boolean;
   codePanelVisible: boolean; onToggleCodePanel: () => void;
   onCloseCodePanel?: () => void;
   positionsCount?: number; onTogglePositionsPanel?: () => void;
@@ -51,7 +52,7 @@ function SummaryChip({ label, value, color, icon }: { label: string; value: stri
 }
 
 export default function WorkspaceToolbar({
-  accounts, accountId, onAccountChange,
+  accounts, accountId, onAccountChange, busy,
   symbol, onSymbolChange, accountInfo, positionCount,
   codePanelVisible, onToggleCodePanel, onCloseCodePanel,
   positionsCount, onTogglePositionsPanel,
@@ -73,7 +74,7 @@ export default function WorkspaceToolbar({
         <div style={groupLabelStyle}>Watchlist</div>
         <Space size={4}>
           <Select size="small" style={{ minWidth: 120, width: 220, maxWidth: '36vw' }}
-            value={accountId || undefined} onChange={onAccountChange}
+            value={accountId || undefined} onChange={onAccountChange} disabled={busy}
             onDropdownVisibleChange={maybeCloseCode}
             placeholder="Select account" showSearch optionFilterProp="label"
             notFoundContent="No accounts"

@@ -5,7 +5,7 @@
 import type { GenFile, GenService } from "@bufbuild/protobuf/codegenv2";
 import { fileDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import { file_ai_chat } from "./ai_chat_pb";
-import type { ListAgentsRequestSchema, ListAgentsResponseSchema } from "./ai_agent_pb";
+import type { BatchSetAgentsRequestSchema, BatchSetAgentsResponseSchema, ListAgentsRequestSchema, ListAgentsResponseSchema } from "./ai_agent_pb";
 import { file_ai_agent } from "./ai_agent_pb";
 import type { ChatRequestSchema, ChatResponseSchema, ChatStreamChunkSchema, CreateConversationRequestSchema, CreateConversationResponseSchema, DeleteConversationRequestSchema, DeleteConversationResponseSchema, GetConversationRequestSchema, GetConversationResponseSchema, ListConversationsRequestSchema, ListConversationsResponseSchema, UpdateConversationTitleRequestSchema, UpdateConversationTitleResponseSchema } from "./ai_chat_requests_pb";
 
@@ -13,7 +13,7 @@ import type { ChatRequestSchema, ChatResponseSchema, ChatStreamChunkSchema, Crea
  * Describes the file ai.proto.
  */
 export const file_ai: GenFile = /*@__PURE__*/
-  fileDesc("CghhaS5wcm90bxIGYW50LnYxMpUFCglBSVNlcnZpY2USMQoEQ2hhdBITLmFudC52MS5DaGF0UmVxdWVzdBoULmFudC52MS5DaGF0UmVzcG9uc2USPAoKQ2hhdFN0cmVhbRITLmFudC52MS5DaGF0UmVxdWVzdBoXLmFudC52MS5DaGF0U3RyZWFtQ2h1bmswARJYChFMaXN0Q29udmVyc2F0aW9ucxIgLmFudC52MS5MaXN0Q29udmVyc2F0aW9uc1JlcXVlc3QaIS5hbnQudjEuTGlzdENvbnZlcnNhdGlvbnNSZXNwb25zZRJSCg9HZXRDb252ZXJzYXRpb24SHi5hbnQudjEuR2V0Q29udmVyc2F0aW9uUmVxdWVzdBofLmFudC52MS5HZXRDb252ZXJzYXRpb25SZXNwb25zZRJbChJDcmVhdGVDb252ZXJzYXRpb24SIS5hbnQudjEuQ3JlYXRlQ29udmVyc2F0aW9uUmVxdWVzdBoiLmFudC52MS5DcmVhdGVDb252ZXJzYXRpb25SZXNwb25zZRJbChJEZWxldGVDb252ZXJzYXRpb24SIS5hbnQudjEuRGVsZXRlQ29udmVyc2F0aW9uUmVxdWVzdBoiLmFudC52MS5EZWxldGVDb252ZXJzYXRpb25SZXNwb25zZRJqChdVcGRhdGVDb252ZXJzYXRpb25UaXRsZRImLmFudC52MS5VcGRhdGVDb252ZXJzYXRpb25UaXRsZVJlcXVlc3QaJy5hbnQudjEuVXBkYXRlQ29udmVyc2F0aW9uVGl0bGVSZXNwb25zZRJDCgpMaXN0QWdlbnRzEhkuYW50LnYxLkxpc3RBZ2VudHNSZXF1ZXN0GhouYW50LnYxLkxpc3RBZ2VudHNSZXNwb25zZUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MVAAUAFiBnByb3RvMw", [file_ai_chat, file_ai_agent]);
+  fileDesc("CghhaS5wcm90bxIGYW50LnYxMuYFCglBSVNlcnZpY2USMQoEQ2hhdBITLmFudC52MS5DaGF0UmVxdWVzdBoULmFudC52MS5DaGF0UmVzcG9uc2USPAoKQ2hhdFN0cmVhbRITLmFudC52MS5DaGF0UmVxdWVzdBoXLmFudC52MS5DaGF0U3RyZWFtQ2h1bmswARJYChFMaXN0Q29udmVyc2F0aW9ucxIgLmFudC52MS5MaXN0Q29udmVyc2F0aW9uc1JlcXVlc3QaIS5hbnQudjEuTGlzdENvbnZlcnNhdGlvbnNSZXNwb25zZRJSCg9HZXRDb252ZXJzYXRpb24SHi5hbnQudjEuR2V0Q29udmVyc2F0aW9uUmVxdWVzdBofLmFudC52MS5HZXRDb252ZXJzYXRpb25SZXNwb25zZRJbChJDcmVhdGVDb252ZXJzYXRpb24SIS5hbnQudjEuQ3JlYXRlQ29udmVyc2F0aW9uUmVxdWVzdBoiLmFudC52MS5DcmVhdGVDb252ZXJzYXRpb25SZXNwb25zZRJbChJEZWxldGVDb252ZXJzYXRpb24SIS5hbnQudjEuRGVsZXRlQ29udmVyc2F0aW9uUmVxdWVzdBoiLmFudC52MS5EZWxldGVDb252ZXJzYXRpb25SZXNwb25zZRJqChdVcGRhdGVDb252ZXJzYXRpb25UaXRsZRImLmFudC52MS5VcGRhdGVDb252ZXJzYXRpb25UaXRsZVJlcXVlc3QaJy5hbnQudjEuVXBkYXRlQ29udmVyc2F0aW9uVGl0bGVSZXNwb25zZRJDCgpMaXN0QWdlbnRzEhkuYW50LnYxLkxpc3RBZ2VudHNSZXF1ZXN0GhouYW50LnYxLkxpc3RBZ2VudHNSZXNwb25zZRJPCg5CYXRjaFNldEFnZW50cxIdLmFudC52MS5CYXRjaFNldEFnZW50c1JlcXVlc3QaHi5hbnQudjEuQmF0Y2hTZXRBZ2VudHNSZXNwb25zZUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MVAAUAFiBnByb3RvMw", [file_ai_chat, file_ai_agent]);
 
 /**
  * @generated from service ant.v1.AIService
@@ -84,6 +84,14 @@ export const AIService: GenService<{
     methodKind: "unary";
     input: typeof ListAgentsRequestSchema;
     output: typeof ListAgentsResponseSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.AIService.BatchSetAgents
+   */
+  batchSetAgents: {
+    methodKind: "unary";
+    input: typeof BatchSetAgentsRequestSchema;
+    output: typeof BatchSetAgentsResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_ai, 0);

@@ -48,8 +48,8 @@ func toProtoBacktestRun(r *repository.BacktestRun) *antv1.BacktestRun {
 	if r.DatasetID != nil {
 		out.DatasetId = proto.String(r.DatasetID.String())
 	}
-	out.IsTerminal = r.Status == "SUCCEEDED" || r.Status == "FAILED" || r.Status == "CANCELED"
-	out.IsSucceeded = r.Status == "SUCCEEDED"
+	out.IsTerminal = r.Status == StatusSucceeded || r.Status == StatusFailed || r.Status == StatusCanceled
+	out.IsSucceeded = r.Status == StatusSucceeded
 	// Deserialize config snapshot to proto.
 	if len(r.ConfigSnapshot) > 0 {
 		var ec antv1.BacktestExecutionConfig
@@ -62,17 +62,17 @@ func toProtoBacktestRun(r *repository.BacktestRun) *antv1.BacktestRun {
 
 func backtestStatusToProto(s string) antv1.BacktestRunStatus {
 	switch s {
-	case "PENDING":
+	case StatusPending:
 		return antv1.BacktestRunStatus_BACKTEST_RUN_STATUS_PENDING
-	case "RUNNING":
+	case StatusRunning:
 		return antv1.BacktestRunStatus_BACKTEST_RUN_STATUS_RUNNING
-	case "SUCCEEDED":
+	case StatusSucceeded:
 		return antv1.BacktestRunStatus_BACKTEST_RUN_STATUS_SUCCEEDED
-	case "FAILED":
+	case StatusFailed:
 		return antv1.BacktestRunStatus_BACKTEST_RUN_STATUS_FAILED
-	case "CANCEL_REQUESTED":
+	case StatusCancelRequested:
 		return antv1.BacktestRunStatus_BACKTEST_RUN_STATUS_CANCEL_REQUESTED
-	case "CANCELED":
+	case StatusCanceled:
 		return antv1.BacktestRunStatus_BACKTEST_RUN_STATUS_CANCELED
 	default:
 		return antv1.BacktestRunStatus_BACKTEST_RUN_STATUS_UNSPECIFIED
