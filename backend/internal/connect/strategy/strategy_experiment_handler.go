@@ -81,6 +81,20 @@ func candidateToProto(c *repository.StrategyExperimentCandidate) *antv1.Strategy
 	}
 	p.Parameters = paramsProtoToStruct(c.Parameters)
 	p.ScoreComponents = scoreProtoToStruct(c.ScoreComponents)
+	// OOS validation fields (proto3 optional double → *float64, direct pointer assignment)
+	if c.OOSScore != nil {
+		p.OosScore = c.OOSScore
+	}
+	if c.OOSTotalReturn != nil {
+		p.OosTotalReturn = c.OOSTotalReturn
+	}
+	if c.OOSSharpeRatio != nil {
+		p.OosSharpeRatio = c.OOSSharpeRatio
+	}
+	if c.DegradationPct != nil {
+		p.DegradationPct = c.DegradationPct
+	}
+	p.IsOverfit = c.IsOverfit
 	return p
 }
 
