@@ -18,4 +18,5 @@ service AIService {
   rpc UpdateConversationTitle(UpdateConversationTitleRequest) returns (UpdateConversationTitleResponse);
   rpc ListAgents(ListAgentsRequest) returns (ListAgentsResponse);
   rpc BatchSetAgents(BatchSetAgentsRequest) returns (BatchSetAgentsResponse);
+  rpc ResolveSession(ResolveSessionRequest) returns (ResolveSessionResponse);
 }

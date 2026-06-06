@@ -67,3 +67,14 @@ message UpdateConversationTitleRequest {
 message UpdateConversationTitleResponse {
   bool success = 1;
 }
+
+message ResolveSessionRequest {
+  string strategy_key = 1;
+  string title = 2;
+}
+
+message ResolveSessionResponse {
+  string session_id = 1;
+  repeated ConversationMessage messages = 2;
+  bool created = 3;
+}

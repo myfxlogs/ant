@@ -667,6 +667,118 @@ func (x *UpdateConversationTitleResponse) GetSuccess() bool {
 	return false
 }
 
+type ResolveSessionRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StrategyKey   string                 `protobuf:"bytes,1,opt,name=strategy_key,json=strategyKey,proto3" json:"strategy_key,omitempty"`
+	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ResolveSessionRequest) Reset() {
+	*x = ResolveSessionRequest{}
+	mi := &file_ai_chat_requests_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResolveSessionRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResolveSessionRequest) ProtoMessage() {}
+
+func (x *ResolveSessionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_chat_requests_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResolveSessionRequest.ProtoReflect.Descriptor instead.
+func (*ResolveSessionRequest) Descriptor() ([]byte, []int) {
+	return file_ai_chat_requests_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *ResolveSessionRequest) GetStrategyKey() string {
+	if x != nil {
+		return x.StrategyKey
+	}
+	return ""
+}
+
+func (x *ResolveSessionRequest) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+type ResolveSessionResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SessionId     string                 `protobuf:"bytes,1,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	Messages      []*ConversationMessage `protobuf:"bytes,2,rep,name=messages,proto3" json:"messages,omitempty"`
+	Created       bool                   `protobuf:"varint,3,opt,name=created,proto3" json:"created,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ResolveSessionResponse) Reset() {
+	*x = ResolveSessionResponse{}
+	mi := &file_ai_chat_requests_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResolveSessionResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResolveSessionResponse) ProtoMessage() {}
+
+func (x *ResolveSessionResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ai_chat_requests_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResolveSessionResponse.ProtoReflect.Descriptor instead.
+func (*ResolveSessionResponse) Descriptor() ([]byte, []int) {
+	return file_ai_chat_requests_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *ResolveSessionResponse) GetSessionId() string {
+	if x != nil {
+		return x.SessionId
+	}
+	return ""
+}
+
+func (x *ResolveSessionResponse) GetMessages() []*ConversationMessage {
+	if x != nil {
+		return x.Messages
+	}
+	return nil
+}
+
+func (x *ResolveSessionResponse) GetCreated() bool {
+	if x != nil {
+		return x.Created
+	}
+	return false
+}
+
 var File_ai_chat_requests_proto protoreflect.FileDescriptor
 
 const file_ai_chat_requests_proto_rawDesc = "" +
@@ -707,7 +819,15 @@ const file_ai_chat_requests_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\";\n" +
 	"\x1fUpdateConversationTitleResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccessB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"P\n" +
+	"\x15ResolveSessionRequest\x12!\n" +
+	"\fstrategy_key\x18\x01 \x01(\tR\vstrategyKey\x12\x14\n" +
+	"\x05title\x18\x02 \x01(\tR\x05title\"\x8a\x01\n" +
+	"\x16ResolveSessionResponse\x12\x1d\n" +
+	"\n" +
+	"session_id\x18\x01 \x01(\tR\tsessionId\x127\n" +
+	"\bmessages\x18\x02 \x03(\v2\x1b.ant.v1.ConversationMessageR\bmessages\x12\x18\n" +
+	"\acreated\x18\x03 \x01(\bR\acreatedB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_ai_chat_requests_proto_rawDescOnce sync.Once
@@ -721,7 +841,7 @@ func file_ai_chat_requests_proto_rawDescGZIP() []byte {
 	return file_ai_chat_requests_proto_rawDescData
 }
 
-var file_ai_chat_requests_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_ai_chat_requests_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_ai_chat_requests_proto_goTypes = []any{
 	(*ChatRequest)(nil),                     // 0: ant.v1.ChatRequest
 	(*ChatResponse)(nil),                    // 1: ant.v1.ChatResponse
@@ -736,19 +856,22 @@ var file_ai_chat_requests_proto_goTypes = []any{
 	(*DeleteConversationResponse)(nil),      // 10: ant.v1.DeleteConversationResponse
 	(*UpdateConversationTitleRequest)(nil),  // 11: ant.v1.UpdateConversationTitleRequest
 	(*UpdateConversationTitleResponse)(nil), // 12: ant.v1.UpdateConversationTitleResponse
-	(*ConversationSummary)(nil),             // 13: ant.v1.ConversationSummary
-	(*ConversationMessage)(nil),             // 14: ant.v1.ConversationMessage
+	(*ResolveSessionRequest)(nil),           // 13: ant.v1.ResolveSessionRequest
+	(*ResolveSessionResponse)(nil),          // 14: ant.v1.ResolveSessionResponse
+	(*ConversationSummary)(nil),             // 15: ant.v1.ConversationSummary
+	(*ConversationMessage)(nil),             // 16: ant.v1.ConversationMessage
 }
 var file_ai_chat_requests_proto_depIdxs = []int32{
-	13, // 0: ant.v1.ListConversationsResponse.conversations:type_name -> ant.v1.ConversationSummary
-	13, // 1: ant.v1.GetConversationResponse.conversation:type_name -> ant.v1.ConversationSummary
-	14, // 2: ant.v1.GetConversationResponse.messages:type_name -> ant.v1.ConversationMessage
-	13, // 3: ant.v1.CreateConversationResponse.conversation:type_name -> ant.v1.ConversationSummary
-	4,  // [4:4] is the sub-list for method output_type
-	4,  // [4:4] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	15, // 0: ant.v1.ListConversationsResponse.conversations:type_name -> ant.v1.ConversationSummary
+	15, // 1: ant.v1.GetConversationResponse.conversation:type_name -> ant.v1.ConversationSummary
+	16, // 2: ant.v1.GetConversationResponse.messages:type_name -> ant.v1.ConversationMessage
+	15, // 3: ant.v1.CreateConversationResponse.conversation:type_name -> ant.v1.ConversationSummary
+	16, // 4: ant.v1.ResolveSessionResponse.messages:type_name -> ant.v1.ConversationMessage
+	5,  // [5:5] is the sub-list for method output_type
+	5,  // [5:5] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_ai_chat_requests_proto_init() }
@@ -763,7 +886,7 @@ func file_ai_chat_requests_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ai_chat_requests_proto_rawDesc), len(file_ai_chat_requests_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

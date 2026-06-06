@@ -79,6 +79,7 @@ type ReviseCodeRequest struct {
 	Instruction   string                 `protobuf:"bytes,2,opt,name=instruction,proto3" json:"instruction,omitempty"`
 	History       []*CodeChatMessage     `protobuf:"bytes,3,rep,name=history,proto3" json:"history,omitempty"`
 	Locale        string                 `protobuf:"bytes,4,opt,name=locale,proto3" json:"locale,omitempty"`
+	SessionId     string                 `protobuf:"bytes,5,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -137,6 +138,13 @@ func (x *ReviseCodeRequest) GetHistory() []*CodeChatMessage {
 func (x *ReviseCodeRequest) GetLocale() string {
 	if x != nil {
 		return x.Locale
+	}
+	return ""
+}
+
+func (x *ReviseCodeRequest) GetSessionId() string {
+	if x != nil {
+		return x.SessionId
 	}
 	return ""
 }
@@ -544,12 +552,14 @@ const file_code_assist_proto_rawDesc = "" +
 	"\x11code_assist.proto\x12\x06ant.v1\"?\n" +
 	"\x0fCodeChatMessage\x12\x12\n" +
 	"\x04role\x18\x01 \x01(\tR\x04role\x12\x18\n" +
-	"\acontent\x18\x02 \x01(\tR\acontent\"\x94\x01\n" +
+	"\acontent\x18\x02 \x01(\tR\acontent\"\xb3\x01\n" +
 	"\x11ReviseCodeRequest\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\tR\x04code\x12 \n" +
 	"\vinstruction\x18\x02 \x01(\tR\vinstruction\x121\n" +
 	"\ahistory\x18\x03 \x03(\v2\x17.ant.v1.CodeChatMessageR\ahistory\x12\x16\n" +
-	"\x06locale\x18\x04 \x01(\tR\x06locale\"@\n" +
+	"\x06locale\x18\x04 \x01(\tR\x06locale\x12\x1d\n" +
+	"\n" +
+	"session_id\x18\x05 \x01(\tR\tsessionId\"@\n" +
 	"\x12ReviseCodeResponse\x12\x12\n" +
 	"\x04text\x18\x01 \x01(\tR\x04text\x12\x16\n" +
 	"\x06python\x18\x02 \x01(\tR\x06python\"Y\n" +

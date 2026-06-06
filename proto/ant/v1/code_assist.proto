@@ -21,6 +21,7 @@ message ReviseCodeRequest {
   string instruction = 2;
   repeated CodeChatMessage history = 3;
   string locale = 4;
+  string session_id = 5;
 }
 
 message ReviseCodeResponse {

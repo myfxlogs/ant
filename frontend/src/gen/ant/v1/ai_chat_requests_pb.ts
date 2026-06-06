@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file ai_chat_requests.proto.
  */
 export const file_ai_chat_requests: GenFile = /*@__PURE__*/
-  fileDesc("ChZhaV9jaGF0X3JlcXVlc3RzLnByb3RvEgZhbnQudjEiXAoLQ2hhdFJlcXVlc3QSDwoHbWVzc2FnZRgBIAEoCRIPCgdjb250ZXh0GAIgASgJEhIKCmFjY291bnRfaWQYAyABKAkSFwoPY29udmVyc2F0aW9uX2lkGAQgASgJIjQKDENoYXRSZXNwb25zZRIPCgdtZXNzYWdlGAEgASgJEhMKC3N1Z2dlc3Rpb25zGAIgAygJIncKD0NoYXRTdHJlYW1DaHVuaxINCgVkZWx0YRgBIAEoCRIMCgRkb25lGAIgASgIEhUKDXByb21wdF90b2tlbnMYAyABKAUSGQoRY29tcGxldGlvbl90b2tlbnMYBCABKAUSFQoNZXJyb3JfbWVzc2FnZRgFIAEoCSIaChhMaXN0Q29udmVyc2F0aW9uc1JlcXVlc3QiTwoZTGlzdENvbnZlcnNhdGlvbnNSZXNwb25zZRIyCg1jb252ZXJzYXRpb25zGAEgAygLMhsuYW50LnYxLkNvbnZlcnNhdGlvblN1bW1hcnkiJAoWR2V0Q29udmVyc2F0aW9uUmVxdWVzdBIKCgJpZBgBIAEoCSJ7ChdHZXRDb252ZXJzYXRpb25SZXNwb25zZRIxCgxjb252ZXJzYXRpb24YASABKAsyGy5hbnQudjEuQ29udmVyc2F0aW9uU3VtbWFyeRItCghtZXNzYWdlcxgCIAMoCzIbLmFudC52MS5Db252ZXJzYXRpb25NZXNzYWdlIioKGUNyZWF0ZUNvbnZlcnNhdGlvblJlcXVlc3QSDQoFdGl0bGUYASABKAkiTwoaQ3JlYXRlQ29udmVyc2F0aW9uUmVzcG9uc2USMQoMY29udmVyc2F0aW9uGAEgASgLMhsuYW50LnYxLkNvbnZlcnNhdGlvblN1bW1hcnkiJwoZRGVsZXRlQ29udmVyc2F0aW9uUmVxdWVzdBIKCgJpZBgBIAEoCSItChpEZWxldGVDb252ZXJzYXRpb25SZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIjsKHlVwZGF0ZUNvbnZlcnNhdGlvblRpdGxlUmVxdWVzdBIKCgJpZBgBIAEoCRINCgV0aXRsZRgCIAEoCSIyCh9VcGRhdGVDb252ZXJzYXRpb25UaXRsZVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAhCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_ai_conversation]);
+  fileDesc("ChZhaV9jaGF0X3JlcXVlc3RzLnByb3RvEgZhbnQudjEiXAoLQ2hhdFJlcXVlc3QSDwoHbWVzc2FnZRgBIAEoCRIPCgdjb250ZXh0GAIgASgJEhIKCmFjY291bnRfaWQYAyABKAkSFwoPY29udmVyc2F0aW9uX2lkGAQgASgJIjQKDENoYXRSZXNwb25zZRIPCgdtZXNzYWdlGAEgASgJEhMKC3N1Z2dlc3Rpb25zGAIgAygJIncKD0NoYXRTdHJlYW1DaHVuaxINCgVkZWx0YRgBIAEoCRIMCgRkb25lGAIgASgIEhUKDXByb21wdF90b2tlbnMYAyABKAUSGQoRY29tcGxldGlvbl90b2tlbnMYBCABKAUSFQoNZXJyb3JfbWVzc2FnZRgFIAEoCSIaChhMaXN0Q29udmVyc2F0aW9uc1JlcXVlc3QiTwoZTGlzdENvbnZlcnNhdGlvbnNSZXNwb25zZRIyCg1jb252ZXJzYXRpb25zGAEgAygLMhsuYW50LnYxLkNvbnZlcnNhdGlvblN1bW1hcnkiJAoWR2V0Q29udmVyc2F0aW9uUmVxdWVzdBIKCgJpZBgBIAEoCSJ7ChdHZXRDb252ZXJzYXRpb25SZXNwb25zZRIxCgxjb252ZXJzYXRpb24YASABKAsyGy5hbnQudjEuQ29udmVyc2F0aW9uU3VtbWFyeRItCghtZXNzYWdlcxgCIAMoCzIbLmFudC52MS5Db252ZXJzYXRpb25NZXNzYWdlIioKGUNyZWF0ZUNvbnZlcnNhdGlvblJlcXVlc3QSDQoFdGl0bGUYASABKAkiTwoaQ3JlYXRlQ29udmVyc2F0aW9uUmVzcG9uc2USMQoMY29udmVyc2F0aW9uGAEgASgLMhsuYW50LnYxLkNvbnZlcnNhdGlvblN1bW1hcnkiJwoZRGVsZXRlQ29udmVyc2F0aW9uUmVxdWVzdBIKCgJpZBgBIAEoCSItChpEZWxldGVDb252ZXJzYXRpb25SZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIjsKHlVwZGF0ZUNvbnZlcnNhdGlvblRpdGxlUmVxdWVzdBIKCgJpZBgBIAEoCRINCgV0aXRsZRgCIAEoCSIyCh9VcGRhdGVDb252ZXJzYXRpb25UaXRsZVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiPAoVUmVzb2x2ZVNlc3Npb25SZXF1ZXN0EhQKDHN0cmF0ZWd5X2tleRgBIAEoCRINCgV0aXRsZRgCIAEoCSJsChZSZXNvbHZlU2Vzc2lvblJlc3BvbnNlEhIKCnNlc3Npb25faWQYASABKAkSLQoIbWVzc2FnZXMYAiADKAsyGy5hbnQudjEuQ29udmVyc2F0aW9uTWVzc2FnZRIPCgdjcmVhdGVkGAMgASgIQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_ai_conversation]);
 
 /**
  * @generated from message ant.v1.ChatRequest
@@ -284,4 +284,53 @@ export type UpdateConversationTitleResponse = Message<"ant.v1.UpdateConversation
  */
 export const UpdateConversationTitleResponseSchema: GenMessage<UpdateConversationTitleResponse> = /*@__PURE__*/
   messageDesc(file_ai_chat_requests, 12);
+
+/**
+ * @generated from message ant.v1.ResolveSessionRequest
+ */
+export type ResolveSessionRequest = Message<"ant.v1.ResolveSessionRequest"> & {
+  /**
+   * @generated from field: string strategy_key = 1;
+   */
+  strategyKey: string;
+
+  /**
+   * @generated from field: string title = 2;
+   */
+  title: string;
+};
+
+/**
+ * Describes the message ant.v1.ResolveSessionRequest.
+ * Use `create(ResolveSessionRequestSchema)` to create a new message.
+ */
+export const ResolveSessionRequestSchema: GenMessage<ResolveSessionRequest> = /*@__PURE__*/
+  messageDesc(file_ai_chat_requests, 13);
+
+/**
+ * @generated from message ant.v1.ResolveSessionResponse
+ */
+export type ResolveSessionResponse = Message<"ant.v1.ResolveSessionResponse"> & {
+  /**
+   * @generated from field: string session_id = 1;
+   */
+  sessionId: string;
+
+  /**
+   * @generated from field: repeated ant.v1.ConversationMessage messages = 2;
+   */
+  messages: ConversationMessage[];
+
+  /**
+   * @generated from field: bool created = 3;
+   */
+  created: boolean;
+};
+
+/**
+ * Describes the message ant.v1.ResolveSessionResponse.
+ * Use `create(ResolveSessionResponseSchema)` to create a new message.
+ */
+export const ResolveSessionResponseSchema: GenMessage<ResolveSessionResponse> = /*@__PURE__*/
+  messageDesc(file_ai_chat_requests, 14);
 
