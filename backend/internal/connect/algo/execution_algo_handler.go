@@ -51,118 +51,102 @@ func NewExecutionAlgoServer(broker mthub.BrokerRegistry, log *zap.Logger) *Execu
 
 func (s *ExecutionAlgoServer) StartAlgo(ctx context.Context, req *connect.Request[antv1.StartAlgoRequest]) (*connect.Response[antv1.StartAlgoResponse], error) {
 	m := req.Msg
-
-	// Validate required fields.
-	if m.AccountId == "" {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("account_id is required"))
-	}
-	if m.Symbol == "" {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("symbol is required"))
-	}
-	if m.Side != "buy" && m.Side != "sell" {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("side must be 'buy' or 'sell'"))
-	}
-	if m.TotalVolume <= 0 {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("total_volume must be positive"))
-	}
-	if m.StartTime == nil || m.EndTime == nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("start_time and end_time are required"))
-	}
-	startTime := m.StartTime.AsTime()
-	endTime := m.EndTime.AsTime()
-	if !endTime.After(startTime) {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("end_time must be after start_time"))
+	if err := validateStartAlgoRequest(m); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	// Authenticate user.
 	userID := interceptor.GetUserID(ctx)
 	if userID == "" {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
 	}
 
-	// Select the algo.
 	algo, err := selectAlgo(m)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	// Build parent order.
+	startTime, endTime := m.StartTime.AsTime(), m.EndTime.AsTime()
 	parent := execalgo.ParentOrder{
-		Symbol:       m.Symbol,
-		Side:         m.Side,
-		TotalVolume:  m.TotalVolume,
-		StartTime:    startTime,
-		EndTime:      endTime,
-		LimitPrice:   m.LimitPrice,
-		ArrivalPrice: m.ArrivalPrice,
+		Symbol: m.Symbol, Side: m.Side, TotalVolume: m.TotalVolume,
+		StartTime: startTime, EndTime: endTime,
+		LimitPrice: m.LimitPrice, ArrivalPrice: m.ArrivalPrice,
 	}
 
-	// Generate schedule.
 	schedule, err := algo.Schedule(parent)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("schedule generation: %w", err))
 	}
 
-	// Resolve broker executor from registry.
-	var brokerExec mthub.BrokerExecutor
-	if s.broker != nil {
-		// Try to resolve by platform. Default to first registered broker.
-		names := s.broker.List()
-		if len(names) > 0 {
-			be, err := s.broker.Resolve(names[0])
-			if err != nil {
-				return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("broker resolution: %w", err))
-			}
-			brokerExec = be
-		}
+	brokerExec, err := s.resolveBrokerExecutor()
+	if err != nil {
+		return nil, err
 	}
-	if brokerExec == nil {
+
+	execID := s.createAndStartExecutor(ctx, schedule, algo.Name(), parent, m.AccountId, brokerExec)
+
+	s.log.Info("algo execution started",
+		zap.String("execution_id", execID), zap.String("algo", algo.Name()),
+		zap.String("user_id", userID), zap.Int("total_slices", len(schedule.Slices)))
+
+	return connect.NewResponse(&antv1.StartAlgoResponse{
+		ExecutionId: execID, Algo: algo.Name(), TotalSlices: int32(len(schedule.Slices)),
+	}), nil
+}
+
+func validateStartAlgoRequest(m *antv1.StartAlgoRequest) error {
+	if m.AccountId == "" { return fmt.Errorf("account_id is required") }
+	if m.Symbol == "" { return fmt.Errorf("symbol is required") }
+	if m.Side != "buy" && m.Side != "sell" { return fmt.Errorf("side must be 'buy' or 'sell'") }
+	if m.TotalVolume <= 0 { return fmt.Errorf("total_volume must be positive") }
+	if m.StartTime == nil || m.EndTime == nil { return fmt.Errorf("start_time and end_time are required") }
+	startTime, endTime := m.StartTime.AsTime(), m.EndTime.AsTime()
+	if !endTime.After(startTime) { return fmt.Errorf("end_time must be after start_time") }
+	return nil
+}
+
+func (s *ExecutionAlgoServer) resolveBrokerExecutor() (mthub.BrokerExecutor, error) {
+	if s.broker == nil {
 		return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("no broker configured for algo execution"))
 	}
-
-	// Create and start executor.
-	execID := uuid.New().String()
-	execCfg := execalgo.ExecutorConfig{
-		Schedule:  schedule,
-		Broker:    brokerExec,
-		AccountID: m.AccountId,
+	names := s.broker.List()
+	if len(names) == 0 {
+		return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("no broker configured for algo execution"))
 	}
-	executor := execalgo.NewExecutor(execCfg)
+	be, err := s.broker.Resolve(names[0])
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("broker resolution: %w", err))
+	}
+	return be, nil
+}
+
+func (s *ExecutionAlgoServer) createAndStartExecutor(
+	ctx context.Context,
+	schedule *execalgo.Schedule,
+	algoName string,
+	parent execalgo.ParentOrder,
+	accountID string,
+	brokerExec mthub.BrokerExecutor,
+) string {
+	execID := uuid.New().String()
+	executor := execalgo.NewExecutor(execalgo.ExecutorConfig{
+		Schedule: schedule, Broker: brokerExec, AccountID: accountID,
+	})
 
 	s.mu.Lock()
-	s.active[execID] = &execution{
-		exec:     executor,
-		algoName: algo.Name(),
-		parent:   parent,
-		started:  time.Now(),
-	}
+	s.active[execID] = &execution{exec: executor, algoName: algoName, parent: parent, started: time.Now()}
 	s.mu.Unlock()
 
 	executor.Start(ctx)
 
-	// Background cleanup: remove from registry when terminal.
 	go func() {
-		for range executor.Events() {
-		}
+		for range executor.Events() {}
 		s.mu.Lock()
 		delete(s.active, execID)
 		s.mu.Unlock()
-		s.log.Info("algo execution completed",
-			zap.String("execution_id", execID),
-			zap.String("algo", algo.Name()))
+		s.log.Info("algo execution completed", zap.String("execution_id", execID), zap.String("algo", algoName))
 	}()
 
-	s.log.Info("algo execution started",
-		zap.String("execution_id", execID),
-		zap.String("algo", algo.Name()),
-		zap.String("user_id", userID),
-		zap.Int("total_slices", len(schedule.Slices)))
-
-	return connect.NewResponse(&antv1.StartAlgoResponse{
-		ExecutionId: execID,
-		Algo:        algo.Name(),
-		TotalSlices: int32(len(schedule.Slices)),
-	}), nil
+	return execID
 }
 
 func (s *ExecutionAlgoServer) GetAlgoStatus(ctx context.Context, req *connect.Request[antv1.GetAlgoStatusRequest]) (*connect.Response[antv1.GetAlgoStatusResponse], error) {
