@@ -50,6 +50,12 @@ type StrategyExperimentCandidate struct {
 	Summary         string     `db:"summary"`
 	Recommendation  string     `db:"recommendation"`
 	CreatedAt       time.Time  `db:"created_at"`
+	// OOS validation fields (nil when window too short or not in top-K)
+	OOSScore        *float64 `db:"oos_score"`
+	OOSTotalReturn  *float64 `db:"oos_total_return"`
+	OOSSharpeRatio  *float64 `db:"oos_sharpe_ratio"`
+	DegradationPct  *float64 `db:"degradation_pct"`
+	IsOverfit       bool     `db:"is_overfit"`
 }
 
 type StrategyExperimentRepository struct {
@@ -150,9 +156,9 @@ func (r *StrategyExperimentRepository) CreateCandidate(ctx context.Context, cand
 		candidate.ScoreComponents = nil
 	}
 	_, err := r.db.Exec(ctx, `
-		INSERT INTO strategy_experiment_candidates (id,experiment_id,parameters,draft_code_ref,backtest_run_id,score,grade,score_components,rank,summary,recommendation,created_at)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
-	`, candidate.ID, candidate.ExperimentID, candidate.Parameters, candidate.DraftCodeRef, candidate.BacktestRunID, candidate.Score, candidate.Grade, candidate.ScoreComponents, candidate.Rank, candidate.Summary, candidate.Recommendation, candidate.CreatedAt)
+		INSERT INTO strategy_experiment_candidates (id,experiment_id,parameters,draft_code_ref,backtest_run_id,score,grade,score_components,rank,summary,recommendation,created_at,oos_score,oos_total_return,oos_sharpe_ratio,degradation_pct,is_overfit)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+	`, candidate.ID, candidate.ExperimentID, candidate.Parameters, candidate.DraftCodeRef, candidate.BacktestRunID, candidate.Score, candidate.Grade, candidate.ScoreComponents, candidate.Rank, candidate.Summary, candidate.Recommendation, candidate.CreatedAt, candidate.OOSScore, candidate.OOSTotalReturn, candidate.OOSSharpeRatio, candidate.DegradationPct, candidate.IsOverfit)
 	if err != nil {
 		return fmt.Errorf("create experiment candidate: %w", err)
 	}
@@ -171,7 +177,7 @@ func (r *StrategyExperimentRepository) ListCandidates(ctx context.Context, userI
 	var result []StrategyExperimentCandidate
 	for rows.Next() {
 		var c StrategyExperimentCandidate
-		if err := rows.Scan(&c.ID, &c.ExperimentID, &c.Parameters, &c.DraftCodeRef, &c.BacktestRunID, &c.Score, &c.Grade, &c.ScoreComponents, &c.Rank, &c.Summary, &c.Recommendation, &c.CreatedAt); err != nil {
+		if err := rows.Scan(&c.ID, &c.ExperimentID, &c.Parameters, &c.DraftCodeRef, &c.BacktestRunID, &c.Score, &c.Grade, &c.ScoreComponents, &c.Rank, &c.Summary, &c.Recommendation, &c.CreatedAt, &c.OOSScore, &c.OOSTotalReturn, &c.OOSSharpeRatio, &c.DegradationPct, &c.IsOverfit); err != nil {
 			return nil, err
 		}
 		result = append(result, c)
@@ -185,7 +191,7 @@ func (r *StrategyExperimentRepository) GetCandidate(ctx context.Context, userID,
 		SELECT c.* FROM strategy_experiment_candidates c
 		JOIN strategy_experiments e ON e.id = c.experiment_id
 		WHERE c.id = $1 AND e.user_id = $2
-	`, candidateID, userID).Scan(&row.ID, &row.ExperimentID, &row.Parameters, &row.DraftCodeRef, &row.BacktestRunID, &row.Score, &row.Grade, &row.ScoreComponents, &row.Rank, &row.Summary, &row.Recommendation, &row.CreatedAt)
+	`, candidateID, userID).Scan(&row.ID, &row.ExperimentID, &row.Parameters, &row.DraftCodeRef, &row.BacktestRunID, &row.Score, &row.Grade, &row.ScoreComponents, &row.Rank, &row.Summary, &row.Recommendation, &row.CreatedAt, &row.OOSScore, &row.OOSTotalReturn, &row.OOSSharpeRatio, &row.DegradationPct, &row.IsOverfit)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrExperimentCandidateNotFound
 	}
@@ -229,6 +235,14 @@ func (r *StrategyExperimentRepository) ClaimPendingExperiment(ctx context.Contex
 
 func (r *StrategyExperimentRepository) UpdateExperimentStatus(ctx context.Context, id uuid.UUID, status string) error {
 	_, err := r.db.Exec(ctx, `UPDATE strategy_experiments SET status = $2, finished_at = NOW() WHERE id = $1`, id, status)
+	return err
+}
+
+// UpdateMarketRegime persists the detected market regime on the experiment.
+func (r *StrategyExperimentRepository) UpdateMarketRegime(ctx context.Context, id uuid.UUID, regime string) error {
+	_, err := r.db.Exec(ctx,
+		`UPDATE strategy_experiments SET market_regime_ref = $2 WHERE id = $1`,
+		id, regime)
 	return err
 }
 
