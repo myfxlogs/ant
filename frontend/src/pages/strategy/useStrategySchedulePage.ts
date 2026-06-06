@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Form, message } from "antd";
-import type { Timestamp } from "@bufbuild/protobuf/wkt";
-import { timestampDate } from "@bufbuild/protobuf/wkt";
 import { pythonStrategyApi } from "../../client/pythonStrategy";
 import { strategyScheduleV2Api, strategyTemplateApi } from "../../client/strategy-schedules";
 import { useAccountsAndSymbols } from "./hooks/useAccountsAndSymbols";
@@ -10,8 +8,8 @@ import { scheduleHealthApi } from "../../client/scheduleHealth";
 import { getTradingRiskToastMessage } from "../../utils/tradingRiskError";
 import type { ScheduleFormValues } from "./components/EditScheduleModal";
 import { DEFAULT_TEMPLATES } from "./StrategyTemplatePage.defaults";
-import { getDeviceLocale, getDeviceTimeZone } from "@/utils/date";
 import { buildParametersFromForm, parseParametersToForm } from "./StrategyScheduleParams";
+import { buildSymbolOptions, formatTime } from "./scheduleUtils";
 import { useTranslation } from "react-i18next";
 
 // ── Local helper types ──
@@ -22,13 +20,7 @@ interface SignalLike {
 }
 interface WithId { id?: unknown; }
 interface WithCode { code?: unknown; }
-interface WithSymbol { symbol?: unknown; }
 type ScheduleType = 'interval' | 'kline_close' | 'hf_quote';
-
-function buildSymbolOptions(list: WithSymbol[]) {
-  return Array.from(new Set((list || []).map((s) => String(s?.symbol || "").trim()).filter(Boolean)))
-    .map((value) => ({ value, label: value }));
-}
 
 export function useStrategySchedulePage() {
   const { t } = useTranslation();
@@ -51,22 +43,6 @@ export function useStrategySchedulePage() {
 
   const symbolsOpts = useMemo(() => buildSymbolOptions(symbols), [symbols]);
 
-  const formatTime = (v: unknown) => {
-    if (!v) return "-";
-    const locale = getDeviceLocale(); const timeZone = getDeviceTimeZone();
-    if (typeof v === "object") {
-      const ts = v as Partial<Timestamp>;
-      const seconds = ts.seconds;
-      const secNum = typeof seconds === "number" ? seconds : typeof seconds === "bigint" ? Number(seconds) : undefined;
-      if (typeof secNum === "number" && Number.isFinite(secNum)) {
-        try { const d = timestampDate(v as Timestamp); if (d instanceof Date && !Number.isNaN(d.getTime())) return d.toLocaleString(locale, { timeZone, hour12: false }); }
-        catch { /* ignore */ }
-      }
-    }
-    if (v instanceof Date) return v.toLocaleString(locale, { timeZone, hour12: false });
-    const s = String(v); const d = new Date(s);
-    if (!Number.isNaN(d.getTime())) return d.toLocaleString(locale, { timeZone, hour12: false });
-    return s;
   };
 
   const loadScheduleHealth = useCallback(async (row: any) => {
