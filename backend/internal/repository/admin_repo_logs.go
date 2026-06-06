@@ -143,87 +143,48 @@ func (r *AdminRepository) ListLogs(ctx context.Context, params *model.LogListPar
 }
 
 func (r *AdminRepository) GetRiskMetricsWindows(ctx context.Context, windows []int, topN int) ([]RiskMetricsWindow, error) {
-	if topN <= 0 {
-		topN = 10
-	}
+	if topN <= 0 { topN = 10 }
 	out := make([]RiskMetricsWindow, 0, len(windows))
 	for _, hours := range windows {
-		if hours <= 0 {
-			continue
-		}
-		item := RiskMetricsWindow{
-			Window: fmt.Sprintf("%dh", hours),
-			Hours:  hours,
-		}
-		if err := r.db.QueryRow(ctx, `
-			SELECT
-				COUNT(*) AS risk_validate_total,
-				COUNT(*) FILTER (WHERE COALESCE(new_value->>'result', '') = 'pass') AS risk_validate_pass,
-				COUNT(*) FILTER (WHERE COALESCE(new_value->>'result', '') = 'reject') AS risk_validate_reject,
-				COUNT(*) FILTER (WHERE COALESCE(new_value->>'result', '') = 'error') AS risk_validate_error,
-				COUNT(*) FILTER (
-					WHERE COALESCE(new_value->>'action', '') = 'order_send'
-					  AND COALESCE(new_value->>'result', '') = 'pass'
-				) AS order_send_success,
-				COUNT(*) FILTER (
-					WHERE COALESCE(new_value->>'action', '') = 'order_send'
-					  AND COALESCE(new_value->>'result', '') IN ('reject', 'error')
-				) AS order_send_failed,
-				COUNT(*) FILTER (
-					WHERE COALESCE(new_value->>'action', '') = 'order_close'
-					  AND COALESCE(new_value->>'result', '') = 'pass'
-				) AS order_close_success,
-				COUNT(*) FILTER (
-					WHERE COALESCE(new_value->>'action', '') = 'order_close'
-					  AND COALESCE(new_value->>'result', '') IN ('reject', 'error')
-				) AS order_close_failed
-			FROM system_operation_logs
-			WHERE module = 'trading_risk'
-			  AND action = 'pre_trade_validate'
-			  AND created_at >= NOW() - ($1::int * INTERVAL '1 hour')
-		`, hours).Scan(
-			&item.RiskValidateTotal,
-			&item.RiskValidatePass,
-			&item.RiskValidateReject,
-			&item.RiskValidateError,
-			&item.OrderSendSuccess,
-			&item.OrderSendFailed,
-			&item.OrderCloseSuccess,
-			&item.OrderCloseFailed,
-		); err != nil {
-			return nil, err
-		}
-
-		rows, err := r.db.Query(ctx, `
-			SELECT
-				COALESCE(NULLIF(new_value->>'risk_code', ''), '(none)') AS risk_code,
-				COUNT(*) AS cnt
-			FROM system_operation_logs
-			WHERE module = 'trading_risk'
-			  AND action = 'pre_trade_validate'
-			  AND created_at >= NOW() - ($1::int * INTERVAL '1 hour')
-			  AND COALESCE(new_value->>'result', '') = 'reject'
-			GROUP BY risk_code
-			ORDER BY cnt DESC, risk_code ASC
-			LIMIT $2
-		`, hours, topN)
-		if err != nil {
-			return nil, err
-		}
-		for rows.Next() {
-			var code RiskCodeCount
-			if err := rows.Scan(&code.RiskCode, &code.Count); err != nil {
-				rows.Close()
-				return nil, err
-			}
-			item.TopRejectRiskCodes = append(item.TopRejectRiskCodes, code)
-		}
-		if err := rows.Err(); err != nil {
-			rows.Close()
-			return nil, err
-		}
-		rows.Close()
+		if hours <= 0 { continue }
+		item := RiskMetricsWindow{Window: fmt.Sprintf("%dh", hours), Hours: hours}
+		if err := r.fetchWindowStats(ctx, hours, &item); err != nil { return nil, err }
+		if err := r.fetchTopRejectCodes(ctx, hours, topN, &item); err != nil { return nil, err }
 		out = append(out, item)
 	}
 	return out, nil
+}
+
+func (r *AdminRepository) fetchWindowStats(ctx context.Context, hours int, item *RiskMetricsWindow) error {
+	return r.db.QueryRow(ctx, `
+		SELECT COUNT(*),
+			COUNT(*) FILTER (WHERE COALESCE(new_value->>'result','')='pass'),
+			COUNT(*) FILTER (WHERE COALESCE(new_value->>'result','')='reject'),
+			COUNT(*) FILTER (WHERE COALESCE(new_value->>'result','')='error'),
+			COUNT(*) FILTER (WHERE COALESCE(new_value->>'action','')='order_send' AND COALESCE(new_value->>'result','')='pass'),
+			COUNT(*) FILTER (WHERE COALESCE(new_value->>'action','')='order_send' AND COALESCE(new_value->>'result','') IN ('reject','error')),
+			COUNT(*) FILTER (WHERE COALESCE(new_value->>'action','')='order_close' AND COALESCE(new_value->>'result','')='pass'),
+			COUNT(*) FILTER (WHERE COALESCE(new_value->>'action','')='order_close' AND COALESCE(new_value->>'result','') IN ('reject','error'))
+		FROM system_operation_logs
+		WHERE module='trading_risk' AND action='pre_trade_validate' AND created_at>=NOW()-($1::int*INTERVAL '1 hour')
+	`, hours).Scan(&item.RiskValidateTotal, &item.RiskValidatePass, &item.RiskValidateReject, &item.RiskValidateError,
+		&item.OrderSendSuccess, &item.OrderSendFailed, &item.OrderCloseSuccess, &item.OrderCloseFailed)
+}
+
+func (r *AdminRepository) fetchTopRejectCodes(ctx context.Context, hours, topN int, item *RiskMetricsWindow) error {
+	rows, err := r.db.Query(ctx, `
+		SELECT COALESCE(NULLIF(new_value->>'risk_code',''),'(none)'), COUNT(*)
+		FROM system_operation_logs
+		WHERE module='trading_risk' AND action='pre_trade_validate'
+		  AND created_at>=NOW()-($1::int*INTERVAL '1 hour') AND COALESCE(new_value->>'result','')='reject'
+		GROUP BY risk_code ORDER BY cnt DESC, risk_code ASC LIMIT $2
+	`, hours, topN)
+	if err != nil { return err }
+	defer rows.Close()
+	for rows.Next() {
+		var code RiskCodeCount
+		if err := rows.Scan(&code.RiskCode, &code.Count); err != nil { return err }
+		item.TopRejectRiskCodes = append(item.TopRejectRiskCodes, code)
+	}
+	return rows.Err()
 }
