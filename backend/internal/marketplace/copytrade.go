@@ -141,21 +141,15 @@ func (e *CopyTradeEngine) Process(ctx context.Context, signal CopySignalEvent) <
 
 // processSync is the synchronous implementation. It runs inside the goroutine
 // spawned by Process, after acquiring the concurrency slot.
-func (e *CopyTradeEngine) processSync(ctx context.Context, signal CopySignalEvent, started time.Time) *CopyTradeResult {
-	result := &CopyTradeResult{
-		SignalID:   signal.SignalID,
-		StrategyID: signal.StrategyID,
-	}
+type subAccount struct {
+	sub     SubscriptionItem
+	account *AccountInfo
+}
 
-	// 1. Look up all active subscriptions for this strategy.
-	subs, err := e.marketplace.ListSubscriptions(ctx, signal.PublisherUserID)
-	// Filter to only this strategy's subscribers.
-	var strategySubs []SubscriptionItem
-	for _, sub := range subs {
-		if sub.StrategyID == signal.StrategyID && sub.Active {
-			strategySubs = append(strategySubs, sub)
-		}
-	}
+func (e *CopyTradeEngine) processSync(ctx context.Context, signal CopySignalEvent, started time.Time) *CopyTradeResult {
+	result := &CopyTradeResult{SignalID: signal.SignalID, StrategyID: signal.StrategyID}
+
+	strategySubs, err := e.filterActiveSubscriptions(ctx, signal)
 	if err != nil {
 		result.Errors = append(result.Errors, CopyTradeError{Error: fmt.Sprintf("list subscriptions: %v", err)})
 		result.Duration = time.Since(started)
@@ -167,24 +161,44 @@ func (e *CopyTradeEngine) processSync(ctx context.Context, signal CopySignalEven
 		return result
 	}
 
-	// 2. Fetch account info for all subscribers in parallel.
-	type subAccount struct {
-		sub     SubscriptionItem
-		account *AccountInfo
+	validAccounts := e.fetchSubscriberAccounts(ctx, strategySubs)
+	allocInput, validAccounts := e.buildAllocInput(validAccounts, result)
+
+	allocation := e.allocator.Allocate(ctx, signal.Volume, allocInput)
+	e.submitCopyOrders(ctx, signal, validAccounts, allocation, result)
+
+	result.Duration = time.Since(started)
+	e.log.Info("copytrade: signal processed",
+		zap.String("signal_id", signal.SignalID), zap.String("strategy_id", signal.StrategyID),
+		zap.Int("subscribers", result.SubscriberCount), zap.Int("success", result.SuccessCount),
+		zap.Int("failed", result.FailureCount), zap.Int("skipped", result.SkippedCount),
+		zap.Duration("duration", result.Duration))
+	return result
+}
+
+func (e *CopyTradeEngine) filterActiveSubscriptions(ctx context.Context, signal CopySignalEvent) ([]SubscriptionItem, error) {
+	subs, err := e.marketplace.ListSubscriptions(ctx, signal.PublisherUserID)
+	if err != nil { return nil, err }
+	var out []SubscriptionItem
+	for _, sub := range subs {
+		if sub.StrategyID == signal.StrategyID && sub.Active {
+			out = append(out, sub)
+		}
 	}
+	return out, nil
+}
+
+func (e *CopyTradeEngine) fetchSubscriberAccounts(ctx context.Context, strategySubs []SubscriptionItem) []subAccount {
 	accounts := make([]subAccount, 0, len(strategySubs))
 	var mu sync.Mutex
 	var wg sync.WaitGroup
-
 	for _, sub := range strategySubs {
 		wg.Add(1)
 		go func(s SubscriptionItem) {
 			defer wg.Done()
 			info, err := e.accountInfo.GetAccountInfo(ctx, s.TargetUserID)
 			if err != nil {
-				e.log.Warn("copytrade: account info fetch failed",
-					zap.String("account_id", s.TargetUserID),
-					zap.Error(err))
+				e.log.Warn("copytrade: account info fetch failed", zap.String("account_id", s.TargetUserID), zap.Error(err))
 			}
 			mu.Lock()
 			accounts = append(accounts, subAccount{sub: s, account: info})
@@ -192,34 +206,32 @@ func (e *CopyTradeEngine) processSync(ctx context.Context, signal CopySignalEven
 		}(sub)
 	}
 	wg.Wait()
+	return accounts
+}
 
-	// 3. Build allocator input: only include connected accounts with positive equity.
+func (e *CopyTradeEngine) buildAllocInput(accounts []subAccount, result *CopyTradeResult) ([]risksvc.AllocAccount, []subAccount) {
 	var allocInput []risksvc.AllocAccount
-	validAccounts := make([]subAccount, 0)
+	var validAccounts []subAccount
 	for _, a := range accounts {
-		if a.account == nil || a.account.Status != "connected" {
-			result.SkippedCount++
-			continue
-		}
-		if a.account.Equity <= 0 {
+		if a.account == nil || a.account.Status != "connected" || a.account.Equity <= 0 {
 			result.SkippedCount++
 			continue
 		}
 		allocInput = append(allocInput, risksvc.AllocAccount{
-			AccountID:  a.sub.TargetUserID,
-			Equity:     a.account.Equity,
-			FreeMargin: a.account.FreeMargin,
+			AccountID: a.sub.TargetUserID, Equity: a.account.Equity, FreeMargin: a.account.FreeMargin,
 		})
 		validAccounts = append(validAccounts, a)
 	}
+	return allocInput, validAccounts
+}
 
-	// 4. Allocate volume across valid subscribers.
-	allocation := e.allocator.Allocate(ctx, signal.Volume, allocInput)
 
-	// 5. Submit orders to each subscriber.
+func (e *CopyTradeEngine) submitCopyOrders(
+	ctx context.Context, signal CopySignalEvent, validAccounts []subAccount,
+	allocation map[string]float64, result *CopyTradeResult,
+) {
 	var submitWg sync.WaitGroup
 	var resultMu sync.Mutex
-
 	for _, a := range validAccounts {
 		vol, ok := allocation[a.sub.TargetUserID]
 		if !ok || vol <= 0 {
@@ -228,64 +240,32 @@ func (e *CopyTradeEngine) processSync(ctx context.Context, signal CopySignalEven
 			resultMu.Unlock()
 			continue
 		}
-
 		submitWg.Add(1)
 		go func(acc subAccount, volume float64) {
 			defer submitWg.Done()
-
 			side := mthub.SideBuy
-			if signal.Side == "sell" {
-				side = mthub.SideSell
-			}
-
+			if signal.Side == "sell" { side = mthub.SideSell }
 			req := &mthub.OrderRequest{
-				AccountID:  acc.sub.TargetUserID,
-				Canonical:  signal.Symbol,
-				Side:       side,
-				OrderType:  mthub.OrderMarket,
-				Volume:     decimal.NewFromFloat(volume),
-				Price:      decimal.NewFromFloat(signal.Price),
-				StopLoss:   decimal.NewFromFloat(signal.StopLoss),
-				TakeProfit: decimal.NewFromFloat(signal.TakeProfit),
-				Comment:    fmt.Sprintf("copytrade:%s:%s", signal.StrategyID[:8], signal.Comment),
-				ClientID:   fmt.Sprintf("copytrade-%s-%s", signal.SignalID, acc.sub.TargetUserID[:8]),
+				AccountID: acc.sub.TargetUserID, Canonical: signal.Symbol, Side: side, OrderType: mthub.OrderMarket,
+				Volume: decimal.NewFromFloat(volume), Price: decimal.NewFromFloat(signal.Price),
+				StopLoss: decimal.NewFromFloat(signal.StopLoss), TakeProfit: decimal.NewFromFloat(signal.TakeProfit),
+				Comment: fmt.Sprintf("copytrade:%s:%s", signal.StrategyID[:8], signal.Comment),
+				ClientID: fmt.Sprintf("copytrade-%s-%s", signal.SignalID, acc.sub.TargetUserID[:8]),
 			}
-
-			if signal.Price > 0 {
-				req.OrderType = mthub.OrderLimit
-			}
-
+			if signal.Price > 0 { req.OrderType = mthub.OrderLimit }
 			_, err := e.mthub.PlaceOrder(ctx, req)
 			resultMu.Lock()
 			defer resultMu.Unlock()
 			if err != nil {
 				result.FailureCount++
-				result.Errors = append(result.Errors, CopyTradeError{
-					SubscriberID: acc.sub.SubscriptionID,
-					AccountID:    acc.sub.TargetUserID,
-					Error:        err.Error(),
-				})
-				e.log.Warn("copytrade: order submit failed",
-					zap.String("account_id", acc.sub.TargetUserID),
-					zap.String("strategy_id", signal.StrategyID),
-					zap.Error(err))
+				result.Errors = append(result.Errors, CopyTradeError{SubscriberID: acc.sub.SubscriptionID, AccountID: acc.sub.TargetUserID, Error: err.Error()})
+				e.log.Warn("copytrade: order submit failed", zap.String("account_id", acc.sub.TargetUserID), zap.String("strategy_id", signal.StrategyID), zap.Error(err))
 			} else {
 				result.SuccessCount++
 			}
 		}(a, vol)
 	}
 	submitWg.Wait()
-
-	result.Duration = time.Since(started)
-	e.log.Info("copytrade: signal processed",
-		zap.String("signal_id", signal.SignalID),
-		zap.String("strategy_id", signal.StrategyID),
-		zap.Int("subscribers", result.SubscriberCount),
-		zap.Int("success", result.SuccessCount),
-		zap.Int("failed", result.FailureCount),
-		zap.Int("skipped", result.SkippedCount),
-		zap.Duration("duration", result.Duration))
-	return result
 }
 
 // Concurrency returns the current number of in-flight copy operations.

@@ -68,18 +68,44 @@ func (s *AnalyticsServer) GetAccountAnalytics(ctx context.Context, req *connect.
 	}
 
 	now := time.Now()
-	start := now.AddDate(-1, 0, 0) // last 12 months
+	start := now.AddDate(-1, 0, 0)
 
-	// Trade stats from raw records
-	trades, err := s.repo.GetTradeRecords(ctx, accountID, start, now)
+	tradeStats, err := s.fetchTradeStats(ctx, accountID, start, now)
 	if err != nil {
-		// #20: Use connect.NewError instead of raw fmt.Errorf.
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("get trade records: %w", err))
 	}
 
-	tradeStats := computeTradeStats(trades)
+	sharpe, sortino, calmar, volatility, avgDailyReturn, maxDDPercent, err := s.fetchRiskMetrics(ctx, accountID, start, now)
+	if err != nil {
+		return nil, err
+	}
 
-	// Consecutive wins/losses (SQL window-function — handler must call separately)
+	symbolStats, _ := s.repo.GetSymbolStats(ctx, accountID, start, now)
+
+	equityCurve := s.fetchEquityCurve(ctx, req, accountID, start, now)
+
+	resp := &antv1.AccountAnalyticsResponse{
+		TradeStats:  tradeStatsToProto(tradeStats),
+		RiskMetrics: riskMetricsToProto(sharpe, sortino, calmar, volatility, avgDailyReturn, maxDDPercent),
+		SymbolStats: symbolStatsToProto(symbolStats),
+		EquityCurve: equityCurveToProto(equityCurve),
+		DailyPnl:    dailyPnLToProto(s.fetchDailyPnL(ctx, accountID, start, now)),
+		HourlyStats: hourlyStatsToProto(s.fetchHourlyStats(ctx, accountID, start, now)),
+	}
+
+	if s.cache != nil {
+		if err := s.cache.Set(ctx, req.Msg.AccountId, resp); err != nil {
+			s.log.Warn("analytics cache: set failed", zap.Error(err))
+		}
+	}
+
+	return connect.NewResponse(resp), nil
+}
+
+func (s *AnalyticsServer) fetchTradeStats(ctx context.Context, accountID uuid.UUID, start, now time.Time) (*model.TradeStats, error) {
+	trades, err := s.repo.GetTradeRecords(ctx, accountID, start, now)
+	if err != nil { return nil, err }
+	tradeStats := computeTradeStats(trades)
 	maxWins, maxLosses, err := s.repo.GetConsecutiveStats(ctx, accountID, start, now)
 	if err != nil {
 		s.log.Warn("get consecutive stats failed", zap.Error(err))
@@ -87,29 +113,26 @@ func (s *AnalyticsServer) GetAccountAnalytics(ctx context.Context, req *connect.
 		tradeStats.MaxConsecutiveWins = maxWins
 		tradeStats.MaxConsecutiveLosses = maxLosses
 	}
+	return tradeStats, nil
+}
 
-	// Risk metrics — computed from daily percentage returns (not dollar amounts).
-	// #23: Propagate critical errors (getMaxDrawdown, getEquityCurve) instead of silently zeroing.
+func (s *AnalyticsServer) fetchRiskMetrics(ctx context.Context, accountID uuid.UUID, start, now time.Time) (float64, float64, float64, float64, float64, float64, error) {
 	_, maxDDPercent, err := s.repo.GetMaxDrawdown(ctx, accountID, start, now)
 	if err != nil {
 		s.log.Error("get max drawdown failed", zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("get max drawdown: %w", err))
+		return 0, 0, 0, 0, 0, 0, connect.NewError(connect.CodeInternal, fmt.Errorf("get max drawdown: %w", err))
 	}
 	eqFull, err := s.repo.GetEquityCurve(ctx, accountID, start, now)
 	if err != nil {
 		s.log.Error("get equity curve for risk metrics failed", zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("get equity curve: %w", err))
+		return 0, 0, 0, 0, 0, 0, connect.NewError(connect.CodeInternal, fmt.Errorf("get equity curve: %w", err))
 	}
 	dailyReturnPct := dailyReturnsToPercent(eqFull)
 	sharpe, sortino, calmar, volatility, avgDailyReturn := computeRiskMetrics(dailyReturnPct, maxDDPercent)
+	return sharpe, sortino, calmar, volatility, avgDailyReturn, maxDDPercent, nil
+}
 
-	// Symbol stats
-	symbolStats, err := s.repo.GetSymbolStats(ctx, accountID, start, now)
-	if err != nil {
-		s.log.Warn("get symbol stats failed", zap.Error(err))
-	}
-
-	// Equity curve — period-specific time window
+func (s *AnalyticsServer) fetchEquityCurve(ctx context.Context, req *connect.Request[antv1.GetAccountAnalyticsRequest], accountID uuid.UUID, start, now time.Time) []*model.EquityPoint {
 	eqStart := start
 	useHourly := false
 	switch req.Msg.EquityCurvePeriod {
@@ -122,6 +145,7 @@ func (s *AnalyticsServer) GetAccountAnalytics(ctx context.Context, req *connect.
 		eqStart = now.AddDate(0, 0, -30)
 	}
 	var equityCurve []*model.EquityPoint
+	var err error
 	if useHourly {
 		equityCurve, err = s.repo.GetHourlyEquityCurve(ctx, accountID, eqStart, now)
 	} else {
@@ -129,41 +153,20 @@ func (s *AnalyticsServer) GetAccountAnalytics(ctx context.Context, req *connect.
 	}
 	if err != nil {
 		s.log.Warn("get equity curve failed", zap.Error(err))
-	}
-	// Append live balance/equity/profit as the final point.
-	if err == nil {
+	} else {
 		equityCurve = appendLiveEquity(ctx, s.repo, accountID, equityCurve)
 	}
+	return equityCurve
+}
 
-	// Daily PnL
-	dailyPnL, err := s.repo.GetDailyPnL(ctx, accountID, start, now)
-	if err != nil {
-		s.log.Warn("get daily pnl failed", zap.Error(err))
-	}
+func (s *AnalyticsServer) fetchDailyPnL(ctx context.Context, accountID uuid.UUID, start, now time.Time) []*model.DailyPnL {
+	pnl, _ := s.repo.GetDailyPnL(ctx, accountID, start, now)
+	return pnl
+}
 
-	// Hourly stats
-	hourlyStats, err := s.repo.GetHourlyStats(ctx, accountID, start, now)
-	if err != nil {
-		s.log.Warn("get hourly stats failed", zap.Error(err))
-	}
-
-	resp := &antv1.AccountAnalyticsResponse{
-		TradeStats:  tradeStatsToProto(tradeStats),
-		RiskMetrics: riskMetricsToProto(sharpe, sortino, calmar, volatility, avgDailyReturn, maxDDPercent),
-		SymbolStats: symbolStatsToProto(symbolStats),
-		EquityCurve: equityCurveToProto(equityCurve),
-		DailyPnl:    dailyPnLToProto(dailyPnL),
-		HourlyStats: hourlyStatsToProto(hourlyStats),
-	}
-
-	// Cache the computed response so subsequent requests skip SQL queries.
-	if s.cache != nil {
-		if err := s.cache.Set(ctx, req.Msg.AccountId, resp); err != nil {
-			s.log.Warn("analytics cache: set failed", zap.Error(err))
-		}
-	}
-
-	return connect.NewResponse(resp), nil
+func (s *AnalyticsServer) fetchHourlyStats(ctx context.Context, accountID uuid.UUID, start, now time.Time) []*model.HourlyStats {
+	stats, _ := s.repo.GetHourlyStats(ctx, accountID, start, now)
+	return stats
 }
 
 func (s *AnalyticsServer) GetRecentTrades(ctx context.Context, req *connect.Request[antv1.GetRecentTradesRequest]) (*connect.Response[antv1.GetRecentTradesResponse], error) {
