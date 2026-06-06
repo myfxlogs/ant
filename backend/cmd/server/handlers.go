@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"net/http"
-	"time"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -21,8 +20,6 @@ import (
 	"anttrader/internal/connect/strategy"
 	"anttrader/internal/connect/system"
 	"anttrader/internal/connect/user"
-	"anttrader/internal/costsvc"
-
 	"anttrader/internal/interceptor"
 	"anttrader/internal/marketplace"
 	"anttrader/internal/mdgateway"
@@ -37,7 +34,6 @@ import (
 	"anttrader/internal/service"
 	systemai "anttrader/internal/service/systemai"
 	antredis "anttrader/internal/storage/redis"
-	"anttrader/internal/usermgr"
 
 	connectrpc "connectrpc.com/connect"
 )
@@ -189,96 +185,14 @@ func registerHandlers(
 	adminSystemServer := admin.NewAdminSystemServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminSystemServiceHandler(adminSystemServer, connectrpc.WithInterceptors(authInterceptor, adminInterceptor)))
 
-	// --- M11-16 Jurisdictional Gate ---
-	jurisStore := risksvc.NewPgJurisdictionStore(pool)
-	geoipResolver := risksvc.NewMaxMindGeoIPResolver(cfg.GeoIPDBPath)
-	jurisGate := &risksvc.JurisdictionGate{
-		Store:               jurisStore,
-		GeoIP:               geoipResolver,
-		RequireKYC:           cfg.RequireKYC,
-		RequireDisclaimer:    cfg.RequireDisclaimer,
-		RequireQuestionnaire: cfg.RequireQuestionnaire,
-	}
-	// S1.1: Wire SignalPipeline for pre-trade risk checks (capability → hardlimit → platform → engine → sizer).
-	capStore := risksvc.NewCapabilityStore()
-	rows, err := pool.Query(context.Background(),
-		`SELECT user_id, COALESCE(capability_tier, 0),
-		        COALESCE(order_types_allowed, '{}'),
-		        lot_per_order_max, daily_order_max, leverage_max,
-		        COALESCE(symbol_whitelist, '{}'),
-		        COALESCE(killswitch_enabled, false)
-		 FROM user_risk_profiles`)
-	if err != nil {
-		log.Error("capability LoadFromPG query failed, using defaults", zap.Error(err))
-	} else {
-		if err := capStore.LoadFromPG(context.Background(), rows); err != nil {
-			log.Error("capability LoadFromPG scan failed, using defaults", zap.Error(err))
-		}
-		log.Info("capability store loaded", zap.Int("users", capStore.Count()))
-	}
-	hardLimit := risksvc.NewHardLimitEvaluator(&risksvc.KycJurisdictionRule{Gate: jurisGate})
-	platformAgg := risksvc.NewPlatformAggregator()
-	platformAgg.StartRefreshLoop(5 * time.Second) // B-1.4: async recalculate on dirty
-	platformLimits := risksvc.DefaultPlatformLimits()
-	riskEngine := risksvc.NewEngine(
-		&risksvc.MaxPosition{Max: 20},
-		&risksvc.Margin{MinLevel: 1.5},
-	)
-	sizer := &risksvc.VolTargetSizer{RiskBudgetPct: 0.01}
-	allocator := &risksvc.ProRataAllocator{}
-
-	pipeline := risksvc.NewSignalPipeline(risksvc.PipelineConfig{
-		CapStore:  capStore,
-		HardLimit: hardLimit,
-		Platform:  platformAgg,
-		Limits:    platformLimits,
-		Engine:    riskEngine,
-		Sizer:     sizer,
-		Allocator: allocator,
-	})
-	mthubSvc.SetRiskPipeline(pipeline)
-
-	// Account state provider queries PG for balance/equity/margin per account.
-	mthubSvc.SetAccountStateProvider(func(ctx context.Context, accountID string) (*mthub.AccountState, error) {
-		var state mthub.AccountState
-		var positions int64
-		err := pool.QueryRow(ctx,
-			`SELECT balance, equity, free_margin, COALESCE(margin, 0)::float8,
-			        COALESCE((SELECT count(*) FROM positions WHERE mt_account_id = $1), 0)::int
-			 FROM mt_accounts WHERE id = $1::uuid`,
-			accountID,
-		).Scan(&state.Balance, &state.Equity, &state.FreeMargin, &state.Margin, &positions)
-		if err != nil {
-			return nil, err
-		}
-		state.Positions = int(positions)
-		return &state, nil
-	})
+	// S1.1-S1.3: Wire SignalPipeline, rate limiter, cost estimator, OMS writer.
+	pipeline, platformAgg := initRiskPipeline(pool, log, mthubSvc, eventStore, cfg)
 
 	// AutoTradingService handler — leverages existing pipeline + repositories.
 	autoTradingRepo := repository.NewAutoTradingRepository(pool)
 	autoTradingServer := autotrading.NewAutoTradingServer(autoTradingRepo, pipeline, log)
 	mux.Handle(antv1c.NewAutoTradingServiceHandler(autoTradingServer,
 		connectrpc.WithInterceptors(authInterceptor)))
-
-	// S1.3: Wire per-user rate limiter (10 orders/sec/user, 100 signals/sec/user).
-	limiter := usermgr.NewUserLimiter(usermgr.DefaultConfig())
-	mthubSvc.SetUserLimiter(limiter)
-
-	// S1.3: Wire pre-trade cost estimator (EURUSD default model).
-	eurtusdModel := &costsvc.CostModel{
-		Symbol:           "EURUSD",
-		SpreadPips:       1.0,
-		PipSize:          0.0001,
-		PipValue:         10.0,
-		CommissionPerLot: 7.0,
-	}
-	estimator := &costsvc.StaticEstimator{Model: eurtusdModel}
-	mthubSvc.SetCostEstimator(estimator)
-
-	// S1.2: OMS state writer for order lifecycle tracking.
-	omsWriter := mthub.NewOmsWriter(pool, eventStore)
-	mthubSvc.SetOmsWriter(omsWriter)
 
 	// Factor subscriber activation prerequisites (M10-BASE-B6):
 	// When ready to wire, create and start:
