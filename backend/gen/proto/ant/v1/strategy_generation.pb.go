@@ -29,8 +29,12 @@ type GenerateStrategyRequest struct {
 	Timeframe          string                 `protobuf:"bytes,4,opt,name=timeframe,proto3" json:"timeframe,omitempty"`                                              // optional, timeframe for context
 	TemplateId         string                 `protobuf:"bytes,5,opt,name=template_id,json=templateId,proto3" json:"template_id,omitempty"`                          // optional, user-selected template override
 	ClarificationRound int32                  `protobuf:"varint,6,opt,name=clarification_round,json=clarificationRound,proto3" json:"clarification_round,omitempty"` // current clarification round (0 = first, max 3)
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+	// Phase 3: feedback context (all optional — absent = fresh mode)
+	PreviousCode        string `protobuf:"bytes,9,opt,name=previous_code,json=previousCode,proto3" json:"previous_code,omitempty"`                         // previous strategy code (for feedback iteration)
+	BacktestMetricsJson string `protobuf:"bytes,10,opt,name=backtest_metrics_json,json=backtestMetricsJson,proto3" json:"backtest_metrics_json,omitempty"` // serialized backtest metrics (FeedbackMetrics JSON)
+	FeedbackMessage     string `protobuf:"bytes,11,opt,name=feedback_message,json=feedbackMessage,proto3" json:"feedback_message,omitempty"`               // user's feedback text (e.g. "太激进了")
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
 }
 
 func (x *GenerateStrategyRequest) Reset() {
@@ -105,6 +109,27 @@ func (x *GenerateStrategyRequest) GetClarificationRound() int32 {
 	return 0
 }
 
+func (x *GenerateStrategyRequest) GetPreviousCode() string {
+	if x != nil {
+		return x.PreviousCode
+	}
+	return ""
+}
+
+func (x *GenerateStrategyRequest) GetBacktestMetricsJson() string {
+	if x != nil {
+		return x.BacktestMetricsJson
+	}
+	return ""
+}
+
+func (x *GenerateStrategyRequest) GetFeedbackMessage() string {
+	if x != nil {
+		return x.FeedbackMessage
+	}
+	return ""
+}
+
 // GenerateStrategyChunk is a single streaming event in the generation pipeline.
 type GenerateStrategyChunk struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
@@ -116,8 +141,11 @@ type GenerateStrategyChunk struct {
 	BacktestRunId    string                 `protobuf:"bytes,6,opt,name=backtest_run_id,json=backtestRunId,proto3" json:"backtest_run_id,omitempty"`        // auto-triggered backtest ID (backtest phase)
 	TemplateName     string                 `protobuf:"bytes,7,opt,name=template_name,json=templateName,proto3" json:"template_name,omitempty"`             // matched template name (generating phase)
 	Error            string                 `protobuf:"bytes,8,opt,name=error,proto3" json:"error,omitempty"`                                               // non-fatal error message
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	// Phase 3: structured feedback output
+	Analysis      string `protobuf:"bytes,9,opt,name=analysis,proto3" json:"analysis,omitempty"` // AI analysis paragraph (feedback mode)
+	Advice        string `protobuf:"bytes,10,opt,name=advice,proto3" json:"advice,omitempty"`    // AI advice paragraph (feedback mode)
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GenerateStrategyChunk) Reset() {
@@ -206,11 +234,25 @@ func (x *GenerateStrategyChunk) GetError() string {
 	return ""
 }
 
+func (x *GenerateStrategyChunk) GetAnalysis() string {
+	if x != nil {
+		return x.Analysis
+	}
+	return ""
+}
+
+func (x *GenerateStrategyChunk) GetAdvice() string {
+	if x != nil {
+		return x.Advice
+	}
+	return ""
+}
+
 var File_strategy_generation_proto protoreflect.FileDescriptor
 
 const file_strategy_generation_proto_rawDesc = "" +
 	"\n" +
-	"\x19strategy_generation.proto\x12\x06ant.v1\"\xe4\x01\n" +
+	"\x19strategy_generation.proto\x12\x06ant.v1\"\xe8\x02\n" +
 	"\x17GenerateStrategyRequest\x12'\n" +
 	"\x0fconversation_id\x18\x01 \x01(\tR\x0econversationId\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x16\n" +
@@ -218,7 +260,11 @@ const file_strategy_generation_proto_rawDesc = "" +
 	"\ttimeframe\x18\x04 \x01(\tR\ttimeframe\x12\x1f\n" +
 	"\vtemplate_id\x18\x05 \x01(\tR\n" +
 	"templateId\x12/\n" +
-	"\x13clarification_round\x18\x06 \x01(\x05R\x12clarificationRound\"\x85\x02\n" +
+	"\x13clarification_round\x18\x06 \x01(\x05R\x12clarificationRound\x12#\n" +
+	"\rprevious_code\x18\t \x01(\tR\fpreviousCode\x122\n" +
+	"\x15backtest_metrics_json\x18\n" +
+	" \x01(\tR\x13backtestMetricsJson\x12)\n" +
+	"\x10feedback_message\x18\v \x01(\tR\x0ffeedbackMessage\"\xb9\x02\n" +
 	"\x15GenerateStrategyChunk\x12\x14\n" +
 	"\x05phase\x18\x01 \x01(\tR\x05phase\x12\x14\n" +
 	"\x05delta\x18\x02 \x01(\tR\x05delta\x12\x1c\n" +
@@ -227,7 +273,10 @@ const file_strategy_generation_proto_rawDesc = "" +
 	"\x11compliance_issues\x18\x05 \x03(\tR\x10complianceIssues\x12&\n" +
 	"\x0fbacktest_run_id\x18\x06 \x01(\tR\rbacktestRunId\x12#\n" +
 	"\rtemplate_name\x18\a \x01(\tR\ftemplateName\x12\x14\n" +
-	"\x05error\x18\b \x01(\tR\x05error2q\n" +
+	"\x05error\x18\b \x01(\tR\x05error\x12\x1a\n" +
+	"\banalysis\x18\t \x01(\tR\banalysis\x12\x16\n" +
+	"\x06advice\x18\n" +
+	" \x01(\tR\x06advice2q\n" +
 	"\x19StrategyGenerationService\x12T\n" +
 	"\x10GenerateStrategy\x12\x1f.ant.v1.GenerateStrategyRequest\x1a\x1d.ant.v1.GenerateStrategyChunk0\x01B\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 

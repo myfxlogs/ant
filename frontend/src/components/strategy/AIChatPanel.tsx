@@ -4,6 +4,12 @@ import { ThunderboltOutlined, SendOutlined, LoadingOutlined } from '@ant-design/
 import { useTranslation } from 'react-i18next';
 import { generateStrategyStream } from '@/client/strategyGen';
 import { codeAssistApi, type CodeChatMessage } from '@/client/codeAssist';
+import { pythonStrategyApi } from '@/client/pythonStrategy';
+
+interface BacktestMetrics {
+  totalReturn?: number; sharpeRatio?: number; maxDrawdown?: number;
+  winRate?: number; totalTrades?: number; profitFactor?: number;
+}
 
 const { TextArea } = Input;
 
@@ -20,7 +26,9 @@ interface Props {
 }
 
 // 4-mode intent classification — keyword tables match backend classifyIntent exactly.
-function detectMode(msg: string, hasCode: boolean): 'generate' | 'revise' | 'repair' | 'discuss' {
+// Phase 3: hasBacktest forces 'generate' (feedback mode) regardless of keywords.
+function detectMode(msg: string, hasCode: boolean, hasBacktest = false): 'generate' | 'revise' | 'repair' | 'discuss' {
+  if (hasBacktest) return 'generate';
   if (!hasCode) return 'generate';
   const lower = msg.toLowerCase();
   // Repair (highest priority — error keywords)
@@ -55,6 +63,11 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
   const [backtestId, setBacktestId] = useState('');
   const [clarifyRound, setClarifyRound] = useState(0);
   const [history, setHistory] = useState<CodeChatMessage[]>(chatHistory || []);
+  // Phase 3: feedback loop state
+  const [backtestMetrics, setBacktestMetrics] = useState<BacktestMetrics | null>(null);
+  const [analysisText, setAnalysisText] = useState('');
+  const [adviceText, setAdviceText] = useState('');
+  const [lastGeneratedCode, setLastGeneratedCode] = useState('');
   const abortRef = useRef<(() => void) | null>(null);
   const streamRef = useRef('');
 
@@ -69,15 +82,28 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
     abortRef.current?.();
     setMode('idle'); setStreamText(''); setQuestions([]);
     setGenCode(''); setError(''); setPhase(''); setBacktestId('');
+    setBacktestMetrics(null); setAnalysisText(''); setAdviceText('');
+    setLastGeneratedCode('');
   }, []);
 
-  const handleGenerate = useCallback((msg: string, round: number) => {
+  const handleGenerate = useCallback((msg: string, round: number, isFeedback = false) => {
     setMode('streaming'); setStreamText(''); setError(''); setGenCode('');
+    setAnalysisText(''); setAdviceText('');
+    const input: Parameters<typeof generateStrategyStream>[0] = {
+      message: msg, symbol, timeframe, clarificationRound: round,
+      conversationId: sessionId || '',
+    };
+    if (isFeedback && backtestMetrics) {
+      input.previousCode = lastGeneratedCode || code;
+      input.backtestMetricsJson = JSON.stringify(backtestMetrics);
+      input.feedbackMessage = msg;
+    }
     const abort = generateStrategyStream(
-      { message: msg, symbol, timeframe, clarificationRound: round, conversationId: sessionId || '' },
+      input,
       {
         onPhase: (p) => {
-          if (p === 'clarifying') setMode('clarifying');
+          if (p === 'analyzing') setPhase('analyzing');
+          else if (p === 'clarifying') setMode('clarifying');
           else if (p === 'generating') setMode('streaming');
           else setPhase(p);
         },
@@ -86,16 +112,34 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
         onTemplate: (n) => setPhase('template: ' + n),
         onCode: (c) => {
           setGenCode(c);
+          setLastGeneratedCode(c);
           if (autoApply) onApply(c);
           else setPendingCode(c);
         },
-        onBacktestId: (id) => setBacktestId(id),
+        onBacktestId: (id) => {
+          setBacktestId(id);
+          // Watch for backtest completion to get metrics for next feedback round
+          pythonStrategyApi.watchBacktestRun(id, (update: any) => {
+            if ((update.status === 'SUCCEEDED' || update.status === 'COMPLETED') && update.metrics) {
+              setBacktestMetrics({
+                sharpeRatio: update.metrics.sharpeRatio,
+                maxDrawdown: update.metrics.maxDrawdown,
+                winRate: update.metrics.winRate,
+                totalTrades: update.metrics.totalTrades,
+                totalReturn: update.metrics.totalReturn,
+                profitFactor: update.metrics.profitFactor,
+              });
+            }
+          });
+        },
+        onAnalysis: (a) => setAnalysisText(a),
+        onAdvice: (a) => setAdviceText(a),
         onError: (e) => setError(e),
         onDone: () => setMode('done'),
       },
     );
     abortRef.current = abort;
-  }, [symbol, timeframe, sessionId, onApply]);
+  }, [symbol, timeframe, sessionId, onApply, backtestMetrics, lastGeneratedCode, code, autoApply]);
 
   const handleRevise = useCallback((msg: string) => {
     setMode('streaming'); setStreamText(''); setError('');
@@ -132,10 +176,11 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
     const msg = draft.trim();
     if (!msg) return;
     setDraft(''); setClarifyRound(0); setQuestions([]);
-    const intent = detectMode(msg, !!code.trim());
-    if (intent === 'generate') handleGenerate(msg, 0);
+    const hasBacktest = !!backtestMetrics;
+    const intent = detectMode(msg, !!code.trim(), hasBacktest);
+    if (intent === 'generate') handleGenerate(msg, 0, hasBacktest);
     else handleRevise(msg);
-  }, [draft, code, handleGenerate, handleRevise]);
+  }, [draft, code, handleGenerate, handleRevise, backtestMetrics]);
 
   const handleClarifyAnswer = useCallback((answer: string) => {
     const next = clarifyRound + 1;
@@ -185,9 +230,11 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
         <ThunderboltOutlined style={{ color: '#faad14' }} />
         <Typography.Text strong style={{ fontSize: 13 }}>AI Chat</Typography.Text>
         <Space size={4} wrap style={{ marginLeft: 8 }}>
-          {!code.trim() && <Tag color="blue">{t('strategy.gen.title', '策略生成')}</Tag>}
-          {!!code.trim() && <Tag color="green">revise</Tag>}
+          {!code.trim() && !backtestMetrics && <Tag color="blue">{t('strategy.gen.title', '策略生成')}</Tag>}
+          {!!code.trim() && !backtestMetrics && <Tag color="green">revise</Tag>}
+          {backtestMetrics && <Tag color="purple">🔄 feedback</Tag>}
           {isBusy && <Tag icon={<LoadingOutlined />} color="processing">streaming</Tag>}
+          {phase === 'analyzing' && isBusy && <Tag color="orange">analyzing</Tag>}
           {phase && !isBusy && phase !== 'done' && <Tag>{phase}</Tag>}
           {backtestId && <Tag color="success">backtest: {backtestId.slice(0, 8)}</Tag>}
         </Space>
@@ -199,11 +246,63 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
       {/* Messages + streaming */}
       <div style={{ maxHeight: 200, overflow: 'auto', marginBottom: 6 }}>
         {messagesView}
+        {analysisText && (
+          <div style={{ margin: '6px 0', padding: '8px 10px', borderRadius: 6,
+            background: '#f5f5f5', fontSize: 12, color: '#595959' }}>
+            🔍 {analysisText}
+          </div>
+        )}
+        {adviceText && (
+          <div style={{ margin: '6px 0', padding: '8px 10px', borderRadius: 6,
+            background: '#e6f4ff', fontSize: 12, color: '#1677ff' }}>
+            💡 {adviceText}
+          </div>
+        )}
         {streamText && (
           <div style={{ margin: '6px 0', padding: '6px 10px', borderRadius: 6,
             background: '#f6ffed', fontSize: 12, whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
             <b style={{ color: '#389e0d' }}>AI</b>
             <div>{streamText}</div>
+          </div>
+        )}
+        {backtestMetrics && mode === 'done' && (
+          <div style={{ margin: '6px 0', padding: '10px', borderRadius: 6,
+            background: '#f6ffed', border: '1px solid #b7eb8f' }}>
+            <Typography.Text strong style={{ fontSize: 11, marginBottom: 4, display: 'block' }}>
+              📊 回测结果
+            </Typography.Text>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
+              {backtestMetrics.sharpeRatio != null && (
+                <span style={{ fontSize: 10, background: '#fff', padding: '1px 5px', borderRadius: 3, border: '1px solid #e8e8e8' }}>
+                  <b>Sharpe</b> {backtestMetrics.sharpeRatio.toFixed(2)}
+                </span>
+              )}
+              {backtestMetrics.maxDrawdown != null && (
+                <span style={{ fontSize: 10, background: '#fff', padding: '1px 5px', borderRadius: 3, border: '1px solid #e8e8e8',
+                  color: backtestMetrics.maxDrawdown > 0.2 ? '#cf1322' : '#595959' }}>
+                  <b>Max DD</b> {(backtestMetrics.maxDrawdown * 100).toFixed(1)}%
+                </span>
+              )}
+              {backtestMetrics.winRate != null && (
+                <span style={{ fontSize: 10, background: '#fff', padding: '1px 5px', borderRadius: 3, border: '1px solid #e8e8e8' }}>
+                  <b>Win</b> {(backtestMetrics.winRate * 100).toFixed(0)}%
+                </span>
+              )}
+              {backtestMetrics.totalTrades != null && (
+                <span style={{ fontSize: 10, background: '#fff', padding: '1px 5px', borderRadius: 3, border: '1px solid #e8e8e8' }}>
+                  <b>Trades</b> {backtestMetrics.totalTrades}
+                </span>
+              )}
+              {backtestMetrics.totalReturn != null && (
+                <span style={{ fontSize: 10, background: '#fff', padding: '1px 5px', borderRadius: 3, border: '1px solid #e8e8e8',
+                  color: backtestMetrics.totalReturn > 0 ? '#389e0d' : '#cf1322' }}>
+                  <b>Return</b> {(backtestMetrics.totalReturn * 100).toFixed(1)}%
+                </span>
+              )}
+            </div>
+            <Typography.Text type="secondary" style={{ fontSize: 9 }}>
+              输入反馈继续迭代（如"太激进了"、"加入止损"）
+            </Typography.Text>
           </div>
         )}
       </div>

@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file strategy_generation.proto.
  */
 export const file_strategy_generation: GenFile = /*@__PURE__*/
-  fileDesc("ChlzdHJhdGVneV9nZW5lcmF0aW9uLnByb3RvEgZhbnQudjEimAEKF0dlbmVyYXRlU3RyYXRlZ3lSZXF1ZXN0EhcKD2NvbnZlcnNhdGlvbl9pZBgBIAEoCRIPCgdtZXNzYWdlGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkSEwoLdGVtcGxhdGVfaWQYBSABKAkSGwoTY2xhcmlmaWNhdGlvbl9yb3VuZBgGIAEoBSKwAQoVR2VuZXJhdGVTdHJhdGVneUNodW5rEg0KBXBoYXNlGAEgASgJEg0KBWRlbHRhGAIgASgJEhEKCXF1ZXN0aW9ucxgDIAMoCRIMCgRjb2RlGAQgASgJEhkKEWNvbXBsaWFuY2VfaXNzdWVzGAUgAygJEhcKD2JhY2t0ZXN0X3J1bl9pZBgGIAEoCRIVCg10ZW1wbGF0ZV9uYW1lGAcgASgJEg0KBWVycm9yGAggASgJMnEKGVN0cmF0ZWd5R2VuZXJhdGlvblNlcnZpY2USVAoQR2VuZXJhdGVTdHJhdGVneRIfLmFudC52MS5HZW5lcmF0ZVN0cmF0ZWd5UmVxdWVzdBodLmFudC52MS5HZW5lcmF0ZVN0cmF0ZWd5Q2h1bmswAUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z");
+  fileDesc("ChlzdHJhdGVneV9nZW5lcmF0aW9uLnByb3RvEgZhbnQudjEi6AEKF0dlbmVyYXRlU3RyYXRlZ3lSZXF1ZXN0EhcKD2NvbnZlcnNhdGlvbl9pZBgBIAEoCRIPCgdtZXNzYWdlGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkSEwoLdGVtcGxhdGVfaWQYBSABKAkSGwoTY2xhcmlmaWNhdGlvbl9yb3VuZBgGIAEoBRIVCg1wcmV2aW91c19jb2RlGAkgASgJEh0KFWJhY2t0ZXN0X21ldHJpY3NfanNvbhgKIAEoCRIYChBmZWVkYmFja19tZXNzYWdlGAsgASgJItIBChVHZW5lcmF0ZVN0cmF0ZWd5Q2h1bmsSDQoFcGhhc2UYASABKAkSDQoFZGVsdGEYAiABKAkSEQoJcXVlc3Rpb25zGAMgAygJEgwKBGNvZGUYBCABKAkSGQoRY29tcGxpYW5jZV9pc3N1ZXMYBSADKAkSFwoPYmFja3Rlc3RfcnVuX2lkGAYgASgJEhUKDXRlbXBsYXRlX25hbWUYByABKAkSDQoFZXJyb3IYCCABKAkSEAoIYW5hbHlzaXMYCSABKAkSDgoGYWR2aWNlGAogASgJMnEKGVN0cmF0ZWd5R2VuZXJhdGlvblNlcnZpY2USVAoQR2VuZXJhdGVTdHJhdGVneRIfLmFudC52MS5HZW5lcmF0ZVN0cmF0ZWd5UmVxdWVzdBodLmFudC52MS5HZW5lcmF0ZVN0cmF0ZWd5Q2h1bmswAUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z");
 
 /**
  * @generated from message ant.v1.GenerateStrategyRequest
@@ -57,6 +57,29 @@ export type GenerateStrategyRequest = Message<"ant.v1.GenerateStrategyRequest"> 
    * @generated from field: int32 clarification_round = 6;
    */
   clarificationRound: number;
+
+  /**
+   * Phase 3: feedback context (all optional — absent = fresh mode)
+   *
+   * previous strategy code (for feedback iteration)
+   *
+   * @generated from field: string previous_code = 9;
+   */
+  previousCode: string;
+
+  /**
+   * serialized backtest metrics (FeedbackMetrics JSON)
+   *
+   * @generated from field: string backtest_metrics_json = 10;
+   */
+  backtestMetricsJson: string;
+
+  /**
+   * user's feedback text (e.g. "太激进了")
+   *
+   * @generated from field: string feedback_message = 11;
+   */
+  feedbackMessage: string;
 };
 
 /**
@@ -127,6 +150,22 @@ export type GenerateStrategyChunk = Message<"ant.v1.GenerateStrategyChunk"> & {
    * @generated from field: string error = 8;
    */
   error: string;
+
+  /**
+   * Phase 3: structured feedback output
+   *
+   * AI analysis paragraph (feedback mode)
+   *
+   * @generated from field: string analysis = 9;
+   */
+  analysis: string;
+
+  /**
+   * AI advice paragraph (feedback mode)
+   *
+   * @generated from field: string advice = 10;
+   */
+  advice: string;
 };
 
 /**

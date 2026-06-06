@@ -8,6 +8,10 @@ export interface StrategyGenInput {
   timeframe?: string;
   templateId?: string;
   clarificationRound?: number;
+  // Phase 3: feedback context (optional — absent = fresh mode)
+  previousCode?: string;
+  backtestMetricsJson?: string;
+  feedbackMessage?: string;
 }
 
 export interface StrategyGenCallbacks {
@@ -17,6 +21,9 @@ export interface StrategyGenCallbacks {
   onCode: (code: string) => void;
   onBacktestId: (runId: string) => void;
   onTemplate: (name: string) => void;
+  // Phase 3: structured feedback output
+  onAnalysis?: (text: string) => void;
+  onAdvice?: (text: string) => void;
   onError: (error: string) => void;
   onDone: () => void;
 }
@@ -38,6 +45,10 @@ export function generateStrategyStream(
           timeframe: input.timeframe || '',
           templateId: input.templateId || '',
           clarificationRound: input.clarificationRound || 0,
+          // Phase 3: feedback context
+          previousCode: input.previousCode || '',
+          backtestMetricsJson: input.backtestMetricsJson || '',
+          feedbackMessage: input.feedbackMessage || '',
         },
         { signal: abortController.signal },
       );
@@ -73,6 +84,13 @@ function handleChunk(chunk: GenerateStrategyChunk, cbs: StrategyGenCallbacks): v
   }
   if (chunk.backtestRunId) {
     cbs.onBacktestId(chunk.backtestRunId);
+  }
+  // Phase 3: structured feedback output
+  if (chunk.analysis) {
+    cbs.onAnalysis?.(chunk.analysis);
+  }
+  if (chunk.advice) {
+    cbs.onAdvice?.(chunk.advice);
   }
   if (chunk.error) {
     cbs.onError(chunk.error);

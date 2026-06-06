@@ -2,6 +2,7 @@ package ai
 
 import (
 	"context"
+	"encoding/json"
 	"strings"
 
 	"github.com/google/uuid"
@@ -53,6 +54,11 @@ func (s *StrategyGenServer) GenerateStrategy(
 	if err != nil { return err }
 	m := req.Msg
 
+	// ── Phase 3: FEEDBACK MODE ──
+	if m.PreviousCode != "" && m.BacktestMetricsJson != "" {
+		return s.handleFeedback(ctx, userID, m, stream)
+	}
+
 	if result := s.runClarification(m); result != nil {
 		return stream.Send(&antv1.GenerateStrategyChunk{Phase: "clarifying", Questions: result.Questions})
 	}
@@ -73,20 +79,7 @@ func (s *StrategyGenServer) GenerateStrategy(
 	runID, btErr := s.finalizeWithBacktest(ctx, userID, code, m.Symbol, m.Timeframe)
 
 	// Auto-persist exchange to strategy session
-	if m.ConversationId != "" {
-		cid, parseErr := uuid.Parse(m.ConversationId)
-		if parseErr == nil {
-			if _, err := s.convRepo.AddMessage(ctx, userID, cid, "user", m.Message); err != nil {
-				s.log.Warn("persist user msg failed", zap.Error(err))
-			}
-			if _, err := s.convRepo.AddMessage(ctx, userID, cid, "assistant", code); err != nil {
-				s.log.Warn("persist assistant msg failed", zap.Error(err))
-			}
-			if err := s.convRepo.Touch(ctx, cid, userID); err != nil {
-				s.log.Warn("touch session failed", zap.Error(err))
-			}
-		}
-	}
+	s.persistExchange(ctx, userID, m.ConversationId, m.Message, code)
 
 	return stream.Send(&antv1.GenerateStrategyChunk{Phase: "done", Code: code, BacktestRunId: runID, Error: btErr})
 }
@@ -147,6 +140,108 @@ func (s *StrategyGenServer) runClarification(m *antv1.GenerateStrategyRequest) *
 	rules := defaultClarificationRules()
 	engine := ai.NewClarificationEngine(rules)
 	return engine.Check(m.Message)
+}
+
+// ── Phase 3: feedback mode ──
+
+// handleFeedback executes the feedback iteration loop:
+// parse backtest metrics → route feedback → build feedback prompt →
+// stream LLM with section parsing → compliance check → auto-backtest.
+func (s *StrategyGenServer) handleFeedback(
+	ctx context.Context, userID uuid.UUID,
+	m *antv1.GenerateStrategyRequest,
+	stream *connect.ServerStream[antv1.GenerateStrategyChunk],
+) error {
+	// 1. Parse backtest metrics
+	var metrics ai.FeedbackMetrics
+	if err := json.Unmarshal([]byte(m.BacktestMetricsJson), &metrics); err != nil {
+		s.log.Warn("feedback: parse backtest metrics failed", zap.Error(err))
+		return stream.Send(&antv1.GenerateStrategyChunk{
+			Phase: "done", Error: "failed to parse backtest metrics",
+		})
+	}
+
+	// 2. Get feedback routing hints
+	routing := ai.RouteFeedback(m.FeedbackMessage, &metrics)
+
+	// 3. Build feedback prompt
+	builder := ai.NewStrategyPromptBuilder()
+	sysPrompt, userPrompt := builder.BuildFeedbackPrompt(&ai.FeedbackPromptParams{
+		PreviousCode:    m.PreviousCode,
+		Metrics:         &metrics,
+		FeedbackMessage: m.FeedbackMessage,
+		FeedbackHints:   routing.Reason,
+	})
+
+	// 4. Stream LLM response with progressive section parsing
+	if err := stream.Send(&antv1.GenerateStrategyChunk{Phase: "analyzing"}); err != nil {
+		return err
+	}
+
+	var fullBuf strings.Builder
+	err := s.systemSvc.ChatCompletionStream(ctx, userID,
+		[]systemai.ChatMessage{{Role: "system", Content: sysPrompt}, {Role: "user", Content: userPrompt}},
+		"", func(chunk systemai.ChatStreamChunk) error {
+			fullBuf.WriteString(chunk.Content)
+			sections := parseSections(fullBuf.String())
+			return stream.Send(&antv1.GenerateStrategyChunk{
+				Phase:    "generating",
+				Delta:    chunk.Content,
+				Analysis: sections.Analysis,
+				Advice:   sections.Advice,
+			})
+		})
+	if err != nil {
+		s.log.Error("feedback: LLM stream failed", zap.Error(err))
+		return stream.Send(&antv1.GenerateStrategyChunk{
+			Phase: "done", Error: systemai.FriendlyError(err),
+		})
+	}
+
+	// 5. Final parse: extract code from sections
+	raw := fullBuf.String()
+	fullSections := parseSections(raw)
+	code := s.extractCode(fullSections.Code)
+
+	// 6. Compliance check
+	if issues := s.runComplianceCheck(code); len(issues) > 0 {
+		return stream.Send(&antv1.GenerateStrategyChunk{
+			Phase: "compliance", Code: code, ComplianceIssues: issues,
+			Analysis: fullSections.Analysis, Advice: fullSections.Advice,
+		})
+	}
+
+	// 7. Auto-backtest
+	runID, btErr := s.finalizeWithBacktest(ctx, userID, code, m.Symbol, m.Timeframe)
+
+	// 8. Persist exchange
+	s.persistExchange(ctx, userID, m.ConversationId, m.FeedbackMessage, code)
+
+	return stream.Send(&antv1.GenerateStrategyChunk{
+		Phase: "done", Code: code, BacktestRunId: runID,
+		Analysis: fullSections.Analysis, Advice: fullSections.Advice,
+		Error: btErr,
+	})
+}
+
+// persistExchange saves user+assistant messages to the conversation store.
+func (s *StrategyGenServer) persistExchange(ctx context.Context, userID uuid.UUID, convID, userMsg, assistantMsg string) {
+	if convID == "" || userMsg == "" || assistantMsg == "" {
+		return
+	}
+	cid, parseErr := uuid.Parse(convID)
+	if parseErr != nil {
+		return
+	}
+	if _, err := s.convRepo.AddMessage(ctx, userID, cid, "user", userMsg); err != nil {
+		s.log.Warn("persist user msg failed", zap.Error(err))
+	}
+	if _, err := s.convRepo.AddMessage(ctx, userID, cid, "assistant", assistantMsg); err != nil {
+		s.log.Warn("persist assistant msg failed", zap.Error(err))
+	}
+	if err := s.convRepo.Touch(ctx, cid, userID); err != nil {
+		s.log.Warn("touch session failed", zap.Error(err))
+	}
 }
 
 func defaultClarificationRules() []ai.ClarificationRule {

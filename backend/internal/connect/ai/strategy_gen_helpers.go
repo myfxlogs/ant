@@ -4,6 +4,7 @@ package ai
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/google/uuid"
@@ -132,3 +133,34 @@ func (s *StrategyGenServer) triggerBacktest(ctx context.Context, userID uuid.UUI
 func f64Ptr(v float64) *float64 { return &v }
 func strPtr(s string) *string { if s == "" { return nil }; return &s }
 func bPtr(v bool) *bool { return &v }
+
+// ── Phase 3: section parsing for feedback mode ──
+
+// parsedSections holds the extracted <section> blocks from LLM feedback output.
+type parsedSections struct {
+	Analysis string
+	Advice   string
+	Code     string
+}
+
+// parseSections extracts <section type="..."> blocks from raw LLM output.
+// Partial output is fine — missing sections are empty strings.
+func parseSections(raw string) parsedSections {
+	var s parsedSections
+	s.Analysis = extractSection(raw, "analysis")
+	s.Advice = extractSection(raw, "advice")
+	s.Code = extractSection(raw, "code")
+	return s
+}
+
+// extractSection matches <section type="TYPE"> ... </section> and returns the inner content.
+func extractSection(raw, sectionType string) string {
+	re := regexp.MustCompile(
+		`(?s)<section\s+type="` + regexp.QuoteMeta(sectionType) + `">(.*?)</section>`,
+	)
+	m := re.FindStringSubmatch(raw)
+	if len(m) < 2 {
+		return ""
+	}
+	return strings.TrimSpace(m[1])
+}
