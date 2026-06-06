@@ -191,3 +191,38 @@ func (r *AIConversationRepository) DeleteMessagesByConversation(ctx context.Cont
 	)
 	return err
 }
+
+// GetByStrategyKey finds a conversation by (user_id, strategy_key).
+// Returns pgx.ErrNoRows if not found.
+func (r *AIConversationRepository) GetByStrategyKey(ctx context.Context, userID uuid.UUID, strategyKey string) (*AIConversation, error) {
+	var conv AIConversation
+	err := r.db.QueryRow(ctx,
+		`SELECT id, user_id, title, created_at, updated_at FROM ai_conversations
+		 WHERE user_id = $1 AND strategy_key = $2`,
+		userID, strategyKey,
+	).Scan(&conv.ID, &conv.UserID, &conv.Title, &conv.CreatedAt, &conv.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return &conv, nil
+}
+
+// CreateWithStrategyKey creates a conversation with a strategy_key binding.
+func (r *AIConversationRepository) CreateWithStrategyKey(ctx context.Context, userID uuid.UUID, title, strategyKey string) (*AIConversation, error) {
+	conv := &AIConversation{
+		ID:        uuid.New(),
+		UserID:    userID,
+		Title:     title,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	_, err := r.db.Exec(ctx,
+		`INSERT INTO ai_conversations (id, user_id, title, strategy_key, created_at, updated_at)
+		 VALUES ($1, $2, $3, $4, NOW(), NOW())`,
+		conv.ID, conv.UserID, conv.Title, strategyKey,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return conv, nil
+}
