@@ -217,65 +217,43 @@ func (s *StrategyExperimentServer) WatchExperiment(ctx context.Context, req *con
 
 	prevStatus := ""
 	notifCh, listenCancel, _ := s.pgListen.Listen(ctx, "experiment_status")
-	if listenCancel != nil {
-		defer listenCancel()
-	}
+	if listenCancel != nil { defer listenCancel() }
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 
 	for {
 		select {
-		case <-ctx.Done():
-			return nil
+		case <-ctx.Done(): return nil
 		case <-notifCh:
 		case <-ticker.C:
 		}
-
 		exp, err := s.repo.Get(ctx, uid, expID)
-		if err != nil {
-			s.log.Warn("WatchExperiment: transient DB error", zap.Error(err), zap.String("expID", expID.String()))
-			continue
-		}
-		if exp == nil {
-			s.log.Warn("WatchExperiment: experiment not found", zap.String("expID", expID.String()))
-			continue
-		}
-		if exp.Status == prevStatus {
-			continue
-		}
+		if err != nil || exp == nil { continue }
+		if exp.Status == prevStatus { continue }
 		prevStatus = exp.Status
 
-		event := &antv1.WatchExperimentEvent{
-			ExperimentId: expID.String(),
-			Status:       exp.Status,
-		}
+		event := s.buildWatchEvent(ctx, uid, expID, exp.Status)
+		if err := stream.Send(event); err != nil { return err }
+		if exp.Status == StatusCompleted || exp.Status == StatusFailed { return nil }
+	}
+}
 
-		// On completion, include all candidates
-		if exp.Status == "COMPLETED" {
-			candidates, err := s.repo.ListCandidates(ctx, uid, expID)
-			if err == nil {
-				protoCands := make([]*antv1.StrategyExperimentCandidate, 0, len(candidates))
-				for _, c := range candidates {
-					protoCands = append(protoCands, candidateToProto(&c))
-				}
-				event.Candidates = protoCands
-				event.CandidatesReady = int32(len(protoCands))
+func (s *StrategyExperimentServer) buildWatchEvent(ctx context.Context, uid, expID uuid.UUID, status string) *antv1.WatchExperimentEvent {
+	event := &antv1.WatchExperimentEvent{ExperimentId: expID.String(), Status: status}
+	if status == "COMPLETED" {
+		if candidates, err := s.repo.ListCandidates(ctx, uid, expID); err == nil {
+			protoCands := make([]*antv1.StrategyExperimentCandidate, 0, len(candidates))
+			for _, c := range candidates {
+				protoCands = append(protoCands, candidateToProto(&c))
 			}
-		}
-
-		if exp.Status == StatusFailed {
-			event.Error = "experiment failed"
-		}
-
-		if err := stream.Send(event); err != nil {
-			return err
-		}
-
-		// Terminal states — close the stream
-		if exp.Status == StatusCompleted || exp.Status == StatusFailed {
-			return nil
+			event.Candidates = protoCands
+			event.CandidatesReady = int32(len(protoCands))
 		}
 	}
+	if status == StatusFailed {
+		event.Error = "experiment failed"
+	}
+	return event
 }
 
 func (s *StrategyExperimentServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }

@@ -93,14 +93,23 @@ func (r *AnalyticsRepository) GetMonthlyPnL(ctx context.Context, accountID uuid.
 		return nil, err
 	}
 	defer rows.Close()
-	type monthStat struct {
-		MonthNum   int     `db:"month_num"`
-		Month      string  `db:"month"`
-		Profit     float64 `db:"profit"`
-		Trades     int     `db:"trades"`
-		WinTrades  int     `db:"win_trades"`
-		LossTrades int     `db:"loss_trades"`
+	stats, err := scanMonthlyPnLStats(rows)
+	if err != nil {
+		return nil, err
 	}
+	return buildMonthlyPnLResult(stats), nil
+}
+
+type monthStat struct {
+	MonthNum   int     `db:"month_num"`
+	Month      string  `db:"month"`
+	Profit     float64 `db:"profit"`
+	Trades     int     `db:"trades"`
+	WinTrades  int     `db:"win_trades"`
+	LossTrades int     `db:"loss_trades"`
+}
+
+func scanMonthlyPnLStats(rows interface{ Scan(...interface{}) error; Next() bool; Err() error }) ([]*monthStat, error) {
 	var stats []*monthStat
 	for rows.Next() {
 		s := &monthStat{}
@@ -109,10 +118,10 @@ func (r *AnalyticsRepository) GetMonthlyPnL(ctx context.Context, accountID uuid.
 		}
 		stats = append(stats, s)
 	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
+	return stats, rows.Err()
+}
 
+func buildMonthlyPnLResult(stats []*monthStat) []*model.MonthlyPnL {
 	monthNames := []string{"1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"}
 	result := make([]*model.MonthlyPnL, 12)
 	for i := 0; i < 12; i++ {
@@ -132,8 +141,7 @@ func (r *AnalyticsRepository) GetMonthlyPnL(ctx context.Context, accountID uuid.
 		result[idx].WinTrades = s.WinTrades
 		result[idx].LossTrades = s.LossTrades
 	}
-
-	return result, nil
+	return result
 }
 
 // GetWeekdayPnL aggregates closed-trade P/L by ISO weekday (1=Mon … 7=Sun) in [start, end].
@@ -154,11 +162,20 @@ func (r *AnalyticsRepository) GetWeekdayPnL(ctx context.Context, accountID uuid.
 		return nil, err
 	}
 	defer rows.Close()
-	type weekdayStat struct {
-		Weekday int     `db:"weekday"`
-		PnL     float64 `db:"pnl"`
-		Trades  int     `db:"trades"`
+	stats, err := scanWeekdayPnLStats(rows)
+	if err != nil {
+		return nil, err
 	}
+	return buildWeekdayPnLResult(stats), nil
+}
+
+type weekdayStat struct {
+	Weekday int     `db:"weekday"`
+	PnL     float64 `db:"pnl"`
+	Trades  int     `db:"trades"`
+}
+
+func scanWeekdayPnLStats(rows interface{ Scan(...interface{}) error; Next() bool; Err() error }) ([]*weekdayStat, error) {
 	var stats []*weekdayStat
 	for rows.Next() {
 		s := &weekdayStat{}
@@ -167,10 +184,10 @@ func (r *AnalyticsRepository) GetWeekdayPnL(ctx context.Context, accountID uuid.
 		}
 		stats = append(stats, s)
 	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
+	return stats, rows.Err()
+}
 
+func buildWeekdayPnLResult(stats []*weekdayStat) []*model.WeekdayPnL {
 	out := make([]*model.WeekdayPnL, 7)
 	for i := 0; i < 7; i++ {
 		out[i] = &model.WeekdayPnL{Weekday: i + 1, PnL: 0, Trades: 0}
@@ -181,5 +198,5 @@ func (r *AnalyticsRepository) GetWeekdayPnL(ctx context.Context, accountID uuid.
 			out[s.Weekday-1].Trades = s.Trades
 		}
 	}
-	return out, nil
+	return out
 }

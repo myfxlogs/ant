@@ -57,15 +57,35 @@ func (s *ScheduleHealthServer) GetScheduleHealth(ctx context.Context, req *conne
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	runLimit := int(req.Msg.RunLimit)
-	if runLimit <= 0 || runLimit > 100 {
-		runLimit = 20
+	runLimit, orderLimit := normalizeHealthLimits(int(req.Msg.RunLimit), int(req.Msg.OrderLimit))
+
+	summary, err := s.buildHealthSummary(ctx, uid, scheduleID)
+	if err != nil {
+		return nil, err
 	}
-	orderLimit := int(req.Msg.OrderLimit)
-	if orderLimit <= 0 || orderLimit > 100 {
-		orderLimit = 20
+	protoRunLogs, err := s.fetchRunLogs(ctx, uid, scheduleID, runLimit)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	protoOrders, err := s.fetchHealthOrders(ctx, uid, scheduleID, orderLimit)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
+	return connect.NewResponse(&antv1.GetScheduleHealthResponse{
+		Summary: summary,
+		RunLogs: protoRunLogs,
+		Orders:  protoOrders,
+	}), nil
+}
+
+func normalizeHealthLimits(runLimit, orderLimit int) (int, int) {
+	if runLimit <= 0 || runLimit > 100 { runLimit = 20 }
+	if orderLimit <= 0 || orderLimit > 100 { orderLimit = 20 }
+	return runLimit, orderLimit
+}
+
+func (s *ScheduleHealthServer) buildHealthSummary(ctx context.Context, uid, scheduleID uuid.UUID) (*antv1.ScheduleHealthSummary, error) {
 	totalRuns, successRuns, failedRuns, successRate, lastRunAt, latestError, err :=
 		s.repo.GetScheduleStats(ctx, uid, scheduleID)
 	if err != nil {
@@ -78,7 +98,7 @@ func (s *ScheduleHealthServer) GetScheduleHealth(ctx context.Context, req *conne
 	cfg := s.repo.GetGradingConfig(ctx)
 	gradeLevel, gradeColor, gradeNoteCode := computeGrade(successRate, int(failedRuns), cfg)
 
-	summary := &antv1.ScheduleHealthSummary{
+	return &antv1.ScheduleHealthSummary{
 		TotalRuns:            totalRuns,
 		SuccessRuns:          successRuns,
 		FailedRuns:           failedRuns,
@@ -95,37 +115,37 @@ func (s *ScheduleHealthServer) GetScheduleHealth(ctx context.Context, req *conne
 		GreenMaxFailedRuns:   int32(cfg.GreenMaxFailedRuns),
 		YellowSuccessRate:    cfg.YellowSuccessRate,
 		MinSampleSize:        int32(cfg.MinSampleSize),
-	}
+	}, nil
+}
 
-	runLogs, err := s.repo.ListRunLogs(ctx, uid, scheduleID, runLimit)
+func (s *ScheduleHealthServer) fetchRunLogs(ctx context.Context, uid, scheduleID uuid.UUID, limit int) ([]*antv1.ScheduleHealthRunLog, error) {
+	runLogs, err := s.repo.ListRunLogs(ctx, uid, scheduleID, limit)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
-	protoRunLogs := make([]*antv1.ScheduleHealthRunLog, 0, len(runLogs))
+	out := make([]*antv1.ScheduleHealthRunLog, 0, len(runLogs))
 	for _, l := range runLogs {
-		protoRunLogs = append(protoRunLogs, &antv1.ScheduleHealthRunLog{
+		out = append(out, &antv1.ScheduleHealthRunLog{
 			Id: l.ID, Status: l.Status, SignalType: l.SignalType,
 			DurationMs: l.DurationMs, ErrorMessage: l.ErrorMessage,
 			CreatedAt: timestamppb.New(l.CreatedAt),
 		})
 	}
+	return out, nil
+}
 
-	orders, err := s.repo.ListOrders(ctx, uid, scheduleID, orderLimit)
+func (s *ScheduleHealthServer) fetchHealthOrders(ctx context.Context, uid, scheduleID uuid.UUID, limit int) ([]*antv1.ScheduleHealthOrder, error) {
+	orders, err := s.repo.ListOrders(ctx, uid, scheduleID, limit)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, err)
+		return nil, err
 	}
-	protoOrders := make([]*antv1.ScheduleHealthOrder, 0, len(orders))
+	out := make([]*antv1.ScheduleHealthOrder, 0, len(orders))
 	for _, o := range orders {
-		protoOrders = append(protoOrders, &antv1.ScheduleHealthOrder{
+		out = append(out, &antv1.ScheduleHealthOrder{
 			Id: o.ID, Ticket: o.Ticket, OrderType: o.OrderType,
 			Symbol: o.Symbol, Profit: o.Profit,
 			OpenTime: ts(o.OpenTime), CloseTime: ts(o.CloseTime),
 		})
 	}
-
-	return connect.NewResponse(&antv1.GetScheduleHealthResponse{
-		Summary: summary,
-		RunLogs: protoRunLogs,
-		Orders:  protoOrders,
-	}), nil
+	return out, nil
 }

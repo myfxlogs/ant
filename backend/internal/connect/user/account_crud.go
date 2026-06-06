@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"connectrpc.com/connect"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -40,42 +42,42 @@ func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	// 2. Test MT connection to validate credentials
-	if s.mtTester != nil {
-		info, err := s.mtTester.Test(ctx, r.MtType, r.BrokerHost, r.Login, r.Password)
-		if err != nil {
-			s.log.Warn("CreateAccount: MT verification failed, rolling back",
-				zap.String("accountId", id), zap.Error(err))
-			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("account verification failed: %w", err))
-		}
-
-		// Update account with MT info within the transaction.
-		if err := s.svc.UpdateAccountInfoTx(ctx, tx, userID, id, info.Balance, info.Equity, info.Credit, info.Margin, info.FreeMargin, int64(info.Leverage), info.Currency, info.IsInvestor); err != nil {
-			s.log.Error("CreateAccount: UpdateAccountInfo failed", zap.Error(err))
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("update account info: %w", err))
-		}
-		s.log.Info("CreateAccount: verified and created",
-			zap.String("id", id),
-			zap.Float64("balance", info.Balance),
-		)
-	} else {
-		s.log.Warn("CreateAccount: MT connection tester not available, skipping verification",
-			zap.String("id", id))
+	// 2. Test MT connection and update account info within transaction.
+	if err := s.verifyAndUpdateAccount(ctx, tx, userID, id, r); err != nil {
+		return nil, err
 	}
-
-	// Commit the transaction.
+	// Commit and fetch full account for response.
 	if err := tx.Commit(ctx); err != nil {
 		s.log.Error("CreateAccount: tx commit failed", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("commit transaction: %w", err))
 	}
-
-	// Fetch the full account back so the response includes balance/equity/margin/currency.
 	a, err := s.svc.GetAccount(ctx, userID, id)
 	if err != nil {
 		s.log.Error("CreateAccount: get account after create", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(accountToProto(a)), nil
+}
+
+func (s *AccountServer) verifyAndUpdateAccount(ctx context.Context, tx pgx.Tx, userID uuid.UUID, accountID string, r *antv1.CreateAccountRequest) error {
+	if s.mtTester == nil {
+		s.log.Warn("CreateAccount: MT connection tester not available, skipping verification",
+			zap.String("id", accountID))
+		return nil
+	}
+	info, err := s.mtTester.Test(ctx, r.MtType, r.BrokerHost, r.Login, r.Password)
+	if err != nil {
+		s.log.Warn("CreateAccount: MT verification failed, rolling back",
+			zap.String("accountId", accountID), zap.Error(err))
+		return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("account verification failed: %w", err))
+	}
+	if err := s.svc.UpdateAccountInfoTx(ctx, tx, userID, accountID, info.Balance, info.Equity, info.Credit, info.Margin, info.FreeMargin, int64(info.Leverage), info.Currency, info.IsInvestor); err != nil {
+		s.log.Error("CreateAccount: UpdateAccountInfo failed", zap.Error(err))
+		return connect.NewError(connect.CodeInternal, fmt.Errorf("update account info: %w", err))
+	}
+	s.log.Info("CreateAccount: verified and created",
+		zap.String("id", accountID), zap.Float64("balance", info.Balance))
+	return nil
 }
 
 // UpdateAccount updates broker fields and disabled status.

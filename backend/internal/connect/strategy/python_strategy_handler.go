@@ -146,9 +146,12 @@ func mapMetrics(met *antv1.ExecuteBacktestMetrics) *antv1.BacktestMetrics {
 
 
 func (s *PythonStrategyServer) GetTemplates(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[antv1.GetPythonTemplatesResponse], error) {
-	return connect.NewResponse(&antv1.GetPythonTemplatesResponse{
-		Templates: []*antv1.PythonTemplate{
-			{Name: "MA Crossover", Description: "双均线交叉策略", Code: `# @param fast_period 10 range=5:50:5
+	return connect.NewResponse(&antv1.GetPythonTemplatesResponse{Templates: builtinTemplates()}), nil
+}
+
+func builtinTemplates() []*antv1.PythonTemplate {
+	return []*antv1.PythonTemplate{
+		{Name: "MA Crossover", Description: "双均线交叉策略", Code: `# @param fast_period 10 range=5:50:5
 # @param slow_period 30 range=10:100:10
 def run(context):
     p = context.get('params', {})
@@ -232,8 +235,7 @@ def run(context):
         if not pos:
             return {'signal': 'sell', 'volume': 1.0}
     return {'signal': 'hold', 'volume': 0}`},
-		},
-	}), nil
+	}
 }
 
 func (s *PythonStrategyServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }

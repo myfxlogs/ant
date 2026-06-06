@@ -51,28 +51,34 @@ func validateBacktestRun(run *repository.BacktestRun) {
 
 func (s *PythonStrategyServer) StartBacktestRun(ctx context.Context, req *connect.Request[antv1.StartBacktestRunRequest]) (*connect.Response[antv1.StartBacktestRunResponse], error) {
 	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
-	accountID, _ := uuid.Parse(req.Msg.AccountId)
-	mode := backtestModeToString(req.Msg.Mode)
+	run := buildBacktestRunFromRequest(userID, req.Msg)
+	validateBacktestRun(run)
+	if cfg := req.Msg.GetExecutionConfig(); cfg != nil {
+		snap, err := proto.Marshal(cfg)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal config snapshot: %w", err))
+		}
+		run.ConfigSnapshot = snap
+	}
+	runID, err := s.backtestRepo.Create(ctx, run)
+	if err != nil {
+		s.log.Error("StartBacktestRun: create", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.StartBacktestRunResponse{RunId: runID.String()}), nil
+}
+
+func buildBacktestRunFromRequest(userID uuid.UUID, msg *antv1.StartBacktestRunRequest) *repository.BacktestRun {
+	accountID, _ := uuid.Parse(msg.AccountId)
 	run := &repository.BacktestRun{
-		ID:            uuid.New(),
-		UserID:        userID,
-		AccountID:     accountID,
-		Symbol:        req.Msg.Symbol,
-		Timeframe:     req.Msg.Timeframe,
-		Mode:          mode,
-		Status:        StatusPending,
-		StrategyCode:  strPtr(req.Msg.Code),
-		InitialCapital: f64Ptr(req.Msg.InitialCapital),
+		ID: uuid.New(), UserID: userID, AccountID: accountID,
+		Symbol: msg.Symbol, Timeframe: msg.Timeframe,
+		Mode: backtestModeToString(msg.Mode), Status: StatusPending,
+		StrategyCode: strPtr(msg.Code), InitialCapital: f64Ptr(msg.InitialCapital),
 	}
-	if run.Mode == "" {
-		run.Mode = "KLINE_RANGE"
-	}
-	if req.Msg.InitialCapital <= 0 {
-		run.InitialCapital = f64Ptr(10000)
-	}
-	// Extract execution config with safe defaults.
-	cfg := req.Msg.GetExecutionConfig()
-	if cfg != nil {
+	if run.Mode == "" { run.Mode = "KLINE_RANGE" }
+	if msg.InitialCapital <= 0 { run.InitialCapital = f64Ptr(10000) }
+	if cfg := msg.GetExecutionConfig(); cfg != nil {
 		run.Commission = f64Ptr(cfg.GetCommission())
 		run.Slippage = f64Ptr(cfg.GetSlippage())
 		run.Leverage = f64Ptr(cfg.GetLeverage())
@@ -80,43 +86,15 @@ func (s *PythonStrategyServer) StartBacktestRun(ctx context.Context, req *connec
 		sMode := cfg.GetStrictMode()
 		run.StrictMode = &sMode
 	}
-	validateBacktestRun(run)
-	// Serialize full config snapshot for reproducibility.
-	if cfg != nil {
-		snap, err := proto.Marshal(cfg)
-		if err != nil {
-			return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("marshal config snapshot: %w", err))
-		}
-		run.ConfigSnapshot = snap
+	if msg.From != nil { t := msg.From.AsTime(); run.FromTs = &t }
+	if msg.To != nil { t := msg.To.AsTime(); run.ToTs = &t }
+	if msg.DatasetId != nil {
+		if id, _ := uuid.Parse(*msg.DatasetId); id != uuid.Nil { run.DatasetID = &id }
 	}
-	if req.Msg.From != nil {
-		t := req.Msg.From.AsTime()
-		run.FromTs = &t
+	if msg.TemplateId != nil {
+		if id, _ := uuid.Parse(*msg.TemplateId); id != uuid.Nil { run.TemplateID = &id }
 	}
-	if req.Msg.To != nil {
-		t := req.Msg.To.AsTime()
-		run.ToTs = &t
-	}
-	if req.Msg.DatasetId != nil {
-		id, _ := uuid.Parse(*req.Msg.DatasetId)
-		if id != uuid.Nil {
-			run.DatasetID = &id
-		}
-	}
-	if req.Msg.TemplateId != nil {
-		id, _ := uuid.Parse(*req.Msg.TemplateId)
-		if id != uuid.Nil {
-			run.TemplateID = &id
-		}
-	}
-	runID, err := s.backtestRepo.Create(ctx, run)
-	if err != nil {
-		s.log.Error("StartBacktestRun: create", zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, err)
-	}
-	return connect.NewResponse(&antv1.StartBacktestRunResponse{
-		RunId: runID.String(),
-	}), nil
+	return run
 }
 
 func (s *PythonStrategyServer) GetBacktestRun(ctx context.Context, req *connect.Request[antv1.GetBacktestRunRequest]) (*connect.Response[antv1.GetBacktestRunResponse], error) {

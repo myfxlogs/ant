@@ -43,44 +43,22 @@ func protoHistoryToChat(protoMsgs []*antv1.CodeChatMessage) []systemai.ChatMessa
 func (s *CodeAssistServer) ReviseCode(ctx context.Context, req *connect.Request[antv1.ReviseCodeRequest]) (*connect.Response[antv1.ReviseCodeResponse], error) {
 	code := req.Msg.Code
 	instruction := req.Msg.Instruction
-
-	if len(code) > maxCodeLen {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("code too large: %d bytes", len(code)))
+	if err := validateCodeAssistLimits(code, instruction); err != nil {
+		return nil, err
 	}
-	if len(instruction) > maxInstrLen {
-		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("instruction too long: %d bytes", len(instruction)))
-	}
-
 	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var sysPrompt, userMsg string
-	if strings.TrimSpace(code) == "" {
-		sysPrompt = "You are an expert quantitative trading strategy developer. " +
-			"Generate a complete Python trading strategy based on the user's description. " +
-			"The strategy must include: a run(ctx) function, entry/exit logic, stop-loss, " +
-			"and position sizing. Return ONLY the Python code, no explanations or markdown fences."
-		userMsg = fmt.Sprintf("Create a trading strategy: %s", instruction)
-	} else {
-		sysPrompt = "You are an expert quantitative trading strategy developer. " +
-			"Revise the following Python trading strategy code according to the user's instruction. " +
-			"Return ONLY the revised Python code, no explanations or markdown fences."
-		userMsg = fmt.Sprintf("Instruction: %s\n\nCode:\n```python\n%s\n```", instruction, code)
-	}
+	sysPrompt, userMsg := buildCodeAssistPrompt(code, instruction)
 	messages := systemai.BuildChatMessages(sysPrompt, userMsg, protoHistoryToChat(req.Msg.History))
-
 	revised, err := s.systemSvc.ChatCompletion(ctx, uid, messages, codeAssistModel)
 	if err != nil {
 		s.log.Warn("CodeAssist: ReviseCode LLM call failed", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(err)))
 	}
-
-	return connect.NewResponse(&antv1.ReviseCodeResponse{
-		Text:   revised,
-		Python: revised,
-	}), nil
+	return connect.NewResponse(&antv1.ReviseCodeResponse{Text: revised, Python: revised}), nil
 }
 
 func (s *CodeAssistServer) ReviseCodeStream(
@@ -90,20 +68,40 @@ func (s *CodeAssistServer) ReviseCodeStream(
 ) error {
 	code := req.Msg.Code
 	instruction := req.Msg.Instruction
+	if err := validateCodeAssistLimits(code, instruction); err != nil {
+		return err
+	}
+	uid, err := userIDFromCtx(ctx)
+	if err != nil {
+		return err
+	}
 
+	sysPrompt, userMsg := buildCodeAssistPrompt(code, instruction)
+	messages := systemai.BuildChatMessages(sysPrompt, userMsg, protoHistoryToChat(req.Msg.History))
+	var fullText strings.Builder
+	err = s.systemSvc.ChatCompletionStream(ctx, uid, messages, codeAssistModel,
+		func(chunk systemai.ChatStreamChunk) error {
+			fullText.WriteString(chunk.Content)
+			return stream.Send(&antv1.ReviseCodeStreamChunk{Delta: chunk.Content, Done: chunk.Done})
+		})
+	if err != nil {
+		s.log.Warn("CodeAssist: ReviseCodeStream LLM call failed", zap.Error(err))
+		return connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(err)))
+	}
+	return stream.Send(&antv1.ReviseCodeStreamChunk{Delta: "", Python: fullText.String(), Done: true})
+}
+
+func validateCodeAssistLimits(code, instruction string) error {
 	if len(code) > maxCodeLen {
 		return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("code too large: %d bytes", len(code)))
 	}
 	if len(instruction) > maxInstrLen {
 		return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("instruction too long: %d bytes", len(instruction)))
 	}
+	return nil
+}
 
-	uid, err := userIDFromCtx(ctx)
-	if err != nil {
-		return err
-	}
-
-	var sysPrompt, userMsg string
+func buildCodeAssistPrompt(code, instruction string) (sysPrompt, userMsg string) {
 	if strings.TrimSpace(code) == "" {
 		sysPrompt = "You are an expert quantitative trading strategy developer. " +
 			"Generate a complete Python trading strategy based on the user's description. " +
@@ -116,24 +114,7 @@ func (s *CodeAssistServer) ReviseCodeStream(
 			"Return ONLY the revised Python code, no explanations or markdown fences."
 		userMsg = fmt.Sprintf("Instruction: %s\n\nCode:\n```python\n%s\n```", instruction, code)
 	}
-	messages := systemai.BuildChatMessages(sysPrompt, userMsg, protoHistoryToChat(req.Msg.History))
-
-	var fullText strings.Builder
-	err = s.systemSvc.ChatCompletionStream(ctx, uid, messages, codeAssistModel,
-		func(chunk systemai.ChatStreamChunk) error {
-			fullText.WriteString(chunk.Content)
-			return stream.Send(&antv1.ReviseCodeStreamChunk{
-				Delta: chunk.Content,
-				Done:  chunk.Done,
-			})
-		})
-	if err != nil {
-		s.log.Warn("CodeAssist: ReviseCodeStream LLM call failed", zap.Error(err))
-		return connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(err)))
-	}
-
-	revised := fullText.String()
-	return stream.Send(&antv1.ReviseCodeStreamChunk{Delta: "", Python: revised, Done: true})
+	return
 }
 
 func (s *CodeAssistServer) ExplainCode(ctx context.Context, req *connect.Request[antv1.ExplainCodeRequest]) (*connect.Response[antv1.ExplainCodeResponse], error) {
@@ -168,28 +149,15 @@ func (s *CodeAssistServer) ExplainCode(ctx context.Context, req *connect.Request
 
 func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *connect.Request[antv1.ValidateStrategyExtendedRequest]) (*connect.Response[antv1.ValidateStrategyExtendedResponse], error) {
 	code := req.Msg.Code
-
 	if len(code) > maxCodeLen {
 		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("code too large: %d bytes", len(code)))
 	}
-
 	uid, err := userIDFromCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	sysPrompt := "You are a trading strategy code validator. " +
-		"Review the following Python strategy code and identify issues. " +
-		"Return a JSON object with fields: valid (bool), errors (string array), warnings (string array), " +
-		"parameters (array of objects with keys: key (str), required (bool), type (str: int|float|str|bool), " +
-		"default_value (str, optional), suggested_value (str, optional)). " +
-		"Extract all @param annotations from the code into the parameters array. " +
-		"Check for: missing stop-loss, missing take-profit, position sizing, error handling, " +
-		"indicator usage correctness, and data boundary handling. " +
-		"Respond with ONLY valid JSON, no markdown fences."
-	userMsg := fmt.Sprintf("Validate this trading strategy:\n```python\n%s\n```", code)
-	messages := systemai.BuildChatMessages(sysPrompt, userMsg, nil)
-
+	messages := systemai.BuildChatMessages(buildValidationPrompt(), fmt.Sprintf("Validate this trading strategy:\n```python\n%s\n```", code), nil)
 	result, err := s.systemSvc.ChatCompletion(ctx, uid, messages, codeAssistModel)
 	if err != nil {
 		s.log.Warn("CodeAssist: ValidateStrategyExtended LLM call failed, falling back to basic check", zap.Error(err))
@@ -198,6 +166,22 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 		}), nil
 	}
 
+	return parseValidationResult(result, s.log)
+}
+
+func buildValidationPrompt() string {
+	return "You are a trading strategy code validator. " +
+		"Review the following Python strategy code and identify issues. " +
+		"Return a JSON object with fields: valid (bool), errors (string array), warnings (string array), " +
+		"parameters (array of objects with keys: key (str), required (bool), type (str: int|float|str|bool), " +
+		"default_value (str, optional), suggested_value (str, optional)). " +
+		"Extract all @param annotations from the code into the parameters array. " +
+		"Check for: missing stop-loss, missing take-profit, position sizing, error handling, " +
+		"indicator usage correctness, and data boundary handling. " +
+		"Respond with ONLY valid JSON, no markdown fences."
+}
+
+func parseValidationResult(raw string, log *zap.Logger) (*connect.Response[antv1.ValidateStrategyExtendedResponse], error) {
 	var parsed struct {
 		Valid    bool     `json:"valid"`
 		Errors   []string `json:"errors"`
@@ -210,9 +194,9 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 			Suggest  string `json:"suggested_value"`
 		} `json:"parameters"`
 	}
-	cleaned := stripMarkdownFences(result)
+	cleaned := stripMarkdownFences(raw)
 	if err := json.Unmarshal([]byte(cleaned), &parsed); err != nil {
-		s.log.Warn("CodeAssist: ValidateStrategyExtended failed to parse LLM JSON",
+		log.Warn("CodeAssist: ValidateStrategyExtended failed to parse LLM JSON",
 			zap.Error(err), zap.String("raw", cleaned[:min(len(cleaned), 200)]))
 		return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
 			Valid: false, Errors: []string{"AI 验证结果解析失败，请检查策略代码格式。"}, Warnings: []string{},
@@ -226,7 +210,6 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 			DefaultValue: p.Default, SuggestedValue: p.Suggest,
 		}
 	}
-
 	return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{
 		Valid: parsed.Valid, Errors: parsed.Errors, Warnings: parsed.Warnings,
 		Parameters: params,

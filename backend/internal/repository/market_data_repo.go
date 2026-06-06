@@ -37,31 +37,34 @@ type KlineBar struct {
 	TickCount     uint32
 }
 
-
 // GetKlines returns OHLCV kline bars for a symbol and period, optionally filtered by broker and time range.
 func (r *MarketDataRepository) GetKlines(ctx context.Context, canonical, broker, period string, from, to *time.Time, limit int32) ([]KlineBar, error) {
 	if limit <= 0 {
 		limit = 500
 	}
+	query, args := buildKlineQuery(canonical, broker, period, from, to, limit)
+	rows, err := r.ch.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("get klines: %w", err)
+	}
+	defer rows.Close()
+	return scanKlineBars(rows, r.log)
+}
 
-	// Performance: avoid the FINAL modifier on a wide ReplacingMergeTree —
-	// it forces a full part merge before sort/limit, blowing up memory on
-	// busy symbols. Instead:
-	//   1. narrow scan via close_ts_unix_ms range (from/to, or 6-month fallback)
-	//   2. dedup with LIMIT 1 BY on the natural primary key, which CH handles
-	//      streaming and bounded.
+// buildKlineQuery constructs a parameterized query for md_bars.
+// Uses toFloat64() casts because open/high/low/close are Decimal(18,6) in CH
+// and the clickhouse-go driver cannot scan Decimal directly into *float64.
+// Avoids FINAL on the ReplacingMergeTree — instead uses LIMIT 1 BY for
+// streaming dedup bounded by a 6-month lookback window.
+func buildKlineQuery(canonical, broker, period string, from, to *time.Time, limit int32) (string, []any) {
 	const lookbackMonths = 6
-
-	// toFloat64() casts: open/high/low/close are Decimal(18,6) in CH and the
-	// clickhouse-go driver cannot scan Decimal directly into *float64.
 	query := `SELECT broker, canonical, period, open_ts_unix_ms, close_ts_unix_ms,
-	                 toFloat64(open), toFloat64(high), toFloat64(low), toFloat64(close),
-	                 volume, tick_count
-	          FROM md_bars
-	          WHERE canonical = $1 AND period = $2 AND is_replay = 0`
+		                 toFloat64(open), toFloat64(high), toFloat64(low), toFloat64(close),
+		                 volume, tick_count
+		          FROM md_bars
+		          WHERE canonical = $1 AND period = $2 AND is_replay = 0`
 	args := []any{canonical, period}
 
-	// Lower bound: use from if provided, otherwise 6-month lookback.
 	if from != nil {
 		query += fmt.Sprintf(` AND close_ts_unix_ms >= $%d`, len(args)+1)
 		args = append(args, from.UnixMilli())
@@ -70,36 +73,29 @@ func (r *MarketDataRepository) GetKlines(ctx context.Context, canonical, broker,
 		query += fmt.Sprintf(` AND close_ts_unix_ms >= $%d`, len(args)+1)
 		args = append(args, cutoffMs)
 	}
-
-	// Upper bound: use to if provided (e.g. "before" timestamp for historical loads).
 	if to != nil {
 		query += fmt.Sprintf(` AND close_ts_unix_ms <= $%d`, len(args)+1)
 		args = append(args, to.UnixMilli())
 	}
-
 	if broker != "" {
 		query += fmt.Sprintf(` AND broker = $%d`, len(args)+1)
 		args = append(args, broker)
 	}
-
 	query += fmt.Sprintf(` ORDER BY close_ts_unix_ms DESC
 		           LIMIT 1 BY (broker, canonical, period, close_ts_unix_ms)
 		           LIMIT $%d`, len(args)+1)
 	args = append(args, limit)
+	return query, args
+}
 
-	rows, err := r.ch.Query(ctx, query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("get klines: %w", err)
-	}
-	defer rows.Close()
-
+func scanKlineBars(rows interface{ Scan(...interface{}) error; Next() bool; Err() error }, log *zap.Logger) ([]KlineBar, error) {
 	var bars []KlineBar
 	for rows.Next() {
 		var b KlineBar
 		if err := rows.Scan(&b.Broker, &b.Canonical, &b.Period, &b.OpenTsUnixMs, &b.CloseTsUnixMs,
 			&b.Open, &b.High, &b.Low, &b.Close, &b.Volume, &b.TickCount); err != nil {
-			if r.log != nil {
-				r.log.Warn("get klines: scan row failed", zap.Error(err))
+			if log != nil {
+				log.Warn("get klines: scan row failed", zap.Error(err))
 			}
 			continue
 		}

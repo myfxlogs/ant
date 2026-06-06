@@ -76,77 +76,67 @@ func (r *AIWorkflowRepository) AppendStep(ctx context.Context, userID, runID uui
 		status = "done"
 	}
 	step := &AIWorkflowStep{
-		ID:        uuid.New(),
-		RunID:     runID,
-		Key:       key,
-		Title:     title,
-		Status:    status,
-		Input:     input,
-		Output:    output,
-		Error:     stepErr,
-		Duration:  durationMs,
-		CreatedAt: time.Now(),
+		ID: uuid.New(), RunID: runID, Key: key, Title: title, Status: status,
+		Input: input, Output: output, Error: stepErr, Duration: durationMs, CreatedAt: time.Now(),
 	}
 
-	tx, txErr := r.db.Begin(ctx)
-	if txErr != nil {
-		return nil, txErr
-	}
-	defer func() {
-		_ = tx.Rollback(ctx)
-	}()
-
-	// authorize run ownership inside transaction
-	var owner uuid.UUID
-	err := tx.QueryRow(ctx, `SELECT user_id FROM ai_workflow_runs WHERE id=$1`, runID).Scan(&owner)
-	if errors.Is(err, pgx.ErrNoRows) {
-		_ = tx.Rollback(ctx)
-		return nil, ErrAIWorkflowRunNotFound
-	}
+	tx, err := r.db.Begin(ctx)
 	if err != nil {
-		_ = tx.Rollback(ctx)
 		return nil, err
 	}
-	if owner != userID {
-		_ = tx.Rollback(ctx)
-		return nil, ErrAIWorkflowRunNotFound
-	}
+	defer tx.Rollback(ctx)
 
-	_, err = tx.Exec(ctx,
+	if err := authorizeRunOwnershipTx(ctx, tx, userID, runID); err != nil {
+		return nil, err
+	}
+	if _, err := tx.Exec(ctx,
 		`INSERT INTO ai_workflow_steps (id, run_id, step_key, title, status, input, output, error, duration_ms, created_at)
-			 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
 		step.ID, step.RunID, step.Key, step.Title, step.Status, step.Input, step.Output, step.Error, step.Duration, step.CreatedAt,
-	)
-	if err != nil {
+	); err != nil {
 		return nil, err
 	}
 
-	now := time.Now()
-	newRunStatus := "running"
-	if status == "error" {
-		newRunStatus = "failed"
-	}
-	// Mark the run succeeded when a terminal step completes.
-	// Terminal keys include "code", "final", "complete", "done", "review", or any key
-	// prefixed with "final_" (e.g. "final_review").
-	if status == "done" && isTerminalStepKey(key) {
-		newRunStatus = "succeeded"
-	}
-	_, err = tx.Exec(ctx,
+	if _, err := tx.Exec(ctx,
 		`UPDATE ai_workflow_runs
-			 SET updated_at = $1,
-			     status = CASE WHEN status = 'running' THEN $2 ELSE status END
-			 WHERE id = $3 AND user_id = $4`,
-		now, newRunStatus, runID, userID,
-	)
-	if err != nil {
+		 SET updated_at = $1, status = CASE WHEN status = 'running' THEN $2 ELSE status END
+		 WHERE id = $3 AND user_id = $4`,
+		time.Now(), determineRunStatus(status, key), runID, userID,
+	); err != nil {
 		return nil, err
 	}
-
 	if err := tx.Commit(ctx); err != nil {
 		return nil, err
 	}
 	return step, nil
+}
+
+func authorizeRunOwnershipTx(ctx context.Context, tx pgx.Tx, userID, runID uuid.UUID) error {
+	var owner uuid.UUID
+	err := tx.QueryRow(ctx, `SELECT user_id FROM ai_workflow_runs WHERE id=$1`, runID).Scan(&owner)
+	if errors.Is(err, pgx.ErrNoRows) {
+		_ = tx.Rollback(ctx)
+		return ErrAIWorkflowRunNotFound
+	}
+	if err != nil {
+		_ = tx.Rollback(ctx)
+		return err
+	}
+	if owner != userID {
+		_ = tx.Rollback(ctx)
+		return ErrAIWorkflowRunNotFound
+	}
+	return nil
+}
+
+func determineRunStatus(stepStatus, key string) string {
+	if stepStatus == "error" {
+		return "failed"
+	}
+	if stepStatus == "done" && isTerminalStepKey(key) {
+		return "succeeded"
+	}
+	return "running"
 }
 
 func (r *AIWorkflowRepository) ListRuns(ctx context.Context, userID uuid.UUID, limit, offset int) ([]AIWorkflowRun, error) {
