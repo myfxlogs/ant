@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Button, Space, Alert, Tooltip, Select, message } from 'antd';
+import { Button, Space, Tooltip, Select, message } from 'antd';
 import {
   CheckCircleOutlined, PlayCircleOutlined, CopyOutlined,
   SaveOutlined, SettingOutlined, RobotOutlined,
@@ -191,64 +191,10 @@ export default function WorkspaceCodePanel({
         />
       </div>
 
-      {/* Validation result */}
-      {validationResult && (
-        <Alert
-          type={validationResult.valid ? 'success' : 'warning'} showIcon
-          message={validationResult.valid
-            ? t('strategy.workspace.validatePass', 'Validation passed')
-            : t('strategy.workspace.validateFailed', 'Validation failed')}
-          description={
-            !validationResult.valid ? (
-              <div style={{
-                maxHeight: 220, overflowY: 'auto',
-                marginTop: 4, padding: '6px 8px',
-                background: '#fff', borderRadius: 4,
-                border: '1px solid #f0f0f0',
-              }}>
-                {validationResult.errors?.map((e, i) => (
-                  <div key={`err-${i}`} style={{
-                    fontSize: 11, lineHeight: '1.6', color: '#cf1322',
-                    padding: '2px 0', borderBottom: '1px solid #fff1f0',
-                    wordBreak: 'break-word',
-                  }}>
-                    <span style={{ fontWeight: 600, marginRight: 4 }}>✕</span>
-                    {e}
-                  </div>
-                ))}
-                {validationResult.warnings?.map((w, i) => (
-                  <div key={`warn-${i}`} style={{
-                    fontSize: 11, lineHeight: '1.6', color: '#ad6800',
-                    padding: '2px 0', borderBottom: '1px solid #fffbe6',
-                    wordBreak: 'break-word',
-                  }}>
-                    <span style={{ fontWeight: 600, marginRight: 4 }}>⚠</span>
-                    {w}
-                  </div>
-                ))}
-              </div>
-            ) : undefined
-          }
-          action={
-            !validationResult.valid ? (
-              <Space direction="vertical" size={4}>
-                {onAutoFix && (
-                  <Button size="small" type="primary" icon={<RobotOutlined />}
-                    loading={autoFixing} onClick={onAutoFix}>
-                    {autoFixing ? 'Fixing...' : 'Auto Fix'}
-                  </Button>
-                )}
-                {onAskAI && (
-                  <Button size="small" type="primary" ghost icon={<RobotOutlined />}
-                    onClick={onAskAI}>
-                    Ask AI
-                  </Button>
-                )}
-              </Space>
-            ) : undefined
-          }
-        />
-      )}
+      <ValidationResultAlert
+        validationResult={validationResult}
+        autoFixing={autoFixing} onAutoFix={onAutoFix} onAskAI={onAskAI}
+      />
 
       <AISettingsModal open={settingsOpen} onClose={handleSettingsClose} />
     </div>
