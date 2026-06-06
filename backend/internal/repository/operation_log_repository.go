@@ -38,90 +38,50 @@ func (r *LogRepository) CreateOperationLog(ctx context.Context, log *model.Syste
 }
 
 func (r *LogRepository) GetOperationLogs(ctx context.Context, userID uuid.UUID, params *model.LogQueryParams) ([]*model.SystemOperationLog, int, error) {
-	baseQuery := `FROM system_operation_logs WHERE user_id = $1`
-	args := []interface{}{userID}
-	argIndex := 2
-
-	if params != nil {
-		if params.Module != "" {
-			baseQuery += fmt.Sprintf(` AND module = $%d`, argIndex)
-			args = append(args, params.Module)
-			argIndex++
-		}
-		if params.Action != "" {
-			baseQuery += fmt.Sprintf(` AND action = $%d`, argIndex)
-			args = append(args, params.Action)
-			argIndex++
-		}
-		if params.Type != "" {
-			baseQuery += fmt.Sprintf(` AND operation_type = $%d`, argIndex)
-			args = append(args, params.Type)
-			argIndex++
-		}
-		if params.ResourceType != "" {
-			baseQuery += fmt.Sprintf(` AND resource_type = $%d`, argIndex)
-			args = append(args, params.ResourceType)
-			argIndex++
-		}
-		if params.ResourceID != "" {
-			baseQuery += fmt.Sprintf(` AND resource_id = $%d`, argIndex)
-			rid, _ := uuid.Parse(params.ResourceID)
-			args = append(args, rid)
-			argIndex++
-		}
-		if params.Status != "" {
-			baseQuery += fmt.Sprintf(` AND status = $%d`, argIndex)
-			args = append(args, params.Status)
-			argIndex++
-		}
-		if params.StartDate != "" {
-			baseQuery += fmt.Sprintf(` AND created_at >= $%d`, argIndex)
-			args = append(args, params.StartDate)
-			argIndex++
-		}
-		if params.EndDate != "" {
-			baseQuery += fmt.Sprintf(` AND created_at <= $%d`, argIndex)
-			args = append(args, params.EndDate)
-			argIndex++
-		}
-	}
-
-	countQuery := `SELECT COUNT(*) ` + baseQuery
+	baseQuery, args, argIdx := buildOpLogFilters(userID, params)
 	var total int
-	if err := r.db.QueryRow(ctx, countQuery, args...).Scan(&total); err != nil {
+	if err := r.db.QueryRow(ctx, `SELECT COUNT(*) `+baseQuery, args...).Scan(&total); err != nil {
 		return nil, 0, err
 	}
-
-	page := 1
-	pageSize := 20
-	if params != nil {
-		if params.Page > 0 {
-			page = params.Page
-		}
-		if params.PageSize > 0 {
-			pageSize = params.PageSize
-		}
-	}
-
-	offset := (page - 1) * pageSize
-	dataQuery := fmt.Sprintf(`SELECT * %s ORDER BY created_at DESC LIMIT $%d OFFSET $%d`, baseQuery, argIndex, argIndex+1)
-	args = append(args, pageSize, offset)
-
-	queryRows, err := r.db.Query(ctx, dataQuery, args...)
-	if err != nil {
-		return nil, 0, err
-	}
-	defer queryRows.Close()
+	page, pageSize := normalizeOpLogPagination(params)
+	dataQuery := fmt.Sprintf(`SELECT * %s ORDER BY created_at DESC LIMIT $%d OFFSET $%d`, baseQuery, argIdx, argIdx+1)
+	args = append(args, pageSize, (page-1)*pageSize)
+	rows, err := r.db.Query(ctx, dataQuery, args...)
+	if err != nil { return nil, 0, err }
+	defer rows.Close()
 	var logs []*model.SystemOperationLog
-	for queryRows.Next() {
-		var log model.SystemOperationLog
-		if err := queryRows.Scan(&log.ID, &log.UserID, &log.OperationType, &log.Module, &log.ResourceType, &log.ResourceID, &log.Action, &log.OldValue, &log.NewValue, &log.IPAddress, &log.UserAgent, &log.Status, &log.ErrorMessage, &log.DurationMs, &log.CreatedAt); err != nil {
+	for rows.Next() {
+		var l model.SystemOperationLog
+		if err := rows.Scan(&l.ID, &l.UserID, &l.OperationType, &l.Module, &l.ResourceType, &l.ResourceID, &l.Action, &l.OldValue, &l.NewValue, &l.IPAddress, &l.UserAgent, &l.Status, &l.ErrorMessage, &l.DurationMs, &l.CreatedAt); err != nil {
 			return nil, 0, err
 		}
-		logs = append(logs, &log)
+		logs = append(logs, &l)
 	}
-	if err := queryRows.Err(); err != nil {
-		return nil, 0, err
+	return logs, total, rows.Err()
+}
+
+func buildOpLogFilters(userID uuid.UUID, params *model.LogQueryParams) (string, []interface{}, int) {
+	base := `FROM system_operation_logs WHERE user_id = $1`
+	args := []interface{}{userID}
+	idx := 2
+	if params == nil { return base, args, idx }
+	addFilter := func(cond, val string) { base += fmt.Sprintf(` AND %s = $%d`, cond, idx); args = append(args, val); idx++ }
+	if params.Module != "" { addFilter("module", params.Module) }
+	if params.Action != "" { addFilter("action", params.Action) }
+	if params.Type != "" { addFilter("operation_type", params.Type) }
+	if params.ResourceType != "" { addFilter("resource_type", params.ResourceType) }
+	if params.ResourceID != "" { rid, _ := uuid.Parse(params.ResourceID); addFilter("resource_id", ""); args[len(args)-1] = rid }
+	if params.Status != "" { addFilter("status", params.Status) }
+	if params.StartDate != "" { addFilter("created_at >=", params.StartDate) }
+	if params.EndDate != "" { addFilter("created_at <=", params.EndDate) }
+	return base, args, idx
+}
+
+func normalizeOpLogPagination(params *model.LogQueryParams) (page, pageSize int) {
+	page, pageSize = 1, 20
+	if params != nil {
+		if params.Page > 0 { page = params.Page }
+		if params.PageSize > 0 { pageSize = params.PageSize }
 	}
-	return logs, total, nil
+	return
 }
