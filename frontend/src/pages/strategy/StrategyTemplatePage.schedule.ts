@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { message } from 'antd';
 import type { TFunction } from 'i18next';
-import { strategyApi } from '@/client/strategy';
+import { strategyScheduleApi } from '@/client/strategy-schedules';
 import { pickMetric } from './StrategyTemplatePage.utils';
 
 // 把这两个"计算 + 副作用"辅助函数从 StrategyTemplatePage.tsx 抽出来，
@@ -111,7 +111,7 @@ export async function createScheduleFromRun(
 
 	setScheduleFlow((p) => ({ ...p, creating: true }));
 	try {
-		const resp: any = await strategyApi.createSchedule({
+		const resp: any = await strategyScheduleApi.createSchedule({
 			templateId: params.templateId,
 			accountId,
 			name: scheduleName,
@@ -123,7 +123,7 @@ export async function createScheduleFromRun(
 		});
 		const scheduleId = String(resp?.id || resp?.schedule?.id || '').trim();
 		if (scheduleId && params.enableAfterCreate) {
-			await strategyApi.toggleSchedule(scheduleId, true);
+			await strategyScheduleApi.toggleSchedule(scheduleId, true);
 		}
 		message.success(
 			String(

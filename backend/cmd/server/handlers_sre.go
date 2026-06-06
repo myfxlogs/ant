@@ -1,3 +1,6 @@
+// Internal SRE endpoints — exempt from ConnectRPC requirement (operational necessity).
+// Kill switches, circuit breakers, and canary configs need plain HTTP (curl-able)
+// to remain functional in degraded states. Auth cookie endpoints are HTTP-native.
 package main
 
 import (

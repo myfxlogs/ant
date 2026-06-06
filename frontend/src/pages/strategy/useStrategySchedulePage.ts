@@ -3,7 +3,7 @@ import { Form, message } from "antd";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { timestampDate } from "@bufbuild/protobuf/wkt";
 import { pythonStrategyApi } from "../../client/pythonStrategy";
-import { strategyScheduleV2Api, strategyTemplateApi } from "../../client/strategy";
+import { strategyScheduleV2Api, strategyTemplateApi } from "../../client/strategy-schedules";
 import { useAccountsAndSymbols } from "./hooks/useAccountsAndSymbols";
 import { tradingApi } from "../../client/trading";
 import { scheduleHealthApi } from "../../client/scheduleHealth";
