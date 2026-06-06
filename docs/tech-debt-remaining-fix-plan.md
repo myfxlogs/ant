@@ -1,7 +1,7 @@
 # 剩余技术债修复方案
 
 **日期**: 2026-06-06  
-**状态**: A✅ D✅ E✅ | B 11/14 | C 12/25+  
+**状态**: A✅ B✅ D✅ E✅ | C 12/25+  
 **前提**: 第一轮（`61286be`）7项管线 + 第二轮（`abd5697`）空REST router
 
 ---
@@ -12,14 +12,14 @@
 
 ---
 
-## 二、B 组：TS 文件拆分 ⏳ 11/14
+## 二、B 组：TS 文件拆分 ✅ 已完成（14/14）
 
 | 已完成 | 原→新 |
 |--------|-------|
-| strategy.ts | 295→153 + schedules.ts |
-| admin.ts | 258→223 + jurisdiction.ts |
-| bridgeStreamEvents.ts | 256→119 + profitEvents.ts |
-| TradeConfirmModal.tsx | 258→36 + 3子组件 |
+| strategy.ts | 295→153 + strategy-schedules.ts |
+| admin.ts | 258→223 + admin-jurisdiction.ts |
+| bridgeStreamEvents.ts | 256→119 + bridgeProfitEvents.ts |
+| TradeConfirmModal.tsx | 258→36 + 3 子组件 |
 | NotificationCenter.tsx | 276→100 + NotificationList.tsx |
 | PriceChart.tsx | 290→115 + ChartToolbar.tsx |
 | useStrategySchedulePage.ts | 271→247 + scheduleUtils.ts |
@@ -27,8 +27,11 @@
 | BacktestParamsCard.tsx | 261→? + BacktestConfigSection.tsx |
 | StrategyWorkspacePage.tsx | 269→233 + WorkspaceLayout.tsx |
 | useStrategyTemplatePage.ts | 271→230 + submitBacktest.ts |
+| useStrategyWorkspaceState.ts | 326→115 + useQuickTradeData(72) + useAIWorkflow(131) |
+| Market.tsx | 305→? + useWatchlist(33) + useSymbolStats(67) |
+| Dashboard.tsx | 297→? + DashboardLogColumns(26) + DashboardRiskMetrics(89) |
 
-**剩余 3 个**: useStrategyWorkspaceState(326) Market(305) Dashboard(297)
+全部 14 个 TS 文件已拆分至软性参考线（250行）以下。`npx tsc --noEmit` 通过。
 
 ---
 
