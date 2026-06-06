@@ -15,6 +15,7 @@ import (
 	"anttrader/internal/connect/admin"
 	"anttrader/internal/connect/ai"
 	algo "anttrader/internal/connect/algo"
+	"anttrader/internal/connect/autotrading"
 	mktplace "anttrader/internal/connect/marketplace"
 	"anttrader/internal/connect/notification"
 	"anttrader/internal/connect/strategy"
@@ -253,6 +254,12 @@ func registerHandlers(
 		state.Positions = int(positions)
 		return &state, nil
 	})
+
+	// AutoTradingService handler — leverages existing pipeline + repositories.
+	autoTradingRepo := repository.NewAutoTradingRepository(pool)
+	autoTradingServer := autotrading.NewAutoTradingServer(autoTradingRepo, pipeline, log)
+	mux.Handle(antv1c.NewAutoTradingServiceHandler(autoTradingServer,
+		connectrpc.WithInterceptors(authInterceptor)))
 
 	// S1.3: Wire per-user rate limiter (10 orders/sec/user, 100 signals/sec/user).
 	limiter := usermgr.NewUserLimiter(usermgr.DefaultConfig())
