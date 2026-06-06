@@ -79,60 +79,41 @@ func normalizePage(page, pageSize int) (int, int) {
 }
 
 func (r *AdminRepository) GetTradingSummary(ctx context.Context, startDate, endDate string) (*model.TradingSummary, error) {
-	summary := &model.TradingSummary{}
-	summary.Period.StartDate = startDate
-	summary.Period.EndDate = endDate
+	s := &model.TradingSummary{}
+	s.Period.StartDate, s.Period.EndDate = startDate, endDate
+	fetchTradingSummaryOverview(ctx, r, s)
+	fetchTradingSummaryTrading(ctx, r, startDate, endDate, s)
+	s.Trading.NetProfit = s.Trading.TotalProfit.Add(s.Trading.TotalLoss)
+	fetchTradingSummaryByPlatform(ctx, r, startDate, endDate, s)
+	return s, nil
+}
 
-	_ = r.db.QueryRow(ctx, `SELECT COUNT(*) FROM users`).Scan(&summary.Overview.TotalUsers)
-	_ = r.db.QueryRow(ctx, `SELECT COUNT(*) FROM users WHERE status = 'active'`).Scan(&summary.Overview.ActiveUsers)
-	_ = r.db.QueryRow(ctx, `SELECT COUNT(*) FROM mt_accounts`).Scan(&summary.Overview.TotalAccounts)
-	_ = r.db.QueryRow(ctx, `SELECT COUNT(*) FROM mt_accounts WHERE account_status = 'connected'`).Scan(&summary.Overview.ConnectedAccounts)
+func fetchTradingSummaryOverview(ctx context.Context, r *AdminRepository, s *model.TradingSummary) {
+	_ = r.db.QueryRow(ctx, `SELECT COUNT(*) FROM users`).Scan(&s.Overview.TotalUsers)
+	_ = r.db.QueryRow(ctx, `SELECT COUNT(*) FROM users WHERE status='active'`).Scan(&s.Overview.ActiveUsers)
+	_ = r.db.QueryRow(ctx, `SELECT COUNT(*) FROM mt_accounts`).Scan(&s.Overview.TotalAccounts)
+	_ = r.db.QueryRow(ctx, `SELECT COUNT(*) FROM mt_accounts WHERE account_status='connected'`).Scan(&s.Overview.ConnectedAccounts)
+}
 
-	_ = r.db.QueryRow(ctx, `
-		SELECT COUNT(*), COALESCE(SUM(volume), 0), COALESCE(SUM(profit), 0)
-		FROM trade_records
-		WHERE DATE(close_time) BETWEEN $1 AND $2`, startDate, endDate,
-	).Scan(&summary.Trading.ClosedOrders, &summary.Trading.TotalVolume, &summary.Trading.TotalProfit)
+func fetchTradingSummaryTrading(ctx context.Context, r *AdminRepository, start, end string, s *model.TradingSummary) {
+	_ = r.db.QueryRow(ctx, `SELECT COUNT(*), COALESCE(SUM(volume),0), COALESCE(SUM(profit),0) FROM trade_records WHERE DATE(close_time) BETWEEN $1 AND $2`, start, end).
+		Scan(&s.Trading.ClosedOrders, &s.Trading.TotalVolume, &s.Trading.TotalProfit)
+	_ = r.db.QueryRow(ctx, `SELECT COALESCE(SUM(CASE WHEN profit<0 THEN profit ELSE 0 END),0) FROM trade_records WHERE DATE(close_time) BETWEEN $1 AND $2`, start, end).
+		Scan(&s.Trading.TotalLoss)
+	_ = r.db.QueryRow(ctx, `SELECT COUNT(*) FROM trade_records WHERE close_time IS NULL`).Scan(&s.Trading.PendingOrders)
+	_ = r.db.QueryRow(ctx, `SELECT COUNT(*) FROM trade_records WHERE DATE(close_time) BETWEEN $1 AND $2`, start, end).
+		Scan(&s.Trading.TotalOrders)
+}
 
-	_ = r.db.QueryRow(ctx, `
-		SELECT COALESCE(SUM(CASE WHEN profit < 0 THEN profit ELSE 0 END), 0)
-		FROM trade_records
-		WHERE DATE(close_time) BETWEEN $1 AND $2`, startDate, endDate,
-	).Scan(&summary.Trading.TotalLoss)
-
-	_ = r.db.QueryRow(ctx, `
-		SELECT COUNT(*) FROM trade_records
-		WHERE close_time IS NULL`, // pending orders
-	).Scan(&summary.Trading.PendingOrders)
-
-	_ = r.db.QueryRow(ctx, `
-		SELECT COUNT(*)
-		FROM trade_records
-		WHERE DATE(close_time) BETWEEN $1 AND $2`, startDate, endDate,
-	).Scan(&summary.Trading.TotalOrders)
-
-	summary.Trading.NetProfit = summary.Trading.TotalProfit.Add(summary.Trading.TotalLoss)
-
-	// ByPlatform breakdown
-	rows, err := r.db.Query(ctx, `
-		SELECT COALESCE(ma.platform, 'unknown'), COUNT(DISTINCT ma.id), COUNT(tr.id), COALESCE(SUM(tr.volume), 0)
-		FROM mt_accounts ma
-		LEFT JOIN trade_records tr ON tr.account_id = ma.id
-			AND DATE(tr.close_time) BETWEEN $1 AND $2
-		GROUP BY ma.platform`, startDate, endDate)
-	if err == nil {
-		defer rows.Close()
-		summary.ByPlatform = make(map[string]model.PlatformSummary)
-		for rows.Next() {
-			var platform string
-			var plat model.PlatformSummary
-			if err := rows.Scan(&platform, &plat.Accounts, &plat.Orders, &plat.Volume); err == nil {
-				summary.ByPlatform[platform] = plat
-			}
-		}
+func fetchTradingSummaryByPlatform(ctx context.Context, r *AdminRepository, start, end string, s *model.TradingSummary) {
+	rows, err := r.db.Query(ctx, `SELECT COALESCE(ma.platform,'unknown'), COUNT(DISTINCT ma.id), COUNT(tr.id), COALESCE(SUM(tr.volume),0) FROM mt_accounts ma LEFT JOIN trade_records tr ON tr.account_id=ma.id AND DATE(tr.close_time) BETWEEN $1 AND $2 GROUP BY ma.platform`, start, end)
+	if err != nil { return }
+	defer rows.Close()
+	s.ByPlatform = make(map[string]model.PlatformSummary)
+	for rows.Next() {
+		var pf string; var ps model.PlatformSummary
+		if err := rows.Scan(&pf, &ps.Accounts, &ps.Orders, &ps.Volume); err == nil { s.ByPlatform[pf] = ps }
 	}
-
-	return summary, nil
 }
 
 func (r *AdminRepository) Ping(ctx context.Context) error {
