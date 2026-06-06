@@ -2,16 +2,20 @@
 
 These constraints are enforced at implementation time. Violation = fix before commit.
 
-## File & Function Size (NON-NEGOTIABLE)
+## File & Function Size
 
-| Language | Max File | Max Function |
-|----------|----------|--------------|
-| Go       | 300 行   | 50 行        |
-| TypeScript | 250 行 | 50 行        |
+**原则**: 按语义域（功能边界）拆分优先，行数作为软性参考。拆分的目的是帮助 AI 阅读代码——如果文件逻辑内聚，适度超标优于碎片化。
 
-- **Before adding code to a near-limit file: SPLIT THE FILE FIRST.**
-- Generated code (`gen/`) and tests exempt (50% overage allowed).
-- Check: `make check-size`
+| Language | 软性参考 | 函数参考 |
+|----------|---------|---------|
+| Go       | 300 行  | 50 行   |
+| TypeScript | 250 行 | 50 行   |
+
+- **拆分前先判断**：是否有明确的功能边界（CRUD/生命周期/实体类型）？有 → 拆。没有 → 保持内聚。
+- **硬性红线**：Go >450 行、TS >375 行必须拆分（AI 明显退化）。
+- 自动生成代码（`gen/`）、测试文件、i18n 文件豁免。
+- 检查：`make check-size`（软性参考，不阻断 CI）。
+- 详细：见 `complexity-limits.md` 分级严重度系统。
 
 ## Prohibited (Zero Tolerance)
 
@@ -45,8 +49,8 @@ These constraints are enforced at implementation time. Violation = fix before co
 ## Before Commit
 
 ```bash
-make check-size   # file/function size compliance
 go build ./...    # must pass
+make check-size   # file size soft reference (informational, does not block)
 ```
 
 Full constraint details: see `/root/.claude/projects/-opt-ant/memory/`
