@@ -1,19 +1,14 @@
 /**
- * Maps SSE stream events to TanStack Query cache operations.
- * Replaces the data-mapping logic previously in ConnectProvider.
+ * Maps SSE order/status/snapshot events to TanStack Query cache.
+ * Profit update handlers are in bridgeProfitEvents.ts.
  */
 import type { QueryClient } from '@tanstack/react-query';
-import type { OrderUpdate, ProfitUpdate, OrderProfitItem } from '@/adapters/dataAdapter';
+import type { OrderUpdate } from '@/adapters/dataAdapter';
 import type { AccountStatusEvent } from '@/gen/ant/v1/stream_event_account_pb';
 import { queryKeys } from '@/queries/queryKeys';
 import type { Position } from '@/types/trading';
 import type { Account } from '@/types/account';
 import type { TradeRecordItem, RecentTradesData } from '@/client/analytics';
-
-const THROTTLE_MS = 300;
-let profitTimeout: number | null = null;
-let profitLastFlush = 0;
-const pendingProfit = new Map<string, ProfitUpdate>();
 
 function normalizeSide(raw: string): Position['type'] {
   const u = raw.toLowerCase();
@@ -42,101 +37,7 @@ function mapOrderToPosition(o: OrderUpdate): Position {
   };
 }
 
-function flushProfitUpdates(queryClient: QueryClient) {
-  profitTimeout = null;
-  profitLastFlush = Date.now();
-
-  const pick = (v: unknown): number | undefined =>
-    typeof v === 'number' && Number.isFinite(v) ? v : undefined;
-
-  for (const [accId, profit] of pendingProfit) {
-    // Update financials cache
-    queryClient.setQueryData<Record<string, number>>(
-      queryKeys.accounts.financials(accId),
-      (old) => {
-        const base = old ?? {};
-        const bal = pick(profit.balance);
-        const eq = pick(profit.equity);
-        const pr = pick(profit.profit);
-        const mg = pick(profit.margin);
-        const fm = pick(profit.freeMargin);
-        const ml = pick(profit.marginLevel);
-        const cr = pick(profit.credit);
-        return {
-          ...base,
-          ...(bal !== undefined ? { balance: bal } : {}),
-          ...(eq !== undefined ? { equity: eq } : {}),
-          ...(pr !== undefined ? { profit: pr } : {}),
-          ...(mg !== undefined ? { margin: mg } : {}),
-          ...(fm !== undefined ? { freeMargin: fm } : {}),
-          ...(ml !== undefined ? { marginLevel: ml } : {}),
-          ...(cr !== undefined ? { credit: cr } : {}),
-        };
-      },
-    );
-
-    // Patch account list cache with live financials
-    queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old) =>
-      (old ?? []).map((a) =>
-        a.id === accId
-          ? {
-              ...a,
-              ...(pick(profit.balance) !== undefined ? { balance: pick(profit.balance) } : {}),
-              ...(pick(profit.equity) !== undefined ? { equity: pick(profit.equity) } : {}),
-              ...(pick(profit.profit) !== undefined ? { profit: pick(profit.profit) } : {}),
-              status: 'connected' as const,
-            }
-          : a,
-      ),
-    );
-
-    // Patch existing position currentPrices (only rows that already exist)
-    const orders: OrderProfitItem[] = Array.isArray(profit.orders) ? profit.orders : [];
-    if (orders.length > 0) {
-      queryClient.setQueryData<Position[]>(
-        queryKeys.positions.byAccount(accId),
-        (old = []) => {
-          let changed = false;
-          const next = old.map((p) => {
-            const o = orders.find(
-              (x) => Number(x.ticket) === Number(p.ticket),
-            );
-            if (o) {
-              changed = true;
-              return {
-                ...p,
-                currentPrice: Number(o.currentPrice) || p.currentPrice,
-                profit: Number(o.profit) || p.profit,
-              };
-            }
-            return p;
-          });
-          return changed ? next : old;
-        },
-      );
-    }
-  }
-  pendingProfit.clear();
-}
-
-export function handleProfitUpdate(
-  queryClient: QueryClient,
-  profit: ProfitUpdate,
-) {
-  if (!profit?.accountId) return;
-  pendingProfit.set(profit.accountId, profit);
-
-  if (profitTimeout) return;
-  const now = Date.now();
-  const elapsed = now - profitLastFlush;
-  const delay = elapsed >= THROTTLE_MS ? 0 : THROTTLE_MS - elapsed;
-  profitTimeout = window.setTimeout(() => flushProfitUpdates(queryClient), delay);
-}
-
-export function handleOrderUpdate(
-  queryClient: QueryClient,
-  order: OrderUpdate,
-) {
+export function handleOrderUpdate(queryClient: QueryClient, order: OrderUpdate) {
   const accountId = String(order.accountId || '');
   if (!accountId) return;
 
@@ -156,24 +57,14 @@ export function handleOrderUpdate(
       queryKeys.positions.byAccount(accountId),
       (old = []) => old.filter((p) => p.ticket !== ticket),
     );
-    // Append closed order to the history trades cache so the History tab
-    // updates reactively — no polling, no CustomEvent, single source of truth.
     queryClient.setQueryData<RecentTradesData>(
       queryKeys.analytics.recentTrades(accountId),
       (old) => {
         const trade: TradeRecordItem = {
-          ticket: pos.ticket,
-          symbol: pos.symbol,
-          type: pos.type,
-          volume: pos.volume,
-          openPrice: pos.openPrice,
-          closePrice: pos.closePrice ?? 0,
-          profit: pos.profit,
-          openTime: pos.openTime,
-          closeTime: pos.closeTime ?? '',
-          swap: pos.swap,
-          commission: pos.commission,
-          comment: pos.comment,
+          ticket: pos.ticket, symbol: pos.symbol, type: pos.type,
+          volume: pos.volume, openPrice: pos.openPrice, closePrice: pos.closePrice ?? 0,
+          profit: pos.profit, openTime: pos.openTime, closeTime: pos.closeTime ?? '',
+          swap: pos.swap, commission: pos.commission, comment: pos.comment,
         };
         if (!old) return { trades: [trade], total: 1 };
         const filtered = old.trades.filter((t) => t.ticket !== trade.ticket);
@@ -218,10 +109,7 @@ export function handleOrderUpdate(
   }
 }
 
-export function handleAccountStatus(
-  queryClient: QueryClient,
-  status: AccountStatusEvent,
-) {
+export function handleAccountStatus(queryClient: QueryClient, status: AccountStatusEvent) {
   if (!status.accountId) return;
   const s = String(status.status || '');
   let mapped = s;
@@ -229,16 +117,12 @@ export function handleAccountStatus(
   if (s === 'disabled') mapped = 'disconnected';
 
   queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old = []) =>
-    old.map((a) =>
-      a.id === status.accountId ? { ...a, status: mapped } : a,
-    ),
+    old.map((a) => (a.id === status.accountId ? { ...a, status: mapped } : a)),
   );
 }
 
 export function handlePositionSnapshot(
-  queryClient: QueryClient,
-  accountId: string,
-  positions: OrderUpdate[],
+  queryClient: QueryClient, accountId: string, positions: OrderUpdate[],
 ) {
   const mapped = positions.map(mapOrderToPosition);
   queryClient.setQueryData<Position[]>(
@@ -247,9 +131,7 @@ export function handlePositionSnapshot(
       const existingByTicket = new Map(old.map((p) => [p.ticket, p]));
       return mapped.map((pos) => {
         const oldPos = existingByTicket.get(pos.ticket);
-        return oldPos
-          ? { ...pos, currentPrice: oldPos.currentPrice ?? pos.openPrice }
-          : { ...pos, currentPrice: pos.openPrice };
+        return oldPos ? { ...pos, currentPrice: oldPos.currentPrice ?? pos.openPrice } : { ...pos, currentPrice: pos.openPrice };
       });
     },
   );

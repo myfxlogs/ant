@@ -9,10 +9,10 @@ import type { AccountStatusEvent } from '@/gen/ant/v1/stream_event_account_pb';
 import type { StreamEvent } from '@/gen/ant/v1/stream_pb';
 import {
   handleOrderUpdate,
-  handleProfitUpdate,
   handleAccountStatus,
   handlePositionSnapshot,
 } from './bridgeStreamEvents';
+import { handleProfitUpdate } from './bridgeProfitEvents';
 import { handleUserSummary } from './bridgeUserSummary';
 
 /**
