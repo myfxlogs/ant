@@ -81,12 +81,25 @@
 
 ---
 
-## 二、执行顺序
+## 二、C 组：Go 函数拆分 ⏳ 9/25+ 完成
+
+| 函数 | 原→新行数 | 提取方法 |
+|------|-----------|----------|
+| GetEquityCurve | 155→35 | getInitialUnrealizedPnL / getDailyTradeData / getDailySnapshots / buildEquityCurveResult |
+| GetHourlyEquityCurve | 109→18 | getHourlySnapshots / getHourlyTradeData / buildHourlyEquityResult |
+| SubscribeEvents | 152→121 | setupProfitSubscriptions / setupSnapSubscriptions / initEventChannels / buildSendEvent |
+| Process | 109→7 | checkCapability / checkHardLimit / checkPlatformLimits / checkRiskEngine / sizePosition |
+| StartAlgo | 114→43 | validateStartAlgoRequest / resolveBrokerExecutor / createAndStartExecutor |
+| GenerateStrategy | 110→29 | buildStrategyPrompt / sendTemplateInfo / streamLLMCode / runComplianceCheck / finalizeWithBacktest |
+
+**方法**: 按语义块提取独立函数（查询构建/验证/阶段拆解）。
+
+## 三、执行顺序
 
 ```
-Phase 1: A组 Go ✅ + B组 TS 7/14
-Phase 2: C组 函数拆分 (25+ 函数) — 待开工
-Phase 3: B组余下 7 个 TS 文件 — 待继续
+Phase 1: A组 Go 文件 ✅ + B组 TS 11/14 ⏳
+Phase 2: C组 函数 9/25+ ⏳
+Phase 3: B组余下 3 个 TS — 待继续
 ```
 
 ---
