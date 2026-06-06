@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	"connectrpc.com/connect"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
+	"anttrader/internal/ai"
 	systemai "anttrader/internal/service/systemai"
 )
 
@@ -22,13 +24,14 @@ const maxInstrLen = 4 * 1024
 // CodeAssistServer implements ant.v1.CodeAssistServiceHandler.
 type CodeAssistServer struct {
 	systemSvc *systemai.Service
+	session   *ai.ConversationSession
 	log       *zap.Logger
 }
 
 var _ antv1c.CodeAssistServiceHandler = (*CodeAssistServer)(nil)
 
-func NewCodeAssistServer(systemSvc *systemai.Service, log *zap.Logger) *CodeAssistServer {
-	return &CodeAssistServer{systemSvc: systemSvc, log: log}
+func NewCodeAssistServer(systemSvc *systemai.Service, session *ai.ConversationSession, log *zap.Logger) *CodeAssistServer {
+	return &CodeAssistServer{systemSvc: systemSvc, session: session, log: log}
 }
 
 // protoHistoryToChat converts proto CodeChatMessage list to systemai ChatMessage list.
@@ -51,14 +54,21 @@ func (s *CodeAssistServer) ReviseCode(ctx context.Context, req *connect.Request[
 		return nil, err
 	}
 
-	sysPrompt, userMsg := buildCodeAssistPrompt(code, instruction)
-	messages := systemai.BuildChatMessages(sysPrompt, userMsg, protoHistoryToChat(req.Msg.History))
+	pc := ai.BuildContext(ai.BuildContextInput{Code: code, Message: instruction})
+	messages := systemai.BuildChatMessages(pc.SystemPrompt, pc.UserMessage, protoHistoryToChat(req.Msg.History))
 	revised, err := s.systemSvc.ChatCompletion(ctx, uid, messages, codeAssistModel)
 	if err != nil {
 		s.log.Warn("CodeAssist: ReviseCode LLM call failed", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(err)))
 	}
-	return connect.NewResponse(&antv1.ReviseCodeResponse{Text: revised, Python: revised}), nil
+
+	result := revised
+	if pc.Mode == ai.ModeRepair {
+		if code := extractCodeFromRepair(revised); code != "" {
+			result = code
+		}
+	}
+	return connect.NewResponse(&antv1.ReviseCodeResponse{Text: result, Python: result}), nil
 }
 
 func (s *CodeAssistServer) ReviseCodeStream(
@@ -76,8 +86,8 @@ func (s *CodeAssistServer) ReviseCodeStream(
 		return err
 	}
 
-	sysPrompt, userMsg := buildCodeAssistPrompt(code, instruction)
-	messages := systemai.BuildChatMessages(sysPrompt, userMsg, protoHistoryToChat(req.Msg.History))
+	pc := ai.BuildContext(ai.BuildContextInput{Code: code, Message: instruction})
+	messages := systemai.BuildChatMessages(pc.SystemPrompt, pc.UserMessage, protoHistoryToChat(req.Msg.History))
 	var fullText strings.Builder
 	err = s.systemSvc.ChatCompletionStream(ctx, uid, messages, codeAssistModel,
 		func(chunk systemai.ChatStreamChunk) error {
@@ -88,7 +98,26 @@ func (s *CodeAssistServer) ReviseCodeStream(
 		s.log.Warn("CodeAssist: ReviseCodeStream LLM call failed", zap.Error(err))
 		return connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(err)))
 	}
-	return stream.Send(&antv1.ReviseCodeStreamChunk{Delta: "", Python: fullText.String(), Done: true})
+
+	// Repair mode post-processing
+	result := fullText.String()
+	if pc.Mode == ai.ModeRepair {
+		if code := extractCodeFromRepair(result); code != "" {
+			result = code
+		}
+	}
+
+	// Auto-persist to session
+	if req.Msg.SessionId != "" {
+		sid, parseErr := uuid.Parse(req.Msg.SessionId)
+		if parseErr == nil {
+			if err := s.session.AppendExchange(ctx, sid, uid, instruction, result); err != nil {
+				s.log.Warn("session append failed", zap.Error(err))
+			}
+		}
+	}
+
+	return stream.Send(&antv1.ReviseCodeStreamChunk{Delta: "", Python: result, Done: true})
 }
 
 func validateCodeAssistLimits(code, instruction string) error {
@@ -99,22 +128,6 @@ func validateCodeAssistLimits(code, instruction string) error {
 		return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("instruction too long: %d bytes", len(instruction)))
 	}
 	return nil
-}
-
-func buildCodeAssistPrompt(code, instruction string) (sysPrompt, userMsg string) {
-	if strings.TrimSpace(code) == "" {
-		sysPrompt = "You are an expert quantitative trading strategy developer. " +
-			"Generate a complete Python trading strategy based on the user's description. " +
-			"The strategy must include: a run(ctx) function, entry/exit logic, stop-loss, " +
-			"and position sizing. Return ONLY the Python code, no explanations or markdown fences."
-		userMsg = fmt.Sprintf("Create a trading strategy: %s", instruction)
-	} else {
-		sysPrompt = "You are an expert quantitative trading strategy developer. " +
-			"Revise the following Python trading strategy code according to the user's instruction. " +
-			"Return ONLY the revised Python code, no explanations or markdown fences."
-		userMsg = fmt.Sprintf("Instruction: %s\n\nCode:\n```python\n%s\n```", instruction, code)
-	}
-	return
 }
 
 func (s *CodeAssistServer) ExplainCode(ctx context.Context, req *connect.Request[antv1.ExplainCodeRequest]) (*connect.Response[antv1.ExplainCodeResponse], error) {
@@ -214,6 +227,63 @@ func parseValidationResult(raw string, log *zap.Logger) (*connect.Response[antv1
 		Valid: parsed.Valid, Errors: parsed.Errors, Warnings: parsed.Warnings,
 		Parameters: params,
 	}), nil
+}
+
+// extractCodeFromRepair attempts to salvage Python code from an LLM response
+// that may contain explanatory text (3-tier extraction).
+func extractCodeFromRepair(raw string) string {
+	// Tier 1: extract from ```python ... ``` fence
+	if code := extractFencedCode(raw, "python"); code != "" {
+		return code
+	}
+	// Tier 2: heuristic — find lines starting with import/def/class/#
+	if code := extractByHeuristic(raw); code != "" {
+		return code
+	}
+	// Tier 3: unable to extract — return empty
+	return ""
+}
+
+func extractFencedCode(raw, lang string) string {
+	marker := "```" + lang
+	start := strings.Index(raw, marker)
+	if start < 0 {
+		start = strings.Index(raw, "```")
+		if start < 0 {
+			return ""
+		}
+	}
+	// Skip the opening fence line
+	if nl := strings.Index(raw[start:], "\n"); nl >= 0 {
+		start += nl + 1
+	} else {
+		return ""
+	}
+	end := strings.Index(raw[start:], "```")
+	if end < 0 {
+		return ""
+	}
+	return strings.TrimSpace(raw[start : start+end])
+}
+
+func extractByHeuristic(raw string) string {
+	raw = strings.TrimSpace(raw)
+	lines := strings.Split(raw, "\n")
+	for i, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" {
+			continue
+		}
+		if strings.HasPrefix(trimmed, "import ") ||
+			strings.HasPrefix(trimmed, "def ") ||
+			strings.HasPrefix(trimmed, "class ") ||
+			strings.HasPrefix(trimmed, "#") ||
+			strings.HasPrefix(trimmed, "from ") {
+			return strings.Join(lines[i:], "\n")
+		}
+		return ""
+	}
+	return ""
 }
 
 func stripMarkdownFences(s string) string {
