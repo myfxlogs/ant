@@ -126,94 +126,80 @@ func (e *Engine) Run(strategy StrategyFunc) *Metrics {
 			e.equity = append(e.equity, balance)
 			continue
 		}
-
-		direction, volume := strategy(bar, e.position)
-
-		if e.position == 0 && direction != 0 && volume > 0 {
-			fill := e.simulateFill(direction, volume, bar.Close, 0)
-			e.position = float64(direction) * fill.FilledVolume
-			e.entryPrice = fill.GrossPrice
-			e.entryTime = bar.CloseTime
-			balance -= fill.TotalCost
-		} else if e.position != 0 {
-			currentDir := 1
-			if e.position < 0 {
-				currentDir = -1
-			}
-			if direction != 0 && direction != currentDir {
-				posVolume := absFloat(e.position)
-				exitFill := e.simulateFill(-currentDir, posVolume, bar.Close, 0)
-				grossPnL := posVolume * e.ContractSize * (exitFill.GrossPrice - e.entryPrice)
-				if currentDir < 0 {
-					grossPnL = posVolume * e.ContractSize * (e.entryPrice - exitFill.GrossPrice)
-				}
-				netPnL := grossPnL - exitFill.TotalCost
-
-				e.trades = append(e.trades, Trade{
-					EntryPrice: e.entryPrice,
-					ExitPrice:  exitFill.GrossPrice,
-					Volume:     posVolume,
-					Direction:  currentDir,
-					GrossPnL:   grossPnL,
-					NetPnL:     netPnL,
-					Commission: exitFill.Commission,
-					Swap:       exitFill.SwapCost,
-					Slippage:   exitFill.SlippageCost,
-					EntryTime:  e.entryTime,
-					ExitTime:   bar.CloseTime,
-				})
-				balance += netPnL
-				e.position = 0
-				e.entryPrice = 0
-
-				if direction != 0 && volume > 0 {
-					fill := e.simulateFill(direction, volume, bar.Close, 0)
-					e.position = float64(direction) * fill.FilledVolume
-					e.entryPrice = fill.GrossPrice
-					e.entryTime = bar.CloseTime
-					balance -= fill.TotalCost
-				}
-			}
-		}
-
+		balance = e.processBar(bar, strategy, balance)
 		currentEquity := balance + e.unrealizedPnL(bar.Close)
 		e.equity = append(e.equity, currentEquity)
 	}
 
-	// Force-close any remaining position at last bar
-	if e.position != 0 && len(e.Bars) > 0 {
-		lastBar := e.Bars[len(e.Bars)-1]
-		dir := 1
-		if e.position < 0 {
-			dir = -1
-		}
-		posVolume := absFloat(e.position)
-		exitFill := e.simulateFill(-dir, posVolume, lastBar.Close, 0)
-		grossPnL := posVolume * e.ContractSize * (exitFill.GrossPrice - e.entryPrice)
-		if dir < 0 {
-			grossPnL = posVolume * e.ContractSize * (e.entryPrice - exitFill.GrossPrice)
-		}
-		netPnL := grossPnL - exitFill.TotalCost
-
-		e.trades = append(e.trades, Trade{
-			EntryPrice: e.entryPrice,
-			ExitPrice:  exitFill.GrossPrice,
-			Volume:     posVolume,
-			Direction:  dir,
-			GrossPnL:   grossPnL,
-			NetPnL:     netPnL,
-			Commission: exitFill.Commission,
-			Swap:       exitFill.SwapCost,
-			Slippage:   exitFill.SlippageCost,
-			EntryTime:  e.entryTime,
-			ExitTime:   lastBar.CloseTime,
-		})
-		balance += netPnL
-		e.position = 0
-		e.equity = append(e.equity, balance)
-	}
-
+	balance = e.forceClosePosition(balance)
 	return ComputeMetrics(e.trades, e.InitialCapital, e.equity)
+}
+
+func (e *Engine) processBar(bar Bar, strategy StrategyFunc, balance float64) float64 {
+	direction, volume := strategy(bar, e.position)
+	if e.position == 0 && direction != 0 && volume > 0 {
+		balance = e.enterPosition(direction, volume, bar, balance)
+	} else if e.position != 0 {
+		balance = e.exitAndReenter(direction, volume, bar, balance)
+	}
+	return balance
+}
+
+func (e *Engine) enterPosition(direction int, volume float64, bar Bar, balance float64) float64 {
+	fill := e.simulateFill(direction, volume, bar.Close, 0)
+	e.position = float64(direction) * fill.FilledVolume
+	e.entryPrice = fill.GrossPrice
+	e.entryTime = bar.CloseTime
+	return balance - fill.TotalCost
+}
+
+func (e *Engine) exitAndReenter(direction int, volume float64, bar Bar, balance float64) float64 {
+	currentDir := 1
+	if e.position < 0 { currentDir = -1 }
+	if direction == 0 || direction == currentDir { return balance }
+
+	posVolume := absFloat(e.position)
+	exitFill := e.simulateFill(-currentDir, posVolume, bar.Close, 0)
+	grossPnL := posVolume * e.ContractSize * (exitFill.GrossPrice - e.entryPrice)
+	if currentDir < 0 { grossPnL = posVolume * e.ContractSize * (e.entryPrice - exitFill.GrossPrice) }
+	netPnL := grossPnL - exitFill.TotalCost
+
+	e.trades = append(e.trades, Trade{
+		EntryPrice: e.entryPrice, ExitPrice: exitFill.GrossPrice, Volume: posVolume,
+		Direction: currentDir, GrossPnL: grossPnL, NetPnL: netPnL,
+		Commission: exitFill.Commission, Swap: exitFill.SwapCost, Slippage: exitFill.SlippageCost,
+		EntryTime: e.entryTime, ExitTime: bar.CloseTime,
+	})
+	balance += netPnL
+	e.position = 0
+	e.entryPrice = 0
+
+	if direction != 0 && volume > 0 {
+		balance = e.enterPosition(direction, volume, bar, balance)
+	}
+	return balance
+}
+
+func (e *Engine) forceClosePosition(balance float64) float64 {
+	if e.position == 0 || len(e.Bars) == 0 { return balance }
+	lastBar := e.Bars[len(e.Bars)-1]
+	dir := 1
+	if e.position < 0 { dir = -1 }
+	posVolume := absFloat(e.position)
+	exitFill := e.simulateFill(-dir, posVolume, lastBar.Close, 0)
+	grossPnL := posVolume * e.ContractSize * (exitFill.GrossPrice - e.entryPrice)
+	if dir < 0 { grossPnL = posVolume * e.ContractSize * (e.entryPrice - exitFill.GrossPrice) }
+	netPnL := grossPnL - exitFill.TotalCost
+
+	e.trades = append(e.trades, Trade{
+		EntryPrice: e.entryPrice, ExitPrice: exitFill.GrossPrice, Volume: posVolume,
+		Direction: dir, GrossPnL: grossPnL, NetPnL: netPnL,
+		Commission: exitFill.Commission, Swap: exitFill.SwapCost, Slippage: exitFill.SlippageCost,
+		EntryTime: e.entryTime, ExitTime: lastBar.CloseTime,
+	})
+	e.position = 0
+	e.equity = append(e.equity, balance+netPnL)
+	return balance + netPnL
 }
 
 func (e *Engine) unrealizedPnL(currentPrice float64) float64 {
