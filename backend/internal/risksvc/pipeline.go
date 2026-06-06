@@ -92,112 +92,74 @@ func NewSignalPipeline(cfg PipelineConfig) *SignalPipeline {
 
 // Process runs the full signal-to-decision pipeline.
 func (p *SignalPipeline) Process(ctx context.Context, sig *SignalRequest) *SignalResult {
-	// Stage 1: Capability tier check
-	if p.capStore == nil {
-		// All users treated as Tier3LiveFull when CapStore is not wired.
-		// This should only happen in dev/test — production must wire CapStore.
-	}
-	if p.capStore != nil {
-		cap := p.capStore.Get(sig.UserID)
-		pre := cap.TierCheck()
-		if !pre.Allowed {
-			return &SignalResult{Allowed: false, Reason: pre.Reason, Stage: "capability"}
-		}
-	}
+	if result := p.checkCapability(sig); !result.Allowed { return result }
+	if result := p.checkHardLimit(ctx, sig); !result.Allowed { return result }
+	if result := p.checkPlatformLimits(); !result.Allowed { return result }
+	if result := p.checkRiskEngine(ctx, sig); !result.Allowed { return result }
+	return p.sizePosition(ctx, sig)
+}
 
-	// Stage 2: HardLimit evaluation (binary deny)
-	if p.hardLimit != nil {
-		req := &HardLimitRequest{
-			UserID:         sig.UserID,
-			AccountID:      sig.AccountID,
-			Symbol:         sig.Symbol,
-			Side:           sig.Side,
-			Volume:         sig.SignalStrength,
-			Price:          sig.Price,
-			Balance:        sig.Balance,
-			Equity:         sig.Equity,
-			FreeMargin:     sig.FreeMargin,
-			ContractExpiry: sig.ContractExpiry,
-			ClientIP:       sig.ClientIP,
-		}
-		if err := p.hardLimit.Evaluate(ctx, req); err != nil {
-			return &SignalResult{Allowed: false, Reason: err.Error(), Stage: "hardlimit"}
-		}
-	}
+func (p *SignalPipeline) checkCapability(sig *SignalRequest) *SignalResult {
+	if p.capStore == nil { return &SignalResult{Allowed: true} }
+	cap := p.capStore.Get(sig.UserID)
+	pre := cap.TierCheck()
+	if !pre.Allowed { return &SignalResult{Allowed: false, Reason: pre.Reason, Stage: "capability"} }
+	return &SignalResult{Allowed: true}
+}
 
-	// Stage 3: Platform limits check
-	if p.platform != nil && p.limits != nil {
-		exposure := p.platform.GetSnapshot()
-		if exposure != nil {
-			result := p.limits.Check(exposure)
-			if !result.Allowed {
-				return &SignalResult{Allowed: false, Reason: result.Reason, Stage: "platform_limits"}
-			}
-		}
+func (p *SignalPipeline) checkHardLimit(ctx context.Context, sig *SignalRequest) *SignalResult {
+	if p.hardLimit == nil { return &SignalResult{Allowed: true} }
+	req := &HardLimitRequest{
+		UserID: sig.UserID, AccountID: sig.AccountID, Symbol: sig.Symbol,
+		Side: sig.Side, Volume: sig.SignalStrength, Price: sig.Price,
+		Balance: sig.Balance, Equity: sig.Equity, FreeMargin: sig.FreeMargin,
+		ContractExpiry: sig.ContractExpiry, ClientIP: sig.ClientIP,
 	}
-
-	// Stage 4: Risk engine pre-check
-	if p.engine != nil {
-		check := &CheckRequest{
-			UserID:    sig.UserID,
-			AccountID: sig.AccountID,
-			Symbol:    sig.Symbol,
-			Side:      sig.Side,
-			Volume:    sig.SignalStrength,
-			Price:     sig.Price,
-			Balance:   sig.Balance,
-			Equity:    sig.Equity,
-			Margin:    sig.Margin,
-			Positions: sig.Positions,
-		}
-		result := p.engine.Evaluate(ctx, check)
-		if !result.Passed {
-			return &SignalResult{Allowed: false, Reason: result.Reason, Stage: "risk_engine"}
-		}
+	if err := p.hardLimit.Evaluate(ctx, req); err != nil {
+		return &SignalResult{Allowed: false, Reason: err.Error(), Stage: "hardlimit"}
 	}
+	return &SignalResult{Allowed: true}
+}
 
-	// Stage 5: Position sizing
+func (p *SignalPipeline) checkPlatformLimits() *SignalResult {
+	if p.platform == nil || p.limits == nil { return &SignalResult{Allowed: true} }
+	exposure := p.platform.GetSnapshot()
+	if exposure == nil { return &SignalResult{Allowed: true} }
+	result := p.limits.Check(exposure)
+	if !result.Allowed { return &SignalResult{Allowed: false, Reason: result.Reason, Stage: "platform_limits"} }
+	return &SignalResult{Allowed: true}
+}
+
+func (p *SignalPipeline) checkRiskEngine(ctx context.Context, sig *SignalRequest) *SignalResult {
+	if p.engine == nil { return &SignalResult{Allowed: true} }
+	check := &CheckRequest{
+		UserID: sig.UserID, AccountID: sig.AccountID, Symbol: sig.Symbol,
+		Side: sig.Side, Volume: sig.SignalStrength, Price: sig.Price,
+		Balance: sig.Balance, Equity: sig.Equity, Margin: sig.Margin,
+		Positions: sig.Positions,
+	}
+	result := p.engine.Evaluate(ctx, check)
+	if !result.Passed { return &SignalResult{Allowed: false, Reason: result.Reason, Stage: "risk_engine"} }
+	return &SignalResult{Allowed: true}
+}
+
+func (p *SignalPipeline) sizePosition(ctx context.Context, sig *SignalRequest) *SignalResult {
 	if p.sizer == nil {
 		return &SignalResult{Allowed: false, Reason: "no sizer configured", Stage: "sizer"}
 	}
 	sreq := &SizerRequest{
-		Symbol:       sig.Symbol,
-		Price:        sig.Price,
-		ATR:          sig.ATR,
-		AnnualVol:    sig.AnnualVol,
-		ContractSize: sig.ContractSize,
-		HoldingDays:  sig.HoldingDays,
-		AccountID:    sig.AccountID,
-		Balance:      sig.Balance,
-		Equity:       sig.Equity,
-		FreeMargin:   sig.FreeMargin,
+		Symbol: sig.Symbol, Price: sig.Price, ATR: sig.ATR, AnnualVol: sig.AnnualVol,
+		ContractSize: sig.ContractSize, HoldingDays: sig.HoldingDays,
+		AccountID: sig.AccountID, Balance: sig.Balance, Equity: sig.Equity, FreeMargin: sig.FreeMargin,
 	}
 	sres, err := p.sizer.Size(ctx, sreq)
-	if err != nil {
-		return &SignalResult{Allowed: false, Reason: err.Error(), Stage: "sizer"}
-	}
+	if err != nil { return &SignalResult{Allowed: false, Reason: err.Error(), Stage: "sizer"} }
 	if sres.Lots <= 0 {
 		return &SignalResult{Allowed: true, Reason: "sizer passthrough (manual order)", Stage: "sizer", RiskUsed: sres.RiskUsed, Method: sres.Method}
 	}
-
-	// Stage 6: Block allocation (multi-account)
 	if p.allocator != nil && len(sig.TargetAccounts) > 0 {
 		allocs := p.allocator.Allocate(ctx, sres.Lots, sig.TargetAccounts)
-		return &SignalResult{
-			Allowed:     true,
-			Stage:       "complete",
-			Lots:        sres.Lots,
-			Allocations: allocs,
-			RiskUsed:    sres.RiskUsed,
-			Method:      sres.Method,
-		}
+		return &SignalResult{Allowed: true, Stage: "complete", Lots: sres.Lots, Allocations: allocs, RiskUsed: sres.RiskUsed, Method: sres.Method}
 	}
-
-	return &SignalResult{
-		Allowed:  true,
-		Stage:    "complete",
-		Lots:     sres.Lots,
-		RiskUsed: sres.RiskUsed,
-		Method:   sres.Method,
-	}
+	return &SignalResult{Allowed: true, Stage: "complete", Lots: sres.Lots, RiskUsed: sres.RiskUsed, Method: sres.Method}
 }
