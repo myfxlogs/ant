@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -9,8 +10,13 @@ import (
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"connectrpc.com/connect"
+
+	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
+	"anttrader/internal/ai"
 	"anttrader/internal/repository"
 	systemai "anttrader/internal/service/systemai"
 )
@@ -19,13 +25,14 @@ import (
 type AIServer struct {
 	systemSvc     *systemai.Service
 	conversations *repository.AIConversationRepository
+	session       *ai.ConversationSession
 	agentDefRepo  *repository.AIAgentDefinitionRepository
 	log           *zap.Logger
 }
 
 // NewAIServer creates an AI service ConnectRPC handler.
-func NewAIServer(systemSvc *systemai.Service, conversations *repository.AIConversationRepository, log *zap.Logger) *AIServer {
-	return &AIServer{systemSvc: systemSvc, conversations: conversations, log: log}
+func NewAIServer(systemSvc *systemai.Service, conversations *repository.AIConversationRepository, session *ai.ConversationSession, log *zap.Logger) *AIServer {
+	return &AIServer{systemSvc: systemSvc, conversations: conversations, session: session, log: log}
 }
 
 var _ antv1c.AIServiceHandler = (*AIServer)(nil)
@@ -57,4 +64,34 @@ func userIDFromBearer(r *http.Request) (uuid.UUID, error) {
 		userID = claims.Sub
 	}
 	return uuid.Parse(userID)
+}
+
+// ResolveSession resolves a strategy_key to a session UUID, creating one if needed.
+func (s *AIServer) ResolveSession(ctx context.Context, req *connect.Request[antv1.ResolveSessionRequest]) (*connect.Response[antv1.ResolveSessionResponse], error) {
+	uid, err := userIDFromCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if req.Msg.StrategyKey == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("strategy_key is required"))
+	}
+	sess, err := s.session.GetOrCreate(ctx, uid, req.Msg.StrategyKey, req.Msg.Title)
+	if err != nil {
+		s.log.Error("ResolveSession", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("internal error"))
+	}
+	msgs := make([]*antv1.ConversationMessage, len(sess.Messages))
+	for i, m := range sess.Messages {
+		msgs[i] = &antv1.ConversationMessage{
+			Id:        m.ID.String(),
+			Role:      m.Role,
+			Content:   m.Content,
+			CreatedAt: timestamppb.New(m.CreatedAt),
+		}
+	}
+	return connect.NewResponse(&antv1.ResolveSessionResponse{
+		SessionId: sess.ID.String(),
+		Messages:  msgs,
+		Created:   len(sess.Messages) == 0,
+	}), nil
 }
