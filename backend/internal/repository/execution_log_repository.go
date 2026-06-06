@@ -53,81 +53,37 @@ func (r *LogRepository) UpdateExecutionLog(ctx context.Context, log *model.Strat
 }
 
 func (r *LogRepository) GetExecutionLogs(ctx context.Context, userID uuid.UUID, params *model.LogQueryParams) ([]*model.StrategyExecutionLog, int, error) {
-	baseQuery := `FROM strategy_execution_logs WHERE user_id = $1`
-	args := []interface{}{userID}
-	argIndex := 2
-
-	if params != nil {
-		if params.ScheduleID != "" {
-			baseQuery += fmt.Sprintf(` AND schedule_id = $%d`, argIndex)
-			scheduleID, _ := uuid.Parse(params.ScheduleID)
-			args = append(args, scheduleID)
-			argIndex++
-		}
-		if params.AccountID != "" {
-			baseQuery += fmt.Sprintf(` AND account_id = $%d`, argIndex)
-			accountID, _ := uuid.Parse(params.AccountID)
-			args = append(args, accountID)
-			argIndex++
-		}
-		if params.Symbol != "" {
-			baseQuery += fmt.Sprintf(` AND symbol = $%d`, argIndex)
-			args = append(args, params.Symbol)
-			argIndex++
-		}
-		if params.Status != "" {
-			baseQuery += fmt.Sprintf(` AND status = $%d`, argIndex)
-			args = append(args, params.Status)
-			argIndex++
-		}
-		if params.StartDate != "" {
-			baseQuery += fmt.Sprintf(` AND created_at >= $%d`, argIndex)
-			args = append(args, params.StartDate)
-			argIndex++
-		}
-		if params.EndDate != "" {
-			baseQuery += fmt.Sprintf(` AND created_at <= $%d`, argIndex)
-			args = append(args, params.EndDate)
-			argIndex++
-		}
-	}
-
-	countQuery := `SELECT COUNT(*) ` + baseQuery
+	baseQ, args, argIdx := buildExecLogFilters(userID, params)
 	var total int
-	if err := r.db.QueryRow(ctx, countQuery, args...).Scan(&total); err != nil {
-		return nil, 0, err
-	}
-
-	page := 1
-	pageSize := 20
-	if params != nil {
-		if params.Page > 0 {
-			page = params.Page
-		}
-		if params.PageSize > 0 {
-			pageSize = params.PageSize
-		}
-	}
-
-	offset := (page - 1) * pageSize
-	dataQuery := fmt.Sprintf(`SELECT * %s ORDER BY created_at DESC LIMIT $%d OFFSET $%d`, baseQuery, argIndex, argIndex+1)
-	args = append(args, pageSize, offset)
-
-	queryRows, err := r.db.Query(ctx, dataQuery, args...)
-	if err != nil {
-		return nil, 0, err
-	}
-	defer queryRows.Close()
+	if err := r.db.QueryRow(ctx, `SELECT COUNT(*) `+baseQ, args...).Scan(&total); err != nil { return nil, 0, err }
+	page, pageSize := normalizeOpLogPagination(params)
+	dataQ := fmt.Sprintf(`SELECT * %s ORDER BY created_at DESC LIMIT $%d OFFSET $%d`, baseQ, argIdx, argIdx+1)
+	args = append(args, pageSize, (page-1)*pageSize)
+	rows, err := r.db.Query(ctx, dataQ, args...)
+	if err != nil { return nil, 0, err }
+	defer rows.Close()
 	var logs []*model.StrategyExecutionLog
-	for queryRows.Next() {
-		var log model.StrategyExecutionLog
-		if err := queryRows.Scan(&log.ID, &log.UserID, &log.ScheduleID, &log.TemplateID, &log.AccountID, &log.Symbol, &log.Timeframe, &log.Status, &log.SignalType, &log.SignalPrice, &log.SignalVolume, &log.SignalStopLoss, &log.SignalTakeProfit, &log.ExecutedOrderID, &log.ExecutedPrice, &log.ExecutedVolume, &log.Profit, &log.ErrorMessage, &log.ExecutionTimeMs, &log.KlineData, &log.StrategyParams, &log.CreatedAt); err != nil {
+	for rows.Next() {
+		var l model.StrategyExecutionLog
+		if err := rows.Scan(&l.ID, &l.UserID, &l.ScheduleID, &l.TemplateID, &l.AccountID, &l.Symbol, &l.Timeframe, &l.Status, &l.SignalType, &l.SignalPrice, &l.SignalVolume, &l.SignalStopLoss, &l.SignalTakeProfit, &l.ExecutedOrderID, &l.ExecutedPrice, &l.ExecutedVolume, &l.Profit, &l.ErrorMessage, &l.ExecutionTimeMs, &l.KlineData, &l.StrategyParams, &l.CreatedAt); err != nil {
 			return nil, 0, err
 		}
-		logs = append(logs, &log)
+		logs = append(logs, &l)
 	}
-	if err := queryRows.Err(); err != nil {
-		return nil, 0, err
-	}
-	return logs, total, nil
+	return logs, total, rows.Err()
+}
+
+func buildExecLogFilters(userID uuid.UUID, params *model.LogQueryParams) (baseQ string, args []interface{}, idx int) {
+	baseQ = `FROM strategy_execution_logs WHERE user_id = $1`
+	args = []interface{}{userID}
+	idx = 2
+	if params == nil { return }
+	addFilter := func(cond, val string) { baseQ += fmt.Sprintf(` AND %s = $%d`, cond, idx); args = append(args, val); idx++ }
+	if params.ScheduleID != "" { sid, _ := uuid.Parse(params.ScheduleID); addFilter("schedule_id", ""); args[len(args)-1] = sid }
+	if params.AccountID != "" { aid, _ := uuid.Parse(params.AccountID); addFilter("account_id", ""); args[len(args)-1] = aid }
+	if params.Symbol != "" { addFilter("symbol", params.Symbol) }
+	if params.Status != "" { addFilter("status", params.Status) }
+	if params.StartDate != "" { addFilter("created_at >=", params.StartDate) }
+	if params.EndDate != "" { addFilter("created_at <=", params.EndDate) }
+	return
 }

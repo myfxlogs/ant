@@ -23,70 +23,35 @@ func (r *LogRepository) CreateConnectionLog(ctx context.Context, log *model.Acco
 }
 
 func (r *LogRepository) GetConnectionLogs(ctx context.Context, userID uuid.UUID, params *model.LogQueryParams) ([]*model.AccountConnectionLog, int, error) {
-	baseQuery := `FROM account_connection_logs WHERE user_id = $1`
-	args := []interface{}{userID}
-	argIndex := 2
-
-	if params != nil {
-		if params.AccountID != "" {
-			baseQuery += fmt.Sprintf(` AND account_id = $%d`, argIndex)
-			accountID, _ := uuid.Parse(params.AccountID)
-			args = append(args, accountID)
-			argIndex++
-		}
-		if params.Status != "" {
-			baseQuery += fmt.Sprintf(` AND status = $%d`, argIndex)
-			args = append(args, params.Status)
-			argIndex++
-		}
-		if params.StartDate != "" {
-			baseQuery += fmt.Sprintf(` AND created_at >= $%d`, argIndex)
-			args = append(args, params.StartDate)
-			argIndex++
-		}
-		if params.EndDate != "" {
-			baseQuery += fmt.Sprintf(` AND created_at <= $%d`, argIndex)
-			args = append(args, params.EndDate)
-			argIndex++
-		}
-	}
-
-	countQuery := `SELECT COUNT(*) ` + baseQuery
+	baseQ, args, argIdx := buildConnLogFilters(userID, params)
 	var total int
-	if err := r.db.QueryRow(ctx, countQuery, args...).Scan(&total); err != nil {
-		return nil, 0, err
-	}
-
-	page := 1
-	pageSize := 20
-	if params != nil {
-		if params.Page > 0 {
-			page = params.Page
-		}
-		if params.PageSize > 0 {
-			pageSize = params.PageSize
-		}
-	}
-
-	offset := (page - 1) * pageSize
-	dataQuery := fmt.Sprintf(`SELECT * %s ORDER BY created_at DESC LIMIT $%d OFFSET $%d`, baseQuery, argIndex, argIndex+1)
-	args = append(args, pageSize, offset)
-
-	queryRows, err := r.db.Query(ctx, dataQuery, args...)
-	if err != nil {
-		return nil, 0, err
-	}
-	defer queryRows.Close()
+	if err := r.db.QueryRow(ctx, `SELECT COUNT(*) `+baseQ, args...).Scan(&total); err != nil { return nil, 0, err }
+	page, pageSize := normalizeOpLogPagination(params)
+	dataQ := fmt.Sprintf(`SELECT * %s ORDER BY created_at DESC LIMIT $%d OFFSET $%d`, baseQ, argIdx, argIdx+1)
+	args = append(args, pageSize, (page-1)*pageSize)
+	rows, err := r.db.Query(ctx, dataQ, args...)
+	if err != nil { return nil, 0, err }
+	defer rows.Close()
 	var logs []*model.AccountConnectionLog
-	for queryRows.Next() {
-		var log model.AccountConnectionLog
-		if err := queryRows.Scan(&log.ID, &log.UserID, &log.AccountID, &log.EventType, &log.Status, &log.Message, &log.ErrorDetail, &log.ServerHost, &log.ServerPort, &log.LoginID, &log.ConnectionDurationSecs, &log.CreatedAt); err != nil {
+	for rows.Next() {
+		var l model.AccountConnectionLog
+		if err := rows.Scan(&l.ID, &l.UserID, &l.AccountID, &l.EventType, &l.Status, &l.Message, &l.ErrorDetail, &l.ServerHost, &l.ServerPort, &l.LoginID, &l.ConnectionDurationSecs, &l.CreatedAt); err != nil {
 			return nil, 0, err
 		}
-		logs = append(logs, &log)
+		logs = append(logs, &l)
 	}
-	if err := queryRows.Err(); err != nil {
-		return nil, 0, err
-	}
-	return logs, total, nil
+	return logs, total, rows.Err()
+}
+
+func buildConnLogFilters(userID uuid.UUID, params *model.LogQueryParams) (baseQ string, args []interface{}, idx int) {
+	baseQ = `FROM account_connection_logs WHERE user_id = $1`
+	args = []interface{}{userID}
+	idx = 2
+	if params == nil { return }
+	addFilter := func(cond, val string) { baseQ += fmt.Sprintf(` AND %s = $%d`, cond, idx); args = append(args, val); idx++ }
+	if params.AccountID != "" { aid, _ := uuid.Parse(params.AccountID); addFilter("account_id", ""); args[len(args)-1] = aid }
+	if params.Status != "" { addFilter("status", params.Status) }
+	if params.StartDate != "" { addFilter("created_at >=", params.StartDate) }
+	if params.EndDate != "" { addFilter("created_at <=", params.EndDate) }
+	return
 }
