@@ -4,7 +4,7 @@ import { pythonStrategyApi } from '@/client/pythonStrategy';
 import { gateApi } from '@/client/gate';
 import type { GateResult, GatePipelineSummary } from '@/gen/ant/v1/ai_gate_pb';
 import {
-  parseStrategyDirectives, backendSweepToSweepDimensions,
+  backendDirectivesToStrategyDirectives, backendSweepToSweepDimensions,
   PRESETS, DATE_PRESETS, DEFAULT_SWEEP_DIMS, dateFromPreset,
   TIMEFRAME_MAX_MONTHS, OPTIMIZER_INFO,
 } from './backtestParamHelpers';
@@ -13,7 +13,7 @@ import type {
 } from './backtestParamHelpers';
 
 export type { StrategyDirective, SweepDimension, PresetKey, TuneMethod };
-export { PRESETS, DATE_PRESETS, parseStrategyDirectives, OPTIMIZER_INFO };
+export { PRESETS, DATE_PRESETS, OPTIMIZER_INFO };
 
 export type BacktestStatus = 'idle' | 'running' | 'completed' | 'error';
 export type BacktestSubTab = 'results' | 'tuning' | 'gate';
@@ -61,8 +61,8 @@ export function useBacktestParams() {
     setSlippage(p.slippage);
   }, []);
 
-  const updateStrategyDirectivesFromCode = useCallback((code: string) => {
-    setStrategyDirectives(parseStrategyDirectives(code));
+  const updateStrategyDirectivesFromCode = useCallback((dirs: { key: string; value: string }[]) => {
+    setStrategyDirectives(backendDirectivesToStrategyDirectives(dirs));
   }, []);
 
   const getTimeframeWarning = useCallback((timeframe: string, presetMonths: number): string | null => {

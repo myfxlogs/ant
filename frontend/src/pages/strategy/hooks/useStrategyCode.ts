@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { strategyApi, type StrategyTemplate } from '@/client/strategy';
 import { codeAssistApi, type ValidateExtendedResult } from '@/client/codeAssist';
 
-export function useStrategyCode() {
+export function useStrategyCode(opts?: { onValidateResult?: (result: ValidateExtendedResult) => void }) {
+  const onValidateResult = opts?.onValidateResult;
   const { t } = useTranslation();
   const [code, setCode] = useState('');
   const [lastValidatedCode, setLastValidatedCode] = useState('');
@@ -18,9 +19,12 @@ export function useStrategyCode() {
       const result = await codeAssistApi.validateExtended(code);
       setValidationResult(result);
       if (result.valid) setLastValidatedCode(code);
+      // Backend zero-trust: push sweep dimensions + strategy directives
+      // from Python backend to the tuning panel.
+      if (onValidateResult) onValidateResult(result);
     } catch (e: unknown) { message.error((e as Error)?.message || 'Validation failed'); }
     finally { setValidating(false); }
-  }, [code]);
+  }, [code, onValidateResult]);
 
   const [templates, setTemplates] = useState<StrategyTemplate[]>([]);
   const [templatesLoading, setTemplatesLoading] = useState(false);

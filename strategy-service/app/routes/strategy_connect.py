@@ -59,6 +59,10 @@ _SWEEP_RE = re.compile(
     r"(?:\s+range=([\d.]+):([\d.]+):([\d.]+))?",
     re.MULTILINE,
 )
+_STRATEGY_RE = re.compile(
+    r"^\s*#\s*@strategy\s+(\w+)\s*:?\s*(\S+)",
+    re.MULTILINE,
+)
 
 
 def _extract_sweep_dimensions(code: str) -> list[dict]:
@@ -98,6 +102,22 @@ def _extract_sweep_dimensions(code: str) -> list[dict]:
     return dims
 
 
+def _extract_strategy_directives(code: str) -> list[dict]:
+    """Extract @strategy directives for the risk control display.
+
+    Backend zero-trust: the frontend MUST NOT parse @strategy itself.
+    """
+    dirs: list[dict] = []
+    seen: set[str] = set()
+    for m in _STRATEGY_RE.finditer(code or ""):
+        key = m.group(1)
+        if key in seen:
+            continue
+        seen.add(key)
+        dirs.append({"key": key, "value": m.group(2)})
+    return dirs
+
+
 @router.post("/ant.v1.PythonStrategyService/Validate")
 async def validate_strategy_connect(request: Request):
     """Validate strategy code syntax via ConnectRPC."""
@@ -116,12 +136,16 @@ async def validate_strategy_connect(request: Request):
                 + json.dumps(dataclasses.asdict(h), ensure_ascii=False)
             )
 
-        # Extract @param sweep dimensions (backend zero-trust: frontend
-        # MUST NOT parse @param itself). Encoded as [SWEEP] JSON.
+        # Extract @param sweep dimensions + @strategy directives
+        # (backend zero-trust: frontend MUST NOT parse code itself).
         sweep_dims = _extract_sweep_dimensions(req.code or "")
         if sweep_dims:
             for dim in sweep_dims:
                 warnings.append("[SWEEP]" + json.dumps(dim, ensure_ascii=False))
+        strategy_dirs = _extract_strategy_directives(req.code or "")
+        if strategy_dirs:
+            for d in strategy_dirs:
+                warnings.append("[STRATEGY]" + json.dumps(d, ensure_ascii=False))
 
         resp = ValidateStrategyResponse(
             valid=result.valid,

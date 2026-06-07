@@ -193,7 +193,7 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 		pyResp, pyErr := s.pythonStrategyClient.Validate(ctx, connect.NewRequest(&antv1.ValidateStrategyRequest{Code: code}))
 		if pyErr == nil && pyResp != nil {
 			for _, w := range pyResp.Msg.Warnings {
-				if strings.HasPrefix(w, "[HINT]") || strings.HasPrefix(w, "[SWEEP]") {
+				if strings.HasPrefix(w, "[HINT]") || strings.HasPrefix(w, "[SWEEP]") || strings.HasPrefix(w, "[STRATEGY]") {
 					resp.Msg.Warnings = append(resp.Msg.Warnings, w)
 				}
 			}

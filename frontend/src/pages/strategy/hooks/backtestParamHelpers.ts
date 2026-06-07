@@ -14,21 +14,21 @@ export const PRESETS = {
 
 export type PresetKey = keyof typeof PRESETS;
 
-// parseStrategyDirectives extracts # @strategy key value annotations from code.
-export function parseStrategyDirectives(code: string): StrategyDirective[] {
-  if (!code) return [];
-  const re = /^#\s*@strategy\s+(\w+)\s*:?\s*(\S+)/gim;
-  const seen = new Map<string, string>();
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(code)) !== null) {
-    seen.set(m[1], m[2]);
-  }
+/** Convert backend-provided @strategy directives to frontend StrategyDirective[].
+ *  Backend zero-trust: the backend extracts raw key-value pairs from code;
+ *  frontend applies display formatting (labels, percentage conversion). */
+export function backendDirectivesToStrategyDirectives(
+  dirs: { key: string; value: string }[],
+): StrategyDirective[] {
   const labels: Record<string, string> = {
     stopLossPct: 'Stop Loss %', takeProfitPct: 'Take Profit %',
     entryPct: 'Entry Size %', trailingEnabled: 'Trailing Stop',
     trailingStopPct: 'Trailing Dist %', trailingActivationPct: 'Trailing Act %',
     tradeDirection: 'Direction',
   };
+  const seen = new Map<string, string>();
+  for (const d of dirs) seen.set(d.key, d.value);
+
   const out: StrategyDirective[] = [];
   for (const [key, raw] of seen) {
     const label = labels[key] || key;
@@ -40,8 +40,6 @@ export function parseStrategyDirectives(code: string): StrategyDirective[] {
     } else if (!isNaN(n)) {
       if (key === 'entryPct' || key === 'stopLossPct' || key === 'takeProfitPct' ||
           key === 'trailingStopPct' || key === 'trailingActivationPct') {
-        // entryPct == 1 means "100%". Ratios 0<N<=1 → multiply by 100.
-        // Values >1 and <=100 → display as-is (already percentage).
         const pct = n <= 1 && n > 0 ? n * 100 : n;
         display = `${pct.toFixed(pct < 1 ? 2 : 1)}%`;
       } else {

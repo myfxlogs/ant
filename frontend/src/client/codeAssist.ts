@@ -64,6 +64,7 @@ export interface ValidateExtendedResult {
   parameters: RequiredParamSpec[];
   qualityHints: CodeQualityHint[];
   sweepDimensions: BackendSweepDim[];
+  strategyDirectives: { key: string; value: string }[];
 }
 
 const parseParamValue = (value: string, type?: RequiredParamSpec['type']) => {
@@ -137,16 +138,19 @@ export const codeAssistApi = {
   validateExtended: async (code: string): Promise<ValidateExtendedResult> => {
     const data = await codeAssistClient.validateStrategyExtended({ code });
 
-    // Extract quality hints + sweep dimensions from [HINT] / [SWEEP]
-    // prefixed warnings (injected by Python backend — zero-trust).
+    // Extract quality hints, sweep dimensions, and strategy directives
+    // from [HINT] / [SWEEP] / [STRATEGY] prefixed warnings (Python backend — zero-trust).
     const qualityHints: CodeQualityHint[] = [];
     const sweepDimensions: BackendSweepDim[] = [];
+    const strategyDirectives: { key: string; value: string }[] = [];
     const warnings: string[] = [];
     for (const w of (data.warnings || [])) {
       if (w.startsWith('[HINT]')) {
         try { qualityHints.push(JSON.parse(w.slice(6))); } catch { /* ignore */ }
       } else if (w.startsWith('[SWEEP]')) {
         try { sweepDimensions.push(JSON.parse(w.slice(7))); } catch { /* ignore */ }
+      } else if (w.startsWith('[STRATEGY]')) {
+        try { strategyDirectives.push(JSON.parse(w.slice(10))); } catch { /* ignore */ }
       } else {
         warnings.push(w);
       }
@@ -158,6 +162,7 @@ export const codeAssistApi = {
       warnings,
       qualityHints,
       sweepDimensions,
+      strategyDirectives,
       parameters: (data.parameters || []).map((p) => ({
         key: p.key,
         required: p.required,

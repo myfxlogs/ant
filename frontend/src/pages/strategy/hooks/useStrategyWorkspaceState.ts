@@ -32,11 +32,16 @@ export function useStrategyWorkspaceState() {
     setAccountId(id); setSymbol(''); marketApi.clearSymbolCache();
   }, [setAccountId, setSymbol]);
 
-  // Code + Templates + Save
-  const codeCtx = useStrategyCode();
-
-  // Backtest + Smart Tuning
+  // Backtest + Smart Tuning (must precede useStrategyCode for onValidateResult wiring)
   const btCtx = useBacktestParams();
+
+  // Code + Templates + Save
+  const codeCtx = useStrategyCode({
+    onValidateResult: (result) => {
+      if (result.sweepDimensions.length > 0) btCtx.updateSweepFromCode(result.sweepDimensions);
+      if (result.strategyDirectives.length > 0) btCtx.updateStrategyDirectivesFromCode(result.strategyDirectives);
+    },
+  });
   const handleRunBacktest = useCallback(() => {
     btCtx.runBacktest({ code: codeCtx.code, symbol, accountId, timeframe });
   }, [codeCtx.code, symbol, accountId, timeframe, btCtx.runBacktest]);
