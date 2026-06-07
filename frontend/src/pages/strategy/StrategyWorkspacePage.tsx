@@ -190,6 +190,7 @@ export default function StrategyWorkspacePage() {
           <div style={{ flexShrink: 0, borderTop: '1px solid #e8e8e8', overflowY: 'auto' }}>
             <div style={{ marginBottom: 6 }}>
             <BacktestParamsCard
+              templates={ws.templates}
               initialCapital={ws.backtest.initialCapital} onInitialCapitalChange={ws.backtest.setInitialCapital}
               leverage={ws.backtest.leverage} onLeverageChange={ws.backtest.setLeverage}
               commission={ws.backtest.commission} onCommissionChange={ws.backtest.setCommission}

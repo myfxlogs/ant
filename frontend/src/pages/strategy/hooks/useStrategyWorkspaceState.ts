@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { message } from 'antd';
 import { useAccount } from '@/hooks/useAccount';
 import { marketApi } from '@/client/market';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
+import { strategyApi } from '@/client/strategy';
 import { useStrategyCode } from './useStrategyCode';
 import { useBacktestParams, DATE_PRESETS } from './useBacktestParams';
 import type { SweepDimension, BacktestMetrics, StrategyDirective, PresetKey, BacktestSubTab } from './useBacktestParams';
@@ -42,16 +44,38 @@ export function useStrategyWorkspaceState() {
       if (result.strategyDirectives.length > 0) btCtx.updateStrategyDirectivesFromCode(result.strategyDirectives);
     },
   });
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
+
+  const handleSelectTemplate = useCallback(async (templateId: string | null) => {
+    if (!templateId) {
+      setSelectedTemplateId('');
+      return;
+    }
+    try {
+      const tpl = await strategyApi.getTemplate(templateId);
+      if (tpl?.code) {
+        codeCtx.setCode(tpl.code);
+        setSelectedTemplateId(templateId);
+      }
+    } catch (e: unknown) {
+      message.error((e as Error)?.message || 'Failed to load template');
+    }
+  }, [codeCtx.setCode]);
+
   const handleRunBacktest = useCallback(() => {
-    btCtx.runBacktest({ code: codeCtx.code, symbol, accountId, timeframe });
-  }, [codeCtx.code, symbol, accountId, timeframe, btCtx.runBacktest]);
+    btCtx.runBacktest({
+      code: codeCtx.code, symbol, accountId, timeframe,
+      templateId: selectedTemplateId || undefined,
+    });
+  }, [codeCtx.code, symbol, accountId, timeframe, selectedTemplateId, btCtx.runBacktest]);
 
   const handleRunTuning = useCallback(async (): Promise<string> => {
     return btCtx.runTuning({
       code: codeCtx.code, symbol, timeframe,
       startDate: btCtx.startDate, endDate: btCtx.endDate,
+      templateId: selectedTemplateId || undefined,
     });
-  }, [codeCtx.code, symbol, timeframe, btCtx.startDate, btCtx.endDate, btCtx.runTuning]);
+  }, [codeCtx.code, symbol, timeframe, btCtx.startDate, btCtx.endDate, selectedTemplateId, btCtx.runTuning]);
 
   // Quick Trade data
   const qt = useQuickTradeData(accountId, symbol);
@@ -89,6 +113,7 @@ export function useStrategyWorkspaceState() {
   return {
     account: { activeAccounts, accountId, setAccountId, symbol, setSymbol, timeframe, setTimeframe, handleAccountChange, accountInfo: qt.accountInfo, selectedAccountMeta },
     code: codeCtx,
+    templates: { list: codeCtx.templates, loading: codeCtx.templatesLoading, selectedId: selectedTemplateId, onSelect: handleSelectTemplate },
     backtest: {
       submitting: btCtx.submitting, status: btCtx.status, metrics: btCtx.metrics,
       executionAssumptions: btCtx.executionAssumptions, error: btCtx.errorMsg,

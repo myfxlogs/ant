@@ -86,8 +86,9 @@ export function useBacktestParams() {
 
   const runBacktest = useCallback(async (params: {
     code: string; accountId: string; symbol: string; timeframe: string;
+    templateId?: string;
   }) => {
-    const { code, accountId, symbol, timeframe } = params;
+    const { code, accountId, symbol, timeframe, templateId } = params;
     if (!code || !symbol) { message.warning('Please enter strategy code and select a symbol'); return; }
     setSubmitting(true);
     try {
@@ -96,6 +97,7 @@ export function useBacktestParams() {
         mode: 'KLINE_RANGE',
         from: startDate ? new Date(startDate) : undefined,
         to: endDate ? new Date(endDate) : undefined,
+        templateId: templateId || undefined,
         executionConfig: {
           commission, slippage, leverage,
           tradeDirection: tradeDirection as 'long' | 'short' | 'both',
@@ -177,6 +179,7 @@ export function useBacktestParams() {
   const runTuning = useCallback(async (params: {
     code: string; symbol: string; timeframe: string;
     startDate: string; endDate: string;
+    templateId?: string;
   }): Promise<string> => {
     setTuningRunning(true);
     try {
@@ -190,7 +193,7 @@ export function useBacktestParams() {
       const fromMs = params.startDate ? new Date(params.startDate).getTime() : 0;
       const toMs = params.endDate ? new Date(params.endDate).getTime() : 0;
       const result = await strategyExperimentApi.submit({
-        baseTemplateId: '',
+        baseTemplateId: params.templateId || '',
         parameterSpace: paramSpace as Record<string, unknown>,
         searchMethod: tuneMethod,
         maxCandidates: Math.min(cartesianSize || 24, 48),
