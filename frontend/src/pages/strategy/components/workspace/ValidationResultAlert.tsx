@@ -10,15 +10,6 @@ const SEVERITY_COLOR: Record<string, string> = {
   info: '#1677ff',
 };
 
-const CATEGORY_LABEL: Record<string, string> = {
-  FUTURE_DATA_LEAK: 'Future Data Leak',
-  MISSING_PARAM: 'Missing Param',
-  UNREAD_PARAM: 'Unread Param',
-  NDARRAY_PANDAS_MISUSE: 'ndarray/pandas Misuse',
-  NO_STOP_AND_TAKE_PROFIT: 'Missing Stop/Take Profit',
-  NO_ENTRY_PCT: 'Missing Entry %',
-};
-
 interface Props {
   validationResult: ValidateExtendedResult;
   autoFixing?: boolean;
@@ -32,7 +23,13 @@ function issueCount(s: { errors: string[]; warnings: string[]; hints: { category
   return s.errors.length + s.warnings.length + s.hints.length;
 }
 
+function categoryLabel(t: ReturnType<typeof useTranslation>['t'], cat: string): string {
+  const key = `strategy.codeQuality.category.${cat}`;
+  return t(key, cat);
+}
+
 function renderIssueList(
+  t: ReturnType<typeof useTranslation>['t'],
   errors: string[], warnings: string[], hints: { category: string; message: string }[],
   prefix: string, color: string, borderColor: string,
 ) {
@@ -52,7 +49,7 @@ function renderIssueList(
         }}>
           {item.type === 'e' ? <span style={{ fontWeight: 600, marginRight: 4 }}>✕</span>
             : item.type === 'w' ? <span style={{ fontWeight: 600, marginRight: 4 }}>⚠</span>
-              : item.cat ? <Tag color="blue" style={{ fontSize: 9, lineHeight: '16px', marginRight: 4 }}>{CATEGORY_LABEL[item.cat] || item.cat}</Tag>
+              : item.cat ? <Tag color="blue" style={{ fontSize: 9, lineHeight: '16px', marginRight: 4 }}>{categoryLabel(t, item.cat)}</Tag>
                 : null}
           {item.text}
         </div>
@@ -80,8 +77,8 @@ export default function ValidationResultAlert({
           icon={autoFixDebug.passed ? <CheckCircleOutlined /> : <ExclamationCircleOutlined />}
           message={
             autoFixDebug.passed
-              ? `Auto-fix passed in ${autoFixDebug.iterations} iteration${autoFixDebug.iterations > 1 ? 's' : ''}`
-              : `Auto-fix: ${issueCount(autoFixDebug.remaining)} issue(s) remain after ${autoFixDebug.iterations} iterations`
+              ? t('strategy.workspace.autoFix.passed', { iterations: autoFixDebug.iterations, plural: autoFixDebug.iterations > 1 ? 's' : '' })
+              : t('strategy.workspace.autoFix.failed', { remaining: issueCount(autoFixDebug.remaining), iterations: autoFixDebug.iterations })
           }
           description={
             <div style={{ fontSize: 12, marginTop: 4 }}>
@@ -89,14 +86,14 @@ export default function ValidationResultAlert({
               {issueCount(autoFixDebug.fixed) > 0 && (
                 <div style={{ marginBottom: 8 }}>
                   <div style={{ fontWeight: 600, color: '#389e0d', marginBottom: 4 }}>
-                    ✅ Fixed ({issueCount(autoFixDebug.fixed)})
+                    {t('strategy.workspace.autoFix.fixed', { count: issueCount(autoFixDebug.fixed) })}
                   </div>
                   <div style={{
                     maxHeight: 120, overflowY: 'auto', padding: '4px 6px',
                     background: '#f6ffed', borderRadius: 4, border: '1px solid #d9f7be',
                   }}>
                     {renderIssueList(
-                      autoFixDebug.fixed.errors, autoFixDebug.fixed.warnings, autoFixDebug.fixed.hints,
+                      t, autoFixDebug.fixed.errors, autoFixDebug.fixed.warnings, autoFixDebug.fixed.hints,
                       'fixed', '#389e0d', '#d9f7be',
                     )}
                   </div>
@@ -107,14 +104,14 @@ export default function ValidationResultAlert({
               {issueCount(autoFixDebug.remaining) > 0 && (
                 <div style={{ marginBottom: 8 }}>
                   <div style={{ fontWeight: 600, color: '#ad6800', marginBottom: 4 }}>
-                    <WarningOutlined /> Remaining ({issueCount(autoFixDebug.remaining)})
+                    {t('strategy.workspace.autoFix.remaining', { count: issueCount(autoFixDebug.remaining) })}
                   </div>
                   <div style={{
                     maxHeight: 120, overflowY: 'auto', padding: '4px 6px',
                     background: '#fffbe6', borderRadius: 4, border: '1px solid #ffe58f',
                   }}>
                     {renderIssueList(
-                      autoFixDebug.remaining.errors, autoFixDebug.remaining.warnings, autoFixDebug.remaining.hints,
+                      t, autoFixDebug.remaining.errors, autoFixDebug.remaining.warnings, autoFixDebug.remaining.hints,
                       'rem', '#ad6800', '#ffe58f',
                     )}
                   </div>
@@ -125,14 +122,14 @@ export default function ValidationResultAlert({
               {issueCount(autoFixDebug.introduced) > 0 && (
                 <div style={{ marginBottom: 4 }}>
                   <div style={{ fontWeight: 600, color: '#cf1322', marginBottom: 4 }}>
-                    ❌ New (regression) ({issueCount(autoFixDebug.introduced)})
+                    {t('strategy.workspace.autoFix.newRegression', { count: issueCount(autoFixDebug.introduced) })}
                   </div>
                   <div style={{
                     maxHeight: 120, overflowY: 'auto', padding: '4px 6px',
                     background: '#fff1f0', borderRadius: 4, border: '1px solid #ffa39e',
                   }}>
                     {renderIssueList(
-                      autoFixDebug.introduced.errors, autoFixDebug.introduced.warnings, autoFixDebug.introduced.hints,
+                      t, autoFixDebug.introduced.errors, autoFixDebug.introduced.warnings, autoFixDebug.introduced.hints,
                       'intro', '#cf1322', '#ffa39e',
                     )}
                   </div>
@@ -141,7 +138,7 @@ export default function ValidationResultAlert({
 
               {onDismissDebug && (
                 <Button size="small" type="link" onClick={onDismissDebug} style={{ padding: 0, marginTop: 4 }}>
-                  Dismiss
+                  {t('strategy.workspace.autoFix.dismiss')}
                 </Button>
               )}
             </div>
@@ -199,7 +196,7 @@ export default function ValidationResultAlert({
                   <span style={{ fontWeight: 500 }}>{h.message}</span>
                   {h.line > 0 && (
                     <span style={{ color: '#8c8c8c', marginLeft: 4 }}>
-                      (line {h.line})
+                      ({t('strategy.workspace.autoFix.lineInfo', { line: h.line })})
                     </span>
                   )}
                 </div>
@@ -213,13 +210,13 @@ export default function ValidationResultAlert({
               {onAutoFix && (
                 <Button size="small" type="primary" icon={<RobotOutlined />}
                   loading={autoFixing} onClick={onAutoFix}>
-                  {autoFixing ? 'Fixing...' : 'Auto Fix'}
+                  {autoFixing ? t('strategy.workspace.autoFix.fixing') : t('strategy.workspace.autoFix.button')}
                 </Button>
               )}
               {onAskAI && (
                 <Button size="small" type="primary" ghost icon={<RobotOutlined />}
                   onClick={onAskAI}>
-                  Ask AI
+                  {t('strategy.workspace.autoFix.askAI')}
                 </Button>
               )}
             </Space>

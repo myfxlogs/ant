@@ -207,7 +207,6 @@ export default function StrategyWorkspacePage() {
               strategyDirectives={ws.backtest.strategyDirectives}
               onApplyPreset={ws.backtest.applyPreset}
               timeframeWarning={ws.backtest.getTimeframeWarning(ws.account.timeframe, DATE_PRESETS.find(p => p.key === ws.backtest.datePreset)?.months ?? 3)}
-              timeframe={ws.account.timeframe} onTimeframeChange={ws.account.setTimeframe}
               onApplyDefaults={ws.backtest.applyDefaults}
               onOpenHistory={ws.history.open}
             />

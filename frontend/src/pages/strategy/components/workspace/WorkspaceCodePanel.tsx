@@ -112,7 +112,7 @@ export default function WorkspaceCodePanel({
       const saved = await aiApi.setPrimary({ providerId: dec.providerId, model: dec.model });
       setPrimaryValue(saved.providerId ? `${saved.providerId}|${saved.model || ''}` : '');
     } catch (e: unknown) {
-      message.error(String((e as Error)?.message || 'Save failed'));
+      message.error(String((e as Error)?.message || t('strategy.workspace.saveFailed')));
     } finally { setPrimarySaving(false); }
   };
 

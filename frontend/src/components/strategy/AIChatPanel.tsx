@@ -43,11 +43,18 @@ function detectMode(msg: string, hasCode: boolean, hasBacktest = false): 'genera
   return 'revise';
 }
 
-const MODE_TAGS: Record<string, { color: string; label: string }> = {
-  generate: { color: 'blue',   label: '⚡ 生成' },
-  revise:   { color: 'green',  label: '✏️ 修改' },
-  repair:   { color: 'orange', label: '🔧 修复' },
-  discuss:  { color: 'purple', label: '💬 分析' },
+function modeLabel(t: (k: string, d?: string) => string, mode: string): string {
+  const map: Record<string, string> = {
+    generate: 'strategy.gen.chat.generate',
+    revise: 'strategy.gen.chat.revise',
+    repair: 'strategy.gen.chat.repair',
+    discuss: 'strategy.gen.chat.discuss',
+  };
+  return t(map[mode] || mode, mode);
+}
+
+const MODE_COLORS: Record<string, string> = {
+  generate: 'blue', revise: 'green', repair: 'orange', discuss: 'purple',
 };
 
 export default function AIChatPanel({ code, onApply, symbol, timeframe, initialPrompt, autoApply = true, sessionId, chatHistory }: Props) {
@@ -269,7 +276,7 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
           <div style={{ margin: '6px 0', padding: '10px', borderRadius: 6,
             background: '#f6ffed', border: '1px solid #b7eb8f' }}>
             <Typography.Text strong style={{ fontSize: 11, marginBottom: 4, display: 'block' }}>
-              📊 回测结果
+              {t('strategy.gen.feedback.heading')}
             </Typography.Text>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
               {backtestMetrics.sharpeRatio != null && (
@@ -301,7 +308,7 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
               )}
             </div>
             <Typography.Text type="secondary" style={{ fontSize: 9 }}>
-              输入反馈继续迭代（如"太激进了"、"加入止损"）
+              {t('strategy.gen.feedback.placeholder')}
             </Typography.Text>
           </div>
         )}
@@ -341,16 +348,14 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
         style={{ fontSize: 13, marginBottom: 8 }}
       />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        {draft.trim() && MODE_TAGS[detectMode(draft, !!code.trim())] && (
-          <Tag color={MODE_TAGS[detectMode(draft, !!code.trim())].color}>
-            {MODE_TAGS[detectMode(draft, !!code.trim())].label}
-          </Tag>
-        )}
-        {!draft.trim() && MODE_TAGS[code.trim() ? 'revise' : 'generate'] && (
-          <Tag color={MODE_TAGS[code.trim() ? 'revise' : 'generate'].color}>
-            {MODE_TAGS[code.trim() ? 'revise' : 'generate'].label}
-          </Tag>
-        )}
+        {draft.trim() && MODE_COLORS[detectMode(draft, !!code.trim())] && (() => {
+          const m = detectMode(draft, !!code.trim());
+          return <Tag color={MODE_COLORS[m]}>{modeLabel(t, m)}</Tag>;
+        })()}
+        {!draft.trim() && MODE_COLORS[code.trim() ? 'revise' : 'generate'] && (() => {
+          const m = code.trim() ? 'revise' : 'generate';
+          return <Tag color={MODE_COLORS[m]}>{modeLabel(t, m)}</Tag>;
+        })()}
         <Button type="primary" icon={<SendOutlined />} loading={isBusy}
           onClick={handleSend} disabled={!draft.trim()}>
           {t('strategy.codeAssist.reviseSend', 'Send to AI')}
