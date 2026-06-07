@@ -254,6 +254,7 @@ def build_sandbox_globals() -> dict:
         "_getattr_": env.guarded_getattr,
         "_getitem_": env.guarded_getitem,
         "_getiter_": env.guarded_getiter,
+        "_iter_unpack_sequence_": env.guarded_getiter,  # RestrictedPython for-loop tuple unpack
         "_write_": env.guarded_write,
         "_print_": env.print_collector,
         "np": np,
