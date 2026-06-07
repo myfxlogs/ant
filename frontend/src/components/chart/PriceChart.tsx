@@ -35,6 +35,8 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
   const { bars, loading, error, streamActive, loadingMore, loadedAll } = useChartData(symbol, timeframe, accountId, chartRef);
   const { active: activeIndicators, getDef, addIndicator, removeIndicator } = useChartIndicatorsStore();
   const [editingIndId, setEditingIndId] = useState<string | null>(null);
+  // Track klinecharts paneIds keyed by store instanceId
+  const kcIndRef = useRef<Map<string, string>>(new Map());
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -63,6 +65,53 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
   }, [chartType]);
 
   const applyChartType = useCallback((type: ChartType) => { setChartType(type); }, []);
+
+  // ── Sync indicators from store to klinecharts chart ──
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+
+    const currentIds = new Set(activeIndicators.map((a) => a.instanceId));
+
+    // Remove indicators that are no longer in store
+    for (const [instanceId, paneId] of kcIndRef.current.entries()) {
+      if (!currentIds.has(instanceId)) {
+        try { chart.removeIndicator(paneId); } catch { /* best-effort */ }
+        kcIndRef.current.delete(instanceId);
+      }
+    }
+
+    // Add or update indicators
+    for (const ind of activeIndicators) {
+      const mapping = KLINECHARTS_MAP[ind.defId];
+      if (!mapping) continue;
+
+      const def = getDef(ind.defId);
+      const calcParams = mapping.buildParams(ind.params);
+      const existingPaneId = kcIndRef.current.get(ind.instanceId);
+
+      if (existingPaneId) {
+        // Update existing indicator (params or visibility changed)
+        try {
+          chart.overrideIndicator(
+            { name: mapping.name, calcParams, visible: ind.visible } as any,
+            existingPaneId,
+          );
+        } catch { /* best-effort */ }
+      } else {
+        // Create new indicator on chart
+        const isOverlay = def?.kind === 'overlay';
+        const paneId = chart.createIndicator(
+          { name: mapping.name, calcParams, visible: ind.visible } as any,
+          isOverlay,
+          isOverlay ? undefined : undefined,
+        );
+        if (paneId) {
+          kcIndRef.current.set(ind.instanceId, paneId);
+        }
+      }
+    }
+  }, [activeIndicators, getDef]);
 
   useEffect(() => {
     const chart = chartRef.current;
