@@ -1,4 +1,4 @@
-import { Button, Row, Col, InputNumber, DatePicker, Segmented, Dropdown, message, Tooltip } from 'antd';
+import { Button, Row, Col, InputNumber, DatePicker, Segmented, Dropdown, message, Tooltip, Radio, Switch, Tag } from 'antd';
 import type { MenuProps } from 'antd';
 import { PlayCircleOutlined, SettingOutlined, CaretUpOutlined, CaretDownOutlined, HistoryOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
@@ -188,12 +188,38 @@ export default function BacktestParamsCard(props: Props) {
               </Row>
               <BacktestConfigSection
                 commission={commission} slippage={slippage}
-                tradeDirection={tradeDirection} strictMode={strictMode}
                 onCommissionChange={onCommissionChange} onSlippageChange={onSlippageChange}
-                onTradeDirectionChange={onTradeDirectionChange}
-                onStrictModeChange={onStrictModeChange}
                 onApplyPreset={onApplyPreset}
               />
+            </div>
+
+            {/* Trade Direction + Strict Mode */}
+            <div>
+              <div style={paramLabel}>Trade Direction</div>
+              <Radio.Group value={tradeDirection} onChange={e => onTradeDirectionChange(e.target.value)}
+                size="small" buttonStyle="solid">
+                <Radio.Button value="long">↑ Long</Radio.Button>
+                <Radio.Button value="short">↓ Short</Radio.Button>
+                <Radio.Button value="both">Both</Radio.Button>
+              </Radio.Group>
+              <div style={{ marginTop: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Switch size="small" checked={strictMode} onChange={onStrictModeChange} />
+                  <span style={{ fontSize: 9, color: '#8c8c8c', fontWeight: 600 }}>
+                    Strict Mode
+                    <Tooltip title={strictMode
+                      ? 'ON: signals confirmed at bar close, executed next bar open'
+                      : 'OFF: same-bar close execution with 1m sub-resolution'}>
+                      <Tag color={strictMode ? 'blue' : 'orange'} style={{ fontSize: 8, marginLeft: 4, lineHeight: '14px' }}>
+                        {strictMode ? 'ON' : 'OFF'}
+                      </Tag>
+                    </Tooltip>
+                  </span>
+                </div>
+                <div style={{ fontSize: 8, color: '#8c8c8c', marginTop: 2, lineHeight: '12px' }}>
+                  {strictMode ? 'Next-bar-open. Standard, conservative.' : 'Same-bar-close + MTF 1m. Higher precision.'}
+                </div>
+              </div>
             </div>
           </div>
 
