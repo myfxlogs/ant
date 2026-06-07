@@ -215,3 +215,7 @@ class ObjectiveScoreResponse(BaseModel):
     overall_score: float
     technical_score: float
     signals: ObjectiveSignals
+
+
+# Alias for objective_score_connect compatibility
+KlineEntry = KlineData
