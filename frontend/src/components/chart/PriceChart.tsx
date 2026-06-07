@@ -101,7 +101,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
   }
 
   return (
-    <div ref={wrapperRef} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div ref={wrapperRef} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       <ChartToolbar
         timeframe={timeframe} chartType={chartType}
         streamActive={streamActive} error={error}
@@ -132,7 +132,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
             ✓ {bars.length} bars loaded
           </div>
         )}
-        <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
+        <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} />
       </div>
     </div>
   );
