@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -143,4 +144,41 @@ func (m *Manager) IsDisconnecting(accountID string) bool {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	return m.disconnecting[accountID]
+}
+
+// GetGateway returns the registered gateway for accountID, or nil if not found.
+func (m *Manager) GetGateway(accountID string) Gateway {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	return m.gateways[accountID]
+}
+
+// ReconnectGateway disconnects and reconnects a gateway in-place.
+// Used by healthMonitor to attempt recovery of dead connections before removing them.
+// The recvLoop goroutines will auto-reconnect after conn is re-established.
+func (m *Manager) ReconnectGateway(ctx context.Context, accountID string) error {
+	m.mu.RLock()
+	gw, ok := m.gateways[accountID]
+	m.mu.RUnlock()
+	if !ok {
+		return fmt.Errorf("mdgateway: gateway %s not found", accountID)
+	}
+	// Graceful disconnect first.
+	if err := gw.Disconnect(ctx); err != nil {
+		m.log.Warn("mdgateway: disconnect during reconnect",
+			zap.String("account", accountID), zap.Error(err))
+	}
+	// Re-connect with fresh session.
+	if err := gw.Connect(ctx); err != nil {
+		return fmt.Errorf("mdgateway: reconnect %s: %w", accountID, err)
+	}
+	return nil
+}
+
+// ResetLastTickAt resets the last-tick timestamp for an account after a
+// successful reconnection so the health monitor doesn't immediately flag it again.
+func (m *Manager) ResetLastTickAt(accountID string) {
+	m.mu.Lock()
+	m.lastTickAt[accountID] = time.Now().Unix()
+	m.mu.Unlock()
 }

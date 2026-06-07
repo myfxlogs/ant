@@ -17,18 +17,19 @@ import (
 )
 
 type Gateway struct {
-	cfg                 mdtick.AccountConfig
-	log                 *zap.Logger
-	mu                  sync.RWMutex
-	conn                *grpc.ClientConn
-	client              pb.MT4Client
-	connCli             pb.ConnectionClient
-	streamCli           pb.StreamsClient
-	subCli              pb.SubscriptionsClient
-	tradingCli          pb.TradingClient
-	sessionID           string
-	cancelSub           context.CancelFunc
-	cancelProfitSub     context.CancelFunc
+	cfg                  mdtick.AccountConfig
+	log                  *zap.Logger
+	mu                   sync.RWMutex
+	conn                 *grpc.ClientConn
+	client               pb.MT4Client
+	connCli              pb.ConnectionClient
+	streamCli            pb.StreamsClient
+	subCli               pb.SubscriptionsClient
+	tradingCli           pb.TradingClient
+	serviceCli           pb.ServiceClient
+	sessionID            string
+	cancelSub            context.CancelFunc
+	cancelProfitSub      context.CancelFunc
 	cancelOrderUpdateSub context.CancelFunc
 }
 
@@ -79,6 +80,7 @@ func (g *Gateway) Connect(ctx context.Context) error {
 	g.streamCli = pb.NewStreamsClient(conn)
 	g.subCli = pb.NewSubscriptionsClient(conn)
 	g.tradingCli = pb.NewTradingClient(conn)
+	g.serviceCli = pb.NewServiceClient(conn)
 	g.mu.Unlock()
 
 	tempID := "mdgw-" + g.cfg.Login
@@ -118,6 +120,10 @@ func (g *Gateway) Connect(ctx context.Context) error {
 }
 
 func (g *Gateway) Disconnect(ctx context.Context) error {
+	// Drain: brief grace period for in-flight stream Recv() calls
+	// to observe the cancelled context before we tear down the conn.
+	time.Sleep(200 * time.Millisecond)
+
 	g.mu.Lock()
 	defer g.mu.Unlock()
 	if g.cancelSub != nil {
@@ -141,6 +147,7 @@ func (g *Gateway) Disconnect(ctx context.Context) error {
 	g.streamCli = nil
 	g.subCli = nil
 	g.tradingCli = nil
+	g.serviceCli = nil
 	g.sessionID = ""
 	return nil
 }
@@ -265,9 +272,24 @@ func (g *Gateway) GetAccountInfo(ctx context.Context) (*mdtick.MTAccountInfo, er
 }
 func (g *Gateway) HealthCheck(ctx context.Context) error {
 	g.mu.RLock()
-	defer g.mu.RUnlock()
-	if g.conn == nil {
+	client := g.serviceCli
+	sid := g.sessionID
+	g.mu.RUnlock()
+
+	if client == nil || sid == "" {
 		return fmt.Errorf("mt4: not connected")
+	}
+
+	pingCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+	md := metadata.New(map[string]string{"id": sid})
+	if tok := g.token(); tok != "" {
+		md.Set("authorization", "Bearer "+tok)
+	}
+	_, err := client.Ping(metadata.NewOutgoingContext(pingCtx, md), &pb.PingRequest{})
+	if err != nil {
+		return fmt.Errorf("mt4: ping failed: %w", err)
 	}
 	return nil
 }

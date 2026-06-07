@@ -30,22 +30,22 @@ func healthMonitor(ctx context.Context, mgr *Manager, chw *CHWriter, log *zap.Lo
 			return
 		case <-ticker.C():
 			var stale, dead int64
-			for _, h := range mgr.Health() {
-				switch h.State {
-				case "stale":
-					stale++
-					log.Warn("mdgateway: stale account — no ticks for >5 min",
-						zap.String("account", h.AccountID),
-						zap.String("platform", h.Platform))
-				case "dead":
-					dead++
+			handleDeadAccount := func(h AccountHealth) {
+				dead++
+				log.Error("mdgateway: dead account — attempting reconnect",
+					zap.String("account", h.AccountID),
+					zap.String("platform", h.Platform))
+
+				// Attempt reconnect before removing. This covers transient
+				// failures (e.g. mtapi proxy restart, network blip) without
+				// losing the gateway and its subscriptions.
+				if err := mgr.ReconnectGateway(ctx, h.AccountID); err != nil {
+					log.Error("mdgateway: reconnect failed, removing dead gateway",
+						zap.String("account", h.AccountID), zap.Error(err))
 					mgr.MarkDisconnecting(h.AccountID)
 					if onDisconnect != nil {
 						onDisconnect(h.AccountID)
 					}
-					log.Error("mdgateway: dead account — no ticks for >15 min",
-						zap.String("account", h.AccountID),
-						zap.String("platform", h.Platform))
 					if err := mgr.RemoveGateway(ctx, h.AccountID); err != nil {
 						log.Warn("mdgateway: remove dead gateway failed",
 							zap.String("account", h.AccountID), zap.Error(err))
@@ -54,6 +54,36 @@ func healthMonitor(ctx context.Context, mgr *Manager, chw *CHWriter, log *zap.Lo
 					// Brief pause to let in-flight NATS messages drain
 					// before reconnects are allowed for this account.
 					time.Sleep(100 * time.Millisecond)
+				} else {
+					log.Info("mdgateway: dead account reconnected successfully",
+						zap.String("account", h.AccountID),
+						zap.String("platform", h.Platform))
+					mgr.ResetLastTickAt(h.AccountID)
+				}
+			}
+
+			for _, h := range mgr.Health() {
+				switch h.State {
+				case "stale":
+					stale++
+					log.Warn("mdgateway: stale account — no ticks for >5 min",
+						zap.String("account", h.AccountID),
+						zap.String("platform", h.Platform))
+					// Proactively verify the connection via Ping/Health RPC.
+					// Escalate to dead immediately if it fails, rather than
+					// waiting the full 15-min dead threshold.
+					if gw := mgr.GetGateway(h.AccountID); gw != nil {
+						if err := gw.HealthCheck(ctx); err != nil {
+							log.Warn("mdgateway: stale account failed health check — promoting to dead",
+								zap.String("account", h.AccountID),
+								zap.String("platform", h.Platform),
+								zap.Error(err))
+							handleDeadAccount(h)
+							continue
+						}
+					}
+				case "dead":
+					handleDeadAccount(h)
 				case "no_data":
 					log.Debug("mdgateway: no data yet",
 						zap.String("account", h.AccountID))
