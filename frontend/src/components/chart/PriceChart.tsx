@@ -42,6 +42,8 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     if (!containerRef.current) return;
     const chart = init(containerRef.current, { styles: DARK_THEME, locale: 'en-US' });
     chartRef.current = chart;
+    // Auto-load Volume sub-pane (default sub-chart)
+    try { chart.createIndicator('VOL', false, { id: 'volume_pane' }); } catch { /* best-effort */ }
     onChartReady?.(chart);
     const ro = new ResizeObserver(([entry]) => setTooNarrow((entry?.contentRect?.width || 300) < 300));
     ro.observe(containerRef.current);
@@ -72,53 +74,51 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     if (!chart) return;
 
     const currentIds = new Set(activeIndicators.map((a) => a.instanceId));
-    console.log('[indSync] activeIndicators:', activeIndicators.length, activeIndicators.map(a => a.defId));
 
     // Remove indicators that are no longer in store
     for (const [instanceId, paneId] of kcIndRef.current.entries()) {
       if (!currentIds.has(instanceId)) {
-        console.log('[indSync] remove:', instanceId, paneId);
-        try { chart.removeIndicator(paneId); } catch (e) { console.error('[indSync] remove error:', e); }
+        try { chart.removeIndicator(paneId); } catch { /* best-effort */ }
         kcIndRef.current.delete(instanceId);
       }
     }
 
     // Add or update indicators
     for (const ind of activeIndicators) {
-      const mapping = KLINECHARTS_MAP[ind.defId];
-      if (!mapping) {
-        console.warn('[indSync] no mapping for:', ind.defId);
-        continue;
-      }
+      const km = KLINECHARTS_MAP[ind.defId];
+      if (!km) continue;
 
       const def = getDef(ind.defId);
-      const calcParams = mapping.buildParams(ind.params);
+      const isOverlay = def?.kind === 'overlay';
+      const calcParams = km.buildParams(ind.params);
       const existingPaneId = kcIndRef.current.get(ind.instanceId);
 
       if (existingPaneId) {
-        // Update existing indicator (params or visibility changed)
-        console.log('[indSync] update:', ind.defId, calcParams, existingPaneId);
+        // Update existing — override params
         try {
           chart.overrideIndicator(
-            { name: mapping.name, calcParams, visible: ind.visible } as any,
+            { name: km.name, calcParams, visible: ind.visible } as any,
             existingPaneId,
           );
-        } catch (e) { console.error('[indSync] update error:', e); }
+        } catch { /* best-effort */ }
       } else {
-        // Create new indicator on chart
-        const isOverlay = def?.kind === 'overlay';
-        console.log('[indSync] create:', ind.defId, mapping.name, calcParams, 'isOverlay:', isOverlay);
+        // Create new — use string name + explicit pane id (original pattern)
         try {
           const paneId = chart.createIndicator(
-            { name: mapping.name, calcParams, visible: ind.visible } as any,
+            km.name,
             isOverlay,
-            undefined,
+            { id: `ind_${ind.instanceId}` },
           );
-          console.log('[indSync] create result paneId:', paneId);
           if (paneId) {
             kcIndRef.current.set(ind.instanceId, paneId);
+            // Set calcParams after creation if non-default
+            if (calcParams.length > 0) {
+              try {
+                chart.overrideIndicator({ name: km.name, calcParams } as any, paneId);
+              } catch { /* best-effort */ }
+            }
           }
-        } catch (e) { console.error('[indSync] create error:', e); }
+        } catch { /* best-effort */ }
       }
     }
   }, [activeIndicators, getDef]);
