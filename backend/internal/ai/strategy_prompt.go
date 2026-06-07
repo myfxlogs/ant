@@ -68,9 +68,10 @@ func strategyContractText() string {
 	sb.WriteString("3. 不要使用 open() 进行文件操作\n")
 	sb.WriteString("4. 不要访问 __builtins__、globals()、locals()\n")
 	sb.WriteString("5. 不要使用 atexit 或 signal 注册处理器\n")
-	sb.WriteString("6. 可使用 numpy (import numpy as np)\n")
-	sb.WriteString("7. 代码必须完整可执行，包含所有必要的 import\n")
-	sb.WriteString("8. 只输出 Python 代码，不要包含解释文字\n\n")
+	sb.WriteString("6. 仅限纯 Python 标准库（math、statistics、collections、itertools、functools 等）\n")
+	sb.WriteString("7. 禁止使用任何第三方库（numpy、pandas、scipy、TA-Lib 等均不可用）\n")
+	sb.WriteString("8. 代码必须完整可执行，包含所有必要的 import（仅限标准库）\n")
+	sb.WriteString("9. 只输出 Python 代码，不要包含解释文字\n\n")
 	return sb.String()
 }
 
