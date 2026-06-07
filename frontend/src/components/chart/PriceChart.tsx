@@ -33,7 +33,8 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
   const [chartType, setChartType] = useState<ChartType>('candle_solid');
 
   const { bars, loading, error, streamActive, loadingMore, loadedAll } = useChartData(symbol, timeframe, accountId, chartRef);
-  const { activeIndicators, getDef, addIndicator, removeIndicator, setEditingIndId, editingIndId } = useChartIndicatorsStore();
+  const { active: activeIndicators, getDef, addIndicator, removeIndicator } = useChartIndicatorsStore();
+  const [editingIndId, setEditingIndId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
