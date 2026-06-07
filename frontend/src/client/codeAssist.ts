@@ -138,31 +138,33 @@ export const codeAssistApi = {
   validateExtended: async (code: string): Promise<ValidateExtendedResult> => {
     const data = await codeAssistClient.validateStrategyExtended({ code });
 
-    // Extract quality hints, sweep dimensions, and strategy directives
-    // from [HINT] / [SWEEP] / [STRATEGY] prefixed warnings (Python backend — zero-trust).
-    const qualityHints: CodeQualityHint[] = [];
-    const sweepDimensions: BackendSweepDim[] = [];
-    const strategyDirectives: { key: string; value: string }[] = [];
-    const warnings: string[] = [];
-    for (const w of (data.warnings || [])) {
-      if (w.startsWith('[HINT]')) {
-        try { qualityHints.push(JSON.parse(w.slice(6))); } catch { /* ignore */ }
-      } else if (w.startsWith('[SWEEP]')) {
-        try { sweepDimensions.push(JSON.parse(w.slice(7))); } catch { /* ignore */ }
-      } else if (w.startsWith('[STRATEGY]')) {
-        try { strategyDirectives.push(JSON.parse(w.slice(10))); } catch { /* ignore */ }
-      } else {
-        warnings.push(w);
-      }
-    }
-
+    // Read structured proto fields directly (Python backend — zero-trust).
+    // quality_hints, sweep_dimensions, and strategy_directives are now
+    // first-class proto message fields — no JSON-in-warnings parsing needed.
     return {
       valid: data.valid,
       errors: data.errors || [],
-      warnings,
-      qualityHints,
-      sweepDimensions,
-      strategyDirectives,
+      warnings: data.warnings || [],
+      qualityHints: (data.qualityHints || []).map((h) => ({
+        category: h.category,
+        severity: h.severity,
+        message: h.message,
+        line: h.line,
+        snippet: h.snippet,
+      })),
+      sweepDimensions: (data.sweepDimensions || []).map((d) => ({
+        key: d.key,
+        type: (d.type || 'float') as 'int' | 'float',
+        default: d.default,
+        min: d.min,
+        max: d.max,
+        step: d.step,
+        hasRange: d.hasRange,
+      })),
+      strategyDirectives: (data.strategyDirectives || []).map((d) => ({
+        key: d.key,
+        value: d.value,
+      })),
       parameters: (data.parameters || []).map((p) => ({
         key: p.key,
         required: p.required,

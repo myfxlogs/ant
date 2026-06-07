@@ -3,7 +3,6 @@ Replaces the previous FastAPI /api/strategy/execute and /api/strategy/validate R
 Protocol: POST /ant.v1.PythonStrategyService/{Execute,Validate}"""
 
 import asyncio
-import dataclasses
 import json
 import logging
 import os
@@ -16,8 +15,13 @@ from fastapi.responses import JSONResponse
 from google.protobuf.json_format import MessageToDict, Parse
 
 from app.python_strategy_pb2 import (
-    ExecuteStrategyRequest, ExecuteStrategyResponse,
-    ValidateStrategyRequest, ValidateStrategyResponse,
+    CodeQualityHint,
+    ExecuteStrategyRequest,
+    ExecuteStrategyResponse,
+    StrategyDirective,
+    SweepDimension,
+    ValidateStrategyRequest,
+    ValidateStrategyResponse,
 )
 # StrategySignal is defined in strategy_signal_messages.proto
 # (imported by python_strategy.proto via strategy_messages.proto)
@@ -65,13 +69,13 @@ _STRATEGY_RE = re.compile(
 )
 
 
-def _extract_sweep_dimensions(code: str) -> list[dict]:
+def _extract_sweep_dimensions(code: str) -> list[SweepDimension]:
     """Extract @param annotations with range info for the Smart Tuning panel.
 
     Backend zero-trust: the frontend MUST NOT parse @param itself.
     All computation happens here; frontend only renders.
     """
-    dims: list[dict] = []
+    dims: list[SweepDimension] = []
     seen: set[str] = set()
     for m in _SWEEP_RE.finditer(code or ""):
         key = m.group(1)
@@ -90,31 +94,31 @@ def _extract_sweep_dimensions(code: str) -> list[dict]:
             pmax = default
             pstep = 0
             ptype = "float" if default % 1 != 0 else "int"
-        dims.append({
-            "key": key,
-            "type": ptype,
-            "default": default,
-            "min": pmin,
-            "max": pmax,
-            "step": pstep,
-            "hasRange": has_range,
-        })
+        dims.append(SweepDimension(
+            key=key,
+            type=ptype,
+            default=default,
+            min=pmin,
+            max=pmax,
+            step=pstep,
+            has_range=has_range,
+        ))
     return dims
 
 
-def _extract_strategy_directives(code: str) -> list[dict]:
+def _extract_strategy_directives(code: str) -> list[StrategyDirective]:
     """Extract @strategy directives for the risk control display.
 
     Backend zero-trust: the frontend MUST NOT parse @strategy itself.
     """
-    dirs: list[dict] = []
+    dirs: list[StrategyDirective] = []
     seen: set[str] = set()
     for m in _STRATEGY_RE.finditer(code or ""):
         key = m.group(1)
         if key in seen:
             continue
         seen.add(key)
-        dirs.append({"key": key, "value": m.group(2)})
+        dirs.append(StrategyDirective(key=key, value=m.group(2)))
     return dirs
 
 
@@ -126,31 +130,30 @@ async def validate_strategy_connect(request: Request):
         result = validate_strategy_code(req.code or "")
         params = extract_required_params(req.code or "") if result.valid else []
 
-        # Encode quality hints + sweep dimensions as JSON in the
-        # warnings field (proto-compatible, no new proto messages needed).
-        # Frontend detects [HINT] and [SWEEP] prefixes.
-        warnings = list(result.warnings)
-        for h in result.quality_hints:
-            warnings.append(
-                "[HINT]"
-                + json.dumps(dataclasses.asdict(h), ensure_ascii=False)
+        # Convert quality hints to proto messages.
+        quality_hints = [
+            CodeQualityHint(
+                category=h.category,
+                severity=h.severity,
+                message=h.message,
+                line=h.line,
+                snippet=h.snippet,
             )
+            for h in result.quality_hints
+        ]
 
         # Extract @param sweep dimensions + @strategy directives
         # (backend zero-trust: frontend MUST NOT parse code itself).
         sweep_dims = _extract_sweep_dimensions(req.code or "")
-        if sweep_dims:
-            for dim in sweep_dims:
-                warnings.append("[SWEEP]" + json.dumps(dim, ensure_ascii=False))
         strategy_dirs = _extract_strategy_directives(req.code or "")
-        if strategy_dirs:
-            for d in strategy_dirs:
-                warnings.append("[STRATEGY]" + json.dumps(d, ensure_ascii=False))
 
         resp = ValidateStrategyResponse(
             valid=result.valid,
             errors=list(result.errors),
-            warnings=warnings,
+            warnings=list(result.warnings),
+            quality_hints=quality_hints,
+            sweep_dimensions=sweep_dims,
+            strategy_directives=strategy_dirs,
         )
     except Exception as e:
         resp = ValidateStrategyResponse(valid=False, errors=[f"验证错误: {e}"])

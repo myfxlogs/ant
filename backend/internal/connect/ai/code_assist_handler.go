@@ -187,16 +187,15 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 
 	resp, _ := parseValidationResult(result, s.log)
 
-	// Merge Python quality hints into warnings (backend zero-trust:
+	// Merge Python quality hints, sweep dimensions, and strategy
+	// directives from the Python backend (backend zero-trust:
 	// all computation in Python; Go just forwards the results).
 	if s.pythonStrategyClient != nil && resp != nil {
 		pyResp, pyErr := s.pythonStrategyClient.Validate(ctx, connect.NewRequest(&antv1.ValidateStrategyRequest{Code: code}))
 		if pyErr == nil && pyResp != nil {
-			for _, w := range pyResp.Msg.Warnings {
-				if strings.HasPrefix(w, "[HINT]") || strings.HasPrefix(w, "[SWEEP]") || strings.HasPrefix(w, "[STRATEGY]") {
-					resp.Msg.Warnings = append(resp.Msg.Warnings, w)
-				}
-			}
+			resp.Msg.QualityHints = pyResp.Msg.QualityHints
+			resp.Msg.SweepDimensions = pyResp.Msg.SweepDimensions
+			resp.Msg.StrategyDirectives = pyResp.Msg.StrategyDirectives
 		}
 	}
 

@@ -59,7 +59,7 @@ import backtest_run_query_pb2 as backtest__run__query__pb2
 import backtest_run_control_pb2 as backtest__run__control__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15python_strategy.proto\x12\x06\x61nt.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x0c\x63ommon.proto\x1a\x17strategy_messages.proto\x1a\x18\x62\x61\x63ktest_run_start.proto\x1a\x18\x62\x61\x63ktest_run_query.proto\x1a\x1a\x62\x61\x63ktest_run_control.proto\"]\n\x16\x45xecuteStrategyRequest\x12\x0c\n\x04\x63ode\x18\x01 \x01(\t\x12\x12\n\naccount_id\x18\x02 \x01(\t\x12\x0e\n\x06symbol\x18\x03 \x01(\t\x12\x11\n\ttimeframe\x18\x04 \x01(\t\"o\n\x17\x45xecuteStrategyResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12&\n\x06signal\x18\x02 \x01(\x0b\x32\x16.ant.v1.StrategySignal\x12\x0c\n\x04logs\x18\x03 \x03(\t\x12\r\n\x05\x65rror\x18\x04 \x01(\t\"\'\n\x17ValidateStrategyRequest\x12\x0c\n\x04\x63ode\x18\x01 \x01(\t\"K\n\x18ValidateStrategyResponse\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\x0e\n\x06\x65rrors\x18\x02 \x03(\t\x12\x10\n\x08warnings\x18\x03 \x03(\t\"\x9f\x01\n\x17\x42\x61\x63ktestStrategyRequest\x12\x0c\n\x04\x63ode\x18\x01 \x01(\t\x12\x12\n\naccount_id\x18\x02 \x01(\t\x12\x0e\n\x06symbol\x18\x03 \x01(\t\x12\x11\n\ttimeframe\x18\x04 \x01(\t\x12\x17\n\x0finitial_capital\x18\x05 \x01(\x01\x12\x17\n\ndataset_id\x18\x06 \x01(\tH\x00\x88\x01\x01\x42\r\n\x0b_dataset_id\"\xa2\x01\n\x18\x42\x61\x63ktestStrategyResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12(\n\x07metrics\x18\x02 \x01(\x0b\x32\x17.ant.v1.BacktestMetrics\x12\x14\n\x0c\x65quity_curve\x18\x03 \x03(\x01\x12\r\n\x05\x65rror\x18\x04 \x01(\t\x12\x17\n\ndataset_id\x18\x05 \x01(\tH\x00\x88\x01\x01\x42\r\n\x0b_dataset_id\"G\n\x1aGetPythonTemplatesResponse\x12)\n\ttemplates\x18\x01 \x03(\x0b\x32\x16.ant.v1.PythonTemplate\"A\n\x0ePythonTemplate\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x0c\n\x04\x63ode\x18\x03 \x01(\t2\xd2\x06\n\x15PythonStrategyService\x12J\n\x07\x45xecute\x12\x1e.ant.v1.ExecuteStrategyRequest\x1a\x1f.ant.v1.ExecuteStrategyResponse\x12M\n\x08Validate\x12\x1f.ant.v1.ValidateStrategyRequest\x1a .ant.v1.ValidateStrategyResponse\x12M\n\x08\x42\x61\x63ktest\x12\x1f.ant.v1.BacktestStrategyRequest\x1a .ant.v1.BacktestStrategyResponse\x12U\n\x10StartBacktestRun\x12\x1f.ant.v1.StartBacktestRunRequest\x1a .ant.v1.StartBacktestRunResponse\x12O\n\x0eGetBacktestRun\x12\x1d.ant.v1.GetBacktestRunRequest\x1a\x1e.ant.v1.GetBacktestRunResponse\x12U\n\x10ListBacktestRuns\x12\x1f.ant.v1.ListBacktestRunsRequest\x1a .ant.v1.ListBacktestRunsResponse\x12P\n\x10WatchBacktestRun\x12\x1f.ant.v1.WatchBacktestRunRequest\x1a\x19.ant.v1.BacktestRunUpdate0\x01\x12X\n\x11\x43\x61ncelBacktestRun\x12 .ant.v1.CancelBacktestRunRequest\x1a!.ant.v1.CancelBacktestRunResponse\x12X\n\x11\x44\x65leteBacktestRun\x12 .ant.v1.DeleteBacktestRunRequest\x1a!.ant.v1.DeleteBacktestRunResponse\x12J\n\x0cGetTemplates\x12\x16.google.protobuf.Empty\x1a\".ant.v1.GetPythonTemplatesResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15python_strategy.proto\x12\x06\x61nt.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x0c\x63ommon.proto\x1a\x17strategy_messages.proto\x1a\x18\x62\x61\x63ktest_run_start.proto\x1a\x18\x62\x61\x63ktest_run_query.proto\x1a\x1a\x62\x61\x63ktest_run_control.proto\"]\n\x16\x45xecuteStrategyRequest\x12\x0c\n\x04\x63ode\x18\x01 \x01(\t\x12\x12\n\naccount_id\x18\x02 \x01(\t\x12\x0e\n\x06symbol\x18\x03 \x01(\t\x12\x11\n\ttimeframe\x18\x04 \x01(\t\"o\n\x17\x45xecuteStrategyResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12&\n\x06signal\x18\x02 \x01(\x0b\x32\x16.ant.v1.StrategySignal\x12\x0c\n\x04logs\x18\x03 \x03(\t\x12\r\n\x05\x65rror\x18\x04 \x01(\t\"\'\n\x17ValidateStrategyRequest\x12\x0c\n\x04\x63ode\x18\x01 \x01(\t\"\xe5\x01\n\x18ValidateStrategyResponse\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\x0e\n\x06\x65rrors\x18\x02 \x03(\t\x12\x10\n\x08warnings\x18\x03 \x03(\t\x12.\n\rquality_hints\x18\x04 \x03(\x0b\x32\x17.ant.v1.CodeQualityHint\x12\x30\n\x10sweep_dimensions\x18\x05 \x03(\x0b\x32\x16.ant.v1.SweepDimension\x12\x36\n\x13strategy_directives\x18\x06 \x03(\x0b\x32\x19.ant.v1.StrategyDirective\"e\n\x0f\x43odeQualityHint\x12\x10\n\x08\x63\x61tegory\x18\x01 \x01(\t\x12\x10\n\x08severity\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\x0c\n\x04line\x18\x04 \x01(\x05\x12\x0f\n\x07snippet\x18\x05 \x01(\t\"w\n\x0eSweepDimension\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x12\x0f\n\x07\x64\x65\x66\x61ult\x18\x03 \x01(\x01\x12\x0b\n\x03min\x18\x04 \x01(\x01\x12\x0b\n\x03max\x18\x05 \x01(\x01\x12\x0c\n\x04step\x18\x06 \x01(\x01\x12\x11\n\thas_range\x18\x07 \x01(\x08\"/\n\x11StrategyDirective\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"\x9f\x01\n\x17\x42\x61\x63ktestStrategyRequest\x12\x0c\n\x04\x63ode\x18\x01 \x01(\t\x12\x12\n\naccount_id\x18\x02 \x01(\t\x12\x0e\n\x06symbol\x18\x03 \x01(\t\x12\x11\n\ttimeframe\x18\x04 \x01(\t\x12\x17\n\x0finitial_capital\x18\x05 \x01(\x01\x12\x17\n\ndataset_id\x18\x06 \x01(\tH\x00\x88\x01\x01\x42\r\n\x0b_dataset_id\"\xa2\x01\n\x18\x42\x61\x63ktestStrategyResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12(\n\x07metrics\x18\x02 \x01(\x0b\x32\x17.ant.v1.BacktestMetrics\x12\x14\n\x0c\x65quity_curve\x18\x03 \x03(\x01\x12\r\n\x05\x65rror\x18\x04 \x01(\t\x12\x17\n\ndataset_id\x18\x05 \x01(\tH\x00\x88\x01\x01\x42\r\n\x0b_dataset_id\"G\n\x1aGetPythonTemplatesResponse\x12)\n\ttemplates\x18\x01 \x03(\x0b\x32\x16.ant.v1.PythonTemplate\"A\n\x0ePythonTemplate\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x0c\n\x04\x63ode\x18\x03 \x01(\t2\xd2\x06\n\x15PythonStrategyService\x12J\n\x07\x45xecute\x12\x1e.ant.v1.ExecuteStrategyRequest\x1a\x1f.ant.v1.ExecuteStrategyResponse\x12M\n\x08Validate\x12\x1f.ant.v1.ValidateStrategyRequest\x1a .ant.v1.ValidateStrategyResponse\x12M\n\x08\x42\x61\x63ktest\x12\x1f.ant.v1.BacktestStrategyRequest\x1a .ant.v1.BacktestStrategyResponse\x12U\n\x10StartBacktestRun\x12\x1f.ant.v1.StartBacktestRunRequest\x1a .ant.v1.StartBacktestRunResponse\x12O\n\x0eGetBacktestRun\x12\x1d.ant.v1.GetBacktestRunRequest\x1a\x1e.ant.v1.GetBacktestRunResponse\x12U\n\x10ListBacktestRuns\x12\x1f.ant.v1.ListBacktestRunsRequest\x1a .ant.v1.ListBacktestRunsResponse\x12P\n\x10WatchBacktestRun\x12\x1f.ant.v1.WatchBacktestRunRequest\x1a\x19.ant.v1.BacktestRunUpdate0\x01\x12X\n\x11\x43\x61ncelBacktestRun\x12 .ant.v1.CancelBacktestRunRequest\x1a!.ant.v1.CancelBacktestRunResponse\x12X\n\x11\x44\x65leteBacktestRun\x12 .ant.v1.DeleteBacktestRunRequest\x1a!.ant.v1.DeleteBacktestRunResponse\x12J\n\x0cGetTemplates\x12\x16.google.protobuf.Empty\x1a\".ant.v1.GetPythonTemplatesResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'python_strategy_pb2', globals())
@@ -73,16 +73,22 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _EXECUTESTRATEGYRESPONSE._serialized_end=387
   _VALIDATESTRATEGYREQUEST._serialized_start=389
   _VALIDATESTRATEGYREQUEST._serialized_end=428
-  _VALIDATESTRATEGYRESPONSE._serialized_start=430
-  _VALIDATESTRATEGYRESPONSE._serialized_end=505
-  _BACKTESTSTRATEGYREQUEST._serialized_start=508
-  _BACKTESTSTRATEGYREQUEST._serialized_end=667
-  _BACKTESTSTRATEGYRESPONSE._serialized_start=670
-  _BACKTESTSTRATEGYRESPONSE._serialized_end=832
-  _GETPYTHONTEMPLATESRESPONSE._serialized_start=834
-  _GETPYTHONTEMPLATESRESPONSE._serialized_end=905
-  _PYTHONTEMPLATE._serialized_start=907
-  _PYTHONTEMPLATE._serialized_end=972
-  _PYTHONSTRATEGYSERVICE._serialized_start=975
-  _PYTHONSTRATEGYSERVICE._serialized_end=1825
+  _VALIDATESTRATEGYRESPONSE._serialized_start=431
+  _VALIDATESTRATEGYRESPONSE._serialized_end=660
+  _CODEQUALITYHINT._serialized_start=662
+  _CODEQUALITYHINT._serialized_end=763
+  _SWEEPDIMENSION._serialized_start=765
+  _SWEEPDIMENSION._serialized_end=884
+  _STRATEGYDIRECTIVE._serialized_start=886
+  _STRATEGYDIRECTIVE._serialized_end=933
+  _BACKTESTSTRATEGYREQUEST._serialized_start=936
+  _BACKTESTSTRATEGYREQUEST._serialized_end=1095
+  _BACKTESTSTRATEGYRESPONSE._serialized_start=1098
+  _BACKTESTSTRATEGYRESPONSE._serialized_end=1260
+  _GETPYTHONTEMPLATESRESPONSE._serialized_start=1262
+  _GETPYTHONTEMPLATESRESPONSE._serialized_end=1333
+  _PYTHONTEMPLATE._serialized_start=1335
+  _PYTHONTEMPLATE._serialized_end=1400
+  _PYTHONSTRATEGYSERVICE._serialized_start=1403
+  _PYTHONSTRATEGYSERVICE._serialized_end=2253
 # @@protoc_insertion_point(module_scope)

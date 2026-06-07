@@ -22,7 +22,7 @@ import type { StrategySignal } from "./strategy_signal_messages_pb";
  * Describes the file python_strategy.proto.
  */
 export const file_python_strategy: GenFile = /*@__PURE__*/
-  fileDesc("ChVweXRob25fc3RyYXRlZ3kucHJvdG8SBmFudC52MSJdChZFeGVjdXRlU3RyYXRlZ3lSZXF1ZXN0EgwKBGNvZGUYASABKAkSEgoKYWNjb3VudF9pZBgCIAEoCRIOCgZzeW1ib2wYAyABKAkSEQoJdGltZWZyYW1lGAQgASgJIm8KF0V4ZWN1dGVTdHJhdGVneVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSJgoGc2lnbmFsGAIgASgLMhYuYW50LnYxLlN0cmF0ZWd5U2lnbmFsEgwKBGxvZ3MYAyADKAkSDQoFZXJyb3IYBCABKAkiJwoXVmFsaWRhdGVTdHJhdGVneVJlcXVlc3QSDAoEY29kZRgBIAEoCSJLChhWYWxpZGF0ZVN0cmF0ZWd5UmVzcG9uc2USDQoFdmFsaWQYASABKAgSDgoGZXJyb3JzGAIgAygJEhAKCHdhcm5pbmdzGAMgAygJIp8BChdCYWNrdGVzdFN0cmF0ZWd5UmVxdWVzdBIMCgRjb2RlGAEgASgJEhIKCmFjY291bnRfaWQYAiABKAkSDgoGc3ltYm9sGAMgASgJEhEKCXRpbWVmcmFtZRgEIAEoCRIXCg9pbml0aWFsX2NhcGl0YWwYBSABKAESFwoKZGF0YXNldF9pZBgGIAEoCUgAiAEBQg0KC19kYXRhc2V0X2lkIqIBChhCYWNrdGVzdFN0cmF0ZWd5UmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCBIoCgdtZXRyaWNzGAIgASgLMhcuYW50LnYxLkJhY2t0ZXN0TWV0cmljcxIUCgxlcXVpdHlfY3VydmUYAyADKAESDQoFZXJyb3IYBCABKAkSFwoKZGF0YXNldF9pZBgFIAEoCUgAiAEBQg0KC19kYXRhc2V0X2lkIkcKGkdldFB5dGhvblRlbXBsYXRlc1Jlc3BvbnNlEikKCXRlbXBsYXRlcxgBIAMoCzIWLmFudC52MS5QeXRob25UZW1wbGF0ZSJBCg5QeXRob25UZW1wbGF0ZRIMCgRuYW1lGAEgASgJEhMKC2Rlc2NyaXB0aW9uGAIgASgJEgwKBGNvZGUYAyABKAky0gYKFVB5dGhvblN0cmF0ZWd5U2VydmljZRJKCgdFeGVjdXRlEh4uYW50LnYxLkV4ZWN1dGVTdHJhdGVneVJlcXVlc3QaHy5hbnQudjEuRXhlY3V0ZVN0cmF0ZWd5UmVzcG9uc2USTQoIVmFsaWRhdGUSHy5hbnQudjEuVmFsaWRhdGVTdHJhdGVneVJlcXVlc3QaIC5hbnQudjEuVmFsaWRhdGVTdHJhdGVneVJlc3BvbnNlEk0KCEJhY2t0ZXN0Eh8uYW50LnYxLkJhY2t0ZXN0U3RyYXRlZ3lSZXF1ZXN0GiAuYW50LnYxLkJhY2t0ZXN0U3RyYXRlZ3lSZXNwb25zZRJVChBTdGFydEJhY2t0ZXN0UnVuEh8uYW50LnYxLlN0YXJ0QmFja3Rlc3RSdW5SZXF1ZXN0GiAuYW50LnYxLlN0YXJ0QmFja3Rlc3RSdW5SZXNwb25zZRJPCg5HZXRCYWNrdGVzdFJ1bhIdLmFudC52MS5HZXRCYWNrdGVzdFJ1blJlcXVlc3QaHi5hbnQudjEuR2V0QmFja3Rlc3RSdW5SZXNwb25zZRJVChBMaXN0QmFja3Rlc3RSdW5zEh8uYW50LnYxLkxpc3RCYWNrdGVzdFJ1bnNSZXF1ZXN0GiAuYW50LnYxLkxpc3RCYWNrdGVzdFJ1bnNSZXNwb25zZRJQChBXYXRjaEJhY2t0ZXN0UnVuEh8uYW50LnYxLldhdGNoQmFja3Rlc3RSdW5SZXF1ZXN0GhkuYW50LnYxLkJhY2t0ZXN0UnVuVXBkYXRlMAESWAoRQ2FuY2VsQmFja3Rlc3RSdW4SIC5hbnQudjEuQ2FuY2VsQmFja3Rlc3RSdW5SZXF1ZXN0GiEuYW50LnYxLkNhbmNlbEJhY2t0ZXN0UnVuUmVzcG9uc2USWAoRRGVsZXRlQmFja3Rlc3RSdW4SIC5hbnQudjEuRGVsZXRlQmFja3Rlc3RSdW5SZXF1ZXN0GiEuYW50LnYxLkRlbGV0ZUJhY2t0ZXN0UnVuUmVzcG9uc2USSgoMR2V0VGVtcGxhdGVzEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GiIuYW50LnYxLkdldFB5dGhvblRlbXBsYXRlc1Jlc3BvbnNlQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_empty, file_common, file_strategy_messages, file_backtest_run_start, file_backtest_run_query, file_backtest_run_control]);
+  fileDesc("ChVweXRob25fc3RyYXRlZ3kucHJvdG8SBmFudC52MSJdChZFeGVjdXRlU3RyYXRlZ3lSZXF1ZXN0EgwKBGNvZGUYASABKAkSEgoKYWNjb3VudF9pZBgCIAEoCRIOCgZzeW1ib2wYAyABKAkSEQoJdGltZWZyYW1lGAQgASgJIm8KF0V4ZWN1dGVTdHJhdGVneVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSJgoGc2lnbmFsGAIgASgLMhYuYW50LnYxLlN0cmF0ZWd5U2lnbmFsEgwKBGxvZ3MYAyADKAkSDQoFZXJyb3IYBCABKAkiJwoXVmFsaWRhdGVTdHJhdGVneVJlcXVlc3QSDAoEY29kZRgBIAEoCSLlAQoYVmFsaWRhdGVTdHJhdGVneVJlc3BvbnNlEg0KBXZhbGlkGAEgASgIEg4KBmVycm9ycxgCIAMoCRIQCgh3YXJuaW5ncxgDIAMoCRIuCg1xdWFsaXR5X2hpbnRzGAQgAygLMhcuYW50LnYxLkNvZGVRdWFsaXR5SGludBIwChBzd2VlcF9kaW1lbnNpb25zGAUgAygLMhYuYW50LnYxLlN3ZWVwRGltZW5zaW9uEjYKE3N0cmF0ZWd5X2RpcmVjdGl2ZXMYBiADKAsyGS5hbnQudjEuU3RyYXRlZ3lEaXJlY3RpdmUiZQoPQ29kZVF1YWxpdHlIaW50EhAKCGNhdGVnb3J5GAEgASgJEhAKCHNldmVyaXR5GAIgASgJEg8KB21lc3NhZ2UYAyABKAkSDAoEbGluZRgEIAEoBRIPCgdzbmlwcGV0GAUgASgJIncKDlN3ZWVwRGltZW5zaW9uEgsKA2tleRgBIAEoCRIMCgR0eXBlGAIgASgJEg8KB2RlZmF1bHQYAyABKAESCwoDbWluGAQgASgBEgsKA21heBgFIAEoARIMCgRzdGVwGAYgASgBEhEKCWhhc19yYW5nZRgHIAEoCCIvChFTdHJhdGVneURpcmVjdGl2ZRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAkinwEKF0JhY2t0ZXN0U3RyYXRlZ3lSZXF1ZXN0EgwKBGNvZGUYASABKAkSEgoKYWNjb3VudF9pZBgCIAEoCRIOCgZzeW1ib2wYAyABKAkSEQoJdGltZWZyYW1lGAQgASgJEhcKD2luaXRpYWxfY2FwaXRhbBgFIAEoARIXCgpkYXRhc2V0X2lkGAYgASgJSACIAQFCDQoLX2RhdGFzZXRfaWQiogEKGEJhY2t0ZXN0U3RyYXRlZ3lSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEigKB21ldHJpY3MYAiABKAsyFy5hbnQudjEuQmFja3Rlc3RNZXRyaWNzEhQKDGVxdWl0eV9jdXJ2ZRgDIAMoARINCgVlcnJvchgEIAEoCRIXCgpkYXRhc2V0X2lkGAUgASgJSACIAQFCDQoLX2RhdGFzZXRfaWQiRwoaR2V0UHl0aG9uVGVtcGxhdGVzUmVzcG9uc2USKQoJdGVtcGxhdGVzGAEgAygLMhYuYW50LnYxLlB5dGhvblRlbXBsYXRlIkEKDlB5dGhvblRlbXBsYXRlEgwKBG5hbWUYASABKAkSEwoLZGVzY3JpcHRpb24YAiABKAkSDAoEY29kZRgDIAEoCTLSBgoVUHl0aG9uU3RyYXRlZ3lTZXJ2aWNlEkoKB0V4ZWN1dGUSHi5hbnQudjEuRXhlY3V0ZVN0cmF0ZWd5UmVxdWVzdBofLmFudC52MS5FeGVjdXRlU3RyYXRlZ3lSZXNwb25zZRJNCghWYWxpZGF0ZRIfLmFudC52MS5WYWxpZGF0ZVN0cmF0ZWd5UmVxdWVzdBogLmFudC52MS5WYWxpZGF0ZVN0cmF0ZWd5UmVzcG9uc2USTQoIQmFja3Rlc3QSHy5hbnQudjEuQmFja3Rlc3RTdHJhdGVneVJlcXVlc3QaIC5hbnQudjEuQmFja3Rlc3RTdHJhdGVneVJlc3BvbnNlElUKEFN0YXJ0QmFja3Rlc3RSdW4SHy5hbnQudjEuU3RhcnRCYWNrdGVzdFJ1blJlcXVlc3QaIC5hbnQudjEuU3RhcnRCYWNrdGVzdFJ1blJlc3BvbnNlEk8KDkdldEJhY2t0ZXN0UnVuEh0uYW50LnYxLkdldEJhY2t0ZXN0UnVuUmVxdWVzdBoeLmFudC52MS5HZXRCYWNrdGVzdFJ1blJlc3BvbnNlElUKEExpc3RCYWNrdGVzdFJ1bnMSHy5hbnQudjEuTGlzdEJhY2t0ZXN0UnVuc1JlcXVlc3QaIC5hbnQudjEuTGlzdEJhY2t0ZXN0UnVuc1Jlc3BvbnNlElAKEFdhdGNoQmFja3Rlc3RSdW4SHy5hbnQudjEuV2F0Y2hCYWNrdGVzdFJ1blJlcXVlc3QaGS5hbnQudjEuQmFja3Rlc3RSdW5VcGRhdGUwARJYChFDYW5jZWxCYWNrdGVzdFJ1bhIgLmFudC52MS5DYW5jZWxCYWNrdGVzdFJ1blJlcXVlc3QaIS5hbnQudjEuQ2FuY2VsQmFja3Rlc3RSdW5SZXNwb25zZRJYChFEZWxldGVCYWNrdGVzdFJ1bhIgLmFudC52MS5EZWxldGVCYWNrdGVzdFJ1blJlcXVlc3QaIS5hbnQudjEuRGVsZXRlQmFja3Rlc3RSdW5SZXNwb25zZRJKCgxHZXRUZW1wbGF0ZXMSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaIi5hbnQudjEuR2V0UHl0aG9uVGVtcGxhdGVzUmVzcG9uc2VCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_empty, file_common, file_strategy_messages, file_backtest_run_start, file_backtest_run_query, file_backtest_run_control]);
 
 /**
  * @generated from message ant.v1.ExecuteStrategyRequest
@@ -123,6 +123,21 @@ export type ValidateStrategyResponse = Message<"ant.v1.ValidateStrategyResponse"
    * @generated from field: repeated string warnings = 3;
    */
   warnings: string[];
+
+  /**
+   * @generated from field: repeated ant.v1.CodeQualityHint quality_hints = 4;
+   */
+  qualityHints: CodeQualityHint[];
+
+  /**
+   * @generated from field: repeated ant.v1.SweepDimension sweep_dimensions = 5;
+   */
+  sweepDimensions: SweepDimension[];
+
+  /**
+   * @generated from field: repeated ant.v1.StrategyDirective strategy_directives = 6;
+   */
+  strategyDirectives: StrategyDirective[];
 };
 
 /**
@@ -131,6 +146,132 @@ export type ValidateStrategyResponse = Message<"ant.v1.ValidateStrategyResponse"
  */
 export const ValidateStrategyResponseSchema: GenMessage<ValidateStrategyResponse> = /*@__PURE__*/
   messageDesc(file_python_strategy, 3);
+
+/**
+ * CodeQualityHint reports a single code quality issue found by static analysis.
+ *
+ * @generated from message ant.v1.CodeQualityHint
+ */
+export type CodeQualityHint = Message<"ant.v1.CodeQualityHint"> & {
+  /**
+   * Category enum: "FUTURE_DATA_LEAK" | "MISSING_PARAM" | "UNREAD_PARAM"
+   *
+   * @generated from field: string category = 1;
+   */
+  category: string;
+
+  /**
+   * Severity: "error" | "warn" | "info"
+   *
+   * @generated from field: string severity = 2;
+   */
+  severity: string;
+
+  /**
+   * Human-readable message (Chinese preferred)
+   *
+   * @generated from field: string message = 3;
+   */
+  message: string;
+
+  /**
+   * Approximate 1-based line number
+   *
+   * @generated from field: int32 line = 4;
+   */
+  line: number;
+
+  /**
+   * Problematic code fragment
+   *
+   * @generated from field: string snippet = 5;
+   */
+  snippet: string;
+};
+
+/**
+ * Describes the message ant.v1.CodeQualityHint.
+ * Use `create(CodeQualityHintSchema)` to create a new message.
+ */
+export const CodeQualityHintSchema: GenMessage<CodeQualityHint> = /*@__PURE__*/
+  messageDesc(file_python_strategy, 4);
+
+/**
+ * SweepDimension describes a single parameter dimension for Smart Tuning.
+ * Extracted from @param annotations by the Python backend (zero-trust).
+ *
+ * @generated from message ant.v1.SweepDimension
+ */
+export type SweepDimension = Message<"ant.v1.SweepDimension"> & {
+  /**
+   * @generated from field: string key = 1;
+   */
+  key: string;
+
+  /**
+   * "int" | "float"
+   *
+   * @generated from field: string type = 2;
+   */
+  type: string;
+
+  /**
+   * @generated from field: double default = 3;
+   */
+  default: number;
+
+  /**
+   * @generated from field: double min = 4;
+   */
+  min: number;
+
+  /**
+   * @generated from field: double max = 5;
+   */
+  max: number;
+
+  /**
+   * @generated from field: double step = 6;
+   */
+  step: number;
+
+  /**
+   * @generated from field: bool has_range = 7;
+   */
+  hasRange: boolean;
+};
+
+/**
+ * Describes the message ant.v1.SweepDimension.
+ * Use `create(SweepDimensionSchema)` to create a new message.
+ */
+export const SweepDimensionSchema: GenMessage<SweepDimension> = /*@__PURE__*/
+  messageDesc(file_python_strategy, 5);
+
+/**
+ * StrategyDirective is a key-value directive from @strategy annotations.
+ * Extracted by the Python backend (zero-trust).
+ *
+ * @generated from message ant.v1.StrategyDirective
+ */
+export type StrategyDirective = Message<"ant.v1.StrategyDirective"> & {
+  /**
+   * @generated from field: string key = 1;
+   */
+  key: string;
+
+  /**
+   * @generated from field: string value = 2;
+   */
+  value: string;
+};
+
+/**
+ * Describes the message ant.v1.StrategyDirective.
+ * Use `create(StrategyDirectiveSchema)` to create a new message.
+ */
+export const StrategyDirectiveSchema: GenMessage<StrategyDirective> = /*@__PURE__*/
+  messageDesc(file_python_strategy, 6);
 
 /**
  * @generated from message ant.v1.BacktestStrategyRequest
@@ -172,7 +313,7 @@ export type BacktestStrategyRequest = Message<"ant.v1.BacktestStrategyRequest"> 
  * Use `create(BacktestStrategyRequestSchema)` to create a new message.
  */
 export const BacktestStrategyRequestSchema: GenMessage<BacktestStrategyRequest> = /*@__PURE__*/
-  messageDesc(file_python_strategy, 4);
+  messageDesc(file_python_strategy, 7);
 
 /**
  * @generated from message ant.v1.BacktestStrategyResponse
@@ -209,7 +350,7 @@ export type BacktestStrategyResponse = Message<"ant.v1.BacktestStrategyResponse"
  * Use `create(BacktestStrategyResponseSchema)` to create a new message.
  */
 export const BacktestStrategyResponseSchema: GenMessage<BacktestStrategyResponse> = /*@__PURE__*/
-  messageDesc(file_python_strategy, 5);
+  messageDesc(file_python_strategy, 8);
 
 /**
  * @generated from message ant.v1.GetPythonTemplatesResponse
@@ -226,7 +367,7 @@ export type GetPythonTemplatesResponse = Message<"ant.v1.GetPythonTemplatesRespo
  * Use `create(GetPythonTemplatesResponseSchema)` to create a new message.
  */
 export const GetPythonTemplatesResponseSchema: GenMessage<GetPythonTemplatesResponse> = /*@__PURE__*/
-  messageDesc(file_python_strategy, 6);
+  messageDesc(file_python_strategy, 9);
 
 /**
  * @generated from message ant.v1.PythonTemplate
@@ -253,7 +394,7 @@ export type PythonTemplate = Message<"ant.v1.PythonTemplate"> & {
  * Use `create(PythonTemplateSchema)` to create a new message.
  */
 export const PythonTemplateSchema: GenMessage<PythonTemplate> = /*@__PURE__*/
-  messageDesc(file_python_strategy, 7);
+  messageDesc(file_python_strategy, 10);
 
 /**
  * @generated from service ant.v1.PythonStrategyService

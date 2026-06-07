@@ -4,6 +4,8 @@ package ant.v1;
 
 option go_package = "anttrader/gen/proto/ant/v1;antv1";
 
+import "python_strategy.proto";
+
 service CodeAssistService {
   rpc ReviseCode(ReviseCodeRequest) returns (ReviseCodeResponse);
   rpc ReviseCodeStream(ReviseCodeRequest) returns (stream ReviseCodeStreamChunk);
@@ -53,6 +55,12 @@ message ValidateStrategyExtendedResponse {
   repeated string errors = 2;
   repeated string warnings = 3;
   repeated RequiredParamSpec parameters = 4;
+  // Code quality hints from Python static analysis (zero-trust).
+  repeated CodeQualityHint quality_hints = 5;
+  // Sweep dimensions from @param annotations (zero-trust).
+  repeated SweepDimension sweep_dimensions = 6;
+  // Strategy directives from @strategy annotations (zero-trust).
+  repeated StrategyDirective strategy_directives = 7;
 }
 
 message RequiredParamSpec {

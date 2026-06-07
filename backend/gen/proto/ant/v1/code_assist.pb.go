@@ -402,13 +402,19 @@ func (x *ValidateStrategyExtendedRequest) GetCode() string {
 }
 
 type ValidateStrategyExtendedResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Valid         bool                   `protobuf:"varint,1,opt,name=valid,proto3" json:"valid,omitempty"`
-	Errors        []string               `protobuf:"bytes,2,rep,name=errors,proto3" json:"errors,omitempty"`
-	Warnings      []string               `protobuf:"bytes,3,rep,name=warnings,proto3" json:"warnings,omitempty"`
-	Parameters    []*RequiredParamSpec   `protobuf:"bytes,4,rep,name=parameters,proto3" json:"parameters,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	Valid      bool                   `protobuf:"varint,1,opt,name=valid,proto3" json:"valid,omitempty"`
+	Errors     []string               `protobuf:"bytes,2,rep,name=errors,proto3" json:"errors,omitempty"`
+	Warnings   []string               `protobuf:"bytes,3,rep,name=warnings,proto3" json:"warnings,omitempty"`
+	Parameters []*RequiredParamSpec   `protobuf:"bytes,4,rep,name=parameters,proto3" json:"parameters,omitempty"`
+	// Code quality hints from Python static analysis (zero-trust).
+	QualityHints []*CodeQualityHint `protobuf:"bytes,5,rep,name=quality_hints,json=qualityHints,proto3" json:"quality_hints,omitempty"`
+	// Sweep dimensions from @param annotations (zero-trust).
+	SweepDimensions []*SweepDimension `protobuf:"bytes,6,rep,name=sweep_dimensions,json=sweepDimensions,proto3" json:"sweep_dimensions,omitempty"`
+	// Strategy directives from @strategy annotations (zero-trust).
+	StrategyDirectives []*StrategyDirective `protobuf:"bytes,7,rep,name=strategy_directives,json=strategyDirectives,proto3" json:"strategy_directives,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *ValidateStrategyExtendedResponse) Reset() {
@@ -465,6 +471,27 @@ func (x *ValidateStrategyExtendedResponse) GetWarnings() []string {
 func (x *ValidateStrategyExtendedResponse) GetParameters() []*RequiredParamSpec {
 	if x != nil {
 		return x.Parameters
+	}
+	return nil
+}
+
+func (x *ValidateStrategyExtendedResponse) GetQualityHints() []*CodeQualityHint {
+	if x != nil {
+		return x.QualityHints
+	}
+	return nil
+}
+
+func (x *ValidateStrategyExtendedResponse) GetSweepDimensions() []*SweepDimension {
+	if x != nil {
+		return x.SweepDimensions
+	}
+	return nil
+}
+
+func (x *ValidateStrategyExtendedResponse) GetStrategyDirectives() []*StrategyDirective {
+	if x != nil {
+		return x.StrategyDirectives
 	}
 	return nil
 }
@@ -549,7 +576,7 @@ var File_code_assist_proto protoreflect.FileDescriptor
 
 const file_code_assist_proto_rawDesc = "" +
 	"\n" +
-	"\x11code_assist.proto\x12\x06ant.v1\"?\n" +
+	"\x11code_assist.proto\x12\x06ant.v1\x1a\x15python_strategy.proto\"?\n" +
 	"\x0fCodeChatMessage\x12\x12\n" +
 	"\x04role\x18\x01 \x01(\tR\x04role\x12\x18\n" +
 	"\acontent\x18\x02 \x01(\tR\acontent\"\xb3\x01\n" +
@@ -573,14 +600,17 @@ const file_code_assist_proto_rawDesc = "" +
 	"\x13ExplainCodeResponse\x12 \n" +
 	"\vexplanation\x18\x01 \x01(\tR\vexplanation\"5\n" +
 	"\x1fValidateStrategyExtendedRequest\x12\x12\n" +
-	"\x04code\x18\x01 \x01(\tR\x04code\"\xa7\x01\n" +
+	"\x04code\x18\x01 \x01(\tR\x04code\"\xf4\x02\n" +
 	" ValidateStrategyExtendedResponse\x12\x14\n" +
 	"\x05valid\x18\x01 \x01(\bR\x05valid\x12\x16\n" +
 	"\x06errors\x18\x02 \x03(\tR\x06errors\x12\x1a\n" +
 	"\bwarnings\x18\x03 \x03(\tR\bwarnings\x129\n" +
 	"\n" +
 	"parameters\x18\x04 \x03(\v2\x19.ant.v1.RequiredParamSpecR\n" +
-	"parameters\"\xa3\x01\n" +
+	"parameters\x12<\n" +
+	"\rquality_hints\x18\x05 \x03(\v2\x17.ant.v1.CodeQualityHintR\fqualityHints\x12A\n" +
+	"\x10sweep_dimensions\x18\x06 \x03(\v2\x16.ant.v1.SweepDimensionR\x0fsweepDimensions\x12J\n" +
+	"\x13strategy_directives\x18\a \x03(\v2\x19.ant.v1.StrategyDirectiveR\x12strategyDirectives\"\xa3\x01\n" +
 	"\x11RequiredParamSpec\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x1a\n" +
 	"\brequired\x18\x02 \x01(\bR\brequired\x12#\n" +
@@ -617,23 +647,29 @@ var file_code_assist_proto_goTypes = []any{
 	(*ValidateStrategyExtendedRequest)(nil),  // 6: ant.v1.ValidateStrategyExtendedRequest
 	(*ValidateStrategyExtendedResponse)(nil), // 7: ant.v1.ValidateStrategyExtendedResponse
 	(*RequiredParamSpec)(nil),                // 8: ant.v1.RequiredParamSpec
+	(*CodeQualityHint)(nil),                  // 9: ant.v1.CodeQualityHint
+	(*SweepDimension)(nil),                   // 10: ant.v1.SweepDimension
+	(*StrategyDirective)(nil),                // 11: ant.v1.StrategyDirective
 }
 var file_code_assist_proto_depIdxs = []int32{
-	0, // 0: ant.v1.ReviseCodeRequest.history:type_name -> ant.v1.CodeChatMessage
-	8, // 1: ant.v1.ValidateStrategyExtendedResponse.parameters:type_name -> ant.v1.RequiredParamSpec
-	1, // 2: ant.v1.CodeAssistService.ReviseCode:input_type -> ant.v1.ReviseCodeRequest
-	1, // 3: ant.v1.CodeAssistService.ReviseCodeStream:input_type -> ant.v1.ReviseCodeRequest
-	4, // 4: ant.v1.CodeAssistService.ExplainCode:input_type -> ant.v1.ExplainCodeRequest
-	6, // 5: ant.v1.CodeAssistService.ValidateStrategyExtended:input_type -> ant.v1.ValidateStrategyExtendedRequest
-	2, // 6: ant.v1.CodeAssistService.ReviseCode:output_type -> ant.v1.ReviseCodeResponse
-	3, // 7: ant.v1.CodeAssistService.ReviseCodeStream:output_type -> ant.v1.ReviseCodeStreamChunk
-	5, // 8: ant.v1.CodeAssistService.ExplainCode:output_type -> ant.v1.ExplainCodeResponse
-	7, // 9: ant.v1.CodeAssistService.ValidateStrategyExtended:output_type -> ant.v1.ValidateStrategyExtendedResponse
-	6, // [6:10] is the sub-list for method output_type
-	2, // [2:6] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	0,  // 0: ant.v1.ReviseCodeRequest.history:type_name -> ant.v1.CodeChatMessage
+	8,  // 1: ant.v1.ValidateStrategyExtendedResponse.parameters:type_name -> ant.v1.RequiredParamSpec
+	9,  // 2: ant.v1.ValidateStrategyExtendedResponse.quality_hints:type_name -> ant.v1.CodeQualityHint
+	10, // 3: ant.v1.ValidateStrategyExtendedResponse.sweep_dimensions:type_name -> ant.v1.SweepDimension
+	11, // 4: ant.v1.ValidateStrategyExtendedResponse.strategy_directives:type_name -> ant.v1.StrategyDirective
+	1,  // 5: ant.v1.CodeAssistService.ReviseCode:input_type -> ant.v1.ReviseCodeRequest
+	1,  // 6: ant.v1.CodeAssistService.ReviseCodeStream:input_type -> ant.v1.ReviseCodeRequest
+	4,  // 7: ant.v1.CodeAssistService.ExplainCode:input_type -> ant.v1.ExplainCodeRequest
+	6,  // 8: ant.v1.CodeAssistService.ValidateStrategyExtended:input_type -> ant.v1.ValidateStrategyExtendedRequest
+	2,  // 9: ant.v1.CodeAssistService.ReviseCode:output_type -> ant.v1.ReviseCodeResponse
+	3,  // 10: ant.v1.CodeAssistService.ReviseCodeStream:output_type -> ant.v1.ReviseCodeStreamChunk
+	5,  // 11: ant.v1.CodeAssistService.ExplainCode:output_type -> ant.v1.ExplainCodeResponse
+	7,  // 12: ant.v1.CodeAssistService.ValidateStrategyExtended:output_type -> ant.v1.ValidateStrategyExtendedResponse
+	9,  // [9:13] is the sub-list for method output_type
+	5,  // [5:9] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_code_assist_proto_init() }
@@ -641,6 +677,7 @@ func file_code_assist_proto_init() {
 	if File_code_assist_proto != nil {
 		return
 	}
+	file_python_strategy_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

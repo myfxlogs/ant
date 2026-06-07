@@ -46,6 +46,43 @@ message ValidateStrategyResponse {
   bool valid = 1;
   repeated string errors = 2;
   repeated string warnings = 3;
+  repeated CodeQualityHint quality_hints = 4;
+  repeated SweepDimension sweep_dimensions = 5;
+  repeated StrategyDirective strategy_directives = 6;
+}
+
+// CodeQualityHint reports a single code quality issue found by static analysis.
+message CodeQualityHint {
+  // Category enum: "FUTURE_DATA_LEAK" | "MISSING_PARAM" | "UNREAD_PARAM"
+  string category = 1;
+  // Severity: "error" | "warn" | "info"
+  string severity = 2;
+  // Human-readable message (Chinese preferred)
+  string message = 3;
+  // Approximate 1-based line number
+  int32 line = 4;
+  // Problematic code fragment
+  string snippet = 5;
+}
+
+// SweepDimension describes a single parameter dimension for Smart Tuning.
+// Extracted from @param annotations by the Python backend (zero-trust).
+message SweepDimension {
+  string key = 1;
+  // "int" | "float"
+  string type = 2;
+  double default = 3;
+  double min = 4;
+  double max = 5;
+  double step = 6;
+  bool has_range = 7;
+}
+
+// StrategyDirective is a key-value directive from @strategy annotations.
+// Extracted by the Python backend (zero-trust).
+message StrategyDirective {
+  string key = 1;
+  string value = 2;
 }
 
 message BacktestStrategyRequest {
