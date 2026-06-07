@@ -77,7 +77,7 @@ func doChatRequest(model string, messages []ChatMessage, stream bool, endpoint, 
 	reqBody := ChatCompletionRequest{
 		Model:       model,
 		Messages:    messages,
-		MaxTokens:   4096,
+		MaxTokens:   8192,
 		Temperature: 0.3,
 		Stream:      stream,
 	}

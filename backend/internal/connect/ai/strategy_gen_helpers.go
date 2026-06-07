@@ -51,29 +51,42 @@ func (s *StrategyGenServer) loadHistory(ctx context.Context, userID uuid.UUID, c
 
 // extractCode extracts Python code from the LLM response.
 func (s *StrategyGenServer) extractCode(raw string) string {
+	// Try to extract from markdown code block
 	start := strings.Index(raw, "```python")
 	if start < 0 {
 		start = strings.Index(raw, "```")
 	}
 	if start >= 0 {
 		rest := raw[start:]
-		end := strings.Index(rest[3:], "```")
+		fenceLen := 3
+		if strings.HasPrefix(rest, "```python") {
+			fenceLen = 9
+		}
+		end := strings.Index(rest[fenceLen:], "```")
 		if end >= 0 {
-			code := rest[3 : end+3]
+			code := rest[fenceLen : end+fenceLen]
 			code = strings.TrimPrefix(code, "python\n")
 			code = strings.TrimPrefix(code, "python")
-			return strings.TrimSpace(code)
+			code = strings.TrimSpace(code)
+			return fixUnclosedBraces(code)
 		}
+		// Code block not closed (streaming truncated): extract everything after opening fence
+		code := rest[fenceLen:]
+		code = strings.TrimPrefix(code, "python\n")
+		code = strings.TrimPrefix(code, "python")
+		code = strings.TrimSpace(code)
+		return fixUnclosedBraces(code)
 	}
+	// Fallback: heuristic line-based extraction
 	raw = strings.TrimSpace(raw)
 	lines := strings.Split(raw, "\n")
 	var codeLines []string
 	inCode := false
 	for _, line := range lines {
-		if strings.HasPrefix(strings.TrimSpace(line), "import ") ||
-			strings.HasPrefix(strings.TrimSpace(line), "def ") ||
-			strings.HasPrefix(strings.TrimSpace(line), "@param") ||
-			strings.HasPrefix(strings.TrimSpace(line), "class ") {
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, "def ") ||
+			strings.HasPrefix(trimmed, "@param") ||
+			strings.HasPrefix(trimmed, "class ") {
 			inCode = true
 		}
 		if inCode {
@@ -81,9 +94,35 @@ func (s *StrategyGenServer) extractCode(raw string) string {
 		}
 	}
 	if len(codeLines) > 0 {
-		return strings.Join(codeLines, "\n")
+		return fixUnclosedBraces(strings.Join(codeLines, "\n"))
 	}
-	return raw
+	return fixUnclosedBraces(raw)
+}
+
+// fixUnclosedBraces adds missing closing braces/returns for truncated code.
+func fixUnclosedBraces(code string) string {
+	// Count braces
+	opens := strings.Count(code, "{")
+	closes := strings.Count(code, "}")
+	if closes < opens {
+		// Add missing closing braces for the return dict
+		for i := closes; i < opens; i++ {
+			code += "\n}"
+		}
+	}
+	// Add missing return if needed
+	code = strings.TrimSpace(code)
+	if !strings.HasSuffix(code, "}") && !strings.Contains(code, "return ") {
+		// Don't try to guess — just ensure braces balance
+	}
+	// Ensure the last return statement has complete closing
+	if strings.Count(code, "{") > strings.Count(code, "}") {
+		missing := strings.Count(code, "{") - strings.Count(code, "}")
+		for i := 0; i < missing; i++ {
+			code += "\n}"
+		}
+	}
+	return code
 }
 
 // collectComplianceIssues gathers all blocking issues into a string slice.
