@@ -20,11 +20,12 @@ import (
 const maxClarificationRounds = 3
 
 type StrategyGenServer struct {
-	systemSvc    *systemai.Service
+	systemSvc     *systemai.Service
 	templatesRepo *repository.AIStrategyTemplatesRepository
-	convRepo     *repository.AIConversationRepository
-	backtestRepo *repository.BacktestRunRepository
-	log          *zap.Logger
+	convRepo      *repository.AIConversationRepository
+	backtestRepo  *repository.BacktestRunRepository
+	intentAnalyzer *ai.IntentAnalyzer
+	log           *zap.Logger
 }
 
 var _ antv1c.StrategyGenerationServiceHandler = (*StrategyGenServer)(nil)
@@ -36,12 +37,21 @@ func NewStrategyGenServer(
 	backtestRepo *repository.BacktestRunRepository,
 	log *zap.Logger,
 ) *StrategyGenServer {
+	// Build LLM-driven intent analyzer from the system AI service
+	analyzer := ai.NewIntentAnalyzer(func(ctx context.Context, userID uuid.UUID, messages []ai.ChatMessage, model string) (string, error) {
+		sysMsgs := make([]systemai.ChatMessage, len(messages))
+		for i, m := range messages {
+			sysMsgs[i] = systemai.ChatMessage{Role: m.Role, Content: m.Content}
+		}
+		return systemSvc.ChatCompletion(ctx, userID, sysMsgs, model)
+	})
 	return &StrategyGenServer{
-		systemSvc:    systemSvc,
+		systemSvc:     systemSvc,
 		templatesRepo: templatesRepo,
-		convRepo:     convRepo,
-		backtestRepo: backtestRepo,
-		log:          log,
+		convRepo:      convRepo,
+		backtestRepo:  backtestRepo,
+		intentAnalyzer: analyzer,
+		log:           log,
 	}
 }
 
@@ -59,13 +69,23 @@ func (s *StrategyGenServer) GenerateStrategy(
 		return s.handleFeedback(ctx, userID, m, stream)
 	}
 
-	if result := s.runClarification(m); result != nil {
-		return stream.Send(&antv1.GenerateStrategyChunk{Phase: "clarifying", Questions: result.Questions})
+	// ── Phase 1: LLM-driven intent analysis ──
+	intent, err := s.analyzeIntent(ctx, userID, m)
+	if err != nil {
+		s.log.Warn("intent analysis failed, falling back to direct generation", zap.Error(err))
+		// Fallback: if LLM call fails, skip clarification and generate directly
+		intent = &ai.IntentResult{NeedsClarification: false}
 	}
 
-	tmpl, sysPrompt, userPrompt := s.buildStrategyPrompt(ctx, userID, m)
+	if intent.NeedsClarification && m.ClarificationRound < maxClarificationRounds {
+		return stream.Send(&antv1.GenerateStrategyChunk{Phase: "clarifying", Questions: intent.Questions})
+	}
+
+	// Build prompt with extracted intent parameters
+	tmpl, sysPrompt, userPrompt := s.buildStrategyPrompt(ctx, userID, m, intent)
 	if err := s.sendTemplateInfo(stream, tmpl); err != nil { return err }
 
+	// Stream LLM code generation
 	code, err := s.streamLLMCode(ctx, userID, sysPrompt, userPrompt, stream)
 	if err != nil {
 		s.log.Error("LLM stream failed", zap.Error(err))
@@ -84,14 +104,40 @@ func (s *StrategyGenServer) GenerateStrategy(
 	return stream.Send(&antv1.GenerateStrategyChunk{Phase: "done", Code: code, BacktestRunId: runID, Error: btErr})
 }
 
-func (s *StrategyGenServer) buildStrategyPrompt(ctx context.Context, userID uuid.UUID, m *antv1.GenerateStrategyRequest) (*repository.AIStrategyTemplate, string, string) {
+func (s *StrategyGenServer) analyzeIntent(ctx context.Context, userID uuid.UUID, m *antv1.GenerateStrategyRequest) (*ai.IntentResult, error) {
+	intent, err := s.intentAnalyzer.Analyze(ctx, userID, m.Message, m.Symbol, m.Timeframe)
+	if err != nil {
+		return nil, err
+	}
+	// Merge fallback keyword params with LLM-extracted params
+	if fallback := s.runClarificationFallback(m); fallback != nil {
+		intent.Questions = append(intent.Questions, fallback.Questions...)
+	}
+	return intent, nil
+}
+
+func (s *StrategyGenServer) buildStrategyPrompt(ctx context.Context, userID uuid.UUID, m *antv1.GenerateStrategyRequest, intent *ai.IntentResult) (*repository.AIStrategyTemplate, string, string) {
 	templates, _ := s.templatesRepo.ListActive(ctx)
 	lib := ai.NewTemplateLibrary(templates)
-	tmpl := lib.Match(m.Message)
+
+	// Match template using LLM-extracted strategy family first, then fallback to keyword
+	tmpl := lib.MatchByFamily(intent.StrategyFamily)
+	if tmpl == nil {
+		tmpl = lib.Match(m.Message)
+	}
+
 	builder := ai.NewStrategyPromptBuilder()
+	// Merge LLM intent params with keyword-based params
+	pm := s.buildParamMap(m)
+	for k, v := range intent.ToParamMap() {
+		if _, exists := pm[k]; !exists {
+			pm[k] = v
+		}
+	}
 	pp := &ai.PromptParams{
 		Template: tmpl, Message: m.Message, Symbol: m.Symbol, Timeframe: m.Timeframe,
-		ParamMap: s.buildParamMap(m), History: s.loadHistory(ctx, userID, m.ConversationId),
+		ParamMap: pm, History: s.loadHistory(ctx, userID, m.ConversationId),
+		Intent:  intent,
 	}
 	return tmpl, builder.BuildSystemPrompt(pp), builder.BuildUserPrompt(pp)
 }
@@ -133,7 +179,9 @@ func (s *StrategyGenServer) finalizeWithBacktest(ctx context.Context, userID uui
 	return runID, ""
 }
 
-func (s *StrategyGenServer) runClarification(m *antv1.GenerateStrategyRequest) *ai.ClarificationResult {
+// runClarificationFallback provides keyword-based clarification as a safety net.
+// Primary clarification is handled by LLM-driven IntentAnalyzer.
+func (s *StrategyGenServer) runClarificationFallback(m *antv1.GenerateStrategyRequest) *ai.ClarificationResult {
 	if m.ClarificationRound >= maxClarificationRounds {
 		return nil
 	}

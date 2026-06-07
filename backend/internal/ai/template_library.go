@@ -30,6 +30,20 @@ func NewTemplateLibrary(templates []repository.AIStrategyTemplate) *TemplateLibr
 	return &TemplateLibrary{templates: templates}
 }
 
+// MatchByFamily selects a template by explicit strategy family name.
+// Returns nil if no template matches the family.
+func (l *TemplateLibrary) MatchByFamily(family string) *repository.AIStrategyTemplate {
+	if family == "" || family == "unknown" || len(l.templates) == 0 {
+		return nil
+	}
+	for i := range l.templates {
+		if l.templates[i].Category == family {
+			return &l.templates[i]
+		}
+	}
+	return nil
+}
+
 // Match finds the best template for the given message. Returns nil if no match.
 // It first checks for explicit category keywords, then falls back to name matching.
 func (l *TemplateLibrary) Match(message string) *repository.AIStrategyTemplate {

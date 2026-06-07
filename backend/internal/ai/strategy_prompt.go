@@ -22,8 +22,9 @@ type PromptParams struct {
 	Message     string // user's natural language description
 	Symbol      string
 	Timeframe   string
-	ParamMap    map[string]string // from clarification engine
+	ParamMap    map[string]string // merged: LLM intent + keyword fallback
 	History     string            // previous conversation summary
+	Intent      *IntentResult     // LLM-extracted intent (nil for legacy callers)
 }
 
 // FeedbackPromptParams holds inputs for building the feedback iteration prompt (Phase 3).
@@ -129,9 +130,30 @@ func (b *StrategyPromptBuilder) BuildSystemPrompt(p *PromptParams) string {
 	// Strategy contract
 	sb.WriteString(strategyContractText())
 
-	// Parameter annotations in skeleton
+	// LLM-extracted intent context
+	if p.Intent != nil && !p.Intent.NeedsClarification {
+		sb.WriteString("根据分析，用户的策略偏好如下：\n")
+		if p.Intent.StrategyFamily != "" && p.Intent.StrategyFamily != "unknown" {
+			sb.WriteString(fmt.Sprintf("- 策略类型: %s\n", p.Intent.StrategyFamily))
+		}
+		if p.Intent.RiskLevel != "" && p.Intent.RiskLevel != "unknown" {
+			sb.WriteString(fmt.Sprintf("- 风险偏好: %s\n", p.Intent.RiskLevel))
+		}
+		if p.Intent.HoldingPeriod != "" && p.Intent.HoldingPeriod != "unknown" {
+			sb.WriteString(fmt.Sprintf("- 持仓周期: %s\n", p.Intent.HoldingPeriod))
+		}
+		if len(p.Intent.EntrySignals) > 0 {
+			sb.WriteString(fmt.Sprintf("- 入场信号: %s\n", strings.Join(p.Intent.EntrySignals, ", ")))
+		}
+		if len(p.Intent.ExitSignals) > 0 {
+			sb.WriteString(fmt.Sprintf("- 离场信号: %s\n", strings.Join(p.Intent.ExitSignals, ", ")))
+		}
+		sb.WriteString("\n")
+	}
+
+	// Parameter hints from clarification/fallback
 	if p.ParamMap != nil && len(p.ParamMap) > 0 {
-		sb.WriteString("根据用户偏好调整以下参数方向：\n")
+		sb.WriteString("参数偏好：\n")
 		for k, v := range p.ParamMap {
 			sb.WriteString(fmt.Sprintf("- %s: %s\n", k, v))
 		}
@@ -183,6 +205,21 @@ func (b *StrategyPromptBuilder) BuildUserPrompt(p *PromptParams) string {
 		}
 		if p.Timeframe != "" {
 			sb.WriteString(fmt.Sprintf("周期: %s\n", p.Timeframe))
+		}
+		sb.WriteString("\n")
+	}
+
+	// Intent-driven guidance
+	if p.Intent != nil && !p.Intent.NeedsClarification {
+		if p.Intent.RiskLevel == "high" {
+			sb.WriteString("用户风险偏好较高，可接受更大回撤以换取更高收益。\n")
+		} else if p.Intent.RiskLevel == "low" {
+			sb.WriteString("用户偏好低风险策略，请注重回撤控制和稳健收益。\n")
+		}
+		if p.Intent.TradeDirection == "long" {
+			sb.WriteString("用户只想做多，不要生成做空信号。\n")
+		} else if p.Intent.TradeDirection == "short" {
+			sb.WriteString("用户只想做空，不要生成做多信号。\n")
 		}
 		sb.WriteString("\n")
 	}
