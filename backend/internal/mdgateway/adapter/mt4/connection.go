@@ -31,6 +31,7 @@ type Gateway struct {
 	cancelSub            context.CancelFunc
 	cancelProfitSub      context.CancelFunc
 	cancelOrderUpdateSub context.CancelFunc
+	reconnecting         bool // true while reconnection is in progress (prevents recvLoop race)
 }
 
 func New(cfg mdtick.AccountConfig, log *zap.Logger) *Gateway {
@@ -155,9 +156,17 @@ func (g *Gateway) Disconnect(ctx context.Context) error {
 func (g *Gateway) ensureConnected(ctx context.Context, backoff *time.Duration, maxBackoff time.Duration) error {
 	g.mu.RLock()
 	conn := g.conn
+	reconnecting := g.reconnecting
 	g.mu.RUnlock()
+
 	if conn != nil {
 		return nil
+	}
+	// If ReconnectGateway is in progress, wait for it to finish
+	// instead of racing a second Connect call.
+	if reconnecting {
+		g.sleep(ctx, 500*time.Millisecond)
+		return nil // recvLoop will retry on next iteration
 	}
 	if err := g.Connect(ctx); err != nil {
 		g.log.Warn("mt4 reconnect failed", zap.Error(err), zap.Duration("backoff", *backoff))
@@ -298,6 +307,13 @@ func (g *Gateway) SessionID() string {
 	g.mu.RLock()
 	defer g.mu.RUnlock()
 	return g.sessionID
+}
+
+// SetReconnecting guards against recvLoop races during managed reconnection.
+func (g *Gateway) SetReconnecting(v bool) {
+	g.mu.Lock()
+	g.reconnecting = v
+	g.mu.Unlock()
 }
 
 func (g *Gateway) MT4Client() pb.MT4Client {

@@ -153,15 +153,26 @@ func (m *Manager) GetGateway(accountID string) Gateway {
 	return m.gateways[accountID]
 }
 
+// reconnectable is the interface gateways implement to guard against
+// recvLoop races during managed reconnection.
+type reconnectable interface {
+	SetReconnecting(bool)
+}
+
 // ReconnectGateway disconnects and reconnects a gateway in-place.
 // Used by healthMonitor to attempt recovery of dead connections before removing them.
-// The recvLoop goroutines will auto-reconnect after conn is re-established.
+// Sets a reconnecting flag to prevent recvLoop goroutines from racing a second Connect.
 func (m *Manager) ReconnectGateway(ctx context.Context, accountID string) error {
 	m.mu.RLock()
 	gw, ok := m.gateways[accountID]
 	m.mu.RUnlock()
 	if !ok {
 		return fmt.Errorf("mdgateway: gateway %s not found", accountID)
+	}
+	// Signal recvLoop goroutines to wait instead of racing.
+	if rc, ok := gw.(reconnectable); ok {
+		rc.SetReconnecting(true)
+		defer rc.SetReconnecting(false)
 	}
 	// Graceful disconnect first.
 	if err := gw.Disconnect(ctx); err != nil {

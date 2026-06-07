@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"go.uber.org/zap"
@@ -51,8 +52,6 @@ func healthMonitor(ctx context.Context, mgr *Manager, chw *CHWriter, log *zap.Lo
 							zap.String("account", h.AccountID), zap.Error(err))
 					}
 					mgr.UnmarkDisconnecting(h.AccountID)
-					// Brief pause to let in-flight NATS messages drain
-					// before reconnects are allowed for this account.
 					time.Sleep(100 * time.Millisecond)
 				} else {
 					log.Info("mdgateway: dead account reconnected successfully",
@@ -62,25 +61,21 @@ func healthMonitor(ctx context.Context, mgr *Manager, chw *CHWriter, log *zap.Lo
 				}
 			}
 
+			// Collect stale accounts for parallel Ping/Health checks.
+			// Running them sequentially could block the health loop for
+			// N * 3s (timeout) when multiple accounts are stale.
+			type staleEntry struct {
+				h  AccountHealth
+				gw Gateway
+			}
+			var stales []staleEntry
 			for _, h := range mgr.Health() {
 				switch h.State {
 				case "stale":
-					stale++
-					log.Warn("mdgateway: stale account — no ticks for >5 min",
-						zap.String("account", h.AccountID),
-						zap.String("platform", h.Platform))
-					// Proactively verify the connection via Ping/Health RPC.
-					// Escalate to dead immediately if it fails, rather than
-					// waiting the full 15-min dead threshold.
 					if gw := mgr.GetGateway(h.AccountID); gw != nil {
-						if err := gw.HealthCheck(ctx); err != nil {
-							log.Warn("mdgateway: stale account failed health check — promoting to dead",
-								zap.String("account", h.AccountID),
-								zap.String("platform", h.Platform),
-								zap.Error(err))
-							handleDeadAccount(h)
-							continue
-						}
+						stales = append(stales, staleEntry{h, gw})
+					} else {
+						stale++
 					}
 				case "dead":
 					handleDeadAccount(h)
@@ -91,6 +86,35 @@ func healthMonitor(ctx context.Context, mgr *Manager, chw *CHWriter, log *zap.Lo
 					log.Debug("mdgateway: health",
 						zap.String("account", h.AccountID),
 						zap.String("state", h.State))
+				}
+			}
+
+			if len(stales) > 0 {
+				var wg sync.WaitGroup
+				failures := make(chan AccountHealth, len(stales))
+				for _, se := range stales {
+					stale++
+					wg.Add(1)
+					go func(e staleEntry) {
+						defer wg.Done()
+						if err := e.gw.HealthCheck(ctx); err != nil {
+							failures <- e.h
+						}
+					}(se)
+				}
+				wg.Wait()
+				close(failures)
+
+				for _, se := range stales {
+					log.Warn("mdgateway: stale account — no ticks for >5 min",
+						zap.String("account", se.h.AccountID),
+						zap.String("platform", se.h.Platform))
+				}
+				for h := range failures {
+					log.Warn("mdgateway: stale account failed health check — promoting to dead",
+						zap.String("account", h.AccountID),
+						zap.String("platform", h.Platform))
+					handleDeadAccount(h)
 				}
 			}
 			SetStaleAccountCount(stale, dead)
