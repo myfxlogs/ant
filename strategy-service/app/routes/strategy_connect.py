@@ -7,6 +7,7 @@ import dataclasses
 import json
 import logging
 import os
+import re
 import time
 
 import numpy as np
@@ -52,6 +53,51 @@ def _respond(proto_resp, request: Request) -> Response:
     )
 
 
+# Regex for @param annotations with optional range: min:max:step.
+_SWEEP_RE = re.compile(
+    r"^\s*#\s*@param\s+(\w+)\s+([\d.]+)"
+    r"(?:\s+range=([\d.]+):([\d.]+):([\d.]+))?",
+    re.MULTILINE,
+)
+
+
+def _extract_sweep_dimensions(code: str) -> list[dict]:
+    """Extract @param annotations with range info for the Smart Tuning panel.
+
+    Backend zero-trust: the frontend MUST NOT parse @param itself.
+    All computation happens here; frontend only renders.
+    """
+    dims: list[dict] = []
+    seen: set[str] = set()
+    for m in _SWEEP_RE.finditer(code or ""):
+        key = m.group(1)
+        if key in seen:
+            continue
+        seen.add(key)
+        default = float(m.group(2))
+        has_range = m.group(3) is not None
+        if has_range:
+            pmin = float(m.group(3))
+            pmax = float(m.group(4))
+            pstep = float(m.group(5))
+            ptype = "int" if (pmin % 1 == 0 and pmax % 1 == 0 and pstep % 1 == 0) else "float"
+        else:
+            pmin = default
+            pmax = default
+            pstep = 0
+            ptype = "float" if default % 1 != 0 else "int"
+        dims.append({
+            "key": key,
+            "type": ptype,
+            "default": default,
+            "min": pmin,
+            "max": pmax,
+            "step": pstep,
+            "hasRange": has_range,
+        })
+    return dims
+
+
 @router.post("/ant.v1.PythonStrategyService/Validate")
 async def validate_strategy_connect(request: Request):
     """Validate strategy code syntax via ConnectRPC."""
@@ -60,14 +106,22 @@ async def validate_strategy_connect(request: Request):
         result = validate_strategy_code(req.code or "")
         params = extract_required_params(req.code or "") if result.valid else []
 
-        # Encode quality hints as JSON in the warnings field (proto-compatible,
-        # avoids adding a new proto message). Frontend detects the [HINT] prefix.
+        # Encode quality hints + sweep dimensions as JSON in the
+        # warnings field (proto-compatible, no new proto messages needed).
+        # Frontend detects [HINT] and [SWEEP] prefixes.
         warnings = list(result.warnings)
         for h in result.quality_hints:
             warnings.append(
                 "[HINT]"
                 + json.dumps(dataclasses.asdict(h), ensure_ascii=False)
             )
+
+        # Extract @param sweep dimensions (backend zero-trust: frontend
+        # MUST NOT parse @param itself). Encoded as [SWEEP] JSON.
+        sweep_dims = _extract_sweep_dimensions(req.code or "")
+        if sweep_dims:
+            for dim in sweep_dims:
+                warnings.append("[SWEEP]" + json.dumps(dim, ensure_ascii=False))
 
         resp = ValidateStrategyResponse(
             valid=result.valid,

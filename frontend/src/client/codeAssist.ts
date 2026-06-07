@@ -46,12 +46,24 @@ export interface CodeQualityHint {
   snippet: string;
 }
 
+/** Backend-provided sweep dimension from @param annotations (zero-trust). */
+export interface BackendSweepDim {
+  key: string;
+  type: 'int' | 'float';
+  default: number;
+  min: number;
+  max: number;
+  step: number;
+  hasRange: boolean;
+}
+
 export interface ValidateExtendedResult {
   valid: boolean;
   errors: string[];
   warnings: string[];
   parameters: RequiredParamSpec[];
   qualityHints: CodeQualityHint[];
+  sweepDimensions: BackendSweepDim[];
 }
 
 const parseParamValue = (value: string, type?: RequiredParamSpec['type']) => {
@@ -125,14 +137,16 @@ export const codeAssistApi = {
   validateExtended: async (code: string): Promise<ValidateExtendedResult> => {
     const data = await codeAssistClient.validateStrategyExtended({ code });
 
-    // Extract quality hints from [HINT] prefixed warnings (injected by Python backend).
+    // Extract quality hints + sweep dimensions from [HINT] / [SWEEP]
+    // prefixed warnings (injected by Python backend — zero-trust).
     const qualityHints: CodeQualityHint[] = [];
+    const sweepDimensions: BackendSweepDim[] = [];
     const warnings: string[] = [];
     for (const w of (data.warnings || [])) {
       if (w.startsWith('[HINT]')) {
-        try {
-          qualityHints.push(JSON.parse(w.slice(6)));
-        } catch { /* ignore malformed hints */ }
+        try { qualityHints.push(JSON.parse(w.slice(6))); } catch { /* ignore */ }
+      } else if (w.startsWith('[SWEEP]')) {
+        try { sweepDimensions.push(JSON.parse(w.slice(7))); } catch { /* ignore */ }
       } else {
         warnings.push(w);
       }
@@ -143,6 +157,7 @@ export const codeAssistApi = {
       errors: data.errors || [],
       warnings,
       qualityHints,
+      sweepDimensions,
       parameters: (data.parameters || []).map((p) => ({
         key: p.key,
         required: p.required,

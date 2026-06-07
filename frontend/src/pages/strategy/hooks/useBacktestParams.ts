@@ -4,7 +4,7 @@ import { pythonStrategyApi } from '@/client/pythonStrategy';
 import { gateApi } from '@/client/gate';
 import type { GateResult, GatePipelineSummary } from '@/gen/ant/v1/ai_gate_pb';
 import {
-  parseStrategyDirectives, parseParamsFromCode,
+  parseStrategyDirectives, backendSweepToSweepDimensions,
   PRESETS, DATE_PRESETS, DEFAULT_SWEEP_DIMS, dateFromPreset,
   TIMEFRAME_MAX_MONTHS, OPTIMIZER_INFO,
 } from './backtestParamHelpers';
@@ -118,8 +118,8 @@ export function useBacktestParams() {
   const [tuneMethod, setTuneMethod] = useState<TuneMethod>('grid');
   const [sweepDimensions, setSweepDimensions] = useState<SweepDimension[]>(DEFAULT_SWEEP_DIMS);
 
-  const updateSweepFromCode = useCallback((code: string) => {
-    const extracted = parseParamsFromCode(code);
+  const updateSweepFromCode = useCallback((dims: { key: string; type: string; default: number; min: number; max: number; step: number; hasRange: boolean }[]) => {
+    const extracted = backendSweepToSweepDimensions(dims);
     if (extracted.length > 0) { setSweepDimensions(extracted); }
   }, []);
   const [tuningRunning, setTuningRunning] = useState(false);

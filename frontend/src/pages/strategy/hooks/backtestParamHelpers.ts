@@ -58,32 +58,24 @@ export interface SweepDimension {
   enabled: boolean; values: number[];
 }
 
-// parseParamsFromCode extracts @param annotations from strategy Python code.
-export function parseParamsFromCode(code: string): SweepDimension[] {
-  if (!code) return [];
-  const re = /@param\s+(\w+)\s+([\d.]+)(?:\s+range=([\d.]+):([\d.]+):([\d.]+))?/g;
-  const dims: SweepDimension[] = [];
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(code)) !== null) {
-    const [, name, defVal, minStr, maxStr, stepStr] = m;
-    if (minStr !== undefined && maxStr !== undefined && stepStr !== undefined) {
-      const min = parseFloat(minStr);
-      const max = parseFloat(maxStr);
-      const step = parseFloat(stepStr);
-      if (isNaN(min) || isNaN(max) || isNaN(step)) continue;
-      const values: number[] = [];
-      for (let v = min; v <= max + step * 0.5; v += step) {
+/** Convert backend-provided sweep dimensions to frontend SweepDimension[].
+ *  Backend zero-trust: the backend parses @param annotations; frontend
+ *  only converts and renders. Values array is generated from min/max/step. */
+export function backendSweepToSweepDimensions(dims: { key: string; type: string; default: number; min: number; max: number; step: number; hasRange: boolean }[]): SweepDimension[] {
+  return dims.filter(d => d.hasRange).map(d => {
+    const values: number[] = [];
+    if (d.step > 0) {
+      for (let v = d.min; v <= d.max + d.step * 0.5; v += d.step) {
         values.push(Math.round(v * 1e10) / 1e10);
       }
-      if (values.length === 0) values.push(parseFloat(defVal));
-      dims.push({
-        key: name, label: name, source: 'code' as const,
-        enabled: values.length <= 20,
-        values: values.length > 100 ? values.slice(0, 100) : values,
-      });
     }
-  }
-  return dims;
+    if (values.length === 0) values.push(d.default);
+    return {
+      key: d.key, label: d.key, source: 'code' as const,
+      enabled: values.length <= 20,
+      values: values.length > 100 ? values.slice(0, 100) : values,
+    };
+  });
 }
 
 export const DEFAULT_SWEEP_DIMS: SweepDimension[] = [
