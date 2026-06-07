@@ -61,6 +61,11 @@ func strategyContractText() string {
 	sb.WriteString("# @param fast_period 10 range=5:50:5\n")
 	sb.WriteString("# @param slow_period 30 range=20:100:10\n")
 	sb.WriteString("```\n\n")
+	sb.WriteString("**重要：@param 注释只用于引擎提取，代码中必须定义同名变量：**\n")
+	sb.WriteString("```python\n")
+	sb.WriteString("fast_period = 10  # 必须定义变量，否则 NameError\n")
+	sb.WriteString("slow_period = 30\n")
+	sb.WriteString("```\n\n")
 
 	sb.WriteString("## 沙箱环境（重要！必须遵守）\n\n")
 	sb.WriteString("代码在受限沙箱中执行。以下资源已**预注入**，直接使用，**不要写 import 语句**：\n\n")
