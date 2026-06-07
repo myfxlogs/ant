@@ -45,7 +45,10 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     // Auto-load Volume sub-pane (default sub-chart)
     try { chart.createIndicator('VOL', false, { id: 'volume_pane' }); } catch { /* best-effort */ }
     onChartReady?.(chart);
-    const ro = new ResizeObserver(([entry]) => setTooNarrow((entry?.contentRect?.width || 300) < 300));
+    const ro = new ResizeObserver(([entry]) => {
+      setTooNarrow((entry?.contentRect?.width || 300) < 300);
+      chart.resize();
+    });
     ro.observe(containerRef.current);
     return () => { ro.disconnect(); dispose(containerRef.current!); };
   }, [onChartReady]);
