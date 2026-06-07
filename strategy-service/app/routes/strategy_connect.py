@@ -14,9 +14,12 @@ from fastapi.responses import JSONResponse
 from google.protobuf.json_format import MessageToDict, Parse
 
 from app.python_strategy_pb2 import (
-    ExecuteStrategyRequest, ExecuteStrategyResponse, StrategySignal,
+    ExecuteStrategyRequest, ExecuteStrategyResponse,
     ValidateStrategyRequest, ValidateStrategyResponse,
 )
+# StrategySignal is defined in strategy_signal_messages.proto
+# (imported by python_strategy.proto via strategy_messages.proto)
+from app.strategy_signal_messages_pb2 import StrategySignal
 from app.engine.params_extractor import extract_required_params
 from app.engine.sandbox import StrategyRunner, StrategyRuntimeError, validate_strategy_code
 

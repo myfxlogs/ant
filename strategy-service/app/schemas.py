@@ -13,9 +13,6 @@ class KlineData(BaseModel):
     close_price: float
     volume: float
 
-# Alias for objective_score_connect compatibility
-KlineEntry = KlineData
-
 
 class MarketData(BaseModel):
     symbol: str
