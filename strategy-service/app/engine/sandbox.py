@@ -27,10 +27,11 @@ import hashlib
 import marshal
 import math
 import threading
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
 from app.engine import indicators
+from app.engine.code_quality import analyze_code_quality
 from app.engine.sandbox_base import BaseSandbox
 from app.engine.types import StrategyCompileError, StrategyRuntimeError
 
@@ -48,6 +49,7 @@ class StrategyValidationResult:
     valid: bool
     errors: List[str]
     warnings: List[str]
+    quality_hints: List[Any] = field(default_factory=list)
 
 
 def validate_strategy_code(code: str) -> StrategyValidationResult:
@@ -141,8 +143,11 @@ def validate_strategy_code(code: str) -> StrategyValidationResult:
             seen.add(e)
             deduped.append(e)
 
+    quality_hints = analyze_code_quality(code)
+
     return StrategyValidationResult(
-        valid=len(deduped) == 0, errors=deduped, warnings=warnings
+        valid=len(deduped) == 0, errors=deduped, warnings=warnings,
+        quality_hints=quality_hints,
     )
 
 

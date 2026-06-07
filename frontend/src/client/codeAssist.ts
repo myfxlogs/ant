@@ -38,11 +38,20 @@ export interface RequiredParamSpec {
   suggested?: unknown;
 }
 
+export interface CodeQualityHint {
+  category: string;   // "FUTURE_DATA_LEAK" | "MISSING_PARAM" | "UNREAD_PARAM"
+  severity: string;   // "error" | "warn" | "info"
+  message: string;
+  line: number;
+  snippet: string;
+}
+
 export interface ValidateExtendedResult {
   valid: boolean;
   errors: string[];
   warnings: string[];
   parameters: RequiredParamSpec[];
+  qualityHints: CodeQualityHint[];
 }
 
 const parseParamValue = (value: string, type?: RequiredParamSpec['type']) => {
@@ -115,10 +124,25 @@ export const codeAssistApi = {
 
   validateExtended: async (code: string): Promise<ValidateExtendedResult> => {
     const data = await codeAssistClient.validateStrategyExtended({ code });
+
+    // Extract quality hints from [HINT] prefixed warnings (injected by Python backend).
+    const qualityHints: CodeQualityHint[] = [];
+    const warnings: string[] = [];
+    for (const w of (data.warnings || [])) {
+      if (w.startsWith('[HINT]')) {
+        try {
+          qualityHints.push(JSON.parse(w.slice(6)));
+        } catch { /* ignore malformed hints */ }
+      } else {
+        warnings.push(w);
+      }
+    }
+
     return {
       valid: data.valid,
       errors: data.errors || [],
-      warnings: data.warnings || [],
+      warnings,
+      qualityHints,
       parameters: (data.parameters || []).map((p) => ({
         key: p.key,
         required: p.required,

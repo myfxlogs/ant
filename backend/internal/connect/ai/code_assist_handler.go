@@ -23,15 +23,21 @@ const maxInstrLen = 4 * 1024
 
 // CodeAssistServer implements ant.v1.CodeAssistServiceHandler.
 type CodeAssistServer struct {
-	systemSvc *systemai.Service
-	session   *ai.ConversationSession
-	log       *zap.Logger
+	systemSvc            *systemai.Service
+	session              *ai.ConversationSession
+	pythonStrategyClient antv1c.PythonStrategyServiceClient // optional: for quality hints
+	log                  *zap.Logger
 }
 
 var _ antv1c.CodeAssistServiceHandler = (*CodeAssistServer)(nil)
 
 func NewCodeAssistServer(systemSvc *systemai.Service, session *ai.ConversationSession, log *zap.Logger) *CodeAssistServer {
 	return &CodeAssistServer{systemSvc: systemSvc, session: session, log: log}
+}
+
+// SetPythonStrategyClient injects the Python strategy client for quality analysis on ValidateStrategyExtended.
+func (s *CodeAssistServer) SetPythonStrategyClient(c antv1c.PythonStrategyServiceClient) {
+	s.pythonStrategyClient = c
 }
 
 // protoHistoryToChat converts proto CodeChatMessage list to systemai ChatMessage list.
@@ -179,7 +185,22 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 		}), nil
 	}
 
-	return parseValidationResult(result, s.log)
+	resp, _ := parseValidationResult(result, s.log)
+
+	// Merge Python quality hints into warnings (backend zero-trust:
+	// all computation in Python; Go just forwards the results).
+	if s.pythonStrategyClient != nil && resp != nil {
+		pyResp, pyErr := s.pythonStrategyClient.Validate(ctx, connect.NewRequest(&antv1.ValidateStrategyRequest{Code: code}))
+		if pyErr == nil && pyResp != nil {
+			for _, w := range pyResp.Msg.Warnings {
+				if strings.HasPrefix(w, "[HINT]") {
+					resp.Msg.Warnings = append(resp.Msg.Warnings, w)
+				}
+			}
+		}
+	}
+
+	return resp, nil
 }
 
 func buildValidationPrompt() string {

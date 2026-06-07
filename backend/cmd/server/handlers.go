@@ -152,6 +152,9 @@ func registerHandlers(
 	}
 	mux.Handle(antv1c.NewPythonStrategyServiceHandler(pythonStrategyServer, connectrpc.WithInterceptors(authInterceptor)))
 	codeAssistServer := ai.NewCodeAssistServer(aiSvc, session, log)
+	if cfg.StrategyServiceURL != "" {
+		codeAssistServer.SetPythonStrategyClient(antv1c.NewPythonStrategyServiceClient(http.DefaultClient, cfg.StrategyServiceURL))
+	}
 	mux.Handle(antv1c.NewCodeAssistServiceHandler(codeAssistServer, connectrpc.WithInterceptors(authInterceptor)))
 	systemAIServer := ai.NewSystemAIServer(aiSvc, log)
 	mux.Handle(antv1c.NewSystemAIServiceHandler(systemAIServer, connectrpc.WithInterceptors(authInterceptor)))

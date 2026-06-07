@@ -3,6 +3,7 @@ Replaces the previous FastAPI /api/strategy/execute and /api/strategy/validate R
 Protocol: POST /ant.v1.PythonStrategyService/{Execute,Validate}"""
 
 import asyncio
+import dataclasses
 import json
 import logging
 import os
@@ -58,10 +59,20 @@ async def validate_strategy_connect(request: Request):
     try:
         result = validate_strategy_code(req.code or "")
         params = extract_required_params(req.code or "") if result.valid else []
+
+        # Encode quality hints as JSON in the warnings field (proto-compatible,
+        # avoids adding a new proto message). Frontend detects the [HINT] prefix.
+        warnings = list(result.warnings)
+        for h in result.quality_hints:
+            warnings.append(
+                "[HINT]"
+                + json.dumps(dataclasses.asdict(h), ensure_ascii=False)
+            )
+
         resp = ValidateStrategyResponse(
             valid=result.valid,
             errors=list(result.errors),
-            warnings=list(result.warnings),
+            warnings=warnings,
         )
     except Exception as e:
         resp = ValidateStrategyResponse(valid=False, errors=[f"验证错误: {e}"])
