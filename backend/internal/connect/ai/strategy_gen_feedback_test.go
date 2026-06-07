@@ -137,7 +137,7 @@ func TestBuildFeedbackPrompt(t *testing.T) {
 		{"section tags", "<section type=\"advice\">"},
 		{"section tags", "<section type=\"code\">"},
 		{"contract text", "def run(context)"},
-		{"forbidden patterns", "eval()"},
+		{"forbidden patterns", "eval/exec"},
 		{"previous code", "def run(context)"},
 		{"backtest metrics", "Sharpe 0.82"},
 		{"backtest metrics", "最大回撤 18.5"},

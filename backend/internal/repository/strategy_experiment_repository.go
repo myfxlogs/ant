@@ -133,7 +133,7 @@ func (r *StrategyExperimentRepository) List(ctx context.Context, userID uuid.UUI
 
 func (r *StrategyExperimentRepository) Cancel(ctx context.Context, userID, id uuid.UUID) (*StrategyExperiment, error) {
 	var exp StrategyExperiment
-	err := r.db.QueryRow(ctx, `UPDATE strategy_experiments SET status = 'CANCELLED', finished_at = COALESCE(finished_at, now()) WHERE id = $1 AND user_id = $2 AND status IN ('QUEUED','RUNNING') RETURNING id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,strategy_code,symbol,timeframe,from_ts_unix_ms,to_ts_unix_ms,created_at,finished_at`, id, userID).Scan(
+	err := r.db.QueryRow(ctx, `UPDATE strategy_experiments SET status = 'CANCELLED', finished_at = COALESCE(finished_at, now()) WHERE id = $1 AND user_id = $2 AND status IN ('PENDING','PROCESSING') RETURNING id,user_id,base_template_id,status,parameter_space,search_method,max_candidates,objective,market_regime_ref,best_candidate_id,job_id,strategy_code,symbol,timeframe,from_ts_unix_ms,to_ts_unix_ms,created_at,finished_at`, id, userID).Scan(
 		&exp.ID, &exp.UserID, &exp.BaseTemplateID, &exp.Status, &exp.ParameterSpace, &exp.SearchMethod, &exp.MaxCandidates, &exp.Objective, &exp.MarketRegimeRef, &exp.BestCandidateID, &exp.JobID, &exp.StrategyCode, &exp.Symbol, &exp.Timeframe, &exp.FromTsUnixMs, &exp.ToTsUnixMs, &exp.CreatedAt, &exp.FinishedAt,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -169,7 +169,7 @@ func (r *StrategyExperimentRepository) ListCandidates(ctx context.Context, userI
 	if _, err := r.Get(ctx, userID, experimentID); err != nil {
 		return nil, err
 	}
-	rows, err := r.db.Query(ctx, `SELECT * FROM strategy_experiment_candidates WHERE experiment_id = $1 ORDER BY rank ASC, created_at ASC`, experimentID)
+	rows, err := r.db.Query(ctx, `SELECT id, experiment_id, parameters, draft_code_ref, backtest_run_id, score, grade, score_components, rank, summary, recommendation, created_at, oos_score, oos_total_return, oos_sharpe_ratio, degradation_pct, is_overfit FROM strategy_experiment_candidates WHERE experiment_id = $1 ORDER BY rank ASC, created_at ASC`, experimentID)
 	if err != nil {
 		return nil, err
 	}
@@ -188,7 +188,7 @@ func (r *StrategyExperimentRepository) ListCandidates(ctx context.Context, userI
 func (r *StrategyExperimentRepository) GetCandidate(ctx context.Context, userID, candidateID uuid.UUID) (*StrategyExperimentCandidate, error) {
 	var row StrategyExperimentCandidate
 	err := r.db.QueryRow(ctx, `
-		SELECT c.* FROM strategy_experiment_candidates c
+		SELECT c.id, c.experiment_id, c.parameters, c.draft_code_ref, c.backtest_run_id, c.score, c.grade, c.score_components, c.rank, c.summary, c.recommendation, c.created_at, c.oos_score, c.oos_total_return, c.oos_sharpe_ratio, c.degradation_pct, c.is_overfit FROM strategy_experiment_candidates c
 		JOIN strategy_experiments e ON e.id = c.experiment_id
 		WHERE c.id = $1 AND e.user_id = $2
 	`, candidateID, userID).Scan(&row.ID, &row.ExperimentID, &row.Parameters, &row.DraftCodeRef, &row.BacktestRunID, &row.Score, &row.Grade, &row.ScoreComponents, &row.Rank, &row.Summary, &row.Recommendation, &row.CreatedAt, &row.OOSScore, &row.OOSTotalReturn, &row.OOSSharpeRatio, &row.DegradationPct, &row.IsOverfit)
