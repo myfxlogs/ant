@@ -1,9 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { message } from 'antd';
 import { useAccount } from '@/hooks/useAccount';
 import { marketApi } from '@/client/market';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
-import { strategyApi } from '@/client/strategy';
 import { useStrategyCode } from './useStrategyCode';
 import { useBacktestParams, DATE_PRESETS } from './useBacktestParams';
 import type { SweepDimension, BacktestMetrics, StrategyDirective, PresetKey, BacktestSubTab } from './useBacktestParams';
@@ -51,16 +49,10 @@ export function useStrategyWorkspaceState() {
       setSelectedTemplateId('');
       return;
     }
-    try {
-      const tpl = await strategyApi.getTemplate(templateId);
-      if (tpl?.code) {
-        codeCtx.setCode(tpl.code);
-        setSelectedTemplateId(templateId);
-      }
-    } catch (e: unknown) {
-      message.error((e as Error)?.message || 'Failed to load template');
-    }
-  }, [codeCtx.setCode]);
+    setSelectedTemplateId(templateId); // Optimistic — reverts below on failure
+    const ok = await codeCtx.handleLoadTemplate(templateId);
+    if (!ok) setSelectedTemplateId('');
+  }, [codeCtx.handleLoadTemplate]);
 
   const handleRunBacktest = useCallback(() => {
     btCtx.runBacktest({
