@@ -51,7 +51,7 @@ registerOverlay({
       const entryPoint = findNearest(byTs, openMs);
       if (!entryPoint) continue;
 
-      const isBuy = t.side === 'buy';
+      const isBuy = t.side?.toLowerCase() === 'buy';
       const color = isBuy ? BUY_COLOR : SELL_COLOR;
       const y = entryPoint.y ?? 0;
       const x = entryPoint.x ?? 0;

@@ -157,7 +157,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
           name: 'backtest_trades',
           extendData: trades,
         });
-        if (id) btOverlayIdRef.current = Array.isArray(id) ? String(id[0]) : String(id);
+        if (id) btOverlayIdRef.current = String(id);
       } catch { /* best-effort */ }
     }
   }, [trades]);
@@ -179,7 +179,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     const onInteraction = () => {
       if (timer != null) window.clearTimeout(timer);
       timer = window.setTimeout(() => {
-        try { const r = (chart as any).getVisibleRange?.() as { from?: number } | null; if (r?.from != null) handleLoadMore(r.from); } catch { /* best-effort */ }
+        try { const r = chart.getVisibleRange?.() as { from?: number } | null; if (r?.from != null) handleLoadMore(r.from); } catch { /* best-effort */ }
       }, 300);
     };
     container.addEventListener('wheel', onInteraction, { passive: true });

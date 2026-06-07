@@ -126,7 +126,10 @@ export function useBacktestParams() {
                 closePrice: t.close_price,
                 pnl: t.pnl,
               })));
-            }).catch(() => { setChartTrades([]); });
+            }).catch((e: unknown) => {
+              console.warn('Failed to fetch backtest trades for chart markers:', e);
+              setChartTrades([]);
+            });
           } else { setChartTrades([]); }
         } else { setMetrics(update.metrics || null); }
       });

@@ -317,7 +317,7 @@ def _has_buy_sell_signal(code: str) -> bool:
     # Look for return {'signal': 'buy'/'sell'} or return dict with signal key
     stripped = _strip_comments(code)
     return bool(re.search(
-        r"""return\s*\{[^}]*['"]signal['"]\s*:\s*['"](?:buy|sell)""",
+        r"""return\s*\{[^}]*['"]signal['"]\s*:\s*['"](?:buy|sell)['"]""",
         stripped,
     ))
 

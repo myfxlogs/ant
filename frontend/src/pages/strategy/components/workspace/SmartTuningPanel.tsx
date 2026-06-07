@@ -52,8 +52,12 @@ export default function SmartTuningPanel({
   const handleRunTuning = useCallback(async () => {
     if (!canRun || tuningRunning) return;
     setCandidates([]); setExperimentId(''); setWatching(true);
-    const eid = await onRunTuning();
-    if (eid) { setExperimentId(eid); } else { setWatching(false); }
+    try {
+      const eid = await onRunTuning();
+      if (eid) { setExperimentId(eid); } else { setWatching(false); }
+    } catch {
+      setWatching(false);
+    }
   }, [canRun, tuningRunning, onRunTuning]);
 
   // SSE watch for experiment completion.

@@ -137,7 +137,7 @@ export function useAIWorkflow(
     let lastWarnings: string[] = vr.warnings || [];
     let lastParams = vr.parameters || [];
     let lastQualityHints: { category: string; message: string; line: number }[] =
-      (vr as any).qualityHints || [];
+      vr.qualityHints || [];
     try {
       for (let iter = 1; iter <= maxIters; iter++) {
         const paramHints = lastParams
