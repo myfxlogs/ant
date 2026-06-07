@@ -4,10 +4,13 @@ Static code quality analysis for ant strategy Python code.
 Read-only analysis — does NOT execute user code. Adapted from QuantDinger's
 indicator_code_quality.py for our ``run(context)`` event-driven model.
 
-Three checks:
-  1. FUTURE_DATA_LEAK  — forward indexing inside loops (AST-based, 100% accurate)
-  2. MISSING_PARAM     — params.get('x') without @param x declaration
-  3. UNREAD_PARAM      — @param x declared but never read
+Checks (6 dimensions):
+  1. FUTURE_DATA_LEAK     — forward indexing inside loops (AST-based, 100% accurate)
+  2. MISSING_PARAM        — params.get('x') without @param x declaration
+  3. UNREAD_PARAM         — @param x declared but never read
+  4. NDARRAY_PANDAS_MISUSE — calling .rolling()/.shift()/.fillna() on numpy arrays
+  5. NO_STOP_AND_TAKE_PROFIT — has buy/sell signals but no @strategy stopLossPct/takeProfitPct
+  6. NO_ENTRY_PCT          — has buy/sell signals but no @strategy entryPct
 """
 
 from __future__ import annotations
@@ -20,7 +23,7 @@ from typing import List, Set
 
 @dataclass
 class CodeHint:
-    category: str   # "FUTURE_DATA_LEAK" | "MISSING_PARAM" | "UNREAD_PARAM"
+    category: str   # "FUTURE_DATA_LEAK" | "MISSING_PARAM" | "UNREAD_PARAM" | "NDARRAY_PANDAS_MISUSE" | "NO_STOP_AND_TAKE_PROFIT" | "NO_ENTRY_PCT"
     severity: str   # "error" | "warn" | "info"
     message: str    # Chinese human-readable
     line: int       # 1-based approximate line number (0 if unknown)
@@ -224,6 +227,152 @@ def _check_unread_params(code: str) -> List[CodeHint]:
 
 
 # ---------------------------------------------------------------------------
+# check 4: NDARRAY_PANDAS_MISUSE
+# ---------------------------------------------------------------------------
+
+# Pandas-only methods that do NOT exist on numpy ndarrays.
+# AI-generated code often calls these on variables that are actually numpy
+# arrays (from context['close'], context['open'], etc.).
+_PANDAS_ONLY_METHODS = frozenset({
+    "rolling", "shift", "fillna", "dropna", "ewm", "expanding",
+    "resample", "pct_change", "diff",
+})
+
+# Variable names strongly suggesting numpy arrays (from context[...]).
+# We detect calls like `close.rolling(...)` where `close` is a numpy array.
+_ARRAY_LIKE_NAMES = frozenset({
+    "close", "open", "high", "low", "volume", "prices",
+    "data", "values", "series", "arr", "array",
+    "returns", "bars", "ohlc", "ohlcv",
+})
+
+
+def _check_ndarray_pandas_misuse(code: str) -> List[CodeHint]:
+    """Detect pandas-only method calls on likely numpy arrays via AST.
+
+    Example: ``close.rolling(20).mean()`` where ``close`` is from
+    ``context['close']`` (a numpy ndarray). Pandas Series has .rolling();
+    numpy ndarray does not.
+    """
+    hints: List[CodeHint] = []
+    seen: Set[str] = set()
+
+    try:
+        tree = ast.parse(code or "")
+    except SyntaxError:
+        return hints
+
+    for node in ast.walk(tree):
+        # Match: <var>.<method>(...) where method is pandas-only
+        if not isinstance(node, ast.Call):
+            continue
+        if not isinstance(node.func, ast.Attribute):
+            continue
+        method = node.func.attr
+        if method not in _PANDAS_ONLY_METHODS:
+            continue
+        # Check if the object is a simple name like 'close'
+        if not isinstance(node.func.value, ast.Name):
+            continue
+        var_name = node.func.value.id
+        if var_name not in _ARRAY_LIKE_NAMES:
+            continue
+
+        line = node.lineno
+        try:
+            src_lines = code.split("\n")
+            snippet = src_lines[line - 1].strip() if line - 1 < len(src_lines) else ""
+        except Exception:
+            snippet = ""
+
+        key = f"{snippet}:{line}"
+        if key in seen:
+            continue
+        seen.add(key)
+
+        hints.append(CodeHint(
+            category="NDARRAY_PANDAS_MISUSE",
+            severity="error",
+            message=(
+                f"'{var_name}.{method}()' 可能是 numpy ndarray 上调用了 pandas 方法。"
+                f"context['{var_name}'] 返回的是 numpy 数组，不支持 .{method}()。"
+                f"如需使用，先转换为 pandas Series: pd.Series({var_name}).{method}(...)"
+            ),
+            line=line,
+            snippet=snippet,
+        ))
+
+    return hints
+
+
+# ---------------------------------------------------------------------------
+# check 5: NO_STOP_AND_TAKE_PROFIT
+# ---------------------------------------------------------------------------
+
+_STRATEGY_KEY_RE = re.compile(r"^\s*#\s*@strategy\s+(\w+)", re.MULTILINE)
+
+
+def _has_buy_sell_signal(code: str) -> bool:
+    """Heuristic: check if the run() function returns buy/sell signals."""
+    # Look for return {'signal': 'buy'/'sell'} or return dict with signal key
+    stripped = _strip_comments(code)
+    return bool(re.search(
+        r"""return\s*\{[^}]*['"]signal['"]\s*:\s*['"](?:buy|sell)""",
+        stripped,
+    ))
+
+
+def _check_no_stop_take_profit(code: str) -> List[CodeHint]:
+    """Warn if strategy has buy/sell signals but no @strategy stopLossPct/takeProfitPct."""
+    if not _has_buy_sell_signal(code):
+        return []
+
+    declared = {m.group(1) for m in _STRATEGY_KEY_RE.finditer(code or "")}
+    hints: List[CodeHint] = []
+
+    if "stopLossPct" not in declared:
+        hints.append(CodeHint(
+            category="NO_STOP_AND_TAKE_PROFIT",
+            severity="warn",
+            message="策略包含买入/卖出信号但未声明 @strategy stopLossPct，建议设置止损以控制风险",
+            line=0,
+            snippet="# @strategy stopLossPct: 2.0",
+        ))
+    if "takeProfitPct" not in declared:
+        hints.append(CodeHint(
+            category="NO_STOP_AND_TAKE_PROFIT",
+            severity="warn",
+            message="策略包含买入/卖出信号但未声明 @strategy takeProfitPct，建议设置止盈以锁定利润",
+            line=0,
+            snippet="# @strategy takeProfitPct: 5.0",
+        ))
+
+    return hints
+
+
+# ---------------------------------------------------------------------------
+# check 6: NO_ENTRY_PCT
+# ---------------------------------------------------------------------------
+
+def _check_no_entry_pct(code: str) -> List[CodeHint]:
+    """Warn if strategy has buy/sell signals but no @strategy entryPct."""
+    if not _has_buy_sell_signal(code):
+        return []
+
+    declared = {m.group(1) for m in _STRATEGY_KEY_RE.finditer(code or "")}
+    if "entryPct" in declared:
+        return []
+
+    return [CodeHint(
+        category="NO_ENTRY_PCT",
+        severity="info",
+        message="策略包含买入/卖出信号但未声明 @strategy entryPct，默认将使用 100% 仓位",
+        line=0,
+        snippet="# @strategy entryPct: 50.0",
+    )]
+
+
+# ---------------------------------------------------------------------------
 # helpers (shared)
 # ---------------------------------------------------------------------------
 
@@ -240,7 +389,7 @@ def _line_of(pattern: str, code: str, start: int = 0) -> int:
 # ---------------------------------------------------------------------------
 
 def analyze_code_quality(source: str) -> List[CodeHint]:
-    """Run all static quality checks. Returns hints sorted by line number."""
+    """Run all static quality checks (6 dimensions). Returns hints sorted by line number."""
     if not source or not source.strip():
         return []
 
@@ -248,6 +397,9 @@ def analyze_code_quality(source: str) -> List[CodeHint]:
     hints.extend(_check_future_data_leak(source))
     hints.extend(_check_missing_params(source))
     hints.extend(_check_unread_params(source))
+    hints.extend(_check_ndarray_pandas_misuse(source))
+    hints.extend(_check_no_stop_take_profit(source))
+    hints.extend(_check_no_entry_pct(source))
 
     # Stable output: sort by line, then category, then message
     hints.sort(key=lambda h: (h.line, h.category, h.message))

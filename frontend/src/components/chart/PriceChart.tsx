@@ -126,10 +126,40 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     }
   }, [activeIndicators, getDef]);
 
+  // ── Backtest trade markers overlay ──
+  const btOverlayIdRef = useRef<string | null>(null);
   useEffect(() => {
     const chart = chartRef.current;
-    if (!chart || !trades) return;
-    try { (chart as any).setOverlayData?.('backtest_trades', trades); } catch { /* overlay best-effort */ }
+    if (!chart) return;
+
+    if (!trades || trades.length === 0) {
+      // Remove overlay when no trades.
+      if (btOverlayIdRef.current) {
+        try { chart.removeOverlay(btOverlayIdRef.current); } catch { /* best-effort */ }
+        btOverlayIdRef.current = null;
+      }
+      return;
+    }
+
+    if (btOverlayIdRef.current) {
+      // Update existing overlay data in-place.
+      try {
+        chart.overrideOverlay({
+          name: 'backtest_trades',
+          id: btOverlayIdRef.current,
+          extendData: trades,
+        } as any);
+      } catch { /* best-effort */ }
+    } else {
+      // Create new overlay.
+      try {
+        const id = chart.createOverlay({
+          name: 'backtest_trades',
+          extendData: trades,
+        });
+        if (id) btOverlayIdRef.current = Array.isArray(id) ? String(id[0]) : String(id);
+      } catch { /* best-effort */ }
+    }
   }, [trades]);
 
   const handleLoadMore = useCallback((oldest: { time: number }) => {

@@ -105,7 +105,7 @@ export function useStrategyWorkspaceState() {
       strategyDirectives: btCtx.strategyDirectives,
       applyDatePreset: btCtx.applyDatePreset, applyPreset: btCtx.applyPreset,
       applyDefaults: btCtx.applyDefaults, getTimeframeWarning: btCtx.getTimeframeWarning,
-      runId: btCtx.backtestRunId, run: handleRunBacktest,
+      runId: btCtx.backtestRunId, chartTrades: btCtx.chartTrades, run: handleRunBacktest,
     },
     tuning: {
       subTab: btCtx.subTab, setSubTab: btCtx.setSubTab,
@@ -118,6 +118,6 @@ export function useStrategyWorkspaceState() {
     quickTrade: { positionCount: qt.positionCount, allPositions: qt.allPositions, qtPositions: qt.qtPositions, qtRecentTrades: qt.qtRecentTrades, handleClosePosition: qt.handleClosePosition },
     layout: { codePanelVisible, setCodePanelVisible, positionsPanelVisible, setPositionsPanelVisible, quickTradeVisible, setQuickTradeVisible },
     history: { drawerOpen: historyDrawerOpen, runId: historyRunId, open: handleOpenHistory, close: handleCloseHistory },
-    ai: { optimize: ai.handleAIOptimize, optimizePrompt: ai.aiOptimizePrompt, askForValidation: ai.handleAskAIForValidation, chatAutoApply: ai.chatAutoApply, autoFixing: ai.autoFixing, autoFix: ai.handleAutoFix, applyTunedParams: (code: string) => { codeCtx.setCode(code); } },
+    ai: { optimize: ai.handleAIOptimize, optimizePrompt: ai.aiOptimizePrompt, askForValidation: ai.handleAskAIForValidation, chatAutoApply: ai.chatAutoApply, autoFixing: ai.autoFixing, autoFix: ai.handleAutoFix, autoFixDebug: ai.autoFixDebug, dismissDebug: ai.dismissDebug, applyTunedParams: (code: string) => { codeCtx.setCode(code); } },
   };
 }

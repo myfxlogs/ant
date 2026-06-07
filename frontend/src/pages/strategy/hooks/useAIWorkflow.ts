@@ -2,10 +2,74 @@ import { useState, useCallback } from 'react';
 import { message } from 'antd';
 import type { BacktestMetrics } from './useBacktestParams';
 
+/** Snapshot of issues at a point in time (used for before/after comparison). */
+interface IssueSnapshot {
+  errors: string[];
+  warnings: string[];
+  hints: { category: string; message: string; line: number }[];
+}
+
+/** Debug summary shown after auto-fix completes. */
+export interface AutoFixDebug {
+  iterations: number;
+  passed: boolean;
+  /** Issues that existed before but were resolved. */
+  fixed: IssueSnapshot;
+  /** Issues that still exist after all iterations. */
+  remaining: IssueSnapshot;
+  /** Issues that were NOT present before but appeared after fix (regressions). */
+  introduced: IssueSnapshot;
+}
+
+function snapshotFromResult(r: {
+  errors?: string[]; warnings?: string[];
+  qualityHints?: { category: string; message: string; line: number }[];
+}): IssueSnapshot {
+  return {
+    errors: [...(r.errors || [])],
+    warnings: [...(r.warnings || [])],
+    hints: (r.qualityHints || []).map(h => ({
+      category: h.category, message: h.message, line: h.line,
+    })),
+  };
+}
+
+/** Compute diff: (before minus after) = fixed, (after minus before) = introduced, (intersection) = remaining. */
+function diffIssues(before: IssueSnapshot, after: IssueSnapshot): { fixed: IssueSnapshot; remaining: IssueSnapshot; introduced: IssueSnapshot } {
+  const setFrom = (errors: string[]) => new Set(errors);
+  const hintSet = (hints: { category: string; message: string; line: number }[]) =>
+    new Set(hints.map(h => `${h.category}::${h.message}::${h.line}`));
+
+  const bErr = setFrom(before.errors);
+  const aErr = setFrom(after.errors);
+  const bWarn = setFrom(before.warnings);
+  const aWarn = setFrom(after.warnings);
+  const bHint = hintSet(before.hints);
+  const aHint = hintSet(after.hints);
+
+  return {
+    fixed: {
+      errors: before.errors.filter(e => !aErr.has(e)),
+      warnings: before.warnings.filter(w => !aWarn.has(w)),
+      hints: before.hints.filter(h => !aHint.has(`${h.category}::${h.message}::${h.line}`)),
+    },
+    remaining: {
+      errors: after.errors.filter(e => bErr.has(e)),
+      warnings: after.warnings.filter(w => bWarn.has(w)),
+      hints: after.hints.filter(h => bHint.has(`${h.category}::${h.message}::${h.line}`)),
+    },
+    introduced: {
+      errors: after.errors.filter(e => !bErr.has(e)),
+      warnings: after.warnings.filter(w => !bWarn.has(w)),
+      hints: after.hints.filter(h => !bHint.has(`${h.category}::${h.message}::${h.line}`)),
+    },
+  };
+}
+
 interface AICodeContext {
   code: string;
   setCode: (code: string) => void;
-  validationResult: { valid: boolean; errors?: string[]; warnings?: string[]; parameters?: { key: string; type?: string; required?: boolean; default?: unknown; suggested?: unknown }[] } | null;
+  validationResult: { valid: boolean; errors?: string[]; warnings?: string[]; parameters?: { key: string; type?: string; required?: boolean; default?: unknown; suggested?: unknown }[]; qualityHints?: { category: string; message: string; line: number }[] } | null;
   setValidationResult: (r: any) => void;
   setLastValidatedCode: (code: string) => void;
   loadTemplates: () => Promise<void>;
@@ -19,6 +83,8 @@ export function useAIWorkflow(
   const [aiOptimizePrompt, setAiOptimizePrompt] = useState<string | null>(null);
   const [chatAutoApply, setChatAutoApply] = useState(true);
   const [autoFixing, setAutoFixing] = useState(false);
+  const [autoFixDebug, setAutoFixDebug] = useState<AutoFixDebug | null>(null);
+  const dismissDebug = useCallback(() => setAutoFixDebug(null), []);
 
   const handleAIOptimize = useCallback(() => {
     const m = btMetrics;
@@ -59,12 +125,19 @@ export function useAIWorkflow(
     const vr = codeCtx.validationResult;
     const currentCode = codeCtx.code;
     if (!vr || vr.valid || !currentCode) return;
+
+    // Snapshot pre-fix state for debug card.
+    const preSnapshot = snapshotFromResult(vr);
+
     setAutoFixing(true);
+    setAutoFixDebug(null);
     const maxIters = 3;
     let code = currentCode;
     let lastErrors: string[] = vr.errors || [];
     let lastWarnings: string[] = vr.warnings || [];
     let lastParams = vr.parameters || [];
+    let lastQualityHints: { category: string; message: string; line: number }[] =
+      (vr as any).qualityHints || [];
     try {
       for (let iter = 1; iter <= maxIters; iter++) {
         const paramHints = lastParams
@@ -96,10 +169,14 @@ export function useAIWorkflow(
           if (!result.python) throw new Error('AI returned no code');
           code = result.python;
           const recheck = await codeAssistApi.validateExtended(code);
+          const postSnapshot = snapshotFromResult(recheck);
+
           if (recheck.valid) {
             codeCtx.setCode(code);
             codeCtx.setLastValidatedCode(code);
             codeCtx.setValidationResult(recheck);
+            const diff = diffIssues(preSnapshot, postSnapshot);
+            setAutoFixDebug({ iterations: iter, passed: true, ...diff });
             message.success(`Auto-fix passed after ${iter} iteration${iter > 1 ? 's' : ''}`);
             setAutoFixing(false);
             return;
@@ -107,15 +184,21 @@ export function useAIWorkflow(
           lastErrors = recheck.errors || [];
           lastWarnings = recheck.warnings || [];
           lastParams = recheck.parameters || [];
+          lastQualityHints = recheck.qualityHints || [];
           codeCtx.setCode(code);
+
+          // On last iteration, compute debug diff for the final state.
+          if (iter === maxIters) {
+            codeCtx.setValidationResult(recheck);
+            const diff = diffIssues(preSnapshot, postSnapshot);
+            setAutoFixDebug({ iterations: maxIters, passed: false, ...diff });
+            message.warning(`Auto-fix: ${lastErrors.length} issue(s) remain after ${maxIters} iterations`);
+          }
         } catch (e: unknown) {
           if (iter < maxIters) continue;
           throw e;
         }
       }
-      codeCtx.setCode(code);
-      codeCtx.setValidationResult({ valid: false, errors: lastErrors, warnings: lastWarnings, parameters: lastParams });
-      message.warning(`Auto-fix: ${lastErrors.length} issue(s) remain after ${maxIters} iterations`);
     } catch (e: unknown) {
       message.error((e as Error)?.message || 'Auto-fix failed');
     } finally {
@@ -124,7 +207,7 @@ export function useAIWorkflow(
   }, [codeCtx.code, codeCtx.validationResult, codeCtx.setCode, codeCtx.setLastValidatedCode, codeCtx.setValidationResult]);
 
   return {
-    aiOptimizePrompt, chatAutoApply, autoFixing,
+    aiOptimizePrompt, chatAutoApply, autoFixing, autoFixDebug, dismissDebug,
     handleAIOptimize, handleAskAIForValidation, handleAutoFix,
     setAiOptimizePrompt,
   };

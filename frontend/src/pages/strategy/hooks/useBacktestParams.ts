@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { message } from 'antd';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
 import { gateApi } from '@/client/gate';
+import { backtestRunsApi, type BacktestTrade } from '@/client/backtestRuns';
 import type { GateResult, GatePipelineSummary } from '@/gen/ant/v1/ai_gate_pb';
 import {
   backendDirectivesToStrategyDirectives, backendSweepToSweepDimensions,
@@ -17,6 +18,16 @@ export { PRESETS, DATE_PRESETS, OPTIMIZER_INFO };
 
 export type BacktestStatus = 'idle' | 'running' | 'completed' | 'error';
 export type BacktestSubTab = 'results' | 'tuning' | 'gate';
+
+/** Chart-ready trade for klinecharts backtest overlay. */
+export interface ChartTrade {
+  side: string;
+  openTime: number;
+  openPrice: number;
+  closeTime?: number;
+  closePrice?: number;
+  pnl?: number;
+}
 
 export interface BacktestMetrics {
   totalReturn?: number; annualReturn?: number; maxDrawdown?: number;
@@ -104,6 +115,19 @@ export function useBacktestParams() {
           setExecutionAssumptions(update.executionAssumptions || null);
           setErrorMsg(update.error || ''); stopWatching();
           backtestWatchRef.current = null;
+          // Fetch trade details for chart overlay markers.
+          if (update.status === 'SUCCEEDED') {
+            backtestRunsApi.getTrades(result.runId).then((tr) => {
+              setChartTrades(tr.trades.map((t: BacktestTrade) => ({
+                side: t.side,
+                openTime: t.open_ts,
+                openPrice: t.open_price,
+                closeTime: t.close_ts,
+                closePrice: t.close_price,
+                pnl: t.pnl,
+              })));
+            }).catch(() => { setChartTrades([]); });
+          } else { setChartTrades([]); }
         } else { setMetrics(update.metrics || null); }
       });
       backtestWatchRef.current = stopWatching;
@@ -124,6 +148,7 @@ export function useBacktestParams() {
   }, []);
   const [tuningRunning, setTuningRunning] = useState(false);
   const [backtestRunId, setBacktestRunId] = useState('');
+  const [chartTrades, setChartTrades] = useState<ChartTrade[]>([]);
 
   // Gate evaluation.
   const [gateLoading, setGateLoading] = useState(false);
@@ -224,6 +249,6 @@ export function useBacktestParams() {
     subTab, setSubTab, tuneMethod, setTuneMethod,
     sweepDimensions, updateSweepFromCode, toggleDimension, enabledSweepDims, cartesianSize,
     tuningRunning, runTuning,
-    backtestRunId, gateLoading, gateGates, gateSummary, gateError, runGate,
+    backtestRunId, chartTrades, gateLoading, gateGates, gateSummary, gateError, runGate,
   };
 }

@@ -9,6 +9,7 @@ import { useSystemAIConfigsQuery } from '@/queries/useSystemAIConfigsQuery';
 import { aiApi } from '@/client/ai';
 import { discoverSystemAIModels } from '@/pages/ai/systemai/api';
 import type { ValidateExtendedResult } from '@/client/codeAssist';
+import type { AutoFixDebug } from '@/pages/strategy/hooks/useAIWorkflow';
 import StrategyCodeEditor from '@/components/strategy/StrategyCodeEditor';
 import ValidationResultAlert from './ValidationResultAlert';
 import AISettingsModal from './AISettingsModal';
@@ -23,6 +24,8 @@ interface Props {
   onAskAI?: () => void;
   onAutoFix?: () => void;
   autoFixing?: boolean;
+  autoFixDebug?: AutoFixDebug | null;
+  onDismissDebug?: () => void;
 }
 
 const btnStyle: React.CSSProperties = { width: 30, height: 30, borderRadius: 6, padding: 0,
@@ -39,7 +42,7 @@ export default function WorkspaceCodePanel({
   code, onCodeChange,
   validating, onValidate, validationResult,
   onRunBacktest, backtestSubmitting, canSave, onSave, onCopy,
-  onAskAI, onAutoFix, autoFixing,
+  onAskAI, onAutoFix, autoFixing, autoFixDebug, onDismissDebug,
 }: Props) {
   const { t } = useTranslation();
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -190,7 +193,8 @@ export default function WorkspaceCodePanel({
 
       <ValidationResultAlert
         validationResult={validationResult}
-        autoFixing={autoFixing} onAutoFix={onAutoFix} onAskAI={onAskAI}
+        autoFixing={autoFixing} autoFixDebug={autoFixDebug}
+        onAutoFix={onAutoFix} onAskAI={onAskAI} onDismissDebug={onDismissDebug}
       />
 
       <AISettingsModal open={settingsOpen} onClose={handleSettingsClose} />

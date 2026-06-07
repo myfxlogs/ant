@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Radio, Button, Checkbox, Tag, Table, Typography, Tooltip } from 'antd';
+import { Radio, Button, Checkbox, Tag, Table, Typography, Tooltip, Alert } from 'antd';
 import { ExperimentOutlined, TrophyOutlined, ThunderboltOutlined, RobotOutlined } from '@ant-design/icons';
 import type { SweepDimension, TuneMethod } from '../../hooks/useBacktestParams';
 import { OPTIMIZER_INFO } from '../../hooks/useBacktestParams';
@@ -109,6 +109,24 @@ export default function SmartTuningPanel({
           ))}
         </Radio.Group>
       </div>
+
+      {/* Budget auto-suggest: Grid → DE when Cartesian product exceeds 48 */}
+      {tuneMethod === 'grid' && cartesianSize > 48 && (
+        <Alert
+          type="info" showIcon style={{ marginBottom: 12, padding: '6px 12px' }}
+          message={
+            <span style={{ fontSize: 11 }}>
+              Grid Search would test <b>{cartesianSize.toLocaleString()}</b> combinations (budget: 48).
+              Consider switching to <b>Differential Evolution</b> which handles large parameter spaces efficiently.
+            </span>
+          }
+          action={
+            <Button size="small" type="primary" onClick={() => onTuneMethodChange('de')}>
+              Switch to DE
+            </Button>
+          }
+        />
+      )}
 
       {/* Run button + AI hint */}
       <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>

@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useMemo, useState, useEffect } from 'react';
+import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { Collapse } from 'antd';
 import { DoubleRightOutlined, DoubleLeftOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -61,11 +61,8 @@ export default function StrategyWorkspacePage() {
     });
   }, [lastSavedId, sessionId]);
 
-  const chartTrades = useMemo(() =>
-    ws.backtest.metrics?.trades?.map((t: any) => ({
-      side: t.side, openPrice: t.price, openTime: t.time, pnl: t.pnl,
-    })), [ws.backtest.metrics?.trades],
-  );
+  // Chart trades come from the backtest trades API (fetched on completion),
+  // not from metrics.trades (which doesn't exist in the BacktestRunUpdate proto).
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 112px)', background: '#fff' }}>
@@ -124,6 +121,8 @@ export default function StrategyWorkspacePage() {
               onAskAI={ws.ai.askForValidation}
               onAutoFix={ws.ai.autoFix}
               autoFixing={ws.ai.autoFixing}
+              autoFixDebug={ws.ai.autoFixDebug}
+              onDismissDebug={ws.ai.dismissDebug}
             />
             <AIChatPanel code={ws.code.code} symbol={ws.account.symbol} timeframe={ws.account.timeframe} onApply={ws.code.setCode} initialPrompt={ws.ai.optimizePrompt} autoApply={ws.ai.chatAutoApply} sessionId={sessionId} chatHistory={chatHistory} />
             <Collapse ghost size="small" style={{ background: 'transparent' }} items={[
@@ -174,7 +173,7 @@ export default function StrategyWorkspacePage() {
                 <PriceChart
                   symbol={ws.account.symbol} timeframe={ws.account.timeframe} onTimeframeChange={ws.account.setTimeframe}
                   accountId={ws.account.accountId}
-                  trades={chartTrades}
+                  trades={ws.backtest.chartTrades}
                 />
               </WorkspaceErrorBoundary>
             ) : (
