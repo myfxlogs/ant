@@ -120,7 +120,6 @@ export default function StrategyWorkspacePage() {
               code={ws.code.code} onCodeChange={ws.code.setCode}
               validating={ws.code.validating} onValidate={ws.code.handleValidate}
               validationResult={ws.code.validationResult}
-              onRunBacktest={ws.backtest.run} backtestSubmitting={ws.backtest.submitting}
               canSave={ws.code.canSave} onSave={ws.code.handleSave} onCopy={ws.code.handleCopy}
               onAskAI={ws.ai.askForValidation}
               onAutoFix={ws.ai.autoFix}

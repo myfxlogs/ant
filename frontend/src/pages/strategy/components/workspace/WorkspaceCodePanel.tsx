@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Button, Space, Tooltip, Select, message } from 'antd';
 import {
-  CheckCircleOutlined, PlayCircleOutlined, CopyOutlined,
+  CheckCircleOutlined, CopyOutlined,
   SaveOutlined, SettingOutlined, RobotOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -18,7 +18,7 @@ interface Props {
   onCodeChange: (code: string) => void;
   validating: boolean; onValidate: () => void;
   validationResult: ValidateExtendedResult | null;
-  onRunBacktest: () => void; backtestSubmitting: boolean;
+  onRunBacktest?: () => void; backtestSubmitting?: boolean;
   canSave: boolean; onSave: () => void; onCopy: () => void;
   onAskAI?: () => void;
   onAutoFix?: () => void;
@@ -130,10 +130,6 @@ export default function WorkspaceCodePanel({
             </Tooltip>
             <Tooltip title={t('strategy.workspace.save', 'Save')}>
               <Button size="small" type="primary" icon={<SaveOutlined />} onClick={onSave} disabled={!canSave} style={btnStyle} />
-            </Tooltip>
-            <Tooltip title={t('strategy.workspace.runBacktest', 'Run Backtest')}>
-              <Button size="small" type="primary" icon={<PlayCircleOutlined />}
-                loading={backtestSubmitting} onClick={onRunBacktest} disabled={!code} style={btnStyle} />
             </Tooltip>
             <Tooltip title={t('strategy.ai.settings', 'AI Settings')}>
               <Button size="small" icon={<SettingOutlined />} onClick={() => setSettingsOpen(true)} style={btnStyle} />
