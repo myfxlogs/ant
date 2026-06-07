@@ -38,12 +38,15 @@ export function useStrategyWorkspaceState() {
   // Backtest + Smart Tuning
   const btCtx = useBacktestParams();
   const handleRunBacktest = useCallback(() => {
-    btCtx.run(codeCtx.code, symbol, accountId, timeframe, activeAccounts, codeCtx.loadTemplates);
-  }, [codeCtx.code, symbol, accountId, timeframe, activeAccounts, codeCtx.loadTemplates, btCtx.run]);
+    btCtx.runBacktest({ code: codeCtx.code, symbol, accountId, timeframe });
+  }, [codeCtx.code, symbol, accountId, timeframe, btCtx.runBacktest]);
 
   const handleRunTuning = useCallback(async (): Promise<string> => {
-    return btCtx.runTuning(codeCtx.code, symbol, accountId, timeframe, handleRunBacktest);
-  }, [codeCtx.code, symbol, accountId, timeframe, handleRunBacktest, btCtx.runTuning]);
+    return btCtx.runTuning({
+      code: codeCtx.code, symbol, timeframe,
+      startDate: btCtx.startDate, endDate: btCtx.endDate,
+    });
+  }, [codeCtx.code, symbol, timeframe, btCtx.startDate, btCtx.endDate, btCtx.runTuning]);
 
   // Quick Trade data
   const qt = useQuickTradeData(accountId, symbol);
