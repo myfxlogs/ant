@@ -121,6 +121,17 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
         {loading && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10, background: 'rgba(0,0,0,0.3)' }}><Spin /></div>}
         {error && !loading && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef5350', zIndex: 10 }}>{error}</div>}
         {!symbol && !loading && !error && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', zIndex: 10 }}>Select a symbol to view chart</div>}
+        {/* Diagnostic: show when all conditions seem fine but no data */}
+        {!loading && !error && symbol && bars.length === 0 && (
+          <div style={{ position: 'absolute', bottom: 8, left: 8, zIndex: 11, background: 'rgba(0,0,0,0.7)', color: '#faad14', fontSize: 10, padding: '2px 6px', borderRadius: 3 }}>
+            ⚠ No data — bars=0, stream={streamActive ? 'ON' : 'OFF'}
+          </div>
+        )}
+        {!loading && !error && symbol && bars.length > 0 && (
+          <div style={{ position: 'absolute', bottom: 8, left: 8, zIndex: 11, background: 'rgba(0,0,0,0.7)', color: '#22c55e', fontSize: 10, padding: '2px 6px', borderRadius: 3 }}>
+            ✓ {bars.length} bars loaded
+          </div>
+        )}
         <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
       </div>
     </div>
