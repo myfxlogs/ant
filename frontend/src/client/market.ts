@@ -24,6 +24,12 @@ export interface KlineData {
   volume: number;
 }
 
+/** Detect MT session errors from ConnectRPC errors. */
+export function isMTSessionError(e: unknown): boolean {
+  const msg = String((e as Error)?.message || '');
+  return msg.includes('session not found') || msg.includes('mthub');
+}
+
 function toUnixSeconds(ts: Timestamp | undefined): number {
   if (!ts) return 0;
   return Number(ts.seconds ?? BigInt(0));
@@ -32,13 +38,10 @@ function toUnixSeconds(ts: Timestamp | undefined): number {
 export const marketApi = {
   // getSymbols returns all available symbol names from the connected broker.
   // Uses SymbolList RPC (fast, returns just names).
+  // Throws on MT session errors so the UI can show a helpful message.
   getSymbols: async (accountId: string): Promise<SymbolInfo[]> => {
-    try {
-      const resp = await tradingClient.symbolList({ accountId });
-      return (resp.symbols || []).map((s) => ({ symbol: s }));
-    } catch (e) { console.warn('market API call failed', e);
-      return [];
-    }
+    const resp = await tradingClient.symbolList({ accountId });
+    return (resp.symbols || []).map((s) => ({ symbol: s }));
   },
 
   // resolveSymbol passthrough (broker symbols used directly for K-line queries).

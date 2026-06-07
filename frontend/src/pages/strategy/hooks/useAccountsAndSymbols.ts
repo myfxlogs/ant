@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { accountApi } from '@/client/account';
-import { marketApi, type SymbolInfo } from '@/client/market';
+import { marketApi, isMTSessionError, type SymbolInfo } from '@/client/market';
 
 interface AccountLike { id: string; [key: string]: unknown; }
 type SymbolOption = { value: string; label: string };
@@ -9,6 +9,7 @@ export function useAccountsAndSymbols() {
   const [accounts, setAccounts] = useState<AccountLike[]>([]);
   const [symbols, setSymbols] = useState<SymbolOption[]>([]);
   const [symbolsLoading, setSymbolsLoading] = useState(false);
+  const [mtError, setMtError] = useState<string | null>(null);
 
   const fetchAccounts = useCallback(async () => {
     try {
@@ -20,8 +21,9 @@ export function useAccountsAndSymbols() {
   }, []);
 
   const loadSymbols = useCallback(async (accountId: string) => {
-    if (!accountId) { setSymbols([]); return; }
+    if (!accountId) { setSymbols([]); setMtError(null); return; }
     setSymbolsLoading(true);
+    setMtError(null);
     try {
       const list = await marketApi.getSymbols(accountId);
       const seen = new Set<string>();
@@ -31,12 +33,15 @@ export function useAccountsAndSymbols() {
         .filter((v) => { if (seen.has(v)) return false; seen.add(v); return true; })
         .map((v) => ({ value: v, label: v }));
       setSymbols(opts);
-    } catch {
+    } catch (e) {
       setSymbols([]);
+      if (isMTSessionError(e)) {
+        setMtError('MT session not found. The trading terminal may be reconnecting — refresh in a moment.');
+      }
     } finally {
       setSymbolsLoading(false);
     }
   }, []);
 
-  return { accounts, symbols, symbolsLoading, fetchAccounts, loadSymbols };
+  return { accounts, symbols, symbolsLoading, mtError, fetchAccounts, loadSymbols };
 }

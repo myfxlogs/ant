@@ -15,6 +15,7 @@ interface Props {
   onCloseCodePanel?: () => void;
   positionsCount?: number; onTogglePositionsPanel?: () => void;
   quickTradeVisible: boolean; onToggleQuickTrade: () => void;
+  mtError?: string | null;
 }
 
 const groupStyle: React.CSSProperties = {
@@ -57,6 +58,7 @@ export default function WorkspaceToolbar({
   codePanelVisible, onToggleCodePanel, onCloseCodePanel,
   positionsCount, onTogglePositionsPanel,
   quickTradeVisible, onToggleQuickTrade,
+  mtError,
 }: Props) {
   const hasData = accountInfo != null;
   const profitColor = accountInfo && accountInfo.profit >= 0 ? '#26a69a' : '#ef5350';
@@ -158,6 +160,19 @@ export default function WorkspaceToolbar({
           Quick Trade
         </Button>
       </div>
+
+      {/* MT session error banner */}
+      {mtError && (
+        <div style={{
+          marginTop: 8, padding: '6px 12px',
+          background: '#fff2f0', border: '1px solid #ffccc7',
+          borderRadius: 6, fontSize: 12, color: '#cf1322',
+          display: 'flex', alignItems: 'center', gap: 8,
+        }}>
+          <span style={{ fontSize: 14 }}>⚠</span>
+          <span>{mtError}</span>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Chart } from 'klinecharts';
-import { marketApi, type KlineData } from '@/client/market';
+import { marketApi, isMTSessionError, type KlineData } from '@/client/market';
 import { subscribeEvents } from '@/client/stream';
 import type { BarUpdateEvent } from '@/gen/ant/v1/stream_pb';
 import { setBidAsk, clearBidAsk, setBidAskPrecision } from './BidAskIndicator';
@@ -88,7 +88,12 @@ export function useChartData(
     marketApi.subscribeBars({ accountId, symbol })
       .then(() => { if (!cancelledRef.current) setStreamActive(true); })
       .catch((err: Error) => {
-        if (!cancelledRef.current) setError(`Live stream unavailable: ${err.message || 'subscription failed'}`);
+        if (!cancelledRef.current) {
+          const msg = isMTSessionError(err)
+            ? 'MT session lost — real-time updates paused. Check terminal connection.'
+            : `Live stream unavailable: ${err.message || 'subscription failed'}`;
+          setError(msg);
+        }
       });
   }, [symbol, accountId]);
 
@@ -117,7 +122,12 @@ export function useChartData(
         if (!cancelled) { barsRef.current = data ?? []; setBars(data ?? []); barCache.current.set(cacheKey, data ?? []); setLoading(false); }
       })
       .catch((err: Error) => {
-        if (!cancelled) { setError(err.message || 'Failed to load chart data'); setLoading(false); }
+        if (!cancelled) {
+          const msg = isMTSessionError(err)
+            ? 'MT session lost — chart data unavailable. Check terminal connection.'
+            : (err.message || 'Failed to load chart data');
+          setError(msg); setLoading(false);
+        }
       });
 
     return () => { cancelled = true; };

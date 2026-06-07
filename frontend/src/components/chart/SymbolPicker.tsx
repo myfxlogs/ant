@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Select } from 'antd';
 import type { SelectProps } from 'antd';
 import { StarFilled } from '@ant-design/icons';
-import { marketApi, type SymbolInfo } from '@/client/market';
+import { marketApi, isMTSessionError, type SymbolInfo } from '@/client/market';
 
 const WATCHLIST_KEY = 'ant_watchlist_symbols';
 
@@ -28,20 +28,23 @@ export default function SymbolPicker({ value, onChange, onDropdownVisibleChange,
   const [symbols, setSymbols] = useState<SymbolInfo[]>([]);
   const [watchlist, setWatchlist] = useState<string[]>(loadWatchlist);
   const [loading, setLoading] = useState(false);
+  const [mtError, setMtError] = useState(false);
 
   useEffect(() => {
-    if (!accountId) return;
+    if (!accountId) { setSymbols([]); setMtError(false); return; }
     let cancelled = false;
     setLoading(true);
+    setMtError(false);
     marketApi.getSymbols(accountId)
       .then((list) => {
         if (cancelled) return;
         setSymbols(list);
         setLoading(false);
       })
-      .catch(() => {
+      .catch((e) => {
         if (cancelled) return;
         setLoading(false);
+        if (isMTSessionError(e)) setMtError(true);
       });
 
     return () => { cancelled = true; };
@@ -117,7 +120,7 @@ export default function SymbolPicker({ value, onChange, onDropdownVisibleChange,
         return String(option.value).toLowerCase().includes(input.toLowerCase());
       }}
       options={options}
-      notFoundContent={loading ? 'Loading...' : 'No symbols found'}
+      notFoundContent={loading ? 'Loading...' : mtError ? '⚠ MT session lost — reconnecting…' : 'No symbols found'}
     />
   );
 }
