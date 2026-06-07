@@ -10,6 +10,7 @@ import { aiApi } from '@/client/ai';
 import { discoverSystemAIModels } from '@/pages/ai/systemai/api';
 import type { ValidateExtendedResult } from '@/client/codeAssist';
 import StrategyCodeEditor from '@/components/strategy/StrategyCodeEditor';
+import ValidationResultAlert from './ValidationResultAlert';
 import AISettingsModal from './AISettingsModal';
 
 interface Props {
