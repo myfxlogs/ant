@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/shopspring/decimal"
 	"context"
+	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
@@ -28,15 +29,13 @@ const (
 
 // CheckMarginCall evaluates margin level against per-broker thresholds and publishes
 // events + sends emails at 3 severity levels with independent cooldowns.
-// Pure logic with no PG or other side effects except email and event publishing.
-func CheckMarginCall(
+func (s *AccountSyncService) CheckMarginCall(
 	accountID, userID string,
 	marginLevel, margin, equity, callPct float64,
 	mu *sync.Mutex,
 	lastSent map[string]map[int]time.Time,
 	eventStore *mthub.TradeEventStore,
 	emailNotifier *notifier.EmailNotifier,
-	notifSender *notification.Sender,
 ) {
 	mu.Lock()
 	defer mu.Unlock()
@@ -83,7 +82,7 @@ func CheckMarginCall(
 	}
 
 	// Emit in-app notification for margin call events (all levels).
-	if notifSender != nil {
+	if s.notifSender != nil {
 		uid, err := uuid.Parse(userID)
 		if err == nil {
 			levelLabel := "Warning"
@@ -92,10 +91,16 @@ func CheckMarginCall(
 			} else if curLevel == int(MLevelCall) {
 				levelLabel = "Margin Call"
 			}
-			_, _ = notifSender.Send(context.Background(), uid, "risk_alert",
+			data, _ := json.Marshal(map[string]interface{}{
+				"account_id":   accountID,
+				"margin_level": marginLevel,
+				"call_pct":     callPct,
+				"severity":     curLevel,
+			})
+			_, _ = s.notifSender.Send(context.Background(), uid, "risk_alert",
 				fmt.Sprintf("Margin %s: %s", levelLabel, accountID),
 				fmt.Sprintf("Margin level %.1f%% (call level: %.1f%%)", marginLevel, callPct),
-				fmt.Sprintf(`{"account_id":"%s","margin_level":%.1f,"call_pct":%.1f,"severity":%d}`, accountID, marginLevel, callPct, curLevel))
+				string(data))
 		}
 	}
 }
@@ -106,6 +111,7 @@ type AccountSyncService struct {
 	mthubSvc        *mthub.MtHubService
 	analyticsCache  *AnalyticsCache
 	log             *zap.Logger
+	notifSender     *notification.Sender
 }
 
 // NewAccountSyncService creates a new AccountSyncService.
@@ -117,6 +123,9 @@ func NewAccountSyncService(tradeRecordRepo *repository.TradeRecordRepository, mt
 		log:             log,
 	}
 }
+
+// SetNotificationSender injects the notification sender for margin call events.
+func (s *AccountSyncService) SetNotificationSender(ns *notification.Sender) { s.notifSender = ns }
 
 // SyncAccountHistory fetches closed orders from MT broker in monthly chunks and
 // writes them to trade_records.  Each chunk is committed independently — if a

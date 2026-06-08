@@ -186,10 +186,11 @@ func main() {
 	brokerReg := adapter.NewBrokerRegistry()
 	mthubSvc.SetBrokerRegistry(brokerReg)
 
-	go startMdGatewayPipeline(pipelineCtx, log, pool, ch, nc, spillDir, secClient, hub, accountSvc, mthubSvc, accountSyncSvc, tradeRecordRepo, snapshotBroker, accountBroker, barBroker, eventStore, &emailNotifier, &platformAgg, &notifSender, &reconLoop, brokerReg)
+	go startMdGatewayPipeline(pipelineCtx, log, pool, ch, nc, spillDir, secClient, hub, accountSvc, mthubSvc, accountSyncSvc, tradeRecordRepo, snapshotBroker, accountBroker, barBroker, eventStore, &emailNotifier, &platformAgg, &reconLoop, brokerReg)
 
 	mux := http.NewServeMux()
 	reconLoop, emailNotifier, platformAgg, notifSender, workerCleanup = registerHandlers(mux, log, pool, ch, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate, analyticsCache, brokerReg)
+	accountSyncSvc.SetNotificationSender(notifSender)
 
 
 	// Graceful shutdown

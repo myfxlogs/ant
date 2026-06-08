@@ -2,6 +2,7 @@ package ai
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"google.golang.org/protobuf/proto"
@@ -56,30 +57,36 @@ func (s *GateEvalServer) RunEvaluation(
 	if err != nil {
 		return err
 	}
-	result, err := streamGateResults(ctx, input, stream)
-	if err != nil {
-		return err
-	}
+
+	// Run pipeline first so we can emit notification before streaming.
+	result := aigates.Pipeline(input)
 
 	// Emit notification for gate evaluation result.
 	if s.notifSender != nil {
 		if result.Passed {
+			data, _ := json.Marshal(map[string]interface{}{
+				"run_id": run.ID.String(), "symbol": run.Symbol, "gates": len(result.Gates),
+			})
 			_, _ = s.notifSender.Send(ctx, userID, "gate_passed",
 				fmt.Sprintf("Gate Evaluation Passed: %s", run.Symbol),
 				fmt.Sprintf("Strategy for %s passed all %d gates", run.Symbol, len(result.Gates)),
-				fmt.Sprintf(`{"run_id":"%s","symbol":"%s","gates":%d}`, run.ID, run.Symbol, len(result.Gates)))
+				string(data))
 		} else {
 			firstFail := string(result.FirstFail)
 			if firstFail == "" {
 				firstFail = "unknown"
 			}
+			data, _ := json.Marshal(map[string]interface{}{
+				"run_id": run.ID.String(), "symbol": run.Symbol, "failed_at": firstFail,
+			})
 			_, _ = s.notifSender.Send(ctx, userID, "gate_failed",
 				fmt.Sprintf("Gate Evaluation Failed: %s", run.Symbol),
 				fmt.Sprintf("Strategy for %s failed at gate: %s", run.Symbol, firstFail),
-				fmt.Sprintf(`{"run_id":"%s","symbol":"%s","failed_at":"%s"}`, run.ID, run.Symbol, firstFail))
+				string(data))
 		}
 	}
-	return nil
+
+	return streamGateResults(ctx, &result, stream)
 }
 
 // fetchRun fetches the backtest run and validates it is completed.
@@ -123,32 +130,27 @@ func buildGateInput(run *repository.BacktestRun, req *antv1.RunGateEvaluationReq
 	}, nil
 }
 
-// streamGateResults runs the pipeline and streams each gate result + summary.
-// Returns the pipeline result for downstream notification emission.
+// streamGateResults streams each gate result + final summary from a pre-computed pipeline result.
 func streamGateResults(
 	ctx context.Context,
-	input aigates.PipelineInput,
+	result *aigates.PipelineResult,
 	stream *connect.ServerStream[antv1.GateEvaluationUpdate],
-) (*aigates.PipelineResult, error) {
-	result := aigates.Pipeline(input)
+) error {
 	for _, gate := range result.Gates {
 		select {
 		case <-ctx.Done():
-			return nil, ctx.Err()
+			return ctx.Err()
 		default:
 		}
 		if err := stream.Send(&antv1.GateEvaluationUpdate{
 			Gate: toProtoGateResult(gate),
 		}); err != nil {
-			return nil, err
+			return err
 		}
 	}
-	if err := stream.Send(&antv1.GateEvaluationUpdate{
-		Completed: toProtoSummary(result),
-	}); err != nil {
-		return nil, err
-	}
-	return &result, nil
+	return stream.Send(&antv1.GateEvaluationUpdate{
+		Completed: toProtoSummary(*result),
+	})
 }
 
 func toProtoGateResult(g aigates.GateStatus) *antv1.GateResult {

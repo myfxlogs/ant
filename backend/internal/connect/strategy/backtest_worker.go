@@ -232,12 +232,17 @@ func (s *PythonStrategyServer) saveBacktestResult(ctx context.Context, run *repo
 	if s.notifSender != nil {
 		totalReturn := result.GetMetrics().GetTotalReturn()
 		sharpe := result.GetMetrics().GetSharpeRatio()
-		dataJSON := fmt.Sprintf(`{"run_id":"%s","symbol":"%s","timeframe":"%s","total_return":%.2f,"sharpe":%.2f}`,
-			run.ID, run.Symbol, run.Timeframe, totalReturn, sharpe)
+		data, _ := json.Marshal(map[string]interface{}{
+			"run_id":       run.ID.String(),
+			"symbol":       run.Symbol,
+			"timeframe":    run.Timeframe,
+			"total_return": totalReturn,
+			"sharpe":       sharpe,
+		})
 		_, _ = s.notifSender.Send(ctx, run.UserID, "backtest_completed",
 			fmt.Sprintf("Backtest Complete: %s %s", run.Symbol, run.Timeframe),
 			fmt.Sprintf("Strategy on %s %s: return %.2f%%, Sharpe %.2f", run.Symbol, run.Timeframe, totalReturn, sharpe),
-			dataJSON)
+			string(data))
 	}
 }
 
@@ -252,12 +257,16 @@ func (s *PythonStrategyServer) failRun(ctx context.Context, run *repository.Back
 
 	// Emit notification for failed backtest.
 	if s.notifSender != nil {
-		dataJSON := fmt.Sprintf(`{"run_id":"%s","symbol":"%s","timeframe":"%s","error":"%s"}`,
-			run.ID, run.Symbol, run.Timeframe, errMsg)
+		data, _ := json.Marshal(map[string]interface{}{
+			"run_id":    run.ID.String(),
+			"symbol":    run.Symbol,
+			"timeframe": run.Timeframe,
+			"error":     errMsg,
+		})
 		_, _ = s.notifSender.Send(ctx, run.UserID, "backtest_failed",
 			fmt.Sprintf("Backtest Failed: %s %s", run.Symbol, run.Timeframe),
 			errMsg,
-			dataJSON)
+			string(data))
 	}
 }
 
