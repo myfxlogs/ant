@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   Card, Input, Select, Tag, Button, Space, Typography, Row, Col,
-  Tooltip, message, Tabs, Rate,
+  Tooltip, message, Tabs, Rate, Drawer, List, Form, Divider,
 } from 'antd';
 import {
   SearchOutlined, PlusOutlined, ExperimentOutlined,
   ShopOutlined, BookOutlined, PieChartOutlined,
-  StarFilled,
+  StarFilled, SendOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { marketplaceClient } from '@/client/connect';
@@ -14,7 +14,7 @@ import { useRpcQuery } from '@/hooks/useRpcQuery';
 import { StatusResult } from '@/components/common/StatusResult';
 import { useAuthStore } from '@/stores/authStore';
 import PublishStrategyModal from './PublishStrategyModal';
-import type { PublishedStrategy } from '@/gen/ant/v1/marketplace_service_pb';
+import type { PublishedStrategy, CommentItem } from '@/gen/ant/v1/marketplace_service_pb';
 
 const { Title, Text, Paragraph } = Typography;
 const ASSET_CLASSES = ['forex', 'crypto', 'commodity', 'index', 'stock', 'other'] as const;
@@ -32,6 +32,11 @@ export default function MarketplacePage() {
   const [assetFilter, setAssetFilter] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [publishOpen, setPublishOpen] = useState(false);
+  const [detailStrategy, setDetailStrategy] = useState<PublishedStrategy | null>(null);
+  const [comments, setComments] = useState<CommentItem[]>([]);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [commentSubmitting, setCommentSubmitting] = useState(false);
 
   const { data: strategies = [], isLoading, error, refetch } = useRpcQuery(
     ['marketplace', 'published', userId, assetFilter, searchText, sortBy],
@@ -75,6 +80,44 @@ export default function MarketplacePage() {
 
   const isSubscribed = (strategyId: string) => subscriptions.some(s => s.strategyId === strategyId);
 
+  const openDetail = useCallback(async (s: PublishedStrategy) => {
+    setDetailStrategy(s);
+    setComments([]);
+    setCommentText('');
+    setCommentsLoading(true);
+    try {
+      const resp = await marketplaceClient.listComments({
+        strategyId: s.publishId,
+        limit: 50,
+        offset: 0,
+      });
+      setComments((resp.comments || []) as CommentItem[]);
+    } catch { /* comments load failed — non-critical */ }
+    setCommentsLoading(false);
+  }, []);
+
+  const submitComment = useCallback(async () => {
+    if (!commentText.trim() || !detailStrategy) return;
+    setCommentSubmitting(true);
+    try {
+      await marketplaceClient.commentOnStrategy({
+        userId,
+        strategyId: detailStrategy.publishId,
+        content: commentText.trim(),
+      });
+      message.success(t('marketplace.messages.commentPosted'));
+      setCommentText('');
+      // Reload comments.
+      const resp = await marketplaceClient.listComments({
+        strategyId: detailStrategy.publishId,
+        limit: 50,
+        offset: 0,
+      });
+      setComments((resp.comments || []) as CommentItem[]);
+    } catch { message.error(t('marketplace.messages.commentFailed')); }
+    setCommentSubmitting(false);
+  }, [commentText, detailStrategy, userId, t]);
+
   const renderStrategyCard = (s: PublishedStrategy) => {
     const isSub = isSubscribed(s.strategyId);
     const riskLevel = s.riskLevel || 'medium';
@@ -99,7 +142,7 @@ export default function MarketplacePage() {
                 {t('marketplace.card.subscribe')}
               </Button>
             ),
-            <Button key="detail" type="link" size="small">{t('marketplace.card.details')}</Button>,
+            <Button key="detail" type="link" size="small" onClick={() => openDetail(s)}>{t('marketplace.card.details')}</Button>,
           ]}>
           <div style={{ marginBottom: 8 }}>
             <Text strong style={{ fontSize: 15 }}>{displayName}</Text>
@@ -202,6 +245,92 @@ export default function MarketplacePage() {
           },
         ]} />
         <PublishStrategyModal open={publishOpen} userId={userId} onClose={() => setPublishOpen(false)} onPublished={refetch} />
+
+        {/* Detail Drawer */}
+        <Drawer
+          title={detailStrategy?.strategyName || detailStrategy?.title || detailStrategy?.strategyId?.slice(0, 8) || t('marketplace.card.details')}
+          open={!!detailStrategy}
+          onClose={() => setDetailStrategy(null)}
+          width={480}
+          styles={{ body: { paddingBottom: 80 } }}
+        >
+          {detailStrategy && (
+            <>
+              {detailStrategy.description && (
+                <Paragraph style={{ color: '#5A6B75' }}>{detailStrategy.description}</Paragraph>
+              )}
+              <Space size={4} wrap style={{ marginBottom: 16 }}>
+                <Tag color="blue">{t(`marketplace.assetClass.${detailStrategy.assetClass || 'forex'}`, { defaultValue: detailStrategy.assetClass || 'forex' })}</Tag>
+                <Tag>{t(`marketplace.risk.${detailStrategy.riskLevel || 'medium'}`, { defaultValue: detailStrategy.riskLevel || 'medium' })}</Tag>
+                {detailStrategy.tags?.map(tag => <Tag key={tag}>{tag}</Tag>)}
+              </Space>
+              <div style={{ marginBottom: 16 }}>
+                <Rate allowHalf value={detailStrategy.avgRating || 0} style={{ fontSize: 14 }}
+                  onChange={async (v) => {
+                    if (!userId) { message.warning(t('marketplace.messages.loginFirst')); return; }
+                    try {
+                      await marketplaceClient.rateStrategy({ userId, strategyId: detailStrategy.publishId, rating: v });
+                      message.success(t('marketplace.messages.rated'));
+                      refetch();
+                    } catch { message.error(t('marketplace.messages.rateFailed')); }
+                  }} />
+                <span style={{ fontSize: 11, color: '#8c8c8c', marginLeft: 8 }}>
+                  {detailStrategy.ratingCount ? `(${detailStrategy.ratingCount})` : ''}
+                </span>
+              </div>
+
+              <Divider />
+
+              <Typography.Title level={5}>{t('marketplace.detail.comments')} ({comments.length})</Typography.Title>
+              <List
+                loading={commentsLoading}
+                dataSource={comments}
+                locale={{ emptyText: t('marketplace.detail.noComments') }}
+                renderItem={(item: CommentItem) => (
+                  <List.Item style={{ padding: '8px 0' }}>
+                    <List.Item.Meta
+                      title={<Text style={{ fontSize: 13 }}>{item.userName || item.userId?.slice(0, 8)}</Text>}
+                      description={
+                        <>
+                          <Text style={{ fontSize: 13, color: '#1A2B3C' }}>{item.content}</Text>
+                          <br />
+                          <Text style={{ fontSize: 11, color: '#B0BEC5' }}>
+                            {item.createdAt ? new Date(item.createdAt.seconds ? Number(item.createdAt.seconds) * 1000 : item.createdAt as any).toLocaleDateString() : ''}
+                          </Text>
+                        </>
+                      }
+                    />
+                  </List.Item>
+                )}
+              />
+
+              {userId && (
+                <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
+                  <Input.TextArea
+                    rows={2}
+                    value={commentText}
+                    onChange={e => setCommentText(e.target.value)}
+                    placeholder={t('marketplace.detail.commentPlaceholder')}
+                    onPressEnter={e => {
+                      if (!e.shiftKey) {
+                        e.preventDefault();
+                        submitComment();
+                      }
+                    }}
+                  />
+                  <Button
+                    type="primary"
+                    icon={<SendOutlined />}
+                    onClick={submitComment}
+                    loading={commentSubmitting}
+                    disabled={!commentText.trim()}
+                    style={{ alignSelf: 'flex-end' }}
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </Drawer>
       </div>
     </div>
   );

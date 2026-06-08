@@ -143,6 +143,12 @@ const base = {
       subscribed: '订阅成功', subscribeFailed: '订阅失败',
       unsubscribed: '已取消订阅', unsubscribeFailed: '取消订阅失败',
       rated: '评分已提交', rateFailed: '评分失败',
+      commentPosted: '评论已发布', commentFailed: '评论失败',
+    },
+    detail: {
+      comments: '评论',
+      noComments: '暂无评论，快来第一个评论吧！',
+      commentPlaceholder: '写评论...（Shift+Enter 换行）',
     },
   },
   market: {

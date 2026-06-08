@@ -143,6 +143,12 @@ const base = {
       subscribed: 'Subscribed successfully', subscribeFailed: 'Subscribe failed',
       unsubscribed: 'Unsubscribed', unsubscribeFailed: 'Unsubscribe failed',
       rated: 'Rating submitted', rateFailed: 'Rating failed',
+      commentPosted: 'Comment posted', commentFailed: 'Comment failed',
+    },
+    detail: {
+      comments: 'Comments',
+      noComments: 'No comments yet. Be the first!',
+      commentPlaceholder: 'Write a comment... (Shift+Enter for new line)',
     },
   },
   market: {

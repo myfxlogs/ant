@@ -8,6 +8,7 @@ import {
   BulbOutlined, RiseOutlined, FallOutlined, MinusOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import ReactMarkdown from 'react-markdown';
 import { assetAnalysisClient } from '@/client/connect';
 import type { AnalyzeAssetResponse, TfOutlook, SRLevel as SRLevelType } from '@/gen/ant/v1/asset_analysis_pb';
 import type { PartialMessage } from '@bufbuild/protobuf';
@@ -244,18 +245,9 @@ export default function AssetAnalysisPage() {
               style={{ marginBottom: 16, borderRadius: 12, borderColor: '#D4AF37' }}
             >
               {result.aiRecommendation ? (
-                <div
-                  style={{ fontSize: 13, lineHeight: 1.8 }}
-                  dangerouslySetInnerHTML={{
-                    __html: result.aiRecommendation
-                      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                      .replace(/\n\n/g, '</p><p>')
-                      .replace(/\n- /g, '<br/>• ')
-                      .replace(/\n\d\. /g, '<br/>$&')
-                      .replace(/^/, '<p>')
-                      .replace(/$/, '</p>'),
-                  }}
-                />
+                <div style={{ fontSize: 13, lineHeight: 1.8 }}>
+                  <ReactMarkdown>{result.aiRecommendation}</ReactMarkdown>
+                </div>
               ) : (
                 <Text type="secondary">
                   AI recommendation unavailable. Please configure an AI provider in Settings.
