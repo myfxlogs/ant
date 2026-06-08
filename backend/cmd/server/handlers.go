@@ -12,9 +12,11 @@ import (
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/config"
 	internalai "anttrader/internal/ai"
+	"anttrader/internal/analysis"
 	"anttrader/internal/connect/admin"
 	"anttrader/internal/connect/ai"
 	algo "anttrader/internal/connect/algo"
+	assetanalysis "anttrader/internal/connect/asset_analysis"
 	"anttrader/internal/connect/autotrading"
 	mktplace "anttrader/internal/connect/marketplace"
 	"anttrader/internal/connect/notification"
@@ -121,6 +123,11 @@ func registerHandlers(
 	mux.Handle(antv1c.NewAIServiceHandler(aiServer, connectrpc.WithInterceptors(authInterceptor)))
 	// Agent definition CRUD (no proto RPC yet — raw HTTP).
 		mux.Handle(antv1c.NewAgentDefinitionServiceHandler(aiServer, connectrpc.WithInterceptors(authInterceptor)))
+
+		// P3: AI Asset Analysis — MTF outlook, S/R levels, volatility, AI recommendation.
+		assetAnalyzer := analysis.NewAnalyzer(marketDataRepo, log)
+		assetAnalysisServer := assetanalysis.NewAssetAnalysisServer(assetAnalyzer, aiSvc, log)
+		mux.Handle(antv1c.NewAssetAnalysisServiceHandler(assetAnalysisServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	streamServer := system.NewStreamServer(mthubSvc, platformSvc, log)
 	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, connectrpc.WithInterceptors(authInterceptor)))

@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+// AssetAnalysisService provides AI-assisted asset analysis including
+// multi-timeframe outlook, S/R level detection, volatility classification,
+// and AI-generated strategy recommendations.
+service AssetAnalysisService {
+  // AnalyzeAsset performs comprehensive asset analysis and streams results
+  // progressively via SSE. Each frame populates a different phase:
+  //   mtf_outlook → sr_levels → volatility → ai_recommendation → complete
+  rpc AnalyzeAsset(AnalyzeAssetRequest) returns (stream AnalyzeAssetResponse);
+}
+
+message AnalyzeAssetRequest {
+  string symbol = 1;
+  string account_id = 2;
+  // Primary timeframe for analysis detail (default "D1").
+  string timeframe = 3;
+  // Number of bars to fetch per timeframe (default 200, max 500).
+  int32 kline_count = 4;
+}
+
+message AnalyzeAssetResponse {
+  // Phase: "mtf_outlook" | "sr_levels" | "volatility" | "ai_recommendation" | "complete"
+  string phase = 1;
+  // Error message (non-empty only if this phase or a prior phase failed).
+  string error = 2;
+
+  MultiTfOutlook multi_tf = 3;
+  repeated SRLevel key_levels = 4;
+  string volatility_state = 5;    // LOW | NORMAL | HIGH | EXTREME
+  double volatility_value = 6;    // ATR % of price
+  string ai_recommendation = 7;   // AI-generated strategy suggestion (markdown)
+}
+
+message MultiTfOutlook {
+  TfOutlook h1 = 1;
+  TfOutlook h4 = 2;
+  TfOutlook d1 = 3;
+  TfOutlook w1 = 4;
+}
+
+message TfOutlook {
+  // Trend direction: "BULLISH" | "BEARISH" | "NEUTRAL"
+  string trend = 1;
+  // Strength 0-1, computed from directional efficiency and EMA gap.
+  double strength = 2;
+  // EMA(10) vs EMA(30) gap as percentage.
+  double ema_gap_pct = 3;
+  // Price change from first to last bar as percentage.
+  double price_change_pct = 4;
+}
+
+message SRLevel {
+  // Price level (raw double from OHLC clustering; display with symbol precision).
+  double price = 1;
+  // "SUPPORT" | "RESISTANCE"
+  string type = 2;
+  // "MAJOR" | "MINOR"
+  string strength = 3;
+  // Number of bar highs/lows touching this level.
+  int32 touches = 4;
+}

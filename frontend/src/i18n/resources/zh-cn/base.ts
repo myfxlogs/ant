@@ -113,6 +113,7 @@ const base = {
     market: '行情',
     analytics: '分析',
     marketplace: '市场',
+    assetAnalysis: 'AI分析',
     experiments: '策略实验',
     marketRegime: '市场状态',
     assets: '策略资产',

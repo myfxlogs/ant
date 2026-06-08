@@ -33,6 +33,7 @@ import { ExecutionAlgoService } from "../gen/ant/v1/execution_algo_pb";
 import { GateService } from "../gen/ant/v1/ai_gate_pb";
 import { StrategyGenerationService } from "../gen/ant/v1/strategy_generation_pb";
 import { NotificationService } from "../gen/ant/v1/notification_service_pb";
+import { AssetAnalysisService } from "../gen/ant/v1/asset_analysis_pb";
 import { streamTransport, transport } from "./transport";
 
 export const authClient = createClient(AuthService, transport);
@@ -84,3 +85,4 @@ export const gateClient = createClient(GateService, streamTransport);
 export const strategyGenClient = createClient(StrategyGenerationService, streamTransport);
 export const notificationClient = createClient(NotificationService, transport);
 export const notificationStreamClient = createClient(NotificationService, streamTransport);
+export const assetAnalysisClient = createClient(AssetAnalysisService, streamTransport);

@@ -113,6 +113,7 @@ const base = {
     market: 'Market',
     analytics: 'Analytics',
     marketplace: 'Marketplace',
+    assetAnalysis: 'AI Analysis',
     experiments: 'Experiments',
     marketRegime: 'Market Regime',
     assets: 'Assets',
