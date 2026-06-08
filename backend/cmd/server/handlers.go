@@ -152,6 +152,7 @@ func registerHandlers(
 		pythonStrategyServer.SetBacktestClient(backtestClient)
 		pythonStrategyServer.SetMarketDataRepo(marketDataRepo)
 		pythonStrategyServer.SetBarSource(strategy.NewBacktestSource(marketDataRepo))
+		pythonStrategyServer.SetMtHub(mthubSvc) // for live strategy order dispatch
 		strategyServer.SetBacktestClient(backtestClient)
 		strategyServer.SetMarketDataRepo(marketDataRepo)
 		pythonStrategyServer.StartBacktestWorker(context.Background()) // Background worker for async backtest runs
