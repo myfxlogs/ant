@@ -5,8 +5,7 @@
   "dependencies": {
     "@tanstack/react-query": "^5.100.14",
     "@tanstack/react-query-devtools": "^5.100.14",
-    "playwright": "^1.60.0",
-    "react-markdown": "^10.1.0"
+    "playwright": "^1.60.0"
   },
   "name": "ant",
   "version": "1.0.0",
