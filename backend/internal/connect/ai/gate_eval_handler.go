@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"google.golang.org/protobuf/proto"
-
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
@@ -38,6 +36,41 @@ func NewGateEvalServer(backtestRepo *repository.BacktestRunRepository, log *zap.
 // SetNotificationSender injects the notification sender for gate result events.
 func (s *GateEvalServer) SetNotificationSender(ns *notification.Sender) { s.notifSender = ns }
 
+// SendGateNotification sends a gate_passed or gate_failed notification for a gate pipeline result.
+// Shared between the RPC handler (RunEvaluation) and the auto-gate callback (handlers.go).
+func SendGateNotification(
+	ctx context.Context,
+	sender *notification.Sender,
+	userID uuid.UUID,
+	run *repository.BacktestRun,
+	result aigates.PipelineResult,
+) {
+	if sender == nil {
+		return
+	}
+	if result.Passed {
+		data, _ := json.Marshal(map[string]interface{}{
+			"run_id": run.ID.String(), "symbol": run.Symbol, "gates": len(result.Gates),
+		})
+		_, _ = sender.Send(ctx, userID, "gate_passed",
+			fmt.Sprintf("Gate Passed: %s", run.Symbol),
+			fmt.Sprintf("Strategy for %s passed all %d gates", run.Symbol, len(result.Gates)),
+			string(data))
+		return
+	}
+	firstFail := string(result.FirstFail)
+	if firstFail == "" {
+		firstFail = "unknown"
+	}
+	data, _ := json.Marshal(map[string]interface{}{
+		"run_id": run.ID.String(), "symbol": run.Symbol, "failed_at": firstFail,
+	})
+	_, _ = sender.Send(ctx, userID, "gate_failed",
+		fmt.Sprintf("Gate Failed: %s", run.Symbol),
+		fmt.Sprintf("Strategy for %s failed at gate: %s", run.Symbol, firstFail),
+		string(data))
+}
+
 // RunEvaluation fetches the backtest run, converts equity_curve to daily returns,
 // runs the 6-gate pipeline, and streams each gate result via SSE.
 func (s *GateEvalServer) RunEvaluation(
@@ -62,29 +95,7 @@ func (s *GateEvalServer) RunEvaluation(
 	result := aigates.Pipeline(input)
 
 	// Emit notification for gate evaluation result.
-	if s.notifSender != nil {
-		if result.Passed {
-			data, _ := json.Marshal(map[string]interface{}{
-				"run_id": run.ID.String(), "symbol": run.Symbol, "gates": len(result.Gates),
-			})
-			_, _ = s.notifSender.Send(ctx, userID, "gate_passed",
-				fmt.Sprintf("Gate Evaluation Passed: %s", run.Symbol),
-				fmt.Sprintf("Strategy for %s passed all %d gates", run.Symbol, len(result.Gates)),
-				string(data))
-		} else {
-			firstFail := string(result.FirstFail)
-			if firstFail == "" {
-				firstFail = "unknown"
-			}
-			data, _ := json.Marshal(map[string]interface{}{
-				"run_id": run.ID.String(), "symbol": run.Symbol, "failed_at": firstFail,
-			})
-			_, _ = s.notifSender.Send(ctx, userID, "gate_failed",
-				fmt.Sprintf("Gate Evaluation Failed: %s", run.Symbol),
-				fmt.Sprintf("Strategy for %s failed at gate: %s", run.Symbol, firstFail),
-				string(data))
-		}
-	}
+	SendGateNotification(ctx, s.notifSender, userID, run, result)
 
 	return streamGateResults(ctx, &result, stream)
 }
@@ -107,7 +118,7 @@ func (s *GateEvalServer) fetchRun(ctx context.Context, userID uuid.UUID, rawID s
 
 // buildGateInput converts a backtest run into pipeline input.
 func buildGateInput(run *repository.BacktestRun, req *antv1.RunGateEvaluationRequest) (aigates.PipelineInput, error) {
-	dailyReturns := EquityCurveToDailyReturns(run.ProtoResponse)
+	dailyReturns := aigates.EquityCurveToDailyReturns(run.ProtoResponse)
 	if len(dailyReturns) < 10 {
 		return aigates.PipelineInput{},
 			fmt.Errorf("insufficient data: need 10+ daily returns, got %d", len(dailyReturns))
@@ -166,25 +177,4 @@ func toProtoSummary(r aigates.PipelineResult) *antv1.GatePipelineSummary {
 		Passed: r.Passed, FirstFail: string(r.FirstFail),
 		Summary: r.Summary, TotalDurationMs: r.TotalDuration,
 	}
-}
-
-// EquityCurveToDailyReturns extracts equity curve from proto binary ExecuteBacktestResponse
-// and converts it to daily return series (equity[i] - equity[i-1]).
-func EquityCurveToDailyReturns(protoResp []byte) []float64 {
-	if len(protoResp) == 0 {
-		return nil
-	}
-	var resp antv1.ExecuteBacktestResponse
-	if err := proto.Unmarshal(protoResp, &resp); err != nil {
-		return nil
-	}
-	equity := resp.GetEquityCurve()
-	if len(equity) < 2 {
-		return nil
-	}
-	rets := make([]float64, len(equity)-1)
-	for i := 1; i < len(equity); i++ {
-		rets[i-1] = equity[i] - equity[i-1]
-	}
-	return rets
 }

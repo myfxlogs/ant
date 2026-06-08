@@ -298,7 +298,7 @@ func (b *StrategyPromptBuilder) BuildFeedbackPrompt(p *FeedbackPromptParams) (st
 	// Detect strategy type from previous code if not explicitly set.
 	st := p.StrategyType
 	if st == "" {
-		st = detectCodeStrategyType(p.PreviousCode)
+		st = DetectCodeStrategyType(p.PreviousCode)
 	}
 	system := fmt.Sprintf(feedbackSystemTemplate,
 		contractText(st),
@@ -323,8 +323,8 @@ func (b *StrategyPromptBuilder) BuildFeedbackPrompt(p *FeedbackPromptParams) (st
 	return system, user
 }
 
-// detectCodeStrategyType heuristically detects whether code uses run_dataframe or run_context.
-func detectCodeStrategyType(code string) string {
+// DetectCodeStrategyType heuristically detects whether code uses run_dataframe or run_context.
+func DetectCodeStrategyType(code string) string {
 	if strings.Contains(code, "def run_dataframe(") {
 		return "run_dataframe"
 	}

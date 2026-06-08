@@ -11,8 +11,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
-
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
@@ -41,7 +39,7 @@ func autoFixCode(
 
 	// 1. Build gate-aware feedback prompt.
 	builder := internalai.NewStrategyPromptBuilder()
-	st := detectStrategyType(*run.StrategyCode)
+	st := internalai.DetectCodeStrategyType(*run.StrategyCode)
 	sysPrompt, userPrompt := builder.BuildFeedbackPrompt(&internalai.FeedbackPromptParams{
 		PreviousCode:       *run.StrategyCode,
 		FeedbackMessage:    fmt.Sprintf("Gate evaluation failed at: %s. Reason: %s", gateResult.FirstFail, gateResult.Summary),
@@ -75,13 +73,13 @@ func autoFixCode(
 
 	// 4. Create a new backtest run with the improved code.
 	newRun := &repository.BacktestRun{
-		ID:            uuid.New(),
-		UserID:        run.UserID,
-		Symbol:        run.Symbol,
-		Timeframe:     run.Timeframe,
-		Mode:          "KLINE_RANGE",
-		Status:        "PENDING",
-		StrategyCode:  &code,
+		ID:             uuid.New(),
+		UserID:         run.UserID,
+		Symbol:         run.Symbol,
+		Timeframe:      run.Timeframe,
+		Mode:           "KLINE_RANGE",
+		Status:         "PENDING",
+		StrategyCode:   &code,
 		InitialCapital: run.InitialCapital,
 		Commission:     run.Commission,
 		Slippage:       run.Slippage,
@@ -115,12 +113,4 @@ func autoFixCode(
 			fmt.Sprintf("Gate '%s' failure triggered automatic code repair. A new backtest has started.", gateResult.FirstFail),
 			string(data))
 	}
-}
-
-// detectStrategyType heuristically detects whether strategy code uses run_dataframe or run_context.
-func detectStrategyType(code string) string {
-	if strings.Contains(code, "def run_dataframe(") {
-		return "run_dataframe"
-	}
-	return "run_context"
 }

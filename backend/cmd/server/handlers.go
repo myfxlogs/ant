@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
@@ -12,9 +10,9 @@ import (
 	"go.uber.org/zap"
 
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/config"
 	internalai "anttrader/internal/ai"
 	"anttrader/internal/analysis"
+	"anttrader/internal/config"
 	"anttrader/internal/connect/admin"
 	"anttrader/internal/connect/ai"
 	algo "anttrader/internal/connect/algo"
@@ -22,7 +20,6 @@ import (
 	"anttrader/internal/connect/autotrading"
 	mktplace "anttrader/internal/connect/marketplace"
 	"anttrader/internal/connect/notification"
-	notifpubsub "anttrader/internal/notification"
 	"anttrader/internal/connect/strategy"
 	"anttrader/internal/connect/system"
 	"anttrader/internal/connect/user"
@@ -32,6 +29,7 @@ import (
 	"anttrader/internal/mdgateway/adapter"
 	"anttrader/internal/mdgateway/adapter/brokersearch"
 	"anttrader/internal/mthub"
+	notifpubsub "anttrader/internal/notification"
 	"anttrader/internal/notifier"
 	"anttrader/internal/pglisten"
 	"anttrader/internal/pkg/secretbox"
@@ -124,12 +122,12 @@ func registerHandlers(
 	aiServer.SetAgentDefRepo(agentDefRepo)
 	mux.Handle(antv1c.NewAIServiceHandler(aiServer, connectrpc.WithInterceptors(authInterceptor)))
 	// Agent definition CRUD (no proto RPC yet — raw HTTP).
-		mux.Handle(antv1c.NewAgentDefinitionServiceHandler(aiServer, connectrpc.WithInterceptors(authInterceptor)))
+	mux.Handle(antv1c.NewAgentDefinitionServiceHandler(aiServer, connectrpc.WithInterceptors(authInterceptor)))
 
-		// P3: AI Asset Analysis — MTF outlook, S/R levels, volatility, AI recommendation.
-		assetAnalyzer := analysis.NewAnalyzer(marketDataRepo, log)
-		assetAnalysisServer := assetanalysis.NewAssetAnalysisServer(assetAnalyzer, aiSvc, log)
-		mux.Handle(antv1c.NewAssetAnalysisServiceHandler(assetAnalysisServer, connectrpc.WithInterceptors(authInterceptor)))
+	// P3: AI Asset Analysis — MTF outlook, S/R levels, volatility, AI recommendation.
+	assetAnalyzer := analysis.NewAnalyzer(marketDataRepo, log)
+	assetAnalysisServer := assetanalysis.NewAssetAnalysisServer(assetAnalyzer, aiSvc, log)
+	mux.Handle(antv1c.NewAssetAnalysisServiceHandler(assetAnalysisServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	streamServer := system.NewStreamServer(mthubSvc, platformSvc, log)
 	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, connectrpc.WithInterceptors(authInterceptor)))
@@ -145,19 +143,19 @@ func registerHandlers(
 	// Real: SystemAI, AIPrimary, Job, ScheduleHealth
 	// Mock: PythonStrategy, CodeAssist, BacktestTrades, EconomicData
 	pythonStrategyServer := strategy.NewPythonStrategyServer(backtestRunRepo, log)
-		pythonStrategyServer.SetPgListen(pgListen)
+	pythonStrategyServer.SetPgListen(pgListen)
 	if cfg.StrategyServiceURL != "" {
-			connectClient := antv1c.NewPythonStrategyServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
-			pythonStrategyServer.SetConnectClient(connectClient)
-			backtestClient := antv1c.NewBacktestServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
-			pythonStrategyServer.SetBacktestClient(backtestClient)
-			pythonStrategyServer.SetMarketDataRepo(marketDataRepo)
+		connectClient := antv1c.NewPythonStrategyServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
+		pythonStrategyServer.SetConnectClient(connectClient)
+		backtestClient := antv1c.NewBacktestServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
+		pythonStrategyServer.SetBacktestClient(backtestClient)
+		pythonStrategyServer.SetMarketDataRepo(marketDataRepo)
 		strategyServer.SetBacktestClient(backtestClient)
-			strategyServer.SetMarketDataRepo(marketDataRepo)
-			pythonStrategyServer.StartBacktestWorker(context.Background()) // Background worker for async backtest runs
-			objScoreClient := antv1c.NewObjectiveScoreServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
-			objectiveScoreServer := strategy.NewObjectiveScoreServer(objScoreClient, log)
-			mux.Handle(antv1c.NewObjectiveScoreServiceHandler(objectiveScoreServer, connectrpc.WithInterceptors(authInterceptor)))
+		strategyServer.SetMarketDataRepo(marketDataRepo)
+		pythonStrategyServer.StartBacktestWorker(context.Background()) // Background worker for async backtest runs
+		objScoreClient := antv1c.NewObjectiveScoreServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
+		objectiveScoreServer := strategy.NewObjectiveScoreServer(objScoreClient, log)
+		mux.Handle(antv1c.NewObjectiveScoreServiceHandler(objectiveScoreServer, connectrpc.WithInterceptors(authInterceptor)))
 		log.Info("Python strategy client configured", zap.String("url", cfg.StrategyServiceURL))
 	}
 	mux.Handle(antv1c.NewPythonStrategyServiceHandler(pythonStrategyServer, connectrpc.WithInterceptors(authInterceptor)))
@@ -193,7 +191,7 @@ func registerHandlers(
 	// Auto-gate callback: runs gate evaluation after every backtest completion.
 	// If gate fails, spawns async auto-fix (LLM code repair → new backtest).
 	onBacktestComplete := func(ctx context.Context, run *repository.BacktestRun) {
-		dailyReturns := ai.EquityCurveToDailyReturns(run.ProtoResponse)
+		dailyReturns := internalai.EquityCurveToDailyReturns(run.ProtoResponse)
 		if len(dailyReturns) < 10 {
 			return
 		}
@@ -203,28 +201,12 @@ func registerHandlers(
 		}
 		result := internalai.Pipeline(input)
 
+		// Send gate notification (shared with GateEvalServer.RunEvaluation).
+		ai.SendGateNotification(ctx, notifSender, run.UserID, run, result)
+
 		if result.Passed {
-			data, _ := json.Marshal(map[string]interface{}{
-				"run_id": run.ID.String(), "symbol": run.Symbol, "gates": len(result.Gates),
-			})
-			_, _ = notifSender.Send(ctx, run.UserID, "gate_passed",
-				fmt.Sprintf("Gate Passed: %s", run.Symbol),
-				fmt.Sprintf("Strategy for %s passed all %d gates", run.Symbol, len(result.Gates)),
-				string(data))
 			return
 		}
-
-		firstFail := string(result.FirstFail)
-		if firstFail == "" {
-			firstFail = "unknown"
-		}
-		data, _ := json.Marshal(map[string]interface{}{
-			"run_id": run.ID.String(), "symbol": run.Symbol, "failed_at": firstFail,
-		})
-		_, _ = notifSender.Send(ctx, run.UserID, "gate_failed",
-			fmt.Sprintf("Gate Failed: %s", run.Symbol),
-			fmt.Sprintf("Strategy for %s failed at gate: %s", run.Symbol, firstFail),
-			string(data))
 
 		// Spawn async auto-fix: LLM generates improved code, creates new backtest run.
 		go autoFixCode(context.Background(), run, result, aiSvc, backtestRunRepo, notifSender, log)
