@@ -76,17 +76,17 @@ export default function WorkspaceBacktestPanel({
           ...tabStyle,
           color: subTab === 'results' ? '#1890ff' : '#8c8c8c',
           borderBottomColor: subTab === 'results' ? '#1890ff' : 'transparent',
-        }}>Backtest Results</div>
+        }}>{t('strategy.workspace.backtestTab')}</div>
         <div onClick={() => onSubTabChange('tuning')} style={{
           ...tabStyle,
           color: subTab === 'tuning' ? '#1890ff' : '#8c8c8c',
           borderBottomColor: subTab === 'tuning' ? '#1890ff' : 'transparent',
-        }}>Smart Tuning</div>
+        }}>{t('strategy.workspace.tuningTab')}</div>
         <div onClick={() => onSubTabChange('gate')} style={{
           ...tabStyle,
           color: subTab === 'gate' ? '#1890ff' : '#8c8c8c',
           borderBottomColor: subTab === 'gate' ? '#1890ff' : 'transparent',
-        }}>Gate</div>
+        }}>{t('strategy.workspace.gateTab', 'Gate')}</div>
       </div>
 
       {/* Results Tab */}
@@ -101,11 +101,11 @@ export default function WorkspaceBacktestPanel({
           <div style={{ marginBottom: 12 }}>
             {status === 'running' && (
               <Tag color="processing" icon={<Spin size="small" />}>
-                {t('strategy.workspace.backtestRunning', 'Backtest running')}{metrics?.processedBars != null ? ` — ${metrics.processedBars} bars processed` : '...'}
+                {t('strategy.workspace.backtestRunning')}{metrics?.processedBars != null ? ` — ${metrics.processedBars} bars processed` : '...'}
               </Tag>
             )}
             {status === 'completed' && (
-              <Tag color="success">{t('strategy.workspace.backtestCompleted', 'Completed')}</Tag>
+              <Tag color="success">{t('strategy.workspace.backtestCompleted')}</Tag>
             )}
             {status === 'completed' && onAIOptimize && metrics && (
               <Button size="small" type="dashed" onClick={onAIOptimize}
@@ -126,18 +126,18 @@ export default function WorkspaceBacktestPanel({
               background: 'linear-gradient(180deg, #f8fbff 0%, #f4f9ff 100%)',
             }}>
               <div style={{ fontSize: 10, fontWeight: 600, color: '#1677ff', marginBottom: 6 }}>
-                ℹ Execution Assumptions
+                {t('strategy.workspace.execAssumptions')}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '4px 12px', fontSize: 11 }}>
-                <div><span style={{ color: '#8c8c8c' }}>Mode:</span> <strong>{executionAssumptions.simulationMode || '-'}</strong></div>
-                <div><span style={{ color: '#8c8c8c' }}>Timing:</span> <strong>{executionAssumptions.signalTiming || '-'}</strong></div>
-                <div><span style={{ color: '#8c8c8c' }}>Fill Rule:</span> <strong>{executionAssumptions.fillRule || '-'}</strong></div>
-                <div><span style={{ color: '#8c8c8c' }}>Direction:</span> <strong>{executionAssumptions.tradeDirection || '-'}</strong></div>
-                <div><span style={{ color: '#8c8c8c' }}>Commission:</span> <strong>{executionAssumptions.actualCommission != null ? (executionAssumptions.actualCommission * 100).toFixed(4) + '%' : '-'}</strong></div>
-                <div><span style={{ color: '#8c8c8c' }}>Slippage:</span> <strong>{executionAssumptions.actualSlippage != null ? (executionAssumptions.actualSlippage * 100).toFixed(4) + '%' : '-'}</strong></div>
-                <div><span style={{ color: '#8c8c8c' }}>Leverage:</span> <strong>{executionAssumptions.actualLeverage || '-'}x</strong></div>
+                <div><span style={{ color: '#8c8c8c' }}>{t('strategy.workspace.execAssumptionsFields.mode')}:</span> <strong>{executionAssumptions.simulationMode || '-'}</strong></div>
+                <div><span style={{ color: '#8c8c8c' }}>{t('strategy.workspace.execAssumptionsFields.timing')}:</span> <strong>{executionAssumptions.signalTiming || '-'}</strong></div>
+                <div><span style={{ color: '#8c8c8c' }}>{t('strategy.workspace.execAssumptionsFields.fillRule')}:</span> <strong>{executionAssumptions.fillRule || '-'}</strong></div>
+                <div><span style={{ color: '#8c8c8c' }}>{t('strategy.workspace.execAssumptionsFields.direction')}:</span> <strong>{executionAssumptions.tradeDirection || '-'}</strong></div>
+                <div><span style={{ color: '#8c8c8c' }}>{t('strategy.workspace.execAssumptionsFields.commission')}:</span> <strong>{executionAssumptions.actualCommission != null ? (executionAssumptions.actualCommission * 100).toFixed(4) + '%' : '-'}</strong></div>
+                <div><span style={{ color: '#8c8c8c' }}>{t('strategy.workspace.execAssumptionsFields.slippage')}:</span> <strong>{executionAssumptions.actualSlippage != null ? (executionAssumptions.actualSlippage * 100).toFixed(4) + '%' : '-'}</strong></div>
+                <div><span style={{ color: '#8c8c8c' }}>{t('strategy.workspace.execAssumptionsFields.leverage')}:</span> <strong>{executionAssumptions.actualLeverage || '-'}x</strong></div>
                 {executionAssumptions.mtfFallbackReason && (
-                  <div style={{ gridColumn: '1 / -1' }}><span style={{ color: '#fa8c16' }}>MTF Fallback:</span> <strong>{executionAssumptions.mtfFallbackReason}</strong></div>
+                  <div style={{ gridColumn: '1 / -1' }}><span style={{ color: '#fa8c16' }}>{t('strategy.workspace.execAssumptionsFields.mtfFallback')}:</span> <strong>{executionAssumptions.mtfFallbackReason}</strong></div>
                 )}
               </div>
             </div>
