@@ -25,6 +25,7 @@ type PythonStrategyServer struct {
 	connectClient       antv1c.PythonStrategyServiceClient // ConnectRPC to Python service
 	backtestClient      antv1c.BacktestServiceClient
 	marketDataRepo      *repository.MarketDataRepository
+	barSource           BarSource // unified bar data source (backtest or live)
 	pgListen            *pglisten.Listener
 	notifSender         *notification.Sender
 	onBacktestComplete  func(ctx context.Context, run *repository.BacktestRun) // auto-gate hook
@@ -33,6 +34,8 @@ type PythonStrategyServer struct {
 func (s *PythonStrategyServer) SetMarketDataRepo(r *repository.MarketDataRepository) {
 	s.marketDataRepo = r
 }
+
+func (s *PythonStrategyServer) SetBarSource(bs BarSource) { s.barSource = bs }
 
 var _ antv1c.PythonStrategyServiceHandler = (*PythonStrategyServer)(nil)
 

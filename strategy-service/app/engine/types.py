@@ -45,6 +45,8 @@ class OrderStatus(str, Enum):
 class RunMode(str, Enum):
     ADVICE = "advice"
     BACKTEST = "backtest"
+    LIVE = "live"
+    PAPER = "paper"
 
 
 class SlippageMode(str, Enum):

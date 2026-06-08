@@ -152,6 +152,16 @@ func (s *PythonStrategyServer) startBacktestWatchers(ctx context.Context, run *r
 	return execCtx
 }
 
+// fetchBars retrieves K-line data via BarSource when available,
+// falling back to direct ClickHouse fetch for backward compatibility.
+func (s *PythonStrategyServer) fetchBars(ctx context.Context, run *repository.BacktestRun) []*antv1.ExecuteKlineBar {
+	if s.barSource != nil {
+		klines, _ := s.barSource.Fetch(ctx, run.Symbol, run.Timeframe, run.FromTs, run.ToTs)
+		return klines
+	}
+	return s.fetchBacktestKlines(ctx, run)
+}
+
 // fetchBacktestKlines retrieves K-line data from ClickHouse and converts to proto format.
 func (s *PythonStrategyServer) fetchBacktestKlines(ctx context.Context, run *repository.BacktestRun) []*antv1.ExecuteKlineBar {
 	if s.marketDataRepo == nil || run.Symbol == "" || run.Timeframe == "" {
@@ -176,7 +186,7 @@ func (s *PythonStrategyServer) executeBacktestRun(ctx context.Context, run *repo
 	execCtx := s.startBacktestWatchers(ctx, run, leaseFor)
 	defer func() { _ = execCtx }()
 
-	req := buildBacktestRequest(run, params, s.fetchBacktestKlines(ctx, run))
+	req := buildBacktestRequest(run, params, s.fetchBars(ctx, run))
 	resp, err := s.backtestClient.RunBacktest(execCtx, connect.NewRequest(req))
 	if err != nil {
 		s.handleBacktestError(ctx, run, execCtx, err)

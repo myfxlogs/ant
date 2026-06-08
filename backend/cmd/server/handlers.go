@@ -151,6 +151,7 @@ func registerHandlers(
 		backtestClient := antv1c.NewBacktestServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
 		pythonStrategyServer.SetBacktestClient(backtestClient)
 		pythonStrategyServer.SetMarketDataRepo(marketDataRepo)
+		pythonStrategyServer.SetBarSource(strategy.NewBacktestSource(marketDataRepo))
 		strategyServer.SetBacktestClient(backtestClient)
 		strategyServer.SetMarketDataRepo(marketDataRepo)
 		pythonStrategyServer.StartBacktestWorker(context.Background()) // Background worker for async backtest runs
