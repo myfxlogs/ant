@@ -16,6 +16,11 @@ const base = {
       and: 'and',
       privacy: 'Privacy Policy',
     },
+    forgotPassword: {
+      title: 'Reset Password',
+      hint: 'Please contact your administrator or support to reset your password.',
+      backToLogin: 'Back to Login',
+    },
     register: {
       subtitle: 'Create an account to get started',
       signingUp: 'Signing up...',

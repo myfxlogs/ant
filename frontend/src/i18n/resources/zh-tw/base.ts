@@ -47,6 +47,11 @@ const base = {
       terms: '服務條款',
       and: '和',
       privacy: '隱私政策'
+    },
+    forgotPassword: {
+      title: '重設密碼',
+      hint: '請聯繫管理員或支援人員重設密碼。',
+      backToLogin: '返回登入'
     }
   },
   common: {

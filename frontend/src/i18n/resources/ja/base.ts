@@ -47,6 +47,11 @@ const base = {
       terms: '利用規約',
       and: 'および',
       privacy: 'プライバシーポリシー'
+    },
+    forgotPassword: {
+      title: 'パスワードリセット',
+      hint: '管理者またはサポートに連絡してパスワードをリセットしてください。',
+      backToLogin: 'ログインに戻る'
     }
   },
   common: {

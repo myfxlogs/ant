@@ -47,6 +47,11 @@ const base = {
       terms: 'Điều khoản dịch vụ',
       and: 'và',
       privacy: 'Chính sách quyền riêng tư'
+    },
+    forgotPassword: {
+      title: 'Đặt lại Mật khẩu',
+      hint: 'Vui lòng liên hệ quản trị viên hoặc hỗ trợ để đặt lại mật khẩu.',
+      backToLogin: 'Quay lại Đăng nhập'
     }
   },
   common: {
