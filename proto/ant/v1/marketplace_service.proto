@@ -9,6 +9,13 @@ service MarketplaceService {
   rpc Unsubscribe(UnsubscribeRequest) returns (UnsubscribeResponse);
   rpc ListPublished(ListPublishedRequest) returns (ListPublishedResponse);
   rpc ListSubscriptions(ListSubscriptionsRequest) returns (ListSubscriptionsResponse);
+  // Rating & comments
+  rpc RateStrategy(RateStrategyRequest) returns (RateStrategyResponse);
+  rpc ListRatings(ListRatingsRequest) returns (ListRatingsResponse);
+  rpc CommentOnStrategy(CommentOnStrategyRequest) returns (CommentOnStrategyResponse);
+  rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse);
+  // Admin
+  rpc SetStrategyPricing(SetStrategyPricingRequest) returns (SetStrategyPricingResponse);
 }
 
 message PublishStrategyRequest {
@@ -48,7 +55,9 @@ message UnsubscribeResponse {}
 message ListPublishedRequest {
   string user_id = 1;
   int32 limit = 2;
-  string asset_class = 3; // M12-B1: optional filter by asset class
+  string asset_class = 3; // optional filter by asset class
+  string keyword = 4;    // search title/description/tags (ILIKE)
+  string sort_by = 5;    // newest | popular | performance (default: newest)
 }
 message ListPublishedResponse {
   repeated PublishedStrategy strategies = 1;
@@ -73,6 +82,8 @@ message PublishedStrategy {
   int32 total_subscribers = 15;
   double win_rate = 16;
   double total_pnl = 17;
+  double avg_rating = 18;
+  int32 rating_count = 19;
 }
 
 message ListSubscriptionsRequest {
@@ -89,4 +100,79 @@ message SubscriptionItem {
   string kind = 4;
   bool active = 5;
   google.protobuf.Timestamp created_at = 6;
+}
+
+// --- Rating ---
+
+message RateStrategyRequest {
+  string user_id = 1;
+  string strategy_id = 2;     // publish_id
+  int32 rating = 3;           // 1-5
+}
+
+message RateStrategyResponse {
+  double avg_rating = 1;
+  int32 rating_count = 2;
+}
+
+message ListRatingsRequest {
+  string strategy_id = 1;     // publish_id
+}
+
+message ListRatingsResponse {
+  repeated RatingItem ratings = 1;
+  double avg_rating = 2;
+  int32 rating_count = 3;
+}
+
+message RatingItem {
+  string id = 1;
+  string user_id = 2;
+  int32 rating = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
+// --- Comment ---
+
+message CommentOnStrategyRequest {
+  string user_id = 1;
+  string strategy_id = 2;     // publish_id
+  string content = 3;
+}
+
+message CommentOnStrategyResponse {
+  string id = 1;
+}
+
+message ListCommentsRequest {
+  string strategy_id = 1;     // publish_id
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message ListCommentsResponse {
+  repeated CommentItem comments = 1;
+  int32 total = 2;
+}
+
+message CommentItem {
+  string id = 1;
+  string user_id = 2;
+  string user_name = 3;
+  string content = 4;
+  google.protobuf.Timestamp created_at = 5;
+}
+
+// --- Admin Pricing ---
+
+message SetStrategyPricingRequest {
+  string strategy_id = 1;     // publish_id
+  string price_model = 2;     // "free" | "paid"
+  double price_amount = 3;
+}
+
+message SetStrategyPricingResponse {
+  string strategy_id = 1;
+  string price_model = 2;
+  double price_amount = 3;
 }

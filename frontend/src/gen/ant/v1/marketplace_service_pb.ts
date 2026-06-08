@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file marketplace_service.proto.
  */
 export const file_marketplace_service: GenFile = /*@__PURE__*/
-  fileDesc("ChltYXJrZXRwbGFjZV9zZXJ2aWNlLnByb3RvEgZhbnQudjEi6AEKFlB1Ymxpc2hTdHJhdGVneVJlcXVlc3QSDwoHdXNlcl9pZBgBIAEoCRITCgtzdHJhdGVneV9pZBgCIAEoCRINCgV0aXRsZRgDIAEoCRITCgtkZXNjcmlwdGlvbhgEIAEoCRITCgtwcmljZV9tb2RlbBgFIAEoCRIUCgxwcmljZV9hbW91bnQYBiABKAESEwoLYXNzZXRfY2xhc3MYByABKAkSDwoHc3ltYm9scxgIIAMoCRIRCgl0aW1lZnJhbWUYCSABKAkSEgoKcmlza19sZXZlbBgKIAEoCRIMCgR0YWdzGAsgAygJIi0KF1B1Ymxpc2hTdHJhdGVneVJlc3BvbnNlEhIKCnB1Ymxpc2hfaWQYASABKAkiYQoQU3Vic2NyaWJlUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJEhkKEXB1Ymxpc2hlcl91c2VyX2lkGAIgASgJEhMKC3N0cmF0ZWd5X2lkGAMgASgJEgwKBGtpbmQYBCABKAkiLAoRU3Vic2NyaWJlUmVzcG9uc2USFwoPc3Vic2NyaXB0aW9uX2lkGAEgASgJIj4KElVuc3Vic2NyaWJlUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJEhcKD3N1YnNjcmlwdGlvbl9pZBgCIAEoCSIVChNVbnN1YnNjcmliZVJlc3BvbnNlIksKFExpc3RQdWJsaXNoZWRSZXF1ZXN0Eg8KB3VzZXJfaWQYASABKAkSDQoFbGltaXQYAiABKAUSEwoLYXNzZXRfY2xhc3MYAyABKAkiRgoVTGlzdFB1Ymxpc2hlZFJlc3BvbnNlEi0KCnN0cmF0ZWdpZXMYASADKAsyGS5hbnQudjEuUHVibGlzaGVkU3RyYXRlZ3kiigMKEVB1Ymxpc2hlZFN0cmF0ZWd5EhIKCnB1Ymxpc2hfaWQYASABKAkSEwoLc3RyYXRlZ3lfaWQYAiABKAkSFQoNc3RyYXRlZ3lfbmFtZRgDIAEoCRIZChFwdWJsaXNoZXJfdXNlcl9pZBgEIAEoCRIwCgxwdWJsaXNoZWRfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg0KBXRpdGxlGAYgASgJEhMKC2Rlc2NyaXB0aW9uGAcgASgJEhMKC3ByaWNlX21vZGVsGAggASgJEhQKDHByaWNlX2Ftb3VudBgJIAEoARITCgthc3NldF9jbGFzcxgKIAEoCRIPCgdzeW1ib2xzGAsgAygJEhEKCXRpbWVmcmFtZRgMIAEoCRISCgpyaXNrX2xldmVsGA0gASgJEgwKBHRhZ3MYDiADKAkSGQoRdG90YWxfc3Vic2NyaWJlcnMYDyABKAUSEAoId2luX3JhdGUYECABKAESEQoJdG90YWxfcG5sGBEgASgBIisKGExpc3RTdWJzY3JpcHRpb25zUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJIkwKGUxpc3RTdWJzY3JpcHRpb25zUmVzcG9uc2USLwoNc3Vic2NyaXB0aW9ucxgBIAMoCzIYLmFudC52MS5TdWJzY3JpcHRpb25JdGVtIqYBChBTdWJzY3JpcHRpb25JdGVtEhcKD3N1YnNjcmlwdGlvbl9pZBgBIAEoCRIWCg50YXJnZXRfdXNlcl9pZBgCIAEoCRITCgtzdHJhdGVneV9pZBgDIAEoCRIMCgRraW5kGAQgASgJEg4KBmFjdGl2ZRgFIAEoCBIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcDKaAwoSTWFya2V0cGxhY2VTZXJ2aWNlElIKD1B1Ymxpc2hTdHJhdGVneRIeLmFudC52MS5QdWJsaXNoU3RyYXRlZ3lSZXF1ZXN0Gh8uYW50LnYxLlB1Ymxpc2hTdHJhdGVneVJlc3BvbnNlEkAKCVN1YnNjcmliZRIYLmFudC52MS5TdWJzY3JpYmVSZXF1ZXN0GhkuYW50LnYxLlN1YnNjcmliZVJlc3BvbnNlEkYKC1Vuc3Vic2NyaWJlEhouYW50LnYxLlVuc3Vic2NyaWJlUmVxdWVzdBobLmFudC52MS5VbnN1YnNjcmliZVJlc3BvbnNlEkwKDUxpc3RQdWJsaXNoZWQSHC5hbnQudjEuTGlzdFB1Ymxpc2hlZFJlcXVlc3QaHS5hbnQudjEuTGlzdFB1Ymxpc2hlZFJlc3BvbnNlElgKEUxpc3RTdWJzY3JpcHRpb25zEiAuYW50LnYxLkxpc3RTdWJzY3JpcHRpb25zUmVxdWVzdBohLmFudC52MS5MaXN0U3Vic2NyaXB0aW9uc1Jlc3BvbnNlQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("ChltYXJrZXRwbGFjZV9zZXJ2aWNlLnByb3RvEgZhbnQudjEi6AEKFlB1Ymxpc2hTdHJhdGVneVJlcXVlc3QSDwoHdXNlcl9pZBgBIAEoCRITCgtzdHJhdGVneV9pZBgCIAEoCRINCgV0aXRsZRgDIAEoCRITCgtkZXNjcmlwdGlvbhgEIAEoCRITCgtwcmljZV9tb2RlbBgFIAEoCRIUCgxwcmljZV9hbW91bnQYBiABKAESEwoLYXNzZXRfY2xhc3MYByABKAkSDwoHc3ltYm9scxgIIAMoCRIRCgl0aW1lZnJhbWUYCSABKAkSEgoKcmlza19sZXZlbBgKIAEoCRIMCgR0YWdzGAsgAygJIi0KF1B1Ymxpc2hTdHJhdGVneVJlc3BvbnNlEhIKCnB1Ymxpc2hfaWQYASABKAkiYQoQU3Vic2NyaWJlUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJEhkKEXB1Ymxpc2hlcl91c2VyX2lkGAIgASgJEhMKC3N0cmF0ZWd5X2lkGAMgASgJEgwKBGtpbmQYBCABKAkiLAoRU3Vic2NyaWJlUmVzcG9uc2USFwoPc3Vic2NyaXB0aW9uX2lkGAEgASgJIj4KElVuc3Vic2NyaWJlUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJEhcKD3N1YnNjcmlwdGlvbl9pZBgCIAEoCSIVChNVbnN1YnNjcmliZVJlc3BvbnNlIm0KFExpc3RQdWJsaXNoZWRSZXF1ZXN0Eg8KB3VzZXJfaWQYASABKAkSDQoFbGltaXQYAiABKAUSEwoLYXNzZXRfY2xhc3MYAyABKAkSDwoHa2V5d29yZBgEIAEoCRIPCgdzb3J0X2J5GAUgASgJIkYKFUxpc3RQdWJsaXNoZWRSZXNwb25zZRItCgpzdHJhdGVnaWVzGAEgAygLMhkuYW50LnYxLlB1Ymxpc2hlZFN0cmF0ZWd5IrQDChFQdWJsaXNoZWRTdHJhdGVneRISCgpwdWJsaXNoX2lkGAEgASgJEhMKC3N0cmF0ZWd5X2lkGAIgASgJEhUKDXN0cmF0ZWd5X25hbWUYAyABKAkSGQoRcHVibGlzaGVyX3VzZXJfaWQYBCABKAkSMAoMcHVibGlzaGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgV0aXRsZRgGIAEoCRITCgtkZXNjcmlwdGlvbhgHIAEoCRITCgtwcmljZV9tb2RlbBgIIAEoCRIUCgxwcmljZV9hbW91bnQYCSABKAESEwoLYXNzZXRfY2xhc3MYCiABKAkSDwoHc3ltYm9scxgLIAMoCRIRCgl0aW1lZnJhbWUYDCABKAkSEgoKcmlza19sZXZlbBgNIAEoCRIMCgR0YWdzGA4gAygJEhkKEXRvdGFsX3N1YnNjcmliZXJzGA8gASgFEhAKCHdpbl9yYXRlGBAgASgBEhEKCXRvdGFsX3BubBgRIAEoARISCgphdmdfcmF0aW5nGBIgASgBEhQKDHJhdGluZ19jb3VudBgTIAEoBSIrChhMaXN0U3Vic2NyaXB0aW9uc1JlcXVlc3QSDwoHdXNlcl9pZBgBIAEoCSJMChlMaXN0U3Vic2NyaXB0aW9uc1Jlc3BvbnNlEi8KDXN1YnNjcmlwdGlvbnMYASADKAsyGC5hbnQudjEuU3Vic2NyaXB0aW9uSXRlbSKmAQoQU3Vic2NyaXB0aW9uSXRlbRIXCg9zdWJzY3JpcHRpb25faWQYASABKAkSFgoOdGFyZ2V0X3VzZXJfaWQYAiABKAkSEwoLc3RyYXRlZ3lfaWQYAyABKAkSDAoEa2luZBgEIAEoCRIOCgZhY3RpdmUYBSABKAgSLgoKY3JlYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiSwoTUmF0ZVN0cmF0ZWd5UmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJEhMKC3N0cmF0ZWd5X2lkGAIgASgJEg4KBnJhdGluZxgDIAEoBSJAChRSYXRlU3RyYXRlZ3lSZXNwb25zZRISCgphdmdfcmF0aW5nGAEgASgBEhQKDHJhdGluZ19jb3VudBgCIAEoBSIpChJMaXN0UmF0aW5nc1JlcXVlc3QSEwoLc3RyYXRlZ3lfaWQYASABKAkiZAoTTGlzdFJhdGluZ3NSZXNwb25zZRIjCgdyYXRpbmdzGAEgAygLMhIuYW50LnYxLlJhdGluZ0l0ZW0SEgoKYXZnX3JhdGluZxgCIAEoARIUCgxyYXRpbmdfY291bnQYAyABKAUiaQoKUmF0aW5nSXRlbRIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEg4KBnJhdGluZxgDIAEoBRIuCgpjcmVhdGVkX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJRChhDb21tZW50T25TdHJhdGVneVJlcXVlc3QSDwoHdXNlcl9pZBgBIAEoCRITCgtzdHJhdGVneV9pZBgCIAEoCRIPCgdjb250ZW50GAMgASgJIicKGUNvbW1lbnRPblN0cmF0ZWd5UmVzcG9uc2USCgoCaWQYASABKAkiSQoTTGlzdENvbW1lbnRzUmVxdWVzdBITCgtzdHJhdGVneV9pZBgBIAEoCRINCgVsaW1pdBgCIAEoBRIOCgZvZmZzZXQYAyABKAUiTAoUTGlzdENvbW1lbnRzUmVzcG9uc2USJQoIY29tbWVudHMYASADKAsyEy5hbnQudjEuQ29tbWVudEl0ZW0SDQoFdG90YWwYAiABKAUifgoLQ29tbWVudEl0ZW0SCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRIRCgl1c2VyX25hbWUYAyABKAkSDwoHY29udGVudBgEIAEoCRIuCgpjcmVhdGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJbChlTZXRTdHJhdGVneVByaWNpbmdSZXF1ZXN0EhMKC3N0cmF0ZWd5X2lkGAEgASgJEhMKC3ByaWNlX21vZGVsGAIgASgJEhQKDHByaWNlX2Ftb3VudBgDIAEoASJcChpTZXRTdHJhdGVneVByaWNpbmdSZXNwb25zZRITCgtzdHJhdGVneV9pZBgBIAEoCRITCgtwcmljZV9tb2RlbBgCIAEoCRIUCgxwcmljZV9hbW91bnQYAyABKAEyrwYKEk1hcmtldHBsYWNlU2VydmljZRJSCg9QdWJsaXNoU3RyYXRlZ3kSHi5hbnQudjEuUHVibGlzaFN0cmF0ZWd5UmVxdWVzdBofLmFudC52MS5QdWJsaXNoU3RyYXRlZ3lSZXNwb25zZRJACglTdWJzY3JpYmUSGC5hbnQudjEuU3Vic2NyaWJlUmVxdWVzdBoZLmFudC52MS5TdWJzY3JpYmVSZXNwb25zZRJGCgtVbnN1YnNjcmliZRIaLmFudC52MS5VbnN1YnNjcmliZVJlcXVlc3QaGy5hbnQudjEuVW5zdWJzY3JpYmVSZXNwb25zZRJMCg1MaXN0UHVibGlzaGVkEhwuYW50LnYxLkxpc3RQdWJsaXNoZWRSZXF1ZXN0Gh0uYW50LnYxLkxpc3RQdWJsaXNoZWRSZXNwb25zZRJYChFMaXN0U3Vic2NyaXB0aW9ucxIgLmFudC52MS5MaXN0U3Vic2NyaXB0aW9uc1JlcXVlc3QaIS5hbnQudjEuTGlzdFN1YnNjcmlwdGlvbnNSZXNwb25zZRJJCgxSYXRlU3RyYXRlZ3kSGy5hbnQudjEuUmF0ZVN0cmF0ZWd5UmVxdWVzdBocLmFudC52MS5SYXRlU3RyYXRlZ3lSZXNwb25zZRJGCgtMaXN0UmF0aW5ncxIaLmFudC52MS5MaXN0UmF0aW5nc1JlcXVlc3QaGy5hbnQudjEuTGlzdFJhdGluZ3NSZXNwb25zZRJYChFDb21tZW50T25TdHJhdGVneRIgLmFudC52MS5Db21tZW50T25TdHJhdGVneVJlcXVlc3QaIS5hbnQudjEuQ29tbWVudE9uU3RyYXRlZ3lSZXNwb25zZRJJCgxMaXN0Q29tbWVudHMSGy5hbnQudjEuTGlzdENvbW1lbnRzUmVxdWVzdBocLmFudC52MS5MaXN0Q29tbWVudHNSZXNwb25zZRJbChJTZXRTdHJhdGVneVByaWNpbmcSIS5hbnQudjEuU2V0U3RyYXRlZ3lQcmljaW5nUmVxdWVzdBoiLmFudC52MS5TZXRTdHJhdGVneVByaWNpbmdSZXNwb25zZUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ant.v1.PublishStrategyRequest
@@ -199,11 +199,25 @@ export type ListPublishedRequest = Message<"ant.v1.ListPublishedRequest"> & {
   limit: number;
 
   /**
-   * M12-B1: optional filter by asset class
+   * optional filter by asset class
    *
    * @generated from field: string asset_class = 3;
    */
   assetClass: string;
+
+  /**
+   * search title/description/tags (ILIKE)
+   *
+   * @generated from field: string keyword = 4;
+   */
+  keyword: string;
+
+  /**
+   * newest | popular | performance (default: newest)
+   *
+   * @generated from field: string sort_by = 5;
+   */
+  sortBy: string;
 };
 
 /**
@@ -320,6 +334,16 @@ export type PublishedStrategy = Message<"ant.v1.PublishedStrategy"> & {
    * @generated from field: double total_pnl = 17;
    */
   totalPnl: number;
+
+  /**
+   * @generated from field: double avg_rating = 18;
+   */
+  avgRating: number;
+
+  /**
+   * @generated from field: int32 rating_count = 19;
+   */
+  ratingCount: number;
 };
 
 /**
@@ -406,6 +430,329 @@ export const SubscriptionItemSchema: GenMessage<SubscriptionItem> = /*@__PURE__*
   messageDesc(file_marketplace_service, 11);
 
 /**
+ * @generated from message ant.v1.RateStrategyRequest
+ */
+export type RateStrategyRequest = Message<"ant.v1.RateStrategyRequest"> & {
+  /**
+   * @generated from field: string user_id = 1;
+   */
+  userId: string;
+
+  /**
+   * publish_id
+   *
+   * @generated from field: string strategy_id = 2;
+   */
+  strategyId: string;
+
+  /**
+   * 1-5
+   *
+   * @generated from field: int32 rating = 3;
+   */
+  rating: number;
+};
+
+/**
+ * Describes the message ant.v1.RateStrategyRequest.
+ * Use `create(RateStrategyRequestSchema)` to create a new message.
+ */
+export const RateStrategyRequestSchema: GenMessage<RateStrategyRequest> = /*@__PURE__*/
+  messageDesc(file_marketplace_service, 12);
+
+/**
+ * @generated from message ant.v1.RateStrategyResponse
+ */
+export type RateStrategyResponse = Message<"ant.v1.RateStrategyResponse"> & {
+  /**
+   * @generated from field: double avg_rating = 1;
+   */
+  avgRating: number;
+
+  /**
+   * @generated from field: int32 rating_count = 2;
+   */
+  ratingCount: number;
+};
+
+/**
+ * Describes the message ant.v1.RateStrategyResponse.
+ * Use `create(RateStrategyResponseSchema)` to create a new message.
+ */
+export const RateStrategyResponseSchema: GenMessage<RateStrategyResponse> = /*@__PURE__*/
+  messageDesc(file_marketplace_service, 13);
+
+/**
+ * @generated from message ant.v1.ListRatingsRequest
+ */
+export type ListRatingsRequest = Message<"ant.v1.ListRatingsRequest"> & {
+  /**
+   * publish_id
+   *
+   * @generated from field: string strategy_id = 1;
+   */
+  strategyId: string;
+};
+
+/**
+ * Describes the message ant.v1.ListRatingsRequest.
+ * Use `create(ListRatingsRequestSchema)` to create a new message.
+ */
+export const ListRatingsRequestSchema: GenMessage<ListRatingsRequest> = /*@__PURE__*/
+  messageDesc(file_marketplace_service, 14);
+
+/**
+ * @generated from message ant.v1.ListRatingsResponse
+ */
+export type ListRatingsResponse = Message<"ant.v1.ListRatingsResponse"> & {
+  /**
+   * @generated from field: repeated ant.v1.RatingItem ratings = 1;
+   */
+  ratings: RatingItem[];
+
+  /**
+   * @generated from field: double avg_rating = 2;
+   */
+  avgRating: number;
+
+  /**
+   * @generated from field: int32 rating_count = 3;
+   */
+  ratingCount: number;
+};
+
+/**
+ * Describes the message ant.v1.ListRatingsResponse.
+ * Use `create(ListRatingsResponseSchema)` to create a new message.
+ */
+export const ListRatingsResponseSchema: GenMessage<ListRatingsResponse> = /*@__PURE__*/
+  messageDesc(file_marketplace_service, 15);
+
+/**
+ * @generated from message ant.v1.RatingItem
+ */
+export type RatingItem = Message<"ant.v1.RatingItem"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string user_id = 2;
+   */
+  userId: string;
+
+  /**
+   * @generated from field: int32 rating = 3;
+   */
+  rating: number;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 4;
+   */
+  createdAt?: Timestamp | undefined;
+};
+
+/**
+ * Describes the message ant.v1.RatingItem.
+ * Use `create(RatingItemSchema)` to create a new message.
+ */
+export const RatingItemSchema: GenMessage<RatingItem> = /*@__PURE__*/
+  messageDesc(file_marketplace_service, 16);
+
+/**
+ * @generated from message ant.v1.CommentOnStrategyRequest
+ */
+export type CommentOnStrategyRequest = Message<"ant.v1.CommentOnStrategyRequest"> & {
+  /**
+   * @generated from field: string user_id = 1;
+   */
+  userId: string;
+
+  /**
+   * publish_id
+   *
+   * @generated from field: string strategy_id = 2;
+   */
+  strategyId: string;
+
+  /**
+   * @generated from field: string content = 3;
+   */
+  content: string;
+};
+
+/**
+ * Describes the message ant.v1.CommentOnStrategyRequest.
+ * Use `create(CommentOnStrategyRequestSchema)` to create a new message.
+ */
+export const CommentOnStrategyRequestSchema: GenMessage<CommentOnStrategyRequest> = /*@__PURE__*/
+  messageDesc(file_marketplace_service, 17);
+
+/**
+ * @generated from message ant.v1.CommentOnStrategyResponse
+ */
+export type CommentOnStrategyResponse = Message<"ant.v1.CommentOnStrategyResponse"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message ant.v1.CommentOnStrategyResponse.
+ * Use `create(CommentOnStrategyResponseSchema)` to create a new message.
+ */
+export const CommentOnStrategyResponseSchema: GenMessage<CommentOnStrategyResponse> = /*@__PURE__*/
+  messageDesc(file_marketplace_service, 18);
+
+/**
+ * @generated from message ant.v1.ListCommentsRequest
+ */
+export type ListCommentsRequest = Message<"ant.v1.ListCommentsRequest"> & {
+  /**
+   * publish_id
+   *
+   * @generated from field: string strategy_id = 1;
+   */
+  strategyId: string;
+
+  /**
+   * @generated from field: int32 limit = 2;
+   */
+  limit: number;
+
+  /**
+   * @generated from field: int32 offset = 3;
+   */
+  offset: number;
+};
+
+/**
+ * Describes the message ant.v1.ListCommentsRequest.
+ * Use `create(ListCommentsRequestSchema)` to create a new message.
+ */
+export const ListCommentsRequestSchema: GenMessage<ListCommentsRequest> = /*@__PURE__*/
+  messageDesc(file_marketplace_service, 19);
+
+/**
+ * @generated from message ant.v1.ListCommentsResponse
+ */
+export type ListCommentsResponse = Message<"ant.v1.ListCommentsResponse"> & {
+  /**
+   * @generated from field: repeated ant.v1.CommentItem comments = 1;
+   */
+  comments: CommentItem[];
+
+  /**
+   * @generated from field: int32 total = 2;
+   */
+  total: number;
+};
+
+/**
+ * Describes the message ant.v1.ListCommentsResponse.
+ * Use `create(ListCommentsResponseSchema)` to create a new message.
+ */
+export const ListCommentsResponseSchema: GenMessage<ListCommentsResponse> = /*@__PURE__*/
+  messageDesc(file_marketplace_service, 20);
+
+/**
+ * @generated from message ant.v1.CommentItem
+ */
+export type CommentItem = Message<"ant.v1.CommentItem"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string user_id = 2;
+   */
+  userId: string;
+
+  /**
+   * @generated from field: string user_name = 3;
+   */
+  userName: string;
+
+  /**
+   * @generated from field: string content = 4;
+   */
+  content: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 5;
+   */
+  createdAt?: Timestamp | undefined;
+};
+
+/**
+ * Describes the message ant.v1.CommentItem.
+ * Use `create(CommentItemSchema)` to create a new message.
+ */
+export const CommentItemSchema: GenMessage<CommentItem> = /*@__PURE__*/
+  messageDesc(file_marketplace_service, 21);
+
+/**
+ * @generated from message ant.v1.SetStrategyPricingRequest
+ */
+export type SetStrategyPricingRequest = Message<"ant.v1.SetStrategyPricingRequest"> & {
+  /**
+   * publish_id
+   *
+   * @generated from field: string strategy_id = 1;
+   */
+  strategyId: string;
+
+  /**
+   * "free" | "paid"
+   *
+   * @generated from field: string price_model = 2;
+   */
+  priceModel: string;
+
+  /**
+   * @generated from field: double price_amount = 3;
+   */
+  priceAmount: number;
+};
+
+/**
+ * Describes the message ant.v1.SetStrategyPricingRequest.
+ * Use `create(SetStrategyPricingRequestSchema)` to create a new message.
+ */
+export const SetStrategyPricingRequestSchema: GenMessage<SetStrategyPricingRequest> = /*@__PURE__*/
+  messageDesc(file_marketplace_service, 22);
+
+/**
+ * @generated from message ant.v1.SetStrategyPricingResponse
+ */
+export type SetStrategyPricingResponse = Message<"ant.v1.SetStrategyPricingResponse"> & {
+  /**
+   * @generated from field: string strategy_id = 1;
+   */
+  strategyId: string;
+
+  /**
+   * @generated from field: string price_model = 2;
+   */
+  priceModel: string;
+
+  /**
+   * @generated from field: double price_amount = 3;
+   */
+  priceAmount: number;
+};
+
+/**
+ * Describes the message ant.v1.SetStrategyPricingResponse.
+ * Use `create(SetStrategyPricingResponseSchema)` to create a new message.
+ */
+export const SetStrategyPricingResponseSchema: GenMessage<SetStrategyPricingResponse> = /*@__PURE__*/
+  messageDesc(file_marketplace_service, 23);
+
+/**
  * @generated from service ant.v1.MarketplaceService
  */
 export const MarketplaceService: GenService<{
@@ -448,6 +795,50 @@ export const MarketplaceService: GenService<{
     methodKind: "unary";
     input: typeof ListSubscriptionsRequestSchema;
     output: typeof ListSubscriptionsResponseSchema;
+  },
+  /**
+   * Rating & comments
+   *
+   * @generated from rpc ant.v1.MarketplaceService.RateStrategy
+   */
+  rateStrategy: {
+    methodKind: "unary";
+    input: typeof RateStrategyRequestSchema;
+    output: typeof RateStrategyResponseSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.MarketplaceService.ListRatings
+   */
+  listRatings: {
+    methodKind: "unary";
+    input: typeof ListRatingsRequestSchema;
+    output: typeof ListRatingsResponseSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.MarketplaceService.CommentOnStrategy
+   */
+  commentOnStrategy: {
+    methodKind: "unary";
+    input: typeof CommentOnStrategyRequestSchema;
+    output: typeof CommentOnStrategyResponseSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.MarketplaceService.ListComments
+   */
+  listComments: {
+    methodKind: "unary";
+    input: typeof ListCommentsRequestSchema;
+    output: typeof ListCommentsResponseSchema;
+  },
+  /**
+   * Admin
+   *
+   * @generated from rpc ant.v1.MarketplaceService.SetStrategyPricing
+   */
+  setStrategyPricing: {
+    methodKind: "unary";
+    input: typeof SetStrategyPricingRequestSchema;
+    output: typeof SetStrategyPricingResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_marketplace_service, 0);

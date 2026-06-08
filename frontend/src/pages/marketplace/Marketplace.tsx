@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import {
   Card, Input, Select, Tag, Button, Space, Typography, Row, Col,
-  Tooltip, message, Tabs,
+  Tooltip, message, Tabs, Rate,
 } from 'antd';
 import {
   SearchOutlined, PlusOutlined, ExperimentOutlined,
   ShopOutlined, BookOutlined, PieChartOutlined,
+  StarFilled,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { marketplaceClient } from '@/client/connect';
@@ -29,12 +30,18 @@ export default function MarketplacePage() {
   const [activeTab, setActiveTab] = useState<TabKey>('marketplace');
   const [searchText, setSearchText] = useState('');
   const [assetFilter, setAssetFilter] = useState('');
+  const [sortBy, setSortBy] = useState('newest');
   const [publishOpen, setPublishOpen] = useState(false);
 
   const { data: strategies = [], isLoading, error, refetch } = useRpcQuery(
-    ['marketplace', 'published', userId, assetFilter],
+    ['marketplace', 'published', userId, assetFilter, searchText, sortBy],
     async () => {
-      const resp = await marketplaceClient.listPublished({ userId, limit: 100, assetClass: assetFilter || undefined });
+      const resp = await marketplaceClient.listPublished({
+        userId, limit: 100,
+        assetClass: assetFilter || undefined,
+        keyword: searchText || undefined,
+        sortBy: sortBy || undefined,
+      });
       return (resp.strategies || []) as PublishedStrategy[];
     },
   );
@@ -68,13 +75,6 @@ export default function MarketplacePage() {
 
   const isSubscribed = (strategyId: string) => subscriptions.some(s => s.strategyId === strategyId);
 
-  const filtered = strategies.filter(s => {
-    if (!searchText) return true;
-    const q = searchText.toLowerCase();
-    const name = (s.strategyName || s.title || '').toLowerCase();
-    return name.includes(q) || s.strategyId.toLowerCase().includes(q);
-  });
-
   const renderStrategyCard = (s: PublishedStrategy) => {
     const isSub = isSubscribed(s.strategyId);
     const riskLevel = s.riskLevel || 'medium';
@@ -105,6 +105,12 @@ export default function MarketplacePage() {
             <Text strong style={{ fontSize: 15 }}>{displayName}</Text>
             {s.priceModel && s.priceModel !== 'free' && <Tag color="gold" style={{ marginLeft: 6 }}>${s.priceAmount?.toFixed(2)}</Tag>}
           </div>
+          {s.avgRating > 0 && (
+            <div style={{ marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Rate disabled allowHalf value={s.avgRating} style={{ fontSize: 12 }} />
+              <span style={{ fontSize: 11, color: '#8c8c8c' }}>({s.ratingCount})</span>
+            </div>
+          )}
           <Space size={4} wrap style={{ marginBottom: 8 }}>
             <Tag color="blue">{t(`marketplace.assetClass.${assetClass}`, { defaultValue: assetClass })}</Tag>
             <Tag color={RISK_COLORS[riskLevel] || 'default'} style={{ background: RISK_BG[riskLevel] || undefined, border: 'none' }}>
@@ -147,10 +153,16 @@ export default function MarketplacePage() {
                   <Select value={assetFilter || undefined} onChange={v => setAssetFilter(v || '')} allowClear
                     placeholder={t('marketplace.filterByClass')} style={{ minWidth: 180 }}
                     options={ASSET_CLASSES.map(c => ({ value: c, label: t(`marketplace.assetClass.${c}`, { defaultValue: c }) }))} />
+                  <Select value={sortBy} onChange={v => setSortBy(v)} style={{ minWidth: 160 }}
+                    options={[
+                      { value: 'newest', label: t('marketplace.sort.newest') },
+                      { value: 'popular', label: t('marketplace.sort.popular') },
+                      { value: 'performance', label: t('marketplace.sort.performance') },
+                    ]} />
                 </div>
                 <StatusResult loading={isLoading} error={error instanceof Error ? error.message : undefined} onRetry={refetch}
-                  empty={filtered.length === 0 && !isLoading} emptyText={t('marketplace.empty')}>
-                  <Row gutter={[16, 16]}>{filtered.map(renderStrategyCard)}</Row>
+                  empty={strategies.length === 0 && !isLoading} emptyText={t('marketplace.empty')}>
+                  <Row gutter={[16, 16]}>{strategies.map(renderStrategyCard)}</Row>
                 </StatusResult>
               </div>
             ),

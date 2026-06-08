@@ -48,6 +48,21 @@ const (
 	// MarketplaceServiceListSubscriptionsProcedure is the fully-qualified name of the
 	// MarketplaceService's ListSubscriptions RPC.
 	MarketplaceServiceListSubscriptionsProcedure = "/ant.v1.MarketplaceService/ListSubscriptions"
+	// MarketplaceServiceRateStrategyProcedure is the fully-qualified name of the MarketplaceService's
+	// RateStrategy RPC.
+	MarketplaceServiceRateStrategyProcedure = "/ant.v1.MarketplaceService/RateStrategy"
+	// MarketplaceServiceListRatingsProcedure is the fully-qualified name of the MarketplaceService's
+	// ListRatings RPC.
+	MarketplaceServiceListRatingsProcedure = "/ant.v1.MarketplaceService/ListRatings"
+	// MarketplaceServiceCommentOnStrategyProcedure is the fully-qualified name of the
+	// MarketplaceService's CommentOnStrategy RPC.
+	MarketplaceServiceCommentOnStrategyProcedure = "/ant.v1.MarketplaceService/CommentOnStrategy"
+	// MarketplaceServiceListCommentsProcedure is the fully-qualified name of the MarketplaceService's
+	// ListComments RPC.
+	MarketplaceServiceListCommentsProcedure = "/ant.v1.MarketplaceService/ListComments"
+	// MarketplaceServiceSetStrategyPricingProcedure is the fully-qualified name of the
+	// MarketplaceService's SetStrategyPricing RPC.
+	MarketplaceServiceSetStrategyPricingProcedure = "/ant.v1.MarketplaceService/SetStrategyPricing"
 )
 
 // MarketplaceServiceClient is a client for the ant.v1.MarketplaceService service.
@@ -57,6 +72,13 @@ type MarketplaceServiceClient interface {
 	Unsubscribe(context.Context, *connect.Request[v1.UnsubscribeRequest]) (*connect.Response[v1.UnsubscribeResponse], error)
 	ListPublished(context.Context, *connect.Request[v1.ListPublishedRequest]) (*connect.Response[v1.ListPublishedResponse], error)
 	ListSubscriptions(context.Context, *connect.Request[v1.ListSubscriptionsRequest]) (*connect.Response[v1.ListSubscriptionsResponse], error)
+	// Rating & comments
+	RateStrategy(context.Context, *connect.Request[v1.RateStrategyRequest]) (*connect.Response[v1.RateStrategyResponse], error)
+	ListRatings(context.Context, *connect.Request[v1.ListRatingsRequest]) (*connect.Response[v1.ListRatingsResponse], error)
+	CommentOnStrategy(context.Context, *connect.Request[v1.CommentOnStrategyRequest]) (*connect.Response[v1.CommentOnStrategyResponse], error)
+	ListComments(context.Context, *connect.Request[v1.ListCommentsRequest]) (*connect.Response[v1.ListCommentsResponse], error)
+	// Admin
+	SetStrategyPricing(context.Context, *connect.Request[v1.SetStrategyPricingRequest]) (*connect.Response[v1.SetStrategyPricingResponse], error)
 }
 
 // NewMarketplaceServiceClient constructs a client for the ant.v1.MarketplaceService service. By
@@ -100,16 +122,51 @@ func NewMarketplaceServiceClient(httpClient connect.HTTPClient, baseURL string, 
 			connect.WithSchema(marketplaceServiceMethods.ByName("ListSubscriptions")),
 			connect.WithClientOptions(opts...),
 		),
+		rateStrategy: connect.NewClient[v1.RateStrategyRequest, v1.RateStrategyResponse](
+			httpClient,
+			baseURL+MarketplaceServiceRateStrategyProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("RateStrategy")),
+			connect.WithClientOptions(opts...),
+		),
+		listRatings: connect.NewClient[v1.ListRatingsRequest, v1.ListRatingsResponse](
+			httpClient,
+			baseURL+MarketplaceServiceListRatingsProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("ListRatings")),
+			connect.WithClientOptions(opts...),
+		),
+		commentOnStrategy: connect.NewClient[v1.CommentOnStrategyRequest, v1.CommentOnStrategyResponse](
+			httpClient,
+			baseURL+MarketplaceServiceCommentOnStrategyProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("CommentOnStrategy")),
+			connect.WithClientOptions(opts...),
+		),
+		listComments: connect.NewClient[v1.ListCommentsRequest, v1.ListCommentsResponse](
+			httpClient,
+			baseURL+MarketplaceServiceListCommentsProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("ListComments")),
+			connect.WithClientOptions(opts...),
+		),
+		setStrategyPricing: connect.NewClient[v1.SetStrategyPricingRequest, v1.SetStrategyPricingResponse](
+			httpClient,
+			baseURL+MarketplaceServiceSetStrategyPricingProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("SetStrategyPricing")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // marketplaceServiceClient implements MarketplaceServiceClient.
 type marketplaceServiceClient struct {
-	publishStrategy   *connect.Client[v1.PublishStrategyRequest, v1.PublishStrategyResponse]
-	subscribe         *connect.Client[v1.SubscribeRequest, v1.SubscribeResponse]
-	unsubscribe       *connect.Client[v1.UnsubscribeRequest, v1.UnsubscribeResponse]
-	listPublished     *connect.Client[v1.ListPublishedRequest, v1.ListPublishedResponse]
-	listSubscriptions *connect.Client[v1.ListSubscriptionsRequest, v1.ListSubscriptionsResponse]
+	publishStrategy    *connect.Client[v1.PublishStrategyRequest, v1.PublishStrategyResponse]
+	subscribe          *connect.Client[v1.SubscribeRequest, v1.SubscribeResponse]
+	unsubscribe        *connect.Client[v1.UnsubscribeRequest, v1.UnsubscribeResponse]
+	listPublished      *connect.Client[v1.ListPublishedRequest, v1.ListPublishedResponse]
+	listSubscriptions  *connect.Client[v1.ListSubscriptionsRequest, v1.ListSubscriptionsResponse]
+	rateStrategy       *connect.Client[v1.RateStrategyRequest, v1.RateStrategyResponse]
+	listRatings        *connect.Client[v1.ListRatingsRequest, v1.ListRatingsResponse]
+	commentOnStrategy  *connect.Client[v1.CommentOnStrategyRequest, v1.CommentOnStrategyResponse]
+	listComments       *connect.Client[v1.ListCommentsRequest, v1.ListCommentsResponse]
+	setStrategyPricing *connect.Client[v1.SetStrategyPricingRequest, v1.SetStrategyPricingResponse]
 }
 
 // PublishStrategy calls ant.v1.MarketplaceService.PublishStrategy.
@@ -137,6 +194,31 @@ func (c *marketplaceServiceClient) ListSubscriptions(ctx context.Context, req *c
 	return c.listSubscriptions.CallUnary(ctx, req)
 }
 
+// RateStrategy calls ant.v1.MarketplaceService.RateStrategy.
+func (c *marketplaceServiceClient) RateStrategy(ctx context.Context, req *connect.Request[v1.RateStrategyRequest]) (*connect.Response[v1.RateStrategyResponse], error) {
+	return c.rateStrategy.CallUnary(ctx, req)
+}
+
+// ListRatings calls ant.v1.MarketplaceService.ListRatings.
+func (c *marketplaceServiceClient) ListRatings(ctx context.Context, req *connect.Request[v1.ListRatingsRequest]) (*connect.Response[v1.ListRatingsResponse], error) {
+	return c.listRatings.CallUnary(ctx, req)
+}
+
+// CommentOnStrategy calls ant.v1.MarketplaceService.CommentOnStrategy.
+func (c *marketplaceServiceClient) CommentOnStrategy(ctx context.Context, req *connect.Request[v1.CommentOnStrategyRequest]) (*connect.Response[v1.CommentOnStrategyResponse], error) {
+	return c.commentOnStrategy.CallUnary(ctx, req)
+}
+
+// ListComments calls ant.v1.MarketplaceService.ListComments.
+func (c *marketplaceServiceClient) ListComments(ctx context.Context, req *connect.Request[v1.ListCommentsRequest]) (*connect.Response[v1.ListCommentsResponse], error) {
+	return c.listComments.CallUnary(ctx, req)
+}
+
+// SetStrategyPricing calls ant.v1.MarketplaceService.SetStrategyPricing.
+func (c *marketplaceServiceClient) SetStrategyPricing(ctx context.Context, req *connect.Request[v1.SetStrategyPricingRequest]) (*connect.Response[v1.SetStrategyPricingResponse], error) {
+	return c.setStrategyPricing.CallUnary(ctx, req)
+}
+
 // MarketplaceServiceHandler is an implementation of the ant.v1.MarketplaceService service.
 type MarketplaceServiceHandler interface {
 	PublishStrategy(context.Context, *connect.Request[v1.PublishStrategyRequest]) (*connect.Response[v1.PublishStrategyResponse], error)
@@ -144,6 +226,13 @@ type MarketplaceServiceHandler interface {
 	Unsubscribe(context.Context, *connect.Request[v1.UnsubscribeRequest]) (*connect.Response[v1.UnsubscribeResponse], error)
 	ListPublished(context.Context, *connect.Request[v1.ListPublishedRequest]) (*connect.Response[v1.ListPublishedResponse], error)
 	ListSubscriptions(context.Context, *connect.Request[v1.ListSubscriptionsRequest]) (*connect.Response[v1.ListSubscriptionsResponse], error)
+	// Rating & comments
+	RateStrategy(context.Context, *connect.Request[v1.RateStrategyRequest]) (*connect.Response[v1.RateStrategyResponse], error)
+	ListRatings(context.Context, *connect.Request[v1.ListRatingsRequest]) (*connect.Response[v1.ListRatingsResponse], error)
+	CommentOnStrategy(context.Context, *connect.Request[v1.CommentOnStrategyRequest]) (*connect.Response[v1.CommentOnStrategyResponse], error)
+	ListComments(context.Context, *connect.Request[v1.ListCommentsRequest]) (*connect.Response[v1.ListCommentsResponse], error)
+	// Admin
+	SetStrategyPricing(context.Context, *connect.Request[v1.SetStrategyPricingRequest]) (*connect.Response[v1.SetStrategyPricingResponse], error)
 }
 
 // NewMarketplaceServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -183,6 +272,36 @@ func NewMarketplaceServiceHandler(svc MarketplaceServiceHandler, opts ...connect
 		connect.WithSchema(marketplaceServiceMethods.ByName("ListSubscriptions")),
 		connect.WithHandlerOptions(opts...),
 	)
+	marketplaceServiceRateStrategyHandler := connect.NewUnaryHandler(
+		MarketplaceServiceRateStrategyProcedure,
+		svc.RateStrategy,
+		connect.WithSchema(marketplaceServiceMethods.ByName("RateStrategy")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceListRatingsHandler := connect.NewUnaryHandler(
+		MarketplaceServiceListRatingsProcedure,
+		svc.ListRatings,
+		connect.WithSchema(marketplaceServiceMethods.ByName("ListRatings")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceCommentOnStrategyHandler := connect.NewUnaryHandler(
+		MarketplaceServiceCommentOnStrategyProcedure,
+		svc.CommentOnStrategy,
+		connect.WithSchema(marketplaceServiceMethods.ByName("CommentOnStrategy")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceListCommentsHandler := connect.NewUnaryHandler(
+		MarketplaceServiceListCommentsProcedure,
+		svc.ListComments,
+		connect.WithSchema(marketplaceServiceMethods.ByName("ListComments")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServiceSetStrategyPricingHandler := connect.NewUnaryHandler(
+		MarketplaceServiceSetStrategyPricingProcedure,
+		svc.SetStrategyPricing,
+		connect.WithSchema(marketplaceServiceMethods.ByName("SetStrategyPricing")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.MarketplaceService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case MarketplaceServicePublishStrategyProcedure:
@@ -195,6 +314,16 @@ func NewMarketplaceServiceHandler(svc MarketplaceServiceHandler, opts ...connect
 			marketplaceServiceListPublishedHandler.ServeHTTP(w, r)
 		case MarketplaceServiceListSubscriptionsProcedure:
 			marketplaceServiceListSubscriptionsHandler.ServeHTTP(w, r)
+		case MarketplaceServiceRateStrategyProcedure:
+			marketplaceServiceRateStrategyHandler.ServeHTTP(w, r)
+		case MarketplaceServiceListRatingsProcedure:
+			marketplaceServiceListRatingsHandler.ServeHTTP(w, r)
+		case MarketplaceServiceCommentOnStrategyProcedure:
+			marketplaceServiceCommentOnStrategyHandler.ServeHTTP(w, r)
+		case MarketplaceServiceListCommentsProcedure:
+			marketplaceServiceListCommentsHandler.ServeHTTP(w, r)
+		case MarketplaceServiceSetStrategyPricingProcedure:
+			marketplaceServiceSetStrategyPricingHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -222,4 +351,24 @@ func (UnimplementedMarketplaceServiceHandler) ListPublished(context.Context, *co
 
 func (UnimplementedMarketplaceServiceHandler) ListSubscriptions(context.Context, *connect.Request[v1.ListSubscriptionsRequest]) (*connect.Response[v1.ListSubscriptionsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.ListSubscriptions is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) RateStrategy(context.Context, *connect.Request[v1.RateStrategyRequest]) (*connect.Response[v1.RateStrategyResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.RateStrategy is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) ListRatings(context.Context, *connect.Request[v1.ListRatingsRequest]) (*connect.Response[v1.ListRatingsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.ListRatings is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) CommentOnStrategy(context.Context, *connect.Request[v1.CommentOnStrategyRequest]) (*connect.Response[v1.CommentOnStrategyResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.CommentOnStrategy is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) ListComments(context.Context, *connect.Request[v1.ListCommentsRequest]) (*connect.Response[v1.ListCommentsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.ListComments is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) SetStrategyPricing(context.Context, *connect.Request[v1.SetStrategyPricingRequest]) (*connect.Response[v1.SetStrategyPricingResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.SetStrategyPricing is not implemented"))
 }

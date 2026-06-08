@@ -395,7 +395,9 @@ type ListPublishedRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
-	AssetClass    string                 `protobuf:"bytes,3,opt,name=asset_class,json=assetClass,proto3" json:"asset_class,omitempty"` // M12-B1: optional filter by asset class
+	AssetClass    string                 `protobuf:"bytes,3,opt,name=asset_class,json=assetClass,proto3" json:"asset_class,omitempty"` // optional filter by asset class
+	Keyword       string                 `protobuf:"bytes,4,opt,name=keyword,proto3" json:"keyword,omitempty"`                         // search title/description/tags (ILIKE)
+	SortBy        string                 `protobuf:"bytes,5,opt,name=sort_by,json=sortBy,proto3" json:"sort_by,omitempty"`             // newest | popular | performance (default: newest)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -447,6 +449,20 @@ func (x *ListPublishedRequest) GetLimit() int32 {
 func (x *ListPublishedRequest) GetAssetClass() string {
 	if x != nil {
 		return x.AssetClass
+	}
+	return ""
+}
+
+func (x *ListPublishedRequest) GetKeyword() string {
+	if x != nil {
+		return x.Keyword
+	}
+	return ""
+}
+
+func (x *ListPublishedRequest) GetSortBy() string {
+	if x != nil {
+		return x.SortBy
 	}
 	return ""
 }
@@ -515,6 +531,8 @@ type PublishedStrategy struct {
 	TotalSubscribers int32    `protobuf:"varint,15,opt,name=total_subscribers,json=totalSubscribers,proto3" json:"total_subscribers,omitempty"`
 	WinRate          float64  `protobuf:"fixed64,16,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
 	TotalPnl         float64  `protobuf:"fixed64,17,opt,name=total_pnl,json=totalPnl,proto3" json:"total_pnl,omitempty"`
+	AvgRating        float64  `protobuf:"fixed64,18,opt,name=avg_rating,json=avgRating,proto3" json:"avg_rating,omitempty"`
+	RatingCount      int32    `protobuf:"varint,19,opt,name=rating_count,json=ratingCount,proto3" json:"rating_count,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -664,6 +682,20 @@ func (x *PublishedStrategy) GetWinRate() float64 {
 func (x *PublishedStrategy) GetTotalPnl() float64 {
 	if x != nil {
 		return x.TotalPnl
+	}
+	return 0
+}
+
+func (x *PublishedStrategy) GetAvgRating() float64 {
+	if x != nil {
+		return x.AvgRating
+	}
+	return 0
+}
+
+func (x *PublishedStrategy) GetRatingCount() int32 {
+	if x != nil {
+		return x.RatingCount
 	}
 	return 0
 }
@@ -840,6 +872,702 @@ func (x *SubscriptionItem) GetCreatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+type RateStrategyRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	StrategyId    string                 `protobuf:"bytes,2,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"` // publish_id
+	Rating        int32                  `protobuf:"varint,3,opt,name=rating,proto3" json:"rating,omitempty"`                          // 1-5
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RateStrategyRequest) Reset() {
+	*x = RateStrategyRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RateStrategyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RateStrategyRequest) ProtoMessage() {}
+
+func (x *RateStrategyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RateStrategyRequest.ProtoReflect.Descriptor instead.
+func (*RateStrategyRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *RateStrategyRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *RateStrategyRequest) GetStrategyId() string {
+	if x != nil {
+		return x.StrategyId
+	}
+	return ""
+}
+
+func (x *RateStrategyRequest) GetRating() int32 {
+	if x != nil {
+		return x.Rating
+	}
+	return 0
+}
+
+type RateStrategyResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AvgRating     float64                `protobuf:"fixed64,1,opt,name=avg_rating,json=avgRating,proto3" json:"avg_rating,omitempty"`
+	RatingCount   int32                  `protobuf:"varint,2,opt,name=rating_count,json=ratingCount,proto3" json:"rating_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RateStrategyResponse) Reset() {
+	*x = RateStrategyResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RateStrategyResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RateStrategyResponse) ProtoMessage() {}
+
+func (x *RateStrategyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RateStrategyResponse.ProtoReflect.Descriptor instead.
+func (*RateStrategyResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *RateStrategyResponse) GetAvgRating() float64 {
+	if x != nil {
+		return x.AvgRating
+	}
+	return 0
+}
+
+func (x *RateStrategyResponse) GetRatingCount() int32 {
+	if x != nil {
+		return x.RatingCount
+	}
+	return 0
+}
+
+type ListRatingsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StrategyId    string                 `protobuf:"bytes,1,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"` // publish_id
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListRatingsRequest) Reset() {
+	*x = ListRatingsRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListRatingsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListRatingsRequest) ProtoMessage() {}
+
+func (x *ListRatingsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListRatingsRequest.ProtoReflect.Descriptor instead.
+func (*ListRatingsRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *ListRatingsRequest) GetStrategyId() string {
+	if x != nil {
+		return x.StrategyId
+	}
+	return ""
+}
+
+type ListRatingsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Ratings       []*RatingItem          `protobuf:"bytes,1,rep,name=ratings,proto3" json:"ratings,omitempty"`
+	AvgRating     float64                `protobuf:"fixed64,2,opt,name=avg_rating,json=avgRating,proto3" json:"avg_rating,omitempty"`
+	RatingCount   int32                  `protobuf:"varint,3,opt,name=rating_count,json=ratingCount,proto3" json:"rating_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListRatingsResponse) Reset() {
+	*x = ListRatingsResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListRatingsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListRatingsResponse) ProtoMessage() {}
+
+func (x *ListRatingsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListRatingsResponse.ProtoReflect.Descriptor instead.
+func (*ListRatingsResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *ListRatingsResponse) GetRatings() []*RatingItem {
+	if x != nil {
+		return x.Ratings
+	}
+	return nil
+}
+
+func (x *ListRatingsResponse) GetAvgRating() float64 {
+	if x != nil {
+		return x.AvgRating
+	}
+	return 0
+}
+
+func (x *ListRatingsResponse) GetRatingCount() int32 {
+	if x != nil {
+		return x.RatingCount
+	}
+	return 0
+}
+
+type RatingItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Rating        int32                  `protobuf:"varint,3,opt,name=rating,proto3" json:"rating,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RatingItem) Reset() {
+	*x = RatingItem{}
+	mi := &file_marketplace_service_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RatingItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RatingItem) ProtoMessage() {}
+
+func (x *RatingItem) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RatingItem.ProtoReflect.Descriptor instead.
+func (*RatingItem) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *RatingItem) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *RatingItem) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *RatingItem) GetRating() int32 {
+	if x != nil {
+		return x.Rating
+	}
+	return 0
+}
+
+func (x *RatingItem) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+type CommentOnStrategyRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	StrategyId    string                 `protobuf:"bytes,2,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"` // publish_id
+	Content       string                 `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CommentOnStrategyRequest) Reset() {
+	*x = CommentOnStrategyRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CommentOnStrategyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommentOnStrategyRequest) ProtoMessage() {}
+
+func (x *CommentOnStrategyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommentOnStrategyRequest.ProtoReflect.Descriptor instead.
+func (*CommentOnStrategyRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *CommentOnStrategyRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *CommentOnStrategyRequest) GetStrategyId() string {
+	if x != nil {
+		return x.StrategyId
+	}
+	return ""
+}
+
+func (x *CommentOnStrategyRequest) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+type CommentOnStrategyResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CommentOnStrategyResponse) Reset() {
+	*x = CommentOnStrategyResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CommentOnStrategyResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommentOnStrategyResponse) ProtoMessage() {}
+
+func (x *CommentOnStrategyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommentOnStrategyResponse.ProtoReflect.Descriptor instead.
+func (*CommentOnStrategyResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *CommentOnStrategyResponse) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type ListCommentsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StrategyId    string                 `protobuf:"bytes,1,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"` // publish_id
+	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	Offset        int32                  `protobuf:"varint,3,opt,name=offset,proto3" json:"offset,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListCommentsRequest) Reset() {
+	*x = ListCommentsRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListCommentsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListCommentsRequest) ProtoMessage() {}
+
+func (x *ListCommentsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListCommentsRequest.ProtoReflect.Descriptor instead.
+func (*ListCommentsRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *ListCommentsRequest) GetStrategyId() string {
+	if x != nil {
+		return x.StrategyId
+	}
+	return ""
+}
+
+func (x *ListCommentsRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *ListCommentsRequest) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+type ListCommentsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Comments      []*CommentItem         `protobuf:"bytes,1,rep,name=comments,proto3" json:"comments,omitempty"`
+	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListCommentsResponse) Reset() {
+	*x = ListCommentsResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListCommentsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListCommentsResponse) ProtoMessage() {}
+
+func (x *ListCommentsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListCommentsResponse.ProtoReflect.Descriptor instead.
+func (*ListCommentsResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *ListCommentsResponse) GetComments() []*CommentItem {
+	if x != nil {
+		return x.Comments
+	}
+	return nil
+}
+
+func (x *ListCommentsResponse) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+type CommentItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserName      string                 `protobuf:"bytes,3,opt,name=user_name,json=userName,proto3" json:"user_name,omitempty"`
+	Content       string                 `protobuf:"bytes,4,opt,name=content,proto3" json:"content,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CommentItem) Reset() {
+	*x = CommentItem{}
+	mi := &file_marketplace_service_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CommentItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommentItem) ProtoMessage() {}
+
+func (x *CommentItem) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommentItem.ProtoReflect.Descriptor instead.
+func (*CommentItem) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *CommentItem) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *CommentItem) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *CommentItem) GetUserName() string {
+	if x != nil {
+		return x.UserName
+	}
+	return ""
+}
+
+func (x *CommentItem) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+func (x *CommentItem) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+type SetStrategyPricingRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StrategyId    string                 `protobuf:"bytes,1,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"` // publish_id
+	PriceModel    string                 `protobuf:"bytes,2,opt,name=price_model,json=priceModel,proto3" json:"price_model,omitempty"` // "free" | "paid"
+	PriceAmount   float64                `protobuf:"fixed64,3,opt,name=price_amount,json=priceAmount,proto3" json:"price_amount,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetStrategyPricingRequest) Reset() {
+	*x = SetStrategyPricingRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetStrategyPricingRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetStrategyPricingRequest) ProtoMessage() {}
+
+func (x *SetStrategyPricingRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetStrategyPricingRequest.ProtoReflect.Descriptor instead.
+func (*SetStrategyPricingRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *SetStrategyPricingRequest) GetStrategyId() string {
+	if x != nil {
+		return x.StrategyId
+	}
+	return ""
+}
+
+func (x *SetStrategyPricingRequest) GetPriceModel() string {
+	if x != nil {
+		return x.PriceModel
+	}
+	return ""
+}
+
+func (x *SetStrategyPricingRequest) GetPriceAmount() float64 {
+	if x != nil {
+		return x.PriceAmount
+	}
+	return 0
+}
+
+type SetStrategyPricingResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StrategyId    string                 `protobuf:"bytes,1,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"`
+	PriceModel    string                 `protobuf:"bytes,2,opt,name=price_model,json=priceModel,proto3" json:"price_model,omitempty"`
+	PriceAmount   float64                `protobuf:"fixed64,3,opt,name=price_amount,json=priceAmount,proto3" json:"price_amount,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetStrategyPricingResponse) Reset() {
+	*x = SetStrategyPricingResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetStrategyPricingResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetStrategyPricingResponse) ProtoMessage() {}
+
+func (x *SetStrategyPricingResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetStrategyPricingResponse.ProtoReflect.Descriptor instead.
+func (*SetStrategyPricingResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *SetStrategyPricingResponse) GetStrategyId() string {
+	if x != nil {
+		return x.StrategyId
+	}
+	return ""
+}
+
+func (x *SetStrategyPricingResponse) GetPriceModel() string {
+	if x != nil {
+		return x.PriceModel
+	}
+	return ""
+}
+
+func (x *SetStrategyPricingResponse) GetPriceAmount() float64 {
+	if x != nil {
+		return x.PriceAmount
+	}
+	return 0
+}
+
 var File_marketplace_service_proto protoreflect.FileDescriptor
 
 const file_marketplace_service_proto_rawDesc = "" +
@@ -876,16 +1604,18 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x12UnsubscribeRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12'\n" +
 	"\x0fsubscription_id\x18\x02 \x01(\tR\x0esubscriptionId\"\x15\n" +
-	"\x13UnsubscribeResponse\"f\n" +
+	"\x13UnsubscribeResponse\"\x99\x01\n" +
 	"\x14ListPublishedRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x1f\n" +
 	"\vasset_class\x18\x03 \x01(\tR\n" +
-	"assetClass\"R\n" +
+	"assetClass\x12\x18\n" +
+	"\akeyword\x18\x04 \x01(\tR\akeyword\x12\x17\n" +
+	"\asort_by\x18\x05 \x01(\tR\x06sortBy\"R\n" +
 	"\x15ListPublishedResponse\x129\n" +
 	"\n" +
 	"strategies\x18\x01 \x03(\v2\x19.ant.v1.PublishedStrategyR\n" +
-	"strategies\"\xd0\x04\n" +
+	"strategies\"\x92\x05\n" +
 	"\x11PublishedStrategy\x12\x1d\n" +
 	"\n" +
 	"publish_id\x18\x01 \x01(\tR\tpublishId\x12\x1f\n" +
@@ -909,7 +1639,10 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x04tags\x18\x0e \x03(\tR\x04tags\x12+\n" +
 	"\x11total_subscribers\x18\x0f \x01(\x05R\x10totalSubscribers\x12\x19\n" +
 	"\bwin_rate\x18\x10 \x01(\x01R\awinRate\x12\x1b\n" +
-	"\ttotal_pnl\x18\x11 \x01(\x01R\btotalPnl\"3\n" +
+	"\ttotal_pnl\x18\x11 \x01(\x01R\btotalPnl\x12\x1d\n" +
+	"\n" +
+	"avg_rating\x18\x12 \x01(\x01R\tavgRating\x12!\n" +
+	"\frating_count\x18\x13 \x01(\x05R\vratingCount\"3\n" +
 	"\x18ListSubscriptionsRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"[\n" +
 	"\x19ListSubscriptionsResponse\x12>\n" +
@@ -922,13 +1655,76 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x04kind\x18\x04 \x01(\tR\x04kind\x12\x16\n" +
 	"\x06active\x18\x05 \x01(\bR\x06active\x129\n" +
 	"\n" +
-	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt2\x9a\x03\n" +
+	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"g\n" +
+	"\x13RateStrategyRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1f\n" +
+	"\vstrategy_id\x18\x02 \x01(\tR\n" +
+	"strategyId\x12\x16\n" +
+	"\x06rating\x18\x03 \x01(\x05R\x06rating\"X\n" +
+	"\x14RateStrategyResponse\x12\x1d\n" +
+	"\n" +
+	"avg_rating\x18\x01 \x01(\x01R\tavgRating\x12!\n" +
+	"\frating_count\x18\x02 \x01(\x05R\vratingCount\"5\n" +
+	"\x12ListRatingsRequest\x12\x1f\n" +
+	"\vstrategy_id\x18\x01 \x01(\tR\n" +
+	"strategyId\"\x85\x01\n" +
+	"\x13ListRatingsResponse\x12,\n" +
+	"\aratings\x18\x01 \x03(\v2\x12.ant.v1.RatingItemR\aratings\x12\x1d\n" +
+	"\n" +
+	"avg_rating\x18\x02 \x01(\x01R\tavgRating\x12!\n" +
+	"\frating_count\x18\x03 \x01(\x05R\vratingCount\"\x88\x01\n" +
+	"\n" +
+	"RatingItem\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x16\n" +
+	"\x06rating\x18\x03 \x01(\x05R\x06rating\x129\n" +
+	"\n" +
+	"created_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"n\n" +
+	"\x18CommentOnStrategyRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1f\n" +
+	"\vstrategy_id\x18\x02 \x01(\tR\n" +
+	"strategyId\x12\x18\n" +
+	"\acontent\x18\x03 \x01(\tR\acontent\"+\n" +
+	"\x19CommentOnStrategyResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"d\n" +
+	"\x13ListCommentsRequest\x12\x1f\n" +
+	"\vstrategy_id\x18\x01 \x01(\tR\n" +
+	"strategyId\x12\x14\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x16\n" +
+	"\x06offset\x18\x03 \x01(\x05R\x06offset\"]\n" +
+	"\x14ListCommentsResponse\x12/\n" +
+	"\bcomments\x18\x01 \x03(\v2\x13.ant.v1.CommentItemR\bcomments\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"\xa8\x01\n" +
+	"\vCommentItem\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1b\n" +
+	"\tuser_name\x18\x03 \x01(\tR\buserName\x12\x18\n" +
+	"\acontent\x18\x04 \x01(\tR\acontent\x129\n" +
+	"\n" +
+	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x80\x01\n" +
+	"\x19SetStrategyPricingRequest\x12\x1f\n" +
+	"\vstrategy_id\x18\x01 \x01(\tR\n" +
+	"strategyId\x12\x1f\n" +
+	"\vprice_model\x18\x02 \x01(\tR\n" +
+	"priceModel\x12!\n" +
+	"\fprice_amount\x18\x03 \x01(\x01R\vpriceAmount\"\x81\x01\n" +
+	"\x1aSetStrategyPricingResponse\x12\x1f\n" +
+	"\vstrategy_id\x18\x01 \x01(\tR\n" +
+	"strategyId\x12\x1f\n" +
+	"\vprice_model\x18\x02 \x01(\tR\n" +
+	"priceModel\x12!\n" +
+	"\fprice_amount\x18\x03 \x01(\x01R\vpriceAmount2\xaf\x06\n" +
 	"\x12MarketplaceService\x12R\n" +
 	"\x0fPublishStrategy\x12\x1e.ant.v1.PublishStrategyRequest\x1a\x1f.ant.v1.PublishStrategyResponse\x12@\n" +
 	"\tSubscribe\x12\x18.ant.v1.SubscribeRequest\x1a\x19.ant.v1.SubscribeResponse\x12F\n" +
 	"\vUnsubscribe\x12\x1a.ant.v1.UnsubscribeRequest\x1a\x1b.ant.v1.UnsubscribeResponse\x12L\n" +
 	"\rListPublished\x12\x1c.ant.v1.ListPublishedRequest\x1a\x1d.ant.v1.ListPublishedResponse\x12X\n" +
-	"\x11ListSubscriptions\x12 .ant.v1.ListSubscriptionsRequest\x1a!.ant.v1.ListSubscriptionsResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x11ListSubscriptions\x12 .ant.v1.ListSubscriptionsRequest\x1a!.ant.v1.ListSubscriptionsResponse\x12I\n" +
+	"\fRateStrategy\x12\x1b.ant.v1.RateStrategyRequest\x1a\x1c.ant.v1.RateStrategyResponse\x12F\n" +
+	"\vListRatings\x12\x1a.ant.v1.ListRatingsRequest\x1a\x1b.ant.v1.ListRatingsResponse\x12X\n" +
+	"\x11CommentOnStrategy\x12 .ant.v1.CommentOnStrategyRequest\x1a!.ant.v1.CommentOnStrategyResponse\x12I\n" +
+	"\fListComments\x12\x1b.ant.v1.ListCommentsRequest\x1a\x1c.ant.v1.ListCommentsResponse\x12[\n" +
+	"\x12SetStrategyPricing\x12!.ant.v1.SetStrategyPricingRequest\x1a\".ant.v1.SetStrategyPricingResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_marketplace_service_proto_rawDescOnce sync.Once
@@ -942,42 +1738,68 @@ func file_marketplace_service_proto_rawDescGZIP() []byte {
 	return file_marketplace_service_proto_rawDescData
 }
 
-var file_marketplace_service_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_marketplace_service_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 var file_marketplace_service_proto_goTypes = []any{
-	(*PublishStrategyRequest)(nil),    // 0: ant.v1.PublishStrategyRequest
-	(*PublishStrategyResponse)(nil),   // 1: ant.v1.PublishStrategyResponse
-	(*SubscribeRequest)(nil),          // 2: ant.v1.SubscribeRequest
-	(*SubscribeResponse)(nil),         // 3: ant.v1.SubscribeResponse
-	(*UnsubscribeRequest)(nil),        // 4: ant.v1.UnsubscribeRequest
-	(*UnsubscribeResponse)(nil),       // 5: ant.v1.UnsubscribeResponse
-	(*ListPublishedRequest)(nil),      // 6: ant.v1.ListPublishedRequest
-	(*ListPublishedResponse)(nil),     // 7: ant.v1.ListPublishedResponse
-	(*PublishedStrategy)(nil),         // 8: ant.v1.PublishedStrategy
-	(*ListSubscriptionsRequest)(nil),  // 9: ant.v1.ListSubscriptionsRequest
-	(*ListSubscriptionsResponse)(nil), // 10: ant.v1.ListSubscriptionsResponse
-	(*SubscriptionItem)(nil),          // 11: ant.v1.SubscriptionItem
-	(*timestamppb.Timestamp)(nil),     // 12: google.protobuf.Timestamp
+	(*PublishStrategyRequest)(nil),     // 0: ant.v1.PublishStrategyRequest
+	(*PublishStrategyResponse)(nil),    // 1: ant.v1.PublishStrategyResponse
+	(*SubscribeRequest)(nil),           // 2: ant.v1.SubscribeRequest
+	(*SubscribeResponse)(nil),          // 3: ant.v1.SubscribeResponse
+	(*UnsubscribeRequest)(nil),         // 4: ant.v1.UnsubscribeRequest
+	(*UnsubscribeResponse)(nil),        // 5: ant.v1.UnsubscribeResponse
+	(*ListPublishedRequest)(nil),       // 6: ant.v1.ListPublishedRequest
+	(*ListPublishedResponse)(nil),      // 7: ant.v1.ListPublishedResponse
+	(*PublishedStrategy)(nil),          // 8: ant.v1.PublishedStrategy
+	(*ListSubscriptionsRequest)(nil),   // 9: ant.v1.ListSubscriptionsRequest
+	(*ListSubscriptionsResponse)(nil),  // 10: ant.v1.ListSubscriptionsResponse
+	(*SubscriptionItem)(nil),           // 11: ant.v1.SubscriptionItem
+	(*RateStrategyRequest)(nil),        // 12: ant.v1.RateStrategyRequest
+	(*RateStrategyResponse)(nil),       // 13: ant.v1.RateStrategyResponse
+	(*ListRatingsRequest)(nil),         // 14: ant.v1.ListRatingsRequest
+	(*ListRatingsResponse)(nil),        // 15: ant.v1.ListRatingsResponse
+	(*RatingItem)(nil),                 // 16: ant.v1.RatingItem
+	(*CommentOnStrategyRequest)(nil),   // 17: ant.v1.CommentOnStrategyRequest
+	(*CommentOnStrategyResponse)(nil),  // 18: ant.v1.CommentOnStrategyResponse
+	(*ListCommentsRequest)(nil),        // 19: ant.v1.ListCommentsRequest
+	(*ListCommentsResponse)(nil),       // 20: ant.v1.ListCommentsResponse
+	(*CommentItem)(nil),                // 21: ant.v1.CommentItem
+	(*SetStrategyPricingRequest)(nil),  // 22: ant.v1.SetStrategyPricingRequest
+	(*SetStrategyPricingResponse)(nil), // 23: ant.v1.SetStrategyPricingResponse
+	(*timestamppb.Timestamp)(nil),      // 24: google.protobuf.Timestamp
 }
 var file_marketplace_service_proto_depIdxs = []int32{
 	8,  // 0: ant.v1.ListPublishedResponse.strategies:type_name -> ant.v1.PublishedStrategy
-	12, // 1: ant.v1.PublishedStrategy.published_at:type_name -> google.protobuf.Timestamp
+	24, // 1: ant.v1.PublishedStrategy.published_at:type_name -> google.protobuf.Timestamp
 	11, // 2: ant.v1.ListSubscriptionsResponse.subscriptions:type_name -> ant.v1.SubscriptionItem
-	12, // 3: ant.v1.SubscriptionItem.created_at:type_name -> google.protobuf.Timestamp
-	0,  // 4: ant.v1.MarketplaceService.PublishStrategy:input_type -> ant.v1.PublishStrategyRequest
-	2,  // 5: ant.v1.MarketplaceService.Subscribe:input_type -> ant.v1.SubscribeRequest
-	4,  // 6: ant.v1.MarketplaceService.Unsubscribe:input_type -> ant.v1.UnsubscribeRequest
-	6,  // 7: ant.v1.MarketplaceService.ListPublished:input_type -> ant.v1.ListPublishedRequest
-	9,  // 8: ant.v1.MarketplaceService.ListSubscriptions:input_type -> ant.v1.ListSubscriptionsRequest
-	1,  // 9: ant.v1.MarketplaceService.PublishStrategy:output_type -> ant.v1.PublishStrategyResponse
-	3,  // 10: ant.v1.MarketplaceService.Subscribe:output_type -> ant.v1.SubscribeResponse
-	5,  // 11: ant.v1.MarketplaceService.Unsubscribe:output_type -> ant.v1.UnsubscribeResponse
-	7,  // 12: ant.v1.MarketplaceService.ListPublished:output_type -> ant.v1.ListPublishedResponse
-	10, // 13: ant.v1.MarketplaceService.ListSubscriptions:output_type -> ant.v1.ListSubscriptionsResponse
-	9,  // [9:14] is the sub-list for method output_type
-	4,  // [4:9] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	24, // 3: ant.v1.SubscriptionItem.created_at:type_name -> google.protobuf.Timestamp
+	16, // 4: ant.v1.ListRatingsResponse.ratings:type_name -> ant.v1.RatingItem
+	24, // 5: ant.v1.RatingItem.created_at:type_name -> google.protobuf.Timestamp
+	21, // 6: ant.v1.ListCommentsResponse.comments:type_name -> ant.v1.CommentItem
+	24, // 7: ant.v1.CommentItem.created_at:type_name -> google.protobuf.Timestamp
+	0,  // 8: ant.v1.MarketplaceService.PublishStrategy:input_type -> ant.v1.PublishStrategyRequest
+	2,  // 9: ant.v1.MarketplaceService.Subscribe:input_type -> ant.v1.SubscribeRequest
+	4,  // 10: ant.v1.MarketplaceService.Unsubscribe:input_type -> ant.v1.UnsubscribeRequest
+	6,  // 11: ant.v1.MarketplaceService.ListPublished:input_type -> ant.v1.ListPublishedRequest
+	9,  // 12: ant.v1.MarketplaceService.ListSubscriptions:input_type -> ant.v1.ListSubscriptionsRequest
+	12, // 13: ant.v1.MarketplaceService.RateStrategy:input_type -> ant.v1.RateStrategyRequest
+	14, // 14: ant.v1.MarketplaceService.ListRatings:input_type -> ant.v1.ListRatingsRequest
+	17, // 15: ant.v1.MarketplaceService.CommentOnStrategy:input_type -> ant.v1.CommentOnStrategyRequest
+	19, // 16: ant.v1.MarketplaceService.ListComments:input_type -> ant.v1.ListCommentsRequest
+	22, // 17: ant.v1.MarketplaceService.SetStrategyPricing:input_type -> ant.v1.SetStrategyPricingRequest
+	1,  // 18: ant.v1.MarketplaceService.PublishStrategy:output_type -> ant.v1.PublishStrategyResponse
+	3,  // 19: ant.v1.MarketplaceService.Subscribe:output_type -> ant.v1.SubscribeResponse
+	5,  // 20: ant.v1.MarketplaceService.Unsubscribe:output_type -> ant.v1.UnsubscribeResponse
+	7,  // 21: ant.v1.MarketplaceService.ListPublished:output_type -> ant.v1.ListPublishedResponse
+	10, // 22: ant.v1.MarketplaceService.ListSubscriptions:output_type -> ant.v1.ListSubscriptionsResponse
+	13, // 23: ant.v1.MarketplaceService.RateStrategy:output_type -> ant.v1.RateStrategyResponse
+	15, // 24: ant.v1.MarketplaceService.ListRatings:output_type -> ant.v1.ListRatingsResponse
+	18, // 25: ant.v1.MarketplaceService.CommentOnStrategy:output_type -> ant.v1.CommentOnStrategyResponse
+	20, // 26: ant.v1.MarketplaceService.ListComments:output_type -> ant.v1.ListCommentsResponse
+	23, // 27: ant.v1.MarketplaceService.SetStrategyPricing:output_type -> ant.v1.SetStrategyPricingResponse
+	18, // [18:28] is the sub-list for method output_type
+	8,  // [8:18] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_marketplace_service_proto_init() }
@@ -991,7 +1813,7 @@ func file_marketplace_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_marketplace_service_proto_rawDesc), len(file_marketplace_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   24,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
