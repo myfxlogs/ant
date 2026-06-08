@@ -29,8 +29,8 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
   const containerRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<Chart | null>(null);
-  const [tooNarrow, setTooNarrow] = useState(false);
   const [chartType, setChartType] = useState<ChartType>('candle_solid');
+  const volumeCollapsedRef = useRef(false);
 
   const { bars, loading, error, streamActive, loadingMore, loadedAll } = useChartData(symbol, timeframe, accountId, chartRef);
   const { active: activeIndicators, getDef, addIndicator, removeIndicator } = useChartIndicatorsStore();
@@ -46,8 +46,18 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     try { chart.createIndicator('VOL', false, { id: 'volume_pane' }); } catch { /* best-effort */ }
     onChartReady?.(chart);
     const ro = new ResizeObserver(([entry]) => {
-      setTooNarrow((entry?.contentRect?.width || 300) < 300);
+      const w = entry?.contentRect?.width || 400;
       chart.resize();
+      // Auto-collapse Volume sub-pane on narrow screens to give K-line more space.
+      try {
+        if (w < 400 && !volumeCollapsedRef.current) {
+          chart.removeIndicator('volume_pane');
+          volumeCollapsedRef.current = true;
+        } else if (w >= 400 && volumeCollapsedRef.current) {
+          chart.createIndicator('VOL', false, { id: 'volume_pane' });
+          volumeCollapsedRef.current = false;
+        }
+      } catch { /* best-effort */ }
     });
     ro.observe(containerRef.current);
     return () => { ro.disconnect(); dispose(containerRef.current!); };
@@ -186,10 +196,6 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     container.addEventListener('pointerdown', onInteraction, { passive: true });
     return () => { container.removeEventListener('wheel', onInteraction); container.removeEventListener('pointerdown', onInteraction); if (timer != null) window.clearTimeout(timer); };
   }, [handleLoadMore]);
-
-  if (tooNarrow) {
-    return <div ref={wrapperRef} style={{ padding: 24, textAlign: 'center', color: '#6b7280', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, background: 'rgba(0,0,0,0.02)' }}>Chart hidden on narrow screens — switch to a wider viewport to see price data.</div>;
-  }
 
   return (
     <div ref={wrapperRef} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>

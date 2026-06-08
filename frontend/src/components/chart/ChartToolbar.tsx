@@ -39,9 +39,11 @@ export default function ChartToolbar({
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 4, flexShrink: 0 }}>
-        <Radio.Group value={timeframe} onChange={e => onTimeframeChange?.(e.target.value)} size="small" optionType="button" buttonStyle="solid">
-          {TIMEFRAMES.map(tf => <Radio.Button key={tf.value} value={tf.value}>{tf.label}</Radio.Button>)}
-        </Radio.Group>
+        <div style={{ overflowX: 'auto', whiteSpace: 'nowrap', scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
+          <Radio.Group value={timeframe} onChange={e => onTimeframeChange?.(e.target.value)} size="small" optionType="button" buttonStyle="solid">
+            {TIMEFRAMES.map(tf => <Radio.Button key={tf.value} value={tf.value}>{tf.label}</Radio.Button>)}
+          </Radio.Group>
+        </div>
         <Space size={4}>
           {CHART_TYPES.map(ct => (
             <Tooltip key={ct.key} title={ct.label}>
