@@ -105,12 +105,21 @@ export default function MarketplacePage() {
             <Text strong style={{ fontSize: 15 }}>{displayName}</Text>
             {s.priceModel && s.priceModel !== 'free' && <Tag color="gold" style={{ marginLeft: 6 }}>${s.priceAmount?.toFixed(2)}</Tag>}
           </div>
-          {s.avgRating > 0 && (
-            <div style={{ marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-              <Rate disabled allowHalf value={s.avgRating} style={{ fontSize: 12 }} />
-              <span style={{ fontSize: 11, color: '#8c8c8c' }}>({s.ratingCount})</span>
-            </div>
-          )}
+          <div style={{ marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}
+            onClick={e => e.stopPropagation()}>
+            <Rate allowHalf value={s.avgRating || 0} style={{ fontSize: 12 }}
+              onChange={async (v) => {
+                if (!userId) { message.warning(t('marketplace.messages.loginFirst')); return; }
+                try {
+                  const resp = await marketplaceClient.rateStrategy({ userId, strategyId: s.publishId, rating: v });
+                  message.success(t('marketplace.messages.rated'));
+                  refetch();
+                } catch { message.error(t('marketplace.messages.rateFailed')); }
+              }} />
+            <span style={{ fontSize: 11, color: '#8c8c8c' }}>
+              {s.ratingCount > 0 ? `(${s.ratingCount})` : ''}
+            </span>
+          </div>
           <Space size={4} wrap style={{ marginBottom: 8 }}>
             <Tag color="blue">{t(`marketplace.assetClass.${assetClass}`, { defaultValue: assetClass })}</Tag>
             <Tag color={RISK_COLORS[riskLevel] || 'default'} style={{ background: RISK_BG[riskLevel] || undefined, border: 'none' }}>

@@ -94,7 +94,7 @@ func registerHandlers(
 	mux.Handle(antv1c.NewMarketServiceHandler(mktServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	mktplaceSvc := marketplace.New(pool)
-	mktplaceHandler := mktplace.NewMarketplaceServer(mktplaceSvc, log)
+	mktplaceHandler := mktplace.NewMarketplaceServer(mktplaceSvc, platformSvc, log)
 	mux.Handle(antv1c.NewMarketplaceServiceHandler(mktplaceHandler, connectrpc.WithInterceptors(authInterceptor)))
 
 	// M12-A2: Execution Algo handler (TWAP/VWAP/POV/Shortfall).

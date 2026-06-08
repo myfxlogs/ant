@@ -2,7 +2,9 @@ package marketplace
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	"connectrpc.com/connect"
@@ -10,19 +12,21 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
+	"anttrader/internal/interceptor"
 	"anttrader/internal/marketplace"
 )
 
 // MarketplaceServer implements ant.v1.MarketplaceServiceHandler.
 type MarketplaceServer struct {
-	svc *marketplace.Service
-	log *zap.Logger
+	svc    *marketplace.Service
+	admin  interceptor.AdminChecker
+	log    *zap.Logger
 }
 
 var _ antv1c.MarketplaceServiceHandler = (*MarketplaceServer)(nil)
 
-func NewMarketplaceServer(svc *marketplace.Service, log *zap.Logger) *MarketplaceServer {
-	return &MarketplaceServer{svc: svc, log: log}
+func NewMarketplaceServer(svc *marketplace.Service, admin interceptor.AdminChecker, log *zap.Logger) *MarketplaceServer {
+	return &MarketplaceServer{svc: svc, admin: admin, log: log}
 }
 
 func (s *MarketplaceServer) PublishStrategy(ctx context.Context, req *connect.Request[antv1.PublishStrategyRequest]) (*connect.Response[antv1.PublishStrategyResponse], error) {
@@ -185,6 +189,14 @@ func (s *MarketplaceServer) ListComments(ctx context.Context, req *connect.Reque
 // --- Admin Pricing ---------------------------------------------------------
 
 func (s *MarketplaceServer) SetStrategyPricing(ctx context.Context, req *connect.Request[antv1.SetStrategyPricingRequest]) (*connect.Response[antv1.SetStrategyPricingResponse], error) {
+	uid, err := uuid.Parse(interceptor.GetUserID(ctx))
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, err)
+	}
+	ok, err := s.admin.IsAdmin(ctx, uid)
+	if err != nil || !ok {
+		return nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin required"))
+	}
 	m := req.Msg
 	if err := s.svc.SetPricing(ctx, m.StrategyId, m.PriceModel, m.PriceAmount); err != nil {
 		s.log.Error("SetStrategyPricing", zap.Error(err))
