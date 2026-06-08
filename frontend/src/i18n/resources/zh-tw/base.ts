@@ -268,22 +268,22 @@ const base = {
             timeframe: '週期: {{timeframe}}',
             data: '資料: {{dataSpec}}',
             constraints: '約束: 最大回撤={{maxDrawdownPct}}% 單筆風險={{riskPerTradePct}}% 日內最多交易={{maxTradesPerDay}} 次',
-            params: '參數（定義+目前值；執行時在 context["params"] 中）：
-{{params}}',
+            params: `參數（定義+目前值；執行時在 context["params"] 中）：
+{{params}}`,
             empty: '(空)',
-            macroEnabled: '宏觀事件(使用者提供):
-{{text}}',
+            macroEnabled: `宏觀事件(使用者提供):
+{{text}}`,
             macroDisabled: '宏觀事件: 不使用',
-            userIntent: '使用者策略目標(自然語言):
-{{intent}}'
+            userIntent: `使用者策略目標(自然語言):
+{{intent}}`
           },
           upstream: {
-            style: '【市場狀態/風格推薦 結論】
-{{text}}',
-            signals: '【訊號與指標設計 結論】
-{{text}}',
-            risk: '【風控與執行約束 結論】
-{{text}}',
+            style: `【市場狀態/風格推薦 結論】
+{{text}}`,
+            signals: `【訊號與指標設計 結論】
+{{text}}`,
+            risk: `【風控與執行約束 結論】
+{{text}}`,
             sectionTitle: '【上游 Agent 結論（原樣提供）】'
           },
           summary: {
@@ -293,8 +293,8 @@ const base = {
             mustInclude2: '2) 主要入場條件（2~4 點）',
             mustInclude3: '3) 主要出場/止損止盈/風控約束（2~4 點）',
             mustInclude4: '4) 適用/不適用場景各 1 點',
-            userIntent: '使用者預期（自然語言）：
-{{intent}}',
+            userIntent: `使用者預期（自然語言）：
+{{intent}}`,
             codeTitle: '程式碼如下：'
           }
         },

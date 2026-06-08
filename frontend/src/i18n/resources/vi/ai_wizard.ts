@@ -1,338 +1,347 @@
 const aiWizard = {
   ai: {
     wizard: {
-      title: 'AI Strategy Wizard',
-      subtitle: 'One step per page, can go forward/backward',
-      currentModel: 'Current model: {{model}}',
+      title: 'Trình hướng dẫn chiến lược AI',
+      subtitle: 'Mỗi bước một trang, bạn có thể tiến/lùi',
+      currentModel: 'Mô hình hiện tại: {{model}}',
       rangePresets: {
-        '1d': 'Last 1 day',
-        '3d': 'Last 3 days',
-        '7d': 'Last 1 week',
-        '30d': 'Last 1 month',
-        '90d': 'Last 3 months',
+        '1d': '1 ngày gần nhất',
+        '3d': '3 ngày gần nhất',
+        '7d': '1 tuần gần nhất',
+        '30d': '1 tháng gần nhất',
+        '90d': '3 tháng gần nhất'
       },
       steps: {
-        setup: 'Basic Info',
-        generate: 'Generate Strategy',
-        publishCode: 'Backtest & Live - Code',
-        publishBacktest: 'Backtest & Live - Backtest',
-        publishLaunch: 'Backtest & Live - Launch',
+        setup: 'Thiết lập',
+        generate: 'Tạo chiến lược',
+        publishCode: 'Triển khai - Mã',
+        publishBacktest: 'Triển khai - Backtest',
+        publishLaunch: 'Triển khai - Khởi chạy'
       },
       actions: {
-        prev: 'Previous',
-        next: 'Next',
-        cancel: 'Cancel',
+        prev: 'Trước',
+        next: 'Tiếp',
+        cancel: 'Hủy'
       },
       generate: {
         cards: {
-          resultsTitle: 'Multiple experts\' results',
+          resultsTitle: 'Kết quả chuyên gia'
         },
         actions: {
-          runAgents: 'Run multiple experts + generate code',
-          hide: 'Hide',
-          abort: 'Abort',
-          rerun: 'Regenerate',
-          regenerateSummary: 'Regenerate summary',
-          goValidate: 'Go to validate',
+          runAgents: 'Phân tích chuyên gia + sinh mã',
+          hide: 'Ẩn',
+          abort: 'Hủy',
+          rerun: 'Chạy lại',
+          regenerateSummary: 'Tạo lại tóm tắt',
+          goValidate: 'Đi xác thực'
         },
         hints: {
-          afterGenerated: 'After generation, proceed to validate/backtest/launch',
+          afterGenerated: 'Sau khi tạo xong, sang bước tiếp theo để xác thực/backtest/triển khai.'
         },
         labels: {
-          elapsed: 'Elapsed',
+          elapsed: 'Thời gian'
         },
         status: {
-          inProgress: 'In progress',
-          done: 'Done',
-          error: 'Error',
-          idle: 'Waiting',
+          inProgress: 'Đang chạy',
+          done: 'Hoàn tất',
+          error: 'Thất bại',
+          idle: 'Đang chờ',
           running: {
-            style: 'Market condition/style recommending',
-            signals: 'Signal design in progress',
-            risk: 'Risk control in progress',
-            code: 'Code generation in progress',
-            generic: '{{title}} in progress',
-          },
+            style: 'Đang phân tích trạng thái/phong cách thị trường',
+            signals: 'Đang thiết kế tín hiệu/chỉ báo',
+            risk: 'Đang thiết kế rủi ro/ràng buộc thực thi',
+            code: 'Đang sinh mã',
+            generic: '{{title}} đang chạy'
+          }
         },
         sections: {
-          prompt: 'Prompt sent to model',
-          output: 'Model output',
-          spec: 'Spec',
+          prompt: 'Prompt gửi tới mô hình',
+          output: 'Kết quả mô hình',
+          spec: 'Đặc tả'
         },
         modals: {
           final: {
-            title: 'Code generated. Recommended to click "Validate code" to confirm it passes.',
-          },
-        },
+            title: 'Đã sinh mã. Khuyến nghị nhấn “Xác thực mã” để xác nhận.'
+          }
+        }
       },
       publish: {
         cards: {
-          codeTitle: '1) Strategy code (editable)',
-          scoreCardTitle: '2) Backtest scorecard',
-          launchTitle: '3) Launch schedule',
+          codeTitle: '1) Mã chiến lược (có thể chỉnh sửa)',
+          scoreCardTitle: '2) Thẻ điểm backtest',
+          launchTitle: '3) Triển khai lịch chạy'
         },
         placeholders: {
-          codeEditable: 'AI-generated code will be filled here; you can also edit manually.',
+          codeEditable: 'Mã do AI tạo sẽ xuất hiện ở đây. Bạn cũng có thể chỉnh sửa thủ công.'
         },
         actions: {
-          validateCode: 'Validate code',
-          startBacktest: 'Backtest (async task)',
-          publishTemplate: 'Publish template',
+          validateCode: 'Xác thực mã',
+          startBacktest: 'Backtest (tác vụ bất đồng bộ)',
+          publishTemplate: 'Triển khai template'
         },
         messages: {
-          validateOk: 'validate passed',
-          validateFailed: 'validate failed',
-        },
+          validateOk: 'validate thành công',
+          validateFailed: 'validate thất bại'
+        }
       },
       agents: {
-        styleTitle: 'Market condition / style recommendation',
-        signalsTitle: 'Signal and indicator design',
-        riskTitle: 'Risk control and execution constraints',
-        codeTitle: 'Code generation',
+        styleTitle: 'Trạng thái thị trường / phong cách',
+        signalsTitle: 'Tín hiệu & chỉ báo',
+        riskTitle: 'Rủi ro & ràng buộc thực thi',
+        codeTitle: 'Sinh mã'
       },
       template: {
-        defaultName: 'AI Strategy {{title}}',
-        defaultDescription: 'AI wizard generated',
+        defaultName: 'Chiến lược AI {{title}}',
+        defaultDescription: 'Tạo bởi trình hướng dẫn AI'
       },
       schedule: {
-        defaultName: 'AI Schedule {{symbol}} {{timeframe}}',
+        defaultName: 'Lịch AI {{symbol}} {{timeframe}}'
       },
       setup: {
         cards: {
-          tradeAndDataTitle: 'Trading & Data',
-          constraintsAndGoalTitle: 'Constraints & Goals',
-          hardConstraintsTitle: 'Hard Constraints',
-          hintsTitle: 'Hints',
+          tradeAndDataTitle: 'Giao dịch & dữ liệu',
+          constraintsAndGoalTitle: 'Ràng buộc & mục tiêu',
+          hardConstraintsTitle: 'Ràng buộc cứng',
+          hintsTitle: 'Gợi ý'
         },
         labels: {
-          account: 'Account',
-          symbol: 'Symbol',
-          timeframe: 'Timeframe',
-          historicalData: 'Historical Data',
-          backtestRange: 'Backtest Range',
-          dataset: 'Frozen Dataset',
-          maxDrawdownPct: 'Max Drawdown (%)',
-          riskPerTradePct: 'Risk per Trade (%)',
-          maxTradesPerDay: 'Max Trades per Day',
-          macroModule: 'Macro Module',
-          macroEvents: 'Macro Events',
-          intent: 'Strategy Goal / Idea',
+          account: 'Tài khoản',
+          symbol: 'Mã',
+          timeframe: 'Khung thời gian',
+          historicalData: 'Dữ liệu lịch sử',
+          backtestRange: 'Phạm vi backtest',
+          dataset: 'Dataset đóng băng',
+          maxDrawdownPct: 'Sụt giảm tối đa (%)',
+          riskPerTradePct: 'Rủi ro mỗi lệnh (%)',
+          maxTradesPerDay: 'Số lệnh tối đa mỗi ngày',
+          macroModule: 'Mô-đun vĩ mô',
+          macroEvents: 'Sự kiện vĩ mô',
+          intent: 'Ý định chiến lược'
         },
         placeholders: {
-          selectAccount: 'Select account',
-          selectSymbol: 'Select symbol',
-          selectTimeframe: 'Select timeframe',
-          selectFrozenDataset: 'Select frozen dataset',
-          macroExample: 'Example:\n2024-01-03 21:15 FOMC minutes\n2024-01-05 20:30 NFP',
-          intentExample: 'Example: breakout trend following; avoid high volatility; prefer higher win rate...',
+          selectAccount: 'Chọn tài khoản',
+          selectSymbol: 'Chọn mã',
+          selectTimeframe: 'Chọn khung thời gian',
+          selectFrozenDataset: 'Chọn dataset đóng băng',
+          macroExample: `Ví dụ:
+2024-01-03 21:15 FOMC Minutes
+2024-01-05 20:30 NFP`,
+          intentExample: 'Ví dụ: Theo xu hướng khi phá vỡ; tránh biến động cao; ưu tiên tỷ lệ thắng...'
         },
         validations: {
-          selectAccount: 'Please select account',
-          selectSymbol: 'Please select symbol',
-          selectTimeframe: 'Please select timeframe',
-          selectDataset: 'Please select dataset',
-          enterIntent: 'Please enter strategy goal/idea',
+          selectAccount: 'Vui lòng chọn tài khoản',
+          selectSymbol: 'Vui lòng chọn mã',
+          selectTimeframe: 'Vui lòng chọn khung thời gian',
+          selectDataset: 'Vui lòng chọn dataset',
+          enterIntent: 'Vui lòng nhập ý định chiến lược'
         },
         dataModes: {
-          klineRange: 'Historical K-line range',
-          dataset: 'Frozen dataset',
+          klineRange: 'Phạm vi nến',
+          dataset: 'Dataset đóng băng'
         },
         actions: {
-          refreshDataset: 'Refresh',
-          freezeFromCurrentRange: 'Freeze from current range',
-          deleteCurrentDataset: 'Delete current dataset',
+          refreshDataset: 'Làm mới',
+          freezeFromCurrentRange: 'Đóng băng từ phạm vi hiện tại',
+          deleteCurrentDataset: 'Xóa dataset hiện tại'
         },
         modals: {
           deleteDataset: {
-            title: 'Delete dataset',
-            content: 'Are you sure you want to delete the selected frozen dataset?',
-            ok: 'Delete',
-          },
+            title: 'Xóa dataset',
+            content: 'Xóa dataset đóng băng đang chọn?',
+            ok: 'Xóa'
+          }
         },
         messages: {
-          datasetDeleted: 'Dataset deleted',
+          datasetDeleted: 'Đã xóa dataset'
         },
         macro: {
-          off: 'Off',
-          on: 'On',
+          off: 'Tắt',
+          on: 'Bật'
         },
         hints: {
-          nextWillGenerateCode: 'Next step will start generating strategy code.',
-          tradeDataNextStep: 'Click "Next" after filling to proceed to constraints & goals.',
-        },
+          nextWillGenerateCode: 'Bước tiếp theo sẽ tạo mã chiến lược.',
+          tradeDataNextStep: 'Sau khi điền xong, nhấn “Tiếp” để tiếp tục thiết lập ràng buộc & mục tiêu.'
+        }
       },
       publishBacktest: {
         cards: {
           backtestTitle: 'Backtest',
-          scoreCardTitle: 'Scorecard',
+          scoreCardTitle: 'Thẻ điểm'
         },
         actions: {
-          startBacktest: 'Start backtest',
-          close: 'Close',
-          retry: 'Retry',
-          succeeded: 'Success',
-          inProgress: 'In progress',
-          runInBackground: 'Run in background',
-          confirm: 'Confirm',
+          startBacktest: 'Bắt đầu backtest',
+          close: 'Đóng',
+          retry: 'Thử lại',
+          succeeded: 'Thành công',
+          inProgress: 'Đang chạy',
+          runInBackground: 'Chạy nền',
+          confirm: 'Xác nhận'
         },
         labels: {
-          status: 'Status',
-          elapsed: 'Elapsed',
-          scoringProgress: 'Scoring progress',
-          overallScore: 'Overall score',
-          confirmed: 'Confirmed',
+          status: 'Trạng thái',
+          elapsed: 'Thời gian',
+          scoringProgress: 'Tiến độ chấm điểm',
+          overallScore: 'Điểm tổng',
+          confirmed: 'Đã xác nhận'
         },
         modals: {
           status: {
-            title: 'Backtest in progress',
+            title: 'Backtest đang chạy'
           },
           score: {
-            title: 'Score confirmation',
-          },
+            title: 'Xác nhận điểm số'
+          }
         },
         draftName: 'Backtest {{datetime}} {{symbol}} {{timeframe}}',
-        draftNameShort: 'Backtest {{symbol}} {{timeframe}}',
+        draftNameShort: 'Backtest {{symbol}} {{timeframe}}'
       },
       strategyParams: {
-        title: 'Strategy Parameters (optional)',
+        title: 'Tham số chiến lược (tùy chọn)',
         hints: {
-          intro: 'These parameters will:',
-          line1: '1) Save to template parameters',
-          line2: '2) Write to schedule.parameters when creating a schedule (map<string,string>)',
-          line3Prefix: '3) Backend will inject them into Python strategy',
+          intro: 'Các tham số này sẽ:',
+          line1: '1) được lưu vào template.parameters',
+          line2: '2) được ghi vào schedule.parameters (map<string,string>) khi tạo lịch',
+          line3Prefix: '3) được tiêm vào chiến lược Python khi chạy dưới dạng'
         },
         actions: {
-          addParam: 'Add parameter',
-          exportJson: 'Export JSON',
-          importJson: 'Import JSON',
-          delete: 'Delete',
+          addParam: 'Thêm tham số',
+          exportJson: 'Xuất JSON',
+          importJson: 'Nhập JSON',
+          delete: 'Xóa'
         },
-        empty: 'No parameters yet. You can add params like fast/slow/risk_per_trade to make the strategy more templated.',
-        paramCardTitle: 'Param #{{index}}',
+        empty: 'Chưa có tham số. Bạn có thể thêm fast/slow/risk_per_trade... để chiến lược dễ tái sử dụng.',
+        paramCardTitle: 'Tham số #{{index}}',
         labels: {
           name: 'name',
           type: 'type',
-          value: 'value (schedule current value)',
+          value: 'value (giá trị hiện tại của lịch)',
           default: 'default',
           min: 'min',
           max: 'max',
           step: 'step',
           label: 'label',
           description: 'description',
-          options: 'options (for select, comma-separated)',
+          options: 'options (dùng cho select, phân tách bằng dấu phẩy)'
         },
         validations: {
-          nameRequired: 'name required',
-          typeRequired: 'type required',
+          nameRequired: 'name là bắt buộc',
+          typeRequired: 'type là bắt buộc'
         },
         placeholders: {
-          nameExample: 'e.g. fast',
-          value: 'Empty uses default',
-          defaultExample: 'e.g. 10',
-          label: 'Display name',
-          description: 'Description',
-          optionsExample: 'e.g. low,medium,high',
-          importJson: 'Paste parameter JSON (array or {"paramDefs": [...]})',
+          nameExample: 'vd: fast',
+          value: 'Để trống sẽ dùng default',
+          defaultExample: 'vd: 10',
+          label: 'Tên hiển thị',
+          description: 'Mô tả',
+          optionsExample: 'vd: low,medium,high',
+          importJson: 'Dán JSON tham số (mảng hoặc {"paramDefs": [...]})'
         },
         modals: {
-          exportTitle: 'Export parameters JSON',
-          importTitle: 'Import parameters JSON',
-          copyAndClose: 'Copy and close',
-          importOk: 'Import',
+          exportTitle: 'Xuất JSON tham số',
+          importTitle: 'Nhập JSON tham số',
+          copyAndClose: 'Sao chép và đóng',
+          importOk: 'Nhập'
         },
         messages: {
-          jsonParseFailed: 'JSON parse failed',
-          importFormatInvalid: 'Import format error: must be array or { "paramDefs": [...] }',
-          importMissingName: 'Import failed: parameter missing name',
-          imported: 'Imported {{count}} parameters',
-          copied: 'Copied',
-          copyFailed: 'Copy failed',
+          jsonParseFailed: 'Phân tích JSON thất bại',
+          importFormatInvalid: 'Định dạng nhập không hợp lệ: cần mảng hoặc {"paramDefs": [...] }',
+          importMissingName: 'Nhập thất bại: có mục thiếu name',
+          imported: 'Đã nhập {{count}} tham số',
+          copied: 'Đã sao chép',
+          copyFailed: 'Sao chép thất bại'
         },
         types: {
-          number: 'Number',
-          string: 'String',
-          bool: 'Boolean',
-          select: 'Select',
-        },
+          number: 'số',
+          string: 'chuỗi',
+          bool: 'bool',
+          select: 'chọn'
+        }
       },
       prompts: {
         dataSpec: {
-          dataset: 'Use frozen dataset datasetId={{datasetId}}',
-          klineRange: 'Use historical K-line range from={{from}} to={{to}}',
+          dataset: 'Sử dụng dataset đã đóng băng datasetId={{datasetId}}',
+          klineRange: 'Sử dụng phạm vi nến lịch sử from={{from}} to={{to}}'
         },
         base: {
-          account: 'Account: {{accountId}}',
-          symbol: 'Symbol: {{symbol}}',
-          timeframe: 'Timeframe: {{timeframe}}',
-          data: 'Data: {{dataSpec}}',
-          constraints: 'Constraints: Max drawdown={{maxDrawdownPct}}% Risk per trade={{riskPerTradePct}}% Max trades per day={{maxTradesPerDay}}',
-          params: 'Parameters (defs+current values; injected into context["params"] at runtime):\n{{params}}',
-          empty: '(empty)',
-          macroEnabled: 'Macro events (user-provided):\n{{text}}',
-          macroDisabled: 'Macro events: not used',
-          userIntent: 'User strategy goal (natural language):\n{{intent}}',
+          account: 'Tài khoản: {{accountId}}',
+          symbol: 'Mã: {{symbol}}',
+          timeframe: 'Khung thời gian: {{timeframe}}',
+          data: 'Dữ liệu: {{dataSpec}}',
+          constraints: 'Ràng buộc: max drawdown={{maxDrawdownPct}}% rủi ro/lệnh={{riskPerTradePct}}% tối đa lệnh/ngày={{maxTradesPerDay}}',
+          params: `Tham số (định nghĩa + giá trị hiện tại; có trong context["params"] khi chạy):
+{{params}}`,
+          empty: '(trống)',
+          macroEnabled: `Sự kiện vĩ mô (người dùng cung cấp):
+{{text}}`,
+          macroDisabled: 'Sự kiện vĩ mô: không dùng',
+          userIntent: `Mục tiêu (ngôn ngữ tự nhiên):
+{{intent}}`
         },
         upstream: {
-          style: '【Market condition/style conclusion】\n{{text}}',
-          signals: '【Signal design conclusion】\n{{text}}',
-          risk: '【Risk control conclusion】\n{{text}}',
-          sectionTitle: '【Upstream agent conclusions (as provided)】',
+          style: `[Kết luận trạng thái thị trường / phong cách]
+{{text}}`,
+          signals: `[Kết luận tín hiệu & chỉ báo]
+{{text}}`,
+          risk: `[Kết luận rủi ro & ràng buộc]
+{{text}}`,
+          sectionTitle: '[Kết luận agent phía trên (nguyên văn)]'
         },
         summary: {
-          intro: 'You are a quantitative strategy explanation assistant. Concisely explain (bullet points, max 12 lines) the core idea of this AntTrader Python strategy code to help users judge if it matches expectations.',
-          mustIncludeTitle: 'Must include:',
-          mustInclude1: '1) Strategy type/paradigm (trend/mean/breakout/momentum/grid/etc.; state "uncertain" if unclear)',
-          mustInclude2: '2) Main entry conditions (2-4 bullet points)',
-          mustInclude3: '3) Main exit/SL/TP/risk controls (2-4 bullet points)',
-          mustInclude4: '4) Applicable / inapplicable scenario each 1 line',
-          userIntent: 'User expectation (natural language):\n{{intent}}',
-          codeTitle: 'Code:',
-        },
+          intro: 'Bạn là trợ lý giải thích chiến lược định lượng. Hãy giải thích ý tưởng cốt lõi của đoạn mã chiến lược AntTrader Python dưới đây bằng các gạch đầu dòng ngắn gọn (tối đa 12 dòng) để giúp người dùng đánh giá có đúng kỳ vọng hay không.',
+          mustIncludeTitle: 'Bắt buộc gồm:',
+          mustInclude1: '1) Loại/kiểu chiến lược (trend/mean-reversion/breakout/momentum/grid... nếu không chắc hãy ghi “Không rõ”)',
+          mustInclude2: '2) Điều kiện vào lệnh chính (2-4 ý)',
+          mustInclude3: '3) Điều kiện thoát/SL/TP/ràng buộc rủi ro chính (2-4 ý)',
+          mustInclude4: '4) 1 bối cảnh phù hợp và 1 bối cảnh không phù hợp',
+          userIntent: `Kỳ vọng người dùng (ngôn ngữ tự nhiên):
+{{intent}}`,
+          codeTitle: 'Mã:'
+        }
       },
       messages: {
-        generateCodeFirst: 'Please generate strategy code first',
-        validateCodeFirst: 'Please click "Validate code" first',
-        codeInvalidFixAndContinue: 'Code validation failed, please fix before continuing',
-        startBacktestFirst: 'Please click "Backtest (async task)" to start backtest first',
-        backtestNotDoneWait: 'Backtest not finished, wait until scorecard status becomes success/failed/cancelled before continuing',
-        confirmScoreFirst: 'Please confirm score result in the score popup first',
-        fillRequiredWithFields: 'Please fill required fields first: {{fields}}',
-        fillRequired: 'Please fill required fields first',
-        watchBacktestRunFailed: 'watchBacktestRun failed',
-        createDraftFailed: 'Create draft failed',
-        loadAccountsFailed: 'Load accounts failed',
-        loadSymbolsFailed: 'Load symbols failed',
-        loadDatasetFailed: 'Load dataset failed',
-        datasetFrozenCreated: 'Frozen dataset created',
-        freezeDatasetFailed: 'Freeze dataset failed',
-        inputIntentFirst: 'Please enter strategy goal/idea first',
-        aiRequestTimeout: 'AI request timeout (>{{seconds}}s)',
-        modelReturnedEmpty: 'Model returned empty',
-        noPythonCodeBlock: 'Code agent did not output ```python block```, check result',
-        agentFailed: '{{title}} failed',
-        userAborted: 'User aborted',
-        chatAborted: 'Chat with model aborted',
-        noCodeToValidate: 'No code to validate',
-        validateOk: 'Validation passed',
-        validateFailed: 'Validation failed',
-        validateError: 'Validation error',
-        noCodeToBacktest: 'No code to backtest',
-        backtestCreated: 'Backtest task created',
-        createBacktestFailed: 'Create backtest failed',
-        draftNotCreated: 'Draft not created',
-        draftSaved: 'Draft saved',
-        saveFailed: 'Save failed',
-        publishedNoId: 'Published but no returned id (please check in strategy management)',
-        templatePublished: 'Template published',
-        publishFailed: 'Publish failed',
-        publishTemplateFirst: 'Please publish template first',
-        scheduleCreatedAndEnabled: 'Schedule created and enabled',
-        scheduleCreated: 'Schedule created',
-        createScheduleFailed: 'Create schedule failed',
-        scheduleAlreadyExists: 'Schedule with same template+symbol+timeframe already exists for this account; do not duplicate.',
-      },
-    },
-  },
+        generateCodeFirst: 'Vui lòng tạo mã chiến lược trước',
+        validateCodeFirst: 'Vui lòng nhấn “Xác thực mã” trước',
+        codeInvalidFixAndContinue: 'Xác thực mã thất bại. Hãy sửa trước khi tiếp tục',
+        startBacktestFirst: 'Vui lòng bắt đầu backtest trước',
+        backtestNotDoneWait: 'Backtest chưa xong. Hãy chờ đến khi trạng thái thành “Succeeded/Failed/Canceled”',
+        confirmScoreFirst: 'Vui lòng xác nhận kết quả trong popup điểm số trước',
+        fillRequiredWithFields: 'Vui lòng điền các trường bắt buộc: {{fields}}',
+        fillRequired: 'Vui lòng điền các trường bắt buộc',
+        watchBacktestRunFailed: 'watchBacktestRun thất bại',
+        createDraftFailed: 'Không thể tạo bản nháp',
+        loadAccountsFailed: 'Không thể tải tài khoản',
+        loadSymbolsFailed: 'Không thể tải mã',
+        loadDatasetFailed: 'Không thể tải dataset',
+        datasetFrozenCreated: 'Đã tạo dataset đóng băng',
+        freezeDatasetFailed: 'Không thể đóng băng dataset',
+        inputIntentFirst: 'Vui lòng nhập mục tiêu/ý tưởng chiến lược trước',
+        aiRequestTimeout: 'Hết thời gian yêu cầu AI (> {{seconds}}s)',
+        modelReturnedEmpty: 'Mô hình trả về rỗng',
+        noPythonCodeBlock: 'Agent code không xuất \`\`\`python code block\`\`\`. Vui lòng kiểm tra kết quả',
+        agentFailed: '{{title}} thất bại',
+        userAborted: 'Người dùng đã hủy',
+        chatAborted: 'Đã hủy trò chuyện với mô hình',
+        noCodeToValidate: 'Không có mã để xác thực',
+        validateOk: 'Xác thực thành công',
+        validateFailed: 'Xác thực thất bại',
+        validateError: 'Lỗi xác thực',
+        noCodeToBacktest: 'Không có mã để backtest',
+        backtestCreated: 'Đã tạo backtest',
+        createBacktestFailed: 'Không thể tạo backtest',
+        draftNotCreated: 'Chưa tạo bản nháp',
+        draftSaved: 'Đã lưu bản nháp',
+        saveFailed: 'Lưu thất bại',
+        publishedNoId: 'Đã triển khai nhưng không nhận được id (vui lòng kiểm tra trong quản lý chiến lược)',
+        templatePublished: 'Đã triển khai template',
+        publishFailed: 'Triển khai thất bại',
+        publishTemplateFirst: 'Vui lòng triển khai template trước',
+        scheduleCreatedAndEnabled: 'Đã tạo và bật lịch',
+        scheduleCreated: 'Đã tạo lịch',
+        createScheduleFailed: 'Không thể tạo lịch',
+        scheduleAlreadyExists: 'Đã tồn tại lịch với cùng template+mã+khung thời gian cho tài khoản này. Vui lòng không tạo trùng.'
+      }
+    }
+  }
 } as const;
 
 export default aiWizard;

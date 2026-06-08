@@ -120,18 +120,18 @@ const aiCore = {
     agentPrompts: {
       style: {
         title: 'Market condition / style recommendation',
-        prompt: 'You are a senior quantitative strategy analyst. Based on the following information, recommend a strategy paradigm: trend / mean reversion / short-term, and explain the reasoning, applicable conditions and inapplicable scenarios.
+        prompt: `You are a senior quantitative strategy analyst. Based on the following information, recommend a strategy paradigm: trend / mean reversion / short-term, and explain the reasoning, applicable conditions and inapplicable scenarios.
 
 Output requirements: use Markdown, must include:
 1) Reasoning process: how you derive from data/constraints/objectives (bullet points)
 2) Conclusion: main recommendation (only one primary paradigm) + alternative + applicable/inapplicable conditions
 3) Risk alerts: at least 3
 
-{{baseInfo}}'
+{{baseInfo}}`
       },
       signals: {
         title: 'Signal and indicator design',
-        prompt: 'You are a quantitative factor and signal engineer. Without relying on external data (unless the user provides macro event tables), design actionable trading signals.
+        prompt: `You are a quantitative factor and signal engineer. Without relying on external data (unless the user provides macro event tables), design actionable trading signals.
 
 Requirements: clearly define entry/exit/filter conditions, preferably parameterized, avoid overfitting.
 
@@ -140,22 +140,22 @@ Output requirements: use Markdown, must include:
 2) Conclusion: executable rule list (entry/exit/filter), with parameter suggestions (default/range)
 3) Boundaries and risks: at least 3 (e.g.: range-bound/gap/high volatility/news events)
 
-{{baseInfo}}'
+{{baseInfo}}`
       },
       risk: {
         title: 'Risk control and execution constraints',
-        prompt: 'You are a trading risk and execution expert. Based on the following information, design position management, stop-loss/take-profit, max drawdown control, cooldown period/trade frequency limits, etc.
+        prompt: `You are a trading risk and execution expert. Based on the following information, design position management, stop-loss/take-profit, max drawdown control, cooldown period/trade frequency limits, etc.
 
 Output requirements: use Markdown, must include:
 1) Reasoning process: why these controls match objectives/constraints (bullet points)
 2) Conclusion: hard constraints + default parameters (suggested/range) + actions after trigger
 3) Failure modes: at least 3 (e.g.: consecutive losses, slippage widening, spread anomalies)
 
-{{baseInfo}}'
+{{baseInfo}}`
       },
       code: {
         title: 'Code generation agent',
-        prompt: 'You are an AntTrader Python strategy code engineer. Generate runnable AntTrader Python strategy code that:
+        prompt: `You are an AntTrader Python strategy code engineer. Generate runnable AntTrader Python strategy code that:
 - Passes validate checks (no import, no dunder, sandbox constraints)
 - Uses platform APIs like on_tick / on_kline (no custom network/file access)
 - run() must receive exactly one parameter: context (must be named context; no run(ctx), run(context, data), etc.)
@@ -183,7 +183,7 @@ def run(context):
 
 {{baseInfo}}
 
-[Note: upstream analysis conclusions – apply to code (provide reasonable defaults if missing)]'
+[Note: upstream analysis conclusions – apply to code (provide reasonable defaults if missing)]`
       }
     },
     consensus: {

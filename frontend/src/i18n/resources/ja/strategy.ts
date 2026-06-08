@@ -817,9 +817,9 @@ signal = {
       noAccounts: 'No available accounts',
       selectSymbol: 'Symbol',
       code: 'Strategy Code',
-      codePlaceholder: '# Python strategy code...
+      codePlaceholder: `# Python strategy code...
 def run(context):
-    return {"signal": "hold"}',
+    return {"signal": "hold"}`,
       validate: 'Validate',
       validatePass: 'Validation passed',
       validateFailed: 'Validation failed',
@@ -989,9 +989,9 @@ def run(context):
       noAccounts: '利用可能な口座がありません',
       selectSymbol: '銘柄',
       code: '戦略コード',
-      codePlaceholder: '# Python 戦略コード...
+      codePlaceholder: `# Python 戦略コード...
 def run(context):
-    return {"signal": "hold"}',
+    return {"signal": "hold"}`,
       validate: '検証',
       validatePass: '検証通過',
       validateFailed: '検証失敗',

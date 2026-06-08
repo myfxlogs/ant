@@ -846,9 +846,9 @@ signal = {
         noAccounts: '暂无可用账户',
         selectSymbol: '品种',
         code: '策略代码',
-        codePlaceholder: '# Python 策略代码...
+        codePlaceholder: `# Python 策略代码...
 def run(context):
-    return {"signal": "hold"}',
+    return {"signal": "hold"}`,
         validate: '验证',
         validatePass: '验证通过',
         validateFailed: '验证失败',
@@ -975,9 +975,9 @@ def run(context):
       noAccounts: 'No available accounts',
       selectSymbol: 'Symbol',
       code: 'Strategy Code',
-      codePlaceholder: '# Python strategy code...
+      codePlaceholder: `# Python strategy code...
 def run(context):
-    return {"signal": "hold"}',
+    return {"signal": "hold"}`,
       validate: 'Validate',
       validatePass: 'Validation passed',
       validateFailed: 'Validation failed',

@@ -1,16 +1,16 @@
-const ai = {
+const aiCore = {
   ai: {
     agentPrompts: {
       style: {
         title: 'Trạng thái thị trường / phong cách',
-        prompt: 'Bạn là nhà phân tích nghiên cứu định lượng cấp cao. Dựa trên thông tin dưới đây, hãy đề xuất một mô hình chiến lược chính (trend / mean-reversion / short-term) và giải thích lý do, điều kiện phù hợp và kịch bản không phù hợp.
+        prompt: `Bạn là nhà phân tích nghiên cứu định lượng cấp cao. Dựa trên thông tin dưới đây, hãy đề xuất một mô hình chiến lược chính (trend / mean-reversion / short-term) và giải thích lý do, điều kiện phù hợp và kịch bản không phù hợp.
 
 Yêu cầu đầu ra: Markdown, bắt buộc gồm:
 1) Lập luận: bạn suy ra từ dữ liệu/ràng buộc/mục tiêu như thế nào (gạch đầu dòng)
 2) Kết luận: 1 mô hình chính (chỉ 1) + phương án thay thế (tùy chọn) + điều kiện phù hợp/không phù hợp
 3) Cảnh báo rủi ro: ít nhất 3 ý
 
-{{baseInfo}}'
+{{baseInfo}}`
       },
       consensus: {
         title: 'Đồng thuận & Trò chuyện',
@@ -47,7 +47,7 @@ Yêu cầu đầu ra: Markdown, bắt buộc gồm:
       },
       signals: {
         title: 'Tín hiệu & chỉ báo',
-        prompt: 'Bạn là kỹ sư yếu tố & tín hiệu định lượng. Không phụ thuộc dữ liệu bên ngoài (trừ khi người dùng cung cấp bảng sự kiện vĩ mô), hãy thiết kế các tín hiệu giao dịch có thể triển khai.
+        prompt: `Bạn là kỹ sư yếu tố & tín hiệu định lượng. Không phụ thuộc dữ liệu bên ngoài (trừ khi người dùng cung cấp bảng sự kiện vĩ mô), hãy thiết kế các tín hiệu giao dịch có thể triển khai.
 
 Yêu cầu: nêu rõ điều kiện vào/ra/bộ lọc, tham số hóa tối đa có thể, tránh overfitting.
 
@@ -56,22 +56,22 @@ Yêu cầu đầu ra: Markdown, bắt buộc gồm:
 2) Kết luận: danh sách quy tắc thực thi (vào/ra/lọc) và gợi ý tham số (mặc định/phạm vi)
 3) Biên & rủi ro: ít nhất 3 ý (vd: sideway/gap/biến động cao/tin tức)
 
-{{baseInfo}}'
+{{baseInfo}}`
       },
       risk: {
         title: 'Rủi ro & ràng buộc thực thi',
-        prompt: 'Bạn là chuyên gia quản trị rủi ro & thực thi giao dịch. Dựa trên thông tin dưới đây, hãy thiết kế quản lý vị thế, SL/TP, kiểm soát drawdown tối đa, cooldown/giới hạn tần suất giao dịch, v.v.
+        prompt: `Bạn là chuyên gia quản trị rủi ro & thực thi giao dịch. Dựa trên thông tin dưới đây, hãy thiết kế quản lý vị thế, SL/TP, kiểm soát drawdown tối đa, cooldown/giới hạn tần suất giao dịch, v.v.
 
 Yêu cầu đầu ra: Markdown, bắt buộc gồm:
 1) Lập luận: vì sao các quy tắc rủi ro này phù hợp mục tiêu/ràng buộc (gạch đầu dòng)
 2) Kết luận: ràng buộc cứng (bắt buộc) + tham số mặc định (gợi ý/phạm vi) + hành động khi kích hoạt
 3) Mô hình thất bại: ít nhất 3 ý (vd: thua liên tiếp, slippage tăng, spread bất thường)
 
-{{baseInfo}}'
+{{baseInfo}}`
       },
       code: {
         title: 'Sinh mã',
-        prompt: 'Bạn là kỹ sư mã chiến lược AntTrader Python. Hãy tạo một chiến lược AntTrader Python có thể chạy, yêu cầu:
+        prompt: `Bạn là kỹ sư mã chiến lược AntTrader Python. Hãy tạo một chiến lược AntTrader Python có thể chạy, yêu cầu:
 - Phải qua validate (không import, không dunder, tuân thủ sandbox)
 - Dùng API nền tảng như on_tick / on_kline (không tự truy cập mạng/tệp)
 - run chỉ nhận đúng 1 tham số: context (tên tham số phải là context; không dùng run(ctx) hay run(context, data))
@@ -100,7 +100,7 @@ def run(context):
 {{baseInfo}}
 
 [Phân tích upstream (nếu có)]
-Hãy đưa kết luận style/signals/risk vào code (nếu không có, chọn mặc định hợp lý).'
+Hãy đưa kết luận style/signals/risk vào code (nếu không có, chọn mặc định hợp lý).`
       }
     },
     tabs: {
@@ -490,574 +490,6 @@ Hãy đưa kết luận style/signals/risk vào code (nếu không có, chọn m
         validationFailedNeedApiKey: 'Validation failed: this provider typically requires an API Key. Please fill and save the key first, then retry.'
       }
     },
-    wizard: {
-      title: 'Trình hướng dẫn chiến lược AI',
-      subtitle: 'Mỗi bước một trang, bạn có thể tiến/lùi',
-      currentModel: 'Mô hình hiện tại: {{model}}',
-      rangePresets: {
-        '1d': '1 ngày gần nhất',
-        '3d': '3 ngày gần nhất',
-        '7d': '1 tuần gần nhất',
-        '30d': '1 tháng gần nhất',
-        '90d': '3 tháng gần nhất'
-      },
-      steps: {
-        setup: 'Thiết lập',
-        generate: 'Tạo chiến lược',
-        publishCode: 'Triển khai - Mã',
-        publishBacktest: 'Triển khai - Backtest',
-        publishLaunch: 'Triển khai - Khởi chạy'
-      },
-      actions: {
-        prev: 'Trước',
-        next: 'Tiếp',
-        cancel: 'Hủy'
-      },
-      generate: {
-        cards: {
-          resultsTitle: 'Kết quả chuyên gia'
-        },
-        actions: {
-          runAgents: 'Phân tích chuyên gia + sinh mã',
-          hide: 'Ẩn',
-          abort: 'Hủy',
-          rerun: 'Chạy lại',
-          regenerateSummary: 'Tạo lại tóm tắt',
-          goValidate: 'Đi xác thực'
-        },
-        hints: {
-          afterGenerated: 'Sau khi tạo xong, sang bước tiếp theo để xác thực/backtest/triển khai.'
-        },
-        labels: {
-          elapsed: 'Thời gian'
-        },
-        status: {
-          inProgress: 'Đang chạy',
-          done: 'Hoàn tất',
-          error: 'Thất bại',
-          idle: 'Đang chờ',
-          running: {
-            style: 'Đang phân tích trạng thái/phong cách thị trường',
-            signals: 'Đang thiết kế tín hiệu/chỉ báo',
-            risk: 'Đang thiết kế rủi ro/ràng buộc thực thi',
-            code: 'Đang sinh mã',
-            generic: '{{title}} đang chạy'
-          }
-        },
-        sections: {
-          prompt: 'Prompt gửi tới mô hình',
-          output: 'Kết quả mô hình',
-          spec: 'Đặc tả'
-        },
-        modals: {
-          final: {
-            title: 'Đã sinh mã. Khuyến nghị nhấn “Xác thực mã” để xác nhận.'
-          }
-        }
-      },
-      publish: {
-        cards: {
-          codeTitle: '1) Mã chiến lược (có thể chỉnh sửa)',
-          scoreCardTitle: '2) Thẻ điểm backtest',
-          launchTitle: '3) Triển khai lịch chạy'
-        },
-        placeholders: {
-          codeEditable: 'Mã do AI tạo sẽ xuất hiện ở đây. Bạn cũng có thể chỉnh sửa thủ công.'
-        },
-        actions: {
-          validateCode: 'Xác thực mã',
-          startBacktest: 'Backtest (tác vụ bất đồng bộ)',
-          publishTemplate: 'Triển khai template'
-        },
-        messages: {
-          validateOk: 'validate thành công',
-          validateFailed: 'validate thất bại'
-        }
-      },
-      agents: {
-        styleTitle: 'Trạng thái thị trường / phong cách',
-        signalsTitle: 'Tín hiệu & chỉ báo',
-        riskTitle: 'Rủi ro & ràng buộc thực thi',
-        codeTitle: 'Sinh mã'
-      },
-      template: {
-        defaultName: 'Chiến lược AI {{title}}',
-        defaultDescription: 'Tạo bởi trình hướng dẫn AI'
-      },
-      schedule: {
-        defaultName: 'Lịch AI {{symbol}} {{timeframe}}'
-      },
-      setup: {
-        cards: {
-          tradeAndDataTitle: 'Giao dịch & dữ liệu',
-          constraintsAndGoalTitle: 'Ràng buộc & mục tiêu',
-          hardConstraintsTitle: 'Ràng buộc cứng',
-          hintsTitle: 'Gợi ý'
-        },
-        labels: {
-          account: 'Tài khoản',
-          symbol: 'Mã',
-          timeframe: 'Khung thời gian',
-          historicalData: 'Dữ liệu lịch sử',
-          backtestRange: 'Phạm vi backtest',
-          dataset: 'Dataset đóng băng',
-          maxDrawdownPct: 'Sụt giảm tối đa (%)',
-          riskPerTradePct: 'Rủi ro mỗi lệnh (%)',
-          maxTradesPerDay: 'Số lệnh tối đa mỗi ngày',
-          macroModule: 'Mô-đun vĩ mô',
-          macroEvents: 'Sự kiện vĩ mô',
-          intent: 'Ý định chiến lược'
-        },
-        placeholders: {
-          selectAccount: 'Chọn tài khoản',
-          selectSymbol: 'Chọn mã',
-          selectTimeframe: 'Chọn khung thời gian',
-          selectFrozenDataset: 'Chọn dataset đóng băng',
-          macroExample: 'Ví dụ:
-2024-01-03 21:15 FOMC Minutes
-2024-01-05 20:30 NFP',
-          intentExample: 'Ví dụ: Theo xu hướng khi phá vỡ; tránh biến động cao; ưu tiên tỷ lệ thắng...'
-        },
-        validations: {
-          selectAccount: 'Vui lòng chọn tài khoản',
-          selectSymbol: 'Vui lòng chọn mã',
-          selectTimeframe: 'Vui lòng chọn khung thời gian',
-          selectDataset: 'Vui lòng chọn dataset',
-          enterIntent: 'Vui lòng nhập ý định chiến lược'
-        },
-        dataModes: {
-          klineRange: 'Phạm vi nến',
-          dataset: 'Dataset đóng băng'
-        },
-        actions: {
-          refreshDataset: 'Làm mới',
-          freezeFromCurrentRange: 'Đóng băng từ phạm vi hiện tại',
-          deleteCurrentDataset: 'Xóa dataset hiện tại'
-        },
-        modals: {
-          deleteDataset: {
-            title: 'Xóa dataset',
-            content: 'Xóa dataset đóng băng đang chọn?',
-            ok: 'Xóa'
-          }
-        },
-        messages: {
-          datasetDeleted: 'Đã xóa dataset'
-        },
-        macro: {
-          off: 'Tắt',
-          on: 'Bật'
-        },
-        hints: {
-          nextWillGenerateCode: 'Bước tiếp theo sẽ tạo mã chiến lược.',
-          tradeDataNextStep: 'Sau khi điền xong, nhấn “Tiếp” để tiếp tục thiết lập ràng buộc & mục tiêu.'
-        }
-      },
-      publishBacktest: {
-        cards: {
-          backtestTitle: 'Backtest',
-          scoreCardTitle: 'Thẻ điểm'
-        },
-        actions: {
-          startBacktest: 'Bắt đầu backtest',
-          close: 'Đóng',
-          retry: 'Thử lại',
-          succeeded: 'Thành công',
-          inProgress: 'Đang chạy',
-          runInBackground: 'Chạy nền',
-          confirm: 'Xác nhận'
-        },
-        labels: {
-          status: 'Trạng thái',
-          elapsed: 'Thời gian',
-          scoringProgress: 'Tiến độ chấm điểm',
-          overallScore: 'Điểm tổng',
-          confirmed: 'Đã xác nhận'
-        },
-        modals: {
-          status: {
-            title: 'Backtest đang chạy'
-          },
-          score: {
-            title: 'Xác nhận điểm số'
-          }
-        },
-        draftName: 'Backtest {{datetime}} {{symbol}} {{timeframe}}',
-        draftNameShort: 'Backtest {{symbol}} {{timeframe}}'
-      },
-      strategyParams: {
-        title: 'Tham số chiến lược (tùy chọn)',
-        hints: {
-          intro: 'Các tham số này sẽ:',
-          line1: '1) được lưu vào template.parameters',
-          line2: '2) được ghi vào schedule.parameters (map<string,string>) khi tạo lịch',
-          line3Prefix: '3) được tiêm vào chiến lược Python khi chạy dưới dạng'
-        },
-        actions: {
-          addParam: 'Thêm tham số',
-          exportJson: 'Xuất JSON',
-          importJson: 'Nhập JSON',
-          delete: 'Xóa'
-        },
-        empty: 'Chưa có tham số. Bạn có thể thêm fast/slow/risk_per_trade... để chiến lược dễ tái sử dụng.',
-        paramCardTitle: 'Tham số #{{index}}',
-        labels: {
-          name: 'name',
-          type: 'type',
-          value: 'value (giá trị hiện tại của lịch)',
-          default: 'default',
-          min: 'min',
-          max: 'max',
-          step: 'step',
-          label: 'label',
-          description: 'description',
-          options: 'options (dùng cho select, phân tách bằng dấu phẩy)'
-        },
-        validations: {
-          nameRequired: 'name là bắt buộc',
-          typeRequired: 'type là bắt buộc'
-        },
-        placeholders: {
-          nameExample: 'vd: fast',
-          value: 'Để trống sẽ dùng default',
-          defaultExample: 'vd: 10',
-          label: 'Tên hiển thị',
-          description: 'Mô tả',
-          optionsExample: 'vd: low,medium,high',
-          importJson: 'Dán JSON tham số (mảng hoặc {"paramDefs": [...]})'
-        },
-        modals: {
-          exportTitle: 'Xuất JSON tham số',
-          importTitle: 'Nhập JSON tham số',
-          copyAndClose: 'Sao chép và đóng',
-          importOk: 'Nhập'
-        },
-        messages: {
-          jsonParseFailed: 'Phân tích JSON thất bại',
-          importFormatInvalid: 'Định dạng nhập không hợp lệ: cần mảng hoặc {"paramDefs": [...] }',
-          importMissingName: 'Nhập thất bại: có mục thiếu name',
-          imported: 'Đã nhập {{count}} tham số',
-          copied: 'Đã sao chép',
-          copyFailed: 'Sao chép thất bại'
-        },
-        types: {
-          number: 'số',
-          string: 'chuỗi',
-          bool: 'bool',
-          select: 'chọn'
-        }
-      },
-      prompts: {
-        dataSpec: {
-          dataset: 'Sử dụng dataset đã đóng băng datasetId={{datasetId}}',
-          klineRange: 'Sử dụng phạm vi nến lịch sử from={{from}} to={{to}}'
-        },
-        base: {
-          account: 'Tài khoản: {{accountId}}',
-          symbol: 'Mã: {{symbol}}',
-          timeframe: 'Khung thời gian: {{timeframe}}',
-          data: 'Dữ liệu: {{dataSpec}}',
-          constraints: 'Ràng buộc: max drawdown={{maxDrawdownPct}}% rủi ro/lệnh={{riskPerTradePct}}% tối đa lệnh/ngày={{maxTradesPerDay}}',
-          params: 'Tham số (định nghĩa + giá trị hiện tại; có trong context["params"] khi chạy):
-{{params}}',
-          empty: '(trống)',
-          macroEnabled: 'Sự kiện vĩ mô (người dùng cung cấp):
-{{text}}',
-          macroDisabled: 'Sự kiện vĩ mô: không dùng',
-          userIntent: 'Mục tiêu (ngôn ngữ tự nhiên):
-{{intent}}'
-        },
-        upstream: {
-          style: '[Kết luận trạng thái thị trường / phong cách]
-{{text}}',
-          signals: '[Kết luận tín hiệu & chỉ báo]
-{{text}}',
-          risk: '[Kết luận rủi ro & ràng buộc]
-{{text}}',
-          sectionTitle: '[Kết luận agent phía trên (nguyên văn)]'
-        },
-        summary: {
-          intro: 'Bạn là trợ lý giải thích chiến lược định lượng. Hãy giải thích ý tưởng cốt lõi của đoạn mã chiến lược AntTrader Python dưới đây bằng các gạch đầu dòng ngắn gọn (tối đa 12 dòng) để giúp người dùng đánh giá có đúng kỳ vọng hay không.',
-          mustIncludeTitle: 'Bắt buộc gồm:',
-          mustInclude1: '1) Loại/kiểu chiến lược (trend/mean-reversion/breakout/momentum/grid... nếu không chắc hãy ghi “Không rõ”)',
-          mustInclude2: '2) Điều kiện vào lệnh chính (2-4 ý)',
-          mustInclude3: '3) Điều kiện thoát/SL/TP/ràng buộc rủi ro chính (2-4 ý)',
-          mustInclude4: '4) 1 bối cảnh phù hợp và 1 bối cảnh không phù hợp',
-          userIntent: 'Kỳ vọng người dùng (ngôn ngữ tự nhiên):
-{{intent}}',
-          codeTitle: 'Mã:'
-        }
-      },
-      messages: {
-        generateCodeFirst: 'Vui lòng tạo mã chiến lược trước',
-        validateCodeFirst: 'Vui lòng nhấn “Xác thực mã” trước',
-        codeInvalidFixAndContinue: 'Xác thực mã thất bại. Hãy sửa trước khi tiếp tục',
-        startBacktestFirst: 'Vui lòng bắt đầu backtest trước',
-        backtestNotDoneWait: 'Backtest chưa xong. Hãy chờ đến khi trạng thái thành “Succeeded/Failed/Canceled”',
-        confirmScoreFirst: 'Vui lòng xác nhận kết quả trong popup điểm số trước',
-        fillRequiredWithFields: 'Vui lòng điền các trường bắt buộc: {{fields}}',
-        fillRequired: 'Vui lòng điền các trường bắt buộc',
-        watchBacktestRunFailed: 'watchBacktestRun thất bại',
-        createDraftFailed: 'Không thể tạo bản nháp',
-        loadAccountsFailed: 'Không thể tải tài khoản',
-        loadSymbolsFailed: 'Không thể tải mã',
-        loadDatasetFailed: 'Không thể tải dataset',
-        datasetFrozenCreated: 'Đã tạo dataset đóng băng',
-        freezeDatasetFailed: 'Không thể đóng băng dataset',
-        inputIntentFirst: 'Vui lòng nhập mục tiêu/ý tưởng chiến lược trước',
-        aiRequestTimeout: 'Hết thời gian yêu cầu AI (> {{seconds}}s)',
-        modelReturnedEmpty: 'Mô hình trả về rỗng',
-        noPythonCodeBlock: 'Agent code không xuất \`\`\`python code block\`\`\`. Vui lòng kiểm tra kết quả',
-        agentFailed: '{{title}} thất bại',
-        userAborted: 'Người dùng đã hủy',
-        chatAborted: 'Đã hủy trò chuyện với mô hình',
-        noCodeToValidate: 'Không có mã để xác thực',
-        validateOk: 'Xác thực thành công',
-        validateFailed: 'Xác thực thất bại',
-        validateError: 'Lỗi xác thực',
-        noCodeToBacktest: 'Không có mã để backtest',
-        backtestCreated: 'Đã tạo backtest',
-        createBacktestFailed: 'Không thể tạo backtest',
-        draftNotCreated: 'Chưa tạo bản nháp',
-        draftSaved: 'Đã lưu bản nháp',
-        saveFailed: 'Lưu thất bại',
-        publishedNoId: 'Đã triển khai nhưng không nhận được id (vui lòng kiểm tra trong quản lý chiến lược)',
-        templatePublished: 'Đã triển khai template',
-        publishFailed: 'Triển khai thất bại',
-        publishTemplateFirst: 'Vui lòng triển khai template trước',
-        scheduleCreatedAndEnabled: 'Đã tạo và bật lịch',
-        scheduleCreated: 'Đã tạo lịch',
-        createScheduleFailed: 'Không thể tạo lịch',
-        scheduleAlreadyExists: 'Đã tồn tại lịch với cùng template+mã+khung thời gian cho tài khoản này. Vui lòng không tạo trùng.'
-      }
-    },
-    settings: {
-      pageTitle: 'Cài đặt trợ lý AI',
-      defaultProfileName: 'Mặc định',
-      primary: {
-        title: 'Mô hình chính mặc định',
-        hint: 'Dùng cho bước "Làm rõ ý định", sinh mã, panel "Trợ lý AI — sửa mã" trong trình soạn template, và bất kỳ Agent nào chưa chọn model riêng.',
-        placeholder: 'Chọn một provider · model làm bộ não mặc định'
-      },
-      fields: {
-        name: 'Tên',
-        provider: 'Nhà cung cấp AI',
-        baseUrl: 'Base URL',
-        baseUrlHint: ' (địa chỉ dịch vụ model)',
-        apiKey: 'API Key',
-        apiKeyConfigured: 'Đã cấu hình',
-        apiKeyReplaceHint: 'Để thay key, nhập lại tại đây',
-        deleteApiKey: 'Xoá key',
-        model: 'Mô hình',
-        defaultModel: 'Model mặc định',
-        availableModels: 'Model khả dụng',
-        availableModelsHint: 'Có thể bật nhiều model dùng chung một API key. Danh sách này hiện trong dropdown của /ai/agents. Mặc định trống — chọn từ dropdown hoặc gõ model id rồi Enter để thêm; chỉ giữ những model bạn chọn rõ ràng.',
-        availableModelsPlaceholder: 'Chọn từ dropdown hoặc gõ model id rồi Enter (mặc định trống)',
-        availableModelsEmpty: 'Gõ model id rồi nhấn Enter để thêm',
-        availableModelsTip: 'Lưu ý: xoá một model không tự huỷ các Agent đã liên kết model đó tại /ai/agents, nhưng nó sẽ biến mất khỏi gợi ý dropdown.',
-        clear: 'Xoá hết',
-        temperature: 'Nhiệt độ (Temperature)',
-        timeoutSeconds: 'Thời gian chờ (giây)',
-        maxTokens: 'Số token tối đa',
-        enabledStatus: 'Trạng thái bật',
-        enabledOn: 'Đang bật → nhấp để tắt',
-        enabledOff: 'Đang tắt → nhấp để bật'
-      },
-      inferenceParams: {
-        title: 'Tham số suy luận'
-      },
-      sections: {
-        basic: 'Thông tin cơ bản',
-        connection: 'Cấu hình kết nối',
-        advanced: 'Tham số nâng cao',
-        advancedHint: 'Chỉ chỉnh khi bạn hiểu rõ ý nghĩa; giá trị mặc định phù hợp đa số kịch bản',
-        connectionApiKeyLink: 'Đến trang đăng ký / quản lý API key của nhà cung cấp'
-      },
-      providers: {
-        enabledTitle: 'Nhà cung cấp đã bật',
-        emptyTitle: 'Chưa có nhà cung cấp nào được bật',
-        emptyHint: 'Cấu hình API key và model khả dụng tại ',
-        emptyHintTail: ' trước.',
-        modelsUnit: 'model',
-        noModels: 'Chưa có model khả dụng',
-        openai: 'OpenAI',
-        anthropic: 'Anthropic Claude',
-        deepseek: 'DeepSeek',
-        zhipu: 'Zhipu AI',
-        qwen: 'Qwen / DashScope',
-        moonshot: 'Moonshot (Kimi)',
-        doubao: 'Doubao',
-        siliconflow: 'SiliconFlow',
-        openrouter: 'OpenRouter',
-        mistral: 'Mistral',
-        groq: 'Groq',
-        custom: 'Tùy chỉnh (tương thích OpenAI)',
-        openai_compatible: 'Tùy chỉnh (tương thích OpenAI)'
-      },
-      placeholders: {
-        name: 'VD: DeepSeek - chi phí thấp',
-        provider: 'Chọn nhà cung cấp AI',
-        baseUrl: 'VD: https://api.example.com/v1',
-        apiKey: 'Nhập API key',
-        providerFirst: 'Vui lòng chọn nhà cung cấp trước',
-        modelManual: 'Nhập tên mô hình (khuyến nghị copy model id từ trang quản lý)',
-        modelSelect: 'Chọn mô hình'
-      },
-      apiKeySavedAs: 'Đã lưu: {{masked}}',
-      apiKeyGuide: {
-        title: 'Hướng dẫn lấy API key',
-        selectProviderHint: 'Chọn nhà cung cấp để xem hướng dẫn lấy API key.',
-        modelSuggestionZhipu: 'Gợi ý: chọn \`glm-4-flash\` / \`glm-4\`',
-        modelSuggestionDeepSeek: 'Gợi ý: chọn \`deepseek-chat\`',
-        default: 'Nhà cung cấp: {{provider}}. Tạo API key trong trang quản lý và dán vào ô phía trên.',
-        zhipu: {
-          title: 'Lấy Zhipu API key',
-          step1: 'Mở nền tảng Zhipu: ',
-          step2: 'Đăng nhập/đăng ký, sau đó tạo và sao chép API key'
-        },
-        deepseek: {
-          title: 'Lấy DeepSeek API key',
-          step1: 'Mở nền tảng DeepSeek: ',
-          step2: 'Đăng nhập/đăng ký, sau đó tạo và sao chép API key trong trang API Keys'
-        }
-      },
-      actions: {
-        validateApiKey: 'Xác minh API key',
-        saveConfig: 'Lưu cấu hình'
-      },
-      profiles: {
-        current: 'Hiện tại',
-        actions: {
-          setCurrent: 'Đặt hiện tại'
-        },
-        delete: {
-          title: 'Xóa cấu hình',
-          content: 'Xóa cấu hình này?'
-        }
-      },
-      messages: {
-        loadConfigFailed: 'Tải cấu hình AI thất bại',
-        probeSuccess: 'Kết nối thành công',
-        probeFailed: 'Kết nối thất bại',
-        selectSavedProfileOrEnterKey: 'Vui lòng chọn cấu hình đã lưu hoặc nhập API key',
-        validateSuccess: 'Xác minh thành công',
-        validateFailed: 'Xác minh thất bại',
-        apiKeyValidated: 'API key hợp lệ',
-        validateBeforeSave: 'Vui lòng xác minh API key trước khi lưu',
-        saveSuccess: 'Lưu thành công',
-        deleted: 'Đã xóa',
-        setCurrentSuccess: 'Đã chuyển cấu hình hiện tại',
-        enabled: 'Đã bật',
-        disabled: 'Đã tắt'
-      },
-      errors: {
-        arrearage: 'Phản hồi từ nhà cung cấp: tài khoản nợ phí/thiếu số dư hoặc trạng thái bất thường. Vui lòng kiểm tra hóa đơn và trạng thái tài khoản.',
-        invalidModelId: 'Phản hồi từ nhà cung cấp: mô hình không khả dụng{{model}}. Vui lòng chọn từ danh sách hoặc dùng đúng model id.',
-        unauthorized: 'Phản hồi từ nhà cung cấp: không được ủy quyền (401). Vui lòng kiểm tra API key và quyền.',
-        forbidden: 'Phản hồi từ nhà cung cấp: bị từ chối (403). Vui lòng kiểm tra quyền, IP allowlist hoặc trạng thái tài khoản.',
-        timeout: 'Hết thời gian chờ. Vui lòng kiểm tra Base URL/mạng và thử lại.'
-      },
-      discoverErrors: {
-        baseUrlRequired: 'Vui lòng nhập Base URL (địa chỉ dịch vụ model).',
-        baseUrlInvalid: 'Base URL không hợp lệ: dùng URL đầy đủ, ví dụ https://model.example.com hoặc https://model.example.com/v1',
-        freeTierExhausted: 'Đã hết miễn phí: tắt chế độ chỉ free tier trên console hoặc đổi sang key trả phí.',
-        quotaOrRateLimit: 'Hết quota hoặc bị giới hạn tốc độ: nhà cung cấp từ chối. Kiểm tra thanh toán/giới hạn hoặc thử lại sau.',
-        quotaForbidden403: 'Bị từ chối (quota): kiểm tra thanh toán/quota trên console.',
-        unauthorized: 'Xác thực thất bại: kiểm tra API key/secret.',
-        endpoint404: 'Không tìm thấy endpoint model: kiểm tra Base URL có khớp API tương thích OpenAI (một số dịch vụ cần /v1).',
-        timeout: 'Hết thời gian chờ: kiểm tra mạng hoặc thử lại sau.',
-        unreachable: 'Không kết nối được dịch vụ model: kiểm tra Base URL, mạng hoặc gateway.',
-        invalidModelsResponse: 'Phản hồi không tương thích giao thức /models.',
-        noModelsReturned: 'Không có model khả dụng: kiểm tra quyền tài khoản hoặc cấu hình.',
-        providerRegionBlocked: 'Hạn chế khu vực: nhà cung cấp model từ chối theo vùng phát hiện được (IP egress có thể khác vị trí máy chủ). Hãy đổi vùng egress/proxy HTTP(S) hợp lệ hoặc dùng nhà cung cấp khác.',
-        generic: 'Không tải được danh sách model. Kiểm tra Base URL và API key.',
-        genericDetail: 'Không tải được danh sách model: {{detail}}'
-      },
-      validation: {
-        nameRequired: 'Tên là bắt buộc',
-        apiKeyRequired: 'API key là bắt buộc',
-        baseUrlRequired: 'Base URL là bắt buộc',
-        baseUrlProtocol: 'Base URL phải bắt đầu bằng http:// hoặc https://',
-        baseUrlNoChatCompletionsSuffix: 'Base URL không nên kết thúc bằng /chat/completions',
-        modelRequired: 'Mô hình là bắt buộc',
-        modelFormat: 'Định dạng mô hình không hợp lệ'
-      },
-      agent: {
-        title: 'Định nghĩa Agent',
-        defaultName: 'Agent tùy chỉnh',
-        removeConfirmTitle: 'Xoá Agent',
-        removeConfirmContent: 'Bạn chắc chắn muốn xoá agent này?',
-        actions: {
-          add: 'Thêm',
-          save: 'Lưu',
-          remove: 'Xoá',
-          loadDefaults: 'Tải 8 agent mặc định',
-          restoreDefaults: 'Khôi phục mặc định',
-          restoreDefaultsConfirmTitle: 'Khôi phục nhân dạng mặc định?',
-          restoreDefaultsConfirmContent: 'Thao tác này sẽ đặt lại 8 agent hệ thống (style/signals/risk/macro/sentiment/portfolio/execution/code) về nhân dạng mặc định. Các agent tự thêm sẽ được giữ. Chỉ chỉnh sửa bản náp, phải bấm Lưu mới được lưu vào CSDL.'
-        },
-        messages: {
-          selectProfileFirst: 'Vui lòng chọn một cấu hình ở bên trái trước',
-          loading: 'Đang tải...',
-          empty: 'Chưa có agent tuỳ chỉnh, bấm "Thêm" để bắt đầu',
-          saveSuccess: 'Đã lưu agents',
-          saveFailed: 'Lưu agents thất bại',
-          defaultsLoaded: 'Đã tải mẫu agent mặc định. Bấm Lưu để lưu vào CSDL.'
-        },
-        fields: {
-          namePlaceholder: 'Tên agent',
-          identityPlaceholder: 'Nhân dạng / persona (ghép vào system prompt)',
-          inputHintPlaceholder: 'Gợi ý nhập (tuỳ chọn)',
-          modelProfilePlaceholder: 'Mặc định (dùng cấu hình hiện tại)',
-          modelProfileEmpty: 'Vui lòng bật ít nhất một provider/model trong "Cài đặt AI" trước',
-          historicalBinding: '{{value}} (lịch sử)'
-        },
-        types: {
-          style: 'Phong cách',
-          signals: 'Tín hiệu',
-          risk: 'Kiểm soát rủi ro',
-          macro: 'Vĩ mô',
-          sentiment: 'Tâm lý',
-          portfolio: 'Danh mục',
-          execution: 'Thực thi',
-          code: 'Mã'
-        },
-        defaults: {
-          style: {
-            identity: 'Bạn là chiến lược gia định lượng cấp cao, tập trung vào chọn mô hình giao dịch phù hợp. Dựa trên loại tài khoản, công cụ, khung thời gian và thống kê lịch sử cùng mục tiêu và ràng buộc của người dùng, đề xuất một mô hình chính và một mô hình thay thế (trend, mean-reversion, breakout, momentum, arbitrage, grid, event-driven). Giải thích điều kiện phù hợp và không phù hợp, kèm ít nhất ba cảnh báo rủi ro.',
-            inputHint: 'Ví dụ: tài khoản = EURUSD cá nhân; khung thời gian = H1; mục tiêu = lợi nhuận 3%/tháng, drawdown tối đa <10%; ưu tiên = tỷ lệ thắng hơn tỷ lệ lời/lỗ.'
-          },
-          signals: {
-            identity: 'Bạn là kỹ sư yếu tố và tín hiệu, sử dụng MA/EMA, RSI, MACD, ADX, ATR, Bollinger Bands, VWAP, pivot, khối lượng và biến động. Không dùng dữ liệu bên ngoài, thiết kế các quy tắc vào/ra/lọc có thể tái tạo và tham số hóa, kèm lập luận và ít nhất ba kịch bản thất bại.',
-            inputHint: 'Ví dụ: mô hình = trend-following; khung thời gian = H1; chỉ báo = EMA/ATR/ADX; fast = 20, slow = 60.'
-          },
-          risk: {
-            identity: 'Bạn là chuyên gia rủi ro, thiết kế định cỡ vị thế, cắt lỗ, giới hạn rủi ro, drawdown tối đa, quy tắc tạm dừng, giới hạn tần suất giao dịch và bảo vệ bất thường. Đầu ra gồm các ràng buộc cứng với tham số đề xuất và hành động kích hoạt, kèm các chế độ thất bại phổ biến.',
-            inputHint: 'Ví dụ: vốn = 10.000; giới hạn drawdown tháng = 5%; rủi ro mỗi giao dịch = 0,5%; giao dịch trong ngày <= 5; cắt lỗ = 1,5×ATR.'
-          },
-          macro: {
-            identity: 'Bạn là nhà nghiên cứu vĩ mô, tập trung vào quyết định ngân hàng trung ương, CPI/PPI, NFP, PMI, GDP và các sự kiện quan trọng. Dùng lịch sự kiện, xác định cửa sổ sự kiện và đề xuất vị thế (tránh/giảm/theo sự kiện) cho công cụ mục tiêu.',
-            inputHint: 'Ví dụ: sự kiện chính = CPI Mỹ và biên bản FOMC; mã mục tiêu = XAUUSD.'
-          },
-          sentiment: {
-            identity: 'Bạn là nhà phân tích tâm lý và dòng vốn, sử dụng COT, VIX, funding, dòng ETF và tin tức/tâm lý mạng xã hội. Đầu ra là điểm tâm lý từ -1 đến 1 với động lực và thay đổi, cùng cách điều chỉnh hoặc ngược dòng.',
-            inputHint: 'Ví dụ: VIX từ 14 lên 22; vị thế long ròng phi thương mại -18%; tin tức chủ đạo về suy thoái / cắt giảm lãi suất.'
-          },
-          portfolio: {
-            identity: 'Bạn là nhà quản lý danh mục, phân bổ vốn giữa các chiến lược và công cụ bằng cách dùng tương quan, co rút hiệp phương sai, risk parity, vol-targeting và đa dạng hóa. Cung cấp tỷ trọng, đóng góp rủi ro và quy tắc tái cân bằng.',
-            inputHint: 'Ví dụ: chiến lược = trend-EURUSD và mean-reversion-XAUUSD; vốn = 50.000; vol mục tiêu = 12% năm.'
-          },
-          execution: {
-            identity: 'Bạn là chuyên gia thực thi, chọn phong cách thực thi, phiên giao dịch và chia lệnh, ước tính tác động và trượt giá, xác định hành vi hạ cấp khi thanh khoản kém.',
-            inputHint: 'Ví dụ: mua 10 lot EURUSD; spread = 0,6 pip; mục tiêu 5 phút; trượt giá tối đa = 0,8 pip.'
-          },
-          code: {
-            identity: 'Bạn là kỹ sư Python AntTrader, tạo mã chiến lược an toàn sandbox với run(context) trả về signal, symbol, confidence, risk_level và reason từ context["params"], đầu ra là một khối \`\`\`python\`\`\` duy nhất không có Markdown thêm.',
-            inputHint: 'Ví dụ: trend-following EMA(fast)/EMA(slow) với bộ lọc ATR; params = fast, slow, atr_period, risk_per_trade.'
-          }
-        }
-      }
-    },
     consensus: {
       title: 'Consensus & Discussion',
       actions: {
@@ -1135,4 +567,4 @@ Hãy đưa kết luận style/signals/risk vào code (nếu không có, chọn m
   }
 } as const;
 
-export default ai;
+export default aiCore;

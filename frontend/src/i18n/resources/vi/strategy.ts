@@ -817,9 +817,9 @@ signal = {
       noAccounts: 'No available accounts',
       selectSymbol: 'Symbol',
       code: 'Strategy Code',
-      codePlaceholder: '# Python strategy code...
+      codePlaceholder: `# Python strategy code...
 def run(context):
-    return {"signal": "hold"}',
+    return {"signal": "hold"}`,
       validate: 'Validate',
       validatePass: 'Validation passed',
       validateFailed: 'Validation failed',
@@ -989,9 +989,9 @@ def run(context):
       noAccounts: 'Không có tài khoản khả dụng',
       selectSymbol: 'Mã',
       code: 'Mã chiến lược',
-      codePlaceholder: '# Mã Python...
+      codePlaceholder: `# Mã Python...
 def run(context):
-    return {"signal": "hold"}',
+    return {"signal": "hold"}`,
       validate: 'Xác minh',
       validatePass: 'Xác minh thành công',
       validateFailed: 'Xác minh thất bại',

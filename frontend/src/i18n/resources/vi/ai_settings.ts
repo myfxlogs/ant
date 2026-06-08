@@ -1,251 +1,251 @@
 const aiSettings = {
   ai: {
     settings: {
-      agent: {
-        types: {
-          strategist: 'Nhà phân tích chiến lược',
-          risk_manager: 'Quản lý rủi ro',
-          executor: 'Cố vấn thực thi',
-          researcher: 'Nghiên cứu thị trường',
-          style: 'Style/Paradigm',
-          signals: 'Signals/Indicators',
-          risk: 'Risk',
-          macro: 'Macro',
-          sentiment: 'Sentiment',
-          portfolio: 'Portfolio',
-          execution: 'Execution',
-          code: 'Code'
-        },
-        defaults: {
-          strategist: {
-            identity: 'Nhà phân tích chiến lược định lượng cấp cao — đề xuất mô hình chiến lược dựa trên điều kiện tài khoản/thị trường.'
-          },
-          risk_manager: {
-            identity: 'Chuyên gia kiểm soát rủi ro nghiêm ngặt — thiết kế định cỡ vị thế, cắt lỗ, giới hạn drawdown.'
-          },
-          executor: {
-            identity: 'Chuyên gia tối ưu hóa thực thi giao dịch — giảm thiểu trượt giá và chi phí thực thi.'
-          },
-          researcher: {
-            identity: 'Nhà nghiên cứu kinh tế vĩ mô và ngành — phân tích sự kiện vĩ mô và xu hướng ngành.'
-          },
-          style: {
-            identity: 'You are a senior quantitative strategy analyst, focused on strategy paradigm selection. Based on account/symbol/timeframe/historical stats (trend strength ADX, volatility ATR, autocorrelation, distribution skew, etc.) and user goals/constraints, recommend one primary paradigm and one alternative from "trend following / mean reversion / breakout / momentum / arbitrage / grid / event-driven", explain applicable/inapplicable conditions. Output in Markdown: 1) reasoning (bullet points) 2) main + alternative + applicable/inapplicable conditions 3) at least 3 risk alerts. Avoid vagueness, do not rely on external data not provided.',
-            inputHint: 'Example: Account=EURUSD retail; Timeframe=H1; Goal=3% monthly return, max drawdown <10%; Preference=win rate over R/R.'
-          },
-          signals: {
-            identity: 'You are a quantitative factor and signal engineer, proficient with MA/EMA, RSI, MACD, ADX, ATR, Bollinger, Bollinger bandwidth, VWAP, Pivot, volume and volatility factors, etc. Without introducing external data (unless user provides macro/event tables), design reproducible, parameterizable entry/exit/filter signal rules, avoid overfitting. Output in Markdown: 1) reasoning 2) executable rule list (entry/exit/filter) with parameters (default/range/step) 3) at least 3 boundary/failure scenarios (range-bound/gap/high volatility/news).',
-            inputHint: 'Example: Paradigm=trend following; Timeframe=H1; Available indicators=EMA/ATR/ADX; fast default 20, slow default 60.'
-          },
-          risk: {
-            identity: 'You are a trading risk and execution constraints expert. Based on user goals and account status, design position sizing (fixed fraction / vol targeting / Kelly modified), stop-loss/take-profit, single/day/week max risk, max drawdown threshold, consecutive loss cooldown, trade frequency cap, spread/slippage anomaly protection, black swan downgrade strategy. Output in Markdown: 1) reasoning 2) hard constraints list + recommended params (suggested/range) + actions after trigger 3) at least 3 failure modes (e.g. consecutive loss expansion, correlation collapse, cross-symbol homogeneous exposure).',
-            inputHint: 'Example: Account equity=10,000; acceptable monthly drawdown=5%; risk per trade=0.5%; day trade cap=5; stop-loss=1.5×ATR.'
-          },
-          macro: {
-            identity: 'You are a macro researcher, focusing on macro events with significant short/medium-term price impact: central bank rate decisions (FOMC/ECB/BoE/BoJ), CPI/PPI, NFP, PMI, GDP, retail sales, crude oil inventory, geopolitical events. Based on user-provided event tables or common calendars, give event windows (typically 30 mins before ~ 2 hours after) and direction/volatility forecast for target symbol, position suggestion (avoid / reduce / event-driven layout). Explicitly state unknowns and uncertainties; do not fabricate unpublished data. Output in Markdown: event impact matrix, recommended response, risk alerts.',
-            inputHint: 'Example: This week key events=US CPI (Thu 20:30), FOMC minutes (Wed next day 02:00); target symbol=XAUUSD.'
-          },
-          sentiment: {
-            identity: 'You are a market sentiment and capital flow analyst, judging extreme optimism/panic: COT reports, VIX and volatility surface, fear/greed index, funding rates (crypto), ETF fund flows, social/news sentiment keywords, Put/Call ratio. Output sentiment score (-1 extreme pessimistic ~ +1 extreme optimistic), identify dominant dimension and recent change speed (first/second order momentum), combine with strategy paradigm to suggest trend-following or contrarian tendency. State clearly when no reliable sentiment data; do not fabricate.',
-            inputHint: 'Example: Last week VIX rose from 14 to 22; non-commercial net long positions -18% WoW; news dominated by "recession/rate cut" keywords.'
-          },
-          portfolio: {
-            identity: 'You are a portfolio management expert, responsible for multi-strategy / multi-symbol / multi-account capital allocation and diversification. Methodologies: correlation matrix, covariance shrinkage, risk parity, volatility targeting, maximum diversification portfolio (MDP), dynamic rebalancing. Based on existing strategy/symbol return-risk characteristics and correlations, give allocation suggestions, and point out concentration, tail correlation rising and drawdown linkage risks. Output in Markdown: portfolio weight table, risk contribution decomposition, rebalancing rules, key risks.',
-            inputHint: 'Example: Existing strategies=trend-EURUSD, mean reversion-XAUUSD; total equity=50,000; target annual vol=12%.'
-          },
-          execution: {
-            identity: 'You are an execution and trading cost optimization expert. For given order size and symbol liquidity, choose appropriate execution method (market / limit / TWAP / VWAP / POV / iceberg), time window (Asia/Europe/US session) and order splitting strategy, estimate impact cost and slippage, give degradation handling for spread anomalies, flash crashes, liquidity drops. Output: execution recommendation, impact cost estimation formula and value range, monitoring metrics (actual slippage, fill time, fill rate) and thresholds.',
-            inputHint: 'Example: Order=long EURUSD 10 lots; current spread=0.6 pip; target completion in 5 mins; acceptable slippage=0.8 pip.'
-          },
-          code: {
-            identity: 'You are an AntTrader Python strategy code engineer. Generate directly executable strategy code, strictly following sandbox validation: no import, no dunder access, no open/eval/exec/compile/__import__/globals/locals/vars/dir, only use platform-provided APIs (on_tick / on_kline / built-in np, math, datetime, calculate_rsi, etc.). Must define run(context) (only 1 context parameter), return dict with at least signal(buy/sell/hold), symbol, confidence(0~1), risk_level(low/medium/high), reason; read params from context["params"]. Strict output: only one \`\`\`python code block\`\`\`, no Markdown symbols, Chinese punctuation, or nested code fences inside the block.',
-            inputHint: 'Example: target paradigm=trend following; indicators=EMA(fast)/EMA(slow)+ATR filter; params=fast,slow,atr_period,risk_per_trade.'
-          }
-        },
-        title: 'Agent Identity Definition',
-        defaultName: 'Custom Agent',
-        removeConfirmTitle: 'Delete Agent',
-        removeConfirmContent: 'Are you sure you want to delete this agent?',
-        actions: {
-          add: 'Add',
-          save: 'Save',
-          remove: 'Delete',
-          loadDefaults: 'Load default 8 agents',
-          restoreDefaults: 'Restore defaults',
-          restoreDefaultsConfirmTitle: 'Restore system default identities?',
-          restoreDefaultsConfirmContent: 'Will reset 8 system agents (style/signals/risk/macro/sentiment/portfolio/execution/code) to default identity definitions; your custom agents will be kept. This only modifies unsaved drafts; click "Save" to persist.'
-        },
-        messages: {
-          selectProfileFirst: 'Please first select a config on the left',
-          loading: 'Loading...',
-          empty: 'No custom agents yet, click "Add" to configure',
-          saveSuccess: 'Agent saved',
-          saveFailed: 'Agent save failed',
-          defaultsLoaded: 'System default agent templates loaded, click "Save" to persist'
-        },
-        fields: {
-          namePlaceholder: 'Agent name',
-          identityPlaceholder: 'Identity/persona description (will be appended to system prompt)',
-          inputHintPlaceholder: 'Input hint (optional)',
-          modelProfilePlaceholder: 'Default (use current profile)',
-          modelProfileEmpty: 'Please first enable at least one provider/model in "AI Settings"',
-          historicalBinding: '{{value}} (historical)'
-        }
-      },
-      pageTitle: 'AI Assistant Settings',
-      defaultProfileName: 'Default',
+      pageTitle: 'Cài đặt trợ lý AI',
+      defaultProfileName: 'Mặc định',
       primary: {
-        title: 'Default Primary Model',
-        hint: 'Used for intent clarification, code generation, AI assistant code modification panel in template editor, and any agent without separate model config.',
-        placeholder: 'Select a provider · model as the fallback brain'
-      },
-      tabs: {
-        config: 'Model Config',
-        agents: 'Agent Config'
+        title: 'Mô hình chính mặc định',
+        hint: 'Dùng cho bước "Làm rõ ý định", sinh mã, panel "Trợ lý AI — sửa mã" trong trình soạn template, và bất kỳ Agent nào chưa chọn model riêng.',
+        placeholder: 'Chọn một provider · model làm bộ não mặc định'
       },
       fields: {
-        name: 'Name',
-        provider: 'AI Provider',
+        name: 'Tên',
+        provider: 'Nhà cung cấp AI',
         baseUrl: 'Base URL',
-        baseUrlHint: '(Model service address)',
+        baseUrlHint: ' (địa chỉ dịch vụ model)',
         apiKey: 'API Key',
-        apiKeyConfigured: 'Configured',
-        apiKeyReplaceHint: 'Enter again to replace key',
-        deleteApiKey: 'Delete key',
-        model: 'Model',
-        defaultModel: 'Default model',
-        availableModels: 'Available models',
-        availableModelsHint: 'Multiple models can be enabled under one API Key; this list appears in /ai/agents dropdown. Default empty; pick from dropdown or type model id then Enter to add; only explicitly selected models are added, not all discovered ones.',
-        availableModelsPlaceholder: 'Select or type model id then Enter (default empty)',
-        availableModelsEmpty: 'Type model id then Enter to add',
-        availableModelsTip: 'Tip: deleting a model will not clear already-bound agents in /ai/agents, but removes it from dropdown suggestions.',
-        clear: 'Clear',
-        temperature: 'Temperature',
-        timeoutSeconds: 'Timeout (seconds)',
-        maxTokens: 'Max Tokens',
-        enabledStatus: 'Enabled',
-        enabledOn: 'Enabled → click to disable',
-        enabledOff: 'Disabled → click to enable'
-      },
-      sections: {
-        basic: 'Basic Info',
-        connection: 'Connection Config',
-        advanced: 'Advanced Params',
-        advancedHint: 'Adjust only if you understand the meaning; defaults fit most scenarios',
-        connectionApiKeyLink: 'Go to apply / manage API Key for this provider'
+        apiKeyConfigured: 'Đã cấu hình',
+        apiKeyReplaceHint: 'Để thay key, nhập lại tại đây',
+        deleteApiKey: 'Xoá key',
+        model: 'Mô hình',
+        defaultModel: 'Model mặc định',
+        availableModels: 'Model khả dụng',
+        availableModelsHint: 'Có thể bật nhiều model dùng chung một API key. Danh sách này hiện trong dropdown của /ai/agents. Mặc định trống — chọn từ dropdown hoặc gõ model id rồi Enter để thêm; chỉ giữ những model bạn chọn rõ ràng.',
+        availableModelsPlaceholder: 'Chọn từ dropdown hoặc gõ model id rồi Enter (mặc định trống)',
+        availableModelsEmpty: 'Gõ model id rồi nhấn Enter để thêm',
+        availableModelsTip: 'Lưu ý: xoá một model không tự huỷ các Agent đã liên kết model đó tại /ai/agents, nhưng nó sẽ biến mất khỏi gợi ý dropdown.',
+        clear: 'Xoá hết',
+        temperature: 'Nhiệt độ (Temperature)',
+        timeoutSeconds: 'Thời gian chờ (giây)',
+        maxTokens: 'Số token tối đa',
+        enabledStatus: 'Trạng thái bật',
+        enabledOn: 'Đang bật → nhấp để tắt',
+        enabledOff: 'Đang tắt → nhấp để bật'
       },
       inferenceParams: {
-        title: 'Inference Parameters'
+        title: 'Tham số suy luận'
+      },
+      sections: {
+        basic: 'Thông tin cơ bản',
+        connection: 'Cấu hình kết nối',
+        advanced: 'Tham số nâng cao',
+        advancedHint: 'Chỉ chỉnh khi bạn hiểu rõ ý nghĩa; giá trị mặc định phù hợp đa số kịch bản',
+        connectionApiKeyLink: 'Đến trang đăng ký / quản lý API key của nhà cung cấp'
       },
       providers: {
-        enabledTitle: 'Enabled providers',
-        emptyTitle: 'No enabled providers yet',
-        emptyHint: 'Please first configure API Key and available models in ',
-        emptyHintTail: '.',
-        modelsUnit: 'models',
-        noModels: 'No available models configured',
+        enabledTitle: 'Nhà cung cấp đã bật',
+        emptyTitle: 'Chưa có nhà cung cấp nào được bật',
+        emptyHint: 'Cấu hình API key và model khả dụng tại ',
+        emptyHintTail: ' trước.',
+        modelsUnit: 'model',
+        noModels: 'Chưa có model khả dụng',
         openai: 'OpenAI',
         anthropic: 'Anthropic Claude',
         deepseek: 'DeepSeek',
         zhipu: 'Zhipu AI',
-        qwen: 'Tongyi Qianwen / DashScope',
+        qwen: 'Qwen / DashScope',
         moonshot: 'Moonshot (Kimi)',
-        doubao: 'Doubao (Volcano Ark)',
+        doubao: 'Doubao',
         siliconflow: 'SiliconFlow',
         openrouter: 'OpenRouter',
         mistral: 'Mistral',
         groq: 'Groq',
-        custom: 'Custom (OpenAI-compatible)',
-        openai_compatible: 'Custom (OpenAI-compatible)'
+        custom: 'Tùy chỉnh (tương thích OpenAI)',
+        openai_compatible: 'Tùy chỉnh (tương thích OpenAI)'
       },
       placeholders: {
-        name: 'e.g. DeepSeek-LowCost',
-        provider: 'Select AI provider',
-        baseUrl: 'e.g. https://api-inference.modelscope.cn/v1 or https://ark.cn-beijing.volces.com/api/v3',
-        apiKey: 'Enter API Key',
-        providerFirst: 'Please select AI provider first',
-        modelManual: 'Enter model name (copy model id from provider console)',
-        modelSelect: 'Select model',
+        name: 'VD: DeepSeek - chi phí thấp',
+        provider: 'Chọn nhà cung cấp AI',
+        baseUrl: 'VD: https://api.example.com/v1',
+        apiKey: 'Nhập API key',
+        providerFirst: 'Vui lòng chọn nhà cung cấp trước',
+        modelManual: 'Nhập tên mô hình (khuyến nghị copy model id từ trang quản lý)',
+        modelSelect: 'Chọn mô hình',
         modelSelectOrType: 'Select from dropdown or type model id'
       },
-      apiKeySavedAs: 'Currently saved: {{masked}}',
+      apiKeySavedAs: 'Đã lưu: {{masked}}',
       apiKeyGuide: {
-        title: 'API Key Application Guide',
-        selectProviderHint: 'After selecting an AI provider, how to apply API Key will be shown here.',
-        modelSuggestionZhipu: 'Model suggestion: select \`glm-4-flash\` / \`glm-4\` in "Model" dropdown',
-        modelSuggestionDeepSeek: 'Model suggestion: select \`deepseek-chat\` in "Model" dropdown',
-        default: `Current provider: {{provider}}. Go to the provider's official console to create API Key, then paste above.`,
+        title: 'Hướng dẫn lấy API key',
+        selectProviderHint: 'Chọn nhà cung cấp để xem hướng dẫn lấy API key.',
+        modelSuggestionZhipu: 'Gợi ý: chọn \`glm-4-flash\` / \`glm-4\`',
+        modelSuggestionDeepSeek: 'Gợi ý: chọn \`deepseek-chat\`',
+        default: 'Nhà cung cấp: {{provider}}. Tạo API key trong trang quản lý và dán vào ô phía trên.',
         zhipu: {
-          title: 'How to get Zhipu API Key',
-          step1: 'Open Zhipu platform: ',
-          step2: 'Login/register, then go to console and create/copy API Key'
+          title: 'Lấy Zhipu API key',
+          step1: 'Mở nền tảng Zhipu: ',
+          step2: 'Đăng nhập/đăng ký, sau đó tạo và sao chép API key'
         },
         deepseek: {
-          title: 'How to get DeepSeek API Key',
-          step1: 'Open DeepSeek platform: ',
-          step2: 'Login/register, then go to API Keys page and create/copy API Key'
+          title: 'Lấy DeepSeek API key',
+          step1: 'Mở nền tảng DeepSeek: ',
+          step2: 'Đăng nhập/đăng ký, sau đó tạo và sao chép API key trong trang API Keys'
         }
       },
       actions: {
-        validateApiKey: 'Validate API Key',
-        saveConfig: 'Save config'
+        validateApiKey: 'Xác minh API key',
+        saveConfig: 'Lưu cấu hình'
       },
       profiles: {
-        current: 'Current',
+        current: 'Hiện tại',
         actions: {
-          setCurrent: 'Set current'
+          setCurrent: 'Đặt hiện tại'
         },
         delete: {
-          title: 'Delete config',
-          content: 'Are you sure you want to delete this config?'
+          title: 'Xóa cấu hình',
+          content: 'Xóa cấu hình này?'
         }
       },
       messages: {
-        loadConfigFailed: 'Failed to load AI config',
-        probeSuccess: 'Connection success',
-        probeFailed: 'Connection failed',
-        selectSavedProfileOrEnterKey: 'Please first select a saved config, or enter API Key',
-        validateSuccess: 'Validation success',
-        validateFailed: 'Validation failed',
-        apiKeyValidated: 'API Key validated',
-        validateBeforeSave: 'Please first click "Validate API Key", can save only after validation passes',
-        saveSuccess: 'Config saved',
-        deleted: 'Deleted',
-        setCurrentSuccess: 'Switched current config',
-        enabled: 'Enabled',
-        disabled: 'Disabled'
+        loadConfigFailed: 'Tải cấu hình AI thất bại',
+        probeSuccess: 'Kết nối thành công',
+        probeFailed: 'Kết nối thất bại',
+        selectSavedProfileOrEnterKey: 'Vui lòng chọn cấu hình đã lưu hoặc nhập API key',
+        validateSuccess: 'Xác minh thành công',
+        validateFailed: 'Xác minh thất bại',
+        apiKeyValidated: 'API key hợp lệ',
+        validateBeforeSave: 'Vui lòng xác minh API key trước khi lưu',
+        saveSuccess: 'Lưu thành công',
+        deleted: 'Đã xóa',
+        setCurrentSuccess: 'Đã chuyển cấu hình hiện tại',
+        enabled: 'Đã bật',
+        disabled: 'Đã tắt'
       },
       errors: {
-        arrearage: 'Provider response: account in arrears / insufficient balance or account status abnormal. Check balance, billing and account status in provider console, then retry.',
-        invalidModelId: 'Provider response: model unavailable{{model}}. Please select from dropdown, or copy correct model id from provider console.',
-        unauthorized: 'Provider response: API Key invalid or unauthorized (401). Check if key is correct and has model permission.',
-        forbidden: 'Provider response: access denied (403). Check key permissions, IP whitelist or account status.',
-        timeout: 'Connection timeout. Check if Base URL is accessible, network is smooth, or retry later.'
+        arrearage: 'Phản hồi từ nhà cung cấp: tài khoản nợ phí/thiếu số dư hoặc trạng thái bất thường. Vui lòng kiểm tra hóa đơn và trạng thái tài khoản.',
+        invalidModelId: 'Phản hồi từ nhà cung cấp: mô hình không khả dụng{{model}}. Vui lòng chọn từ danh sách hoặc dùng đúng model id.',
+        unauthorized: 'Phản hồi từ nhà cung cấp: không được ủy quyền (401). Vui lòng kiểm tra API key và quyền.',
+        forbidden: 'Phản hồi từ nhà cung cấp: bị từ chối (403). Vui lòng kiểm tra quyền, IP allowlist hoặc trạng thái tài khoản.',
+        timeout: 'Hết thời gian chờ. Vui lòng kiểm tra Base URL/mạng và thử lại.'
       },
       discoverErrors: {
-        baseUrlRequired: 'Please enter Base URL (model service address).',
-        baseUrlInvalid: 'Invalid Base URL: use a full URL such as https://model.example.com or https://model.example.com/v1',
-        freeTierExhausted: 'Free tier exhausted: disable free-tier-only in the provider console or use a paid key.',
-        quotaOrRateLimit: 'Quota or rate limit: the provider rejected the call. Check billing/rate limits or retry later.',
-        quotaForbidden403: 'Call denied (quota): check billing and quota in the provider console.',
-        unauthorized: 'Auth failed: check API key/secret.',
-        endpoint404: 'Model endpoint not found: ensure Base URL matches the OpenAI-compatible API (some need /v1).',
-        timeout: 'Request timed out: check connectivity or retry later.',
-        unreachable: 'Cannot reach model service: check Base URL, network, or gateway.',
-        invalidModelsResponse: 'Model service response is not compatible with /models.',
-        noModelsReturned: 'No models returned: check account permissions or configuration.',
-        providerRegionBlocked: 'Region not supported: the model provider rejected this request based on detected location (egress IP may differ from your server). Try a supported network region, a compliant HTTP(S) proxy, or another provider.',
-        generic: 'Failed to list models. Check Base URL and API key.',
-        genericDetail: 'Failed to list models: {{detail}}'
+        baseUrlRequired: 'Vui lòng nhập Base URL (địa chỉ dịch vụ model).',
+        baseUrlInvalid: 'Base URL không hợp lệ: dùng URL đầy đủ, ví dụ https://model.example.com hoặc https://model.example.com/v1',
+        freeTierExhausted: 'Đã hết miễn phí: tắt chế độ chỉ free tier trên console hoặc đổi sang key trả phí.',
+        quotaOrRateLimit: 'Hết quota hoặc bị giới hạn tốc độ: nhà cung cấp từ chối. Kiểm tra thanh toán/giới hạn hoặc thử lại sau.',
+        quotaForbidden403: 'Bị từ chối (quota): kiểm tra thanh toán/quota trên console.',
+        unauthorized: 'Xác thực thất bại: kiểm tra API key/secret.',
+        endpoint404: 'Không tìm thấy endpoint model: kiểm tra Base URL có khớp API tương thích OpenAI (một số dịch vụ cần /v1).',
+        timeout: 'Hết thời gian chờ: kiểm tra mạng hoặc thử lại sau.',
+        unreachable: 'Không kết nối được dịch vụ model: kiểm tra Base URL, mạng hoặc gateway.',
+        invalidModelsResponse: 'Phản hồi không tương thích giao thức /models.',
+        noModelsReturned: 'Không có model khả dụng: kiểm tra quyền tài khoản hoặc cấu hình.',
+        providerRegionBlocked: 'Hạn chế khu vực: nhà cung cấp model từ chối theo vùng phát hiện được (IP egress có thể khác vị trí máy chủ). Hãy đổi vùng egress/proxy HTTP(S) hợp lệ hoặc dùng nhà cung cấp khác.',
+        generic: 'Không tải được danh sách model. Kiểm tra Base URL và API key.',
+        genericDetail: 'Không tải được danh sách model: {{detail}}'
       },
       validation: {
-        nameRequired: 'Name cannot be empty',
-        apiKeyRequired: 'API Key cannot be empty',
-        baseUrlRequired: 'Base URL cannot be empty',
-        baseUrlProtocol: 'Base URL must start with http:// or https://',
-        baseUrlNoChatCompletionsSuffix: 'Base URL should not end with /chat/completions (system will auto-append)',
-        modelRequired: 'Model cannot be empty',
-        modelFormat: 'Invalid model format'
+        nameRequired: 'Tên là bắt buộc',
+        apiKeyRequired: 'API key là bắt buộc',
+        baseUrlRequired: 'Base URL là bắt buộc',
+        baseUrlProtocol: 'Base URL phải bắt đầu bằng http:// hoặc https://',
+        baseUrlNoChatCompletionsSuffix: 'Base URL không nên kết thúc bằng /chat/completions',
+        modelRequired: 'Mô hình là bắt buộc',
+        modelFormat: 'Định dạng mô hình không hợp lệ'
+      },
+      agent: {
+        title: 'Định nghĩa Agent',
+        defaultName: 'Agent tùy chỉnh',
+        removeConfirmTitle: 'Xoá Agent',
+        removeConfirmContent: 'Bạn chắc chắn muốn xoá agent này?',
+        actions: {
+          add: 'Thêm',
+          save: 'Lưu',
+          remove: 'Xoá',
+          loadDefaults: 'Tải 8 agent mặc định',
+          restoreDefaults: 'Khôi phục mặc định',
+          restoreDefaultsConfirmTitle: 'Khôi phục nhân dạng mặc định?',
+          restoreDefaultsConfirmContent: 'Thao tác này sẽ đặt lại 8 agent hệ thống (style/signals/risk/macro/sentiment/portfolio/execution/code) về nhân dạng mặc định. Các agent tự thêm sẽ được giữ. Chỉ chỉnh sửa bản náp, phải bấm Lưu mới được lưu vào CSDL.'
+        },
+        messages: {
+          selectProfileFirst: 'Vui lòng chọn một cấu hình ở bên trái trước',
+          loading: 'Đang tải...',
+          empty: 'Chưa có agent tuỳ chỉnh, bấm "Thêm" để bắt đầu',
+          saveSuccess: 'Đã lưu agents',
+          saveFailed: 'Lưu agents thất bại',
+          defaultsLoaded: 'Đã tải mẫu agent mặc định. Bấm Lưu để lưu vào CSDL.'
+        },
+        fields: {
+          namePlaceholder: 'Tên agent',
+          identityPlaceholder: 'Nhân dạng / persona (ghép vào system prompt)',
+          inputHintPlaceholder: 'Gợi ý nhập (tuỳ chọn)',
+          modelProfilePlaceholder: 'Mặc định (dùng cấu hình hiện tại)',
+          modelProfileEmpty: 'Vui lòng bật ít nhất một provider/model trong "Cài đặt AI" trước',
+          historicalBinding: '{{value}} (lịch sử)'
+        },
+        types: {
+          style: 'Phong cách',
+          signals: 'Tín hiệu',
+          risk: 'Kiểm soát rủi ro',
+          macro: 'Vĩ mô',
+          sentiment: 'Tâm lý',
+          portfolio: 'Danh mục',
+          execution: 'Thực thi',
+          code: 'Mã',
+          strategist: 'Strategy Analyst',
+          risk_manager: 'Risk Manager',
+          executor: 'Execution Advisor',
+          researcher: 'Market Researcher'
+        },
+        defaults: {
+          style: {
+            identity: 'Bạn là chiến lược gia định lượng cấp cao, tập trung vào chọn mô hình giao dịch phù hợp. Dựa trên loại tài khoản, công cụ, khung thời gian và thống kê lịch sử cùng mục tiêu và ràng buộc của người dùng, đề xuất một mô hình chính và một mô hình thay thế (trend, mean-reversion, breakout, momentum, arbitrage, grid, event-driven). Giải thích điều kiện phù hợp và không phù hợp, kèm ít nhất ba cảnh báo rủi ro.',
+            inputHint: 'Ví dụ: tài khoản = EURUSD cá nhân; khung thời gian = H1; mục tiêu = lợi nhuận 3%/tháng, drawdown tối đa <10%; ưu tiên = tỷ lệ thắng hơn tỷ lệ lời/lỗ.'
+          },
+          signals: {
+            identity: 'Bạn là kỹ sư yếu tố và tín hiệu, sử dụng MA/EMA, RSI, MACD, ADX, ATR, Bollinger Bands, VWAP, pivot, khối lượng và biến động. Không dùng dữ liệu bên ngoài, thiết kế các quy tắc vào/ra/lọc có thể tái tạo và tham số hóa, kèm lập luận và ít nhất ba kịch bản thất bại.',
+            inputHint: 'Ví dụ: mô hình = trend-following; khung thời gian = H1; chỉ báo = EMA/ATR/ADX; fast = 20, slow = 60.'
+          },
+          risk: {
+            identity: 'Bạn là chuyên gia rủi ro, thiết kế định cỡ vị thế, cắt lỗ, giới hạn rủi ro, drawdown tối đa, quy tắc tạm dừng, giới hạn tần suất giao dịch và bảo vệ bất thường. Đầu ra gồm các ràng buộc cứng với tham số đề xuất và hành động kích hoạt, kèm các chế độ thất bại phổ biến.',
+            inputHint: 'Ví dụ: vốn = 10.000; giới hạn drawdown tháng = 5%; rủi ro mỗi giao dịch = 0,5%; giao dịch trong ngày <= 5; cắt lỗ = 1,5×ATR.'
+          },
+          macro: {
+            identity: 'Bạn là nhà nghiên cứu vĩ mô, tập trung vào quyết định ngân hàng trung ương, CPI/PPI, NFP, PMI, GDP và các sự kiện quan trọng. Dùng lịch sự kiện, xác định cửa sổ sự kiện và đề xuất vị thế (tránh/giảm/theo sự kiện) cho công cụ mục tiêu.',
+            inputHint: 'Ví dụ: sự kiện chính = CPI Mỹ và biên bản FOMC; mã mục tiêu = XAUUSD.'
+          },
+          sentiment: {
+            identity: 'Bạn là nhà phân tích tâm lý và dòng vốn, sử dụng COT, VIX, funding, dòng ETF và tin tức/tâm lý mạng xã hội. Đầu ra là điểm tâm lý từ -1 đến 1 với động lực và thay đổi, cùng cách điều chỉnh hoặc ngược dòng.',
+            inputHint: 'Ví dụ: VIX từ 14 lên 22; vị thế long ròng phi thương mại -18%; tin tức chủ đạo về suy thoái / cắt giảm lãi suất.'
+          },
+          portfolio: {
+            identity: 'Bạn là nhà quản lý danh mục, phân bổ vốn giữa các chiến lược và công cụ bằng cách dùng tương quan, co rút hiệp phương sai, risk parity, vol-targeting và đa dạng hóa. Cung cấp tỷ trọng, đóng góp rủi ro và quy tắc tái cân bằng.',
+            inputHint: 'Ví dụ: chiến lược = trend-EURUSD và mean-reversion-XAUUSD; vốn = 50.000; vol mục tiêu = 12% năm.'
+          },
+          execution: {
+            identity: 'Bạn là chuyên gia thực thi, chọn phong cách thực thi, phiên giao dịch và chia lệnh, ước tính tác động và trượt giá, xác định hành vi hạ cấp khi thanh khoản kém.',
+            inputHint: 'Ví dụ: mua 10 lot EURUSD; spread = 0,6 pip; mục tiêu 5 phút; trượt giá tối đa = 0,8 pip.'
+          },
+          code: {
+            identity: 'Bạn là kỹ sư Python AntTrader, tạo mã chiến lược an toàn sandbox với run(context) trả về signal, symbol, confidence, risk_level và reason từ context["params"], đầu ra là một khối \`\`\`python\`\`\` duy nhất không có Markdown thêm.',
+            inputHint: 'Ví dụ: trend-following EMA(fast)/EMA(slow) với bộ lọc ATR; params = fast, slow, atr_period, risk_per_trade.'
+          },
+          strategist: {
+            identity: 'Senior quantitative strategy analyst — recommends strategy paradigms based on account/market conditions.'
+          },
+          risk_manager: {
+            identity: 'Strict risk control expert — designs position sizing, stop-loss, drawdown limits.'
+          },
+          executor: {
+            identity: 'Trade execution optimization expert — minimizes slippage and execution costs.'
+          },
+          researcher: {
+            identity: 'Macroeconomic and industry researcher — analyzes macro events and sector trends.'
+          }
+        }
+      },
+      tabs: {
+        config: 'Model Config',
+        agents: 'Agent Config'
       }
     }
   }

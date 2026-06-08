@@ -23,18 +23,18 @@ const aiCore = {
     'agent提示詞s': {
       style: {
         title: '市場狀態/風格推薦',
-        prompt: '你是資深量化投研分析師。請基於以下資訊，推薦策略範式：趨勢/均值回歸/短線，並說明理由、適用條件與不適用場景。
+        prompt: `你是資深量化投研分析師。請基於以下資訊，推薦策略範式：趨勢/均值回歸/短線，並說明理由、適用條件與不適用場景。
 
 輸出要求：用 Markdown，必須包含：
 1) 推理過程：你如何從資料/約束/目標推導（分點）
 2) 結論：主推薦（只能選一個主範式）+ 備選（可選）+ 適用/不適用條件
 3) 風險提示：至少 3 條
 
-{{baseInfo}}'
+{{baseInfo}}`
       },
       signals: {
         title: '訊號與指標設計',
-        prompt: '你是量化因子與訊號工程師。請在不依賴外部資料（除非使用者提供宏觀事件表）的前提下，設計可實作的交易訊號。
+        prompt: `你是量化因子與訊號工程師。請在不依賴外部資料（除非使用者提供宏觀事件表）的前提下，設計可實作的交易訊號。
 
 要求：明確入場/出場/過濾條件，盡量參數化，避免過度擬合。
 
@@ -43,22 +43,22 @@ const aiCore = {
 2) 結論：可執行的規則清單（入場/出場/過濾），並給出參數建議（含預設值/範圍）
 3) 邊界與風險：至少 3 條（例如：震盪/跳空/高波動/消息面等）
 
-{{baseInfo}}'
+{{baseInfo}}`
       },
       risk: {
         title: '風控與執行約束',
-        prompt: '你是交易風控與執行專家。請根據以下資訊，設計倉位管理、止損止盈、最大回撤控制、冷卻期/交易頻率限制等規則。
+        prompt: `你是交易風控與執行專家。請根據以下資訊，設計倉位管理、止損止盈、最大回撤控制、冷卻期/交易頻率限制等規則。
 
 輸出要求：用 Markdown，必須包含：
 1) 推理過程：為何這些風控能匹配目標/約束（分點）
 2) 結論：硬約束（必須遵守）+ 預設參數（建議值/範圍）+ 觸發後的動作
 3) 失敗模式：至少 3 條（例如：連續虧損、滑點擴大、點差異常等）
 
-{{baseInfo}}'
+{{baseInfo}}`
       },
       code: {
         title: '程式碼生成',
-        prompt: '你是 AntTrader Python 策略程式碼工程師。請生成一份可執行的 AntTrader Python 策略程式碼，要求：
+        prompt: `你是 AntTrader Python 策略程式碼工程師。請生成一份可執行的 AntTrader Python 策略程式碼，要求：
 - 必須通過 validate 校驗（禁止 import、禁止 dunder、遵守沙箱約束）
 - 使用 on_tick / on_kline 等平台提供的 API（不要自訂網路/檔案存取）
 - run 必須且只能接收一個參數：context（參數名必須是 context；不允許 run(ctx)、run(context, data) 等）
@@ -87,7 +87,7 @@ def run(context):
 {{baseInfo}}
 
 【附：上游分析（若有）】
-請你將市場/訊號/風控三個分析結論落到程式碼中（若上游結論未提供，也請給出合理預設）。'
+請你將市場/訊號/風控三個分析結論落到程式碼中（若上游結論未提供，也請給出合理預設）。`
       }
     },
     systemAI: {
@@ -183,18 +183,18 @@ def run(context):
     agentPrompts: {
       style: {
         title: 'Market condition / style recommendation',
-        prompt: 'You are a senior quantitative strategy analyst. Based on the following information, recommend a strategy paradigm: trend / mean reversion / short-term, and explain the reasoning, applicable conditions and inapplicable scenarios.
+        prompt: `You are a senior quantitative strategy analyst. Based on the following information, recommend a strategy paradigm: trend / mean reversion / short-term, and explain the reasoning, applicable conditions and inapplicable scenarios.
 
 Output requirements: use Markdown, must include:
 1) Reasoning process: how you derive from data/constraints/objectives (bullet points)
 2) Conclusion: main recommendation (only one primary paradigm) + alternative + applicable/inapplicable conditions
 3) Risk alerts: at least 3
 
-{{baseInfo}}'
+{{baseInfo}}`
       },
       signals: {
         title: 'Signal and indicator design',
-        prompt: 'You are a quantitative factor and signal engineer. Without relying on external data (unless the user provides macro event tables), design actionable trading signals.
+        prompt: `You are a quantitative factor and signal engineer. Without relying on external data (unless the user provides macro event tables), design actionable trading signals.
 
 Requirements: clearly define entry/exit/filter conditions, preferably parameterized, avoid overfitting.
 
@@ -203,22 +203,22 @@ Output requirements: use Markdown, must include:
 2) Conclusion: executable rule list (entry/exit/filter), with parameter suggestions (default/range)
 3) Boundaries and risks: at least 3 (e.g.: range-bound/gap/high volatility/news events)
 
-{{baseInfo}}'
+{{baseInfo}}`
       },
       risk: {
         title: 'Risk control and execution constraints',
-        prompt: 'You are a trading risk and execution expert. Based on the following information, design position management, stop-loss/take-profit, max drawdown control, cooldown period/trade frequency limits, etc.
+        prompt: `You are a trading risk and execution expert. Based on the following information, design position management, stop-loss/take-profit, max drawdown control, cooldown period/trade frequency limits, etc.
 
 Output requirements: use Markdown, must include:
 1) Reasoning process: why these controls match objectives/constraints (bullet points)
 2) Conclusion: hard constraints + default parameters (suggested/range) + actions after trigger
 3) Failure modes: at least 3 (e.g.: consecutive losses, slippage widening, spread anomalies)
 
-{{baseInfo}}'
+{{baseInfo}}`
       },
       code: {
         title: 'Code generation agent',
-        prompt: 'You are an AntTrader Python strategy code engineer. Generate runnable AntTrader Python strategy code that:
+        prompt: `You are an AntTrader Python strategy code engineer. Generate runnable AntTrader Python strategy code that:
 - Passes validate checks (no import, no dunder, sandbox constraints)
 - Uses platform APIs like on_tick / on_kline (no custom network/file access)
 - run() must receive exactly one parameter: context (must be named context; no run(ctx), run(context, data), etc.)
@@ -246,7 +246,7 @@ def run(context):
 
 {{baseInfo}}
 
-[Note: upstream analysis conclusions – apply to code (provide reasonable defaults if missing)]'
+[Note: upstream analysis conclusions – apply to code (provide reasonable defaults if missing)]`
       }
     },
     consensus: {

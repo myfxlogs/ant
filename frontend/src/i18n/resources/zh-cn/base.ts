@@ -305,22 +305,22 @@ const base = {
           timeframe: '周期: {{timeframe}}',
           data: '数据: {{dataSpec}}',
           constraints: '约束: 最大回撤={{maxDrawdownPct}}% 单笔风险={{riskPerTradePct}}% 日内最多交易={{maxTradesPerDay}} 次',
-          params: '参数（定义+当前值；运行时在 context["params"] 中）：
-{{params}}',
+          params: `参数（定义+当前值；运行时在 context["params"] 中）：
+{{params}}`,
           empty: '(空)',
-          macroEnabled: '宏观事件(用户提供):
-{{text}}',
+          macroEnabled: `宏观事件(用户提供):
+{{text}}`,
           macroDisabled: '宏观事件: 不使用',
-          userIntent: '用户策略目标(自然语言):
-{{intent}}'
+          userIntent: `用户策略目标(自然语言):
+{{intent}}`
         },
         upstream: {
-          style: '【市场状态/风格推荐 结论】
-{{text}}',
-          signals: '【信号与指标设计 结论】
-{{text}}',
-          risk: '【风控与执行约束 结论】
-{{text}}',
+          style: `【市场状态/风格推荐 结论】
+{{text}}`,
+          signals: `【信号与指标设计 结论】
+{{text}}`,
+          risk: `【风控与执行约束 结论】
+{{text}}`,
           sectionTitle: '【上游 Agent 结论（原样提供）】'
         },
         summary: {
@@ -330,8 +330,8 @@ const base = {
           mustInclude2: '2) 主要入场条件（用 2~4 条要点）',
           mustInclude3: '3) 主要出场/止损止盈/风控约束（用 2~4 条要点）',
           mustInclude4: '4) 适用/不适用场景各 1 条',
-          userIntent: '用户预期（自然语言）：
-{{intent}}',
+          userIntent: `用户预期（自然语言）：
+{{intent}}`,
           codeTitle: '代码如下：'
         }
       },

@@ -269,22 +269,22 @@ const base = {
           timeframe: 'Khung thời gian: {{timeframe}}',
           data: 'Dữ liệu: {{dataSpec}}',
           constraints: 'Ràng buộc: max drawdown={{maxDrawdownPct}}% rủi ro/lệnh={{riskPerTradePct}}% tối đa lệnh/ngày={{maxTradesPerDay}}',
-          params: 'Tham số (định nghĩa + giá trị hiện tại; có trong context["params"] khi chạy):
-{{params}}',
+          params: `Tham số (định nghĩa + giá trị hiện tại; có trong context["params"] khi chạy):
+{{params}}`,
           empty: '(trống)',
-          macroEnabled: 'Sự kiện vĩ mô (người dùng cung cấp):
-{{text}}',
+          macroEnabled: `Sự kiện vĩ mô (người dùng cung cấp):
+{{text}}`,
           macroDisabled: 'Sự kiện vĩ mô: không dùng',
-          userIntent: 'Mục tiêu (ngôn ngữ tự nhiên):
-{{intent}}'
+          userIntent: `Mục tiêu (ngôn ngữ tự nhiên):
+{{intent}}`
         },
         upstream: {
-          style: '[Kết luận trạng thái thị trường / phong cách]
-{{text}}',
-          signals: '[Kết luận tín hiệu & chỉ báo]
-{{text}}',
-          risk: '[Kết luận rủi ro & ràng buộc]
-{{text}}',
+          style: `[Kết luận trạng thái thị trường / phong cách]
+{{text}}`,
+          signals: `[Kết luận tín hiệu & chỉ báo]
+{{text}}`,
+          risk: `[Kết luận rủi ro & ràng buộc]
+{{text}}`,
           sectionTitle: '[Kết luận agent phía trên (nguyên văn)]'
         },
         summary: {
@@ -294,8 +294,8 @@ const base = {
           mustInclude2: '2) Điều kiện vào lệnh chính (2-4 ý)',
           mustInclude3: '3) Điều kiện thoát/SL/TP/ràng buộc rủi ro chính (2-4 ý)',
           mustInclude4: '4) 1 bối cảnh phù hợp và 1 bối cảnh không phù hợp',
-          userIntent: 'Kỳ vọng người dùng (ngôn ngữ tự nhiên):
-{{intent}}',
+          userIntent: `Kỳ vọng người dùng (ngôn ngữ tự nhiên):
+{{intent}}`,
           codeTitle: 'Mã:'
         }
       },
