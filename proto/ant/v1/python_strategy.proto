@@ -22,6 +22,10 @@ service PythonStrategyService {
   rpc CancelBacktestRun(CancelBacktestRunRequest) returns (CancelBacktestRunResponse);
   rpc DeleteBacktestRun(DeleteBacktestRunRequest) returns (DeleteBacktestRunResponse);
   rpc GetTemplates(google.protobuf.Empty) returns (GetPythonTemplatesResponse);
+  // ExecuteLive: proto-native live/paper strategy execution.
+  // Go LiveStrategyRunner sends proto-native LiveStrategyContext (no JSON).
+  // Python maintains a LiveWorker pool — pre-compiled, per-bar calls < 100ms.
+  rpc ExecuteLive(ExecuteLiveRequest) returns (ExecuteLiveResponse);
 }
 
 message ExecuteStrategyRequest {
@@ -113,4 +117,78 @@ message PythonTemplate {
   string name = 1;
   string description = 2;
   string code = 3;
+}
+
+// ── ExecuteLive: proto-native live/paper strategy execution ──
+
+// ExecuteLiveRequest sends strategy code with a proto-native context message.
+// The Go-side LiveStrategyRunner builds the context from real-time bar data
+// and calls this RPC per bar. Python maintains a LiveWorker pool for speed.
+message ExecuteLiveRequest {
+  string strategy_code = 1;
+  LiveStrategyContext context = 2;  // proto-native — no JSON
+}
+
+message ExecuteLiveResponse {
+  bool success = 1;
+  StrategySignal signal = 2;
+  string error = 3;
+  string strategy_hash = 4;  // cached worker identifier for debugging
+}
+
+// LiveStrategyContext is the execution context passed to run(context) in live/paper mode.
+// Proto-native binary encoding — no JSON marshalling. Python converts to numpy on receipt.
+message LiveStrategyContext {
+  // Market data (primary symbol OHLCV — length-aligned arrays)
+  repeated double close = 1;
+  repeated double open = 2;
+  repeated double high = 3;
+  repeated double low = 4;
+  repeated double volume = 5;
+  repeated int64 bar_times_ms = 6;  // bar close timestamps in unix ms
+
+  // Account state
+  double equity = 7;
+  double balance = 8;
+  LivePosition position = 9;        // current open position (nil = none)
+  repeated LivePosition positions = 10;  // all open positions
+
+  // Metadata
+  string symbol = 11;
+  string timeframe = 12;
+  string mode = 13;  // "live" | "paper"
+  repeated LiveParam params = 14;
+
+  // Multi-symbol views (Phase B2 — optional)
+  repeated LiveSymbolSeries symbols = 15;
+  string primary_symbol = 16;
+  double current_price = 17;
+}
+
+// LivePosition mirrors the engine Position for live context.
+message LivePosition {
+  int64 ticket = 1;
+  string side = 2;       // "buy" | "sell"
+  double volume = 3;
+  double open_price = 4;
+  double sl = 5;
+  double tp = 6;
+  double swap = 7;
+  double commission = 8;
+}
+
+// LiveParam is a key-value strategy parameter.
+message LiveParam {
+  string key = 1;
+  string value = 2;  // stringly-typed; strategy calls params.get(key) → converts as needed
+}
+
+// LiveSymbolSeries holds OHLCV for one symbol in multi-symbol mode.
+message LiveSymbolSeries {
+  string symbol = 1;
+  repeated double close = 2;
+  repeated double open = 3;
+  repeated double high = 4;
+  repeated double low = 5;
+  repeated double volume = 6;
 }

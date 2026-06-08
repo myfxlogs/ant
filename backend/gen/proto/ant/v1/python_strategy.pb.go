@@ -791,6 +791,546 @@ func (x *PythonTemplate) GetCode() string {
 	return ""
 }
 
+// ExecuteLiveRequest sends strategy code with a proto-native context message.
+// The Go-side LiveStrategyRunner builds the context from real-time bar data
+// and calls this RPC per bar. Python maintains a LiveWorker pool for speed.
+type ExecuteLiveRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StrategyCode  string                 `protobuf:"bytes,1,opt,name=strategy_code,json=strategyCode,proto3" json:"strategy_code,omitempty"`
+	Context       *LiveStrategyContext   `protobuf:"bytes,2,opt,name=context,proto3" json:"context,omitempty"` // proto-native — no JSON
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ExecuteLiveRequest) Reset() {
+	*x = ExecuteLiveRequest{}
+	mi := &file_python_strategy_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExecuteLiveRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExecuteLiveRequest) ProtoMessage() {}
+
+func (x *ExecuteLiveRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_python_strategy_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExecuteLiveRequest.ProtoReflect.Descriptor instead.
+func (*ExecuteLiveRequest) Descriptor() ([]byte, []int) {
+	return file_python_strategy_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ExecuteLiveRequest) GetStrategyCode() string {
+	if x != nil {
+		return x.StrategyCode
+	}
+	return ""
+}
+
+func (x *ExecuteLiveRequest) GetContext() *LiveStrategyContext {
+	if x != nil {
+		return x.Context
+	}
+	return nil
+}
+
+type ExecuteLiveResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Signal        *StrategySignal        `protobuf:"bytes,2,opt,name=signal,proto3" json:"signal,omitempty"`
+	Error         string                 `protobuf:"bytes,3,opt,name=error,proto3" json:"error,omitempty"`
+	StrategyHash  string                 `protobuf:"bytes,4,opt,name=strategy_hash,json=strategyHash,proto3" json:"strategy_hash,omitempty"` // cached worker identifier for debugging
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ExecuteLiveResponse) Reset() {
+	*x = ExecuteLiveResponse{}
+	mi := &file_python_strategy_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExecuteLiveResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExecuteLiveResponse) ProtoMessage() {}
+
+func (x *ExecuteLiveResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_python_strategy_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExecuteLiveResponse.ProtoReflect.Descriptor instead.
+func (*ExecuteLiveResponse) Descriptor() ([]byte, []int) {
+	return file_python_strategy_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ExecuteLiveResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *ExecuteLiveResponse) GetSignal() *StrategySignal {
+	if x != nil {
+		return x.Signal
+	}
+	return nil
+}
+
+func (x *ExecuteLiveResponse) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
+
+func (x *ExecuteLiveResponse) GetStrategyHash() string {
+	if x != nil {
+		return x.StrategyHash
+	}
+	return ""
+}
+
+// LiveStrategyContext is the execution context passed to run(context) in live/paper mode.
+// Proto-native binary encoding — no JSON marshalling. Python converts to numpy on receipt.
+type LiveStrategyContext struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Market data (primary symbol OHLCV — length-aligned arrays)
+	Close      []float64 `protobuf:"fixed64,1,rep,packed,name=close,proto3" json:"close,omitempty"`
+	Open       []float64 `protobuf:"fixed64,2,rep,packed,name=open,proto3" json:"open,omitempty"`
+	High       []float64 `protobuf:"fixed64,3,rep,packed,name=high,proto3" json:"high,omitempty"`
+	Low        []float64 `protobuf:"fixed64,4,rep,packed,name=low,proto3" json:"low,omitempty"`
+	Volume     []float64 `protobuf:"fixed64,5,rep,packed,name=volume,proto3" json:"volume,omitempty"`
+	BarTimesMs []int64   `protobuf:"varint,6,rep,packed,name=bar_times_ms,json=barTimesMs,proto3" json:"bar_times_ms,omitempty"` // bar close timestamps in unix ms
+	// Account state
+	Equity    float64         `protobuf:"fixed64,7,opt,name=equity,proto3" json:"equity,omitempty"`
+	Balance   float64         `protobuf:"fixed64,8,opt,name=balance,proto3" json:"balance,omitempty"`
+	Position  *LivePosition   `protobuf:"bytes,9,opt,name=position,proto3" json:"position,omitempty"`    // current open position (nil = none)
+	Positions []*LivePosition `protobuf:"bytes,10,rep,name=positions,proto3" json:"positions,omitempty"` // all open positions
+	// Metadata
+	Symbol    string       `protobuf:"bytes,11,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Timeframe string       `protobuf:"bytes,12,opt,name=timeframe,proto3" json:"timeframe,omitempty"`
+	Mode      string       `protobuf:"bytes,13,opt,name=mode,proto3" json:"mode,omitempty"` // "live" | "paper"
+	Params    []*LiveParam `protobuf:"bytes,14,rep,name=params,proto3" json:"params,omitempty"`
+	// Multi-symbol views (Phase B2 — optional)
+	Symbols       []*LiveSymbolSeries `protobuf:"bytes,15,rep,name=symbols,proto3" json:"symbols,omitempty"`
+	PrimarySymbol string              `protobuf:"bytes,16,opt,name=primary_symbol,json=primarySymbol,proto3" json:"primary_symbol,omitempty"`
+	CurrentPrice  float64             `protobuf:"fixed64,17,opt,name=current_price,json=currentPrice,proto3" json:"current_price,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LiveStrategyContext) Reset() {
+	*x = LiveStrategyContext{}
+	mi := &file_python_strategy_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LiveStrategyContext) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LiveStrategyContext) ProtoMessage() {}
+
+func (x *LiveStrategyContext) ProtoReflect() protoreflect.Message {
+	mi := &file_python_strategy_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LiveStrategyContext.ProtoReflect.Descriptor instead.
+func (*LiveStrategyContext) Descriptor() ([]byte, []int) {
+	return file_python_strategy_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *LiveStrategyContext) GetClose() []float64 {
+	if x != nil {
+		return x.Close
+	}
+	return nil
+}
+
+func (x *LiveStrategyContext) GetOpen() []float64 {
+	if x != nil {
+		return x.Open
+	}
+	return nil
+}
+
+func (x *LiveStrategyContext) GetHigh() []float64 {
+	if x != nil {
+		return x.High
+	}
+	return nil
+}
+
+func (x *LiveStrategyContext) GetLow() []float64 {
+	if x != nil {
+		return x.Low
+	}
+	return nil
+}
+
+func (x *LiveStrategyContext) GetVolume() []float64 {
+	if x != nil {
+		return x.Volume
+	}
+	return nil
+}
+
+func (x *LiveStrategyContext) GetBarTimesMs() []int64 {
+	if x != nil {
+		return x.BarTimesMs
+	}
+	return nil
+}
+
+func (x *LiveStrategyContext) GetEquity() float64 {
+	if x != nil {
+		return x.Equity
+	}
+	return 0
+}
+
+func (x *LiveStrategyContext) GetBalance() float64 {
+	if x != nil {
+		return x.Balance
+	}
+	return 0
+}
+
+func (x *LiveStrategyContext) GetPosition() *LivePosition {
+	if x != nil {
+		return x.Position
+	}
+	return nil
+}
+
+func (x *LiveStrategyContext) GetPositions() []*LivePosition {
+	if x != nil {
+		return x.Positions
+	}
+	return nil
+}
+
+func (x *LiveStrategyContext) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *LiveStrategyContext) GetTimeframe() string {
+	if x != nil {
+		return x.Timeframe
+	}
+	return ""
+}
+
+func (x *LiveStrategyContext) GetMode() string {
+	if x != nil {
+		return x.Mode
+	}
+	return ""
+}
+
+func (x *LiveStrategyContext) GetParams() []*LiveParam {
+	if x != nil {
+		return x.Params
+	}
+	return nil
+}
+
+func (x *LiveStrategyContext) GetSymbols() []*LiveSymbolSeries {
+	if x != nil {
+		return x.Symbols
+	}
+	return nil
+}
+
+func (x *LiveStrategyContext) GetPrimarySymbol() string {
+	if x != nil {
+		return x.PrimarySymbol
+	}
+	return ""
+}
+
+func (x *LiveStrategyContext) GetCurrentPrice() float64 {
+	if x != nil {
+		return x.CurrentPrice
+	}
+	return 0
+}
+
+// LivePosition mirrors the engine Position for live context.
+type LivePosition struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Ticket        int64                  `protobuf:"varint,1,opt,name=ticket,proto3" json:"ticket,omitempty"`
+	Side          string                 `protobuf:"bytes,2,opt,name=side,proto3" json:"side,omitempty"` // "buy" | "sell"
+	Volume        float64                `protobuf:"fixed64,3,opt,name=volume,proto3" json:"volume,omitempty"`
+	OpenPrice     float64                `protobuf:"fixed64,4,opt,name=open_price,json=openPrice,proto3" json:"open_price,omitempty"`
+	Sl            float64                `protobuf:"fixed64,5,opt,name=sl,proto3" json:"sl,omitempty"`
+	Tp            float64                `protobuf:"fixed64,6,opt,name=tp,proto3" json:"tp,omitempty"`
+	Swap          float64                `protobuf:"fixed64,7,opt,name=swap,proto3" json:"swap,omitempty"`
+	Commission    float64                `protobuf:"fixed64,8,opt,name=commission,proto3" json:"commission,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LivePosition) Reset() {
+	*x = LivePosition{}
+	mi := &file_python_strategy_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LivePosition) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LivePosition) ProtoMessage() {}
+
+func (x *LivePosition) ProtoReflect() protoreflect.Message {
+	mi := &file_python_strategy_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LivePosition.ProtoReflect.Descriptor instead.
+func (*LivePosition) Descriptor() ([]byte, []int) {
+	return file_python_strategy_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *LivePosition) GetTicket() int64 {
+	if x != nil {
+		return x.Ticket
+	}
+	return 0
+}
+
+func (x *LivePosition) GetSide() string {
+	if x != nil {
+		return x.Side
+	}
+	return ""
+}
+
+func (x *LivePosition) GetVolume() float64 {
+	if x != nil {
+		return x.Volume
+	}
+	return 0
+}
+
+func (x *LivePosition) GetOpenPrice() float64 {
+	if x != nil {
+		return x.OpenPrice
+	}
+	return 0
+}
+
+func (x *LivePosition) GetSl() float64 {
+	if x != nil {
+		return x.Sl
+	}
+	return 0
+}
+
+func (x *LivePosition) GetTp() float64 {
+	if x != nil {
+		return x.Tp
+	}
+	return 0
+}
+
+func (x *LivePosition) GetSwap() float64 {
+	if x != nil {
+		return x.Swap
+	}
+	return 0
+}
+
+func (x *LivePosition) GetCommission() float64 {
+	if x != nil {
+		return x.Commission
+	}
+	return 0
+}
+
+// LiveParam is a key-value strategy parameter.
+type LiveParam struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Key           string                 `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Value         string                 `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"` // stringly-typed; strategy calls params.get(key) → converts as needed
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LiveParam) Reset() {
+	*x = LiveParam{}
+	mi := &file_python_strategy_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LiveParam) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LiveParam) ProtoMessage() {}
+
+func (x *LiveParam) ProtoReflect() protoreflect.Message {
+	mi := &file_python_strategy_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LiveParam.ProtoReflect.Descriptor instead.
+func (*LiveParam) Descriptor() ([]byte, []int) {
+	return file_python_strategy_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *LiveParam) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *LiveParam) GetValue() string {
+	if x != nil {
+		return x.Value
+	}
+	return ""
+}
+
+// LiveSymbolSeries holds OHLCV for one symbol in multi-symbol mode.
+type LiveSymbolSeries struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Symbol        string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	Close         []float64              `protobuf:"fixed64,2,rep,packed,name=close,proto3" json:"close,omitempty"`
+	Open          []float64              `protobuf:"fixed64,3,rep,packed,name=open,proto3" json:"open,omitempty"`
+	High          []float64              `protobuf:"fixed64,4,rep,packed,name=high,proto3" json:"high,omitempty"`
+	Low           []float64              `protobuf:"fixed64,5,rep,packed,name=low,proto3" json:"low,omitempty"`
+	Volume        []float64              `protobuf:"fixed64,6,rep,packed,name=volume,proto3" json:"volume,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LiveSymbolSeries) Reset() {
+	*x = LiveSymbolSeries{}
+	mi := &file_python_strategy_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LiveSymbolSeries) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LiveSymbolSeries) ProtoMessage() {}
+
+func (x *LiveSymbolSeries) ProtoReflect() protoreflect.Message {
+	mi := &file_python_strategy_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LiveSymbolSeries.ProtoReflect.Descriptor instead.
+func (*LiveSymbolSeries) Descriptor() ([]byte, []int) {
+	return file_python_strategy_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *LiveSymbolSeries) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *LiveSymbolSeries) GetClose() []float64 {
+	if x != nil {
+		return x.Close
+	}
+	return nil
+}
+
+func (x *LiveSymbolSeries) GetOpen() []float64 {
+	if x != nil {
+		return x.Open
+	}
+	return nil
+}
+
+func (x *LiveSymbolSeries) GetHigh() []float64 {
+	if x != nil {
+		return x.High
+	}
+	return nil
+}
+
+func (x *LiveSymbolSeries) GetLow() []float64 {
+	if x != nil {
+		return x.Low
+	}
+	return nil
+}
+
+func (x *LiveSymbolSeries) GetVolume() []float64 {
+	if x != nil {
+		return x.Volume
+	}
+	return nil
+}
+
 var File_python_strategy_proto protoreflect.FileDescriptor
 
 const file_python_strategy_proto_rawDesc = "" +
@@ -857,7 +1397,57 @@ const file_python_strategy_proto_rawDesc = "" +
 	"\x0ePythonTemplate\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x12\n" +
-	"\x04code\x18\x03 \x01(\tR\x04code2\xd2\x06\n" +
+	"\x04code\x18\x03 \x01(\tR\x04code\"p\n" +
+	"\x12ExecuteLiveRequest\x12#\n" +
+	"\rstrategy_code\x18\x01 \x01(\tR\fstrategyCode\x125\n" +
+	"\acontext\x18\x02 \x01(\v2\x1b.ant.v1.LiveStrategyContextR\acontext\"\x9a\x01\n" +
+	"\x13ExecuteLiveResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12.\n" +
+	"\x06signal\x18\x02 \x01(\v2\x16.ant.v1.StrategySignalR\x06signal\x12\x14\n" +
+	"\x05error\x18\x03 \x01(\tR\x05error\x12#\n" +
+	"\rstrategy_hash\x18\x04 \x01(\tR\fstrategyHash\"\xac\x04\n" +
+	"\x13LiveStrategyContext\x12\x14\n" +
+	"\x05close\x18\x01 \x03(\x01R\x05close\x12\x12\n" +
+	"\x04open\x18\x02 \x03(\x01R\x04open\x12\x12\n" +
+	"\x04high\x18\x03 \x03(\x01R\x04high\x12\x10\n" +
+	"\x03low\x18\x04 \x03(\x01R\x03low\x12\x16\n" +
+	"\x06volume\x18\x05 \x03(\x01R\x06volume\x12 \n" +
+	"\fbar_times_ms\x18\x06 \x03(\x03R\n" +
+	"barTimesMs\x12\x16\n" +
+	"\x06equity\x18\a \x01(\x01R\x06equity\x12\x18\n" +
+	"\abalance\x18\b \x01(\x01R\abalance\x120\n" +
+	"\bposition\x18\t \x01(\v2\x14.ant.v1.LivePositionR\bposition\x122\n" +
+	"\tpositions\x18\n" +
+	" \x03(\v2\x14.ant.v1.LivePositionR\tpositions\x12\x16\n" +
+	"\x06symbol\x18\v \x01(\tR\x06symbol\x12\x1c\n" +
+	"\ttimeframe\x18\f \x01(\tR\ttimeframe\x12\x12\n" +
+	"\x04mode\x18\r \x01(\tR\x04mode\x12)\n" +
+	"\x06params\x18\x0e \x03(\v2\x11.ant.v1.LiveParamR\x06params\x122\n" +
+	"\asymbols\x18\x0f \x03(\v2\x18.ant.v1.LiveSymbolSeriesR\asymbols\x12%\n" +
+	"\x0eprimary_symbol\x18\x10 \x01(\tR\rprimarySymbol\x12#\n" +
+	"\rcurrent_price\x18\x11 \x01(\x01R\fcurrentPrice\"\xc5\x01\n" +
+	"\fLivePosition\x12\x16\n" +
+	"\x06ticket\x18\x01 \x01(\x03R\x06ticket\x12\x12\n" +
+	"\x04side\x18\x02 \x01(\tR\x04side\x12\x16\n" +
+	"\x06volume\x18\x03 \x01(\x01R\x06volume\x12\x1d\n" +
+	"\n" +
+	"open_price\x18\x04 \x01(\x01R\topenPrice\x12\x0e\n" +
+	"\x02sl\x18\x05 \x01(\x01R\x02sl\x12\x0e\n" +
+	"\x02tp\x18\x06 \x01(\x01R\x02tp\x12\x12\n" +
+	"\x04swap\x18\a \x01(\x01R\x04swap\x12\x1e\n" +
+	"\n" +
+	"commission\x18\b \x01(\x01R\n" +
+	"commission\"3\n" +
+	"\tLiveParam\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value\"\x92\x01\n" +
+	"\x10LiveSymbolSeries\x12\x16\n" +
+	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x14\n" +
+	"\x05close\x18\x02 \x03(\x01R\x05close\x12\x12\n" +
+	"\x04open\x18\x03 \x03(\x01R\x04open\x12\x12\n" +
+	"\x04high\x18\x04 \x03(\x01R\x04high\x12\x10\n" +
+	"\x03low\x18\x05 \x03(\x01R\x03low\x12\x16\n" +
+	"\x06volume\x18\x06 \x03(\x01R\x06volume2\x9a\a\n" +
 	"\x15PythonStrategyService\x12J\n" +
 	"\aExecute\x12\x1e.ant.v1.ExecuteStrategyRequest\x1a\x1f.ant.v1.ExecuteStrategyResponse\x12M\n" +
 	"\bValidate\x12\x1f.ant.v1.ValidateStrategyRequest\x1a .ant.v1.ValidateStrategyResponse\x12M\n" +
@@ -868,7 +1458,8 @@ const file_python_strategy_proto_rawDesc = "" +
 	"\x10WatchBacktestRun\x12\x1f.ant.v1.WatchBacktestRunRequest\x1a\x19.ant.v1.BacktestRunUpdate0\x01\x12X\n" +
 	"\x11CancelBacktestRun\x12 .ant.v1.CancelBacktestRunRequest\x1a!.ant.v1.CancelBacktestRunResponse\x12X\n" +
 	"\x11DeleteBacktestRun\x12 .ant.v1.DeleteBacktestRunRequest\x1a!.ant.v1.DeleteBacktestRunResponse\x12J\n" +
-	"\fGetTemplates\x12\x16.google.protobuf.Empty\x1a\".ant.v1.GetPythonTemplatesResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\fGetTemplates\x12\x16.google.protobuf.Empty\x1a\".ant.v1.GetPythonTemplatesResponse\x12F\n" +
+	"\vExecuteLive\x12\x1a.ant.v1.ExecuteLiveRequest\x1a\x1b.ant.v1.ExecuteLiveResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_python_strategy_proto_rawDescOnce sync.Once
@@ -882,7 +1473,7 @@ func file_python_strategy_proto_rawDescGZIP() []byte {
 	return file_python_strategy_proto_rawDescData
 }
 
-var file_python_strategy_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_python_strategy_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_python_strategy_proto_goTypes = []any{
 	(*ExecuteStrategyRequest)(nil),     // 0: ant.v1.ExecuteStrategyRequest
 	(*ExecuteStrategyResponse)(nil),    // 1: ant.v1.ExecuteStrategyResponse
@@ -895,54 +1486,68 @@ var file_python_strategy_proto_goTypes = []any{
 	(*BacktestStrategyResponse)(nil),   // 8: ant.v1.BacktestStrategyResponse
 	(*GetPythonTemplatesResponse)(nil), // 9: ant.v1.GetPythonTemplatesResponse
 	(*PythonTemplate)(nil),             // 10: ant.v1.PythonTemplate
-	(*StrategySignal)(nil),             // 11: ant.v1.StrategySignal
-	(*BacktestMetrics)(nil),            // 12: ant.v1.BacktestMetrics
-	(*StartBacktestRunRequest)(nil),    // 13: ant.v1.StartBacktestRunRequest
-	(*GetBacktestRunRequest)(nil),      // 14: ant.v1.GetBacktestRunRequest
-	(*ListBacktestRunsRequest)(nil),    // 15: ant.v1.ListBacktestRunsRequest
-	(*WatchBacktestRunRequest)(nil),    // 16: ant.v1.WatchBacktestRunRequest
-	(*CancelBacktestRunRequest)(nil),   // 17: ant.v1.CancelBacktestRunRequest
-	(*DeleteBacktestRunRequest)(nil),   // 18: ant.v1.DeleteBacktestRunRequest
-	(*emptypb.Empty)(nil),              // 19: google.protobuf.Empty
-	(*StartBacktestRunResponse)(nil),   // 20: ant.v1.StartBacktestRunResponse
-	(*GetBacktestRunResponse)(nil),     // 21: ant.v1.GetBacktestRunResponse
-	(*ListBacktestRunsResponse)(nil),   // 22: ant.v1.ListBacktestRunsResponse
-	(*BacktestRunUpdate)(nil),          // 23: ant.v1.BacktestRunUpdate
-	(*CancelBacktestRunResponse)(nil),  // 24: ant.v1.CancelBacktestRunResponse
-	(*DeleteBacktestRunResponse)(nil),  // 25: ant.v1.DeleteBacktestRunResponse
+	(*ExecuteLiveRequest)(nil),         // 11: ant.v1.ExecuteLiveRequest
+	(*ExecuteLiveResponse)(nil),        // 12: ant.v1.ExecuteLiveResponse
+	(*LiveStrategyContext)(nil),        // 13: ant.v1.LiveStrategyContext
+	(*LivePosition)(nil),               // 14: ant.v1.LivePosition
+	(*LiveParam)(nil),                  // 15: ant.v1.LiveParam
+	(*LiveSymbolSeries)(nil),           // 16: ant.v1.LiveSymbolSeries
+	(*StrategySignal)(nil),             // 17: ant.v1.StrategySignal
+	(*BacktestMetrics)(nil),            // 18: ant.v1.BacktestMetrics
+	(*StartBacktestRunRequest)(nil),    // 19: ant.v1.StartBacktestRunRequest
+	(*GetBacktestRunRequest)(nil),      // 20: ant.v1.GetBacktestRunRequest
+	(*ListBacktestRunsRequest)(nil),    // 21: ant.v1.ListBacktestRunsRequest
+	(*WatchBacktestRunRequest)(nil),    // 22: ant.v1.WatchBacktestRunRequest
+	(*CancelBacktestRunRequest)(nil),   // 23: ant.v1.CancelBacktestRunRequest
+	(*DeleteBacktestRunRequest)(nil),   // 24: ant.v1.DeleteBacktestRunRequest
+	(*emptypb.Empty)(nil),              // 25: google.protobuf.Empty
+	(*StartBacktestRunResponse)(nil),   // 26: ant.v1.StartBacktestRunResponse
+	(*GetBacktestRunResponse)(nil),     // 27: ant.v1.GetBacktestRunResponse
+	(*ListBacktestRunsResponse)(nil),   // 28: ant.v1.ListBacktestRunsResponse
+	(*BacktestRunUpdate)(nil),          // 29: ant.v1.BacktestRunUpdate
+	(*CancelBacktestRunResponse)(nil),  // 30: ant.v1.CancelBacktestRunResponse
+	(*DeleteBacktestRunResponse)(nil),  // 31: ant.v1.DeleteBacktestRunResponse
 }
 var file_python_strategy_proto_depIdxs = []int32{
-	11, // 0: ant.v1.ExecuteStrategyResponse.signal:type_name -> ant.v1.StrategySignal
+	17, // 0: ant.v1.ExecuteStrategyResponse.signal:type_name -> ant.v1.StrategySignal
 	4,  // 1: ant.v1.ValidateStrategyResponse.quality_hints:type_name -> ant.v1.CodeQualityHint
 	5,  // 2: ant.v1.ValidateStrategyResponse.sweep_dimensions:type_name -> ant.v1.SweepDimension
 	6,  // 3: ant.v1.ValidateStrategyResponse.strategy_directives:type_name -> ant.v1.StrategyDirective
-	12, // 4: ant.v1.BacktestStrategyResponse.metrics:type_name -> ant.v1.BacktestMetrics
+	18, // 4: ant.v1.BacktestStrategyResponse.metrics:type_name -> ant.v1.BacktestMetrics
 	10, // 5: ant.v1.GetPythonTemplatesResponse.templates:type_name -> ant.v1.PythonTemplate
-	0,  // 6: ant.v1.PythonStrategyService.Execute:input_type -> ant.v1.ExecuteStrategyRequest
-	2,  // 7: ant.v1.PythonStrategyService.Validate:input_type -> ant.v1.ValidateStrategyRequest
-	7,  // 8: ant.v1.PythonStrategyService.Backtest:input_type -> ant.v1.BacktestStrategyRequest
-	13, // 9: ant.v1.PythonStrategyService.StartBacktestRun:input_type -> ant.v1.StartBacktestRunRequest
-	14, // 10: ant.v1.PythonStrategyService.GetBacktestRun:input_type -> ant.v1.GetBacktestRunRequest
-	15, // 11: ant.v1.PythonStrategyService.ListBacktestRuns:input_type -> ant.v1.ListBacktestRunsRequest
-	16, // 12: ant.v1.PythonStrategyService.WatchBacktestRun:input_type -> ant.v1.WatchBacktestRunRequest
-	17, // 13: ant.v1.PythonStrategyService.CancelBacktestRun:input_type -> ant.v1.CancelBacktestRunRequest
-	18, // 14: ant.v1.PythonStrategyService.DeleteBacktestRun:input_type -> ant.v1.DeleteBacktestRunRequest
-	19, // 15: ant.v1.PythonStrategyService.GetTemplates:input_type -> google.protobuf.Empty
-	1,  // 16: ant.v1.PythonStrategyService.Execute:output_type -> ant.v1.ExecuteStrategyResponse
-	3,  // 17: ant.v1.PythonStrategyService.Validate:output_type -> ant.v1.ValidateStrategyResponse
-	8,  // 18: ant.v1.PythonStrategyService.Backtest:output_type -> ant.v1.BacktestStrategyResponse
-	20, // 19: ant.v1.PythonStrategyService.StartBacktestRun:output_type -> ant.v1.StartBacktestRunResponse
-	21, // 20: ant.v1.PythonStrategyService.GetBacktestRun:output_type -> ant.v1.GetBacktestRunResponse
-	22, // 21: ant.v1.PythonStrategyService.ListBacktestRuns:output_type -> ant.v1.ListBacktestRunsResponse
-	23, // 22: ant.v1.PythonStrategyService.WatchBacktestRun:output_type -> ant.v1.BacktestRunUpdate
-	24, // 23: ant.v1.PythonStrategyService.CancelBacktestRun:output_type -> ant.v1.CancelBacktestRunResponse
-	25, // 24: ant.v1.PythonStrategyService.DeleteBacktestRun:output_type -> ant.v1.DeleteBacktestRunResponse
-	9,  // 25: ant.v1.PythonStrategyService.GetTemplates:output_type -> ant.v1.GetPythonTemplatesResponse
-	16, // [16:26] is the sub-list for method output_type
-	6,  // [6:16] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	13, // 6: ant.v1.ExecuteLiveRequest.context:type_name -> ant.v1.LiveStrategyContext
+	17, // 7: ant.v1.ExecuteLiveResponse.signal:type_name -> ant.v1.StrategySignal
+	14, // 8: ant.v1.LiveStrategyContext.position:type_name -> ant.v1.LivePosition
+	14, // 9: ant.v1.LiveStrategyContext.positions:type_name -> ant.v1.LivePosition
+	15, // 10: ant.v1.LiveStrategyContext.params:type_name -> ant.v1.LiveParam
+	16, // 11: ant.v1.LiveStrategyContext.symbols:type_name -> ant.v1.LiveSymbolSeries
+	0,  // 12: ant.v1.PythonStrategyService.Execute:input_type -> ant.v1.ExecuteStrategyRequest
+	2,  // 13: ant.v1.PythonStrategyService.Validate:input_type -> ant.v1.ValidateStrategyRequest
+	7,  // 14: ant.v1.PythonStrategyService.Backtest:input_type -> ant.v1.BacktestStrategyRequest
+	19, // 15: ant.v1.PythonStrategyService.StartBacktestRun:input_type -> ant.v1.StartBacktestRunRequest
+	20, // 16: ant.v1.PythonStrategyService.GetBacktestRun:input_type -> ant.v1.GetBacktestRunRequest
+	21, // 17: ant.v1.PythonStrategyService.ListBacktestRuns:input_type -> ant.v1.ListBacktestRunsRequest
+	22, // 18: ant.v1.PythonStrategyService.WatchBacktestRun:input_type -> ant.v1.WatchBacktestRunRequest
+	23, // 19: ant.v1.PythonStrategyService.CancelBacktestRun:input_type -> ant.v1.CancelBacktestRunRequest
+	24, // 20: ant.v1.PythonStrategyService.DeleteBacktestRun:input_type -> ant.v1.DeleteBacktestRunRequest
+	25, // 21: ant.v1.PythonStrategyService.GetTemplates:input_type -> google.protobuf.Empty
+	11, // 22: ant.v1.PythonStrategyService.ExecuteLive:input_type -> ant.v1.ExecuteLiveRequest
+	1,  // 23: ant.v1.PythonStrategyService.Execute:output_type -> ant.v1.ExecuteStrategyResponse
+	3,  // 24: ant.v1.PythonStrategyService.Validate:output_type -> ant.v1.ValidateStrategyResponse
+	8,  // 25: ant.v1.PythonStrategyService.Backtest:output_type -> ant.v1.BacktestStrategyResponse
+	26, // 26: ant.v1.PythonStrategyService.StartBacktestRun:output_type -> ant.v1.StartBacktestRunResponse
+	27, // 27: ant.v1.PythonStrategyService.GetBacktestRun:output_type -> ant.v1.GetBacktestRunResponse
+	28, // 28: ant.v1.PythonStrategyService.ListBacktestRuns:output_type -> ant.v1.ListBacktestRunsResponse
+	29, // 29: ant.v1.PythonStrategyService.WatchBacktestRun:output_type -> ant.v1.BacktestRunUpdate
+	30, // 30: ant.v1.PythonStrategyService.CancelBacktestRun:output_type -> ant.v1.CancelBacktestRunResponse
+	31, // 31: ant.v1.PythonStrategyService.DeleteBacktestRun:output_type -> ant.v1.DeleteBacktestRunResponse
+	9,  // 32: ant.v1.PythonStrategyService.GetTemplates:output_type -> ant.v1.GetPythonTemplatesResponse
+	12, // 33: ant.v1.PythonStrategyService.ExecuteLive:output_type -> ant.v1.ExecuteLiveResponse
+	23, // [23:34] is the sub-list for method output_type
+	12, // [12:23] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_python_strategy_proto_init() }
@@ -963,7 +1568,7 @@ func file_python_strategy_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_python_strategy_proto_rawDesc), len(file_python_strategy_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   11,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

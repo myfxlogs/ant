@@ -22,7 +22,7 @@ import type { StrategySignal } from "./strategy_signal_messages_pb";
  * Describes the file python_strategy.proto.
  */
 export const file_python_strategy: GenFile = /*@__PURE__*/
-  fileDesc("ChVweXRob25fc3RyYXRlZ3kucHJvdG8SBmFudC52MSJdChZFeGVjdXRlU3RyYXRlZ3lSZXF1ZXN0EgwKBGNvZGUYASABKAkSEgoKYWNjb3VudF9pZBgCIAEoCRIOCgZzeW1ib2wYAyABKAkSEQoJdGltZWZyYW1lGAQgASgJIm8KF0V4ZWN1dGVTdHJhdGVneVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSJgoGc2lnbmFsGAIgASgLMhYuYW50LnYxLlN0cmF0ZWd5U2lnbmFsEgwKBGxvZ3MYAyADKAkSDQoFZXJyb3IYBCABKAkiJwoXVmFsaWRhdGVTdHJhdGVneVJlcXVlc3QSDAoEY29kZRgBIAEoCSL8AQoYVmFsaWRhdGVTdHJhdGVneVJlc3BvbnNlEg0KBXZhbGlkGAEgASgIEg4KBmVycm9ycxgCIAMoCRIQCgh3YXJuaW5ncxgDIAMoCRIuCg1xdWFsaXR5X2hpbnRzGAQgAygLMhcuYW50LnYxLkNvZGVRdWFsaXR5SGludBIwChBzd2VlcF9kaW1lbnNpb25zGAUgAygLMhYuYW50LnYxLlN3ZWVwRGltZW5zaW9uEjYKE3N0cmF0ZWd5X2RpcmVjdGl2ZXMYBiADKAsyGS5hbnQudjEuU3RyYXRlZ3lEaXJlY3RpdmUSFQoNc3RyYXRlZ3lfdHlwZRgHIAEoCSJlCg9Db2RlUXVhbGl0eUhpbnQSEAoIY2F0ZWdvcnkYASABKAkSEAoIc2V2ZXJpdHkYAiABKAkSDwoHbWVzc2FnZRgDIAEoCRIMCgRsaW5lGAQgASgFEg8KB3NuaXBwZXQYBSABKAkidwoOU3dlZXBEaW1lbnNpb24SCwoDa2V5GAEgASgJEgwKBHR5cGUYAiABKAkSDwoHZGVmYXVsdBgDIAEoARILCgNtaW4YBCABKAESCwoDbWF4GAUgASgBEgwKBHN0ZXAYBiABKAESEQoJaGFzX3JhbmdlGAcgASgIIi8KEVN0cmF0ZWd5RGlyZWN0aXZlEgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCSKfAQoXQmFja3Rlc3RTdHJhdGVneVJlcXVlc3QSDAoEY29kZRgBIAEoCRISCgphY2NvdW50X2lkGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkSFwoPaW5pdGlhbF9jYXBpdGFsGAUgASgBEhcKCmRhdGFzZXRfaWQYBiABKAlIAIgBAUINCgtfZGF0YXNldF9pZCKiAQoYQmFja3Rlc3RTdHJhdGVneVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSKAoHbWV0cmljcxgCIAEoCzIXLmFudC52MS5CYWNrdGVzdE1ldHJpY3MSFAoMZXF1aXR5X2N1cnZlGAMgAygBEg0KBWVycm9yGAQgASgJEhcKCmRhdGFzZXRfaWQYBSABKAlIAIgBAUINCgtfZGF0YXNldF9pZCJHChpHZXRQeXRob25UZW1wbGF0ZXNSZXNwb25zZRIpCgl0ZW1wbGF0ZXMYASADKAsyFi5hbnQudjEuUHl0aG9uVGVtcGxhdGUiQQoOUHl0aG9uVGVtcGxhdGUSDAoEbmFtZRgBIAEoCRITCgtkZXNjcmlwdGlvbhgCIAEoCRIMCgRjb2RlGAMgASgJMtIGChVQeXRob25TdHJhdGVneVNlcnZpY2USSgoHRXhlY3V0ZRIeLmFudC52MS5FeGVjdXRlU3RyYXRlZ3lSZXF1ZXN0Gh8uYW50LnYxLkV4ZWN1dGVTdHJhdGVneVJlc3BvbnNlEk0KCFZhbGlkYXRlEh8uYW50LnYxLlZhbGlkYXRlU3RyYXRlZ3lSZXF1ZXN0GiAuYW50LnYxLlZhbGlkYXRlU3RyYXRlZ3lSZXNwb25zZRJNCghCYWNrdGVzdBIfLmFudC52MS5CYWNrdGVzdFN0cmF0ZWd5UmVxdWVzdBogLmFudC52MS5CYWNrdGVzdFN0cmF0ZWd5UmVzcG9uc2USVQoQU3RhcnRCYWNrdGVzdFJ1bhIfLmFudC52MS5TdGFydEJhY2t0ZXN0UnVuUmVxdWVzdBogLmFudC52MS5TdGFydEJhY2t0ZXN0UnVuUmVzcG9uc2USTwoOR2V0QmFja3Rlc3RSdW4SHS5hbnQudjEuR2V0QmFja3Rlc3RSdW5SZXF1ZXN0Gh4uYW50LnYxLkdldEJhY2t0ZXN0UnVuUmVzcG9uc2USVQoQTGlzdEJhY2t0ZXN0UnVucxIfLmFudC52MS5MaXN0QmFja3Rlc3RSdW5zUmVxdWVzdBogLmFudC52MS5MaXN0QmFja3Rlc3RSdW5zUmVzcG9uc2USUAoQV2F0Y2hCYWNrdGVzdFJ1bhIfLmFudC52MS5XYXRjaEJhY2t0ZXN0UnVuUmVxdWVzdBoZLmFudC52MS5CYWNrdGVzdFJ1blVwZGF0ZTABElgKEUNhbmNlbEJhY2t0ZXN0UnVuEiAuYW50LnYxLkNhbmNlbEJhY2t0ZXN0UnVuUmVxdWVzdBohLmFudC52MS5DYW5jZWxCYWNrdGVzdFJ1blJlc3BvbnNlElgKEURlbGV0ZUJhY2t0ZXN0UnVuEiAuYW50LnYxLkRlbGV0ZUJhY2t0ZXN0UnVuUmVxdWVzdBohLmFudC52MS5EZWxldGVCYWNrdGVzdFJ1blJlc3BvbnNlEkoKDEdldFRlbXBsYXRlcxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRoiLmFudC52MS5HZXRQeXRob25UZW1wbGF0ZXNSZXNwb25zZUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_empty, file_common, file_strategy_messages, file_backtest_run_start, file_backtest_run_query, file_backtest_run_control]);
+  fileDesc("ChVweXRob25fc3RyYXRlZ3kucHJvdG8SBmFudC52MSJdChZFeGVjdXRlU3RyYXRlZ3lSZXF1ZXN0EgwKBGNvZGUYASABKAkSEgoKYWNjb3VudF9pZBgCIAEoCRIOCgZzeW1ib2wYAyABKAkSEQoJdGltZWZyYW1lGAQgASgJIm8KF0V4ZWN1dGVTdHJhdGVneVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSJgoGc2lnbmFsGAIgASgLMhYuYW50LnYxLlN0cmF0ZWd5U2lnbmFsEgwKBGxvZ3MYAyADKAkSDQoFZXJyb3IYBCABKAkiJwoXVmFsaWRhdGVTdHJhdGVneVJlcXVlc3QSDAoEY29kZRgBIAEoCSL8AQoYVmFsaWRhdGVTdHJhdGVneVJlc3BvbnNlEg0KBXZhbGlkGAEgASgIEg4KBmVycm9ycxgCIAMoCRIQCgh3YXJuaW5ncxgDIAMoCRIuCg1xdWFsaXR5X2hpbnRzGAQgAygLMhcuYW50LnYxLkNvZGVRdWFsaXR5SGludBIwChBzd2VlcF9kaW1lbnNpb25zGAUgAygLMhYuYW50LnYxLlN3ZWVwRGltZW5zaW9uEjYKE3N0cmF0ZWd5X2RpcmVjdGl2ZXMYBiADKAsyGS5hbnQudjEuU3RyYXRlZ3lEaXJlY3RpdmUSFQoNc3RyYXRlZ3lfdHlwZRgHIAEoCSJlCg9Db2RlUXVhbGl0eUhpbnQSEAoIY2F0ZWdvcnkYASABKAkSEAoIc2V2ZXJpdHkYAiABKAkSDwoHbWVzc2FnZRgDIAEoCRIMCgRsaW5lGAQgASgFEg8KB3NuaXBwZXQYBSABKAkidwoOU3dlZXBEaW1lbnNpb24SCwoDa2V5GAEgASgJEgwKBHR5cGUYAiABKAkSDwoHZGVmYXVsdBgDIAEoARILCgNtaW4YBCABKAESCwoDbWF4GAUgASgBEgwKBHN0ZXAYBiABKAESEQoJaGFzX3JhbmdlGAcgASgIIi8KEVN0cmF0ZWd5RGlyZWN0aXZlEgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCSKfAQoXQmFja3Rlc3RTdHJhdGVneVJlcXVlc3QSDAoEY29kZRgBIAEoCRISCgphY2NvdW50X2lkGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkSFwoPaW5pdGlhbF9jYXBpdGFsGAUgASgBEhcKCmRhdGFzZXRfaWQYBiABKAlIAIgBAUINCgtfZGF0YXNldF9pZCKiAQoYQmFja3Rlc3RTdHJhdGVneVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSKAoHbWV0cmljcxgCIAEoCzIXLmFudC52MS5CYWNrdGVzdE1ldHJpY3MSFAoMZXF1aXR5X2N1cnZlGAMgAygBEg0KBWVycm9yGAQgASgJEhcKCmRhdGFzZXRfaWQYBSABKAlIAIgBAUINCgtfZGF0YXNldF9pZCJHChpHZXRQeXRob25UZW1wbGF0ZXNSZXNwb25zZRIpCgl0ZW1wbGF0ZXMYASADKAsyFi5hbnQudjEuUHl0aG9uVGVtcGxhdGUiQQoOUHl0aG9uVGVtcGxhdGUSDAoEbmFtZRgBIAEoCRITCgtkZXNjcmlwdGlvbhgCIAEoCRIMCgRjb2RlGAMgASgJIlkKEkV4ZWN1dGVMaXZlUmVxdWVzdBIVCg1zdHJhdGVneV9jb2RlGAEgASgJEiwKB2NvbnRleHQYAiABKAsyGy5hbnQudjEuTGl2ZVN0cmF0ZWd5Q29udGV4dCJ0ChNFeGVjdXRlTGl2ZVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgSJgoGc2lnbmFsGAIgASgLMhYuYW50LnYxLlN0cmF0ZWd5U2lnbmFsEg0KBWVycm9yGAMgASgJEhUKDXN0cmF0ZWd5X2hhc2gYBCABKAkikwMKE0xpdmVTdHJhdGVneUNvbnRleHQSDQoFY2xvc2UYASADKAESDAoEb3BlbhgCIAMoARIMCgRoaWdoGAMgAygBEgsKA2xvdxgEIAMoARIOCgZ2b2x1bWUYBSADKAESFAoMYmFyX3RpbWVzX21zGAYgAygDEg4KBmVxdWl0eRgHIAEoARIPCgdiYWxhbmNlGAggASgBEiYKCHBvc2l0aW9uGAkgASgLMhQuYW50LnYxLkxpdmVQb3NpdGlvbhInCglwb3NpdGlvbnMYCiADKAsyFC5hbnQudjEuTGl2ZVBvc2l0aW9uEg4KBnN5bWJvbBgLIAEoCRIRCgl0aW1lZnJhbWUYDCABKAkSDAoEbW9kZRgNIAEoCRIhCgZwYXJhbXMYDiADKAsyES5hbnQudjEuTGl2ZVBhcmFtEikKB3N5bWJvbHMYDyADKAsyGC5hbnQudjEuTGl2ZVN5bWJvbFNlcmllcxIWCg5wcmltYXJ5X3N5bWJvbBgQIAEoCRIVCg1jdXJyZW50X3ByaWNlGBEgASgBIooBCgxMaXZlUG9zaXRpb24SDgoGdGlja2V0GAEgASgDEgwKBHNpZGUYAiABKAkSDgoGdm9sdW1lGAMgASgBEhIKCm9wZW5fcHJpY2UYBCABKAESCgoCc2wYBSABKAESCgoCdHAYBiABKAESDAoEc3dhcBgHIAEoARISCgpjb21taXNzaW9uGAggASgBIicKCUxpdmVQYXJhbRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAkiagoQTGl2ZVN5bWJvbFNlcmllcxIOCgZzeW1ib2wYASABKAkSDQoFY2xvc2UYAiADKAESDAoEb3BlbhgDIAMoARIMCgRoaWdoGAQgAygBEgsKA2xvdxgFIAMoARIOCgZ2b2x1bWUYBiADKAEymgcKFVB5dGhvblN0cmF0ZWd5U2VydmljZRJKCgdFeGVjdXRlEh4uYW50LnYxLkV4ZWN1dGVTdHJhdGVneVJlcXVlc3QaHy5hbnQudjEuRXhlY3V0ZVN0cmF0ZWd5UmVzcG9uc2USTQoIVmFsaWRhdGUSHy5hbnQudjEuVmFsaWRhdGVTdHJhdGVneVJlcXVlc3QaIC5hbnQudjEuVmFsaWRhdGVTdHJhdGVneVJlc3BvbnNlEk0KCEJhY2t0ZXN0Eh8uYW50LnYxLkJhY2t0ZXN0U3RyYXRlZ3lSZXF1ZXN0GiAuYW50LnYxLkJhY2t0ZXN0U3RyYXRlZ3lSZXNwb25zZRJVChBTdGFydEJhY2t0ZXN0UnVuEh8uYW50LnYxLlN0YXJ0QmFja3Rlc3RSdW5SZXF1ZXN0GiAuYW50LnYxLlN0YXJ0QmFja3Rlc3RSdW5SZXNwb25zZRJPCg5HZXRCYWNrdGVzdFJ1bhIdLmFudC52MS5HZXRCYWNrdGVzdFJ1blJlcXVlc3QaHi5hbnQudjEuR2V0QmFja3Rlc3RSdW5SZXNwb25zZRJVChBMaXN0QmFja3Rlc3RSdW5zEh8uYW50LnYxLkxpc3RCYWNrdGVzdFJ1bnNSZXF1ZXN0GiAuYW50LnYxLkxpc3RCYWNrdGVzdFJ1bnNSZXNwb25zZRJQChBXYXRjaEJhY2t0ZXN0UnVuEh8uYW50LnYxLldhdGNoQmFja3Rlc3RSdW5SZXF1ZXN0GhkuYW50LnYxLkJhY2t0ZXN0UnVuVXBkYXRlMAESWAoRQ2FuY2VsQmFja3Rlc3RSdW4SIC5hbnQudjEuQ2FuY2VsQmFja3Rlc3RSdW5SZXF1ZXN0GiEuYW50LnYxLkNhbmNlbEJhY2t0ZXN0UnVuUmVzcG9uc2USWAoRRGVsZXRlQmFja3Rlc3RSdW4SIC5hbnQudjEuRGVsZXRlQmFja3Rlc3RSdW5SZXF1ZXN0GiEuYW50LnYxLkRlbGV0ZUJhY2t0ZXN0UnVuUmVzcG9uc2USSgoMR2V0VGVtcGxhdGVzEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5GiIuYW50LnYxLkdldFB5dGhvblRlbXBsYXRlc1Jlc3BvbnNlEkYKC0V4ZWN1dGVMaXZlEhouYW50LnYxLkV4ZWN1dGVMaXZlUmVxdWVzdBobLmFudC52MS5FeGVjdXRlTGl2ZVJlc3BvbnNlQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_google_protobuf_empty, file_common, file_strategy_messages, file_backtest_run_start, file_backtest_run_query, file_backtest_run_control]);
 
 /**
  * @generated from message ant.v1.ExecuteStrategyRequest
@@ -405,6 +405,310 @@ export const PythonTemplateSchema: GenMessage<PythonTemplate> = /*@__PURE__*/
   messageDesc(file_python_strategy, 10);
 
 /**
+ * ExecuteLiveRequest sends strategy code with a proto-native context message.
+ * The Go-side LiveStrategyRunner builds the context from real-time bar data
+ * and calls this RPC per bar. Python maintains a LiveWorker pool for speed.
+ *
+ * @generated from message ant.v1.ExecuteLiveRequest
+ */
+export type ExecuteLiveRequest = Message<"ant.v1.ExecuteLiveRequest"> & {
+  /**
+   * @generated from field: string strategy_code = 1;
+   */
+  strategyCode: string;
+
+  /**
+   * proto-native — no JSON
+   *
+   * @generated from field: ant.v1.LiveStrategyContext context = 2;
+   */
+  context?: LiveStrategyContext | undefined;
+};
+
+/**
+ * Describes the message ant.v1.ExecuteLiveRequest.
+ * Use `create(ExecuteLiveRequestSchema)` to create a new message.
+ */
+export const ExecuteLiveRequestSchema: GenMessage<ExecuteLiveRequest> = /*@__PURE__*/
+  messageDesc(file_python_strategy, 11);
+
+/**
+ * @generated from message ant.v1.ExecuteLiveResponse
+ */
+export type ExecuteLiveResponse = Message<"ant.v1.ExecuteLiveResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+
+  /**
+   * @generated from field: ant.v1.StrategySignal signal = 2;
+   */
+  signal?: StrategySignal | undefined;
+
+  /**
+   * @generated from field: string error = 3;
+   */
+  error: string;
+
+  /**
+   * cached worker identifier for debugging
+   *
+   * @generated from field: string strategy_hash = 4;
+   */
+  strategyHash: string;
+};
+
+/**
+ * Describes the message ant.v1.ExecuteLiveResponse.
+ * Use `create(ExecuteLiveResponseSchema)` to create a new message.
+ */
+export const ExecuteLiveResponseSchema: GenMessage<ExecuteLiveResponse> = /*@__PURE__*/
+  messageDesc(file_python_strategy, 12);
+
+/**
+ * LiveStrategyContext is the execution context passed to run(context) in live/paper mode.
+ * Proto-native binary encoding — no JSON marshalling. Python converts to numpy on receipt.
+ *
+ * @generated from message ant.v1.LiveStrategyContext
+ */
+export type LiveStrategyContext = Message<"ant.v1.LiveStrategyContext"> & {
+  /**
+   * Market data (primary symbol OHLCV — length-aligned arrays)
+   *
+   * @generated from field: repeated double close = 1;
+   */
+  close: number[];
+
+  /**
+   * @generated from field: repeated double open = 2;
+   */
+  open: number[];
+
+  /**
+   * @generated from field: repeated double high = 3;
+   */
+  high: number[];
+
+  /**
+   * @generated from field: repeated double low = 4;
+   */
+  low: number[];
+
+  /**
+   * @generated from field: repeated double volume = 5;
+   */
+  volume: number[];
+
+  /**
+   * bar close timestamps in unix ms
+   *
+   * @generated from field: repeated int64 bar_times_ms = 6;
+   */
+  barTimesMs: bigint[];
+
+  /**
+   * Account state
+   *
+   * @generated from field: double equity = 7;
+   */
+  equity: number;
+
+  /**
+   * @generated from field: double balance = 8;
+   */
+  balance: number;
+
+  /**
+   * current open position (nil = none)
+   *
+   * @generated from field: ant.v1.LivePosition position = 9;
+   */
+  position?: LivePosition | undefined;
+
+  /**
+   * all open positions
+   *
+   * @generated from field: repeated ant.v1.LivePosition positions = 10;
+   */
+  positions: LivePosition[];
+
+  /**
+   * Metadata
+   *
+   * @generated from field: string symbol = 11;
+   */
+  symbol: string;
+
+  /**
+   * @generated from field: string timeframe = 12;
+   */
+  timeframe: string;
+
+  /**
+   * "live" | "paper"
+   *
+   * @generated from field: string mode = 13;
+   */
+  mode: string;
+
+  /**
+   * @generated from field: repeated ant.v1.LiveParam params = 14;
+   */
+  params: LiveParam[];
+
+  /**
+   * Multi-symbol views (Phase B2 — optional)
+   *
+   * @generated from field: repeated ant.v1.LiveSymbolSeries symbols = 15;
+   */
+  symbols: LiveSymbolSeries[];
+
+  /**
+   * @generated from field: string primary_symbol = 16;
+   */
+  primarySymbol: string;
+
+  /**
+   * @generated from field: double current_price = 17;
+   */
+  currentPrice: number;
+};
+
+/**
+ * Describes the message ant.v1.LiveStrategyContext.
+ * Use `create(LiveStrategyContextSchema)` to create a new message.
+ */
+export const LiveStrategyContextSchema: GenMessage<LiveStrategyContext> = /*@__PURE__*/
+  messageDesc(file_python_strategy, 13);
+
+/**
+ * LivePosition mirrors the engine Position for live context.
+ *
+ * @generated from message ant.v1.LivePosition
+ */
+export type LivePosition = Message<"ant.v1.LivePosition"> & {
+  /**
+   * @generated from field: int64 ticket = 1;
+   */
+  ticket: bigint;
+
+  /**
+   * "buy" | "sell"
+   *
+   * @generated from field: string side = 2;
+   */
+  side: string;
+
+  /**
+   * @generated from field: double volume = 3;
+   */
+  volume: number;
+
+  /**
+   * @generated from field: double open_price = 4;
+   */
+  openPrice: number;
+
+  /**
+   * @generated from field: double sl = 5;
+   */
+  sl: number;
+
+  /**
+   * @generated from field: double tp = 6;
+   */
+  tp: number;
+
+  /**
+   * @generated from field: double swap = 7;
+   */
+  swap: number;
+
+  /**
+   * @generated from field: double commission = 8;
+   */
+  commission: number;
+};
+
+/**
+ * Describes the message ant.v1.LivePosition.
+ * Use `create(LivePositionSchema)` to create a new message.
+ */
+export const LivePositionSchema: GenMessage<LivePosition> = /*@__PURE__*/
+  messageDesc(file_python_strategy, 14);
+
+/**
+ * LiveParam is a key-value strategy parameter.
+ *
+ * @generated from message ant.v1.LiveParam
+ */
+export type LiveParam = Message<"ant.v1.LiveParam"> & {
+  /**
+   * @generated from field: string key = 1;
+   */
+  key: string;
+
+  /**
+   * stringly-typed; strategy calls params.get(key) → converts as needed
+   *
+   * @generated from field: string value = 2;
+   */
+  value: string;
+};
+
+/**
+ * Describes the message ant.v1.LiveParam.
+ * Use `create(LiveParamSchema)` to create a new message.
+ */
+export const LiveParamSchema: GenMessage<LiveParam> = /*@__PURE__*/
+  messageDesc(file_python_strategy, 15);
+
+/**
+ * LiveSymbolSeries holds OHLCV for one symbol in multi-symbol mode.
+ *
+ * @generated from message ant.v1.LiveSymbolSeries
+ */
+export type LiveSymbolSeries = Message<"ant.v1.LiveSymbolSeries"> & {
+  /**
+   * @generated from field: string symbol = 1;
+   */
+  symbol: string;
+
+  /**
+   * @generated from field: repeated double close = 2;
+   */
+  close: number[];
+
+  /**
+   * @generated from field: repeated double open = 3;
+   */
+  open: number[];
+
+  /**
+   * @generated from field: repeated double high = 4;
+   */
+  high: number[];
+
+  /**
+   * @generated from field: repeated double low = 5;
+   */
+  low: number[];
+
+  /**
+   * @generated from field: repeated double volume = 6;
+   */
+  volume: number[];
+};
+
+/**
+ * Describes the message ant.v1.LiveSymbolSeries.
+ * Use `create(LiveSymbolSeriesSchema)` to create a new message.
+ */
+export const LiveSymbolSeriesSchema: GenMessage<LiveSymbolSeries> = /*@__PURE__*/
+  messageDesc(file_python_strategy, 16);
+
+/**
  * @generated from service ant.v1.PythonStrategyService
  */
 export const PythonStrategyService: GenService<{
@@ -487,6 +791,18 @@ export const PythonStrategyService: GenService<{
     methodKind: "unary";
     input: typeof EmptySchema;
     output: typeof GetPythonTemplatesResponseSchema;
+  },
+  /**
+   * ExecuteLive: proto-native live/paper strategy execution.
+   * Go LiveStrategyRunner sends proto-native LiveStrategyContext (no JSON).
+   * Python maintains a LiveWorker pool — pre-compiled, per-bar calls < 100ms.
+   *
+   * @generated from rpc ant.v1.PythonStrategyService.ExecuteLive
+   */
+  executeLive: {
+    methodKind: "unary";
+    input: typeof ExecuteLiveRequestSchema;
+    output: typeof ExecuteLiveResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_python_strategy, 0);

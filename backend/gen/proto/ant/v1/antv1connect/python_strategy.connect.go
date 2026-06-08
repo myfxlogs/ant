@@ -64,6 +64,9 @@ const (
 	// PythonStrategyServiceGetTemplatesProcedure is the fully-qualified name of the
 	// PythonStrategyService's GetTemplates RPC.
 	PythonStrategyServiceGetTemplatesProcedure = "/ant.v1.PythonStrategyService/GetTemplates"
+	// PythonStrategyServiceExecuteLiveProcedure is the fully-qualified name of the
+	// PythonStrategyService's ExecuteLive RPC.
+	PythonStrategyServiceExecuteLiveProcedure = "/ant.v1.PythonStrategyService/ExecuteLive"
 )
 
 // PythonStrategyServiceClient is a client for the ant.v1.PythonStrategyService service.
@@ -78,6 +81,10 @@ type PythonStrategyServiceClient interface {
 	CancelBacktestRun(context.Context, *connect.Request[v1.CancelBacktestRunRequest]) (*connect.Response[v1.CancelBacktestRunResponse], error)
 	DeleteBacktestRun(context.Context, *connect.Request[v1.DeleteBacktestRunRequest]) (*connect.Response[v1.DeleteBacktestRunResponse], error)
 	GetTemplates(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.GetPythonTemplatesResponse], error)
+	// ExecuteLive: proto-native live/paper strategy execution.
+	// Go LiveStrategyRunner sends proto-native LiveStrategyContext (no JSON).
+	// Python maintains a LiveWorker pool — pre-compiled, per-bar calls < 100ms.
+	ExecuteLive(context.Context, *connect.Request[v1.ExecuteLiveRequest]) (*connect.Response[v1.ExecuteLiveResponse], error)
 }
 
 // NewPythonStrategyServiceClient constructs a client for the ant.v1.PythonStrategyService service.
@@ -151,6 +158,12 @@ func NewPythonStrategyServiceClient(httpClient connect.HTTPClient, baseURL strin
 			connect.WithSchema(pythonStrategyServiceMethods.ByName("GetTemplates")),
 			connect.WithClientOptions(opts...),
 		),
+		executeLive: connect.NewClient[v1.ExecuteLiveRequest, v1.ExecuteLiveResponse](
+			httpClient,
+			baseURL+PythonStrategyServiceExecuteLiveProcedure,
+			connect.WithSchema(pythonStrategyServiceMethods.ByName("ExecuteLive")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -166,6 +179,7 @@ type pythonStrategyServiceClient struct {
 	cancelBacktestRun *connect.Client[v1.CancelBacktestRunRequest, v1.CancelBacktestRunResponse]
 	deleteBacktestRun *connect.Client[v1.DeleteBacktestRunRequest, v1.DeleteBacktestRunResponse]
 	getTemplates      *connect.Client[emptypb.Empty, v1.GetPythonTemplatesResponse]
+	executeLive       *connect.Client[v1.ExecuteLiveRequest, v1.ExecuteLiveResponse]
 }
 
 // Execute calls ant.v1.PythonStrategyService.Execute.
@@ -218,6 +232,11 @@ func (c *pythonStrategyServiceClient) GetTemplates(ctx context.Context, req *con
 	return c.getTemplates.CallUnary(ctx, req)
 }
 
+// ExecuteLive calls ant.v1.PythonStrategyService.ExecuteLive.
+func (c *pythonStrategyServiceClient) ExecuteLive(ctx context.Context, req *connect.Request[v1.ExecuteLiveRequest]) (*connect.Response[v1.ExecuteLiveResponse], error) {
+	return c.executeLive.CallUnary(ctx, req)
+}
+
 // PythonStrategyServiceHandler is an implementation of the ant.v1.PythonStrategyService service.
 type PythonStrategyServiceHandler interface {
 	Execute(context.Context, *connect.Request[v1.ExecuteStrategyRequest]) (*connect.Response[v1.ExecuteStrategyResponse], error)
@@ -230,6 +249,10 @@ type PythonStrategyServiceHandler interface {
 	CancelBacktestRun(context.Context, *connect.Request[v1.CancelBacktestRunRequest]) (*connect.Response[v1.CancelBacktestRunResponse], error)
 	DeleteBacktestRun(context.Context, *connect.Request[v1.DeleteBacktestRunRequest]) (*connect.Response[v1.DeleteBacktestRunResponse], error)
 	GetTemplates(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.GetPythonTemplatesResponse], error)
+	// ExecuteLive: proto-native live/paper strategy execution.
+	// Go LiveStrategyRunner sends proto-native LiveStrategyContext (no JSON).
+	// Python maintains a LiveWorker pool — pre-compiled, per-bar calls < 100ms.
+	ExecuteLive(context.Context, *connect.Request[v1.ExecuteLiveRequest]) (*connect.Response[v1.ExecuteLiveResponse], error)
 }
 
 // NewPythonStrategyServiceHandler builds an HTTP handler from the service implementation. It
@@ -299,6 +322,12 @@ func NewPythonStrategyServiceHandler(svc PythonStrategyServiceHandler, opts ...c
 		connect.WithSchema(pythonStrategyServiceMethods.ByName("GetTemplates")),
 		connect.WithHandlerOptions(opts...),
 	)
+	pythonStrategyServiceExecuteLiveHandler := connect.NewUnaryHandler(
+		PythonStrategyServiceExecuteLiveProcedure,
+		svc.ExecuteLive,
+		connect.WithSchema(pythonStrategyServiceMethods.ByName("ExecuteLive")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.PythonStrategyService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case PythonStrategyServiceExecuteProcedure:
@@ -321,6 +350,8 @@ func NewPythonStrategyServiceHandler(svc PythonStrategyServiceHandler, opts ...c
 			pythonStrategyServiceDeleteBacktestRunHandler.ServeHTTP(w, r)
 		case PythonStrategyServiceGetTemplatesProcedure:
 			pythonStrategyServiceGetTemplatesHandler.ServeHTTP(w, r)
+		case PythonStrategyServiceExecuteLiveProcedure:
+			pythonStrategyServiceExecuteLiveHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -368,4 +399,8 @@ func (UnimplementedPythonStrategyServiceHandler) DeleteBacktestRun(context.Conte
 
 func (UnimplementedPythonStrategyServiceHandler) GetTemplates(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.GetPythonTemplatesResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.PythonStrategyService.GetTemplates is not implemented"))
+}
+
+func (UnimplementedPythonStrategyServiceHandler) ExecuteLive(context.Context, *connect.Request[v1.ExecuteLiveRequest]) (*connect.Response[v1.ExecuteLiveResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.PythonStrategyService.ExecuteLive is not implemented"))
 }

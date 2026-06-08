@@ -13,6 +13,7 @@ import (
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
+	"anttrader/internal/mthub"
 	"anttrader/internal/notification"
 	"anttrader/internal/repository"
 	"anttrader/internal/pglisten"
@@ -26,6 +27,7 @@ type PythonStrategyServer struct {
 	backtestClient      antv1c.BacktestServiceClient
 	marketDataRepo      *repository.MarketDataRepository
 	barSource           BarSource // unified bar data source (backtest or live)
+	mtHub               *mthub.MtHubService // for live order submission
 	pgListen            *pglisten.Listener
 	notifSender         *notification.Sender
 	onBacktestComplete  func(ctx context.Context, run *repository.BacktestRun) // auto-gate hook
@@ -35,7 +37,8 @@ func (s *PythonStrategyServer) SetMarketDataRepo(r *repository.MarketDataReposit
 	s.marketDataRepo = r
 }
 
-func (s *PythonStrategyServer) SetBarSource(bs BarSource) { s.barSource = bs }
+func (s *PythonStrategyServer) SetBarSource(bs BarSource)           { s.barSource = bs }
+func (s *PythonStrategyServer) SetMtHub(h *mthub.MtHubService)      { s.mtHub = h }
 
 var _ antv1c.PythonStrategyServiceHandler = (*PythonStrategyServer)(nil)
 
@@ -155,6 +158,23 @@ func mapMetrics(met *antv1.ExecuteBacktestMetrics) *antv1.BacktestMetrics {
 
 func (s *PythonStrategyServer) GetTemplates(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[antv1.GetPythonTemplatesResponse], error) {
 	return connect.NewResponse(&antv1.GetPythonTemplatesResponse{Templates: builtinTemplates()}), nil
+}
+
+// ExecuteLive runs strategy code against a proto-native LiveStrategyContext (live/paper mode).
+// Delegates to the Python strategy service which maintains a LiveWorker pool for sub-100ms per-bar calls.
+func (s *PythonStrategyServer) ExecuteLive(ctx context.Context, req *connect.Request[antv1.ExecuteLiveRequest]) (*connect.Response[antv1.ExecuteLiveResponse], error) {
+	if _, err := userIDRequire(ctx); err != nil {
+		return nil, err
+	}
+	if s.connectClient != nil {
+		resp, err := s.connectClient.ExecuteLive(ctx, connect.NewRequest(req.Msg))
+		if err != nil {
+			s.log.Warn("python ExecuteLive failed", zap.Error(err))
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		return connect.NewResponse(resp.Msg), nil
+	}
+	return connect.NewResponse(&antv1.ExecuteLiveResponse{Success: false, Error: "Python service not configured"}), nil
 }
 
 func (s *PythonStrategyServer) SetPgListen(l *pglisten.Listener) { s.pgListen = l }
