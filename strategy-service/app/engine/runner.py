@@ -132,11 +132,14 @@ class BacktestRunner:
         if sandbox is None and detect_strategy_type(req.strategy_code) == "run_dataframe":
             import pandas as pd
             df_runner = DataFrameStrategyRunner(req.strategy_code, timeout_ms=req.deadline_ms)
-            ohlc_df = pd.DataFrame([
-                {"open": b.open, "high": b.high, "low": b.low, "close": b.close,
-                 "volume": b.tick_volume, "time": b.time}
-                for b in self._primary_bars
-            ])
+            ohlc_df = pd.DataFrame({
+                "open":   [b.open for b in self._primary_bars],
+                "high":   [b.high for b in self._primary_bars],
+                "low":    [b.low for b in self._primary_bars],
+                "close":  [b.close for b in self._primary_bars],
+                "volume": [b.tick_volume for b in self._primary_bars],
+                "time":   [b.time for b in self._primary_bars],
+            })
             self._signal_df = df_runner.call_dataframe(ohlc_df, req.strategy_params or {})
             self._sandbox = None  # vectorized — no per-bar sandbox calls needed
 
@@ -284,7 +287,14 @@ class BacktestRunner:
             self._fill.cancel_all()
             return
         if action == "close":
-            for trade in self._portfolio.force_liquidate_all(tick, CloseReason.SIGNAL):
+            close_side = str(signal.get("side") or "").lower()
+            if close_side == "long":
+                trades = self._portfolio.force_liquidate_side(tick, Side.BUY, CloseReason.SIGNAL)
+            elif close_side == "short":
+                trades = self._portfolio.force_liquidate_side(tick, Side.SELL, CloseReason.SIGNAL)
+            else:
+                trades = self._portfolio.force_liquidate_all(tick, CloseReason.SIGNAL)
+            for trade in trades:
                 self._events.append(self._close_event(trade))
             return
 

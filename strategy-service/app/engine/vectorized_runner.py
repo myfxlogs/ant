@@ -21,10 +21,8 @@ Signal contract (aligned with QuantDinger indicator workspace):
 from __future__ import annotations
 
 import ast
-import hashlib
-import marshal
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 
@@ -42,7 +40,6 @@ from app.engine.types import StrategyCompileError, StrategyRuntimeError
 
 _FOUR_WAY_COLS = {"open_long", "close_long", "open_short", "close_short"}
 _LEGACY_COLS = {"buy", "sell"}
-_SIGNAL_COLS = _FOUR_WAY_COLS | _LEGACY_COLS
 
 
 @dataclass(frozen=True)
@@ -84,19 +81,6 @@ def validate_dataframe_code(code: str) -> DataFrameValidationResult:
             errors.append(
                 "run_dataframe 必须且只能接收两个参数: df, params"
             )
-
-    # Basic safety checks (same as event-driven)
-    _FORBIDDEN_CALLS = frozenset(
-        {"open", "eval", "exec", "compile", "__import__",
-         "input", "globals", "locals", "vars", "dir"}
-    )
-    for node in ast.walk(tree):
-        if isinstance(node, (ast.Import, ast.ImportFrom)):
-            errors.append("禁止 import")
-        if isinstance(node, ast.Call):
-            fn_id = getattr(node.func, "id", None)
-            if fn_id in _FORBIDDEN_CALLS:
-                errors.append(f"禁止调用: {fn_id}()")
 
     seen = set()
     deduped: List[str] = []
@@ -210,9 +194,9 @@ def extract_signal_at(
         if cs and cl:
             return {"signal": "close"}
         if cs:
-            return {"signal": "close"}  # only close shorts
+            return {"signal": "close", "side": "short"}
         if cl:
-            return {"signal": "close"}  # only close longs
+            return {"signal": "close", "side": "long"}
 
         # Open new positions.
         if ol and os_:

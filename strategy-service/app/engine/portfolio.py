@@ -195,3 +195,12 @@ class Portfolio:
             mark = tick.bid if pos.side is Side.BUY else tick.ask
             closed.append(self.close_position(pos.ticket, mark, tick.ts, reason))
         return closed
+
+    def force_liquidate_side(self, tick: Tick, side: Side, reason: CloseReason) -> List[Trade]:
+        """Close open positions of a single side only."""
+        closed: List[Trade] = []
+        for pos in list(self._positions):
+            if pos.side is side:
+                mark = tick.bid if pos.side is Side.BUY else tick.ask
+                closed.append(self.close_position(pos.ticket, mark, tick.ts, reason))
+        return closed

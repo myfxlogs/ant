@@ -133,7 +133,7 @@ def validate_strategy_code(code: str) -> StrategyValidationResult:
             errors.append("run(context) 必须且只能接收一个参数: context")
 
     if not errors and "signal" not in code and "def run" not in code:
-        errors.append("必须定义 signal 变量或 run(context) 函数")
+        errors.append("必须定义 signal 变量、run(context) 或 run_dataframe(df, params) 函数")
 
     # Deduplicate while preserving order so the frontend message stays stable.
     seen = set()
