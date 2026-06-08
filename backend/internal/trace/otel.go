@@ -1,11 +1,17 @@
-// Package trace provides OpenTelemetry initialization for the ant data pipeline.
+// Package trace provides OpenTelemetry initialization for the ant platform.
 // ADR-0010 §2.3: spans cover normalize → quality → dedup → aggregate → publish → chwrite.
 // Enabled via OTEL_EXPORTER_OTLP_ENDPOINT env var; disabled by default.
+//
+// Architecture:
+//   - InitGlobalProvider() is called once in main.go — sets the global TracerProvider.
+//   - New() creates a tracer from the global provider (used by mdgateway pipeline).
+//   - connectrpc.com/otelconnect interceptor uses the global provider for RPC spans.
+//   - All share one TracerProvider → unified trace context across HTTP + pipeline.
+
 package trace
 
 import (
 	"context"
-	"os"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -25,35 +31,51 @@ type Span struct {
 	inner trace.Span
 }
 
-// New creates a tracer. If OTEL_EXPORTER_OTLP_ENDPOINT is set, OTel SDK
-// is initialized with OTLP gRPC exporter; otherwise traces are no-ops.
-func New() *Tracer {
-	ep := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
-	if ep == "" {
-		return &Tracer{enabled: false}
+// InitGlobalProvider initializes the OTel SDK global TracerProvider and
+// TextMapPropagator. Returns a shutdown function that flushes pending spans.
+//
+// Call once in main.go before any tracing occurs. When endpoint is empty,
+// tracing is disabled and the returned shutdown is a no-op.
+//
+// Both the connectrpc.com/otelconnect interceptor (ConnectRPC spans) and
+// the mdgateway pipeline (data-quality spans) share this single provider.
+func InitGlobalProvider(endpoint string) (func(context.Context) error, error) {
+	if endpoint == "" {
+		otel.SetTracerProvider(trace.NewNoopTracerProvider())
+		return func(context.Context) error { return nil }, nil
 	}
 
 	exporter, err := otlptracegrpc.New(context.Background(),
-		otlptracegrpc.WithEndpoint(ep),
+		otlptracegrpc.WithEndpoint(endpoint),
 		otlptracegrpc.WithInsecure(),
 	)
 	if err != nil {
-		return &Tracer{enabled: false}
+		return nil, err
 	}
 
 	provider := sdktrace.NewTracerProvider(
 		sdktrace.WithBatcher(exporter),
-		sdktrace.WithSampler(sdktrace.TraceIDRatioBased(0.01)), // 1% sampling for real-time path
+		sdktrace.WithSampler(sdktrace.TraceIDRatioBased(0.01)),
 	)
 	otel.SetTracerProvider(provider)
 	otel.SetTextMapPropagator(propagation.TraceContext{})
 
+	return provider.Shutdown, nil
+}
+
+// New creates a tracer from the global TracerProvider.
+// Used by the mdgateway pipeline; ConnectRPC uses the global provider directly
+// via the otelconnect interceptor.
+func New() *Tracer {
+	provider, ok := otel.GetTracerProvider().(*sdktrace.TracerProvider)
+	if !ok || provider == nil {
+		return &Tracer{enabled: false}
+	}
 	return &Tracer{provider: provider, enabled: true}
 }
 
 // NewWithProvider creates a tracer backed by a user-supplied TracerProvider.
-// Use this for testing with tracetest.InMemoryExporter or custom sampling.
-// L-2: enables e2e verification of pipeline spans without an external collector.
+// Use for testing with tracetest.InMemoryExporter or custom sampling.
 func NewWithProvider(provider *sdktrace.TracerProvider) *Tracer {
 	if provider == nil {
 		return &Tracer{enabled: false}
@@ -63,7 +85,7 @@ func NewWithProvider(provider *sdktrace.TracerProvider) *Tracer {
 	return &Tracer{provider: provider, enabled: true}
 }
 
-// ForceFlush flushes all pending spans to the exporter. For testing.
+// ForceFlush flushes all pending spans. For testing.
 func (t *Tracer) ForceFlush(ctx context.Context) error {
 	if t.provider != nil {
 		return t.provider.ForceFlush(ctx)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"os/signal"
 	"strings"
 	"syscall"
@@ -15,9 +16,11 @@ import (
 	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
 
+	"connectrpc.com/otelconnect"
 	"anttrader/internal/config"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/mdgateway/adapter"
+	anttrace "anttrader/internal/trace"
 	"anttrader/internal/mdgateway/chmigrate"
 	"anttrader/internal/mthub"
 	notifpubsub "anttrader/internal/notification"
@@ -51,6 +54,29 @@ func main() {
 	cfg := config.Load()
 	if err := cfg.Validate(); err != nil {
 		log.Fatal("invalid config", zap.Error(err))
+	}
+
+	// ── OpenTelemetry: unified tracer provider for all ConnectRPC + pipeline spans ──
+	// Configured via standard OTel env vars: OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_SERVICE_NAME.
+	traceShutdown, err := anttrace.InitGlobalProvider(os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"))
+	if err != nil {
+		log.Warn("OpenTelemetry init failed, tracing disabled", zap.Error(err))
+	}
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := traceShutdown(ctx); err != nil {
+			log.Warn("OpenTelemetry shutdown failed", zap.Error(err))
+		}
+	}()
+
+	// ConnectRPC OpenTelemetry interceptor — creates spans for every RPC call.
+	// Uses the global TracerProvider set by InitGlobalProvider above.
+	otelInterceptor, err := otelconnect.NewInterceptor(
+		otelconnect.WithTrustRemote(),
+	)
+	if err != nil {
+		log.Warn("otelconnect interceptor creation failed", zap.Error(err))
 	}
 
 	// Connect to PostgreSQL
@@ -189,7 +215,7 @@ func main() {
 	go startMdGatewayPipeline(pipelineCtx, log, pool, ch, nc, spillDir, secClient, hub, accountSvc, mthubSvc, accountSyncSvc, tradeRecordRepo, snapshotBroker, accountBroker, barBroker, eventStore, &emailNotifier, &platformAgg, &reconLoop, brokerReg)
 
 	mux := http.NewServeMux()
-	reconLoop, emailNotifier, platformAgg, notifSender, workerCleanup = registerHandlers(mux, log, pool, ch, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate, analyticsCache, brokerReg)
+	reconLoop, emailNotifier, platformAgg, notifSender, workerCleanup = registerHandlers(mux, log, pool, ch, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, otelInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate, analyticsCache, brokerReg)
 	accountSyncSvc.SetNotificationSender(notifSender)
 
 

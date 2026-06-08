@@ -43,6 +43,7 @@ func registerSREHandlers(
 	rdb *antredis.Client,
 	cfg *config.Config,
 	authInterceptor *interceptor.AuthInterceptor,
+	otelInterceptor connectrpc.Interceptor,
 	platformSvc *service.PlatformService,
 	mthubSvc *mthub.MtHubService,
 	authServer *user.AuthServer,
@@ -67,20 +68,20 @@ func registerSREHandlers(
 	}, log)
 	sreHandler := admin.NewSREHandler(sreKillSwitch, sreBreakers, sreCanary, platformSvc, emailNotifier, log)
 	// ConnectRPC handler (proto binary) -- replaces REST endpoints below
-	mux.Handle(antv1c.NewAdminSREServiceHandler(sreHandler, connectrpc.WithInterceptors(authInterceptor)))
+	mux.Handle(antv1c.NewAdminSREServiceHandler(sreHandler, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
 	analyticsRepo := repository.NewAnalyticsRepository(pool)
 	analyticsServer := system.NewAnalyticsServer(analyticsRepo, platformSvc, analyticsCache, log)
-	mux.Handle(antv1c.NewAnalyticsServiceHandler(analyticsServer, connectrpc.WithInterceptors(authInterceptor)))
+	mux.Handle(antv1c.NewAnalyticsServiceHandler(analyticsServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
 	marketDataRepo := repository.NewMarketDataRepository(ch, log)
 	marketRegimeRepo := repository.NewMarketRegimeRepository(pool)
 	marketRegimeServer := mktplace.NewMarketRegimeServer(marketRegimeRepo, marketDataRepo, log)
-	mux.Handle(antv1c.NewMarketRegimeServiceHandler(marketRegimeServer, connectrpc.WithInterceptors(authInterceptor)))
+	mux.Handle(antv1c.NewMarketRegimeServiceHandler(marketRegimeServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
 	strategyExperimentServer := strategy.NewStrategyExperimentServer(strategyExperimentRepo, log)
 	strategyExperimentServer.SetPgListen(pglisten.New(pool, log))
-	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, connectrpc.WithInterceptors(authInterceptor)))
+	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 	backtestRunRepo := repository.NewBacktestRunRepository(pool)
 	experimentWorker := strategy.NewExperimentWorker(strategyExperimentRepo, backtestRunRepo, marketDataRepo, log)
 	if aiSvc != nil {
@@ -94,11 +95,11 @@ func registerSREHandlers(
 	reflectionWorker := ai.NewReflectionWorker(calSvc, ch, log)
 	reflectionWorker.Start(context.Background())
 	strategyAssetServer := strategy.NewStrategyAssetServer(strategyAssetRepo, log)
-	mux.Handle(antv1c.NewStrategyAssetServiceHandler(strategyAssetServer, connectrpc.WithInterceptors(authInterceptor)))
+	mux.Handle(antv1c.NewStrategyAssetServiceHandler(strategyAssetServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 	scheduleHealthServer := system.NewScheduleHealthServer(schedHealthRepo, log)
-	mux.Handle(antv1c.NewScheduleHealthServiceHandler(scheduleHealthServer, connectrpc.WithInterceptors(authInterceptor)))
+	mux.Handle(antv1c.NewScheduleHealthServiceHandler(scheduleHealthServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 	indicatorCatalogServer := mktplace.NewIndicatorCatalogServer(log)
-	mux.Handle(antv1c.NewIndicatorCatalogServiceHandler(indicatorCatalogServer, connectrpc.WithInterceptors(authInterceptor)))
+	mux.Handle(antv1c.NewIndicatorCatalogServiceHandler(indicatorCatalogServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
 	// Catch-all: return 404 for unknown routes.
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -169,6 +170,13 @@ func registerSREHandlers(
 			return
 		}
 		w.Write([]byte("ant ok"))
+	})
+
+	// /readyz — lightweight readiness probe (K8s standard). Does NOT check DB dependencies;
+	// unlike /healthz, returning 503 here tells K8s to stop routing traffic without killing the pod.
+	mux.HandleFunc("/readyz", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		w.Write([]byte("ready"))
 	})
 
 	workerCleanup := func() {
