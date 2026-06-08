@@ -107,7 +107,7 @@ func (s *GateEvalServer) fetchRun(ctx context.Context, userID uuid.UUID, rawID s
 
 // buildGateInput converts a backtest run into pipeline input.
 func buildGateInput(run *repository.BacktestRun, req *antv1.RunGateEvaluationRequest) (aigates.PipelineInput, error) {
-	dailyReturns := equityCurveToDailyReturns(run.ProtoResponse)
+	dailyReturns := EquityCurveToDailyReturns(run.ProtoResponse)
 	if len(dailyReturns) < 10 {
 		return aigates.PipelineInput{},
 			fmt.Errorf("insufficient data: need 10+ daily returns, got %d", len(dailyReturns))
@@ -168,8 +168,9 @@ func toProtoSummary(r aigates.PipelineResult) *antv1.GatePipelineSummary {
 	}
 }
 
-// equityCurveToDailyReturns extracts equity curve from proto binary ExecuteBacktestResponse.
-func equityCurveToDailyReturns(protoResp []byte) []float64 {
+// EquityCurveToDailyReturns extracts equity curve from proto binary ExecuteBacktestResponse
+// and converts it to daily return series (equity[i] - equity[i-1]).
+func EquityCurveToDailyReturns(protoResp []byte) []float64 {
 	if len(protoResp) == 0 {
 		return nil
 	}

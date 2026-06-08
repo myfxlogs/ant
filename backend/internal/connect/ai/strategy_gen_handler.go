@@ -161,7 +161,7 @@ func (s *StrategyGenServer) streamLLMCode(ctx context.Context, userID uuid.UUID,
 			return nil
 		})
 	if err != nil { return "", err }
-	return s.extractCode(codeBuf.String()), nil
+	return ExtractCode(codeBuf.String()), nil
 }
 
 func (s *StrategyGenServer) runComplianceCheck(code string) []string {
@@ -250,7 +250,7 @@ func (s *StrategyGenServer) handleFeedback(
 	// 5. Final parse: extract code from sections
 	raw := fullBuf.String()
 	fullSections := parseSections(raw)
-	code := s.extractCode(fullSections.Code)
+	code := ExtractCode(fullSections.Code)
 
 	// 6. Compliance check
 	if issues := s.runComplianceCheck(code); len(issues) > 0 {

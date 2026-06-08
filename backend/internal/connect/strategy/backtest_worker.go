@@ -244,6 +244,11 @@ func (s *PythonStrategyServer) saveBacktestResult(ctx context.Context, run *repo
 			fmt.Sprintf("Strategy on %s %s: return %.2f%%, Sharpe %.2f", run.Symbol, run.Timeframe, totalReturn, sharpe),
 			string(data))
 	}
+
+	// Trigger auto-gate evaluation after backtest completes.
+	if s.onBacktestComplete != nil {
+		go s.onBacktestComplete(context.Background(), run)
+	}
 }
 
 func (s *PythonStrategyServer) failRun(ctx context.Context, run *repository.BacktestRun, errMsg string) {

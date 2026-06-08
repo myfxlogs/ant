@@ -20,13 +20,14 @@ import (
 
 // PythonStrategyServer implements ant.v1.PythonStrategyServiceHandler.
 type PythonStrategyServer struct {
-	backtestRepo   *repository.BacktestRunRepository
-	log            *zap.Logger
-	connectClient  antv1c.PythonStrategyServiceClient // ConnectRPC to Python service
-	backtestClient antv1c.BacktestServiceClient
-	marketDataRepo *repository.MarketDataRepository
-	pgListen       *pglisten.Listener
-	notifSender    *notification.Sender
+	backtestRepo        *repository.BacktestRunRepository
+	log                 *zap.Logger
+	connectClient       antv1c.PythonStrategyServiceClient // ConnectRPC to Python service
+	backtestClient      antv1c.BacktestServiceClient
+	marketDataRepo      *repository.MarketDataRepository
+	pgListen            *pglisten.Listener
+	notifSender         *notification.Sender
+	onBacktestComplete  func(ctx context.Context, run *repository.BacktestRun) // auto-gate hook
 }
 
 func (s *PythonStrategyServer) SetMarketDataRepo(r *repository.MarketDataRepository) {
@@ -42,6 +43,7 @@ func NewPythonStrategyServer(backtestRepo *repository.BacktestRunRepository, log
 func (s *PythonStrategyServer) SetConnectClient(c antv1c.PythonStrategyServiceClient) { s.connectClient = c }
 func (s *PythonStrategyServer) SetBacktestClient(c antv1c.BacktestServiceClient)     { s.backtestClient = c }
 func (s *PythonStrategyServer) SetNotificationSender(ns *notification.Sender)         { s.notifSender = ns }
+func (s *PythonStrategyServer) SetOnBacktestComplete(fn func(context.Context, *repository.BacktestRun)) { s.onBacktestComplete = fn }
 
 // userIDRequire extracts and validates the authenticated user ID from context.
 func userIDRequire(ctx context.Context) (uuid.UUID, error) {

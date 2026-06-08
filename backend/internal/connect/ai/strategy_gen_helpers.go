@@ -49,8 +49,9 @@ func (s *StrategyGenServer) loadHistory(ctx context.Context, userID uuid.UUID, c
 	return sb.String()
 }
 
-// extractCode extracts Python code from the LLM response.
-func (s *StrategyGenServer) extractCode(raw string) string {
+// ExtractCode extracts Python code from an LLM response string.
+// Handles markdown code fences, truncated output, and heuristic line-based extraction.
+func ExtractCode(raw string) string {
 	// Try to extract from markdown code block
 	start := strings.Index(raw, "```python")
 	if start < 0 {

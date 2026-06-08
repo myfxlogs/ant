@@ -32,11 +32,13 @@ type PromptParams struct {
 
 // FeedbackPromptParams holds inputs for building the feedback iteration prompt (Phase 3).
 type FeedbackPromptParams struct {
-	PreviousCode    string           // previous strategy code
-	Metrics         *FeedbackMetrics // last backtest metrics
-	FeedbackMessage string           // user's feedback text
-	FeedbackHints   string           // hints from feedback_router
-	StrategyType    string           // detected from previous code: "run_dataframe" or "run_context"
+	PreviousCode       string           // previous strategy code
+	Metrics            *FeedbackMetrics // last backtest metrics
+	FeedbackMessage    string           // user's feedback text
+	FeedbackHints      string           // hints from feedback_router
+	StrategyType       string           // detected from previous code: "run_dataframe" or "run_context"
+	GateFailureReason  string           // e.g. "lookahead", "deflated_sharpe" — empty if N/A
+	GateFailureDetails string           // human-readable reason from gate pipeline
 }
 
 // contractText returns the appropriate Python strategy contract based on strategy type.
@@ -304,6 +306,19 @@ func (b *StrategyPromptBuilder) BuildFeedbackPrompt(p *FeedbackPromptParams) (st
 		metricsCtx,
 		hints,
 	)
+
+	// Inject gate evaluation failure context when available.
+	if p.GateFailureReason != "" {
+		details := p.GateFailureDetails
+		if details == "" {
+			details = "no additional details"
+		}
+		system += fmt.Sprintf("\n\n## Gate 评估失败信息\n"+
+			"上一次策略在 Gate '%s' 失败: %s\n"+
+			"请在修复代码时针对此问题进行改进，确保策略能通过此次 Gate 检查。",
+			p.GateFailureReason, details)
+	}
+
 	user := fmt.Sprintf("【用户反馈】%s\n\n请分析回测结果，给出建议，并生成优化后的代码。", p.FeedbackMessage)
 	return system, user
 }

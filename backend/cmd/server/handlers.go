@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
@@ -187,6 +189,48 @@ func registerHandlers(
 	notifSender := notifpubsub.NewSender(notifRepo, notifSub, log)
 	pythonStrategyServer.SetNotificationSender(notifSender)
 	gateEvalServer.SetNotificationSender(notifSender)
+
+	// Auto-gate callback: runs gate evaluation after every backtest completion.
+	// If gate fails, spawns async auto-fix (LLM code repair → new backtest).
+	onBacktestComplete := func(ctx context.Context, run *repository.BacktestRun) {
+		dailyReturns := ai.EquityCurveToDailyReturns(run.ProtoResponse)
+		if len(dailyReturns) < 10 {
+			return
+		}
+		input := internalai.PipelineInput{
+			DailyReturns: dailyReturns,
+			NumAttempts:  1,
+		}
+		result := internalai.Pipeline(input)
+
+		if result.Passed {
+			data, _ := json.Marshal(map[string]interface{}{
+				"run_id": run.ID.String(), "symbol": run.Symbol, "gates": len(result.Gates),
+			})
+			_, _ = notifSender.Send(ctx, run.UserID, "gate_passed",
+				fmt.Sprintf("Gate Passed: %s", run.Symbol),
+				fmt.Sprintf("Strategy for %s passed all %d gates", run.Symbol, len(result.Gates)),
+				string(data))
+			return
+		}
+
+		firstFail := string(result.FirstFail)
+		if firstFail == "" {
+			firstFail = "unknown"
+		}
+		data, _ := json.Marshal(map[string]interface{}{
+			"run_id": run.ID.String(), "symbol": run.Symbol, "failed_at": firstFail,
+		})
+		_, _ = notifSender.Send(ctx, run.UserID, "gate_failed",
+			fmt.Sprintf("Gate Failed: %s", run.Symbol),
+			fmt.Sprintf("Strategy for %s failed at gate: %s", run.Symbol, firstFail),
+			string(data))
+
+		// Spawn async auto-fix: LLM generates improved code, creates new backtest run.
+		go autoFixCode(context.Background(), run, result, aiSvc, backtestRunRepo, notifSender, log)
+	}
+	pythonStrategyServer.SetOnBacktestComplete(onBacktestComplete)
+
 	adminRepo := repository.NewAdminRepository(pool)
 	passwordResetRepo := repository.NewPasswordResetRepo(pool)
 	adminTradingServer := admin.NewAdminTradingServer(adminRepo, log)
