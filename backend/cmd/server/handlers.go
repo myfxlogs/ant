@@ -130,6 +130,7 @@ func registerHandlers(
 	mux.Handle(antv1c.NewAssetAnalysisServiceHandler(assetAnalysisServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	streamServer := system.NewStreamServer(mthubSvc, platformSvc, log)
+	streamServer.SetMarketDataRepo(marketDataRepo)
 	mux.Handle(antv1c.NewStreamServiceHandler(streamServer, connectrpc.WithInterceptors(authInterceptor)))
 
 	strategySvc := service.NewStrategySvc(pool)

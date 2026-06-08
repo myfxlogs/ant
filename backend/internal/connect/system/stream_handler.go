@@ -13,6 +13,7 @@ import (
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/mthub"
+	"anttrader/internal/repository"
 	"anttrader/internal/service"
 )
 
@@ -33,9 +34,10 @@ func formatPrice(p float64) string {
 
 // StreamServer implements the ant.v1.StreamServiceHandler interface.
 type StreamServer struct {
-	svc      *mthub.MtHubService
-	platform *service.PlatformService
-	log      *zap.Logger
+	svc            *mthub.MtHubService
+	platform       *service.PlatformService
+	marketDataRepo *repository.MarketDataRepository
+	log            *zap.Logger
 }
 
 var _ antv1c.StreamServiceHandler = (*StreamServer)(nil)
@@ -82,13 +84,21 @@ func (s *StreamServer) SubscribeEvents(
 		return connect.NewError(connect.CodeInternal, err)
 	}
 	defer func() {
-		for _, ps := range profitSubs { ps.cancel() }
+		for _, ps := range profitSubs {
+			ps.cancel()
+		}
 	}()
 
 	if filterAll && len(profitSubs) == 0 {
 		ticker := time.NewTicker(30 * time.Second)
 		defer ticker.Stop()
-		for { select { case <-ctx.Done(): return nil; case <-ticker.C: } }
+		for {
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-ticker.C:
+			}
+		}
 	}
 
 	var connectedIDs []string
@@ -102,7 +112,9 @@ func (s *StreamServer) SubscribeEvents(
 		s.log.Warn("snapSubs setup failed", zap.Error(err))
 	}
 	defer func() {
-		for _, ss := range snapSubs { ss.cancel() }
+		for _, ss := range snapSubs {
+			ss.cancel()
+		}
 	}()
 
 	loopCtx, loopCancel := context.WithCancel(ctx)

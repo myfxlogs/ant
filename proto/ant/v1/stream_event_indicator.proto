@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+// IndicatorSeries holds one named line of indicator output values.
+// Multi-line indicators (MACD, BOLL, KDJ) produce one series per line.
+message IndicatorSeries {
+  repeated double values = 1;
+}
+
+// IndicatorUpdateEvent carries computed indicator values for a symbol/timeframe.
+// Pushed via SubscribeIndicators server-streaming RPC.
+message IndicatorUpdateEvent {
+  string symbol = 1;
+  string timeframe = 2;
+  string indicator_id = 3;
+  // Single-line indicators use "values" directly.
+  repeated double values = 4;
+  // Multi-line indicators (MACD, BOLL, KDJ) use the series map keyed by line name.
+  map<string, IndicatorSeries> series = 5;
+  // "overlay" for main-chart indicators (MA, BOLL), "sub" for sub-pane (RSI, MACD, VOL).
+  string pane = 6;
+  // Total number of bars in this response.
+  int32 bar_count = 7;
+}
+
+// SubscribeIndicatorsRequest initiates indicator computation and streaming.
+message SubscribeIndicatorsRequest {
+  string symbol = 1;
+  string timeframe = 2;
+  repeated string indicator_ids = 3;
+  // Optional per-indicator parameter overrides, e.g. {"RSI.period": "14"}.
+  map<string, string> params = 4;
+}

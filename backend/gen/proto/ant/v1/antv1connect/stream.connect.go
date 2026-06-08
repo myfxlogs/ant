@@ -49,6 +49,9 @@ const (
 	// StreamServiceSubscribeUserSummaryProcedure is the fully-qualified name of the StreamService's
 	// SubscribeUserSummary RPC.
 	StreamServiceSubscribeUserSummaryProcedure = "/ant.v1.StreamService/SubscribeUserSummary"
+	// StreamServiceSubscribeIndicatorsProcedure is the fully-qualified name of the StreamService's
+	// SubscribeIndicators RPC.
+	StreamServiceSubscribeIndicatorsProcedure = "/ant.v1.StreamService/SubscribeIndicators"
 )
 
 // StreamServiceClient is a client for the ant.v1.StreamService service.
@@ -58,6 +61,7 @@ type StreamServiceClient interface {
 	SubscribeOrderUpdates(context.Context, *connect.Request[v1.SubscribeOrderUpdatesRequest]) (*connect.ServerStreamForClient[v1.OrderUpdateEvent], error)
 	SubscribeProfitUpdates(context.Context, *connect.Request[v1.SubscribeProfitUpdatesRequest]) (*connect.ServerStreamForClient[v1.ProfitUpdateEvent], error)
 	SubscribeUserSummary(context.Context, *connect.Request[emptypb.Empty]) (*connect.ServerStreamForClient[v1.UserSummaryEvent], error)
+	SubscribeIndicators(context.Context, *connect.Request[v1.SubscribeIndicatorsRequest]) (*connect.ServerStreamForClient[v1.IndicatorUpdateEvent], error)
 }
 
 // NewStreamServiceClient constructs a client for the ant.v1.StreamService service. By default, it
@@ -101,6 +105,12 @@ func NewStreamServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 			connect.WithSchema(streamServiceMethods.ByName("SubscribeUserSummary")),
 			connect.WithClientOptions(opts...),
 		),
+		subscribeIndicators: connect.NewClient[v1.SubscribeIndicatorsRequest, v1.IndicatorUpdateEvent](
+			httpClient,
+			baseURL+StreamServiceSubscribeIndicatorsProcedure,
+			connect.WithSchema(streamServiceMethods.ByName("SubscribeIndicators")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -111,6 +121,7 @@ type streamServiceClient struct {
 	subscribeOrderUpdates  *connect.Client[v1.SubscribeOrderUpdatesRequest, v1.OrderUpdateEvent]
 	subscribeProfitUpdates *connect.Client[v1.SubscribeProfitUpdatesRequest, v1.ProfitUpdateEvent]
 	subscribeUserSummary   *connect.Client[emptypb.Empty, v1.UserSummaryEvent]
+	subscribeIndicators    *connect.Client[v1.SubscribeIndicatorsRequest, v1.IndicatorUpdateEvent]
 }
 
 // SubscribeEvents calls ant.v1.StreamService.SubscribeEvents.
@@ -138,6 +149,11 @@ func (c *streamServiceClient) SubscribeUserSummary(ctx context.Context, req *con
 	return c.subscribeUserSummary.CallServerStream(ctx, req)
 }
 
+// SubscribeIndicators calls ant.v1.StreamService.SubscribeIndicators.
+func (c *streamServiceClient) SubscribeIndicators(ctx context.Context, req *connect.Request[v1.SubscribeIndicatorsRequest]) (*connect.ServerStreamForClient[v1.IndicatorUpdateEvent], error) {
+	return c.subscribeIndicators.CallServerStream(ctx, req)
+}
+
 // StreamServiceHandler is an implementation of the ant.v1.StreamService service.
 type StreamServiceHandler interface {
 	SubscribeEvents(context.Context, *connect.Request[v1.SubscribeEventsRequest], *connect.ServerStream[v1.StreamEvent]) error
@@ -145,6 +161,7 @@ type StreamServiceHandler interface {
 	SubscribeOrderUpdates(context.Context, *connect.Request[v1.SubscribeOrderUpdatesRequest], *connect.ServerStream[v1.OrderUpdateEvent]) error
 	SubscribeProfitUpdates(context.Context, *connect.Request[v1.SubscribeProfitUpdatesRequest], *connect.ServerStream[v1.ProfitUpdateEvent]) error
 	SubscribeUserSummary(context.Context, *connect.Request[emptypb.Empty], *connect.ServerStream[v1.UserSummaryEvent]) error
+	SubscribeIndicators(context.Context, *connect.Request[v1.SubscribeIndicatorsRequest], *connect.ServerStream[v1.IndicatorUpdateEvent]) error
 }
 
 // NewStreamServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -184,6 +201,12 @@ func NewStreamServiceHandler(svc StreamServiceHandler, opts ...connect.HandlerOp
 		connect.WithSchema(streamServiceMethods.ByName("SubscribeUserSummary")),
 		connect.WithHandlerOptions(opts...),
 	)
+	streamServiceSubscribeIndicatorsHandler := connect.NewServerStreamHandler(
+		StreamServiceSubscribeIndicatorsProcedure,
+		svc.SubscribeIndicators,
+		connect.WithSchema(streamServiceMethods.ByName("SubscribeIndicators")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.StreamService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case StreamServiceSubscribeEventsProcedure:
@@ -196,6 +219,8 @@ func NewStreamServiceHandler(svc StreamServiceHandler, opts ...connect.HandlerOp
 			streamServiceSubscribeProfitUpdatesHandler.ServeHTTP(w, r)
 		case StreamServiceSubscribeUserSummaryProcedure:
 			streamServiceSubscribeUserSummaryHandler.ServeHTTP(w, r)
+		case StreamServiceSubscribeIndicatorsProcedure:
+			streamServiceSubscribeIndicatorsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -223,4 +248,8 @@ func (UnimplementedStreamServiceHandler) SubscribeProfitUpdates(context.Context,
 
 func (UnimplementedStreamServiceHandler) SubscribeUserSummary(context.Context, *connect.Request[emptypb.Empty], *connect.ServerStream[v1.UserSummaryEvent]) error {
 	return connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StreamService.SubscribeUserSummary is not implemented"))
+}
+
+func (UnimplementedStreamServiceHandler) SubscribeIndicators(context.Context, *connect.Request[v1.SubscribeIndicatorsRequest], *connect.ServerStream[v1.IndicatorUpdateEvent]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.StreamService.SubscribeIndicators is not implemented"))
 }

@@ -45,6 +45,7 @@ type StreamEvent struct {
 	//	*StreamEvent_TradeReceipt
 	//	*StreamEvent_PositionSnapshot
 	//	*StreamEvent_BarUpdate
+	//	*StreamEvent_IndicatorUpdate
 	Payload       isStreamEvent_Payload `protobuf_oneof:"payload"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -232,6 +233,15 @@ func (x *StreamEvent) GetBarUpdate() *BarUpdateEvent {
 	return nil
 }
 
+func (x *StreamEvent) GetIndicatorUpdate() *IndicatorUpdateEvent {
+	if x != nil {
+		if x, ok := x.Payload.(*StreamEvent_IndicatorUpdate); ok {
+			return x.IndicatorUpdate
+		}
+	}
+	return nil
+}
+
 type isStreamEvent_Payload interface {
 	isStreamEvent_Payload()
 }
@@ -288,6 +298,10 @@ type StreamEvent_BarUpdate struct {
 	BarUpdate *BarUpdateEvent `protobuf:"bytes,18,opt,name=bar_update,json=barUpdate,proto3,oneof"`
 }
 
+type StreamEvent_IndicatorUpdate struct {
+	IndicatorUpdate *IndicatorUpdateEvent `protobuf:"bytes,19,opt,name=indicator_update,json=indicatorUpdate,proto3,oneof"`
+}
+
 func (*StreamEvent_OrderUpdate) isStreamEvent_Payload() {}
 
 func (*StreamEvent_ProfitUpdate) isStreamEvent_Payload() {}
@@ -313,6 +327,8 @@ func (*StreamEvent_TradeReceipt) isStreamEvent_Payload() {}
 func (*StreamEvent_PositionSnapshot) isStreamEvent_Payload() {}
 
 func (*StreamEvent_BarUpdate) isStreamEvent_Payload() {}
+
+func (*StreamEvent_IndicatorUpdate) isStreamEvent_Payload() {}
 
 // BarUpdateEvent is pushed when a K-line bar is finalized or updated.
 type BarUpdateEvent struct {
@@ -643,7 +659,7 @@ var File_stream_proto protoreflect.FileDescriptor
 
 const file_stream_proto_rawDesc = "" +
 	"\n" +
-	"\fstream.proto\x12\x06ant.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1astream_event_account.proto\x1a\x18stream_event_trade.proto\x1a\x17stream_event_sync.proto\x1a\x1astream_event_command.proto\"\xe7\a\n" +
+	"\fstream.proto\x12\x06ant.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1astream_event_account.proto\x1a\x18stream_event_trade.proto\x1a\x17stream_event_sync.proto\x1a\x1astream_event_command.proto\x1a\x1cstream_event_indicator.proto\"\xb2\b\n" +
 	"\vStreamEvent\x12\x12\n" +
 	"\x04type\x18\x01 \x01(\tR\x04type\x12\x1d\n" +
 	"\n" +
@@ -666,7 +682,8 @@ const file_stream_proto_rawDesc = "" +
 	"\rtrade_receipt\x18\x10 \x01(\v2\x19.ant.v1.TradeReceiptEventH\x00R\ftradeReceipt\x12L\n" +
 	"\x11position_snapshot\x18\x11 \x01(\v2\x1d.ant.v1.PositionSnapshotEventH\x00R\x10positionSnapshot\x127\n" +
 	"\n" +
-	"bar_update\x18\x12 \x01(\v2\x16.ant.v1.BarUpdateEventH\x00R\tbarUpdateB\t\n" +
+	"bar_update\x18\x12 \x01(\v2\x16.ant.v1.BarUpdateEventH\x00R\tbarUpdate\x12I\n" +
+	"\x10indicator_update\x18\x13 \x01(\v2\x1c.ant.v1.IndicatorUpdateEventH\x00R\x0findicatorUpdateB\t\n" +
 	"\apayload\"\xbc\x02\n" +
 	"\x0eBarUpdateEvent\x12\x1d\n" +
 	"\n" +
@@ -696,13 +713,14 @@ const file_stream_proto_rawDesc = "" +
 	"account_id\x18\x01 \x01(\tR\taccountId\">\n" +
 	"\x1dSubscribeProfitUpdatesRequest\x12\x1d\n" +
 	"\n" +
-	"account_id\x18\x01 \x01(\tR\taccountId2\xaa\x03\n" +
+	"account_id\x18\x01 \x01(\tR\taccountId2\x85\x04\n" +
 	"\rStreamService\x12H\n" +
 	"\x0fSubscribeEvents\x12\x1e.ant.v1.SubscribeEventsRequest\x1a\x13.ant.v1.StreamEvent0\x01\x12J\n" +
 	"\x10SubscribeHistory\x12\x1f.ant.v1.SubscribeHistoryRequest\x1a\x13.ant.v1.StreamEvent0\x01\x12Y\n" +
 	"\x15SubscribeOrderUpdates\x12$.ant.v1.SubscribeOrderUpdatesRequest\x1a\x18.ant.v1.OrderUpdateEvent0\x01\x12\\\n" +
 	"\x16SubscribeProfitUpdates\x12%.ant.v1.SubscribeProfitUpdatesRequest\x1a\x19.ant.v1.ProfitUpdateEvent0\x01\x12J\n" +
-	"\x14SubscribeUserSummary\x12\x16.google.protobuf.Empty\x1a\x18.ant.v1.UserSummaryEvent0\x01B\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x14SubscribeUserSummary\x12\x16.google.protobuf.Empty\x1a\x18.ant.v1.UserSummaryEvent0\x01\x12Y\n" +
+	"\x13SubscribeIndicators\x12\".ant.v1.SubscribeIndicatorsRequest\x1a\x1c.ant.v1.IndicatorUpdateEvent0\x01B\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_stream_proto_rawDescOnce sync.Once
@@ -737,8 +755,10 @@ var file_stream_proto_goTypes = []any{
 	(*TradeCommandEvent)(nil),             // 16: ant.v1.TradeCommandEvent
 	(*TradeReceiptEvent)(nil),             // 17: ant.v1.TradeReceiptEvent
 	(*PositionSnapshotEvent)(nil),         // 18: ant.v1.PositionSnapshotEvent
-	(*emptypb.Empty)(nil),                 // 19: google.protobuf.Empty
-	(*UserSummaryEvent)(nil),              // 20: ant.v1.UserSummaryEvent
+	(*IndicatorUpdateEvent)(nil),          // 19: ant.v1.IndicatorUpdateEvent
+	(*emptypb.Empty)(nil),                 // 20: google.protobuf.Empty
+	(*SubscribeIndicatorsRequest)(nil),    // 21: ant.v1.SubscribeIndicatorsRequest
+	(*UserSummaryEvent)(nil),              // 22: ant.v1.UserSummaryEvent
 }
 var file_stream_proto_depIdxs = []int32{
 	6,  // 0: ant.v1.StreamEvent.timestamp:type_name -> google.protobuf.Timestamp
@@ -755,23 +775,26 @@ var file_stream_proto_depIdxs = []int32{
 	17, // 11: ant.v1.StreamEvent.trade_receipt:type_name -> ant.v1.TradeReceiptEvent
 	18, // 12: ant.v1.StreamEvent.position_snapshot:type_name -> ant.v1.PositionSnapshotEvent
 	1,  // 13: ant.v1.StreamEvent.bar_update:type_name -> ant.v1.BarUpdateEvent
-	6,  // 14: ant.v1.BarUpdateEvent.open_time:type_name -> google.protobuf.Timestamp
-	6,  // 15: ant.v1.SubscribeHistoryRequest.since:type_name -> google.protobuf.Timestamp
-	2,  // 16: ant.v1.StreamService.SubscribeEvents:input_type -> ant.v1.SubscribeEventsRequest
-	3,  // 17: ant.v1.StreamService.SubscribeHistory:input_type -> ant.v1.SubscribeHistoryRequest
-	4,  // 18: ant.v1.StreamService.SubscribeOrderUpdates:input_type -> ant.v1.SubscribeOrderUpdatesRequest
-	5,  // 19: ant.v1.StreamService.SubscribeProfitUpdates:input_type -> ant.v1.SubscribeProfitUpdatesRequest
-	19, // 20: ant.v1.StreamService.SubscribeUserSummary:input_type -> google.protobuf.Empty
-	0,  // 21: ant.v1.StreamService.SubscribeEvents:output_type -> ant.v1.StreamEvent
-	0,  // 22: ant.v1.StreamService.SubscribeHistory:output_type -> ant.v1.StreamEvent
-	7,  // 23: ant.v1.StreamService.SubscribeOrderUpdates:output_type -> ant.v1.OrderUpdateEvent
-	8,  // 24: ant.v1.StreamService.SubscribeProfitUpdates:output_type -> ant.v1.ProfitUpdateEvent
-	20, // 25: ant.v1.StreamService.SubscribeUserSummary:output_type -> ant.v1.UserSummaryEvent
-	21, // [21:26] is the sub-list for method output_type
-	16, // [16:21] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	19, // 14: ant.v1.StreamEvent.indicator_update:type_name -> ant.v1.IndicatorUpdateEvent
+	6,  // 15: ant.v1.BarUpdateEvent.open_time:type_name -> google.protobuf.Timestamp
+	6,  // 16: ant.v1.SubscribeHistoryRequest.since:type_name -> google.protobuf.Timestamp
+	2,  // 17: ant.v1.StreamService.SubscribeEvents:input_type -> ant.v1.SubscribeEventsRequest
+	3,  // 18: ant.v1.StreamService.SubscribeHistory:input_type -> ant.v1.SubscribeHistoryRequest
+	4,  // 19: ant.v1.StreamService.SubscribeOrderUpdates:input_type -> ant.v1.SubscribeOrderUpdatesRequest
+	5,  // 20: ant.v1.StreamService.SubscribeProfitUpdates:input_type -> ant.v1.SubscribeProfitUpdatesRequest
+	20, // 21: ant.v1.StreamService.SubscribeUserSummary:input_type -> google.protobuf.Empty
+	21, // 22: ant.v1.StreamService.SubscribeIndicators:input_type -> ant.v1.SubscribeIndicatorsRequest
+	0,  // 23: ant.v1.StreamService.SubscribeEvents:output_type -> ant.v1.StreamEvent
+	0,  // 24: ant.v1.StreamService.SubscribeHistory:output_type -> ant.v1.StreamEvent
+	7,  // 25: ant.v1.StreamService.SubscribeOrderUpdates:output_type -> ant.v1.OrderUpdateEvent
+	8,  // 26: ant.v1.StreamService.SubscribeProfitUpdates:output_type -> ant.v1.ProfitUpdateEvent
+	22, // 27: ant.v1.StreamService.SubscribeUserSummary:output_type -> ant.v1.UserSummaryEvent
+	19, // 28: ant.v1.StreamService.SubscribeIndicators:output_type -> ant.v1.IndicatorUpdateEvent
+	23, // [23:29] is the sub-list for method output_type
+	17, // [17:23] is the sub-list for method input_type
+	17, // [17:17] is the sub-list for extension type_name
+	17, // [17:17] is the sub-list for extension extendee
+	0,  // [0:17] is the sub-list for field type_name
 }
 
 func init() { file_stream_proto_init() }
@@ -783,6 +806,7 @@ func file_stream_proto_init() {
 	file_stream_event_trade_proto_init()
 	file_stream_event_sync_proto_init()
 	file_stream_event_command_proto_init()
+	file_stream_event_indicator_proto_init()
 	file_stream_proto_msgTypes[0].OneofWrappers = []any{
 		(*StreamEvent_OrderUpdate)(nil),
 		(*StreamEvent_ProfitUpdate)(nil),
@@ -797,6 +821,7 @@ func file_stream_proto_init() {
 		(*StreamEvent_TradeReceipt)(nil),
 		(*StreamEvent_PositionSnapshot)(nil),
 		(*StreamEvent_BarUpdate)(nil),
+		(*StreamEvent_IndicatorUpdate)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

@@ -10,6 +10,7 @@ import "stream_event_account.proto";
 import "stream_event_trade.proto";
 import "stream_event_sync.proto";
 import "stream_event_command.proto";
+import "stream_event_indicator.proto";
 
 // StreamEvent is the union event type pushed via SubscribeEvents.
 message StreamEvent {
@@ -31,6 +32,7 @@ message StreamEvent {
     TradeReceiptEvent trade_receipt = 16;
     PositionSnapshotEvent position_snapshot = 17;
     BarUpdateEvent bar_update = 18;
+    IndicatorUpdateEvent indicator_update = 19;
   }
 }
 
@@ -75,4 +77,5 @@ service StreamService {
   rpc SubscribeOrderUpdates(SubscribeOrderUpdatesRequest) returns (stream OrderUpdateEvent);
   rpc SubscribeProfitUpdates(SubscribeProfitUpdatesRequest) returns (stream ProfitUpdateEvent);
   rpc SubscribeUserSummary(google.protobuf.Empty) returns (stream UserSummaryEvent);
+  rpc SubscribeIndicators(SubscribeIndicatorsRequest) returns (stream IndicatorUpdateEvent);
 }
