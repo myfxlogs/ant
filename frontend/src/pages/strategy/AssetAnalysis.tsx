@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import {
-  Card, Input, Button, Typography, Tag, Space, Spin, Progress,
-  Descriptions, Row, Col, Alert, Divider,
+  Card, Input, Button, Typography, Tag, Progress,
+  Descriptions, Row, Col, Alert, Grid,
 } from 'antd';
 import {
   SearchOutlined, ThunderboltOutlined, DashboardOutlined,
@@ -40,6 +40,8 @@ const PHASES: Phase[] = ['mtf_outlook', 'sr_levels', 'volatility', 'ai_recommend
 
 export default function AssetAnalysisPage() {
   const { t } = useTranslation();
+  const screens = Grid.useBreakpoint();
+  const isMobile = !screens.sm;
   const [symbol, setSymbol] = useState('');
   const [phase, setPhase] = useState<Phase>('idle');
   const [loading, setLoading] = useState(false);
@@ -95,7 +97,7 @@ export default function AssetAnalysisPage() {
   const renderTfCard = (label: string, tf: TfOutlook | undefined) => {
     if (!tf) return null;
     return (
-      <Card size="small" style={{ textAlign: 'center', minWidth: 130 }}>
+      <Card size="small" style={{ textAlign: 'center' }}>
         <div style={{ fontSize: 12, color: '#8A9AA5', marginBottom: 4 }}>{label}</div>
         <div style={{ fontSize: 20, marginBottom: 4 }}>{TREND_ICONS[tf.trend] || null}</div>
         <Tag color={TREND_COLORS[tf.trend] || 'default'} style={{ marginBottom: 4 }}>
@@ -137,7 +139,7 @@ export default function AssetAnalysisPage() {
   };
 
   return (
-    <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 16px' }}>
+    <div style={{ maxWidth: 960, margin: '0 auto', padding: isMobile ? '16px 12px' : '24px 16px' }}>
       <Title level={3}>
         <BulbOutlined style={{ marginRight: 8 }} />
         AI Asset Analysis
@@ -146,27 +148,32 @@ export default function AssetAnalysisPage() {
         Multi-timeframe trend outlook, S/R level detection, volatility classification, and AI strategy recommendation
       </Text>
 
-      <Space style={{ marginBottom: 24, width: '100%' }} size={12}>
-        <Input
-          prefix={<SearchOutlined />}
-          placeholder="Enter symbol (e.g. EURUSD, XAUUSD, BTCUSD)"
-          value={symbol}
-          onChange={e => setSymbol(e.target.value)}
-          onPressEnter={handleAnalyze}
-          style={{ width: 320, borderRadius: 8 }}
-          disabled={loading}
-        />
-        <Button
-          type="primary"
-          icon={<ThunderboltOutlined />}
-          onClick={handleAnalyze}
-          loading={loading}
-          disabled={!symbol.trim()}
-          style={{ borderRadius: 8 }}
-        >
-          Analyze
-        </Button>
-      </Space>
+      <Row gutter={[12, 12]} style={{ marginBottom: 24 }}>
+        <Col xs={24} sm={16} md={12}>
+          <Input
+            prefix={<SearchOutlined />}
+            placeholder="Enter symbol (e.g. EURUSD, XAUUSD, BTCUSD)"
+            value={symbol}
+            onChange={e => setSymbol(e.target.value)}
+            onPressEnter={handleAnalyze}
+            style={{ width: '100%', borderRadius: 8 }}
+            disabled={loading}
+          />
+        </Col>
+        <Col xs={12} sm={8} md={4}>
+          <Button
+            type="primary"
+            icon={<ThunderboltOutlined />}
+            onClick={handleAnalyze}
+            loading={loading}
+            disabled={!symbol.trim()}
+            style={{ borderRadius: 8, width: '100%' }}
+            block
+          >
+            Analyze
+          </Button>
+        </Col>
+      </Row>
 
       {loading && (
         <div style={{ marginBottom: 16 }}>
@@ -190,11 +197,11 @@ export default function AssetAnalysisPage() {
               size="small"
               style={{ marginBottom: 16, borderRadius: 12 }}
             >
-              <Row gutter={[12, 12]} justify="space-around">
-                <Col>{renderTfCard('1H', result.multiTf.h1)}</Col>
-                <Col>{renderTfCard('4H', result.multiTf.h4)}</Col>
-                <Col>{renderTfCard('D1', result.multiTf.d1)}</Col>
-                <Col>{renderTfCard('W1', result.multiTf.w1)}</Col>
+              <Row gutter={[12, 12]} justify="start">
+                <Col xs={12} sm={12} md={6}>{renderTfCard('1H', result.multiTf.h1)}</Col>
+                <Col xs={12} sm={12} md={6}>{renderTfCard('4H', result.multiTf.h4)}</Col>
+                <Col xs={12} sm={12} md={6}>{renderTfCard('D1', result.multiTf.d1)}</Col>
+                <Col xs={12} sm={12} md={6}>{renderTfCard('W1', result.multiTf.w1)}</Col>
               </Row>
             </Card>
           )}
@@ -218,7 +225,7 @@ export default function AssetAnalysisPage() {
               size="small"
               style={{ marginBottom: 16, borderRadius: 12 }}
             >
-              <Descriptions column={2} size="small">
+              <Descriptions column={{ xs: 1, sm: 2 }} size="small">
                 <Descriptions.Item label="State">
                   <Tag color={VOL_COLORS[result.volatilityState] || 'default'}>
                     {result.volatilityState}

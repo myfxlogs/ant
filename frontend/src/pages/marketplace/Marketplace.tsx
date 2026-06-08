@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import {
   Card, Input, Select, Tag, Button, Space, Typography, Row, Col,
   Tooltip, message, Tabs, Rate, Drawer, List, Form, Divider,
+  Grid,
 } from 'antd';
 import {
   SearchOutlined, PlusOutlined, ExperimentOutlined,
@@ -26,6 +27,8 @@ type TabKey = 'marketplace' | 'subscriptions';
 export default function MarketplacePage() {
   const { t } = useTranslation();
   const { user } = useAuthStore();
+  const screens = Grid.useBreakpoint();
+  const isMobile = !screens.sm;
   const userId = user?.id || '';
   const [activeTab, setActiveTab] = useState<TabKey>('marketplace');
   const [searchText, setSearchText] = useState('');
@@ -184,7 +187,7 @@ export default function MarketplacePage() {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: '#F5F7F9', padding: '24px 24px 80px' }}>
+    <div className="min-h-screen" style={{ background: '#F5F7F9', padding: isMobile ? '16px 12px 80px' : '24px 24px 80px' }}>
       <div className="max-w-7xl mx-auto">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
           <div>
@@ -199,19 +202,25 @@ export default function MarketplacePage() {
             label: <span><ShopOutlined /> {t('marketplace.tabs.marketplace')}</span>,
             children: (
               <div>
-                <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-                  <Input prefix={<SearchOutlined />} placeholder={t('marketplace.searchPlaceholder')} value={searchText}
-                    onChange={e => setSearchText(e.target.value)} style={{ maxWidth: 360, borderRadius: 8 }} allowClear />
-                  <Select value={assetFilter || undefined} onChange={v => setAssetFilter(v || '')} allowClear
-                    placeholder={t('marketplace.filterByClass')} style={{ minWidth: 180 }}
-                    options={ASSET_CLASSES.map(c => ({ value: c, label: t(`marketplace.assetClass.${c}`, { defaultValue: c }) }))} />
-                  <Select value={sortBy} onChange={v => setSortBy(v)} style={{ minWidth: 160 }}
-                    options={[
-                      { value: 'newest', label: t('marketplace.sort.newest') },
-                      { value: 'popular', label: t('marketplace.sort.popular') },
-                      { value: 'performance', label: t('marketplace.sort.performance') },
-                    ]} />
-                </div>
+                <Row gutter={[12, 12]} style={{ marginBottom: 20 }}>
+                  <Col xs={24} sm={12} md={8}>
+                    <Input prefix={<SearchOutlined />} placeholder={t('marketplace.searchPlaceholder')} value={searchText}
+                      onChange={e => setSearchText(e.target.value)} style={{ width: '100%', borderRadius: 8 }} allowClear />
+                  </Col>
+                  <Col xs={12} sm={6} md={4}>
+                    <Select value={assetFilter || undefined} onChange={v => setAssetFilter(v || '')} allowClear
+                      placeholder={t('marketplace.filterByClass')} style={{ width: '100%' }}
+                      options={ASSET_CLASSES.map(c => ({ value: c, label: t(`marketplace.assetClass.${c}`, { defaultValue: c }) }))} />
+                  </Col>
+                  <Col xs={12} sm={6} md={4}>
+                    <Select value={sortBy} onChange={v => setSortBy(v)} style={{ width: '100%' }}
+                      options={[
+                        { value: 'newest', label: t('marketplace.sort.newest') },
+                        { value: 'popular', label: t('marketplace.sort.popular') },
+                        { value: 'performance', label: t('marketplace.sort.performance') },
+                      ]} />
+                  </Col>
+                </Row>
                 <StatusResult loading={isLoading} error={error instanceof Error ? error.message : undefined} onRetry={refetch}
                   empty={strategies.length === 0 && !isLoading} emptyText={t('marketplace.empty')}>
                   <Row gutter={[16, 16]}>{strategies.map(renderStrategyCard)}</Row>
@@ -251,7 +260,7 @@ export default function MarketplacePage() {
           title={detailStrategy?.strategyName || detailStrategy?.title || detailStrategy?.strategyId?.slice(0, 8) || t('marketplace.card.details')}
           open={!!detailStrategy}
           onClose={() => setDetailStrategy(null)}
-          width={480}
+          width={isMobile ? '100%' : 480}
           styles={{ body: { paddingBottom: 80 } }}
         >
           {detailStrategy && (
