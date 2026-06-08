@@ -8,6 +8,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"connectrpc.com/connect"
+	"github.com/shopspring/decimal"
 	"github.com/google/uuid"
 
 	antv1 "anttrader/gen/proto/ant/v1"
@@ -28,6 +29,7 @@ type PythonStrategyServer struct {
 	marketDataRepo      *repository.MarketDataRepository
 	barSource           BarSource // unified bar data source (backtest or live)
 	mtHub               *mthub.MtHubService // for live order submission
+	paperEngine         PaperOrderExecutor  // for paper trading simulated fills
 	pgListen            *pglisten.Listener
 	notifSender         *notification.Sender
 	onBacktestComplete  func(ctx context.Context, run *repository.BacktestRun) // auto-gate hook
@@ -37,8 +39,16 @@ func (s *PythonStrategyServer) SetMarketDataRepo(r *repository.MarketDataReposit
 	s.marketDataRepo = r
 }
 
-func (s *PythonStrategyServer) SetBarSource(bs BarSource)           { s.barSource = bs }
-func (s *PythonStrategyServer) SetMtHub(h *mthub.MtHubService)      { s.mtHub = h }
+// PaperOrderExecutor abstracts paper trading order simulation.
+// Implemented by paper.PaperEngine to avoid circular imports.
+type PaperOrderExecutor interface {
+	PlacePaperOrder(ctx context.Context, accountID, symbol, side string,
+		volume decimal.Decimal, bid, ask float64) error
+}
+
+func (s *PythonStrategyServer) SetBarSource(bs BarSource)                 { s.barSource = bs }
+func (s *PythonStrategyServer) SetMtHub(h *mthub.MtHubService)            { s.mtHub = h }
+func (s *PythonStrategyServer) SetPaperEngine(pe PaperOrderExecutor)      { s.paperEngine = pe }
 
 var _ antv1c.PythonStrategyServiceHandler = (*PythonStrategyServer)(nil)
 

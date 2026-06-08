@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+// PaperTradingService manages virtual paper trading accounts and simulated strategy execution.
+// All messages are proto-native binary encoding — no JSON.
+service PaperTradingService {
+  rpc CreatePaperAccount(CreatePaperAccountRequest) returns (PaperAccount);
+  rpc ListPaperAccounts(ListPaperAccountsRequest) returns (ListPaperAccountsResponse);
+  rpc StartPaperStrategy(StartPaperStrategyRequest) returns (StartPaperStrategyResponse);
+  rpc StopPaperStrategy(StopPaperStrategyRequest) returns (StopPaperStrategyResponse);
+  rpc WatchPaperAccount(WatchPaperAccountRequest) returns (stream PaperAccountUpdate);
+}
+
+// ── Paper Account ──
+
+message CreatePaperAccountRequest {
+  string name = 1;
+  string initial_balance = 2;  // decimal string: "10000.00"
+}
+
+message PaperAccount {
+  string id = 1;
+  string user_id = 2;
+  string name = 3;
+  string initial_balance = 4;
+  string current_balance = 5;
+  string equity = 6;       // balance + unrealized PnL
+  string currency = 7;
+  int64 created_at_unix_ms = 8;
+  bool archived = 9;
+}
+
+message ListPaperAccountsRequest {
+  // user_id is derived from auth context
+}
+
+message ListPaperAccountsResponse {
+  repeated PaperAccount accounts = 1;
+}
+
+// ── Paper Strategy ──
+
+message StartPaperStrategyRequest {
+  string paper_account_id = 1;
+  string strategy_code = 2;
+  string symbol = 3;
+  string timeframe = 4;
+  // strategy params as key-value pairs (passed to run(context)['params'])
+  map<string, string> params = 5;
+}
+
+message StartPaperStrategyResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+message StopPaperStrategyRequest {
+  string paper_account_id = 1;
+}
+
+message StopPaperStrategyResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+// ── SSE streaming ──
+
+message WatchPaperAccountRequest {
+  string paper_account_id = 1;
+}
+
+message PaperAccountUpdate {
+  string paper_account_id = 1;
+  PaperAccount account = 2;
+  // recent orders (last 10)
+  repeated PaperOrder recent_orders = 3;
+}
+
+message PaperOrder {
+  string id = 1;
+  string paper_account_id = 2;
+  string symbol = 3;
+  string side = 4;          // "buy" | "sell"
+  string volume = 5;        // decimal string
+  string fill_price = 6;    // decimal string
+  int32 slippage_bps = 7;
+  string pnl = 8;           // decimal string
+  string state = 9;         // "open" | "closed" | "cancelled"
+  int64 created_at_unix_ms = 10;
+  optional int64 closed_at_unix_ms = 11;
+}

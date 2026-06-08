@@ -120,7 +120,7 @@ func (s *PythonStrategyServer) RunLiveStrategy(ctx context.Context, cfg LiveStra
 			}
 
 			// Dispatch signal.
-			s.dispatchLiveSignal(ctx, cfg, sig)
+			s.dispatchLiveSignal(ctx, cfg, bar, sig)
 		}
 	}
 }
@@ -177,7 +177,7 @@ func buildLiveParams(params map[string]string) []*antv1.LiveParam {
 // dispatchLiveSignal routes the strategy signal to the appropriate destination.
 // LIVE mode: signal → OMS → broker (via mthub)
 // PAPER mode: signal → log (paper portfolio coming later)
-func (s *PythonStrategyServer) dispatchLiveSignal(ctx context.Context, cfg LiveStrategyConfig, sig *antv1.StrategySignal) {
+func (s *PythonStrategyServer) dispatchLiveSignal(ctx context.Context, cfg LiveStrategyConfig, bar *mthub.BarUpdate, sig *antv1.StrategySignal) {
 	s.log.Info("LiveStrategyRunner: signal",
 		zap.String("account", cfg.AccountID),
 		zap.String("symbol", cfg.Symbol),
@@ -188,9 +188,16 @@ func (s *PythonStrategyServer) dispatchLiveSignal(ctx context.Context, cfg LiveS
 	)
 
 	if cfg.Mode == "paper" {
-		s.log.Info("LiveStrategyRunner: paper signal (not dispatched to broker)",
-			zap.String("signal", sig.GetSignalType()),
-			zap.Float64("volume", sig.GetVolume()))
+		if s.paperEngine == nil {
+			s.log.Warn("LiveStrategyRunner: no PaperEngine configured, dropping paper signal")
+			return
+		}
+		bid := bar.Bid
+		ask := bar.Ask
+		if err := s.paperEngine.PlacePaperOrder(ctx, cfg.AccountID, cfg.Symbol,
+			sig.GetSignalType(), decimal.NewFromFloat(sig.GetVolume()), bid, ask); err != nil {
+			s.log.Warn("LiveStrategyRunner: paper order failed", zap.Error(err))
+		}
 		return
 	}
 

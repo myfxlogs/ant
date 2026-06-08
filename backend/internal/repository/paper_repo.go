@@ -7,34 +7,38 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/shopspring/decimal"
 )
 
 // PaperAccount represents a virtual trading account for paper trading.
+// Monetary fields use decimal.Decimal (NUMERIC in DB) per platform data precision rules.
 type PaperAccount struct {
 	ID             string
 	UserID         string
 	Name           string
-	InitialBalance float64
-	CurrentBalance float64
-	Equity         float64
+	InitialBalance decimal.Decimal
+	CurrentBalance decimal.Decimal
+	Equity         decimal.Decimal
 	Currency       string
 	CreatedAt      time.Time
 	Archived       bool
 }
 
 // PaperOrder represents a simulated order.
+// Monetary fields use decimal.Decimal (NUMERIC in DB) per platform data precision rules.
 type PaperOrder struct {
-	ID              string
-	PaperAccountID  string
-	StrategyID      *string
-	Symbol          string
-	Side            string
-	Volume          float64
-	FillPrice       *float64
-	SlippageBps     float64
-	State           string
-	CreatedAt       time.Time
-	ClosedAt        *time.Time
+	ID             string
+	PaperAccountID string
+	StrategyID     *string
+	Symbol         string
+	Side           string
+	Volume         decimal.Decimal
+	FillPrice      decimal.Decimal
+	SlippageBps    int32
+	PnL            decimal.Decimal
+	State          string
+	CreatedAt      time.Time
+	ClosedAt       *time.Time
 }
 
 // PaperStrategy represents a user's paper (simulated) strategy.
@@ -62,7 +66,7 @@ func NewPaperRepo(pg *pgxpool.Pool) *PaperRepo {
 }
 
 // CreateAccount inserts a new paper account.
-func (r *PaperRepo) CreateAccount(ctx context.Context, userID, name string, initialBalance float64) (*PaperAccount, error) {
+func (r *PaperRepo) CreateAccount(ctx context.Context, userID, name string, initialBalance decimal.Decimal) (*PaperAccount, error) {
 	a := &PaperAccount{}
 	err := r.pg.QueryRow(ctx, `
 		INSERT INTO paper_accounts (user_id, name, initial_balance, current_balance, equity)
@@ -97,16 +101,36 @@ func (r *PaperRepo) ListAccounts(ctx context.Context, userID string) ([]*PaperAc
 // CreateOrder inserts a paper order.
 func (r *PaperRepo) CreateOrder(ctx context.Context, o *PaperOrder) error {
 	_, err := r.pg.Exec(ctx, `
-		INSERT INTO paper_orders (paper_account_id, strategy_id, symbol, side, volume, fill_price, slippage_bps, state)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-	`, o.PaperAccountID, o.StrategyID, o.Symbol, o.Side, o.Volume, o.FillPrice, o.SlippageBps, o.State)
-	return fmt.Errorf("create paper order: %w", err)
+		INSERT INTO paper_orders (paper_account_id, strategy_id, symbol, side, volume, fill_price, slippage_bps, state, pnl)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	`, o.PaperAccountID, o.StrategyID, o.Symbol, o.Side, o.Volume, o.FillPrice, o.SlippageBps, o.State, o.PnL)
+	if err != nil {
+		return fmt.Errorf("create paper order: %w", err)
+	}
+	return nil
+}
+
+// UpdateOrderState updates the state, close price, and PnL of a paper order.
+func (r *PaperRepo) UpdateOrderState(ctx context.Context, orderID string, state string, closePrice, pnl decimal.Decimal, closedAt time.Time) error {
+	_, err := r.pg.Exec(ctx, `
+		UPDATE paper_orders SET state = $2, close_price = $3, pnl = $4, closed_at = $5
+		WHERE id = $1
+	`, orderID, state, closePrice, pnl, closedAt)
+	return err
+}
+
+// UpdateAccountBalance updates the current balance and equity of a paper account.
+func (r *PaperRepo) UpdateAccountBalance(ctx context.Context, accountID string, balance, equity decimal.Decimal) error {
+	_, err := r.pg.Exec(ctx, `
+		UPDATE paper_accounts SET current_balance = $2, equity = $3 WHERE id = $1
+	`, accountID, balance, equity)
+	return err
 }
 
 // ListOrders returns all paper orders for a paper account.
 func (r *PaperRepo) ListOrders(ctx context.Context, paperAccountID string) ([]*PaperOrder, error) {
 	rows, err := r.pg.Query(ctx, `
-		SELECT id, paper_account_id, strategy_id, symbol, side, volume, fill_price, slippage_bps, state, created_at, closed_at
+		SELECT id, paper_account_id, strategy_id, symbol, side, volume, fill_price, slippage_bps, state, pnl, created_at, closed_at
 		FROM paper_orders
 		WHERE paper_account_id = $1
 		ORDER BY created_at DESC
@@ -120,7 +144,7 @@ func (r *PaperRepo) ListOrders(ctx context.Context, paperAccountID string) ([]*P
 	for rows.Next() {
 		o := &PaperOrder{}
 		if err := rows.Scan(&o.ID, &o.PaperAccountID, &o.StrategyID, &o.Symbol, &o.Side,
-			&o.Volume, &o.FillPrice, &o.SlippageBps, &o.State, &o.CreatedAt, &o.ClosedAt); err != nil {
+			&o.Volume, &o.FillPrice, &o.SlippageBps, &o.State, &o.PnL, &o.CreatedAt, &o.ClosedAt); err != nil {
 			return nil, err
 		}
 		out = append(out, o)
@@ -134,7 +158,10 @@ func (r *PaperRepo) CreateStrategy(ctx context.Context, s *PaperStrategy) error 
 		INSERT INTO paper_strategies (user_id, name, description, category, dsl_code, backtest_metrics)
 		VALUES ($1, $2, $3, $4, $5, $6)
 	`, s.UserID, s.Name, s.Description, s.Category, s.DSLCode, s.BacktestMetrics)
-	return fmt.Errorf("create paper strategy: %w", err)
+	if err != nil {
+		return fmt.Errorf("create paper strategy: %w", err)
+	}
+	return nil
 }
 
 // ListStrategies returns all non-archived paper strategies for a user.

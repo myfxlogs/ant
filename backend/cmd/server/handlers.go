@@ -23,6 +23,8 @@ import (
 	"anttrader/internal/connect/strategy"
 	"anttrader/internal/connect/system"
 	"anttrader/internal/connect/user"
+	paperhdr "anttrader/internal/connect/paper"
+	papereng "anttrader/internal/paper"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/marketplace"
 	"anttrader/internal/mdgateway"
@@ -163,6 +165,13 @@ func registerHandlers(
 		log.Info("Python strategy client configured", zap.String("url", cfg.StrategyServiceURL))
 	}
 	mux.Handle(antv1c.NewPythonStrategyServiceHandler(pythonStrategyServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+
+	// Paper trading — virtual trading engine + ConnectRPC handler.
+	paperRepo := repository.NewPaperRepo(pool)
+	paperEngine := papereng.New(paperRepo, mthubSvc, log)
+	pythonStrategyServer.SetPaperEngine(paperEngine)
+	paperHandler := paperhdr.NewHandler(paperRepo, paperEngine, log)
+	mux.Handle(antv1c.NewPaperTradingServiceHandler(paperHandler, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 	codeAssistServer := ai.NewCodeAssistServer(aiSvc, session, log)
 	if cfg.StrategyServiceURL != "" {
 		codeAssistServer.SetPythonStrategyClient(antv1c.NewPythonStrategyServiceClient(http.DefaultClient, cfg.StrategyServiceURL))
