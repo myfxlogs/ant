@@ -31,18 +31,18 @@ const logs = {
     success: 'Thành công',
     failed: 'Thất bại',
     exampleSymbolPlaceholder: 'Ví dụ: XAUUSD',
-    result: 'Result',
-    riskCode: 'Risk Code',
-    requestId: 'Request ID',
-    triggerSource: 'Trigger Source',
-    riskLogQuickFilter: 'Risk Log Quick Filter',
-    loadFailed: 'Failed to load logs',
+    result: 'Kết quả',
+    riskCode: 'Mã rủi ro',
+    requestId: 'ID yêu cầu',
+    triggerSource: 'Nguồn kích hoạt',
+    riskLogQuickFilter: 'Bộ lọc nhanh nhật ký rủi ro',
+    loadFailed: 'Tải nhật ký thất bại',
     orderTable: {
-      ticket: 'Ticket',
-      type: 'Type',
-      lots: 'Lots',
-      open: 'Open',
-      close: 'Close'
+      ticket: 'Vé',
+      type: 'Loại',
+      lots: 'Lot',
+      open: 'Mở',
+      close: 'Đóng'
     }
   }
 } as const;

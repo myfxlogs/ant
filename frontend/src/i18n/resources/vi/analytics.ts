@@ -32,7 +32,7 @@ const analytics = {
         pnlShare: 'Tỷ lệ lãi/lỗ',
         tradeStats: 'Thống kê giao dịch',
         riskMetrics: 'Chỉ số rủi ro',
-        economicCalendar: 'Economic calendar'
+        economicCalendar: 'Lịch kinh tế'
       },
       tradeStats: {
         totalTrades: 'Tổng số lệnh',
@@ -54,7 +54,7 @@ const analytics = {
         sharpe: 'Sharpe',
         sortino: 'Sortino',
         volatility: 'Biến động',
-        var95: 'Value at Risk (95%)'
+        var95: 'Giá trị rủi ro (95%)'
       },
       direction: {
         buy: 'Mua',
@@ -66,17 +66,17 @@ const analytics = {
       },
       yearOption: '{{year}}',
       economicCalendar: {
-        loading: 'Loading economic calendar...',
-        empty: 'No economic events available.',
-        actual: 'Actual',
-        previous: 'Previous',
-        estimate: 'Estimate',
-        keyIndicatorsTitle: 'Key macro indicators',
+        loading: 'Đang tải lịch kinh tế...',
+        empty: 'Không có sự kiện kinh tế nào.',
+        actual: 'Thực tế',
+        previous: 'Trước đó',
+        estimate: 'Dự báo',
+        keyIndicatorsTitle: 'Các chỉ số vĩ mô chính',
         indicators: {
-          CPI: 'Inflation (CPI)',
-          UNRATE: 'Unemployment rate',
-          FEDFUNDS: 'Fed funds rate',
-          GDP: 'Real GDP'
+          CPI: 'Lạm phát (CPI)',
+          UNRATE: 'Tỷ lệ thất nghiệp',
+          FEDFUNDS: 'Lãi suất quỹ Fed',
+          GDP: 'GDP thực tế'
         }
       }
     }

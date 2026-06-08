@@ -165,7 +165,7 @@ const aiWizard = {
       },
       publishBacktest: {
         cards: {
-          backtestTitle: 'Backtest',
+          backtestTitle: 'Kiểm thử lùi',
           scoreCardTitle: 'Thẻ điểm'
         },
         actions: {
@@ -192,8 +192,8 @@ const aiWizard = {
             title: 'Xác nhận điểm số'
           }
         },
-        draftName: 'Backtest {{datetime}} {{symbol}} {{timeframe}}',
-        draftNameShort: 'Backtest {{symbol}} {{timeframe}}'
+        draftName: 'Kiểm thử lùi {{datetime}} {{symbol}} {{timeframe}}',
+        draftNameShort: 'Kiểm thử lùi {{symbol}} {{timeframe}}'
       },
       strategyParams: {
         title: 'Tham số chiến lược (tùy chọn)',
@@ -339,6 +339,31 @@ const aiWizard = {
         scheduleCreated: 'Đã tạo lịch',
         createScheduleFailed: 'Không thể tạo lịch',
         scheduleAlreadyExists: 'Đã tồn tại lịch với cùng template+mã+khung thời gian cho tài khoản này. Vui lòng không tạo trùng.'
+      }
+    }
+  },
+  ai_wizard: {
+    ai: {
+      wizard: {
+        publishBacktest: {
+          cards: {
+            backtestTitle: 'Backtest'
+          },
+          draftName: 'Backtest {{datetime}} {{symbol}} {{timeframe}}',
+          draftNameShort: 'Backtest {{symbol}} {{timeframe}}'
+        },
+        strategyParams: {
+          labels: {
+            name: 'tên',
+            type: 'kiểu',
+            default: 'mặc định',
+            min: 'tối thiểu',
+            max: 'tối đa',
+            step: 'bước',
+            label: 'nhãn',
+            description: 'mô tả'
+          }
+        }
       }
     }
   }

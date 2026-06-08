@@ -170,7 +170,7 @@ const accounts = {
         week: '本週',
         month: '本月',
         all: '全部',
-        year: 'This year'
+        year: '今年'
       },
       chartSeries: {
         equity: '淨值',
@@ -212,19 +212,19 @@ const accounts = {
         netDeposit: '淨入金'
       },
       advancedTabs: {
-        hourly: 'Hourly',
-        daily: 'Daily'
+        hourly: '每小時',
+        daily: '每日'
       },
       timeDetail: {
-        lots: 'Lots',
-        trades: 'Trades',
-        profitAmount: 'Profit amount',
-        balance: 'Balance',
-        profitFactor: 'Profit factor',
-        maxFloatingLossAmount: 'Max floating loss amount',
-        maxFloatingLossRatio: 'Max floating loss ratio',
-        maxFloatingProfitAmount: 'Max floating profit amount',
-        maxFloatingProfitRatio: 'Max floating profit ratio'
+        lots: '手數',
+        trades: '交易次數',
+        profitAmount: '利潤金額',
+        balance: '餘額',
+        profitFactor: '利潤因子',
+        maxFloatingLossAmount: '最大浮動虧損金額',
+        maxFloatingLossRatio: '最大浮動虧損比例',
+        maxFloatingProfitAmount: '最大浮動盈利金額',
+        maxFloatingProfitRatio: '最大浮動盈利比例'
       }
     },
     bind: {
@@ -262,8 +262,8 @@ const accounts = {
       actions: {
         search: '搜尋',
         confirmBind: '確認綁定',
-        verifyAccount: 'Verify account',
-        retryVerify: 'Retry'
+        verifyAccount: '驗證帳戶',
+        retryVerify: '重試'
       },
       passwordHint: '密碼將透過 HTTPS 加密傳輸，後端使用 Argon2id 雜湊儲存不可回逆',
       summary: {
@@ -272,13 +272,13 @@ const accounts = {
         platform: '交易平台',
         tradingAccount: '交易帳號',
         password: '密碼',
-        verified: 'Account verified',
-        balance: 'Balance',
-        equity: 'Equity',
-        margin: 'Margin',
-        freeMargin: 'Free margin',
-        leverage: 'Leverage',
-        currency: 'Currency'
+        verified: '帳戶已驗證',
+        balance: '餘額',
+        equity: '淨值',
+        margin: '保證金',
+        freeMargin: '可用保證金',
+        leverage: '槓桿',
+        currency: '貨幣'
       },
       errorModal: {
         title: '綁定失敗'
@@ -294,7 +294,7 @@ const accounts = {
         noAccessHosts: '無可用伺服器位址',
         bindSuccess: '帳戶綁定成功',
         bindFailed: '帳戶綁定失敗',
-        verifyFailed: 'Account verification failed'
+        verifyFailed: '帳戶驗證失敗'
       },
       errors: {
         brokerUnavailable: '連線伺服器錯誤或密碼不正確',
@@ -375,11 +375,11 @@ const accounts = {
         enableAccount: '啟用帳戶',
         disableAccount: '停用帳戶',
         syncHistory: '同步歷史',
-        deleteAccount: 'Delete account',
-        deleteConfirm: 'Verify & Delete',
-        deleteWarning: 'This action is irreversible. All account data (trade records, analytics, etc.) will be permanently deleted.',
-        deletePasswordHint: 'Enter the MT trading password or read-only password to verify:',
-        deletePasswordPlaceholder: 'MT trading / read-only password'
+        deleteAccount: '刪除帳戶',
+        deleteConfirm: '驗證並刪除',
+        deleteWarning: '此操作不可逆轉。所有帳戶資料（交易記錄、分析等）將被永久刪除。',
+        deletePasswordHint: '請輸入MT交易密碼或唯讀密碼以驗證：',
+        deletePasswordPlaceholder: 'MT交易密碼/唯讀密碼'
       },
       status: {
         disabled: '已停用',

@@ -11,9 +11,9 @@ const aiStore = {
         createConversationFailed: 'Tạo hội thoại thất bại',
         deleteConversationFailed: 'Xóa hội thoại thất bại',
         clearedLocalOnly: 'Đã xóa (chỉ cục bộ)',
-        getReportsFailed: 'Get reports failed',
-        generateReportSuccess: 'Report generated successfully',
-        generateReportFailed: 'Report generation failed'
+        getReportsFailed: 'Lấy báo cáo thất bại',
+        generateReportSuccess: 'Báo cáo đã được tạo thành công',
+        generateReportFailed: 'Tạo báo cáo thất bại'
       },
       prefs: {
         rememberPrefix: '/remember ',
@@ -21,25 +21,58 @@ const aiStore = {
         savedReply: 'Đã lưu tùy chọn của bạn.'
       },
       strategyRules: {
-        title: 'When writing AntTrader Python strategy code, you must strictly follow these validation rules:',
+        title: 'Khi viết mã chiến lược Python AntTrader, bạn phải tuân thủ nghiêm ngặt các quy tắc xác thực sau:',
         rules: {
-          noImport: '- No import / from ... import ... allowed',
-          noGlobal: '- No global / nonlocal',
-          noDunderAccess: '- No access to dunder attributes (obj.__xxx__)',
-          noDunderName: '- No dunder names (__xxx__)',
-          noDangerousCalls: '- No calls to: open()/eval()/exec()/compile()/__import__()/input()/globals()/locals()/vars()/dir()',
-          runSignature: '- If defining run function: only one run(context), must have exactly 1 parameter context, no *args/**kwargs',
-          mustDefineEntry: '- Strategy must define signal variable or run(context) function (prefer run(context))'
+          noImport: '- Không được phép import / from ... import ...',
+          noGlobal: '- Không được phép global / nonlocal',
+          noDunderAccess: '- Không truy cập thuộc tính dunder (obj.__xxx__)',
+          noDunderName: '- Không tên dunder (__xxx__)',
+          noDangerousCalls: '- Không gọi: open()/eval()/exec()/compile()/__import__()/input()/globals()/locals()/vars()/dir()',
+          runSignature: '- Nếu định nghĩa hàm run: chỉ một run(context), phải có chính xác 1 tham số context, không *args/**kwargs',
+          mustDefineEntry: '- Chiến lược phải định nghĩa biến signal hoặc hàm run(context) (ưu tiên run(context))'
         },
-        allowedGlobals: 'Allowed globals/modules: np, math, datetime, calculate_rsi (do not import).'
+        allowedGlobals: 'Toàn cục/mô-đun được phép: np, math, datetime, calculate_rsi (không import).'
       },
       context: {
-        userPrefsTitle: 'User preferences (please follow as much as possible):',
-        outputTitle: 'Output requirements:',
+        userPrefsTitle: 'Tùy chọn người dùng (vui lòng tuân thủ càng nhiều càng tốt):',
+        outputTitle: 'Yêu cầu đầu ra:',
         outputRules: {
-          wrapPython: '- If outputting strategy code, output full code wrapped in \`\`\`python',
-          validateFirst: '- Code must pass validate first',
-          noImport: '- Do not output any import statements'
+          wrapPython: '- Nếu xuất mã chiến lược, xuất mã đầy đủ trong \`\`\`python',
+          validateFirst: '- Mã phải vượt qua xác thực trước',
+          noImport: '- Không xuất bất kỳ câu lệnh import nào'
+        }
+      }
+    }
+  },
+  ai_store: {
+    ai: {
+      store: {
+        strategyRules: {
+          title: 'Khi viết mã chiến lược Python AntTrader, bạn phải tuân thủ nghiêm ngặt các quy tắc xác thực sau:',
+          rules: {
+            noImport: '- Không được phép import / from ... import ...',
+            noGlobal: '- Không được dùng global / nonlocal',
+            noDunderAccess: '- Không được truy cập thuộc tính dunder (obj.__xxx__)',
+            noDunderName: '- Không được dùng tên dunder (__xxx__)',
+            noDangerousCalls: '- Không được gọi: open()/eval()/exec()/compile()/__import__()/input()/globals()/locals()/vars()/dir()',
+            runSignature: '- Nếu định nghĩa hàm run: chỉ một run(context), phải có đúng 1 tham số context, không *args/**kwargs',
+            mustDefineEntry: '- Chiến lược phải định nghĩa biến signal hoặc hàm run(context) (ưu tiên run(context))'
+          },
+          allowedGlobals: 'Các module/biến toàn cục được phép: np, math, datetime, calculate_rsi (không cần import).'
+        },
+        context: {
+          userPrefsTitle: 'Sở thích người dùng (vui lòng tuân theo càng nhiều càng tốt):',
+          outputTitle: 'Yêu cầu đầu ra:',
+          outputRules: {
+            wrapPython: '- Nếu xuất mã chiến lược, hãy xuất toàn bộ mã được bọc trong \`\`\`python',
+            validateFirst: '- Mã phải vượt qua xác thực trước tiên',
+            noImport: '- Không xuất bất kỳ câu lệnh import nào'
+          }
+        },
+        messages: {
+          getReportsFailed: 'Lấy báo cáo thất bại',
+          generateReportSuccess: 'Tạo báo cáo thành công',
+          generateReportFailed: 'Tạo báo cáo thất bại'
         }
       }
     }

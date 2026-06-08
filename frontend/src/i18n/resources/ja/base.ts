@@ -94,7 +94,7 @@ const base = {
       day: '日',
       lessThanMinute: '< 1分'
     },
-    required: 'Required'
+    required: '必須'
   },
   language: {
     simplifiedChinese: '简体中文',
@@ -119,7 +119,7 @@ const base = {
     schedules: '戦略スケジュール',
     indicatorCatalog: 'インジケーターカタログ',
     logs: 'システムログ',
-    assetAnalysis: 'AI Analysis'
+    assetAnalysis: 'AI分析'
   },
   market: {
     searchPlaceholder: '銘柄を検索（例: EURUSD, XAUUSD）',
@@ -127,10 +127,10 @@ const base = {
     watchlist: 'ウォッチリスト',
     popularSymbols: '人気銘柄',
     noSymbolSelected: '銘柄を選択してマーケットデータを表示',
-    bid: 'Bid',
-    ask: 'Ask',
+    bid: '買値',
+    ask: '売値',
     spread: 'スプレッド',
-    mid: 'Mid'
+    mid: '仲値'
   },
   topbar: {
     systemOk: 'システムは正常に稼働中',
@@ -186,11 +186,11 @@ const base = {
         fallback: '自動取引ステータスが更新されました'
       }
     },
-    all: 'All',
-    unread: 'Unread',
-    markAllRead: 'Mark all as read',
-    clearAll: 'Clear all',
-    confirmClearAll: 'Clear all notifications?'
+    all: 'すべて',
+    unread: '未読',
+    markAllRead: 'すべて既読にする',
+    clearAll: 'すべて消去',
+    confirmClearAll: 'すべての通知を消去しますか？'
   },
   errors: {
     not_authenticated: '認証されていません',
@@ -232,60 +232,60 @@ const base = {
     translate_failed: '翻訳に失敗しました'
   },
   marketplace: {
-    title: 'Strategy Marketplace',
-    subtitle: 'Discover, rate, and subscribe to community strategies',
-    publish: 'Publish Strategy',
+    title: 'ストラテジーマーケットプレイス',
+    subtitle: 'コミュニティストラテジーの発見、評価、購読',
+    publish: 'ストラテジーを公開',
     tabs: {
-      marketplace: 'Marketplace',
-      subscriptions: 'My Subscriptions'
+      marketplace: 'マーケットプレイス',
+      subscriptions: 'マイ購読'
     },
-    searchPlaceholder: 'Search strategies...',
-    filterByClass: 'Filter by asset class',
+    searchPlaceholder: 'ストラテジーを検索...',
+    filterByClass: '資産クラスで絞り込み',
     sort: {
-      newest: 'Newest',
-      popular: 'Most Popular',
-      performance: 'Best Performance'
+      newest: '最新順',
+      popular: '人気順',
+      performance: 'パフォーマンス順'
     },
-    empty: 'No strategies published yet',
-    noSubscriptions: 'No subscriptions yet',
+    empty: 'まだ公開されたストラテジーはありません',
+    noSubscriptions: 'まだ購読していません',
     card: {
-      subscribe: 'Subscribe',
-      subscribed: 'Subscribed',
-      unsubscribe: 'Unsubscribe',
-      unsubscribeHint: 'Click to unsubscribe',
-      details: 'Details',
-      subscribers: 'Subscribers',
-      winRate: 'Win Rate',
+      subscribe: '購読',
+      subscribed: '購読中',
+      unsubscribe: '購読解除',
+      unsubscribeHint: 'クリックして購読解除',
+      details: '詳細',
+      subscribers: '購読者',
+      winRate: '勝率',
       by: 'by'
     },
     assetClass: {
-      forex: 'Forex',
-      crypto: 'Crypto',
-      commodity: 'Commodity',
-      index: 'Index',
-      stock: 'Stock',
-      other: 'Other'
+      forex: '外国為替',
+      crypto: '暗号資産',
+      commodity: '商品',
+      index: '指数',
+      stock: '株式',
+      other: 'その他'
     },
     risk: {
-      low: 'Low Risk',
-      medium: 'Medium Risk',
-      high: 'High Risk'
+      low: '低リスク',
+      medium: '中リスク',
+      high: '高リスク'
     },
     messages: {
-      loginFirst: 'Please log in first',
-      subscribed: 'Subscribed successfully',
-      subscribeFailed: 'Subscribe failed',
-      unsubscribed: 'Unsubscribed',
-      unsubscribeFailed: 'Unsubscribe failed',
-      rated: 'Rating submitted',
-      rateFailed: 'Rating failed',
-      commentPosted: 'Comment posted',
-      commentFailed: 'Comment failed'
+      loginFirst: '先にログインしてください',
+      subscribed: '購読しました',
+      subscribeFailed: '購読に失敗しました',
+      unsubscribed: '購読を解除しました',
+      unsubscribeFailed: '購読解除に失敗しました',
+      rated: '評価を送信しました',
+      rateFailed: '評価に失敗しました',
+      commentPosted: 'コメントを投稿しました',
+      commentFailed: 'コメント投稿に失敗しました'
     },
     detail: {
-      comments: 'Comments',
-      noComments: 'No comments yet. Be the first!',
-      commentPlaceholder: 'Write a comment... (Shift+Enter for new line)'
+      comments: 'コメント',
+      noComments: 'まだコメントはありません。最初に投稿してみませんか？',
+      commentPlaceholder: 'コメントを入力...（Shift+Enterで改行）'
     }
   },
   admin: {
@@ -477,17 +477,17 @@ const base = {
     }
   },
   symbolDetection: {
-    label: 'Detected Symbols',
-    loading: 'Parsing…',
-    noSymbols: 'No trading symbols detected. Try including specific symbol names (e.g. "Bitcoin", "EURUSD", "Gold").',
-    unresolvedTooltip: 'No trading account bound yet, unable to resolve',
-    resolvedTooltip: 'broker: {{broker}} | mode: {{mode}}',
+    label: '検出された銘柄',
+    loading: '解析中...',
+    noSymbols: '取引銘柄が検出されませんでした。具体的な銘柄名を含めてみてください（例：「Bitcoin」「EURUSD」「Gold」）',
+    unresolvedTooltip: '取引口座が未バインドのため、解決できません',
+    resolvedTooltip: 'ブローカー：{{broker}} | モード：{{mode}}',
     tradeMode: {
-      disabled: 'Disabled',
-      longOnly: 'Long Only',
-      shortOnly: 'Short Only',
-      longShort: 'Both Long & Short',
-      unknown: 'Unknown({{mode}})'
+      disabled: '無効',
+      longOnly: '買いのみ',
+      shortOnly: '売りのみ',
+      longShort: '両建て可',
+      unknown: '不明（{{mode}}）'
     }
   }
 } as const;

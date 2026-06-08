@@ -41,8 +41,8 @@ const accounts = {
       actions: {
         search: '検索',
         confirmBind: '連携を確定',
-        verifyAccount: 'Verify account',
-        retryVerify: 'Retry'
+        verifyAccount: 'アカウントを確認',
+        retryVerify: '再試行'
       },
       passwordHint: 'パスワードは HTTPS で送信され、バックエンドで Argon2id ハッシュとして保存されます（復元不可）。',
       summary: {
@@ -51,13 +51,13 @@ const accounts = {
         platform: 'プラットフォーム',
         tradingAccount: '取引口座',
         password: 'パスワード',
-        verified: 'Account verified',
-        balance: 'Balance',
-        equity: 'Equity',
-        margin: 'Margin',
-        freeMargin: 'Free margin',
-        leverage: 'Leverage',
-        currency: 'Currency'
+        verified: 'アカウント確認済み',
+        balance: '残高',
+        equity: '純資産',
+        margin: '証拠金',
+        freeMargin: '有効証拠金',
+        leverage: 'レバレッジ',
+        currency: '通貨'
       },
       messages: {
         enterBrokerName: 'ブローカー名を入力してください',
@@ -70,7 +70,7 @@ const accounts = {
         noAccessHosts: '利用可能なアクセスホストがありません',
         bindSuccess: '口座を連携しました',
         bindFailed: '口座の連携に失敗しました',
-        verifyFailed: 'Account verification failed'
+        verifyFailed: 'アカウント確認に失敗しました'
       },
       errors: {
         brokerUnavailable: 'サーバーエラーまたはパスワードが正しくありません',
@@ -179,19 +179,19 @@ const accounts = {
         netDeposit: '純入金'
       },
       advancedTabs: {
-        hourly: 'Hourly',
-        daily: 'Daily'
+        hourly: '時間足',
+        daily: '日足'
       },
       timeDetail: {
-        lots: 'Lots',
-        trades: 'Trades',
-        profitAmount: 'Profit amount',
-        balance: 'Balance',
-        profitFactor: 'Profit factor',
-        maxFloatingLossAmount: 'Max floating loss amount',
-        maxFloatingLossRatio: 'Max floating loss ratio',
-        maxFloatingProfitAmount: 'Max floating profit amount',
-        maxFloatingProfitRatio: 'Max floating profit ratio'
+        lots: 'ロット',
+        trades: '取引数',
+        profitAmount: '損益額',
+        balance: '残高',
+        profitFactor: 'プロフィットファクター',
+        maxFloatingLossAmount: '最大含み損額',
+        maxFloatingLossRatio: '最大含み損比率',
+        maxFloatingProfitAmount: '最大含み益額',
+        maxFloatingProfitRatio: '最大含み益比率'
       }
     },
     card: {
@@ -311,11 +311,11 @@ const accounts = {
         enableAccount: '口座を有効化',
         disableAccount: '口座を無効化',
         syncHistory: '履歴を同期',
-        deleteAccount: 'Delete account',
-        deleteConfirm: 'Verify & Delete',
-        deleteWarning: 'This action is irreversible. All account data (trade records, analytics, etc.) will be permanently deleted.',
-        deletePasswordHint: 'Enter the MT trading password or read-only password to verify:',
-        deletePasswordPlaceholder: 'MT trading / read-only password'
+        deleteAccount: 'アカウント削除',
+        deleteConfirm: '確認して削除',
+        deleteWarning: 'この操作は元に戻せません。取引記録、分析データなど、すべてのアカウントデータが完全に削除されます。',
+        deletePasswordHint: '確認のため、MT取引パスワードまたは読み取り専用パスワードを入力してください：',
+        deletePasswordPlaceholder: 'MT取引/読み取り専用パスワード'
       },
       status: {
         disabled: '無効',

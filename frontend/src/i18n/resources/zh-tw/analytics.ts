@@ -32,7 +32,7 @@ const analytics = {
         pnlShare: '盈虧占比',
         tradeStats: '交易統計',
         riskMetrics: '風險指標',
-        economicCalendar: 'Economic calendar'
+        economicCalendar: '經濟日曆'
       },
       tradeStats: {
         totalTrades: '總交易',
@@ -54,7 +54,7 @@ const analytics = {
         sharpe: '夏普比率',
         sortino: '索提諾比率',
         volatility: '波動率',
-        var95: 'Value at Risk (95%)'
+        var95: '風險價值（95%）'
       },
       direction: {
         buy: '買入',
@@ -66,17 +66,17 @@ const analytics = {
       },
       yearOption: '{{year}}年',
       economicCalendar: {
-        loading: 'Loading economic calendar...',
-        empty: 'No economic events available.',
-        actual: 'Actual',
-        previous: 'Previous',
-        estimate: 'Estimate',
-        keyIndicatorsTitle: 'Key macro indicators',
+        loading: '正在載入經濟日曆...',
+        empty: '暫無經濟事件。',
+        actual: '實際值',
+        previous: '前值',
+        estimate: '預測值',
+        keyIndicatorsTitle: '關鍵宏觀指標',
         indicators: {
-          CPI: 'Inflation (CPI)',
-          UNRATE: 'Unemployment rate',
-          FEDFUNDS: 'Fed funds rate',
-          GDP: 'Real GDP'
+          CPI: '通貨膨脹（CPI）',
+          UNRATE: '失業率',
+          FEDFUNDS: '聯邦基金利率',
+          GDP: '實際GDP'
         }
       }
     }

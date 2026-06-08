@@ -31,18 +31,18 @@ const logs = {
     success: '成功',
     failed: '失敗',
     exampleSymbolPlaceholder: '例如: XAUUSD',
-    result: 'Result',
-    riskCode: 'Risk Code',
-    requestId: 'Request ID',
-    triggerSource: 'Trigger Source',
-    riskLogQuickFilter: 'Risk Log Quick Filter',
-    loadFailed: 'Failed to load logs',
+    result: '結果',
+    riskCode: '風險代碼',
+    requestId: '請求ID',
+    triggerSource: '觸發來源',
+    riskLogQuickFilter: '風險日誌快速篩選',
+    loadFailed: '載入日誌失敗',
     orderTable: {
-      ticket: 'Ticket',
-      type: 'Type',
-      lots: 'Lots',
-      open: 'Open',
-      close: 'Close'
+      ticket: '訂單號',
+      type: '類型',
+      lots: '手數',
+      open: '開盤',
+      close: '收盤'
     }
   }
 } as const;

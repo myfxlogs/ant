@@ -80,7 +80,7 @@ const accounts = {
         metrics: {
           change: 'Thay doi',
           profit: 'Loi nhuan',
-          lots: 'Lots',
+          lots: 'Lot',
           pips: 'Pips'
         },
         chartMainTitle: 'Loi nhuan theo thang ({{metric}})',
@@ -170,7 +170,7 @@ const accounts = {
         week: 'Tuần này',
         month: 'Tháng này',
         all: 'Tất cả',
-        year: 'This year'
+        year: 'Năm nay'
       },
       chartSeries: {
         equity: 'Vốn',
@@ -212,19 +212,19 @@ const accounts = {
         netDeposit: 'Nạp ròng'
       },
       advancedTabs: {
-        hourly: 'Hourly',
-        daily: 'Daily'
+        hourly: 'Theo giờ',
+        daily: 'Theo ngày'
       },
       timeDetail: {
-        lots: 'Lots',
-        trades: 'Trades',
-        profitAmount: 'Profit amount',
-        balance: 'Balance',
-        profitFactor: 'Profit factor',
-        maxFloatingLossAmount: 'Max floating loss amount',
-        maxFloatingLossRatio: 'Max floating loss ratio',
-        maxFloatingProfitAmount: 'Max floating profit amount',
-        maxFloatingProfitRatio: 'Max floating profit ratio'
+        lots: 'Lot',
+        trades: 'Giao dịch',
+        profitAmount: 'Lợi nhuận',
+        balance: 'Số dư',
+        profitFactor: 'Hệ số lợi nhuận',
+        maxFloatingLossAmount: 'Lỗ thả nổi tối đa',
+        maxFloatingLossRatio: 'Tỷ lệ lỗ thả nổi tối đa',
+        maxFloatingProfitAmount: 'Lợi nhuận thả nổi tối đa',
+        maxFloatingProfitRatio: 'Tỷ lệ lợi nhuận thả nổi tối đa'
       }
     },
     bind: {
@@ -262,8 +262,8 @@ const accounts = {
       actions: {
         search: 'Tìm kiếm',
         confirmBind: 'Xác nhận',
-        verifyAccount: 'Verify account',
-        retryVerify: 'Retry'
+        verifyAccount: 'Xác minh tài khoản',
+        retryVerify: 'Thử lại'
       },
       passwordHint: 'Mật khẩu được truyền qua HTTPS. Backend lưu dưới dạng băm Argon2id không thể đảo ngược.',
       summary: {
@@ -272,13 +272,13 @@ const accounts = {
         platform: 'Nền tảng',
         tradingAccount: 'Tài khoản giao dịch',
         password: 'Mật khẩu',
-        verified: 'Account verified',
-        balance: 'Balance',
-        equity: 'Equity',
-        margin: 'Margin',
-        freeMargin: 'Free margin',
-        leverage: 'Leverage',
-        currency: 'Currency'
+        verified: 'Tài khoản đã xác minh',
+        balance: 'Số dư',
+        equity: 'Vốn chủ sở hữu',
+        margin: 'Ký quỹ',
+        freeMargin: 'Ký quỹ tự do',
+        leverage: 'Đòn bẩy',
+        currency: 'Tiền tệ'
       },
       errorModal: {
         title: 'Liên kết thất bại'
@@ -294,7 +294,7 @@ const accounts = {
         noAccessHosts: 'Không có máy chủ khả dụng',
         bindSuccess: 'Liên kết tài khoản thành công',
         bindFailed: 'Liên kết tài khoản thất bại',
-        verifyFailed: 'Account verification failed'
+        verifyFailed: 'Xác minh tài khoản thất bại'
       },
       errors: {
         brokerUnavailable: 'Lỗi máy chủ hoặc mật khẩu không đúng',
@@ -375,11 +375,11 @@ const accounts = {
         enableAccount: 'Bật tài khoản',
         disableAccount: 'Tắt tài khoản',
         syncHistory: 'Đồng bộ lịch sử',
-        deleteAccount: 'Delete account',
-        deleteConfirm: 'Verify & Delete',
-        deleteWarning: 'This action is irreversible. All account data (trade records, analytics, etc.) will be permanently deleted.',
-        deletePasswordHint: 'Enter the MT trading password or read-only password to verify:',
-        deletePasswordPlaceholder: 'MT trading / read-only password'
+        deleteAccount: 'Xóa tài khoản',
+        deleteConfirm: 'Xác minh & Xóa',
+        deleteWarning: 'Hành động này không thể hoàn tác. Toàn bộ dữ liệu tài khoản (lịch sử giao dịch, phân tích, v.v.) sẽ bị xóa vĩnh viễn.',
+        deletePasswordHint: 'Nhập mật khẩu giao dịch MT hoặc mật khẩu chỉ-đọc để xác minh:',
+        deletePasswordPlaceholder: 'Mật khẩu giao dịch / chỉ-đọc MT'
       },
       status: {
         disabled: 'Đã tắt',

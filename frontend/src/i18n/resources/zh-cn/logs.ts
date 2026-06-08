@@ -42,9 +42,9 @@ const logs = {
       type: '类型',
       lots: '手数',
       open: '开仓价',
-      close: '平仓价',
-    },
-  },
+      close: '平仓价'
+    }
+  }
 } as const;
 
 export default logs;

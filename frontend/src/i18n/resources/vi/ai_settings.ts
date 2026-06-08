@@ -11,9 +11,9 @@ const aiSettings = {
       fields: {
         name: 'Tên',
         provider: 'Nhà cung cấp AI',
-        baseUrl: 'Base URL',
+        baseUrl: 'URL Cơ sở',
         baseUrlHint: ' (địa chỉ dịch vụ model)',
-        apiKey: 'API Key',
+        apiKey: 'Khóa API',
         apiKeyConfigured: 'Đã cấu hình',
         apiKeyReplaceHint: 'Để thay key, nhập lại tại đây',
         deleteApiKey: 'Xoá key',
@@ -71,7 +71,7 @@ const aiSettings = {
         providerFirst: 'Vui lòng chọn nhà cung cấp trước',
         modelManual: 'Nhập tên mô hình (khuyến nghị copy model id từ trang quản lý)',
         modelSelect: 'Chọn mô hình',
-        modelSelectOrType: 'Select from dropdown or type model id'
+        modelSelectOrType: 'Chọn từ danh sách hoặc nhập ID mô hình'
       },
       apiKeySavedAs: 'Đã lưu: {{masked}}',
       apiKeyGuide: {
@@ -191,10 +191,10 @@ const aiSettings = {
           portfolio: 'Danh mục',
           execution: 'Thực thi',
           code: 'Mã',
-          strategist: 'Strategy Analyst',
-          risk_manager: 'Risk Manager',
-          executor: 'Execution Advisor',
-          researcher: 'Market Researcher'
+          strategist: 'Nhà phân tích Chiến lược',
+          risk_manager: 'Quản lý Rủi ro',
+          executor: 'Cố vấn Thực thi',
+          researcher: 'Nghiên cứu Thị trường'
         },
         defaults: {
           style: {
@@ -230,22 +230,61 @@ const aiSettings = {
             inputHint: 'Ví dụ: trend-following EMA(fast)/EMA(slow) với bộ lọc ATR; params = fast, slow, atr_period, risk_per_trade.'
           },
           strategist: {
-            identity: 'Senior quantitative strategy analyst — recommends strategy paradigms based on account/market conditions.'
+            identity: 'Nhà phân tích chiến lược định lượng cao cấp — đề xuất mô hình chiến lược dựa trên điều kiện tài khoản/thị trường.'
           },
           risk_manager: {
-            identity: 'Strict risk control expert — designs position sizing, stop-loss, drawdown limits.'
+            identity: 'Chuyên gia kiểm soát rủi ro nghiêm ngặt — thiết kế định cỡ vị thế, cắt lỗ, giới hạn sụt giảm.'
           },
           executor: {
-            identity: 'Trade execution optimization expert — minimizes slippage and execution costs.'
+            identity: 'Chuyên gia tối ưu hóa thực thi giao dịch — giảm thiểu trượt giá và chi phí thực thi.'
           },
           researcher: {
-            identity: 'Macroeconomic and industry researcher — analyzes macro events and sector trends.'
+            identity: 'Nhà nghiên cứu kinh tế vĩ mô và ngành — phân tích sự kiện vĩ mô và xu hướng ngành.'
           }
         }
       },
       tabs: {
-        config: 'Model Config',
-        agents: 'Agent Config'
+        config: 'Cấu hình Mô hình',
+        agents: 'Cấu hình Tác nhân'
+      }
+    }
+  },
+  ai_settings: {
+    ai: {
+      settings: {
+        tabs: {
+          config: 'Cấu hình mô hình',
+          agents: 'Cấu hình tác nhân'
+        },
+        fields: {
+          baseUrl: 'URL gốc',
+          apiKey: 'Khóa API'
+        },
+        placeholders: {
+          modelSelectOrType: 'Chọn từ danh sách hoặc nhập ID mô hình'
+        },
+        agent: {
+          types: {
+            strategist: 'Chuyên viên phân tích chiến lược',
+            risk_manager: 'Quản lý rủi ro',
+            executor: 'Cố vấn thực thi',
+            researcher: 'Nhà nghiên cứu thị trường'
+          },
+          defaults: {
+            strategist: {
+              identity: 'Chuyên viên phân tích chiến lược định lượng cấp cao — đề xuất mô hình chiến lược dựa trên điều kiện tài khoản/thị trường.'
+            },
+            risk_manager: {
+              identity: 'Chuyên gia kiểm soát rủi ro nghiêm ngặt — thiết kế quy mô vị thế, cắt lỗ, giới hạn sụt giảm.'
+            },
+            executor: {
+              identity: 'Chuyên gia tối ưu hóa thực thi giao dịch — giảm thiểu trượt giá và chi phí thực thi.'
+            },
+            researcher: {
+              identity: 'Nhà nghiên cứu kinh tế vĩ mô và ngành — phân tích sự kiện vĩ mô và xu hướng ngành.'
+            }
+          }
+        }
       }
     }
   }

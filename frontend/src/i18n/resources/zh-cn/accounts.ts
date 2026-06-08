@@ -170,7 +170,7 @@ const accounts = {
         week: '本周',
         month: '本月',
         all: '全部',
-        year: 'This year'
+        year: '本年'
       },
       chartSeries: {
         equity: '净值',

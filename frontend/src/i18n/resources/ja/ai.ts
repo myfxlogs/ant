@@ -66,7 +66,7 @@ const aiCore = {
         needKey: 'キー設定を完了してください',
         needKeyDesc: 'API キーを入力するとモデル一覧を自動検出します',
         connectionFailed: '接続異常です。上の提示を確認してください',
-        noProvider: 'No provider selected yet'
+        noProvider: 'プロバイダーが未選択です'
       },
       cardState: {
         noKey: '未設定',
@@ -98,80 +98,80 @@ const aiCore = {
         primaryForHint: 'サービス内部ルーティング専用：チャット / 埋め込み / 要約 / 推論'
       },
       messages: {
-        loadConfigFailed: 'Failed to load configs',
-        secretSavedAutoDiscover: 'Secret saved, auto-discovering models...',
-        secretAutoSaveFailed: 'Secret auto-save failed',
-        autoDiscoveredModels: 'Auto-discovered {{count}} model(s) (for suggestion only)',
-        autoValidatedModels: 'Auto-validated: {{count}} model(s) found',
-        configSaved: 'Config saved',
-        configSaveFailed: 'Config save failed',
-        toggleEnabledFailed: 'Toggle enabled status failed',
-        secretDeletedConfigReset: 'Secret deleted, provider config reset to defaults',
-        deleteSecretFailed: 'Delete secret failed',
-        validationPassedModels: 'Validation passed: {{count}} model(s) found',
-        validationFailedNeedApiKey: 'Validation failed: this provider typically requires an API Key. Please fill and save the key first, then retry.'
+        loadConfigFailed: '設定の読み込みに失敗しました',
+        secretSavedAutoDiscover: 'シークレットを保存しました。モデルを自動検出中...',
+        secretAutoSaveFailed: 'シークレットの自動保存に失敗しました',
+        autoDiscoveredModels: '{{count}}個のモデルを自動検出しました（参考用）',
+        autoValidatedModels: '自動検証完了：{{count}}個のモデルが見つかりました',
+        configSaved: '設定を保存しました',
+        configSaveFailed: '設定の保存に失敗しました',
+        toggleEnabledFailed: '有効状態の切り替えに失敗しました',
+        secretDeletedConfigReset: 'シークレットを削除しました。プロバイダー設定をデフォルトにリセットしました',
+        deleteSecretFailed: 'シークレットの削除に失敗しました',
+        validationPassedModels: '検証完了：{{count}}個のモデルが見つかりました',
+        validationFailedNeedApiKey: '検証に失敗しました：このプロバイダーは通常APIキーが必要です。キーを入力して保存した後、再試行してください。'
       }
     },
     tabs: {
       settings: '設定',
       agentSettings: 'エージェント設定',
-      gate: 'AI Gate'
+      gate: 'AIゲート'
     },
     agentPrompts: {
       style: {
-        title: 'Market condition / style recommendation',
-        prompt: `You are a senior quantitative strategy analyst. Based on the following information, recommend a strategy paradigm: trend / mean reversion / short-term, and explain the reasoning, applicable conditions and inapplicable scenarios.
+        title: '相場環境・スタイル推奨',
+        prompt: `あなたはシニア定量ストラテジーアナリストです。以下の情報に基づき、トレンド/平均回帰/短期売買の戦略パラダイムを推奨し、その理由、適用条件、不適用シナリオを説明してください。
 
-Output requirements: use Markdown, must include:
-1) Reasoning process: how you derive from data/constraints/objectives (bullet points)
-2) Conclusion: main recommendation (only one primary paradigm) + alternative + applicable/inapplicable conditions
-3) Risk alerts: at least 3
+出力要件：Markdownを使用し、以下を含めてください：
+1) 推論プロセス：データ/制約/目標からどのように導き出したか（箇条書き）
+2) 結論：主推奨（1つの主要パラダイムのみ）+ 代替案 + 適用/不適用条件
+3) リスクアラート：最低3つ
 
 {{baseInfo}}`
       },
       signals: {
-        title: 'Signal and indicator design',
-        prompt: `You are a quantitative factor and signal engineer. Without relying on external data (unless the user provides macro event tables), design actionable trading signals.
+        title: 'シグナルとインジケーター設計',
+        prompt: `あなたは定量ファクター・シグナルエンジニアです。外部データに依存せず（ユーザーがマクロイベントテーブルを提供する場合を除く）、実用的な取引シグナルを設計してください。
 
-Requirements: clearly define entry/exit/filter conditions, preferably parameterized, avoid overfitting.
+要件：エントリー/エグジット/フィルター条件を明確に定義し、可能な限りパラメーター化し、オーバーフィッティングを避けてください。
 
-Output requirements: use Markdown, must include:
-1) Reasoning process: why choose these indicators/thresholds/filter conditions (bullet points)
-2) Conclusion: executable rule list (entry/exit/filter), with parameter suggestions (default/range)
-3) Boundaries and risks: at least 3 (e.g.: range-bound/gap/high volatility/news events)
+出力要件：Markdownを使用し、以下を含めてください：
+1) 推論プロセス：なぜこれらのインジケーター/しきい値/フィルター条件を選択したか（箇条書き）
+2) 結論：実行可能なルール一覧（エントリー/エグジット/フィルター）、パラメーター提案（デフォルト/範囲）
+3) 限界とリスク：最低3つ（例：レンジ相場/ギャップ/高ボラティリティ/ニュースイベント）
 
 {{baseInfo}}`
       },
       risk: {
-        title: 'Risk control and execution constraints',
-        prompt: `You are a trading risk and execution expert. Based on the following information, design position management, stop-loss/take-profit, max drawdown control, cooldown period/trade frequency limits, etc.
+        title: 'リスク管理と執行制約',
+        prompt: `あなたは取引リスクと執行の専門家です。以下の情報に基づき、ポジション管理、ストップロス/テイクプロフィット、最大ドローダウン管理、クールダウン期間/取引頻度制限などを設計してください。
 
-Output requirements: use Markdown, must include:
-1) Reasoning process: why these controls match objectives/constraints (bullet points)
-2) Conclusion: hard constraints + default parameters (suggested/range) + actions after trigger
-3) Failure modes: at least 3 (e.g.: consecutive losses, slippage widening, spread anomalies)
+出力要件：Markdownを使用し、以下を含めてください：
+1) 推論プロセス：なぜこれらの制御が目標/制約に適合するか（箇条書き）
+2) 結論：ハード制約 + デフォルトパラメーター（推奨値/範囲）+ トリガー後のアクション
+3) 障害モード：最低3つ（例：連続損失、スリッページ拡大、スプレッド異常）
 
 {{baseInfo}}`
       },
       code: {
-        title: 'Code generation agent',
-        prompt: `You are an AntTrader Python strategy code engineer. Generate runnable AntTrader Python strategy code that:
-- Passes validate checks (no import, no dunder, sandbox constraints)
-- Uses platform APIs like on_tick / on_kline (no custom network/file access)
-- run() must receive exactly one parameter: context (must be named context; no run(ctx), run(context, data), etc.)
-- run(context) returns a dict with at least: signal(buy/sell/hold), symbol, confidence(0~1), risk_level(low/medium/high), reason
-- Read parameters from context["params"] (from schedule injection); use defaults if missing
-- Use upstream signal design and risk controls (provide reasonable defaults if not provided)
-- Output full code wrapped in \`\`\`python
-- Strict output: only one \`\`\`python block\`\`\`, no explanation text
-- Code block must be pure Python: no Markdown symbols, no Chinese punctuation, no nested code fences
+        title: 'コード生成エージェント',
+        prompt: `あなたはAntTraderのPythonストラテジーコードエンジニアです。以下の条件を満たす実行可能なAntTrader Pythonストラテジーコードを生成してください：
+- バリデーションチェックに合格（import不可、dunder不可、サンドボックス制約）
+- on_tick/on_klineなどのプラットフォームAPIを使用（カスタムネットワーク/ファイルアクセス不可）
+- run()は引数を1つだけ受け取る：context（名前はcontextでなければなりません。run(ctx)、run(context, data)などは不可）
+- run(context)は以下を含むdictを返す：signal(buy/sell/hold)、symbol、confidence(0~1)、risk_level(low/medium/high)、reason
+- context["params"]からパラメーターを読み取り（スケジュール注入から）、欠落している場合はデフォルト値を使用
+- 上流のシグナル設計とリスク制御を使用（提供されない場合は適切なデフォルト値を設定）
+- 完全なコードを \`\`\`python でラップして出力
+- 厳密な出力：\`\`\`python ブロック1つのみ、説明文なし
+- コードブロックは純粋なPython：Markdown記号不可、中国語の句読点不可、ネストされたコードフェンス不可
 
-[Mandatory entry template (do not change function name/param count/param name)]
+[必須テンプレート（関数名/パラメーター数/パラメーター名は変更不可）]
 \`\`\`python
 def run(context):
     params = context.get("params") or {}
     symbol = context.get("symbol") or params.get("symbol") or ""
-    # TODO: implement signal/risk logic here
+    # TODO: シグナル/リスクロジックをここに実装
     return {
         "signal": "hold",
         "symbol": symbol,
@@ -183,271 +183,230 @@ def run(context):
 
 {{baseInfo}}
 
-[Note: upstream analysis conclusions – apply to code (provide reasonable defaults if missing)]`
+[注記：上流分析の結論 – コードに適用（欠落している場合は適切なデフォルト値を設定）]`
       }
     },
     consensus: {
-      title: 'Consensus & Discussion',
+      title: 'コンセンサスと議論',
       actions: {
-        refresh: 'Refresh'
+        refresh: '更新'
       },
       fields: {
-        account: 'Account',
-        symbol: 'Symbol',
-        timeframe: 'Timeframe'
+        account: '口座',
+        symbol: '銘柄',
+        timeframe: '時間足'
       },
       panel: {
-        title: 'Objective Score',
-        decision: 'Decision',
-        overallScore: 'Overall',
-        technicalScore: 'Technical'
+        title: '目標スコア',
+        decision: '判定',
+        overallScore: '総合',
+        technicalScore: 'テクニカル'
       },
       signals: {
         rsi: {
           value: 'RSI',
-          flag: 'Signal'
+          flag: 'シグナル'
         },
         macd: {
           value: 'MACD',
-          signalLine: 'Signal Line',
-          hist: 'Histogram',
-          flag: 'Signal',
-          trend: 'Pattern'
+          signalLine: 'シグナル線',
+          hist: 'ヒストグラム',
+          flag: 'シグナル',
+          trend: 'パターン'
         },
         ma: {
-          trend: 'MA Trend'
+          trend: 'MAトレンド'
         }
       }
     },
     conversation: {
-      defaultTitle: 'New Conversation'
+      defaultTitle: '新しい会話'
     },
     reports: {
       tradeAnalysis: {
-        title: 'AI Trade Analysis Report',
-        riskAssessmentPrefix: 'Risk Assessment:'
+        title: 'AI取引分析レポート',
+        riskAssessmentPrefix: 'リスク評価：'
       }
     },
     signalCard: {
       status: {
-        pending: 'Pending',
-        confirmed: 'Confirmed',
-        executed: 'Executed',
-        cancelled: 'Cancelled'
+        pending: '保留中',
+        confirmed: '確認済み',
+        executed: '執行済み',
+        cancelled: 'キャンセル済み'
       },
       labels: {
-        price: 'Price',
-        volume: 'Lots',
-        confidence: 'Confidence',
-        stopLoss: 'Stop Loss',
-        takeProfit: 'Take Profit',
-        analysisReason: 'Analysis Reason'
+        price: '価格',
+        volume: 'ロット',
+        confidence: '確信度',
+        stopLoss: 'ストップロス',
+        takeProfit: 'テイクプロフィット',
+        analysisReason: '分析理由'
       },
       actions: {
-        confirm: 'Confirm',
-        cancel: 'Cancel',
-        executeTrade: 'Execute Trade'
+        confirm: '確認',
+        cancel: 'キャンセル',
+        executeTrade: '取引を執行'
       },
       confirmCancel: {
-        title: 'Are you sure you want to cancel this signal?'
+        title: 'このシグナルをキャンセルしてもよろしいですか？'
       },
       confirmExecute: {
-        title: 'Are you sure you want to execute this trade signal?',
-        description: 'Will place the order immediately'
+        title: 'この取引シグナルを執行してもよろしいですか？',
+        description: 'すぐに注文を発注します'
       }
     },
     assistant: {
       messages: {
-        noCodeBlockFound: 'No code block found (\`\`\`...\`\`\`)'
+        noCodeBlockFound: 'コードブロックが見つかりませんでした（\`\`\`...\`\`\`）'
       }
     },
     strategyCard: {
       status: {
-        active: 'Active',
-        inactive: 'Inactive',
-        paused: 'Paused'
+        active: '稼働中',
+        inactive: '停止中',
+        paused: '一時停止中'
       },
       actionType: {
-        buy: 'Buy',
-        sell: 'Sell',
-        closeLong: 'Close Long',
-        closeShort: 'Close Short',
-        alert: 'Alert'
+        buy: '買い',
+        sell: '売り',
+        closeLong: '買い決済',
+        closeShort: '売り決済',
+        alert: 'アラート'
       },
       labels: {
-        triggeredCount: 'Triggered {{count}} times',
-        lastTriggeredAt: 'Last triggered: {{time}}'
+        triggeredCount: '{{count}}回トリガー',
+        lastTriggeredAt: '最終トリガー：{{time}}'
       },
       sections: {
-        conditions: 'Trigger Conditions',
-        actions: 'Actions'
+        conditions: 'トリガー条件',
+        actions: 'アクション'
       },
       tooltips: {
-        createdAt: 'Created at',
-        lastTriggeredAt: 'Last triggered'
+        createdAt: '作成日時',
+        lastTriggeredAt: '最終トリガー日時'
       },
       actions: {
-        start: 'Start',
-        stop: 'Stop'
+        start: '開始',
+        stop: '停止'
       },
       confirmDelete: {
-        title: 'Are you sure you want to delete this strategy?',
-        description: 'Cannot be recovered after deletion'
+        title: 'このストラテジーを削除してもよろしいですか？',
+        description: '削除後は復元できません'
       }
     },
     requireConfig: {
-      title: 'No LLM configured yet',
-      description: 'Please go to Settings first to configure the AI provider, model, and API key, then use the strategy wizard or chat.',
+      title: 'LLMがまだ設定されていません',
+      description: '先に設定画面でAIプロバイダー、モデル、APIキーを設定してください。その後、ストラテジーウィザードまたはチャットをご利用いただけます。',
       actions: {
-        goSettings: 'Go to Settings'
+        goSettings: '設定へ'
       }
     },
     riskEval: {
-      failed: 'Risk evaluation failed'
+      failed: 'リスク評価に失敗しました'
     },
     workflowRuns: {
-      title: 'AI Workflow',
-      defaultTitle: 'AI Workflow',
+      title: 'AIワークフロー',
+      defaultTitle: 'AIワークフロー',
       hints: {
-        selectToViewDetail: 'Select a run from the left to view details'
+        selectToViewDetail: '左側から実行を選択して詳細を表示'
       },
       messages: {
-        loadListFailed: 'Failed to load run list',
-        loadDetailFailed: 'Failed to load details'
+        loadListFailed: '実行一覧の読み込みに失敗しました',
+        loadDetailFailed: '詳細の読み込みに失敗しました'
       }
     },
     backtestScoreCard: {
-      title: 'Backtest Scorecard',
-      stateLabel: 'State',
+      title: 'バックテストスコアカード',
+      stateLabel: '状態',
       status: {
-        succeeded: 'Success',
-        running: 'Running',
-        pending: 'Queued',
-        failed: 'Failed',
-        cancelRequested: 'Cancelling',
-        canceled: 'Cancelled'
+        succeeded: '成功',
+        running: '実行中',
+        pending: 'キュー待ち',
+        failed: '失敗',
+        cancelRequested: 'キャンセル中',
+        canceled: 'キャンセル済み'
       },
       recommendation: {
-        loading: 'Risk assessment in progress, please wait for completion before going live.',
-        recommended: 'Recommended for live: risk controllable, metrics healthy.',
-        cautious: 'Cautious for live: try small capital / manual confirmation for a while first.',
-        notRecommended: 'Not recommended for direct live: high risk or unreliable, optimize before trying.'
+        loading: 'リスク評価中です。完了するまでお待ちください。',
+        recommended: '本番推奨：リスク管理可能、指標良好。',
+        cautious: '本番注意：まずは少額または手動確認でしばらく運用してください。',
+        notRecommended: '直接の本番運用非推奨：高リスクまたは信頼性に欠けます。最適化後に再試行してください。'
       },
       backendRiskScore: {
-        title: 'Backend Risk Score',
-        loading: 'Calculating...',
-        unknown: 'unknown',
-        reliable: 'Reliable',
-        unreliable: 'Unreliable',
-        reasons: 'Reasons',
-        warnings: 'Warnings',
-        empty: 'None (save template first, will auto-calculate after backtest completes)'
+        title: 'バックエンドリスクスコア',
+        loading: '計算中...',
+        unknown: '不明',
+        reliable: '信頼できる',
+        unreliable: '信頼できない',
+        reasons: '理由',
+        warnings: '警告',
+        empty: 'なし（先にテンプレートを保存してください。バックテスト完了後に自動計算されます）'
       },
       score: {
-        empty: 'No score yet (wait for backtest or no metrics)',
-        title: 'Overall Score (heuristic)'
+        empty: 'スコア未評価（バックテスト待ちまたは指標なし）',
+        title: '総合スコア（ヒューリスティック）'
       },
       level: {
-        excellent: 'Excellent',
-        good: 'Good',
-        fair: 'Fair',
-        poor: 'Poor'
+        excellent: '優秀',
+        good: '良好',
+        fair: '普通',
+        poor: '劣る'
       },
       metrics: {
-        totalReturn: 'Total Return',
-        annualReturn: 'Annual Return',
-        maxDrawdown: 'Max Drawdown',
-        sharpe: 'Sharpe',
-        winRate: 'Win Rate',
-        totalTrades: 'Total Trades',
-        equityPoints: 'Equity points'
+        totalReturn: '総収益率',
+        annualReturn: '年換算収益率',
+        maxDrawdown: '最大ドローダウン',
+        sharpe: 'シャープレシオ',
+        winRate: '勝率',
+        totalTrades: '総取引数',
+        equityPoints: 'エクイティポイント'
       },
       chart: {
-        title: 'Equity Curve'
+        title: 'エクイティカーブ'
       }
     },
     gate: {
-      title: 'AI Gate Progress',
-      pipelineDesc: '6-stage Gate pipeline: Compliance → LookAhead → Walk-Forward → DeflatedSharpe → Paper → Correlation',
+      title: 'AIゲート進捗',
+      pipelineDesc: '6段階ゲートパイプライン：コンプライアンス → 先読みバイアス → ウォークフォワード → 収縮シャープ → ペーパー → 相関',
       labels: {
-        compliance: 'Compliance',
-        lookahead: 'Look-Ahead Bias',
-        walkforward: 'Walk-Forward',
-        deflated_sharpe: 'Deflated Sharpe',
-        paper: 'Paper Trading',
-        correlation: 'Correlation'
+        compliance: 'コンプライアンス',
+        lookahead: '先読みバイアス',
+        walkforward: 'ウォークフォワード',
+        deflated_sharpe: '収縮シャープレシオ',
+        paper: 'ペーパートレーディング',
+        correlation: '相関'
       },
       descriptions: {
-        compliance: 'DSL expression non-empty validation',
-        lookahead: 'Future function reference scan (close[t+N], ref negative offset)',
-        walkforward: 'Purged Walk-Forward cross-validation',
-        deflated_sharpe: 'Lopez de Prado Deflated Sharpe Ratio',
-        paper: '≥14 days paper trading validation',
-        correlation: 'Signal correlation check with existing strategies'
+        compliance: 'DSL式の空チェック',
+        lookahead: '未来関数参照のスキャン（close[t+N]、ref負のオフセット）',
+        walkforward: 'パージド・ウォークフォワード交差検証',
+        deflated_sharpe: 'Lopez de Prado 収縮シャープレシオ',
+        paper: '14日以上のペーパートレーディング検証',
+        correlation: '既存ストラテジーとのシグナル相関チェック'
       },
       status: {
-        evaluating: 'Evaluating...'
+        evaluating: '評価中...'
       },
-      strategyParams: 'Strategy Parameters',
-      dslExpression: 'DSL Expression',
-      dailyReturns: 'Daily Returns (comma or newline separated)',
-      numAttempts: 'Strategy Attempts',
-      paperMetrics: 'Paper Trading Metrics',
-      paperDays: 'Paper Days',
-      paperNetPnL: 'Paper Net P&L',
-      paperNetReturn: 'Paper Net Return',
-      paperTradeCount: 'Paper Trade Count',
-      backtestNetReturn: 'Backtest Net Return',
-      backtestGrossReturn: 'Backtest Gross Return',
-      runPipeline: 'Run Gate Pipeline',
-      retry: 'Retry',
-      gateProgress: 'Gate Evaluation Progress',
-      pipelineResult: 'Pipeline Result',
-      allPassed: 'All 6 gates passed — strategy eligible for PromoteToLive evaluation',
-      failed: 'Failed: {{gate}}',
-      details: 'Details'
+      strategyParams: 'ストラテジーパラメーター',
+      dslExpression: 'DSL式',
+      dailyReturns: '日次リターン（カンマまたは改行区切り）',
+      numAttempts: 'ストラテジー試行回数',
+      paperMetrics: 'ペーパートレーディング指標',
+      paperDays: 'ペーパー日数',
+      paperNetPnL: 'ペーパー純損益',
+      paperNetReturn: 'ペーパー純収益率',
+      paperTradeCount: 'ペーパー取引回数',
+      backtestNetReturn: 'バックテスト純収益率',
+      backtestGrossReturn: 'バックテスト総収益率',
+      runPipeline: 'ゲートパイプライン実行',
+      retry: '再試行',
+      gateProgress: 'ゲート評価進捗',
+      pipelineResult: 'パイプライン結果',
+      allPassed: '全6ゲートを通過 — ストラテジーは本番昇格評価の対象です',
+      failed: '不合格：{{gate}}',
+      details: '詳細'
     }
-  },
-  gate: {
-    title: 'AI Gate Progress',
-    pipelineDesc: '6-stage Gate pipeline: Compliance → LookAhead → Walk-Forward → DeflatedSharpe → Paper → Correlation',
-    labels: {
-      compliance: 'Compliance',
-      lookahead: 'Look-Ahead Bias',
-      walkforward: 'Walk-Forward',
-      deflated_sharpe: 'Deflated Sharpe',
-      paper: 'Paper Trading',
-      correlation: 'Correlation'
-    },
-    descriptions: {
-      compliance: 'DSL expression non-empty validation',
-      lookahead: 'Future function reference scan (close[t+N], ref negative offset)',
-      walkforward: 'Purged Walk-Forward cross-validation',
-      deflated_sharpe: 'Lopez de Prado Deflated Sharpe Ratio',
-      paper: '≥14 days paper trading validation',
-      correlation: 'Signal correlation check with existing strategies'
-    },
-    status: {
-      evaluating: 'Evaluating...'
-    },
-    strategyParams: 'Strategy Parameters',
-    dslExpression: 'DSL Expression',
-    dailyReturns: 'Daily Returns (comma or newline separated)',
-    numAttempts: 'Strategy Attempts',
-    paperMetrics: 'Paper Trading Metrics',
-    paperDays: 'Paper Days',
-    paperNetPnL: 'Paper Net P&L',
-    paperNetReturn: 'Paper Net Return',
-    paperTradeCount: 'Paper Trade Count',
-    backtestNetReturn: 'Backtest Net Return',
-    backtestGrossReturn: 'Backtest Gross Return',
-    runPipeline: 'Run Gate Pipeline',
-    retry: 'Retry',
-    gateProgress: 'Gate Evaluation Progress',
-    pipelineResult: 'Pipeline Result',
-    allPassed: 'All 6 gates passed — strategy eligible for PromoteToLive evaluation',
-    failed: 'Failed: {{gate}}',
-    details: 'Details'
   }
 } as const;
 

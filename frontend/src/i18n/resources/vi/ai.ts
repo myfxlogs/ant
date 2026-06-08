@@ -106,7 +106,7 @@ Hãy đưa kết luận style/signals/risk vào code (nếu không có, chọn m
     tabs: {
       settings: 'Cài đặt',
       agentSettings: 'Thiết lập chuyên gia',
-      gate: 'AI Gate'
+      gate: 'Cổng AI'
     },
     strategyCard: {
       status: {
@@ -376,7 +376,7 @@ Hãy đưa kết luận style/signals/risk vào code (nếu không có, chọn m
       backendRiskScore: {
         title: 'Điểm rủi ro từ backend',
         loading: 'Đang tính...',
-        unknown: 'unknown',
+        unknown: 'không xác định',
         reliable: 'Đáng tin cậy',
         unreliable: 'Không đáng tin cậy',
         reasons: 'Lý do',
@@ -476,35 +476,35 @@ Hãy đưa kết luận style/signals/risk vào code (nếu không có, chọn m
         primaryForHint: 'Chỉ dùng cho định tuyến nội bộ: chat / embedding / summarizer / reasoning'
       },
       messages: {
-        loadConfigFailed: 'Failed to load configs',
-        secretSavedAutoDiscover: 'Secret saved, auto-discovering models...',
-        secretAutoSaveFailed: 'Secret auto-save failed',
-        autoDiscoveredModels: 'Auto-discovered {{count}} model(s) (for suggestion only)',
-        autoValidatedModels: 'Auto-validated: {{count}} model(s) found',
-        configSaved: 'Config saved',
-        configSaveFailed: 'Config save failed',
-        toggleEnabledFailed: 'Toggle enabled status failed',
-        secretDeletedConfigReset: 'Secret deleted, provider config reset to defaults',
-        deleteSecretFailed: 'Delete secret failed',
-        validationPassedModels: 'Validation passed: {{count}} model(s) found',
-        validationFailedNeedApiKey: 'Validation failed: this provider typically requires an API Key. Please fill and save the key first, then retry.'
+        loadConfigFailed: 'Tải cấu hình thất bại',
+        secretSavedAutoDiscover: 'Đã lưu khóa bí mật, đang tự động khám phá mô hình...',
+        secretAutoSaveFailed: 'Tự động lưu khóa bí mật thất bại',
+        autoDiscoveredModels: 'Đã tự động khám phá {{count}} mô hình (chỉ để gợi ý)',
+        autoValidatedModels: 'Đã tự động xác thực: tìm thấy {{count}} mô hình',
+        configSaved: 'Đã lưu cấu hình',
+        configSaveFailed: 'Lưu cấu hình thất bại',
+        toggleEnabledFailed: 'Thay đổi trạng thái bật/tắt thất bại',
+        secretDeletedConfigReset: 'Đã xóa khóa bí mật, cấu hình nhà cung cấp đặt lại về mặc định',
+        deleteSecretFailed: 'Xóa khóa bí mật thất bại',
+        validationPassedModels: 'Xác thực thành công: tìm thấy {{count}} mô hình',
+        validationFailedNeedApiKey: 'Xác thực thất bại: nhà cung cấp này thường yêu cầu khóa API. Vui lòng điền và lưu khóa trước, sau đó thử lại.'
       }
     },
     consensus: {
-      title: 'Consensus & Discussion',
+      title: 'Đồng thuận & Thảo luận',
       actions: {
-        refresh: 'Refresh'
+        refresh: 'Làm mới'
       },
       fields: {
-        account: 'Account',
-        symbol: 'Symbol',
-        timeframe: 'Timeframe'
+        account: 'Tài khoản',
+        symbol: 'Mã chứng khoán',
+        timeframe: 'Khung thời gian'
       },
       panel: {
-        title: 'Objective Score',
-        decision: 'Decision',
-        overallScore: 'Overall',
-        technicalScore: 'Technical'
+        title: 'Điểm mục tiêu',
+        decision: 'Quyết định',
+        overallScore: 'Tổng thể',
+        technicalScore: 'Kỹ thuật'
       },
       signals: {
         rsi: {
@@ -524,45 +524,45 @@ Hãy đưa kết luận style/signals/risk vào code (nếu không có, chọn m
       }
     },
     gate: {
-      title: 'AI Gate Progress',
-      pipelineDesc: '6-stage Gate pipeline: Compliance → LookAhead → Walk-Forward → DeflatedSharpe → Paper → Correlation',
+      title: 'Tiến trình Cổng AI',
+      pipelineDesc: 'Quy trình 6 cổng: Tuân thủ -> Nhìn về phía trước -> Walk-Forward -> Deflated Sharpe -> Giấy -> Tương quan',
       labels: {
-        compliance: 'Compliance',
-        lookahead: 'Look-Ahead Bias',
+        compliance: 'Tuân thủ',
+        lookahead: 'Độ chệch nhìn về phía trước',
         walkforward: 'Walk-Forward',
         deflated_sharpe: 'Deflated Sharpe',
         paper: 'Paper Trading',
         correlation: 'Correlation'
       },
       descriptions: {
-        compliance: 'DSL expression non-empty validation',
-        lookahead: 'Future function reference scan (close[t+N], ref negative offset)',
-        walkforward: 'Purged Walk-Forward cross-validation',
-        deflated_sharpe: 'Lopez de Prado Deflated Sharpe Ratio',
-        paper: '≥14 days paper trading validation',
-        correlation: 'Signal correlation check with existing strategies'
+        compliance: 'Xác thực biểu thức DSL không rỗng',
+        lookahead: 'Quét tham chiếu hàm tương lai (close[t+N], ref offset âm)',
+        walkforward: 'Xác thực chéo Walk-Forward đã thanh lọc',
+        deflated_sharpe: 'Tỷ lệ Sharpe đã giảm phát của Lopez de Prado',
+        paper: 'Xác thực giao dịch giấy >=14 ngày',
+        correlation: 'Kiểm tra tương quan tín hiệu với các chiến lược hiện có'
       },
       status: {
-        evaluating: 'Evaluating...'
+        evaluating: 'Đang đánh giá...'
       },
-      strategyParams: 'Strategy Parameters',
-      dslExpression: 'DSL Expression',
-      dailyReturns: 'Daily Returns (comma or newline separated)',
-      numAttempts: 'Strategy Attempts',
-      paperMetrics: 'Paper Trading Metrics',
-      paperDays: 'Paper Days',
-      paperNetPnL: 'Paper Net P&L',
-      paperNetReturn: 'Paper Net Return',
-      paperTradeCount: 'Paper Trade Count',
-      backtestNetReturn: 'Backtest Net Return',
-      backtestGrossReturn: 'Backtest Gross Return',
-      runPipeline: 'Run Gate Pipeline',
-      retry: 'Retry',
-      gateProgress: 'Gate Evaluation Progress',
-      pipelineResult: 'Pipeline Result',
-      allPassed: 'All 6 gates passed — strategy eligible for PromoteToLive evaluation',
-      failed: 'Failed: {{gate}}',
-      details: 'Details'
+      strategyParams: 'Tham số chiến lược',
+      dslExpression: 'Biểu thức DSL',
+      dailyReturns: 'Lợi nhuận hàng ngày (phân cách bằng dấu phẩy hoặc xuống dòng)',
+      numAttempts: 'Số lần thử chiến lược',
+      paperMetrics: 'Chỉ số giao dịch giấy',
+      paperDays: 'Ngày giao dịch giấy',
+      paperNetPnL: 'Lãi/Lỗ ròng giấy',
+      paperNetReturn: 'Lợi nhuận ròng giấy',
+      paperTradeCount: 'Số giao dịch giấy',
+      backtestNetReturn: 'Lợi nhuận ròng backtest',
+      backtestGrossReturn: 'Lợi nhuận gộp backtest',
+      runPipeline: 'Chạy quy trình Cổng',
+      retry: 'Thử lại',
+      gateProgress: 'Tiến trình đánh giá Cổng',
+      pipelineResult: 'Kết quả quy trình',
+      allPassed: 'Cả 6 cổng đều vượt qua — chiến lược đủ điều kiện đánh giá PromoteToLive',
+      failed: 'Thất bại: {{gate}}',
+      details: 'Chi tiết'
     }
   }
 } as const;

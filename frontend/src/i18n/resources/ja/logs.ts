@@ -38,12 +38,12 @@ const logs = {
       open: '建値',
       close: '決済値'
     },
-    result: 'Result',
-    riskCode: 'Risk Code',
-    requestId: 'Request ID',
-    triggerSource: 'Trigger Source',
-    riskLogQuickFilter: 'Risk Log Quick Filter',
-    loadFailed: 'Failed to load logs'
+    result: '結果',
+    riskCode: 'リスクコード',
+    requestId: 'リクエストID',
+    triggerSource: 'トリガーソース',
+    riskLogQuickFilter: 'リスクログクイックフィルター',
+    loadFailed: 'ログの読み込みに失敗しました'
   }
 } as const;
 

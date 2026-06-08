@@ -93,8 +93,8 @@ const base = {
       day: '天',
       lessThanMinute: '< 1分鐘'
     },
-    required: 'Required',
-    noData: 'No data'
+    required: '必填',
+    noData: '尚無資料'
   },
   language: {
     simplifiedChinese: '简体中文',
@@ -119,7 +119,7 @@ const base = {
     schedules: '策略調度',
     indicatorCatalog: '指標目錄',
     logs: '系統日誌',
-    assetAnalysis: 'AI Analysis'
+    assetAnalysis: 'AI 分析'
   },
   market: {
     searchPlaceholder: '搜尋品種（如 EURUSD, XAUUSD）',
@@ -167,28 +167,28 @@ const base = {
       clearAll: '清空',
       clearAllConfirm: '確定清空所有通知？'
     },
-    all: 'All',
-    unread: 'Unread',
-    markAllRead: 'Mark all as read',
-    clearAll: 'Clear all',
-    confirmClearAll: 'Clear all notifications?',
+    all: '全部',
+    unread: '未讀',
+    markAllRead: '全部已讀',
+    clearAll: '清除全部',
+    confirmClearAll: '確定清除所有通知？',
     stream: {
       strategyExecution: {
-        title: 'Strategy Execution',
-        completed: '{{symbol}} {{action}} completed',
-        failed: 'Execution failed: {{error}}'
+        title: '策略執行',
+        completed: '{{symbol}} {{action}} 已完成',
+        failed: '執行失敗：{{error}}'
       },
       riskAlert: {
-        title: 'Risk Alert',
-        fallback: 'Alert type: {{alertType}}'
+        title: '風險警示',
+        fallback: '警示類型：{{alertType}}'
       },
       strategySignal: {
-        title: 'Strategy Signal',
-        message: '{{symbol}} triggered {{signalType}}'
+        title: '策略訊號',
+        message: '{{symbol}} 觸發 {{signalType}}'
       },
       autoTrading: {
-        title: 'Auto Trading',
-        fallback: 'Auto trading event triggered'
+        title: '自動交易',
+        fallback: '自動交易事件已觸發'
       }
     }
   },
@@ -345,60 +345,60 @@ const base = {
     translate_failed: '翻譯失敗'
   },
   marketplace: {
-    title: 'Strategy Marketplace',
-    subtitle: 'Discover, rate, and subscribe to community strategies',
-    publish: 'Publish Strategy',
+    title: '策略市集',
+    subtitle: '探索、評分與訂閱社群策略',
+    publish: '發布策略',
     tabs: {
-      marketplace: 'Marketplace',
-      subscriptions: 'My Subscriptions'
+      marketplace: '市集',
+      subscriptions: '我的訂閱'
     },
-    searchPlaceholder: 'Search strategies...',
-    filterByClass: 'Filter by asset class',
+    searchPlaceholder: '搜尋策略...',
+    filterByClass: '依資產類別篩選',
     sort: {
-      newest: 'Newest',
-      popular: 'Most Popular',
-      performance: 'Best Performance'
+      newest: '最新',
+      popular: '最熱門',
+      performance: '最佳表現'
     },
-    empty: 'No strategies published yet',
-    noSubscriptions: 'No subscriptions yet',
+    empty: '尚無已發布策略',
+    noSubscriptions: '尚無訂閱',
     card: {
-      subscribe: 'Subscribe',
-      subscribed: 'Subscribed',
-      unsubscribe: 'Unsubscribe',
-      unsubscribeHint: 'Click to unsubscribe',
-      details: 'Details',
-      subscribers: 'Subscribers',
-      winRate: 'Win Rate',
-      by: 'by'
+      subscribe: '訂閱',
+      subscribed: '已訂閱',
+      unsubscribe: '取消訂閱',
+      unsubscribeHint: '點擊取消訂閱',
+      details: '詳情',
+      subscribers: '訂閱者',
+      winRate: '勝率',
+      by: '作者'
     },
     assetClass: {
-      forex: 'Forex',
-      crypto: 'Crypto',
-      commodity: 'Commodity',
-      index: 'Index',
-      stock: 'Stock',
-      other: 'Other'
+      forex: '外匯',
+      crypto: '加密貨幣',
+      commodity: '大宗商品',
+      index: '指數',
+      stock: '股票',
+      other: '其他'
     },
     risk: {
-      low: 'Low Risk',
-      medium: 'Medium Risk',
-      high: 'High Risk'
+      low: '低風險',
+      medium: '中風險',
+      high: '高風險'
     },
     messages: {
-      loginFirst: 'Please log in first',
-      subscribed: 'Subscribed successfully',
-      subscribeFailed: 'Subscribe failed',
-      unsubscribed: 'Unsubscribed',
-      unsubscribeFailed: 'Unsubscribe failed',
-      rated: 'Rating submitted',
-      rateFailed: 'Rating failed',
-      commentPosted: 'Comment posted',
-      commentFailed: 'Comment failed'
+      loginFirst: '請先登入',
+      subscribed: '訂閱成功',
+      subscribeFailed: '訂閱失敗',
+      unsubscribed: '已取消訂閱',
+      unsubscribeFailed: '取消訂閱失敗',
+      rated: '評分已提交',
+      rateFailed: '評分失敗',
+      commentPosted: '評論已發布',
+      commentFailed: '評論失敗'
     },
     detail: {
-      comments: 'Comments',
-      noComments: 'No comments yet. Be the first!',
-      commentPlaceholder: 'Write a comment... (Shift+Enter for new line)'
+      comments: '評論',
+      noComments: '尚無評論，快來搶頭香！',
+      commentPlaceholder: '撰寫評論...（Shift+Enter 換行）'
     }
   },
   admin: {
@@ -590,17 +590,17 @@ const base = {
     }
   },
   symbolDetection: {
-    label: 'Detected Symbols',
-    loading: 'Parsing…',
-    noSymbols: 'No trading symbols detected. Try including specific symbol names (e.g. "Bitcoin", "EURUSD", "Gold").',
-    unresolvedTooltip: 'No trading account bound yet, unable to resolve',
-    resolvedTooltip: 'broker: {{broker}} | mode: {{mode}}',
+    label: '偵測到的交易品種',
+    loading: '解析中…',
+    noSymbols: '未偵測到交易品種。請嘗試包含具體品種名稱（如「比特幣」、「EURUSD」、「黃金」）。',
+    unresolvedTooltip: '尚未綁定交易帳戶，無法解析',
+    resolvedTooltip: '券商：{{broker}} | 模式：{{mode}}',
     tradeMode: {
-      disabled: 'Disabled',
-      longOnly: 'Long Only',
-      shortOnly: 'Short Only',
-      longShort: 'Both Long & Short',
-      unknown: 'Unknown({{mode}})'
+      disabled: '已停用',
+      longOnly: '僅做多',
+      shortOnly: '僅做空',
+      longShort: '多空皆可',
+      unknown: '未知({{mode}})'
     }
   }
 } as const;

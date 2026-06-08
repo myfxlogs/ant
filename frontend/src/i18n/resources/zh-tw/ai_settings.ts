@@ -35,7 +35,7 @@ const aiSettings = {
         enabledStatus: '啟用狀態',
         enabledOn: '已啟用 → 點選關閉',
         enabledOff: '已停用 → 點選啟用',
-        model: 'Model'
+        model: '模型'
       },
       sections: {
         basic: '基礎資訊',
@@ -185,7 +185,7 @@ const aiSettings = {
           inputHintPlaceholder: '輸入提示（可選）',
           modelProfilePlaceholder: '預設（沿用目前設定檔）',
           modelProfileEmpty: '請先在「AI 設定」啟用至少一個 廠商/模型',
-          historicalBinding: '{{value}} (historical)'
+          historicalBinding: '{{value}}（歷史）'
         },
         types: {
           style: '風格/範式',
@@ -245,6 +245,28 @@ const aiSettings = {
           },
           researcher: {
             identity: '宏觀經濟和行業研究員 — 分析宏觀事件和行業趨勢。'
+          }
+        }
+      }
+    }
+  },
+  ai_settings: {
+    ai: {
+      settings: {
+        fields: {
+          model: '模型'
+        },
+        providers: {
+          openai: 'OpenAI',
+          anthropic: 'Anthropic Claude',
+          deepseek: 'DeepSeek',
+          openrouter: 'OpenRouter',
+          mistral: 'Mistral',
+          groq: 'Groq'
+        },
+        agent: {
+          fields: {
+            historicalBinding: '{{value}}（歷史）'
           }
         }
       }

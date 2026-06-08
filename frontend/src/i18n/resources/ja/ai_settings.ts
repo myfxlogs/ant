@@ -35,7 +35,7 @@ const aiSettings = {
         enabledStatus: '有効状態',
         enabledOn: '有効→無効化',
         enabledOff: '無効→有効化',
-        model: 'Model'
+        model: 'モデル'
       },
       sections: {
         basic: '基本情報',
@@ -57,9 +57,9 @@ const aiSettings = {
         openai: 'OpenAI',
         anthropic: 'Anthropic Claude',
         deepseek: 'DeepSeek',
-        zhipu: 'Zhipu AI',
+        zhipu: '智譜AI',
         qwen: 'Tongyi Qianwen',
-        moonshot: 'Moonshot (Kimi)',
+        moonshot: '月之暗面（Kimi）',
         doubao: 'Doubao',
         siliconflow: 'SiliconFlow',
         openrouter: 'OpenRouter',
@@ -185,7 +185,7 @@ const aiSettings = {
           inputHintPlaceholder: '入力ヒント',
           modelProfilePlaceholder: 'デフォルト',
           modelProfileEmpty: '先に「AI設定」でプロバイダー/モデルを有効化',
-          historicalBinding: '{{value}} (historical)'
+          historicalBinding: '{{value}}（過去）'
         },
         types: {
           style: 'スタイル/パラダイム',

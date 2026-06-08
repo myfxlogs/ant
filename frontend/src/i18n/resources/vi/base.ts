@@ -93,8 +93,8 @@ const base = {
       day: 'ngày',
       lessThanMinute: '< 1 phút'
     },
-    required: 'Required',
-    noData: 'No data'
+    required: 'Bắt buộc',
+    noData: 'Không có dữ liệu'
   },
   language: {
     simplifiedChinese: '简体中文',
@@ -112,14 +112,14 @@ const base = {
     trading: 'Giao dịch',
     market: 'Thị trường',
     analytics: 'Phân tích',
-    marketplace: 'Marketplace',
+    marketplace: 'Thị trường',
     experiments: 'Thí nghiệm',
     marketRegime: 'Chế độ thị trường',
     assets: 'Tài sản',
     schedules: 'Lịch chạy chiến lược',
     indicatorCatalog: 'Danh mục chỉ báo',
     logs: 'Nhật ký hệ thống',
-    assetAnalysis: 'AI Analysis'
+    assetAnalysis: 'Phân tích AI'
   },
   market: {
     searchPlaceholder: 'Tìm kiếm mã (VD: EURUSD, XAUUSD)',
@@ -167,28 +167,28 @@ const base = {
       clearAll: 'Xóa',
       clearAllConfirm: 'Xóa tất cả thông báo?'
     },
-    all: 'All',
-    unread: 'Unread',
-    markAllRead: 'Mark all as read',
-    clearAll: 'Clear all',
-    confirmClearAll: 'Clear all notifications?',
+    all: 'Tất cả',
+    unread: 'Chưa đọc',
+    markAllRead: 'Đánh dấu tất cả đã đọc',
+    clearAll: 'Xóa tất cả',
+    confirmClearAll: 'Xóa tất cả thông báo?',
     stream: {
       strategyExecution: {
-        title: 'Strategy Execution',
-        completed: '{{symbol}} {{action}} completed',
-        failed: 'Execution failed: {{error}}'
+        title: 'Thực thi Chiến lược',
+        completed: '{{symbol}} {{action}} đã hoàn thành',
+        failed: 'Thực thi thất bại: {{error}}'
       },
       riskAlert: {
-        title: 'Risk Alert',
-        fallback: 'Alert type: {{alertType}}'
+        title: 'Cảnh báo Rủi ro',
+        fallback: 'Loại cảnh báo: {{alertType}}'
       },
       strategySignal: {
-        title: 'Strategy Signal',
-        message: '{{symbol}} triggered {{signalType}}'
+        title: 'Tín hiệu Chiến lược',
+        message: '{{symbol}} đã kích hoạt {{signalType}}'
       },
       autoTrading: {
-        title: 'Auto Trading',
-        fallback: 'Auto trading event triggered'
+        title: 'Giao dịch Tự động',
+        fallback: 'Sự kiện giao dịch tự động đã kích hoạt'
       }
     }
   },
@@ -345,60 +345,60 @@ const base = {
     translate_failed: 'Dịch thất bại'
   },
   marketplace: {
-    title: 'Strategy Marketplace',
-    subtitle: 'Discover, rate, and subscribe to community strategies',
-    publish: 'Publish Strategy',
+    title: 'Thị trường Chiến lược',
+    subtitle: 'Khám phá, đánh giá và đăng ký chiến lược cộng đồng',
+    publish: 'Xuất bản Chiến lược',
     tabs: {
-      marketplace: 'Marketplace',
-      subscriptions: 'My Subscriptions'
+      marketplace: 'Thị trường',
+      subscriptions: 'Đăng ký của tôi'
     },
-    searchPlaceholder: 'Search strategies...',
-    filterByClass: 'Filter by asset class',
+    searchPlaceholder: 'Tìm kiếm chiến lược...',
+    filterByClass: 'Lọc theo loại tài sản',
     sort: {
-      newest: 'Newest',
-      popular: 'Most Popular',
-      performance: 'Best Performance'
+      newest: 'Mới nhất',
+      popular: 'Phổ biến nhất',
+      performance: 'Hiệu suất tốt nhất'
     },
-    empty: 'No strategies published yet',
-    noSubscriptions: 'No subscriptions yet',
+    empty: 'Chưa có chiến lược nào được xuất bản',
+    noSubscriptions: 'Chưa có đăng ký nào',
     card: {
-      subscribe: 'Subscribe',
-      subscribed: 'Subscribed',
-      unsubscribe: 'Unsubscribe',
-      unsubscribeHint: 'Click to unsubscribe',
-      details: 'Details',
-      subscribers: 'Subscribers',
-      winRate: 'Win Rate',
-      by: 'by'
+      subscribe: 'Đăng ký',
+      subscribed: 'Đã đăng ký',
+      unsubscribe: 'Hủy đăng ký',
+      unsubscribeHint: 'Nhấp để hủy đăng ký',
+      details: 'Chi tiết',
+      subscribers: 'Người đăng ký',
+      winRate: 'Tỷ lệ thắng',
+      by: 'bởi'
     },
     assetClass: {
-      forex: 'Forex',
-      crypto: 'Crypto',
-      commodity: 'Commodity',
-      index: 'Index',
-      stock: 'Stock',
-      other: 'Other'
+      forex: 'Ngoại hối',
+      crypto: 'Tiền điện tử',
+      commodity: 'Hàng hóa',
+      index: 'Chỉ số',
+      stock: 'Cổ phiếu',
+      other: 'Khác'
     },
     risk: {
-      low: 'Low Risk',
-      medium: 'Medium Risk',
-      high: 'High Risk'
+      low: 'Rủi ro thấp',
+      medium: 'Rủi ro trung bình',
+      high: 'Rủi ro cao'
     },
     messages: {
-      loginFirst: 'Please log in first',
-      subscribed: 'Subscribed successfully',
-      subscribeFailed: 'Subscribe failed',
-      unsubscribed: 'Unsubscribed',
-      unsubscribeFailed: 'Unsubscribe failed',
-      rated: 'Rating submitted',
-      rateFailed: 'Rating failed',
-      commentPosted: 'Comment posted',
-      commentFailed: 'Comment failed'
+      loginFirst: 'Vui lòng đăng nhập trước',
+      subscribed: 'Đăng ký thành công',
+      subscribeFailed: 'Đăng ký thất bại',
+      unsubscribed: 'Đã hủy đăng ký',
+      unsubscribeFailed: 'Hủy đăng ký thất bại',
+      rated: 'Đã gửi đánh giá',
+      rateFailed: 'Đánh giá thất bại',
+      commentPosted: 'Đã đăng bình luận',
+      commentFailed: 'Bình luận thất bại'
     },
     detail: {
-      comments: 'Comments',
-      noComments: 'No comments yet. Be the first!',
-      commentPlaceholder: 'Write a comment... (Shift+Enter for new line)'
+      comments: 'Bình luận',
+      noComments: 'Chưa có bình luận. Hãy là người đầu tiên!',
+      commentPlaceholder: 'Viết bình luận... (Shift+Enter để xuống dòng)'
     }
   },
   admin: {
@@ -590,17 +590,17 @@ const base = {
     }
   },
   symbolDetection: {
-    label: 'Detected Symbols',
-    loading: 'Parsing…',
-    noSymbols: 'No trading symbols detected. Try including specific symbol names (e.g. "Bitcoin", "EURUSD", "Gold").',
-    unresolvedTooltip: 'No trading account bound yet, unable to resolve',
-    resolvedTooltip: 'broker: {{broker}} | mode: {{mode}}',
+    label: 'Biểu tượng được Phát hiện',
+    loading: 'Đang phân tích…',
+    noSymbols: 'Không phát hiện biểu tượng giao dịch. Thử bao gồm tên biểu tượng cụ thể (ví dụ: "Bitcoin", "EURUSD", "Vàng").',
+    unresolvedTooltip: 'Chưa liên kết tài khoản giao dịch, không thể phân giải',
+    resolvedTooltip: 'môi giới: {{broker}} | chế độ: {{mode}}',
     tradeMode: {
-      disabled: 'Disabled',
-      longOnly: 'Long Only',
-      shortOnly: 'Short Only',
-      longShort: 'Both Long & Short',
-      unknown: 'Unknown({{mode}})'
+      disabled: 'Đã tắt',
+      longOnly: 'Chỉ Mua',
+      shortOnly: 'Chỉ Bán',
+      longShort: 'Cả Mua & Bán',
+      unknown: 'Không xác định({{mode}})'
     }
   }
 } as const;

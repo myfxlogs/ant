@@ -238,15 +238,15 @@ const base = {
         fallback: '自动交易事件已触发'
       }
     },
-    title: 'Notifications',
+    title: '通知中心',
     tabs: {
-      all: 'All ({{count}})',
-      unread: 'Unread ({{count}})'
+      all: '全部 ({{count}})',
+      unread: '未读 ({{count}})'
     },
     actions: {
-      markAllAsRead: 'Mark all as read',
-      clearAllConfirm: 'Clear all notifications?',
-      clearAll: 'Clear all'
+      markAllAsRead: '全部已读',
+      clearAllConfirm: '确定清空所有通知？',
+      clearAll: '清空全部'
     }
   },
   errors: {
