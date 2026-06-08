@@ -10,8 +10,10 @@ import { marketApi } from '@/client/market';
 import { useChartData, toChartBar } from './useChartData';
 import { useChartIndicatorsStore, KLINECHARTS_MAP } from '@/stores/chartIndicatorsStore';
 import IndicatorSettingsModal from './IndicatorSettingsModal';
+import { useServerIndicators } from '@/hooks/useServerIndicators';
 import './BidAskIndicator';
 import './BacktestTradeOverlay';
+import './serverIndicators'; // registers custom klinecharts indicators
 
 interface Props {
   symbol: string;
@@ -37,6 +39,14 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
   const [editingIndId, setEditingIndId] = useState<string | null>(null);
   // Track klinecharts paneIds keyed by store instanceId
   const kcIndRef = useRef<Map<string, string>>(new Map());
+
+  // Server-side indicator computation: subscribes to SubscribeIndicators RPC,
+  // populates shared store consumed by custom ANT_* klinecharts indicators.
+  const [serverStreaming, setServerStreaming] = useState(false);
+  useServerIndicators({
+    symbol, timeframe, activeIndicators, chartRef,
+    onStreamStatus: setServerStreaming,
+  });
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -201,7 +211,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
     <div ref={wrapperRef} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       <ChartToolbar
         timeframe={timeframe} chartType={chartType}
-        streamActive={streamActive} error={error}
+        streamActive={streamActive || serverStreaming} error={error}
         activeIndicators={activeIndicators} getDef={getDef}
         onTimeframeChange={onTimeframeChange} applyChartType={applyChartType}
         onSettingsClick={setEditingIndId} onRemoveIndicator={removeIndicator}

@@ -61,20 +61,25 @@ const INDICATOR_REGISTRY: IndicatorDef[] = [
   { id: 'VOL', name: 'Volume', kind: 'sub', params: [], defaults: {} },
 ];
 
-// Maps store defId → klinecharts built-in indicator name + calcParams builder.
-// Only indicators supported by klinecharts v9.8 are listed here.
+// Maps store defId → klinecharts custom ANT_* indicator name + calcParams builder.
+// All indicators are computed server-side via SubscribeIndicators RPC and rendered
+// through custom klinecharts indicators registered in serverIndicators.ts.
 export const KLINECHARTS_MAP: Record<string, { name: string; buildParams: (p: Record<string, number>) => number[] }> = {
-  SMA:   { name: 'MA',   buildParams: (p) => [p.length] },
-  EMA:   { name: 'EMA',  buildParams: (p) => [p.length] },
-  BOLL:  { name: 'BOLL', buildParams: (p) => [p.length, p.mult] },
-  RSI:   { name: 'RSI',  buildParams: (p) => [p.length] },
-  MACD:  { name: 'MACD', buildParams: (p) => [p.fast, p.slow, p.signal] },
-  KDJ:   { name: 'KDJ',  buildParams: (p) => [p.period, p.k, p.d] },
-  CCI:   { name: 'CCI',  buildParams: (p) => [p.length] },
-  WILLR: { name: 'WR',   buildParams: (p) => [p.length] },
-  OBV:   { name: 'OBV',  buildParams: () => [] },
-  ADX:   { name: 'DMI',  buildParams: (p) => [p.length] },
-  VOL:   { name: 'VOL',  buildParams: () => [] },
+  SMA:   { name: 'ANT_SMA',   buildParams: (p) => [p.length] },
+  EMA:   { name: 'ANT_EMA',   buildParams: (p) => [p.length] },
+  BOLL:  { name: 'ANT_BOLL',  buildParams: (p) => [p.length, p.mult] },
+  RSI:   { name: 'ANT_RSI',   buildParams: (p) => [p.length] },
+  MACD:  { name: 'ANT_MACD',  buildParams: (p) => [p.fast, p.slow, p.signal] },
+  KDJ:   { name: 'ANT_KDJ',   buildParams: (p) => [p.period, p.k, p.d] },
+  CCI:   { name: 'ANT_CCI',   buildParams: (p) => [p.length] },
+  WILLR: { name: 'ANT_WILLR', buildParams: (p) => [p.length] },
+  OBV:   { name: 'ANT_OBV',   buildParams: () => [] },
+  ADX:   { name: 'ANT_ADX',   buildParams: (p) => [p.length] },
+  VOL:   { name: 'ANT_VOL',   buildParams: () => [] },
+  ATR:   { name: 'ANT_ATR',   buildParams: (p) => [p.length] },
+  MFI:   { name: 'ANT_MFI',   buildParams: (p) => [p.length] },
+  ADOSC: { name: 'ANT_ADOSC', buildParams: (p) => [p.fast, p.slow] },
+  AD:    { name: 'ANT_AD',    buildParams: () => [] },
 };
 
 // ── Store ──
