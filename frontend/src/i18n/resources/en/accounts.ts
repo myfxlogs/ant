@@ -278,9 +278,9 @@ const accounts = {
     },
     messages: {
       enterPassword: 'Please enter password',
-      passwordVerified: 'Password verified',
+      passwordVerified: 'Password verified successfully',
       passwordVerifyFailed: 'Password verification failed',
-      verifyFirst: 'Please verify password first',
+      verifyFirst: 'Please verify the password first',
       passwordSaved: 'Password saved',
     },
   },

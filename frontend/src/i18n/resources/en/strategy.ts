@@ -11,8 +11,10 @@ const strategy = {
         description: 'Description',
         tags: 'Tags',
         visibility: 'Visibility',
+        status: 'Status',
         useCount: 'Use count',
         createdAt: 'Created at',
+        updatedAt: 'Updated at',
         actions: 'Actions',
         loadingDefault: 'Loading default templates...',
         defaultHint: 'Default',
@@ -25,7 +27,14 @@ const strategy = {
         public: 'Public',
         private: 'Private',
       },
+      status: {
+        draft: 'Draft',
+        published: 'Published',
+      },
       actions: {
+        create: 'New Template',
+        edit: 'Edit',
+        delete: 'Delete',
         backtest: 'Backtest',
         viewCode: 'View code',
         copy: 'Copy',
@@ -34,6 +43,7 @@ const strategy = {
       },
       copySuffix: ' (copy)',
       deleteConfirm: 'Delete this template?',
+      defaultDraftName: 'Draft template',
       scheduleName: 'Schedule name: {{name}}',
       scheduleLaunch: {
         title: 'Launch schedule',
@@ -87,6 +97,7 @@ const strategy = {
         },
       },
       backtest: {
+        title: 'Backtest',
         modalTitleWithName: 'Backtest: {{name}}',
         parameters: {
           title: 'Strategy Parameters',
@@ -140,6 +151,10 @@ const strategy = {
         backtestRunningCannotPublish: 'Backtest is running. Cannot publish now.',
         missingDraftIdCannotPublish: 'Missing draft id. Cannot publish.',
         publishedButNoTemplateId: 'Published, but template id is missing.',
+        templateRepublished: 'Template republished',
+        templateAlreadyPublished: 'Template already published',
+        templateNotDraftUnknownPublishStatus: 'Template is not a draft. Unknown publish status.',
+        publishFailed: 'Publish failed',
 
         fetchTemplateListFailed: 'Failed to load template list',
         enterStrategyCode: 'Please enter strategy code',
@@ -163,10 +178,6 @@ const strategy = {
         backtestRunNoPublishedTemplate: 'Backtest run has no published template',
         codeCopied: 'Code copied',
         copyFailed: 'Copy failed',
-        templateRepublished: 'Template republished',
-        templateAlreadyPublished: 'Template already published',
-        templateNotDraftUnknownPublishStatus: 'Template is not draft. Unknown publish status.',
-        publishFailed: 'Publish failed',
       },
       backtestRuns: {
         title: 'Backtest runs',
@@ -194,7 +205,34 @@ const strategy = {
           canceled: 'Canceled',
         },
       },
-      defaultDraftName: 'Draft template',
+    },
+    defaultTemplates: {
+      maCross: {
+        name: 'Dual MA Crossover Strategy',
+        description: 'Buy when fast MA crosses above slow MA, sell when it crosses below',
+      },
+      forceBuy: {
+        name: 'Force BUY Test',
+        description: 'For verifying the order pipeline: always returns buy on each execution, reads lot from context/params as volume',
+      },
+      rsi: {
+        name: 'RSI Overbought/Oversold Strategy',
+        description: 'Buy when RSI < 30 (oversold), sell when RSI > 70 (overbought)',
+      },
+      macd: {
+        name: 'MACD Strategy',
+        description: 'Buy on MACD golden cross, sell on death cross',
+      },
+    },
+    validation: {
+      passed: 'Validation passed',
+      notPassed: 'Validation did not pass',
+      riskEval: {
+        title: 'Risk Assessment',
+        riskHigh: 'Risk level: high',
+        riskUnreliable: 'Risk assessment: unreliable (isReliable=false)',
+        riskLoading: 'Backend risk assessment is still calculating',
+      },
     },
     codeEditor: {
       title: 'Strategy editor',
@@ -263,10 +301,6 @@ const strategy = {
         name: 'Enter template name',
         description: 'Enter description',
       },
-    },
-    validation: {
-      passed: 'Validation passed',
-      notPassed: 'Validation did not pass',
     },
     backtestRun: {
       title: 'Backtest run',
