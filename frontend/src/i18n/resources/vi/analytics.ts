@@ -3,27 +3,27 @@ const analytics = {
     summary: {
       title: 'Phân tích',
       placeholders: {
-        selectAccount: 'Chọn tài khoản',
+        selectAccount: 'Chọn tài khoản'
       },
       periods: {
         today: 'Hôm nay',
         week: 'Tuần này',
         month: 'Tháng này',
         year: 'Năm nay',
-        all: 'Tất cả',
+        all: 'Tất cả'
       },
       sections: {
         equityCurve: 'Đường vốn',
-        monthlyStats: 'Thống kê theo tháng',
+        monthlyStats: 'Thống kê theo tháng'
       },
       labels: {
-        pnl: 'Lãi/Lỗ',
+        pnl: 'Lãi/Lỗ'
       },
       metrics: {
         netProfit: 'Tổng lãi/lỗ',
         equity: 'Vốn',
         balance: 'Số dư',
-        equityValue: 'Vốn',
+        equityValue: 'Vốn'
       },
       cards: {
         symbolPnlCompare: 'Lãi/Lỗ theo mã',
@@ -32,6 +32,7 @@ const analytics = {
         pnlShare: 'Tỷ lệ lãi/lỗ',
         tradeStats: 'Thống kê giao dịch',
         riskMetrics: 'Chỉ số rủi ro',
+        economicCalendar: 'Economic calendar'
       },
       tradeStats: {
         totalTrades: 'Tổng số lệnh',
@@ -45,7 +46,7 @@ const analytics = {
         maxHolding: 'Thời gian giữ dài nhất',
         avgVolume: 'Khối lượng TB',
         avgProfit: 'Lãi TB',
-        avgLoss: 'Lỗ TB',
+        avgLoss: 'Lỗ TB'
       },
       risk: {
         maxDrawdown: 'Drawdown tối đa',
@@ -53,18 +54,33 @@ const analytics = {
         sharpe: 'Sharpe',
         sortino: 'Sortino',
         volatility: 'Biến động',
+        var95: 'Value at Risk (95%)'
       },
       direction: {
         buy: 'Mua',
-        sell: 'Bán',
+        sell: 'Bán'
       },
       profit: {
         win: 'Lãi',
-        loss: 'Lỗ',
+        loss: 'Lỗ'
       },
       yearOption: '{{year}}',
-    },
-  },
+      economicCalendar: {
+        loading: 'Loading economic calendar...',
+        empty: 'No economic events available.',
+        actual: 'Actual',
+        previous: 'Previous',
+        estimate: 'Estimate',
+        keyIndicatorsTitle: 'Key macro indicators',
+        indicators: {
+          CPI: 'Inflation (CPI)',
+          UNRATE: 'Unemployment rate',
+          FEDFUNDS: 'Fed funds rate',
+          GDP: 'Real GDP'
+        }
+      }
+    }
+  }
 } as const;
 
 export default analytics;

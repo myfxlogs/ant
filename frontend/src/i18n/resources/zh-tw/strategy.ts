@@ -9,7 +9,10 @@ const strategy = {
         notPassed: '風險評估未通過',
         highRisk: '風險評估：高風險',
         unreliable: '風險評估：不可靠',
-      },
+        riskHigh: 'Risk level: high',
+        riskUnreliable: 'Risk assessment: unreliable (isReliable=false)',
+        riskLoading: 'Backend risk assessment is still calculating'
+      }
     },
     codeEditor: {
       title: '策略編輯器',
@@ -18,7 +21,7 @@ const strategy = {
         symbol: '品種',
         timeframe: '時間週期',
         code: '策略代碼',
-        disabledSuffix: '（已禁用）',
+        disabledSuffix: '（已禁用）'
       },
       actions: {
         copy: '複製',
@@ -27,7 +30,7 @@ const strategy = {
         saveAsTemplate: '保存為模板',
         sendToAI: '發給AI修改',
         sendToAIFixTitleValidate: '驗證未通過/有警告',
-        sendToAIFixTitlePreview: '預覽訊號執行失敗/需要優化',
+        sendToAIFixTitlePreview: '預覽訊號執行失敗/需要優化'
       },
       placeholders: {
         selectAccount: '選擇帳號',
@@ -35,15 +38,14 @@ const strategy = {
         loadingSymbols: '可用品種載入中…',
         selectSymbol: '選擇品種',
         noSymbols: '未取得到品種列表',
-        code: '輸入Python策略代碼...',
+        code: '輸入Python策略代碼...'
       },
       cards: {
         validationResult: '驗證結果',
-        previewResult: '預覽結果',
+        previewResult: '預覽結果'
       },
       hints: {
-        previewInfo:
-          'Preview 取最近 N 根K線（默認 500，配置：strategy.preview_bars）；回測取最近 N 個月（默認 3，配置：strategy.backtest_window_months）。',
+        previewInfo: 'Preview 取最近 N 根K線（默認 500，配置：strategy.preview_bars）；回測取最近 N 個月（默認 3，配置：strategy.backtest_window_months）。'
       },
       messages: {
         enterCode: '請輸入策略代碼',
@@ -57,17 +59,17 @@ const strategy = {
         execFailed: '執行失敗',
         savedAsTemplate: '已保存為模板',
         copied: '代碼已複製',
-        copyFailed: '複製失敗，請手動複製',
+        copyFailed: '複製失敗，請手動複製'
       },
       aiPrompt: {
         intro: '請根據以下資訊修改策略代碼，使其通過驗證並且預覽訊號執行成功。',
         problem: '【問題】{{title}}',
         currentCodeTitle: '【當前代碼】',
         outputTitle: '【輸出資訊】',
-        outro: '請直接給出修改後的完整代碼（用 ```python 包裹），並說明修改點。',
-        pythonFenceStart: '```python',
-        fenceEnd: '```',
-      },
+        outro: '請直接給出修改後的完整代碼（用 \`\`\`python 包裹），並說明修改點。',
+        pythonFenceStart: '\`\`\`python',
+        fenceEnd: '\`\`\`'
+      }
     },
     schedules: {
       title: '策略調度',
@@ -75,7 +77,7 @@ const strategy = {
         create: '新建調度',
         logs: '日誌',
         healthCheck: '健康檢查',
-        runNow: '立即執行',
+        runNow: '立即執行'
       },
       health: {
         title: '策略健康檢查 {{name}}',
@@ -85,14 +87,14 @@ const strategy = {
           noSample: '無樣本',
           healthy: '健康',
           watch: '關注',
-          alert: '告警',
+          alert: '告警'
         },
         notes: {
           pending: '請先執行健康檢查。',
           noSample: '樣本不足，至少需要 {{minSampleSize}} 筆運行記錄。',
           healthy: '成功率高且失敗次數可控。',
           watch: '成功率達到關注門檻（>= {{yellowSuccessRate}}%），建議持續觀察。',
-          alert: '成功率偏低，建議立即排查策略與帳戶狀態。',
+          alert: '成功率偏低，建議立即排查策略與帳戶狀態。'
         },
         fields: {
           grade: '健康級別',
@@ -104,29 +106,28 @@ const strategy = {
           successOverTotal: '執行成功/總次數',
           failedRuns: '執行失敗次數',
           latestProfit: '最近成交盈虧',
-          latestError: '最近錯誤訊息',
+          latestError: '最近錯誤訊息'
         },
-        thresholdsSummary:
-          'min_sample_size={{minSampleSize}}；綠色：成功率>={{greenSuccessRate}}% 且失敗次數<={{greenMaxFailedRuns}}；黃色：成功率>={{yellowSuccessRate}}%',
+        thresholdsSummary: 'min_sample_size={{minSampleSize}}；綠色：成功率>={{greenSuccessRate}}% 且失敗次數<={{greenMaxFailedRuns}}；黃色：成功率>={{yellowSuccessRate}}%',
         sections: {
           runLogs: '最近執行日誌',
-          orders: '最近成交記錄',
+          orders: '最近成交記錄'
         },
         runLogs: {
-          signalType: '信號',
+          signalType: '信號'
         },
         messages: {
           loadFailed: '載入健康檢查資料失敗',
-          clickRefresh: '點擊重新整理以載入健康資料',
-        },
+          clickRefresh: '點擊重新整理以載入健康資料'
+        }
       },
       editModal: {
         title: {
           create: '新建調度任務',
-          edit: '編輯調度任務',
+          edit: '編輯調度任務'
         },
         autoName: {
-          strategy: '策略',
+          strategy: '策略'
         },
         fields: {
           template: '模板',
@@ -141,12 +142,12 @@ const strategy = {
           cronExtra: '標準 5 段：分鐘 小時 日 月 週。例如：*/5 * * * * 每5分鐘；0 9 * * 1-5 工作日9點',
           intervalSeconds: '間隔(秒)',
           intervalSecondsExtra: '自動跟隨週期(timeframe)，無需修改',
-          enableExtra: 'EA 體驗：啟用後會持續運行，直到你手動停用',
+          enableExtra: 'EA 體驗：啟用後會持續運行，直到你手動停用'
         },
         placeholders: {
           name: '例如：EURUSD M5 早盤策略',
           selectAccountFirst: '先選帳號',
-          symbol: '選擇品種',
+          symbol: '選擇品種'
         },
         validation: {
           templateRequired: '請選擇模板',
@@ -157,15 +158,15 @@ const strategy = {
           runFrequencyRequired: '請選擇運行頻率',
           cronRequired: '請輸入 cron',
           timeframeRequired: '請選擇週期',
-          triggerModeRequired: '請選擇觸發模式',
+          triggerModeRequired: '請選擇觸發模式'
         },
         runFrequencyExtra: {
           cron: '高級：使用 Cron 精確控制執行時間',
-          byTimeframe: '預設：跟隨週期(timeframe)觸發（最像EA的OnTick/OnTimer體驗）',
+          byTimeframe: '預設：跟隨週期(timeframe)觸發（最像EA的OnTick/OnTimer體驗）'
         },
         runFrequencyOptions: {
           byTimeframe: '按週期觸發（推薦）',
-          cron: 'Cron（高級）',
+          cron: 'Cron（高級）'
         },
         advanced: {
           title: '高級設定',
@@ -177,41 +178,41 @@ const strategy = {
           triggerModeExtra: '穩定：按K線/週期觸發（信號更穩但有延遲）；高頻：報價流觸發（更快但噪聲大，需要去抖）',
           triggerModeOptions: {
             stable: '穩定（K線/週期）',
-            hf: '高頻（報價/tick）',
+            hf: '高頻（報價/tick）'
           },
           stableOverrideIntervalSeconds: '穩定模式高級：間隔(秒)',
           stableOverrideIntervalSecondsExtra: '可選。預設綁定週期(timeframe)。填寫後將覆蓋穩定模式的觸發間隔',
           hfCooldownMs: '高頻模式：最小觸發間隔(ms)',
           hfCooldownMsExtra: '用於去抖：兩次評估/下單之間的最小間隔',
           parametersJson: '參數(JSON對象)',
-          parametersJsonExtra: '用於給策略代碼傳參，形如 key->value。值會以字串形式傳給後端執行（必要時可在策略裡自行轉換）。示例：{ "fast": 10, "slow": 20, "risk": "low" }',
-        },
+          parametersJsonExtra: '用於給策略代碼傳參，形如 key->value。值會以字串形式傳給後端執行（必要時可在策略裡自行轉換）。示例：{ "fast": 10, "slow": 20, "risk": "low" }'
+        }
       },
       triggerModal: {
         title: '立即執行(直接下單)',
         actions: {
           rerun: '重新執行',
-          confirmOrder: '確認下單',
+          confirmOrder: '確認下單'
         },
         confirmOrder: {
           title: '確認要下單嗎？',
-          ok: '確認下單',
+          ok: '確認下單'
         },
         summary: {
           scheduleName: '調度名稱',
           account: '帳號',
           symbol: '品種',
-          timeframe: '週期',
+          timeframe: '週期'
         },
         messages: {
-          signalNotOrderable: '當前信號不可下單：需要 buy/sell 且 volume > 0',
+          signalNotOrderable: '當前信號不可下單：需要 buy/sell 且 volume > 0'
         },
         cards: {
           logs: '執行日誌',
-          signal: '信號(用於下單)',
+          signal: '信號(用於下單)'
         },
         emptyLogs: '(無日誌)',
-        emptySignal: '(無信號)',
+        emptySignal: '(無信號)'
       },
       table: {
         name: '名稱',
@@ -221,23 +222,23 @@ const strategy = {
         schedule: '計劃',
         status: '狀態',
         lastRun: '最近運行',
-        actions: '操作',
+        actions: '操作'
       },
       templateVisibility: {
         public: '公開',
-        private: '私有',
+        private: '私有'
       },
       status: {
         running: '運行中',
-        disabled: '已停用',
+        disabled: '已停用'
       },
       nextRunAt: '下次運行',
       enableCount: '啟用次數',
       deleteConfirm: {
-        title: '確認刪除該調度任務？',
+        title: '確認刪除該調度任務？'
       },
       validation: {
-        parametersMustBeJsonObject: '參數必須是 JSON 對象',
+        parametersMustBeJsonObject: '參數必須是 JSON 對象'
       },
       messages: {
         parametersParseFailed: '參數解析失敗',
@@ -250,18 +251,18 @@ const strategy = {
         signalHoldCannotOrder: '當前信號為 hold/無交易動作，不能下單',
         volumeInvalid: '下單手數無效（volume 必須 > 0）',
         orderSubmitted: '已提交下單',
-        orderFailed: '下單失敗',
-      },
+        orderFailed: '下單失敗'
+      }
     },
     scheduleLogs: {
       title: '記錄',
       titleWithName: '記錄 - {{name}}',
       tabs: {
         exec: '運行記錄',
-        orders: '交易記錄',
+        orders: '交易記錄'
       },
       messages: {
-        missingScheduleId: '缺少 scheduleId',
+        missingScheduleId: '缺少 scheduleId'
       },
       summary: {
         name: '名稱',
@@ -269,19 +270,19 @@ const strategy = {
         trade: '交易',
         enableCount: '啟用次數',
         lastRun: '最近運行',
-        lastError: '最近錯誤',
+        lastError: '最近錯誤'
       },
       execStatus: {
         pending: '待執行',
         running: '運行中',
         completed: '已完成',
         failed: '失敗',
-        skipped: '已跳過',
+        skipped: '已跳過'
       },
       operationStatus: {
         success: '成功',
         failed: '失敗',
-        running: '執行中',
+        running: '執行中'
       },
       execTable: {
         time: '時間',
@@ -289,7 +290,7 @@ const strategy = {
         status: '狀態',
         durationMs: '耗時(ms)',
         error: '錯誤',
-        execute: '執行',
+        execute: '執行'
       },
       ordersTable: {
         time: '時間',
@@ -299,7 +300,7 @@ const strategy = {
         openPrice: '開倉價',
         closePrice: '平倉價',
         profit: '盈虧',
-        ticket: '訂單號',
+        ticket: '訂單號'
       },
       orderSide: {
         buy: '市價買入',
@@ -310,34 +311,34 @@ const strategy = {
         buyStop: '突破買入',
         sellStop: '突破賣出',
         buyStopLimit: '限價突破買',
-        sellStopLimit: '限價突破賣',
+        sellStopLimit: '限價突破賣'
       },
-      scheduleIdLabel: '排程ID:',
+      scheduleIdLabel: '排程ID:'
     },
     templates: {
       title: '策略模板',
       tabs: {
         system: '系統模板',
-        user: '自建模板',
+        user: '自建模板'
       },
       copySuffix: ' (副本)',
       scheduleName: '{{symbol}} {{timeframe}} {{nowText}}',
       badges: {
-        preset: '預設',
+        preset: '預設'
       },
       visibility: {
         public: '公開',
-        private: '私有',
+        private: '私有'
       },
       codeModal: {
         title: '策略代碼',
         actions: {
-          copy: '複製',
-        },
+          copy: '複製'
+        }
       },
       status: {
         draft: '草稿',
-        published: '已發布',
+        published: '已發布'
       },
       actions: {
         create: '新建模板',
@@ -347,7 +348,7 @@ const strategy = {
         copy: '複製',
         viewCode: '查看代碼',
         backtest: '回測',
-        launchSchedule: '上線到調度',
+        launchSchedule: '上線到調度'
       },
       table: {
         name: '名稱',
@@ -359,6 +360,9 @@ const strategy = {
         createdAt: '建立時間',
         updatedAt: '更新時間',
         actions: '操作',
+        loadingDefault: 'Loading default templates...',
+        defaultHint: 'Default',
+        emptyUser: 'No user templates yet. Click "Create Template" above to get started.'
       },
       scheduleLaunch: {
         title: '調度上線',
@@ -370,7 +374,7 @@ const strategy = {
         actions: {
           publishTemplate: '發布模板',
           createScheduleNoEnable: '建立調度',
-          createAndEnable: '建立並啟用',
+          createAndEnable: '建立並啟用'
         },
         metrics: {
           totalReturn: '總收益',
@@ -378,33 +382,57 @@ const strategy = {
           maxDrawdown: '最大回撤',
           sharpe: '夏普比率',
           winRate: '勝率',
-          totalTrades: '交易次數',
-        },
+          totalTrades: '交易次數'
+        }
       },
       editTemplateModal: {
         title: {
           create: '新建模板',
-          edit: '編輯模板',
+          edit: '編輯模板'
         },
         fields: {
           name: '名稱',
           description: '描述',
           code: '策略代碼',
-          publicShare: '公開分享',
+          publicShare: '公開分享'
         },
         placeholders: {
           name: '例如：均線交叉策略',
           description: '可選：策略說明',
-          codeSample:
-            "# 策略代碼示例\n# 可用的變量: close, open, high, low, volume, symbol\n# 返回: signal字典\n\nimport numpy as np\n\n# 計算指標\nmaFast = np.mean(close[-10:])\nmaSlow = np.mean(close[-20:])\n\n# 生成信號\nif maFast > maSlow:\n    signal = 'buy'\nelif maFast < maSlow:\n    signal = 'sell'\nelse:\n    signal = 'hold'\n\n# 返回結果\nsignal = {\n    'signal': signal,\n    'symbol': symbol,\n    'price': close[-1],\n    'confidence': 0.7,\n    'reason': f'MA快線={maFast:.5f}, MA慢線={maSlow:.5f}'\n}",
+          codeSample: `# 策略代碼示例
+# 可用的變量: close, open, high, low, volume, symbol
+# 返回: signal字典
+
+import numpy as np
+
+# 計算指標
+maFast = np.mean(close[-10:])
+maSlow = np.mean(close[-20:])
+
+# 生成信號
+if maFast > maSlow:
+    signal = 'buy'
+elif maFast < maSlow:
+    signal = 'sell'
+else:
+    signal = 'hold'
+
+# 返回結果
+signal = {
+    'signal': signal,
+    'symbol': symbol,
+    'price': close[-1],
+    'confidence': 0.7,
+    'reason': f'MA快線={maFast:.5f}, MA慢線={maSlow:.5f}'
+}`
         },
         validation: {
           nameRequired: '請輸入名稱',
-          codeRequired: '請輸入策略代碼',
+          codeRequired: '請輸入策略代碼'
         },
         actions: {
-          validateCode: '驗證代碼',
-        },
+          validateCode: '驗證代碼'
+        }
       },
       backtest: {
         title: '回測',
@@ -415,27 +443,36 @@ const strategy = {
           timeframe: '週期',
           initialCapital: '初始資金',
           range: '回測區間',
+          extraSymbols: 'Extra symbols (multi-select)'
         },
         placeholders: {
           account: '選擇帳戶',
           symbol: '選擇品種',
           range: '請選擇回測區間',
+          extraSymbols: 'Optional, useful for pairs/rotation strategies'
         },
         validation: {
           accountRequired: '請選擇帳戶',
           symbolRequired: '請選擇品種',
           timeframeRequired: '請選擇週期',
           initialCapitalRequired: '請輸入初始資金',
-          rangeRequired: '請選擇回測區間',
+          rangeRequired: '請選擇回測區間'
         },
         quickRange: {
           '1d': '1天',
           '3d': '3天',
           '1w': '1週',
           '1y': '1年',
-          custom: '自訂',
+          custom: '自訂'
         },
         accountDisabledSuffix: ' (已停用)',
+        modalTitleWithName: 'Backtest: {{name}}',
+        parameters: {
+          title: 'Strategy Parameters'
+        },
+        tooltips: {
+          extraSymbols: 'Additional symbols to fetch K-lines for (same account, same timeframe). Strategy can access them via context["closes_by_symbol"].'
+        }
       },
       messages: {
         fetchTemplateListFailed: '獲取模板列表失敗',
@@ -465,6 +502,17 @@ const strategy = {
         scheduleCreated: '調度已建立',
         scheduleCreatedAndEnabled: '調度已建立並啟用',
         createScheduleFailed: '建立調度失敗',
+        templatePublished: 'Template published',
+        cannotPublishAndCreateDraftFailed: 'Unable to publish. Draft creation failed.',
+        republishedButNoTemplateId: 'Republished, but template id is missing.',
+        backtestRunningCannotPublish: 'Backtest is running. Cannot publish now.',
+        missingDraftIdCannotPublish: 'Missing draft id. Cannot publish.',
+        publishedButNoTemplateId: 'Published, but template id is missing.',
+        templateRepublished: 'Template republished',
+        templateAlreadyPublished: 'Template already published',
+        templateNotDraftUnknownPublishStatus: 'Template is not a draft. Unknown publish status.',
+        publishFailed: 'Publish failed',
+        backtestRunNoPublishedTemplate: 'Backtest run has no published template'
       },
       backtestRuns: {
         title: '回測報告',
@@ -476,7 +524,7 @@ const strategy = {
           completed: '已完成',
           failed: '失敗',
           canceling: '取消中',
-          canceled: '已取消',
+          canceled: '已取消'
         },
         table: {
           title: '標題',
@@ -484,14 +532,16 @@ const strategy = {
           symbol: '品種',
           timeframe: '週期',
           createdAt: '建立時間',
-          actions: '操作',
+          actions: '操作'
         },
         actions: {
           view: '查看',
           launchSchedule: '調度上線',
-          createSchedule: '建立調度',
-        },
+          createSchedule: '建立調度'
+        }
       },
+      deleteConfirm: 'Delete this template?',
+      defaultDraftName: 'Draft template'
     },
     backtestRun: {
       title: '回測運行',
@@ -502,19 +552,19 @@ const strategy = {
         failed: '失敗',
         canceling: '取消中',
         canceled: '已取消',
-        ended: '已結束',
+        ended: '已結束'
       },
       actions: {
-        cancel: '取消',
+        cancel: '取消'
       },
       hints: {
         queued: '回測排隊中',
         running: '回測運行中',
-        canceling: '正在取消回測',
+        canceling: '正在取消回測'
       },
       fields: {
         status: '狀態',
-        error: '錯誤',
+        error: '錯誤'
       },
       metrics: {
         totalReturn: '總收益',
@@ -523,7 +573,7 @@ const strategy = {
         sharpe: '夏普比率',
         winRate: '勝率',
         totalTrades: '交易次數',
-        equityCurvePoints: '資金曲線點數',
+        equityCurvePoints: '資金曲線點數'
       },
       trades: {
         title: '訂單明細',
@@ -547,28 +597,28 @@ const strategy = {
           tp: '停利',
           margin_call: '強平',
           expired: '到期',
-          end_of_test: '回測結束',
+          end_of_test: '回測結束'
         },
-        summary: '共 {{count}} 筆，勝 {{wins}} / 負 {{losses}}，淨盈虧 {{pnl}}',
-      },
+        summary: '共 {{count}} 筆，勝 {{wins}} / 負 {{losses}}，淨盈虧 {{pnl}}'
+      }
     },
     defaultTemplates: {
       maCross: {
         name: '雙均線交叉策略',
-        description: '當快均線上穿慢均線時買入，下穿時賣出',
+        description: '當快均線上穿慢均線時買入，下穿時賣出'
       },
       forceBuy: {
         name: '測試下單（強制BUY）',
-        description: '用於驗證下單鏈路：每次執行都返回 buy，並從 context/params 讀取 lot 作為 volume',
+        description: '用於驗證下單鏈路：每次執行都返回 buy，並從 context/params 讀取 lot 作為 volume'
       },
       rsi: {
         name: 'RSI 超買超賣策略',
-        description: 'RSI 低於30超賣區買入，高於70超買區賣出',
+        description: 'RSI 低於30超賣區買入，高於70超買區賣出'
       },
       macd: {
         name: 'MACD 策略',
-        description: 'MACD 金叉買入，死叉賣出',
-      },
+        description: 'MACD 金叉買入，死叉賣出'
+      }
     },
     codeAssist: {
       tabAI: 'AI 修改',
@@ -594,7 +644,7 @@ const strategy = {
         emaPeriod: 'EMA 指數移動平均的週期（K 線根數）。',
         smaPeriod: 'SMA 簡單移動平均的週期（K 線根數）。',
         genericPeriod: '回看週期（K 線根數），用於指標計算的視窗長度。',
-        genericPercent: '百分比/比率類參數，單位通常為 %（如 1 表示 1%）。',
+        genericPercent: '百分比/比率類參數，單位通常為 %（如 1 表示 1%）。'
       },
       required: '必填',
       suggested: '建議',
@@ -607,8 +657,314 @@ const strategy = {
       codeEmpty: '目前沒有可修改的程式碼。',
       codeUpdated: '程式碼已更新，請重新進行程式碼驗證後再儲存。',
       noPython: 'AI 沒有回傳 Python 程式碼區塊，請換個說法再試一次。',
-      saveBlockedNotValidated: '請先點擊「驗證程式碼」，驗證通過後才能儲存。',
+      saveBlockedNotValidated: '請先點擊「驗證程式碼」，驗證通過後才能儲存。'
     },
+    templateModal: {
+      title: 'Save as template',
+      fields: {
+        name: 'Name',
+        description: 'Description'
+      },
+      placeholders: {
+        name: 'Enter template name',
+        description: 'Enter description'
+      }
+    },
+    asset: {
+      title: 'Strategy Assets',
+      subtitle: 'Asset publishing, review status, and cloning are maintained by the backend. Cloned results are independent user templates.',
+      submitAsset: 'Submit Asset',
+      assetList: 'Asset List',
+      name: 'Name',
+      visibility: 'Visibility',
+      reviewStatus: 'Review Status',
+      cloneCount: 'Clones',
+      version: 'Version',
+      description: 'Description',
+      actions: 'Actions',
+      cloneAsDraft: 'Clone as Draft',
+      sourceTemplate: 'Source Template',
+      assetName: 'Asset Name',
+      submit: 'Submit',
+      messages: {
+        loadFailed: 'Failed to load strategy assets',
+        submitSuccess: 'Strategy asset submitted',
+        submitFailed: 'Failed to submit strategy asset',
+        cloneSuccess: 'Cloned as template: {{templateId}}',
+        cloneFailed: 'Failed to clone strategy asset'
+      },
+      validation: {
+        selectTemplate: 'Please select a source template',
+        enterName: 'Please enter asset name'
+      }
+    },
+    gen: {
+      title: 'Strategy Generation',
+      send: 'Generate Strategy',
+      regenerate: 'Regenerate',
+      reset: 'Start Over',
+      template: 'Template',
+      generating: 'Generating...',
+      validating: 'Compliance Check',
+      backtestStarted: 'Backtest Started',
+      done: 'Done',
+      backtestMsg: 'Backtest task created',
+      clarifyTitle: 'A few details to confirm:',
+      useDefaults: 'Continue with defaults',
+      placeholder: 'Describe the trading strategy you want to create, e.g.: "Make a Bollinger Band mean-reversion strategy for EURUSD on 1H"',
+      chat: {
+        generate: '⚡ Generate',
+        revise: '✏️ Revise',
+        repair: '🔧 Repair',
+        discuss: '💬 Discuss'
+      },
+      feedback: {
+        heading: '📊 Backtest Results',
+        placeholder: 'Provide feedback to iterate (e.g. "Too aggressive", "Add stop loss")'
+      }
+    },
+    marketRegime: {
+      title: 'Market Regime Detection',
+      subtitle: 'Backend computes trend, volatility, and efficiency features from K-lines. Frontend only displays results.',
+      ruleVersionAlert: 'Currently using rule-based detection model rule-v1. K-line authoritative source remains the backend Market/Kline service.',
+      detectSuccess: 'Market regime detection completed',
+      detectFailed: 'Market regime detection failed',
+      form: {
+        title: 'Detection Parameters',
+        accountId: 'Account ID',
+        accountIdRequired: 'Account ID is required',
+        accountIdPlaceholder: 'MT account UUID',
+        symbol: 'Symbol',
+        symbolRequired: 'Symbol is required',
+        symbolPlaceholder: 'EURUSD',
+        timeframe: 'Timeframe',
+        klineCount: 'K-line Count',
+        submit: 'Start Detection'
+      },
+      result: {
+        title: 'Detection Result',
+        status: 'Status',
+        confidence: 'Confidence',
+        modelVersion: 'Model Version',
+        strategyFamilies: 'Strategy Families',
+        features: 'Features',
+        recordId: 'Record ID'
+      }
+    },
+    experiment: {
+      title: 'Strategy Experiment',
+      subtitle: 'Parameter experimentation, candidate scoring, and draft generation are handled by the backend. Frontend only submits and displays.',
+      ruleVersionAlert: 'Current minimal loop: deterministic parameter experiment. Candidates only generate drafts and will not auto-publish, schedule, or trade.',
+      jobEventStream: 'Job Event Stream',
+      noEvents: 'No events',
+      selectJobToView: 'Select an experiment with a Job to view events.',
+      submitForm: {
+        title: 'Submit Experiment',
+        baseTemplate: 'Base Strategy Template',
+        baseTemplateRequired: 'Please select a base strategy template',
+        baseTemplatePlaceholder: 'Select template',
+        parameterSpace: 'Parameter Space JSON',
+        parameterSpaceRequired: 'Please enter parameter space JSON',
+        searchMethod: 'Search Method',
+        maxCandidates: 'Max Candidates',
+        objective: 'Objective',
+        submit: 'Submit Experiment'
+      },
+      list: {
+        title: 'Experiment List',
+        column: {
+          status: 'Status',
+          searchMethod: 'Search Method',
+          maxCandidates: 'Max Candidates',
+          objective: 'Objective',
+          actions: 'Actions',
+          viewCandidates: 'View Candidates'
+        }
+      },
+      candidates: {
+        title: 'Candidates',
+        titleWithId: 'Candidates: {{id}}',
+        column: {
+          rank: 'Rank',
+          grade: 'Grade',
+          score: 'Score',
+          parameters: 'Parameters',
+          summary: 'Summary',
+          recommendation: 'Recommendation',
+          actions: 'Actions',
+          viewCandidates: 'View Candidates',
+          generateDraft: 'Generate Draft'
+        }
+      },
+      messages: {
+        loadTemplatesFailed: 'Failed to load strategy templates',
+        loadExperimentsFailed: 'Failed to load experiment list',
+        loadCandidatesFailed: 'Failed to load candidates',
+        subscribeJobFailed: 'Failed to subscribe to experiment Job events',
+        candidatesGenerated: 'Strategy experiment candidates generated',
+        submitFailed: 'Failed to submit experiment. Please verify the parameter space is valid JSON.',
+        draftGenerated: 'Draft template generated: {{templateId}}',
+        promoteFailed: 'Failed to promote candidate to draft'
+      }
+    },
+    workspace: {
+      title: 'Strategy Workspace',
+      account: 'Account',
+      accountPlaceholder: 'Account ID',
+      chartWindow: 'Chart',
+      hideCode: 'Hide Code',
+      showCode: 'Show Code',
+      quickTrade: 'Quick Trade',
+      quickTradeHint: 'Select a symbol first',
+      tradePanelPlaceholder: 'Trade panel — coming soon',
+      selectSymbolHint: 'Select a trading account and symbol to view chart',
+      noAccounts: 'No available accounts',
+      selectSymbol: 'Symbol',
+      code: 'Strategy Code',
+      codePlaceholder: '# Python strategy code...
+def run(context):
+    return {"signal": "hold"}',
+      validate: 'Validate',
+      validatePass: 'Validation passed',
+      validateFailed: 'Validation failed',
+      validateBeforeSave: 'Please validate code before saving',
+      runBacktest: 'Run Backtest',
+      save: 'Save',
+      copy: 'Copy',
+      copySuccess: 'Copied',
+      copyFailed: 'Copy failed',
+      saveSuccess: 'Saved',
+      chart: 'K-line',
+      backtest: 'Backtest',
+      backtestRunning: 'Backtest running...',
+      backtestCompleted: 'Completed',
+      backtestError: 'Backtest failed',
+      backtestEmpty: 'Run a backtest to see results',
+      backtestTab: 'Backtest Results',
+      tuningTab: 'Smart Tuning',
+      execAssumptions: 'ℹ Execution Assumptions',
+      execAssumptionsFields: {
+        mode: 'Mode',
+        timing: 'Timing',
+        fillRule: 'Fill Rule',
+        direction: 'Direction',
+        commission: 'Commission',
+        slippage: 'Slippage',
+        leverage: 'Leverage',
+        mtfFallback: 'MTF Fallback'
+      },
+      aiAssist: 'AI Assistant',
+      ai: 'AI',
+      runtimeMode: 'Runtime',
+      saveFailed: 'Save failed',
+      autoFix: {
+        fixing: 'Fixing...',
+        button: 'Auto Fix',
+        askAI: 'Ask AI',
+        dismiss: 'Dismiss',
+        passed: 'Auto-fix passed in {{iterations}} iteration{{plural}}',
+        failed: 'Auto-fix: {{remaining}} issue(s) remain after {{iterations}} iterations',
+        fixed: 'Fixed ({{count}})',
+        remaining: 'Remaining ({{count}})',
+        newRegression: 'New regression ({{count}})',
+        lineInfo: 'line {{line}}'
+      },
+      template: {
+        title: 'Template',
+        selectPlaceholder: 'Select a template...',
+        load: 'Load',
+        saveAs: 'Save As New',
+        loaded: 'Loaded'
+      }
+    },
+    codeQuality: {
+      category: {
+        FUTURE_DATA_LEAK: 'Future Data Leak',
+        MISSING_PARAM: 'Missing Param',
+        UNREAD_PARAM: 'Unread Param',
+        NDARRAY_PANDAS_MISUSE: 'ndarray/pandas Misuse',
+        NO_STOP_AND_TAKE_PROFIT: 'Missing Stop/Take Profit',
+        NO_ENTRY_PCT: 'Missing Entry %'
+      }
+    },
+    backtestParams: {
+      title: 'Backtest',
+      currentDraft: '📝 Current Draft',
+      dateRange: 'Date Range',
+      execution: 'Execution',
+      capital: 'Capital',
+      leverage: 'Leverage',
+      commission: 'Commission',
+      slippage: 'Slippage',
+      trade: 'Trade',
+      direction: 'Direction',
+      long: '↑ Long',
+      short: '↓ Short',
+      both: 'Both',
+      strictMode: 'Strict Mode',
+      strictModeOn: 'ON',
+      strictModeOff: 'OFF',
+      strictModeOnDesc: 'Next-bar-open. Standard, conservative.',
+      strictModeOffDesc: 'Same-bar-close + MTF 1m. Higher precision.',
+      strictModeOnTooltip: 'ON: signals confirmed at bar close, executed next bar open',
+      strictModeOffTooltip: 'OFF: same-bar close execution with 1m sub-resolution',
+      vectorizedMode: 'Vectorized',
+      eventDrivenMode: 'Run(context)',
+      runtimeMode: 'Runtime',
+      history: 'Backtest History',
+      run: '▶ Run',
+      settingsSave: 'Save as My Defaults',
+      settingsLoad: 'Load My Defaults',
+      settingsReset: 'Reset to Factory',
+      defaultsSaved: 'Defaults saved',
+      defaultsLoaded: 'Defaults loaded',
+      defaultsReset: 'Reset to factory defaults',
+      presets: {
+        liveAligned: 'Live Aligned',
+        exploration: 'Exploration'
+      }
+    },
+    tuning: {
+      optimizerMethod: 'Optimizer method',
+      parameterDimensions: 'Parameter dimensions',
+      enabledCombinations: '{{enabled}} enabled · {{combos}} combinations',
+      hide: 'Hide',
+      preview: 'Preview',
+      previewTitle: 'Preview ({{shown}} of {{total}})',
+      truncated: 'TRUNCATED',
+      results: 'Results ({{count}})',
+      rank: '#',
+      grade: 'Grade',
+      score: 'Score',
+      parameters: 'Parameters',
+      summary: 'Summary',
+      oosScore: 'OOS Score',
+      degradation: 'Degradation',
+      overfit: 'Overfit',
+      overfitWarning: '⚠ OVERFIT',
+      apply: 'Apply',
+      run: 'Run ({{count}})',
+      tuning: 'Tuning…',
+      requiresAI: 'Requires AI provider configured',
+      switchToDE: 'Switch to DE',
+      waiting: 'Waiting for experiment... (SSE auto-refresh)',
+      gridWarning: 'Grid Search would test <b>{{count}}</b> combinations (budget: 48). Consider switching to <b>Differential Evolution</b> which handles large parameter spaces efficiently.',
+      oosFootnote: 'OOS validation run on top-5 candidates (by IS score). Green degradation <20%, orange 20-40%, red >40%.',
+      optimizer: {
+        grid: 'Grid Search',
+        random: 'Random Search',
+        de: 'Differential Evolution',
+        tpe: 'TPE (KDE)',
+        ags: 'Annealed Gaussian',
+        ai: 'AI Optimizer',
+        gridDesc: 'Exhaustive Cartesian product. Best for ≤3 params.',
+        randomDesc: 'Uniform random sampling. Good for exploration.',
+        deDesc: 'rand/1/bin mutation. Converges fast on smooth landscapes.',
+        tpeDesc: 'Tree-structured Parzen Estimator. KDE models good/bad distributions.',
+        agsDesc: 'Gaussian jitter with sigma annealing. Lightweight alternative to TPE.',
+        aiDesc: 'LLM multi-round proposal. Learns from previous results over 3 rounds.'
+      }
+    }
   },
   indicatorCatalog: {
     title: '指標目錄',
@@ -637,7 +993,9 @@ const strategy = {
       noAccounts: '暫無可用賬戶',
       selectSymbol: '品種',
       code: '策略程式碼',
-      codePlaceholder: '# Python 策略程式碼...\ndef run(context):\n    return {"signal": "hold"}',
+      codePlaceholder: '# Python 策略程式碼...
+def run(context):
+    return {"signal": "hold"}',
       validate: '驗證',
       validatePass: '驗證通過',
       validateFailed: '驗證失敗',
@@ -661,10 +1019,10 @@ const strategy = {
         selectPlaceholder: '選擇一個模板...',
         load: '載入',
         saveAs: '另存為',
-        loaded: '已載入',
-      },
-    },
-  },
+        loaded: '已載入'
+      }
+    }
+  }
 } as const;
 
 export default strategy;

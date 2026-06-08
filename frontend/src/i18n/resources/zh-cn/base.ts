@@ -1,12 +1,12 @@
 const base = {
   app: {
-    name: 'AntTrader',
+    name: 'AntTrader'
   },
   auth: {
     fields: {
       email: '邮箱',
       password: '密码',
-      confirmPassword: '确认密码',
+      confirmPassword: '确认密码'
     },
     messages: {
       loginSuccess: '登录成功',
@@ -14,7 +14,7 @@ const base = {
       registerSuccess: '注册成功，请登录',
       registerFailed: '注册失败，请稍后重试',
       logoutSuccess: '已退出登录',
-      fetchMeFailed: '获取用户信息失败',
+      fetchMeFailed: '获取用户信息失败'
     },
     validation: {
       emailRequired: '请输入邮箱',
@@ -22,7 +22,7 @@ const base = {
       passwordRequired: '请输入密码',
       passwordMin8: '密码至少8位',
       confirmPasswordRequired: '请确认密码',
-      passwordMismatch: '两次输入的密码不一致',
+      passwordMismatch: '两次输入的密码不一致'
     },
     login: {
       subtitle: '这是一个测试不具备责任能力',
@@ -35,7 +35,7 @@ const base = {
       agreePrefix: '登录即表示您同意我们的',
       terms: '服务条款',
       and: '和',
-      privacy: '隐私政策',
+      privacy: '隐私政策'
     },
     register: {
       subtitle: '创建新账号',
@@ -46,8 +46,8 @@ const base = {
       agreePrefix: '注册即表示您同意我们的',
       terms: '服务条款',
       and: '和',
-      privacy: '隐私政策',
-    },
+      privacy: '隐私政策'
+    }
   },
   common: {
     refresh: '刷新',
@@ -93,15 +93,15 @@ const base = {
       minute: '分钟',
       hour: '小时',
       day: '天',
-      lessThanMinute: '< 1分钟',
-    },
+      lessThanMinute: '< 1分钟'
+    }
   },
   language: {
     simplifiedChinese: '简体中文',
     traditionalChinese: '繁體中文',
     english: 'English',
     japanese: '日本語',
-    vietnamese: 'Tiếng Việt',
+    vietnamese: 'Tiếng Việt'
   },
   menu: {
     strategyWorkspace: '策略工作台',
@@ -119,37 +119,64 @@ const base = {
     assets: '策略资产',
     schedules: '策略调度',
     indicatorCatalog: '指标目录',
-    logs: '系统日志',
+    logs: '系统日志'
   },
   marketplace: {
     title: '策略市场',
     subtitle: '发现、评分和订阅社区策略',
     publish: '发布策略',
-    tabs: { marketplace: '市场', subscriptions: '我的订阅' },
+    tabs: {
+      marketplace: '市场',
+      subscriptions: '我的订阅'
+    },
     searchPlaceholder: '搜索策略...',
     filterByClass: '按资产类别筛选',
-    sort: { newest: '最新', popular: '最热', performance: '最佳表现' },
+    sort: {
+      newest: '最新',
+      popular: '最热',
+      performance: '最佳表现'
+    },
     empty: '暂无已发布策略',
     noSubscriptions: '暂无订阅',
     card: {
-      subscribe: '订阅', subscribed: '已订阅', unsubscribe: '取消订阅',
-      unsubscribeHint: '点击取消订阅', details: '详情',
-      subscribers: '订阅者', winRate: '胜率', by: '作者',
+      subscribe: '订阅',
+      subscribed: '已订阅',
+      unsubscribe: '取消订阅',
+      unsubscribeHint: '点击取消订阅',
+      details: '详情',
+      subscribers: '订阅者',
+      winRate: '胜率',
+      by: '作者'
     },
-    assetClass: { forex: '外汇', crypto: '加密货币', commodity: '大宗商品', index: '指数', stock: '股票', other: '其他' },
-    risk: { low: '低风险', medium: '中风险', high: '高风险' },
+    assetClass: {
+      forex: '外汇',
+      crypto: '加密货币',
+      commodity: '大宗商品',
+      index: '指数',
+      stock: '股票',
+      other: '其他'
+    },
+    risk: {
+      low: '低风险',
+      medium: '中风险',
+      high: '高风险'
+    },
     messages: {
       loginFirst: '请先登录',
-      subscribed: '订阅成功', subscribeFailed: '订阅失败',
-      unsubscribed: '已取消订阅', unsubscribeFailed: '取消订阅失败',
-      rated: '评分已提交', rateFailed: '评分失败',
-      commentPosted: '评论已发布', commentFailed: '评论失败',
+      subscribed: '订阅成功',
+      subscribeFailed: '订阅失败',
+      unsubscribed: '已取消订阅',
+      unsubscribeFailed: '取消订阅失败',
+      rated: '评分已提交',
+      rateFailed: '评分失败',
+      commentPosted: '评论已发布',
+      commentFailed: '评论失败'
     },
     detail: {
       comments: '评论',
       noComments: '暂无评论，快来第一个评论吧！',
-      commentPlaceholder: '写评论...（Shift+Enter 换行）',
-    },
+      commentPlaceholder: '写评论...（Shift+Enter 换行）'
+    }
   },
   market: {
     searchPlaceholder: '搜索品种（如 EURUSD, XAUUSD）',
@@ -160,7 +187,7 @@ const base = {
     bid: '买价',
     ask: '卖价',
     spread: '点差',
-    mid: '中间价',
+    mid: '中间价'
   },
   topbar: {
     systemOk: '系统正常运行',
@@ -168,7 +195,7 @@ const base = {
     settings: '设置',
     switchToAdmin: '切换到管理',
     logout: '退出登录',
-    user: '用户',
+    user: '用户'
   },
   profile: {
     title: '个人信息',
@@ -176,27 +203,51 @@ const base = {
     role: '角色',
     status: '状态',
     lastLogin: '最后登录',
-    registered: '注册时间',
+    registered: '注册时间'
   },
   notifications: {
-    title: '通知中心',
+    all: '全部',
+    unread: '未读',
     empty: '暂无通知',
+    markAllRead: '全部已读',
+    clearAll: '清空全部',
+    confirmClearAll: '确认清空所有通知？',
     types: {
       trade: '交易',
       signal: '信号',
-      risk_alert: '风险',
-      strategy_execution: '策略',
-      system: '系统',
+      risk_alert: '风控告警',
+      strategy_execution: '策略执行',
+      system: '系统'
     },
+    stream: {
+      strategyExecution: {
+        title: '策略执行',
+        completed: '{{symbol}} {{action}} 已完成',
+        failed: '执行失败：{{error}}'
+      },
+      riskAlert: {
+        title: '风控告警',
+        fallback: '告警类型：{{alertType}}'
+      },
+      strategySignal: {
+        title: '策略信号',
+        message: '{{symbol}} 触发 {{signalType}}'
+      },
+      autoTrading: {
+        title: '自动交易',
+        fallback: '自动交易事件已触发'
+      }
+    },
+    title: 'Notifications',
     tabs: {
-      all: '全部 ({{count}})',
-      unread: '未读 ({{count}})',
+      all: 'All ({{count}})',
+      unread: 'Unread ({{count}})'
     },
     actions: {
-      markAllAsRead: '全部已读',
-      clearAll: '清空',
-      clearAllConfirm: '确定清空所有通知？',
-    },
+      markAllAsRead: 'Mark all as read',
+      clearAllConfirm: 'Clear all notifications?',
+      clearAll: 'Clear all'
+    }
   },
   errors: {
     not_authenticated: '未登录',
@@ -212,7 +263,7 @@ const base = {
     auto_trading_disabled: '自动交易已关闭',
     connection_failed: {
       title: '连接失败',
-      content: '无法连接到后端服务，请检查服务器是否已启动。',
+      content: '无法连接到后端服务，请检查服务器是否已启动。'
     },
     wizard: {
       title: 'AI 策略向导',
@@ -223,30 +274,30 @@ const base = {
         generate: '生成策略',
         publishCode: '回测上线-代码',
         publishBacktest: '回测上线-回测',
-        publishLaunch: '回测上线-上线',
+        publishLaunch: '回测上线-上线'
       },
       actions: {
         prev: '上一步',
         next: '下一步',
-        cancel: '取消',
+        cancel: '取消'
       },
       agents: {
         styleTitle: '市场状态/风格推荐',
         signalsTitle: '信号与指标设计',
         riskTitle: '风控与执行约束',
-        codeTitle: '代码生成',
+        codeTitle: '代码生成'
       },
       template: {
         defaultName: 'AI 策略 {{title}}',
-        defaultDescription: 'AI 向导生成',
+        defaultDescription: 'AI 向导生成'
       },
       schedule: {
-        defaultName: 'AI 调度 {{symbol}} {{timeframe}}',
+        defaultName: 'AI 调度 {{symbol}} {{timeframe}}'
       },
       prompts: {
         dataSpec: {
           dataset: '使用冻结数据集 datasetId={{datasetId}}',
-          klineRange: '使用历史K线范围 from={{from}} to={{to}}',
+          klineRange: '使用历史K线范围 from={{from}} to={{to}}'
         },
         base: {
           account: '账号: {{accountId}}',
@@ -254,17 +305,23 @@ const base = {
           timeframe: '周期: {{timeframe}}',
           data: '数据: {{dataSpec}}',
           constraints: '约束: 最大回撤={{maxDrawdownPct}}% 单笔风险={{riskPerTradePct}}% 日内最多交易={{maxTradesPerDay}} 次',
-          params: '参数（定义+当前值；运行时在 context["params"] 中）：\n{{params}}',
+          params: '参数（定义+当前值；运行时在 context["params"] 中）：
+{{params}}',
           empty: '(空)',
-          macroEnabled: '宏观事件(用户提供):\n{{text}}',
+          macroEnabled: '宏观事件(用户提供):
+{{text}}',
           macroDisabled: '宏观事件: 不使用',
-          userIntent: '用户策略目标(自然语言):\n{{intent}}',
+          userIntent: '用户策略目标(自然语言):
+{{intent}}'
         },
         upstream: {
-          style: '【市场状态/风格推荐 结论】\n{{text}}',
-          signals: '【信号与指标设计 结论】\n{{text}}',
-          risk: '【风控与执行约束 结论】\n{{text}}',
-          sectionTitle: '【上游 Agent 结论（原样提供）】',
+          style: '【市场状态/风格推荐 结论】
+{{text}}',
+          signals: '【信号与指标设计 结论】
+{{text}}',
+          risk: '【风控与执行约束 结论】
+{{text}}',
+          sectionTitle: '【上游 Agent 结论（原样提供）】'
         },
         summary: {
           intro: '你是量化策略解释助手。请用简洁中文（要点形式，最多 12 行）解释下面这段 AntTrader Python 策略代码的核心思路，帮助用户判断是否符合预期。',
@@ -273,9 +330,10 @@ const base = {
           mustInclude2: '2) 主要入场条件（用 2~4 条要点）',
           mustInclude3: '3) 主要出场/止损止盈/风控约束（用 2~4 条要点）',
           mustInclude4: '4) 适用/不适用场景各 1 条',
-          userIntent: '用户预期（自然语言）：\n{{intent}}',
-          codeTitle: '代码如下：',
-        },
+          userIntent: '用户预期（自然语言）：
+{{intent}}',
+          codeTitle: '代码如下：'
+        }
       },
       messages: {
         generateCodeFirst: '请先生成策略代码',
@@ -296,7 +354,7 @@ const base = {
         inputIntentFirst: '请先输入策略目标/想法',
         aiRequestTimeout: 'AI 请求超时（>{{seconds}}s）',
         modelReturnedEmpty: '模型返回为空',
-        noPythonCodeBlock: '代码 Agent 未输出 ```python 代码块```，请在结果中检查',
+        noPythonCodeBlock: '代码 Agent 未输出 \`\`\`python 代码块\`\`\`，请在结果中检查',
         agentFailed: '{{title}} 失败',
         userAborted: '用户已中止',
         chatAborted: '已中止与模型对话',
@@ -317,8 +375,8 @@ const base = {
         scheduleCreatedAndEnabled: '调度已创建并启用',
         scheduleCreated: '调度已创建',
         createScheduleFailed: '创建调度失败',
-        scheduleAlreadyExists: '该账号下已存在相同策略调度（模板+品种+周期相同），请勿重复创建。',
-      },
+        scheduleAlreadyExists: '该账号下已存在相同策略调度（模板+品种+周期相同），请勿重复创建。'
+      }
     },
     ai: {
       not_configured: 'AI 未配置：请先到 AI 设置中启用并配置。',
@@ -339,9 +397,9 @@ const base = {
       probe_ok_no_models: '正常（未返回 models）',
       free_tier_exhausted: 'AI 模型免费额度已耗尽：请在模型供应商管理后台关闭“use free tier only”或更换付费 Key。',
       rate_limited: 'AI 服务触发限流/额度不足（429/资源耗尽）。请稍后重试或更换可用的 API Key/模型配置。',
-      forbidden_quota: 'AI 服务额度/权限不足（403）。请检查 API Key 是否有可用额度或是否开启了付费模式。',
+      forbidden_quota: 'AI 服务额度/权限不足（403）。请检查 API Key 是否有可用额度或是否开启了付费模式。'
     },
-    translate_failed: '翻译失败',
+    translate_failed: '翻译失败'
   },
   admin: {
     sidebar: {
@@ -351,13 +409,14 @@ const base = {
       tradingMonitor: '交易监控',
       operationLogs: '操作日志',
       systemConfig: '系统配置',
+      jurisdiction: 'Jurisdiction Gate'
     },
     header: {
       adminMode: '管理员模式',
       adminPanel: '管理后台',
       backToUser: '返回用户端',
       logout: '退出登录',
-      admin: '管理员',
+      admin: '管理员'
     },
     userManagement: {
       title: '用户管理',
@@ -365,18 +424,18 @@ const base = {
       filters: {
         searchPlaceholder: '搜索邮箱/昵称',
         statusPlaceholder: '状态筛选',
-        rolePlaceholder: '角色筛选',
+        rolePlaceholder: '角色筛选'
       },
       status: {
         active: '正常',
-        suspended: '禁用',
+        suspended: '禁用'
       },
       roles: {
         user: '用户',
         superAdmin: '超级管理员',
         operation: '运营',
         customerService: '客服',
-        audit: '审计',
+        audit: '审计'
       },
       table: {
         id: 'ID',
@@ -386,24 +445,24 @@ const base = {
         mtAccountCount: 'MT账户',
         status: '状态',
         createdAt: '注册时间',
-        actions: '操作',
+        actions: '操作'
       },
       actions: {
         details: '详情',
         changePassword: '改密',
         disable: '禁用',
-        enable: '启用',
+        enable: '启用'
       },
       deleteConfirm: {
-        title: '确定删除此用户？',
+        title: '确定删除此用户？'
       },
       pagination: {
-        total: '共 {{total}} 条',
+        total: '共 {{total}} 条'
       },
       modals: {
         createTitle: '添加用户',
         editTitle: '编辑用户',
-        passwordTitle: '修改密码 - {{email}}',
+        passwordTitle: '修改密码 - {{email}}'
       },
       form: {
         email: '邮箱',
@@ -414,8 +473,8 @@ const base = {
         placeholders: {
           email: '请输入邮箱',
           password: '请输入密码（至少8位）',
-          nickname: '请输入昵称',
-        },
+          nickname: '请输入昵称'
+        }
       },
       passwordForm: {
         newPassword: '新密码',
@@ -423,15 +482,15 @@ const base = {
         submit: '确认修改',
         placeholders: {
           newPassword: '请输入新密码（至少8位，包含字母和数字）',
-          confirmPassword: '请再次输入新密码',
+          confirmPassword: '请再次输入新密码'
         },
         validation: {
           newPasswordRequired: '请输入新密码',
           passwordMin8: '密码至少8位',
           passwordMustContainLettersAndNumbers: '密码必须包含字母和数字',
           confirmPasswordRequired: '请确认密码',
-          passwordMismatch: '两次输入的密码不一致',
-        },
+          passwordMismatch: '两次输入的密码不一致'
+        }
       },
       drawer: {
         title: '用户详情',
@@ -443,8 +502,8 @@ const base = {
           status: '状态',
           mtAccountCount: 'MT账户数',
           lastLogin: '最后登录',
-          createdAt: '注册时间',
-        },
+          createdAt: '注册时间'
+        }
       },
       messages: {
         userCreatedSuccess: '用户创建成功',
@@ -456,8 +515,8 @@ const base = {
         userDisabled: '用户已禁用',
         userEnabled: '用户已启用',
         passwordUpdatedSuccess: '密码修改成功',
-        passwordUpdateFailed: '密码修改失败',
-      },
+        passwordUpdateFailed: '密码修改失败'
+      }
     },
     config: {
       title: '系统配置',
@@ -491,7 +550,7 @@ const base = {
         greenMaxFailedRunsNonNegative: 'green_max_failed_runs 必须大于等于 0',
         minSampleSizeNonNegative: 'min_sample_size 必须大于等于 0',
         apiKeyRequired: 'API Key 不能为空',
-        modelRequired: '模型名称不能为空',
+        modelRequired: '模型名称不能为空'
       },
       messages: {
         loadFailed: '加载配置失败',
@@ -499,7 +558,7 @@ const base = {
         updateFailed: '更新失败',
         enabled: '配置已启用',
         disabled: '配置已禁用',
-        operationFailed: '操作失败',
+        operationFailed: '操作失败'
       },
       placeholders: {
         json: '请输入 JSON',
@@ -507,13 +566,13 @@ const base = {
         model: '例如 glm-4-flash / deepseek-chat / gpt-4o-mini',
         baseUrl: '例如 https://api.openai.com 或自建网关',
         configValue: '请输入配置值',
-        description: '请输入描述',
+        description: '请输入描述'
       },
       providerOptions: {
         zhipu: '智谱 (Zhipu)',
         deepseek: 'DeepSeek',
-        custom: '自定义 / OpenAI 兼容',
-      },
+        custom: '自定义 / OpenAI 兼容'
+      }
     },
     trading: {
       title: '交易监控',
@@ -534,7 +593,7 @@ const base = {
       netProfit: '净盈亏',
       totalProfit: '总盈利',
       totalLoss: '总亏损',
-      pendingOrders: '挂单中',
+      pendingOrders: '挂单中'
     },
     dashboard: {
       title: '管理仪表盘',
@@ -558,8 +617,8 @@ const base = {
           userManagement: '用户管理',
           accountManagement: '账户管理',
           trading: '交易',
-          systemConfig: '系统配置',
-        },
+          systemConfig: '系统配置'
+        }
       },
       riskMetrics: {
         title: '风控执行指标（实时）',
@@ -570,7 +629,7 @@ const base = {
         orderSendSuccess: '下单成功',
         orderSendFailed: '下单失败',
         orderCloseSuccess: '平仓成功',
-        orderCloseFailed: '平仓失败',
+        orderCloseFailed: '平仓失败'
       },
       riskWindow: {
         title: '风控时间窗口指标（1h / 24h / 72h）',
@@ -585,9 +644,50 @@ const base = {
         rejectRiskCodesHeader: '拒单 Top N 风险码（{{window}}）',
         rejectCount: '拒单次数',
         noRejectData: '当前窗口无拒单数据',
-        noData: '暂无窗口指标数据',
-      },
+        noData: '暂无窗口指标数据'
+      }
     },
+    jurisdiction: {
+      title: 'Jurisdiction Gate',
+      sanctionedCountriesTab: 'Sanctioned Countries',
+      kycStatusTab: 'User KYC Status',
+      sanctionedCountries: 'Sanctioned Countries',
+      userKYCStatus: 'User KYC Status',
+      addCountry: 'Add Country',
+      addSanctionedCountry: 'Add Sanctioned Country',
+      countryCode: 'Country Code',
+      countryLabel: 'Label',
+      addedBy: 'Added By',
+      actions: 'Actions',
+      userEmail: 'Email',
+      kycStatus: 'KYC Status',
+      country: 'Country',
+      sanctioned: 'Sanctioned',
+      disclaimer: 'Disclaimer',
+      questionnaire: 'Questionnaire',
+      override: 'Override',
+      setKYC: 'Set KYC',
+      setKYCStatus: 'Set KYC Status',
+      grantOverride: 'Grant Override',
+      revokeOverride: 'Revoke Override',
+      filterByKYCStatus: 'Filter by KYC status',
+      unverified: 'Unverified',
+      pending: 'Pending',
+      verified: 'Verified',
+      rejected: 'Rejected',
+      emptySanctions: 'No sanctioned countries configured',
+      emptyKYC: 'No users match the selected KYC filter',
+      messages: {
+        countryAdded: 'Sanctioned country added',
+        countryAddFailed: 'Failed to add sanctioned country',
+        countryRemoved: 'Sanctioned country removed',
+        countryRemoveFailed: 'Failed to remove sanctioned country',
+        kycUpdated: 'KYC status updated',
+        kycUpdateFailed: 'Failed to update KYC status',
+        overrideUpdated: 'Sanctioned override updated',
+        overrideUpdateFailed: 'Failed to update sanctioned override'
+      }
+    }
   },
   symbolDetection: {
     label: '识别到的交易品种',
@@ -600,43 +700,9 @@ const base = {
       longOnly: '仅做多',
       shortOnly: '仅做空',
       longShort: '多空均可',
-      unknown: '未知({{mode}})',
-    },
-  },
-  notifications: {
-    all: '全部',
-    unread: '未读',
-    empty: '暂无通知',
-    markAllRead: '全部已读',
-    clearAll: '清空全部',
-    confirmClearAll: '确认清空所有通知？',
-    types: {
-      trade: '交易',
-      signal: '信号',
-      risk_alert: '风控告警',
-      strategy_execution: '策略执行',
-      system: '系统',
-    },
-    stream: {
-      strategyExecution: {
-        title: '策略执行',
-        completed: '{{symbol}} {{action}} 已完成',
-        failed: '执行失败：{{error}}',
-      },
-      riskAlert: {
-        title: '风控告警',
-        fallback: '告警类型：{{alertType}}',
-      },
-      strategySignal: {
-        title: '策略信号',
-        message: '{{symbol}} 触发 {{signalType}}',
-      },
-      autoTrading: {
-        title: '自动交易',
-        fallback: '自动交易事件已触发',
-      },
-    },
-  },
+      unknown: '未知({{mode}})'
+    }
+  }
 } as const;
 
 export default base;

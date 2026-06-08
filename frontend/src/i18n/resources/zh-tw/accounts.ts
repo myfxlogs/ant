@@ -11,27 +11,27 @@ const accounts = {
         broker: '經紀商',
         balance: '餘額',
         equity: '淨值',
-        actions: '操作',
+        actions: '操作'
       },
       confirmDelete: {
         title: '確定刪除此帳戶？',
-        content: '刪除後無法恢復',
+        content: '刪除後無法恢復'
       },
       mobile: {
         balanceLabel: '餘額: ',
-        equityLabel: '淨值: ',
-      },
+        equityLabel: '淨值: '
+      }
     },
     empty: {
       title: '暫無綁定帳戶',
-      subtitle: '點擊下方按鈕綁定您的 MT4/MT5 交易帳戶',
+      subtitle: '點擊下方按鈕綁定您的 MT4/MT5 交易帳戶'
     },
     legend: {
       title: '圖例:',
       connected: '已連線',
       connecting: '連線中',
       disconnectedOrError: '已斷線/錯誤',
-      disabled: '已停用',
+      disabled: '已停用'
     },
     messages: {
       disabledSuccess: '帳戶停用成功',
@@ -46,7 +46,7 @@ const accounts = {
       disconnectFailed: '斷開連線失敗',
       disableFailed: '停用帳戶失敗',
       deleted: '帳戶已刪除',
-      deleteFailed: '刪除失敗',
+      deleteFailed: '刪除失敗'
     },
     tradeTabs: {
       positionsWithCount: '持倉訂單 ({{count}})',
@@ -68,11 +68,11 @@ const accounts = {
         profit: '盈虧',
         openTime: '開倉時間',
         pendingTime: '掛單時間',
-        closeTime: '平倉時間',
+        closeTime: '平倉時間'
       },
       pagination: {
-        total: '共 {{total}} 筆',
-      },
+        total: '共 {{total}} 筆'
+      }
     },
     analytics: {
       monthlyAnalysis: {
@@ -81,7 +81,7 @@ const accounts = {
           change: '變化',
           profit: '利潤',
           lots: '手數',
-          pips: '點',
+          pips: '點'
         },
         chartMainTitle: '每月收益（{{metric}}）',
         focusedValue: '{{period}} · {{metric}}：{{value}}',
@@ -93,38 +93,38 @@ const accounts = {
           legendShortTerm: '賣出側',
           sliceOther: '其他',
           emptyCharts: '該月無成交',
-          popularityShare: '手數占比',
-        },
+          popularityShare: '手數占比'
+        }
       },
       chartType: {
         equity: '淨值',
         balance: '餘額',
-        profit: '利潤',
+        profit: '利潤'
       },
       summary: {
         title: '分析',
         placeholders: {
-          selectAccount: '選擇帳戶',
+          selectAccount: '選擇帳戶'
         },
         periods: {
           today: '今日',
           week: '本週',
           month: '本月',
           year: '本年',
-          all: '全部',
+          all: '全部'
         },
         sections: {
           equityCurve: '資金曲線',
-          monthlyStats: '月度統計',
+          monthlyStats: '月度統計'
         },
         labels: {
-          pnl: '盈虧',
+          pnl: '盈虧'
         },
         metrics: {
           netProfit: '總盈虧',
           equity: '當前持倉',
           balance: '餘額',
-          equityValue: '淨值',
+          equityValue: '淨值'
         },
         cards: {
           symbolPnlCompare: '品種盈虧對比',
@@ -132,7 +132,7 @@ const accounts = {
           directionShare: '買賣方向占比',
           pnlShare: '盈虧占比',
           tradeStats: '交易統計',
-          riskMetrics: '風險指標',
+          riskMetrics: '風險指標'
         },
         tradeStats: {
           totalTrades: '總交易',
@@ -146,43 +146,44 @@ const accounts = {
           maxHolding: '最長持倉',
           avgVolume: '平均手數',
           avgProfit: '平均盈利',
-          avgLoss: '平均虧損',
+          avgLoss: '平均虧損'
         },
         risk: {
           maxDrawdown: '最大回撤',
           maxDrawdownPct: '回撤比例',
           sharpe: '夏普比率',
           sortino: '索提諾比率',
-          volatility: '波動率',
+          volatility: '波動率'
         },
         direction: {
           buy: '買入',
-          sell: '賣出',
+          sell: '賣出'
         },
         profit: {
           win: '盈利',
-          loss: '虧損',
+          loss: '虧損'
         },
-        yearOption: '{{year}}年',
+        yearOption: '{{year}}年'
       },
       chartPeriod: {
         day: '今日',
         week: '本週',
         month: '本月',
         all: '全部',
+        year: 'This year'
       },
       chartSeries: {
         equity: '淨值',
         balance: '餘額',
         profit: '盈虧',
-        tradeCount: '交易數',
+        tradeCount: '交易數'
       },
       empty: {
         equityCurve: '暫無淨值曲線資料',
         monthlyProfit: '暫無月度盈虧資料',
         symbolDistribution: '暫無品種資料',
         dailyPnL: '暫無每日盈虧資料',
-        hourly: '暫無時段分析資料',
+        hourly: '暫無時段分析資料'
       },
       monthlyProfitTitle: '月度盈虧',
       advancedStatsTitle: '進階統計',
@@ -208,22 +209,37 @@ const accounts = {
         netProfit: '淨利潤',
         totalDeposit: '入金',
         totalWithdrawal: '出金',
-        netDeposit: '淨入金',
+        netDeposit: '淨入金'
       },
+      advancedTabs: {
+        hourly: 'Hourly',
+        daily: 'Daily'
+      },
+      timeDetail: {
+        lots: 'Lots',
+        trades: 'Trades',
+        profitAmount: 'Profit amount',
+        balance: 'Balance',
+        profitFactor: 'Profit factor',
+        maxFloatingLossAmount: 'Max floating loss amount',
+        maxFloatingLossRatio: 'Max floating loss ratio',
+        maxFloatingProfitAmount: 'Max floating profit amount',
+        maxFloatingProfitRatio: 'Max floating profit ratio'
+      }
     },
     bind: {
       title: '綁定 MT 帳戶',
       step1: {
         title: '選擇平台與經紀商',
-        subtitle: '選擇您的交易平台並搜尋經紀商',
+        subtitle: '選擇您的交易平台並搜尋經紀商'
       },
       step2: {
         title: '輸入帳戶資訊',
-        subtitle: '輸入您的交易帳號與密碼',
+        subtitle: '輸入您的交易帳號與密碼'
       },
       step3: {
         title: '確認綁定',
-        subtitle: '請確認以下資訊無誤',
+        subtitle: '請確認以下資訊無誤'
       },
       fields: {
         platform: '交易平台',
@@ -231,21 +247,23 @@ const accounts = {
         company: '選擇公司',
         server: '選擇伺服器',
         tradingAccount: '交易帳號',
-        password: '密碼',
+        password: '密碼'
       },
       placeholders: {
         brokerName: '輸入經紀商名稱，如：XMGlobal、ICMarkets',
         company: '請選擇經紀商公司',
         server: '請選擇伺服器',
         tradingAccount: '輸入交易帳號',
-        password: '輸入密碼',
+        password: '輸入密碼'
       },
       labels: {
-        serverCount: '{{count}} 個伺服器',
+        serverCount: '{{count}} 個伺服器'
       },
       actions: {
         search: '搜尋',
         confirmBind: '確認綁定',
+        verifyAccount: 'Verify account',
+        retryVerify: 'Retry'
       },
       passwordHint: '密碼將透過 HTTPS 加密傳輸，後端使用 Argon2id 雜湊儲存不可回逆',
       summary: {
@@ -254,9 +272,16 @@ const accounts = {
         platform: '交易平台',
         tradingAccount: '交易帳號',
         password: '密碼',
+        verified: 'Account verified',
+        balance: 'Balance',
+        equity: 'Equity',
+        margin: 'Margin',
+        freeMargin: 'Free margin',
+        leverage: 'Leverage',
+        currency: 'Currency'
       },
       errorModal: {
-        title: '綁定失敗',
+        title: '綁定失敗'
       },
       messages: {
         enterBrokerName: '請輸入經紀商名稱',
@@ -269,13 +294,14 @@ const accounts = {
         noAccessHosts: '無可用伺服器位址',
         bindSuccess: '帳戶綁定成功',
         bindFailed: '帳戶綁定失敗',
+        verifyFailed: 'Account verification failed'
       },
       errors: {
         brokerUnavailable: '連線伺服器錯誤或密碼不正確',
         invalidCredentials: '帳號或密碼錯誤，未找到該交易帳戶',
         connectionFailed: '無法連線到經紀商伺服器，請檢查網路',
-        timeout: '連線超時，請稍後重試',
-      },
+        timeout: '連線超時，請稍後重試'
+      }
     },
     card: {
       status: {
@@ -283,87 +309,92 @@ const accounts = {
         connected: '已連線',
         connecting: '連線中',
         disconnected: '已斷線',
-        error: '連線錯誤',
+        error: '連線錯誤'
       },
       fields: {
         balance: '餘額',
         equity: '淨值',
         broker: '經紀商',
-        server: '伺服器',
+        server: '伺服器'
       },
       actions: {
         positions: '持倉',
         orders: '訂單',
-        details: '詳情',
+        details: '詳情'
       },
       deleteConfirm: {
         title: '確定刪除此帳戶？',
-        content: '刪除後無法恢復',
-      },
+        content: '刪除後無法恢復'
+      }
     },
     edit: {
       title: '編輯帳戶',
       fields: {
         tradingAccount: '交易帳號',
         server: '伺服器',
-        password: '密碼',
+        password: '密碼'
       },
       placeholders: {
-        newPassword: '輸入新密碼',
+        newPassword: '輸入新密碼'
       },
       actions: {
-        verifyPassword: '驗證密碼',
+        verifyPassword: '驗證密碼'
       },
       messages: {
         enterPassword: '請輸入密碼',
         passwordVerified: '密碼驗證成功！',
         passwordVerifyFailed: '密碼驗證失敗',
         verifyFirst: '請先驗證密碼',
-        passwordSaved: '密碼已保存',
-      },
+        passwordSaved: '密碼已保存'
+      }
     },
     detail: {
       messages: {
         fetchAccountFailed: '獲取帳戶資訊失敗，請稍後重試',
         syncHistorySuccess: '同步歷史訂單成功',
-        syncHistoryFailed: '同步歷史訂單失敗，請確保帳戶已連線到 MT 伺服器',
+        syncHistoryFailed: '同步歷史訂單失敗，請確保帳戶已連線到 MT 伺服器'
       },
       orderTypes: {
         buyLimit: '買入限價',
         sellLimit: '賣出限價',
         buyStop: '買入止損',
-        sellStop: '賣出止損',
+        sellStop: '賣出止損'
       },
       balanceRecord: {
         deposit: '入金',
         withdraw: '出金',
         depositIconText: '💰 入金',
-        withdrawIconText: '💸 出金',
+        withdrawIconText: '💸 出金'
       },
       syncHistory: {
         title: '同步歷史訂單',
         content: '確定要從MT伺服器同步過去一年的歷史訂單嗎？這可能需要一些時間。',
-        ok: '確定同步',
+        ok: '確定同步'
       },
       actions: {
         enableAccount: '啟用帳戶',
         disableAccount: '停用帳戶',
         syncHistory: '同步歷史',
+        deleteAccount: 'Delete account',
+        deleteConfirm: 'Verify & Delete',
+        deleteWarning: 'This action is irreversible. All account data (trade records, analytics, etc.) will be permanently deleted.',
+        deletePasswordHint: 'Enter the MT trading password or read-only password to verify:',
+        deletePasswordPlaceholder: 'MT trading / read-only password'
       },
       status: {
         disabled: '已停用',
         connected: '已連線',
         connecting: '連線中',
         disconnected: '已斷線',
-        error: '連線錯誤',
+        error: '連線錯誤'
       },
       accountType: {
         real: '真實',
-        demo: '模擬',
+        demo: '模擬'
       },
       mode: {
         investor: '投資者模式',
-        trader: '交易者模式',
+        trader: '交易者模式'
       },
       leverage: '槓桿 {{leverage}}x',
       cards: {
@@ -373,10 +404,10 @@ const accounts = {
         marginUsed: '已用保證金',
         marginFree: '可用保證金',
         marginLevel: '保證金比例',
-        credit: '信用額度',
-      },
-    },
-  },
+        credit: '信用額度'
+      }
+    }
+  }
 } as const;
 
 export default accounts;

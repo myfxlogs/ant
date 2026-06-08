@@ -36,9 +36,15 @@ const logs = {
       type: 'タイプ',
       lots: 'ロット',
       open: '建値',
-      close: '決済値',
+      close: '決済値'
     },
-  },
+    result: 'Result',
+    riskCode: 'Risk Code',
+    requestId: 'Request ID',
+    triggerSource: 'Trigger Source',
+    riskLogQuickFilter: 'Risk Log Quick Filter',
+    loadFailed: 'Failed to load logs'
+  }
 } as const;
 
 export default logs;

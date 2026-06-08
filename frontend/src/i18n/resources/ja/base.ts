@@ -1,12 +1,12 @@
 const base = {
   app: {
-    name: 'AntTrader',
+    name: 'AntTrader'
   },
   auth: {
     fields: {
       email: 'メール',
       password: 'パスワード',
-      confirmPassword: 'パスワード確認',
+      confirmPassword: 'パスワード確認'
     },
     messages: {
       loginSuccess: 'ログインしました',
@@ -14,7 +14,7 @@ const base = {
       registerSuccess: '登録が完了しました。ログインしてください。',
       registerFailed: '登録に失敗しました。しばらくしてから再試行してください。',
       logoutSuccess: 'ログアウトしました',
-      fetchMeFailed: 'ユーザー情報の取得に失敗しました',
+      fetchMeFailed: 'ユーザー情報の取得に失敗しました'
     },
     validation: {
       emailRequired: 'メールアドレスを入力してください',
@@ -22,7 +22,7 @@ const base = {
       passwordRequired: 'パスワードを入力してください',
       passwordMin8: 'パスワードは8文字以上である必要があります',
       confirmPasswordRequired: 'パスワードを確認してください',
-      passwordMismatch: 'パスワードが一致しません',
+      passwordMismatch: 'パスワードが一致しません'
     },
     login: {
       subtitle: '本サービスはテストであり責任を負いません',
@@ -35,7 +35,7 @@ const base = {
       agreePrefix: 'ログインすることで、以下に同意したものとみなされます：',
       terms: '利用規約',
       and: 'および',
-      privacy: 'プライバシーポリシー',
+      privacy: 'プライバシーポリシー'
     },
     register: {
       subtitle: '新規アカウント作成',
@@ -46,8 +46,8 @@ const base = {
       agreePrefix: '登録することで、以下に同意したものとみなされます：',
       terms: '利用規約',
       and: 'および',
-      privacy: 'プライバシーポリシー',
-    },
+      privacy: 'プライバシーポリシー'
+    }
   },
   common: {
     refresh: '更新',
@@ -92,15 +92,16 @@ const base = {
       minute: '分',
       hour: '時間',
       day: '日',
-      lessThanMinute: '< 1分',
+      lessThanMinute: '< 1分'
     },
+    required: 'Required'
   },
   language: {
     simplifiedChinese: '简体中文',
     traditionalChinese: '繁體中文',
     english: 'English',
     japanese: '日本語',
-    vietnamese: 'Tiếng Việt',
+    vietnamese: 'Tiếng Việt'
   },
   menu: {
     strategyWorkspace: '戦略ワークスペース',
@@ -118,6 +119,7 @@ const base = {
     schedules: '戦略スケジュール',
     indicatorCatalog: 'インジケーターカタログ',
     logs: 'システムログ',
+    assetAnalysis: 'AI Analysis'
   },
   market: {
     searchPlaceholder: '銘柄を検索（例: EURUSD, XAUUSD）',
@@ -128,7 +130,7 @@ const base = {
     bid: 'Bid',
     ask: 'Ask',
     spread: 'スプレッド',
-    mid: 'Mid',
+    mid: 'Mid'
   },
   topbar: {
     systemOk: 'システムは正常に稼働中',
@@ -136,7 +138,7 @@ const base = {
     settings: '設定',
     switchToAdmin: '管理画面へ切替',
     logout: 'ログアウト',
-    user: 'ユーザー',
+    user: 'ユーザー'
   },
   profile: {
     title: 'プロフィール',
@@ -144,46 +146,51 @@ const base = {
     role: 'ロール',
     status: 'ステータス',
     lastLogin: '最終ログイン',
-    registered: '登録日時',
+    registered: '登録日時'
   },
   notifications: {
     title: '通知',
     empty: '通知はありません',
     tabs: {
       all: 'すべて',
-      unread: '未読',
+      unread: '未読'
     },
     types: {
       trade: '取引',
       signal: 'シグナル',
       risk_alert: 'リスク',
       strategy_execution: '戦略',
-      system: 'システム',
+      system: 'システム'
     },
     actions: {
       markAllAsRead: 'すべて既読',
       clearAll: 'クリア',
-      clearAllConfirm: 'すべての通知を削除しますか？',
+      clearAllConfirm: 'すべての通知を削除しますか？'
     },
     stream: {
       strategyExecution: {
         title: '戦略実行',
         completed: '実行完了',
-        failed: '実行失敗',
+        failed: '実行失敗'
       },
       riskAlert: {
         title: 'リスクアラート',
-        fallback: 'リスクアラートが発生しました',
+        fallback: 'リスクアラートが発生しました'
       },
       strategySignal: {
         title: '戦略シグナル',
-        message: '新しい戦略シグナルを受信しました',
+        message: '新しい戦略シグナルを受信しました'
       },
       autoTrading: {
         title: '自動取引',
-        fallback: '自動取引ステータスが更新されました',
-      },
+        fallback: '自動取引ステータスが更新されました'
+      }
     },
+    all: 'All',
+    unread: 'Unread',
+    markAllRead: 'Mark all as read',
+    clearAll: 'Clear all',
+    confirmClearAll: 'Clear all notifications?'
   },
   errors: {
     not_authenticated: '認証されていません',
@@ -199,7 +206,7 @@ const base = {
     auto_trading_disabled: '自動売買を無効にしました',
     connection_failed: {
       title: '接続に失敗しました',
-      content: 'バックエンドに接続できません。サーバーが起動しているか確認してください。',
+      content: 'バックエンドに接続できません。サーバーが起動しているか確認してください。'
     },
     ai: {
       not_configured: 'AI が設定されていません。先に AI 設定で有効化・設定してください。',
@@ -218,13 +225,271 @@ const base = {
       request_failed: 'API リクエストに失敗しました',
       probe_ok: 'OK',
       probe_ok_no_models: 'OK（model が返されませんでした）',
-      free_tier_exhausted:
-        'AI の無料枠が上限に達しました。プロバイダー管理画面で「無料枠のみ使用」を無効化するか、有料キーに切り替えてください。',
+      free_tier_exhausted: 'AI の無料枠が上限に達しました。プロバイダー管理画面で「無料枠のみ使用」を無効化するか、有料キーに切り替えてください。',
       rate_limited: 'AI サービスがレート制限/クォータ不足（429/資源枯渇）。しばらく待つか、利用可能な API Key/model に切り替えてください。',
-      forbidden_quota: 'AI サービスのクォータ/権限が不足しています（403）。API Key の残高や課金状態を確認してください。',
+      forbidden_quota: 'AI サービスのクォータ/権限が不足しています（403）。API Key の残高や課金状態を確認してください。'
     },
-    translate_failed: '翻訳に失敗しました',
+    translate_failed: '翻訳に失敗しました'
   },
+  marketplace: {
+    title: 'Strategy Marketplace',
+    subtitle: 'Discover, rate, and subscribe to community strategies',
+    publish: 'Publish Strategy',
+    tabs: {
+      marketplace: 'Marketplace',
+      subscriptions: 'My Subscriptions'
+    },
+    searchPlaceholder: 'Search strategies...',
+    filterByClass: 'Filter by asset class',
+    sort: {
+      newest: 'Newest',
+      popular: 'Most Popular',
+      performance: 'Best Performance'
+    },
+    empty: 'No strategies published yet',
+    noSubscriptions: 'No subscriptions yet',
+    card: {
+      subscribe: 'Subscribe',
+      subscribed: 'Subscribed',
+      unsubscribe: 'Unsubscribe',
+      unsubscribeHint: 'Click to unsubscribe',
+      details: 'Details',
+      subscribers: 'Subscribers',
+      winRate: 'Win Rate',
+      by: 'by'
+    },
+    assetClass: {
+      forex: 'Forex',
+      crypto: 'Crypto',
+      commodity: 'Commodity',
+      index: 'Index',
+      stock: 'Stock',
+      other: 'Other'
+    },
+    risk: {
+      low: 'Low Risk',
+      medium: 'Medium Risk',
+      high: 'High Risk'
+    },
+    messages: {
+      loginFirst: 'Please log in first',
+      subscribed: 'Subscribed successfully',
+      subscribeFailed: 'Subscribe failed',
+      unsubscribed: 'Unsubscribed',
+      unsubscribeFailed: 'Unsubscribe failed',
+      rated: 'Rating submitted',
+      rateFailed: 'Rating failed',
+      commentPosted: 'Comment posted',
+      commentFailed: 'Comment failed'
+    },
+    detail: {
+      comments: 'Comments',
+      noComments: 'No comments yet. Be the first!',
+      commentPlaceholder: 'Write a comment... (Shift+Enter for new line)'
+    }
+  },
+  admin: {
+    sidebar: {
+      dashboard: 'Dashboard',
+      userManagement: 'User Management',
+      accountManagement: 'Account Management',
+      tradingMonitor: 'Trading Monitor',
+      operationLogs: 'Operation Logs',
+      systemConfig: 'System Config',
+      jurisdiction: 'Jurisdiction Gate'
+    },
+    header: {
+      adminMode: 'Admin Mode',
+      adminPanel: 'Admin Panel',
+      backToUser: 'Back to User',
+      logout: 'Logout',
+      admin: 'Admin'
+    },
+    config: {
+      title: 'System Configuration',
+      editConfig: 'Edit Config: {{key}}',
+      configItem: 'Config Item',
+      value: 'Value',
+      description: 'Description',
+      status: 'Status',
+      toggle: 'Toggle',
+      updatedAt: 'Updated At',
+      on: 'On',
+      off: 'Off',
+      maxAccountsPerUser: 'Max Accounts Per User',
+      aiProviderCatalog: 'AI Model Provider Catalog',
+      econAIConfig: 'Economic Calendar Translation AI Config',
+      strategyHealthConfig: 'Strategy Health Grading Config',
+      provider: 'Provider',
+      modelName: 'Model Name',
+      enableToggle: 'Enable',
+      baseUrlLabel: 'Base URL (optional, custom/OpenAI compatible only)',
+      formatJson: 'Format JSON',
+      fillTemplate: 'Fill Example',
+      thresholdInfo: 'Threshold Field Description',
+      thresholdDesc: 'green_success_rate: green success rate threshold; green_max_failed_runs: max failed runs for green; yellow_success_rate: yellow success rate threshold; min_sample_size: minimum sample size.',
+      validation: {
+        jsonEmpty: 'JSON cannot be empty',
+        jsonInvalid: 'Invalid JSON format',
+        greenSuccessRateRange: 'green_success_rate must be between 0 and 100',
+        yellowSuccessRateRange: 'yellow_success_rate must be between 0 and 100',
+        yellowNotGreaterThanGreen: 'yellow_success_rate cannot be greater than green_success_rate',
+        greenMaxFailedRunsNonNegative: 'green_max_failed_runs must be >= 0',
+        minSampleSizeNonNegative: 'min_sample_size must be >= 0',
+        apiKeyRequired: 'API Key cannot be empty',
+        modelRequired: 'Model name cannot be empty'
+      },
+      messages: {
+        loadFailed: 'Failed to load configs',
+        updated: 'Config updated',
+        updateFailed: 'Update failed',
+        enabled: 'Config enabled',
+        disabled: 'Config disabled',
+        operationFailed: 'Operation failed'
+      },
+      placeholders: {
+        json: 'Enter JSON',
+        apiKey: 'Enter API Key',
+        model: 'e.g. glm-4-flash / deepseek-chat / gpt-4o-mini',
+        baseUrl: 'e.g. https://api.openai.com or self-hosted gateway',
+        configValue: 'Enter config value',
+        description: 'Enter description'
+      },
+      providerOptions: {
+        zhipu: 'Zhipu',
+        deepseek: 'DeepSeek',
+        custom: 'Custom / OpenAI Compatible'
+      }
+    },
+    trading: {
+      title: 'Trading Monitor',
+      loadFailed: 'Failed to load trading statistics',
+      platform: 'Platform',
+      accounts: 'Accounts',
+      orders: 'Orders',
+      volume: 'Volume',
+      byPlatform: 'By Platform',
+      profitStats: 'P&L Statistics',
+      totalUsers: 'Total Users',
+      activeUsers: 'Active Users',
+      totalAccounts: 'Total Accounts',
+      connectedAccounts: 'Connected Accounts',
+      totalOrders: 'Total Orders',
+      closedOrders: 'Closed Orders',
+      totalVolume: 'Total Volume',
+      netProfit: 'Net P&L',
+      totalProfit: 'Total Profit',
+      totalLoss: 'Total Loss',
+      pendingOrders: 'Pending Orders'
+    },
+    dashboard: {
+      title: 'Admin Dashboard',
+      loadFailed: 'Failed to load dashboard data',
+      totalUsers: 'Total Users',
+      activeUsers: 'Active Users',
+      mtAccounts: 'MT Accounts',
+      onlineAccounts: 'Online Accounts',
+      todayTrades: 'Today Trades',
+      todayProfit: 'Today P&L',
+      recentLogs: 'Recent Operation Logs',
+      logs: {
+        time: 'Time',
+        module: 'Module',
+        actionType: 'Action Type',
+        target: 'Target',
+        status: 'Status',
+        success: 'Success',
+        failed: 'Failed',
+        moduleMap: {
+          userManagement: 'User Management',
+          accountManagement: 'Account Management',
+          trading: 'Trading',
+          systemConfig: 'System Config'
+        }
+      },
+      riskMetrics: {
+        title: 'Risk Control Metrics (Real-time)',
+        riskValidateTotal: 'Risk Validated Total',
+        riskValidatePass: 'Risk Validated Pass',
+        riskValidateReject: 'Risk Validated Reject',
+        riskValidateError: 'Risk Validated Error',
+        orderSendSuccess: 'Order Sent Success',
+        orderSendFailed: 'Order Sent Failed',
+        orderCloseSuccess: 'Order Closed Success',
+        orderCloseFailed: 'Order Closed Failed'
+      },
+      riskWindow: {
+        title: 'Risk Control Window Metrics (1h / 24h / 72h)',
+        validateTotal: '{{window}} Validated Total',
+        validatePass: '{{window}} Pass',
+        validateReject: '{{window}} Reject',
+        validateError: '{{window}} Error',
+        orderSendSuccess: '{{window}} Order Sent',
+        orderSendFailed: '{{window}} Order Failed',
+        orderCloseSuccess: '{{window}} Close Success',
+        orderCloseFailed: '{{window}} Close Failed',
+        rejectRiskCodesHeader: 'Top N Reject Risk Codes ({{window}})',
+        rejectCount: 'Reject Count',
+        noRejectData: 'No reject data for current window',
+        noData: 'No window metrics data'
+      }
+    },
+    jurisdiction: {
+      title: 'Jurisdiction Gate',
+      sanctionedCountriesTab: 'Sanctioned Countries',
+      kycStatusTab: 'User KYC Status',
+      sanctionedCountries: 'Sanctioned Countries',
+      userKYCStatus: 'User KYC Status',
+      addCountry: 'Add Country',
+      addSanctionedCountry: 'Add Sanctioned Country',
+      countryCode: 'Country Code',
+      countryLabel: 'Label',
+      addedBy: 'Added By',
+      actions: 'Actions',
+      userEmail: 'Email',
+      kycStatus: 'KYC Status',
+      country: 'Country',
+      sanctioned: 'Sanctioned',
+      disclaimer: 'Disclaimer',
+      questionnaire: 'Questionnaire',
+      override: 'Override',
+      setKYC: 'Set KYC',
+      setKYCStatus: 'Set KYC Status',
+      grantOverride: 'Grant Override',
+      revokeOverride: 'Revoke Override',
+      filterByKYCStatus: 'Filter by KYC status',
+      unverified: 'Unverified',
+      pending: 'Pending',
+      verified: 'Verified',
+      rejected: 'Rejected',
+      emptySanctions: 'No sanctioned countries configured',
+      emptyKYC: 'No users match the selected KYC filter',
+      messages: {
+        countryAdded: 'Sanctioned country added',
+        countryAddFailed: 'Failed to add sanctioned country',
+        countryRemoved: 'Sanctioned country removed',
+        countryRemoveFailed: 'Failed to remove sanctioned country',
+        kycUpdated: 'KYC status updated',
+        kycUpdateFailed: 'Failed to update KYC status',
+        overrideUpdated: 'Sanctioned override updated',
+        overrideUpdateFailed: 'Failed to update sanctioned override'
+      }
+    }
+  },
+  symbolDetection: {
+    label: 'Detected Symbols',
+    loading: 'Parsing…',
+    noSymbols: 'No trading symbols detected. Try including specific symbol names (e.g. "Bitcoin", "EURUSD", "Gold").',
+    unresolvedTooltip: 'No trading account bound yet, unable to resolve',
+    resolvedTooltip: 'broker: {{broker}} | mode: {{mode}}',
+    tradeMode: {
+      disabled: 'Disabled',
+      longOnly: 'Long Only',
+      shortOnly: 'Short Only',
+      longShort: 'Both Long & Short',
+      unknown: 'Unknown({{mode}})'
+    }
+  }
 } as const;
 
 export default base;

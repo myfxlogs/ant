@@ -11,27 +11,27 @@ const accounts = {
         broker: 'Nhà môi giới',
         balance: 'Số dư',
         equity: 'Vốn',
-        actions: 'Thao tác',
+        actions: 'Thao tác'
       },
       confirmDelete: {
         title: 'Xóa tài khoản này?',
-        content: 'Không thể hoàn tác.',
+        content: 'Không thể hoàn tác.'
       },
       mobile: {
         balanceLabel: 'Số dư: ',
-        equityLabel: 'Vốn: ',
-      },
+        equityLabel: 'Vốn: '
+      }
     },
     empty: {
       title: 'Chưa có tài khoản',
-      subtitle: 'Nhấn nút bên dưới để liên kết tài khoản MT4/MT5',
+      subtitle: 'Nhấn nút bên dưới để liên kết tài khoản MT4/MT5'
     },
     legend: {
       title: 'Chú giải:',
       connected: 'Đã kết nối',
       connecting: 'Đang kết nối',
       disconnectedOrError: 'Mất kết nối/Lỗi',
-      disabled: 'Đã tắt',
+      disabled: 'Đã tắt'
     },
     messages: {
       disabledSuccess: 'Vô hiệu hóa tài khoản thành công',
@@ -46,7 +46,7 @@ const accounts = {
       disconnectFailed: 'Ngắt kết nối thất bại',
       disableFailed: 'Vô hiệu hóa tài khoản thất bại',
       deleted: 'Đã xóa',
-      deleteFailed: 'Xóa thất bại',
+      deleteFailed: 'Xóa thất bại'
     },
     tradeTabs: {
       positionsWithCount: 'Vị thế ({{count}})',
@@ -68,11 +68,11 @@ const accounts = {
         profit: 'Lãi/Lỗ',
         openTime: 'Thời gian mở',
         pendingTime: 'Thời gian đặt',
-        closeTime: 'Thời gian đóng',
+        closeTime: 'Thời gian đóng'
       },
       pagination: {
-        total: 'Tổng {{total}}',
-      },
+        total: 'Tổng {{total}}'
+      }
     },
     analytics: {
       monthlyAnalysis: {
@@ -81,7 +81,7 @@ const accounts = {
           change: 'Thay doi',
           profit: 'Loi nhuan',
           lots: 'Lots',
-          pips: 'Pips',
+          pips: 'Pips'
         },
         chartMainTitle: 'Loi nhuan theo thang ({{metric}})',
         focusedValue: '{{period}} · {{metric}}: {{value}}',
@@ -93,38 +93,38 @@ const accounts = {
           legendShortTerm: 'Ban',
           sliceOther: 'Khac',
           emptyCharts: 'Khong co lenh trong thang',
-          popularityShare: 'Ty trong lot',
-        },
+          popularityShare: 'Ty trong lot'
+        }
       },
       chartType: {
         equity: 'Vốn',
         balance: 'Số dư',
-        profit: 'Lợi nhuận',
+        profit: 'Lợi nhuận'
       },
       summary: {
         title: 'Phân tích',
         placeholders: {
-          selectAccount: 'Chọn tài khoản',
+          selectAccount: 'Chọn tài khoản'
         },
         periods: {
           today: 'Hôm nay',
           week: 'Tuần này',
           month: 'Tháng này',
           year: 'Năm nay',
-          all: 'Tất cả',
+          all: 'Tất cả'
         },
         sections: {
           equityCurve: 'Đường vốn',
-          monthlyStats: 'Thống kê theo tháng',
+          monthlyStats: 'Thống kê theo tháng'
         },
         labels: {
-          pnl: 'Lãi/Lỗ',
+          pnl: 'Lãi/Lỗ'
         },
         metrics: {
           netProfit: 'Tổng lãi/lỗ',
           equity: 'Vốn',
           balance: 'Số dư',
-          equityValue: 'Vốn',
+          equityValue: 'Vốn'
         },
         cards: {
           symbolPnlCompare: 'Lãi/Lỗ theo mã',
@@ -132,7 +132,7 @@ const accounts = {
           directionShare: 'Tỷ lệ mua/bán',
           pnlShare: 'Tỷ lệ lãi/lỗ',
           tradeStats: 'Thống kê giao dịch',
-          riskMetrics: 'Chỉ số rủi ro',
+          riskMetrics: 'Chỉ số rủi ro'
         },
         tradeStats: {
           totalTrades: 'Tổng số lệnh',
@@ -146,43 +146,44 @@ const accounts = {
           maxHolding: 'Thời gian giữ dài nhất',
           avgVolume: 'Khối lượng TB',
           avgProfit: 'Lãi TB',
-          avgLoss: 'Lỗ TB',
+          avgLoss: 'Lỗ TB'
         },
         risk: {
           maxDrawdown: 'Drawdown tối đa',
           maxDrawdownPct: 'Tỷ lệ drawdown',
           sharpe: 'Sharpe',
           sortino: 'Sortino',
-          volatility: 'Biến động',
+          volatility: 'Biến động'
         },
         direction: {
           buy: 'Mua',
-          sell: 'Bán',
+          sell: 'Bán'
         },
         profit: {
           win: 'Lãi',
-          loss: 'Lỗ',
+          loss: 'Lỗ'
         },
-        yearOption: '{{year}}',
+        yearOption: '{{year}}'
       },
       chartPeriod: {
         day: 'Hôm nay',
         week: 'Tuần này',
         month: 'Tháng này',
         all: 'Tất cả',
+        year: 'This year'
       },
       chartSeries: {
         equity: 'Vốn',
         balance: 'Số dư',
         profit: 'Lợi nhuận',
-        tradeCount: 'Số lệnh',
+        tradeCount: 'Số lệnh'
       },
       empty: {
         equityCurve: 'Không có dữ liệu đường vốn',
         monthlyProfit: 'Không có dữ liệu lãi/lỗ theo tháng',
         symbolDistribution: 'Không có dữ liệu phân bổ mã',
         dailyPnL: 'Không có dữ liệu lãi/lỗ theo ngày',
-        hourly: 'Không có dữ liệu phân tích theo giờ',
+        hourly: 'Không có dữ liệu phân tích theo giờ'
       },
       monthlyProfitTitle: 'Lãi/lỗ theo tháng',
       advancedStatsTitle: 'Thống kê nâng cao',
@@ -208,22 +209,37 @@ const accounts = {
         netProfit: 'Lợi nhuận ròng',
         totalDeposit: 'Nạp',
         totalWithdrawal: 'Rút',
-        netDeposit: 'Nạp ròng',
+        netDeposit: 'Nạp ròng'
       },
+      advancedTabs: {
+        hourly: 'Hourly',
+        daily: 'Daily'
+      },
+      timeDetail: {
+        lots: 'Lots',
+        trades: 'Trades',
+        profitAmount: 'Profit amount',
+        balance: 'Balance',
+        profitFactor: 'Profit factor',
+        maxFloatingLossAmount: 'Max floating loss amount',
+        maxFloatingLossRatio: 'Max floating loss ratio',
+        maxFloatingProfitAmount: 'Max floating profit amount',
+        maxFloatingProfitRatio: 'Max floating profit ratio'
+      }
     },
     bind: {
       title: 'Liên kết tài khoản MT',
       step1: {
         title: 'Chọn nền tảng và nhà môi giới',
-        subtitle: 'Chọn nền tảng giao dịch và tìm kiếm nhà môi giới',
+        subtitle: 'Chọn nền tảng giao dịch và tìm kiếm nhà môi giới'
       },
       step2: {
         title: 'Nhập thông tin tài khoản',
-        subtitle: 'Nhập tài khoản giao dịch và mật khẩu',
+        subtitle: 'Nhập tài khoản giao dịch và mật khẩu'
       },
       step3: {
         title: 'Xác nhận liên kết',
-        subtitle: 'Vui lòng kiểm tra lại thông tin bên dưới',
+        subtitle: 'Vui lòng kiểm tra lại thông tin bên dưới'
       },
       fields: {
         platform: 'Nền tảng',
@@ -231,21 +247,23 @@ const accounts = {
         company: 'Công ty',
         server: 'Máy chủ',
         tradingAccount: 'Tài khoản giao dịch',
-        password: 'Mật khẩu',
+        password: 'Mật khẩu'
       },
       placeholders: {
-        brokerName: "Nhập tên môi giới, ví dụ: XM, IC Markets",
+        brokerName: 'Nhập tên môi giới, ví dụ: XM, IC Markets',
         company: 'Chọn công ty môi giới',
         server: 'Chọn máy chủ',
         tradingAccount: 'Nhập tài khoản giao dịch',
-        password: 'Nhập mật khẩu',
+        password: 'Nhập mật khẩu'
       },
       labels: {
-        serverCount: '{{count}} máy chủ',
+        serverCount: '{{count}} máy chủ'
       },
       actions: {
         search: 'Tìm kiếm',
         confirmBind: 'Xác nhận',
+        verifyAccount: 'Verify account',
+        retryVerify: 'Retry'
       },
       passwordHint: 'Mật khẩu được truyền qua HTTPS. Backend lưu dưới dạng băm Argon2id không thể đảo ngược.',
       summary: {
@@ -254,9 +272,16 @@ const accounts = {
         platform: 'Nền tảng',
         tradingAccount: 'Tài khoản giao dịch',
         password: 'Mật khẩu',
+        verified: 'Account verified',
+        balance: 'Balance',
+        equity: 'Equity',
+        margin: 'Margin',
+        freeMargin: 'Free margin',
+        leverage: 'Leverage',
+        currency: 'Currency'
       },
       errorModal: {
-        title: 'Liên kết thất bại',
+        title: 'Liên kết thất bại'
       },
       messages: {
         enterBrokerName: 'Vui lòng nhập tên môi giới',
@@ -269,13 +294,14 @@ const accounts = {
         noAccessHosts: 'Không có máy chủ khả dụng',
         bindSuccess: 'Liên kết tài khoản thành công',
         bindFailed: 'Liên kết tài khoản thất bại',
+        verifyFailed: 'Account verification failed'
       },
       errors: {
         brokerUnavailable: 'Lỗi máy chủ hoặc mật khẩu không đúng',
         invalidCredentials: 'Không tìm thấy tài khoản hoặc mật khẩu không đúng',
         connectionFailed: 'Không thể kết nối đến máy chủ môi giới, vui lòng kiểm tra mạng',
-        timeout: 'Kết nối quá thời gian, vui lòng thử lại sau',
-      },
+        timeout: 'Kết nối quá thời gian, vui lòng thử lại sau'
+      }
     },
     card: {
       status: {
@@ -283,87 +309,92 @@ const accounts = {
         connected: 'Đã kết nối',
         connecting: 'Đang kết nối',
         disconnected: 'Mất kết nối',
-        error: 'Lỗi kết nối',
+        error: 'Lỗi kết nối'
       },
       fields: {
         balance: 'Số dư',
         equity: 'Vốn',
         broker: 'Môi giới',
-        server: 'Máy chủ',
+        server: 'Máy chủ'
       },
       actions: {
         positions: 'Vị thế',
         orders: 'Lệnh',
-        details: 'Chi tiết',
+        details: 'Chi tiết'
       },
       deleteConfirm: {
         title: 'Xóa tài khoản này?',
-        content: 'Không thể khôi phục sau khi xóa',
-      },
+        content: 'Không thể khôi phục sau khi xóa'
+      }
     },
     edit: {
       title: 'Chỉnh sửa tài khoản',
       fields: {
         tradingAccount: 'Tài khoản giao dịch',
         server: 'Máy chủ',
-        password: 'Mật khẩu',
+        password: 'Mật khẩu'
       },
       placeholders: {
-        newPassword: 'Nhập mật khẩu mới',
+        newPassword: 'Nhập mật khẩu mới'
       },
       actions: {
-        verifyPassword: 'Xác minh',
+        verifyPassword: 'Xác minh'
       },
       messages: {
         enterPassword: 'Vui lòng nhập mật khẩu',
         passwordVerified: 'Xác minh mật khẩu thành công!',
         passwordVerifyFailed: 'Xác minh mật khẩu thất bại',
         verifyFirst: 'Vui lòng xác minh mật khẩu trước',
-        passwordSaved: 'Đã lưu mật khẩu',
-      },
+        passwordSaved: 'Đã lưu mật khẩu'
+      }
     },
     detail: {
       messages: {
         fetchAccountFailed: 'Không thể tải thông tin tài khoản. Vui lòng thử lại sau.',
         syncHistorySuccess: 'Đồng bộ lịch sử lệnh thành công',
-        syncHistoryFailed: 'Đồng bộ lịch sử lệnh thất bại. Vui lòng đảm bảo tài khoản đã kết nối tới máy chủ MT.',
+        syncHistoryFailed: 'Đồng bộ lịch sử lệnh thất bại. Vui lòng đảm bảo tài khoản đã kết nối tới máy chủ MT.'
       },
       orderTypes: {
         buyLimit: 'Mua giới hạn',
         sellLimit: 'Bán giới hạn',
         buyStop: 'Mua dừng',
-        sellStop: 'Bán dừng',
+        sellStop: 'Bán dừng'
       },
       balanceRecord: {
         deposit: 'Nạp tiền',
         withdraw: 'Rút tiền',
         depositIconText: '💰 Nạp tiền',
-        withdrawIconText: '💸 Rút tiền',
+        withdrawIconText: '💸 Rút tiền'
       },
       syncHistory: {
         title: 'Đồng bộ lịch sử lệnh',
         content: 'Đồng bộ lịch sử lệnh 1 năm gần nhất từ máy chủ MT? Việc này có thể mất một chút thời gian.',
-        ok: 'Đồng bộ',
+        ok: 'Đồng bộ'
       },
       actions: {
         enableAccount: 'Bật tài khoản',
         disableAccount: 'Tắt tài khoản',
         syncHistory: 'Đồng bộ lịch sử',
+        deleteAccount: 'Delete account',
+        deleteConfirm: 'Verify & Delete',
+        deleteWarning: 'This action is irreversible. All account data (trade records, analytics, etc.) will be permanently deleted.',
+        deletePasswordHint: 'Enter the MT trading password or read-only password to verify:',
+        deletePasswordPlaceholder: 'MT trading / read-only password'
       },
       status: {
         disabled: 'Đã tắt',
         connected: 'Đã kết nối',
         connecting: 'Đang kết nối',
         disconnected: 'Mất kết nối',
-        error: 'Lỗi kết nối',
+        error: 'Lỗi kết nối'
       },
       accountType: {
         real: 'Thực',
-        demo: 'Demo',
+        demo: 'Demo'
       },
       mode: {
         investor: 'Chế độ nhà đầu tư',
-        trader: 'Chế độ giao dịch',
+        trader: 'Chế độ giao dịch'
       },
       leverage: 'Đòn bẩy {{leverage}}x',
       cards: {
@@ -373,10 +404,10 @@ const accounts = {
         marginUsed: 'Ký quỹ đã dùng',
         marginFree: 'Ký quỹ khả dụng',
         marginLevel: 'Tỷ lệ ký quỹ',
-        credit: 'Hạn mức tín dụng',
-      },
-    },
-  },
+        credit: 'Hạn mức tín dụng'
+      }
+    }
+  }
 } as const;
 
 export default accounts;

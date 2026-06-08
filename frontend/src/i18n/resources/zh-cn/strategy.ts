@@ -7,8 +7,8 @@ const strategy = {
         title: '风险评估',
         riskHigh: '风险等级：high',
         riskUnreliable: '风险评估：不可靠（isReliable=false）',
-        riskLoading: '后端风险评估仍在计算中',
-      },
+        riskLoading: '后端风险评估仍在计算中'
+      }
     },
     codeEditor: {
       title: '策略编辑器',
@@ -17,7 +17,7 @@ const strategy = {
         symbol: '品种',
         timeframe: '时间周期',
         code: '策略代码',
-        disabledSuffix: '（已禁用）',
+        disabledSuffix: '（已禁用）'
       },
       actions: {
         copy: '复制',
@@ -26,7 +26,7 @@ const strategy = {
         saveAsTemplate: '保存为模板',
         sendToAI: '发给AI修改',
         sendToAIFixTitleValidate: '验证未通过/有警告',
-        sendToAIFixTitlePreview: '预览信号执行失败/需要优化',
+        sendToAIFixTitlePreview: '预览信号执行失败/需要优化'
       },
       placeholders: {
         selectAccount: '选择账号',
@@ -34,15 +34,14 @@ const strategy = {
         loadingSymbols: '可用品种加载中…',
         selectSymbol: '选择品种',
         noSymbols: '未获取到品种列表',
-        code: '输入Python策略代码...',
+        code: '输入Python策略代码...'
       },
       cards: {
         validationResult: '验证结果',
-        previewResult: '预览结果',
+        previewResult: '预览结果'
       },
       hints: {
-        previewInfo:
-          'Preview 取最近 N 根K线（默认 500，配置：strategy.preview_bars）；回测取最近 N 个月（默认 3，配置：strategy.backtest_window_months）。',
+        previewInfo: 'Preview 取最近 N 根K线（默认 500，配置：strategy.preview_bars）；回测取最近 N 个月（默认 3，配置：strategy.backtest_window_months）。'
       },
       messages: {
         enterCode: '请输入策略代码',
@@ -56,17 +55,17 @@ const strategy = {
         execFailed: '执行失败',
         savedAsTemplate: '已保存为模板',
         copied: '代码已复制',
-        copyFailed: '复制失败，请手动复制',
+        copyFailed: '复制失败，请手动复制'
       },
       aiPrompt: {
         intro: '请根据以下信息修改策略代码，使其通过验证并且预览信号执行成功。',
         problem: '【问题】{{title}}',
         currentCodeTitle: '【当前代码】',
         outputTitle: '【输出信息】',
-        outro: '请直接给出修改后的完整代码（用 ```python 包裹），并说明修改点。',
-        pythonFenceStart: '```python',
-        fenceEnd: '```',
-      },
+        outro: '请直接给出修改后的完整代码（用 \`\`\`python 包裹），并说明修改点。',
+        pythonFenceStart: '\`\`\`python',
+        fenceEnd: '\`\`\`'
+      }
     },
     schedules: {
       title: '策略调度',
@@ -74,7 +73,7 @@ const strategy = {
         create: '新建调度',
         logs: '日志',
         healthCheck: '健康检查',
-        runNow: '立即执行',
+        runNow: '立即执行'
       },
       health: {
         title: '策略健康检查 {{name}}',
@@ -84,14 +83,14 @@ const strategy = {
           noSample: '无样本',
           healthy: '健康',
           watch: '关注',
-          alert: '告警',
+          alert: '告警'
         },
         notes: {
           pending: '请先执行健康检查。',
           noSample: '样本不足，至少需要 {{minSampleSize}} 条运行记录。',
           healthy: '成功率高且失败次数可控。',
           watch: '成功率达到关注阈值（>= {{yellowSuccessRate}}%），建议持续观察。',
-          alert: '成功率偏低，建议立即排查策略与账户状态。',
+          alert: '成功率偏低，建议立即排查策略与账户状态。'
         },
         fields: {
           grade: '健康级别',
@@ -103,29 +102,28 @@ const strategy = {
           successOverTotal: '执行成功/总次数',
           failedRuns: '执行失败次数',
           latestProfit: '最近成交盈亏',
-          latestError: '最近错误信息',
+          latestError: '最近错误信息'
         },
-        thresholdsSummary:
-          'min_sample_size={{minSampleSize}}；绿色：成功率>={{greenSuccessRate}}% 且失败次数<={{greenMaxFailedRuns}}；黄色：成功率>={{yellowSuccessRate}}%',
+        thresholdsSummary: 'min_sample_size={{minSampleSize}}；绿色：成功率>={{greenSuccessRate}}% 且失败次数<={{greenMaxFailedRuns}}；黄色：成功率>={{yellowSuccessRate}}%',
         sections: {
           runLogs: '最近执行日志',
-          orders: '最近成交记录',
+          orders: '最近成交记录'
         },
         runLogs: {
-          signalType: '信号',
+          signalType: '信号'
         },
         messages: {
           loadFailed: '加载健康检查数据失败',
-          clickRefresh: '点击刷新加载健康数据',
-        },
+          clickRefresh: '点击刷新加载健康数据'
+        }
       },
       editModal: {
         title: {
           create: '新建调度任务',
-          edit: '编辑调度任务',
+          edit: '编辑调度任务'
         },
         autoName: {
-          strategy: '策略',
+          strategy: '策略'
         },
         fields: {
           template: '模板',
@@ -140,12 +138,12 @@ const strategy = {
           cronExtra: '标准 5 段：分钟 小时 日 月 周。例如：*/5 * * * * 每5分钟；0 9 * * 1-5 工作日9点',
           intervalSeconds: '间隔(秒)',
           intervalSecondsExtra: '自动跟随周期(timeframe)，无需修改',
-          enableExtra: 'EA 体验：启用后会持续运行，直到你手动停用',
+          enableExtra: 'EA 体验：启用后会持续运行，直到你手动停用'
         },
         placeholders: {
           name: '例如：EURUSD M5 早盘策略',
           selectAccountFirst: '先选账号',
-          symbol: '选择品种',
+          symbol: '选择品种'
         },
         validation: {
           templateRequired: '请选择模板',
@@ -156,15 +154,15 @@ const strategy = {
           runFrequencyRequired: '请选择运行频率',
           cronRequired: '请输入 cron',
           timeframeRequired: '请选择周期',
-          triggerModeRequired: '请选择触发模式',
+          triggerModeRequired: '请选择触发模式'
         },
         runFrequencyExtra: {
           cron: '高级：使用 Cron 精确控制执行时间',
-          byTimeframe: '默认：跟随周期(timeframe)触发（最像EA的OnTick/OnTimer体验）',
+          byTimeframe: '默认：跟随周期(timeframe)触发（最像EA的OnTick/OnTimer体验）'
         },
         runFrequencyOptions: {
           byTimeframe: '按周期触发（推荐）',
-          cron: 'Cron（高级）',
+          cron: 'Cron（高级）'
         },
         advanced: {
           title: '高级设置',
@@ -176,42 +174,41 @@ const strategy = {
           triggerModeExtra: '稳定：按K线/周期触发（更稳但有延迟）；高频：报价流触发（更快但噪声大，需要去抖）',
           triggerModeOptions: {
             stable: '稳定（K线/周期）',
-            hf: '高频（报价/tick）',
+            hf: '高频（报价/tick）'
           },
           stableOverrideIntervalSeconds: '稳定模式高级：间隔(秒)',
           stableOverrideIntervalSecondsExtra: '可选。默认绑定周期(timeframe)。填写后将覆盖稳定模式的触发间隔',
           hfCooldownMs: '高频模式：最小触发间隔(ms)',
           hfCooldownMsExtra: '用于去抖：两次评估/下单之间的最小间隔',
           parametersJson: '参数(JSON对象)',
-          parametersJsonExtra:
-            '用于给策略代码传参，形如 key->value。值会以字符串形式传给后端执行。示例：{ "fast": 10, "slow": 20, "risk": "low" }',
-        },
+          parametersJsonExtra: '用于给策略代码传参，形如 key->value。值会以字符串形式传给后端执行。示例：{ "fast": 10, "slow": 20, "risk": "low" }'
+        }
       },
       triggerModal: {
         title: '立即执行(直接下单)',
         actions: {
           rerun: '重新执行',
-          confirmOrder: '确认下单',
+          confirmOrder: '确认下单'
         },
         confirmOrder: {
           title: '确认要下单吗？',
-          ok: '确认下单',
+          ok: '确认下单'
         },
         summary: {
           scheduleName: '调度名称',
           account: '账号',
           symbol: '品种',
-          timeframe: '周期',
+          timeframe: '周期'
         },
         messages: {
-          signalNotOrderable: '当前信号不可下单：需要 buy/sell 且 volume > 0',
+          signalNotOrderable: '当前信号不可下单：需要 buy/sell 且 volume > 0'
         },
         cards: {
           logs: '执行日志',
-          signal: '信号(用于下单)',
+          signal: '信号(用于下单)'
         },
         emptyLogs: '(无日志)',
-        emptySignal: '(无信号)',
+        emptySignal: '(无信号)'
       },
       table: {
         name: '名称',
@@ -221,23 +218,23 @@ const strategy = {
         schedule: '计划',
         status: '状态',
         lastRun: '最近运行',
-        actions: '操作',
+        actions: '操作'
       },
       templateVisibility: {
         public: '公开',
-        private: '私有',
+        private: '私有'
       },
       status: {
         running: '运行中',
-        disabled: '已停用',
+        disabled: '已停用'
       },
       nextRunAt: '下次运行',
       enableCount: '启用次数',
       deleteConfirm: {
-        title: '确认删除该调度任务？',
+        title: '确认删除该调度任务？'
       },
       validation: {
-        parametersMustBeJsonObject: '参数必须是 JSON 对象',
+        parametersMustBeJsonObject: '参数必须是 JSON 对象'
       },
       messages: {
         parametersParseFailed: '参数解析失败',
@@ -250,18 +247,18 @@ const strategy = {
         signalHoldCannotOrder: '当前信号为 hold/无交易动作，不能下单',
         volumeInvalid: '下单手数无效（volume 必须 > 0）',
         orderSubmitted: '已提交下单',
-        orderFailed: '下单失败',
-      },
+        orderFailed: '下单失败'
+      }
     },
     scheduleLogs: {
       title: '记录',
       titleWithName: '记录 - {{name}}',
       tabs: {
         exec: '运行记录',
-        orders: '交易记录',
+        orders: '交易记录'
       },
       messages: {
-        missingScheduleId: '缺少 scheduleId',
+        missingScheduleId: '缺少 scheduleId'
       },
       summary: {
         name: '名称',
@@ -269,19 +266,19 @@ const strategy = {
         trade: '交易',
         enableCount: '启用次数',
         lastRun: '最近运行',
-        lastError: '最近错误',
+        lastError: '最近错误'
       },
       execStatus: {
         pending: '待执行',
         running: '运行中',
         completed: '已完成',
         failed: '失败',
-        skipped: '已跳过',
+        skipped: '已跳过'
       },
       operationStatus: {
         success: '成功',
         failed: '失败',
-        running: '执行中',
+        running: '执行中'
       },
       execTable: {
         time: '时间',
@@ -289,7 +286,7 @@ const strategy = {
         status: '状态',
         durationMs: '耗时(ms)',
         error: '错误',
-        execute: '执行',
+        execute: '执行'
       },
       ordersTable: {
         time: '时间',
@@ -299,7 +296,7 @@ const strategy = {
         openPrice: '开仓价',
         closePrice: '平仓价',
         profit: '盈亏',
-        ticket: '订单号',
+        ticket: '订单号'
       },
       orderSide: {
         buy: '市价买入',
@@ -310,34 +307,34 @@ const strategy = {
         buyStop: '突破买入',
         sellStop: '突破卖出',
         buyStopLimit: '限价突破买',
-        sellStopLimit: '限价突破卖',
+        sellStopLimit: '限价突破卖'
       },
-      scheduleIdLabel: '调度ID:',
+      scheduleIdLabel: '调度ID:'
     },
     templates: {
       title: '策略模板',
       tabs: {
         system: '系统模板',
-        user: '自建模板',
+        user: '自建模板'
       },
       copySuffix: ' (副本)',
       scheduleName: '{{symbol}} {{timeframe}} {{nowText}}',
       badges: {
-        preset: '预设',
+        preset: '预设'
       },
       visibility: {
         public: '公开',
-        private: '私有',
+        private: '私有'
       },
       codeModal: {
         title: '策略代码',
         actions: {
-          copy: '复制',
-        },
+          copy: '复制'
+        }
       },
       status: {
         draft: '草稿',
-        published: '已发布',
+        published: '已发布'
       },
       actions: {
         create: '新建模板',
@@ -347,7 +344,7 @@ const strategy = {
         copy: '复制',
         viewCode: '查看代码',
         backtest: '回测',
-        launchSchedule: '上线到调度',
+        launchSchedule: '上线到调度'
       },
       table: {
         name: '名称',
@@ -361,7 +358,7 @@ const strategy = {
         actions: '操作',
         loadingDefault: '正在加载默认模板...',
         defaultHint: '默认',
-        emptyUser: '暂无自建模板，点击右上角「新建模板」开始',
+        emptyUser: '暂无自建模板，点击右上角「新建模板」开始'
       },
       scheduleLaunch: {
         title: '调度上线',
@@ -373,7 +370,7 @@ const strategy = {
         actions: {
           publishTemplate: '发布模板',
           createScheduleNoEnable: '创建调度',
-          createAndEnable: '创建并启用',
+          createAndEnable: '创建并启用'
         },
         metrics: {
           totalReturn: '总收益',
@@ -381,38 +378,62 @@ const strategy = {
           maxDrawdown: '最大回撤',
           sharpe: '夏普比率',
           winRate: '胜率',
-          totalTrades: '交易次数',
-        },
+          totalTrades: '交易次数'
+        }
       },
       editTemplateModal: {
         title: {
           create: '新建模板',
-          edit: '编辑模板',
+          edit: '编辑模板'
         },
         fields: {
           name: '名称',
           description: '描述',
           code: '策略代码',
-          publicShare: '公开分享',
+          publicShare: '公开分享'
         },
         placeholders: {
           name: '例如：均线交叉策略',
           description: '可选：策略说明',
-          codeSample:
-            "# 策略代码示例\n# 可用的变量: close, open, high, low, volume, symbol\n# 返回: signal字典\n\nimport numpy as np\n\n# 计算指标\nmaFast = np.mean(close[-10:])\nmaSlow = np.mean(close[-20:])\n\n# 生成信号\nif maFast > maSlow:\n    signal = 'buy'\nelif maFast < maSlow:\n    signal = 'sell'\nelse:\n    signal = 'hold'\n\n# 返回结果\nsignal = {\n    'signal': signal,\n    'symbol': symbol,\n    'price': close[-1],\n    'confidence': 0.7,\n    'reason': f'MA快线={maFast:.5f}, MA慢线={maSlow:.5f}'\n}",
+          codeSample: `# 策略代码示例
+# 可用的变量: close, open, high, low, volume, symbol
+# 返回: signal字典
+
+import numpy as np
+
+# 计算指标
+maFast = np.mean(close[-10:])
+maSlow = np.mean(close[-20:])
+
+# 生成信号
+if maFast > maSlow:
+    signal = 'buy'
+elif maFast < maSlow:
+    signal = 'sell'
+else:
+    signal = 'hold'
+
+# 返回结果
+signal = {
+    'signal': signal,
+    'symbol': symbol,
+    'price': close[-1],
+    'confidence': 0.7,
+    'reason': f'MA快线={maFast:.5f}, MA慢线={maSlow:.5f}'
+}`
         },
         validation: {
           nameRequired: '请输入名称',
-          codeRequired: '请输入策略代码',
+          codeRequired: '请输入策略代码'
         },
         actions: {
-          validateCode: '验证代码',
-        },
+          validateCode: '验证代码'
+        }
       },
       backtest: {
         title: '回测',
         parameters: {
-          title: '策略参数',
+          title: '策略参数'
         },
         fields: {
           title: '标题',
@@ -421,32 +442,33 @@ const strategy = {
           timeframe: '周期',
           initialCapital: '初始资金',
           range: '回测区间',
-          extraSymbols: '辅助标的（可多选）',
+          extraSymbols: '辅助标的（可多选）'
         },
         placeholders: {
           account: '选择账户',
           symbol: '选择品种',
           range: '请选择回测区间',
-          extraSymbols: '可选，配对/轮动策略常用',
+          extraSymbols: '可选，配对/轮动策略常用'
         },
         tooltips: {
-          extraSymbols: '除主标的外，额外拉取的 K 线（同账户、同周期）。策略通过 context["closes_by_symbol"] 访问。',
+          extraSymbols: '除主标的外，额外拉取的 K 线（同账户、同周期）。策略通过 context["closes_by_symbol"] 访问。'
         },
         validation: {
           accountRequired: '请选择账户',
           symbolRequired: '请选择品种',
           timeframeRequired: '请选择周期',
           initialCapitalRequired: '请输入初始资金',
-          rangeRequired: '请选择回测区间',
+          rangeRequired: '请选择回测区间'
         },
         quickRange: {
           '1d': '1天',
           '3d': '3天',
           '1w': '1周',
           '1y': '1年',
-          custom: '自定义',
+          custom: '自定义'
         },
         accountDisabledSuffix: ' (已禁用)',
+        modalTitleWithName: 'Backtest: {{name}}'
       },
       messages: {
         fetchTemplateListFailed: '获取模板列表失败',
@@ -476,6 +498,17 @@ const strategy = {
         scheduleCreated: '调度已创建',
         scheduleCreatedAndEnabled: '调度已创建并启用',
         createScheduleFailed: '创建调度失败',
+        templatePublished: 'Template published',
+        cannotPublishAndCreateDraftFailed: 'Unable to publish. Draft creation failed.',
+        republishedButNoTemplateId: 'Republished, but template id is missing.',
+        backtestRunningCannotPublish: 'Backtest is running. Cannot publish now.',
+        missingDraftIdCannotPublish: 'Missing draft id. Cannot publish.',
+        publishedButNoTemplateId: 'Published, but template id is missing.',
+        templateRepublished: 'Template republished',
+        templateAlreadyPublished: 'Template already published',
+        templateNotDraftUnknownPublishStatus: 'Template is not a draft. Unknown publish status.',
+        publishFailed: 'Publish failed',
+        backtestRunNoPublishedTemplate: 'Backtest run has no published template'
       },
       backtestRuns: {
         title: '回测报告',
@@ -487,7 +520,7 @@ const strategy = {
           completed: '已完成',
           failed: '失败',
           canceling: '取消中',
-          canceled: '已取消',
+          canceled: '已取消'
         },
         table: {
           title: '标题',
@@ -495,14 +528,16 @@ const strategy = {
           symbol: '品种',
           timeframe: '周期',
           createdAt: '创建时间',
-          actions: '操作',
+          actions: '操作'
         },
         actions: {
           view: '查看',
           launchSchedule: '调度上线',
-          createSchedule: '创建调度',
-        },
+          createSchedule: '创建调度'
+        }
       },
+      deleteConfirm: 'Delete this template?',
+      defaultDraftName: 'Draft template'
     },
     backtestRun: {
       title: '回测运行',
@@ -513,19 +548,19 @@ const strategy = {
         failed: '失败',
         canceling: '取消中',
         canceled: '已取消',
-        ended: '已结束',
+        ended: '已结束'
       },
       actions: {
-        cancel: '取消',
+        cancel: '取消'
       },
       hints: {
         queued: '回测排队中',
         running: '回测运行中',
-        canceling: '正在取消回测',
+        canceling: '正在取消回测'
       },
       fields: {
         status: '状态',
-        error: '错误',
+        error: '错误'
       },
       metrics: {
         totalReturn: '总收益',
@@ -534,7 +569,7 @@ const strategy = {
         sharpe: '夏普比率',
         winRate: '胜率',
         totalTrades: '交易次数',
-        equityCurvePoints: '资金曲线点数',
+        equityCurvePoints: '资金曲线点数'
       },
       trades: {
         title: '订单明细',
@@ -558,28 +593,28 @@ const strategy = {
           tp: '止盈',
           margin_call: '强平',
           expired: '到期',
-          end_of_test: '回测结束',
+          end_of_test: '回测结束'
         },
-        summary: '共 {{count}} 笔，胜 {{wins}} / 负 {{losses}}，净盈亏 {{pnl}}',
-      },
+        summary: '共 {{count}} 笔，胜 {{wins}} / 负 {{losses}}，净盈亏 {{pnl}}'
+      }
     },
     defaultTemplates: {
       maCross: {
         name: '双均线交叉策略',
-        description: '当快均线上穿慢均线时买入，下穿时卖出',
+        description: '当快均线上穿慢均线时买入，下穿时卖出'
       },
       forceBuy: {
         name: '测试下单（强制BUY）',
-        description: '用于验证下单链路：每次执行都返回 buy，并从 context/params 读取 lot 作为 volume',
+        description: '用于验证下单链路：每次执行都返回 buy，并从 context/params 读取 lot 作为 volume'
       },
       rsi: {
         name: 'RSI超买超卖策略',
-        description: 'RSI低于30超买区买入，高于70超卖区卖出',
+        description: 'RSI低于30超买区买入，高于70超卖区卖出'
       },
       macd: {
         name: 'MACD策略',
-        description: 'MACD金叉买入，死叉卖出',
-      },
+        description: 'MACD金叉买入，死叉卖出'
+      }
     },
     asset: {
       title: '策略资产库',
@@ -602,12 +637,12 @@ const strategy = {
         submitSuccess: '已提交策略资产',
         submitFailed: '提交策略资产失败',
         cloneSuccess: '已克隆为模板：{{templateId}}',
-        cloneFailed: '克隆策略资产失败',
+        cloneFailed: '克隆策略资产失败'
       },
       validation: {
         selectTemplate: '请选择来源模板',
-        enterName: '请输入资产名称',
-      },
+        enterName: '请输入资产名称'
+      }
     },
     gen: {
       title: '策略生成',
@@ -627,12 +662,12 @@ const strategy = {
         generate: '⚡ 生成',
         revise: '✏️ 修改',
         repair: '🔧 修复',
-        discuss: '💬 分析',
+        discuss: '💬 分析'
       },
       feedback: {
         heading: '📊 回测结果',
-        placeholder: '输入反馈继续迭代（如"太激进了"、"加入止损"）',
-      },
+        placeholder: '输入反馈继续迭代（如"太激进了"、"加入止损"）'
+      }
     },
     codeAssist: {
       tabAI: 'AI 修改',
@@ -658,7 +693,7 @@ const strategy = {
         emaPeriod: 'EMA 指数移动平均的周期（K 线根数）。',
         smaPeriod: 'SMA 简单移动平均的周期（K 线根数）。',
         genericPeriod: '回看周期（K 线根数），用于指标计算的窗口长度。',
-        genericPercent: '百分比/比率类参数，单位通常为 %（如 1 表示 1%）。',
+        genericPercent: '百分比/比率类参数，单位通常为 %（如 1 表示 1%）。'
       },
       required: '必填',
       suggested: '建议',
@@ -671,7 +706,7 @@ const strategy = {
       codeEmpty: '当前没有可修改的代码。',
       codeUpdated: '代码已更新，请重新进行代码验证后再保存。',
       noPython: 'AI 没有返回 Python 代码块，请换种说法再试。',
-      saveBlockedNotValidated: '请先点击"验证代码"，验证通过后才能保存。',
+      saveBlockedNotValidated: '请先点击"验证代码"，验证通过后才能保存。'
     },
     marketRegime: {
       title: '市场状态识别',
@@ -689,7 +724,7 @@ const strategy = {
         symbolPlaceholder: 'EURUSD',
         timeframe: '周期',
         klineCount: 'K 线数量',
-        submit: '开始检测',
+        submit: '开始检测'
       },
       result: {
         title: '检测结果',
@@ -698,8 +733,8 @@ const strategy = {
         modelVersion: '模型版本',
         strategyFamilies: '策略族',
         features: '特征',
-        recordId: '记录 ID',
-      },
+        recordId: '记录 ID'
+      }
     },
     experiment: {
       title: '策略实验',
@@ -718,7 +753,7 @@ const strategy = {
         searchMethod: '搜索方式',
         maxCandidates: '候选上限',
         objective: '目标',
-        submit: '提交实验',
+        submit: '提交实验'
       },
       list: {
         title: '实验列表',
@@ -728,8 +763,8 @@ const strategy = {
           maxCandidates: '候选上限',
           objective: '目标',
           actions: '操作',
-          viewCandidates: '查看候选',
-        },
+          viewCandidates: '查看候选'
+        }
       },
       candidates: {
         title: '候选列表',
@@ -743,8 +778,8 @@ const strategy = {
           recommendation: '建议',
           actions: '操作',
           viewCandidates: '查看候选',
-          generateDraft: '生成草稿',
-        },
+          generateDraft: '生成草稿'
+        }
       },
       messages: {
         loadTemplatesFailed: '加载策略模板失败',
@@ -754,8 +789,8 @@ const strategy = {
         candidatesGenerated: '策略实验已生成候选',
         submitFailed: '提交策略实验失败，请确认参数空间是合法 JSON',
         draftGenerated: '已生成草稿模板：{{templateId}}',
-        promoteFailed: '提升候选为草稿失败',
-      },
+        promoteFailed: '提升候选为草稿失败'
+      }
     },
     tuning: {
       optimizerMethod: '优化方法',
@@ -795,124 +830,254 @@ const strategy = {
         deDesc: 'rand/1/bin 变异。在平滑曲面上快速收敛。',
         tpeDesc: '树状 Parzen 估计器。用 KDE 建模好/坏分布。',
         agsDesc: '高斯抖动 + sigma 退火。TPE 的轻量替代方案。',
-        aiDesc: 'LLM 多轮提议。基于前序结果学习，共 3 轮。',
+        aiDesc: 'LLM 多轮提议。基于前序结果学习，共 3 轮。'
       },
-    workspace: {
-      title: '策略工作台',
-      account: '账户',
-      accountPlaceholder: '账户 ID',
-      chartWindow: '图表',
-      hideCode: '隐藏代码',
-      showCode: '显示代码',
-      quickTrade: '快捷交易',
-      quickTradeHint: '请先选择品种',
-      tradePanelPlaceholder: '交易面板 — 即将推出',
-      selectSymbolHint: '选择交易账户和品种以查看图表',
-      noAccounts: '暂无可用账户',
-      selectSymbol: '品种',
-      code: '策略代码',
-      codePlaceholder: '# Python 策略代码...\ndef run(context):\n    return {"signal": "hold"}',
-      validate: '验证',
-      validatePass: '验证通过',
-      validateFailed: '验证失败',
-      validateBeforeSave: '请先验证代码再保存',
-      runBacktest: '运行回测',
-      save: '保存',
-      copy: '复制',
-      copySuccess: '已复制',
-      copyFailed: '复制失败',
-      saveSuccess: '已保存',
-      chart: 'K线',
-      backtest: '回测',
-      backtestRunning: '回测运行中...',
-      backtestCompleted: '已完成',
-      backtestError: '回测失败',
-      backtestEmpty: '运行回测查看结果',
-      backtestTab: '回测结果',
-      tuningTab: '智能调参',
-      execAssumptions: 'ℹ 执行假设',
-      execAssumptionsFields: {
-        mode: '模式',
-        timing: '时机',
-        fillRule: '成交规则',
-        direction: '方向',
+      workspace: {
+        title: '策略工作台',
+        account: '账户',
+        accountPlaceholder: '账户 ID',
+        chartWindow: '图表',
+        hideCode: '隐藏代码',
+        showCode: '显示代码',
+        quickTrade: '快捷交易',
+        quickTradeHint: '请先选择品种',
+        tradePanelPlaceholder: '交易面板 — 即将推出',
+        selectSymbolHint: '选择交易账户和品种以查看图表',
+        noAccounts: '暂无可用账户',
+        selectSymbol: '品种',
+        code: '策略代码',
+        codePlaceholder: '# Python 策略代码...
+def run(context):
+    return {"signal": "hold"}',
+        validate: '验证',
+        validatePass: '验证通过',
+        validateFailed: '验证失败',
+        validateBeforeSave: '请先验证代码再保存',
+        runBacktest: '运行回测',
+        save: '保存',
+        copy: '复制',
+        copySuccess: '已复制',
+        copyFailed: '复制失败',
+        saveSuccess: '已保存',
+        chart: 'K线',
+        backtest: '回测',
+        backtestRunning: '回测运行中...',
+        backtestCompleted: '已完成',
+        backtestError: '回测失败',
+        backtestEmpty: '运行回测查看结果',
+        backtestTab: '回测结果',
+        tuningTab: '智能调参',
+        execAssumptions: 'ℹ 执行假设',
+        execAssumptionsFields: {
+          mode: '模式',
+          timing: '时机',
+          fillRule: '成交规则',
+          direction: '方向',
+          commission: '手续费',
+          slippage: '滑点',
+          leverage: '杠杆',
+          mtfFallback: 'MTF 回退'
+        },
+        aiAssist: 'AI 助手',
+        ai: 'AI',
+        runtimeMode: '运行时',
+        saveFailed: '保存失败',
+        autoFix: {
+          fixing: '修复中...',
+          button: '自动修复',
+          askAI: '询问 AI',
+          dismiss: '关闭',
+          passed: '自动修复通过 ({{iterations}} 次迭代)',
+          failed: '自动修复: {{remaining}} 个问题未解决 ({{iterations}} 次迭代后)',
+          fixed: '✅ 已修复 ({{count}})',
+          remaining: '⚠️ 剩余 ({{count}})',
+          newRegression: '❌ 新增回归 ({{count}})',
+          lineInfo: '第 {{line}} 行'
+        },
+        template: {
+          title: '模板',
+          selectPlaceholder: '选择一个模板...',
+          load: '加载',
+          saveAs: '另存为',
+          loaded: '已加载'
+        }
+      },
+      codeQuality: {
+        category: {
+          FUTURE_DATA_LEAK: '未来数据泄露',
+          MISSING_PARAM: '缺少参数声明',
+          UNREAD_PARAM: '未使用参数',
+          NDARRAY_PANDAS_MISUSE: 'ndarray/pandas 误用',
+          NO_STOP_AND_TAKE_PROFIT: '缺少止损止盈',
+          NO_ENTRY_PCT: '缺少入场比例'
+        }
+      },
+      backtestParams: {
+        title: '回测参数',
+        currentDraft: '📝 当前草稿',
+        dateRange: '日期范围',
+        execution: '执行参数',
+        capital: '本金',
+        leverage: '杠杆',
         commission: '手续费',
         slippage: '滑点',
-        leverage: '杠杆',
-        mtfFallback: 'MTF 回退',
+        trade: '交易设置',
+        direction: '方向',
+        long: '↑ 做多',
+        short: '↓ 做空',
+        both: '双向',
+        strictMode: '严格模式',
+        strictModeOn: '开',
+        strictModeOff: '关',
+        strictModeOnDesc: '下一根 K 线开仓。标准保守模式。',
+        strictModeOffDesc: '同 K 线收盘价 + MTF 1m。更高精度。',
+        strictModeOnTooltip: '开：信号在 K 线收盘确认，下一根 K 线开盘执行',
+        strictModeOffTooltip: '关：同 K 线收盘执行，1m 子分辨率',
+        vectorizedMode: '矢量模式',
+        eventDrivenMode: 'Run(context)',
+        runtimeMode: '运行时',
+        history: '回测历史',
+        run: '▶ 运行',
+        settingsSave: '保存为我的默认',
+        settingsLoad: '加载我的默认',
+        settingsReset: '恢复出厂默认',
+        defaultsSaved: '默认已保存',
+        defaultsLoaded: '默认已加载',
+        defaultsReset: '已恢复出厂默认',
+        presets: {
+          liveAligned: '实盘对齐',
+          exploration: '探索模式'
+        }
+      }
+    },
+    templateModal: {
+      title: 'Save as template',
+      fields: {
+        name: 'Name',
+        description: 'Description'
       },
-      aiAssist: 'AI 助手',
+      placeholders: {
+        name: 'Enter template name',
+        description: 'Enter description'
+      }
+    },
+    workspace: {
+      title: 'Strategy Workspace',
+      account: 'Account',
+      accountPlaceholder: 'Account ID',
+      chartWindow: 'Chart',
+      hideCode: 'Hide Code',
+      showCode: 'Show Code',
+      quickTrade: 'Quick Trade',
+      quickTradeHint: 'Select a symbol first',
+      tradePanelPlaceholder: 'Trade panel — coming soon',
+      selectSymbolHint: 'Select a trading account and symbol to view chart',
+      noAccounts: 'No available accounts',
+      selectSymbol: 'Symbol',
+      code: 'Strategy Code',
+      codePlaceholder: '# Python strategy code...
+def run(context):
+    return {"signal": "hold"}',
+      validate: 'Validate',
+      validatePass: 'Validation passed',
+      validateFailed: 'Validation failed',
+      validateBeforeSave: 'Please validate code before saving',
+      runBacktest: 'Run Backtest',
+      save: 'Save',
+      copy: 'Copy',
+      copySuccess: 'Copied',
+      copyFailed: 'Copy failed',
+      saveSuccess: 'Saved',
+      chart: 'K-line',
+      backtest: 'Backtest',
+      backtestRunning: 'Backtest running...',
+      backtestCompleted: 'Completed',
+      backtestError: 'Backtest failed',
+      backtestEmpty: 'Run a backtest to see results',
+      backtestTab: 'Backtest Results',
+      tuningTab: 'Smart Tuning',
+      execAssumptions: 'ℹ Execution Assumptions',
+      execAssumptionsFields: {
+        mode: 'Mode',
+        timing: 'Timing',
+        fillRule: 'Fill Rule',
+        direction: 'Direction',
+        commission: 'Commission',
+        slippage: 'Slippage',
+        leverage: 'Leverage',
+        mtfFallback: 'MTF Fallback'
+      },
+      aiAssist: 'AI Assistant',
       ai: 'AI',
-      runtimeMode: '运行时',
-      saveFailed: '保存失败',
+      runtimeMode: 'Runtime',
+      saveFailed: 'Save failed',
       autoFix: {
-        fixing: '修复中...',
-        button: '自动修复',
-        askAI: '询问 AI',
-        dismiss: '关闭',
-        passed: '自动修复通过 ({{iterations}} 次迭代)',
-        failed: '自动修复: {{remaining}} 个问题未解决 ({{iterations}} 次迭代后)',
-        fixed: '✅ 已修复 ({{count}})',
-        remaining: '⚠️ 剩余 ({{count}})',
-        newRegression: '❌ 新增回归 ({{count}})',
-        lineInfo: '第 {{line}} 行',
+        fixing: 'Fixing...',
+        button: 'Auto Fix',
+        askAI: 'Ask AI',
+        dismiss: 'Dismiss',
+        passed: 'Auto-fix passed in {{iterations}} iteration{{plural}}',
+        failed: 'Auto-fix: {{remaining}} issue(s) remain after {{iterations}} iterations',
+        fixed: 'Fixed ({{count}})',
+        remaining: 'Remaining ({{count}})',
+        newRegression: 'New regression ({{count}})',
+        lineInfo: 'line {{line}}'
       },
       template: {
-        title: '模板',
-        selectPlaceholder: '选择一个模板...',
-        load: '加载',
-        saveAs: '另存为',
-        loaded: '已加载',
-      },
+        title: 'Template',
+        selectPlaceholder: 'Select a template...',
+        load: 'Load',
+        saveAs: 'Save As New',
+        loaded: 'Loaded'
+      }
     },
     codeQuality: {
       category: {
-        FUTURE_DATA_LEAK: '未来数据泄露',
-        MISSING_PARAM: '缺少参数声明',
-        UNREAD_PARAM: '未使用参数',
-        NDARRAY_PANDAS_MISUSE: 'ndarray/pandas 误用',
-        NO_STOP_AND_TAKE_PROFIT: '缺少止损止盈',
-        NO_ENTRY_PCT: '缺少入场比例',
-      },
+        FUTURE_DATA_LEAK: 'Future Data Leak',
+        MISSING_PARAM: 'Missing Param',
+        UNREAD_PARAM: 'Unread Param',
+        NDARRAY_PANDAS_MISUSE: 'ndarray/pandas Misuse',
+        NO_STOP_AND_TAKE_PROFIT: 'Missing Stop/Take Profit',
+        NO_ENTRY_PCT: 'Missing Entry %'
+      }
     },
     backtestParams: {
-      title: '回测参数',
-      currentDraft: '📝 当前草稿',
-      dateRange: '日期范围',
-      execution: '执行参数',
-      capital: '本金',
-      leverage: '杠杆',
-      commission: '手续费',
-      slippage: '滑点',
-      trade: '交易设置',
-      direction: '方向',
-      long: '↑ 做多',
-      short: '↓ 做空',
-      both: '双向',
-      strictMode: '严格模式',
-      strictModeOn: '开',
-      strictModeOff: '关',
-      strictModeOnDesc: '下一根 K 线开仓。标准保守模式。',
-      strictModeOffDesc: '同 K 线收盘价 + MTF 1m。更高精度。',
-      strictModeOnTooltip: '开：信号在 K 线收盘确认，下一根 K 线开盘执行',
-      strictModeOffTooltip: '关：同 K 线收盘执行，1m 子分辨率',
-      vectorizedMode: '矢量模式',
+      title: 'Backtest',
+      currentDraft: '📝 Current Draft',
+      dateRange: 'Date Range',
+      execution: 'Execution',
+      capital: 'Capital',
+      leverage: 'Leverage',
+      commission: 'Commission',
+      slippage: 'Slippage',
+      trade: 'Trade',
+      direction: 'Direction',
+      long: '↑ Long',
+      short: '↓ Short',
+      both: 'Both',
+      strictMode: 'Strict Mode',
+      strictModeOn: 'ON',
+      strictModeOff: 'OFF',
+      strictModeOnDesc: 'Next-bar-open. Standard, conservative.',
+      strictModeOffDesc: 'Same-bar-close + MTF 1m. Higher precision.',
+      strictModeOnTooltip: 'ON: signals confirmed at bar close, executed next bar open',
+      strictModeOffTooltip: 'OFF: same-bar close execution with 1m sub-resolution',
+      vectorizedMode: 'Vectorized',
       eventDrivenMode: 'Run(context)',
-      runtimeMode: '运行时',
-      history: '回测历史',
-      run: '▶ 运行',
-      settingsSave: '保存为我的默认',
-      settingsLoad: '加载我的默认',
-      settingsReset: '恢复出厂默认',
-      defaultsSaved: '默认已保存',
-      defaultsLoaded: '默认已加载',
-      defaultsReset: '已恢复出厂默认',
+      runtimeMode: 'Runtime',
+      history: 'Backtest History',
+      run: '▶ Run',
+      settingsSave: 'Save as My Defaults',
+      settingsLoad: 'Load My Defaults',
+      settingsReset: 'Reset to Factory',
+      defaultsSaved: 'Defaults saved',
+      defaultsLoaded: 'Defaults loaded',
+      defaultsReset: 'Reset to factory defaults',
       presets: {
-        liveAligned: '实盘对齐',
-        exploration: '探索模式',
-      },
-    },
-    },
+        liveAligned: 'Live Aligned',
+        exploration: 'Exploration'
+      }
+    }
   },
   indicatorCatalog: {
     title: '指标目录',
@@ -926,8 +1091,8 @@ const strategy = {
     paramType: '类型',
     paramDefault: '默认值',
     paramRange: '范围',
-    paramDescription: '描述',
-  },
+    paramDescription: '描述'
+  }
 } as const;
 
 export default strategy;

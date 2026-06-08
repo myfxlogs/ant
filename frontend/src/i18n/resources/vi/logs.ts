@@ -31,7 +31,20 @@ const logs = {
     success: 'Thành công',
     failed: 'Thất bại',
     exampleSymbolPlaceholder: 'Ví dụ: XAUUSD',
-  },
+    result: 'Result',
+    riskCode: 'Risk Code',
+    requestId: 'Request ID',
+    triggerSource: 'Trigger Source',
+    riskLogQuickFilter: 'Risk Log Quick Filter',
+    loadFailed: 'Failed to load logs',
+    orderTable: {
+      ticket: 'Ticket',
+      type: 'Type',
+      lots: 'Lots',
+      open: 'Open',
+      close: 'Close'
+    }
+  }
 } as const;
 
 export default logs;

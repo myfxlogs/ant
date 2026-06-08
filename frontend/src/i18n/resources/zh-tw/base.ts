@@ -1,12 +1,12 @@
 const base = {
   app: {
-    name: 'AntTrader',
+    name: 'AntTrader'
   },
   auth: {
     fields: {
       email: '信箱',
       password: '密碼',
-      confirmPassword: '確認密碼',
+      confirmPassword: '確認密碼'
     },
     messages: {
       loginSuccess: '登入成功',
@@ -14,7 +14,7 @@ const base = {
       registerSuccess: '註冊成功，請登入',
       registerFailed: '註冊失敗，請稍後重試',
       logoutSuccess: '已登出',
-      fetchMeFailed: '取得使用者資訊失敗',
+      fetchMeFailed: '取得使用者資訊失敗'
     },
     validation: {
       emailRequired: '請輸入信箱',
@@ -22,7 +22,7 @@ const base = {
       passwordRequired: '請輸入密碼',
       passwordMin8: '密碼至少 8 碼',
       confirmPasswordRequired: '請確認密碼',
-      passwordMismatch: '兩次輸入的密碼不一致',
+      passwordMismatch: '兩次輸入的密碼不一致'
     },
     login: {
       subtitle: '這是一個測試不具備責任能力',
@@ -35,7 +35,7 @@ const base = {
       agreePrefix: '登入即表示您同意我們的',
       terms: '服務條款',
       and: '和',
-      privacy: '隱私政策',
+      privacy: '隱私政策'
     },
     register: {
       subtitle: '建立新帳號',
@@ -46,8 +46,8 @@ const base = {
       agreePrefix: '註冊即表示您同意我們的',
       terms: '服務條款',
       and: '和',
-      privacy: '隱私政策',
-    },
+      privacy: '隱私政策'
+    }
   },
   common: {
     refresh: '刷新',
@@ -91,15 +91,17 @@ const base = {
       minute: '分鐘',
       hour: '小時',
       day: '天',
-      lessThanMinute: '< 1分鐘',
+      lessThanMinute: '< 1分鐘'
     },
+    required: 'Required',
+    noData: 'No data'
   },
   language: {
     simplifiedChinese: '简体中文',
     traditionalChinese: '繁體中文',
     english: 'English',
     japanese: '日本語',
-    vietnamese: 'Tiếng Việt',
+    vietnamese: 'Tiếng Việt'
   },
   menu: {
     strategyWorkspace: '策略工作台',
@@ -117,6 +119,7 @@ const base = {
     schedules: '策略調度',
     indicatorCatalog: '指標目錄',
     logs: '系統日誌',
+    assetAnalysis: 'AI Analysis'
   },
   market: {
     searchPlaceholder: '搜尋品種（如 EURUSD, XAUUSD）',
@@ -127,7 +130,7 @@ const base = {
     bid: '買價',
     ask: '賣價',
     spread: '點差',
-    mid: '中間價',
+    mid: '中間價'
   },
   topbar: {
     systemOk: '系統正常運行',
@@ -135,7 +138,7 @@ const base = {
     settings: '設定',
     switchToAdmin: '切換到管理',
     logout: '退出登入',
-    user: '用戶',
+    user: '用戶'
   },
   profile: {
     title: '個人資訊',
@@ -143,7 +146,7 @@ const base = {
     role: '角色',
     status: '狀態',
     lastLogin: '最後登入',
-    registered: '註冊時間',
+    registered: '註冊時間'
   },
   notifications: {
     title: '通知中心',
@@ -153,17 +156,41 @@ const base = {
       signal: '訊號',
       risk_alert: '風險',
       strategy_execution: '策略',
-      system: '系統',
+      system: '系統'
     },
     tabs: {
       all: '全部 ({{count}})',
-      unread: '未讀 ({{count}})',
+      unread: '未讀 ({{count}})'
     },
     actions: {
       markAllAsRead: '全部已讀',
       clearAll: '清空',
-      clearAllConfirm: '確定清空所有通知？',
+      clearAllConfirm: '確定清空所有通知？'
     },
+    all: 'All',
+    unread: 'Unread',
+    markAllRead: 'Mark all as read',
+    clearAll: 'Clear all',
+    confirmClearAll: 'Clear all notifications?',
+    stream: {
+      strategyExecution: {
+        title: 'Strategy Execution',
+        completed: '{{symbol}} {{action}} completed',
+        failed: 'Execution failed: {{error}}'
+      },
+      riskAlert: {
+        title: 'Risk Alert',
+        fallback: 'Alert type: {{alertType}}'
+      },
+      strategySignal: {
+        title: 'Strategy Signal',
+        message: '{{symbol}} triggered {{signalType}}'
+      },
+      autoTrading: {
+        title: 'Auto Trading',
+        fallback: 'Auto trading event triggered'
+      }
+    }
   },
   errors: {
     not_authenticated: '未登入',
@@ -179,7 +206,7 @@ const base = {
     auto_trading_disabled: '自動交易已關閉',
     connection_failed: {
       title: '連線失敗',
-      content: '無法連線到後端服務，請確認伺服器是否已啟動。',
+      content: '無法連線到後端服務，請確認伺服器是否已啟動。'
     },
     ai: {
       not_configured: 'AI 未配置：請先到 AI 設定中啟用並配置。',
@@ -198,8 +225,7 @@ const base = {
       request_failed: 'API 請求失敗',
       probe_ok: '正常',
       probe_ok_no_models: '正常（未回傳 models）',
-      free_tier_exhausted:
-        'AI 模型免費額度已耗盡：請在模型供應商管理後台關閉「use free tier only」或更換付費 Key。',
+      free_tier_exhausted: 'AI 模型免費額度已耗盡：請在模型供應商管理後台關閉「use free tier only」或更換付費 Key。',
       rate_limited: 'AI 服務觸發限流/額度不足（429/資源耗盡）。請稍後重試或更換可用的 API Key/模型配置。',
       forbidden_quota: 'AI 服務額度/權限不足（403）。請檢查 API Key 是否有可用額度或是否已啟用付費模式。',
       wizard: {
@@ -211,30 +237,30 @@ const base = {
           generate: '生成策略',
           publishCode: '回測上線-程式碼',
           publishBacktest: '回測上線-回測',
-          publishLaunch: '回測上線-上線',
+          publishLaunch: '回測上線-上線'
         },
         actions: {
           prev: '上一步',
           next: '下一步',
-          cancel: '取消',
+          cancel: '取消'
         },
         agents: {
           styleTitle: '市場狀態/風格推薦',
           signalsTitle: '訊號與指標設計',
           riskTitle: '風控與執行約束',
-          codeTitle: '程式碼生成',
+          codeTitle: '程式碼生成'
         },
         template: {
           defaultName: 'AI 策略 {{title}}',
-          defaultDescription: 'AI 嚮導生成',
+          defaultDescription: 'AI 嚮導生成'
         },
         schedule: {
-          defaultName: 'AI 調度 {{symbol}} {{timeframe}}',
+          defaultName: 'AI 調度 {{symbol}} {{timeframe}}'
         },
         prompts: {
           dataSpec: {
             dataset: '使用凍結資料集 datasetId={{datasetId}}',
-            klineRange: '使用歷史K線範圍 from={{from}} to={{to}}',
+            klineRange: '使用歷史K線範圍 from={{from}} to={{to}}'
           },
           base: {
             account: '帳號: {{accountId}}',
@@ -242,17 +268,23 @@ const base = {
             timeframe: '週期: {{timeframe}}',
             data: '資料: {{dataSpec}}',
             constraints: '約束: 最大回撤={{maxDrawdownPct}}% 單筆風險={{riskPerTradePct}}% 日內最多交易={{maxTradesPerDay}} 次',
-            params: '參數（定義+目前值；執行時在 context["params"] 中）：\n{{params}}',
+            params: '參數（定義+目前值；執行時在 context["params"] 中）：
+{{params}}',
             empty: '(空)',
-            macroEnabled: '宏觀事件(使用者提供):\n{{text}}',
+            macroEnabled: '宏觀事件(使用者提供):
+{{text}}',
             macroDisabled: '宏觀事件: 不使用',
-            userIntent: '使用者策略目標(自然語言):\n{{intent}}',
+            userIntent: '使用者策略目標(自然語言):
+{{intent}}'
           },
           upstream: {
-            style: '【市場狀態/風格推薦 結論】\n{{text}}',
-            signals: '【訊號與指標設計 結論】\n{{text}}',
-            risk: '【風控與執行約束 結論】\n{{text}}',
-            sectionTitle: '【上游 Agent 結論（原樣提供）】',
+            style: '【市場狀態/風格推薦 結論】
+{{text}}',
+            signals: '【訊號與指標設計 結論】
+{{text}}',
+            risk: '【風控與執行約束 結論】
+{{text}}',
+            sectionTitle: '【上游 Agent 結論（原樣提供）】'
           },
           summary: {
             intro: '你是量化策略解釋助手。請用精簡中文（要點形式，最多 12 行）解釋下面這段 AntTrader Python 策略程式碼的核心思路，幫助使用者判斷是否符合預期。',
@@ -261,9 +293,10 @@ const base = {
             mustInclude2: '2) 主要入場條件（2~4 點）',
             mustInclude3: '3) 主要出場/止損止盈/風控約束（2~4 點）',
             mustInclude4: '4) 適用/不適用場景各 1 點',
-            userIntent: '使用者預期（自然語言）：\n{{intent}}',
-            codeTitle: '程式碼如下：',
-          },
+            userIntent: '使用者預期（自然語言）：
+{{intent}}',
+            codeTitle: '程式碼如下：'
+          }
         },
         messages: {
           generateCodeFirst: '請先生成策略程式碼',
@@ -284,7 +317,7 @@ const base = {
           inputIntentFirst: '請先輸入策略目標/想法',
           aiRequestTimeout: 'AI 請求逾時（>{{seconds}}s）',
           modelReturnedEmpty: '模型回傳為空',
-          noPythonCodeBlock: '程式碼 Agent 未輸出 ```python 代碼塊```，請在結果中檢查',
+          noPythonCodeBlock: '程式碼 Agent 未輸出 \`\`\`python 代碼塊\`\`\`，請在結果中檢查',
           agentFailed: '{{title}} 失敗',
           userAborted: '使用者已中止',
           chatAborted: '已中止與模型對話',
@@ -305,12 +338,271 @@ const base = {
           scheduleCreatedAndEnabled: '調度已建立並啟用',
           scheduleCreated: '調度已建立',
           createScheduleFailed: '建立調度失敗',
-          scheduleAlreadyExists: '該帳號下已存在相同策略調度（模板+品種+週期相同），請勿重複建立。',
-        },
-      },
+          scheduleAlreadyExists: '該帳號下已存在相同策略調度（模板+品種+週期相同），請勿重複建立。'
+        }
+      }
     },
-    translate_failed: '翻譯失敗',
+    translate_failed: '翻譯失敗'
   },
+  marketplace: {
+    title: 'Strategy Marketplace',
+    subtitle: 'Discover, rate, and subscribe to community strategies',
+    publish: 'Publish Strategy',
+    tabs: {
+      marketplace: 'Marketplace',
+      subscriptions: 'My Subscriptions'
+    },
+    searchPlaceholder: 'Search strategies...',
+    filterByClass: 'Filter by asset class',
+    sort: {
+      newest: 'Newest',
+      popular: 'Most Popular',
+      performance: 'Best Performance'
+    },
+    empty: 'No strategies published yet',
+    noSubscriptions: 'No subscriptions yet',
+    card: {
+      subscribe: 'Subscribe',
+      subscribed: 'Subscribed',
+      unsubscribe: 'Unsubscribe',
+      unsubscribeHint: 'Click to unsubscribe',
+      details: 'Details',
+      subscribers: 'Subscribers',
+      winRate: 'Win Rate',
+      by: 'by'
+    },
+    assetClass: {
+      forex: 'Forex',
+      crypto: 'Crypto',
+      commodity: 'Commodity',
+      index: 'Index',
+      stock: 'Stock',
+      other: 'Other'
+    },
+    risk: {
+      low: 'Low Risk',
+      medium: 'Medium Risk',
+      high: 'High Risk'
+    },
+    messages: {
+      loginFirst: 'Please log in first',
+      subscribed: 'Subscribed successfully',
+      subscribeFailed: 'Subscribe failed',
+      unsubscribed: 'Unsubscribed',
+      unsubscribeFailed: 'Unsubscribe failed',
+      rated: 'Rating submitted',
+      rateFailed: 'Rating failed',
+      commentPosted: 'Comment posted',
+      commentFailed: 'Comment failed'
+    },
+    detail: {
+      comments: 'Comments',
+      noComments: 'No comments yet. Be the first!',
+      commentPlaceholder: 'Write a comment... (Shift+Enter for new line)'
+    }
+  },
+  admin: {
+    sidebar: {
+      dashboard: 'Dashboard',
+      userManagement: 'User Management',
+      accountManagement: 'Account Management',
+      tradingMonitor: 'Trading Monitor',
+      operationLogs: 'Operation Logs',
+      systemConfig: 'System Config',
+      jurisdiction: 'Jurisdiction Gate'
+    },
+    header: {
+      adminMode: 'Admin Mode',
+      adminPanel: 'Admin Panel',
+      backToUser: 'Back to User',
+      logout: 'Logout',
+      admin: 'Admin'
+    },
+    config: {
+      title: 'System Configuration',
+      editConfig: 'Edit Config: {{key}}',
+      configItem: 'Config Item',
+      value: 'Value',
+      description: 'Description',
+      status: 'Status',
+      toggle: 'Toggle',
+      updatedAt: 'Updated At',
+      on: 'On',
+      off: 'Off',
+      maxAccountsPerUser: 'Max Accounts Per User',
+      aiProviderCatalog: 'AI Model Provider Catalog',
+      econAIConfig: 'Economic Calendar Translation AI Config',
+      strategyHealthConfig: 'Strategy Health Grading Config',
+      provider: 'Provider',
+      modelName: 'Model Name',
+      enableToggle: 'Enable',
+      baseUrlLabel: 'Base URL (optional, custom/OpenAI compatible only)',
+      formatJson: 'Format JSON',
+      fillTemplate: 'Fill Example',
+      thresholdInfo: 'Threshold Field Description',
+      thresholdDesc: 'green_success_rate: green success rate threshold; green_max_failed_runs: max failed runs for green; yellow_success_rate: yellow success rate threshold; min_sample_size: minimum sample size.',
+      validation: {
+        jsonEmpty: 'JSON cannot be empty',
+        jsonInvalid: 'Invalid JSON format',
+        greenSuccessRateRange: 'green_success_rate must be between 0 and 100',
+        yellowSuccessRateRange: 'yellow_success_rate must be between 0 and 100',
+        yellowNotGreaterThanGreen: 'yellow_success_rate cannot be greater than green_success_rate',
+        greenMaxFailedRunsNonNegative: 'green_max_failed_runs must be >= 0',
+        minSampleSizeNonNegative: 'min_sample_size must be >= 0',
+        apiKeyRequired: 'API Key cannot be empty',
+        modelRequired: 'Model name cannot be empty'
+      },
+      messages: {
+        loadFailed: 'Failed to load configs',
+        updated: 'Config updated',
+        updateFailed: 'Update failed',
+        enabled: 'Config enabled',
+        disabled: 'Config disabled',
+        operationFailed: 'Operation failed'
+      },
+      placeholders: {
+        json: 'Enter JSON',
+        apiKey: 'Enter API Key',
+        model: 'e.g. glm-4-flash / deepseek-chat / gpt-4o-mini',
+        baseUrl: 'e.g. https://api.openai.com or self-hosted gateway',
+        configValue: 'Enter config value',
+        description: 'Enter description'
+      },
+      providerOptions: {
+        zhipu: 'Zhipu',
+        deepseek: 'DeepSeek',
+        custom: 'Custom / OpenAI Compatible'
+      }
+    },
+    trading: {
+      title: 'Trading Monitor',
+      loadFailed: 'Failed to load trading statistics',
+      platform: 'Platform',
+      accounts: 'Accounts',
+      orders: 'Orders',
+      volume: 'Volume',
+      byPlatform: 'By Platform',
+      profitStats: 'P&L Statistics',
+      totalUsers: 'Total Users',
+      activeUsers: 'Active Users',
+      totalAccounts: 'Total Accounts',
+      connectedAccounts: 'Connected Accounts',
+      totalOrders: 'Total Orders',
+      closedOrders: 'Closed Orders',
+      totalVolume: 'Total Volume',
+      netProfit: 'Net P&L',
+      totalProfit: 'Total Profit',
+      totalLoss: 'Total Loss',
+      pendingOrders: 'Pending Orders'
+    },
+    dashboard: {
+      title: 'Admin Dashboard',
+      loadFailed: 'Failed to load dashboard data',
+      totalUsers: 'Total Users',
+      activeUsers: 'Active Users',
+      mtAccounts: 'MT Accounts',
+      onlineAccounts: 'Online Accounts',
+      todayTrades: 'Today Trades',
+      todayProfit: 'Today P&L',
+      recentLogs: 'Recent Operation Logs',
+      logs: {
+        time: 'Time',
+        module: 'Module',
+        actionType: 'Action Type',
+        target: 'Target',
+        status: 'Status',
+        success: 'Success',
+        failed: 'Failed',
+        moduleMap: {
+          userManagement: 'User Management',
+          accountManagement: 'Account Management',
+          trading: 'Trading',
+          systemConfig: 'System Config'
+        }
+      },
+      riskMetrics: {
+        title: 'Risk Control Metrics (Real-time)',
+        riskValidateTotal: 'Risk Validated Total',
+        riskValidatePass: 'Risk Validated Pass',
+        riskValidateReject: 'Risk Validated Reject',
+        riskValidateError: 'Risk Validated Error',
+        orderSendSuccess: 'Order Sent Success',
+        orderSendFailed: 'Order Sent Failed',
+        orderCloseSuccess: 'Order Closed Success',
+        orderCloseFailed: 'Order Closed Failed'
+      },
+      riskWindow: {
+        title: 'Risk Control Window Metrics (1h / 24h / 72h)',
+        validateTotal: '{{window}} Validated Total',
+        validatePass: '{{window}} Pass',
+        validateReject: '{{window}} Reject',
+        validateError: '{{window}} Error',
+        orderSendSuccess: '{{window}} Order Sent',
+        orderSendFailed: '{{window}} Order Failed',
+        orderCloseSuccess: '{{window}} Close Success',
+        orderCloseFailed: '{{window}} Close Failed',
+        rejectRiskCodesHeader: 'Top N Reject Risk Codes ({{window}})',
+        rejectCount: 'Reject Count',
+        noRejectData: 'No reject data for current window',
+        noData: 'No window metrics data'
+      }
+    },
+    jurisdiction: {
+      title: 'Jurisdiction Gate',
+      sanctionedCountriesTab: 'Sanctioned Countries',
+      kycStatusTab: 'User KYC Status',
+      sanctionedCountries: 'Sanctioned Countries',
+      userKYCStatus: 'User KYC Status',
+      addCountry: 'Add Country',
+      addSanctionedCountry: 'Add Sanctioned Country',
+      countryCode: 'Country Code',
+      countryLabel: 'Label',
+      addedBy: 'Added By',
+      actions: 'Actions',
+      userEmail: 'Email',
+      kycStatus: 'KYC Status',
+      country: 'Country',
+      sanctioned: 'Sanctioned',
+      disclaimer: 'Disclaimer',
+      questionnaire: 'Questionnaire',
+      override: 'Override',
+      setKYC: 'Set KYC',
+      setKYCStatus: 'Set KYC Status',
+      grantOverride: 'Grant Override',
+      revokeOverride: 'Revoke Override',
+      filterByKYCStatus: 'Filter by KYC status',
+      unverified: 'Unverified',
+      pending: 'Pending',
+      verified: 'Verified',
+      rejected: 'Rejected',
+      emptySanctions: 'No sanctioned countries configured',
+      emptyKYC: 'No users match the selected KYC filter',
+      messages: {
+        countryAdded: 'Sanctioned country added',
+        countryAddFailed: 'Failed to add sanctioned country',
+        countryRemoved: 'Sanctioned country removed',
+        countryRemoveFailed: 'Failed to remove sanctioned country',
+        kycUpdated: 'KYC status updated',
+        kycUpdateFailed: 'Failed to update KYC status',
+        overrideUpdated: 'Sanctioned override updated',
+        overrideUpdateFailed: 'Failed to update sanctioned override'
+      }
+    }
+  },
+  symbolDetection: {
+    label: 'Detected Symbols',
+    loading: 'Parsing…',
+    noSymbols: 'No trading symbols detected. Try including specific symbol names (e.g. "Bitcoin", "EURUSD", "Gold").',
+    unresolvedTooltip: 'No trading account bound yet, unable to resolve',
+    resolvedTooltip: 'broker: {{broker}} | mode: {{mode}}',
+    tradeMode: {
+      disabled: 'Disabled',
+      longOnly: 'Long Only',
+      shortOnly: 'Short Only',
+      longShort: 'Both Long & Short',
+      unknown: 'Unknown({{mode}})'
+    }
+  }
 } as const;
 
 export default base;

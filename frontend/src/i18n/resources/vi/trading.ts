@@ -4,53 +4,53 @@ const trading = {
       errors: {
         RISK_ACCOUNT_TRADE_DISABLED: {
           title: 'Giao dịch đã bị tắt cho tài khoản này.',
-          action: 'Kiểm tra trạng thái tài khoản và quyền truy cập rồi thử lại.',
+          action: 'Kiểm tra trạng thái tài khoản và quyền truy cập rồi thử lại.'
         },
         RISK_SYMBOL_TRADE_DISABLED: {
           title: 'Mã này hiện không thể giao dịch.',
-          action: 'Chuyển sang mã có thể giao dịch hoặc thử lại sau.',
+          action: 'Chuyển sang mã có thể giao dịch hoặc thử lại sau.'
         },
         RISK_MARKET_SESSION_CLOSED: {
           title: 'Thị trường của mã này đang đóng cửa.',
-          action: 'Chờ phiên giao dịch tiếp theo rồi thử lại.',
+          action: 'Chờ phiên giao dịch tiếp theo rồi thử lại.'
         },
         RISK_VOLUME_INVALID: {
           title: 'Khối lượng lệnh không hợp lệ.',
-          action: 'Điều chỉnh khối lượng theo giới hạn min/max/step.',
+          action: 'Điều chỉnh khối lượng theo giới hạn min/max/step.'
         },
         RISK_ORDER_TYPE_UNSUPPORTED: {
           title: 'Loại lệnh này không được hỗ trợ cho mã đã chọn.',
-          action: 'Chọn loại lệnh được hỗ trợ rồi thử lại.',
+          action: 'Chọn loại lệnh được hỗ trợ rồi thử lại.'
         },
         RISK_STOP_DISTANCE_TOO_CLOSE: {
           title: 'Stop-loss hoặc take-profit quá gần giá thị trường.',
-          action: 'Tăng khoảng cách SL/TP rồi thử lại.',
+          action: 'Tăng khoảng cách SL/TP rồi thử lại.'
         },
         RISK_ORDER_FROZEN_ZONE: {
           title: 'Không thể sửa lệnh trong vùng đóng băng.',
-          action: 'Chờ giá rời khỏi khoảng đóng băng rồi thử lại.',
+          action: 'Chờ giá rời khỏi khoảng đóng băng rồi thử lại.'
         },
         RISK_MARGIN_INSUFFICIENT: {
           title: 'Không đủ ký quỹ khả dụng để đặt lệnh này.',
-          action: 'Giảm khối lượng, đóng bớt vị thế hoặc nạp thêm tiền.',
+          action: 'Giảm khối lượng, đóng bớt vị thế hoặc nạp thêm tiền.'
         },
         RISK_MAX_OPEN_POSITIONS_EXCEEDED: {
           title: 'Đã đạt giới hạn số vị thế mở tối đa.',
-          action: 'Đóng bớt vị thế hiện có hoặc tăng giới hạn.',
+          action: 'Đóng bớt vị thế hiện có hoặc tăng giới hạn.'
         },
         RISK_MAX_PENDING_ORDERS_EXCEEDED: {
           title: 'Đã đạt giới hạn số lệnh chờ tối đa.',
-          action: 'Hủy bớt lệnh chờ hiện có hoặc tăng giới hạn.',
+          action: 'Hủy bớt lệnh chờ hiện có hoặc tăng giới hạn.'
         },
         RISK_INTERNAL_RULE_UNAVAILABLE: {
           title: 'Quy tắc rủi ro tạm thời chưa khả dụng.',
-          action: 'Thử lại sau; liên hệ hỗ trợ nếu lỗi vẫn còn.',
+          action: 'Thử lại sau; liên hệ hỗ trợ nếu lỗi vẫn còn.'
         },
         unknown: {
           title: 'Yêu cầu giao dịch đã bị từ chối.',
-          action: 'Vui lòng kiểm tra lại tham số lệnh và thử lại.',
-        },
-      },
+          action: 'Vui lòng kiểm tra lại tham số lệnh và thử lại.'
+        }
+      }
     },
     messages: {
       fetchPositionsFailed: 'Không thể tải vị thế',
@@ -61,7 +61,7 @@ const trading = {
       orderCloseSuccess: 'Đóng lệnh thành công',
       orderCloseFailed: 'Đóng lệnh thất bại',
       fetchPendingOrdersFailed: 'Không thể tải lệnh chờ',
-      fetchOrderHistoryFailed: 'Không thể tải lịch sử lệnh',
+      fetchOrderHistoryFailed: 'Không thể tải lịch sử lệnh'
     },
     autoTrade: {
       confirm: {
@@ -77,8 +77,8 @@ const trading = {
         enableBullet3: 'Nên thử nghiệm trước trên tài khoản demo',
         disableInfoTitle: 'Tắt giao dịch tự động',
         disableInfoDescription: 'Sau khi tắt, hệ thống sẽ dừng giao dịch tự động, nhưng các chiến lược đang bật vẫn có thể tiếp tục theo dõi thị trường.',
-        disableQuestion: 'Tắt tính năng giao dịch tự động?',
-      },
+        disableQuestion: 'Tắt tính năng giao dịch tự động?'
+      }
     },
     riskConfig: {
       fields: {
@@ -88,14 +88,14 @@ const trading = {
         maxPositions: 'Số vị thế tối đa',
         maxLotSize: 'Khối lượng tối đa',
         trailingStopEnabled: 'Trailing stop',
-        trailingStopPips: 'Trailing stop (pips)',
+        trailingStopPips: 'Trailing stop (pips)'
       },
       confirm: {
         title: 'Xác nhận lưu cấu hình rủi ro',
         confirmText: 'Lưu',
         description: 'Vui lòng xác nhận cấu hình rủi ro sau:',
-        info: 'Sau khi có hiệu lực, mọi giao dịch tự động sẽ tuân theo giới hạn rủi ro mới.',
-      },
+        info: 'Sau khi có hiệu lực, mọi giao dịch tự động sẽ tuân theo giới hạn rủi ro mới.'
+      }
     },
     strategyExecute: {
       confirm: {
@@ -108,10 +108,38 @@ const trading = {
         action: 'Hướng',
         buy: 'Mua',
         sell: 'Bán',
-        volume: 'Khối lượng',
-      },
+        volume: 'Khối lượng'
+      }
     },
-  },
+    title: 'Trading',
+    account: 'Account',
+    balance: 'Balance',
+    equity: 'Equity',
+    margin: 'Margin',
+    freeMargin: 'Free Margin',
+    marginLevel: 'Margin Level',
+    noAccount: 'No account selected',
+    placeOrder: 'Place Order',
+    symbol: 'Symbol',
+    type: 'Type',
+    volume: 'Volume',
+    price: 'Price',
+    stopLoss: 'Stop Loss',
+    takeProfit: 'Take Profit',
+    side: 'Side',
+    buy: 'Buy',
+    sell: 'Sell',
+    market: 'Market',
+    limit: 'Limit',
+    stop: 'Stop',
+    positions: 'Positions',
+    noPositions: 'No open positions',
+    closePosition: 'Close',
+    closePositionConfirm: 'Close this position?',
+    openTime: 'Open Time',
+    orderHistory: 'Order History',
+    noOrders: 'No orders yet'
+  }
 } as const;
 
 export default trading;

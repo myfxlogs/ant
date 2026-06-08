@@ -1,12 +1,12 @@
 const base = {
   app: {
-    name: 'AntTrader',
+    name: 'AntTrader'
   },
   auth: {
     fields: {
       email: 'Email',
       password: 'Mật khẩu',
-      confirmPassword: 'Xác nhận mật khẩu',
+      confirmPassword: 'Xác nhận mật khẩu'
     },
     messages: {
       loginSuccess: 'Đăng nhập thành công',
@@ -14,7 +14,7 @@ const base = {
       registerSuccess: 'Đăng ký thành công. Vui lòng đăng nhập.',
       registerFailed: 'Đăng ký thất bại. Vui lòng thử lại sau.',
       logoutSuccess: 'Đã đăng xuất',
-      fetchMeFailed: 'Không thể tải thông tin người dùng',
+      fetchMeFailed: 'Không thể tải thông tin người dùng'
     },
     validation: {
       emailRequired: 'Vui lòng nhập email',
@@ -22,7 +22,7 @@ const base = {
       passwordRequired: 'Vui lòng nhập mật khẩu',
       passwordMin8: 'Mật khẩu phải có ít nhất 8 ký tự',
       confirmPasswordRequired: 'Vui lòng xác nhận mật khẩu',
-      passwordMismatch: 'Mật khẩu không khớp',
+      passwordMismatch: 'Mật khẩu không khớp'
     },
     login: {
       subtitle: 'Đây là bản thử nghiệm và không chịu trách nhiệm',
@@ -35,7 +35,7 @@ const base = {
       agreePrefix: 'Bằng việc đăng nhập, bạn đồng ý với',
       terms: 'Điều khoản dịch vụ',
       and: 'và',
-      privacy: 'Chính sách quyền riêng tư',
+      privacy: 'Chính sách quyền riêng tư'
     },
     register: {
       subtitle: 'Tạo tài khoản mới',
@@ -46,8 +46,8 @@ const base = {
       agreePrefix: 'Bằng việc đăng ký, bạn đồng ý với',
       terms: 'Điều khoản dịch vụ',
       and: 'và',
-      privacy: 'Chính sách quyền riêng tư',
-    },
+      privacy: 'Chính sách quyền riêng tư'
+    }
   },
   common: {
     refresh: 'Làm mới',
@@ -91,15 +91,17 @@ const base = {
       minute: 'phút',
       hour: 'giờ',
       day: 'ngày',
-      lessThanMinute: '< 1 phút',
+      lessThanMinute: '< 1 phút'
     },
+    required: 'Required',
+    noData: 'No data'
   },
   language: {
     simplifiedChinese: '简体中文',
     traditionalChinese: '繁體中文',
     english: 'English',
     japanese: '日本語',
-    vietnamese: 'Tiếng Việt',
+    vietnamese: 'Tiếng Việt'
   },
   menu: {
     strategyWorkspace: 'Không gian chiến lược',
@@ -117,6 +119,7 @@ const base = {
     schedules: 'Lịch chạy chiến lược',
     indicatorCatalog: 'Danh mục chỉ báo',
     logs: 'Nhật ký hệ thống',
+    assetAnalysis: 'AI Analysis'
   },
   market: {
     searchPlaceholder: 'Tìm kiếm mã (VD: EURUSD, XAUUSD)',
@@ -127,7 +130,7 @@ const base = {
     bid: 'Giá mua',
     ask: 'Giá bán',
     spread: 'Chênh lệch',
-    mid: 'Giá trung bình',
+    mid: 'Giá trung bình'
   },
   topbar: {
     systemOk: 'Hệ thống đang hoạt động bình thường',
@@ -135,7 +138,7 @@ const base = {
     settings: 'Cài đặt',
     switchToAdmin: 'Chuyển sang quản trị',
     logout: 'Đăng xuất',
-    user: 'Người dùng',
+    user: 'Người dùng'
   },
   profile: {
     title: 'Hồ sơ',
@@ -143,7 +146,7 @@ const base = {
     role: 'Vai trò',
     status: 'Trạng thái',
     lastLogin: 'Đăng nhập cuối',
-    registered: 'Đã đăng ký',
+    registered: 'Đã đăng ký'
   },
   notifications: {
     title: 'Thông báo',
@@ -153,17 +156,41 @@ const base = {
       signal: 'Tín hiệu',
       risk_alert: 'Rủi ro',
       strategy_execution: 'Chiến lược',
-      system: 'Hệ thống',
+      system: 'Hệ thống'
     },
     tabs: {
       all: 'Tất cả ({{count}})',
-      unread: 'Chưa đọc ({{count}})',
+      unread: 'Chưa đọc ({{count}})'
     },
     actions: {
       markAllAsRead: 'Đánh dấu đã đọc',
       clearAll: 'Xóa',
-      clearAllConfirm: 'Xóa tất cả thông báo?',
+      clearAllConfirm: 'Xóa tất cả thông báo?'
     },
+    all: 'All',
+    unread: 'Unread',
+    markAllRead: 'Mark all as read',
+    clearAll: 'Clear all',
+    confirmClearAll: 'Clear all notifications?',
+    stream: {
+      strategyExecution: {
+        title: 'Strategy Execution',
+        completed: '{{symbol}} {{action}} completed',
+        failed: 'Execution failed: {{error}}'
+      },
+      riskAlert: {
+        title: 'Risk Alert',
+        fallback: 'Alert type: {{alertType}}'
+      },
+      strategySignal: {
+        title: 'Strategy Signal',
+        message: '{{symbol}} triggered {{signalType}}'
+      },
+      autoTrading: {
+        title: 'Auto Trading',
+        fallback: 'Auto trading event triggered'
+      }
+    }
   },
   errors: {
     not_authenticated: 'Chưa đăng nhập',
@@ -179,7 +206,7 @@ const base = {
     auto_trading_disabled: 'Đã tắt giao dịch tự động',
     connection_failed: {
       title: 'Kết nối thất bại',
-      content: 'Không thể kết nối đến dịch vụ backend. Vui lòng kiểm tra máy chủ đã chạy hay chưa.',
+      content: 'Không thể kết nối đến dịch vụ backend. Vui lòng kiểm tra máy chủ đã chạy hay chưa.'
     },
     ai: {
       not_configured: 'AI chưa được cấu hình. Vui lòng bật và cấu hình trong AI Settings trước.',
@@ -198,10 +225,9 @@ const base = {
       request_failed: 'Yêu cầu API thất bại',
       probe_ok: 'OK',
       probe_ok_no_models: 'OK (không trả về models)',
-      free_tier_exhausted:
-        'Đã hết hạn mức miễn phí của AI. Vui lòng tắt “use free tier only” trong trang quản trị nhà cung cấp hoặc chuyển sang khóa trả phí.',
+      free_tier_exhausted: 'Đã hết hạn mức miễn phí của AI. Vui lòng tắt “use free tier only” trong trang quản trị nhà cung cấp hoặc chuyển sang khóa trả phí.',
       rate_limited: 'AI bị giới hạn tốc độ hoặc hết hạn mức (429/resource exhausted). Vui lòng thử lại sau.',
-      forbidden_quota: 'AI thiếu hạn mức/quyền truy cập (403). Vui lòng kiểm tra hạn mức của API key hoặc trạng thái thanh toán.',
+      forbidden_quota: 'AI thiếu hạn mức/quyền truy cập (403). Vui lòng kiểm tra hạn mức của API key hoặc trạng thái thanh toán.'
     },
     wizard: {
       title: 'Trình hướng dẫn chiến lược AI',
@@ -212,30 +238,30 @@ const base = {
         generate: 'Tạo chiến lược',
         publishCode: 'Triển khai - Mã',
         publishBacktest: 'Triển khai - Backtest',
-        publishLaunch: 'Triển khai - Khởi chạy',
+        publishLaunch: 'Triển khai - Khởi chạy'
       },
       actions: {
         prev: 'Trước',
         next: 'Tiếp',
-        cancel: 'Hủy',
+        cancel: 'Hủy'
       },
       agents: {
         styleTitle: 'Trạng thái thị trường / phong cách',
         signalsTitle: 'Tín hiệu & chỉ báo',
         riskTitle: 'Rủi ro & ràng buộc thực thi',
-        codeTitle: 'Sinh mã',
+        codeTitle: 'Sinh mã'
       },
       template: {
         defaultName: 'Chiến lược AI {{title}}',
-        defaultDescription: 'Tạo bởi trình hướng dẫn AI',
+        defaultDescription: 'Tạo bởi trình hướng dẫn AI'
       },
       schedule: {
-        defaultName: 'Lịch AI {{symbol}} {{timeframe}}',
+        defaultName: 'Lịch AI {{symbol}} {{timeframe}}'
       },
       prompts: {
         dataSpec: {
           dataset: 'Sử dụng dataset đã đóng băng datasetId={{datasetId}}',
-          klineRange: 'Sử dụng phạm vi nến lịch sử from={{from}} to={{to}}',
+          klineRange: 'Sử dụng phạm vi nến lịch sử from={{from}} to={{to}}'
         },
         base: {
           account: 'Tài khoản: {{accountId}}',
@@ -243,29 +269,35 @@ const base = {
           timeframe: 'Khung thời gian: {{timeframe}}',
           data: 'Dữ liệu: {{dataSpec}}',
           constraints: 'Ràng buộc: max drawdown={{maxDrawdownPct}}% rủi ro/lệnh={{riskPerTradePct}}% tối đa lệnh/ngày={{maxTradesPerDay}}',
-          params: 'Tham số (định nghĩa + giá trị hiện tại; có trong context["params"] khi chạy):\n{{params}}',
+          params: 'Tham số (định nghĩa + giá trị hiện tại; có trong context["params"] khi chạy):
+{{params}}',
           empty: '(trống)',
-          macroEnabled: 'Sự kiện vĩ mô (người dùng cung cấp):\n{{text}}',
+          macroEnabled: 'Sự kiện vĩ mô (người dùng cung cấp):
+{{text}}',
           macroDisabled: 'Sự kiện vĩ mô: không dùng',
-          userIntent: 'Mục tiêu (ngôn ngữ tự nhiên):\n{{intent}}',
+          userIntent: 'Mục tiêu (ngôn ngữ tự nhiên):
+{{intent}}'
         },
         upstream: {
-          style: '[Kết luận trạng thái thị trường / phong cách]\n{{text}}',
-          signals: '[Kết luận tín hiệu & chỉ báo]\n{{text}}',
-          risk: '[Kết luận rủi ro & ràng buộc]\n{{text}}',
-          sectionTitle: '[Kết luận agent phía trên (nguyên văn)]',
+          style: '[Kết luận trạng thái thị trường / phong cách]
+{{text}}',
+          signals: '[Kết luận tín hiệu & chỉ báo]
+{{text}}',
+          risk: '[Kết luận rủi ro & ràng buộc]
+{{text}}',
+          sectionTitle: '[Kết luận agent phía trên (nguyên văn)]'
         },
         summary: {
-          intro:
-            'Bạn là trợ lý giải thích chiến lược định lượng. Hãy giải thích ý tưởng cốt lõi của đoạn mã chiến lược AntTrader Python dưới đây bằng các gạch đầu dòng ngắn gọn (tối đa 12 dòng) để giúp người dùng đánh giá có đúng kỳ vọng hay không.',
+          intro: 'Bạn là trợ lý giải thích chiến lược định lượng. Hãy giải thích ý tưởng cốt lõi của đoạn mã chiến lược AntTrader Python dưới đây bằng các gạch đầu dòng ngắn gọn (tối đa 12 dòng) để giúp người dùng đánh giá có đúng kỳ vọng hay không.',
           mustIncludeTitle: 'Bắt buộc gồm:',
           mustInclude1: '1) Loại/kiểu chiến lược (trend/mean-reversion/breakout/momentum/grid... nếu không chắc hãy ghi “Không rõ”)',
           mustInclude2: '2) Điều kiện vào lệnh chính (2-4 ý)',
           mustInclude3: '3) Điều kiện thoát/SL/TP/ràng buộc rủi ro chính (2-4 ý)',
           mustInclude4: '4) 1 bối cảnh phù hợp và 1 bối cảnh không phù hợp',
-          userIntent: 'Kỳ vọng người dùng (ngôn ngữ tự nhiên):\n{{intent}}',
-          codeTitle: 'Mã:',
-        },
+          userIntent: 'Kỳ vọng người dùng (ngôn ngữ tự nhiên):
+{{intent}}',
+          codeTitle: 'Mã:'
+        }
       },
       messages: {
         generateCodeFirst: 'Vui lòng tạo mã chiến lược trước',
@@ -286,7 +318,7 @@ const base = {
         inputIntentFirst: 'Vui lòng nhập mục tiêu/ý tưởng chiến lược trước',
         aiRequestTimeout: 'Hết thời gian yêu cầu AI (> {{seconds}}s)',
         modelReturnedEmpty: 'Mô hình trả về rỗng',
-        noPythonCodeBlock: 'Agent code không xuất ```python code block```. Vui lòng kiểm tra kết quả',
+        noPythonCodeBlock: 'Agent code không xuất \`\`\`python code block\`\`\`. Vui lòng kiểm tra kết quả',
         agentFailed: '{{title}} thất bại',
         userAborted: 'Người dùng đã hủy',
         chatAborted: 'Đã hủy trò chuyện với mô hình',
@@ -307,11 +339,270 @@ const base = {
         scheduleCreatedAndEnabled: 'Đã tạo và bật lịch',
         scheduleCreated: 'Đã tạo lịch',
         createScheduleFailed: 'Không thể tạo lịch',
-        scheduleAlreadyExists: 'Đã tồn tại lịch với cùng template+mã+khung thời gian cho tài khoản này. Vui lòng không tạo trùng.',
-      },
+        scheduleAlreadyExists: 'Đã tồn tại lịch với cùng template+mã+khung thời gian cho tài khoản này. Vui lòng không tạo trùng.'
+      }
     },
-    translate_failed: 'Dịch thất bại',
+    translate_failed: 'Dịch thất bại'
   },
+  marketplace: {
+    title: 'Strategy Marketplace',
+    subtitle: 'Discover, rate, and subscribe to community strategies',
+    publish: 'Publish Strategy',
+    tabs: {
+      marketplace: 'Marketplace',
+      subscriptions: 'My Subscriptions'
+    },
+    searchPlaceholder: 'Search strategies...',
+    filterByClass: 'Filter by asset class',
+    sort: {
+      newest: 'Newest',
+      popular: 'Most Popular',
+      performance: 'Best Performance'
+    },
+    empty: 'No strategies published yet',
+    noSubscriptions: 'No subscriptions yet',
+    card: {
+      subscribe: 'Subscribe',
+      subscribed: 'Subscribed',
+      unsubscribe: 'Unsubscribe',
+      unsubscribeHint: 'Click to unsubscribe',
+      details: 'Details',
+      subscribers: 'Subscribers',
+      winRate: 'Win Rate',
+      by: 'by'
+    },
+    assetClass: {
+      forex: 'Forex',
+      crypto: 'Crypto',
+      commodity: 'Commodity',
+      index: 'Index',
+      stock: 'Stock',
+      other: 'Other'
+    },
+    risk: {
+      low: 'Low Risk',
+      medium: 'Medium Risk',
+      high: 'High Risk'
+    },
+    messages: {
+      loginFirst: 'Please log in first',
+      subscribed: 'Subscribed successfully',
+      subscribeFailed: 'Subscribe failed',
+      unsubscribed: 'Unsubscribed',
+      unsubscribeFailed: 'Unsubscribe failed',
+      rated: 'Rating submitted',
+      rateFailed: 'Rating failed',
+      commentPosted: 'Comment posted',
+      commentFailed: 'Comment failed'
+    },
+    detail: {
+      comments: 'Comments',
+      noComments: 'No comments yet. Be the first!',
+      commentPlaceholder: 'Write a comment... (Shift+Enter for new line)'
+    }
+  },
+  admin: {
+    sidebar: {
+      dashboard: 'Dashboard',
+      userManagement: 'User Management',
+      accountManagement: 'Account Management',
+      tradingMonitor: 'Trading Monitor',
+      operationLogs: 'Operation Logs',
+      systemConfig: 'System Config',
+      jurisdiction: 'Jurisdiction Gate'
+    },
+    header: {
+      adminMode: 'Admin Mode',
+      adminPanel: 'Admin Panel',
+      backToUser: 'Back to User',
+      logout: 'Logout',
+      admin: 'Admin'
+    },
+    config: {
+      title: 'System Configuration',
+      editConfig: 'Edit Config: {{key}}',
+      configItem: 'Config Item',
+      value: 'Value',
+      description: 'Description',
+      status: 'Status',
+      toggle: 'Toggle',
+      updatedAt: 'Updated At',
+      on: 'On',
+      off: 'Off',
+      maxAccountsPerUser: 'Max Accounts Per User',
+      aiProviderCatalog: 'AI Model Provider Catalog',
+      econAIConfig: 'Economic Calendar Translation AI Config',
+      strategyHealthConfig: 'Strategy Health Grading Config',
+      provider: 'Provider',
+      modelName: 'Model Name',
+      enableToggle: 'Enable',
+      baseUrlLabel: 'Base URL (optional, custom/OpenAI compatible only)',
+      formatJson: 'Format JSON',
+      fillTemplate: 'Fill Example',
+      thresholdInfo: 'Threshold Field Description',
+      thresholdDesc: 'green_success_rate: green success rate threshold; green_max_failed_runs: max failed runs for green; yellow_success_rate: yellow success rate threshold; min_sample_size: minimum sample size.',
+      validation: {
+        jsonEmpty: 'JSON cannot be empty',
+        jsonInvalid: 'Invalid JSON format',
+        greenSuccessRateRange: 'green_success_rate must be between 0 and 100',
+        yellowSuccessRateRange: 'yellow_success_rate must be between 0 and 100',
+        yellowNotGreaterThanGreen: 'yellow_success_rate cannot be greater than green_success_rate',
+        greenMaxFailedRunsNonNegative: 'green_max_failed_runs must be >= 0',
+        minSampleSizeNonNegative: 'min_sample_size must be >= 0',
+        apiKeyRequired: 'API Key cannot be empty',
+        modelRequired: 'Model name cannot be empty'
+      },
+      messages: {
+        loadFailed: 'Failed to load configs',
+        updated: 'Config updated',
+        updateFailed: 'Update failed',
+        enabled: 'Config enabled',
+        disabled: 'Config disabled',
+        operationFailed: 'Operation failed'
+      },
+      placeholders: {
+        json: 'Enter JSON',
+        apiKey: 'Enter API Key',
+        model: 'e.g. glm-4-flash / deepseek-chat / gpt-4o-mini',
+        baseUrl: 'e.g. https://api.openai.com or self-hosted gateway',
+        configValue: 'Enter config value',
+        description: 'Enter description'
+      },
+      providerOptions: {
+        zhipu: 'Zhipu',
+        deepseek: 'DeepSeek',
+        custom: 'Custom / OpenAI Compatible'
+      }
+    },
+    trading: {
+      title: 'Trading Monitor',
+      loadFailed: 'Failed to load trading statistics',
+      platform: 'Platform',
+      accounts: 'Accounts',
+      orders: 'Orders',
+      volume: 'Volume',
+      byPlatform: 'By Platform',
+      profitStats: 'P&L Statistics',
+      totalUsers: 'Total Users',
+      activeUsers: 'Active Users',
+      totalAccounts: 'Total Accounts',
+      connectedAccounts: 'Connected Accounts',
+      totalOrders: 'Total Orders',
+      closedOrders: 'Closed Orders',
+      totalVolume: 'Total Volume',
+      netProfit: 'Net P&L',
+      totalProfit: 'Total Profit',
+      totalLoss: 'Total Loss',
+      pendingOrders: 'Pending Orders'
+    },
+    dashboard: {
+      title: 'Admin Dashboard',
+      loadFailed: 'Failed to load dashboard data',
+      totalUsers: 'Total Users',
+      activeUsers: 'Active Users',
+      mtAccounts: 'MT Accounts',
+      onlineAccounts: 'Online Accounts',
+      todayTrades: 'Today Trades',
+      todayProfit: 'Today P&L',
+      recentLogs: 'Recent Operation Logs',
+      logs: {
+        time: 'Time',
+        module: 'Module',
+        actionType: 'Action Type',
+        target: 'Target',
+        status: 'Status',
+        success: 'Success',
+        failed: 'Failed',
+        moduleMap: {
+          userManagement: 'User Management',
+          accountManagement: 'Account Management',
+          trading: 'Trading',
+          systemConfig: 'System Config'
+        }
+      },
+      riskMetrics: {
+        title: 'Risk Control Metrics (Real-time)',
+        riskValidateTotal: 'Risk Validated Total',
+        riskValidatePass: 'Risk Validated Pass',
+        riskValidateReject: 'Risk Validated Reject',
+        riskValidateError: 'Risk Validated Error',
+        orderSendSuccess: 'Order Sent Success',
+        orderSendFailed: 'Order Sent Failed',
+        orderCloseSuccess: 'Order Closed Success',
+        orderCloseFailed: 'Order Closed Failed'
+      },
+      riskWindow: {
+        title: 'Risk Control Window Metrics (1h / 24h / 72h)',
+        validateTotal: '{{window}} Validated Total',
+        validatePass: '{{window}} Pass',
+        validateReject: '{{window}} Reject',
+        validateError: '{{window}} Error',
+        orderSendSuccess: '{{window}} Order Sent',
+        orderSendFailed: '{{window}} Order Failed',
+        orderCloseSuccess: '{{window}} Close Success',
+        orderCloseFailed: '{{window}} Close Failed',
+        rejectRiskCodesHeader: 'Top N Reject Risk Codes ({{window}})',
+        rejectCount: 'Reject Count',
+        noRejectData: 'No reject data for current window',
+        noData: 'No window metrics data'
+      }
+    },
+    jurisdiction: {
+      title: 'Jurisdiction Gate',
+      sanctionedCountriesTab: 'Sanctioned Countries',
+      kycStatusTab: 'User KYC Status',
+      sanctionedCountries: 'Sanctioned Countries',
+      userKYCStatus: 'User KYC Status',
+      addCountry: 'Add Country',
+      addSanctionedCountry: 'Add Sanctioned Country',
+      countryCode: 'Country Code',
+      countryLabel: 'Label',
+      addedBy: 'Added By',
+      actions: 'Actions',
+      userEmail: 'Email',
+      kycStatus: 'KYC Status',
+      country: 'Country',
+      sanctioned: 'Sanctioned',
+      disclaimer: 'Disclaimer',
+      questionnaire: 'Questionnaire',
+      override: 'Override',
+      setKYC: 'Set KYC',
+      setKYCStatus: 'Set KYC Status',
+      grantOverride: 'Grant Override',
+      revokeOverride: 'Revoke Override',
+      filterByKYCStatus: 'Filter by KYC status',
+      unverified: 'Unverified',
+      pending: 'Pending',
+      verified: 'Verified',
+      rejected: 'Rejected',
+      emptySanctions: 'No sanctioned countries configured',
+      emptyKYC: 'No users match the selected KYC filter',
+      messages: {
+        countryAdded: 'Sanctioned country added',
+        countryAddFailed: 'Failed to add sanctioned country',
+        countryRemoved: 'Sanctioned country removed',
+        countryRemoveFailed: 'Failed to remove sanctioned country',
+        kycUpdated: 'KYC status updated',
+        kycUpdateFailed: 'Failed to update KYC status',
+        overrideUpdated: 'Sanctioned override updated',
+        overrideUpdateFailed: 'Failed to update sanctioned override'
+      }
+    }
+  },
+  symbolDetection: {
+    label: 'Detected Symbols',
+    loading: 'Parsing…',
+    noSymbols: 'No trading symbols detected. Try including specific symbol names (e.g. "Bitcoin", "EURUSD", "Gold").',
+    unresolvedTooltip: 'No trading account bound yet, unable to resolve',
+    resolvedTooltip: 'broker: {{broker}} | mode: {{mode}}',
+    tradeMode: {
+      disabled: 'Disabled',
+      longOnly: 'Long Only',
+      shortOnly: 'Short Only',
+      longShort: 'Both Long & Short',
+      unknown: 'Unknown({{mode}})'
+    }
+  }
 } as const;
 
 export default base;

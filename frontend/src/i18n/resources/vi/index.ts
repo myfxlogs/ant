@@ -3,28 +3,28 @@ import trading from './trading';
 import dashboard from './dashboard';
 import accounts from './accounts';
 import aiCore from './ai';
+import aiWizard from './ai_wizard';
 import aiSettings from './ai_settings';
 import aiStore from './ai_store';
 import analytics from './analytics';
 import logs from './logs';
 import strategy from './strategy';
 import errors from './errors';
-import zhCN from '../zh-cn/index';
 import { mergeResources } from '../merge';
 
 const vi = mergeResources(
   base,
-  trading,
   dashboard,
+  trading,
   accounts,
   aiCore,
+  aiWizard,
   aiSettings,
   aiStore,
   analytics,
   logs,
   strategy,
   errors,
-  { admin: zhCN.admin },
 ) as const;
 
 export default vi;

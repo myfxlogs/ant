@@ -11,27 +11,27 @@ const accounts = {
         broker: '经纪商',
         balance: '余额',
         equity: '净值',
-        actions: '操作',
+        actions: '操作'
       },
       confirmDelete: {
         title: '确定删除此账户？',
-        content: '删除后无法恢复',
+        content: '删除后无法恢复'
       },
       mobile: {
         balanceLabel: '余额: ',
-        equityLabel: '净值: ',
-      },
+        equityLabel: '净值: '
+      }
     },
     empty: {
       title: '暂无绑定账户',
-      subtitle: '点击下方按钮绑定您的 MT4/MT5 交易账户',
+      subtitle: '点击下方按钮绑定您的 MT4/MT5 交易账户'
     },
     legend: {
       title: '图例:',
       connected: '已连接',
       connecting: '连接中',
       disconnectedOrError: '已断开/错误',
-      disabled: '已停用',
+      disabled: '已停用'
     },
     messages: {
       disabledSuccess: '账户停用成功',
@@ -46,7 +46,7 @@ const accounts = {
       disconnectFailed: '断开连接失败',
       disableFailed: '停用账户失败',
       deleted: '账户已删除',
-      deleteFailed: '删除失败',
+      deleteFailed: '删除失败'
     },
     tradeTabs: {
       positionsWithCount: '持仓订单 ({{count}})',
@@ -68,11 +68,11 @@ const accounts = {
         profit: '盈亏',
         openTime: '开仓时间',
         pendingTime: '挂单时间',
-        closeTime: '平仓时间',
+        closeTime: '平仓时间'
       },
       pagination: {
-        total: '共 {{total}} 条',
-      },
+        total: '共 {{total}} 条'
+      }
     },
     analytics: {
       monthlyAnalysis: {
@@ -81,7 +81,7 @@ const accounts = {
           change: '变化',
           profit: '利润',
           lots: '手数',
-          pips: '点',
+          pips: '点'
         },
         chartMainTitle: '每月收益（{{metric}}）',
         focusedValue: '{{period}} · {{metric}}：{{value}}',
@@ -93,38 +93,38 @@ const accounts = {
           legendShortTerm: '卖出侧',
           sliceOther: '其他',
           emptyCharts: '该月无成交',
-          popularityShare: '手数占比',
-        },
+          popularityShare: '手数占比'
+        }
       },
       chartType: {
         equity: '净值',
         balance: '余额',
-        profit: '利润',
+        profit: '利润'
       },
       summary: {
         title: '分析',
         placeholders: {
-          selectAccount: '选择账户',
+          selectAccount: '选择账户'
         },
         periods: {
           today: '今日',
           week: '本周',
           month: '本月',
           year: '本年',
-          all: '全部',
+          all: '全部'
         },
         sections: {
           equityCurve: '资金曲线',
-          monthlyStats: '月度统计',
+          monthlyStats: '月度统计'
         },
         labels: {
-          pnl: '盈亏',
+          pnl: '盈亏'
         },
         metrics: {
           netProfit: '总盈亏',
           equity: '当前持仓',
           balance: '余额',
-          equityValue: '净值',
+          equityValue: '净值'
         },
         cards: {
           symbolPnlCompare: '品种盈亏对比',
@@ -132,7 +132,7 @@ const accounts = {
           directionShare: '买卖方向占比',
           pnlShare: '盈亏占比',
           tradeStats: '交易统计',
-          riskMetrics: '风险指标',
+          riskMetrics: '风险指标'
         },
         tradeStats: {
           totalTrades: '总交易',
@@ -146,43 +146,44 @@ const accounts = {
           maxHolding: '最长持仓',
           avgVolume: '平均手数',
           avgProfit: '平均盈利',
-          avgLoss: '平均亏损',
+          avgLoss: '平均亏损'
         },
         risk: {
           maxDrawdown: '最大回撤',
           maxDrawdownPct: '回撤比例',
           sharpe: '夏普比率',
           sortino: '索提诺比率',
-          volatility: '波动率',
+          volatility: '波动率'
         },
         direction: {
           buy: '买入',
-          sell: '卖出',
+          sell: '卖出'
         },
         profit: {
           win: '盈利',
-          loss: '亏损',
+          loss: '亏损'
         },
-        yearOption: '{{year}}年',
+        yearOption: '{{year}}年'
       },
       chartPeriod: {
         day: '今日',
         week: '本周',
         month: '本月',
         all: '全部',
+        year: 'This year'
       },
       chartSeries: {
         equity: '净值',
         balance: '余额',
         profit: '盈亏',
-        tradeCount: '交易数',
+        tradeCount: '交易数'
       },
       empty: {
         equityCurve: '暂无净值曲线数据',
         monthlyProfit: '暂无月度盈亏数据',
         symbolDistribution: '暂无品种数据',
         dailyPnL: '暂无每日盈亏数据',
-        hourly: '暂无时段分析数据',
+        hourly: '暂无时段分析数据'
       },
       monthlyProfitTitle: '月度盈亏',
       advancedStatsTitle: '高级统计',
@@ -191,7 +192,7 @@ const accounts = {
       hourlyTitle: '⏰ 时段分析',
       advancedTabs: {
         hourly: '按小时',
-        daily: '按天',
+        daily: '按天'
       },
       timeDetail: {
         lots: '手数',
@@ -202,7 +203,7 @@ const accounts = {
         maxFloatingLossAmount: '最大浮亏金额',
         maxFloatingLossRatio: '最大浮亏比例',
         maxFloatingProfitAmount: '最大浮盈金额',
-        maxFloatingProfitRatio: '最大浮盈比例',
+        maxFloatingProfitRatio: '最大浮盈比例'
       },
       stats: {
         winRate: '胜率',
@@ -223,22 +224,22 @@ const accounts = {
         netProfit: '净利润',
         totalDeposit: '入金',
         totalWithdrawal: '出金',
-        netDeposit: '净入金',
-      },
+        netDeposit: '净入金'
+      }
     },
     bind: {
       title: '绑定 MT 账户',
       step1: {
         title: '选择平台和经纪商',
-        subtitle: '选择您的交易平台并搜索经纪商',
+        subtitle: '选择您的交易平台并搜索经纪商'
       },
       step2: {
         title: '输入账户信息',
-        subtitle: '输入您的交易账号和密码',
+        subtitle: '输入您的交易账号和密码'
       },
       step3: {
         title: '验证并确认',
-        subtitle: '验证账户凭据，确认后完成绑定',
+        subtitle: '验证账户凭据，确认后完成绑定'
       },
       fields: {
         platform: '交易平台',
@@ -246,23 +247,23 @@ const accounts = {
         company: '选择公司',
         server: '选择服务器',
         tradingAccount: '交易账号',
-        password: '密码',
+        password: '密码'
       },
       placeholders: {
         brokerName: '输入经纪商名称，如：XMGlobal、ICMarkets',
         company: '请选择经纪商公司',
         server: '请选择服务器',
         tradingAccount: '输入交易账号',
-        password: '输入密码',
+        password: '输入密码'
       },
       labels: {
-        serverCount: '{{count}} 个服务器',
+        serverCount: '{{count}} 个服务器'
       },
       actions: {
         search: '搜索',
         verifyAccount: '验证账户',
         confirmBind: '确认绑定',
-        retryVerify: '重新验证',
+        retryVerify: '重新验证'
       },
       passwordHint: '密码将通过 HTTPS 加密传输，后端使用 Argon2id 哈希存储不可回逆',
       summary: {
@@ -277,10 +278,10 @@ const accounts = {
         margin: '已用保证金',
         freeMargin: '可用保证金',
         leverage: '杠杆',
-        currency: '货币',
+        currency: '货币'
       },
       errorModal: {
-        title: '绑定失败',
+        title: '绑定失败'
       },
       messages: {
         enterBrokerName: '请输入经纪商名称',
@@ -293,14 +294,14 @@ const accounts = {
         enterPassword: '请输入密码',
         noAccessHosts: '无可用服务器地址',
         bindSuccess: '账户绑定成功',
-        bindFailed: '账户绑定失败',
+        bindFailed: '账户绑定失败'
       },
       errors: {
         brokerUnavailable: '连接服务器错误或者密码不正确',
         invalidCredentials: '账号或密码错误，未找到该交易账户',
         connectionFailed: '无法连接到经纪商服务器，请检查网络',
-        timeout: '连接超时，请稍后重试',
-      },
+        timeout: '连接超时，请稍后重试'
+      }
     },
     card: {
       status: {
@@ -308,67 +309,67 @@ const accounts = {
         connected: '已连接',
         connecting: '连接中',
         disconnected: '已断开',
-        error: '连接错误',
+        error: '连接错误'
       },
       fields: {
         balance: '余额',
         equity: '净值',
         broker: '经纪商',
-        server: '服务器',
+        server: '服务器'
       },
       actions: {
         positions: '持仓',
         orders: '订单',
-        details: '详情',
+        details: '详情'
       },
       deleteConfirm: {
         title: '确定删除此账户？',
-        content: '删除后无法恢复',
-      },
+        content: '删除后无法恢复'
+      }
     },
     edit: {
       title: '编辑账户',
       fields: {
         tradingAccount: '交易账号',
         server: '服务器',
-        password: '密码',
+        password: '密码'
       },
       placeholders: {
-        newPassword: '输入新密码',
+        newPassword: '输入新密码'
       },
       actions: {
-        verifyPassword: '验证密码',
+        verifyPassword: '验证密码'
       },
       messages: {
         enterPassword: '请输入密码',
         passwordVerified: '密码验证成功！',
         passwordVerifyFailed: '密码验证失败',
         verifyFirst: '请先验证密码',
-        passwordSaved: '密码已保存',
-      },
+        passwordSaved: '密码已保存'
+      }
     },
     detail: {
       messages: {
         fetchAccountFailed: '获取账户信息失败，请稍后重试',
         syncHistorySuccess: '同步历史订单成功',
-        syncHistoryFailed: '同步历史订单失败，请确保账户已连接到 MT 服务器',
+        syncHistoryFailed: '同步历史订单失败，请确保账户已连接到 MT 服务器'
       },
       orderTypes: {
         buyLimit: '买入限价',
         sellLimit: '卖出限价',
         buyStop: '买入止损',
-        sellStop: '卖出止损',
+        sellStop: '卖出止损'
       },
       balanceRecord: {
         deposit: '入金',
         withdraw: '出金',
         depositIconText: '💰 入金',
-        withdrawIconText: '💸 出金',
+        withdrawIconText: '💸 出金'
       },
       syncHistory: {
         title: '同步历史订单',
         content: '确定要从MT服务器同步过去一年的历史订单吗？这可能需要一些时间。',
-        ok: '确定同步',
+        ok: '确定同步'
       },
       actions: {
         enableAccount: '启用账户',
@@ -378,22 +379,22 @@ const accounts = {
         deleteWarning: '此操作不可撤销。账户所有数据（交易记录、分析数据等）将被永久删除。',
         deletePasswordHint: '请输入该账户的 MT 交易密码或只读密码进行验证：',
         deletePasswordPlaceholder: 'MT 交易密码 / 只读密码',
-        syncHistory: '同步历史',
+        syncHistory: '同步历史'
       },
       status: {
         disabled: '已停用',
         connected: '已连接',
         connecting: '连接中',
         disconnected: '已断开',
-        error: '连接错误',
+        error: '连接错误'
       },
       accountType: {
         real: '真实',
-        demo: '模拟',
+        demo: '模拟'
       },
       mode: {
         investor: '投资者模式',
-        trader: '交易者模式',
+        trader: '交易者模式'
       },
       leverage: '杠杆 {{leverage}}x',
       cards: {
@@ -403,10 +404,10 @@ const accounts = {
         marginUsed: '已用保证金',
         marginFree: '可用保证金',
         marginLevel: '保证金比例',
-        credit: '信用额度',
-      },
-    },
-  },
+        credit: '信用额度'
+      }
+    }
+  }
 } as const;
 
 export default accounts;

@@ -31,7 +31,20 @@ const logs = {
     success: '成功',
     failed: '失敗',
     exampleSymbolPlaceholder: '例如: XAUUSD',
-  },
+    result: 'Result',
+    riskCode: 'Risk Code',
+    requestId: 'Request ID',
+    triggerSource: 'Trigger Source',
+    riskLogQuickFilter: 'Risk Log Quick Filter',
+    loadFailed: 'Failed to load logs',
+    orderTable: {
+      ticket: 'Ticket',
+      type: 'Type',
+      lots: 'Lots',
+      open: 'Open',
+      close: 'Close'
+    }
+  }
 } as const;
 
 export default logs;
