@@ -147,6 +147,10 @@ async def validate_strategy_connect(request: Request):
         sweep_dims = _extract_sweep_dimensions(req.code or "")
         strategy_dirs = _extract_strategy_directives(req.code or "")
 
+        # Auto-detect strategy type from code.
+        from app.engine.vectorized_runner import detect_strategy_type
+        strategy_type = detect_strategy_type(req.code or "")
+
         resp = ValidateStrategyResponse(
             valid=result.valid,
             errors=list(result.errors),
@@ -154,6 +158,7 @@ async def validate_strategy_connect(request: Request):
             quality_hints=quality_hints,
             sweep_dimensions=sweep_dims,
             strategy_directives=strategy_dirs,
+            strategy_type=strategy_type,
         )
     except Exception as e:
         resp = ValidateStrategyResponse(valid=False, errors=[f"验证错误: {e}"])

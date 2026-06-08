@@ -794,6 +794,7 @@ const strategy = {
       },
       aiAssist: 'AI Assistant',
       ai: 'AI',
+      runtimeMode: 'Runtime',
       saveFailed: 'Save failed',
       autoFix: {
         fixing: 'Fixing...',
@@ -846,6 +847,9 @@ const strategy = {
       strictModeOffDesc: 'Same-bar-close + MTF 1m. Higher precision.',
       strictModeOnTooltip: 'ON: signals confirmed at bar close, executed next bar open',
       strictModeOffTooltip: 'OFF: same-bar close execution with 1m sub-resolution',
+      vectorizedMode: 'Vectorized',
+      eventDrivenMode: 'Run(context)',
+      runtimeMode: 'Runtime',
       history: 'Backtest History',
       run: '▶ Run',
       settingsSave: 'Save as My Defaults',

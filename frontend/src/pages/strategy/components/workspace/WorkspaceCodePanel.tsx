@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Button, Space, Tooltip, Select, message } from 'antd';
+import { Button, Space, Tooltip, Select, message, Segmented, Tag } from 'antd';
 import {
   CheckCircleOutlined, CopyOutlined,
   SaveOutlined, SettingOutlined, RobotOutlined,
@@ -181,6 +181,24 @@ export default function WorkspaceCodePanel({
               onClick={() => setSettingsOpen(true)}>
               {t('strategy.ai.checkSettings', { defaultValue: 'Check AI Settings →' })}
             </span>
+          </div>
+        )}
+
+        {/* Strategy runtime mode indicator */}
+        {validationResult?.strategyType && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '2px 0', marginBottom: 4,
+          }}>
+            <span style={{ fontSize: 10, color: '#8c8c8c' }}>
+              {t('strategy.workspace.runtimeMode', 'Runtime')}:
+            </span>
+            <Tag color={validationResult.strategyType === 'run_dataframe' ? 'green' : 'blue'}
+              style={{ fontSize: 10, margin: 0, lineHeight: '18px' }}>
+              {validationResult.strategyType === 'run_dataframe'
+                ? t('strategy.backtestParams.vectorizedMode', 'Vectorized')
+                : t('strategy.backtestParams.eventDrivenMode', 'Run(context)')}
+            </Tag>
           </div>
         )}
 

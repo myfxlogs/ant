@@ -65,6 +65,7 @@ export interface ValidateExtendedResult {
   qualityHints: CodeQualityHint[];
   sweepDimensions: BackendSweepDim[];
   strategyDirectives: { key: string; value: string }[];
+  strategyType: string;  // "run_dataframe" | "run_context"
 }
 
 const parseParamValue = (value: string, type?: RequiredParamSpec['type']) => {
@@ -165,6 +166,7 @@ export const codeAssistApi = {
         key: d.key,
         value: d.value,
       })),
+      strategyType: (data as Record<string, unknown>).strategyType as string || 'run_context',
       parameters: (data.parameters || []).map((p) => ({
         key: p.key,
         required: p.required,

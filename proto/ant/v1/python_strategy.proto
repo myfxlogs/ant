@@ -49,6 +49,9 @@ message ValidateStrategyResponse {
   repeated CodeQualityHint quality_hints = 4;
   repeated SweepDimension sweep_dimensions = 5;
   repeated StrategyDirective strategy_directives = 6;
+  // Auto-detected strategy type from code analysis.
+  // "run_context" = event-driven run(context) | "run_dataframe" = vectorized run_dataframe(df, params)
+  string strategy_type = 7;
 }
 
 // CodeQualityHint reports a single code quality issue found by static analysis.

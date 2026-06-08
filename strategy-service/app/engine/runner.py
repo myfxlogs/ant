@@ -30,6 +30,11 @@ from app.engine.metrics import build_metrics
 from app.engine.portfolio import Portfolio
 from app.engine.sandbox import StrategyRunner, code_sha256
 from app.engine.sandbox_base import BaseSandbox
+from app.engine.vectorized_runner import (
+    DataFrameStrategyRunner,
+    extract_signal_at,
+    detect_strategy_type,
+)
 from app.engine.types import (
     BacktestRequest,
     BacktestResult,
@@ -121,6 +126,20 @@ class BacktestRunner:
         self._margin = MarginModel(req.leverage, contract_size)
         self._sandbox = sandbox if sandbox is not None else StrategyRunner(req.strategy_code, timeout_ms=req.deadline_ms)
 
+        # Vectorized mode: if the strategy defines run_dataframe, pre-compute
+        # the signal DataFrame once before the main loop starts.
+        self._signal_df: Optional[Any] = None
+        if sandbox is None and detect_strategy_type(req.strategy_code) == "run_dataframe":
+            import pandas as pd
+            df_runner = DataFrameStrategyRunner(req.strategy_code, timeout_ms=req.deadline_ms)
+            ohlc_df = pd.DataFrame([
+                {"open": b.open, "high": b.high, "low": b.low, "close": b.close,
+                 "volume": b.tick_volume, "time": b.time}
+                for b in self._primary_bars
+            ])
+            self._signal_df = df_runner.call_dataframe(ohlc_df, req.strategy_params or {})
+            self._sandbox = None  # vectorized — no per-bar sandbox calls needed
+
         # Strategy runtime KV persisted across bars (for EA-like behaviours such as grid/martingale).
         self._runtime: dict = {}
 
@@ -209,7 +228,12 @@ class BacktestRunner:
 
                 # Inject persistent runtime state (mutable dict).
                 ctx["runtime"] = self._runtime
-                signal = self._sandbox.call(ctx)
+                if self._signal_df is not None:
+                    signal = extract_signal_at(
+                        self._signal_df, self._last_bar_idx, req.strategy_params
+                    )
+                else:
+                    signal = self._sandbox.call(ctx)
                 self._dispatch_signal(signal, tick)
                 self._equity_curve.append(self._portfolio.cash)
 

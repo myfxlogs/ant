@@ -843,6 +843,7 @@ const strategy = {
       },
       aiAssist: 'AI 助手',
       ai: 'AI',
+      runtimeMode: '运行时',
       saveFailed: '保存失败',
       autoFix: {
         fixing: '修复中...',
@@ -895,6 +896,9 @@ const strategy = {
       strictModeOffDesc: '同 K 线收盘价 + MTF 1m。更高精度。',
       strictModeOnTooltip: '开：信号在 K 线收盘确认，下一根 K 线开盘执行',
       strictModeOffTooltip: '关：同 K 线收盘执行，1m 子分辨率',
+      vectorizedMode: '矢量模式',
+      eventDrivenMode: 'Run(context)',
+      runtimeMode: '运行时',
       history: '回测历史',
       run: '▶ 运行',
       settingsSave: '保存为我的默认',
