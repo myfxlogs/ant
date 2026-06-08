@@ -137,7 +137,8 @@ func (s *StrategyGenServer) buildStrategyPrompt(ctx context.Context, userID uuid
 	pp := &ai.PromptParams{
 		Template: tmpl, Message: m.Message, Symbol: m.Symbol, Timeframe: m.Timeframe,
 		ParamMap: pm, History: s.loadHistory(ctx, userID, m.ConversationId),
-		Intent:  intent,
+		Intent:       intent,
+		StrategyType: intent.StrategyType,
 	}
 	return tmpl, builder.BuildSystemPrompt(pp), builder.BuildUserPrompt(pp)
 }

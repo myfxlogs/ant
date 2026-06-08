@@ -21,6 +21,7 @@ type IntentResult struct {
 	NeedsClarification bool              `json:"needs_clarification"`
 	Questions          []string          `json:"questions"`
 	StrategyFamily     string            `json:"strategy_family"`    // trend_following, mean_reversion, breakout, grid, martingale
+	StrategyType       string            `json:"strategy_type"`      // "run_dataframe" (vectorized/indicator) or "run_context" (event-driven) or ""
 	RiskLevel          string            `json:"risk_level"`         // low, medium, high
 	TradeDirection     string            `json:"trade_direction"`    // long, short, both
 	MaxDrawdown        string            `json:"max_drawdown"`       // e.g. "0.10", "0.30"
@@ -40,6 +41,7 @@ const intentAnalysisSystemPrompt = `你是量化策略需求分析专家。分�
   "needs_clarification": true/false,
   "questions": ["问题1", "问题2"],
   "strategy_family": "trend_following|mean_reversion|breakout|grid|martingale|unknown",
+  "strategy_type": "run_dataframe|run_context|",
   "risk_level": "low|medium|high|unknown",
   "trade_direction": "long|short|both|unknown",
   "max_drawdown": "容忍的最大回撤，如0.10表示10%。未提及则为空字符串",
@@ -50,6 +52,11 @@ const intentAnalysisSystemPrompt = `你是量化策略需求分析专家。分�
   "take_profit": "tight|medium|wide|none|unknown",
   "confidence": 0.0-1.0
 }
+
+## strategy_type 判断规则
+- "run_dataframe": 用户提到"指标"、"矢量"、"图表"、"画线"、"均线交叉"、"RSI"、"布林带"、"MACD"、"金叉死叉"、"指标策略"、"数据帧"、"df"等 → 矢量模式
+- "run_context": 用户提到"逐笔"、"逐K"、"事件驱动"、"持仓管理"、"移动止损"、"动态仓位"、"分批加仓"、"bot"、"网格"等 → 事件驱动模式
+- "": 无法判断或用户未提及，默认为空（系统会使用 run_context 作为默认值）
 
 ## 规则
 1. needs_clarification=true 当用户描述过于模糊（只说"做个策略"、"帮我赚钱"），此时 questions 必须包含1-3个具体的追问
