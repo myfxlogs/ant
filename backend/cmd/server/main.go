@@ -20,6 +20,7 @@ import (
 	"anttrader/internal/mdgateway/adapter"
 	"anttrader/internal/mdgateway/chmigrate"
 	"anttrader/internal/mthub"
+	notifpubsub "anttrader/internal/notification"
 	"anttrader/internal/notifier"
 	"anttrader/internal/repository"
 	"anttrader/internal/risksvc"
@@ -177,6 +178,7 @@ func main() {
 
 	var emailNotifier *notifier.EmailNotifier             // set after creation; referenced by OnAccountProfit closure
 	var platformAgg *risksvc.PlatformAggregator           // set after creation; referenced by OnOrderUpdate closure
+	var notifSender *notifpubsub.Sender                   // set after creation; referenced by CheckMarginCall closure
 	var workerCleanup func()                               // set after creation; calls worker.Stop() on shutdown
 
 	// M12-C2: multi-broker registry created early so both handler wiring
@@ -184,10 +186,10 @@ func main() {
 	brokerReg := adapter.NewBrokerRegistry()
 	mthubSvc.SetBrokerRegistry(brokerReg)
 
-	go startMdGatewayPipeline(pipelineCtx, log, pool, ch, nc, spillDir, secClient, hub, accountSvc, mthubSvc, accountSyncSvc, tradeRecordRepo, snapshotBroker, accountBroker, barBroker, eventStore, &emailNotifier, &platformAgg, &reconLoop, brokerReg)
+	go startMdGatewayPipeline(pipelineCtx, log, pool, ch, nc, spillDir, secClient, hub, accountSvc, mthubSvc, accountSyncSvc, tradeRecordRepo, snapshotBroker, accountBroker, barBroker, eventStore, &emailNotifier, &platformAgg, &notifSender, &reconLoop, brokerReg)
 
 	mux := http.NewServeMux()
-	reconLoop, emailNotifier, platformAgg, workerCleanup = registerHandlers(mux, log, pool, ch, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate, analyticsCache, brokerReg)
+	reconLoop, emailNotifier, platformAgg, notifSender, workerCleanup = registerHandlers(mux, log, pool, ch, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate, analyticsCache, brokerReg)
 
 
 	// Graceful shutdown

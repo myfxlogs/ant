@@ -64,7 +64,7 @@ func registerHandlers(
 	reconcileGate *mthub.ReconcileGate,
 	analyticsCache *service.AnalyticsCache,
 	brokerReg *adapter.BrokerRegistry,
-) (*mthub.ReconciliationLoop, *notifier.EmailNotifier, *risksvc.PlatformAggregator, func()) {
+) (*mthub.ReconciliationLoop, *notifier.EmailNotifier, *risksvc.PlatformAggregator, *notifpubsub.Sender, func()) {
 
 	// ConnectRPC handlers
 	// Repositories for handler→service→repository layering (P1-2).
@@ -184,6 +184,9 @@ func registerHandlers(
 	notifRepo := repository.NewNotificationRepository(pool)
 	notifServer := notification.NewNotificationServer(notifRepo, notifSub, log)
 	mux.Handle(antv1c.NewNotificationServiceHandler(notifServer, connectrpc.WithInterceptors(authInterceptor)))
+	notifSender := notifpubsub.NewSender(notifRepo, notifSub, log)
+	pythonStrategyServer.SetNotificationSender(notifSender)
+	gateEvalServer.SetNotificationSender(notifSender)
 	adminRepo := repository.NewAdminRepository(pool)
 	passwordResetRepo := repository.NewPasswordResetRepo(pool)
 	adminTradingServer := admin.NewAdminTradingServer(adminRepo, log)
@@ -229,5 +232,5 @@ func registerHandlers(
 		aiSvc,
 	)
 
-	return reconLoop, emailNotifier, platformAgg, workerCleanup
+	return reconLoop, emailNotifier, platformAgg, notifSender, workerCleanup
 }

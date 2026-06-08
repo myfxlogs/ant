@@ -14,6 +14,7 @@ import (
 
 	aigates "anttrader/internal/ai"
 	"anttrader/internal/interceptor"
+	"anttrader/internal/notification"
 	"anttrader/internal/repository"
 
 	"connectrpc.com/connect"
@@ -23,6 +24,7 @@ import (
 type GateEvalServer struct {
 	backtestRepo *repository.BacktestRunRepository
 	log          *zap.Logger
+	notifSender  *notification.Sender
 }
 
 var _ antv1c.GateServiceHandler = (*GateEvalServer)(nil)
@@ -31,6 +33,9 @@ var _ antv1c.GateServiceHandler = (*GateEvalServer)(nil)
 func NewGateEvalServer(backtestRepo *repository.BacktestRunRepository, log *zap.Logger) *GateEvalServer {
 	return &GateEvalServer{backtestRepo: backtestRepo, log: log}
 }
+
+// SetNotificationSender injects the notification sender for gate result events.
+func (s *GateEvalServer) SetNotificationSender(ns *notification.Sender) { s.notifSender = ns }
 
 // RunEvaluation fetches the backtest run, converts equity_curve to daily returns,
 // runs the 6-gate pipeline, and streams each gate result via SSE.
@@ -51,7 +56,30 @@ func (s *GateEvalServer) RunEvaluation(
 	if err != nil {
 		return err
 	}
-	return streamGateResults(ctx, input, stream)
+	result, err := streamGateResults(ctx, input, stream)
+	if err != nil {
+		return err
+	}
+
+	// Emit notification for gate evaluation result.
+	if s.notifSender != nil {
+		if result.Passed {
+			_, _ = s.notifSender.Send(ctx, userID, "gate_passed",
+				fmt.Sprintf("Gate Evaluation Passed: %s", run.Symbol),
+				fmt.Sprintf("Strategy for %s passed all %d gates", run.Symbol, len(result.Gates)),
+				fmt.Sprintf(`{"run_id":"%s","symbol":"%s","gates":%d}`, run.ID, run.Symbol, len(result.Gates)))
+		} else {
+			firstFail := string(result.FirstFail)
+			if firstFail == "" {
+				firstFail = "unknown"
+			}
+			_, _ = s.notifSender.Send(ctx, userID, "gate_failed",
+				fmt.Sprintf("Gate Evaluation Failed: %s", run.Symbol),
+				fmt.Sprintf("Strategy for %s failed at gate: %s", run.Symbol, firstFail),
+				fmt.Sprintf(`{"run_id":"%s","symbol":"%s","failed_at":"%s"}`, run.ID, run.Symbol, firstFail))
+		}
+	}
+	return nil
 }
 
 // fetchRun fetches the backtest run and validates it is completed.
@@ -96,27 +124,31 @@ func buildGateInput(run *repository.BacktestRun, req *antv1.RunGateEvaluationReq
 }
 
 // streamGateResults runs the pipeline and streams each gate result + summary.
+// Returns the pipeline result for downstream notification emission.
 func streamGateResults(
 	ctx context.Context,
 	input aigates.PipelineInput,
 	stream *connect.ServerStream[antv1.GateEvaluationUpdate],
-) error {
+) (*aigates.PipelineResult, error) {
 	result := aigates.Pipeline(input)
 	for _, gate := range result.Gates {
 		select {
 		case <-ctx.Done():
-			return nil
+			return nil, ctx.Err()
 		default:
 		}
 		if err := stream.Send(&antv1.GateEvaluationUpdate{
 			Gate: toProtoGateResult(gate),
 		}); err != nil {
-			return err
+			return nil, err
 		}
 	}
-	return stream.Send(&antv1.GateEvaluationUpdate{
+	if err := stream.Send(&antv1.GateEvaluationUpdate{
 		Completed: toProtoSummary(result),
-	})
+	}); err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 func toProtoGateResult(g aigates.GateStatus) *antv1.GateResult {

@@ -227,6 +227,18 @@ func (s *PythonStrategyServer) saveBacktestResult(ctx context.Context, run *repo
 	s.log.Info("backtest worker: run completed", zap.String("runID", run.ID.String()),
 		zap.Float64("total_return", result.GetMetrics().GetTotalReturn()),
 		zap.Float64("sharpe", result.GetMetrics().GetSharpeRatio()))
+
+	// Emit notification for completed backtest.
+	if s.notifSender != nil {
+		totalReturn := result.GetMetrics().GetTotalReturn()
+		sharpe := result.GetMetrics().GetSharpeRatio()
+		dataJSON := fmt.Sprintf(`{"run_id":"%s","symbol":"%s","timeframe":"%s","total_return":%.2f,"sharpe":%.2f}`,
+			run.ID, run.Symbol, run.Timeframe, totalReturn, sharpe)
+		_, _ = s.notifSender.Send(ctx, run.UserID, "backtest_completed",
+			fmt.Sprintf("Backtest Complete: %s %s", run.Symbol, run.Timeframe),
+			fmt.Sprintf("Strategy on %s %s: return %.2f%%, Sharpe %.2f", run.Symbol, run.Timeframe, totalReturn, sharpe),
+			dataJSON)
+	}
 }
 
 func (s *PythonStrategyServer) failRun(ctx context.Context, run *repository.BacktestRun, errMsg string) {
@@ -236,6 +248,16 @@ func (s *PythonStrategyServer) failRun(ctx context.Context, run *repository.Back
 	if err := s.backtestRepo.UpdateAsyncFields(ctx, run.UserID, run.ID, status, errMsg, nil, &now, nil); err != nil {
 		s.log.Error("backtest worker: failRun UpdateAsyncFields",
 			zap.String("run_id", run.ID.String()), zap.Error(err))
+	}
+
+	// Emit notification for failed backtest.
+	if s.notifSender != nil {
+		dataJSON := fmt.Sprintf(`{"run_id":"%s","symbol":"%s","timeframe":"%s","error":"%s"}`,
+			run.ID, run.Symbol, run.Timeframe, errMsg)
+		_, _ = s.notifSender.Send(ctx, run.UserID, "backtest_failed",
+			fmt.Sprintf("Backtest Failed: %s %s", run.Symbol, run.Timeframe),
+			errMsg,
+			dataJSON)
 	}
 }
 

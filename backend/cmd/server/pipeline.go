@@ -15,6 +15,7 @@ import (
 	"anttrader/internal/mdgateway/adapter"
 	"anttrader/internal/mdgateway/adapter/mdtick"
 	"anttrader/internal/mthub"
+	notifpubsub "anttrader/internal/notification"
 	"anttrader/internal/notifier"
 	"anttrader/internal/repository"
 	"anttrader/internal/risksvc"
@@ -41,6 +42,7 @@ func startMdGatewayPipeline(
 	eventStore *mthub.TradeEventStore,
 	emailNotifier **notifier.EmailNotifier,
 	platformAgg **risksvc.PlatformAggregator,
+	notifSender **notifpubsub.Sender,
 	reconLoop **mthub.ReconciliationLoop,
 	brokerReg *adapter.BrokerRegistry,
 ) error {
@@ -124,7 +126,7 @@ func startMdGatewayPipeline(
 				if callPct <= 0 {
 					callPct = 100.0
 				}
-				service.CheckMarginCall(accountID, userID, p.MarginLevel, p.Margin, p.Equity, callPct, &marginCallMu, marginCallLastSent, eventStore, *emailNotifier)
+				service.CheckMarginCall(accountID, userID, p.MarginLevel, p.Margin, p.Equity, callPct, &marginCallMu, marginCallLastSent, eventStore, *emailNotifier, *notifSender)
 			}
 		},
 		OnOrderUpdate: buildOnOrderUpdate(log, accountSvc, accountBroker, snapshotBroker, tradeRecordRepo, platformAgg),

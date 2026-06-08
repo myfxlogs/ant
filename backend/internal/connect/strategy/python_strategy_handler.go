@@ -13,6 +13,7 @@ import (
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
+	"anttrader/internal/notification"
 	"anttrader/internal/repository"
 	"anttrader/internal/pglisten"
 )
@@ -25,6 +26,7 @@ type PythonStrategyServer struct {
 	backtestClient antv1c.BacktestServiceClient
 	marketDataRepo *repository.MarketDataRepository
 	pgListen       *pglisten.Listener
+	notifSender    *notification.Sender
 }
 
 func (s *PythonStrategyServer) SetMarketDataRepo(r *repository.MarketDataRepository) {
@@ -39,6 +41,7 @@ func NewPythonStrategyServer(backtestRepo *repository.BacktestRunRepository, log
 
 func (s *PythonStrategyServer) SetConnectClient(c antv1c.PythonStrategyServiceClient) { s.connectClient = c }
 func (s *PythonStrategyServer) SetBacktestClient(c antv1c.BacktestServiceClient)     { s.backtestClient = c }
+func (s *PythonStrategyServer) SetNotificationSender(ns *notification.Sender)         { s.notifSender = ns }
 
 // userIDRequire extracts and validates the authenticated user ID from context.
 func userIDRequire(ctx context.Context) (uuid.UUID, error) {

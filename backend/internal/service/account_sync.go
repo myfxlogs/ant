@@ -12,6 +12,7 @@ import (
 
 	"anttrader/internal/model"
 	"anttrader/internal/mthub"
+	"anttrader/internal/notification"
 	"anttrader/internal/notifier"
 	"anttrader/internal/repository"
 )
@@ -35,6 +36,7 @@ func CheckMarginCall(
 	lastSent map[string]map[int]time.Time,
 	eventStore *mthub.TradeEventStore,
 	emailNotifier *notifier.EmailNotifier,
+	notifSender *notification.Sender,
 ) {
 	mu.Lock()
 	defer mu.Unlock()
@@ -78,6 +80,23 @@ func CheckMarginCall(
 
 	if curLevel >= int(MLevelCall) && emailNotifier != nil {
 		emailNotifier.MarginCallAlert(accountID, userID, margin, equity)
+	}
+
+	// Emit in-app notification for margin call events (all levels).
+	if notifSender != nil {
+		uid, err := uuid.Parse(userID)
+		if err == nil {
+			levelLabel := "Warning"
+			if curLevel == int(MLevelCrit) {
+				levelLabel = "Critical"
+			} else if curLevel == int(MLevelCall) {
+				levelLabel = "Margin Call"
+			}
+			_, _ = notifSender.Send(context.Background(), uid, "risk_alert",
+				fmt.Sprintf("Margin %s: %s", levelLabel, accountID),
+				fmt.Sprintf("Margin level %.1f%% (call level: %.1f%%)", marginLevel, callPct),
+				fmt.Sprintf(`{"account_id":"%s","margin_level":%.1f,"call_pct":%.1f,"severity":%d}`, accountID, marginLevel, callPct, curLevel))
+		}
 	}
 }
 
