@@ -42,6 +42,12 @@ const (
 	// NotificationServiceMarkAllReadProcedure is the fully-qualified name of the NotificationService's
 	// MarkAllRead RPC.
 	NotificationServiceMarkAllReadProcedure = "/ant.v1.NotificationService/MarkAllRead"
+	// NotificationServiceStreamNotificationsProcedure is the fully-qualified name of the
+	// NotificationService's StreamNotifications RPC.
+	NotificationServiceStreamNotificationsProcedure = "/ant.v1.NotificationService/StreamNotifications"
+	// NotificationServiceSendNotificationProcedure is the fully-qualified name of the
+	// NotificationService's SendNotification RPC.
+	NotificationServiceSendNotificationProcedure = "/ant.v1.NotificationService/SendNotification"
 )
 
 // NotificationServiceClient is a client for the ant.v1.NotificationService service.
@@ -49,6 +55,8 @@ type NotificationServiceClient interface {
 	ListNotifications(context.Context, *connect.Request[v1.ListNotificationsRequest]) (*connect.Response[v1.ListNotificationsResponse], error)
 	MarkRead(context.Context, *connect.Request[v1.MarkReadRequest]) (*connect.Response[v1.MarkReadResponse], error)
 	MarkAllRead(context.Context, *connect.Request[v1.MarkAllReadRequest]) (*connect.Response[v1.MarkAllReadResponse], error)
+	StreamNotifications(context.Context, *connect.Request[v1.StreamNotificationsRequest]) (*connect.ServerStreamForClient[v1.Notification], error)
+	SendNotification(context.Context, *connect.Request[v1.SendNotificationRequest]) (*connect.Response[v1.SendNotificationResponse], error)
 }
 
 // NewNotificationServiceClient constructs a client for the ant.v1.NotificationService service. By
@@ -80,14 +88,28 @@ func NewNotificationServiceClient(httpClient connect.HTTPClient, baseURL string,
 			connect.WithSchema(notificationServiceMethods.ByName("MarkAllRead")),
 			connect.WithClientOptions(opts...),
 		),
+		streamNotifications: connect.NewClient[v1.StreamNotificationsRequest, v1.Notification](
+			httpClient,
+			baseURL+NotificationServiceStreamNotificationsProcedure,
+			connect.WithSchema(notificationServiceMethods.ByName("StreamNotifications")),
+			connect.WithClientOptions(opts...),
+		),
+		sendNotification: connect.NewClient[v1.SendNotificationRequest, v1.SendNotificationResponse](
+			httpClient,
+			baseURL+NotificationServiceSendNotificationProcedure,
+			connect.WithSchema(notificationServiceMethods.ByName("SendNotification")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // notificationServiceClient implements NotificationServiceClient.
 type notificationServiceClient struct {
-	listNotifications *connect.Client[v1.ListNotificationsRequest, v1.ListNotificationsResponse]
-	markRead          *connect.Client[v1.MarkReadRequest, v1.MarkReadResponse]
-	markAllRead       *connect.Client[v1.MarkAllReadRequest, v1.MarkAllReadResponse]
+	listNotifications   *connect.Client[v1.ListNotificationsRequest, v1.ListNotificationsResponse]
+	markRead            *connect.Client[v1.MarkReadRequest, v1.MarkReadResponse]
+	markAllRead         *connect.Client[v1.MarkAllReadRequest, v1.MarkAllReadResponse]
+	streamNotifications *connect.Client[v1.StreamNotificationsRequest, v1.Notification]
+	sendNotification    *connect.Client[v1.SendNotificationRequest, v1.SendNotificationResponse]
 }
 
 // ListNotifications calls ant.v1.NotificationService.ListNotifications.
@@ -105,11 +127,23 @@ func (c *notificationServiceClient) MarkAllRead(ctx context.Context, req *connec
 	return c.markAllRead.CallUnary(ctx, req)
 }
 
+// StreamNotifications calls ant.v1.NotificationService.StreamNotifications.
+func (c *notificationServiceClient) StreamNotifications(ctx context.Context, req *connect.Request[v1.StreamNotificationsRequest]) (*connect.ServerStreamForClient[v1.Notification], error) {
+	return c.streamNotifications.CallServerStream(ctx, req)
+}
+
+// SendNotification calls ant.v1.NotificationService.SendNotification.
+func (c *notificationServiceClient) SendNotification(ctx context.Context, req *connect.Request[v1.SendNotificationRequest]) (*connect.Response[v1.SendNotificationResponse], error) {
+	return c.sendNotification.CallUnary(ctx, req)
+}
+
 // NotificationServiceHandler is an implementation of the ant.v1.NotificationService service.
 type NotificationServiceHandler interface {
 	ListNotifications(context.Context, *connect.Request[v1.ListNotificationsRequest]) (*connect.Response[v1.ListNotificationsResponse], error)
 	MarkRead(context.Context, *connect.Request[v1.MarkReadRequest]) (*connect.Response[v1.MarkReadResponse], error)
 	MarkAllRead(context.Context, *connect.Request[v1.MarkAllReadRequest]) (*connect.Response[v1.MarkAllReadResponse], error)
+	StreamNotifications(context.Context, *connect.Request[v1.StreamNotificationsRequest], *connect.ServerStream[v1.Notification]) error
+	SendNotification(context.Context, *connect.Request[v1.SendNotificationRequest]) (*connect.Response[v1.SendNotificationResponse], error)
 }
 
 // NewNotificationServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -137,6 +171,18 @@ func NewNotificationServiceHandler(svc NotificationServiceHandler, opts ...conne
 		connect.WithSchema(notificationServiceMethods.ByName("MarkAllRead")),
 		connect.WithHandlerOptions(opts...),
 	)
+	notificationServiceStreamNotificationsHandler := connect.NewServerStreamHandler(
+		NotificationServiceStreamNotificationsProcedure,
+		svc.StreamNotifications,
+		connect.WithSchema(notificationServiceMethods.ByName("StreamNotifications")),
+		connect.WithHandlerOptions(opts...),
+	)
+	notificationServiceSendNotificationHandler := connect.NewUnaryHandler(
+		NotificationServiceSendNotificationProcedure,
+		svc.SendNotification,
+		connect.WithSchema(notificationServiceMethods.ByName("SendNotification")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.NotificationService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case NotificationServiceListNotificationsProcedure:
@@ -145,6 +191,10 @@ func NewNotificationServiceHandler(svc NotificationServiceHandler, opts ...conne
 			notificationServiceMarkReadHandler.ServeHTTP(w, r)
 		case NotificationServiceMarkAllReadProcedure:
 			notificationServiceMarkAllReadHandler.ServeHTTP(w, r)
+		case NotificationServiceStreamNotificationsProcedure:
+			notificationServiceStreamNotificationsHandler.ServeHTTP(w, r)
+		case NotificationServiceSendNotificationProcedure:
+			notificationServiceSendNotificationHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -164,4 +214,12 @@ func (UnimplementedNotificationServiceHandler) MarkRead(context.Context, *connec
 
 func (UnimplementedNotificationServiceHandler) MarkAllRead(context.Context, *connect.Request[v1.MarkAllReadRequest]) (*connect.Response[v1.MarkAllReadResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.NotificationService.MarkAllRead is not implemented"))
+}
+
+func (UnimplementedNotificationServiceHandler) StreamNotifications(context.Context, *connect.Request[v1.StreamNotificationsRequest], *connect.ServerStream[v1.Notification]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.NotificationService.StreamNotifications is not implemented"))
+}
+
+func (UnimplementedNotificationServiceHandler) SendNotification(context.Context, *connect.Request[v1.SendNotificationRequest]) (*connect.Response[v1.SendNotificationResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.NotificationService.SendNotification is not implemented"))
 }

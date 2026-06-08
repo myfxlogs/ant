@@ -86,3 +86,17 @@ func (r *NotificationRepository) MarkAllRead(ctx context.Context, userID uuid.UU
 		`UPDATE notifications SET is_read = true WHERE user_id = $1 AND is_read = false`, userID)
 	return err
 }
+
+// Insert creates a new notification and returns the row.
+func (r *NotificationRepository) Insert(
+	ctx context.Context, userID uuid.UUID, typ, title, message, dataJSON string,
+) (NotificationRow, error) {
+	var n NotificationRow
+	err := r.pool.QueryRow(ctx,
+		`INSERT INTO notifications (user_id, type, title, message, data_json)
+		 VALUES ($1,$2,$3,$4,$5)
+		 RETURNING id, user_id, type, title, message, data_json, is_read, created_at`,
+		userID, typ, title, message, dataJSON,
+	).Scan(&n.ID, &n.UserID, &n.Type, &n.Title, &n.Message, &n.DataJSON, &n.IsRead, &n.CreatedAt)
+	return n, err
+}

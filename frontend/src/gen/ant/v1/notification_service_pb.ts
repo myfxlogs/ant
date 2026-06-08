@@ -10,7 +10,26 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file notification_service.proto.
  */
 export const file_notification_service: GenFile = /*@__PURE__*/
-  fileDesc("Chpub3RpZmljYXRpb25fc2VydmljZS5wcm90bxIGYW50LnYxIpEBCgxOb3RpZmljYXRpb24SCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRIMCgR0eXBlGAMgASgJEg0KBXRpdGxlGAQgASgJEg8KB21lc3NhZ2UYBSABKAkSEQoJZGF0YV9qc29uGAYgASgJEg8KB2lzX3JlYWQYByABKAgSEgoKY3JlYXRlZF9hdBgIIAEoCSJOChhMaXN0Tm90aWZpY2F0aW9uc1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGb2Zmc2V0GAIgASgFEhMKC3VucmVhZF9vbmx5GAMgASgIIl4KGUxpc3ROb3RpZmljYXRpb25zUmVzcG9uc2USKwoNbm90aWZpY2F0aW9ucxgBIAMoCzIULmFudC52MS5Ob3RpZmljYXRpb24SFAoMdG90YWxfdW5yZWFkGAIgASgFIh0KD01hcmtSZWFkUmVxdWVzdBIKCgJpZBgBIAEoCSISChBNYXJrUmVhZFJlc3BvbnNlIhQKEk1hcmtBbGxSZWFkUmVxdWVzdCIVChNNYXJrQWxsUmVhZFJlc3BvbnNlMvYBChNOb3RpZmljYXRpb25TZXJ2aWNlElgKEUxpc3ROb3RpZmljYXRpb25zEiAuYW50LnYxLkxpc3ROb3RpZmljYXRpb25zUmVxdWVzdBohLmFudC52MS5MaXN0Tm90aWZpY2F0aW9uc1Jlc3BvbnNlEj0KCE1hcmtSZWFkEhcuYW50LnYxLk1hcmtSZWFkUmVxdWVzdBoYLmFudC52MS5NYXJrUmVhZFJlc3BvbnNlEkYKC01hcmtBbGxSZWFkEhouYW50LnYxLk1hcmtBbGxSZWFkUmVxdWVzdBobLmFudC52MS5NYXJrQWxsUmVhZFJlc3BvbnNlQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
+  fileDesc("Chpub3RpZmljYXRpb25fc2VydmljZS5wcm90bxIGYW50LnYxIjEKGlN0cmVhbU5vdGlmaWNhdGlvbnNSZXF1ZXN0EhMKC3VucmVhZF9vbmx5GAEgASgIIpEBCgxOb3RpZmljYXRpb24SCgoCaWQYASABKAkSDwoHdXNlcl9pZBgCIAEoCRIMCgR0eXBlGAMgASgJEg0KBXRpdGxlGAQgASgJEg8KB21lc3NhZ2UYBSABKAkSEQoJZGF0YV9qc29uGAYgASgJEg8KB2lzX3JlYWQYByABKAgSEgoKY3JlYXRlZF9hdBgIIAEoCSJOChhMaXN0Tm90aWZpY2F0aW9uc1JlcXVlc3QSDQoFbGltaXQYASABKAUSDgoGb2Zmc2V0GAIgASgFEhMKC3VucmVhZF9vbmx5GAMgASgIIl4KGUxpc3ROb3RpZmljYXRpb25zUmVzcG9uc2USKwoNbm90aWZpY2F0aW9ucxgBIAMoCzIULmFudC52MS5Ob3RpZmljYXRpb24SFAoMdG90YWxfdW5yZWFkGAIgASgFIh0KD01hcmtSZWFkUmVxdWVzdBIKCgJpZBgBIAEoCSISChBNYXJrUmVhZFJlc3BvbnNlIhQKEk1hcmtBbGxSZWFkUmVxdWVzdCIVChNNYXJrQWxsUmVhZFJlc3BvbnNlImsKF1NlbmROb3RpZmljYXRpb25SZXF1ZXN0Eg8KB3VzZXJfaWQYASABKAkSDAoEdHlwZRgCIAEoCRINCgV0aXRsZRgDIAEoCRIPCgdtZXNzYWdlGAQgASgJEhEKCWRhdGFfanNvbhgFIAEoCSImChhTZW5kTm90aWZpY2F0aW9uUmVzcG9uc2USCgoCaWQYASABKAkyoAMKE05vdGlmaWNhdGlvblNlcnZpY2USWAoRTGlzdE5vdGlmaWNhdGlvbnMSIC5hbnQudjEuTGlzdE5vdGlmaWNhdGlvbnNSZXF1ZXN0GiEuYW50LnYxLkxpc3ROb3RpZmljYXRpb25zUmVzcG9uc2USPQoITWFya1JlYWQSFy5hbnQudjEuTWFya1JlYWRSZXF1ZXN0GhguYW50LnYxLk1hcmtSZWFkUmVzcG9uc2USRgoLTWFya0FsbFJlYWQSGi5hbnQudjEuTWFya0FsbFJlYWRSZXF1ZXN0GhsuYW50LnYxLk1hcmtBbGxSZWFkUmVzcG9uc2USUQoTU3RyZWFtTm90aWZpY2F0aW9ucxIiLmFudC52MS5TdHJlYW1Ob3RpZmljYXRpb25zUmVxdWVzdBoULmFudC52MS5Ob3RpZmljYXRpb24wARJVChBTZW5kTm90aWZpY2F0aW9uEh8uYW50LnYxLlNlbmROb3RpZmljYXRpb25SZXF1ZXN0GiAuYW50LnYxLlNlbmROb3RpZmljYXRpb25SZXNwb25zZUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z");
+
+/**
+ * @generated from message ant.v1.StreamNotificationsRequest
+ */
+export type StreamNotificationsRequest = Message<"ant.v1.StreamNotificationsRequest"> & {
+  /**
+   * when true, only stream unread notifications
+   *
+   * @generated from field: bool unread_only = 1;
+   */
+  unreadOnly: boolean;
+};
+
+/**
+ * Describes the message ant.v1.StreamNotificationsRequest.
+ * Use `create(StreamNotificationsRequestSchema)` to create a new message.
+ */
+export const StreamNotificationsRequestSchema: GenMessage<StreamNotificationsRequest> = /*@__PURE__*/
+  messageDesc(file_notification_service, 0);
 
 /**
  * @generated from message ant.v1.Notification
@@ -68,7 +87,7 @@ export type Notification = Message<"ant.v1.Notification"> & {
  * Use `create(NotificationSchema)` to create a new message.
  */
 export const NotificationSchema: GenMessage<Notification> = /*@__PURE__*/
-  messageDesc(file_notification_service, 0);
+  messageDesc(file_notification_service, 1);
 
 /**
  * @generated from message ant.v1.ListNotificationsRequest
@@ -101,7 +120,7 @@ export type ListNotificationsRequest = Message<"ant.v1.ListNotificationsRequest"
  * Use `create(ListNotificationsRequestSchema)` to create a new message.
  */
 export const ListNotificationsRequestSchema: GenMessage<ListNotificationsRequest> = /*@__PURE__*/
-  messageDesc(file_notification_service, 1);
+  messageDesc(file_notification_service, 2);
 
 /**
  * @generated from message ant.v1.ListNotificationsResponse
@@ -123,7 +142,7 @@ export type ListNotificationsResponse = Message<"ant.v1.ListNotificationsRespons
  * Use `create(ListNotificationsResponseSchema)` to create a new message.
  */
 export const ListNotificationsResponseSchema: GenMessage<ListNotificationsResponse> = /*@__PURE__*/
-  messageDesc(file_notification_service, 2);
+  messageDesc(file_notification_service, 3);
 
 /**
  * @generated from message ant.v1.MarkReadRequest
@@ -140,7 +159,7 @@ export type MarkReadRequest = Message<"ant.v1.MarkReadRequest"> & {
  * Use `create(MarkReadRequestSchema)` to create a new message.
  */
 export const MarkReadRequestSchema: GenMessage<MarkReadRequest> = /*@__PURE__*/
-  messageDesc(file_notification_service, 3);
+  messageDesc(file_notification_service, 4);
 
 /**
  * @generated from message ant.v1.MarkReadResponse
@@ -153,7 +172,7 @@ export type MarkReadResponse = Message<"ant.v1.MarkReadResponse"> & {
  * Use `create(MarkReadResponseSchema)` to create a new message.
  */
 export const MarkReadResponseSchema: GenMessage<MarkReadResponse> = /*@__PURE__*/
-  messageDesc(file_notification_service, 4);
+  messageDesc(file_notification_service, 5);
 
 /**
  * @generated from message ant.v1.MarkAllReadRequest
@@ -166,7 +185,7 @@ export type MarkAllReadRequest = Message<"ant.v1.MarkAllReadRequest"> & {
  * Use `create(MarkAllReadRequestSchema)` to create a new message.
  */
 export const MarkAllReadRequestSchema: GenMessage<MarkAllReadRequest> = /*@__PURE__*/
-  messageDesc(file_notification_service, 5);
+  messageDesc(file_notification_service, 6);
 
 /**
  * @generated from message ant.v1.MarkAllReadResponse
@@ -179,11 +198,71 @@ export type MarkAllReadResponse = Message<"ant.v1.MarkAllReadResponse"> & {
  * Use `create(MarkAllReadResponseSchema)` to create a new message.
  */
 export const MarkAllReadResponseSchema: GenMessage<MarkAllReadResponse> = /*@__PURE__*/
-  messageDesc(file_notification_service, 6);
+  messageDesc(file_notification_service, 7);
+
+/**
+ * @generated from message ant.v1.SendNotificationRequest
+ */
+export type SendNotificationRequest = Message<"ant.v1.SendNotificationRequest"> & {
+  /**
+   * @generated from field: string user_id = 1;
+   */
+  userId: string;
+
+  /**
+   * backtest_completed | tuning_completed | gate_passed | signal_triggered | system_alert
+   *
+   * @generated from field: string type = 2;
+   */
+  type: string;
+
+  /**
+   * @generated from field: string title = 3;
+   */
+  title: string;
+
+  /**
+   * @generated from field: string message = 4;
+   */
+  message: string;
+
+  /**
+   * optional JSON metadata
+   *
+   * @generated from field: string data_json = 5;
+   */
+  dataJson: string;
+};
+
+/**
+ * Describes the message ant.v1.SendNotificationRequest.
+ * Use `create(SendNotificationRequestSchema)` to create a new message.
+ */
+export const SendNotificationRequestSchema: GenMessage<SendNotificationRequest> = /*@__PURE__*/
+  messageDesc(file_notification_service, 8);
+
+/**
+ * @generated from message ant.v1.SendNotificationResponse
+ */
+export type SendNotificationResponse = Message<"ant.v1.SendNotificationResponse"> & {
+  /**
+   * created notification id
+   *
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message ant.v1.SendNotificationResponse.
+ * Use `create(SendNotificationResponseSchema)` to create a new message.
+ */
+export const SendNotificationResponseSchema: GenMessage<SendNotificationResponse> = /*@__PURE__*/
+  messageDesc(file_notification_service, 9);
 
 /**
  * NotificationService is the user-facing in-app notification inbox.
- * Handler implementation deferred to P1; schema + proto this round (B-2.6).
+ * Supports list, mark-read, SSE streaming, and server-side notification creation.
  *
  * @generated from service ant.v1.NotificationService
  */
@@ -211,6 +290,22 @@ export const NotificationService: GenService<{
     methodKind: "unary";
     input: typeof MarkAllReadRequestSchema;
     output: typeof MarkAllReadResponseSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.NotificationService.StreamNotifications
+   */
+  streamNotifications: {
+    methodKind: "server_streaming";
+    input: typeof StreamNotificationsRequestSchema;
+    output: typeof NotificationSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.NotificationService.SendNotification
+   */
+  sendNotification: {
+    methodKind: "unary";
+    input: typeof SendNotificationRequestSchema;
+    output: typeof SendNotificationResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_notification_service, 0);

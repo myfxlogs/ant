@@ -18,6 +18,7 @@ import (
 	"anttrader/internal/connect/autotrading"
 	mktplace "anttrader/internal/connect/marketplace"
 	"anttrader/internal/connect/notification"
+	notifpubsub "anttrader/internal/notification"
 	"anttrader/internal/connect/strategy"
 	"anttrader/internal/connect/system"
 	"anttrader/internal/connect/user"
@@ -172,8 +173,9 @@ func registerHandlers(
 	mux.Handle(antv1c.NewJobServiceHandler(jobServer, connectrpc.WithInterceptors(authInterceptor)))
 	logServiceServer := system.NewLogServiceServer(logSvc, log)
 	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, connectrpc.WithInterceptors(authInterceptor)))
+	notifSub := notifpubsub.NewSubscriber()
 	notifRepo := repository.NewNotificationRepository(pool)
-	notifServer := notification.NewNotificationServer(notifRepo, log)
+	notifServer := notification.NewNotificationServer(notifRepo, notifSub, log)
 	mux.Handle(antv1c.NewNotificationServiceHandler(notifServer, connectrpc.WithInterceptors(authInterceptor)))
 	adminRepo := repository.NewAdminRepository(pool)
 	passwordResetRepo := repository.NewPasswordResetRepo(pool)

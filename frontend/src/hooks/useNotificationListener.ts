@@ -1,74 +1,60 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNotificationStore } from '@/stores/notificationStore';
-import i18n from '@/i18n';
+import { notificationStreamClient } from '@/client/connect';
+import type { Notification as ProtoNotification } from '@/gen/ant/v1/notification_service_pb';
+import type { Notification } from '@/types/notification';
 
-const STREAM_NOTIFICATION_EVENTS = [
-  'strategy_execution',
-  'risk_alert',
-  'strategy_signal',
-  'auto_trading',
-];
+function toNotification(pb: ProtoNotification): Notification {
+  let data: Record<string, unknown> | undefined;
+  try {
+    data = pb.dataJson ? JSON.parse(pb.dataJson) : undefined;
+  } catch {
+    data = undefined;
+  }
+  return {
+    id: pb.id,
+    type: (pb.type as Notification['type']) || 'system',
+    title: pb.title,
+    message: pb.message,
+    data,
+    read: pb.isRead,
+    created_at: pb.createdAt || pb.created_at || new Date().toISOString(),
+  };
+}
 
 export function useNotificationListener() {
   const addNotification = useNotificationStore((state) => state.addNotification);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    const handleStreamEvent = (event: CustomEvent) => {
-      const data = event.detail;
-      
-      if (!data || !data.type) return;
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
 
-      if (STREAM_NOTIFICATION_EVENTS.includes(data.type)) {
-        switch (data.type) {
-          case 'strategy_execution':
-            addNotification({
-              type: 'strategy_execution',
-              title: i18n.t('notifications.stream.strategyExecution.title'),
-              message:
-                data.status === 'completed'
-                  ? i18n.t('notifications.stream.strategyExecution.completed', { symbol: data.symbol, action: data.action })
-                  : i18n.t('notifications.stream.strategyExecution.failed', {
-                      error: data.error_message || i18n.t('common.unknown'),
-                    }),
-              data,
-            });
-            break;
-
-          case 'risk_alert':
-            addNotification({
-              type: 'risk_alert',
-              title: i18n.t('notifications.stream.riskAlert.title'),
-              message:
-                data.message || i18n.t('notifications.stream.riskAlert.fallback', { alertType: data.alert_type }),
-              data,
-            });
-            break;
-
-          case 'strategy_signal':
-            addNotification({
-              type: 'signal',
-              title: i18n.t('notifications.stream.strategySignal.title'),
-              message: i18n.t('notifications.stream.strategySignal.message', { symbol: data.symbol, signalType: data.signal_type }),
-              data,
-            });
-            break;
-
-          case 'auto_trading':
-            addNotification({
-              type: 'system',
-              title: i18n.t('notifications.stream.autoTrading.title'),
-              message: data.message || i18n.t('notifications.stream.autoTrading.fallback'),
-              data,
-            });
-            break;
+    (async () => {
+      try {
+        const stream = notificationStreamClient.streamNotifications(
+          { unreadOnly: false },
+          { signal: ctrl.signal },
+        );
+        for await (const pb of stream) {
+          if (ctrl.signal.aborted) break;
+          const notif = toNotification(pb);
+          addNotification({
+            type: notif.type,
+            title: notif.title,
+            message: notif.message,
+            data: notif.data,
+          });
+        }
+      } catch (e: unknown) {
+        if ((e as { name?: string })?.name !== 'AbortError') {
+          console.warn('Notification SSE stream ended:', e);
         }
       }
-    };
-
-    window.addEventListener('stream-notification', handleStreamEvent as EventListener);
+    })();
 
     return () => {
-      window.removeEventListener('stream-notification', handleStreamEvent as EventListener);
+      ctrl.abort();
     };
   }, [addNotification]);
 }

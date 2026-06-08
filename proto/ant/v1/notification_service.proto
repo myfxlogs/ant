@@ -5,11 +5,17 @@ package ant.v1;
 option go_package = "anttrader/gen/proto/ant/v1;antv1";
 
 // NotificationService is the user-facing in-app notification inbox.
-// Handler implementation deferred to P1; schema + proto this round (B-2.6).
+// Supports list, mark-read, SSE streaming, and server-side notification creation.
 service NotificationService {
   rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsResponse);
   rpc MarkRead(MarkReadRequest) returns (MarkReadResponse);
   rpc MarkAllRead(MarkAllReadRequest) returns (MarkAllReadResponse);
+  rpc StreamNotifications(StreamNotificationsRequest) returns (stream Notification);
+  rpc SendNotification(SendNotificationRequest) returns (SendNotificationResponse);
+}
+
+message StreamNotificationsRequest {
+  bool unread_only = 1;  // when true, only stream unread notifications
 }
 
 message Notification {
@@ -43,3 +49,15 @@ message MarkReadResponse {}
 message MarkAllReadRequest {}
 
 message MarkAllReadResponse {}
+
+message SendNotificationRequest {
+  string user_id = 1;
+  string type = 2;     // backtest_completed | tuning_completed | gate_passed | signal_triggered | system_alert
+  string title = 3;
+  string message = 4;
+  string data_json = 5; // optional JSON metadata
+}
+
+message SendNotificationResponse {
+  string id = 1;        // created notification id
+}

@@ -11,20 +11,22 @@ import (
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
+	"anttrader/internal/notification"
 	"anttrader/internal/repository"
 )
 
 // NotificationServer implements the NotificationService ConnectRPC handler.
 type NotificationServer struct {
 	repo *repository.NotificationRepository
+	sub  *notification.Subscriber
 	log  *zap.Logger
 }
 
 var _ antv1c.NotificationServiceHandler = (*NotificationServer)(nil)
 
 // NewNotificationServer creates a NotificationService handler.
-func NewNotificationServer(repo *repository.NotificationRepository, log *zap.Logger) *NotificationServer {
-	return &NotificationServer{repo: repo, log: log}
+func NewNotificationServer(repo *repository.NotificationRepository, sub *notification.Subscriber, log *zap.Logger) *NotificationServer {
+	return &NotificationServer{repo: repo, sub: sub, log: log}
 }
 
 func (s *NotificationServer) userID(ctx context.Context) uuid.UUID {
@@ -106,4 +108,71 @@ func (s *NotificationServer) MarkAllRead(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.MarkAllReadResponse{}), nil
+}
+
+// StreamNotifications implements server-stream (SSE) for real-time notification delivery.
+// The stream sends a keepalive comment every 15s and pushes new notifications as they
+// are inserted by SendNotification.
+func (s *NotificationServer) StreamNotifications(
+	ctx context.Context,
+	req *connect.Request[antv1.StreamNotificationsRequest],
+	stream *connect.ServerStream[antv1.Notification],
+) error {
+	uid := s.userID(ctx)
+	if uid == uuid.Nil {
+		return connect.NewError(connect.CodeUnauthenticated,
+			fmt.Errorf("authentication required"))
+	}
+
+	ch := s.sub.Subscribe(uid)
+	defer s.sub.Unsubscribe(uid, ch)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case n, ok := <-ch:
+			if !ok {
+				return nil
+			}
+			if req.Msg.UnreadOnly && n.IsRead {
+				continue
+			}
+			if err := stream.Send(&antv1.Notification{
+				Id:        n.ID.String(),
+				UserId:    n.UserID.String(),
+				Type:      n.Type,
+				Title:     n.Title,
+				Message:   n.Message,
+				DataJson:  n.DataJSON,
+				IsRead:    n.IsRead,
+				CreatedAt: n.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+			}); err != nil {
+				return err
+			}
+		}
+	}
+}
+
+// SendNotification creates a notification for a user and broadcasts it via SSE.
+// Called internally by other services (backtest, tuning, gate) when events complete.
+func (s *NotificationServer) SendNotification(
+	ctx context.Context,
+	req *connect.Request[antv1.SendNotificationRequest],
+) (*connect.Response[antv1.SendNotificationResponse], error) {
+	uid, err := uuid.Parse(req.Msg.UserId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	row, err := s.repo.Insert(ctx, uid,
+		req.Msg.Type, req.Msg.Title, req.Msg.Message, req.Msg.DataJson)
+	if err != nil {
+		s.log.Error("send notification insert failed", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	// Broadcast to active SSE subscribers for this user
+	s.sub.Publish(uid, row)
+	return connect.NewResponse(&antv1.SendNotificationResponse{
+		Id: row.ID.String(),
+	}), nil
 }

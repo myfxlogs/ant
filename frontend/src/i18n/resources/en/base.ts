@@ -400,6 +400,40 @@ const base = {
       unknown: 'Unknown({{mode}})',
     },
   },
+  notifications: {
+    all: 'All',
+    unread: 'Unread',
+    empty: 'No notifications',
+    markAllRead: 'Mark all read',
+    clearAll: 'Clear all',
+    confirmClearAll: 'Clear all notifications?',
+    types: {
+      trade: 'Trade',
+      signal: 'Signal',
+      risk_alert: 'Risk Alert',
+      strategy_execution: 'Execution',
+      system: 'System',
+    },
+    stream: {
+      strategyExecution: {
+        title: 'Strategy Execution',
+        completed: '{{symbol}} {{action}} completed',
+        failed: 'Execution failed: {{error}}',
+      },
+      riskAlert: {
+        title: 'Risk Alert',
+        fallback: 'Alert type: {{alertType}}',
+      },
+      strategySignal: {
+        title: 'Strategy Signal',
+        message: '{{symbol}} triggered {{signalType}}',
+      },
+      autoTrading: {
+        title: 'Auto Trading',
+        fallback: 'Auto trading event triggered',
+      },
+    },
+  },
 } as const;
 
 export default base;

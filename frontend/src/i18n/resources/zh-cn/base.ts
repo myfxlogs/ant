@@ -572,6 +572,40 @@ const base = {
       unknown: '未知({{mode}})',
     },
   },
+  notifications: {
+    all: '全部',
+    unread: '未读',
+    empty: '暂无通知',
+    markAllRead: '全部已读',
+    clearAll: '清空全部',
+    confirmClearAll: '确认清空所有通知？',
+    types: {
+      trade: '交易',
+      signal: '信号',
+      risk_alert: '风控告警',
+      strategy_execution: '策略执行',
+      system: '系统',
+    },
+    stream: {
+      strategyExecution: {
+        title: '策略执行',
+        completed: '{{symbol}} {{action}} 已完成',
+        failed: '执行失败：{{error}}',
+      },
+      riskAlert: {
+        title: '风控告警',
+        fallback: '告警类型：{{alertType}}',
+      },
+      strategySignal: {
+        title: '策略信号',
+        message: '{{symbol}} 触发 {{signalType}}',
+      },
+      autoTrading: {
+        title: '自动交易',
+        fallback: '自动交易事件已触发',
+      },
+    },
+  },
 } as const;
 
 export default base;
