@@ -183,10 +183,6 @@ func dataframeContractText() string {
 	sb.WriteString("- 允许 import: numpy, pandas, math, json, datetime, time, collections, functools, itertools, statistics, decimal, fractions, copy\n")
 	sb.WriteString("- pd, np, params 已预注入，一般无需再 import\n")
 	sb.WriteString("- 禁止: 网络请求、文件读写、子进程、eval/exec/open/__import__/getattr/setattr\n\n")
-
-	// Wire indicator catalog into the prompt so LLM knows available helpers.
-	sb.WriteString(service.BuildIndicatorCatalogPromptBlockCompact())
-	sb.WriteString("\n")
 	return sb.String()
 }
 
@@ -235,31 +231,23 @@ func NewStrategyPromptBuilder() *StrategyPromptBuilder {
 	return &StrategyPromptBuilder{}
 }
 
-// effectiveStrategyType returns the strategy type to use, defaulting to "run_context"
-// when not explicitly specified.
-func effectiveStrategyType(p *PromptParams) string {
-	if p.StrategyType == "run_dataframe" {
-		return "run_dataframe"
-	}
-	// Default: event-driven. Also check intent for hints.
-	if p.Intent != nil && p.Intent.StrategyType == "run_dataframe" {
-		return "run_dataframe"
-	}
-	return "run_context"
-}
-
 // BuildSystemPrompt returns the system prompt that instructs the LLM.
 func (b *StrategyPromptBuilder) BuildSystemPrompt(p *PromptParams) string {
 	var sb strings.Builder
-
-	st := effectiveStrategyType(p)
 
 	// Role definition
 	sb.WriteString("你是一位专业的量化交易策略工程师。")
 	sb.WriteString("你的任务是根据用户的自然语言描述，生成符合规范的 Python 策略代码。\n\n")
 
-	// Strategy contract — select based on strategy type.
+	// Strategy contract — contractText defaults empty to "run_context".
+	st := p.StrategyType
 	sb.WriteString(contractText(st))
+
+	// Indicator catalog — only for vectorized strategies so LLM knows available helpers.
+	if st == "run_dataframe" {
+		sb.WriteString(service.BuildIndicatorCatalogPromptBlockCompact())
+		sb.WriteString("\n")
+	}
 
 	// LLM-extracted intent context
 	if p.Intent != nil && !p.Intent.NeedsClarification {
@@ -322,7 +310,7 @@ func (b *StrategyPromptBuilder) BuildFeedbackPrompt(p *FeedbackPromptParams) (st
 
 // detectCodeStrategyType heuristically detects whether code uses run_dataframe or run_context.
 func detectCodeStrategyType(code string) string {
-	if strings.Contains(code, "run_dataframe") {
+	if strings.Contains(code, "def run_dataframe(") {
 		return "run_dataframe"
 	}
 	return "run_context"
