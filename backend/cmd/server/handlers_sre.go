@@ -117,31 +117,26 @@ func registerSREHandlers(
 	mux.HandleFunc("/api/auth/refresh", authServer.HandleTokenRefresh)
 	mux.HandleFunc("/api/auth/logout", authServer.HandleLogout)
 
-	// SRE control plane HTTP endpoints.
-	mux.HandleFunc("/api/admin/sre/killswitch/status", func(w http.ResponseWriter, r *http.Request) {
-		sreHandler.HandleKillSwitchStatus(w, r, authInterceptor)
-	})
-	mux.HandleFunc("/api/admin/sre/killswitch/engage", func(w http.ResponseWriter, r *http.Request) {
-		sreHandler.HandleKillSwitchEngage(w, r, authInterceptor)
-	})
-	mux.HandleFunc("/api/admin/sre/killswitch/disengage", func(w http.ResponseWriter, r *http.Request) {
-		sreHandler.HandleKillSwitchDisengage(w, r, authInterceptor)
-	})
-	mux.HandleFunc("/api/admin/sre/breakers", func(w http.ResponseWriter, r *http.Request) {
-		sreHandler.HandleBreakersList(w, r, authInterceptor)
-	})
-	mux.HandleFunc("/api/admin/sre/breakers/reset", func(w http.ResponseWriter, r *http.Request) {
-		sreHandler.HandleBreakerReset(w, r, authInterceptor)
-	})
-	mux.HandleFunc("/api/admin/sre/canary", func(w http.ResponseWriter, r *http.Request) {
-		sreHandler.HandleCanaryList(w, r, authInterceptor)
-	})
-	mux.HandleFunc("/api/admin/sre/canary/set", func(w http.ResponseWriter, r *http.Request) {
-		sreHandler.HandleCanarySet(w, r, authInterceptor)
-	})
-	mux.HandleFunc("/api/admin/sre/canary/delete", func(w http.ResponseWriter, r *http.Request) {
-		sreHandler.HandleCanaryDelete(w, r, authInterceptor)
-	})
+	// SRE control plane HTTP endpoints — table-driven to avoid repetitive closures.
+	type sreRoute struct {
+		path    string
+		handler func(http.ResponseWriter, *http.Request, *interceptor.AuthInterceptor)
+	}
+	for _, rt := range []sreRoute{
+		{"/api/admin/sre/killswitch/status", sreHandler.HandleKillSwitchStatus},
+		{"/api/admin/sre/killswitch/engage", sreHandler.HandleKillSwitchEngage},
+		{"/api/admin/sre/killswitch/disengage", sreHandler.HandleKillSwitchDisengage},
+		{"/api/admin/sre/breakers", sreHandler.HandleBreakersList},
+		{"/api/admin/sre/breakers/reset", sreHandler.HandleBreakerReset},
+		{"/api/admin/sre/canary", sreHandler.HandleCanaryList},
+		{"/api/admin/sre/canary/set", sreHandler.HandleCanarySet},
+		{"/api/admin/sre/canary/delete", sreHandler.HandleCanaryDelete},
+	} {
+		route := rt
+		mux.HandleFunc(route.path, func(w http.ResponseWriter, r *http.Request) {
+			route.handler(w, r, authInterceptor)
+		})
+	}
 
 	// Prometheus /metrics endpoint (M10 ADR-0010 §2.4).
 	mux.Handle("/metrics", mdgateway.MetricsHandler())
