@@ -344,6 +344,32 @@ const accounts = {
         credit: 'クレジット'
       }
     }
+        report: {
+      title: '取引レポート',
+      titleShort: 'レポート',
+      generate: 'レポート生成',
+      aiAnalysis: 'AI分析',
+      symbolPnL: '銘柄別損益',
+      direction: '売買分析',
+      directionLong: '買い',
+      directionShort: '売り',
+      tradeDistribution: '損益分布',
+      drawdownOverlay: '資産曲線 + ドローダウン',
+      drawdownEvents: 'ドローダウンイベント',
+      recovered: '回復済み',
+      winRateTrend: '月次勝率トレンド',
+      periods: {
+        week: '今週',
+        month: '今月',
+        quarter: '今四半期',
+        year: '今年',
+      },
+      sections: {
+        summary: '総評',
+        findings: '主な発見',
+        recommendations: '改善提案',
+      },
+    },
   }
 } as const;
 

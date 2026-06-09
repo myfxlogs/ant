@@ -18,19 +18,21 @@ import (
 	"anttrader/internal/model"
 	"anttrader/internal/repository"
 	"anttrader/internal/service"
+	systemai "anttrader/internal/service/systemai"
 )
 
 type AnalyticsServer struct {
 	repo     *repository.AnalyticsRepository
 	platform *service.PlatformService
 	cache    *service.AnalyticsCache
+	aiSvc    *systemai.Service
 	log      *zap.Logger
 }
 
 var _ antv1c.AnalyticsServiceHandler = (*AnalyticsServer)(nil)
 
-func NewAnalyticsServer(repo *repository.AnalyticsRepository, platform *service.PlatformService, cache *service.AnalyticsCache, log *zap.Logger) *AnalyticsServer {
-	return &AnalyticsServer{repo: repo, platform: platform, cache: cache, log: log}
+func NewAnalyticsServer(repo *repository.AnalyticsRepository, platform *service.PlatformService, cache *service.AnalyticsCache, aiSvc *systemai.Service, log *zap.Logger) *AnalyticsServer {
+	return &AnalyticsServer{repo: repo, platform: platform, cache: cache, aiSvc: aiSvc, log: log}
 }
 
 // verifyAccountOwnership extracts userID and checks account ownership (#19).

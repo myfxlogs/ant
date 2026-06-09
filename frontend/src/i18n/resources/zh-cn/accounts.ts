@@ -408,6 +408,32 @@ const accounts = {
         credit: '信用额度'
       }
     }
+        report: {
+      title: '交易报告',
+      titleShort: '报告',
+      generate: '生成报告',
+      aiAnalysis: 'AI 分析',
+      symbolPnL: '品种盈亏',
+      direction: '多空分析',
+      directionLong: '做多',
+      directionShort: '做空',
+      tradeDistribution: '盈亏分布',
+      drawdownOverlay: '权益曲线 + 回撤',
+      drawdownEvents: '回撤事件',
+      recovered: '已恢复',
+      winRateTrend: '月度胜率趋势',
+      periods: {
+        week: '本周',
+        month: '本月',
+        quarter: '本季度',
+        year: '今年',
+      },
+      sections: {
+        summary: '总体评价',
+        findings: '关键发现',
+        recommendations: '改进建议',
+      },
+    },
   }
 } as const;
 

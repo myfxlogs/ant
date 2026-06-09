@@ -1,6 +1,7 @@
-import { analyticsClient, economicDataClient } from './connect';
+import { analyticsClient, analyticsStreamClient, economicDataClient } from './connect';
 import i18n from '@/i18n';
 import { EquityCurvePeriod } from '../gen/ant/v1/analytics_pb';
+import type { GenerateReportChunk } from '../gen/ant/v1/analytics_pb';
 import {
   mapAccountAnalytics,
   mapRecentTradesResponse,
@@ -200,4 +201,165 @@ export const analyticsApi = {
     const data = await economicDataClient.listEconomicIndicators({});
     return data.indicators || [];
   },
+
+  getAttributionAnalysis: async (accountId: string): Promise<AttributionAnalysisData> => {
+    const res = await analyticsClient.getAttributionAnalysis({ accountId });
+    return {
+      symbolPnls: (res.symbolPnls || []).map((s) => ({
+        symbol: s.symbol,
+        netProfit: s.netProfit,
+        totalTrades: Number(s.totalTrades),
+        winRate: s.winRate,
+        profitFactor: s.profitFactor,
+        tradeSharePercent: s.tradeSharePercent,
+      })),
+      direction: {
+        longProfit: res.direction?.longProfit || 0,
+        longTrades: Number(res.direction?.longTrades || 0),
+        longWinRate: res.direction?.longWinRate || 0,
+        shortProfit: res.direction?.shortProfit || 0,
+        shortTrades: Number(res.direction?.shortTrades || 0),
+        shortWinRate: res.direction?.shortWinRate || 0,
+      },
+      tradeDistribution: {
+        profitBuckets: (res.tradeDistribution?.profitBuckets || []).map((b) => ({
+          label: b.label,
+          minValue: b.minValue,
+          maxValue: b.maxValue,
+          count: Number(b.count),
+        })),
+      },
+      hourlyPnl: (res.hourlyPnl || []).map((h) => ({
+        hour: h.hour,
+        profit: h.profit,
+        trades: Number(h.trades),
+        winRate: h.winRate,
+      })),
+    };
+  },
+
+  getRollingMetrics: async (accountId: string): Promise<RollingMetricsData> => {
+    const res = await analyticsClient.getRollingMetrics({ accountId });
+    return {
+      rollingSharpe: (res.rollingSharpe || []).map((p) => ({
+        date: p.date,
+        value: p.value,
+      })),
+      drawdownEvents: (res.drawdownEvents || []).map((e) => ({
+        startDate: e.startDate,
+        endDate: e.endDate,
+        durationDays: e.durationDays,
+        depthPercent: e.depthPercent,
+        recoveryDate: e.recoveryDate,
+      })),
+      monthlyWinRates: (res.monthlyWinRates || []).map((m) => ({
+        month: m.month,
+        winRate: m.winRate,
+        totalTrades: Number(m.totalTrades),
+      })),
+      equityCurve: (res.equityCurve || []).map((p) => ({
+        date: p.date,
+        equity: p.equity,
+        balance: p.balance,
+        profit: p.profit,
+      })),
+      drawdownCurve: (res.drawdownCurve || []).map((p) => ({
+        date: p.date,
+        drawdownPercent: p.drawdownPercent,
+      })),
+    };
+  },
+
+  generateReportStream: (
+    accountId: string,
+    period: string,
+    callbacks: ReportCallbacks,
+  ): (() => void) => {
+    const abortController = new AbortController();
+    (async () => {
+      try {
+        const stream = analyticsStreamClient.generateReport(
+          { accountId, period },
+          { signal: abortController.signal },
+        );
+        for await (const chunk of stream) {
+          const c = chunk as GenerateReportChunk;
+          if (c.phase) callbacks.onPhase(c.phase);
+          if (c.delta) callbacks.onDelta(c.delta);
+          if (c.section) callbacks.onSection(c.section);
+          if (c.error) callbacks.onError(c.error);
+          if (c.done) {
+            if (c.summary) callbacks.onSummary(c.summary);
+            if (c.findings) callbacks.onFindings(c.findings);
+            if (c.recommendations) callbacks.onRecommendations(c.recommendations);
+            callbacks.onDone();
+          }
+        }
+      } catch (e: unknown) {
+        if (e instanceof Error && e.name === 'AbortError') return;
+        callbacks.onError(e instanceof Error ? e.message : 'Stream failed');
+        callbacks.onDone();
+      }
+    })();
+    return () => abortController.abort();
+  },
 };
+
+export interface SymbolPnLData {
+  symbol: string;
+  netProfit: number;
+  totalTrades: number;
+  winRate: number;
+  profitFactor: number;
+  tradeSharePercent: number;
+}
+
+export interface DirectionBreakdown {
+  longProfit: number;
+  longTrades: number;
+  longWinRate: number;
+  shortProfit: number;
+  shortTrades: number;
+  shortWinRate: number;
+}
+
+export interface TradeBucket {
+  label: string;
+  minValue: number;
+  maxValue: number;
+  count: number;
+}
+
+export interface AttributionAnalysisData {
+  symbolPnls: SymbolPnLData[];
+  direction: DirectionBreakdown;
+  tradeDistribution: {
+    profitBuckets: TradeBucket[];
+  };
+  hourlyPnl: Array<{ hour: number; profit: number; trades: number; winRate: number }>;
+}
+
+export interface RollingMetricsData {
+  rollingSharpe: Array<{ date: string; value: number }>;
+  drawdownEvents: Array<{
+    startDate: string;
+    endDate: string;
+    durationDays: number;
+    depthPercent: number;
+    recoveryDate: string;
+  }>;
+  monthlyWinRates: Array<{ month: string; winRate: number; totalTrades: number }>;
+  equityCurve: EquityPoint[];
+  drawdownCurve: Array<{ date: string; drawdownPercent: number }>;
+}
+
+export interface ReportCallbacks {
+  onPhase: (phase: string) => void;
+  onDelta: (delta: string) => void;
+  onSection: (section: string) => void;
+  onSummary: (text: string) => void;
+  onFindings: (text: string) => void;
+  onRecommendations: (text: string) => void;
+  onError: (error: string) => void;
+  onDone: () => void;
+}

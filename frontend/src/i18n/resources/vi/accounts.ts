@@ -408,6 +408,32 @@ const accounts = {
         credit: 'Hạn mức tín dụng'
       }
     }
+        report: {
+      title: 'Báo cáo giao dịch',
+      titleShort: 'Báo cáo',
+      generate: 'Tạo báo cáo',
+      aiAnalysis: 'Phân tích AI',
+      symbolPnL: 'Lãi/lỗ theo mã',
+      direction: 'Phân tích hướng',
+      directionLong: 'Mua',
+      directionShort: 'Bán',
+      tradeDistribution: 'Phân phối lãi/lỗ',
+      drawdownOverlay: 'Đường vốn + Drawdown',
+      drawdownEvents: 'Sự kiện drawdown',
+      recovered: 'Đã phục hồi',
+      winRateTrend: 'Xu hướng tỷ lệ thắng',
+      periods: {
+        week: 'Tuần này',
+        month: 'Tháng này',
+        quarter: 'Quý này',
+        year: 'Năm nay',
+      },
+      sections: {
+        summary: 'Tổng quan',
+        findings: 'Phát hiện chính',
+        recommendations: 'Khuyến nghị',
+      },
+    },
   }
 } as const;
 

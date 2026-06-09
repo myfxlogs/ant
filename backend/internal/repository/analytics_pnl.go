@@ -187,6 +187,73 @@ func scanWeekdayPnLStats(rows interface{ Scan(...interface{}) error; Next() bool
 	return stats, rows.Err()
 }
 
+// DirectionStat holds P&L stats grouped by order direction.
+type DirectionStat struct {
+	Direction   string  `db:"direction"`
+	Profit      float64 `db:"profit"`
+	Trades      int     `db:"trades"`
+	WinTrades   int     `db:"win_trades"`
+}
+
+// GetPnLByDirection returns profit aggregated by trade direction (BUY/SELL).
+func (r *AnalyticsRepository) GetPnLByDirection(ctx context.Context, accountID uuid.UUID, start, end time.Time) ([]*DirectionStat, error) {
+	query := `
+		SELECT
+			CASE
+				WHEN order_type IN ('buy', 'BUY', 'Buy') THEN 'BUY'
+				WHEN order_type IN ('sell', 'SELL', 'Sell') THEN 'SELL'
+				ELSE 'OTHER'
+			END AS direction,
+			COALESCE(SUM(profit), 0) AS profit,
+			COUNT(*)::int AS trades,
+			SUM(CASE WHEN profit > 0 THEN 1 ELSE 0 END)::int AS win_trades
+		FROM trade_records
+		WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3
+			AND order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit')
+		GROUP BY 1
+		ORDER BY CASE WHEN order_type IN ('buy', 'BUY', 'Buy') THEN 0 ELSE 1 END
+	`
+	rows, err := r.db.Query(ctx, query, accountID, start, end)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var stats []*DirectionStat
+	for rows.Next() {
+		s := &DirectionStat{}
+		if err := rows.Scan(&s.Direction, &s.Profit, &s.Trades, &s.WinTrades); err != nil {
+			return nil, err
+		}
+		stats = append(stats, s)
+	}
+	return stats, rows.Err()
+}
+
+// GetTradeProfitValues returns individual trade profits for histogram construction.
+func (r *AnalyticsRepository) GetTradeProfitValues(ctx context.Context, accountID uuid.UUID, start, end time.Time) ([]float64, error) {
+	query := `
+		SELECT profit
+		FROM trade_records
+		WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3
+			AND order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit')
+		ORDER BY profit
+	`
+	rows, err := r.db.Query(ctx, query, accountID, start, end)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var profits []float64
+	for rows.Next() {
+		var p float64
+		if err := rows.Scan(&p); err != nil {
+			return nil, err
+		}
+		profits = append(profits, p)
+	}
+	return profits, rows.Err()
+}
+
 func buildWeekdayPnLResult(stats []*weekdayStat) []*model.WeekdayPnL {
 	out := make([]*model.WeekdayPnL, 7)
 	for i := 0; i < 7; i++ {

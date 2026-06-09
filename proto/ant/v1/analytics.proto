@@ -9,6 +9,9 @@ service AnalyticsService {
   rpc GetRecentTrades(GetRecentTradesRequest) returns (GetRecentTradesResponse);
   rpc GetMonthlyPnL(GetMonthlyPnLRequest) returns (GetMonthlyPnLResponse);
   rpc GetMonthlyAnalysis(GetMonthlyAnalysisRequest) returns (GetMonthlyAnalysisResponse);
+  rpc GetAttributionAnalysis(GetAttributionAnalysisRequest) returns (GetAttributionAnalysisResponse);
+  rpc GetRollingMetrics(GetRollingMetricsRequest) returns (GetRollingMetricsResponse);
+  rpc GenerateReport(GenerateReportRequest) returns (stream GenerateReportChunk);
 }
 
 enum EquityCurvePeriod {
@@ -145,4 +148,110 @@ message GetMonthlyAnalysisRequest {
 message GetMonthlyAnalysisResponse {
   repeated int32 years = 1;
   bytes data = 2;
+}
+
+// ── Attribution Analysis ──
+
+message GetAttributionAnalysisRequest {
+  string account_id = 1;
+}
+
+message GetAttributionAnalysisResponse {
+  repeated SymbolPnL symbol_pnls = 1;
+  DirectionBreakdown direction = 2;
+  TradeDistribution trade_distribution = 3;
+  repeated HourlyPnL hourly_pnl = 4;
+}
+
+message SymbolPnL {
+  string symbol = 1;
+  double net_profit = 2;
+  int64 total_trades = 3;
+  double win_rate = 4;
+  double profit_factor = 5;
+  double trade_share_percent = 6;
+}
+
+message DirectionBreakdown {
+  double long_profit = 1;
+  int64 long_trades = 2;
+  double long_win_rate = 3;
+  double short_profit = 4;
+  int64 short_trades = 5;
+  double short_win_rate = 6;
+}
+
+message TradeDistribution {
+  repeated TradeBucket profit_buckets = 1;
+  repeated TradeBucket holding_buckets = 2;
+}
+
+message TradeBucket {
+  string label = 1;
+  double min_value = 2;
+  double max_value = 3;
+  int64 count = 4;
+}
+
+message HourlyPnL {
+  int32 hour = 1;
+  double profit = 2;
+  int64 trades = 3;
+  double win_rate = 4;
+}
+
+// ── Rolling Metrics ──
+
+message GetRollingMetricsRequest {
+  string account_id = 1;
+}
+
+message GetRollingMetricsResponse {
+  repeated RollingPoint rolling_sharpe = 1;
+  repeated DrawdownEvent drawdown_events = 2;
+  repeated MonthlyWinRate monthly_win_rates = 3;
+  repeated EquityPoint equity_curve = 4;
+  repeated DrawdownPoint drawdown_curve = 5;
+}
+
+message RollingPoint {
+  string date = 1;
+  double value = 2;
+}
+
+message DrawdownEvent {
+  string start_date = 1;
+  string end_date = 2;
+  int32 duration_days = 3;
+  double depth_percent = 4;
+  string recovery_date = 5;
+}
+
+message DrawdownPoint {
+  string date = 1;
+  double drawdown_percent = 2;
+}
+
+message MonthlyWinRate {
+  string month = 1;
+  double win_rate = 2;
+  int64 total_trades = 3;
+}
+
+// ── Report Generation (SSE streaming) ──
+
+message GenerateReportRequest {
+  string account_id = 1;
+  string period = 2; // week, month, quarter, year
+}
+
+message GenerateReportChunk {
+  string phase = 1;    // computing, analyzing, done
+  string delta = 2;    // streaming text
+  string section = 3;  // summary, findings, recommendations
+  string error = 4;
+  bool done = 5;
+  string summary = 6;
+  string findings = 7;
+  string recommendations = 8;
 }

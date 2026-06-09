@@ -15,6 +15,7 @@ const Register = lazy(() => import('@/pages/auth/Register'));
 const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'));
 const Dashboard = lazy(() => import('@/pages/dashboard/Dashboard'));
 const AccountDetail = lazy(() => import('@/pages/accounts/AccountDetail'));
+const AccountReport = lazy(() => import('@/pages/accounts/AccountReport'));
 const BindAccount = lazy(() => import('@/pages/accounts/BindAccount'));
 const SystemAI = lazy(() => import('@/pages/ai/SystemAI'));
 const StrategyTemplatePage = lazy(() => import('@/pages/strategy/StrategyTemplatePage'));
@@ -61,6 +62,7 @@ const mainRoutes = (
   <Route path="/" element={<PrivateRoute><MainLayout /></PrivateRoute>}>
     <Route index element={wrap(<Dashboard />)} />
     <Route path="accounts/:id" element={wrap(<AccountDetail />)} />
+    <Route path="accounts/:id/report" element={wrap(<AccountReport />)} />
     <Route path="accounts/bind" element={wrap(<BindAccount />)} />
     <Route path="profile" element={wrap(<ProfilePage />)} />
     <Route path="strategy/templates" element={wrap(<StrategyTemplatePage />)} />

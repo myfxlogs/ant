@@ -57,6 +57,7 @@ export const adminConfigClient = createClient(AdminConfigService, transport);
 export const adminLogClient = createClient(AdminLogService, transport);
 export const adminSystemClient = createClient(AdminSystemService, transport);
 export const analyticsClient = createClient(AnalyticsService, transport);
+export const analyticsStreamClient = createClient(AnalyticsService, streamTransport);
 export const pythonStrategyClient = createClient(
   PythonStrategyService,
   transport,

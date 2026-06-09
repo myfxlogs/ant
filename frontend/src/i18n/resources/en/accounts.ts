@@ -343,7 +343,33 @@ const accounts = {
         marginLevel: 'Margin level',
         credit: 'Credit'
       }
-    }
+    },
+    report: {
+      title: 'Trading Report',
+      titleShort: 'Report',
+      generate: 'Generate Report',
+      aiAnalysis: 'AI Analysis',
+      symbolPnL: 'P&L by Symbol',
+      direction: 'Direction Breakdown',
+      directionLong: 'Long',
+      directionShort: 'Short',
+      tradeDistribution: 'Trade Profit Distribution',
+      drawdownOverlay: 'Equity Curve + Drawdown',
+      drawdownEvents: 'Drawdown Events',
+      recovered: 'Recovered',
+      winRateTrend: 'Monthly Win Rate Trend',
+      periods: {
+        week: 'This Week',
+        month: 'This Month',
+        quarter: 'This Quarter',
+        year: 'This Year',
+      },
+      sections: {
+        summary: 'Summary',
+        findings: 'Key Findings',
+        recommendations: 'Recommendations',
+      },
+    },
   }
 } as const;
 

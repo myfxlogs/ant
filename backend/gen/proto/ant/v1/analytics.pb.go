@@ -1292,6 +1292,986 @@ func (x *GetMonthlyAnalysisResponse) GetData() []byte {
 	return nil
 }
 
+type GetAttributionAnalysisRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetAttributionAnalysisRequest) Reset() {
+	*x = GetAttributionAnalysisRequest{}
+	mi := &file_analytics_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetAttributionAnalysisRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetAttributionAnalysisRequest) ProtoMessage() {}
+
+func (x *GetAttributionAnalysisRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_analytics_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetAttributionAnalysisRequest.ProtoReflect.Descriptor instead.
+func (*GetAttributionAnalysisRequest) Descriptor() ([]byte, []int) {
+	return file_analytics_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *GetAttributionAnalysisRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+
+type GetAttributionAnalysisResponse struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	SymbolPnls        []*SymbolPnL           `protobuf:"bytes,1,rep,name=symbol_pnls,json=symbolPnls,proto3" json:"symbol_pnls,omitempty"`
+	Direction         *DirectionBreakdown    `protobuf:"bytes,2,opt,name=direction,proto3" json:"direction,omitempty"`
+	TradeDistribution *TradeDistribution     `protobuf:"bytes,3,opt,name=trade_distribution,json=tradeDistribution,proto3" json:"trade_distribution,omitempty"`
+	HourlyPnl         []*HourlyPnL           `protobuf:"bytes,4,rep,name=hourly_pnl,json=hourlyPnl,proto3" json:"hourly_pnl,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *GetAttributionAnalysisResponse) Reset() {
+	*x = GetAttributionAnalysisResponse{}
+	mi := &file_analytics_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetAttributionAnalysisResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetAttributionAnalysisResponse) ProtoMessage() {}
+
+func (x *GetAttributionAnalysisResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_analytics_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetAttributionAnalysisResponse.ProtoReflect.Descriptor instead.
+func (*GetAttributionAnalysisResponse) Descriptor() ([]byte, []int) {
+	return file_analytics_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *GetAttributionAnalysisResponse) GetSymbolPnls() []*SymbolPnL {
+	if x != nil {
+		return x.SymbolPnls
+	}
+	return nil
+}
+
+func (x *GetAttributionAnalysisResponse) GetDirection() *DirectionBreakdown {
+	if x != nil {
+		return x.Direction
+	}
+	return nil
+}
+
+func (x *GetAttributionAnalysisResponse) GetTradeDistribution() *TradeDistribution {
+	if x != nil {
+		return x.TradeDistribution
+	}
+	return nil
+}
+
+func (x *GetAttributionAnalysisResponse) GetHourlyPnl() []*HourlyPnL {
+	if x != nil {
+		return x.HourlyPnl
+	}
+	return nil
+}
+
+type SymbolPnL struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	Symbol            string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
+	NetProfit         float64                `protobuf:"fixed64,2,opt,name=net_profit,json=netProfit,proto3" json:"net_profit,omitempty"`
+	TotalTrades       int64                  `protobuf:"varint,3,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`
+	WinRate           float64                `protobuf:"fixed64,4,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
+	ProfitFactor      float64                `protobuf:"fixed64,5,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`
+	TradeSharePercent float64                `protobuf:"fixed64,6,opt,name=trade_share_percent,json=tradeSharePercent,proto3" json:"trade_share_percent,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *SymbolPnL) Reset() {
+	*x = SymbolPnL{}
+	mi := &file_analytics_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SymbolPnL) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SymbolPnL) ProtoMessage() {}
+
+func (x *SymbolPnL) ProtoReflect() protoreflect.Message {
+	mi := &file_analytics_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SymbolPnL.ProtoReflect.Descriptor instead.
+func (*SymbolPnL) Descriptor() ([]byte, []int) {
+	return file_analytics_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *SymbolPnL) GetSymbol() string {
+	if x != nil {
+		return x.Symbol
+	}
+	return ""
+}
+
+func (x *SymbolPnL) GetNetProfit() float64 {
+	if x != nil {
+		return x.NetProfit
+	}
+	return 0
+}
+
+func (x *SymbolPnL) GetTotalTrades() int64 {
+	if x != nil {
+		return x.TotalTrades
+	}
+	return 0
+}
+
+func (x *SymbolPnL) GetWinRate() float64 {
+	if x != nil {
+		return x.WinRate
+	}
+	return 0
+}
+
+func (x *SymbolPnL) GetProfitFactor() float64 {
+	if x != nil {
+		return x.ProfitFactor
+	}
+	return 0
+}
+
+func (x *SymbolPnL) GetTradeSharePercent() float64 {
+	if x != nil {
+		return x.TradeSharePercent
+	}
+	return 0
+}
+
+type DirectionBreakdown struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	LongProfit    float64                `protobuf:"fixed64,1,opt,name=long_profit,json=longProfit,proto3" json:"long_profit,omitempty"`
+	LongTrades    int64                  `protobuf:"varint,2,opt,name=long_trades,json=longTrades,proto3" json:"long_trades,omitempty"`
+	LongWinRate   float64                `protobuf:"fixed64,3,opt,name=long_win_rate,json=longWinRate,proto3" json:"long_win_rate,omitempty"`
+	ShortProfit   float64                `protobuf:"fixed64,4,opt,name=short_profit,json=shortProfit,proto3" json:"short_profit,omitempty"`
+	ShortTrades   int64                  `protobuf:"varint,5,opt,name=short_trades,json=shortTrades,proto3" json:"short_trades,omitempty"`
+	ShortWinRate  float64                `protobuf:"fixed64,6,opt,name=short_win_rate,json=shortWinRate,proto3" json:"short_win_rate,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DirectionBreakdown) Reset() {
+	*x = DirectionBreakdown{}
+	mi := &file_analytics_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DirectionBreakdown) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DirectionBreakdown) ProtoMessage() {}
+
+func (x *DirectionBreakdown) ProtoReflect() protoreflect.Message {
+	mi := &file_analytics_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DirectionBreakdown.ProtoReflect.Descriptor instead.
+func (*DirectionBreakdown) Descriptor() ([]byte, []int) {
+	return file_analytics_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *DirectionBreakdown) GetLongProfit() float64 {
+	if x != nil {
+		return x.LongProfit
+	}
+	return 0
+}
+
+func (x *DirectionBreakdown) GetLongTrades() int64 {
+	if x != nil {
+		return x.LongTrades
+	}
+	return 0
+}
+
+func (x *DirectionBreakdown) GetLongWinRate() float64 {
+	if x != nil {
+		return x.LongWinRate
+	}
+	return 0
+}
+
+func (x *DirectionBreakdown) GetShortProfit() float64 {
+	if x != nil {
+		return x.ShortProfit
+	}
+	return 0
+}
+
+func (x *DirectionBreakdown) GetShortTrades() int64 {
+	if x != nil {
+		return x.ShortTrades
+	}
+	return 0
+}
+
+func (x *DirectionBreakdown) GetShortWinRate() float64 {
+	if x != nil {
+		return x.ShortWinRate
+	}
+	return 0
+}
+
+type TradeDistribution struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	ProfitBuckets  []*TradeBucket         `protobuf:"bytes,1,rep,name=profit_buckets,json=profitBuckets,proto3" json:"profit_buckets,omitempty"`
+	HoldingBuckets []*TradeBucket         `protobuf:"bytes,2,rep,name=holding_buckets,json=holdingBuckets,proto3" json:"holding_buckets,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *TradeDistribution) Reset() {
+	*x = TradeDistribution{}
+	mi := &file_analytics_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TradeDistribution) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TradeDistribution) ProtoMessage() {}
+
+func (x *TradeDistribution) ProtoReflect() protoreflect.Message {
+	mi := &file_analytics_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TradeDistribution.ProtoReflect.Descriptor instead.
+func (*TradeDistribution) Descriptor() ([]byte, []int) {
+	return file_analytics_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *TradeDistribution) GetProfitBuckets() []*TradeBucket {
+	if x != nil {
+		return x.ProfitBuckets
+	}
+	return nil
+}
+
+func (x *TradeDistribution) GetHoldingBuckets() []*TradeBucket {
+	if x != nil {
+		return x.HoldingBuckets
+	}
+	return nil
+}
+
+type TradeBucket struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Label         string                 `protobuf:"bytes,1,opt,name=label,proto3" json:"label,omitempty"`
+	MinValue      float64                `protobuf:"fixed64,2,opt,name=min_value,json=minValue,proto3" json:"min_value,omitempty"`
+	MaxValue      float64                `protobuf:"fixed64,3,opt,name=max_value,json=maxValue,proto3" json:"max_value,omitempty"`
+	Count         int64                  `protobuf:"varint,4,opt,name=count,proto3" json:"count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TradeBucket) Reset() {
+	*x = TradeBucket{}
+	mi := &file_analytics_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TradeBucket) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TradeBucket) ProtoMessage() {}
+
+func (x *TradeBucket) ProtoReflect() protoreflect.Message {
+	mi := &file_analytics_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TradeBucket.ProtoReflect.Descriptor instead.
+func (*TradeBucket) Descriptor() ([]byte, []int) {
+	return file_analytics_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *TradeBucket) GetLabel() string {
+	if x != nil {
+		return x.Label
+	}
+	return ""
+}
+
+func (x *TradeBucket) GetMinValue() float64 {
+	if x != nil {
+		return x.MinValue
+	}
+	return 0
+}
+
+func (x *TradeBucket) GetMaxValue() float64 {
+	if x != nil {
+		return x.MaxValue
+	}
+	return 0
+}
+
+func (x *TradeBucket) GetCount() int64 {
+	if x != nil {
+		return x.Count
+	}
+	return 0
+}
+
+type HourlyPnL struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Hour          int32                  `protobuf:"varint,1,opt,name=hour,proto3" json:"hour,omitempty"`
+	Profit        float64                `protobuf:"fixed64,2,opt,name=profit,proto3" json:"profit,omitempty"`
+	Trades        int64                  `protobuf:"varint,3,opt,name=trades,proto3" json:"trades,omitempty"`
+	WinRate       float64                `protobuf:"fixed64,4,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HourlyPnL) Reset() {
+	*x = HourlyPnL{}
+	mi := &file_analytics_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HourlyPnL) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HourlyPnL) ProtoMessage() {}
+
+func (x *HourlyPnL) ProtoReflect() protoreflect.Message {
+	mi := &file_analytics_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HourlyPnL.ProtoReflect.Descriptor instead.
+func (*HourlyPnL) Descriptor() ([]byte, []int) {
+	return file_analytics_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *HourlyPnL) GetHour() int32 {
+	if x != nil {
+		return x.Hour
+	}
+	return 0
+}
+
+func (x *HourlyPnL) GetProfit() float64 {
+	if x != nil {
+		return x.Profit
+	}
+	return 0
+}
+
+func (x *HourlyPnL) GetTrades() int64 {
+	if x != nil {
+		return x.Trades
+	}
+	return 0
+}
+
+func (x *HourlyPnL) GetWinRate() float64 {
+	if x != nil {
+		return x.WinRate
+	}
+	return 0
+}
+
+type GetRollingMetricsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRollingMetricsRequest) Reset() {
+	*x = GetRollingMetricsRequest{}
+	mi := &file_analytics_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRollingMetricsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRollingMetricsRequest) ProtoMessage() {}
+
+func (x *GetRollingMetricsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_analytics_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRollingMetricsRequest.ProtoReflect.Descriptor instead.
+func (*GetRollingMetricsRequest) Descriptor() ([]byte, []int) {
+	return file_analytics_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *GetRollingMetricsRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+
+type GetRollingMetricsResponse struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	RollingSharpe   []*RollingPoint        `protobuf:"bytes,1,rep,name=rolling_sharpe,json=rollingSharpe,proto3" json:"rolling_sharpe,omitempty"`
+	DrawdownEvents  []*DrawdownEvent       `protobuf:"bytes,2,rep,name=drawdown_events,json=drawdownEvents,proto3" json:"drawdown_events,omitempty"`
+	MonthlyWinRates []*MonthlyWinRate      `protobuf:"bytes,3,rep,name=monthly_win_rates,json=monthlyWinRates,proto3" json:"monthly_win_rates,omitempty"`
+	EquityCurve     []*EquityPoint         `protobuf:"bytes,4,rep,name=equity_curve,json=equityCurve,proto3" json:"equity_curve,omitempty"`
+	DrawdownCurve   []*DrawdownPoint       `protobuf:"bytes,5,rep,name=drawdown_curve,json=drawdownCurve,proto3" json:"drawdown_curve,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *GetRollingMetricsResponse) Reset() {
+	*x = GetRollingMetricsResponse{}
+	mi := &file_analytics_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRollingMetricsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRollingMetricsResponse) ProtoMessage() {}
+
+func (x *GetRollingMetricsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_analytics_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRollingMetricsResponse.ProtoReflect.Descriptor instead.
+func (*GetRollingMetricsResponse) Descriptor() ([]byte, []int) {
+	return file_analytics_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *GetRollingMetricsResponse) GetRollingSharpe() []*RollingPoint {
+	if x != nil {
+		return x.RollingSharpe
+	}
+	return nil
+}
+
+func (x *GetRollingMetricsResponse) GetDrawdownEvents() []*DrawdownEvent {
+	if x != nil {
+		return x.DrawdownEvents
+	}
+	return nil
+}
+
+func (x *GetRollingMetricsResponse) GetMonthlyWinRates() []*MonthlyWinRate {
+	if x != nil {
+		return x.MonthlyWinRates
+	}
+	return nil
+}
+
+func (x *GetRollingMetricsResponse) GetEquityCurve() []*EquityPoint {
+	if x != nil {
+		return x.EquityCurve
+	}
+	return nil
+}
+
+func (x *GetRollingMetricsResponse) GetDrawdownCurve() []*DrawdownPoint {
+	if x != nil {
+		return x.DrawdownCurve
+	}
+	return nil
+}
+
+type RollingPoint struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Date          string                 `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
+	Value         float64                `protobuf:"fixed64,2,opt,name=value,proto3" json:"value,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RollingPoint) Reset() {
+	*x = RollingPoint{}
+	mi := &file_analytics_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RollingPoint) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RollingPoint) ProtoMessage() {}
+
+func (x *RollingPoint) ProtoReflect() protoreflect.Message {
+	mi := &file_analytics_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RollingPoint.ProtoReflect.Descriptor instead.
+func (*RollingPoint) Descriptor() ([]byte, []int) {
+	return file_analytics_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *RollingPoint) GetDate() string {
+	if x != nil {
+		return x.Date
+	}
+	return ""
+}
+
+func (x *RollingPoint) GetValue() float64 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
+}
+
+type DrawdownEvent struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StartDate     string                 `protobuf:"bytes,1,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
+	EndDate       string                 `protobuf:"bytes,2,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`
+	DurationDays  int32                  `protobuf:"varint,3,opt,name=duration_days,json=durationDays,proto3" json:"duration_days,omitempty"`
+	DepthPercent  float64                `protobuf:"fixed64,4,opt,name=depth_percent,json=depthPercent,proto3" json:"depth_percent,omitempty"`
+	RecoveryDate  string                 `protobuf:"bytes,5,opt,name=recovery_date,json=recoveryDate,proto3" json:"recovery_date,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DrawdownEvent) Reset() {
+	*x = DrawdownEvent{}
+	mi := &file_analytics_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DrawdownEvent) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DrawdownEvent) ProtoMessage() {}
+
+func (x *DrawdownEvent) ProtoReflect() protoreflect.Message {
+	mi := &file_analytics_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DrawdownEvent.ProtoReflect.Descriptor instead.
+func (*DrawdownEvent) Descriptor() ([]byte, []int) {
+	return file_analytics_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *DrawdownEvent) GetStartDate() string {
+	if x != nil {
+		return x.StartDate
+	}
+	return ""
+}
+
+func (x *DrawdownEvent) GetEndDate() string {
+	if x != nil {
+		return x.EndDate
+	}
+	return ""
+}
+
+func (x *DrawdownEvent) GetDurationDays() int32 {
+	if x != nil {
+		return x.DurationDays
+	}
+	return 0
+}
+
+func (x *DrawdownEvent) GetDepthPercent() float64 {
+	if x != nil {
+		return x.DepthPercent
+	}
+	return 0
+}
+
+func (x *DrawdownEvent) GetRecoveryDate() string {
+	if x != nil {
+		return x.RecoveryDate
+	}
+	return ""
+}
+
+type DrawdownPoint struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Date            string                 `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
+	DrawdownPercent float64                `protobuf:"fixed64,2,opt,name=drawdown_percent,json=drawdownPercent,proto3" json:"drawdown_percent,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *DrawdownPoint) Reset() {
+	*x = DrawdownPoint{}
+	mi := &file_analytics_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DrawdownPoint) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DrawdownPoint) ProtoMessage() {}
+
+func (x *DrawdownPoint) ProtoReflect() protoreflect.Message {
+	mi := &file_analytics_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DrawdownPoint.ProtoReflect.Descriptor instead.
+func (*DrawdownPoint) Descriptor() ([]byte, []int) {
+	return file_analytics_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *DrawdownPoint) GetDate() string {
+	if x != nil {
+		return x.Date
+	}
+	return ""
+}
+
+func (x *DrawdownPoint) GetDrawdownPercent() float64 {
+	if x != nil {
+		return x.DrawdownPercent
+	}
+	return 0
+}
+
+type MonthlyWinRate struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Month         string                 `protobuf:"bytes,1,opt,name=month,proto3" json:"month,omitempty"`
+	WinRate       float64                `protobuf:"fixed64,2,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
+	TotalTrades   int64                  `protobuf:"varint,3,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MonthlyWinRate) Reset() {
+	*x = MonthlyWinRate{}
+	mi := &file_analytics_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MonthlyWinRate) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MonthlyWinRate) ProtoMessage() {}
+
+func (x *MonthlyWinRate) ProtoReflect() protoreflect.Message {
+	mi := &file_analytics_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MonthlyWinRate.ProtoReflect.Descriptor instead.
+func (*MonthlyWinRate) Descriptor() ([]byte, []int) {
+	return file_analytics_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *MonthlyWinRate) GetMonth() string {
+	if x != nil {
+		return x.Month
+	}
+	return ""
+}
+
+func (x *MonthlyWinRate) GetWinRate() float64 {
+	if x != nil {
+		return x.WinRate
+	}
+	return 0
+}
+
+func (x *MonthlyWinRate) GetTotalTrades() int64 {
+	if x != nil {
+		return x.TotalTrades
+	}
+	return 0
+}
+
+type GenerateReportRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	Period        string                 `protobuf:"bytes,2,opt,name=period,proto3" json:"period,omitempty"` // week, month, quarter, year
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GenerateReportRequest) Reset() {
+	*x = GenerateReportRequest{}
+	mi := &file_analytics_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GenerateReportRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GenerateReportRequest) ProtoMessage() {}
+
+func (x *GenerateReportRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_analytics_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GenerateReportRequest.ProtoReflect.Descriptor instead.
+func (*GenerateReportRequest) Descriptor() ([]byte, []int) {
+	return file_analytics_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *GenerateReportRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+
+func (x *GenerateReportRequest) GetPeriod() string {
+	if x != nil {
+		return x.Period
+	}
+	return ""
+}
+
+type GenerateReportChunk struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Phase           string                 `protobuf:"bytes,1,opt,name=phase,proto3" json:"phase,omitempty"`     // computing, analyzing, done
+	Delta           string                 `protobuf:"bytes,2,opt,name=delta,proto3" json:"delta,omitempty"`     // streaming text
+	Section         string                 `protobuf:"bytes,3,opt,name=section,proto3" json:"section,omitempty"` // summary, findings, recommendations
+	Error           string                 `protobuf:"bytes,4,opt,name=error,proto3" json:"error,omitempty"`
+	Done            bool                   `protobuf:"varint,5,opt,name=done,proto3" json:"done,omitempty"`
+	Summary         string                 `protobuf:"bytes,6,opt,name=summary,proto3" json:"summary,omitempty"`
+	Findings        string                 `protobuf:"bytes,7,opt,name=findings,proto3" json:"findings,omitempty"`
+	Recommendations string                 `protobuf:"bytes,8,opt,name=recommendations,proto3" json:"recommendations,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *GenerateReportChunk) Reset() {
+	*x = GenerateReportChunk{}
+	mi := &file_analytics_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GenerateReportChunk) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GenerateReportChunk) ProtoMessage() {}
+
+func (x *GenerateReportChunk) ProtoReflect() protoreflect.Message {
+	mi := &file_analytics_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GenerateReportChunk.ProtoReflect.Descriptor instead.
+func (*GenerateReportChunk) Descriptor() ([]byte, []int) {
+	return file_analytics_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *GenerateReportChunk) GetPhase() string {
+	if x != nil {
+		return x.Phase
+	}
+	return ""
+}
+
+func (x *GenerateReportChunk) GetDelta() string {
+	if x != nil {
+		return x.Delta
+	}
+	return ""
+}
+
+func (x *GenerateReportChunk) GetSection() string {
+	if x != nil {
+		return x.Section
+	}
+	return ""
+}
+
+func (x *GenerateReportChunk) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
+}
+
+func (x *GenerateReportChunk) GetDone() bool {
+	if x != nil {
+		return x.Done
+	}
+	return false
+}
+
+func (x *GenerateReportChunk) GetSummary() string {
+	if x != nil {
+		return x.Summary
+	}
+	return ""
+}
+
+func (x *GenerateReportChunk) GetFindings() string {
+	if x != nil {
+		return x.Findings
+	}
+	return ""
+}
+
+func (x *GenerateReportChunk) GetRecommendations() string {
+	if x != nil {
+		return x.Recommendations
+	}
+	return ""
+}
+
 var File_analytics_proto protoreflect.FileDescriptor
 
 const file_analytics_proto_rawDesc = "" +
@@ -1414,18 +2394,100 @@ const file_analytics_proto_rawDesc = "" +
 	"account_id\x18\x01 \x01(\tR\taccountId\"F\n" +
 	"\x1aGetMonthlyAnalysisResponse\x12\x14\n" +
 	"\x05years\x18\x01 \x03(\x05R\x05years\x12\x12\n" +
-	"\x04data\x18\x02 \x01(\fR\x04data*\xaf\x01\n" +
+	"\x04data\x18\x02 \x01(\fR\x04data\">\n" +
+	"\x1dGetAttributionAnalysisRequest\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\x01 \x01(\tR\taccountId\"\x8a\x02\n" +
+	"\x1eGetAttributionAnalysisResponse\x122\n" +
+	"\vsymbol_pnls\x18\x01 \x03(\v2\x11.ant.v1.SymbolPnLR\n" +
+	"symbolPnls\x128\n" +
+	"\tdirection\x18\x02 \x01(\v2\x1a.ant.v1.DirectionBreakdownR\tdirection\x12H\n" +
+	"\x12trade_distribution\x18\x03 \x01(\v2\x19.ant.v1.TradeDistributionR\x11tradeDistribution\x120\n" +
+	"\n" +
+	"hourly_pnl\x18\x04 \x03(\v2\x11.ant.v1.HourlyPnLR\thourlyPnl\"\xd5\x01\n" +
+	"\tSymbolPnL\x12\x16\n" +
+	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x1d\n" +
+	"\n" +
+	"net_profit\x18\x02 \x01(\x01R\tnetProfit\x12!\n" +
+	"\ftotal_trades\x18\x03 \x01(\x03R\vtotalTrades\x12\x19\n" +
+	"\bwin_rate\x18\x04 \x01(\x01R\awinRate\x12#\n" +
+	"\rprofit_factor\x18\x05 \x01(\x01R\fprofitFactor\x12.\n" +
+	"\x13trade_share_percent\x18\x06 \x01(\x01R\x11tradeSharePercent\"\xe6\x01\n" +
+	"\x12DirectionBreakdown\x12\x1f\n" +
+	"\vlong_profit\x18\x01 \x01(\x01R\n" +
+	"longProfit\x12\x1f\n" +
+	"\vlong_trades\x18\x02 \x01(\x03R\n" +
+	"longTrades\x12\"\n" +
+	"\rlong_win_rate\x18\x03 \x01(\x01R\vlongWinRate\x12!\n" +
+	"\fshort_profit\x18\x04 \x01(\x01R\vshortProfit\x12!\n" +
+	"\fshort_trades\x18\x05 \x01(\x03R\vshortTrades\x12$\n" +
+	"\x0eshort_win_rate\x18\x06 \x01(\x01R\fshortWinRate\"\x8d\x01\n" +
+	"\x11TradeDistribution\x12:\n" +
+	"\x0eprofit_buckets\x18\x01 \x03(\v2\x13.ant.v1.TradeBucketR\rprofitBuckets\x12<\n" +
+	"\x0fholding_buckets\x18\x02 \x03(\v2\x13.ant.v1.TradeBucketR\x0eholdingBuckets\"s\n" +
+	"\vTradeBucket\x12\x14\n" +
+	"\x05label\x18\x01 \x01(\tR\x05label\x12\x1b\n" +
+	"\tmin_value\x18\x02 \x01(\x01R\bminValue\x12\x1b\n" +
+	"\tmax_value\x18\x03 \x01(\x01R\bmaxValue\x12\x14\n" +
+	"\x05count\x18\x04 \x01(\x03R\x05count\"j\n" +
+	"\tHourlyPnL\x12\x12\n" +
+	"\x04hour\x18\x01 \x01(\x05R\x04hour\x12\x16\n" +
+	"\x06profit\x18\x02 \x01(\x01R\x06profit\x12\x16\n" +
+	"\x06trades\x18\x03 \x01(\x03R\x06trades\x12\x19\n" +
+	"\bwin_rate\x18\x04 \x01(\x01R\awinRate\"9\n" +
+	"\x18GetRollingMetricsRequest\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\x01 \x01(\tR\taccountId\"\xd2\x02\n" +
+	"\x19GetRollingMetricsResponse\x12;\n" +
+	"\x0erolling_sharpe\x18\x01 \x03(\v2\x14.ant.v1.RollingPointR\rrollingSharpe\x12>\n" +
+	"\x0fdrawdown_events\x18\x02 \x03(\v2\x15.ant.v1.DrawdownEventR\x0edrawdownEvents\x12B\n" +
+	"\x11monthly_win_rates\x18\x03 \x03(\v2\x16.ant.v1.MonthlyWinRateR\x0fmonthlyWinRates\x126\n" +
+	"\fequity_curve\x18\x04 \x03(\v2\x13.ant.v1.EquityPointR\vequityCurve\x12<\n" +
+	"\x0edrawdown_curve\x18\x05 \x03(\v2\x15.ant.v1.DrawdownPointR\rdrawdownCurve\"8\n" +
+	"\fRollingPoint\x12\x12\n" +
+	"\x04date\x18\x01 \x01(\tR\x04date\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x01R\x05value\"\xb8\x01\n" +
+	"\rDrawdownEvent\x12\x1d\n" +
+	"\n" +
+	"start_date\x18\x01 \x01(\tR\tstartDate\x12\x19\n" +
+	"\bend_date\x18\x02 \x01(\tR\aendDate\x12#\n" +
+	"\rduration_days\x18\x03 \x01(\x05R\fdurationDays\x12#\n" +
+	"\rdepth_percent\x18\x04 \x01(\x01R\fdepthPercent\x12#\n" +
+	"\rrecovery_date\x18\x05 \x01(\tR\frecoveryDate\"N\n" +
+	"\rDrawdownPoint\x12\x12\n" +
+	"\x04date\x18\x01 \x01(\tR\x04date\x12)\n" +
+	"\x10drawdown_percent\x18\x02 \x01(\x01R\x0fdrawdownPercent\"d\n" +
+	"\x0eMonthlyWinRate\x12\x14\n" +
+	"\x05month\x18\x01 \x01(\tR\x05month\x12\x19\n" +
+	"\bwin_rate\x18\x02 \x01(\x01R\awinRate\x12!\n" +
+	"\ftotal_trades\x18\x03 \x01(\x03R\vtotalTrades\"N\n" +
+	"\x15GenerateReportRequest\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\x01 \x01(\tR\taccountId\x12\x16\n" +
+	"\x06period\x18\x02 \x01(\tR\x06period\"\xe5\x01\n" +
+	"\x13GenerateReportChunk\x12\x14\n" +
+	"\x05phase\x18\x01 \x01(\tR\x05phase\x12\x14\n" +
+	"\x05delta\x18\x02 \x01(\tR\x05delta\x12\x18\n" +
+	"\asection\x18\x03 \x01(\tR\asection\x12\x14\n" +
+	"\x05error\x18\x04 \x01(\tR\x05error\x12\x12\n" +
+	"\x04done\x18\x05 \x01(\bR\x04done\x12\x18\n" +
+	"\asummary\x18\x06 \x01(\tR\asummary\x12\x1a\n" +
+	"\bfindings\x18\a \x01(\tR\bfindings\x12(\n" +
+	"\x0frecommendations\x18\b \x01(\tR\x0frecommendations*\xaf\x01\n" +
 	"\x11EquityCurvePeriod\x12#\n" +
 	"\x1fEQUITY_CURVE_PERIOD_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17EQUITY_CURVE_PERIOD_DAY\x10\x01\x12\x1c\n" +
 	"\x18EQUITY_CURVE_PERIOD_WEEK\x10\x02\x12\x1d\n" +
 	"\x19EQUITY_CURVE_PERIOD_MONTH\x10\x03\x12\x1b\n" +
-	"\x17EQUITY_CURVE_PERIOD_ALL\x10\x042\xee\x02\n" +
+	"\x17EQUITY_CURVE_PERIOD_ALL\x10\x042\x81\x05\n" +
 	"\x10AnalyticsService\x12[\n" +
 	"\x13GetAccountAnalytics\x12\".ant.v1.GetAccountAnalyticsRequest\x1a .ant.v1.AccountAnalyticsResponse\x12R\n" +
 	"\x0fGetRecentTrades\x12\x1e.ant.v1.GetRecentTradesRequest\x1a\x1f.ant.v1.GetRecentTradesResponse\x12L\n" +
 	"\rGetMonthlyPnL\x12\x1c.ant.v1.GetMonthlyPnLRequest\x1a\x1d.ant.v1.GetMonthlyPnLResponse\x12[\n" +
-	"\x12GetMonthlyAnalysis\x12!.ant.v1.GetMonthlyAnalysisRequest\x1a\".ant.v1.GetMonthlyAnalysisResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x12GetMonthlyAnalysis\x12!.ant.v1.GetMonthlyAnalysisRequest\x1a\".ant.v1.GetMonthlyAnalysisResponse\x12g\n" +
+	"\x16GetAttributionAnalysis\x12%.ant.v1.GetAttributionAnalysisRequest\x1a&.ant.v1.GetAttributionAnalysisResponse\x12X\n" +
+	"\x11GetRollingMetrics\x12 .ant.v1.GetRollingMetricsRequest\x1a!.ant.v1.GetRollingMetricsResponse\x12N\n" +
+	"\x0eGenerateReport\x12\x1d.ant.v1.GenerateReportRequest\x1a\x1b.ant.v1.GenerateReportChunk0\x01B\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_analytics_proto_rawDescOnce sync.Once
@@ -1440,25 +2502,40 @@ func file_analytics_proto_rawDescGZIP() []byte {
 }
 
 var file_analytics_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_analytics_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_analytics_proto_msgTypes = make([]protoimpl.MessageInfo, 31)
 var file_analytics_proto_goTypes = []any{
-	(EquityCurvePeriod)(0),             // 0: ant.v1.EquityCurvePeriod
-	(*GetAccountAnalyticsRequest)(nil), // 1: ant.v1.GetAccountAnalyticsRequest
-	(*AccountAnalyticsResponse)(nil),   // 2: ant.v1.AccountAnalyticsResponse
-	(*TradeStats)(nil),                 // 3: ant.v1.TradeStats
-	(*RiskMetrics)(nil),                // 4: ant.v1.RiskMetrics
-	(*SymbolStat)(nil),                 // 5: ant.v1.SymbolStat
-	(*EquityPoint)(nil),                // 6: ant.v1.EquityPoint
-	(*DailyPnL)(nil),                   // 7: ant.v1.DailyPnL
-	(*HourlyStat)(nil),                 // 8: ant.v1.HourlyStat
-	(*TradeRecord)(nil),                // 9: ant.v1.TradeRecord
-	(*GetRecentTradesRequest)(nil),     // 10: ant.v1.GetRecentTradesRequest
-	(*GetRecentTradesResponse)(nil),    // 11: ant.v1.GetRecentTradesResponse
-	(*MonthlyPnLItem)(nil),             // 12: ant.v1.MonthlyPnLItem
-	(*GetMonthlyPnLRequest)(nil),       // 13: ant.v1.GetMonthlyPnLRequest
-	(*GetMonthlyPnLResponse)(nil),      // 14: ant.v1.GetMonthlyPnLResponse
-	(*GetMonthlyAnalysisRequest)(nil),  // 15: ant.v1.GetMonthlyAnalysisRequest
-	(*GetMonthlyAnalysisResponse)(nil), // 16: ant.v1.GetMonthlyAnalysisResponse
+	(EquityCurvePeriod)(0),                 // 0: ant.v1.EquityCurvePeriod
+	(*GetAccountAnalyticsRequest)(nil),     // 1: ant.v1.GetAccountAnalyticsRequest
+	(*AccountAnalyticsResponse)(nil),       // 2: ant.v1.AccountAnalyticsResponse
+	(*TradeStats)(nil),                     // 3: ant.v1.TradeStats
+	(*RiskMetrics)(nil),                    // 4: ant.v1.RiskMetrics
+	(*SymbolStat)(nil),                     // 5: ant.v1.SymbolStat
+	(*EquityPoint)(nil),                    // 6: ant.v1.EquityPoint
+	(*DailyPnL)(nil),                       // 7: ant.v1.DailyPnL
+	(*HourlyStat)(nil),                     // 8: ant.v1.HourlyStat
+	(*TradeRecord)(nil),                    // 9: ant.v1.TradeRecord
+	(*GetRecentTradesRequest)(nil),         // 10: ant.v1.GetRecentTradesRequest
+	(*GetRecentTradesResponse)(nil),        // 11: ant.v1.GetRecentTradesResponse
+	(*MonthlyPnLItem)(nil),                 // 12: ant.v1.MonthlyPnLItem
+	(*GetMonthlyPnLRequest)(nil),           // 13: ant.v1.GetMonthlyPnLRequest
+	(*GetMonthlyPnLResponse)(nil),          // 14: ant.v1.GetMonthlyPnLResponse
+	(*GetMonthlyAnalysisRequest)(nil),      // 15: ant.v1.GetMonthlyAnalysisRequest
+	(*GetMonthlyAnalysisResponse)(nil),     // 16: ant.v1.GetMonthlyAnalysisResponse
+	(*GetAttributionAnalysisRequest)(nil),  // 17: ant.v1.GetAttributionAnalysisRequest
+	(*GetAttributionAnalysisResponse)(nil), // 18: ant.v1.GetAttributionAnalysisResponse
+	(*SymbolPnL)(nil),                      // 19: ant.v1.SymbolPnL
+	(*DirectionBreakdown)(nil),             // 20: ant.v1.DirectionBreakdown
+	(*TradeDistribution)(nil),              // 21: ant.v1.TradeDistribution
+	(*TradeBucket)(nil),                    // 22: ant.v1.TradeBucket
+	(*HourlyPnL)(nil),                      // 23: ant.v1.HourlyPnL
+	(*GetRollingMetricsRequest)(nil),       // 24: ant.v1.GetRollingMetricsRequest
+	(*GetRollingMetricsResponse)(nil),      // 25: ant.v1.GetRollingMetricsResponse
+	(*RollingPoint)(nil),                   // 26: ant.v1.RollingPoint
+	(*DrawdownEvent)(nil),                  // 27: ant.v1.DrawdownEvent
+	(*DrawdownPoint)(nil),                  // 28: ant.v1.DrawdownPoint
+	(*MonthlyWinRate)(nil),                 // 29: ant.v1.MonthlyWinRate
+	(*GenerateReportRequest)(nil),          // 30: ant.v1.GenerateReportRequest
+	(*GenerateReportChunk)(nil),            // 31: ant.v1.GenerateReportChunk
 }
 var file_analytics_proto_depIdxs = []int32{
 	0,  // 0: ant.v1.GetAccountAnalyticsRequest.equity_curve_period:type_name -> ant.v1.EquityCurvePeriod
@@ -1470,19 +2547,36 @@ var file_analytics_proto_depIdxs = []int32{
 	8,  // 6: ant.v1.AccountAnalyticsResponse.hourly_stats:type_name -> ant.v1.HourlyStat
 	9,  // 7: ant.v1.GetRecentTradesResponse.trades:type_name -> ant.v1.TradeRecord
 	12, // 8: ant.v1.GetMonthlyPnLResponse.monthly_pnl:type_name -> ant.v1.MonthlyPnLItem
-	1,  // 9: ant.v1.AnalyticsService.GetAccountAnalytics:input_type -> ant.v1.GetAccountAnalyticsRequest
-	10, // 10: ant.v1.AnalyticsService.GetRecentTrades:input_type -> ant.v1.GetRecentTradesRequest
-	13, // 11: ant.v1.AnalyticsService.GetMonthlyPnL:input_type -> ant.v1.GetMonthlyPnLRequest
-	15, // 12: ant.v1.AnalyticsService.GetMonthlyAnalysis:input_type -> ant.v1.GetMonthlyAnalysisRequest
-	2,  // 13: ant.v1.AnalyticsService.GetAccountAnalytics:output_type -> ant.v1.AccountAnalyticsResponse
-	11, // 14: ant.v1.AnalyticsService.GetRecentTrades:output_type -> ant.v1.GetRecentTradesResponse
-	14, // 15: ant.v1.AnalyticsService.GetMonthlyPnL:output_type -> ant.v1.GetMonthlyPnLResponse
-	16, // 16: ant.v1.AnalyticsService.GetMonthlyAnalysis:output_type -> ant.v1.GetMonthlyAnalysisResponse
-	13, // [13:17] is the sub-list for method output_type
-	9,  // [9:13] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	19, // 9: ant.v1.GetAttributionAnalysisResponse.symbol_pnls:type_name -> ant.v1.SymbolPnL
+	20, // 10: ant.v1.GetAttributionAnalysisResponse.direction:type_name -> ant.v1.DirectionBreakdown
+	21, // 11: ant.v1.GetAttributionAnalysisResponse.trade_distribution:type_name -> ant.v1.TradeDistribution
+	23, // 12: ant.v1.GetAttributionAnalysisResponse.hourly_pnl:type_name -> ant.v1.HourlyPnL
+	22, // 13: ant.v1.TradeDistribution.profit_buckets:type_name -> ant.v1.TradeBucket
+	22, // 14: ant.v1.TradeDistribution.holding_buckets:type_name -> ant.v1.TradeBucket
+	26, // 15: ant.v1.GetRollingMetricsResponse.rolling_sharpe:type_name -> ant.v1.RollingPoint
+	27, // 16: ant.v1.GetRollingMetricsResponse.drawdown_events:type_name -> ant.v1.DrawdownEvent
+	29, // 17: ant.v1.GetRollingMetricsResponse.monthly_win_rates:type_name -> ant.v1.MonthlyWinRate
+	6,  // 18: ant.v1.GetRollingMetricsResponse.equity_curve:type_name -> ant.v1.EquityPoint
+	28, // 19: ant.v1.GetRollingMetricsResponse.drawdown_curve:type_name -> ant.v1.DrawdownPoint
+	1,  // 20: ant.v1.AnalyticsService.GetAccountAnalytics:input_type -> ant.v1.GetAccountAnalyticsRequest
+	10, // 21: ant.v1.AnalyticsService.GetRecentTrades:input_type -> ant.v1.GetRecentTradesRequest
+	13, // 22: ant.v1.AnalyticsService.GetMonthlyPnL:input_type -> ant.v1.GetMonthlyPnLRequest
+	15, // 23: ant.v1.AnalyticsService.GetMonthlyAnalysis:input_type -> ant.v1.GetMonthlyAnalysisRequest
+	17, // 24: ant.v1.AnalyticsService.GetAttributionAnalysis:input_type -> ant.v1.GetAttributionAnalysisRequest
+	24, // 25: ant.v1.AnalyticsService.GetRollingMetrics:input_type -> ant.v1.GetRollingMetricsRequest
+	30, // 26: ant.v1.AnalyticsService.GenerateReport:input_type -> ant.v1.GenerateReportRequest
+	2,  // 27: ant.v1.AnalyticsService.GetAccountAnalytics:output_type -> ant.v1.AccountAnalyticsResponse
+	11, // 28: ant.v1.AnalyticsService.GetRecentTrades:output_type -> ant.v1.GetRecentTradesResponse
+	14, // 29: ant.v1.AnalyticsService.GetMonthlyPnL:output_type -> ant.v1.GetMonthlyPnLResponse
+	16, // 30: ant.v1.AnalyticsService.GetMonthlyAnalysis:output_type -> ant.v1.GetMonthlyAnalysisResponse
+	18, // 31: ant.v1.AnalyticsService.GetAttributionAnalysis:output_type -> ant.v1.GetAttributionAnalysisResponse
+	25, // 32: ant.v1.AnalyticsService.GetRollingMetrics:output_type -> ant.v1.GetRollingMetricsResponse
+	31, // 33: ant.v1.AnalyticsService.GenerateReport:output_type -> ant.v1.GenerateReportChunk
+	27, // [27:34] is the sub-list for method output_type
+	20, // [20:27] is the sub-list for method input_type
+	20, // [20:20] is the sub-list for extension type_name
+	20, // [20:20] is the sub-list for extension extendee
+	0,  // [0:20] is the sub-list for field type_name
 }
 
 func init() { file_analytics_proto_init() }
@@ -1496,7 +2590,7 @@ func file_analytics_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_analytics_proto_rawDesc), len(file_analytics_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   16,
+			NumMessages:   31,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

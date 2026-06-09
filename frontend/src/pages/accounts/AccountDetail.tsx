@@ -5,7 +5,7 @@ import {
   ArrowLeftOutlined, ReloadOutlined, PauseCircleOutlined,
   CaretRightOutlined, MoreOutlined, WalletOutlined, LineChartOutlined,
   RiseOutlined, FallOutlined, DollarOutlined, PercentageOutlined,
-  WarningOutlined, DeleteOutlined,
+  WarningOutlined, DeleteOutlined, FileTextOutlined,
 } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -112,6 +112,7 @@ export default function AccountDetail() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button icon={<FileTextOutlined />} onClick={() => navigate(`/accounts/${id}/report`)}>{t('accounts.report.titleShort')}</Button>
             <Button icon={<ReloadOutlined />} onClick={handleRefresh} loading={analyticsLoading}>{t('common.refresh')}</Button>
             <Dropdown menu={{ items: menuItems }} trigger={['click']}><Button icon={<MoreOutlined />} /></Dropdown>
           </div>
