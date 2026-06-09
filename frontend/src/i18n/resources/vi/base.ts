@@ -99,7 +99,12 @@ const base = {
       lessThanMinute: '< 1 phút'
     },
     required: 'Bắt buộc',
-    noData: 'Không có dữ liệu'
+    noData: 'Không có dữ liệu',
+    ok: 'OK',
+    error: 'Error',
+    retry: 'Retry',
+    pageError: 'Page Error',
+    unexpectedError: 'An unexpected error occurred'
   },
   language: {
     simplifiedChinese: '简体中文',
@@ -135,7 +140,12 @@ const base = {
     bid: 'Giá mua',
     ask: 'Giá bán',
     spread: 'Chênh lệch',
-    mid: 'Giá trung bình'
+    mid: 'Giá trung bình',
+    allSymbols: 'All Symbols',
+    common: 'Common',
+    selectSymbol: 'Select symbol',
+    noSymbolsFound: 'No symbols found',
+    loadingSymbols: 'Loading...'
   },
   topbar: {
     systemOk: 'Hệ thống đang hoạt động bình thường',

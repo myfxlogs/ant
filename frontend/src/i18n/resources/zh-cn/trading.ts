@@ -138,7 +138,22 @@ const trading = {
     closePosition: '平仓',
     closePositionConfirm: '确认平仓？',
     orderHistory: '历史订单',
-    noOrders: '暂无订单'
+    noOrders: '暂无订单',
+    pnl: 'P&L',
+    time: 'Time',
+    ordersCount: '{{count}} orders',
+    markPrice: 'Mark Price',
+    positionSide: 'Side',
+    positionSize: 'Size',
+    positionEntryPrice: 'Entry Price',
+    positionMarkPrice: 'Mark Price',
+    positionLeverage: 'Leverage',
+    positionUnrealizedPnL: 'Unrealized PnL',
+    positionLong: 'LONG',
+    positionShort: 'SHORT',
+    openPositionsTitle: 'Open Positions',
+    closePositionTitle: 'Close Position',
+    recentTrades: 'Recent Trades'
   }
 } as const;
 

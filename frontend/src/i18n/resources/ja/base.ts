@@ -99,7 +99,12 @@ const base = {
       day: '日',
       lessThanMinute: '< 1分'
     },
-    required: '必須'
+    required: '必須',
+    ok: 'OK',
+    error: 'Error',
+    retry: 'Retry',
+    pageError: 'Page Error',
+    unexpectedError: 'An unexpected error occurred'
   },
   language: {
     simplifiedChinese: '简体中文',
@@ -135,7 +140,12 @@ const base = {
     bid: '買値',
     ask: '売値',
     spread: 'スプレッド',
-    mid: '仲値'
+    mid: '仲値',
+    allSymbols: 'All Symbols',
+    common: 'Common',
+    selectSymbol: 'Select symbol',
+    noSymbolsFound: 'No symbols found',
+    loadingSymbols: 'Loading...'
   },
   topbar: {
     systemOk: 'システムは正常に稼働中',

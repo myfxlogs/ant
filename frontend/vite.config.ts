@@ -18,6 +18,10 @@ export default defineConfig({
         target: process.env.VITE_DEV_PROXY_TARGET || 'http://127.0.0.1:8080',
         changeOrigin: true,
       },
+      '/ant.v1.': {
+        target: process.env.VITE_DEV_PROXY_TARGET || 'http://127.0.0.1:8080',
+        changeOrigin: true,
+      },
     },
     headers: {
       'Cache-Control': 'no-store, no-cache, must-revalidate',

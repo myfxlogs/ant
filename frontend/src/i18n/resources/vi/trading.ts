@@ -138,7 +138,22 @@ const trading = {
     closePositionConfirm: 'Đóng vị thế này?',
     openTime: 'Thời gian mở',
     orderHistory: 'Lịch sử lệnh',
-    noOrders: 'Chưa có lệnh nào'
+    noOrders: 'Chưa có lệnh nào',
+    pnl: 'P&L',
+    time: 'Time',
+    ordersCount: '{{count}} orders',
+    markPrice: 'Mark Price',
+    positionSide: 'Side',
+    positionSize: 'Size',
+    positionEntryPrice: 'Entry Price',
+    positionMarkPrice: 'Mark Price',
+    positionLeverage: 'Leverage',
+    positionUnrealizedPnL: 'Unrealized PnL',
+    positionLong: 'LONG',
+    positionShort: 'SHORT',
+    openPositionsTitle: 'Open Positions',
+    closePositionTitle: 'Close Position',
+    recentTrades: 'Recent Trades'
   }
 } as const;
 

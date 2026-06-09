@@ -2,21 +2,16 @@
 /**
  * fill-i18n-from-en.ts - Deep-merge missing English keys into all non-en locales.
  *
- * English (en/) is canonical. This script:
- * 1. Loads each locale module via tsx import (zero eval)
- * 2. Finds keys present in en but missing in the locale
- * 3. Inserts missing keys using precise string editing (preserves all formatting)
+ * English (en/) is canonical. Loads each locale module via tsx import,
+ * deep-merges missing keys from English, and serializes back with toTS().
  *
  * Usage:
  *   npx tsx scripts/fill-i18n-from-en.ts          # dry-run
  *   npx tsx scripts/fill-i18n-from-en.ts --write  # apply changes
- *
- * Excludes: admin.* keys (managed separately)
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { parseSource, ensureKey } from './lib/i18n-source-editor.js';
 
 const write = process.argv.includes('--write');
 const scriptDir = path.dirname(new URL(import.meta.url).pathname);
@@ -31,106 +26,111 @@ const modules = fs.readdirSync(path.join(BASE, 'en'))
   .filter(f => f.endsWith('.ts') && f !== 'index.ts')
   .map(f => f.replace('.ts', ''));
 
-function leafPaths(obj: Record<string, unknown>, prefix = ''): Map<string, unknown> {
-  const out = new Map<string, unknown>();
-  for (const [k, v] of Object.entries(obj)) {
-    const fullKey = prefix ? prefix + '.' + k : k;
-    if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
-      for (const [p, val] of leafPaths(v as Record<string, unknown>, fullKey)) {
-        out.set(p, val);
+function deepMerge(target: Record<string, unknown>, source: Record<string, unknown>): Record<string, unknown> {
+  const out = { ...target };
+  for (const [key, value] of Object.entries(source)) {
+    if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+      if (typeof out[key] === 'object' && out[key] !== null && !Array.isArray(out[key])) {
+        out[key] = deepMerge(out[key] as Record<string, unknown>, value as Record<string, unknown>);
+      } else if (!(key in out)) {
+        out[key] = deepMerge({}, value as Record<string, unknown>);
       }
-    } else {
-      out.set(fullKey, v);
+    } else if (!(key in out)) {
+      out[key] = value;
     }
   }
   return out;
 }
 
-// Determine the top-level key in the merged object that corresponds to a module.
-// e.g. ai_settings.ts exports { ai: { settings: {...} } }, so its top-level path is "ai.settings"
-function getModulePrefix(mod: string): string {
-  const mapping: Record<string, string> = {
-    base: '',
-    accounts: 'accounts',
-    analytics: 'analytics',
-    dashboard: 'dashboard',
-    trading: 'trading',
-    strategy: 'strategy',
-    errors: 'errors',
-    logs: 'logs',
-    ai: 'ai',
-    ai_settings: 'ai.settings',
-    ai_store: 'ai.store',
-    ai_wizard: 'ai.wizard',
-  };
-  return mapping[mod] ?? mod;
+function countLeafKeys(obj: Record<string, unknown>): number {
+  let count = 0;
+  for (const v of Object.values(obj)) {
+    if (v !== null && typeof v === 'object' && !Array.isArray(v)) count += countLeafKeys(v as Record<string, unknown>);
+    else count++;
+  }
+  return count;
+}
+
+// toTS: serialize a plain object back to TS object literal notation.
+// CRITICAL: always uses backtick templates for strings containing newlines
+// or single quotes + backticks, to produce valid JavaScript.
+function toTS(obj: unknown, indent = 0): string {
+  const pad = '  '.repeat(indent);
+  const pad1 = '  '.repeat(indent + 1);
+  if (obj === null || obj === undefined) return 'null';
+  if (typeof obj === 'string') {
+    const s = obj as string;
+    // Escape backslash, backtick, template injection
+    const escaped = s.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\${/g, '\\${');
+    // Multi-line or contains single-quote → use backtick
+    if (s.includes('\n') || s.includes("'")) {
+      return '`' + escaped + '`';
+    }
+    return "'" + escaped + "'";
+  }
+  if (typeof obj === 'number' || typeof obj === 'boolean') return String(obj);
+  if (Array.isArray(obj)) {
+    if (obj.length === 0) return '[]';
+    const items = obj.map(v => pad1 + toTS(v, indent + 1)).join(',\n');
+    return '[\n' + items + '\n' + pad + ']';
+  }
+  if (typeof obj === 'object') {
+    const keys = Object.keys(obj as Record<string, unknown>);
+    if (keys.length === 0) return '{}';
+    const kv = keys.map(k => {
+      const v = toTS((obj as Record<string, unknown>)[k], indent + 1);
+      const key = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(k) ? k : "'" + k + "'";
+      return pad1 + key + ': ' + v;
+    }).join(',\n');
+    return '{\n' + kv + '\n' + pad + '}';
+  }
+  return String(obj);
 }
 
 let totalAdded = 0;
 
 async function main() {
+  for (const mod of modules) {
+    const enPath = path.join(BASE, 'en', mod + '.ts');
+    const enMod = await import(enPath);
+    const enObj = (enMod.default || enMod) as Record<string, unknown>;
+    const enCount = countLeafKeys(enObj);
 
-for (const mod of modules) {
-  const enPath = path.join(BASE, 'en', mod + '.ts');
-  const enMod = await import(enPath);
-  const enObj = (enMod.default || enMod) as Record<string, unknown>;
-  const enKeys = leafPaths(enObj);
-  const modPrefix = getModulePrefix(mod);
-
-  for (const locale of locales) {
-    const locPath = path.join(BASE, locale, mod + '.ts');
-    if (!fs.existsSync(locPath)) {
-      console.log('SKIP (no file): ' + locale + '/' + mod + '.ts');
-      continue;
-    }
-
-    const locMod = await import(locPath);
-    const locObj = (locMod.default || locMod) as Record<string, unknown>;
-    const locKeys = leafPaths(locObj);
-
-    // Find missing string keys (not admin)
-    const missing: Array<{ key: string; value: string }> = [];
-    for (const [key, value] of enKeys) {
-      if (key.startsWith('admin.')) continue;
-      if (!locKeys.has(key) && typeof value === 'string') {
-        missing.push({ key, value });
-      }
-    }
-
-    if (missing.length === 0) {
-      // console.log('OK: ' + locale + '/' + mod + '.ts');  // too noisy
-      continue;
-    }
-
-    if (write) {
-      // Read source, parse structure, insert missing keys
-      let source = fs.readFileSync(locPath, 'utf8');
-      let locMap = parseSource(source);
-
-      // Sort missing keys shallow-to-deep so parent objects are created first
-      const sorted = [...missing].sort((a, b) => a.key.split('.').length - b.key.split('.').length);
-
-      for (const { key, value } of sorted) {
-        const result = ensureKey(source, key, value, locMap);
-        source = result.source;
-        locMap = result.locMap;
+    for (const locale of locales) {
+      const locPath = path.join(BASE, locale, mod + '.ts');
+      if (!fs.existsSync(locPath)) {
+        console.log('SKIP (no file): ' + locale + '/' + mod + '.ts');
+        continue;
       }
 
-      fs.writeFileSync(locPath, source, 'utf8');
-      console.log('FILLED: ' + locale + '/' + mod + '.ts + ' + missing.length + ' keys added');
-      totalAdded += missing.length;
-    } else {
-      console.log('DRY-RUN: ' + locale + '/' + mod + '.ts + ' + missing.length + ' keys would be added');
-      totalAdded += missing.length;
+      const locMod = await import(locPath);
+      const locObj = (locMod.default || locMod) as Record<string, unknown>;
+      const oldCount = countLeafKeys(locObj);
+
+      const merged = deepMerge(locObj, enObj);
+      const newCount = countLeafKeys(merged);
+      const added = newCount - oldCount;
+
+      if (added > 0) {
+        if (write) {
+          const varMatch = fs.readFileSync(locPath, 'utf8').match(/const\s+(\w+)\s*=/);
+          const varName = varMatch ? varMatch[1] : mod;
+          const newContent = 'const ' + varName + ' = ' + toTS(merged) + ' as const;\n\nexport default ' + varName + ';\n';
+          fs.writeFileSync(locPath, newContent, 'utf8');
+          console.log('FILLED: ' + locale + '/' + mod + '.ts ' + added + ' keys added');
+        } else {
+          console.log('DRY-RUN: ' + locale + '/' + mod + '.ts ' + added + ' keys would be added');
+        }
+        totalAdded += added;
+      }
     }
   }
-}
 
-if (totalAdded === 0) {
-  console.log('\nAll non-en locales are up to date with English canonical.');
-} else {
-  console.log('\nTotal keys ' + (write ? 'added' : 'to add') + ': ' + totalAdded);
-}
+  if (totalAdded === 0) {
+    console.log('\nAll non-en locales are up to date with English canonical.');
+  } else {
+    console.log('\nTotal keys ' + (write ? 'added' : 'to add') + ': ' + totalAdded);
+  }
 }
 
 main();

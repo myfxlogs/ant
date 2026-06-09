@@ -182,7 +182,22 @@ const trading = {
     closePositionConfirm: 'このポジションを決済しますか？',
     openTime: 'エントリー時間',
     orderHistory: '注文履歴',
-    noOrders: 'まだ注文はありません'
+    noOrders: 'まだ注文はありません',
+    pnl: 'P&L',
+    time: 'Time',
+    ordersCount: '{{count}} orders',
+    markPrice: 'Mark Price',
+    positionSide: 'Side',
+    positionSize: 'Size',
+    positionEntryPrice: 'Entry Price',
+    positionMarkPrice: 'Mark Price',
+    positionLeverage: 'Leverage',
+    positionUnrealizedPnL: 'Unrealized PnL',
+    positionLong: 'LONG',
+    positionShort: 'SHORT',
+    openPositionsTitle: 'Open Positions',
+    closePositionTitle: 'Close Position',
+    recentTrades: 'Recent Trades'
   }
 } as const;
 

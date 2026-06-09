@@ -475,7 +475,13 @@ def run(context):
       pipelineResult: '管線結果',
       allPassed: '全部6個閘道已通過——策略符合推廣至上線評估條件',
       failed: '失敗：{{gate}}',
-      details: '詳情'
+      details: '詳情',
+      skipped: 'SKIPPED',
+      noData: 'no data',
+      pass: 'PASS',
+      fail: 'FAIL',
+      unknown: 'unknown',
+      selectRun: 'Select backtest run...'
     }
   }
 } as const;

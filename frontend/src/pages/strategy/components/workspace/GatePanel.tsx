@@ -14,10 +14,10 @@ interface Props {
 
 const GATE_ORDER = ['compliance', 'lookahead', 'walkforward', 'deflated_sharpe', 'paper', 'correlation'];
 
-const GATE_LABELS: Record<string, string> = {
-  compliance: 'Compliance', lookahead: 'Look-Ahead',
-  walkforward: 'Walk-Forward', deflated_sharpe: 'Deflated Sharpe',
-  paper: 'Paper (14d)', correlation: 'Correlation',
+const GATE_KEY: Record<string, string> = {
+  compliance: 'ai.gate.labels.compliance', lookahead: 'ai.gate.labels.lookahead',
+  walkforward: 'ai.gate.labels.walkforward', deflated_sharpe: 'ai.gate.labels.deflated_sharpe',
+  paper: 'ai.gate.labels.paper', correlation: 'ai.gate.labels.correlation',
 };
 
 export default function GatePanel({ loading, gates, summary, error, status, canRun, onRun, runId, availableRunIds, onSelectRun }: Props) {
@@ -56,11 +56,11 @@ export default function GatePanel({ loading, gates, summary, error, status, canR
             const gs = gateMap.get(gate);
             const isCurrent = loading && gates.length === GATE_ORDER.indexOf(gate);
             if (isCurrent) {
-              return { title: <span><LoadingOutlined style={{ color: '#1677ff' }} /> <span style={{ marginLeft: 8 }}>{GATE_LABELS[gate] || gate}</span></span>,
-                description: <span style={{ fontSize: 12, color: '#8c8c8c' }}>Evaluating...</span>, status: 'process' as const };
+              return { title: <span><LoadingOutlined style={{ color: '#1677ff' }} /> <span style={{ marginLeft: 8 }}>{t(GATE_KEY[gate] || gate, gate)}</span></span>,
+                description: <span style={{ fontSize: 12, color: '#8c8c8c' }}>{t('ai.gate.evaluating', 'Evaluating...')}</span>, status: 'process' as const };
             }
             if (!gs) {
-              return { title: <span><ClockCircleFilled style={{ color: '#d9d9d9' }} /> <span style={{ marginLeft: 8 }}>{GATE_LABELS[gate] || gate}</span></span>,
+              return { title: <span><ClockCircleFilled style={{ color: '#d9d9d9' }} /> <span style={{ marginLeft: 8 }}>{t(GATE_KEY[gate] || gate, gate)}</span></span>,
                 description: null, status: 'wait' as const };
             }
             if (gs.skipped) {
@@ -68,7 +68,7 @@ export default function GatePanel({ loading, gates, summary, error, status, canR
                 {GATE_LABELS[gs.gate] || gs.gate}
                 <Tag style={{ marginLeft: 8, fontSize: 10 }}>{gs.gate}</Tag>
               </span>,
-                description: <span style={{ fontSize: 12, color: '#8c8c8c' }}>SKIPPED — {gs.reason || 'no data'}</span>,
+                description: <span style={{ fontSize: 12, color: '#8c8c8c' }}>{t('ai.gate.skipped', 'SKIPPED')} — {gs.reason || t('ai.gate.noData', 'no data')}</span>,
                 status: 'wait' as const };
             }
             return { title: <span>{gs.passed
@@ -78,7 +78,7 @@ export default function GatePanel({ loading, gates, summary, error, status, canR
               <Tag style={{ marginLeft: 8, fontSize: 10 }}>{gs.gate}</Tag>
             </span>,
               description: <span style={{ fontSize: 12 }}>
-                {gs.passed ? 'PASS' : `FAIL — ${gs.reason || 'unknown'}`}
+                {gs.passed ? t('ai.gate.pass', 'PASS') : `${t('ai.gate.fail', 'FAIL')} — ${gs.reason || t('ai.gate.unknown', 'unknown')}`}
                 {gs.score !== 0 ? ` (score: ${gs.score.toFixed(4)})` : ''}
                 {` — ${gs.durationMs}ms`}
               </span>,

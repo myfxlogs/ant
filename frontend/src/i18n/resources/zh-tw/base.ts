@@ -99,7 +99,12 @@ const base = {
       lessThanMinute: '< 1分鐘'
     },
     required: '必填',
-    noData: '尚無資料'
+    noData: '尚無資料',
+    ok: 'OK',
+    error: 'Error',
+    retry: 'Retry',
+    pageError: 'Page Error',
+    unexpectedError: 'An unexpected error occurred'
   },
   language: {
     simplifiedChinese: '简体中文',
@@ -135,7 +140,12 @@ const base = {
     bid: '買價',
     ask: '賣價',
     spread: '點差',
-    mid: '中間價'
+    mid: '中間價',
+    allSymbols: 'All Symbols',
+    common: 'Common',
+    selectSymbol: 'Select symbol',
+    noSymbolsFound: 'No symbols found',
+    loadingSymbols: 'Loading...'
   },
   topbar: {
     systemOk: '系統正常運行',

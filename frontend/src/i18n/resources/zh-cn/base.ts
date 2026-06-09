@@ -99,7 +99,12 @@ const base = {
       hour: '小时',
       day: '天',
       lessThanMinute: '< 1分钟'
-    }
+    },
+    ok: 'OK',
+    error: 'Error',
+    retry: 'Retry',
+    pageError: 'Page Error',
+    unexpectedError: 'An unexpected error occurred'
   },
   language: {
     simplifiedChinese: '简体中文',
@@ -192,7 +197,12 @@ const base = {
     bid: '买价',
     ask: '卖价',
     spread: '点差',
-    mid: '中间价'
+    mid: '中间价',
+    allSymbols: 'All Symbols',
+    common: 'Common',
+    selectSymbol: 'Select symbol',
+    noSymbolsFound: 'No symbols found',
+    loadingSymbols: 'Loading...'
   },
   topbar: {
     systemOk: '系统正常运行',

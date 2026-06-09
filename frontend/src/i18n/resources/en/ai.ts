@@ -328,6 +328,12 @@ const aiCore = {
       status: {
         evaluating: 'Evaluating...',
       },
+      skipped: 'SKIPPED',
+      noData: 'no data',
+      pass: 'PASS',
+      fail: 'FAIL',
+      unknown: 'unknown',
+      selectRun: 'Select backtest run...',
       strategyParams: 'Strategy Parameters',
       dslExpression: 'DSL Expression',
       dailyReturns: 'Daily Returns (comma or newline separated)',

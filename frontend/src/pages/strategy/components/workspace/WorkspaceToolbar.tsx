@@ -1,5 +1,6 @@
 import { Select, Space, Button, Tooltip, Tag } from 'antd';
 import { ThunderboltOutlined, CodeOutlined, RiseOutlined, FallOutlined, BankOutlined, AimOutlined, KeyOutlined, EyeOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import SymbolPicker from '@/components/chart/SymbolPicker';
 import type { AccountInfo } from '@/stores/tradingStore';
 import type { Account } from '@/types/account';
@@ -60,6 +61,7 @@ export default function WorkspaceToolbar({
   quickTradeVisible, onToggleQuickTrade,
   mtError,
 }: Props) {
+  const { t } = useTranslation();
   const hasData = accountInfo != null;
   const profitColor = accountInfo && accountInfo.profit >= 0 ? '#26a69a' : '#ef5350';
   const selectedAccount = (accounts || []).find(a => a.id === accountId);
@@ -73,13 +75,13 @@ export default function WorkspaceToolbar({
     }}>
       {/* Watchlist group */}
       <div style={{ ...groupStyle, flex: '0 0 auto' }}>
-        <div style={groupLabelStyle}>Watchlist</div>
+        <div style={groupLabelStyle}>{t('strategy.workspace.watchlist')}</div>
         <Space size={4}>
           <Select size="small" style={{ minWidth: 120, width: 220, maxWidth: '36vw' }}
             value={accountId || undefined} onChange={onAccountChange} disabled={busy}
             onDropdownVisibleChange={maybeCloseCode}
-            placeholder="Select account" showSearch optionFilterProp="label"
-            notFoundContent="No accounts"
+            placeholder={t('strategy.workspace.selectAccount')} showSearch optionFilterProp="label"
+            notFoundContent={t('strategy.workspace.noAccounts')}
             options={(accounts || []).map((a) => ({ value: a.id, label: `${a.brokerServer} · ${a.login}` }))} />
           <SymbolPicker accountId={accountId} value={symbol} onChange={onSymbolChange}
             onDropdownVisibleChange={maybeCloseCode} style={{ width: 120 }} />
@@ -89,8 +91,8 @@ export default function WorkspaceToolbar({
       {/* Account Summary — shown inline in spare toolbar space */}
       {hasData && (
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-          <SummaryChip label="Balance" value={`$${fmtCompact(accountInfo!.balance)}`} />
-          <SummaryChip label="Equity" value={`$${fmtCompact(accountInfo!.equity)}`} />
+          <SummaryChip label={t('trading.balance')} value={`$${fmtCompact(accountInfo!.balance)}`} />
+          <SummaryChip label={t('trading.equity')} value={`$${fmtCompact(accountInfo!.equity)}`} />
           <SummaryChip
             label="Profit"
             value={`$${fmtCompact(Math.abs(accountInfo!.profit))}`}

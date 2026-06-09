@@ -562,7 +562,13 @@ Hãy đưa kết luận style/signals/risk vào code (nếu không có, chọn m
       pipelineResult: 'Kết quả quy trình',
       allPassed: 'Cả 6 cổng đều vượt qua — chiến lược đủ điều kiện đánh giá PromoteToLive',
       failed: 'Thất bại: {{gate}}',
-      details: 'Chi tiết'
+      details: 'Chi tiết',
+      skipped: 'SKIPPED',
+      noData: 'no data',
+      pass: 'PASS',
+      fail: 'FAIL',
+      unknown: 'unknown',
+      selectRun: 'Select backtest run...'
     }
   }
 } as const;

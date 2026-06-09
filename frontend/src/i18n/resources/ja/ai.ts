@@ -405,7 +405,13 @@ def run(context):
       pipelineResult: 'パイプライン結果',
       allPassed: '全6ゲートを通過 — ストラテジーは本番昇格評価の対象です',
       failed: '不合格：{{gate}}',
-      details: '詳細'
+      details: '詳細',
+      skipped: 'SKIPPED',
+      noData: 'no data',
+      pass: 'PASS',
+      fail: 'FAIL',
+      unknown: 'unknown',
+      selectRun: 'Select backtest run...'
     }
   }
 } as const;

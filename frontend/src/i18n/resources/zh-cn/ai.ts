@@ -405,7 +405,13 @@ def run(context):
       pipelineResult: '管道结果',
       allPassed: '所有 6 个 Gate 通过，策略可进入 PromoteToLive 评估',
       failed: '未通过: {{gate}}',
-      details: '详细结果'
+      details: '详细结果',
+      skipped: 'SKIPPED',
+      noData: 'no data',
+      pass: 'PASS',
+      fail: 'FAIL',
+      unknown: 'unknown',
+      selectRun: 'Select backtest run...'
     },
     settings: {
       fields: {
