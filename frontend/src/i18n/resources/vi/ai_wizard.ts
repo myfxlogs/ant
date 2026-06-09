@@ -212,15 +212,15 @@ const aiWizard = {
         empty: 'Chưa có tham số. Bạn có thể thêm fast/slow/risk_per_trade... để chiến lược dễ tái sử dụng.',
         paramCardTitle: 'Tham số #{{index}}',
         labels: {
-          name: 'name',
-          type: 'type',
+          name: 'tên',
+          type: 'loại',
           value: 'value (giá trị hiện tại của lịch)',
-          default: 'default',
-          min: 'min',
-          max: 'max',
-          step: 'step',
-          label: 'label',
-          description: 'description',
+          default: 'mặc định',
+          min: 'tối thiểu',
+          max: 'tối đa',
+          step: 'bước',
+          label: 'nhãn',
+          description: 'mô tả',
           options: 'options (dùng cho select, phân tách bằng dấu phẩy)'
         },
         validations: {

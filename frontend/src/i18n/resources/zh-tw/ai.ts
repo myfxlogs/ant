@@ -477,11 +477,11 @@ def run(context):
       failed: '失敗：{{gate}}',
       details: '詳情',
       skipped: 'SKIPPED',
-      noData: 'no data',
+      noData: '無數據',
       pass: 'PASS',
       fail: 'FAIL',
-      unknown: 'unknown',
-      selectRun: 'Select backtest run...'
+      unknown: '未知',
+      selectRun: '選擇回測運行...'
     }
   }
 } as const;

@@ -212,15 +212,15 @@ const aiWizard = {
         empty: '暫無參數。你可以新增如 fast/slow/risk_per_trade 等參數。',
         paramCardTitle: '參數 #{{index}}',
         labels: {
-          name: 'name',
-          type: 'type',
+          name: '名稱',
+          type: '類型',
           value: 'value（排程目前值）',
-          default: 'default',
-          min: 'min',
-          max: 'max',
-          step: 'step',
-          label: 'label',
-          description: 'description',
+          default: '預設值',
+          min: '最小值',
+          max: '最大值',
+          step: '步長',
+          label: '標籤',
+          description: '描述',
           options: 'options（select 可用，逗號分隔）'
         },
         validations: {

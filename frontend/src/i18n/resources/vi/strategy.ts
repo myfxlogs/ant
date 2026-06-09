@@ -337,7 +337,7 @@ const strategy = {
         delete: 'Xóa',
         copy: 'Sao chép',
         viewCode: 'Xem code',
-        backtest: 'Backtest',
+        backtest: 'Kiểm thử lùi',
         launchSchedule: 'Khởi chạy lịch'
       },
       table: {
@@ -425,7 +425,7 @@ signal = {
         }
       },
       backtest: {
-        title: 'Backtest',
+        title: 'Kiểm thử lùi',
         fields: {
           title: 'Tiêu đề',
           account: 'Tài khoản',
@@ -456,7 +456,7 @@ signal = {
           custom: 'Tùy chỉnh'
         },
         accountDisabledSuffix: ' (Đã tắt)',
-        modalTitleWithName: 'Backtest: {{name}}',
+        modalTitleWithName: 'Kiểm thử lùi: {{name}}',
         parameters: {
           title: 'Tham số chiến lược'
         },
@@ -831,7 +831,7 @@ def run(context):
       copyFailed: 'Sao chép thất bại',
       saveSuccess: 'Đã lưu',
       chart: 'Nến K',
-      backtest: 'Backtest',
+      backtest: 'Kiểm thử lùi',
       backtestRunning: 'Backtest đang chạy...',
       backtestCompleted: 'Hoàn thành',
       backtestError: 'Backtest thất bại',
@@ -872,35 +872,35 @@ def run(context):
         saveAs: 'Lưu thành mới',
         loaded: 'Đã tải'
       },
-      watchlist: 'Watchlist',
-      selectAccount: 'Select account',
-      openPositions: 'Open Positions ({{count}})',
-      noOpenPositions: 'No open positions for this account',
-      chartError: 'Chart error — try refreshing',
-      smartTuning: 'Smart Tuning',
+      watchlist: 'Danh sách theo dõi',
+      selectAccount: 'Chọn tài khoản',
+      openPositions: 'Vị thế mở ({{count}})',
+      noOpenPositions: 'Không có vị thế mở cho tài khoản này',
+      chartError: 'Lỗi biểu đồ — hãy thử làm mới',
+      smartTuning: 'Tinh chỉnh thông minh',
       quickTradeSection: {
-        selectSymbol: 'Select a symbol first',
-        validVolume: 'Enter a valid volume',
-        priceRequired: 'Price is required for Limit/Stop orders',
-        orderPlaced: '{{side}} order placed',
-        orderFailed: 'Order failed',
-        amountLots: 'Amount (lots)',
-        marginMode: 'Margin Mode',
+        selectSymbol: 'Vui lòng chọn mã giao dịch trước',
+        validVolume: 'Nhập khối lượng hợp lệ',
+        priceRequired: 'Cần nhập giá cho lệnh Limit/Stop',
+        orderPlaced: 'Lệnh {{side}} đã được đặt',
+        orderFailed: 'Đặt lệnh thất bại',
+        amountLots: 'Khối lượng (lô)',
+        marginMode: 'Chế độ ký quỹ',
         cross: 'Cross',
-        isolated: 'Isolated',
-        mt4CrossOnly: 'MT4 supports Cross margin only'
+        isolated: 'Cô lập',
+        mt4CrossOnly: 'MT4 chỉ hỗ trợ ký quỹ Cross'
       },
       chartTools: {
-        streamActive: 'Live bar stream active',
-        streamUnavailable: 'Stream unavailable',
-        hide: 'Hide',
-        show: 'Show',
-        settings: 'Settings',
-        remove: 'Remove',
-        clearDrawings: 'Clear All Drawings',
-        candle: 'Candle',
+        streamActive: 'Luồng dữ liệu nến trực tiếp đang hoạt động',
+        streamUnavailable: 'Luồng dữ liệu không khả dụng',
+        hide: 'Ẩn',
+        show: 'Hiện',
+        settings: 'Cài đặt',
+        remove: 'Xóa',
+        clearDrawings: 'Xóa tất cả hình vẽ',
+        candle: 'Nến',
         ohlc: 'OHLC',
-        area: 'Area',
+        area: 'Vùng',
         live: 'LIVE',
         error: 'ERROR',
         static: 'STATIC'
@@ -917,7 +917,7 @@ def run(context):
       }
     },
     backtestParams: {
-      title: 'Backtest',
+      title: 'Kiểm thử lùi',
       currentDraft: 'Bản nháp hiện tại',
       dateRange: 'Khoảng thời gian',
       execution: 'Thực thi',

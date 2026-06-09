@@ -509,17 +509,17 @@ Hãy đưa kết luận style/signals/risk vào code (nếu không có, chọn m
       signals: {
         rsi: {
           value: 'RSI',
-          flag: 'Signal'
+          flag: 'Tín hiệu'
         },
         macd: {
           value: 'MACD',
-          signalLine: 'Signal Line',
-          hist: 'Histogram',
-          flag: 'Signal',
-          trend: 'Pattern'
+          signalLine: 'Đường tín hiệu',
+          hist: 'Biểu đồ cột',
+          flag: 'Tín hiệu',
+          trend: 'Mô hình'
         },
         ma: {
-          trend: 'MA Trend'
+          trend: 'Xu hướng MA'
         }
       }
     },
@@ -531,8 +531,8 @@ Hãy đưa kết luận style/signals/risk vào code (nếu không có, chọn m
         lookahead: 'Độ chệch nhìn về phía trước',
         walkforward: 'Walk-Forward',
         deflated_sharpe: 'Deflated Sharpe',
-        paper: 'Paper Trading',
-        correlation: 'Correlation'
+        paper: 'Giao dịch giấy',
+        correlation: 'Tương quan'
       },
       descriptions: {
         compliance: 'Xác thực biểu thức DSL không rỗng',
@@ -564,11 +564,11 @@ Hãy đưa kết luận style/signals/risk vào code (nếu không có, chọn m
       failed: 'Thất bại: {{gate}}',
       details: 'Chi tiết',
       skipped: 'SKIPPED',
-      noData: 'no data',
+      noData: 'không có dữ liệu',
       pass: 'PASS',
       fail: 'FAIL',
-      unknown: 'unknown',
-      selectRun: 'Select backtest run...'
+      unknown: 'không xác định',
+      selectRun: 'Chọn lần chạy kiểm thử lùi...'
     }
   }
 } as const;

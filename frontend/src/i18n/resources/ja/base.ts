@@ -101,10 +101,10 @@ const base = {
     },
     required: '必須',
     ok: 'OK',
-    error: 'Error',
-    retry: 'Retry',
-    pageError: 'Page Error',
-    unexpectedError: 'An unexpected error occurred'
+    error: 'エラー',
+    retry: 'リトライ',
+    pageError: 'ページエラー',
+    unexpectedError: '予期しないエラーが発生しました'
   },
   language: {
     simplifiedChinese: '简体中文',
@@ -141,11 +141,11 @@ const base = {
     ask: '売値',
     spread: 'スプレッド',
     mid: '仲値',
-    allSymbols: 'All Symbols',
-    common: 'Common',
-    selectSymbol: 'Select symbol',
-    noSymbolsFound: 'No symbols found',
-    loadingSymbols: 'Loading...'
+    allSymbols: '全銘柄',
+    common: '共通',
+    selectSymbol: '銘柄を選択',
+    noSymbolsFound: '銘柄が見つかりません',
+    loadingSymbols: '読み込み中...'
   },
   topbar: {
     systemOk: 'システムは正常に稼働中',

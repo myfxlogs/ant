@@ -101,10 +101,10 @@ const base = {
     required: 'Bắt buộc',
     noData: 'Không có dữ liệu',
     ok: 'OK',
-    error: 'Error',
-    retry: 'Retry',
-    pageError: 'Page Error',
-    unexpectedError: 'An unexpected error occurred'
+    error: 'Lỗi',
+    retry: 'Thử lại',
+    pageError: 'Lỗi trang',
+    unexpectedError: 'Đã xảy ra lỗi không mong muốn'
   },
   language: {
     simplifiedChinese: '简体中文',
@@ -141,11 +141,11 @@ const base = {
     ask: 'Giá bán',
     spread: 'Chênh lệch',
     mid: 'Giá trung bình',
-    allSymbols: 'All Symbols',
-    common: 'Common',
-    selectSymbol: 'Select symbol',
-    noSymbolsFound: 'No symbols found',
-    loadingSymbols: 'Loading...'
+    allSymbols: 'Tất cả mã',
+    common: 'Phổ biến',
+    selectSymbol: 'Chọn mã giao dịch',
+    noSymbolsFound: 'Không tìm thấy mã nào',
+    loadingSymbols: 'Đang tải...'
   },
   topbar: {
     systemOk: 'Hệ thống đang hoạt động bình thường',

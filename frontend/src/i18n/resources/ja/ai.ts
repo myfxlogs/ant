@@ -407,11 +407,11 @@ def run(context):
       failed: '不合格：{{gate}}',
       details: '詳細',
       skipped: 'SKIPPED',
-      noData: 'no data',
+      noData: 'データがありません',
       pass: 'PASS',
       fail: 'FAIL',
-      unknown: 'unknown',
-      selectRun: 'Select backtest run...'
+      unknown: '不明',
+      selectRun: 'バックテスト実行を選択...'
     }
   }
 } as const;

@@ -100,11 +100,11 @@ const base = {
     },
     required: '必填',
     noData: '尚無資料',
-    ok: 'OK',
-    error: 'Error',
-    retry: 'Retry',
-    pageError: 'Page Error',
-    unexpectedError: 'An unexpected error occurred'
+    ok: '確定',
+    error: '錯誤',
+    retry: '重試',
+    pageError: '頁面錯誤',
+    unexpectedError: '發生意外錯誤'
   },
   language: {
     simplifiedChinese: '简体中文',
@@ -141,11 +141,11 @@ const base = {
     ask: '賣價',
     spread: '點差',
     mid: '中間價',
-    allSymbols: 'All Symbols',
-    common: 'Common',
-    selectSymbol: 'Select symbol',
-    noSymbolsFound: 'No symbols found',
-    loadingSymbols: 'Loading...'
+    allSymbols: '全部品種',
+    common: '常用',
+    selectSymbol: '選擇品種',
+    noSymbolsFound: '找不到品種',
+    loadingSymbols: '載入中...'
   },
   topbar: {
     systemOk: '系統正常運行',
