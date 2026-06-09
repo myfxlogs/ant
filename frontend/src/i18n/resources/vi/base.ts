@@ -139,7 +139,10 @@ const base = {
     indicatorCatalog: 'Danh mục chỉ báo',
     logs: 'Nhật ký hệ thống',
     assetAnalysis: 'Phân tích AI',
-    autoTrading: 'Giao Dịch Tự Động'
+    autoTrading: 'Giao Dịch Tự Động',
+    marketTools: 'Công cụ thị trường',
+    devGroup: 'Phát triển',
+    opsGroup: 'Vận hành',
   },
   market: {
     searchPlaceholder: 'Tìm kiếm mã (VD: EURUSD, XAUUSD)',

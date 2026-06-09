@@ -31,6 +31,7 @@ const LogManagement = lazy(() => import('@/pages/logs/LogManagement'));
 const AutoTradingSettings = lazy(() => import('@/pages/auto-trading/AutoTradingSettings'));
 const StrategyExperimentPage = lazy(() => import('@/pages/strategy/StrategyExperimentPage'));
 const MarketRegimePage = lazy(() => import('@/pages/strategy/MarketRegimePage'));
+const MarketToolsPage = lazy(() => import('@/pages/strategy/MarketToolsPage'));
 const AlgoDashboard = lazy(() => import('@/pages/trading/AlgoDashboard'));
 const AnalyticsSummary = lazy(() => import('@/pages/analytics/Summary'));
 const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
@@ -67,16 +68,16 @@ const mainRoutes = (
     <Route path="profile" element={wrap(<ProfilePage />)} />
     <Route path="strategy/templates" element={wrap(<StrategyTemplatePage />)} />
     <Route path="strategy/workspace" element={wrap(<StrategyWorkspacePage />)} />
-    <Route path="strategy/assets" element={wrap(<StrategyAssetPage />)} />
     <Route path="strategy/schedules" element={wrap(<StrategySchedulePage />)} />
     <Route path="strategy/schedules/:id/logs" element={wrap(<StrategyScheduleLogsPage />)} />
     <Route path="strategy/indicator-catalog" element={wrap(<IndicatorCatalogPage />)} />
     <Route path="marketplace" element={wrap(<MarketplacePage />)} />
-    <Route path="strategy/analysis" element={wrap(<AssetAnalysisPage />)} />
+    <Route path="strategy/experiments" element={wrap(<StrategyExperimentPage />)} />
+    <Route path="strategy/market-tools" element={wrap(<MarketToolsPage />)} />
+    <Route path="strategy/analysis" element={<Navigate to="/strategy/market-tools?tab=symbol" replace />} />
+    <Route path="strategy/market-regime" element={<Navigate to="/strategy/market-tools?tab=regime" replace />} />
     <Route path="logs" element={wrap(<LogManagement />)} />
     <Route path="auto-trading" element={wrap(<AutoTradingSettings />)} />
-    <Route path="strategy/experiments" element={wrap(<StrategyExperimentPage />)} />
-    <Route path="strategy/market-regime" element={wrap(<MarketRegimePage />)} />
     <Route path="trading/algos" element={wrap(<AlgoDashboard />)} />
     <Route path="analytics" element={wrap(<AnalyticsSummary />)} />
   </Route>

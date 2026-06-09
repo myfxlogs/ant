@@ -10,7 +10,17 @@ interface MenuItem {
   key: string;
   icon: React.ReactNode;
   label: string;
+  type?: 'group';
   children?: MenuItem[];
+}
+
+/** Collect all navigable leaf keys nested under an item (flattens group children). */
+function leafKeys(item: MenuItem): string[] {
+  if (!item.children) return [];
+  return item.children.flatMap(child => {
+    if (child.type === 'group' && child.children) return leafKeys(child);
+    return child.key ? [child.key] : [];
+  });
 }
 
 interface LanguageOption {
@@ -48,9 +58,10 @@ function SidebarMenu({ items }: { items: MenuItem[] }) {
   const navigate = useNavigate();
 
   // Derive which submenus should be open based on the current path.
+  // Uses leafKeys to flatten group children.
   const derivedOpenKeys = useMemo(
     () => items
-      .filter(item => item.children?.some(child => location.pathname.startsWith(child.key)))
+      .filter(item => leafKeys(item).some(leaf => location.pathname.startsWith(leaf)))
       .map(item => item.key),
     [items, location.pathname],
   );

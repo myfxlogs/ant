@@ -139,7 +139,10 @@ const base = {
     schedules: 'Schedules',
     indicatorCatalog: 'Indicator Catalog',
     logs: 'System Logs',
-    autoTrading: 'Auto Trading'
+    autoTrading: 'Auto Trading',
+    marketTools: 'Market Tools',
+    devGroup: 'Development',
+    opsGroup: 'Operations',
   },
   marketplace: {
     title: 'Strategy Marketplace',

@@ -139,7 +139,10 @@ const base = {
     indicatorCatalog: '指標目錄',
     logs: '系統日誌',
     assetAnalysis: 'AI 分析',
-    autoTrading: '自動交易'
+    autoTrading: '自動交易',
+    marketTools: '市場分析工具',
+    devGroup: '策略開發',
+    opsGroup: '策略營運',
   },
   market: {
     searchPlaceholder: '搜尋品種（如 EURUSD, XAUUSD）',

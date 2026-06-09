@@ -139,7 +139,10 @@ const base = {
     schedules: '策略调度',
     indicatorCatalog: '指标目录',
     logs: '系统日志',
-    autoTrading: '自动交易'
+    autoTrading: '自动交易',
+    marketTools: '市场分析工具',
+    devGroup: '策略开发',
+    opsGroup: '策略运营',
   },
   marketplace: {
     title: '策略市场',

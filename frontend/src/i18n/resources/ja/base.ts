@@ -139,7 +139,10 @@ const base = {
     indicatorCatalog: 'インジケーターカタログ',
     logs: 'システムログ',
     assetAnalysis: 'AI分析',
-    autoTrading: '自動取引'
+    autoTrading: '自動取引',
+    marketTools: 'マーケット分析ツール',
+    devGroup: '戦略開発',
+    opsGroup: '戦略運用',
   },
   market: {
     searchPlaceholder: '銘柄を検索（例: EURUSD, XAUUSD）',
