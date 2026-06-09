@@ -97,8 +97,10 @@ proto-tools:
 	@cd backend && GOBIN="$(CURDIR)/tools/proto-gen/bin" go install connectrpc.com/connect/cmd/protoc-gen-connect-go@v1.19.1
 
 proto:
-	@echo "Generating protobuf code (Go + TS)..."
+	@echo "Generating protobuf code (Go + TS + Python)..."
 	@PATH="$(CURDIR)/tools/proto-gen/bin:$(CURDIR)/frontend/node_modules/.bin:$(CURDIR)/tools/proto-gen/node_modules/.bin:$$PATH" buf generate
+	@echo "  → Python strategy-service protos..."
+	@protoc --proto_path=$(CURDIR)/proto/ant/v1 --proto_path=/usr/include --python_out=$(CURDIR)/strategy-service/app $(CURDIR)/proto/ant/v1/*.proto
 
 check-lines:
 	@echo "Checking file line limits (flat 800 + baseline)..."
