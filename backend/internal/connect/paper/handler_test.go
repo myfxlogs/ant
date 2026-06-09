@@ -3,6 +3,7 @@ package paper
 import (
 	"context"
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -20,13 +21,31 @@ import (
 // ── Test stubs ──
 
 type stubStrategyRunner struct {
+	mu    sync.Mutex
 	calls []strategy.LiveStrategyConfig
 	err   error
 }
 
 func (s *stubStrategyRunner) RunLiveStrategy(_ context.Context, cfg strategy.LiveStrategyConfig) error {
+	s.mu.Lock()
 	s.calls = append(s.calls, cfg)
+	s.mu.Unlock()
 	return s.err
+}
+
+func (s *stubStrategyRunner) callCount() int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return len(s.calls)
+}
+
+func (s *stubStrategyRunner) lastCall() *strategy.LiveStrategyConfig {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if len(s.calls) == 0 {
+		return nil
+	}
+	return &s.calls[len(s.calls)-1]
 }
 
 // stubPaperRepo implements paperRepository for handler tests.
@@ -110,13 +129,13 @@ func TestHandler_StartPaperStrategy_Success(t *testing.T) {
 	}
 	// Wait for goroutine to call RunLiveStrategy.
 	deadline := time.Now().Add(2 * time.Second)
-	for len(runner.calls) == 0 && time.Now().Before(deadline) {
+	for runner.callCount() == 0 && time.Now().Before(deadline) {
 		time.Sleep(10 * time.Millisecond)
 	}
-	if len(runner.calls) == 0 {
+	if runner.callCount() == 0 {
 		t.Fatal("expected RunLiveStrategy to be called within 2s")
 	}
-	call := runner.calls[0]
+	call := runner.lastCall()
 	if call.AccountID != "pa-1" {
 		t.Errorf("expected account pa-1, got %s", call.AccountID)
 	}

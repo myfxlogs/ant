@@ -10,7 +10,7 @@ func init() {
 }
 
 func TestGenerateTokenPair_Success(t *testing.T) {
-	t.Parallel()
+	// Not parallel — uses global jwtConfig modified by init().
 	pair, err := GenerateTokenPair("user-1", "test@example.com", "user")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -27,7 +27,7 @@ func TestGenerateTokenPair_Success(t *testing.T) {
 }
 
 func TestParseToken_ValidAccessToken(t *testing.T) {
-	t.Parallel()
+	// Not parallel — uses global jwtConfig.
 	pair, _ := GenerateTokenPair("user-2", "u2@test.com", "admin")
 	claims, err := ParseToken(pair.AccessToken)
 	if err != nil {
@@ -61,7 +61,7 @@ func TestParseToken_Expired(t *testing.T) {
 }
 
 func TestParseToken_Invalid(t *testing.T) {
-	t.Parallel()
+	// Not parallel — uses global jwtConfig.
 	_, err := ParseToken("not-a-valid-jwt-token")
 	if err != ErrTokenInvalid {
 		t.Fatalf("expected ErrTokenInvalid, got %v", err)
@@ -69,7 +69,7 @@ func TestParseToken_Invalid(t *testing.T) {
 }
 
 func TestParseToken_WrongSignature(t *testing.T) {
-	t.Parallel()
+	// Not parallel — uses global jwtConfig.
 	Init("key-a", 1*time.Hour, 24*time.Hour, "a")
 	pair, _ := GenerateTokenPair("u-3", "u3@t.com", "user")
 	// Switch secret and try to parse.
@@ -82,7 +82,7 @@ func TestParseToken_WrongSignature(t *testing.T) {
 }
 
 func TestValidateToken_SynonymForParse(t *testing.T) {
-	t.Parallel()
+	// Not parallel — uses global jwtConfig.
 	pair, _ := GenerateTokenPair("u-4", "u4@t.com", "user")
 	claims, err := ValidateToken(pair.AccessToken)
 	if err != nil {
