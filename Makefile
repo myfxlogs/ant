@@ -85,7 +85,7 @@ env-check:
 	fi; \
 	echo "All env keys present ✅"
 
-.PHONY: proto-tools proto check-lines verify
+.PHONY: proto-tools proto proto-python check-lines verify
 
 proto-tools:
 	@echo "Installing proto generation toolchain..."
@@ -97,10 +97,16 @@ proto-tools:
 	@cd backend && GOBIN="$(CURDIR)/tools/proto-gen/bin" go install connectrpc.com/connect/cmd/protoc-gen-connect-go@v1.19.1
 
 proto:
-	@echo "Generating protobuf code (Go + TS + Python)..."
+	@echo "Generating protobuf code (Go + TS)..."
 	@PATH="$(CURDIR)/tools/proto-gen/bin:$(CURDIR)/frontend/node_modules/.bin:$(CURDIR)/tools/proto-gen/node_modules/.bin:$$PATH" buf generate
-	@echo "  → Python strategy-service protos..."
+
+# Regenerate Python protobuf files for strategy-service (requires protoc).
+# Not part of `proto` because CI doesn't have protoc installed.
+proto-python:
+	@echo "Generating Python strategy-service protos..."
+	@which protoc >/dev/null 2>&1 || { echo "ERROR: protoc not found. Install: apt install protobuf-compiler"; exit 1; }
 	@protoc --proto_path=$(CURDIR)/proto/ant/v1 --proto_path=/usr/include --python_out=$(CURDIR)/strategy-service/app $(CURDIR)/proto/ant/v1/*.proto
+	@echo "  → Python protos regenerated."
 
 check-lines:
 	@echo "Checking file line limits (flat 800 + baseline)..."
