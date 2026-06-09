@@ -45,6 +45,10 @@ def classify_file(rel: str) -> tuple[str, int]:
     r = rel.replace("\\", "/")
     ext = Path(rel).suffix.lower()
 
+    # Scripts — linear procedural code, not subject to AI cognitive limits
+    if r.startswith("scripts/"):
+        return "scripts", OTHER_LIMIT
+
     # Generated protobuf code
     if "/gen/" in r:
         if ext == ".go":
@@ -77,7 +81,7 @@ def classify_file(rel: str) -> tuple[str, int]:
 
 def severity(lines: int, limit: int, category: str) -> str:
     """Return severity level for a file given its line count and category."""
-    if category in ("gen", "i18n", "other"):
+    if category in ("gen", "i18n", "other", "scripts"):
         return "info"  # non-code files: informational only
     if category == "test":
         # Test files: warn if >50% over exempt limit, info otherwise
@@ -139,14 +143,17 @@ def main() -> int:
     args = parser.parse_args()
 
     baseline = load_baseline(ROOT / args.baseline)
-    limit = 800 if not args.strict else None
+    flat_limit = 800
 
     oversized = {}  # rel -> lines (all files over their applicable limit)
     for path in iter_files():
         rel = path.relative_to(ROOT).as_posix()
         lines = line_count(path)
         cat, eff_limit = classify_file(rel)
-        threshold = limit if limit else eff_limit
+        # Flat mode: only check business code (go/ts categories), skip exempt categories
+        if not args.strict and cat in ("gen", "i18n", "scripts", "other"):
+            continue
+        threshold = flat_limit if not args.strict else eff_limit
         if lines > threshold:
             oversized[rel] = (lines, cat, eff_limit)
 
@@ -154,13 +161,12 @@ def main() -> int:
     fixed_items = sorted(baseline - set(oversized))
 
     if not args.strict:
-        # Flat 800 mode — CI-compatible, simple pass/fail
         if new_items:
-            print(f"error: {len(new_items)} file(s) exceed 800 lines and are not in baseline")
+            print(f"error: {len(new_items)} file(s) exceed {flat_limit} lines and are not in baseline")
             for rel in new_items:
                 print(f"  {oversized[rel][0]:5d}  {rel}")
         if fixed_items:
-            print(f"note: {len(fixed_items)} baseline file(s) are now <= 800 lines; remove them from baseline")
+            print(f"note: {len(fixed_items)} baseline file(s) are now <= {flat_limit} lines; remove them from baseline")
             for rel in fixed_items:
                 print(f"  {rel}")
         if new_items:
