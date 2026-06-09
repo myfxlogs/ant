@@ -11,9 +11,10 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+import python_strategy_pb2 as python__strategy__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11\x63ode_assist.proto\x12\x06\x61nt.v1\"0\n\x0f\x43odeChatMessage\x12\x0c\n\x04role\x18\x01 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x02 \x01(\t\"\x84\x01\n\x11ReviseCodeRequest\x12\x0c\n\x04\x63ode\x18\x01 \x01(\t\x12\x13\n\x0binstruction\x18\x02 \x01(\t\x12(\n\x07history\x18\x03 \x03(\x0b\x32\x17.ant.v1.CodeChatMessage\x12\x0e\n\x06locale\x18\x04 \x01(\t\x12\x12\n\nsession_id\x18\x05 \x01(\t\"2\n\x12ReviseCodeResponse\x12\x0c\n\x04text\x18\x01 \x01(\t\x12\x0e\n\x06python\x18\x02 \x01(\t\"D\n\x15ReviseCodeStreamChunk\x12\r\n\x05\x64\x65lta\x18\x01 \x01(\t\x12\x0e\n\x06python\x18\x02 \x01(\t\x12\x0c\n\x04\x64one\x18\x03 \x01(\x08\"2\n\x12\x45xplainCodeRequest\x12\x0c\n\x04\x63ode\x18\x01 \x01(\t\x12\x0e\n\x06locale\x18\x02 \x01(\t\"*\n\x13\x45xplainCodeResponse\x12\x13\n\x0b\x65xplanation\x18\x01 \x01(\t\"/\n\x1fValidateStrategyExtendedRequest\x12\x0c\n\x04\x63ode\x18\x01 \x01(\t\"\x82\x01\n ValidateStrategyExtendedResponse\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\x0e\n\x06\x65rrors\x18\x02 \x03(\t\x12\x10\n\x08warnings\x18\x03 \x03(\t\x12-\n\nparameters\x18\x04 \x03(\x0b\x32\x19.ant.v1.RequiredParamSpec\"p\n\x11RequiredParamSpec\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x10\n\x08required\x18\x02 \x01(\x08\x12\x15\n\rdefault_value\x18\x03 \x01(\t\x12\x0c\n\x04type\x18\x04 \x01(\t\x12\x17\n\x0fsuggested_value\x18\x05 \x01(\t2\xdf\x02\n\x11\x43odeAssistService\x12\x43\n\nReviseCode\x12\x19.ant.v1.ReviseCodeRequest\x1a\x1a.ant.v1.ReviseCodeResponse\x12N\n\x10ReviseCodeStream\x12\x19.ant.v1.ReviseCodeRequest\x1a\x1d.ant.v1.ReviseCodeStreamChunk0\x01\x12\x46\n\x0b\x45xplainCode\x12\x1a.ant.v1.ExplainCodeRequest\x1a\x1b.ant.v1.ExplainCodeResponse\x12m\n\x18ValidateStrategyExtended\x12\'.ant.v1.ValidateStrategyExtendedRequest\x1a(.ant.v1.ValidateStrategyExtendedResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11\x63ode_assist.proto\x12\x06\x61nt.v1\x1a\x15python_strategy.proto\"0\n\x0f\x43odeChatMessage\x12\x0c\n\x04role\x18\x01 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x02 \x01(\t\"\x84\x01\n\x11ReviseCodeRequest\x12\x0c\n\x04\x63ode\x18\x01 \x01(\t\x12\x13\n\x0binstruction\x18\x02 \x01(\t\x12(\n\x07history\x18\x03 \x03(\x0b\x32\x17.ant.v1.CodeChatMessage\x12\x0e\n\x06locale\x18\x04 \x01(\t\x12\x12\n\nsession_id\x18\x05 \x01(\t\"2\n\x12ReviseCodeResponse\x12\x0c\n\x04text\x18\x01 \x01(\t\x12\x0e\n\x06python\x18\x02 \x01(\t\"D\n\x15ReviseCodeStreamChunk\x12\r\n\x05\x64\x65lta\x18\x01 \x01(\t\x12\x0e\n\x06python\x18\x02 \x01(\t\x12\x0c\n\x04\x64one\x18\x03 \x01(\x08\"2\n\x12\x45xplainCodeRequest\x12\x0c\n\x04\x63ode\x18\x01 \x01(\t\x12\x0e\n\x06locale\x18\x02 \x01(\t\"*\n\x13\x45xplainCodeResponse\x12\x13\n\x0b\x65xplanation\x18\x01 \x01(\t\"/\n\x1fValidateStrategyExtendedRequest\x12\x0c\n\x04\x63ode\x18\x01 \x01(\t\"\x9c\x02\n ValidateStrategyExtendedResponse\x12\r\n\x05valid\x18\x01 \x01(\x08\x12\x0e\n\x06\x65rrors\x18\x02 \x03(\t\x12\x10\n\x08warnings\x18\x03 \x03(\t\x12-\n\nparameters\x18\x04 \x03(\x0b\x32\x19.ant.v1.RequiredParamSpec\x12.\n\rquality_hints\x18\x05 \x03(\x0b\x32\x17.ant.v1.CodeQualityHint\x12\x30\n\x10sweep_dimensions\x18\x06 \x03(\x0b\x32\x16.ant.v1.SweepDimension\x12\x36\n\x13strategy_directives\x18\x07 \x03(\x0b\x32\x19.ant.v1.StrategyDirective\"p\n\x11RequiredParamSpec\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x10\n\x08required\x18\x02 \x01(\x08\x12\x15\n\rdefault_value\x18\x03 \x01(\t\x12\x0c\n\x04type\x18\x04 \x01(\t\x12\x17\n\x0fsuggested_value\x18\x05 \x01(\t2\xdf\x02\n\x11\x43odeAssistService\x12\x43\n\nReviseCode\x12\x19.ant.v1.ReviseCodeRequest\x1a\x1a.ant.v1.ReviseCodeResponse\x12N\n\x10ReviseCodeStream\x12\x19.ant.v1.ReviseCodeRequest\x1a\x1d.ant.v1.ReviseCodeStreamChunk0\x01\x12\x46\n\x0b\x45xplainCode\x12\x1a.ant.v1.ExplainCodeRequest\x1a\x1b.ant.v1.ExplainCodeResponse\x12m\n\x18ValidateStrategyExtended\x12\'.ant.v1.ValidateStrategyExtendedRequest\x1a(.ant.v1.ValidateStrategyExtendedResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'code_assist_pb2', globals())
@@ -21,24 +22,24 @@ if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
   DESCRIPTOR._serialized_options = b'Z anttrader/gen/proto/ant/v1;antv1'
-  _CODECHATMESSAGE._serialized_start=29
-  _CODECHATMESSAGE._serialized_end=77
-  _REVISECODEREQUEST._serialized_start=80
-  _REVISECODEREQUEST._serialized_end=212
-  _REVISECODERESPONSE._serialized_start=214
-  _REVISECODERESPONSE._serialized_end=264
-  _REVISECODESTREAMCHUNK._serialized_start=266
-  _REVISECODESTREAMCHUNK._serialized_end=334
-  _EXPLAINCODEREQUEST._serialized_start=336
-  _EXPLAINCODEREQUEST._serialized_end=386
-  _EXPLAINCODERESPONSE._serialized_start=388
-  _EXPLAINCODERESPONSE._serialized_end=430
-  _VALIDATESTRATEGYEXTENDEDREQUEST._serialized_start=432
-  _VALIDATESTRATEGYEXTENDEDREQUEST._serialized_end=479
-  _VALIDATESTRATEGYEXTENDEDRESPONSE._serialized_start=482
-  _VALIDATESTRATEGYEXTENDEDRESPONSE._serialized_end=612
-  _REQUIREDPARAMSPEC._serialized_start=614
-  _REQUIREDPARAMSPEC._serialized_end=726
-  _CODEASSISTSERVICE._serialized_start=729
-  _CODEASSISTSERVICE._serialized_end=1080
+  _CODECHATMESSAGE._serialized_start=52
+  _CODECHATMESSAGE._serialized_end=100
+  _REVISECODEREQUEST._serialized_start=103
+  _REVISECODEREQUEST._serialized_end=235
+  _REVISECODERESPONSE._serialized_start=237
+  _REVISECODERESPONSE._serialized_end=287
+  _REVISECODESTREAMCHUNK._serialized_start=289
+  _REVISECODESTREAMCHUNK._serialized_end=357
+  _EXPLAINCODEREQUEST._serialized_start=359
+  _EXPLAINCODEREQUEST._serialized_end=409
+  _EXPLAINCODERESPONSE._serialized_start=411
+  _EXPLAINCODERESPONSE._serialized_end=453
+  _VALIDATESTRATEGYEXTENDEDREQUEST._serialized_start=455
+  _VALIDATESTRATEGYEXTENDEDREQUEST._serialized_end=502
+  _VALIDATESTRATEGYEXTENDEDRESPONSE._serialized_start=505
+  _VALIDATESTRATEGYEXTENDEDRESPONSE._serialized_end=789
+  _REQUIREDPARAMSPEC._serialized_start=791
+  _REQUIREDPARAMSPEC._serialized_end=903
+  _CODEASSISTSERVICE._serialized_start=906
+  _CODEASSISTSERVICE._serialized_end=1257
 # @@protoc_insertion_point(module_scope)

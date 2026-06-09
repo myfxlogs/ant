@@ -17,9 +17,10 @@ import stream_event_account_pb2 as stream__event__account__pb2
 import stream_event_trade_pb2 as stream__event__trade__pb2
 import stream_event_sync_pb2 as stream__event__sync__pb2
 import stream_event_command_pb2 as stream__event__command__pb2
+import stream_event_indicator_pb2 as stream__event__indicator__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cstream.proto\x12\x06\x61nt.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1astream_event_account.proto\x1a\x18stream_event_trade.proto\x1a\x17stream_event_sync.proto\x1a\x1astream_event_command.proto\"\x92\x06\n\x0bStreamEvent\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x12\n\naccount_id\x18\x02 \x01(\t\x12-\n\ttimestamp\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x10\n\x08\x65vent_id\x18\n \x01(\t\x12\x30\n\x0corder_update\x18\x05 \x01(\x0b\x32\x18.ant.v1.OrderUpdateEventH\x00\x12\x32\n\rprofit_update\x18\x06 \x01(\x0b\x32\x19.ant.v1.ProfitUpdateEventH\x00\x12\x34\n\x0e\x61\x63\x63ount_status\x18\x07 \x01(\x0b\x32\x1a.ant.v1.AccountStatusEventH\x00\x12<\n\x12strategy_execution\x18\x08 \x01(\x0b\x32\x1e.ant.v1.StrategyExecutionEventH\x00\x12,\n\nrisk_alert\x18\t \x01(\x0b\x32\x16.ant.v1.RiskAlertEventH\x00\x12!\n\x04sync\x18\x0b \x01(\x0b\x32\x11.ant.v1.SyncEventH\x00\x12.\n\x0b\x64\x65\x61l_update\x18\x0c \x01(\x0b\x32\x17.ant.v1.DealUpdateEventH\x00\x12\x36\n\x0fposition_update\x18\r \x01(\x0b\x32\x1b.ant.v1.PositionUpdateEventH\x00\x12\x30\n\x0cledger_entry\x18\x0e \x01(\x0b\x32\x18.ant.v1.LedgerEntryEventH\x00\x12\x32\n\rtrade_command\x18\x0f \x01(\x0b\x32\x19.ant.v1.TradeCommandEventH\x00\x12\x32\n\rtrade_receipt\x18\x10 \x01(\x0b\x32\x19.ant.v1.TradeReceiptEventH\x00\x12:\n\x11position_snapshot\x18\x11 \x01(\x0b\x32\x1d.ant.v1.PositionSnapshotEventH\x00\x12,\n\nbar_update\x18\x12 \x01(\x0b\x32\x16.ant.v1.BarUpdateEventH\x00\x42\t\n\x07payload\"\xe5\x01\n\x0e\x42\x61rUpdateEvent\x12\x12\n\naccount_id\x18\x01 \x01(\t\x12\x0e\n\x06symbol\x18\x02 \x01(\t\x12\x0e\n\x06period\x18\x03 \x01(\t\x12-\n\topen_time\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x0c\n\x04open\x18\x05 \x01(\t\x12\x0c\n\x04high\x18\x06 \x01(\t\x12\x0b\n\x03low\x18\x07 \x01(\t\x12\r\n\x05\x63lose\x18\x08 \x01(\t\x12\x0e\n\x06volume\x18\t \x01(\x01\x12\x0e\n\x06\x63losed\x18\n \x01(\x08\x12\x0b\n\x03\x62id\x18\x0b \x01(\t\x12\x0b\n\x03\x61sk\x18\x0c \x01(\t\"-\n\x16SubscribeEventsRequest\x12\x13\n\x0b\x61\x63\x63ount_ids\x18\x01 \x03(\t\"h\n\x17SubscribeHistoryRequest\x12\x13\n\x0b\x61\x63\x63ount_ids\x18\x01 \x03(\t\x12\r\n\x05limit\x18\x02 \x01(\x05\x12)\n\x05since\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"2\n\x1cSubscribeOrderUpdatesRequest\x12\x12\n\naccount_id\x18\x01 \x01(\t\"3\n\x1dSubscribeProfitUpdatesRequest\x12\x12\n\naccount_id\x18\x01 \x01(\t2\xaa\x03\n\rStreamService\x12H\n\x0fSubscribeEvents\x12\x1e.ant.v1.SubscribeEventsRequest\x1a\x13.ant.v1.StreamEvent0\x01\x12J\n\x10SubscribeHistory\x12\x1f.ant.v1.SubscribeHistoryRequest\x1a\x13.ant.v1.StreamEvent0\x01\x12Y\n\x15SubscribeOrderUpdates\x12$.ant.v1.SubscribeOrderUpdatesRequest\x1a\x18.ant.v1.OrderUpdateEvent0\x01\x12\\\n\x16SubscribeProfitUpdates\x12%.ant.v1.SubscribeProfitUpdatesRequest\x1a\x19.ant.v1.ProfitUpdateEvent0\x01\x12J\n\x14SubscribeUserSummary\x12\x16.google.protobuf.Empty\x1a\x18.ant.v1.UserSummaryEvent0\x01\x42\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cstream.proto\x12\x06\x61nt.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1astream_event_account.proto\x1a\x18stream_event_trade.proto\x1a\x17stream_event_sync.proto\x1a\x1astream_event_command.proto\x1a\x1cstream_event_indicator.proto\"\xcc\x06\n\x0bStreamEvent\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\x12\n\naccount_id\x18\x02 \x01(\t\x12-\n\ttimestamp\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x10\n\x08\x65vent_id\x18\n \x01(\t\x12\x30\n\x0corder_update\x18\x05 \x01(\x0b\x32\x18.ant.v1.OrderUpdateEventH\x00\x12\x32\n\rprofit_update\x18\x06 \x01(\x0b\x32\x19.ant.v1.ProfitUpdateEventH\x00\x12\x34\n\x0e\x61\x63\x63ount_status\x18\x07 \x01(\x0b\x32\x1a.ant.v1.AccountStatusEventH\x00\x12<\n\x12strategy_execution\x18\x08 \x01(\x0b\x32\x1e.ant.v1.StrategyExecutionEventH\x00\x12,\n\nrisk_alert\x18\t \x01(\x0b\x32\x16.ant.v1.RiskAlertEventH\x00\x12!\n\x04sync\x18\x0b \x01(\x0b\x32\x11.ant.v1.SyncEventH\x00\x12.\n\x0b\x64\x65\x61l_update\x18\x0c \x01(\x0b\x32\x17.ant.v1.DealUpdateEventH\x00\x12\x36\n\x0fposition_update\x18\r \x01(\x0b\x32\x1b.ant.v1.PositionUpdateEventH\x00\x12\x30\n\x0cledger_entry\x18\x0e \x01(\x0b\x32\x18.ant.v1.LedgerEntryEventH\x00\x12\x32\n\rtrade_command\x18\x0f \x01(\x0b\x32\x19.ant.v1.TradeCommandEventH\x00\x12\x32\n\rtrade_receipt\x18\x10 \x01(\x0b\x32\x19.ant.v1.TradeReceiptEventH\x00\x12:\n\x11position_snapshot\x18\x11 \x01(\x0b\x32\x1d.ant.v1.PositionSnapshotEventH\x00\x12,\n\nbar_update\x18\x12 \x01(\x0b\x32\x16.ant.v1.BarUpdateEventH\x00\x12\x38\n\x10indicator_update\x18\x13 \x01(\x0b\x32\x1c.ant.v1.IndicatorUpdateEventH\x00\x42\t\n\x07payload\"\xe5\x01\n\x0e\x42\x61rUpdateEvent\x12\x12\n\naccount_id\x18\x01 \x01(\t\x12\x0e\n\x06symbol\x18\x02 \x01(\t\x12\x0e\n\x06period\x18\x03 \x01(\t\x12-\n\topen_time\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x0c\n\x04open\x18\x05 \x01(\t\x12\x0c\n\x04high\x18\x06 \x01(\t\x12\x0b\n\x03low\x18\x07 \x01(\t\x12\r\n\x05\x63lose\x18\x08 \x01(\t\x12\x0e\n\x06volume\x18\t \x01(\x01\x12\x0e\n\x06\x63losed\x18\n \x01(\x08\x12\x0b\n\x03\x62id\x18\x0b \x01(\t\x12\x0b\n\x03\x61sk\x18\x0c \x01(\t\"-\n\x16SubscribeEventsRequest\x12\x13\n\x0b\x61\x63\x63ount_ids\x18\x01 \x03(\t\"h\n\x17SubscribeHistoryRequest\x12\x13\n\x0b\x61\x63\x63ount_ids\x18\x01 \x03(\t\x12\r\n\x05limit\x18\x02 \x01(\x05\x12)\n\x05since\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"2\n\x1cSubscribeOrderUpdatesRequest\x12\x12\n\naccount_id\x18\x01 \x01(\t\"3\n\x1dSubscribeProfitUpdatesRequest\x12\x12\n\naccount_id\x18\x01 \x01(\t2\x85\x04\n\rStreamService\x12H\n\x0fSubscribeEvents\x12\x1e.ant.v1.SubscribeEventsRequest\x1a\x13.ant.v1.StreamEvent0\x01\x12J\n\x10SubscribeHistory\x12\x1f.ant.v1.SubscribeHistoryRequest\x1a\x13.ant.v1.StreamEvent0\x01\x12Y\n\x15SubscribeOrderUpdates\x12$.ant.v1.SubscribeOrderUpdatesRequest\x1a\x18.ant.v1.OrderUpdateEvent0\x01\x12\\\n\x16SubscribeProfitUpdates\x12%.ant.v1.SubscribeProfitUpdatesRequest\x1a\x19.ant.v1.ProfitUpdateEvent0\x01\x12J\n\x14SubscribeUserSummary\x12\x16.google.protobuf.Empty\x1a\x18.ant.v1.UserSummaryEvent0\x01\x12Y\n\x13SubscribeIndicators\x12\".ant.v1.SubscribeIndicatorsRequest\x1a\x1c.ant.v1.IndicatorUpdateEvent0\x01\x42\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'stream_pb2', globals())
@@ -27,18 +28,18 @@ if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
   DESCRIPTOR._serialized_options = b'Z anttrader/gen/proto/ant/v1;antv1'
-  _STREAMEVENT._serialized_start=194
-  _STREAMEVENT._serialized_end=980
-  _BARUPDATEEVENT._serialized_start=983
-  _BARUPDATEEVENT._serialized_end=1212
-  _SUBSCRIBEEVENTSREQUEST._serialized_start=1214
-  _SUBSCRIBEEVENTSREQUEST._serialized_end=1259
-  _SUBSCRIBEHISTORYREQUEST._serialized_start=1261
-  _SUBSCRIBEHISTORYREQUEST._serialized_end=1365
-  _SUBSCRIBEORDERUPDATESREQUEST._serialized_start=1367
-  _SUBSCRIBEORDERUPDATESREQUEST._serialized_end=1417
-  _SUBSCRIBEPROFITUPDATESREQUEST._serialized_start=1419
-  _SUBSCRIBEPROFITUPDATESREQUEST._serialized_end=1470
-  _STREAMSERVICE._serialized_start=1473
-  _STREAMSERVICE._serialized_end=1899
+  _STREAMEVENT._serialized_start=224
+  _STREAMEVENT._serialized_end=1068
+  _BARUPDATEEVENT._serialized_start=1071
+  _BARUPDATEEVENT._serialized_end=1300
+  _SUBSCRIBEEVENTSREQUEST._serialized_start=1302
+  _SUBSCRIBEEVENTSREQUEST._serialized_end=1347
+  _SUBSCRIBEHISTORYREQUEST._serialized_start=1349
+  _SUBSCRIBEHISTORYREQUEST._serialized_end=1453
+  _SUBSCRIBEORDERUPDATESREQUEST._serialized_start=1455
+  _SUBSCRIBEORDERUPDATESREQUEST._serialized_end=1505
+  _SUBSCRIBEPROFITUPDATESREQUEST._serialized_start=1507
+  _SUBSCRIBEPROFITUPDATESREQUEST._serialized_end=1558
+  _STREAMSERVICE._serialized_start=1561
+  _STREAMSERVICE._serialized_end=2078
 # @@protoc_insertion_point(module_scope)

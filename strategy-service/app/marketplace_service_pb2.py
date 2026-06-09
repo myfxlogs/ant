@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x19marketplace_service.proto\x12\x06\x61nt.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe8\x01\n\x16PublishStrategyRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x13\n\x0bstrategy_id\x18\x02 \x01(\t\x12\r\n\x05title\x18\x03 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12\x13\n\x0bprice_model\x18\x05 \x01(\t\x12\x14\n\x0cprice_amount\x18\x06 \x01(\x01\x12\x13\n\x0b\x61sset_class\x18\x07 \x01(\t\x12\x0f\n\x07symbols\x18\x08 \x03(\t\x12\x11\n\ttimeframe\x18\t \x01(\t\x12\x12\n\nrisk_level\x18\n \x01(\t\x12\x0c\n\x04tags\x18\x0b \x03(\t\"-\n\x17PublishStrategyResponse\x12\x12\n\npublish_id\x18\x01 \x01(\t\"a\n\x10SubscribeRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x19\n\x11publisher_user_id\x18\x02 \x01(\t\x12\x13\n\x0bstrategy_id\x18\x03 \x01(\t\x12\x0c\n\x04kind\x18\x04 \x01(\t\",\n\x11SubscribeResponse\x12\x17\n\x0fsubscription_id\x18\x01 \x01(\t\">\n\x12UnsubscribeRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x17\n\x0fsubscription_id\x18\x02 \x01(\t\"\x15\n\x13UnsubscribeResponse\"K\n\x14ListPublishedRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\r\n\x05limit\x18\x02 \x01(\x05\x12\x13\n\x0b\x61sset_class\x18\x03 \x01(\t\"F\n\x15ListPublishedResponse\x12-\n\nstrategies\x18\x01 \x03(\x0b\x32\x19.ant.v1.PublishedStrategy\"\x8a\x03\n\x11PublishedStrategy\x12\x12\n\npublish_id\x18\x01 \x01(\t\x12\x13\n\x0bstrategy_id\x18\x02 \x01(\t\x12\x15\n\rstrategy_name\x18\x03 \x01(\t\x12\x19\n\x11publisher_user_id\x18\x04 \x01(\t\x12\x30\n\x0cpublished_at\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\r\n\x05title\x18\x06 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x07 \x01(\t\x12\x13\n\x0bprice_model\x18\x08 \x01(\t\x12\x14\n\x0cprice_amount\x18\t \x01(\x01\x12\x13\n\x0b\x61sset_class\x18\n \x01(\t\x12\x0f\n\x07symbols\x18\x0b \x03(\t\x12\x11\n\ttimeframe\x18\x0c \x01(\t\x12\x12\n\nrisk_level\x18\r \x01(\t\x12\x0c\n\x04tags\x18\x0e \x03(\t\x12\x19\n\x11total_subscribers\x18\x0f \x01(\x05\x12\x10\n\x08win_rate\x18\x10 \x01(\x01\x12\x11\n\ttotal_pnl\x18\x11 \x01(\x01\"+\n\x18ListSubscriptionsRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\"L\n\x19ListSubscriptionsResponse\x12/\n\rsubscriptions\x18\x01 \x03(\x0b\x32\x18.ant.v1.SubscriptionItem\"\xa6\x01\n\x10SubscriptionItem\x12\x17\n\x0fsubscription_id\x18\x01 \x01(\t\x12\x16\n\x0etarget_user_id\x18\x02 \x01(\t\x12\x13\n\x0bstrategy_id\x18\x03 \x01(\t\x12\x0c\n\x04kind\x18\x04 \x01(\t\x12\x0e\n\x06\x61\x63tive\x18\x05 \x01(\x08\x12.\n\ncreated_at\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp2\x9a\x03\n\x12MarketplaceService\x12R\n\x0fPublishStrategy\x12\x1e.ant.v1.PublishStrategyRequest\x1a\x1f.ant.v1.PublishStrategyResponse\x12@\n\tSubscribe\x12\x18.ant.v1.SubscribeRequest\x1a\x19.ant.v1.SubscribeResponse\x12\x46\n\x0bUnsubscribe\x12\x1a.ant.v1.UnsubscribeRequest\x1a\x1b.ant.v1.UnsubscribeResponse\x12L\n\rListPublished\x12\x1c.ant.v1.ListPublishedRequest\x1a\x1d.ant.v1.ListPublishedResponse\x12X\n\x11ListSubscriptions\x12 .ant.v1.ListSubscriptionsRequest\x1a!.ant.v1.ListSubscriptionsResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x19marketplace_service.proto\x12\x06\x61nt.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe8\x01\n\x16PublishStrategyRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x13\n\x0bstrategy_id\x18\x02 \x01(\t\x12\r\n\x05title\x18\x03 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12\x13\n\x0bprice_model\x18\x05 \x01(\t\x12\x14\n\x0cprice_amount\x18\x06 \x01(\x01\x12\x13\n\x0b\x61sset_class\x18\x07 \x01(\t\x12\x0f\n\x07symbols\x18\x08 \x03(\t\x12\x11\n\ttimeframe\x18\t \x01(\t\x12\x12\n\nrisk_level\x18\n \x01(\t\x12\x0c\n\x04tags\x18\x0b \x03(\t\"-\n\x17PublishStrategyResponse\x12\x12\n\npublish_id\x18\x01 \x01(\t\"a\n\x10SubscribeRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x19\n\x11publisher_user_id\x18\x02 \x01(\t\x12\x13\n\x0bstrategy_id\x18\x03 \x01(\t\x12\x0c\n\x04kind\x18\x04 \x01(\t\",\n\x11SubscribeResponse\x12\x17\n\x0fsubscription_id\x18\x01 \x01(\t\">\n\x12UnsubscribeRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x17\n\x0fsubscription_id\x18\x02 \x01(\t\"\x15\n\x13UnsubscribeResponse\"m\n\x14ListPublishedRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\r\n\x05limit\x18\x02 \x01(\x05\x12\x13\n\x0b\x61sset_class\x18\x03 \x01(\t\x12\x0f\n\x07keyword\x18\x04 \x01(\t\x12\x0f\n\x07sort_by\x18\x05 \x01(\t\"F\n\x15ListPublishedResponse\x12-\n\nstrategies\x18\x01 \x03(\x0b\x32\x19.ant.v1.PublishedStrategy\"\xb4\x03\n\x11PublishedStrategy\x12\x12\n\npublish_id\x18\x01 \x01(\t\x12\x13\n\x0bstrategy_id\x18\x02 \x01(\t\x12\x15\n\rstrategy_name\x18\x03 \x01(\t\x12\x19\n\x11publisher_user_id\x18\x04 \x01(\t\x12\x30\n\x0cpublished_at\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\r\n\x05title\x18\x06 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x07 \x01(\t\x12\x13\n\x0bprice_model\x18\x08 \x01(\t\x12\x14\n\x0cprice_amount\x18\t \x01(\x01\x12\x13\n\x0b\x61sset_class\x18\n \x01(\t\x12\x0f\n\x07symbols\x18\x0b \x03(\t\x12\x11\n\ttimeframe\x18\x0c \x01(\t\x12\x12\n\nrisk_level\x18\r \x01(\t\x12\x0c\n\x04tags\x18\x0e \x03(\t\x12\x19\n\x11total_subscribers\x18\x0f \x01(\x05\x12\x10\n\x08win_rate\x18\x10 \x01(\x01\x12\x11\n\ttotal_pnl\x18\x11 \x01(\x01\x12\x12\n\navg_rating\x18\x12 \x01(\x01\x12\x14\n\x0crating_count\x18\x13 \x01(\x05\"+\n\x18ListSubscriptionsRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\"L\n\x19ListSubscriptionsResponse\x12/\n\rsubscriptions\x18\x01 \x03(\x0b\x32\x18.ant.v1.SubscriptionItem\"\xa6\x01\n\x10SubscriptionItem\x12\x17\n\x0fsubscription_id\x18\x01 \x01(\t\x12\x16\n\x0etarget_user_id\x18\x02 \x01(\t\x12\x13\n\x0bstrategy_id\x18\x03 \x01(\t\x12\x0c\n\x04kind\x18\x04 \x01(\t\x12\x0e\n\x06\x61\x63tive\x18\x05 \x01(\x08\x12.\n\ncreated_at\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"K\n\x13RateStrategyRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x13\n\x0bstrategy_id\x18\x02 \x01(\t\x12\x0e\n\x06rating\x18\x03 \x01(\x05\"@\n\x14RateStrategyResponse\x12\x12\n\navg_rating\x18\x01 \x01(\x01\x12\x14\n\x0crating_count\x18\x02 \x01(\x05\")\n\x12ListRatingsRequest\x12\x13\n\x0bstrategy_id\x18\x01 \x01(\t\"d\n\x13ListRatingsResponse\x12#\n\x07ratings\x18\x01 \x03(\x0b\x32\x12.ant.v1.RatingItem\x12\x12\n\navg_rating\x18\x02 \x01(\x01\x12\x14\n\x0crating_count\x18\x03 \x01(\x05\"i\n\nRatingItem\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x0e\n\x06rating\x18\x03 \x01(\x05\x12.\n\ncreated_at\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"Q\n\x18\x43ommentOnStrategyRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x13\n\x0bstrategy_id\x18\x02 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x03 \x01(\t\"\'\n\x19\x43ommentOnStrategyResponse\x12\n\n\x02id\x18\x01 \x01(\t\"I\n\x13ListCommentsRequest\x12\x13\n\x0bstrategy_id\x18\x01 \x01(\t\x12\r\n\x05limit\x18\x02 \x01(\x05\x12\x0e\n\x06offset\x18\x03 \x01(\x05\"L\n\x14ListCommentsResponse\x12%\n\x08\x63omments\x18\x01 \x03(\x0b\x32\x13.ant.v1.CommentItem\x12\r\n\x05total\x18\x02 \x01(\x05\"~\n\x0b\x43ommentItem\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x11\n\tuser_name\x18\x03 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x04 \x01(\t\x12.\n\ncreated_at\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"[\n\x19SetStrategyPricingRequest\x12\x13\n\x0bstrategy_id\x18\x01 \x01(\t\x12\x13\n\x0bprice_model\x18\x02 \x01(\t\x12\x14\n\x0cprice_amount\x18\x03 \x01(\x01\"\\\n\x1aSetStrategyPricingResponse\x12\x13\n\x0bstrategy_id\x18\x01 \x01(\t\x12\x13\n\x0bprice_model\x18\x02 \x01(\t\x12\x14\n\x0cprice_amount\x18\x03 \x01(\x01\x32\xaf\x06\n\x12MarketplaceService\x12R\n\x0fPublishStrategy\x12\x1e.ant.v1.PublishStrategyRequest\x1a\x1f.ant.v1.PublishStrategyResponse\x12@\n\tSubscribe\x12\x18.ant.v1.SubscribeRequest\x1a\x19.ant.v1.SubscribeResponse\x12\x46\n\x0bUnsubscribe\x12\x1a.ant.v1.UnsubscribeRequest\x1a\x1b.ant.v1.UnsubscribeResponse\x12L\n\rListPublished\x12\x1c.ant.v1.ListPublishedRequest\x1a\x1d.ant.v1.ListPublishedResponse\x12X\n\x11ListSubscriptions\x12 .ant.v1.ListSubscriptionsRequest\x1a!.ant.v1.ListSubscriptionsResponse\x12I\n\x0cRateStrategy\x12\x1b.ant.v1.RateStrategyRequest\x1a\x1c.ant.v1.RateStrategyResponse\x12\x46\n\x0bListRatings\x12\x1a.ant.v1.ListRatingsRequest\x1a\x1b.ant.v1.ListRatingsResponse\x12X\n\x11\x43ommentOnStrategy\x12 .ant.v1.CommentOnStrategyRequest\x1a!.ant.v1.CommentOnStrategyResponse\x12I\n\x0cListComments\x12\x1b.ant.v1.ListCommentsRequest\x1a\x1c.ant.v1.ListCommentsResponse\x12[\n\x12SetStrategyPricing\x12!.ant.v1.SetStrategyPricingRequest\x1a\".ant.v1.SetStrategyPricingResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'marketplace_service_pb2', globals())
@@ -35,17 +35,41 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _UNSUBSCRIBERESPONSE._serialized_start=561
   _UNSUBSCRIBERESPONSE._serialized_end=582
   _LISTPUBLISHEDREQUEST._serialized_start=584
-  _LISTPUBLISHEDREQUEST._serialized_end=659
-  _LISTPUBLISHEDRESPONSE._serialized_start=661
-  _LISTPUBLISHEDRESPONSE._serialized_end=731
-  _PUBLISHEDSTRATEGY._serialized_start=734
-  _PUBLISHEDSTRATEGY._serialized_end=1128
-  _LISTSUBSCRIPTIONSREQUEST._serialized_start=1130
-  _LISTSUBSCRIPTIONSREQUEST._serialized_end=1173
-  _LISTSUBSCRIPTIONSRESPONSE._serialized_start=1175
-  _LISTSUBSCRIPTIONSRESPONSE._serialized_end=1251
-  _SUBSCRIPTIONITEM._serialized_start=1254
-  _SUBSCRIPTIONITEM._serialized_end=1420
-  _MARKETPLACESERVICE._serialized_start=1423
-  _MARKETPLACESERVICE._serialized_end=1833
+  _LISTPUBLISHEDREQUEST._serialized_end=693
+  _LISTPUBLISHEDRESPONSE._serialized_start=695
+  _LISTPUBLISHEDRESPONSE._serialized_end=765
+  _PUBLISHEDSTRATEGY._serialized_start=768
+  _PUBLISHEDSTRATEGY._serialized_end=1204
+  _LISTSUBSCRIPTIONSREQUEST._serialized_start=1206
+  _LISTSUBSCRIPTIONSREQUEST._serialized_end=1249
+  _LISTSUBSCRIPTIONSRESPONSE._serialized_start=1251
+  _LISTSUBSCRIPTIONSRESPONSE._serialized_end=1327
+  _SUBSCRIPTIONITEM._serialized_start=1330
+  _SUBSCRIPTIONITEM._serialized_end=1496
+  _RATESTRATEGYREQUEST._serialized_start=1498
+  _RATESTRATEGYREQUEST._serialized_end=1573
+  _RATESTRATEGYRESPONSE._serialized_start=1575
+  _RATESTRATEGYRESPONSE._serialized_end=1639
+  _LISTRATINGSREQUEST._serialized_start=1641
+  _LISTRATINGSREQUEST._serialized_end=1682
+  _LISTRATINGSRESPONSE._serialized_start=1684
+  _LISTRATINGSRESPONSE._serialized_end=1784
+  _RATINGITEM._serialized_start=1786
+  _RATINGITEM._serialized_end=1891
+  _COMMENTONSTRATEGYREQUEST._serialized_start=1893
+  _COMMENTONSTRATEGYREQUEST._serialized_end=1974
+  _COMMENTONSTRATEGYRESPONSE._serialized_start=1976
+  _COMMENTONSTRATEGYRESPONSE._serialized_end=2015
+  _LISTCOMMENTSREQUEST._serialized_start=2017
+  _LISTCOMMENTSREQUEST._serialized_end=2090
+  _LISTCOMMENTSRESPONSE._serialized_start=2092
+  _LISTCOMMENTSRESPONSE._serialized_end=2168
+  _COMMENTITEM._serialized_start=2170
+  _COMMENTITEM._serialized_end=2296
+  _SETSTRATEGYPRICINGREQUEST._serialized_start=2298
+  _SETSTRATEGYPRICINGREQUEST._serialized_end=2389
+  _SETSTRATEGYPRICINGRESPONSE._serialized_start=2391
+  _SETSTRATEGYPRICINGRESPONSE._serialized_end=2483
+  _MARKETPLACESERVICE._serialized_start=2486
+  _MARKETPLACESERVICE._serialized_end=3301
 # @@protoc_insertion_point(module_scope)
