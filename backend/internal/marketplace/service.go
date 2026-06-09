@@ -74,23 +74,42 @@ func (s *Service) Publish(ctx context.Context, params PublishParams) (string, er
 	if err != nil { return "", fmt.Errorf("marketplace: insert publish: %w", err) }
 
 	_, err = tx.Exec(ctx, `INSERT INTO marketplace_strategies (id, strategy_id, publisher_id, title, description, price_model, price_amount, asset_class, symbols, timeframe, risk_level, tags, status, created_at, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'published',now(),now())`,
-		stratID, publishID, params.UserID, params.Title, params.Description,
+		stratID, params.StrategyID, params.UserID, params.Title, params.Description,
 		params.PriceModel, params.PriceAmount, params.AssetClass,
-		jsonArray(params.Symbols), params.Timeframe, params.RiskLevel, jsonArray(params.Tags))
+		pgTextArray(params.Symbols), params.Timeframe, params.RiskLevel, pgTextArray(params.Tags))
 	if err != nil { return "", fmt.Errorf("marketplace: insert listing: %w", err) }
 
 	if err := tx.Commit(ctx); err != nil { return "", fmt.Errorf("marketplace: publish commit: %w", err) }
 	return publishID.String(), nil
 }
 
-func jsonArray(items []string) string {
-	if len(items) == 0 { return "[]" }
-	out := "["
-	for i, s := range items {
-		if i > 0 { out += "," }
-		out += `"` + s + `"`
+// pgTextArray formats a string slice as a PostgreSQL TEXT[] literal: {a,b,c}.
+// Special characters in values (commas, braces, quotes) are backslash-escaped.
+func pgTextArray(items []string) string {
+	if len(items) == 0 {
+		return "{}"
 	}
-	return out + "]"
+	out := "{"
+	for i, s := range items {
+		if i > 0 {
+			out += ","
+		}
+		out += pgEscape(s)
+	}
+	return out + "}"
+}
+
+func pgEscape(s string) string {
+	b := make([]byte, 0, len(s)+4)
+	for _, c := range []byte(s) {
+		switch c {
+		case '"', '\\', '{', '}', ',':
+			b = append(b, '\\', c)
+		default:
+			b = append(b, c)
+		}
+	}
+	return string(b)
 }
 
 
@@ -125,13 +144,13 @@ func buildPublishedQuery(userID, assetClass, keyword, sortBy string, limit int) 
 	query := `SELECT usp.id, usp.platform_strategy_id, COALESCE(ms.title,ps.name,usp.platform_strategy_id::text),
 		usp.user_id, usp.published_at, COALESCE(ms.title,''), COALESCE(ms.description,''),
 		COALESCE(ms.price_model,''), ms.price_amount, COALESCE(ms.asset_class,''),
-		COALESCE(ms.symbols,'[]'), ms.timeframe, COALESCE(ms.risk_level,''),
-		COALESCE(ms.tags,'[]'), COALESCE(ms.total_subscribers,0), ms.win_rate, ms.total_pnl,
+		COALESCE(ms.symbols,'{}'), ms.timeframe, COALESCE(ms.risk_level,''),
+		COALESCE(ms.tags,'{}'), COALESCE(ms.total_subscribers,0), ms.win_rate, ms.total_pnl,
 		COALESCE(r.avg_rating,0), COALESCE(r.rating_count,0)
 	 FROM user_strategy_publishes usp
-	 LEFT JOIN marketplace_strategies ms ON ms.strategy_id=usp.id
+	 LEFT JOIN marketplace_strategies ms ON ms.strategy_id=usp.platform_strategy_id
 	 LEFT JOIN platform_strategies ps ON ps.id::text=usp.platform_strategy_id::text
-	 LEFT JOIN (SELECT strategy_id, AVG(rating) AS avg_rating, COUNT(*)::int AS rating_count FROM marketplace_ratings GROUP BY strategy_id) r ON r.strategy_id=usp.id
+	 LEFT JOIN (SELECT strategy_id, AVG(rating) AS avg_rating, COUNT(*)::int AS rating_count FROM marketplace_ratings GROUP BY strategy_id) r ON r.strategy_id=ms.id
 	 WHERE 1=1`
 	args := []interface{}{}
 	if userID != "" {
@@ -163,13 +182,17 @@ func buildPublishedQuery(userID, assetClass, keyword, sortBy string, limit int) 
 // parseJSONStringArray parses a PostgreSQL JSON array string like ["a","b"]
 // into a Go []string. Returns empty slice on parse failure.
 func parseJSONStringArray(raw string) []string {
-	if raw == "" || raw == "[]" || raw == "null" {
+	if raw == "" || raw == "[]" || raw == "{}" || raw == "null" {
 		return nil
 	}
 	// Simple parser: strip brackets, split by comma, strip quotes.
+	// Handles both JSON array ["a","b"] and PostgreSQL array {a,b} formats.
 	inner := raw
-	if len(inner) >= 2 && inner[0] == '[' && inner[len(inner)-1] == ']' {
-		inner = inner[1 : len(inner)-1]
+	if len(inner) >= 2 {
+		first, last := inner[0], inner[len(inner)-1]
+		if (first == '[' && last == ']') || (first == '{' && last == '}') {
+			inner = inner[1 : len(inner)-1]
+		}
 	}
 	if inner == "" {
 		return nil
