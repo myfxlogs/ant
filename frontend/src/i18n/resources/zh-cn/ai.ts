@@ -407,10 +407,13 @@ def run(context):
       failed: '未通过: {{gate}}',
       details: '详细结果',
       skipped: '已跳过',
-      noData: 'no '无数据'    pass: 'PASS',
-'通过'fail: 'FAIL',
-  '失败'known: 'unknown',
- '未知'ctRun: 'Select backtest '选择回测运行...'ngs: {
+      noData: '无数据',
+      pass: '通过',
+      fail: '失败',
+      unknown: '未知',
+      selectRun: '选择回测运行...'
+    },
+    settings: {
       fields: {
         baseUrl: 'Base URL',
         apiKey: 'API Key',

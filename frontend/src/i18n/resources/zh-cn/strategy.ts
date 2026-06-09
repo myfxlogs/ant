@@ -1031,9 +1031,13 @@ def run(context):
         loaded: '已加载'
       },
       watchlist: '自选',
-      selectAccount: 'Select'选择账户' openPositions: 'Open Positions ('持仓 ({{count}})'itions: 'No open positions for this a'此账户暂无持仓'ror — try refreshing',
-      smartTuning: 'Smar'图表错误 — 请尝试刷新'tion: {
-        selectSymbol: 'Select'智能调参't',
+      selectAccount: '选择账户',
+      openPositions: '持仓 ({{count}})',
+      noOpenPositions: '此账户暂无持仓',
+      chartError: '图表错误 — 请尝试刷新',
+      smartTuning: '智能调参',
+      quickTradeSection: {
+        selectSymbol: 'Select a symbol first',
         validVolume: 'Enter a valid volume',
         priceRequired: 'Price is required for Limit/Stop orders',
         orderPlaced: '{{side}} order placed',
@@ -1106,6 +1110,33 @@ def run(context):
         liveAligned: '实盘对齐',
         exploration: '探索模式'
       }
+    },
+    quickTradeSection: {
+      selectSymbol: '请先选择品种',
+      validVolume: '请输入有效手数',
+      priceRequired: '限价/止损单需要输入价格',
+      orderPlaced: '{{side}} 订单已提交',
+      orderFailed: '订单失败',
+      amountLots: '数量（手）',
+      marginMode: '保证金模式',
+      cross: '跨期',
+      isolated: '逐仓',
+      mt4CrossOnly: 'MT4 仅支持跨期保证金'
+    },
+    chartTools: {
+      streamActive: '实时K线流已连接',
+      streamUnavailable: '数据流不可用',
+      hide: '隐藏',
+      show: '显示',
+      settings: '设置',
+      remove: '移除',
+      clearDrawings: '清除所有绘图',
+      candle: '蜡烛图',
+      ohlc: 'OHLC',
+      area: '面积图',
+      live: '实时',
+      error: '错误',
+      static: '静态'
     }
   },
   indicatorCatalog: {
