@@ -108,19 +108,19 @@ export default function PaperAccountPanel() {
 
   // ── Handlers ──
   const handleCreate = useCallback(async () => {
-    if (!createName.trim()) { message.warning('Enter a name'); return; }
+    if (!createName.trim()) { message.warning(t('strategy.paper.messages.enterName')); return; }
     try {
       const resp = await paperTradingClient.createPaperAccount({
         name: createName,
         initialBalance: createBalance,
       });
-      message.success('Paper account created');
+      message.success(t('strategy.paper.messages.created'));
       setCreateName('');
       setCreateBalance('10000');
       // Add to frontend state immediately and subscribe.
       setAccounts(prev => [...prev, resp]);
       subscribeAccount(resp.id);
-    } catch { message.error('Create failed'); }
+    } catch { message.error(t('strategy.paper.messages.createFailed')); }
   }, [createName, createBalance, subscribeAccount]);
 
   const openStartModal = useCallback((accountId: string) => {
@@ -132,7 +132,7 @@ export default function PaperAccountPanel() {
   }, []);
 
   const handleStart = useCallback(async () => {
-    if (!startCode.trim()) { message.warning('Paste your strategy code'); return; }
+    if (!startCode.trim()) { message.warning(t('strategy.paper.messages.pasteCode')); return; }
     setStarting(true);
     try {
       await paperTradingClient.startPaperStrategy({
@@ -142,13 +142,13 @@ export default function PaperAccountPanel() {
         timeframe: startTimeframe,
         params: {},
       });
-      message.success('Paper strategy started');
+      message.success(t('strategy.paper.messages.strategyStarted'));
       setRunning(prev => ({
         ...prev,
         [startTargetId]: { symbol: startSymbol, timeframe: startTimeframe },
       }));
       setStartModalOpen(false);
-    } catch { message.error('Start failed'); }
+    } catch { message.error(t('strategy.paper.messages.startFailed')); }
     setStarting(false);
   }, [startCode, startTargetId, startSymbol, startTimeframe]);
 
@@ -156,31 +156,31 @@ export default function PaperAccountPanel() {
     setStopping(prev => ({ ...prev, [accountId]: true }));
     try {
       await paperTradingClient.stopPaperStrategy({ paperAccountId: accountId });
-      message.success('Paper strategy stopped');
+      message.success(t('strategy.paper.messages.strategyStopped'));
       setRunning(prev => {
         const next = { ...prev };
         delete next[accountId];
         return next;
       });
-    } catch { message.error('Stop failed'); }
+    } catch { message.error(t('strategy.paper.messages.stopFailed')); }
     setStopping(prev => ({ ...prev, [accountId]: false }));
   }, []);
 
   return (
     <div style={{ padding: 16 }}>
-      <Title level={5} style={{ marginBottom: 16 }}>📊 Paper Trading</Title>
+      <Title level={5} style={{ marginBottom: 16 }}>{t('strategy.paper.title')}</Title>
 
       {/* Create account */}
       <Card size="small" style={{ marginBottom: 16, background: '#fafafa' }}>
         <Space direction="vertical" style={{ width: '100%' }}>
-          <Text strong style={{ fontSize: 12 }}>Create Paper Account</Text>
+          <Text strong style={{ fontSize: 12 }}>{t('strategy.paper.createAccount')}</Text>
           <Space>
-            <Input size="small" placeholder="Account name" value={createName}
+            <Input size="small" placeholder={t('strategy.paper.accountName')} value={createName}
               onChange={e => setCreateName(e.target.value)} style={{ width: 160 }} />
-            <Input size="small" placeholder="Balance" value={createBalance}
+            <Input size="small" placeholder={t('trading.balance')} value={createBalance}
               onChange={e => setCreateBalance(e.target.value)} style={{ width: 100 }} />
             <Button size="small" type="primary" icon={<PlusOutlined />}
-              onClick={handleCreate}>Create</Button>
+              onClick={handleCreate}>{t('strategy.paper.create')}</Button>
           </Space>
         </Space>
       </Card>
@@ -189,7 +189,7 @@ export default function PaperAccountPanel() {
       <List
         loading={loading}
         dataSource={accounts}
-        locale={{ emptyText: 'No paper accounts. Create one to start simulated trading.' }}
+        locale={{ emptyText: t('strategy.paper.noAccounts') }}
         renderItem={(a: PaperAccount) => {
           const isRunning = !!running[a.id];
           const isBusy = stopping[a.id] || false;
@@ -204,11 +204,11 @@ export default function PaperAccountPanel() {
                   <Text type="secondary" style={{ fontSize: 11 }}>{a.id?.slice(0, 8)}</Text>
                 </Col>
                 <Col span={8}>
-                  <Statistic title="Balance" value={a.currentBalance || '0'}
+                  <Statistic title={t('trading.balance')} value={a.currentBalance || '0'}
                     valueStyle={{ fontSize: 14 }} prefix="$" />
                 </Col>
                 <Col span={8}>
-                  <Statistic title="Equity" value={a.equity || '0'}
+                  <Statistic title={t('trading.equity')} value={a.equity || '0'}
                     valueStyle={{ fontSize: 14, color: eq >= ib ? '#26a69a' : '#ef5350' }}
                     prefix={eq >= ib ? <RiseOutlined /> : <FallOutlined />} />
                 </Col>
@@ -217,28 +217,28 @@ export default function PaperAccountPanel() {
                 {isRunning ? (
                   <>
                     <Tag color="green">
-                      Running {running[a.id].symbol} {running[a.id].timeframe}
+                      {t('strategy.paper.running', { symbol: running[a.id].symbol, timeframe: running[a.id].timeframe })}
                     </Tag>
                     <Button size="small" icon={<StopOutlined />} danger
                       loading={isBusy}
                       onClick={() => handleStop(a.id)}>
-                      Stop
+                      {t('strategy.paper.stop')}
                     </Button>
                   </>
                 ) : (
                   <>
                     <Button size="small" icon={<PlayCircleOutlined />}
                       onClick={() => openStartModal(a.id)}>
-                      Start
+                      {t('strategy.paper.start')}
                     </Button>
-                    <Button size="small" icon={<StopOutlined />} disabled>Stop</Button>
+                    <Button size="small" icon={<StopOutlined />} disabled>{t('strategy.paper.stop')}</Button>
                   </>
                 )}
                 <Button size="small" icon={<ReloadOutlined />}
                   onClick={() => subscribeAccount(a.id)}>
-                  Watch
+                  {t('strategy.paper.watch')}
                 </Button>
-                <Tag color="blue">Paper</Tag>
+                <Tag color="blue">{t('strategy.paper.paper')}</Tag>
               </Space>
             </Card>
           );
@@ -247,29 +247,29 @@ export default function PaperAccountPanel() {
 
       {/* Start Strategy Modal */}
       <Modal
-        title="Start Paper Strategy"
+        title={t('strategy.paper.startStrategy')}
         open={startModalOpen}
         onCancel={() => setStartModalOpen(false)}
         onOk={handleStart}
         confirmLoading={starting}
-        okText="Start"
+        okText={t('strategy.paper.start')}
       >
         <Form layout="vertical" size="small" style={{ marginTop: 16 }}>
-          <Form.Item label="Symbol">
+          <Form.Item label={t('strategy.paper.symbol')}>
             <Input
               value={startSymbol}
               onChange={e => setStartSymbol(e.target.value.toUpperCase())}
               placeholder="XAUUSD"
             />
           </Form.Item>
-          <Form.Item label="Timeframe">
+          <Form.Item label={t('strategy.paper.timeframe')}>
             <Select value={startTimeframe} onChange={setStartTimeframe}>
               {TIMEFRAMES.map(tf => (
                 <Select.Option key={tf} value={tf}>{tf}</Select.Option>
               ))}
             </Select>
           </Form.Item>
-          <Form.Item label="Strategy Code (Python)">
+          <Form.Item label={t('strategy.paper.strategyCode')}>
             <Input.TextArea
               rows={6}
               value={startCode}

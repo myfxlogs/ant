@@ -85,7 +85,7 @@ export default function PublishStrategyModal({ open, userId, onClose, onPublishe
           </Form.Item>
         </Space>
         <Form.Item name="symbols" label={t('marketplace.publishModal.symbols')}>
-          <Input placeholder="EURUSD, GBPUSD, XAUUSD" />
+          <Input placeholder={t('marketplace.publishModal.symbolsPlaceholder')} />
         </Form.Item>
         <Form.Item name="tags" label={t('marketplace.publishModal.tags')}>
           <Input placeholder="trend, scalping, mean-reversion" />

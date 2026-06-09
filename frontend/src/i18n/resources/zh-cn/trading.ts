@@ -153,7 +153,8 @@ const trading = {
     positionShort: '空头',
     openPositionsTitle: '持仓',
     closePositionTitle: '平仓',
-    recentTrades: '最近交易'
+    recentTrades: '最近交易',
+    profit: '盈亏'
   }
 } as const;
 

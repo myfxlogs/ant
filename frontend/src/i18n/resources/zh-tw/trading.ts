@@ -153,7 +153,8 @@ const trading = {
     positionShort: '做空',
     openPositionsTitle: '持倉',
     closePositionTitle: '平倉',
-    recentTrades: '近期交易'
+    recentTrades: '近期交易',
+    profit: '盈虧'
   }
 } as const;
 

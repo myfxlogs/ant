@@ -94,16 +94,16 @@ export default function WorkspaceToolbar({
           <SummaryChip label={t('trading.balance')} value={`$${fmtCompact(accountInfo!.balance)}`} />
           <SummaryChip label={t('trading.equity')} value={`$${fmtCompact(accountInfo!.equity)}`} />
           <SummaryChip
-            label="Profit"
+            label={t('trading.profit')}
             value={`$${fmtCompact(Math.abs(accountInfo!.profit))}`}
             color={profitColor}
             icon={accountInfo!.profit >= 0
               ? <RiseOutlined style={{ fontSize: 11 }} />
               : <FallOutlined style={{ fontSize: 11 }} />}
           />
-          <SummaryChip label="Free Margin" value={`$${fmtCompact(accountInfo!.freeMargin)}`} />
+          <SummaryChip label={t('trading.freeMargin')} value={`$${fmtCompact(accountInfo!.freeMargin)}`} />
           {accountInfo!.marginLevel > 0 && (
-            <SummaryChip label="Margin Lvl" value={`${accountInfo!.marginLevel.toFixed(0)}%`} />
+            <SummaryChip label={t('trading.marginLevel')} value={`${accountInfo!.marginLevel.toFixed(0)}%`} />
           )}
         </div>
       )}
@@ -134,7 +134,7 @@ export default function WorkspaceToolbar({
               : <KeyOutlined style={{ fontSize: 10 }} />}
             color={selectedAccount.isInvestor ? 'orange' : 'green'}
             style={{ fontSize: 10, margin: 0, lineHeight: '18px' }}>
-            {selectedAccount.isInvestor ? 'Investor (Read-only)' : 'Master (Trading)'}
+            {selectedAccount.isInvestor ? t('strategy.workspace.investorReadOnly') : t('strategy.workspace.masterTrading')}
           </Tag>
           {selectedAccount.leverage && selectedAccount.leverage > 0 && (
             <SummaryChip label={t('trading.positionLeverage')} value={`1:${selectedAccount.leverage}`} />
@@ -147,7 +147,7 @@ export default function WorkspaceToolbar({
 
       {/* Actions — chart toolbar handles timeframe + indicators internally */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-        <Tooltip title={codePanelVisible ? 'Hide Code' : 'Show Code'}>
+        <Tooltip title={codePanelVisible ? t('strategy.workspace.hideCode') : t('strategy.workspace.showCode')}>
           <Button size="small" type={codePanelVisible ? 'primary' : 'default'}
             icon={<CodeOutlined />} onClick={onToggleCodePanel}
             style={{ width: 30, height: 30, borderRadius: 6, padding: 0,
@@ -159,7 +159,7 @@ export default function WorkspaceToolbar({
             background: quickTradeVisible ? '#1890ff' : undefined,
             borderColor: quickTradeVisible ? '#1890ff' : undefined,
             boxShadow: quickTradeVisible ? '0 2px 8px rgba(24,144,255,0.3)' : undefined }}>
-          Quick Trade
+          {t('strategy.workspace.quickTrade')}
         </Button>
       </div>
 

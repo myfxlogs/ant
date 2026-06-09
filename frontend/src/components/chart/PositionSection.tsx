@@ -1,4 +1,5 @@
 import { Tag, Button } from 'antd';
+import { useTranslation } from 'react-i18next';
 
 export interface PositionItem {
   ticket: number; side: string; volume: number;
@@ -25,12 +26,13 @@ function pnl(v: number): string {
 }
 
 export default function PositionSection({ symbol, positions, closingTicket, onClosePosition }: Props) {
+  const { t } = useTranslation();
   if (positions.length === 0) {
     return (
       <div style={{ borderTop: '1px solid #e8e8e8', paddingTop: 10 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: '#595959', marginBottom: 6 }}>📊 Current Position</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: '#595959', marginBottom: 6 }}>{t('common.currentPosition')}</div>
         <div style={{ textAlign: 'center', padding: 10, color: '#8c8c8c', fontSize: 11 }}>
-          No open positions for {symbol || 'this symbol'}
+          {t('common.noOpenPositionsForSymbol', { symbol: symbol || 'this symbol' })}
         </div>
       </div>
     );
@@ -39,7 +41,7 @@ export default function PositionSection({ symbol, positions, closingTicket, onCl
   return (
     <div style={{ borderTop: '1px solid #e8e8e8', paddingTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ fontSize: 11, fontWeight: 700, color: '#595959' }}>📊 Current Position</span>
+        <span style={{ fontSize: 11, fontWeight: 700, color: '#595959' }}>{t('common.currentPosition')}</span>
         {positions.length > 1 && <span style={{ fontSize: 10, color: '#8c8c8c' }}>({positions.length})</span>}
       </div>
 
@@ -51,23 +53,23 @@ export default function PositionSection({ symbol, positions, closingTicket, onCl
             borderLeft: `3px solid ${isLong ? '#26a69a' : '#ef5350'}`,
             display: 'flex', flexDirection: 'column', gap: 3,
           }}>
-            <Row label="Side">
+            <Row label={t('trading.positionSide')}>
               <Tag color={isLong ? 'success' : 'error'} style={{ fontSize: 10, lineHeight: '16px' }}>
-                {isLong ? 'LONG' : 'SHORT'}
+                {isLong ? t('trading.positionLong') : t('trading.positionShort')}
               </Tag>
             </Row>
-            <Row label="Size"><span>{pos.volume}</span></Row>
-            <Row label="Entry Price"><span>${num(pos.openPrice)}</span></Row>
-            {pos.markPrice && <Row label="Mark Price"><span>${num(pos.markPrice)}</span></Row>}
-            {pos.leverage && pos.leverage > 1 && <Row label="Leverage"><span>{pos.leverage}x</span></Row>}
-            <Row label="Unrealized PnL">
+            <Row label={t('trading.positionSize')}><span>{pos.volume}</span></Row>
+            <Row label={t('trading.positionEntryPrice')}><span>${num(pos.openPrice)}</span></Row>
+            {pos.markPrice && <Row label={t('trading.positionMarkPrice')}><span>${num(pos.markPrice)}</span></Row>}
+            {pos.leverage && pos.leverage > 1 && <Row label={t('trading.positionLeverage')}><span>{pos.leverage}x</span></Row>}
+            <Row label={t('trading.positionUnrealizedPnL')}>
               <span style={{ color: pos.profit >= 0 ? '#26a69a' : '#ef5350', fontWeight: 700 }}>
                 {pnl(pos.profit)}
               </span>
             </Row>
             <Button danger size="small" block ghost loading={closingTicket === pos.ticket}
               style={{ marginTop: 4 }} onClick={() => onClosePosition(pos.ticket, pos.volume)}>
-              Close Position
+              {t('trading.closePosition')}
             </Button>
           </div>
         );

@@ -1,5 +1,6 @@
 import { Tag, Tooltip, Button, Space } from 'antd';
 import { EyeOutlined, EyeInvisibleOutlined, SettingOutlined, CloseOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { useChartIndicatorsStore } from '@/stores/chartIndicatorsStore';
 import { useState } from 'react';
 import IndicatorSettingsModal from './IndicatorSettingsModal';
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export default function ActiveIndicatorsBar({ className, style }: Props) {
+  const { t } = useTranslation();
   const { active, removeIndicator, toggleVisibility, getDef } = useChartIndicatorsStore();
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -40,7 +42,7 @@ export default function ActiveIndicatorsBar({ className, style }: Props) {
                   {ind.defId === 'RSI' || ind.defId === 'ATR' || ind.defId === 'CCI' ? `(${ind.params.length})` : ''}
                   {ind.defId === 'MACD' ? `(${ind.params.fast},${ind.params.slow},${ind.params.signal})` : ''}
                 </span>
-                <Tooltip title={ind.visible ? 'Hide' : 'Show'} mouseEnterDelay={0.5}>
+                <Tooltip title={ind.visible ? t('strategy.chartTools.hide') : t('strategy.chartTools.show')} mouseEnterDelay={0.5}>
                   <Button
                     type="text" size="small"
                     icon={ind.visible ? <EyeOutlined /> : <EyeInvisibleOutlined />}
@@ -48,7 +50,7 @@ export default function ActiveIndicatorsBar({ className, style }: Props) {
                     style={{ padding: 0, minWidth: 14, height: 14, lineHeight: 1 }}
                   />
                 </Tooltip>
-                <Tooltip title="Settings" mouseEnterDelay={0.5}>
+                <Tooltip title={t('strategy.chartTools.settings')} mouseEnterDelay={0.5}>
                   <Button
                     type="text" size="small"
                     icon={<SettingOutlined />}
@@ -56,7 +58,7 @@ export default function ActiveIndicatorsBar({ className, style }: Props) {
                     style={{ padding: 0, minWidth: 14, height: 14, lineHeight: 1 }}
                   />
                 </Tooltip>
-                <Tooltip title="Remove" mouseEnterDelay={0.5}>
+                <Tooltip title={t('strategy.chartTools.remove')} mouseEnterDelay={0.5}>
                   <Button
                     type="text" size="small" danger
                     icon={<CloseOutlined />}

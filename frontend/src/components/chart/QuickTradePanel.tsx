@@ -128,7 +128,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
       {/* Price (Limit/Stop only) */}
       {isLimitOrStop && (
         <div>
-          <div style={labelSm}>Price</div>
+          <div style={labelSm}>{t('trading.price')}</div>
           <InputNumber size="small" style={{ width: '100%' }} min={0} step={0.00001}
             value={price} onChange={(v) => setPrice(v)} placeholder="0.00000" />
         </div>

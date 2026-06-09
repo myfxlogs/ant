@@ -104,7 +104,12 @@ const base = {
     error: '错误',
     retry: '重试',
     pageError: '页面错误',
-    unexpectedError: '发生了意外错误'
+    unexpectedError: '发生了意外错误',
+    lineColor: '线颜色',
+    selectSymbolToViewChart: '选择品种查看图表',
+    currentPosition: '📊 当前持仓',
+    noOpenPositionsForSymbol: '{{symbol}} 暂无持仓',
+    indicatorSettings: '{{name}} 设置'
   },
   language: {
     simplifiedChinese: '简体中文',
@@ -186,6 +191,9 @@ const base = {
       comments: '评论',
       noComments: '暂无评论，快来第一个评论吧！',
       commentPlaceholder: '写评论...（Shift+Enter 换行）'
+    },
+    publishModal: {
+      symbolsPlaceholder: 'EURUSD, GBPUSD, XAUUSD'
     }
   },
   market: {

@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { message } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
 import { gateApi } from '@/client/gate';
 import { backtestRunsApi, type BacktestTrade } from '@/client/backtestRuns';
@@ -37,6 +38,7 @@ export interface BacktestMetrics {
 }
 
 export function useBacktestParams() {
+  const { t } = useTranslation();
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<BacktestStatus>('idle');
   const [metrics, setMetrics] = useState<BacktestMetrics | null>(null);
@@ -89,7 +91,7 @@ export function useBacktestParams() {
     templateId?: string;
   }) => {
     const { code, accountId, symbol, timeframe, templateId } = params;
-    if (!code || !symbol) { message.warning('Please enter strategy code and select a symbol'); return; }
+    if (!code || !symbol) { message.warning(t('strategy.backtestParams.enterCodeAndSymbol')); return; }
     setSubmitting(true);
     try {
       const result = await pythonStrategyApi.startBacktestRun({
@@ -137,7 +139,7 @@ export function useBacktestParams() {
       });
       backtestWatchRef.current = stopWatching;
     } catch (e: any) {
-      message.error(e?.message || 'Backtest failed');
+      message.error(e?.message || t('strategy.backtestParams.backtestFailed'));
       setStatus('error'); setErrorMsg(e?.message || 'Unknown error');
     } finally { setSubmitting(false); }
   }, [initialCapital, commission, slippage, leverage, tradeDirection, strictMode, startDate, endDate]);
@@ -204,7 +206,7 @@ export function useBacktestParams() {
         fromTsUnixMs: BigInt(fromMs),
         toTsUnixMs: BigInt(toMs),
       });
-      message.success('Smart Tuning started');
+      message.success(t('strategy.tuning.started'));
       return result.experiment?.id || result.jobId || '';
     } catch (e: any) {
       message.error(e?.message || 'Tuning failed');

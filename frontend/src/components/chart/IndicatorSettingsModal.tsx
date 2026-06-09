@@ -31,7 +31,7 @@ export default function IndicatorSettingsModal({ visible, indicator, def, onClos
 
   return (
     <Modal
-      title={`${def.name} Settings`}
+      title={t('common.indicatorSettings', { name: def.name })}
       open={visible}
       onCancel={onClose}
       onOk={handleSave}
@@ -76,7 +76,7 @@ export default function IndicatorSettingsModal({ visible, indicator, def, onClos
         ))}
 
         {/* Line color */}
-        <Form.Item label="Line Color" name="_color">
+        <Form.Item label={t('common.lineColor')} name="_color">
           <ColorPicker showText style={{ width: '100%' }} />
         </Form.Item>
       </Form>

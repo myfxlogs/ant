@@ -119,7 +119,7 @@ export default function AssetAnalysisPage() {
   };
 
   const renderSRLevels = (levels: SRLevelType[]) => {
-    if (!levels?.length) return <Text type="secondary">No significant levels detected</Text>;
+    if (!levels?.length) return <Text type="secondary">{t('strategy.assetAnalysis.noLevels')}</Text>;
     return (
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
         {levels.map((lvl, i) => (
@@ -142,17 +142,17 @@ export default function AssetAnalysisPage() {
     <div style={{ maxWidth: 960, margin: '0 auto', padding: isMobile ? '16px 12px' : '24px 16px' }}>
       <Title level={3}>
         <BulbOutlined style={{ marginRight: 8 }} />
-        AI Asset Analysis
+        {t('strategy.assetAnalysis.title')}
       </Title>
       <Text type="secondary" style={{ display: 'block', marginBottom: 24 }}>
-        Multi-timeframe trend outlook, S/R level detection, volatility classification, and AI strategy recommendation
+        {t('strategy.assetAnalysis.subtitle')}
       </Text>
 
       <Row gutter={[12, 12]} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={16} md={12}>
           <Input
             prefix={<SearchOutlined />}
-            placeholder="Enter symbol (e.g. EURUSD, XAUUSD, BTCUSD)"
+            placeholder={t('strategy.assetAnalysis.symbolPlaceholder')}
             value={symbol}
             onChange={e => setSymbol(e.target.value)}
             onPressEnter={handleAnalyze}
@@ -170,7 +170,7 @@ export default function AssetAnalysisPage() {
             style={{ borderRadius: 8, width: '100%' }}
             block
           >
-            Analyze
+            {t('strategy.assetAnalysis.analyze')}
           </Button>
         </Col>
       </Row>
@@ -179,7 +179,7 @@ export default function AssetAnalysisPage() {
         <div style={{ marginBottom: 16 }}>
           <Progress percent={progress} status="active" size="small" />
           <Text type="secondary" style={{ fontSize: 12 }}>
-            {phase === 'idle' ? 'Fetching market data...' : `Phase: ${phase}`}
+            {phase === 'idle' ? t('strategy.assetAnalysis.fetchingData') : t('strategy.assetAnalysis.phase', { phase })}
           </Text>
         </div>
       )}
@@ -193,7 +193,7 @@ export default function AssetAnalysisPage() {
           {/* MTF Outlook */}
           {(phase === 'mtf_outlook' || phase === 'sr_levels' || phase === 'volatility' || phase === 'ai_recommendation' || phase === 'complete') && result.multiTf && (
             <Card
-              title={<><DashboardOutlined /> Multi-Timeframe Outlook</>}
+              title={<><DashboardOutlined /> {t('strategy.assetAnalysis.mtfOutlook')}</>}
               size="small"
               style={{ marginBottom: 16, borderRadius: 12 }}
             >
@@ -209,7 +209,7 @@ export default function AssetAnalysisPage() {
           {/* S/R Levels */}
           {(phase === 'sr_levels' || phase === 'volatility' || phase === 'ai_recommendation' || phase === 'complete') && (
             <Card
-              title="Support / Resistance Levels"
+              title={t('strategy.assetAnalysis.srLevels')}
               size="small"
               style={{ marginBottom: 16, borderRadius: 12 }}
               extra={result.keyLevels?.length ? <Tag>{result.keyLevels.length} levels</Tag> : null}
@@ -221,25 +221,25 @@ export default function AssetAnalysisPage() {
           {/* Volatility */}
           {(phase === 'volatility' || phase === 'ai_recommendation' || phase === 'complete') && result.volatilityState && (
             <Card
-              title="Volatility"
+              title={t('strategy.assetAnalysis.volatility')}
               size="small"
               style={{ marginBottom: 16, borderRadius: 12 }}
             >
               <Descriptions column={{ xs: 1, sm: 2 }} size="small">
-                <Descriptions.Item label="State">
+                <Descriptions.Item label={t('strategy.assetAnalysis.state')}>
                   <Tag color={VOL_COLORS[result.volatilityState] || 'default'}>
                     {result.volatilityState}
                   </Tag>
                 </Descriptions.Item>
-                <Descriptions.Item label="ATR %">
+                <Descriptions.Item label={t('strategy.assetAnalysis.atrPct')}>
                   <Text strong>{result.volatilityValue?.toFixed(2)}%</Text>
                 </Descriptions.Item>
               </Descriptions>
               <Paragraph style={{ fontSize: 12, color: '#8A9AA5', marginTop: 8, marginBottom: 0 }}>
-                {result.volatilityState === 'LOW' && 'Low volatility — consider breakout or mean-reversion strategies with tight stops.'}
-                {result.volatilityState === 'NORMAL' && 'Normal volatility — suitable for most strategy types.'}
-                {result.volatilityState === 'HIGH' && 'High volatility — wider stops recommended; trend-following and breakout strategies favored.'}
-                {result.volatilityState === 'EXTREME' && 'Extreme volatility — reduce position sizes significantly; wide stops required.'}
+                {result.volatilityState === 'LOW' && t('strategy.assetAnalysis.volLow')}
+                {result.volatilityState === 'NORMAL' && t('strategy.assetAnalysis.volNormal')}
+                {result.volatilityState === 'HIGH' && t('strategy.assetAnalysis.volHigh')}
+                {result.volatilityState === 'EXTREME' && t('strategy.assetAnalysis.volExtreme')}
               </Paragraph>
             </Card>
           )}
@@ -247,7 +247,7 @@ export default function AssetAnalysisPage() {
           {/* AI Recommendation */}
           {(phase === 'ai_recommendation' || phase === 'complete') && (
             <Card
-              title={<><BulbOutlined /> AI Strategy Recommendation</>}
+              title={<><BulbOutlined /> {t('strategy.assetAnalysis.aiRecommendation')}</>}
               size="small"
               style={{ marginBottom: 16, borderRadius: 12, borderColor: '#D4AF37' }}
             >
@@ -257,7 +257,7 @@ export default function AssetAnalysisPage() {
                 </div>
               ) : (
                 <Text type="secondary">
-                  AI recommendation unavailable. Please configure an AI provider in Settings.
+                  {t('strategy.assetAnalysis.aiUnavailable')}
                 </Text>
               )}
             </Card>
@@ -266,7 +266,7 @@ export default function AssetAnalysisPage() {
       )}
 
       {phase === 'complete' && !hasData && !error && (
-        <Alert type="info" message="No analysis results returned. Try a different symbol." />
+        <Alert type="info" message={t('strategy.assetAnalysis.noResults')} />
       )}
     </div>
   );

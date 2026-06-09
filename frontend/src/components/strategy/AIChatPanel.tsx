@@ -188,18 +188,18 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
         <ThunderboltOutlined style={{ color: '#faad14' }} />
-        <Typography.Text strong style={{ fontSize: 13 }}>AI Chat</Typography.Text>
+        <Typography.Text strong style={{ fontSize: 13 }}>{t('strategy.aiChat.title')}</Typography.Text>
         <Space size={4} wrap style={{ marginLeft: 8 }}>
           {!code.trim() && !backtestMetrics && <Tag color="blue">{t('strategy.gen.title', '策略生成')}</Tag>}
-          {!!code.trim() && !backtestMetrics && <Tag color="green">revise</Tag>}
-          {backtestMetrics && <Tag color="purple">🔄 feedback</Tag>}
-          {isBusy && <Tag icon={<LoadingOutlined />} color="processing">streaming</Tag>}
-          {phase === 'analyzing' && isBusy && <Tag color="orange">analyzing</Tag>}
+          {!!code.trim() && !backtestMetrics && <Tag color="green">{t('strategy.aiChat.revise')}</Tag>}
+          {backtestMetrics && <Tag color="purple">{t('strategy.aiChat.feedback')}</Tag>}
+          {isBusy && <Tag icon={<LoadingOutlined />} color="processing">{t('strategy.aiChat.streaming')}</Tag>}
+          {phase === 'analyzing' && isBusy && <Tag color="orange">{t('strategy.aiChat.analyzing')}</Tag>}
           {phase && !isBusy && phase !== 'done' && <Tag>{phase}</Tag>}
           {backtestId && <Tag color="success">backtest: {backtestId.slice(0, 8)}</Tag>}
         </Space>
         {mode !== 'idle' && !isBusy && (
-          <Button size="small" type="link" onClick={reset} style={{ marginLeft: 'auto' }}>reset</Button>
+          <Button size="small" type="link" onClick={reset} style={{ marginLeft: 'auto' }}>{t('strategy.aiChat.reset')}</Button>
         )}
       </div>
 

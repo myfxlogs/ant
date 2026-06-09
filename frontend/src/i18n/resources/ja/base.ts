@@ -104,7 +104,12 @@ const base = {
     error: 'エラー',
     retry: 'リトライ',
     pageError: 'ページエラー',
-    unexpectedError: '予期しないエラーが発生しました'
+    unexpectedError: '予期しないエラーが発生しました',
+    lineColor: 'ライン色',
+    selectSymbolToViewChart: '銘柄を選択してチャートを表示',
+    currentPosition: '📊 現在のポジション',
+    noOpenPositionsForSymbol: '{{symbol}} のポジションはありません',
+    indicatorSettings: '{{name}} 設定'
   },
   language: {
     simplifiedChinese: '简体中文',
@@ -301,6 +306,9 @@ const base = {
       comments: 'コメント',
       noComments: 'まだコメントはありません。最初に投稿してみませんか？',
       commentPlaceholder: 'コメントを入力...（Shift+Enterで改行）'
+    },
+    publishModal: {
+      symbolsPlaceholder: 'EURUSD, GBPUSD, XAUUSD'
     }
   },
   admin: {

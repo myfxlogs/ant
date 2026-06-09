@@ -76,7 +76,7 @@ export default function StrategyCard({ strategy: s, isSubscribed: isSub, subscri
         <div style={{ fontSize: 12, color: '#8A9AA5', marginBottom: 8 }}>
           <PieChartOutlined /> {t('marketplace.card.subscribers', { count: subscribers })}: {subscribers} &nbsp;
           <ExperimentOutlined /> {t('marketplace.card.winRate')}: {winRate}
-          {s.totalPnl != null && <span style={{ marginLeft: 8, color: s.totalPnl >= 0 ? '#00A651' : '#E53935' }}>PnL: ${s.totalPnl.toFixed(0)}</span>}
+          {s.totalPnl != null && <span style={{ marginLeft: 8, color: s.totalPnl >= 0 ? '#00A651' : '#E53935' }}>{t('trading.pnl')}: ${s.totalPnl.toFixed(0)}</span>}
         </div>
         <div style={{ fontSize: 11, color: '#B0BEC5' }}>
           {t('marketplace.card.by')} {s.publisherUserId ? s.publisherUserId.slice(0, 8) + '...' : 'unknown'}

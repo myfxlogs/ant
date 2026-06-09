@@ -140,6 +140,7 @@ const trading = {
       },
     },
     pnl: 'P&L',
+    profit: 'Profit',
     time: 'Time',
     ordersCount: '{{count}} orders',
     markPrice: 'Mark Price',

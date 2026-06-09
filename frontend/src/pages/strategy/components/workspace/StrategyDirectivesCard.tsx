@@ -1,5 +1,6 @@
 import { Tooltip } from 'antd';
 import { LockOutlined, EditOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import type { StrategyDirective } from '../../hooks/useBacktestParams';
 
 interface Props {
@@ -23,6 +24,7 @@ const valueStyle = (isSet: boolean): React.CSSProperties => ({
 });
 
 export function StrategyDirectivesCard({ directives, onJumpToLine }: Props) {
+  const { t } = useTranslation();
   if (!directives.length) return null;
 
   return (
@@ -36,9 +38,9 @@ export function StrategyDirectivesCard({ directives, onJumpToLine }: Props) {
         fontSize: 10, fontWeight: 600, color: '#1677ff',
       }}>
         <LockOutlined />
-        <span>Risk Controls from Code</span>
+        <span>{t('strategy.workspace.riskControls')}</span>
         {onJumpToLine && (
-          <Tooltip title="Jump to code">
+          <Tooltip title={t('strategy.workspace.jumpToCode')}>
             <EditOutlined
               style={{ marginLeft: 'auto', cursor: 'pointer', fontSize: 11 }}
               onClick={() => onJumpToLine('first')}

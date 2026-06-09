@@ -721,6 +721,13 @@ signal = {
       feedback: {
         heading: '📊 回測結果',
         placeholder: '提供反饋以進行迭代（例如「過於激進」、「加入止損」）'
+      },
+      metrics: {
+        sharpe: '夏普',
+        maxDrawdown: '最大回撤',
+        winRate: '勝率',
+        trades: '交易',
+        return: '收益'
       }
     },
     marketRegime: {
@@ -908,7 +915,15 @@ def run(context):
         live: '即時',
         error: '錯誤',
         static: '靜態'
-      }
+      },
+      backtestRunIdLabel: '選擇回測運行...',
+      investorReadOnly: '投資者（唯讀）',
+      masterTrading: '主帳戶（交易）',
+      riskControls: '程式碼中的風控規則',
+      jumpToCode: '跳轉到程式碼',
+      runningStatus: '執行中...',
+      completedStatus: '已完成',
+      backtestResultsLabel: '回測結果'
     },
     codeQuality: {
       category: {
@@ -955,7 +970,9 @@ def run(context):
       presets: {
         liveAligned: '與真實交易對齊',
         exploration: '探索模式'
-      }
+      },
+      enterCodeAndSymbol: '請輸入策略程式碼並選擇品種',
+      backtestFailed: '回測失敗'
     },
     tuning: {
       optimizerMethod: '最佳化方法',
@@ -996,7 +1013,68 @@ def run(context):
         tpeDesc: '樹狀結構Parzen估計器。KDE建模好/差分布。',
         agsDesc: '帶sigma退火的高斯抖動。TPE的輕量級替代方案。',
         aiDesc: 'LLM多輪提案。在3輪中從先前結果學習。'
+      },
+      started: '智慧調參已啟動'
+    },
+    paper: {
+      title: '📊 模擬交易',
+      createAccount: '建立模擬帳戶',
+      accountName: '帳戶名稱',
+      create: '建立',
+      noAccounts: '暫無模擬帳戶。建立一個開始模擬交易。',
+      running: '執行中 {{symbol}} {{timeframe}}',
+      start: '啟動',
+      stop: '停止',
+      watch: '監控',
+      paper: '模擬',
+      startStrategy: '啟動模擬策略',
+      symbol: '品種',
+      timeframe: '週期',
+      strategyCode: '策略程式碼 (Python)',
+      messages: {
+        enterName: '請輸入名稱',
+        created: '模擬帳戶已建立',
+        createFailed: '建立失敗',
+        pasteCode: '貼上您的策略程式碼',
+        strategyStarted: '模擬策略已啟動',
+        startFailed: '啟動失敗',
+        strategyStopped: '模擬策略已停止',
+        stopFailed: '停止失敗'
       }
+    },
+    aiChat: {
+      title: 'AI 對話',
+      you: '你',
+      ai: 'AI',
+      revise: '修改',
+      feedback: '🔄 回饋',
+      streaming: '生成中',
+      analyzing: '分析中',
+      reset: '重置',
+      applyCode: '套用程式碼',
+      dismiss: '關閉',
+      reviewCode: 'AI 已生成程式碼 — 請在套用前查看上方的對話。'
+    },
+    assetAnalysis: {
+      title: 'AI 資產分析',
+      subtitle: '多週期趨勢展望、支撐阻力位檢測、波動率分類及 AI 策略推薦',
+      symbolPlaceholder: '輸入品種 (例如 EURUSD, XAUUSD, BTCUSD)',
+      analyze: '分析',
+      fetchingData: '正在取得市場資料...',
+      phase: '階段: {{phase}}',
+      mtfOutlook: '多週期展望',
+      srLevels: '支撐 / 阻力位',
+      volatility: '波動率',
+      state: '狀態',
+      atrPct: 'ATR %',
+      aiRecommendation: 'AI 策略推薦',
+      aiUnavailable: 'AI 推薦不可用。請在設定中配置 AI 提供商。',
+      noLevels: '未檢測到顯著價位',
+      noResults: '未返回分析結果。請嘗試其他品種。',
+      volLow: '低波動率 — 可考慮突破或均值回歸策略，配合緊湊止損。',
+      volNormal: '正常波動率 — 適合大多數策略類型。',
+      volHigh: '高波動率 — 建議擴大止損；趨勢跟蹤和突破策略更有利。',
+      volExtreme: '極端波動率 — 請大幅降低倉位；需要寬止損。'
     }
   },
   indicatorCatalog: {

@@ -75,12 +75,12 @@ export default function Market() {
             {watchlist.length === 0 && <span style={{ color: '#8c8c8c', fontSize: 12 }}>{t('market.emptyWatchlist')}</span>}
           </div>
           <Row gutter={12}>
-            <Col span={8}><Statistic title="Bid" value={stats.bid} loading={stats.loading} prefix={bidIcon} valueStyle={{ fontSize: 18 }} /></Col>
-            <Col span={8}><Statistic title="Ask" value={stats.ask} loading={stats.loading} prefix={askIcon} valueStyle={{ fontSize: 18 }} /></Col>
-            <Col span={8}><Statistic title="Spread" value={stats.spread} loading={stats.loading} valueStyle={{ fontSize: 18 }} /></Col>
+            <Col span={8}><Statistic title={t('market.bid')} value={stats.bid} loading={stats.loading} prefix={bidIcon} valueStyle={{ fontSize: 18 }} /></Col>
+            <Col span={8}><Statistic title={t('market.ask')} value={stats.ask} loading={stats.loading} prefix={askIcon} valueStyle={{ fontSize: 18 }} /></Col>
+            <Col span={8}><Statistic title={t('market.spread')} value={stats.spread} loading={stats.loading} valueStyle={{ fontSize: 18 }} /></Col>
           </Row>
           <div style={{ marginTop: 12 }}>
-            <span style={{ fontSize: 11, color: '#8c8c8c' }}>Common</span>
+            <span style={{ fontSize: 11, color: '#8c8c8c' }}>{t('market.common')}</span>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
               {COMMON_SYMBOLS.map((s) => (
                 <Tag key={s} color={s === symbol ? 'blue' : 'default'} style={{ cursor: 'pointer', fontSize: 10 }}

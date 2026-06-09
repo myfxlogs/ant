@@ -1,9 +1,11 @@
 import { Component, type ReactNode } from 'react';
 import { Button, Result } from 'antd';
+import { withTranslation, type TFunction } from 'react-i18next';
 
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
+  t: TFunction;
 }
 
 interface State {
@@ -11,7 +13,7 @@ interface State {
   error: Error | null;
 }
 
-export class ErrorBoundary extends Component<Props, State> {
+class ErrorBoundaryClass extends Component<Props, State> {
   state: State = { hasError: false, error: null };
 
   static getDerivedStateFromError(error: Error): State {
@@ -21,14 +23,15 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       if (this.props.fallback) return this.props.fallback;
+      const { t } = this.props;
       return (
         <Result
           status="error"
-          title="Page Error"
-          subTitle={this.state.error?.message || 'An unexpected error occurred'}
+          title={t('common.pageError')}
+          subTitle={this.state.error?.message || t('common.unexpectedError')}
           extra={
             <Button type="primary" onClick={() => this.setState({ hasError: false, error: null })}>
-              Retry
+              {t('common.retry')}
             </Button>
           }
         />
@@ -37,3 +40,5 @@ export class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
+
+export const ErrorBoundary = withTranslation()(ErrorBoundaryClass);

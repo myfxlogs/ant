@@ -104,7 +104,12 @@ const base = {
     error: 'Lỗi',
     retry: 'Thử lại',
     pageError: 'Lỗi trang',
-    unexpectedError: 'Đã xảy ra lỗi không mong muốn'
+    unexpectedError: 'Đã xảy ra lỗi không mong muốn',
+    lineColor: 'Màu đường',
+    selectSymbolToViewChart: 'Chọn mã để xem biểu đồ',
+    currentPosition: '📊 Vị thế hiện tại',
+    noOpenPositionsForSymbol: 'Không có vị thế mở cho {{symbol}}',
+    indicatorSettings: 'Cài đặt {{name}}'
   },
   language: {
     simplifiedChinese: '简体中文',
@@ -414,6 +419,9 @@ const base = {
       comments: 'Bình luận',
       noComments: 'Chưa có bình luận. Hãy là người đầu tiên!',
       commentPlaceholder: 'Viết bình luận... (Shift+Enter để xuống dòng)'
+    },
+    publishModal: {
+      symbolsPlaceholder: 'EURUSD, GBPUSD, XAUUSD'
     }
   },
   admin: {

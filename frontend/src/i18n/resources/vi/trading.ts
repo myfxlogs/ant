@@ -153,7 +153,8 @@ const trading = {
     positionShort: 'SHORT',
     openPositionsTitle: 'Vị thế mở',
     closePositionTitle: 'Đóng vị thế',
-    recentTrades: 'Giao dịch gần đây'
+    recentTrades: 'Giao dịch gần đây',
+    profit: 'Lợi nhuận'
   }
 } as const;
 

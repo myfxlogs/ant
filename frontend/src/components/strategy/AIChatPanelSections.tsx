@@ -66,7 +66,7 @@ export function ChatMessagesView({ history, analysisText, adviceText, streamText
           background: m.role === 'user' ? '#e6f4ff' : '#f6ffed', fontSize: 12, whiteSpace: 'pre-wrap',
         }}>
           <b style={{ color: m.role === 'user' ? '#1677ff' : '#389e0d' }}>
-            {m.role === 'user' ? 'You' : 'AI'}
+            {m.role === 'user' ? t('strategy.aiChat.you') : t('strategy.aiChat.ai')}
           </b>
           <div>{m.content}</div>
         </div>
@@ -86,7 +86,7 @@ export function ChatMessagesView({ history, analysisText, adviceText, streamText
       {streamText && (
         <div style={{ margin: '6px 0', padding: '6px 10px', borderRadius: 6,
           background: '#f6ffed', fontSize: 12, whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
-          <b style={{ color: '#389e0d' }}>AI</b>
+          <b style={{ color: '#389e0d' }}>{t('strategy.aiChat.ai')}</b>
           <div>{streamText}</div>
         </div>
       )}
@@ -99,29 +99,29 @@ export function ChatMessagesView({ history, analysisText, adviceText, streamText
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
             {backtestMetrics.sharpeRatio != null && (
               <span style={{ fontSize: 10, background: '#fff', padding: '1px 5px', borderRadius: 3, border: '1px solid #e8e8e8' }}>
-                <b>Sharpe</b> {backtestMetrics.sharpeRatio.toFixed(2)}
+                <b>{t('strategy.gen.metrics.sharpe')}</b> {backtestMetrics.sharpeRatio.toFixed(2)}
               </span>
             )}
             {backtestMetrics.maxDrawdown != null && (
               <span style={{ fontSize: 10, background: '#fff', padding: '1px 5px', borderRadius: 3, border: '1px solid #e8e8e8',
                 color: backtestMetrics.maxDrawdown > 0.2 ? '#cf1322' : '#595959' }}>
-                <b>Max DD</b> {(backtestMetrics.maxDrawdown * 100).toFixed(1)}%
+                <b>{t('strategy.gen.metrics.maxDrawdown')}</b> {(backtestMetrics.maxDrawdown * 100).toFixed(1)}%
               </span>
             )}
             {backtestMetrics.winRate != null && (
               <span style={{ fontSize: 10, background: '#fff', padding: '1px 5px', borderRadius: 3, border: '1px solid #e8e8e8' }}>
-                <b>Win</b> {(backtestMetrics.winRate * 100).toFixed(0)}%
+                <b>{t('strategy.gen.metrics.winRate')}</b> {(backtestMetrics.winRate * 100).toFixed(0)}%
               </span>
             )}
             {backtestMetrics.totalTrades != null && (
               <span style={{ fontSize: 10, background: '#fff', padding: '1px 5px', borderRadius: 3, border: '1px solid #e8e8e8' }}>
-                <b>Trades</b> {backtestMetrics.totalTrades}
+                <b>{t('strategy.gen.metrics.trades')}</b> {backtestMetrics.totalTrades}
               </span>
             )}
             {backtestMetrics.totalReturn != null && (
               <span style={{ fontSize: 10, background: '#fff', padding: '1px 5px', borderRadius: 3, border: '1px solid #e8e8e8',
                 color: backtestMetrics.totalReturn > 0 ? '#389e0d' : '#cf1322' }}>
-                <b>Return</b> {(backtestMetrics.totalReturn * 100).toFixed(1)}%
+                <b>{t('strategy.gen.metrics.return')}</b> {(backtestMetrics.totalReturn * 100).toFixed(1)}%
               </span>
             )}
           </div>
@@ -179,13 +179,13 @@ export function ChatPendingCodeBanner({ pendingCode, onApply, onDismiss, t }: Ch
     <div style={{ padding: 8, marginBottom: 8, background: '#f6ffed', borderRadius: 6,
       border: '1px solid #b7eb8f', display: 'flex', alignItems: 'center', gap: 8 }}>
       <span style={{ fontSize: 12, flex: 1 }}>
-        AI generated code — review the chat above before applying.
+        {t('strategy.aiChat.reviewCode')}
       </span>
       <Space size={6}>
         <Button size="small" onClick={() => { onApply(pendingCode); }}>
-          Apply Code
+          {t('strategy.aiChat.applyCode')}
         </Button>
-        <Button size="small" onClick={onDismiss}>Dismiss</Button>
+        <Button size="small" onClick={onDismiss}>{t('strategy.aiChat.dismiss')}</Button>
       </Space>
     </div>
   );

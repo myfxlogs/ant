@@ -30,7 +30,7 @@ export default function GatePanel({ loading, gates, summary, error, status, canR
       {/* Run selector + button */}
       <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
         {availableRunIds && availableRunIds.length > 0 && onSelectRun && (
-          <Select size="small" style={{ minWidth: 240 }} placeholder="Select backtest run..."
+          <Select size="small" style={{ minWidth: 240 }} placeholder={t('strategy.workspace.backtestRunIdLabel')}
             value={runId || undefined} onChange={onSelectRun}
             options={availableRunIds.map(id => ({ label: id.slice(0, 8) + '...', value: id }))} />
         )}

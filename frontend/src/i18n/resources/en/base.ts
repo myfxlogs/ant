@@ -105,6 +105,11 @@ const base = {
     unexpectedError: 'An unexpected error occurred',
     required: 'Required',
     noData: 'No data',
+    lineColor: 'Line Color',
+    selectSymbolToViewChart: 'Select a symbol to view chart',
+    currentPosition: '📊 Current Position',
+    noOpenPositionsForSymbol: 'No open positions for {{symbol}}',
+    indicatorSettings: '{{name}} Settings',
     totalItems: '{{total}} items',
     time: {
       minute: 'min',
@@ -134,6 +139,9 @@ const base = {
   marketplace: {
     title: 'Strategy Marketplace',
     subtitle: 'Discover, rate, and subscribe to community strategies',
+    publishModal: {
+      symbolsPlaceholder: 'EURUSD, GBPUSD, XAUUSD',
+    },
     publish: 'Publish Strategy',
     tabs: { marketplace: 'Marketplace', subscriptions: 'My Subscriptions' },
     searchPlaceholder: 'Search strategies...',

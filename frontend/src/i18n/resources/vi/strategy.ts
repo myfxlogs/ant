@@ -717,6 +717,13 @@ signal = {
       feedback: {
         heading: 'Kết quả backtest',
         placeholder: 'Cung cấp phản hồi để lặp lại (ví dụ: "Quá hung hăng", "Thêm cắt lỗ")'
+      },
+      metrics: {
+        sharpe: 'Sharpe',
+        maxDrawdown: 'Max DD',
+        winRate: 'Thắng',
+        trades: 'Giao dịch',
+        return: 'Lợi nhuận'
       }
     },
     marketRegime: {
@@ -904,7 +911,15 @@ def run(context):
         live: 'LIVE',
         error: 'ERROR',
         static: 'STATIC'
-      }
+      },
+      backtestRunIdLabel: 'Chọn lần chạy backtest...',
+      investorReadOnly: 'Nhà đầu tư (Chỉ xem)',
+      masterTrading: 'Chủ (Giao dịch)',
+      riskControls: 'Quy tắc rủi ro từ mã',
+      jumpToCode: 'Đi tới mã',
+      runningStatus: 'Đang chạy...',
+      completedStatus: 'Hoàn thành',
+      backtestResultsLabel: 'Kết quả backtest'
     },
     codeQuality: {
       category: {
@@ -951,7 +966,9 @@ def run(context):
       presets: {
         liveAligned: 'Căn chỉnh thực tế',
         exploration: 'Khám phá'
-      }
+      },
+      enterCodeAndSymbol: 'Vui lòng nhập mã chiến lược và chọn mã',
+      backtestFailed: 'Backtest thất bại'
     },
     tuning: {
       optimizerMethod: 'Phương pháp tối ưu hóa',
@@ -992,7 +1009,68 @@ def run(context):
         tpeDesc: 'Ước lượng Parzen có cấu trúc cây. Mô hình KDE phân phối tốt/xấu.',
         agsDesc: 'Nhiễu Gaussian với ủ nhiệt sigma. Giải pháp nhẹ hơn TPE.',
         aiDesc: 'Đề xuất đa vòng LLM. Học từ kết quả trước qua 3 vòng.'
+      },
+      started: 'Đã bắt đầu tinh chỉnh thông minh'
+    },
+    paper: {
+      title: '📊 Giao dịch giấy',
+      createAccount: 'Tạo tài khoản giấy',
+      accountName: 'Tên tài khoản',
+      create: 'Tạo',
+      noAccounts: 'Chưa có tài khoản giấy. Tạo một tài khoản để bắt đầu giao dịch mô phỏng.',
+      running: 'Đang chạy {{symbol}} {{timeframe}}',
+      start: 'Bắt đầu',
+      stop: 'Dừng',
+      watch: 'Theo dõi',
+      paper: 'Giấy',
+      startStrategy: 'Bắt đầu chiến lược giấy',
+      symbol: 'Mã',
+      timeframe: 'Khung thời gian',
+      strategyCode: 'Mã chiến lược (Python)',
+      messages: {
+        enterName: 'Nhập tên',
+        created: 'Đã tạo tài khoản giấy',
+        createFailed: 'Tạo thất bại',
+        pasteCode: 'Dán mã chiến lược của bạn',
+        strategyStarted: 'Chiến lược giấy đã bắt đầu',
+        startFailed: 'Bắt đầu thất bại',
+        strategyStopped: 'Chiến lược giấy đã dừng',
+        stopFailed: 'Dừng thất bại'
       }
+    },
+    aiChat: {
+      title: 'Trò chuyện AI',
+      you: 'Bạn',
+      ai: 'AI',
+      revise: 'sửa đổi',
+      feedback: '🔄 phản hồi',
+      streaming: 'đang tạo',
+      analyzing: 'đang phân tích',
+      reset: 'đặt lại',
+      applyCode: 'Áp dụng mã',
+      dismiss: 'Bỏ qua',
+      reviewCode: 'AI đã tạo mã — hãy xem lại cuộc trò chuyện ở trên trước khi áp dụng.'
+    },
+    assetAnalysis: {
+      title: 'Phân tích tài sản AI',
+      subtitle: 'Triển vọng xu hướng đa khung thời gian, phát hiện mức hỗ trợ/kháng cự, phân loại biến động và đề xuất chiến lược AI',
+      symbolPlaceholder: 'Nhập mã (ví dụ: EURUSD, XAUUSD, BTCUSD)',
+      analyze: 'Phân tích',
+      fetchingData: 'Đang lấy dữ liệu thị trường...',
+      phase: 'Giai đoạn: {{phase}}',
+      mtfOutlook: 'Triển vọng đa khung',
+      srLevels: 'Mức Hỗ trợ / Kháng cự',
+      volatility: 'Biến động',
+      state: 'Trạng thái',
+      atrPct: 'ATR %',
+      aiRecommendation: 'Đề xuất chiến lược AI',
+      aiUnavailable: 'Đề xuất AI không khả dụng. Vui lòng cấu hình nhà cung cấp AI trong Cài đặt.',
+      noLevels: 'Không phát hiện mức đáng kể',
+      noResults: 'Không có kết quả phân tích. Thử mã khác.',
+      volLow: 'Biến động thấp — cân nhắc chiến lược breakout hoặc mean-reversion với stop chặt.',
+      volNormal: 'Biến động bình thường — phù hợp với hầu hết các loại chiến lược.',
+      volHigh: 'Biến động cao — khuyến nghị stop rộng hơn; chiến lược theo xu hướng và breakout có lợi thế.',
+      volExtreme: 'Biến động cực đoan — giảm đáng kể kích thước vị thế; cần stop rộng.'
     }
   },
   indicatorCatalog: {

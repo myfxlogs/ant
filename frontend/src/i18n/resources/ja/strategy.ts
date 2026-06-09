@@ -717,6 +717,13 @@ signal = {
       feedback: {
         heading: '📊 バックテスト結果',
         placeholder: 'フィードバックを入力して反復改善（例：「攻撃的すぎる」「ストップロスを追加」）'
+      },
+      metrics: {
+        sharpe: 'シャープ',
+        maxDrawdown: '最大DD',
+        winRate: '勝率',
+        trades: '取引',
+        return: 'リターン'
       }
     },
     marketRegime: {
@@ -904,7 +911,15 @@ def run(context):
         live: 'LIVE',
         error: 'ERROR',
         static: 'STATIC'
-      }
+      },
+      backtestRunIdLabel: 'バックテスト実行を選択...',
+      investorReadOnly: '投資家（閲覧のみ）',
+      masterTrading: 'マスター（取引）',
+      riskControls: 'コード内のリスク管理ルール',
+      jumpToCode: 'コードへ移動',
+      runningStatus: '実行中...',
+      completedStatus: '完了',
+      backtestResultsLabel: 'バックテスト結果'
     },
     codeQuality: {
       category: {
@@ -951,7 +966,9 @@ def run(context):
       presets: {
         liveAligned: '本番準拠',
         exploration: '探索'
-      }
+      },
+      enterCodeAndSymbol: '戦略コードを入力し銘柄を選択してください',
+      backtestFailed: 'バックテスト失敗'
     },
     tuning: {
       optimizerMethod: '最適化手法',
@@ -992,7 +1009,68 @@ def run(context):
         tpeDesc: 'Tree-structured Parzen Estimator。KDEで良/悪分布をモデル化。',
         agsDesc: 'ガウシアンジッターとシグマ焼きなまし。TPEの軽量代替。',
         aiDesc: 'LLMによる複数ラウンド提案。過去の結果から学習（3ラウンド）。'
+      },
+      started: 'スマートチューニング開始'
+    },
+    paper: {
+      title: '📊 ペーパー取引',
+      createAccount: 'ペーパー口座を作成',
+      accountName: '口座名',
+      create: '作成',
+      noAccounts: 'ペーパー口座がありません。作成して模擬取引を開始してください。',
+      running: '実行中 {{symbol}} {{timeframe}}',
+      start: '開始',
+      stop: '停止',
+      watch: '監視',
+      paper: 'ペーパー',
+      startStrategy: 'ペーパー戦略を開始',
+      symbol: '銘柄',
+      timeframe: '時間枠',
+      strategyCode: '戦略コード (Python)',
+      messages: {
+        enterName: '名前を入力してください',
+        created: 'ペーパー口座が作成されました',
+        createFailed: '作成に失敗しました',
+        pasteCode: '戦略コードを貼り付けてください',
+        strategyStarted: 'ペーパー戦略が開始されました',
+        startFailed: '開始に失敗しました',
+        strategyStopped: 'ペーパー戦略が停止されました',
+        stopFailed: '停止に失敗しました'
       }
+    },
+    aiChat: {
+      title: 'AI チャット',
+      you: 'あなた',
+      ai: 'AI',
+      revise: '修正',
+      feedback: '🔄 フィードバック',
+      streaming: '生成中',
+      analyzing: '分析中',
+      reset: 'リセット',
+      applyCode: 'コードを適用',
+      dismiss: '閉じる',
+      reviewCode: 'AIがコードを生成しました — 適用前に上の会話を確認してください。'
+    },
+    assetAnalysis: {
+      title: 'AI 資産分析',
+      subtitle: 'マルチタイムフレームのトレンド展望、サポート/レジスタンス検出、ボラティリティ分類、AI戦略推奨',
+      symbolPlaceholder: '銘柄を入力 (例: EURUSD, XAUUSD, BTCUSD)',
+      analyze: '分析',
+      fetchingData: '市場データを取得中...',
+      phase: 'フェーズ: {{phase}}',
+      mtfOutlook: 'マルチタイムフレーム展望',
+      srLevels: 'サポート / レジスタンス',
+      volatility: 'ボラティリティ',
+      state: '状態',
+      atrPct: 'ATR %',
+      aiRecommendation: 'AI 戦略推奨',
+      aiUnavailable: 'AI推奨は利用できません。設定でAIプロバイダーを構成してください。',
+      noLevels: '有意なレベルは検出されませんでした',
+      noResults: '分析結果が返されませんでした。別の銘柄をお試しください。',
+      volLow: '低ボラティリティ — ブレイクアウトまたは平均回帰戦略をタイトなストップで検討。',
+      volNormal: '通常ボラティリティ — ほとんどの戦略タイプに適しています。',
+      volHigh: '高ボラティリティ — 広めのストップ推奨；トレンドフォローとブレイクアウト戦略が有利。',
+      volExtreme: '極端なボラティリティ — ポジションサイズを大幅に縮小；広いストップが必要。'
     }
   },
   indicatorCatalog: {

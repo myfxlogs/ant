@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Tooltip } from 'antd';
+import { useTranslation } from 'react-i18next';
 import {
   LineChartOutlined, MinusOutlined, ColumnWidthOutlined,
   VerticalAlignMiddleOutlined, ArrowUpOutlined, DashOutlined,
@@ -33,6 +34,7 @@ interface Props {
 }
 
 export default function DrawingToolbar({ chart }: Props) {
+  const { t } = useTranslation();
   const [activeTool, setActiveTool] = useState<string | null>(null);
 
   const handleToolClick = (tool: ToolDef) => {
@@ -104,7 +106,7 @@ export default function DrawingToolbar({ chart }: Props) {
       {/* Separator */}
       <div style={{ height: 1, margin: '4px 4px', background: 'rgba(255,255,255,0.1)' }} />
 
-      <Tooltip title="Clear All Drawings" placement="right">
+      <Tooltip title={t('strategy.chartTools.clearDrawings')} placement="right">
         <div
           onClick={handleClearAll}
           style={{

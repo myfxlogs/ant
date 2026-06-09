@@ -99,7 +99,7 @@ export default function AlgoSubmitForm({ onStarted }: Props) {
         </Form.Item>
         <Space wrap>
           <Form.Item name="limitPrice" label={t('algo.fields.limitPrice')}>
-            <InputNumber min={0} step={0.0001} style={{ width: 120 }} placeholder="Market" />
+            <InputNumber min={0} step={0.0001} style={{ width: 120 }} placeholder={t('trading.market')} />
           </Form.Item>
           <Form.Item name="sliceInterval" label={t('algo.fields.sliceInterval')}>
             <InputNumber min={1} max={3600} style={{ width: 100 }} placeholder="60s" addonAfter="s" />

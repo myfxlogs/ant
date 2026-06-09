@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { Spin } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { init, dispose } from 'klinecharts';
 import type { Chart } from 'klinecharts';
 import DARK_THEME from './chartTheme';
@@ -28,6 +29,7 @@ interface Props {
 }
 
 export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange, accountId, onChartReady, trades }: Props) {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<Chart | null>(null);
@@ -227,7 +229,7 @@ export default function PriceChart({ symbol, timeframe = '1h', onTimeframeChange
         <DrawingToolbar chart={chartRef.current} />
         {loading && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10, background: 'rgba(0,0,0,0.3)' }}><Spin /></div>}
         {error && !loading && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef5350', zIndex: 10 }}>{error}</div>}
-        {!symbol && !loading && !error && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', zIndex: 10 }}>Select a symbol to view chart</div>}
+        {!symbol && !loading && !error && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', zIndex: 10 }}>{t('common.selectSymbolToViewChart')}</div>}
         <div ref={containerRef} style={{ position: 'absolute', inset: 0 }} />
       </div>
     </div>

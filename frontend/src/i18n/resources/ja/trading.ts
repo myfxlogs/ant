@@ -197,7 +197,8 @@ const trading = {
     positionShort: 'SHORT',
     openPositionsTitle: 'オープンポジション',
     closePositionTitle: 'ポジションを決済',
-    recentTrades: '最近の取引'
+    recentTrades: '最近の取引',
+    profit: '損益'
   }
 } as const;
 

@@ -101,7 +101,7 @@ export default function StrategyWorkspacePage() {
             : <DoubleRightOutlined style={{ fontSize: 14 }} />
           }
           <span style={{ fontSize: 10, writingMode: 'vertical-rl', fontWeight: 500,
-            color: ws.layout.codePanelVisible ? '#fff' : 'inherit' }}>Code</span>
+            color: ws.layout.codePanelVisible ? '#fff' : 'inherit' }}>{t('strategy.workspace.code')}</span>
         </div>
 
         {/* ── Expanded code panel (overlays chart, stays within workspace) ── */}
@@ -147,7 +147,7 @@ export default function StrategyWorkspacePage() {
               borderBottom: '1px solid ' + C.border,
             }}>
               <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>
-                Open Positions ({ws.quickTrade.allPositions.length})
+                {t('strategy.workspace.openPositions', { count: ws.quickTrade.allPositions.length })}
               </span>
               <span onClick={() => ws.layout.setPositionsPanelVisible(false)} role="button" tabIndex={0}
                 onKeyUp={e => e.key === 'Enter' && ws.layout.setPositionsPanelVisible(false)}
@@ -158,7 +158,7 @@ export default function StrategyWorkspacePage() {
                 <MiniPositionsTable positions={ws.quickTrade.allPositions} onClosePosition={ws.quickTrade.handleClosePosition} />
               ) : (
                 <div style={{ textAlign: 'center', padding: 40, color: '#8c8c8c', fontSize: 13 }}>
-                  No open positions for this account
+                  {t('strategy.workspace.noOpenPositions')}
                 </div>
               )}
             </div>
@@ -169,7 +169,7 @@ export default function StrategyWorkspacePage() {
         <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <div style={{ flex: '1 1 0', minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             {ws.account.symbol ? (
-              <WorkspaceErrorBoundary fallback={<div style={{ display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'#8c8c8c' }}>Chart error — try refreshing</div>}>
+              <WorkspaceErrorBoundary fallback={<div style={{ display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'#8c8c8c' }}>{t('strategy.workspace.chartError')}</div>}>
                 <PriceChart
                   symbol={ws.account.symbol} timeframe={ws.account.timeframe} onTimeframeChange={ws.account.setTimeframe}
                   accountId={ws.account.accountId}
@@ -221,9 +221,9 @@ export default function StrategyWorkspacePage() {
                   background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
                 }}>
                 <span style={{ fontSize: 12, fontWeight: 700, color: '#262626' }}>
-                  {ws.tuning.subTab === 'tuning' ? 'Smart Tuning' : 'Backtest Results'}
-                  {ws.backtest.status === 'running' && <span style={{ color: '#1890ff', marginLeft: 8, fontSize: 11 }}>Running...</span>}
-                  {ws.backtest.status === 'completed' && <span style={{ color: '#26a69a', marginLeft: 8, fontSize: 11 }}>Completed</span>}
+                  {ws.tuning.subTab === 'tuning' ? t('strategy.workspace.smartTuning') : t('strategy.workspace.backtestResultsLabel')}
+                  {ws.backtest.status === 'running' && <span style={{ color: '#1890ff', marginLeft: 8, fontSize: 11 }}>{t('strategy.workspace.runningStatus')}</span>}
+                  {ws.backtest.status === 'completed' && <span style={{ color: '#26a69a', marginLeft: 8, fontSize: 11 }}>{t('strategy.workspace.completedStatus')}</span>}
                 </span>
                 <span style={{ fontSize: 10, color: C.muted }}>{ws.backtest.resultsExpanded ? '▲' : '▼'}</span>
               </div>

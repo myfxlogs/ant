@@ -667,6 +667,13 @@ signal = {
       feedback: {
         heading: '📊 回测结果',
         placeholder: '输入反馈继续迭代（如"太激进了"、"加入止损"）'
+      },
+      metrics: {
+        sharpe: '夏普',
+        maxDrawdown: '最大回撤',
+        winRate: '胜率',
+        trades: '交易',
+        return: '收益'
       }
     },
     codeAssist: {
@@ -948,7 +955,8 @@ def run(context):
           liveAligned: '实盘对齐',
           exploration: '探索模式'
         }
-      }
+      },
+      started: '智能调参已启动'
     },
     templateModal: {
       title: '保存为模板',
@@ -1062,7 +1070,15 @@ def run(context):
         live: 'LIVE',
         error: 'ERROR',
         static: 'STATIC'
-      }
+      },
+      backtestRunIdLabel: '选择回测运行...',
+      investorReadOnly: '投资者（只读）',
+      masterTrading: '主账户（交易）',
+      riskControls: '代码中的风控规则',
+      jumpToCode: '跳转到代码',
+      runningStatus: '运行中...',
+      completedStatus: '已完成',
+      backtestResultsLabel: '回测结果'
     },
     codeQuality: {
       category: {
@@ -1109,7 +1125,9 @@ def run(context):
       presets: {
         liveAligned: '实盘对齐',
         exploration: '探索模式'
-      }
+      },
+      enterCodeAndSymbol: '请输入策略代码并选择品种',
+      backtestFailed: '回测失败'
     },
     quickTradeSection: {
       selectSymbol: '请先选择品种',
@@ -1137,6 +1155,66 @@ def run(context):
       live: '实时',
       error: '错误',
       static: '静态'
+    },
+    paper: {
+      title: '📊 模拟交易',
+      createAccount: '创建模拟账户',
+      accountName: '账户名称',
+      create: '创建',
+      noAccounts: '暂无模拟账户。创建一个开始模拟交易。',
+      running: '运行中 {{symbol}} {{timeframe}}',
+      start: '启动',
+      stop: '停止',
+      watch: '监控',
+      paper: '模拟',
+      startStrategy: '启动模拟策略',
+      symbol: '品种',
+      timeframe: '周期',
+      strategyCode: '策略代码 (Python)',
+      messages: {
+        enterName: '请输入名称',
+        created: '模拟账户已创建',
+        createFailed: '创建失败',
+        pasteCode: '粘贴您的策略代码',
+        strategyStarted: '模拟策略已启动',
+        startFailed: '启动失败',
+        strategyStopped: '模拟策略已停止',
+        stopFailed: '停止失败'
+      }
+    },
+    aiChat: {
+      title: 'AI 对话',
+      you: '你',
+      ai: 'AI',
+      revise: '修改',
+      feedback: '🔄 反馈',
+      streaming: '生成中',
+      analyzing: '分析中',
+      reset: '重置',
+      applyCode: '应用代码',
+      dismiss: '关闭',
+      reviewCode: 'AI 已生成代码 — 请在应用前查看上方的对话。'
+    },
+    assetAnalysis: {
+      title: 'AI 资产分析',
+      subtitle: '多周期趋势展望、支撑阻力位检测、波动率分类及 AI 策略推荐',
+      symbolPlaceholder: '输入品种 (例如 EURUSD, XAUUSD, BTCUSD)',
+      analyze: '分析',
+      fetchingData: '正在获取市场数据...',
+      phase: '阶段: {{phase}}',
+      mtfOutlook: '多周期展望',
+      srLevels: '支撑 / 阻力位',
+      volatility: '波动率',
+      state: '状态',
+      atrPct: 'ATR %',
+      aiRecommendation: 'AI 策略推荐',
+      aiUnavailable: 'AI 推荐不可用。请在设置中配置 AI 提供商。',
+      noLevels: '未检测到显著价位',
+      noResults: '未返回分析结果。请尝试其他品种。',
+      volLow: '低波动率 — 可考虑突破或均值回归策略，配合紧凑止损。',
+      volNormal: '正常波动率 — 适合大多数策略类型。',
+      volHigh: '高波动率 — 建议扩大止损；趋势跟踪和突破策略更有利。',
+      volExtreme: '极端波动率 — 请大幅降低仓位；需要宽止损。'
     }
   },
   indicatorCatalog: {

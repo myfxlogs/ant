@@ -104,7 +104,12 @@ const base = {
     error: '錯誤',
     retry: '重試',
     pageError: '頁面錯誤',
-    unexpectedError: '發生意外錯誤'
+    unexpectedError: '發生意外錯誤',
+    lineColor: '線顏色',
+    selectSymbolToViewChart: '選擇品種查看圖表',
+    currentPosition: '📊 當前持倉',
+    noOpenPositionsForSymbol: '{{symbol}} 暫無持倉',
+    indicatorSettings: '{{name}} 設定'
   },
   language: {
     simplifiedChinese: '简体中文',
@@ -414,6 +419,9 @@ const base = {
       comments: '評論',
       noComments: '尚無評論，快來搶頭香！',
       commentPlaceholder: '撰寫評論...（Shift+Enter 換行）'
+    },
+    publishModal: {
+      symbolsPlaceholder: 'EURUSD, GBPUSD, XAUUSD'
     }
   },
   admin: {
