@@ -380,7 +380,7 @@ func TestPeriodMs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.period, func(t *testing.T) {
-			if got := periodMs(tt.period); got != tt.want {
+			if got := mdtick.PeriodMs(tt.period); got != tt.want {
 				t.Errorf("periodMs(%q) = %d, want %d", tt.period, got, tt.want)
 			}
 		})

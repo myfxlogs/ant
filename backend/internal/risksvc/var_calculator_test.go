@@ -1,6 +1,7 @@
 package risksvc
 
 import (
+	"github.com/shopspring/decimal"
 	"math"
 	"testing"
 )
@@ -13,7 +14,7 @@ func TestVaR(t *testing.T) {
 	if result.VaR > 0 {
 		t.Fatalf("VaR should be negative, got %.2f", result.VaR)
 	}
-	t.Logf("VaR=%.2f CVaR=%.2f AnnualVol=%.2f", result.VaR, result.CVaR, result.AnnualVol)
+	t.Logf("VaR result: daily_vol=%.4f annual_vol=%s var_95=%.2f max_drawdown=%s", result.DailyVol, result.AnnualVol, result.VaR, result.MaxDrawdown)
 }
 
 func TestStressTest(t *testing.T) {
@@ -57,15 +58,14 @@ func TestComputeVaR_NormalReturns(t *testing.T) {
 	if result.DailyVol <= 0 {
 		t.Fatal("daily vol should be positive")
 	}
-	if result.AnnualVol <= 0 {
+	if result.AnnualVol.LessThanOrEqual(decimal.Zero) {
 		t.Fatal("annual vol should be positive")
 	}
-	if result.MaxDrawdown < 0 {
+	if result.MaxDrawdown.LessThan(decimal.Zero) {
 		t.Fatal("max drawdown should be >= 0")
 	}
 
-	t.Logf("VaR=%.2f CVaR=%.2f DailyVol=%.2f AnnualVol=%.2f MaxDD=%.2f",
-		result.VaR, result.CVaR, result.DailyVol, result.AnnualVol, result.MaxDrawdown)
+	t.Logf("VaR result: daily_vol=%.4f annual_vol=%s var_95=%.2f max_drawdown=%s", result.DailyVol, result.AnnualVol, result.VaR, result.MaxDrawdown)
 }
 
 func TestComputeVaR_Empty(t *testing.T) {

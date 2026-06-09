@@ -35,7 +35,7 @@ func TestSpillReplayDualWrite(t *testing.T) {
 	sw.Close()
 
 	// Create SpillReplay with nil publisher and nil CHWriter (dual-write no-op).
-	sr := NewSpillReplay(dir, nil, nil, zap.NewNop())
+	sr := NewSpillReplay(dir, nil, nil, nil, zap.NewNop())
 
 	n, err := sr.Run(context.Background())
 	if err != nil {

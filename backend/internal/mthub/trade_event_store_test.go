@@ -1,6 +1,7 @@
 package mthub
 
 import (
+	"github.com/shopspring/decimal"
 	"context"
 	"encoding/json"
 	"testing"
@@ -35,10 +36,10 @@ func TestTradeEvent_JSONRoundTrip(t *testing.T) {
 		Canonical:     "EURUSD",
 		Side:          "BUY",
 		OrderType:     "MARKET",
-		Volume:        0.1,
-		Price:         1.0850,
-		StopLoss:      1.0800,
-		TakeProfit:    1.0950,
+		Volume:        decimal.NewFromFloat(0.1),
+		Price:         decimal.NewFromFloat(1.0850),
+		StopLoss:      decimal.NewFromFloat(1.0800),
+		TakeProfit:    decimal.NewFromFloat(1.0950),
 		FromState:     "NEW",
 		ToState:       "SUBMITTED",
 		Timestamp:     time.Date(2026, 1, 15, 10, 30, 0, 0, time.UTC),
@@ -65,8 +66,8 @@ func TestTradeEvent_JSONRoundTrip(t *testing.T) {
 	if decoded.Canonical != ev.Canonical {
 		t.Fatalf("Canonical: want %s, got %s", ev.Canonical, decoded.Canonical)
 	}
-	if decoded.Price != ev.Price {
-		t.Fatalf("Price: want %f, got %f", ev.Price, decoded.Price)
+	if !decoded.Price.Equal(ev.Price) {
+		t.Fatalf("Price: want %s, got %s", ev.Price, decoded.Price)
 	}
 }
 

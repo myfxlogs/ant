@@ -1,6 +1,7 @@
 package mthub
 
 import (
+	"github.com/shopspring/decimal"
 	"context"
 	"testing"
 	"time"
@@ -22,8 +23,8 @@ func TestStateCache_GetSetOrder(t *testing.T) {
 		Ticket:    100,
 		Canonical: "EURUSD",
 		Side:      "BUY",
-		Volume:    0.1,
-		Price:     1.0850,
+		Volume:    decimal.NewFromFloat(0.1),
+		Price:     decimal.NewFromFloat(1.0850),
 		ToState:   "FILLED",
 		Timestamp: time.Now(),
 	}
@@ -67,7 +68,7 @@ func TestStateCache_PositionTracking(t *testing.T) {
 	// Buy 0.1 EURUSD.
 	c.ApplyEvent(&TradeEvent{
 		EventType: TradeEventOrderFilled, AccountID: "acc-1", Ticket: 1,
-		Canonical: "EURUSD", Side: "BUY", Volume: 0.1, Price: 1.0850,
+		Canonical: "EURUSD", Side: "BUY", Volume: decimal.NewFromFloat(0.1), Price: decimal.NewFromFloat(1.0850),
 		ToState: "FILLED", Timestamp: time.Now(),
 	})
 
@@ -75,20 +76,20 @@ func TestStateCache_PositionTracking(t *testing.T) {
 	if pos == nil {
 		t.Fatal("position should exist")
 	}
-	if pos.NetVolume != 0.1 {
-		t.Fatalf("want 0.1, got %f", pos.NetVolume)
+	if !pos.NetVolume.Equal(decimal.NewFromFloat(0.1)) {
+		t.Fatalf("want 0.1, got %s", pos.NetVolume)
 	}
 
 	// Sell 0.03 EURUSD.
 	c.ApplyEvent(&TradeEvent{
 		EventType: TradeEventOrderFilled, AccountID: "acc-1", Ticket: 2,
-		Canonical: "EURUSD", Side: "SELL", Volume: 0.03, Price: 1.0860,
+		Canonical: "EURUSD", Side: "SELL", Volume: decimal.NewFromFloat(0.03), Price: decimal.NewFromFloat(1.0860),
 		ToState: "FILLED", Timestamp: time.Now(),
 	})
 
 	pos = c.GetPosition("acc-1", "EURUSD")
-	if pos.NetVolume != 0.07 {
-		t.Fatalf("want 0.07 after sell, got %f", pos.NetVolume)
+	if !pos.NetVolume.Equal(decimal.NewFromFloat(0.07)) {
+		t.Fatalf("want 0.07 after sell, got %s", pos.NetVolume)
 	}
 }
 
@@ -98,7 +99,7 @@ func TestStateCache_NonFillEventsDontUpdatePosition(t *testing.T) {
 
 	c.ApplyEvent(&TradeEvent{
 		EventType: TradeEventOrderCreated, AccountID: "acc-1", Ticket: 1,
-		Canonical: "EURUSD", Side: "BUY", Volume: 0.1, Price: 1.0850,
+		Canonical: "EURUSD", Side: "BUY", Volume: decimal.NewFromFloat(0.1), Price: decimal.NewFromFloat(1.0850),
 		ToState: "SUBMITTED", Timestamp: time.Now(),
 	})
 
@@ -112,8 +113,8 @@ func TestStateCache_Stats(t *testing.T) {
 	t.Parallel()
 	c := NewStateCache(nil, testLogger())
 
-	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderFilled, AccountID: "acc-1", Ticket: 1, Canonical: "EURUSD", Side: "BUY", Volume: 0.1, ToState: "FILLED", Timestamp: time.Now()})
-	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderFilled, AccountID: "acc-1", Ticket: 2, Canonical: "GBPUSD", Side: "SELL", Volume: 0.2, ToState: "FILLED", Timestamp: time.Now()})
+	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderFilled, AccountID: "acc-1", Ticket: 1, Canonical: "EURUSD", Side: "BUY", Volume: decimal.NewFromFloat(0.1), ToState: "FILLED", Timestamp: time.Now()})
+	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderFilled, AccountID: "acc-1", Ticket: 2, Canonical: "GBPUSD", Side: "SELL", Volume: decimal.NewFromFloat(0.2), ToState: "FILLED", Timestamp: time.Now()})
 
 	orders, positions := c.Stats()
 	if orders != 2 {
@@ -145,9 +146,9 @@ func TestStateCache_GetPositionsByAccount(t *testing.T) {
 	t.Parallel()
 	c := NewStateCache(nil, testLogger())
 
-	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderFilled, AccountID: "acc-1", Ticket: 1, Canonical: "EURUSD", Side: "BUY", Volume: 0.1, ToState: "FILLED", Timestamp: time.Now()})
-	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderFilled, AccountID: "acc-1", Ticket: 2, Canonical: "GBPUSD", Side: "BUY", Volume: 0.2, ToState: "FILLED", Timestamp: time.Now()})
-	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderFilled, AccountID: "acc-2", Ticket: 3, Canonical: "USDJPY", Side: "SELL", Volume: 0.3, ToState: "FILLED", Timestamp: time.Now()})
+	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderFilled, AccountID: "acc-1", Ticket: 1, Canonical: "EURUSD", Side: "BUY", Volume: decimal.NewFromFloat(0.1), ToState: "FILLED", Timestamp: time.Now()})
+	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderFilled, AccountID: "acc-1", Ticket: 2, Canonical: "GBPUSD", Side: "BUY", Volume: decimal.NewFromFloat(0.2), ToState: "FILLED", Timestamp: time.Now()})
+	c.ApplyEvent(&TradeEvent{EventType: TradeEventOrderFilled, AccountID: "acc-2", Ticket: 3, Canonical: "USDJPY", Side: "SELL", Volume: decimal.NewFromFloat(0.3), ToState: "FILLED", Timestamp: time.Now()})
 
 	positions := c.GetPositionsByAccount("acc-1")
 	if len(positions) != 2 {

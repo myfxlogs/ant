@@ -119,7 +119,7 @@ func TestEstimate_Forex_Buy(t *testing.T) {
 	if est.CostBps <= 0 {
 		t.Fatalf("cost_bps should be positive, got %.2f", est.CostBps)
 	}
-	t.Logf("Forex buy estimate: total=%.4f bps=%.2f spread=%.2f comm=%.2f slip=%.2f swap=%.2f",
+	t.Logf("Forex buy estimate: total=%.4f bps=%.2f spread=%.2f comm=%s slip=%.2f swap=%.2f",
 		est.TotalCost, est.CostBps, est.SpreadCost, est.Commission, est.SlippageCost, est.SwapCost)
 }
 

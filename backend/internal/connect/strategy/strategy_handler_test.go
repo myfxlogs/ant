@@ -46,12 +46,12 @@ func TestRunBacktest_NoTemplateId(t *testing.T) {
 
 func TestSetClient_StrategyServer(t *testing.T) {
 	srv := NewStrategyServer(nil, zap.NewNop())
-	if srv.client != nil {
+	if srv.backtestClient != nil {
 		t.Error("expected nil client initially")
 	}
 	// SetClient with nil: no panic.
-	srv.SetClient(nil)
-	if srv.client != nil {
+	srv.SetBacktestClient(nil)
+	if srv.backtestClient != nil {
 		t.Error("expected nil client after SetClient(nil)")
 	}
 }

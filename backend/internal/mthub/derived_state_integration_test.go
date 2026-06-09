@@ -14,17 +14,17 @@ func TestDerivedQuantities(t *testing.T) {
 	// Populate cache with order fills from multiple accounts.
 	cache.ApplyEvent(&TradeEvent{
 		EventType: TradeEventOrderFilled, AccountID: "acc-1", Ticket: 1,
-		Canonical: "EURUSD", Side: "BUY", Volume: 1.0, Price: 1.0850,
+		Canonical: "EURUSD", Side: "BUY", Volume: decimal.NewFromFloat(1.0), Price: decimal.NewFromFloat(1.0850),
 		ToState: "FILLED", Timestamp: time.Now(),
 	})
 	cache.ApplyEvent(&TradeEvent{
 		EventType: TradeEventOrderFilled, AccountID: "acc-1", Ticket: 2,
-		Canonical: "GBPUSD", Side: "SELL", Volume: 0.5, Price: 1.2650,
+		Canonical: "GBPUSD", Side: "SELL", Volume: decimal.NewFromFloat(0.5), Price: decimal.NewFromFloat(1.2650),
 		ToState: "FILLED", Timestamp: time.Now(),
 	})
 	cache.ApplyEvent(&TradeEvent{
 		EventType: TradeEventOrderFilled, AccountID: "acc-2", Ticket: 3,
-		Canonical: "USDJPY", Side: "BUY", Volume: 2.0, Price: 150.00,
+		Canonical: "USDJPY", Side: "BUY", Volume: decimal.NewFromFloat(2.0), Price: decimal.NewFromFloat(150.0),
 		ToState: "FILLED", Timestamp: time.Now(),
 	})
 

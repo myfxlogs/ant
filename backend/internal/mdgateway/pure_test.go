@@ -1469,7 +1469,7 @@ func TestNormalizerInvalidator_TickerLoop(t *testing.T) {
 func TestSpillReplay_Run_NoFiles(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()
-	replay := NewSpillReplay(dir, nil, nil, zap.NewNop())
+	replay := NewSpillReplay(dir, nil, nil, nil, zap.NewNop())
 	ctx := context.Background()
 	replay.Run(ctx)
 }
