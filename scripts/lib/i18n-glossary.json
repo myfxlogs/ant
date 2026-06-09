@@ -1,0 +1,33 @@
+{
+  "description": "Canonical translations for key financial/trading terms. Used by CI to detect inconsistent translations of the same English term.",
+  "terms": {
+    "Stop Loss": { "zh-cn": "止损", "zh-tw": "止損", "ja": "ストップロス", "vi": "Cắt lỗ" },
+    "Take Profit": { "zh-cn": "止盈", "zh-tw": "止盈", "ja": "テイクプロフィット", "vi": "Chốt lời" },
+    "Drawdown": { "zh-cn": "回撤", "zh-tw": "回撤", "ja": "ドローダウン", "vi": "Sụt giảm" },
+    "Equity": { "zh-cn": "净值", "zh-tw": "淨值", "ja": "純資産", "vi": "Vốn chủ sở hữu" },
+    "Balance": { "zh-cn": "余额", "zh-tw": "餘額", "ja": "残高", "vi": "Số dư" },
+    "Margin": { "zh-cn": "保证金", "zh-tw": "保證金", "ja": "証拠金", "vi": "Ký quỹ" },
+    "Leverage": { "zh-cn": "杠杆", "zh-tw": "槓桿", "ja": "レバレッジ", "vi": "Đòn bẩy" },
+    "Position": { "zh-cn": "持仓", "zh-tw": "持倉", "ja": "ポジション", "vi": "Vị thế" },
+    "Order": { "zh-cn": "订单", "zh-tw": "訂單", "ja": "注文", "vi": "Lệnh" },
+    "Backtest": { "zh-cn": "回测", "zh-tw": "回測", "ja": "バックテスト", "vi": "Kiểm thử lùi" },
+    "Volatility": { "zh-cn": "波动率", "zh-tw": "波動率", "ja": "ボラティリティ", "vi": "Biến động" },
+    "Slippage": { "zh-cn": "滑点", "zh-tw": "滑點", "ja": "スリッページ", "vi": "Trượt giá" },
+    "Commission": { "zh-cn": "手续费", "zh-tw": "手續費", "ja": "手数料", "vi": "Hoa hồng" },
+    "Lot": { "zh-cn": "手", "zh-tw": "手", "ja": "ロット", "vi": "Lô" },
+    "Symbol": { "zh-cn": "品种", "zh-tw": "品種", "ja": "銘柄", "vi": "Biểu tượng" },
+    "Timeframe": { "zh-cn": "周期", "zh-tw": "週期", "ja": "時間枠", "vi": "Khung thời gian" },
+    "Account": { "zh-cn": "账户", "zh-tw": "帳戶", "ja": "アカウント", "vi": "Tài khoản" },
+    "Broker": { "zh-cn": "经纪商", "zh-tw": "經紀商", "ja": "ブローカー", "vi": "Môi giới" },
+    "Strategy": { "zh-cn": "策略", "zh-tw": "策略", "ja": "戦略", "vi": "Chiến lược" },
+    "Signal": { "zh-cn": "信号", "zh-tw": "訊號", "ja": "シグナル", "vi": "Tín hiệu" },
+    "Risk": { "zh-cn": "风险", "zh-tw": "風險", "ja": "リスク", "vi": "Rủi ro" },
+    "Profit": { "zh-cn": "盈利", "zh-tw": "盈利", "ja": "利益", "vi": "Lợi nhuận" },
+    "Loss": { "zh-cn": "亏损", "zh-tw": "虧損", "ja": "損失", "vi": "Thua lỗ" },
+    "Win Rate": { "zh-cn": "胜率", "zh-tw": "勝率", "ja": "勝率", "vi": "Tỷ lệ thắng" },
+    "Sharpe Ratio": { "zh-cn": "夏普比率", "zh-tw": "夏普比率", "ja": "シャープレシオ", "vi": "Tỷ lệ Sharpe" },
+    "Dashboard": { "zh-cn": "仪表盘", "zh-tw": "儀表板", "ja": "ダッシュボード", "vi": "Bảng điều khiển" },
+    "Validation": { "zh-cn": "验证", "zh-tw": "驗證", "ja": "検証", "vi": "Xác thực" },
+    "Schedule": { "zh-cn": "调度", "zh-tw": "排程", "ja": "スケジュール", "vi": "Lịch trình" }
+  }
+}

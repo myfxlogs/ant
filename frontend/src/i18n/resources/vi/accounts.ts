@@ -65,7 +65,7 @@ const accounts = {
         currentPrice: 'Giá hiện tại',
         pendingPrice: 'Giá đặt',
         closePrice: 'Giá đóng',
-        profit: 'Lãi/Lỗ',
+        profit: 'Lợi nhuận',
         openTime: 'Thời gian mở',
         pendingTime: 'Thời gian đặt',
         closeTime: 'Thời gian đóng'

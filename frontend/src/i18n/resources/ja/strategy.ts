@@ -318,7 +318,7 @@ const strategy = {
         user: 'ユーザーテンプレート'
       },
       copySuffix: '（コピー）',
-      scheduleName: '{{symbol}} {{timeframe}} {{nowText}}',
+      scheduleName: '{{symbol}} {{timeframe}} {{name}}',
       badges: {
         preset: 'プリセット'
       },
@@ -858,7 +858,7 @@ def run(context):
         button: '自動修正',
         askAI: 'AIに問い合わせ',
         dismiss: '閉じる',
-        passed: '自動修正が{{iterations}}回の反復で成功しました',
+        passed: '自動修正が{{iterations}}回の反復で成功しました{{plural}}',
         failed: '自動修正：{{iterations}}回の反復後も{{remaining}}件の問題が残っています',
         fixed: '修正済み（{{count}}）',
         remaining: '残り（{{count}}）',

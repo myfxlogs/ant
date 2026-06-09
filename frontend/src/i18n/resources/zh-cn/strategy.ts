@@ -318,7 +318,7 @@ const strategy = {
         user: '自建模板'
       },
       copySuffix: ' (副本)',
-      scheduleName: '{{symbol}} {{timeframe}} {{nowText}}',
+      scheduleName: '{{symbol}} {{timeframe}} {{name}}',
       badges: {
         preset: '预设'
       },
@@ -1016,7 +1016,7 @@ def run(context):
         button: '自动修复',
         askAI: '询问 AI',
         dismiss: '关闭',
-        passed: '自动修复通过（{{iterations}} 次迭代）',
+        passed: '自动修复通过（{{iterations}} 次迭代）{{plural}}',
         failed: '自动修复：{{remaining}} 个问题未解决（{{iterations}} 次迭代后）',
         fixed: '✅ 已修复 ({{count}})',
         remaining: '⚠️ 剩余 ({{count}})',

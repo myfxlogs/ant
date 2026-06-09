@@ -157,8 +157,8 @@ const base = {
     title: '通知',
     empty: '通知はありません',
     tabs: {
-      all: 'すべて',
-      unread: '未読'
+      all: 'すべて ({{count}})',
+      unread: '未読 ({{count}})'
     },
     types: {
       trade: '取引',
@@ -175,16 +175,16 @@ const base = {
     stream: {
       strategyExecution: {
         title: '戦略実行',
-        completed: '実行完了',
-        failed: '実行失敗'
+        completed: '{{symbol}} {{action}} が完了しました',
+        failed: '実行失敗: {{error}}'
       },
       riskAlert: {
         title: 'リスクアラート',
-        fallback: 'リスクアラートが発生しました'
+        fallback: 'アラートタイプ: {{alertType}}'
       },
       strategySignal: {
         title: '戦略シグナル',
-        message: '新しい戦略シグナルを受信しました'
+        message: '{{symbol}} が {{signalType}} をトリガーしました'
       },
       autoTrading: {
         title: '自動取引',

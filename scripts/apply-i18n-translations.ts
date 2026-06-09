@@ -24,7 +24,8 @@ if (!locale || !transFile) {
   process.exit(1);
 }
 
-const BASE = path.join(import.meta.dirname, '..', 'frontend', 'src', 'i18n', 'resources');
+const scriptDir = path.dirname(new URL(import.meta.url).pathname);
+const BASE = path.join(scriptDir, '..', 'frontend', 'src', 'i18n', 'resources');
 const translations: Record<string, string> = JSON.parse(fs.readFileSync(transFile, 'utf8'));
 
 // Map merged key prefixes to file modules (matches the mergeResources structure)

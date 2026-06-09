@@ -315,7 +315,7 @@ const aiWizard = {
         datasetFrozenCreated: 'データセット凍結作成',
         freezeDatasetFailed: '凍結失敗',
         inputIntentFirst: 'まず戦略目標入力',
-        aiRequestTimeout: 'タイムアウト',
+        aiRequestTimeout: 'AIリクエストがタイムアウトしました（>{{seconds}}秒）',
         modelReturnedEmpty: '空返答',
         noPythonCodeBlock: 'コードブロックなし',
         agentFailed: '{{title}}失敗',

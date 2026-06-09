@@ -318,7 +318,7 @@ const strategy = {
         user: 'Mẫu tự tạo'
       },
       copySuffix: ' (Bản sao)',
-      scheduleName: '{{symbol}} {{timeframe}} {{nowText}}',
+      scheduleName: '{{symbol}} {{timeframe}} {{name}}',
       badges: {
         preset: 'Mặc định'
       },
@@ -858,7 +858,7 @@ def run(context):
         button: 'Tự động sửa',
         askAI: 'Hỏi AI',
         dismiss: 'Bỏ qua',
-        passed: 'Tự động sửa thành công sau {{iterations}} lần lặp',
+        passed: 'Tự động sửa đã vượt qua trong {{iterations}} lần lặp{{plural}}',
         failed: 'Tự động sửa: còn {{remaining}} vấn đề sau {{iterations}} lần lặp',
         fixed: 'Đã sửa ({{count}})',
         remaining: 'Còn lại ({{count}})',

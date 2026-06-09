@@ -16,10 +16,11 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { parseSource, insertKey } from './lib/i18n-source-editor.js';
+import { parseSource, ensureKey } from './lib/i18n-source-editor.js';
 
 const write = process.argv.includes('--write');
-const BASE = path.join(import.meta.dirname, '..', 'frontend', 'src', 'i18n', 'resources');
+const scriptDir = path.dirname(new URL(import.meta.url).pathname);
+const BASE = path.join(scriptDir, '..', 'frontend', 'src', 'i18n', 'resources');
 
 const locales = fs.readdirSync(BASE).filter(d => {
   const stat = fs.statSync(path.join(BASE, d));
@@ -104,34 +105,15 @@ for (const mod of modules) {
     if (write) {
       // Read source, parse structure, insert missing keys
       let source = fs.readFileSync(locPath, 'utf8');
-      const locMap = parseSource(source);
+      let locMap = parseSource(source);
 
-      // Group missing keys by their parent path
-      // e.g. "auth.forgotPassword.title" -> parent = "auth.forgotPassword"
-      const byParent = new Map<string, Array<{ name: string; value: string }>>();
-      for (const { key, value } of missing) {
-        const lastDot = key.lastIndexOf('.');
-        const parentPath = lastDot === -1 ? '' : key.slice(0, lastDot);
-        const keyName = lastDot === -1 ? key : key.slice(lastDot + 1);
-        if (!byParent.has(parentPath)) byParent.set(parentPath, []);
-        byParent.get(parentPath)!.push({ name: keyName, value });
-      }
+      // Sort missing keys shallow-to-deep so parent objects are created first
+      const sorted = [...missing].sort((a, b) => a.key.split('.').length - b.key.split('.').length);
 
-      for (const [parentPath, entries] of byParent) {
-        const parentLoc = parentPath ? locMap.get(parentPath) : null;
-        // If parent doesn't exist in locale, try to find it by walking the tree
-        if (!parentLoc && parentPath) {
-          // The parent might not exist yet - we'd need to create intermediate objects.
-          // For now, skip these (they're rare - usually whole branches are missing).
-          console.log('  SKIP (parent not found): ' + parentPath + ' in ' + locale + '/' + mod + '.ts');
-          continue;
-        }
-
-        for (const { name, value } of entries) {
-          if (parentLoc) {
-            source = insertKey(source, parentLoc, name, value);
-          }
-        }
+      for (const { key, value } of sorted) {
+        const result = ensureKey(source, key, value, locMap);
+        source = result.source;
+        locMap = result.locMap;
       }
 
       fs.writeFileSync(locPath, source, 'utf8');

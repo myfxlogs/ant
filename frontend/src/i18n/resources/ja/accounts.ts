@@ -128,7 +128,7 @@ const accounts = {
         }
       },
       chartType: {
-        equity: '有効証拠金',
+        equity: '純資産',
         balance: '残高',
         profit: '損益'
       },
@@ -140,7 +140,7 @@ const accounts = {
         all: '全期間'
       },
       chartSeries: {
-        equity: '有効証拠金',
+        equity: '純資産',
         balance: '残高',
         profit: '損益',
         tradeCount: '取引回数'
@@ -204,7 +204,7 @@ const accounts = {
       },
       fields: {
         balance: '残高',
-        equity: '有効証拠金',
+        equity: '純資産',
         broker: 'ブローカー',
         server: 'サーバー'
       },
@@ -225,7 +225,7 @@ const accounts = {
         type: 'タイプ',
         broker: 'ブローカー',
         balance: '残高',
-        equity: '有効証拠金',
+        equity: '純資産',
         actions: '操作'
       },
       confirmDelete: {
@@ -234,7 +234,7 @@ const accounts = {
       },
       mobile: {
         balanceLabel: '残高: ',
-        equityLabel: '有効証拠金: '
+        equityLabel: '純資産: '
       }
     },
     tradeTabs: {
@@ -335,7 +335,7 @@ const accounts = {
       leverage: 'レバレッジ {{leverage}} 倍',
       cards: {
         balance: '残高',
-        equity: '有効証拠金',
+        equity: '純資産',
         floatingProfit: '含み損益',
         marginUsed: '使用証拠金',
         marginFree: '余剰証拠金',

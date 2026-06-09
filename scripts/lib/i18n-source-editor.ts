@@ -189,6 +189,7 @@ export function parseSource(source: string): Map<string, KeyLocation> {
 
   pos = openBrace;
   parseValue('', root);
+  map.set('', root); // root object at empty path
   return map;
 }
 
@@ -319,5 +320,105 @@ export function insertKey(
     const ws = wsMatch ? wsMatch[1] : '';
     const rest = afterBrace.slice(ws.length);
     return beforeBrace + ws + '\n' + indent + keyName + ': ' + quote + escaped + quote + '\n' + rest;
+  }
+}
+
+/**
+ * Ensure a key path exists with the given string value, creating intermediate
+ * empty objects as needed. Re-parses after each structural change.
+ *
+ * Returns { source, locMap } — the updated source and a fresh parse map.
+ */
+export function ensureKey(
+  source: string,
+  keyPath: string,
+  value: string,
+  locMap: Map<string, KeyLocation>,
+): { source: string; locMap: Map<string, KeyLocation> } {
+  // Check if the key already exists as a string
+  const existing = locMap.get(keyPath);
+  if (existing?.stringValue !== null && existing?.stringValue !== undefined) {
+    return { source: replaceValue(source, existing, value), locMap };
+  }
+  if (existing && existing.stringValue === null) {
+    // Exists as object — don't overwrite
+    return { source, locMap };
+  }
+
+  // Find deepest existing object ancestor
+  const parts = keyPath.split('.');
+  let ancestorIdx = -1;
+  for (let i = parts.length - 1; i >= 0; i--) {
+    const path = parts.slice(0, i).join('.');
+    const loc = path ? locMap.get(path) : null;
+    if (loc && loc.stringValue === null) {
+      ancestorIdx = i;
+      break;
+    }
+  }
+
+  if (ancestorIdx < 0) {
+    throw new Error('No object ancestor found for key: ' + keyPath);
+  }
+
+  // Create missing intermediate objects, then the leaf
+  let curSource = source;
+  let curMap = locMap;
+
+  for (let i = ancestorIdx; i < parts.length; i++) {
+    const isLeaf = i === parts.length - 1;
+    const parentPath = parts.slice(0, i).join('.');
+    const parentLoc = curMap.get(parentPath) || curMap.get('')!;
+    const childName = parts[i];
+
+    if (isLeaf) {
+      curSource = insertKey(curSource, parentLoc, childName, value);
+    } else {
+      curSource = insertEmptyObject(curSource, parentLoc, childName);
+      curMap = parseSource(curSource); // re-parse for next level
+    }
+  }
+
+  return { source: curSource, locMap: parseSource(curSource) };
+}
+
+/**
+ * Insert an empty object as a child of parentLoc.
+ * Returns the modified source. The new object has no children yet.
+ */
+export function insertEmptyObject(
+  source: string,
+  parentLoc: KeyLocation,
+  keyName: string,
+): string {
+  // Similar to insertKey but inserts `keyName: {}` instead of a string value
+  const closeBrace = parentLoc.valueEnd - 1;
+
+  let indent = '  ';
+  if (parentLoc.children.length > 0) {
+    const lastChild = parentLoc.children[parentLoc.children.length - 1];
+    const lineStart = source.lastIndexOf('\n', lastChild.keyStart) + 1;
+    indent = source.slice(lineStart, lastChild.keyStart);
+  } else {
+    const parentLineStart = source.lastIndexOf('\n', parentLoc.valueStart) + 1;
+    const parentIndent = source.slice(parentLineStart, parentLoc.valueStart);
+    indent = parentIndent + '  ';
+  }
+
+  if (parentLoc.children.length > 0) {
+    let insertPos = closeBrace;
+    while (insertPos > 0 && /[\s\n]/.test(source[insertPos - 1])) insertPos--;
+    const before = source.slice(0, insertPos);
+    const after = source.slice(insertPos);
+    const newEntry = ',\n' + indent + keyName + ': {}';
+    return before + newEntry + '\n' + after.trimStart();
+  } else {
+    const openBrace = parentLoc.valueStart;
+    const beforeBrace = source.slice(0, openBrace + 1);
+    const afterBrace = source.slice(openBrace + 1);
+    const wsMatch = afterBrace.match(/^(\s*)/);
+    const ws = wsMatch ? wsMatch[1] : '';
+    const rest = afterBrace.slice(ws.length);
+    return beforeBrace + ws + '\n' + indent + keyName + ': {}\n' + rest;
   }
 }

@@ -6,5 +6,6 @@
 #   ./scripts/check-i18n-keys.sh --strict # CI mode (exit 1 on any missing key)
 
 set -euo pipefail
-cd "$(dirname "$0")/.."
-exec npx tsx scripts/check-i18n-keys.ts "$@"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR/.."
+exec npx tsx "$SCRIPT_DIR/check-i18n-keys.ts" "$@"

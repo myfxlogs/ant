@@ -322,7 +322,7 @@ const strategy = {
         user: '自建模板'
       },
       copySuffix: ' (副本)',
-      scheduleName: '{{symbol}} {{timeframe}} {{nowText}}',
+      scheduleName: '{{symbol}} {{timeframe}} {{name}}',
       badges: {
         preset: '預設'
       },
@@ -862,7 +862,7 @@ def run(context):
         button: '自動修復',
         askAI: '詢問AI',
         dismiss: '關閉',
-        passed: '自動修復在{{iterations}}次迭代後通過',
+        passed: '自動修復通過（{{iterations}} 次迭代）{{plural}}',
         failed: '自動修復：{{iterations}}次迭代後仍有{{remaining}}個問題',
         fixed: '已修復（{{count}}）',
         remaining: '剩餘（{{count}}）',
