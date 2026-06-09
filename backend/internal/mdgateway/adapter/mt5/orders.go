@@ -124,7 +124,7 @@ func (g *Gateway) CloseOrder(ctx context.Context, ticket int64, lots decimal.Dec
 	defer cancel()
 	callCtx = metadata.NewOutgoingContext(callCtx, md)
 	l := lots.InexactFloat64()
-	g.log.Info("mt5 CloseOrder: sending", zap.Int64("ticket", ticket), zap.Float64("lots", l), zap.String("sid", sid[:8]+"..."))
+	g.log.Info("mt5 CloseOrder: sending", zap.Int64("ticket", ticket), zap.Float64("lots", l), zap.String("sid", truncSid(sid)))
 	resp, err := tc.OrderClose(callCtx, &pb.OrderCloseRequest{Id: sid, Ticket: ticket, Lots: &l})
 	if err != nil {
 		g.log.Error("mt5 OrderClose: gRPC error", zap.Error(err))
@@ -297,4 +297,9 @@ func (g *Gateway) SubscribeOrderEvents(ctx context.Context, h mthub.OrderEventHa
 		}
 	}()
 	return nil
+}
+
+func truncSid(s string) string {
+	if len(s) > 8 { return s[:8] + "..." }
+	return s
 }
