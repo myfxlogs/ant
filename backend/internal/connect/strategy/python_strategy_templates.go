@@ -3,12 +3,23 @@ package strategy
 import antv1 "anttrader/gen/proto/ant/v1"
 
 // builtinTemplates returns the built-in Python strategy templates.
-// Extracted from python_strategy_handler.go to keep handler file focused on RPC logic.
-// Templates are pure data — 3 vectorized (run_dataframe) + 3 event-driven (run_context).
+// 3 vectorized (run_dataframe) + 3 event-driven (run_context).
 func builtinTemplates() []*antv1.PythonTemplate {
 	return []*antv1.PythonTemplate{
-		// ── Vectorized (run_dataframe) templates — recommended default ──
-		{Name: "MA Crossover (Vectorized)", Description: "双均线交叉策略 — 矢量模式", Code: `my_indicator_name = "MA Crossover"
+		tplMACrossoverVectorized(),
+		tplRSIMeanReversionVectorized(),
+		tplBollingerBreakoutVectorized(),
+		tplMACrossover(),
+		tplRSIMeanReversion(),
+		tplBollingerBreakout(),
+	}
+}
+
+func tplMACrossoverVectorized() *antv1.PythonTemplate {
+	return &antv1.PythonTemplate{
+		Name:        "MA Crossover (Vectorized)",
+		Description: "双均线交叉策略 — 矢量模式",
+		Code: `my_indicator_name = "MA Crossover"
 my_indicator_description = "Buy when fast EMA crosses above slow EMA, sell on reverse cross."
 
 # @param fast_len int 10 Fast EMA period
@@ -50,8 +61,15 @@ output = {
         {"type": "buy", "text": "B", "data": buy_marks, "color": "#00E676"},
         {"type": "sell", "text": "S", "data": sell_marks, "color": "#FF5252"},
     ]
-}`},
-		{Name: "RSI Mean Reversion (Vectorized)", Description: "RSI超买超卖反转策略 — 矢量模式", Code: `my_indicator_name = "RSI Mean Reversion"
+}`,
+	}
+}
+
+func tplRSIMeanReversionVectorized() *antv1.PythonTemplate {
+	return &antv1.PythonTemplate{
+		Name:        "RSI Mean Reversion (Vectorized)",
+		Description: "RSI超买超卖反转策略 — 矢量模式",
+		Code: `my_indicator_name = "RSI Mean Reversion"
 my_indicator_description = "Buy when RSI drops below oversold, sell when RSI rises above overbought."
 
 # @param rsi_len int 14 RSI period
@@ -97,8 +115,15 @@ output = {
         {"type": "buy", "text": "B", "data": buy_marks, "color": "#00E676"},
         {"type": "sell", "text": "S", "data": sell_marks, "color": "#FF5252"},
     ]
-}`},
-		{Name: "Bollinger Breakout (Vectorized)", Description: "布林带突破策略 — 矢量模式", Code: `my_indicator_name = "Bollinger Breakout"
+}`,
+	}
+}
+
+func tplBollingerBreakoutVectorized() *antv1.PythonTemplate {
+	return &antv1.PythonTemplate{
+		Name:        "Bollinger Breakout (Vectorized)",
+		Description: "布林带突破策略 — 矢量模式",
+		Code: `my_indicator_name = "Bollinger Breakout"
 my_indicator_description = "Buy on breakout above upper band, sell on breakdown below lower band."
 
 # @param bb_len int 20 Bollinger period
@@ -143,10 +168,15 @@ output = {
         {"type": "buy", "text": "B", "data": buy_marks, "color": "#00E676"},
         {"type": "sell", "text": "S", "data": sell_marks, "color": "#FF5252"},
     ]
-}`},
+}`,
+	}
+}
 
-		// ── Event-driven (run_context) templates — legacy compat ──
-		{Name: "MA Crossover", Description: "双均线交叉策略 — 事件驱动模式", Code: `# @param fast_period 10 range=5:50:5
+func tplMACrossover() *antv1.PythonTemplate {
+	return &antv1.PythonTemplate{
+		Name:        "MA Crossover",
+		Description: "双均线交叉策略 — 事件驱动模式",
+		Code: `# @param fast_period 10 range=5:50:5
 # @param slow_period 30 range=10:100:10
 def run(context):
     p = context.get('params', {})
@@ -170,8 +200,15 @@ def run(context):
         if pos:
             return {'signal': 'close', 'volume': 0}
         return {'signal': 'sell', 'volume': 1.0}
-    return {'signal': 'hold', 'volume': 0}`},
-		{Name: "RSI Mean Reversion", Description: "RSI超买超卖反转策略 — 事件驱动模式", Code: `# @param rsi_period 14 range=7:28:7
+    return {'signal': 'hold', 'volume': 0}`,
+	}
+}
+
+func tplRSIMeanReversion() *antv1.PythonTemplate {
+	return &antv1.PythonTemplate{
+		Name:        "RSI Mean Reversion",
+		Description: "RSI超买超卖反转策略 — 事件驱动模式",
+		Code: `# @param rsi_period 14 range=7:28:7
 # @param oversold 30 range=20:40:5
 # @param overbought 70 range=60:80:5
 def run(context):
@@ -200,8 +237,15 @@ def run(context):
             return {'signal': 'close', 'volume': 0}
         if not pos:
             return {'signal': 'sell', 'volume': 1.0}
-    return {'signal': 'hold', 'volume': 0}`},
-		{Name: "Bollinger Breakout", Description: "布林带突破策略 — 事件驱动模式", Code: `# @param bb_period 20 range=10:50:10
+    return {'signal': 'hold', 'volume': 0}`,
+	}
+}
+
+func tplBollingerBreakout() *antv1.PythonTemplate {
+	return &antv1.PythonTemplate{
+		Name:        "Bollinger Breakout",
+		Description: "布林带突破策略 — 事件驱动模式",
+		Code: `# @param bb_period 20 range=10:50:10
 # @param bb_std 2.0 range=1.0:4.0:0.5
 def run(context):
     p = context.get('params', {})
@@ -229,6 +273,6 @@ def run(context):
             return {'signal': 'close', 'volume': 0}
         if not pos:
             return {'signal': 'sell', 'volume': 1.0}
-    return {'signal': 'hold', 'volume': 0}`},
+    return {'signal': 'hold', 'volume': 0}`,
 	}
 }

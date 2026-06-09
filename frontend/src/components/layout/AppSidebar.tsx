@@ -1,3 +1,4 @@
+import { useMemo, useState, useEffect } from 'react';
 import { Layout, Menu, Drawer, Dropdown } from 'antd';
 import { GlobalOutlined, LineChartOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -9,6 +10,7 @@ interface MenuItem {
   key: string;
   icon: React.ReactNode;
   label: string;
+  children?: MenuItem[];
 }
 
 interface LanguageOption {
@@ -44,12 +46,48 @@ function BrandLogo() {
 function SidebarMenu({ items }: { items: MenuItem[] }) {
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Derive which submenus should be open based on the current path.
+  const derivedOpenKeys = useMemo(
+    () => items
+      .filter(item => item.children?.some(child => location.pathname.startsWith(child.key)))
+      .map(item => item.key),
+    [items, location.pathname],
+  );
+
+  const [openKeys, setOpenKeys] = useState<string[]>(derivedOpenKeys);
+
+  // Auto-expand submenus when navigating to a child route (e.g. browser back/forward).
+  // Preserves submenus the user manually opened.
+  useEffect(() => {
+    setOpenKeys(prev => {
+      const merged = new Set([...prev, ...derivedOpenKeys]);
+      const next = [...merged];
+      if (next.length === prev.length && next.every((k, i) => k === prev[i])) {
+        return prev; // no change → avoid re-render
+      }
+      return next;
+    });
+  }, [derivedOpenKeys]);
+
+  const handleClick = ({ key }: { key: string }) => {
+    // Only navigate for leaf items (no children).
+    const isLeaf = !items.some(item =>
+      item.children?.some(child => child.key === key)
+    );
+    if (isLeaf) {
+      navigate(key);
+    }
+  };
+
   return (
     <Menu
       mode="inline"
       selectedKeys={[location.pathname]}
+      openKeys={openKeys}
+      onOpenChange={setOpenKeys}
       items={items}
-      onClick={({ key }) => navigate(key)}
+      onClick={handleClick}
       style={{ background: 'transparent', border: 'none' }}
     />
   );

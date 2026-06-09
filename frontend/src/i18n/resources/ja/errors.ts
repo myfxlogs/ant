@@ -63,10 +63,6 @@ const errors = {
     broker_search_failed: 'ブローカーの検索に失敗しました',
     broker_not_found: 'ブローカーが見つかりません',
     broker_server_unavailable: 'ブローカーサーバーは現在利用できません'
-  },
-  legal: {
-    privacy: '隐私政策',
-    terms: '服务条款'
   }
 } as const;
 

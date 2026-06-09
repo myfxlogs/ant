@@ -2,6 +2,7 @@ package admin
 
 import (
 	"context"
+	"fmt"
 
 	"go.uber.org/zap"
 
@@ -51,19 +52,14 @@ func (s *AdminSystemServer) GetMetrics(ctx context.Context, _ *connect.Request[a
 	return connect.NewResponse(&antv1.GetMetricsResponse{Metrics: metrics}), nil
 }
 
-func (s *AdminSystemServer) ResolveAlert(_ context.Context, req *connect.Request[antv1.ResolveAlertRequest]) (*connect.Response[antv1.ResolveAlertResponse], error) {
-	s.log.Warn("admin: ResolveAlert is a stub — no alert resolution implemented",
-		zap.String("alert_id", req.Msg.GetAlertId()))
-	return connect.NewResponse(&antv1.ResolveAlertResponse{}), nil
+func (s *AdminSystemServer) ResolveAlert(ctx context.Context, req *connect.Request[antv1.ResolveAlertRequest]) (*connect.Response[antv1.ResolveAlertResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("ResolveAlert: not yet implemented"))
 }
 
-func (s *AdminSystemServer) ClearCache(_ context.Context, _ *connect.Request[antv1.ClearCacheRequest]) (*connect.Response[antv1.ClearCacheResponse], error) {
-	s.log.Warn("admin: ClearCache is a stub — no cache clearing implemented")
-	return connect.NewResponse(&antv1.ClearCacheResponse{}), nil
+func (s *AdminSystemServer) ClearCache(ctx context.Context, req *connect.Request[antv1.ClearCacheRequest]) (*connect.Response[antv1.ClearCacheResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("ClearCache: not yet implemented"))
 }
 
-func (s *AdminSystemServer) InvalidateCache(_ context.Context, req *connect.Request[antv1.InvalidateCacheRequest]) (*connect.Response[antv1.InvalidateCacheResponse], error) {
-	s.log.Warn("admin: InvalidateCache is a stub — no cache invalidation implemented",
-		zap.Strings("tags", req.Msg.GetTags()))
-	return connect.NewResponse(&antv1.InvalidateCacheResponse{}), nil
+func (s *AdminSystemServer) InvalidateCache(ctx context.Context, req *connect.Request[antv1.InvalidateCacheRequest]) (*connect.Response[antv1.InvalidateCacheResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("InvalidateCache: not yet implemented"))
 }

@@ -31,22 +31,14 @@ const base = {
       signingIn: 'Đang đăng nhập...',
       login: 'Đăng nhập',
       noAccount: 'Chưa có tài khoản?',
-      registerNow: 'Đăng ký ngay',
-      agreePrefix: 'Bằng việc đăng nhập, bạn đồng ý với',
-      terms: 'Điều khoản dịch vụ',
-      and: 'và',
-      privacy: 'Chính sách quyền riêng tư'
+      registerNow: 'Đăng ký ngay'
     },
     register: {
       subtitle: 'Tạo tài khoản mới',
       signingUp: 'Đang đăng ký...',
       register: 'Đăng ký',
       haveAccount: 'Đã có tài khoản?',
-      loginNow: 'Đăng nhập ngay',
-      agreePrefix: 'Bằng việc đăng ký, bạn đồng ý với',
-      terms: 'Điều khoản dịch vụ',
-      and: 'và',
-      privacy: 'Chính sách quyền riêng tư'
+      loginNow: 'Đăng nhập ngay'
     },
     forgotPassword: {
       title: 'Đặt lại Mật khẩu',
@@ -131,10 +123,12 @@ const base = {
   menu: {
     strategyWorkspace: 'Không gian chiến lược',
     dashboard: 'Bảng điều khiển',
+    strategy: 'Chiến lược',
     accounts: 'Quản lý tài khoản',
     aiAssistant: 'Trợ lý AI',
     strategies: 'Quản lý chiến lược',
     trading: 'Giao dịch',
+    algoDashboard: 'Thuật toán',
     market: 'Thị trường',
     analytics: 'Phân tích',
     marketplace: 'Thị trường',

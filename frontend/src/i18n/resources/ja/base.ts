@@ -31,22 +31,14 @@ const base = {
       signingIn: 'ログイン中...',
       login: 'ログイン',
       noAccount: 'アカウントをお持ちでないですか？',
-      registerNow: '新規登録',
-      agreePrefix: 'ログインすることで、以下に同意したものとみなされます：',
-      terms: '利用規約',
-      and: 'および',
-      privacy: 'プライバシーポリシー'
+      registerNow: '新規登録'
     },
     register: {
       subtitle: '新規アカウント作成',
       signingUp: '登録中...',
       register: '登録',
       haveAccount: 'すでにアカウントをお持ちですか？',
-      loginNow: 'ログイン',
-      agreePrefix: '登録することで、以下に同意したものとみなされます：',
-      terms: '利用規約',
-      and: 'および',
-      privacy: 'プライバシーポリシー'
+      loginNow: 'ログイン'
     },
     forgotPassword: {
       title: 'パスワードリセット',
@@ -131,10 +123,12 @@ const base = {
   menu: {
     strategyWorkspace: '戦略ワークスペース',
     dashboard: 'ダッシュボード',
+    strategy: '戦略',
     accounts: '口座管理',
     aiAssistant: 'AIアシスタント',
     strategies: '戦略管理',
     trading: '取引',
+    algoDashboard: 'アルゴダッシュボード',
     market: 'マーケット',
     analytics: '分析',
     marketplace: 'マーケットプレイス',

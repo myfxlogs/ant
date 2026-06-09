@@ -170,7 +170,7 @@ func registerHandlers(
 	paperRepo := repository.NewPaperRepo(pool)
 	paperEngine := papereng.New(paperRepo, mthubSvc, log)
 	pythonStrategyServer.SetPaperEngine(paperEngine)
-	paperHandler := paperhdr.NewHandler(paperRepo, paperEngine, log)
+	paperHandler := paperhdr.NewHandler(paperRepo, paperEngine, pythonStrategyServer, log)
 	mux.Handle(antv1c.NewPaperTradingServiceHandler(paperHandler, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 	codeAssistServer := ai.NewCodeAssistServer(aiSvc, session, log)
 	if cfg.StrategyServiceURL != "" {

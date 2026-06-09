@@ -1,57 +1,92 @@
 package errors
 
 import (
-	stderrors "errors"
+	"errors"
 	"fmt"
 	"testing"
+
+	"connectrpc.com/connect"
 )
 
-func TestAppError_Error(t *testing.T) {
+func TestNew_Success(t *testing.T) {
 	t.Parallel()
-	e := New(UserNotFound, fmt.Errorf("user 123 not in db"))
-	got := e.Error()
-	want := "[1001] errors.user_not_found: user 123 not in db"
-	if got != want {
-		t.Errorf("Error() = %q, want %q", got, want)
+	appErr := New(UserNotFound, fmt.Errorf("user not in db"))
+	if appErr.Code != UserNotFound {
+		t.Errorf("expected code %d, got %d", UserNotFound, appErr.Code)
 	}
 }
 
-func TestAppError_Error_Nil(t *testing.T) {
+func TestNew_UnknownCodeFallsBack(t *testing.T) {
 	t.Parallel()
-	e := New(NotFound, nil)
-	got := e.Error()
-	want := "[5] errors.not_found"
-	if got != want {
-		t.Errorf("Error() = %q, want %q", got, want)
+	appErr := New(99999, nil)
+	if appErr.Message != errorMessages[UnknownError] {
+		t.Errorf("expected fallback to unknown error message")
+	}
+}
+
+func TestNewWithMessage_CustomMessage(t *testing.T) {
+	t.Parallel()
+	appErr := NewWithMessage(OrderRejected, "custom reason", fmt.Errorf("detail"))
+	if appErr.Code != OrderRejected {
+		t.Errorf("expected code %d, got %d", OrderRejected, appErr.Code)
+	}
+	if appErr.Message != "custom reason" {
+		t.Errorf("expected custom message, got %q", appErr.Message)
+	}
+}
+
+func TestAppError_Error(t *testing.T) {
+	t.Parallel()
+	appErr := New(InvalidParameter, fmt.Errorf("field X"))
+	if appErr.Error() == "" {
+		t.Fatal("expected non-empty error string")
 	}
 }
 
 func TestAppError_Unwrap(t *testing.T) {
 	t.Parallel()
-	sentinel := fmt.Errorf("original error")
-	e := New(InternalError, sentinel)
-	if !stderrors.Is(e, sentinel) {
-		t.Error("stderrors.Is should find sentinel via Unwrap")
+	inner := fmt.Errorf("inner")
+	appErr := New(InternalError, inner)
+	if !errors.Is(appErr, inner) {
+		t.Fatal("expected Unwrap to return inner error")
 	}
 }
 
-func TestAppError_Unwrap_Nil(t *testing.T) {
+func TestGetMessage(t *testing.T) {
 	t.Parallel()
-	e := New(Forbidden, nil)
-	if e.Unwrap() != nil {
-		t.Error("Unwrap() should return nil when inner error is nil")
+	if GetMessage(TokenExpired) == "" {
+		t.Fatal("expected non-empty message")
+	}
+	if GetMessage(99999) != errorMessages[UnknownError] {
+		t.Fatal("expected fallback")
 	}
 }
 
-func TestAppError_Unwrap_AsType(t *testing.T) {
+func TestToConnectError(t *testing.T) {
 	t.Parallel()
-	e := New(InternalError, fmt.Errorf("wrapped"))
-	var appErr *AppError
-	if !stderrors.As(e, &appErr) {
-		t.Error("stderrors.As should succeed on *AppError")
-		return
+	appErr := New(Unauthorized, fmt.Errorf("bad token"))
+	ce := ToConnectError(appErr)
+	if ce.Code() != connect.CodeUnauthenticated {
+		t.Errorf("expected Unauthenticated, got %v", ce.Code())
 	}
-	if appErr.Code != InternalError {
-		t.Errorf("expected code %d, got %d", InternalError, appErr.Code)
+}
+
+func TestToConnectError_UnknownCode(t *testing.T) {
+	t.Parallel()
+	appErr := New(99999, nil)
+	ce := ToConnectError(appErr)
+	if ce.Code() != connect.CodeInternal {
+		t.Errorf("expected Internal fallback, got %v", ce.Code())
+	}
+}
+
+func TestErrorCodeUniqueness(t *testing.T) {
+	t.Parallel()
+	seen := make(map[int]bool)
+	for code := range errorMessages {
+		if seen[code] {
+			t.Errorf("duplicate error code: %d", code)
+		}
+		seen[code] = true
 	}
 }

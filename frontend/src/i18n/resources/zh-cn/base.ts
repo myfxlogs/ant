@@ -31,22 +31,14 @@ const base = {
       signingIn: '登录中...',
       login: '登录',
       noAccount: '还没有账号？',
-      registerNow: '立即注册',
-      agreePrefix: '登录即表示您同意我们的',
-      terms: '服务条款',
-      and: '和',
-      privacy: '隐私政策'
+      registerNow: '立即注册'
     },
     register: {
       subtitle: '创建新账号',
       signingUp: '注册中...',
       register: '注册',
       haveAccount: '已有账号？',
-      loginNow: '立即登录',
-      agreePrefix: '注册即表示您同意我们的',
-      terms: '服务条款',
-      and: '和',
-      privacy: '隐私政策'
+      loginNow: '立即登录'
     },
     forgotPassword: {
       title: '重置密码',
@@ -131,10 +123,12 @@ const base = {
   menu: {
     strategyWorkspace: '策略工作台',
     dashboard: '仪表盘',
+    strategy: '策略',
     accounts: '账户管理',
     aiAssistant: 'AI助手',
     strategies: '策略管理',
     trading: '交易',
+    algoDashboard: '算法看板',
     market: '行情',
     analytics: '分析',
     marketplace: '市场',

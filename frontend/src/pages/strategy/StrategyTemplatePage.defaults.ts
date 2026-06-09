@@ -19,8 +19,6 @@ import default_bb_mean_reversion from './templates/default-bb-mean-reversion';
 import default_turtle_trading from './templates/default-turtle-trading';
 import default_grid_trading from './templates/default-grid-trading';
 import default_dca_buy from './templates/default-dca-buy';
-import default_pairs_trading from './templates/default-pairs-trading';
-import default_momentum_rotation from './templates/default-momentum-rotation';
 import default_test_force_buy from './templates/default-test-force-buy';
 import default_rsi from './templates/default-rsi';
 import default_macd from './templates/default-macd';
@@ -35,8 +33,6 @@ export const DEFAULT_TEMPLATES: DefaultTemplateItem[] = [
   default_turtle_trading,
   default_grid_trading,
   default_dca_buy,
-  default_pairs_trading,
-  default_momentum_rotation,
   default_test_force_buy,
   default_rsi,
   default_macd,

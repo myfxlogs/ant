@@ -11,10 +11,6 @@ const base = {
       login: 'Sign in',
       noAccount: `Don't have an account?`,
       registerNow: 'Register now',
-      agreePrefix: 'By continuing you agree to the',
-      terms: 'Terms',
-      and: 'and',
-      privacy: 'Privacy Policy'
     },
     forgotPassword: {
       title: 'Reset Password',
@@ -27,10 +23,6 @@ const base = {
       register: 'Register',
       haveAccount: 'Already have an account?',
       loginNow: 'Sign in',
-      agreePrefix: 'By continuing you agree to the',
-      terms: 'Terms',
-      and: 'and',
-      privacy: 'Privacy Policy'
     },
     fields: {
       email: 'Email',
@@ -131,10 +123,12 @@ const base = {
   menu: {
     strategyWorkspace: 'Strategy Workspace',
     dashboard: 'Dashboard',
+    strategy: 'Strategy',
     accounts: 'Accounts',
     aiAssistant: 'AI Assistant',
     strategies: 'Strategies',
     trading: 'Trading',
+    algoDashboard: 'Algo Dashboard',
     market: 'Market',
     analytics: 'Analytics',
     marketplace: 'Marketplace',

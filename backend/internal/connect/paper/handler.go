@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
@@ -13,23 +14,46 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
+	"anttrader/internal/connect/strategy"
 	"anttrader/internal/interceptor"
 	papereng "anttrader/internal/paper"
 	"anttrader/internal/repository"
 )
 
+// StrategyRunner is the paper package's local interface for launching live/paper strategy goroutines.
+// Defined here (consumer side) per Go best practice — the strategy package need not know about this interface.
+type StrategyRunner interface {
+	RunLiveStrategy(ctx context.Context, cfg strategy.LiveStrategyConfig) error
+}
+
+// paperRepo is the local interface for paper account persistence.
+// Defined on the consumer side — repository package need not know about it.
+type paperRepo interface {
+	CreateAccount(ctx context.Context, userID, name string, initialBalance decimal.Decimal) (*repository.PaperAccount, error)
+	ListAccounts(ctx context.Context, userID string) ([]*repository.PaperAccount, error)
+}
+
 // Handler implements ant.v1.PaperTradingServiceHandler.
 type Handler struct {
-	repo   *repository.PaperRepo
-	engine *papereng.PaperEngine
-	log    *zap.Logger
+	repo             paperRepo
+	engine           *papereng.PaperEngine
+	strategyRunner   StrategyRunner
+	activeStrategies map[string]context.CancelFunc // paperAccountID → cancel
+	mu               sync.Mutex
+	log              *zap.Logger
 }
 
 var _ antv1c.PaperTradingServiceHandler = (*Handler)(nil)
 
 // NewHandler creates a paper trading ConnectRPC handler.
-func NewHandler(repo *repository.PaperRepo, engine *papereng.PaperEngine, log *zap.Logger) *Handler {
-	return &Handler{repo: repo, engine: engine, log: log}
+func NewHandler(repo paperRepo, engine *papereng.PaperEngine, runner StrategyRunner, log *zap.Logger) *Handler {
+	return &Handler{
+		repo:             repo,
+		engine:           engine,
+		strategyRunner:   runner,
+		activeStrategies: make(map[string]context.CancelFunc),
+		log:              log,
+	}
 }
 
 func (h *Handler) userID(ctx context.Context) string {
@@ -76,39 +100,113 @@ func (h *Handler) ListPaperAccounts(ctx context.Context, req *connect.Request[an
 }
 
 // StartPaperStrategy launches a strategy in paper trading mode.
+// Spawns a LiveStrategyRunner goroutine that subscribes to bar updates and executes
+// the strategy code against a virtual paper account (mode="paper").
 func (h *Handler) StartPaperStrategy(ctx context.Context, req *connect.Request[antv1.StartPaperStrategyRequest]) (*connect.Response[antv1.StartPaperStrategyResponse], error) {
 	uid := h.userID(ctx)
 	if uid == "" {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
 	}
-	_ = uid
 
-	// TODO: spawn LiveStrategyRunner goroutine with mode="paper"
-	// cfg := LiveStrategyConfig{
-	//     AccountID: req.Msg.PaperAccountId,
-	//     Symbol:    req.Msg.Symbol,
-	//     Timeframe: req.Msg.Timeframe,
-	//     Code:      req.Msg.StrategyCode,
-	//     Mode:      "paper",
-	//     Params:    req.Msg.Params,
-	// }
-	// go strategyServer.RunLiveStrategy(ctx, cfg)
+	accountID := req.Msg.PaperAccountId
+	if accountID == "" {
+		return connect.NewResponse(&antv1.StartPaperStrategyResponse{
+			Success: false,
+			Error:   "paper_account_id is required",
+		}), nil
+	}
 
-	h.log.Info("StartPaperStrategy requested (LiveStrategyRunner integration pending)",
-		zap.String("paper_account", req.Msg.PaperAccountId),
-		zap.String("symbol", req.Msg.Symbol),
-	)
+	if h.strategyRunner == nil {
+		return connect.NewResponse(&antv1.StartPaperStrategyResponse{
+			Success: false,
+			Error:   "strategy server not configured",
+		}), nil
+	}
+
+	// Prevent duplicate strategies on the same paper account.
+	h.mu.Lock()
+	if _, running := h.activeStrategies[accountID]; running {
+		h.mu.Unlock()
+		return connect.NewResponse(&antv1.StartPaperStrategyResponse{
+			Success: false,
+			Error:   fmt.Sprintf("strategy already running for paper account %s", accountID),
+		}), nil
+	}
+	h.mu.Unlock()
+
+	runCtx, cancel := context.WithCancel(context.Background())
+
+	cfg := strategy.LiveStrategyConfig{
+		AccountID: accountID,
+		Symbol:    req.Msg.Symbol,
+		Timeframe: req.Msg.Timeframe,
+		Code:      req.Msg.StrategyCode,
+		Mode:      "paper",
+		Params:    req.Msg.Params,
+	}
+
+	h.mu.Lock()
+	h.activeStrategies[accountID] = cancel
+	h.mu.Unlock()
+
+	go func() {
+		defer func() {
+			h.mu.Lock()
+			delete(h.activeStrategies, accountID)
+			h.mu.Unlock()
+			cancel()
+		}()
+
+		h.log.Info("StartPaperStrategy: launching LiveStrategyRunner",
+			zap.String("user", uid),
+			zap.String("paper_account", accountID),
+			zap.String("symbol", req.Msg.Symbol),
+			zap.String("timeframe", req.Msg.Timeframe),
+		)
+
+		if err := h.strategyRunner.RunLiveStrategy(runCtx, cfg); err != nil {
+			h.log.Warn("StartPaperStrategy: LiveStrategyRunner exited with error",
+				zap.String("paper_account", accountID),
+				zap.Error(err),
+			)
+		} else {
+			h.log.Info("StartPaperStrategy: LiveStrategyRunner exited cleanly",
+				zap.String("paper_account", accountID),
+			)
+		}
+	}()
 
 	return connect.NewResponse(&antv1.StartPaperStrategyResponse{Success: true}), nil
 }
 
-// StopPaperStrategy stops a running paper strategy.
+// StopPaperStrategy stops a running paper strategy by cancelling its context.
 func (h *Handler) StopPaperStrategy(ctx context.Context, req *connect.Request[antv1.StopPaperStrategyRequest]) (*connect.Response[antv1.StopPaperStrategyResponse], error) {
 	uid := h.userID(ctx)
 	if uid == "" {
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("authentication required"))
 	}
 	_ = uid
+
+	accountID := req.Msg.PaperAccountId
+
+	h.mu.Lock()
+	cancel, ok := h.activeStrategies[accountID]
+	if ok {
+		delete(h.activeStrategies, accountID)
+	}
+	h.mu.Unlock()
+
+	if !ok {
+		return connect.NewResponse(&antv1.StopPaperStrategyResponse{
+			Success: false,
+			Error:   fmt.Sprintf("no running strategy found for paper account %s", accountID),
+		}), nil
+	}
+
+	cancel()
+	h.log.Info("StopPaperStrategy: cancelled",
+		zap.String("paper_account", accountID),
+	)
 
 	return connect.NewResponse(&antv1.StopPaperStrategyResponse{Success: true}), nil
 }

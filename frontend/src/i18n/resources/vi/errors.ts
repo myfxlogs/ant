@@ -63,10 +63,6 @@ const errors = {
     broker_search_failed: 'Tìm kiếm nhà môi giới thất bại',
     broker_not_found: 'Không tìm thấy nhà môi giới',
     broker_server_unavailable: 'Máy chủ nhà môi giới hiện không khả dụng'
-  },
-  legal: {
-    privacy: 'Chính Sách Bảo Mật',
-    terms: 'Điều Khoản Dịch Vụ'
   }
 } as const;
 

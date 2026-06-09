@@ -63,10 +63,6 @@ const errors = {
     broker_search_failed: 'Failed to search for brokers',
     broker_not_found: 'Broker not found',
     broker_server_unavailable: 'Broker server is currently unavailable'
-  },
-  legal: {
-    privacy: 'Privacy Policy',
-    terms: 'Terms of Service'
   }
 } as const;
 

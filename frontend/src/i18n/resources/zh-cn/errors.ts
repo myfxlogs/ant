@@ -63,10 +63,6 @@ const errors = {
     broker_search_failed: '搜索券商失败',
     broker_not_found: '券商未找到',
     broker_server_unavailable: '券商服务器当前不可用'
-  },
-  legal: {
-    privacy: '隐私政策',
-    terms: '服务条款'
   }
 } as const;
 

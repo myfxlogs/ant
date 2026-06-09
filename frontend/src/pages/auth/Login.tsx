@@ -174,15 +174,6 @@ export default function Login() {
           </div>
         </div>
       </div>
-
-      <div className="text-center mt-6" style={{ color: '#8A9AA5', fontSize: '12px' }}>
-        <p>
-          {t('auth.login.agreePrefix')}
-          <Link to="/terms" style={{ color: '#D4AF37' }}> {t('auth.login.terms')} </Link>
-          {t('auth.login.and')}
-          <Link to="/privacy" style={{ color: '#D4AF37' }}> {t('auth.login.privacy')} </Link>
-        </p>
-      </div>
     </div>
   );
 }

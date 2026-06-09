@@ -225,16 +225,6 @@ export default function Register() {
           </div>
         </div>
       </div>
-
-      {/* 底部信息 */}
-      <div className="text-center mt-6" style={{ color: '#8A9AA5', fontSize: '12px' }}>
-        <p>
-          {t('auth.register.agreePrefix')}
-          <Link to="/terms" style={{ color: '#D4AF37' }}> {t('auth.register.terms')} </Link>
-          {t('auth.register.and')}
-          <Link to="/privacy" style={{ color: '#D4AF37' }}> {t('auth.register.privacy')} </Link>
-        </p>
-      </div>
     </div>
   );
 }

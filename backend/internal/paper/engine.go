@@ -22,9 +22,17 @@ import (
 	"anttrader/internal/repository"
 )
 
+// paperRepository is the local interface for paper account persistence.
+// Defined on the consumer side per Go convention — repository package need not know about it.
+type paperRepository interface {
+	CreateOrder(ctx context.Context, o *repository.PaperOrder) error
+	ListAccounts(ctx context.Context, userID string) ([]*repository.PaperAccount, error)
+	UpdateAccountBalance(ctx context.Context, accountID string, balance, equity decimal.Decimal) error
+}
+
 // PaperEngine manages virtual paper trading accounts, simulated order fills, and SSE subscribers.
 type PaperEngine struct {
-	repo  *repository.PaperRepo
+	repo  paperRepository
 	mtHub *mthub.MtHubService
 	log   *zap.Logger
 
@@ -34,7 +42,7 @@ type PaperEngine struct {
 }
 
 // New creates a PaperEngine.
-func New(repo *repository.PaperRepo, mtHub *mthub.MtHubService, log *zap.Logger) *PaperEngine {
+func New(repo paperRepository, mtHub *mthub.MtHubService, log *zap.Logger) *PaperEngine {
 	return &PaperEngine{
 		repo:        repo,
 		mtHub:       mtHub,

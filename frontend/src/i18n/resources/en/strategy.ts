@@ -937,7 +937,6 @@ const strategy = {
       smartTuning: 'Smart Tuning',
       quickTrade: 'Quick Trade',
       quickTradeHint: 'Select a symbol first',
-      tradePanelPlaceholder: 'Trade panel — coming soon',
       selectSymbolHint: 'Select a trading account and symbol to view chart',
       noAccounts: 'No available accounts',
       selectSymbol: 'Symbol',
