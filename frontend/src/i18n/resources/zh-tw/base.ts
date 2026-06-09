@@ -91,12 +91,12 @@ const base = {
     copy: '複製',
     copied: '已複製',
     copyFailed: '複製失敗',
-    totalItems: '共 {{total}} 筆',
+    totalItems: '共 {{count}} 項',
     time: {
-      minute: '分鐘',
-      hour: '小時',
-      day: '天',
-      lessThanMinute: '< 1分鐘'
+      minute: '{{n}}分',
+      hour: '{{n}}時',
+      day: '{{n}}天',
+      lessThanMinute: '<1分'
     },
     required: '必填',
     noData: '尚無資料',
@@ -109,7 +109,17 @@ const base = {
     selectSymbolToViewChart: '選擇品種查看圖表',
     currentPosition: '📊 當前持倉',
     noOpenPositionsForSymbol: '{{symbol}} 暫無持倉',
-    indicatorSettings: '{{name}} 設定'
+    indicatorSettings: '{{name}} 設定',
+    active: '啟用',
+    inactive: '停用',
+    clear: '清除',
+    saveSuccess: '儲存成功',
+    remove: '移除',
+    yes: '是',
+    no: '否',
+    you: '你',
+    comingSoon: '即將上線',
+    pageUnderDevelopment: '此页面正在開发中'
   },
   language: {
     simplifiedChinese: '简体中文',
@@ -150,7 +160,9 @@ const base = {
     common: '常用',
     selectSymbol: '選擇品種',
     noSymbolsFound: '找不到品種',
-    loadingSymbols: '載入中...'
+    loadingSymbols: '載入中...',
+    emptyWatchlist: '暫無自選',
+    searchSymbol: '搜尋商品...'
   },
   topbar: {
     systemOk: '系統正常運行',
@@ -369,7 +381,7 @@ const base = {
     subtitle: '探索、評分與訂閱社群策略',
     publish: '發布策略',
     tabs: {
-      marketplace: '市集',
+      marketplace: '策略市場',
       subscriptions: '我的訂閱'
     },
     searchPlaceholder: '搜尋策略...',
@@ -386,10 +398,10 @@ const base = {
       subscribed: '已訂閱',
       unsubscribe: '取消訂閱',
       unsubscribeHint: '點擊取消訂閱',
-      details: '詳情',
+      details: '詳細',
       subscribers: '訂閱者',
       winRate: '勝率',
-      by: '作者'
+      by: '發布者'
     },
     assetClass: {
       forex: '外匯',
@@ -400,9 +412,9 @@ const base = {
       other: '其他'
     },
     risk: {
-      low: '低風險',
-      medium: '中風險',
-      high: '高風險'
+      low: '低',
+      medium: '中',
+      high: '高'
     },
     messages: {
       loginFirst: '請先登入',
@@ -411,9 +423,11 @@ const base = {
       unsubscribed: '已取消訂閱',
       unsubscribeFailed: '取消訂閱失敗',
       rated: '評分已提交',
-      rateFailed: '評分失敗',
+      rateFailed: '评分失敗',
       commentPosted: '評論已發布',
-      commentFailed: '評論失敗'
+      commentFailed: '评论失敗',
+      publishFailed: '發布失敗',
+      published: '發布成功'
     },
     detail: {
       comments: '評論',
@@ -421,7 +435,25 @@ const base = {
       commentPlaceholder: '撰寫評論...（Shift+Enter 換行）'
     },
     publishModal: {
-      symbolsPlaceholder: 'EURUSD, GBPUSD, XAUUSD'
+      symbolsPlaceholder: 'EURUSD, GBPUSD, XAUUSD',
+      strategyId: '策略ID',
+      title: '發布策略',
+      titleField: '標題',
+      titlePlaceholder: '輸入策略標題',
+      description: '描述',
+      assetClass: '资产類別',
+      riskLevel: '風險等級',
+      priceModel: '價格模式',
+      priceAmount: '價格',
+      symbols: '交易商品',
+      tags: '標籤',
+      timeframe: '時間週期',
+      submit: '發布'
+    },
+    priceModel: {
+      free: '免費',
+      subscription: '訂閱制',
+      performanceFee: '績效分成'
     }
   },
   admin: {
@@ -444,171 +476,275 @@ const base = {
     config: {
       title: 'System Configuration',
       editConfig: 'Edit Config: {{key}}',
-      configItem: 'Config Item',
-      value: 'Value',
-      description: 'Description',
-      status: 'Status',
-      toggle: 'Toggle',
-      updatedAt: 'Updated At',
-      on: 'On',
-      off: 'Off',
-      maxAccountsPerUser: 'Max Accounts Per User',
-      aiProviderCatalog: 'AI Model Provider Catalog',
-      econAIConfig: 'Economic Calendar Translation AI Config',
-      strategyHealthConfig: 'Strategy Health Grading Config',
-      provider: 'Provider',
-      modelName: 'Model Name',
-      enableToggle: 'Enable',
-      baseUrlLabel: 'Base URL (optional, custom/OpenAI compatible only)',
-      formatJson: 'Format JSON',
-      fillTemplate: 'Fill Example',
-      thresholdInfo: 'Threshold Field Description',
-      thresholdDesc: 'green_success_rate: green success rate threshold; green_max_failed_runs: max failed runs for green; yellow_success_rate: yellow success rate threshold; min_sample_size: minimum sample size.',
+      configItem: '配置項目',
+      value: '值',
+      description: '描述',
+      status: '狀態',
+      toggle: '切换',
+      updatedAt: '更新時間',
+      on: '開',
+      off: '關',
+      maxAccountsPerUser: '每用戶最大账戶數',
+      aiProviderCatalog: 'AI提供者目錄',
+      econAIConfig: '經濟日曆AI配置',
+      strategyHealthConfig: '策略健康度配置',
+      provider: '提供者',
+      modelName: '模型名稱',
+      enableToggle: '啟用',
+      baseUrlLabel: 'Base URL',
+      formatJson: '格式化JSON',
+      fillTemplate: '填入範本',
+      thresholdInfo: '閾值說明',
+      thresholdDesc: '閾值描述',
       validation: {
-        jsonEmpty: 'JSON cannot be empty',
-        jsonInvalid: 'Invalid JSON format',
-        greenSuccessRateRange: 'green_success_rate must be between 0 and 100',
-        yellowSuccessRateRange: 'yellow_success_rate must be between 0 and 100',
-        yellowNotGreaterThanGreen: 'yellow_success_rate cannot be greater than green_success_rate',
-        greenMaxFailedRunsNonNegative: 'green_max_failed_runs must be >= 0',
-        minSampleSizeNonNegative: 'min_sample_size must be >= 0',
-        apiKeyRequired: 'API Key cannot be empty',
-        modelRequired: 'Model name cannot be empty'
+        jsonEmpty: 'JSON不能為空白',
+        jsonInvalid: 'JSON格式無效',
+        greenSuccessRateRange: '绿色成功率需在0-100之間',
+        yellowSuccessRateRange: '黄色成功率需在0-100之間',
+        yellowNotGreaterThanGreen: '黄色閾值不能超過绿色閾值',
+        greenMaxFailedRunsNonNegative: '绿色最大失敗次數需≥0',
+        minSampleSizeNonNegative: '最小样本量需≥0',
+        apiKeyRequired: 'API Key不能為空白',
+        modelRequired: '模型名稱不能為空白'
       },
       messages: {
-        loadFailed: 'Failed to load configs',
-        updated: 'Config updated',
-        updateFailed: 'Update failed',
-        enabled: 'Config enabled',
-        disabled: 'Config disabled',
-        operationFailed: 'Operation failed'
+        loadFailed: '加载配置失敗',
+        updated: '配置已更新',
+        updateFailed: '更新配置失敗',
+        enabled: '已啟用',
+        disabled: '已停用',
+        operationFailed: '操作失敗'
       },
       placeholders: {
-        json: 'Enter JSON',
-        apiKey: 'Enter API Key',
-        model: 'e.g. glm-4-flash / deepseek-chat / gpt-4o-mini',
-        baseUrl: 'e.g. https://api.openai.com or self-hosted gateway',
-        configValue: 'Enter config value',
-        description: 'Enter description'
+        json: '輸入JSON',
+        apiKey: '輸入API Key',
+        model: '輸入模型名稱',
+        baseUrl: '輸入Base URL',
+        configValue: '輸入配置值',
+        description: '輸入描述'
       },
       providerOptions: {
-        zhipu: 'Zhipu',
+        zhipu: '智谱AI',
         deepseek: 'DeepSeek',
-        custom: 'Custom / OpenAI Compatible'
+        custom: '自訂'
       }
     },
     trading: {
-      title: 'Trading Monitor',
+      title: '交易監控',
       loadFailed: 'Failed to load trading statistics',
-      platform: 'Platform',
-      accounts: 'Accounts',
-      orders: 'Orders',
-      volume: 'Volume',
-      byPlatform: 'By Platform',
-      profitStats: 'P&L Statistics',
-      totalUsers: 'Total Users',
-      activeUsers: 'Active Users',
-      totalAccounts: 'Total Accounts',
-      connectedAccounts: 'Connected Accounts',
-      totalOrders: 'Total Orders',
-      closedOrders: 'Closed Orders',
-      totalVolume: 'Total Volume',
-      netProfit: 'Net P&L',
-      totalProfit: 'Total Profit',
-      totalLoss: 'Total Loss',
-      pendingOrders: 'Pending Orders'
+      platform: '平台',
+      accounts: '账戶',
+      orders: '訂單',
+      volume: '交易量',
+      byPlatform: '按平台',
+      profitStats: '盈虧統計',
+      totalUsers: '總用戶數',
+      activeUsers: '活躍用戶',
+      totalAccounts: '總账戶數',
+      connectedAccounts: '已连接',
+      totalOrders: '總訂單',
+      closedOrders: '已平倉',
+      totalVolume: '總交易量',
+      netProfit: '淨利潤',
+      totalProfit: '總盈利',
+      totalLoss: '總虧損',
+      pendingOrders: '掛單'
     },
     dashboard: {
-      title: 'Admin Dashboard',
-      loadFailed: 'Failed to load dashboard data',
-      totalUsers: 'Total Users',
-      activeUsers: 'Active Users',
-      mtAccounts: 'MT Accounts',
-      onlineAccounts: 'Online Accounts',
-      todayTrades: 'Today Trades',
-      todayProfit: 'Today P&L',
-      recentLogs: 'Recent Operation Logs',
+      title: '管理儀表板',
+      loadFailed: '加载儀表板數据失敗',
+      totalUsers: '總用戶數',
+      activeUsers: '活躍用戶',
+      mtAccounts: 'MT账戶',
+      onlineAccounts: '在線账戶',
+      todayTrades: '今日交易',
+      todayProfit: '今日盈虧',
+      recentLogs: '最近日誌',
       logs: {
-        time: 'Time',
-        module: 'Module',
-        actionType: 'Action Type',
-        target: 'Target',
-        status: 'Status',
-        success: 'Success',
-        failed: 'Failed',
+        time: '時間',
+        module: '模組',
+        actionType: '操作',
+        target: '目標',
+        status: '狀態',
+        success: '成功',
+        failed: '失敗',
         moduleMap: {
-          userManagement: 'User Management',
-          accountManagement: 'Account Management',
-          trading: 'Trading',
-          systemConfig: 'System Config'
+          userManagement: '用戶管理',
+          accountManagement: '账戶管理',
+          trading: '交易',
+          systemConfig: '系统配置'
         }
       },
       riskMetrics: {
-        title: 'Risk Control Metrics (Real-time)',
-        riskValidateTotal: 'Risk Validated Total',
-        riskValidatePass: 'Risk Validated Pass',
-        riskValidateReject: 'Risk Validated Reject',
-        riskValidateError: 'Risk Validated Error',
-        orderSendSuccess: 'Order Sent Success',
-        orderSendFailed: 'Order Sent Failed',
-        orderCloseSuccess: 'Order Closed Success',
-        orderCloseFailed: 'Order Closed Failed'
+        title: '風控指標',
+        riskValidateTotal: '總驗證數',
+        riskValidatePass: '通過',
+        riskValidateReject: '拒絕',
+        riskValidateError: '錯誤',
+        orderSendSuccess: '下單成功',
+        orderSendFailed: '下單失敗',
+        orderCloseSuccess: '平倉成功',
+        orderCloseFailed: '平倉失敗'
       },
       riskWindow: {
-        title: 'Risk Control Window Metrics (1h / 24h / 72h)',
-        validateTotal: '{{window}} Validated Total',
-        validatePass: '{{window}} Pass',
-        validateReject: '{{window}} Reject',
-        validateError: '{{window}} Error',
-        orderSendSuccess: '{{window}} Order Sent',
-        orderSendFailed: '{{window}} Order Failed',
-        orderCloseSuccess: '{{window}} Close Success',
-        orderCloseFailed: '{{window}} Close Failed',
-        rejectRiskCodesHeader: 'Top N Reject Risk Codes ({{window}})',
-        rejectCount: 'Reject Count',
-        noRejectData: 'No reject data for current window',
-        noData: 'No window metrics data'
+        title: '風控窗口',
+        validateTotal: '總计',
+        validatePass: '通過',
+        validateReject: '拒絕',
+        validateError: '錯誤',
+        orderSendSuccess: '下單成功',
+        orderSendFailed: '下單失敗',
+        orderCloseSuccess: '平倉成功',
+        orderCloseFailed: '平倉失敗',
+        rejectRiskCodesHeader: '風控代碼',
+        rejectCount: '拒絕次數',
+        noRejectData: '此時段无拒絕記錄',
+        noData: '暫無風控數据'
       }
     },
     jurisdiction: {
-      title: 'Jurisdiction Gate',
-      sanctionedCountriesTab: 'Sanctioned Countries',
-      kycStatusTab: 'User KYC Status',
-      sanctionedCountries: 'Sanctioned Countries',
-      userKYCStatus: 'User KYC Status',
-      addCountry: 'Add Country',
-      addSanctionedCountry: 'Add Sanctioned Country',
-      countryCode: 'Country Code',
-      countryLabel: 'Label',
-      addedBy: 'Added By',
-      actions: 'Actions',
-      userEmail: 'Email',
-      kycStatus: 'KYC Status',
-      country: 'Country',
-      sanctioned: 'Sanctioned',
-      disclaimer: 'Disclaimer',
-      questionnaire: 'Questionnaire',
-      override: 'Override',
-      setKYC: 'Set KYC',
-      setKYCStatus: 'Set KYC Status',
-      grantOverride: 'Grant Override',
-      revokeOverride: 'Revoke Override',
-      filterByKYCStatus: 'Filter by KYC status',
-      unverified: 'Unverified',
-      pending: 'Pending',
-      verified: 'Verified',
-      rejected: 'Rejected',
-      emptySanctions: 'No sanctioned countries configured',
-      emptyKYC: 'No users match the selected KYC filter',
+      title: '管轄权管理',
+      sanctionedCountriesTab: '制裁國家',
+      kycStatusTab: 'KYC狀態',
+      sanctionedCountries: '制裁國家',
+      userKYCStatus: '用戶KYC狀態',
+      addCountry: '新增國家',
+      addSanctionedCountry: '新增制裁國家',
+      countryCode: '國家代碼',
+      countryLabel: '國家',
+      addedBy: '新增人',
+      actions: '操作',
+      userEmail: '用戶電子郵件',
+      kycStatus: 'KYC狀態',
+      country: '國家',
+      sanctioned: '已制裁',
+      disclaimer: '免責聲明',
+      questionnaire: '問卷',
+      override: '豁免',
+      setKYC: '設定KYC',
+      setKYCStatus: '設定KYC狀態',
+      grantOverride: '授予豁免',
+      revokeOverride: '撤銷豁免',
+      filterByKYCStatus: '按KYC狀態篩選',
+      unverified: '未驗證',
+      pending: '待審核',
+      verified: '已驗證',
+      rejected: '已拒絕',
+      emptySanctions: '暫無制裁國家',
+      emptyKYC: '暫無KYC記錄',
       messages: {
-        countryAdded: 'Sanctioned country added',
-        countryAddFailed: 'Failed to add sanctioned country',
-        countryRemoved: 'Sanctioned country removed',
-        countryRemoveFailed: 'Failed to remove sanctioned country',
-        kycUpdated: 'KYC status updated',
-        kycUpdateFailed: 'Failed to update KYC status',
-        overrideUpdated: 'Sanctioned override updated',
-        overrideUpdateFailed: 'Failed to update sanctioned override'
+        countryAdded: '國家已新增',
+        countryAddFailed: '新增國家失敗',
+        countryRemoved: '國家已移除',
+        countryRemoveFailed: '移除國家失敗',
+        kycUpdated: 'KYC狀態已更新',
+        kycUpdateFailed: '更新KYC狀態失敗',
+        overrideUpdated: '豁免狀態已更新',
+        overrideUpdateFailed: '更新豁免狀態失敗'
+      },
+      overrideWarning: '该用戶來自受制裁國家，授予豁免將允許交易。',
+      confirmGrantOverride: '確認授予该用戶豁免權限？',
+      confirmRevokeOverride: '確認撤銷该用戶的豁免權限？'
+    },
+    userManagement: {
+      title: '用戶管理',
+      addUser: '新建用戶',
+      table: {
+        id: 'ID',
+        email: '電子郵件',
+        nickname: '暱稱',
+        role: '角色',
+        status: '狀態',
+        mtAccountCount: 'MT账戶數',
+        createdAt: '建立時間',
+        actions: '操作'
+      },
+      actions: {
+        details: '詳細',
+        enable: '啟用',
+        disable: '停用',
+        changePassword: '修改密碼'
+      },
+      filters: {
+        searchPlaceholder: '搜尋電子郵件或暱稱',
+        rolePlaceholder: '按角色篩選',
+        statusPlaceholder: '按狀態篩選'
+      },
+      status: {
+        active: '正常',
+        suspended: '已停用'
+      },
+      roles: {
+        user: '一般用戶',
+        superAdmin: '超級管理員',
+        operation: '營運',
+        customerService: '客服',
+        audit: '稽核'
+      },
+      pagination: {
+        total: '共 {{total}} 個用戶'
+      },
+      deleteConfirm: {
+        title: '確認刪除此用戶？此操作不可復原。'
+      },
+      modals: {
+        createTitle: '新建用戶',
+        editTitle: '編輯用戶',
+        passwordTitle: '修改密碼'
+      },
+      form: {
+        email: '電子郵件',
+        nickname: '暱稱',
+        password: '密碼',
+        role: '角色',
+        status: '狀態',
+        placeholders: {
+          email: '輸入電子郵件',
+          nickname: '輸入暱稱',
+          password: '輸入密碼'
+        }
+      },
+      passwordForm: {
+        newPassword: '新密碼',
+        confirmPassword: '確認密碼',
+        placeholders: {
+          newPassword: '輸入新密碼',
+          confirmPassword: '再次輸入新密碼'
+        },
+        submit: '更新密碼',
+        validation: {
+          newPasswordRequired: '请輸入新密碼',
+          confirmPasswordRequired: '请確認新密碼',
+          passwordMin8: '密碼至少8位元',
+          passwordMismatch: '两次密碼不一致',
+          passwordMustContainLettersAndNumbers: '密碼需包含字母和數字'
+        }
+      },
+      messages: {
+        userCreatedSuccess: '用戶建立成功',
+        userCreateFailed: '建立用戶失敗',
+        userUpdatedSuccess: '用戶更新成功',
+        userUpdateFailed: '更新用戶失敗',
+        userDeletedSuccess: '用戶已刪除',
+        userDeleteFailed: '刪除用戶失敗',
+        userEnabled: '用戶已啟用',
+        userDisabled: '用戶已停用',
+        passwordUpdatedSuccess: '密碼更新成功',
+        passwordUpdateFailed: '密碼更新失敗',
+        newPasswordIs: '新密碼为: {{password}}'
+      },
+      drawer: {
+        title: '用戶詳細',
+        labels: {
+          id: 'ID',
+          email: '電子郵件',
+          nickname: '暱稱',
+          role: '角色',
+          status: '狀態',
+          mtAccountCount: 'MT账戶數',
+          createdAt: '建立時間',
+          lastLogin: '最后登入'
+        }
       }
     }
   },
@@ -622,8 +758,8 @@ const base = {
       disabled: '已停用',
       longOnly: '僅做多',
       shortOnly: '僅做空',
-      longShort: '多空皆可',
-      unknown: '未知({{mode}})'
+      longShort: '多空雙向',
+      unknown: '未知'
     }
   }
 } as const;

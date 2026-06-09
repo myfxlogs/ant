@@ -2,8 +2,8 @@ const dashboard = {
   dashboard: {
     welcome: 'Chào mừng trở lại, {{name}}',
     subtitle: 'Xem tổng quan tài khoản của bạn',
-    templates: "Mẫu",
-    logs: "Nhật ký",
+    templates: 'Mẫu',
+    logs: 'Nhật ký',
     bindAccount: 'Liên kết tài khoản',
     accountOverview: 'Tổng quan tài khoản',
     accountList: 'Danh sách tài khoản',
@@ -15,18 +15,18 @@ const dashboard = {
       totalEquity: 'Tổng vốn',
       connected: 'Đang kết nối',
       accountCount: 'Số tài khoản',
-      totalProfit: 'Tổng lãi/lỗ thả nổi',
+      totalProfit: 'Tổng lãi/lỗ thả nổi'
     },
     fields: {
       balance: 'Số dư',
       equity: 'Vốn',
-      floating: 'Thả nổi',
+      floating: 'Thả nổi'
     },
     accountStatus: {
       disabled: 'Đã tắt',
       connected: 'Đã kết nối',
       connecting: 'Đang kết nối',
-      disconnected: 'Chưa kết nối',
+      disconnected: 'Chưa kết nối'
     },
     quickActions: {
       title: 'Thao tác nhanh',
@@ -34,12 +34,13 @@ const dashboard = {
       market: 'Thị trường',
       accounts: 'Tài khoản',
       analytics: 'Phân tích',
-    templates: "Mẫu",
-    logs: "Nhật ký",
+      templates: 'Mẫu',
+      logs: 'Nhật ký',
       bindAccount: 'Liên kết',
-      closePosition: 'Đóng lệnh',
+      closePosition: 'Đóng lệnh'
     },
-  },
+    defaultName: 'Bảng Điều Khiển'
+  }
 } as const;
 
 export default dashboard;

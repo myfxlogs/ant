@@ -92,12 +92,12 @@ const base = {
     copied: 'コピーしました',
     copyFailed: 'コピーに失敗しました',
     noData: 'データがありません',
-    totalItems: '合計 {{total}} 件',
+    totalItems: '共 {{count}} 项',
     time: {
-      minute: '分',
-      hour: '時間',
-      day: '日',
-      lessThanMinute: '< 1分'
+      minute: '{{n}}分',
+      hour: '{{n}}时',
+      day: '{{n}}天',
+      lessThanMinute: '<1分'
     },
     required: '必須',
     ok: 'OK',
@@ -109,7 +109,17 @@ const base = {
     selectSymbolToViewChart: '銘柄を選択してチャートを表示',
     currentPosition: '📊 現在のポジション',
     noOpenPositionsForSymbol: '{{symbol}} のポジションはありません',
-    indicatorSettings: '{{name}} 設定'
+    indicatorSettings: '{{name}} 設定',
+    active: '启用',
+    inactive: '停用',
+    clear: '清除',
+    saveSuccess: '保存成功',
+    remove: '移除',
+    yes: '是',
+    no: '否',
+    you: '你',
+    comingSoon: '即将上线',
+    pageUnderDevelopment: '此页面正在开发中'
   },
   language: {
     simplifiedChinese: '简体中文',
@@ -150,7 +160,9 @@ const base = {
     common: '共通',
     selectSymbol: '銘柄を選択',
     noSymbolsFound: '銘柄が見つかりません',
-    loadingSymbols: '読み込み中...'
+    loadingSymbols: '読み込み中...',
+    emptyWatchlist: '暂无自选',
+    searchSymbol: '搜索品种...'
   },
   topbar: {
     systemOk: 'システムは正常に稼働中',
@@ -256,27 +268,27 @@ const base = {
     subtitle: 'コミュニティストラテジーの発見、評価、購読',
     publish: 'ストラテジーを公開',
     tabs: {
-      marketplace: 'マーケットプレイス',
-      subscriptions: 'マイ購読'
+      marketplace: '策略市场',
+      subscriptions: '我的订阅'
     },
     searchPlaceholder: 'ストラテジーを検索...',
     filterByClass: '資産クラスで絞り込み',
     sort: {
-      newest: '最新順',
-      popular: '人気順',
-      performance: 'パフォーマンス順'
+      newest: '最新',
+      popular: '最热门',
+      performance: '最佳表现'
     },
     empty: 'まだ公開されたストラテジーはありません',
     noSubscriptions: 'まだ購読していません',
     card: {
       subscribe: '購読',
-      subscribed: '購読中',
-      unsubscribe: '購読解除',
+      subscribed: '已订阅',
+      unsubscribe: '取消订阅',
       unsubscribeHint: 'クリックして購読解除',
-      details: '詳細',
+      details: '详情',
       subscribers: '購読者',
-      winRate: '勝率',
-      by: 'by'
+      winRate: '胜率',
+      by: '发布者'
     },
     assetClass: {
       forex: '外国為替',
@@ -287,20 +299,22 @@ const base = {
       other: 'その他'
     },
     risk: {
-      low: '低リスク',
-      medium: '中リスク',
-      high: '高リスク'
+      low: '低',
+      medium: '中',
+      high: '高'
     },
     messages: {
       loginFirst: '先にログインしてください',
       subscribed: '購読しました',
-      subscribeFailed: '購読に失敗しました',
+      subscribeFailed: '订阅失败',
       unsubscribed: '購読を解除しました',
-      unsubscribeFailed: '購読解除に失敗しました',
+      unsubscribeFailed: '取消订阅失败',
       rated: '評価を送信しました',
-      rateFailed: '評価に失敗しました',
+      rateFailed: '评分失败',
       commentPosted: 'コメントを投稿しました',
-      commentFailed: 'コメント投稿に失敗しました'
+      commentFailed: '评论失败',
+      publishFailed: '发布失败',
+      published: '发布成功'
     },
     detail: {
       comments: 'コメント',
@@ -308,7 +322,25 @@ const base = {
       commentPlaceholder: 'コメントを入力...（Shift+Enterで改行）'
     },
     publishModal: {
-      symbolsPlaceholder: 'EURUSD, GBPUSD, XAUUSD'
+      symbolsPlaceholder: 'EURUSD, GBPUSD, XAUUSD',
+      strategyId: '策略ID',
+      title: '发布策略',
+      titleField: '标题',
+      titlePlaceholder: '输入策略标题',
+      description: '描述',
+      assetClass: '资产类别',
+      riskLevel: '风险等级',
+      priceModel: '价格模式',
+      priceAmount: '价格',
+      symbols: '交易品种',
+      tags: '标签',
+      timeframe: '时间周期',
+      submit: '发布'
+    },
+    priceModel: {
+      free: '免费',
+      subscription: '订阅制',
+      performanceFee: '绩效分成'
     }
   },
   admin: {
@@ -331,171 +363,275 @@ const base = {
     config: {
       title: 'System Configuration',
       editConfig: 'Edit Config: {{key}}',
-      configItem: 'Config Item',
-      value: 'Value',
-      description: 'Description',
-      status: 'Status',
-      toggle: 'Toggle',
-      updatedAt: 'Updated At',
-      on: 'On',
-      off: 'Off',
-      maxAccountsPerUser: 'Max Accounts Per User',
-      aiProviderCatalog: 'AI Model Provider Catalog',
-      econAIConfig: 'Economic Calendar Translation AI Config',
-      strategyHealthConfig: 'Strategy Health Grading Config',
-      provider: 'Provider',
-      modelName: 'Model Name',
-      enableToggle: 'Enable',
-      baseUrlLabel: 'Base URL (optional, custom/OpenAI compatible only)',
-      formatJson: 'Format JSON',
-      fillTemplate: 'Fill Example',
-      thresholdInfo: 'Threshold Field Description',
-      thresholdDesc: 'green_success_rate: green success rate threshold; green_max_failed_runs: max failed runs for green; yellow_success_rate: yellow success rate threshold; min_sample_size: minimum sample size.',
+      configItem: '配置项',
+      value: '值',
+      description: '描述',
+      status: '状态',
+      toggle: '切换',
+      updatedAt: '更新时间',
+      on: '开',
+      off: '关',
+      maxAccountsPerUser: '每用户最大账户数',
+      aiProviderCatalog: 'AI提供商目录',
+      econAIConfig: '经济日历AI配置',
+      strategyHealthConfig: '策略健康度配置',
+      provider: '提供商',
+      modelName: '模型名称',
+      enableToggle: '启用',
+      baseUrlLabel: 'Base URL',
+      formatJson: '格式化JSON',
+      fillTemplate: '填充模板',
+      thresholdInfo: '阈值说明',
+      thresholdDesc: '阈值描述',
       validation: {
-        jsonEmpty: 'JSON cannot be empty',
-        jsonInvalid: 'Invalid JSON format',
-        greenSuccessRateRange: 'green_success_rate must be between 0 and 100',
-        yellowSuccessRateRange: 'yellow_success_rate must be between 0 and 100',
-        yellowNotGreaterThanGreen: 'yellow_success_rate cannot be greater than green_success_rate',
-        greenMaxFailedRunsNonNegative: 'green_max_failed_runs must be >= 0',
-        minSampleSizeNonNegative: 'min_sample_size must be >= 0',
-        apiKeyRequired: 'API Key cannot be empty',
-        modelRequired: 'Model name cannot be empty'
+        jsonEmpty: 'JSON不能为空',
+        jsonInvalid: 'JSON格式无效',
+        greenSuccessRateRange: '绿色成功率需在0-100之间',
+        yellowSuccessRateRange: '黄色成功率需在0-100之间',
+        yellowNotGreaterThanGreen: '黄色阈值不能超过绿色阈值',
+        greenMaxFailedRunsNonNegative: '绿色最大失败次数需≥0',
+        minSampleSizeNonNegative: '最小样本量需≥0',
+        apiKeyRequired: 'API Key不能为空',
+        modelRequired: '模型名称不能为空'
       },
       messages: {
-        loadFailed: 'Failed to load configs',
-        updated: 'Config updated',
-        updateFailed: 'Update failed',
-        enabled: 'Config enabled',
-        disabled: 'Config disabled',
-        operationFailed: 'Operation failed'
+        loadFailed: '加载配置失败',
+        updated: '配置已更新',
+        updateFailed: '更新配置失败',
+        enabled: '已启用',
+        disabled: '已禁用',
+        operationFailed: '操作失败'
       },
       placeholders: {
-        json: 'Enter JSON',
-        apiKey: 'Enter API Key',
-        model: 'e.g. glm-4-flash / deepseek-chat / gpt-4o-mini',
-        baseUrl: 'e.g. https://api.openai.com or self-hosted gateway',
-        configValue: 'Enter config value',
-        description: 'Enter description'
+        json: '输入JSON',
+        apiKey: '输入API Key',
+        model: '输入模型名称',
+        baseUrl: '输入Base URL',
+        configValue: '输入配置值',
+        description: '输入描述'
       },
       providerOptions: {
-        zhipu: 'Zhipu',
+        zhipu: '智谱AI',
         deepseek: 'DeepSeek',
-        custom: 'Custom / OpenAI Compatible'
+        custom: '自定义'
       }
     },
     trading: {
-      title: 'Trading Monitor',
+      title: '取引監視',
       loadFailed: 'Failed to load trading statistics',
-      platform: 'Platform',
-      accounts: 'Accounts',
-      orders: 'Orders',
-      volume: 'Volume',
-      byPlatform: 'By Platform',
-      profitStats: 'P&L Statistics',
-      totalUsers: 'Total Users',
-      activeUsers: 'Active Users',
-      totalAccounts: 'Total Accounts',
-      connectedAccounts: 'Connected Accounts',
-      totalOrders: 'Total Orders',
-      closedOrders: 'Closed Orders',
-      totalVolume: 'Total Volume',
-      netProfit: 'Net P&L',
-      totalProfit: 'Total Profit',
-      totalLoss: 'Total Loss',
-      pendingOrders: 'Pending Orders'
+      platform: 'プラットフォーム',
+      accounts: 'アカウント',
+      orders: '注文',
+      volume: '取引量',
+      byPlatform: 'プラットフォーム別',
+      profitStats: '損益統計',
+      totalUsers: '総ユーザー数',
+      activeUsers: 'アクティブユーザー',
+      totalAccounts: '総アカウント数',
+      connectedAccounts: '接続済み',
+      totalOrders: '総注文数',
+      closedOrders: '決済済み',
+      totalVolume: '総取引量',
+      netProfit: '純利益',
+      totalProfit: '総利益',
+      totalLoss: '総損失',
+      pendingOrders: '保留中注文'
     },
     dashboard: {
-      title: 'Admin Dashboard',
-      loadFailed: 'Failed to load dashboard data',
-      totalUsers: 'Total Users',
-      activeUsers: 'Active Users',
-      mtAccounts: 'MT Accounts',
-      onlineAccounts: 'Online Accounts',
-      todayTrades: 'Today Trades',
-      todayProfit: 'Today P&L',
-      recentLogs: 'Recent Operation Logs',
+      title: '管理ダッシュボード',
+      loadFailed: 'ダッシュボードデータの読み込みに失敗しました',
+      totalUsers: '総ユーザー数',
+      activeUsers: 'アクティブユーザー',
+      mtAccounts: 'MTアカウント',
+      onlineAccounts: 'オンラインアカウント',
+      todayTrades: '本日の取引',
+      todayProfit: '本日の損益',
+      recentLogs: '最近のログ',
       logs: {
-        time: 'Time',
-        module: 'Module',
-        actionType: 'Action Type',
-        target: 'Target',
-        status: 'Status',
-        success: 'Success',
-        failed: 'Failed',
+        time: '時間',
+        module: 'モジュール',
+        actionType: 'アクション',
+        target: '対象',
+        status: 'ステータス',
+        success: '成功',
+        failed: '失敗',
         moduleMap: {
-          userManagement: 'User Management',
-          accountManagement: 'Account Management',
-          trading: 'Trading',
-          systemConfig: 'System Config'
+          userManagement: 'ユーザー管理',
+          accountManagement: 'アカウント管理',
+          trading: '取引',
+          systemConfig: 'システム設定'
         }
       },
       riskMetrics: {
-        title: 'Risk Control Metrics (Real-time)',
-        riskValidateTotal: 'Risk Validated Total',
-        riskValidatePass: 'Risk Validated Pass',
-        riskValidateReject: 'Risk Validated Reject',
-        riskValidateError: 'Risk Validated Error',
-        orderSendSuccess: 'Order Sent Success',
-        orderSendFailed: 'Order Sent Failed',
-        orderCloseSuccess: 'Order Closed Success',
-        orderCloseFailed: 'Order Closed Failed'
+        title: 'リスク検証指標',
+        riskValidateTotal: '検証総数',
+        riskValidatePass: '通過',
+        riskValidateReject: '拒否',
+        riskValidateError: 'エラー',
+        orderSendSuccess: '注文成功',
+        orderSendFailed: '注文失敗',
+        orderCloseSuccess: '決済成功',
+        orderCloseFailed: '決済失敗'
       },
       riskWindow: {
-        title: 'Risk Control Window Metrics (1h / 24h / 72h)',
-        validateTotal: '{{window}} Validated Total',
-        validatePass: '{{window}} Pass',
-        validateReject: '{{window}} Reject',
-        validateError: '{{window}} Error',
-        orderSendSuccess: '{{window}} Order Sent',
-        orderSendFailed: '{{window}} Order Failed',
-        orderCloseSuccess: '{{window}} Close Success',
-        orderCloseFailed: '{{window}} Close Failed',
-        rejectRiskCodesHeader: 'Top N Reject Risk Codes ({{window}})',
-        rejectCount: 'Reject Count',
-        noRejectData: 'No reject data for current window',
-        noData: 'No window metrics data'
+        title: 'リスク管理ウィンドウ',
+        validateTotal: '合計',
+        validatePass: '通過',
+        validateReject: '拒否',
+        validateError: 'エラー',
+        orderSendSuccess: '注文OK',
+        orderSendFailed: '注文失敗',
+        orderCloseSuccess: '決済OK',
+        orderCloseFailed: '決済失敗',
+        rejectRiskCodesHeader: 'リスクコード',
+        rejectCount: '拒否数',
+        noRejectData: 'この期間に拒否はありません',
+        noData: 'リスクデータなし'
       }
     },
     jurisdiction: {
-      title: 'Jurisdiction Gate',
-      sanctionedCountriesTab: 'Sanctioned Countries',
-      kycStatusTab: 'User KYC Status',
-      sanctionedCountries: 'Sanctioned Countries',
-      userKYCStatus: 'User KYC Status',
-      addCountry: 'Add Country',
-      addSanctionedCountry: 'Add Sanctioned Country',
-      countryCode: 'Country Code',
-      countryLabel: 'Label',
-      addedBy: 'Added By',
-      actions: 'Actions',
-      userEmail: 'Email',
-      kycStatus: 'KYC Status',
-      country: 'Country',
-      sanctioned: 'Sanctioned',
-      disclaimer: 'Disclaimer',
-      questionnaire: 'Questionnaire',
-      override: 'Override',
-      setKYC: 'Set KYC',
-      setKYCStatus: 'Set KYC Status',
-      grantOverride: 'Grant Override',
-      revokeOverride: 'Revoke Override',
-      filterByKYCStatus: 'Filter by KYC status',
-      unverified: 'Unverified',
-      pending: 'Pending',
-      verified: 'Verified',
-      rejected: 'Rejected',
-      emptySanctions: 'No sanctioned countries configured',
-      emptyKYC: 'No users match the selected KYC filter',
+      title: '管轄権管理',
+      sanctionedCountriesTab: '制裁対象国',
+      kycStatusTab: 'KYCステータス',
+      sanctionedCountries: '制裁対象国',
+      userKYCStatus: 'ユーザーKYCステータス',
+      addCountry: '国を追加',
+      addSanctionedCountry: '制裁国を追加',
+      countryCode: '国コード',
+      countryLabel: '国',
+      addedBy: '追加者',
+      actions: '操作',
+      userEmail: 'ユーザーメール',
+      kycStatus: 'KYCステータス',
+      country: '国',
+      sanctioned: '制裁済み',
+      disclaimer: '免責事項',
+      questionnaire: 'アンケート',
+      override: '上書き',
+      setKYC: 'KYC設定',
+      setKYCStatus: 'KYCステータス設定',
+      grantOverride: '上書き許可',
+      revokeOverride: '上書き取消',
+      filterByKYCStatus: 'KYCステータスでフィルター',
+      unverified: '未確認',
+      pending: '保留中',
+      verified: '確認済み',
+      rejected: '拒否',
+      emptySanctions: '制裁国はありません',
+      emptyKYC: 'KYCレコードがありません',
       messages: {
-        countryAdded: 'Sanctioned country added',
-        countryAddFailed: 'Failed to add sanctioned country',
-        countryRemoved: 'Sanctioned country removed',
-        countryRemoveFailed: 'Failed to remove sanctioned country',
-        kycUpdated: 'KYC status updated',
-        kycUpdateFailed: 'Failed to update KYC status',
-        overrideUpdated: 'Sanctioned override updated',
-        overrideUpdateFailed: 'Failed to update sanctioned override'
+        countryAdded: '国を追加しました',
+        countryAddFailed: '国の追加に失敗しました',
+        countryRemoved: '国を削除しました',
+        countryRemoveFailed: '国の削除に失敗しました',
+        kycUpdated: 'KYCステータスを更新しました',
+        kycUpdateFailed: 'KYCステータス更新に失敗しました',
+        overrideUpdated: '上書き設定を更新しました',
+        overrideUpdateFailed: '上書き設定更新に失敗しました'
+      },
+      overrideWarning: 'このユーザーは制裁対象国からのアクセスです。上書き許可で取引が可能になります。',
+      confirmGrantOverride: 'このユーザーに上書き許可を付与しますか？',
+      confirmRevokeOverride: 'このユーザーの上書き許可を取り消しますか？'
+    },
+    userManagement: {
+      title: 'ユーザー管理',
+      addUser: 'ユーザー追加',
+      table: {
+        id: 'ID',
+        email: 'メール',
+        nickname: 'ニックネーム',
+        role: '役割',
+        status: 'ステータス',
+        mtAccountCount: 'MTアカウント',
+        createdAt: '作成日時',
+        actions: '操作'
+      },
+      actions: {
+        details: '詳細',
+        enable: '有効化',
+        disable: '無効化',
+        changePassword: 'パスワード変更'
+      },
+      filters: {
+        searchPlaceholder: 'メールまたは名前で検索',
+        rolePlaceholder: '役割でフィルター',
+        statusPlaceholder: 'ステータスでフィルター'
+      },
+      status: {
+        active: 'アクティブ',
+        suspended: '停止中'
+      },
+      roles: {
+        user: 'ユーザー',
+        superAdmin: 'スーパー管理者',
+        operation: '運用',
+        customerService: 'カスタマーサポート',
+        audit: '監査'
+      },
+      pagination: {
+        total: '合計 {{total}} ユーザー'
+      },
+      deleteConfirm: {
+        title: 'このユーザーを削除しますか？この操作は元に戻せません。'
+      },
+      modals: {
+        createTitle: 'ユーザー作成',
+        editTitle: 'ユーザー編集',
+        passwordTitle: 'パスワード変更'
+      },
+      form: {
+        email: 'メール',
+        nickname: 'ニックネーム',
+        password: 'パスワード',
+        role: '役割',
+        status: 'ステータス',
+        placeholders: {
+          email: 'メールを入力',
+          nickname: 'ニックネームを入力',
+          password: 'パスワードを入力'
+        }
+      },
+      passwordForm: {
+        newPassword: '新しいパスワード',
+        confirmPassword: 'パスワード確認',
+        placeholders: {
+          newPassword: '新しいパスワードを入力',
+          confirmPassword: '新しいパスワードを再入力'
+        },
+        submit: 'パスワード更新',
+        validation: {
+          newPasswordRequired: '新しいパスワードが必要です',
+          confirmPasswordRequired: 'パスワード確認が必要です',
+          passwordMin8: 'パスワードは8文字以上必要です',
+          passwordMismatch: 'パスワードが一致しません',
+          passwordMustContainLettersAndNumbers: 'パスワードには英字と数字の両方を含める必要があります'
+        }
+      },
+      messages: {
+        userCreatedSuccess: 'ユーザーを作成しました',
+        userCreateFailed: 'ユーザー作成に失敗しました',
+        userUpdatedSuccess: 'ユーザーを更新しました',
+        userUpdateFailed: 'ユーザー更新に失敗しました',
+        userDeletedSuccess: 'ユーザーを削除しました',
+        userDeleteFailed: 'ユーザー削除に失敗しました',
+        userEnabled: 'ユーザーを有効化しました',
+        userDisabled: 'ユーザーを無効化しました',
+        passwordUpdatedSuccess: 'パスワードを更新しました',
+        passwordUpdateFailed: 'パスワード更新に失敗しました',
+        newPasswordIs: '新しいパスワード: {{password}}'
+      },
+      drawer: {
+        title: 'ユーザー詳細',
+        labels: {
+          id: 'ID',
+          email: 'メール',
+          nickname: 'ニックネーム',
+          role: '役割',
+          status: 'ステータス',
+          mtAccountCount: 'MTアカウント',
+          createdAt: '作成日時',
+          lastLogin: '最終ログイン'
+        }
       }
     }
   },
@@ -506,11 +642,11 @@ const base = {
     unresolvedTooltip: '取引口座が未バインドのため、解決できません',
     resolvedTooltip: 'ブローカー：{{broker}} | モード：{{mode}}',
     tradeMode: {
-      disabled: '無効',
-      longOnly: '買いのみ',
-      shortOnly: '売りのみ',
-      longShort: '両建て可',
-      unknown: '不明（{{mode}}）'
+      disabled: '已禁用',
+      longOnly: '仅做多',
+      shortOnly: '仅做空',
+      longShort: '多空双向',
+      unknown: '未知'
     }
   }
 } as const;

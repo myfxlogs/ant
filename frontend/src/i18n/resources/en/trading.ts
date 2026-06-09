@@ -32,53 +32,53 @@ const trading = {
       errors: {
         RISK_ACCOUNT_TRADE_DISABLED: {
           title: 'Trading is disabled for this account.',
-          action: 'Check account status and permissions, then try again.',
+          action: 'Check account status and permissions, then try again.'
         },
         RISK_SYMBOL_TRADE_DISABLED: {
           title: 'This symbol is currently not tradable.',
-          action: 'Switch to a tradable symbol or try later.',
+          action: 'Switch to a tradable symbol or try later.'
         },
         RISK_MARKET_SESSION_CLOSED: {
           title: 'Market is closed for this symbol.',
-          action: 'Wait for the next trading session and retry.',
+          action: 'Wait for the next trading session and retry.'
         },
         RISK_VOLUME_INVALID: {
           title: 'Order volume is invalid.',
-          action: 'Adjust volume to match min/max/step requirements.',
+          action: 'Adjust volume to match min/max/step requirements.'
         },
         RISK_ORDER_TYPE_UNSUPPORTED: {
           title: 'This order type is not supported for the symbol.',
-          action: 'Choose a supported order type and retry.',
+          action: 'Choose a supported order type and retry.'
         },
         RISK_STOP_DISTANCE_TOO_CLOSE: {
           title: 'Stop-loss or take-profit is too close to market price.',
-          action: 'Increase SL/TP distance and retry.',
+          action: 'Increase SL/TP distance and retry.'
         },
         RISK_ORDER_FROZEN_ZONE: {
           title: 'Order cannot be modified in the freeze zone.',
-          action: 'Wait until price moves away from freeze distance, then retry.',
+          action: 'Wait until price moves away from freeze distance, then retry.'
         },
         RISK_MARGIN_INSUFFICIENT: {
           title: 'Insufficient free margin to place this order.',
-          action: 'Reduce volume, close positions, or add funds.',
+          action: 'Reduce volume, close positions, or add funds.'
         },
         RISK_MAX_OPEN_POSITIONS_EXCEEDED: {
           title: 'Maximum open positions limit reached.',
-          action: 'Close existing positions or raise the limit.',
+          action: 'Close existing positions or raise the limit.'
         },
         RISK_MAX_PENDING_ORDERS_EXCEEDED: {
           title: 'Maximum pending orders limit reached.',
-          action: 'Cancel existing pending orders or raise the limit.',
+          action: 'Cancel existing pending orders or raise the limit.'
         },
         RISK_INTERNAL_RULE_UNAVAILABLE: {
           title: 'Risk rules are temporarily unavailable.',
-          action: 'Retry later; contact support if the issue persists.',
+          action: 'Retry later; contact support if the issue persists.'
         },
         unknown: {
           title: 'Trade request was rejected.',
-          action: 'Please review order parameters and try again.',
-        },
-      },
+          action: 'Please review order parameters and try again.'
+        }
+      }
     },
     messages: {
       fetchPositionsFailed: 'Failed to load positions',
@@ -89,7 +89,7 @@ const trading = {
       orderCloseSuccess: 'Position closed successfully',
       orderCloseFailed: 'Failed to close position',
       fetchPendingOrdersFailed: 'Failed to load pending orders',
-      fetchOrderHistoryFailed: 'Failed to load order history',
+      fetchOrderHistoryFailed: 'Failed to load order history'
     },
     riskConfig: {
       fields: {
@@ -99,14 +99,14 @@ const trading = {
         maxPositions: 'Max Open Positions',
         maxLotSize: 'Max Lot Size',
         trailingStopEnabled: 'Trailing Stop',
-        trailingStopPips: 'Trailing Stop (pips)',
+        trailingStopPips: 'Trailing Stop (pips)'
       },
       confirm: {
         title: 'Confirm Risk Settings',
         confirmText: 'Save',
         description: 'Please confirm the following risk settings:',
-        info: 'After saving, all auto trading will follow the new risk limits.',
-      },
+        info: 'After saving, all auto trading will follow the new risk limits.'
+      }
     },
     strategyExecute: {
       confirm: {
@@ -119,8 +119,8 @@ const trading = {
         action: 'Side',
         buy: 'Buy',
         sell: 'Sell',
-        volume: 'Volume',
-      },
+        volume: 'Volume'
+      }
     },
     autoTrade: {
       confirm: {
@@ -136,8 +136,8 @@ const trading = {
         enableBullet3: 'You can disable auto trading at any time.',
         disableInfoTitle: 'Disable auto trading',
         disableInfoDescription: 'Auto trading will stop placing new orders.',
-        disableQuestion: 'Are you sure you want to disable auto trading?',
-      },
+        disableQuestion: 'Are you sure you want to disable auto trading?'
+      }
     },
     pnl: 'P&L',
     profit: 'Profit',
@@ -155,7 +155,60 @@ const trading = {
     openPositionsTitle: 'Open Positions',
     closePositionTitle: 'Close Position',
     recentTrades: 'Recent Trades',
+    selectSymbol: 'Select a symbol'
   },
+  algo: {
+    submitForm: {
+      title: 'Launch Algo'
+    },
+    actions: {
+      start: 'Start',
+      cancel: 'Cancel'
+    },
+    fields: {
+      algo: 'Algorithm',
+      symbol: 'Symbol',
+      side: 'Side',
+      volume: 'Volume',
+      limitPrice: 'Limit Price',
+      account: 'Account',
+      timeRange: 'Time Range',
+      urgency: 'Urgency',
+      sliceInterval: 'Slice Interval',
+      participationRate: 'Participation Rate'
+    },
+    side: {
+      buy: 'Buy',
+      sell: 'Sell'
+    },
+    info: {
+      name: 'Name',
+      description: 'Description'
+    },
+    messages: {
+      started: 'Algo started'
+    },
+    timePresets: {
+      '1h': '1 Hour',
+      '4h': '4 Hours',
+      EOD: 'End of Day'
+    },
+    dashboard: {
+      title: 'Algo Dashboard',
+      activeExecutions: 'Active Executions',
+      noActive: 'No active algo executions'
+    },
+    table: {
+      executionId: 'Execution ID',
+      algo: 'Algorithm',
+      symbol: 'Symbol',
+      side: 'Side',
+      volume: 'Volume',
+      progress: 'Progress',
+      state: 'State',
+      actions: 'Actions'
+    }
+  }
 } as const;
 
 export default trading;

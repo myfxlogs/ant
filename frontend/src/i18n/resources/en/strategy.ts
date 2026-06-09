@@ -4,7 +4,7 @@ const strategy = {
       title: 'Templates',
       tabs: {
         system: 'System templates',
-        user: 'User templates',
+        user: 'User templates'
       },
       table: {
         name: 'Name',
@@ -18,18 +18,18 @@ const strategy = {
         actions: 'Actions',
         loadingDefault: 'Loading default templates...',
         defaultHint: 'Default',
-        emptyUser: 'No user templates yet. Click "Create Template" above to get started.',
+        emptyUser: 'No user templates yet. Click "Create Template" above to get started.'
       },
       badges: {
-        preset: 'Preset',
+        preset: 'Preset'
       },
       visibility: {
         public: 'Public',
-        private: 'Private',
+        private: 'Private'
       },
       status: {
         draft: 'Draft',
-        published: 'Published',
+        published: 'Published'
       },
       actions: {
         create: 'New Template',
@@ -39,7 +39,7 @@ const strategy = {
         viewCode: 'View code',
         copy: 'Copy',
         launchSchedule: 'Launch schedule',
-        createTemplate: 'Create template',
+        createTemplate: 'Create template'
       },
       copySuffix: ' (copy)',
       deleteConfirm: 'Delete this template?',
@@ -56,6 +56,9 @@ const strategy = {
           publishTemplate: 'Publish template',
           createScheduleNoEnable: 'Create schedule',
           createAndEnable: 'Create & enable',
+          create: 'Create Schedule',
+          addAccount: 'Add Account',
+          updateTradingPassword: 'Update Trading Password'
         },
         metrics: {
           totalReturn: 'Total return',
@@ -63,44 +66,92 @@ const strategy = {
           maxDrawdown: 'Max drawdown',
           sharpe: 'Sharpe ratio',
           winRate: 'Win rate',
-          totalTrades: 'Total trades',
+          totalTrades: 'Total trades'
         },
+        form: {
+          account: 'Account',
+          accountPlaceholder: 'Select account',
+          scheduleName: 'Schedule Name',
+          scheduleNamePlaceholder: 'Enter schedule name',
+          scheduleNameMax: 'Max 64 characters',
+          scheduleType: 'Schedule Type',
+          scheduleTypes: {
+            interval: 'Interval',
+            hfQuote: 'High-Freq Quote',
+            klineClose: 'K-line Close'
+          },
+          intervalMs: 'Interval (ms)',
+          intervalMsTip: 'Minimum 1000ms for non-HF modes',
+          hfCooldownMs: 'HF Cooldown (ms)',
+          hfCooldownMsTip: 'Cooldown between quote-driven executions',
+          symbol: 'Symbol',
+          symbolPlaceholder: 'Select symbol',
+          symbolPlaceholderEmpty: 'No symbols configured',
+          timeframe: 'Timeframe',
+          defaultVolume: 'Default Volume (lots)',
+          defaultVolumeTip: 'Default order volume per signal',
+          enableAfterCreate: 'Enable after creation',
+          riskSection: 'Risk Controls',
+          maxDrawdownPct: 'Max Drawdown %',
+          maxDrawdownPctTip: 'Auto-stop if drawdown exceeds this threshold',
+          maxPositions: 'Max Positions',
+          maxPositionsTip: 'Maximum concurrent open positions',
+          stopLossOffset: 'Stop Loss Offset',
+          stopLossOffsetTip: 'SL offset from entry price (pips)',
+          takeProfitOffset: 'Take Profit Offset',
+          takeProfitOffsetTip: 'TP offset from entry price (pips)',
+          strategyParamsSection: 'Strategy Parameters',
+          investorTag: 'Investor (Read-only)'
+        },
+        noAccountTitle: 'No Account',
+        noAccountBody: 'You need to bind an MT account before launching a schedule.',
+        investorWarningTitle: 'Investor Account',
+        investorWarningBody: 'This account is in investor (read-only) mode. You need trading permission to launch schedules.',
+        errorInvestorAccount: 'Cannot launch schedule with investor-only account. Update trading password to enable trading.',
+        verifyingPermission: 'Verifying trading permission...',
+        tradePermissionOk: 'Trading permission verified',
+        updatePasswordTitle: 'Update Trading Password',
+        updatePasswordHint: 'Enter the trading password for this account to enable trading.',
+        updatePasswordOk: 'Trading password updated',
+        updatePasswordFailed: 'Failed to update trading password',
+        updatePasswordStillInvestor: 'Password update succeeded but account still in investor mode. Contact support.',
+        newPasswordPlaceholder: 'Enter new trading password'
       },
       editTemplateModal: {
         title: {
           edit: 'Edit template',
-          create: 'Create template',
+          create: 'Create template'
         },
         actions: {
-          validateCode: 'Validate code',
+          validateCode: 'Validate code'
         },
         fields: {
           name: 'Name',
           description: 'Description',
           code: 'Code',
-          publicShare: 'Public',
+          publicShare: 'Public'
         },
         validation: {
           nameRequired: 'Name is required',
-          codeRequired: 'Code is required',
+          codeRequired: 'Code is required'
         },
         placeholders: {
           name: 'Enter name',
           description: 'Enter description',
-          codeSample: 'Paste strategy code here',
-        },
+          codeSample: 'Paste strategy code here'
+        }
       },
       codeModal: {
         title: 'Strategy code',
         actions: {
-          copy: 'Copy',
-        },
+          copy: 'Copy'
+        }
       },
       backtest: {
         title: 'Backtest',
         modalTitleWithName: 'Backtest: {{name}}',
         parameters: {
-          title: 'Strategy Parameters',
+          title: 'Strategy Parameters'
         },
         fields: {
           title: 'Title',
@@ -109,23 +160,23 @@ const strategy = {
           timeframe: 'Timeframe',
           initialCapital: 'Initial capital',
           range: 'Range',
-          extraSymbols: 'Extra symbols (multi-select)',
+          extraSymbols: 'Extra symbols (multi-select)'
         },
         validation: {
           accountRequired: 'Account is required',
           symbolRequired: 'Symbol is required',
           timeframeRequired: 'Timeframe is required',
           initialCapitalRequired: 'Initial capital is required',
-          rangeRequired: 'Range is required',
+          rangeRequired: 'Range is required'
         },
         placeholders: {
           account: 'Select an account',
           symbol: 'Select a symbol',
           range: 'Select range',
-          extraSymbols: 'Optional, useful for pairs/rotation strategies',
+          extraSymbols: 'Optional, useful for pairs/rotation strategies'
         },
         tooltips: {
-          extraSymbols: 'Additional symbols to fetch K-lines for (same account, same timeframe). Strategy can access them via context["closes_by_symbol"].',
+          extraSymbols: 'Additional symbols to fetch K-lines for (same account, same timeframe). Strategy can access them via context["closes_by_symbol"].'
         },
         accountDisabledSuffix: ' (disabled)',
         quickRange: {
@@ -133,8 +184,8 @@ const strategy = {
           '3d': '3D',
           '1w': '1W',
           '1y': '1Y',
-          custom: 'Custom',
-        },
+          custom: 'Custom'
+        }
       },
       messages: {
         deepLinkNavigate: 'Opened template and latest run details from external link',
@@ -144,7 +195,6 @@ const strategy = {
         scheduleCreatedAndEnabled: 'Schedule created and enabled',
         scheduleCreated: 'Schedule created',
         createScheduleFailed: 'Failed to create schedule',
-
         templatePublished: 'Template published',
         cannotPublishAndCreateDraftFailed: 'Unable to publish. Draft creation failed.',
         republishedButNoTemplateId: 'Republished, but template id is missing.',
@@ -155,7 +205,6 @@ const strategy = {
         templateAlreadyPublished: 'Template already published',
         templateNotDraftUnknownPublishStatus: 'Template is not a draft. Unknown publish status.',
         publishFailed: 'Publish failed',
-
         fetchTemplateListFailed: 'Failed to load template list',
         enterStrategyCode: 'Please enter strategy code',
         codeValidationPassed: 'Code validation passed',
@@ -165,7 +214,6 @@ const strategy = {
         templateCreated: 'Template created',
         templateDeleted: 'Template deleted',
         readStrategyCodeFailed: 'Failed to read strategy code',
-
         strategyCodeEmptyCannotBacktest: 'Strategy code is empty. Cannot backtest.',
         selectBacktestRange: 'Please select backtest range',
         backtestRangeInvalid: 'Invalid backtest range',
@@ -178,6 +226,8 @@ const strategy = {
         backtestRunNoPublishedTemplate: 'Backtest run has no published template',
         codeCopied: 'Code copied',
         copyFailed: 'Copy failed',
+        strategyCodeEmptyCannotPublish: 'Strategy code is empty. Please save your code before publishing.',
+        systemTemplateReadOnly: 'System templates are read-only. Clone to edit.'
       },
       backtestRuns: {
         title: 'Backtest runs',
@@ -188,12 +238,12 @@ const strategy = {
           symbol: 'Symbol',
           timeframe: 'Timeframe',
           createdAt: 'Created at',
-          actions: 'Actions',
+          actions: 'Actions'
         },
         actions: {
           view: 'View',
           launchSchedule: 'View score',
-          createSchedule: 'Create schedule',
+          createSchedule: 'Create schedule'
         },
         deleteConfirm: 'Delete this run?',
         status: {
@@ -202,27 +252,27 @@ const strategy = {
           completed: 'Completed',
           failed: 'Failed',
           canceling: 'Canceling',
-          canceled: 'Canceled',
-        },
-      },
+          canceled: 'Canceled'
+        }
+      }
     },
     defaultTemplates: {
       maCross: {
         name: 'Dual MA Crossover Strategy',
-        description: 'Buy when fast MA crosses above slow MA, sell when it crosses below',
+        description: 'Buy when fast MA crosses above slow MA, sell when it crosses below'
       },
       forceBuy: {
         name: 'Force BUY Test',
-        description: 'For verifying the order pipeline: always returns buy on each execution, reads lot from context/params as volume',
+        description: 'For verifying the order pipeline: always returns buy on each execution, reads lot from context/params as volume'
       },
       rsi: {
         name: 'RSI Overbought/Oversold Strategy',
-        description: 'Buy when RSI < 30 (oversold), sell when RSI > 70 (overbought)',
+        description: 'Buy when RSI < 30 (oversold), sell when RSI > 70 (overbought)'
       },
       macd: {
         name: 'MACD Strategy',
-        description: 'Buy on MACD golden cross, sell on death cross',
-      },
+        description: 'Buy on MACD golden cross, sell on death cross'
+      }
     },
     validation: {
       passed: 'Validation passed',
@@ -231,8 +281,8 @@ const strategy = {
         title: 'Risk Assessment',
         riskHigh: 'Risk level: high',
         riskUnreliable: 'Risk assessment: unreliable (isReliable=false)',
-        riskLoading: 'Backend risk assessment is still calculating',
-      },
+        riskLoading: 'Backend risk assessment is still calculating'
+      }
     },
     codeEditor: {
       title: 'Strategy editor',
@@ -241,7 +291,7 @@ const strategy = {
         account: 'Account',
         symbol: 'Symbol',
         timeframe: 'Timeframe',
-        disabledSuffix: ' (disabled)',
+        disabledSuffix: ' (disabled)'
       },
       actions: {
         copy: 'Copy',
@@ -250,7 +300,7 @@ const strategy = {
         saveAsTemplate: 'Save as template',
         sendToAI: 'Send to AI',
         sendToAIFixTitleValidate: 'Fix validation issues',
-        sendToAIFixTitlePreview: 'Fix preview issues',
+        sendToAIFixTitlePreview: 'Fix preview issues'
       },
       placeholders: {
         code: 'Paste strategy code here',
@@ -258,14 +308,14 @@ const strategy = {
         selectAccountFirst: 'Select an account first',
         loadingSymbols: 'Loading symbols...',
         selectSymbol: 'Select a symbol',
-        noSymbols: 'No symbols available',
+        noSymbols: 'No symbols available'
       },
       hints: {
-        previewInfo: 'Preview will execute with sample market data.',
+        previewInfo: 'Preview will execute with sample market data.'
       },
       cards: {
         validationResult: 'Validation result',
-        previewResult: 'Preview result',
+        previewResult: 'Preview result'
       },
       messages: {
         enterCode: 'Please enter strategy code',
@@ -279,28 +329,28 @@ const strategy = {
         execFailed: 'Execution failed',
         savedAsTemplate: 'Saved as template',
         copied: 'Copied',
-        copyFailed: 'Copy failed',
+        copyFailed: 'Copy failed'
       },
       aiPrompt: {
         intro: 'Please help fix the strategy based on the following issues:',
         problem: 'Problem',
         currentCodeTitle: 'Current code',
-        pythonFenceStart: '```python',
-        fenceEnd: '```',
+        pythonFenceStart: '\`\`\`python',
+        fenceEnd: '\`\`\`',
         outputTitle: 'Output fixed code',
-        outro: 'Return only the fixed code wrapped in ```python```.',
-      },
+        outro: 'Return only the fixed code wrapped in \`\`\`python\`\`\`.'
+      }
     },
     templateModal: {
       title: 'Save as template',
       fields: {
         name: 'Name',
-        description: 'Description',
+        description: 'Description'
       },
       placeholders: {
         name: 'Enter template name',
-        description: 'Enter description',
-      },
+        description: 'Enter description'
+      }
     },
     backtestRun: {
       title: 'Backtest run',
@@ -311,19 +361,21 @@ const strategy = {
         failed: 'Failed',
         canceling: 'Canceling',
         canceled: 'Canceled',
-        ended: 'Ended',
+        ended: 'Ended'
       },
       actions: {
-        cancel: 'Cancel',
+        cancel: 'Cancel'
       },
       hints: {
         queued: 'Backtest is queued',
         running: 'Backtest is running',
-        canceling: 'Canceling backtest',
+        canceling: 'Canceling backtest'
       },
       fields: {
         status: 'Status',
         error: 'Error',
+        maxDrawdown: 'Max Drawdown',
+        sharpe: 'Sharpe'
       },
       metrics: {
         totalReturn: 'Total return',
@@ -332,7 +384,7 @@ const strategy = {
         sharpe: 'Sharpe ratio',
         winRate: 'Win rate',
         totalTrades: 'Total trades',
-        equityCurvePoints: 'Equity curve points',
+        equityCurvePoints: 'Equity curve points'
       },
       trades: {
         title: 'Order details',
@@ -356,28 +408,28 @@ const strategy = {
           tp: 'Take profit',
           margin_call: 'Margin call',
           expired: 'Expired',
-          end_of_test: 'End of test',
+          end_of_test: 'End of test'
         },
-        summary: '{{count}} trades · {{wins}} wins / {{losses}} losses · net P&L {{pnl}}',
-      },
+        summary: '{{count}} trades · {{wins}} wins / {{losses}} losses · net P&L {{pnl}}'
+      }
     },
     scheduleLogs: {
       title: 'Schedule logs',
       titleWithName: 'Schedule logs: {{name}}',
       messages: {
-        missingScheduleId: 'Missing schedule ID',
+        missingScheduleId: 'Missing schedule ID'
       },
       execStatus: {
         pending: 'Pending',
         running: 'Running',
         completed: 'Completed',
         failed: 'Failed',
-        skipped: 'Skipped',
+        skipped: 'Skipped'
       },
       operationStatus: {
         success: 'Success',
         failed: 'Failed',
-        running: 'Running',
+        running: 'Running'
       },
       execTable: {
         time: 'Time',
@@ -385,7 +437,7 @@ const strategy = {
         execute: 'Execute',
         status: 'Status',
         durationMs: 'Duration (ms)',
-        error: 'Error',
+        error: 'Error'
       },
       ordersTable: {
         time: 'Time',
@@ -395,7 +447,7 @@ const strategy = {
         openPrice: 'Open price',
         closePrice: 'Close price',
         profit: 'P/L',
-        ticket: 'Ticket',
+        ticket: 'Ticket'
       },
       orderSide: {
         buy: 'Market buy',
@@ -406,7 +458,7 @@ const strategy = {
         buyStop: 'Buy stop',
         sellStop: 'Sell stop',
         buyStopLimit: 'Buy stop limit',
-        sellStopLimit: 'Sell stop limit',
+        sellStopLimit: 'Sell stop limit'
       },
       scheduleIdLabel: 'Schedule ID:',
       summary: {
@@ -415,22 +467,33 @@ const strategy = {
         trade: 'Trade',
         enableCount: 'Enabled count',
         lastRun: 'Last run',
-        lastError: 'Last error',
+        lastError: 'Last error'
       },
       tabs: {
         exec: 'Executions',
         orders: 'Orders',
+        execLogs: 'Execution Logs',
+        orderLogs: 'Order Logs'
       },
+      status: {
+        success: 'Success',
+        failed: 'Failed'
+      },
+      action: {
+        start: 'Start',
+        stop: 'Stop',
+        restart: 'Restart'
+      }
     },
     schedules: {
       title: 'Schedules',
       status: {
         running: 'Running',
-        disabled: 'Disabled',
+        disabled: 'Disabled'
       },
       templateVisibility: {
         public: 'Public',
-        private: 'Private',
+        private: 'Private'
       },
       table: {
         name: 'Name',
@@ -440,7 +503,7 @@ const strategy = {
         schedule: 'Schedule',
         status: 'Status',
         lastRun: 'Last run',
-        actions: 'Actions',
+        actions: 'Actions'
       },
       nextRunAt: 'Next run at',
       enableCount: 'Enable count',
@@ -448,7 +511,7 @@ const strategy = {
         create: 'Create',
         logs: 'Logs',
         healthCheck: 'Health check',
-        runNow: 'Run now',
+        runNow: 'Run now'
       },
       health: {
         title: 'Strategy health check {{name}}',
@@ -458,14 +521,14 @@ const strategy = {
           noSample: 'No sample',
           healthy: 'Healthy',
           watch: 'Watch',
-          alert: 'Alert',
+          alert: 'Alert'
         },
         notes: {
           pending: 'Run health check first.',
           noSample: 'Not enough samples to evaluate (minimum {{minSampleSize}}).',
           healthy: 'High success rate and controlled failures.',
           watch: 'Success rate is acceptable but should be monitored (>= {{yellowSuccessRate}}%).',
-          alert: 'Low success rate. Investigate strategy/account conditions now.',
+          alert: 'Low success rate. Investigate strategy/account conditions now.'
         },
         fields: {
           grade: 'Health grade',
@@ -477,27 +540,26 @@ const strategy = {
           successOverTotal: 'Success / Total',
           failedRuns: 'Failed runs',
           latestProfit: 'Latest profit',
-          latestError: 'Latest error',
+          latestError: 'Latest error'
         },
-        thresholdsSummary:
-          'min_sample_size={{minSampleSize}}, green: success>={{greenSuccessRate}}% & failed<={{greenMaxFailedRuns}}, yellow: success>={{yellowSuccessRate}}%',
+        thresholdsSummary: 'min_sample_size={{minSampleSize}}, green: success>={{greenSuccessRate}}% & failed<={{greenMaxFailedRuns}}, yellow: success>={{yellowSuccessRate}}%',
         sections: {
           runLogs: 'Recent execution logs',
-          orders: 'Recent order records',
+          orders: 'Recent order records'
         },
         runLogs: {
-          signalType: 'Signal',
+          signalType: 'Signal'
         },
         messages: {
           loadFailed: 'Failed to load health data',
-          clickRefresh: 'Click refresh to load health data',
-        },
+          clickRefresh: 'Click refresh to load health data'
+        }
       },
       deleteConfirm: {
-        title: 'Delete this schedule?',
+        title: 'Delete this schedule?'
       },
       validation: {
-        parametersMustBeJsonObject: 'Parameters must be a JSON object',
+        parametersMustBeJsonObject: 'Parameters must be a JSON object'
       },
       messages: {
         parametersParseFailed: 'Failed to parse parameters',
@@ -510,12 +572,12 @@ const strategy = {
         signalHoldCannotOrder: 'Signal is HOLD. Cannot place order.',
         volumeInvalid: 'Invalid volume',
         orderSubmitted: 'Order submitted',
-        orderFailed: 'Order failed',
+        orderFailed: 'Order failed'
       },
       editModal: {
         title: {
           edit: 'Edit schedule',
-          create: 'Create schedule',
+          create: 'Create schedule'
         },
         fields: {
           template: 'Template',
@@ -530,12 +592,12 @@ const strategy = {
           cronExtra: 'Use cron format to schedule runs',
           intervalSeconds: 'Interval (seconds)',
           intervalSecondsExtra: 'Run every N seconds',
-          enableExtra: 'Enable schedule after creating',
+          enableExtra: 'Enable schedule after creating'
         },
         placeholders: {
           name: 'Enter schedule name',
           selectAccountFirst: 'Select an account first',
-          symbol: 'Select a symbol',
+          symbol: 'Select a symbol'
         },
         validation: {
           templateRequired: 'Template is required',
@@ -546,18 +608,18 @@ const strategy = {
           runFrequencyRequired: 'Run frequency is required',
           cronRequired: 'Cron expression is required',
           timeframeRequired: 'Timeframe is required',
-          triggerModeRequired: 'Trigger mode is required',
+          triggerModeRequired: 'Trigger mode is required'
         },
         runFrequencyExtra: {
           cron: 'Run by cron expression',
-          byTimeframe: 'Run by timeframe',
+          byTimeframe: 'Run by timeframe'
         },
         runFrequencyOptions: {
           byTimeframe: 'By timeframe',
-          cron: 'Cron',
+          cron: 'Cron'
         },
         autoName: {
-          strategy: 'Strategy',
+          strategy: 'Strategy'
         },
         advanced: {
           title: 'Advanced',
@@ -569,42 +631,43 @@ const strategy = {
           triggerModeExtra: 'Choose when to trigger signals',
           triggerModeOptions: {
             stable: 'Stable K-line',
-            hf: 'High-frequency signal stream',
+            hf: 'High-frequency signal stream'
           },
           stableOverrideIntervalSeconds: 'Stable override interval (seconds)',
           stableOverrideIntervalSecondsExtra: 'Override stable timeframe interval',
           hfCooldownMs: 'HF cooldown (ms)',
           hfCooldownMsExtra: 'Minimum interval between HF signals',
           parametersJson: 'Parameters (JSON)',
-          parametersJsonExtra: 'JSON parameters for the strategy',
-        },
+          parametersJsonExtra: 'JSON parameters for the strategy'
+        }
       },
       triggerModal: {
         title: 'Trigger schedule',
         confirmOrder: {
           title: 'Confirm order',
-          ok: 'Confirm',
+          ok: 'Confirm'
         },
         actions: {
           confirmOrder: 'Confirm order',
-          rerun: 'Re-run',
+          rerun: 'Re-run'
         },
         summary: {
           scheduleName: 'Schedule name',
           account: 'Account',
           symbol: 'Symbol',
-          timeframe: 'Timeframe',
+          timeframe: 'Timeframe'
         },
         messages: {
-          signalNotOrderable: 'Signal is not orderable',
+          signalNotOrderable: 'Signal is not orderable'
         },
         cards: {
           logs: 'Logs',
-          signal: 'Signal',
+          signal: 'Signal'
         },
         emptyLogs: 'No logs',
-        emptySignal: 'No signal',
+        emptySignal: 'No signal'
       },
+      createSchedule: 'Create Schedule'
     },
     asset: {
       title: 'Strategy Assets',
@@ -627,12 +690,13 @@ const strategy = {
         submitSuccess: 'Strategy asset submitted',
         submitFailed: 'Failed to submit strategy asset',
         cloneSuccess: 'Cloned as template: {{templateId}}',
-        cloneFailed: 'Failed to clone strategy asset',
+        cloneFailed: 'Failed to clone strategy asset'
       },
       validation: {
         selectTemplate: 'Please select a source template',
-        enterName: 'Please enter asset name',
+        enterName: 'Please enter asset name'
       },
+      empty: 'No strategy assets yet'
     },
     paper: {
       title: '📊 Paper Trading',
@@ -657,8 +721,8 @@ const strategy = {
         strategyStarted: 'Paper strategy started',
         startFailed: 'Start failed',
         strategyStopped: 'Paper strategy stopped',
-        stopFailed: 'Stop failed',
-      },
+        stopFailed: 'Stop failed'
+      }
     },
     aiChat: {
       title: 'AI Chat',
@@ -671,7 +735,7 @@ const strategy = {
       reset: 'reset',
       applyCode: 'Apply Code',
       dismiss: 'Dismiss',
-      reviewCode: 'AI generated code — review the chat above before applying.',
+      reviewCode: 'AI generated code — review the chat above before applying.'
     },
     assetAnalysis: {
       title: 'AI Asset Analysis',
@@ -692,7 +756,7 @@ const strategy = {
       volLow: 'Low volatility — consider breakout or mean-reversion strategies with tight stops.',
       volNormal: 'Normal volatility — suitable for most strategy types.',
       volHigh: 'High volatility — wider stops recommended; trend-following and breakout strategies favored.',
-      volExtreme: 'Extreme volatility — reduce position sizes significantly; wide stops required.',
+      volExtreme: 'Extreme volatility — reduce position sizes significantly; wide stops required.'
     },
     gen: {
       title: 'Strategy Generation',
@@ -712,19 +776,19 @@ const strategy = {
         generate: '⚡ Generate',
         revise: '✏️ Revise',
         repair: '🔧 Repair',
-        discuss: '💬 Discuss',
+        discuss: '💬 Discuss'
       },
       feedback: {
         heading: '📊 Backtest Results',
-        placeholder: 'Provide feedback to iterate (e.g. "Too aggressive", "Add stop loss")',
+        placeholder: 'Provide feedback to iterate (e.g. "Too aggressive", "Add stop loss")'
       },
       metrics: {
         sharpe: 'Sharpe',
         maxDrawdown: 'Max DD',
         winRate: 'Win',
         trades: 'Trades',
-        return: 'Return',
-      },
+        return: 'Return'
+      }
     },
     codeAssist: {
       tabAI: 'AI revise',
@@ -750,7 +814,7 @@ const strategy = {
         emaPeriod: 'EMA (exponential moving average) lookback in bars.',
         smaPeriod: 'SMA (simple moving average) lookback in bars.',
         genericPeriod: 'Lookback window in bars used for indicator calculation.',
-        genericPercent: 'Percentage / ratio parameter (e.g. 1 means 1%).',
+        genericPercent: 'Percentage / ratio parameter (e.g. 1 means 1%).'
       },
       required: 'required',
       suggested: 'suggested',
@@ -764,6 +828,7 @@ const strategy = {
       codeUpdated: 'Code updated. Please re-run validation before saving.',
       noPython: 'AI did not return a Python block. Try rephrasing.',
       saveBlockedNotValidated: 'Please click "Validate code" first. Save is disabled until validation passes.',
+      generatePlaceholder: 'Describe your strategy requirements...'
     },
     marketRegime: {
       title: 'Market Regime Detection',
@@ -781,7 +846,7 @@ const strategy = {
         symbolPlaceholder: 'EURUSD',
         timeframe: 'Timeframe',
         klineCount: 'K-line Count',
-        submit: 'Start Detection',
+        submit: 'Start Detection'
       },
       result: {
         title: 'Detection Result',
@@ -790,8 +855,8 @@ const strategy = {
         modelVersion: 'Model Version',
         strategyFamilies: 'Strategy Families',
         features: 'Features',
-        recordId: 'Record ID',
-      },
+        recordId: 'Record ID'
+      }
     },
     experiment: {
       title: 'Strategy Experiment',
@@ -810,7 +875,7 @@ const strategy = {
         searchMethod: 'Search Method',
         maxCandidates: 'Max Candidates',
         objective: 'Objective',
-        submit: 'Submit Experiment',
+        submit: 'Submit Experiment'
       },
       list: {
         title: 'Experiment List',
@@ -820,8 +885,8 @@ const strategy = {
           maxCandidates: 'Max Candidates',
           objective: 'Objective',
           actions: 'Actions',
-          viewCandidates: 'View Candidates',
-        },
+          viewCandidates: 'View Candidates'
+        }
       },
       candidates: {
         title: 'Candidates',
@@ -835,8 +900,8 @@ const strategy = {
           recommendation: 'Recommendation',
           actions: 'Actions',
           viewCandidates: 'View Candidates',
-          generateDraft: 'Generate Draft',
-        },
+          generateDraft: 'Generate Draft'
+        }
       },
       messages: {
         loadTemplatesFailed: 'Failed to load strategy templates',
@@ -846,8 +911,8 @@ const strategy = {
         candidatesGenerated: 'Strategy experiment candidates generated',
         submitFailed: 'Failed to submit experiment. Please verify the parameter space is valid JSON.',
         draftGenerated: 'Draft template generated: {{templateId}}',
-        promoteFailed: 'Failed to promote candidate to draft',
-      },
+        promoteFailed: 'Failed to promote candidate to draft'
+      }
     },
     workspace: {
       title: 'Strategy Workspace',
@@ -877,7 +942,9 @@ const strategy = {
       noAccounts: 'No available accounts',
       selectSymbol: 'Symbol',
       code: 'Strategy Code',
-      codePlaceholder: '# Python strategy code...\ndef run(context):\n    return {"signal": "hold"}',
+      codePlaceholder: `# Python strategy code...
+def run(context):
+    return {"signal": "hold"}`,
       validate: 'Validate',
       validatePass: 'Validation passed',
       validateFailed: 'Validation failed',
@@ -905,7 +972,7 @@ const strategy = {
         commission: 'Commission',
         slippage: 'Slippage',
         leverage: 'Leverage',
-        mtfFallback: 'MTF Fallback',
+        mtfFallback: 'MTF Fallback'
       },
       aiAssist: 'AI Assistant',
       ai: 'AI',
@@ -921,14 +988,14 @@ const strategy = {
         fixed: 'Fixed ({{count}})',
         remaining: 'Remaining ({{count}})',
         newRegression: 'New regression ({{count}})',
-        lineInfo: 'line {{line}}',
+        lineInfo: 'line {{line}}'
       },
       template: {
         title: 'Template',
         selectPlaceholder: 'Select a template...',
         load: 'Load',
         saveAs: 'Save As New',
-        loaded: 'Loaded',
+        loaded: 'Loaded'
       },
       quickTradeSection: {
         selectSymbol: 'Select a symbol first',
@@ -940,7 +1007,7 @@ const strategy = {
         marginMode: 'Margin Mode',
         cross: 'Cross',
         isolated: 'Isolated',
-        mt4CrossOnly: 'MT4 supports Cross margin only',
+        mt4CrossOnly: 'MT4 supports Cross margin only'
       },
       chartTools: {
         streamActive: 'Live bar stream active',
@@ -955,8 +1022,9 @@ const strategy = {
         area: 'Area',
         live: 'LIVE',
         error: 'ERROR',
-        static: 'STATIC',
+        static: 'STATIC'
       },
+      gateTab: 'Gate'
     },
     codeQuality: {
       category: {
@@ -965,8 +1033,8 @@ const strategy = {
         UNREAD_PARAM: 'Unread Param',
         NDARRAY_PANDAS_MISUSE: 'ndarray/pandas Misuse',
         NO_STOP_AND_TAKE_PROFIT: 'Missing Stop/Take Profit',
-        NO_ENTRY_PCT: 'Missing Entry %',
-      },
+        NO_ENTRY_PCT: 'Missing Entry %'
+      }
     },
     backtestParams: {
       title: 'Backtest',
@@ -1004,8 +1072,8 @@ const strategy = {
       defaultsReset: 'Reset to factory defaults',
       presets: {
         liveAligned: 'Live Aligned',
-        exploration: 'Exploration',
-      },
+        exploration: 'Exploration'
+      }
     },
     tuning: {
       optimizerMethod: 'Optimizer method',
@@ -1046,9 +1114,47 @@ const strategy = {
         deDesc: 'rand/1/bin mutation. Converges fast on smooth landscapes.',
         tpeDesc: 'Tree-structured Parzen Estimator. KDE models good/bad distributions.',
         agsDesc: 'Gaussian jitter with sigma annealing. Lightweight alternative to TPE.',
-        aiDesc: 'LLM multi-round proposal. Learns from previous results over 3 rounds.',
-      },
+        aiDesc: 'LLM multi-round proposal. Learns from previous results over 3 rounds.'
+      }
     },
+    ai: {
+      checkSettings: 'Check AI Settings',
+      refreshFailed: 'Refresh failed',
+      settings: 'AI Settings'
+    },
+    backtest: {
+      annualReturn: 'Annual Return',
+      equityCurve: 'Equity Curve',
+      maxDrawdown: 'Max Drawdown',
+      sharpe: 'Sharpe',
+      totalReturn: 'Total Return',
+      totalTrades: 'Total Trades',
+      winRate: 'Win Rate',
+      tradeLog: 'Trade Log',
+      tradeTime: 'Time',
+      tradeSide: 'Side',
+      tradePrice: 'Price',
+      tradeVolume: 'Volume'
+    },
+    chartTools: {
+      clearDrawings: 'Clear All Drawings',
+      hide: 'Hide',
+      show: 'Show',
+      settings: 'Settings',
+      remove: 'Remove'
+    },
+    quickTradeSection: {
+      amountLots: 'Amount (Lots)',
+      marginMode: 'Margin Mode',
+      cross: 'Cross',
+      isolated: 'Isolated',
+      mt4CrossOnly: 'MT4 only supports Cross margin',
+      selectSymbol: 'Please select a symbol',
+      validVolume: 'Volume must be ≥ 0.01 lots',
+      priceRequired: 'Price is required',
+      orderPlaced: 'Order placed successfully',
+      orderFailed: 'Order failed'
+    }
   },
   indicatorCatalog: {
     title: 'Indicator Catalog',
@@ -1062,8 +1168,8 @@ const strategy = {
     paramType: 'Type',
     paramDefault: 'Default',
     paramRange: 'Range',
-    paramDescription: 'Description',
-  },
+    paramDescription: 'Description'
+  }
 } as const;
 
 export default strategy;

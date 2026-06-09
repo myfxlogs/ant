@@ -248,14 +248,17 @@ const strategy = {
         volumeInvalid: 'Khối lượng không hợp lệ (phải > 0)',
         orderSubmitted: 'Đã gửi lệnh',
         orderFailed: 'Đặt lệnh thất bại'
-      }
+      },
+      createSchedule: 'Tạo Lịch'
     },
     scheduleLogs: {
       title: 'Nhật ký',
       titleWithName: 'Nhật ký - {{name}}',
       tabs: {
         exec: 'Lần chạy',
-        orders: 'Lệnh'
+        orders: 'Lệnh',
+        execLogs: '执行日志',
+        orderLogs: '订单日志'
       },
       messages: {
         missingScheduleId: 'Thiếu scheduleId'
@@ -309,7 +312,16 @@ const strategy = {
         buyStopLimit: 'Mua stop limit',
         sellStopLimit: 'Bán stop limit'
       },
-      scheduleIdLabel: 'ID lịch chạy:'
+      scheduleIdLabel: 'ID lịch chạy:',
+      status: {
+        success: 'Thành Công',
+        failed: 'Thất Bại'
+      },
+      action: {
+        start: 'Bắt Đầu',
+        stop: 'Dừng',
+        restart: 'Khởi Động Lại'
+      }
     },
     templates: {
       title: 'Mẫu chiến lược',
@@ -364,7 +376,10 @@ const strategy = {
         actions: {
           publishTemplate: 'Xuất bản template',
           createScheduleNoEnable: 'Tạo lịch',
-          createAndEnable: 'Tạo & bật'
+          createAndEnable: 'Tạo & bật',
+          create: '创建计划',
+          addAccount: '添加账户',
+          updateTradingPassword: '更新交易密码'
         },
         metrics: {
           totalReturn: 'Tổng lợi nhuận',
@@ -373,7 +388,55 @@ const strategy = {
           sharpe: 'Sharpe',
           winRate: 'Tỷ lệ thắng',
           totalTrades: 'Số lệnh'
-        }
+        },
+        form: {
+          account: 'Tài Khoản',
+          accountPlaceholder: '选择账户',
+          scheduleName: '计划名称',
+          scheduleNamePlaceholder: '输入计划名称',
+          scheduleNameMax: '最多64字符',
+          scheduleType: '计划类型',
+          scheduleTypes: {
+            interval: '定时执行',
+            hfQuote: '高频报价',
+            klineClose: 'K线收盘'
+          },
+          intervalMs: '间隔(毫秒)',
+          intervalMsTip: '非高频模式最小1000ms',
+          hfCooldownMs: '高频冷却(毫秒)',
+          hfCooldownMsTip: '报价驱动执行间的冷却时间',
+          symbol: 'Mã',
+          symbolPlaceholder: '选择品种',
+          symbolPlaceholderEmpty: '未配置品种',
+          timeframe: 'Khung Thời Gian',
+          defaultVolume: '默认手数',
+          defaultVolumeTip: '每个信号的默认下单量',
+          enableAfterCreate: '创建后立即启用',
+          riskSection: 'Kiểm Soát Rủi Ro',
+          maxDrawdownPct: '最大回撤%',
+          maxDrawdownPctTip: '回撤超过此阈值自动停止',
+          maxPositions: '最大持仓数',
+          maxPositionsTip: '同时持有的最大仓位数量',
+          stopLossOffset: '止损偏移',
+          stopLossOffsetTip: '距入场价的止损距离(点)',
+          takeProfitOffset: '止盈偏移',
+          takeProfitOffsetTip: '距入场价的止盈距离(点)',
+          strategyParamsSection: '策略参数',
+          investorTag: '投资者(只读)'
+        },
+        noAccountTitle: '无账户',
+        noAccountBody: '启动计划前需要先绑定MT账户。',
+        investorWarningTitle: '投资者账户',
+        investorWarningBody: '此账户为投资者(只读)模式，需要交易权限才能启动计划。',
+        errorInvestorAccount: '无法使用投资者账户启动计划。请更新交易密码以启用交易。',
+        verifyingPermission: '验证交易权限中...',
+        tradePermissionOk: '交易权限验证通过',
+        updatePasswordTitle: '更新交易密码',
+        updatePasswordHint: '输入此账户的交易密码以启用交易。',
+        updatePasswordOk: '交易密码已更新',
+        updatePasswordFailed: '更新交易密码失败',
+        updatePasswordStillInvestor: '密码更新成功但账户仍为投资者模式，请联系客服。',
+        newPasswordPlaceholder: '输入新交易密码'
       },
       editTemplateModal: {
         title: {
@@ -502,7 +565,9 @@ signal = {
         templateAlreadyPublished: 'Mẫu đã được xuất bản',
         templateNotDraftUnknownPublishStatus: 'Mẫu không phải bản nháp. Không xác định trạng thái xuất bản.',
         publishFailed: 'Xuất bản thất bại',
-        backtestRunNoPublishedTemplate: 'Lần chạy backtest không có mẫu đã xuất bản'
+        backtestRunNoPublishedTemplate: 'Lần chạy backtest không có mẫu đã xuất bản',
+        strategyCodeEmptyCannotPublish: '策略代码为空，请先保存代码再发布。',
+        systemTemplateReadOnly: '系统模板为只读，请克隆后再编辑。'
       },
       backtestRuns: {
         title: 'Báo cáo backtest',
@@ -594,7 +659,8 @@ signal = {
       codeEmpty: 'Chưa có code để sửa.',
       codeUpdated: 'Code đã được cập nhật. Vui lòng chạy lại xác thực trước khi lưu.',
       noPython: 'AI không trả về khối Python. Hãy diễn đạt lại và thử lại.',
-      saveBlockedNotValidated: 'Vui lòng nhấn "Xác thực mã" trước. Lưu sẽ bị vô hiệu hóa cho đến khi xác thực thành công.'
+      saveBlockedNotValidated: 'Vui lòng nhấn "Xác thực mã" trước. Lưu sẽ bị vô hiệu hóa cho đến khi xác thực thành công.',
+      generatePlaceholder: '描述你的策略需求...'
     },
     templateModal: {
       title: 'Lưu làm mẫu',
@@ -628,7 +694,9 @@ signal = {
       },
       fields: {
         status: 'Trạng thái',
-        error: 'Lỗi'
+        error: 'Lỗi',
+        maxDrawdown: '最大回撤',
+        sharpe: '夏普比率'
       },
       metrics: {
         totalReturn: 'Tổng lợi nhuận',
@@ -692,7 +760,8 @@ signal = {
       validation: {
         selectTemplate: 'Vui lòng chọn mẫu nguồn',
         enterName: 'Vui lòng nhập tên tài sản'
-      }
+      },
+      empty: '暂无策略资产'
     },
     gen: {
       title: 'Tạo chiến lược',
@@ -919,7 +988,8 @@ def run(context):
       jumpToCode: 'Đi tới mã',
       runningStatus: 'Đang chạy...',
       completedStatus: 'Hoàn thành',
-      backtestResultsLabel: 'Kết quả backtest'
+      backtestResultsLabel: 'Kết quả backtest',
+      gateTab: 'Gate'
     },
     codeQuality: {
       category: {
@@ -1071,6 +1141,44 @@ def run(context):
       volNormal: 'Biến động bình thường — phù hợp với hầu hết các loại chiến lược.',
       volHigh: 'Biến động cao — khuyến nghị stop rộng hơn; chiến lược theo xu hướng và breakout có lợi thế.',
       volExtreme: 'Biến động cực đoan — giảm đáng kể kích thước vị thế; cần stop rộng.'
+    },
+    ai: {
+      checkSettings: '检查AI设置',
+      refreshFailed: '刷新失败',
+      settings: 'AI设置'
+    },
+    backtest: {
+      annualReturn: 'Lợi Nhuận Hàng Năm',
+      equityCurve: '权益曲线',
+      maxDrawdown: 'Sụt Giảm Tối Đa',
+      sharpe: 'Sharpe',
+      totalReturn: 'Tổng Lợi Nhuận',
+      totalTrades: 'Tổng Giao Dịch',
+      winRate: 'Tỷ Lệ Thắng',
+      tradeLog: '交易日志',
+      tradeTime: '时间',
+      tradeSide: '方向',
+      tradePrice: '价格',
+      tradeVolume: '数量'
+    },
+    chartTools: {
+      clearDrawings: '清除所有绘图',
+      hide: 'Ẩn',
+      show: 'Hiện',
+      settings: 'Cài Đặt',
+      remove: 'Xóa'
+    },
+    quickTradeSection: {
+      amountLots: '数量(手)',
+      marginMode: '保证金模式',
+      cross: '跨式',
+      isolated: '逐仓',
+      mt4CrossOnly: 'MT4 仅支持跨式保证金',
+      selectSymbol: '请选择交易品种',
+      validVolume: '交易量需 ≥ 0.01 手',
+      priceRequired: '请输入价格',
+      orderPlaced: 'Đã đặt lệnh',
+      orderFailed: 'Đặt lệnh thất bại'
     }
   },
   indicatorCatalog: {

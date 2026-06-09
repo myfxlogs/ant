@@ -46,7 +46,8 @@ const accounts = {
       disconnectFailed: '断开连接失败',
       disableFailed: '停用账户失败',
       deleted: '账户已删除',
-      deleteFailed: '删除失败'
+      deleteFailed: '删除失败',
+      enableFailed: '启用账户失败'
     },
     tradeTabs: {
       positionsWithCount: '持仓订单 ({{count}})',

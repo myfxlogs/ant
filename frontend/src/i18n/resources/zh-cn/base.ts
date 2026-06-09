@@ -93,12 +93,12 @@ const base = {
     copy: '复制',
     copied: '已复制',
     copyFailed: '复制失败',
-    totalItems: '共 {{total}} 条',
+    totalItems: '共 {{count}} 项',
     time: {
-      minute: '分钟',
-      hour: '小时',
-      day: '天',
-      lessThanMinute: '< 1分钟'
+      minute: '{{n}}分',
+      hour: '{{n}}时',
+      day: '{{n}}天',
+      lessThanMinute: '<1分'
     },
     ok: '确定',
     error: '错误',
@@ -109,7 +109,17 @@ const base = {
     selectSymbolToViewChart: '选择品种查看图表',
     currentPosition: '📊 当前持仓',
     noOpenPositionsForSymbol: '{{symbol}} 暂无持仓',
-    indicatorSettings: '{{name}} 设置'
+    indicatorSettings: '{{name}} 设置',
+    active: '启用',
+    inactive: '停用',
+    clear: '清除',
+    saveSuccess: '保存成功',
+    remove: '移除',
+    yes: '是',
+    no: '否',
+    you: '你',
+    comingSoon: '即将上线',
+    pageUnderDevelopment: '此页面正在开发中'
   },
   language: {
     simplifiedChinese: '简体中文',
@@ -141,14 +151,14 @@ const base = {
     subtitle: '发现、评分和订阅社区策略',
     publish: '发布策略',
     tabs: {
-      marketplace: '市场',
+      marketplace: '策略市场',
       subscriptions: '我的订阅'
     },
     searchPlaceholder: '搜索策略...',
     filterByClass: '按资产类别筛选',
     sort: {
       newest: '最新',
-      popular: '最热',
+      popular: '最热门',
       performance: '最佳表现'
     },
     empty: '暂无已发布策略',
@@ -161,7 +171,7 @@ const base = {
       details: '详情',
       subscribers: '订阅者',
       winRate: '胜率',
-      by: '作者'
+      by: '发布者'
     },
     assetClass: {
       forex: '外汇',
@@ -172,9 +182,9 @@ const base = {
       other: '其他'
     },
     risk: {
-      low: '低风险',
-      medium: '中风险',
-      high: '高风险'
+      low: '低',
+      medium: '中',
+      high: '高'
     },
     messages: {
       loginFirst: '请先登录',
@@ -185,7 +195,9 @@ const base = {
       rated: '评分已提交',
       rateFailed: '评分失败',
       commentPosted: '评论已发布',
-      commentFailed: '评论失败'
+      commentFailed: '评论失败',
+      publishFailed: '发布失败',
+      published: '发布成功'
     },
     detail: {
       comments: '评论',
@@ -193,7 +205,25 @@ const base = {
       commentPlaceholder: '写评论...（Shift+Enter 换行）'
     },
     publishModal: {
-      symbolsPlaceholder: 'EURUSD, GBPUSD, XAUUSD'
+      symbolsPlaceholder: 'EURUSD, GBPUSD, XAUUSD',
+      strategyId: '策略ID',
+      title: '发布策略',
+      titleField: '标题',
+      titlePlaceholder: '输入策略标题',
+      description: '描述',
+      assetClass: '资产类别',
+      riskLevel: '风险等级',
+      priceModel: '价格模式',
+      priceAmount: '价格',
+      symbols: '交易品种',
+      tags: '标签',
+      timeframe: '时间周期',
+      submit: '发布'
+    },
+    priceModel: {
+      free: '免费',
+      subscription: '订阅制',
+      performanceFee: '绩效分成'
     }
   },
   market: {
@@ -210,7 +240,9 @@ const base = {
     common: '常用',
     selectSymbol: '选择品种',
     noSymbolsFound: '未找到品种',
-    loadingSymbols: '加载中...'
+    loadingSymbols: '加载中...',
+    emptyWatchlist: '暂无自选',
+    searchSymbol: '搜索品种...'
   },
   topbar: {
     systemOk: '系统正常运行',
@@ -443,18 +475,18 @@ const base = {
     },
     userManagement: {
       title: '用户管理',
-      addUser: '添加用户',
+      addUser: '新建用户',
       filters: {
-        searchPlaceholder: '搜索邮箱/昵称',
-        statusPlaceholder: '状态筛选',
-        rolePlaceholder: '角色筛选'
+        searchPlaceholder: '搜索邮箱或昵称',
+        statusPlaceholder: '按状态筛选',
+        rolePlaceholder: '按角色筛选'
       },
       status: {
         active: '正常',
-        suspended: '禁用'
+        suspended: '已停用'
       },
       roles: {
-        user: '用户',
+        user: '普通用户',
         superAdmin: '超级管理员',
         operation: '运营',
         customerService: '客服',
@@ -465,27 +497,27 @@ const base = {
         email: '邮箱',
         nickname: '昵称',
         role: '角色',
-        mtAccountCount: 'MT账户',
+        mtAccountCount: 'MT账户数',
         status: '状态',
-        createdAt: '注册时间',
+        createdAt: '创建时间',
         actions: '操作'
       },
       actions: {
         details: '详情',
-        changePassword: '改密',
+        changePassword: '修改密码',
         disable: '禁用',
         enable: '启用'
       },
       deleteConfirm: {
-        title: '确定删除此用户？'
+        title: '确认删除此用户？此操作不可撤销。'
       },
       pagination: {
-        total: '共 {{total}} 条'
+        total: '共 {{total}} 个用户'
       },
       modals: {
-        createTitle: '添加用户',
+        createTitle: '新建用户',
         editTitle: '编辑用户',
-        passwordTitle: '修改密码 - {{email}}'
+        passwordTitle: '修改密码'
       },
       form: {
         email: '邮箱',
@@ -494,25 +526,25 @@ const base = {
         role: '角色',
         status: '状态',
         placeholders: {
-          email: '请输入邮箱',
-          password: '请输入密码（至少8位）',
-          nickname: '请输入昵称'
+          email: '输入邮箱',
+          password: '输入密码',
+          nickname: '输入昵称'
         }
       },
       passwordForm: {
         newPassword: '新密码',
         confirmPassword: '确认密码',
-        submit: '确认修改',
+        submit: '更新密码',
         placeholders: {
-          newPassword: '请输入新密码（至少8位，包含字母和数字）',
-          confirmPassword: '请再次输入新密码'
+          newPassword: '输入新密码',
+          confirmPassword: '再次输入新密码'
         },
         validation: {
           newPasswordRequired: '请输入新密码',
           passwordMin8: '密码至少8位',
-          passwordMustContainLettersAndNumbers: '密码必须包含字母和数字',
-          confirmPasswordRequired: '请确认密码',
-          passwordMismatch: '两次输入的密码不一致'
+          passwordMustContainLettersAndNumbers: '密码需包含字母和数字',
+          confirmPasswordRequired: '请确认新密码',
+          passwordMismatch: '两次密码不一致'
         }
       },
       drawer: {
@@ -525,7 +557,7 @@ const base = {
           status: '状态',
           mtAccountCount: 'MT账户数',
           lastLogin: '最后登录',
-          createdAt: '注册时间'
+          createdAt: '创建时间'
         }
       },
       messages: {
@@ -533,12 +565,13 @@ const base = {
         userCreateFailed: '创建用户失败',
         userUpdatedSuccess: '用户更新成功',
         userUpdateFailed: '更新用户失败',
-        userDeletedSuccess: '用户删除成功',
+        userDeletedSuccess: '用户已删除',
         userDeleteFailed: '删除用户失败',
         userDisabled: '用户已禁用',
         userEnabled: '用户已启用',
-        passwordUpdatedSuccess: '密码修改成功',
-        passwordUpdateFailed: '密码修改失败'
+        passwordUpdatedSuccess: '密码更新成功',
+        passwordUpdateFailed: '密码更新失败',
+        newPasswordIs: '新密码为: {{password}}'
       }
     },
     config: {
@@ -548,90 +581,90 @@ const base = {
       value: '值',
       description: '描述',
       status: '状态',
-      toggle: '开关',
+      toggle: '切换',
       updatedAt: '更新时间',
       on: '开',
       off: '关',
       maxAccountsPerUser: '每用户最大账户数',
-      aiProviderCatalog: 'AI 模型提供商目录',
-      econAIConfig: '经济日历翻译模型配置',
-      strategyHealthConfig: '策略健康分级阈值配置',
+      aiProviderCatalog: 'AI提供商目录',
+      econAIConfig: '经济日历AI配置',
+      strategyHealthConfig: '策略健康度配置',
       provider: '提供商',
       modelName: '模型名称',
-      enableToggle: '是否启用',
-      baseUrlLabel: 'Base URL (可选，仅自定义/OpenAI 兼容)',
-      formatJson: '格式化 JSON',
-      fillTemplate: '填充示例',
-      thresholdInfo: '阈值字段说明',
-      thresholdDesc: 'green_success_rate: 绿色成功率阈值；green_max_failed_runs: 绿色最大失败次数；yellow_success_rate: 黄色成功率阈值；min_sample_size: 最小样本数。',
+      enableToggle: '启用',
+      baseUrlLabel: 'Base URL',
+      formatJson: '格式化JSON',
+      fillTemplate: '填充模板',
+      thresholdInfo: '阈值说明',
+      thresholdDesc: '阈值描述',
       validation: {
-        jsonEmpty: 'JSON 不能为空',
-        jsonInvalid: 'JSON 格式不正确',
-        greenSuccessRateRange: 'green_success_rate 必须在 0~100 之间',
-        yellowSuccessRateRange: 'yellow_success_rate 必须在 0~100 之间',
-        yellowNotGreaterThanGreen: 'yellow_success_rate 不能大于 green_success_rate',
-        greenMaxFailedRunsNonNegative: 'green_max_failed_runs 必须大于等于 0',
-        minSampleSizeNonNegative: 'min_sample_size 必须大于等于 0',
-        apiKeyRequired: 'API Key 不能为空',
+        jsonEmpty: 'JSON不能为空',
+        jsonInvalid: 'JSON格式无效',
+        greenSuccessRateRange: '绿色成功率需在0-100之间',
+        yellowSuccessRateRange: '黄色成功率需在0-100之间',
+        yellowNotGreaterThanGreen: '黄色阈值不能超过绿色阈值',
+        greenMaxFailedRunsNonNegative: '绿色最大失败次数需≥0',
+        minSampleSizeNonNegative: '最小样本量需≥0',
+        apiKeyRequired: 'API Key不能为空',
         modelRequired: '模型名称不能为空'
       },
       messages: {
         loadFailed: '加载配置失败',
         updated: '配置已更新',
-        updateFailed: '更新失败',
-        enabled: '配置已启用',
-        disabled: '配置已禁用',
+        updateFailed: '更新配置失败',
+        enabled: '已启用',
+        disabled: '已禁用',
         operationFailed: '操作失败'
       },
       placeholders: {
-        json: '请输入 JSON',
-        apiKey: '请输入 API Key',
-        model: '例如 glm-4-flash / deepseek-chat / gpt-4o-mini',
-        baseUrl: '例如 https://api.openai.com 或自建网关',
-        configValue: '请输入配置值',
-        description: '请输入描述'
+        json: '输入JSON',
+        apiKey: '输入API Key',
+        model: '输入模型名称',
+        baseUrl: '输入Base URL',
+        configValue: '输入配置值',
+        description: '输入描述'
       },
       providerOptions: {
-        zhipu: '智谱 (Zhipu)',
+        zhipu: '智谱AI',
         deepseek: 'DeepSeek',
-        custom: '自定义 / OpenAI 兼容'
+        custom: '自定义'
       }
     },
     trading: {
       title: '交易监控',
       loadFailed: '加载交易统计失败',
       platform: '平台',
-      accounts: '账户数',
-      orders: '订单数',
+      accounts: '账户',
+      orders: '订单',
       volume: '交易量',
-      byPlatform: '按平台统计',
+      byPlatform: '按平台',
       profitStats: '盈亏统计',
-      totalUsers: '总用户',
+      totalUsers: '总用户数',
       activeUsers: '活跃用户',
-      totalAccounts: '总账户',
-      connectedAccounts: '已连接账户',
+      totalAccounts: '总账户数',
+      connectedAccounts: '已连接',
       totalOrders: '总订单',
       closedOrders: '已平仓',
       totalVolume: '总交易量',
-      netProfit: '净盈亏',
+      netProfit: '净利润',
       totalProfit: '总盈利',
       totalLoss: '总亏损',
-      pendingOrders: '挂单中'
+      pendingOrders: '挂单'
     },
     dashboard: {
       title: '管理仪表盘',
       loadFailed: '加载仪表盘数据失败',
-      totalUsers: '总用户',
+      totalUsers: '总用户数',
       activeUsers: '活跃用户',
       mtAccounts: 'MT账户',
       onlineAccounts: '在线账户',
       todayTrades: '今日交易',
       todayProfit: '今日盈亏',
-      recentLogs: '最近操作日志',
+      recentLogs: '最近日志',
       logs: {
         time: '时间',
         module: '模块',
-        actionType: '操作类型',
+        actionType: '操作',
         target: '目标',
         status: '状态',
         success: '成功',
@@ -644,72 +677,75 @@ const base = {
         }
       },
       riskMetrics: {
-        title: '风控执行指标（实时）',
-        riskValidateTotal: '风控校验总量',
-        riskValidatePass: '风控通过',
-        riskValidateReject: '风控拒绝',
-        riskValidateError: '风控异常',
+        title: '风控指标',
+        riskValidateTotal: '总验证数',
+        riskValidatePass: '通过',
+        riskValidateReject: '拒绝',
+        riskValidateError: '错误',
         orderSendSuccess: '下单成功',
         orderSendFailed: '下单失败',
         orderCloseSuccess: '平仓成功',
         orderCloseFailed: '平仓失败'
       },
       riskWindow: {
-        title: '风控时间窗口指标（1h / 24h / 72h）',
-        validateTotal: '{{window}} 校验总量',
-        validatePass: '{{window}} 通过',
-        validateReject: '{{window}} 拒绝',
-        validateError: '{{window}} 异常',
-        orderSendSuccess: '{{window}} 下单成功',
-        orderSendFailed: '{{window}} 下单失败',
-        orderCloseSuccess: '{{window}} 平仓成功',
-        orderCloseFailed: '{{window}} 平仓失败',
-        rejectRiskCodesHeader: '拒单 Top N 风险码（{{window}}）',
-        rejectCount: '拒单次数',
-        noRejectData: '当前窗口无拒单数据',
-        noData: '暂无窗口指标数据'
+        title: '风控窗口',
+        validateTotal: '总计',
+        validatePass: '通过',
+        validateReject: '拒绝',
+        validateError: '错误',
+        orderSendSuccess: '下单成功',
+        orderSendFailed: '下单失败',
+        orderCloseSuccess: '平仓成功',
+        orderCloseFailed: '平仓失败',
+        rejectRiskCodesHeader: '风控代码',
+        rejectCount: '拒绝次数',
+        noRejectData: '本时段无拒绝记录',
+        noData: '暂无风控数据'
       }
     },
     jurisdiction: {
-      title: 'Jurisdiction Gate',
-      sanctionedCountriesTab: 'Sanctioned Countries',
-      kycStatusTab: 'User KYC Status',
-      sanctionedCountries: 'Sanctioned Countries',
-      userKYCStatus: 'User KYC Status',
-      addCountry: 'Add Country',
-      addSanctionedCountry: 'Add Sanctioned Country',
-      countryCode: 'Country Code',
-      countryLabel: 'Label',
-      addedBy: 'Added By',
-      actions: 'Actions',
-      userEmail: 'Email',
-      kycStatus: 'KYC Status',
-      country: 'Country',
-      sanctioned: 'Sanctioned',
-      disclaimer: 'Disclaimer',
-      questionnaire: 'Questionnaire',
-      override: 'Override',
-      setKYC: 'Set KYC',
-      setKYCStatus: 'Set KYC Status',
-      grantOverride: 'Grant Override',
-      revokeOverride: 'Revoke Override',
-      filterByKYCStatus: 'Filter by KYC status',
-      unverified: 'Unverified',
-      pending: 'Pending',
-      verified: 'Verified',
-      rejected: 'Rejected',
-      emptySanctions: 'No sanctioned countries configured',
-      emptyKYC: 'No users match the selected KYC filter',
+      title: '管辖权管理',
+      sanctionedCountriesTab: '制裁国家',
+      kycStatusTab: 'KYC状态',
+      sanctionedCountries: '制裁国家',
+      userKYCStatus: '用户KYC状态',
+      addCountry: '添加国家',
+      addSanctionedCountry: '添加制裁国家',
+      countryCode: '国家代码',
+      countryLabel: '国家',
+      addedBy: '添加人',
+      actions: '操作',
+      userEmail: '用户邮箱',
+      kycStatus: 'KYC状态',
+      country: '国家',
+      sanctioned: '已制裁',
+      disclaimer: '免责声明',
+      questionnaire: '问卷',
+      override: '豁免',
+      setKYC: '设置KYC',
+      setKYCStatus: '设置KYC状态',
+      grantOverride: '授予豁免',
+      revokeOverride: '撤销豁免',
+      filterByKYCStatus: '按KYC状态筛选',
+      unverified: '未验证',
+      pending: '待审核',
+      verified: '已验证',
+      rejected: '已拒绝',
+      emptySanctions: '暂无制裁国家',
+      emptyKYC: '暂无KYC记录',
       messages: {
-        countryAdded: 'Sanctioned country added',
-        countryAddFailed: 'Failed to add sanctioned country',
-        countryRemoved: 'Sanctioned country removed',
-        countryRemoveFailed: 'Failed to remove sanctioned country',
-        kycUpdated: 'KYC status updated',
-        kycUpdateFailed: 'Failed to update KYC status',
-        overrideUpdated: 'Sanctioned override updated',
-        overrideUpdateFailed: 'Failed to update sanctioned override'
-      }
+        countryAdded: '国家已添加',
+        countryAddFailed: '添加国家失败',
+        countryRemoved: '国家已移除',
+        countryRemoveFailed: '移除国家失败',
+        kycUpdated: 'KYC状态已更新',
+        kycUpdateFailed: '更新KYC状态失败',
+        overrideUpdated: '豁免状态已更新',
+        overrideUpdateFailed: '更新豁免状态失败'
+      },
+      overrideWarning: '该用户来自受制裁国家，授予豁免将允许交易。',
+      confirmGrantOverride: '确认授予该用户豁免权限？',
+      confirmRevokeOverride: '确认撤销该用户的豁免权限？'
     }
   },
   symbolDetection: {
@@ -722,8 +758,8 @@ const base = {
       disabled: '已禁用',
       longOnly: '仅做多',
       shortOnly: '仅做空',
-      longShort: '多空均可',
-      unknown: '未知({{mode}})'
+      longShort: '多空双向',
+      unknown: '未知'
     }
   }
 } as const;

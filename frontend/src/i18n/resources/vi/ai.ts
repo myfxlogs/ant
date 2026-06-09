@@ -488,6 +488,14 @@ Hãy đưa kết luận style/signals/risk vào code (nếu không có, chọn m
         deleteSecretFailed: 'Xóa khóa bí mật thất bại',
         validationPassedModels: 'Xác thực thành công: tìm thấy {{count}} mô hình',
         validationFailedNeedApiKey: 'Xác thực thất bại: nhà cung cấp này thường yêu cầu khóa API. Vui lòng điền và lưu khóa trước, sau đó thử lại.'
+      },
+      customProvider: {
+        deleted: 'Đã xóa nhà cung cấp tùy chỉnh',
+        fillNameFirst: 'Vui lòng điền tên trước',
+        nameHint: '用于识别此提供商的唯一名称',
+        nameLabel: 'Tên Nhà Cung Cấp',
+        namePlaceholder: 'Nhà Cung Cấp Của Tôi',
+        nameRequired: 'Tên nhà cung cấp là bắt buộc'
       }
     },
     consensus: {
@@ -568,7 +576,9 @@ Hãy đưa kết luận style/signals/risk vào code (nếu không có, chọn m
       pass: 'PASS',
       fail: 'FAIL',
       unknown: 'không xác định',
-      selectRun: 'Chọn lần chạy kiểm thử lùi...'
+      selectRun: 'Chọn lần chạy kiểm thử lùi...',
+      evaluating: 'Đang đánh giá...',
+      runHint: 'Chạy backtest trước, sau đó nhấp "Chạy Gate" để đánh giá chất lượng chiến lược.'
     }
   }
 } as const;

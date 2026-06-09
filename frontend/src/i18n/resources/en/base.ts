@@ -1,6 +1,6 @@
 const base = {
   app: {
-    name: 'AntTrader',
+    name: 'AntTrader'
   },
   auth: {
     login: {
@@ -9,17 +9,17 @@ const base = {
       forgotPassword: 'Forgot password?',
       signingIn: 'Signing in...',
       login: 'Sign in',
-      noAccount: "Don't have an account?",
+      noAccount: `Don't have an account?`,
       registerNow: 'Register now',
       agreePrefix: 'By continuing you agree to the',
       terms: 'Terms',
       and: 'and',
-      privacy: 'Privacy Policy',
+      privacy: 'Privacy Policy'
     },
     forgotPassword: {
       title: 'Reset Password',
       hint: 'Please contact your administrator or support to reset your password.',
-      backToLogin: 'Back to Login',
+      backToLogin: 'Back to Login'
     },
     register: {
       subtitle: 'Create an account to get started',
@@ -30,12 +30,12 @@ const base = {
       agreePrefix: 'By continuing you agree to the',
       terms: 'Terms',
       and: 'and',
-      privacy: 'Privacy Policy',
+      privacy: 'Privacy Policy'
     },
     fields: {
       email: 'Email',
       password: 'Password',
-      confirmPassword: 'Confirm password',
+      confirmPassword: 'Confirm password'
     },
     validation: {
       emailRequired: 'Email is required',
@@ -43,7 +43,7 @@ const base = {
       passwordRequired: 'Password is required',
       passwordMin8: 'Password must be at least 8 characters',
       confirmPasswordRequired: 'Please confirm your password',
-      passwordMismatch: 'Passwords do not match',
+      passwordMismatch: 'Passwords do not match'
     },
     messages: {
       loginSuccess: 'Signed in',
@@ -51,15 +51,15 @@ const base = {
       registerSuccess: 'Registered successfully. Please sign in.',
       registerFailed: 'Registration failed. Please try again later.',
       logoutSuccess: 'Signed out',
-      fetchMeFailed: 'Failed to load user profile',
-    },
+      fetchMeFailed: 'Failed to load user profile'
+    }
   },
   language: {
     simplifiedChinese: '简体中文',
     traditionalChinese: '繁體中文',
     english: 'English',
     japanese: '日本語',
-    vietnamese: 'Tiếng Việt',
+    vietnamese: 'Tiếng Việt'
   },
   common: {
     refresh: 'Refresh',
@@ -110,13 +110,23 @@ const base = {
     currentPosition: '📊 Current Position',
     noOpenPositionsForSymbol: 'No open positions for {{symbol}}',
     indicatorSettings: '{{name}} Settings',
-    totalItems: '{{total}} items',
+    totalItems: 'Total {{count}} items',
     time: {
-      minute: 'min',
-      hour: 'h',
-      day: 'd',
-      lessThanMinute: '< 1 min',
+      minute: '{{n}}m',
+      hour: '{{n}}h',
+      day: '{{n}}d',
+      lessThanMinute: '<1m'
     },
+    active: 'Active',
+    inactive: 'Inactive',
+    clear: 'Clear',
+    saveSuccess: 'Saved successfully',
+    remove: 'Remove',
+    yes: 'Yes',
+    no: 'No',
+    you: 'You',
+    comingSoon: 'Coming Soon',
+    pageUnderDevelopment: 'This page is under development'
   },
   menu: {
     strategyWorkspace: 'Strategy Workspace',
@@ -134,40 +144,87 @@ const base = {
     assets: 'Assets',
     schedules: 'Schedules',
     indicatorCatalog: 'Indicator Catalog',
-    logs: 'System Logs',
+    logs: 'System Logs'
   },
   marketplace: {
     title: 'Strategy Marketplace',
     subtitle: 'Discover, rate, and subscribe to community strategies',
     publishModal: {
       symbolsPlaceholder: 'EURUSD, GBPUSD, XAUUSD',
+      strategyId: 'Strategy ID',
+      title: 'Publish Strategy',
+      titleField: 'Title',
+      titlePlaceholder: 'Enter strategy title',
+      description: 'Description',
+      assetClass: 'Asset Class',
+      riskLevel: 'Risk Level',
+      priceModel: 'Price Model',
+      priceAmount: 'Price Amount',
+      symbols: 'Symbols',
+      tags: 'Tags',
+      timeframe: 'Timeframe',
+      submit: 'Publish'
     },
     publish: 'Publish Strategy',
-    tabs: { marketplace: 'Marketplace', subscriptions: 'My Subscriptions' },
+    tabs: {
+      marketplace: 'Marketplace',
+      subscriptions: 'My Subscriptions'
+    },
     searchPlaceholder: 'Search strategies...',
     filterByClass: 'Filter by asset class',
-    sort: { newest: 'Newest', popular: 'Most Popular', performance: 'Best Performance' },
+    sort: {
+      newest: 'Newest',
+      popular: 'Most Popular',
+      performance: 'Best Performance'
+    },
     empty: 'No strategies published yet',
     noSubscriptions: 'No subscriptions yet',
     card: {
-      subscribe: 'Subscribe', subscribed: 'Subscribed', unsubscribe: 'Unsubscribe',
-      unsubscribeHint: 'Click to unsubscribe', details: 'Details',
-      subscribers: 'Subscribers', winRate: 'Win Rate', by: 'by',
+      subscribe: 'Subscribe',
+      subscribed: 'Subscribed',
+      unsubscribe: 'Unsubscribe',
+      unsubscribeHint: 'Click to unsubscribe',
+      details: 'Details',
+      subscribers: 'Subscribers',
+      winRate: 'Win Rate',
+      by: 'by'
     },
-    assetClass: { forex: 'Forex', crypto: 'Crypto', commodity: 'Commodity', index: 'Index', stock: 'Stock', other: 'Other' },
-    risk: { low: 'Low Risk', medium: 'Medium Risk', high: 'High Risk' },
+    assetClass: {
+      forex: 'Forex',
+      crypto: 'Crypto',
+      commodity: 'Commodity',
+      index: 'Index',
+      stock: 'Stock',
+      other: 'Other'
+    },
+    risk: {
+      low: 'Low',
+      medium: 'Medium',
+      high: 'High'
+    },
     messages: {
       loginFirst: 'Please log in first',
-      subscribed: 'Subscribed successfully', subscribeFailed: 'Subscribe failed',
-      unsubscribed: 'Unsubscribed', unsubscribeFailed: 'Unsubscribe failed',
-      rated: 'Rating submitted', rateFailed: 'Rating failed',
-      commentPosted: 'Comment posted', commentFailed: 'Comment failed',
+      subscribed: 'Subscribed successfully',
+      subscribeFailed: 'Failed to subscribe',
+      unsubscribed: 'Unsubscribed',
+      unsubscribeFailed: 'Failed to unsubscribe',
+      rated: 'Rating submitted',
+      rateFailed: 'Failed to rate',
+      commentPosted: 'Comment posted',
+      commentFailed: 'Failed to post comment',
+      publishFailed: 'Failed to publish',
+      published: 'Published successfully'
     },
     detail: {
       comments: 'Comments',
       noComments: 'No comments yet. Be the first!',
-      commentPlaceholder: 'Write a comment... (Shift+Enter for new line)',
+      commentPlaceholder: 'Write a comment... (Shift+Enter for new line)'
     },
+    priceModel: {
+      free: 'Free',
+      subscription: 'Subscription',
+      performanceFee: 'Performance Fee'
+    }
   },
   market: {
     searchPlaceholder: 'Search symbol (e.g. EURUSD, XAUUSD)',
@@ -184,6 +241,8 @@ const base = {
     selectSymbol: 'Select symbol',
     noSymbolsFound: 'No symbols found',
     loadingSymbols: 'Loading...',
+    emptyWatchlist: 'No symbols in watchlist',
+    searchSymbol: 'Search symbol...'
   },
   topbar: {
     systemOk: 'System running normally',
@@ -191,7 +250,7 @@ const base = {
     settings: 'Settings',
     switchToAdmin: 'Switch to Admin',
     logout: 'Logout',
-    user: 'User',
+    user: 'User'
   },
   profile: {
     title: 'Profile',
@@ -199,9 +258,8 @@ const base = {
     role: 'Role',
     status: 'Status',
     lastLogin: 'Last Login',
-    registered: 'Registered',
+    registered: 'Registered'
   },
-  // Unified notifications section (merged from both definitions)
   notifications: {
     title: 'Notifications',
     all: 'All',
@@ -212,39 +270,39 @@ const base = {
     confirmClearAll: 'Clear all notifications?',
     tabs: {
       all: 'All ({{count}})',
-      unread: 'Unread ({{count}})',
+      unread: 'Unread ({{count}})'
     },
     types: {
       trade: 'Trade',
       signal: 'Signal',
       risk_alert: 'Risk Alert',
       strategy_execution: 'Execution',
-      system: 'System',
+      system: 'System'
     },
     actions: {
       markAllAsRead: 'Mark all as read',
       clearAllConfirm: 'Clear all notifications?',
-      clearAll: 'Clear all',
+      clearAll: 'Clear all'
     },
     stream: {
       strategyExecution: {
         title: 'Strategy Execution',
         completed: '{{symbol}} {{action}} completed',
-        failed: 'Execution failed: {{error}}',
+        failed: 'Execution failed: {{error}}'
       },
       riskAlert: {
         title: 'Risk Alert',
-        fallback: 'Alert type: {{alertType}}',
+        fallback: 'Alert type: {{alertType}}'
       },
       strategySignal: {
         title: 'Strategy Signal',
-        message: '{{symbol}} triggered {{signalType}}',
+        message: '{{symbol}} triggered {{signalType}}'
       },
       autoTrading: {
         title: 'Auto Trading',
-        fallback: 'Auto trading event triggered',
-      },
-    },
+        fallback: 'Auto trading event triggered'
+      }
+    }
   },
   admin: {
     sidebar: {
@@ -254,14 +312,14 @@ const base = {
       tradingMonitor: 'Trading Monitor',
       operationLogs: 'Operation Logs',
       systemConfig: 'System Config',
-      jurisdiction: 'Jurisdiction Gate',
+      jurisdiction: 'Jurisdiction Gate'
     },
     header: {
       adminMode: 'Admin Mode',
       adminPanel: 'Admin Panel',
       backToUser: 'Back to User',
       logout: 'Logout',
-      admin: 'Admin',
+      admin: 'Admin'
     },
     config: {
       title: 'System Configuration',
@@ -295,7 +353,7 @@ const base = {
         greenMaxFailedRunsNonNegative: 'green_max_failed_runs must be >= 0',
         minSampleSizeNonNegative: 'min_sample_size must be >= 0',
         apiKeyRequired: 'API Key cannot be empty',
-        modelRequired: 'Model name cannot be empty',
+        modelRequired: 'Model name cannot be empty'
       },
       messages: {
         loadFailed: 'Failed to load configs',
@@ -303,7 +361,7 @@ const base = {
         updateFailed: 'Update failed',
         enabled: 'Config enabled',
         disabled: 'Config disabled',
-        operationFailed: 'Operation failed',
+        operationFailed: 'Operation failed'
       },
       placeholders: {
         json: 'Enter JSON',
@@ -311,13 +369,13 @@ const base = {
         model: 'e.g. glm-4-flash / deepseek-chat / gpt-4o-mini',
         baseUrl: 'e.g. https://api.openai.com or self-hosted gateway',
         configValue: 'Enter config value',
-        description: 'Enter description',
+        description: 'Enter description'
       },
       providerOptions: {
         zhipu: 'Zhipu',
         deepseek: 'DeepSeek',
-        custom: 'Custom / OpenAI Compatible',
-      },
+        custom: 'Custom / OpenAI Compatible'
+      }
     },
     trading: {
       title: 'Trading Monitor',
@@ -338,7 +396,7 @@ const base = {
       netProfit: 'Net P&L',
       totalProfit: 'Total Profit',
       totalLoss: 'Total Loss',
-      pendingOrders: 'Pending Orders',
+      pendingOrders: 'Pending Orders'
     },
     dashboard: {
       title: 'Admin Dashboard',
@@ -362,8 +420,8 @@ const base = {
           userManagement: 'User Management',
           accountManagement: 'Account Management',
           trading: 'Trading',
-          systemConfig: 'System Config',
-        },
+          systemConfig: 'System Config'
+        }
       },
       riskMetrics: {
         title: 'Risk Control Metrics (Real-time)',
@@ -374,7 +432,7 @@ const base = {
         orderSendSuccess: 'Order Sent Success',
         orderSendFailed: 'Order Sent Failed',
         orderCloseSuccess: 'Order Closed Success',
-        orderCloseFailed: 'Order Closed Failed',
+        orderCloseFailed: 'Order Closed Failed'
       },
       riskWindow: {
         title: 'Risk Control Window Metrics (1h / 24h / 72h)',
@@ -389,8 +447,8 @@ const base = {
         rejectRiskCodesHeader: 'Top N Reject Risk Codes ({{window}})',
         rejectCount: 'Reject Count',
         noRejectData: 'No reject data for current window',
-        noData: 'No window metrics data',
-      },
+        noData: 'No window metrics data'
+      }
     },
     jurisdiction: {
       title: 'Jurisdiction Gate',
@@ -430,12 +488,115 @@ const base = {
         kycUpdated: 'KYC status updated',
         kycUpdateFailed: 'Failed to update KYC status',
         overrideUpdated: 'Sanctioned override updated',
-        overrideUpdateFailed: 'Failed to update sanctioned override',
+        overrideUpdateFailed: 'Failed to update sanctioned override'
       },
+      confirmGrantOverride: 'Grant override access to this user?',
+      confirmRevokeOverride: 'Revoke override access from this user?',
+      overrideWarning: 'This user is from a sanctioned country. Granting override will allow trading.'
     },
+    userManagement: {
+      title: 'User Management',
+      addUser: 'Add User',
+      table: {
+        id: 'ID',
+        email: 'Email',
+        nickname: 'Nickname',
+        role: 'Role',
+        status: 'Status',
+        mtAccountCount: 'MT Accounts',
+        createdAt: 'Created At',
+        actions: 'Actions'
+      },
+      actions: {
+        details: 'Details',
+        enable: 'Enable',
+        disable: 'Disable',
+        changePassword: 'Change Password'
+      },
+      filters: {
+        searchPlaceholder: 'Search by email or nickname',
+        rolePlaceholder: 'Filter by role',
+        statusPlaceholder: 'Filter by status'
+      },
+      status: {
+        active: 'Active',
+        suspended: 'Suspended'
+      },
+      roles: {
+        user: 'User',
+        superAdmin: 'Super Admin',
+        operation: 'Operation',
+        customerService: 'Customer Service',
+        audit: 'Audit'
+      },
+      pagination: {
+        total: 'Total {{total}} users'
+      },
+      deleteConfirm: {
+        title: 'Delete this user? This action cannot be undone.'
+      },
+      modals: {
+        createTitle: 'Create User',
+        editTitle: 'Edit User',
+        passwordTitle: 'Change Password'
+      },
+      form: {
+        email: 'Email',
+        nickname: 'Nickname',
+        password: 'Password',
+        role: 'Role',
+        status: 'Status',
+        placeholders: {
+          email: 'Enter email',
+          nickname: 'Enter nickname',
+          password: 'Enter password'
+        }
+      },
+      passwordForm: {
+        newPassword: 'New Password',
+        confirmPassword: 'Confirm Password',
+        placeholders: {
+          newPassword: 'Enter new password',
+          confirmPassword: 'Re-enter new password'
+        },
+        submit: 'Update Password',
+        validation: {
+          newPasswordRequired: 'New password is required',
+          confirmPasswordRequired: 'Please confirm the new password',
+          passwordMin8: 'Password must be at least 8 characters',
+          passwordMismatch: 'Passwords do not match',
+          passwordMustContainLettersAndNumbers: 'Password must contain both letters and numbers'
+        }
+      },
+      messages: {
+        userCreatedSuccess: 'User created successfully',
+        userCreateFailed: 'Failed to create user',
+        userUpdatedSuccess: 'User updated successfully',
+        userUpdateFailed: 'Failed to update user',
+        userDeletedSuccess: 'User deleted successfully',
+        userDeleteFailed: 'Failed to delete user',
+        userEnabled: 'User enabled',
+        userDisabled: 'User disabled',
+        passwordUpdatedSuccess: 'Password updated successfully',
+        passwordUpdateFailed: 'Failed to update password',
+        newPasswordIs: 'New password is: {{password}}'
+      },
+      drawer: {
+        title: 'User Details',
+        labels: {
+          id: 'ID',
+          email: 'Email',
+          nickname: 'Nickname',
+          role: 'Role',
+          status: 'Status',
+          mtAccountCount: 'MT Accounts',
+          createdAt: 'Created At',
+          lastLogin: 'Last Login'
+        }
+      }
+    }
   },
   errors: {
-    // Inline error messages (complement the structured errors in errors.ts)
     not_authenticated: 'Not signed in',
     invalid_credentials: 'Invalid email or password',
     user_not_found: 'User not found',
@@ -450,7 +611,7 @@ const base = {
     translate_failed: 'Translation failed',
     connection_failed: {
       title: 'Connection failed',
-      content: 'Unable to connect to the server. Please check your network and try again.',
+      content: 'Unable to connect to the server. Please check your network and try again.'
     },
     ai: {
       not_configured: 'AI is not configured. Please enable and configure it in AI Settings first.',
@@ -471,8 +632,8 @@ const base = {
       probe_ok_no_models: 'OK (no models returned)',
       free_tier_exhausted: 'Free tier exhausted',
       rate_limited: 'Rate limited. Please try again later.',
-      forbidden_quota: 'Quota exceeded',
-    },
+      forbidden_quota: 'Quota exceeded'
+    }
   },
   symbolDetection: {
     label: 'Detected Symbols',
@@ -484,10 +645,10 @@ const base = {
       disabled: 'Disabled',
       longOnly: 'Long Only',
       shortOnly: 'Short Only',
-      longShort: 'Both Long & Short',
-      unknown: 'Unknown({{mode}})',
-    },
-  },
+      longShort: 'Long & Short',
+      unknown: 'Unknown'
+    }
+  }
 } as const;
 
 export default base;

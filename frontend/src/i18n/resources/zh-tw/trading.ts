@@ -154,7 +154,60 @@ const trading = {
     openPositionsTitle: '持倉',
     closePositionTitle: '平倉',
     recentTrades: '近期交易',
-    profit: '盈虧'
+    profit: '盈虧',
+    selectSymbol: '選擇交易商品'
+  },
+  algo: {
+    submitForm: {
+      title: '啟動演算法'
+    },
+    actions: {
+      start: '啟動',
+      cancel: '取消'
+    },
+    fields: {
+      algo: '演算法',
+      symbol: '商品',
+      side: '方向',
+      volume: '數量',
+      limitPrice: '限價',
+      account: '账戶',
+      timeRange: '時間範圍',
+      urgency: '緊急度',
+      sliceInterval: '切片間隔',
+      participationRate: '參與率'
+    },
+    side: {
+      buy: '買入',
+      sell: '賣出'
+    },
+    info: {
+      name: '名稱',
+      description: '描述'
+    },
+    messages: {
+      started: '演算法已啟動'
+    },
+    timePresets: {
+      '1h': '1小時',
+      '4h': '4小時',
+      EOD: '日終'
+    },
+    dashboard: {
+      title: '演算法面板',
+      activeExecutions: '執行中',
+      noActive: '无活躍演算法'
+    },
+    table: {
+      executionId: '執行ID',
+      algo: '演算法',
+      symbol: '商品',
+      side: '方向',
+      volume: '數量',
+      progress: '進度',
+      state: '狀態',
+      actions: '操作'
+    }
   }
 } as const;
 

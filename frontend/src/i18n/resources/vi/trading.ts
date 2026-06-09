@@ -154,7 +154,60 @@ const trading = {
     openPositionsTitle: 'Vị thế mở',
     closePositionTitle: 'Đóng vị thế',
     recentTrades: 'Giao dịch gần đây',
-    profit: 'Lợi nhuận'
+    profit: 'Lợi nhuận',
+    selectSymbol: 'Chọn mã giao dịch'
+  },
+  algo: {
+    submitForm: {
+      title: 'Khởi Chạy Thuật Toán'
+    },
+    actions: {
+      start: 'Bắt Đầu',
+      cancel: 'Hủy'
+    },
+    fields: {
+      algo: 'Thuật Toán',
+      symbol: 'Mã',
+      side: 'Hướng',
+      volume: 'Khối Lượng',
+      limitPrice: '限价',
+      account: 'Tài Khoản',
+      timeRange: '时间范围',
+      urgency: '紧急度',
+      sliceInterval: '切片间隔',
+      participationRate: '参与率'
+    },
+    side: {
+      buy: 'Mua',
+      sell: 'Bán'
+    },
+    info: {
+      name: 'Tên',
+      description: 'Mô Tả'
+    },
+    messages: {
+      started: 'Đã khởi chạy thuật toán'
+    },
+    timePresets: {
+      '1h': '1 Giờ',
+      '4h': '4 Giờ',
+      EOD: 'Cuối Ngày'
+    },
+    dashboard: {
+      title: 'Bảng Thuật Toán',
+      activeExecutions: 'Đang Thực Thi',
+      noActive: 'Không có thuật toán đang chạy'
+    },
+    table: {
+      executionId: '执行ID',
+      algo: 'Thuật Toán',
+      symbol: 'Mã',
+      side: 'Hướng',
+      volume: 'Khối Lượng',
+      progress: 'Tiến Độ',
+      state: 'Trạng Thái',
+      actions: 'Thao Tác'
+    }
   }
 } as const;
 

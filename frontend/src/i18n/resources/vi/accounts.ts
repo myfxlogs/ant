@@ -46,7 +46,8 @@ const accounts = {
       disconnectFailed: 'Ngắt kết nối thất bại',
       disableFailed: 'Vô hiệu hóa tài khoản thất bại',
       deleted: 'Đã xóa',
-      deleteFailed: 'Xóa thất bại'
+      deleteFailed: 'Xóa thất bại',
+      enableFailed: 'Kích hoạt tài khoản thất bại'
     },
     tradeTabs: {
       positionsWithCount: 'Vị thế ({{count}})',

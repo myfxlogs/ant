@@ -198,7 +198,60 @@ const trading = {
     openPositionsTitle: 'オープンポジション',
     closePositionTitle: 'ポジションを決済',
     recentTrades: '最近の取引',
-    profit: '損益'
+    profit: '損益',
+    selectSymbol: '选择交易品种'
+  },
+  algo: {
+    submitForm: {
+      title: '启动算法'
+    },
+    actions: {
+      start: '启动',
+      cancel: '取消'
+    },
+    fields: {
+      algo: '算法',
+      symbol: '品种',
+      side: '方向',
+      volume: '数量',
+      limitPrice: '限价',
+      account: '账户',
+      timeRange: '时间范围',
+      urgency: '紧急度',
+      sliceInterval: '切片间隔',
+      participationRate: '参与率'
+    },
+    side: {
+      buy: '买入',
+      sell: '卖出'
+    },
+    info: {
+      name: '名称',
+      description: '描述'
+    },
+    messages: {
+      started: '算法已启动'
+    },
+    timePresets: {
+      '1h': '1小时',
+      '4h': '4小时',
+      EOD: '日终'
+    },
+    dashboard: {
+      title: '算法面板',
+      activeExecutions: '执行中',
+      noActive: '无活跃算法'
+    },
+    table: {
+      executionId: '执行ID',
+      algo: '算法',
+      symbol: '品种',
+      side: '方向',
+      volume: '数量',
+      progress: '进度',
+      state: '状态',
+      actions: '操作'
+    }
   }
 } as const;
 

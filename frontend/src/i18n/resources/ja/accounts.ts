@@ -103,7 +103,8 @@ const accounts = {
       disconnectFailed: '切断に失敗しました',
       disableFailed: '口座の無効化に失敗しました',
       deleted: '口座を削除しました',
-      deleteFailed: '削除に失敗しました'
+      deleteFailed: '削除に失敗しました',
+      enableFailed: '启用账户失败'
     },
     analytics: {
       monthlyAnalysis: {

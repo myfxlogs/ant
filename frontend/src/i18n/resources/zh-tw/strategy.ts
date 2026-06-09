@@ -252,14 +252,17 @@ const strategy = {
         volumeInvalid: '下單手數無效（volume 必須 > 0）',
         orderSubmitted: '已提交下單',
         orderFailed: '下單失敗'
-      }
+      },
+      createSchedule: '建立计划'
     },
     scheduleLogs: {
       title: '記錄',
       titleWithName: '記錄 - {{name}}',
       tabs: {
         exec: '運行記錄',
-        orders: '交易記錄'
+        orders: '交易記錄',
+        execLogs: '执行日誌',
+        orderLogs: '訂單日誌'
       },
       messages: {
         missingScheduleId: '缺少 scheduleId'
@@ -313,7 +316,16 @@ const strategy = {
         buyStopLimit: '限價突破買',
         sellStopLimit: '限價突破賣'
       },
-      scheduleIdLabel: '排程ID:'
+      scheduleIdLabel: '排程ID:',
+      status: {
+        success: '成功',
+        failed: '失敗'
+      },
+      action: {
+        start: '啟動',
+        stop: '停止',
+        restart: '重启'
+      }
     },
     templates: {
       title: '策略模板',
@@ -374,7 +386,10 @@ const strategy = {
         actions: {
           publishTemplate: '發布模板',
           createScheduleNoEnable: '建立調度',
-          createAndEnable: '建立並啟用'
+          createAndEnable: '建立並啟用',
+          create: '建立计划',
+          addAccount: '新增账戶',
+          updateTradingPassword: '更新交易密碼'
         },
         metrics: {
           totalReturn: '總收益',
@@ -383,7 +398,55 @@ const strategy = {
           sharpe: '夏普比率',
           winRate: '勝率',
           totalTrades: '交易次數'
-        }
+        },
+        form: {
+          account: '账戶',
+          accountPlaceholder: '選擇账戶',
+          scheduleName: '计划名稱',
+          scheduleNamePlaceholder: '輸入计划名稱',
+          scheduleNameMax: '最多64字元',
+          scheduleType: '排程類型',
+          scheduleTypes: {
+            interval: '定時執行',
+            hfQuote: '高頻報價',
+            klineClose: 'K線收盤'
+          },
+          intervalMs: '間隔(毫秒)',
+          intervalMsTip: '非高頻模式最小1000ms',
+          hfCooldownMs: '高頻冷卻(毫秒)',
+          hfCooldownMsTip: '报价驱动执行间的冷却時間',
+          symbol: '商品',
+          symbolPlaceholder: '選擇商品',
+          symbolPlaceholderEmpty: '未配置商品',
+          timeframe: '時間週期',
+          defaultVolume: '默认手數',
+          defaultVolumeTip: '每個信号的默认下單量',
+          enableAfterCreate: '建立后立即啟用',
+          riskSection: '風控設定',
+          maxDrawdownPct: '最大回撤%',
+          maxDrawdownPctTip: '回撤超過此閾值自动停止',
+          maxPositions: '最大持仓數',
+          maxPositionsTip: '同時持有的最大仓位元數量',
+          stopLossOffset: '止損偏移',
+          stopLossOffsetTip: '距入場價的止損距離(點)',
+          takeProfitOffset: '止盈偏移',
+          takeProfitOffsetTip: '距入場價的止盈距離(點)',
+          strategyParamsSection: '策略参數',
+          investorTag: '投資者(唯讀)'
+        },
+        noAccountTitle: '无账戶',
+        noAccountBody: '啟動计划前需要先绑定MT账戶。',
+        investorWarningTitle: '投資者账戶',
+        investorWarningBody: '此账戶为投資者(唯讀)模式，需要交易權限才能啟動计划。',
+        errorInvestorAccount: '无法使用投資者账戶啟動计划。请更新交易密碼以啟用交易。',
+        verifyingPermission: '驗證交易權限中...',
+        tradePermissionOk: '交易權限驗證通過',
+        updatePasswordTitle: '更新交易密碼',
+        updatePasswordHint: '輸入此账戶的交易密碼以啟用交易。',
+        updatePasswordOk: '交易密碼已更新',
+        updatePasswordFailed: '更新交易密碼失敗',
+        updatePasswordStillInvestor: '密碼更新成功但账戶仍为投資者模式，請聯絡客服。',
+        newPasswordPlaceholder: '輸入新交易密碼'
       },
       editTemplateModal: {
         title: {
@@ -512,7 +575,9 @@ signal = {
         templateAlreadyPublished: '模板已發布',
         templateNotDraftUnknownPublishStatus: '模板不是草稿。發布狀態未知。',
         publishFailed: '發布失敗',
-        backtestRunNoPublishedTemplate: '回測執行沒有已發布的模板'
+        backtestRunNoPublishedTemplate: '回測執行沒有已發布的模板',
+        strategyCodeEmptyCannotPublish: '策略代碼為空白，请先保存代碼再發布。',
+        systemTemplateReadOnly: '系統範本為唯讀，请克隆后再編輯。'
       },
       backtestRuns: {
         title: '回測報告',
@@ -564,7 +629,9 @@ signal = {
       },
       fields: {
         status: '狀態',
-        error: '錯誤'
+        error: '錯誤',
+        maxDrawdown: '最大回撤',
+        sharpe: '夏普比率'
       },
       metrics: {
         totalReturn: '總收益',
@@ -657,7 +724,8 @@ signal = {
       codeEmpty: '目前沒有可修改的程式碼。',
       codeUpdated: '程式碼已更新，請重新進行程式碼驗證後再儲存。',
       noPython: 'AI 沒有回傳 Python 程式碼區塊，請換個說法再試一次。',
-      saveBlockedNotValidated: '請先點擊「驗證程式碼」，驗證通過後才能儲存。'
+      saveBlockedNotValidated: '請先點擊「驗證程式碼」，驗證通過後才能儲存。',
+      generatePlaceholder: '描述你的策略需求...'
     },
     templateModal: {
       title: '另存為模板',
@@ -696,7 +764,8 @@ signal = {
       validation: {
         selectTemplate: '請選擇來源模板',
         enterName: '請輸入資產名稱'
-      }
+      },
+      empty: '暫無策略资产'
     },
     gen: {
       title: '策略生成',
@@ -923,7 +992,8 @@ def run(context):
       jumpToCode: '跳轉到程式碼',
       runningStatus: '執行中...',
       completedStatus: '已完成',
-      backtestResultsLabel: '回測結果'
+      backtestResultsLabel: '回測結果',
+      gateTab: 'Gate'
     },
     codeQuality: {
       category: {
@@ -1075,6 +1145,44 @@ def run(context):
       volNormal: '正常波動率 — 適合大多數策略類型。',
       volHigh: '高波動率 — 建議擴大止損；趨勢跟蹤和突破策略更有利。',
       volExtreme: '極端波動率 — 請大幅降低倉位；需要寬止損。'
+    },
+    ai: {
+      checkSettings: '檢查AI設定',
+      refreshFailed: '重新整理失敗',
+      settings: 'AI設定'
+    },
+    backtest: {
+      annualReturn: '年化報酬',
+      equityCurve: '權益曲線',
+      maxDrawdown: '最大回撤',
+      sharpe: '夏普比率',
+      totalReturn: '總收益',
+      totalTrades: '總交易',
+      winRate: '勝率',
+      tradeLog: '交易日誌',
+      tradeTime: '時間',
+      tradeSide: '方向',
+      tradePrice: '價格',
+      tradeVolume: '數量'
+    },
+    chartTools: {
+      clearDrawings: '清除所有繪圖',
+      hide: '隱藏',
+      show: '顯示',
+      settings: '設定',
+      remove: '移除'
+    },
+    quickTradeSection: {
+      amountLots: '數量(手)',
+      marginMode: '保證金模式',
+      cross: '跨式',
+      isolated: '逐倉',
+      mt4CrossOnly: 'MT4 僅支援跨式保证金',
+      selectSymbol: '请選擇交易商品',
+      validVolume: '交易量需 ≥ 0.01 手',
+      priceRequired: '请輸入價格',
+      orderPlaced: '下單成功',
+      orderFailed: '下單失敗'
     }
   },
   indicatorCatalog: {

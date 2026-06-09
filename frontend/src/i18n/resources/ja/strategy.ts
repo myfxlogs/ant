@@ -248,14 +248,17 @@ const strategy = {
         volumeInvalid: '数量が不正です（> 0）',
         orderSubmitted: '注文を送信しました',
         orderFailed: '注文に失敗しました'
-      }
+      },
+      createSchedule: '创建计划'
     },
     scheduleLogs: {
       title: '記録',
       titleWithName: '記録 - {{name}}',
       tabs: {
         exec: '実行履歴',
-        orders: '取引履歴'
+        orders: '取引履歴',
+        execLogs: '执行日志',
+        orderLogs: '订单日志'
       },
       messages: {
         missingScheduleId: 'scheduleId がありません'
@@ -309,7 +312,16 @@ const strategy = {
         buyStopLimit: 'ストップリミット買い',
         sellStopLimit: 'ストップリミット売り'
       },
-      scheduleIdLabel: 'スケジュールID:'
+      scheduleIdLabel: 'スケジュールID:',
+      status: {
+        success: '成功',
+        failed: '失败'
+      },
+      action: {
+        start: '启动',
+        stop: '停止',
+        restart: '重启'
+      }
     },
     templates: {
       title: '戦略テンプレート',
@@ -332,7 +344,10 @@ const strategy = {
         actions: {
           publishTemplate: 'テンプレートを公開',
           createScheduleNoEnable: 'スケジュール作成',
-          createAndEnable: '作成して有効化'
+          createAndEnable: '作成して有効化',
+          create: '创建计划',
+          addAccount: '添加账户',
+          updateTradingPassword: '更新交易密码'
         },
         metrics: {
           totalReturn: '総リターン',
@@ -341,7 +356,55 @@ const strategy = {
           sharpe: 'シャープレシオ',
           winRate: '勝率',
           totalTrades: '取引回数'
-        }
+        },
+        form: {
+          account: '账户',
+          accountPlaceholder: '选择账户',
+          scheduleName: '计划名称',
+          scheduleNamePlaceholder: '输入计划名称',
+          scheduleNameMax: '最多64字符',
+          scheduleType: '计划类型',
+          scheduleTypes: {
+            interval: '定时执行',
+            hfQuote: '高频报价',
+            klineClose: 'K线收盘'
+          },
+          intervalMs: '间隔(毫秒)',
+          intervalMsTip: '非高频模式最小1000ms',
+          hfCooldownMs: '高频冷却(毫秒)',
+          hfCooldownMsTip: '报价驱动执行间的冷却时间',
+          symbol: '品种',
+          symbolPlaceholder: '选择品种',
+          symbolPlaceholderEmpty: '未配置品种',
+          timeframe: '时间周期',
+          defaultVolume: '默认手数',
+          defaultVolumeTip: '每个信号的默认下单量',
+          enableAfterCreate: '创建后立即启用',
+          riskSection: '风控设置',
+          maxDrawdownPct: '最大回撤%',
+          maxDrawdownPctTip: '回撤超过此阈值自动停止',
+          maxPositions: '最大持仓数',
+          maxPositionsTip: '同时持有的最大仓位数量',
+          stopLossOffset: '止损偏移',
+          stopLossOffsetTip: '距入场价的止损距离(点)',
+          takeProfitOffset: '止盈偏移',
+          takeProfitOffsetTip: '距入场价的止盈距离(点)',
+          strategyParamsSection: '策略参数',
+          investorTag: '投资者(只读)'
+        },
+        noAccountTitle: '无账户',
+        noAccountBody: '启动计划前需要先绑定MT账户。',
+        investorWarningTitle: '投资者账户',
+        investorWarningBody: '此账户为投资者(只读)模式，需要交易权限才能启动计划。',
+        errorInvestorAccount: '无法使用投资者账户启动计划。请更新交易密码以启用交易。',
+        verifyingPermission: '验证交易权限中...',
+        tradePermissionOk: '交易权限验证通过',
+        updatePasswordTitle: '更新交易密码',
+        updatePasswordHint: '输入此账户的交易密码以启用交易。',
+        updatePasswordOk: '交易密码已更新',
+        updatePasswordFailed: '更新交易密码失败',
+        updatePasswordStillInvestor: '密码更新成功但账户仍为投资者模式，请联系客服。',
+        newPasswordPlaceholder: '输入新交易密码'
       },
       visibility: {
         public: '公開',
@@ -502,7 +565,9 @@ signal = {
         templateAlreadyPublished: 'テンプレートは既に公開済みです',
         templateNotDraftUnknownPublishStatus: 'テンプレートは下書きではありません。公開ステータスが不明です。',
         publishFailed: '公開に失敗しました',
-        backtestRunNoPublishedTemplate: 'バックテスト実行に対応する公開テンプレートがありません'
+        backtestRunNoPublishedTemplate: 'バックテスト実行に対応する公開テンプレートがありません',
+        strategyCodeEmptyCannotPublish: '策略代码为空，请先保存代码再发布。',
+        systemTemplateReadOnly: '系统模板为只读，请克隆后再编辑。'
       },
       backtestRuns: {
         title: 'バックテストレポート',
@@ -594,7 +659,8 @@ signal = {
       codeEmpty: '修正できるコードがありません。',
       codeUpdated: 'コードが更新されました。保存前に再度コード検証を実行してください。',
       noPython: 'AI が Python コードブロックを返しませんでした。表現を変えて再試行してください。',
-      saveBlockedNotValidated: 'まず「コード検証」を実行してください。検証に合格するまで保存は無効です。'
+      saveBlockedNotValidated: 'まず「コード検証」を実行してください。検証に合格するまで保存は無効です。',
+      generatePlaceholder: '描述你的策略需求...'
     },
     templateModal: {
       title: 'テンプレートとして保存',
@@ -628,7 +694,9 @@ signal = {
       },
       fields: {
         status: 'ステータス',
-        error: 'エラー'
+        error: 'エラー',
+        maxDrawdown: '最大回撤',
+        sharpe: '夏普比率'
       },
       metrics: {
         totalReturn: '総収益率',
@@ -692,7 +760,8 @@ signal = {
       validation: {
         selectTemplate: '元テンプレートを選択してください',
         enterName: 'アセット名を入力してください'
-      }
+      },
+      empty: '暂无策略资产'
     },
     gen: {
       title: 'ストラテジー生成',
@@ -919,7 +988,8 @@ def run(context):
       jumpToCode: 'コードへ移動',
       runningStatus: '実行中...',
       completedStatus: '完了',
-      backtestResultsLabel: 'バックテスト結果'
+      backtestResultsLabel: 'バックテスト結果',
+      gateTab: 'Gate'
     },
     codeQuality: {
       category: {
@@ -1071,6 +1141,44 @@ def run(context):
       volNormal: '通常ボラティリティ — ほとんどの戦略タイプに適しています。',
       volHigh: '高ボラティリティ — 広めのストップ推奨；トレンドフォローとブレイクアウト戦略が有利。',
       volExtreme: '極端なボラティリティ — ポジションサイズを大幅に縮小；広いストップが必要。'
+    },
+    ai: {
+      checkSettings: '检查AI设置',
+      refreshFailed: '刷新失败',
+      settings: 'AI设置'
+    },
+    backtest: {
+      annualReturn: '年化收益',
+      equityCurve: '权益曲线',
+      maxDrawdown: '最大回撤',
+      sharpe: '夏普比率',
+      totalReturn: '总收益',
+      totalTrades: '总交易',
+      winRate: '胜率',
+      tradeLog: '交易日志',
+      tradeTime: '时间',
+      tradeSide: '方向',
+      tradePrice: '价格',
+      tradeVolume: '数量'
+    },
+    chartTools: {
+      clearDrawings: '清除所有绘图',
+      hide: '隐藏',
+      show: '显示',
+      settings: '设置',
+      remove: '移除'
+    },
+    quickTradeSection: {
+      amountLots: '数量(手)',
+      marginMode: '保证金模式',
+      cross: '跨式',
+      isolated: '逐仓',
+      mt4CrossOnly: 'MT4 仅支持跨式保证金',
+      selectSymbol: '请选择交易品种',
+      validVolume: '交易量需 ≥ 0.01 手',
+      priceRequired: '请输入价格',
+      orderPlaced: '下单成功',
+      orderFailed: '下单失败'
     }
   },
   indicatorCatalog: {

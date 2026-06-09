@@ -248,14 +248,17 @@ const strategy = {
         volumeInvalid: '下单手数无效（volume 必须 > 0）',
         orderSubmitted: '已提交下单',
         orderFailed: '下单失败'
-      }
+      },
+      createSchedule: '创建计划'
     },
     scheduleLogs: {
       title: '记录',
       titleWithName: '记录 - {{name}}',
       tabs: {
         exec: '运行记录',
-        orders: '交易记录'
+        orders: '交易记录',
+        execLogs: '执行日志',
+        orderLogs: '订单日志'
       },
       messages: {
         missingScheduleId: '缺少 scheduleId'
@@ -309,7 +312,16 @@ const strategy = {
         buyStopLimit: '限价突破买',
         sellStopLimit: '限价突破卖'
       },
-      scheduleIdLabel: '调度ID:'
+      scheduleIdLabel: '调度ID:',
+      status: {
+        success: '成功',
+        failed: '失败'
+      },
+      action: {
+        start: '启动',
+        stop: '停止',
+        restart: '重启'
+      }
     },
     templates: {
       title: '策略模板',
@@ -370,7 +382,10 @@ const strategy = {
         actions: {
           publishTemplate: '发布模板',
           createScheduleNoEnable: '创建调度',
-          createAndEnable: '创建并启用'
+          createAndEnable: '创建并启用',
+          create: '创建计划',
+          addAccount: '添加账户',
+          updateTradingPassword: '更新交易密码'
         },
         metrics: {
           totalReturn: '总收益',
@@ -379,7 +394,55 @@ const strategy = {
           sharpe: '夏普比率',
           winRate: '胜率',
           totalTrades: '交易次数'
-        }
+        },
+        form: {
+          account: '账户',
+          accountPlaceholder: '选择账户',
+          scheduleName: '计划名称',
+          scheduleNamePlaceholder: '输入计划名称',
+          scheduleNameMax: '最多64字符',
+          scheduleType: '计划类型',
+          scheduleTypes: {
+            interval: '定时执行',
+            hfQuote: '高频报价',
+            klineClose: 'K线收盘'
+          },
+          intervalMs: '间隔(毫秒)',
+          intervalMsTip: '非高频模式最小1000ms',
+          hfCooldownMs: '高频冷却(毫秒)',
+          hfCooldownMsTip: '报价驱动执行间的冷却时间',
+          symbol: '品种',
+          symbolPlaceholder: '选择品种',
+          symbolPlaceholderEmpty: '未配置品种',
+          timeframe: '时间周期',
+          defaultVolume: '默认手数',
+          defaultVolumeTip: '每个信号的默认下单量',
+          enableAfterCreate: '创建后立即启用',
+          riskSection: '风控设置',
+          maxDrawdownPct: '最大回撤%',
+          maxDrawdownPctTip: '回撤超过此阈值自动停止',
+          maxPositions: '最大持仓数',
+          maxPositionsTip: '同时持有的最大仓位数量',
+          stopLossOffset: '止损偏移',
+          stopLossOffsetTip: '距入场价的止损距离(点)',
+          takeProfitOffset: '止盈偏移',
+          takeProfitOffsetTip: '距入场价的止盈距离(点)',
+          strategyParamsSection: '策略参数',
+          investorTag: '投资者(只读)'
+        },
+        noAccountTitle: '无账户',
+        noAccountBody: '启动计划前需要先绑定MT账户。',
+        investorWarningTitle: '投资者账户',
+        investorWarningBody: '此账户为投资者(只读)模式，需要交易权限才能启动计划。',
+        errorInvestorAccount: '无法使用投资者账户启动计划。请更新交易密码以启用交易。',
+        verifyingPermission: '验证交易权限中...',
+        tradePermissionOk: '交易权限验证通过',
+        updatePasswordTitle: '更新交易密码',
+        updatePasswordHint: '输入此账户的交易密码以启用交易。',
+        updatePasswordOk: '交易密码已更新',
+        updatePasswordFailed: '更新交易密码失败',
+        updatePasswordStillInvestor: '密码更新成功但账户仍为投资者模式，请联系客服。',
+        newPasswordPlaceholder: '输入新交易密码'
       },
       editTemplateModal: {
         title: {
@@ -508,7 +571,9 @@ signal = {
         templateAlreadyPublished: '模板已发布',
         templateNotDraftUnknownPublishStatus: '模板非草稿状态，发布状态未知。',
         publishFailed: '发布失败',
-        backtestRunNoPublishedTemplate: '回测运行缺少已发布模板'
+        backtestRunNoPublishedTemplate: '回测运行缺少已发布模板',
+        strategyCodeEmptyCannotPublish: '策略代码为空，请先保存代码再发布。',
+        systemTemplateReadOnly: '系统模板为只读，请克隆后再编辑。'
       },
       backtestRuns: {
         title: '回测报告',
@@ -560,7 +625,9 @@ signal = {
       },
       fields: {
         status: '状态',
-        error: '错误'
+        error: '错误',
+        maxDrawdown: '最大回撤',
+        sharpe: '夏普比率'
       },
       metrics: {
         totalReturn: '总收益',
@@ -642,7 +709,8 @@ signal = {
       validation: {
         selectTemplate: '请选择来源模板',
         enterName: '请输入资产名称'
-      }
+      },
+      empty: '暂无策略资产'
     },
     gen: {
       title: '策略生成',
@@ -713,7 +781,8 @@ signal = {
       codeEmpty: '当前没有可修改的代码。',
       codeUpdated: '代码已更新，请重新进行代码验证后再保存。',
       noPython: 'AI 没有返回 Python 代码块，请换种说法再试。',
-      saveBlockedNotValidated: '请先点击"验证代码"，验证通过后才能保存。'
+      saveBlockedNotValidated: '请先点击"验证代码"，验证通过后才能保存。',
+      generatePlaceholder: '描述你的策略需求...'
     },
     marketRegime: {
       title: '市场状态识别',
@@ -1078,7 +1147,8 @@ def run(context):
       jumpToCode: '跳转到代码',
       runningStatus: '运行中...',
       completedStatus: '已完成',
-      backtestResultsLabel: '回测结果'
+      backtestResultsLabel: '回测结果',
+      gateTab: 'Gate'
     },
     codeQuality: {
       category: {
@@ -1130,16 +1200,16 @@ def run(context):
       backtestFailed: '回测失败'
     },
     quickTradeSection: {
-      selectSymbol: '请先选择品种',
-      validVolume: '请输入有效手数',
-      priceRequired: '限价/止损单需要输入价格',
-      orderPlaced: '{{side}} 订单已提交',
-      orderFailed: '订单失败',
-      amountLots: '数量（手）',
+      selectSymbol: '请选择交易品种',
+      validVolume: '交易量需 ≥ 0.01 手',
+      priceRequired: '请输入价格',
+      orderPlaced: '下单成功',
+      orderFailed: '下单失败',
+      amountLots: '数量(手)',
       marginMode: '保证金模式',
-      cross: '跨期',
+      cross: '跨式',
       isolated: '逐仓',
-      mt4CrossOnly: 'MT4 仅支持跨期保证金'
+      mt4CrossOnly: 'MT4 仅支持跨式保证金'
     },
     chartTools: {
       streamActive: '实时K线流已连接',
@@ -1215,6 +1285,25 @@ def run(context):
       volNormal: '正常波动率 — 适合大多数策略类型。',
       volHigh: '高波动率 — 建议扩大止损；趋势跟踪和突破策略更有利。',
       volExtreme: '极端波动率 — 请大幅降低仓位；需要宽止损。'
+    },
+    ai: {
+      checkSettings: '检查AI设置',
+      refreshFailed: '刷新失败',
+      settings: 'AI设置'
+    },
+    backtest: {
+      annualReturn: '年化收益',
+      equityCurve: '权益曲线',
+      maxDrawdown: '最大回撤',
+      sharpe: '夏普比率',
+      totalReturn: '总收益',
+      totalTrades: '总交易',
+      winRate: '胜率',
+      tradeLog: '交易日志',
+      tradeTime: '时间',
+      tradeSide: '方向',
+      tradePrice: '价格',
+      tradeVolume: '数量'
     }
   },
   indicatorCatalog: {

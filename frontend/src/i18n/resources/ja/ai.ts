@@ -110,6 +110,14 @@ const aiCore = {
         deleteSecretFailed: 'シークレットの削除に失敗しました',
         validationPassedModels: '検証完了：{{count}}個のモデルが見つかりました',
         validationFailedNeedApiKey: '検証に失敗しました：このプロバイダーは通常APIキーが必要です。キーを入力して保存した後、再試行してください。'
+      },
+      customProvider: {
+        deleted: '自定义提供商已删除',
+        fillNameFirst: '请先填写名称',
+        nameHint: '用于识别此提供商的唯一名称',
+        nameLabel: '提供商名称',
+        namePlaceholder: '我的自定义提供商',
+        nameRequired: '提供商名称不能为空'
       }
     },
     tabs: {
@@ -411,7 +419,9 @@ def run(context):
       pass: 'PASS',
       fail: 'FAIL',
       unknown: '不明',
-      selectRun: 'バックテスト実行を選択...'
+      selectRun: 'バックテスト実行を選択...',
+      evaluating: '评估中...',
+      runHint: '先运行回测，然后点击"运行Gate"评估策略质量。'
     }
   }
 } as const;

@@ -46,7 +46,8 @@ const accounts = {
       disconnectFailed: '斷開連線失敗',
       disableFailed: '停用帳戶失敗',
       deleted: '帳戶已刪除',
-      deleteFailed: '刪除失敗'
+      deleteFailed: '刪除失敗',
+      enableFailed: '啟用账戶失敗'
     },
     tradeTabs: {
       positionsWithCount: '持倉訂單 ({{count}})',

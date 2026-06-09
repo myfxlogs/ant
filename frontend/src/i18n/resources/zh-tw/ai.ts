@@ -173,6 +173,14 @@ def run(context):
         deleteSecretFailed: '刪除金鑰失敗',
         validationPassedModels: '驗證通過：找到{{count}}個模型',
         validationFailedNeedApiKey: '驗證失敗：此供應商通常需要API金鑰。請先填寫並儲存金鑰，然後重試。'
+      },
+      customProvider: {
+        deleted: '自訂提供者已刪除',
+        fillNameFirst: '请先填写名稱',
+        nameHint: '用于识别此提供者的唯一名稱',
+        nameLabel: '提供者名稱',
+        namePlaceholder: '我的自訂提供者',
+        nameRequired: '提供者名稱不能為空白'
       }
     },
     tabs: {
@@ -481,7 +489,9 @@ def run(context):
       pass: 'PASS',
       fail: 'FAIL',
       unknown: '未知',
-      selectRun: '選擇回測運行...'
+      selectRun: '選擇回測運行...',
+      evaluating: '評估中...',
+      runHint: '先執行回測，然后點击"运行Gate"評估策略品質。'
     }
   }
 } as const;

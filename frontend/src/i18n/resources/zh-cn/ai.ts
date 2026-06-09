@@ -359,6 +359,14 @@ def run(context):
         deleteSecretFailed: '删除密钥失败',
         validationPassedModels: '验证通过：发现 {{count}} 个模型',
         validationFailedNeedApiKey: '验证失败：当前厂商通常需要 API Key。请先填写并保存密钥，再重试验证连接。'
+      },
+      customProvider: {
+        deleted: '自定义提供商已删除',
+        fillNameFirst: '请先填写名称',
+        nameHint: '用于识别此提供商的唯一名称',
+        nameLabel: '提供商名称',
+        namePlaceholder: '我的自定义提供商',
+        nameRequired: '提供商名称不能为空'
       }
     },
     tabs: {
@@ -411,7 +419,9 @@ def run(context):
       pass: '通过',
       fail: '失败',
       unknown: '未知',
-      selectRun: '选择回测运行...'
+      selectRun: '选择回测运行...',
+      evaluating: '评估中...',
+      runHint: '先运行回测，然后点击"运行Gate"评估策略质量。'
     },
     settings: {
       fields: {

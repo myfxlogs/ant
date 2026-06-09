@@ -91,12 +91,12 @@ const base = {
     copy: 'Sao chép',
     copied: 'Đã sao chép',
     copyFailed: 'Sao chép thất bại',
-    totalItems: 'Tổng {{total}} mục',
+    totalItems: 'Tổng {{count}} mục',
     time: {
-      minute: 'phút',
-      hour: 'giờ',
-      day: 'ngày',
-      lessThanMinute: '< 1 phút'
+      minute: '{{n}}ph',
+      hour: '{{n}}giờ',
+      day: '{{n}}ngày',
+      lessThanMinute: '<1ph'
     },
     required: 'Bắt buộc',
     noData: 'Không có dữ liệu',
@@ -109,7 +109,17 @@ const base = {
     selectSymbolToViewChart: 'Chọn mã để xem biểu đồ',
     currentPosition: '📊 Vị thế hiện tại',
     noOpenPositionsForSymbol: 'Không có vị thế mở cho {{symbol}}',
-    indicatorSettings: 'Cài đặt {{name}}'
+    indicatorSettings: 'Cài đặt {{name}}',
+    active: 'Hoạt Động',
+    inactive: 'Không Hoạt Động',
+    clear: 'Xóa',
+    saveSuccess: 'Đã Lưu',
+    remove: 'Xóa',
+    yes: 'Có',
+    no: 'Không',
+    you: 'Bạn',
+    comingSoon: 'Sắp Ra Mắt',
+    pageUnderDevelopment: 'Trang Đang Phát Triển'
   },
   language: {
     simplifiedChinese: '简体中文',
@@ -150,7 +160,9 @@ const base = {
     common: 'Phổ biến',
     selectSymbol: 'Chọn mã giao dịch',
     noSymbolsFound: 'Không tìm thấy mã nào',
-    loadingSymbols: 'Đang tải...'
+    loadingSymbols: 'Đang tải...',
+    emptyWatchlist: 'Danh sách trống',
+    searchSymbol: 'Tìm mã...'
   },
   topbar: {
     systemOk: 'Hệ thống đang hoạt động bình thường',
@@ -369,26 +381,26 @@ const base = {
     subtitle: 'Khám phá, đánh giá và đăng ký chiến lược cộng đồng',
     publish: 'Xuất bản Chiến lược',
     tabs: {
-      marketplace: 'Thị trường',
-      subscriptions: 'Đăng ký của tôi'
+      marketplace: 'Thị Trường',
+      subscriptions: 'Đăng Ký Của Tôi'
     },
     searchPlaceholder: 'Tìm kiếm chiến lược...',
     filterByClass: 'Lọc theo loại tài sản',
     sort: {
-      newest: 'Mới nhất',
-      popular: 'Phổ biến nhất',
-      performance: 'Hiệu suất tốt nhất'
+      newest: 'Mới Nhất',
+      popular: 'Phổ Biến Nhất',
+      performance: 'Hiệu Suất Tốt Nhất'
     },
     empty: 'Chưa có chiến lược nào được xuất bản',
     noSubscriptions: 'Chưa có đăng ký nào',
     card: {
       subscribe: 'Đăng ký',
-      subscribed: 'Đã đăng ký',
-      unsubscribe: 'Hủy đăng ký',
+      subscribed: 'Đã Đăng Ký',
+      unsubscribe: 'Hủy Đăng Ký',
       unsubscribeHint: 'Nhấp để hủy đăng ký',
-      details: 'Chi tiết',
+      details: 'Chi Tiết',
       subscribers: 'Người đăng ký',
-      winRate: 'Tỷ lệ thắng',
+      winRate: 'Tỷ Lệ Thắng',
       by: 'bởi'
     },
     assetClass: {
@@ -400,9 +412,9 @@ const base = {
       other: 'Khác'
     },
     risk: {
-      low: 'Rủi ro thấp',
-      medium: 'Rủi ro trung bình',
-      high: 'Rủi ro cao'
+      low: 'Thấp',
+      medium: 'Trung Bình',
+      high: 'Cao'
     },
     messages: {
       loginFirst: 'Vui lòng đăng nhập trước',
@@ -411,9 +423,11 @@ const base = {
       unsubscribed: 'Đã hủy đăng ký',
       unsubscribeFailed: 'Hủy đăng ký thất bại',
       rated: 'Đã gửi đánh giá',
-      rateFailed: 'Đánh giá thất bại',
+      rateFailed: '评分失败',
       commentPosted: 'Đã đăng bình luận',
-      commentFailed: 'Bình luận thất bại'
+      commentFailed: '评论失败',
+      publishFailed: 'Đăng thất bại',
+      published: 'Đã đăng thành công'
     },
     detail: {
       comments: 'Bình luận',
@@ -421,7 +435,25 @@ const base = {
       commentPlaceholder: 'Viết bình luận... (Shift+Enter để xuống dòng)'
     },
     publishModal: {
-      symbolsPlaceholder: 'EURUSD, GBPUSD, XAUUSD'
+      symbolsPlaceholder: 'EURUSD, GBPUSD, XAUUSD',
+      strategyId: '策略ID',
+      title: '发布策略',
+      titleField: '标题',
+      titlePlaceholder: '输入策略标题',
+      description: '描述',
+      assetClass: '资产类别',
+      riskLevel: '风险等级',
+      priceModel: '价格模式',
+      priceAmount: '价格',
+      symbols: '交易品种',
+      tags: '标签',
+      timeframe: '时间周期',
+      submit: '发布'
+    },
+    priceModel: {
+      free: 'Miễn Phí',
+      subscription: 'Đăng Ký',
+      performanceFee: 'Phí Hiệu Suất'
     }
   },
   admin: {
@@ -444,171 +476,275 @@ const base = {
     config: {
       title: 'System Configuration',
       editConfig: 'Edit Config: {{key}}',
-      configItem: 'Config Item',
-      value: 'Value',
-      description: 'Description',
-      status: 'Status',
-      toggle: 'Toggle',
-      updatedAt: 'Updated At',
-      on: 'On',
-      off: 'Off',
-      maxAccountsPerUser: 'Max Accounts Per User',
-      aiProviderCatalog: 'AI Model Provider Catalog',
-      econAIConfig: 'Economic Calendar Translation AI Config',
-      strategyHealthConfig: 'Strategy Health Grading Config',
-      provider: 'Provider',
-      modelName: 'Model Name',
-      enableToggle: 'Enable',
-      baseUrlLabel: 'Base URL (optional, custom/OpenAI compatible only)',
-      formatJson: 'Format JSON',
-      fillTemplate: 'Fill Example',
-      thresholdInfo: 'Threshold Field Description',
-      thresholdDesc: 'green_success_rate: green success rate threshold; green_max_failed_runs: max failed runs for green; yellow_success_rate: yellow success rate threshold; min_sample_size: minimum sample size.',
+      configItem: '配置项',
+      value: '值',
+      description: '描述',
+      status: '状态',
+      toggle: '切换',
+      updatedAt: '更新时间',
+      on: '开',
+      off: '关',
+      maxAccountsPerUser: '每用户最大账户数',
+      aiProviderCatalog: 'AI提供商目录',
+      econAIConfig: '经济日历AI配置',
+      strategyHealthConfig: '策略健康度配置',
+      provider: '提供商',
+      modelName: '模型名称',
+      enableToggle: '启用',
+      baseUrlLabel: 'Base URL',
+      formatJson: '格式化JSON',
+      fillTemplate: '填充模板',
+      thresholdInfo: '阈值说明',
+      thresholdDesc: '阈值描述',
       validation: {
-        jsonEmpty: 'JSON cannot be empty',
-        jsonInvalid: 'Invalid JSON format',
-        greenSuccessRateRange: 'green_success_rate must be between 0 and 100',
-        yellowSuccessRateRange: 'yellow_success_rate must be between 0 and 100',
-        yellowNotGreaterThanGreen: 'yellow_success_rate cannot be greater than green_success_rate',
-        greenMaxFailedRunsNonNegative: 'green_max_failed_runs must be >= 0',
-        minSampleSizeNonNegative: 'min_sample_size must be >= 0',
-        apiKeyRequired: 'API Key cannot be empty',
-        modelRequired: 'Model name cannot be empty'
+        jsonEmpty: 'JSON不能为空',
+        jsonInvalid: 'JSON格式无效',
+        greenSuccessRateRange: '绿色成功率需在0-100之间',
+        yellowSuccessRateRange: '黄色成功率需在0-100之间',
+        yellowNotGreaterThanGreen: '黄色阈值不能超过绿色阈值',
+        greenMaxFailedRunsNonNegative: '绿色最大失败次数需≥0',
+        minSampleSizeNonNegative: '最小样本量需≥0',
+        apiKeyRequired: 'API Key不能为空',
+        modelRequired: '模型名称不能为空'
       },
       messages: {
-        loadFailed: 'Failed to load configs',
-        updated: 'Config updated',
-        updateFailed: 'Update failed',
-        enabled: 'Config enabled',
-        disabled: 'Config disabled',
-        operationFailed: 'Operation failed'
+        loadFailed: '加载配置失败',
+        updated: '配置已更新',
+        updateFailed: '更新配置失败',
+        enabled: '已启用',
+        disabled: '已禁用',
+        operationFailed: '操作失败'
       },
       placeholders: {
-        json: 'Enter JSON',
-        apiKey: 'Enter API Key',
-        model: 'e.g. glm-4-flash / deepseek-chat / gpt-4o-mini',
-        baseUrl: 'e.g. https://api.openai.com or self-hosted gateway',
-        configValue: 'Enter config value',
-        description: 'Enter description'
+        json: '输入JSON',
+        apiKey: '输入API Key',
+        model: '输入模型名称',
+        baseUrl: '输入Base URL',
+        configValue: '输入配置值',
+        description: '输入描述'
       },
       providerOptions: {
-        zhipu: 'Zhipu',
+        zhipu: '智谱AI',
         deepseek: 'DeepSeek',
-        custom: 'Custom / OpenAI Compatible'
+        custom: '自定义'
       }
     },
     trading: {
-      title: 'Trading Monitor',
+      title: 'Giám Sát Giao Dịch',
       loadFailed: 'Failed to load trading statistics',
-      platform: 'Platform',
-      accounts: 'Accounts',
-      orders: 'Orders',
-      volume: 'Volume',
-      byPlatform: 'By Platform',
-      profitStats: 'P&L Statistics',
-      totalUsers: 'Total Users',
-      activeUsers: 'Active Users',
-      totalAccounts: 'Total Accounts',
-      connectedAccounts: 'Connected Accounts',
-      totalOrders: 'Total Orders',
-      closedOrders: 'Closed Orders',
-      totalVolume: 'Total Volume',
-      netProfit: 'Net P&L',
-      totalProfit: 'Total Profit',
-      totalLoss: 'Total Loss',
-      pendingOrders: 'Pending Orders'
+      platform: 'Nền Tảng',
+      accounts: 'Tài Khoản',
+      orders: 'Lệnh',
+      volume: 'Khối Lượng',
+      byPlatform: '按平台',
+      profitStats: 'Thống Kê Lợi Nhuận',
+      totalUsers: 'Tổng Người Dùng',
+      activeUsers: 'Người Dùng Hoạt Động',
+      totalAccounts: 'Tổng Tài Khoản',
+      connectedAccounts: 'Đã Kết Nối',
+      totalOrders: 'Tổng Lệnh',
+      closedOrders: 'Đã Đóng',
+      totalVolume: 'Tổng Khối Lượng',
+      netProfit: 'Lợi Nhuận Ròng',
+      totalProfit: 'Tổng Lợi Nhuận',
+      totalLoss: 'Tổng Thua Lỗ',
+      pendingOrders: 'Lệnh Chờ'
     },
     dashboard: {
-      title: 'Admin Dashboard',
-      loadFailed: 'Failed to load dashboard data',
-      totalUsers: 'Total Users',
-      activeUsers: 'Active Users',
-      mtAccounts: 'MT Accounts',
-      onlineAccounts: 'Online Accounts',
-      todayTrades: 'Today Trades',
-      todayProfit: 'Today P&L',
-      recentLogs: 'Recent Operation Logs',
+      title: 'Bảng Điều Khiển Quản Trị',
+      loadFailed: 'Tải dữ liệu bảng điều khiển thất bại',
+      totalUsers: 'Tổng Người Dùng',
+      activeUsers: 'Người Dùng Hoạt Động',
+      mtAccounts: 'Tài Khoản MT',
+      onlineAccounts: 'Trực Tuyến',
+      todayTrades: 'Giao Dịch Hôm Nay',
+      todayProfit: 'Lợi Nhuận Hôm Nay',
+      recentLogs: 'Nhật Ký Gần Đây',
       logs: {
-        time: 'Time',
-        module: 'Module',
-        actionType: 'Action Type',
-        target: 'Target',
-        status: 'Status',
-        success: 'Success',
-        failed: 'Failed',
+        time: 'Thời Gian',
+        module: 'Mô-đun',
+        actionType: 'Hành Động',
+        target: 'Mục Tiêu',
+        status: 'Trạng Thái',
+        success: 'Thành Công',
+        failed: 'Thất Bại',
         moduleMap: {
-          userManagement: 'User Management',
-          accountManagement: 'Account Management',
-          trading: 'Trading',
-          systemConfig: 'System Config'
+          userManagement: 'Quản Lý Người Dùng',
+          accountManagement: 'Quản Lý Tài Khoản',
+          trading: 'Giao Dịch',
+          systemConfig: 'Cấu Hình Hệ Thống'
         }
       },
       riskMetrics: {
-        title: 'Risk Control Metrics (Real-time)',
-        riskValidateTotal: 'Risk Validated Total',
-        riskValidatePass: 'Risk Validated Pass',
-        riskValidateReject: 'Risk Validated Reject',
-        riskValidateError: 'Risk Validated Error',
-        orderSendSuccess: 'Order Sent Success',
-        orderSendFailed: 'Order Sent Failed',
-        orderCloseSuccess: 'Order Closed Success',
-        orderCloseFailed: 'Order Closed Failed'
+        title: '风控指标',
+        riskValidateTotal: '总验证数',
+        riskValidatePass: '通过',
+        riskValidateReject: '拒绝',
+        riskValidateError: '错误',
+        orderSendSuccess: '下单成功',
+        orderSendFailed: '下单失败',
+        orderCloseSuccess: '平仓成功',
+        orderCloseFailed: '平仓失败'
       },
       riskWindow: {
-        title: 'Risk Control Window Metrics (1h / 24h / 72h)',
-        validateTotal: '{{window}} Validated Total',
-        validatePass: '{{window}} Pass',
-        validateReject: '{{window}} Reject',
-        validateError: '{{window}} Error',
-        orderSendSuccess: '{{window}} Order Sent',
-        orderSendFailed: '{{window}} Order Failed',
-        orderCloseSuccess: '{{window}} Close Success',
-        orderCloseFailed: '{{window}} Close Failed',
-        rejectRiskCodesHeader: 'Top N Reject Risk Codes ({{window}})',
-        rejectCount: 'Reject Count',
-        noRejectData: 'No reject data for current window',
-        noData: 'No window metrics data'
+        title: '风控窗口',
+        validateTotal: '总计',
+        validatePass: '通过',
+        validateReject: '拒绝',
+        validateError: '错误',
+        orderSendSuccess: '下单成功',
+        orderSendFailed: '下单失败',
+        orderCloseSuccess: '平仓成功',
+        orderCloseFailed: '平仓失败',
+        rejectRiskCodesHeader: '风控代码',
+        rejectCount: '拒绝次数',
+        noRejectData: '本时段无拒绝记录',
+        noData: '暂无风控数据'
       }
     },
     jurisdiction: {
-      title: 'Jurisdiction Gate',
-      sanctionedCountriesTab: 'Sanctioned Countries',
-      kycStatusTab: 'User KYC Status',
-      sanctionedCountries: 'Sanctioned Countries',
-      userKYCStatus: 'User KYC Status',
-      addCountry: 'Add Country',
-      addSanctionedCountry: 'Add Sanctioned Country',
-      countryCode: 'Country Code',
-      countryLabel: 'Label',
-      addedBy: 'Added By',
-      actions: 'Actions',
-      userEmail: 'Email',
-      kycStatus: 'KYC Status',
-      country: 'Country',
-      sanctioned: 'Sanctioned',
-      disclaimer: 'Disclaimer',
-      questionnaire: 'Questionnaire',
-      override: 'Override',
-      setKYC: 'Set KYC',
-      setKYCStatus: 'Set KYC Status',
-      grantOverride: 'Grant Override',
-      revokeOverride: 'Revoke Override',
-      filterByKYCStatus: 'Filter by KYC status',
-      unverified: 'Unverified',
-      pending: 'Pending',
-      verified: 'Verified',
-      rejected: 'Rejected',
-      emptySanctions: 'No sanctioned countries configured',
-      emptyKYC: 'No users match the selected KYC filter',
+      title: 'Kiểm Soát Quyền Hạn',
+      sanctionedCountriesTab: '制裁国家',
+      kycStatusTab: 'KYC状态',
+      sanctionedCountries: 'Quốc Gia Bị Cấm Vận',
+      userKYCStatus: '用户KYC状态',
+      addCountry: 'Thêm Quốc Gia',
+      addSanctionedCountry: '添加制裁国家',
+      countryCode: 'Mã Quốc Gia',
+      countryLabel: 'Quốc Gia',
+      addedBy: 'Người Thêm',
+      actions: 'Thao Tác',
+      userEmail: '用户邮箱',
+      kycStatus: 'Trạng Thái KYC',
+      country: 'Quốc Gia',
+      sanctioned: 'Đã Cấm Vận',
+      disclaimer: '免责声明',
+      questionnaire: '问卷',
+      override: 'Ghi Đè',
+      setKYC: 'Đặt KYC',
+      setKYCStatus: 'Đặt Trạng Thái KYC',
+      grantOverride: 'Cấp Ghi Đè',
+      revokeOverride: 'Thu Hồi Ghi Đè',
+      filterByKYCStatus: '按KYC状态筛选',
+      unverified: 'Chưa Xác Minh',
+      pending: 'Đang Chờ',
+      verified: 'Đã Xác Minh',
+      rejected: 'Đã Từ Chối',
+      emptySanctions: 'Không có quốc gia bị cấm vận',
+      emptyKYC: 'Không có hồ sơ KYC',
       messages: {
-        countryAdded: 'Sanctioned country added',
-        countryAddFailed: 'Failed to add sanctioned country',
-        countryRemoved: 'Sanctioned country removed',
-        countryRemoveFailed: 'Failed to remove sanctioned country',
-        kycUpdated: 'KYC status updated',
-        kycUpdateFailed: 'Failed to update KYC status',
-        overrideUpdated: 'Sanctioned override updated',
-        overrideUpdateFailed: 'Failed to update sanctioned override'
+        countryAdded: '国家已添加',
+        countryAddFailed: '添加国家失败',
+        countryRemoved: '国家已移除',
+        countryRemoveFailed: '移除国家失败',
+        kycUpdated: 'KYC状态已更新',
+        kycUpdateFailed: '更新KYC状态失败',
+        overrideUpdated: '豁免状态已更新',
+        overrideUpdateFailed: '更新豁免状态失败'
+      },
+      overrideWarning: '该用户来自受制裁国家，授予豁免将允许交易。',
+      confirmGrantOverride: '确认授予该用户豁免权限？',
+      confirmRevokeOverride: '确认撤销该用户的豁免权限？'
+    },
+    userManagement: {
+      title: 'Quản Lý Người Dùng',
+      addUser: 'Thêm Người Dùng',
+      table: {
+        id: 'ID',
+        email: 'Email',
+        nickname: 'Biệt Danh',
+        role: 'Vai Trò',
+        status: 'Trạng Thái',
+        mtAccountCount: 'TK MT',
+        createdAt: 'Ngày Tạo',
+        actions: 'Thao Tác'
+      },
+      actions: {
+        details: 'Chi Tiết',
+        enable: 'Kích Hoạt',
+        disable: 'Vô Hiệu',
+        changePassword: 'Đổi Mật Khẩu'
+      },
+      filters: {
+        searchPlaceholder: 'Tìm theo email hoặc biệt danh',
+        rolePlaceholder: 'Lọc theo vai trò',
+        statusPlaceholder: 'Lọc theo trạng thái'
+      },
+      status: {
+        active: 'Hoạt Động',
+        suspended: 'Đã Khóa'
+      },
+      roles: {
+        user: 'Người Dùng',
+        superAdmin: 'Quản Trị Viên',
+        operation: 'Vận Hành',
+        customerService: 'CSKH',
+        audit: 'Kiểm Toán'
+      },
+      pagination: {
+        total: 'Tổng {{total}} người dùng'
+      },
+      deleteConfirm: {
+        title: 'Xóa người dùng này? Hành động này không thể hoàn tác.'
+      },
+      modals: {
+        createTitle: 'Tạo Người Dùng',
+        editTitle: 'Sửa Người Dùng',
+        passwordTitle: 'Đổi Mật Khẩu'
+      },
+      form: {
+        email: 'Email',
+        nickname: 'Biệt Danh',
+        password: 'Mật Khẩu',
+        role: 'Vai Trò',
+        status: 'Trạng Thái',
+        placeholders: {
+          email: 'Nhập email',
+          nickname: 'Nhập biệt danh',
+          password: 'Nhập mật khẩu'
+        }
+      },
+      passwordForm: {
+        newPassword: 'Mật Khẩu Mới',
+        confirmPassword: 'Xác Nhận Mật Khẩu',
+        placeholders: {
+          newPassword: 'Nhập mật khẩu mới',
+          confirmPassword: 'Nhập lại mật khẩu mới'
+        },
+        submit: 'Cập Nhật Mật Khẩu',
+        validation: {
+          newPasswordRequired: 'Vui lòng nhập mật khẩu mới',
+          confirmPasswordRequired: 'Vui lòng xác nhận mật khẩu mới',
+          passwordMin8: 'Mật khẩu phải có ít nhất 8 ký tự',
+          passwordMismatch: 'Mật khẩu không khớp',
+          passwordMustContainLettersAndNumbers: 'Mật khẩu phải chứa cả chữ và số'
+        }
+      },
+      messages: {
+        userCreatedSuccess: 'Đã tạo người dùng',
+        userCreateFailed: 'Tạo người dùng thất bại',
+        userUpdatedSuccess: 'Đã cập nhật người dùng',
+        userUpdateFailed: 'Cập nhật người dùng thất bại',
+        userDeletedSuccess: 'Đã xóa người dùng',
+        userDeleteFailed: 'Xóa người dùng thất bại',
+        userEnabled: 'Đã kích hoạt người dùng',
+        userDisabled: 'Đã vô hiệu người dùng',
+        passwordUpdatedSuccess: 'Đã cập nhật mật khẩu',
+        passwordUpdateFailed: 'Cập nhật mật khẩu thất bại',
+        newPasswordIs: 'Mật khẩu mới là: {{password}}'
+      },
+      drawer: {
+        title: 'Chi Tiết Người Dùng',
+        labels: {
+          id: 'ID',
+          email: 'Email',
+          nickname: 'Biệt Danh',
+          role: 'Vai Trò',
+          status: 'Trạng Thái',
+          mtAccountCount: 'TK MT',
+          createdAt: 'Ngày Tạo',
+          lastLogin: 'Đăng Nhập Cuối'
+        }
       }
     }
   },
@@ -619,11 +755,11 @@ const base = {
     unresolvedTooltip: 'Chưa liên kết tài khoản giao dịch, không thể phân giải',
     resolvedTooltip: 'môi giới: {{broker}} | chế độ: {{mode}}',
     tradeMode: {
-      disabled: 'Đã tắt',
+      disabled: 'Đã Tắt',
       longOnly: 'Chỉ Mua',
       shortOnly: 'Chỉ Bán',
-      longShort: 'Cả Mua & Bán',
-      unknown: 'Không xác định({{mode}})'
+      longShort: 'Mua & Bán',
+      unknown: 'Không Xác Định'
     }
   }
 } as const;

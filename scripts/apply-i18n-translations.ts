@@ -42,6 +42,7 @@ const topKeyToFile: Record<string, string> = {
   symbolDetection: 'base',
   accounts: 'accounts', analytics: 'analytics', dashboard: 'dashboard',
   trading: 'trading', strategy: 'strategy', indicatorCatalog: 'strategy',
+  algo: 'trading', legal: 'errors',
   logs: 'logs', ai: 'ai',
 };
 
