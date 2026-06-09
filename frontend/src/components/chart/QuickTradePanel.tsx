@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Button, Select, InputNumber, Radio, message, Row, Col } from 'antd';
 import { SendOutlined, RiseOutlined, FallOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { tradingApi } from '@/client/trading';
 import PositionSection, { type PositionItem } from './PositionSection';
 import TradeHistorySection, { type TradeItem } from './TradeHistorySection';
@@ -25,16 +26,17 @@ interface Props {
 type OrderSide = 'buy' | 'sell';
 type OrderKind = 'MARKET' | 'LIMIT' | 'STOP';
 
-const ORDER_KINDS: { value: OrderKind; label: string }[] = [
-  { value: 'MARKET', label: 'Market' },
-  { value: 'LIMIT', label: 'Limit' },
-  { value: 'STOP', label: 'Stop' },
-];
+const ORDER_KIND_KEYS: Record<OrderKind, string> = {
+  MARKET: 'trading.market',
+  LIMIT: 'trading.limit',
+  STOP: 'trading.stop',
+};
 
 const cardBox: React.CSSProperties = { background: '#f6f9fc', border: '1px solid #e0e8f0', borderRadius: 6, padding: '6px 10px' };
 const labelSm: React.CSSProperties = { fontSize: 10, color: '#64748b', fontWeight: 600 };
 
 export default function QuickTradePanel({ accountId, symbol, accountMeta, allPositions = [], positions = [], recentTrades = [], onClosePosition, onToggleAllPositions }: Props) {
+  const { t } = useTranslation();
   const totalLots = (allPositions || []).reduce((s, p) => s + (p.volume || 0), 0);
   const [side, setSide] = useState<OrderSide>('buy');
   const [orderKind, setOrderKind] = useState<OrderKind>('MARKET');
@@ -53,9 +55,9 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
 
   const handleSubmit = useCallback(async () => {
     if (submitting) return; // prevent double-click
-    if (!symbol || !accountId) { message.warning('Select a symbol first'); return; }
-    if (!volume || volume <= 0) { message.warning('Enter a valid volume'); return; }
-    if (isLimitOrStop && (!price || price <= 0)) { message.warning('Price is required for Limit/Stop orders'); return; }
+    if (!symbol || !accountId) { message.warning(t('strategy.quickTradeSection.selectSymbol')); return; }
+    if (!volume || volume <= 0) { message.warning(t('strategy.quickTradeSection.validVolume')); return; }
+    if (isLimitOrStop && (!price || price <= 0)) { message.warning(t('strategy.quickTradeSection.priceRequired')); return; }
     setSubmitting(true);
     try {
       const typeStr = `${side}${isLimitOrStop ? `_${orderKind.toLowerCase()}` : ''}`;
@@ -69,8 +71,8 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
       });
       if (result.error && result.error !== '0' && result.error !== '') {
         message.error(result.message || result.error);
-      } else { message.success(`${side === 'buy' ? 'Buy' : 'Sell'} order placed`); }
-    } catch (e: any) { message.error(e?.message || 'Order failed'); }
+      } else { message.success(t('strategy.quickTradeSection.orderPlaced', { side: side === 'buy' ? t('trading.buy') : t('trading.sell') })); }
+    } catch (e: any) { message.error(e?.message || t('strategy.quickTradeSection.orderFailed')); }
     finally { setSubmitting(false); }
   }, [accountId, symbol, side, orderKind, volume, price, stopLoss, takeProfit, isLimitOrStop]);
 
@@ -100,7 +102,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
             background: side === 'buy' ? '#22c55e' : '#f1f5f9',
             borderColor: side === 'buy' ? '#22c55e' : '#d1d5db',
             color: side === 'buy' ? '#fff' : '#64748b',
-          }}>Buy</Button>
+          }}>{t('trading.buy')}</Button>
         <Button block type={side === 'sell' ? 'primary' : 'default'}
           onClick={() => setSide('sell')} icon={<FallOutlined />}
           style={{
@@ -108,15 +110,17 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
             background: side === 'sell' ? '#ef4444' : '#f1f5f9',
             borderColor: side === 'sell' ? '#ef4444' : '#d1d5db',
             color: side === 'sell' ? '#fff' : '#64748b',
-          }}>Sell</Button>
+          }}>{t('trading.sell')}</Button>
       </div>
 
       {/* Order type */}
-      <Select size="small" value={orderKind} onChange={setOrderKind} options={ORDER_KINDS} style={{ width: '100%' }} />
+      <Select size="small" value={orderKind} onChange={setOrderKind}
+        options={Object.entries(ORDER_KIND_KEYS).map(([value, key]) => ({ value, label: t(key) }))}
+        style={{ width: '100%' }} />
 
       {/* Volume */}
       <div>
-        <div style={labelSm}>Amount (lots)</div>
+        <div style={labelSm}>{t('strategy.quickTradeSection.amountLots')}</div>
         <InputNumber size="small" style={{ width: '100%' }} min={0.01} step={0.01}
           value={volume} onChange={(v) => setVolume(v ?? 0.01)} placeholder="0.01" />
       </div>
@@ -132,27 +136,27 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
 
       {/* Margin Mode — MT5 supports cross/isolated; MT4 only cross */}
       <div>
-        <div style={labelSm}>Margin Mode</div>
+        <div style={labelSm}>{t('strategy.quickTradeSection.marginMode')}</div>
         <Radio.Group size="small" buttonStyle="solid"
           value={marginMode} onChange={e => setMarginMode(e.target.value)}
           disabled={!isMT5}>
-          <Radio.Button value="cross">Cross</Radio.Button>
-          <Radio.Button value="isolated">Isolated</Radio.Button>
+          <Radio.Button value="cross">{t('strategy.quickTradeSection.cross')}</Radio.Button>
+          <Radio.Button value="isolated">{t('strategy.quickTradeSection.isolated')}</Radio.Button>
         </Radio.Group>
         {!isMT5 && (
-          <div style={{ fontSize: 9, color: '#8c8c8c', marginTop: 2 }}>MT4 supports Cross margin only</div>
+          <div style={{ fontSize: 9, color: '#8c8c8c', marginTop: 2 }}>{t('strategy.quickTradeSection.mt4CrossOnly')}</div>
         )}
       </div>
 
       {/* SL / TP */}
       <Row gutter={8}>
         <Col span={12}>
-          <div style={labelSm}>Stop Loss</div>
+          <div style={labelSm}>{t('trading.stopLoss')}</div>
           <InputNumber size="small" style={{ width: '100%' }} min={0} step={0.00001}
             value={stopLoss} onChange={(v) => setStopLoss(v)} placeholder="SL" />
         </Col>
         <Col span={12}>
-          <div style={labelSm}>Take Profit</div>
+          <div style={labelSm}>{t('trading.takeProfit')}</div>
           <InputNumber size="small" style={{ width: '100%' }} min={0} step={0.00001}
             value={takeProfit} onChange={(v) => setTakeProfit(v)} placeholder="TP" />
         </Col>
@@ -171,7 +175,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
             ? '0 2px 8px rgba(34,197,94,0.35)'
             : '0 2px 8px rgba(239,68,68,0.35)',
         }}>
-        {side === 'buy' ? 'Buy' : 'Sell'} {symbol || '—'}
+        {side === 'buy' ? t('trading.buy') : t('trading.sell')} {symbol || '—'}
       </Button>
       </>)}
 
@@ -179,7 +183,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
       <div onClick={onToggleAllPositions} role="button" tabIndex={0}
         onKeyUp={e => e.key === 'Enter' && onToggleAllPositions?.()}
         style={{ ...cardBox, display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-        <span style={labelSm}>Open Positions</span>
+        <span style={labelSm}>{t('trading.openPositionsTitle')}</span>
         <span style={{ fontSize: 13, fontWeight: 700, color: '#262626' }}>
           {totalLots.toFixed(2)} lots · {allPositions.length} &gt;
         </span>
