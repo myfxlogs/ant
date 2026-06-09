@@ -143,35 +143,31 @@ func registerHandlers(
 	strategyServer.SetPgListen(pgListen)
 	mux.Handle(antv1c.NewStrategyServiceHandler(strategyServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
-	// Mock/stub handlers — return mock data for services not yet connected to real backends.
-	// Real: SystemAI, AIPrimary, Job, ScheduleHealth
-	// Mock: PythonStrategy, CodeAssist, BacktestTrades, EconomicData
-	pythonStrategyServer := strategy.NewPythonStrategyServer(backtestRunRepo, log)
-	pythonStrategyServer.SetPgListen(pgListen)
-	if cfg.StrategyServiceURL != "" {
-		connectClient := antv1c.NewPythonStrategyServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
-		pythonStrategyServer.SetConnectClient(connectClient)
-		backtestClient := antv1c.NewBacktestServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
-		pythonStrategyServer.SetBacktestClient(backtestClient)
-		pythonStrategyServer.SetMarketDataRepo(marketDataRepo)
-		pythonStrategyServer.SetBarSource(strategy.NewBacktestSource(marketDataRepo))
-		pythonStrategyServer.SetMtHub(mthubSvc) // for live strategy order dispatch
-		strategyServer.SetBacktestClient(backtestClient)
-		strategyServer.SetMarketDataRepo(marketDataRepo)
-		pythonStrategyServer.StartBacktestWorker(context.Background()) // Background worker for async backtest runs
-		objScoreClient := antv1c.NewObjectiveScoreServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
-		objectiveScoreServer := strategy.NewObjectiveScoreServer(objScoreClient, log)
-		mux.Handle(antv1c.NewObjectiveScoreServiceHandler(objectiveScoreServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-		log.Info("Python strategy client configured", zap.String("url", cfg.StrategyServiceURL))
-	}
-	mux.Handle(antv1c.NewPythonStrategyServiceHandler(pythonStrategyServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-
-	// Paper trading — virtual trading engine + ConnectRPC handler.
+	// Paper trading + notification deps created early — both needed by PythonStrategyServer config.
 	paperRepo := repository.NewPaperRepo(pool)
 	paperEngine := papereng.New(paperRepo, mthubSvc, log)
-	pythonStrategyServer.SetPaperEngine(paperEngine)
+	notifSub := notifpubsub.NewSubscriber()
+	notifRepo := repository.NewNotificationRepository(pool)
+	notifSender := notifpubsub.NewSender(notifRepo, notifSub, log)
+
+	pythonStrategyServer := configurePythonStrategy(backtestRunRepo, marketDataRepo, mthubSvc,
+		paperEngine, notifSender, aiSvc, pgListen, cfg, log)
+	if cfg.StrategyServiceURL != "" {
+		backtestClient := antv1c.NewBacktestServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
+		strategyServer.SetBacktestClient(backtestClient)
+		strategyServer.SetMarketDataRepo(marketDataRepo)
+		objScoreClient := antv1c.NewObjectiveScoreServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
+		objectiveScoreServer := strategy.NewObjectiveScoreServer(objScoreClient, log)
+		mux.Handle(antv1c.NewObjectiveScoreServiceHandler(objectiveScoreServer,
+			connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
+		log.Info("Python strategy client configured", zap.String("url", cfg.StrategyServiceURL))
+	}
+	mux.Handle(antv1c.NewPythonStrategyServiceHandler(pythonStrategyServer,
+		connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
+
 	paperHandler := paperhdr.NewHandler(paperRepo, paperEngine, pythonStrategyServer, log)
-	mux.Handle(antv1c.NewPaperTradingServiceHandler(paperHandler, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
+	mux.Handle(antv1c.NewPaperTradingServiceHandler(paperHandler,
+		connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 	codeAssistServer := ai.NewCodeAssistServer(aiSvc, session, log)
 	if cfg.StrategyServiceURL != "" {
 		codeAssistServer.SetPythonStrategyClient(antv1c.NewPythonStrategyServiceClient(http.DefaultClient, cfg.StrategyServiceURL))
@@ -193,38 +189,9 @@ func registerHandlers(
 	mux.Handle(antv1c.NewJobServiceHandler(jobServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 	logServiceServer := system.NewLogServiceServer(logSvc, log)
 	mux.Handle(antv1c.NewLogServiceHandler(logServiceServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-	notifSub := notifpubsub.NewSubscriber()
-	notifRepo := repository.NewNotificationRepository(pool)
 	notifServer := notification.NewNotificationServer(notifRepo, notifSub, log)
 	mux.Handle(antv1c.NewNotificationServiceHandler(notifServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-	notifSender := notifpubsub.NewSender(notifRepo, notifSub, log)
-	pythonStrategyServer.SetNotificationSender(notifSender)
 	gateEvalServer.SetNotificationSender(notifSender)
-
-	// Auto-gate callback: runs gate evaluation after every backtest completion.
-	// If gate fails, spawns async auto-fix (LLM code repair → new backtest).
-	onBacktestComplete := func(ctx context.Context, run *repository.BacktestRun) {
-		dailyReturns := internalai.EquityCurveToDailyReturns(run.ProtoResponse)
-		if len(dailyReturns) < 10 {
-			return
-		}
-		input := internalai.PipelineInput{
-			DailyReturns: dailyReturns,
-			NumAttempts:  1,
-		}
-		result := internalai.Pipeline(input)
-
-		// Send gate notification (shared with GateEvalServer.RunEvaluation).
-		ai.SendGateNotification(ctx, notifSender, run.UserID, run, result)
-
-		if result.Passed {
-			return
-		}
-
-		// Spawn async auto-fix: LLM generates improved code, creates new backtest run.
-		go autoFixCode(context.Background(), run, result, aiSvc, backtestRunRepo, notifSender, log)
-	}
-	pythonStrategyServer.SetOnBacktestComplete(onBacktestComplete)
 
 	adminRepo := repository.NewAdminRepository(pool)
 	passwordResetRepo := repository.NewPasswordResetRepo(pool)
@@ -269,7 +236,60 @@ func registerHandlers(
 		strategyExperimentRepo, strategyAssetRepo, schedHealthRepo,
 		analyticsCache,
 		aiSvc,
+		backtestRunRepo,
+		marketDataRepo,
 	)
 
 	return reconLoop, emailNotifier, platformAgg, notifSender, workerCleanup
+}
+
+// configurePythonStrategy creates the PythonStrategyServer with all dependencies
+// wired in — client connections, paper engine, notification sender, and auto-gate
+// callback. Returns the fully configured server ready for handler registration.
+func configurePythonStrategy(
+	backtestRunRepo *repository.BacktestRunRepository,
+	marketDataRepo *repository.MarketDataRepository,
+	mthubSvc *mthub.MtHubService,
+	paperEngine *papereng.PaperEngine,
+	notifSender *notifpubsub.Sender,
+	aiSvc *systemai.Service,
+	pgListen *pglisten.Listener,
+	cfg *config.Config,
+	log *zap.Logger,
+) *strategy.PythonStrategyServer {
+	srv := strategy.NewPythonStrategyServer(backtestRunRepo, log)
+	srv.SetPgListen(pgListen)
+	if cfg.StrategyServiceURL != "" {
+		connectClient := antv1c.NewPythonStrategyServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
+		srv.SetConnectClient(connectClient)
+		backtestClient := antv1c.NewBacktestServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
+		srv.SetBacktestClient(backtestClient)
+		srv.SetMarketDataRepo(marketDataRepo)
+		srv.SetBarSource(strategy.NewBacktestSource(marketDataRepo))
+		srv.SetMtHub(mthubSvc)
+		srv.StartBacktestWorker(context.Background())
+	}
+	srv.SetPaperEngine(paperEngine)
+	srv.SetNotificationSender(notifSender)
+
+	// Auto-gate: runs gate evaluation after every backtest completion.
+	// On failure, spawns async auto-fix (LLM code repair → new backtest).
+	onBacktestComplete := func(ctx context.Context, run *repository.BacktestRun) {
+		dailyReturns := internalai.EquityCurveToDailyReturns(run.ProtoResponse)
+		if len(dailyReturns) < 10 {
+			return
+		}
+		input := internalai.PipelineInput{
+			DailyReturns: dailyReturns,
+			NumAttempts:  1,
+		}
+		result := internalai.Pipeline(input)
+		ai.SendGateNotification(ctx, notifSender, run.UserID, run, result)
+		if result.Passed {
+			return
+		}
+		go autoFixCode(context.Background(), run, result, aiSvc, backtestRunRepo, notifSender, log)
+	}
+	srv.SetOnBacktestComplete(onBacktestComplete)
+	return srv
 }

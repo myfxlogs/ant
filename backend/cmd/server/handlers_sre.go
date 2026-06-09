@@ -52,6 +52,8 @@ func registerSREHandlers(
 	schedHealthRepo *repository.ScheduleHealthRepository,
 	analyticsCache *service.AnalyticsCache,
 	aiSvc *systemai.Service,
+	backtestRunRepo *repository.BacktestRunRepository,
+	marketDataRepo *repository.MarketDataRepository,
 ) (*notifier.EmailNotifier, func()) {
 	// --- SRE control plane ---
 	sreKillSwitch := controlplane.NewKillSwitch()
@@ -74,7 +76,6 @@ func registerSREHandlers(
 	analyticsServer := system.NewAnalyticsServer(analyticsRepo, platformSvc, analyticsCache, log)
 	mux.Handle(antv1c.NewAnalyticsServiceHandler(analyticsServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
-	marketDataRepo := repository.NewMarketDataRepository(ch, log)
 	marketRegimeRepo := repository.NewMarketRegimeRepository(pool)
 	marketRegimeServer := mktplace.NewMarketRegimeServer(marketRegimeRepo, marketDataRepo, log)
 	mux.Handle(antv1c.NewMarketRegimeServiceHandler(marketRegimeServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
@@ -82,7 +83,6 @@ func registerSREHandlers(
 	strategyExperimentServer := strategy.NewStrategyExperimentServer(strategyExperimentRepo, log)
 	strategyExperimentServer.SetPgListen(pglisten.New(pool, log))
 	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-	backtestRunRepo := repository.NewBacktestRunRepository(pool)
 	experimentWorker := strategy.NewExperimentWorker(strategyExperimentRepo, backtestRunRepo, marketDataRepo, log)
 	if aiSvc != nil {
 		experimentWorker.SetAIService(aiSvc)
