@@ -71,11 +71,13 @@ function SidebarMenu({ items }: { items: MenuItem[] }) {
   }, [derivedOpenKeys]);
 
   const handleClick = ({ key }: { key: string }) => {
-    // Only navigate for leaf items (no children).
-    const isLeaf = !items.some(item =>
-      item.children?.some(child => child.key === key)
+    // Navigate only when the clicked item itself has no children.
+    // (The old check looked for "is this key someone else's child?" which
+    // incorrectly blocked all submenu items from navigating.)
+    const hasChildren = items.some(item =>
+      item.key === key && item.children && item.children.length > 0,
     );
-    if (isLeaf) {
+    if (!hasChildren) {
       navigate(key);
     }
   };
