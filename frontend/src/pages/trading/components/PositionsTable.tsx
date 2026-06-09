@@ -119,8 +119,8 @@ export default function PositionsTable() {
           <Popconfirm
             title={t('trading.closePositionConfirm', 'Close this position?')}
             onConfirm={() => handleClose(record.ticket)}
-            okText="OK"
-            cancelText="Cancel"
+            okText={t('common.ok')}
+            cancelText={t('common.cancel')}
           >
             <Button size="small" danger icon={<CloseOutlined />}>
               {t('trading.closePosition', 'Close')}

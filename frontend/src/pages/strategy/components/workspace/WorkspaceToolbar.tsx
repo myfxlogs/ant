@@ -112,7 +112,7 @@ export default function WorkspaceToolbar({
       <div onClick={onTogglePositionsPanel} role="button" tabIndex={0}
         onKeyUp={e => e.key === 'Enter' && onTogglePositionsPanel?.()}
         style={{ cursor: 'pointer' }}>
-        <SummaryChip label="Positions" value={positionCount != null ? String(positionCount) : '0'}
+        <SummaryChip label={t('trading.positions')} value={positionCount != null ? String(positionCount) : '0'}
           color={positionCount != null && positionCount > 0 ? '#1677ff' : undefined} />
       </div>
 
@@ -137,7 +137,7 @@ export default function WorkspaceToolbar({
             {selectedAccount.isInvestor ? 'Investor (Read-only)' : 'Master (Trading)'}
           </Tag>
           {selectedAccount.leverage && selectedAccount.leverage > 0 && (
-            <SummaryChip label="Leverage" value={`1:${selectedAccount.leverage}`} />
+            <SummaryChip label={t('trading.positionLeverage')} value={`1:${selectedAccount.leverage}`} />
           )}
         </div>
       )}
