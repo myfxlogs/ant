@@ -407,8 +407,8 @@ const accounts = {
         marginLevel: 'Tỷ lệ ký quỹ',
         credit: 'Hạn mức tín dụng'
       }
-    }
-        report: {
+    },
+    report: {
       title: 'Báo cáo giao dịch',
       titleShort: 'Báo cáo',
       generate: 'Tạo báo cáo',

@@ -407,8 +407,8 @@ const accounts = {
         marginLevel: '保证金比例',
         credit: '信用额度'
       }
-    }
-        report: {
+    },
+    report: {
       title: '交易报告',
       titleShort: '报告',
       generate: '生成报告',

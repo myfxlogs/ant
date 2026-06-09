@@ -343,8 +343,8 @@ const accounts = {
         marginLevel: '証拠金維持率',
         credit: 'クレジット'
       }
-    }
-        report: {
+    },
+    report: {
       title: '取引レポート',
       titleShort: 'レポート',
       generate: 'レポート生成',
