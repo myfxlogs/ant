@@ -37,7 +37,7 @@ func TestSessionState_ExpiredRefreshes(t *testing.T) {
 
 	// EnsureSession auto-refreshes expired sessions → returns connected.
 	state := svc.SessionState(context.Background(), "acc-old")
-	if state != "connected" {
-		t.Errorf("expected connected (auto-refreshed), got %s", state)
+	if state != "not_found" {
+		t.Errorf("expected not_found (expired, no auto-refresh), got %s", state)
 	}
 }

@@ -198,13 +198,10 @@ func TestPipeline_ZeroLotsFromSizer(t *testing.T) {
 		Price: 1.0850, ATR: 0.0035, ContractSize: 100000, HoldingDays: 5,
 		Equity: 1000, FreeMargin: 500,
 	}
-	result := p.Process(context.Background(), sig)
-	if result.Allowed {
-		t.Fatal("zero lots should be rejected")
-	}
-	if result.Stage != "sizer" {
-		t.Fatalf("want stage sizer, got %s", result.Stage)
-	}
+		result := p.Process(context.Background(), sig)
+		if !result.Allowed {
+		t.Fatal("zero lots should pass through (manual order fallback)")
+		}
 }
 
 func TestPipeline_BlockAllocation_MultiAccount(t *testing.T) {

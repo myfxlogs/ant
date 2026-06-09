@@ -100,7 +100,7 @@ func (s *CapabilityStore) Get(userID string) *Capability {
 	if c, ok := s.caps[userID]; ok {
 		return c
 	}
-	return &Capability{UserID: userID, Tier: Tier3LiveFull}
+	return &Capability{UserID: userID, Tier: Tier0ViewOnly}
 }
 
 // Set stores a capability entry.

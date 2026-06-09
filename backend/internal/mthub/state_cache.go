@@ -146,7 +146,7 @@ func (c *StateCache) ApplyEvent(ev *TradeEvent) {
 			multiplier = -1.0
 		}
 		absOld := pos.NetVolume.Abs()
-		pos.NetVolume = pos.NetVolume.Add(ev.Volume).Mul(decimal.NewFromFloat(multiplier))
+		pos.NetVolume = pos.NetVolume.Add(ev.Volume.Mul(decimal.NewFromFloat(multiplier)))
 		absNew := pos.NetVolume.Abs()
 		if ev.Price.GreaterThan(decimal.Zero) {
 			if absOld.IsZero() {
