@@ -144,7 +144,8 @@ const base = {
     schedules: 'Lịch chạy chiến lược',
     indicatorCatalog: 'Danh mục chỉ báo',
     logs: 'Nhật ký hệ thống',
-    assetAnalysis: 'Phân tích AI'
+    assetAnalysis: 'Phân tích AI',
+    autoTrading: 'Giao Dịch Tự Động'
   },
   market: {
     searchPlaceholder: 'Tìm kiếm mã (VD: EURUSD, XAUUSD)',
@@ -760,6 +761,43 @@ const base = {
       shortOnly: 'Chỉ Bán',
       longShort: 'Mua & Bán',
       unknown: 'Không Xác Định'
+    }
+  },
+  autoTrading: {
+    title: 'Giao Dịch Tự Động',
+    status: {
+      enabled: 'Giao Dịch Tự Động Đã Bật',
+      disabled: 'Giao Dịch Tự Động Đã Tắt',
+      activeStrategies: 'Chiến Lược Đang Hoạt Động',
+      todayExecutions: 'Thực Thi Hôm Nay',
+      todayProfit: 'Lợi Nhuận Hôm Nay'
+    },
+    settings: {
+      title: 'Cài Đặt Rủi Ro Toàn Cục',
+      maxRiskPercent: 'Rủi Ro Tối Đa %',
+      maxPositions: 'Vị Thế Tối Đa',
+      maxLotSize: 'Lot Tối Đa',
+      maxDailyLoss: 'Lỗ Tối Đa Hàng Ngày',
+      maxDrawdownPercent: 'Sụt Giảm Tối Đa %',
+      saveSuccess: 'Đã lưu cài đặt',
+      saveFailed: 'Lưu cài đặt thất bại'
+    },
+    logs: {
+      title: 'Nhật Ký Giao Dịch Gần Đây',
+      empty: 'Chưa có nhật ký giao dịch',
+      columns: {
+        time: 'Thời Gian',
+        symbol: 'Mã',
+        action: 'Hành Động',
+        volume: 'Khối Lượng',
+        price: 'Giá',
+        profit: 'Lãi/Lỗ',
+        ticket: 'Ticket'
+      }
+    },
+    messages: {
+      loadFailed: 'Tải dữ liệu giao dịch tự động thất bại',
+      toggleFailed: 'Chuyển đổi giao dịch tự động thất bại'
     }
   }
 } as const;

@@ -114,6 +114,11 @@ const MAIN_PAGES: PageDef[] = [
     name: 'Logs',
     semanticSelectors: ['.ant-table, .ant-list, .ant-card, [class*="log"]'],
   },
+  {
+    path: '/auto-trading',
+    name: 'AutoTrading',
+    semanticSelectors: ['.ant-card', '.ant-table', '.ant-statistic', '.ant-switch', '.ant-form'],
+  },
 ];
 
 const ADMIN_PAGES: PageDef[] = [

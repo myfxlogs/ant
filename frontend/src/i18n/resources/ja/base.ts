@@ -144,7 +144,8 @@ const base = {
     schedules: '戦略スケジュール',
     indicatorCatalog: 'インジケーターカタログ',
     logs: 'システムログ',
-    assetAnalysis: 'AI分析'
+    assetAnalysis: 'AI分析',
+    autoTrading: '自動取引'
   },
   market: {
     searchPlaceholder: '銘柄を検索（例: EURUSD, XAUUSD）',
@@ -647,6 +648,43 @@ const base = {
       shortOnly: '仅做空',
       longShort: '多空双向',
       unknown: '未知'
+    }
+  },
+  autoTrading: {
+    title: '自動取引',
+    status: {
+      enabled: '自動取引が有効です',
+      disabled: '自動取引が無効です',
+      activeStrategies: 'アクティブ戦略',
+      todayExecutions: '本日の実行',
+      todayProfit: '本日の損益'
+    },
+    settings: {
+      title: 'グローバルリスク設定',
+      maxRiskPercent: '最大リスク%',
+      maxPositions: '最大ポジション数',
+      maxLotSize: '最大ロットサイズ',
+      maxDailyLoss: '最大日次損失',
+      maxDrawdownPercent: '最大ドローダウン%',
+      saveSuccess: '設定を保存しました',
+      saveFailed: '設定の保存に失敗しました'
+    },
+    logs: {
+      title: '最近の取引ログ',
+      empty: '取引ログはまだありません',
+      columns: {
+        time: '時間',
+        symbol: '銘柄',
+        action: 'アクション',
+        volume: '数量',
+        price: '価格',
+        profit: '損益',
+        ticket: 'チケット'
+      }
+    },
+    messages: {
+      loadFailed: '自動取引データの読み込みに失敗しました',
+      toggleFailed: '自動取引の切り替えに失敗しました'
     }
   }
 } as const;

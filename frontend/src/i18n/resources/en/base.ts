@@ -144,7 +144,8 @@ const base = {
     assets: 'Assets',
     schedules: 'Schedules',
     indicatorCatalog: 'Indicator Catalog',
-    logs: 'System Logs'
+    logs: 'System Logs',
+    autoTrading: 'Auto Trading'
   },
   marketplace: {
     title: 'Strategy Marketplace',
@@ -647,6 +648,48 @@ const base = {
       shortOnly: 'Short Only',
       longShort: 'Long & Short',
       unknown: 'Unknown'
+    }
+  },
+  autoTrading: {
+    title: 'Auto Trading',
+    status: {
+      enabled: 'Auto Trading Enabled',
+      disabled: 'Auto Trading Disabled',
+      activeStrategies: 'Active Strategies',
+      todayExecutions: `Today's Executions`,
+      todayProfit: `Today's Profit`
+    },
+    settings: {
+      title: 'Global Risk Settings',
+      maxRiskPercent: 'Max Risk %',
+      maxRiskPercentHint: 'Percentage of balance to risk per trade',
+      maxPositions: 'Max Positions',
+      maxPositionsHint: 'Maximum concurrent open positions',
+      maxLotSize: 'Max Lot Size',
+      maxLotSizeHint: 'Maximum volume per trade (lots)',
+      maxDailyLoss: 'Max Daily Loss',
+      maxDailyLossHint: 'Auto-disable trading if daily loss exceeds this',
+      maxDrawdownPercent: 'Max Drawdown %',
+      maxDrawdownPercentHint: 'Auto-disable trading if drawdown exceeds this',
+      saveSuccess: 'Settings saved',
+      saveFailed: 'Failed to save settings'
+    },
+    logs: {
+      title: 'Recent Trading Logs',
+      empty: 'No trading logs yet',
+      columns: {
+        time: 'Time',
+        symbol: 'Symbol',
+        action: 'Action',
+        volume: 'Volume',
+        price: 'Price',
+        profit: 'P&L',
+        ticket: 'Ticket'
+      }
+    },
+    messages: {
+      loadFailed: 'Failed to load auto trading data',
+      toggleFailed: 'Failed to toggle auto trading'
     }
   }
 } as const;

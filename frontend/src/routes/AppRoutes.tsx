@@ -29,6 +29,7 @@ const MarketplacePage = lazy(() => import('@/pages/marketplace/Marketplace'));
 const AssetAnalysisPage = lazy(() => import('@/pages/strategy/AssetAnalysis'));
 const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'));
 const LogManagement = lazy(() => import('@/pages/logs/LogManagement'));
+const AutoTradingSettings = lazy(() => import('@/pages/auto-trading/AutoTradingSettings'));
 const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
 const UserManagement = lazy(() => import('@/pages/admin/UserManagement'));
 const AccountManagement = lazy(() => import('@/pages/admin/AccountManagement'));
@@ -71,6 +72,7 @@ const mainRoutes = (
     <Route path="marketplace" element={wrap(<MarketplacePage />)} />
     <Route path="strategy/analysis" element={wrap(<AssetAnalysisPage />)} />
     <Route path="logs" element={wrap(<LogManagement />)} />
+    <Route path="auto-trading" element={wrap(<AutoTradingSettings />)} />
   </Route>
 );
 

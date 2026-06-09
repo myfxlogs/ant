@@ -144,7 +144,8 @@ const base = {
     schedules: '策略調度',
     indicatorCatalog: '指標目錄',
     logs: '系統日誌',
-    assetAnalysis: 'AI 分析'
+    assetAnalysis: 'AI 分析',
+    autoTrading: '自動交易'
   },
   market: {
     searchPlaceholder: '搜尋品種（如 EURUSD, XAUUSD）',
@@ -760,6 +761,48 @@ const base = {
       shortOnly: '僅做空',
       longShort: '多空雙向',
       unknown: '未知'
+    }
+  },
+  autoTrading: {
+    title: '自動交易',
+    status: {
+      enabled: '自動交易已開啟',
+      disabled: '自動交易已關閉',
+      activeStrategies: '活躍策略',
+      todayExecutions: '今日執行',
+      todayProfit: '今日盈虧'
+    },
+    settings: {
+      title: '全域風控設定',
+      maxRiskPercent: '最大風險%',
+      maxRiskPercentHint: '每筆交易風險佔餘額百分比',
+      maxPositions: '最大持倉數',
+      maxPositionsHint: '同時持有的最大倉位數量',
+      maxLotSize: '最大手數',
+      maxLotSizeHint: '每筆交易最大交易量(手)',
+      maxDailyLoss: '每日最大虧損',
+      maxDailyLossHint: '日虧損超過此值時自動停止交易',
+      maxDrawdownPercent: '最大回撤%',
+      maxDrawdownPercentHint: '回撤超過此值時自動停止交易',
+      saveSuccess: '設定已儲存',
+      saveFailed: '儲存設定失敗'
+    },
+    logs: {
+      title: '最近交易日誌',
+      empty: '暫無交易日誌',
+      columns: {
+        time: '時間',
+        symbol: '商品',
+        action: '操作',
+        volume: '數量',
+        price: '價格',
+        profit: '盈虧',
+        ticket: '單號'
+      }
+    },
+    messages: {
+      loadFailed: '載入自動交易資料失敗',
+      toggleFailed: '切換自動交易失敗'
     }
   }
 } as const;

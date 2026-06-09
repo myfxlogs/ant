@@ -144,7 +144,8 @@ const base = {
     assets: '策略资产',
     schedules: '策略调度',
     indicatorCatalog: '指标目录',
-    logs: '系统日志'
+    logs: '系统日志',
+    autoTrading: '自动交易'
   },
   marketplace: {
     title: '策略市场',
@@ -760,6 +761,48 @@ const base = {
       shortOnly: '仅做空',
       longShort: '多空双向',
       unknown: '未知'
+    }
+  },
+  autoTrading: {
+    title: '自动交易',
+    status: {
+      enabled: '自动交易已开启',
+      disabled: '自动交易已关闭',
+      activeStrategies: '活跃策略',
+      todayExecutions: '今日执行',
+      todayProfit: '今日盈亏'
+    },
+    settings: {
+      title: '全局风控设置',
+      maxRiskPercent: '最大风险%',
+      maxRiskPercentHint: '每笔交易风险占余额百分比',
+      maxPositions: '最大持仓数',
+      maxPositionsHint: '同时持有的最大仓位数量',
+      maxLotSize: '最大手数',
+      maxLotSizeHint: '每笔交易最大交易量(手)',
+      maxDailyLoss: '每日最大亏损',
+      maxDailyLossHint: '日亏损超过此值时自动停止交易',
+      maxDrawdownPercent: '最大回撤%',
+      maxDrawdownPercentHint: '回撤超过此值时自动停止交易',
+      saveSuccess: '设置已保存',
+      saveFailed: '保存设置失败'
+    },
+    logs: {
+      title: '最近交易日志',
+      empty: '暂无交易日志',
+      columns: {
+        time: '时间',
+        symbol: '品种',
+        action: '操作',
+        volume: '数量',
+        price: '价格',
+        profit: '盈亏',
+        ticket: '单号'
+      }
+    },
+    messages: {
+      loadFailed: '加载自动交易数据失败',
+      toggleFailed: '切换自动交易失败'
     }
   }
 } as const;

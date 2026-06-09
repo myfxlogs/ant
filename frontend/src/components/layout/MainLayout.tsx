@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Layout } from 'antd';
-import { HomeOutlined, ThunderboltOutlined, HistoryOutlined, UnorderedListOutlined, FolderOutlined, CodeOutlined, ShopOutlined, BulbOutlined } from '@ant-design/icons';
+import { HomeOutlined, ThunderboltOutlined, HistoryOutlined, UnorderedListOutlined, FolderOutlined, CodeOutlined, ShopOutlined, BulbOutlined, SettingOutlined } from '@ant-design/icons';
 import { Outlet } from 'react-router-dom';
 import ContentContainer from '@/components/layout/ContentContainer';
 import { useTranslation } from 'react-i18next';
@@ -43,6 +43,7 @@ export default function MainLayout() {
     { key: '/strategy/workspace', icon: <CodeOutlined size={20} stroke={1.5} />, label: t('menu.strategyWorkspace') },
     { key: '/strategy/assets', icon: <FolderOutlined size={20} stroke={1.5} />, label: t('menu.assets') },
     { key: '/strategy/schedules', icon: <ThunderboltOutlined size={20} stroke={1.5} />, label: t('menu.schedules') },
+    { key: '/auto-trading', icon: <SettingOutlined size={20} stroke={1.5} />, label: t('menu.autoTrading') },
     { key: '/marketplace', icon: <ShopOutlined size={20} stroke={1.5} />, label: t('menu.marketplace') },
     { key: '/strategy/analysis', icon: <BulbOutlined size={20} stroke={1.5} />, label: t('menu.assetAnalysis') },
     { key: '/logs', icon: <HistoryOutlined size={20} stroke={1.5} />, label: t('menu.logs') },
