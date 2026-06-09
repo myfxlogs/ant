@@ -39,10 +39,10 @@ func TestPeriodMs(t *testing.T) {
 
 func TestDefaultPeriods(t *testing.T) {
 	t.Parallel()
-	if len(defaultPeriods) != 3 {
-		t.Errorf("expected 3 default periods, got %d", len(defaultPeriods))
+	if len(defaultPeriods) != 8 {
+		t.Errorf("expected 8 default periods, got %d", len(defaultPeriods))
 	}
-	names := map[string]bool{"1m": true, "1h": true, "1d": true}
+	names := map[string]bool{"1m": true, "5m": true, "15m": true, "30m": true, "1h": true, "4h": true, "1d": true, "1w": true}
 	for _, p := range defaultPeriods {
 		if !names[p.name] {
 			t.Errorf("unexpected period: %q", p.name)

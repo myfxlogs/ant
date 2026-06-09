@@ -21,11 +21,8 @@ func TestRunBacktest_MockFallback(t *testing.T) {
 	if err != nil {
 		t.Fatalf("RunBacktest: %v", err)
 	}
-	if !resp.Msg.Success {
-		t.Error("expected success=true in mock fallback")
-	}
-	if resp.Msg.Metrics != nil {
-		t.Log("metrics populated from python (expected nil in mock fallback)")
+	if resp.Msg.Success {
+		t.Error("expected success=false when backtestClient is nil")
 	}
 }
 
@@ -39,8 +36,8 @@ func TestRunBacktest_NoTemplateId(t *testing.T) {
 	if err != nil {
 		t.Fatalf("RunBacktest: %v", err)
 	}
-	if !resp.Msg.Success {
-		t.Error("expected success=true with empty template (mock fallback)")
+	if resp.Msg.Success {
+		t.Error("expected success=false with empty template")
 	}
 }
 
@@ -49,7 +46,6 @@ func TestSetClient_StrategyServer(t *testing.T) {
 	if srv.backtestClient != nil {
 		t.Error("expected nil client initially")
 	}
-	// SetClient with nil: no panic.
 	srv.SetBacktestClient(nil)
 	if srv.backtestClient != nil {
 		t.Error("expected nil client after SetClient(nil)")
