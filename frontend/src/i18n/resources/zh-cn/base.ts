@@ -100,13 +100,9 @@ const base = {
       day: '天',
       lessThanMinute: '< 1分钟'
     },
-    ok: 'OK',
-    error: 'Error',
-    retry: 'Retry',
-    pageError: 'Page Error',
-    unexpectedError: 'An unexpected error occurred'
-  },
-  language: {
+    ok: '确定',
+    error: '错误',
+    retry: 'Re'重试'   pageError: 'Page '页面错误'unexpectedError: 'An unexpect'发生了意外错误'uage: {
     simplifiedChinese: '简体中文',
     traditionalChinese: '繁體中文',
     english: 'English',
@@ -199,15 +195,9 @@ const base = {
     spread: '点差',
     mid: '中间价',
     allSymbols: 'All Symbols',
-    common: 'Common',
-    selectSymbol: 'Select symbol',
-    noSymbolsFound: 'No symbols found',
-    loadingSymbols: 'Loading...'
-  },
-  topbar: {
-    systemOk: '系统正常运行',
-    profile: '个人信息',
-    settings: '设置',
+    common: 'Commo'全部品种'tSymbol: 'Select symb'常用' noSymbolsFound: 'No sym'选择品种'  loadingSymbols: 'Loading...'
+'未找到品种'   systemOk: '系统正常运行',
+    profil'加载中...'   settings: '设置',
     switchToAdmin: '切换到管理',
     logout: '退出登录',
     user: '用户'

@@ -406,14 +406,11 @@ def run(context):
       allPassed: '所有 6 个 Gate 通过，策略可进入 PromoteToLive 评估',
       failed: '未通过: {{gate}}',
       details: '详细结果',
-      skipped: 'SKIPPED',
-      noData: 'no data',
-      pass: 'PASS',
-      fail: 'FAIL',
-      unknown: 'unknown',
-      selectRun: 'Select backtest run...'
-    },
-    settings: {
+      skipped: '已跳过',
+      noData: 'no '无数据'    pass: 'PASS',
+'通过'fail: 'FAIL',
+  '失败'known: 'unknown',
+ '未知'ctRun: 'Select backtest '选择回测运行...'ngs: {
       fields: {
         baseUrl: 'Base URL',
         apiKey: 'API Key',

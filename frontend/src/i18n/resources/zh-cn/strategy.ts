@@ -1030,14 +1030,10 @@ def run(context):
         saveAs: '另存为',
         loaded: '已加载'
       },
-      watchlist: 'Watchlist',
-      selectAccount: 'Select account',
-      openPositions: 'Open Positions ({{count}})',
-      noOpenPositions: 'No open positions for this account',
-      chartError: 'Chart error — try refreshing',
-      smartTuning: 'Smart Tuning',
-      quickTradeSection: {
-        selectSymbol: 'Select a symbol first',
+      watchlist: '自选',
+      selectAccount: 'Select'选择账户' openPositions: 'Open Positions ('持仓 ({{count}})'itions: 'No open positions for this a'此账户暂无持仓'ror — try refreshing',
+      smartTuning: 'Smar'图表错误 — 请尝试刷新'tion: {
+        selectSymbol: 'Select'智能调参't',
         validVolume: 'Enter a valid volume',
         priceRequired: 'Price is required for Limit/Stop orders',
         orderPlaced: '{{side}} order placed',
