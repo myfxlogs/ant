@@ -7,6 +7,17 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <title>AntTrader</title>
+    <script>
+      // Apply theme before first paint to prevent FOUC.
+      (function () {
+        var theme = 'dark';
+        try {
+          var stored = localStorage.getItem('ant-theme');
+          if (stored === 'light' || stored === 'dark') theme = stored;
+        } catch (_) {}
+        if (theme === 'dark') document.documentElement.classList.add('dark');
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

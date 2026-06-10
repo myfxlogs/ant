@@ -3,6 +3,8 @@ import { MenuOutlined, UserOutlined, SettingOutlined, LogoutOutlined, LineChartO
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import NotificationCenter from '@/components/notification/NotificationCenter';
+import WalletDropdown from '@/components/wallet/WalletDropdown';
+import ThemeToggle from '@/components/theme/ThemeToggle';
 import { isAdmin } from '@/constants/permissions';
 import { useTranslation } from 'react-i18next';
 import type { SupportedLanguage } from '@/i18n';
@@ -44,32 +46,34 @@ export default function TopBar({ isMobile, onMenuToggle, language, languages, la
 
   return (
     <Header className="px-4 sm:px-6 flex items-center justify-between h-14 sm:h-16"
-      style={{ background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(0,0,0,0.08)', position: 'fixed', top: 0, left: isMobile ? 0 : 240, right: 0, zIndex: 100 }}>
+      style={{ background: 'var(--color-bg-header)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--color-border)', position: 'fixed', top: 0, left: isMobile ? 0 : 240, right: 0, zIndex: 100 }}>
       <div className="flex items-center gap-2">
         {isMobile && (
-          <button onClick={onMenuToggle} className="p-2 rounded-lg transition-colors" style={{ color: '#5A6B75' }}>
+          <button onClick={onMenuToggle} className="p-2 rounded-lg transition-colors" style={{ color: 'var(--color-text-secondary)' }}>
             <MenuOutlined size={22} stroke={1.5} />
           </button>
         )}
         {!isMobile && (
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: '#F5F7F9', border: '1px solid rgba(0,0,0,0.08)' }}>
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
             <div className="w-2 h-2 rounded-full" style={{ background: '#00A651', animation: 'pulse 2s infinite' }} />
-            <span className="text-sm" style={{ color: '#5A6B75' }}>{t('topbar.systemOk')}</span>
+            <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{t('topbar.systemOk')}</span>
           </div>
         )}
       </div>
       <div className="flex items-center gap-1 sm:gap-3">
         <Dropdown menu={languageMenu} placement="bottomRight" trigger={['click']}>
-          <div className="flex items-center gap-1.5 p-2 rounded-lg cursor-pointer transition-colors" style={{ background: '#F5F7F9' }}>
+          <div className="flex items-center gap-1.5 p-2 rounded-lg cursor-pointer transition-colors" style={{ background: 'var(--color-bg-secondary)' }}>
             <GlobalOutlined size={18} />
-            <span className="hidden sm:inline text-sm" style={{ color: '#5A6B75' }}>{languages.find(l => l.key === language)?.key.toUpperCase()}</span>
+            <span className="hidden sm:inline text-sm" style={{ color: 'var(--color-text-secondary)' }}>{languages.find(l => l.key === language)?.key.toUpperCase()}</span>
           </div>
         </Dropdown>
+        <ThemeToggle />
         <NotificationCenter />
+        <WalletDropdown />
         <Dropdown menu={{ items: userMenuItems, onClick: handleUserMenu }} placement="bottomRight" trigger={['click']}>
-          <div className="flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors" style={{ background: '#F5F7F9' }}>
+          <div className="flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-colors" style={{ background: 'var(--color-bg-secondary)' }}>
             <Avatar size={32} icon={<UserOutlined />} style={{ background: '#D4AF37' }} />
-            <span className="hidden sm:inline text-sm font-medium" style={{ color: '#141D22' }}>{user?.email?.split('@')[0] || user?.username || ''}</span>
+            <span className="hidden sm:inline text-sm font-medium" style={{ color: 'var(--color-text)' }}>{user?.email?.split('@')[0] || user?.username || ''}</span>
           </div>
         </Dropdown>
       </div>

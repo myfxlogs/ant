@@ -66,6 +66,7 @@ const base = {
     previous: '戻る',
     gotIt: '了解',
     loading: '読み込み中...',
+    searching: '検索中...',
     unknown: '不明',
     enable: '有効化',
     disable: '無効化',
@@ -129,6 +130,7 @@ const base = {
     aiAssistant: 'AIアシスタント',
     strategies: '戦略管理',
     trading: '取引',
+    wallet: 'ウォレット',
     algoDashboard: 'アルゴダッシュボード',
     market: 'マーケット',
     analytics: '分析',
@@ -346,6 +348,7 @@ const base = {
     sidebar: {
       dashboard: 'Dashboard',
       userManagement: 'User Management',
+      walletManagement: 'Wallets',
       accountManagement: 'Account Management',
       tradingMonitor: 'Trading Monitor',
       operationLogs: 'Operation Logs',
@@ -587,6 +590,8 @@ const base = {
         password: 'パスワード',
         role: '役割',
         status: 'ステータス',
+        accountNumber: '口座番号',
+        accountNumberInvalid: '5-6桁、先頭ゼロなし、4と7は不可',
         placeholders: {
           email: 'メールを入力',
           nickname: 'ニックネームを入力',
@@ -635,7 +640,37 @@ const base = {
           lastLogin: '最終ログイン'
         }
       }
+    },
+    wallet: {
+      title: 'ウォレット管理',
+      searchPlaceholder: 'メールまたは口座番号で検索...',
+      noUsers: 'ユーザーが見つかりません',
+      walletFor: 'ウォレット -',
+      accountNumber: '口座番号',
+      adjustBalance: '残高調整',
+      adjustSuccess: '残高を調整しました',
+      adjustFailed: '調整に失敗しました',
+      add: '追加',
+      deduct: '控除',
+      reason: '調整理由...',
     }
+  },
+  wallet: {
+    title: 'マイウォレット',
+    accountNumber: '口座番号',
+    table: {
+      type: '種類',
+      amount: '金額',
+      balanceAfter: '調整後残高',
+      description: '説明',
+      time: '時間',
+    },
+    balance: '残高',
+    frozen: '凍結',
+    frozenBalance: '凍結',
+    currency: '通貨',
+    transactions: '取引履歴',
+    viewDetails: '詳細を見る',
   },
   symbolDetection: {
     label: '検出された銘柄',

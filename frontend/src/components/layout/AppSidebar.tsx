@@ -114,9 +114,9 @@ export default function AppSidebar({
 
   const langDropdown = (
     <Dropdown menu={languageMenu} placement="topLeft" trigger={['click']}>
-      <div className="flex items-center gap-2 p-3 rounded-lg cursor-pointer" style={{ background: '#F5F7F9' }}>
+      <div className="flex items-center gap-2 p-3 rounded-lg cursor-pointer" style={{ background: 'var(--color-bg-secondary)' }}>
         <GlobalOutlined size={18} stroke={1.5} />
-        <span style={{ color: '#141D22' }}>{t(languages.find(l => l.key === language)?.labelKey || 'language.english')}</span>
+        <span style={{ color: 'var(--color-text)' }}>{t(languages.find(l => l.key === language)?.labelKey || 'language.english')}</span>
       </div>
     </Dropdown>
   );
@@ -126,10 +126,10 @@ export default function AppSidebar({
     return (
       <Drawer placement="left" open={drawerVisible} onClose={onDrawerClose} closable={false}
         styles={{ body: { padding: 0 }, header: { display: 'none' }, wrapper: { width: '280px' } }}
-        style={{ background: '#FFFFFF' }}>
-        <div className="h-16 flex items-center justify-center" style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}><BrandLogo /></div>
+        style={{ background: 'var(--color-bg-main)' }}>
+        <div className="h-16 flex items-center justify-center" style={{ borderBottom: '1px solid var(--color-border)' }}><BrandLogo /></div>
         <SidebarMenu items={menuItems} />
-        <div className="absolute bottom-0 left-0 right-0 p-4" style={{ borderTop: '1px solid rgba(0,0,0,0.08)' }}>{langDropdown}</div>
+        <div className="absolute bottom-0 left-0 right-0 p-4" style={{ borderTop: '1px solid var(--color-border)' }}>{langDropdown}</div>
       </Drawer>
     );
   }
@@ -137,9 +137,9 @@ export default function AppSidebar({
   // Desktop sidebar
   return (
     <Layout.Sider trigger={null}
-      style={{ background: '#FFFFFF', borderRight: '1px solid rgba(0,0,0,0.08)', width: 240, minWidth: 240, maxWidth: 240, position: 'fixed', left: 0, top: 0, bottom: 0 }}
+      style={{ background: 'var(--color-bg-main)', borderRight: '1px solid var(--color-border)', width: 240, minWidth: 240, maxWidth: 240, position: 'fixed', left: 0, top: 0, bottom: 0 }}
       width={240}>
-      <div className="h-16 flex items-center justify-center" style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}><BrandLogo /></div>
+      <div className="h-16 flex items-center justify-center" style={{ borderBottom: '1px solid var(--color-border)' }}><BrandLogo /></div>
       <SidebarMenu items={menuItems} />
     </Layout.Sider>
   );

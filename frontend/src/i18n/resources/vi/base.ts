@@ -66,6 +66,7 @@ const base = {
     previous: 'Quay lại',
     gotIt: 'Đã hiểu',
     loading: 'Đang tải...',
+    searching: 'Đang tìm...',
     unknown: 'Không rõ',
     enable: 'Bật',
     disable: 'Tắt',
@@ -129,6 +130,7 @@ const base = {
     aiAssistant: 'Trợ lý AI',
     strategies: 'Quản lý chiến lược',
     trading: 'Giao dịch',
+    wallet: 'Ví',
     algoDashboard: 'Thuật toán',
     market: 'Thị trường',
     analytics: 'Phân tích',
@@ -459,6 +461,7 @@ const base = {
     sidebar: {
       dashboard: 'Dashboard',
       userManagement: 'User Management',
+      walletManagement: 'Wallets',
       accountManagement: 'Account Management',
       tradingMonitor: 'Trading Monitor',
       operationLogs: 'Operation Logs',
@@ -700,6 +703,8 @@ const base = {
         password: 'Mật Khẩu',
         role: 'Vai Trò',
         status: 'Trạng Thái',
+        accountNumber: 'Số Tài Khoản',
+        accountNumberInvalid: '5-6 chữ số, không có số 0 ở đầu, không có 4 hoặc 7',
         placeholders: {
           email: 'Nhập email',
           nickname: 'Nhập biệt danh',
@@ -748,7 +753,37 @@ const base = {
           lastLogin: 'Đăng Nhập Cuối'
         }
       }
+    },
+    wallet: {
+      title: 'Quản Lý Ví',
+      searchPlaceholder: 'Tìm theo email hoặc số tài khoản...',
+      noUsers: 'Không tìm thấy người dùng',
+      walletFor: 'Ví của',
+      accountNumber: 'Số TK',
+      adjustBalance: 'Điều Chỉnh Số Dư',
+      adjustSuccess: 'Đã điều chỉnh số dư',
+      adjustFailed: 'Điều chỉnh thất bại',
+      add: 'Thêm',
+      deduct: 'Trừ',
+      reason: 'Lý do điều chỉnh...',
     }
+  },
+  wallet: {
+    title: 'Ví Của Tôi',
+    accountNumber: 'Số TK',
+    table: {
+      type: 'Loại',
+      amount: 'Số Tiền',
+      balanceAfter: 'Số Dư Sau',
+      description: 'Mô Tả',
+      time: 'Thời Gian',
+    },
+    balance: 'Số Dư',
+    frozen: 'Đóng Băng',
+    frozenBalance: 'Đóng Băng',
+    currency: 'Tiền Tệ',
+    transactions: 'Giao Dịch',
+    viewDetails: 'Xem Chi Tiết',
   },
   symbolDetection: {
     label: 'Biểu tượng được Phát hiện',

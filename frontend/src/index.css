@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --color-primary: #D4AF37;
   --color-primary-light: #E6C65C;
@@ -9,24 +11,56 @@
   --color-bg-card: #FFFFFF;
   --color-bg-secondary: #F5F7F9;
   --color-bg-tertiary: #E8ECF0;
+  --color-bg-header: rgba(255, 255, 255, 0.95);
   --color-border: rgba(0, 0, 0, 0.08);
+  --color-border-light: rgba(0, 0, 0, 0.05);
   --color-text: #141D22;
   --color-text-secondary: #5A6B75;
   --color-text-muted: #8A9AA5;
   --color-success: #00A651;
   --color-danger: #E53935;
   --color-info: #2196F3;
-  
+  --color-shadow: rgba(0, 0, 0, 0.04);
+  --color-shadow-hover: rgba(0, 0, 0, 0.08);
+  --color-scrollbar: rgba(0, 0, 0, 0.15);
+  --color-scrollbar-hover: rgba(0, 0, 0, 0.25);
+  --color-glass-bg: rgba(255, 255, 255, 0.95);
+  --color-gold-bg: rgba(212, 175, 55, 0.1);
+  --color-gold-bg-hover: rgba(212, 175, 55, 0.05);
+  --color-gold-shadow: rgba(212, 175, 55, 0.1);
+
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
+}
+
+.dark {
+  --color-accent: #E2E8F0;
+  --color-bg-main: #0F172A;
+  --color-bg-card: #1E293B;
+  --color-bg-secondary: #1E293B;
+  --color-bg-tertiary: #334155;
+  --color-bg-header: rgba(15, 23, 42, 0.95);
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-light: rgba(255, 255, 255, 0.05);
+  --color-text: #E2E8F0;
+  --color-text-secondary: #94A3B8;
+  --color-text-muted: #64748B;
+  --color-shadow: rgba(0, 0, 0, 0.2);
+  --color-shadow-hover: rgba(0, 0, 0, 0.4);
+  --color-scrollbar: rgba(255, 255, 255, 0.15);
+  --color-scrollbar-hover: rgba(255, 255, 255, 0.25);
+  --color-glass-bg: rgba(30, 41, 59, 0.95);
+  --color-gold-bg: rgba(212, 175, 55, 0.15);
+  --color-gold-bg-hover: rgba(212, 175, 55, 0.08);
+  --color-gold-shadow: rgba(212, 175, 55, 0.15);
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: #FFFFFF;
+  background: var(--color-bg-main);
   color: var(--color-text);
 }
 
@@ -36,12 +70,12 @@ body {
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--color-glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 8px var(--color-shadow);
 }
 
 .glow-primary {
@@ -71,36 +105,36 @@ body {
 }
 
 .input-light {
-  background: #F5F7F9;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  color: #141D22;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
   border-radius: 8px;
   padding: 0.5rem 1rem;
   transition: all 0.2s;
 }
 
 .input-light::placeholder {
-  color: #8A9AA5;
+  color: var(--color-text-muted);
 }
 
 .input-light:focus {
   outline: none;
-  border-color: #D4AF37;
-  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-gold-shadow);
 }
 
 .stat-card {
-  background: #FFFFFF;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 1.25rem;
   transition: all 0.3s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 8px var(--color-shadow);
 }
 
 .stat-card:hover {
   border-color: rgba(212, 175, 55, 0.3);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px var(--color-shadow-hover);
 }
 
 .price-up {
@@ -113,7 +147,7 @@ body {
 
 .scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+  scrollbar-color: var(--color-scrollbar) transparent;
 }
 
 .scrollbar-thin::-webkit-scrollbar {
@@ -126,28 +160,28 @@ body {
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
+  background: var(--color-scrollbar);
   border-radius: 3px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--color-scrollbar-hover);
 }
 
 .ant-card {
-  background: #FFFFFF !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--color-border) !important;
   border-radius: 12px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  box-shadow: 0 2px 8px var(--color-shadow) !important;
 }
 
 .ant-card-head {
-  color: #141D22 !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: var(--color-text) !important;
+  border-bottom: 1px solid var(--color-border) !important;
 }
 
 .ant-card-head-title {
-  color: #141D22 !important;
+  color: var(--color-text) !important;
 }
 
 .ant-table {
@@ -162,40 +196,40 @@ body {
 }
 
 .ant-table-thead > tr > th {
-  background: #F5F7F9 !important;
-  color: #5A6B75 !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+  background: var(--color-bg-secondary) !important;
+  color: var(--color-text-secondary) !important;
+  border-bottom: 1px solid var(--color-border) !important;
 }
 
 .ant-table-tbody > tr > td {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+  border-bottom: 1px solid var(--color-border-light) !important;
 }
 
 .ant-table-tbody > tr:hover > td {
-  background: #F5F7F9 !important;
+  background: var(--color-bg-secondary) !important;
 }
 
 .ant-input,
 .ant-input-affix-wrapper,
 .ant-select-selector,
 .ant-picker {
-  background: #F5F7F9 !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  color: #141D22 !important;
+  background: var(--color-bg-secondary) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text) !important;
   border-radius: 8px !important;
 }
 
 .ant-input::placeholder,
 .ant-input-affix-wrapper input::placeholder {
-  color: #8A9AA5 !important;
+  color: var(--color-text-muted) !important;
 }
 
 .ant-input:focus,
 .ant-input-affix-wrapper-focused,
 .ant-select-focused .ant-select-selector,
 .ant-picker-focused {
-  border-color: #D4AF37 !important;
-  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.1) !important;
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 2px var(--color-gold-shadow) !important;
 }
 
 .ant-btn-primary {
@@ -246,11 +280,11 @@ body {
 }
 
 .ant-statistic-title {
-  color: #8A9AA5 !important;
+  color: var(--color-text-muted) !important;
 }
 
 .ant-statistic-content {
-  color: #141D22 !important;
+  color: var(--color-text) !important;
 }
 
 .ant-tag {
@@ -258,28 +292,28 @@ body {
 }
 
 .ant-spin-dot-item {
-  background-color: #D4AF37 !important;
+  background-color: var(--color-primary) !important;
 }
 
 .ant-message-notice-content {
-  background: #FFFFFF !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  color: #141D22 !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
 .ant-dropdown-menu {
-  background: #FFFFFF !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  background: var(--color-bg-card) !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
 .ant-dropdown-menu-item {
-  color: #141D22 !important;
+  color: var(--color-text) !important;
 }
 
 .ant-dropdown-menu-item:hover {
-  background: #F5F7F9 !important;
+  background: var(--color-bg-secondary) !important;
 }
 
 .ant-menu {
@@ -287,19 +321,19 @@ body {
 }
 
 .ant-menu-item {
-  color: #5A6B75 !important;
+  color: var(--color-text-secondary) !important;
   margin: 4px 8px !important;
   border-radius: 8px !important;
 }
 
 .ant-menu-item-selected {
-  color: #D4AF37 !important;
-  background: rgba(212, 175, 55, 0.1) !important;
+  color: var(--color-primary) !important;
+  background: var(--color-gold-bg) !important;
 }
 
 .ant-menu-item:hover {
-  color: #D4AF37 !important;
-  background: rgba(212, 175, 55, 0.05) !important;
+  color: var(--color-primary) !important;
+  background: var(--color-gold-bg-hover) !important;
 }
 
 .ant-avatar {
@@ -307,13 +341,13 @@ body {
 }
 
 .ant-layout-sider {
-  background: #FFFFFF !important;
-  border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
+  background: var(--color-bg-main) !important;
+  border-right: 1px solid var(--color-border) !important;
 }
 
 .ant-layout-header {
-  background: rgba(255, 255, 255, 0.95) !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+  background: var(--color-bg-header) !important;
+  border-bottom: 1px solid var(--color-border) !important;
   backdrop-filter: blur(12px);
 }
 

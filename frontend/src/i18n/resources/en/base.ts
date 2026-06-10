@@ -73,6 +73,7 @@ const base = {
     previous: 'Previous',
     gotIt: 'Got it',
     loading: 'Loading...',
+    searching: 'Searching...',
     unknown: 'Unknown',
     enable: 'Enable',
     disable: 'Disable',
@@ -129,6 +130,7 @@ const base = {
     aiAssistant: 'AI Assistant',
     strategies: 'Strategies',
     trading: 'Trading',
+    wallet: 'Wallet',
     algoDashboard: 'Algo Dashboard',
     market: 'Market',
     analytics: 'Analytics',
@@ -307,6 +309,7 @@ const base = {
     sidebar: {
       dashboard: 'Dashboard',
       userManagement: 'User Management',
+      walletManagement: 'Wallets',
       accountManagement: 'Account Management',
       tradingMonitor: 'Trading Monitor',
       operationLogs: 'Operation Logs',
@@ -548,6 +551,8 @@ const base = {
         password: 'Password',
         role: 'Role',
         status: 'Status',
+        accountNumber: 'Account Number',
+        accountNumberInvalid: '5-6 digits, no leading 0, no 4 or 7',
         placeholders: {
           email: 'Enter email',
           nickname: 'Enter nickname',
@@ -596,7 +601,37 @@ const base = {
           lastLogin: 'Last Login'
         }
       }
+    },
+    wallet: {
+      title: 'Wallet Management',
+      searchPlaceholder: 'Search by email or account number...',
+      noUsers: 'No users found',
+      walletFor: 'Wallet for',
+      accountNumber: 'Account',
+      adjustBalance: 'Adjust Balance',
+      adjustSuccess: 'Balance adjusted',
+      adjustFailed: 'Adjustment failed',
+      add: 'Add',
+      deduct: 'Deduct',
+      reason: 'Reason for adjustment...',
     }
+  },
+  wallet: {
+    title: 'My Wallet',
+    accountNumber: 'Account',
+    table: {
+      type: 'Type',
+      amount: 'Amount',
+      balanceAfter: 'Balance After',
+      description: 'Description',
+      time: 'Time',
+    },
+    balance: 'Balance',
+    frozen: 'Frozen',
+    frozenBalance: 'Frozen',
+    currency: 'Currency',
+    transactions: 'Transactions',
+    viewDetails: 'View Details',
   },
   errors: {
     not_authenticated: 'Not signed in',

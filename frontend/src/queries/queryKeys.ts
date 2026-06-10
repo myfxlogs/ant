@@ -52,4 +52,8 @@ export const queryKeys = {
   systemAI: {
     configs: ['systemAI', 'configs'] as const,
   },
+  wallet: {
+    all: ['wallet'] as const,
+    transactions: () => [...queryKeys.wallet.all, 'transactions'] as const,
+  },
 };

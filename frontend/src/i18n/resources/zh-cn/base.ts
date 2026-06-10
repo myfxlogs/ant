@@ -68,6 +68,7 @@ const base = {
     previous: '上一步',
     gotIt: '我知道了',
     loading: '加载中...',
+    searching: '搜索中...',
     unknown: '未知',
     enable: '启用',
     disable: '停用',
@@ -129,6 +130,7 @@ const base = {
     aiAssistant: 'AI助手',
     strategies: '策略管理',
     trading: '交易',
+    wallet: '钱包',
     algoDashboard: '算法看板',
     market: '行情',
     analytics: '分析',
@@ -459,6 +461,7 @@ const base = {
     sidebar: {
       dashboard: '仪表盘',
       userManagement: '用户管理',
+      walletManagement: '钱包管理',
       accountManagement: '账户管理',
       tradingMonitor: '交易监控',
       operationLogs: '操作日志',
@@ -527,6 +530,8 @@ const base = {
         nickname: '昵称',
         role: '角色',
         status: '状态',
+        accountNumber: '钱包号',
+        accountNumberInvalid: '5-6位数字，无前导零，不含4和7',
         placeholders: {
           email: '输入邮箱',
           password: '输入密码',
@@ -575,6 +580,19 @@ const base = {
         passwordUpdateFailed: '密码更新失败',
         newPasswordIs: '新密码为: {{password}}'
       }
+    },
+    wallet: {
+      title: '钱包管理',
+      searchPlaceholder: '搜索邮箱或钱包号...',
+      noUsers: '未找到用户',
+      walletFor: '钱包 -',
+      accountNumber: '钱包号',
+      adjustBalance: '调整余额',
+      adjustSuccess: '余额已调整',
+      adjustFailed: '调整失败',
+      add: '增加',
+      deduct: '扣除',
+      reason: '调整原因...',
     },
     config: {
       title: '系统配置',
@@ -749,6 +767,23 @@ const base = {
       confirmGrantOverride: '确认授予该用户豁免权限？',
       confirmRevokeOverride: '确认撤销该用户的豁免权限？'
     }
+  },
+  wallet: {
+    title: '我的钱包',
+    accountNumber: '钱包号',
+    table: {
+      type: '类型',
+      amount: '金额',
+      balanceAfter: '调整后余额',
+      description: '描述',
+      time: '时间',
+    },
+    balance: '余额',
+    frozen: '冻结',
+    frozenBalance: '冻结',
+    currency: '币种',
+    transactions: '交易记录',
+    viewDetails: '查看详情',
   },
   symbolDetection: {
     label: '识别到的交易品种',

@@ -66,6 +66,7 @@ const base = {
     previous: '上一步',
     gotIt: '我知道了',
     loading: '載入中...',
+    searching: '搜尋中...',
     unknown: '未知',
     enable: '啟用',
     disable: '停用',
@@ -129,6 +130,7 @@ const base = {
     aiAssistant: 'AI助手',
     strategies: '策略管理',
     trading: '交易',
+    wallet: '錢包',
     algoDashboard: '演算法看板',
     market: '行情',
     analytics: '分析',
@@ -459,6 +461,7 @@ const base = {
     sidebar: {
       dashboard: 'Dashboard',
       userManagement: 'User Management',
+      walletManagement: 'Wallets',
       accountManagement: 'Account Management',
       tradingMonitor: 'Trading Monitor',
       operationLogs: 'Operation Logs',
@@ -700,6 +703,8 @@ const base = {
         password: '密碼',
         role: '角色',
         status: '狀態',
+        accountNumber: '錢包號',
+        accountNumberInvalid: '5-6位數字，無前導零，不含4和7',
         placeholders: {
           email: '輸入電子郵件',
           nickname: '輸入暱稱',
@@ -748,7 +753,37 @@ const base = {
           lastLogin: '最后登入'
         }
       }
+    },
+    wallet: {
+      title: '錢包管理',
+      searchPlaceholder: '搜尋郵箱或錢包號...',
+      noUsers: '未找到用戶',
+      walletFor: '錢包 -',
+      accountNumber: '錢包號',
+      adjustBalance: '調整餘額',
+      adjustSuccess: '餘額已調整',
+      adjustFailed: '調整失敗',
+      add: '增加',
+      deduct: '扣除',
+      reason: '調整原因...',
     }
+  },
+  wallet: {
+    title: '我的錢包',
+    accountNumber: '錢包號',
+    table: {
+      type: '類型',
+      amount: '金額',
+      balanceAfter: '調整後餘額',
+      description: '描述',
+      time: '時間',
+    },
+    balance: '餘額',
+    frozen: '凍結',
+    frozenBalance: '凍結',
+    currency: '幣種',
+    transactions: '交易記錄',
+    viewDetails: '查看詳情',
   },
   symbolDetection: {
     label: '偵測到的交易品種',

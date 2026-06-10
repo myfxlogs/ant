@@ -3,6 +3,7 @@ import { Card, Table, Tag, Typography, Descriptions } from 'antd';
 import { WalletOutlined, TransactionOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { walletApi } from '@/client/wallet';
+import { queryKeys } from '@/queries/queryKeys';
 import { StatusResult } from '@/components/common/StatusResult';
 import { useMemo } from 'react';
 
@@ -12,12 +13,12 @@ export default function WalletPage() {
   const { t } = useTranslation();
 
   const { data: wallet, isLoading, error, refetch } = useQuery({
-    queryKey: ['wallet'],
+    queryKey: queryKeys.wallet.all,
     queryFn: () => walletApi.getWallet(),
   });
 
   const { data: txData, isLoading: txLoading } = useQuery({
-    queryKey: ['wallet', 'transactions'],
+    queryKey: queryKeys.wallet.transactions(),
     queryFn: () => walletApi.listTransactions(1, 50),
   });
 

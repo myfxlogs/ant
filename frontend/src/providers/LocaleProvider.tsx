@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, theme } from 'antd';
 import dayjs from 'dayjs';
 import i18n, { normalizeLanguage, type SupportedLanguage } from '@/i18n';
+import { useUIStore } from '@/stores/uiStore';
 
 const antdLocaleCache: Record<string, unknown> = {};
 
@@ -23,9 +24,23 @@ const antdLocaleLoaders: Record<string, () => Promise<{ default: unknown }>> = {
 const dayjsLocaleMap: Record<string, string> = { 'zh-cn': 'zh-cn', 'zh-tw': 'zh-tw', ja: 'ja', vi: 'vi' };
 const antdLocaleKeyMap: Record<string, string> = { 'zh-cn': 'zh_CN', 'zh-tw': 'zh_TW', ja: 'ja_JP', vi: 'vi_VN' };
 
+const { darkAlgorithm, defaultAlgorithm } = theme;
+
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLang] = useState<SupportedLanguage>(normalizeLanguage(i18n.language));
   const [antdLocale, setAntdLocale] = useState<unknown>(null);
+  const themeMode = useUIStore((s) => s.theme);
+  const isDark = themeMode === 'dark';
+
+  // Toggle dark class on <html> for Tailwind dark: variants and CSS variable overrides.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isDark) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, [isDark]);
 
   useEffect(() => {
     const handler = (lng: string) => setLang(normalizeLanguage(lng));
@@ -50,5 +65,12 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     }
   }, [lang]);
 
-  return <ConfigProvider locale={antdLocale || undefined}>{children}</ConfigProvider>;
+  return (
+    <ConfigProvider
+      locale={antdLocale || undefined}
+      theme={{ algorithm: isDark ? darkAlgorithm : defaultAlgorithm }}
+    >
+      {children}
+    </ConfigProvider>
+  );
 }
