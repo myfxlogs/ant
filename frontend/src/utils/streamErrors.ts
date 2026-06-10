@@ -32,6 +32,29 @@ export function isLikelyStreamTransportFailure(error: unknown): boolean {
   );
 }
 
+/**
+ * Auth-related errors on StreamService procedures — token is expired or
+ * missing and the reactive refresh has already failed. The user needs to
+ * re-login; the stream cannot recover on its own.
+ */
+export function isStreamAuthFailure(error: unknown): boolean {
+  const e = error as { code?: unknown; message?: unknown; rawMessage?: unknown } | null | undefined;
+  const parts = [
+    String(e?.message ?? ''),
+    String(e?.rawMessage ?? ''),
+    String(error ?? ''),
+  ]
+    .join(' ')
+    .toLowerCase();
+  return (
+    parts.includes('missing request message') ||
+    parts.includes('missing authorization header') ||
+    parts.includes('unauthenticated') ||
+    parts.includes('token expired') ||
+    parts.includes('invalid token')
+  );
+}
+
 export function isStreamServiceProcedure(procLower: string): boolean {
   return procLower.includes('streamservice');
 }

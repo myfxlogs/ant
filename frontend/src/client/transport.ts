@@ -3,7 +3,7 @@ import { ConnectError, Code, type Interceptor } from '@connectrpc/connect';
 import { Modal, message } from 'antd';
 import i18n from '@/i18n';
 import { useAuthStore } from '@/stores/authStore';
-import { isLikelyStreamTransportFailure, isStreamServiceProcedure } from '@/utils/streamErrors';
+import { isLikelyStreamTransportFailure, isStreamAuthFailure, isStreamServiceProcedure } from '@/utils/streamErrors';
 import { translateMaybeI18nKey } from '@/utils/error';
 import { ensureFreshToken, refreshAccessToken } from '@/utils/tokenLifecycle';
 
@@ -114,6 +114,12 @@ const interceptors: Interceptor[] = [
         }
       } else {
         if (isStreamServiceProcedure(proc) && isLikelyStreamTransportFailure(error)) {
+          throw error;
+        }
+        // StreamService auth failure (expired/missing token) — the reactive
+        // refresh interceptor already tried and failed; show friendly re-login prompt.
+        if (isStreamServiceProcedure(proc) && isStreamAuthFailure(error)) {
+          message.error(i18n.t('errors.token_expired'));
           throw error;
         }
         // Skip global toast for user-input validation errors — the caller
