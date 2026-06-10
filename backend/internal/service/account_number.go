@@ -115,6 +115,17 @@ func IsUniqueViolation(err error) bool {
 	return errors.As(err, &pgErr) && pgErr.Code == "23505"
 }
 
+// IsAccountNumberViolation returns true if the error is a UNIQUE violation
+// specifically on the account_number column. Use this to distinguish between
+// account_number collisions (retry) and email collisions (reject).
+func IsAccountNumberViolation(err error) bool {
+	var pgErr *pgconn.PgError
+	if !errors.As(err, &pgErr) || pgErr.Code != "23505" {
+		return false
+	}
+	return pgErr.ConstraintName == "idx_users_account_number"
+}
+
 // randomAccountNumber generates a random valid 6-digit account number using crypto/rand.
 func randomAccountNumber() (string, error) {
 	buf := make([]byte, NumberLength)

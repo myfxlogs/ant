@@ -157,7 +157,7 @@ func (s *AdminUserServer) CreateUser(ctx context.Context, req *connect.Request[a
 		if err == nil {
 			break
 		}
-		if service.IsUniqueViolation(err) {
+		if service.IsAccountNumberViolation(err) {
 			if attempt >= maxRetries {
 				return nil, connect.NewError(connect.CodeAlreadyExists, fmt.Errorf("account number collision after %d retries", maxRetries))
 			}
@@ -171,8 +171,8 @@ func (s *AdminUserServer) CreateUser(ctx context.Context, req *connect.Request[a
 			}
 			continue
 		}
-		// Non-unique error — could be duplicate email.
-		if strings.Contains(err.Error(), "users_email_key") || strings.Contains(err.Error(), "idx_users_email") {
+		if service.IsUniqueViolation(err) {
+			// Non-account_number unique violation → duplicate email.
 			return nil, connect.NewError(connect.CodeAlreadyExists, fmt.Errorf("email already registered"))
 		}
 		return nil, err
