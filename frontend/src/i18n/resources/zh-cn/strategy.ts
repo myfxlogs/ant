@@ -579,8 +579,8 @@ signal = {
         title: '回测报告',
         empty: '暂无回测记录',
         deleteConfirm: '确定要删除这条回测报告吗？',
-          batchDeleteConfirm: '确定要删除 {{count}} 条回测报告吗？',
-          batchDeleteSuccess: '已删除 {{count}} 条回测报告',
+        batchDeleteConfirm: '确定要删除 {{count}} 条回测报告吗？',
+        batchDeleteSuccess: '已删除 {{count}} 条回测报告',
         status: {
           queued: '排队中',
           running: '运行中',

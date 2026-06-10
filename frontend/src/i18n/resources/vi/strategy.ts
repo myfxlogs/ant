@@ -573,6 +573,8 @@ signal = {
         title: 'Báo cáo backtest',
         empty: 'Chưa có backtest',
         deleteConfirm: 'Xóa báo cáo backtest này?',
+        batchDeleteConfirm: 'Xóa {{count}} báo cáo backtest?',
+        batchDeleteSuccess: 'Đã xóa {{count}} báo cáo backtest',
         status: {
           queued: 'Đang chờ',
           running: 'Đang chạy',

@@ -246,6 +246,8 @@ const strategy = {
           createSchedule: 'Create schedule'
         },
         deleteConfirm: 'Delete this run?',
+        batchDeleteConfirm: 'Delete {{count}} backtest report(s)?',
+        batchDeleteSuccess: '{{count}} backtest report(s) deleted',
         status: {
           queued: 'Queued',
           running: 'Running',

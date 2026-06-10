@@ -573,6 +573,8 @@ signal = {
         title: 'バックテストレポート',
         empty: 'バックテスト記録がありません',
         deleteConfirm: 'このバックテストレポートを削除しますか？',
+        batchDeleteConfirm: '{{count}}件のバックテストレポートを削除しますか？',
+        batchDeleteSuccess: '{{count}}件のバックテストレポートを削除しました',
         status: {
           queued: '待機中',
           running: '実行中',

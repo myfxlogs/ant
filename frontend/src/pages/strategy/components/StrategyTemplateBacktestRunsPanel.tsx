@@ -65,10 +65,18 @@ export default function StrategyTemplateBacktestRunsPanel({
     }
   };
   const handleBatchDelete = async (runIds: string[]) => {
+    let failed = 0;
     for (const id of runIds) {
-      await pythonStrategyApi.deleteBacktestRun(id);
+      try {
+        await pythonStrategyApi.deleteBacktestRun(id);
+      } catch {
+        failed++;
+      }
     }
-    onRefresh();
+    await onRefresh();
+    if (failed > 0) {
+      throw new Error(`${failed}/${runIds.length} failed`);
+    }
   };
 
   return (
