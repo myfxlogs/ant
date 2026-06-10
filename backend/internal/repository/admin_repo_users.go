@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -155,43 +156,91 @@ func (r *AdminRepository) RestoreUser(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
+// userFKDependency describes a child table with FK columns referencing users(id).
+type userFKDependency struct {
+	Table   string
+	Columns []string // all FK columns in this table referencing users(id)
+}
+
+// discoverUserFKs queries information_schema to find every table with a
+// foreign key to users(id). New tables are picked up automatically —
+// no hardcoded list to maintain.
+func (r *AdminRepository) discoverUserFKs(ctx context.Context) ([]userFKDependency, error) {
+	rows, err := r.db.Query(ctx, `
+		SELECT tc.table_name,
+		       array_agg(DISTINCT kcu.column_name ORDER BY kcu.column_name) AS columns
+		FROM information_schema.table_constraints tc
+		JOIN information_schema.referential_constraints rc
+		  ON tc.constraint_name = rc.constraint_name
+		 AND tc.constraint_schema = rc.constraint_schema
+		JOIN information_schema.key_column_usage kcu
+		  ON tc.constraint_name = kcu.constraint_name
+		 AND tc.constraint_schema = kcu.constraint_schema
+		JOIN information_schema.constraint_column_usage ccu
+		  ON rc.unique_constraint_name = ccu.constraint_name
+		 AND rc.unique_constraint_schema = ccu.constraint_schema
+		WHERE tc.constraint_type = 'FOREIGN KEY'
+		  AND ccu.table_name = 'users'
+		  AND ccu.column_name = 'id'
+		  AND tc.table_schema = 'public'
+		GROUP BY tc.table_name
+		ORDER BY tc.table_name
+	`)
+	if err != nil {
+		return nil, fmt.Errorf("discover user FKs: %w", err)
+	}
+	defer rows.Close()
+
+	var deps []userFKDependency
+	for rows.Next() {
+		var dep userFKDependency
+		if err := rows.Scan(&dep.Table, &dep.Columns); err != nil {
+			return nil, fmt.Errorf("scan FK dependency: %w", err)
+		}
+		deps = append(deps, dep)
+	}
+	return deps, rows.Err()
+}
+
+// buildAffectedCountQuery builds a UNION ALL query that counts rows in each
+// discovered child table for a given user.
+func buildAffectedCountQuery(deps []userFKDependency) string {
+	if len(deps) == 0 {
+		return `SELECT '', 0 WHERE FALSE`
+	}
+	parts := make([]string, 0, len(deps))
+	for _, dep := range deps {
+		label := fmt.Sprintf("'%s'", dep.Table)
+		if len(dep.Columns) == 1 {
+			parts = append(parts, fmt.Sprintf(
+				`SELECT %s, COUNT(*) FROM %s WHERE %s = $1`,
+				label, dep.Table, dep.Columns[0],
+			))
+		} else {
+			// Multiple FK columns — count rows where ANY column matches.
+			ors := make([]string, len(dep.Columns))
+			for i, col := range dep.Columns {
+				ors[i] = fmt.Sprintf("%s = $1", col)
+			}
+			parts = append(parts, fmt.Sprintf(
+				`SELECT %s, COUNT(*) FROM %s WHERE %s`,
+				label, dep.Table, strings.Join(ors, " OR "),
+			))
+		}
+	}
+	return strings.Join(parts, " UNION ALL ")
+}
+
 // GetAffectedTableCounts returns the number of rows in each child table that
-// reference the given user ID. Uses a single UNION ALL query (one DB round-trip)
-// instead of N individual queries.
+// reference the given user ID. FK dependencies are discovered dynamically from
+// information_schema — no hardcoded table list.
 func (r *AdminRepository) GetAffectedTableCounts(ctx context.Context, userID uuid.UUID) (map[string]int64, error) {
-	const query = `
-		SELECT 'account_connection_logs', COUNT(*) FROM account_connection_logs WHERE user_id = $1
-		UNION ALL
-		SELECT 'admins', COUNT(*) FROM admins WHERE user_id = $1
-		UNION ALL
-		SELECT 'api_keys', COUNT(*) FROM api_keys WHERE user_id = $1
-		UNION ALL
-		SELECT 'order_history', COUNT(*) FROM order_history WHERE user_id = $1
-		UNION ALL
-		SELECT 'strategy_execution_logs', COUNT(*) FROM strategy_execution_logs WHERE user_id = $1
-		UNION ALL
-		SELECT 'system_operation_logs', COUNT(*) FROM system_operation_logs WHERE user_id = $1
-		UNION ALL
-		SELECT 'user_ai_agents', COUNT(*) FROM user_ai_agents WHERE user_id = $1
-		UNION ALL
-		SELECT 'user_strategy_publishes', COUNT(*) FROM user_strategy_publishes WHERE user_id = $1
-		UNION ALL
-		SELECT 'user_subscriptions', COUNT(*) FROM user_subscriptions WHERE subscriber_user_id = $1 OR target_user_id = $1
-		UNION ALL
-		SELECT 'wallet_transactions', COUNT(*) FROM wallet_transactions WHERE user_id = $1
-		UNION ALL
-		SELECT 'marketplace_strategies', COUNT(*) FROM marketplace_strategies WHERE publisher_id = $1
-		UNION ALL
-		SELECT 'platform_strategies', COUNT(*) FROM platform_strategies WHERE published_by = $1
-		UNION ALL
-		SELECT 'sanctioned_countries', COUNT(*) FROM sanctioned_countries WHERE added_by = $1
-		UNION ALL
-		SELECT 'user_jurisdiction', COUNT(*) FROM user_jurisdiction WHERE kyc_verified_by = $1
-		UNION ALL
-		SELECT 'mt_accounts', COUNT(*) FROM mt_accounts WHERE user_id = $1
-		UNION ALL
-		SELECT 'user_wallets', COUNT(*) FROM user_wallets WHERE user_id = $1
-	`
+	deps, err := r.discoverUserFKs(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	query := buildAffectedCountQuery(deps)
 
 	rows, err := r.db.Query(ctx, query, userID)
 	if err != nil {
@@ -199,7 +248,7 @@ func (r *AdminRepository) GetAffectedTableCounts(ctx context.Context, userID uui
 	}
 	defer rows.Close()
 
-	result := make(map[string]int64)
+	result := make(map[string]int64, len(deps))
 	for rows.Next() {
 		var name string
 		var count int64
