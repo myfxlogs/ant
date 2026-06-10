@@ -67,6 +67,27 @@ export function useUserManagement() {
     } catch { message.error(t('admin.userManagement.messages.userDeleteFailed')); }
   };
 
+  const handleBatchDelete = async (ids: string[]) => {
+    try {
+      const resp: any = await adminApi.deleteUsers(ids);
+      if (resp?.failedCount > 0) {
+        message.warning(
+          t('admin.userManagement.messages.batchDeletePartial', {
+            deleted: resp.deletedCount,
+            failed: resp.failedCount,
+          }),
+        );
+      } else {
+        message.success(
+          t('admin.userManagement.messages.batchDeleteSuccess', { count: resp?.deletedCount || ids.length }),
+        );
+      }
+      fetchUsers();
+    } catch {
+      message.error(t('admin.userManagement.messages.userDeleteFailed'));
+    }
+  };
+
   const handleToggleStatus = async (user: UserWithAccounts) => {
     try {
       if (user.status === 'active') {
@@ -120,7 +141,7 @@ export function useUserManagement() {
     createModalVisible, setCreateModalVisible, editModalVisible, setEditModalVisible,
     detailDrawerVisible, setDetailDrawerVisible, passwordModalVisible, setPasswordModalVisible,
     currentUser, createForm, editForm, passwordForm,
-    fetchUsers, handleCreate, handleUpdate, handleDelete, handleToggleStatus,
+    fetchUsers, handleCreate, handleUpdate, handleDelete, handleBatchDelete, handleToggleStatus,
     handleUpdatePassword, showEditModal, showDetailDrawer, showPasswordModal,
   };
 }

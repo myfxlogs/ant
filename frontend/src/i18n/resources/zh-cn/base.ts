@@ -508,7 +508,10 @@ const base = {
         enable: '启用'
       },
       deleteConfirm: {
-        title: '确认删除此用户？此操作不可撤销。'
+        title: '确认删除此用户？此操作不可撤销。',
+        batchDeleteConfirm: '确认删除 {{count}} 个用户？此操作不可撤销。',
+        batchDeleteSuccess: '已删除 {{count}} 个用户',
+        batchDeletePartial: '已删除 {{deleted}} 个，{{failed}} 个失败',
       },
       pagination: {
         total: '共 {{total}} 个用户'

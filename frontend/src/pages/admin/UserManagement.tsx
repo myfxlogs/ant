@@ -1,4 +1,6 @@
-import { Card, Table, Input, Select, Space, Tag, Popconfirm, Button } from 'antd';
+import { useState } from 'react';
+import { Card, Table, Input, Select, Space, Tag, Popconfirm, Button, message } from 'antd';
+import type { TableRowSelection } from 'antd/es/table';
 import { PlusOutlined, DeleteOutlined, UserDeleteOutlined, AuditOutlined, KeyOutlined } from '@ant-design/icons';
 import { formatDateTime } from '@/utils/date';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +18,27 @@ const { Search } = Input;
 export default function UserManagement() {
   const { t } = useTranslation();
   const ctx = useUserManagement();
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [batchDeleting, setBatchDeleting] = useState(false);
+
+  const rowSelection: TableRowSelection<UserWithAccounts> = {
+    selectedRowKeys,
+    onChange: (keys) => setSelectedRowKeys(keys),
+    selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT, Table.SELECTION_NONE],
+  };
+
+  const handleBatchDelete = async () => {
+    if (selectedRowKeys.length === 0) return;
+    setBatchDeleting(true);
+    try {
+      await ctx.handleBatchDelete(selectedRowKeys.map(String));
+      setSelectedRowKeys([]);
+    } catch {
+      message.error(t('common.deleteFailed'));
+    } finally {
+      setBatchDeleting(false);
+    }
+  };
 
   const columns = [
     { title: t('admin.userManagement.table.id'), dataIndex: 'id', key: 'id', width: 100, ellipsis: true },
@@ -75,9 +98,21 @@ export default function UserManagement() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold" style={{ color: '#141D22' }}>{t('admin.userManagement.title')}</h1>
-        <GradientButton icon={<PlusOutlined size={16} />} onClick={() => ctx.setCreateModalVisible(true)}>
+        <Space>
+          {selectedRowKeys.length > 0 && (
+            <Popconfirm
+              title={t('admin.userManagement.batchDeleteConfirm', { count: selectedRowKeys.length })}
+              onConfirm={handleBatchDelete}
+            >
+              <Button danger icon={<DeleteOutlined />} loading={batchDeleting}>
+                {t('common.deleteSelected', { count: selectedRowKeys.length })}
+              </Button>
+            </Popconfirm>
+          )}
+          <GradientButton icon={<PlusOutlined size={16} />} onClick={() => ctx.setCreateModalVisible(true)}>
           {t('admin.userManagement.addUser')}
         </GradientButton>
+        </Space>
       </div>
       <Card>
         <div className="mb-4 flex gap-4 flex-wrap">
@@ -97,7 +132,7 @@ export default function UserManagement() {
             ]} />
         </div>
         <StatusResult error={ctx.error} onRetry={ctx.fetchUsers}>
-          <Table scroll={{ x: 'max-content' }} columns={columns} dataSource={ctx.users} rowKey="id" loading={ctx.loading}
+          <Table rowSelection={rowSelection} scroll={{ x: 'max-content' }} columns={columns} dataSource={ctx.users} rowKey="id" loading={ctx.loading}
             pagination={{
               current: ctx.params.page, pageSize: ctx.params.pageSize, total: ctx.total, showSizeChanger: true,
               showTotal: (total) => t('admin.userManagement.pagination.total', { total }),

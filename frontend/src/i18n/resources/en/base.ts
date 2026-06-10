@@ -532,7 +532,10 @@ const base = {
         total: 'Total {{total}} users'
       },
       deleteConfirm: {
-        title: 'Delete this user? This action cannot be undone.'
+        title: 'Delete this user? This action cannot be undone.',
+        batchDeleteConfirm: 'Delete {{count}} user(s)? This action cannot be undone.',
+        batchDeleteSuccess: '{{count}} user(s) deleted',
+        batchDeletePartial: '{{deleted}} deleted, {{failed}} failed',
       },
       modals: {
         createTitle: 'Create User',

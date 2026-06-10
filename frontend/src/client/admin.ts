@@ -124,6 +124,10 @@ export const adminApi = {
     await adminUserClient.deleteUser({ id });
   },
 
+  deleteUsers: async (ids: string[]) => {
+    return await adminUserClient.deleteUsers({ ids });
+  },
+
   disableUser: async (id: string) => {
     await adminUserClient.disableUser({ id });
   },

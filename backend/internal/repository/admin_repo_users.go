@@ -117,6 +117,19 @@ func (r *AdminRepository) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
+// DeleteUsers deletes multiple users by ID in a single query.
+// Returns the count of actually deleted rows.
+func (r *AdminRepository) DeleteUsers(ctx context.Context, ids []uuid.UUID) (int64, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+	ct, err := r.db.Exec(ctx, `DELETE FROM users WHERE id = ANY($1)`, ids)
+	if err != nil {
+		return 0, fmt.Errorf("delete users: %w", err)
+	}
+	return ct.RowsAffected(), nil
+}
+
 func (r *AdminRepository) SetUserStatus(ctx context.Context, id uuid.UUID, status string) error {
 	result, err := r.db.Exec(ctx,
 		`UPDATE users SET status = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,

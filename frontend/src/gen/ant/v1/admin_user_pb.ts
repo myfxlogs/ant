@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file admin_user.proto.
  */
 export const file_admin_user: GenFile = /*@__PURE__*/
-  fileDesc("ChBhZG1pbl91c2VyLnByb3RvEgZhbnQudjEiwwEKDkRhc2hib2FyZFN0YXRzEhMKC3RvdGFsX3VzZXJzGAEgASgDEhQKDGFjdGl2ZV91c2VycxgCIAEoAxIWCg50b3RhbF9hY2NvdW50cxgDIAEoAxIXCg9vbmxpbmVfYWNjb3VudHMYBCABKAMSFAoMdG9kYXlfdHJhZGVzGAUgASgDEhQKDHRvZGF5X3ZvbHVtZRgGIAEoARIUCgx0b2RheV9wcm9maXQYByABKAESEwoLc3lzdGVtX2xvYWQYCCABKAEiFQoTR2V0RGFzaGJvYXJkUmVxdWVzdCI9ChRHZXREYXNoYm9hcmRSZXNwb25zZRIlCgVzdGF0cxgBIAEoCzIWLmFudC52MS5EYXNoYm9hcmRTdGF0cyJwChJVc2VyQWNjb3VudFN1bW1hcnkSCgoCaWQYASABKAkSDQoFbG9naW4YAiABKAkSDwoHbXRfdHlwZRgDIAEoCRIWCg5icm9rZXJfY29tcGFueRgEIAEoCRIWCg5hY2NvdW50X3N0YXR1cxgFIAEoCSLgAgoQVXNlcldpdGhBY2NvdW50cxIKCgJpZBgBIAEoCRIQCgh1c2VybmFtZRgCIAEoCRINCgVlbWFpbBgDIAEoCRIQCghuaWNrbmFtZRgEIAEoCRIMCgRyb2xlGAUgASgJEg4KBnN0YXR1cxgGIAEoCRIWCg5lbWFpbF92ZXJpZmllZBgHIAEoCBIuCgpjcmVhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIxCg1sYXN0X2xvZ2luX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIsCghhY2NvdW50cxgLIAMoCzIaLmFudC52MS5Vc2VyQWNjb3VudFN1bW1hcnkSFgoOYWNjb3VudF9udW1iZXIYDCABKAkiYQoQTGlzdFVzZXJzUmVxdWVzdBIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBRIOCgZzZWFyY2gYAyABKAkSDgoGc3RhdHVzGAQgASgJEgwKBHJvbGUYBSABKAkiSwoRTGlzdFVzZXJzUmVzcG9uc2USJwoFdXNlcnMYASADKAsyGC5hbnQudjEuVXNlcldpdGhBY2NvdW50cxINCgV0b3RhbBgCIAEoAyJsChFDcmVhdGVVc2VyUmVxdWVzdBIQCgh1c2VybmFtZRgBIAEoCRINCgVlbWFpbBgCIAEoCRIQCghwYXNzd29yZBgDIAEoCRIMCgRyb2xlGAQgASgJEhYKDmFjY291bnRfbnVtYmVyGAUgASgJIiAKEkNyZWF0ZVVzZXJSZXNwb25zZRIKCgJpZBgBIAEoCSJwChFVcGRhdGVVc2VyUmVxdWVzdBIKCgJpZBgBIAEoCRIQCgh1c2VybmFtZRgCIAEoCRINCgVlbWFpbBgDIAEoCRIMCgRyb2xlGAQgASgJEg4KBnN0YXR1cxgFIAEoCRIQCghuaWNrbmFtZRgGIAEoCSIUChJVcGRhdGVVc2VyUmVzcG9uc2UiHwoRRGVsZXRlVXNlclJlcXVlc3QSCgoCaWQYASABKAkiFAoSRGVsZXRlVXNlclJlc3BvbnNlIiAKEkRpc2FibGVVc2VyUmVxdWVzdBIKCgJpZBgBIAEoCSIVChNEaXNhYmxlVXNlclJlc3BvbnNlIh8KEUVuYWJsZVVzZXJSZXF1ZXN0EgoKAmlkGAEgASgJIhQKEkVuYWJsZVVzZXJSZXNwb25zZSImChhSZXNldFVzZXJQYXNzd29yZFJlcXVlc3QSCgoCaWQYASABKAkiMQoZUmVzZXRVc2VyUGFzc3dvcmRSZXNwb25zZRIUCgxuZXdfcGFzc3dvcmQYASABKAky1QQKEEFkbWluVXNlclNlcnZpY2USSQoMR2V0RGFzaGJvYXJkEhsuYW50LnYxLkdldERhc2hib2FyZFJlcXVlc3QaHC5hbnQudjEuR2V0RGFzaGJvYXJkUmVzcG9uc2USQAoJTGlzdFVzZXJzEhguYW50LnYxLkxpc3RVc2Vyc1JlcXVlc3QaGS5hbnQudjEuTGlzdFVzZXJzUmVzcG9uc2USQwoKQ3JlYXRlVXNlchIZLmFudC52MS5DcmVhdGVVc2VyUmVxdWVzdBoaLmFudC52MS5DcmVhdGVVc2VyUmVzcG9uc2USQwoKVXBkYXRlVXNlchIZLmFudC52MS5VcGRhdGVVc2VyUmVxdWVzdBoaLmFudC52MS5VcGRhdGVVc2VyUmVzcG9uc2USQwoKRGVsZXRlVXNlchIZLmFudC52MS5EZWxldGVVc2VyUmVxdWVzdBoaLmFudC52MS5EZWxldGVVc2VyUmVzcG9uc2USRgoLRGlzYWJsZVVzZXISGi5hbnQudjEuRGlzYWJsZVVzZXJSZXF1ZXN0GhsuYW50LnYxLkRpc2FibGVVc2VyUmVzcG9uc2USQwoKRW5hYmxlVXNlchIZLmFudC52MS5FbmFibGVVc2VyUmVxdWVzdBoaLmFudC52MS5FbmFibGVVc2VyUmVzcG9uc2USWAoRUmVzZXRVc2VyUGFzc3dvcmQSIC5hbnQudjEuUmVzZXRVc2VyUGFzc3dvcmRSZXF1ZXN0GiEuYW50LnYxLlJlc2V0VXNlclBhc3N3b3JkUmVzcG9uc2VCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("ChBhZG1pbl91c2VyLnByb3RvEgZhbnQudjEiwwEKDkRhc2hib2FyZFN0YXRzEhMKC3RvdGFsX3VzZXJzGAEgASgDEhQKDGFjdGl2ZV91c2VycxgCIAEoAxIWCg50b3RhbF9hY2NvdW50cxgDIAEoAxIXCg9vbmxpbmVfYWNjb3VudHMYBCABKAMSFAoMdG9kYXlfdHJhZGVzGAUgASgDEhQKDHRvZGF5X3ZvbHVtZRgGIAEoARIUCgx0b2RheV9wcm9maXQYByABKAESEwoLc3lzdGVtX2xvYWQYCCABKAEiFQoTR2V0RGFzaGJvYXJkUmVxdWVzdCI9ChRHZXREYXNoYm9hcmRSZXNwb25zZRIlCgVzdGF0cxgBIAEoCzIWLmFudC52MS5EYXNoYm9hcmRTdGF0cyJwChJVc2VyQWNjb3VudFN1bW1hcnkSCgoCaWQYASABKAkSDQoFbG9naW4YAiABKAkSDwoHbXRfdHlwZRgDIAEoCRIWCg5icm9rZXJfY29tcGFueRgEIAEoCRIWCg5hY2NvdW50X3N0YXR1cxgFIAEoCSLgAgoQVXNlcldpdGhBY2NvdW50cxIKCgJpZBgBIAEoCRIQCgh1c2VybmFtZRgCIAEoCRINCgVlbWFpbBgDIAEoCRIQCghuaWNrbmFtZRgEIAEoCRIMCgRyb2xlGAUgASgJEg4KBnN0YXR1cxgGIAEoCRIWCg5lbWFpbF92ZXJpZmllZBgHIAEoCBIuCgpjcmVhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIxCg1sYXN0X2xvZ2luX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIsCghhY2NvdW50cxgLIAMoCzIaLmFudC52MS5Vc2VyQWNjb3VudFN1bW1hcnkSFgoOYWNjb3VudF9udW1iZXIYDCABKAkiYQoQTGlzdFVzZXJzUmVxdWVzdBIMCgRwYWdlGAEgASgFEhEKCXBhZ2Vfc2l6ZRgCIAEoBRIOCgZzZWFyY2gYAyABKAkSDgoGc3RhdHVzGAQgASgJEgwKBHJvbGUYBSABKAkiSwoRTGlzdFVzZXJzUmVzcG9uc2USJwoFdXNlcnMYASADKAsyGC5hbnQudjEuVXNlcldpdGhBY2NvdW50cxINCgV0b3RhbBgCIAEoAyJsChFDcmVhdGVVc2VyUmVxdWVzdBIQCgh1c2VybmFtZRgBIAEoCRINCgVlbWFpbBgCIAEoCRIQCghwYXNzd29yZBgDIAEoCRIMCgRyb2xlGAQgASgJEhYKDmFjY291bnRfbnVtYmVyGAUgASgJIiAKEkNyZWF0ZVVzZXJSZXNwb25zZRIKCgJpZBgBIAEoCSJwChFVcGRhdGVVc2VyUmVxdWVzdBIKCgJpZBgBIAEoCRIQCgh1c2VybmFtZRgCIAEoCRINCgVlbWFpbBgDIAEoCRIMCgRyb2xlGAQgASgJEg4KBnN0YXR1cxgFIAEoCRIQCghuaWNrbmFtZRgGIAEoCSIUChJVcGRhdGVVc2VyUmVzcG9uc2UiHwoRRGVsZXRlVXNlclJlcXVlc3QSCgoCaWQYASABKAkiFAoSRGVsZXRlVXNlclJlc3BvbnNlIiEKEkRlbGV0ZVVzZXJzUmVxdWVzdBILCgNpZHMYASADKAkiUgoTRGVsZXRlVXNlcnNSZXNwb25zZRIVCg1kZWxldGVkX2NvdW50GAEgASgFEhQKDGZhaWxlZF9jb3VudBgCIAEoBRIOCgZlcnJvcnMYAyADKAkiIAoSRGlzYWJsZVVzZXJSZXF1ZXN0EgoKAmlkGAEgASgJIhUKE0Rpc2FibGVVc2VyUmVzcG9uc2UiHwoRRW5hYmxlVXNlclJlcXVlc3QSCgoCaWQYASABKAkiFAoSRW5hYmxlVXNlclJlc3BvbnNlIiYKGFJlc2V0VXNlclBhc3N3b3JkUmVxdWVzdBIKCgJpZBgBIAEoCSIxChlSZXNldFVzZXJQYXNzd29yZFJlc3BvbnNlEhQKDG5ld19wYXNzd29yZBgBIAEoCTKdBQoQQWRtaW5Vc2VyU2VydmljZRJJCgxHZXREYXNoYm9hcmQSGy5hbnQudjEuR2V0RGFzaGJvYXJkUmVxdWVzdBocLmFudC52MS5HZXREYXNoYm9hcmRSZXNwb25zZRJACglMaXN0VXNlcnMSGC5hbnQudjEuTGlzdFVzZXJzUmVxdWVzdBoZLmFudC52MS5MaXN0VXNlcnNSZXNwb25zZRJDCgpDcmVhdGVVc2VyEhkuYW50LnYxLkNyZWF0ZVVzZXJSZXF1ZXN0GhouYW50LnYxLkNyZWF0ZVVzZXJSZXNwb25zZRJDCgpVcGRhdGVVc2VyEhkuYW50LnYxLlVwZGF0ZVVzZXJSZXF1ZXN0GhouYW50LnYxLlVwZGF0ZVVzZXJSZXNwb25zZRJDCgpEZWxldGVVc2VyEhkuYW50LnYxLkRlbGV0ZVVzZXJSZXF1ZXN0GhouYW50LnYxLkRlbGV0ZVVzZXJSZXNwb25zZRJGCgtEZWxldGVVc2VycxIaLmFudC52MS5EZWxldGVVc2Vyc1JlcXVlc3QaGy5hbnQudjEuRGVsZXRlVXNlcnNSZXNwb25zZRJGCgtEaXNhYmxlVXNlchIaLmFudC52MS5EaXNhYmxlVXNlclJlcXVlc3QaGy5hbnQudjEuRGlzYWJsZVVzZXJSZXNwb25zZRJDCgpFbmFibGVVc2VyEhkuYW50LnYxLkVuYWJsZVVzZXJSZXF1ZXN0GhouYW50LnYxLkVuYWJsZVVzZXJSZXNwb25zZRJYChFSZXNldFVzZXJQYXNzd29yZBIgLmFudC52MS5SZXNldFVzZXJQYXNzd29yZFJlcXVlc3QaIS5hbnQudjEuUmVzZXRVc2VyUGFzc3dvcmRSZXNwb25zZUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message ant.v1.DashboardStats
@@ -406,6 +406,50 @@ export const DeleteUserResponseSchema: GenMessage<DeleteUserResponse> = /*@__PUR
   messageDesc(file_admin_user, 12);
 
 /**
+ * @generated from message ant.v1.DeleteUsersRequest
+ */
+export type DeleteUsersRequest = Message<"ant.v1.DeleteUsersRequest"> & {
+  /**
+   * @generated from field: repeated string ids = 1;
+   */
+  ids: string[];
+};
+
+/**
+ * Describes the message ant.v1.DeleteUsersRequest.
+ * Use `create(DeleteUsersRequestSchema)` to create a new message.
+ */
+export const DeleteUsersRequestSchema: GenMessage<DeleteUsersRequest> = /*@__PURE__*/
+  messageDesc(file_admin_user, 13);
+
+/**
+ * @generated from message ant.v1.DeleteUsersResponse
+ */
+export type DeleteUsersResponse = Message<"ant.v1.DeleteUsersResponse"> & {
+  /**
+   * @generated from field: int32 deleted_count = 1;
+   */
+  deletedCount: number;
+
+  /**
+   * @generated from field: int32 failed_count = 2;
+   */
+  failedCount: number;
+
+  /**
+   * @generated from field: repeated string errors = 3;
+   */
+  errors: string[];
+};
+
+/**
+ * Describes the message ant.v1.DeleteUsersResponse.
+ * Use `create(DeleteUsersResponseSchema)` to create a new message.
+ */
+export const DeleteUsersResponseSchema: GenMessage<DeleteUsersResponse> = /*@__PURE__*/
+  messageDesc(file_admin_user, 14);
+
+/**
  * @generated from message ant.v1.DisableUserRequest
  */
 export type DisableUserRequest = Message<"ant.v1.DisableUserRequest"> & {
@@ -420,7 +464,7 @@ export type DisableUserRequest = Message<"ant.v1.DisableUserRequest"> & {
  * Use `create(DisableUserRequestSchema)` to create a new message.
  */
 export const DisableUserRequestSchema: GenMessage<DisableUserRequest> = /*@__PURE__*/
-  messageDesc(file_admin_user, 13);
+  messageDesc(file_admin_user, 15);
 
 /**
  * @generated from message ant.v1.DisableUserResponse
@@ -433,7 +477,7 @@ export type DisableUserResponse = Message<"ant.v1.DisableUserResponse"> & {
  * Use `create(DisableUserResponseSchema)` to create a new message.
  */
 export const DisableUserResponseSchema: GenMessage<DisableUserResponse> = /*@__PURE__*/
-  messageDesc(file_admin_user, 14);
+  messageDesc(file_admin_user, 16);
 
 /**
  * @generated from message ant.v1.EnableUserRequest
@@ -450,7 +494,7 @@ export type EnableUserRequest = Message<"ant.v1.EnableUserRequest"> & {
  * Use `create(EnableUserRequestSchema)` to create a new message.
  */
 export const EnableUserRequestSchema: GenMessage<EnableUserRequest> = /*@__PURE__*/
-  messageDesc(file_admin_user, 15);
+  messageDesc(file_admin_user, 17);
 
 /**
  * @generated from message ant.v1.EnableUserResponse
@@ -463,7 +507,7 @@ export type EnableUserResponse = Message<"ant.v1.EnableUserResponse"> & {
  * Use `create(EnableUserResponseSchema)` to create a new message.
  */
 export const EnableUserResponseSchema: GenMessage<EnableUserResponse> = /*@__PURE__*/
-  messageDesc(file_admin_user, 16);
+  messageDesc(file_admin_user, 18);
 
 /**
  * @generated from message ant.v1.ResetUserPasswordRequest
@@ -480,7 +524,7 @@ export type ResetUserPasswordRequest = Message<"ant.v1.ResetUserPasswordRequest"
  * Use `create(ResetUserPasswordRequestSchema)` to create a new message.
  */
 export const ResetUserPasswordRequestSchema: GenMessage<ResetUserPasswordRequest> = /*@__PURE__*/
-  messageDesc(file_admin_user, 17);
+  messageDesc(file_admin_user, 19);
 
 /**
  * @generated from message ant.v1.ResetUserPasswordResponse
@@ -497,7 +541,7 @@ export type ResetUserPasswordResponse = Message<"ant.v1.ResetUserPasswordRespons
  * Use `create(ResetUserPasswordResponseSchema)` to create a new message.
  */
 export const ResetUserPasswordResponseSchema: GenMessage<ResetUserPasswordResponse> = /*@__PURE__*/
-  messageDesc(file_admin_user, 18);
+  messageDesc(file_admin_user, 20);
 
 /**
  * @generated from service ant.v1.AdminUserService
@@ -542,6 +586,14 @@ export const AdminUserService: GenService<{
     methodKind: "unary";
     input: typeof DeleteUserRequestSchema;
     output: typeof DeleteUserResponseSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.AdminUserService.DeleteUsers
+   */
+  deleteUsers: {
+    methodKind: "unary";
+    input: typeof DeleteUsersRequestSchema;
+    output: typeof DeleteUsersResponseSchema;
   },
   /**
    * @generated from rpc ant.v1.AdminUserService.DisableUser

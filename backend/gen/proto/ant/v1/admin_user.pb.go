@@ -858,6 +858,110 @@ func (*DeleteUserResponse) Descriptor() ([]byte, []int) {
 	return file_admin_user_proto_rawDescGZIP(), []int{12}
 }
 
+type DeleteUsersRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Ids           []string               `protobuf:"bytes,1,rep,name=ids,proto3" json:"ids,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteUsersRequest) Reset() {
+	*x = DeleteUsersRequest{}
+	mi := &file_admin_user_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteUsersRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteUsersRequest) ProtoMessage() {}
+
+func (x *DeleteUsersRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_admin_user_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteUsersRequest.ProtoReflect.Descriptor instead.
+func (*DeleteUsersRequest) Descriptor() ([]byte, []int) {
+	return file_admin_user_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *DeleteUsersRequest) GetIds() []string {
+	if x != nil {
+		return x.Ids
+	}
+	return nil
+}
+
+type DeleteUsersResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DeletedCount  int32                  `protobuf:"varint,1,opt,name=deleted_count,json=deletedCount,proto3" json:"deleted_count,omitempty"`
+	FailedCount   int32                  `protobuf:"varint,2,opt,name=failed_count,json=failedCount,proto3" json:"failed_count,omitempty"`
+	Errors        []string               `protobuf:"bytes,3,rep,name=errors,proto3" json:"errors,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteUsersResponse) Reset() {
+	*x = DeleteUsersResponse{}
+	mi := &file_admin_user_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteUsersResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteUsersResponse) ProtoMessage() {}
+
+func (x *DeleteUsersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_admin_user_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteUsersResponse.ProtoReflect.Descriptor instead.
+func (*DeleteUsersResponse) Descriptor() ([]byte, []int) {
+	return file_admin_user_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *DeleteUsersResponse) GetDeletedCount() int32 {
+	if x != nil {
+		return x.DeletedCount
+	}
+	return 0
+}
+
+func (x *DeleteUsersResponse) GetFailedCount() int32 {
+	if x != nil {
+		return x.FailedCount
+	}
+	return 0
+}
+
+func (x *DeleteUsersResponse) GetErrors() []string {
+	if x != nil {
+		return x.Errors
+	}
+	return nil
+}
+
 type DisableUserRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -867,7 +971,7 @@ type DisableUserRequest struct {
 
 func (x *DisableUserRequest) Reset() {
 	*x = DisableUserRequest{}
-	mi := &file_admin_user_proto_msgTypes[13]
+	mi := &file_admin_user_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -879,7 +983,7 @@ func (x *DisableUserRequest) String() string {
 func (*DisableUserRequest) ProtoMessage() {}
 
 func (x *DisableUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_user_proto_msgTypes[13]
+	mi := &file_admin_user_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -892,7 +996,7 @@ func (x *DisableUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DisableUserRequest.ProtoReflect.Descriptor instead.
 func (*DisableUserRequest) Descriptor() ([]byte, []int) {
-	return file_admin_user_proto_rawDescGZIP(), []int{13}
+	return file_admin_user_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *DisableUserRequest) GetId() string {
@@ -910,7 +1014,7 @@ type DisableUserResponse struct {
 
 func (x *DisableUserResponse) Reset() {
 	*x = DisableUserResponse{}
-	mi := &file_admin_user_proto_msgTypes[14]
+	mi := &file_admin_user_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -922,7 +1026,7 @@ func (x *DisableUserResponse) String() string {
 func (*DisableUserResponse) ProtoMessage() {}
 
 func (x *DisableUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_user_proto_msgTypes[14]
+	mi := &file_admin_user_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -935,7 +1039,7 @@ func (x *DisableUserResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DisableUserResponse.ProtoReflect.Descriptor instead.
 func (*DisableUserResponse) Descriptor() ([]byte, []int) {
-	return file_admin_user_proto_rawDescGZIP(), []int{14}
+	return file_admin_user_proto_rawDescGZIP(), []int{16}
 }
 
 type EnableUserRequest struct {
@@ -947,7 +1051,7 @@ type EnableUserRequest struct {
 
 func (x *EnableUserRequest) Reset() {
 	*x = EnableUserRequest{}
-	mi := &file_admin_user_proto_msgTypes[15]
+	mi := &file_admin_user_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -959,7 +1063,7 @@ func (x *EnableUserRequest) String() string {
 func (*EnableUserRequest) ProtoMessage() {}
 
 func (x *EnableUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_user_proto_msgTypes[15]
+	mi := &file_admin_user_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -972,7 +1076,7 @@ func (x *EnableUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EnableUserRequest.ProtoReflect.Descriptor instead.
 func (*EnableUserRequest) Descriptor() ([]byte, []int) {
-	return file_admin_user_proto_rawDescGZIP(), []int{15}
+	return file_admin_user_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *EnableUserRequest) GetId() string {
@@ -990,7 +1094,7 @@ type EnableUserResponse struct {
 
 func (x *EnableUserResponse) Reset() {
 	*x = EnableUserResponse{}
-	mi := &file_admin_user_proto_msgTypes[16]
+	mi := &file_admin_user_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1002,7 +1106,7 @@ func (x *EnableUserResponse) String() string {
 func (*EnableUserResponse) ProtoMessage() {}
 
 func (x *EnableUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_user_proto_msgTypes[16]
+	mi := &file_admin_user_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1015,7 +1119,7 @@ func (x *EnableUserResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EnableUserResponse.ProtoReflect.Descriptor instead.
 func (*EnableUserResponse) Descriptor() ([]byte, []int) {
-	return file_admin_user_proto_rawDescGZIP(), []int{16}
+	return file_admin_user_proto_rawDescGZIP(), []int{18}
 }
 
 type ResetUserPasswordRequest struct {
@@ -1027,7 +1131,7 @@ type ResetUserPasswordRequest struct {
 
 func (x *ResetUserPasswordRequest) Reset() {
 	*x = ResetUserPasswordRequest{}
-	mi := &file_admin_user_proto_msgTypes[17]
+	mi := &file_admin_user_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1039,7 +1143,7 @@ func (x *ResetUserPasswordRequest) String() string {
 func (*ResetUserPasswordRequest) ProtoMessage() {}
 
 func (x *ResetUserPasswordRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_user_proto_msgTypes[17]
+	mi := &file_admin_user_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1052,7 +1156,7 @@ func (x *ResetUserPasswordRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResetUserPasswordRequest.ProtoReflect.Descriptor instead.
 func (*ResetUserPasswordRequest) Descriptor() ([]byte, []int) {
-	return file_admin_user_proto_rawDescGZIP(), []int{17}
+	return file_admin_user_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *ResetUserPasswordRequest) GetId() string {
@@ -1071,7 +1175,7 @@ type ResetUserPasswordResponse struct {
 
 func (x *ResetUserPasswordResponse) Reset() {
 	*x = ResetUserPasswordResponse{}
-	mi := &file_admin_user_proto_msgTypes[18]
+	mi := &file_admin_user_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1083,7 +1187,7 @@ func (x *ResetUserPasswordResponse) String() string {
 func (*ResetUserPasswordResponse) ProtoMessage() {}
 
 func (x *ResetUserPasswordResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_user_proto_msgTypes[18]
+	mi := &file_admin_user_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1096,7 +1200,7 @@ func (x *ResetUserPasswordResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResetUserPasswordResponse.ProtoReflect.Descriptor instead.
 func (*ResetUserPasswordResponse) Descriptor() ([]byte, []int) {
-	return file_admin_user_proto_rawDescGZIP(), []int{18}
+	return file_admin_user_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *ResetUserPasswordResponse) GetNewPassword() string {
@@ -1174,7 +1278,13 @@ const file_admin_user_proto_rawDesc = "" +
 	"\x12UpdateUserResponse\"#\n" +
 	"\x11DeleteUserRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x14\n" +
-	"\x12DeleteUserResponse\"$\n" +
+	"\x12DeleteUserResponse\"&\n" +
+	"\x12DeleteUsersRequest\x12\x10\n" +
+	"\x03ids\x18\x01 \x03(\tR\x03ids\"u\n" +
+	"\x13DeleteUsersResponse\x12#\n" +
+	"\rdeleted_count\x18\x01 \x01(\x05R\fdeletedCount\x12!\n" +
+	"\ffailed_count\x18\x02 \x01(\x05R\vfailedCount\x12\x16\n" +
+	"\x06errors\x18\x03 \x03(\tR\x06errors\"$\n" +
 	"\x12DisableUserRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x15\n" +
 	"\x13DisableUserResponse\"#\n" +
@@ -1184,7 +1294,7 @@ const file_admin_user_proto_rawDesc = "" +
 	"\x18ResetUserPasswordRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\">\n" +
 	"\x19ResetUserPasswordResponse\x12!\n" +
-	"\fnew_password\x18\x01 \x01(\tR\vnewPassword2\xd5\x04\n" +
+	"\fnew_password\x18\x01 \x01(\tR\vnewPassword2\x9d\x05\n" +
 	"\x10AdminUserService\x12I\n" +
 	"\fGetDashboard\x12\x1b.ant.v1.GetDashboardRequest\x1a\x1c.ant.v1.GetDashboardResponse\x12@\n" +
 	"\tListUsers\x12\x18.ant.v1.ListUsersRequest\x1a\x19.ant.v1.ListUsersResponse\x12C\n" +
@@ -1194,6 +1304,7 @@ const file_admin_user_proto_rawDesc = "" +
 	"UpdateUser\x12\x19.ant.v1.UpdateUserRequest\x1a\x1a.ant.v1.UpdateUserResponse\x12C\n" +
 	"\n" +
 	"DeleteUser\x12\x19.ant.v1.DeleteUserRequest\x1a\x1a.ant.v1.DeleteUserResponse\x12F\n" +
+	"\vDeleteUsers\x12\x1a.ant.v1.DeleteUsersRequest\x1a\x1b.ant.v1.DeleteUsersResponse\x12F\n" +
 	"\vDisableUser\x12\x1a.ant.v1.DisableUserRequest\x1a\x1b.ant.v1.DisableUserResponse\x12C\n" +
 	"\n" +
 	"EnableUser\x12\x19.ant.v1.EnableUserRequest\x1a\x1a.ant.v1.EnableUserResponse\x12X\n" +
@@ -1211,7 +1322,7 @@ func file_admin_user_proto_rawDescGZIP() []byte {
 	return file_admin_user_proto_rawDescData
 }
 
-var file_admin_user_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_admin_user_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_admin_user_proto_goTypes = []any{
 	(*DashboardStats)(nil),            // 0: ant.v1.DashboardStats
 	(*GetDashboardRequest)(nil),       // 1: ant.v1.GetDashboardRequest
@@ -1226,19 +1337,21 @@ var file_admin_user_proto_goTypes = []any{
 	(*UpdateUserResponse)(nil),        // 10: ant.v1.UpdateUserResponse
 	(*DeleteUserRequest)(nil),         // 11: ant.v1.DeleteUserRequest
 	(*DeleteUserResponse)(nil),        // 12: ant.v1.DeleteUserResponse
-	(*DisableUserRequest)(nil),        // 13: ant.v1.DisableUserRequest
-	(*DisableUserResponse)(nil),       // 14: ant.v1.DisableUserResponse
-	(*EnableUserRequest)(nil),         // 15: ant.v1.EnableUserRequest
-	(*EnableUserResponse)(nil),        // 16: ant.v1.EnableUserResponse
-	(*ResetUserPasswordRequest)(nil),  // 17: ant.v1.ResetUserPasswordRequest
-	(*ResetUserPasswordResponse)(nil), // 18: ant.v1.ResetUserPasswordResponse
-	(*timestamppb.Timestamp)(nil),     // 19: google.protobuf.Timestamp
+	(*DeleteUsersRequest)(nil),        // 13: ant.v1.DeleteUsersRequest
+	(*DeleteUsersResponse)(nil),       // 14: ant.v1.DeleteUsersResponse
+	(*DisableUserRequest)(nil),        // 15: ant.v1.DisableUserRequest
+	(*DisableUserResponse)(nil),       // 16: ant.v1.DisableUserResponse
+	(*EnableUserRequest)(nil),         // 17: ant.v1.EnableUserRequest
+	(*EnableUserResponse)(nil),        // 18: ant.v1.EnableUserResponse
+	(*ResetUserPasswordRequest)(nil),  // 19: ant.v1.ResetUserPasswordRequest
+	(*ResetUserPasswordResponse)(nil), // 20: ant.v1.ResetUserPasswordResponse
+	(*timestamppb.Timestamp)(nil),     // 21: google.protobuf.Timestamp
 }
 var file_admin_user_proto_depIdxs = []int32{
 	0,  // 0: ant.v1.GetDashboardResponse.stats:type_name -> ant.v1.DashboardStats
-	19, // 1: ant.v1.UserWithAccounts.created_at:type_name -> google.protobuf.Timestamp
-	19, // 2: ant.v1.UserWithAccounts.updated_at:type_name -> google.protobuf.Timestamp
-	19, // 3: ant.v1.UserWithAccounts.last_login_at:type_name -> google.protobuf.Timestamp
+	21, // 1: ant.v1.UserWithAccounts.created_at:type_name -> google.protobuf.Timestamp
+	21, // 2: ant.v1.UserWithAccounts.updated_at:type_name -> google.protobuf.Timestamp
+	21, // 3: ant.v1.UserWithAccounts.last_login_at:type_name -> google.protobuf.Timestamp
 	3,  // 4: ant.v1.UserWithAccounts.accounts:type_name -> ant.v1.UserAccountSummary
 	4,  // 5: ant.v1.ListUsersResponse.users:type_name -> ant.v1.UserWithAccounts
 	1,  // 6: ant.v1.AdminUserService.GetDashboard:input_type -> ant.v1.GetDashboardRequest
@@ -1246,19 +1359,21 @@ var file_admin_user_proto_depIdxs = []int32{
 	7,  // 8: ant.v1.AdminUserService.CreateUser:input_type -> ant.v1.CreateUserRequest
 	9,  // 9: ant.v1.AdminUserService.UpdateUser:input_type -> ant.v1.UpdateUserRequest
 	11, // 10: ant.v1.AdminUserService.DeleteUser:input_type -> ant.v1.DeleteUserRequest
-	13, // 11: ant.v1.AdminUserService.DisableUser:input_type -> ant.v1.DisableUserRequest
-	15, // 12: ant.v1.AdminUserService.EnableUser:input_type -> ant.v1.EnableUserRequest
-	17, // 13: ant.v1.AdminUserService.ResetUserPassword:input_type -> ant.v1.ResetUserPasswordRequest
-	2,  // 14: ant.v1.AdminUserService.GetDashboard:output_type -> ant.v1.GetDashboardResponse
-	6,  // 15: ant.v1.AdminUserService.ListUsers:output_type -> ant.v1.ListUsersResponse
-	8,  // 16: ant.v1.AdminUserService.CreateUser:output_type -> ant.v1.CreateUserResponse
-	10, // 17: ant.v1.AdminUserService.UpdateUser:output_type -> ant.v1.UpdateUserResponse
-	12, // 18: ant.v1.AdminUserService.DeleteUser:output_type -> ant.v1.DeleteUserResponse
-	14, // 19: ant.v1.AdminUserService.DisableUser:output_type -> ant.v1.DisableUserResponse
-	16, // 20: ant.v1.AdminUserService.EnableUser:output_type -> ant.v1.EnableUserResponse
-	18, // 21: ant.v1.AdminUserService.ResetUserPassword:output_type -> ant.v1.ResetUserPasswordResponse
-	14, // [14:22] is the sub-list for method output_type
-	6,  // [6:14] is the sub-list for method input_type
+	13, // 11: ant.v1.AdminUserService.DeleteUsers:input_type -> ant.v1.DeleteUsersRequest
+	15, // 12: ant.v1.AdminUserService.DisableUser:input_type -> ant.v1.DisableUserRequest
+	17, // 13: ant.v1.AdminUserService.EnableUser:input_type -> ant.v1.EnableUserRequest
+	19, // 14: ant.v1.AdminUserService.ResetUserPassword:input_type -> ant.v1.ResetUserPasswordRequest
+	2,  // 15: ant.v1.AdminUserService.GetDashboard:output_type -> ant.v1.GetDashboardResponse
+	6,  // 16: ant.v1.AdminUserService.ListUsers:output_type -> ant.v1.ListUsersResponse
+	8,  // 17: ant.v1.AdminUserService.CreateUser:output_type -> ant.v1.CreateUserResponse
+	10, // 18: ant.v1.AdminUserService.UpdateUser:output_type -> ant.v1.UpdateUserResponse
+	12, // 19: ant.v1.AdminUserService.DeleteUser:output_type -> ant.v1.DeleteUserResponse
+	14, // 20: ant.v1.AdminUserService.DeleteUsers:output_type -> ant.v1.DeleteUsersResponse
+	16, // 21: ant.v1.AdminUserService.DisableUser:output_type -> ant.v1.DisableUserResponse
+	18, // 22: ant.v1.AdminUserService.EnableUser:output_type -> ant.v1.EnableUserResponse
+	20, // 23: ant.v1.AdminUserService.ResetUserPassword:output_type -> ant.v1.ResetUserPasswordResponse
+	15, // [15:24] is the sub-list for method output_type
+	6,  // [6:15] is the sub-list for method input_type
 	6,  // [6:6] is the sub-list for extension type_name
 	6,  // [6:6] is the sub-list for extension extendee
 	0,  // [0:6] is the sub-list for field type_name
@@ -1275,7 +1390,7 @@ func file_admin_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_admin_user_proto_rawDesc), len(file_admin_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   19,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

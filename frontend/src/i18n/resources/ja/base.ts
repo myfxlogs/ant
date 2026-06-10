@@ -571,7 +571,10 @@ const base = {
         total: '合計 {{total}} ユーザー'
       },
       deleteConfirm: {
-        title: 'このユーザーを削除しますか？この操作は元に戻せません。'
+        title: 'このユーザーを削除しますか？この操作は元に戻せません。',
+        batchDeleteConfirm: '{{count}}人のユーザーを削除しますか？この操作は元に戻せません。',
+        batchDeleteSuccess: '{{count}}人のユーザーを削除しました',
+        batchDeletePartial: '{{deleted}}人削除、{{failed}}人失敗',
       },
       modals: {
         createTitle: 'ユーザー作成',

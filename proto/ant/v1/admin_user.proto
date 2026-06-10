@@ -12,6 +12,7 @@ service AdminUserService {
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
   rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse);
   rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+  rpc DeleteUsers(DeleteUsersRequest) returns (DeleteUsersResponse);
   rpc DisableUser(DisableUserRequest) returns (DisableUserResponse);
   rpc EnableUser(EnableUserRequest) returns (EnableUserResponse);
   rpc ResetUserPassword(ResetUserPasswordRequest) returns (ResetUserPasswordResponse);
@@ -98,6 +99,16 @@ message DeleteUserRequest {
 }
 
 message DeleteUserResponse {}
+
+message DeleteUsersRequest {
+  repeated string ids = 1;
+}
+
+message DeleteUsersResponse {
+  int32 deleted_count = 1;
+  int32 failed_count = 2;
+  repeated string errors = 3;
+}
 
 message DisableUserRequest {
   string id = 1;

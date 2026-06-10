@@ -48,6 +48,9 @@ const (
 	// AdminUserServiceDeleteUserProcedure is the fully-qualified name of the AdminUserService's
 	// DeleteUser RPC.
 	AdminUserServiceDeleteUserProcedure = "/ant.v1.AdminUserService/DeleteUser"
+	// AdminUserServiceDeleteUsersProcedure is the fully-qualified name of the AdminUserService's
+	// DeleteUsers RPC.
+	AdminUserServiceDeleteUsersProcedure = "/ant.v1.AdminUserService/DeleteUsers"
 	// AdminUserServiceDisableUserProcedure is the fully-qualified name of the AdminUserService's
 	// DisableUser RPC.
 	AdminUserServiceDisableUserProcedure = "/ant.v1.AdminUserService/DisableUser"
@@ -66,6 +69,7 @@ type AdminUserServiceClient interface {
 	CreateUser(context.Context, *connect.Request[v1.CreateUserRequest]) (*connect.Response[v1.CreateUserResponse], error)
 	UpdateUser(context.Context, *connect.Request[v1.UpdateUserRequest]) (*connect.Response[v1.UpdateUserResponse], error)
 	DeleteUser(context.Context, *connect.Request[v1.DeleteUserRequest]) (*connect.Response[v1.DeleteUserResponse], error)
+	DeleteUsers(context.Context, *connect.Request[v1.DeleteUsersRequest]) (*connect.Response[v1.DeleteUsersResponse], error)
 	DisableUser(context.Context, *connect.Request[v1.DisableUserRequest]) (*connect.Response[v1.DisableUserResponse], error)
 	EnableUser(context.Context, *connect.Request[v1.EnableUserRequest]) (*connect.Response[v1.EnableUserResponse], error)
 	ResetUserPassword(context.Context, *connect.Request[v1.ResetUserPasswordRequest]) (*connect.Response[v1.ResetUserPasswordResponse], error)
@@ -112,6 +116,12 @@ func NewAdminUserServiceClient(httpClient connect.HTTPClient, baseURL string, op
 			connect.WithSchema(adminUserServiceMethods.ByName("DeleteUser")),
 			connect.WithClientOptions(opts...),
 		),
+		deleteUsers: connect.NewClient[v1.DeleteUsersRequest, v1.DeleteUsersResponse](
+			httpClient,
+			baseURL+AdminUserServiceDeleteUsersProcedure,
+			connect.WithSchema(adminUserServiceMethods.ByName("DeleteUsers")),
+			connect.WithClientOptions(opts...),
+		),
 		disableUser: connect.NewClient[v1.DisableUserRequest, v1.DisableUserResponse](
 			httpClient,
 			baseURL+AdminUserServiceDisableUserProcedure,
@@ -140,6 +150,7 @@ type adminUserServiceClient struct {
 	createUser        *connect.Client[v1.CreateUserRequest, v1.CreateUserResponse]
 	updateUser        *connect.Client[v1.UpdateUserRequest, v1.UpdateUserResponse]
 	deleteUser        *connect.Client[v1.DeleteUserRequest, v1.DeleteUserResponse]
+	deleteUsers       *connect.Client[v1.DeleteUsersRequest, v1.DeleteUsersResponse]
 	disableUser       *connect.Client[v1.DisableUserRequest, v1.DisableUserResponse]
 	enableUser        *connect.Client[v1.EnableUserRequest, v1.EnableUserResponse]
 	resetUserPassword *connect.Client[v1.ResetUserPasswordRequest, v1.ResetUserPasswordResponse]
@@ -170,6 +181,11 @@ func (c *adminUserServiceClient) DeleteUser(ctx context.Context, req *connect.Re
 	return c.deleteUser.CallUnary(ctx, req)
 }
 
+// DeleteUsers calls ant.v1.AdminUserService.DeleteUsers.
+func (c *adminUserServiceClient) DeleteUsers(ctx context.Context, req *connect.Request[v1.DeleteUsersRequest]) (*connect.Response[v1.DeleteUsersResponse], error) {
+	return c.deleteUsers.CallUnary(ctx, req)
+}
+
 // DisableUser calls ant.v1.AdminUserService.DisableUser.
 func (c *adminUserServiceClient) DisableUser(ctx context.Context, req *connect.Request[v1.DisableUserRequest]) (*connect.Response[v1.DisableUserResponse], error) {
 	return c.disableUser.CallUnary(ctx, req)
@@ -192,6 +208,7 @@ type AdminUserServiceHandler interface {
 	CreateUser(context.Context, *connect.Request[v1.CreateUserRequest]) (*connect.Response[v1.CreateUserResponse], error)
 	UpdateUser(context.Context, *connect.Request[v1.UpdateUserRequest]) (*connect.Response[v1.UpdateUserResponse], error)
 	DeleteUser(context.Context, *connect.Request[v1.DeleteUserRequest]) (*connect.Response[v1.DeleteUserResponse], error)
+	DeleteUsers(context.Context, *connect.Request[v1.DeleteUsersRequest]) (*connect.Response[v1.DeleteUsersResponse], error)
 	DisableUser(context.Context, *connect.Request[v1.DisableUserRequest]) (*connect.Response[v1.DisableUserResponse], error)
 	EnableUser(context.Context, *connect.Request[v1.EnableUserRequest]) (*connect.Response[v1.EnableUserResponse], error)
 	ResetUserPassword(context.Context, *connect.Request[v1.ResetUserPasswordRequest]) (*connect.Response[v1.ResetUserPasswordResponse], error)
@@ -234,6 +251,12 @@ func NewAdminUserServiceHandler(svc AdminUserServiceHandler, opts ...connect.Han
 		connect.WithSchema(adminUserServiceMethods.ByName("DeleteUser")),
 		connect.WithHandlerOptions(opts...),
 	)
+	adminUserServiceDeleteUsersHandler := connect.NewUnaryHandler(
+		AdminUserServiceDeleteUsersProcedure,
+		svc.DeleteUsers,
+		connect.WithSchema(adminUserServiceMethods.ByName("DeleteUsers")),
+		connect.WithHandlerOptions(opts...),
+	)
 	adminUserServiceDisableUserHandler := connect.NewUnaryHandler(
 		AdminUserServiceDisableUserProcedure,
 		svc.DisableUser,
@@ -264,6 +287,8 @@ func NewAdminUserServiceHandler(svc AdminUserServiceHandler, opts ...connect.Han
 			adminUserServiceUpdateUserHandler.ServeHTTP(w, r)
 		case AdminUserServiceDeleteUserProcedure:
 			adminUserServiceDeleteUserHandler.ServeHTTP(w, r)
+		case AdminUserServiceDeleteUsersProcedure:
+			adminUserServiceDeleteUsersHandler.ServeHTTP(w, r)
 		case AdminUserServiceDisableUserProcedure:
 			adminUserServiceDisableUserHandler.ServeHTTP(w, r)
 		case AdminUserServiceEnableUserProcedure:
@@ -297,6 +322,10 @@ func (UnimplementedAdminUserServiceHandler) UpdateUser(context.Context, *connect
 
 func (UnimplementedAdminUserServiceHandler) DeleteUser(context.Context, *connect.Request[v1.DeleteUserRequest]) (*connect.Response[v1.DeleteUserResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AdminUserService.DeleteUser is not implemented"))
+}
+
+func (UnimplementedAdminUserServiceHandler) DeleteUsers(context.Context, *connect.Request[v1.DeleteUsersRequest]) (*connect.Response[v1.DeleteUsersResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AdminUserService.DeleteUsers is not implemented"))
 }
 
 func (UnimplementedAdminUserServiceHandler) DisableUser(context.Context, *connect.Request[v1.DisableUserRequest]) (*connect.Response[v1.DisableUserResponse], error) {

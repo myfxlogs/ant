@@ -684,7 +684,10 @@ const base = {
         total: '共 {{total}} 個用戶'
       },
       deleteConfirm: {
-        title: '確認刪除此用戶？此操作不可復原。'
+        title: '確認刪除此用戶？此操作不可復原。',
+        batchDeleteConfirm: '確認刪除 {{count}} 個用戶？此操作不可復原。',
+        batchDeleteSuccess: '已刪除 {{count}} 個用戶',
+        batchDeletePartial: '已刪除 {{deleted}} 個，{{failed}} 個失敗',
       },
       modals: {
         createTitle: '新建用戶',

@@ -684,7 +684,10 @@ const base = {
         total: 'Tổng {{total}} người dùng'
       },
       deleteConfirm: {
-        title: 'Xóa người dùng này? Hành động này không thể hoàn tác.'
+        title: 'Xóa người dùng này? Hành động này không thể hoàn tác.',
+        batchDeleteConfirm: 'Xóa {{count}} người dùng? Hành động này không thể hoàn tác.',
+        batchDeleteSuccess: 'Đã xóa {{count}} người dùng',
+        batchDeletePartial: 'Đã xóa {{deleted}}, {{failed}} thất bại',
       },
       modals: {
         createTitle: 'Tạo Người Dùng',

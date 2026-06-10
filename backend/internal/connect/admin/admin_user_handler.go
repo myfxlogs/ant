@@ -228,6 +228,61 @@ func (s *AdminUserServer) DeleteUser(ctx context.Context, req *connect.Request[a
 	return connect.NewResponse(&antv1.DeleteUserResponse{}), nil
 }
 
+// DeleteUsers implements the batch-delete RPC for admin user management.
+func (s *AdminUserServer) DeleteUsers(ctx context.Context, req *connect.Request[antv1.DeleteUsersRequest]) (*connect.Response[antv1.DeleteUsersResponse], error) {
+	actorID := getActorID(ctx)
+	ids := req.Msg.Ids
+	if len(ids) == 0 {
+		return connect.NewResponse(&antv1.DeleteUsersResponse{}), nil
+	}
+	adminCount, err := s.repo.CountAdmins(ctx)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	uuids := make([]uuid.UUID, 0, len(ids))
+	var errors []string
+	for _, id := range ids {
+		uid, err := uuid.Parse(id)
+		if err != nil {
+			errors = append(errors, fmt.Sprintf("%s: invalid id", id))
+			continue
+		}
+		// Prevent self-deletion.
+		if actorID != uuid.Nil && actorID == uid {
+			errors = append(errors, fmt.Sprintf("%s: cannot delete yourself", id))
+			continue
+		}
+		// Prevent deleting the last admin.
+		target, err := s.repo.GetUserByID(ctx, uid)
+		if err != nil {
+			errors = append(errors, fmt.Sprintf("%s: %v", id, err))
+			continue
+		}
+		if target != nil && target.Role == "admin" && adminCount <= 1 {
+			errors = append(errors, fmt.Sprintf("%s: cannot delete the last admin", id))
+			continue
+		}
+		uuids = append(uuids, uid)
+	}
+	var deleted int64
+	if len(uuids) > 0 {
+		var err error
+		deleted, err = s.repo.DeleteUsers(ctx, uuids)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+	}
+	s.log.Info("admin: batch delete users",
+		zap.String("actor", actorID.String()),
+		zap.Int64("deleted", deleted),
+		zap.Int("failed", len(errors)))
+	return connect.NewResponse(&antv1.DeleteUsersResponse{
+		DeletedCount: int32(deleted),
+		FailedCount:  int32(len(errors)),
+		Errors:       errors,
+	}), nil
+}
+
 func (s *AdminUserServer) DisableUser(ctx context.Context, req *connect.Request[antv1.DisableUserRequest]) (*connect.Response[antv1.DisableUserResponse], error) {
 	id, err := uuid.Parse(req.Msg.Id)
 	if err != nil {
