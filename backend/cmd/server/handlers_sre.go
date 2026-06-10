@@ -1,6 +1,5 @@
-// Internal SRE endpoints — exempt from ConnectRPC requirement (operational necessity).
-// Kill switches, circuit breakers, and canary configs need plain HTTP (curl-able)
-// to remain functional in degraded states. Auth cookie endpoints are HTTP-native.
+// SRE and platform handlers — ConnectRPC for all business logic.
+// Auth cookie endpoints are HTTP-native (httpOnly cookie requirement).
 package main
 
 import (
@@ -69,7 +68,7 @@ func registerSREHandlers(
 		To:       splitAndTrim(cfg.SMTPTo, ","),
 	}, log)
 	sreHandler := admin.NewSREHandler(sreKillSwitch, sreBreakers, sreCanary, platformSvc, emailNotifier, log)
-	// ConnectRPC handler (proto binary) -- replaces REST endpoints below
+	// AdminSRE — ConnectRPC (proto binary)
 	mux.Handle(antv1c.NewAdminSREServiceHandler(sreHandler, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
 	analyticsRepo := repository.NewAnalyticsRepository(pool)
@@ -117,26 +116,6 @@ func registerSREHandlers(
 	mux.HandleFunc("/api/auth/refresh", authServer.HandleTokenRefresh)
 	mux.HandleFunc("/api/auth/logout", authServer.HandleLogout)
 
-	// SRE control plane HTTP endpoints — table-driven to avoid repetitive closures.
-	type sreRoute struct {
-		path    string
-		handler func(http.ResponseWriter, *http.Request, *interceptor.AuthInterceptor)
-	}
-	for _, rt := range []sreRoute{
-		{"/api/admin/sre/killswitch/status", sreHandler.HandleKillSwitchStatus},
-		{"/api/admin/sre/killswitch/engage", sreHandler.HandleKillSwitchEngage},
-		{"/api/admin/sre/killswitch/disengage", sreHandler.HandleKillSwitchDisengage},
-		{"/api/admin/sre/breakers", sreHandler.HandleBreakersList},
-		{"/api/admin/sre/breakers/reset", sreHandler.HandleBreakerReset},
-		{"/api/admin/sre/canary", sreHandler.HandleCanaryList},
-		{"/api/admin/sre/canary/set", sreHandler.HandleCanarySet},
-		{"/api/admin/sre/canary/delete", sreHandler.HandleCanaryDelete},
-	} {
-		route := rt
-		mux.HandleFunc(route.path, func(w http.ResponseWriter, r *http.Request) {
-			route.handler(w, r, authInterceptor)
-		})
-	}
 
 	// Prometheus /metrics endpoint (M10 ADR-0010 §2.4).
 	mux.Handle("/metrics", mdgateway.MetricsHandler())

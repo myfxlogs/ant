@@ -219,8 +219,7 @@ export default function AccountTradeTabs({
                     onHistoryTradesChange(data?.trades || []);
                     onHistoryTotalChange(Number(data?.total || 0));
                     onHistoryPageChange(page);
-                  }).catch((err) => {
-                    if (import.meta.env.DEV) console.debug('[AccountTradeTabs] pagination error', err);
+                  }).catch(() => {
                     onHistoryPageChange(historyPage); // reset to current page on error
                   }).finally(() => {
                     setLocalHistoryLoading(false);

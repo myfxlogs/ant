@@ -12,6 +12,7 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/interceptor"
+	"anttrader/internal/pkg/ptr"
 	"anttrader/internal/repository"
 )
 
@@ -23,22 +24,22 @@ func validateBacktestRun(run *repository.BacktestRun) {
 		run.Mode = "KLINE_RANGE"
 	}
 	if run.Commission == nil || *run.Commission == 0 {
-		run.Commission = f64Ptr(0.001)
+		run.Commission = ptr.F64(0.001)
 	}
 	if run.Commission != nil && (*run.Commission < 0 || *run.Commission > 10) {
-		run.Commission = f64Ptr(0.001)
+		run.Commission = ptr.F64(0.001)
 	}
 	if run.Slippage != nil && (*run.Slippage < 0 || *run.Slippage > 10) {
-		run.Slippage = f64Ptr(0)
+		run.Slippage = ptr.F64(0)
 	}
 	if run.Leverage == nil || *run.Leverage == 0 {
-		run.Leverage = f64Ptr(1)
+		run.Leverage = ptr.F64(1)
 	}
 	if run.Leverage != nil && (*run.Leverage < 1 || *run.Leverage > 125) {
-		run.Leverage = f64Ptr(1)
+		run.Leverage = ptr.F64(1)
 	}
 	if run.TradeDirection == nil || *run.TradeDirection == "" {
-		run.TradeDirection = strPtr("both")
+		run.TradeDirection = ptr.Str("both")
 	}
 	if run.StrictMode == nil {
 		t := true
@@ -74,15 +75,15 @@ func buildBacktestRunFromRequest(userID uuid.UUID, msg *antv1.StartBacktestRunRe
 		ID: uuid.New(), UserID: userID, AccountID: accountID,
 		Symbol: msg.Symbol, Timeframe: msg.Timeframe,
 		Mode: backtestModeToString(msg.Mode), Status: StatusPending,
-		StrategyCode: strPtr(msg.Code), InitialCapital: f64Ptr(msg.InitialCapital),
+		StrategyCode: ptr.Str(msg.Code), InitialCapital: ptr.F64(msg.InitialCapital),
 	}
 	if run.Mode == "" { run.Mode = "KLINE_RANGE" }
-	if msg.InitialCapital <= 0 { run.InitialCapital = f64Ptr(10000) }
+	if msg.InitialCapital <= 0 { run.InitialCapital = ptr.F64(10000) }
 	if cfg := msg.GetExecutionConfig(); cfg != nil {
-		run.Commission = f64Ptr(cfg.GetCommission())
-		run.Slippage = f64Ptr(cfg.GetSlippage())
-		run.Leverage = f64Ptr(cfg.GetLeverage())
-		run.TradeDirection = strPtr(tradeDirectionToString(cfg.GetTradeDirection()))
+		run.Commission = ptr.F64(cfg.GetCommission())
+		run.Slippage = ptr.F64(cfg.GetSlippage())
+		run.Leverage = ptr.F64(cfg.GetLeverage())
+		run.TradeDirection = ptr.Str(tradeDirectionToString(cfg.GetTradeDirection()))
 		sMode := cfg.GetStrictMode()
 		run.StrictMode = &sMode
 	}

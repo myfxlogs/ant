@@ -1,5 +1,4 @@
-import { Button, Row, Col, InputNumber, DatePicker, Segmented, Dropdown, message, Tooltip, Radio, Switch, Tag, Select } from 'antd';
-import type { MenuProps } from 'antd';
+import { Button, Row, Col, InputNumber, DatePicker, Segmented, Dropdown, Tooltip, Radio, Switch, Tag, Select } from 'antd';
 import { PlayCircleOutlined, SettingOutlined, CaretUpOutlined, CaretDownOutlined, HistoryOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
@@ -8,23 +7,7 @@ import type { StrategyDirective } from '../../hooks/useBacktestParams';
 import { PRESETS } from '../../hooks/useBacktestParams';
 import type { StrategyTemplate } from '@/client/strategy';
 import { StrategyDirectivesCard } from './StrategyDirectivesCard';
-
-const DEFAULTS_KEY = 'ant_backtest_defaults';
-const FACTORY_DEFAULTS = {
-  commission: 0.001, slippage: 0.0, leverage: 1,
-  tradeDirection: 'both', strictMode: true,
-};
-
-function loadDefaults() {
-  try { const raw = localStorage.getItem(DEFAULTS_KEY); return raw ? JSON.parse(raw) : null; }
-  catch { return null; }
-}
-function saveDefaults(vals: Record<string, unknown>) {
-  try { localStorage.setItem(DEFAULTS_KEY, JSON.stringify(vals)); } catch { /* quota exceeded */ }
-}
-function removeDefaults() {
-  try { localStorage.removeItem(DEFAULTS_KEY); } catch { /* ignore */ }
-}
+import { useBacktestDefaults, FACTORY_DEFAULTS } from '../../hooks/useBacktestDefaults';
 
 interface TemplatesProp {
   list: StrategyTemplate[];
@@ -75,31 +58,11 @@ export default function BacktestParamsCard(props: Props) {
   } = props;
 
   const { t } = useTranslation();
-  const saved = loadDefaults();
-  const settingsItems: MenuProps['items'] = [
-    {
-      key: 'save', label: t('strategy.backtestParams.settingsSave'),
-      onClick: () => {
-        saveDefaults({ commission, slippage, leverage, tradeDirection, strictMode });
-        message.success(t('strategy.backtestParams.defaultsSaved'));
-      },
-    },
-    ...(saved ? [{
-      key: 'load', label: t('strategy.backtestParams.settingsLoad'),
-      onClick: () => {
-        onApplyDefaults?.(saved);
-        message.success(t('strategy.backtestParams.defaultsLoaded'));
-      },
-    }] : []),
-    {
-      key: 'reset', label: t('strategy.backtestParams.settingsReset'),
-      onClick: () => {
-        removeDefaults();
-        onApplyDefaults?.(FACTORY_DEFAULTS);
-        message.success(t('strategy.backtestParams.defaultsReset'));
-      },
-    },
-  ];
+  const { settingsItems } = useBacktestDefaults(
+    t,
+    { commission, slippage, leverage, tradeDirection, strictMode },
+    onApplyDefaults,
+  );
 
   const strategyOptions = [
     { value: '__draft__', label: t('strategy.backtestParams.currentDraft') },

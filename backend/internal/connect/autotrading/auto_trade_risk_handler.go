@@ -19,7 +19,7 @@ func (s *AutoTradingServer) GetRiskConfig(
 	ctx context.Context,
 	req *connect.Request[antv1.GetRiskConfigRequest],
 ) (*connect.Response[antv1.RiskConfig], error) {
-	aid, err := parseUUID(req.Msg.AccountId)
+	aid, err := uuid.Parse(req.Msg.AccountId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
@@ -41,7 +41,7 @@ func (s *AutoTradingServer) UpdateRiskConfig(
 		return nil, connect.NewError(connect.CodeUnauthenticated,
 			fmt.Errorf("authentication required"))
 	}
-	aid, err := parseUUID(req.Msg.AccountId)
+	aid, err := uuid.Parse(req.Msg.AccountId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
@@ -159,7 +159,7 @@ func (s *AutoTradingServer) resolveRiskLimit(ctx context.Context, accountID stri
 		maxLotSize:         100.0,
 	}
 
-	aid, err := parseUUID(accountID)
+	aid, err := uuid.Parse(accountID)
 	if err != nil {
 		return defaults
 	}

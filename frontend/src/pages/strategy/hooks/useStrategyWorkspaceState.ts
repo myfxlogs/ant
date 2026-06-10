@@ -38,7 +38,7 @@ export function useStrategyWorkspaceState() {
   // Code + Templates + Save
   const codeCtx = useStrategyCode({
     onValidateResult: (result) => {
-      if (result.sweepDimensions.length > 0) btCtx.updateSweepFromCode(result.sweepDimensions);
+      if (result.sweepDimensions.length > 0) btCtx.tuning.updateSweepFromCode(result.sweepDimensions);
       if (result.strategyDirectives.length > 0) btCtx.updateStrategyDirectivesFromCode(result.strategyDirectives);
     },
   });
@@ -62,7 +62,7 @@ export function useStrategyWorkspaceState() {
   }, [codeCtx.code, symbol, accountId, timeframe, selectedTemplateId, btCtx.runBacktest]);
 
   const handleRunTuning = useCallback(async (): Promise<string> => {
-    return btCtx.runTuning({
+    return btCtx.tuning.run({
       code: codeCtx.code, symbol, timeframe,
       startDate: btCtx.startDate, endDate: btCtx.endDate,
       templateId: selectedTemplateId || undefined,
@@ -85,7 +85,7 @@ export function useStrategyWorkspaceState() {
       const { pythonStrategyApi } = await import('@/client/pythonStrategy');
       const resp = await pythonStrategyApi.listBacktestRuns({ accountId, limit: 1 });
       if (resp.runs?.length) setHistoryRunId(resp.runs[0].id);
-    } catch (e) { console.warn('fetch history run failed', e); }
+    } catch { /* best-effort: open drawer regardless */ }
     setHistoryDrawerOpen(true);
   }, [accountId]);
   const handleCloseHistory = useCallback(() => { setHistoryDrawerOpen(false); setHistoryRunId(''); }, []);
@@ -125,13 +125,13 @@ export function useStrategyWorkspaceState() {
       runId: btCtx.backtestRunId, chartTrades: btCtx.chartTrades, run: handleRunBacktest,
     },
     tuning: {
-      subTab: btCtx.subTab, setSubTab: btCtx.setSubTab,
-      method: btCtx.tuneMethod, setMethod: btCtx.setTuneMethod,
-      sweepDimensions: btCtx.sweepDimensions, toggleDimension: btCtx.toggleDimension,
-      enabledDims: btCtx.enabledSweepDims, cartesianSize: btCtx.cartesianSize,
-      running: btCtx.tuningRunning, run: handleRunTuning,
+      subTab: btCtx.tuning.subTab, setSubTab: btCtx.tuning.setSubTab,
+      method: btCtx.tuning.method, setMethod: btCtx.tuning.setMethod,
+      sweepDimensions: btCtx.tuning.sweepDimensions, toggleDimension: btCtx.tuning.toggleDimension,
+      enabledDims: btCtx.tuning.enabledDims, cartesianSize: btCtx.tuning.cartesianSize,
+      running: btCtx.tuning.running, run: handleRunTuning,
     },
-    gate: { loading: btCtx.gateLoading, gates: btCtx.gateGates, summary: btCtx.gateSummary, error: btCtx.gateError, run: btCtx.runGate },
+    gate: { loading: btCtx.gate.loading, gates: btCtx.gate.gates, summary: btCtx.gate.summary, error: btCtx.gate.error, run: btCtx.gate.run },
     quickTrade: { positionCount: qt.positionCount, allPositions: qt.allPositions, qtPositions: qt.qtPositions, qtRecentTrades: qt.qtRecentTrades, handleClosePosition: qt.handleClosePosition },
     layout: { codePanelVisible, setCodePanelVisible, positionsPanelVisible, setPositionsPanelVisible, quickTradeVisible, setQuickTradeVisible },
     history: { drawerOpen: historyDrawerOpen, runId: historyRunId, open: handleOpenHistory, close: handleCloseHistory },

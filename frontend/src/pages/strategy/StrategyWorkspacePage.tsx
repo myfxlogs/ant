@@ -1,8 +1,7 @@
-import React, { Suspense, lazy, useState, useEffect } from 'react';
-import { Collapse, Grid, Button, Typography, Result } from 'antd';
-import { DoubleRightOutlined, DoubleLeftOutlined, CodeOutlined } from '@ant-design/icons';
+import { Suspense, lazy } from 'react';
+import { Collapse, Grid } from 'antd';
+import { DoubleRightOutlined, DoubleLeftOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import { useStrategyWorkspaceState, DATE_PRESETS } from './hooks/useStrategyWorkspaceState';
 import WorkspaceCodePanel from './components/workspace/WorkspaceCodePanel';
 import WorkspaceBacktestPanel from './components/workspace/WorkspaceBacktestPanel';
@@ -11,78 +10,30 @@ import WorkspaceToolbar from './components/workspace/WorkspaceToolbar';
 import BacktestParamsCard from './components/workspace/BacktestParamsCard';
 import MiniPositionsTable from './components/workspace/MiniPositionsTable';
 import AIChatPanel from '@/components/strategy/AIChatPanel';
-import { aiClient } from '@/client/connect';
 import { useAuthStore } from '@/stores/authStore';
-import type { CodeChatMessage } from '@/client/codeAssist';
 import PriceChart from '@/components/chart/PriceChart';
 import BacktestRunDrawer from '@/components/strategy/BacktestRunDrawer';
+import WorkspaceErrorBoundary from './components/workspace/WorkspaceErrorBoundary';
+import MobileGuard from './components/workspace/MobileGuard';
+import { useWorkspaceSession } from './hooks/useWorkspaceSession';
 import { CODE_PANEL_WIDTH, POSITIONS_PANEL_WIDTH, C, QuickTradeSection, SaveTemplateWrapper } from './WorkspaceLayout';
 
 const SaveTemplateModal = lazy(() => import('@/components/strategy/SaveTemplateModal'));
 
-// Lightweight error boundary to prevent chart/editor crashes from taking down the entire workspace.
-class WorkspaceErrorBoundary extends React.Component<{ children: React.ReactNode; fallback: React.ReactNode }, { hasError: boolean }> {
-  constructor(props: { children: React.ReactNode; fallback: React.ReactNode }) { super(props); this.state = { hasError: false }; }
-  static getDerivedStateFromError() { return { hasError: true }; }
-  render() { return this.state.hasError ? this.props.fallback : this.props.children; }
-}
-
 export default function StrategyWorkspacePage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const screens = Grid.useBreakpoint();
   const ws = useStrategyWorkspaceState();
   const userId = useAuthStore(s => s.user?.id);
-
-  // Resolve AI session on workspace mount — enables cross-device chat history sync
-  const [sessionId, setSessionId] = useState<string>('');
-  const [chatHistory, setChatHistory] = useState<CodeChatMessage[]>([]);
-  useEffect(() => {
-    if (!userId) return;
-    const strategyKey = `draft:${userId}:${ws.account.symbol || ''}:${ws.account.timeframe || ''}`;
-    aiClient.resolveSession({ strategyKey }).then(res => {
-      setSessionId(res.sessionId);
-      setChatHistory(res.messages || []);
-    }).catch(err => {
-      console.warn('ResolveSession failed, AI chat will work without persistence:', err);
-    });
-  }, [userId, ws.account.symbol, ws.account.timeframe]);
-
-  // Migrate session key when strategy is saved: draft:* → strategy:<id>
-  const lastSavedId = ws.code.lastSavedId;
-  useEffect(() => {
-    if (!lastSavedId || !sessionId) return;
-    const newKey = `strategy:${lastSavedId}`;
-    aiClient.updateSessionStrategyKey({ sessionId, strategyKey: newKey }).then(() => {
-      // Re-resolve with the new strategy key so future loads use strategy:<id>
-      aiClient.resolveSession({ strategyKey: newKey }).then(res => {
-        setSessionId(res.sessionId);
-        setChatHistory(res.messages || []);
-      }).catch(() => {});
-    }).catch(err => {
-      console.warn('Session key migration failed:', err);
-    });
-  }, [lastSavedId, sessionId]);
+  const { sessionId, chatHistory } = useWorkspaceSession(
+    userId,
+    ws.account.symbol,
+    ws.account.timeframe,
+    ws.code.lastSavedId,
+  );
 
   // The workspace uses fixed-width panels (750+520 px) and is unusable on narrow screens.
-  // Show a guard page with a link to strategy templates instead.
-  if (!screens.lg) {
-    return (
-      <Result
-        icon={<CodeOutlined style={{ color: '#D4AF37', fontSize: 64 }} />}
-        title={t('strategy.workspace.mobileTitle', { defaultValue: 'Desktop Required' })}
-        subTitle={t('strategy.workspace.mobileSubtitle', { defaultValue: 'The Strategy Workspace needs a larger screen. Please switch to a desktop device, or browse strategy templates instead.' })}
-        extra={
-          <Button type="primary" onClick={() => navigate('/strategy/templates')}>
-            {t('strategy.workspace.mobileCta', { defaultValue: 'Go to Strategy Templates' })}
-          </Button>
-        }
-      />
-    );
-  }
-
-  // Chart trades come from the backtest trades API (fetched on completion),
-  // not from metrics.trades (which doesn't exist in the BacktestRunUpdate proto).
+  if (!screens.lg) return <MobileGuard />;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 112px)', background: '#fff' }}>

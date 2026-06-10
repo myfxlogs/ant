@@ -160,15 +160,7 @@ func parseExecutionAssumptions(raw []byte) *antv1.ExecutionAssumptions {
 	return resp.GetExecutionAssumptions()
 }
 
-func strPtr(s string) *string {
-	if s == "" {
-		return nil
-	}
-	return &s
-}
 
-func f64Ptr(v float64) *float64 { return &v }
-func boolPtr(v bool) *bool { return &v }
 
 // tradeDirectionToString converts proto TradeDirection enum to DB string.
 func tradeDirectionToString(d antv1.TradeDirection) string {

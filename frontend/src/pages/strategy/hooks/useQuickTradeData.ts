@@ -53,7 +53,7 @@ export function useQuickTradeData(accountId: string, symbol: string) {
         closeTime: o.closeTime ? new Date(o.closeTime * 1000).toISOString() : undefined,
         created_at: o.openTime ? new Date(o.openTime * 1000).toISOString() : undefined,
       })));
-    } catch (e) { console.warn('fetch trade history failed', e); }
+    } catch { /* trade history fetch is best-effort */ }
   }, [accountId, financialsReady]);
 
   const queryClient = useQueryClient();

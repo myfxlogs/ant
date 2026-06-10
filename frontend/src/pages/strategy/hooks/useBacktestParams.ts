@@ -1,24 +1,21 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
-import { gateApi } from '@/client/gate';
 import { backtestRunsApi, type BacktestTrade } from '@/client/backtestRuns';
-import type { GateResult, GatePipelineSummary } from '@/gen/ant/v1/ai_gate_pb';
 import {
-  backendDirectivesToStrategyDirectives, backendSweepToSweepDimensions,
-  PRESETS, DATE_PRESETS, DEFAULT_SWEEP_DIMS, dateFromPreset,
-  TIMEFRAME_MAX_MONTHS, OPTIMIZER_INFO,
+  backendDirectivesToStrategyDirectives,
+  PRESETS, DATE_PRESETS, dateFromPreset,
+  TIMEFRAME_MAX_MONTHS,
 } from './backtestParamHelpers';
-import type {
-  StrategyDirective, SweepDimension, PresetKey, TuneMethod,
-} from './backtestParamHelpers';
+import type { StrategyDirective, PresetKey } from './backtestParamHelpers';
+import { useTuning } from './useTuning';
+import { useGateEvaluation } from './useGateEvaluation';
 
-export type { StrategyDirective, SweepDimension, PresetKey, TuneMethod };
-export { PRESETS, DATE_PRESETS, OPTIMIZER_INFO };
+export type { StrategyDirective, PresetKey };
+export { PRESETS, DATE_PRESETS };
 
 export type BacktestStatus = 'idle' | 'running' | 'completed' | 'error';
-export type BacktestSubTab = 'results' | 'tuning' | 'gate';
 
 /** Chart-ready trade for klinecharts backtest overlay. */
 export interface ChartTrade {
@@ -57,6 +54,17 @@ export function useBacktestParams() {
   const [paramsExpanded, setParamsExpanded] = useState(true);
   const [resultsExpanded, setResultsExpanded] = useState(false);
   const [strategyDirectives, setStrategyDirectives] = useState<StrategyDirective[]>([]);
+
+  const [backtestRunId, setBacktestRunId] = useState('');
+  const [chartTrades, setChartTrades] = useState<ChartTrade[]>([]);
+  const backtestWatchRef = useRef<(() => void) | null>(null);
+
+  // Sub-hooks: tuning and gate evaluation are separate functional domains.
+  const tuning = useTuning(t);
+  const gate = useGateEvaluation();
+
+  // Cleanup all SSE/watch connections on unmount.
+  useEffect(() => () => { backtestWatchRef.current?.(); }, []);
 
   useEffect(() => {
     if (status === 'completed') setResultsExpanded(true);
@@ -108,7 +116,7 @@ export function useBacktestParams() {
       });
       if (!result.runId) throw new Error('No run ID');
       setBacktestRunId(result.runId);
-      setStatus('running'); setGateGates([]); setGateSummary(null); setGateError('');
+      setStatus('running');
       setExecutionAssumptions(null);
       // Stop previous watch before starting a new one.
       backtestWatchRef.current?.();
@@ -130,8 +138,7 @@ export function useBacktestParams() {
                 closePrice: t.close_price,
                 pnl: t.pnl,
               })));
-            }).catch((e: unknown) => {
-              console.warn('Failed to fetch backtest trades for chart markers:', e);
+            }).catch(() => {
               setChartTrades([]);
             });
           } else { setChartTrades([]); }
@@ -142,93 +149,7 @@ export function useBacktestParams() {
       message.error(e?.message || t('strategy.backtestParams.backtestFailed'));
       setStatus('error'); setErrorMsg(e?.message || 'Unknown error');
     } finally { setSubmitting(false); }
-  }, [initialCapital, commission, slippage, leverage, tradeDirection, strictMode, startDate, endDate]);
-
-  // Smart Tuning.
-  const [subTab, setSubTab] = useState<BacktestSubTab>('results');
-  const [tuneMethod, setTuneMethod] = useState<TuneMethod>('grid');
-  const [sweepDimensions, setSweepDimensions] = useState<SweepDimension[]>(DEFAULT_SWEEP_DIMS);
-
-  const updateSweepFromCode = useCallback((dims: { key: string; type: string; default: number; min: number; max: number; step: number; hasRange: boolean }[]) => {
-    const extracted = backendSweepToSweepDimensions(dims);
-    if (extracted.length > 0) { setSweepDimensions(extracted); }
-  }, []);
-  const [tuningRunning, setTuningRunning] = useState(false);
-  const [backtestRunId, setBacktestRunId] = useState('');
-  const [chartTrades, setChartTrades] = useState<ChartTrade[]>([]);
-
-  // Gate evaluation.
-  const [gateLoading, setGateLoading] = useState(false);
-  const [gateGates, setGateGates] = useState<GateResult[]>([]);
-  const [gateSummary, setGateSummary] = useState<GatePipelineSummary | null>(null);
-  const [gateError, setGateError] = useState('');
-  const gateStopRef = useRef<(() => void) | null>(null);
-  const backtestWatchRef = useRef<(() => void) | null>(null);
-
-  // Cleanup all SSE/watch connections on unmount.
-  useEffect(() => () => {
-    gateStopRef.current?.();
-    backtestWatchRef.current?.();
-  }, []);
-
-  const enabledSweepDims = useMemo(() => sweepDimensions.filter(d => d.enabled), [sweepDimensions]);
-  const cartesianSize = useMemo(() => enabledSweepDims.reduce((acc, d) => acc * d.values.length, 1), [enabledSweepDims]);
-
-  const toggleDimension = useCallback((key: string) => {
-    setSweepDimensions(prev => prev.map(d => d.key === key ? { ...d, enabled: !d.enabled } : d));
-  }, []);
-
-  const runTuning = useCallback(async (params: {
-    code: string; symbol: string; timeframe: string;
-    startDate: string; endDate: string;
-    templateId?: string;
-  }): Promise<string> => {
-    setTuningRunning(true);
-    try {
-      const paramSpace: Record<string, number[]> = {};
-      const enabled = sweepDimensions.filter(d => d.enabled);
-      for (const dim of enabled) {
-        if (dim.values && dim.values.length > 0) paramSpace[dim.key] = dim.values as number[];
-        else paramSpace[dim.key] = [0.01, 0.02, 0.03, 0.05, 0.10];
-      }
-      const { strategyExperimentApi } = await import('@/client/strategyExperiment');
-      const fromMs = params.startDate ? new Date(params.startDate).getTime() : 0;
-      const toMs = params.endDate ? new Date(params.endDate).getTime() : 0;
-      const result = await strategyExperimentApi.submit({
-        baseTemplateId: params.templateId || '',
-        parameterSpace: paramSpace as Record<string, unknown>,
-        searchMethod: tuneMethod,
-        maxCandidates: Math.min(cartesianSize || 24, 48),
-        objective: 'balanced',
-        strategyCode: params.code || '',
-        symbol: params.symbol || '',
-        timeframe: params.timeframe || '',
-        fromTsUnixMs: BigInt(fromMs),
-        toTsUnixMs: BigInt(toMs),
-      });
-      message.success(t('strategy.tuning.started'));
-      return result.experiment?.id || result.jobId || '';
-    } catch (e: any) {
-      message.error(e?.message || 'Tuning failed');
-      return '';
-    } finally { setTuningRunning(false); }
-  }, [sweepDimensions, tuneMethod, cartesianSize]);
-
-  const runGate = useCallback(() => {
-    if (!backtestRunId) return;
-    gateStopRef.current?.();
-    setGateLoading(true); setGateGates([]); setGateSummary(null); setGateError('');
-    setSubTab('gate');
-    const stop = gateApi.runEvaluation(
-      { backtestRunId },
-      {
-        onGate: (g) => setGateGates(prev => [...prev, g]),
-        onCompleted: (s) => { setGateSummary(s); setGateLoading(false); },
-        onError: (e) => { setGateError(String(e?.message ?? e ?? 'Unknown error')); setGateLoading(false); },
-      },
-    );
-    gateStopRef.current = stop;
-  }, [backtestRunId]);
+  }, [initialCapital, commission, slippage, leverage, tradeDirection, strictMode, startDate, endDate, t]);
 
   // applyDefaults bulk-sets multiple params at once (for Settings → Load/Reset).
   const applyDefaults = useCallback((d: {
@@ -254,9 +175,21 @@ export function useBacktestParams() {
     strategyDirectives, updateStrategyDirectivesFromCode,
     applyDefaults, applyPreset, applyDatePreset, getTimeframeWarning,
     runBacktest,
-    subTab, setSubTab, tuneMethod, setTuneMethod,
-    sweepDimensions, updateSweepFromCode, toggleDimension, enabledSweepDims, cartesianSize,
-    tuningRunning, runTuning,
-    backtestRunId, chartTrades, gateLoading, gateGates, gateSummary, gateError, runGate,
+    backtestRunId, chartTrades,
+    // Tuning domain (delegated).
+    tuning: {
+      subTab: tuning.subTab, setSubTab: tuning.setSubTab,
+      method: tuning.tuneMethod, setMethod: tuning.setTuneMethod,
+      sweepDimensions: tuning.sweepDimensions, updateSweepFromCode: tuning.updateSweepFromCode,
+      toggleDimension: tuning.toggleDimension,
+      enabledDims: tuning.enabledSweepDims, cartesianSize: tuning.cartesianSize,
+      running: tuning.tuningRunning, run: tuning.runTuning,
+    },
+    // Gate domain (delegated).
+    gate: {
+      loading: gate.gateLoading, gates: gate.gateGates,
+      summary: gate.gateSummary, error: gate.gateError,
+      run: () => gate.runGate(backtestRunId, () => tuning.setSubTab('gate')),
+    },
   };
 }

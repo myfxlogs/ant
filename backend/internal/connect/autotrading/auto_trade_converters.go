@@ -1,7 +1,6 @@
 package autotrading
 
 import (
-	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -88,10 +87,4 @@ func tradingLogToProto(l *model.TradingLog) *antv1.TradingLog {
 		Profit:     l.Profit.InexactFloat64(),
 		CreatedAt:  timestamppb.New(l.CreatedAt),
 	}
-}
-
-// --- UUID helpers ---
-
-func parseUUID(s string) (uuid.UUID, error) {
-	return uuid.Parse(s)
 }

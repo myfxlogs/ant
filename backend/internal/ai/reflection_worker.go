@@ -101,7 +101,7 @@ func (w *ReflectionWorker) run(ctx context.Context) {
 
 	// 3. Recalibrate affected users.
 	for uid := range byUser {
-		userID, err := parseUUID(uid)
+		userID, err := uuid.Parse(uid)
 		if err != nil {
 			continue
 		}
@@ -146,6 +146,3 @@ func (w *ReflectionWorker) fetchActualReturn(ctx context.Context, symbol string,
 	return (closePrice - openPrice) / openPrice, nil
 }
 
-func parseUUID(s string) (uuid.UUID, error) {
-	return uuid.Parse(s)
-}

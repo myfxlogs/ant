@@ -11,6 +11,7 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	"anttrader/internal/ai"
+	"anttrader/internal/pkg/ptr"
 	"anttrader/internal/repository"
 )
 
@@ -38,12 +39,12 @@ func (w *ExperimentWorker) runSingleBacktest(
 		Mode:               "KLINE_RANGE",
 		Status:             StatusPending,
 		StrategyCode:       &modifiedCode,
-		InitialCapital:     f64Ptr(10000),
-		Commission:         f64Ptr(0.001),
-		Slippage:           f64Ptr(0),
-		Leverage:           f64Ptr(1),
-		TradeDirection:     strPtr("both"),
-		StrictMode:         boolPtr(true),
+		InitialCapital:     ptr.F64(10000),
+		Commission:         ptr.F64(0.001),
+		Slippage:           ptr.F64(0),
+		Leverage:           ptr.F64(1),
+		TradeDirection:     ptr.Str("both"),
+		StrictMode:         ptr.Bool(true),
 		StrategyCodeHash:   "",
 		Error:              "",
 		ExtraSymbols:       []string{},
