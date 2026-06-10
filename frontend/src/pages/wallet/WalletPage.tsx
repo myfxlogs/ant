@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { walletApi } from '@/client/wallet';
 import { queryKeys } from '@/queries/queryKeys';
 import { StatusResult } from '@/components/common/StatusResult';
-import { formatAmount } from '@/utils/price';
+import { formatAmount } from '@/utils/amount';
 import { useMemo } from 'react';
 
 const { Title } = Typography;
@@ -41,7 +41,7 @@ export default function WalletPage() {
       width: 120,
       render: (v: string) => {
         const num = parseFloat(v);
-        return <span style={{ color: num >= 0 ? '#00A651' : '#E53935', fontWeight: 500 }}>{num >= 0 ? '+' : ''}{v}</span>;
+        return <span style={{ color: num >= 0 ? '#00A651' : '#E53935', fontWeight: 500 }}>{num >= 0 ? '+' : ''}{formatAmount(v)}</span>;
       },
     },
     {

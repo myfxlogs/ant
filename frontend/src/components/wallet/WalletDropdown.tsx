@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { walletApi } from '@/client/wallet';
 import { queryKeys } from '@/queries/queryKeys';
-import { formatAmount } from '@/utils/price';
+import { formatAmount } from '@/utils/amount';
 
 const { Text } = Typography;
 
