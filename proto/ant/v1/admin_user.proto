@@ -93,6 +93,7 @@ message UpdateUserRequest {
   string role = 4;
   string status = 5;
   string nickname = 6;
+  string account_number = 7;  // optional — admin may change; validated + uniqueness-checked
 }
 
 message UpdateUserResponse {}

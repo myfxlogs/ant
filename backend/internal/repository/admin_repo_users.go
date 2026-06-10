@@ -102,10 +102,11 @@ func (r *AdminRepository) CreateUser(ctx context.Context, user *model.User) erro
 func (r *AdminRepository) UpdateUser(ctx context.Context, user *model.User) error {
 		return r.db.QueryRow(ctx,
 			`UPDATE users
-			 SET email = $2, nickname = $3, avatar = $4, role = $5, status = $6, updated_at = CURRENT_TIMESTAMP
+			 SET email = $2, nickname = $3, avatar = $4, role = $5, status = $6,
+			     account_number = $7, updated_at = CURRENT_TIMESTAMP
 			 WHERE id = $1
 			 RETURNING updated_at`,
-			user.ID, user.Email, user.Nickname, user.Avatar, user.Role, user.Status,
+			user.ID, user.Email, user.Nickname, user.Avatar, user.Role, user.Status, user.AccountNumber,
 		).Scan(&user.UpdatedAt)
 	}
 

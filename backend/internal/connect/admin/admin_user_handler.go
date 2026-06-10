@@ -198,6 +198,24 @@ func (s *AdminUserServer) UpdateUser(ctx context.Context, req *connect.Request[a
 	if req.Msg.Nickname != "" {
 		existing.Nickname = &req.Msg.Nickname
 	}
+	// Account number: validate, check uniqueness, then update.
+	if req.Msg.AccountNumber != "" {
+		if err := service.ValidateAccountNumber(req.Msg.AccountNumber); err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_number: %w", err))
+		}
+		if existing.AccountNumber == nil || *existing.AccountNumber != req.Msg.AccountNumber {
+			if s.acctSvc != nil {
+				avail, err := s.acctSvc.IsAccountNumberAvailable(ctx, req.Msg.AccountNumber)
+				if err != nil {
+					return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("check account_number: %w", err))
+				}
+				if !avail {
+					return nil, connect.NewError(connect.CodeAlreadyExists, fmt.Errorf("account number %s is already taken", req.Msg.AccountNumber))
+				}
+			}
+			existing.AccountNumber = &req.Msg.AccountNumber
+		}
+	}
 	if err := s.repo.UpdateUser(ctx, existing); err != nil {
 		return nil, err
 	}

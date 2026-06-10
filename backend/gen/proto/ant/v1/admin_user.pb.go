@@ -682,6 +682,7 @@ type UpdateUserRequest struct {
 	Role          string                 `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
 	Status        string                 `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`
 	Nickname      string                 `protobuf:"bytes,6,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	AccountNumber string                 `protobuf:"bytes,7,opt,name=account_number,json=accountNumber,proto3" json:"account_number,omitempty"` // optional — admin may change; validated + uniqueness-checked
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -754,6 +755,13 @@ func (x *UpdateUserRequest) GetStatus() string {
 func (x *UpdateUserRequest) GetNickname() string {
 	if x != nil {
 		return x.Nickname
+	}
+	return ""
+}
+
+func (x *UpdateUserRequest) GetAccountNumber() string {
+	if x != nil {
+		return x.AccountNumber
 	}
 	return ""
 }
@@ -1366,14 +1374,15 @@ const file_admin_user_proto_rawDesc = "" +
 	"\x04role\x18\x04 \x01(\tR\x04role\x12%\n" +
 	"\x0eaccount_number\x18\x05 \x01(\tR\raccountNumber\"$\n" +
 	"\x12CreateUserResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\x9d\x01\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\xc4\x01\n" +
 	"\x11UpdateUserRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x14\n" +
 	"\x05email\x18\x03 \x01(\tR\x05email\x12\x12\n" +
 	"\x04role\x18\x04 \x01(\tR\x04role\x12\x16\n" +
 	"\x06status\x18\x05 \x01(\tR\x06status\x12\x1a\n" +
-	"\bnickname\x18\x06 \x01(\tR\bnickname\"\x14\n" +
+	"\bnickname\x18\x06 \x01(\tR\bnickname\x12%\n" +
+	"\x0eaccount_number\x18\a \x01(\tR\raccountNumber\"\x14\n" +
 	"\x12UpdateUserResponse\"#\n" +
 	"\x11DeleteUserRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x14\n" +
