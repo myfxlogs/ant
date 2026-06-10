@@ -63,6 +63,7 @@ const base = {
     disabled: 'Disabled',
     deleted: 'Deleted',
     deleteFailed: 'Delete failed',
+  deleteSelected: 'Delete selected ({{count}})',
     loadingFailed: 'Loading failed',
     none: 'None',
     close: 'Close',

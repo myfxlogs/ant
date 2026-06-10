@@ -1,6 +1,6 @@
-import React from 'react';
-import { Button, Card, Popconfirm, Space, Table, Tag, Tooltip, Typography } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import React, { useState } from 'react';
+import { Button, Card, message, Popconfirm, Space, Table, Tag, Tooltip, Typography } from 'antd';
+import type { ColumnsType, TableRowSelection } from 'antd/es/table';
 import { DeleteOutlined, SyncOutlined } from '@ant-design/icons';
 import { formatDateTime } from '@/utils/date';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,7 @@ type Props = {
   onViewScore?: (runId: string) => void;
   onAddToSchedule?: (run: BacktestRun) => void;
   onDelete: (runId: string) => void;
+  onBatchDelete?: (runIds: string[]) => Promise<void>;
 };
 
 function statusText(s: unknown, t: (key: string) => string) {
@@ -36,8 +37,45 @@ function statusText(s: unknown, t: (key: string) => string) {
   }
 }
 
-const BacktestRunsCard: React.FC<Props> = ({ runs, loading, onRefresh, onView, onViewScore, onDelete }) => {
+const BacktestRunsCard: React.FC<Props> = ({ runs, loading, onRefresh, onView, onViewScore, onDelete, onBatchDelete }) => {
   const { t } = useTranslation();
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [batchDeleting, setBatchDeleting] = useState(false);
+
+  const rowSelection: TableRowSelection<any> = {
+    selectedRowKeys,
+    onChange: (keys) => setSelectedRowKeys(keys),
+    selections: [
+      Table.SELECTION_ALL,
+      Table.SELECTION_INVERT,
+      Table.SELECTION_NONE,
+    ],
+  };
+
+  const handleBatchDelete = async () => {
+    if (selectedRowKeys.length === 0) return;
+    setBatchDeleting(true);
+    try {
+      if (onBatchDelete) {
+        await onBatchDelete(selectedRowKeys.map(String));
+      } else {
+        // Fallback: delete one by one
+        for (const id of selectedRowKeys) {
+          onDelete(String(id));
+        }
+      }
+      message.success(
+        t('strategy.templates.backtestRuns.batchDeleteSuccess', {
+          count: selectedRowKeys.length,
+        }),
+      );
+      setSelectedRowKeys([]);
+    } catch {
+      message.error(t('common.deleteFailed'));
+    } finally {
+      setBatchDeleting(false);
+    }
+  };
   const columns: ColumnsType<any> = [
     {
       title: t('strategy.templates.backtestRuns.table.title'),
@@ -117,12 +155,31 @@ const BacktestRunsCard: React.FC<Props> = ({ runs, loading, onRefresh, onView, o
     <Card
       title={t('strategy.templates.backtestRuns.title')}
       extra={
-        <Button icon={<SyncOutlined />} onClick={onRefresh} loading={loading}>
-          {t('common.refresh')}
-        </Button>
+        <Space>
+          {selectedRowKeys.length > 0 && (
+            <Popconfirm
+              title={t('strategy.templates.backtestRuns.batchDeleteConfirm', {
+                count: selectedRowKeys.length,
+              })}
+              onConfirm={handleBatchDelete}
+            >
+              <Button
+                danger
+                icon={<DeleteOutlined />}
+                loading={batchDeleting}
+              >
+                {t('common.deleteSelected', { count: selectedRowKeys.length })}
+              </Button>
+            </Popconfirm>
+          )}
+          <Button icon={<SyncOutlined />} onClick={onRefresh} loading={loading}>
+            {t('common.refresh')}
+          </Button>
+        </Space>
       }
     >
       <Table
+        rowSelection={rowSelection}
         columns={columns}
         dataSource={runs}
         rowKey={(r) => String(r?.id || '')}

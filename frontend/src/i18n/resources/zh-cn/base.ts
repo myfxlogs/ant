@@ -56,6 +56,7 @@ const base = {
     disabled: '已停用',
     deleted: '已删除',
     deleteFailed: '删除失败',
+  deleteSelected: '删除选中 ({{count}})',
     loadingFailed: '加载失败',
     none: '无',
     noData: '暂无数据',

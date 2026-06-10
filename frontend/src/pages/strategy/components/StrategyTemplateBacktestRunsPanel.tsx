@@ -64,6 +64,13 @@ export default function StrategyTemplateBacktestRunsPanel({
       actions.setScoreLoading(false);
     }
   };
+  const handleBatchDelete = async (runIds: string[]) => {
+    for (const id of runIds) {
+      await pythonStrategyApi.deleteBacktestRun(id);
+    }
+    onRefresh();
+  };
+
   return (
     <BacktestRunsCard
       runs={runs}
@@ -75,6 +82,7 @@ export default function StrategyTemplateBacktestRunsPanel({
       }}
       onViewScore={onViewScore}
       onDelete={onDelete}
+      onBatchDelete={handleBatchDelete}
     />
   );
 }

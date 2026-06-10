@@ -56,6 +56,7 @@ const base = {
     disabled: 'Đã tắt',
     deleted: 'Đã xóa',
     deleteFailed: 'Xóa thất bại',
+  deleteSelected: 'Xóa {{count}} mục đã chọn',
     loadingFailed: 'Tải thất bại',
     none: 'Không có',
     close: 'Đóng',

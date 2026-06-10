@@ -56,6 +56,7 @@ const base = {
     disabled: '無効化しました',
     deleted: '削除しました',
     deleteFailed: '削除に失敗しました',
+  deleteSelected: '選択した{{count}}件を削除',
     loadingFailed: '読み込みに失敗しました',
     none: 'なし',
     close: '閉じる',

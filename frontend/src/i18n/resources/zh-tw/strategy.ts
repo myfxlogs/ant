@@ -583,6 +583,8 @@ signal = {
         title: '回測報告',
         empty: '暫無回測記錄',
         deleteConfirm: '確定要刪除這條回測報告嗎？',
+          batchDeleteConfirm: '確定要刪除 {{count}} 條回測報告嗎？',
+          batchDeleteSuccess: '已刪除 {{count}} 條回測報告',
         status: {
           queued: '排隊中',
           running: '運行中',
