@@ -85,7 +85,7 @@ env-check:
 	fi; \
 	echo "All env keys present ✅"
 
-.PHONY: proto-tools proto proto-python check-lines verify
+.PHONY: proto-tools proto proto-python check-lines check-lines-strict check-fk verify
 
 proto-tools:
 	@echo "Installing proto generation toolchain..."
@@ -116,10 +116,15 @@ check-lines-strict:
 	@echo "Checking file line limits (Go 300 / TS 250, gen+test 50% over)..."
 	@python3 scripts/check-file-lines.py --strict
 
+check-fk:
+	@echo "Checking FK constraints referencing users(id)..."
+	@python3 scripts/check-fk-cascade.py
+
 verify:
-	@echo "Verifying repo (proto + line limits + go test)..."
+	@echo "Verifying repo (proto + line limits + FK check + go test)..."
 	@$(MAKE) proto
 	@$(MAKE) check-lines
+	@$(MAKE) check-fk
 	@cd backend && go test ./...
 
 # ── RTK (Rust Token Killer) ──────────────────────────────────────────

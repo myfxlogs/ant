@@ -11,6 +11,7 @@ import {
   LogoutOutlined,
   MenuOutlined,
   ArrowLeftOutlined,
+  WalletOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -42,6 +43,7 @@ export default function AdminLayout() {
   const menuItems = [
     { key: '/admin', icon: <DashboardOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.dashboard') },
     { key: '/admin/users', icon: <TeamOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.userManagement') },
+    { key: '/admin/wallet', icon: <WalletOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.walletManagement', { defaultValue: 'Wallets' }) },
     { key: '/admin/accounts', icon: <BankOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.accountManagement') },
     { key: '/admin/trading', icon: <LineChartOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.tradingMonitor') },
     { key: '/admin/logs', icon: <FileTextOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.operationLogs') },

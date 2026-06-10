@@ -16,19 +16,56 @@ import (
 
 // WalletServer implements ant.v1.WalletServiceHandler.
 type WalletServer struct {
-	svc *service.WalletService
-	log *zap.Logger
+	svc         *service.WalletService
+	platformSvc *service.PlatformService
+	log         *zap.Logger
 }
 
 var _ antv1c.WalletServiceHandler = (*WalletServer)(nil)
 
-func NewWalletServer(svc *service.WalletService, log *zap.Logger) *WalletServer {
-	return &WalletServer{svc: svc, log: log}
+func NewWalletServer(svc *service.WalletService, platformSvc *service.PlatformService, log *zap.Logger) *WalletServer {
+	return &WalletServer{svc: svc, platformSvc: platformSvc, log: log}
+}
+
+// requireAdmin extracts the current user ID and verifies they are an admin.
+// Returns the actor's UUID on success, or a ConnectError on failure.
+func (s *WalletServer) requireAdmin(ctx context.Context) (uuid.UUID, error) {
+	actorStr := interceptor.GetUserID(ctx)
+	actorID, err := uuid.Parse(actorStr)
+	if err != nil {
+		return uuid.Nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid actor"))
+	}
+	if s.platformSvc == nil {
+		return actorID, nil // no platform service = admin check disabled (dev/test)
+	}
+	isAdmin, err := s.platformSvc.IsAdmin(ctx, actorID)
+	if err != nil {
+		return uuid.Nil, connect.NewError(connect.CodeInternal, fmt.Errorf("check admin: %w", err))
+	}
+	if !isAdmin {
+		return uuid.Nil, connect.NewError(connect.CodePermissionDenied, fmt.Errorf("admin required"))
+	}
+	return actorID, nil
+}
+
+// resolveTargetUser resolves the user ID for wallet operations.
+// If an admin specifies a target user_id, verify admin status and use it.
+// Otherwise fall back to the current authenticated user.
+func (s *WalletServer) resolveTargetUser(ctx context.Context, targetUserID string) (uuid.UUID, error) {
+	if targetUserID != "" {
+		// Admin may query any user's wallet.
+		if _, err := s.requireAdmin(ctx); err != nil {
+			return uuid.Nil, err
+		}
+		return uuid.Parse(targetUserID)
+	}
+	return parseUserID(ctx)
 }
 
 // GetWallet returns the current user's wallet (auto-creates for legacy users).
+// Admin may specify user_id to query another user's wallet.
 func (s *WalletServer) GetWallet(ctx context.Context, req *connect.Request[antv1.GetWalletRequest]) (*connect.Response[antv1.GetWalletResponse], error) {
-	uid, err := parseUserID(ctx)
+	uid, err := s.resolveTargetUser(ctx, req.Msg.UserId)
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +88,9 @@ func (s *WalletServer) GetWallet(ctx context.Context, req *connect.Request[antv1
 }
 
 // ListTransactions returns the current user's wallet transaction history.
+// Admin may specify user_id to query another user's transactions.
 func (s *WalletServer) ListTransactions(ctx context.Context, req *connect.Request[antv1.ListWalletTransactionsRequest]) (*connect.Response[antv1.ListWalletTransactionsResponse], error) {
-	uid, err := parseUserID(ctx)
+	uid, err := s.resolveTargetUser(ctx, req.Msg.UserId)
 	if err != nil {
 		return nil, err
 	}
@@ -93,10 +131,9 @@ func (s *WalletServer) ListTransactions(ctx context.Context, req *connect.Reques
 
 // AdjustBalance allows admin to credit/debit a user's wallet.
 func (s *WalletServer) AdjustBalance(ctx context.Context, req *connect.Request[antv1.AdjustBalanceRequest]) (*connect.Response[antv1.AdjustBalanceResponse], error) {
-	operatorIDStr := interceptor.GetUserID(ctx)
-	operatorID, err := uuid.Parse(operatorIDStr)
+	operatorID, err := s.requireAdmin(ctx)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid operator id"))
+		return nil, err
 	}
 	r := req.Msg
 	userID, err := uuid.Parse(r.UserId)

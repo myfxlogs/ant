@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -88,7 +89,7 @@ func registerHandlers(
 	authServer.WithRegistration(registrationSvc)
 	mux.Handle(antv1c.NewAuthServiceHandler(authServer, connectrpc.WithInterceptors(otelInterceptor,rateLimitInterceptor, authInterceptor)))
 
-	walletServer := user.NewWalletServer(walletSvc, log)
+	walletServer := user.NewWalletServer(walletSvc, platformSvc, log)
 	mux.Handle(antv1c.NewWalletServiceHandler(walletServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
 	reconLoop := mthub.NewReconciliationLoop(hub, pool, rdb.Client(), log, reconcileGate)
@@ -247,6 +248,31 @@ func registerHandlers(
 		backtestRunRepo,
 		marketDataRepo,
 	)
+
+	// Daily hard-delete of expired soft-deleted users (30-day retention).
+	// After 30 days, CASCADE/SET NULL FKs from migrations 149/150 take effect,
+	// permanently removing all user-owned data.
+	go func() {
+		// Run immediately on startup so recently-expired users are cleaned
+		// without waiting 24h for the first tick.
+		doCleanup := func() {
+			cleanCtx, ccl := context.WithTimeout(context.Background(), 5*time.Minute)
+			deleted, err := adminRepo.HardDeleteExpiredUsers(cleanCtx, 30)
+			if err != nil {
+				log.Warn("hard-delete expired users failed", zap.Error(err))
+			} else if deleted > 0 {
+				log.Info("hard-deleted expired users", zap.Int64("count", deleted))
+			}
+			ccl()
+		}
+		doCleanup()
+
+		ticker := time.NewTicker(24 * time.Hour)
+		defer ticker.Stop()
+		for range ticker.C {
+			doCleanup()
+		}
+	}()
 
 	return reconLoop, emailNotifier, platformAgg, notifSender, workerCleanup
 }

@@ -37,6 +37,7 @@ const AlgoDashboard = lazy(() => import('@/pages/trading/AlgoDashboard'));
 const AnalyticsSummary = lazy(() => import('@/pages/analytics/Summary'));
 const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
 const UserManagement = lazy(() => import('@/pages/admin/UserManagement'));
+const WalletManagement = lazy(() => import('@/pages/admin/WalletManagement'));
 const AccountManagement = lazy(() => import('@/pages/admin/AccountManagement'));
 const TradingMonitor = lazy(() => import('@/pages/admin/TradingMonitor'));
 const OperationLogs = lazy(() => import('@/pages/admin/OperationLogs'));
@@ -90,6 +91,7 @@ const adminRoutes = (
   <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
     <Route index element={wrap(<AdminDashboard />)} />
     <Route path="users" element={wrap(<UserManagement />)} />
+    <Route path="wallet" element={wrap(<WalletManagement />)} />
     <Route path="accounts" element={wrap(<AccountManagement />)} />
     <Route path="trading" element={wrap(<TradingMonitor />)} />
     <Route path="logs" element={wrap(<OperationLogs />)} />

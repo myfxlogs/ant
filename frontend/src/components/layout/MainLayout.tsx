@@ -10,6 +10,7 @@ import TopBar from '@/components/layout/TopBar';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/queries/queryKeys';
 import { accountApi } from '@/client/account';
+import { walletApi } from '@/client/wallet';
 import type { Account } from '@/types/account';
 
 const { Content } = Layout;
@@ -34,6 +35,14 @@ export default function MainLayout() {
     queryKey: queryKeys.accounts.list(),
     queryFn: () => accountApi.list(),
     staleTime: Infinity,
+  });
+
+  // Wallet balance for sidebar display.
+  const { data: wallet } = useQuery({
+    queryKey: ['wallet'],
+    queryFn: () => walletApi.getWallet(),
+    staleTime: 30_000,
+    retry: false,
   });
 
   useEffect(() => {
@@ -82,7 +91,7 @@ export default function MainLayout() {
           ]},
       ],
     },
-    { key: '/wallet', icon: <WalletOutlined size={20} stroke={1.5} />, label: t('menu.wallet', { defaultValue: 'Wallet' }) },
+    { key: '/wallet', icon: <WalletOutlined size={20} stroke={1.5} />, label: wallet?.balance ? `${t('menu.wallet', { defaultValue: 'Wallet' })} (${wallet.balance})` : t('menu.wallet', { defaultValue: 'Wallet' }) },
     { key: '/trading/algos', icon: <DashboardOutlined size={20} stroke={1.5} />, label: t('menu.algoDashboard') },
     { key: '/auto-trading', icon: <SettingOutlined size={20} stroke={1.5} />, label: t('menu.autoTrading') },
     { key: '/analytics', icon: <PieChartOutlined size={20} stroke={1.5} />, label: t('menu.analytics') },

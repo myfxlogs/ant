@@ -16,6 +16,7 @@ type User struct {
 	Status        string     `json:"status" db:"status"`
 	AccountNumber *string    `json:"account_number" db:"account_number"`
 	LastLoginAt   *time.Time `json:"last_login_at" db:"last_login_at"`
+	DeletedAt     *time.Time `json:"deleted_at" db:"deleted_at"`
 	CreatedAt     time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt     time.Time  `json:"updated_at" db:"updated_at"`
 }

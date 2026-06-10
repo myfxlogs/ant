@@ -59,11 +59,12 @@ type DashboardStats struct {
 }
 
 type UserListParams struct {
-	Page     int    `form:"page"`
-	PageSize int    `form:"page_size"`
-	Search   string `form:"search"`
-	Status   string `form:"status"`
-	Role     string `form:"role"`
+	Page          int    `form:"page"`
+	PageSize      int    `form:"page_size"`
+	Search        string `form:"search"`
+	Status        string `form:"status"`
+	Role          string `form:"role"`
+	DeletedFilter string `form:"deleted_filter"` // "" = active, "deleted", "all"
 }
 
 type AccountListParams struct {

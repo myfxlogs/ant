@@ -53,6 +53,9 @@ func userWithAccountsToProto(u *repository.UserWithAccounts) *antv1.UserWithAcco
 	if u.AccountNumber != nil {
 		p.AccountNumber = *u.AccountNumber
 	}
+	if u.DeletedAt != nil {
+		p.DeletedAt = timestamppb.New(*u.DeletedAt)
+	}
 	return p
 }
 
@@ -77,11 +80,12 @@ func (s *AdminUserServer) GetDashboard(ctx context.Context, _ *connect.Request[a
 
 func (s *AdminUserServer) ListUsers(ctx context.Context, req *connect.Request[antv1.ListUsersRequest]) (*connect.Response[antv1.ListUsersResponse], error) {
 	params := &model.UserListParams{
-		Page:     int(req.Msg.Page),
-		PageSize: int(req.Msg.PageSize),
-		Search:   req.Msg.Search,
-		Status:   req.Msg.Status,
-		Role:     req.Msg.Role,
+		Page:          int(req.Msg.Page),
+		PageSize:      int(req.Msg.PageSize),
+		Search:        req.Msg.Search,
+		Status:        req.Msg.Status,
+		Role:          req.Msg.Role,
+		DeletedFilter: req.Msg.DeletedFilter,
 	}
 	users, total, err := s.repo.ListUsers(ctx, params)
 	if err != nil {
@@ -219,7 +223,13 @@ func (s *AdminUserServer) DeleteUser(ctx context.Context, req *connect.Request[a
 	if target != nil && target.Role == "admin" && adminCount <= 1 {
 		return nil, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("cannot delete the last admin"))
 	}
+
+	// Record audit snapshot before soft-delete.
+	affected, _ := s.repo.GetAffectedTableCounts(ctx, id)
+	recordAuditLog(ctx, s.repo, actorID, "delete_user", id.String(), target.Email, affected)
+
 	if err := s.repo.DeleteUser(ctx, id); err != nil {
+		s.log.Error("admin: delete user failed", zap.Error(err), zap.String("target", id.String()))
 		return nil, err
 	}
 	s.log.Info("admin: user deleted",
@@ -240,6 +250,8 @@ func (s *AdminUserServer) DeleteUsers(ctx context.Context, req *connect.Request[
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	uuids := make([]uuid.UUID, 0, len(ids))
+	type targetInfo struct{ id uuid.UUID; email string }
+	var targets []targetInfo
 	var errors []string
 	for _, id := range ids {
 		uid, err := uuid.Parse(id)
@@ -263,12 +275,21 @@ func (s *AdminUserServer) DeleteUsers(ctx context.Context, req *connect.Request[
 			continue
 		}
 		uuids = append(uuids, uid)
+		targets = append(targets, targetInfo{id: uid, email: target.Email})
 	}
+
+	// Record audit logs before soft-delete.
+	for _, t := range targets {
+		affected, _ := s.repo.GetAffectedTableCounts(ctx, t.id)
+		recordAuditLog(ctx, s.repo, actorID, "batch_delete", t.id.String(), t.email, affected)
+	}
+
 	var deleted int64
 	if len(uuids) > 0 {
 		var err error
 		deleted, err = s.repo.DeleteUsers(ctx, uuids)
 		if err != nil {
+			s.log.Error("admin: batch delete users failed", zap.Error(err), zap.Int("count", len(uuids)))
 			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 	}
@@ -281,6 +302,28 @@ func (s *AdminUserServer) DeleteUsers(ctx context.Context, req *connect.Request[
 		FailedCount:  int32(len(errors)),
 		Errors:       errors,
 	}), nil
+}
+
+// RestoreUser clears the soft-delete marker on a previously deleted user.
+func (s *AdminUserServer) RestoreUser(ctx context.Context, req *connect.Request[antv1.RestoreUserRequest]) (*connect.Response[antv1.RestoreUserResponse], error) {
+	id, err := uuid.Parse(req.Msg.Id)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	if err := s.repo.RestoreUser(ctx, id); err != nil {
+		if err == repository.ErrUserNotFound {
+			return nil, connect.NewError(connect.CodeNotFound, fmt.Errorf("user not found or not deleted"))
+		}
+		s.log.Error("admin: restore user failed", zap.Error(err), zap.String("target", id.String()))
+		return nil, err
+	}
+	actorID := getActorID(ctx)
+	s.log.Info("admin: user restored",
+		zap.String("actor", actorID.String()),
+		zap.String("target", id.String()))
+	// Best-effort audit log.
+	recordAuditLog(ctx, s.repo, actorID, "restore_user", id.String(), id.String(), nil)
+	return connect.NewResponse(&antv1.RestoreUserResponse{}), nil
 }
 
 func (s *AdminUserServer) DisableUser(ctx context.Context, req *connect.Request[antv1.DisableUserRequest]) (*connect.Response[antv1.DisableUserResponse], error) {
@@ -346,6 +389,16 @@ func validRole(role string) bool {
 		return true
 	}
 	return false
+}
+
+// recordAuditLog writes an admin action to the audit log. Best-effort:
+// log errors are emitted but not returned — audit failure must not block the
+// primary operation (delete / restore).
+func recordAuditLog(ctx context.Context, repo *repository.AdminRepository, actorID uuid.UUID, action, targetID, targetEmail string, affected map[string]int64) {
+	if err := repo.InsertAuditLog(ctx, actorID, action, targetID, targetEmail, affected); err != nil {
+		// audit failure must not block the operation; the zap logger is
+		// the fallback trace.
+	}
 }
 
 // getActorID extracts the authenticated user ID from the request context.

@@ -16,6 +16,7 @@ service AdminUserService {
   rpc DisableUser(DisableUserRequest) returns (DisableUserResponse);
   rpc EnableUser(EnableUserRequest) returns (EnableUserResponse);
   rpc ResetUserPassword(ResetUserPasswordRequest) returns (ResetUserPasswordResponse);
+  rpc RestoreUser(RestoreUserRequest) returns (RestoreUserResponse);
 }
 
 message DashboardStats {
@@ -56,6 +57,7 @@ message UserWithAccounts {
   google.protobuf.Timestamp last_login_at = 10;
   repeated UserAccountSummary accounts = 11;
   string account_number = 12;
+  google.protobuf.Timestamp deleted_at = 13;
 }
 
 message ListUsersRequest {
@@ -64,6 +66,7 @@ message ListUsersRequest {
   string search = 3;
   string status = 4;
   string role = 5;
+  string deleted_filter = 6;  // "" = active only, "deleted" = deleted only, "all" = both
 }
 
 message ListUsersResponse {
@@ -129,3 +132,9 @@ message ResetUserPasswordRequest {
 message ResetUserPasswordResponse {
   string new_password = 1;
 }
+
+message RestoreUserRequest {
+  string id = 1;
+}
+
+message RestoreUserResponse {}

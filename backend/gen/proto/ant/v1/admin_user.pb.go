@@ -292,6 +292,7 @@ type UserWithAccounts struct {
 	LastLoginAt   *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=last_login_at,json=lastLoginAt,proto3" json:"last_login_at,omitempty"`
 	Accounts      []*UserAccountSummary  `protobuf:"bytes,11,rep,name=accounts,proto3" json:"accounts,omitempty"`
 	AccountNumber string                 `protobuf:"bytes,12,opt,name=account_number,json=accountNumber,proto3" json:"account_number,omitempty"`
+	DeletedAt     *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=deleted_at,json=deletedAt,proto3" json:"deleted_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -410,6 +411,13 @@ func (x *UserWithAccounts) GetAccountNumber() string {
 	return ""
 }
 
+func (x *UserWithAccounts) GetDeletedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.DeletedAt
+	}
+	return nil
+}
+
 type ListUsersRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
@@ -417,6 +425,7 @@ type ListUsersRequest struct {
 	Search        string                 `protobuf:"bytes,3,opt,name=search,proto3" json:"search,omitempty"`
 	Status        string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
 	Role          string                 `protobuf:"bytes,5,opt,name=role,proto3" json:"role,omitempty"`
+	DeletedFilter string                 `protobuf:"bytes,6,opt,name=deleted_filter,json=deletedFilter,proto3" json:"deleted_filter,omitempty"` // "" = active only, "deleted" = deleted only, "all" = both
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -482,6 +491,13 @@ func (x *ListUsersRequest) GetStatus() string {
 func (x *ListUsersRequest) GetRole() string {
 	if x != nil {
 		return x.Role
+	}
+	return ""
+}
+
+func (x *ListUsersRequest) GetDeletedFilter() string {
+	if x != nil {
+		return x.DeletedFilter
 	}
 	return ""
 }
@@ -1210,6 +1226,86 @@ func (x *ResetUserPasswordResponse) GetNewPassword() string {
 	return ""
 }
 
+type RestoreUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RestoreUserRequest) Reset() {
+	*x = RestoreUserRequest{}
+	mi := &file_admin_user_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RestoreUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RestoreUserRequest) ProtoMessage() {}
+
+func (x *RestoreUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_admin_user_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RestoreUserRequest.ProtoReflect.Descriptor instead.
+func (*RestoreUserRequest) Descriptor() ([]byte, []int) {
+	return file_admin_user_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *RestoreUserRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type RestoreUserResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RestoreUserResponse) Reset() {
+	*x = RestoreUserResponse{}
+	mi := &file_admin_user_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RestoreUserResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RestoreUserResponse) ProtoMessage() {}
+
+func (x *RestoreUserResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_admin_user_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RestoreUserResponse.ProtoReflect.Descriptor instead.
+func (*RestoreUserResponse) Descriptor() ([]byte, []int) {
+	return file_admin_user_proto_rawDescGZIP(), []int{22}
+}
+
 var File_admin_user_proto protoreflect.FileDescriptor
 
 const file_admin_user_proto_rawDesc = "" +
@@ -1234,7 +1330,7 @@ const file_admin_user_proto_rawDesc = "" +
 	"\x05login\x18\x02 \x01(\tR\x05login\x12\x17\n" +
 	"\amt_type\x18\x03 \x01(\tR\x06mtType\x12%\n" +
 	"\x0ebroker_company\x18\x04 \x01(\tR\rbrokerCompany\x12%\n" +
-	"\x0eaccount_status\x18\x05 \x01(\tR\raccountStatus\"\xd8\x03\n" +
+	"\x0eaccount_status\x18\x05 \x01(\tR\raccountStatus\"\x93\x04\n" +
 	"\x10UserWithAccounts\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x14\n" +
@@ -1250,13 +1346,16 @@ const file_admin_user_proto_rawDesc = "" +
 	"\rlast_login_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\vlastLoginAt\x126\n" +
 	"\baccounts\x18\v \x03(\v2\x1a.ant.v1.UserAccountSummaryR\baccounts\x12%\n" +
-	"\x0eaccount_number\x18\f \x01(\tR\raccountNumber\"\x87\x01\n" +
+	"\x0eaccount_number\x18\f \x01(\tR\raccountNumber\x129\n" +
+	"\n" +
+	"deleted_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tdeletedAt\"\xae\x01\n" +
 	"\x10ListUsersRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x16\n" +
 	"\x06search\x18\x03 \x01(\tR\x06search\x12\x16\n" +
 	"\x06status\x18\x04 \x01(\tR\x06status\x12\x12\n" +
-	"\x04role\x18\x05 \x01(\tR\x04role\"Y\n" +
+	"\x04role\x18\x05 \x01(\tR\x04role\x12%\n" +
+	"\x0edeleted_filter\x18\x06 \x01(\tR\rdeletedFilter\"Y\n" +
 	"\x11ListUsersResponse\x12.\n" +
 	"\x05users\x18\x01 \x03(\v2\x18.ant.v1.UserWithAccountsR\x05users\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x03R\x05total\"\x9c\x01\n" +
@@ -1294,7 +1393,10 @@ const file_admin_user_proto_rawDesc = "" +
 	"\x18ResetUserPasswordRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\">\n" +
 	"\x19ResetUserPasswordResponse\x12!\n" +
-	"\fnew_password\x18\x01 \x01(\tR\vnewPassword2\x9d\x05\n" +
+	"\fnew_password\x18\x01 \x01(\tR\vnewPassword\"$\n" +
+	"\x12RestoreUserRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\x15\n" +
+	"\x13RestoreUserResponse2\xe5\x05\n" +
 	"\x10AdminUserService\x12I\n" +
 	"\fGetDashboard\x12\x1b.ant.v1.GetDashboardRequest\x1a\x1c.ant.v1.GetDashboardResponse\x12@\n" +
 	"\tListUsers\x12\x18.ant.v1.ListUsersRequest\x1a\x19.ant.v1.ListUsersResponse\x12C\n" +
@@ -1308,7 +1410,8 @@ const file_admin_user_proto_rawDesc = "" +
 	"\vDisableUser\x12\x1a.ant.v1.DisableUserRequest\x1a\x1b.ant.v1.DisableUserResponse\x12C\n" +
 	"\n" +
 	"EnableUser\x12\x19.ant.v1.EnableUserRequest\x1a\x1a.ant.v1.EnableUserResponse\x12X\n" +
-	"\x11ResetUserPassword\x12 .ant.v1.ResetUserPasswordRequest\x1a!.ant.v1.ResetUserPasswordResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\x11ResetUserPassword\x12 .ant.v1.ResetUserPasswordRequest\x1a!.ant.v1.ResetUserPasswordResponse\x12F\n" +
+	"\vRestoreUser\x12\x1a.ant.v1.RestoreUserRequest\x1a\x1b.ant.v1.RestoreUserResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_admin_user_proto_rawDescOnce sync.Once
@@ -1322,7 +1425,7 @@ func file_admin_user_proto_rawDescGZIP() []byte {
 	return file_admin_user_proto_rawDescData
 }
 
-var file_admin_user_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
+var file_admin_user_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
 var file_admin_user_proto_goTypes = []any{
 	(*DashboardStats)(nil),            // 0: ant.v1.DashboardStats
 	(*GetDashboardRequest)(nil),       // 1: ant.v1.GetDashboardRequest
@@ -1345,38 +1448,43 @@ var file_admin_user_proto_goTypes = []any{
 	(*EnableUserResponse)(nil),        // 18: ant.v1.EnableUserResponse
 	(*ResetUserPasswordRequest)(nil),  // 19: ant.v1.ResetUserPasswordRequest
 	(*ResetUserPasswordResponse)(nil), // 20: ant.v1.ResetUserPasswordResponse
-	(*timestamppb.Timestamp)(nil),     // 21: google.protobuf.Timestamp
+	(*RestoreUserRequest)(nil),        // 21: ant.v1.RestoreUserRequest
+	(*RestoreUserResponse)(nil),       // 22: ant.v1.RestoreUserResponse
+	(*timestamppb.Timestamp)(nil),     // 23: google.protobuf.Timestamp
 }
 var file_admin_user_proto_depIdxs = []int32{
 	0,  // 0: ant.v1.GetDashboardResponse.stats:type_name -> ant.v1.DashboardStats
-	21, // 1: ant.v1.UserWithAccounts.created_at:type_name -> google.protobuf.Timestamp
-	21, // 2: ant.v1.UserWithAccounts.updated_at:type_name -> google.protobuf.Timestamp
-	21, // 3: ant.v1.UserWithAccounts.last_login_at:type_name -> google.protobuf.Timestamp
+	23, // 1: ant.v1.UserWithAccounts.created_at:type_name -> google.protobuf.Timestamp
+	23, // 2: ant.v1.UserWithAccounts.updated_at:type_name -> google.protobuf.Timestamp
+	23, // 3: ant.v1.UserWithAccounts.last_login_at:type_name -> google.protobuf.Timestamp
 	3,  // 4: ant.v1.UserWithAccounts.accounts:type_name -> ant.v1.UserAccountSummary
-	4,  // 5: ant.v1.ListUsersResponse.users:type_name -> ant.v1.UserWithAccounts
-	1,  // 6: ant.v1.AdminUserService.GetDashboard:input_type -> ant.v1.GetDashboardRequest
-	5,  // 7: ant.v1.AdminUserService.ListUsers:input_type -> ant.v1.ListUsersRequest
-	7,  // 8: ant.v1.AdminUserService.CreateUser:input_type -> ant.v1.CreateUserRequest
-	9,  // 9: ant.v1.AdminUserService.UpdateUser:input_type -> ant.v1.UpdateUserRequest
-	11, // 10: ant.v1.AdminUserService.DeleteUser:input_type -> ant.v1.DeleteUserRequest
-	13, // 11: ant.v1.AdminUserService.DeleteUsers:input_type -> ant.v1.DeleteUsersRequest
-	15, // 12: ant.v1.AdminUserService.DisableUser:input_type -> ant.v1.DisableUserRequest
-	17, // 13: ant.v1.AdminUserService.EnableUser:input_type -> ant.v1.EnableUserRequest
-	19, // 14: ant.v1.AdminUserService.ResetUserPassword:input_type -> ant.v1.ResetUserPasswordRequest
-	2,  // 15: ant.v1.AdminUserService.GetDashboard:output_type -> ant.v1.GetDashboardResponse
-	6,  // 16: ant.v1.AdminUserService.ListUsers:output_type -> ant.v1.ListUsersResponse
-	8,  // 17: ant.v1.AdminUserService.CreateUser:output_type -> ant.v1.CreateUserResponse
-	10, // 18: ant.v1.AdminUserService.UpdateUser:output_type -> ant.v1.UpdateUserResponse
-	12, // 19: ant.v1.AdminUserService.DeleteUser:output_type -> ant.v1.DeleteUserResponse
-	14, // 20: ant.v1.AdminUserService.DeleteUsers:output_type -> ant.v1.DeleteUsersResponse
-	16, // 21: ant.v1.AdminUserService.DisableUser:output_type -> ant.v1.DisableUserResponse
-	18, // 22: ant.v1.AdminUserService.EnableUser:output_type -> ant.v1.EnableUserResponse
-	20, // 23: ant.v1.AdminUserService.ResetUserPassword:output_type -> ant.v1.ResetUserPasswordResponse
-	15, // [15:24] is the sub-list for method output_type
-	6,  // [6:15] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	23, // 5: ant.v1.UserWithAccounts.deleted_at:type_name -> google.protobuf.Timestamp
+	4,  // 6: ant.v1.ListUsersResponse.users:type_name -> ant.v1.UserWithAccounts
+	1,  // 7: ant.v1.AdminUserService.GetDashboard:input_type -> ant.v1.GetDashboardRequest
+	5,  // 8: ant.v1.AdminUserService.ListUsers:input_type -> ant.v1.ListUsersRequest
+	7,  // 9: ant.v1.AdminUserService.CreateUser:input_type -> ant.v1.CreateUserRequest
+	9,  // 10: ant.v1.AdminUserService.UpdateUser:input_type -> ant.v1.UpdateUserRequest
+	11, // 11: ant.v1.AdminUserService.DeleteUser:input_type -> ant.v1.DeleteUserRequest
+	13, // 12: ant.v1.AdminUserService.DeleteUsers:input_type -> ant.v1.DeleteUsersRequest
+	15, // 13: ant.v1.AdminUserService.DisableUser:input_type -> ant.v1.DisableUserRequest
+	17, // 14: ant.v1.AdminUserService.EnableUser:input_type -> ant.v1.EnableUserRequest
+	19, // 15: ant.v1.AdminUserService.ResetUserPassword:input_type -> ant.v1.ResetUserPasswordRequest
+	21, // 16: ant.v1.AdminUserService.RestoreUser:input_type -> ant.v1.RestoreUserRequest
+	2,  // 17: ant.v1.AdminUserService.GetDashboard:output_type -> ant.v1.GetDashboardResponse
+	6,  // 18: ant.v1.AdminUserService.ListUsers:output_type -> ant.v1.ListUsersResponse
+	8,  // 19: ant.v1.AdminUserService.CreateUser:output_type -> ant.v1.CreateUserResponse
+	10, // 20: ant.v1.AdminUserService.UpdateUser:output_type -> ant.v1.UpdateUserResponse
+	12, // 21: ant.v1.AdminUserService.DeleteUser:output_type -> ant.v1.DeleteUserResponse
+	14, // 22: ant.v1.AdminUserService.DeleteUsers:output_type -> ant.v1.DeleteUsersResponse
+	16, // 23: ant.v1.AdminUserService.DisableUser:output_type -> ant.v1.DisableUserResponse
+	18, // 24: ant.v1.AdminUserService.EnableUser:output_type -> ant.v1.EnableUserResponse
+	20, // 25: ant.v1.AdminUserService.ResetUserPassword:output_type -> ant.v1.ResetUserPasswordResponse
+	22, // 26: ant.v1.AdminUserService.RestoreUser:output_type -> ant.v1.RestoreUserResponse
+	17, // [17:27] is the sub-list for method output_type
+	7,  // [7:17] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_admin_user_proto_init() }
@@ -1390,7 +1498,7 @@ func file_admin_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_admin_user_proto_rawDesc), len(file_admin_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   21,
+			NumMessages:   23,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

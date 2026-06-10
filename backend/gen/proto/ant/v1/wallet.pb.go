@@ -208,6 +208,7 @@ func (x *WalletTransaction) GetCreatedAtTsMs() int64 {
 
 type GetWalletRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // optional — admin may query any user; empty = current user
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -240,6 +241,13 @@ func (x *GetWalletRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetWalletRequest.ProtoReflect.Descriptor instead.
 func (*GetWalletRequest) Descriptor() ([]byte, []int) {
 	return file_wallet_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *GetWalletRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
 }
 
 type GetWalletResponse struct {
@@ -290,6 +298,7 @@ type ListWalletTransactionsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
 	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	UserId        string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // optional — admin may query any user; empty = current user
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -336,6 +345,13 @@ func (x *ListWalletTransactionsRequest) GetPageSize() int32 {
 		return x.PageSize
 	}
 	return 0
+}
+
+func (x *ListWalletTransactionsRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
 }
 
 type ListWalletTransactionsResponse struct {
@@ -515,13 +531,15 @@ const file_wallet_proto_rawDesc = "" +
 	"\vdescription\x18\x06 \x01(\tR\vdescription\x12\x1f\n" +
 	"\voperator_id\x18\a \x01(\tR\n" +
 	"operatorId\x12'\n" +
-	"\x10created_at_ts_ms\x18\b \x01(\x03R\rcreatedAtTsMs\"\x12\n" +
-	"\x10GetWalletRequest\";\n" +
+	"\x10created_at_ts_ms\x18\b \x01(\x03R\rcreatedAtTsMs\"+\n" +
+	"\x10GetWalletRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\";\n" +
 	"\x11GetWalletResponse\x12&\n" +
-	"\x06wallet\x18\x01 \x01(\v2\x0e.ant.v1.WalletR\x06wallet\"P\n" +
+	"\x06wallet\x18\x01 \x01(\v2\x0e.ant.v1.WalletR\x06wallet\"i\n" +
 	"\x1dListWalletTransactionsRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\"u\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x17\n" +
+	"\auser_id\x18\x03 \x01(\tR\x06userId\"u\n" +
 	"\x1eListWalletTransactionsResponse\x12=\n" +
 	"\ftransactions\x18\x01 \x03(\v2\x19.ant.v1.WalletTransactionR\ftransactions\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x03R\x05total\"i\n" +

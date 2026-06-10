@@ -33,7 +33,9 @@ message WalletTransaction {
   int64 created_at_ts_ms = 8;
 }
 
-message GetWalletRequest {}
+message GetWalletRequest {
+  string user_id = 1;  // optional — admin may query any user; empty = current user
+}
 
 message GetWalletResponse {
   Wallet wallet = 1;
@@ -42,6 +44,7 @@ message GetWalletResponse {
 message ListWalletTransactionsRequest {
   int32 page = 1;
   int32 page_size = 2;
+  string user_id = 3;  // optional — admin may query any user; empty = current user
 }
 
 message ListWalletTransactionsResponse {

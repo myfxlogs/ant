@@ -40,7 +40,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.User
 	query := `
 		SELECT id, email, password_hash, nickname, avatar, role, status,
 		       account_number, last_login_at, created_at, updated_at
-		FROM users WHERE id = $1
+		FROM users WHERE id = $1 AND deleted_at IS NULL
 	`
 	err := r.db.QueryRow(ctx, query, id).Scan(
 		&user.ID,
@@ -66,7 +66,7 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*model.U
 	query := `
 		SELECT id, email, password_hash, nickname, avatar, role, status,
 		       account_number, last_login_at, created_at, updated_at
-		FROM users WHERE email = $1
+		FROM users WHERE email = $1 AND deleted_at IS NULL
 	`
 	err := r.db.QueryRow(ctx, query, email).Scan(
 		&user.ID,
@@ -93,7 +93,7 @@ func (r *UserRepository) GetByLogin(ctx context.Context, login string) (*model.U
 	query := `
 		SELECT id, email, password_hash, nickname, avatar, role, status,
 		       account_number, last_login_at, created_at, updated_at
-		FROM users WHERE email = $1 OR account_number = $1
+		FROM users WHERE (email = $1 OR account_number = $1) AND deleted_at IS NULL
 	`
 	err := r.db.QueryRow(ctx, query, login).Scan(
 		&user.ID,
@@ -120,7 +120,7 @@ func (r *UserRepository) GetByAccountNumber(ctx context.Context, accountNumber s
 	query := `
 		SELECT id, email, password_hash, nickname, avatar, role, status,
 		       account_number, last_login_at, created_at, updated_at
-		FROM users WHERE account_number = $1
+		FROM users WHERE account_number = $1 AND deleted_at IS NULL
 	`
 	err := r.db.QueryRow(ctx, query, accountNumber).Scan(
 		&user.ID,
@@ -177,7 +177,7 @@ func (r *UserRepository) UpdatePassword(ctx context.Context, id uuid.UUID, passw
 // GetAIPrimary 读取用户在 /ai/settings 选定的「默认主模型」。
 // 自 061 迁移引入；空字符串表示未设置（调用方应回落到 pickEnabledSystemAIRow）。
 func (r *UserRepository) GetAIPrimary(ctx context.Context, id uuid.UUID) (providerID, model string, err error) {
-	const q = `SELECT ai_primary_provider_id, ai_primary_model FROM users WHERE id = $1`
+	const q = `SELECT ai_primary_provider_id, ai_primary_model FROM users WHERE id = $1 AND deleted_at IS NULL`
 	err = r.db.QueryRow(ctx, q, id).Scan(&providerID, &model)
 	return
 }
@@ -223,7 +223,7 @@ func (r *UserRepository) GetCapabilities(ctx context.Context, userID uuid.UUID, 
 
 func (r *UserRepository) ExistsByEmail(ctx context.Context, email string) (bool, error) {
 	var exists bool
-	query := `SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)`
+	query := `SELECT EXISTS(SELECT 1 FROM users WHERE email = $1 AND deleted_at IS NULL)`
 	err := r.db.QueryRow(ctx, query, email).Scan(&exists)
 	return exists, err
 }

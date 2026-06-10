@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Card, Table, Input, Select, Space, Tag, Popconfirm, Button, message } from 'antd';
+import { Card, Table, Input, Select, Space, Tag, Popconfirm, Button, message, Typography } from 'antd';
 import type { TableRowSelection } from 'antd/es/table';
 import { PlusOutlined, DeleteOutlined, UserDeleteOutlined, AuditOutlined, KeyOutlined } from '@ant-design/icons';
 import { formatDateTime } from '@/utils/date';
@@ -14,6 +14,7 @@ import UserDetailDrawer from './components/UserDetailDrawer';
 import type { UserWithAccounts } from '@/client/admin';
 
 const { Search } = Input;
+const { Text } = Typography;
 
 export default function UserManagement() {
   const { t } = useTranslation();
@@ -43,6 +44,11 @@ export default function UserManagement() {
   const columns = [
     { title: t('admin.userManagement.table.id'), dataIndex: 'id', key: 'id', width: 100, ellipsis: true },
     { title: t('admin.userManagement.table.email'), dataIndex: 'email', key: 'email', width: 200 },
+    {
+      title: t('admin.userManagement.table.accountNumber', { defaultValue: 'Account' }),
+      dataIndex: 'accountNumber', key: 'accountNumber', width: 100,
+      render: (v: string) => v ? <Tag color="blue">{v}</Tag> : <Text type="secondary">—</Text>,
+    },
     { title: t('admin.userManagement.table.nickname'), dataIndex: 'nickname', key: 'nickname', width: 120 },
     {
       title: t('admin.userManagement.table.role'), dataIndex: 'role', key: 'role', width: 100,

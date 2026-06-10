@@ -60,6 +60,9 @@ const (
 	// AdminUserServiceResetUserPasswordProcedure is the fully-qualified name of the AdminUserService's
 	// ResetUserPassword RPC.
 	AdminUserServiceResetUserPasswordProcedure = "/ant.v1.AdminUserService/ResetUserPassword"
+	// AdminUserServiceRestoreUserProcedure is the fully-qualified name of the AdminUserService's
+	// RestoreUser RPC.
+	AdminUserServiceRestoreUserProcedure = "/ant.v1.AdminUserService/RestoreUser"
 )
 
 // AdminUserServiceClient is a client for the ant.v1.AdminUserService service.
@@ -73,6 +76,7 @@ type AdminUserServiceClient interface {
 	DisableUser(context.Context, *connect.Request[v1.DisableUserRequest]) (*connect.Response[v1.DisableUserResponse], error)
 	EnableUser(context.Context, *connect.Request[v1.EnableUserRequest]) (*connect.Response[v1.EnableUserResponse], error)
 	ResetUserPassword(context.Context, *connect.Request[v1.ResetUserPasswordRequest]) (*connect.Response[v1.ResetUserPasswordResponse], error)
+	RestoreUser(context.Context, *connect.Request[v1.RestoreUserRequest]) (*connect.Response[v1.RestoreUserResponse], error)
 }
 
 // NewAdminUserServiceClient constructs a client for the ant.v1.AdminUserService service. By
@@ -140,6 +144,12 @@ func NewAdminUserServiceClient(httpClient connect.HTTPClient, baseURL string, op
 			connect.WithSchema(adminUserServiceMethods.ByName("ResetUserPassword")),
 			connect.WithClientOptions(opts...),
 		),
+		restoreUser: connect.NewClient[v1.RestoreUserRequest, v1.RestoreUserResponse](
+			httpClient,
+			baseURL+AdminUserServiceRestoreUserProcedure,
+			connect.WithSchema(adminUserServiceMethods.ByName("RestoreUser")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -154,6 +164,7 @@ type adminUserServiceClient struct {
 	disableUser       *connect.Client[v1.DisableUserRequest, v1.DisableUserResponse]
 	enableUser        *connect.Client[v1.EnableUserRequest, v1.EnableUserResponse]
 	resetUserPassword *connect.Client[v1.ResetUserPasswordRequest, v1.ResetUserPasswordResponse]
+	restoreUser       *connect.Client[v1.RestoreUserRequest, v1.RestoreUserResponse]
 }
 
 // GetDashboard calls ant.v1.AdminUserService.GetDashboard.
@@ -201,6 +212,11 @@ func (c *adminUserServiceClient) ResetUserPassword(ctx context.Context, req *con
 	return c.resetUserPassword.CallUnary(ctx, req)
 }
 
+// RestoreUser calls ant.v1.AdminUserService.RestoreUser.
+func (c *adminUserServiceClient) RestoreUser(ctx context.Context, req *connect.Request[v1.RestoreUserRequest]) (*connect.Response[v1.RestoreUserResponse], error) {
+	return c.restoreUser.CallUnary(ctx, req)
+}
+
 // AdminUserServiceHandler is an implementation of the ant.v1.AdminUserService service.
 type AdminUserServiceHandler interface {
 	GetDashboard(context.Context, *connect.Request[v1.GetDashboardRequest]) (*connect.Response[v1.GetDashboardResponse], error)
@@ -212,6 +228,7 @@ type AdminUserServiceHandler interface {
 	DisableUser(context.Context, *connect.Request[v1.DisableUserRequest]) (*connect.Response[v1.DisableUserResponse], error)
 	EnableUser(context.Context, *connect.Request[v1.EnableUserRequest]) (*connect.Response[v1.EnableUserResponse], error)
 	ResetUserPassword(context.Context, *connect.Request[v1.ResetUserPasswordRequest]) (*connect.Response[v1.ResetUserPasswordResponse], error)
+	RestoreUser(context.Context, *connect.Request[v1.RestoreUserRequest]) (*connect.Response[v1.RestoreUserResponse], error)
 }
 
 // NewAdminUserServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -275,6 +292,12 @@ func NewAdminUserServiceHandler(svc AdminUserServiceHandler, opts ...connect.Han
 		connect.WithSchema(adminUserServiceMethods.ByName("ResetUserPassword")),
 		connect.WithHandlerOptions(opts...),
 	)
+	adminUserServiceRestoreUserHandler := connect.NewUnaryHandler(
+		AdminUserServiceRestoreUserProcedure,
+		svc.RestoreUser,
+		connect.WithSchema(adminUserServiceMethods.ByName("RestoreUser")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/ant.v1.AdminUserService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AdminUserServiceGetDashboardProcedure:
@@ -295,6 +318,8 @@ func NewAdminUserServiceHandler(svc AdminUserServiceHandler, opts ...connect.Han
 			adminUserServiceEnableUserHandler.ServeHTTP(w, r)
 		case AdminUserServiceResetUserPasswordProcedure:
 			adminUserServiceResetUserPasswordHandler.ServeHTTP(w, r)
+		case AdminUserServiceRestoreUserProcedure:
+			adminUserServiceRestoreUserHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -338,4 +363,8 @@ func (UnimplementedAdminUserServiceHandler) EnableUser(context.Context, *connect
 
 func (UnimplementedAdminUserServiceHandler) ResetUserPassword(context.Context, *connect.Request[v1.ResetUserPasswordRequest]) (*connect.Response[v1.ResetUserPasswordResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AdminUserService.ResetUserPassword is not implemented"))
+}
+
+func (UnimplementedAdminUserServiceHandler) RestoreUser(context.Context, *connect.Request[v1.RestoreUserRequest]) (*connect.Response[v1.RestoreUserResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AdminUserService.RestoreUser is not implemented"))
 }
