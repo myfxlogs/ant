@@ -82,7 +82,7 @@ export default function AccountReport() {
     abortRef.current = abort;
   }, [id, period]);
 
-  const { balance, equity, profit, profitPercent } = financials;
+  const { balance = 0, equity = 0, profit = 0, profitPercent = 0 } = financials;
   const attribution = attributionQ.data;
   const rolling = rollingQ.data;
 

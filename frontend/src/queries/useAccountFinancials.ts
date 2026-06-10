@@ -12,13 +12,14 @@ export function useAccountFinancials(accountId: string) {
     queryFn: async () => {
       const a = await accountApi.get(accountId);
       return {
-        balance: a.balance,
-        equity: a.equity,
-        profit: a.profit,
-        margin: a.margin,
-        freeMargin: a.freeMargin,
-        marginLevel: a.marginLevel,
-        credit: a.credit,
+        balance: a.balance ?? 0,
+        equity: a.equity ?? 0,
+        profit: a.profit ?? 0,
+        profitPercent: a.profitPercent ?? 0,
+        margin: a.margin ?? 0,
+        freeMargin: a.freeMargin ?? 0,
+        marginLevel: a.marginLevel ?? 0,
+        credit: a.credit ?? 0,
       };
     },
     enabled: !!accountId,
