@@ -84,12 +84,12 @@ export default function WalletPage() {
                 </span>
               </Descriptions.Item>
               <Descriptions.Item label={t('wallet.balance', { defaultValue: 'Balance' })}>
-                <span style={{ fontSize: 16, fontWeight: 600, color: '#141D22' }}>
+                <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text)' }}>
                   {formatAmount(wallet.balance)} {wallet.currency}
                 </span>
               </Descriptions.Item>
               <Descriptions.Item label={t('wallet.frozen', { defaultValue: 'Frozen' })}>
-                <span style={{ fontSize: 16, color: '#8A9AA5' }}>
+                <span style={{ fontSize: 16, color: 'var(--color-text-muted)' }}>
                   {formatAmount(wallet.frozenBalance)} {wallet.currency}
                 </span>
               </Descriptions.Item>
