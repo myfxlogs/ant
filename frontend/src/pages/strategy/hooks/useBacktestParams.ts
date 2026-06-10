@@ -14,6 +14,8 @@ import { useGateEvaluation } from './useGateEvaluation';
 
 export type { StrategyDirective, PresetKey };
 export { PRESETS, DATE_PRESETS };
+export type { SweepDimension, TuneMethod, BacktestSubTab } from './useTuning';
+export { OPTIMIZER_INFO } from './useTuning';
 
 export type BacktestStatus = 'idle' | 'running' | 'completed' | 'error';
 
