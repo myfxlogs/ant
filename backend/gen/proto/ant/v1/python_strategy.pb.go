@@ -1447,7 +1447,7 @@ const file_python_strategy_proto_rawDesc = "" +
 	"\x04open\x18\x03 \x03(\x01R\x04open\x12\x12\n" +
 	"\x04high\x18\x04 \x03(\x01R\x04high\x12\x10\n" +
 	"\x03low\x18\x05 \x03(\x01R\x03low\x12\x16\n" +
-	"\x06volume\x18\x06 \x03(\x01R\x06volume2\x9a\a\n" +
+	"\x06volume\x18\x06 \x03(\x01R\x06volume2\xf7\a\n" +
 	"\x15PythonStrategyService\x12J\n" +
 	"\aExecute\x12\x1e.ant.v1.ExecuteStrategyRequest\x1a\x1f.ant.v1.ExecuteStrategyResponse\x12M\n" +
 	"\bValidate\x12\x1f.ant.v1.ValidateStrategyRequest\x1a .ant.v1.ValidateStrategyResponse\x12M\n" +
@@ -1457,7 +1457,8 @@ const file_python_strategy_proto_rawDesc = "" +
 	"\x10ListBacktestRuns\x12\x1f.ant.v1.ListBacktestRunsRequest\x1a .ant.v1.ListBacktestRunsResponse\x12P\n" +
 	"\x10WatchBacktestRun\x12\x1f.ant.v1.WatchBacktestRunRequest\x1a\x19.ant.v1.BacktestRunUpdate0\x01\x12X\n" +
 	"\x11CancelBacktestRun\x12 .ant.v1.CancelBacktestRunRequest\x1a!.ant.v1.CancelBacktestRunResponse\x12X\n" +
-	"\x11DeleteBacktestRun\x12 .ant.v1.DeleteBacktestRunRequest\x1a!.ant.v1.DeleteBacktestRunResponse\x12J\n" +
+	"\x11DeleteBacktestRun\x12 .ant.v1.DeleteBacktestRunRequest\x1a!.ant.v1.DeleteBacktestRunResponse\x12[\n" +
+	"\x12DeleteBacktestRuns\x12!.ant.v1.DeleteBacktestRunsRequest\x1a\".ant.v1.DeleteBacktestRunsResponse\x12J\n" +
 	"\fGetTemplates\x12\x16.google.protobuf.Empty\x1a\".ant.v1.GetPythonTemplatesResponse\x12F\n" +
 	"\vExecuteLive\x12\x1a.ant.v1.ExecuteLiveRequest\x1a\x1b.ant.v1.ExecuteLiveResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
@@ -1500,13 +1501,15 @@ var file_python_strategy_proto_goTypes = []any{
 	(*WatchBacktestRunRequest)(nil),    // 22: ant.v1.WatchBacktestRunRequest
 	(*CancelBacktestRunRequest)(nil),   // 23: ant.v1.CancelBacktestRunRequest
 	(*DeleteBacktestRunRequest)(nil),   // 24: ant.v1.DeleteBacktestRunRequest
-	(*emptypb.Empty)(nil),              // 25: google.protobuf.Empty
-	(*StartBacktestRunResponse)(nil),   // 26: ant.v1.StartBacktestRunResponse
-	(*GetBacktestRunResponse)(nil),     // 27: ant.v1.GetBacktestRunResponse
-	(*ListBacktestRunsResponse)(nil),   // 28: ant.v1.ListBacktestRunsResponse
-	(*BacktestRunUpdate)(nil),          // 29: ant.v1.BacktestRunUpdate
-	(*CancelBacktestRunResponse)(nil),  // 30: ant.v1.CancelBacktestRunResponse
-	(*DeleteBacktestRunResponse)(nil),  // 31: ant.v1.DeleteBacktestRunResponse
+	(*DeleteBacktestRunsRequest)(nil),  // 25: ant.v1.DeleteBacktestRunsRequest
+	(*emptypb.Empty)(nil),              // 26: google.protobuf.Empty
+	(*StartBacktestRunResponse)(nil),   // 27: ant.v1.StartBacktestRunResponse
+	(*GetBacktestRunResponse)(nil),     // 28: ant.v1.GetBacktestRunResponse
+	(*ListBacktestRunsResponse)(nil),   // 29: ant.v1.ListBacktestRunsResponse
+	(*BacktestRunUpdate)(nil),          // 30: ant.v1.BacktestRunUpdate
+	(*CancelBacktestRunResponse)(nil),  // 31: ant.v1.CancelBacktestRunResponse
+	(*DeleteBacktestRunResponse)(nil),  // 32: ant.v1.DeleteBacktestRunResponse
+	(*DeleteBacktestRunsResponse)(nil), // 33: ant.v1.DeleteBacktestRunsResponse
 }
 var file_python_strategy_proto_depIdxs = []int32{
 	17, // 0: ant.v1.ExecuteStrategyResponse.signal:type_name -> ant.v1.StrategySignal
@@ -1530,21 +1533,23 @@ var file_python_strategy_proto_depIdxs = []int32{
 	22, // 18: ant.v1.PythonStrategyService.WatchBacktestRun:input_type -> ant.v1.WatchBacktestRunRequest
 	23, // 19: ant.v1.PythonStrategyService.CancelBacktestRun:input_type -> ant.v1.CancelBacktestRunRequest
 	24, // 20: ant.v1.PythonStrategyService.DeleteBacktestRun:input_type -> ant.v1.DeleteBacktestRunRequest
-	25, // 21: ant.v1.PythonStrategyService.GetTemplates:input_type -> google.protobuf.Empty
-	11, // 22: ant.v1.PythonStrategyService.ExecuteLive:input_type -> ant.v1.ExecuteLiveRequest
-	1,  // 23: ant.v1.PythonStrategyService.Execute:output_type -> ant.v1.ExecuteStrategyResponse
-	3,  // 24: ant.v1.PythonStrategyService.Validate:output_type -> ant.v1.ValidateStrategyResponse
-	8,  // 25: ant.v1.PythonStrategyService.Backtest:output_type -> ant.v1.BacktestStrategyResponse
-	26, // 26: ant.v1.PythonStrategyService.StartBacktestRun:output_type -> ant.v1.StartBacktestRunResponse
-	27, // 27: ant.v1.PythonStrategyService.GetBacktestRun:output_type -> ant.v1.GetBacktestRunResponse
-	28, // 28: ant.v1.PythonStrategyService.ListBacktestRuns:output_type -> ant.v1.ListBacktestRunsResponse
-	29, // 29: ant.v1.PythonStrategyService.WatchBacktestRun:output_type -> ant.v1.BacktestRunUpdate
-	30, // 30: ant.v1.PythonStrategyService.CancelBacktestRun:output_type -> ant.v1.CancelBacktestRunResponse
-	31, // 31: ant.v1.PythonStrategyService.DeleteBacktestRun:output_type -> ant.v1.DeleteBacktestRunResponse
-	9,  // 32: ant.v1.PythonStrategyService.GetTemplates:output_type -> ant.v1.GetPythonTemplatesResponse
-	12, // 33: ant.v1.PythonStrategyService.ExecuteLive:output_type -> ant.v1.ExecuteLiveResponse
-	23, // [23:34] is the sub-list for method output_type
-	12, // [12:23] is the sub-list for method input_type
+	25, // 21: ant.v1.PythonStrategyService.DeleteBacktestRuns:input_type -> ant.v1.DeleteBacktestRunsRequest
+	26, // 22: ant.v1.PythonStrategyService.GetTemplates:input_type -> google.protobuf.Empty
+	11, // 23: ant.v1.PythonStrategyService.ExecuteLive:input_type -> ant.v1.ExecuteLiveRequest
+	1,  // 24: ant.v1.PythonStrategyService.Execute:output_type -> ant.v1.ExecuteStrategyResponse
+	3,  // 25: ant.v1.PythonStrategyService.Validate:output_type -> ant.v1.ValidateStrategyResponse
+	8,  // 26: ant.v1.PythonStrategyService.Backtest:output_type -> ant.v1.BacktestStrategyResponse
+	27, // 27: ant.v1.PythonStrategyService.StartBacktestRun:output_type -> ant.v1.StartBacktestRunResponse
+	28, // 28: ant.v1.PythonStrategyService.GetBacktestRun:output_type -> ant.v1.GetBacktestRunResponse
+	29, // 29: ant.v1.PythonStrategyService.ListBacktestRuns:output_type -> ant.v1.ListBacktestRunsResponse
+	30, // 30: ant.v1.PythonStrategyService.WatchBacktestRun:output_type -> ant.v1.BacktestRunUpdate
+	31, // 31: ant.v1.PythonStrategyService.CancelBacktestRun:output_type -> ant.v1.CancelBacktestRunResponse
+	32, // 32: ant.v1.PythonStrategyService.DeleteBacktestRun:output_type -> ant.v1.DeleteBacktestRunResponse
+	33, // 33: ant.v1.PythonStrategyService.DeleteBacktestRuns:output_type -> ant.v1.DeleteBacktestRunsResponse
+	9,  // 34: ant.v1.PythonStrategyService.GetTemplates:output_type -> ant.v1.GetPythonTemplatesResponse
+	12, // 35: ant.v1.PythonStrategyService.ExecuteLive:output_type -> ant.v1.ExecuteLiveResponse
+	24, // [24:36] is the sub-list for method output_type
+	12, // [12:24] is the sub-list for method input_type
 	12, // [12:12] is the sub-list for extension type_name
 	12, // [12:12] is the sub-list for extension extendee
 	0,  // [0:12] is the sub-list for field type_name

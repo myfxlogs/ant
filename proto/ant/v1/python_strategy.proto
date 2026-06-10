@@ -21,6 +21,7 @@ service PythonStrategyService {
   rpc WatchBacktestRun(WatchBacktestRunRequest) returns (stream BacktestRunUpdate);
   rpc CancelBacktestRun(CancelBacktestRunRequest) returns (CancelBacktestRunResponse);
   rpc DeleteBacktestRun(DeleteBacktestRunRequest) returns (DeleteBacktestRunResponse);
+  rpc DeleteBacktestRuns(DeleteBacktestRunsRequest) returns (DeleteBacktestRunsResponse);
   rpc GetTemplates(google.protobuf.Empty) returns (GetPythonTemplatesResponse);
   // ExecuteLive: proto-native live/paper strategy execution.
   // Go LiveStrategyRunner sends proto-native LiveStrategyContext (no JSON).

@@ -238,3 +238,22 @@ func (r *BacktestRunRepository) Delete(ctx context.Context, userID, runID uuid.U
 	}
 	return ct.RowsAffected() > 0, nil
 }
+
+	// DeleteBatch deletes multiple backtest runs owned by the user in a single query.
+	// Returns the count of successfully deleted rows.
+	func (r *BacktestRunRepository) DeleteBatch(ctx context.Context, userID uuid.UUID, runIDs []uuid.UUID) (int64, error) {
+		if r == nil || r.db == nil {
+			return 0, errors.New("repository not initialized")
+		}
+		if len(runIDs) == 0 {
+			return 0, nil
+		}
+		ct, err := r.db.Exec(ctx, `
+			DELETE FROM backtest_runs
+			WHERE user_id = $1 AND id = ANY($2)
+		`, userID, runIDs)
+		if err != nil {
+			return 0, err
+		}
+		return ct.RowsAffected(), nil
+	}

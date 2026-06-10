@@ -14,6 +14,7 @@ import {
 import {
   CancelBacktestRunRequestSchema,
   DeleteBacktestRunRequestSchema,
+  DeleteBacktestRunsRequestSchema,
 } from '../gen/ant/v1/backtest_run_control_pb';
 
 export interface ExecuteStrategyResult {
@@ -193,6 +194,11 @@ export const pythonStrategyApi = {
   deleteBacktestRun: async (runId: string) => {
     const msg = create(DeleteBacktestRunRequestSchema, { runId });
     return (await pythonStrategyService.deleteBacktestRun(msg));
+  },
+
+  deleteBacktestRuns: async (runIds: string[]) => {
+    const msg = create(DeleteBacktestRunsRequestSchema, { runIds });
+    return (await pythonStrategyService.deleteBacktestRuns(msg));
   },
 
   watchBacktestRun: (runId: string, onUpdate: (u: any) => void, onError?: (e: any) => void) => {

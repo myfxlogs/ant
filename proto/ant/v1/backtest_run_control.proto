@@ -21,3 +21,12 @@ message DeleteBacktestRunRequest {
 message DeleteBacktestRunResponse {
   bool deleted = 1;
 }
+
+message DeleteBacktestRunsRequest {
+  repeated string run_ids = 1;
+}
+
+message DeleteBacktestRunsResponse {
+  int32 deleted_count = 1;
+  int32 failed_count = 2;
+}

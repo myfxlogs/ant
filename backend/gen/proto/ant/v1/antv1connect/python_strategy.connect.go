@@ -61,6 +61,9 @@ const (
 	// PythonStrategyServiceDeleteBacktestRunProcedure is the fully-qualified name of the
 	// PythonStrategyService's DeleteBacktestRun RPC.
 	PythonStrategyServiceDeleteBacktestRunProcedure = "/ant.v1.PythonStrategyService/DeleteBacktestRun"
+	// PythonStrategyServiceDeleteBacktestRunsProcedure is the fully-qualified name of the
+	// PythonStrategyService's DeleteBacktestRuns RPC.
+	PythonStrategyServiceDeleteBacktestRunsProcedure = "/ant.v1.PythonStrategyService/DeleteBacktestRuns"
 	// PythonStrategyServiceGetTemplatesProcedure is the fully-qualified name of the
 	// PythonStrategyService's GetTemplates RPC.
 	PythonStrategyServiceGetTemplatesProcedure = "/ant.v1.PythonStrategyService/GetTemplates"
@@ -80,6 +83,7 @@ type PythonStrategyServiceClient interface {
 	WatchBacktestRun(context.Context, *connect.Request[v1.WatchBacktestRunRequest]) (*connect.ServerStreamForClient[v1.BacktestRunUpdate], error)
 	CancelBacktestRun(context.Context, *connect.Request[v1.CancelBacktestRunRequest]) (*connect.Response[v1.CancelBacktestRunResponse], error)
 	DeleteBacktestRun(context.Context, *connect.Request[v1.DeleteBacktestRunRequest]) (*connect.Response[v1.DeleteBacktestRunResponse], error)
+	DeleteBacktestRuns(context.Context, *connect.Request[v1.DeleteBacktestRunsRequest]) (*connect.Response[v1.DeleteBacktestRunsResponse], error)
 	GetTemplates(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.GetPythonTemplatesResponse], error)
 	// ExecuteLive: proto-native live/paper strategy execution.
 	// Go LiveStrategyRunner sends proto-native LiveStrategyContext (no JSON).
@@ -152,6 +156,12 @@ func NewPythonStrategyServiceClient(httpClient connect.HTTPClient, baseURL strin
 			connect.WithSchema(pythonStrategyServiceMethods.ByName("DeleteBacktestRun")),
 			connect.WithClientOptions(opts...),
 		),
+		deleteBacktestRuns: connect.NewClient[v1.DeleteBacktestRunsRequest, v1.DeleteBacktestRunsResponse](
+			httpClient,
+			baseURL+PythonStrategyServiceDeleteBacktestRunsProcedure,
+			connect.WithSchema(pythonStrategyServiceMethods.ByName("DeleteBacktestRuns")),
+			connect.WithClientOptions(opts...),
+		),
 		getTemplates: connect.NewClient[emptypb.Empty, v1.GetPythonTemplatesResponse](
 			httpClient,
 			baseURL+PythonStrategyServiceGetTemplatesProcedure,
@@ -169,17 +179,18 @@ func NewPythonStrategyServiceClient(httpClient connect.HTTPClient, baseURL strin
 
 // pythonStrategyServiceClient implements PythonStrategyServiceClient.
 type pythonStrategyServiceClient struct {
-	execute           *connect.Client[v1.ExecuteStrategyRequest, v1.ExecuteStrategyResponse]
-	validate          *connect.Client[v1.ValidateStrategyRequest, v1.ValidateStrategyResponse]
-	backtest          *connect.Client[v1.BacktestStrategyRequest, v1.BacktestStrategyResponse]
-	startBacktestRun  *connect.Client[v1.StartBacktestRunRequest, v1.StartBacktestRunResponse]
-	getBacktestRun    *connect.Client[v1.GetBacktestRunRequest, v1.GetBacktestRunResponse]
-	listBacktestRuns  *connect.Client[v1.ListBacktestRunsRequest, v1.ListBacktestRunsResponse]
-	watchBacktestRun  *connect.Client[v1.WatchBacktestRunRequest, v1.BacktestRunUpdate]
-	cancelBacktestRun *connect.Client[v1.CancelBacktestRunRequest, v1.CancelBacktestRunResponse]
-	deleteBacktestRun *connect.Client[v1.DeleteBacktestRunRequest, v1.DeleteBacktestRunResponse]
-	getTemplates      *connect.Client[emptypb.Empty, v1.GetPythonTemplatesResponse]
-	executeLive       *connect.Client[v1.ExecuteLiveRequest, v1.ExecuteLiveResponse]
+	execute            *connect.Client[v1.ExecuteStrategyRequest, v1.ExecuteStrategyResponse]
+	validate           *connect.Client[v1.ValidateStrategyRequest, v1.ValidateStrategyResponse]
+	backtest           *connect.Client[v1.BacktestStrategyRequest, v1.BacktestStrategyResponse]
+	startBacktestRun   *connect.Client[v1.StartBacktestRunRequest, v1.StartBacktestRunResponse]
+	getBacktestRun     *connect.Client[v1.GetBacktestRunRequest, v1.GetBacktestRunResponse]
+	listBacktestRuns   *connect.Client[v1.ListBacktestRunsRequest, v1.ListBacktestRunsResponse]
+	watchBacktestRun   *connect.Client[v1.WatchBacktestRunRequest, v1.BacktestRunUpdate]
+	cancelBacktestRun  *connect.Client[v1.CancelBacktestRunRequest, v1.CancelBacktestRunResponse]
+	deleteBacktestRun  *connect.Client[v1.DeleteBacktestRunRequest, v1.DeleteBacktestRunResponse]
+	deleteBacktestRuns *connect.Client[v1.DeleteBacktestRunsRequest, v1.DeleteBacktestRunsResponse]
+	getTemplates       *connect.Client[emptypb.Empty, v1.GetPythonTemplatesResponse]
+	executeLive        *connect.Client[v1.ExecuteLiveRequest, v1.ExecuteLiveResponse]
 }
 
 // Execute calls ant.v1.PythonStrategyService.Execute.
@@ -227,6 +238,11 @@ func (c *pythonStrategyServiceClient) DeleteBacktestRun(ctx context.Context, req
 	return c.deleteBacktestRun.CallUnary(ctx, req)
 }
 
+// DeleteBacktestRuns calls ant.v1.PythonStrategyService.DeleteBacktestRuns.
+func (c *pythonStrategyServiceClient) DeleteBacktestRuns(ctx context.Context, req *connect.Request[v1.DeleteBacktestRunsRequest]) (*connect.Response[v1.DeleteBacktestRunsResponse], error) {
+	return c.deleteBacktestRuns.CallUnary(ctx, req)
+}
+
 // GetTemplates calls ant.v1.PythonStrategyService.GetTemplates.
 func (c *pythonStrategyServiceClient) GetTemplates(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[v1.GetPythonTemplatesResponse], error) {
 	return c.getTemplates.CallUnary(ctx, req)
@@ -248,6 +264,7 @@ type PythonStrategyServiceHandler interface {
 	WatchBacktestRun(context.Context, *connect.Request[v1.WatchBacktestRunRequest], *connect.ServerStream[v1.BacktestRunUpdate]) error
 	CancelBacktestRun(context.Context, *connect.Request[v1.CancelBacktestRunRequest]) (*connect.Response[v1.CancelBacktestRunResponse], error)
 	DeleteBacktestRun(context.Context, *connect.Request[v1.DeleteBacktestRunRequest]) (*connect.Response[v1.DeleteBacktestRunResponse], error)
+	DeleteBacktestRuns(context.Context, *connect.Request[v1.DeleteBacktestRunsRequest]) (*connect.Response[v1.DeleteBacktestRunsResponse], error)
 	GetTemplates(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.GetPythonTemplatesResponse], error)
 	// ExecuteLive: proto-native live/paper strategy execution.
 	// Go LiveStrategyRunner sends proto-native LiveStrategyContext (no JSON).
@@ -316,6 +333,12 @@ func NewPythonStrategyServiceHandler(svc PythonStrategyServiceHandler, opts ...c
 		connect.WithSchema(pythonStrategyServiceMethods.ByName("DeleteBacktestRun")),
 		connect.WithHandlerOptions(opts...),
 	)
+	pythonStrategyServiceDeleteBacktestRunsHandler := connect.NewUnaryHandler(
+		PythonStrategyServiceDeleteBacktestRunsProcedure,
+		svc.DeleteBacktestRuns,
+		connect.WithSchema(pythonStrategyServiceMethods.ByName("DeleteBacktestRuns")),
+		connect.WithHandlerOptions(opts...),
+	)
 	pythonStrategyServiceGetTemplatesHandler := connect.NewUnaryHandler(
 		PythonStrategyServiceGetTemplatesProcedure,
 		svc.GetTemplates,
@@ -348,6 +371,8 @@ func NewPythonStrategyServiceHandler(svc PythonStrategyServiceHandler, opts ...c
 			pythonStrategyServiceCancelBacktestRunHandler.ServeHTTP(w, r)
 		case PythonStrategyServiceDeleteBacktestRunProcedure:
 			pythonStrategyServiceDeleteBacktestRunHandler.ServeHTTP(w, r)
+		case PythonStrategyServiceDeleteBacktestRunsProcedure:
+			pythonStrategyServiceDeleteBacktestRunsHandler.ServeHTTP(w, r)
 		case PythonStrategyServiceGetTemplatesProcedure:
 			pythonStrategyServiceGetTemplatesHandler.ServeHTTP(w, r)
 		case PythonStrategyServiceExecuteLiveProcedure:
@@ -395,6 +420,10 @@ func (UnimplementedPythonStrategyServiceHandler) CancelBacktestRun(context.Conte
 
 func (UnimplementedPythonStrategyServiceHandler) DeleteBacktestRun(context.Context, *connect.Request[v1.DeleteBacktestRunRequest]) (*connect.Response[v1.DeleteBacktestRunResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.PythonStrategyService.DeleteBacktestRun is not implemented"))
+}
+
+func (UnimplementedPythonStrategyServiceHandler) DeleteBacktestRuns(context.Context, *connect.Request[v1.DeleteBacktestRunsRequest]) (*connect.Response[v1.DeleteBacktestRunsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.PythonStrategyService.DeleteBacktestRuns is not implemented"))
 }
 
 func (UnimplementedPythonStrategyServiceHandler) GetTemplates(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[v1.GetPythonTemplatesResponse], error) {

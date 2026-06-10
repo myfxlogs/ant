@@ -220,3 +220,29 @@ func (s *PythonStrategyServer) DeleteBacktestRun(ctx context.Context, req *conne
 	}
 	return connect.NewResponse(&antv1.DeleteBacktestRunResponse{Deleted: deleted}), nil
 }
+
+// DeleteBacktestRuns implements the batch-delete RPC for backtest runs.
+func (s *PythonStrategyServer) DeleteBacktestRuns(ctx context.Context, req *connect.Request[antv1.DeleteBacktestRunsRequest]) (*connect.Response[antv1.DeleteBacktestRunsResponse], error) {
+	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
+	ids := req.Msg.RunIds
+	if len(ids) == 0 {
+		return connect.NewResponse(&antv1.DeleteBacktestRunsResponse{}), nil
+	}
+	uuids := make([]uuid.UUID, 0, len(ids))
+	for _, id := range ids {
+		uid, err := uuid.Parse(id)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid run_id %q: %w", id, err))
+		}
+		uuids = append(uuids, uid)
+	}
+	deleted, err := s.backtestRepo.DeleteBatch(ctx, userID, uuids)
+	if err != nil {
+		s.log.Error("DeleteBacktestRuns", zap.Error(err))
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.DeleteBacktestRunsResponse{
+		DeletedCount: int32(deleted),
+		FailedCount:  int32(len(uuids)) - int32(deleted),
+	}), nil
+}

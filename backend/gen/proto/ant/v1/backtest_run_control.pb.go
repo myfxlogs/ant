@@ -197,6 +197,102 @@ func (x *DeleteBacktestRunResponse) GetDeleted() bool {
 	return false
 }
 
+type DeleteBacktestRunsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RunIds        []string               `protobuf:"bytes,1,rep,name=run_ids,json=runIds,proto3" json:"run_ids,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteBacktestRunsRequest) Reset() {
+	*x = DeleteBacktestRunsRequest{}
+	mi := &file_backtest_run_control_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteBacktestRunsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteBacktestRunsRequest) ProtoMessage() {}
+
+func (x *DeleteBacktestRunsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_backtest_run_control_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteBacktestRunsRequest.ProtoReflect.Descriptor instead.
+func (*DeleteBacktestRunsRequest) Descriptor() ([]byte, []int) {
+	return file_backtest_run_control_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *DeleteBacktestRunsRequest) GetRunIds() []string {
+	if x != nil {
+		return x.RunIds
+	}
+	return nil
+}
+
+type DeleteBacktestRunsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DeletedCount  int32                  `protobuf:"varint,1,opt,name=deleted_count,json=deletedCount,proto3" json:"deleted_count,omitempty"`
+	FailedCount   int32                  `protobuf:"varint,2,opt,name=failed_count,json=failedCount,proto3" json:"failed_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteBacktestRunsResponse) Reset() {
+	*x = DeleteBacktestRunsResponse{}
+	mi := &file_backtest_run_control_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteBacktestRunsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteBacktestRunsResponse) ProtoMessage() {}
+
+func (x *DeleteBacktestRunsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_backtest_run_control_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteBacktestRunsResponse.ProtoReflect.Descriptor instead.
+func (*DeleteBacktestRunsResponse) Descriptor() ([]byte, []int) {
+	return file_backtest_run_control_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *DeleteBacktestRunsResponse) GetDeletedCount() int32 {
+	if x != nil {
+		return x.DeletedCount
+	}
+	return 0
+}
+
+func (x *DeleteBacktestRunsResponse) GetFailedCount() int32 {
+	if x != nil {
+		return x.FailedCount
+	}
+	return 0
+}
+
 var File_backtest_run_control_proto protoreflect.FileDescriptor
 
 const file_backtest_run_control_proto_rawDesc = "" +
@@ -209,7 +305,12 @@ const file_backtest_run_control_proto_rawDesc = "" +
 	"\x18DeleteBacktestRunRequest\x12\x15\n" +
 	"\x06run_id\x18\x01 \x01(\tR\x05runId\"5\n" +
 	"\x19DeleteBacktestRunResponse\x12\x18\n" +
-	"\adeleted\x18\x01 \x01(\bR\adeletedB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
+	"\adeleted\x18\x01 \x01(\bR\adeleted\"4\n" +
+	"\x19DeleteBacktestRunsRequest\x12\x17\n" +
+	"\arun_ids\x18\x01 \x03(\tR\x06runIds\"d\n" +
+	"\x1aDeleteBacktestRunsResponse\x12#\n" +
+	"\rdeleted_count\x18\x01 \x01(\x05R\fdeletedCount\x12!\n" +
+	"\ffailed_count\x18\x02 \x01(\x05R\vfailedCountB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 
 var (
 	file_backtest_run_control_proto_rawDescOnce sync.Once
@@ -223,16 +324,18 @@ func file_backtest_run_control_proto_rawDescGZIP() []byte {
 	return file_backtest_run_control_proto_rawDescData
 }
 
-var file_backtest_run_control_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_backtest_run_control_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_backtest_run_control_proto_goTypes = []any{
-	(*CancelBacktestRunRequest)(nil),  // 0: ant.v1.CancelBacktestRunRequest
-	(*CancelBacktestRunResponse)(nil), // 1: ant.v1.CancelBacktestRunResponse
-	(*DeleteBacktestRunRequest)(nil),  // 2: ant.v1.DeleteBacktestRunRequest
-	(*DeleteBacktestRunResponse)(nil), // 3: ant.v1.DeleteBacktestRunResponse
-	(*BacktestRun)(nil),               // 4: ant.v1.BacktestRun
+	(*CancelBacktestRunRequest)(nil),   // 0: ant.v1.CancelBacktestRunRequest
+	(*CancelBacktestRunResponse)(nil),  // 1: ant.v1.CancelBacktestRunResponse
+	(*DeleteBacktestRunRequest)(nil),   // 2: ant.v1.DeleteBacktestRunRequest
+	(*DeleteBacktestRunResponse)(nil),  // 3: ant.v1.DeleteBacktestRunResponse
+	(*DeleteBacktestRunsRequest)(nil),  // 4: ant.v1.DeleteBacktestRunsRequest
+	(*DeleteBacktestRunsResponse)(nil), // 5: ant.v1.DeleteBacktestRunsResponse
+	(*BacktestRun)(nil),                // 6: ant.v1.BacktestRun
 }
 var file_backtest_run_control_proto_depIdxs = []int32{
-	4, // 0: ant.v1.CancelBacktestRunResponse.run:type_name -> ant.v1.BacktestRun
+	6, // 0: ant.v1.CancelBacktestRunResponse.run:type_name -> ant.v1.BacktestRun
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
@@ -252,7 +355,7 @@ func file_backtest_run_control_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_backtest_run_control_proto_rawDesc), len(file_backtest_run_control_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

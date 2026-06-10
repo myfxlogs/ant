@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file backtest_run_control.proto.
  */
 export const file_backtest_run_control: GenFile = /*@__PURE__*/
-  fileDesc("ChpiYWNrdGVzdF9ydW5fY29udHJvbC5wcm90bxIGYW50LnYxIioKGENhbmNlbEJhY2t0ZXN0UnVuUmVxdWVzdBIOCgZydW5faWQYASABKAkiPQoZQ2FuY2VsQmFja3Rlc3RSdW5SZXNwb25zZRIgCgNydW4YASABKAsyEy5hbnQudjEuQmFja3Rlc3RSdW4iKgoYRGVsZXRlQmFja3Rlc3RSdW5SZXF1ZXN0Eg4KBnJ1bl9pZBgBIAEoCSIsChlEZWxldGVCYWNrdGVzdFJ1blJlc3BvbnNlEg8KB2RlbGV0ZWQYASABKAhCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw", [file_backtest_run]);
+  fileDesc("ChpiYWNrdGVzdF9ydW5fY29udHJvbC5wcm90bxIGYW50LnYxIioKGENhbmNlbEJhY2t0ZXN0UnVuUmVxdWVzdBIOCgZydW5faWQYASABKAkiPQoZQ2FuY2VsQmFja3Rlc3RSdW5SZXNwb25zZRIgCgNydW4YASABKAsyEy5hbnQudjEuQmFja3Rlc3RSdW4iKgoYRGVsZXRlQmFja3Rlc3RSdW5SZXF1ZXN0Eg4KBnJ1bl9pZBgBIAEoCSIsChlEZWxldGVCYWNrdGVzdFJ1blJlc3BvbnNlEg8KB2RlbGV0ZWQYASABKAgiLAoZRGVsZXRlQmFja3Rlc3RSdW5zUmVxdWVzdBIPCgdydW5faWRzGAEgAygJIkkKGkRlbGV0ZUJhY2t0ZXN0UnVuc1Jlc3BvbnNlEhUKDWRlbGV0ZWRfY291bnQYASABKAUSFAoMZmFpbGVkX2NvdW50GAIgASgFQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM", [file_backtest_run]);
 
 /**
  * @generated from message ant.v1.CancelBacktestRunRequest
@@ -81,4 +81,43 @@ export type DeleteBacktestRunResponse = Message<"ant.v1.DeleteBacktestRunRespons
  */
 export const DeleteBacktestRunResponseSchema: GenMessage<DeleteBacktestRunResponse> = /*@__PURE__*/
   messageDesc(file_backtest_run_control, 3);
+
+/**
+ * @generated from message ant.v1.DeleteBacktestRunsRequest
+ */
+export type DeleteBacktestRunsRequest = Message<"ant.v1.DeleteBacktestRunsRequest"> & {
+  /**
+   * @generated from field: repeated string run_ids = 1;
+   */
+  runIds: string[];
+};
+
+/**
+ * Describes the message ant.v1.DeleteBacktestRunsRequest.
+ * Use `create(DeleteBacktestRunsRequestSchema)` to create a new message.
+ */
+export const DeleteBacktestRunsRequestSchema: GenMessage<DeleteBacktestRunsRequest> = /*@__PURE__*/
+  messageDesc(file_backtest_run_control, 4);
+
+/**
+ * @generated from message ant.v1.DeleteBacktestRunsResponse
+ */
+export type DeleteBacktestRunsResponse = Message<"ant.v1.DeleteBacktestRunsResponse"> & {
+  /**
+   * @generated from field: int32 deleted_count = 1;
+   */
+  deletedCount: number;
+
+  /**
+   * @generated from field: int32 failed_count = 2;
+   */
+  failedCount: number;
+};
+
+/**
+ * Describes the message ant.v1.DeleteBacktestRunsResponse.
+ * Use `create(DeleteBacktestRunsResponseSchema)` to create a new message.
+ */
+export const DeleteBacktestRunsResponseSchema: GenMessage<DeleteBacktestRunsResponse> = /*@__PURE__*/
+  messageDesc(file_backtest_run_control, 5);
 
