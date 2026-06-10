@@ -15,6 +15,7 @@ export type UserListParams = {
   search?: string;
   status?: string;
   role?: string;
+  deletedFilter?: string;
 };
 
 export type CreateUserRequest = {
@@ -29,6 +30,8 @@ export type UpdateUserRequest = {
   email?: string;
   role?: string;
   status?: string;
+  nickname?: string;
+  accountNumber?: string;
 };
 
 export type AccountListParams = {
@@ -117,6 +120,8 @@ export const adminApi = {
       email: data.email,
       role: data.role,
       status: data.status,
+      nickname: data.nickname,
+      accountNumber: data.accountNumber,
     });
   },
 

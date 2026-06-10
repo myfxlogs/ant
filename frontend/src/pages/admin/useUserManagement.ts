@@ -121,7 +121,7 @@ export function useUserManagement() {
 
   const showEditModal = (user: UserWithAccounts) => {
     setCurrentUser(user);
-    editForm.setFieldsValue({ nickname: user.nickname, role: user.role, status: user.status });
+    editForm.setFieldsValue({ nickname: user.nickname, role: user.role, status: user.status, accountNumber: user.accountNumber });
     setEditModalVisible(true);
   };
 

@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import type { FormInstance } from 'antd';
 import type { UpdateUserRequest } from '@/client/admin';
 
+const ACCOUNT_NUMBER_PATTERN = /^[1235689][01235689]{4,5}$/;
+
 interface Props {
   visible: boolean;
   form: FormInstance;
@@ -32,6 +34,15 @@ export default function UserEditModal({ visible, form, onFinish, onCancel }: Pro
             { label: t('admin.userManagement.status.active'), value: 'active' },
             { label: t('admin.userManagement.status.suspended'), value: 'suspended' },
           ]} />
+        </Form.Item>
+        <Form.Item
+          name="accountNumber"
+          label={t('admin.userManagement.form.accountNumber', { defaultValue: 'Account Number' })}
+          rules={[
+            { pattern: ACCOUNT_NUMBER_PATTERN, message: t('admin.userManagement.form.accountNumberInvalid', { defaultValue: '5-6 digits, no leading 0, no 4 or 7' }) },
+          ]}
+        >
+          <Input placeholder="e.g. 123568" maxLength={6} />
         </Form.Item>
         <Form.Item>
           <Space>
