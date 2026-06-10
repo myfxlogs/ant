@@ -9,9 +9,15 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 
 	"anttrader/internal/model"
 )
+
+// BeginTx starts a new database transaction.
+func (r *AdminRepository) BeginTx(ctx context.Context) (pgx.Tx, error) {
+	return r.db.Begin(ctx)
+}
 
 type UserWithAccounts struct {
 	model.User
@@ -131,6 +137,18 @@ func (r *AdminRepository) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
+// DeleteUserTx is the transaction variant of DeleteUser.
+func (r *AdminRepository) DeleteUserTx(ctx context.Context, tx pgx.Tx, id uuid.UUID) error {
+	result, err := tx.Exec(ctx, `UPDATE users SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL`, id)
+	if err != nil {
+		return fmt.Errorf("delete user: %w", err)
+	}
+	if result.RowsAffected() == 0 {
+		return ErrUserNotFound
+	}
+	return nil
+}
+
 // DeleteUsers batch soft-deletes multiple users by ID.
 // Returns the count of users that were actually soft-deleted (not already deleted).
 func (r *AdminRepository) DeleteUsers(ctx context.Context, ids []uuid.UUID) (int64, error) {
@@ -144,9 +162,33 @@ func (r *AdminRepository) DeleteUsers(ctx context.Context, ids []uuid.UUID) (int
 	return ct.RowsAffected(), nil
 }
 
+// DeleteUsersTx is the transaction variant of DeleteUsers.
+func (r *AdminRepository) DeleteUsersTx(ctx context.Context, tx pgx.Tx, ids []uuid.UUID) (int64, error) {
+	if len(ids) == 0 {
+		return 0, nil
+	}
+	ct, err := tx.Exec(ctx, `UPDATE users SET deleted_at = NOW() WHERE id = ANY($1) AND deleted_at IS NULL`, ids)
+	if err != nil {
+		return 0, fmt.Errorf("delete users: %w", err)
+	}
+	return ct.RowsAffected(), nil
+}
+
 // RestoreUser clears the soft-delete marker for a previously deleted user.
 func (r *AdminRepository) RestoreUser(ctx context.Context, id uuid.UUID) error {
 	result, err := r.db.Exec(ctx, `UPDATE users SET deleted_at = NULL WHERE id = $1 AND deleted_at IS NOT NULL`, id)
+	if err != nil {
+		return fmt.Errorf("restore user: %w", err)
+	}
+	if result.RowsAffected() == 0 {
+		return ErrUserNotFound
+	}
+	return nil
+}
+
+// RestoreUserTx is the transaction variant of RestoreUser.
+func (r *AdminRepository) RestoreUserTx(ctx context.Context, tx pgx.Tx, id uuid.UUID) error {
+	result, err := tx.Exec(ctx, `UPDATE users SET deleted_at = NULL WHERE id = $1 AND deleted_at IS NOT NULL`, id)
 	if err != nil {
 		return fmt.Errorf("restore user: %w", err)
 	}
@@ -276,11 +318,24 @@ func (r *AdminRepository) HardDeleteExpiredUsers(ctx context.Context, retentionD
 
 // InsertAuditLog records an admin action in the audit log.
 func (r *AdminRepository) InsertAuditLog(ctx context.Context, actorID uuid.UUID, action, targetID, targetEmail string, affectedData map[string]int64) error {
+	return insertAuditLog(ctx, r.db, actorID, action, targetID, targetEmail, affectedData)
+}
+
+// InsertAuditLogTx is the transaction variant of InsertAuditLog.
+func (r *AdminRepository) InsertAuditLogTx(ctx context.Context, tx pgx.Tx, actorID uuid.UUID, action, targetID, targetEmail string, affectedData map[string]int64) error {
+	return insertAuditLog(ctx, tx, actorID, action, targetID, targetEmail, affectedData)
+}
+
+type execer interface {
+	Exec(context.Context, string, ...interface{}) (pgconn.CommandTag, error)
+}
+
+func insertAuditLog(ctx context.Context, exec execer, actorID uuid.UUID, action, targetID, targetEmail string, affectedData map[string]int64) error {
 	dataJSON, err := json.Marshal(affectedData)
 	if err != nil {
 		return fmt.Errorf("marshal affected data: %w", err)
 	}
-	_, err = r.db.Exec(ctx,
+	_, err = exec.Exec(ctx,
 		`INSERT INTO admin_audit_log (actor_id, action, target_id, target_email, affected_data)
 		 VALUES ($1, $2, $3, $4, $5)`,
 		actorID, action, targetID, targetEmail, dataJSON)
