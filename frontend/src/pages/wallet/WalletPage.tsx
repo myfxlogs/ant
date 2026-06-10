@@ -89,7 +89,7 @@ export default function WalletPage() {
                 </span>
               </Descriptions.Item>
               <Descriptions.Item label={t('wallet.frozen', { defaultValue: 'Frozen' })}>
-                <span style={{ fontSize: 16, color: 'var(--color-text-muted)' }}>
+                <span style={{ fontSize: 16, color: 'var(--color-text)' }}>
                   {formatAmount(wallet.frozenBalance)} {wallet.currency}
                 </span>
               </Descriptions.Item>

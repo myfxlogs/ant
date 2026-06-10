@@ -62,7 +62,7 @@ export default function WalletDropdown() {
           <Descriptions.Item
             label={<Text type="secondary">{t('wallet.frozen')}</Text>}
           >
-            <Text style={{ color: 'var(--color-text-muted)' }}>
+            <Text style={{ color: 'var(--color-text)' }}>
               {formattedFrozen} {currency}
             </Text>
           </Descriptions.Item>
