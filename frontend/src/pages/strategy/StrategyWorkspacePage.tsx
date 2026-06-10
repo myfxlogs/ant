@@ -1,7 +1,8 @@
 import React, { Suspense, lazy, useState, useEffect } from 'react';
-import { Collapse } from 'antd';
-import { DoubleRightOutlined, DoubleLeftOutlined } from '@ant-design/icons';
+import { Collapse, Grid, Button, Typography, Result } from 'antd';
+import { DoubleRightOutlined, DoubleLeftOutlined, CodeOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useStrategyWorkspaceState, DATE_PRESETS } from './hooks/useStrategyWorkspaceState';
 import WorkspaceCodePanel from './components/workspace/WorkspaceCodePanel';
 import WorkspaceBacktestPanel from './components/workspace/WorkspaceBacktestPanel';
@@ -28,6 +29,26 @@ class WorkspaceErrorBoundary extends React.Component<{ children: React.ReactNode
 
 export default function StrategyWorkspacePage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const screens = Grid.useBreakpoint();
+
+  // The workspace uses fixed-width panels (750+520 px) and is unusable on narrow screens.
+  // Show a guard page with a link to strategy templates instead.
+  if (!screens.lg) {
+    return (
+      <Result
+        icon={<CodeOutlined style={{ color: '#D4AF37', fontSize: 64 }} />}
+        title={t('strategy.workspace.mobileTitle', { defaultValue: 'Desktop Required' })}
+        subTitle={t('strategy.workspace.mobileSubtitle', { defaultValue: 'The Strategy Workspace needs a larger screen. Please switch to a desktop device, or browse strategy templates instead.' })}
+        extra={
+          <Button type="primary" onClick={() => navigate('/strategy/templates')}>
+            {t('strategy.workspace.mobileCta', { defaultValue: 'Go to Strategy Templates' })}
+          </Button>
+        }
+      />
+    );
+  }
+
   const ws = useStrategyWorkspaceState();
   const userId = useAuthStore(s => s.user?.id);
 

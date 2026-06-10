@@ -151,8 +151,10 @@ export default function Summary() {
         />
 
         <SummaryMetricsCards tradeStats={tradeStats} riskMetrics={riskMetrics} />
+      </StatusResult>
 
-        {/* Economic calendar panel */}
+      {/* Economic calendar — independent section with its own loading/error state */}
+      <StatusResult loading={false} error={null}>
         <div className="rounded-2xl p-6 mt-6" style={{ background: '#FFFFFF', boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)' }}>
           <h2 className="text-lg font-semibold mb-4" style={{ color: '#141D22' }}>{t('analytics.summary.cards.economicCalendar')}</h2>
           <Row gutter={16}>

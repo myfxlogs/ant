@@ -134,7 +134,7 @@ export function Step2Credentials({
       </div>
       <div>
         <label className="block mb-2 font-medium" style={{ color: '#141D22' }}>{t('accounts.bind.fields.password')}</label>
-        <input type="text" value={password} onChange={(e) => setPassword(e.target.value)}
+        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
           placeholder={t('accounts.bind.placeholders.password')} className="w-full outline-none transition-all"
           style={{ background: '#FFFFFF', border: '1px solid rgba(185, 201, 223, 0.4)', borderRadius: '10px', padding: '14px 16px', fontSize: '16px', color: '#141D22', height: '48px' }} />
         <p className="mt-2 text-sm" style={{ color: '#8A9AA5' }}>{t('accounts.bind.passwordHint')}</p>

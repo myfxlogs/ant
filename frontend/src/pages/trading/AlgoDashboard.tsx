@@ -1,10 +1,11 @@
 import { useState, useCallback } from 'react';
-import { Card, Table, Tag, Button, Space, Typography, Empty } from 'antd';
+import { Card, Table, Tag, Button, Space, Typography } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { ColumnsType } from 'antd/es/table';
 import { executionAlgoClient } from '@/client/connect';
 import AlgoSubmitForm from '@/components/trade/AlgoSubmitForm';
+import { StatusResult } from '@/components/common/StatusResult';
 
 const { Title } = Typography;
 
@@ -135,9 +136,7 @@ export default function AlgoDashboard() {
         <AlgoSubmitForm onStarted={handleStarted} />
 
         <Card title={t('algo.dashboard.activeExecutions')} size="small">
-          {algos.length === 0 ? (
-            <Empty description={t('algo.dashboard.noActive')} />
-          ) : (
+          <StatusResult empty={algos.length === 0} emptyText={t('algo.dashboard.noActive')}>
             <Table<ActiveAlgo>
               columns={columns}
               dataSource={algos}
@@ -145,7 +144,7 @@ export default function AlgoDashboard() {
               pagination={false}
               size="small"
             />
-          )}
+          </StatusResult>
         </Card>
       </Space>
     </div>

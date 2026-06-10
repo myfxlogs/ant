@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Layout } from 'antd';
-import { HomeOutlined, ThunderboltOutlined, HistoryOutlined, UnorderedListOutlined, FolderOutlined, CodeOutlined, ShopOutlined, BulbOutlined, SettingOutlined, ExperimentOutlined, RadarChartOutlined, DashboardOutlined, PieChartOutlined } from '@ant-design/icons';
+import { HomeOutlined, ThunderboltOutlined, HistoryOutlined, UnorderedListOutlined, FolderOutlined, CodeOutlined, ShopOutlined, BulbOutlined, SettingOutlined, ExperimentOutlined, RadarChartOutlined, DashboardOutlined, PieChartOutlined, WalletOutlined } from '@ant-design/icons';
 import { Outlet } from 'react-router-dom';
 import ContentContainer from '@/components/layout/ContentContainer';
 import { useTranslation } from 'react-i18next';
 import i18n, { normalizeLanguage, setLanguage, type SupportedLanguage } from '@/i18n';
 import AppSidebar from '@/components/layout/AppSidebar';
 import TopBar from '@/components/layout/TopBar';
+import { useAccountStore } from '@/stores/accountStore';
+import { useAccount } from '@/hooks/useAccount';
 
 const { Content } = Layout;
 
@@ -24,6 +26,11 @@ export default function MainLayout() {
   const [language, setLanguageState] = useState<SupportedLanguage>(normalizeLanguage(i18n.language));
   const [isMobile, setIsMobile] = useState(false);
 
+  // Preload accounts on mount so the sidebar has them.
+  const { fetchAccounts } = useAccount();
+  const accounts = useAccountStore(s => s.accounts);
+  useEffect(() => { fetchAccounts(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     const handler = (lng: string) => setLanguageState(normalizeLanguage(lng));
     i18n.on('languageChanged', handler);
@@ -37,8 +44,23 @@ export default function MainLayout() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const menuItems = [
+  const accountChildren = useMemo(() =>
+    accounts
+      .filter(a => !a.isDisabled)
+      .map(a => ({
+        key: `/accounts/${a.id}`,
+        icon: <WalletOutlined size={20} stroke={1.5} />,
+        label: `${a.login} · ${a.brokerCompany ?? ''}`,
+      })),
+    [accounts],
+  );
+
+  const menuItems = useMemo(() => [
     { key: '/', icon: <HomeOutlined size={20} stroke={1.5} />, label: t('menu.dashboard') },
+    ...(accountChildren.length > 0 ? [{
+      key: '/accounts', icon: <WalletOutlined size={20} stroke={1.5} />, label: t('menu.accounts'),
+      children: accountChildren,
+    }] : []),
     {
       key: '/strategy', icon: <CodeOutlined size={20} stroke={1.5} />, label: t('menu.strategy'),
       children: [
@@ -60,7 +82,7 @@ export default function MainLayout() {
     { key: '/analytics', icon: <PieChartOutlined size={20} stroke={1.5} />, label: t('menu.analytics') },
     { key: '/marketplace', icon: <ShopOutlined size={20} stroke={1.5} />, label: t('menu.marketplace') },
     { key: '/logs', icon: <HistoryOutlined size={20} stroke={1.5} />, label: t('menu.logs') },
-  ];
+  ], [t, accountChildren]);
 
   const handleLanguageChange = ({ key }: { key: string }) => {
     setLanguageState(normalizeLanguage(key));
