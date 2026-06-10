@@ -119,7 +119,7 @@ func (s *AdminUserServer) CreateUser(ctx context.Context, req *connect.Request[a
 		Email: email,
 		Role:  role,
 	}
-	// Admin-specified account number (optional — validated and uniqueness-checked if provided).
+	// Account number: admin-specified or auto-generated.
 	if acctNum := req.Msg.AccountNumber; acctNum != "" {
 		if err := service.ValidateAccountNumber(acctNum); err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_number: %w", err))
@@ -134,6 +134,14 @@ func (s *AdminUserServer) CreateUser(ctx context.Context, req *connect.Request[a
 			}
 		}
 		user.AccountNumber = &acctNum
+	} else if s.acctSvc != nil {
+		// Auto-generate when admin doesn't specify one.
+		num, err := s.acctSvc.GenerateAccountNumber(ctx)
+		if err != nil {
+			s.log.Warn("admin: auto-generate account number failed, continuing without one", zap.Error(err))
+		} else {
+			user.AccountNumber = &num
+		}
 	}
 	hashed, err := hash.HashPassword(password)
 	if err != nil {

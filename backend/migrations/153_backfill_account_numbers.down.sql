@@ -1,0 +1,4 @@
+-- Migration 153 rollback: cannot revert account number assignment.
+-- Account numbers are unique identifiers — un-assigning them would require
+-- knowing which users were backfilled by this migration vs. originally assigned.
+-- No-op.
