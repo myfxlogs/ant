@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+import "google/protobuf/timestamp.proto";
+
+// WalletService provides user wallet balance and transaction history.
+service WalletService {
+  rpc GetWallet(GetWalletRequest) returns (GetWalletResponse);
+  rpc ListTransactions(ListWalletTransactionsRequest) returns (ListWalletTransactionsResponse);
+  rpc AdjustBalance(AdjustBalanceRequest) returns (AdjustBalanceResponse);  // admin
+}
+
+message Wallet {
+  string id = 1;
+  string user_id = 2;
+  string balance = 3;
+  string frozen_balance = 4;
+  string currency = 5;
+  string account_number = 6;
+}
+
+message WalletTransaction {
+  string id = 1;
+  string tx_type = 2;
+  string amount = 3;
+  string balance_before = 4;
+  string balance_after = 5;
+  string description = 6;
+  string operator_id = 7;
+  int64 created_at_ts_ms = 8;
+}
+
+message GetWalletRequest {}
+
+message GetWalletResponse {
+  Wallet wallet = 1;
+}
+
+message ListWalletTransactionsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+}
+
+message ListWalletTransactionsResponse {
+  repeated WalletTransaction transactions = 1;
+  int64 total = 2;
+}
+
+message AdjustBalanceRequest {
+  string user_id = 1;
+  string amount = 2;       // positive = add, negative = deduct
+  string description = 3;
+}
+
+message AdjustBalanceResponse {
+  Wallet wallet = 1;
+}

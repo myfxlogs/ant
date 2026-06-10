@@ -27,6 +27,7 @@ const StrategyWorkspacePage = lazy(() => import('@/pages/strategy/StrategyWorksp
 const MarketplacePage = lazy(() => import('@/pages/marketplace/Marketplace'));
 const AssetAnalysisPage = lazy(() => import('@/pages/strategy/AssetAnalysis'));
 const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'));
+const WalletPage = lazy(() => import('@/pages/wallet/WalletPage'));
 const LogManagement = lazy(() => import('@/pages/logs/LogManagement'));
 const AutoTradingSettings = lazy(() => import('@/pages/auto-trading/AutoTradingSettings'));
 const StrategyExperimentPage = lazy(() => import('@/pages/strategy/StrategyExperimentPage'));
@@ -66,6 +67,7 @@ const mainRoutes = (
     <Route path="accounts/:id/report" element={wrap(<AccountReport />)} />
     <Route path="accounts/bind" element={wrap(<BindAccount />)} />
     <Route path="profile" element={wrap(<ProfilePage />)} />
+    <Route path="wallet" element={wrap(<WalletPage />)} />
     <Route path="strategy/templates" element={wrap(<StrategyTemplatePage />)} />
     <Route path="strategy/workspace" element={wrap(<StrategyWorkspacePage />)} />
     <Route path="strategy/schedules" element={wrap(<StrategySchedulePage />)} />

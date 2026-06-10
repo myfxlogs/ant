@@ -37,8 +37,10 @@ import { AssetAnalysisService } from "../gen/ant/v1/asset_analysis_pb";
 import { PaperTradingService } from "../gen/ant/v1/paper_trading_pb";
 import { AutoTradingService } from "../gen/ant/v1/auto_trading_pb";
 import { ObjectiveScoreService } from "../gen/ant/v1/objective_score_pb";
+import { WalletService } from "../gen/ant/v1/wallet_pb";
 import { streamTransport, transport } from "./transport";
 
+export const walletClient = createClient(WalletService, transport);
 export const authClient = createClient(AuthService, transport);
 export const accountClient = createClient(AccountService, transport);
 export const tradingClient = createClient(MtHubService, transport);

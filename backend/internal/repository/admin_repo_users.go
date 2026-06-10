@@ -35,7 +35,7 @@ func (r *AdminRepository) ListUsers(ctx context.Context, params *model.UserListP
 	for rows.Next() {
 		var u UserWithAccounts
 		if err := rows.Scan(&u.ID, &u.Email, &u.PasswordHash, &u.Nickname, &u.Avatar,
-			&u.Role, &u.Status, &u.LastLoginAt, &u.CreatedAt, &u.UpdatedAt, &u.MTAccountCount); err != nil {
+			&u.Role, &u.Status, &u.AccountNumber, &u.LastLoginAt, &u.CreatedAt, &u.UpdatedAt, &u.MTAccountCount); err != nil {
 			return nil, 0, err
 		}
 		users = append(users, &u)
@@ -45,7 +45,7 @@ func (r *AdminRepository) ListUsers(ctx context.Context, params *model.UserListP
 
 func buildUserListFilters(params *model.UserListParams) (countQ, query string, args []interface{}) {
 	countQ = `SELECT COUNT(*) FROM users WHERE 1=1`
-	query = `SELECT u.id, u.email, u.password_hash, u.nickname, u.avatar, u.role, u.status, u.last_login_at, u.created_at, u.updated_at, COUNT(ma.id) as mt_account_count FROM users u LEFT JOIN mt_accounts ma ON u.id = ma.user_id WHERE 1=1`
+	query = `SELECT u.id, u.email, u.password_hash, u.nickname, u.avatar, u.role, u.status, u.account_number, u.last_login_at, u.created_at, u.updated_at, COUNT(ma.id) as mt_account_count FROM users u LEFT JOIN mt_accounts ma ON u.id = ma.user_id WHERE 1=1`
 	var conds []string
 	addCond := func(col, val string) {
 		if val == "" { return }
@@ -66,10 +66,10 @@ func (r *AdminRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*model
 	user := &model.User{}
 	err := r.db.QueryRow(ctx,
 		`SELECT id, email, password_hash, nickname, avatar, role, status,
-		        last_login_at, created_at, updated_at
+		        account_number, last_login_at, created_at, updated_at
 		 FROM users WHERE id = $1`, id).Scan(
 		&user.ID, &user.Email, &user.PasswordHash, &user.Nickname, &user.Avatar,
-		&user.Role, &user.Status, &user.LastLoginAt, &user.CreatedAt, &user.UpdatedAt,
+		&user.Role, &user.Status, &user.AccountNumber, &user.LastLoginAt, &user.CreatedAt, &user.UpdatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -82,10 +82,10 @@ func (r *AdminRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*model
 
 func (r *AdminRepository) CreateUser(ctx context.Context, user *model.User) error {
 	return r.db.QueryRow(ctx,
-		`INSERT INTO users (email, password_hash, nickname, avatar, role, status)
-		 VALUES ($1, $2, $3, $4, $5, $6)
+		`INSERT INTO users (email, password_hash, nickname, avatar, role, status, account_number)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7)
 		 RETURNING id, created_at, updated_at`,
-		user.Email, user.PasswordHash, user.Nickname, user.Avatar, user.Role, user.Status,
+		user.Email, user.PasswordHash, user.Nickname, user.Avatar, user.Role, user.Status, user.AccountNumber,
 	).Scan(&user.ID, &user.CreatedAt, &user.UpdatedAt)
 }
 

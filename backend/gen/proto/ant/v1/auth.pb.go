@@ -25,8 +25,9 @@ const (
 
 type LoginRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
+	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"` // deprecated: use login field instead (kept for backward compat)
 	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	Login         string                 `protobuf:"bytes,3,opt,name=login,proto3" json:"login,omitempty"` // email OR account_number (preferred)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -71,6 +72,13 @@ func (x *LoginRequest) GetEmail() string {
 func (x *LoginRequest) GetPassword() string {
 	if x != nil {
 		return x.Password
+	}
+	return ""
+}
+
+func (x *LoginRequest) GetLogin() string {
+	if x != nil {
+		return x.Login
 	}
 	return ""
 }
@@ -405,6 +413,7 @@ type User struct {
 	UpdatedAt      *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	Permissions    []string               `protobuf:"bytes,7,rep,name=permissions,proto3" json:"permissions,omitempty"`
 	CapabilityTier int32                  `protobuf:"varint,8,opt,name=capability_tier,json=capabilityTier,proto3" json:"capability_tier,omitempty"`
+	AccountNumber  string                 `protobuf:"bytes,9,opt,name=account_number,json=accountNumber,proto3" json:"account_number,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -495,15 +504,23 @@ func (x *User) GetCapabilityTier() int32 {
 	return 0
 }
 
+func (x *User) GetAccountNumber() string {
+	if x != nil {
+		return x.AccountNumber
+	}
+	return ""
+}
+
 var File_auth_proto protoreflect.FileDescriptor
 
 const file_auth_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"auth.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\"@\n" +
+	"auth.proto\x12\x06ant.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\"V\n" +
 	"\fLoginRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"\x98\x01\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x14\n" +
+	"\x05login\x18\x03 \x01(\tR\x05login\"\x98\x01\n" +
 	"\rLoginResponse\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
 	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\x12\x1d\n" +
@@ -524,7 +541,7 @@ const file_auth_proto_rawDesc = "" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x14\n" +
 	"\x05email\x18\x03 \x01(\tR\x05email\"4\n" +
 	"\x10RegisterResponse\x12 \n" +
-	"\x04user\x18\x01 \x01(\v2\f.ant.v1.UserR\x04user\"\x9d\x02\n" +
+	"\x04user\x18\x01 \x01(\v2\f.ant.v1.UserR\x04user\"\xc4\x02\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x14\n" +
@@ -535,7 +552,8 @@ const file_auth_proto_rawDesc = "" +
 	"\n" +
 	"updated_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12 \n" +
 	"\vpermissions\x18\a \x03(\tR\vpermissions\x12'\n" +
-	"\x0fcapability_tier\x18\b \x01(\x05R\x0ecapabilityTier2\xbf\x02\n" +
+	"\x0fcapability_tier\x18\b \x01(\x05R\x0ecapabilityTier\x12%\n" +
+	"\x0eaccount_number\x18\t \x01(\tR\raccountNumber2\xbf\x02\n" +
 	"\vAuthService\x124\n" +
 	"\x05Login\x12\x14.ant.v1.LoginRequest\x1a\x15.ant.v1.LoginResponse\x128\n" +
 	"\x06Logout\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12I\n" +

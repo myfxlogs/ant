@@ -1,5 +1,5 @@
 export interface LoginRequest {
-  email: string;
+  login: string;
   password: string;
 }
 
@@ -18,6 +18,7 @@ export interface User {
   permissions: string[];
   capabilityTier: number;
   status: string;
+  accountNumber: string;
   last_login_at: string | null;
   created_at: string;
   updated_at: string;

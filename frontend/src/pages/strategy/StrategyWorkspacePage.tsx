@@ -31,24 +31,6 @@ export default function StrategyWorkspacePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const screens = Grid.useBreakpoint();
-
-  // The workspace uses fixed-width panels (750+520 px) and is unusable on narrow screens.
-  // Show a guard page with a link to strategy templates instead.
-  if (!screens.lg) {
-    return (
-      <Result
-        icon={<CodeOutlined style={{ color: '#D4AF37', fontSize: 64 }} />}
-        title={t('strategy.workspace.mobileTitle', { defaultValue: 'Desktop Required' })}
-        subTitle={t('strategy.workspace.mobileSubtitle', { defaultValue: 'The Strategy Workspace needs a larger screen. Please switch to a desktop device, or browse strategy templates instead.' })}
-        extra={
-          <Button type="primary" onClick={() => navigate('/strategy/templates')}>
-            {t('strategy.workspace.mobileCta', { defaultValue: 'Go to Strategy Templates' })}
-          </Button>
-        }
-      />
-    );
-  }
-
   const ws = useStrategyWorkspaceState();
   const userId = useAuthStore(s => s.user?.id);
 
@@ -81,6 +63,23 @@ export default function StrategyWorkspacePage() {
       console.warn('Session key migration failed:', err);
     });
   }, [lastSavedId, sessionId]);
+
+  // The workspace uses fixed-width panels (750+520 px) and is unusable on narrow screens.
+  // Show a guard page with a link to strategy templates instead.
+  if (!screens.lg) {
+    return (
+      <Result
+        icon={<CodeOutlined style={{ color: '#D4AF37', fontSize: 64 }} />}
+        title={t('strategy.workspace.mobileTitle', { defaultValue: 'Desktop Required' })}
+        subTitle={t('strategy.workspace.mobileSubtitle', { defaultValue: 'The Strategy Workspace needs a larger screen. Please switch to a desktop device, or browse strategy templates instead.' })}
+        extra={
+          <Button type="primary" onClick={() => navigate('/strategy/templates')}>
+            {t('strategy.workspace.mobileCta', { defaultValue: 'Go to Strategy Templates' })}
+          </Button>
+        }
+      />
+    );
+  }
 
   // Chart trades come from the backtest trades API (fetched on completion),
   // not from metrics.trades (which doesn't exist in the BacktestRunUpdate proto).

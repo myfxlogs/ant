@@ -82,6 +82,7 @@ export default function MainLayout() {
           ]},
       ],
     },
+    { key: '/wallet', icon: <WalletOutlined size={20} stroke={1.5} />, label: t('menu.wallet', { defaultValue: 'Wallet' }) },
     { key: '/trading/algos', icon: <DashboardOutlined size={20} stroke={1.5} />, label: t('menu.algoDashboard') },
     { key: '/auto-trading', icon: <SettingOutlined size={20} stroke={1.5} />, label: t('menu.autoTrading') },
     { key: '/analytics', icon: <PieChartOutlined size={20} stroke={1.5} />, label: t('menu.analytics') },

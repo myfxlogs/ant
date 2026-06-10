@@ -16,8 +16,9 @@ service AuthService {
 }
 
 message LoginRequest {
-  string email = 1;
+  string email = 1;     // deprecated: use login field instead (kept for backward compat)
   string password = 2;
+  string login = 3;     // email OR account_number (preferred)
 }
 
 message LoginResponse {
@@ -60,4 +61,5 @@ message User {
   google.protobuf.Timestamp updated_at = 6;
   repeated string permissions = 7;
   int32 capability_tier = 8;
+  string account_number = 9;
 }

@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"go.uber.org/zap"
-	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"connectrpc.com/connect"
@@ -14,30 +13,34 @@ import (
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
-	"anttrader/internal/model"
-	"anttrader/internal/repository"
 	antinterceptor "anttrader/internal/interceptor"
+	"anttrader/internal/model"
+	"anttrader/internal/pkg/hash"
+	"anttrader/internal/repository"
+	"anttrader/internal/service"
 )
 
 type AdminUserServer struct {
-	repo       *repository.AdminRepository
-	resetRepo  *repository.PasswordResetRepo
-	log        *zap.Logger
+	repo      *repository.AdminRepository
+	resetRepo *repository.PasswordResetRepo
+	walletSvc *service.WalletService
+	acctSvc   *service.AccountNumberService
+	log       *zap.Logger
 }
 
 var _ antv1c.AdminUserServiceHandler = (*AdminUserServer)(nil)
 
-func NewAdminUserServer(repo *repository.AdminRepository, resetRepo *repository.PasswordResetRepo, log *zap.Logger) *AdminUserServer {
-	return &AdminUserServer{repo: repo, resetRepo: resetRepo, log: log}
+func NewAdminUserServer(repo *repository.AdminRepository, resetRepo *repository.PasswordResetRepo, walletSvc *service.WalletService, acctSvc *service.AccountNumberService, log *zap.Logger) *AdminUserServer {
+	return &AdminUserServer{repo: repo, resetRepo: resetRepo, walletSvc: walletSvc, acctSvc: acctSvc, log: log}
 }
 
 func userWithAccountsToProto(u *repository.UserWithAccounts) *antv1.UserWithAccounts {
 	p := &antv1.UserWithAccounts{
-		Id:       u.ID.String(),
-		Email:    u.Email,
-		Role:     u.Role,
-		Status:   u.Status,
-		Username: u.Email, // email serves as username
+		Id:        u.ID.String(),
+		Email:     u.Email,
+		Role:      u.Role,
+		Status:    u.Status,
+		Username:  u.Email, // email serves as username
 		CreatedAt: timestamppb.New(u.CreatedAt),
 		UpdatedAt: timestamppb.New(u.UpdatedAt),
 	}
@@ -46,6 +49,9 @@ func userWithAccountsToProto(u *repository.UserWithAccounts) *antv1.UserWithAcco
 	}
 	if u.LastLoginAt != nil {
 		p.LastLoginAt = timestamppb.New(*u.LastLoginAt)
+	}
+	if u.AccountNumber != nil {
+		p.AccountNumber = *u.AccountNumber
 	}
 	return p
 }
@@ -109,17 +115,43 @@ func (s *AdminUserServer) CreateUser(ctx context.Context, req *connect.Request[a
 		Email: email,
 		Role:  role,
 	}
-	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	// Admin-specified account number (optional — validated and uniqueness-checked if provided).
+	if acctNum := req.Msg.AccountNumber; acctNum != "" {
+		if err := service.ValidateAccountNumber(acctNum); err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_number: %w", err))
+		}
+		if s.acctSvc != nil {
+			avail, err := s.acctSvc.IsAccountNumberAvailable(ctx, acctNum)
+			if err != nil {
+				return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("check account_number availability: %w", err))
+			}
+			if !avail {
+				return nil, connect.NewError(connect.CodeAlreadyExists, fmt.Errorf("account number %s is already taken", acctNum))
+			}
+		}
+		user.AccountNumber = &acctNum
+	}
+	hashed, err := hash.HashPassword(password)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("hash password: %w", err))
 	}
-	user.PasswordHash = string(hashed)
+	user.PasswordHash = hashed
 	if err := s.repo.CreateUser(ctx, user); err != nil {
-		// Detect duplicate email from unique constraint violation.
+		// Detect duplicate email or account_number from unique constraint violation.
 		if strings.Contains(err.Error(), "duplicate key") || strings.Contains(err.Error(), "unique constraint") {
+			if strings.Contains(err.Error(), "account_number") {
+				return nil, connect.NewError(connect.CodeAlreadyExists, fmt.Errorf("account number already taken"))
+			}
 			return nil, connect.NewError(connect.CodeAlreadyExists, fmt.Errorf("email already registered"))
 		}
 		return nil, err
+	}
+	// Auto-create wallet for admin-created users (best-effort).
+	if s.walletSvc != nil {
+		if _, err := s.walletSvc.CreateWallet(ctx, user.ID); err != nil {
+			s.log.Warn("admin: create wallet for new user failed",
+				zap.String("userID", user.ID.String()), zap.Error(err))
+		}
 	}
 	s.log.Info("admin: user created",
 		zap.String("actor", getActorID(ctx).String()),

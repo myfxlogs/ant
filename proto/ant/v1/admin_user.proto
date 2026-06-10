@@ -54,6 +54,7 @@ message UserWithAccounts {
   google.protobuf.Timestamp updated_at = 9;
   google.protobuf.Timestamp last_login_at = 10;
   repeated UserAccountSummary accounts = 11;
+  string account_number = 12;
 }
 
 message ListUsersRequest {
@@ -74,6 +75,7 @@ message CreateUserRequest {
   string email = 2;
   string password = 3;
   string role = 4;
+  string account_number = 5;     // optional — auto-generated if empty
 }
 
 message CreateUserResponse {

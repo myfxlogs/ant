@@ -87,7 +87,8 @@ func (s *AccountService) GetAccountCredentials(ctx context.Context, userID uuid.
 	}, nil
 }
 
-// UpdateAccountInfoTx updates balance/equity/margin/leverage/currency + status within a transaction (#2, #32).
+// UpdateAccountInfoTx updates balance/equity/margin/leverage/currency within a transaction.
+// Does NOT touch account_status — that is owned by the gateway lifecycle (startGatewayForAccount / OnAccountDisconnect).
 func (s *AccountService) UpdateAccountInfoTx(ctx context.Context, tx pgx.Tx, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin float64, leverage int64, currency string, isInvestor bool) error {
 	_, err := tx.Exec(ctx, `
 		UPDATE mt_accounts SET
@@ -99,7 +100,6 @@ func (s *AccountService) UpdateAccountInfoTx(ctx context.Context, tx pgx.Tx, use
 			leverage = $8,
 			currency = $9,
 			is_investor = $10,
-			account_status = 'connected',
 			updated_at = CURRENT_TIMESTAMP
 		WHERE id = $1::uuid AND user_id = $2
 	`, id, userID, balance, equity, credit, margin, freeMargin, leverage, currency, isInvestor)
@@ -109,7 +109,8 @@ func (s *AccountService) UpdateAccountInfoTx(ctx context.Context, tx pgx.Tx, use
 	return nil
 }
 
-// UpdateAccountInfo updates balance/equity/margin/leverage/currency + status after MT verification (#32).
+// UpdateAccountInfo updates balance/equity/margin/leverage/currency after MT verification.
+// Does NOT touch account_status — that is owned by the gateway lifecycle (startGatewayForAccount / OnAccountDisconnect).
 func (s *AccountService) UpdateAccountInfo(ctx context.Context, userID uuid.UUID, id string, balance, equity, credit, margin, freeMargin float64, leverage int64, currency string) error {
 	_, err := s.db.Exec(ctx, `
 		UPDATE mt_accounts SET
@@ -120,7 +121,6 @@ func (s *AccountService) UpdateAccountInfo(ctx context.Context, userID uuid.UUID
 			free_margin = $7,
 			leverage = $8,
 			currency = $9,
-			account_status = 'connected',
 			updated_at = CURRENT_TIMESTAMP
 		WHERE id = $1::uuid AND user_id = $2
 	`, id, userID, balance, equity, credit, margin, freeMargin, leverage, currency)

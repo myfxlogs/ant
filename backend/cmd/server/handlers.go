@@ -78,10 +78,18 @@ func registerHandlers(
 	jobRepo := repository.NewJobRepository(pool)
 	schedHealthRepo := repository.NewScheduleHealthRepository(pool)
 	marketDataRepo := repository.NewMarketDataRepository(ch, log)
+	walletRepo := repository.NewWalletRepository(pool)
+	walletSvc := service.NewWalletService(walletRepo, pool, log)
+	accountNumberSvc := service.NewAccountNumberService(pool)
+	registrationSvc := service.NewRegistrationService(userRepo, accountNumberSvc, walletSvc, log)
 
 	authServer := user.NewAuthServer(userRepo, jwtSecret, log)
 	authServer.SetInsecureCookies(true) // no TLS in Docker deployment
+	authServer.WithRegistration(registrationSvc)
 	mux.Handle(antv1c.NewAuthServiceHandler(authServer, connectrpc.WithInterceptors(otelInterceptor,rateLimitInterceptor, authInterceptor)))
+
+	walletServer := user.NewWalletServer(walletSvc, log)
+	mux.Handle(antv1c.NewWalletServiceHandler(walletServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
 	reconLoop := mthub.NewReconciliationLoop(hub, pool, rdb.Client(), log, reconcileGate)
 
@@ -203,7 +211,7 @@ func registerHandlers(
 	mux.Handle(antv1c.NewAdminLogServiceHandler(adminLogServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
 	adminAccountServer := admin.NewAdminAccountServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminAccountServiceHandler(adminAccountServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
-	adminUserServer := admin.NewAdminUserServer(adminRepo, passwordResetRepo, log)
+	adminUserServer := admin.NewAdminUserServer(adminRepo, passwordResetRepo, walletSvc, accountNumberSvc, log)
 	mux.Handle(antv1c.NewAdminUserServiceHandler(adminUserServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
 	adminSystemServer := admin.NewAdminSystemServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminSystemServiceHandler(adminSystemServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))

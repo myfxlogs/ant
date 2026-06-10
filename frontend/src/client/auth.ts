@@ -23,8 +23,8 @@ export interface RefreshTokenResult {
 
 
 export const authApi = {
-  login: async (email: string, password: string): Promise<LoginResult> => {
-    const response: any = await authClient.login({ email, password });
+  login: async (login: string, password: string): Promise<LoginResult> => {
+    const response: any = await authClient.login({ login, password });
     return {
       accessToken: response.accessToken,
       expiresAt: response.expiresAt,

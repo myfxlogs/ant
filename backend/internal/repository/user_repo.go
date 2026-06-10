@@ -38,8 +38,8 @@ func (r *UserRepository) Create(ctx context.Context, user *model.User) error {
 func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
 	user := &model.User{}
 	query := `
-		SELECT id, email, password_hash, nickname, avatar, role, status, 
-			   last_login_at, created_at, updated_at
+		SELECT id, email, password_hash, nickname, avatar, role, status,
+		       account_number, last_login_at, created_at, updated_at
 		FROM users WHERE id = $1
 	`
 	err := r.db.QueryRow(ctx, query, id).Scan(
@@ -50,6 +50,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.User
 		&user.Avatar,
 		&user.Role,
 		&user.Status,
+		&user.AccountNumber,
 		&user.LastLoginAt,
 		&user.CreatedAt,
 		&user.UpdatedAt,
@@ -63,8 +64,8 @@ func (r *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.User
 func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*model.User, error) {
 	user := &model.User{}
 	query := `
-		SELECT id, email, password_hash, nickname, avatar, role, status, 
-			   last_login_at, created_at, updated_at
+		SELECT id, email, password_hash, nickname, avatar, role, status,
+		       account_number, last_login_at, created_at, updated_at
 		FROM users WHERE email = $1
 	`
 	err := r.db.QueryRow(ctx, query, email).Scan(
@@ -75,6 +76,61 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*model.U
 		&user.Avatar,
 		&user.Role,
 		&user.Status,
+		&user.AccountNumber,
+		&user.LastLoginAt,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+// GetByLogin looks up a user by email OR account_number in a single query.
+func (r *UserRepository) GetByLogin(ctx context.Context, login string) (*model.User, error) {
+	user := &model.User{}
+	query := `
+		SELECT id, email, password_hash, nickname, avatar, role, status,
+		       account_number, last_login_at, created_at, updated_at
+		FROM users WHERE email = $1 OR account_number = $1
+	`
+	err := r.db.QueryRow(ctx, query, login).Scan(
+		&user.ID,
+		&user.Email,
+		&user.PasswordHash,
+		&user.Nickname,
+		&user.Avatar,
+		&user.Role,
+		&user.Status,
+		&user.AccountNumber,
+		&user.LastLoginAt,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+// GetByAccountNumber looks up a user by their 5-digit account number.
+func (r *UserRepository) GetByAccountNumber(ctx context.Context, accountNumber string) (*model.User, error) {
+	user := &model.User{}
+	query := `
+		SELECT id, email, password_hash, nickname, avatar, role, status,
+		       account_number, last_login_at, created_at, updated_at
+		FROM users WHERE account_number = $1
+	`
+	err := r.db.QueryRow(ctx, query, accountNumber).Scan(
+		&user.ID,
+		&user.Email,
+		&user.PasswordHash,
+		&user.Nickname,
+		&user.Avatar,
+		&user.Role,
+		&user.Status,
+		&user.AccountNumber,
 		&user.LastLoginAt,
 		&user.CreatedAt,
 		&user.UpdatedAt,
@@ -87,7 +143,7 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*model.U
 
 func (r *UserRepository) Update(ctx context.Context, user *model.User) error {
 	query := `
-		UPDATE users 
+		UPDATE users
 		SET nickname = $2, avatar = $3, status = $4, updated_at = CURRENT_TIMESTAMP
 		WHERE id = $1
 		RETURNING updated_at

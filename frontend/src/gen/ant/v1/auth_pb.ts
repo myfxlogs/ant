@@ -12,13 +12,15 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file auth.proto.
  */
 export const file_auth: GenFile = /*@__PURE__*/
-  fileDesc("CgphdXRoLnByb3RvEgZhbnQudjEiLwoMTG9naW5SZXF1ZXN0Eg0KBWVtYWlsGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJImwKDUxvZ2luUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEhUKDXJlZnJlc2hfdG9rZW4YAiABKAkSEgoKZXhwaXJlc19hdBgDIAEoAxIaCgR1c2VyGAQgASgLMgwuYW50LnYxLlVzZXIiLAoTUmVmcmVzaFRva2VuUmVxdWVzdBIVCg1yZWZyZXNoX3Rva2VuGAEgASgJIlcKFFJlZnJlc2hUb2tlblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIVCg1yZWZyZXNoX3Rva2VuGAIgASgJEhIKCmV4cGlyZXNfYXQYAyABKAMiKwoNR2V0TWVSZXNwb25zZRIaCgR1c2VyGAEgASgLMgwuYW50LnYxLlVzZXIiRAoPUmVnaXN0ZXJSZXF1ZXN0EhAKCHVzZXJuYW1lGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEg0KBWVtYWlsGAMgASgJIi4KEFJlZ2lzdGVyUmVzcG9uc2USGgoEdXNlchgBIAEoCzIMLmFudC52MS5Vc2VyIs8BCgRVc2VyEgoKAmlkGAEgASgJEhAKCHVzZXJuYW1lGAIgASgJEg0KBWVtYWlsGAMgASgJEgwKBHJvbGUYBCABKAkSLgoKY3JlYXRlZF9hdBgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEwoLcGVybWlzc2lvbnMYByADKAkSFwoPY2FwYWJpbGl0eV90aWVyGAggASgFMr8CCgtBdXRoU2VydmljZRI0CgVMb2dpbhIULmFudC52MS5Mb2dpblJlcXVlc3QaFS5hbnQudjEuTG9naW5SZXNwb25zZRI4CgZMb2dvdXQSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSSQoMUmVmcmVzaFRva2VuEhsuYW50LnYxLlJlZnJlc2hUb2tlblJlcXVlc3QaHC5hbnQudjEuUmVmcmVzaFRva2VuUmVzcG9uc2USNgoFR2V0TWUSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFS5hbnQudjEuR2V0TWVSZXNwb25zZRI9CghSZWdpc3RlchIXLmFudC52MS5SZWdpc3RlclJlcXVlc3QaGC5hbnQudjEuUmVnaXN0ZXJSZXNwb25zZUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_timestamp, file_google_protobuf_empty]);
+  fileDesc("CgphdXRoLnByb3RvEgZhbnQudjEiPgoMTG9naW5SZXF1ZXN0Eg0KBWVtYWlsGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEg0KBWxvZ2luGAMgASgJImwKDUxvZ2luUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEhUKDXJlZnJlc2hfdG9rZW4YAiABKAkSEgoKZXhwaXJlc19hdBgDIAEoAxIaCgR1c2VyGAQgASgLMgwuYW50LnYxLlVzZXIiLAoTUmVmcmVzaFRva2VuUmVxdWVzdBIVCg1yZWZyZXNoX3Rva2VuGAEgASgJIlcKFFJlZnJlc2hUb2tlblJlc3BvbnNlEhQKDGFjY2Vzc190b2tlbhgBIAEoCRIVCg1yZWZyZXNoX3Rva2VuGAIgASgJEhIKCmV4cGlyZXNfYXQYAyABKAMiKwoNR2V0TWVSZXNwb25zZRIaCgR1c2VyGAEgASgLMgwuYW50LnYxLlVzZXIiRAoPUmVnaXN0ZXJSZXF1ZXN0EhAKCHVzZXJuYW1lGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEg0KBWVtYWlsGAMgASgJIi4KEFJlZ2lzdGVyUmVzcG9uc2USGgoEdXNlchgBIAEoCzIMLmFudC52MS5Vc2VyIucBCgRVc2VyEgoKAmlkGAEgASgJEhAKCHVzZXJuYW1lGAIgASgJEg0KBWVtYWlsGAMgASgJEgwKBHJvbGUYBCABKAkSLgoKY3JlYXRlZF9hdBgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEwoLcGVybWlzc2lvbnMYByADKAkSFwoPY2FwYWJpbGl0eV90aWVyGAggASgFEhYKDmFjY291bnRfbnVtYmVyGAkgASgJMr8CCgtBdXRoU2VydmljZRI0CgVMb2dpbhIULmFudC52MS5Mb2dpblJlcXVlc3QaFS5hbnQudjEuTG9naW5SZXNwb25zZRI4CgZMb2dvdXQSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSSQoMUmVmcmVzaFRva2VuEhsuYW50LnYxLlJlZnJlc2hUb2tlblJlcXVlc3QaHC5hbnQudjEuUmVmcmVzaFRva2VuUmVzcG9uc2USNgoFR2V0TWUSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaFS5hbnQudjEuR2V0TWVSZXNwb25zZRI9CghSZWdpc3RlchIXLmFudC52MS5SZWdpc3RlclJlcXVlc3QaGC5hbnQudjEuUmVnaXN0ZXJSZXNwb25zZUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z", [file_google_protobuf_timestamp, file_google_protobuf_empty]);
 
 /**
  * @generated from message ant.v1.LoginRequest
  */
 export type LoginRequest = Message<"ant.v1.LoginRequest"> & {
   /**
+   * deprecated: use login field instead (kept for backward compat)
+   *
    * @generated from field: string email = 1;
    */
   email: string;
@@ -27,6 +29,13 @@ export type LoginRequest = Message<"ant.v1.LoginRequest"> & {
    * @generated from field: string password = 2;
    */
   password: string;
+
+  /**
+   * email OR account_number (preferred)
+   *
+   * @generated from field: string login = 3;
+   */
+  login: string;
 };
 
 /**
@@ -216,6 +225,11 @@ export type User = Message<"ant.v1.User"> & {
    * @generated from field: int32 capability_tier = 8;
    */
   capabilityTier: number;
+
+  /**
+   * @generated from field: string account_number = 9;
+   */
+  accountNumber: string;
 };
 
 /**

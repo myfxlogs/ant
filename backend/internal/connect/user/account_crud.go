@@ -51,6 +51,16 @@ func (s *AccountServer) CreateAccount(ctx context.Context, req *connect.Request[
 		s.log.Error("CreateAccount: tx commit failed", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("commit transaction: %w", err))
 	}
+
+	// Trigger gateway connection after successful account creation.
+	// Set status to 'connecting' and publish NATS event so mdgateway runner
+	// picks it up and starts a persistent broker connection.
+	if err := s.svc.ConnectAccount(ctx, userID, id); err != nil {
+		s.log.Warn("CreateAccount: ConnectAccount after create failed", zap.String("id", id), zap.Error(err))
+	} else if s.publisher != nil {
+		s.publisher.PublishConnect(ctx, id, userID.String())
+	}
+
 	a, err := s.svc.GetAccount(ctx, userID, id)
 	if err != nil {
 		s.log.Error("CreateAccount: get account after create", zap.Error(err))

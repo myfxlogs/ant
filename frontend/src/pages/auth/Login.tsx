@@ -92,14 +92,13 @@ export default function Login() {
             requiredMark={false}
           >
             <Form.Item
-              name="email"
+              name="login"
               rules={[
-                { required: true, message: t('auth.validation.emailRequired') },
-                { type: 'email', message: t('auth.validation.emailInvalid') },
+                { required: true, message: t('auth.validation.loginRequired', { defaultValue: 'Please enter your email or account number' }) },
               ]}
             >
-              <Input 
-                placeholder={t('auth.fields.email')}
+              <Input
+                placeholder={t('auth.fields.login', { defaultValue: '邮箱/账号' })}
                 size="large"
                 style={{
                   borderRadius: '10px',

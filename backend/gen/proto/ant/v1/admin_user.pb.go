@@ -291,6 +291,7 @@ type UserWithAccounts struct {
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	LastLoginAt   *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=last_login_at,json=lastLoginAt,proto3" json:"last_login_at,omitempty"`
 	Accounts      []*UserAccountSummary  `protobuf:"bytes,11,rep,name=accounts,proto3" json:"accounts,omitempty"`
+	AccountNumber string                 `protobuf:"bytes,12,opt,name=account_number,json=accountNumber,proto3" json:"account_number,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -400,6 +401,13 @@ func (x *UserWithAccounts) GetAccounts() []*UserAccountSummary {
 		return x.Accounts
 	}
 	return nil
+}
+
+func (x *UserWithAccounts) GetAccountNumber() string {
+	if x != nil {
+		return x.AccountNumber
+	}
+	return ""
 }
 
 type ListUsersRequest struct {
@@ -536,6 +544,7 @@ type CreateUserRequest struct {
 	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
 	Password      string                 `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`
 	Role          string                 `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
+	AccountNumber string                 `protobuf:"bytes,5,opt,name=account_number,json=accountNumber,proto3" json:"account_number,omitempty"` // optional — auto-generated if empty
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -594,6 +603,13 @@ func (x *CreateUserRequest) GetPassword() string {
 func (x *CreateUserRequest) GetRole() string {
 	if x != nil {
 		return x.Role
+	}
+	return ""
+}
+
+func (x *CreateUserRequest) GetAccountNumber() string {
+	if x != nil {
+		return x.AccountNumber
 	}
 	return ""
 }
@@ -1114,7 +1130,7 @@ const file_admin_user_proto_rawDesc = "" +
 	"\x05login\x18\x02 \x01(\tR\x05login\x12\x17\n" +
 	"\amt_type\x18\x03 \x01(\tR\x06mtType\x12%\n" +
 	"\x0ebroker_company\x18\x04 \x01(\tR\rbrokerCompany\x12%\n" +
-	"\x0eaccount_status\x18\x05 \x01(\tR\raccountStatus\"\xb1\x03\n" +
+	"\x0eaccount_status\x18\x05 \x01(\tR\raccountStatus\"\xd8\x03\n" +
 	"\x10UserWithAccounts\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x14\n" +
@@ -1129,7 +1145,8 @@ const file_admin_user_proto_rawDesc = "" +
 	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12>\n" +
 	"\rlast_login_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\vlastLoginAt\x126\n" +
-	"\baccounts\x18\v \x03(\v2\x1a.ant.v1.UserAccountSummaryR\baccounts\"\x87\x01\n" +
+	"\baccounts\x18\v \x03(\v2\x1a.ant.v1.UserAccountSummaryR\baccounts\x12%\n" +
+	"\x0eaccount_number\x18\f \x01(\tR\raccountNumber\"\x87\x01\n" +
 	"\x10ListUsersRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x16\n" +
@@ -1138,12 +1155,13 @@ const file_admin_user_proto_rawDesc = "" +
 	"\x04role\x18\x05 \x01(\tR\x04role\"Y\n" +
 	"\x11ListUsersResponse\x12.\n" +
 	"\x05users\x18\x01 \x03(\v2\x18.ant.v1.UserWithAccountsR\x05users\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x03R\x05total\"u\n" +
+	"\x05total\x18\x02 \x01(\x03R\x05total\"\x9c\x01\n" +
 	"\x11CreateUserRequest\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x03 \x01(\tR\bpassword\x12\x12\n" +
-	"\x04role\x18\x04 \x01(\tR\x04role\"$\n" +
+	"\x04role\x18\x04 \x01(\tR\x04role\x12%\n" +
+	"\x0eaccount_number\x18\x05 \x01(\tR\raccountNumber\"$\n" +
 	"\x12CreateUserResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x9d\x01\n" +
 	"\x11UpdateUserRequest\x12\x0e\n" +
