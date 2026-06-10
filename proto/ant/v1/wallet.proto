@@ -4,8 +4,6 @@ package ant.v1;
 
 option go_package = "anttrader/gen/proto/ant/v1;antv1";
 
-import "google/protobuf/timestamp.proto";
-
 // WalletService provides user wallet balance and transaction history.
 service WalletService {
   rpc GetWallet(GetWalletRequest) returns (GetWalletResponse);
