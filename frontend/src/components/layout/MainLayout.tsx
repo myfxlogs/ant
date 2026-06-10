@@ -7,8 +7,10 @@ import { useTranslation } from 'react-i18next';
 import i18n, { normalizeLanguage, setLanguage, type SupportedLanguage } from '@/i18n';
 import AppSidebar from '@/components/layout/AppSidebar';
 import TopBar from '@/components/layout/TopBar';
-import { useAccountStore } from '@/stores/accountStore';
-import { useAccount } from '@/hooks/useAccount';
+import { useQuery } from '@tanstack/react-query';
+import { queryKeys } from '@/queries/queryKeys';
+import { accountApi } from '@/client/account';
+import type { Account } from '@/types/account';
 
 const { Content } = Layout;
 
@@ -26,10 +28,13 @@ export default function MainLayout() {
   const [language, setLanguageState] = useState<SupportedLanguage>(normalizeLanguage(i18n.language));
   const [isMobile, setIsMobile] = useState(false);
 
-  // Preload accounts on mount so the sidebar has them.
-  const { fetchAccounts } = useAccount();
-  const accounts = useAccountStore(s => s.accounts);
-  useEffect(() => { fetchAccounts(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // Share React Query cache with Dashboard — no duplicate fetches.
+  // If Dashboard already fetched, TQ returns cached data immediately.
+  const { data: accounts = [] } = useQuery<Account[]>({
+    queryKey: queryKeys.accounts.list(),
+    queryFn: () => accountApi.list(),
+    staleTime: Infinity,
+  });
 
   useEffect(() => {
     const handler = (lng: string) => setLanguageState(normalizeLanguage(lng));
