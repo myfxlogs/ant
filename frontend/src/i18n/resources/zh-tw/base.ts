@@ -786,6 +786,13 @@ const base = {
     deposit: '充值',
     withdraw: '提取',
     history: '歷史記錄',
+    txType: {
+      deposit: '充值',
+      withdrawal: '提取',
+      adjustment: '餘額調整',
+      fee: '手續費',
+      reversal: '沖正',
+    },
   },
   symbolDetection: {
     label: '偵測到的交易品種',

@@ -673,6 +673,13 @@ const base = {
     deposit: '入金',
     withdraw: '出金',
     history: '履歴',
+    txType: {
+      deposit: '入金',
+      withdrawal: '出金',
+      adjustment: '残高調整',
+      fee: '手数料',
+      reversal: '取消',
+    },
   },
   symbolDetection: {
     label: '検出された銘柄',

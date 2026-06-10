@@ -30,8 +30,9 @@ export default function WalletPage() {
       key: 'txType',
       width: 100,
       render: (v: string) => {
-        const colors: Record<string, string> = { deposit: 'green', withdrawal: 'red', adjustment: 'blue', fee: 'orange' };
-        return <Tag color={colors[v] || 'default'}>{v}</Tag>;
+        const colors: Record<string, string> = { deposit: 'green', withdrawal: 'red', adjustment: 'blue', fee: 'orange', reversal: 'orange' };
+        const label = t(`wallet.txType.${v}`, { defaultValue: v });
+        return <Tag color={colors[v] || 'default'}>{label}</Tag>;
       },
     },
     {

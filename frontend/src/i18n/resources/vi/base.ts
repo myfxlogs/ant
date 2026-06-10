@@ -786,6 +786,13 @@ const base = {
     deposit: 'Nạp Tiền',
     withdraw: 'Rút Tiền',
     history: 'Lịch Sử',
+    txType: {
+      deposit: 'Nạp Tiền',
+      withdrawal: 'Rút Tiền',
+      adjustment: 'Điều Chỉnh',
+      fee: 'Phí',
+      reversal: 'Hoàn Tác',
+    },
   },
   symbolDetection: {
     label: 'Biểu tượng được Phát hiện',

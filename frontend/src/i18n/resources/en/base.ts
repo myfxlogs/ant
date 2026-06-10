@@ -634,6 +634,13 @@ const base = {
     deposit: 'Deposit',
     withdraw: 'Withdraw',
     history: 'History',
+    txType: {
+      deposit: 'Deposit',
+      withdrawal: 'Withdrawal',
+      adjustment: 'Adjustment',
+      fee: 'Fee',
+      reversal: 'Reversal',
+    },
   },
   errors: {
     not_authenticated: 'Not signed in',
