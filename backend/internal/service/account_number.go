@@ -3,9 +3,11 @@ package service
 import (
 	"context"
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"math/big"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -74,14 +76,34 @@ func ValidateAccountNumber(num string) error {
 
 // IsAccountNumberAvailable checks if a specific number is not yet taken.
 func (s *AccountNumberService) IsAccountNumberAvailable(ctx context.Context, num string) (bool, error) {
+	return s.IsAccountNumberAvailableExcluding(ctx, num, "")
+}
+
+// IsAccountNumberAvailableExcluding checks availability, ignoring the given user ID.
+// Pass empty userID to check against all users.
+func (s *AccountNumberService) IsAccountNumberAvailableExcluding(ctx context.Context, num, excludeUserID string) (bool, error) {
 	var exists bool
-	err := s.pg.QueryRow(ctx,
-		"SELECT EXISTS(SELECT 1 FROM users WHERE account_number = $1)", num,
-	).Scan(&exists)
+	var err error
+	if excludeUserID == "" {
+		err = s.pg.QueryRow(ctx,
+			"SELECT EXISTS(SELECT 1 FROM users WHERE account_number = $1)", num,
+		).Scan(&exists)
+	} else {
+		err = s.pg.QueryRow(ctx,
+			"SELECT EXISTS(SELECT 1 FROM users WHERE account_number = $1 AND id != $2)", num, excludeUserID,
+		).Scan(&exists)
+	}
 	if err != nil {
 		return false, err
 	}
 	return !exists, nil
+}
+
+// IsUniqueViolation returns true if the error is a PostgreSQL unique-constraint
+// violation (SQLSTATE 23505). Use this instead of string-matching error messages.
+func IsUniqueViolation(err error) bool {
+	var pgErr *pgconn.PgError
+	return errors.As(err, &pgErr) && pgErr.Code == "23505"
 }
 
 // randomAccountNumber generates a random valid 5-digit account number.

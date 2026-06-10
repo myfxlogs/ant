@@ -148,12 +148,31 @@ func (s *AdminUserServer) CreateUser(ctx context.Context, req *connect.Request[a
 		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("hash password: %w", err))
 	}
 	user.PasswordHash = hashed
-	if err := s.repo.CreateUser(ctx, user); err != nil {
-		// Detect duplicate email or account_number from unique constraint violation.
-		if strings.Contains(err.Error(), "duplicate key") || strings.Contains(err.Error(), "unique constraint") {
-			if strings.Contains(err.Error(), "account_number") {
-				return nil, connect.NewError(connect.CodeAlreadyExists, fmt.Errorf("account number already taken"))
+
+	// Try INSERT with retry on account_number unique violation (race window between
+	// GenerateAccountNumber SELECT and this INSERT — the UNIQUE constraint is the ultimate guard).
+	const maxRetries = 3
+	for attempt := 0; ; attempt++ {
+		err := s.repo.CreateUser(ctx, user)
+		if err == nil {
+			break
+		}
+		if service.IsUniqueViolation(err) {
+			if attempt >= maxRetries {
+				return nil, connect.NewError(connect.CodeAlreadyExists, fmt.Errorf("account number collision after %d retries", maxRetries))
 			}
+			// Regenerate account_number and retry.
+			if s.acctSvc != nil {
+				num, genErr := s.acctSvc.GenerateAccountNumber(ctx)
+				if genErr != nil {
+					return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("regenerate account number: %w", genErr))
+				}
+				user.AccountNumber = &num
+			}
+			continue
+		}
+		// Non-unique error — could be duplicate email.
+		if strings.Contains(err.Error(), "users_email_key") || strings.Contains(err.Error(), "idx_users_email") {
 			return nil, connect.NewError(connect.CodeAlreadyExists, fmt.Errorf("email already registered"))
 		}
 		return nil, err
@@ -198,14 +217,14 @@ func (s *AdminUserServer) UpdateUser(ctx context.Context, req *connect.Request[a
 	if req.Msg.Nickname != "" {
 		existing.Nickname = &req.Msg.Nickname
 	}
-	// Account number: validate, check uniqueness, then update.
+	// Account number: validate, check uniqueness (excluding self), then update.
 	if req.Msg.AccountNumber != "" {
 		if err := service.ValidateAccountNumber(req.Msg.AccountNumber); err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid account_number: %w", err))
 		}
 		if existing.AccountNumber == nil || *existing.AccountNumber != req.Msg.AccountNumber {
 			if s.acctSvc != nil {
-				avail, err := s.acctSvc.IsAccountNumberAvailable(ctx, req.Msg.AccountNumber)
+				avail, err := s.acctSvc.IsAccountNumberAvailableExcluding(ctx, req.Msg.AccountNumber, id.String())
 				if err != nil {
 					return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("check account_number: %w", err))
 				}
