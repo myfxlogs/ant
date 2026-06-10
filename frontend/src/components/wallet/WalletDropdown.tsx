@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { walletApi } from '@/client/wallet';
 import { queryKeys } from '@/queries/queryKeys';
+import { formatAmount } from '@/utils/price';
 
 const { Text } = Typography;
 
@@ -22,16 +23,16 @@ export default function WalletDropdown() {
   });
 
   const hasWallet = !!wallet;
-  const balance = wallet?.balance || '0';
+  const balance = wallet?.balance ?? '0';
   const currency = wallet?.currency || 'USD';
   const accountNumber = wallet?.accountNumber;
-  const frozen = wallet?.frozenBalance || '0';
+  const frozen = wallet?.frozenBalance ?? '0';
 
-  const formattedBalance = parseFloat(balance).toFixed(2);
-  const formattedFrozen = parseFloat(frozen).toFixed(2);
+  const formattedBalance = formatAmount(balance);
+  const formattedFrozen = formatAmount(frozen);
 
   const dropdownContent = hasWallet ? (
-    <div style={{ width: 280 }}>
+    <div style={{ width: 280, background: 'var(--color-bg-card)', borderRadius: 8, overflow: 'hidden' }}>
       <div style={{ textAlign: 'center', padding: '20px 16px 12px' }}>
         <Text type="secondary" style={{ fontSize: 12 }}>
           {t('wallet.balance')}
@@ -70,7 +71,30 @@ export default function WalletDropdown() {
 
       <Divider style={{ margin: 0 }} />
 
-      <div style={{ padding: '12px 16px' }}>
+      <div style={{ display: 'flex', gap: 8, padding: '12px 16px' }}>
+        <Button
+          type="default"
+          style={{ flex: 1 }}
+          onClick={() => {
+            setOpen(false);
+            navigate('/wallet/deposit');
+          }}
+        >
+          {t('wallet.deposit')}
+        </Button>
+        <Button
+          type="default"
+          style={{ flex: 1 }}
+          onClick={() => {
+            setOpen(false);
+            navigate('/wallet/withdraw');
+          }}
+        >
+          {t('wallet.withdraw')}
+        </Button>
+      </div>
+
+      <div style={{ padding: '0 16px 12px' }}>
         <Button
           type="primary"
           block
@@ -79,12 +103,12 @@ export default function WalletDropdown() {
             navigate('/wallet');
           }}
         >
-          {t('wallet.viewDetails')}
+          {t('wallet.history')}
         </Button>
       </div>
     </div>
   ) : (
-    <div style={{ width: 280, padding: '32px 16px', textAlign: 'center' }}>
+    <div style={{ width: 280, padding: '32px 16px', textAlign: 'center', background: 'var(--color-bg-card)', borderRadius: 8 }}>
       <Text type="secondary">{t('common.loading')}</Text>
     </div>
   );

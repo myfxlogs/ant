@@ -66,7 +66,6 @@ export default function TopBar({ isMobile, onMenuToggle, language, languages, la
         <Dropdown menu={languageMenu} placement="bottomRight" trigger={['click']}>
           <div className="flex items-center gap-1.5 p-2 rounded-lg cursor-pointer transition-colors" style={{ background: 'var(--color-bg-secondary)' }}>
             <GlobalOutlined size={18} />
-            <span className="hidden sm:inline text-sm" style={{ color: 'var(--color-text-secondary)' }}>{languages.find(l => l.key === language)?.key.toUpperCase()}</span>
           </div>
         </Dropdown>
         <NotificationCenter />

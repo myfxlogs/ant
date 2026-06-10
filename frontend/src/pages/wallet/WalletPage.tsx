@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { walletApi } from '@/client/wallet';
 import { queryKeys } from '@/queries/queryKeys';
 import { StatusResult } from '@/components/common/StatusResult';
+import { formatAmount } from '@/utils/price';
 import { useMemo } from 'react';
 
 const { Title } = Typography;
@@ -48,7 +49,7 @@ export default function WalletPage() {
       dataIndex: 'balanceAfter',
       key: 'balanceAfter',
       width: 120,
-      render: (v: string) => parseFloat(v).toFixed(2),
+      render: (v: string) => formatAmount(v),
     },
     {
       title: t('wallet.table.description', { defaultValue: 'Description' }),
@@ -83,12 +84,12 @@ export default function WalletPage() {
               </Descriptions.Item>
               <Descriptions.Item label={t('wallet.balance', { defaultValue: 'Balance' })}>
                 <span style={{ fontSize: 16, fontWeight: 600, color: '#141D22' }}>
-                  {parseFloat(wallet.balance).toFixed(2)} {wallet.currency}
+                  {formatAmount(wallet.balance)} {wallet.currency}
                 </span>
               </Descriptions.Item>
               <Descriptions.Item label={t('wallet.frozen', { defaultValue: 'Frozen' })}>
                 <span style={{ fontSize: 16, color: '#8A9AA5' }}>
-                  {parseFloat(wallet.frozenBalance).toFixed(2)} {wallet.currency}
+                  {formatAmount(wallet.frozenBalance)} {wallet.currency}
                 </span>
               </Descriptions.Item>
             </Descriptions>

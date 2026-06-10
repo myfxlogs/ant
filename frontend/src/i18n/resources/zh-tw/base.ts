@@ -783,7 +783,9 @@ const base = {
     frozenBalance: '凍結',
     currency: '幣種',
     transactions: '交易記錄',
-    viewDetails: '查看詳情',
+    deposit: '充值',
+    withdraw: '提取',
+    history: '歷史記錄',
   },
   symbolDetection: {
     label: '偵測到的交易品種',

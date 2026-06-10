@@ -783,7 +783,9 @@ const base = {
     frozenBalance: 'Đóng Băng',
     currency: 'Tiền Tệ',
     transactions: 'Giao Dịch',
-    viewDetails: 'Xem Chi Tiết',
+    deposit: 'Nạp Tiền',
+    withdraw: 'Rút Tiền',
+    history: 'Lịch Sử',
   },
   symbolDetection: {
     label: 'Biểu tượng được Phát hiện',

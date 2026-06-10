@@ -670,7 +670,9 @@ const base = {
     frozenBalance: '凍結',
     currency: '通貨',
     transactions: '取引履歴',
-    viewDetails: '詳細を見る',
+    deposit: '入金',
+    withdraw: '出金',
+    history: '履歴',
   },
   symbolDetection: {
     label: '検出された銘柄',

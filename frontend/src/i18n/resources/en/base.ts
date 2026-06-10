@@ -631,7 +631,9 @@ const base = {
     frozenBalance: 'Frozen',
     currency: 'Currency',
     transactions: 'Transactions',
-    viewDetails: 'View Details',
+    deposit: 'Deposit',
+    withdraw: 'Withdraw',
+    history: 'History',
   },
   errors: {
     not_authenticated: 'Not signed in',
