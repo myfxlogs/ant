@@ -304,6 +304,33 @@ export const analyticsApi = {
     })();
     return () => abortController.abort();
   },
+
+  getMonthlyDetail: async (accountId: string, year: number, month: number): Promise<MonthlyDetailData> => {
+    const res = await analyticsClient.getMonthlyDetail({ accountId, year, month });
+    return {
+      metrics: {
+        netReturn: res.metrics?.netReturn ?? 0,
+        returnPercent: res.metrics?.returnPercent ?? 0,
+        totalTrades: Number(res.metrics?.totalTrades ?? 0),
+        winRate: res.metrics?.winRate ?? 0,
+        profitFactor: res.metrics?.profitFactor ?? 0,
+        bestTrade: res.metrics?.bestTrade ?? 0,
+        worstTrade: res.metrics?.worstTrade ?? 0,
+      },
+      symbolPnls: (res.symbolPnls ?? []).map((s) => ({
+        symbol: s.symbol,
+        netProfit: s.netProfit,
+        trades: Number(s.trades),
+        winRate: s.winRate,
+      })),
+      holdingStats: {
+        averageHours: res.holdingStats?.averageHours ?? 0,
+        medianHours: res.holdingStats?.medianHours ?? 0,
+        maxHours: res.holdingStats?.maxHours ?? 0,
+        minHours: res.holdingStats?.minHours ?? 0,
+      },
+    };
+  },
 };
 
 export interface SymbolPnLData {
@@ -352,6 +379,30 @@ export interface RollingMetricsData {
   monthlyWinRates: Array<{ month: string; winRate: number; totalTrades: number }>;
   equityCurve: EquityPoint[];
   drawdownCurve: Array<{ date: string; drawdownPercent: number }>;
+}
+
+export interface MonthlyDetailData {
+  metrics: {
+    netReturn: number;
+    returnPercent: number;
+    totalTrades: number;
+    winRate: number;
+    profitFactor: number;
+    bestTrade: number;
+    worstTrade: number;
+  };
+  symbolPnls: Array<{
+    symbol: string;
+    netProfit: number;
+    trades: number;
+    winRate: number;
+  }>;
+  holdingStats: {
+    averageHours: number;
+    medianHours: number;
+    maxHours: number;
+    minHours: number;
+  };
 }
 
 export interface ReportCallbacks {

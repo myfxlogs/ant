@@ -128,6 +128,23 @@ const accounts = {
           popularityShare: 'ロット比率'
         }
       },
+      monthlyDetail: {
+        metricsTitle: '月次指標',
+        symbolPnLTitle: '銘柄別損益',
+        holdingTitle: '保有時間',
+        fields: {
+          netReturn: '純利益',
+          totalTrades: '取引数',
+          winRate: '勝率',
+          profitFactor: 'PF',
+          bestTrade: '最良取引',
+          worstTrade: '最悪取引',
+          averageHours: '平均',
+          medianHours: '中央値',
+          maxHours: '最大',
+          minHours: '最小',
+        },
+      },
       chartType: {
         equity: '純資産',
         balance: '残高',

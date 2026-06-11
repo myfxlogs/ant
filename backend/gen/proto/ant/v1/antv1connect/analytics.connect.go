@@ -45,6 +45,9 @@ const (
 	// AnalyticsServiceGetMonthlyAnalysisProcedure is the fully-qualified name of the AnalyticsService's
 	// GetMonthlyAnalysis RPC.
 	AnalyticsServiceGetMonthlyAnalysisProcedure = "/ant.v1.AnalyticsService/GetMonthlyAnalysis"
+	// AnalyticsServiceGetMonthlyDetailProcedure is the fully-qualified name of the AnalyticsService's
+	// GetMonthlyDetail RPC.
+	AnalyticsServiceGetMonthlyDetailProcedure = "/ant.v1.AnalyticsService/GetMonthlyDetail"
 	// AnalyticsServiceGetAttributionAnalysisProcedure is the fully-qualified name of the
 	// AnalyticsService's GetAttributionAnalysis RPC.
 	AnalyticsServiceGetAttributionAnalysisProcedure = "/ant.v1.AnalyticsService/GetAttributionAnalysis"
@@ -62,6 +65,7 @@ type AnalyticsServiceClient interface {
 	GetRecentTrades(context.Context, *connect.Request[v1.GetRecentTradesRequest]) (*connect.Response[v1.GetRecentTradesResponse], error)
 	GetMonthlyPnL(context.Context, *connect.Request[v1.GetMonthlyPnLRequest]) (*connect.Response[v1.GetMonthlyPnLResponse], error)
 	GetMonthlyAnalysis(context.Context, *connect.Request[v1.GetMonthlyAnalysisRequest]) (*connect.Response[v1.GetMonthlyAnalysisResponse], error)
+	GetMonthlyDetail(context.Context, *connect.Request[v1.GetMonthlyDetailRequest]) (*connect.Response[v1.GetMonthlyDetailResponse], error)
 	GetAttributionAnalysis(context.Context, *connect.Request[v1.GetAttributionAnalysisRequest]) (*connect.Response[v1.GetAttributionAnalysisResponse], error)
 	GetRollingMetrics(context.Context, *connect.Request[v1.GetRollingMetricsRequest]) (*connect.Response[v1.GetRollingMetricsResponse], error)
 	GenerateReport(context.Context, *connect.Request[v1.GenerateReportRequest]) (*connect.ServerStreamForClient[v1.GenerateReportChunk], error)
@@ -102,6 +106,12 @@ func NewAnalyticsServiceClient(httpClient connect.HTTPClient, baseURL string, op
 			connect.WithSchema(analyticsServiceMethods.ByName("GetMonthlyAnalysis")),
 			connect.WithClientOptions(opts...),
 		),
+		getMonthlyDetail: connect.NewClient[v1.GetMonthlyDetailRequest, v1.GetMonthlyDetailResponse](
+			httpClient,
+			baseURL+AnalyticsServiceGetMonthlyDetailProcedure,
+			connect.WithSchema(analyticsServiceMethods.ByName("GetMonthlyDetail")),
+			connect.WithClientOptions(opts...),
+		),
 		getAttributionAnalysis: connect.NewClient[v1.GetAttributionAnalysisRequest, v1.GetAttributionAnalysisResponse](
 			httpClient,
 			baseURL+AnalyticsServiceGetAttributionAnalysisProcedure,
@@ -129,6 +139,7 @@ type analyticsServiceClient struct {
 	getRecentTrades        *connect.Client[v1.GetRecentTradesRequest, v1.GetRecentTradesResponse]
 	getMonthlyPnL          *connect.Client[v1.GetMonthlyPnLRequest, v1.GetMonthlyPnLResponse]
 	getMonthlyAnalysis     *connect.Client[v1.GetMonthlyAnalysisRequest, v1.GetMonthlyAnalysisResponse]
+	getMonthlyDetail       *connect.Client[v1.GetMonthlyDetailRequest, v1.GetMonthlyDetailResponse]
 	getAttributionAnalysis *connect.Client[v1.GetAttributionAnalysisRequest, v1.GetAttributionAnalysisResponse]
 	getRollingMetrics      *connect.Client[v1.GetRollingMetricsRequest, v1.GetRollingMetricsResponse]
 	generateReport         *connect.Client[v1.GenerateReportRequest, v1.GenerateReportChunk]
@@ -154,6 +165,11 @@ func (c *analyticsServiceClient) GetMonthlyAnalysis(ctx context.Context, req *co
 	return c.getMonthlyAnalysis.CallUnary(ctx, req)
 }
 
+// GetMonthlyDetail calls ant.v1.AnalyticsService.GetMonthlyDetail.
+func (c *analyticsServiceClient) GetMonthlyDetail(ctx context.Context, req *connect.Request[v1.GetMonthlyDetailRequest]) (*connect.Response[v1.GetMonthlyDetailResponse], error) {
+	return c.getMonthlyDetail.CallUnary(ctx, req)
+}
+
 // GetAttributionAnalysis calls ant.v1.AnalyticsService.GetAttributionAnalysis.
 func (c *analyticsServiceClient) GetAttributionAnalysis(ctx context.Context, req *connect.Request[v1.GetAttributionAnalysisRequest]) (*connect.Response[v1.GetAttributionAnalysisResponse], error) {
 	return c.getAttributionAnalysis.CallUnary(ctx, req)
@@ -175,6 +191,7 @@ type AnalyticsServiceHandler interface {
 	GetRecentTrades(context.Context, *connect.Request[v1.GetRecentTradesRequest]) (*connect.Response[v1.GetRecentTradesResponse], error)
 	GetMonthlyPnL(context.Context, *connect.Request[v1.GetMonthlyPnLRequest]) (*connect.Response[v1.GetMonthlyPnLResponse], error)
 	GetMonthlyAnalysis(context.Context, *connect.Request[v1.GetMonthlyAnalysisRequest]) (*connect.Response[v1.GetMonthlyAnalysisResponse], error)
+	GetMonthlyDetail(context.Context, *connect.Request[v1.GetMonthlyDetailRequest]) (*connect.Response[v1.GetMonthlyDetailResponse], error)
 	GetAttributionAnalysis(context.Context, *connect.Request[v1.GetAttributionAnalysisRequest]) (*connect.Response[v1.GetAttributionAnalysisResponse], error)
 	GetRollingMetrics(context.Context, *connect.Request[v1.GetRollingMetricsRequest]) (*connect.Response[v1.GetRollingMetricsResponse], error)
 	GenerateReport(context.Context, *connect.Request[v1.GenerateReportRequest], *connect.ServerStream[v1.GenerateReportChunk]) error
@@ -211,6 +228,12 @@ func NewAnalyticsServiceHandler(svc AnalyticsServiceHandler, opts ...connect.Han
 		connect.WithSchema(analyticsServiceMethods.ByName("GetMonthlyAnalysis")),
 		connect.WithHandlerOptions(opts...),
 	)
+	analyticsServiceGetMonthlyDetailHandler := connect.NewUnaryHandler(
+		AnalyticsServiceGetMonthlyDetailProcedure,
+		svc.GetMonthlyDetail,
+		connect.WithSchema(analyticsServiceMethods.ByName("GetMonthlyDetail")),
+		connect.WithHandlerOptions(opts...),
+	)
 	analyticsServiceGetAttributionAnalysisHandler := connect.NewUnaryHandler(
 		AnalyticsServiceGetAttributionAnalysisProcedure,
 		svc.GetAttributionAnalysis,
@@ -239,6 +262,8 @@ func NewAnalyticsServiceHandler(svc AnalyticsServiceHandler, opts ...connect.Han
 			analyticsServiceGetMonthlyPnLHandler.ServeHTTP(w, r)
 		case AnalyticsServiceGetMonthlyAnalysisProcedure:
 			analyticsServiceGetMonthlyAnalysisHandler.ServeHTTP(w, r)
+		case AnalyticsServiceGetMonthlyDetailProcedure:
+			analyticsServiceGetMonthlyDetailHandler.ServeHTTP(w, r)
 		case AnalyticsServiceGetAttributionAnalysisProcedure:
 			analyticsServiceGetAttributionAnalysisHandler.ServeHTTP(w, r)
 		case AnalyticsServiceGetRollingMetricsProcedure:
@@ -268,6 +293,10 @@ func (UnimplementedAnalyticsServiceHandler) GetMonthlyPnL(context.Context, *conn
 
 func (UnimplementedAnalyticsServiceHandler) GetMonthlyAnalysis(context.Context, *connect.Request[v1.GetMonthlyAnalysisRequest]) (*connect.Response[v1.GetMonthlyAnalysisResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AnalyticsService.GetMonthlyAnalysis is not implemented"))
+}
+
+func (UnimplementedAnalyticsServiceHandler) GetMonthlyDetail(context.Context, *connect.Request[v1.GetMonthlyDetailRequest]) (*connect.Response[v1.GetMonthlyDetailResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AnalyticsService.GetMonthlyDetail is not implemented"))
 }
 
 func (UnimplementedAnalyticsServiceHandler) GetAttributionAnalysis(context.Context, *connect.Request[v1.GetAttributionAnalysisRequest]) (*connect.Response[v1.GetAttributionAnalysisResponse], error) {

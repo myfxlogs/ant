@@ -97,6 +97,23 @@ const accounts = {
           popularityShare: '手数占比'
         }
       },
+      monthlyDetail: {
+        metricsTitle: '月度指标',
+        symbolPnLTitle: '品种盈亏',
+        holdingTitle: '持仓时长',
+        fields: {
+          netReturn: '净收益',
+          totalTrades: '总笔数',
+          winRate: '胜率',
+          profitFactor: '盈亏比',
+          bestTrade: '最优单笔',
+          worstTrade: '最差单笔',
+          averageHours: '平均',
+          medianHours: '中位',
+          maxHours: '最长',
+          minHours: '最短',
+        },
+      },
       chartType: {
         equity: '净值',
         balance: '余额',

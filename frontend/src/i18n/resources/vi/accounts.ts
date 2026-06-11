@@ -97,6 +97,23 @@ const accounts = {
           popularityShare: 'Ty trong lot'
         }
       },
+      monthlyDetail: {
+        metricsTitle: 'Chỉ số tháng',
+        symbolPnLTitle: 'Lợi nhuận theo cặp',
+        holdingTitle: 'Thời gian giữ lệnh',
+        fields: {
+          netReturn: 'Lợi nhuận ròng',
+          totalTrades: 'Tổng lệnh',
+          winRate: 'Tỷ lệ thắng',
+          profitFactor: 'Hệ số lợi nhuận',
+          bestTrade: 'Lệnh tốt nhất',
+          worstTrade: 'Lệnh tệ nhất',
+          averageHours: 'TB',
+          medianHours: 'Trung vị',
+          maxHours: 'Tối đa',
+          minHours: 'Tối thiểu',
+        },
+      },
       chartType: {
         equity: 'Vốn',
         balance: 'Số dư',

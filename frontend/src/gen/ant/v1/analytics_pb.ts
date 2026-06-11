@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file analytics.proto.
  */
 export const file_analytics: GenFile = /*@__PURE__*/
-  fileDesc("Cg9hbmFseXRpY3MucHJvdG8SBmFudC52MSJoChpHZXRBY2NvdW50QW5hbHl0aWNzUmVxdWVzdBISCgphY2NvdW50X2lkGAEgASgJEjYKE2VxdWl0eV9jdXJ2ZV9wZXJpb2QYAiABKA4yGS5hbnQudjEuRXF1aXR5Q3VydmVQZXJpb2QikgIKGEFjY291bnRBbmFseXRpY3NSZXNwb25zZRInCgt0cmFkZV9zdGF0cxgBIAEoCzISLmFudC52MS5UcmFkZVN0YXRzEikKDHJpc2tfbWV0cmljcxgCIAEoCzITLmFudC52MS5SaXNrTWV0cmljcxIoCgxzeW1ib2xfc3RhdHMYAyADKAsyEi5hbnQudjEuU3ltYm9sU3RhdBIpCgxlcXVpdHlfY3VydmUYBCADKAsyEy5hbnQudjEuRXF1aXR5UG9pbnQSIwoJZGFpbHlfcG5sGAUgAygLMhAuYW50LnYxLkRhaWx5UG5MEigKDGhvdXJseV9zdGF0cxgGIAMoCzISLmFudC52MS5Ib3VybHlTdGF0ItoCCgpUcmFkZVN0YXRzEhQKDHRvdGFsX3RyYWRlcxgBIAEoAxIQCgh3aW5fcmF0ZRgCIAEoARIVCg1wcm9maXRfZmFjdG9yGAMgASgBEhYKDmF2ZXJhZ2VfcHJvZml0GAQgASgBEhQKDGF2ZXJhZ2VfbG9zcxgFIAEoARITCgtsYXJnZXN0X3dpbhgGIAEoARIUCgxsYXJnZXN0X2xvc3MYByABKAESHAoUbWF4X2NvbnNlY3V0aXZlX3dpbnMYCCABKAMSHgoWbWF4X2NvbnNlY3V0aXZlX2xvc3NlcxgJIAEoAxIcChRhdmVyYWdlX2hvbGRpbmdfdGltZRgKIAEoCRISCgpuZXRfcHJvZml0GAsgASgBEhUKDXRvdGFsX2RlcG9zaXQYDCABKAESGAoQdG90YWxfd2l0aGRyYXdhbBgNIAEoARITCgtuZXRfZGVwb3NpdBgOIAEoASKgAQoLUmlza01ldHJpY3MSHAoUbWF4X2RyYXdkb3duX3BlcmNlbnQYASABKAESFAoMc2hhcnBlX3JhdGlvGAIgASgBEhUKDXNvcnRpbm9fcmF0aW8YAyABKAESFAoMY2FsbWFyX3JhdGlvGAQgASgBEhIKCnZvbGF0aWxpdHkYBSABKAESHAoUYXZlcmFnZV9kYWlseV9yZXR1cm4YBiABKAEiSQoKU3ltYm9sU3RhdBIOCgZzeW1ib2wYASABKAkSDgoGcHJvZml0GAIgASgBEhsKE3RyYWRlX3NoYXJlX3BlcmNlbnQYAyABKAEiTAoLRXF1aXR5UG9pbnQSDAoEZGF0ZRgBIAEoCRIOCgZlcXVpdHkYAiABKAESDwoHYmFsYW5jZRgDIAEoARIOCgZwcm9maXQYBCABKAEiggIKCERhaWx5UG5MEgsKA2RheRgBIAEoCRIMCgRkYXRlGAIgASgJEgsKA3BubBgDIAEoARIOCgZ0cmFkZXMYBCABKAMSDAoEbG90cxgFIAEoARIPCgdiYWxhbmNlGAYgASgBEhUKDXByb2ZpdF9mYWN0b3IYByABKAESIAoYbWF4X2Zsb2F0aW5nX2xvc3NfYW1vdW50GAggASgBEh8KF21heF9mbG9hdGluZ19sb3NzX3JhdGlvGAkgASgBEiIKGm1heF9mbG9hdGluZ19wcm9maXRfYW1vdW50GAogASgBEiEKGW1heF9mbG9hdGluZ19wcm9maXRfcmF0aW8YCyABKAEi2gEKCkhvdXJseVN0YXQSDAoEaG91chgBIAEoBRIMCgRsb3RzGAIgASgBEg8KB2JhbGFuY2UYAyABKAESFQoNcHJvZml0X2ZhY3RvchgEIAEoARIgChhtYXhfZmxvYXRpbmdfbG9zc19hbW91bnQYBSABKAESHwoXbWF4X2Zsb2F0aW5nX2xvc3NfcmF0aW8YBiABKAESIgoabWF4X2Zsb2F0aW5nX3Byb2ZpdF9hbW91bnQYByABKAESIQoZbWF4X2Zsb2F0aW5nX3Byb2ZpdF9yYXRpbxgIIAEoASLeAQoLVHJhZGVSZWNvcmQSDgoGdGlja2V0GAEgASgJEg4KBnN5bWJvbBgCIAEoCRIMCgR0eXBlGAMgASgJEg4KBnZvbHVtZRgEIAEoARISCgpvcGVuX3ByaWNlGAUgASgBEhMKC2Nsb3NlX3ByaWNlGAYgASgBEg4KBnByb2ZpdBgHIAEoARIRCglvcGVuX3RpbWUYCCABKAkSEgoKY2xvc2VfdGltZRgJIAEoCRIMCgRzd2FwGAogASgBEhIKCmNvbW1pc3Npb24YCyABKAESDwoHY29tbWVudBgMIAEoCSJNChZHZXRSZWNlbnRUcmFkZXNSZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAkSDAoEcGFnZRgCIAEoBRIRCglwYWdlX3NpemUYAyABKAUiTQoXR2V0UmVjZW50VHJhZGVzUmVzcG9uc2USIwoGdHJhZGVzGAEgAygLMhMuYW50LnYxLlRyYWRlUmVjb3JkEg0KBXRvdGFsGAIgASgDIj8KDk1vbnRobHlQbkxJdGVtEg0KBW1vbnRoGAEgASgFEg4KBnByb2ZpdBgCIAEoARIOCgZ0cmFkZXMYAyABKAMiOAoUR2V0TW9udGhseVBuTFJlcXVlc3QSEgoKYWNjb3VudF9pZBgBIAEoCRIMCgR5ZWFyGAIgASgFIkQKFUdldE1vbnRobHlQbkxSZXNwb25zZRIrCgttb250aGx5X3BubBgBIAMoCzIWLmFudC52MS5Nb250aGx5UG5MSXRlbSIvChlHZXRNb250aGx5QW5hbHlzaXNSZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAkiOQoaR2V0TW9udGhseUFuYWx5c2lzUmVzcG9uc2USDQoFeWVhcnMYASADKAUSDAoEZGF0YRgCIAEoDCIzCh1HZXRBdHRyaWJ1dGlvbkFuYWx5c2lzUmVxdWVzdBISCgphY2NvdW50X2lkGAEgASgJItUBCh5HZXRBdHRyaWJ1dGlvbkFuYWx5c2lzUmVzcG9uc2USJgoLc3ltYm9sX3BubHMYASADKAsyES5hbnQudjEuU3ltYm9sUG5MEi0KCWRpcmVjdGlvbhgCIAEoCzIaLmFudC52MS5EaXJlY3Rpb25CcmVha2Rvd24SNQoSdHJhZGVfZGlzdHJpYnV0aW9uGAMgASgLMhkuYW50LnYxLlRyYWRlRGlzdHJpYnV0aW9uEiUKCmhvdXJseV9wbmwYBCADKAsyES5hbnQudjEuSG91cmx5UG5MIosBCglTeW1ib2xQbkwSDgoGc3ltYm9sGAEgASgJEhIKCm5ldF9wcm9maXQYAiABKAESFAoMdG90YWxfdHJhZGVzGAMgASgDEhAKCHdpbl9yYXRlGAQgASgBEhUKDXByb2ZpdF9mYWN0b3IYBSABKAESGwoTdHJhZGVfc2hhcmVfcGVyY2VudBgGIAEoASKZAQoSRGlyZWN0aW9uQnJlYWtkb3duEhMKC2xvbmdfcHJvZml0GAEgASgBEhMKC2xvbmdfdHJhZGVzGAIgASgDEhUKDWxvbmdfd2luX3JhdGUYAyABKAESFAoMc2hvcnRfcHJvZml0GAQgASgBEhQKDHNob3J0X3RyYWRlcxgFIAEoAxIWCg5zaG9ydF93aW5fcmF0ZRgGIAEoASJuChFUcmFkZURpc3RyaWJ1dGlvbhIrCg5wcm9maXRfYnVja2V0cxgBIAMoCzITLmFudC52MS5UcmFkZUJ1Y2tldBIsCg9ob2xkaW5nX2J1Y2tldHMYAiADKAsyEy5hbnQudjEuVHJhZGVCdWNrZXQiUQoLVHJhZGVCdWNrZXQSDQoFbGFiZWwYASABKAkSEQoJbWluX3ZhbHVlGAIgASgBEhEKCW1heF92YWx1ZRgDIAEoARINCgVjb3VudBgEIAEoAyJLCglIb3VybHlQbkwSDAoEaG91chgBIAEoBRIOCgZwcm9maXQYAiABKAESDgoGdHJhZGVzGAMgASgDEhAKCHdpbl9yYXRlGAQgASgBIi4KGEdldFJvbGxpbmdNZXRyaWNzUmVxdWVzdBISCgphY2NvdW50X2lkGAEgASgJIoYCChlHZXRSb2xsaW5nTWV0cmljc1Jlc3BvbnNlEiwKDnJvbGxpbmdfc2hhcnBlGAEgAygLMhQuYW50LnYxLlJvbGxpbmdQb2ludBIuCg9kcmF3ZG93bl9ldmVudHMYAiADKAsyFS5hbnQudjEuRHJhd2Rvd25FdmVudBIxChFtb250aGx5X3dpbl9yYXRlcxgDIAMoCzIWLmFudC52MS5Nb250aGx5V2luUmF0ZRIpCgxlcXVpdHlfY3VydmUYBCADKAsyEy5hbnQudjEuRXF1aXR5UG9pbnQSLQoOZHJhd2Rvd25fY3VydmUYBSADKAsyFS5hbnQudjEuRHJhd2Rvd25Qb2ludCIrCgxSb2xsaW5nUG9pbnQSDAoEZGF0ZRgBIAEoCRINCgV2YWx1ZRgCIAEoASJ6Cg1EcmF3ZG93bkV2ZW50EhIKCnN0YXJ0X2RhdGUYASABKAkSEAoIZW5kX2RhdGUYAiABKAkSFQoNZHVyYXRpb25fZGF5cxgDIAEoBRIVCg1kZXB0aF9wZXJjZW50GAQgASgBEhUKDXJlY292ZXJ5X2RhdGUYBSABKAkiNwoNRHJhd2Rvd25Qb2ludBIMCgRkYXRlGAEgASgJEhgKEGRyYXdkb3duX3BlcmNlbnQYAiABKAEiRwoOTW9udGhseVdpblJhdGUSDQoFbW9udGgYASABKAkSEAoId2luX3JhdGUYAiABKAESFAoMdG90YWxfdHJhZGVzGAMgASgDIksKFUdlbmVyYXRlUmVwb3J0UmVxdWVzdBISCgphY2NvdW50X2lkGAEgASgJEg4KBnBlcmlvZBgCIAEoCRIOCgZsb2NhbGUYAyABKAkinQEKE0dlbmVyYXRlUmVwb3J0Q2h1bmsSDQoFcGhhc2UYASABKAkSDQoFZGVsdGEYAiABKAkSDwoHc2VjdGlvbhgDIAEoCRINCgVlcnJvchgEIAEoCRIMCgRkb25lGAUgASgIEg8KB3N1bW1hcnkYBiABKAkSEAoIZmluZGluZ3MYByABKAkSFwoPcmVjb21tZW5kYXRpb25zGAggASgJKq8BChFFcXVpdHlDdXJ2ZVBlcmlvZBIjCh9FUVVJVFlfQ1VSVkVfUEVSSU9EX1VOU1BFQ0lGSUVEEAASGwoXRVFVSVRZX0NVUlZFX1BFUklPRF9EQVkQARIcChhFUVVJVFlfQ1VSVkVfUEVSSU9EX1dFRUsQAhIdChlFUVVJVFlfQ1VSVkVfUEVSSU9EX01PTlRIEAMSGwoXRVFVSVRZX0NVUlZFX1BFUklPRF9BTEwQBDKBBQoQQW5hbHl0aWNzU2VydmljZRJbChNHZXRBY2NvdW50QW5hbHl0aWNzEiIuYW50LnYxLkdldEFjY291bnRBbmFseXRpY3NSZXF1ZXN0GiAuYW50LnYxLkFjY291bnRBbmFseXRpY3NSZXNwb25zZRJSCg9HZXRSZWNlbnRUcmFkZXMSHi5hbnQudjEuR2V0UmVjZW50VHJhZGVzUmVxdWVzdBofLmFudC52MS5HZXRSZWNlbnRUcmFkZXNSZXNwb25zZRJMCg1HZXRNb250aGx5UG5MEhwuYW50LnYxLkdldE1vbnRobHlQbkxSZXF1ZXN0Gh0uYW50LnYxLkdldE1vbnRobHlQbkxSZXNwb25zZRJbChJHZXRNb250aGx5QW5hbHlzaXMSIS5hbnQudjEuR2V0TW9udGhseUFuYWx5c2lzUmVxdWVzdBoiLmFudC52MS5HZXRNb250aGx5QW5hbHlzaXNSZXNwb25zZRJnChZHZXRBdHRyaWJ1dGlvbkFuYWx5c2lzEiUuYW50LnYxLkdldEF0dHJpYnV0aW9uQW5hbHlzaXNSZXF1ZXN0GiYuYW50LnYxLkdldEF0dHJpYnV0aW9uQW5hbHlzaXNSZXNwb25zZRJYChFHZXRSb2xsaW5nTWV0cmljcxIgLmFudC52MS5HZXRSb2xsaW5nTWV0cmljc1JlcXVlc3QaIS5hbnQudjEuR2V0Um9sbGluZ01ldHJpY3NSZXNwb25zZRJOCg5HZW5lcmF0ZVJlcG9ydBIdLmFudC52MS5HZW5lcmF0ZVJlcG9ydFJlcXVlc3QaGy5hbnQudjEuR2VuZXJhdGVSZXBvcnRDaHVuazABQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
+  fileDesc("Cg9hbmFseXRpY3MucHJvdG8SBmFudC52MSJoChpHZXRBY2NvdW50QW5hbHl0aWNzUmVxdWVzdBISCgphY2NvdW50X2lkGAEgASgJEjYKE2VxdWl0eV9jdXJ2ZV9wZXJpb2QYAiABKA4yGS5hbnQudjEuRXF1aXR5Q3VydmVQZXJpb2QikgIKGEFjY291bnRBbmFseXRpY3NSZXNwb25zZRInCgt0cmFkZV9zdGF0cxgBIAEoCzISLmFudC52MS5UcmFkZVN0YXRzEikKDHJpc2tfbWV0cmljcxgCIAEoCzITLmFudC52MS5SaXNrTWV0cmljcxIoCgxzeW1ib2xfc3RhdHMYAyADKAsyEi5hbnQudjEuU3ltYm9sU3RhdBIpCgxlcXVpdHlfY3VydmUYBCADKAsyEy5hbnQudjEuRXF1aXR5UG9pbnQSIwoJZGFpbHlfcG5sGAUgAygLMhAuYW50LnYxLkRhaWx5UG5MEigKDGhvdXJseV9zdGF0cxgGIAMoCzISLmFudC52MS5Ib3VybHlTdGF0ItoCCgpUcmFkZVN0YXRzEhQKDHRvdGFsX3RyYWRlcxgBIAEoAxIQCgh3aW5fcmF0ZRgCIAEoARIVCg1wcm9maXRfZmFjdG9yGAMgASgBEhYKDmF2ZXJhZ2VfcHJvZml0GAQgASgBEhQKDGF2ZXJhZ2VfbG9zcxgFIAEoARITCgtsYXJnZXN0X3dpbhgGIAEoARIUCgxsYXJnZXN0X2xvc3MYByABKAESHAoUbWF4X2NvbnNlY3V0aXZlX3dpbnMYCCABKAMSHgoWbWF4X2NvbnNlY3V0aXZlX2xvc3NlcxgJIAEoAxIcChRhdmVyYWdlX2hvbGRpbmdfdGltZRgKIAEoCRISCgpuZXRfcHJvZml0GAsgASgBEhUKDXRvdGFsX2RlcG9zaXQYDCABKAESGAoQdG90YWxfd2l0aGRyYXdhbBgNIAEoARITCgtuZXRfZGVwb3NpdBgOIAEoASKgAQoLUmlza01ldHJpY3MSHAoUbWF4X2RyYXdkb3duX3BlcmNlbnQYASABKAESFAoMc2hhcnBlX3JhdGlvGAIgASgBEhUKDXNvcnRpbm9fcmF0aW8YAyABKAESFAoMY2FsbWFyX3JhdGlvGAQgASgBEhIKCnZvbGF0aWxpdHkYBSABKAESHAoUYXZlcmFnZV9kYWlseV9yZXR1cm4YBiABKAEiSQoKU3ltYm9sU3RhdBIOCgZzeW1ib2wYASABKAkSDgoGcHJvZml0GAIgASgBEhsKE3RyYWRlX3NoYXJlX3BlcmNlbnQYAyABKAEiTAoLRXF1aXR5UG9pbnQSDAoEZGF0ZRgBIAEoCRIOCgZlcXVpdHkYAiABKAESDwoHYmFsYW5jZRgDIAEoARIOCgZwcm9maXQYBCABKAEiggIKCERhaWx5UG5MEgsKA2RheRgBIAEoCRIMCgRkYXRlGAIgASgJEgsKA3BubBgDIAEoARIOCgZ0cmFkZXMYBCABKAMSDAoEbG90cxgFIAEoARIPCgdiYWxhbmNlGAYgASgBEhUKDXByb2ZpdF9mYWN0b3IYByABKAESIAoYbWF4X2Zsb2F0aW5nX2xvc3NfYW1vdW50GAggASgBEh8KF21heF9mbG9hdGluZ19sb3NzX3JhdGlvGAkgASgBEiIKGm1heF9mbG9hdGluZ19wcm9maXRfYW1vdW50GAogASgBEiEKGW1heF9mbG9hdGluZ19wcm9maXRfcmF0aW8YCyABKAEi2gEKCkhvdXJseVN0YXQSDAoEaG91chgBIAEoBRIMCgRsb3RzGAIgASgBEg8KB2JhbGFuY2UYAyABKAESFQoNcHJvZml0X2ZhY3RvchgEIAEoARIgChhtYXhfZmxvYXRpbmdfbG9zc19hbW91bnQYBSABKAESHwoXbWF4X2Zsb2F0aW5nX2xvc3NfcmF0aW8YBiABKAESIgoabWF4X2Zsb2F0aW5nX3Byb2ZpdF9hbW91bnQYByABKAESIQoZbWF4X2Zsb2F0aW5nX3Byb2ZpdF9yYXRpbxgIIAEoASLeAQoLVHJhZGVSZWNvcmQSDgoGdGlja2V0GAEgASgJEg4KBnN5bWJvbBgCIAEoCRIMCgR0eXBlGAMgASgJEg4KBnZvbHVtZRgEIAEoARISCgpvcGVuX3ByaWNlGAUgASgBEhMKC2Nsb3NlX3ByaWNlGAYgASgBEg4KBnByb2ZpdBgHIAEoARIRCglvcGVuX3RpbWUYCCABKAkSEgoKY2xvc2VfdGltZRgJIAEoCRIMCgRzd2FwGAogASgBEhIKCmNvbW1pc3Npb24YCyABKAESDwoHY29tbWVudBgMIAEoCSJNChZHZXRSZWNlbnRUcmFkZXNSZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAkSDAoEcGFnZRgCIAEoBRIRCglwYWdlX3NpemUYAyABKAUiTQoXR2V0UmVjZW50VHJhZGVzUmVzcG9uc2USIwoGdHJhZGVzGAEgAygLMhMuYW50LnYxLlRyYWRlUmVjb3JkEg0KBXRvdGFsGAIgASgDIj8KDk1vbnRobHlQbkxJdGVtEg0KBW1vbnRoGAEgASgFEg4KBnByb2ZpdBgCIAEoARIOCgZ0cmFkZXMYAyABKAMiOAoUR2V0TW9udGhseVBuTFJlcXVlc3QSEgoKYWNjb3VudF9pZBgBIAEoCRIMCgR5ZWFyGAIgASgFIkQKFUdldE1vbnRobHlQbkxSZXNwb25zZRIrCgttb250aGx5X3BubBgBIAMoCzIWLmFudC52MS5Nb250aGx5UG5MSXRlbSIvChlHZXRNb250aGx5QW5hbHlzaXNSZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAkiOQoaR2V0TW9udGhseUFuYWx5c2lzUmVzcG9uc2USDQoFeWVhcnMYASADKAUSDAoEZGF0YRgCIAEoDCJKChdHZXRNb250aGx5RGV0YWlsUmVxdWVzdBISCgphY2NvdW50X2lkGAEgASgJEgwKBHllYXIYAiABKAUSDQoFbW9udGgYAyABKAUiqQEKGEdldE1vbnRobHlEZXRhaWxSZXNwb25zZRItCgdtZXRyaWNzGAEgASgLMhwuYW50LnYxLk1vbnRobHlEZXRhaWxNZXRyaWNzEi0KC3N5bWJvbF9wbmxzGAIgAygLMhguYW50LnYxLlN5bWJvbE1vbnRobHlQbkwSLwoNaG9sZGluZ19zdGF0cxgDIAEoCzIYLmFudC52MS5Ib2xkaW5nVGltZVN0YXRzIqoBChRNb250aGx5RGV0YWlsTWV0cmljcxISCgpuZXRfcmV0dXJuGAEgASgBEhYKDnJldHVybl9wZXJjZW50GAIgASgBEhQKDHRvdGFsX3RyYWRlcxgDIAEoAxIQCgh3aW5fcmF0ZRgEIAEoARIVCg1wcm9maXRfZmFjdG9yGAUgASgBEhIKCmJlc3RfdHJhZGUYBiABKAESEwoLd29yc3RfdHJhZGUYByABKAEiWAoQU3ltYm9sTW9udGhseVBuTBIOCgZzeW1ib2wYASABKAkSEgoKbmV0X3Byb2ZpdBgCIAEoARIOCgZ0cmFkZXMYAyABKAMSEAoId2luX3JhdGUYBCABKAEiZQoQSG9sZGluZ1RpbWVTdGF0cxIVCg1hdmVyYWdlX2hvdXJzGAEgASgBEhQKDG1lZGlhbl9ob3VycxgCIAEoARIRCgltYXhfaG91cnMYAyABKAESEQoJbWluX2hvdXJzGAQgASgBIjMKHUdldEF0dHJpYnV0aW9uQW5hbHlzaXNSZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAki1QEKHkdldEF0dHJpYnV0aW9uQW5hbHlzaXNSZXNwb25zZRImCgtzeW1ib2xfcG5scxgBIAMoCzIRLmFudC52MS5TeW1ib2xQbkwSLQoJZGlyZWN0aW9uGAIgASgLMhouYW50LnYxLkRpcmVjdGlvbkJyZWFrZG93bhI1ChJ0cmFkZV9kaXN0cmlidXRpb24YAyABKAsyGS5hbnQudjEuVHJhZGVEaXN0cmlidXRpb24SJQoKaG91cmx5X3BubBgEIAMoCzIRLmFudC52MS5Ib3VybHlQbkwiiwEKCVN5bWJvbFBuTBIOCgZzeW1ib2wYASABKAkSEgoKbmV0X3Byb2ZpdBgCIAEoARIUCgx0b3RhbF90cmFkZXMYAyABKAMSEAoId2luX3JhdGUYBCABKAESFQoNcHJvZml0X2ZhY3RvchgFIAEoARIbChN0cmFkZV9zaGFyZV9wZXJjZW50GAYgASgBIpkBChJEaXJlY3Rpb25CcmVha2Rvd24SEwoLbG9uZ19wcm9maXQYASABKAESEwoLbG9uZ190cmFkZXMYAiABKAMSFQoNbG9uZ193aW5fcmF0ZRgDIAEoARIUCgxzaG9ydF9wcm9maXQYBCABKAESFAoMc2hvcnRfdHJhZGVzGAUgASgDEhYKDnNob3J0X3dpbl9yYXRlGAYgASgBIm4KEVRyYWRlRGlzdHJpYnV0aW9uEisKDnByb2ZpdF9idWNrZXRzGAEgAygLMhMuYW50LnYxLlRyYWRlQnVja2V0EiwKD2hvbGRpbmdfYnVja2V0cxgCIAMoCzITLmFudC52MS5UcmFkZUJ1Y2tldCJRCgtUcmFkZUJ1Y2tldBINCgVsYWJlbBgBIAEoCRIRCgltaW5fdmFsdWUYAiABKAESEQoJbWF4X3ZhbHVlGAMgASgBEg0KBWNvdW50GAQgASgDIksKCUhvdXJseVBuTBIMCgRob3VyGAEgASgFEg4KBnByb2ZpdBgCIAEoARIOCgZ0cmFkZXMYAyABKAMSEAoId2luX3JhdGUYBCABKAEiLgoYR2V0Um9sbGluZ01ldHJpY3NSZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAkihgIKGUdldFJvbGxpbmdNZXRyaWNzUmVzcG9uc2USLAoOcm9sbGluZ19zaGFycGUYASADKAsyFC5hbnQudjEuUm9sbGluZ1BvaW50Ei4KD2RyYXdkb3duX2V2ZW50cxgCIAMoCzIVLmFudC52MS5EcmF3ZG93bkV2ZW50EjEKEW1vbnRobHlfd2luX3JhdGVzGAMgAygLMhYuYW50LnYxLk1vbnRobHlXaW5SYXRlEikKDGVxdWl0eV9jdXJ2ZRgEIAMoCzITLmFudC52MS5FcXVpdHlQb2ludBItCg5kcmF3ZG93bl9jdXJ2ZRgFIAMoCzIVLmFudC52MS5EcmF3ZG93blBvaW50IisKDFJvbGxpbmdQb2ludBIMCgRkYXRlGAEgASgJEg0KBXZhbHVlGAIgASgBInoKDURyYXdkb3duRXZlbnQSEgoKc3RhcnRfZGF0ZRgBIAEoCRIQCghlbmRfZGF0ZRgCIAEoCRIVCg1kdXJhdGlvbl9kYXlzGAMgASgFEhUKDWRlcHRoX3BlcmNlbnQYBCABKAESFQoNcmVjb3ZlcnlfZGF0ZRgFIAEoCSI3Cg1EcmF3ZG93blBvaW50EgwKBGRhdGUYASABKAkSGAoQZHJhd2Rvd25fcGVyY2VudBgCIAEoASJHCg5Nb250aGx5V2luUmF0ZRINCgVtb250aBgBIAEoCRIQCgh3aW5fcmF0ZRgCIAEoARIUCgx0b3RhbF90cmFkZXMYAyABKAMiSwoVR2VuZXJhdGVSZXBvcnRSZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAkSDgoGcGVyaW9kGAIgASgJEg4KBmxvY2FsZRgDIAEoCSKdAQoTR2VuZXJhdGVSZXBvcnRDaHVuaxINCgVwaGFzZRgBIAEoCRINCgVkZWx0YRgCIAEoCRIPCgdzZWN0aW9uGAMgASgJEg0KBWVycm9yGAQgASgJEgwKBGRvbmUYBSABKAgSDwoHc3VtbWFyeRgGIAEoCRIQCghmaW5kaW5ncxgHIAEoCRIXCg9yZWNvbW1lbmRhdGlvbnMYCCABKAkqrwEKEUVxdWl0eUN1cnZlUGVyaW9kEiMKH0VRVUlUWV9DVVJWRV9QRVJJT0RfVU5TUEVDSUZJRUQQABIbChdFUVVJVFlfQ1VSVkVfUEVSSU9EX0RBWRABEhwKGEVRVUlUWV9DVVJWRV9QRVJJT0RfV0VFSxACEh0KGUVRVUlUWV9DVVJWRV9QRVJJT0RfTU9OVEgQAxIbChdFUVVJVFlfQ1VSVkVfUEVSSU9EX0FMTBAEMtgFChBBbmFseXRpY3NTZXJ2aWNlElsKE0dldEFjY291bnRBbmFseXRpY3MSIi5hbnQudjEuR2V0QWNjb3VudEFuYWx5dGljc1JlcXVlc3QaIC5hbnQudjEuQWNjb3VudEFuYWx5dGljc1Jlc3BvbnNlElIKD0dldFJlY2VudFRyYWRlcxIeLmFudC52MS5HZXRSZWNlbnRUcmFkZXNSZXF1ZXN0Gh8uYW50LnYxLkdldFJlY2VudFRyYWRlc1Jlc3BvbnNlEkwKDUdldE1vbnRobHlQbkwSHC5hbnQudjEuR2V0TW9udGhseVBuTFJlcXVlc3QaHS5hbnQudjEuR2V0TW9udGhseVBuTFJlc3BvbnNlElsKEkdldE1vbnRobHlBbmFseXNpcxIhLmFudC52MS5HZXRNb250aGx5QW5hbHlzaXNSZXF1ZXN0GiIuYW50LnYxLkdldE1vbnRobHlBbmFseXNpc1Jlc3BvbnNlElUKEEdldE1vbnRobHlEZXRhaWwSHy5hbnQudjEuR2V0TW9udGhseURldGFpbFJlcXVlc3QaIC5hbnQudjEuR2V0TW9udGhseURldGFpbFJlc3BvbnNlEmcKFkdldEF0dHJpYnV0aW9uQW5hbHlzaXMSJS5hbnQudjEuR2V0QXR0cmlidXRpb25BbmFseXNpc1JlcXVlc3QaJi5hbnQudjEuR2V0QXR0cmlidXRpb25BbmFseXNpc1Jlc3BvbnNlElgKEUdldFJvbGxpbmdNZXRyaWNzEiAuYW50LnYxLkdldFJvbGxpbmdNZXRyaWNzUmVxdWVzdBohLmFudC52MS5HZXRSb2xsaW5nTWV0cmljc1Jlc3BvbnNlEk4KDkdlbmVyYXRlUmVwb3J0Eh0uYW50LnYxLkdlbmVyYXRlUmVwb3J0UmVxdWVzdBobLmFudC52MS5HZW5lcmF0ZVJlcG9ydENodW5rMAFCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw");
 
 /**
  * @generated from message ant.v1.GetAccountAnalyticsRequest
@@ -605,6 +605,173 @@ export const GetMonthlyAnalysisResponseSchema: GenMessage<GetMonthlyAnalysisResp
   messageDesc(file_analytics, 15);
 
 /**
+ * @generated from message ant.v1.GetMonthlyDetailRequest
+ */
+export type GetMonthlyDetailRequest = Message<"ant.v1.GetMonthlyDetailRequest"> & {
+  /**
+   * @generated from field: string account_id = 1;
+   */
+  accountId: string;
+
+  /**
+   * @generated from field: int32 year = 2;
+   */
+  year: number;
+
+  /**
+   * 1-12
+   *
+   * @generated from field: int32 month = 3;
+   */
+  month: number;
+};
+
+/**
+ * Describes the message ant.v1.GetMonthlyDetailRequest.
+ * Use `create(GetMonthlyDetailRequestSchema)` to create a new message.
+ */
+export const GetMonthlyDetailRequestSchema: GenMessage<GetMonthlyDetailRequest> = /*@__PURE__*/
+  messageDesc(file_analytics, 16);
+
+/**
+ * @generated from message ant.v1.GetMonthlyDetailResponse
+ */
+export type GetMonthlyDetailResponse = Message<"ant.v1.GetMonthlyDetailResponse"> & {
+  /**
+   * @generated from field: ant.v1.MonthlyDetailMetrics metrics = 1;
+   */
+  metrics?: MonthlyDetailMetrics | undefined;
+
+  /**
+   * @generated from field: repeated ant.v1.SymbolMonthlyPnL symbol_pnls = 2;
+   */
+  symbolPnls: SymbolMonthlyPnL[];
+
+  /**
+   * @generated from field: ant.v1.HoldingTimeStats holding_stats = 3;
+   */
+  holdingStats?: HoldingTimeStats | undefined;
+};
+
+/**
+ * Describes the message ant.v1.GetMonthlyDetailResponse.
+ * Use `create(GetMonthlyDetailResponseSchema)` to create a new message.
+ */
+export const GetMonthlyDetailResponseSchema: GenMessage<GetMonthlyDetailResponse> = /*@__PURE__*/
+  messageDesc(file_analytics, 17);
+
+/**
+ * @generated from message ant.v1.MonthlyDetailMetrics
+ */
+export type MonthlyDetailMetrics = Message<"ant.v1.MonthlyDetailMetrics"> & {
+  /**
+   * @generated from field: double net_return = 1;
+   */
+  netReturn: number;
+
+  /**
+   * @generated from field: double return_percent = 2;
+   */
+  returnPercent: number;
+
+  /**
+   * @generated from field: int64 total_trades = 3;
+   */
+  totalTrades: bigint;
+
+  /**
+   * @generated from field: double win_rate = 4;
+   */
+  winRate: number;
+
+  /**
+   * @generated from field: double profit_factor = 5;
+   */
+  profitFactor: number;
+
+  /**
+   * @generated from field: double best_trade = 6;
+   */
+  bestTrade: number;
+
+  /**
+   * @generated from field: double worst_trade = 7;
+   */
+  worstTrade: number;
+};
+
+/**
+ * Describes the message ant.v1.MonthlyDetailMetrics.
+ * Use `create(MonthlyDetailMetricsSchema)` to create a new message.
+ */
+export const MonthlyDetailMetricsSchema: GenMessage<MonthlyDetailMetrics> = /*@__PURE__*/
+  messageDesc(file_analytics, 18);
+
+/**
+ * @generated from message ant.v1.SymbolMonthlyPnL
+ */
+export type SymbolMonthlyPnL = Message<"ant.v1.SymbolMonthlyPnL"> & {
+  /**
+   * @generated from field: string symbol = 1;
+   */
+  symbol: string;
+
+  /**
+   * @generated from field: double net_profit = 2;
+   */
+  netProfit: number;
+
+  /**
+   * @generated from field: int64 trades = 3;
+   */
+  trades: bigint;
+
+  /**
+   * @generated from field: double win_rate = 4;
+   */
+  winRate: number;
+};
+
+/**
+ * Describes the message ant.v1.SymbolMonthlyPnL.
+ * Use `create(SymbolMonthlyPnLSchema)` to create a new message.
+ */
+export const SymbolMonthlyPnLSchema: GenMessage<SymbolMonthlyPnL> = /*@__PURE__*/
+  messageDesc(file_analytics, 19);
+
+/**
+ * @generated from message ant.v1.HoldingTimeStats
+ */
+export type HoldingTimeStats = Message<"ant.v1.HoldingTimeStats"> & {
+  /**
+   * @generated from field: double average_hours = 1;
+   */
+  averageHours: number;
+
+  /**
+   * @generated from field: double median_hours = 2;
+   */
+  medianHours: number;
+
+  /**
+   * @generated from field: double max_hours = 3;
+   */
+  maxHours: number;
+
+  /**
+   * @generated from field: double min_hours = 4;
+   */
+  minHours: number;
+};
+
+/**
+ * Describes the message ant.v1.HoldingTimeStats.
+ * Use `create(HoldingTimeStatsSchema)` to create a new message.
+ */
+export const HoldingTimeStatsSchema: GenMessage<HoldingTimeStats> = /*@__PURE__*/
+  messageDesc(file_analytics, 20);
+
+/**
  * @generated from message ant.v1.GetAttributionAnalysisRequest
  */
 export type GetAttributionAnalysisRequest = Message<"ant.v1.GetAttributionAnalysisRequest"> & {
@@ -619,7 +786,7 @@ export type GetAttributionAnalysisRequest = Message<"ant.v1.GetAttributionAnalys
  * Use `create(GetAttributionAnalysisRequestSchema)` to create a new message.
  */
 export const GetAttributionAnalysisRequestSchema: GenMessage<GetAttributionAnalysisRequest> = /*@__PURE__*/
-  messageDesc(file_analytics, 16);
+  messageDesc(file_analytics, 21);
 
 /**
  * @generated from message ant.v1.GetAttributionAnalysisResponse
@@ -651,7 +818,7 @@ export type GetAttributionAnalysisResponse = Message<"ant.v1.GetAttributionAnaly
  * Use `create(GetAttributionAnalysisResponseSchema)` to create a new message.
  */
 export const GetAttributionAnalysisResponseSchema: GenMessage<GetAttributionAnalysisResponse> = /*@__PURE__*/
-  messageDesc(file_analytics, 17);
+  messageDesc(file_analytics, 22);
 
 /**
  * @generated from message ant.v1.SymbolPnL
@@ -693,7 +860,7 @@ export type SymbolPnL = Message<"ant.v1.SymbolPnL"> & {
  * Use `create(SymbolPnLSchema)` to create a new message.
  */
 export const SymbolPnLSchema: GenMessage<SymbolPnL> = /*@__PURE__*/
-  messageDesc(file_analytics, 18);
+  messageDesc(file_analytics, 23);
 
 /**
  * @generated from message ant.v1.DirectionBreakdown
@@ -735,7 +902,7 @@ export type DirectionBreakdown = Message<"ant.v1.DirectionBreakdown"> & {
  * Use `create(DirectionBreakdownSchema)` to create a new message.
  */
 export const DirectionBreakdownSchema: GenMessage<DirectionBreakdown> = /*@__PURE__*/
-  messageDesc(file_analytics, 19);
+  messageDesc(file_analytics, 24);
 
 /**
  * @generated from message ant.v1.TradeDistribution
@@ -757,7 +924,7 @@ export type TradeDistribution = Message<"ant.v1.TradeDistribution"> & {
  * Use `create(TradeDistributionSchema)` to create a new message.
  */
 export const TradeDistributionSchema: GenMessage<TradeDistribution> = /*@__PURE__*/
-  messageDesc(file_analytics, 20);
+  messageDesc(file_analytics, 25);
 
 /**
  * @generated from message ant.v1.TradeBucket
@@ -789,7 +956,7 @@ export type TradeBucket = Message<"ant.v1.TradeBucket"> & {
  * Use `create(TradeBucketSchema)` to create a new message.
  */
 export const TradeBucketSchema: GenMessage<TradeBucket> = /*@__PURE__*/
-  messageDesc(file_analytics, 21);
+  messageDesc(file_analytics, 26);
 
 /**
  * @generated from message ant.v1.HourlyPnL
@@ -821,7 +988,7 @@ export type HourlyPnL = Message<"ant.v1.HourlyPnL"> & {
  * Use `create(HourlyPnLSchema)` to create a new message.
  */
 export const HourlyPnLSchema: GenMessage<HourlyPnL> = /*@__PURE__*/
-  messageDesc(file_analytics, 22);
+  messageDesc(file_analytics, 27);
 
 /**
  * @generated from message ant.v1.GetRollingMetricsRequest
@@ -838,7 +1005,7 @@ export type GetRollingMetricsRequest = Message<"ant.v1.GetRollingMetricsRequest"
  * Use `create(GetRollingMetricsRequestSchema)` to create a new message.
  */
 export const GetRollingMetricsRequestSchema: GenMessage<GetRollingMetricsRequest> = /*@__PURE__*/
-  messageDesc(file_analytics, 23);
+  messageDesc(file_analytics, 28);
 
 /**
  * @generated from message ant.v1.GetRollingMetricsResponse
@@ -875,7 +1042,7 @@ export type GetRollingMetricsResponse = Message<"ant.v1.GetRollingMetricsRespons
  * Use `create(GetRollingMetricsResponseSchema)` to create a new message.
  */
 export const GetRollingMetricsResponseSchema: GenMessage<GetRollingMetricsResponse> = /*@__PURE__*/
-  messageDesc(file_analytics, 24);
+  messageDesc(file_analytics, 29);
 
 /**
  * @generated from message ant.v1.RollingPoint
@@ -897,7 +1064,7 @@ export type RollingPoint = Message<"ant.v1.RollingPoint"> & {
  * Use `create(RollingPointSchema)` to create a new message.
  */
 export const RollingPointSchema: GenMessage<RollingPoint> = /*@__PURE__*/
-  messageDesc(file_analytics, 25);
+  messageDesc(file_analytics, 30);
 
 /**
  * @generated from message ant.v1.DrawdownEvent
@@ -934,7 +1101,7 @@ export type DrawdownEvent = Message<"ant.v1.DrawdownEvent"> & {
  * Use `create(DrawdownEventSchema)` to create a new message.
  */
 export const DrawdownEventSchema: GenMessage<DrawdownEvent> = /*@__PURE__*/
-  messageDesc(file_analytics, 26);
+  messageDesc(file_analytics, 31);
 
 /**
  * @generated from message ant.v1.DrawdownPoint
@@ -956,7 +1123,7 @@ export type DrawdownPoint = Message<"ant.v1.DrawdownPoint"> & {
  * Use `create(DrawdownPointSchema)` to create a new message.
  */
 export const DrawdownPointSchema: GenMessage<DrawdownPoint> = /*@__PURE__*/
-  messageDesc(file_analytics, 27);
+  messageDesc(file_analytics, 32);
 
 /**
  * @generated from message ant.v1.MonthlyWinRate
@@ -983,7 +1150,7 @@ export type MonthlyWinRate = Message<"ant.v1.MonthlyWinRate"> & {
  * Use `create(MonthlyWinRateSchema)` to create a new message.
  */
 export const MonthlyWinRateSchema: GenMessage<MonthlyWinRate> = /*@__PURE__*/
-  messageDesc(file_analytics, 28);
+  messageDesc(file_analytics, 33);
 
 /**
  * @generated from message ant.v1.GenerateReportRequest
@@ -1014,7 +1181,7 @@ export type GenerateReportRequest = Message<"ant.v1.GenerateReportRequest"> & {
  * Use `create(GenerateReportRequestSchema)` to create a new message.
  */
 export const GenerateReportRequestSchema: GenMessage<GenerateReportRequest> = /*@__PURE__*/
-  messageDesc(file_analytics, 29);
+  messageDesc(file_analytics, 34);
 
 /**
  * @generated from message ant.v1.GenerateReportChunk
@@ -1072,7 +1239,7 @@ export type GenerateReportChunk = Message<"ant.v1.GenerateReportChunk"> & {
  * Use `create(GenerateReportChunkSchema)` to create a new message.
  */
 export const GenerateReportChunkSchema: GenMessage<GenerateReportChunk> = /*@__PURE__*/
-  messageDesc(file_analytics, 30);
+  messageDesc(file_analytics, 35);
 
 /**
  * @generated from enum ant.v1.EquityCurvePeriod
@@ -1145,6 +1312,14 @@ export const AnalyticsService: GenService<{
     methodKind: "unary";
     input: typeof GetMonthlyAnalysisRequestSchema;
     output: typeof GetMonthlyAnalysisResponseSchema;
+  },
+  /**
+   * @generated from rpc ant.v1.AnalyticsService.GetMonthlyDetail
+   */
+  getMonthlyDetail: {
+    methodKind: "unary";
+    input: typeof GetMonthlyDetailRequestSchema;
+    output: typeof GetMonthlyDetailResponseSchema;
   },
   /**
    * @generated from rpc ant.v1.AnalyticsService.GetAttributionAnalysis

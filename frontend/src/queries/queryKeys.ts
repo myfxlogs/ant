@@ -24,6 +24,8 @@ export const queryKeys = {
       ['analytics', 'monthlyPnL', accountId, year] as const,
     monthlyAnalysis: (accountId: string) =>
       ['analytics', 'monthlyAnalysis', accountId] as const,
+    monthlyDetail: (accountId: string, year: number, month: number) =>
+      ['analytics', 'monthlyDetail', accountId, year, month] as const,
     attribution: (accountId: string) =>
       ['analytics', 'attribution', accountId] as const,
     rolling: (accountId: string) =>

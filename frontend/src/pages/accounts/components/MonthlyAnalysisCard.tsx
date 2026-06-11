@@ -1,8 +1,11 @@
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
+import { Spin } from 'antd';
 
 import MonthlyAnalysisMainChart from './MonthlyAnalysisMainChart';
+import MonthlyDrillDown from './MonthlyDrillDown';
 import { formatMonthLongName } from '@/utils/date';
 import {
   type MetricType,
@@ -12,6 +15,9 @@ import {
   monthFromBarClick,
   monthShortLabels,
 } from './MonthlyAnalysisCard.shared';
+import { analyticsApi } from '@/client/analytics';
+import type { MonthlyDetailData } from '@/client/analytics';
+import { queryKeys } from '@/queries/queryKeys';
 
 const ALL_METRICS: MetricType[] = ['change', 'profit', 'lots', 'pips', 'winRate'];
 
@@ -22,6 +28,14 @@ export default function MonthlyAnalysisCard({ accountId, years, data, winRateDat
   const [hoverMonth, setHoverMonth] = useState<number | null>(null);
   const [selectedMetric, setSelectedMetric] = useState<MetricType>('change');
   const displayMonth = hoverMonth ?? selectedMonth;
+
+  // Fetch drill-down detail for the selected month.
+  const monthlyDetailQ = useQuery<MonthlyDetailData>({
+    queryKey: queryKeys.analytics.monthlyDetail(accountId!, selectedYear, selectedMonth),
+    queryFn: () => analyticsApi.getMonthlyDetail(accountId!, selectedYear, selectedMonth),
+    enabled: !!accountId,
+    staleTime: 10 * 60_000,
+  });
 
   // Merge winRate data into year data points.
   const winRateMap = useMemo(() => {
@@ -233,6 +247,15 @@ export default function MonthlyAnalysisCard({ accountId, years, data, winRateDat
           onCommitMonthClick={commitMonthClick}
         />
       </div>
+
+      {/* Drill-down sub-panels for the selected month */}
+      {monthlyDetailQ.isLoading ? (
+        <div className="mt-4 text-center py-4" style={{ color: 'var(--color-text-muted)' }}>
+          <Spin size="small" />
+        </div>
+      ) : monthlyDetailQ.data ? (
+        <MonthlyDrillDown detail={monthlyDetailQ.data} currency={currency} />
+      ) : null}
     </div>
   );
 }

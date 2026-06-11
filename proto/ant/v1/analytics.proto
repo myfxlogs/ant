@@ -9,6 +9,7 @@ service AnalyticsService {
   rpc GetRecentTrades(GetRecentTradesRequest) returns (GetRecentTradesResponse);
   rpc GetMonthlyPnL(GetMonthlyPnLRequest) returns (GetMonthlyPnLResponse);
   rpc GetMonthlyAnalysis(GetMonthlyAnalysisRequest) returns (GetMonthlyAnalysisResponse);
+  rpc GetMonthlyDetail(GetMonthlyDetailRequest) returns (GetMonthlyDetailResponse);
   rpc GetAttributionAnalysis(GetAttributionAnalysisRequest) returns (GetAttributionAnalysisResponse);
   rpc GetRollingMetrics(GetRollingMetricsRequest) returns (GetRollingMetricsResponse);
   rpc GenerateReport(GenerateReportRequest) returns (stream GenerateReportChunk);
@@ -148,6 +149,44 @@ message GetMonthlyAnalysisRequest {
 message GetMonthlyAnalysisResponse {
   repeated int32 years = 1;
   bytes data = 2;
+}
+
+// ── Monthly Detail (drill-down) ──
+
+message GetMonthlyDetailRequest {
+  string account_id = 1;
+  int32 year = 2;
+  int32 month = 3;  // 1-12
+}
+
+message GetMonthlyDetailResponse {
+  MonthlyDetailMetrics metrics = 1;
+  repeated SymbolMonthlyPnL symbol_pnls = 2;
+  HoldingTimeStats holding_stats = 3;
+}
+
+message MonthlyDetailMetrics {
+  double net_return = 1;
+  double return_percent = 2;
+  int64 total_trades = 3;
+  double win_rate = 4;
+  double profit_factor = 5;
+  double best_trade = 6;
+  double worst_trade = 7;
+}
+
+message SymbolMonthlyPnL {
+  string symbol = 1;
+  double net_profit = 2;
+  int64 trades = 3;
+  double win_rate = 4;
+}
+
+message HoldingTimeStats {
+  double average_hours = 1;
+  double median_hours = 2;
+  double max_hours = 3;
+  double min_hours = 4;
 }
 
 // ── Attribution Analysis ──

@@ -128,6 +128,23 @@ const accounts = {
           popularityShare: 'Lot volume share'
         }
       },
+      monthlyDetail: {
+        metricsTitle: 'Monthly Metrics',
+        symbolPnLTitle: 'Symbol P&L',
+        holdingTitle: 'Holding Time',
+        fields: {
+          netReturn: 'Net Return',
+          totalTrades: 'Total Trades',
+          winRate: 'Win Rate',
+          profitFactor: 'Profit Factor',
+          bestTrade: 'Best Trade',
+          worstTrade: 'Worst Trade',
+          averageHours: 'Avg',
+          medianHours: 'Median',
+          maxHours: 'Max',
+          minHours: 'Min',
+        },
+      },
       chartType: {
         equity: 'Equity',
         balance: 'Balance',

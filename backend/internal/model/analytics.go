@@ -183,3 +183,32 @@ type AccountAnalytics struct {
 	EquityCurve  []*EquityPoint `json:"equity_curve"`
 	RecentTrades []*TradeRecord `json:"recent_trades"`
 }
+
+// ── Monthly Detail (drill-down) ──
+
+// MonthlyDetailMetrics holds aggregated metrics for a single month.
+type MonthlyDetailMetrics struct {
+	NetReturn     float64 `json:"net_return"`
+	ReturnPercent float64 `json:"return_percent"`
+	TotalTrades   int     `json:"total_trades"`
+	WinRate       float64 `json:"win_rate"`
+	ProfitFactor  float64 `json:"profit_factor"`
+	BestTrade     float64 `json:"best_trade"`
+	WorstTrade    float64 `json:"worst_trade"`
+}
+
+// MonthlySymbolPnL holds per-symbol P&L for a single month.
+type MonthlySymbolPnL struct {
+	Symbol    string  `json:"symbol"`
+	NetProfit float64 `json:"net_profit"`
+	Trades    int     `json:"trades"`
+	WinRate   float64 `json:"win_rate"`
+}
+
+// MonthlyHoldingStats holds holding time statistics for a single month.
+type MonthlyHoldingStats struct {
+	AverageHours float64 `json:"average_hours"`
+	MedianHours  float64 `json:"median_hours"`
+	MaxHours     float64 `json:"max_hours"`
+	MinHours     float64 `json:"min_hours"`
+}

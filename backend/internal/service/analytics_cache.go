@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"google.golang.org/protobuf/proto"
 	"time"
 
@@ -106,12 +107,42 @@ func (c *AnalyticsCache) SetRolling(ctx context.Context, accountID string, resp 
 	return c.redis.Set(ctx, "analytics:rolling:"+accountID, data, 30*time.Minute).Err()
 }
 
+// GetMonthlyDetail retrieves a cached monthly detail response for a given year/month.
+func (c *AnalyticsCache) GetMonthlyDetail(ctx context.Context, accountID string, year, month int32) (*antv1.GetMonthlyDetailResponse, error) {
+	key := fmt.Sprintf("analytics:monthly_detail:%s:%d:%d", accountID, year, month)
+	data, err := c.redis.Get(ctx, key).Bytes()
+	if err != nil {
+		return nil, nil // cache miss
+	}
+	var resp antv1.GetMonthlyDetailResponse
+	if err := proto.Unmarshal(data, &resp); err != nil {
+		c.log.Warn("analytics cache: monthly_detail unmarshal failed",
+			zap.String("account", accountID), zap.Error(err))
+		return nil, nil
+	}
+	return &resp, nil
+}
+
+// SetMonthlyDetail stores a monthly detail response in Redis with a 30‑minute TTL.
+func (c *AnalyticsCache) SetMonthlyDetail(ctx context.Context, accountID string, year, month int32, resp *antv1.GetMonthlyDetailResponse) error {
+	key := fmt.Sprintf("analytics:monthly_detail:%s:%d:%d", accountID, year, month)
+	data, err := proto.Marshal(resp)
+	if err != nil {
+		return err
+	}
+	return c.redis.Set(ctx, key, data, 30*time.Minute).Err()
+}
+
 // Invalidate clears all analytics caches for an account after trade data changes.
 func (c *AnalyticsCache) Invalidate(ctx context.Context, accountID string) {
 	keys := []string{
 		"analytics:" + accountID,
 		"analytics:attribution:" + accountID,
 		"analytics:rolling:" + accountID,
+	}
+	// Also clear all monthly_detail keys for this account (wildcard pattern).
+	if detailKeys, err := c.redis.Keys(ctx, "analytics:monthly_detail:"+accountID+":*").Result(); err == nil {
+		keys = append(keys, detailKeys...)
 	}
 	if err := c.redis.Del(ctx, keys...).Err(); err != nil {
 		c.log.Warn("analytics cache: del failed",
