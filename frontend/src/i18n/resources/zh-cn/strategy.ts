@@ -1322,6 +1322,36 @@ def run(context):
     paramRange: '范围',
     paramDescription: '描述'
   }
+    library: {
+      title: '策略库',
+      myStrategies: '我的策略',
+      create: '新建',
+      filterAll: '全部',
+      filterMine: '我的',
+      filterSystem: '预置',
+      searchPlaceholder: '搜索策略...',
+      empty: '暂无策略',
+      published: '已发布',
+      draft: '草稿',
+      unpublish: '下架',
+      unpublishShort: '下架',
+      publish: '发布到市场',
+      publishSuccess: '已发布',
+      unpublishSuccess: '已下架',
+      publishStatus: '市场状态',
+      selectHint: '选择左侧策略查看详情',
+      overview: '概览',
+      schedules: '自动运行',
+      backtestHistory: '回测历史',
+      scheduleCount: '{{count}} 个运行中',
+      scheduleRunningCount: '{{count}} 个运行中',
+      noSchedules: '未运行',
+      openInWorkspace: '在 Workspace 中打开',
+      createSchedule: '创建运行',
+      codePreview: '代码预览',
+      viewCode: '查看策略代码',
+    }
+  }
 } as const;
 
 export default strategy;

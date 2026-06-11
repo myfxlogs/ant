@@ -124,6 +124,7 @@ const base = {
   },
   menu: {
     strategyWorkspace: '戦略ワークスペース',
+    strategyLibrary: '戦略ライブラリ',
     dashboard: 'ダッシュボード',
     strategy: '戦略',
     accounts: '口座管理',

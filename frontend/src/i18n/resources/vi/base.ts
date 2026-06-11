@@ -124,6 +124,7 @@ const base = {
   },
   menu: {
     strategyWorkspace: 'Không gian chiến lược',
+    strategyLibrary: 'Thư viện chiến lược',
     dashboard: 'Bảng điều khiển',
     strategy: 'Chiến lược',
     accounts: 'Quản lý tài khoản',

@@ -124,6 +124,7 @@ const base = {
   },
   menu: {
     strategyWorkspace: '策略工作台',
+    strategyLibrary: '策略庫',
     dashboard: '儀表板',
     strategy: '策略',
     accounts: '帳戶管理',

@@ -124,6 +124,7 @@ const base = {
   },
   menu: {
     strategyWorkspace: 'Strategy Workspace',
+    strategyLibrary: 'Strategy Library',
     dashboard: 'Dashboard',
     strategy: 'Strategy',
     accounts: 'Accounts',

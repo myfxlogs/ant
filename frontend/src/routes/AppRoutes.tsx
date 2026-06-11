@@ -21,6 +21,7 @@ const SystemAI = lazy(() => import('@/pages/ai/SystemAI'));
 const StrategyTemplatePage = lazy(() => import('@/pages/strategy/StrategyTemplatePage'));
 const StrategyAssetPage = lazy(() => import('@/pages/strategy/StrategyAssetPage'));
 const StrategySchedulePage = lazy(() => import('@/pages/strategy/StrategySchedulePage'));
+const StrategyLibraryPage = lazy(() => import('@/pages/strategy/StrategyLibraryPage'));
 const StrategyScheduleLogsPage = lazy(() => import('@/pages/strategy/StrategyScheduleLogsPage'));
 const IndicatorCatalogPage = lazy(() => import('@/pages/strategy/IndicatorCatalogPage'));
 const StrategyWorkspacePage = lazy(() => import('@/pages/strategy/StrategyWorkspacePage'));
@@ -69,10 +70,11 @@ const mainRoutes = (
     <Route path="accounts/bind" element={wrap(<BindAccount />)} />
     <Route path="profile" element={wrap(<ProfilePage />)} />
     <Route path="wallet" element={wrap(<WalletPage />)} />
-    <Route path="strategy/templates" element={wrap(<StrategyTemplatePage />)} />
-    <Route path="strategy/workspace" element={wrap(<StrategyWorkspacePage />)} />
-    <Route path="strategy/schedules" element={wrap(<StrategySchedulePage />)} />
+    <Route path="strategy/templates" element={<Navigate to="/strategy/library" replace />} />
+    <Route path="strategy/schedules" element={<Navigate to="/strategy/library" replace />} />
     <Route path="strategy/schedules/:id/logs" element={wrap(<StrategyScheduleLogsPage />)} />
+    <Route path="strategy/library" element={wrap(<StrategyLibraryPage />)} />
+    <Route path="strategy/workspace" element={wrap(<StrategyWorkspacePage />)} />
     <Route path="strategy/indicator-catalog" element={wrap(<IndicatorCatalogPage />)} />
     <Route path="marketplace" element={wrap(<MarketplacePage />)} />
     <Route path="strategy/experiments" element={wrap(<StrategyExperimentPage />)} />

@@ -415,6 +415,16 @@ const strategy = {
         summary: '{{count}} trades · {{wins}} wins / {{losses}} losses · net P&L {{pnl}}'
       }
     },
+    backtestHistory: {
+      title: 'Backtest History',
+      empty: 'No backtest runs found',
+      deleteConfirm: 'Delete this backtest run?',
+      batchDeleteConfirm: 'Delete {{count}} selected backtest runs?',
+      batchDelete: 'Delete {{count}} selected',
+      actions: {
+        view: 'View',
+      },
+    },
     scheduleLogs: {
       title: 'Schedule logs',
       titleWithName: 'Schedule logs: {{name}}',
@@ -1170,6 +1180,36 @@ def run(context):
     paramDefault: 'Default',
     paramRange: 'Range',
     paramDescription: 'Description'
+  },
+    library: {
+      title: 'Strategy Library',
+      myStrategies: 'My Strategies',
+      create: 'Create',
+      filterAll: 'All',
+      filterMine: 'My',
+      filterSystem: 'Preset',
+      searchPlaceholder: 'Search strategies...',
+      empty: 'No strategies found',
+      published: 'Published',
+      draft: 'Draft',
+      unpublish: 'Unpublish',
+      unpublishShort: 'Off',
+      publish: 'Publish to Market',
+      publishSuccess: 'Published',
+      unpublishSuccess: 'Unpublished',
+      publishStatus: 'Marketplace Status',
+      selectHint: 'Select a strategy from the list to view details',
+      overview: 'Overview',
+      schedules: 'Auto Run',
+      backtestHistory: 'Backtest History',
+      scheduleCount: '{{count}} running',
+      scheduleRunningCount: '{{count}} schedules running',
+      noSchedules: 'No schedules',
+      openInWorkspace: 'Open in Workspace',
+      createSchedule: 'Create Schedule',
+      codePreview: 'Code Preview',
+      viewCode: 'View Strategy Code',
+    }
   }
 } as const;
 

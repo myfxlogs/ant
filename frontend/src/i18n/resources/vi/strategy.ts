@@ -1240,6 +1240,36 @@ def run(context):
       }
     }
   }
+    library: {
+      title: 'Thư viện chiến lược',
+      myStrategies: 'Chiến lược của tôi',
+      create: 'Tạo mới',
+      filterAll: 'Tất cả',
+      filterMine: 'Của tôi',
+      filterSystem: 'Có sẵn',
+      searchPlaceholder: 'Tìm kiếm chiến lược...',
+      empty: 'Chưa có chiến lược',
+      published: 'Đã xuất bản',
+      draft: 'Bản nháp',
+      unpublish: 'Gỡ xuống',
+      unpublishShort: 'Gỡ',
+      publish: 'Xuất bản lên Market',
+      publishSuccess: 'Đã xuất bản',
+      unpublishSuccess: 'Đã gỡ xuống',
+      publishStatus: 'Trạng thái',
+      selectHint: 'Chọn chiến lược từ danh sách để xem chi tiết',
+      overview: 'Tổng quan',
+      schedules: 'Tự động chạy',
+      backtestHistory: 'Lịch sử backtest',
+      scheduleCount: '{{count}} đang chạy',
+      scheduleRunningCount: '{{count}} đang chạy',
+      noSchedules: 'Chưa chạy',
+      openInWorkspace: 'Mở trong Workspace',
+      createSchedule: 'Tạo lịch chạy',
+      codePreview: 'Xem trước code',
+      viewCode: 'Xem code chiến lược',
+    }
+  }
 } as const;
 
 export default strategy;

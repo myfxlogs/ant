@@ -69,17 +69,10 @@ export default function MainLayout() {
     {
       key: '/strategy', icon: <CodeOutlined size={20} stroke={1.5} />, label: t('menu.strategy'),
       children: [
-        { type: 'group' as const, label: t('menu.devGroup'),
-          children: [
-            { key: '/strategy/templates', icon: <UnorderedListOutlined size={20} stroke={1.5} />, label: t('menu.strategies') },
-            { key: '/strategy/workspace', icon: <CodeOutlined size={20} stroke={1.5} />, label: t('menu.strategyWorkspace') },
-            { key: '/strategy/experiments', icon: <ExperimentOutlined size={20} stroke={1.5} />, label: t('menu.experiments') },
-          ]},
-        { type: 'group' as const, label: t('menu.opsGroup'),
-          children: [
-            { key: '/strategy/schedules', icon: <ThunderboltOutlined size={20} stroke={1.5} />, label: t('menu.schedules') },
-            { key: '/strategy/market-tools', icon: <RadarChartOutlined size={20} stroke={1.5} />, label: t('menu.marketTools') },
-          ]},
+        { key: '/strategy/workspace', icon: <CodeOutlined size={20} stroke={1.5} />, label: t('menu.strategyWorkspace') },
+        { key: '/strategy/library', icon: <UnorderedListOutlined size={20} stroke={1.5} />, label: t('menu.strategyLibrary') },
+        { key: '/strategy/experiments', icon: <ExperimentOutlined size={20} stroke={1.5} />, label: t('menu.experiments') },
+        { key: '/strategy/market-tools', icon: <RadarChartOutlined size={20} stroke={1.5} />, label: t('menu.marketTools') },
       ],
     },
     { key: '/wallet', icon: <WalletOutlined size={20} stroke={1.5} />, label: t('menu.wallet') },

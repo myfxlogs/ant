@@ -1240,6 +1240,36 @@ def run(context):
       }
     }
   }
+    library: {
+      title: '戦略ライブラリ',
+      myStrategies: 'マイ戦略',
+      create: '作成',
+      filterAll: 'すべて',
+      filterMine: 'マイ',
+      filterSystem: 'プリセット',
+      searchPlaceholder: '戦略を検索...',
+      empty: '戦略がありません',
+      published: '公開済み',
+      draft: '下書き',
+      unpublish: '公開取消',
+      unpublishShort: '取消',
+      publish: 'マーケットに公開',
+      publishSuccess: '公開しました',
+      unpublishSuccess: '公開を取り消しました',
+      publishStatus: '公開ステータス',
+      selectHint: '左側から戦略を選択してください',
+      overview: '概要',
+      schedules: '自動実行',
+      backtestHistory: 'バックテスト履歴',
+      scheduleCount: '{{count}} 件実行中',
+      scheduleRunningCount: '{{count}} 件実行中',
+      noSchedules: '実行なし',
+      openInWorkspace: 'Workspaceで開く',
+      createSchedule: '実行を作成',
+      codePreview: 'コードプレビュー',
+      viewCode: '戦略コードを表示',
+    }
+  }
 } as const;
 
 export default strategy;

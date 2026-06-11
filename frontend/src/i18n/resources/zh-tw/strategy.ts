@@ -1244,6 +1244,36 @@ def run(context):
       }
     }
   }
+    library: {
+      title: '策略庫',
+      myStrategies: '我的策略',
+      create: '新建',
+      filterAll: '全部',
+      filterMine: '我的',
+      filterSystem: '預置',
+      searchPlaceholder: '搜尋策略...',
+      empty: '暫無策略',
+      published: '已發佈',
+      draft: '草稿',
+      unpublish: '下架',
+      unpublishShort: '下架',
+      publish: '發佈到市場',
+      publishSuccess: '已發佈',
+      unpublishSuccess: '已下架',
+      publishStatus: '市場狀態',
+      selectHint: '選擇左側策略查看詳情',
+      overview: '概覽',
+      schedules: '自動執行',
+      backtestHistory: '回測歷史',
+      scheduleCount: '{{count}} 個執行中',
+      scheduleRunningCount: '{{count}} 個執行中',
+      noSchedules: '未執行',
+      openInWorkspace: '在 Workspace 中開啟',
+      createSchedule: '建立排程',
+      codePreview: '程式碼預覽',
+      viewCode: '檢視策略程式碼',
+    }
+  }
 } as const;
 
 export default strategy;
