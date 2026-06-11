@@ -21,6 +21,7 @@ interface Props {
   form: any; accountIdWatch: string | undefined;
   loadSymbols: (accountId: string, symbol?: string) => void;
   submitEdit: () => void;
+  openUpdate: (row: any) => void;
   // Actions
   onToggleActive: (row: any, next: boolean) => void;
   onDelete: (row: any) => void;
@@ -91,10 +92,7 @@ export default function LibraryScheduleTab(props: Props) {
         triggering={props.triggering}
         triggerContext={props.triggerContext}
         formatTime={props.formatTime}
-        onEdit={props.openUpdate || ((row: any) => {
-          const { openUpdate } = props as any;
-          if (openUpdate) openUpdate(row);
-        })}
+        onEdit={props.openUpdate}
         onToggleActive={props.onToggleActive}
         onHealthCheck={props.loadScheduleHealth}
         onManualTrigger={props.onManualTrigger}

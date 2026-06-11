@@ -5,12 +5,13 @@ import { marketplaceClient } from '@/client/connect';
 import { useRpcQuery } from '@/hooks/useRpcQuery';
 import { useAuthStore } from '@/stores/authStore';
 import type { PublishedStrategy } from '@/gen/ant/v1/marketplace_service_pb';
+import type { MarketplaceCtx } from '../MarketplaceContext';
 
 export type PriceFilter = 'all' | 'free' | 'paid';
 export type SortBy = 'score' | 'newest' | 'popular' | 'rating' | 'price_asc' | 'price_desc';
 export type TabKey = 'market' | 'purchases' | 'author';
 
-export function useMarketplace() {
+export function useMarketplace(): MarketplaceCtx {
   const { t } = useTranslation();
   const { user } = useAuthStore();
   const userId = user?.id || '';
@@ -19,28 +20,37 @@ export function useMarketplace() {
   const [searchText, setSearchText] = useState('');
   const [priceFilter, setPriceFilter] = useState<PriceFilter>('all');
   const [sortBy, setSortBy] = useState<SortBy>('score');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [detailStrategy, setDetailStrategy] = useState<PublishedStrategy | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
-  // ── Market listing ──
-  const { data: strategies = [], isLoading: loading, error, refetch } = useRpcQuery(
-    ['marketplace', 'published', userId, searchText, priceFilter, sortBy],
+  // ── Market listing (server-side pagination via API) ──
+  const { data: allStrategies = [], isLoading: loading, error, refetch } = useRpcQuery(
+    ['marketplace', 'published', userId, searchText, sortBy, page, pageSize],
     async () => {
       const resp = await marketplaceClient.listPublished({
-        userId, limit: 100,
+        userId, limit: pageSize, offset: (page - 1) * pageSize,
         keyword: searchText || undefined,
         sortBy: sortBy || undefined,
       });
-      const list = (resp.strategies || []) as PublishedStrategy[];
-      // Client-side price filter
-      if (priceFilter === 'free') return list.filter(s => !s.priceAmount || s.priceAmount === 0);
-      if (priceFilter === 'paid') return list.filter(s => s.priceAmount && s.priceAmount > 0);
-      return list;
+      return (resp.strategies || []) as PublishedStrategy[];
     },
   );
 
-  // ── Purchases (repurpose subscriptions) ──
-  const { data: purchases = [], refetch: refetchPurchases } = useRpcQuery(
+  // Client-side price filter + cache-warmed list
+  const strategies = useMemo(() => {
+    let list = allStrategies;
+    if (priceFilter === 'free') list = list.filter(s => !s.priceAmount || s.priceAmount === 0);
+    if (priceFilter === 'paid') list = list.filter(s => s.priceAmount && s.priceAmount > 0);
+    return list;
+  }, [allStrategies, priceFilter]);
+
+  // Estimate total — API returns at most pageSize items
+  const total = allStrategies.length < pageSize ? (page - 1) * pageSize + allStrategies.length : page * pageSize + 1;
+
+  // ── Purchases ──
+  const { data: purchases = [], isLoading: purchasesLoading, refetch: refetchPurchases } = useRpcQuery(
     ['marketplace', 'purchases', userId],
     async () => {
       if (!userId) return [];
@@ -58,8 +68,8 @@ export function useMarketplace() {
   // ── Author: my published strategies ──
   const myPublished = useMemo(() => {
     if (!userId) return [];
-    return strategies.filter((s: any) => s.publisherUserId === userId);
-  }, [strategies, userId]);
+    return allStrategies.filter((s: any) => s.publisherUserId === userId);
+  }, [allStrategies, userId]);
 
   const authorStats = useMemo(() => ({
     published: myPublished.length,
@@ -97,22 +107,15 @@ export function useMarketplace() {
   }, [userId, t, refetchPurchases]);
 
   const handleBuy = useCallback(async (_strategy: PublishedStrategy) => {
-    // TODO: wallet payment flow — purchase with credits
-    message.info(t('marketplace.messages.paymentComingSoon', '购买功能即将上线'));
+    message.info(t('marketplace.messages.paymentComingSoon', 'Payment coming soon'));
   }, [t]);
 
   return {
-    activeTab, setActiveTab,
-    searchText, setSearchText,
-    priceFilter, setPriceFilter,
-    sortBy, setSortBy,
-    // Data
-    strategies, loading, error, refetch,
-    purchases, refetchPurchases,
-    myPublished, authorStats,
-    // Detail
-    detailStrategy, detailOpen, openDetail, closeDetail,
-    // Actions
-    isPurchased, handleGetFree, handleBuy,
+    strategies, loading, error, purchases, purchasesLoading, myPublished, authorStats,
+    activeTab, setActiveTab, searchText, setSearchText,
+    priceFilter, setPriceFilter, sortBy, setSortBy,
+    page, pageSize, total, setPage, setPageSize,
+    refetch, isPurchased, handleGetFree, handleBuy,
+    openDetail, closeDetail, detailStrategy, detailOpen,
   };
 }

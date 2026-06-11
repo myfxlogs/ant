@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { strategyScheduleV2Api, strategyTemplateApi } from '@/client/strategy-schedules';
 import { DEFAULT_TIMEFRAME } from '@/constants/timeframes';
 import { scheduleHealthApi } from '@/client/scheduleHealth';
-import { logApi } from '@/client/log';
 import { useAccountsAndSymbols } from './useAccountsAndSymbols';
 import { buildSymbolOptions, formatTime } from '../scheduleUtils';
 import { buildParametersFromForm, parseParametersToForm } from '../StrategyScheduleParams';

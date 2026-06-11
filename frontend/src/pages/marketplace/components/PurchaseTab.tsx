@@ -3,20 +3,15 @@ import type { ColumnsType } from 'antd/es/table';
 import { EyeOutlined, ExportOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { formatDateTime } from '@/utils/date';
+import { useMarketplaceCtx } from '../MarketplaceContext';
 
 const { Text } = Typography;
 
-interface Props {
-  purchases: any[];
-  loading: boolean;
-  onViewDetail: (strategyId: string) => void;
-  onOpenInWorkspace: (strategyId: string) => void;
-}
-
-export default function PurchaseTab({ purchases, loading, onViewDetail, onOpenInWorkspace }: Props) {
+export default function PurchaseTab() {
   const { t } = useTranslation();
+  const m = useMarketplaceCtx();
 
-  if (purchases.length === 0 && !loading) {
+  if (!m.purchasesLoading && m.purchases.length === 0) {
     return <Empty description={t('marketplace.purchases.empty')} />;
   }
 
@@ -45,10 +40,15 @@ export default function PurchaseTab({ purchases, loading, onViewDetail, onOpenIn
       key: 'actions',
       render: (_: unknown, row: any) => (
         <Space>
-          <Button size="small" icon={<EyeOutlined />} onClick={() => onViewDetail(row.strategyId)}>
+          <Button size="small" icon={<EyeOutlined />} onClick={() => {
+            const s = m.strategies.find(s => s.strategyId === row.strategyId);
+            if (s) m.openDetail(s);
+          }}>
             {t('strategy.backtestHistory.actions.view')}
           </Button>
-          <Button size="small" icon={<ExportOutlined />} onClick={() => onOpenInWorkspace(row.strategyId)}>
+          <Button size="small" icon={<ExportOutlined />} onClick={() => {
+            window.open(`/strategy/workspace?templateId=${row.strategyId}`, '_blank');
+          }}>
             {t('strategy.library.openInWorkspace')}
           </Button>
         </Space>
@@ -60,8 +60,8 @@ export default function PurchaseTab({ purchases, loading, onViewDetail, onOpenIn
     <Table
       rowKey="subscriptionId"
       columns={columns}
-      dataSource={purchases}
-      loading={loading}
+      dataSource={m.purchases}
+      loading={m.purchasesLoading}
       pagination={{ pageSize: 10 }}
       size="small"
     />

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useStrategyLibrary } from './hooks/useStrategyLibrary';
 import LibraryLeftPanel from './components/library/LibraryLeftPanel';
 import LibraryRightPanel from './components/library/LibraryRightPanel';
+import WorkspaceErrorBoundary from './components/workspace/WorkspaceErrorBoundary';
 import type { StrategyTemplate } from '@/client/strategy';
 
 const StrategyTemplateEditModal = lazy(() => import('./StrategyTemplateEditModal').then(m => ({ default: m.StrategyTemplateEditModal })));
@@ -52,27 +53,30 @@ export default function StrategyLibraryPage() {
   return (
     <div style={{ display: 'flex', height: 'calc(100vh - 112px)', background: '#fff' }}>
       {/* Left Panel */}
-      <LibraryLeftPanel
-        templates={tCtx.filtered}
-        loading={tCtx.loading}
-        error={tCtx.error}
-        filter={tCtx.filter}
-        onFilterChange={tCtx.setFilter}
-        search={tCtx.search}
-        onSearchChange={tCtx.setSearch}
-        selectedId={tCtx.selectedId}
-        onSelect={lib.selectTemplate}
-        onEdit={handleEditOpen}
-        onDelete={tCtx.handleDelete}
-        onPublish={tCtx.handlePublish}
-        onUnpublish={tCtx.handleUnpublish}
-        publishing={tCtx.publishing}
-        scheduleCountByTemplate={scheduleCountByTemplate}
-        onCreate={tCtx.openCreate}
-      />
+      <WorkspaceErrorBoundary fallback={<div style={{ width: 340, padding: 20, color: '#8c8c8c' }}>{t('common.loadingFailed')}</div>}>
+        <LibraryLeftPanel
+          templates={tCtx.filtered}
+          loading={tCtx.loading}
+          error={tCtx.error}
+          filter={tCtx.filter}
+          onFilterChange={tCtx.setFilter}
+          search={tCtx.search}
+          onSearchChange={tCtx.setSearch}
+          selectedId={tCtx.selectedId}
+          onSelect={lib.selectTemplate}
+          onEdit={handleEditOpen}
+          onDelete={tCtx.handleDelete}
+          onPublish={tCtx.handlePublish}
+          onUnpublish={tCtx.handleUnpublish}
+          publishing={tCtx.publishing}
+          scheduleCountByTemplate={scheduleCountByTemplate}
+          onCreate={tCtx.openCreate}
+        />
+      </WorkspaceErrorBoundary>
 
       {/* Right Panel */}
-      <LibraryRightPanel
+      <WorkspaceErrorBoundary fallback={<div style={{ flex: 1, padding: 20, color: '#8c8c8c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{t('common.loadingFailed')}</div>}>
+        <LibraryRightPanel
         selectedTemplate={tCtx.selected}
         activeTab={lib.activeTab}
         onTabChange={lib.setActiveTab}
@@ -119,6 +123,7 @@ export default function StrategyLibraryPage() {
           onRefresh: () => rCtx.fetchRuns(rCtx.page, rCtx.pageSize),
         }}
       />
+      </WorkspaceErrorBoundary>
 
       {/* Modals */}
       <Suspense fallback={null}>
