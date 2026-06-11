@@ -47,14 +47,14 @@ export default function AccountDetail() {
   };
 
   const statusConfig = useMemo(() => {
-    if (!currentAccount) return { color: '#8A9AA5', bg: 'rgba(138, 154, 165, 0.1)', text: t('common.unknown') };
-    if (currentAccount.isDisabled) return { color: '#8A9AA5', bg: 'rgba(138, 154, 165, 0.1)', text: t('accounts.detail.status.disabled') };
+    if (!currentAccount) return { color: 'var(--color-text-muted)', bg: 'rgba(138, 154, 165, 0.1)', text: t('common.unknown') };
+    if (currentAccount.isDisabled) return { color: 'var(--color-text-muted)', bg: 'rgba(138, 154, 165, 0.1)', text: t('accounts.detail.status.disabled') };
     switch (currentAccount.status) {
       case 'connected': return { color: '#00A651', bg: 'rgba(0, 166, 81, 0.1)', text: t('accounts.detail.status.connected') };
       case 'connecting': return { color: '#FF9800', bg: 'rgba(255, 152, 0, 0.1)', text: t('accounts.detail.status.connecting') };
       case 'disconnected': return { color: '#E53935', bg: 'rgba(229, 57, 53, 0.1)', text: t('accounts.detail.status.disconnected') };
       case 'error': return { color: '#E53935', bg: 'rgba(229, 57, 53, 0.1)', text: t('accounts.detail.status.error') };
-      default: return { color: '#8A9AA5', bg: 'rgba(138, 154, 165, 0.1)', text: t('common.unknown') };
+      default: return { color: 'var(--color-text-muted)', bg: 'rgba(138, 154, 165, 0.1)', text: t('common.unknown') };
     }
   }, [currentAccount, t]);
 
@@ -83,15 +83,15 @@ export default function AccountDetail() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#F5F7F9' }}>
+    <div className="min-h-screen" style={{ background: 'var(--color-bg-secondary)' }}>
       <div className="max-w-7xl mx-auto p-4">
         {/* Header + control bar */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} style={{ color: '#8A9AA5' }} />
+            <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} style={{ color: 'var(--color-text-muted)' }} />
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold" style={{ color: '#141D22' }}>{currentAccount.login}</h1>
+                <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>{currentAccount.login}</h1>
                 <Tag color={currentAccount.mtType === 'MT4' ? 'blue' : 'purple'}>{currentAccount.mtType}</Tag>
                 {currentAccount.accountType && (
                   <Tag style={{ borderRadius: '6px', background: currentAccount.accountType === 'real' ? 'rgba(229, 57, 53, 0.1)' : 'rgba(33, 150, 243, 0.1)', color: currentAccount.accountType === 'real' ? '#E53935' : '#2196F3', border: 'none' }}>
@@ -106,7 +106,7 @@ export default function AccountDetail() {
                   {connecting ? t('accounts.detail.status.connecting') : statusConfig.text}
                 </Tag>
               </div>
-              <div className="flex items-center gap-4 mt-1" style={{ color: '#8A9AA5', fontSize: '14px' }}>
+              <div className="flex items-center gap-4 mt-1" style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>
                 <span>{currentAccount.brokerCompany}</span><span>•</span><span>{currentAccount.brokerServer}</span><span>•</span><span>{t('accounts.detail.leverage', { leverage: currentAccount.leverage })}</span>
               </div>
             </div>
@@ -120,14 +120,14 @@ export default function AccountDetail() {
 
         {/* Info cards */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-          <InfoCard icon={<WalletOutlined style={{ color: '#8A9AA5' }} />} label={t('accounts.detail.cards.balance')} value={formatCurrency(balance)} loading={isStreamLoading} />
-          <InfoCard icon={<LineChartOutlined style={{ color: '#8A9AA5' }} />} label={t('accounts.detail.cards.equity')} value={formatCurrency(equity)} loading={isStreamLoading} />
-          <div className="rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
+          <InfoCard icon={<WalletOutlined style={{ color: 'var(--color-text-muted)' }} />} label={t('accounts.detail.cards.balance')} value={formatCurrency(balance)} loading={isStreamLoading} />
+          <InfoCard icon={<LineChartOutlined style={{ color: 'var(--color-text-muted)' }} />} label={t('accounts.detail.cards.equity')} value={formatCurrency(equity)} loading={isStreamLoading} />
+          <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
             <div className="flex items-center gap-2 mb-3">
               {profit >= 0 ? <RiseOutlined style={{ color: '#00A651' }} /> : <FallOutlined style={{ color: '#E53935' }} />}
-              <span style={{ color: '#8A9AA5', fontSize: '14px' }}>{t('accounts.detail.cards.floatingProfit')}</span>
+              <span style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>{t('accounts.detail.cards.floatingProfit')}</span>
             </div>
-            {isStreamLoading ? <div className="text-lg" style={{ color: '#8A9AA5' }}>{t('common.loading')}</div>
+            {isStreamLoading ? <div className="text-lg" style={{ color: 'var(--color-text-muted)' }}>{t('common.loading')}</div>
               : <div className="flex items-baseline gap-2"><span className="text-2xl font-bold" style={{ color: profit >= 0 ? '#00A651' : '#E53935' }}>{profit >= 0 ? '+' : ''}{formatCurrency(profit)}</span><span style={{ color: profit >= 0 ? '#00A651' : '#E53935', fontSize: '14px' }}>({profitPercent >= 0 ? '+' : ''}{profitPercent.toFixed(2)}%)</span></div>
             }
           </div>
@@ -135,16 +135,16 @@ export default function AccountDetail() {
 
         {/* Small info cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <SmallInfoCard icon={<DollarOutlined style={{ color: '#8A9AA5' }} />} label={t('accounts.detail.cards.marginUsed')} value={formatCurrency(margin)} loading={isStreamLoading} />
-          <SmallInfoCard icon={<DollarOutlined style={{ color: '#8A9AA5' }} />} label={t('accounts.detail.cards.marginFree')} value={formatCurrency(freeMargin)} loading={isStreamLoading} />
-          <SmallInfoCard icon={<PercentageOutlined style={{ color: '#8A9AA5' }} />} label={t('accounts.detail.cards.marginLevel')} value={margin > 0 ? `${(marginLevel || 0).toFixed(2)}%` : '--'} loading={isStreamLoading} valueColor={margin > 0 && (marginLevel || 0) < 100 ? '#E53935' : '#141D22'} />
-          <SmallInfoCard icon={<WarningOutlined style={{ color: '#8A9AA5' }} />} label={t('accounts.detail.cards.credit')} value={formatCurrency(credit)} loading={isStreamLoading} />
+          <SmallInfoCard icon={<DollarOutlined style={{ color: 'var(--color-text-muted)' }} />} label={t('accounts.detail.cards.marginUsed')} value={formatCurrency(margin)} loading={isStreamLoading} />
+          <SmallInfoCard icon={<DollarOutlined style={{ color: 'var(--color-text-muted)' }} />} label={t('accounts.detail.cards.marginFree')} value={formatCurrency(freeMargin)} loading={isStreamLoading} />
+          <SmallInfoCard icon={<PercentageOutlined style={{ color: 'var(--color-text-muted)' }} />} label={t('accounts.detail.cards.marginLevel')} value={margin > 0 ? `${(marginLevel || 0).toFixed(2)}%` : '--'} loading={isStreamLoading} valueColor={margin > 0 && (marginLevel || 0) < 100 ? '#E53935' : '#141D22'} />
+          <SmallInfoCard icon={<WarningOutlined style={{ color: 'var(--color-text-muted)' }} />} label={t('accounts.detail.cards.credit')} value={formatCurrency(credit)} loading={isStreamLoading} />
         </div>
 
         {/* Trade tabs */}
-        <div className="rounded-2xl overflow-hidden mb-6" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
+        <div className="rounded-2xl overflow-hidden mb-6" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
           {disabled ? (
-            <div className="text-center py-12" style={{ color: '#8A9AA5' }}>
+            <div className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
               <PauseCircleOutlined style={{ fontSize: 48, opacity: 0.3 }} />
               <p className="mt-4">{t('accounts.detail.status.disabled')}</p>
             </div>
@@ -200,7 +200,7 @@ export default function AccountDetail() {
           destroyOnClose
         >
           <div style={{ marginBottom: 16, color: '#E53935' }}>{t('accounts.detail.actions.deleteWarning')}</div>
-          <div style={{ marginBottom: 8, color: '#8A9AA5' }}>{t('accounts.detail.actions.deletePasswordHint')}</div>
+          <div style={{ marginBottom: 8, color: 'var(--color-text-muted)' }}>{t('accounts.detail.actions.deletePasswordHint')}</div>
           <Input
             placeholder={t('accounts.detail.actions.deletePasswordPlaceholder')}
             value={deletePassword}

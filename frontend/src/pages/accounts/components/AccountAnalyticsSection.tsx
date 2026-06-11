@@ -94,13 +94,13 @@ function AccountAnalyticsSection(props: Props) {
     <StatusResult loading={analyticsLoading} error={analyticsError} onRetry={onRetryAnalytics}>
       {/* Equity + Monthly Profit */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div className="rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
+        <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
           <div className="flex items-center justify-between mb-4">
-            <div className="flex gap-1 p-1 rounded-lg" style={{ background: '#F5F7F9' }}>
+            <div className="flex gap-1 p-1 rounded-lg" style={{ background: 'var(--color-bg-secondary)' }}>
               {(['equity', 'balance', 'profit'] as const).map((key) => (
                 <button key={key} onClick={() => setChartType(key)}
                   className="px-4 py-1.5 rounded-md text-sm font-medium transition-all"
-                  style={{ background: chartType === key ? '#FFFFFF' : 'transparent', color: chartType === key ? '#141D22' : '#8A9AA5', boxShadow: chartType === key ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none' }}>
+                  style={{ background: chartType === key ? 'var(--color-bg-card)' : 'transparent', color: chartType === key ? 'var(--color-text)' : 'var(--color-text-muted)', boxShadow: chartType === key ? '0 1px 3px rgba(0, 0, 0, 0.1)' : 'none' }}>
                   {t(`accounts.analytics.chartType.${key}`)}
                 </button>
               ))}
@@ -116,15 +116,15 @@ function AccountAnalyticsSection(props: Props) {
           <EquityChart chartType={chartType} chartPeriod={chartPeriod} data={equityChartData} />
         </div>
 
-        <div className="rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
+        <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold flex items-center gap-2" style={{ color: '#141D22' }}>
+            <h2 className="text-lg font-semibold flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
               <BarChartOutlined />{t('accounts.analytics.monthlyProfitTitle')}
             </h2>
             <div className="flex items-center gap-2">
               {[currentYear - 2, currentYear - 1, currentYear].map((year) => (
                 <Tag key={year} onClick={() => setSelectedYear(year)}
-                  style={{ cursor: 'pointer', borderRadius: '6px', padding: '2px 12px', background: selectedYear === year ? '#D4AF37' : '#F5F7F9', color: selectedYear === year ? '#FFFFFF' : '#8A9AA5', border: 'none', fontWeight: selectedYear === year ? 600 : 400 }}>
+                  style={{ cursor: 'pointer', borderRadius: '6px', padding: '2px 12px', background: selectedYear === year ? '#D4AF37' : 'var(--color-bg-secondary)', color: selectedYear === year ? '#FFFFFF' : 'var(--color-text-muted)', border: 'none', fontWeight: selectedYear === year ? 600 : 400 }}>
                   {year}
                 </Tag>
               ))}
@@ -133,26 +133,26 @@ function AccountAnalyticsSection(props: Props) {
           {profitByMonthData.length > 0 ? (
             <ResponsiveContainer width="100%" height={280}>
               <ComposedChart data={profitByMonthData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                <XAxis dataKey="month" type="category" stroke="#8A9AA5" fontSize={11} />
-                <YAxis yAxisId="left" stroke="#8A9AA5" fontSize={11} />
-                <YAxis yAxisId="right" orientation="right" stroke="#8A9AA5" fontSize={11} />
-                <Tooltip contentStyle={{ background: '#FFFFFF', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                <XAxis dataKey="month" type="category" stroke="var(--color-text-muted)" fontSize={11} />
+                <YAxis yAxisId="left" stroke="var(--color-text-muted)" fontSize={11} />
+                <YAxis yAxisId="right" orientation="right" stroke="var(--color-text-muted)" fontSize={11} />
+                <Tooltip contentStyle={{ background: 'var(--color-bg-card)', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }} />
                 <Legend />
                 <Bar yAxisId="left" dataKey="profit" fill="#D4AF37" radius={[4, 4, 0, 0]} name={t('accounts.analytics.chartSeries.profit')} isAnimationActive={false} />
                 <Line yAxisId="right" type="monotone" dataKey="trades" stroke="#2196F3" strokeWidth={2} name={t('accounts.analytics.chartSeries.tradeCount')} isAnimationActive={false} />
               </ComposedChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-[280px]" style={{ color: '#8A9AA5' }}>{t('accounts.analytics.empty.monthlyProfit')}</div>
+            <div className="flex items-center justify-center h-[280px]" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.analytics.empty.monthlyProfit')}</div>
           )}
         </div>
       </div>
 
       {/* Stats + Symbol Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div className="lg:col-span-2 rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
-          <h2 className="text-lg font-semibold flex items-center gap-2 mb-4" style={{ color: '#141D22' }}>
+        <div className="lg:col-span-2 rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
+          <h2 className="text-lg font-semibold flex items-center gap-2 mb-4" style={{ color: 'var(--color-text)' }}>
             <TrophyOutlined />{t('accounts.analytics.advancedStatsTitle')}
           </h2>
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
@@ -178,8 +178,8 @@ function AccountAnalyticsSection(props: Props) {
           </div>
         </div>
 
-        <div className="rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
-          <h2 className="text-lg font-semibold flex items-center gap-2 mb-4" style={{ color: '#141D22' }}>
+        <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
+          <h2 className="text-lg font-semibold flex items-center gap-2 mb-4" style={{ color: 'var(--color-text)' }}>
             <PieChartOutlined />{t('accounts.analytics.symbolDistributionTitle')}
           </h2>
           {symbolDistributionData.length > 0 ? (
@@ -196,15 +196,15 @@ function AccountAnalyticsSection(props: Props) {
                   <div key={String(item.name)} className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-2">
                       <div className="w-2.5 h-2.5 rounded-full" style={{ background: CHART_COLORS[i % CHART_COLORS.length] }} />
-                      <span style={{ color: '#141D22', fontSize: '12px' }}>{String(item.name)}</span>
+                      <span style={{ color: 'var(--color-text)', fontSize: '12px' }}>{String(item.name)}</span>
                     </div>
-                    <span style={{ color: '#8A9AA5', fontSize: '12px' }}>{String(item.value)}%</span>
+                    <span style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>{String(item.value)}%</span>
                   </div>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="flex items-center justify-center h-[120px]" style={{ color: '#8A9AA5' }}>{t('accounts.analytics.empty.symbolDistribution')}</div>
+            <div className="flex items-center justify-center h-[120px]" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.analytics.empty.symbolDistribution')}</div>
           )}
         </div>
       </div>
@@ -217,20 +217,20 @@ function AccountAnalyticsSection(props: Props) {
       {/* ── Attribution Analysis (collapsed) ── */}
       <Collapse ghost className="mb-6" items={[{
         key: 'attribution',
-        label: <span className="text-lg font-semibold" style={{ color: '#141D22' }}><PieChartOutlined className="mr-2" />{t('accounts.report.symbolPnL')}</span>,
+        label: <span className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}><PieChartOutlined className="mr-2" />{t('accounts.report.symbolPnL')}</span>,
         children: (
           <StatusResult loading={attributionQ.isLoading} error={attributionQ.error?.message}>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Symbol P&L ranking */}
-              <div className="rounded-xl p-4" style={{ background: '#F8FAFC', border: '1px solid #E5E7EB' }}>
-                <h3 className="text-sm font-semibold mb-3" style={{ color: '#475467' }}>{t('accounts.report.symbolPnL')}</h3>
+              <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
+                <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-secondary)' }}>{t('accounts.report.symbolPnL')}</h3>
                 {attr?.symbolPnls?.length ? (
                   <ResponsiveContainer width="100%" height={220}>
                     <ComposedChart layout="vertical" data={attr.symbolPnls.slice(0, 6)}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                      <XAxis type="number" stroke="#8A9AA5" fontSize={10} />
-                      <YAxis type="category" dataKey="symbol" width={60} stroke="#8A9AA5" fontSize={10} />
-                      <Tooltip contentStyle={{ background: '#FFFFFF', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                      <XAxis type="number" stroke="var(--color-text-muted)" fontSize={10} />
+                      <YAxis type="category" dataKey="symbol" width={60} stroke="var(--color-text-muted)" fontSize={10} />
+                      <Tooltip contentStyle={{ background: 'var(--color-bg-card)', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
                       <Bar dataKey="netProfit" radius={[0, 3, 3, 0]} isAnimationActive={false}>
                         {attr.symbolPnls.slice(0, 6).map((_: unknown, i: number) => (
                           <Cell key={i} fill={(attr.symbolPnls?.[i]?.netProfit ?? 0) >= 0 ? '#00A651' : '#E53935'} />
@@ -238,39 +238,39 @@ function AccountAnalyticsSection(props: Props) {
                       </Bar>
                     </ComposedChart>
                   </ResponsiveContainer>
-                ) : <div className="flex items-center justify-center h-[220px]" style={{ color: '#8A9AA5', fontSize: 13 }}>{t('accounts.analytics.empty.monthlyProfit')}</div>}
+                ) : <div className="flex items-center justify-center h-[220px]" style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t('accounts.analytics.empty.monthlyProfit')}</div>}
               </div>
               {/* Direction breakdown */}
-              <div className="rounded-xl p-4" style={{ background: '#F8FAFC', border: '1px solid #E5E7EB' }}>
-                <h3 className="text-sm font-semibold mb-3" style={{ color: '#475467' }}>{t('accounts.report.direction')}</h3>
+              <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
+                <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-secondary)' }}>{t('accounts.report.direction')}</h3>
                 {attr?.direction ? (
                   <div className="grid grid-cols-2 gap-3">
                     {[
                       { label: t('accounts.report.directionLong'), color: '#00A651', d: { profit: attr.direction.longProfit, trades: attr.direction.longTrades, winRate: attr.direction.longWinRate } },
                       { label: t('accounts.report.directionShort'), color: '#E53935', d: { profit: attr.direction.shortProfit, trades: attr.direction.shortTrades, winRate: attr.direction.shortWinRate } },
                     ].map(({ label, color, d }) => (
-                      <div key={label} className="rounded-lg p-3" style={{ border: '1px solid #E5E7EB', background: '#FFFFFF' }}>
+                      <div key={label} className="rounded-lg p-3" style={{ border: '1px solid var(--color-border)', background: 'var(--color-bg-card)' }}>
                         <span className="text-sm font-semibold" style={{ color }}>{label}</span>
-                        <div className="mt-1 text-xs" style={{ color: '#475467', lineHeight: 1.8 }}>
-                          <div>P&L: <strong style={{ color: d.profit >= 0 ? '#00A651' : '#E53935' }}>{d.profit >= 0 ? '+' : ''}{d.profit.toFixed(2)}</strong></div>
-                          <div>{t('accounts.analytics.stats.totalTrades')}: {d.trades}</div>
-                          <div>{t('accounts.analytics.stats.winRate')}: {d.winRate.toFixed(1)}%</div>
+                        <div className="mt-1 text-xs" style={{ color: 'var(--color-text-secondary)', lineHeight: 1.8 }}>
+                          <div>P&L: <strong style={{ color: (d.profit ?? 0) >= 0 ? '#00A651' : '#E53935' }}>{(d.profit ?? 0) >= 0 ? '+' : ''}{(d.profit ?? 0).toFixed(2)}</strong></div>
+                          <div>{t('accounts.analytics.stats.totalTrades')}: {d.trades ?? 0}</div>
+                          <div>{t('accounts.analytics.stats.winRate')}: {(d.winRate ?? 0).toFixed(1)}%</div>
                         </div>
                       </div>
                     ))}
                   </div>
-                ) : <div className="flex items-center justify-center h-[120px]" style={{ color: '#8A9AA5', fontSize: 13 }}>{t('accounts.analytics.empty.monthlyProfit')}</div>}
+                ) : <div className="flex items-center justify-center h-[120px]" style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t('accounts.analytics.empty.monthlyProfit')}</div>}
               </div>
               {/* Trade profit histogram */}
               {attr?.tradeDistribution?.profitBuckets?.length ? (
-                <div className="rounded-xl p-4 lg:col-span-2" style={{ background: '#F8FAFC', border: '1px solid #E5E7EB' }}>
-                  <h3 className="text-sm font-semibold mb-3" style={{ color: '#475467' }}>{t('accounts.report.tradeDistribution')}</h3>
+                <div className="rounded-xl p-4 lg:col-span-2" style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
+                  <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-secondary)' }}>{t('accounts.report.tradeDistribution')}</h3>
                   <ResponsiveContainer width="100%" height={200}>
                     <ComposedChart data={attr.tradeDistribution.profitBuckets}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                      <XAxis dataKey="label" stroke="#8A9AA5" fontSize={9} angle={-20} textAnchor="end" height={50} />
-                      <YAxis stroke="#8A9AA5" fontSize={10} />
-                      <Tooltip contentStyle={{ background: '#FFFFFF', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                      <XAxis dataKey="label" stroke="var(--color-text-muted)" fontSize={9} angle={-20} textAnchor="end" height={50} />
+                      <YAxis stroke="var(--color-text-muted)" fontSize={10} />
+                      <Tooltip contentStyle={{ background: 'var(--color-bg-card)', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
                       <Bar dataKey="count" fill="#2196F3" radius={[3, 3, 0, 0]} isAnimationActive={false} />
                     </ComposedChart>
                   </ResponsiveContainer>
@@ -284,24 +284,24 @@ function AccountAnalyticsSection(props: Props) {
       {/* ── Time-Series Depth (collapsed) ── */}
       <Collapse ghost className="mb-6" items={[{
         key: 'rolling',
-        label: <span className="text-lg font-semibold" style={{ color: '#141D22' }}><RiseOutlined className="mr-2" />{t('accounts.report.drawdownOverlay')}</span>,
+        label: <span className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}><RiseOutlined className="mr-2" />{t('accounts.report.drawdownOverlay')}</span>,
         children: (
           <StatusResult loading={rollingQ.isLoading} error={rollingQ.error?.message}>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Equity + drawdown overlay */}
               {roll?.equityCurve?.length ? (
-                <div className="rounded-xl p-4" style={{ background: '#F8FAFC', border: '1px solid #E5E7EB' }}>
-                  <h3 className="text-sm font-semibold mb-3" style={{ color: '#475467' }}>{t('accounts.report.drawdownOverlay')}</h3>
+                <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
+                  <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-secondary)' }}>{t('accounts.report.drawdownOverlay')}</h3>
                   <ResponsiveContainer width="100%" height={240}>
                     <ComposedChart data={roll.equityCurve.map((p, i) => ({
                       ...p,
                       drawdown: roll.drawdownCurve?.[i]?.drawdownPercent ?? 0,
                     }))}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                      <XAxis dataKey="date" stroke="#8A9AA5" fontSize={9} />
-                      <YAxis yAxisId="left" stroke="#8A9AA5" fontSize={10} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                      <XAxis dataKey="date" stroke="var(--color-text-muted)" fontSize={9} />
+                      <YAxis yAxisId="left" stroke="var(--color-text-muted)" fontSize={10} />
                       <YAxis yAxisId="right" orientation="right" stroke="#E53935" fontSize={10} reversed />
-                      <Tooltip contentStyle={{ background: '#FFFFFF', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                      <Tooltip contentStyle={{ background: 'var(--color-bg-card)', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
                       <Line yAxisId="left" type="monotone" dataKey="equity" stroke="#2196F3" strokeWidth={2} dot={false} name="Equity" isAnimationActive={false} />
                       <Line yAxisId="right" type="monotone" dataKey="drawdown" stroke="#E53935" strokeWidth={1} dot={false} name="DD%" isAnimationActive={false} />
                     </ComposedChart>
@@ -310,12 +310,12 @@ function AccountAnalyticsSection(props: Props) {
               ) : null}
               {/* Drawdown events */}
               {roll?.drawdownEvents?.length ? (
-                <div className="rounded-xl p-4" style={{ background: '#F8FAFC', border: '1px solid #E5E7EB' }}>
-                  <h3 className="text-sm font-semibold mb-3" style={{ color: '#475467' }}>{t('accounts.report.drawdownEvents')}</h3>
+                <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
+                  <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-secondary)' }}>{t('accounts.report.drawdownEvents')}</h3>
                   <div className="space-y-2 max-h-[240px] overflow-y-auto">
                     {roll.drawdownEvents.map((e, i) => (
-                      <div key={i} className="flex items-center justify-between rounded-lg p-2 text-xs" style={{ border: '1px solid #E5E7EB', background: '#FFFFFF' }}>
-                        <span style={{ color: '#141D22' }}>{e.startDate} → {e.endDate || '...'}</span>
+                      <div key={i} className="flex items-center justify-between rounded-lg p-2 text-xs" style={{ border: '1px solid var(--color-border)', background: 'var(--color-bg-card)' }}>
+                        <span style={{ color: 'var(--color-text)' }}>{e.startDate} → {e.endDate || '...'}</span>
                         <Tag color="error" style={{ margin: 0 }}>{e.depthPercent.toFixed(1)}%</Tag>
                       </div>
                     ))}
@@ -324,14 +324,14 @@ function AccountAnalyticsSection(props: Props) {
               ) : null}
               {/* Monthly win rate trend */}
               {roll?.monthlyWinRates?.length ? (
-                <div className="rounded-xl p-4 lg:col-span-2" style={{ background: '#F8FAFC', border: '1px solid #E5E7EB' }}>
-                  <h3 className="text-sm font-semibold mb-3" style={{ color: '#475467' }}>{t('accounts.report.winRateTrend')}</h3>
+                <div className="rounded-xl p-4 lg:col-span-2" style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
+                  <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--color-text-secondary)' }}>{t('accounts.report.winRateTrend')}</h3>
                   <ResponsiveContainer width="100%" height={200}>
                     <ComposedChart data={roll.monthlyWinRates}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                      <XAxis dataKey="month" stroke="#8A9AA5" fontSize={9} />
-                      <YAxis stroke="#8A9AA5" fontSize={10} domain={[0, 100]} />
-                      <Tooltip contentStyle={{ background: '#FFFFFF', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                      <XAxis dataKey="month" stroke="var(--color-text-muted)" fontSize={9} />
+                      <YAxis stroke="var(--color-text-muted)" fontSize={10} domain={[0, 100]} />
+                      <Tooltip contentStyle={{ background: 'var(--color-bg-card)', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
                       <Line type="monotone" dataKey="winRate" stroke="#00A651" strokeWidth={2} dot isAnimationActive={false} />
                     </ComposedChart>
                   </ResponsiveContainer>

@@ -15,32 +15,32 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
 
   return (
     <div className="mt-8">
-      <h3 className="text-lg font-semibold mb-4" style={{ color: '#8A9AA5' }}>
+      <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text-muted)' }}>
         {t('accounts.disabled.title')}
       </h3>
       <div
         className="hidden md:block rounded-xl overflow-hidden"
-        style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}
+        style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}
       >
         <table className="w-full">
           <thead>
-            <tr style={{ background: '#F5F7F9' }}>
-              <th className="text-left p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>
+            <tr style={{ background: 'var(--color-bg-secondary)' }}>
+              <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
                 {t('accounts.disabled.table.account')}
               </th>
-              <th className="text-left p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>
+              <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
                 {t('accounts.disabled.table.type')}
               </th>
-              <th className="text-left p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>
+              <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
                 {t('accounts.disabled.table.broker')}
               </th>
-              <th className="text-right p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>
+              <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
                 {t('accounts.disabled.table.balance')}
               </th>
-              <th className="text-right p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>
+              <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
                 {t('accounts.disabled.table.equity')}
               </th>
-              <th className="text-right p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>
+              <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
                 {t('accounts.disabled.table.actions')}
               </th>
             </tr>
@@ -50,9 +50,9 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
               <tr
                 key={account.id}
                 className="border-b hover:bg-gray-50"
-                style={{ borderColor: 'rgba(0, 0, 0, 0.06)', opacity: 0.7 }}
+                style={{ borderColor: 'var(--color-border)', opacity: 0.7 }}
               >
-                <td className="p-3 font-medium" style={{ color: '#141D22' }}>
+                <td className="p-3 font-medium" style={{ color: 'var(--color-text)' }}>
                   {account.login}
                 </td>
                 <td className="p-3">
@@ -60,13 +60,13 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
                     {account.mtType}
                   </Tag>
                 </td>
-                <td className="p-3" style={{ color: '#8A9AA5' }}>
+                <td className="p-3" style={{ color: 'var(--color-text-muted)' }}>
                   {account.brokerCompany || '-'}
                 </td>
-                <td className="text-right p-3" style={{ color: '#141D22' }}>
+                <td className="text-right p-3" style={{ color: 'var(--color-text)' }}>
                   {(account.balance || 0).toFixed(2)} {account.currency || 'USD'}
                 </td>
-                <td className="text-right p-3" style={{ color: '#141D22' }}>
+                <td className="text-right p-3" style={{ color: 'var(--color-text)' }}>
                   {(account.equity || 0).toFixed(2)} {account.currency || 'USD'}
                 </td>
                 <td className="text-right p-3">
@@ -109,11 +109,11 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
           <div
             key={account.id}
             className="rounded-xl p-4"
-            style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)', opacity: 0.7 }}
+            style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)', opacity: 0.7 }}
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <span className="font-medium" style={{ color: '#141D22' }}>
+                <span className="font-medium" style={{ color: 'var(--color-text)' }}>
                   {account.login}
                 </span>
                 <Tag color={account.mtType === 'MT4' ? 'blue' : 'purple'} style={{ borderRadius: '4px' }}>
@@ -122,19 +122,19 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
               </div>
               <Tag color="red">{t('common.disabled')}</Tag>
             </div>
-            <div className="text-sm mb-3" style={{ color: '#8A9AA5' }}>
+            <div className="text-sm mb-3" style={{ color: 'var(--color-text-muted)' }}>
               {account.brokerCompany || '-'}
             </div>
             <div className="flex justify-between mb-3 text-sm">
               <div>
-                <span style={{ color: '#8A9AA5' }}>{t('accounts.disabled.mobile.balanceLabel')}</span>
-                <span style={{ color: '#141D22' }}>{(account.balance || 0).toFixed(2)}</span>
+                <span style={{ color: 'var(--color-text-muted)' }}>{t('accounts.disabled.mobile.balanceLabel')}</span>
+                <span style={{ color: 'var(--color-text)' }}>{(account.balance || 0).toFixed(2)}</span>
               </div>
               <div>
-                <span style={{ color: '#8A9AA5' }}>{t('accounts.disabled.mobile.equityLabel')}</span>
-                <span style={{ color: '#141D22' }}>{(account.equity || 0).toFixed(2)}</span>
+                <span style={{ color: 'var(--color-text-muted)' }}>{t('accounts.disabled.mobile.equityLabel')}</span>
+                <span style={{ color: 'var(--color-text)' }}>{(account.equity || 0).toFixed(2)}</span>
               </div>
-              <div style={{ color: '#8A9AA5' }}>{account.currency || 'USD'}</div>
+              <div style={{ color: 'var(--color-text-muted)' }}>{account.currency || 'USD'}</div>
             </div>
             <div className="flex gap-2">
               <Button

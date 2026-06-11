@@ -94,7 +94,7 @@ const BacktestRunDrawer: React.FC<Props> = ({ open, runId, onClose, onCancel, ca
 			count: visibleTradeSummary.count,
 			wins: visibleTradeSummary.wins,
 			losses: visibleTradeSummary.losses,
-			pnl: visibleTradeSummary.netPnl.toFixed(2),
+			pnl: (visibleTradeSummary.netPnl ?? 0).toFixed(2),
 		});
 	}, [visibleTradeSummary, t]);
 
