@@ -1259,7 +1259,7 @@ def run(context):
       publishStatus: '公開ステータス',
       selectHint: '左側から戦略を選択してください',
       overview: '概要',
-      schedules: '自動実行',
+      schedules: '実行',
       backtestHistory: 'バックテスト履歴',
       scheduleCount: '{{count}} 件実行中',
       scheduleRunningCount: '{{count}} 件実行中',

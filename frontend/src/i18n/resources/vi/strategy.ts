@@ -1259,7 +1259,7 @@ def run(context):
       publishStatus: 'Trạng thái',
       selectHint: 'Chọn chiến lược từ danh sách để xem chi tiết',
       overview: 'Tổng quan',
-      schedules: 'Tự động chạy',
+      schedules: 'Chạy',
       backtestHistory: 'Lịch sử backtest',
       scheduleCount: '{{count}} đang chạy',
       scheduleRunningCount: '{{count}} đang chạy',

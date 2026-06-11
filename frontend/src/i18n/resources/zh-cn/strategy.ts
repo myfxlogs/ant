@@ -1341,7 +1341,7 @@ def run(context):
       publishStatus: '市场状态',
       selectHint: '选择左侧策略查看详情',
       overview: '概览',
-      schedules: '自动运行',
+      schedules: '运行',
       backtestHistory: '回测历史',
       scheduleCount: '{{count}} 个运行中',
       scheduleRunningCount: '{{count}} 个运行中',

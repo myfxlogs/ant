@@ -1263,7 +1263,7 @@ def run(context):
       publishStatus: '市場狀態',
       selectHint: '選擇左側策略查看詳情',
       overview: '概覽',
-      schedules: '自動執行',
+      schedules: '執行',
       backtestHistory: '回測歷史',
       scheduleCount: '{{count}} 個執行中',
       scheduleRunningCount: '{{count}} 個執行中',

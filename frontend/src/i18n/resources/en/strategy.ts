@@ -1200,7 +1200,7 @@ def run(context):
       publishStatus: 'Marketplace Status',
       selectHint: 'Select a strategy from the list to view details',
       overview: 'Overview',
-      schedules: 'Auto Run',
+      schedules: 'Run',
       backtestHistory: 'Backtest History',
       scheduleCount: '{{count}} running',
       scheduleRunningCount: '{{count}} running',
