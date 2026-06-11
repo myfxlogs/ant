@@ -167,11 +167,17 @@ type mt5MockQuoteStream struct {
 
 func (m *mt5MockQuoteStream) Recv() (*pb.OnQuoteReply, error) {
 	m.mu.Lock()
-	defer m.mu.Unlock()
 	if m.idx < len(m.quotes) {
 		q := m.quotes[m.idx]
 		m.idx++
+		m.mu.Unlock()
 		return q, nil
+	}
+	m.mu.Unlock()
+	// Block until context is cancelled, simulating a long-lived stream.
+	if m.ctx != nil {
+		<-m.ctx.Done()
+		return nil, m.ctx.Err()
 	}
 	return nil, io.EOF
 }
@@ -191,11 +197,17 @@ type mt5MockProfitStream struct {
 
 func (m *mt5MockProfitStream) Recv() (*pb.OnOrderProfitReply, error) {
 	m.mu.Lock()
-	defer m.mu.Unlock()
 	if m.idx < len(m.updates) {
 		u := m.updates[m.idx]
 		m.idx++
+		m.mu.Unlock()
 		return u, nil
+	}
+	m.mu.Unlock()
+	// Block until context is cancelled, simulating a long-lived stream.
+	if m.ctx != nil {
+		<-m.ctx.Done()
+		return nil, m.ctx.Err()
 	}
 	return nil, io.EOF
 }
@@ -215,11 +227,17 @@ type mt5MockOrderUpdateStream struct {
 
 func (m *mt5MockOrderUpdateStream) Recv() (*pb.OnOrderUpdateReply, error) {
 	m.mu.Lock()
-	defer m.mu.Unlock()
 	if m.idx < len(m.updates) {
 		u := m.updates[m.idx]
 		m.idx++
+		m.mu.Unlock()
 		return u, nil
+	}
+	m.mu.Unlock()
+	// Block until context is cancelled, simulating a long-lived stream.
+	if m.ctx != nil {
+		<-m.ctx.Done()
+		return nil, m.ctx.Err()
 	}
 	return nil, io.EOF
 }
@@ -243,18 +261,21 @@ func (m *mt5MockStreamsClient) OnQuote(ctx context.Context, in *pb.OnQuoteReques
 	if m.quoteErr != nil {
 		return nil, m.quoteErr
 	}
+	m.quoteStream.ctx = ctx
 	return m.quoteStream, nil
 }
 func (m *mt5MockStreamsClient) OnOrderProfit(ctx context.Context, in *pb.OnOrderProfitRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[pb.OnOrderProfitReply], error) {
 	if m.profitErr != nil {
 		return nil, m.profitErr
 	}
+	m.profitStream.ctx = ctx
 	return m.profitStream, nil
 }
 func (m *mt5MockStreamsClient) OnOrderUpdate(ctx context.Context, in *pb.OnOrderUpdateRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[pb.OnOrderUpdateReply], error) {
 	if m.orderUpdateErr != nil {
 		return nil, m.orderUpdateErr
 	}
+	m.orderUpdateStream.ctx = ctx
 	return m.orderUpdateStream, nil
 }
 func (m *mt5MockStreamsClient) Events(ctx context.Context, in *pb.EventsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[pb.EventsReply], error) {

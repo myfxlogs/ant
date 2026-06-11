@@ -92,11 +92,17 @@ type mockQuoteStream struct {
 
 func (m *mockQuoteStream) Recv() (*pb.OnQuoteReply, error) {
 	m.mu.Lock()
-	defer m.mu.Unlock()
 	if m.idx < len(m.quotes) {
 		q := m.quotes[m.idx]
 		m.idx++
+		m.mu.Unlock()
 		return q, nil
+	}
+	m.mu.Unlock()
+	// Block until context is cancelled, simulating a long-lived stream.
+	if m.ctx != nil {
+		<-m.ctx.Done()
+		return nil, m.ctx.Err()
 	}
 	return nil, io.EOF
 }
@@ -116,11 +122,17 @@ type mockProfitStream struct {
 
 func (m *mockProfitStream) Recv() (*pb.OnOrderProfitReply, error) {
 	m.mu.Lock()
-	defer m.mu.Unlock()
 	if m.idx < len(m.updates) {
 		u := m.updates[m.idx]
 		m.idx++
+		m.mu.Unlock()
 		return u, nil
+	}
+	m.mu.Unlock()
+	// Block until context is cancelled, simulating a long-lived stream.
+	if m.ctx != nil {
+		<-m.ctx.Done()
+		return nil, m.ctx.Err()
 	}
 	return nil, io.EOF
 }
@@ -140,11 +152,17 @@ type mockOrderUpdateStream struct {
 
 func (m *mockOrderUpdateStream) Recv() (*pb.OnOrderUpdateReply, error) {
 	m.mu.Lock()
-	defer m.mu.Unlock()
 	if m.idx < len(m.updates) {
 		u := m.updates[m.idx]
 		m.idx++
+		m.mu.Unlock()
 		return u, nil
+	}
+	m.mu.Unlock()
+	// Block until context is cancelled, simulating a long-lived stream.
+	if m.ctx != nil {
+		<-m.ctx.Done()
+		return nil, m.ctx.Err()
 	}
 	return nil, io.EOF
 }
@@ -169,18 +187,21 @@ func (m *mockStreamsClient) OnQuote(ctx context.Context, in *pb.OnQuoteRequest, 
 	if m.quoteErr != nil {
 		return nil, m.quoteErr
 	}
+	m.quoteStream.ctx = ctx
 	return m.quoteStream, nil
 }
 func (m *mockStreamsClient) OnOrderProfit(ctx context.Context, in *pb.OnOrderProfitRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[pb.OnOrderProfitReply], error) {
 	if m.profitErr != nil {
 		return nil, m.profitErr
 	}
+	m.profitStream.ctx = ctx
 	return m.profitStream, nil
 }
 func (m *mockStreamsClient) OnOrderUpdate(ctx context.Context, in *pb.OnOrderUpdateRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[pb.OnOrderUpdateReply], error) {
 	if m.orderUpdateErr != nil {
 		return nil, m.orderUpdateErr
 	}
+	m.orderUpdateStream.ctx = ctx
 	return m.orderUpdateStream, nil
 }
 func (m *mockStreamsClient) OnTickValue(ctx context.Context, in *pb.OnTickValueRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[pb.OnTickValueReply], error) {

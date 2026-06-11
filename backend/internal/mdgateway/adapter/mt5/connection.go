@@ -29,6 +29,7 @@ type Gateway struct {
 	tradingCli           pb.TradingClient
 	serviceCli           pb.ServiceClient
 	sessionID            string
+	subscribedSymbols    []string             // symbols registered via Subscribe/AddSymbols; re-subscribed after reconnect
 	cancelSub            context.CancelFunc
 	cancelProfitSub      context.CancelFunc
 	cancelOrderUpdateSub context.CancelFunc

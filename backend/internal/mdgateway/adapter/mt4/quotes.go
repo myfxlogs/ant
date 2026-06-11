@@ -21,6 +21,10 @@ func (g *Gateway) Subscribe(ctx context.Context, syms []string, handler mdtick.T
 	if sc == nil {
 		return fmt.Errorf("mt4: not connected")
 	}
+	// Persist symbols for re-subscription after reconnect.
+	g.mu.Lock()
+	g.subscribedSymbols = append(g.subscribedSymbols[:0], syms...)
+	g.mu.Unlock()
 	if sub != nil && len(syms) > 0 {
 		subMd := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
 		subCtx := metadata.NewOutgoingContext(ctx, subMd)
@@ -55,6 +59,10 @@ func (g *Gateway) AddSymbols(ctx context.Context, symbols []string) error {
 	if err != nil {
 		return fmt.Errorf("mt4 AddSymbols: %w", err)
 	}
+	// Persist for re-subscription after reconnect.
+	g.mu.Lock()
+	g.subscribedSymbols = append(g.subscribedSymbols, symbols...)
+	g.mu.Unlock()
 	g.log.Info("mt4: added symbols", zap.Strings("syms", symbols))
 	return nil
 }
@@ -74,9 +82,24 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 			return
 		}
 
+		// Re-subscribe symbols after a reconnect. ensureConnected may have
+		// performed a fresh Connect (new session), which loses prior subscriptions.
+		g.mu.RLock()
+		syms := append([]string{}, g.subscribedSymbols...)
+		sub := g.subCli
+		sid := g.sessionID
+		g.mu.RUnlock()
+		if sub != nil && len(syms) > 0 {
+			subMd := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
+			subCtx := metadata.NewOutgoingContext(ctx, subMd)
+			if _, err := sub.SubscribeMany(subCtx, &pb.SubscribeManyRequest{Id: sid, Symbols: syms}); err != nil {
+				g.log.Warn("mt4: re-subscribe symbols failed", zap.Strings("syms", syms), zap.Error(err))
+			}
+		}
+
 		g.mu.RLock()
 		sc := g.streamCli
-		sid := g.sessionID
+		sid = g.sessionID
 		g.mu.RUnlock()
 
 		subCtx, cancel := context.WithCancel(ctx)
@@ -90,6 +113,12 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 		if err != nil {
 			g.log.Warn("mt4 subscribe", zap.Error(err), zap.Duration("backoff", backoff))
 			cancel()
+			// Force disconnect so ensureConnected will do a fresh Connect
+			// with a new session on the next iteration.
+			// Skip on context cancellation — normal teardown, not a stream error.
+			if err != context.Canceled && err != context.DeadlineExceeded {
+				g.Disconnect(ctx)
+			}
 			g.sleep(ctx, backoff)
 			backoff = minDuration(backoff*2, maxBackoff)
 			continue
@@ -102,6 +131,12 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 			if err != nil {
 				g.log.Warn("mt4 recv", zap.Error(err))
 				cancel()
+				// Force disconnect so ensureConnected will do a fresh Connect
+				// with a new session on the next iteration.
+				// Skip on context cancellation — normal teardown, not a stream error.
+				if err != context.Canceled && err != context.DeadlineExceeded {
+					g.Disconnect(ctx)
+				}
 				break
 			}
 			q := quote.GetResult()
@@ -167,6 +202,12 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 		if err != nil {
 			g.log.Warn("mt4 profit subscribe", zap.Error(err), zap.Duration("backoff", backoff))
 			cancel()
+			// Force disconnect so ensureConnected will do a fresh Connect
+			// with a new session on the next iteration.
+			// Skip on context cancellation — normal teardown, not a stream error.
+			if err != context.Canceled && err != context.DeadlineExceeded {
+				g.Disconnect(ctx)
+			}
 			g.sleep(ctx, backoff)
 			backoff = minDuration(backoff*2, maxBackoff)
 			continue
@@ -179,6 +220,12 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 			if err != nil {
 				g.log.Warn("mt4 profit recv", zap.Error(err))
 				cancel()
+				// Force disconnect so ensureConnected will do a fresh Connect
+				// with a new session on the next iteration.
+				// Skip on context cancellation — normal teardown, not a stream error.
+				if err != context.Canceled && err != context.DeadlineExceeded {
+					g.Disconnect(ctx)
+				}
 				break
 			}
 			p := resp.GetResult()

@@ -54,6 +54,12 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 		if err != nil {
 			g.log.Warn("mt5 order update subscribe", zap.Error(err), zap.Duration("backoff", backoff))
 			cancel()
+			// Force disconnect so ensureConnected will do a fresh Connect
+			// with a new session on the next iteration.
+			// Skip on context cancellation — normal teardown, not a stream error.
+			if err != context.Canceled && err != context.DeadlineExceeded {
+				g.Disconnect(ctx)
+			}
 			g.sleep(ctx, backoff)
 			backoff = minDuration(backoff*2, maxBackoff)
 			continue
@@ -66,6 +72,12 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 			if err != nil {
 				g.log.Warn("mt5 order update recv", zap.Error(err))
 				cancel()
+				// Force disconnect so ensureConnected will do a fresh Connect
+				// with a new session on the next iteration.
+				// Skip on context cancellation — normal teardown, not a stream error.
+				if err != context.Canceled && err != context.DeadlineExceeded {
+					g.Disconnect(ctx)
+				}
 				break
 			}
 			s := resp.GetResult()
