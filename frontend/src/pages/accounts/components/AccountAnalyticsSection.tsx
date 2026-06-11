@@ -1,4 +1,4 @@
-import { Segmented, Switch } from 'antd';
+import { Segmented, Switch, Tag } from 'antd';
 import { Bar, CartesianGrid, ComposedChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { BarChartOutlined, TrophyOutlined, FallOutlined } from '@ant-design/icons';
 import React, { useMemo, useState } from 'react';
