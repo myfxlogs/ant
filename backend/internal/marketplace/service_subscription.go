@@ -19,10 +19,23 @@ type SubscriptionItem struct {
 	CreatedAt      time.Time
 }
 
-// Subscribe subscribes a user to a published strategy.
+// Subscribe subscribes a user to a published strategy. Only free strategies
+// can be obtained via Subscribe; paid strategies must use PurchaseStrategy.
 func (s *Service) Subscribe(ctx context.Context, userID, publisherUserID, strategyID, kind string) (string, error) {
+	// Guard: reject paid strategies — they must go through PurchaseStrategy.
+	var priceModel string
+	var priceAmount float64
+	err := s.pg.QueryRow(ctx,
+		`SELECT price_model, COALESCE(price_amount, 0) FROM marketplace_strategies WHERE strategy_id = $1`,
+		strategyID,
+	).Scan(&priceModel, &priceAmount)
+	if err == nil && priceModel == "once" && priceAmount > 0 {
+		return "", fmt.Errorf("marketplace: paid strategies require purchase, not subscribe")
+	}
+	// If the strategy is not in marketplace_strategies (e.g. internal subscriptions), allow.
+
 	id := uuid.New().String()
-	_, err := s.pg.Exec(ctx, `
+	_, err = s.pg.Exec(ctx, `
 		INSERT INTO user_subscriptions (id, subscriber_user_id, target_user_id, target_strategy_id, kind, active)
 		VALUES ($1, $2, $3, $4, $5, true)
 	`, id, userID, publisherUserID, strategyID, kind)

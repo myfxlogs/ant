@@ -226,6 +226,23 @@ const base = {
       free: '免费',
       subscription: '订阅制',
       performanceFee: '绩效分成'
+    },
+    payment: {
+      title: '确认购买',
+      strategyName: '策略',
+      price: '价格',
+      oneTimePurchase: '¥{{amount}} 一次性买断',
+      walletBalance: '我的余额',
+      balanceAfter: '购买后余额',
+      insufficientBalance: '余额不足',
+      depositPrompt: '请先充值后再购买。',
+      goToDeposit: '去充值',
+      confirm: '确认购买',
+      cancel: '取消',
+      purchasing: '处理中...',
+      purchaseSuccess: '购买成功！策略已加入您的库。',
+      purchaseFailed: '购买失败，请重试。',
+      alreadyPurchased: '您已拥有此策略。',
     }
   },
   market: {

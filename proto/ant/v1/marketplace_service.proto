@@ -7,6 +7,7 @@ service MarketplaceService {
   rpc PublishStrategy(PublishStrategyRequest) returns (PublishStrategyResponse);
   rpc Subscribe(SubscribeRequest) returns (SubscribeResponse);
   rpc Unsubscribe(UnsubscribeRequest) returns (UnsubscribeResponse);
+  rpc PurchaseStrategy(PurchaseStrategyRequest) returns (PurchaseStrategyResponse);
   rpc ListPublished(ListPublishedRequest) returns (ListPublishedResponse);
   rpc ListSubscriptions(ListSubscriptionsRequest) returns (ListSubscriptionsResponse);
   // Rating & comments
@@ -51,6 +52,19 @@ message UnsubscribeRequest {
   string subscription_id = 2;
 }
 message UnsubscribeResponse {}
+
+message PurchaseStrategyRequest {
+  string user_id = 1;
+  string strategy_id = 2;        // publish_id
+  string publisher_user_id = 3;
+}
+
+message PurchaseStrategyResponse {
+  string subscription_id = 1;
+  string transaction_id = 2;
+  string amount_charged = 3;     // decimal string
+  string balance_after = 4;      // decimal string
+}
 
 message ListPublishedRequest {
   string user_id = 1;

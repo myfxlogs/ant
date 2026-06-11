@@ -340,9 +340,26 @@ const base = {
       submit: '发布'
     },
     priceModel: {
-      free: '免费',
-      subscription: '订阅制',
-      performanceFee: '绩效分成'
+      free: '無料',
+      subscription: 'サブスクリプション',
+      performanceFee: '成果報酬'
+    },
+    payment: {
+      title: '購入確認',
+      strategyName: 'ストラテジー',
+      price: '価格',
+      oneTimePurchase: '¥{{amount}} 買い切り',
+      walletBalance: '残高',
+      balanceAfter: '購入後残高',
+      insufficientBalance: '残高不足',
+      depositPrompt: 'チャージしてから購入してください。',
+      goToDeposit: 'チャージ',
+      confirm: '購入確認',
+      cancel: 'キャンセル',
+      purchasing: '処理中...',
+      purchaseSuccess: '購入完了！ストラテジーがライブラリに追加されました。',
+      purchaseFailed: '購入に失敗しました。再試行してください。',
+      alreadyPurchased: 'このストラテジーは既に購入済みです。',
     }
   },
   admin: {

@@ -318,6 +318,139 @@ func (s *Service) ListComments(ctx context.Context, strategyID string, limit, of
 	return items, total, rows.Err()
 }
 
+// PurchaseResult holds the outcome of a paid strategy purchase.
+type PurchaseResult struct {
+	SubscriptionID string
+	TransactionID  string
+	AmountCharged  string
+	BalanceAfter   string
+}
+
+// PurchaseStrategy atomically charges the user's wallet and creates a subscription
+// for a one-time purchase strategy. All steps run in a single DB transaction
+// with FOR UPDATE row locking to prevent races.
+func (s *Service) PurchaseStrategy(ctx context.Context, userID, strategyID, publisherUserID string) (*PurchaseResult, error) {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: invalid user_id: %w", err)
+	}
+	sid, err := uuid.Parse(strategyID)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: invalid strategy_id: %w", err)
+	}
+	pid, err := uuid.Parse(publisherUserID)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: invalid publisher_user_id: %w", err)
+	}
+
+	tx, err := s.pg.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	// 1. Look up strategy price.
+	var priceModel string
+	var priceAmount float64
+	var strategyTitle string
+	err = tx.QueryRow(ctx,
+		`SELECT price_model, COALESCE(price_amount, 0), title FROM marketplace_strategies WHERE strategy_id = $1`,
+		sid,
+	).Scan(&priceModel, &priceAmount, &strategyTitle)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: strategy not published")
+	}
+	if priceModel != "once" || priceAmount <= 0 {
+		return nil, fmt.Errorf("marketplace: strategy is not purchasable")
+	}
+
+	// 2. Check for existing active subscription.
+	var existing string
+	_ = tx.QueryRow(ctx,
+		`SELECT id::text FROM user_subscriptions WHERE subscriber_user_id = $1 AND target_strategy_id = $2 AND active = true`,
+		uid, sid,
+	).Scan(&existing)
+	if existing != "" {
+		return nil, fmt.Errorf("marketplace: already subscribed")
+	}
+
+	// 3. Lock wallet and read balance.
+	var walletID uuid.UUID
+	var balanceBefore string
+	err = tx.QueryRow(ctx,
+		`SELECT id, balance::text FROM user_wallets WHERE user_id = $1 FOR UPDATE`,
+		uid,
+	).Scan(&walletID, &balanceBefore)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: wallet not found")
+	}
+
+	// Compare as Go floats for the error message (DB does the real comparison).
+	if balanceBefore == "" {
+		return nil, fmt.Errorf("marketplace: wallet balance unavailable")
+	}
+
+	amountStr := fmt.Sprintf("%.2f", priceAmount)
+	negAmountStr := fmt.Sprintf("-%.2f", priceAmount)
+
+	// 4. Deduct balance (DB enforces non-negative via CHECK constraint).
+	var balanceAfter string
+	err = tx.QueryRow(ctx,
+		`UPDATE user_wallets SET balance = balance - $1::numeric, updated_at = now()
+		 WHERE user_id = $2 AND balance >= $1::numeric
+		 RETURNING balance::text`,
+		amountStr, uid,
+	).Scan(&balanceAfter)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: insufficient balance")
+	}
+
+	// 5. Insert wallet_transactions row.
+	var txID uuid.UUID
+	desc := fmt.Sprintf("Purchase strategy: %s", strategyTitle)
+	err = tx.QueryRow(ctx,
+		`INSERT INTO wallet_transactions (id, wallet_id, user_id, tx_type, amount, balance_before, balance_after, description)
+		 VALUES (uuid_generate_v4(), $1, $2, 'purchase', $3::numeric, $4::numeric, $5::numeric, $6)
+		 RETURNING id`,
+		walletID, uid, negAmountStr, balanceBefore, balanceAfter, desc,
+	).Scan(&txID)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: record transaction: %w", err)
+	}
+
+	// 6. Insert subscription row.
+	var subID uuid.UUID
+	err = tx.QueryRow(ctx,
+		`INSERT INTO user_subscriptions (id, subscriber_user_id, target_user_id, target_strategy_id, kind, active)
+		 VALUES (uuid_generate_v4(), $1, $2, $3, 'purchase', true)
+		 RETURNING id`,
+		uid, pid, sid,
+	).Scan(&subID)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: create subscription: %w", err)
+	}
+
+	// 7. Increment total_subscribers counter.
+	_, err = tx.Exec(ctx,
+		`UPDATE marketplace_strategies SET total_subscribers = total_subscribers + 1 WHERE strategy_id = $1`,
+		sid,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("marketplace: update subscriber count: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("marketplace: commit purchase: %w", err)
+	}
+
+	return &PurchaseResult{
+		SubscriptionID: subID.String(),
+		TransactionID:  txID.String(),
+		AmountCharged:  amountStr,
+		BalanceAfter:   balanceAfter,
+	}, nil
+}
+
 // --- Admin Pricing --------------------------------------------------------
 
 func (s *Service) SetPricing(ctx context.Context, strategyID, priceModel string, priceAmount float64) error {

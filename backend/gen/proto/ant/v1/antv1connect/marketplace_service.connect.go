@@ -42,6 +42,9 @@ const (
 	// MarketplaceServiceUnsubscribeProcedure is the fully-qualified name of the MarketplaceService's
 	// Unsubscribe RPC.
 	MarketplaceServiceUnsubscribeProcedure = "/ant.v1.MarketplaceService/Unsubscribe"
+	// MarketplaceServicePurchaseStrategyProcedure is the fully-qualified name of the
+	// MarketplaceService's PurchaseStrategy RPC.
+	MarketplaceServicePurchaseStrategyProcedure = "/ant.v1.MarketplaceService/PurchaseStrategy"
 	// MarketplaceServiceListPublishedProcedure is the fully-qualified name of the MarketplaceService's
 	// ListPublished RPC.
 	MarketplaceServiceListPublishedProcedure = "/ant.v1.MarketplaceService/ListPublished"
@@ -70,6 +73,7 @@ type MarketplaceServiceClient interface {
 	PublishStrategy(context.Context, *connect.Request[v1.PublishStrategyRequest]) (*connect.Response[v1.PublishStrategyResponse], error)
 	Subscribe(context.Context, *connect.Request[v1.SubscribeRequest]) (*connect.Response[v1.SubscribeResponse], error)
 	Unsubscribe(context.Context, *connect.Request[v1.UnsubscribeRequest]) (*connect.Response[v1.UnsubscribeResponse], error)
+	PurchaseStrategy(context.Context, *connect.Request[v1.PurchaseStrategyRequest]) (*connect.Response[v1.PurchaseStrategyResponse], error)
 	ListPublished(context.Context, *connect.Request[v1.ListPublishedRequest]) (*connect.Response[v1.ListPublishedResponse], error)
 	ListSubscriptions(context.Context, *connect.Request[v1.ListSubscriptionsRequest]) (*connect.Response[v1.ListSubscriptionsResponse], error)
 	// Rating & comments
@@ -108,6 +112,12 @@ func NewMarketplaceServiceClient(httpClient connect.HTTPClient, baseURL string, 
 			httpClient,
 			baseURL+MarketplaceServiceUnsubscribeProcedure,
 			connect.WithSchema(marketplaceServiceMethods.ByName("Unsubscribe")),
+			connect.WithClientOptions(opts...),
+		),
+		purchaseStrategy: connect.NewClient[v1.PurchaseStrategyRequest, v1.PurchaseStrategyResponse](
+			httpClient,
+			baseURL+MarketplaceServicePurchaseStrategyProcedure,
+			connect.WithSchema(marketplaceServiceMethods.ByName("PurchaseStrategy")),
 			connect.WithClientOptions(opts...),
 		),
 		listPublished: connect.NewClient[v1.ListPublishedRequest, v1.ListPublishedResponse](
@@ -160,6 +170,7 @@ type marketplaceServiceClient struct {
 	publishStrategy    *connect.Client[v1.PublishStrategyRequest, v1.PublishStrategyResponse]
 	subscribe          *connect.Client[v1.SubscribeRequest, v1.SubscribeResponse]
 	unsubscribe        *connect.Client[v1.UnsubscribeRequest, v1.UnsubscribeResponse]
+	purchaseStrategy   *connect.Client[v1.PurchaseStrategyRequest, v1.PurchaseStrategyResponse]
 	listPublished      *connect.Client[v1.ListPublishedRequest, v1.ListPublishedResponse]
 	listSubscriptions  *connect.Client[v1.ListSubscriptionsRequest, v1.ListSubscriptionsResponse]
 	rateStrategy       *connect.Client[v1.RateStrategyRequest, v1.RateStrategyResponse]
@@ -182,6 +193,11 @@ func (c *marketplaceServiceClient) Subscribe(ctx context.Context, req *connect.R
 // Unsubscribe calls ant.v1.MarketplaceService.Unsubscribe.
 func (c *marketplaceServiceClient) Unsubscribe(ctx context.Context, req *connect.Request[v1.UnsubscribeRequest]) (*connect.Response[v1.UnsubscribeResponse], error) {
 	return c.unsubscribe.CallUnary(ctx, req)
+}
+
+// PurchaseStrategy calls ant.v1.MarketplaceService.PurchaseStrategy.
+func (c *marketplaceServiceClient) PurchaseStrategy(ctx context.Context, req *connect.Request[v1.PurchaseStrategyRequest]) (*connect.Response[v1.PurchaseStrategyResponse], error) {
+	return c.purchaseStrategy.CallUnary(ctx, req)
 }
 
 // ListPublished calls ant.v1.MarketplaceService.ListPublished.
@@ -224,6 +240,7 @@ type MarketplaceServiceHandler interface {
 	PublishStrategy(context.Context, *connect.Request[v1.PublishStrategyRequest]) (*connect.Response[v1.PublishStrategyResponse], error)
 	Subscribe(context.Context, *connect.Request[v1.SubscribeRequest]) (*connect.Response[v1.SubscribeResponse], error)
 	Unsubscribe(context.Context, *connect.Request[v1.UnsubscribeRequest]) (*connect.Response[v1.UnsubscribeResponse], error)
+	PurchaseStrategy(context.Context, *connect.Request[v1.PurchaseStrategyRequest]) (*connect.Response[v1.PurchaseStrategyResponse], error)
 	ListPublished(context.Context, *connect.Request[v1.ListPublishedRequest]) (*connect.Response[v1.ListPublishedResponse], error)
 	ListSubscriptions(context.Context, *connect.Request[v1.ListSubscriptionsRequest]) (*connect.Response[v1.ListSubscriptionsResponse], error)
 	// Rating & comments
@@ -258,6 +275,12 @@ func NewMarketplaceServiceHandler(svc MarketplaceServiceHandler, opts ...connect
 		MarketplaceServiceUnsubscribeProcedure,
 		svc.Unsubscribe,
 		connect.WithSchema(marketplaceServiceMethods.ByName("Unsubscribe")),
+		connect.WithHandlerOptions(opts...),
+	)
+	marketplaceServicePurchaseStrategyHandler := connect.NewUnaryHandler(
+		MarketplaceServicePurchaseStrategyProcedure,
+		svc.PurchaseStrategy,
+		connect.WithSchema(marketplaceServiceMethods.ByName("PurchaseStrategy")),
 		connect.WithHandlerOptions(opts...),
 	)
 	marketplaceServiceListPublishedHandler := connect.NewUnaryHandler(
@@ -310,6 +333,8 @@ func NewMarketplaceServiceHandler(svc MarketplaceServiceHandler, opts ...connect
 			marketplaceServiceSubscribeHandler.ServeHTTP(w, r)
 		case MarketplaceServiceUnsubscribeProcedure:
 			marketplaceServiceUnsubscribeHandler.ServeHTTP(w, r)
+		case MarketplaceServicePurchaseStrategyProcedure:
+			marketplaceServicePurchaseStrategyHandler.ServeHTTP(w, r)
 		case MarketplaceServiceListPublishedProcedure:
 			marketplaceServiceListPublishedHandler.ServeHTTP(w, r)
 		case MarketplaceServiceListSubscriptionsProcedure:
@@ -343,6 +368,10 @@ func (UnimplementedMarketplaceServiceHandler) Subscribe(context.Context, *connec
 
 func (UnimplementedMarketplaceServiceHandler) Unsubscribe(context.Context, *connect.Request[v1.UnsubscribeRequest]) (*connect.Response[v1.UnsubscribeResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.Unsubscribe is not implemented"))
+}
+
+func (UnimplementedMarketplaceServiceHandler) PurchaseStrategy(context.Context, *connect.Request[v1.PurchaseStrategyRequest]) (*connect.Response[v1.PurchaseStrategyResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.MarketplaceService.PurchaseStrategy is not implemented"))
 }
 
 func (UnimplementedMarketplaceServiceHandler) ListPublished(context.Context, *connect.Request[v1.ListPublishedRequest]) (*connect.Response[v1.ListPublishedResponse], error) {

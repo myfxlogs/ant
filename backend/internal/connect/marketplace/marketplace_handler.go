@@ -3,6 +3,7 @@ package marketplace
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -27,6 +28,7 @@ type marketplaceSvc interface {
 	ListComments(ctx context.Context, strategyID string, limit, offset int32) ([]marketplace.CommentItem, int32, error)
 	Subscribe(ctx context.Context, userID, publisherUserID, strategyID, kind string) (string, error)
 	Unsubscribe(ctx context.Context, userID, subscriptionID string) error
+	PurchaseStrategy(ctx context.Context, userID, strategyID, publisherUserID string) (*marketplace.PurchaseResult, error)
 	ListSubscriptions(ctx context.Context, userID string) ([]marketplace.SubscriptionItem, error)
 	SetPricing(ctx context.Context, strategyID, priceModel string, priceAmount float64) error
 }
@@ -83,6 +85,31 @@ func (s *MarketplaceServer) Unsubscribe(ctx context.Context, req *connect.Reques
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 	return connect.NewResponse(&antv1.UnsubscribeResponse{}), nil
+}
+
+func (s *MarketplaceServer) PurchaseStrategy(ctx context.Context, req *connect.Request[antv1.PurchaseStrategyRequest]) (*connect.Response[antv1.PurchaseStrategyResponse], error) {
+	m := req.Msg
+	result, err := s.svc.PurchaseStrategy(ctx, m.UserId, m.StrategyId, m.PublisherUserId)
+	if err != nil {
+		s.log.Error("PurchaseStrategy", zap.Error(err))
+		msg := err.Error()
+		if strings.Contains(msg, "insufficient balance") {
+			return nil, connect.NewError(connect.CodeFailedPrecondition, err)
+		}
+		if strings.Contains(msg, "already subscribed") {
+			return nil, connect.NewError(connect.CodeAlreadyExists, err)
+		}
+		if strings.Contains(msg, "not purchasable") || strings.Contains(msg, "not published") {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	return connect.NewResponse(&antv1.PurchaseStrategyResponse{
+		SubscriptionId: result.SubscriptionID,
+		TransactionId:  result.TransactionID,
+		AmountCharged:  result.AmountCharged,
+		BalanceAfter:   result.BalanceAfter,
+	}), nil
 }
 
 func (s *MarketplaceServer) ListPublished(ctx context.Context, req *connect.Request[antv1.ListPublishedRequest]) (*connect.Response[antv1.ListPublishedResponse], error) {

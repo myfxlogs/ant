@@ -456,6 +456,23 @@ const base = {
       free: 'Miễn Phí',
       subscription: 'Đăng Ký',
       performanceFee: 'Phí Hiệu Suất'
+    },
+    payment: {
+      title: 'Xác Nhận Mua',
+      strategyName: 'Chiến Lược',
+      price: 'Giá',
+      oneTimePurchase: '¥{{amount}} mua một lần',
+      walletBalance: 'Số Dư',
+      balanceAfter: 'Số dư sau khi mua',
+      insufficientBalance: 'Số dư không đủ',
+      depositPrompt: 'Vui lòng nạp tiền trước khi mua.',
+      goToDeposit: 'Nạp Tiền',
+      confirm: 'Xác Nhận Mua',
+      cancel: 'Hủy',
+      purchasing: 'Đang xử lý...',
+      purchaseSuccess: 'Mua thành công! Chiến lược đã được thêm vào thư viện.',
+      purchaseFailed: 'Mua thất bại. Vui lòng thử lại.',
+      alreadyPurchased: 'Bạn đã sở hữu chiến lược này.',
     }
   },
   admin: {

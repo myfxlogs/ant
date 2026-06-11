@@ -50,6 +50,17 @@ func (s *stubMarketplaceSvc) Subscribe(_ context.Context, _, _, _, _ string) (st
 	return "sub-1", s.err
 }
 func (s *stubMarketplaceSvc) Unsubscribe(_ context.Context, _, _ string) error { return s.err }
+func (s *stubMarketplaceSvc) PurchaseStrategy(_ context.Context, _, _, _ string) (*marketplace.PurchaseResult, error) {
+	if s.err != nil {
+		return nil, s.err
+	}
+	return &marketplace.PurchaseResult{
+		SubscriptionID: "sub-1",
+		TransactionID:  "tx-1",
+		AmountCharged:  "49.99",
+		BalanceAfter:   "50.01",
+	}, nil
+}
 func (s *stubMarketplaceSvc) ListSubscriptions(_ context.Context, _ string) ([]marketplace.SubscriptionItem, error) {
 	return s.subs, s.err
 }

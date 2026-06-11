@@ -391,6 +391,134 @@ func (*UnsubscribeResponse) Descriptor() ([]byte, []int) {
 	return file_marketplace_service_proto_rawDescGZIP(), []int{5}
 }
 
+type PurchaseStrategyRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	UserId          string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	StrategyId      string                 `protobuf:"bytes,2,opt,name=strategy_id,json=strategyId,proto3" json:"strategy_id,omitempty"` // publish_id
+	PublisherUserId string                 `protobuf:"bytes,3,opt,name=publisher_user_id,json=publisherUserId,proto3" json:"publisher_user_id,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *PurchaseStrategyRequest) Reset() {
+	*x = PurchaseStrategyRequest{}
+	mi := &file_marketplace_service_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PurchaseStrategyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PurchaseStrategyRequest) ProtoMessage() {}
+
+func (x *PurchaseStrategyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PurchaseStrategyRequest.ProtoReflect.Descriptor instead.
+func (*PurchaseStrategyRequest) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *PurchaseStrategyRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *PurchaseStrategyRequest) GetStrategyId() string {
+	if x != nil {
+		return x.StrategyId
+	}
+	return ""
+}
+
+func (x *PurchaseStrategyRequest) GetPublisherUserId() string {
+	if x != nil {
+		return x.PublisherUserId
+	}
+	return ""
+}
+
+type PurchaseStrategyResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	SubscriptionId string                 `protobuf:"bytes,1,opt,name=subscription_id,json=subscriptionId,proto3" json:"subscription_id,omitempty"`
+	TransactionId  string                 `protobuf:"bytes,2,opt,name=transaction_id,json=transactionId,proto3" json:"transaction_id,omitempty"`
+	AmountCharged  string                 `protobuf:"bytes,3,opt,name=amount_charged,json=amountCharged,proto3" json:"amount_charged,omitempty"` // decimal string
+	BalanceAfter   string                 `protobuf:"bytes,4,opt,name=balance_after,json=balanceAfter,proto3" json:"balance_after,omitempty"`    // decimal string
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *PurchaseStrategyResponse) Reset() {
+	*x = PurchaseStrategyResponse{}
+	mi := &file_marketplace_service_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PurchaseStrategyResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PurchaseStrategyResponse) ProtoMessage() {}
+
+func (x *PurchaseStrategyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_marketplace_service_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PurchaseStrategyResponse.ProtoReflect.Descriptor instead.
+func (*PurchaseStrategyResponse) Descriptor() ([]byte, []int) {
+	return file_marketplace_service_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *PurchaseStrategyResponse) GetSubscriptionId() string {
+	if x != nil {
+		return x.SubscriptionId
+	}
+	return ""
+}
+
+func (x *PurchaseStrategyResponse) GetTransactionId() string {
+	if x != nil {
+		return x.TransactionId
+	}
+	return ""
+}
+
+func (x *PurchaseStrategyResponse) GetAmountCharged() string {
+	if x != nil {
+		return x.AmountCharged
+	}
+	return ""
+}
+
+func (x *PurchaseStrategyResponse) GetBalanceAfter() string {
+	if x != nil {
+		return x.BalanceAfter
+	}
+	return ""
+}
+
 type ListPublishedRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -404,7 +532,7 @@ type ListPublishedRequest struct {
 
 func (x *ListPublishedRequest) Reset() {
 	*x = ListPublishedRequest{}
-	mi := &file_marketplace_service_proto_msgTypes[6]
+	mi := &file_marketplace_service_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -416,7 +544,7 @@ func (x *ListPublishedRequest) String() string {
 func (*ListPublishedRequest) ProtoMessage() {}
 
 func (x *ListPublishedRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_marketplace_service_proto_msgTypes[6]
+	mi := &file_marketplace_service_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -429,7 +557,7 @@ func (x *ListPublishedRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPublishedRequest.ProtoReflect.Descriptor instead.
 func (*ListPublishedRequest) Descriptor() ([]byte, []int) {
-	return file_marketplace_service_proto_rawDescGZIP(), []int{6}
+	return file_marketplace_service_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ListPublishedRequest) GetUserId() string {
@@ -476,7 +604,7 @@ type ListPublishedResponse struct {
 
 func (x *ListPublishedResponse) Reset() {
 	*x = ListPublishedResponse{}
-	mi := &file_marketplace_service_proto_msgTypes[7]
+	mi := &file_marketplace_service_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -488,7 +616,7 @@ func (x *ListPublishedResponse) String() string {
 func (*ListPublishedResponse) ProtoMessage() {}
 
 func (x *ListPublishedResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_marketplace_service_proto_msgTypes[7]
+	mi := &file_marketplace_service_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -501,7 +629,7 @@ func (x *ListPublishedResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPublishedResponse.ProtoReflect.Descriptor instead.
 func (*ListPublishedResponse) Descriptor() ([]byte, []int) {
-	return file_marketplace_service_proto_rawDescGZIP(), []int{7}
+	return file_marketplace_service_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ListPublishedResponse) GetStrategies() []*PublishedStrategy {
@@ -539,7 +667,7 @@ type PublishedStrategy struct {
 
 func (x *PublishedStrategy) Reset() {
 	*x = PublishedStrategy{}
-	mi := &file_marketplace_service_proto_msgTypes[8]
+	mi := &file_marketplace_service_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -551,7 +679,7 @@ func (x *PublishedStrategy) String() string {
 func (*PublishedStrategy) ProtoMessage() {}
 
 func (x *PublishedStrategy) ProtoReflect() protoreflect.Message {
-	mi := &file_marketplace_service_proto_msgTypes[8]
+	mi := &file_marketplace_service_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -564,7 +692,7 @@ func (x *PublishedStrategy) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PublishedStrategy.ProtoReflect.Descriptor instead.
 func (*PublishedStrategy) Descriptor() ([]byte, []int) {
-	return file_marketplace_service_proto_rawDescGZIP(), []int{8}
+	return file_marketplace_service_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *PublishedStrategy) GetPublishId() string {
@@ -709,7 +837,7 @@ type ListSubscriptionsRequest struct {
 
 func (x *ListSubscriptionsRequest) Reset() {
 	*x = ListSubscriptionsRequest{}
-	mi := &file_marketplace_service_proto_msgTypes[9]
+	mi := &file_marketplace_service_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -721,7 +849,7 @@ func (x *ListSubscriptionsRequest) String() string {
 func (*ListSubscriptionsRequest) ProtoMessage() {}
 
 func (x *ListSubscriptionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_marketplace_service_proto_msgTypes[9]
+	mi := &file_marketplace_service_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -734,7 +862,7 @@ func (x *ListSubscriptionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSubscriptionsRequest.ProtoReflect.Descriptor instead.
 func (*ListSubscriptionsRequest) Descriptor() ([]byte, []int) {
-	return file_marketplace_service_proto_rawDescGZIP(), []int{9}
+	return file_marketplace_service_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ListSubscriptionsRequest) GetUserId() string {
@@ -753,7 +881,7 @@ type ListSubscriptionsResponse struct {
 
 func (x *ListSubscriptionsResponse) Reset() {
 	*x = ListSubscriptionsResponse{}
-	mi := &file_marketplace_service_proto_msgTypes[10]
+	mi := &file_marketplace_service_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -765,7 +893,7 @@ func (x *ListSubscriptionsResponse) String() string {
 func (*ListSubscriptionsResponse) ProtoMessage() {}
 
 func (x *ListSubscriptionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_marketplace_service_proto_msgTypes[10]
+	mi := &file_marketplace_service_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -778,7 +906,7 @@ func (x *ListSubscriptionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSubscriptionsResponse.ProtoReflect.Descriptor instead.
 func (*ListSubscriptionsResponse) Descriptor() ([]byte, []int) {
-	return file_marketplace_service_proto_rawDescGZIP(), []int{10}
+	return file_marketplace_service_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ListSubscriptionsResponse) GetSubscriptions() []*SubscriptionItem {
@@ -802,7 +930,7 @@ type SubscriptionItem struct {
 
 func (x *SubscriptionItem) Reset() {
 	*x = SubscriptionItem{}
-	mi := &file_marketplace_service_proto_msgTypes[11]
+	mi := &file_marketplace_service_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -814,7 +942,7 @@ func (x *SubscriptionItem) String() string {
 func (*SubscriptionItem) ProtoMessage() {}
 
 func (x *SubscriptionItem) ProtoReflect() protoreflect.Message {
-	mi := &file_marketplace_service_proto_msgTypes[11]
+	mi := &file_marketplace_service_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -827,7 +955,7 @@ func (x *SubscriptionItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscriptionItem.ProtoReflect.Descriptor instead.
 func (*SubscriptionItem) Descriptor() ([]byte, []int) {
-	return file_marketplace_service_proto_rawDescGZIP(), []int{11}
+	return file_marketplace_service_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *SubscriptionItem) GetSubscriptionId() string {
@@ -883,7 +1011,7 @@ type RateStrategyRequest struct {
 
 func (x *RateStrategyRequest) Reset() {
 	*x = RateStrategyRequest{}
-	mi := &file_marketplace_service_proto_msgTypes[12]
+	mi := &file_marketplace_service_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -895,7 +1023,7 @@ func (x *RateStrategyRequest) String() string {
 func (*RateStrategyRequest) ProtoMessage() {}
 
 func (x *RateStrategyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_marketplace_service_proto_msgTypes[12]
+	mi := &file_marketplace_service_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -908,7 +1036,7 @@ func (x *RateStrategyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RateStrategyRequest.ProtoReflect.Descriptor instead.
 func (*RateStrategyRequest) Descriptor() ([]byte, []int) {
-	return file_marketplace_service_proto_rawDescGZIP(), []int{12}
+	return file_marketplace_service_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *RateStrategyRequest) GetUserId() string {
@@ -942,7 +1070,7 @@ type RateStrategyResponse struct {
 
 func (x *RateStrategyResponse) Reset() {
 	*x = RateStrategyResponse{}
-	mi := &file_marketplace_service_proto_msgTypes[13]
+	mi := &file_marketplace_service_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -954,7 +1082,7 @@ func (x *RateStrategyResponse) String() string {
 func (*RateStrategyResponse) ProtoMessage() {}
 
 func (x *RateStrategyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_marketplace_service_proto_msgTypes[13]
+	mi := &file_marketplace_service_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -967,7 +1095,7 @@ func (x *RateStrategyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RateStrategyResponse.ProtoReflect.Descriptor instead.
 func (*RateStrategyResponse) Descriptor() ([]byte, []int) {
-	return file_marketplace_service_proto_rawDescGZIP(), []int{13}
+	return file_marketplace_service_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *RateStrategyResponse) GetAvgRating() float64 {
@@ -993,7 +1121,7 @@ type ListRatingsRequest struct {
 
 func (x *ListRatingsRequest) Reset() {
 	*x = ListRatingsRequest{}
-	mi := &file_marketplace_service_proto_msgTypes[14]
+	mi := &file_marketplace_service_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1005,7 +1133,7 @@ func (x *ListRatingsRequest) String() string {
 func (*ListRatingsRequest) ProtoMessage() {}
 
 func (x *ListRatingsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_marketplace_service_proto_msgTypes[14]
+	mi := &file_marketplace_service_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1018,7 +1146,7 @@ func (x *ListRatingsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListRatingsRequest.ProtoReflect.Descriptor instead.
 func (*ListRatingsRequest) Descriptor() ([]byte, []int) {
-	return file_marketplace_service_proto_rawDescGZIP(), []int{14}
+	return file_marketplace_service_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *ListRatingsRequest) GetStrategyId() string {
@@ -1039,7 +1167,7 @@ type ListRatingsResponse struct {
 
 func (x *ListRatingsResponse) Reset() {
 	*x = ListRatingsResponse{}
-	mi := &file_marketplace_service_proto_msgTypes[15]
+	mi := &file_marketplace_service_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1051,7 +1179,7 @@ func (x *ListRatingsResponse) String() string {
 func (*ListRatingsResponse) ProtoMessage() {}
 
 func (x *ListRatingsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_marketplace_service_proto_msgTypes[15]
+	mi := &file_marketplace_service_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1064,7 +1192,7 @@ func (x *ListRatingsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListRatingsResponse.ProtoReflect.Descriptor instead.
 func (*ListRatingsResponse) Descriptor() ([]byte, []int) {
-	return file_marketplace_service_proto_rawDescGZIP(), []int{15}
+	return file_marketplace_service_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *ListRatingsResponse) GetRatings() []*RatingItem {
@@ -1100,7 +1228,7 @@ type RatingItem struct {
 
 func (x *RatingItem) Reset() {
 	*x = RatingItem{}
-	mi := &file_marketplace_service_proto_msgTypes[16]
+	mi := &file_marketplace_service_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1112,7 +1240,7 @@ func (x *RatingItem) String() string {
 func (*RatingItem) ProtoMessage() {}
 
 func (x *RatingItem) ProtoReflect() protoreflect.Message {
-	mi := &file_marketplace_service_proto_msgTypes[16]
+	mi := &file_marketplace_service_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1125,7 +1253,7 @@ func (x *RatingItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RatingItem.ProtoReflect.Descriptor instead.
 func (*RatingItem) Descriptor() ([]byte, []int) {
-	return file_marketplace_service_proto_rawDescGZIP(), []int{16}
+	return file_marketplace_service_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *RatingItem) GetId() string {
@@ -1167,7 +1295,7 @@ type CommentOnStrategyRequest struct {
 
 func (x *CommentOnStrategyRequest) Reset() {
 	*x = CommentOnStrategyRequest{}
-	mi := &file_marketplace_service_proto_msgTypes[17]
+	mi := &file_marketplace_service_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1179,7 +1307,7 @@ func (x *CommentOnStrategyRequest) String() string {
 func (*CommentOnStrategyRequest) ProtoMessage() {}
 
 func (x *CommentOnStrategyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_marketplace_service_proto_msgTypes[17]
+	mi := &file_marketplace_service_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1192,7 +1320,7 @@ func (x *CommentOnStrategyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommentOnStrategyRequest.ProtoReflect.Descriptor instead.
 func (*CommentOnStrategyRequest) Descriptor() ([]byte, []int) {
-	return file_marketplace_service_proto_rawDescGZIP(), []int{17}
+	return file_marketplace_service_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *CommentOnStrategyRequest) GetUserId() string {
@@ -1225,7 +1353,7 @@ type CommentOnStrategyResponse struct {
 
 func (x *CommentOnStrategyResponse) Reset() {
 	*x = CommentOnStrategyResponse{}
-	mi := &file_marketplace_service_proto_msgTypes[18]
+	mi := &file_marketplace_service_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1237,7 +1365,7 @@ func (x *CommentOnStrategyResponse) String() string {
 func (*CommentOnStrategyResponse) ProtoMessage() {}
 
 func (x *CommentOnStrategyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_marketplace_service_proto_msgTypes[18]
+	mi := &file_marketplace_service_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1250,7 +1378,7 @@ func (x *CommentOnStrategyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommentOnStrategyResponse.ProtoReflect.Descriptor instead.
 func (*CommentOnStrategyResponse) Descriptor() ([]byte, []int) {
-	return file_marketplace_service_proto_rawDescGZIP(), []int{18}
+	return file_marketplace_service_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *CommentOnStrategyResponse) GetId() string {
@@ -1271,7 +1399,7 @@ type ListCommentsRequest struct {
 
 func (x *ListCommentsRequest) Reset() {
 	*x = ListCommentsRequest{}
-	mi := &file_marketplace_service_proto_msgTypes[19]
+	mi := &file_marketplace_service_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1283,7 +1411,7 @@ func (x *ListCommentsRequest) String() string {
 func (*ListCommentsRequest) ProtoMessage() {}
 
 func (x *ListCommentsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_marketplace_service_proto_msgTypes[19]
+	mi := &file_marketplace_service_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1296,7 +1424,7 @@ func (x *ListCommentsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCommentsRequest.ProtoReflect.Descriptor instead.
 func (*ListCommentsRequest) Descriptor() ([]byte, []int) {
-	return file_marketplace_service_proto_rawDescGZIP(), []int{19}
+	return file_marketplace_service_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *ListCommentsRequest) GetStrategyId() string {
@@ -1330,7 +1458,7 @@ type ListCommentsResponse struct {
 
 func (x *ListCommentsResponse) Reset() {
 	*x = ListCommentsResponse{}
-	mi := &file_marketplace_service_proto_msgTypes[20]
+	mi := &file_marketplace_service_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1342,7 +1470,7 @@ func (x *ListCommentsResponse) String() string {
 func (*ListCommentsResponse) ProtoMessage() {}
 
 func (x *ListCommentsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_marketplace_service_proto_msgTypes[20]
+	mi := &file_marketplace_service_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1355,7 +1483,7 @@ func (x *ListCommentsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCommentsResponse.ProtoReflect.Descriptor instead.
 func (*ListCommentsResponse) Descriptor() ([]byte, []int) {
-	return file_marketplace_service_proto_rawDescGZIP(), []int{20}
+	return file_marketplace_service_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *ListCommentsResponse) GetComments() []*CommentItem {
@@ -1385,7 +1513,7 @@ type CommentItem struct {
 
 func (x *CommentItem) Reset() {
 	*x = CommentItem{}
-	mi := &file_marketplace_service_proto_msgTypes[21]
+	mi := &file_marketplace_service_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1397,7 +1525,7 @@ func (x *CommentItem) String() string {
 func (*CommentItem) ProtoMessage() {}
 
 func (x *CommentItem) ProtoReflect() protoreflect.Message {
-	mi := &file_marketplace_service_proto_msgTypes[21]
+	mi := &file_marketplace_service_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1410,7 +1538,7 @@ func (x *CommentItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommentItem.ProtoReflect.Descriptor instead.
 func (*CommentItem) Descriptor() ([]byte, []int) {
-	return file_marketplace_service_proto_rawDescGZIP(), []int{21}
+	return file_marketplace_service_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *CommentItem) GetId() string {
@@ -1459,7 +1587,7 @@ type SetStrategyPricingRequest struct {
 
 func (x *SetStrategyPricingRequest) Reset() {
 	*x = SetStrategyPricingRequest{}
-	mi := &file_marketplace_service_proto_msgTypes[22]
+	mi := &file_marketplace_service_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1471,7 +1599,7 @@ func (x *SetStrategyPricingRequest) String() string {
 func (*SetStrategyPricingRequest) ProtoMessage() {}
 
 func (x *SetStrategyPricingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_marketplace_service_proto_msgTypes[22]
+	mi := &file_marketplace_service_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1484,7 +1612,7 @@ func (x *SetStrategyPricingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetStrategyPricingRequest.ProtoReflect.Descriptor instead.
 func (*SetStrategyPricingRequest) Descriptor() ([]byte, []int) {
-	return file_marketplace_service_proto_rawDescGZIP(), []int{22}
+	return file_marketplace_service_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *SetStrategyPricingRequest) GetStrategyId() string {
@@ -1519,7 +1647,7 @@ type SetStrategyPricingResponse struct {
 
 func (x *SetStrategyPricingResponse) Reset() {
 	*x = SetStrategyPricingResponse{}
-	mi := &file_marketplace_service_proto_msgTypes[23]
+	mi := &file_marketplace_service_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1531,7 +1659,7 @@ func (x *SetStrategyPricingResponse) String() string {
 func (*SetStrategyPricingResponse) ProtoMessage() {}
 
 func (x *SetStrategyPricingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_marketplace_service_proto_msgTypes[23]
+	mi := &file_marketplace_service_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1544,7 +1672,7 @@ func (x *SetStrategyPricingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetStrategyPricingResponse.ProtoReflect.Descriptor instead.
 func (*SetStrategyPricingResponse) Descriptor() ([]byte, []int) {
-	return file_marketplace_service_proto_rawDescGZIP(), []int{23}
+	return file_marketplace_service_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *SetStrategyPricingResponse) GetStrategyId() string {
@@ -1604,7 +1732,17 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"\x12UnsubscribeRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12'\n" +
 	"\x0fsubscription_id\x18\x02 \x01(\tR\x0esubscriptionId\"\x15\n" +
-	"\x13UnsubscribeResponse\"\x99\x01\n" +
+	"\x13UnsubscribeResponse\"\x7f\n" +
+	"\x17PurchaseStrategyRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1f\n" +
+	"\vstrategy_id\x18\x02 \x01(\tR\n" +
+	"strategyId\x12*\n" +
+	"\x11publisher_user_id\x18\x03 \x01(\tR\x0fpublisherUserId\"\xb6\x01\n" +
+	"\x18PurchaseStrategyResponse\x12'\n" +
+	"\x0fsubscription_id\x18\x01 \x01(\tR\x0esubscriptionId\x12%\n" +
+	"\x0etransaction_id\x18\x02 \x01(\tR\rtransactionId\x12%\n" +
+	"\x0eamount_charged\x18\x03 \x01(\tR\ramountCharged\x12#\n" +
+	"\rbalance_after\x18\x04 \x01(\tR\fbalanceAfter\"\x99\x01\n" +
 	"\x14ListPublishedRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x1f\n" +
@@ -1713,11 +1851,12 @@ const file_marketplace_service_proto_rawDesc = "" +
 	"strategyId\x12\x1f\n" +
 	"\vprice_model\x18\x02 \x01(\tR\n" +
 	"priceModel\x12!\n" +
-	"\fprice_amount\x18\x03 \x01(\x01R\vpriceAmount2\xaf\x06\n" +
+	"\fprice_amount\x18\x03 \x01(\x01R\vpriceAmount2\x86\a\n" +
 	"\x12MarketplaceService\x12R\n" +
 	"\x0fPublishStrategy\x12\x1e.ant.v1.PublishStrategyRequest\x1a\x1f.ant.v1.PublishStrategyResponse\x12@\n" +
 	"\tSubscribe\x12\x18.ant.v1.SubscribeRequest\x1a\x19.ant.v1.SubscribeResponse\x12F\n" +
-	"\vUnsubscribe\x12\x1a.ant.v1.UnsubscribeRequest\x1a\x1b.ant.v1.UnsubscribeResponse\x12L\n" +
+	"\vUnsubscribe\x12\x1a.ant.v1.UnsubscribeRequest\x1a\x1b.ant.v1.UnsubscribeResponse\x12U\n" +
+	"\x10PurchaseStrategy\x12\x1f.ant.v1.PurchaseStrategyRequest\x1a .ant.v1.PurchaseStrategyResponse\x12L\n" +
 	"\rListPublished\x12\x1c.ant.v1.ListPublishedRequest\x1a\x1d.ant.v1.ListPublishedResponse\x12X\n" +
 	"\x11ListSubscriptions\x12 .ant.v1.ListSubscriptionsRequest\x1a!.ant.v1.ListSubscriptionsResponse\x12I\n" +
 	"\fRateStrategy\x12\x1b.ant.v1.RateStrategyRequest\x1a\x1c.ant.v1.RateStrategyResponse\x12F\n" +
@@ -1738,7 +1877,7 @@ func file_marketplace_service_proto_rawDescGZIP() []byte {
 	return file_marketplace_service_proto_rawDescData
 }
 
-var file_marketplace_service_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
+var file_marketplace_service_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_marketplace_service_proto_goTypes = []any{
 	(*PublishStrategyRequest)(nil),     // 0: ant.v1.PublishStrategyRequest
 	(*PublishStrategyResponse)(nil),    // 1: ant.v1.PublishStrategyResponse
@@ -1746,57 +1885,61 @@ var file_marketplace_service_proto_goTypes = []any{
 	(*SubscribeResponse)(nil),          // 3: ant.v1.SubscribeResponse
 	(*UnsubscribeRequest)(nil),         // 4: ant.v1.UnsubscribeRequest
 	(*UnsubscribeResponse)(nil),        // 5: ant.v1.UnsubscribeResponse
-	(*ListPublishedRequest)(nil),       // 6: ant.v1.ListPublishedRequest
-	(*ListPublishedResponse)(nil),      // 7: ant.v1.ListPublishedResponse
-	(*PublishedStrategy)(nil),          // 8: ant.v1.PublishedStrategy
-	(*ListSubscriptionsRequest)(nil),   // 9: ant.v1.ListSubscriptionsRequest
-	(*ListSubscriptionsResponse)(nil),  // 10: ant.v1.ListSubscriptionsResponse
-	(*SubscriptionItem)(nil),           // 11: ant.v1.SubscriptionItem
-	(*RateStrategyRequest)(nil),        // 12: ant.v1.RateStrategyRequest
-	(*RateStrategyResponse)(nil),       // 13: ant.v1.RateStrategyResponse
-	(*ListRatingsRequest)(nil),         // 14: ant.v1.ListRatingsRequest
-	(*ListRatingsResponse)(nil),        // 15: ant.v1.ListRatingsResponse
-	(*RatingItem)(nil),                 // 16: ant.v1.RatingItem
-	(*CommentOnStrategyRequest)(nil),   // 17: ant.v1.CommentOnStrategyRequest
-	(*CommentOnStrategyResponse)(nil),  // 18: ant.v1.CommentOnStrategyResponse
-	(*ListCommentsRequest)(nil),        // 19: ant.v1.ListCommentsRequest
-	(*ListCommentsResponse)(nil),       // 20: ant.v1.ListCommentsResponse
-	(*CommentItem)(nil),                // 21: ant.v1.CommentItem
-	(*SetStrategyPricingRequest)(nil),  // 22: ant.v1.SetStrategyPricingRequest
-	(*SetStrategyPricingResponse)(nil), // 23: ant.v1.SetStrategyPricingResponse
-	(*timestamppb.Timestamp)(nil),      // 24: google.protobuf.Timestamp
+	(*PurchaseStrategyRequest)(nil),    // 6: ant.v1.PurchaseStrategyRequest
+	(*PurchaseStrategyResponse)(nil),   // 7: ant.v1.PurchaseStrategyResponse
+	(*ListPublishedRequest)(nil),       // 8: ant.v1.ListPublishedRequest
+	(*ListPublishedResponse)(nil),      // 9: ant.v1.ListPublishedResponse
+	(*PublishedStrategy)(nil),          // 10: ant.v1.PublishedStrategy
+	(*ListSubscriptionsRequest)(nil),   // 11: ant.v1.ListSubscriptionsRequest
+	(*ListSubscriptionsResponse)(nil),  // 12: ant.v1.ListSubscriptionsResponse
+	(*SubscriptionItem)(nil),           // 13: ant.v1.SubscriptionItem
+	(*RateStrategyRequest)(nil),        // 14: ant.v1.RateStrategyRequest
+	(*RateStrategyResponse)(nil),       // 15: ant.v1.RateStrategyResponse
+	(*ListRatingsRequest)(nil),         // 16: ant.v1.ListRatingsRequest
+	(*ListRatingsResponse)(nil),        // 17: ant.v1.ListRatingsResponse
+	(*RatingItem)(nil),                 // 18: ant.v1.RatingItem
+	(*CommentOnStrategyRequest)(nil),   // 19: ant.v1.CommentOnStrategyRequest
+	(*CommentOnStrategyResponse)(nil),  // 20: ant.v1.CommentOnStrategyResponse
+	(*ListCommentsRequest)(nil),        // 21: ant.v1.ListCommentsRequest
+	(*ListCommentsResponse)(nil),       // 22: ant.v1.ListCommentsResponse
+	(*CommentItem)(nil),                // 23: ant.v1.CommentItem
+	(*SetStrategyPricingRequest)(nil),  // 24: ant.v1.SetStrategyPricingRequest
+	(*SetStrategyPricingResponse)(nil), // 25: ant.v1.SetStrategyPricingResponse
+	(*timestamppb.Timestamp)(nil),      // 26: google.protobuf.Timestamp
 }
 var file_marketplace_service_proto_depIdxs = []int32{
-	8,  // 0: ant.v1.ListPublishedResponse.strategies:type_name -> ant.v1.PublishedStrategy
-	24, // 1: ant.v1.PublishedStrategy.published_at:type_name -> google.protobuf.Timestamp
-	11, // 2: ant.v1.ListSubscriptionsResponse.subscriptions:type_name -> ant.v1.SubscriptionItem
-	24, // 3: ant.v1.SubscriptionItem.created_at:type_name -> google.protobuf.Timestamp
-	16, // 4: ant.v1.ListRatingsResponse.ratings:type_name -> ant.v1.RatingItem
-	24, // 5: ant.v1.RatingItem.created_at:type_name -> google.protobuf.Timestamp
-	21, // 6: ant.v1.ListCommentsResponse.comments:type_name -> ant.v1.CommentItem
-	24, // 7: ant.v1.CommentItem.created_at:type_name -> google.protobuf.Timestamp
+	10, // 0: ant.v1.ListPublishedResponse.strategies:type_name -> ant.v1.PublishedStrategy
+	26, // 1: ant.v1.PublishedStrategy.published_at:type_name -> google.protobuf.Timestamp
+	13, // 2: ant.v1.ListSubscriptionsResponse.subscriptions:type_name -> ant.v1.SubscriptionItem
+	26, // 3: ant.v1.SubscriptionItem.created_at:type_name -> google.protobuf.Timestamp
+	18, // 4: ant.v1.ListRatingsResponse.ratings:type_name -> ant.v1.RatingItem
+	26, // 5: ant.v1.RatingItem.created_at:type_name -> google.protobuf.Timestamp
+	23, // 6: ant.v1.ListCommentsResponse.comments:type_name -> ant.v1.CommentItem
+	26, // 7: ant.v1.CommentItem.created_at:type_name -> google.protobuf.Timestamp
 	0,  // 8: ant.v1.MarketplaceService.PublishStrategy:input_type -> ant.v1.PublishStrategyRequest
 	2,  // 9: ant.v1.MarketplaceService.Subscribe:input_type -> ant.v1.SubscribeRequest
 	4,  // 10: ant.v1.MarketplaceService.Unsubscribe:input_type -> ant.v1.UnsubscribeRequest
-	6,  // 11: ant.v1.MarketplaceService.ListPublished:input_type -> ant.v1.ListPublishedRequest
-	9,  // 12: ant.v1.MarketplaceService.ListSubscriptions:input_type -> ant.v1.ListSubscriptionsRequest
-	12, // 13: ant.v1.MarketplaceService.RateStrategy:input_type -> ant.v1.RateStrategyRequest
-	14, // 14: ant.v1.MarketplaceService.ListRatings:input_type -> ant.v1.ListRatingsRequest
-	17, // 15: ant.v1.MarketplaceService.CommentOnStrategy:input_type -> ant.v1.CommentOnStrategyRequest
-	19, // 16: ant.v1.MarketplaceService.ListComments:input_type -> ant.v1.ListCommentsRequest
-	22, // 17: ant.v1.MarketplaceService.SetStrategyPricing:input_type -> ant.v1.SetStrategyPricingRequest
-	1,  // 18: ant.v1.MarketplaceService.PublishStrategy:output_type -> ant.v1.PublishStrategyResponse
-	3,  // 19: ant.v1.MarketplaceService.Subscribe:output_type -> ant.v1.SubscribeResponse
-	5,  // 20: ant.v1.MarketplaceService.Unsubscribe:output_type -> ant.v1.UnsubscribeResponse
-	7,  // 21: ant.v1.MarketplaceService.ListPublished:output_type -> ant.v1.ListPublishedResponse
-	10, // 22: ant.v1.MarketplaceService.ListSubscriptions:output_type -> ant.v1.ListSubscriptionsResponse
-	13, // 23: ant.v1.MarketplaceService.RateStrategy:output_type -> ant.v1.RateStrategyResponse
-	15, // 24: ant.v1.MarketplaceService.ListRatings:output_type -> ant.v1.ListRatingsResponse
-	18, // 25: ant.v1.MarketplaceService.CommentOnStrategy:output_type -> ant.v1.CommentOnStrategyResponse
-	20, // 26: ant.v1.MarketplaceService.ListComments:output_type -> ant.v1.ListCommentsResponse
-	23, // 27: ant.v1.MarketplaceService.SetStrategyPricing:output_type -> ant.v1.SetStrategyPricingResponse
-	18, // [18:28] is the sub-list for method output_type
-	8,  // [8:18] is the sub-list for method input_type
+	6,  // 11: ant.v1.MarketplaceService.PurchaseStrategy:input_type -> ant.v1.PurchaseStrategyRequest
+	8,  // 12: ant.v1.MarketplaceService.ListPublished:input_type -> ant.v1.ListPublishedRequest
+	11, // 13: ant.v1.MarketplaceService.ListSubscriptions:input_type -> ant.v1.ListSubscriptionsRequest
+	14, // 14: ant.v1.MarketplaceService.RateStrategy:input_type -> ant.v1.RateStrategyRequest
+	16, // 15: ant.v1.MarketplaceService.ListRatings:input_type -> ant.v1.ListRatingsRequest
+	19, // 16: ant.v1.MarketplaceService.CommentOnStrategy:input_type -> ant.v1.CommentOnStrategyRequest
+	21, // 17: ant.v1.MarketplaceService.ListComments:input_type -> ant.v1.ListCommentsRequest
+	24, // 18: ant.v1.MarketplaceService.SetStrategyPricing:input_type -> ant.v1.SetStrategyPricingRequest
+	1,  // 19: ant.v1.MarketplaceService.PublishStrategy:output_type -> ant.v1.PublishStrategyResponse
+	3,  // 20: ant.v1.MarketplaceService.Subscribe:output_type -> ant.v1.SubscribeResponse
+	5,  // 21: ant.v1.MarketplaceService.Unsubscribe:output_type -> ant.v1.UnsubscribeResponse
+	7,  // 22: ant.v1.MarketplaceService.PurchaseStrategy:output_type -> ant.v1.PurchaseStrategyResponse
+	9,  // 23: ant.v1.MarketplaceService.ListPublished:output_type -> ant.v1.ListPublishedResponse
+	12, // 24: ant.v1.MarketplaceService.ListSubscriptions:output_type -> ant.v1.ListSubscriptionsResponse
+	15, // 25: ant.v1.MarketplaceService.RateStrategy:output_type -> ant.v1.RateStrategyResponse
+	17, // 26: ant.v1.MarketplaceService.ListRatings:output_type -> ant.v1.ListRatingsResponse
+	20, // 27: ant.v1.MarketplaceService.CommentOnStrategy:output_type -> ant.v1.CommentOnStrategyResponse
+	22, // 28: ant.v1.MarketplaceService.ListComments:output_type -> ant.v1.ListCommentsResponse
+	25, // 29: ant.v1.MarketplaceService.SetStrategyPricing:output_type -> ant.v1.SetStrategyPricingResponse
+	19, // [19:30] is the sub-list for method output_type
+	8,  // [8:19] is the sub-list for method input_type
 	8,  // [8:8] is the sub-list for extension type_name
 	8,  // [8:8] is the sub-list for extension extendee
 	0,  // [0:8] is the sub-list for field type_name
@@ -1813,7 +1956,7 @@ func file_marketplace_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_marketplace_service_proto_rawDesc), len(file_marketplace_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   24,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

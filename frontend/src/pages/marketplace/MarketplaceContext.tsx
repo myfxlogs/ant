@@ -28,6 +28,13 @@ export interface MarketplaceCtx {
   closeDetail: () => void;
   detailStrategy: PublishedStrategy | null;
   detailOpen: boolean;
+  // Payment
+  paymentModalOpen: boolean;
+  paymentLoading: boolean;
+  paymentStrategy: PublishedStrategy | null;
+  walletBalance: string;
+  handleConfirmPayment: () => void;
+  handleCancelPayment: () => void;
 }
 
 const Ctx = createContext<MarketplaceCtx | null>(null);

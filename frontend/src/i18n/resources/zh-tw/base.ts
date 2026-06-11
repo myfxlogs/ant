@@ -456,6 +456,23 @@ const base = {
       free: '免費',
       subscription: '訂閱制',
       performanceFee: '績效分成'
+    },
+    payment: {
+      title: '確認購買',
+      strategyName: '策略',
+      price: '價格',
+      oneTimePurchase: '¥{{amount}} 一次性買斷',
+      walletBalance: '我的餘額',
+      balanceAfter: '購買後餘額',
+      insufficientBalance: '餘額不足',
+      depositPrompt: '請先充值後再購買。',
+      goToDeposit: '去充值',
+      confirm: '確認購買',
+      cancel: '取消',
+      purchasing: '處理中...',
+      purchaseSuccess: '購買成功！策略已加入您的庫。',
+      purchaseFailed: '購買失敗，請重試。',
+      alreadyPurchased: '您已擁有此策略。',
     }
   },
   admin: {

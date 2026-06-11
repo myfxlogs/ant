@@ -8,6 +8,7 @@ import MarketTab from './components/MarketTab';
 import PurchaseTab from './components/PurchaseTab';
 import AuthorTab from './components/AuthorTab';
 import StrategyDetailModal from './components/StrategyDetailModal';
+import PaymentModal from './components/PaymentModal';
 
 const { Title, Text } = Typography;
 
@@ -38,6 +39,14 @@ function MarketplaceUI() {
             strategy={m.detailStrategy} open={m.detailOpen}
             isPurchased={m.detailStrategy ? m.isPurchased(m.detailStrategy.strategyId) : false}
             onClose={m.closeDetail} onGetFree={m.handleGetFree} onBuy={m.handleBuy}
+          />
+          <PaymentModal
+            strategy={m.paymentStrategy}
+            walletBalance={m.walletBalance}
+            open={m.paymentModalOpen}
+            loading={m.paymentLoading}
+            onConfirm={m.handleConfirmPayment}
+            onCancel={m.handleCancelPayment}
           />
         </div>
       </div>

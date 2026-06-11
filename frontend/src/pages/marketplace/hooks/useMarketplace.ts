@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { marketplaceClient } from '@/client/connect';
+import { walletApi } from '@/client/wallet';
 import { useRpcQuery } from '@/hooks/useRpcQuery';
 import { useAuthStore } from '@/stores/authStore';
 import type { PublishedStrategy, SubscriptionItem } from '@/gen/ant/v1/marketplace_service_pb';
@@ -31,6 +32,12 @@ export function useMarketplace(): MarketplaceCtx {
   const [pageSize, setPageSize] = useState(20);
   const [detailStrategy, setDetailStrategy] = useState<PublishedStrategy | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+
+  // ── Payment state ──
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentStrategy, setPaymentStrategy] = useState<PublishedStrategy | null>(null);
+  const [walletBalance, setWalletBalance] = useState('0');
 
   // ── Market listing (server-side pagination via API) ──
   const { data: allStrategies = [], isLoading: loading, error, refetch } = useRpcQuery(
@@ -111,9 +118,52 @@ export function useMarketplace(): MarketplaceCtx {
     } catch { message.error(t('marketplace.messages.subscribeFailed')); }
   }, [userId, t, refetchPurchases]);
 
-  const handleBuy = useCallback(async (_strategy: PublishedStrategy) => {
-    message.info(t('marketplace.messages.paymentComingSoon', 'Payment coming soon'));
-  }, [t]);
+  const handleBuy = useCallback(async (strategy: PublishedStrategy) => {
+    if (!userId) { message.warning(t('marketplace.messages.loginFirst')); return; }
+    try {
+      const wallet = await walletApi.getWallet(userId);
+      const balance = wallet?.balance || '0';
+      setWalletBalance(balance);
+      setPaymentStrategy(strategy);
+      setPaymentModalOpen(true);
+    } catch {
+      message.error(t('marketplace.payment.purchaseFailed', 'Purchase failed. Please try again.'));
+    }
+  }, [userId, t]);
+
+  const handleConfirmPayment = useCallback(async () => {
+    if (!paymentStrategy) return;
+    setPaymentLoading(true);
+    try {
+      await marketplaceClient.purchaseStrategy({
+        userId,
+        strategyId: paymentStrategy.strategyId,
+        publisherUserId: paymentStrategy.publisherUserId,
+      });
+      message.success(t('marketplace.payment.purchaseSuccess', 'Purchase successful! Strategy added to your library.'));
+      setPaymentModalOpen(false);
+      setPaymentStrategy(null);
+      refetchPurchases();
+    } catch (err: unknown) {
+      const msg = String((err as { message?: string })?.message || '');
+      if (msg.includes('insufficient balance') || msg.includes('insufficient_balance')) {
+        message.error(t('marketplace.payment.insufficientBalance', 'Insufficient balance'));
+      } else if (msg.includes('already subscribed') || msg.includes('already_exists')) {
+        message.info(t('marketplace.payment.alreadyPurchased', 'You already own this strategy.'));
+        setPaymentModalOpen(false);
+        setPaymentStrategy(null);
+      } else {
+        message.error(t('marketplace.payment.purchaseFailed', 'Purchase failed. Please try again.'));
+      }
+    } finally {
+      setPaymentLoading(false);
+    }
+  }, [paymentStrategy, userId, t, refetchPurchases, refetch]);
+
+  const handleCancelPayment = useCallback(() => {
+    setPaymentModalOpen(false);
+    setPaymentStrategy(null);
+  }, []);
 
   return {
     strategies, loading, error, purchases, purchasesLoading, myPublished, authorStats,
@@ -122,5 +172,8 @@ export function useMarketplace(): MarketplaceCtx {
     page, pageSize, total, setPage, setPageSize,
     refetch, isPurchased, handleGetFree, handleBuy,
     openDetail, closeDetail, detailStrategy, detailOpen,
+    // Payment
+    paymentModalOpen, paymentLoading, paymentStrategy, walletBalance,
+    handleConfirmPayment, handleCancelPayment,
   };
 }
