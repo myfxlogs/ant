@@ -12,7 +12,7 @@ export default function AddAccountCard({ onClick }: Props) {
       onClick={onClick}
       className="rounded-2xl overflow-hidden cursor-pointer transition-all flex flex-col items-center justify-center min-h-[280px]"
       style={{
-        background: '#F5F7F9',
+        background: 'var(--color-bg-secondary)',
         border: '2px dashed rgba(185, 201, 223, 0.4)',
       }}
       onMouseEnter={(e) => {
@@ -30,7 +30,7 @@ export default function AddAccountCard({ onClick }: Props) {
       >
         <PlusOutlined size={32} stroke={1.5} color="#D4AF37" />
       </div>
-      <span className="font-medium" style={{ color: '#8A9AA5' }}>
+      <span className="font-medium" style={{ color: 'var(--color-text-muted)' }}>
         {t('accounts.bindNew')}
       </span>
     </div>

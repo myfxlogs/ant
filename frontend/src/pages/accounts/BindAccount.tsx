@@ -136,7 +136,7 @@ export default function BindAccount() {
       {[1, 2, 3].map((s) => (
         <div key={s} className="flex items-center">
           <div className="w-8 h-8 rounded-full flex items-center justify-center font-medium"
-            style={{ background: step >= s ? PRIMARY_GRADIENT : '#E8ECF0', color: step >= s ? '#FFFFFF' : '#8A9AA5' }}>
+            style={{ background: step >= s ? PRIMARY_GRADIENT : 'var(--color-bg-tertiary)', color: step >= s ? '#FFFFFF' : 'var(--color-text-muted)' }}>
             {step > s ? <CheckOutlined style={{ fontSize: 16 }} /> : s}
           </div>
           {s < 3 && <div className="w-16 h-0.5 mx-2" style={{ background: step > s ? '#D4AF37' : '#E8ECF0' }} />}
@@ -146,13 +146,13 @@ export default function BindAccount() {
   );
 
   return (
-    <div className="min-h-screen" style={{ background: '#F5F7F9' }}>
+    <div className="min-h-screen" style={{ background: 'var(--color-bg-secondary)' }}>
       <div className="max-w-xl mx-auto p-4">
         <div className="flex items-center gap-4 mb-8">
-          <Button type="text" icon={<ArrowLeftOutlined style={{ fontSize: 20 }} />} onClick={() => navigate('/')} style={{ color: '#8A9AA5' }} />
-          <h1 className="text-2xl font-bold" style={{ fontFamily: 'Poppins, sans-serif', color: '#141D22' }}>{t('accounts.bind.title')}</h1>
+          <Button type="text" icon={<ArrowLeftOutlined style={{ fontSize: 20 }} />} onClick={() => navigate('/')} style={{ color: 'var(--color-text-muted)' }} />
+          <h1 className="text-2xl font-bold" style={{ fontFamily: 'Poppins, sans-serif', color: 'var(--color-text)' }}>{t('accounts.bind.title')}</h1>
         </div>
-        <div className="rounded-2xl p-6" style={{ background: '#FFFFFF', boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)' }}>
+        <div className="rounded-2xl p-6" style={{ background: 'var(--color-bg-card)', boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)' }}>
           {renderStepIndicator()}
           {step === 1 && <Step1SearchBroker mtType={mtType} setMtType={setMtType} companySearch={companySearch} setCompanySearch={setCompanySearch} searching={searching} searchResults={searchResults} setSearchResults={setSearchResults} selectedCompany={selectedCompany} selectedServer={selectedServer} setSelectedCompany={setSelectedCompany} setSelectedServer={setSelectedServer} alias={alias} setAlias={setAlias} handleSearch={handleSearch} handleCompanyChange={handleCompanyChange} handleServerChange={handleServerChange} onNext={() => setStep(2)} />}
           {step === 2 && <Step2Credentials mtType={mtType} selectedServer={selectedServer} selectedCompany={selectedCompany} login={login} setLogin={setLogin} password={password} setPassword={setPassword} onBack={() => setStep(1)} onNext={() => setStep(3)} />}

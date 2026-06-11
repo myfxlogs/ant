@@ -29,7 +29,7 @@ type Props = {
 
 const getStatusIndicator = (account: Account, t: (key: string) => string) => {
   if (account.isDisabled) {
-    return { icon: '⚪', color: '#8A9AA5', text: t('accounts.card.status.disabled') };
+    return { icon: '⚪', color: 'var(--color-text-muted)', text: t('accounts.card.status.disabled') };
   }
   switch (account.status) {
     case 'connected':
@@ -41,7 +41,7 @@ const getStatusIndicator = (account: Account, t: (key: string) => string) => {
     case 'error':
       return { icon: '🔴', color: '#E53935', text: t('accounts.card.status.error') };
     default:
-      return { icon: '⚪', color: '#8A9AA5', text: t('common.unknown') };
+      return { icon: '⚪', color: 'var(--color-text-muted)', text: t('common.unknown') };
   }
 };
 
@@ -64,13 +64,13 @@ export default function AccountCard({
 
   const balanceDisplay = useMemo(() => {
     const isNegative = balance < 0;
-    const color = isNegative ? '#E53935' : '#141D22';
+    const color = isNegative ? '#E53935' : 'var(--color-text)';
     return { text: `${isNegative ? '-' : ''}${Math.abs(balance).toFixed(2)} ${account.currency || 'USD'}`, color };
   }, [balance, account]);
 
   const equityDisplay = useMemo(() => {
     const isNegative = equity < 0;
-    const color = isNegative ? '#E53935' : '#141D22';
+    const color = isNegative ? '#E53935' : 'var(--color-text)';
     return { text: `${isNegative ? '-' : ''}${Math.abs(equity).toFixed(2)} ${account.currency || 'USD'}`, color };
   }, [equity, account]);
 
@@ -132,7 +132,7 @@ export default function AccountCard({
       key={account.id}
       className="rounded-2xl overflow-hidden transition-all"
       style={{
-        background: '#FFFFFF',
+        background: 'var(--color-bg-card)',
         boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)',
         opacity: account.isDisabled ? 0.6 : 1,
       }}
@@ -142,7 +142,7 @@ export default function AccountCard({
           <div className="flex items-center gap-3">
             <span className="text-xl">{status.icon}</span>
             <div>
-              <div className="font-semibold text-lg" style={{ color: '#141D22' }}>
+              <div className="font-semibold text-lg" style={{ color: 'var(--color-text)' }}>
                 {account.login}
               </div>
               <Tag
@@ -170,33 +170,33 @@ export default function AccountCard({
               type="text"
               size="small"
               icon={<MoreOutlined size={16} stroke={1.5} />}
-              style={{ color: '#8A9AA5' }}
+              style={{ color: 'var(--color-text-muted)' }}
             />
           </Dropdown>
         </div>
 
         <div className="space-y-2 mb-4">
           <div className="flex justify-between">
-            <span style={{ color: '#8A9AA5' }}>{t('accounts.card.fields.balance')}</span>
+            <span style={{ color: 'var(--color-text-muted)' }}>{t('accounts.card.fields.balance')}</span>
             <span className="font-medium" style={{ color: balanceDisplay.color }}>
               {balanceDisplay.text}
             </span>
           </div>
           <div className="flex justify-between">
-            <span style={{ color: '#8A9AA5' }}>{t('accounts.card.fields.equity')}</span>
+            <span style={{ color: 'var(--color-text-muted)' }}>{t('accounts.card.fields.equity')}</span>
             <span className="font-medium" style={{ color: equityDisplay.color }}>
               {equityDisplay.text}
             </span>
           </div>
           <div className="flex justify-between">
-            <span style={{ color: '#8A9AA5' }}>{t('accounts.card.fields.broker')}</span>
-            <span className="font-medium" style={{ color: '#141D22' }}>
+            <span style={{ color: 'var(--color-text-muted)' }}>{t('accounts.card.fields.broker')}</span>
+            <span className="font-medium" style={{ color: 'var(--color-text)' }}>
               {account.brokerCompany}
             </span>
           </div>
           <div className="flex justify-between">
-            <span style={{ color: '#8A9AA5' }}>{t('accounts.card.fields.server')}</span>
-            <span className="font-medium" style={{ color: '#141D22' }}>
+            <span style={{ color: 'var(--color-text-muted)' }}>{t('accounts.card.fields.server')}</span>
+            <span className="font-medium" style={{ color: 'var(--color-text)' }}>
               {account.brokerServer}
             </span>
           </div>

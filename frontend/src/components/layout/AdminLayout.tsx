@@ -83,7 +83,7 @@ export default function AdminLayout() {
   );
 
   return (
-    <Layout className="min-h-screen" style={{ background: '#F5F7F9' }}>
+    <Layout className="min-h-screen" style={{ background: 'var(--color-bg-secondary)' }}>
       <Drawer
         placement="left"
         open={drawerVisible}
@@ -157,7 +157,7 @@ export default function AdminLayout() {
               <button
                 onClick={() => setDrawerVisible(true)}
                 className="p-2 rounded-lg transition-colors"
-                style={{ color: '#5A6B75' }}
+                style={{ color: 'var(--color-text-secondary)' }}
               >
                 <MenuOutlined size={22} stroke={1.5} />
               </button>
@@ -182,7 +182,7 @@ export default function AdminLayout() {
                 />
                 {!isMobile && (
                   <div className="hidden sm:block">
-                    <div className="text-sm font-medium" style={{ color: '#141D22' }}>{user?.nickname || user?.email?.split('@')[0] || t('admin.header.admin')}</div>
+                    <div className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>{user?.nickname || user?.email?.split('@')[0] || t('admin.header.admin')}</div>
                   </div>
                 )}
               </div>

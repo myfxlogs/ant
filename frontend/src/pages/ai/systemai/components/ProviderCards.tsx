@@ -59,7 +59,7 @@ export function ProviderCardsSection(props: {
               className="text-left rounded-lg border p-3 transition-all hover:shadow-sm"
               style={{
                 backgroundColor: isSelected ? 'rgba(212, 175, 55, 0.08)' : '#FFFFFF',
-                borderColor: isSelected ? '#D4AF37' : '#E5E7EB',
+                borderColor: isSelected ? '#D4AF37' : 'var(--color-border)',
                 borderWidth: isSelected ? 2 : 1,
               }}
             >

@@ -95,7 +95,7 @@ export default function StrategyTemplateListCard({
         />
         {templatesCount === 0 && templateGroup === "system" && (
           <div
-            style={{ textAlign: "center", padding: "16px 0", color: "#8A9AA5" }}
+            style={{ textAlign: "center", padding: "16px 0", color: "var(--color-text-muted)" }}
           >
             <Text type="secondary">
               {t("strategy.templates.table.defaultHint")}

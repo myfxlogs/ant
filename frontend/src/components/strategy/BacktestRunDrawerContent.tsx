@@ -55,7 +55,7 @@ export default function BacktestRunDrawerContent({ watched, statusText, trades, 
           </Descriptions>
           <div className="mt-4" />
           <Typography.Text strong>{t('strategy.backtestRun.trades.title')}</Typography.Text>
-          {summary && <div className="text-xs mt-1 mb-2" style={{ color: '#8A9AA5' }}>{summary}</div>}
+          {summary && <div className="text-xs mt-1 mb-2" style={{ color: 'var(--color-text-muted)' }}>{summary}</div>}
           {tradesError ? (
             <Alert type="error" title={tradesError} />
           ) : (

@@ -46,14 +46,14 @@ export default function Login() {
   return (
     <div 
       className="min-h-screen flex flex-col items-center justify-center p-4"
-      style={{ background: '#F5F7F9' }}
+      style={{ background: 'var(--color-bg-secondary)' }}
     >
       <div className="w-full max-w-md flex justify-end mb-3">
         <Dropdown menu={languageMenu} placement="bottomRight" trigger={['click']}>
           <button
             type="button"
             className="px-3 py-2 rounded-lg text-sm"
-            style={{ background: '#FFFFFF', border: '1px solid rgba(0, 0, 0, 0.08)', color: '#5A6B75' }}
+            style={{ background: 'var(--color-bg-card)', border: '1px solid rgba(0, 0, 0, 0.08)', color: 'var(--color-text-secondary)' }}
           >
             {t(languages.find((l) => l.key === currentLang)?.labelKey || 'language.english')}
           </button>
@@ -62,7 +62,7 @@ export default function Login() {
       <div 
         className="w-full max-w-md rounded-2xl overflow-hidden"
         style={{ 
-          background: '#FFFFFF',
+          background: 'var(--color-bg-card)',
           boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)',
         }}
       >
@@ -75,10 +75,10 @@ export default function Login() {
               <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold" style={{ fontFamily: 'Poppins, sans-serif', color: '#141D22' }}>
+          <h1 className="text-2xl font-bold" style={{ fontFamily: 'Poppins, sans-serif', color: 'var(--color-text)' }}>
             {t('app.name')}
           </h1>
-          <p className="mt-1 text-sm" style={{ color: '#8A9AA5' }}>
+          <p className="mt-1 text-sm" style={{ color: 'var(--color-text-muted)' }}>
             {t('auth.login.subtitle')}
           </p>
         </div>
@@ -131,7 +131,7 @@ export default function Login() {
                   className="w-4 h-4 rounded"
                   style={{ accentColor: '#D4AF37' }}
                 />
-                <span style={{ color: '#5A6B75', fontSize: '14px' }}>{t('auth.login.rememberMe')}</span>
+                <span style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>{t('auth.login.rememberMe')}</span>
               </label>
               <Link 
                 to="/forgot-password" 
@@ -162,7 +162,7 @@ export default function Login() {
           </Form>
 
           <div className="text-center pt-4" style={{ borderTop: '1px solid rgba(0, 0, 0, 0.06)' }}>
-            <span style={{ color: '#8A9AA5', fontSize: '14px' }}>{t('auth.login.noAccount')}</span>
+            <span style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>{t('auth.login.noAccount')}</span>
             <Link 
               to="/register" 
               className="ml-2 font-medium"

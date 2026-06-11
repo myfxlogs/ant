@@ -137,7 +137,7 @@ export default function AccountDetail() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <SmallInfoCard icon={<DollarOutlined style={{ color: 'var(--color-text-muted)' }} />} label={t('accounts.detail.cards.marginUsed')} value={formatCurrency(margin)} loading={isStreamLoading} />
           <SmallInfoCard icon={<DollarOutlined style={{ color: 'var(--color-text-muted)' }} />} label={t('accounts.detail.cards.marginFree')} value={formatCurrency(freeMargin)} loading={isStreamLoading} />
-          <SmallInfoCard icon={<PercentageOutlined style={{ color: 'var(--color-text-muted)' }} />} label={t('accounts.detail.cards.marginLevel')} value={margin > 0 ? `${(marginLevel || 0).toFixed(2)}%` : '--'} loading={isStreamLoading} valueColor={margin > 0 && (marginLevel || 0) < 100 ? '#E53935' : '#141D22'} />
+          <SmallInfoCard icon={<PercentageOutlined style={{ color: 'var(--color-text-muted)' }} />} label={t('accounts.detail.cards.marginLevel')} value={margin > 0 ? `${(marginLevel || 0).toFixed(2)}%` : '--'} loading={isStreamLoading} valueColor={margin > 0 && (marginLevel || 0) < 100 ? '#E53935' : 'var(--color-text)'} />
           <SmallInfoCard icon={<WarningOutlined style={{ color: 'var(--color-text-muted)' }} />} label={t('accounts.detail.cards.credit')} value={formatCurrency(credit)} loading={isStreamLoading} />
         </div>
 

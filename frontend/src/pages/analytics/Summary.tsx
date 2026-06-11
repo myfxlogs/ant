@@ -127,9 +127,9 @@ export default function Summary() {
         <Row gutter={[16, 16]} className="mt-6">
           {[
             { icon: <RiseOutlined />, color: '#00A651', label: t('analytics.summary.metrics.netProfit'), value: `$${(Number(analytics?.profit || tradeStats?.netProfit || 0)).toFixed(2)}`, valueColor: (Number(analytics?.profit || tradeStats?.netProfit || 0)) >= 0 ? '#00A651' : '#E53935' },
-            { icon: <LineChartOutlined />, color: '#2196F3', label: t('analytics.summary.metrics.equity'), value: `$${(Number(analytics?.equity || 0)).toFixed(2)}`, valueColor: '#141D22' },
-            { icon: <AimOutlined />, color: '#D4AF37', label: t('analytics.summary.metrics.balance'), value: `$${(Number(analytics?.balance || 0)).toFixed(2)}`, valueColor: '#141D22' },
-            { icon: <PieChartOutlined />, color: '#9C27B0', label: t('analytics.summary.metrics.equityValue'), value: `$${(Number(analytics?.equity || 0)).toFixed(2)}`, valueColor: '#141D22' },
+            { icon: <LineChartOutlined />, color: '#2196F3', label: t('analytics.summary.metrics.equity'), value: `$${(Number(analytics?.equity || 0)).toFixed(2)}`, valueColor: 'var(--color-text)' },
+            { icon: <AimOutlined />, color: '#D4AF37', label: t('analytics.summary.metrics.balance'), value: `$${(Number(analytics?.balance || 0)).toFixed(2)}`, valueColor: 'var(--color-text)' },
+            { icon: <PieChartOutlined />, color: '#9C27B0', label: t('analytics.summary.metrics.equityValue'), value: `$${(Number(analytics?.equity || 0)).toFixed(2)}`, valueColor: 'var(--color-text)' },
           ].map((s, i) => (
             <Col xs={12} sm={6} key={i}>
               <div className="stat-card">
@@ -155,7 +155,7 @@ export default function Summary() {
 
       {/* Economic calendar — independent section with its own loading/error state */}
       <StatusResult loading={false} error={null}>
-        <div className="rounded-2xl p-6 mt-6" style={{ background: '#FFFFFF', boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)' }}>
+        <div className="rounded-2xl p-6 mt-6" style={{ background: 'var(--color-bg-card)', boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)' }}>
           <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>{t('analytics.summary.cards.economicCalendar')}</h2>
           <Row gutter={16}>
             <Col xs={24} md={14}>

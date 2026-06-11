@@ -85,7 +85,7 @@ export default function MonthlyAnalysisMainChart({
               return (
                 <div
                   style={{
-                    background: '#FFFFFF',
+                    background: 'var(--color-bg-card)',
                     border: '1px solid #D9E2EC',
                     borderRadius: '6px',
                     boxShadow: '0 4px 10px rgba(15, 23, 42, 0.12)',
@@ -98,19 +98,19 @@ export default function MonthlyAnalysisMainChart({
                   <div style={{ fontWeight: 700, color: '#1F2937', marginBottom: 6 }}>
                     {monthShortLabels[(point.month || 1) - 1]} {point.year}
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#475467', marginBottom: 2 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text-secondary)', marginBottom: 2 }}>
                     <span>{metricTitleMap.change}</span>
                     {renderMetricValue('change', point.change || 0)}
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#475467', marginBottom: 2 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text-secondary)', marginBottom: 2 }}>
                     <span>{metricTitleMap.profit}</span>
                     {renderMetricValue('profit', point.profit || 0)}
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#475467', marginBottom: 2 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text-secondary)', marginBottom: 2 }}>
                     <span>{metricTitleMap.lots}</span>
                     {renderMetricValue('lots', point.lots || 0)}
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#475467' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text-secondary)' }}>
                     <span>{metricTitleMap.pips}</span>
                     {renderMetricValue('pips', point.pips || 0)}
                   </div>
@@ -123,7 +123,7 @@ export default function MonthlyAnalysisMainChart({
               dataKey="value"
               position="top"
               formatter={(v: number) => (Math.abs(Number(v)) < 1e-12 ? '' : formatValue(selectedMetric, v))}
-              style={{ fontSize: 10, fill: '#475467', fontWeight: 600, pointerEvents: 'none' }}
+              style={{ fontSize: 10, fill: 'var(--color-text-secondary)', fontWeight: 600, pointerEvents: 'none' }}
             />
             {series.map((item) => (
               <Cell key={`${item.year}-${item.month}`} fill={barCellFill(item)} />

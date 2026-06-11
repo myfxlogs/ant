@@ -78,11 +78,11 @@ function AccountCard({ item, navigate, t }: { item: Account; navigate: (path: st
       <div className="grid grid-cols-3 gap-2 text-center">
         <div>
           <div className="text-xs mb-0.5" style={{ color: 'var(--color-text-muted)' }}>{t('dashboard.fields.balance')}</div>
-          <div className="text-sm font-semibold" style={{ color: isDisabled ? '#8A9AA5' : '#141D22' }}>{fmt(balance, '$')}</div>
+          <div className="text-sm font-semibold" style={{ color: isDisabled ? 'var(--color-text-muted)' : 'var(--color-text)' }}>{fmt(balance, '$')}</div>
         </div>
         <div>
           <div className="text-xs mb-0.5" style={{ color: 'var(--color-text-muted)' }}>{t('dashboard.fields.equity')}</div>
-          <div className="text-sm font-semibold" style={{ color: isDisabled ? '#8A9AA5' : '#141D22' }}>{fmt(equity, '$')}</div>
+          <div className="text-sm font-semibold" style={{ color: isDisabled ? 'var(--color-text-muted)' : 'var(--color-text)' }}>{fmt(equity, '$')}</div>
         </div>
         {isDisabled ? (
           <div>

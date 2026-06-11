@@ -16,13 +16,13 @@ const { Title, Text, Paragraph } = Typography;
 const TREND_ICONS: Record<string, React.ReactNode> = {
   BULLISH: <RiseOutlined style={{ color: '#00A651' }} />,
   BEARISH: <FallOutlined style={{ color: '#E53935' }} />,
-  NEUTRAL: <MinusOutlined style={{ color: '#8A9AA5' }} />,
+  NEUTRAL: <MinusOutlined style={{ color: 'var(--color-text-muted)' }} />,
 };
 
 const TREND_COLORS: Record<string, string> = {
   BULLISH: '#00A651',
   BEARISH: '#E53935',
-  NEUTRAL: '#8A9AA5',
+  NEUTRAL: 'var(--color-text-muted)',
 };
 
 const VOL_COLORS: Record<string, string> = {
@@ -36,7 +36,7 @@ function renderTfCard(label: string, tf: TfOutlook | undefined) {
   if (!tf) return null;
   return (
     <Card size="small" style={{ textAlign: 'center' }}>
-      <div style={{ fontSize: 12, color: '#8A9AA5', marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 4 }}>{label}</div>
       <div style={{ fontSize: 20, marginBottom: 4 }}>{TREND_ICONS[tf.trend] || null}</div>
       <Tag color={TREND_COLORS[tf.trend] || 'default'} style={{ marginBottom: 4 }}>
         {tf.trend}
@@ -181,7 +181,7 @@ export default function AssetAnalysisPage() {
                   <Text strong>{result.volatilityValue?.toFixed(2)}%</Text>
                 </Descriptions.Item>
               </Descriptions>
-              <Paragraph style={{ fontSize: 12, color: '#8A9AA5', marginTop: 8, marginBottom: 0 }}>
+              <Paragraph style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 8, marginBottom: 0 }}>
                 {result.volatilityState === 'LOW' && t('strategy.assetAnalysis.volLow')}
                 {result.volatilityState === 'NORMAL' && t('strategy.assetAnalysis.volNormal')}
                 {result.volatilityState === 'HIGH' && t('strategy.assetAnalysis.volHigh')}

@@ -96,7 +96,7 @@ export default function AccountTradeTabs({
       ),
       children:
         realPositions.length === 0 && pendingOrders.length === 0 ? (
-          <div className="text-center py-12" style={{ color: '#8A9AA5' }}>
+          <div className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
             <LineChartOutlined size={48} stroke={1} color="#D4AF37" style={{ opacity: 0.3 }} />
             <p className="mt-4">{t('accounts.tradeTabs.emptyPositions')}</p>
           </div>
@@ -106,15 +106,15 @@ export default function AccountTradeTabs({
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr style={{ background: '#F5F7F9' }}>
-                      <th className="text-left p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.orderId')}</th>
-                      <th className="text-left p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.symbol')}</th>
-                      <th className="text-left p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.side')}</th>
-                      <th className="text-right p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.volume')}</th>
-                      <th className="text-right p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.openPrice')}</th>
-                      <th className="text-right p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.currentPrice')}</th>
-                      <th className="text-right p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.profit')}</th>
-                      <th className="text-left p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.openTime')}</th>
+                    <tr style={{ background: 'var(--color-bg-secondary)' }}>
+                      <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.orderId')}</th>
+                      <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.symbol')}</th>
+                      <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.side')}</th>
+                      <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.volume')}</th>
+                      <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.openPrice')}</th>
+                      <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.currentPrice')}</th>
+                      <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.profit')}</th>
+                      <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.openTime')}</th>
                     </tr>
                   </thead>
                   <tbody>{realPositions.map((p) => <PositionRow key={p.ticket} position={p} />)}</tbody>
@@ -123,20 +123,20 @@ export default function AccountTradeTabs({
             )}
             {pendingOrders.length > 0 && (
               <div className="mt-4">
-                <div className="px-3 py-2 text-sm font-medium" style={{ color: '#8A9AA5', background: '#F5F7F9' }}>
+                <div className="px-3 py-2 text-sm font-medium" style={{ color: 'var(--color-text-muted)', background: 'var(--color-bg-secondary)' }}>
                   {t('accounts.tradeTabs.pendingWithCount', { count: pendingOrders.length })}
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr style={{ background: '#FAFBFC' }}>
-                        <th className="text-left p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.orderId')}</th>
-                        <th className="text-left p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.symbol')}</th>
-                        <th className="text-left p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.type')}</th>
-                        <th className="text-right p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.volume')}</th>
-                        <th className="text-right p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.pendingPrice')}</th>
-                        <th className="text-right p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.currentPrice')}</th>
-                        <th className="text-left p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.pendingTime')}</th>
+                        <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.orderId')}</th>
+                        <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.symbol')}</th>
+                        <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.type')}</th>
+                        <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.volume')}</th>
+                        <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.pendingPrice')}</th>
+                        <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.currentPrice')}</th>
+                        <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.pendingTime')}</th>
                       </tr>
                     </thead>
                     <tbody>{pendingOrders.map((p) => <PendingOrderRow key={p.ticket} order={p} />)}</tbody>
@@ -168,7 +168,7 @@ export default function AccountTradeTabs({
                 {t('accounts.tradeTabs.syncHistory')}
               </Button>
             </div>
-            <div className="text-center py-12" style={{ color: '#8A9AA5' }}>
+            <div className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
               <HistoryOutlined size={48} stroke={1} color="#D4AF37" style={{ opacity: 0.3 }} />
               <p className="mt-4">{t('accounts.tradeTabs.emptyHistory')}</p>
             </div>
@@ -189,15 +189,15 @@ export default function AccountTradeTabs({
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr style={{ background: '#F5F7F9' }}>
-                    <th className="text-left p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.orderId')}</th>
-                    <th className="text-left p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.symbol')}</th>
-                    <th className="text-left p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.side')}</th>
-                    <th className="text-right p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.volume')}</th>
-                    <th className="text-right p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.openPrice')}</th>
-                    <th className="text-right p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.closePrice')}</th>
-                    <th className="text-right p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.profit')}</th>
-                    <th className="text-left p-3 text-sm font-medium" style={{ color: '#8A9AA5' }}>{t('accounts.tradeTabs.table.closeTime')}</th>
+                  <tr style={{ background: 'var(--color-bg-secondary)' }}>
+                    <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.orderId')}</th>
+                    <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.symbol')}</th>
+                    <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.side')}</th>
+                    <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.volume')}</th>
+                    <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.openPrice')}</th>
+                    <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.closePrice')}</th>
+                    <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.profit')}</th>
+                    <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.tradeTabs.table.closeTime')}</th>
                   </tr>
                 </thead>
                 <tbody>

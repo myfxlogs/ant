@@ -7,7 +7,7 @@ export default function ForgotPassword() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#F5F7F9' }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-bg-secondary)' }}>
       <Result
         icon={<MailOutlined style={{ color: '#D4AF37', fontSize: 64 }} />}
         title={t('auth.forgotPassword.title', 'Reset Password')}

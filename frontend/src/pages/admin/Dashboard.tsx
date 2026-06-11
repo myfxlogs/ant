@@ -46,7 +46,7 @@ export default function AdminDashboard() {
   return (
     <StatusResult loading={loading} error={error} onRetry={() => window.location.reload()}>
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold" style={{ color: '#141D22' }}>{t('admin.dashboard.title')}</h1>
+      <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>{t('admin.dashboard.title')}</h1>
 
       <Row gutter={[16, 16]}>
         {[

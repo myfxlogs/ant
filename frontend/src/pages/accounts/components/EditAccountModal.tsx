@@ -48,21 +48,21 @@ export default function EditAccountModal({ open, account, onClose }: Props) {
     <Modal title={t('accounts.edit.title')} open={open} onCancel={onClose} footer={null} width={480}>
       {account && (
         <div className="space-y-4">
-          <div className="p-4 rounded-xl" style={{ background: '#F5F7F9' }}>
+          <div className="p-4 rounded-xl" style={{ background: 'var(--color-bg-secondary)' }}>
             <div className="flex justify-between mb-2">
-              <span style={{ color: '#8A9AA5' }}>{t('accounts.edit.fields.tradingAccount')}</span>
-              <span style={{ color: '#141D22' }}>{account.login}</span>
+              <span style={{ color: 'var(--color-text-muted)' }}>{t('accounts.edit.fields.tradingAccount')}</span>
+              <span style={{ color: 'var(--color-text)' }}>{account.login}</span>
             </div>
             <div className="flex justify-between">
-              <span style={{ color: '#8A9AA5' }}>{t('accounts.edit.fields.server')}</span>
-              <span style={{ color: '#141D22' }}>
+              <span style={{ color: 'var(--color-text-muted)' }}>{t('accounts.edit.fields.server')}</span>
+              <span style={{ color: 'var(--color-text)' }}>
                 {account.brokerServer || account.brokerCompany}
               </span>
             </div>
           </div>
 
           <div>
-            <label className="block mb-2" style={{ color: '#8A9AA5' }}>
+            <label className="block mb-2" style={{ color: 'var(--color-text-muted)' }}>
               {t('accounts.edit.fields.password')}
             </label>
             <div className="flex gap-2">
@@ -76,12 +76,12 @@ export default function EditAccountModal({ open, account, onClose }: Props) {
                 placeholder={t('accounts.edit.placeholders.newPassword')}
                 className="flex-1 outline-none transition-all"
                 style={{
-                  background: '#FFFFFF',
+                  background: 'var(--color-bg-card)',
                   border: '1px solid rgba(185, 201, 223, 0.4)',
                   borderRadius: '10px',
                   padding: '10px 14px',
                   fontSize: '14px',
-                  color: '#141D22',
+                  color: 'var(--color-text)',
                 }}
               />
               <Button onClick={handleVerifyPassword} loading={verifying} style={{ borderRadius: '10px' }}>

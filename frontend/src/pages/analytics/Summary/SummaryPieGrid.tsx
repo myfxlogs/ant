@@ -17,14 +17,14 @@ export default function SummaryPieGrid({ symbolStats, symbolPieData, directionPi
   return (
     <Row gutter={[16, 16]} className="mt-6">
       <Col xs={24} lg={12}>
-        <Card title={<span style={{ color: '#141D22', fontWeight: 500 }}>{t('analytics.summary.cards.symbolPnlCompare')}</span>} className="glass-card">
+        <Card title={<span style={{ color: 'var(--color-text)', fontWeight: 500 }}>{t('analytics.summary.cards.symbolPnlCompare')}</span>} className="glass-card">
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={(symbolStats || []).slice(0, 5)} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF0" />
-              <XAxis type="number" stroke="#8A9AA5" fontSize={12} />
-              <YAxis dataKey="symbol" type="category" stroke="#8A9AA5" fontSize={12} width={60} />
+              <XAxis type="number" stroke="var(--color-text-muted)" fontSize={12} />
+              <YAxis dataKey="symbol" type="category" stroke="var(--color-text-muted)" fontSize={12} width={60} />
               <Tooltip
-                contentStyle={{ background: '#FFFFFF', border: '1px solid rgba(0, 0, 0, 0.1)', borderRadius: '8px' }}
+                contentStyle={{ background: 'var(--color-bg-card)', border: '1px solid rgba(0, 0, 0, 0.1)', borderRadius: '8px' }}
                 formatter={(value: number | undefined) => [`$${(value || 0).toFixed(2)}`, t('analytics.summary.labels.pnl')]}
               />
               <Bar dataKey="profit" fill="#D4AF37" radius={[0, 4, 4, 0]} />
@@ -33,7 +33,7 @@ export default function SummaryPieGrid({ symbolStats, symbolPieData, directionPi
         </Card>
       </Col>
       <Col xs={24} lg={12}>
-        <Card title={<span style={{ color: '#141D22', fontWeight: 500 }}>{t('analytics.summary.cards.symbolTradeShare')}</span>} className="glass-card">
+        <Card title={<span style={{ color: 'var(--color-text)', fontWeight: 500 }}>{t('analytics.summary.cards.symbolTradeShare')}</span>} className="glass-card">
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
               <Pie data={symbolPieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} dataKey="value">
@@ -45,7 +45,7 @@ export default function SummaryPieGrid({ symbolStats, symbolPieData, directionPi
         </Card>
       </Col>
       <Col xs={24} lg={12}>
-        <Card title={<span style={{ color: '#141D22', fontWeight: 500 }}>{t('analytics.summary.cards.directionShare')}</span>} className="glass-card">
+        <Card title={<span style={{ color: 'var(--color-text)', fontWeight: 500 }}>{t('analytics.summary.cards.directionShare')}</span>} className="glass-card">
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
               <Pie data={directionPieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} dataKey="value">
@@ -57,7 +57,7 @@ export default function SummaryPieGrid({ symbolStats, symbolPieData, directionPi
         </Card>
       </Col>
       <Col xs={24} lg={12}>
-        <Card title={<span style={{ color: '#141D22', fontWeight: 500 }}>{t('analytics.summary.cards.pnlShare')}</span>} className="glass-card">
+        <Card title={<span style={{ color: 'var(--color-text)', fontWeight: 500 }}>{t('analytics.summary.cards.pnlShare')}</span>} className="glass-card">
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
               <Pie data={profitPieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} dataKey="value">

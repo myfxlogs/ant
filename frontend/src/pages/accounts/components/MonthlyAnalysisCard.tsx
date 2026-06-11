@@ -130,7 +130,7 @@ export default function MonthlyAnalysisCard({ accountId, years, data, currency =
   return (
     <div
       className="rounded-xl p-4 mb-6"
-      style={{ background: '#FFFFFF', border: '1px solid #D9E2EC', boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04)' }}
+      style={{ background: 'var(--color-bg-card)', border: '1px solid #D9E2EC', boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04)' }}
     >
       <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
         <h2 className="text-base font-semibold" style={{ color: '#1F2937' }}>
@@ -176,9 +176,9 @@ export default function MonthlyAnalysisCard({ accountId, years, data, currency =
 
       <div
         className="mb-2 px-2 py-1.5 rounded-md flex flex-wrap items-center gap-x-3 gap-y-1"
-        style={{ background: '#F8FAFC', border: '1px solid #E6EDF5', fontSize: '11px' }}
+        style={{ background: 'var(--color-bg-secondary)', border: '1px solid #E6EDF5', fontSize: '11px' }}
       >
-        <span style={{ color: '#475467', fontWeight: 600 }}>
+        <span style={{ color: 'var(--color-text-secondary)', fontWeight: 600 }}>
           {t('accounts.analytics.monthlyAnalysis.focusedValue', {
             period: selectedPeriodLabel,
             metric: metricTitleMap[selectedMetric],
@@ -195,7 +195,7 @@ export default function MonthlyAnalysisCard({ accountId, years, data, currency =
       </div>
 
       <div className="relative">
-        <div className="text-center text-xs font-semibold mb-1" style={{ color: '#475467' }}>
+        <div className="text-center text-xs font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
           {chartTitleMain}
         </div>
         <MonthlyAnalysisMainChart

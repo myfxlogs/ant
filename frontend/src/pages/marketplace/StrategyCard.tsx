@@ -32,7 +32,7 @@ export default function StrategyCard({ strategy: s, isSubscribed: isSub, subscri
 
   return (
     <Col xs={24} sm={12} lg={8} xl={6} key={s.publishId || s.strategyId}>
-      <Card hoverable size="small" style={{ borderRadius: 12, height: '100%', borderColor: isSub ? '#D4AF37' : '#E5E7EB' }}
+      <Card hoverable size="small" style={{ borderRadius: 12, height: '100%', borderColor: isSub ? '#D4AF37' : 'var(--color-border)' }}
         actions={[
           isSub ? (
             <Tooltip key="sub" title={t('marketplace.card.unsubscribeHint')}>
@@ -72,8 +72,8 @@ export default function StrategyCard({ strategy: s, isSubscribed: isSub, subscri
             {t(`marketplace.risk.${riskLevel}`, { defaultValue: riskLevel })}</Tag>
           {s.tags?.slice(0, 2).map(tag => <Tag key={tag}>{tag}</Tag>)}
         </Space>
-        {s.description && <Paragraph ellipsis={{ rows: 2 }} style={{ fontSize: 12, color: '#5A6B75', marginBottom: 8 }}>{s.description}</Paragraph>}
-        <div style={{ fontSize: 12, color: '#8A9AA5', marginBottom: 8 }}>
+        {s.description && <Paragraph ellipsis={{ rows: 2 }} style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 8 }}>{s.description}</Paragraph>}
+        <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 8 }}>
           <PieChartOutlined /> {t('marketplace.card.subscribers', { count: subscribers })}: {subscribers} &nbsp;
           <ExperimentOutlined /> {t('marketplace.card.winRate')}: {winRate}
           {s.totalPnl != null && <span style={{ marginLeft: 8, color: s.totalPnl >= 0 ? '#00A651' : '#E53935' }}>{t('trading.pnl')}: ${s.totalPnl.toFixed(0)}</span>}

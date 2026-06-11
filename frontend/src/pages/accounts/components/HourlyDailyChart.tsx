@@ -86,7 +86,7 @@ export function HourlyDailyChart({ hourlyData, dailyPnLData, currency }: Props) 
       </div>
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <div className="xl:col-span-2 min-w-0">{renderChart()}</div>
-        <div className="rounded-xl p-3 border" style={{ borderColor: 'var(--color-border)', background: '#F8FAFC' }}>
+        <div className="rounded-xl p-3 border" style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg-secondary)' }}>
           <div className="text-sm font-semibold mb-2" style={{ color: '#1F2937' }}>
             {timeView === 'hourly' ? (selectedTimePoint?.hourLabel || '--') : `${selectedTimePoint?.date || '--'} ${selectedTimePoint?.day || ''}`}
           </div>

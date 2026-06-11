@@ -11,7 +11,7 @@ export const StatCard = memo(
     icon,
     label,
     value,
-    valueColor = '#141D22',
+    valueColor = 'var(--color-text)',
     background = '#F5F7F9',
   }: {
     icon: React.ReactNode;
@@ -21,7 +21,7 @@ export const StatCard = memo(
     background?: string;
   }) => (
     <div className="p-2 rounded-lg" style={{ background }}>
-      <div style={{ color: '#8A9AA5', fontSize: '10px' }}>{icon} {label}</div>
+      <div style={{ color: 'var(--color-text-muted)', fontSize: '10px' }}>{icon} {label}</div>
       <div className="text-base font-bold" style={{ color: valueColor }}>{value}</div>
     </div>
   ),
@@ -31,15 +31,15 @@ export const InfoCard = memo(
   ({ icon, label, value, loading }: { icon: React.ReactNode; label: string; value: string; loading?: boolean }) => {
     const { t } = useTranslation();
     return (
-      <div className="rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
+      <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
         <div className="flex items-center gap-2 mb-3">
           {icon}
-          <span style={{ color: '#8A9AA5', fontSize: '14px' }}>{label}</span>
+          <span style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>{label}</span>
         </div>
         {loading ? (
-          <div className="text-lg" style={{ color: '#8A9AA5' }}>{t('common.loading')}</div>
+          <div className="text-lg" style={{ color: 'var(--color-text-muted)' }}>{t('common.loading')}</div>
         ) : (
-          <div className="text-2xl font-bold" style={{ color: '#141D22' }}>{value}</div>
+          <div className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>{value}</div>
         )}
       </div>
     );
@@ -52,7 +52,7 @@ export const SmallInfoCard = memo(
     label,
     value,
     loading,
-    valueColor = '#141D22',
+    valueColor = 'var(--color-text)',
   }: {
     icon: React.ReactNode;
     label: string;
@@ -62,13 +62,13 @@ export const SmallInfoCard = memo(
   }) => {
     const { t } = useTranslation();
     return (
-      <div className="rounded-xl p-4" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
+      <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
         <div className="flex items-center gap-2 mb-2">
           {icon}
-          <span style={{ color: '#8A9AA5', fontSize: '13px' }}>{label}</span>
+          <span style={{ color: 'var(--color-text-muted)', fontSize: '13px' }}>{label}</span>
         </div>
         {loading ? (
-          <div className="text-base" style={{ color: '#8A9AA5' }}>{t('common.loading')}</div>
+          <div className="text-base" style={{ color: 'var(--color-text-muted)' }}>{t('common.loading')}</div>
         ) : (
           <div className="text-lg font-semibold" style={{ color: valueColor }}>{value}</div>
         )}
@@ -81,16 +81,16 @@ export const PositionRow = memo(({ position }: { position: any }) => {
   const { t } = useTranslation();
   return (
     <tr className="border-b hover:bg-gray-50" style={{ borderColor: 'rgba(0, 0, 0, 0.06)' }}>
-    <td className="p-3 font-medium" style={{ color: '#141D22' }}>{position.ticket}</td>
-    <td className="p-3" style={{ color: '#141D22' }}>{position.symbol}</td>
+    <td className="p-3 font-medium" style={{ color: 'var(--color-text)' }}>{position.ticket}</td>
+    <td className="p-3" style={{ color: 'var(--color-text)' }}>{position.symbol}</td>
     <td className="p-3">
       <Tag style={{ background: position.type === 'buy' ? 'rgba(0, 166, 81, 0.1)' : 'rgba(229, 57, 53, 0.1)', color: position.type === 'buy' ? '#00A651' : '#E53935', border: 'none', borderRadius: '4px' }}>
         {position.type === 'buy' ? t('trading.strategyExecute.confirm.buy') : t('trading.strategyExecute.confirm.sell')}
       </Tag>
     </td>
-    <td className="text-right p-3" style={{ color: '#141D22' }}>{position.volume}</td>
-    <td className="text-right p-3" style={{ color: '#141D22' }}>{formatPrice(position.openPrice, position.symbol)}</td>
-    <td className="text-right p-3" style={{ color: '#141D22' }}>
+    <td className="text-right p-3" style={{ color: 'var(--color-text)' }}>{position.volume}</td>
+    <td className="text-right p-3" style={{ color: 'var(--color-text)' }}>{formatPrice(position.openPrice, position.symbol)}</td>
+    <td className="text-right p-3" style={{ color: 'var(--color-text)' }}>
       <PositionPrice
         symbol={position.symbol}
         defaultPrice={
@@ -106,7 +106,7 @@ export const PositionRow = memo(({ position }: { position: any }) => {
     <td className="text-right p-3 font-medium" style={{ color: (Number(position.profit) || 0) >= 0 ? '#00A651' : '#E53935' }}>
       {(Number(position.profit) || 0) >= 0 ? '+' : ''}{(Number(position.profit) || 0).toFixed(2)}
     </td>
-    <td className="p-3" style={{ color: '#8A9AA5', fontSize: '12px' }}>{formatTimestamp(position.openTime)}</td>
+    <td className="p-3" style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>{formatTimestamp(position.openTime)}</td>
     </tr>
   );
 });
@@ -115,8 +115,8 @@ export const PendingOrderRow = memo(({ order }: { order: any }) => {
   const { t } = useTranslation();
   return (
     <tr className="border-b hover:bg-gray-50" style={{ borderColor: 'rgba(0, 0, 0, 0.06)' }}>
-    <td className="p-3 font-medium" style={{ color: '#141D22' }}>{order.ticket}</td>
-    <td className="p-3" style={{ color: '#141D22' }}>{order.symbol}</td>
+    <td className="p-3 font-medium" style={{ color: 'var(--color-text)' }}>{order.ticket}</td>
+    <td className="p-3" style={{ color: 'var(--color-text)' }}>{order.symbol}</td>
     <td className="p-3">
       <Tag style={{ background: order.type.includes('buy') ? 'rgba(0, 166, 81, 0.1)' : 'rgba(229, 57, 53, 0.1)', color: order.type.includes('buy') ? '#00A651' : '#E53935', border: 'none', borderRadius: '4px' }}>
         {order.type === 'buy_limit'
@@ -128,9 +128,9 @@ export const PendingOrderRow = memo(({ order }: { order: any }) => {
               : t('accounts.detail.orderTypes.sellStop')}
       </Tag>
     </td>
-    <td className="text-right p-3" style={{ color: '#141D22' }}>{order.volume}</td>
-    <td className="text-right p-3" style={{ color: '#141D22' }}>{formatPrice(order.openPrice, order.symbol)}</td>
-    <td className="text-right p-3" style={{ color: '#141D22' }}>
+    <td className="text-right p-3" style={{ color: 'var(--color-text)' }}>{order.volume}</td>
+    <td className="text-right p-3" style={{ color: 'var(--color-text)' }}>{formatPrice(order.openPrice, order.symbol)}</td>
+    <td className="text-right p-3" style={{ color: 'var(--color-text)' }}>
       <PositionPrice
         symbol={order.symbol}
         defaultPrice={
@@ -143,7 +143,7 @@ export const PendingOrderRow = memo(({ order }: { order: any }) => {
         orderType={order.type.includes('buy') ? 'buy' : 'sell'}
       />
     </td>
-    <td className="p-3" style={{ color: '#8A9AA5', fontSize: '12px' }}>{formatTimestamp(order.openTime)}</td>
+    <td className="p-3" style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>{formatTimestamp(order.openTime)}</td>
     </tr>
   );
 });
@@ -163,8 +163,8 @@ export const HistoryTradeRow = memo(({ trade }: { trade: any }) => {
   
   return (
     <tr className="border-b" style={{ borderColor: 'rgba(0, 0, 0, 0.06)', background: isBalanceRecord ? 'rgba(212, 175, 55, 0.05)' : 'transparent' }}>
-      <td className="p-3 font-medium" style={{ color: '#141D22' }}>{trade.ticket}</td>
-      <td className="p-3" style={{ color: '#141D22' }}>
+      <td className="p-3 font-medium" style={{ color: 'var(--color-text)' }}>{trade.ticket}</td>
+      <td className="p-3" style={{ color: 'var(--color-text)' }}>
         {isBalanceRecord ? (isDeposit ? t('accounts.detail.balanceRecord.depositIconText') : t('accounts.detail.balanceRecord.withdrawIconText')) : (trade.symbol || '--')}
       </td>
       <td className="p-3">
@@ -178,11 +178,11 @@ export const HistoryTradeRow = memo(({ trade }: { trade: any }) => {
           </Tag>
         )}
       </td>
-      <td className="text-right p-3" style={{ color: '#141D22' }}>{isBalanceRecord ? '-' : volume}</td>
-      <td className="text-right p-3" style={{ color: '#141D22' }}>{isBalanceRecord ? '-' : formatPrice(openPrice, trade.symbol)}</td>
-      <td className="text-right p-3" style={{ color: '#141D22' }}>{isBalanceRecord ? '-' : formatPrice(closePrice, trade.symbol)}</td>
+      <td className="text-right p-3" style={{ color: 'var(--color-text)' }}>{isBalanceRecord ? '-' : volume}</td>
+      <td className="text-right p-3" style={{ color: 'var(--color-text)' }}>{isBalanceRecord ? '-' : formatPrice(openPrice, trade.symbol)}</td>
+      <td className="text-right p-3" style={{ color: 'var(--color-text)' }}>{isBalanceRecord ? '-' : formatPrice(closePrice, trade.symbol)}</td>
       <td className="text-right p-3 font-medium" style={{ color: (Number(trade.profit) || 0) >= 0 ? '#00A651' : '#E53935' }}>{(Number(trade.profit) || 0) >= 0 ? '+' : ''}{(Number(trade.profit) || 0).toFixed(2)}</td>
-      <td className="p-3" style={{ color: '#8A9AA5', fontSize: '12px' }}>{formatTimestamp(closeTime)}</td>
+      <td className="p-3" style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>{formatTimestamp(closeTime)}</td>
     </tr>
   );
 });

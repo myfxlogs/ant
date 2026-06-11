@@ -65,7 +65,7 @@ export default function StrategyDetailDrawer({ strategy: detailStrategy, userId,
       {detailStrategy && (
         <>
           {detailStrategy.description && (
-            <Paragraph style={{ color: '#5A6B75' }}>{detailStrategy.description}</Paragraph>
+            <Paragraph style={{ color: 'var(--color-text-secondary)' }}>{detailStrategy.description}</Paragraph>
           )}
           <Space size={4} wrap style={{ marginBottom: 16 }}>
             <Tag color="blue">{t(`marketplace.assetClass.${detailStrategy.assetClass || 'forex'}`, { defaultValue: detailStrategy.assetClass || 'forex' })}</Tag>
