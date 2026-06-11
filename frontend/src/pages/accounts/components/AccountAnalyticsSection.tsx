@@ -93,13 +93,12 @@ function AccountAnalyticsSection(props: Props) {
   // ── Direction cards — filter to only sides with trades ──
   const dirCards = useMemo(() => {
     if (!attr?.direction) return [];
-    const items = [
+    return [
       { key: 'long', label: t('accounts.report.directionLong'), color: 'var(--color-success)',
         profit: attr.direction.longProfit ?? 0, trades: attr.direction.longTrades ?? 0, winRate: attr.direction.longWinRate ?? 0 },
       { key: 'short', label: t('accounts.report.directionShort'), color: 'var(--color-danger)',
         profit: attr.direction.shortProfit ?? 0, trades: attr.direction.shortTrades ?? 0, winRate: attr.direction.shortWinRate ?? 0 },
     ];
-    return items.filter((d) => d.trades > 0);
   }, [attr?.direction, t]);
 
   return (
@@ -260,8 +259,7 @@ function AccountAnalyticsSection(props: Props) {
 
                 {/* Direction — only sides with trades */}
                 {dirCards.length > 0 && (
-                  <div className="grid gap-2"
-                    style={{ gridTemplateColumns: dirCards.length === 1 ? '1fr' : '1fr 1fr' }}>
+                  <div className="grid grid-cols-2 gap-2">
                     {dirCards.map(({ key, label, color, profit, trades, winRate }) => (
                       <div key={key} className="rounded-lg p-2"
                         style={{ border: '1px solid var(--color-border)', background: 'var(--color-bg-secondary)' }}>
