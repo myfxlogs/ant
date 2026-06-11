@@ -83,7 +83,7 @@ export default function OperationLogs() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold" style={{ color: '#141D22' }}>操作日志</h1>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>操作日志</h1>
       </div>
 
       <Card>

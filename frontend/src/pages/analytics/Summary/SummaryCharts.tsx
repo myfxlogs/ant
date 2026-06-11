@@ -32,7 +32,7 @@ export default function SummaryCharts({
   return (
     <>
       <div className="rounded-2xl p-6" style={{ background: '#FFFFFF', boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)' }}>
-        <h2 className="text-lg font-semibold mb-4" style={{ color: '#141D22' }}>{t('analytics.summary.sections.equityCurve')}</h2>
+        <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text)' }}>{t('analytics.summary.sections.equityCurve')}</h2>
         <ResponsiveContainer width="100%" height={250}>
           <LineChart data={equityCurveData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF0" />
@@ -46,7 +46,7 @@ export default function SummaryCharts({
 
       <div className="rounded-2xl p-6 mt-6" style={{ background: '#FFFFFF', boxShadow: '0 4px 24px rgba(0, 0, 0, 0.08)' }}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold" style={{ color: '#141D22' }}>{t('analytics.summary.sections.monthlyStats')}</h2>
+          <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>{t('analytics.summary.sections.monthlyStats')}</h2>
           <Select value={selectedYear} onChange={onYearChange} options={yearOptions} style={{ width: 100 }} />
         </div>
         <ResponsiveContainer width="100%" height={200}>

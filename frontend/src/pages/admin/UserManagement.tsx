@@ -103,7 +103,7 @@ export default function UserManagement() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold" style={{ color: '#141D22' }}>{t('admin.userManagement.title')}</h1>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>{t('admin.userManagement.title')}</h1>
         <Space>
           {selectedRowKeys.length > 0 && (
             <Popconfirm

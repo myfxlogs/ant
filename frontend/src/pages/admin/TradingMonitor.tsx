@@ -66,7 +66,7 @@ export default function TradingMonitor() {
     <StatusResult loading={isLoading} error={error?.message} onRetry={() => refetch()} empty={!isLoading && !error && !summary}>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold" style={{ color: '#141D22' }}>{t('admin.trading.title')}</h1>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>{t('admin.trading.title')}</h1>
           <RangePicker onChange={(dates) => handleDateChange(dates as [Date | null, Date | null] | null)} />
         </div>
 

@@ -98,7 +98,7 @@ export default function SystemConfigPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold" style={{ color: '#141D22' }}>{t('admin.config.title')}</h1>
+      <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>{t('admin.config.title')}</h1>
       <Card>
         <StatusResult error={error} onRetry={fetchConfigs}>
           <Table

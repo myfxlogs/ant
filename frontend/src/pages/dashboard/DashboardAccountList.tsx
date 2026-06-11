@@ -47,7 +47,7 @@ function AccountCard({ item, navigate, t }: { item: Account; navigate: (path: st
       onClick={() => navigate(`/accounts/${item.id}`)}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/accounts/${item.id}`); } }}
       className="p-4 rounded-xl cursor-pointer transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#D4AF37]"
-      style={{ background: '#F5F7F9', border: '1px solid rgba(0,0,0,0.05)' }}
+      style={{ background: 'var(--color-bg-secondary)', border: '1px solid rgba(0,0,0,0.05)' }}
       onMouseEnter={(e) => {
         e.currentTarget.style.background = '#E8ECF0';
         e.currentTarget.style.borderColor = 'rgba(212,175,55,0.2)';
@@ -65,33 +65,33 @@ function AccountCard({ item, navigate, t }: { item: Account; navigate: (path: st
         >
           <BankOutlined style={{ fontSize: 16, color: isMT4 ? '#2196F3' : '#D4AF37' }} />
         </div>
-        <span style={{ color: '#141D22', fontWeight: 600, fontSize: 14 }}>{item.login}</span>
+        <span style={{ color: 'var(--color-text)', fontWeight: 600, fontSize: 14 }}>{item.login}</span>
         <Tag color={isMT4 ? 'blue' : 'gold'} className="!text-xs !m-0">{item.mtType}</Tag>
         <div className="flex-1" />
         {getStatusTag(item, t)}
       </div>
 
       {/* Server — more specific than company name */}
-      <div className="text-xs mb-3 truncate" style={{ color: '#8A9AA5' }}>{item.brokerServer || '—'}</div>
+      <div className="text-xs mb-3 truncate" style={{ color: 'var(--color-text-muted)' }}>{item.brokerServer || '—'}</div>
 
       {/* Financials — 3 columns */}
       <div className="grid grid-cols-3 gap-2 text-center">
         <div>
-          <div className="text-xs mb-0.5" style={{ color: '#8A9AA5' }}>{t('dashboard.fields.balance')}</div>
+          <div className="text-xs mb-0.5" style={{ color: 'var(--color-text-muted)' }}>{t('dashboard.fields.balance')}</div>
           <div className="text-sm font-semibold" style={{ color: isDisabled ? '#8A9AA5' : '#141D22' }}>{fmt(balance, '$')}</div>
         </div>
         <div>
-          <div className="text-xs mb-0.5" style={{ color: '#8A9AA5' }}>{t('dashboard.fields.equity')}</div>
+          <div className="text-xs mb-0.5" style={{ color: 'var(--color-text-muted)' }}>{t('dashboard.fields.equity')}</div>
           <div className="text-sm font-semibold" style={{ color: isDisabled ? '#8A9AA5' : '#141D22' }}>{fmt(equity, '$')}</div>
         </div>
         {isDisabled ? (
           <div>
-            <div className="text-xs mb-0.5" style={{ color: '#8A9AA5' }}>{t('dashboard.fields.floating')}</div>
-            <div className="text-sm font-semibold" style={{ color: '#8A9AA5' }}>--</div>
+            <div className="text-xs mb-0.5" style={{ color: 'var(--color-text-muted)' }}>{t('dashboard.fields.floating')}</div>
+            <div className="text-sm font-semibold" style={{ color: 'var(--color-text-muted)' }}>--</div>
           </div>
         ) : (
         <div>
-          <div className="text-xs mb-0.5" style={{ color: '#8A9AA5' }}>{t('dashboard.fields.floating')}</div>
+          <div className="text-xs mb-0.5" style={{ color: 'var(--color-text-muted)' }}>{t('dashboard.fields.floating')}</div>
           <div
             className="text-sm font-semibold flex items-center justify-center gap-1"
             style={{ color: (Number.isFinite(floating) ? floating : 0) >= 0 ? '#00A651' : '#E53935' }}
@@ -116,7 +116,7 @@ export default function DashboardAccountList({ accounts, loading, error, onRetry
 
   return (
     <Card
-      title={<span style={{ color: '#141D22', fontWeight: 500 }}>{t('dashboard.accountList')}</span>}
+      title={<span style={{ color: 'var(--color-text)', fontWeight: 500 }}>{t('dashboard.accountList')}</span>}
       className="glass-card"
     >
       <StatusResult

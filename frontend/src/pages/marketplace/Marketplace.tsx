@@ -80,7 +80,7 @@ export default function MarketplacePage() {
   const getSubId = (strategyId: string) => subscriptions.find(s => s.strategyId === strategyId)?.subscriptionId;
 
   return (
-    <div className="min-h-screen" style={{ background: '#F5F7F9', padding: isMobile ? '16px 12px 80px' : '24px 24px 80px' }}>
+    <div className="min-h-screen" style={{ background: 'var(--color-bg-secondary)', padding: isMobile ? '16px 12px 80px' : '24px 24px 80px' }}>
       <div className="max-w-7xl mx-auto">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
           <div>
