@@ -98,21 +98,21 @@ export default function AccountReport() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#F5F7F9' }}>
+    <div className="min-h-screen" style={{ background: 'var(--color-bg-secondary)' }}>
       <div className="max-w-7xl mx-auto p-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <Button type="text" icon={<ArrowLeftOutlined />}
-              onClick={() => navigate(`/accounts/${id}`)} style={{ color: '#8A9AA5' }} />
+              onClick={() => navigate(`/accounts/${id}`)} style={{ color: 'var(--color-text-muted)' }} />
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold" style={{ color: '#141D22' }}>
+                <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
                   {t('accounts.report.title')}
                 </h1>
                 <Tag color={currentAccount.mtType === 'MT4' ? 'blue' : 'purple'}>{currentAccount.mtType}</Tag>
               </div>
-              <p style={{ color: '#8A9AA5', fontSize: 14 }}>
+              <p style={{ color: 'var(--color-text-muted)', fontSize: 14 }}>
                 {currentAccount.login} · {currentAccount.brokerCompany}
               </p>
             </div>
@@ -134,16 +134,16 @@ export default function AccountReport() {
             { label: t('accounts.detail.cards.equity'), value: `${equity.toFixed(2)} ${currentAccount.currency || 'USD'}` },
             { label: t('accounts.detail.cards.floatingProfit'), value: `${profit >= 0 ? '+' : ''}${profit.toFixed(2)} (${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%)`, color: profit >= 0 ? '#00A651' : '#E53935' },
           ].map((card, i) => (
-            <div key={i} className="rounded-xl p-4" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-              <Text style={{ color: '#8A9AA5', fontSize: 13 }}>{card.label}</Text>
-              <div className="text-xl font-bold mt-1" style={{ color: card.color || '#141D22' }}>{card.value}</div>
+            <div key={i} className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
+              <Text style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{card.label}</Text>
+              <div className="text-xl font-bold mt-1" style={{ color: card.color || 'var(--color-text)' }}>{card.value}</div>
             </div>
           ))}
         </div>
 
         {/* AI Narrative */}
         {(narrative || generating) && (
-          <div className="rounded-2xl p-6 mb-6" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+          <div className="rounded-2xl p-6 mb-6" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
             <Title level={5} style={{ marginBottom: 16 }}>
               <TrophyOutlined /> {t('accounts.report.aiAnalysis')}
             </Title>
@@ -155,25 +155,25 @@ export default function AccountReport() {
             {/* Structured sections */}
             {sections.summary && (
               <div className="mb-4">
-                <Text strong style={{ color: '#141D22' }}>{t('accounts.report.sections.summary')}</Text>
-                <Paragraph style={{ color: '#475467', marginTop: 4 }}>{sections.summary}</Paragraph>
+                <Text strong style={{ color: 'var(--color-text)' }}>{t('accounts.report.sections.summary')}</Text>
+                <Paragraph style={{ color: 'var(--color-text-secondary)', marginTop: 4 }}>{sections.summary}</Paragraph>
               </div>
             )}
             {sections.findings && (
               <div className="mb-4">
-                <Text strong style={{ color: '#141D22' }}>{t('accounts.report.sections.findings')}</Text>
-                <Paragraph style={{ color: '#475467', marginTop: 4, whiteSpace: 'pre-wrap' }}>{sections.findings}</Paragraph>
+                <Text strong style={{ color: 'var(--color-text)' }}>{t('accounts.report.sections.findings')}</Text>
+                <Paragraph style={{ color: 'var(--color-text-secondary)', marginTop: 4, whiteSpace: 'pre-wrap' }}>{sections.findings}</Paragraph>
               </div>
             )}
             {sections.recommendations && (
               <div className="mb-4">
-                <Text strong style={{ color: '#141D22' }}>{t('accounts.report.sections.recommendations')}</Text>
-                <Paragraph style={{ color: '#475467', marginTop: 4, whiteSpace: 'pre-wrap' }}>{sections.recommendations}</Paragraph>
+                <Text strong style={{ color: 'var(--color-text)' }}>{t('accounts.report.sections.recommendations')}</Text>
+                <Paragraph style={{ color: 'var(--color-text-secondary)', marginTop: 4, whiteSpace: 'pre-wrap' }}>{sections.recommendations}</Paragraph>
               </div>
             )}
             {/* Raw streaming text if sections not parsed yet */}
             {!sections.summary && narrative && (
-              <div className="rounded-lg p-4" style={{ background: '#F8FAFC', whiteSpace: 'pre-wrap', color: '#475467', fontSize: 14, lineHeight: 1.8 }}>
+              <div className="rounded-lg p-4" style={{ background: 'var(--color-bg-secondary)', whiteSpace: 'pre-wrap', color: 'var(--color-text-secondary)', fontSize: 14, lineHeight: 1.8 }}>
                 {narrative}
                 {generating && <span className="inline-block w-2 h-4 ml-1 animate-pulse" style={{ background: '#D4AF37' }} />}
               </div>
@@ -185,15 +185,15 @@ export default function AccountReport() {
         <StatusResult loading={attributionQ.isLoading} error={attributionQ.error?.message}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             {/* Symbol P&L ranking */}
-            <div className="rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+            <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
               <Title level={5}><BarChartOutlined /> {t('accounts.report.symbolPnL')}</Title>
               {attribution?.symbolPnls?.length ? (
                 <ResponsiveContainer width="100%" height={280}>
                   <ComposedChart layout="vertical" data={attribution.symbolPnls.slice(0, 8)}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                    <XAxis type="number" stroke="#8A9AA5" fontSize={11} />
-                    <YAxis type="category" dataKey="symbol" width={70} stroke="#8A9AA5" fontSize={11} />
-                    <Tooltip contentStyle={{ background: '#FFFFFF', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                    <XAxis type="number" stroke="var(--color-text-muted)" fontSize={11} />
+                    <YAxis type="category" dataKey="symbol" width={70} stroke="var(--color-text-muted)" fontSize={11} />
+                    <Tooltip contentStyle={{ background: 'var(--color-bg-card)', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px var(--color-shadow)' }} />
                     <Bar dataKey="netProfit" radius={[0, 4, 4, 0]} isAnimationActive={false}>
                       {attribution.symbolPnls.slice(0, 8).map((_: unknown, i: number) => (
                         <Cell key={i} fill={(attribution.symbolPnls?.[i]?.netProfit ?? 0) >= 0 ? '#00A651' : '#E53935'} />
@@ -201,11 +201,11 @@ export default function AccountReport() {
                     </Bar>
                   </ComposedChart>
                 </ResponsiveContainer>
-              ) : <div className="flex items-center justify-center h-[280px]" style={{ color: '#8A9AA5' }}>{t('accounts.analytics.empty.monthlyProfit')}</div>}
+              ) : <div className="flex items-center justify-center h-[280px]" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.analytics.empty.monthlyProfit')}</div>}
             </div>
 
             {/* Direction breakdown */}
-            <div className="rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+            <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
               <Title level={5}><PieChartOutlined /> {t('accounts.report.direction')}</Title>
               {attribution?.direction ? (
                 <div className="grid grid-cols-2 gap-4 mt-4">
@@ -213,9 +213,9 @@ export default function AccountReport() {
                     { label: t('accounts.report.directionLong'), color: '#00A651', d: { profit: attribution.direction.longProfit, trades: attribution.direction.longTrades, winRate: attribution.direction.longWinRate } },
                     { label: t('accounts.report.directionShort'), color: '#E53935', d: { profit: attribution.direction.shortProfit, trades: attribution.direction.shortTrades, winRate: attribution.direction.shortWinRate } },
                   ].map(({ label, color, d }) => (
-                    <div key={label} className="rounded-xl p-4" style={{ border: '1px solid #E5E7EB' }}>
+                    <div key={label} className="rounded-xl p-4" style={{ border: '1px solid var(--color-border)' }}>
                       <Text strong style={{ color }}>{label}</Text>
-                      <div className="mt-2 space-y-1" style={{ fontSize: 13, color: '#475467' }}>
+                      <div className="mt-2 space-y-1" style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>
                         <div>{t('accounts.analytics.stats.netProfit')}: <Text strong style={{ color: d.profit >= 0 ? '#00A651' : '#E53935' }}>{d.profit >= 0 ? '+' : ''}{d.profit.toFixed(2)}</Text></div>
                         <div>{t('accounts.analytics.stats.totalTrades')}: {d.trades}</div>
                         <div>{t('accounts.analytics.stats.winRate')}: {d.winRate.toFixed(1)}%</div>
@@ -224,20 +224,20 @@ export default function AccountReport() {
                   ))}
                 </div>
               ) : (
-                <div className="flex items-center justify-center h-[200px]" style={{ color: '#8A9AA5' }}>{t('accounts.analytics.empty.monthlyProfit')}</div>
+                <div className="flex items-center justify-center h-[200px]" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.analytics.empty.monthlyProfit')}</div>
               )}
             </div>
 
             {/* Trade profit distribution */}
             {attribution?.tradeDistribution?.profitBuckets?.length ? (
-              <div className="rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+              <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
                 <Title level={5}><BarChartOutlined /> {t('accounts.report.tradeDistribution')}</Title>
                 <ResponsiveContainer width="100%" height={250}>
                   <ComposedChart data={attribution.tradeDistribution.profitBuckets}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                    <XAxis dataKey="label" stroke="#8A9AA5" fontSize={10} angle={-30} textAnchor="end" height={60} />
-                    <YAxis stroke="#8A9AA5" fontSize={11} />
-                    <Tooltip contentStyle={{ background: '#FFFFFF', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                    <XAxis dataKey="label" stroke="var(--color-text-muted)" fontSize={10} angle={-30} textAnchor="end" height={60} />
+                    <YAxis stroke="var(--color-text-muted)" fontSize={11} />
+                    <Tooltip contentStyle={{ background: 'var(--color-bg-card)', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px var(--color-shadow)' }} />
                     <Bar dataKey="count" fill="#2196F3" radius={[4, 4, 0, 0]} isAnimationActive={false} />
                   </ComposedChart>
                 </ResponsiveContainer>
@@ -251,18 +251,18 @@ export default function AccountReport() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             {/* Equity + Drawdown overlay */}
             {rolling?.equityCurve?.length ? (
-              <div className="rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+              <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
                 <Title level={5}><LineChartOutlined /> {t('accounts.report.drawdownOverlay')}</Title>
                 <ResponsiveContainer width="100%" height={280}>
                   <ComposedChart data={rolling.equityCurve.map((p, i) => ({
                     ...p,
                     drawdown: rolling.drawdownCurve?.[i]?.drawdownPercent ?? 0,
                   }))}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                    <XAxis dataKey="date" stroke="#8A9AA5" fontSize={10} />
-                    <YAxis yAxisId="left" stroke="#8A9AA5" fontSize={11} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                    <XAxis dataKey="date" stroke="var(--color-text-muted)" fontSize={10} />
+                    <YAxis yAxisId="left" stroke="var(--color-text-muted)" fontSize={11} />
                     <YAxis yAxisId="right" orientation="right" stroke="#E53935" fontSize={11} domain={[100, 0]} />
-                    <Tooltip contentStyle={{ background: '#FFFFFF', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                    <Tooltip contentStyle={{ background: 'var(--color-bg-card)', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px var(--color-shadow)' }} />
                     <Line yAxisId="left" type="monotone" dataKey="equity" stroke="#2196F3" strokeWidth={2} dot={false} name="Equity" isAnimationActive={false} />
                     <Line yAxisId="right" type="monotone" dataKey="drawdown" stroke="#E53935" strokeWidth={1} dot={false} name="DD%" isAnimationActive={false} fillOpacity={0.1} fill="#E53935" />
                   </ComposedChart>
@@ -272,14 +272,14 @@ export default function AccountReport() {
 
             {/* Drawdown events */}
             {rolling?.drawdownEvents?.length ? (
-              <div className="rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+              <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
                 <Title level={5}><FallOutlined /> {t('accounts.report.drawdownEvents')}</Title>
                 <div className="space-y-2 max-h-[280px] overflow-y-auto">
                   {rolling.drawdownEvents.map((e, i) => (
-                    <div key={i} className="flex items-center justify-between rounded-lg p-3" style={{ border: '1px solid #E5E7EB' }}>
+                    <div key={i} className="flex items-center justify-between rounded-lg p-3" style={{ border: '1px solid var(--color-border)' }}>
                       <div>
-                        <Text style={{ color: '#141D22', fontSize: 13 }}>{e.startDate} → {e.endDate || '...'}</Text>
-                        {e.recoveryDate && <Text style={{ color: '#8A9AA5', fontSize: 12, marginLeft: 8 }}>{t('accounts.report.recovered')}: {e.recoveryDate}</Text>}
+                        <Text style={{ color: 'var(--color-text)', fontSize: 13 }}>{e.startDate} → {e.endDate || '...'}</Text>
+                        {e.recoveryDate && <Text style={{ color: 'var(--color-text-muted)', fontSize: 12, marginLeft: 8 }}>{t('accounts.report.recovered')}: {e.recoveryDate}</Text>}
                       </div>
                       <Tag color="error">{e.depthPercent.toFixed(1)}%</Tag>
                     </div>
@@ -290,14 +290,14 @@ export default function AccountReport() {
 
             {/* Monthly win rate trend */}
             {rolling?.monthlyWinRates?.length ? (
-              <div className="rounded-2xl p-5" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+              <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
                 <Title level={5}><RiseOutlined /> {t('accounts.report.winRateTrend')}</Title>
                 <ResponsiveContainer width="100%" height={250}>
                   <ComposedChart data={rolling.monthlyWinRates}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                    <XAxis dataKey="month" stroke="#8A9AA5" fontSize={10} />
-                    <YAxis stroke="#8A9AA5" fontSize={11} domain={[0, 100]} />
-                    <Tooltip contentStyle={{ background: '#FFFFFF', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                    <XAxis dataKey="month" stroke="var(--color-text-muted)" fontSize={10} />
+                    <YAxis stroke="var(--color-text-muted)" fontSize={11} domain={[0, 100]} />
+                    <Tooltip contentStyle={{ background: 'var(--color-bg-card)', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px var(--color-shadow)' }} />
                     <Line type="monotone" dataKey="winRate" stroke="#00A651" strokeWidth={2} dot isAnimationActive={false} />
                   </ComposedChart>
                 </ResponsiveContainer>
