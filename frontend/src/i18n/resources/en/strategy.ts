@@ -415,16 +415,6 @@ const strategy = {
         summary: '{{count}} trades · {{wins}} wins / {{losses}} losses · net P&L {{pnl}}'
       }
     },
-    backtestHistory: {
-      title: 'Backtest History',
-      empty: 'No backtest runs found',
-      deleteConfirm: 'Delete this backtest run?',
-      batchDeleteConfirm: 'Delete {{count}} selected backtest runs?',
-      batchDelete: 'Delete {{count}} selected',
-      actions: {
-        view: 'View',
-      },
-    },
     scheduleLogs: {
       title: 'Schedule logs',
       titleWithName: 'Schedule logs: {{name}}',
@@ -679,7 +669,7 @@ const strategy = {
         emptyLogs: 'No logs',
         emptySignal: 'No signal'
       },
-      createSchedule: 'Create Run'
+      createSchedule: 'Create Schedule'
     },
     asset: {
       title: 'Strategy Assets',
@@ -1181,6 +1171,7 @@ def run(context):
     paramRange: 'Range',
     paramDescription: 'Description'
   },
+
     library: {
       title: 'Strategy Library',
       myStrategies: 'My Strategies',
@@ -1210,7 +1201,6 @@ def run(context):
       codePreview: 'Code Preview',
       viewCode: 'View Strategy Code',
     }
-  }
 } as const;
 
 export default strategy;

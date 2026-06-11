@@ -1239,7 +1239,8 @@ def run(context):
         loaded: 'ロード済'
       }
     }
-  }
+  },
+
     library: {
       title: '戦略ライブラリ',
       myStrategies: 'マイ戦略',
@@ -1269,7 +1270,6 @@ def run(context):
       codePreview: 'コードプレビュー',
       viewCode: '戦略コードを表示',
     }
-  }
 } as const;
 
 export default strategy;

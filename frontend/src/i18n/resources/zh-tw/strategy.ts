@@ -1243,7 +1243,8 @@ def run(context):
         loaded: '已載入'
       }
     }
-  }
+  },
+
     library: {
       title: '策略庫',
       myStrategies: '我的策略',
@@ -1273,7 +1274,6 @@ def run(context):
       codePreview: '程式碼預覽',
       viewCode: '檢視策略程式碼',
     }
-  }
 } as const;
 
 export default strategy;

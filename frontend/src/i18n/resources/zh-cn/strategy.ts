@@ -1321,7 +1321,8 @@ def run(context):
     paramDefault: '默认值',
     paramRange: '范围',
     paramDescription: '描述'
-  }
+  },
+
     library: {
       title: '策略库',
       myStrategies: '我的策略',
@@ -1351,7 +1352,6 @@ def run(context):
       codePreview: '代码预览',
       viewCode: '查看策略代码',
     }
-  }
 } as const;
 
 export default strategy;

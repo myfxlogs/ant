@@ -1239,7 +1239,8 @@ def run(context):
         loaded: 'Đã tải'
       }
     }
-  }
+  },
+
     library: {
       title: 'Thư viện chiến lược',
       myStrategies: 'Chiến lược của tôi',
@@ -1269,7 +1270,6 @@ def run(context):
       codePreview: 'Xem trước code',
       viewCode: 'Xem code chiến lược',
     }
-  }
 } as const;
 
 export default strategy;
