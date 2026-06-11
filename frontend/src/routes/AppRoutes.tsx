@@ -23,7 +23,7 @@ const StrategyLibraryPage = lazy(() => import('@/pages/strategy/StrategyLibraryP
 const StrategyScheduleLogsPage = lazy(() => import('@/pages/strategy/StrategyScheduleLogsPage'));
 const IndicatorCatalogPage = lazy(() => import('@/pages/strategy/IndicatorCatalogPage'));
 const StrategyWorkspacePage = lazy(() => import('@/pages/strategy/StrategyWorkspacePage'));
-const MarketplacePage = lazy(() => import('@/pages/marketplace/Marketplace'));
+const MarketplacePage = lazy(() => import('@/pages/marketplace/MarketplacePage'));
 const AssetAnalysisPage = lazy(() => import('@/pages/strategy/AssetAnalysis'));
 const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'));
 const WalletPage = lazy(() => import('@/pages/wallet/WalletPage'));

@@ -150,83 +150,64 @@ const base = {
   },
   marketplace: {
     title: 'Strategy Marketplace',
-    subtitle: 'Discover, rate, and subscribe to community strategies',
-    publishModal: {
-      symbolsPlaceholder: 'EURUSD, GBPUSD, XAUUSD',
-      strategyId: 'Strategy ID',
-      title: 'Publish Strategy',
-      titleField: 'Title',
-      titlePlaceholder: 'Enter strategy title',
-      description: 'Description',
-      assetClass: 'Asset Class',
-      riskLevel: 'Risk Level',
-      priceModel: 'Price Model',
-      priceAmount: 'Price Amount',
-      symbols: 'Symbols',
-      tags: 'Tags',
-      timeframe: 'Timeframe',
-      submit: 'Publish'
-    },
+    subtitle: 'Discover, buy, and use community strategies',
     publish: 'Publish Strategy',
     tabs: {
-      marketplace: 'Marketplace',
-      subscriptions: 'My Subscriptions'
+      marketplace: 'Market',
+      purchases: 'My Purchases',
+      author: 'Author Center',
+      subscriptions: 'My Subscriptions',
     },
     searchPlaceholder: 'Search strategies...',
     filterByClass: 'Filter by asset class',
+    filter: { all: 'All', free: 'Free', paid: 'Paid' },
     sort: {
+      score: 'Composite Score',
       newest: 'Newest',
       popular: 'Most Popular',
-      performance: 'Best Performance'
+      performance: 'Best Performance',
+      rating: 'Highest Rated',
+      priceAsc: 'Price: Low to High',
+      priceDesc: 'Price: High to Low',
     },
     empty: 'No strategies published yet',
     noSubscriptions: 'No subscriptions yet',
     card: {
-      subscribe: 'Subscribe',
-      subscribed: 'Subscribed',
-      unsubscribe: 'Unsubscribe',
-      unsubscribeHint: 'Click to unsubscribe',
-      details: 'Details',
+      free: 'Free', rent: '¥{{amount}}/mo', buy: '¥{{amount}}',
+      owned: 'Purchased', users: 'Users',
+      winRate: 'Win Rate', pnl: 'Total PnL',
       subscribers: 'Subscribers',
-      winRate: 'Win Rate',
-      by: 'by'
+      by: 'by',
     },
-    assetClass: {
-      forex: 'Forex',
-      crypto: 'Crypto',
-      commodity: 'Commodity',
-      index: 'Index',
-      stock: 'Stock',
-      other: 'Other'
-    },
-    risk: {
-      low: 'Low',
-      medium: 'Medium',
-      high: 'High'
-    },
+    assetClass: { forex: 'Forex', crypto: 'Crypto', commodity: 'Commodity', index: 'Index', stock: 'Stock', other: 'Other' },
+    risk: { low: 'Low', medium: 'Medium', high: 'High' },
     messages: {
       loginFirst: 'Please log in first',
-      subscribed: 'Subscribed successfully',
-      subscribeFailed: 'Failed to subscribe',
-      unsubscribed: 'Unsubscribed',
-      unsubscribeFailed: 'Failed to unsubscribe',
-      rated: 'Rating submitted',
-      rateFailed: 'Failed to rate',
-      commentPosted: 'Comment posted',
-      commentFailed: 'Failed to post comment',
-      publishFailed: 'Failed to publish',
-      published: 'Published successfully'
+      subscribed: 'Added to your purchases',
+      subscribeFailed: 'Failed',
+      paymentComingSoon: 'Payment coming soon',
     },
     detail: {
-      comments: 'Comments',
-      noComments: 'No comments yet. Be the first!',
-      commentPlaceholder: 'Write a comment... (Shift+Enter for new line)'
+      author: 'Author', price: 'Price',
+      assetClass: 'Asset Class', riskLevel: 'Risk Level',
+      subscribers: 'Subscribers', avgRating: 'Rating',
+      description: 'Description', tags: 'Tags',
+      getFree: 'Get Free', buyNow: 'Buy Now',
+      rentPrice: '¥{{amount}} / month', buyPrice: '¥{{amount}} one-time',
+      comments: 'Comments', noComments: 'No comments yet',
+      commentPlaceholder: 'Write a comment...',
     },
-    priceModel: {
-      free: 'Free',
-      subscription: 'Subscription',
-      performanceFee: 'Performance Fee'
-    }
+    purchases: {
+      empty: 'No purchases yet. Browse the market to find strategies.',
+      strategy: 'Strategy', date: 'Purchased',
+      status: 'Status', actions: 'Actions',
+    },
+    author: {
+      empty: 'No strategies published yet. Go to Strategy Library to publish one.',
+      published: 'Published', subscribers: 'Subscribers',
+      avgRating: 'Avg Rating', noPublished: 'No published strategies',
+    },
+    priceModel: { free: 'Free', subscription: 'Subscription', performanceFee: 'Performance Fee' },
   },
   market: {
     searchPlaceholder: 'Search symbol (e.g. EURUSD, XAUUSD)',
