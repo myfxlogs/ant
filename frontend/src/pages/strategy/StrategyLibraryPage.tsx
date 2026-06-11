@@ -5,16 +5,9 @@ import { useStrategyLibrary } from './hooks/useStrategyLibrary';
 import LibraryLeftPanel from './components/library/LibraryLeftPanel';
 import LibraryRightPanel from './components/library/LibraryRightPanel';
 import type { StrategyTemplate } from '@/client/strategy';
-import { strategyTemplateApi } from '@/client/strategy-schedules';
 
-const StrategyTemplateEditModal = lazy(() => import('./StrategyTemplateEditModal'));
-const StrategyTemplateCodeViewModal = lazy(() => import('./StrategyTemplateEditModal').then(m => ({ default: (m as any).CodeViewModal || (() => null) })));
+const StrategyTemplateEditModal = lazy(() => import('./StrategyTemplateEditModal').then(m => ({ default: m.StrategyTemplateEditModal })));
 const BacktestRunDrawer = lazy(() => import('@/components/strategy/BacktestRunDrawer'));
-
-// CodeViewModal is exported from the same file — check if it's a separate export
-const CodeViewModal = lazy(() => import('./StrategyTemplateEditModal').then(m => {
-  return { default: (m as any).StrategyTemplateCodeViewModal || (() => null) };
-}));
 
 export default function StrategyLibraryPage() {
   const { t } = useTranslation();
