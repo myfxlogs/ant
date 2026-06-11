@@ -73,7 +73,7 @@ export default function LibraryRightPanel({
     },
     {
       key: 'schedules' as LibraryTab,
-      label: t('strategy.library.schedules', '调度'),
+      label: t('strategy.library.schedules', '运行'),
       children: <LibraryScheduleTab {...scheduleProps} />,
     },
     {

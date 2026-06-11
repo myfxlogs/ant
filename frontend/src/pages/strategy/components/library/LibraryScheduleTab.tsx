@@ -79,7 +79,7 @@ export default function LibraryScheduleTab(props: Props) {
       <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span />
         <Button type="primary" icon={<PlusOutlined />} onClick={props.openCreate}>
-          {t('strategy.schedules.createSchedule', '新建调度')}
+          {t('strategy.schedules.createSchedule', '新建运行')}
         </Button>
       </div>
 

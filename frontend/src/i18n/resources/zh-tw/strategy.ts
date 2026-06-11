@@ -1269,7 +1269,7 @@ def run(context):
       scheduleRunningCount: '{{count}} 個執行中',
       noSchedules: '未執行',
       openInWorkspace: '在 Workspace 中開啟',
-      createSchedule: '建立排程',
+      createSchedule: '建立執行',
       codePreview: '程式碼預覽',
       viewCode: '檢視策略程式碼',
     }

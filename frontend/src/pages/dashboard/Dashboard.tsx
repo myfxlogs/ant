@@ -19,7 +19,7 @@ import DashboardAccountList from './DashboardAccountList';
 
 const quickActions = [
   { key: 'bind', label: 'dashboard.quickActions.bindAccount', path: '/accounts/bind', icon: <PlusOutlined size={22} />, color: 'rgba(212,175,55,0.1)' },
-  { key: 'templates', label: 'dashboard.quickActions.templates', path: '/strategy/templates', icon: <PieChartOutlined size={22} />, color: 'rgba(0,166,81,0.1)' },
+  { key: 'library', label: 'dashboard.quickActions.library', path: '/strategy/library', icon: <PieChartOutlined size={22} />, color: 'rgba(0,166,81,0.1)' },
   { key: 'analytics', label: 'dashboard.quickActions.analytics', path: '/analytics', icon: <BarChartOutlined size={22} />, color: 'rgba(33,150,243,0.1)' },
   { key: 'logs', label: 'dashboard.quickActions.logs', path: '/logs', icon: <BarChartOutlined size={22} />, color: 'rgba(156,39,176,0.1)' },
 ];

@@ -679,7 +679,7 @@ const strategy = {
         emptyLogs: 'No logs',
         emptySignal: 'No signal'
       },
-      createSchedule: 'Create Schedule'
+      createSchedule: 'Create Run'
     },
     asset: {
       title: 'Strategy Assets',
@@ -1203,10 +1203,10 @@ def run(context):
       schedules: 'Auto Run',
       backtestHistory: 'Backtest History',
       scheduleCount: '{{count}} running',
-      scheduleRunningCount: '{{count}} schedules running',
-      noSchedules: 'No schedules',
+      scheduleRunningCount: '{{count}} running',
+      noSchedules: 'Not running',
       openInWorkspace: 'Open in Workspace',
-      createSchedule: 'Create Schedule',
+      createSchedule: 'Create Run',
       codePreview: 'Code Preview',
       viewCode: 'View Strategy Code',
     }

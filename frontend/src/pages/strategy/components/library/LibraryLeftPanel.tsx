@@ -71,7 +71,7 @@ export default function LibraryLeftPanel({
           <List
             loading={loading ? { spinning: true, indicator: <LoadingOutlined style={{ fontSize: 20 }} /> } : false}
             dataSource={templates}
-            locale={{ emptyText: t('strategy.library.empty', '暂无策略模板') }}
+            locale={{ emptyText: t('strategy.library.empty', '暂无策略') }}
             renderItem={(tpl: StrategyTemplate) => {
               const id = String(tpl.id || '');
               const tags = Array.isArray((tpl as any).tags) ? (tpl as any).tags : [];
@@ -108,8 +108,8 @@ export default function LibraryLeftPanel({
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Text type="secondary" style={{ fontSize: 12 }}>
                       {scheduleCount > 0
-                        ? t('strategy.library.scheduleCount', { count: scheduleCount }, '{{count}} 个调度运行中')
-                        : t('strategy.library.noSchedules', '未调度')}
+                        ? t('strategy.library.scheduleCount', { count: scheduleCount }, '{{count}} 个运行中')
+                        : t('strategy.library.noSchedules', '未运行')}
                     </Text>
                     {!isSystem && (
                       <span onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: 4 }}>

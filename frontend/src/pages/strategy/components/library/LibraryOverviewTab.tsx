@@ -60,7 +60,7 @@ export default function LibraryOverviewTab({
               ? <Tag color="green">{t('strategy.library.published', '已发布')}</Tag>
               : <Tag>{t('strategy.library.draft', '草稿')}</Tag>}
         </Descriptions.Item>
-        <Descriptions.Item label={t('strategy.library.scheduleCount', '调度')}>
+        <Descriptions.Item label={t('strategy.library.scheduleCount', '运行')}>
           {scheduleCount > 0
             ? <Text style={{ color: '#1677ff' }}>{t('strategy.library.scheduleRunningCount', { count: scheduleCount }, '{{count}} 个运行中')}</Text>
             : <Text type="secondary">{t('strategy.library.noSchedules', '无')}</Text>}
@@ -107,7 +107,7 @@ export default function LibraryOverviewTab({
           {t('strategy.templates.actions.backtest', '回测')}
         </Button>
         <Button onClick={onOpenCreateSchedule}>
-          {t('strategy.library.createSchedule', '创建调度')}
+          {t('strategy.library.createSchedule', '创建运行')}
         </Button>
         <Button icon={<ExportOutlined />}
           onClick={() => navigate(`/strategy/workspace?templateId=${id}`)}>
