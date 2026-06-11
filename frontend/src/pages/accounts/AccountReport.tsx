@@ -210,15 +210,15 @@ export default function AccountReport() {
               {attribution?.direction ? (
                 <div className="grid grid-cols-2 gap-4 mt-4">
                   {[
-                    { label: t('accounts.report.directionLong'), color: '#00A651', d: { profit: attribution.direction.longProfit, trades: attribution.direction.longTrades, winRate: attribution.direction.longWinRate } },
-                    { label: t('accounts.report.directionShort'), color: '#E53935', d: { profit: attribution.direction.shortProfit, trades: attribution.direction.shortTrades, winRate: attribution.direction.shortWinRate } },
+                    { label: t('accounts.report.directionLong'), color: '#00A651', d: { profit: attribution.direction.longProfit ?? 0, trades: attribution.direction.longTrades ?? 0, winRate: attribution.direction.longWinRate ?? 0 } },
+                    { label: t('accounts.report.directionShort'), color: '#E53935', d: { profit: attribution.direction.shortProfit ?? 0, trades: attribution.direction.shortTrades ?? 0, winRate: attribution.direction.shortWinRate ?? 0 } },
                   ].map(({ label, color, d }) => (
                     <div key={label} className="rounded-xl p-4" style={{ border: '1px solid var(--color-border)' }}>
                       <Text strong style={{ color }}>{label}</Text>
                       <div className="mt-2 space-y-1" style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>
-                        <div>{t('accounts.analytics.stats.netProfit')}: <Text strong style={{ color: (d.profit ?? 0) >= 0 ? '#00A651' : '#E53935' }}>{(d.profit ?? 0) >= 0 ? '+' : ''}{(d.profit ?? 0).toFixed(2)}</Text></div>
-                        <div>{t('accounts.analytics.stats.totalTrades')}: {d.trades ?? 0}</div>
-                        <div>{t('accounts.analytics.stats.winRate')}: {(d.winRate ?? 0).toFixed(1)}%</div>
+                        <div>{t('accounts.analytics.stats.netProfit')}: <Text strong style={{ color: d.profit >= 0 ? '#00A651' : '#E53935' }}>{d.profit >= 0 ? '+' : ''}{d.profit.toFixed(2)}</Text></div>
+                        <div>{t('accounts.analytics.stats.totalTrades')}: {d.trades}</div>
+                        <div>{t('accounts.analytics.stats.winRate')}: {d.winRate.toFixed(1)}%</div>
                       </div>
                     </div>
                   ))}
