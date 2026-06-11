@@ -211,7 +211,7 @@ func (r *AnalyticsRepository) GetPnLByDirection(ctx context.Context, accountID u
 		WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3
 			AND order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit')
 		GROUP BY 1
-		ORDER BY CASE WHEN order_type IN ('buy', 'BUY', 'Buy') THEN 0 ELSE 1 END
+		ORDER BY 1
 	`
 	rows, err := r.db.Query(ctx, query, accountID, start, end)
 	if err != nil {

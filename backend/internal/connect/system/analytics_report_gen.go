@@ -49,25 +49,14 @@ func (s *AnalyticsServer) GenerateReport(ctx context.Context, req *connect.Reque
 	}
 	metrics := buildReportMetrics(analyticsResp, attrResp)
 
-	sysPrompt := `你是一位专业的量化交易分析师。用户提供了交易账户的历史数据，请分析并生成一份简洁的交易报告。
-请使用以下结构输出报告：
-
-<section type="summary">
-总体评价——2-3句话概括账户表现。包含胜率、盈亏比、最大回撤等关键数据。
-</section>
-
-<section type="findings">
-关键发现——列出2-4个具体发现。引用具体数据（品种、时段、胜率变化等）。每个发现使用一句话。
-</section>
-
-<section type="recommendations">
-改进建议——基于发现给出2-3条可操作建议。
-</section>
-
-要求：简洁、数据驱动、避免泛泛而谈。使用中文输出。`
+	locale := req.Msg.Locale
+	if locale == "" {
+		locale = "zh-CN"
+	}
+	sysPrompt := buildReportSystemPrompt(locale)
 
 	metricsJSON, _ := json.Marshal(metrics)
-	userMsg := fmt.Sprintf("请分析以下交易账户的%v周期表现：\n%s", req.Msg.Period, string(metricsJSON))
+	userMsg := fmt.Sprintf("Please analyze the following trading account's %v period performance:\n%s", req.Msg.Period, string(metricsJSON))
 
 	messages := []systemai.ChatMessage{
 		{Role: "system", Content: sysPrompt},
@@ -233,4 +222,87 @@ func extractSection(raw, sectionType string) string {
 		return strings.TrimSpace(raw[start:])
 	}
 	return strings.TrimSpace(raw[start : start+end])
+}
+
+// reportSystemPromptTemplates maps language code to AI system prompt.
+var reportSystemPromptTemplates = map[string]string{
+	"zh": `你是一位专业的量化交易分析师。用户提供了交易账户的历史数据，请分析并生成一份简洁的交易报告。
+请使用以下结构输出报告：
+
+<section type="summary">
+总体评价——2-3句话概括账户表现。包含胜率、盈亏比、最大回撤等关键数据。
+</section>
+
+<section type="findings">
+关键发现——列出2-4个具体发现。引用具体数据（品种、时段、胜率变化等）。每个发现使用一句话。
+</section>
+
+<section type="recommendations">
+改进建议——基于发现给出2-3条可操作建议。
+</section>
+
+要求：简洁、数据驱动、避免泛泛而谈。使用中文输出。`,
+
+	"en": `You are a professional quantitative trading analyst. The user has provided historical trading account data. Analyze it and generate a concise trading report.
+Use the following structure for your output:
+
+<section type="summary">
+Overall assessment — 2-3 sentences summarizing the account performance. Include key metrics: win rate, profit factor, max drawdown, etc.
+</section>
+
+<section type="findings">
+Key findings — list 2-4 specific findings. Reference concrete data (symbols, time periods, win rate changes). One sentence per finding.
+</section>
+
+<section type="recommendations">
+Improvement suggestions — based on your findings, provide 2-3 actionable recommendations.
+</section>
+
+Requirements: concise, data-driven, avoid generic statements. Output in English.`,
+
+	"ja": `あなたはプロのクオンツ取引アナリストです。ユーザーから取引口座の履歴データが提供されました。分析して簡潔な取引レポートを生成してください。
+以下の構造で出力してください：
+
+<section type="summary">
+全体評価——2〜3文で口座のパフォーマンスを要約。勝率、プロフィットファクター、最大ドローダウンなどの主要指標を含めてください。
+</section>
+
+<section type="findings">
+主な発見——2〜4つの具体的な発見をリストアップ。具体的なデータ（銘柄、時間帯、勝率の変化など）を引用してください。各発見は1文で。
+</section>
+
+<section type="recommendations">
+改善提案——発見に基づいて、2〜3つの実用的な推奨事項を提供してください。
+</section>
+
+要件：簡潔、データ駆動、一般的な表現を避ける。日本語で出力。`,
+
+	"vi": `Bạn là một nhà phân tích giao dịch định lượng chuyên nghiệp. Người dùng đã cung cấp dữ liệu lịch sử tài khoản giao dịch. Hãy phân tích và tạo một báo cáo giao dịch ngắn gọn.
+Sử dụng cấu trúc sau cho đầu ra:
+
+<section type="summary">
+Đánh giá tổng quan — 2-3 câu tóm tắt hiệu suất tài khoản. Bao gồm các chỉ số chính: tỷ lệ thắng, hệ số lợi nhuận, mức sụt giảm tối đa, v.v.
+</section>
+
+<section type="findings">
+Phát hiện chính — liệt kê 2-4 phát hiện cụ thể. Trích dẫn dữ liệu cụ thể (cặp giao dịch, khung thời gian, thay đổi tỷ lệ thắng). Mỗi phát hiện một câu.
+</section>
+
+<section type="recommendations">
+Đề xuất cải thiện — dựa trên phát hiện, đưa ra 2-3 khuyến nghị có thể hành động.
+</section>
+
+Yêu cầu: ngắn gọn, dựa trên dữ liệu, tránh tuyên bố chung chung. Đầu ra bằng tiếng Việt.`,
+}
+
+// buildReportSystemPrompt returns a locale-specific system prompt for the AI report.
+func buildReportSystemPrompt(locale string) string {
+	lang := locale
+	if idx := strings.Index(locale, "-"); idx >= 0 {
+		lang = locale[:idx]
+	}
+	if tmpl, ok := reportSystemPromptTemplates[lang]; ok {
+		return tmpl
+	}
+	return reportSystemPromptTemplates["en"]
 }

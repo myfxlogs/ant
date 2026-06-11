@@ -273,13 +273,14 @@ export const analyticsApi = {
   generateReportStream: (
     accountId: string,
     period: string,
+    locale: string,
     callbacks: ReportCallbacks,
   ): (() => void) => {
     const abortController = new AbortController();
     (async () => {
       try {
         const stream = analyticsStreamClient.generateReport(
-          { accountId, period },
+          { accountId, period, locale },
           { signal: abortController.signal },
         );
         for await (const chunk of stream) {

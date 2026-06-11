@@ -243,6 +243,7 @@ message MonthlyWinRate {
 message GenerateReportRequest {
   string account_id = 1;
   string period = 2; // week, month, quarter, year
+  string locale = 3;  // e.g. zh-CN, en, ja, vi
 }
 
 message GenerateReportChunk {

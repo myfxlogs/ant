@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Select, Spin, Tag, Typography } from 'antd';
 import {
   ArrowLeftOutlined, ReloadOutlined, TrophyOutlined,
@@ -16,18 +16,22 @@ import { CHART_COLORS } from '@/constants/performance';
 import { analyticsApi } from '@/client/analytics';
 import type {
   AttributionAnalysisData, RollingMetricsData, TradeBucket,
+  AccountAnalyticsData,
 } from '@/client/analytics';
 import { queryKeys } from '@/queries/queryKeys';
 import { useAccountDetailQuery } from '@/queries/useAccountDetailQuery';
 import { useAccountFinancials } from '@/queries/useAccountFinancials';
 import { StatusResult } from '@/components/common/StatusResult';
+import MonthlyAnalysisCard from './components/MonthlyAnalysisCard';
+import type { MonthlyAnalysisPoint } from './components/MonthlyAnalysisCard.shared';
+import { HourlyDailyChart } from './components/HourlyDailyChart';
 
 const { Title, Text, Paragraph } = Typography;
 
 type Period = 'week' | 'month' | 'quarter' | 'year';
 
 export default function AccountReport() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const abortRef = useRef<() => void>();
@@ -59,6 +63,22 @@ export default function AccountReport() {
     staleTime: 5 * 60_000,
   });
 
+  // Analytics data (shared cache with detail page)
+  const analyticsQ = useQuery<AccountAnalyticsData>({
+    queryKey: queryKeys.analytics.detail(id!, period),
+    queryFn: () => analyticsApi.getAccountAnalytics(id!, period),
+    enabled: !!id,
+    staleTime: 5 * 60_000,
+  });
+
+  // Monthly analysis data
+  const monthlyAnalysisQ = useQuery<{ years: number[]; data: unknown[] }>({
+    queryKey: queryKeys.analytics.monthlyAnalysis(id!),
+    queryFn: () => analyticsApi.getMonthlyAnalysis(id!),
+    enabled: !!id,
+    staleTime: 5 * 60_000,
+  });
+
   useEffect(() => () => abortRef.current?.(), []);
 
   const handleGenerate = useCallback(() => {
@@ -69,7 +89,7 @@ export default function AccountReport() {
     setSections({});
     setReportError(null);
 
-    const abort = analyticsApi.generateReportStream(id, period, {
+    const abort = analyticsApi.generateReportStream(id, period, i18n.language, {
       onPhase: () => {},
       onDelta: (delta) => setNarrative((p) => p + delta),
       onSection: () => {},
@@ -80,11 +100,30 @@ export default function AccountReport() {
       onDone: () => setGenerating(false),
     });
     abortRef.current = abort;
-  }, [id, period]);
+  }, [id, period, i18n.language]);
 
-  const { balance = 0, equity = 0, profit = 0, profitPercent = 0 } = financials;
+  const { balance = 0, equity = 0, profit = 0, profitPercent = 0, margin = 0, freeMargin = 0, marginLevel = 0 } = financials;
   const attribution = attributionQ.data;
   const rolling = rollingQ.data;
+  const analytics = analyticsQ.data;
+
+  // Derived chart data from analytics
+  const derived = useMemo(() => ({
+    hourlyData: (analytics?.hourlyStats || []).map((h) => ({
+      ...h, hourLabel: `${String(h.hour).padStart(2, '0')}:00`,
+    })),
+    dailyPnLData: (analytics?.dailyPnl || []).map((d) => ({
+      day: d.day, date: d.date, profit: d.pnl, trades: d.trades, lots: d.lots,
+      balance: d.balance, profitFactor: d.profitFactor,
+      maxFloatingLossAmount: d.maxFloatingLossAmount, maxFloatingLossRatio: d.maxFloatingLossRatio,
+      maxFloatingProfitAmount: d.maxFloatingProfitAmount, maxFloatingProfitRatio: d.maxFloatingProfitRatio,
+    })),
+    tradeStats: analytics?.tradeStats || { totalTrades: 0, winRate: 0, profitFactor: 0 },
+    riskMetrics: analytics?.riskMetrics || { maxDrawdownPercent: 0, sharpeRatio: 0 },
+  }), [analytics]);
+
+  const monthlyAnalysisYears = monthlyAnalysisQ.data?.years ?? [];
+  const monthlyAnalysisData = (monthlyAnalysisQ.data?.data ?? []) as unknown as MonthlyAnalysisPoint[];
 
   const periodLabels: Record<Period, string> = {
     week: t('accounts.report.periods.week'),
@@ -128,15 +167,18 @@ export default function AccountReport() {
         </div>
 
         {/* Account snapshot cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 mb-6">
           {[
             { label: t('accounts.detail.cards.balance'), value: `${balance.toFixed(2)} ${currentAccount.currency || 'USD'}` },
             { label: t('accounts.detail.cards.equity'), value: `${equity.toFixed(2)} ${currentAccount.currency || 'USD'}` },
-            { label: t('accounts.detail.cards.floatingProfit'), value: `${profit >= 0 ? '+' : ''}${profit.toFixed(2)} (${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%)`, color: profit >= 0 ? '#00A651' : '#E53935' },
+            { label: t('accounts.detail.cards.floatingProfit'), value: `${profit >= 0 ? '+' : ''}${profit.toFixed(2)} (${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%)`, color: profit >= 0 ? 'var(--color-success)' : 'var(--color-danger)' },
+            { label: t('accounts.detail.cards.margin'), value: `${margin.toFixed(2)} ${currentAccount.currency || 'USD'}` },
+            { label: t('accounts.detail.cards.freeMargin'), value: `${freeMargin.toFixed(2)} ${currentAccount.currency || 'USD'}` },
+            { label: t('accounts.detail.cards.marginLevel'), value: `${marginLevel.toFixed(2)}%` },
           ].map((card, i) => (
-            <div key={i} className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
-              <Text style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{card.label}</Text>
-              <div className="text-xl font-bold mt-1" style={{ color: card.color || 'var(--color-text)' }}>{card.value}</div>
+            <div key={i} className="rounded-xl p-3" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
+              <div style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>{card.label}</div>
+              <div className="text-lg font-bold mt-1" style={{ color: card.color || 'var(--color-text)' }}>{card.value}</div>
             </div>
           ))}
         </div>
@@ -148,7 +190,7 @@ export default function AccountReport() {
               <TrophyOutlined /> {t('accounts.report.aiAnalysis')}
             </Title>
             {reportError && (
-              <div className="rounded-lg p-3 mb-4" style={{ background: '#FFF2F0', border: '1px solid #FFCCC7', color: '#E53935' }}>
+              <div className="rounded-lg p-3 mb-4" style={{ background: 'var(--color-danger-bg)', border: '1px solid var(--color-danger-bg-subtle)', color: 'var(--color-danger)' }}>
                 {reportError}
               </div>
             )}
@@ -175,7 +217,7 @@ export default function AccountReport() {
             {!sections.summary && narrative && (
               <div className="rounded-lg p-4" style={{ background: 'var(--color-bg-secondary)', whiteSpace: 'pre-wrap', color: 'var(--color-text-secondary)', fontSize: 14, lineHeight: 1.8 }}>
                 {narrative}
-                {generating && <span className="inline-block w-2 h-4 ml-1 animate-pulse" style={{ background: '#D4AF37' }} />}
+                {generating && <span className="inline-block w-2 h-4 ml-1 animate-pulse" style={{ background: 'var(--color-primary)' }} />}
               </div>
             )}
           </div>
@@ -196,7 +238,7 @@ export default function AccountReport() {
                     <Tooltip contentStyle={{ background: 'var(--color-bg-card)', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px var(--color-shadow)' }} />
                     <Bar dataKey="netProfit" radius={[0, 4, 4, 0]} isAnimationActive={false}>
                       {attribution.symbolPnls.slice(0, 8).map((_: unknown, i: number) => (
-                        <Cell key={i} fill={(attribution.symbolPnls?.[i]?.netProfit ?? 0) >= 0 ? '#00A651' : '#E53935'} />
+                        <Cell key={i} fill={(attribution.symbolPnls?.[i]?.netProfit ?? 0) >= 0 ? 'var(--color-success)' : 'var(--color-danger)'} />
                       ))}
                     </Bar>
                   </ComposedChart>
@@ -210,13 +252,13 @@ export default function AccountReport() {
               {attribution?.direction ? (
                 <div className="grid grid-cols-2 gap-4 mt-4">
                   {[
-                    { label: t('accounts.report.directionLong'), color: '#00A651', d: { profit: attribution.direction.longProfit ?? 0, trades: attribution.direction.longTrades ?? 0, winRate: attribution.direction.longWinRate ?? 0 } },
-                    { label: t('accounts.report.directionShort'), color: '#E53935', d: { profit: attribution.direction.shortProfit ?? 0, trades: attribution.direction.shortTrades ?? 0, winRate: attribution.direction.shortWinRate ?? 0 } },
+                    { label: t('accounts.report.directionLong'), color: 'var(--color-success)', d: { profit: attribution.direction.longProfit ?? 0, trades: attribution.direction.longTrades ?? 0, winRate: attribution.direction.longWinRate ?? 0 } },
+                    { label: t('accounts.report.directionShort'), color: 'var(--color-danger)', d: { profit: attribution.direction.shortProfit ?? 0, trades: attribution.direction.shortTrades ?? 0, winRate: attribution.direction.shortWinRate ?? 0 } },
                   ].map(({ label, color, d }) => (
                     <div key={label} className="rounded-xl p-4" style={{ border: '1px solid var(--color-border)' }}>
                       <Text strong style={{ color }}>{label}</Text>
                       <div className="mt-2 space-y-1" style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>
-                        <div>{t('accounts.analytics.stats.netProfit')}: <Text strong style={{ color: d.profit >= 0 ? '#00A651' : '#E53935' }}>{d.profit >= 0 ? '+' : ''}{d.profit.toFixed(2)}</Text></div>
+                        <div>{t('accounts.analytics.stats.netProfit')}: <strong style={{ color: d.profit >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>{d.profit >= 0 ? '+' : ''}{d.profit.toFixed(2)}</strong></div>
                         <div>{t('accounts.analytics.stats.totalTrades')}: {d.trades}</div>
                         <div>{t('accounts.analytics.stats.winRate')}: {d.winRate.toFixed(1)}%</div>
                       </div>
@@ -238,12 +280,28 @@ export default function AccountReport() {
                     <XAxis dataKey="label" stroke="var(--color-text-muted)" fontSize={10} angle={-30} textAnchor="end" height={60} />
                     <YAxis stroke="var(--color-text-muted)" fontSize={11} />
                     <Tooltip contentStyle={{ background: 'var(--color-bg-card)', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px var(--color-shadow)' }} />
-                    <Bar dataKey="count" fill="#2196F3" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                    <Bar dataKey="count" fill="var(--color-info)" radius={[4, 4, 0, 0]} isAnimationActive={false} />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
             ) : null}
           </div>
+        </StatusResult>
+
+        {/* Monthly Analysis + Hourly/Daily */}
+        <StatusResult loading={analyticsQ.isLoading || monthlyAnalysisQ.isLoading} error={(analyticsQ.error || monthlyAnalysisQ.error)?.message}>
+          {monthlyAnalysisYears.length > 0 && (
+            <MonthlyAnalysisCard
+              accountId={id}
+              years={monthlyAnalysisYears}
+              data={monthlyAnalysisData}
+              winRateData={rolling?.monthlyWinRates}
+              currency={currentAccount.currency}
+            />
+          )}
+          {derived.hourlyData.length > 0 && (
+            <HourlyDailyChart hourlyData={derived.hourlyData} dailyPnLData={derived.dailyPnLData} currency={currentAccount.currency || 'USD'} />
+          )}
         </StatusResult>
 
         {/* Rolling Metrics */}
@@ -261,10 +319,10 @@ export default function AccountReport() {
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                     <XAxis dataKey="date" stroke="var(--color-text-muted)" fontSize={10} />
                     <YAxis yAxisId="left" stroke="var(--color-text-muted)" fontSize={11} />
-                    <YAxis yAxisId="right" orientation="right" stroke="#E53935" fontSize={11} domain={[100, 0]} />
+                    <YAxis yAxisId="right" orientation="right" stroke="var(--color-danger)" fontSize={11} domain={[100, 0]} />
                     <Tooltip contentStyle={{ background: 'var(--color-bg-card)', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px var(--color-shadow)' }} />
-                    <Line yAxisId="left" type="monotone" dataKey="equity" stroke="#2196F3" strokeWidth={2} dot={false} name="Equity" isAnimationActive={false} />
-                    <Line yAxisId="right" type="monotone" dataKey="drawdown" stroke="#E53935" strokeWidth={1} dot={false} name="DD%" isAnimationActive={false} fillOpacity={0.1} fill="#E53935" />
+                    <Line yAxisId="left" type="monotone" dataKey="equity" stroke="var(--color-info)" strokeWidth={2} dot={false} name="Equity" isAnimationActive={false} />
+                    <Line yAxisId="right" type="monotone" dataKey="drawdown" stroke="var(--color-danger)" strokeWidth={1} dot={false} name="DD%" isAnimationActive={false} fillOpacity={0.1} fill="var(--color-danger)" />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
@@ -298,7 +356,7 @@ export default function AccountReport() {
                     <XAxis dataKey="month" stroke="var(--color-text-muted)" fontSize={10} />
                     <YAxis stroke="var(--color-text-muted)" fontSize={11} domain={[0, 100]} />
                     <Tooltip contentStyle={{ background: 'var(--color-bg-card)', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px var(--color-shadow)' }} />
-                    <Line type="monotone" dataKey="winRate" stroke="#00A651" strokeWidth={2} dot isAnimationActive={false} />
+                    <Line type="monotone" dataKey="winRate" stroke="var(--color-success)" strokeWidth={2} dot isAnimationActive={false} />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>

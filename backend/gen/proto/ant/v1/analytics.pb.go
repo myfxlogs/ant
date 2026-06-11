@@ -2124,6 +2124,7 @@ type GenerateReportRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AccountId     string                 `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
 	Period        string                 `protobuf:"bytes,2,opt,name=period,proto3" json:"period,omitempty"` // week, month, quarter, year
+	Locale        string                 `protobuf:"bytes,3,opt,name=locale,proto3" json:"locale,omitempty"` // e.g. zh-CN, en, ja, vi
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2168,6 +2169,13 @@ func (x *GenerateReportRequest) GetAccountId() string {
 func (x *GenerateReportRequest) GetPeriod() string {
 	if x != nil {
 		return x.Period
+	}
+	return ""
+}
+
+func (x *GenerateReportRequest) GetLocale() string {
+	if x != nil {
+		return x.Locale
 	}
 	return ""
 }
@@ -2460,11 +2468,12 @@ const file_analytics_proto_rawDesc = "" +
 	"\x0eMonthlyWinRate\x12\x14\n" +
 	"\x05month\x18\x01 \x01(\tR\x05month\x12\x19\n" +
 	"\bwin_rate\x18\x02 \x01(\x01R\awinRate\x12!\n" +
-	"\ftotal_trades\x18\x03 \x01(\x03R\vtotalTrades\"N\n" +
+	"\ftotal_trades\x18\x03 \x01(\x03R\vtotalTrades\"f\n" +
 	"\x15GenerateReportRequest\x12\x1d\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tR\taccountId\x12\x16\n" +
-	"\x06period\x18\x02 \x01(\tR\x06period\"\xe5\x01\n" +
+	"\x06period\x18\x02 \x01(\tR\x06period\x12\x16\n" +
+	"\x06locale\x18\x03 \x01(\tR\x06locale\"\xe5\x01\n" +
 	"\x13GenerateReportChunk\x12\x14\n" +
 	"\x05phase\x18\x01 \x01(\tR\x05phase\x12\x14\n" +
 	"\x05delta\x18\x02 \x01(\tR\x05delta\x12\x18\n" +

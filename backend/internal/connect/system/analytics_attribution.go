@@ -74,9 +74,15 @@ func (s *AnalyticsServer) GetAttributionAnalysis(ctx context.Context, req *conne
 func (s *AnalyticsServer) computeAttributionCore(ctx context.Context, accountID uuid.UUID) *antv1.GetAttributionAnalysisResponse {
 	now := time.Now()
 	start := now.AddDate(-1, 0, 0)
-	symbolStats, _ := s.repo.GetSymbolStats(ctx, accountID, start, now)
+	symbolStats, err := s.repo.GetSymbolStats(ctx, accountID, start, now)
+	if err != nil {
+		s.log.Warn("analytics: GetSymbolStats failed", zap.Error(err))
+	}
 	symbolPnLs := symbolStatsToSymbolPnLs(symbolStats)
-	dirStats, _ := s.repo.GetPnLByDirection(ctx, accountID, start, now)
+	dirStats, err := s.repo.GetPnLByDirection(ctx, accountID, start, now)
+	if err != nil {
+		s.log.Warn("analytics: GetPnLByDirection failed", zap.Error(err))
+	}
 	return &antv1.GetAttributionAnalysisResponse{
 		SymbolPnls: symbolPnLs,
 		Direction:  buildDirectionBreakdown(dirStats),
