@@ -12,7 +12,7 @@ export const StatCard = memo(
     label,
     value,
     valueColor = 'var(--color-text)',
-    background = '#F5F7F9',
+    background = 'var(--color-bg-secondary)',
   }: {
     icon: React.ReactNode;
     label: string;
@@ -31,7 +31,7 @@ export const InfoCard = memo(
   ({ icon, label, value, loading }: { icon: React.ReactNode; label: string; value: string; loading?: boolean }) => {
     const { t } = useTranslation();
     return (
-      <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
+      <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-border)' }}>
         <div className="flex items-center gap-2 mb-3">
           {icon}
           <span style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>{label}</span>
@@ -62,7 +62,7 @@ export const SmallInfoCard = memo(
   }) => {
     const { t } = useTranslation();
     return (
-      <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
+      <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-border)' }}>
         <div className="flex items-center gap-2 mb-2">
           {icon}
           <span style={{ color: 'var(--color-text-muted)', fontSize: '13px' }}>{label}</span>
@@ -80,11 +80,11 @@ export const SmallInfoCard = memo(
 export const PositionRow = memo(({ position }: { position: any }) => {
   const { t } = useTranslation();
   return (
-    <tr className="border-b hover:bg-gray-50" style={{ borderColor: 'rgba(0, 0, 0, 0.06)' }}>
+    <tr className="border-b hover:bg-gray-50" style={{ borderColor: 'var(--color-border)' }}>
     <td className="p-3 font-medium" style={{ color: 'var(--color-text)' }}>{position.ticket}</td>
     <td className="p-3" style={{ color: 'var(--color-text)' }}>{position.symbol}</td>
     <td className="p-3">
-      <Tag style={{ background: position.type === 'buy' ? 'rgba(0, 166, 81, 0.1)' : 'rgba(229, 57, 53, 0.1)', color: position.type === 'buy' ? '#00A651' : '#E53935', border: 'none', borderRadius: '4px' }}>
+      <Tag style={{ background: position.type === 'buy' ? 'var(--color-success-bg)' : 'var(--color-danger-bg)', color: position.type === 'buy' ? 'var(--color-success)' : 'var(--color-danger)', border: 'none', borderRadius: '4px' }}>
         {position.type === 'buy' ? t('trading.strategyExecute.confirm.buy') : t('trading.strategyExecute.confirm.sell')}
       </Tag>
     </td>
@@ -103,7 +103,7 @@ export const PositionRow = memo(({ position }: { position: any }) => {
         orderType={position.type}
       />
     </td>
-    <td className="text-right p-3 font-medium" style={{ color: (Number(position.profit) || 0) >= 0 ? '#00A651' : '#E53935' }}>
+    <td className="text-right p-3 font-medium" style={{ color: (Number(position.profit) || 0) >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>
       {(Number(position.profit) || 0) >= 0 ? '+' : ''}{(Number(position.profit) || 0).toFixed(2)}
     </td>
     <td className="p-3" style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>{formatTimestamp(position.openTime)}</td>
@@ -114,11 +114,11 @@ export const PositionRow = memo(({ position }: { position: any }) => {
 export const PendingOrderRow = memo(({ order }: { order: any }) => {
   const { t } = useTranslation();
   return (
-    <tr className="border-b hover:bg-gray-50" style={{ borderColor: 'rgba(0, 0, 0, 0.06)' }}>
+    <tr className="border-b hover:bg-gray-50" style={{ borderColor: 'var(--color-border)' }}>
     <td className="p-3 font-medium" style={{ color: 'var(--color-text)' }}>{order.ticket}</td>
     <td className="p-3" style={{ color: 'var(--color-text)' }}>{order.symbol}</td>
     <td className="p-3">
-      <Tag style={{ background: order.type.includes('buy') ? 'rgba(0, 166, 81, 0.1)' : 'rgba(229, 57, 53, 0.1)', color: order.type.includes('buy') ? '#00A651' : '#E53935', border: 'none', borderRadius: '4px' }}>
+      <Tag style={{ background: order.type.includes('buy') ? 'var(--color-success-bg)' : 'var(--color-danger-bg)', color: order.type.includes('buy') ? 'var(--color-success)' : 'var(--color-danger)', border: 'none', borderRadius: '4px' }}>
         {order.type === 'buy_limit'
           ? t('accounts.detail.orderTypes.buyLimit')
           : order.type === 'sell_limit'
@@ -162,18 +162,18 @@ export const HistoryTradeRow = memo(({ trade }: { trade: any }) => {
   const isDeposit = trade.profit >= 0;
   
   return (
-    <tr className="border-b" style={{ borderColor: 'rgba(0, 0, 0, 0.06)', background: isBalanceRecord ? 'rgba(212, 175, 55, 0.05)' : 'transparent' }}>
+    <tr className="border-b" style={{ borderColor: 'var(--color-border)', background: isBalanceRecord ? 'var(--color-gold-bg-hover)' : 'transparent' }}>
       <td className="p-3 font-medium" style={{ color: 'var(--color-text)' }}>{trade.ticket}</td>
       <td className="p-3" style={{ color: 'var(--color-text)' }}>
         {isBalanceRecord ? (isDeposit ? t('accounts.detail.balanceRecord.depositIconText') : t('accounts.detail.balanceRecord.withdrawIconText')) : (trade.symbol || '--')}
       </td>
       <td className="p-3">
         {isBalanceRecord ? (
-          <Tag style={{ background: isDeposit ? 'rgba(212, 175, 55, 0.1)' : 'rgba(229, 57, 53, 0.1)', color: isDeposit ? '#D4AF37' : '#E53935', border: 'none', borderRadius: '4px' }}>
+          <Tag style={{ background: isDeposit ? 'var(--color-gold-bg)' : 'var(--color-danger-bg)', color: isDeposit ? 'var(--color-primary)' : 'var(--color-danger)', border: 'none', borderRadius: '4px' }}>
             {isDeposit ? t('accounts.detail.balanceRecord.deposit') : t('accounts.detail.balanceRecord.withdraw')}
           </Tag>
         ) : (
-          <Tag style={{ background: orderType.includes('buy') ? 'rgba(0, 166, 81, 0.1)' : 'rgba(229, 57, 53, 0.1)', color: orderType.includes('buy') ? '#00A651' : '#E53935', border: 'none', borderRadius: '4px' }}>
+          <Tag style={{ background: orderType.includes('buy') ? 'var(--color-success-bg)' : 'var(--color-danger-bg)', color: orderType.includes('buy') ? 'var(--color-success)' : 'var(--color-danger)', border: 'none', borderRadius: '4px' }}>
             {orderType.includes('buy') ? t('trading.strategyExecute.confirm.buy') : t('trading.strategyExecute.confirm.sell')}
           </Tag>
         )}
@@ -181,7 +181,7 @@ export const HistoryTradeRow = memo(({ trade }: { trade: any }) => {
       <td className="text-right p-3" style={{ color: 'var(--color-text)' }}>{isBalanceRecord ? '-' : volume}</td>
       <td className="text-right p-3" style={{ color: 'var(--color-text)' }}>{isBalanceRecord ? '-' : formatPrice(openPrice, trade.symbol)}</td>
       <td className="text-right p-3" style={{ color: 'var(--color-text)' }}>{isBalanceRecord ? '-' : formatPrice(closePrice, trade.symbol)}</td>
-      <td className="text-right p-3 font-medium" style={{ color: (Number(trade.profit) || 0) >= 0 ? '#00A651' : '#E53935' }}>{(Number(trade.profit) || 0) >= 0 ? '+' : ''}{(Number(trade.profit) || 0).toFixed(2)}</td>
+      <td className="text-right p-3 font-medium" style={{ color: (Number(trade.profit) || 0) >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>{(Number(trade.profit) || 0) >= 0 ? '+' : ''}{(Number(trade.profit) || 0).toFixed(2)}</td>
       <td className="p-3" style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>{formatTimestamp(closeTime)}</td>
     </tr>
   );

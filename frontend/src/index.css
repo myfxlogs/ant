@@ -19,7 +19,13 @@
   --color-text-muted: #8A9AA5;
   --color-success: #00A651;
   --color-danger: #E53935;
+  --color-warning: #FF9800;
   --color-info: #2196F3;
+  --color-success-bg: rgba(0, 166, 81, 0.1);
+  --color-danger-bg: rgba(229, 57, 53, 0.1);
+  --color-warning-bg: rgba(255, 152, 0, 0.1);
+  --color-info-bg: rgba(33, 150, 243, 0.1);
+  --color-danger-bg-subtle: rgba(229, 57, 53, 0.08);
   --color-shadow: rgba(0, 0, 0, 0.04);
   --color-shadow-hover: rgba(0, 0, 0, 0.08);
   --color-scrollbar: rgba(0, 0, 0, 0.15);
@@ -138,11 +144,11 @@ body {
 }
 
 .price-up {
-  color: #00A651;
+  color: var(--color-success);
 }
 
 .price-down {
-  color: #E53935;
+  color: var(--color-danger);
 }
 
 .scrollbar-thin {

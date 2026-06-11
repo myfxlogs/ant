@@ -13,15 +13,29 @@ import {
   monthShortLabels,
 } from './MonthlyAnalysisCard.shared';
 
-export default function MonthlyAnalysisCard({ accountId, years, data, currency = 'USD' }: MonthlyAnalysisCardProps) {
+const ALL_METRICS: MetricType[] = ['change', 'profit', 'lots', 'pips', 'winRate'];
+
+export default function MonthlyAnalysisCard({ accountId, years, data, winRateData, currency = 'USD' }: MonthlyAnalysisCardProps) {
   const { t } = useTranslation();
   const [selectedYear, setSelectedYear] = useState<number>(years[years.length - 1] || new Date().getFullYear());
-  /** Committed selection: drives bonus API and persists after pointer leaves the chart. */
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
-  /** Hover preview: follows Recharts tooltip index so summary/highlight match the tooltip without extra API calls. */
   const [hoverMonth, setHoverMonth] = useState<number | null>(null);
   const [selectedMetric, setSelectedMetric] = useState<MetricType>('change');
   const displayMonth = hoverMonth ?? selectedMonth;
+
+  // Merge winRate data into year data points.
+  const winRateMap = useMemo(() => {
+    const m = new Map<number, number>();
+    if (!winRateData) return m;
+    for (const w of winRateData) {
+      const parts = w.month.split('-');
+      if (parts.length >= 2) {
+        const monthNum = parseInt(parts[1], 10);
+        if (monthNum >= 1 && monthNum <= 12) m.set(monthNum, w.winRate);
+      }
+    }
+    return m;
+  }, [winRateData]);
 
   const yearData = useMemo(() => {
     const monthMap = new Map<number, MonthlyAnalysisPoint>();
@@ -30,9 +44,19 @@ export default function MonthlyAnalysisCard({ accountId, years, data, currency =
       .forEach((item) => monthMap.set(item.month, item));
     return Array.from({ length: 12 }, (_, index) => {
       const month = index + 1;
-      return monthMap.get(month) || { year: selectedYear, month, change: 0, profit: 0, lots: 0, pips: 0, trades: 0 };
+      const existing = monthMap.get(month);
+      return {
+        year: selectedYear,
+        month,
+        change: existing?.change ?? 0,
+        profit: existing?.profit ?? 0,
+        lots: existing?.lots ?? 0,
+        pips: existing?.pips ?? 0,
+        trades: existing?.trades ?? 0,
+        winRate: winRateMap.get(month) ?? 0,
+      };
     });
-  }, [data, selectedYear]);
+  }, [data, selectedYear, winRateMap]);
 
   const focused = useMemo(
     () => yearData.find((item) => item.month === displayMonth) || yearData[0],
@@ -44,20 +68,23 @@ export default function MonthlyAnalysisCard({ accountId, years, data, currency =
     profit: t('accounts.analytics.monthlyAnalysis.metrics.profit'),
     lots: t('accounts.analytics.monthlyAnalysis.metrics.lots'),
     pips: t('accounts.analytics.monthlyAnalysis.metrics.pips'),
+    winRate: t('accounts.analytics.stats.winRate'),
   };
 
   const formatValue = (metric: MetricType, value: number) => {
     if (metric === 'change') return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
     if (metric === 'profit') return `${value >= 0 ? '+' : ''}${value.toFixed(2)} ${currency}`;
     if (metric === 'lots') return `${value.toFixed(2)} lots`;
+    if (metric === 'winRate') return `${value.toFixed(1)}%`;
     return `${value >= 0 ? '+' : ''}${value.toFixed(1)} pips`;
   };
 
-  const renderMetricValue = (metric: MetricType, value: number) => (
-    <span style={{ color: value > 0 ? '#2E7D32' : value < 0 ? '#C62828' : '#607D8B', fontWeight: 600 }}>
-      {formatValue(metric, value)}
-    </span>
-  );
+  const renderMetricValue = (metric: MetricType, value: number) => {
+    const color = metric === 'winRate'
+      ? 'var(--color-text)'
+      : value > 0 ? 'var(--color-success)' : value < 0 ? 'var(--color-danger)' : 'var(--color-text-muted)';
+    return <span style={{ color, fontWeight: 600 }}>{formatValue(metric, value)}</span>;
+  };
 
   const series: MonthlyBarRow[] = useMemo(
     () =>
@@ -66,7 +93,7 @@ export default function MonthlyAnalysisCard({ accountId, years, data, currency =
         return {
           ...item,
           monthAxisLabel: `${monthShortLabels[item.month - 1]} ${selectedYear}`,
-          value: item[selectedMetric],
+          value: (item as Record<string, number>)[selectedMetric] ?? 0,
           isActive,
         };
       }),
@@ -129,26 +156,22 @@ export default function MonthlyAnalysisCard({ accountId, years, data, currency =
 
   return (
     <div
-      className="rounded-xl p-4 mb-6"
-      style={{ background: 'var(--color-bg-card)', border: '1px solid #D9E2EC', boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04)' }}
+      className="rounded-xl p-4 mb-4"
+      style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', boxShadow: '0 1px 3px var(--color-shadow)' }}
     >
       <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
-        <h2 className="text-base font-semibold" style={{ color: '#1F2937' }}>
+        <h2 className="text-base font-semibold" style={{ color: 'var(--color-text)' }}>
           {t('accounts.analytics.monthlyAnalysis.title')}
         </h2>
-        <div className="flex items-center gap-1 rounded-md p-1" style={{ background: '#F4F7FA' }}>
+        <div className="flex items-center gap-1 rounded-md p-1" style={{ background: 'var(--color-bg-secondary)' }}>
           {years.map((year) => (
             <button
               key={year}
-              onClick={() => {
-                setSelectedYear(year);
-                setSelectedMonth(1);
-                setHoverMonth(null);
-              }}
+              onClick={() => { setSelectedYear(year); setSelectedMonth(1); setHoverMonth(null); }}
               className="px-3 py-1 rounded text-xs font-semibold transition-colors"
               style={{
-                background: selectedYear === year ? '#2B6CB0' : 'transparent',
-                color: selectedYear === year ? '#FFFFFF' : '#64748B',
+                background: selectedYear === year ? 'var(--color-info)' : 'transparent',
+                color: selectedYear === year ? '#FFFFFF' : 'var(--color-text-muted)',
               }}
             >
               {year}
@@ -157,15 +180,15 @@ export default function MonthlyAnalysisCard({ accountId, years, data, currency =
         </div>
       </div>
 
-      <div className="flex gap-3 mb-2 border-b" style={{ borderColor: '#E5EAF0' }}>
-        {(['change', 'profit', 'lots', 'pips'] as MetricType[]).map((metric) => (
+      <div className="flex gap-3 mb-2 border-b" style={{ borderColor: 'var(--color-border)' }}>
+        {ALL_METRICS.map((metric) => (
           <button
             key={metric}
             onClick={() => setSelectedMetric(metric)}
             className="pb-2 text-sm font-medium transition-colors"
             style={{
-              color: selectedMetric === metric ? '#2B6CB0' : '#667085',
-              borderBottom: selectedMetric === metric ? '2px solid #2B6CB0' : '2px solid transparent',
+              color: selectedMetric === metric ? 'var(--color-info)' : 'var(--color-text-muted)',
+              borderBottom: selectedMetric === metric ? '2px solid var(--color-info)' : '2px solid transparent',
               marginBottom: '-1px',
             }}
           >
@@ -176,21 +199,20 @@ export default function MonthlyAnalysisCard({ accountId, years, data, currency =
 
       <div
         className="mb-2 px-2 py-1.5 rounded-md flex flex-wrap items-center gap-x-3 gap-y-1"
-        style={{ background: 'var(--color-bg-secondary)', border: '1px solid #E6EDF5', fontSize: '11px' }}
+        style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', fontSize: 11 }}
       >
         <span style={{ color: 'var(--color-text-secondary)', fontWeight: 600 }}>
           {t('accounts.analytics.monthlyAnalysis.focusedValue', {
             period: selectedPeriodLabel,
             metric: metricTitleMap[selectedMetric],
-            value: formatValue(selectedMetric, focused?.[selectedMetric] || 0),
+            value: formatValue(selectedMetric, focused?.[selectedMetric as keyof typeof focused] as number || 0),
           })}
         </span>
-        <span className="text-slate-400 hidden sm:inline">|</span>
-        <span style={{ color: '#64748B' }} className="flex flex-wrap gap-x-3 gap-y-0.5">
-          <span>{metricTitleMap.change}: {renderMetricValue('change', focused?.change || 0)}</span>
-          <span>{metricTitleMap.profit}: {renderMetricValue('profit', focused?.profit || 0)}</span>
-          <span>{metricTitleMap.lots}: {renderMetricValue('lots', focused?.lots || 0)}</span>
-          <span>{metricTitleMap.pips}: {renderMetricValue('pips', focused?.pips || 0)}</span>
+        <span className="hidden sm:inline" style={{ color: 'var(--color-text-muted)' }}>|</span>
+        <span style={{ color: 'var(--color-text-secondary)' }} className="flex flex-wrap gap-x-3 gap-y-0.5">
+          {ALL_METRICS.map((m) => (
+            <span key={m}>{metricTitleMap[m]}: {renderMetricValue(m, (focused as Record<string, number>)[m] || 0)}</span>
+          ))}
         </span>
       </div>
 

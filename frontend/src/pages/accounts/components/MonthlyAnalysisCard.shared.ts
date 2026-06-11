@@ -1,6 +1,6 @@
 import { CHART_COLORS } from '@/constants/performance';
 
-export type MetricType = 'change' | 'profit' | 'lots' | 'pips';
+export type MetricType = 'change' | 'profit' | 'lots' | 'pips' | 'winRate';
 
 export type MonthlyAnalysisPoint = {
   year: number;
@@ -10,6 +10,7 @@ export type MonthlyAnalysisPoint = {
   lots: number;
   pips: number;
   trades?: number;
+  winRate?: number;
 };
 
 export type MonthlyBarRow = MonthlyAnalysisPoint & {
@@ -39,10 +40,13 @@ export type BonusPayload = {
   totalTrades: number;
 };
 
+export type MonthlyWinRatePoint = { month: string; winRate: number; totalTrades: number };
+
 export type MonthlyAnalysisCardProps = {
   accountId?: string;
   years: number[];
   data: MonthlyAnalysisPoint[];
+  winRateData?: MonthlyWinRatePoint[];
   currency?: string;
 };
 

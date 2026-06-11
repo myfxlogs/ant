@@ -47,14 +47,14 @@ export default function AccountDetail() {
   };
 
   const statusConfig = useMemo(() => {
-    if (!currentAccount) return { color: 'var(--color-text-muted)', bg: 'rgba(138, 154, 165, 0.1)', text: t('common.unknown') };
-    if (currentAccount.isDisabled) return { color: 'var(--color-text-muted)', bg: 'rgba(138, 154, 165, 0.1)', text: t('accounts.detail.status.disabled') };
+    if (!currentAccount) return { color: 'var(--color-text-muted)', bg: 'var(--color-bg-tertiary)', text: t('common.unknown') };
+    if (currentAccount.isDisabled) return { color: 'var(--color-text-muted)', bg: 'var(--color-bg-tertiary)', text: t('accounts.detail.status.disabled') };
     switch (currentAccount.status) {
-      case 'connected': return { color: '#00A651', bg: 'rgba(0, 166, 81, 0.1)', text: t('accounts.detail.status.connected') };
-      case 'connecting': return { color: '#FF9800', bg: 'rgba(255, 152, 0, 0.1)', text: t('accounts.detail.status.connecting') };
-      case 'disconnected': return { color: '#E53935', bg: 'rgba(229, 57, 53, 0.1)', text: t('accounts.detail.status.disconnected') };
-      case 'error': return { color: '#E53935', bg: 'rgba(229, 57, 53, 0.1)', text: t('accounts.detail.status.error') };
-      default: return { color: 'var(--color-text-muted)', bg: 'rgba(138, 154, 165, 0.1)', text: t('common.unknown') };
+      case 'connected': return { color: 'var(--color-success)', bg: 'var(--color-success-bg)', text: t('accounts.detail.status.connected') };
+      case 'connecting': return { color: 'var(--color-warning)', bg: 'var(--color-warning-bg)', text: t('accounts.detail.status.connecting') };
+      case 'disconnected': return { color: 'var(--color-danger)', bg: 'var(--color-danger-bg)', text: t('accounts.detail.status.disconnected') };
+      case 'error': return { color: 'var(--color-danger)', bg: 'var(--color-danger-bg)', text: t('accounts.detail.status.error') };
+      default: return { color: 'var(--color-text-muted)', bg: 'var(--color-bg-tertiary)', text: t('common.unknown') };
     }
   }, [currentAccount, t]);
 
@@ -72,7 +72,7 @@ export default function AccountDetail() {
     {
       key: 'delete',
       label: t('accounts.detail.actions.deleteAccount'),
-      icon: <DeleteOutlined style={{ color: '#E53935' }} />,
+      icon: <DeleteOutlined style={{ color: 'var(--color-danger)' }} />,
       onClick: () => setDeleteModalOpen(true),
       danger: true,
     },
@@ -110,8 +110,8 @@ export default function AccountDetail() {
                 {currentAccount.accountType && (
                   <Tag style={{
                     borderRadius: 6,
-                    background: currentAccount.accountType === 'real' ? 'rgba(229, 57, 53, 0.1)' : 'rgba(33, 150, 243, 0.1)',
-                    color: currentAccount.accountType === 'real' ? '#E53935' : '#2196F3',
+                    background: currentAccount.accountType === 'real' ? 'var(--color-danger-bg)' : 'var(--color-info-bg)',
+                    color: currentAccount.accountType === 'real' ? 'var(--color-danger)' : 'var(--color-info)',
                     border: 'none',
                   }}>
                     {currentAccount.accountType === 'real' ? t('accounts.detail.accountType.real') : t('accounts.detail.accountType.demo')}
@@ -119,8 +119,8 @@ export default function AccountDetail() {
                 )}
                 <Tag style={{
                   borderRadius: 6,
-                  background: currentAccount.isInvestor ? 'rgba(255, 152, 0, 0.1)' : 'rgba(0, 166, 81, 0.1)',
-                  color: currentAccount.isInvestor ? '#FF9800' : '#00A651',
+                  background: currentAccount.isInvestor ? 'var(--color-warning-bg)' : 'var(--color-success-bg)',
+                  color: currentAccount.isInvestor ? 'var(--color-warning)' : 'var(--color-success)',
                   border: 'none',
                 }}>
                   {currentAccount.isInvestor ? t('accounts.detail.mode.investor') : t('accounts.detail.mode.trader')}
@@ -160,9 +160,9 @@ export default function AccountDetail() {
         {/* ── Error banner ── */}
         {currentAccount.status === 'error' && currentAccount.lastError && (
           <div className="rounded-lg p-3 mb-4 flex items-center gap-2"
-            style={{ background: 'rgba(229, 57, 53, 0.08)', border: '1px solid rgba(229, 57, 53, 0.2)' }}>
-            <WarningOutlined style={{ color: '#E53935' }} />
-            <span style={{ color: '#E53935', fontSize: 13 }}>{currentAccount.lastError}</span>
+            style={{ background: 'var(--color-danger-bg-subtle)', border: '1px solid var(--color-danger-bg)' }}>
+            <WarningOutlined style={{ color: 'var(--color-danger)' }} />
+            <span style={{ color: 'var(--color-danger)', fontSize: 13 }}>{currentAccount.lastError}</span>
           </div>
         )}
 
@@ -183,7 +183,7 @@ export default function AccountDetail() {
         {/* ── Primary metrics: Equity · P&L · Margin Level ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
           {/* Equity */}
-          <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
+          <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
             <div className="flex items-center gap-2 mb-1">
               <LineChartOutlined style={{ color: 'var(--color-text-muted)', fontSize: 14 }} />
               <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t('accounts.detail.cards.equity')}</span>
@@ -198,18 +198,18 @@ export default function AccountDetail() {
           </div>
 
           {/* Floating P&L */}
-          <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
+          <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
             <div className="flex items-center gap-2 mb-1">
-              {profit >= 0 ? <RiseOutlined style={{ color: '#00A651', fontSize: 14 }} /> : <FallOutlined style={{ color: '#E53935', fontSize: 14 }} />}
+              {profit >= 0 ? <RiseOutlined style={{ color: 'var(--color-success)', fontSize: 14 }} /> : <FallOutlined style={{ color: 'var(--color-danger)', fontSize: 14 }} />}
               <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t('accounts.detail.cards.floatingProfit')}</span>
             </div>
             {isStreamLoading
               ? <div className="text-xl" style={{ color: 'var(--color-text-muted)' }}>{t('common.loading')}</div>
               : <>
-                <div className="text-xl font-bold" style={{ color: profit >= 0 ? '#00A651' : '#E53935' }}>
+                <div className="text-xl font-bold" style={{ color: profit >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>
                   {profit >= 0 ? '+' : ''}{formatCurrency(profit)}
                 </div>
-                <div style={{ color: profit >= 0 ? '#00A651' : '#E53935', fontSize: 12, marginTop: 2 }}>
+                <div style={{ color: profit >= 0 ? 'var(--color-success)' : 'var(--color-danger)', fontSize: 12, marginTop: 2 }}>
                   {profitPercent >= 0 ? '+' : ''}{profitPercent.toFixed(2)}%
                 </div>
               </>
@@ -217,7 +217,7 @@ export default function AccountDetail() {
           </div>
 
           {/* Margin Level */}
-          <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
+          <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
             <div className="flex items-center gap-2 mb-1">
               <PercentageOutlined style={{ color: 'var(--color-text-muted)', fontSize: 14 }} />
               <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t('accounts.detail.cards.marginLevel')}</span>
@@ -226,7 +226,7 @@ export default function AccountDetail() {
               ? <div className="text-xl" style={{ color: 'var(--color-text-muted)' }}>{t('common.loading')}</div>
               : <>
                 <div className="text-xl font-bold" style={{
-                  color: margin > 0 && (marginLevel || 0) < 100 ? '#E53935' : 'var(--color-text)',
+                  color: margin > 0 && (marginLevel || 0) < 100 ? 'var(--color-danger)' : 'var(--color-text)',
                 }}>
                   {margin > 0 ? `${(marginLevel || 0).toFixed(2)}%` : '--'}
                 </div>
@@ -267,7 +267,7 @@ export default function AccountDetail() {
         </div>
 
         {/* ── Trade tabs ── */}
-        <div className="rounded-xl overflow-hidden mb-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
+        <div className="rounded-xl overflow-hidden mb-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
           {disabled ? (
             <div className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
               <PauseCircleOutlined style={{ fontSize: 48, opacity: 0.3 }} />
@@ -324,7 +324,7 @@ export default function AccountDetail() {
           okButtonProps={{ danger: true }}
           destroyOnClose
         >
-          <div style={{ marginBottom: 16, color: '#E53935' }}>{t('accounts.detail.actions.deleteWarning')}</div>
+          <div style={{ marginBottom: 16, color: 'var(--color-danger)' }}>{t('accounts.detail.actions.deleteWarning')}</div>
           <div style={{ marginBottom: 8, color: 'var(--color-text-muted)' }}>{t('accounts.detail.actions.deletePasswordHint')}</div>
           <Input
             placeholder={t('accounts.detail.actions.deletePasswordPlaceholder')}
