@@ -3,6 +3,7 @@ import { Alert, Button, Divider, Form, Input, InputNumber, Select, Space, Switch
 import { LockOutlined, SafetyCertificateOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import type { RequiredParamSpec } from '@/client/codeAssist';
+import { TIMEFRAMES } from '@/constants/timeframes';
 import { RequiredParamsForm } from '@/components/strategy/CodeAssist';
 import { useScheduleLaunchForm } from './useScheduleLaunchForm';
 import TradePasswordModal from './components/TradePasswordModal';
@@ -112,7 +113,7 @@ export const StrategyTemplateScheduleLaunchForm: React.FC<Props> = ({
 
         <Form.Item label={t('strategy.templates.scheduleLaunch.form.timeframe', '周期')} name="timeframe"
           rules={[{ required: true, message: t('common.required', '必填') }]}>
-          <Select options={['M1', 'M5', 'M15', 'M30', 'H1', 'H4', 'D1'].map((tf) => ({ value: tf, label: tf }))} />
+          <Select options={TIMEFRAMES.map((tf) => ({ value: tf, label: tf }))} />
         </Form.Item>
 
         <Form.Item label={t('strategy.templates.scheduleLaunch.form.scheduleType', '调度类型')} name="scheduleType" rules={[{ required: true }]}>

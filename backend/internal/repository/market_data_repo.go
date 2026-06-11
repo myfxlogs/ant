@@ -37,11 +37,28 @@ type KlineBar struct {
 	TickCount     uint32
 }
 
+// timeframeAliases maps MT-standard format to internal format used by ClickHouse.
+// Internal format is canonical: 1m, 5m, 15m, 30m, 1h, 4h, 1d, 1w.
+var timeframeAliases = map[string]string{
+	"M1": "1m", "M5": "5m", "M15": "15m", "M30": "30m",
+	"H1": "1h", "H4": "4h", "D1": "1d", "W1": "1w", "MN": "1mo",
+}
+
+// normalizeTimeframe converts MT-standard timeframe strings to internal format.
+// Idempotent: passing an already-internal format is a no-op.
+func normalizeTimeframe(period string) string {
+	if mapped, ok := timeframeAliases[period]; ok {
+		return mapped
+	}
+	return period // already internal, or unknown — pass through
+}
+
 // GetKlines returns OHLCV kline bars for a symbol and period, optionally filtered by broker and time range.
 func (r *MarketDataRepository) GetKlines(ctx context.Context, canonical, broker, period string, from, to *time.Time, limit int32) ([]KlineBar, error) {
 	if limit <= 0 {
 		limit = 500
 	}
+	period = normalizeTimeframe(period)
 	query, args := buildKlineQuery(canonical, broker, period, from, to, limit)
 	rows, err := r.ch.Query(ctx, query, args...)
 	if err != nil {

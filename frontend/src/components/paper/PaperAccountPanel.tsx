@@ -8,10 +8,9 @@ import { useTranslation } from 'react-i18next';
 import { paperTradingClient, paperTradingStreamClient } from '@/client/connect';
 import type { PaperAccount, PaperAccountUpdate } from '@/gen/ant/v1/paper_trading_pb';
 import { useAuthStore } from '@/stores/authStore';
+import { TIMEFRAMES } from '@/constants/timeframes';
 
 const { Text, Title } = Typography;
-
-const TIMEFRAMES = ['M1', 'M5', 'M15', 'M30', 'H1', 'H4', 'D1', 'W1'];
 
 interface RunningStrategy {
   symbol: string;
@@ -30,7 +29,7 @@ export default function PaperAccountPanel() {
   const [startModalOpen, setStartModalOpen] = useState(false);
   const [startTargetId, setStartTargetId] = useState('');
   const [startSymbol, setStartSymbol] = useState('XAUUSD');
-  const [startTimeframe, setStartTimeframe] = useState('M5');
+  const [startTimeframe, setStartTimeframe] = useState('5m');
   const [startCode, setStartCode] = useState('');
   const [starting, setStarting] = useState(false);
 
@@ -126,7 +125,7 @@ export default function PaperAccountPanel() {
   const openStartModal = useCallback((accountId: string) => {
     setStartTargetId(accountId);
     setStartSymbol('XAUUSD');
-    setStartTimeframe('M5');
+    setStartTimeframe('5m');
     setStartCode('');
     setStartModalOpen(true);
   }, []);

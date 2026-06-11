@@ -7,6 +7,7 @@ import type { StrategyTemplate } from '@/client/strategy';
 import { quickRangeLabel, type QuickRangeKey } from './StrategyTemplatePage.utils';
 import { RequiredParamsForm } from '@/components/strategy/CodeAssist';
 import type { RequiredParamSpec } from '@/client/codeAssist';
+import { TIMEFRAMES, DEFAULT_TIMEFRAME } from '@/constants/timeframes';
 
 const { RangePicker } = DatePicker;
 
@@ -63,7 +64,7 @@ export const StrategyTemplateBacktestModal: React.FC<StrategyTemplateBacktestMod
 			confirmLoading={submitting}
 			width={720}
 		>
-			<Form form={form} size="small" layout="vertical" initialValues={{ timeframe: 'H1', initialCapital: 10000 }}>
+			<Form form={form} size="small" layout="vertical" initialValues={{ timeframe: DEFAULT_TIMEFRAME, initialCapital: 10000 }}>
 				{template && Array.isArray(template?.parameters) && template.parameters.length > 0 && (
 					<div
 						style={{
@@ -163,15 +164,7 @@ export const StrategyTemplateBacktestModal: React.FC<StrategyTemplateBacktestMod
 						>
 							<Select
 								size="small"
-								options={[
-									{ value: 'M1', label: 'M1' },
-									{ value: 'M5', label: 'M5' },
-									{ value: 'M15', label: 'M15' },
-									{ value: 'M30', label: 'M30' },
-									{ value: 'H1', label: 'H1' },
-									{ value: 'H4', label: 'H4' },
-									{ value: 'D1', label: 'D1' },
-								]}
+								options={TIMEFRAMES.map(tf => ({ value: tf, label: tf }))}
 							/>
 						</Form.Item>
 					</Col>

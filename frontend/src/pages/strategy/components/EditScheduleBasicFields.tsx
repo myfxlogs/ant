@@ -1,6 +1,7 @@
 import { Col, Form, Input, InputNumber, Row, Select, Switch, Tooltip } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { isTradingAccountEnabled } from '@/utils/accountStatus';
+import { TIMEFRAMES } from '@/constants/timeframes';
 
 interface Props {
   isCreate: boolean;
@@ -67,7 +68,7 @@ export default function EditScheduleBasicFields({
         <Col span={12}>
           <Form.Item label={t('strategy.templates.scheduleLaunch.form.timeframe', '周期')} name="timeframe"
             rules={[{ required: true, message: t('common.required', '必填') }]}>
-            <Select options={['M1', 'M5', 'M15', 'M30', 'H1', 'H4', 'D1'].map((tf) => ({ value: tf, label: tf }))} />
+            <Select options={TIMEFRAMES.map((tf) => ({ value: tf, label: tf }))} />
           </Form.Item>
         </Col>
       </Row>

@@ -3,6 +3,7 @@ import { Form, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { accountApi } from '@/client/account';
 import type { RequiredParamSpec } from '@/client/codeAssist';
+import { DEFAULT_TIMEFRAME } from '@/constants/timeframes';
 import { isTradingAccountEnabled } from '@/utils/accountStatus';
 import { buildParametersFromForm } from './StrategyScheduleParams';
 import type { ScheduleLaunchFormValues } from './StrategyTemplateScheduleLaunchForm';
@@ -48,7 +49,7 @@ export function useScheduleLaunchForm({
     if (!open) return;
     const initial: Partial<ScheduleLaunchFormValues> = {
       scheduleName: defaults?.scheduleName || '', accountId: String(defaults?.accountId || accountOptions[0]?.id || ''),
-      symbol: defaults?.symbol || '', timeframe: defaults?.timeframe || 'H1',
+      symbol: defaults?.symbol || '', timeframe: defaults?.timeframe || DEFAULT_TIMEFRAME,
       scheduleType: defaults?.scheduleType || 'kline_close',
       intervalMs: defaults?.intervalMs || 300_000, hfCooldownMs: defaults?.hfCooldownMs || 1_000,
       defaultVolume: defaults?.defaultVolume, maxPositions: defaults?.maxPositions,

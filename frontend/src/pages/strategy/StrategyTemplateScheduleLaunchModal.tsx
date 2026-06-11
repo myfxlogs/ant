@@ -3,6 +3,7 @@ import { Button, Modal, Space } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { codeAssistApi, type RequiredParamSpec } from '@/client/codeAssist';
 import { strategyApi } from '@/client/strategy';
+import { DEFAULT_TIMEFRAME } from '@/constants/timeframes';
 import { isTerminalRun, pickMetric } from './StrategyTemplatePage.utils';
 import {
 	StrategyTemplateScheduleLaunchForm,
@@ -120,7 +121,7 @@ export const StrategyTemplateScheduleLaunchModal: React.FC<StrategyTemplateSched
 		? {
 				accountId: String(run?.accountId || run?.account_id || ''),
 				symbol: String(run?.symbol || ''),
-				timeframe: String(run?.timeframe || 'H1'),
+				timeframe: String(run?.timeframe || DEFAULT_TIMEFRAME),
 				scheduleType: 'kline_close',
 				intervalMs: 300_000,
 				enableAfterCreate: true,

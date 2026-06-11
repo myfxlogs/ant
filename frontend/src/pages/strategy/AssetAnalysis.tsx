@@ -144,10 +144,10 @@ export default function AssetAnalysisPage() {
               style={{ marginBottom: 16, borderRadius: 12 }}
             >
               <Row gutter={[12, 12]} justify="start">
-                <Col xs={12} sm={12} md={6}>{renderTfCard('1H', result.multiTf.h1)}</Col>
-                <Col xs={12} sm={12} md={6}>{renderTfCard('4H', result.multiTf.h4)}</Col>
-                <Col xs={12} sm={12} md={6}>{renderTfCard('D1', result.multiTf.d1)}</Col>
-                <Col xs={12} sm={12} md={6}>{renderTfCard('W1', result.multiTf.w1)}</Col>
+                <Col xs={12} sm={12} md={6}>{renderTfCard('1h', result.multiTf.h1)}</Col>
+                <Col xs={12} sm={12} md={6}>{renderTfCard('4h', result.multiTf.h4)}</Col>
+                <Col xs={12} sm={12} md={6}>{renderTfCard('1d', result.multiTf.d1)}</Col>
+                <Col xs={12} sm={12} md={6}>{renderTfCard('1w', result.multiTf.w1)}</Col>
               </Row>
             </Card>
           )}

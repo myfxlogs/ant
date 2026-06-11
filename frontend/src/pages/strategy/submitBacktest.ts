@@ -3,6 +3,7 @@ import { message } from 'antd';
 import type { FormInstance } from 'antd';
 import type { TFunction } from 'i18next';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
+import { DEFAULT_TIMEFRAME } from '@/constants/timeframes';
 import { wrapStrategyCodeWithParams } from './backtestParamInjection';
 import { quickRangeLabel, saveRunTitle, type QuickRangeKey } from './StrategyTemplatePage.utils';
 import type { StrategyTemplate } from '@/client/strategy';
@@ -75,7 +76,7 @@ export async function openBacktestModal(
   const defaultTo = dayjs(); const defaultFrom = dayjs().add(-1, 'day');
   backtestForm.setFieldsValue({
     title: `${dayjs().format('YYYY-MM-DD HH:mm')} ${quickRangeLabel(t, '1D')}`,
-    accountId: defaultAccountId, symbol: '', timeframe: 'H1', initialCapital: 10000,
+    accountId: defaultAccountId, symbol: '', timeframe: DEFAULT_TIMEFRAME, initialCapital: 10000,
     range: [defaultFrom, defaultTo], extraSymbols: [],
   });
   if (defaultAccountId) await loadSymbols(defaultAccountId);

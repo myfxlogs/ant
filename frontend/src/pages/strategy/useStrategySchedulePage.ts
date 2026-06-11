@@ -3,6 +3,7 @@ import { Form, message } from "antd";
 import { pythonStrategyApi } from "../../client/pythonStrategy";
 import { strategyScheduleV2Api, strategyTemplateApi } from "../../client/strategy-schedules";
 import { useAccountsAndSymbols } from "./hooks/useAccountsAndSymbols";
+import { DEFAULT_TIMEFRAME } from '@/constants/timeframes';
 import { tradingApi } from "../../client/trading";
 import { scheduleHealthApi } from "../../client/scheduleHealth";
 import { getTradingRiskToastMessage } from "../../utils/tradingRiskError";
@@ -83,7 +84,7 @@ export function useStrategySchedulePage() {
 
   const openCreate = useCallback(() => {
     setEditing(null); form.resetFields();
-    form.setFieldsValue({ isActive: true, timeframe: "H1", symbol: "", scheduleType: "kline_close", intervalMs: 300_000, hfCooldownMs: 1_000, parametersJson: "{}" });
+    form.setFieldsValue({ isActive: true, timeframe: DEFAULT_TIMEFRAME, symbol: "", scheduleType: "kline_close", intervalMs: 300_000, hfCooldownMs: 1_000, parametersJson: "{}" });
     setOpenEdit(true);
   }, [form]);
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Modal, Form, Input, Select, InputNumber, Button, Space, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { marketplaceClient } from '@/client/connect';
+import { TIMEFRAMES, DEFAULT_TIMEFRAME } from '@/constants/timeframes';
 
 const ASSET_CLASSES = ['forex', 'crypto', 'commodity', 'index', 'stock', 'other'] as const;
 
@@ -29,7 +30,7 @@ export default function PublishStrategyModal({ open, userId, onClose, onPublishe
         priceAmount: Number(values.priceAmount || 0),
         assetClass: (values.assetClass as string) || 'forex',
         symbols: values.symbols ? (values.symbols as string).split(',').map((s: string) => s.trim()) : [],
-        timeframe: (values.timeframe as string) || 'H1',
+        timeframe: (values.timeframe as string) || DEFAULT_TIMEFRAME,
         riskLevel: (values.riskLevel as string) || 'medium',
         tags: values.tags ? (values.tags as string).split(',').map((s: string) => s.trim()) : [],
       });
@@ -47,7 +48,7 @@ export default function PublishStrategyModal({ open, userId, onClose, onPublishe
   return (
     <Modal title={t('marketplace.publishModal.title')} open={open} onCancel={onClose} footer={null} destroyOnClose>
       <Form form={form} layout="vertical" onFinish={handlePublish}
-        initialValues={{ priceModel: 'free', assetClass: 'forex', riskLevel: 'medium', timeframe: 'H1' }}>
+        initialValues={{ priceModel: 'free', assetClass: 'forex', riskLevel: 'medium', timeframe: DEFAULT_TIMEFRAME }}>
         <Form.Item name="strategyId" label={t('marketplace.publishModal.strategyId')} rules={[{ required: true }]}>
           <Input placeholder="e.g. abc123-def4-..." />
         </Form.Item>
@@ -69,7 +70,7 @@ export default function PublishStrategyModal({ open, userId, onClose, onPublishe
             ]} style={{ width: 120 }} />
           </Form.Item>
           <Form.Item name="timeframe" label={t('marketplace.publishModal.timeframe')}>
-            <Select options={['M1','M5','M15','M30','H1','H4','D1'].map(v => ({ value: v, label: v }))} style={{ width: 90 }} />
+            <Select options={TIMEFRAMES.map(v => ({ value: v, label: v }))} style={{ width: 90 }} />
           </Form.Item>
         </Space>
         <Space style={{ width: '100%' }} size="middle">

@@ -3,6 +3,7 @@ import { Alert, Button, Card, Descriptions, Form, Input, InputNumber, Select, Sp
 import { marketRegimeApi, type MarketRegime } from '@/client/marketRegime';
 import { showError, showSuccess } from '@/utils/message';
 import { useTranslation } from 'react-i18next';
+import { TIMEFRAMES } from '@/constants/timeframes';
 
 const { Text, Title } = Typography;
 
@@ -35,7 +36,7 @@ export default function MarketRegimePage() {
       <Alert type="info" showIcon message={t('strategy.marketRegime.ruleVersionAlert')} />
 
       <Card title={t('strategy.marketRegime.form.title')}>
-        <Form form={form} layout="vertical" onFinish={detect} initialValues={{ timeframe: 'M15', count: 120 }}>
+        <Form form={form} layout="vertical" onFinish={detect} initialValues={{ timeframe: '15m' as const, count: 120 }}>
           <Form.Item name="accountId" label={t('strategy.marketRegime.form.accountId')} rules={[{ required: true, message: t('strategy.marketRegime.form.accountIdRequired') }]}>
             <Input placeholder={t('strategy.marketRegime.form.accountIdPlaceholder')} />
           </Form.Item>
@@ -44,7 +45,7 @@ export default function MarketRegimePage() {
               <Input style={{ width: 180 }} placeholder={t('strategy.marketRegime.form.symbolPlaceholder')} />
             </Form.Item>
             <Form.Item name="timeframe" label={t('strategy.marketRegime.form.timeframe')}>
-              <Select style={{ width: 140 }} options={['M1', 'M5', 'M15', 'M30', 'H1', 'H4', 'D1'].map(v => ({ value: v, label: v }))} />
+              <Select style={{ width: 140 }} options={TIMEFRAMES.map(v => ({ value: v, label: v }))} />
             </Form.Item>
             <Form.Item name="count" label={t('strategy.marketRegime.form.klineCount')}>
               <InputNumber min={20} max={500} />
