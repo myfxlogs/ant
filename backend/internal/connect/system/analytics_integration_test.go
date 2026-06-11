@@ -165,7 +165,7 @@ func buildTestAnalyticsServer(t *testing.T, pool *pgxpool.Pool, redisClient *gor
 	if redisClient != nil {
 		cache = service.NewAnalyticsCache(redisClient, log)
 	}
-	return NewAnalyticsServer(analyticsRepo, platformSvc, cache, log)
+	return NewAnalyticsServer(analyticsRepo, platformSvc, cache, nil, log)
 }
 
 // ctxWithUserID returns a context with the given user ID set (bypasses JWT auth).

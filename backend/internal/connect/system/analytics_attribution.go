@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 
 	"connectrpc.com/connect"
 
@@ -26,43 +27,25 @@ func (s *AnalyticsServer) GetAttributionAnalysis(ctx context.Context, req *conne
 		return nil, err
 	}
 
-	now := time.Now()
-	start := now.AddDate(-1, 0, 0)
-
-	// Symbol P&L — existing query already has profit per symbol.
-	symbolStats, _ := s.repo.GetSymbolStats(ctx, accountID, start, now)
-	symbolPnLs := make([]*antv1.SymbolPnL, 0, len(symbolStats))
-	for _, ss := range symbolStats {
-		wr := 0.0
-		if ss.TotalTrades > 0 {
-			wr = float64(ss.WinningTrades) / float64(ss.TotalTrades) * 100
+	// Check cache — return immediately on hit.
+	if s.cache != nil {
+		if cached, _ := s.cache.GetAttribution(ctx, req.Msg.AccountId); cached != nil {
+			return connect.NewResponse(cached), nil
 		}
-		pf := 0.0
-		if !ss.TotalLoss.IsZero() {
-			pf = math.Abs(ss.TotalProfit.InexactFloat64() / ss.TotalLoss.InexactFloat64())
-		}
-		symbolPnLs = append(symbolPnLs, &antv1.SymbolPnL{
-			Symbol:           ss.Symbol,
-			NetProfit:        math.Round(ss.NetProfit.InexactFloat64()*100) / 100,
-			TotalTrades:      int64(ss.TotalTrades),
-			WinRate:          math.Round(wr*100) / 100,
-			ProfitFactor:     math.Round(pf*100) / 100,
-			TradeSharePercent: 0, // computed client-side
-		})
 	}
-	sort.Slice(symbolPnLs, func(i, j int) bool {
-		return symbolPnLs[i].NetProfit > symbolPnLs[j].NetProfit
+
+	core := s.computeAttributionCore(ctx, accountID)
+
+	// Sort symbol PnLs for display.
+	sort.Slice(core.SymbolPnls, func(i, j int) bool {
+		return core.SymbolPnls[i].NetProfit > core.SymbolPnls[j].NetProfit
 	})
 
-	// Direction breakdown.
-	dirStats, _ := s.repo.GetPnLByDirection(ctx, accountID, start, now)
-	dir := buildDirectionBreakdown(dirStats)
-
-	// Trade profit distribution histogram.
+	// Add trade distribution + hourly PnL (not in core — not needed by AI report).
+	now := time.Now()
+	start := now.AddDate(-1, 0, 0)
 	profits, _ := s.repo.GetTradeProfitValues(ctx, accountID, start, now)
-	tradeDist := buildTradeDistribution(profits)
-
-	// Hourly P&L — reuse existing data.
+	core.TradeDistribution = buildTradeDistribution(profits)
 	hourlyStats, _ := s.repo.GetHourlyStats(ctx, accountID, start, now)
 	hourlyPnl := make([]*antv1.HourlyPnL, 0, len(hourlyStats))
 	for _, h := range hourlyStats {
@@ -73,13 +56,31 @@ func (s *AnalyticsServer) GetAttributionAnalysis(ctx context.Context, req *conne
 			WinRate: math.Round(h.WinRate.InexactFloat64()*100) / 100,
 		})
 	}
+	core.HourlyPnl = hourlyPnl
 
-	return connect.NewResponse(&antv1.GetAttributionAnalysisResponse{
-		SymbolPnls:       symbolPnLs,
-		Direction:         dir,
-		TradeDistribution: tradeDist,
-		HourlyPnl:         hourlyPnl,
-	}), nil
+	if s.cache != nil {
+		if err := s.cache.SetAttribution(ctx, req.Msg.AccountId, core); err != nil {
+			s.log.Warn("analytics cache: set attribution failed", zap.Error(err))
+		}
+	}
+
+	return connect.NewResponse(core), nil
+}
+
+// computeAttributionCore computes symbol PnLs and direction breakdown —
+// the subset common to both GetAttributionAnalysis and AI report generation.
+// Callers that need trade distribution or hourly PnL must add them after
+// calling this method.
+func (s *AnalyticsServer) computeAttributionCore(ctx context.Context, accountID uuid.UUID) *antv1.GetAttributionAnalysisResponse {
+	now := time.Now()
+	start := now.AddDate(-1, 0, 0)
+	symbolStats, _ := s.repo.GetSymbolStats(ctx, accountID, start, now)
+	symbolPnLs := symbolStatsToSymbolPnLs(symbolStats)
+	dirStats, _ := s.repo.GetPnLByDirection(ctx, accountID, start, now)
+	return &antv1.GetAttributionAnalysisResponse{
+		SymbolPnls: symbolPnLs,
+		Direction:  buildDirectionBreakdown(dirStats),
+	}
 }
 
 func buildDirectionBreakdown(stats []*repository.DirectionStat) *antv1.DirectionBreakdown {

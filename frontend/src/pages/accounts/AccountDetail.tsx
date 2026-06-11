@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
-import { Tag, Button, Spin, Dropdown, Modal, Input } from 'antd';
+import { Tag, Button, Spin, Dropdown, Modal, Input, Tooltip } from 'antd';
 import type { MenuProps } from 'antd';
 import {
   ArrowLeftOutlined, ReloadOutlined, PauseCircleOutlined,
   CaretRightOutlined, MoreOutlined, WalletOutlined, LineChartOutlined,
   RiseOutlined, FallOutlined, DollarOutlined, PercentageOutlined,
-  WarningOutlined, DeleteOutlined, FileTextOutlined,
+  WarningOutlined, DeleteOutlined, FileTextOutlined, ClockCircleOutlined,
 } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -78,6 +78,12 @@ export default function AccountDetail() {
     },
   ], [currentAccount?.isDisabled, togglePending, disabling, handleToggleStatus, t]);
 
+  const displayName = currentAccount?.alias || currentAccount?.login;
+  const hasAlias = !!currentAccount?.alias;
+  const lastConnectedText = currentAccount?.connectedAt
+    ? t('accounts.detail.lastConnected', { time: new Date(currentAccount.connectedAt).toLocaleString() })
+    : null;
+
   if (!currentAccount) {
     return <div className="p-4 flex justify-center items-center h-64"><Spin size="large" /></div>;
   }
@@ -85,64 +91,183 @@ export default function AccountDetail() {
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-bg-secondary)' }}>
       <div className="max-w-7xl mx-auto p-4">
-        {/* Header + control bar */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} style={{ color: 'var(--color-text-muted)' }} />
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>{currentAccount.login}</h1>
+        {/* ── Header ── */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')}
+              style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl font-bold truncate" style={{ color: 'var(--color-text)' }}>
+                  {displayName}
+                </h1>
+                {hasAlias && (
+                  <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>
+                    ({currentAccount.login})
+                  </span>
+                )}
                 <Tag color={currentAccount.mtType === 'MT4' ? 'blue' : 'purple'}>{currentAccount.mtType}</Tag>
                 {currentAccount.accountType && (
-                  <Tag style={{ borderRadius: '6px', background: currentAccount.accountType === 'real' ? 'rgba(229, 57, 53, 0.1)' : 'rgba(33, 150, 243, 0.1)', color: currentAccount.accountType === 'real' ? '#E53935' : '#2196F3', border: 'none' }}>
+                  <Tag style={{
+                    borderRadius: 6,
+                    background: currentAccount.accountType === 'real' ? 'rgba(229, 57, 53, 0.1)' : 'rgba(33, 150, 243, 0.1)',
+                    color: currentAccount.accountType === 'real' ? '#E53935' : '#2196F3',
+                    border: 'none',
+                  }}>
                     {currentAccount.accountType === 'real' ? t('accounts.detail.accountType.real') : t('accounts.detail.accountType.demo')}
                   </Tag>
                 )}
-                <Tag style={{ borderRadius: '6px', background: currentAccount.isInvestor ? 'rgba(255, 152, 0, 0.1)' : 'rgba(0, 166, 81, 0.1)', color: currentAccount.isInvestor ? '#FF9800' : '#00A651', border: 'none' }}>
+                <Tag style={{
+                  borderRadius: 6,
+                  background: currentAccount.isInvestor ? 'rgba(255, 152, 0, 0.1)' : 'rgba(0, 166, 81, 0.1)',
+                  color: currentAccount.isInvestor ? '#FF9800' : '#00A651',
+                  border: 'none',
+                }}>
                   {currentAccount.isInvestor ? t('accounts.detail.mode.investor') : t('accounts.detail.mode.trader')}
                 </Tag>
-                <Tag style={{ background: statusConfig.bg, color: statusConfig.color, border: 'none', borderRadius: '6px', cursor: currentAccount.status === 'disconnected' || currentAccount.status === 'error' ? 'pointer' : 'default' }}
-                  onClick={() => { if (currentAccount.status === 'disconnected' || currentAccount.status === 'error') handleConnect(); }}>
-                  {connecting ? t('accounts.detail.status.connecting') : statusConfig.text}
-                </Tag>
               </div>
-              <div className="flex items-center gap-4 mt-1" style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>
-                <span>{currentAccount.brokerCompany}</span><span>•</span><span>{currentAccount.brokerServer}</span><span>•</span><span>{t('accounts.detail.leverage', { leverage: currentAccount.leverage })}</span>
+              <div className="flex items-center gap-3 mt-0.5 flex-wrap" style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>
+                <span>{currentAccount.brokerCompany} · {currentAccount.brokerServer}</span>
+                <span>·</span>
+                <span>{t('accounts.detail.leverage', { leverage: currentAccount.leverage })}</span>
+                {lastConnectedText && (
+                  <>
+                    <span>·</span>
+                    <Tooltip title={lastConnectedText}>
+                      <span style={{ cursor: 'default' }}>
+                        <ClockCircleOutlined style={{ marginRight: 2 }} />
+                        {t('accounts.detail.connected')}
+                      </span>
+                    </Tooltip>
+                  </>
+                )}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button icon={<FileTextOutlined />} onClick={() => navigate(`/accounts/${id}/report`)}>{t('accounts.report.titleShort')}</Button>
-            <Button icon={<ReloadOutlined />} onClick={handleRefresh} loading={analyticsLoading}>{t('common.refresh')}</Button>
-            <Dropdown menu={{ items: menuItems }} trigger={['click']}><Button icon={<MoreOutlined />} /></Dropdown>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Button icon={<FileTextOutlined />} onClick={() => navigate(`/accounts/${id}/report`)}>
+              {t('accounts.report.titleShort')}
+            </Button>
+            <Button icon={<ReloadOutlined />} onClick={handleRefresh} loading={analyticsLoading}>
+              {t('common.refresh')}
+            </Button>
+            <Dropdown menu={{ items: menuItems }} trigger={['click']}>
+              <Button icon={<MoreOutlined />} />
+            </Dropdown>
           </div>
         </div>
 
-        {/* Info cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-          <InfoCard icon={<WalletOutlined style={{ color: 'var(--color-text-muted)' }} />} label={t('accounts.detail.cards.balance')} value={formatCurrency(balance)} loading={isStreamLoading} />
-          <InfoCard icon={<LineChartOutlined style={{ color: 'var(--color-text-muted)' }} />} label={t('accounts.detail.cards.equity')} value={formatCurrency(equity)} loading={isStreamLoading} />
-          <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
-            <div className="flex items-center gap-2 mb-3">
-              {profit >= 0 ? <RiseOutlined style={{ color: '#00A651' }} /> : <FallOutlined style={{ color: '#E53935' }} />}
-              <span style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>{t('accounts.detail.cards.floatingProfit')}</span>
+        {/* ── Error banner ── */}
+        {currentAccount.status === 'error' && currentAccount.lastError && (
+          <div className="rounded-lg p-3 mb-4 flex items-center gap-2"
+            style={{ background: 'rgba(229, 57, 53, 0.08)', border: '1px solid rgba(229, 57, 53, 0.2)' }}>
+            <WarningOutlined style={{ color: '#E53935' }} />
+            <span style={{ color: '#E53935', fontSize: 13 }}>{currentAccount.lastError}</span>
+          </div>
+        )}
+
+        {/* ── Status tag + quick connect ── */}
+        <div className="flex items-center gap-3 mb-4">
+          <Tag
+            style={{
+              background: statusConfig.bg, color: statusConfig.color, border: 'none', borderRadius: 6,
+              cursor: (currentAccount.status === 'disconnected' || currentAccount.status === 'error') ? 'pointer' : 'default',
+              padding: '2px 12px', fontSize: 13,
+            }}
+            onClick={() => { if (currentAccount.status === 'disconnected' || currentAccount.status === 'error') handleConnect(); }}
+          >
+            {connecting ? t('accounts.detail.status.connecting') : statusConfig.text}
+          </Tag>
+        </div>
+
+        {/* ── Primary metrics: Equity · P&L · Margin Level ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+          {/* Equity */}
+          <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
+            <div className="flex items-center gap-2 mb-1">
+              <LineChartOutlined style={{ color: 'var(--color-text-muted)', fontSize: 14 }} />
+              <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t('accounts.detail.cards.equity')}</span>
             </div>
-            {isStreamLoading ? <div className="text-lg" style={{ color: 'var(--color-text-muted)' }}>{t('common.loading')}</div>
-              : <div className="flex items-baseline gap-2"><span className="text-2xl font-bold" style={{ color: profit >= 0 ? '#00A651' : '#E53935' }}>{profit >= 0 ? '+' : ''}{formatCurrency(profit)}</span><span style={{ color: profit >= 0 ? '#00A651' : '#E53935', fontSize: '14px' }}>({profitPercent >= 0 ? '+' : ''}{profitPercent.toFixed(2)}%)</span></div>
+            {isStreamLoading
+              ? <div className="text-xl" style={{ color: 'var(--color-text-muted)' }}>{t('common.loading')}</div>
+              : <div className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>{formatCurrency(equity)}</div>
+            }
+            <div style={{ color: 'var(--color-text-muted)', fontSize: 11, marginTop: 2 }}>
+              {t('accounts.detail.cards.balance')}: {formatCurrency(balance)}
+            </div>
+          </div>
+
+          {/* Floating P&L */}
+          <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
+            <div className="flex items-center gap-2 mb-1">
+              {profit >= 0 ? <RiseOutlined style={{ color: '#00A651', fontSize: 14 }} /> : <FallOutlined style={{ color: '#E53935', fontSize: 14 }} />}
+              <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t('accounts.detail.cards.floatingProfit')}</span>
+            </div>
+            {isStreamLoading
+              ? <div className="text-xl" style={{ color: 'var(--color-text-muted)' }}>{t('common.loading')}</div>
+              : <>
+                <div className="text-xl font-bold" style={{ color: profit >= 0 ? '#00A651' : '#E53935' }}>
+                  {profit >= 0 ? '+' : ''}{formatCurrency(profit)}
+                </div>
+                <div style={{ color: profit >= 0 ? '#00A651' : '#E53935', fontSize: 12, marginTop: 2 }}>
+                  {profitPercent >= 0 ? '+' : ''}{profitPercent.toFixed(2)}%
+                </div>
+              </>
+            }
+          </div>
+
+          {/* Margin Level */}
+          <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
+            <div className="flex items-center gap-2 mb-1">
+              <PercentageOutlined style={{ color: 'var(--color-text-muted)', fontSize: 14 }} />
+              <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t('accounts.detail.cards.marginLevel')}</span>
+            </div>
+            {isStreamLoading
+              ? <div className="text-xl" style={{ color: 'var(--color-text-muted)' }}>{t('common.loading')}</div>
+              : <>
+                <div className="text-xl font-bold" style={{
+                  color: margin > 0 && (marginLevel || 0) < 100 ? '#E53935' : 'var(--color-text)',
+                }}>
+                  {margin > 0 ? `${(marginLevel || 0).toFixed(2)}%` : '--'}
+                </div>
+                <div style={{ color: 'var(--color-text-muted)', fontSize: 11, marginTop: 2 }}>
+                  {t('accounts.detail.cards.marginUsed')}: {formatCurrency(margin)}
+                </div>
+              </>
             }
           </div>
         </div>
 
-        {/* Small info cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <SmallInfoCard icon={<DollarOutlined style={{ color: 'var(--color-text-muted)' }} />} label={t('accounts.detail.cards.marginUsed')} value={formatCurrency(margin)} loading={isStreamLoading} />
-          <SmallInfoCard icon={<DollarOutlined style={{ color: 'var(--color-text-muted)' }} />} label={t('accounts.detail.cards.marginFree')} value={formatCurrency(freeMargin)} loading={isStreamLoading} />
-          <SmallInfoCard icon={<PercentageOutlined style={{ color: 'var(--color-text-muted)' }} />} label={t('accounts.detail.cards.marginLevel')} value={margin > 0 ? `${(marginLevel || 0).toFixed(2)}%` : '--'} loading={isStreamLoading} valueColor={margin > 0 && (marginLevel || 0) < 100 ? '#E53935' : 'var(--color-text)'} />
-          <SmallInfoCard icon={<WarningOutlined style={{ color: 'var(--color-text-muted)' }} />} label={t('accounts.detail.cards.credit')} value={formatCurrency(credit)} loading={isStreamLoading} />
+        {/* ── Secondary metrics: Balance · Margin · Free Margin · Credit ── */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+          <SmallInfoCard
+            icon={<WalletOutlined style={{ color: 'var(--color-text-muted)', fontSize: 13 }} />}
+            label={t('accounts.detail.cards.balance')}
+            value={formatCurrency(balance)}
+            loading={isStreamLoading}
+          />
+          <SmallInfoCard
+            icon={<DollarOutlined style={{ color: 'var(--color-text-muted)', fontSize: 13 }} />}
+            label={t('accounts.detail.cards.marginUsed')}
+            value={formatCurrency(margin)}
+            loading={isStreamLoading}
+          />
+          <SmallInfoCard
+            icon={<DollarOutlined style={{ color: 'var(--color-text-muted)', fontSize: 13 }} />}
+            label={t('accounts.detail.cards.marginFree')}
+            value={formatCurrency(freeMargin)}
+            loading={isStreamLoading}
+          />
+          <SmallInfoCard
+            icon={<WarningOutlined style={{ color: 'var(--color-text-muted)', fontSize: 13 }} />}
+            label={t('accounts.detail.cards.credit')}
+            value={formatCurrency(credit)}
+            loading={isStreamLoading}
+          />
         </div>
 
-        {/* Trade tabs */}
-        <div className="rounded-2xl overflow-hidden mb-6" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
+        {/* ── Trade tabs ── */}
+        <div className="rounded-xl overflow-hidden mb-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
           {disabled ? (
             <div className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
               <PauseCircleOutlined style={{ fontSize: 48, opacity: 0.3 }} />
@@ -165,7 +290,7 @@ export default function AccountDetail() {
           )}
         </div>
 
-        {/* Analytics */}
+        {/* ── Analytics ── */}
         <AccountAnalyticsSection
           analyticsLoading={analyticsLoading}
           analyticsError={analyticsError}
@@ -187,7 +312,7 @@ export default function AccountDetail() {
           accountId={id}
         />
 
-        {/* Delete modal */}
+        {/* ── Delete modal ── */}
         <Modal
           title={t('accounts.detail.actions.deleteAccount')}
           open={deleteModalOpen}

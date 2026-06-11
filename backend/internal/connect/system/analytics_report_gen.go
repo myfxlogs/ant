@@ -7,7 +7,6 @@ import (
 	"math"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -35,9 +34,20 @@ func (s *AnalyticsServer) GenerateReport(ctx context.Context, req *connect.Reque
 
 	userID := interceptor.GetUserID(ctx)
 
-	// Compute metrics.
+	// Compute metrics — prefer cache, fall back to DB queries.
 	_ = stream.Send(&antv1.GenerateReportChunk{Phase: "computing"})
-	metrics := s.buildReportMetrics(ctx, accountID, req.Msg.Period)
+
+	analyticsResp := s.getOrComputeAnalyticsForReport(ctx, accountID)
+	attrResp := s.getOrComputeAttributionForReport(ctx, accountID)
+	if analyticsResp == nil || attrResp == nil {
+		_ = stream.Send(&antv1.GenerateReportChunk{
+			Phase: "done",
+			Error: "数据加载失败，请重试",
+			Done:  true,
+		})
+		return nil
+	}
+	metrics := buildReportMetrics(analyticsResp, attrResp)
 
 	sysPrompt := `你是一位专业的量化交易分析师。用户提供了交易账户的历史数据，请分析并生成一份简洁的交易报告。
 请使用以下结构输出报告：
@@ -117,66 +127,78 @@ type symbolSummary struct {
 	WinRate float64 `json:"win_rate"`
 }
 
-func (s *AnalyticsServer) buildReportMetrics(ctx context.Context, accountID uuid.UUID, period string) *reportMetrics {
-	now := time.Now()
-	start := now.AddDate(-1, 0, 0)
-	switch period {
-	case "week":
-		start = now.AddDate(0, 0, -7)
-	case "month":
-		start = now.AddDate(0, -1, 0)
-	case "quarter":
-		start = now.AddDate(0, -3, 0)
+// getOrComputeAnalyticsForReport returns analytics data from cache, or delegates
+// to computeAnalyticsCore on miss. Returns nil if both cache and compute fail.
+// Deliberately omits cache write — the partial response (no equity/daily/hourly)
+// must not pollute the shared cache key.
+func (s *AnalyticsServer) getOrComputeAnalyticsForReport(ctx context.Context, accountID uuid.UUID) *antv1.AccountAnalyticsResponse {
+	if s.cache != nil {
+		if cached, _ := s.cache.Get(ctx, accountID.String()); cached != nil {
+			return cached
+		}
 	}
+	core, err := s.computeAnalyticsCore(ctx, accountID)
+	if err != nil {
+		s.log.Error("report: compute analytics core failed", zap.Error(err))
+		return nil
+	}
+	return core
+}
 
-	trades, _ := s.repo.GetTradeRecords(ctx, accountID, start, now)
-	stats := computeTradeStats(trades)
+// getOrComputeAttributionForReport returns attribution data from cache, or
+// delegates to computeAttributionCore on miss. Deliberately omits cache write —
+// the partial response (no trade distribution / hourly PnL) must not pollute
+// the shared cache key.
+func (s *AnalyticsServer) getOrComputeAttributionForReport(ctx context.Context, accountID uuid.UUID) *antv1.GetAttributionAnalysisResponse {
+	if s.cache != nil {
+		if cached, _ := s.cache.GetAttribution(ctx, accountID.String()); cached != nil {
+			return cached
+		}
+	}
+	return s.computeAttributionCore(ctx, accountID)
+}
 
+// buildReportMetrics maps analytics + attribution proto responses into the
+// AI prompt JSON struct. Pure function — no DB access.
+func buildReportMetrics(analytics *antv1.AccountAnalyticsResponse, attribution *antv1.GetAttributionAnalysisResponse) *reportMetrics {
 	m := &reportMetrics{
-		NetProfit:    math.Round(stats.NetProfit.InexactFloat64()*100) / 100,
-		TotalTrades:  int64(stats.TotalTrades),
-		WinRate:      stats.WinRate.InexactFloat64(),
-		ProfitFactor: stats.ProfitFactor.InexactFloat64(),
+		NetProfit:    math.Round(analytics.TradeStats.NetProfit*100) / 100,
+		TotalTrades:  analytics.TradeStats.TotalTrades,
+		WinRate:      analytics.TradeStats.WinRate,
+		ProfitFactor: analytics.TradeStats.ProfitFactor,
+		MaxDrawdown:  math.Round(analytics.RiskMetrics.MaxDrawdownPercent*100) / 100,
+		SharpeRatio:  math.Round(analytics.RiskMetrics.SharpeRatio*100) / 100,
 	}
 
-	// Max drawdown.
-	_, m.MaxDrawdown, _ = s.repo.GetMaxDrawdown(ctx, accountID, start, now)
-	m.MaxDrawdown = math.Round(m.MaxDrawdown*100) / 100
-
-	// Sharpe.
-	eq, _ := s.repo.GetEquityCurve(ctx, accountID, start, now)
-	if dailies := dailyReturnsToPercent(eq); len(dailies) > 0 {
-		m.SharpeRatio, _, _, _, _ = computeRiskMetrics(dailies, m.MaxDrawdown)
-		m.SharpeRatio = math.Round(m.SharpeRatio*100) / 100
-	}
-
-	// Top symbols.
-	symbolStats, _ := s.repo.GetSymbolStats(ctx, accountID, start, now)
-	sort.Slice(symbolStats, func(i, j int) bool {
-		return symbolStats[i].NetProfit.GreaterThan(symbolStats[j].NetProfit)
+	// Top 5 symbols by profit — use attribution SymbolPnLs which have
+	// TotalTrades and WinRate (unlike analytics SymbolStats).
+	sorted := make([]*antv1.SymbolPnL, len(attribution.SymbolPnls))
+	copy(sorted, attribution.SymbolPnls)
+	sort.Slice(sorted, func(i, j int) bool {
+		return sorted[i].NetProfit > sorted[j].NetProfit
 	})
-	for i, ss := range symbolStats {
+	for i, s := range sorted {
 		if i >= 5 {
 			break
 		}
-		wr := 0.0
-		if ss.TotalTrades > 0 {
-			wr = float64(ss.WinningTrades) / float64(ss.TotalTrades) * 100
-		}
 		m.TopSymbols = append(m.TopSymbols, symbolSummary{
-			Symbol:  ss.Symbol,
-			Profit:  math.Round(ss.NetProfit.InexactFloat64()*100) / 100,
-			Trades:  int64(ss.TotalTrades),
-			WinRate: math.Round(wr*100) / 100,
+			Symbol:  s.Symbol,
+			Profit:  math.Round(s.NetProfit*100) / 100,
+			Trades:  s.TotalTrades,
+			WinRate: s.WinRate,
 		})
 	}
 
-	// Direction.
-	dirStats, _ := s.repo.GetPnLByDirection(ctx, accountID, start, now)
-	if len(dirStats) > 0 {
-		parts := make([]string, len(dirStats))
-		for i, d := range dirStats {
-			parts[i] = fmt.Sprintf("%s P&L=%.0f (%d trades)", d.Direction, d.Profit, d.Trades)
+	// Direction breakdown.
+	if attribution.Direction != nil {
+		parts := make([]string, 0, 2)
+		if attribution.Direction.LongTrades > 0 {
+			parts = append(parts, fmt.Sprintf("BUY P&L=%.0f (%d trades)",
+				attribution.Direction.LongProfit, attribution.Direction.LongTrades))
+		}
+		if attribution.Direction.ShortTrades > 0 {
+			parts = append(parts, fmt.Sprintf("SELL P&L=%.0f (%d trades)",
+				attribution.Direction.ShortProfit, attribution.Direction.ShortTrades))
 		}
 		m.DirectionBreakdown = strings.Join(parts, ", ")
 	}

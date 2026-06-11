@@ -397,7 +397,9 @@ const accounts = {
         investor: 'Chế độ nhà đầu tư',
         trader: 'Chế độ giao dịch'
       },
-      leverage: 'Đòn bẩy {{leverage}}x',
+      connected: 'Đã kết nối',
+        lastConnected: '{{time}}',
+        leverage: 'Đòn bẩy {{leverage}}x',
       cards: {
         balance: 'Số dư',
         equity: 'Vốn',

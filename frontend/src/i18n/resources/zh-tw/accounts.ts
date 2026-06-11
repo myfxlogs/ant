@@ -397,7 +397,9 @@ const accounts = {
         investor: '投資者模式',
         trader: '交易者模式'
       },
-      leverage: '槓桿 {{leverage}}x',
+      connected: '已連接',
+        lastConnected: '{{time}}',
+        leverage: '槓桿 {{leverage}}x',
       cards: {
         balance: '餘額',
         equity: '淨值',

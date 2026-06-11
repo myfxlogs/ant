@@ -397,7 +397,9 @@ const accounts = {
         investor: '投资者模式',
         trader: '交易者模式'
       },
-      leverage: '杠杆 {{leverage}}x',
+      connected: '已连接',
+        lastConnected: '{{time}}',
+        leverage: '杠杆 {{leverage}}x',
       cards: {
         balance: '余额',
         equity: '净值',

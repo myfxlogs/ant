@@ -62,46 +62,56 @@ func (s *AnalyticsServer) GetAccountAnalytics(ctx context.Context, req *connect.
 		return nil, err
 	}
 
-	// Check analytics cache — return immediately on hit, bypassing all 7 SQL queries.
+	// Check analytics cache — return immediately on hit, bypassing all SQL queries.
 	if s.cache != nil {
 		if cached, err := s.cache.Get(ctx, req.Msg.AccountId); err == nil && cached != nil {
 			return connect.NewResponse(cached), nil
 		}
 	}
 
-	now := time.Now()
-	start := now.AddDate(-1, 0, 0)
-
-	tradeStats, err := s.fetchTradeStats(ctx, accountID, start, now)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("get trade records: %w", err))
-	}
-
-	sharpe, sortino, calmar, volatility, avgDailyReturn, maxDDPercent, err := s.fetchRiskMetrics(ctx, accountID, start, now)
+	core, err := s.computeAnalyticsCore(ctx, accountID)
 	if err != nil {
 		return nil, err
 	}
 
-	symbolStats, _ := s.repo.GetSymbolStats(ctx, accountID, start, now)
-
+	// Add equity / daily / hourly (not in core — not needed by AI report).
+	now := time.Now()
+	start := now.AddDate(-1, 0, 0)
 	equityCurve := s.fetchEquityCurve(ctx, req, accountID, start, now)
-
-	resp := &antv1.AccountAnalyticsResponse{
-		TradeStats:  tradeStatsToProto(tradeStats),
-		RiskMetrics: riskMetricsToProto(sharpe, sortino, calmar, volatility, avgDailyReturn, maxDDPercent),
-		SymbolStats: symbolStatsToProto(symbolStats),
-		EquityCurve: equityCurveToProto(equityCurve),
-		DailyPnl:    dailyPnLToProto(s.fetchDailyPnL(ctx, accountID, start, now)),
-		HourlyStats: hourlyStatsToProto(s.fetchHourlyStats(ctx, accountID, start, now)),
-	}
+	core.EquityCurve = equityCurveToProto(equityCurve)
+	core.DailyPnl = dailyPnLToProto(s.fetchDailyPnL(ctx, accountID, start, now))
+	core.HourlyStats = hourlyStatsToProto(s.fetchHourlyStats(ctx, accountID, start, now))
 
 	if s.cache != nil {
-		if err := s.cache.Set(ctx, req.Msg.AccountId, resp); err != nil {
+		if err := s.cache.Set(ctx, req.Msg.AccountId, core); err != nil {
 			s.log.Warn("analytics cache: set failed", zap.Error(err))
 		}
 	}
 
-	return connect.NewResponse(resp), nil
+	return connect.NewResponse(core), nil
+}
+
+// computeAnalyticsCore computes trade stats, risk metrics, and symbol stats —
+// the subset common to both GetAccountAnalytics and AI report generation.
+// Callers that need equity curve, daily PnL, or hourly stats must add them
+// after calling this method.
+func (s *AnalyticsServer) computeAnalyticsCore(ctx context.Context, accountID uuid.UUID) (*antv1.AccountAnalyticsResponse, error) {
+	now := time.Now()
+	start := now.AddDate(-1, 0, 0)
+	tradeStats, err := s.fetchTradeStats(ctx, accountID, start, now)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("get trade records: %w", err))
+	}
+	sharpe, sortino, calmar, volatility, avgDailyReturn, maxDDPercent, err := s.fetchRiskMetrics(ctx, accountID, start, now)
+	if err != nil {
+		return nil, err
+	}
+	symbolStats, _ := s.repo.GetSymbolStats(ctx, accountID, start, now)
+	return &antv1.AccountAnalyticsResponse{
+		TradeStats:  tradeStatsToProto(tradeStats),
+		RiskMetrics: riskMetricsToProto(sharpe, sortino, calmar, volatility, avgDailyReturn, maxDDPercent),
+		SymbolStats: symbolStatsToProto(symbolStats),
+	}, nil
 }
 
 func (s *AnalyticsServer) fetchTradeStats(ctx context.Context, accountID uuid.UUID, start, now time.Time) (*model.TradeStats, error) {
@@ -228,9 +238,9 @@ func equityCurveToProto(points []*model.EquityPoint) []*antv1.EquityPoint {
 	for _, p := range points {
 		result = append(result, &antv1.EquityPoint{
 			Date:    p.Date,
-			Equity:  p.Equity.InexactFloat64(),
-			Balance: p.Balance.InexactFloat64(),
-			Profit:  p.Profit.InexactFloat64(),
+			Equity:  math.Round(p.Equity.InexactFloat64()*100) / 100,
+			Balance: math.Round(p.Balance.InexactFloat64()*100) / 100,
+			Profit:  math.Round(p.Profit.InexactFloat64()*100) / 100,
 		})
 	}
 	return result

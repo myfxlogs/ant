@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"connectrpc.com/connect"
 	"github.com/jackc/pgx/v5"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
@@ -65,6 +67,12 @@ func parseUserID(ctx context.Context) (uuid.UUID, error) {
 
 // accountToProto converts a service.AccountDTO to a protobuf Account message.
 func accountToProto(a *service.AccountDTO) *antv1.Account {
+	var connectedAt *timestamppb.Timestamp
+	if a.LastConnectedAt != "" {
+		if t, err := time.Parse(time.RFC3339, a.LastConnectedAt); err == nil {
+			connectedAt = timestamppb.New(t)
+		}
+	}
 	return &antv1.Account{
 		Id: a.ID, UserId: a.UserID, Login: a.Login,
 		MtType: a.Platform, BrokerCompany: a.Broker, BrokerServer: a.Server,
@@ -73,6 +81,7 @@ func accountToProto(a *service.AccountDTO) *antv1.Account {
 		FreeMargin: a.FreeMargin, MarginLevel: a.MarginLevel,
 		Leverage: a.Leverage, Currency: a.Currency,
 		IsInvestor: a.IsInvestor, LastError: a.LastError,
+		ConnectedAt: connectedAt,
 	}
 }
 

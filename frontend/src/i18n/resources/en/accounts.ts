@@ -333,7 +333,9 @@ const accounts = {
         investor: 'Investor mode',
         trader: 'Trader mode'
       },
-      leverage: 'Leverage {{leverage}}x',
+      connected: 'Connected',
+        lastConnected: '{{time}}',
+        leverage: 'Leverage {{leverage}}x',
       cards: {
         balance: 'Balance',
         equity: 'Equity',

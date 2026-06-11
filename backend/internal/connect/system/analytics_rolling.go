@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 
 	"connectrpc.com/connect"
 
@@ -24,6 +25,13 @@ func (s *AnalyticsServer) GetRollingMetrics(ctx context.Context, req *connect.Re
 	}
 	if err := s.verifyAccountOwnership(ctx, req.Msg.AccountId); err != nil {
 		return nil, err
+	}
+
+	// Check cache — return immediately on hit.
+	if s.cache != nil {
+		if cached, _ := s.cache.GetRolling(ctx, req.Msg.AccountId); cached != nil {
+			return connect.NewResponse(cached), nil
+		}
 	}
 
 	now := time.Now()
@@ -46,13 +54,21 @@ func (s *AnalyticsServer) GetRollingMetrics(ctx context.Context, req *connect.Re
 	// Monthly win rates — from actual trade records.
 	monthlyWinRates := computeMonthlyWinRates(ctx, s.repo, accountID, start, now)
 
-	return connect.NewResponse(&antv1.GetRollingMetricsResponse{
+	resp := &antv1.GetRollingMetricsResponse{
 		RollingSharpe:   rollingSharpe,
 		DrawdownEvents:  ddEvents,
 		MonthlyWinRates: monthlyWinRates,
 		EquityCurve:     eqProto,
 		DrawdownCurve:   ddProto,
-	}), nil
+	}
+
+	if s.cache != nil {
+		if err := s.cache.SetRolling(ctx, req.Msg.AccountId, resp); err != nil {
+			s.log.Warn("analytics cache: set rolling failed", zap.Error(err))
+		}
+	}
+
+	return connect.NewResponse(resp), nil
 }
 
 func computeRollingSharpe(dailyReturns []float64, curve []*model.EquityPoint) []*antv1.RollingPoint {

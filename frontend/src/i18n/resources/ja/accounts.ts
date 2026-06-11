@@ -333,7 +333,9 @@ const accounts = {
         investor: '投資家モード',
         trader: 'トレーダーモード'
       },
-      leverage: 'レバレッジ {{leverage}} 倍',
+      connected: '接続済み',
+        lastConnected: '{{time}}',
+        leverage: 'レバレッジ {{leverage}} 倍',
       cards: {
         balance: '残高',
         equity: '純資産',

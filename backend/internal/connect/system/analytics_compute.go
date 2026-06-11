@@ -234,6 +234,39 @@ func symbolStatsToProto(stats []*model.SymbolStats) []*antv1.SymbolStat {
 	return result
 }
 
+// symbolStatsToSymbolPnLs converts SymbolStats model objects to SymbolPnL proto
+// messages with win rate, profit factor, and trade share computed from totals.
+func symbolStatsToSymbolPnLs(stats []*model.SymbolStats) []*antv1.SymbolPnL {
+	var totalTrades int
+	for _, s := range stats {
+		totalTrades += s.TotalTrades
+	}
+	result := make([]*antv1.SymbolPnL, 0, len(stats))
+	for _, s := range stats {
+		wr := 0.0
+		if s.TotalTrades > 0 {
+			wr = float64(s.WinningTrades) / float64(s.TotalTrades) * 100
+		}
+		pf := 0.0
+		if !s.TotalLoss.IsZero() {
+			pf = math.Abs(s.TotalProfit.InexactFloat64() / s.TotalLoss.InexactFloat64())
+		}
+		tradeSharePct := 0.0
+		if totalTrades > 0 {
+			tradeSharePct = float64(s.TotalTrades) / float64(totalTrades) * 100.0
+		}
+		result = append(result, &antv1.SymbolPnL{
+			Symbol:            s.Symbol,
+			NetProfit:         math.Round(s.NetProfit.InexactFloat64()*100) / 100,
+			TotalTrades:       int64(s.TotalTrades),
+			WinRate:           math.Round(wr*100) / 100,
+			ProfitFactor:      math.Round(pf*100) / 100,
+			TradeSharePercent: math.Round(tradeSharePct*100) / 100,
+		})
+	}
+	return result
+}
+
 func dailyPnLToProto(items []*model.DailyPnL) []*antv1.DailyPnL {
 	result := make([]*antv1.DailyPnL, 0, len(items))
 	for _, d := range items {
