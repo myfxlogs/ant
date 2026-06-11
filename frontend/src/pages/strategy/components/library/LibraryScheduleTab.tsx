@@ -1,25 +1,27 @@
 import { Button } from 'antd';
+import type { FormInstance } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import ScheduleTable from '../ScheduleTable';
 import EditScheduleModal from '../EditScheduleModal';
+import type { ScheduleFormValues } from '../EditScheduleModal';
 import TriggerModal from '../TriggerModal';
 import ScheduleHealthModal from '../ScheduleHealthModal';
-import type { ScheduleRow, ScheduleHealthSummary, TriggerResult, TriggerContext } from '../../hooks/libraryTypes';
+import type { ScheduleRow, ScheduleHealthSummary, TriggerResult, TriggerContext, TemplateOption, AccountRow } from '../../hooks/libraryTypes';
 
 interface Props {
   schedules: ScheduleRow[];
   allSchedules: ScheduleRow[];
   loading: boolean;
-  templates: any[];
-  accounts: any[];
+  templates: TemplateOption[];
+  accounts: AccountRow[];
   symbols: { value: string; label: string }[];
   symbolsLoading: boolean;
   formatTime: (v: unknown) => string;
   // Edit modal
   openEdit: boolean; setOpenEdit: (v: boolean) => void;
   editing: ScheduleRow | null; setEditing: (v: ScheduleRow | null) => void;
-  form: any; accountIdWatch: string | undefined;
+  form: FormInstance<ScheduleFormValues>; accountIdWatch: string | undefined;
   loadSymbols: (accountId: string, symbol?: string) => void;
   submitEdit: () => void;
   openUpdate: (row: ScheduleRow) => void;

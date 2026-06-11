@@ -1,8 +1,10 @@
 import { createContext, useContext } from 'react';
+import type { FormInstance } from 'antd';
 import type { StrategyTemplate } from '@/client/strategy';
 import type { TemplateFilter } from './hooks/useLibraryTemplates';
 import type { LibraryTab } from './hooks/useStrategyLibrary';
-import type { ScheduleRow, BacktestRunRow, ScheduleHealthSummary, TriggerResult, TriggerContext } from './hooks/libraryTypes';
+import type { ScheduleRow, BacktestRunRow, ScheduleHealthSummary, TriggerResult, TriggerContext, TemplateOption, AccountRow } from './hooks/libraryTypes';
+import type { ScheduleFormValues } from './components/EditScheduleModal';
 
 export interface LibraryCtx {
   // Templates
@@ -37,12 +39,12 @@ export interface LibraryCtx {
   scheduleProps: {
     schedules: ScheduleRow[]; allSchedules: ScheduleRow[];
     loading: boolean; error: string | null;
-    templates: any[]; accounts: any[];
+    templates: TemplateOption[]; accounts: AccountRow[];
     symbols: { value: string; label: string }[]; symbolsLoading: boolean;
     formatTime: (v: unknown) => string;
     openEdit: boolean; setOpenEdit: (v: boolean) => void;
     editing: ScheduleRow | null; setEditing: (v: ScheduleRow | null) => void;
-    form: any; accountIdWatch: string | undefined;
+    form: FormInstance<ScheduleFormValues>; accountIdWatch: string | undefined;
     loadSymbols: (accountId: string, symbol?: string) => void;
     submitEdit: () => void; openUpdate: (row: ScheduleRow) => void;
     onToggleActive: (row: ScheduleRow, next: boolean) => void;

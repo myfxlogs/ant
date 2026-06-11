@@ -6,6 +6,7 @@ import type { StrategyTemplate } from '@/client/strategy';
 import { strategyTemplateApi, type CreateTemplateRequest } from '@/client/strategy-schedules';
 import { codeAssistApi } from '@/client/codeAssist';
 import { DEFAULT_TEMPLATES } from '../StrategyLibrary.defaults';
+import type { DefaultTemplateItem } from '../StrategyLibrary.defaults';
 import { isSystemTemplate, isPublicTemplate } from './libraryTypes';
 
 export type TemplateFilter = 'all' | 'user' | 'system';
@@ -44,11 +45,11 @@ export function useLibraryTemplates() {
 
   const allTemplates: StrategyTemplate[] = templates.length > 0
     ? templates
-    : (DEFAULT_TEMPLATES as any[]).map(d => ({
+    : (DEFAULT_TEMPLATES as DefaultTemplateItem[]).map(d => ({
         ...d,
         name: d.nameKey ? t(d.nameKey) : d.name,
         description: d.descriptionKey ? t(d.descriptionKey) : d.description,
-      })) as StrategyTemplate[];
+      })) as unknown as StrategyTemplate[];
 
   const filtered = allTemplates.filter(tpl => {
     const system = isSystemTemplate(tpl);
@@ -106,7 +107,7 @@ export function useLibraryTemplates() {
   const handlePublish = useCallback(async (id: string) => {
     setPublishing(true);
     try {
-      await strategyTemplateApi.update({ id, isPublic: true } as any);
+      await strategyTemplateApi.update({ id, isPublic: true });
       message.success(t('strategy.library.publishSuccess'));
       fetchTemplates();
       queryClient.invalidateQueries({ queryKey: ['marketplace'] });
@@ -117,7 +118,7 @@ export function useLibraryTemplates() {
   const handleUnpublish = useCallback(async (id: string) => {
     setPublishing(true);
     try {
-      await strategyTemplateApi.update({ id, isPublic: false } as any);
+      await strategyTemplateApi.update({ id, isPublic: false });
       message.success(t('strategy.library.unpublishSuccess'));
       fetchTemplates();
       queryClient.invalidateQueries({ queryKey: ['marketplace'] });

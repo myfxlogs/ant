@@ -19,7 +19,7 @@ export default function LibraryOverviewTab() {
   const id = String(tpl.id || '');
   const system = isSystemTemplate(tpl);
   const public_ = isPublicTemplate(tpl);
-  const code = String((tpl as any).code || '');
+  const code = String(tpl.code || '');
   const count = lib.scheduleCountByTemplate(id);
 
   const handleCopyCode = async () => {
@@ -45,7 +45,7 @@ export default function LibraryOverviewTab() {
           {count > 0 ? <Text style={{ color: '#1677ff' }}>{t('strategy.library.scheduleRunningCount', '{{count}} 个运行中', { count })}</Text>
             : <Text type="secondary">{t('strategy.library.noSchedules')}</Text>}
         </Descriptions.Item>
-        <Descriptions.Item label={t('strategy.templates.table.useCount')}>{String((tpl as any).useCount || 0)}</Descriptions.Item>
+        <Descriptions.Item label={t('strategy.templates.table.useCount')}>{String(tpl.useCount || 0)}</Descriptions.Item>
         <Descriptions.Item label={t('strategy.templates.table.createdAt')}>{formatDateTime(String(tpl.createdAt || ''))}</Descriptions.Item>
       </Descriptions>
 

@@ -4,6 +4,7 @@ import { EyeOutlined, ExportOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { formatDateTime } from '@/utils/date';
 import { useMarketplaceCtx } from '../MarketplaceContext';
+import type { PurchasedItem } from '../hooks/useMarketplace';
 
 const { Text } = Typography;
 
@@ -15,7 +16,7 @@ export default function PurchaseTab() {
     return <Empty description={t('marketplace.purchases.empty')} />;
   }
 
-  const columns: ColumnsType<any> = [
+  const columns: ColumnsType<PurchasedItem> = [
     {
       title: t('marketplace.purchases.strategy'),
       dataIndex: 'strategyId', key: 'strategy',
@@ -24,12 +25,12 @@ export default function PurchaseTab() {
     {
       title: t('marketplace.purchases.date'),
       key: 'date',
-      render: (_: unknown, row: any) => <Text>{formatDateTime(row.createdAt || row.purchasedAt)}</Text>,
+      render: (_: unknown, row: PurchasedItem) => <Text>{formatDateTime(String(row.createdAt || row.purchasedAt || ''))}</Text>,
     },
     {
       title: t('marketplace.purchases.status'),
       key: 'status',
-      render: (_: unknown, row: any) => (
+      render: (_: unknown, row: PurchasedItem) => (
         row.active
           ? <Tag color="green">{t('common.active')}</Tag>
           : <Tag>{t('common.inactive')}</Tag>
@@ -38,7 +39,7 @@ export default function PurchaseTab() {
     {
       title: t('marketplace.purchases.actions'),
       key: 'actions',
-      render: (_: unknown, row: any) => (
+      render: (_: unknown, row: PurchasedItem) => (
         <Space>
           <Button size="small" icon={<EyeOutlined />} onClick={() => {
             const s = m.strategies.find(s => s.strategyId === row.strategyId);

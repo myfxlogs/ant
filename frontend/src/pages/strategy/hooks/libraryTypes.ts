@@ -1,14 +1,21 @@
 import type { StrategyTemplate } from '@/client/strategy';
 
 // ── Template helpers ──
-export function isSystemTemplate(tpl: StrategyTemplate | Record<string, unknown>): boolean {
-  const id = String((tpl as any).id || '');
-  const tags = Array.isArray((tpl as any).tags) ? (tpl as any).tags : [];
-  return Boolean((tpl as any).isSystem) || tags.includes('preset') || id.startsWith('default-');
+export function isSystemTemplate(tpl: StrategyTemplate): boolean {
+  const id = String(tpl.id || '');
+  const tags = tpl.tags || [];
+  return Boolean(tpl.isSystem) || tags.includes('preset') || id.startsWith('default-');
 }
 
-export function isPublicTemplate(tpl: StrategyTemplate | Record<string, unknown>): boolean {
-  return Boolean((tpl as any).isPublic);
+export function isPublicTemplate(tpl: StrategyTemplate): boolean {
+  return Boolean(tpl.isPublic);
+}
+
+// Minimal template reference used by schedule forms and tables
+export interface TemplateOption {
+  id: string;
+  name: string;
+  isPublic?: boolean;
 }
 
 // ── Schedule entity (the shape returned by API) ──

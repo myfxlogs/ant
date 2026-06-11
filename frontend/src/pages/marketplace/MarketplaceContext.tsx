@@ -1,13 +1,13 @@
 import { createContext, useContext } from 'react';
 import type { PublishedStrategy } from '@/gen/ant/v1/marketplace_service_pb';
-import type { PriceFilter, SortBy, TabKey } from './hooks/useMarketplace';
+import type { PriceFilter, SortBy, TabKey, PurchasedItem } from './hooks/useMarketplace';
 
 export interface MarketplaceCtx {
   // Data
   strategies: PublishedStrategy[];
   loading: boolean;
   error: unknown;
-  purchases: any[];
+  purchases: PurchasedItem[];
   purchasesLoading: boolean;
   myPublished: PublishedStrategy[];
   authorStats: { published: number; totalSubscribers: number; avgRating: number };

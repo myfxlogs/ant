@@ -10,9 +10,11 @@ import { useAccountsAndSymbols } from './useAccountsAndSymbols';
 import { buildSymbolOptions, formatTime } from '../scheduleUtils';
 import { buildParametersFromForm, parseParametersToForm } from '../StrategyScheduleParams';
 import { DEFAULT_TEMPLATES } from '../StrategyLibrary.defaults';
+import type { DefaultTemplateItem } from '../StrategyLibrary.defaults';
 import { getTradingRiskToastMessage } from '@/utils/tradingRiskError';
 import type { ScheduleFormValues } from '../components/EditScheduleModal';
-import type { ScheduleRow, ScheduleHealthSummary, TriggerResult, TriggerContext } from './libraryTypes';
+import type { ScheduleRow, ScheduleHealthSummary, TriggerResult, TriggerContext, TemplateOption } from './libraryTypes';
+import type { StrategyTemplate } from '@/client/strategy';
 
 type ScheduleType = 'interval' | 'kline_close' | 'hf_quote';
 
@@ -21,7 +23,7 @@ export function useLibrarySchedules(selectedTemplateId: string) {
   const [schedules, setSchedules] = useState<ScheduleRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [templates, setTemplates] = useState<ScheduleRow[]>([]);
+  const [templates, setTemplates] = useState<StrategyTemplate[]>([]);
   const { accounts, symbols, symbolsLoading, fetchAccounts, loadSymbols } = useAccountsAndSymbols();
   const [openEdit, setOpenEdit] = useState(false);
   const [editing, setEditing] = useState<ScheduleRow | null>(null);
@@ -54,7 +56,7 @@ export function useLibrarySchedules(selectedTemplateId: string) {
     setTriggerContext({ schedule: row, accountId: row.accountId }); setOpenTrigger(true);
     try {
       const tpl = await strategyTemplateApi.get(row.templateId);
-      const code = String((tpl as any)?.code || '');
+      const code = String(tpl?.code || '');
       if (!code) throw new Error(t('strategy.schedules.messages.templateCodeEmptyCannotExecute'));
       const exec = await pythonStrategyApi.execute({ code, accountId: row.accountId, symbol: row.symbol, timeframe: row.timeframe });
       if (!exec.success) throw new Error(exec.error || t('strategy.schedules.messages.strategyExecuteFailed'));
@@ -102,7 +104,7 @@ export function useLibrarySchedules(selectedTemplateId: string) {
     setLoading(true); setError(null);
     try {
       const [tpls, schs] = await Promise.all([strategyTemplateApi.list(), strategyScheduleV2Api.list()]);
-      setTemplates(tpls as ScheduleRow[]); setSchedules(schs as ScheduleRow[]); void fetchAccounts();
+      setTemplates(tpls || []); setSchedules(schs as ScheduleRow[]); void fetchAccounts();
     } catch (e: any) {
       setError(e?.message || t('common.loadingFailed'));
     } finally { setLoading(false); }
@@ -129,10 +131,10 @@ export function useLibrarySchedules(selectedTemplateId: string) {
   // Re-fetch on template change
   useEffect(() => { if (selectedTemplateId) void refresh(); }, [selectedTemplateId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const templatesForSelect = useMemo(() => {
-    const out: ScheduleRow[] = []; const seen = new Set<string>();
-    templates.forEach(t => { if (!t?.id) return; seen.add(String(t.id)); out.push(t); });
-    (DEFAULT_TEMPLATES as any[]).forEach(t => { if (!t?.id) return; const id = String(t.id); if (seen.has(id)) return; out.push(t as ScheduleRow); });
+  const templatesForSelect = useMemo((): TemplateOption[] => {
+    const out: TemplateOption[] = []; const seen = new Set<string>();
+    templates.forEach(t => { if (!t?.id) return; seen.add(String(t.id)); out.push({ id: t.id, name: t.name, isPublic: t.isPublic }); });
+    (DEFAULT_TEMPLATES as DefaultTemplateItem[]).forEach(t => { if (!t?.id) return; const id = String(t.id); if (seen.has(id)) return; out.push({ id: String(t.id), name: t.name, isPublic: t.isSystem }); });
     return out;
   }, [templates]);
 

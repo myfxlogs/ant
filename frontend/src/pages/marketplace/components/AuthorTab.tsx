@@ -2,6 +2,7 @@ import { Card, Row, Col, Statistic, Table, Tag, Typography, Empty } from 'antd';
 import { ShopOutlined, StarOutlined, SendOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useMarketplaceCtx } from '../MarketplaceContext';
+import type { PublishedStrategy } from '@/gen/ant/v1/marketplace_service_pb';
 
 const { Text } = Typography;
 
@@ -34,16 +35,16 @@ export default function AuthorTab() {
         </Col>
       </Row>
 
-      <Table
+      <Table<PublishedStrategy>
         rowKey="publishId"
         dataSource={myPublished}
         pagination={{ pageSize: 10 }}
         size="small"
         columns={[
-          { title: t('strategy.templates.table.name'), dataIndex: 'strategyName', key: 'name', render: (n: string, row: any) => <Text strong>{n || row.title || 'Unknown'}</Text> },
-          { title: t('marketplace.detail.price'), key: 'price', render: (_: unknown, row: any) => (<Tag color={!row.priceAmount || row.priceModel === 'free' ? 'green' : 'gold'}>{!row.priceAmount || row.priceModel === 'free' ? t('marketplace.card.free') : `¥${row.priceAmount}`}</Tag>) },
+          { title: t('strategy.templates.table.name'), dataIndex: 'strategyName', key: 'name', render: (n: string, row: PublishedStrategy) => <Text strong>{n || row.title || 'Unknown'}</Text> },
+          { title: t('marketplace.detail.price'), key: 'price', render: (_: unknown, row: PublishedStrategy) => (<Tag color={!row.priceAmount || row.priceModel === 'free' ? 'green' : 'gold'}>{!row.priceAmount || row.priceModel === 'free' ? t('marketplace.card.free') : `¥${row.priceAmount}`}</Tag>) },
           { title: t('marketplace.author.subscribers'), dataIndex: 'totalSubscribers', key: 'subscribers' },
-          { title: t('marketplace.author.avgRating'), key: 'rating', render: (_: unknown, row: any) => Number(row.avgRating || 0).toFixed(1) },
+          { title: t('marketplace.author.avgRating'), key: 'rating', render: (_: unknown, row: PublishedStrategy) => Number(row.avgRating || 0).toFixed(1) },
         ]}
         locale={{ emptyText: t('marketplace.author.noPublished') }}
       />

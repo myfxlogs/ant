@@ -4,8 +4,15 @@ import { useTranslation } from 'react-i18next';
 import { marketplaceClient } from '@/client/connect';
 import { useRpcQuery } from '@/hooks/useRpcQuery';
 import { useAuthStore } from '@/stores/authStore';
-import type { PublishedStrategy } from '@/gen/ant/v1/marketplace_service_pb';
+import type { PublishedStrategy, SubscriptionItem } from '@/gen/ant/v1/marketplace_service_pb';
 import type { MarketplaceCtx } from '../MarketplaceContext';
+
+export interface PurchasedItem extends SubscriptionItem {
+  /** Alias for subscriptionId */
+  id: string;
+  /** Alias for createdAt */
+  purchasedAt: SubscriptionItem['createdAt'];
+}
 
 export type PriceFilter = 'all' | 'free' | 'paid';
 export type SortBy = 'score' | 'newest' | 'popular' | 'rating' | 'price_asc' | 'price_desc';
@@ -52,13 +59,12 @@ export function useMarketplace(): MarketplaceCtx {
   // ── Purchases ──
   const { data: purchases = [], isLoading: purchasesLoading, refetch: refetchPurchases } = useRpcQuery(
     ['marketplace', 'purchases', userId],
-    async () => {
+    async (): Promise<PurchasedItem[]> => {
       if (!userId) return [];
       const resp = await marketplaceClient.listSubscriptions({ userId });
-      return (resp.subscriptions || []).map((s: any) => ({
+      return (resp.subscriptions || []).map((s: SubscriptionItem): PurchasedItem => ({
         ...s,
         id: s.subscriptionId,
-        strategyId: s.strategyId,
         purchasedAt: s.createdAt,
       }));
     },
@@ -68,14 +74,14 @@ export function useMarketplace(): MarketplaceCtx {
   // ── Author: my published strategies ──
   const myPublished = useMemo(() => {
     if (!userId) return [];
-    return allStrategies.filter((s: any) => s.publisherUserId === userId);
+    return allStrategies.filter((s: PublishedStrategy) => s.publisherUserId === userId);
   }, [allStrategies, userId]);
 
   const authorStats = useMemo(() => ({
     published: myPublished.length,
-    totalSubscribers: myPublished.reduce((sum: number, s: any) => sum + (s.totalSubscribers || 0), 0),
+    totalSubscribers: myPublished.reduce((sum: number, s: PublishedStrategy) => sum + (s.totalSubscribers || 0), 0),
     avgRating: myPublished.length > 0
-      ? myPublished.reduce((sum: number, s: any) => sum + (s.avgRating || 0), 0) / myPublished.length
+      ? myPublished.reduce((sum: number, s: PublishedStrategy) => sum + (s.avgRating || 0), 0) / myPublished.length
       : 0,
   }), [myPublished]);
 
@@ -88,7 +94,7 @@ export function useMarketplace(): MarketplaceCtx {
   }, []);
 
   // ── Purchase / Get (Set for O(1) lookup) ──
-  const purchasedIds = useMemo(() => new Set(purchases.map((p: any) => p.strategyId)), [purchases]);
+  const purchasedIds = useMemo(() => new Set(purchases.map((p: PurchasedItem) => p.strategyId)), [purchases]);
   const isPurchased = useCallback((strategyId: string) => purchasedIds.has(strategyId), [purchasedIds]);
 
   const handleGetFree = useCallback(async (strategy: PublishedStrategy) => {
