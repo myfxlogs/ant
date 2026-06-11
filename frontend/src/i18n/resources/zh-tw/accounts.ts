@@ -101,6 +101,10 @@ const accounts = {
         metricsTitle: '月度指標',
         symbolPnLTitle: '品種盈虧',
         holdingTitle: '持倉時長',
+        riskRewardTitle: '獎勵:風險比率',
+        popularityTitle: '貨幣流行度',
+        long: '多頭',
+        short: '短線',
         fields: {
           netReturn: '淨收益',
           totalTrades: '總筆數',

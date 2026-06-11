@@ -1,11 +1,9 @@
 import React, { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import type { MonthlyDetailData } from '@/client/analytics';
-
-type Props = {
-  detail: MonthlyDetailData;
-  currency: string;
-};
+import {
+  Bar, BarChart, CartesianGrid, Cell, Pie, PieChart,
+  ResponsiveContainer, Tooltip, XAxis, YAxis,
+} from 'recharts';
+import { PIE_COLORS } from './MonthlyAnalysisCard.shared';
 
 const sectionStyle = {
   background: 'var(--color-bg-secondary)',
@@ -18,97 +16,184 @@ const titleStyle = {
   color: 'var(--color-text)',
   fontSize: 12,
   fontWeight: 600,
-  marginBottom: 8,
+  marginBottom: 6,
 } as const;
 
-const labelStyle = { color: 'var(--color-text-muted)', fontSize: 10, lineHeight: 1.5 };
-const valueStyle = (color = 'var(--color-text)') => ({ color, fontSize: 12, fontWeight: 600, lineHeight: 1.5 });
+const tooltipStyle = {
+  background: 'var(--color-bg-card)',
+  border: 'none',
+  borderRadius: 6,
+  boxShadow: '0 2px 8px var(--color-shadow)',
+  fontSize: 11,
+};
 
-const MetricRow = React.memo(({ label, value, color }: { label: string; value: string; color?: string }) => (
-  <div className="flex justify-between items-baseline">
-    <span style={labelStyle}>{label}</span>
-    <span style={valueStyle(color)}>{value}</span>
-  </div>
-));
-
-const SymbolBar = React.memo(({ symbol, profit, widthPct, color }: { symbol: string; profit: string; widthPct: number; color: string }) => (
-  <div className="flex items-center gap-1.5 mb-1">
-    <span style={{ ...labelStyle, width: 56, flexShrink: 0, textAlign: 'right' }}>{symbol}</span>
-    <div className="flex-1 h-3 rounded-sm" style={{ background: 'var(--color-bg-card)', overflow: 'hidden' }}>
-      <div className="h-full rounded-sm transition-all" style={{ width: `${Math.max(widthPct, 2)}%`, background: color }} />
-    </div>
-    <span style={{ ...valueStyle(color), width: 64, flexShrink: 0 }}>{profit}</span>
-  </div>
-));
-
-export default function MonthlyDrillDown({ detail, currency }: Props) {
-  const { t } = useTranslation();
-  const { metrics, symbolPnls, holdingStats } = detail;
-
-  const symbolBars = useMemo(() => {
-    if (!symbolPnls.length) return null;
-    const maxAbs = Math.max(...symbolPnls.map((s) => Math.abs(s.netProfit)), 1);
-    return symbolPnls.slice(0, 8).map((s) => ({
-      ...s,
-      widthPct: (Math.abs(s.netProfit) / maxAbs) * 100,
-      color: s.netProfit >= 0 ? 'var(--color-success)' : 'var(--color-danger)',
+/* ── Panel 1: Risk/Reward ratio per symbol (horizontal bar chart) ── */
+const RiskRewardPanel = React.memo(({ risks, t }: {
+  risks: Array<{ symbol: string; riskRatio: number }>;
+  t: (k: string) => string;
+}) => {
+  const chartData = useMemo(() => {
+    if (!risks.length) return [];
+    return risks.slice(0, 10).map((r) => ({
+      symbol: r.symbol,
+      riskRatio: Math.min(r.riskRatio, 5), // clamp visual, raw value in tooltip
+      rawRatio: r.riskRatio,
     }));
-  }, [symbolPnls]);
+  }, [risks]);
+
+  if (!chartData.length) {
+    return (
+      <div style={sectionStyle}>
+        <h4 style={titleStyle}>{t('accounts.analytics.monthlyDetail.riskRewardTitle')}</h4>
+        <div className="flex items-center justify-center h-[100px]" style={{ color: 'var(--color-text-muted)', fontSize: 11 }}>
+          {t('accounts.analytics.empty.monthlyProfit')}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" style={{ borderTop: '1px solid var(--color-border)', paddingTop: 12 }}>
-      {/* Panel 1: Monthly Metrics */}
-      <div style={sectionStyle}>
-        <h4 style={titleStyle}>{t('accounts.analytics.monthlyDetail.metricsTitle')}</h4>
-        <div className="space-y-0.5">
-          <MetricRow label={t('accounts.analytics.monthlyDetail.fields.netReturn')}
-            value={`${metrics.netReturn >= 0 ? '+' : ''}${metrics.netReturn.toFixed(2)} ${currency}`}
-            color={metrics.netReturn >= 0 ? 'var(--color-success)' : 'var(--color-danger)'} />
-          <MetricRow label={t('accounts.analytics.monthlyDetail.fields.totalTrades')}
-            value={`${metrics.totalTrades}`} />
-          <MetricRow label={t('accounts.analytics.monthlyDetail.fields.winRate')}
-            value={`${metrics.winRate.toFixed(1)}%`} />
-          <MetricRow label={t('accounts.analytics.monthlyDetail.fields.profitFactor')}
-            value={metrics.profitFactor.toFixed(2)} />
-          <MetricRow label={t('accounts.analytics.monthlyDetail.fields.bestTrade')}
-            value={`+${metrics.bestTrade.toFixed(2)}`} color="var(--color-success)" />
-          <MetricRow label={t('accounts.analytics.monthlyDetail.fields.worstTrade')}
-            value={`${metrics.worstTrade.toFixed(2)}`} color="var(--color-danger)" />
-        </div>
-      </div>
-
-      {/* Panel 2: Symbol P&L */}
-      <div style={sectionStyle}>
-        <h4 style={titleStyle}>{t('accounts.analytics.monthlyDetail.symbolPnLTitle')}</h4>
-        {symbolBars && symbolBars.length > 0 ? (
-          <div>
-            {symbolBars.map((s) => (
-              <SymbolBar key={s.symbol} symbol={s.symbol}
-                profit={`${s.netProfit >= 0 ? '+' : ''}${s.netProfit.toFixed(2)}`}
-                widthPct={s.widthPct} color={s.color} />
+    <div style={sectionStyle}>
+      <h4 style={titleStyle}>{t('accounts.analytics.monthlyDetail.riskRewardTitle')}</h4>
+      <ResponsiveContainer width="100%" height={Math.max(chartData.length * 28, 140)}>
+        <BarChart layout="vertical" data={chartData} margin={{ top: 0, right: 28, bottom: 0, left: 0 }}>
+          <CartesianGrid strokeDasharray="2 2" stroke="var(--color-border)" horizontal={false} />
+          <XAxis type="number" stroke="var(--color-text-muted)" fontSize={9}
+            tickFormatter={(v) => v.toFixed(1)} />
+          <YAxis type="category" dataKey="symbol" width={56} stroke="var(--color-text-muted)" fontSize={10} />
+          <Tooltip contentStyle={tooltipStyle}
+            formatter={(_v: number, _n: string, props: { payload?: { rawRatio?: number } }) =>
+              [`${props?.payload?.rawRatio?.toFixed(2) ?? '—'}`, 'Reward:Risk']
+            } />
+          <Bar dataKey="riskRatio" radius={[0, 3, 3, 0]} isAnimationActive={false}>
+            {chartData.map((_, i) => (
+              <Cell key={i} fill="rgba(119, 189, 243, 0.7)" />
             ))}
-          </div>
-        ) : (
-          <div style={{ color: 'var(--color-text-muted)', fontSize: 11, paddingTop: 4 }}>
-            {t('accounts.analytics.empty.monthlyProfit')}
-          </div>
-        )}
-      </div>
-
-      {/* Panel 3: Holding Time Stats */}
-      <div style={sectionStyle}>
-        <h4 style={titleStyle}>{t('accounts.analytics.monthlyDetail.holdingTitle')}</h4>
-        <div className="space-y-0.5">
-          <MetricRow label={t('accounts.analytics.monthlyDetail.fields.averageHours')}
-            value={`${holdingStats.averageHours.toFixed(1)}h`} />
-          <MetricRow label={t('accounts.analytics.monthlyDetail.fields.medianHours')}
-            value={`${holdingStats.medianHours.toFixed(1)}h`} />
-          <MetricRow label={t('accounts.analytics.monthlyDetail.fields.maxHours')}
-            value={`${holdingStats.maxHours.toFixed(1)}h`} />
-          <MetricRow label={t('accounts.analytics.monthlyDetail.fields.minHours')}
-            value={`${holdingStats.minHours.toFixed(1)}h`} />
-        </div>
-      </div>
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   );
-}
+});
+
+/* ── Panel 2: Currency/Symbol Popularity pie chart ── */
+const PopularityPanel = React.memo(({ popularity, t }: {
+  popularity: Array<{ symbol: string; trades: number; sharePercent: number }>;
+  t: (k: string) => string;
+}) => {
+  const pieData = useMemo(() => {
+    if (!popularity.length) return [];
+    return popularity.map((s, i) => ({
+      name: s.symbol,
+      value: s.sharePercent,
+      trades: s.trades,
+      fill: PIE_COLORS[i % PIE_COLORS.length],
+    }));
+  }, [popularity]);
+
+  if (!pieData.length) {
+    return (
+      <div style={sectionStyle}>
+        <h4 style={titleStyle}>{t('accounts.analytics.monthlyDetail.popularityTitle')}</h4>
+        <div className="flex items-center justify-center h-[140px]" style={{ color: 'var(--color-text-muted)', fontSize: 11 }}>
+          {t('accounts.analytics.empty.monthlyProfit')}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={sectionStyle}>
+      <h4 style={titleStyle}>{t('accounts.analytics.monthlyDetail.popularityTitle')}</h4>
+      <ResponsiveContainer width="100%" height={200}>
+        <PieChart>
+          <Pie
+            data={pieData}
+            cx="50%"
+            cy="50%"
+            innerRadius={50}
+            outerRadius={85}
+            paddingAngle={2}
+            dataKey="value"
+            isAnimationActive={false}
+            label={({ name, value }) => `${name}: ${value.toFixed(1)}%`}
+            labelLine={{ stroke: 'var(--color-text-muted)', strokeWidth: 1 }}
+          >
+            {pieData.map((d, i) => (
+              <Cell key={i} fill={d.fill} stroke="#fff" strokeWidth={1} />
+            ))}
+          </Pie>
+          <Tooltip contentStyle={tooltipStyle}
+            formatter={(v: number, _n: string, props: { payload?: { trades?: number } }) =>
+              [`${v.toFixed(1)}% (${props?.payload?.trades ?? 0} trades)`, '']
+            } />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+  );
+});
+
+/* ── Panel 3: Holding time split — bulls (long) vs short (horizontal bars) ── */
+const HoldingSplitPanel = React.memo(({ holdingSplit, t }: {
+  holdingSplit: Array<{ symbol: string; bullsSeconds: number; shortTermSeconds: number }>;
+  t: (k: string) => string;
+}) => {
+  // Transform to stacked-data shape for grouped horizontal bars
+  const chartData = useMemo(() => {
+    if (!holdingSplit.length) return [];
+    // myfxbook uses milliseconds in the chart — convert seconds to ms
+    return holdingSplit.slice(0, 10).map((h) => ({
+      symbol: h.symbol,
+      long: h.bullsSeconds * 1000,
+      short: h.shortTermSeconds * 1000,
+    }));
+  }, [holdingSplit]);
+
+  if (!chartData.length) {
+    return (
+      <div style={sectionStyle}>
+        <h4 style={titleStyle}>{t('accounts.analytics.monthlyDetail.holdingTitle')}</h4>
+        <div className="flex items-center justify-center h-[100px]" style={{ color: 'var(--color-text-muted)', fontSize: 11 }}>
+          {t('accounts.analytics.empty.monthlyProfit')}
+        </div>
+      </div>
+    );
+  }
+
+  const maxVal = Math.max(...chartData.flatMap((d) => [d.long, d.short]), 1);
+
+  // Format milliseconds to human-readable
+  const fmtMs = (ms: number): string => {
+    if (ms <= 0) return '0';
+    const sec = ms / 1000;
+    if (sec < 60) return `${Math.round(sec)}s`;
+    if (sec < 3600) return `${(sec / 60).toFixed(1)}m`;
+    if (sec < 86400) return `${(sec / 3600).toFixed(1)}h`;
+    return `${(sec / 86400).toFixed(1)}d`;
+  };
+
+  return (
+    <div style={sectionStyle}>
+      <h4 style={titleStyle}>{t('accounts.analytics.monthlyDetail.holdingTitle')}</h4>
+      <ResponsiveContainer width="100%" height={Math.max(chartData.length * 28, 150)}>
+        <BarChart layout="vertical" data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
+          barGap={1} barCategoryGap="20%">
+          <CartesianGrid strokeDasharray="2 2" stroke="var(--color-border)" horizontal={false} />
+          <XAxis type="number" stroke="var(--color-text-muted)" fontSize={9}
+            domain={[0, maxVal * 1.15]}
+            tickFormatter={fmtMs} />
+          <YAxis type="category" dataKey="symbol" width={56} stroke="var(--color-text-muted)" fontSize={10} />
+          <Tooltip contentStyle={tooltipStyle}
+            formatter={(v: number) => [fmtMs(Number(v)), '']} />
+          <Bar dataKey="long" radius={[0, 3, 3, 0]} isAnimationActive={false}
+            fill="rgba(83, 243, 2, 0.7)" name={t('accounts.analytics.monthlyDetail.long')} />
+          <Bar dataKey="short" radius={[0, 3, 3, 0]} isAnimationActive={false}
+            fill="rgba(255, 0, 0, 0.7)" name={t('accounts.analytics.monthlyDetail.short')} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+});
+
+/* ── Named exports — caller lays out panels in myfxbook grid ── */
+export { RiskRewardPanel, PopularityPanel, HoldingSplitPanel };

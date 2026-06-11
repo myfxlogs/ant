@@ -101,6 +101,10 @@ const accounts = {
         metricsTitle: '月度指标',
         symbolPnLTitle: '品种盈亏',
         holdingTitle: '持仓时长',
+        riskRewardTitle: '奖励:风险比率',
+        popularityTitle: '货币流行度',
+        long: '多头',
+        short: '短线',
         fields: {
           netReturn: '净收益',
           totalTrades: '总笔数',

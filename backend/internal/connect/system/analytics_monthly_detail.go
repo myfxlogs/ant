@@ -3,12 +3,11 @@ package system
 import (
 	"context"
 	"fmt"
-	"math"
-	"sort"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 )
@@ -56,60 +55,111 @@ func (s *AnalyticsServer) computeMonthlyDetailCore(ctx context.Context, accountI
 	ym := int(month)
 	yy := int(year)
 
-	metrics, err := s.repo.GetMonthlyDetailMetrics(ctx, accountID, yy, ym)
-	if err != nil {
-		s.log.Warn("analytics: GetMonthlyDetailMetrics failed", zap.Error(err))
-		metrics = nil
-	}
+	// Run all 4 repo calls concurrently — single DB round trip.
+	var (
+		metrics    *antv1.MonthlyDetailMetrics
+		symbolPnLs []*antv1.SymbolMonthlyPnL
+		holding    *antv1.HoldingTimeStats
+		bonus      *antv1.MonthlyBonus
+	)
+	eg, ctx := errgroup.WithContext(ctx)
 
-	symbolPnLs, err := s.repo.GetMonthlySymbolPnL(ctx, accountID, yy, ym)
-	if err != nil {
-		s.log.Warn("analytics: GetMonthlySymbolPnL failed", zap.Error(err))
-	}
-
-	holding, err := s.repo.GetMonthlyHoldingStats(ctx, accountID, yy, ym)
-	if err != nil {
-		s.log.Warn("analytics: GetMonthlyHoldingStats failed", zap.Error(err))
-		holding = nil
-	}
-
-	resp := &antv1.GetMonthlyDetailResponse{}
-
-	if metrics != nil {
-		resp.Metrics = &antv1.MonthlyDetailMetrics{
-			NetReturn:    metrics.NetReturn,
-			ReturnPercent: metrics.ReturnPercent,
-			TotalTrades:  int64(metrics.TotalTrades),
-			WinRate:      metrics.WinRate,
-			ProfitFactor: metrics.ProfitFactor,
-			BestTrade:    metrics.BestTrade,
-			WorstTrade:   metrics.WorstTrade,
+	eg.Go(func() error {
+		m, err := s.repo.GetMonthlyDetailMetrics(ctx, accountID, yy, ym)
+		if err != nil {
+			s.log.Warn("analytics: GetMonthlyDetailMetrics failed", zap.Error(err))
+			return nil // warn-no-block: let other calls succeed
 		}
-	}
+		metrics = &antv1.MonthlyDetailMetrics{
+			NetReturn:     m.NetReturn,
+			ReturnPercent: m.ReturnPercent,
+			TotalTrades:   int64(m.TotalTrades),
+			WinRate:       m.WinRate,
+			ProfitFactor:  m.ProfitFactor,
+			BestTrade:     m.BestTrade,
+			WorstTrade:    m.WorstTrade,
+		}
+		return nil
+	})
 
-	if len(symbolPnLs) > 0 {
-		// Sort by net profit descending.
-		sort.Slice(symbolPnLs, func(i, j int) bool {
-			return symbolPnLs[i].NetProfit > symbolPnLs[j].NetProfit
-		})
-		for _, s := range symbolPnLs {
-			resp.SymbolPnls = append(resp.SymbolPnls, &antv1.SymbolMonthlyPnL{
-				Symbol:    s.Symbol,
-				NetProfit: math.Round(s.NetProfit*100) / 100,
-				Trades:    int64(s.Trades),
-				WinRate:   math.Round(s.WinRate*100) / 100,
+	eg.Go(func() error {
+		rows, err := s.repo.GetMonthlySymbolPnL(ctx, accountID, yy, ym)
+		if err != nil {
+			s.log.Warn("analytics: GetMonthlySymbolPnL failed", zap.Error(err))
+			return nil
+		}
+		// SQL already ORDER BY net_profit DESC — no client-side sort needed.
+		for _, r := range rows {
+			symbolPnLs = append(symbolPnLs, &antv1.SymbolMonthlyPnL{
+				Symbol:    r.Symbol,
+				NetProfit: r.NetProfit, // already rounded in repo
+				Trades:    int64(r.Trades),
+				WinRate:   r.WinRate, // already rounded in repo
 			})
 		}
-	}
+		return nil
+	})
 
-	if holding != nil {
-		resp.HoldingStats = &antv1.HoldingTimeStats{
-			AverageHours: holding.AverageHours,
-			MedianHours:  holding.MedianHours,
-			MaxHours:     holding.MaxHours,
-			MinHours:     holding.MinHours,
+	eg.Go(func() error {
+		h, err := s.repo.GetMonthlyHoldingStats(ctx, accountID, yy, ym)
+		if err != nil {
+			s.log.Warn("analytics: GetMonthlyHoldingStats failed", zap.Error(err))
+			return nil
 		}
+		holding = &antv1.HoldingTimeStats{
+			AverageHours: h.AverageHours,
+			MedianHours:  h.MedianHours,
+			MaxHours:     h.MaxHours,
+			MinHours:     h.MinHours,
+		}
+		return nil
+	})
+
+	eg.Go(func() error {
+		b, err := s.repo.GetMonthlyBonus(ctx, accountID, yy, ym)
+		if err != nil {
+			s.log.Warn("analytics: GetMonthlyBonus failed", zap.Error(err))
+			return nil
+		}
+		bonus = &antv1.MonthlyBonus{
+			// aggregate risk_ratio is derived from metrics.ProfitFactor below
+			// (same SQL formula — avoids a redundant 4th query)
+		}
+		for _, s := range b.SymbolPopularity {
+			bonus.SymbolPopularity = append(bonus.SymbolPopularity, &antv1.SymbolPopularityItem{
+				Symbol:       s.Symbol,
+				Trades:       int64(s.Trades),
+				SharePercent: s.SharePercent,
+			})
+		}
+		for _, r := range b.SymbolRisks {
+			bonus.SymbolRisks = append(bonus.SymbolRisks, &antv1.SymbolRiskItem{
+				Symbol:    r.Symbol,
+				RiskRatio: r.RiskRatio,
+			})
+		}
+		for _, h := range b.SymbolHoldings {
+			bonus.SymbolHoldingSplit = append(bonus.SymbolHoldingSplit, &antv1.SymbolHoldingSplit{
+				Symbol:           h.Symbol,
+				BullsSeconds:     h.BullsSeconds,
+				ShortTermSeconds: h.ShortTermSeconds,
+			})
+		}
+		return nil
+	})
+
+	_ = eg.Wait() // each goroutine already logs its own warnings
+
+	// Derive aggregate risk_ratio from metrics.ProfitFactor (same SQL formula).
+	if bonus != nil && metrics != nil {
+		bonus.RiskRatio = metrics.ProfitFactor
 	}
 
+	resp := &antv1.GetMonthlyDetailResponse{
+		Metrics:      metrics,
+		SymbolPnls:   symbolPnLs,
+		HoldingStats: holding,
+		Bonus:        bonus,
+	}
 	return resp
 }

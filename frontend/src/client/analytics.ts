@@ -329,6 +329,23 @@ export const analyticsApi = {
         maxHours: res.holdingStats?.maxHours ?? 0,
         minHours: res.holdingStats?.minHours ?? 0,
       },
+      bonus: res.bonus ? {
+        riskRatio: res.bonus.riskRatio,
+        symbolPopularity: (res.bonus.symbolPopularity ?? []).map((s) => ({
+          symbol: s.symbol,
+          trades: Number(s.trades),
+          sharePercent: s.sharePercent,
+        })),
+        symbolRisks: (res.bonus.symbolRisks ?? []).map((r) => ({
+          symbol: r.symbol,
+          riskRatio: r.riskRatio,
+        })),
+        symbolHoldingSplit: (res.bonus.symbolHoldingSplit ?? []).map((h) => ({
+          symbol: h.symbol,
+          bullsSeconds: h.bullsSeconds,
+          shortTermSeconds: h.shortTermSeconds,
+        })),
+      } : undefined,
     };
   },
 };
@@ -402,6 +419,12 @@ export interface MonthlyDetailData {
     medianHours: number;
     maxHours: number;
     minHours: number;
+  };
+  bonus?: {
+    riskRatio: number;
+    symbolPopularity: Array<{ symbol: string; trades: number; sharePercent: number }>;
+    symbolRisks: Array<{ symbol: string; riskRatio: number }>;
+    symbolHoldingSplit: Array<{ symbol: string; bullsSeconds: number; shortTermSeconds: number }>;
   };
 }
 

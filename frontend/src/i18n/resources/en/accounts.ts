@@ -132,6 +132,10 @@ const accounts = {
         metricsTitle: 'Monthly Metrics',
         symbolPnLTitle: 'Symbol P&L',
         holdingTitle: 'Holding Time',
+        riskRewardTitle: 'Reward:Risk Ratio',
+        popularityTitle: 'Currency Popularity',
+        long: 'Long',
+        short: 'Short',
         fields: {
           netReturn: 'Net Return',
           totalTrades: 'Total Trades',

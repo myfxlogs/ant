@@ -163,6 +163,7 @@ message GetMonthlyDetailResponse {
   MonthlyDetailMetrics metrics = 1;
   repeated SymbolMonthlyPnL symbol_pnls = 2;
   HoldingTimeStats holding_stats = 3;
+  MonthlyBonus bonus = 4;
 }
 
 message MonthlyDetailMetrics {
@@ -187,6 +188,32 @@ message HoldingTimeStats {
   double median_hours = 2;
   double max_hours = 3;
   double min_hours = 4;
+}
+
+// ── Monthly Bonus (myfxbook-style panels) ──
+
+message MonthlyBonus {
+  double risk_ratio = 1;
+  repeated SymbolPopularityItem symbol_popularity = 2;
+  repeated SymbolRiskItem symbol_risks = 3;
+  repeated SymbolHoldingSplit symbol_holding_split = 4;
+}
+
+message SymbolPopularityItem {
+  string symbol = 1;
+  int64 trades = 2;
+  double share_percent = 3;
+}
+
+message SymbolRiskItem {
+  string symbol = 1;
+  double risk_ratio = 2;
+}
+
+message SymbolHoldingSplit {
+  string symbol = 1;
+  double bulls_seconds = 2;
+  double short_term_seconds = 3;
 }
 
 // ── Attribution Analysis ──

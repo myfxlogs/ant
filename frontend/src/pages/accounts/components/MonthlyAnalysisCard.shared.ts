@@ -1,7 +1,5 @@
 import { CHART_COLORS } from '@/constants/performance';
 
-export type MetricType = 'change' | 'profit' | 'lots' | 'pips' | 'winRate';
-
 export type MonthlyAnalysisPoint = {
   year: number;
   month: number;
@@ -20,25 +18,23 @@ export type MonthlyBarRow = MonthlyAnalysisPoint & {
 };
 
 export function monthFromBarClick(data: unknown, index: number, rows: MonthlyBarRow[]): number | null {
-  const payload = (data as { payload?: { month?: number } })?.payload;
-  if (typeof payload?.month === 'number' && payload.month >= 1 && payload.month <= 12) {
-    return payload.month;
+  // recharts v3: data is BarRectangleItem with payload containing the chart data entry
+  const v3Payload = (data as { payload?: MonthlyBarRow })?.payload;
+  if (typeof v3Payload?.month === 'number' && v3Payload.month >= 1 && v3Payload.month <= 12) {
+    return v3Payload.month;
   }
+  // recharts v2 / direct entry
+  const direct = data as MonthlyBarRow | undefined;
+  if (typeof direct?.month === 'number' && direct.month >= 1 && direct.month <= 12) {
+    return direct.month;
+  }
+  // Fallback by numeric index into the series array
   const row = rows[index];
   if (row && typeof row.month === 'number' && row.month >= 1 && row.month <= 12) {
     return row.month;
   }
   return null;
 }
-
-export type BonusPayload = {
-  riskRatio: number;
-  symbolPopularity: { symbol: string; trades: number; sharePercent: number }[];
-  symbolRisks: { symbol: string; riskRatio: number }[];
-  symbolHoldingSplit: { symbol: string; bullsSeconds: number; shortTermSeconds: number }[];
-  averageHoldingSeconds: number;
-  totalTrades: number;
-};
 
 export type MonthlyWinRatePoint = { month: string; winRate: number; totalTrades: number };
 
@@ -52,20 +48,20 @@ export type MonthlyAnalysisCardProps = {
 
 export const monthShortLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-/** Myfxbook-style pastel bars (rotate by month). */
+/** Myfxbook-style pastel bar colors — rotating palette per month. */
 export const MONTH_BAR_PASTELS = [
-  '#9B8FD9',
-  '#E879A9',
-  '#4DB6AC',
-  '#FF9E5E',
-  '#A3D977',
-  '#7EB6E8',
-  '#D4A574',
-  '#90CAF9',
-  '#CE93D8',
-  '#80CBC4',
-  '#FFAB91',
-  '#B39DDB',
+  '#B486B4', // Jan — mauve
+  '#E28686', // Feb — soft red
+  '#5AB4B4', // Mar — teal
+  '#FFB789', // Apr — peach
+  '#B5D35D', // May — lime
+  '#F6D263', // Jun — gold
+  '#CCE6FA', // Jul — ice blue
+  '#E28686', // Aug — soft red
+  '#5AB4B4', // Sep — teal
+  '#FFB789', // Oct — peach
+  '#B5D35D', // Nov — lime
+  '#B486B4', // Dec — mauve
 ];
 
 export function barCellFill(item: MonthlyBarRow): string {

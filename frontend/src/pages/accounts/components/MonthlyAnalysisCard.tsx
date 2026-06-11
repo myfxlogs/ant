@@ -5,10 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Spin } from 'antd';
 
 import MonthlyAnalysisMainChart from './MonthlyAnalysisMainChart';
-import MonthlyDrillDown from './MonthlyDrillDown';
-import { formatMonthLongName } from '@/utils/date';
+import { RiskRewardPanel, PopularityPanel, HoldingSplitPanel } from './MonthlyDrillDown';
 import {
-  type MetricType,
   type MonthlyAnalysisCardProps,
   type MonthlyAnalysisPoint,
   type MonthlyBarRow,
@@ -19,7 +17,14 @@ import { analyticsApi } from '@/client/analytics';
 import type { MonthlyDetailData } from '@/client/analytics';
 import { queryKeys } from '@/queries/queryKeys';
 
-const ALL_METRICS: MetricType[] = ['change', 'profit', 'lots', 'pips', 'winRate'];
+type MetricType = 'change' | 'profit' | 'lots' | 'pips';
+
+const METRIC_OPTIONS: { key: MetricType; labelKey: string }[] = [
+  { key: 'change', labelKey: 'accounts.analytics.monthlyAnalysis.metrics.change' },
+  { key: 'profit', labelKey: 'accounts.analytics.monthlyAnalysis.metrics.profit' },
+  { key: 'lots', labelKey: 'accounts.analytics.monthlyAnalysis.metrics.lots' },
+  { key: 'pips', labelKey: 'accounts.analytics.monthlyAnalysis.metrics.pips' },
+];
 
 export default function MonthlyAnalysisCard({ accountId, years, data, winRateData, currency = 'USD' }: MonthlyAnalysisCardProps) {
   const { t } = useTranslation();
@@ -72,32 +77,11 @@ export default function MonthlyAnalysisCard({ accountId, years, data, winRateDat
     });
   }, [data, selectedYear, winRateMap]);
 
-  const focused = useMemo(
-    () => yearData.find((item) => item.month === displayMonth) || yearData[0],
-    [yearData, displayMonth]
-  );
-
   const metricTitleMap: Record<MetricType, string> = {
     change: t('accounts.analytics.monthlyAnalysis.metrics.change'),
     profit: t('accounts.analytics.monthlyAnalysis.metrics.profit'),
     lots: t('accounts.analytics.monthlyAnalysis.metrics.lots'),
     pips: t('accounts.analytics.monthlyAnalysis.metrics.pips'),
-    winRate: t('accounts.analytics.stats.winRate'),
-  };
-
-  const formatValue = (metric: MetricType, value: number) => {
-    if (metric === 'change') return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
-    if (metric === 'profit') return `${value >= 0 ? '+' : ''}${value.toFixed(2)} ${currency}`;
-    if (metric === 'lots') return `${value.toFixed(2)} lots`;
-    if (metric === 'winRate') return `${value.toFixed(1)}%`;
-    return `${value >= 0 ? '+' : ''}${value.toFixed(1)} pips`;
-  };
-
-  const renderMetricValue = (metric: MetricType, value: number) => {
-    const color = metric === 'winRate'
-      ? 'var(--color-text)'
-      : value > 0 ? 'var(--color-success)' : value < 0 ? 'var(--color-danger)' : 'var(--color-text-muted)';
-    return <span style={{ color, fontWeight: 600 }}>{formatValue(metric, value)}</span>;
   };
 
   const series: MonthlyBarRow[] = useMemo(
@@ -106,12 +90,12 @@ export default function MonthlyAnalysisCard({ accountId, years, data, winRateDat
         const isActive = item.month === displayMonth;
         return {
           ...item,
-          monthAxisLabel: `${monthShortLabels[item.month - 1]} ${selectedYear}`,
+          monthAxisLabel: monthShortLabels[item.month - 1],
           value: (item as Record<string, number>)[selectedMetric] ?? 0,
           isActive,
         };
       }),
-    [yearData, selectedMetric, selectedYear, displayMonth]
+    [yearData, selectedMetric, displayMonth]
   );
 
   const seriesRef = useRef<MonthlyBarRow[]>(series);
@@ -124,15 +108,10 @@ export default function MonthlyAnalysisCard({ accountId, years, data, winRateDat
     setHoverMonth((prev) => (prev === row.month ? prev : row.month));
   }, []);
 
-  type RechartsMouseState = {
-    isTooltipActive?: boolean;
-    activeTooltipIndex?: number | string;
-  };
-
   const handleMainChartMouseMove = useCallback(
-    (state: RechartsMouseState) => {
-      if (!state.isTooltipActive) return;
-      syncHoverFromTooltipIndex(state.activeTooltipIndex);
+    (activeTooltipIndex: number | string | undefined) => {
+      if (activeTooltipIndex == null) return;
+      syncHoverFromTooltipIndex(activeTooltipIndex);
     },
     [syncHoverFromTooltipIndex]
   );
@@ -154,108 +133,125 @@ export default function MonthlyAnalysisCard({ accountId, years, data, winRateDat
   }, []);
 
   const commitMonthByTooltipIndex = useCallback((activeTooltipIndex: number | string | undefined) => {
-    if (typeof activeTooltipIndex !== 'number') return;
-    const row = seriesRef.current[activeTooltipIndex];
+    if (activeTooltipIndex == null) return;
+    const rows = seriesRef.current;
+    let row: MonthlyBarRow | undefined;
+    if (typeof activeTooltipIndex === 'number') {
+      row = rows[activeTooltipIndex];
+    } else {
+      // recharts v3: activeTooltipIndex can be a string label (e.g. "Jan", "Feb")
+      row = rows.find(r => r.monthAxisLabel === activeTooltipIndex);
+    }
     if (!row) return;
     setSelectedMonth(row.month);
     setHoverMonth(null);
   }, []);
 
-  const monthLong = formatMonthLongName(displayMonth);
-  const selectedPeriodLabel = `${monthLong} ${selectedYear}`;
+  const isLoading = monthlyDetailQ.isLoading;
+  const detail = monthlyDetailQ.data;
 
-  const chartTitleMain = t('accounts.analytics.monthlyAnalysis.chartMainTitle', {
-    metric: metricTitleMap[selectedMetric],
-  });
+  // Y-axis formatter per metric
+  const yAxisFormatter = useCallback((v: number) => {
+    if (selectedMetric === 'change') return `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`;
+    if (selectedMetric === 'profit') return `${v >= 0 ? '+' : ''}${v.toFixed(2)}`;
+    if (selectedMetric === 'lots') return v.toFixed(2);
+    return `${v >= 0 ? '+' : ''}${v.toFixed(1)}`;
+  }, [selectedMetric]);
 
   return (
     <div
       className="rounded-xl p-4 mb-4"
       style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', boxShadow: '0 1px 3px var(--color-shadow)' }}
     >
+      {/* Header — myfxbook tabs style */}
       <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
-        <h2 className="text-base font-semibold" style={{ color: 'var(--color-text)' }}>
-          {t('accounts.analytics.monthlyAnalysis.title')}
-        </h2>
-        <div className="flex items-center gap-1 rounded-md p-1" style={{ background: 'var(--color-bg-secondary)' }}>
-          {years.map((year) => (
-            <button
-              key={year}
-              onClick={() => { setSelectedYear(year); setSelectedMonth(1); setHoverMonth(null); }}
-              className="px-3 py-1 rounded text-xs font-semibold transition-colors"
-              style={{
-                background: selectedYear === year ? 'var(--color-info)' : 'transparent',
-                color: selectedYear === year ? '#FFFFFF' : 'var(--color-text-muted)',
-              }}
-            >
-              {year}
-            </button>
-          ))}
+        <div className="flex items-center gap-1">
+          <span className="text-sm font-semibold px-3 py-1" style={{ color: 'var(--color-text-muted)' }}>
+            {t('accounts.analytics.monthlyAnalysis.title')}
+          </span>
+          <div className="flex items-center gap-0.5 rounded-md p-0.5" style={{ background: 'var(--color-bg-secondary)' }}>
+            {years.map((year) => (
+              <button
+                key={year}
+                onClick={() => { setSelectedYear(year); setSelectedMonth(1); setHoverMonth(null); }}
+                className="px-3 py-1 rounded text-xs font-semibold transition-colors"
+                style={{
+                  background: selectedYear === year ? 'var(--color-info)' : 'transparent',
+                  color: selectedYear === year ? '#FFFFFF' : 'var(--color-text-muted)',
+                }}
+              >
+                {year}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Metric filter dropdown — myfxbook style */}
+        <div className="relative">
+          <div className="flex rounded-md overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
+            {METRIC_OPTIONS.map((opt) => (
+              <button
+                key={opt.key}
+                onClick={() => setSelectedMetric(opt.key)}
+                className="px-2.5 py-0.5 text-xs font-medium transition-colors"
+                style={{
+                  background: selectedMetric === opt.key ? 'var(--color-info)' : 'transparent',
+                  color: selectedMetric === opt.key ? '#FFFFFF' : 'var(--color-text-muted)',
+                  borderRight: opt.key !== 'pips' ? '1px solid var(--color-border)' : 'none',
+                }}
+              >
+                {t(opt.labelKey)}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="flex gap-3 mb-2 border-b" style={{ borderColor: 'var(--color-border)' }}>
-        {ALL_METRICS.map((metric) => (
-          <button
-            key={metric}
-            onClick={() => setSelectedMetric(metric)}
-            className="pb-2 text-sm font-medium transition-colors"
-            style={{
-              color: selectedMetric === metric ? 'var(--color-info)' : 'var(--color-text-muted)',
-              borderBottom: selectedMetric === metric ? '2px solid var(--color-info)' : '2px solid transparent',
-              marginBottom: '-1px',
-            }}
-          >
-            {metricTitleMap[metric]}
-          </button>
-        ))}
+      {/* Chart title */}
+      <div className="text-center text-xs font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+        {t('accounts.analytics.monthlyAnalysis.chartMainTitle', { metric: metricTitleMap[selectedMetric] })}
       </div>
 
-      <div
-        className="mb-2 px-2 py-1.5 rounded-md flex flex-wrap items-center gap-x-3 gap-y-1"
-        style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', fontSize: 11 }}
-      >
-        <span style={{ color: 'var(--color-text-secondary)', fontWeight: 600 }}>
-          {t('accounts.analytics.monthlyAnalysis.focusedValue', {
-            period: selectedPeriodLabel,
-            metric: metricTitleMap[selectedMetric],
-            value: formatValue(selectedMetric, focused?.[selectedMetric as keyof typeof focused] as number || 0),
-          })}
-        </span>
-        <span className="hidden sm:inline" style={{ color: 'var(--color-text-muted)' }}>|</span>
-        <span style={{ color: 'var(--color-text-secondary)' }} className="flex flex-wrap gap-x-3 gap-y-0.5">
-          {ALL_METRICS.map((m) => (
-            <span key={m}>{metricTitleMap[m]}: {renderMetricValue(m, (focused as Record<string, number>)[m] || 0)}</span>
-          ))}
-        </span>
-      </div>
-
-      <div className="relative">
-        <div className="text-center text-xs font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
-          {chartTitleMain}
+      {/* myfxbook 2×2 grid: Row1=Chart+RiskReward, Row2=Popularity+HoldingSplit */}
+      <div className="flex flex-col gap-3">
+        {/* Row 1: Main chart (left) | Risk/Reward (right) */}
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-3">
+          <div className="lg:col-span-7">
+            <MonthlyAnalysisMainChart
+              series={series}
+              selectedMetric={selectedMetric}
+              currency={currency}
+              yAxisFormatter={yAxisFormatter}
+              onMouseDown={suppressChartFocus}
+              onMouseMove={handleMainChartMouseMove}
+              onMouseLeave={handleMainChartMouseLeave}
+              onCommitByTooltipIndex={commitMonthByTooltipIndex}
+              onCommitMonthClick={commitMonthClick}
+            />
+          </div>
+          <div className="lg:col-span-5">
+            {isLoading ? (
+              <div className="text-center py-8" style={{ color: 'var(--color-text-muted)' }}>
+                <Spin size="small" />
+              </div>
+            ) : detail?.bonus ? (
+              <RiskRewardPanel risks={detail.bonus.symbolRisks} t={t} />
+            ) : null}
+          </div>
         </div>
-        <MonthlyAnalysisMainChart
-          series={series}
-          selectedMetric={selectedMetric}
-          metricTitleMap={metricTitleMap}
-          formatValue={formatValue}
-          renderMetricValue={renderMetricValue}
-          onMouseDown={suppressChartFocus}
-          onMouseMove={handleMainChartMouseMove}
-          onMouseLeave={handleMainChartMouseLeave}
-          onCommitByTooltipIndex={commitMonthByTooltipIndex}
-          onCommitMonthClick={commitMonthClick}
-        />
-      </div>
 
-      {/* Drill-down sub-panels for the selected month */}
-      {monthlyDetailQ.isLoading ? (
-        <div className="mt-4 text-center py-4" style={{ color: 'var(--color-text-muted)' }}>
-          <Spin size="small" />
-        </div>
-      ) : monthlyDetailQ.data ? (
-        <MonthlyDrillDown detail={monthlyDetailQ.data} currency={currency} />
-      ) : null}
+        {/* Row 2: Currency Popularity (left) | Holding Split (right) */}
+        {!isLoading && detail?.bonus && (
+          <div className="flex flex-col lg:grid lg:grid-cols-12 gap-3">
+            <div className="lg:col-span-7">
+              <PopularityPanel popularity={detail.bonus.symbolPopularity} t={t} />
+            </div>
+            <div className="lg:col-span-5">
+              <HoldingSplitPanel holdingSplit={detail.bonus.symbolHoldingSplit} t={t} />
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

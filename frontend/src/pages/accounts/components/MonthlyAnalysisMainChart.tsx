@@ -5,44 +5,49 @@ import {
   Cell,
   ComposedChart,
   LabelList,
+  ReferenceArea,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
+import { barCellFill, monthShortLabels, type MonthlyBarRow } from './MonthlyAnalysisCard.shared';
 
-import {
-  type MetricType,
-  type MonthlyAnalysisPoint,
-  type MonthlyBarRow,
-  barCellFill,
-  monthShortLabels,
-} from './MonthlyAnalysisCard.shared';
-
-type RechartsMouseState = {
-  isTooltipActive?: boolean;
-  activeTooltipIndex?: number | string;
-};
+type MetricType = 'change' | 'profit' | 'lots' | 'pips';
 
 type Props = {
   series: MonthlyBarRow[];
   selectedMetric: MetricType;
-  metricTitleMap: Record<MetricType, string>;
-  formatValue: (metric: MetricType, value: number) => string;
-  renderMetricValue: (metric: MetricType, value: number) => JSX.Element;
+  currency: string;
+  yAxisFormatter: (v: number) => string;
   onMouseDown: (e: ReactMouseEvent) => void;
-  onMouseMove: (state: RechartsMouseState) => void;
+  onMouseMove: (activeTooltipIndex: number | string | undefined) => void;
   onMouseLeave: () => void;
   onCommitByTooltipIndex: (activeTooltipIndex: number | string | undefined) => void;
   onCommitMonthClick: (data: unknown, index: number) => void;
 };
 
+function formatTooltipValue(metric: MetricType, point: MonthlyBarRow, currency: string): string {
+  switch (metric) {
+    case 'change':
+      return `${point.change >= 0 ? '+' : ''}${point.change.toFixed(2)}%`;
+    case 'profit':
+      return `${point.profit >= 0 ? '+' : ''}${point.profit.toFixed(2)} ${currency}`;
+    case 'lots':
+      return `${point.lots.toFixed(2)} lots`;
+    case 'pips':
+      return `${point.pips >= 0 ? '+' : ''}${point.pips.toFixed(1)} pips`;
+    default:
+      return '';
+  }
+}
+
 export default function MonthlyAnalysisMainChart({
   series,
   selectedMetric,
-  metricTitleMap,
-  formatValue,
-  renderMetricValue,
+  currency,
+  yAxisFormatter,
   onMouseDown,
   onMouseMove,
   onMouseLeave,
@@ -54,79 +59,107 @@ export default function MonthlyAnalysisMainChart({
       className="outline-none [&_.recharts-wrapper]:!outline-none [&_.recharts-wrapper]:ring-0 [&_.recharts-surface]:outline-none"
       onMouseDown={onMouseDown}
     >
-      <ResponsiveContainer width="100%" height={250}>
+      <ResponsiveContainer width="100%" height={210}>
         <ComposedChart
           data={series}
-          margin={{ top: 22, right: 6, left: 0, bottom: 4 }}
-          onMouseMove={onMouseMove}
+          margin={{ top: 20, right: 6, left: 0, bottom: 4 }}
+          onMouseMove={(state) => onMouseMove(state.activeTooltipIndex)}
           onMouseLeave={onMouseLeave}
-          onClick={(state: RechartsMouseState) => onCommitByTooltipIndex(state.activeTooltipIndex)}
+          onClick={(state) => onCommitByTooltipIndex(state.activeTooltipIndex ?? state.activeIndex)}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="#E6EDF5" vertical={false} />
+          {/* Alternating month background — myfxbook signature */}
+          {series.map((item, i) => {
+            if (i % 2 !== 1) return null;
+            const next = series[i + 1];
+            return (
+              <ReferenceArea
+                key={`bg-${i}`}
+                x1={item.monthAxisLabel}
+                x2={next?.monthAxisLabel}
+                fill="var(--color-bg-secondary)"
+                fillOpacity={0.4}
+                ifOverflow="hidden"
+              />
+            );
+          })}
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+          {/* Zero line */}
+          <ReferenceLine y={0} stroke="var(--color-text-muted)" strokeOpacity={0.5} />
           <XAxis
             dataKey="monthAxisLabel"
-            stroke="#94A3B8"
+            stroke="var(--color-text-muted)"
             fontSize={10}
             tickLine={false}
-            axisLine={{ stroke: '#E6EDF5' }}
+            axisLine={{ stroke: 'var(--color-border)' }}
             interval={0}
-            angle={-32}
+            angle={-30}
             textAnchor="end"
-            height={46}
+            height={42}
           />
-          <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={{ stroke: '#E6EDF5' }} />
+          <YAxis
+            stroke="var(--color-text-muted)"
+            fontSize={10}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={yAxisFormatter}
+            width={52}
+          />
           <Tooltip
             wrapperStyle={{ pointerEvents: 'none' }}
             cursor={false}
             content={({ active, payload }) => {
               if (!active || !payload?.length) return null;
-              const point = payload[0]?.payload as MonthlyAnalysisPoint | undefined;
-              if (!point) return null;
+              const row = payload[0]?.payload as MonthlyBarRow | undefined;
+              if (!row) return null;
               return (
                 <div
                   style={{
                     background: 'var(--color-bg-card)',
-                    border: '1px solid #D9E2EC',
-                    borderRadius: '6px',
-                    boxShadow: '0 4px 10px rgba(15, 23, 42, 0.12)',
-                    padding: '8px 10px',
-                    minWidth: 190,
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 6,
+                    boxShadow: '0 2px 8px var(--color-shadow)',
+                    padding: '8px 12px',
                     fontSize: 12,
                     pointerEvents: 'none',
+                    lineHeight: 1.6,
                   }}
                 >
-                  <div style={{ fontWeight: 700, color: '#1F2937', marginBottom: 6 }}>
-                    {monthShortLabels[(point.month || 1) - 1]} {point.year}
+                  <div style={{ fontWeight: 700, color: 'var(--color-text)', marginBottom: 2 }}>
+                    {monthShortLabels[(row.month || 1) - 1]} {row.year}
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text-secondary)', marginBottom: 2 }}>
-                    <span>{metricTitleMap.change}</span>
-                    {renderMetricValue('change', point.change || 0)}
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text-secondary)', marginBottom: 2 }}>
-                    <span>{metricTitleMap.profit}</span>
-                    {renderMetricValue('profit', point.profit || 0)}
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text-secondary)', marginBottom: 2 }}>
-                    <span>{metricTitleMap.lots}</span>
-                    {renderMetricValue('lots', point.lots || 0)}
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text-secondary)' }}>
-                    <span>{metricTitleMap.pips}</span>
-                    {renderMetricValue('pips', point.pips || 0)}
+                  <div style={{ color: 'var(--color-text-secondary)' }}>
+                    {formatTooltipValue(selectedMetric, row, currency)}
                   </div>
                 </div>
               );
             }}
           />
-          <Bar dataKey="value" radius={[2, 2, 0, 0]} minPointSize={8} isAnimationActive={false} style={{ cursor: 'pointer' }} onClick={onCommitMonthClick}>
+          <Bar
+            dataKey="value"
+            barSize={20}
+            radius={[2, 2, 0, 0]}
+            minPointSize={4}
+            isAnimationActive={false}
+            style={{ cursor: 'pointer' }}
+            onClick={onCommitMonthClick}
+          >
             <LabelList
               dataKey="value"
               position="top"
-              formatter={(v: number) => (Math.abs(Number(v)) < 1e-12 ? '' : formatValue(selectedMetric, v))}
-              style={{ fontSize: 10, fill: 'var(--color-text-secondary)', fontWeight: 600, pointerEvents: 'none' }}
+              formatter={(v: number) => {
+                if (!Number.isFinite(v) || Math.abs(Number(v)) < 1e-12) return '';
+                if (selectedMetric === 'change') return `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`;
+                if (selectedMetric === 'profit') return `${v >= 0 ? '+' : ''}${v.toFixed(2)}`;
+                if (selectedMetric === 'lots') return v.toFixed(2);
+                return `${v >= 0 ? '+' : ''}${v.toFixed(1)}`;
+              }}
+              style={{ fontSize: 9, fill: 'var(--color-text-muted)', fontWeight: 600, pointerEvents: 'none' }}
             />
             {series.map((item) => (
-              <Cell key={`${item.year}-${item.month}`} fill={barCellFill(item)} />
+              <Cell
+                key={`${item.year}-${item.month}`}
+                fill={barCellFill(item)}
+              />
             ))}
           </Bar>
         </ComposedChart>

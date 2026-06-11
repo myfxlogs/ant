@@ -108,7 +108,7 @@ export default function LibraryLeftPanel({
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Text type="secondary" style={{ fontSize: 12 }}>
                       {scheduleCount > 0
-                        ? t('strategy.library.scheduleCount', { count: scheduleCount }, '{{count}} 个运行中')
+                        ? t('strategy.library.scheduleCount', '{{count}} 个运行中', { count: scheduleCount })
                         : t('strategy.library.noSchedules', '未运行')}
                     </Text>
                     {!isSystem && (

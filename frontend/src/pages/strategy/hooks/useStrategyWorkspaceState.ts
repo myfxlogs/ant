@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAccount } from '@/hooks/useAccount';
 import { marketApi } from '@/client/market';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
@@ -77,19 +77,77 @@ export function useStrategyWorkspaceState() {
   const quickTradeVisible = wsStore.quickTradeVisible; const setQuickTradeVisible = wsStore.setQuickTradeVisible;
   const positionsPanelVisible = wsStore.positionsPanelVisible; const setPositionsPanelVisible = wsStore.setPositionsPanelVisible;
 
-  // History drawer
+  // History
   const [historyDrawerOpen, setHistoryDrawerOpen] = useState(false);
   const [historyRunId, setHistoryRunId] = useState('');
-  const handleOpenHistory = useCallback(async () => {
+  const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [historyRuns, setHistoryRuns] = useState<any[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyPage, setHistoryPage] = useState(1);
+  const [historyPageSize, setHistoryPageSize] = useState(20);
+  const [historyTotal, setHistoryTotal] = useState(0);
+  const [historySelectedKeys, setHistorySelectedKeys] = useState<React.Key[]>([]);
+  const [historyDeleting, setHistoryDeleting] = useState(false);
+
+  const fetchHistoryRuns = useCallback(async (page: number, pageSize: number) => {
+    setHistoryLoading(true);
     try {
       const { pythonStrategyApi } = await import('@/client/pythonStrategy');
-      const resp = await pythonStrategyApi.listBacktestRuns({ accountId, limit: 1 });
-      if (resp.runs?.length) setHistoryRunId(resp.runs[0].id);
-    } catch { /* best-effort: open drawer regardless */ }
-    setHistoryDrawerOpen(true);
+      const resp = await pythonStrategyApi.listBacktestRuns({ accountId, limit: pageSize, offset: (page - 1) * pageSize });
+      const runs = resp.runs ?? [];
+      setHistoryRuns(runs);
+      // API has no total field — infer from returned count
+      setHistoryTotal(runs.length < pageSize ? (page - 1) * pageSize + runs.length : page * pageSize + 1);
+    } catch { /* best-effort */ }
+    finally { setHistoryLoading(false); }
   }, [accountId]);
+
+  const handleOpenHistory = useCallback(() => {
+    setHistoryModalOpen(true);
+    setHistoryPage(1); setHistoryPageSize(20); setHistorySelectedKeys([]);
+    fetchHistoryRuns(1, 20);
+  }, [fetchHistoryRuns]);
+
   const handleCloseHistory = useCallback(() => { setHistoryDrawerOpen(false); setHistoryRunId(''); }, []);
+  const handleCloseHistoryModal = useCallback(() => { setHistoryModalOpen(false); setHistorySelectedKeys([]); }, []);
   const handleViewHistoryRun = useCallback((runId: string) => { setHistoryRunId(runId); setHistoryDrawerOpen(true); }, []);
+
+  const handleHistoryPageChange = useCallback((p: number, ps: number) => {
+    setHistoryPage(p); setHistoryPageSize(ps); setHistorySelectedKeys([]);
+    fetchHistoryRuns(p, ps);
+  }, [fetchHistoryRuns]);
+
+  const handleDeleteHistoryRun = useCallback(async (runId: string) => {
+    setHistoryDeleting(true);
+    try {
+      const { pythonStrategyApi } = await import('@/client/pythonStrategy');
+      await pythonStrategyApi.deleteBacktestRun(runId);
+      // If page now empty, go back one page
+      const newPage = historyRuns.length <= 1 && historyPage > 1 ? historyPage - 1 : historyPage;
+      setHistoryPage(newPage);
+      fetchHistoryRuns(newPage, historyPageSize);
+    } catch { /* best-effort, onRefresh will retry */ }
+    finally { setHistoryDeleting(false); }
+  }, [historyRuns.length, historyPage, historyPageSize, fetchHistoryRuns]);
+
+  const handleBatchDeleteHistory = useCallback(async () => {
+    if (!historySelectedKeys.length) return;
+    setHistoryDeleting(true);
+    try {
+      const { pythonStrategyApi } = await import('@/client/pythonStrategy');
+      await pythonStrategyApi.deleteBacktestRuns(historySelectedKeys.map(String));
+      setHistorySelectedKeys([]);
+      const newPage = historyRuns.length <= historySelectedKeys.length && historyPage > 1 ? historyPage - 1 : historyPage;
+      setHistoryPage(newPage);
+      fetchHistoryRuns(newPage, historyPageSize);
+    } catch { /* best-effort */ }
+    finally { setHistoryDeleting(false); }
+  }, [historySelectedKeys, historyRuns.length, historyPage, historyPageSize, fetchHistoryRuns]);
+
+  // Refetch when account changes while modal is open
+  useEffect(() => {
+    if (historyModalOpen && accountId) { setHistoryPage(1); fetchHistoryRuns(1, historyPageSize); }
+  }, [accountId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // AI workflow
   const ai = useAIWorkflow(codeCtx, btCtx.metrics, setCodePanelVisible);
@@ -134,7 +192,20 @@ export function useStrategyWorkspaceState() {
     gate: { loading: btCtx.gate.loading, gates: btCtx.gate.gates, summary: btCtx.gate.summary, error: btCtx.gate.error, run: btCtx.gate.run },
     quickTrade: { positionCount: qt.positionCount, allPositions: qt.allPositions, qtPositions: qt.qtPositions, qtRecentTrades: qt.qtRecentTrades, handleClosePosition: qt.handleClosePosition },
     layout: { codePanelVisible, setCodePanelVisible, positionsPanelVisible, setPositionsPanelVisible, quickTradeVisible, setQuickTradeVisible },
-    history: { drawerOpen: historyDrawerOpen, runId: historyRunId, open: handleOpenHistory, close: handleCloseHistory },
+    history: {
+      drawerOpen: historyDrawerOpen, runId: historyRunId,
+      open: handleOpenHistory, close: handleCloseHistory,
+      modalOpen: historyModalOpen, closeModal: handleCloseHistoryModal,
+      runs: historyRuns, loading: historyLoading,
+      page: historyPage, pageSize: historyPageSize, total: historyTotal,
+      selectedRowKeys: historySelectedKeys, setSelectedRowKeys: setHistorySelectedKeys,
+      deleting: historyDeleting,
+      onPageChange: handleHistoryPageChange,
+      onViewRun: handleViewHistoryRun,
+      onDeleteRun: handleDeleteHistoryRun,
+      onBatchDelete: handleBatchDeleteHistory,
+      onRefresh: () => fetchHistoryRuns(historyPage, historyPageSize),
+    },
     ai: { optimize: ai.handleAIOptimize, optimizePrompt: ai.aiOptimizePrompt, askForValidation: ai.handleAskAIForValidation, chatAutoApply: ai.chatAutoApply, autoFixing: ai.autoFixing, autoFix: ai.handleAutoFix, autoFixDebug: ai.autoFixDebug, dismissDebug: ai.dismissDebug, applyTunedParams: (code: string) => { codeCtx.setCode(code); } },
   };
 }

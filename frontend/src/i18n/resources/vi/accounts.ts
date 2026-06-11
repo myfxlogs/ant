@@ -101,6 +101,10 @@ const accounts = {
         metricsTitle: 'Chỉ số tháng',
         symbolPnLTitle: 'Lợi nhuận theo cặp',
         holdingTitle: 'Thời gian giữ lệnh',
+        riskRewardTitle: 'Tỷ lệ R:R',
+        popularityTitle: 'Mức độ phổ biến',
+        long: 'Mua',
+        short: 'Bán',
         fields: {
           netReturn: 'Lợi nhuận ròng',
           totalTrades: 'Tổng lệnh',

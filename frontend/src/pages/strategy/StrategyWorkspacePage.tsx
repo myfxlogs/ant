@@ -13,6 +13,7 @@ import AIChatPanel from '@/components/strategy/AIChatPanel';
 import { useAuthStore } from '@/stores/authStore';
 import PriceChart from '@/components/chart/PriceChart';
 import BacktestRunDrawer from '@/components/strategy/BacktestRunDrawer';
+import BacktestHistoryModal from './components/workspace/BacktestHistoryModal';
 import WorkspaceErrorBoundary from './components/workspace/WorkspaceErrorBoundary';
 import MobileGuard from './components/workspace/MobileGuard';
 import { useWorkspaceSession } from './hooks/useWorkspaceSession';
@@ -226,6 +227,23 @@ export default function StrategyWorkspacePage() {
       </div>
 
       <SaveTemplateWrapper ws={ws} />
+      <BacktestHistoryModal
+        open={ws.history.modalOpen}
+        runs={ws.history.runs}
+        loading={ws.history.loading}
+        page={ws.history.page}
+        pageSize={ws.history.pageSize}
+        total={ws.history.total}
+        selectedRowKeys={ws.history.selectedRowKeys}
+        deleting={ws.history.deleting}
+        onPageChange={ws.history.onPageChange}
+        onSelectionChange={ws.history.setSelectedRowKeys}
+        onViewRun={ws.history.onViewRun}
+        onDeleteRun={ws.history.onDeleteRun}
+        onBatchDelete={ws.history.onBatchDelete}
+        onRefresh={ws.history.onRefresh}
+        onClose={ws.history.closeModal}
+      />
       <BacktestRunDrawer
         open={ws.history.drawerOpen} runId={ws.history.runId}
         onClose={ws.history.close}

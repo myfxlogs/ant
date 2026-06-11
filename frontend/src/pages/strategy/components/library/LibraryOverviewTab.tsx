@@ -62,7 +62,7 @@ export default function LibraryOverviewTab({
         </Descriptions.Item>
         <Descriptions.Item label={t('strategy.library.scheduleCount', '运行')}>
           {scheduleCount > 0
-            ? <Text style={{ color: '#1677ff' }}>{t('strategy.library.scheduleRunningCount', { count: scheduleCount }, '{{count}} 个运行中')}</Text>
+            ? <Text style={{ color: '#1677ff' }}>{t('strategy.library.scheduleRunningCount', '{{count}} 个运行中', { count: scheduleCount })}</Text>
             : <Text type="secondary">{t('strategy.library.noSchedules', '无')}</Text>}
         </Descriptions.Item>
         <Descriptions.Item label={t('strategy.templates.table.useCount')}>

@@ -165,11 +165,9 @@ type MonthlyBonusHoldingRow struct {
 
 type MonthlyAnalysisBonus struct {
 	RiskRatio         float64                   `json:"risk_ratio"`
-	Symbols           []*MonthlyBonusSymbol     `json:"symbols"`
+	SymbolPopularity  []*MonthlyBonusSymbol     `json:"symbol_popularity"`
 	SymbolRisks       []*MonthlyBonusRiskRow    `json:"symbol_risks"`
 	SymbolHoldings    []*MonthlyBonusHoldingRow `json:"symbol_holdings"`
-	AvgHoldingSeconds float64                   `json:"average_holding_seconds"`
-	TotalTrades       int                       `json:"total_trades"`
 }
 
 type AccountAnalytics struct {
@@ -189,7 +187,7 @@ type AccountAnalytics struct {
 // MonthlyDetailMetrics holds aggregated metrics for a single month.
 type MonthlyDetailMetrics struct {
 	NetReturn     float64 `json:"net_return"`
-	ReturnPercent float64 `json:"return_percent"`
+	ReturnPercent float64 `json:"return_percent"` // TODO: requires starting-balance join; always 0 until funded
 	TotalTrades   int     `json:"total_trades"`
 	WinRate       float64 `json:"win_rate"`
 	ProfitFactor  float64 `json:"profit_factor"`

@@ -132,6 +132,10 @@ const accounts = {
         metricsTitle: '月次指標',
         symbolPnLTitle: '銘柄別損益',
         holdingTitle: '保有時間',
+        riskRewardTitle: '報酬:リスク比率',
+        popularityTitle: '通貨人気度',
+        long: 'ロング',
+        short: 'ショート',
         fields: {
           netReturn: '純利益',
           totalTrades: '取引数',
