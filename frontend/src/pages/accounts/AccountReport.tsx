@@ -216,9 +216,9 @@ export default function AccountReport() {
                     <div key={label} className="rounded-xl p-4" style={{ border: '1px solid var(--color-border)' }}>
                       <Text strong style={{ color }}>{label}</Text>
                       <div className="mt-2 space-y-1" style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>
-                        <div>{t('accounts.analytics.stats.netProfit')}: <Text strong style={{ color: d.profit >= 0 ? '#00A651' : '#E53935' }}>{d.profit >= 0 ? '+' : ''}{d.profit.toFixed(2)}</Text></div>
-                        <div>{t('accounts.analytics.stats.totalTrades')}: {d.trades}</div>
-                        <div>{t('accounts.analytics.stats.winRate')}: {d.winRate.toFixed(1)}%</div>
+                        <div>{t('accounts.analytics.stats.netProfit')}: <Text strong style={{ color: (d.profit ?? 0) >= 0 ? '#00A651' : '#E53935' }}>{(d.profit ?? 0) >= 0 ? '+' : ''}{(d.profit ?? 0).toFixed(2)}</Text></div>
+                        <div>{t('accounts.analytics.stats.totalTrades')}: {d.trades ?? 0}</div>
+                        <div>{t('accounts.analytics.stats.winRate')}: {(d.winRate ?? 0).toFixed(1)}%</div>
                       </div>
                     </div>
                   ))}
@@ -281,7 +281,7 @@ export default function AccountReport() {
                         <Text style={{ color: 'var(--color-text)', fontSize: 13 }}>{e.startDate} → {e.endDate || '...'}</Text>
                         {e.recoveryDate && <Text style={{ color: 'var(--color-text-muted)', fontSize: 12, marginLeft: 8 }}>{t('accounts.report.recovered')}: {e.recoveryDate}</Text>}
                       </div>
-                      <Tag color="error">{e.depthPercent.toFixed(1)}%</Tag>
+                      <Tag color="error">{(e.depthPercent ?? 0).toFixed(1)}%</Tag>
                     </div>
                   ))}
                 </div>
