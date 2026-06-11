@@ -2,76 +2,137 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Form, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { strategyScheduleV2Api, strategyTemplateApi } from '@/client/strategy-schedules';
+import { pythonStrategyApi } from '@/client/pythonStrategy';
+import { tradingApi } from '@/client/trading';
 import { DEFAULT_TIMEFRAME } from '@/constants/timeframes';
 import { scheduleHealthApi } from '@/client/scheduleHealth';
 import { useAccountsAndSymbols } from './useAccountsAndSymbols';
 import { buildSymbolOptions, formatTime } from '../scheduleUtils';
 import { buildParametersFromForm, parseParametersToForm } from '../StrategyScheduleParams';
-import { DEFAULT_TEMPLATES } from '../StrategyTemplatePage.defaults';
+import { DEFAULT_TEMPLATES } from '../StrategyLibrary.defaults';
+import { getTradingRiskToastMessage } from '@/utils/tradingRiskError';
 import type { ScheduleFormValues } from '../components/EditScheduleModal';
+import type { ScheduleRow, ScheduleHealthSummary, TriggerResult, TriggerContext } from './libraryTypes';
 
 type ScheduleType = 'interval' | 'kline_close' | 'hf_quote';
 
 export function useLibrarySchedules(selectedTemplateId: string) {
   const { t } = useTranslation();
-  const [schedules, setSchedules] = useState<any[]>([]);
+  const [schedules, setSchedules] = useState<ScheduleRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [templates, setTemplates] = useState<any[]>([]);
+  const [templates, setTemplates] = useState<ScheduleRow[]>([]);
   const { accounts, symbols, symbolsLoading, fetchAccounts, loadSymbols } = useAccountsAndSymbols();
   const [openEdit, setOpenEdit] = useState(false);
-  const [editing, setEditing] = useState<any | null>(null);
-  const [healthOpen, setHealthOpen] = useState(false);
-  const [healthLoading, setHealthLoading] = useState(false);
-  const [healthTarget, setHealthTarget] = useState<any | null>(null);
-  const [healthSummary, setHealthSummary] = useState<any | null>(null);
-  const [triggering, setTriggering] = useState(false);
-  const [openTrigger, setOpenTrigger] = useState(false);
-  const [triggerResult, setTriggerResult] = useState<any>(null);
-  const [triggerContext, setTriggerContext] = useState<any>(null);
+  const [editing, setEditing] = useState<ScheduleRow | null>(null);
   const [form] = Form.useForm<ScheduleFormValues>();
 
   const symbolsOpts = useMemo(() => buildSymbolOptions(symbols), [symbols]);
   const accountIdWatch = Form.useWatch('accountId', form);
 
-  // Filter schedules by selected template
+  // ── Health state (lazy-loaded per schedule) ──
+  const [healthOpen, setHealthOpen] = useState(false);
+  const [healthLoading, setHealthLoading] = useState(false);
+  const [healthTarget, setHealthTarget] = useState<ScheduleRow | null>(null);
+  const [healthSummary, setHealthSummary] = useState<ScheduleHealthSummary | null>(null);
+
+  const loadScheduleHealth = useCallback(async (row: ScheduleRow) => {
+    if (!row?.id) return; setHealthLoading(true);
+    try { setHealthSummary(await scheduleHealthApi.getScheduleHealth(row.id) as ScheduleHealthSummary); }
+    catch (e: any) { message.error(e?.message || t('strategy.schedules.health.messages.loadFailed')); setHealthSummary(null); }
+    finally { setHealthLoading(false); }
+  }, [t]);
+
+  // ── Trigger state ──
+  const [triggering, setTriggering] = useState(false);
+  const [openTrigger, setOpenTrigger] = useState(false);
+  const [triggerResult, setTriggerResult] = useState<TriggerResult | null>(null);
+  const [triggerContext, setTriggerContext] = useState<TriggerContext | null>(null);
+
+  const onManualTrigger = useCallback(async (row: ScheduleRow) => {
+    setTriggering(true); setTriggerResult(null);
+    setTriggerContext({ schedule: row, accountId: row.accountId }); setOpenTrigger(true);
+    try {
+      const tpl = await strategyTemplateApi.get(row.templateId);
+      const code = String((tpl as any)?.code || '');
+      if (!code) throw new Error(t('strategy.schedules.messages.templateCodeEmptyCannotExecute'));
+      const exec = await pythonStrategyApi.execute({ code, accountId: row.accountId, symbol: row.symbol, timeframe: row.timeframe });
+      if (!exec.success) throw new Error(exec.error || t('strategy.schedules.messages.strategyExecuteFailed'));
+      setTriggerResult({ logs: exec.logs || [], signal: exec.signal as any, meta: { templateId: row.templateId, scheduleId: row.id } });
+    } catch (e: any) {
+      setTriggerResult({ logs: [], signal: null, meta: { error: e?.message || t('strategy.schedules.messages.executeFailed') } });
+    }
+    finally { setTriggering(false); }
+  }, [t]);
+
+  const doOrderSend = useCallback(async () => {
+    if (!triggerContext?.schedule) return;
+    const { schedule } = triggerContext;
+    const raw = triggerResult?.signal;
+    if (!raw) { message.error(t('strategy.schedules.messages.noOrderableSignal')); return; }
+    const signal = raw;
+    const rawAction = String(signal?.type ?? signal?.signalType ?? signal?.signal ?? '').trim().toLowerCase();
+    const action = rawAction === 'buy' || rawAction === 'sell' ? rawAction : '';
+    const volumeNum = typeof signal?.volume === 'number' ? signal.volume : Number(signal?.volume);
+    const volume = Number.isFinite(volumeNum) ? volumeNum : 0;
+    if (!action || action === 'hold') { message.error(t('strategy.schedules.messages.signalHoldCannotOrder')); return; }
+    if (!(volume > 0)) { message.error(t('strategy.schedules.messages.volumeInvalid')); return; }
+    const payload: any = {
+      accountId: schedule.accountId, symbol: signal.symbol || schedule.symbol, type: action, volume,
+      price: typeof signal?.price === 'number' ? signal.price : Number(signal?.price || 0),
+      stopLoss: typeof signal?.stopLoss === 'number' ? signal.stopLoss : Number(signal?.stopLoss || 0),
+      takeProfit: typeof signal?.takeProfit === 'number' ? signal.takeProfit : Number(signal?.takeProfit || 0),
+      comment: String(signal?.comment || ''),
+    };
+    try {
+      const res = await tradingApi.orderSend(payload);
+      if (res.error) { message.error(getTradingRiskToastMessage({ riskCode: res.riskError?.code, error: res.error, message: res.message, fallback: res.error || t('strategy.schedules.messages.orderFailed') })); return; }
+      message.success(t('strategy.schedules.messages.orderSubmitted'));
+      setOpenTrigger(false); setTriggerContext(null); setTriggerResult(null);
+    } catch (e: any) { message.error(e?.message || t('strategy.schedules.messages.orderFailed')); }
+  }, [triggerContext, triggerResult, t]);
+
+  // ── Schedule CRUD ──
   const filteredSchedules = useMemo(() => {
     if (!selectedTemplateId) return schedules;
-    return schedules.filter((s: any) => String(s.templateId || '') === selectedTemplateId);
+    return schedules.filter(s => String(s.templateId || '') === selectedTemplateId);
   }, [schedules, selectedTemplateId]);
 
   const refresh = useCallback(async () => {
     setLoading(true); setError(null);
     try {
       const [tpls, schs] = await Promise.all([strategyTemplateApi.list(), strategyScheduleV2Api.list()]);
-      setTemplates(tpls as any[]); setSchedules(schs as any[]); void fetchAccounts();
+      setTemplates(tpls as ScheduleRow[]); setSchedules(schs as ScheduleRow[]); void fetchAccounts();
     } catch (e: any) {
-      const msg = e?.message || t('common.loadingFailed'); setError(msg);
+      setError(e?.message || t('common.loadingFailed'));
     } finally { setLoading(false); }
   }, [t, fetchAccounts]);
 
-  useEffect(() => { void refresh(); }, [refresh]);
+  useEffect(() => { void refresh(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // SSE streaming for live schedule updates
+  // SSE — start after initial fetch to avoid race
+  const [sseReady, setSseReady] = useState(false);
+  useEffect(() => { if (!loading) setSseReady(true); }, [loading]);
   useEffect(() => {
+    if (!sseReady) return;
     const ctrl = new AbortController();
     (async () => {
       try {
         for await (const event of strategyScheduleV2Api.watch(ctrl.signal)) {
-          setSchedules(event.schedules as any[] || []);
+          setSchedules((event.schedules || []) as ScheduleRow[]);
         }
       } catch { /* stream closed */ }
     })();
     return () => ctrl.abort();
-  }, []);
+  }, [sseReady]);
 
-  // Re-fetch schedules when template selection changes (ensures full list is loaded)
-  useEffect(() => { void refresh(); }, [selectedTemplateId]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Re-fetch on template change
+  useEffect(() => { if (selectedTemplateId) void refresh(); }, [selectedTemplateId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const templatesForSelect = useMemo(() => {
-    const out: any[] = []; const seen = new Set<string>();
-    (templates || []).forEach((t: any) => { if (!t?.id) return; seen.add(String(t.id)); out.push(t); });
-    (DEFAULT_TEMPLATES || []).forEach((t: any) => { if (!t?.id) return; const id = String(t.id); if (seen.has(id)) return; out.push(t); });
+    const out: ScheduleRow[] = []; const seen = new Set<string>();
+    templates.forEach(t => { if (!t?.id) return; seen.add(String(t.id)); out.push(t); });
+    (DEFAULT_TEMPLATES as any[]).forEach(t => { if (!t?.id) return; const id = String(t.id); if (seen.has(id)) return; out.push(t as ScheduleRow); });
     return out;
   }, [templates]);
 
@@ -80,13 +141,12 @@ export function useLibrarySchedules(selectedTemplateId: string) {
     form.setFieldsValue({
       isActive: true, timeframe: DEFAULT_TIMEFRAME, symbol: '',
       scheduleType: 'kline_close', intervalMs: 300_000, hfCooldownMs: 1_000,
-      parametersJson: '{}',
-      templateId: selectedTemplateId || undefined,
+      parametersJson: '{}', templateId: selectedTemplateId || undefined,
     });
     setOpenEdit(true);
   }, [form, selectedTemplateId]);
 
-  const openUpdate = useCallback((row: any) => {
+  const openUpdate = useCallback((row: ScheduleRow) => {
     setEditing(row);
     const conf = row?.scheduleConfig || {};
     const rawType = String(row?.scheduleType || '').toLowerCase();
@@ -134,16 +194,13 @@ export function useLibrarySchedules(selectedTemplateId: string) {
         });
         message.success(t('common.updated'));
       } else {
-        await strategyScheduleV2Api.create({
+        const created: any = await strategyScheduleV2Api.create({
           templateId: v.templateId, accountId: v.accountId, name: v.name,
           symbol: v.symbol, timeframe: v.timeframe, scheduleType: backendScheduleType,
           scheduleConfig: scheduleConfig as any, parameters: merged,
         });
-        if (v.isActive) {
-          // Find the created schedule to toggle it — SSE will update the list
-          const all = await strategyScheduleV2Api.list();
-          const created = (all as any[]).find((s: any) => s.templateId === v.templateId && s.accountId === v.accountId && s.symbol === v.symbol);
-          if (created?.id) await strategyScheduleV2Api.toggle(created.id, true);
+        if (v.isActive && created?.id) {
+          await strategyScheduleV2Api.toggle(created.id, true);
         }
         message.success(t('common.created'));
       }
@@ -152,7 +209,7 @@ export function useLibrarySchedules(selectedTemplateId: string) {
     finally { setLoading(false); }
   }, [editing, form, refresh, t]);
 
-  const onToggleActive = useCallback(async (row: any, next: boolean) => {
+  const onToggleActive = useCallback(async (row: ScheduleRow, next: boolean) => {
     try {
       await strategyScheduleV2Api.toggle(row.id, next);
       message.success(next ? t('common.enabled') : t('common.disabled'));
@@ -160,7 +217,7 @@ export function useLibrarySchedules(selectedTemplateId: string) {
     } catch (e: any) { message.error(e?.message || t('common.operationFailed')); }
   }, [refresh, t]);
 
-  const onDelete = useCallback(async (row: any) => {
+  const onDelete = useCallback(async (row: ScheduleRow) => {
     try {
       await strategyScheduleV2Api.delete(row.id);
       message.success(t('common.deleted'));
@@ -168,28 +225,6 @@ export function useLibrarySchedules(selectedTemplateId: string) {
     } catch (e: any) { message.error(e?.message || t('common.deleteFailed')); }
   }, [refresh, t]);
 
-  const onManualTrigger = useCallback(async (row: any) => {
-    setTriggering(true); setTriggerResult(null); setTriggerContext({ schedule: row, accountId: row.accountId }); setOpenTrigger(true);
-    try {
-      const { pythonStrategyApi } = await import('@/client/pythonStrategy');
-      const tpl = await strategyTemplateApi.get(row.templateId);
-      const code = String((tpl as any)?.code || '');
-      if (!code) throw new Error(t('strategy.schedules.messages.templateCodeEmptyCannotExecute'));
-      const exec = await pythonStrategyApi.execute({ code, accountId: row.accountId, symbol: row.symbol, timeframe: row.timeframe });
-      if (!exec.success) throw new Error(exec.error || t('strategy.schedules.messages.strategyExecuteFailed'));
-      setTriggerResult({ logs: exec.logs || [], signal: exec.signal, meta: { templateId: row.templateId, scheduleId: row.id } });
-    } catch (e: any) { setTriggerResult({ logs: [], signal: null, meta: { error: e?.message || t('strategy.schedules.messages.executeFailed') } }); }
-    finally { setTriggering(false); }
-  }, [t]);
-
-  const loadScheduleHealth = useCallback(async (row: any) => {
-    if (!row?.id) return; setHealthLoading(true);
-    try { setHealthSummary(await scheduleHealthApi.getScheduleHealth(row.id)); }
-    catch (e: any) { message.error(e?.message || t('strategy.schedules.health.messages.loadFailed')); setHealthSummary(null); }
-    finally { setHealthLoading(false); }
-  }, [t]);
-
-  // Load symbols when account changes in create mode
   useEffect(() => {
     if (!openEdit || editing?.id || !accountIdWatch) return;
     void loadSymbols(accountIdWatch);
@@ -204,5 +239,6 @@ export function useLibrarySchedules(selectedTemplateId: string) {
     triggering, openTrigger, setOpenTrigger, triggerResult, triggerContext, setTriggerContext, setTriggerResult,
     formatTime, loadSymbols,
     refresh, openCreate, openUpdate, submitEdit, onToggleActive, onDelete, onManualTrigger, loadScheduleHealth,
+    doOrderSend,
   };
 }

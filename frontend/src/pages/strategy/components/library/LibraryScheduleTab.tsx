@@ -1,79 +1,48 @@
-import { Button, Space } from 'antd';
+import { Button } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import ScheduleTable from '../ScheduleTable';
 import EditScheduleModal from '../EditScheduleModal';
 import TriggerModal from '../TriggerModal';
 import ScheduleHealthModal from '../ScheduleHealthModal';
+import type { ScheduleRow, ScheduleHealthSummary, TriggerResult, TriggerContext } from '../../hooks/libraryTypes';
 
 interface Props {
-  schedules: any[];
-  allSchedules: any[];
+  schedules: ScheduleRow[];
+  allSchedules: ScheduleRow[];
   loading: boolean;
   templates: any[];
   accounts: any[];
-  symbols: any[];
+  symbols: { value: string; label: string }[];
   symbolsLoading: boolean;
-  formatTime: (v: any) => string;
+  formatTime: (v: unknown) => string;
   // Edit modal
   openEdit: boolean; setOpenEdit: (v: boolean) => void;
-  editing: any; setEditing: (v: any) => void;
+  editing: ScheduleRow | null; setEditing: (v: ScheduleRow | null) => void;
   form: any; accountIdWatch: string | undefined;
   loadSymbols: (accountId: string, symbol?: string) => void;
   submitEdit: () => void;
-  openUpdate: (row: any) => void;
+  openUpdate: (row: ScheduleRow) => void;
   // Actions
-  onToggleActive: (row: any, next: boolean) => void;
-  onDelete: (row: any) => void;
-  onManualTrigger: (row: any) => void;
-  loadScheduleHealth: (row: any) => void;
+  onToggleActive: (row: ScheduleRow, next: boolean) => void;
+  onDelete: (row: ScheduleRow) => void;
+  onManualTrigger: (row: ScheduleRow) => void;
+  loadScheduleHealth: (row: ScheduleRow) => void;
   // Health
   healthOpen: boolean; setHealthOpen: (v: boolean) => void;
-  healthLoading: boolean; healthTarget: any; setHealthTarget: (v: any) => void;
-  healthSummary: any; setHealthSummary: (v: any) => void;
+  healthLoading: boolean; healthTarget: ScheduleRow | null; setHealthTarget: (v: ScheduleRow | null) => void;
+  healthSummary: ScheduleHealthSummary | null; setHealthSummary: (v: ScheduleHealthSummary | null) => void;
   // Trigger
   triggering: boolean; openTrigger: boolean; setOpenTrigger: (v: boolean) => void;
-  triggerResult: any; triggerContext: any; setTriggerContext: (v: any) => void; setTriggerResult: (v: any) => void;
-  doOrderSend: (schedule: any) => void;
+  triggerResult: TriggerResult | null; triggerContext: TriggerContext | null;
+  setTriggerContext: (v: TriggerContext | null) => void; setTriggerResult: (v: TriggerResult | null) => void;
+  doOrderSend: () => void;
   // Create
   openCreate: () => void;
 }
 
 export default function LibraryScheduleTab(props: Props) {
   const { t } = useTranslation();
-
-  const doOrderSend = async () => {
-    // Extract logic from useSchedulePage's doOrderSend pattern
-    const { schedule } = props.triggerContext || {};
-    if (!schedule) return;
-    const { triggerResult } = props;
-    const raw = triggerResult?.signal;
-    if (!raw) return;
-    const { tradingApi } = await import('@/client/trading');
-    const { getTradingRiskToastMessage } = await import('@/utils/tradingRiskError');
-    const { message } = await import('antd');
-    const signal = raw;
-    const rawAction = String(signal?.type ?? signal?.signalType ?? signal?.signal ?? '').trim().toLowerCase();
-    const action = rawAction === 'buy' || rawAction === 'sell' ? rawAction : '';
-    const volumeNum = typeof signal?.volume === 'number' ? signal.volume : Number(signal?.volume);
-    const volume = Number.isFinite(volumeNum) ? volumeNum : 0;
-    if (!action || action === 'hold') { message.error(t('strategy.schedules.messages.signalHoldCannotOrder')); return; }
-    if (!(volume > 0)) { message.error(t('strategy.schedules.messages.volumeInvalid')); return; }
-    props.setTriggering && (() => {})();
-    try {
-      const payload: any = {
-        accountId: schedule.accountId, symbol: signal.symbol || schedule.symbol, type: action, volume,
-        price: typeof signal?.price === 'number' ? signal.price : Number(signal?.price || 0),
-        stopLoss: typeof signal?.stopLoss === 'number' ? signal.stopLoss : Number(signal?.stopLoss || 0),
-        takeProfit: typeof signal?.takeProfit === 'number' ? signal.takeProfit : Number(signal?.takeProfit || 0),
-        comment: String(signal?.comment || ''),
-      };
-      const res = await tradingApi.orderSend(payload);
-      if (res.error) { message.error(getTradingRiskToastMessage({ riskCode: res.riskError?.code, error: res.error, message: res.message, fallback: res.error || t('strategy.schedules.messages.orderFailed') })); return; }
-      message.success(t('strategy.schedules.messages.orderSubmitted'));
-      props.setOpenTrigger(false); props.setTriggerContext(null); props.setTriggerResult(null);
-    } catch (e: any) { message.error(e?.message || t('strategy.schedules.messages.orderFailed')); }
-  };
 
   return (
     <div style={{ padding: '16px 0' }}>
@@ -119,7 +88,7 @@ export default function LibraryScheduleTab(props: Props) {
         result={props.triggerResult}
         context={props.triggerContext}
         onCancel={() => { props.setOpenTrigger(false); props.setTriggerContext(null); props.setTriggerResult(null); }}
-        onOrderSend={doOrderSend}
+        onOrderSend={props.doOrderSend}
       />
 
       <ScheduleHealthModal

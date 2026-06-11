@@ -87,10 +87,9 @@ export function useMarketplace(): MarketplaceCtx {
     setDetailStrategy(null); setDetailOpen(false);
   }, []);
 
-  // ── Purchase / Get ──
-  const isPurchased = useCallback((strategyId: string) =>
-    purchases.some((p: any) => p.strategyId === strategyId),
-  [purchases]);
+  // ── Purchase / Get (Set for O(1) lookup) ──
+  const purchasedIds = useMemo(() => new Set(purchases.map((p: any) => p.strategyId)), [purchases]);
+  const isPurchased = useCallback((strategyId: string) => purchasedIds.has(strategyId), [purchasedIds]);
 
   const handleGetFree = useCallback(async (strategy: PublishedStrategy) => {
     if (!userId) { message.warning(t('marketplace.messages.loginFirst')); return; }

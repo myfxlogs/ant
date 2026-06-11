@@ -1,4 +1,4 @@
-import type { DefaultTemplateItem } from '../StrategyTemplatePage.defaults';
+import type { DefaultTemplateItem } from '../StrategyLibrary.defaults';
 
 const tpl: DefaultTemplateItem = {
 id: 'default-rsi',

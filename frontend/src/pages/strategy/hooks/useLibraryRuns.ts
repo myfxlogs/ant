@@ -1,13 +1,15 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
 import { isTerminalRun, loadRunTitles } from '../StrategyTemplatePage.utils';
+import type { BacktestRunRow } from './libraryTypes';
 
 export function useLibraryRuns() {
   const { t } = useTranslation();
-  const [runs, setRuns] = useState<any[]>([]);
+  const [runs, setRuns] = useState<BacktestRunRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedRunId, setSelectedRunId] = useState('');
   const [deleting, setDeleting] = useState(false);
@@ -18,31 +20,34 @@ export function useLibraryRuns() {
   const runStreamUnsubRef = useRef<Record<string, (() => void) | undefined>>({});
 
   const fetchRuns = useCallback(async (p: number = page, ps: number = pageSize) => {
-    setLoading(true);
+    setLoading(true); setError(null);
     try {
-      const resp: any = await pythonStrategyApi.listBacktestRuns({ limit: ps, offset: (p - 1) * ps });
+      const resp: any = await pythonStrategyApi.listBacktestRuns({ limit: ps + 1, offset: (p - 1) * ps });
       const titles = loadRunTitles();
-      const list = (resp?.runs || []).map((r: any) => ({
+      const rawList: BacktestRunRow[] = (resp?.runs || []).map((r: any) => ({
         ...r,
         title: titles?.[String(r?.id || '')] || '',
         templateId: r.templateId || r.template_id,
         templateDraftId: r.templateDraftId || r.template_draft_id,
       }));
-      setRuns(list);
-      setTotal(list.length < ps ? (p - 1) * ps + list.length : p * ps + 1); // estimate
+      const hasMore = rawList.length > ps;
+      const displayList = hasMore ? rawList.slice(0, ps) : rawList;
+      setRuns(displayList);
+      setTotal(hasMore ? p * ps + 1 : (p - 1) * ps + displayList.length);
     } catch {
       setRuns([]);
+      setError(t('common.loadingFailed'));
     } finally { setLoading(false); }
-  }, [page, pageSize]);
+  }, [page, pageSize, t]);
 
   useEffect(() => { fetchRuns(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const updateRunFromStream = useCallback((u: any) => {
     const id = String(u?.run?.id || u?.run?.runId || u?.runId || '');
     if (!id) return;
-    setRuns(prev => (prev || []).map((r: any) => {
-      if (String(r?.id || '') !== id) return r;
-      return { ...r, ...u?.run, status: u?.run?.status ?? r?.status, error: u?.run?.error ?? r?.error, metrics: u?.metrics ?? r?.metrics, equityCurve: Array.isArray(u?.equityCurve) ? u.equityCurve : r?.equityCurve };
+    setRuns(prev => prev.map(r => {
+      if (String(r.id || '') !== id) return r;
+      return { ...r, ...u?.run, status: u?.run?.status ?? r.status, error: u?.run?.error ?? r.error, metrics: u?.metrics ?? r.metrics, equityCurve: Array.isArray(u?.equityCurve) ? u.equityCurve : r.equityCurve };
     }));
     if (isTerminalRun(u?.run)) {
       runStreamUnsubRef.current[id]?.();
@@ -50,10 +55,9 @@ export function useLibraryRuns() {
     }
   }, []);
 
-  // SSE streaming for non-terminal runs
   useEffect(() => {
-    for (const r of runs || []) {
-      const id = String(r?.id || '');
+    for (const r of runs) {
+      const id = String(r.id || '');
       if (!id || isTerminalRun(r)) continue;
       if (runStreamUnsubRef.current[id]) continue;
       runStreamUnsubRef.current[id] = pythonStrategyApi.watchBacktestRun(id, updateRunFromStream, () => {});
@@ -97,16 +101,9 @@ export function useLibraryRuns() {
     fetchRuns(p, ps);
   }, [fetchRuns]);
 
-  // Filter by template if one is selected (but fetch all globally — filter client-side)
-  const filteredByTemplate = useCallback((templateId: string) => {
-    if (!templateId) return runs;
-    return runs.filter(r => String(r.templateId || '') === templateId);
-  }, [runs]);
-
   return {
-    runs, loading, drawerOpen, setDrawerOpen, selectedRunId,
+    runs, loading, error, drawerOpen, setDrawerOpen, selectedRunId,
     deleting, page, pageSize, total, selectedKeys, setSelectedKeys,
     fetchRuns, onViewRun, onDeleteRun, onBatchDelete, onPageChange,
-    filteredByTemplate,
   };
 }
