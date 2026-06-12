@@ -15,9 +15,16 @@ ALTER TABLE strategy_templates ALTER COLUMN user_id DROP NOT NULL;
 ALTER TABLE strategy_templates ADD CONSTRAINT strategy_templates_user_id_fkey
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
+-- 修复已有的 NULL is_system 值
+UPDATE strategy_templates SET is_system = false WHERE is_system IS NULL;
+
+-- 清理旧预设：053 把带 'preset' 标签的用户策略设为了 is_system=true，但这些有 user_id
+-- 新模型要求系统策略 user_id 必须为 NULL，把这些旧预设清除标记
+UPDATE strategy_templates SET is_system = false WHERE is_system = true AND user_id IS NOT NULL;
+
 -- CHECK 约束：系统策略必须 user_id IS NULL
 ALTER TABLE strategy_templates ADD CONSTRAINT ck_system_user_id_null
-    CHECK (is_system = false OR user_id IS NULL);
+    CHECK (is_system IS NOT TRUE OR user_id IS NULL);
 
 COMMENT ON CONSTRAINT ck_system_user_id_null ON strategy_templates IS
     '系统策略 (is_system=true) 的 user_id 必须为 NULL — 平台共享资产，不属于任何用户';
