@@ -257,6 +257,9 @@ func selectAlgo(m *antv1.StartAlgoRequest) (execalgo.Algo, error) {
 			urgency = 1
 		}
 		// numSlices = duration / interval
+		if m.StartTime == nil || m.EndTime == nil {
+			return nil, fmt.Errorf("start_time and end_time are required")
+		}
 		startTime := m.StartTime.AsTime()
 		endTime := m.EndTime.AsTime()
 		dur := endTime.Sub(startTime)
