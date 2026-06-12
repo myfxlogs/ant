@@ -106,7 +106,7 @@ func fetchTradingSummaryTrading(ctx context.Context, r *AdminRepository, start, 
 }
 
 func fetchTradingSummaryByPlatform(ctx context.Context, r *AdminRepository, start, end string, s *model.TradingSummary) {
-	rows, err := r.db.Query(ctx, `SELECT COALESCE(ma.platform,'unknown'), COUNT(DISTINCT ma.id), COUNT(tr.id), COALESCE(SUM(tr.volume),0) FROM mt_accounts ma LEFT JOIN trade_records tr ON tr.account_id=ma.id AND DATE(tr.close_time) BETWEEN $1 AND $2 GROUP BY ma.platform`, start, end)
+	rows, err := r.db.Query(ctx, `SELECT COALESCE(ma.mt_type,'unknown'), COUNT(DISTINCT ma.id), COUNT(tr.id), COALESCE(SUM(tr.volume),0) FROM mt_accounts ma LEFT JOIN trade_records tr ON tr.account_id=ma.id AND DATE(tr.close_time) BETWEEN $1 AND $2 GROUP BY ma.mt_type`, start, end)
 	if err != nil { return }
 	defer rows.Close()
 	s.ByPlatform = make(map[string]model.PlatformSummary)
