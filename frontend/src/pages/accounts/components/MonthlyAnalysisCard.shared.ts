@@ -53,13 +53,13 @@ export const MONTH_BAR_PASTELS = [
   '#B486B4', // Jan — mauve
   '#E28686', // Feb — soft red
   '#5AB4B4', // Mar — teal
-  '#FFB789', // Apr — peach
+  'rgba(255, 183, 137, 0.9)', // Apr — peach
   '#B5D35D', // May — lime
   '#F6D263', // Jun — gold
   '#CCE6FA', // Jul — ice blue
   '#E28686', // Aug — soft red
   '#5AB4B4', // Sep — teal
-  '#FFB789', // Oct — peach
+  'rgba(255, 183, 137, 0.9)', // Oct — peach
   '#B5D35D', // Nov — lime
   '#B486B4', // Dec — mauve
 ];
