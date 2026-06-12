@@ -18,6 +18,7 @@ import (
 
 	"connectrpc.com/otelconnect"
 	"anttrader/internal/config"
+	"anttrader/internal/connect/strategy"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/mdgateway/adapter"
 	anttrace "anttrader/internal/trace"
@@ -208,6 +209,7 @@ func main() {
 	var platformAgg *risksvc.PlatformAggregator           // set after creation; referenced by OnOrderUpdate closure
 	var notifSender *notifpubsub.Sender                   // set after creation; referenced by CheckMarginCall closure
 	var workerCleanup func()                               // set after creation; calls worker.Stop() on shutdown
+	var scheduleEngine *strategy.ScheduleEngine              // set after creation; started below
 
 	// M12-C2: multi-broker registry created early so both handler wiring
 	// and the mdgateway pipeline can reference the same instance.
@@ -217,13 +219,14 @@ func main() {
 	go startMdGatewayPipeline(pipelineCtx, log, pool, ch, nc, spillDir, secClient, hub, accountSvc, mthubSvc, accountSyncSvc, tradeRecordRepo, snapshotBroker, accountBroker, barBroker, eventStore, &emailNotifier, &platformAgg, &reconLoop, brokerReg)
 
 	mux := http.NewServeMux()
-	reconLoop, emailNotifier, platformAgg, notifSender, workerCleanup = registerHandlers(mux, log, pool, ch, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, otelInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate, analyticsCache, brokerReg)
+	reconLoop, emailNotifier, platformAgg, notifSender, scheduleEngine, workerCleanup = registerHandlers(mux, log, pool, ch, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, otelInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate, analyticsCache, brokerReg)
 	accountSyncSvc.SetNotificationSender(notifSender)
-
 
 	// Graceful shutdown
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
+
+	go scheduleEngine.Start(ctx)
 	defer workerCleanup()
 
 	// Start reconciliation loop (cancelled on shutdown)

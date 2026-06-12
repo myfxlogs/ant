@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -114,6 +115,22 @@ func (r *StrategyScheduleRepository) GetActiveSchedules(ctx context.Context) ([]
 			manual_run_count, last_manual_run_at, last_manual_error,
 			created_at, updated_at
 		FROM strategy_schedules WHERE is_active = true ORDER BY next_run_at ASC`)
+}
+
+// GetEarliestNextRunAt returns the earliest next_run_at among all active schedules.
+// Returns zero time if no active schedule has a next_run_at set.
+func (r *StrategyScheduleRepository) GetEarliestNextRunAt(ctx context.Context) (time.Time, error) {
+	var earliest *time.Time
+	err := r.db.QueryRow(ctx,
+		`SELECT MIN(next_run_at) FROM strategy_schedules WHERE is_active = true AND next_run_at IS NOT NULL`,
+	).Scan(&earliest)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("GetEarliestNextRunAt: %w", err)
+	}
+	if earliest == nil {
+		return time.Time{}, nil
+	}
+	return *earliest, nil
 }
 
 // GetDueSchedules returns active schedules whose next_run_at is <= the given time.

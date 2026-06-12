@@ -162,6 +162,78 @@ func (s *StrategySchedule) SetScheduleConfig(config map[string]interface{}) erro
 	return nil
 }
 
+// ComputeNextRunAt returns the next execution time based on schedule_type and schedule_config.
+// Returns zero time for event-driven schedules (kline_close, hf_quote) that don't use timer-based firing.
+func (s *StrategySchedule) ComputeNextRunAt() (time.Time, error) {
+	return ComputeNextRunAtFromConfig(s.ScheduleType, s.ScheduleConfig)
+}
+
+// getInt64FromConfig extracts an int64 value from a decoded JSONB config map.
+// Handles float64 (JSON default), int64 (proto), and bigint (frontend via BigInt(n)).
+func getInt64FromConfig(cfg map[string]interface{}, key string) int64 {
+	v, ok := cfg[key]
+	if !ok {
+		return 0
+	}
+	switch n := v.(type) {
+	case float64:
+		return int64(n)
+	case int64:
+		return n
+	case int:
+		return int64(n)
+	default:
+		return 0
+	}
+}
+
+// ComputeNextRunAtFromConfig is a standalone helper for computing next_run_at from raw fields.
+// Used by both the model (StrategySchedule.ComputeNextRunAt) and the service layer (ScheduleRow).
+func ComputeNextRunAtFromConfig(scheduleType string, scheduleConfig []byte) (time.Time, error) {
+	var cfg map[string]interface{}
+	if len(scheduleConfig) > 0 {
+		if err := json.Unmarshal(scheduleConfig, &cfg); err != nil {
+			return time.Time{}, fmt.Errorf("compute next_run_at: parse config: %w", err)
+		}
+	}
+	if cfg == nil {
+		cfg = make(map[string]interface{})
+	}
+
+	switch scheduleType {
+	case ScheduleTypeInterval:
+		ms := getInt64FromConfig(cfg, "intervalMs")
+		if ms == 0 {
+			ms = getInt64FromConfig(cfg, "interval_seconds") * 1000 // legacy
+		}
+		if ms < 1000 {
+			ms = 3600_000 // default: 1 hour
+		}
+		return time.Now().Add(time.Duration(ms) * time.Millisecond), nil
+
+	case ScheduleTypeCron:
+		// Backward compat: old records mapped kline_close/hf_quote as "cron" with triggerMode.
+		if triggerMode, _ := cfg["triggerMode"].(string); triggerMode == "stable_kline" || triggerMode == "hf_quote_stream" {
+			return time.Time{}, nil // event-driven, no next_run_at
+		}
+		// Cron expression — for now fallback to interval mode.
+		ms := getInt64FromConfig(cfg, "intervalMs")
+		if ms == 0 {
+			ms = getInt64FromConfig(cfg, "interval_seconds") * 1000
+		}
+		if ms < 1000 {
+			ms = 3600_000
+		}
+		return time.Now().Add(time.Duration(ms) * time.Millisecond), nil
+
+	case ScheduleTypeEvent:
+		return time.Time{}, nil // event-driven: kline_close / hf_quote
+
+	default:
+		return time.Time{}, fmt.Errorf("unknown schedule_type: %s", scheduleType)
+	}
+}
+
 func NewStrategySchedule(userID, templateID, accountID uuid.UUID, symbol, timeframe string) *StrategySchedule {
 	now := time.Now()
 	return &StrategySchedule{

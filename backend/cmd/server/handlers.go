@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
@@ -68,7 +69,7 @@ func registerHandlers(
 	reconcileGate *mthub.ReconcileGate,
 	analyticsCache *service.AnalyticsCache,
 	brokerReg *adapter.BrokerRegistry,
-) (*mthub.ReconciliationLoop, *notifier.EmailNotifier, *risksvc.PlatformAggregator, *notifpubsub.Sender, func()) {
+) (*mthub.ReconciliationLoop, *notifier.EmailNotifier, *risksvc.PlatformAggregator, *notifpubsub.Sender, *strategy.ScheduleEngine, func()) {
 
 	// ConnectRPC handlers
 	// Repositories for handler→service→repository layering (P1-2).
@@ -227,6 +228,21 @@ func registerHandlers(
 	mux.Handle(antv1c.NewAutoTradingServiceHandler(autoTradingServer,
 		connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
+	// Schedule execution engine — timer-driven loop that dispatches due schedules
+	// to RunLiveStrategy (bar stream → Python LiveWorker → signal → OMS).
+	scheduleRepo := repository.NewStrategyScheduleRepository(pool)
+	scheduleEngine := strategy.NewScheduleEngine(scheduleRepo, templatesRepo,
+		pythonStrategyServer,
+		func(userID uuid.UUID) bool {
+			settings, err := autoTradingRepo.GetGlobalSettingsByUserID(context.Background(), userID)
+			if err != nil {
+				return true // default to enabled if settings not found
+			}
+			return settings.AutoTradeEnabled
+		},
+		log)
+	strategyServer.SetEngine(scheduleEngine)
+
 	// Factor subscriber activation prerequisites (M10-BASE-B6):
 	// When ready to wire, create and start:
 	//   factorSub := factor.NewSubscriber(factor.DefaultSubscriberConfig(), log)
@@ -275,7 +291,7 @@ func registerHandlers(
 		}
 	}()
 
-	return reconLoop, emailNotifier, platformAgg, notifSender, workerCleanup
+	return reconLoop, emailNotifier, platformAgg, notifSender, scheduleEngine, workerCleanup
 }
 
 // configurePythonStrategy creates the PythonStrategyServer with all dependencies
@@ -300,7 +316,7 @@ func configurePythonStrategy(
 		backtestClient := antv1c.NewBacktestServiceClient(http.DefaultClient, cfg.StrategyServiceURL)
 		srv.SetBacktestClient(backtestClient)
 		srv.SetMarketDataRepo(marketDataRepo)
-		srv.SetBarSource(strategy.NewBacktestSource(marketDataRepo))
+		srv.SetBarSource(strategy.NewLiveSource(mthubSvc, marketDataRepo))
 		srv.SetMtHub(mthubSvc)
 		srv.StartBacktestWorker(context.Background())
 	}

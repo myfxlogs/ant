@@ -154,8 +154,17 @@ export function useLibrarySchedules(selectedTemplateId: string) {
     const rawType = String(row?.scheduleType || '').toLowerCase();
     const triggerMode = String(conf?.triggerMode || 'stable_kline');
     let scheduleType: ScheduleType;
-    if (rawType === 'interval' || rawType === 'cron') scheduleType = 'interval';
-    else if (triggerMode === 'hf_quote_stream' || rawType === 'hf_quote') scheduleType = 'hf_quote';
+    if (rawType === 'interval') scheduleType = 'interval';
+    else if (rawType === 'event') {
+      if (triggerMode === 'hf_quote_stream') scheduleType = 'hf_quote';
+      else scheduleType = 'kline_close';
+    }
+    // Backward compat: old records stored kline_close/hf_quote as "cron" with triggerMode.
+    else if (rawType === 'cron') {
+      if (triggerMode === 'hf_quote_stream') scheduleType = 'hf_quote';
+      else scheduleType = 'kline_close';
+    }
+    else if (rawType === 'hf_quote') scheduleType = 'hf_quote';
     else scheduleType = 'kline_close';
     const intervalMs = typeof conf?.intervalMs === 'number' ? conf.intervalMs : typeof conf?.intervalMs === 'bigint' ? Number(conf.intervalMs) : 300_000;
     const hfCooldownMs = typeof conf?.hfCooldownMs === 'number' ? conf.hfCooldownMs : typeof conf?.hfCooldownMs === 'bigint' ? Number(conf.hfCooldownMs) : 1_000;
@@ -186,7 +195,7 @@ export function useLibrarySchedules(selectedTemplateId: string) {
     };
     if (sType === 'interval') { const ms = Math.max(1000, Math.floor(Number(v.intervalMs || 300_000))); scheduleConfig.intervalMs = BigInt(ms); }
     if (sType === 'hf_quote') { const cd = Math.max(100, Math.floor(Number(v.hfCooldownMs || 1_000))); scheduleConfig.hfCooldownMs = BigInt(cd); }
-    const backendScheduleType = sType === 'interval' ? 'interval' : 'cron';
+    const backendScheduleType = sType === 'interval' ? 'interval' : 'event';
     setLoading(true);
     try {
       if (editing?.id) {

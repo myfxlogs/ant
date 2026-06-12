@@ -20,6 +20,7 @@ type StrategyServer struct {
 	marketDataRepo *repository.MarketDataRepository
 	log            *zap.Logger
 	pgListen       *pglisten.Listener
+	engine         *ScheduleEngine
 }
 
 var _ antv1c.StrategyServiceHandler = (*StrategyServer)(nil)
@@ -27,6 +28,8 @@ var _ antv1c.StrategyServiceHandler = (*StrategyServer)(nil)
 func NewStrategyServer(svc *service.StrategySvc, log *zap.Logger) *StrategyServer {
 	return &StrategyServer{svc: svc, log: log}
 }
+
+func (s *StrategyServer) SetEngine(e *ScheduleEngine) { s.engine = e }
 
 // SetBacktestClient injects the ConnectRPC backtest client for RunBacktest.
 func (s *StrategyServer) SetBacktestClient(c antv1c.BacktestServiceClient) { s.backtestClient = c }

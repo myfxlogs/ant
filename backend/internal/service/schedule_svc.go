@@ -8,6 +8,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+
+	"anttrader/internal/model"
 )
 
 type ScheduleRow struct {
@@ -89,6 +91,12 @@ func (s *StrategySvc) CreateSchedule(ctx context.Context, r *ScheduleRow) error 
 	if r.RiskWarnings == nil {
 		r.RiskWarnings = []byte("[]")
 	}
+	// Compute next_run_at for timer-based schedules.
+	if r.NextRunAt == nil {
+		if next, err := model.ComputeNextRunAtFromConfig(r.ScheduleType, r.ScheduleConfig); err == nil && !next.IsZero() {
+			r.NextRunAt = &next
+		}
+	}
 	_, err := s.pg.Exec(ctx,
 		`INSERT INTO strategy_schedules (id, user_id, template_id, account_id, name, symbol, timeframe, parameters, schedule_type, schedule_config,
 		 backtest_metrics, risk_score, risk_level, risk_reasons, risk_warnings, last_backtest_at,
@@ -106,6 +114,12 @@ func (s *StrategySvc) CreateSchedule(ctx context.Context, r *ScheduleRow) error 
 
 func (s *StrategySvc) UpdateSchedule(ctx context.Context, r *ScheduleRow) error {
 	r.UpdatedAt = time.Now()
+	// Recompute next_run_at when schedule_type or schedule_config change.
+	if next, err := model.ComputeNextRunAtFromConfig(r.ScheduleType, r.ScheduleConfig); err == nil && !next.IsZero() {
+		r.NextRunAt = &next
+	} else if next.IsZero() {
+		r.NextRunAt = nil // event-driven, clear next_run_at
+	}
 	_, err := s.pg.Exec(ctx,
 		`UPDATE strategy_schedules SET name=$2, symbol=$3, timeframe=$4, parameters=$5, schedule_type=$6, schedule_config=$7,
 		 backtest_metrics=$8, risk_score=$9, risk_level=$10, risk_reasons=$11, risk_warnings=$12, last_backtest_at=$13,

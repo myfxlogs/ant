@@ -77,6 +77,9 @@ func (s *StrategyServer) CreateSchedule(ctx context.Context, req *connect.Reques
 	if err := s.svc.CreateSchedule(ctx, &r); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	if s.engine != nil {
+		s.engine.Notify()
+	}
 	return connect.NewResponse(scheduleRowToProto(&r)), nil
 }
 
@@ -115,6 +118,9 @@ func (s *StrategyServer) UpdateSchedule(ctx context.Context, req *connect.Reques
 	if err := s.svc.UpdateSchedule(ctx, existing); err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+	if s.engine != nil {
+		s.engine.Notify()
+	}
 	return connect.NewResponse(scheduleRowToProto(existing)), nil
 }
 
@@ -122,6 +128,9 @@ func (s *StrategyServer) DeleteSchedule(ctx context.Context, req *connect.Reques
 	id, err := uuid.Parse(req.Msg.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	if s.engine != nil {
+		s.engine.StopSchedule(id)
 	}
 	if err := s.svc.DeleteSchedule(ctx, id, s.userID(ctx)); err != nil {
 		return nil, err
@@ -137,6 +146,13 @@ func (s *StrategyServer) ToggleSchedule(ctx context.Context, req *connect.Reques
 	}
 	if err := s.svc.SetScheduleActive(ctx, id, s.userID(ctx), m.Active); err != nil {
 		return nil, err
+	}
+	if s.engine != nil {
+		if !m.Active {
+			s.engine.StopSchedule(id)
+		} else {
+			s.engine.Notify()
+		}
 	}
 	row, err := s.svc.GetSchedule(ctx, id, s.userID(ctx))
 	if err != nil {
