@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
-import { Tag, Button, Spin, Dropdown, Modal, Input, Tooltip } from 'antd';
+import { Tag, Button, Spin, Dropdown, Modal, Input } from 'antd';
 import type { MenuProps } from 'antd';
 import {
   ArrowLeftOutlined, ReloadOutlined, PauseCircleOutlined,
   CaretRightOutlined, MoreOutlined, WalletOutlined, LineChartOutlined,
   RiseOutlined, FallOutlined, DollarOutlined, PercentageOutlined,
-  WarningOutlined, DeleteOutlined, FileTextOutlined, ClockCircleOutlined,
+  WarningOutlined, DeleteOutlined, FileTextOutlined,
 } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -80,10 +80,6 @@ export default function AccountDetail() {
 
   const displayName = currentAccount?.alias || currentAccount?.login;
   const hasAlias = !!currentAccount?.alias;
-  const lastConnectedText = currentAccount?.connectedAt
-    ? t('accounts.detail.lastConnected', { time: new Date(currentAccount.connectedAt).toLocaleString() })
-    : null;
-
   if (!currentAccount) {
     return <div className="p-4 flex justify-center items-center h-64"><Spin size="large" /></div>;
   }
@@ -130,17 +126,17 @@ export default function AccountDetail() {
                 <span>{currentAccount.brokerCompany} · {currentAccount.brokerServer}</span>
                 <span>·</span>
                 <span>{t('accounts.detail.leverage', { leverage: currentAccount.leverage })}</span>
-                {lastConnectedText && (
-                  <>
-                    <span>·</span>
-                    <Tooltip title={lastConnectedText}>
-                      <span style={{ cursor: 'default' }}>
-                        <ClockCircleOutlined style={{ marginRight: 2 }} />
-                        {t('accounts.detail.connected')}
-                      </span>
-                    </Tooltip>
-                  </>
-                )}
+                <span>·</span>
+                <Tag
+                  style={{
+                    background: statusConfig.bg, color: statusConfig.color, border: 'none', borderRadius: 6,
+                    cursor: (currentAccount.status === 'disconnected' || currentAccount.status === 'error') ? 'pointer' : 'default',
+                    padding: '0 8px', fontSize: 12, margin: 0,
+                  }}
+                  onClick={() => { if (currentAccount.status === 'disconnected' || currentAccount.status === 'error') handleConnect(); }}
+                >
+                  {connecting ? t('accounts.detail.status.connecting') : statusConfig.text}
+                </Tag>
               </div>
             </div>
           </div>
@@ -165,20 +161,6 @@ export default function AccountDetail() {
             <span style={{ color: 'var(--color-danger)', fontSize: 13 }}>{currentAccount.lastError}</span>
           </div>
         )}
-
-        {/* ── Status tag + quick connect ── */}
-        <div className="flex items-center gap-3 mb-4">
-          <Tag
-            style={{
-              background: statusConfig.bg, color: statusConfig.color, border: 'none', borderRadius: 6,
-              cursor: (currentAccount.status === 'disconnected' || currentAccount.status === 'error') ? 'pointer' : 'default',
-              padding: '2px 12px', fontSize: 13,
-            }}
-            onClick={() => { if (currentAccount.status === 'disconnected' || currentAccount.status === 'error') handleConnect(); }}
-          >
-            {connecting ? t('accounts.detail.status.connecting') : statusConfig.text}
-          </Tag>
-        </div>
 
         {/* ── Primary metrics: Equity · P&L · Margin Level ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">

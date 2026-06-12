@@ -35,6 +35,7 @@ type Gateway struct {
 	cancelOrderUpdateSub context.CancelFunc   // set by orderUpdateRecvLoop (SSE stream)
 	cancelHubOrderSub    context.CancelFunc   // set by SubscribeOrderEvents (Hub stream)
 	reconnecting         bool // true while reconnection is in progress (prevents recvLoop race)
+	onStatusChange       func(status, message string) // connection state callback (nil-safe)
 }
 
 func New(cfg mdtick.AccountConfig, log *zap.Logger) *Gateway {
@@ -348,6 +349,25 @@ func (g *Gateway) SetReconnecting(v bool) {
 	g.mu.Lock()
 	g.reconnecting = v
 	g.mu.Unlock()
+}
+
+// SetStatusCallback registers a callback for connection state changes.
+// The callback must not block — it is called from recvLoop goroutines.
+func (g *Gateway) SetStatusCallback(fn func(status, message string)) {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	g.onStatusChange = fn
+}
+
+// reportStatus invokes the registered status callback if set.
+// Concurrency-safe: reads the callback field under RLock.
+func (g *Gateway) reportStatus(status, message string) {
+	g.mu.RLock()
+	fn := g.onStatusChange
+	g.mu.RUnlock()
+	if fn != nil {
+		fn(status, message)
+	}
 }
 
 func (g *Gateway) MT5Client() pb.MT5Client {

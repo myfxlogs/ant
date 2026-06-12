@@ -282,8 +282,8 @@ func TestMT5OrderTypeLabel(t *testing.T) {
 		{"sell stop", pb.OrderType_OrderType_SellStop, "sell_stop"},
 		{"buy stop limit", pb.OrderType_OrderType_BuyStopLimit, "buy_stop_limit"},
 		{"sell stop limit", pb.OrderType_OrderType_SellStopLimit, "sell_stop_limit"},
-		{"balance (defaults to buy)", pb.OrderType_OrderType_Balance, "buy"},
-		{"credit (defaults to buy)", pb.OrderType_OrderType_Credit, "buy"},
+		{"balance", pb.OrderType_OrderType_Balance, "balance"},
+		{"credit", pb.OrderType_OrderType_Credit, "credit"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

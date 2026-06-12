@@ -33,6 +33,7 @@ type RunnerDeps struct {
 	OnAccountDisconnect func(accountID string)                                     // B-1.3: called when gateway stops/fails for an account
 	OnBrokerInfo        func(accountID, platform, broker string, info *mdtick.BrokerInfo) // B-2.2: called once after successful Connect
 	OnBar               func(bar *mdtick.Bar)                                               // called when a bar is finalized (for realtime SSE push)
+	OnAccountStatus     func(accountID, userID, status, message string)                      // called when gateway connection state changes (connected/reconnecting/disconnected)
 	Hub                 *mthub.Hub
 	BrokerRegistry      *adapter.BrokerRegistry // M12-C2: multi-broker registry; gateways registered on start
 }

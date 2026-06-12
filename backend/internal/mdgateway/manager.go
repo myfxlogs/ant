@@ -22,6 +22,10 @@ type Gateway interface {
 	SubscribeOrderUpdate(ctx context.Context, handler mdtick.OrderUpdateHandler) error
 	HealthCheck(ctx context.Context) error
 	SessionID() string
+	// SetStatusCallback registers a callback that fires when the gateway's
+	// connection state changes (connected → reconnecting → disconnected).
+	// The callback is concurrency-safe and must not block the caller.
+	SetStatusCallback(func(status, message string))
 }
 
 type ManagerDeps struct {

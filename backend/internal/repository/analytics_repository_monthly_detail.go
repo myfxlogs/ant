@@ -10,10 +10,12 @@ import (
 	"anttrader/internal/model"
 )
 
-// monthlyDetailBaseFilter is the common WHERE clause excluding non-trade order types.
+// monthlyDetailBaseFilter is the common WHERE clause excluding non-trade order types
+// and balance/credit entries that lack a symbol.
 // Used by every trade_records query in the monthly detail module.
 const monthlyDetailBaseFilter = `
-			AND order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit')`
+			AND order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit')
+			AND symbol IS NOT NULL AND symbol != ''`
 
 // ── Monthly Detail (drill-down) ──
 

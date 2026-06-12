@@ -59,6 +59,7 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 			// with a new session on the next iteration.
 			// Skip on context cancellation — normal teardown, not a stream error.
 			if err != context.Canceled && err != context.DeadlineExceeded {
+				g.reportStatus("reconnecting", err.Error())
 				g.Disconnect(ctx)
 			}
 			g.sleep(ctx, backoff)
@@ -67,6 +68,7 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 		}
 
 		backoff = time.Second
+		g.reportStatus("connected", "")
 		g.log.Info("mt5: order update stream active")
 		for {
 			resp, err := stream.Recv()
@@ -77,6 +79,7 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 				// with a new session on the next iteration.
 				// Skip on context cancellation — normal teardown, not a stream error.
 				if err != context.Canceled && err != context.DeadlineExceeded {
+					g.reportStatus("reconnecting", err.Error())
 					g.Disconnect(ctx)
 				}
 				break
@@ -198,6 +201,8 @@ func mt5UpdateTypeLabel(t pb.UpdateType) string {
 		return "modify"
 	case pb.UpdateType_UpdateType_PendingModify:
 		return "modify"
+	case pb.UpdateType_UpdateType_Balance:
+		return "balance"
 	default:
 		return "unknown"
 	}
@@ -219,6 +224,10 @@ func mt5OrderTypeLabel(ot pb.OrderType) string {
 		return "buy_stop_limit"
 	case pb.OrderType_OrderType_SellStopLimit:
 		return "sell_stop_limit"
+	case pb.OrderType_OrderType_Balance:
+		return "balance"
+	case pb.OrderType_OrderType_Credit:
+		return "credit"
 	default:
 		return "buy"
 	}

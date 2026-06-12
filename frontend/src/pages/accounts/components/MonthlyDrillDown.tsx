@@ -27,6 +27,16 @@ const tooltipStyle = {
   fontSize: 11,
 };
 
+// Adaptive YAxis: width & font size scale with the longest symbol name.
+const useAdaptiveYAxis = (symbols: string[]) =>
+  useMemo(() => {
+    const maxLen = Math.max(...symbols.map((s) => s.length), 3);
+    // ~6.5px per char at fontSize 10, plus tick mark + padding
+    const width = Math.min(Math.round(maxLen * 6.8 + 10), 90);
+    const fontSize = maxLen > 12 ? 8 : maxLen > 8 ? 9 : 10;
+    return { width, fontSize };
+  }, [symbols]);
+
 /* ── Panel 1: Risk/Reward ratio per symbol (horizontal bar chart) ── */
 const RiskRewardPanel = React.memo(({ risks, t }: {
   risks: Array<{ symbol: string; riskRatio: number }>;
@@ -40,6 +50,8 @@ const RiskRewardPanel = React.memo(({ risks, t }: {
       rawRatio: r.riskRatio,
     }));
   }, [risks]);
+
+  const yAxis = useAdaptiveYAxis(chartData.map((d) => d.symbol));
 
   if (!chartData.length) {
     return (
@@ -60,12 +72,12 @@ const RiskRewardPanel = React.memo(({ risks, t }: {
           <CartesianGrid strokeDasharray="2 2" stroke="var(--color-border)" horizontal={false} />
           <XAxis type="number" stroke="var(--color-text-muted)" fontSize={9}
             tickFormatter={(v) => v.toFixed(1)} />
-          <YAxis type="category" dataKey="symbol" width={56} stroke="var(--color-text-muted)" fontSize={10} />
+          <YAxis type="category" dataKey="symbol" width={yAxis.width} stroke="var(--color-text-muted)" fontSize={yAxis.fontSize} />
           <Tooltip contentStyle={tooltipStyle}
             formatter={(_v: number, _n: string, props: { payload?: { rawRatio?: number } }) =>
               [`${props?.payload?.rawRatio?.toFixed(2) ?? '—'}`, 'Reward:Risk']
             } />
-          <Bar dataKey="riskRatio" radius={[0, 3, 3, 0]} isAnimationActive={false}>
+          <Bar dataKey="riskRatio" radius={[0, 3, 3, 0]} maxBarSize={24} cursor="pointer" isAnimationActive={false}>
             {chartData.map((_, i) => (
               <Cell key={i} fill="rgba(119, 189, 243, 0.7)" />
             ))}
@@ -91,6 +103,15 @@ const PopularityPanel = React.memo(({ popularity, t }: {
     }));
   }, [popularity]);
 
+  // Adaptive dimensions: more symbols → taller chart + proportionally larger pie.
+  const { pieHeight, innerR, outerR } = useMemo(() => {
+    const n = Math.max(pieData.length, 1);
+    const h = Math.min(Math.round(120 + n * 32), 240);
+    const or = Math.round(h * 0.38);
+    const ir = Math.round(or * 0.55);
+    return { pieHeight: h, innerR: ir, outerR: or };
+  }, [pieData.length]);
+
   if (!pieData.length) {
     return (
       <div style={sectionStyle}>
@@ -105,18 +126,18 @@ const PopularityPanel = React.memo(({ popularity, t }: {
   return (
     <div style={sectionStyle}>
       <h4 style={titleStyle}>{t('accounts.analytics.monthlyDetail.popularityTitle')}</h4>
-      <ResponsiveContainer width="100%" height={200}>
+      <ResponsiveContainer width="100%" height={pieHeight}>
         <PieChart>
           <Pie
             data={pieData}
             cx="50%"
             cy="50%"
-            innerRadius={50}
-            outerRadius={85}
+            innerRadius={innerR}
+            outerRadius={outerR}
             paddingAngle={2}
             dataKey="value"
             isAnimationActive={false}
-            label={({ name, value }) => `${name}: ${value.toFixed(1)}%`}
+            label={({ name, value }) => `${name} ${value.toFixed(1)}%`}
             labelLine={{ stroke: 'var(--color-text-muted)', strokeWidth: 1 }}
           >
             {pieData.map((d, i) => (
@@ -161,6 +182,7 @@ const HoldingSplitPanel = React.memo(({ holdingSplit, t }: {
   }
 
   const maxVal = Math.max(...chartData.flatMap((d) => [d.long, d.short]), 1);
+  const yAxis = useAdaptiveYAxis(chartData.map((d) => d.symbol));
 
   // Format milliseconds to human-readable
   const fmtMs = (ms: number): string => {
@@ -177,17 +199,17 @@ const HoldingSplitPanel = React.memo(({ holdingSplit, t }: {
       <h4 style={titleStyle}>{t('accounts.analytics.monthlyDetail.holdingTitle')}</h4>
       <ResponsiveContainer width="100%" height={Math.max(chartData.length * 28, 150)}>
         <BarChart layout="vertical" data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
-          barGap={1} barCategoryGap="20%">
+          barGap={1} barCategoryGap="10%">
           <CartesianGrid strokeDasharray="2 2" stroke="var(--color-border)" horizontal={false} />
           <XAxis type="number" stroke="var(--color-text-muted)" fontSize={9}
             domain={[0, maxVal * 1.15]}
             tickFormatter={fmtMs} />
-          <YAxis type="category" dataKey="symbol" width={56} stroke="var(--color-text-muted)" fontSize={10} />
+          <YAxis type="category" dataKey="symbol" width={yAxis.width} stroke="var(--color-text-muted)" fontSize={yAxis.fontSize} />
           <Tooltip contentStyle={tooltipStyle}
             formatter={(v: number) => [fmtMs(Number(v)), '']} />
-          <Bar dataKey="long" radius={[0, 3, 3, 0]} isAnimationActive={false}
+          <Bar dataKey="long" radius={[0, 3, 3, 0]} maxBarSize={20} cursor="pointer" isAnimationActive={false}
             fill="rgba(83, 243, 2, 0.7)" name={t('accounts.analytics.monthlyDetail.long')} />
-          <Bar dataKey="short" radius={[0, 3, 3, 0]} isAnimationActive={false}
+          <Bar dataKey="short" radius={[0, 3, 3, 0]} maxBarSize={20} cursor="pointer" isAnimationActive={false}
             fill="rgba(255, 0, 0, 0.7)" name={t('accounts.analytics.monthlyDetail.short')} />
         </BarChart>
       </ResponsiveContainer>

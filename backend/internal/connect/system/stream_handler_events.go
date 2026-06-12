@@ -63,6 +63,31 @@ func (s *StreamServer) forwardSnapEvents(
 	return snapCh
 }
 
+type statusSub struct {
+	accountID string
+	ch        <-chan *mthub.AccountStatusEvent
+	cancel    func()
+}
+
+func (s *StreamServer) forwardStatusEvents(
+	loopCtx context.Context,
+	statusSubs []statusSub,
+) chan *mthub.AccountStatusEvent {
+	statusCh := make(chan *mthub.AccountStatusEvent, 64)
+	for _, ss := range statusSubs {
+		go func(ch <-chan *mthub.AccountStatusEvent) {
+			for ev := range ch {
+				select {
+				case statusCh <- ev:
+				case <-loopCtx.Done():
+					return
+				}
+			}
+		}(ss.ch)
+	}
+	return statusCh
+}
+
 // --- Per-event-type handlers for the main SSE loop ---
 
 func (s *StreamServer) handleOrderEvent(
@@ -248,6 +273,28 @@ func (s *StreamServer) emitPositionSnapshot(
 		},
 	}); err != nil {
 		return connect.NewError(connect.CodeInternal, fmt.Errorf("send position_snapshot event: %w", err))
+	}
+	return nil
+}
+
+// handleStatusEvent sends an account_status SSE event for a connection state change.
+func (s *StreamServer) handleStatusEvent(
+	ev *mthub.AccountStatusEvent,
+	sendEvent func(*antv1.StreamEvent) error,
+) error {
+	if err := sendEvent(&antv1.StreamEvent{
+		Type:      "account_status",
+		AccountId: ev.AccountID,
+		Timestamp: timestamppb.New(ev.Timestamp),
+		Payload: &antv1.StreamEvent_AccountStatus{
+			AccountStatus: &antv1.AccountStatusEvent{
+				AccountId: ev.AccountID,
+				Status:    ev.Status,
+				Message:   ev.Message,
+			},
+		},
+	}); err != nil {
+		return connect.NewError(connect.CodeInternal, fmt.Errorf("send account_status event: %w", err))
 	}
 	return nil
 }

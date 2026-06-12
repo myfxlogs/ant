@@ -180,6 +180,7 @@ func main() {
 	accountBroker := mthub.NewAccountProfitBroker()
 	snapshotBroker := mthub.NewPositionSnapshotBroker()
 	barBroker := mthub.NewBarBroker()
+	statusBroker := mthub.NewAccountStatusBroker()
 	idemGuard := mthub.NewIdempotencyGuard(rdb.Client())
 	reconcileGate := mthub.NewReconcileGate()
 	var reconLoop *mthub.ReconciliationLoop // H17: declared early so OnBrokerInfo callback can trigger reconciliation
@@ -191,6 +192,7 @@ func main() {
 	mthubSvc := mthub.NewMtHubService(hub, eventBroker, accountBroker, snapshotBroker, idemGuard, reconcileGate, eventStore)
 	mthubSvc.SetLogger(log)
 	mthubSvc.SetBarBroker(barBroker)
+	mthubSvc.SetStatusBroker(statusBroker)
 	// --- Analytics cache ---
 	analyticsCache := service.NewAnalyticsCache(rdb.Client(), log)
 

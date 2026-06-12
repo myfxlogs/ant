@@ -194,6 +194,10 @@ func mthubSideOrderTypeToString(side mthub.Side, ot mthub.OrderType) string {
 		return prefix + "_STOP"
 	case mthub.OrderStopLimit:
 		return prefix + "_STOP_LIMIT"
+	case mthub.OrderBalance:
+		return "BALANCE"
+	case mthub.OrderCredit:
+		return "CREDIT"
 	default:
 		return prefix
 	}

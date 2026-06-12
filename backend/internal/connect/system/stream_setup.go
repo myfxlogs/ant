@@ -62,18 +62,45 @@ func (s *StreamServer) setupSnapSubscriptions(
 	return snapSubs, nil
 }
 
+// setupStatusSubscriptions subscribes to account status updates for the user.
+func (s *StreamServer) setupStatusSubscriptions(
+	ctx context.Context,
+	userID string,
+	accountIDs []string,
+	filterAll bool,
+	accountSet map[string]bool,
+) ([]statusSub, error) {
+	var statusSubs []statusSub
+	var err error
+	accountIDs, err = s.platform.GetUserAccountIDs(ctx, userID)
+	if err != nil {
+		s.log.Warn("GetUserAccountIDs failed for statusSubs", zap.Error(err))
+		return nil, err
+	}
+	for _, aid := range accountIDs {
+		if !filterAll && !accountSet[aid] {
+			continue
+		}
+		ch, cancel := s.svc.SubscribeAccountStatus(aid)
+		statusSubs = append(statusSubs, statusSub{accountID: aid, ch: ch, cancel: cancel})
+	}
+	return statusSubs, nil
+}
+
 // initEventChannels creates the forwarded event channels and returns them
 // along with a combined cleanup function.
 func (s *StreamServer) initEventChannels(
 	loopCtx context.Context,
 	profitSubs []profitSub,
 	snapSubs []snapSub,
+	statusSubs []statusSub,
 	accountIDs []string,
 	filterAll bool,
 	accountSet map[string]bool,
-) (profitCh <-chan *mthub.AccountProfitEvent, snapCh <-chan *mthub.PositionSnapshot, barCh <-chan *mthub.BarUpdate, barCancel func()) {
+) (profitCh <-chan *mthub.AccountProfitEvent, snapCh <-chan *mthub.PositionSnapshot, statusCh <-chan *mthub.AccountStatusEvent, barCh <-chan *mthub.BarUpdate, barCancel func()) {
 	profitCh = s.forwardProfitEvents(loopCtx, profitSubs)
 	snapCh = s.forwardSnapEvents(loopCtx, snapSubs)
+	statusCh = s.forwardStatusEvents(loopCtx, statusSubs)
 	barCh, barCancel = s.forwardBarEvents(loopCtx, accountIDs, filterAll, accountSet)
 	return
 }

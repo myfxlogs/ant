@@ -117,10 +117,20 @@ func (s *StreamServer) SubscribeEvents(
 		}
 	}()
 
+	statusSubs, err := s.setupStatusSubscriptions(ctx, userID, accountIDs, filterAll, accountSet)
+	if err != nil {
+		s.log.Warn("statusSubs setup failed", zap.Error(err))
+	}
+	defer func() {
+		for _, ss := range statusSubs {
+			ss.cancel()
+		}
+	}()
+
 	loopCtx, loopCancel := context.WithCancel(ctx)
 	defer loopCancel()
 
-	profitCh, snapCh, barCh, barCancel := s.initEventChannels(loopCtx, profitSubs, snapSubs, accountIDs, filterAll, accountSet)
+	profitCh, snapCh, statusCh, barCh, barCancel := s.initEventChannels(loopCtx, profitSubs, snapSubs, statusSubs, accountIDs, filterAll, accountSet)
 	defer barCancel()
 
 	snapKnownTickets := make(map[string]map[int64]bool)
@@ -154,6 +164,15 @@ func (s *StreamServer) SubscribeEvents(
 				return nil
 			}
 			if err := s.handleOrderEvent(ev, filterAll, accountSet, recentlyClosed, sendEvent); err != nil {
+				return err
+			}
+
+		case sev, ok := <-statusCh:
+			if !ok {
+				statusCh = nil
+				continue
+			}
+			if err := s.handleStatusEvent(sev, sendEvent); err != nil {
 				return err
 			}
 

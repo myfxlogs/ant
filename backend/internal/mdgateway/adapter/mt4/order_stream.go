@@ -59,6 +59,7 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 			// with a new session on the next iteration.
 			// Skip on context cancellation — normal teardown, not a stream error.
 			if err != context.Canceled && err != context.DeadlineExceeded {
+				g.reportStatus("reconnecting", err.Error())
 				g.Disconnect(ctx)
 			}
 			g.sleep(ctx, backoff)
@@ -67,6 +68,7 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 		}
 
 		backoff = time.Second
+		g.reportStatus("connected", "")
 		g.log.Info("mt4: order update stream active")
 		for {
 			resp, err := stream.Recv()
@@ -77,6 +79,7 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 				// with a new session on the next iteration.
 				// Skip on context cancellation — normal teardown, not a stream error.
 				if err != context.Canceled && err != context.DeadlineExceeded {
+					g.reportStatus("reconnecting", err.Error())
 					g.Disconnect(ctx)
 				}
 				break
@@ -197,6 +200,10 @@ func mt4UpdateActionLabel(a pb.UpdateAction) string {
 		return "pending_modify"
 	case pb.UpdateAction_UpdateAction_PendingFill:
 		return "open"
+	case pb.UpdateAction_UpdateAction_Balance:
+		return "balance"
+	case pb.UpdateAction_UpdateAction_Credit:
+		return "credit"
 	default:
 		return "unknown"
 	}
@@ -214,6 +221,10 @@ func mt4OrderOpLabel(op pb.Op) string {
 		return "buy_stop"
 	case pb.Op_Op_SellStop:
 		return "sell_stop"
+	case pb.Op_Op_Balance:
+		return "balance"
+	case pb.Op_Op_Credit:
+		return "credit"
 	default:
 		return "buy"
 	}

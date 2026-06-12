@@ -43,6 +43,8 @@ func (g *fakeGateway) SubscribeOrderUpdate(ctx context.Context, handler mdtick.O
 	return nil
 }
 
+func (g *fakeGateway) SetStatusCallback(func(status, message string)) {}
+
 func (g *fakeGateway) HealthCheck(ctx context.Context) error {
 	if g.failHealth {
 		return context.DeadlineExceeded

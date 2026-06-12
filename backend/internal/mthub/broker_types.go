@@ -1,6 +1,9 @@
 package mthub
 
-import "sync"
+import (
+	"sync"
+	"time"
+)
 
 // Precision note: financial fields in SSE push types (PositionSnapshot, BarUpdate)
 // use float64 for display efficiency. These are real-time visual updates, NOT used
@@ -130,6 +133,63 @@ func (b *BarBroker) Publish(ev *BarUpdate) {
 }
 func (b *BarBroker) Subscribe(accountID string) (<-chan *BarUpdate, func()) {
 	ch := make(chan *BarUpdate, 64)
+	b.mu.Lock()
+	b.subscribers[accountID] = append(b.subscribers[accountID], ch)
+	b.mu.Unlock()
+	return ch, func() {
+		b.mu.Lock()
+		defer b.mu.Unlock()
+		for i, c := range b.subscribers[accountID] {
+			if c == ch {
+				b.subscribers[accountID] = append(b.subscribers[accountID][:i], b.subscribers[accountID][i+1:]...)
+				close(ch)
+				return
+			}
+		}
+	}
+}
+
+
+// --- Account status (per-account connection state push) ---
+
+// AccountStatusEvent is emitted when a gateway's connection state changes
+// (connected → reconnecting → disconnected). It carries the actual error
+// message (e.g. "rpc error: code = Unauthenticated desc = token expired")
+// so the frontend can display diagnostic information in real time.
+type AccountStatusEvent struct {
+	AccountID string
+	UserID    string
+	Status    string // "connected" | "reconnecting" | "disconnected"
+	Message   string // error detail when status != connected; empty on connect
+	Timestamp time.Time
+}
+
+// AccountStatusBroker broadcasts connection state changes per accountID.
+type AccountStatusBroker struct {
+	mu          sync.RWMutex
+	subscribers map[string][]chan *AccountStatusEvent
+}
+
+func NewAccountStatusBroker() *AccountStatusBroker {
+	return &AccountStatusBroker{subscribers: map[string][]chan *AccountStatusEvent{}}
+}
+
+func (b *AccountStatusBroker) Publish(ev *AccountStatusEvent) {
+	b.mu.RLock()
+	src := b.subscribers[ev.AccountID]
+	b.mu.RUnlock()
+	chs := make([]chan *AccountStatusEvent, len(src))
+	copy(chs, src)
+	for _, ch := range chs {
+		select {
+		case ch <- ev:
+		default:
+		}
+	}
+}
+
+func (b *AccountStatusBroker) Subscribe(accountID string) (<-chan *AccountStatusEvent, func()) {
+	ch := make(chan *AccountStatusEvent, 8)
 	b.mu.Lock()
 	b.subscribers[accountID] = append(b.subscribers[accountID], ch)
 	b.mu.Unlock()

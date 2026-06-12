@@ -61,6 +61,7 @@ type MtHubService struct {
 	omsWriter      *OmsWriter
 	brokerRegistry BrokerRegistry // M12-C2: multi-broker registry (optional)
 	barBroker      *BarBroker
+	statusBroker   *AccountStatusBroker
 	logger         *zap.Logger
 }
 
@@ -121,6 +122,9 @@ func (s *MtHubService) SetLogger(l *zap.Logger) { s.logger = l }
 // SetBarBroker injects the bar update broker for real-time K-line push.
 func (s *MtHubService) SetBarBroker(b *BarBroker) { s.barBroker = b }
 
+// SetStatusBroker injects the account status broker for real-time connection state push.
+func (s *MtHubService) SetStatusBroker(b *AccountStatusBroker) { s.statusBroker = b }
+
 // PublishBar publishes a bar update to all subscribers for the given account.
 func (s *MtHubService) PublishBar(ev *BarUpdate) {
 	if s.barBroker != nil {
@@ -136,6 +140,23 @@ func (s *MtHubService) SubscribeBarUpdates(accountID string) (<-chan *BarUpdate,
 		return ch, func() {}
 	}
 	return s.barBroker.Subscribe(accountID)
+}
+
+// PublishAccountStatus publishes an account status event to all subscribers.
+func (s *MtHubService) PublishAccountStatus(ev *AccountStatusEvent) {
+	if s.statusBroker != nil {
+		s.statusBroker.Publish(ev)
+	}
+}
+
+// SubscribeAccountStatus returns a channel of account status events for the given account.
+func (s *MtHubService) SubscribeAccountStatus(accountID string) (<-chan *AccountStatusEvent, func()) {
+	if s.statusBroker == nil {
+		ch := make(chan *AccountStatusEvent)
+		close(ch)
+		return ch, func() {}
+	}
+	return s.statusBroker.Subscribe(accountID)
 }
 
 // ErrAccountNotOwned is returned when the authenticated user does not own the account.

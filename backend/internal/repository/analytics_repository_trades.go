@@ -32,6 +32,7 @@ func (r *AnalyticsRepository) GetTradeRecords(ctx context.Context, accountID uui
 			open_time, close_time
 		FROM trade_records
 		WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3
+		AND order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit')
 		ORDER BY close_time ASC
 	`
 	rows, err := r.db.Query(ctx, query, accountID, start, end)
@@ -59,6 +60,7 @@ func (r *AnalyticsRepository) GetTradeRecordsByUser(ctx context.Context, userID 
 		FROM trade_records tr
 		JOIN mt_accounts ma ON tr.account_id = ma.id
 		WHERE ma.user_id = $1 AND tr.close_time >= $2 AND tr.close_time <= $3
+		AND order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit')
 		ORDER BY tr.close_time ASC
 	`
 	rows, err := r.db.Query(ctx, query, userID, start, end)
@@ -107,6 +109,7 @@ func (r *AnalyticsRepository) GetTradeRecordsWithLimit(ctx context.Context, acco
 			open_time, close_time, stop_loss, take_profit, order_comment, magic_number
 		FROM trade_records
 		WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3
+		AND order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit')
 		ORDER BY close_time DESC
 	`
 	if limit > 0 {
@@ -143,14 +146,16 @@ func (r *AnalyticsRepository) GetTradeRecordsWithLimit(ctx context.Context, acco
 }
 
 func (r *AnalyticsRepository) GetTradeRecordsCount(ctx context.Context, accountID uuid.UUID, start, end time.Time) (int, error) {
-	query := `SELECT COUNT(*) FROM trade_records WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3`
+	query := `SELECT COUNT(*) FROM trade_records WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3
+		AND order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit')`
 	var total int
 	err := r.db.QueryRow(ctx, query, accountID, start, end).Scan(&total)
 	return total, err
 }
 
 func (r *AnalyticsRepository) GetTradeRecordsPaginated(ctx context.Context, accountID uuid.UUID, start, end time.Time, page, pageSize int) ([]*model.TradeRecord, int, error) {
-	countQuery := `SELECT COUNT(*) FROM trade_records WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3`
+	countQuery := `SELECT COUNT(*) FROM trade_records WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3
+		AND order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit')`
 	var total int
 	err := r.db.QueryRow(ctx, countQuery, accountID, start, end).Scan(&total)
 	if err != nil {
@@ -165,6 +170,7 @@ func (r *AnalyticsRepository) GetTradeRecordsPaginated(ctx context.Context, acco
 			open_time, close_time, stop_loss, take_profit, order_comment, magic_number
 		FROM trade_records
 		WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3
+		AND order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit')
 		ORDER BY close_time DESC
 		LIMIT $4 OFFSET $5
 	`

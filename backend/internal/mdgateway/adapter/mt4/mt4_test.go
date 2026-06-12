@@ -195,8 +195,8 @@ func TestMT4UpdateActionLabel(t *testing.T) {
 		{"pending close", pb.UpdateAction_UpdateAction_PendingClose, "pending_close"},
 		{"pending modify", pb.UpdateAction_UpdateAction_PendingModify, "pending_modify"},
 		{"pending fill", pb.UpdateAction_UpdateAction_PendingFill, "open"},
-		{"balance", pb.UpdateAction_UpdateAction_Balance, "unknown"},
-		{"credit", pb.UpdateAction_UpdateAction_Credit, "unknown"},
+		{"balance", pb.UpdateAction_UpdateAction_Balance, "balance"},
+		{"credit", pb.UpdateAction_UpdateAction_Credit, "credit"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -220,8 +220,8 @@ func TestMT4OrderOpLabel(t *testing.T) {
 		{"sell limit", pb.Op_Op_SellLimit, "sell_limit"},
 		{"buy stop", pb.Op_Op_BuyStop, "buy_stop"},
 		{"sell stop", pb.Op_Op_SellStop, "sell_stop"},
-		{"balance (defaults to buy)", pb.Op_Op_Balance, "buy"},
-		{"credit (defaults to buy)", pb.Op_Op_Credit, "buy"},
+		{"balance", pb.Op_Op_Balance, "balance"},
+		{"credit", pb.Op_Op_Credit, "credit"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

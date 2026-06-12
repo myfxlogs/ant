@@ -117,6 +117,7 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 			// with a new session on the next iteration.
 			// Skip on context cancellation — normal teardown, not a stream error.
 			if err != context.Canceled && err != context.DeadlineExceeded {
+				g.reportStatus("reconnecting", err.Error())
 				g.Disconnect(ctx)
 			}
 			g.sleep(ctx, backoff)
@@ -125,6 +126,7 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 		}
 
 		backoff = time.Second
+		g.reportStatus("connected", "")
 		g.log.Info("mt5: quote stream active")
 		for {
 			tick, err := stream.Recv()
@@ -135,6 +137,7 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 				// with a new session on the next iteration.
 				// Skip on context cancellation — normal teardown, not a stream error.
 				if err != context.Canceled && err != context.DeadlineExceeded {
+					g.reportStatus("reconnecting", err.Error())
 					g.Disconnect(ctx)
 				}
 				break
@@ -280,6 +283,7 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 			// with a new session on the next iteration.
 			// Skip on context cancellation — normal teardown, not a stream error.
 			if err != context.Canceled && err != context.DeadlineExceeded {
+				g.reportStatus("reconnecting", err.Error())
 				g.Disconnect(ctx)
 			}
 			g.sleep(ctx, backoff)
@@ -288,6 +292,7 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 		}
 
 		backoff = time.Second
+		g.reportStatus("connected", "")
 		g.log.Info("mt5: profit stream active")
 
 		// Call AccountSummary once for initial snapshot. MT5 OnOrderProfit
@@ -305,6 +310,7 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 				// with a new session on the next iteration.
 				// Skip on context cancellation — normal teardown, not a stream error.
 				if err != context.Canceled && err != context.DeadlineExceeded {
+					g.reportStatus("reconnecting", err.Error())
 					g.Disconnect(ctx)
 				}
 				break
