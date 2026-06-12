@@ -229,21 +229,27 @@ export default function AccountReport() {
             {/* Symbol P&L ranking */}
             <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
               <Title level={5}><BarChartOutlined /> {t('accounts.report.symbolPnL')}</Title>
-              {attribution?.symbolPnls?.length ? (
-                <ResponsiveContainer width="100%" height={280}>
-                  <ComposedChart layout="vertical" data={attribution.symbolPnls.slice(0, 8)}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+              {attribution?.symbolPnls?.length ? (() => {
+                const data = attribution.symbolPnls.slice(0, 8);
+                const maxSymbolLen = Math.max(...data.map((s: { symbol: string }) => s.symbol.length), 3);
+                const yWidth = Math.min(Math.round(maxSymbolLen * 6.8 + 10), 90);
+                const yFontSize = maxSymbolLen > 12 ? 8 : maxSymbolLen > 8 ? 9 : 10;
+                return (
+                <ResponsiveContainer width="100%" height={Math.max(data.length * 36, 140)}>
+                  <ComposedChart layout="vertical" data={data} barCategoryGap="8%">
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" horizontal={false} />
                     <XAxis type="number" stroke="var(--color-text-muted)" fontSize={11} />
-                    <YAxis type="category" dataKey="symbol" width={70} stroke="var(--color-text-muted)" fontSize={11} />
+                    <YAxis type="category" dataKey="symbol" width={yWidth} stroke="var(--color-text-muted)" fontSize={yFontSize} />
                     <Tooltip contentStyle={{ background: 'var(--color-bg-card)', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px var(--color-shadow)' }} />
-                    <Bar dataKey="netProfit" radius={[0, 4, 4, 0]} isAnimationActive={false}>
-                      {attribution.symbolPnls.slice(0, 8).map((_: unknown, i: number) => (
-                        <Cell key={i} fill={(attribution.symbolPnls?.[i]?.netProfit ?? 0) >= 0 ? 'var(--color-success)' : 'var(--color-danger)'} />
+                    <Bar dataKey="netProfit" radius={[0, 4, 4, 0]} maxBarSize={30} isAnimationActive={false} cursor="pointer">
+                      {data.map((_: unknown, i: number) => (
+                        <Cell key={i} fill={(data[i]?.netProfit ?? 0) >= 0 ? 'var(--color-success)' : 'var(--color-danger)'} />
                       ))}
                     </Bar>
                   </ComposedChart>
                 </ResponsiveContainer>
-              ) : <div className="flex items-center justify-center h-[280px]" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.analytics.empty.monthlyProfit')}</div>}
+                );
+              })() : <div className="flex items-center justify-center h-[280px]" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.analytics.empty.monthlyProfit')}</div>}
             </div>
 
             {/* Direction breakdown */}
@@ -275,12 +281,12 @@ export default function AccountReport() {
               <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
                 <Title level={5}><BarChartOutlined /> {t('accounts.report.tradeDistribution')}</Title>
                 <ResponsiveContainer width="100%" height={250}>
-                  <ComposedChart data={attribution.tradeDistribution.profitBuckets}>
+                  <ComposedChart data={attribution.tradeDistribution.profitBuckets} barCategoryGap="10%">
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                     <XAxis dataKey="label" stroke="var(--color-text-muted)" fontSize={10} angle={-30} textAnchor="end" height={60} />
                     <YAxis stroke="var(--color-text-muted)" fontSize={11} />
                     <Tooltip contentStyle={{ background: 'var(--color-bg-card)', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px var(--color-shadow)' }} />
-                    <Bar dataKey="count" fill="var(--color-info)" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                    <Bar dataKey="count" fill="var(--color-info)" radius={[4, 4, 0, 0]} maxBarSize={50} isAnimationActive={false} cursor="pointer" />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>

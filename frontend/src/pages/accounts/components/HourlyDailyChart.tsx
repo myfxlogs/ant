@@ -48,6 +48,7 @@ export function HourlyDailyChart({ hourlyData, dailyPnLData, currency }: Props) 
         <ResponsiveContainer width="100%" height={250}>
           <ComposedChart
             data={data}
+            barCategoryGap={timeView === 'hourly' ? '10%' : '15%'}
             onMouseMove={(state) => { const idx = pickTooltipIndex(state as RechartsMouseState, data.length); if (idx != null) setSelected(idx); }}
             onClick={(state) => { const idx = pickTooltipIndex(state as RechartsMouseState, data.length); if (idx != null) setSelected(idx); }}
           >
@@ -56,7 +57,7 @@ export function HourlyDailyChart({ hourlyData, dailyPnLData, currency }: Props) 
             <YAxis yAxisId="left" stroke="var(--color-text-muted)" fontSize={10} />
             <YAxis yAxisId="right" orientation="right" stroke="var(--color-text-muted)" fontSize={10} />
             <Tooltip cursor={false} wrapperStyle={{ pointerEvents: 'none' }} contentStyle={{ background: 'var(--color-bg-card)', border: '1px solid #E5E7EB', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)' }} />
-            <Bar yAxisId="left" dataKey="trades" radius={[3, 3, 0, 0]} barSize={timeView === 'hourly' ? 18 : 24} isAnimationActive={false}>
+            <Bar yAxisId="left" dataKey="trades" radius={[3, 3, 0, 0]} barSize={timeView === 'hourly' ? 18 : 24} isAnimationActive={false} cursor="pointer">
               {data.map((_: unknown, index: number) => (
                 <Cell key={`cell-${index}`} fill={index === selectedIdx ? '#2B6CB0' : (timeView === 'hourly' ? '#64B5F6' : '#4DB6AC')} style={{ cursor: 'pointer' }} onClick={() => setSelected(index)} />
               ))}

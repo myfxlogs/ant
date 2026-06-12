@@ -243,19 +243,27 @@ function AccountAnalyticsSection(props: Props) {
                 )}
 
                 {/* P&L ranking bar chart */}
-                <ResponsiveContainer width="100%" height={140}>
-                  <ComposedChart layout="vertical" data={attr.symbolPnls.slice(0, 6)}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                {(() => {
+                  const data = attr.symbolPnls.slice(0, 6);
+                  const maxSymbolLen = Math.max(...data.map((s: { symbol: string }) => s.symbol.length), 3);
+                  const yWidth = Math.min(Math.round(maxSymbolLen * 6.8 + 10), 90);
+                  const yFontSize = maxSymbolLen > 12 ? 8 : maxSymbolLen > 8 ? 9 : 10;
+                  return (
+                <ResponsiveContainer width="100%" height={Math.max(data.length * 28, 100)}>
+                  <ComposedChart layout="vertical" data={data} barCategoryGap="6%">
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" horizontal={false} />
                     <XAxis type="number" stroke="var(--color-text-muted)" fontSize={10} />
-                    <YAxis type="category" dataKey="symbol" width={60} stroke="var(--color-text-muted)" fontSize={10} />
+                    <YAxis type="category" dataKey="symbol" width={yWidth} stroke="var(--color-text-muted)" fontSize={yFontSize} />
                     <Tooltip contentStyle={{ background: 'var(--color-bg-card)', border: 'none', borderRadius: 8, boxShadow: '0 4px 12px var(--color-shadow)' }} />
-                    <Bar dataKey="netProfit" radius={[0, 3, 3, 0]} isAnimationActive={false}>
-                      {attr.symbolPnls.slice(0, 6).map((_: unknown, i: number) => (
-                        <Cell key={i} fill={(attr.symbolPnls?.[i]?.netProfit ?? 0) >= 0 ? 'var(--color-success)' : 'var(--color-danger)'} />
+                    <Bar dataKey="netProfit" radius={[0, 3, 3, 0]} maxBarSize={22} isAnimationActive={false} cursor="pointer">
+                      {data.map((_: unknown, i: number) => (
+                        <Cell key={i} fill={(data[i]?.netProfit ?? 0) >= 0 ? 'var(--color-success)' : 'var(--color-danger)'} />
                       ))}
                     </Bar>
                   </ComposedChart>
                 </ResponsiveContainer>
+                  );
+                })()}
 
                 {/* Direction — only sides with trades */}
                 {dirCards.length > 0 && (
