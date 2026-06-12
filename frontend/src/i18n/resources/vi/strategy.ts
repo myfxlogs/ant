@@ -62,9 +62,9 @@ const strategy = {
         problem: '[Vấn đề] {{title}}',
         currentCodeTitle: '[Mã hiện tại]',
         outputTitle: '[Đầu ra]',
-        outro: 'Vui lòng xuất toàn bộ mã đã chỉnh sửa (bọc bằng \`\`\`python) và giải thích thay đổi.',
-        pythonFenceStart: '\`\`\`python',
-        fenceEnd: '\`\`\`'
+        outro: 'Vui lòng xuất toàn bộ mã đã chỉnh sửa (bọc bằng ```python) và giải thích thay đổi.',
+        pythonFenceStart: '```python',
+        fenceEnd: '```'
       }
     },
     schedules: {
@@ -253,8 +253,7 @@ const strategy = {
         volumeInvalid: 'Khối lượng không hợp lệ (phải > 0)',
         orderSubmitted: 'Đã gửi lệnh',
         orderFailed: 'Đặt lệnh thất bại'
-      },
-      createSchedule: 'Tạo Lịch'
+      }
     },
     scheduleLogs: {
       title: 'Nhật ký',
@@ -1186,66 +1185,7 @@ def run(context):
       priceRequired: '请输入价格',
       orderPlaced: 'Đã đặt lệnh',
       orderFailed: 'Đặt lệnh thất bại'
-    }
-  },
-  indicatorCatalog: {
-    title: 'Danh mục chỉ báo',
-    description: 'Các chỉ báo kỹ thuật và tham số rủi ro có sẵn trong sandbox chiến lược. Chỉ sử dụng các helper và khóa tham số này trong mã chiến lược.',
-    indicatorsTitle: 'Chỉ báo kỹ thuật',
-    riskSectionTitle: 'Tham số quản lý rủi ro',
-    riskParamsTitle: 'Tham số rủi ro chung',
-    riskParamsDesc: 'Mọi chiến lược nên tuân thủ các tham số quản lý rủi ro này bất kể chỉ báo nào được chọn.',
-    paramKey: 'Khóa',
-    paramLabel: 'Nhãn',
-    paramType: 'Loại',
-    paramDefault: 'Mặc định',
-    paramRange: 'Phạm vi',
-    paramDescription: 'Mô tả',
-    workspace: {
-      title: 'Không gian chiến lược',
-      account: 'Tài khoản',
-      accountPlaceholder: 'ID tài khoản',
-      chartWindow: 'Biểu đồ',
-      hideCode: 'Ẩn mã',
-      showCode: 'Hiện mã',
-      quickTrade: 'Giao dịch',
-      quickTradeHint: 'Chọn mã trước',
-      tradePanelPlaceholder: 'Bảng giao dịch — sắp ra mắt',
-      selectSymbolHint: 'Chọn tài khoản và mã để xem biểu đồ',
-      noAccounts: 'Không có tài khoản khả dụng',
-      selectSymbol: 'Mã',
-      code: 'Mã chiến lược',
-      codePlaceholder: `# Mã Python...
-def run(context):
-    return {"signal": "hold"}`,
-      validate: 'Xác minh',
-      validatePass: 'Xác minh thành công',
-      validateFailed: 'Xác minh thất bại',
-      validateBeforeSave: 'Vui lòng xác minh mã trước khi lưu',
-      runBacktest: 'Chạy backtest',
-      save: 'Lưu',
-      copy: 'Sao chép',
-      copySuccess: 'Đã sao chép',
-      copyFailed: 'Sao chép thất bại',
-      saveSuccess: 'Đã lưu',
-      chart: 'K-line',
-      backtest: 'Backtest',
-      backtestRunning: 'Đang chạy...',
-      backtestCompleted: 'Hoàn thành',
-      backtestError: 'Thất bại',
-      backtestEmpty: 'Chạy backtest để xem kết quả',
-      aiAssist: 'Trợ lý AI',
-      ai: 'AI',
-      template: {
-        title: 'Mẫu',
-        selectPlaceholder: 'Chọn mẫu...',
-        load: 'Tải',
-        saveAs: 'Lưu thành mới',
-        loaded: 'Đã tải'
-      }
-    }
-  },
-
+    },
     library: {
       title: 'Thư viện chiến lược',
       myStrategies: 'Chiến lược của tôi',
@@ -1272,9 +1212,27 @@ def run(context):
       noSchedules: 'Chưa chạy',
       openInWorkspace: 'Mở trong Workspace',
       createSchedule: 'Tạo lịch chạy',
+      saveAsMine: 'Lưu thành của tôi',
+      saveAsMineSuccess: 'Đã lưu vào Chiến lược của tôi',
+      myCopy: 'Bản sao của tôi',
       codePreview: 'Xem trước code',
       viewCode: 'Xem code chiến lược',
     }
+  },
+  indicatorCatalog: {
+    title: 'Danh mục chỉ báo',
+    description: 'Các chỉ báo kỹ thuật và tham số rủi ro có sẵn trong sandbox chiến lược. Chỉ sử dụng các helper và khóa tham số này trong mã chiến lược.',
+    indicatorsTitle: 'Chỉ báo kỹ thuật',
+    riskSectionTitle: 'Tham số quản lý rủi ro',
+    riskParamsTitle: 'Tham số rủi ro chung',
+    riskParamsDesc: 'Mọi chiến lược nên tuân thủ các tham số quản lý rủi ro này bất kể chỉ báo nào được chọn.',
+    paramKey: 'Khóa',
+    paramLabel: 'Nhãn',
+    paramType: 'Loại',
+    paramDefault: 'Mặc định',
+    paramRange: 'Phạm vi',
+    paramDescription: 'Mô tả'
+  }
 } as const;
 
 export default strategy;

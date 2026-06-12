@@ -1,0 +1,160 @@
+syntax = "proto3";
+
+package ant.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+// AdminStrategyService — Admin-level strategy management.
+// All methods require admin scope (enforced by adminInterceptor).
+service AdminStrategyService {
+  // ── Preset (system strategy) CRUD ──
+  rpc ListSystemStrategies(ListSystemStrategiesRequest) returns (ListSystemStrategiesResponse);
+  rpc CreateSystemStrategy(CreateSystemStrategyRequest) returns (SystemStrategy);
+  rpc UpdateSystemStrategy(UpdateSystemStrategyRequest) returns (SystemStrategy);
+  rpc DeleteSystemStrategy(DeleteSystemStrategyRequest) returns (DeleteSystemStrategyResponse);
+
+  // ── All strategies oversight (read-only) ──
+  rpc ListAllStrategies(ListAllStrategiesRequest) returns (ListAllStrategiesResponse);
+  rpc GetStrategyDetail(GetStrategyDetailRequest) returns (StrategyDetail);
+
+  // ── Compliance actions ──
+  rpc FlagStrategy(FlagStrategyRequest) returns (FlagStrategyResponse);
+  rpc UnpublishStrategy(UnpublishStrategyRequest) returns (UnpublishStrategyResponse);
+  rpc DisableStrategy(DisableStrategyRequest) returns (DisableStrategyResponse);
+  rpc EnableStrategy(EnableStrategyRequest) returns (EnableStrategyResponse);
+  rpc ArchiveStrategy(ArchiveStrategyRequest) returns (ArchiveStrategyResponse);
+}
+
+// ── System strategy messages ──
+
+message SystemStrategy {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string code = 4;
+  bool is_active = 5;
+  int32 use_count = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+  repeated string tags = 9;
+}
+
+message ListSystemStrategiesRequest {}
+
+message ListSystemStrategiesResponse {
+  repeated SystemStrategy strategies = 1;
+}
+
+message CreateSystemStrategyRequest {
+  string name = 1;
+  string description = 2;
+  string code = 3;
+  repeated string tags = 4;
+}
+
+message UpdateSystemStrategyRequest {
+  string id = 1;
+  optional string name = 2;
+  optional string description = 3;
+  optional string code = 4;
+  repeated string tags = 5;
+}
+
+message DeleteSystemStrategyRequest {
+  string id = 1;
+}
+
+message DeleteSystemStrategyResponse {}
+
+// ── All strategies oversight messages ──
+
+message ListAllStrategiesRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  optional string search = 3;
+  optional string user_id = 4;
+  optional string flag = 5;       // "flagged" | "disabled" | "archived" | "" (all active)
+}
+
+message StrategySummary {
+  string id = 1;
+  string name = 2;
+  string user_id = 3;
+  string user_email = 4;
+  string status = 5;              // draft | published | canceled
+  bool is_system = 6;
+  bool is_public = 7;
+  string flag = 8;                // "" | "flagged" | "disabled" | "archived"
+  string flag_reason = 9;
+  int32 schedule_count = 10;
+  int32 use_count = 11;
+  repeated string tags = 12;
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp updated_at = 14;
+  string flagged_by = 15;
+}
+
+message ListAllStrategiesResponse {
+  repeated StrategySummary strategies = 1;
+  int32 total = 2;
+}
+
+message GetStrategyDetailRequest {
+  string id = 1;
+}
+
+message StrategyDetail {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string code = 4;
+  string user_id = 5;
+  string user_email = 6;
+  string status = 7;
+  bool is_system = 8;
+  bool is_public = 9;
+  string flag = 10;
+  string flag_reason = 11;
+  string flagged_by = 12;
+  google.protobuf.Timestamp flagged_at = 13;
+  int32 schedule_count = 14;
+  int32 use_count = 15;
+  repeated string tags = 16;
+  google.protobuf.Timestamp created_at = 17;
+  google.protobuf.Timestamp updated_at = 18;
+}
+
+// ── Compliance action messages ──
+
+message FlagStrategyRequest {
+  string id = 1;
+  string reason = 2;
+}
+
+message FlagStrategyResponse {}
+
+message UnpublishStrategyRequest {
+  string id = 1;
+}
+
+message UnpublishStrategyResponse {}
+
+message DisableStrategyRequest {
+  string id = 1;
+}
+
+message DisableStrategyResponse {}
+
+message EnableStrategyRequest {
+  string id = 1;
+}
+
+message EnableStrategyResponse {}
+
+message ArchiveStrategyRequest {
+  string id = 1;
+}
+
+message ArchiveStrategyResponse {}

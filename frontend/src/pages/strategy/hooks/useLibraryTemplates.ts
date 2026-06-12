@@ -5,8 +5,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { StrategyTemplate } from '@/client/strategy';
 import { strategyTemplateApi, type CreateTemplateRequest } from '@/client/strategy-schedules';
 import { codeAssistApi } from '@/client/codeAssist';
-import { DEFAULT_TEMPLATES } from '../StrategyLibrary.defaults';
-import type { DefaultTemplateItem } from '../StrategyLibrary.defaults';
 import { isSystemTemplate, isPublicTemplate } from './libraryTypes';
 
 export type TemplateFilter = 'all' | 'user' | 'system';
@@ -43,13 +41,7 @@ export function useLibraryTemplates() {
     return () => { i18n.off('languageChanged', onLang); };
   }, [i18n, fetchTemplates]);
 
-  const allTemplates: StrategyTemplate[] = templates.length > 0
-    ? templates
-    : (DEFAULT_TEMPLATES as DefaultTemplateItem[]).map(d => ({
-        ...d,
-        name: d.nameKey ? t(d.nameKey) : d.name,
-        description: d.descriptionKey ? t(d.descriptionKey) : d.description,
-      })) as unknown as StrategyTemplate[];
+  const allTemplates: StrategyTemplate[] = templates;
 
   const filtered = allTemplates.filter(tpl => {
     const system = isSystemTemplate(tpl);
@@ -72,6 +64,24 @@ export function useLibraryTemplates() {
   const openEdit = useCallback((tpl: StrategyTemplate) => {
     setEditing(tpl); setLastValidatedCode(''); setEditOpen(true);
   }, []);
+
+  const handleSaveAsMine = useCallback(async (tpl: StrategyTemplate) => {
+    try {
+      const data: CreateTemplateRequest = {
+        name: `${String(tpl.name || '')} (${t('strategy.library.myCopy')})`,
+        description: String(tpl.description || ''),
+        code: String(tpl.code || ''),
+        parameters: [],
+        isPublic: false,
+        tags: Array.isArray(tpl.tags) ? [...tpl.tags] : [],
+      };
+      const created = await strategyTemplateApi.create(data);
+      message.success(t('strategy.library.saveAsMineSuccess'));
+      fetchTemplates();
+      setSelectedId(String(created.id || ''));
+      setFilter('user');
+    } catch { message.error(t('common.saveFailed')); }
+  }, [fetchTemplates, t]);
 
   const handleSave = useCallback(async (values: Record<string, unknown>) => {
     try {
@@ -132,7 +142,7 @@ export function useLibraryTemplates() {
     selectedId, setSelectedId, selected,
     editOpen, setEditOpen, editing, setEditing,
     codeValidating, lastValidatedCode, setLastValidatedCode,
-    publishing, fetchTemplates, openCreate, openEdit, handleSave, handleDelete,
+    publishing, fetchTemplates, openCreate, openEdit, handleSaveAsMine, handleSave, handleDelete,
     handlePublish, handleUnpublish,
   };
 }

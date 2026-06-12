@@ -2,9 +2,7 @@ import type { StrategyTemplate } from '@/client/strategy';
 
 // ── Template helpers ──
 export function isSystemTemplate(tpl: StrategyTemplate): boolean {
-  const id = String(tpl.id || '');
-  const tags = tpl.tags || [];
-  return Boolean(tpl.isSystem) || tags.includes('preset') || id.startsWith('default-');
+  return Boolean(tpl.isSystem);
 }
 
 export function isPublicTemplate(tpl: StrategyTemplate): boolean {

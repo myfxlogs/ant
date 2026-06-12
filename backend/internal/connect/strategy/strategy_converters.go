@@ -28,9 +28,13 @@ func logProtoErr(op, name string, err error) {
 
 func templateRowToProto(r *service.TemplateRow) *antv1.StrategyTemplate {
 	params := unmarshalTemplateParams(r.Parameters)
+	var userID string
+	if r.UserID != nil {
+		userID = r.UserID.String()
+	}
 	return &antv1.StrategyTemplate{
 		Id:          r.ID.String(),
-		UserId:      r.UserID.String(),
+		UserId:      userID,
 		Name:        r.Name,
 		Description: r.Description,
 		Code:        r.Code,

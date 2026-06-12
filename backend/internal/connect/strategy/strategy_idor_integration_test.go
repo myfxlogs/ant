@@ -106,7 +106,7 @@ func TestStrategyIDOR(t *testing.T) {
 	// Create template as userA
 	tA := &service.TemplateRow{
 		ID:     uuid.New(),
-		UserID: userA,
+		UserID: &userA,
 		Name:   "A's Private Template",
 		Code:   "print('hello')",
 		Status: "published",
@@ -191,7 +191,7 @@ func TestStrategyIDOR(t *testing.T) {
 
 	tPub := &service.TemplateRow{
 		ID:       uuid.New(),
-		UserID:   userA,
+		UserID:   &userA,
 		Name:     "A's Public Template",
 		Code:     "print('public')",
 		Status:   "published",

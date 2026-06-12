@@ -61,6 +61,12 @@ func (s *StrategyServer) CreateSchedule(ctx context.Context, req *connect.Reques
 	templateID, _ := uuid.Parse(m.TemplateId)
 	accountID, _ := uuid.Parse(m.AccountId)
 
+	// Reject system templates — user must save as their own first.
+	if tpl, err := s.svc.GetTemplate(ctx, templateID, uid); err == nil && tpl.IsSystem {
+		return nil, connect.NewError(connect.CodePermissionDenied,
+			fmt.Errorf("system preset strategies cannot be scheduled directly — save as your own strategy first"))
+	}
+
 	r := service.ScheduleRow{
 		UserID:         uid,
 		TemplateID:     templateID,

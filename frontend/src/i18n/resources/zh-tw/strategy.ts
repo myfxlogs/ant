@@ -66,9 +66,9 @@ const strategy = {
         problem: '【問題】{{title}}',
         currentCodeTitle: '【當前代碼】',
         outputTitle: '【輸出資訊】',
-        outro: '請直接給出修改後的完整代碼（用 \`\`\`python 包裹），並說明修改點。',
-        pythonFenceStart: '\`\`\`python',
-        fenceEnd: '\`\`\`'
+        outro: '請直接給出修改後的完整代碼（用 ```python 包裹），並說明修改點。',
+        pythonFenceStart: '```python',
+        fenceEnd: '```'
       }
     },
     schedules: {
@@ -257,8 +257,7 @@ const strategy = {
         volumeInvalid: '下單手數無效（volume 必須 > 0）',
         orderSubmitted: '已提交下單',
         orderFailed: '下單失敗'
-      },
-      createSchedule: '建立计划'
+      }
     },
     scheduleLogs: {
       title: '記錄',
@@ -1190,66 +1189,7 @@ def run(context):
       priceRequired: '请輸入價格',
       orderPlaced: '下單成功',
       orderFailed: '下單失敗'
-    }
-  },
-  indicatorCatalog: {
-    title: '指標目錄',
-    description: '策略沙箱中可用的技術指標和風險參數。請在策略代碼中僅使用這些輔助函數和參數鍵。',
-    indicatorsTitle: '技術指標',
-    riskSectionTitle: '風險管理參數',
-    riskParamsTitle: '通用風險參數',
-    riskParamsDesc: '無論選擇哪些指標，每個策略都應遵循這些風險管理參數。',
-    paramKey: '鍵',
-    paramLabel: '標籤',
-    paramType: '類型',
-    paramDefault: '預設值',
-    paramRange: '範圍',
-    paramDescription: '描述',
-    workspace: {
-      title: '策略工作台',
-      account: '賬戶',
-      accountPlaceholder: '賬戶 ID',
-      chartWindow: '圖表',
-      hideCode: '隱藏程式碼',
-      showCode: '顯示程式碼',
-      quickTrade: '快速交易',
-      quickTradeHint: '請先選擇品種',
-      tradePanelPlaceholder: '交易面板 — 即將推出',
-      selectSymbolHint: '選擇交易賬戶和品種以檢視圖表',
-      noAccounts: '暫無可用賬戶',
-      selectSymbol: '品種',
-      code: '策略程式碼',
-      codePlaceholder: `# Python 策略程式碼...
-def run(context):
-    return {"signal": "hold"}`,
-      validate: '驗證',
-      validatePass: '驗證通過',
-      validateFailed: '驗證失敗',
-      validateBeforeSave: '請先驗證程式碼再儲存',
-      runBacktest: '執行回測',
-      save: '儲存',
-      copy: '複製',
-      copySuccess: '已複製',
-      copyFailed: '複製失敗',
-      saveSuccess: '已儲存',
-      chart: 'K線',
-      backtest: '回測',
-      backtestRunning: '回測執行中...',
-      backtestCompleted: '已完成',
-      backtestError: '回測失敗',
-      backtestEmpty: '執行回測查看結果',
-      aiAssist: 'AI 助手',
-      ai: 'AI',
-      template: {
-        title: '模板',
-        selectPlaceholder: '選擇一個模板...',
-        load: '載入',
-        saveAs: '另存為',
-        loaded: '已載入'
-      }
-    }
-  },
-
+    },
     library: {
       title: '策略庫',
       myStrategies: '我的策略',
@@ -1276,9 +1216,27 @@ def run(context):
       noSchedules: '未執行',
       openInWorkspace: '在 Workspace 中開啟',
       createSchedule: '建立執行',
+      saveAsMine: '儲存為我的策略',
+      saveAsMineSuccess: '已儲存到我的策略',
+      myCopy: '我的副本',
       codePreview: '程式碼預覽',
       viewCode: '檢視策略程式碼',
     }
+  },
+  indicatorCatalog: {
+    title: '指標目錄',
+    description: '策略沙箱中可用的技術指標和風險參數。請在策略代碼中僅使用這些輔助函數和參數鍵。',
+    indicatorsTitle: '技術指標',
+    riskSectionTitle: '風險管理參數',
+    riskParamsTitle: '通用風險參數',
+    riskParamsDesc: '無論選擇哪些指標，每個策略都應遵循這些風險管理參數。',
+    paramKey: '鍵',
+    paramLabel: '標籤',
+    paramType: '類型',
+    paramDefault: '預設值',
+    paramRange: '範圍',
+    paramDescription: '描述'
+  }
 } as const;
 
 export default strategy;

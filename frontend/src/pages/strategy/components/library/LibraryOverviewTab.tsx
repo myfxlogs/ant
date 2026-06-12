@@ -64,7 +64,11 @@ export default function LibraryOverviewTab() {
           </>
         )}
         {code && <Button icon={<CodeOutlined />} onClick={() => { lib.setViewingCode(code); lib.setCodeViewOpen(true); }}>{t('strategy.templates.actions.viewCode')}</Button>}
-        <Button onClick={lib.scheduleProps.openCreate}>{t('strategy.library.createSchedule')}</Button>
+        {system ? (
+          <Button type="primary" onClick={() => lib.handleSaveAsMine(tpl)}>{t('strategy.library.saveAsMine')}</Button>
+        ) : (
+          <Button onClick={lib.scheduleProps.openCreate}>{t('strategy.library.createSchedule')}</Button>
+        )}
         <Button icon={<ExportOutlined />} onClick={() => navigate(`/strategy/workspace?templateId=${id}`)}>{t('strategy.library.openInWorkspace')}</Button>
       </Space>
 

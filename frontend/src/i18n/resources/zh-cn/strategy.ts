@@ -62,9 +62,9 @@ const strategy = {
         problem: '【问题】{{title}}',
         currentCodeTitle: '【当前代码】',
         outputTitle: '【输出信息】',
-        outro: '请直接给出修改后的完整代码（用 \`\`\`python 包裹），并说明修改点。',
-        pythonFenceStart: '\`\`\`python',
-        fenceEnd: '\`\`\`'
+        outro: '请直接给出修改后的完整代码（用 ```python 包裹），并说明修改点。',
+        pythonFenceStart: '```python',
+        fenceEnd: '```'
       }
     },
     schedules: {
@@ -253,8 +253,7 @@ const strategy = {
         volumeInvalid: '下单手数无效（volume 必须 > 0）',
         orderSubmitted: '已提交下单',
         orderFailed: '下单失败'
-      },
-      createSchedule: '创建计划'
+      }
     },
     scheduleLogs: {
       title: '记录',
@@ -915,123 +914,6 @@ signal = {
         agsDesc: '高斯抖动 + sigma 退火。TPE 的轻量替代方案。',
         aiDesc: 'LLM 多轮提议。基于前序结果学习，共 3 轮。'
       },
-      workspace: {
-        title: '策略工作台',
-        account: '账户',
-        accountPlaceholder: '账户 ID',
-        chartWindow: '图表',
-        hideCode: '隐藏代码',
-        showCode: '显示代码',
-        quickTrade: '快捷交易',
-        quickTradeHint: '请先选择品种',
-        tradePanelPlaceholder: '交易面板 — 即将推出',
-        selectSymbolHint: '选择交易账户和品种以查看图表',
-        noAccounts: '暂无可用账户',
-        selectSymbol: '品种',
-        code: '策略代码',
-        codePlaceholder: `# Python 策略代码...
-def run(context):
-    return {"signal": "hold"}`,
-        validate: '验证',
-        validatePass: '验证通过',
-        validateFailed: '验证失败',
-        validateBeforeSave: '请先验证代码再保存',
-        runBacktest: '运行回测',
-        save: '保存',
-        copy: '复制',
-        copySuccess: '已复制',
-        copyFailed: '复制失败',
-        saveSuccess: '已保存',
-        chart: 'K线',
-        backtest: '回测',
-        backtestRunning: '回测运行中...',
-        backtestCompleted: '已完成',
-        backtestError: '回测失败',
-        backtestEmpty: '运行回测查看结果',
-        backtestTab: '回测结果',
-        tuningTab: '智能调参',
-        execAssumptions: 'ℹ 执行假设',
-        execAssumptionsFields: {
-          mode: '模式',
-          timing: '时机',
-          fillRule: '成交规则',
-          direction: '方向',
-          commission: '手续费',
-          slippage: '滑点',
-          leverage: '杠杆',
-          mtfFallback: 'MTF 回退'
-        },
-        aiAssist: 'AI 助手',
-        ai: 'AI',
-        runtimeMode: '运行时',
-        saveFailed: '保存失败',
-        autoFix: {
-          fixing: '修复中...',
-          button: '自动修复',
-          askAI: '询问 AI',
-          dismiss: '关闭',
-          passed: '自动修复通过 ({{iterations}} 次迭代)',
-          failed: '自动修复: {{remaining}} 个问题未解决 ({{iterations}} 次迭代后)',
-          fixed: '✅ 已修复 ({{count}})',
-          remaining: '⚠️ 剩余 ({{count}})',
-          newRegression: '❌ 新增回归 ({{count}})',
-          lineInfo: '第 {{line}} 行'
-        },
-        template: {
-          title: '模板',
-          selectPlaceholder: '选择一个模板...',
-          load: '加载',
-          saveAs: '另存为',
-          loaded: '已加载'
-        }
-      },
-      codeQuality: {
-        category: {
-          FUTURE_DATA_LEAK: '未来数据泄露',
-          MISSING_PARAM: '缺少参数声明',
-          UNREAD_PARAM: '未使用参数',
-          NDARRAY_PANDAS_MISUSE: 'ndarray/pandas 误用',
-          NO_STOP_AND_TAKE_PROFIT: '缺少止损止盈',
-          NO_ENTRY_PCT: '缺少入场比例'
-        }
-      },
-      backtestParams: {
-        title: '回测参数',
-        currentDraft: '📝 当前草稿',
-        dateRange: '日期范围',
-        execution: '执行参数',
-        capital: '本金',
-        leverage: '杠杆',
-        commission: '手续费',
-        slippage: '滑点',
-        trade: '交易设置',
-        direction: '方向',
-        long: '↑ 做多',
-        short: '↓ 做空',
-        both: '双向',
-        strictMode: '严格模式',
-        strictModeOn: '开',
-        strictModeOff: '关',
-        strictModeOnDesc: '下一根 K 线开仓。标准保守模式。',
-        strictModeOffDesc: '同 K 线收盘价 + MTF 1m。更高精度。',
-        strictModeOnTooltip: '开：信号在 K 线收盘确认，下一根 K 线开盘执行',
-        strictModeOffTooltip: '关：同 K 线收盘执行，1m 子分辨率',
-        vectorizedMode: '矢量模式',
-        eventDrivenMode: 'Run(context)',
-        runtimeMode: '运行时',
-        history: '回测历史',
-        run: '▶ 运行',
-        settingsSave: '保存为我的默认',
-        settingsLoad: '加载我的默认',
-        settingsReset: '恢复出厂默认',
-        defaultsSaved: '默认已保存',
-        defaultsLoaded: '默认已加载',
-        defaultsReset: '已恢复出厂默认',
-        presets: {
-          liveAligned: '实盘对齐',
-          exploration: '探索模式'
-        }
-      },
       started: '智能调参已启动'
     },
     templateModal: {
@@ -1159,12 +1041,12 @@ def run(context):
     },
     codeQuality: {
       category: {
-        FUTURE_DATA_LEAK: 'Future Data Leak',
-        MISSING_PARAM: 'Missing Param',
-        UNREAD_PARAM: 'Unread Param',
-        NDARRAY_PANDAS_MISUSE: 'ndarray/pandas Misuse',
-        NO_STOP_AND_TAKE_PROFIT: 'Missing Stop/Take Profit',
-        NO_ENTRY_PCT: 'Missing Entry %'
+        FUTURE_DATA_LEAK: '未来数据泄露',
+        MISSING_PARAM: '缺少参数声明',
+        UNREAD_PARAM: '未使用参数',
+        NDARRAY_PANDAS_MISUSE: 'ndarray/pandas 误用',
+        NO_STOP_AND_TAKE_PROFIT: '缺少止损止盈',
+        NO_ENTRY_PCT: '缺少入场比例'
       }
     },
     backtestParams: {
@@ -1311,23 +1193,7 @@ def run(context):
       tradeSide: '方向',
       tradePrice: '价格',
       tradeVolume: '数量'
-    }
-  },
-  indicatorCatalog: {
-    title: '指标目录',
-    description: '策略沙箱中可用的技术指标和风险参数。请在策略代码中仅使用这些辅助函数和参数键。',
-    indicatorsTitle: '技术指标',
-    riskSectionTitle: '风险管理参数',
-    riskParamsTitle: '通用风险参数',
-    riskParamsDesc: '无论选择哪些指标，每个策略都应遵循这些风险管理参数。',
-    paramKey: '键',
-    paramLabel: '标签',
-    paramType: '类型',
-    paramDefault: '默认值',
-    paramRange: '范围',
-    paramDescription: '描述'
-  },
-
+    },
     library: {
       title: '策略库',
       myStrategies: '我的策略',
@@ -1354,9 +1220,27 @@ def run(context):
       noSchedules: '未运行',
       openInWorkspace: '在 Workspace 中打开',
       createSchedule: '创建运行',
+      saveAsMine: '保存为我的策略',
+      saveAsMineSuccess: '已保存到我的策略',
+      myCopy: '我的副本',
       codePreview: '代码预览',
       viewCode: '查看策略代码',
     }
+  },
+  indicatorCatalog: {
+    title: '指标目录',
+    description: '策略沙箱中可用的技术指标和风险参数。请在策略代码中仅使用这些辅助函数和参数键。',
+    indicatorsTitle: '技术指标',
+    riskSectionTitle: '风险管理参数',
+    riskParamsTitle: '通用风险参数',
+    riskParamsDesc: '无论选择哪些指标，每个策略都应遵循这些风险管理参数。',
+    paramKey: '键',
+    paramLabel: '标签',
+    paramType: '类型',
+    paramDefault: '默认值',
+    paramRange: '范围',
+    paramDescription: '描述'
+  }
 } as const;
 
 export default strategy;

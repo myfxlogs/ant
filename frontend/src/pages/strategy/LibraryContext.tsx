@@ -22,6 +22,7 @@ export interface LibraryCtx {
   // Template actions
   openCreate: () => void;
   openEdit: (tpl: StrategyTemplate) => void;
+  handleSaveAsMine: (tpl: StrategyTemplate) => void;
   handleDelete: (id: string) => void;
   handlePublish: (id: string) => void;
   handleUnpublish: (id: string) => void;

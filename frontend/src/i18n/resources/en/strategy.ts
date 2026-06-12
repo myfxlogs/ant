@@ -337,10 +337,10 @@ const strategy = {
         intro: 'Please help fix the strategy based on the following issues:',
         problem: 'Problem',
         currentCodeTitle: 'Current code',
-        pythonFenceStart: '\`\`\`python',
-        fenceEnd: '\`\`\`',
+        pythonFenceStart: '```python',
+        fenceEnd: '```',
         outputTitle: 'Output fixed code',
-        outro: 'Return only the fixed code wrapped in \`\`\`python\`\`\`.'
+        outro: 'Return only the fixed code wrapped in ```python```.'
       }
     },
     templateModal: {
@@ -673,8 +673,7 @@ const strategy = {
         },
         emptyLogs: 'No logs',
         emptySignal: 'No signal'
-      },
-      createSchedule: 'Create Schedule'
+      }
     },
     asset: {
       title: 'Strategy Assets',
@@ -1160,23 +1159,7 @@ def run(context):
       priceRequired: 'Price is required',
       orderPlaced: 'Order placed successfully',
       orderFailed: 'Order failed'
-    }
-  },
-  indicatorCatalog: {
-    title: 'Indicator Catalog',
-    description: 'Technical indicators and risk parameters available in the strategy sandbox. Use only these helpers and parameter keys in your strategy code.',
-    indicatorsTitle: 'Technical Indicators',
-    riskSectionTitle: 'Risk Management Parameters',
-    riskParamsTitle: 'Universal Risk Parameters',
-    riskParamsDesc: 'Every strategy should respect these risk-management parameters regardless of which indicators are selected.',
-    paramKey: 'Key',
-    paramLabel: 'Label',
-    paramType: 'Type',
-    paramDefault: 'Default',
-    paramRange: 'Range',
-    paramDescription: 'Description'
-  },
-
+    },
     library: {
       title: 'Strategy Library',
       myStrategies: 'My Strategies',
@@ -1203,9 +1186,27 @@ def run(context):
       noSchedules: 'Not running',
       openInWorkspace: 'Open in Workspace',
       createSchedule: 'Create Run',
+      saveAsMine: 'Save as Mine',
+      saveAsMineSuccess: 'Saved to My Strategies',
+      myCopy: 'My Copy',
       codePreview: 'Code Preview',
       viewCode: 'View Strategy Code',
     }
+  },
+  indicatorCatalog: {
+    title: 'Indicator Catalog',
+    description: 'Technical indicators and risk parameters available in the strategy sandbox. Use only these helpers and parameter keys in your strategy code.',
+    indicatorsTitle: 'Technical Indicators',
+    riskSectionTitle: 'Risk Management Parameters',
+    riskParamsTitle: 'Universal Risk Parameters',
+    riskParamsDesc: 'Every strategy should respect these risk-management parameters regardless of which indicators are selected.',
+    paramKey: 'Key',
+    paramLabel: 'Label',
+    paramType: 'Type',
+    paramDefault: 'Default',
+    paramRange: 'Range',
+    paramDescription: 'Description'
+  }
 } as const;
 
 export default strategy;

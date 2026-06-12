@@ -62,9 +62,9 @@ const strategy = {
         problem: '【問題】{{title}}',
         currentCodeTitle: '【現在のコード】',
         outputTitle: '【出力】',
-        outro: '修正後の完全なコードを \`\`\`python で囲って出力し、変更点を説明してください。',
-        pythonFenceStart: '\`\`\`python',
-        fenceEnd: '\`\`\`'
+        outro: '修正後の完全なコードを ```python で囲って出力し、変更点を説明してください。',
+        pythonFenceStart: '```python',
+        fenceEnd: '```'
       }
     },
     schedules: {
@@ -253,8 +253,7 @@ const strategy = {
         volumeInvalid: '数量が不正です（> 0）',
         orderSubmitted: '注文を送信しました',
         orderFailed: '注文に失敗しました'
-      },
-      createSchedule: '创建计划'
+      }
     },
     scheduleLogs: {
       title: '記録',
@@ -1186,66 +1185,7 @@ def run(context):
       priceRequired: '请输入价格',
       orderPlaced: '下单成功',
       orderFailed: '下单失败'
-    }
-  },
-  indicatorCatalog: {
-    title: 'インジケーターカタログ',
-    description: '戦略サンドボックスで利用可能なテクニカル指標とリスクパラメータ。戦略コードではこれらのヘルパーとパラメータキーのみを使用してください。',
-    indicatorsTitle: 'テクニカル指標',
-    riskSectionTitle: 'リスク管理パラメータ',
-    riskParamsTitle: '共通リスクパラメータ',
-    riskParamsDesc: '指標の選択に関わらず、すべての戦略はこれらのリスク管理パラメータを尊重する必要があります。',
-    paramKey: 'キー',
-    paramLabel: 'ラベル',
-    paramType: '型',
-    paramDefault: 'デフォルト',
-    paramRange: '範囲',
-    paramDescription: '説明',
-    workspace: {
-      title: '戦略ワークスペース',
-      account: '口座',
-      accountPlaceholder: '口座 ID',
-      chartWindow: 'チャート',
-      hideCode: 'コード非表示',
-      showCode: 'コード表示',
-      quickTrade: 'クイック取引',
-      quickTradeHint: '銘柄を選択してください',
-      tradePanelPlaceholder: '取引パネル — 近日公開',
-      selectSymbolHint: '取引口座と銘柄を選択してください',
-      noAccounts: '利用可能な口座がありません',
-      selectSymbol: '銘柄',
-      code: '戦略コード',
-      codePlaceholder: `# Python 戦略コード...
-def run(context):
-    return {"signal": "hold"}`,
-      validate: '検証',
-      validatePass: '検証通過',
-      validateFailed: '検証失敗',
-      validateBeforeSave: '保存前にコードを検証してください',
-      runBacktest: 'バックテスト実行',
-      save: '保存',
-      copy: 'コピー',
-      copySuccess: 'コピーしました',
-      copyFailed: 'コピー失敗',
-      saveSuccess: '保存しました',
-      chart: 'K線',
-      backtest: 'バックテスト',
-      backtestRunning: '実行中...',
-      backtestCompleted: '完了',
-      backtestError: '失敗',
-      backtestEmpty: 'バックテストを実行してください',
-      aiAssist: 'AI アシスタント',
-      ai: 'AI',
-      template: {
-        title: 'テンプレート',
-        selectPlaceholder: 'テンプレート選択...',
-        load: 'ロード',
-        saveAs: '新規保存',
-        loaded: 'ロード済'
-      }
-    }
-  },
-
+    },
     library: {
       title: '戦略ライブラリ',
       myStrategies: 'マイ戦略',
@@ -1272,9 +1212,27 @@ def run(context):
       noSchedules: '実行なし',
       openInWorkspace: 'Workspaceで開く',
       createSchedule: '実行を作成',
+      saveAsMine: '自分の戦略として保存',
+      saveAsMineSuccess: '自分の戦略に保存しました',
+      myCopy: 'マイコピー',
       codePreview: 'コードプレビュー',
       viewCode: '戦略コードを表示',
     }
+  },
+  indicatorCatalog: {
+    title: 'インジケーターカタログ',
+    description: '戦略サンドボックスで利用可能なテクニカル指標とリスクパラメータ。戦略コードではこれらのヘルパーとパラメータキーのみを使用してください。',
+    indicatorsTitle: 'テクニカル指標',
+    riskSectionTitle: 'リスク管理パラメータ',
+    riskParamsTitle: '共通リスクパラメータ',
+    riskParamsDesc: '指標の選択に関わらず、すべての戦略はこれらのリスク管理パラメータを尊重する必要があります。',
+    paramKey: 'キー',
+    paramLabel: 'ラベル',
+    paramType: '型',
+    paramDefault: 'デフォルト',
+    paramRange: '範囲',
+    paramDescription: '説明'
+  }
 } as const;
 
 export default strategy;

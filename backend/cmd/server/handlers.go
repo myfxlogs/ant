@@ -218,6 +218,8 @@ func registerHandlers(
 	mux.Handle(antv1c.NewAdminUserServiceHandler(adminUserServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
 	adminSystemServer := admin.NewAdminSystemServer(adminRepo, log)
 	mux.Handle(antv1c.NewAdminSystemServiceHandler(adminSystemServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
+		adminStrategyServer := admin.NewAdminStrategyServer(strategySvc, log)
+		mux.Handle(antv1c.NewAdminStrategyServiceHandler(adminStrategyServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
 
 	// S1.1-S1.3: Wire SignalPipeline, rate limiter, cost estimator, OMS writer.
 	pipeline, platformAgg := initRiskPipeline(pool, log, mthubSvc, eventStore, cfg)

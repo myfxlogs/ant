@@ -12,6 +12,7 @@ import {
   MenuOutlined,
   ArrowLeftOutlined,
   WalletOutlined,
+  CodeOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -49,6 +50,7 @@ export default function AdminLayout() {
     { key: '/admin/logs', icon: <FileTextOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.operationLogs') },
     { key: '/admin/config', icon: <SettingOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.systemConfig') },
     { key: '/admin/jurisdiction', icon: <SafetyOutlined size={20} stroke={1.5} />, label: t('admin.sidebar.jurisdiction') },
+    { key: '/admin/strategies', icon: <CodeOutlined size={20} stroke={1.5} />, label: 'Strategies' },
     { key: '/admin/sre', icon: <SafetyOutlined size={20} stroke={1.5} />, label: 'SRE 控制' },
   ];
 

@@ -40,8 +40,9 @@ func (s *StrategyServer) GetTemplate(ctx context.Context, req *connect.Request[a
 
 func (s *StrategyServer) CreateTemplate(ctx context.Context, req *connect.Request[antv1.CreateTemplateRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
 	m := req.Msg
+	userID := s.userID(ctx)
 	t := service.TemplateRow{
-		UserID:      s.userID(ctx),
+		UserID:      &userID,
 		Name:        m.Name,
 		Description: m.Description,
 		Code:        m.Code,
@@ -102,8 +103,9 @@ func (s *StrategyServer) DeleteTemplate(ctx context.Context, req *connect.Reques
 }
 
 func (s *StrategyServer) CreateTemplateDraft(ctx context.Context, req *connect.Request[antv1.CreateTemplateDraftRequest]) (*connect.Response[antv1.StrategyTemplate], error) {
+	userID := s.userID(ctx)
 	t := service.TemplateRow{
-		UserID:     s.userID(ctx),
+		UserID:     &userID,
 		Name:       req.Msg.Name,
 		Status:     "draft",
 		Parameters: []byte("[]"),

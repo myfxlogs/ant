@@ -229,4 +229,45 @@ export const adminApi = {
   },
 
 };
+
+// Admin Strategy API
+export const adminStrategyApi = {
+  listSystemStrategies: async () => {
+    return await adminStrategyClient.listSystemStrategies({});
+  },
+  createSystemStrategy: async (params: { name: string; description: string; code: string; tags: string[] }) => {
+    return await adminStrategyClient.createSystemStrategy(params);
+  },
+  updateSystemStrategy: async (params: { id: string; name?: string; description?: string; code?: string; tags?: string[] }) => {
+    return await adminStrategyClient.updateSystemStrategy(params);
+  },
+  deleteSystemStrategy: async (id: string) => {
+    await adminStrategyClient.deleteSystemStrategy({ id });
+  },
+
+  listAllStrategies: async (params?: { page?: number; pageSize?: number; search?: string; userId?: string; flag?: string }) => {
+    return await adminStrategyClient.listAllStrategies(params || {});
+  },
+  getStrategyDetail: async (id: string) => {
+    return await adminStrategyClient.getStrategyDetail({ id });
+  },
+
+  flagStrategy: async (id: string, reason: string) => {
+    await adminStrategyClient.flagStrategy({ id, reason });
+  },
+  unpublishStrategy: async (id: string) => {
+    await adminStrategyClient.unpublishStrategy({ id });
+  },
+  disableStrategy: async (id: string) => {
+    await adminStrategyClient.disableStrategy({ id });
+  },
+  enableStrategy: async (id: string) => {
+    await adminStrategyClient.enableStrategy({ id });
+  },
+  archiveStrategy: async (id: string) => {
+    await adminStrategyClient.archiveStrategy({ id });
+  },
+};
+
+import { adminStrategyClient } from './connect';
 export { adminJurisdictionApi } from './admin-jurisdiction';

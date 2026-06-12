@@ -32,6 +32,7 @@ function LibraryUI() {
     scheduleCountByTemplate,
     openCreate: tCtx.openCreate, openEdit: (tpl: StrategyTemplate) => { tCtx.openEdit(tpl); editForm.setFieldsValue({ name: tpl.name, description: tpl.description, code: (tpl as any).code, isPublic: (tpl as any).isPublic }); },
     handleDelete: tCtx.handleDelete, handlePublish: tCtx.handlePublish, handleUnpublish: tCtx.handleUnpublish,
+    handleSaveAsMine: tCtx.handleSaveAsMine,
     editOpen: tCtx.editOpen, setEditOpen: tCtx.setEditOpen,
     editing: tCtx.editing, setEditing: tCtx.setEditing,
     codeValidating: tCtx.codeValidating, lastValidatedCode: tCtx.lastValidatedCode, setLastValidatedCode: tCtx.setLastValidatedCode,
