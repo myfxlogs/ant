@@ -35,7 +35,10 @@ func (g *Gateway) GetPriceHistory(ctx context.Context, accountID, symbolRaw, per
 	}
 	fromStr := time.Unix(to, 0).UTC().Format("2006-01-02T15:04:05")
 
-	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
+	md := metadata.New(map[string]string{"id": sid})
+	if tok := g.token(); tok != "" {
+		md.Set("authorization", "Bearer "+tok)
+	}
 	authCtx := metadata.NewOutgoingContext(ctx, md)
 	resp, err := client.QuoteHistory(authCtx, &pb.QuoteHistoryRequest{
 		Id: sid, Symbol: symbolRaw, Timeframe: tf, From: fromStr, Count: count,

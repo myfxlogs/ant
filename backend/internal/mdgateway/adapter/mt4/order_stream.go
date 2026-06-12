@@ -49,7 +49,10 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 		g.cancelOrderUpdateSub = cancel
 		g.mu.Unlock()
 
-		md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
+		md := metadata.New(map[string]string{"id": sid})
+		if tok := g.token(); tok != "" {
+			md.Set("authorization", "Bearer "+tok)
+		}
 		subCtx = metadata.NewOutgoingContext(subCtx, md)
 		stream, err := sc.OnOrderUpdate(subCtx, &pb.OnOrderUpdateRequest{Id: sid})
 		if err != nil {

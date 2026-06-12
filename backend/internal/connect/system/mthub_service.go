@@ -144,18 +144,13 @@ func (s *MtHubServer) OrderHistory(ctx context.Context, req *connect.Request[ant
 	if err := s.validateAccountAccess(ctx, req.Msg.AccountId); err != nil {
 		return nil, err
 	}
-	var from, to time.Time
+	from := time.Now().AddDate(-1, 0, 0)
+	to := time.Now()
 	if req.Msg.From != nil {
 		from = req.Msg.From.AsTime()
 	}
 	if req.Msg.To != nil {
 		to = req.Msg.To.AsTime()
-	}
-	if from.IsZero() {
-		from = time.Now().AddDate(-1, 0, 0)
-	}
-	if to.IsZero() {
-		to = time.Now()
 	}
 	list, err := s.svc.OrderHistory(ctx, req.Msg.AccountId, from, to)
 	if err != nil {

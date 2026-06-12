@@ -85,6 +85,9 @@ func (g *Gateway) FetchOrderHistory(ctx context.Context, from, to time.Time) ([]
 	if client == nil || sid == "" {
 		return nil, fmt.Errorf("mt5 FetchOrderHistory: not connected")
 	}
+	if from.IsZero() || to.IsZero() {
+		return nil, fmt.Errorf("mt5 FetchOrderHistory: from and to are required")
+	}
 	fromStr := from.UTC().Format("2006-01-02T15:04:05")
 	toStr := to.UTC().Format("2006-01-02T15:04:05")
 	md := metadata.New(map[string]string{"id": sid})

@@ -25,7 +25,10 @@ func (g *Gateway) PlaceOrder(ctx context.Context, req *mthub.OrderRequest) (int6
 	}
 	ot := mt5OrderType(req.Side, req.OrderType)
 	price := req.Price.InexactFloat64()
-	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
+	md := metadata.New(map[string]string{"id": sid})
+	if tok := g.token(); tok != "" {
+		md.Set("authorization", "Bearer "+tok)
+	}
 	callCtx, cancel := context.WithTimeout(ctx, orderTimeout)
 	defer cancel()
 	callCtx = metadata.NewOutgoingContext(callCtx, md)
@@ -119,7 +122,10 @@ func (g *Gateway) CloseOrder(ctx context.Context, ticket int64, lots decimal.Dec
 		g.log.Warn("mt5 CloseOrder: not connected", zap.Bool("hasCli", tc != nil), zap.Bool("hasSid", sid != ""))
 		return fmt.Errorf("mt5 CloseOrder: not connected")
 	}
-	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
+	md := metadata.New(map[string]string{"id": sid})
+	if tok := g.token(); tok != "" {
+		md.Set("authorization", "Bearer "+tok)
+	}
 	callCtx, cancel := context.WithTimeout(ctx, orderTimeout)
 	defer cancel()
 	callCtx = metadata.NewOutgoingContext(callCtx, md)
@@ -146,7 +152,10 @@ func (g *Gateway) ModifyOrder(ctx context.Context, ticket int64, sl, tp, price d
 	if tc == nil || sid == "" {
 		return fmt.Errorf("mt5 ModifyOrder: not connected")
 	}
-	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
+	md := metadata.New(map[string]string{"id": sid})
+	if tok := g.token(); tok != "" {
+		md.Set("authorization", "Bearer "+tok)
+	}
 	callCtx, cancel := context.WithTimeout(ctx, orderTimeout)
 	defer cancel()
 	callCtx = metadata.NewOutgoingContext(callCtx, md)
@@ -171,7 +180,10 @@ func (g *Gateway) FetchSymbolParams(ctx context.Context, canonicals []string) ([
 	if client == nil || sid == "" {
 		return nil, fmt.Errorf("mt5 FetchSymbolParams: not connected")
 	}
-	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
+	md := metadata.New(map[string]string{"id": sid})
+	if tok := g.token(); tok != "" {
+		md.Set("authorization", "Bearer "+tok)
+	}
 	out := make([]*mthub.SymbolParam, 0, len(canonicals))
 	for _, c := range canonicals {
 		ctx2 := metadata.NewOutgoingContext(ctx, md)
@@ -234,7 +246,10 @@ func (g *Gateway) FetchAllSymbols(ctx context.Context) ([]string, error) {
 	if client == nil || sid == "" {
 		return nil, fmt.Errorf("mt5 FetchAllSymbols: not connected")
 	}
-	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
+	md := metadata.New(map[string]string{"id": sid})
+	if tok := g.token(); tok != "" {
+		md.Set("authorization", "Bearer "+tok)
+	}
 	ctx2 := metadata.NewOutgoingContext(ctx, md)
 	resp, err := client.SymbolList(ctx2, &pb.SymbolListRequest{Id: sid})
 	if err != nil {
@@ -254,7 +269,10 @@ func (g *Gateway) SubscribeOrderEvents(ctx context.Context, h mthub.OrderEventHa
 	if streamCli == nil || sid == "" {
 		return fmt.Errorf("mt5 SubscribeOrderEvents: not connected")
 	}
-	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
+	md := metadata.New(map[string]string{"id": sid})
+	if tok := g.token(); tok != "" {
+		md.Set("authorization", "Bearer "+tok)
+	}
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	stream, err := streamCli.OnOrderUpdate(ctx, &pb.OnOrderUpdateRequest{Id: sid})
 	if err != nil {

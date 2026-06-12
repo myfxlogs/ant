@@ -26,7 +26,10 @@ func (g *Gateway) Subscribe(ctx context.Context, syms []string, handler mdtick.T
 	g.subscribedSymbols = append(g.subscribedSymbols[:0], syms...)
 	g.mu.Unlock()
 	if sub != nil && len(syms) > 0 {
-		subMd := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
+		subMd := metadata.New(map[string]string{"id": sid})
+		if tok := g.token(); tok != "" {
+			subMd.Set("authorization", "Bearer "+tok)
+		}
 		subCtx := metadata.NewOutgoingContext(ctx, subMd)
 		if _, err := sub.SubscribeMany(subCtx, &pb.SubscribeManyRequest{Id: sid, Symbols: syms}); err != nil {
 			g.log.Warn("mt4: subscribe symbols failed", zap.Strings("syms", syms), zap.Error(err))
@@ -53,7 +56,10 @@ func (g *Gateway) AddSymbols(ctx context.Context, symbols []string) error {
 	if len(symbols) == 0 {
 		return nil
 	}
-	subMd := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
+	subMd := metadata.New(map[string]string{"id": sid})
+	if tok := g.token(); tok != "" {
+		subMd.Set("authorization", "Bearer "+tok)
+	}
 	subCtx := metadata.NewOutgoingContext(ctx, subMd)
 	_, err := sub.SubscribeMany(subCtx, &pb.SubscribeManyRequest{Id: sid, Symbols: symbols})
 	if err != nil {
@@ -90,7 +96,10 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 		sid := g.sessionID
 		g.mu.RUnlock()
 		if sub != nil && len(syms) > 0 {
-			subMd := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
+			subMd := metadata.New(map[string]string{"id": sid})
+			if tok := g.token(); tok != "" {
+				subMd.Set("authorization", "Bearer "+tok)
+			}
 			subCtx := metadata.NewOutgoingContext(ctx, subMd)
 			if _, err := sub.SubscribeMany(subCtx, &pb.SubscribeManyRequest{Id: sid, Symbols: syms}); err != nil {
 				g.log.Warn("mt4: re-subscribe symbols failed", zap.Strings("syms", syms), zap.Error(err))
@@ -107,7 +116,10 @@ func (g *Gateway) recvLoop(ctx context.Context, handler mdtick.TickHandler) {
 		g.cancelSub = cancel
 		g.mu.Unlock()
 
-		md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
+		md := metadata.New(map[string]string{"id": sid})
+		if tok := g.token(); tok != "" {
+			md.Set("authorization", "Bearer "+tok)
+		}
 		subCtx = metadata.NewOutgoingContext(subCtx, md)
 		stream, err := sc.OnQuote(subCtx, &pb.OnQuoteRequest{Id: sid})
 		if err != nil {
@@ -199,7 +211,10 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 		g.cancelProfitSub = cancel
 		g.mu.Unlock()
 
-		md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
+		md := metadata.New(map[string]string{"id": sid})
+		if tok := g.token(); tok != "" {
+			md.Set("authorization", "Bearer "+tok)
+		}
 		subCtx = metadata.NewOutgoingContext(subCtx, md)
 		stream, err := sc.OnOrderProfit(subCtx, &pb.OnOrderProfitRequest{Id: sid})
 		if err != nil {
