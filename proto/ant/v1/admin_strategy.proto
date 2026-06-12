@@ -21,6 +21,7 @@ service AdminStrategyService {
 
   // ── Compliance actions ──
   rpc FlagStrategy(FlagStrategyRequest) returns (FlagStrategyResponse);
+  rpc UnflagStrategy(UnflagStrategyRequest) returns (UnflagStrategyResponse);
   rpc UnpublishStrategy(UnpublishStrategyRequest) returns (UnpublishStrategyResponse);
   rpc DisableStrategy(DisableStrategyRequest) returns (DisableStrategyResponse);
   rpc EnableStrategy(EnableStrategyRequest) returns (EnableStrategyResponse);
@@ -134,6 +135,12 @@ message FlagStrategyRequest {
 }
 
 message FlagStrategyResponse {}
+
+message UnflagStrategyRequest {
+  string id = 1;
+}
+
+message UnflagStrategyResponse {}
 
 message UnpublishStrategyRequest {
   string id = 1;

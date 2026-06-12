@@ -1,4 +1,4 @@
-import { adminAccountClient, adminConfigClient, adminLogClient, adminSystemClient, adminTradingClient, adminUserClient } from './connect';
+import { adminAccountClient, adminConfigClient, adminLogClient, adminStrategyClient, adminSystemClient, adminTradingClient, adminUserClient } from './connect';
 
 // Note: getDashboard is defined in AdminUserService, not AdminSystemService
 
@@ -255,6 +255,9 @@ export const adminStrategyApi = {
   flagStrategy: async (id: string, reason: string) => {
     await adminStrategyClient.flagStrategy({ id, reason });
   },
+  unflagStrategy: async (id: string) => {
+    await adminStrategyClient.unflagStrategy({ id });
+  },
   unpublishStrategy: async (id: string) => {
     await adminStrategyClient.unpublishStrategy({ id });
   },
@@ -269,5 +272,4 @@ export const adminStrategyApi = {
   },
 };
 
-import { adminStrategyClient } from './connect';
 export { adminJurisdictionApi } from './admin-jurisdiction';

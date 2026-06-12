@@ -10,6 +10,30 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+// GetTemplateDetail fetches a template with user email (admin bypass — no ownership check).
+func (s *StrategySvc) GetTemplateDetail(ctx context.Context, id uuid.UUID) (*TemplateRow, string, error) {
+	var t TemplateRow
+	var userEmail string
+	err := s.pg.QueryRow(ctx,
+		`SELECT st.id, st.user_id, st.name, st.description, st.code, st.status, st.parameters, st.is_public, st.is_system,
+		        st.tags, st.use_count, st.flag, st.flag_reason, st.flagged_by, st.flagged_at, st.created_at, st.updated_at,
+		        COALESCE(u.email, '')
+		 FROM strategy_templates st
+		 LEFT JOIN users u ON st.user_id = u.id
+		 WHERE st.id = $1`, id,
+	).Scan(&t.ID, &t.UserID, &t.Name, &t.Description, &t.Code, &t.Status, &t.Parameters,
+		&t.IsPublic, &t.IsSystem, &t.Tags, &t.UseCount,
+		&t.Flag, &t.FlagReason, &t.FlaggedBy, &t.FlaggedAt, &t.CreatedAt, &t.UpdatedAt,
+		&userEmail)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, "", ErrTemplateNotFound
+		}
+		return nil, "", fmt.Errorf("GetTemplateDetail: %w", err)
+	}
+	return &t, userEmail, nil
+}
+
 // ── System strategy CRUD ──
 
 // SystemStrategyRow is a lightweight row for admin system strategy management.
@@ -107,12 +131,13 @@ func (s *StrategySvc) UpdateSystemStrategy(ctx context.Context, id uuid.UUID, na
 }
 
 func (s *StrategySvc) DeleteSystemStrategy(ctx context.Context, id uuid.UUID) error {
-	tag, err := s.pg.Exec(ctx,
-		`DELETE FROM strategy_templates WHERE id = $1 AND is_system = true`, id)
+	ct, err := s.pg.Exec(ctx,
+		`UPDATE strategy_templates SET status='canceled', updated_at=$2 WHERE id=$1 AND is_system=true AND status!='canceled'`,
+		id, time.Now())
 	if err != nil {
 		return fmt.Errorf("delete system strategy: %w", err)
 	}
-	if tag.RowsAffected() == 0 {
+	if ct.RowsAffected() == 0 {
 		return ErrTemplateNotFound
 	}
 	return nil
@@ -224,10 +249,23 @@ func (s *StrategySvc) ListAllStrategies(ctx context.Context, params ListAllStrat
 func (s *StrategySvc) FlagTemplate(ctx context.Context, id uuid.UUID, reason string, adminID uuid.UUID) error {
 	now := time.Now()
 	ct, err := s.pg.Exec(ctx,
-		`UPDATE strategy_templates SET flag='flagged', flag_reason=$2, flagged_by=$3, flagged_at=$4 WHERE id=$1 AND is_system=false`,
+		`UPDATE strategy_templates SET flag='flagged', flag_reason=$2, flagged_by=$3, flagged_at=$4 WHERE id=$1`,
 		id, reason, adminID, now)
 	if err != nil {
 		return fmt.Errorf("flag template: %w", err)
+	}
+	if ct.RowsAffected() == 0 {
+		return ErrTemplateNotFound
+	}
+	return nil
+}
+
+func (s *StrategySvc) UnflagTemplate(ctx context.Context, id uuid.UUID) error {
+	ct, err := s.pg.Exec(ctx,
+		`UPDATE strategy_templates SET flag='', flag_reason='', flagged_by=NULL, flagged_at=NULL WHERE id=$1 AND flag='flagged'`,
+		id)
+	if err != nil {
+		return fmt.Errorf("unflag template: %w", err)
 	}
 	if ct.RowsAffected() == 0 {
 		return ErrTemplateNotFound

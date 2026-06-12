@@ -167,15 +167,13 @@ func (s *AdminStrategyServer) GetStrategyDetail(ctx context.Context, req *connec
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	// Use GetTemplate with uuid.Nil userID — admin bypasses ownership check.
-	row, err := s.svc.GetTemplate(ctx, id, uuid.Nil)
+	row, userEmail, err := s.svc.GetTemplateDetail(ctx, id)
 	if err != nil {
 		if err == service.ErrTemplateNotFound {
 			return nil, connect.NewError(connect.CodeNotFound, err)
 		}
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-
 	var userID string
 	if row.UserID != nil {
 		userID = row.UserID.String()
@@ -195,6 +193,7 @@ func (s *AdminStrategyServer) GetStrategyDetail(ctx context.Context, req *connec
 		Description: row.Description,
 		Code:        row.Code,
 		UserId:      userID,
+		UserEmail:   userEmail,
 		Status:      row.Status,
 		IsSystem:    row.IsSystem,
 		IsPublic:    row.IsPublic,
@@ -228,6 +227,22 @@ func (s *AdminStrategyServer) FlagStrategy(ctx context.Context, req *connect.Req
 	return connect.NewResponse(&antv1.FlagStrategyResponse{}), nil
 }
 
+func (s *AdminStrategyServer) UnflagStrategy(ctx context.Context, req *connect.Request[antv1.UnflagStrategyRequest]) (*connect.Response[antv1.UnflagStrategyResponse], error) {
+	id, err := uuid.Parse(req.Msg.Id)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	adminID := getActorID(ctx)
+	if err := s.svc.UnflagTemplate(ctx, id); err != nil {
+		if err == service.ErrTemplateNotFound {
+			return nil, connect.NewError(connect.CodeNotFound, err)
+		}
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	s.log.Info("admin: unflagged strategy", zap.String("strategy_id", req.Msg.Id), zap.String("actor", adminID.String()))
+	return connect.NewResponse(&antv1.UnflagStrategyResponse{}), nil
+}
+
 func (s *AdminStrategyServer) UnpublishStrategy(ctx context.Context, req *connect.Request[antv1.UnpublishStrategyRequest]) (*connect.Response[antv1.UnpublishStrategyResponse], error) {
 	id, err := uuid.Parse(req.Msg.Id)
 	if err != nil {
@@ -239,7 +254,7 @@ func (s *AdminStrategyServer) UnpublishStrategy(ctx context.Context, req *connec
 		}
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	s.log.Info("admin: unpublished strategy", zap.String("strategy_id", req.Msg.Id))
+	s.log.Info("admin: unpublished strategy", zap.String("strategy_id", req.Msg.Id), zap.String("actor", getActorID(ctx).String()))
 	return connect.NewResponse(&antv1.UnpublishStrategyResponse{}), nil
 }
 
@@ -254,7 +269,7 @@ func (s *AdminStrategyServer) DisableStrategy(ctx context.Context, req *connect.
 		}
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	s.log.Info("admin: disabled strategy", zap.String("strategy_id", req.Msg.Id))
+	s.log.Info("admin: disabled strategy", zap.String("strategy_id", req.Msg.Id), zap.String("actor", getActorID(ctx).String()))
 	return connect.NewResponse(&antv1.DisableStrategyResponse{}), nil
 }
 
@@ -269,7 +284,7 @@ func (s *AdminStrategyServer) EnableStrategy(ctx context.Context, req *connect.R
 		}
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	s.log.Info("admin: enabled strategy", zap.String("strategy_id", req.Msg.Id))
+	s.log.Info("admin: enabled strategy", zap.String("strategy_id", req.Msg.Id), zap.String("actor", getActorID(ctx).String()))
 	return connect.NewResponse(&antv1.EnableStrategyResponse{}), nil
 }
 
@@ -284,6 +299,6 @@ func (s *AdminStrategyServer) ArchiveStrategy(ctx context.Context, req *connect.
 		}
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	s.log.Info("admin: archived strategy", zap.String("strategy_id", req.Msg.Id))
+	s.log.Info("admin: archived strategy", zap.String("strategy_id", req.Msg.Id), zap.String("actor", getActorID(ctx).String()))
 	return connect.NewResponse(&antv1.ArchiveStrategyResponse{}), nil
 }

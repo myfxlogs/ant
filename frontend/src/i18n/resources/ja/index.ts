@@ -10,7 +10,7 @@ import analytics from './analytics';
 import logs from './logs';
 import strategy from './strategy';
 import errors from './errors';
-import zhCN from '../zh-cn/index';
+import admin from './admin';
 import { mergeResources } from '../merge';
 
 const ja = mergeResources(
@@ -26,7 +26,7 @@ const ja = mergeResources(
   logs,
   strategy,
   errors,
-  { admin: zhCN.admin },
+  admin,
 ) as const;
 
 export default ja;
