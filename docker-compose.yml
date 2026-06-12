@@ -168,15 +168,15 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1024M
+          memory: 2048M
         reservations:
-          memory: 256M
+          memory: 512M
     environment:
       - CLICKHOUSE_DB=${CH_DATABASE:-ant}
       - CLICKHOUSE_USER=${CH_USER:-default}
       - CLICKHOUSE_PASSWORD=${CH_PASSWORD:-clickhouse}
       - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
-      - MAX_MEMORY_USAGE=1600000000
+      - MAX_MEMORY_USAGE=1500000000
     ports:
       - "${CH_HTTP_PORT:-8123}:8123"
       - "${CH_NATIVE_PORT:-9000}:9000"
