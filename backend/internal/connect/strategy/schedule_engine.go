@@ -1,14 +1,11 @@
 // schedule_engine.go — Schedule execution engine: timer-driven loop that dispatches
 // due strategy schedules to RunLiveStrategy.
 //
-// Architecture:
-//   Timer + notifyCh (push-first)
-//     recomputeTimer() finds the earliest next_run_at, sets a time.Timer.
-//     When Timer fires → GetDueSchedules → dispatch() → go runOne().
-//     When an external event occurs (new schedule, toggle, runOne completes)
-//     → notifyCh → recomputeTimer() resets the timer.
-//   Active runs are tracked in activeRuns map[scheduleID]*runHandle to prevent
-//     duplicate execution and support StopSchedule().
+// Architecture (push-first, zero-polling):
+//   Timer + notifyCh: recomputeTimer() finds the earliest next_run_at, sets a time.Timer.
+//   Timer fires → GetDueSchedules → dispatch() → go runOne().
+//   External events (create, toggle, runOne completion) → notifyCh → recomputeTimer resets.
+//   Active runs tracked in activeRuns map[scheduleID]*runHandle (Paper Trading pattern).
 
 package strategy
 
@@ -25,13 +22,11 @@ import (
 	"anttrader/internal/repository"
 )
 
-// runHandle tracks a single running strategy execution.
 type runHandle struct {
 	cancel context.CancelFunc
-	wg     sync.WaitGroup // waits for the goroutine to exit
+	wg     sync.WaitGroup
 }
 
-// ScheduleEngine polls due schedules and dispatches them to RunLiveStrategy.
 type ScheduleEngine struct {
 	repo             *repository.StrategyScheduleRepository
 	templateRepo     *repository.AIStrategyTemplatesRepository
@@ -43,7 +38,12 @@ type ScheduleEngine struct {
 	log              *zap.Logger
 }
 
-// NewScheduleEngine creates a new schedule engine.
+const (
+	backoffDelay = 30 * time.Second
+	idleDelay    = 24 * time.Hour
+	dbTimeout    = 5 * time.Second
+)
+
 func NewScheduleEngine(
 	repo *repository.StrategyScheduleRepository,
 	templateRepo *repository.AIStrategyTemplatesRepository,
@@ -63,47 +63,34 @@ func NewScheduleEngine(
 }
 
 // Start begins the main timer loop. Blocks until ctx is cancelled.
-// Callers should run this in a goroutine.
 func (e *ScheduleEngine) Start(ctx context.Context) error {
 	e.log.Info("schedule engine starting")
+	e.reconcileOnStartup(ctx)
 
-	// First pass: ensure all active schedules have a valid next_run_at.
-	if err := e.reconcileOnStartup(ctx); err != nil {
-		e.log.Warn("schedule engine startup reconcile failed", zap.Error(err))
-		// Continue anyway — the timer loop will pick up due schedules.
-	}
-
-	var currentTimer *time.Timer
+	var cur *time.Timer
 	defer func() {
-		if currentTimer != nil {
-			currentTimer.Stop()
+		if cur != nil && !cur.Stop() {
+			<-cur.C // drain
 		}
 	}()
 
 	for {
-		timer, earliest, err := e.recomputeTimer(ctx)
+		timer, _, err := e.recomputeTimer(ctx)
 		if err != nil {
-			e.log.Error("schedule engine recompute timer failed", zap.Error(err))
-			// Backoff before retrying.
-			timer = time.NewTimer(30 * time.Second)
+			e.log.Error("recompute timer failed", zap.Error(err))
+			timer = time.NewTimer(backoffDelay)
 		}
-
-		// Stop previous timer before replacing.
-		if currentTimer != nil {
-			currentTimer.Stop()
+		if cur != nil {
+			if !cur.Stop() {
+				select { case <-cur.C: default: }
+			}
 		}
-		currentTimer = timer
+		cur = timer
 
 		select {
 		case <-timer.C:
-			e.log.Debug("timer fired, checking due schedules",
-				zap.Time("earliest", earliest))
 			e.executeLoop(ctx)
-
 		case <-e.notifyCh:
-			e.log.Debug("notify received, recomputing timer")
-			// Timer will be recomputed on next loop iteration.
-
 		case <-ctx.Done():
 			e.log.Info("schedule engine shutting down")
 			e.Stop()
@@ -112,20 +99,27 @@ func (e *ScheduleEngine) Start(ctx context.Context) error {
 	}
 }
 
-// Notify signals the engine to recompute its timer. Safe to call from any goroutine.
 func (e *ScheduleEngine) Notify() {
 	select {
 	case e.notifyCh <- struct{}{}:
 	default:
-		// Channel full — a recompute is already pending.
 	}
 }
 
-// reconcileOnStartup loads all active schedules and fills in missing next_run_at values.
-func (e *ScheduleEngine) reconcileOnStartup(ctx context.Context) error {
+// --- internal helpers ---
+
+func (e *ScheduleEngine) isRunning(id uuid.UUID) bool {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	_, ok := e.activeRuns[id]
+	return ok
+}
+
+func (e *ScheduleEngine) reconcileOnStartup(ctx context.Context) {
 	schedules, err := e.repo.GetActiveSchedules(ctx)
 	if err != nil {
-		return err
+		e.log.Warn("reconcile: failed to load active schedules", zap.Error(err))
+		return
 	}
 	var updated int
 	for _, s := range schedules {
@@ -137,7 +131,7 @@ func (e *ScheduleEngine) reconcileOnStartup(ctx context.Context) error {
 			continue
 		}
 		if err := e.repo.UpdateNextRunAt(ctx, s.ID, next); err != nil {
-			e.log.Warn("reconcile: failed to update next_run_at",
+			e.log.Warn("reconcile: update next_run_at failed",
 				zap.String("schedule_id", s.ID.String()), zap.Error(err))
 			continue
 		}
@@ -146,39 +140,27 @@ func (e *ScheduleEngine) reconcileOnStartup(ctx context.Context) error {
 	if updated > 0 {
 		e.log.Info("reconciled missing next_run_at", zap.Int("count", updated))
 	}
-	return nil
 }
 
-// recomputeTimer returns a Timer that fires at the earliest next_run_at.
-// If there are no active schedules with next_run_at, returns a long-wait timer.
 func (e *ScheduleEngine) recomputeTimer(ctx context.Context) (*time.Timer, time.Time, error) {
 	earliest, err := e.repo.GetEarliestNextRunAt(ctx)
 	if err != nil {
-		return time.NewTimer(30 * time.Second), time.Time{}, err
+		return time.NewTimer(backoffDelay), time.Time{}, err
 	}
-
 	if earliest.IsZero() {
-		// No active schedules — wait a long time (will be woken by Notify).
-		timer := time.NewTimer(24 * time.Hour)
-		e.log.Debug("no active schedules, waiting for notify")
-		return timer, time.Time{}, nil
+		return time.NewTimer(idleDelay), time.Time{}, nil
 	}
-
-	duration := time.Until(earliest)
-	if duration < 0 {
-		duration = 0 // fire immediately
+	d := time.Until(earliest)
+	if d < 0 {
+		d = 0
 	}
-	e.log.Debug("timer set",
-		zap.Time("earliest", earliest),
-		zap.Duration("duration", duration))
-	return time.NewTimer(duration), earliest, nil
+	return time.NewTimer(d), earliest, nil
 }
 
-// executeLoop queries due schedules and dispatches them.
 func (e *ScheduleEngine) executeLoop(ctx context.Context) {
 	due, err := e.repo.GetDueSchedules(ctx, time.Now())
 	if err != nil {
-		e.log.Error("failed to get due schedules", zap.Error(err))
+		e.log.Error("get due schedules failed", zap.Error(err))
 		return
 	}
 	if len(due) == 0 {
@@ -187,51 +169,32 @@ func (e *ScheduleEngine) executeLoop(ctx context.Context) {
 	e.log.Info("due schedules found", zap.Int("count", len(due)))
 
 	for _, s := range due {
+		if e.isRunning(s.ID) {
+			continue
+		}
+		if e.autoTradeEnabled != nil && !e.autoTradeEnabled(s.UserID) {
+			continue
+		}
 		select {
 		case <-ctx.Done():
 			return
 		default:
 		}
-		e.mu.Lock()
-		_, running := e.activeRuns[s.ID]
-		e.mu.Unlock()
-		if running {
-			e.log.Debug("schedule already running, skipping",
-				zap.String("schedule_id", s.ID.String()))
-			continue
-		}
-
-		if e.autoTradeEnabled != nil && !e.autoTradeEnabled(s.UserID) {
-			e.log.Debug("auto-trade disabled for user, skipping",
-				zap.String("user_id", s.UserID.String()),
-				zap.String("schedule_id", s.ID.String()))
-			continue
-		}
-
 		e.dispatch(ctx, s)
 	}
 }
 
-// dispatch loads the template code and launches a goroutine to run the strategy.
 func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategySchedule) {
-	// Load template code.
+	// Load and validate template.
 	tpl, err := e.templateRepo.GetByID(ctx, schedule.TemplateID)
-	if err != nil || tpl == nil {
-		e.log.Error("failed to load template for schedule",
-			zap.String("schedule_id", schedule.ID.String()),
-			zap.String("template_id", schedule.TemplateID.String()),
-			zap.Error(err))
-		errMsg := "template not found"
+	if err != nil || tpl == nil || tpl.PythonSkeleton == "" {
+		reason := "template code is empty"
 		if err != nil {
-			errMsg = err.Error()
+			reason = err.Error()
 		}
-		_ = e.repo.UpdateLastRun(ctx, schedule.ID, wrapErr(errMsg))
-		return
-	}
-	if tpl.PythonSkeleton == "" {
-		e.log.Warn("template has empty code, skipping",
-			zap.String("schedule_id", schedule.ID.String()))
-		_ = e.repo.UpdateLastRun(ctx, schedule.ID, wrapErr("template code is empty"))
+		e.log.Error("dispatch: invalid template",
+			zap.String("schedule_id", schedule.ID.String()), zap.String("template_id", schedule.TemplateID.String()), zap.Error(err))
+		_ = e.repo.UpdateLastRun(ctx, schedule.ID, fmt.Errorf("dispatch: %s", reason))
 		return
 	}
 
@@ -239,15 +202,6 @@ func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategyS
 	strParams := make(map[string]string, len(params))
 	for k, v := range params {
 		strParams[k] = fmt.Sprintf("%v", v)
-	}
-
-	cfg := LiveStrategyConfig{
-		AccountID: schedule.AccountID.String(),
-		Symbol:    schedule.Symbol,
-		Timeframe: schedule.Timeframe,
-		Code:      tpl.PythonSkeleton,
-		Mode:      "live",
-		Params:    strParams,
 	}
 
 	runCtx, cancel := context.WithCancel(context.Background())
@@ -258,15 +212,19 @@ func (e *ScheduleEngine) dispatch(ctx context.Context, schedule *model.StrategyS
 	e.activeRuns[schedule.ID] = handle
 	e.mu.Unlock()
 
-	go e.runOne(runCtx, schedule, cfg, handle)
+	go e.runOne(runCtx, schedule, LiveStrategyConfig{
+		AccountID: schedule.AccountID.String(),
+		Symbol:    schedule.Symbol,
+		Timeframe: schedule.Timeframe,
+		Code:      tpl.PythonSkeleton,
+		Mode:      "live",
+		Params:    strParams,
+	}, handle)
 
-	e.log.Info("schedule dispatched",
-		zap.String("schedule_id", schedule.ID.String()),
-		zap.String("symbol", schedule.Symbol),
-		zap.String("timeframe", schedule.Timeframe))
+	e.log.Info("dispatched", zap.String("schedule_id", schedule.ID.String()),
+		zap.String("symbol", schedule.Symbol), zap.String("timeframe", schedule.Timeframe))
 }
 
-// runOne executes a single strategy run and cleans up on completion.
 func (e *ScheduleEngine) runOne(ctx context.Context, schedule *model.StrategySchedule, cfg LiveStrategyConfig, handle *runHandle) {
 	defer handle.wg.Done()
 	defer func() {
@@ -276,45 +234,35 @@ func (e *ScheduleEngine) runOne(ctx context.Context, schedule *model.StrategySch
 		handle.cancel()
 	}()
 
-	var runErr error
+	runErr := fmt.Errorf("strategy runner not configured")
 	if e.runner != nil {
 		runErr = e.runner.RunLiveStrategy(ctx, cfg)
-	} else {
-		runErr = wrapErr("strategy runner not configured")
 	}
 
-	// Record execution result.
-	recordCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	recordCtx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
-	if err := e.repo.UpdateLastRun(recordCtx, schedule.ID, runErr); err != nil {
-		e.log.Error("failed to update last_run", zap.Error(err))
-	}
 
-	// Schedule next run.
-	next, err := schedule.ComputeNextRunAt()
-	if err != nil {
-		e.log.Error("failed to compute next_run_at", zap.Error(err))
+	if err := e.repo.UpdateLastRun(recordCtx, schedule.ID, runErr); err != nil {
+		e.log.Error("update last_run failed", zap.Error(err))
+	}
+	if next, err := schedule.ComputeNextRunAt(); err != nil {
+		e.log.Error("compute next_run_at failed", zap.Error(err))
 	} else if !next.IsZero() {
 		if err := e.repo.UpdateNextRunAt(recordCtx, schedule.ID, next); err != nil {
-			e.log.Error("failed to update next_run_at", zap.Error(err))
+			e.log.Error("update next_run_at failed", zap.Error(err))
 		}
 	}
 
-	// Signal the timer to recompute.
 	e.Notify()
 
 	if runErr != nil {
-		e.log.Warn("schedule run completed with error",
-			zap.String("schedule_id", schedule.ID.String()),
-			zap.Error(runErr))
+		e.log.Warn("run completed with error",
+			zap.String("schedule_id", schedule.ID.String()), zap.Error(runErr))
 	} else {
-		e.log.Info("schedule run completed",
-			zap.String("schedule_id", schedule.ID.String()))
+		e.log.Info("run completed", zap.String("schedule_id", schedule.ID.String()))
 	}
 }
 
-// StopSchedule cancels a running schedule execution by its ID.
-// Blocks until the goroutine has exited. Safe to call from any goroutine.
 func (e *ScheduleEngine) StopSchedule(id uuid.UUID) {
 	e.mu.Lock()
 	handle, ok := e.activeRuns[id]
@@ -327,17 +275,13 @@ func (e *ScheduleEngine) StopSchedule(id uuid.UUID) {
 	e.log.Info("schedule stopped", zap.String("schedule_id", id.String()))
 }
 
-// Stop cancels all running strategy executions and waits for them to exit.
 func (e *ScheduleEngine) Stop() {
 	e.mu.Lock()
 	handles := make([]*runHandle, 0, len(e.activeRuns))
 	for id, h := range e.activeRuns {
 		handles = append(handles, h)
-		e.log.Info("cancelling schedule", zap.String("schedule_id", id.String()))
+		e.log.Info("cancelling", zap.String("schedule_id", id.String()))
 		h.cancel()
-	}
-	// Clear the map so runOne defers don't race.
-	for id := range e.activeRuns {
 		delete(e.activeRuns, id)
 	}
 	e.mu.Unlock()
@@ -347,12 +291,3 @@ func (e *ScheduleEngine) Stop() {
 	}
 	e.log.Info("all schedules stopped")
 }
-
-// wrapErr is a helper to create a recognizable error for UpdateLastRun.
-func wrapErr(msg string) error {
-	return &scheduleError{msg: msg}
-}
-
-type scheduleError struct{ msg string }
-
-func (e *scheduleError) Error() string { return e.msg }
