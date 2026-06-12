@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, Form, Select, InputNumber, DatePicker, Button, Space, message, Descriptions } from 'antd';
 import { PlayCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -7,6 +7,8 @@ import { create } from '@bufbuild/protobuf';
 import { executionAlgoClient } from '@/client/connect';
 import { StartAlgoRequestSchema } from '@/gen/ant/v1/execution_algo_pb';
 import { useAccount } from '@/hooks/useAccount';
+import SymbolPicker from '@/components/chart/SymbolPicker';
+import { marketApi } from '@/client/market';
 
 interface Props {
   onStarted?: (executionId: string) => void;
@@ -21,16 +23,30 @@ const ALGO_OPTIONS = [
 
 export default function AlgoSubmitForm({ onStarted }: Props) {
   const { t } = useTranslation();
-  const { accounts } = useAccount();
+  const { accounts, fetchAccounts } = useAccount();
   const [form] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
   const [selectedAlgo, setSelectedAlgo] = useState<string>('twap');
 
+  const activeAccounts = useMemo(
+    () => (accounts || []).filter((a) => !a.isDisabled),
+    [accounts],
+  );
+
+  useEffect(() => { fetchAccounts(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
-    if (accounts.length > 0 && !form.getFieldValue('accountId')) {
-      form.setFieldValue('accountId', accounts[0].id);
+    if (activeAccounts.length > 0 && !form.getFieldValue('accountId')) {
+      form.setFieldValue('accountId', activeAccounts[0].id);
     }
-  }, [accounts, form]);
+  }, [activeAccounts, form]);
+
+  const watchedAccountId = Form.useWatch('accountId', form) as string | undefined;
+
+  const handleAccountChange = useCallback(() => {
+    form.setFieldValue('symbol', '');
+    marketApi.clearSymbolCache();
+  }, [form]);
 
   const handleSubmit = async () => {
     const values = await form.validateFields();
@@ -65,15 +81,18 @@ export default function AlgoSubmitForm({ onStarted }: Props) {
       <Form form={form} layout="vertical" onFinish={handleSubmit}
         initialValues={{ algo: 'twap', side: 'buy', totalVolume: 1.0 }}>
         <Form.Item name="accountId" label={t('algo.fields.account')} rules={[{ required: true }]}>
-          <Select options={accounts.map(a => ({ value: a.id, label: a.alias || a.login }))} />
+          <Select
+            showSearch
+            onChange={handleAccountChange}
+            optionFilterProp="label"
+            notFoundContent={t('strategy.workspace.noAccounts')}
+            options={activeAccounts.map((a) => ({ value: a.id, label: `${a.brokerServer} · ${a.login}` }))}
+            style={{ width: '30%' }}
+          />
         </Form.Item>
         <Space style={{ width: '100%' }} size="middle">
           <Form.Item name="symbol" label={t('algo.fields.symbol')} rules={[{ required: true }]} style={{ flex: 1 }}>
-            <Select showSearch options={[
-              { value: 'EURUSD', label: 'EURUSD' }, { value: 'GBPUSD', label: 'GBPUSD' },
-              { value: 'USDJPY', label: 'USDJPY' }, { value: 'XAUUSD', label: 'XAUUSD' },
-              { value: 'BTCUSD', label: 'BTCUSD' },
-            ]} />
+            <SymbolPicker accountId={watchedAccountId ?? ''} style={{ width: 180 }} />
           </Form.Item>
           <Form.Item name="side" label={t('algo.fields.side')} rules={[{ required: true }]}>
             <Select options={[
@@ -86,7 +105,7 @@ export default function AlgoSubmitForm({ onStarted }: Props) {
           </Form.Item>
         </Space>
         <Form.Item name="timeRange" label={t('algo.fields.timeRange')} rules={[{ required: true }]}>
-          <DatePicker.RangePicker showTime style={{ width: '100%' }}
+          <DatePicker.RangePicker showTime style={{ width: '40%' }}
             presets={[
               { label: t('algo.timePresets.1h'), value: [dayjs(), dayjs().add(1, 'hour')] },
               { label: t('algo.timePresets.4h'), value: [dayjs(), dayjs().add(1, 'hour')] },
@@ -95,7 +114,7 @@ export default function AlgoSubmitForm({ onStarted }: Props) {
         </Form.Item>
         <Form.Item name="algo" label={t('algo.fields.algo')} rules={[{ required: true }]}>
           <Select options={ALGO_OPTIONS.map(a => ({ value: a.value, label: t(a.labelKey) }))}
-            onChange={setSelectedAlgo} />
+            onChange={setSelectedAlgo} style={{ width: '30%' }} />
         </Form.Item>
         <Space wrap>
           <Form.Item name="limitPrice" label={t('algo.fields.limitPrice')}>
