@@ -19,7 +19,10 @@ func (g *Gateway) FetchOpenedOrders(ctx context.Context) ([]*mthub.OrderRecord, 
 	if client == nil || sid == "" {
 		return nil, fmt.Errorf("mt5: not connected")
 	}
-	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
+	md := metadata.New(map[string]string{"id": sid})
+	if tok := g.token(); tok != "" {
+		md.Set("authorization", "Bearer "+tok)
+	}
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	resp, err := client.OpenedOrders(ctx, &pb.OpenedOrdersRequest{Id: sid})
 	if err != nil {
@@ -84,7 +87,10 @@ func (g *Gateway) FetchOrderHistory(ctx context.Context, from, to time.Time) ([]
 	}
 	fromStr := from.UTC().Format("2006-01-02T15:04:05")
 	toStr := to.UTC().Format("2006-01-02T15:04:05")
-	md := metadata.New(map[string]string{"id": sid, "authorization": "Bearer " + g.token()})
+	md := metadata.New(map[string]string{"id": sid})
+	if tok := g.token(); tok != "" {
+		md.Set("authorization", "Bearer "+tok)
+	}
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	resp, err := client.OrderHistory(ctx, &pb.OrderHistoryRequest{Id: sid, From: fromStr, To: toStr})
 	if err != nil {

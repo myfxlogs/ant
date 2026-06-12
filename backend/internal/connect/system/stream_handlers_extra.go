@@ -214,7 +214,10 @@ func (s *StreamServer) SubscribeHistory(
 		limit = 50 // default cap
 	}
 
-	since := req.Msg.Since.AsTime()
+	var since time.Time
+	if req.Msg.Since != nil {
+		since = req.Msg.Since.AsTime()
+	}
 	if since.IsZero() {
 		since = time.Now().Add(-24 * time.Hour)
 	}

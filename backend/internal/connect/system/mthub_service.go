@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -143,7 +144,20 @@ func (s *MtHubServer) OrderHistory(ctx context.Context, req *connect.Request[ant
 	if err := s.validateAccountAccess(ctx, req.Msg.AccountId); err != nil {
 		return nil, err
 	}
-	list, err := s.svc.OrderHistory(ctx, req.Msg.AccountId, req.Msg.From.AsTime(), req.Msg.To.AsTime())
+	var from, to time.Time
+	if req.Msg.From != nil {
+		from = req.Msg.From.AsTime()
+	}
+	if req.Msg.To != nil {
+		to = req.Msg.To.AsTime()
+	}
+	if from.IsZero() {
+		from = time.Now().AddDate(-1, 0, 0)
+	}
+	if to.IsZero() {
+		to = time.Now()
+	}
+	list, err := s.svc.OrderHistory(ctx, req.Msg.AccountId, from, to)
 	if err != nil {
 		s.log.Error("OrderHistory", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
