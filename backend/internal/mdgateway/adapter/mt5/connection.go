@@ -32,7 +32,8 @@ type Gateway struct {
 	subscribedSymbols    []string             // symbols registered via Subscribe/AddSymbols; re-subscribed after reconnect
 	cancelSub            context.CancelFunc
 	cancelProfitSub      context.CancelFunc
-	cancelOrderUpdateSub context.CancelFunc
+	cancelOrderUpdateSub context.CancelFunc   // set by orderUpdateRecvLoop (SSE stream)
+	cancelHubOrderSub    context.CancelFunc   // set by SubscribeOrderEvents (Hub stream)
 	reconnecting         bool // true while reconnection is in progress (prevents recvLoop race)
 }
 
@@ -99,8 +100,19 @@ func (g *Gateway) Connect(ctx context.Context) error {
 		Password: g.cfg.Password,
 	})
 	if err != nil {
-		g.conn.Close()
-		g.conn = nil
+		g.mu.Lock()
+		if g.conn != nil {
+			g.conn.Close()
+			g.conn = nil
+		}
+		g.client = nil
+		g.connCli = nil
+		g.streamCli = nil
+		g.qhCli = nil
+		g.subCli = nil
+		g.tradingCli = nil
+		g.serviceCli = nil
+		g.mu.Unlock()
 		return fmt.Errorf("mt5 login: %w", err)
 	}
 	token := loginResp.GetResult()
@@ -113,8 +125,19 @@ func (g *Gateway) Connect(ctx context.Context) error {
 		if respErr != nil {
 			errMsg = fmt.Sprintf("code=%d msg=%s", respErr.GetCode(), respErr.GetMessage())
 		}
-		g.conn.Close()
-		g.conn = nil
+		g.mu.Lock()
+		if g.conn != nil {
+			g.conn.Close()
+			g.conn = nil
+		}
+		g.client = nil
+		g.connCli = nil
+		g.streamCli = nil
+		g.qhCli = nil
+		g.subCli = nil
+		g.tradingCli = nil
+		g.serviceCli = nil
+		g.mu.Unlock()
 		return fmt.Errorf("mt5 login: %s", errMsg)
 	}
 	g.mu.Lock()
@@ -141,6 +164,10 @@ func (g *Gateway) Disconnect(ctx context.Context) error {
 	if g.cancelOrderUpdateSub != nil {
 		g.cancelOrderUpdateSub()
 		g.cancelOrderUpdateSub = nil
+	}
+	if g.cancelHubOrderSub != nil {
+		g.cancelHubOrderSub()
+		g.cancelHubOrderSub = nil
 	}
 	if g.conn != nil {
 		g.conn.Close()

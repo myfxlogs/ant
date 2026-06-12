@@ -7,6 +7,7 @@ import (
 
 	pb "anttrader/mt4"
 	"anttrader/internal/mdgateway/adapter/mdtick"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/metadata"
 )
@@ -140,10 +141,13 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 			}
 
 			balance := s.GetBalance()
-			profit := s.GetEquity() - balance
+			// Use Decimal for financial arithmetic to avoid float64 rounding.
+			equityD := decimal.NewFromFloat(s.GetEquity())
+			balanceD := decimal.NewFromFloat(balance)
+			profitD := equityD.Sub(balanceD)
 			var profitPct float64
 			if balance > 0 {
-				profitPct = (profit / balance) * 100
+				profitPct = profitD.Div(balanceD).Mul(decimal.NewFromInt(100)).InexactFloat64()
 			}
 			handler(&mdtick.OrderUpdate{
 				AccountID:        g.cfg.AccountID,
@@ -169,7 +173,7 @@ func (g *Gateway) orderUpdateRecvLoop(ctx context.Context, handler mdtick.OrderU
 				Margin:           s.GetMargin(),
 				FreeMargin:       s.GetFreeMargin(),
 				MarginLevel:      s.GetMarginLevel(),
-				Profit:           profit,
+				Profit:           profitD.InexactFloat64(),
 				ProfitPercent:    profitPct,
 				Positions:        positions,
 			})

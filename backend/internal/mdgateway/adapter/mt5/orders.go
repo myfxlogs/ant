@@ -177,10 +177,10 @@ func (g *Gateway) FetchSymbolParams(ctx context.Context, canonicals []string) ([
 		ctx2 := metadata.NewOutgoingContext(ctx, md)
 		resp, err := client.SymbolParams(ctx2, &pb.SymbolParamsRequest{Id: sid, Symbol: c})
 		if err != nil {
-			return out, fmt.Errorf("mt5 SymbolParams(%s): %w", c, err)
+			return nil, fmt.Errorf("mt5 SymbolParams(%s): %w", c, err)
 		}
 		if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
-			return out, fmt.Errorf("mt5 SymbolParams(%s): code=%d msg=%s", c, resp.GetError().GetCode(), resp.GetError().GetMessage())
+			return nil, fmt.Errorf("mt5 SymbolParams(%s): code=%d msg=%s", c, resp.GetError().GetCode(), resp.GetError().GetMessage())
 		}
 		r := resp.GetResult()
 		if r == nil {
@@ -213,13 +213,13 @@ func (g *Gateway) FetchPriceHistory(ctx context.Context, symbol, period string, 
 	}
 	out := make([]*mthub.Bar, 0, len(bars))
 	for _, b := range bars {
-		o, _ := b.Open.Float64()
-		h, _ := b.High.Float64()
-		l, _ := b.Low.Float64()
-		c, _ := b.Close.Float64()
 		out = append(out, &mthub.Bar{
-			Time: time.UnixMilli(b.OpenTsUnixMs),
-			Open: o, High: h, Low: l, Close: c, Volume: b.Volume,
+			Time:   time.UnixMilli(b.OpenTsUnixMs),
+			Open:   b.Open.InexactFloat64(),
+			High:   b.High.InexactFloat64(),
+			Low:    b.Low.InexactFloat64(),
+			Close:  b.Close.InexactFloat64(),
+			Volume: b.Volume,
 		})
 	}
 	return out, nil
@@ -261,10 +261,10 @@ func (g *Gateway) SubscribeOrderEvents(ctx context.Context, h mthub.OrderEventHa
 		return fmt.Errorf("mt5 OnOrderUpdate: %w", err)
 	}
 	g.mu.Lock()
-	if g.cancelOrderUpdateSub != nil {
-		g.cancelOrderUpdateSub()
+	if g.cancelHubOrderSub != nil {
+		g.cancelHubOrderSub()
 	}
-	ctx, g.cancelOrderUpdateSub = context.WithCancel(ctx)
+	ctx, g.cancelHubOrderSub = context.WithCancel(ctx)
 	g.mu.Unlock()
 	go func() {
 		defer func() { recover() }()

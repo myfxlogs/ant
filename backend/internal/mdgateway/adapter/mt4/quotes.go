@@ -232,10 +232,13 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 			if p == nil {
 				continue
 			}
-			profit := p.GetEquity() - p.GetBalance()
+			// Use Decimal for financial arithmetic to avoid float64 rounding.
+			equityD := decimal.NewFromFloat(p.GetEquity())
+			balanceD := decimal.NewFromFloat(p.GetBalance())
+			profitD := equityD.Sub(balanceD)
 			var profitPercent float64
-			if p.GetBalance() > 0 {
-				profitPercent = profit / p.GetBalance() * 100
+			if !balanceD.IsZero() {
+				profitPercent = profitD.Div(balanceD).Mul(decimal.NewFromInt(100)).InexactFloat64()
 			}
 			positions := make([]mdtick.ProfitPosition, 0, len(p.GetOrders()))
 			for _, o := range p.GetOrders() {
@@ -256,7 +259,7 @@ func (g *Gateway) profitRecvLoop(ctx context.Context, handler mdtick.ProfitHandl
 				Margin:        p.GetMargin(),
 				FreeMargin:    p.GetFreeMargin(),
 				MarginLevel:   p.GetMarginLevel(),
-				Profit:        profit,
+				Profit:        profitD.InexactFloat64(),
 				ProfitPercent: profitPercent,
 				Positions:     positions,
 			})

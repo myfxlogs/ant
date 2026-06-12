@@ -186,7 +186,8 @@ func (g *Gateway) fetchAndPublish(ctx context.Context, sid string, p *pb.ProfitU
 			zap.String("account_id", g.cfg.AccountID), zap.Error(err))
 		balance = p.GetBalance()
 		equity = p.GetEquity()
-		profit = equity - balance
+		// Use Decimal for arithmetic to avoid float64 rounding.
+		profit = decimal.NewFromFloat(equity).Sub(decimal.NewFromFloat(balance)).InexactFloat64()
 		margin = p.GetMargin()
 		freeMargin = p.GetFreeMargin()
 		marginLevel = p.GetMarginLevel()
@@ -199,7 +200,8 @@ func (g *Gateway) fetchAndPublish(ctx context.Context, sid string, p *pb.ProfitU
 
 	var profitPercent float64
 	if balance > 0 {
-		profitPercent = profit / balance * 100
+		// Use Decimal arithmetic for rounding-safe percentage.
+		profitPercent = decimal.NewFromFloat(profit).Div(decimal.NewFromFloat(balance)).Mul(decimal.NewFromInt(100)).InexactFloat64()
 	}
 
 	var positions []mdtick.ProfitPosition

@@ -25,6 +25,9 @@ func (g *Gateway) FetchOpenedOrders(ctx context.Context) ([]*mthub.OrderRecord, 
 	if err != nil {
 		return nil, fmt.Errorf("mt4 OpenedOrders: %w", err)
 	}
+	if resp.GetError() != nil && resp.GetError().GetCode() != 0 {
+		return nil, fmt.Errorf("mt4 OpenedOrders: code=%d msg=%s", resp.GetError().GetCode(), resp.GetError().GetMessage())
+	}
 	orders := resp.GetResult()
 	out := make([]*mthub.OrderRecord, 0, len(orders))
 	for _, o := range orders {
