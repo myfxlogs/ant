@@ -18,9 +18,8 @@
         <ttl>event_date + INTERVAL 3 DAY DELETE</ttl>
     </query_log>
 
-    <!-- Memory governance: 2GiB container, leave 15% headroom for OS/kernel -->
+    <!-- Memory governance: 2GiB container × 0.85 = 1.7GiB for ClickHouse, 300MiB for OS/kernel -->
     <max_server_memory_usage_to_ram_ratio>0.85</max_server_memory_usage_to_ram_ratio>
-    <max_server_memory_usage>1740000000</max_server_memory_usage>
 
     <!-- Cap caches so they don't squeeze query memory -->
     <mark_cache_size>134217728</mark_cache_size>          <!-- 128 MiB -->
