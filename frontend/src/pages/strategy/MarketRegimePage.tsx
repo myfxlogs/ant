@@ -42,6 +42,7 @@ export default function MarketRegimePage() {
               optionFilterProp="label"
               notFoundContent={t('strategy.workspace.noAccounts')}
               options={activeAccounts.map((a) => ({ value: a.id, label: `${a.brokerServer} · ${a.login}` }))}
+              style={{ width: '30%' }}
             />
           </Form.Item>
           <Space size="large" wrap>
