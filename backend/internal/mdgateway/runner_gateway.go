@@ -34,6 +34,13 @@ func startGatewayForAccount(ctx context.Context, cfg mdtick.AccountConfig, deps 
 		return nil, fmt.Errorf("connect: %w", err)
 	}
 
+	// Wire gateway connection state changes → OnAccountStatus callback.
+	gw.SetStatusCallback(func(status, message string) {
+		if deps.OnAccountStatus != nil {
+			deps.OnAccountStatus(accID, cfg.UserID, status, message)
+		}
+	})
+
 	// Persist connected status + account metadata (investor flag, method).
 	if deps.PG != nil {
 		isInvestor := false

@@ -129,7 +129,9 @@ func startMdGatewayPipeline(
 		},
 		OnOrderUpdate: buildOnOrderUpdate(log, accountSvc, accountBroker, snapshotBroker, tradeRecordRepo, platformAgg),
 		OnAccountDisconnect: func(accountID string) {
+			var uid string
 			if userID, err := getUserIDFromPool(context.Background(), pool, accountID); err == nil {
+				uid = userID
 				accountSyncSvc.SyncAccountHistory(accountID, userID)
 			}
 			(*platformAgg).ClearAccount(accountID)
@@ -140,6 +142,12 @@ func startMdGatewayPipeline(
 			if err := accountSvc.DisconnectAccountByID(writeCtx, accountID); err != nil {
 				log.Warn("OnAccountDisconnect: failed to update account_status", zap.String("account", accountID), zap.Error(err))
 			}
+			// Push real-time status update to SSE subscribers.
+			mthubSvc.PublishAccountStatus(&mthub.AccountStatusEvent{
+				AccountID: accountID, UserID: uid, Status: "disconnected",
+				Message: "health monitor: account dead after reconnect failure",
+				Timestamp: time.Now(),
+			})
 		},
 		OnBrokerInfo: func(accountID, platform, broker string, info *mdtick.BrokerInfo) {
 			if userID, err := getUserIDFromPool(context.Background(), pool, accountID); err == nil {
@@ -187,6 +195,31 @@ func startMdGatewayPipeline(
 						zap.Float64("stop_out_pct", stop))
 				}
 			}
+		},
+		OnAccountStatus: func(accountID, userID, status, message string) {
+			writeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			if status == "connected" {
+				if _, err := pool.Exec(writeCtx,
+					`UPDATE mt_accounts SET account_status = $1, last_error = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = $2`,
+					status, accountID); err != nil {
+					log.Warn("OnAccountStatus: update failed", zap.String("account", accountID), zap.Error(err))
+				}
+			} else {
+				msg := message
+				if len(msg) > 512 {
+					msg = msg[:512]
+				}
+				if _, err := pool.Exec(writeCtx,
+					`UPDATE mt_accounts SET account_status = $1, last_error = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3`,
+					status, msg, accountID); err != nil {
+					log.Warn("OnAccountStatus: update failed", zap.String("account", accountID), zap.Error(err))
+				}
+			}
+			mthubSvc.PublishAccountStatus(&mthub.AccountStatusEvent{
+				AccountID: accountID, UserID: userID, Status: status,
+				Message: message, Timestamp: time.Now(),
+			})
 		},
 		OnBar: func(b *mdtick.Bar) {
 			o, _ := b.Open.Float64()
