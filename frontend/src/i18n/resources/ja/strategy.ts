@@ -69,6 +69,11 @@ const strategy = {
     },
     schedules: {
       title: '戦略スケジュール',
+      createSchedule: 'スケジュール作成',
+      format: {
+        interval: '{{s}}秒毎',
+        cron: 'cron: {{expr}}',
+      },
       actions: {
         create: 'スケジュール作成',
         logs: 'ログ',

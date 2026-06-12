@@ -125,7 +125,7 @@ function CodeModal({ open, code, onClose, onCopy }: { open: boolean; code: strin
         </div>
         <pre style={{ flex: 1, overflow: 'auto', padding: 16, margin: 0, background: '#1e1e1e', color: '#d4d4d4', fontSize: 13, lineHeight: 1.5 }}>{code}</pre>
         <div style={{ padding: '10px 20px', borderTop: '1px solid #f0f0f0', textAlign: 'right' }}>
-          <button onClick={() => onCopy(code)} style={{ padding: '4px 16px', border: '1px solid #d9d9d9', borderRadius: 4, background: '#fff', cursor: 'pointer', fontSize: 13 }}>{t('strategy.templates.actions.copyCode')}</button>
+          <button onClick={() => onCopy(code)} style={{ padding: '4px 16px', border: '1px solid #d9d9d9', borderRadius: 4, background: '#fff', cursor: 'pointer', fontSize: 13 }}>{t('strategy.templates.actions.copy')}</button>
         </div>
       </div>
     </div>

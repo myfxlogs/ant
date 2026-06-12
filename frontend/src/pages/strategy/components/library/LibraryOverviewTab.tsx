@@ -72,7 +72,7 @@ export default function LibraryOverviewTab() {
         <div style={{ marginTop: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <Text strong>{t('strategy.library.codePreview')}</Text>
-            <Button size="small" onClick={handleCopyCode}>{t('strategy.templates.actions.copyCode')}</Button>
+            <Button size="small" onClick={handleCopyCode}>{t('strategy.templates.actions.copy')}</Button>
           </div>
           <pre style={{ background: '#1e1e1e', color: '#d4d4d4', padding: 12, borderRadius: 6, fontSize: 12, maxHeight: 240, overflow: 'auto', margin: 0 }}>
             {code.split('\n').slice(0, 20).join('\n')}

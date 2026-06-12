@@ -121,7 +121,7 @@ export default function ScheduleTable({
     {
       title: t("strategy.schedules.table.schedule"),
       key: "schedule",
-      render: (_: any, row: any) => <Text>{formatSchedule(row)}</Text>,
+      render: (_: any, row: any) => <Text>{formatSchedule(t, row)}</Text>,
     },
     {
       title: t("strategy.schedules.table.status"),
@@ -214,7 +214,7 @@ export default function ScheduleTable({
   );
 }
 
-function formatSchedule(row: any) {
+function formatSchedule(t: (key: string) => string, row: any) {
   const conf = row?.scheduleConfig || {};
   if (row?.scheduleType === "interval") {
     const raw = conf?.intervalMs;
@@ -225,10 +225,11 @@ function formatSchedule(row: any) {
           ? Number(raw)
           : undefined;
     if (typeof ms === "number" && Number.isFinite(ms) && ms > 0) {
-      return `interval: ${Math.max(1, Math.floor(ms / 1000))}s`;
+      const s = Math.max(1, Math.floor(ms / 1000));
+      return t('strategy.schedules.format.interval', { s });
     }
     return "-";
   }
   const cron = String(conf?.cronExpression || "").trim();
-  return cron ? `cron: ${cron}` : "-";
+  return cron ? t('strategy.schedules.format.cron', { expr: cron }) : "-";
 }

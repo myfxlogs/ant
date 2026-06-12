@@ -73,6 +73,11 @@ const strategy = {
     },
     schedules: {
       title: '策略調度',
+      createSchedule: '建立調度',
+      format: {
+        interval: '每 {{s}}秒',
+        cron: '定時: {{expr}}',
+      },
       actions: {
         create: '新建調度',
         logs: '日誌',

@@ -69,6 +69,11 @@ const strategy = {
     },
     schedules: {
       title: 'Lịch chạy chiến lược',
+      createSchedule: 'Tạo lịch',
+      format: {
+        interval: 'mỗi {{s}}s',
+        cron: 'cron: {{expr}}',
+      },
       actions: {
         create: 'Tạo lịch',
         logs: 'Nhật ký',

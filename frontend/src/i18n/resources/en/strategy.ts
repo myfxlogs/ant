@@ -489,6 +489,11 @@ const strategy = {
     },
     schedules: {
       title: 'Schedules',
+      createSchedule: 'Create Schedule',
+      format: {
+        interval: 'every {{s}}s',
+        cron: 'cron: {{expr}}',
+      },
       status: {
         running: 'Running',
         disabled: 'Disabled'
