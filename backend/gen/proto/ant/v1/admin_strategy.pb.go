@@ -1190,6 +1190,86 @@ func (*UnpublishStrategyResponse) Descriptor() ([]byte, []int) {
 	return file_admin_strategy_proto_rawDescGZIP(), []int{17}
 }
 
+type AdminPublishStrategyRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminPublishStrategyRequest) Reset() {
+	*x = AdminPublishStrategyRequest{}
+	mi := &file_admin_strategy_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminPublishStrategyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminPublishStrategyRequest) ProtoMessage() {}
+
+func (x *AdminPublishStrategyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_admin_strategy_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminPublishStrategyRequest.ProtoReflect.Descriptor instead.
+func (*AdminPublishStrategyRequest) Descriptor() ([]byte, []int) {
+	return file_admin_strategy_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *AdminPublishStrategyRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type AdminPublishStrategyResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminPublishStrategyResponse) Reset() {
+	*x = AdminPublishStrategyResponse{}
+	mi := &file_admin_strategy_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminPublishStrategyResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminPublishStrategyResponse) ProtoMessage() {}
+
+func (x *AdminPublishStrategyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_admin_strategy_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminPublishStrategyResponse.ProtoReflect.Descriptor instead.
+func (*AdminPublishStrategyResponse) Descriptor() ([]byte, []int) {
+	return file_admin_strategy_proto_rawDescGZIP(), []int{19}
+}
+
 type DisableStrategyRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -1199,7 +1279,7 @@ type DisableStrategyRequest struct {
 
 func (x *DisableStrategyRequest) Reset() {
 	*x = DisableStrategyRequest{}
-	mi := &file_admin_strategy_proto_msgTypes[18]
+	mi := &file_admin_strategy_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1211,7 +1291,7 @@ func (x *DisableStrategyRequest) String() string {
 func (*DisableStrategyRequest) ProtoMessage() {}
 
 func (x *DisableStrategyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_strategy_proto_msgTypes[18]
+	mi := &file_admin_strategy_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1224,7 +1304,7 @@ func (x *DisableStrategyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DisableStrategyRequest.ProtoReflect.Descriptor instead.
 func (*DisableStrategyRequest) Descriptor() ([]byte, []int) {
-	return file_admin_strategy_proto_rawDescGZIP(), []int{18}
+	return file_admin_strategy_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *DisableStrategyRequest) GetId() string {
@@ -1242,7 +1322,7 @@ type DisableStrategyResponse struct {
 
 func (x *DisableStrategyResponse) Reset() {
 	*x = DisableStrategyResponse{}
-	mi := &file_admin_strategy_proto_msgTypes[19]
+	mi := &file_admin_strategy_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1254,7 +1334,7 @@ func (x *DisableStrategyResponse) String() string {
 func (*DisableStrategyResponse) ProtoMessage() {}
 
 func (x *DisableStrategyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_strategy_proto_msgTypes[19]
+	mi := &file_admin_strategy_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1267,7 +1347,7 @@ func (x *DisableStrategyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DisableStrategyResponse.ProtoReflect.Descriptor instead.
 func (*DisableStrategyResponse) Descriptor() ([]byte, []int) {
-	return file_admin_strategy_proto_rawDescGZIP(), []int{19}
+	return file_admin_strategy_proto_rawDescGZIP(), []int{21}
 }
 
 type EnableStrategyRequest struct {
@@ -1279,7 +1359,7 @@ type EnableStrategyRequest struct {
 
 func (x *EnableStrategyRequest) Reset() {
 	*x = EnableStrategyRequest{}
-	mi := &file_admin_strategy_proto_msgTypes[20]
+	mi := &file_admin_strategy_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1291,7 +1371,7 @@ func (x *EnableStrategyRequest) String() string {
 func (*EnableStrategyRequest) ProtoMessage() {}
 
 func (x *EnableStrategyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_strategy_proto_msgTypes[20]
+	mi := &file_admin_strategy_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1304,7 +1384,7 @@ func (x *EnableStrategyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EnableStrategyRequest.ProtoReflect.Descriptor instead.
 func (*EnableStrategyRequest) Descriptor() ([]byte, []int) {
-	return file_admin_strategy_proto_rawDescGZIP(), []int{20}
+	return file_admin_strategy_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *EnableStrategyRequest) GetId() string {
@@ -1322,7 +1402,7 @@ type EnableStrategyResponse struct {
 
 func (x *EnableStrategyResponse) Reset() {
 	*x = EnableStrategyResponse{}
-	mi := &file_admin_strategy_proto_msgTypes[21]
+	mi := &file_admin_strategy_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1334,7 +1414,7 @@ func (x *EnableStrategyResponse) String() string {
 func (*EnableStrategyResponse) ProtoMessage() {}
 
 func (x *EnableStrategyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_strategy_proto_msgTypes[21]
+	mi := &file_admin_strategy_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1347,7 +1427,7 @@ func (x *EnableStrategyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EnableStrategyResponse.ProtoReflect.Descriptor instead.
 func (*EnableStrategyResponse) Descriptor() ([]byte, []int) {
-	return file_admin_strategy_proto_rawDescGZIP(), []int{21}
+	return file_admin_strategy_proto_rawDescGZIP(), []int{23}
 }
 
 type ArchiveStrategyRequest struct {
@@ -1359,7 +1439,7 @@ type ArchiveStrategyRequest struct {
 
 func (x *ArchiveStrategyRequest) Reset() {
 	*x = ArchiveStrategyRequest{}
-	mi := &file_admin_strategy_proto_msgTypes[22]
+	mi := &file_admin_strategy_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1371,7 +1451,7 @@ func (x *ArchiveStrategyRequest) String() string {
 func (*ArchiveStrategyRequest) ProtoMessage() {}
 
 func (x *ArchiveStrategyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_strategy_proto_msgTypes[22]
+	mi := &file_admin_strategy_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1384,7 +1464,7 @@ func (x *ArchiveStrategyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArchiveStrategyRequest.ProtoReflect.Descriptor instead.
 func (*ArchiveStrategyRequest) Descriptor() ([]byte, []int) {
-	return file_admin_strategy_proto_rawDescGZIP(), []int{22}
+	return file_admin_strategy_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *ArchiveStrategyRequest) GetId() string {
@@ -1402,7 +1482,7 @@ type ArchiveStrategyResponse struct {
 
 func (x *ArchiveStrategyResponse) Reset() {
 	*x = ArchiveStrategyResponse{}
-	mi := &file_admin_strategy_proto_msgTypes[23]
+	mi := &file_admin_strategy_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1414,7 +1494,7 @@ func (x *ArchiveStrategyResponse) String() string {
 func (*ArchiveStrategyResponse) ProtoMessage() {}
 
 func (x *ArchiveStrategyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_admin_strategy_proto_msgTypes[23]
+	mi := &file_admin_strategy_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1427,7 +1507,7 @@ func (x *ArchiveStrategyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArchiveStrategyResponse.ProtoReflect.Descriptor instead.
 func (*ArchiveStrategyResponse) Descriptor() ([]byte, []int) {
-	return file_admin_strategy_proto_rawDescGZIP(), []int{23}
+	return file_admin_strategy_proto_rawDescGZIP(), []int{25}
 }
 
 var File_admin_strategy_proto protoreflect.FileDescriptor
@@ -1543,7 +1623,10 @@ const file_admin_strategy_proto_rawDesc = "" +
 	"\x16UnflagStrategyResponse\"*\n" +
 	"\x18UnpublishStrategyRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x1b\n" +
-	"\x19UnpublishStrategyResponse\"(\n" +
+	"\x19UnpublishStrategyResponse\"-\n" +
+	"\x1bAdminPublishStrategyRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\x1e\n" +
+	"\x1cAdminPublishStrategyResponse\"(\n" +
 	"\x16DisableStrategyRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x19\n" +
 	"\x17DisableStrategyResponse\"'\n" +
@@ -1552,7 +1635,7 @@ const file_admin_strategy_proto_rawDesc = "" +
 	"\x16EnableStrategyResponse\"(\n" +
 	"\x16ArchiveStrategyRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x19\n" +
-	"\x17ArchiveStrategyResponse2\x9e\b\n" +
+	"\x17ArchiveStrategyResponse2\xfc\b\n" +
 	"\x14AdminStrategyService\x12a\n" +
 	"\x14ListSystemStrategies\x12#.ant.v1.ListSystemStrategiesRequest\x1a$.ant.v1.ListSystemStrategiesResponse\x12S\n" +
 	"\x14CreateSystemStrategy\x12#.ant.v1.CreateSystemStrategyRequest\x1a\x16.ant.v1.SystemStrategy\x12S\n" +
@@ -1562,7 +1645,8 @@ const file_admin_strategy_proto_rawDesc = "" +
 	"\x11GetStrategyDetail\x12 .ant.v1.GetStrategyDetailRequest\x1a\x16.ant.v1.StrategyDetail\x12I\n" +
 	"\fFlagStrategy\x12\x1b.ant.v1.FlagStrategyRequest\x1a\x1c.ant.v1.FlagStrategyResponse\x12O\n" +
 	"\x0eUnflagStrategy\x12\x1d.ant.v1.UnflagStrategyRequest\x1a\x1e.ant.v1.UnflagStrategyResponse\x12X\n" +
-	"\x11UnpublishStrategy\x12 .ant.v1.UnpublishStrategyRequest\x1a!.ant.v1.UnpublishStrategyResponse\x12R\n" +
+	"\x11UnpublishStrategy\x12 .ant.v1.UnpublishStrategyRequest\x1a!.ant.v1.UnpublishStrategyResponse\x12\\\n" +
+	"\x0fPublishStrategy\x12#.ant.v1.AdminPublishStrategyRequest\x1a$.ant.v1.AdminPublishStrategyResponse\x12R\n" +
 	"\x0fDisableStrategy\x12\x1e.ant.v1.DisableStrategyRequest\x1a\x1f.ant.v1.DisableStrategyResponse\x12O\n" +
 	"\x0eEnableStrategy\x12\x1d.ant.v1.EnableStrategyRequest\x1a\x1e.ant.v1.EnableStrategyResponse\x12R\n" +
 	"\x0fArchiveStrategy\x12\x1e.ant.v1.ArchiveStrategyRequest\x1a\x1f.ant.v1.ArchiveStrategyResponseB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
@@ -1579,7 +1663,7 @@ func file_admin_strategy_proto_rawDescGZIP() []byte {
 	return file_admin_strategy_proto_rawDescData
 }
 
-var file_admin_strategy_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
+var file_admin_strategy_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_admin_strategy_proto_goTypes = []any{
 	(*SystemStrategy)(nil),               // 0: ant.v1.SystemStrategy
 	(*ListSystemStrategiesRequest)(nil),  // 1: ant.v1.ListSystemStrategiesRequest
@@ -1599,24 +1683,26 @@ var file_admin_strategy_proto_goTypes = []any{
 	(*UnflagStrategyResponse)(nil),       // 15: ant.v1.UnflagStrategyResponse
 	(*UnpublishStrategyRequest)(nil),     // 16: ant.v1.UnpublishStrategyRequest
 	(*UnpublishStrategyResponse)(nil),    // 17: ant.v1.UnpublishStrategyResponse
-	(*DisableStrategyRequest)(nil),       // 18: ant.v1.DisableStrategyRequest
-	(*DisableStrategyResponse)(nil),      // 19: ant.v1.DisableStrategyResponse
-	(*EnableStrategyRequest)(nil),        // 20: ant.v1.EnableStrategyRequest
-	(*EnableStrategyResponse)(nil),       // 21: ant.v1.EnableStrategyResponse
-	(*ArchiveStrategyRequest)(nil),       // 22: ant.v1.ArchiveStrategyRequest
-	(*ArchiveStrategyResponse)(nil),      // 23: ant.v1.ArchiveStrategyResponse
-	(*timestamppb.Timestamp)(nil),        // 24: google.protobuf.Timestamp
+	(*AdminPublishStrategyRequest)(nil),  // 18: ant.v1.AdminPublishStrategyRequest
+	(*AdminPublishStrategyResponse)(nil), // 19: ant.v1.AdminPublishStrategyResponse
+	(*DisableStrategyRequest)(nil),       // 20: ant.v1.DisableStrategyRequest
+	(*DisableStrategyResponse)(nil),      // 21: ant.v1.DisableStrategyResponse
+	(*EnableStrategyRequest)(nil),        // 22: ant.v1.EnableStrategyRequest
+	(*EnableStrategyResponse)(nil),       // 23: ant.v1.EnableStrategyResponse
+	(*ArchiveStrategyRequest)(nil),       // 24: ant.v1.ArchiveStrategyRequest
+	(*ArchiveStrategyResponse)(nil),      // 25: ant.v1.ArchiveStrategyResponse
+	(*timestamppb.Timestamp)(nil),        // 26: google.protobuf.Timestamp
 }
 var file_admin_strategy_proto_depIdxs = []int32{
-	24, // 0: ant.v1.SystemStrategy.created_at:type_name -> google.protobuf.Timestamp
-	24, // 1: ant.v1.SystemStrategy.updated_at:type_name -> google.protobuf.Timestamp
+	26, // 0: ant.v1.SystemStrategy.created_at:type_name -> google.protobuf.Timestamp
+	26, // 1: ant.v1.SystemStrategy.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: ant.v1.ListSystemStrategiesResponse.strategies:type_name -> ant.v1.SystemStrategy
-	24, // 3: ant.v1.StrategySummary.created_at:type_name -> google.protobuf.Timestamp
-	24, // 4: ant.v1.StrategySummary.updated_at:type_name -> google.protobuf.Timestamp
+	26, // 3: ant.v1.StrategySummary.created_at:type_name -> google.protobuf.Timestamp
+	26, // 4: ant.v1.StrategySummary.updated_at:type_name -> google.protobuf.Timestamp
 	8,  // 5: ant.v1.ListAllStrategiesResponse.strategies:type_name -> ant.v1.StrategySummary
-	24, // 6: ant.v1.StrategyDetail.flagged_at:type_name -> google.protobuf.Timestamp
-	24, // 7: ant.v1.StrategyDetail.created_at:type_name -> google.protobuf.Timestamp
-	24, // 8: ant.v1.StrategyDetail.updated_at:type_name -> google.protobuf.Timestamp
+	26, // 6: ant.v1.StrategyDetail.flagged_at:type_name -> google.protobuf.Timestamp
+	26, // 7: ant.v1.StrategyDetail.created_at:type_name -> google.protobuf.Timestamp
+	26, // 8: ant.v1.StrategyDetail.updated_at:type_name -> google.protobuf.Timestamp
 	1,  // 9: ant.v1.AdminStrategyService.ListSystemStrategies:input_type -> ant.v1.ListSystemStrategiesRequest
 	3,  // 10: ant.v1.AdminStrategyService.CreateSystemStrategy:input_type -> ant.v1.CreateSystemStrategyRequest
 	4,  // 11: ant.v1.AdminStrategyService.UpdateSystemStrategy:input_type -> ant.v1.UpdateSystemStrategyRequest
@@ -1626,23 +1712,25 @@ var file_admin_strategy_proto_depIdxs = []int32{
 	12, // 15: ant.v1.AdminStrategyService.FlagStrategy:input_type -> ant.v1.FlagStrategyRequest
 	14, // 16: ant.v1.AdminStrategyService.UnflagStrategy:input_type -> ant.v1.UnflagStrategyRequest
 	16, // 17: ant.v1.AdminStrategyService.UnpublishStrategy:input_type -> ant.v1.UnpublishStrategyRequest
-	18, // 18: ant.v1.AdminStrategyService.DisableStrategy:input_type -> ant.v1.DisableStrategyRequest
-	20, // 19: ant.v1.AdminStrategyService.EnableStrategy:input_type -> ant.v1.EnableStrategyRequest
-	22, // 20: ant.v1.AdminStrategyService.ArchiveStrategy:input_type -> ant.v1.ArchiveStrategyRequest
-	2,  // 21: ant.v1.AdminStrategyService.ListSystemStrategies:output_type -> ant.v1.ListSystemStrategiesResponse
-	0,  // 22: ant.v1.AdminStrategyService.CreateSystemStrategy:output_type -> ant.v1.SystemStrategy
-	0,  // 23: ant.v1.AdminStrategyService.UpdateSystemStrategy:output_type -> ant.v1.SystemStrategy
-	6,  // 24: ant.v1.AdminStrategyService.DeleteSystemStrategy:output_type -> ant.v1.DeleteSystemStrategyResponse
-	9,  // 25: ant.v1.AdminStrategyService.ListAllStrategies:output_type -> ant.v1.ListAllStrategiesResponse
-	11, // 26: ant.v1.AdminStrategyService.GetStrategyDetail:output_type -> ant.v1.StrategyDetail
-	13, // 27: ant.v1.AdminStrategyService.FlagStrategy:output_type -> ant.v1.FlagStrategyResponse
-	15, // 28: ant.v1.AdminStrategyService.UnflagStrategy:output_type -> ant.v1.UnflagStrategyResponse
-	17, // 29: ant.v1.AdminStrategyService.UnpublishStrategy:output_type -> ant.v1.UnpublishStrategyResponse
-	19, // 30: ant.v1.AdminStrategyService.DisableStrategy:output_type -> ant.v1.DisableStrategyResponse
-	21, // 31: ant.v1.AdminStrategyService.EnableStrategy:output_type -> ant.v1.EnableStrategyResponse
-	23, // 32: ant.v1.AdminStrategyService.ArchiveStrategy:output_type -> ant.v1.ArchiveStrategyResponse
-	21, // [21:33] is the sub-list for method output_type
-	9,  // [9:21] is the sub-list for method input_type
+	18, // 18: ant.v1.AdminStrategyService.PublishStrategy:input_type -> ant.v1.AdminPublishStrategyRequest
+	20, // 19: ant.v1.AdminStrategyService.DisableStrategy:input_type -> ant.v1.DisableStrategyRequest
+	22, // 20: ant.v1.AdminStrategyService.EnableStrategy:input_type -> ant.v1.EnableStrategyRequest
+	24, // 21: ant.v1.AdminStrategyService.ArchiveStrategy:input_type -> ant.v1.ArchiveStrategyRequest
+	2,  // 22: ant.v1.AdminStrategyService.ListSystemStrategies:output_type -> ant.v1.ListSystemStrategiesResponse
+	0,  // 23: ant.v1.AdminStrategyService.CreateSystemStrategy:output_type -> ant.v1.SystemStrategy
+	0,  // 24: ant.v1.AdminStrategyService.UpdateSystemStrategy:output_type -> ant.v1.SystemStrategy
+	6,  // 25: ant.v1.AdminStrategyService.DeleteSystemStrategy:output_type -> ant.v1.DeleteSystemStrategyResponse
+	9,  // 26: ant.v1.AdminStrategyService.ListAllStrategies:output_type -> ant.v1.ListAllStrategiesResponse
+	11, // 27: ant.v1.AdminStrategyService.GetStrategyDetail:output_type -> ant.v1.StrategyDetail
+	13, // 28: ant.v1.AdminStrategyService.FlagStrategy:output_type -> ant.v1.FlagStrategyResponse
+	15, // 29: ant.v1.AdminStrategyService.UnflagStrategy:output_type -> ant.v1.UnflagStrategyResponse
+	17, // 30: ant.v1.AdminStrategyService.UnpublishStrategy:output_type -> ant.v1.UnpublishStrategyResponse
+	19, // 31: ant.v1.AdminStrategyService.PublishStrategy:output_type -> ant.v1.AdminPublishStrategyResponse
+	21, // 32: ant.v1.AdminStrategyService.DisableStrategy:output_type -> ant.v1.DisableStrategyResponse
+	23, // 33: ant.v1.AdminStrategyService.EnableStrategy:output_type -> ant.v1.EnableStrategyResponse
+	25, // 34: ant.v1.AdminStrategyService.ArchiveStrategy:output_type -> ant.v1.ArchiveStrategyResponse
+	22, // [22:35] is the sub-list for method output_type
+	9,  // [9:22] is the sub-list for method input_type
 	9,  // [9:9] is the sub-list for extension type_name
 	9,  // [9:9] is the sub-list for extension extendee
 	0,  // [0:9] is the sub-list for field type_name
@@ -1661,7 +1749,7 @@ func file_admin_strategy_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_admin_strategy_proto_rawDesc), len(file_admin_strategy_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   24,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

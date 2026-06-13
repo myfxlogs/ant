@@ -258,6 +258,21 @@ func (s *AdminStrategyServer) UnpublishStrategy(ctx context.Context, req *connec
 	return connect.NewResponse(&antv1.UnpublishStrategyResponse{}), nil
 }
 
+func (s *AdminStrategyServer) PublishStrategy(ctx context.Context, req *connect.Request[antv1.AdminPublishStrategyRequest]) (*connect.Response[antv1.AdminPublishStrategyResponse], error) {
+	id, err := uuid.Parse(req.Msg.Id)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	if err := s.svc.PublishTemplate(ctx, id); err != nil {
+		if err == service.ErrTemplateNotFound {
+			return nil, connect.NewError(connect.CodeNotFound, err)
+		}
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	s.log.Info("admin: published strategy", zap.String("strategy_id", req.Msg.Id), zap.String("actor", getActorID(ctx).String()))
+	return connect.NewResponse(&antv1.AdminPublishStrategyResponse{}), nil
+}
+
 func (s *AdminStrategyServer) DisableStrategy(ctx context.Context, req *connect.Request[antv1.DisableStrategyRequest]) (*connect.Response[antv1.DisableStrategyResponse], error) {
 	id, err := uuid.Parse(req.Msg.Id)
 	if err != nil {

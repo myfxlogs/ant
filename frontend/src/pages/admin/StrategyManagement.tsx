@@ -152,6 +152,15 @@ export default function StrategyManagement() {
     );
   };
 
+  const handlePublish = (id: string) => {
+    runAction(
+      () => adminStrategyApi.publishStrategy(id),
+      t('admin.strategy.messages.publishSuccess'),
+      t('admin.strategy.messages.publishFailed'),
+      id,
+    );
+  };
+
   const handleDisable = (id: string) => {
     runAction(
       () => adminStrategyApi.disableStrategy(id),
@@ -241,12 +250,17 @@ export default function StrategyManagement() {
               )}
               {r.flag !== 'disabled' ? (
                 <>
-                  {r.isPublic && !r.isSystem && (
+                  {!r.isSystem && r.isPublic ? (
                     <Button size="small" loading={actionLoading === r.id}
                       onClick={() => handleUnpublish(r.id)}>
                       {t('admin.strategy.actions.unpublish')}
                     </Button>
-                  )}
+                  ) : !r.isSystem && !r.isPublic ? (
+                    <Button size="small" loading={actionLoading === r.id}
+                      onClick={() => handlePublish(r.id)}>
+                      {t('admin.strategy.actions.publish')}
+                    </Button>
+                  ) : null}
                   {!r.isSystem && (
                     <Popconfirm title={t('admin.strategy.actions.disableConfirm')} onConfirm={() => handleDisable(r.id)}>
                       <Button size="small" danger icon={<StopOutlined />} loading={actionLoading === r.id} />

@@ -23,6 +23,7 @@ service AdminStrategyService {
   rpc FlagStrategy(FlagStrategyRequest) returns (FlagStrategyResponse);
   rpc UnflagStrategy(UnflagStrategyRequest) returns (UnflagStrategyResponse);
   rpc UnpublishStrategy(UnpublishStrategyRequest) returns (UnpublishStrategyResponse);
+  rpc PublishStrategy(AdminPublishStrategyRequest) returns (AdminPublishStrategyResponse);
   rpc DisableStrategy(DisableStrategyRequest) returns (DisableStrategyResponse);
   rpc EnableStrategy(EnableStrategyRequest) returns (EnableStrategyResponse);
   rpc ArchiveStrategy(ArchiveStrategyRequest) returns (ArchiveStrategyResponse);
@@ -147,6 +148,12 @@ message UnpublishStrategyRequest {
 }
 
 message UnpublishStrategyResponse {}
+
+message AdminPublishStrategyRequest {
+  string id = 1;
+}
+
+message AdminPublishStrategyResponse {}
 
 message DisableStrategyRequest {
   string id = 1;

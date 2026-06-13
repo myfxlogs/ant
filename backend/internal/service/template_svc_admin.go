@@ -285,6 +285,18 @@ func (s *StrategySvc) UnpublishTemplate(ctx context.Context, id uuid.UUID) error
 	return nil
 }
 
+func (s *StrategySvc) PublishTemplate(ctx context.Context, id uuid.UUID) error {
+	ct, err := s.pg.Exec(ctx,
+		`UPDATE strategy_templates SET is_public=true WHERE id=$1 AND is_system=false`, id)
+	if err != nil {
+		return fmt.Errorf("publish template: %w", err)
+	}
+	if ct.RowsAffected() == 0 {
+		return ErrTemplateNotFound
+	}
+	return nil
+}
+
 func (s *StrategySvc) DisableTemplate(ctx context.Context, id uuid.UUID) error {
 	// Stop all active schedules for this template, then flag as disabled.
 	_, err := s.pg.Exec(ctx,

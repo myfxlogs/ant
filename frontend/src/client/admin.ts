@@ -261,6 +261,9 @@ export const adminStrategyApi = {
   unpublishStrategy: async (id: string) => {
     await adminStrategyClient.unpublishStrategy({ id });
   },
+  publishStrategy: async (id: string) => {
+    await adminStrategyClient.publishStrategy({ id });
+  },
   disableStrategy: async (id: string) => {
     await adminStrategyClient.disableStrategy({ id });
   },

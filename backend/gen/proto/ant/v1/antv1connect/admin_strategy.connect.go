@@ -60,6 +60,9 @@ const (
 	// AdminStrategyServiceUnpublishStrategyProcedure is the fully-qualified name of the
 	// AdminStrategyService's UnpublishStrategy RPC.
 	AdminStrategyServiceUnpublishStrategyProcedure = "/ant.v1.AdminStrategyService/UnpublishStrategy"
+	// AdminStrategyServicePublishStrategyProcedure is the fully-qualified name of the
+	// AdminStrategyService's PublishStrategy RPC.
+	AdminStrategyServicePublishStrategyProcedure = "/ant.v1.AdminStrategyService/PublishStrategy"
 	// AdminStrategyServiceDisableStrategyProcedure is the fully-qualified name of the
 	// AdminStrategyService's DisableStrategy RPC.
 	AdminStrategyServiceDisableStrategyProcedure = "/ant.v1.AdminStrategyService/DisableStrategy"
@@ -85,6 +88,7 @@ type AdminStrategyServiceClient interface {
 	FlagStrategy(context.Context, *connect.Request[v1.FlagStrategyRequest]) (*connect.Response[v1.FlagStrategyResponse], error)
 	UnflagStrategy(context.Context, *connect.Request[v1.UnflagStrategyRequest]) (*connect.Response[v1.UnflagStrategyResponse], error)
 	UnpublishStrategy(context.Context, *connect.Request[v1.UnpublishStrategyRequest]) (*connect.Response[v1.UnpublishStrategyResponse], error)
+	PublishStrategy(context.Context, *connect.Request[v1.AdminPublishStrategyRequest]) (*connect.Response[v1.AdminPublishStrategyResponse], error)
 	DisableStrategy(context.Context, *connect.Request[v1.DisableStrategyRequest]) (*connect.Response[v1.DisableStrategyResponse], error)
 	EnableStrategy(context.Context, *connect.Request[v1.EnableStrategyRequest]) (*connect.Response[v1.EnableStrategyResponse], error)
 	ArchiveStrategy(context.Context, *connect.Request[v1.ArchiveStrategyRequest]) (*connect.Response[v1.ArchiveStrategyResponse], error)
@@ -155,6 +159,12 @@ func NewAdminStrategyServiceClient(httpClient connect.HTTPClient, baseURL string
 			connect.WithSchema(adminStrategyServiceMethods.ByName("UnpublishStrategy")),
 			connect.WithClientOptions(opts...),
 		),
+		publishStrategy: connect.NewClient[v1.AdminPublishStrategyRequest, v1.AdminPublishStrategyResponse](
+			httpClient,
+			baseURL+AdminStrategyServicePublishStrategyProcedure,
+			connect.WithSchema(adminStrategyServiceMethods.ByName("PublishStrategy")),
+			connect.WithClientOptions(opts...),
+		),
 		disableStrategy: connect.NewClient[v1.DisableStrategyRequest, v1.DisableStrategyResponse](
 			httpClient,
 			baseURL+AdminStrategyServiceDisableStrategyProcedure,
@@ -187,6 +197,7 @@ type adminStrategyServiceClient struct {
 	flagStrategy         *connect.Client[v1.FlagStrategyRequest, v1.FlagStrategyResponse]
 	unflagStrategy       *connect.Client[v1.UnflagStrategyRequest, v1.UnflagStrategyResponse]
 	unpublishStrategy    *connect.Client[v1.UnpublishStrategyRequest, v1.UnpublishStrategyResponse]
+	publishStrategy      *connect.Client[v1.AdminPublishStrategyRequest, v1.AdminPublishStrategyResponse]
 	disableStrategy      *connect.Client[v1.DisableStrategyRequest, v1.DisableStrategyResponse]
 	enableStrategy       *connect.Client[v1.EnableStrategyRequest, v1.EnableStrategyResponse]
 	archiveStrategy      *connect.Client[v1.ArchiveStrategyRequest, v1.ArchiveStrategyResponse]
@@ -237,6 +248,11 @@ func (c *adminStrategyServiceClient) UnpublishStrategy(ctx context.Context, req 
 	return c.unpublishStrategy.CallUnary(ctx, req)
 }
 
+// PublishStrategy calls ant.v1.AdminStrategyService.PublishStrategy.
+func (c *adminStrategyServiceClient) PublishStrategy(ctx context.Context, req *connect.Request[v1.AdminPublishStrategyRequest]) (*connect.Response[v1.AdminPublishStrategyResponse], error) {
+	return c.publishStrategy.CallUnary(ctx, req)
+}
+
 // DisableStrategy calls ant.v1.AdminStrategyService.DisableStrategy.
 func (c *adminStrategyServiceClient) DisableStrategy(ctx context.Context, req *connect.Request[v1.DisableStrategyRequest]) (*connect.Response[v1.DisableStrategyResponse], error) {
 	return c.disableStrategy.CallUnary(ctx, req)
@@ -266,6 +282,7 @@ type AdminStrategyServiceHandler interface {
 	FlagStrategy(context.Context, *connect.Request[v1.FlagStrategyRequest]) (*connect.Response[v1.FlagStrategyResponse], error)
 	UnflagStrategy(context.Context, *connect.Request[v1.UnflagStrategyRequest]) (*connect.Response[v1.UnflagStrategyResponse], error)
 	UnpublishStrategy(context.Context, *connect.Request[v1.UnpublishStrategyRequest]) (*connect.Response[v1.UnpublishStrategyResponse], error)
+	PublishStrategy(context.Context, *connect.Request[v1.AdminPublishStrategyRequest]) (*connect.Response[v1.AdminPublishStrategyResponse], error)
 	DisableStrategy(context.Context, *connect.Request[v1.DisableStrategyRequest]) (*connect.Response[v1.DisableStrategyResponse], error)
 	EnableStrategy(context.Context, *connect.Request[v1.EnableStrategyRequest]) (*connect.Response[v1.EnableStrategyResponse], error)
 	ArchiveStrategy(context.Context, *connect.Request[v1.ArchiveStrategyRequest]) (*connect.Response[v1.ArchiveStrategyResponse], error)
@@ -332,6 +349,12 @@ func NewAdminStrategyServiceHandler(svc AdminStrategyServiceHandler, opts ...con
 		connect.WithSchema(adminStrategyServiceMethods.ByName("UnpublishStrategy")),
 		connect.WithHandlerOptions(opts...),
 	)
+	adminStrategyServicePublishStrategyHandler := connect.NewUnaryHandler(
+		AdminStrategyServicePublishStrategyProcedure,
+		svc.PublishStrategy,
+		connect.WithSchema(adminStrategyServiceMethods.ByName("PublishStrategy")),
+		connect.WithHandlerOptions(opts...),
+	)
 	adminStrategyServiceDisableStrategyHandler := connect.NewUnaryHandler(
 		AdminStrategyServiceDisableStrategyProcedure,
 		svc.DisableStrategy,
@@ -370,6 +393,8 @@ func NewAdminStrategyServiceHandler(svc AdminStrategyServiceHandler, opts ...con
 			adminStrategyServiceUnflagStrategyHandler.ServeHTTP(w, r)
 		case AdminStrategyServiceUnpublishStrategyProcedure:
 			adminStrategyServiceUnpublishStrategyHandler.ServeHTTP(w, r)
+		case AdminStrategyServicePublishStrategyProcedure:
+			adminStrategyServicePublishStrategyHandler.ServeHTTP(w, r)
 		case AdminStrategyServiceDisableStrategyProcedure:
 			adminStrategyServiceDisableStrategyHandler.ServeHTTP(w, r)
 		case AdminStrategyServiceEnableStrategyProcedure:
@@ -419,6 +444,10 @@ func (UnimplementedAdminStrategyServiceHandler) UnflagStrategy(context.Context, 
 
 func (UnimplementedAdminStrategyServiceHandler) UnpublishStrategy(context.Context, *connect.Request[v1.UnpublishStrategyRequest]) (*connect.Response[v1.UnpublishStrategyResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AdminStrategyService.UnpublishStrategy is not implemented"))
+}
+
+func (UnimplementedAdminStrategyServiceHandler) PublishStrategy(context.Context, *connect.Request[v1.AdminPublishStrategyRequest]) (*connect.Response[v1.AdminPublishStrategyResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("ant.v1.AdminStrategyService.PublishStrategy is not implemented"))
 }
 
 func (UnimplementedAdminStrategyServiceHandler) DisableStrategy(context.Context, *connect.Request[v1.DisableStrategyRequest]) (*connect.Response[v1.DisableStrategyResponse], error) {
