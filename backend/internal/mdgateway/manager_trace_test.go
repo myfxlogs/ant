@@ -86,15 +86,15 @@ func TestHandleTickCreatesSixSpans(t *testing.T) {
 // HandleTick helper: minimal deps that won't panic.
 func testManager() *Manager {
 	nopLog := zap.NewNop()
-	chCfg := DefaultCHWriterConfig()
-	chCfg.QueueSize = 100
+	pgCfg := DefaultPgWriterConfig()
+	pgCfg.QueueSize = 100
 	return NewManager(ManagerDeps{
 		Normalizer: NewNormalizer(nil),
 		Quality:    NewQuality(DefaultQualityConfig()),
 		Dedup:      NewTickDedup(10),
 		Aggregator: NewBarAggregator(),
 		Publisher:  NewPublisher(nil),
-		CHWriter:   NewCHWriter(chCfg, nil, nil, nopLog),
+		PgWriter:   NewPgWriter(pgCfg, nil, nopLog),
 	})
 }
 

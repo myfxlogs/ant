@@ -6,6 +6,7 @@ import (
 
 	"github.com/shopspring/decimal"
 	"anttrader/internal/mdgateway/adapter/mdtick"
+	"anttrader/internal/repository"
 )
 
 var Periods = []struct{ Name string; Ms int64 }{
@@ -13,14 +14,10 @@ var Periods = []struct{ Name string; Ms int64 }{
 	{"1h", 3_600_000}, {"4h", 14_400_000}, {"1d", 86_400_000}, {"1w", 604_800_000},
 }
 
-type finalizedKey struct {
-	broker, canonical, period string
-}
-
 type BarAggregator struct {
 	mu sync.Mutex
 	bars map[string]*openBar // key: broker:canonical:period
-	finalizedBars map[finalizedKey]map[int64]struct{}
+	finalizedBars map[repository.FinalizedKey]map[int64]struct{}
 }
 
 type openBar struct {
@@ -36,11 +33,11 @@ type openBar struct {
 func NewBarAggregator() *BarAggregator {
 	return &BarAggregator{
 		bars:          make(map[string]*openBar),
-		finalizedBars: make(map[finalizedKey]map[int64]struct{}),
+		finalizedBars: make(map[repository.FinalizedKey]map[int64]struct{}),
 	}
 }
 
-func (a *BarAggregator) LoadFinalizedBars(closeTsMap map[finalizedKey][]int64) {
+func (a *BarAggregator) LoadFinalizedBars(closeTsMap map[repository.FinalizedKey][]int64) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	for k, vals := range closeTsMap {
@@ -56,7 +53,7 @@ func (a *BarAggregator) LoadFinalizedBars(closeTsMap map[finalizedKey][]int64) {
 func (a *BarAggregator) IngestExternalBar(b *mdtick.Bar) bool {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	fk := finalizedKey{b.Broker, b.Canonical, b.Period}
+	fk := repository.FinalizedKey{Broker: b.Broker, Canonical: b.Canonical, Period: b.Period}
 	if set, ok := a.finalizedBars[fk]; ok {
 		if _, exists := set[b.CloseTsUnixMs]; exists {
 			barSkippedFinalized.Add(1)
@@ -94,7 +91,7 @@ func (a *BarAggregator) AddTick(t *mdtick.Tick, onBar func(*mdtick.Bar)) {
 				Volume: ob.volume, TickCount: ob.count,
 				IsClosed: true,
 			}
-			fk := finalizedKey{t.Broker, t.Canonical, p.Name}
+			fk := repository.FinalizedKey{Broker: t.Broker, Canonical: t.Canonical, Period: p.Name}
 			if a.finalizedBars[fk] == nil {
 				a.finalizedBars[fk] = make(map[int64]struct{})
 			}

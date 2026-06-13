@@ -24,7 +24,7 @@ import (
 type MtHubServer struct {
 	svc          *mthub.MtHubService
 	platform     *service.PlatformService
-	marketData   *repository.MarketDataRepository
+	marketData   repository.MarketDataStore
 	tradeRecords *repository.TradeRecordRepository
 	log          *zap.Logger
 	backfillMu   sync.Mutex
@@ -33,7 +33,7 @@ type MtHubServer struct {
 
 var _ antv1c.MtHubServiceHandler = (*MtHubServer)(nil)
 
-func NewMtHubServer(svc *mthub.MtHubService, platform *service.PlatformService, marketData *repository.MarketDataRepository, tradeRecords *repository.TradeRecordRepository, log *zap.Logger) *MtHubServer {
+func NewMtHubServer(svc *mthub.MtHubService, platform *service.PlatformService, marketData repository.MarketDataStore, tradeRecords *repository.TradeRecordRepository, log *zap.Logger) *MtHubServer {
 	return &MtHubServer{svc: svc, platform: platform, marketData: marketData, tradeRecords: tradeRecords, log: log, backfilling: make(map[string]bool)}
 }
 

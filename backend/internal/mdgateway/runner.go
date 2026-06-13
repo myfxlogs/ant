@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
@@ -17,6 +16,7 @@ import (
 	"anttrader/internal/mdgateway/adapter/mt5"
 	"anttrader/internal/mdgateway/backfiller"
 	"anttrader/internal/mthub"
+	"anttrader/internal/repository"
 	"anttrader/internal/secrets"
 )
 
@@ -24,7 +24,8 @@ import (
 type RunnerDeps struct {
 	Log            *zap.Logger
 	PG             *pgxpool.Pool
-	CH             clickhouse.Conn
+	Store          repository.MarketDataStore         // PG market data store
+	ChStore        repository.MarketDataStore         // optional CH read replica (nil if not configured)
 	NATSConn       *nats.Conn
 	SpillDir       string          // default /var/lib/ant/spill
 	Secrets        secrets.Client  // decrypts account passwords and mtapi tokens
@@ -41,65 +42,48 @@ type RunnerDeps struct {
 // Run assembles and starts the full mdgateway pipeline. Blocks until ctx.Done.
 func Run(ctx context.Context, deps RunnerDeps) error {
 	log := deps.Log
-	log.Info("mdgateway: starting", zap.String("spill_dir", deps.SpillDir))
+	log.Info("mdgateway: starting")
 
 	// --- OTel trace (ADR-0010 §2.3) ---
 	tracer := anttrace.New()
 	defer tracer.Shutdown(context.Background())
 	log.Info("mdgateway: trace", zap.Bool("enabled", tracer.Enabled()))
 
-	// --- SpillWriter ---
-	spillCfg := DefaultSpillConfig()
-	if deps.SpillDir != "" {
-		spillCfg.Dir = deps.SpillDir
-	}
-	spillWriter, err := NewSpillWriter(spillCfg, log)
-	if err != nil {
-		return fmt.Errorf("create spill writer: %w", err)
-	}
-	defer spillWriter.Close()
-
-	// --- CHWriter ---
-	chCfg := DefaultCHWriterConfig()
-	chWriter := NewCHWriter(chCfg, deps.CH, spillWriter, log)
-
 	// --- Publisher ---
 	var js nats.JetStreamContext
 	if deps.NATSConn != nil {
-		js, err = deps.NATSConn.JetStream()
-		if err != nil {
-			log.Warn("mdgateway: JetStream not available", zap.Error(err))
+		var jetErr error
+		js, jetErr = deps.NATSConn.JetStream()
+		if jetErr != nil {
+			log.Warn("mdgateway: JetStream not available", zap.Error(jetErr))
 		}
 	}
 	publisher := NewPublisher(js)
 
 	// --- BarAggregator with finalized bars ---
 	aggregator := NewBarAggregator()
-	finalized, err := loadFinalizedBars(ctx, deps.CH, log)
+	finalized, err := loadFinalizedBars(ctx, deps.Store, log)
 	if err != nil {
-		return fmt.Errorf("load finalized bars from ClickHouse: %w", err)
+		return fmt.Errorf("load finalized bars: %w", err)
 	}
 	aggregator.LoadFinalizedBars(finalized)
 
-	// --- SpillReplay (runs after aggregator for finality dedup) ---
-	replay := NewSpillReplay(spillCfg.Dir, publisher, chWriter, aggregator, log)
-	if n, err := replay.Run(ctx); err != nil {
-		log.Warn("mdgateway: spill_replay errors", zap.Error(err))
-	} else {
-		log.Info("mdgateway: spill_replay complete", zap.Int("rows", n))
+	// --- PgWriter (sole writer — PG is the only storage backend) ---
+	pgCfg := DefaultPgWriterConfig()
+	pgWriter := NewPgWriter(pgCfg, deps.Store, log)
+	if deps.ChStore != nil {
+		pgWriter.SetCHStore(deps.ChStore)
 	}
+	// #nosec G118 — pipeline ctx is the correct lifecycle scope for PgWriter
+	go pgWriter.Start(ctx)
 
 	// --- Normalizer + Quality + Dedup ---
 	normalizer := NewNormalizer(deps.PG)
 	quality := NewQuality(DefaultQualityConfig())
 	dedup := NewTickDedup(0) // default size (1000)
 
-	// --- Start CHWriter background loop ---
-	// #nosec G118 — pipeline ctx is the correct lifecycle scope for CHWriter
-	go chWriter.Start(ctx)
-
 	// --- Backfiller (initial scan + 6h cron) ---
-	bf, srcMap := startBackfiller(ctx, deps, aggregator, publisher, chWriter, log)
+	bf, srcMap := startBackfiller(ctx, deps, aggregator, publisher, pgWriter, log)
 
 	// --- NormalizerInvalidator (PG LISTEN) ---
 	invalidator := NewNormalizerInvalidator(log, deps.PG, func(broker, symbolRaw string) {
@@ -114,17 +98,12 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 		Dedup:       dedup,
 		Aggregator:  aggregator,
 		Publisher:   publisher,
-		CHWriter:    chWriter,
-		SpillWriter: spillWriter,
+		PgWriter:    pgWriter,
 		OnBar:       deps.OnBar,
 		Log:         log,
 	})
 	mgr.SetOTelTracer(tracer)
 	mgr.SetBaseContext(ctx)
-
-	chWriter.SetOnSpillFail(func(brokerKey string, err error) {
-		log.Warn("mdgateway: spill failed", zap.String("broker", brokerKey), zap.Error(err))
-	})
 
 	// --- Open bar ticker (500ms) for real-time price updates ---
 	// #nosec G118 — pipeline ctx is the correct lifecycle scope for open bar ticker
@@ -132,7 +111,7 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 
 	// --- Health monitor (start before gateways so accounts with no ticks are caught) ---
 	// #nosec G118 — pipeline ctx is the correct lifecycle scope for health monitor
-	go healthMonitor(ctx, mgr, chWriter, log, deps.OnAccountDisconnect)
+	go healthMonitor(ctx, mgr, nil, log, deps.OnAccountDisconnect)
 
 	// --- Load active accounts and start gateways ---
 	var cfgs []mdtick.AccountConfig
@@ -198,8 +177,8 @@ func Run(ctx context.Context, deps RunnerDeps) error {
 	<-ctx.Done()
 	log.Info("mdgateway: shutting down")
 
-	ticks, bars := chWriter.drain()
-	chWriter.Flush(ctx, ticks, bars)
+	pticks, pbars := pgWriter.Drain()
+	pgWriter.Flush(ctx, pticks, pbars)
 	_ = invalidator
 	_ = bf
 	log.Info("mdgateway: stopped")

@@ -20,13 +20,13 @@ import (
 
 type MarketRegimeServer struct {
 	repo           *repository.MarketRegimeRepository
-	marketDataRepo *repository.MarketDataRepository
+	marketDataRepo repository.MarketDataStore
 	log            *zap.Logger
 }
 
 var _ antv1c.MarketRegimeServiceHandler = (*MarketRegimeServer)(nil)
 
-func NewMarketRegimeServer(repo *repository.MarketRegimeRepository, marketDataRepo *repository.MarketDataRepository, log *zap.Logger) *MarketRegimeServer {
+func NewMarketRegimeServer(repo *repository.MarketRegimeRepository, marketDataRepo repository.MarketDataStore, log *zap.Logger) *MarketRegimeServer {
 	return &MarketRegimeServer{repo: repo, marketDataRepo: marketDataRepo, log: log}
 }
 

@@ -1,28 +1,15 @@
+// market_data_repo.go — shared market data types and helpers.
+// Implementation: PgMarketDataStore (market_data_pg.go).
+
 package repository
 
 import (
-	"context"
-	"fmt"
-	"strconv"
 	"time"
 
-	"github.com/ClickHouse/clickhouse-go/v2"
-	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 )
 
-// MarketDataRepository provides read access to ClickHouse market data.
-type MarketDataRepository struct {
-	ch  clickhouse.Conn
-	log *zap.Logger
-}
-
-// NewMarketDataRepository creates a market data repository backed by ClickHouse.
-func NewMarketDataRepository(ch clickhouse.Conn, log *zap.Logger) *MarketDataRepository {
-	return &MarketDataRepository{ch: ch, log: log}
-}
-
-// KlineBar represents a single OHLCV bar from ClickHouse.
+// KlineBar represents a single OHLCV bar.
 type KlineBar struct {
 	Broker        string
 	Canonical     string
@@ -37,7 +24,14 @@ type KlineBar struct {
 	TickCount     uint32
 }
 
-// timeframeAliases maps MT-standard format to internal format used by ClickHouse.
+// LatestTick holds the latest bid/ask for a symbol.
+type LatestTick struct {
+	Bid    string
+	Ask    string
+	Broker string
+}
+
+// timeframeAliases maps MT-standard format to internal format.
 // Internal format is canonical: 1m, 5m, 15m, 30m, 1h, 4h, 1d, 1w.
 var timeframeAliases = map[string]string{
 	"M1": "1m", "M5": "5m", "M15": "15m", "M30": "30m",
@@ -50,61 +44,11 @@ func normalizeTimeframe(period string) string {
 	if mapped, ok := timeframeAliases[period]; ok {
 		return mapped
 	}
-	return period // already internal, or unknown — pass through
+	return period
 }
 
-// GetKlines returns OHLCV kline bars for a symbol and period, optionally filtered by broker and time range.
-func (r *MarketDataRepository) GetKlines(ctx context.Context, canonical, broker, period string, from, to *time.Time, limit int32) ([]KlineBar, error) {
-	if limit <= 0 {
-		limit = 500
-	}
-	period = normalizeTimeframe(period)
-	query, args := buildKlineQuery(canonical, broker, period, from, to, limit)
-	rows, err := r.ch.Query(ctx, query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("get klines: %w", err)
-	}
-	defer rows.Close()
-	return scanKlineBars(rows, r.log)
-}
-
-// buildKlineQuery constructs a parameterized query for md_bars.
-// Uses toFloat64() casts because open/high/low/close are Decimal(18,6) in CH
-// and the clickhouse-go driver cannot scan Decimal directly into *float64.
-// Avoids FINAL on the ReplacingMergeTree — instead uses LIMIT 1 BY for
-// streaming dedup bounded by a 6-month lookback window.
-func buildKlineQuery(canonical, broker, period string, from, to *time.Time, limit int32) (string, []any) {
-	const lookbackMonths = 6
-	query := `SELECT broker, canonical, period, open_ts_unix_ms, close_ts_unix_ms,
-		                 toFloat64(open), toFloat64(high), toFloat64(low), toFloat64(close),
-		                 volume, tick_count
-		          FROM md_bars
-		          WHERE canonical = $1 AND period = $2 AND is_replay = 0`
-	args := []any{canonical, period}
-
-	if from != nil {
-		query += fmt.Sprintf(` AND close_ts_unix_ms >= $%d`, len(args)+1)
-		args = append(args, from.UnixMilli())
-	} else {
-		cutoffMs := time.Now().AddDate(0, -lookbackMonths, 0).UnixMilli()
-		query += fmt.Sprintf(` AND close_ts_unix_ms >= $%d`, len(args)+1)
-		args = append(args, cutoffMs)
-	}
-	if to != nil {
-		query += fmt.Sprintf(` AND close_ts_unix_ms <= $%d`, len(args)+1)
-		args = append(args, to.UnixMilli())
-	}
-	if broker != "" {
-		query += fmt.Sprintf(` AND broker = $%d`, len(args)+1)
-		args = append(args, broker)
-	}
-	query += fmt.Sprintf(` ORDER BY close_ts_unix_ms DESC
-		           LIMIT 1 BY (broker, canonical, period, close_ts_unix_ms)
-		           LIMIT $%d`, len(args)+1)
-	args = append(args, limit)
-	return query, args
-}
-
+// scanKlineBars scans a row iterator into a slice of KlineBar.
+// Used by both CH (legacy) and PG implementations.
 func scanKlineBars(rows interface{ Scan(...interface{}) error; Next() bool; Err() error }, log *zap.Logger) ([]KlineBar, error) {
 	var bars []KlineBar
 	for rows.Next() {
@@ -112,98 +56,19 @@ func scanKlineBars(rows interface{ Scan(...interface{}) error; Next() bool; Err(
 		if err := rows.Scan(&b.Broker, &b.Canonical, &b.Period, &b.OpenTsUnixMs, &b.CloseTsUnixMs,
 			&b.Open, &b.High, &b.Low, &b.Close, &b.Volume, &b.TickCount); err != nil {
 			if log != nil {
-				log.Warn("get klines: scan row failed", zap.Error(err))
+				log.Warn("scan kline bars: scan row failed", zap.Error(err))
 			}
 			continue
 		}
 		bars = append(bars, b)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("get klines rows: %w", err)
+		return nil, err
 	}
 	if bars == nil {
 		bars = []KlineBar{}
 	}
 	return bars, nil
-}
-
-// InsertBars writes kline bars into the md_bars table (bypassing Buffer for backfill).
-func (r *MarketDataRepository) InsertBars(ctx context.Context, bars []KlineBar) error {
-	if len(bars) == 0 {
-		return nil
-	}
-	batch, err := r.ch.PrepareBatch(ctx,
-		"INSERT INTO md_bars (broker, symbol_raw, canonical, period, open_ts_unix_ms, close_ts_unix_ms, open, high, low, close, volume, tick_count, is_replay, account_id)")
-	if err != nil {
-		return fmt.Errorf("insert bars: prepare batch: %w", err)
-	}
-	defer batch.Abort()
-	for _, b := range bars {
-		o := decimal.NewFromFloat(b.Open)
-		h := decimal.NewFromFloat(b.High)
-		l := decimal.NewFromFloat(b.Low)
-		c := decimal.NewFromFloat(b.Close)
-		if err := batch.Append(b.Broker, b.Canonical, b.Canonical, b.Period, b.OpenTsUnixMs, b.CloseTsUnixMs,
-			o, h, l, c, b.Volume, b.TickCount, uint8(0), ""); err != nil {
-			return fmt.Errorf("insert bars: append: %w", err)
-		}
-	}
-	return batch.Send()
-}
-
-// LatestTick holds the latest bid/ask for a symbol.
-type LatestTick struct {
-	Bid    string
-	Ask    string
-	Broker string
-}
-
-// GetLatestTick returns the most recent tick for a symbol, optionally filtered by broker.
-//
-// Avoids FINAL + ORDER BY DESC LIMIT 1 on the wide ReplacingMergeTree — that
-// pattern forces a full part merge in memory and OOMs on busy symbols. We use
-// argMax(field, ts) which streams in bounded memory, scoped to a 1-day window
-// via the partition key (md_ticks is partitioned monthly on arrived_unix_ms).
-func (r *MarketDataRepository) GetLatestTick(ctx context.Context, canonical, broker string) (*LatestTick, error) {
-	const lookbackHours = 24
-	cutoffMs := time.Now().Add(-lookbackHours * time.Hour).UnixMilli()
-
-	var t LatestTick
-	var bidF, askF float64
-	var brokerOut string
-	var err error
-	if broker != "" {
-		err = r.ch.QueryRow(ctx,
-			`SELECT toFloat64(argMax(bid, ts_unix_ms)),
-			        toFloat64(argMax(ask, ts_unix_ms)),
-			        argMax(broker, ts_unix_ms)
-			 FROM md_ticks
-			 WHERE canonical = $1 AND broker = $2 AND is_replay = 0
-			   AND arrived_unix_ms >= $3`,
-			canonical, broker, cutoffMs,
-		).Scan(&bidF, &askF, &brokerOut)
-	} else {
-		err = r.ch.QueryRow(ctx,
-			`SELECT toFloat64(argMax(bid, ts_unix_ms)),
-			        toFloat64(argMax(ask, ts_unix_ms)),
-			        argMax(broker, ts_unix_ms)
-			 FROM md_ticks
-			 WHERE canonical = $1 AND is_replay = 0
-			   AND arrived_unix_ms >= $2`,
-			canonical, cutoffMs,
-		).Scan(&bidF, &askF, &brokerOut)
-	}
-	if err != nil {
-		return nil, err
-	}
-	if bidF == 0 && askF == 0 {
-		// argMax over an empty set returns zero values without an error.
-		return nil, fmt.Errorf("no recent ticks for %s (last %dh)", canonical, lookbackHours)
-	}
-	t.Bid = strconv.FormatFloat(bidF, 'f', -1, 64)
-	t.Ask = strconv.FormatFloat(askF, 'f', -1, 64)
-	t.Broker = brokerOut
-	return &t, nil
 }
 
 // OpenTime converts a unix millisecond timestamp to time.Time.

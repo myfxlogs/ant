@@ -13,7 +13,7 @@ import (
 func TestDLQParseError(t *testing.T) {
 	t.Parallel()
 	// DLQ with nil CH conn — writes should be no-ops (spill fallback or skip).
-	dlq := NewDLQWriter(nil, nil, zap.NewNop())
+	dlq := NewDLQWriter(zap.NewNop())
 	if dlq == nil {
 		t.Fatal("NewDLQWriter returned nil")
 	}
@@ -34,7 +34,7 @@ func TestDLQParseError(t *testing.T) {
 
 func TestDLQSampling(t *testing.T) {
 	t.Parallel()
-	dlq := NewDLQWriter(nil, nil, zap.NewNop())
+	dlq := NewDLQWriter(zap.NewNop())
 
 	tick := &mdtick.Tick{
 		Broker: "test-broker", Canonical: "EURUSD",
@@ -59,7 +59,7 @@ var _ clickhouse.Conn = nil
 
 func TestDLQAsync(t *testing.T) {
 	t.Parallel()
-	dlq := NewDLQWriter(nil, nil, zap.NewNop())
+	dlq := NewDLQWriter(zap.NewNop())
 	tick := &mdtick.Tick{
 		Broker: "test", Canonical: "EURUSD",
 		TsUnixMs: 1000, ArrivedUnixMs: 1000,

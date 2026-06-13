@@ -44,10 +44,10 @@ type LiveBarSubscriber interface {
 
 type LiveSource struct {
 	hub     *mthub.MtHubService
-	mktRepo *repository.MarketDataRepository
+	mktRepo repository.MarketDataStore
 }
 
-func NewLiveSource(hub *mthub.MtHubService, mktRepo *repository.MarketDataRepository) *LiveSource {
+func NewLiveSource(hub *mthub.MtHubService, mktRepo repository.MarketDataStore) *LiveSource {
 	return &LiveSource{hub: hub, mktRepo: mktRepo}
 }
 

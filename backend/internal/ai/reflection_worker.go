@@ -11,12 +11,12 @@ package ai
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+
+	"anttrader/internal/repository"
 )
 
 const (
@@ -29,15 +29,15 @@ const (
 // triggers confidence recalibration.
 type ReflectionWorker struct {
 	calibration *CalibrationService
-	ch          clickhouse.Conn
+	store       repository.MarketDataStore
 	log         *zap.Logger
 	stopCh      chan struct{}
 }
 
-func NewReflectionWorker(cal *CalibrationService, ch clickhouse.Conn, log *zap.Logger) *ReflectionWorker {
+func NewReflectionWorker(cal *CalibrationService, store repository.MarketDataStore, log *zap.Logger) *ReflectionWorker {
 	return &ReflectionWorker{
 		calibration: cal,
-		ch:          ch,
+		store:       store,
 		log:         log,
 		stopCh:      make(chan struct{}),
 	}
@@ -117,32 +117,8 @@ func (w *ReflectionWorker) run(ctx context.Context) {
 	}
 }
 
-// fetchActualReturn queries ClickHouse for the 7-day price return after predicted_at.
+// fetchActualReturn queries the MarketDataStore for the 7-day price return after predicted_at.
 func (w *ReflectionWorker) fetchActualReturn(ctx context.Context, symbol string, predictedAt time.Time) (float64, error) {
-	start := predictedAt
-	end := predictedAt.Add(7 * 24 * time.Hour)
-
-	var openPrice, closePrice float64
-	err := w.ch.QueryRow(ctx,
-		`SELECT
-			COALESCE((SELECT open FROM md_bars
-			  WHERE canonical = $1 AND period = '1d'
-			    AND open_ts_unix_ms >= $2 AND open_ts_unix_ms < $3
-			  ORDER BY open_ts_unix_ms ASC LIMIT 1), 0),
-			COALESCE((SELECT close FROM md_bars
-			  WHERE canonical = $1 AND period = '1d'
-			    AND close_ts_unix_ms <= $4
-			  ORDER BY close_ts_unix_ms DESC LIMIT 1), 0)`,
-		symbol,
-		start.UnixMilli(), end.UnixMilli(),
-		end.UnixMilli(),
-	).Scan(&openPrice, &closePrice)
-	if err != nil {
-		return 0, err
-	}
-	if openPrice <= 0 {
-		return 0, fmt.Errorf("no price data for %s", symbol)
-	}
-	return (closePrice - openPrice) / openPrice, nil
+	return w.store.FetchActualReturn(ctx, symbol, predictedAt)
 }
 

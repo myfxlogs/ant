@@ -22,7 +22,6 @@ import (
 	"anttrader/internal/interceptor"
 	"anttrader/internal/mdgateway/adapter"
 	anttrace "anttrader/internal/trace"
-	"anttrader/internal/mdgateway/chmigrate"
 	"anttrader/internal/mthub"
 	notifpubsub "anttrader/internal/notification"
 	"anttrader/internal/notifier"
@@ -95,30 +94,27 @@ func main() {
 	}
 	defer pool.Close()
 
-	// Connect to ClickHouse
-	chHost := cfg.CHHost
-	chPort := cfg.CHPort
-	chUser := cfg.CHUser
-	chPass := cfg.CHPassword
-	chDB := cfg.CHDatabase
-	ch, err := clickhouse.Open(&clickhouse.Options{
-		Addr: []string{fmt.Sprintf("%s:%s", chHost, chPort)},
-		Auth: clickhouse.Auth{
-			Database: chDB,
-			Username: chUser,
-			Password: chPass,
-		},
-	})
-	if err != nil {
-		log.Fatal("clickhouse connect failed", zap.Error(err))
+	// PG is the system of record for market data.
+	pgStore := repository.NewPgMarketDataStore(pool, log)
+
+	// Optional ClickHouse read replica for analytical queries (200+ accounts).
+	var chStore repository.MarketDataStore
+	if cfg.CHHost != "" {
+		chConn, chErr := connectClickHouse(cfg, log)
+		if chErr != nil {
+			log.Warn("ClickHouse unavailable — running PG-only", zap.Error(chErr))
+		} else {
+			defer chConn.Close()
+			chStore = repository.NewCHMarketDataStore(chConn, log)
+			log.Info("ClickHouse read replica enabled for analytical queries")
+		}
 	}
-	defer ch.Close()
-	if err := ch.Ping(context.Background()); err != nil {
-		log.Fatal("clickhouse ping failed", zap.Error(err))
-	}
-	if err := chmigrate.Run(context.Background(), ch, log); err != nil {
-		log.Fatal("chmigrate failed", zap.Error(err))
-	}
+
+	// Multi-store: routes analytical reads to CH (if available), writes to PG.
+	mdStore := repository.NewMultiMarketDataStore(pgStore, chStore, log)
+
+	// Ensure PG market data partitions exist for current and future months.
+	repository.EnsureMarketDataPartitions(context.Background(), pool, log)
 
 	// Connect to NATS
 	natsURL := cfg.NATSURL
@@ -216,10 +212,10 @@ func main() {
 	brokerReg := adapter.NewBrokerRegistry()
 	mthubSvc.SetBrokerRegistry(brokerReg)
 
-	go startMdGatewayPipeline(pipelineCtx, log, pool, ch, nc, spillDir, secClient, hub, accountSvc, mthubSvc, accountSyncSvc, tradeRecordRepo, snapshotBroker, accountBroker, barBroker, eventStore, &emailNotifier, &platformAgg, &reconLoop, brokerReg)
+	go startMdGatewayPipeline(pipelineCtx, log, pool, mdStore, chStore, nc, spillDir, secClient, hub, accountSvc, mthubSvc, accountSyncSvc, tradeRecordRepo, snapshotBroker, accountBroker, barBroker, eventStore, &emailNotifier, &platformAgg, &reconLoop, brokerReg)
 
 	mux := http.NewServeMux()
-	reconLoop, emailNotifier, platformAgg, notifSender, scheduleEngine, workerCleanup = registerHandlers(mux, log, pool, ch, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, otelInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate, analyticsCache, brokerReg)
+	reconLoop, emailNotifier, platformAgg, notifSender, scheduleEngine, workerCleanup = registerHandlers(mux, log, pool, mdStore, nc, rdb, cfg, jwtSecret, accountSvc, platformSvc, authInterceptor, adminInterceptor, rateLimitInterceptor, otelInterceptor, mthubSvc, hub, tradeRecordRepo, js, eventStore, reconcileGate, analyticsCache, brokerReg)
 	accountSyncSvc.SetNotificationSender(notifSender)
 
 	// Graceful shutdown
@@ -249,7 +245,7 @@ func main() {
 	}()
 
 	port := cfg.Port
-	log.Info("ant v2 starting", zap.String("port", port), zap.String("ch", chHost), zap.String("nats", natsURL))
+	log.Info("ant v2 starting", zap.String("port", port), zap.String("nats", natsURL))
 
 	go func() {
 		<-ctx.Done()
@@ -264,3 +260,25 @@ func main() {
 
 }
 
+
+// connectClickHouse attempts to connect to ClickHouse for analytical read replica.
+// Returns an error if CH is unreachable — caller should gracefully degrade to PG-only.
+func connectClickHouse(cfg *config.Config, log *zap.Logger) (clickhouse.Conn, error) {
+	ch, err := clickhouse.Open(&clickhouse.Options{
+		Addr: []string{fmt.Sprintf("%s:%s", cfg.CHHost, cfg.CHPort)},
+		Auth: clickhouse.Auth{
+			Database: cfg.CHDatabase,
+			Username: cfg.CHUser,
+			Password: cfg.CHPassword,
+		},
+		DialTimeout: 5 * time.Second,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("clickhouse open: %w", err)
+	}
+	if err := ch.Ping(context.Background()); err != nil {
+		ch.Close()
+		return nil, fmt.Errorf("clickhouse ping: %w", err)
+	}
+	return ch, nil
+}

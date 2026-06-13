@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"anttrader/internal/mdgateway/adapter/mdtick"
-	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
+	"anttrader/internal/repository"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 )
@@ -381,45 +381,6 @@ func TestCircuitBreaker_HalfOpenToOpen(t *testing.T) {
 	}
 }
 
-// --- clickhouse_writer.go ---
-
-func TestDefaultCHWriterConfig(t *testing.T) {
-	t.Parallel()
-	cfg := DefaultCHWriterConfig()
-	if cfg.FlushInterval <= 0 {
-		t.Errorf("FlushInterval = %v, want >0", cfg.FlushInterval)
-	}
-	if cfg.QueueSize <= 0 {
-		t.Errorf("QueueSize = %d, want >0", cfg.QueueSize)
-	}
-}
-
-func TestTickTargetTable(t *testing.T) {
-	t.Parallel()
-	if got := (&CHWriter{}).tickTargetTable(); got != "md_ticks" {
-		t.Errorf("tickTargetTable = %q, want md_ticks", got)
-	}
-}
-
-func TestBarTargetTable(t *testing.T) {
-	t.Parallel()
-	if got := (&CHWriter{}).barTargetTable(); got != "md_bars" {
-		t.Errorf("barTargetTable = %q, want md_bars", got)
-	}
-}
-
-func TestBufferEnabled(t *testing.T) {
-	t.Parallel()
-	w := NewCHWriter(DefaultCHWriterConfig(), nil, nil, zap.NewNop())
-	if !w.BufferEnabled() {
-		t.Error("BufferEnabled should default to true")
-	}
-	w.SetBufferEnabled(false)
-	if w.BufferEnabled() {
-		t.Error("BufferEnabled should be false after SetBufferEnabled(false)")
-	}
-}
-
 // --- session_clock.go ---
 
 func TestDefaultSessionClock(t *testing.T) {
@@ -541,15 +502,7 @@ func TestEvaluateTradeable_Holiday(t *testing.T) {
 	}
 }
 
-// --- spill_writer.go ---
 
-func TestDefaultSpillConfig(t *testing.T) {
-	t.Parallel()
-	cfg := DefaultSpillConfig()
-	if cfg.Dir == "" {
-		t.Error("SpillDir should not be empty")
-	}
-}
 
 // --- user_metrics_flusher.go ---
 
@@ -594,7 +547,7 @@ func TestLoadFinalizedBars_Empty(t *testing.T) {
 	t.Parallel()
 	agg := NewBarAggregator()
 	agg.LoadFinalizedBars(nil)
-	agg.LoadFinalizedBars(make(map[finalizedKey][]int64))
+	agg.LoadFinalizedBars(make(map[repository.FinalizedKey][]int64))
 }
 
 func TestIngestExternalBar_NoFinalized(t *testing.T) {
@@ -749,18 +702,6 @@ func TestManager_Health_Empty(t *testing.T) {
 
 // --- runner.go drain ---
 
-func TestCHWriterDrain_Empty(t *testing.T) {
-	t.Parallel()
-	cfg := DefaultCHWriterConfig()
-	chw := NewCHWriter(cfg, nil, nil, nil)
-	ticks, bars := chw.drain()
-	if len(ticks) != 0 {
-		t.Errorf("drain ticks should be empty, got %d", len(ticks))
-	}
-	if len(bars) != 0 {
-		t.Errorf("drain bars should be empty, got %d", len(bars))
-	}
-}
 
 // --- quote_stuffing.go ---
 
@@ -826,34 +767,57 @@ func TestStuffingDetector_Observe_Multiple(t *testing.T) {
 	}
 }
 
-func TestCHWriter_EnqueueBar(t *testing.T) {
+func TestPgWriter_EnqueueBar(t *testing.T) {
 	t.Parallel()
-	w := NewCHWriter(DefaultCHWriterConfig(), nil, nil, zap.NewNop())
+	w := NewPgWriter(DefaultPgWriterConfig(), nil, zap.NewNop())
 	bar := &mdtick.Bar{
 		Broker: "broker", Canonical: "EURUSD", Period: "1h",
 		CloseTsUnixMs: time.Now().UnixMilli(),
 	}
-	// Should not panic even with nil conn.
+	// Should not panic even with nil store.
 	w.EnqueueBar(bar)
 }
 
-func TestCHWriter_EnqueueBar_FullQueue(t *testing.T) {
+func TestPgWriter_EnqueueBar_FullQueue(t *testing.T) {
 	t.Parallel()
-	cfg := DefaultCHWriterConfig()
+	cfg := DefaultPgWriterConfig()
 	cfg.QueueSize = 1
-	w := NewCHWriter(cfg, nil, nil, zap.NewNop())
+	w := NewPgWriter(cfg, nil, zap.NewNop())
 	bar := &mdtick.Bar{Broker: "broker", Canonical: "EURUSD", Period: "1h"}
-	// First enqueue succeeds, second fills queue and triggers spill path.
+	// First enqueue succeeds, second fills queue and is dropped gracefully.
 	w.EnqueueBar(bar)
-	w.EnqueueBar(bar) // should spill (spill is nil, so no-op)
+	w.EnqueueBar(bar) // queue full — dropped gracefully
 }
 
-func TestCHWriter_Flush_Empty(t *testing.T) {
+func TestPgWriter_Flush_Empty(t *testing.T) {
 	t.Parallel()
-	w := NewCHWriter(DefaultCHWriterConfig(), nil, nil, zap.NewNop())
+	w := NewPgWriter(DefaultPgWriterConfig(), nil, zap.NewNop())
 	ctx := context.Background()
 	// Flush with empty batches should be safe.
 	w.Flush(ctx, nil, nil)
+}
+
+func TestPgWriterDrain_Empty(t *testing.T) {
+	t.Parallel()
+	w := NewPgWriter(DefaultPgWriterConfig(), nil, zap.NewNop())
+	ticks, bars := w.Drain()
+	if len(ticks) != 0 {
+		t.Errorf("drain ticks should be empty, got %d", len(ticks))
+	}
+	if len(bars) != 0 {
+		t.Errorf("drain bars should be empty, got %d", len(bars))
+	}
+}
+
+func TestDefaultPgWriterConfig(t *testing.T) {
+	t.Parallel()
+	cfg := DefaultPgWriterConfig()
+	if cfg.FlushInterval <= 0 {
+		t.Errorf("FlushInterval = %v, want >0", cfg.FlushInterval)
+	}
+	if cfg.QueueSize <= 0 {
+		t.Errorf("QueueSize = %d, want >0", cfg.QueueSize)
+	}
 }
 
 func TestComputeRateZscore(t *testing.T) {
@@ -919,19 +883,8 @@ func TestRemoveGateway_NotExist(t *testing.T) {
 	}
 }
 
-// --- clickhouse_writer.go ---
 
-func TestSetOnSpillFail(t *testing.T) {
-	t.Parallel()
-	w := NewCHWriter(DefaultCHWriterConfig(), nil, nil, zap.NewNop())
-	w.SetOnSpillFail(func(brokerKey string, err error) {})
-}
 
-func TestSetUserLimiter(t *testing.T) {
-	t.Parallel()
-	w := NewCHWriter(DefaultCHWriterConfig(), nil, nil, zap.NewNop())
-	w.SetUserLimiter(nil)
-}
 
 // --- quality.go ---
 
@@ -941,15 +894,7 @@ func TestSetDLQWriter(t *testing.T) {
 	q.SetDLQWriter(nil)
 }
 
-// --- spill_writer.go ---
 
-func TestNewSpillWriter_InvalidDir(t *testing.T) {
-	t.Parallel()
-	_, err := NewSpillWriter(SpillWriterConfig{Dir: "/proc/invalid-spill-dir"}, zap.NewNop())
-	if err == nil {
-		t.Log("NewSpillWriter to /proc should likely error")
-	}
-}
 
 // --- metrics.go percentile ---
 
@@ -992,110 +937,10 @@ func TestNewNormalizer_NilPG(t *testing.T) {
 
 // --- dlq_writer.go ---
 
-// mockCHConn is a minimal clickhouse.Conn that always returns errors.
-// Used to test error/spill paths without a real CH server.
-type mockCHConn struct{}
 
-func (m *mockCHConn) Contributors() []string                                     { return nil }
-func (m *mockCHConn) ServerVersion() (*driver.ServerVersion, error)               { return nil, nil }
-func (m *mockCHConn) Select(ctx context.Context, dest any, query string, args ...any) error {
-	return fmt.Errorf("mock: not implemented")
-}
-func (m *mockCHConn) Query(ctx context.Context, query string, args ...any) (driver.Rows, error) {
-	return nil, fmt.Errorf("mock: not implemented")
-}
-func (m *mockCHConn) QueryRow(ctx context.Context, query string, args ...any) driver.Row {
-	return nil
-}
-func (m *mockCHConn) PrepareBatch(ctx context.Context, query string, opts ...driver.PrepareBatchOption) (driver.Batch, error) {
-	return nil, fmt.Errorf("mock: prepare failed")
-}
-func (m *mockCHConn) Exec(ctx context.Context, query string, args ...any) error {
-	return fmt.Errorf("mock: not implemented")
-}
-func (m *mockCHConn) AsyncInsert(ctx context.Context, query string, wait bool, args ...any) error {
-	return fmt.Errorf("mock: not implemented")
-}
-func (m *mockCHConn) Ping(ctx context.Context) error { return nil }
-func (m *mockCHConn) Stats() driver.Stats            { return driver.Stats{} }
-func (m *mockCHConn) Close() error                   { return nil }
 
-func TestCHWriter_FlushTicks_WithMockConn(t *testing.T) {
-	t.Parallel()
-	cfg := DefaultCHWriterConfig()
-	cfg.QueueSize = 100
-	w := NewCHWriter(cfg, &mockCHConn{}, nil, zap.NewNop())
-	ctx := context.Background()
 
-	tick := &mdtick.Tick{
-		Broker: "broker", Canonical: "EURUSD",
-		TsUnixMs: time.Now().UnixMilli(), ArrivedUnixMs: time.Now().UnixMilli(),
-		Bid: decimal.NewFromFloat(1.1000), Ask: decimal.NewFromFloat(1.1001),
-	}
-	// flushTicks with error from mock conn should fall through to spill (nil spill, no-op).
-	w.Flush(ctx, []*mdtick.Tick{tick}, nil)
-}
 
-func TestCHWriter_FlushBars_WithMockConn(t *testing.T) {
-	t.Parallel()
-	cfg := DefaultCHWriterConfig()
-	cfg.QueueSize = 100
-	w := NewCHWriter(cfg, &mockCHConn{}, nil, zap.NewNop())
-	ctx := context.Background()
-
-	bar := &mdtick.Bar{
-		Broker: "broker", Canonical: "EURUSD", Period: "1h",
-		CloseTsUnixMs: time.Now().UnixMilli(), OpenTsUnixMs: time.Now().UnixMilli() - 3600_000,
-		Open: decimal.NewFromFloat(1.1000), High: decimal.NewFromFloat(1.1050),
-		Low: decimal.NewFromFloat(1.0990), Close: decimal.NewFromFloat(1.1020),
-	}
-	w.Flush(ctx, nil, []*mdtick.Bar{bar})
-}
-
-func TestCHWriter_Start_WithMockConn(t *testing.T) {
-	t.Parallel()
-	cfg := DefaultCHWriterConfig()
-	cfg.QueueSize = 10
-	cfg.FlushInterval = 50 * time.Millisecond
-	w := NewCHWriter(cfg, &mockCHConn{}, nil, zap.NewNop())
-	ctx, cancel := context.WithTimeout(context.Background(), 150*time.Millisecond)
-	defer cancel()
-	w.Start(ctx)
-}
-
-func TestCHWriter_EnqueueTick(t *testing.T) {
-	t.Parallel()
-	w := NewCHWriter(DefaultCHWriterConfig(), &mockCHConn{}, nil, zap.NewNop())
-	tick := &mdtick.Tick{
-		Broker: "broker", Canonical: "EURUSD",
-		TsUnixMs: time.Now().UnixMilli(), ArrivedUnixMs: time.Now().UnixMilli(),
-		Bid: decimal.NewFromFloat(1.1000), Ask: decimal.NewFromFloat(1.1001),
-	}
-	w.EnqueueTick(tick)
-}
-
-func TestCHWriter_SpillFailed(t *testing.T) {
-	t.Parallel()
-	w := NewCHWriter(DefaultCHWriterConfig(), &mockCHConn{}, nil, zap.NewNop())
-	w.spillFailed("broker", fmt.Errorf("test error"))
-	w.spillFailed("broker", fmt.Errorf("another error"))
-}
-
-func TestSpillWriter_ShouldRotate(t *testing.T) {
-	t.Parallel()
-	sw := &SpillWriter{
-		cfg:      DefaultSpillConfig(),
-		curBytes: 0,
-		curStart: time.Now(),
-	}
-	if sw.shouldRotate() {
-		t.Error("shouldRotate should be false for fresh writer")
-	}
-	sw.curBytes = sw.cfg.MaxFileBytes
-	if !sw.shouldRotate() {
-		t.Error("shouldRotate should be true when curBytes >= MaxFileBytes")
-	}
-}
 
 func TestPublisher_PublishTick_NilJS(t *testing.T) {
 	t.Parallel()
@@ -1158,97 +1003,13 @@ func TestResolve(t *testing.T) {
 	}
 }
 
-func TestSpillWriter_WriteBar(t *testing.T) {
-	t.Parallel()
-	dir := t.TempDir()
-	sw, err := NewSpillWriter(SpillWriterConfig{
-		Dir:          dir,
-		MaxFileBytes: 100 * 1024 * 1024,
-		MaxFileAge:   time.Hour,
-	}, zap.NewNop())
-	if err != nil {
-		t.Fatalf("NewSpillWriter: %v", err)
-	}
-	defer sw.Close()
-	bar := &mdtick.Bar{
-		Broker: "broker", Canonical: "EURUSD", Period: "1h",
-		CloseTsUnixMs: time.Now().UnixMilli(),
-		Open: decimal.NewFromFloat(1.1000), High: decimal.NewFromFloat(1.1050),
-		Low: decimal.NewFromFloat(1.0990), Close: decimal.NewFromFloat(1.1020),
-	}
-	if err := sw.WriteBar(bar); err != nil {
-		t.Errorf("WriteBar should not error: %v", err)
-	}
-}
 
-func TestSpillWriter_WriteTick_Real(t *testing.T) {
-	t.Parallel()
-	dir := t.TempDir()
-	sw, err := NewSpillWriter(SpillWriterConfig{
-		Dir:          dir,
-		MaxFileBytes: 100 * 1024 * 1024,
-		MaxFileAge:   time.Hour,
-	}, zap.NewNop())
-	if err != nil {
-		t.Fatalf("NewSpillWriter: %v", err)
-	}
-	defer sw.Close()
-	tick := &mdtick.Tick{
-		Broker: "broker", Canonical: "EURUSD",
-		TsUnixMs: time.Now().UnixMilli(), ArrivedUnixMs: time.Now().UnixMilli(),
-		Bid: decimal.NewFromFloat(1.1000), Ask: decimal.NewFromFloat(1.1001),
-	}
-	if err := sw.WriteTick(tick); err != nil {
-		t.Errorf("WriteTick should not error: %v", err)
-	}
-}
 
-func TestCHWriter_WriteSpillTick_WithSpill(t *testing.T) {
-	t.Parallel()
-	dir := t.TempDir()
-	sw, err := NewSpillWriter(SpillWriterConfig{
-		Dir:          dir,
-		MaxFileBytes: 100 * 1024 * 1024,
-		MaxFileAge:   time.Hour,
-	}, zap.NewNop())
-	if err != nil {
-		t.Fatalf("NewSpillWriter: %v", err)
-	}
-	defer sw.Close()
-	w := NewCHWriter(DefaultCHWriterConfig(), &mockCHConn{}, sw, zap.NewNop())
-	tick := &mdtick.Tick{
-		Broker: "broker", Canonical: "EURUSD",
-		TsUnixMs: time.Now().UnixMilli(), ArrivedUnixMs: time.Now().UnixMilli(),
-		Bid: decimal.NewFromFloat(1.1000), Ask: decimal.NewFromFloat(1.1001),
-	}
-	w.Flush(context.Background(), []*mdtick.Tick{tick}, nil)
-}
 
-func TestCHWriter_WriteSpillBar_WithSpill(t *testing.T) {
-	t.Parallel()
-	dir := t.TempDir()
-	sw, err := NewSpillWriter(SpillWriterConfig{
-		Dir:          dir,
-		MaxFileBytes: 100 * 1024 * 1024,
-		MaxFileAge:   time.Hour,
-	}, zap.NewNop())
-	if err != nil {
-		t.Fatalf("NewSpillWriter: %v", err)
-	}
-	defer sw.Close()
-	w := NewCHWriter(DefaultCHWriterConfig(), &mockCHConn{}, sw, zap.NewNop())
-	bar := &mdtick.Bar{
-		Broker: "broker", Canonical: "EURUSD", Period: "1h",
-		CloseTsUnixMs: time.Now().UnixMilli(),
-		Open: decimal.NewFromFloat(1.1000), High: decimal.NewFromFloat(1.1050),
-		Low: decimal.NewFromFloat(1.0990), Close: decimal.NewFromFloat(1.1020),
-	}
-	w.Flush(context.Background(), nil, []*mdtick.Bar{bar})
-}
 
 func TestShouldSample_Always(t *testing.T) {
 	t.Parallel()
-	dlq := NewDLQWriter(nil, nil, zap.NewNop())
+	dlq := NewDLQWriter(zap.NewNop())
 	if dlq == nil {
 		t.Fatal("NewDLQWriter returned nil")
 	}
@@ -1329,21 +1090,7 @@ func TestBarAggregator_IngestExternalBar_Finalized(t *testing.T) {
 	}
 }
 
-// --- clickhouse_writer.go EnqueueTick full queue ---
 
-func TestCHWriter_EnqueueTick_FullQueue(t *testing.T) {
-	t.Parallel()
-	cfg := DefaultCHWriterConfig()
-	cfg.QueueSize = 1
-	w := NewCHWriter(cfg, &mockCHConn{}, nil, zap.NewNop())
-	tick := &mdtick.Tick{
-		Broker: "broker", Canonical: "EURUSD",
-		TsUnixMs: time.Now().UnixMilli(), ArrivedUnixMs: time.Now().UnixMilli(),
-		Bid: decimal.NewFromFloat(1.1000), Ask: decimal.NewFromFloat(1.1001),
-	}
-	w.EnqueueTick(tick)
-	w.EnqueueTick(tick) // queue full, triggers writeSpillTick (nil spill)
-}
 
 // --- normalizer.go Resolve cache hit ---
 
@@ -1374,7 +1121,7 @@ func TestNormalizer_Resolve_CacheGuard(t *testing.T) {
 
 func TestDLQWriter_WriteTick_WithCHConn(t *testing.T) {
 	t.Parallel()
-	dlq := NewDLQWriter(&mockCHConn{}, nil, zap.NewNop())
+	dlq := NewDLQWriter(zap.NewNop())
 	tick := &mdtick.Tick{
 		Broker: "broker", Canonical: "EURUSD",
 		TsUnixMs: time.Now().UnixMilli(), ArrivedUnixMs: time.Now().UnixMilli(),
@@ -1385,7 +1132,7 @@ func TestDLQWriter_WriteTick_WithCHConn(t *testing.T) {
 
 func TestDLQWriter_WriteTick_SpillOnly(t *testing.T) {
 	t.Parallel()
-	dlq := NewDLQWriter(nil, nil, zap.NewNop())
+	dlq := NewDLQWriter(zap.NewNop())
 	tick := &mdtick.Tick{
 		Broker: "broker", Canonical: "EURUSD",
 		TsUnixMs: time.Now().UnixMilli(), ArrivedUnixMs: time.Now().UnixMilli(),
@@ -1466,13 +1213,6 @@ func TestNormalizerInvalidator_TickerLoop(t *testing.T) {
 
 // --- spill_replay.go Run ---
 
-func TestSpillReplay_Run_NoFiles(t *testing.T) {
-	t.Parallel()
-	dir := t.TempDir()
-	replay := NewSpillReplay(dir, nil, nil, nil, zap.NewNop())
-	ctx := context.Background()
-	replay.Run(ctx)
-}
 
 // --- quote_stuffing.go IsPaused deeper ---
 
@@ -1506,80 +1246,12 @@ func TestStuffingDetector_IsPaused_Active(t *testing.T) {
 	}
 }
 
-// --- clickhouse_writer.go Start with real ticker ---
 
-func TestCHWriter_Start_FullFlush(t *testing.T) {
-	t.Parallel()
-	cfg := DefaultCHWriterConfig()
-	cfg.QueueSize = 2
-	cfg.MaxBatchSize = 2
-	cfg.FlushInterval = 20 * time.Millisecond
-	w := NewCHWriter(cfg, &mockCHConn{}, nil, zap.NewNop())
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
-	defer cancel()
-	// Enqueue ticks to trigger batch flush.
-	tick := &mdtick.Tick{
-		Broker: "broker", Canonical: "EURUSD",
-		TsUnixMs: time.Now().UnixMilli(), ArrivedUnixMs: time.Now().UnixMilli(),
-		Bid: decimal.NewFromFloat(1.1000), Ask: decimal.NewFromFloat(1.1001),
-	}
-	w.EnqueueTick(tick)
-	// Start ticker loop (will flush at interval or on ctx done).
-	w.Start(ctx)
-}
 
-// --- spill_writer.go rotate ---
 
-func TestSpillWriter_Rotate_TimeBased(t *testing.T) {
-	t.Parallel()
-	dir := t.TempDir()
-	sw, err := NewSpillWriter(SpillWriterConfig{
-		Dir:          dir,
-		MaxFileBytes: 10 * 1024 * 1024,
-		MaxFileAge:   time.Millisecond, // trigger rotation
-	}, zap.NewNop())
-	if err != nil {
-		t.Fatalf("NewSpillWriter: %v", err)
-	}
-	defer sw.Close()
-	tick := &mdtick.Tick{
-		Broker: "broker", Canonical: "EURUSD",
-		TsUnixMs: time.Now().UnixMilli(), ArrivedUnixMs: time.Now().UnixMilli(),
-		Bid: decimal.NewFromFloat(1.1000), Ask: decimal.NewFromFloat(1.1001),
-	}
-	if err := sw.WriteTick(tick); err != nil {
-		t.Errorf("first WriteTick: %v", err)
-	}
-	time.Sleep(5 * time.Millisecond)
-	if err := sw.WriteTick(tick); err != nil {
-		t.Errorf("second WriteTick: %v", err)
-	}
-}
 
 // --- dlq_writer.go spillDLQ with spill ---
 
-func TestDLQWriter_SpillDLQ_WithSpill(t *testing.T) {
-	t.Parallel()
-	dir := t.TempDir()
-	sw, err := NewSpillWriter(SpillWriterConfig{
-		Dir:          dir,
-		MaxFileBytes: 100 * 1024 * 1024,
-		MaxFileAge:   time.Hour,
-	}, zap.NewNop())
-	if err != nil {
-		t.Fatalf("NewSpillWriter: %v", err)
-	}
-	defer sw.Close()
-	dlq := NewDLQWriter(nil, sw, zap.NewNop())
-	tick := &mdtick.Tick{
-		Broker: "broker", Canonical: "EURUSD",
-		TsUnixMs: time.Now().UnixMilli(), ArrivedUnixMs: time.Now().UnixMilli(),
-		Bid: decimal.NewFromFloat(1.1000), Ask: decimal.NewFromFloat(1.1001),
-	}
-	// Use "parse_error" (100% sample rate) to ensure the tick is written.
-	dlq.WriteTick(context.Background(), tick, "parse_error", "raw")
-	time.Sleep(10 * time.Millisecond) // wait for async flushLoop
-}
 
 // --- session_clock.go ClockSkewMs with offset ---
 

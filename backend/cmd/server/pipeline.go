@@ -5,7 +5,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nats-io/nats.go"
@@ -26,7 +25,8 @@ func startMdGatewayPipeline(
 	pipelineCtx context.Context,
 	log *zap.Logger,
 	pool *pgxpool.Pool,
-	ch clickhouse.Conn,
+	store repository.MarketDataStore,
+	chStore repository.MarketDataStore,
 	nc *nats.Conn,
 	spillDir string,
 	secClient secrets.Client,
@@ -78,7 +78,8 @@ func startMdGatewayPipeline(
 	if err := mdgateway.Run(pipelineCtx, mdgateway.RunnerDeps{
 		Log:      log,
 		PG:       pool,
-		CH:       ch,
+		Store:    store,
+		ChStore:  chStore,
 		NATSConn: nc,
 		SpillDir: spillDir,
 		Secrets:  secClient,

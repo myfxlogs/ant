@@ -4,36 +4,22 @@ import (
 	"context"
 	"time"
 
-	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
 	"anttrader/internal/mdgateway/adapter/mdtick"
 	"anttrader/internal/mdgateway/backfiller"
+	"anttrader/internal/repository"
 )
 
-// loadFinalizedBars queries CH for all existing close_ts values per (broker,canonical,period).
+// loadFinalizedBars queries the MarketDataStore for existing close_ts values per key.
 // Returns a map of key→[]close_ts for exact-match dedup (M10.5-3d fix).
-// If CH is unreachable, logs fatal and returns error — bar finality must never be silently disabled.
-func loadFinalizedBars(ctx context.Context, ch clickhouse.Conn, log *zap.Logger) (map[finalizedKey][]int64, error) {
-	result := make(map[finalizedKey][]int64)
-	rows, err := ch.Query(ctx, `
-		SELECT broker, canonical, period, close_ts_unix_ms
-		FROM md_bars WHERE close_ts_unix_ms >= ?
-	`, Clk.Now().Add(-30*24*time.Hour).UnixMilli())
+// If the store is unreachable, logs fatal and returns error — bar finality must never be silently disabled.
+func loadFinalizedBars(ctx context.Context, store repository.MarketDataStore, log *zap.Logger) (map[repository.FinalizedKey][]int64, error) {
+	result, err := store.LoadFinalizedBars(ctx, time.Now().Add(-30*24*time.Hour))
 	if err != nil {
-		log.Error("mdgateway: load finalized bars FAILED — CH unreachable, refusing to start", zap.Error(err))
+		log.Error("mdgateway: load finalized bars FAILED — store unreachable, refusing to start", zap.Error(err))
 		return nil, err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var broker, canonical, period string
-		var closeTs int64
-		if err := rows.Scan(&broker, &canonical, &period, &closeTs); err != nil {
-			continue
-		}
-		fk := finalizedKey{broker, canonical, period}
-		result[fk] = append(result[fk], closeTs)
 	}
 	log.Info("mdgateway: loaded finalized bars", zap.Int("keys", len(result)))
 	return result, nil
@@ -87,17 +73,17 @@ func loadAccountConfigs(ctx context.Context, deps RunnerDeps) ([]mdtick.AccountC
 	return cfgs, nil
 }
 
-// startBackfiller creates and starts the backfiller with real Source + CH + PG wiring.
-func startBackfiller(ctx context.Context, deps RunnerDeps, agg *BarAggregator, pub *Publisher, chw *CHWriter, log *zap.Logger) (*backfiller.Backfiller, *gatewaySourceMap) {
+// startBackfiller creates and starts the backfiller with real Source + Store + PG wiring.
+func startBackfiller(ctx context.Context, deps RunnerDeps, agg *BarAggregator, pub *Publisher, pgw *PgWriter, log *zap.Logger) (*backfiller.Backfiller, *gatewaySourceMap) {
 	// Source: routes GetPriceHistory to the correct gateway by accountID.
 	srcMap := &gatewaySourceMap{gws: make(map[string]backfiller.MTAPIBarSource)}
 	src := backfiller.NewSourceMTAPI(srcMap)
 
-	// Target: aggregator finality check → NATS publish → CH enqueue.
-	tgt := backfiller.NewTarget(agg, pub, chw)
+	// Target: aggregator finality check → NATS publish → PG enqueue.
+	tgt := backfiller.NewTarget(agg, pub, pgw, nil)
 
-	// CHMaxCloseTs: queries ClickHouse for max close_ts per (broker, canonical, period).
-	chMax := &chMaxCloseTs{conn: deps.CH}
+	// CHMaxCloseTs: uses MarketDataStore (PG-primary, CH during transition).
+	chMax := &storeMaxCloseTs{store: deps.Store}
 
 	// PGActiveAccounts: queries pg for active accounts + subscribed symbols.
 	pgAcc := &pgActiveAccounts{pool: deps.PG}
@@ -159,22 +145,13 @@ func (m *gatewaySourceMap) GetPriceHistory(ctx context.Context, accountID, symbo
 	return gw.GetPriceHistory(ctx, accountID, symbolRaw, period, from, to)
 }
 
-// chMaxCloseTs implements backfiller.CHMaxCloseTs via ClickHouse.
-type chMaxCloseTs struct {
-	conn clickhouse.Conn
+// storeMaxCloseTs implements backfiller.CHMaxCloseTs via MarketDataStore.
+type storeMaxCloseTs struct {
+	store repository.MarketDataStore
 }
 
-func (c *chMaxCloseTs) MaxCloseTs(ctx context.Context, broker, canonical, period string) (int64, error) {
-	var ts int64
-	err := c.conn.QueryRow(ctx, `
-		SELECT max(close_ts_unix_ms) FROM md_bars
-		WHERE broker = ? AND canonical = ? AND period = ?
-			  AND close_ts_unix_ms >= ?
-		`, broker, canonical, period, Clk.Now().Add(-90*24*time.Hour).UnixMilli()).Scan(&ts)
-	if err != nil {
-		return 0, nil
-	}
-	return ts, nil
+func (c *storeMaxCloseTs) MaxCloseTs(ctx context.Context, broker, canonical, period string) (int64, error) {
+	return c.store.MaxCloseTs(ctx, broker, canonical, period)
 }
 
 // loadSingleAccountConfig queries PG for a single account by ID.

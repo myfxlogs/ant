@@ -18,7 +18,7 @@ import (
 type ExperimentWorker struct {
 	repo           *repository.StrategyExperimentRepository
 	backtestRepo   *repository.BacktestRunRepository
-	marketDataRepo *repository.MarketDataRepository
+	marketDataRepo repository.MarketDataStore
 	log            *zap.Logger
 	systemAISvc    *systemai.Service // optional: enables AI multi-round proposal
 	stopCh         chan struct{}
@@ -27,7 +27,7 @@ type ExperimentWorker struct {
 func NewExperimentWorker(
 	repo *repository.StrategyExperimentRepository,
 	backtestRepo *repository.BacktestRunRepository,
-	marketDataRepo *repository.MarketDataRepository,
+	marketDataRepo repository.MarketDataStore,
 	log *zap.Logger,
 ) *ExperimentWorker {
 	return &ExperimentWorker{

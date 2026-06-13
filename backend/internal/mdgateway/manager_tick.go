@@ -78,9 +78,9 @@ func (m *Manager) HandleTick(t *mdtick.Tick) {
 	span5.End()
 
 	_, span6 := m.startTrace(ctx, "enqueue")
-	m.chWriter.EnqueueTick(t)
+	m.pgWriter.EnqueueTick(t)
 	for _, b := range bars {
-		m.chWriter.EnqueueBar(b)
+		m.pgWriter.EnqueueBar(b)
 	}
 	span6.End()
 }

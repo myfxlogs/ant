@@ -21,12 +21,12 @@ import (
 
 // Analyzer performs comprehensive asset analysis using OHLC k-line data.
 type Analyzer struct {
-	marketDataRepo *repository.MarketDataRepository
+	marketDataRepo repository.MarketDataStore
 	log            *zap.Logger
 }
 
 // NewAnalyzer creates an asset analyzer.
-func NewAnalyzer(marketDataRepo *repository.MarketDataRepository, log *zap.Logger) *Analyzer {
+func NewAnalyzer(marketDataRepo repository.MarketDataStore, log *zap.Logger) *Analyzer {
 	return &Analyzer{marketDataRepo: marketDataRepo, log: log}
 }
 

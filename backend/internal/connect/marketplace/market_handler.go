@@ -21,14 +21,14 @@ import (
 // MarketServer implements ant.v1.MarketServiceHandler.
 type MarketServer struct {
 	platform   *service.PlatformService
-	marketData *repository.MarketDataRepository
+	marketData repository.MarketDataStore
 	nc         *nats.Conn
 	log        *zap.Logger
 }
 
 var _ antv1c.MarketServiceHandler = (*MarketServer)(nil)
 
-func NewMarketServer(svc *service.PlatformService, marketData *repository.MarketDataRepository, nc *nats.Conn, log *zap.Logger) *MarketServer {
+func NewMarketServer(svc *service.PlatformService, marketData repository.MarketDataStore, nc *nats.Conn, log *zap.Logger) *MarketServer {
 	return &MarketServer{platform: svc, marketData: marketData, nc: nc, log: log}
 }
 

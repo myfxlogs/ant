@@ -18,26 +18,27 @@ type PublisherTarget interface {
 	PublishBar(ctx context.Context, b *mdtick.Bar) error
 }
 
-// CHWriterTarget enqueues bars for ClickHouse insertion.
-type CHWriterTarget interface {
+// BarEnqueuer enqueues bars for storage insertion.
+type BarEnqueuer interface {
 	EnqueueBar(b *mdtick.Bar)
 }
 
-// TargetAdapter composes the three downstream targets for backfilled bars.
+// TargetAdapter composes the downstream targets for backfilled bars.
 // Each bar is: 1) finality-checked by aggregator, 2) published to NATS,
-// 3) enqueued for CH write.
+// 3) enqueued for storage (CH + PG during migration).
 type TargetAdapter struct {
 	agg       BarAggregatorTarget
 	publisher PublisherTarget
-	chWriter  CHWriterTarget
+	chWriter  BarEnqueuer
+	pgWriter  BarEnqueuer // nil if PG not configured
 }
 
 // NewTarget creates a TargetAdapter.
-func NewTarget(agg BarAggregatorTarget, pub PublisherTarget, chw CHWriterTarget) *TargetAdapter {
-	return &TargetAdapter{agg: agg, publisher: pub, chWriter: chw}
+func NewTarget(agg BarAggregatorTarget, pub PublisherTarget, chw BarEnqueuer, pgw BarEnqueuer) *TargetAdapter {
+	return &TargetAdapter{agg: agg, publisher: pub, chWriter: chw, pgWriter: pgw}
 }
 
-// IngestBar routes a backfilled bar through the three targets.
+// IngestBar routes a backfilled bar through the targets.
 // Bars are skipped if their close_ts <= the finalized ceiling (ADR-0009 §2.2).
 func (ta *TargetAdapter) IngestBar(ctx context.Context, bar *mdtick.Bar) error {
 	// 1. Finality check.
@@ -50,7 +51,10 @@ func (ta *TargetAdapter) IngestBar(ctx context.Context, bar *mdtick.Bar) error {
 		return fmt.Errorf("publish backfilled bar to NATS: %w", err)
 	}
 
-	// 3. Enqueue for CH write.
+	// 3. Enqueue for storage (CH + PG during migration).
 	ta.chWriter.EnqueueBar(bar)
+	if ta.pgWriter != nil {
+		ta.pgWriter.EnqueueBar(bar)
+	}
 	return nil
 }

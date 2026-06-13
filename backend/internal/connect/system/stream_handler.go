@@ -36,7 +36,7 @@ func formatPrice(p float64) string {
 type StreamServer struct {
 	svc            *mthub.MtHubService
 	platform       *service.PlatformService
-	marketDataRepo *repository.MarketDataRepository
+	marketDataRepo repository.MarketDataStore
 	log            *zap.Logger
 }
 

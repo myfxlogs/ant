@@ -26,7 +26,7 @@ type PythonStrategyServer struct {
 	log                 *zap.Logger
 	connectClient       antv1c.PythonStrategyServiceClient // ConnectRPC to Python service
 	backtestClient      antv1c.BacktestServiceClient
-	marketDataRepo      *repository.MarketDataRepository
+	marketDataRepo      repository.MarketDataStore
 	barSource           BarSource // unified bar data source (backtest or live)
 	mtHub               *mthub.MtHubService // for live order submission
 	paperEngine         PaperOrderExecutor  // for paper trading simulated fills
@@ -35,7 +35,7 @@ type PythonStrategyServer struct {
 	onBacktestComplete  func(ctx context.Context, run *repository.BacktestRun) // auto-gate hook
 }
 
-func (s *PythonStrategyServer) SetMarketDataRepo(r *repository.MarketDataRepository) {
+func (s *PythonStrategyServer) SetMarketDataRepo(r repository.MarketDataStore) {
 	s.marketDataRepo = r
 }
 

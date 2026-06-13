@@ -16,7 +16,7 @@ import (
 )
 
 // SetMarketDataRepo injects the market data repository for indicator streaming.
-func (s *StreamServer) SetMarketDataRepo(repo *repository.MarketDataRepository) {
+func (s *StreamServer) SetMarketDataRepo(repo repository.MarketDataStore) {
 	s.marketDataRepo = repo
 }
 

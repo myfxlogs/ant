@@ -116,7 +116,7 @@ func mapBacktestResult(resp *antv1.ExecuteBacktestResponse) *antv1.RunBacktestRe
 // fetchKlines is the shared helper for fetching and transforming ClickHouse K-lines.
 // Used by both StrategyServer and PythonStrategyServer sync backtest paths.
 func fetchKlines(
-	ctx context.Context, repo *repository.MarketDataRepository,
+	ctx context.Context, repo repository.MarketDataStore,
 	symbol, timeframe string,
 ) ([]*antv1.ExecuteKlineBar, error) {
 	if repo == nil {

@@ -17,7 +17,7 @@ import (
 type StrategyServer struct {
 	svc            *service.StrategySvc
 	backtestClient antv1c.BacktestServiceClient   // ConnectRPC to Python BacktestService
-	marketDataRepo *repository.MarketDataRepository
+	marketDataRepo repository.MarketDataStore
 	log            *zap.Logger
 	pgListen       *pglisten.Listener
 	engine         *ScheduleEngine
@@ -35,7 +35,7 @@ func (s *StrategyServer) SetEngine(e *ScheduleEngine) { s.engine = e }
 func (s *StrategyServer) SetBacktestClient(c antv1c.BacktestServiceClient) { s.backtestClient = c }
 
 // SetMarketDataRepo injects the ClickHouse market data repo for fetching K-lines.
-func (s *StrategyServer) SetMarketDataRepo(r *repository.MarketDataRepository) { s.marketDataRepo = r }
+func (s *StrategyServer) SetMarketDataRepo(r repository.MarketDataStore) { s.marketDataRepo = r }
 
 func (s *StrategyServer) userID(ctx context.Context) uuid.UUID {
 	raw := interceptor.GetUserID(ctx)

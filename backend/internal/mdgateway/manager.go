@@ -34,8 +34,7 @@ type ManagerDeps struct {
 	Dedup            *TickDedup
 	Aggregator       *BarAggregator
 	Publisher        *Publisher
-	CHWriter         *CHWriter
-	SpillWriter      *SpillWriter
+	PgWriter         *PgWriter
 	MarketState      *MarketStateTracker
 	StuffingDetector *StuffingDetector
 	OnBar            func(*mdtick.Bar)
@@ -48,8 +47,7 @@ type Manager struct {
 	dedup            *TickDedup
 	aggregator       *BarAggregator
 	publisher        *Publisher
-	chWriter         *CHWriter
-	spillWriter      *SpillWriter
+	pgWriter         *PgWriter
 	marketState      *MarketStateTracker
 	stuffingDetector *StuffingDetector
 	onBar            func(*mdtick.Bar)
@@ -71,8 +69,7 @@ func NewManager(deps ManagerDeps) *Manager {
 		dedup:            deps.Dedup,
 		aggregator:       deps.Aggregator,
 		publisher:        deps.Publisher,
-		chWriter:         deps.CHWriter,
-		spillWriter:      deps.SpillWriter,
+		pgWriter:         deps.PgWriter,
 		marketState:      deps.MarketState,
 		stuffingDetector: deps.StuffingDetector,
 		onBar:            deps.OnBar,

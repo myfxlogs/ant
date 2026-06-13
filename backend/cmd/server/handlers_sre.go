@@ -6,7 +6,6 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
@@ -37,7 +36,7 @@ func registerSREHandlers(
 	mux *http.ServeMux,
 	log *zap.Logger,
 	pool *pgxpool.Pool,
-	ch clickhouse.Conn,
+	store repository.MarketDataStore,
 	nc *nats.Conn,
 	rdb *antredis.Client,
 	cfg *config.Config,
@@ -52,7 +51,6 @@ func registerSREHandlers(
 	analyticsCache *service.AnalyticsCache,
 	aiSvc *systemai.Service,
 	backtestRunRepo *repository.BacktestRunRepository,
-	marketDataRepo *repository.MarketDataRepository,
 ) (*notifier.EmailNotifier, func()) {
 	// --- SRE control plane ---
 	sreKillSwitch := controlplane.NewKillSwitch()
@@ -76,13 +74,13 @@ func registerSREHandlers(
 	mux.Handle(antv1c.NewAnalyticsServiceHandler(analyticsServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
 	marketRegimeRepo := repository.NewMarketRegimeRepository(pool)
-	marketRegimeServer := mktplace.NewMarketRegimeServer(marketRegimeRepo, marketDataRepo, log)
+	marketRegimeServer := mktplace.NewMarketRegimeServer(marketRegimeRepo, store, log)
 	mux.Handle(antv1c.NewMarketRegimeServiceHandler(marketRegimeServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
 	strategyExperimentServer := strategy.NewStrategyExperimentServer(strategyExperimentRepo, log)
 	strategyExperimentServer.SetPgListen(pglisten.New(pool, log))
 	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
-	experimentWorker := strategy.NewExperimentWorker(strategyExperimentRepo, backtestRunRepo, marketDataRepo, log)
+	experimentWorker := strategy.NewExperimentWorker(strategyExperimentRepo, backtestRunRepo, store, log)
 	if aiSvc != nil {
 		experimentWorker.SetAIService(aiSvc)
 	}
@@ -91,7 +89,7 @@ func registerSREHandlers(
 	// AI reflection loop: validates historical predictions → recalibrates confidence.
 	calRepo := ai.NewCalibrationRepository(pool)
 	calSvc := ai.NewCalibrationService(calRepo)
-	reflectionWorker := ai.NewReflectionWorker(calSvc, ch, log)
+	reflectionWorker := ai.NewReflectionWorker(calSvc, store, log)
 	reflectionWorker.Start(context.Background())
 	strategyAssetServer := strategy.NewStrategyAssetServer(strategyAssetRepo, log)
 	mux.Handle(antv1c.NewStrategyAssetServiceHandler(strategyAssetServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
@@ -126,11 +124,6 @@ func registerSREHandlers(
 		if err := pool.Ping(context.Background()); err != nil {
 			w.WriteHeader(503)
 			w.Write([]byte("pg unreachable"))
-			return
-		}
-		if err := ch.Ping(context.Background()); err != nil {
-			w.WriteHeader(503)
-			w.Write([]byte("ch unreachable"))
 			return
 		}
 		if !nc.IsConnected() {

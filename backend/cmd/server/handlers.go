@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nats-io/nats.go"
@@ -50,7 +49,7 @@ func registerHandlers(
 	mux *http.ServeMux,
 	log *zap.Logger,
 	pool *pgxpool.Pool,
-	ch clickhouse.Conn,
+	store repository.MarketDataStore,
 	nc *nats.Conn,
 	rdb *antredis.Client,
 	cfg *config.Config,
@@ -79,7 +78,7 @@ func registerHandlers(
 	templatesRepo := repository.NewAIStrategyTemplatesRepository(pool)
 	jobRepo := repository.NewJobRepository(pool)
 	schedHealthRepo := repository.NewScheduleHealthRepository(pool)
-	marketDataRepo := repository.NewMarketDataRepository(ch, log)
+	marketDataRepo := store
 	walletRepo := repository.NewWalletRepository(pool)
 	walletSvc := service.NewWalletService(walletRepo, pool, log)
 	accountNumberSvc := service.NewAccountNumberService(pool)
@@ -258,14 +257,13 @@ func registerHandlers(
 	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
 
 	emailNotifier, workerCleanup := registerSREHandlers(
-		mux, log, pool, ch, nc, rdb, cfg,
+		mux, log, pool, store, nc, rdb, cfg,
 		authInterceptor, otelInterceptor, platformSvc, mthubSvc,
 		authServer,
 		strategyExperimentRepo, strategyAssetRepo, schedHealthRepo,
 		analyticsCache,
 		aiSvc,
 		backtestRunRepo,
-		marketDataRepo,
 	)
 
 	// Daily hard-delete of expired soft-deleted users (30-day retention).
@@ -301,7 +299,7 @@ func registerHandlers(
 // callback. Returns the fully configured server ready for handler registration.
 func configurePythonStrategy(
 	backtestRunRepo *repository.BacktestRunRepository,
-	marketDataRepo *repository.MarketDataRepository,
+	marketDataRepo repository.MarketDataStore,
 	mthubSvc *mthub.MtHubService,
 	paperEngine *papereng.PaperEngine,
 	notifSender *notifpubsub.Sender,

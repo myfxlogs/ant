@@ -11,12 +11,11 @@ import (
 
 	"go.uber.org/zap"
 
-	"anttrader/internal/mdgateway/adapter/mdtick"
 )
 
 // healthMonitor checks gateway health every 30s, monitors memory pressure
 // for S-2 auto-degradation, and emits stale/dead account metrics.
-func healthMonitor(ctx context.Context, mgr *Manager, chw *CHWriter, log *zap.Logger, onDisconnect func(accountID string)) {
+func healthMonitor(ctx context.Context, mgr *Manager, _ interface{}, log *zap.Logger, onDisconnect func(accountID string)) {
 	ticker := Clk.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 
@@ -119,21 +118,6 @@ func healthMonitor(ctx context.Context, mgr *Manager, chw *CHWriter, log *zap.Lo
 			}
 			SetStaleAccountCount(stale, dead)
 
-			// S-2: memory pressure → auto buffer bypass.
-			memRatio := currentMemoryRatio()
-			bufEnabled := chw.BufferEnabled()
-
-			if memRatio > highThreshold && bufEnabled {
-				log.Warn("mdgateway: memory pressure — disabling CH Buffer engine",
-					zap.Float64("mem_ratio", memRatio),
-					zap.Float64("threshold", highThreshold))
-				chw.SetBufferEnabled(false)
-			} else if memRatio < lowThreshold && !bufEnabled {
-				log.Info("mdgateway: memory pressure resolved — re-enabling CH Buffer engine",
-					zap.Float64("mem_ratio", memRatio),
-					zap.Float64("threshold", lowThreshold))
-				chw.SetBufferEnabled(true)
-			}
 		}
 	}
 }
@@ -184,28 +168,6 @@ func cgroupMemoryLimit() int64 {
 	var ms runtime.MemStats
 	runtime.ReadMemStats(&ms)
 	return int64(ms.Sys)
-}
-
-// drain collects all pending ticks and bars from the CHWriter queues for flush.
-func (w *CHWriter) drain() (ticks []*mdtick.Tick, bars []*mdtick.Bar) {
-	// Drain tickQ.
-	for {
-		select {
-		case t := <-w.tickQ:
-			ticks = append(ticks, t)
-		default:
-			goto drainBars
-		}
-	}
-drainBars:
-	for {
-		select {
-		case b := <-w.barQ:
-			bars = append(bars, b)
-		default:
-			return
-		}
-	}
 }
 
 // defaultQuoteSymbols returns a broad set of symbols for mtapi SymbolSubscribe

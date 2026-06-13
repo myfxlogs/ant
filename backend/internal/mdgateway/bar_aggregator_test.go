@@ -6,16 +6,17 @@ import (
 	"github.com/shopspring/decimal"
 
 	"anttrader/internal/mdgateway/adapter/mdtick"
+	"anttrader/internal/repository"
 )
 
 func TestBarFinality(t *testing.T) {
 	t.Parallel()
 	agg := NewBarAggregator()
 
-	fk := finalizedKey{"test-broker", "EURUSD", "1m"}
+	fk := repository.FinalizedKey{Broker: "test-broker", Canonical: "EURUSD", Period: "1m"}
 
 	// Load finalized set with one existing bar.
-	agg.LoadFinalizedBars(map[finalizedKey][]int64{
+	agg.LoadFinalizedBars(map[repository.FinalizedKey][]int64{
 		fk: {1000, 2000, 3000},
 	})
 
