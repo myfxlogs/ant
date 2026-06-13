@@ -52,9 +52,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 192M
         reservations:
-          memory: 256M
+          memory: 64M
     environment:
       - DB_HOST=postgres
       - DB_NAME=${DB_NAME:-ant}
@@ -107,9 +107,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 384M
-        reservations:
           memory: 192M
+        reservations:
+          memory: 64M
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:8081/health || exit 1"]
       interval: 10s
@@ -138,9 +138,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
-        reservations:
           memory: 256M
+        reservations:
+          memory: 96M
     environment:
       - POSTGRES_USER=${DB_USER:-ant}
       - POSTGRES_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set in .env}
@@ -168,9 +168,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2048M
+          cpus: '1.0'
+          memory: 1536M
         reservations:
-          memory: 512M
+          cpus: '0.25'
+          memory: 256M
     environment:
       - CLICKHOUSE_DB=${CH_DATABASE:-ant}
       - CLICKHOUSE_USER=${CH_USER:-default}
@@ -234,9 +236,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
-        reservations:
           memory: 128M
+        reservations:
+          memory: 48M
     command: ["-c", "/etc/nats/nats.conf", "-js"]
     ports:
       - "${NATS_PORT:-4222}:4222"
