@@ -1,0 +1,1 @@
+ALTER TABLE backtest_runs ALTER COLUMN status SET DEFAULT 'SUCCEEDED';
