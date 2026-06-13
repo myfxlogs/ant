@@ -3,6 +3,8 @@ import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
 import { backtestRunsApi, type BacktestTrade } from '@/client/backtestRuns';
+import type { BacktestRunUpdate } from '@/gen/ant/v1/backtest_run_query_pb';
+import { isTerminalRun, isSucceededRun } from '../StrategyTemplatePage.utils';
 import {
   backendDirectivesToStrategyDirectives,
   PRESETS, DATE_PRESETS, dateFromPreset,
@@ -122,15 +124,17 @@ export function useBacktestParams() {
       setExecutionAssumptions(null);
       // Stop previous watch before starting a new one.
       backtestWatchRef.current?.();
-      const stopWatching = await pythonStrategyApi.watchBacktestRun(result.runId, (update: any) => {
-        if (update.status === 'SUCCEEDED' || update.status === 'FAILED' || update.status === 'CANCELED') {
-          setStatus(update.status === 'SUCCEEDED' ? 'completed' : 'error');
-          setMetrics(update.metrics || null);
-          setExecutionAssumptions(update.executionAssumptions || null);
-          setErrorMsg(update.error || ''); stopWatching();
+      const stopWatching = await pythonStrategyApi.watchBacktestRun(result.runId, (update: BacktestRunUpdate) => {
+        const run = update.run;
+        if (run && isTerminalRun(run)) {
+          const ok = isSucceededRun(run);
+          setStatus(ok ? 'completed' : 'error');
+          setMetrics(update.metrics ?? null);
+          setExecutionAssumptions(update.executionAssumptions ?? null);
+          setErrorMsg(update.run?.error ?? ''); stopWatching();
           backtestWatchRef.current = null;
           // Fetch trade details for chart overlay markers.
-          if (update.status === 'SUCCEEDED') {
+          if (ok) {
             backtestRunsApi.getTrades(result.runId).then((tr) => {
               setChartTrades(tr.trades.map((t: BacktestTrade) => ({
                 side: t.side,

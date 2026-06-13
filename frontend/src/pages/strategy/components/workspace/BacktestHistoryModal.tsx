@@ -121,7 +121,6 @@ const BacktestHistoryModal: React.FC<Props> = ({
       onCancel={onClose}
       width={1100}
       footer={null}
-      destroyOnClose
     >
       <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'space-between' }}>
         <Space>

@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { generateStrategyStream } from '@/client/strategyGen';
 import { codeAssistApi, type CodeChatMessage } from '@/client/codeAssist';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
+import type { BacktestRunUpdate } from '@/gen/ant/v1/backtest_run_query_pb';
+import { isSucceededRun } from '@/pages/strategy/StrategyTemplatePage.utils';
 import {
   ChatMessagesView,
   ChatClarificationView,
@@ -47,8 +49,9 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
   const [lastGeneratedCode, setLastGeneratedCode] = useState('');
   const abortRef = useRef<(() => void) | null>(null);
   const streamRef = useRef('');
+  const watchRef = useRef<(() => void) | null>(null);
 
-  useEffect(() => () => abortRef.current?.(), []);
+  useEffect(() => () => { abortRef.current?.(); watchRef.current?.(); }, []);
 
   useEffect(() => {
     if (initialPrompt) { setDraft(initialPrompt); }
@@ -56,6 +59,7 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
 
   const reset = useCallback(() => {
     abortRef.current?.();
+    watchRef.current?.();
     setMode('idle'); setStreamText(''); setQuestions([]);
     setGenCode(''); setError(''); setPhase(''); setBacktestId('');
     setBacktestMetrics(null); setAnalysisText(''); setAdviceText('');
@@ -94,8 +98,9 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
         },
         onBacktestId: (id) => {
           setBacktestId(id);
-          pythonStrategyApi.watchBacktestRun(id, (update: any) => {
-            if ((update.status === 'SUCCEEDED' || update.status === 'COMPLETED') && update.metrics) {
+          watchRef.current?.();
+          const stop = pythonStrategyApi.watchBacktestRun(id, (update: BacktestRunUpdate) => {
+            if (isSucceededRun(update.run) && update.metrics) {
               setBacktestMetrics({
                 sharpeRatio: update.metrics.sharpeRatio,
                 maxDrawdown: update.metrics.maxDrawdown,
@@ -106,6 +111,7 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
               });
             }
           });
+          watchRef.current = stop;
         },
         onAnalysis: (a) => setAnalysisText(a),
         onAdvice: (a) => setAdviceText(a),

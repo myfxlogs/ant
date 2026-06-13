@@ -39,4 +39,5 @@ playwright.config.ts
 vitest.config.ts
 
 # Build artifacts
+dist/
 *.local

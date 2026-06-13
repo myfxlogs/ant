@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
+import type { BacktestRunUpdate } from '@/gen/ant/v1/backtest_run_query_pb';
+import { isTerminalRun } from '@/pages/strategy/StrategyTemplatePage.utils';
 
 export type WatchBacktestState = {
 	run: any | null;
@@ -9,10 +11,6 @@ export type WatchBacktestState = {
 	error: string | null;
 	isTerminal: boolean;
 };
-
-function isTerminalRun(run: { status?: unknown }): boolean {
-	return Boolean(run?.isTerminal || run?.is_terminal);
-}
 
 export function useWatchBacktestRun(runId?: string | null): WatchBacktestState {
 	const [run, setRun] = useState<any | null>(null);
@@ -83,7 +81,7 @@ export function useWatchBacktestRun(runId?: string | null): WatchBacktestState {
 
 				unsubscribe = pythonStrategyApi.watchBacktestRun(
 					runId,
-					(u: unknown) => {
+					(u: BacktestRunUpdate) => {
 						if (stoppedRef.current) return;
 						setRun(u?.run ?? null);
 						setMetrics(u?.metrics ?? null);

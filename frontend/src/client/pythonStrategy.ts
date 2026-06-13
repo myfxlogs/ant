@@ -10,6 +10,7 @@ import {
   GetBacktestRunRequestSchema,
   ListBacktestRunsRequestSchema,
   WatchBacktestRunRequestSchema,
+  type BacktestRunUpdate,
 } from '../gen/ant/v1/backtest_run_query_pb';
 import {
   CancelBacktestRunRequestSchema,
@@ -201,7 +202,7 @@ export const pythonStrategyApi = {
     return (await pythonStrategyService.deleteBacktestRuns(msg));
   },
 
-  watchBacktestRun: (runId: string, onUpdate: (u: any) => void, onError?: (e: any) => void) => {
+  watchBacktestRun: (runId: string, onUpdate: (u: BacktestRunUpdate) => void, onError?: (e: any) => void) => {
     const abortController = new AbortController();
     (async () => {
       try {
