@@ -2,6 +2,7 @@ package mdgateway
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -16,6 +17,9 @@ import (
 // Returns a map of key→[]close_ts for exact-match dedup (M10.5-3d fix).
 // If the store is unreachable, logs fatal and returns error — bar finality must never be silently disabled.
 func loadFinalizedBars(ctx context.Context, store repository.MarketDataStore, log *zap.Logger) (map[repository.FinalizedKey][]int64, error) {
+	if store == nil {
+		return nil, fmt.Errorf("mdgateway: market data store is nil")
+	}
 	result, err := store.LoadFinalizedBars(ctx, time.Now().Add(-30*24*time.Hour))
 	if err != nil {
 		log.Error("mdgateway: load finalized bars FAILED — store unreachable, refusing to start", zap.Error(err))
