@@ -17,6 +17,23 @@ These constraints are enforced at implementation time. Violation = fix before co
 - 检查：`python3 scripts/check-file-lines.py --strict`（🔴 阻断 CI，🟡🟢 通过）。
 - 详细：见 `complexity-limits.md` 分级严重度系统。
 
+## Command Output Discipline (Token Efficiency)
+
+**优先级**: Claude Code 内置工具 > `rtk` 前缀 > 裸命令
+
+| 操作 | ✅ 首选 | ⚠️ 次选 | ❌ 禁止 |
+|------|--------|--------|--------|
+| 读文件 | Read 工具 | `rtk read` | `cat` / `head` / `tail` |
+| 搜索文本 | Grep 工具 | `rtk grep` | `grep -rn` |
+| 查找文件 | Glob 工具 | `rtk find` | `find` |
+| 统计行数 | — | `rtk wc` | `wc -l` |
+| 列目录 | — | `rtk ls` | `ls -la` |
+
+- **内置工具（Read/Grep/Glob）零 token 开销**，且结果格式化，始终优先使用。
+- 内置工具无法满足时（如需要复杂管道、非文件操作），使用 `rtk` 前缀命令，利用 RTK 过滤器压缩输出。
+- **裸 `grep -rn` / `find` / `cat` / `head` / `tail` 禁止在 Bash 中直接使用。**
+- 验证：`rtk discover` 定期检查遗漏，目标裸命令占比 <5%。
+
 ## Prohibited (Zero Tolerance)
 
 - ❌ REST endpoints (except healthz/readyz/livez/metrics)
