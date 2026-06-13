@@ -13,7 +13,7 @@ declare -A SPEC_LIMITS
 # Updated 2026-05-30 after M10-BASE + M11 + M12 growth
 SPEC_LIMITS["backend/internal/mdgateway"]="4300"
 SPEC_LIMITS["backend/internal/mdgateway/runner.go"]="600"
-SPEC_LIMITS["backend/internal/mdgateway/clickhouse_writer.go"]="300"
+SPEC_LIMITS["backend/internal/mdgateway/pg_writer.go"]="300"
 
 echo "=== detect-spec-drift: comparing spec LOC limits vs actual ==="
 
