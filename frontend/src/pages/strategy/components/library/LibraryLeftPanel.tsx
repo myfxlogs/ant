@@ -1,5 +1,5 @@
 import { Input, Segmented, List, Tag, Typography, Button, Popconfirm } from 'antd';
-import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined, SendOutlined, LoadingOutlined } from '@ant-design/icons';
+import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined, SendOutlined, LoadingOutlined, BankOutlined, GlobalOutlined, LockOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useLibraryCtx } from '../../LibraryContext';
 import { isSystemTemplate, isPublicTemplate } from '../../hooks/libraryTypes';
@@ -26,7 +26,6 @@ export default function LibraryLeftPanel() {
         <Segmented block size="small" value={lib.filter}
           onChange={v => lib.setFilter(v as any)}
           options={[
-            { value: 'all', label: t('strategy.library.filterAll') },
             { value: 'user', label: t('strategy.library.filterMine') },
             { value: 'system', label: t('strategy.library.filterSystem') },
           ]}
@@ -63,9 +62,9 @@ export default function LibraryLeftPanel() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                     <Text strong style={{ fontSize: 13, maxWidth: 200 }} ellipsis>{String(tpl.name || '')}</Text>
                     <span>
-                      {system && <Tag color="gold" style={{ margin: 0, fontSize: 10 }}>{t('strategy.templates.badges.preset')}</Tag>}
-                      {!system && public_ && <Tag color="blue" style={{ margin: 0, fontSize: 10 }}>{t('strategy.library.published')}</Tag>}
-                      {!system && !public_ && <Tag style={{ margin: 0, fontSize: 10 }}>{t('strategy.library.draft')}</Tag>}
+                      {system && <Tag color="gold" icon={<BankOutlined />} style={{ margin: 0, fontSize: 10 }}>{t('strategy.library.system')}</Tag>}
+                      {!system && public_ && <Tag color="blue" icon={<GlobalOutlined />} style={{ margin: 0, fontSize: 10 }}>{t('strategy.library.shared')}</Tag>}
+                      {!system && !public_ && <Tag color="default" icon={<LockOutlined />} style={{ margin: 0, fontSize: 10 }}>{t('strategy.library.private')}</Tag>}
                     </span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -81,7 +80,7 @@ export default function LibraryLeftPanel() {
                           </Button>
                         ) : (
                           <Button type="text" size="small" onClick={() => lib.handlePublish(id)} loading={lib.publishing}>
-                            <SendOutlined />
+                            <Text style={{ fontSize: 11 }}>{t('strategy.library.share')}</Text>
                           </Button>
                         )}
                         <Popconfirm title={t('strategy.templates.deleteConfirm')} onConfirm={() => lib.handleDelete(id)}>

@@ -5,16 +5,17 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { StrategyTemplate } from '@/client/strategy';
 import { strategyTemplateApi, type CreateTemplateRequest } from '@/client/strategy-schedules';
 import { codeAssistApi } from '@/client/codeAssist';
+import { useAuthStore } from '@/stores/authStore';
 import { isSystemTemplate, isPublicTemplate } from './libraryTypes';
 
-export type TemplateFilter = 'all' | 'user' | 'system';
+export type TemplateFilter = 'user' | 'system';
 
 export function useLibraryTemplates() {
   const { t, i18n } = useTranslation();
   const [templates, setTemplates] = useState<StrategyTemplate[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<TemplateFilter>('all');
+  const [filter, setFilter] = useState<TemplateFilter>('user');
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState<string>('');
   const [editOpen, setEditOpen] = useState(false);
@@ -23,6 +24,7 @@ export function useLibraryTemplates() {
   const [lastValidatedCode, setLastValidatedCode] = useState<string>('');
   const [publishing, setPublishing] = useState(false);
   const queryClient = useQueryClient();
+  const currentUserId = useAuthStore(s => s.user?.id);
 
   const fetchTemplates = useCallback(async () => {
     setLoading(true); setError(null);
@@ -46,7 +48,11 @@ export function useLibraryTemplates() {
   const filtered = allTemplates.filter(tpl => {
     const system = isSystemTemplate(tpl);
     if (filter === 'system' && !system) return false;
-    if (filter === 'user' && system) return false;
+    if (filter === 'user') {
+      if (system) return false;
+      // Exclude other users' templates — discovery is through Marketplace, not Library
+      if (currentUserId && String(tpl.userId || '') !== currentUserId) return false;
+    }
     if (search) {
       const q = search.toLowerCase();
       if (!String(tpl.name || '').toLowerCase().includes(q)

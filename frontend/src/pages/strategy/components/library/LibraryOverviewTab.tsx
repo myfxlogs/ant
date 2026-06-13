@@ -1,5 +1,5 @@
 import { Button, Descriptions, Space, Tag, Typography, Popconfirm, message } from 'antd';
-import { EditOutlined, DeleteOutlined, CodeOutlined, SendOutlined, ExportOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, CodeOutlined, ExportOutlined, BankOutlined, GlobalOutlined, LockOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { formatDateTime } from '@/utils/date';
@@ -34,12 +34,9 @@ export default function LibraryOverviewTab() {
         <Descriptions.Item label={t('strategy.templates.table.name')}><Text strong>{tpl.name}</Text></Descriptions.Item>
         <Descriptions.Item label={t('strategy.templates.table.description')}>{tpl.description || '-'}</Descriptions.Item>
         <Descriptions.Item label={t('strategy.templates.table.visibility')}>
-          {public_ ? <Tag color="blue">{t('strategy.templates.visibility.public')}</Tag> : <Tag>{t('strategy.templates.visibility.private')}</Tag>}
-        </Descriptions.Item>
-        <Descriptions.Item label={t('strategy.library.publishStatus')}>
-          {system ? <Tag color="gold">{t('strategy.templates.badges.preset')}</Tag>
-            : public_ ? <Tag color="green">{t('strategy.library.published')}</Tag>
-            : <Tag>{t('strategy.library.draft')}</Tag>}
+          {system ? <Tag color="gold" icon={<BankOutlined />}>{t('strategy.library.system')}</Tag>
+            : public_ ? <Tag color="blue" icon={<GlobalOutlined />}>{t('strategy.library.shared')}</Tag>
+            : <Tag color="default" icon={<LockOutlined />}>{t('strategy.library.private')}</Tag>}
         </Descriptions.Item>
         <Descriptions.Item label={t('strategy.library.scheduleCount')}>
           {count > 0 ? <Text style={{ color: '#1677ff' }}>{t('strategy.library.scheduleRunningCount', '{{count}} 个运行中', { count })}</Text>
@@ -56,7 +53,7 @@ export default function LibraryOverviewTab() {
             {public_ ? (
               <Button onClick={() => lib.handleUnpublish(id)} loading={lib.publishing}>{t('strategy.library.unpublish')}</Button>
             ) : (
-              <Button type="primary" icon={<SendOutlined />} onClick={() => lib.handlePublish(id)} loading={lib.publishing}>{t('strategy.library.publish')}</Button>
+              <Button type="primary" icon={<GlobalOutlined />} onClick={() => lib.handlePublish(id)} loading={lib.publishing}>{t('strategy.library.share')}</Button>
             )}
             <Popconfirm title={t('strategy.templates.deleteConfirm')} onConfirm={() => lib.handleDelete(id)}>
               <Button danger icon={<DeleteOutlined />}>{t('common.delete')}</Button>
