@@ -22,7 +22,7 @@ function LibraryUI() {
   [sCtx.allSchedules]);
 
   const ctxValue = {
-    templates: tCtx.filtered, allTemplates: tCtx.allTemplates,
+    templates: tCtx.templates, allTemplates: tCtx.allTemplates,
     templatesLoading: tCtx.loading, templatesError: tCtx.error,
     selectedId: tCtx.selectedId, selected: tCtx.selected,
     selectTemplate: lib.selectTemplate,
