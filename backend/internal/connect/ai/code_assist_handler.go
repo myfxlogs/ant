@@ -187,12 +187,23 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 
 	resp, _ := parseValidationResult(result, s.log)
 
-	// Merge Python quality hints, sweep dimensions, and strategy
-	// directives from the Python backend (backend zero-trust:
-	// all computation in Python; Go just forwards the results).
+	// Merge Python quality hints, sweep dimensions, strategy
+	// directives, errors, and warnings from the Python backend.
+	// Python's ast.parse() is authoritative for syntax errors;
+	// LLM only checks business logic.
 	if s.pythonStrategyClient != nil && resp != nil {
 		pyResp, pyErr := s.pythonStrategyClient.Validate(ctx, connect.NewRequest(&antv1.ValidateStrategyRequest{Code: code}))
 		if pyErr == nil && pyResp != nil {
+			// Merge Python's authoritative errors/warnings (incl. SyntaxError from ast.parse).
+			// Python errors are prepended — they are deterministic (ast.parse) and
+			// must be fixed before LLM's business-logic suggestions are relevant.
+			if len(pyResp.Msg.Errors) > 0 {
+				resp.Msg.Errors = append(pyResp.Msg.Errors, resp.Msg.Errors...)
+				resp.Msg.Valid = false // Python syntax/security errors override LLM
+			}
+			if len(pyResp.Msg.Warnings) > 0 {
+				resp.Msg.Warnings = append(resp.Msg.Warnings, pyResp.Msg.Warnings...)
+			}
 			resp.Msg.QualityHints = pyResp.Msg.QualityHints
 			resp.Msg.SweepDimensions = pyResp.Msg.SweepDimensions
 			resp.Msg.StrategyDirectives = pyResp.Msg.StrategyDirectives
