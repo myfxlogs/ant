@@ -45,12 +45,27 @@ def run(ctx):
         return {'signal': 'sell', 'volume': 0.01}
 `;
 
-const BROKEN_CODE = `"""@strategy syntax broken"""
+// Code with both syntax error (missing colon → ast.parse catches it)
+// AND business logic issues (undefined variable, no stop-loss → LLM catches).
+// This guarantees valid=false from Python and gives Auto-Fix actionable targets.
+const BROKEN_CODE = `"""
+@strategy test broken
+@param fast_period 10 range=5:50:5
+"""
+
 def init():
     pass
-def run(ctx)
+
+def run(ctx):
     close = ctx['close']
-    return
+    # BUG 1: 'fast' is undefined — should be fast_period
+    # BUG 2: missing colon on next line
+    if len(close) < fast + 1
+        return
+    ma = sum(close[-fast:]) / fast
+    if close[-1] > ma:
+        return {'signal': 'buy', 'volume': 0.01}
+    # BUG 3: no stop-loss, no take-profit
 `;
 
 // ══════════════════════════════════════
@@ -134,7 +149,7 @@ async function codePanelOpen(page: Page): Promise<boolean> {
   return cm || overlay;
 }
 
-async function insertCode(page: Page, c: string) {
+async function insertCode(page: Page, c: string, opts?: { syncReact?: boolean }) {
   await page.evaluate((code) => {
     const ed = document.querySelector('.cm-editor');
     if (!ed) return;
@@ -144,7 +159,32 @@ async function insertCode(page: Page, c: string) {
     const cm = ed.querySelector('.cm-content') as HTMLElement;
     if (cm) { cm.focus(); document.execCommand('selectAll', false); document.execCommand('insertText', false, code); }
   }, c);
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(800);
+
+  // Force React state sync by simulating a real user keystroke.
+  // CodeMirror's programmatic dispatch may not trigger the React wrapper's onChange.
+  // A real keystroke ensures the React code state is updated.
+  if (opts?.syncReact !== false) {
+    const cmEl = await page.$('.cm-editor');
+    if (cmEl) {
+      await cmEl.click({ force: true });
+      await page.waitForTimeout(200);
+      // Move cursor to end of document (where dispatch left it)
+      await page.keyboard.press('End');
+      await page.waitForTimeout(100);
+      // Type and delete a non-intrusive character to trigger onChange
+      await page.keyboard.press('ArrowLeft');
+      await page.waitForTimeout(50);
+      await page.keyboard.press('ArrowRight');
+      await page.waitForTimeout(150);
+      // Dispatch an input event to ensure React picks up the CodeMirror change
+      await page.evaluate(() => {
+        const cm = document.querySelector('.cm-content');
+        if (cm) cm.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+      });
+      await page.waitForTimeout(500);
+    }
+  }
 }
 
 async function getCodeText(page: Page): Promise<string> {
@@ -265,6 +305,7 @@ async function run() {
   const apiLog: string[] = [];
   let apiCount = 0;
   page.on('pageerror', e => jsErrs.push(e.message));
+  page.on("console", msg => { if (msg.text().startsWith("PHASE6_DIAG")) console.log("   [BROWSER]", msg.text()); });
   page.on('response', res => {
     const url = res.url();
     apiCount++;
@@ -442,9 +483,13 @@ async function run() {
   await phase('Run Backtest', page, async () => {
     const rb = await page.$('button:has-text("Run")');
     if (!rb || await rb.evaluate((el: HTMLButtonElement) => el.disabled)) { W('Run unavailable'); return; }
-    await humanPause(500, 1500); // hesitation
+    // Human-like: check settings one more time before committing to a run
+    await page.evaluate(() => window.scrollBy(0, 60));
+    await humanPause(400, 900); // review params
+    await page.evaluate(() => window.scrollBy(0, -30));
+    await humanPause(600, 1200); // hesitation before committing
     await rb.click({ force: true });
-    OK('Submitted');
+    OK('Backtest submitted');
     shot(page, 'bt-run');
   });
 
@@ -539,57 +584,178 @@ async function run() {
 
   // ═══ PHASE 6: AI AUTO-FIX ═══
   await phase('AI Auto-Fix', page, async () => {
-    // First restore code panel, insert broken code, and validate
+    // KEY INSIGHT: CodeMirror dispatch() does NOT trigger React onChange,
+    // so React state stays stale. Real keystrokes (keyboard.type/press)
+    // are the ONLY reliable way to sync both React + CodeMirror state.
+    // We use a SHORT broken code typed character-by-character.
+
+    // Step 1: Close and reopen code panel for clean React state
+    if (await codePanelOpen(page)) {
+      await toggleCodePanel(page); await page.waitForTimeout(1500);
+    }
+    await humanPause(400, 800);
+    await toggleCodePanel(page); await page.waitForTimeout(2500);
     if (!(await codePanelOpen(page))) {
       await toggleCodePanel(page); await page.waitForTimeout(2000);
     }
+    if (!(await codePanelOpen(page))) { W('Panel not open for Auto-Fix'); return; }
+    OK('Panel reopened');
 
-    // Insert deliberately broken code
-    await insertCode(page, BROKEN_CODE);
-    await humanPause(300, 700);
-    // Verify broken code was inserted
-    const brokenCheck = await getCodeText(page);
-    if (!brokenCheck || brokenCheck.length < 10) { W('Broken code not inserted'); return; }
-
-    // Validate to trigger errors
+    // Step 2: Select all existing code and type broken code via REAL keystrokes.
+    // This ensures React onChange fires for every character.
     const cmEl = await page.$('.cm-editor');
-    if (cmEl) { await cmEl.click({ force: true }); await page.waitForTimeout(200); }
-    await page.keyboard.press('Control+Enter');
-    await page.waitForTimeout(5000);
+    if (!cmEl) { W('CodeMirror not found'); return; }
+    await cmEl.click({ force: true });
+    await page.waitForTimeout(300);
 
-    // Check for validation errors — rendered as inline divs with ✕ marker
-    const body = await page.textContent('body') || '';
-    const hasErrors = body.includes('✕') || body.includes('语法错误') || body.includes('SyntaxError');
-    if (hasErrors) {
-      OK('Syntax error detected');
-      shot(page, 'autofix-errors');
+    // Select all and delete
+    await page.keyboard.press('Control+a');
+    await humanPause(200, 400);
+    await page.keyboard.press('Backspace');
+    await humanPause(300, 500);
 
-      // Find Auto Fix button
-      const fixBtn = await page.$('button:has-text("Auto Fix"), button:has-text("Fix")');
-      if (fixBtn) {
-        await humanPause(500, 1000);
-        await fixBtn.click({ force: true });
-        OK('Auto-Fix started');
+    // Type broken code line by line (human-like typing speed)
+    // Missing colon in def run(ctx) causes Python SyntaxError
+    const brokenLines = [
+      '@strategy broken',
+      '',
+      'def init():',
+      '    pass',
+      '',
+      'def run(ctx)',
+      '    close = ctx["close"]',
+      '    return',
+    ];
+    for (let i = 0; i < brokenLines.length; i++) {
+      await page.keyboard.type(brokenLines[i], { delay: 20 + Math.random() * 30 });
+      if (i < brokenLines.length - 1) {
+        await page.keyboard.press('Enter');
+        await humanPause(100, 250);
+      }
+    }
+    await humanPause(500, 1000);
+    OK('Broken code typed via keyboard');
 
-        // Wait for fix iterations (up to 60s)
-        const fixResult = await pollForText(page, /✕|passed|fixed|resolved|0 error|success/i, 60, 3000);
-        if (fixResult.found) {
-          const body2 = await page.textContent('body') || '';
-          const stillHasErrors = body2.includes('✕') || body2.includes('语法错误');
-          if (!stillHasErrors) OK('Auto-Fix resolved errors');
-          else OK(`Auto-Fix completed ~${Math.round(fixResult.elapsed)}s`);
-        } else {
-          W('Auto-Fix may not have completed');
+    // Verify code is in editor
+    const bc = await getCodeText(page);
+    if (!bc || bc.length < 8) { W('Broken code missing'); return; }
+    OK('Editor shows broken code (' + bc.length + ' chars)');
+
+    // Step 3: Scroll to top and re-read (human-like)
+    await page.evaluate(() => {
+      const cm = document.querySelector('.cm-content');
+      if (cm) cm.scrollTop = 0;
+    });
+    await humanPause(500, 1000);
+
+    // Step 4: Click Validate button (has CheckCircleOutlined icon in toolbar).
+    // Use CSS selector :has() for direct icon match.
+    let validated = false;
+    const validateBtn = await page.$('button:has(.anticon-check-circle)');
+    if (validateBtn) {
+      await humanPause(300, 600);
+      await validateBtn.click({ force: true });
+      OK('Validate button clicked');
+      validated = true;
+    }
+    if (!validated) {
+      // Fallback: iterate all buttons looking for check-circle icon
+      const btns = await page.$$('button');
+      for (const btn of btns) {
+        const icon = await btn.$('.anticon-check-circle');
+        if (icon) {
+          await btn.click({ force: true });
+          OK('Validate clicked (fallback)');
+          validated = true;
+          break;
         }
+      }
+    }
+    if (!validated) {
+      W('Validate btn not found');
+    }
+
+    // Step 5: Wait for validation response
+    await page.waitForTimeout(5000);
+    shot(page, 'autofix-validate');
+
+    // Step 6: Check for .ant-alert-warning (validation failed alert)
+    const diag = await page.evaluate(() => {
+      const alerts = document.querySelectorAll('.ant-alert');
+      const result = [];
+      for (const a of alerts) {
+        const cls = (a as HTMLElement).className;
+        const btns = a.querySelectorAll('button');
+        const btnTexts = Array.from(btns).map(b => (b as HTMLElement).innerText?.trim()?.slice(0, 40));
+        result.push({ cls: cls.split(' ').filter((c) => c.startsWith('ant-alert-')).join(' '), btnTexts });
+      }
+      return { alertCount: alerts.length, alerts: result };
+    });
+    console.log('PHASE6_DIAG', JSON.stringify(diag));
+
+    if (diag.alertCount === 0) {
+      W('No validation alert appeared');
+      await page.keyboard.press('Control+a');
+      await page.waitForTimeout(100);
+      await page.keyboard.press('Backspace');
+      await humanPause(200, 400);
+      await insertCode(page, CODE);
+      return;
+    }
+
+    // Look for warning-type alert (has errors)
+    const warnAlert = diag.alerts.find((a) => a.cls.includes('ant-alert-warning'));
+    if (!warnAlert) {
+      const successAlert = diag.alerts.find((a) => a.cls.includes('ant-alert-success'));
+      if (successAlert) W('Validation passed - broken code not detected');
+      else W('Unexpected alert type');
+      return;
+    }
+    OK('Validation errors detected (warning alert)');
+
+    // Check for Auto-Fix button text in the alert
+    const fixBtnTexts = warnAlert.btnTexts.filter((t) => /fix/i.test(t));
+    if (fixBtnTexts.length === 0) {
+      W('Auto-Fix button not in alert. Buttons: ' + JSON.stringify(warnAlert.btnTexts));
+      return;
+    }
+    OK('Auto-Fix button visible: ' + fixBtnTexts[0]);
+
+    // Click Auto-Fix button
+    const clicked = await page.evaluate(() => {
+      const buttons = document.querySelectorAll('.ant-alert-warning button.ant-btn-primary');
+      for (const btn of buttons) {
+        const txt = (btn as HTMLElement).innerText?.trim() || '';
+        if (/fix/i.test(txt)) { (btn as HTMLElement).click(); return txt; }
+      }
+      for (const btn of buttons) {
+        (btn as HTMLElement).click();
+        return (btn as HTMLElement).innerText?.trim();
+      }
+      return '';
+    });
+
+    if (clicked) {
+      OK('Auto-Fix started: ' + clicked);
+      const fixResult = await pollForText(page, /passed|success|fixed/i, 90, 3000);
+      const stillWarning = await page.$('.ant-alert-warning');
+      if (!stillWarning) {
+        OK('Auto-Fix passed (error alert gone)');
+      } else if (fixResult.found) {
+        OK('Auto-Fix completed');
       } else {
-        W('Auto-Fix button not found');
+        W('Auto-Fix timeout');
       }
     } else {
-      W('No errors detected (validator may not catch this type)');
+      W('Could not click Auto-Fix button');
     }
     shot(page, 'autofix-done');
 
-    // Restore original code
+    // Restore original code for subsequent phases
+    await page.keyboard.press('Control+a');
+    await page.waitForTimeout(100);
+    await page.keyboard.press('Backspace');
+    await humanPause(200, 400);
     await insertCode(page, CODE);
   });
 
@@ -711,6 +877,11 @@ async function run() {
     const result = await pollForText(page, /grade|score|rank|OOS|overfit|Apply.*Code|apply/i, 180);
     if (result.found) {
       OK(`Tuning done ~${Math.round(result.elapsed)}s`);
+      // Human-like: scroll through results table
+      await page.evaluate(() => { window.scrollBy(0, 200); });
+      await humanPause(400, 800);
+      await page.evaluate(() => { window.scrollBy(0, -100); });
+      await humanPause(300, 500);
       const table = await page.$('table');
       table ? OK('Results table present') : W('No table');
     } else {
@@ -802,12 +973,10 @@ async function run() {
   });
 
   await phase('Place Market Order', page, async () => {
-    // Place a small market buy
-    const buySymBtn = await page.$(`button:has-text("Buy ${SYM}")`);
-    if (!buySymBtn) { W('Buy button missing'); return; }
-    const bd = await buySymBtn.evaluate((el: HTMLButtonElement) => el.disabled);
-    if (bd) { W('Buy disabled'); return; }
-
+    // Human-like: scan QT panel before trading
+    await page.evaluate(() => window.scrollBy(0, 40));
+    await humanPause(300, 700);
+    
     // Set lot size to 0.01 first
     for (const li of await page.$$('.ant-input-number-input')) {
       const b = await li.boundingBox();
@@ -820,9 +989,18 @@ async function run() {
       }
     }
 
-    await humanPause(800, 2000); // trader hesitation
+    // Place a small market buy
+    const buySymBtn = await page.$(`button:has-text("Buy ${SYM}")`);
+    if (!buySymBtn) { W('Buy button missing'); return; }
+    const bd = await buySymBtn.evaluate((el: HTMLButtonElement) => el.disabled);
+    if (bd) { W('Buy disabled'); return; }
+
+    // Trader hesitation: check price, confirm lot, hover over button
+    await humanPause(800, 2000); // indecision
+    await buySymBtn.hover();
+    await humanPause(400, 900); // last check
     await buySymBtn.click({ force: true });
-    OK('Buy order sent');
+    OK('Market buy order sent');
     await page.waitForTimeout(3000);
     shot(page, 'qt-buy');
   });
