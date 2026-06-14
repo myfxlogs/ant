@@ -51,10 +51,16 @@ interface AnalyticsRiskMetrics {
 
 export default function Summary() {
   const { t } = useTranslation();
-  const { accounts } = useAccount();
+  const { accounts, fetchAccounts } = useAccount();
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState('month');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+  // Fetch accounts on mount — the Analytics page is a direct navigation target
+  // and cannot rely on another page having already populated the Zustand store.
+  useEffect(() => {
+    fetchAccounts();
+  }, [fetchAccounts]);
 
   useEffect(() => {
     if (!selectedAccount && accounts.length > 0) {
@@ -67,7 +73,7 @@ export default function Summary() {
     async () => {
       if (!selectedAccount) return null;
       const [accountAnalytics] = await Promise.all([
-        analyticsApi.getAccountAnalytics({ accountId: selectedAccount, period: selectedPeriod }),
+        analyticsApi.getAccountAnalytics(selectedAccount, selectedPeriod as 'day' | 'week' | 'month' | 'all'),
       ]);
       return { ...accountAnalytics };
     },

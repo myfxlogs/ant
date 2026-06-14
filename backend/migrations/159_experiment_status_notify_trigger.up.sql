@@ -10,6 +10,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS experiment_status_notify ON strategy_experiments;
 CREATE TRIGGER experiment_status_notify
     AFTER UPDATE OF status ON strategy_experiments
     FOR EACH ROW
