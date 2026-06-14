@@ -115,7 +115,7 @@ export default function Summary() {
         </h1>
         <Space>
           <Select value={selectedAccount} onChange={setSelectedAccount} style={{ width: 200 }} placeholder={t('analytics.summary.placeholders.selectAccount')}>
-            {(accounts || []).map(a => <Select.Option key={a.id} value={a.id}>{a.alias}</Select.Option>)}
+            {(accounts || []).map(a => <Select.Option key={a.id} value={a.id}>{a.login} · {a.brokerServer}</Select.Option>)}
           </Select>
           <Select value={selectedPeriod} onChange={setSelectedPeriod} options={periodOptions(t)} style={{ width: 120 }} />
         </Space>
