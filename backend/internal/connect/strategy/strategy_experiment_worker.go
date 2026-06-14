@@ -50,12 +50,23 @@ func (w *ExperimentWorker) Start(ctx context.Context) {
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				if err := w.processOne(ctx); err != nil {
-					w.log.Warn("experiment worker error", zap.Error(err))
-				}
+				w.processOneSafe(ctx)
 			}
 		}
 	}()
+}
+
+// processOneSafe wraps processOne with panic recovery so a single corrupted
+// experiment cannot take down the entire worker loop.
+func (w *ExperimentWorker) processOneSafe(ctx context.Context) {
+	defer func() {
+		if r := recover(); r != nil {
+			w.log.Error("experiment worker panic recovered", zap.Any("panic", r))
+		}
+	}()
+	if err := w.processOne(ctx); err != nil {
+		w.log.Warn("experiment worker error", zap.Error(err))
+	}
 }
 
 func (w *ExperimentWorker) Stop() { close(w.stopCh) }

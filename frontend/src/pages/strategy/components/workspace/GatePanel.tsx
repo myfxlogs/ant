@@ -65,7 +65,7 @@ export default function GatePanel({ loading, gates, summary, error, status, canR
             }
             if (gs.skipped) {
               return { title: <span><MinusCircleOutlined style={{ color: '#faad14', marginRight: 6 }} />
-                {GATE_LABELS[gs.gate] || gs.gate}
+                {t(GATE_KEY[gs.gate] || gs.gate, gs.gate)}
                 <Tag style={{ marginLeft: 8, fontSize: 10 }}>{gs.gate}</Tag>
               </span>,
                 description: <span style={{ fontSize: 12, color: '#8c8c8c' }}>{t('ai.gate.skipped', 'SKIPPED')} — {gs.reason || t('ai.gate.noData', 'no data')}</span>,
@@ -74,7 +74,7 @@ export default function GatePanel({ loading, gates, summary, error, status, canR
             return { title: <span>{gs.passed
                 ? <CheckCircleFilled style={{ color: '#52c41a', marginRight: 6 }} />
                 : <CloseCircleFilled style={{ color: '#ff4d4f', marginRight: 6 }} />}
-              {GATE_LABELS[gs.gate] || gs.gate}
+              {t(GATE_KEY[gs.gate] || gs.gate, gs.gate)}
               <Tag style={{ marginLeft: 8, fontSize: 10 }}>{gs.gate}</Tag>
             </span>,
               description: <span style={{ fontSize: 12 }}>

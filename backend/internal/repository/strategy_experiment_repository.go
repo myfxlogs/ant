@@ -230,12 +230,19 @@ func (r *StrategyExperimentRepository) ClaimPendingExperiment(ctx context.Contex
 		}
 		return nil, fmt.Errorf("claim pending: %w", err)
 	}
+	// PG NOTIFY is handled by trigger experiment_status_notify on status column UPDATE.
 	return &e, nil
 }
 
 func (r *StrategyExperimentRepository) UpdateExperimentStatus(ctx context.Context, id uuid.UUID, status string) error {
-	_, err := r.db.Exec(ctx, `UPDATE strategy_experiments SET status = $2, finished_at = NOW() WHERE id = $1`, id, status)
-	return err
+	_, err := r.db.Exec(ctx,
+		`UPDATE strategy_experiments SET status = $2, finished_at = NOW() WHERE id = $1`,
+		id, status)
+	if err != nil {
+		return err
+	}
+	// PG NOTIFY is handled by trigger experiment_status_notify on status column UPDATE.
+	return nil
 }
 
 // UpdateMarketRegime persists the detected market regime on the experiment.

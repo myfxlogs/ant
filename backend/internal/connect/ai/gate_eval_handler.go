@@ -82,17 +82,23 @@ func (s *GateEvalServer) RunEvaluation(
 	if err != nil {
 		return fmt.Errorf("unauthorized: %w", err)
 	}
+	s.log.Debug("Gate: RunEvaluation called", zap.String("runID", req.Msg.BacktestRunId), zap.String("userID", userID.String()))
 	run, err := s.fetchRun(ctx, userID, req.Msg.BacktestRunId)
 	if err != nil {
+		s.log.Error("Gate: fetchRun failed", zap.Error(err))
 		return err
 	}
+	s.log.Debug("Gate: fetched run", zap.String("status", run.Status), zap.String("symbol", run.Symbol))
 	input, err := buildGateInput(run, req.Msg)
 	if err != nil {
+		s.log.Error("Gate: buildGateInput failed", zap.Error(err))
 		return err
 	}
+	s.log.Debug("Gate: running pipeline", zap.Int("dailyReturns", len(input.DailyReturns)))
 
 	// Run pipeline first so we can emit notification before streaming.
 	result := aigates.Pipeline(input)
+	s.log.Debug("Gate: pipeline done", zap.Bool("passed", result.Passed), zap.Int("gates", len(result.Gates)))
 
 	// Emit notification for gate evaluation result.
 	SendGateNotification(ctx, s.notifSender, userID, run, result)
@@ -119,9 +125,9 @@ func (s *GateEvalServer) fetchRun(ctx context.Context, userID uuid.UUID, rawID s
 // buildGateInput converts a backtest run into pipeline input.
 func buildGateInput(run *repository.BacktestRun, req *antv1.RunGateEvaluationRequest) (aigates.PipelineInput, error) {
 	dailyReturns := aigates.EquityCurveToDailyReturns(run.ProtoResponse)
-	if len(dailyReturns) < 10 {
+	if len(dailyReturns) < 3 {
 		return aigates.PipelineInput{},
-			fmt.Errorf("insufficient data: need 10+ daily returns, got %d", len(dailyReturns))
+			fmt.Errorf("insufficient daily returns: need 3+, got %d", len(dailyReturns))
 	}
 	n := int(req.NumAttempts)
 	if n <= 0 {

@@ -232,7 +232,7 @@ func (s *StrategyExperimentServer) WatchExperiment(ctx context.Context, req *con
 	prevStatus := ""
 	notifCh, listenCancel, _ := s.pgListen.Listen(ctx, "experiment_status")
 	if listenCancel != nil { defer listenCancel() }
-	ticker := time.NewTicker(30 * time.Second)
+	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
 	for {
