@@ -74,7 +74,7 @@ func registerSREHandlers(
 	mux.Handle(antv1c.NewAnalyticsServiceHandler(analyticsServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
 	marketRegimeRepo := repository.NewMarketRegimeRepository(pool)
-	marketRegimeServer := mktplace.NewMarketRegimeServer(marketRegimeRepo, store, log)
+	marketRegimeServer := mktplace.NewMarketRegimeServer(marketRegimeRepo, store, platformSvc, log)
 	mux.Handle(antv1c.NewMarketRegimeServiceHandler(marketRegimeServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 
 	strategyExperimentServer := strategy.NewStrategyExperimentServer(strategyExperimentRepo, log)
