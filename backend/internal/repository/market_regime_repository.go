@@ -51,6 +51,9 @@ func (r *MarketRegimeRepository) Create(ctx context.Context, row *MarketRegime) 
 	if len(row.Segments) == 0 {
 		row.Segments = []byte(`[]`)
 	}
+	if row.StrategyFamilies == nil {
+		row.StrategyFamilies = []string{}
+	}
 	_, err := r.db.Exec(ctx, `
 		INSERT INTO market_regimes (id,user_id,account_id,symbol,timeframe,regime,confidence,features,segments,strategy_families,from_time,to_time,model_version,created_at)
 		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
@@ -61,9 +64,17 @@ func (r *MarketRegimeRepository) Create(ctx context.Context, row *MarketRegime) 
 	return nil
 }
 
+const marketRegimesColumns = `id, user_id, account_id, symbol, timeframe, regime, confidence,
+	features, segments, strategy_families, from_time, to_time, model_version, created_at`
+
 func (r *MarketRegimeRepository) Get(ctx context.Context, userID, id uuid.UUID) (*MarketRegime, error) {
 	var row MarketRegime
-	err := r.db.QueryRow(ctx, `SELECT * FROM market_regimes WHERE id = $1 AND user_id = $2`, id, userID).Scan(&row.ID, &row.UserID, &row.AccountID, &row.Symbol, &row.Timeframe, &row.Regime, &row.Confidence, &row.Features, &row.Segments, &row.StrategyFamilies, &row.FromTime, &row.ToTime, &row.ModelVersion, &row.CreatedAt)
+	err := r.db.QueryRow(ctx,
+		`SELECT `+marketRegimesColumns+` FROM market_regimes WHERE id = $1 AND user_id = $2`,
+		id, userID,
+	).Scan(&row.ID, &row.UserID, &row.AccountID, &row.Symbol, &row.Timeframe,
+		&row.Regime, &row.Confidence, &row.Features, &row.Segments,
+		&row.StrategyFamilies, &row.FromTime, &row.ToTime, &row.ModelVersion, &row.CreatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrMarketRegimeNotFound
 	}
@@ -72,7 +83,12 @@ func (r *MarketRegimeRepository) Get(ctx context.Context, userID, id uuid.UUID) 
 
 func (r *MarketRegimeRepository) GetByID(ctx context.Context, id uuid.UUID) (*MarketRegime, error) {
 	var row MarketRegime
-	err := r.db.QueryRow(ctx, `SELECT * FROM market_regimes WHERE id = $1`, id).Scan(&row.ID, &row.UserID, &row.AccountID, &row.Symbol, &row.Timeframe, &row.Regime, &row.Confidence, &row.Features, &row.Segments, &row.StrategyFamilies, &row.FromTime, &row.ToTime, &row.ModelVersion, &row.CreatedAt)
+	err := r.db.QueryRow(ctx,
+		`SELECT `+marketRegimesColumns+` FROM market_regimes WHERE id = $1`,
+		id,
+	).Scan(&row.ID, &row.UserID, &row.AccountID, &row.Symbol, &row.Timeframe,
+		&row.Regime, &row.Confidence, &row.Features, &row.Segments,
+		&row.StrategyFamilies, &row.FromTime, &row.ToTime, &row.ModelVersion, &row.CreatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrMarketRegimeNotFound
 	}

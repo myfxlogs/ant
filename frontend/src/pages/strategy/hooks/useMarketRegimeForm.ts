@@ -32,9 +32,11 @@ export function useMarketRegimeForm() {
     };
     setLoading(true);
     try {
-      const row = await marketRegimeApi.detect(values);
-      setResult(row);
-      return row;
+      const res = await marketRegimeApi.detect(values);
+      // Unwrap MarketRegime from the DetectMarketRegimeResponse envelope.
+      const regime = res.regime ?? null;
+      setResult(regime);
+      return regime;
     } finally {
       setLoading(false);
     }

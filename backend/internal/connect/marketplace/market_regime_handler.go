@@ -3,7 +3,9 @@ package marketplace
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -16,18 +18,37 @@ import (
 	"anttrader/internal/ai"
 	"anttrader/internal/interceptor"
 	"anttrader/internal/repository"
+	"anttrader/internal/service"
 )
 
 type MarketRegimeServer struct {
 	repo           *repository.MarketRegimeRepository
 	marketDataRepo repository.MarketDataStore
+	platformSvc    *service.PlatformService
 	log            *zap.Logger
 }
 
 var _ antv1c.MarketRegimeServiceHandler = (*MarketRegimeServer)(nil)
 
-func NewMarketRegimeServer(repo *repository.MarketRegimeRepository, marketDataRepo repository.MarketDataStore, log *zap.Logger) *MarketRegimeServer {
-	return &MarketRegimeServer{repo: repo, marketDataRepo: marketDataRepo, log: log}
+func NewMarketRegimeServer(
+	repo *repository.MarketRegimeRepository,
+	marketDataRepo repository.MarketDataStore,
+	platformSvc *service.PlatformService,
+	log *zap.Logger,
+) *MarketRegimeServer {
+	return &MarketRegimeServer{
+		repo:           repo,
+		marketDataRepo: marketDataRepo,
+		platformSvc:    platformSvc,
+		log:            log,
+	}
+}
+
+// detectResult holds the outcome of regime detection from kline data.
+type detectResult struct {
+	regime     string
+	confidence float64
+	features   []byte
 }
 
 func (s *MarketRegimeServer) DetectMarketRegime(ctx context.Context, req *connect.Request[antv1.DetectMarketRegimeRequest]) (*connect.Response[antv1.DetectMarketRegimeResponse], error) {
@@ -41,38 +62,67 @@ func (s *MarketRegimeServer) DetectMarketRegime(ctx context.Context, req *connec
 		return nil, connect.NewError(connect.CodeUnauthenticated, fmt.Errorf("invalid user_id: %w", err))
 	}
 
-	row := &repository.MarketRegime{
-		UserID:     userID,
-		AccountID:  accountID,
-		Symbol:     req.Msg.Symbol,
-		Timeframe:  req.Msg.Timeframe,
-		Confidence: 0,
-		Features:   []byte(`{}`),
-		Segments:   []byte(`[]`),
+	if req.Msg.Symbol == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("symbol is required"))
+	}
+	if req.Msg.Timeframe == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("timeframe is required"))
 	}
 
+	// Broker is required for deterministic kline queries.
+	broker, err := s.platformSvc.GetAccountBroker(ctx, accountID.String())
+	if err != nil {
+		s.log.Error("market regime: failed to resolve broker", zap.String("account", accountID.String()), zap.Error(err))
+		return nil, connect.NewError(connect.CodeFailedPrecondition,
+			fmt.Errorf("cannot resolve broker for account %s", accountID))
+	}
+	if broker == "" {
+		s.log.Error("market regime: broker not found for account", zap.String("account", accountID.String()))
+		return nil, connect.NewError(connect.CodeFailedPrecondition,
+			fmt.Errorf("no broker configured for account %s", accountID))
+	}
+
+	// Resolve symbol to canonical form so the kline query matches stored data.
+	canonical := s.platformSvc.ResolveSymbol(ctx, accountID.String(), req.Msg.Symbol)
+
+	// Extract optional time bounds once — used by both detection and row.
+	var fromTime, toTime *time.Time
 	if req.Msg.From != nil {
 		t := req.Msg.From.AsTime()
-		row.FromTime = &t
+		fromTime = &t
 	}
 	if req.Msg.To != nil {
 		t := req.Msg.To.AsTime()
-		row.ToTime = &t
+		toTime = &t
 	}
 
-	s.detectRegimeFromKlines(ctx, req.Msg.Symbol, req.Msg.Timeframe, row)
+	det, err := s.detectRegime(ctx, canonical, broker, req.Msg.Timeframe, fromTime, toTime)
+	if err != nil {
+		return nil, err
+	}
+
+	row := &repository.MarketRegime{
+		UserID:           userID,
+		AccountID:        accountID,
+		Symbol:           canonical,
+		Timeframe:        req.Msg.Timeframe,
+		Regime:           det.regime,
+		Confidence:       det.confidence,
+		Features:         det.features,
+		Segments:         []byte(`[]`),
+		StrategyFamilies: []string{},
+		FromTime:         fromTime,
+		ToTime:           toTime,
+	}
 
 	if err := s.repo.Create(ctx, row); err != nil {
 		return nil, fmt.Errorf("create market regime: %w", err)
 	}
 
-	regime, err := s.repo.Get(ctx, row.UserID, row.ID)
-	if err != nil {
-		return nil, fmt.Errorf("get market regime after create: %w", err)
-	}
-
+	// Return the created row directly — no redundant Get round-trip.
+	// Create already set row.ID and row.CreatedAt, so row is complete.
 	return connect.NewResponse(&antv1.DetectMarketRegimeResponse{
-		Regime: marketRegimeToProto(regime),
+		Regime: marketRegimeToProto(row),
 	}), nil
 }
 
@@ -84,6 +134,9 @@ func (s *MarketRegimeServer) GetMarketRegime(ctx context.Context, req *connect.R
 
 	row, err := s.repo.GetByID(ctx, regimeID)
 	if err != nil {
+		if errors.Is(err, repository.ErrMarketRegimeNotFound) {
+			return nil, connect.NewError(connect.CodeNotFound, err)
+		}
 		return nil, fmt.Errorf("get market regime: %w", err)
 	}
 
@@ -92,29 +145,41 @@ func (s *MarketRegimeServer) GetMarketRegime(ctx context.Context, req *connect.R
 	}), nil
 }
 
-func (s *MarketRegimeServer) detectRegimeFromKlines(ctx context.Context, symbol, timeframe string, row *repository.MarketRegime) {
-	if s.marketDataRepo == nil || symbol == "" || timeframe == "" {
-		return
+// detectRegime fetches klines and runs regime detection.
+// Returns an error when detection cannot be performed (no klines, insufficient bars, etc.)
+// so the caller never inserts a meaningless empty row.
+func (s *MarketRegimeServer) detectRegime(ctx context.Context, symbol, broker, timeframe string, fromTime, toTime *time.Time) (*detectResult, error) {
+	if s.marketDataRepo == nil {
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("market data store not available"))
 	}
-	bars, err := s.marketDataRepo.GetKlines(ctx, symbol, "", timeframe, row.FromTime, row.ToTime, 2000)
+
+	bars, err := s.marketDataRepo.GetKlines(ctx, symbol, broker, timeframe, fromTime, toTime, 2000)
 	if err != nil {
-		s.log.Warn("market regime: failed to fetch klines", zap.Error(err))
-		return
+		return nil, fmt.Errorf("fetch klines for %s/%s: %w", symbol, timeframe, err)
 	}
 	if len(bars) < 30 {
-		return
+		return nil, connect.NewError(connect.CodeFailedPrecondition,
+			fmt.Errorf("insufficient kline data for %s/%s: need at least 30 bars, got %d", symbol, timeframe, len(bars)))
 	}
+
+	// Reverse bars so oldest is first — DetectRegime expects chronological order.
 	ohlc := make([]ai.OHLCBar, len(bars))
 	for i := 0; i < len(bars); i++ {
 		b := bars[len(bars)-1-i]
 		ohlc[i] = ai.OHLCBar{Open: b.Open, High: b.High, Low: b.Low, Close: b.Close, Volume: b.Volume}
 	}
 	result := ai.DetectRegime(ohlc)
-	row.Regime = result.Regime.String()
-	row.Confidence = result.Confidence
+
+	features := []byte(`{}`)
 	if featJSON, err := json.Marshal(result.Features); err == nil {
-		row.Features = featJSON
+		features = featJSON
 	}
+
+	return &detectResult{
+		regime:     result.Regime.String(),
+		confidence: result.Confidence,
+		features:   features,
+	}, nil
 }
 
 func marketRegimeToProto(r *repository.MarketRegime) *antv1.MarketRegime {
