@@ -37,7 +37,7 @@ func (s *AnalyticsServer) GetMonthlyPnL(ctx context.Context, req *connect.Reques
 	for _, m := range monthlyData {
 		items = append(items, &antv1.MonthlyPnLItem{
 			Month:  int32(m.MonthNum),
-			Profit: m.Profit.InexactFloat64(),
+			Profit: m.Profit.String(),
 			Trades: int64(m.Trades),
 		})
 	}

@@ -201,7 +201,7 @@ const aiWizard = {
           intro: '這些參數會：',
           line1: '1) 儲存到樣板 parameters',
           line2: '2) 建立排程時寫入 schedule.parameters',
-          line3Prefix: '3) 執行時後端會把參數注入到 Python 策略的'
+          line3Prefix: '3) 執行時系統會把參數注入到 Python 策略的'
         },
         actions: {
           addParam: '新增參數',

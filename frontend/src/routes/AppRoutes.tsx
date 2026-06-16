@@ -2,8 +2,7 @@ import { lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Spin } from 'antd';
 import { useAuthStore } from '@/stores/authStore';
-import { ConnectProvider } from '@/providers/ConnectProvider';
-import { SSEQueryBridge } from '@/bridge/SSEQueryBridge';
+import { StreamProvider } from '@/providers/StreamProvider';
 import { PageWrapper } from '@/components/common/PageWrapper';
 import { PrivateRoute, PublicRoute, AdminRoute } from '@/components/auth/RouteGuards';
 import MainLayout from '@/components/layout/MainLayout';
@@ -46,6 +45,7 @@ const SREKillSwitch = lazy(() => import('@/pages/admin/sre/KillSwitchPage'));
 const StrategyManagement = lazy(() => import('@/pages/admin/StrategyManagement'));
 const SREBreakers = lazy(() => import('@/pages/admin/sre/BreakersPage'));
 const SRECanary = lazy(() => import('@/pages/admin/sre/CanaryPage'));
+const AIGatewayManagement = lazy(() => import('@/pages/admin/AIGatewayManagement'));
 const SRELayout = lazy(() => import('@/pages/admin/sre/SRELayout'));
 
 // ── Route helpers ──
@@ -99,6 +99,7 @@ const adminRoutes = (
     <Route path="config" element={wrap(<SystemConfig />)} />
     <Route path="jurisdiction" element={wrap(<JurisdictionGate />)} />
     <Route path="strategies" element={wrap(<StrategyManagement />)} />
+	    <Route path="ai-gateway" element={wrap(<AIGatewayManagement />)} />
     <Route path="sre" element={<SRELayout />}>
       <Route index element={<Navigate to="/admin/sre/killswitch" replace />} />
       <Route path="killswitch" element={wrap(<SREKillSwitch />)} />
@@ -115,14 +116,13 @@ export function AppRoutes() {
     return <div className="min-h-screen flex items-center justify-center"><Spin size="large" /></div>;
   }
   return (
-    <ConnectProvider>
-      <SSEQueryBridge />
+    <StreamProvider>
       <Routes>
         {publicRoutes}
         {mainRoutes}
         {adminRoutes}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </ConnectProvider>
+    </StreamProvider>
   );
 }

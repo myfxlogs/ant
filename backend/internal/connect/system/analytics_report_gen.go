@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
@@ -150,8 +151,9 @@ func (s *AnalyticsServer) getOrComputeAttributionForReport(ctx context.Context, 
 // buildReportMetrics maps analytics + attribution proto responses into the
 // AI prompt JSON struct. Pure function — no DB access.
 func buildReportMetrics(analytics *antv1.AccountAnalyticsResponse, attribution *antv1.GetAttributionAnalysisResponse) *reportMetrics {
+	netProfit, _ := strconv.ParseFloat(analytics.TradeStats.NetProfit, 64)
 	m := &reportMetrics{
-		NetProfit:    math.Round(analytics.TradeStats.NetProfit*100) / 100,
+		NetProfit:    math.Round(netProfit*100) / 100,
 		TotalTrades:  analytics.TradeStats.TotalTrades,
 		WinRate:      analytics.TradeStats.WinRate,
 		ProfitFactor: analytics.TradeStats.ProfitFactor,
@@ -164,15 +166,18 @@ func buildReportMetrics(analytics *antv1.AccountAnalyticsResponse, attribution *
 	sorted := make([]*antv1.SymbolPnL, len(attribution.SymbolPnls))
 	copy(sorted, attribution.SymbolPnls)
 	sort.Slice(sorted, func(i, j int) bool {
-		return sorted[i].NetProfit > sorted[j].NetProfit
+		ai, _ := strconv.ParseFloat(sorted[i].NetProfit, 64)
+		aj, _ := strconv.ParseFloat(sorted[j].NetProfit, 64)
+		return ai > aj
 	})
 	for i, s := range sorted {
 		if i >= 5 {
 			break
 		}
+		profit, _ := strconv.ParseFloat(s.NetProfit, 64)
 		m.TopSymbols = append(m.TopSymbols, symbolSummary{
 			Symbol:  s.Symbol,
-			Profit:  math.Round(s.NetProfit*100) / 100,
+			Profit:  math.Round(profit*100) / 100,
 			Trades:  s.TotalTrades,
 			WinRate: s.WinRate,
 		})
@@ -182,11 +187,11 @@ func buildReportMetrics(analytics *antv1.AccountAnalyticsResponse, attribution *
 	if attribution.Direction != nil {
 		parts := make([]string, 0, 2)
 		if attribution.Direction.LongTrades > 0 {
-			parts = append(parts, fmt.Sprintf("BUY P&L=%.0f (%d trades)",
+			parts = append(parts, fmt.Sprintf("BUY P&L=%s (%d trades)",
 				attribution.Direction.LongProfit, attribution.Direction.LongTrades))
 		}
 		if attribution.Direction.ShortTrades > 0 {
-			parts = append(parts, fmt.Sprintf("SELL P&L=%.0f (%d trades)",
+			parts = append(parts, fmt.Sprintf("SELL P&L=%s (%d trades)",
 				attribution.Direction.ShortProfit, attribution.Direction.ShortTrades))
 		}
 		m.DirectionBreakdown = strings.Join(parts, ", ")

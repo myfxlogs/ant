@@ -246,6 +246,7 @@ const strategy = {
           createSchedule: 'Create schedule'
         },
         deleteConfirm: 'Delete this run?',
+        batchDelete: 'Delete {{count}}',
         batchDeleteConfirm: 'Delete {{count}} backtest report(s)?',
         batchDeleteSuccess: '{{count}} backtest report(s) deleted',
         status: {
@@ -283,7 +284,7 @@ const strategy = {
         title: 'Risk Assessment',
         riskHigh: 'Risk level: high',
         riskUnreliable: 'Risk assessment: unreliable (isReliable=false)',
-        riskLoading: 'Backend risk assessment is still calculating'
+        riskLoading: 'Risk assessment is still calculating'
       }
     },
     codeEditor: {
@@ -677,7 +678,7 @@ const strategy = {
     },
     asset: {
       title: 'Strategy Assets',
-      subtitle: 'Asset publishing, review status, and cloning are maintained by the backend. Cloned results are independent user templates.',
+      subtitle: 'Asset publishing, review status, and cloning are maintained by the system. Cloned results are independent user templates.',
       submitAsset: 'Submit Asset',
       assetList: 'Asset List',
       name: 'Name',
@@ -757,6 +758,7 @@ const strategy = {
       atrPct: 'ATR %',
       aiRecommendation: 'AI Strategy Recommendation',
       aiUnavailable: 'AI recommendation unavailable. Please configure an AI provider in Settings.',
+      configureAI: 'Configure AI Provider',
       noLevels: 'No significant levels detected',
       noResults: 'No analysis results returned. Try a different symbol.',
       volLow: 'Low volatility — consider breakout or mean-reversion strategies with tight stops.',
@@ -838,8 +840,8 @@ const strategy = {
     },
     marketRegime: {
       title: 'Market Regime Detection',
-      subtitle: 'Backend computes trend, volatility, and efficiency features from K-lines. Frontend only displays results.',
-      ruleVersionAlert: 'Currently using rule-based detection model rule-v1. K-line authoritative source remains the backend Market/Kline service.',
+      subtitle: 'Analyzes trend direction, volatility regime, and price efficiency from historical K-line data to classify current market conditions.',
+      ruleVersionAlert: 'Currently using rule-based detection model rule-v1, driven by real-time K-line market data.',
       detectSuccess: 'Market regime detection completed',
       detectFailed: 'Market regime detection failed',
       form: {
@@ -866,7 +868,7 @@ const strategy = {
     },
     experiment: {
       title: 'Strategy Experiment',
-      subtitle: 'Parameter experimentation, candidate scoring, and draft generation are handled by the backend. Frontend only submits and displays.',
+      subtitle: 'Submit parameter combinations to automatically run experiments, score candidate strategies, and generate drafts.',
       ruleVersionAlert: 'Current minimal loop: deterministic parameter experiment. Candidates only generate drafts and will not auto-publish, schedule, or trade.',
       jobEventStream: 'Job Event Stream',
       noEvents: 'No events',

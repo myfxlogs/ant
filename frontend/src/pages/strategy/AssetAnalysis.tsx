@@ -1,13 +1,17 @@
 import {
-  Card, Input, Button, Typography, Tag, Progress,
+  Card, Button, Select, Typography, Tag, Progress,
   Descriptions, Row, Col, Alert, Grid,
 } from 'antd';
 import {
-  SearchOutlined, ThunderboltOutlined, DashboardOutlined,
+  ThunderboltOutlined, DashboardOutlined, SettingOutlined,
   BulbOutlined, RiseOutlined, FallOutlined, MinusOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
+import { useMemo, useEffect, useState } from 'react';
+import { useAccount } from '@/hooks/useAccount';
+import SymbolPicker from '@/components/chart/SymbolPicker';
+import AISettingsModal from '@/pages/strategy/components/workspace/AISettingsModal';
 import type { TfOutlook, SRLevel as SRLevelType } from '@/gen/ant/v1/asset_analysis_pb';
 import { useAssetAnalysis, type AnalysisPhase } from './hooks/useAssetAnalysis';
 
@@ -80,9 +84,22 @@ export default function AssetAnalysisPage() {
   const { t } = useTranslation();
   const screens = Grid.useBreakpoint();
   const isMobile = !screens.sm;
-  const { symbol, setSymbol, phase, loading, error, setError, result, progress, analyze } = useAssetAnalysis();
+  const { accountId, setAccountId, symbol, setSymbol, phase, loading, error, setError, result, progress, analyze } = useAssetAnalysis();
+
+  // Account selection — reuse workspace pattern (useAccount → activeAccounts)
+  const { accounts, fetchAccounts } = useAccount();
+  const activeAccounts = useMemo(
+    () => (accounts || []).filter((a) => !a.isDisabled),
+    [accounts],
+  );
+  useEffect(() => { fetchAccounts(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const [aiSettingsOpen, setAiSettingsOpen] = useState(false);
 
   const hasData = phase !== 'idle' && Object.keys(result).length > 0;
+
+  // Detect backend fallback message — AI provider not configured or call failed.
+  const isAIFallback = result.aiRecommendation?.startsWith('_AI recommendation unavailable');
 
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', padding: isMobile ? '16px 12px' : '24px 16px' }}>
@@ -94,16 +111,28 @@ export default function AssetAnalysisPage() {
         {t('strategy.assetAnalysis.subtitle')}
       </Text>
 
-      <Row gutter={[12, 12]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={16} md={12}>
-          <Input
-            prefix={<SearchOutlined />}
-            placeholder={t('strategy.assetAnalysis.symbolPlaceholder')}
-            value={symbol}
-            onChange={e => setSymbol(e.target.value)}
-            onPressEnter={analyze}
+      {/* Account + Symbol selectors — both use the same column width for visual alignment. */}
+      <Row gutter={[12, 12]} style={{ marginBottom: 12 }}>
+        <Col xs={24} sm={12} md={8}>
+          <Select
+            showSearch
+            placeholder={t('strategy.marketRegime.form.accountIdPlaceholder')}
+            value={accountId || undefined}
+            onChange={(val) => { setAccountId(val); setSymbol(''); }}
+            optionFilterProp="label"
+            notFoundContent={t('strategy.workspace.noAccounts')}
+            options={activeAccounts.map((a) => ({ value: a.id, label: `${a.brokerServer} · ${a.login}` }))}
             style={{ width: '100%', borderRadius: 8 }}
             disabled={loading}
+          />
+        </Col>
+        <Col xs={24} sm={12} md={8}>
+          <SymbolPicker
+            accountId={accountId}
+            value={symbol}
+            onChange={(val) => setSymbol(val)}
+            placeholder={t('strategy.assetAnalysis.symbolPlaceholder')}
+            style={{ width: '100%', borderRadius: 8 }}
           />
         </Col>
         <Col xs={12} sm={8} md={4}>
@@ -112,7 +141,7 @@ export default function AssetAnalysisPage() {
             icon={<ThunderboltOutlined />}
             onClick={analyze}
             loading={loading}
-            disabled={!symbol.trim()}
+            disabled={!accountId.trim() || !symbol.trim()}
             style={{ borderRadius: 8, width: '100%' }}
             block
           >
@@ -197,14 +226,23 @@ export default function AssetAnalysisPage() {
               size="small"
               style={{ marginBottom: 16, borderRadius: 12, borderColor: '#D4AF37' }}
             >
-              {result.aiRecommendation ? (
+              {result.aiRecommendation && !isAIFallback ? (
                 <div style={{ fontSize: 13, lineHeight: 1.8 }}>
                   <ReactMarkdown>{result.aiRecommendation}</ReactMarkdown>
                 </div>
               ) : (
-                <Text type="secondary">
-                  {t('strategy.assetAnalysis.aiUnavailable')}
-                </Text>
+                <div style={{ textAlign: 'center', padding: '16px 0' }}>
+                  <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
+                    {t('strategy.assetAnalysis.aiUnavailable')}
+                  </Text>
+                  <Button
+                    type="primary"
+                    icon={<SettingOutlined />}
+                    onClick={() => setAiSettingsOpen(true)}
+                  >
+                    {t('strategy.assetAnalysis.configureAI')}
+                  </Button>
+                </div>
               )}
             </Card>
           )}
@@ -214,6 +252,8 @@ export default function AssetAnalysisPage() {
       {phase === 'complete' && !hasData && !error && (
         <Alert type="info" message={t('strategy.assetAnalysis.noResults')} />
       )}
+
+      <AISettingsModal open={aiSettingsOpen} onClose={() => setAiSettingsOpen(false)} />
     </div>
   );
 }

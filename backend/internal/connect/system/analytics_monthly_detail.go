@@ -71,13 +71,13 @@ func (s *AnalyticsServer) computeMonthlyDetailCore(ctx context.Context, accountI
 			return nil // warn-no-block: let other calls succeed
 		}
 		metrics = &antv1.MonthlyDetailMetrics{
-			NetReturn:     m.NetReturn,
+			NetReturn:     m.NetReturn.StringFixed(2),
 			ReturnPercent: m.ReturnPercent,
 			TotalTrades:   int64(m.TotalTrades),
 			WinRate:       m.WinRate,
 			ProfitFactor:  m.ProfitFactor,
-			BestTrade:     m.BestTrade,
-			WorstTrade:    m.WorstTrade,
+			BestTrade:     m.BestTrade.StringFixed(2),
+			WorstTrade:    m.WorstTrade.StringFixed(2),
 		}
 		return nil
 	})
@@ -92,7 +92,7 @@ func (s *AnalyticsServer) computeMonthlyDetailCore(ctx context.Context, accountI
 		for _, r := range rows {
 			symbolPnLs = append(symbolPnLs, &antv1.SymbolMonthlyPnL{
 				Symbol:    r.Symbol,
-				NetProfit: r.NetProfit, // already rounded in repo
+				NetProfit: r.NetProfit.StringFixed(2), // already rounded in repo
 				Trades:    int64(r.Trades),
 				WinRate:   r.WinRate, // already rounded in repo
 			})

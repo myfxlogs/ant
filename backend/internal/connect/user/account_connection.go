@@ -31,6 +31,7 @@ func (s *AccountServer) ConnectAccount(ctx context.Context, req *connect.Request
 	}
 
 	// Event-driven wait: block on a channel that Register() closes — zero CPU.
+	msg := "connected"
 	if s.sessionWaiter != nil {
 		select {
 		case <-s.sessionWaiter.WaitSession(req.Msg.Id):
@@ -38,12 +39,14 @@ func (s *AccountServer) ConnectAccount(ctx context.Context, req *connect.Request
 		case <-ctx.Done():
 			s.log.Warn("ConnectAccount: context cancelled while waiting for session",
 				zap.String("accountId", req.Msg.Id), zap.Error(ctx.Err()))
+			msg = "connection initiated — session may take a moment to establish"
 		case <-time.After(5 * time.Second):
 			s.log.Warn("ConnectAccount: timed out waiting for session",
 				zap.String("accountId", req.Msg.Id))
+			msg = "connection initiated — session may take a moment to establish"
 		}
 	}
-	return connect.NewResponse(&antv1.ConnectAccountResponse{Success: true, Message: "connected"}), nil
+	return connect.NewResponse(&antv1.ConnectAccountResponse{Success: true, Message: msg}), nil
 }
 
 // DisconnectAccount marks the account as disconnected and publishes a NATS event.

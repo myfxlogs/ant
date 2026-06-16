@@ -199,7 +199,7 @@ const aiWizard = {
           intro: '这些参数会：',
           line1: '1) 保存到模板 parameters',
           line2: '2) 创建调度时写入 schedule.parameters（map<string,string>）',
-          line3Prefix: '3) 运行时后端会把参数注入到 Python 策略的',
+          line3Prefix: '3) 运行时系统会把参数注入到 Python 策略的',
         },
         actions: {
           addParam: '新增参数',

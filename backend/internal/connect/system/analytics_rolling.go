@@ -38,7 +38,10 @@ func (s *AnalyticsServer) GetRollingMetrics(ctx context.Context, req *connect.Re
 	start := now.AddDate(-1, 0, 0)
 
 	// Equity curve — base for rolling metrics and drawdown.
-	equityCurve, _ := s.repo.GetEquityCurve(ctx, accountID, start, now)
+	equityCurve, err := s.repo.GetEquityCurve(ctx, accountID, start, now)
+	if err != nil {
+		s.log.Warn("analytics: get equity curve for rolling metrics failed", zap.Error(err))
+	}
 	equityCurve = appendLiveEquity(ctx, s.repo, accountID, equityCurve)
 
 	// Rolling Sharpe — 20-trade window from daily returns.
@@ -199,8 +202,8 @@ func buildEquityDrawdown(curve []*model.EquityPoint) ([]*antv1.EquityPoint, []*a
 		eq := p.Equity.InexactFloat64()
 		eqProto[i] = &antv1.EquityPoint{
 			Date:    p.Date,
-			Equity:  math.Round(eq*100) / 100,
-			Balance: math.Round(p.Balance.InexactFloat64()*100) / 100,
+			Equity:  p.Equity.String(),
+			Balance: p.Balance.String(),
 		}
 		if eq > runningMax {
 			runningMax = eq

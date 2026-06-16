@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"fmt"
-	"math"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -14,13 +13,13 @@ import (
 
 type snapPoint struct {
 	RecordedAt time.Time
-	Equity     float64
+	Equity     decimal.Decimal
 }
 
 type hourlyData struct {
 	Hour              time.Time
-	Profit            float64
-	DepositWithdrawal float64
+	Profit            decimal.Decimal
+	DepositWithdrawal decimal.Decimal
 }
 
 // GetHourlyEquityCurve returns equity curve points grouped by hour for intraday display.
@@ -79,7 +78,7 @@ func (r *AnalyticsRepository) getHourlyTradeData(ctx context.Context, accountID 
 }
 
 func (r *AnalyticsRepository) buildHourlyEquityResult(
-	initialBalance float64,
+	initialBalance decimal.Decimal,
 	snapshots []snapPoint,
 	hourlyDataList []hourlyData,
 	start, end time.Time,
@@ -92,31 +91,31 @@ func (r *AnalyticsRepository) buildHourlyEquityResult(
 	dataIdx, snapIdx := 0, 0
 
 	for !hourCursor.After(endHour) {
-		profit, deposit := 0.0, 0.0
+		profit, deposit := decimal.Zero, decimal.Zero
 		if dataIdx < len(hourlyDataList) && hourlyDataList[dataIdx].Hour.Equal(hourCursor) {
 			profit, deposit = hourlyDataList[dataIdx].Profit, hourlyDataList[dataIdx].DepositWithdrawal
 			dataIdx++
 		}
-		runningBalance += deposit + profit
+		runningBalance = runningBalance.Add(deposit).Add(profit)
 		hourEnd := hourCursor.Add(time.Hour)
 		for snapIdx < len(snapshots) && snapshots[snapIdx].RecordedAt.Before(hourEnd) {
 			currentEquity = snapshots[snapIdx].Equity
 			snapIdx++
 		}
 		result = append(result, &model.EquityPoint{
-			Date: hourCursor.Format("2006-01-02 15:04"),
-			Equity: decimal.NewFromFloat(math.Round(currentEquity*100)/100),
-			Balance: decimal.NewFromFloat(math.Round(runningBalance*100)/100),
-			Profit: decimal.NewFromFloat(math.Round(profit*100)/100),
+			Date:    hourCursor.Format("2006-01-02 15:04"),
+			Equity:  currentEquity,
+			Balance: runningBalance,
+			Profit:  profit,
 		})
 		hourCursor = hourCursor.Add(time.Hour)
 	}
 	if len(result) == 0 {
 		result = append(result, &model.EquityPoint{
-			Date: time.Now().Format("2006-01-02 15:04"),
-			Equity: decimal.NewFromFloat(math.Round(initialBalance*100)/100),
-			Balance: decimal.NewFromFloat(math.Round(initialBalance*100)/100),
-			Profit: decimal.Zero,
+			Date:    time.Now().Format("2006-01-02 15:04"),
+			Equity:  initialBalance,
+			Balance: initialBalance,
+			Profit:  decimal.Zero,
 		})
 	}
 	return result, nil

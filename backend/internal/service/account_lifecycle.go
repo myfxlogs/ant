@@ -33,6 +33,7 @@ func (s *AccountService) DisconnectAccount(ctx context.Context, userID uuid.UUID
 	if err != nil {
 		return fmt.Errorf("service: disconnect account: %w", err)
 	}
+	s.InvalidateSummaryCache(userID.String())
 	return nil
 }
 

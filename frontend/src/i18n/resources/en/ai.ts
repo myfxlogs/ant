@@ -244,7 +244,7 @@ def run(context):
         notRecommended: 'Not recommended for direct live: high risk or unreliable, optimize before trying.'
       },
       backendRiskScore: {
-        title: 'Backend Risk Score',
+        title: 'Strategy Risk Score',
         loading: 'Calculating...',
         unknown: 'unknown',
         reliable: 'Reliable',
@@ -421,6 +421,21 @@ def run(context):
       details: 'Details',
       evaluating: 'Evaluating...',
       runHint: 'Run a backtest first, then click "Run Gate" to evaluate strategy quality.'
+    },
+    gateway: {
+      title: 'AI Gateway',
+      useGateway: 'Platform Models',
+      useGatewayDesc: 'Wallet billing · Pay per token',
+      useOwnKey: 'My API Key',
+      useOwnKeyDesc: 'Direct billing · Self-managed',
+      useOwnKeyHint: 'Use your own API key to pay the provider directly. Select a provider card below to configure.',
+      selectModel: 'Select Model',
+      modelPlaceholder: 'Choose an AI model',
+      noModels: 'No models available',
+      balance: 'Balance',
+      monthlyTokens: 'Tokens this month',
+      monthlyCost: 'Cost this month',
+      usageByFeature: 'Usage by Feature',
     }
   }
 } as const;

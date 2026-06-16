@@ -1,0 +1,138 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+// ── AI Gateway Service ──
+// Platform-operated AI model relay with token billing.
+// Admin manages providers/models/pricing; users browse and select models.
+
+service AIGatewayService {
+  // User: list available system models with pricing.
+  rpc ListSystemModels(ListSystemModelsRequest) returns (ListSystemModelsResponse);
+  // User: get monthly token usage summary.
+  rpc GetTokenUsage(GetTokenUsageRequest) returns (GetTokenUsageResponse);
+
+  // Admin: list all system providers.
+  rpc ListProviders(ListProvidersRequest) returns (ListProvidersResponse);
+  // Admin: update a system provider (name, base_url, api_key, enabled).
+  rpc UpdateProvider(UpdateProviderRequest) returns (UpdateProviderResponse);
+  // Admin: delete a system provider.
+  rpc DeleteProvider(DeleteProviderRequest) returns (DeleteProviderResponse);
+  // Admin: list all models for a provider.
+  rpc ListModels(ListModelsRequest) returns (ListModelsResponse);
+  // Admin: create or update a model.
+  rpc UpsertModel(UpsertModelRequest) returns (UpsertModelResponse);
+  // Admin: delete a model.
+  rpc DeleteModel(DeleteModelRequest) returns (DeleteModelResponse);
+}
+
+// ── User-facing messages ──
+
+message ListSystemModelsRequest {}
+
+message ListSystemModelsResponse {
+  repeated SystemModel models = 1;
+}
+
+message SystemModel {
+  string id = 1;
+  string provider_id = 2;
+  string model_name = 3;
+  string display_name = 4;
+  string price_per_1m_input = 5;
+  string price_per_1m_output = 6;
+}
+
+message GetTokenUsageRequest {}
+
+message GetTokenUsageResponse {
+  // feature → total tokens this month
+  map<string, int32> feature_tokens = 1;
+  repeated TokenUsageRecord records = 2;
+}
+
+message TokenUsageRecord {
+  string id = 1;
+  string paid_by = 2;
+  string provider_id = 3;
+  string model_name = 4;
+  string feature = 5;
+  int32 input_tokens = 6;
+  int32 output_tokens = 7;
+  string cost = 8;
+  int64 created_at_ts_ms = 9;
+}
+
+// ── Admin messages ──
+
+message ListProvidersRequest {}
+
+message ListProvidersResponse {
+  repeated AIProvider providers = 1;
+}
+
+message AIProvider {
+  string id = 1;
+  string provider_id = 2;
+  string name = 3;
+  string base_url = 4;
+  bool enabled = 5;
+  bool has_api_key = 6;
+}
+
+message UpdateProviderRequest {
+  string id = 1;
+  optional string name = 2;
+  optional string base_url = 3;
+  optional string api_key = 4;   // empty = keep existing
+  optional bool enabled = 5;
+}
+
+message UpdateProviderResponse {}
+
+message ListModelsRequest {
+  string provider_id = 1;   // UUID of system_ai_providers row
+}
+
+message ListModelsResponse {
+  repeated AIModelConfig models = 1;
+}
+
+message AIModelConfig {
+  string id = 1;
+  string model_name = 2;
+  string display_name = 3;
+  string price_per_1m_input = 4;
+  string price_per_1m_output = 5;
+  bool enabled = 6;
+  int32 sort_order = 7;
+}
+
+message UpsertModelRequest {
+  optional string id = 1;          // present = update, absent = create
+  string provider_id = 2;
+  string model_name = 3;
+  optional string display_name = 4;
+  string price_per_1m_input = 5;
+  string price_per_1m_output = 6;
+  optional bool enabled = 7;
+  optional int32 sort_order = 8;
+}
+
+message UpsertModelResponse {
+  string id = 1;
+}
+
+message DeleteModelRequest {
+  string id = 1;
+}
+
+message DeleteModelResponse {}
+
+message DeleteProviderRequest {
+  string id = 1;
+}
+
+message DeleteProviderResponse {}

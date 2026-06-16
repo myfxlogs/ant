@@ -30,9 +30,13 @@ func (s *AIPrimaryServer) GetAIPrimary(ctx context.Context, req *connect.Request
 	if err != nil {
 		return nil, err
 	}
+	// Return user's saved primary first (persisted across page refreshes).
+	if pid, model, perr := s.systemSvc.GetAIPrimary(ctx, uid); perr == nil && pid != "" {
+		return connect.NewResponse(&antv1.AIPrimaryResponse{ProviderId: pid, Model: model}), nil
+	}
 	rows, err := s.systemSvc.List(ctx, uid)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("internal error"))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("errors.ai.internal_error"))
 	}
 	for _, r := range rows {
 		if r.Enabled {
@@ -55,7 +59,8 @@ func (s *AIPrimaryServer) GetAIPrimary(ctx context.Context, req *connect.Request
 			}), nil
 		}
 	}
-	return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("no enabled AI config"))
+	// No AI configured — normal state, return empty response.
+	return connect.NewResponse(&antv1.AIPrimaryResponse{}), nil
 }
 
 func (s *AIPrimaryServer) SetAIPrimary(ctx context.Context, req *connect.Request[antv1.SetAIPrimaryRequest]) (*connect.Response[antv1.AIPrimaryResponse], error) {
@@ -71,7 +76,7 @@ func (s *AIPrimaryServer) SetAIPrimary(ctx context.Context, req *connect.Request
 	}
 	if err := s.systemSvc.SetAIPrimary(ctx, uid, req.Msg.ProviderId, req.Msg.Model); err != nil {
 		s.log.Error("SetAIPrimary transaction failed", zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("internal error"))
+		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("errors.ai.internal_error"))
 	}
 	return connect.NewResponse(&antv1.AIPrimaryResponse{
 		ProviderId: req.Msg.ProviderId,

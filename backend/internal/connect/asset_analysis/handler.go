@@ -3,6 +3,7 @@ package asset_analysis
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -12,14 +13,16 @@ import (
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/analysis"
 	"anttrader/internal/interceptor"
+	"anttrader/internal/service"
 	"anttrader/internal/service/systemai"
 )
 
 // AssetAnalysisServer implements the AssetAnalysisService ConnectRPC handler.
 type AssetAnalysisServer struct {
-	analyzer *analysis.Analyzer
-	aiSvc    *systemai.Service
-	log      *zap.Logger
+	analyzer    *analysis.Analyzer
+	aiSvc       *systemai.Service
+	platformSvc *service.PlatformService
+	log         *zap.Logger
 }
 
 var _ antv1c.AssetAnalysisServiceHandler = (*AssetAnalysisServer)(nil)
@@ -28,12 +31,14 @@ var _ antv1c.AssetAnalysisServiceHandler = (*AssetAnalysisServer)(nil)
 func NewAssetAnalysisServer(
 	analyzer *analysis.Analyzer,
 	aiSvc *systemai.Service,
+	platformSvc *service.PlatformService,
 	log *zap.Logger,
 ) *AssetAnalysisServer {
 	return &AssetAnalysisServer{
-		analyzer: analyzer,
-		aiSvc:    aiSvc,
-		log:      log,
+		analyzer:    analyzer,
+		aiSvc:       aiSvc,
+		platformSvc: platformSvc,
+		log:         log,
 	}
 }
 
@@ -58,6 +63,23 @@ func (s *AssetAnalysisServer) AnalyzeAsset(
 			fmt.Errorf("symbol is required"))
 	}
 
+	accountID := req.Msg.AccountId
+	if accountID == "" {
+		return connect.NewError(connect.CodeInvalidArgument,
+			fmt.Errorf("account_id is required"))
+	}
+
+	// Resolve broker from account so analysis uses the user's actual broker data.
+	broker, err := s.platformSvc.GetAccountBroker(ctx, accountID)
+	if err != nil {
+		return connect.NewError(connect.CodeInvalidArgument,
+			fmt.Errorf("resolve broker for account %s: %w", accountID, err))
+	}
+	if broker == "" {
+		return connect.NewError(connect.CodeInvalidArgument,
+			fmt.Errorf("broker not found for account %s", accountID))
+	}
+
 	primaryTF := req.Msg.Timeframe
 	if primaryTF == "" {
 		primaryTF = "D1"
@@ -69,7 +91,7 @@ func (s *AssetAnalysisServer) AnalyzeAsset(
 	}
 
 	// Run analysis, streaming each phase.
-	result, analyzeErr := s.analyzer.Analyze(ctx, symbol, req.Msg.AccountId, primaryTF, klineCount,
+	result, analyzeErr := s.analyzer.Analyze(ctx, symbol, broker, primaryTF, klineCount,
 		func(phase string, r *analysis.AnalysisResult) error {
 			resp := analysisResultToProto(phase, r)
 			return stream.Send(resp)
@@ -86,8 +108,9 @@ func (s *AssetAnalysisServer) AnalyzeAsset(
 
 	// AI recommendation: build prompt and call LLM.
 	if s.aiSvc != nil && result != nil {
-		prompt := analysis.BuildAIPrompt(symbol, result)
-		sysPrompt := "You are a quantitative trading analyst. Given market data analysis, recommend a trading strategy. Be concise and specific. Use markdown."
+		lang := detectLang(req.Header().Get("Accept-Language"))
+		prompt := analysis.BuildAIPrompt(symbol, result) + langInstruction(lang)
+		sysPrompt := buildSystemPrompt(lang)
 		messages := systemai.BuildChatMessages(sysPrompt, prompt, nil)
 
 		recommendation, aiErr := s.aiSvc.ChatCompletion(ctx, userID, messages, "")
@@ -144,5 +167,59 @@ func tfOutlookToProto(o analysis.TfOutlook) *antv1.TfOutlook {
 		Strength:       o.Strength,
 		EmaGapPct:      o.EMAGapPct,
 		PriceChangePct: o.PriceChangePct,
+	}
+}
+
+// detectLang maps Accept-Language header to a prompt language tag.
+func detectLang(acceptLang string) string {
+	if acceptLang == "" {
+		return "en"
+	}
+	// Parse primary language from header like "zh-CN,zh;q=0.9,en;q=0.8"
+	primary := acceptLang
+	if idx := strings.IndexByte(acceptLang, ','); idx > 0 {
+		primary = acceptLang[:idx]
+	}
+	if idx := strings.IndexByte(primary, ';'); idx > 0 {
+		primary = primary[:idx]
+	}
+	primary = strings.TrimSpace(primary)
+	switch {
+	case strings.HasPrefix(primary, "zh"):
+		return "zh"
+	case strings.HasPrefix(primary, "ja"):
+		return "ja"
+	case strings.HasPrefix(primary, "vi"):
+		return "vi"
+	default:
+		return "en"
+	}
+}
+
+// buildSystemPrompt returns a quant analyst system prompt in the user's language.
+func buildSystemPrompt(lang string) string {
+	switch lang {
+	case "zh":
+		return "你是一名量化交易分析师。根据提供的市场数据分析，推荐交易策略。要求简洁具体，使用 Markdown 格式，用中文回复。"
+	case "ja":
+		return "あなたはクオンツトレーディングアナリストです。提供された市場データ分析に基づいて、取引戦略を推奨してください。簡潔かつ具体的に、Markdown形式で日本語で回答してください。"
+	case "vi":
+		return "Bạn là nhà phân tích giao dịch định lượng. Dựa trên phân tích dữ liệu thị trường được cung cấp, hãy đề xuất chiến lược giao dịch. Hãy ngắn gọn và cụ thể, sử dụng định dạng Markdown, trả lời bằng tiếng Việt."
+	default:
+		return "You are a quantitative trading analyst. Given market data analysis, recommend a trading strategy. Be concise and specific. Use markdown."
+	}
+}
+
+// langInstruction returns a prompt suffix instructing the LLM to respond in the user's language.
+func langInstruction(lang string) string {
+	switch lang {
+	case "zh":
+		return "\n\n请用中文回复。"
+	case "ja":
+		return "\n\n日本語で回答してください。"
+	case "vi":
+		return "\n\nVui lòng trả lời bằng tiếng Việt."
+	default:
+		return ""
 	}
 }

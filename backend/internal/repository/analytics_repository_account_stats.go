@@ -59,6 +59,7 @@ func (r *AnalyticsRepository) GetSymbolStats(ctx context.Context, accountID uuid
 	var stats []*model.SymbolStats
 	for rows.Next() {
 		s := &model.SymbolStats{}
+		// Scan monetary fields as decimal.Decimal to preserve NUMERIC precision.
 		if err := rows.Scan(&s.Symbol, &s.TotalTrades, &s.WinningTrades, &s.LosingTrades, &s.WinRate, &s.TotalProfit, &s.TotalLoss, &s.NetProfit, &s.ProfitFactor, &s.AverageProfit, &s.TotalVolume, &s.AverageVolume, &s.LargestWin, &s.LargestLoss, &s.AverageHoldingTime); err != nil {
 			return nil, err
 		}
@@ -78,8 +79,8 @@ func (r *AnalyticsRepository) GetDailyEquity(ctx context.Context, accountID uuid
 		ORDER BY date ASC
 	`
 	type dailyProfit struct {
-		Date   time.Time `db:"date"`
-		Profit float64   `db:"profit"`
+		Date   time.Time       `db:"date"`
+		Profit decimal.Decimal `db:"profit"`
 	}
 	rows, err := r.db.Query(ctx, query, accountID, start, end)
 	if err != nil {
@@ -99,14 +100,14 @@ func (r *AnalyticsRepository) GetDailyEquity(ctx context.Context, accountID uuid
 	}
 
 	var result []*model.DailyEquity
-	runningBalance := 0.0
+	runningBalance := decimal.Zero
 	for _, dp := range dailyProfits {
-		runningBalance += dp.Profit
+		runningBalance = runningBalance.Add(dp.Profit)
 		result = append(result, &model.DailyEquity{
 			Date:     dp.Date.Format("2006-01-02"),
-			Profit:   decimal.NewFromFloat(dp.Profit),
-			Balance:  decimal.NewFromFloat(runningBalance),
-			Equity:   decimal.NewFromFloat(runningBalance),
+			Profit:   dp.Profit,
+			Balance:  runningBalance,
+			Equity:   runningBalance,
 			Drawdown: 0,
 		})
 	}
@@ -137,14 +138,14 @@ func (r *AnalyticsRepository) GetAccountInitialBalance(ctx context.Context, acco
 }
 
 // GetBalanceAtTime returns the account balance closest to but not after `at`.
-func (r *AnalyticsRepository) GetBalanceAtTime(ctx context.Context, accountID uuid.UUID, at time.Time) (float64, error) {
+func (r *AnalyticsRepository) GetBalanceAtTime(ctx context.Context, accountID uuid.UUID, at time.Time) (decimal.Decimal, error) {
 	query := `
 		SELECT balance FROM account_balance_history
 		WHERE account_id = $1 AND recorded_at <= $2
 		ORDER BY recorded_at DESC
 		LIMIT 1
 	`
-	var balance float64
+	var balance decimal.Decimal
 	err := r.db.QueryRow(ctx, query, accountID, at).Scan(&balance)
 	if err == nil {
 		return balance, nil
@@ -154,13 +155,13 @@ func (r *AnalyticsRepository) GetBalanceAtTime(ctx context.Context, accountID uu
 	query = `SELECT COALESCE(SUM(profit), 0) FROM trade_records WHERE account_id = $1 AND close_time <= $2`
 	err = r.db.QueryRow(ctx, query, accountID, at).Scan(&balance)
 	if err != nil {
-		return 0, err
+		return decimal.Zero, err
 	}
 	return balance, nil
 }
 
 // RecordBalanceSnapshot inserts a periodic equity/balance snapshot.
-func (r *AnalyticsRepository) RecordBalanceSnapshot(ctx context.Context, accountID, userID uuid.UUID, balance, equity, margin, freeMargin float64) error {
+func (r *AnalyticsRepository) RecordBalanceSnapshot(ctx context.Context, accountID, userID uuid.UUID, balance, equity, margin, freeMargin decimal.Decimal) error {
 	query := `
 		INSERT INTO account_balance_history (account_id, user_id, balance, equity, margin, free_margin, recorded_at)
 		VALUES ($1, $2, $3, $4, $5, $6, NOW())

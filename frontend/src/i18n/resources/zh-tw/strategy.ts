@@ -11,7 +11,7 @@ const strategy = {
         unreliable: '風險評估：不可靠',
         riskHigh: '風險等級：高',
         riskUnreliable: '風險評估：不可靠（isReliable=false）',
-        riskLoading: '後端風險評估仍在計算中'
+        riskLoading: '風險評估仍在計算中'
       }
     },
     codeEditor: {
@@ -190,7 +190,7 @@ const strategy = {
           hfCooldownMs: '高頻模式：最小觸發間隔(ms)',
           hfCooldownMsExtra: '用於去抖：兩次評估/下單之間的最小間隔',
           parametersJson: '參數(JSON對象)',
-          parametersJsonExtra: '用於給策略代碼傳參，形如 key->value。值會以字串形式傳給後端執行（必要時可在策略裡自行轉換）。示例：{ "fast": 10, "slow": 20, "risk": "low" }'
+          parametersJsonExtra: '用於給策略代碼傳參，形如 key->value。值會在運行時自動注入策略上下文（必要時可在策略裡自行轉換）。示例：{ "fast": 10, "slow": 20, "risk": "low" }'
         }
       },
       triggerModal: {
@@ -587,6 +587,7 @@ signal = {
         title: '回測報告',
         empty: '暫無回測記錄',
         deleteConfirm: '確定要刪除這條回測報告嗎？',
+        batchDelete: '刪除 {{count}} 條',
         batchDeleteConfirm: '確定要刪除 {{count}} 條回測報告嗎？',
         batchDeleteSuccess: '已刪除 {{count}} 條回測報告',
         status: {
@@ -746,7 +747,7 @@ signal = {
     },
     asset: {
       title: '策略資產',
-      subtitle: '資產發布、審查狀態與複製由後端維護。複製結果為獨立的使用者模板。',
+      subtitle: '資產發布、審查狀態與複製由系統維護，複製結果為獨立的使用者模板。',
       submitAsset: '提交資產',
       assetList: '資產列表',
       name: '名稱',
@@ -807,8 +808,8 @@ signal = {
     },
     marketRegime: {
       title: '市場狀態偵測',
-      subtitle: '後端從K線計算趨勢、波動性和效率特徵。前端僅顯示結果。',
-      ruleVersionAlert: '目前使用基於規則的偵測模型rule-v1。K線權威來源仍為後端Market/Kline服務。',
+      subtitle: '從歷史K線數據分析趨勢方向、波動率狀態和價格效率，識別當前市場環境。',
+      ruleVersionAlert: '目前使用基於規則的偵測模型 rule-v1，由即時 K 線市場數據驅動。',
       detectSuccess: '市場狀態偵測完成',
       detectFailed: '市場狀態偵測失敗',
       form: {
@@ -835,7 +836,7 @@ signal = {
     },
     experiment: {
       title: '策略實驗',
-      subtitle: '參數實驗、候選評分與草稿生成由後端處理。前端僅提交和顯示。',
+      subtitle: '提交參數組合後，系統自動運行實驗、評分候選策略並生成草稿。',
       ruleVersionAlert: '當前最小化迴圈：確定性參數實驗。候選僅生成草稿，不會自動發布、排程或交易。',
       jobEventStream: '任務事件流',
       noEvents: '暫無事件',
@@ -1145,6 +1146,7 @@ def run(context):
       atrPct: 'ATR %',
       aiRecommendation: 'AI 策略推薦',
       aiUnavailable: 'AI 推薦不可用。請在設定中配置 AI 提供商。',
+      configureAI: '配置 AI 提供商',
       noLevels: '未檢測到顯著價位',
       noResults: '未返回分析結果。請嘗試其他品種。',
       volLow: '低波動率 — 可考慮突破或均值回歸策略，配合緊湊止損。',

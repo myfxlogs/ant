@@ -1,33 +1,21 @@
 import { useContext, useEffect, useState } from 'react';
 import { Button, Card, Col, Row } from 'antd';
-import {
-  BarChartOutlined, PieChartOutlined, PlusOutlined,
-  WifiOutlined, DisconnectOutlined,
-} from '@ant-design/icons';
+import { PlusOutlined, WifiOutlined, DisconnectOutlined } from '@ant-design/icons';
 import { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
 import { useNavigate } from 'react-router-dom';
 import { useAccount } from '@/hooks/useAccount';
 import { useAuthStore } from '@/stores/authStore';
-import { useQuery } from '@tanstack/react-query';
-import { queryKeys } from '@/queries/queryKeys';
+import { useUserSummaryQuery } from '@/queries/useUserSummaryQuery';
 import { ConnectContext } from '@/providers/connectContext';
 import { useTranslation } from 'react-i18next';
-import type { Account } from '@/types/account';
-import type { UserSummaryData } from '@/bridge/bridgeUserSummary';
 import DashboardStatCards from './DashboardStatCards';
 import DashboardAccountList from './DashboardAccountList';
-
-const quickActions = [
-  { key: 'bind', label: 'dashboard.quickActions.bindAccount', path: '/accounts/bind', icon: <PlusOutlined size={22} />, color: 'rgba(212,175,55,0.1)' },
-  { key: 'library', label: 'dashboard.quickActions.library', path: '/strategy/library', icon: <PieChartOutlined size={22} />, color: 'rgba(0,166,81,0.1)' },
-  { key: 'analytics', label: 'dashboard.quickActions.analytics', path: '/analytics', icon: <BarChartOutlined size={22} />, color: 'rgba(33,150,243,0.1)' },
-  { key: 'logs', label: 'dashboard.quickActions.logs', path: '/logs', icon: <BarChartOutlined size={22} />, color: 'rgba(156,39,176,0.1)' },
-];
+import { createQuickActions } from './quickActions';
 
 export default function Dashboard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { fetchAccounts } = useAccount();
+  const { fetchAccounts, accounts } = useAccount();
   const { user } = useAuthStore();
   const [localLoading, setLocalLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -35,20 +23,9 @@ export default function Dashboard() {
   const streamConnected = connectCtx?.isConnected ?? false;
 
   // Aggregated totals come from backend SubscribeUserSummary SSE (pre-computed).
-  const { data: summary } = useQuery<UserSummaryData>({
-    queryKey: queryKeys.userSummary.all,
-    staleTime: Infinity, // SSE keeps this fresh
-  });
+  const { data: summary } = useUserSummaryQuery();
 
-  // Single source of truth: SSE bridge writes balance/equity/profit/status
-  // into the TQ cache; initial fetch populates metadata (login/broker, etc).
-  const { data: accounts } = useQuery<Account[]>({
-    queryKey: queryKeys.accounts.list(),
-    staleTime: Infinity,
-  });
-
-  // Initial or forced refresh — populates TQ cache (Zustand kept in sync
-  // for delete/create optimistic updates elsewhere).
+  // Initial or forced refresh — populates TQ cache via SSE bridge.
   useEffect(() => {
     let cancelled = false;
     setLocalLoading(true);
@@ -60,8 +37,10 @@ export default function Dashboard() {
   }, [fetchAccounts]);
 
   const accts = accounts ?? [];
+  const quickActions = createQuickActions(t);
 
   const stats = {
+    totalBalance: summary?.totalBalance ?? 0,
     totalEquity: summary?.totalEquity ?? 0,
     totalProfit: summary?.totalProfit ?? 0,
     connectedCount: summary?.connectedCount ?? 0,
@@ -108,7 +87,7 @@ export default function Dashboard() {
                   onMouseEnter={(e) => { e.currentTarget.style.background = '#E8ECF0'; e.currentTarget.style.borderColor = 'rgba(212,175,55,0.2)'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = '#F5F7F9'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.05)'; }}>
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3" style={{ background: action.color }}>{action.icon}</div>
-                  <span style={{ color: 'var(--color-text)', fontWeight: 500, fontSize: '13px' }}>{t(action.label)}</span>
+                  <span style={{ color: 'var(--color-text)', fontWeight: 500, fontSize: '13px' }}>{action.label}</span>
                 </div>
               ))}
             </div>

@@ -70,6 +70,7 @@ const accounts = {
         noAccessHosts: '利用可能なアクセスホストがありません',
         bindSuccess: '口座を連携しました',
         bindFailed: '口座の連携に失敗しました',
+        loginDigitsOnly: '取引口座は数字のみ入力可能です',
         verifyFailed: 'アカウント確認に失敗しました'
       },
       errors: {
@@ -290,19 +291,17 @@ const accounts = {
       fields: {
         tradingAccount: '取引口座',
         server: 'サーバー',
-        password: 'パスワード'
+        password: '新しいパスワード',
+        oldPassword: '現在のパスワード'
       },
       placeholders: {
-        newPassword: '新しいパスワードを入力'
-      },
-      actions: {
-        verifyPassword: 'パスワード確認'
+        newPassword: '新しいパスワードを入力',
+        oldPassword: '現在のパスワードを入力'
       },
       messages: {
-        enterPassword: 'パスワードを入力してください',
-        passwordVerified: 'パスワードを確認しました',
-        passwordVerifyFailed: 'パスワード確認に失敗しました',
-        verifyFirst: '先にパスワード確認を行ってください',
+        enterPassword: '新しいパスワードを入力してください',
+        enterOldPassword: '現在のパスワードを入力してください',
+        passwordVerifyFailed: 'パスワード変更に失敗しました',
         passwordSaved: 'パスワードを保存しました'
       }
     },
@@ -371,6 +370,7 @@ const accounts = {
       title: '取引レポート',
       titleShort: 'レポート',
       generate: 'レポート生成',
+      goToAISettings: 'AI設定へ →',
       aiAnalysis: 'AI分析',
       symbolPnL: '銘柄別損益',
       direction: '売買分析',

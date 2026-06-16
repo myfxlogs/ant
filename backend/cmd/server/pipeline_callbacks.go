@@ -37,6 +37,8 @@ func buildOnOrderUpdate(
 			log.Warn("OnOrderUpdate: pg update failed", zap.String("account", accountID), zap.Error(err))
 		}
 		publishProfitEvent(accountBroker, accountID, userID, o)
+		// Update in-memory summary cache for SSE SubscribeUserSummary.
+		accountSvc.UpdateSummaryCache(userID, accountID, o.Balance, o.Equity, "connected")
 		publishPositionSnapshot(snapshotBroker, accountID, userID, o)
 		feedPlatformAggregator(platformAgg, accountID, o)
 		writeClosedTradeRecord(log, tradeRecordRepo, writeCtx, accountID, o)

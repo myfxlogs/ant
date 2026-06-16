@@ -4,38 +4,32 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"sync"
 	"time"
 
-	"go.uber.org/zap"
-
 	"anttrader/internal/repository"
-)
-
-// snapshotThrottle prevents writing more than one balance snapshot per account per hour.
-var (
-	snapshotThrottleMu sync.Mutex
-	snapshotThrottle   = map[string]time.Time{}
 )
 
 // RecordBalanceSnapshot inserts a throttled equity/balance snapshot row.
 // Writes at most once per hour per account to bound disk growth
 // (unthrottled profit updates can fire every few seconds).
 func (s *AccountService) RecordBalanceSnapshot(ctx context.Context, id string, userID string, balance, equity, margin, freeMargin float64) error {
-	snapshotThrottleMu.Lock()
-	last, ok := snapshotThrottle[id]
+	s.snapshotThrottleMu.Lock()
+	last, ok := s.snapshotThrottle[id]
 	// Sweep stale entries (> 2h idle) every ~100 calls to bound map growth.
-	if len(snapshotThrottle)%100 == 0 {
-		for k, v := range snapshotThrottle {
+	if len(s.snapshotThrottle)%100 == 0 {
+		for k, v := range s.snapshotThrottle {
 			if time.Since(v) > 2*time.Hour {
-				delete(snapshotThrottle, k)
+				delete(s.snapshotThrottle, k)
 			}
 		}
 	}
-	snapshotThrottleMu.Unlock()
 	if ok && time.Since(last) < time.Hour {
+		s.snapshotThrottleMu.Unlock()
 		return nil // throttled
 	}
+	// Mark before releasing lock so concurrent callers see a fresh timestamp.
+	s.snapshotThrottle[id] = time.Now()
+	s.snapshotThrottleMu.Unlock()
 
 	_, err := s.db.Exec(ctx,
 		`INSERT INTO account_balance_history (account_id, user_id, balance, equity, margin, free_margin, recorded_at)
@@ -45,9 +39,6 @@ func (s *AccountService) RecordBalanceSnapshot(ctx context.Context, id string, u
 		return fmt.Errorf("service: record balance snapshot: %w", err)
 	}
 
-	snapshotThrottleMu.Lock()
-	snapshotThrottle[id] = time.Now()
-	snapshotThrottleMu.Unlock()
 	return nil
 }
 
@@ -95,45 +86,118 @@ func (s *AccountService) GetUserAccountSnapshots(ctx context.Context, userID str
 	out := make([]AccountSnapshot, len(rows))
 	for i, r := range rows {
 		out[i] = AccountSnapshot{
-			ID:          pgUUIDToString(r.ID),
-			Status:      r.AccountStatus,
-			Balance:     pgNumericToFloat64(r.Balance),
-			Equity:      pgNumericToFloat64(r.Equity),
-			Credit:      pgNumericToFloat64(r.Credit),
-			Margin:      pgNumericToFloat64(r.Margin),
-			FreeMargin:  pgNumericToFloat64(r.FreeMargin),
-			MarginLevel: pgNumericToFloat64(r.MarginLevel),
+			ID:      pgUUIDToString(r.ID),
+			Status:  r.AccountStatus,
+			Balance: pgNumericToFloat64Ignore(r.Balance),
+			Equity:  pgNumericToFloat64Ignore(r.Equity),
+			Credit:  pgNumericToFloat64Ignore(r.Credit),
+			Margin:  pgNumericToFloat64Ignore(r.Margin),
+			FreeMargin:  pgNumericToFloat64Ignore(r.FreeMargin),
+			MarginLevel: pgNumericToFloat64Ignore(r.MarginLevel),
 		}
 	}
 	return out, nil
 }
 
+// UpdateSummaryCache incrementally updates the in-memory summary for a user
+// from a profit event. Called from the pipeline on every account profit update.
+func (s *AccountService) UpdateSummaryCache(userID, accountID string, balance, equity float64, status string) {
+	s.summaryMu.Lock()
+	defer s.summaryMu.Unlock()
+
+	entry, ok := s.summaryCache[userID]
+	if !ok {
+		return // cold: first GetUserAccountsSummary will seed from DB
+	}
+
+	prev, existed := entry.accounts[accountID]
+	entry.accounts[accountID] = accountSummaryItem{balance: balance, equity: equity, status: status}
+
+	if !existed {
+		// New account added while cache was warm — recompute aggregates.
+		entry.summary.AccountCount++
+		entry.summary.TotalBalance += balance
+		entry.summary.TotalEquity += equity
+		entry.summary.TotalProfit += equity - balance
+		if status == "connected" {
+			entry.summary.ConnectedCount++
+		}
+	} else {
+		// Existing account — update aggregate deltas.
+		entry.summary.TotalBalance += balance - prev.balance
+		entry.summary.TotalEquity += equity - prev.equity
+		entry.summary.TotalProfit += (equity - balance) - (prev.equity - prev.balance)
+		if prev.status != "connected" && status == "connected" {
+			entry.summary.ConnectedCount++
+		} else if prev.status == "connected" && status != "connected" {
+			entry.summary.ConnectedCount--
+		}
+	}
+}
+
+// InvalidateSummaryCache removes the cached summary for a user, forcing the next
+// GetUserAccountsSummary call to re-seed from DB. Call on account create/delete/disconnect.
+func (s *AccountService) InvalidateSummaryCache(userID string) {
+	s.summaryMu.Lock()
+	delete(s.summaryCache, userID)
+	s.summaryMu.Unlock()
+}
+
 // GetUserAccountsSummary computes an aggregated summary of a user's accounts (#30).
+// Uses an in-memory cache seeded from DB on first access and kept fresh by
+// UpdateSummaryCache on every profit event.
 func (s *AccountService) GetUserAccountsSummary(ctx context.Context, userID string) (*UserAccountsSummary, error) {
+	// Fast path: read from cache.
+	s.summaryMu.RLock()
+	if entry, ok := s.summaryCache[userID]; ok {
+		cpy := entry.summary // stack copy under read lock
+		s.summaryMu.RUnlock()
+		return &cpy, nil
+	}
+	s.summaryMu.RUnlock()
+
+	// Slow path: seed cache from DB under write lock with double-check.
+	s.summaryMu.Lock()
+	defer s.summaryMu.Unlock()
+
+	if entry, ok := s.summaryCache[userID]; ok {
+		cpy := entry.summary
+		return &cpy, nil
+	}
+
 	rows, err := s.db.Query(ctx,
-		"SELECT balance, equity, account_status FROM mt_accounts WHERE user_id = $1", userID)
+		"SELECT id::text, balance, equity, account_status FROM mt_accounts WHERE user_id = $1", userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var sum UserAccountsSummary
+	entry := &userSummaryCacheEntry{
+		accounts: make(map[string]accountSummaryItem),
+	}
 	for rows.Next() {
+		var id string
 		var balance, equity sql.NullFloat64
 		var status string
-		if err := rows.Scan(&balance, &equity, &status); err != nil {
-			if s.log != nil {
-				s.log.Warn("GetUserAccountsSummary: scan error, skipping row", zap.Error(err))
-			}
-			continue
+		if err := rows.Scan(&id, &balance, &equity, &status); err != nil {
+			return nil, fmt.Errorf("service: get user accounts summary: scan row: %w", err)
 		}
-		sum.TotalBalance += balance.Float64
-		sum.TotalEquity += equity.Float64
-		sum.TotalProfit += equity.Float64 - balance.Float64
-		sum.AccountCount++
+		entry.summary.TotalBalance += balance.Float64
+		entry.summary.TotalEquity += equity.Float64
+		entry.summary.TotalProfit += equity.Float64 - balance.Float64
+		entry.summary.AccountCount++
 		if status == "connected" {
-			sum.ConnectedCount++
+			entry.summary.ConnectedCount++
+		}
+		entry.accounts[id] = accountSummaryItem{
+			balance: balance.Float64, equity: equity.Float64, status: status,
 		}
 	}
-	return &sum, rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	s.summaryCache[userID] = entry
+	cpy := entry.summary
+	return &cpy, nil
 }

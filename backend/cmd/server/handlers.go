@@ -18,6 +18,7 @@ import (
 	"anttrader/internal/connect/ai"
 	algo "anttrader/internal/connect/algo"
 	assetanalysis "anttrader/internal/connect/asset_analysis"
+	"anttrader/internal/connect/gateway"
 	"anttrader/internal/connect/autotrading"
 	mktplace "anttrader/internal/connect/marketplace"
 	"anttrader/internal/connect/notification"
@@ -129,6 +130,7 @@ func registerHandlers(
 		aiBox = secretbox.New([]byte(mk))
 	}
 	aiSvc := systemai.NewService(aiRepo, aiBox)
+	aiSvc.SetUserRepo(userRepo)
 	agentDefRepo := repository.NewAIAgentDefinitionRepository(pool)
 	aiServer := ai.NewAIServer(aiSvc, convRepo, session, log)
 	aiServer.SetAgentDefRepo(agentDefRepo)
@@ -138,8 +140,23 @@ func registerHandlers(
 
 	// P3: AI Asset Analysis — MTF outlook, S/R levels, volatility, AI recommendation.
 	assetAnalyzer := analysis.NewAnalyzer(marketDataRepo, log)
-	assetAnalysisServer := assetanalysis.NewAssetAnalysisServer(assetAnalyzer, aiSvc, log)
+	assetAnalysisServer := assetanalysis.NewAssetAnalysisServer(assetAnalyzer, aiSvc, platformSvc, log)
 	mux.Handle(antv1c.NewAssetAnalysisServiceHandler(assetAnalysisServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+
+	// AI Gateway: platform-operated AI model relay with token billing.
+	gatewayProviderRepo := repository.NewSystemAIProviderRepository(pool)
+	gatewayModelRepo := repository.NewAIModelRepository(pool)
+	gatewayTokenUsageRepo := repository.NewAITokenUsageRepository(pool)
+	gatewayServer := gateway.NewAIGatewayServer(gatewayProviderRepo, gatewayModelRepo, gatewayTokenUsageRepo, walletSvc, aiBox, log)
+	mux.Handle(antv1c.NewAIGatewayServiceHandler(gatewayServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+
+	// Wire AI Gateway fallback: if user has no own API key, use system providers.
+	aiSvc.SetGatewayProviderRepo(gatewayProviderRepo)
+
+	// Wire token billing: all ChatCompletion calls automatically record usage through this hook.
+	aiSvc.SetTokenRecorder(func(ctx context.Context, r systemai.TokenRecord) {
+		_ = gatewayServer.RecordTokenUsage(ctx, r.UserID, "system", r.ProviderID, r.Model, r.Feature, r.InputTokens, r.OutputTokens, "0")
+	})
 
 	streamServer := system.NewStreamServer(mthubSvc, platformSvc, log)
 	streamServer.SetMarketDataRepo(marketDataRepo)

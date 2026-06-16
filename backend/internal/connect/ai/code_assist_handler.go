@@ -60,7 +60,7 @@ func (s *CodeAssistServer) ReviseCode(ctx context.Context, req *connect.Request[
 		return nil, err
 	}
 
-	pc := ai.BuildContext(ai.BuildContextInput{Code: code, Message: instruction})
+	pc := ai.BuildContext(ai.BuildContextInput{Code: code, Message: instruction, Locale: req.Msg.Locale})
 	messages := systemai.BuildChatMessages(pc.SystemPrompt, pc.UserMessage, protoHistoryToChat(req.Msg.History))
 	revised, err := s.systemSvc.ChatCompletion(ctx, uid, messages, codeAssistModel)
 	if err != nil {
@@ -92,7 +92,7 @@ func (s *CodeAssistServer) ReviseCodeStream(
 		return err
 	}
 
-	pc := ai.BuildContext(ai.BuildContextInput{Code: code, Message: instruction})
+	pc := ai.BuildContext(ai.BuildContextInput{Code: code, Message: instruction, Locale: req.Msg.Locale})
 	messages := systemai.BuildChatMessages(pc.SystemPrompt, pc.UserMessage, protoHistoryToChat(req.Msg.History))
 	var fullText strings.Builder
 	err = s.systemSvc.ChatCompletionStream(ctx, uid, messages, codeAssistModel,

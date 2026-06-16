@@ -72,3 +72,4 @@ ssh/
 .claude/
 bin/antrader
 bin/
+e2e/shots/*

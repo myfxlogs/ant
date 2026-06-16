@@ -34,11 +34,32 @@ var defaultProviderSeeds = []struct {
 	{"openai_compatible", "自定义 (OpenAI 兼容)", ""},
 }
 
+// TokenRecord is passed to the recorder after each successful AI call.
+type TokenRecord struct {
+	UserID        uuid.UUID
+	ProviderID    string
+	Model         string
+	Feature       string
+	InputTokens   int
+	OutputTokens  int
+}
+
+// TokenRecorder is called after each successful ChatCompletion / ChatCompletionStream.
+type TokenRecorder func(ctx context.Context, r TokenRecord)
+
 // Service exposes high-level operations consumed by the connect handler.
 type Service struct {
-	repo        *repository.SystemAIConfigRepository
-	box         *secretbox.Box
-	secretCache sync.Map // key: "userID|providerID" → secretCacheEntry{secret, expiresAt}
+	repo                *repository.SystemAIConfigRepository
+	userRepo            *repository.UserRepository
+	box                 *secretbox.Box
+	secretCache         sync.Map
+	tokenRecorder       TokenRecorder
+	gatewayProviderRepo *repository.SystemAIProviderRepository // optional: fallback for AI Gateway
+}
+
+// SetUserRepo sets the user repository for AI primary model queries.
+func (s *Service) SetUserRepo(r *repository.UserRepository) {
+	s.userRepo = r
 }
 
 // secretCacheEntry holds a decrypted secret with expiry.
@@ -49,6 +70,25 @@ type secretCacheEntry struct {
 
 func NewService(repo *repository.SystemAIConfigRepository, box *secretbox.Box) *Service {
 	return &Service{repo: repo, box: box}
+}
+
+// SetTokenRecorder sets a callback invoked after each successful AI call.
+func (s *Service) SetTokenRecorder(fn TokenRecorder) {
+	s.tokenRecorder = fn
+}
+
+// SetGatewayProviderRepo sets an optional fallback provider repo for AI Gateway.
+func (s *Service) SetGatewayProviderRepo(repo *repository.SystemAIProviderRepository) {
+	s.gatewayProviderRepo = repo
+}
+
+// aiFeatureKey is a context key for tagging AI calls with a feature name.
+type aiFeatureKey struct{}
+
+// WithAIFeature returns a context tagged with the given AI feature name.
+// Callers pass this ctx to ChatCompletion / ChatCompletionStream for billing attribution.
+func WithAIFeature(ctx context.Context, feature string) context.Context {
+	return context.WithValue(ctx, aiFeatureKey{}, feature)
 }
 
 // EnsureSeed 为用户补齐缺失的默认 provider 空行（幂等）。
@@ -103,8 +143,30 @@ func (s *Service) UpdateConfig(ctx context.Context, row *repository.SystemAIConf
 // SetAIPrimary atomically assigns the "chat" primary role to providerID and
 // saves the default model name. All row mutations execute inside a single
 // database transaction.
+func (s *Service) GetAIPrimary(ctx context.Context, userID uuid.UUID) (providerID, model string, err error) {
+	if s.userRepo != nil {
+		return s.userRepo.GetAIPrimary(ctx, userID)
+	}
+	return "", "", fmt.Errorf("user repository not available")
+}
+
 func (s *Service) SetAIPrimary(ctx context.Context, userID uuid.UUID, providerID, defaultModel string) error {
-	return s.repo.SetAIPrimary(ctx, userID, providerID, defaultModel)
+	// Authoritative store: the users table is what GetAIPrimary reads first, and it
+	// works for AI Gateway models too (which have no owning system_ai_configs row).
+	if s.userRepo != nil {
+		if err := s.userRepo.SetAIPrimary(ctx, userID, providerID, defaultModel); err != nil {
+			return err
+		}
+	}
+	// Best-effort: keep system_ai_configs.primary_for in sync for users who selected
+	// one of their own API-key providers. Gateway selections match no row here, which
+	// is fine — the users table above already persisted the choice.
+	if err := s.repo.SetAIPrimary(ctx, userID, providerID, defaultModel); err != nil {
+		if s.userRepo == nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // UpdateSecret encrypts and stores a provider's API key. Empty secret clears it.
@@ -217,6 +279,10 @@ func FriendlyError(err error) string {
 		return ""
 	}
 	msg := err.Error()
+	// Pass through i18n keys without wrapping.
+	if strings.HasPrefix(msg, "errors.") {
+		return msg
+	}
 	low := strings.ToLower(msg)
 	switch {
 	case errors.Is(err, errBaseURLEmpty):

@@ -50,8 +50,8 @@ export default function BacktestRunDrawerContent({ watched, statusText, trades, 
           <Descriptions size="small" column={2} bordered>
             <Descriptions.Item label={t('strategy.backtestRun.metrics.totalReturn')}>{isCompleted ? watched.metrics?.totalReturn ?? '-' : '-'}</Descriptions.Item>
             <Descriptions.Item label={t('strategy.backtestRun.metrics.annualReturn')}>{isCompleted ? watched.metrics?.annualReturn ?? '-' : '-'}</Descriptions.Item>
-            <Descriptions.Item label={t('strategy.backtestRun.fields.maxDrawdown')}>-</Descriptions.Item>
-            <Descriptions.Item label={t('strategy.backtestRun.fields.sharpe')}>-</Descriptions.Item>
+            <Descriptions.Item label={t('strategy.backtestRun.fields.maxDrawdown')}>{isCompleted ? watched.metrics?.maxDrawdown ?? '-' : '-'}</Descriptions.Item>
+            <Descriptions.Item label={t('strategy.backtestRun.fields.sharpe')}>{isCompleted ? watched.metrics?.sharpeRatio ?? '-' : '-'}</Descriptions.Item>
           </Descriptions>
           <div className="mt-4" />
           <Typography.Text strong>{t('strategy.backtestRun.trades.title')}</Typography.Text>

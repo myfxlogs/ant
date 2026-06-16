@@ -412,7 +412,7 @@ def run(context):
         notRecommended: '不建議直接上線：高風險或不可靠，請先優化後再嘗試。'
       },
       backendRiskScore: {
-        title: '後端風險評分',
+        title: '策略風險評分',
         loading: '計算中...',
         unknown: '未知',
         reliable: '可靠',
@@ -492,6 +492,21 @@ def run(context):
       selectRun: '選擇回測運行...',
       evaluating: '評估中...',
       runHint: '先執行回測，然后點击"运行Gate"評估策略品質。'
+    },
+    gateway: {
+      title: 'AI 網關',
+      useGateway: 'AI 網關',
+      useGatewayDesc: '扣錢包餘額 · 按 Token 計費',
+      useOwnKey: '我的 API Key',
+      useOwnKeyDesc: '直付廠商 · 自行管理',
+      useOwnKeyHint: '使用你自己的 API Key，直接向所選廠商付費。在下方選擇廠商卡片進行配置。',
+      selectModel: '選擇模型',
+      modelPlaceholder: '選擇 AI 模型',
+      noModels: '暫無可用模型',
+      balance: '錢包餘額',
+      monthlyTokens: '本月 Token',
+      monthlyCost: '本月費用',
+      usageByFeature: '按功能用量',
     }
   }
 } as const;

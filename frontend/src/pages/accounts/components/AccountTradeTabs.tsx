@@ -11,18 +11,21 @@ import { useQueryClient } from '@tanstack/react-query';
 import { analyticsApi } from '@/client/analytics';
 import { tradingApi } from '@/client/trading';
 import { queryKeys } from '@/queries/queryKeys';
+import { showError } from '@/utils/message';
 import { HistoryTradeRow, PendingOrderRow, PositionRow } from './AccountDetail.shared';
 import { useTranslation } from 'react-i18next';
+import type { Position } from '@/types/trading';
+import type { TradeRecordItem } from '@/client/analyticsTypes';
 
 type Props = {
   id: string | undefined;
-  realPositions: any[];
-  pendingOrders: any[];
-  historyTrades: any[];
+  realPositions: Position[];
+  pendingOrders: Position[];
+  historyTrades: TradeRecordItem[];
   historyTotal: number;
   historyPage: number;
   historyPageSize: number;
-  onHistoryTradesChange: (trades: any[]) => void;
+  onHistoryTradesChange: (trades: TradeRecordItem[]) => void;
   onHistoryTotalChange: (total: number) => void;
   onHistoryPageChange: (page: number) => void;
   historyLoading?: boolean;
@@ -46,7 +49,14 @@ export default function AccountTradeTabs({
   const [localHistoryLoading, setLocalHistoryLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const isHistoryLoading = historyLoading || localHistoryLoading;
-  const autoSyncDone = useRef(false);
+  const autoSyncDone = useRef<string | null>(null);
+
+  // Reset auto-sync flag when the account changes so the new account gets synced.
+  useEffect(() => {
+    if (autoSyncDone.current !== id) {
+      autoSyncDone.current = null;
+    }
+  }, [id]);
 
   const doSync = async () => {
     if (!id) return;
@@ -63,8 +73,8 @@ export default function AccountTradeTabs({
       queryClient.invalidateQueries({ queryKey: queryKeys.analytics.detail(id, 'week') });
       queryClient.invalidateQueries({ queryKey: queryKeys.analytics.detail(id, 'month') });
       queryClient.invalidateQueries({ queryKey: queryKeys.analytics.detail(id, 'all') });
-    } catch (err) {
-      console.error('Sync history failed:', err);
+    } catch (err: any) {
+      showError(err?.message || t('accounts.tradeTabs.syncHistoryFailed'));
     } finally {
       setSyncing(false);
     }
@@ -75,12 +85,13 @@ export default function AccountTradeTabs({
   // Auto-sync: if history is empty and not loading, trigger a one-time sync
   // from the MT broker. Covers new accounts that haven't synced yet.
   // Only mark done on success — allows retry on next mount if it fails.
+  // Tracks by account ID so switching accounts re-triggers the sync.
   useEffect(() => {
     if (!id) return;
-    if (autoSyncDone.current) return;
+    if (autoSyncDone.current === id) return;
     if (historyLoading) return;
-    if (historyTrades.length > 0) { autoSyncDone.current = true; return; }
-    doSync().then(() => { autoSyncDone.current = true; }).catch(() => {});
+    if (historyTrades.length > 0) { autoSyncDone.current = id; return; }
+    doSync().then(() => { autoSyncDone.current = id; }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, historyLoading, historyTrades.length]);
 
@@ -89,7 +100,7 @@ export default function AccountTradeTabs({
       key: 'positions',
       label: (
         <span className="flex items-center gap-2">
-          <UnorderedListOutlined size={16} stroke={1.5} />
+          <UnorderedListOutlined style={{ fontSize: 16 }} />
           {t('accounts.tradeTabs.positionsWithCount', { count: realPositions.length })}
           {pendingOrders.length > 0 && ` | ${t('accounts.tradeTabs.pendingWithCount', { count: pendingOrders.length })}`}
         </span>
@@ -97,7 +108,7 @@ export default function AccountTradeTabs({
       children:
         realPositions.length === 0 && pendingOrders.length === 0 ? (
           <div className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
-            <LineChartOutlined size={48} stroke={1} color="#D4AF37" style={{ opacity: 0.3 }} />
+            <LineChartOutlined style={{ fontSize: 48, opacity: 0.3 }} color="#D4AF37" />
             <p className="mt-4">{t('accounts.tradeTabs.emptyPositions')}</p>
           </div>
         ) : (
@@ -151,7 +162,7 @@ export default function AccountTradeTabs({
       key: 'history',
       label: (
         <span className="flex items-center gap-2">
-          <HistoryOutlined size={16} stroke={1.5} />
+          <HistoryOutlined style={{ fontSize: 16 }} />
           {t('accounts.tradeTabs.historyWithCount', { count: historyTotal })}
         </span>
       ),
@@ -169,7 +180,7 @@ export default function AccountTradeTabs({
               </Button>
             </div>
             <div className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
-              <HistoryOutlined size={48} stroke={1} color="#D4AF37" style={{ opacity: 0.3 }} />
+              <HistoryOutlined style={{ fontSize: 48, opacity: 0.3 }} color="#D4AF37" />
               <p className="mt-4">{t('accounts.tradeTabs.emptyHistory')}</p>
             </div>
           </div>
@@ -201,7 +212,7 @@ export default function AccountTradeTabs({
                   </tr>
                 </thead>
                 <tbody>
-                  {historyTrades.map((trade: any) => (
+                  {historyTrades.map((trade) => (
                     <HistoryTradeRow key={trade.id || trade.ticket} trade={trade} />
                   ))}
                 </tbody>

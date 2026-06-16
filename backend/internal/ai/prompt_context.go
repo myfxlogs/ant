@@ -38,6 +38,27 @@ type BuildContextInput struct {
 	Timeframe        string
 	BacktestSummary  string
 	ValidationErrors []string
+	Locale           string // user UI language (e.g. en, zh, zh-TW, ja, vi); blank = no directive
+}
+
+// localeDirective returns a language instruction for AI prose responses.
+// Code-only modes (generate/revise/repair) are unaffected by language, but
+// the discuss mode and any inline explanations must follow the user's UI language.
+func localeDirective(locale string) string {
+	switch {
+	case strings.HasPrefix(locale, "zh-TW"), strings.HasPrefix(locale, "zh-HK"), strings.HasPrefix(locale, "zh-Hant"):
+		return "\n\n请使用繁體中文回复。"
+	case strings.HasPrefix(locale, "zh"):
+		return "\n\n请使用简体中文回复。"
+	case strings.HasPrefix(locale, "ja"):
+		return "\n\n日本語で回答してください。"
+	case strings.HasPrefix(locale, "vi"):
+		return "\n\nVui lòng trả lời bằng tiếng Việt."
+	case locale == "" :
+		return ""
+	default:
+		return "\n\nRespond in English."
+	}
 }
 
 // BuildContext analyzes code + message and returns the appropriate PromptContext.
@@ -64,7 +85,7 @@ func BuildContext(input BuildContextInput) *PromptContext {
 		pc.SystemPrompt = repairPrompt(input.ValidationErrors)
 		pc.UserMessage = buildRepairUserMessage(input.Code, input.Message)
 	case ModeDiscuss:
-		pc.SystemPrompt = discussPrompt(input.Code)
+		pc.SystemPrompt = discussPrompt(input.Code) + localeDirective(input.Locale)
 		pc.UserMessage = input.Message
 	}
 

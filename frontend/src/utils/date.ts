@@ -32,11 +32,15 @@ export function formatMonthLongName(month: number): string {
   return d.toLocaleString(getUILocale(), { month: 'long', timeZone: 'UTC' });
 }
 
-export function formatDateTime(dateStr: string | Timestamp | null | undefined): string {
-  if (!dateStr) return '-';
+export function formatDateTime(dateStr: string | number | bigint | Timestamp | null | undefined): string {
+  if (dateStr == null || dateStr === '') return '-';
+  // Handle Unix milliseconds (int64 proto fields: number or bigint)
+  if (typeof dateStr === 'number' || typeof dateStr === 'bigint') {
+    dateStr = new Date(Number(dateStr)).toISOString();
+  }
   const locale = getUILocale();
   const timeZone = getDeviceTimeZone();
-  
+
   if (typeof dateStr === 'object' && 'seconds' in dateStr) {
     const date = timestampToDate(dateStr as Timestamp);
     return date.toLocaleString(locale, {
@@ -50,8 +54,9 @@ export function formatDateTime(dateStr: string | Timestamp | null | undefined): 
       hour12: false
     }).replace(/\//g, '-');
   }
-  
-  let cleanStr = dateStr as string;
+
+  // Safety: coerce to string before using string methods
+  let cleanStr = String(dateStr);
   if (cleanStr.endsWith('Z')) {
     cleanStr = cleanStr.replace('Z', '+00:00');
   }

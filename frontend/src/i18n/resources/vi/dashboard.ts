@@ -12,6 +12,7 @@ const dashboard = {
     streamOffline: 'Ngoại tuyến',
     noAccounts: 'Chưa có tài khoản. Hãy nhấn “Liên kết tài khoản”.',
     stats: {
+      totalBalance: 'Tổng số dư',
       totalEquity: 'Tổng vốn',
       connected: 'Đang kết nối',
       accountCount: 'Số tài khoản',
@@ -34,6 +35,7 @@ const dashboard = {
       market: 'Thị trường',
       accounts: 'Tài khoản',
       analytics: 'Phân tích',
+      library: 'Thư viện',
       templates: 'Mẫu',
       logs: 'Nhật ký',
       bindAccount: 'Liên kết',

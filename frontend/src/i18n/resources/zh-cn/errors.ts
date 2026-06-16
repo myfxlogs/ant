@@ -62,7 +62,11 @@ const errors = {
     audit_log_not_found: '审计日志未找到',
     broker_search_failed: '搜索券商失败',
     broker_not_found: '券商未找到',
-    broker_server_unavailable: '券商服务器当前不可用'
+    broker_server_unavailable: '券商服务器当前不可用',
+    ai: {
+      not_configured: '尚未配置 AI 厂商，请点击 ⚙ 在 AI 设置中填写 API Key。',
+      internal_error: 'AI 服务异常，请稍后重试。',
+    }
   }
 } as const;
 

@@ -85,7 +85,10 @@ const interceptors: Interceptor[] = [
       req.header.set('Authorization', `Bearer ${token}`);
     }
 
-    const lang = i18n.language || 'en';
+    const lang = (() => {
+      try { const v = localStorage.getItem('anttrader_lang'); if (v) return v; } catch {}
+      return i18n.language || 'en';
+    })();
     if (lang) {
       req.header.set('Accept-Language', lang);
     }

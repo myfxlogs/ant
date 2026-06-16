@@ -48,11 +48,13 @@ func (r *AnalyticsRepository) GetMonthlyDetailMetrics(ctx context.Context, accou
 	if err != nil {
 		return nil, err
 	}
-	m.NetReturn = math.Round(m.NetReturn*100) / 100
+	// Round monetary fields to 2 decimal places for display.
+	m.NetReturn = m.NetReturn.Round(2)
+	m.BestTrade = m.BestTrade.Round(2)
+	m.WorstTrade = m.WorstTrade.Round(2)
+	// Ratio fields still float64 — round for display consistency.
 	m.WinRate = math.Round(m.WinRate*100) / 100
 	m.ProfitFactor = math.Round(m.ProfitFactor*100) / 100
-	m.BestTrade = math.Round(m.BestTrade*100) / 100
-	m.WorstTrade = math.Round(m.WorstTrade*100) / 100
 	return m, nil
 }
 
@@ -85,7 +87,7 @@ func (r *AnalyticsRepository) GetMonthlySymbolPnL(ctx context.Context, accountID
 		if err := rows.Scan(&s.Symbol, &s.NetProfit, &s.Trades, &s.WinRate); err != nil {
 			return nil, err
 		}
-		s.NetProfit = math.Round(s.NetProfit*100) / 100
+		s.NetProfit = s.NetProfit.Round(2)
 		s.WinRate = math.Round(s.WinRate*100) / 100
 		results = append(results, s)
 	}

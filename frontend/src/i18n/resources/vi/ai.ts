@@ -374,7 +374,7 @@ Hãy đưa kết luận style/signals/risk vào code (nếu không có, chọn m
         notRecommended: 'Không khuyến nghị triển khai ngay: rủi ro cao hoặc không đáng tin cậy. Hãy tối ưu rồi thử lại.'
       },
       backendRiskScore: {
-        title: 'Điểm rủi ro từ backend',
+        title: 'Điểm rủi ro chiến lược',
         loading: 'Đang tính...',
         unknown: 'không xác định',
         reliable: 'Đáng tin cậy',
@@ -385,7 +385,7 @@ Hãy đưa kết luận style/signals/risk vào code (nếu không có, chọn m
       },
       score: {
         empty: 'Chưa có điểm (đợi backtest hoàn tất hoặc thiếu metrics)',
-        title: 'Điểm tổng hợp (heuristic phía frontend)'
+        title: 'Điểm tổng hợp (heuristic)'
       },
       level: {
         excellent: 'Xuất sắc',
@@ -579,6 +579,21 @@ Hãy đưa kết luận style/signals/risk vào code (nếu không có, chọn m
       selectRun: 'Chọn lần chạy kiểm thử lùi...',
       evaluating: 'Đang đánh giá...',
       runHint: 'Chạy backtest trước, sau đó nhấp "Chạy Gate" để đánh giá chất lượng chiến lược.'
+    },
+    gateway: {
+      title: 'AI Gateway',
+      useGateway: 'AI Gateway',
+      useGatewayDesc: 'Trừ ví · Tính theo token',
+      useOwnKey: 'API Key của tôi',
+      useOwnKeyDesc: 'Thanh toán trực tiếp · Tự quản lý',
+      useOwnKeyHint: 'Sử dụng API Key của bạn để thanh toán trực tiếp cho nhà cung cấp. Chọn thẻ nhà cung cấp bên dưới để cấu hình.',
+      selectModel: 'Chọn mô hình',
+      modelPlaceholder: 'Chọn mô hình AI',
+      noModels: 'Không có mô hình nào',
+      balance: 'Số dư ví',
+      monthlyTokens: 'Token tháng này',
+      monthlyCost: 'Chi phí tháng này',
+      usageByFeature: 'Sử dụng theo tính năng',
     }
   }
 } as const;

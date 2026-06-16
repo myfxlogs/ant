@@ -1,6 +1,15 @@
 import { getDeviceLocale, getDeviceTimeZone } from '@/utils/date';
 
-export const formatTimestamp = (ts: any): string => {
+/** Accepted timestamp shapes from API responses, SSE bridge, and protobuf. */
+type TimestampInput =
+  | string
+  | number
+  | Date
+  | { seconds?: number | bigint; nanos?: number }
+  | null
+  | undefined;
+
+export const formatTimestamp = (ts: TimestampInput): string => {
   if (ts == null || ts === '') return '';
   const locale = getDeviceLocale();
   const timeZone = getDeviceTimeZone();

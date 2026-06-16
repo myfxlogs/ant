@@ -119,6 +119,8 @@ func startMdGatewayPipeline(
 				Status: "connected", Timestamp: time.Now(),
 					Positions:     convertProfitPositions(p.Positions),
 			})
+			// Update in-memory summary cache so SSE SubscribeUserSummary avoids a full DB scan.
+			accountSvc.UpdateSummaryCache(userID, accountID, p.Balance, p.Equity, "connected")
 			// B-2.3: 3-level margin call detection with per-broker thresholds.
 			if p.MarginLevel > 0 {
 				callPct := marginCallThresholds[accountID]
@@ -142,6 +144,8 @@ func startMdGatewayPipeline(
 			defer cancel()
 			if err := accountSvc.DisconnectAccountByID(writeCtx, accountID); err != nil {
 				log.Warn("OnAccountDisconnect: failed to update account_status", zap.String("account", accountID), zap.Error(err))
+			} else if uid != "" {
+				accountSvc.InvalidateSummaryCache(uid)
 			}
 			// Push real-time status update to SSE subscribers.
 			mthubSvc.PublishAccountStatus(&mthub.AccountStatusEvent{

@@ -134,16 +134,31 @@ func (c *AnalyticsCache) SetMonthlyDetail(ctx context.Context, accountID string,
 }
 
 // Invalidate clears all analytics caches for an account after trade data changes.
+// Uses SCAN instead of KEYS to avoid blocking Redis on large key spaces.
 func (c *AnalyticsCache) Invalidate(ctx context.Context, accountID string) {
 	keys := []string{
 		"analytics:" + accountID,
 		"analytics:attribution:" + accountID,
 		"analytics:rolling:" + accountID,
 	}
-	// Also clear all monthly_detail keys for this account (wildcard pattern).
-	if detailKeys, err := c.redis.Keys(ctx, "analytics:monthly_detail:"+accountID+":*").Result(); err == nil {
-		keys = append(keys, detailKeys...)
+
+	// SCAN for monthly_detail keys matching the account wildcard.
+	pattern := "analytics:monthly_detail:" + accountID + ":*"
+	var cursor uint64
+	for {
+		scanned, nextCursor, err := c.redis.Scan(ctx, cursor, pattern, 100).Result()
+		if err != nil {
+			c.log.Warn("analytics cache: scan failed",
+				zap.String("account", accountID), zap.Error(err))
+			break
+		}
+		keys = append(keys, scanned...)
+		cursor = nextCursor
+		if cursor == 0 {
+			break
+		}
 	}
+
 	if err := c.redis.Del(ctx, keys...).Err(); err != nil {
 		c.log.Warn("analytics cache: del failed",
 			zap.String("account", accountID), zap.Error(err))

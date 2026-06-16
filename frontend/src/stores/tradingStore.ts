@@ -16,33 +16,12 @@ export interface AccountInfo {
   marginLevel: number;
 }
 
-export interface UserSummary {
-  totalBalance: number;
-  totalEquity: number;
-  totalProfit: number;
-  accountCount: number;
-  connectedCount: number;
-  pnlToday: number;
-  pnlWeek: number;
-  pnlMonth: number;
-  tradesToday: number;
-  tradesWeek: number;
-  tradesMonth: number;
-  winRate: number;
-  profitFactor: number;
-  maxDrawdownPercent: number;
-  maxConsecutiveWins: number;
-  maxConsecutiveLosses: number;
-  updatedAt?: any;
-}
-
 interface TradingState {
   positions: Position[];
   positionsMap: Map<string, Position[]>;
   tradeLogs: TradeLog[];
   accountInfo: AccountInfo;
   accountInfoMap: Map<string, AccountInfo>;
-  userSummary: UserSummary;
   accountReceivedData: Set<string>;
   /** Last time we applied account-level profit stream batch (ms since epoch). */
   lastStreamProfitAtByAccount: Map<string, number>;
@@ -57,7 +36,6 @@ interface TradingState {
   addTradeLog: (_log: TradeLog) => void;
   setAccountInfo: (_info: Partial<AccountInfo>) => void;
   setAccountInfoById: (_accountId: string, _info: Partial<AccountInfo>) => void;
-  setUserSummary: (_summary: Partial<UserSummary>) => void;
   getAccountInfoById: (_accountId: string) => AccountInfo | undefined;
   hasReceivedData: (_accountId: string) => boolean;
   setCurrentAccountId: (_accountId: string | null) => void;
@@ -75,32 +53,12 @@ const defaultAccountInfo: AccountInfo = {
   marginLevel: 0,
 };
 
-const defaultUserSummary: UserSummary = {
-  totalBalance: 0,
-  totalEquity: 0,
-  totalProfit: 0,
-  accountCount: 0,
-  connectedCount: 0,
-  pnlToday: 0,
-  pnlWeek: 0,
-  pnlMonth: 0,
-  tradesToday: 0,
-  tradesWeek: 0,
-  tradesMonth: 0,
-  winRate: 0,
-  profitFactor: 0,
-  maxDrawdownPercent: 0,
-  maxConsecutiveWins: 0,
-  maxConsecutiveLosses: 0,
-};
-
 export const useTradingStore = create<TradingState>((set, get) => ({
   positions: [],
   positionsMap: new Map(),
   tradeLogs: [],
   accountInfo: { ...defaultAccountInfo },
   accountInfoMap: new Map(),
-  userSummary: { ...defaultUserSummary },
   accountReceivedData: new Set<string>(),
   lastStreamProfitAtByAccount: new Map<string, number>(),
   currentAccountId: null,
@@ -218,7 +176,6 @@ export const useTradingStore = create<TradingState>((set, get) => ({
     }
     return { accountInfoMap: newMap, accountReceivedData: newReceivedData };
   }),
-  setUserSummary: (summary) => set((state) => ({ userSummary: { ...state.userSummary, ...summary } })),
   getAccountInfoById: (accountId) => {
     return get().accountInfoMap.get(accountId);
   },

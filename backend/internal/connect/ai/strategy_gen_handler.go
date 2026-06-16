@@ -64,13 +64,18 @@ func (s *StrategyGenServer) GenerateStrategy(
 	if err != nil { return err }
 	m := req.Msg
 
+	// Detect the user's UI language so all AI-generated text (analysis, advice,
+	// clarification questions, code comments) follows it. Frontend sends this on
+	// every ConnectRPC request via the Accept-Language header.
+	lang := LangFromAccept(req.Header().Get("Accept-Language"))
+
 	// ── Phase 3: FEEDBACK MODE ──
 	if m.PreviousCode != "" && m.BacktestMetricsJson != "" {
-		return s.handleFeedback(ctx, userID, m, stream)
+		return s.handleFeedback(ctx, userID, m, stream, lang)
 	}
 
 	// ── Phase 1: LLM-driven intent analysis ──
-	intent, err := s.analyzeIntent(ctx, userID, m)
+	intent, err := s.analyzeIntent(ctx, userID, m, lang)
 	if err != nil {
 		s.log.Warn("intent analysis failed, falling back to direct generation", zap.Error(err))
 		// Fallback: if LLM call fails, skip clarification and generate directly
@@ -82,7 +87,7 @@ func (s *StrategyGenServer) GenerateStrategy(
 	}
 
 	// Build prompt with extracted intent parameters
-	tmpl, sysPrompt, userPrompt := s.buildStrategyPrompt(ctx, userID, m, intent)
+	tmpl, sysPrompt, userPrompt := s.buildStrategyPrompt(ctx, userID, m, intent, lang)
 	if err := s.sendTemplateInfo(stream, tmpl); err != nil { return err }
 
 	// Stream LLM code generation
@@ -104,8 +109,8 @@ func (s *StrategyGenServer) GenerateStrategy(
 	return stream.Send(&antv1.GenerateStrategyChunk{Phase: "done", Code: code, BacktestRunId: runID, Error: btErr})
 }
 
-func (s *StrategyGenServer) analyzeIntent(ctx context.Context, userID uuid.UUID, m *antv1.GenerateStrategyRequest) (*ai.IntentResult, error) {
-	intent, err := s.intentAnalyzer.Analyze(ctx, userID, m.Message, m.Symbol, m.Timeframe)
+func (s *StrategyGenServer) analyzeIntent(ctx context.Context, userID uuid.UUID, m *antv1.GenerateStrategyRequest, lang string) (*ai.IntentResult, error) {
+	intent, err := s.intentAnalyzer.Analyze(ctx, userID, m.Message, m.Symbol, m.Timeframe, clarifyLangDirective(lang))
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +121,7 @@ func (s *StrategyGenServer) analyzeIntent(ctx context.Context, userID uuid.UUID,
 	return intent, nil
 }
 
-func (s *StrategyGenServer) buildStrategyPrompt(ctx context.Context, userID uuid.UUID, m *antv1.GenerateStrategyRequest, intent *ai.IntentResult) (*repository.AIStrategyTemplate, string, string) {
+func (s *StrategyGenServer) buildStrategyPrompt(ctx context.Context, userID uuid.UUID, m *antv1.GenerateStrategyRequest, intent *ai.IntentResult, lang string) (*repository.AIStrategyTemplate, string, string) {
 	templates, _ := s.templatesRepo.ListActive(ctx)
 	lib := ai.NewTemplateLibrary(templates)
 
@@ -140,7 +145,7 @@ func (s *StrategyGenServer) buildStrategyPrompt(ctx context.Context, userID uuid
 		Intent:       intent,
 		StrategyType: intent.StrategyType,
 	}
-	return tmpl, builder.BuildSystemPrompt(pp), builder.BuildUserPrompt(pp)
+	return tmpl, builder.BuildSystemPrompt(pp) + "\n\n" + LangPrompt(lang), builder.BuildUserPrompt(pp)
 }
 
 func (s *StrategyGenServer) sendTemplateInfo(stream *connect.ServerStream[antv1.GenerateStrategyChunk], tmpl *repository.AIStrategyTemplate) error {
@@ -200,6 +205,7 @@ func (s *StrategyGenServer) handleFeedback(
 	ctx context.Context, userID uuid.UUID,
 	m *antv1.GenerateStrategyRequest,
 	stream *connect.ServerStream[antv1.GenerateStrategyChunk],
+	lang string,
 ) error {
 	// 1. Parse backtest metrics
 	var metrics ai.FeedbackMetrics
@@ -221,6 +227,8 @@ func (s *StrategyGenServer) handleFeedback(
 		FeedbackMessage: m.FeedbackMessage,
 		FeedbackHints:   routing.Reason,
 	})
+	// Append UI-language directive so analysis/advice text follows the user's language.
+	sysPrompt += "\n\n" + LangPrompt(lang)
 
 	// 4. Stream LLM response with progressive section parsing
 	if err := stream.Send(&antv1.GenerateStrategyChunk{Phase: "analyzing"}); err != nil {

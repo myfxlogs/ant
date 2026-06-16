@@ -1,6 +1,6 @@
 export const COLORS = ['#D4AF37', '#2196F3', '#00A651', '#E53935', '#9C27B0', '#FF9800'];
 
-export function periodOptions(t: (key: string, opts?: Record<string, any>) => string) {
+export function periodOptions(t: (key: string, opts?: Record<string, unknown>) => string) {
   return [
     { value: 'today', label: t('analytics.summary.periods.today') },
     { value: 'week', label: t('analytics.summary.periods.week') },

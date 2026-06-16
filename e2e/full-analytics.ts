@@ -154,19 +154,74 @@ async function run() {
 
     if (pies.length > 0) {
       OK(`${pies.length} pie charts`);
-      // Read some labels
+      // Read all labels to verify direction share has real data
       const labels: string[] = [];
-      for (const l of pieLabels.slice(0, 6)) { labels.push((await l.textContent())?.trim() || ''); }
+      for (const l of pieLabels.slice(0, 12)) { labels.push((await l.textContent())?.trim() || ''); }
       labels.length > 0 && console.log(`   Labels: ${labels.join(', ')}`);
     } else {
       W('No pie charts — data may be sparse');
     }
+
+    // Verify direction share specifically — look for "Direction Share" card title
+    const cards = await page.$$('.ant-card');
+    let foundDirection = false;
+    for (const card of cards) {
+      const title = await card.$('.ant-card-head-title');
+      const titleText = title ? await title.textContent() : '';
+      if (titleText && /Direction/i.test(titleText)) {
+        const sectors = await card.$$('.recharts-pie-sector');
+        const directionLabels = await card.$$('.recharts-pie-label-text');
+        const labelTexts: string[] = [];
+        for (const l of directionLabels.slice(0, 4)) { labelTexts.push((await l.textContent())?.trim() || ''); }
+        // Labels are text (e.g. "Buy"/"Sell") not numbers; verify non-empty
+        const hasDirectionData = labelTexts.some(t => t.length > 0);
+        hasDirectionData ? OK(`Direction share: ${labelTexts.join(', ')}`) : (sectors.length >= 2 ? OK(`Direction share: ${sectors.length} sectors (no labels)`) : W(`Direction share blank: 0 sectors`));
+        console.log(`   Direction sectors: ${sectors.length}, labels: [${labelTexts.join('|')}]`);
+        foundDirection = true;
+        break;
+      }
+    }
+    if (!foundDirection) W('Direction Share card not found');
 
     // Symbol P&L comparison (bar chart)
     const barCharts = await page.$$('.recharts-bar');
     barCharts.length >= 1 ? OK('Symbol P&L bar chart') : W('No symbol P&L');
 
     shot(page, 'pies');
+  });
+
+  // PHASE 6b: Sticky Header — verify account/period bar stays on top using Ant Affix
+  await phase('Sticky Header', page, async () => {
+    // Scroll down the page (body-level scroll)
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await humanPause(800, 1200);
+
+    // Ant Design Affix wraps the element in a div that becomes position:fixed
+    const stickyInfo = await page.evaluate(() => {
+      // Ant Affix container has class .ant-affix
+      const affixEls = document.querySelectorAll('.ant-affix');
+      const results: any[] = [];
+      affixEls.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        results.push({
+          tag: el.tagName,
+          rectTop: rect.top,
+          rectBottom: rect.bottom,
+          width: rect.width,
+          visible: rect.top >= -5 && rect.top <= 10 && rect.width > 100,
+        });
+      });
+      return results;
+    });
+    console.log(`   Affix: ${JSON.stringify(stickyInfo)}`);
+
+    const hasVisibleAffix = stickyInfo.some((s: any) => s.visible);
+    hasVisibleAffix ? OK('Sticky header (Affix) visible at bottom scroll') : W('Header may not be sticky — no affix at top');
+
+    // Scroll back to top
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await humanPause(300, 500);
+    shot(page, 'sticky-header');
   });
 
   // PHASE 7: Trade Stats

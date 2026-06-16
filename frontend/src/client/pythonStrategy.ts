@@ -178,9 +178,10 @@ export const pythonStrategyApi = {
     return (await pythonStrategyService.getBacktestRun(msg));
   },
 
-  listBacktestRuns: async (params: { accountId?: string; limit?: number; offset?: number }) => {
+  listBacktestRuns: async (params: { accountId?: string; templateId?: string; limit?: number; offset?: number }) => {
     const msg = create(ListBacktestRunsRequestSchema, {
       accountId: params.accountId,
+      templateId: params.templateId,
       limit: params.limit ?? 50,
       offset: params.offset ?? 0,
     });

@@ -1,17 +1,17 @@
-import { useMemo } from 'react';
-import { Tag, Button, Spin, Dropdown, Modal, Input } from 'antd';
+import { useCallback, useMemo } from 'react';
+import { Tag, Button, Spin, Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
 import {
   ArrowLeftOutlined, ReloadOutlined, PauseCircleOutlined,
-  CaretRightOutlined, MoreOutlined, WalletOutlined, LineChartOutlined,
-  RiseOutlined, FallOutlined, DollarOutlined, PercentageOutlined,
+  CaretRightOutlined, MoreOutlined,
   WarningOutlined, DeleteOutlined, FileTextOutlined,
 } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AccountTradeTabs from './components/AccountTradeTabs';
 import AccountAnalyticsSection from './components/AccountAnalyticsSection';
-import { InfoCard, SmallInfoCard } from './components/AccountDetail.shared';
+import AccountMetricsCards from './components/AccountMetricsCards';
+import AccountDeleteModal from './components/AccountDeleteModal';
 import { useAccountDetailData } from './AccountDetail/useAccountDetailData';
 
 export default function AccountDetail() {
@@ -20,7 +20,7 @@ export default function AccountDetail() {
   const navigate = useNavigate();
 
   const {
-    currentAccount, isStreamLoading, financials,
+    currentAccount, isStreamLoading, accountLoadError, financials,
     positions, pendingOrders,
     analyticsLoading, analyticsError,
     equityChartData, profitByMonthData, symbolDistributionData,
@@ -40,11 +40,11 @@ export default function AccountDetail() {
   const disabled = !!currentAccount?.isDisabled;
   const { balance, equity, margin, freeMargin, marginLevel, profit, profitPercent, credit } = financials;
 
-  const formatCurrency = (value: number) => {
+  const formatCurrency = useCallback((value: number) => {
     if (disabled) return '--';
     const isNegative = value < 0;
     return `${isNegative ? '-' : ''}${Math.abs(value).toFixed(2)} ${currentAccount?.currency || 'USD'}`;
-  };
+  }, [disabled, currentAccount?.currency]);
 
   const statusConfig = useMemo(() => {
     if (!currentAccount) return { color: 'var(--color-text-muted)', bg: 'var(--color-bg-tertiary)', text: t('common.unknown') };
@@ -81,6 +81,16 @@ export default function AccountDetail() {
   const displayName = currentAccount?.alias || currentAccount?.login;
   const hasAlias = !!currentAccount?.alias;
   if (!currentAccount) {
+    if (accountLoadError) {
+      return (
+        <div className="p-4 flex flex-col justify-center items-center h-64 gap-4">
+          <div style={{ color: 'var(--color-text-muted)', fontSize: 14 }}>
+            {t('accounts.detail.messages.fetchAccountFailed')}
+          </div>
+          <Button onClick={handleRetry}>{t('common.retry')}</Button>
+        </div>
+      );
+    }
     return <div className="p-4 flex justify-center items-center h-64"><Spin size="large" /></div>;
   }
 
@@ -162,91 +172,16 @@ export default function AccountDetail() {
           </div>
         )}
 
-        {/* ── Primary metrics: Equity · P&L · Margin Level ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-          {/* Equity */}
-          <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
-            <div className="flex items-center gap-2 mb-1">
-              <LineChartOutlined style={{ color: 'var(--color-text-muted)', fontSize: 14 }} />
-              <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t('accounts.detail.cards.equity')}</span>
-            </div>
-            {isStreamLoading
-              ? <div className="text-xl" style={{ color: 'var(--color-text-muted)' }}>{t('common.loading')}</div>
-              : <div className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>{formatCurrency(equity)}</div>
-            }
-            <div style={{ color: 'var(--color-text-muted)', fontSize: 11, marginTop: 2 }}>
-              {t('accounts.detail.cards.balance')}: {formatCurrency(balance)}
-            </div>
-          </div>
-
-          {/* Floating P&L */}
-          <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
-            <div className="flex items-center gap-2 mb-1">
-              {profit >= 0 ? <RiseOutlined style={{ color: 'var(--color-success)', fontSize: 14 }} /> : <FallOutlined style={{ color: 'var(--color-danger)', fontSize: 14 }} />}
-              <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t('accounts.detail.cards.floatingProfit')}</span>
-            </div>
-            {isStreamLoading
-              ? <div className="text-xl" style={{ color: 'var(--color-text-muted)' }}>{t('common.loading')}</div>
-              : <>
-                <div className="text-xl font-bold" style={{ color: profit >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>
-                  {profit >= 0 ? '+' : ''}{formatCurrency(profit)}
-                </div>
-                <div style={{ color: profit >= 0 ? 'var(--color-success)' : 'var(--color-danger)', fontSize: 12, marginTop: 2 }}>
-                  {profitPercent >= 0 ? '+' : ''}{profitPercent.toFixed(2)}%
-                </div>
-              </>
-            }
-          </div>
-
-          {/* Margin Level */}
-          <div className="rounded-xl p-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
-            <div className="flex items-center gap-2 mb-1">
-              <PercentageOutlined style={{ color: 'var(--color-text-muted)', fontSize: 14 }} />
-              <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{t('accounts.detail.cards.marginLevel')}</span>
-            </div>
-            {isStreamLoading
-              ? <div className="text-xl" style={{ color: 'var(--color-text-muted)' }}>{t('common.loading')}</div>
-              : <>
-                <div className="text-xl font-bold" style={{
-                  color: margin > 0 && (marginLevel || 0) < 100 ? 'var(--color-danger)' : 'var(--color-text)',
-                }}>
-                  {margin > 0 ? `${(marginLevel || 0).toFixed(2)}%` : '--'}
-                </div>
-                <div style={{ color: 'var(--color-text-muted)', fontSize: 11, marginTop: 2 }}>
-                  {t('accounts.detail.cards.marginUsed')}: {formatCurrency(margin)}
-                </div>
-              </>
-            }
-          </div>
-        </div>
-
-        {/* ── Secondary metrics: Balance · Margin · Free Margin · Credit ── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-          <SmallInfoCard
-            icon={<WalletOutlined style={{ color: 'var(--color-text-muted)', fontSize: 13 }} />}
-            label={t('accounts.detail.cards.balance')}
-            value={formatCurrency(balance)}
-            loading={isStreamLoading}
-          />
-          <SmallInfoCard
-            icon={<DollarOutlined style={{ color: 'var(--color-text-muted)', fontSize: 13 }} />}
-            label={t('accounts.detail.cards.marginUsed')}
-            value={formatCurrency(margin)}
-            loading={isStreamLoading}
-          />
-          <SmallInfoCard
-            icon={<DollarOutlined style={{ color: 'var(--color-text-muted)', fontSize: 13 }} />}
-            label={t('accounts.detail.cards.marginFree')}
-            value={formatCurrency(freeMargin)}
-            loading={isStreamLoading}
-          />
-          <SmallInfoCard
-            icon={<WarningOutlined style={{ color: 'var(--color-text-muted)', fontSize: 13 }} />}
-            label={t('accounts.detail.cards.credit')}
-            value={formatCurrency(credit)}
-            loading={isStreamLoading}
-          />
-        </div>
+        {/* ── Primary + Secondary metrics ── */}
+        <AccountMetricsCards
+          isStreamLoading={isStreamLoading}
+          disabled={disabled}
+          formatCurrency={formatCurrency}
+          balance={balance} equity={equity}
+          profit={profit} profitPercent={profitPercent}
+          margin={margin} freeMargin={freeMargin}
+          marginLevel={marginLevel} credit={credit}
+        />
 
         {/* ── Trade tabs ── */}
         <div className="rounded-xl overflow-hidden mb-4" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
@@ -295,27 +230,14 @@ export default function AccountDetail() {
         />
 
         {/* ── Delete modal ── */}
-        <Modal
-          title={t('accounts.detail.actions.deleteAccount')}
+        <AccountDeleteModal
           open={deleteModalOpen}
-          onOk={handleDelete}
+          deletePassword={deletePassword}
+          deleting={deleting}
+          onDelete={handleDelete}
           onCancel={() => setDeleteModalOpen(false)}
-          confirmLoading={deleting}
-          okText={t('accounts.detail.actions.deleteConfirm')}
-          cancelText={t('common.cancel')}
-          okButtonProps={{ danger: true }}
-          destroyOnClose
-        >
-          <div style={{ marginBottom: 16, color: 'var(--color-danger)' }}>{t('accounts.detail.actions.deleteWarning')}</div>
-          <div style={{ marginBottom: 8, color: 'var(--color-text-muted)' }}>{t('accounts.detail.actions.deletePasswordHint')}</div>
-          <Input
-            placeholder={t('accounts.detail.actions.deletePasswordPlaceholder')}
-            value={deletePassword}
-            onChange={(e) => setDeletePassword(e.target.value)}
-            onPressEnter={handleDelete}
-            disabled={deleting}
-          />
-        </Modal>
+          onPasswordChange={setDeletePassword}
+        />
       </div>
     </div>
   );

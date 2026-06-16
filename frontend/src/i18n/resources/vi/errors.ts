@@ -62,7 +62,11 @@ const errors = {
     audit_log_not_found: 'Không tìm thấy mục nhật ký kiểm toán',
     broker_search_failed: 'Tìm kiếm nhà môi giới thất bại',
     broker_not_found: 'Không tìm thấy nhà môi giới',
-    broker_server_unavailable: 'Máy chủ nhà môi giới hiện không khả dụng'
+    broker_server_unavailable: 'Máy chủ nhà môi giới hiện không khả dụng',
+    ai: {
+      not_configured: 'Chưa cấu hình nhà cung cấp AI. Nhấp ⚙ để thiết lập API Key trong Cài đặt AI.',
+      internal_error: 'Lỗi dịch vụ AI. Vui lòng thử lại sau.',
+    }
   }
 } as const;
 

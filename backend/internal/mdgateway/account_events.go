@@ -40,6 +40,10 @@ func (p *AccountEventPublisher) publish(ctx context.Context, subject string, ev 
 	if p.js == nil {
 		return
 	}
+	// Respect caller's context deadline/cancellation.
+	if err := ctx.Err(); err != nil {
+		return
+	}
 	data, err := proto.Marshal(&antv1.AccountEventPayload{AccountId: ev.AccountID, UserId: ev.UserID, TsUnixMs: ev.Timestamp.UnixMilli()})
 	if err != nil {
 		p.log.Warn("account event marshal failed", zap.Error(err))
@@ -49,13 +53,14 @@ func (p *AccountEventPublisher) publish(ctx context.Context, subject string, ev 
 	tryEnsureAccountEventsStream(p.js, p.log)
 
 	// Retry once with backoff on transient publish failures.
-	if _, err := p.js.Publish(subject, data); err != nil {
+	opts := []natsgo.PubOpt{natsgo.Context(ctx)}
+	if _, err := p.js.Publish(subject, data, opts...); err != nil {
 		p.log.Warn("account event publish failed, retrying",
 			zap.String("subject", subject),
 			zap.String("account_id", ev.AccountID),
 			zap.Error(err))
 		time.Sleep(100 * time.Millisecond)
-		if _, err := p.js.Publish(subject, data); err != nil {
+		if _, err := p.js.Publish(subject, data, opts...); err != nil {
 			p.log.Warn("account event publish failed after retry",
 				zap.String("subject", subject),
 				zap.String("account_id", ev.AccountID),

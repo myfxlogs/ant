@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -145,7 +146,7 @@ func (r *BacktestRunRepository) GetByID(ctx context.Context, userID, runID uuid.
 	return &out, nil
 }
 
-func (r *BacktestRunRepository) ListByUser(ctx context.Context, userID uuid.UUID, accountID *uuid.UUID, limit, offset int) ([]*BacktestRun, error) {
+func (r *BacktestRunRepository) ListByUser(ctx context.Context, userID uuid.UUID, accountID, templateID *uuid.UUID, limit, offset int) ([]*BacktestRun, error) {
 	if r == nil || r.db == nil {
 		return nil, errors.New("repository not initialized")
 	}
@@ -159,42 +160,34 @@ func (r *BacktestRunRepository) ListByUser(ctx context.Context, userID uuid.UUID
 		offset = 0
 	}
 
-	if accountID == nil || *accountID == uuid.Nil {
-		return r.listByUserAll(ctx, userID, limit, offset)
+	baseQuery := `SELECT id, user_id, account_id, symbol, timeframe, dataset_id, template_id, template_draft_id,
+		mode, from_ts, to_ts, cancel_requested_at, lease_until,
+		strategy_code_hash, python_service_version,
+		cost_model_snapshot,
+		status, error, started_at, finished_at, strategy_code, initial_capital,
+		extra_symbols, parameter_overrides, proto_response,
+		commission, slippage, leverage, trade_direction, strict_mode, config_snapshot,
+		created_at
+	FROM backtest_runs
+	WHERE user_id = $1`
+	args := []interface{}{userID}
+	argIdx := 2
+
+	if accountID != nil && *accountID != uuid.Nil {
+		baseQuery += fmt.Sprintf(" AND account_id = $%d", argIdx)
+		args = append(args, *accountID)
+		argIdx++
 	}
-	return r.listByUserAccount(ctx, userID, *accountID, limit, offset)
-}
+	if templateID != nil && *templateID != uuid.Nil {
+		baseQuery += fmt.Sprintf(" AND template_id = $%d", argIdx)
+		args = append(args, *templateID)
+		argIdx++
+	}
 
-func (r *BacktestRunRepository) listByUserAll(ctx context.Context, userID uuid.UUID, limit, offset int) ([]*BacktestRun, error) {
-	return r.scanBacktestRunRows(ctx,
-		`SELECT id, user_id, account_id, symbol, timeframe, dataset_id, template_id, template_draft_id,
-			mode, from_ts, to_ts, cancel_requested_at, lease_until,
-			strategy_code_hash, python_service_version,
-			cost_model_snapshot,
-			status, error, started_at, finished_at, strategy_code, initial_capital,
-			extra_symbols, parameter_overrides, proto_response,
-			commission, slippage, leverage, trade_direction, strict_mode, config_snapshot,
-			created_at
-		FROM backtest_runs
-		WHERE user_id = $1
-		ORDER BY created_at DESC
-		LIMIT $2 OFFSET $3`, userID, limit, offset)
-}
+	baseQuery += fmt.Sprintf(" ORDER BY created_at DESC LIMIT $%d OFFSET $%d", argIdx, argIdx+1)
+	args = append(args, limit, offset)
 
-func (r *BacktestRunRepository) listByUserAccount(ctx context.Context, userID, accountID uuid.UUID, limit, offset int) ([]*BacktestRun, error) {
-	return r.scanBacktestRunRows(ctx,
-		`SELECT id, user_id, account_id, symbol, timeframe, dataset_id, template_id, template_draft_id,
-			mode, from_ts, to_ts, cancel_requested_at, lease_until,
-			strategy_code_hash, python_service_version,
-			cost_model_snapshot,
-			status, error, started_at, finished_at, strategy_code, initial_capital,
-			extra_symbols, parameter_overrides, proto_response,
-			commission, slippage, leverage, trade_direction, strict_mode, config_snapshot,
-			created_at
-		FROM backtest_runs
-		WHERE user_id = $1 AND account_id = $2
-		ORDER BY created_at DESC
-		LIMIT $3 OFFSET $4`, userID, accountID, limit, offset)
+	return r.scanBacktestRunRows(ctx, baseQuery, args...)
 }
 
 func (r *BacktestRunRepository) scanBacktestRunRows(ctx context.Context, query string, args ...interface{}) ([]*BacktestRun, error) {

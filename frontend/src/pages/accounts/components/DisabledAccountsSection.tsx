@@ -1,5 +1,6 @@
 import { Button, Modal, Tag } from 'antd';
 import { CaretRightOutlined, DeleteOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import type { Account } from '@/types/account';
 import { useTranslation } from 'react-i18next';
 
@@ -11,6 +12,7 @@ type Props = {
 
 export default function DisabledAccountsSection({ accounts, onEnable, onDelete }: Props) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   if (!accounts || accounts.length === 0) return null;
 
   return (
@@ -50,7 +52,8 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
               <tr
                 key={account.id}
                 className="border-b hover:bg-gray-50"
-                style={{ borderColor: 'var(--color-border)', opacity: 0.7 }}
+                style={{ borderColor: 'var(--color-border)', opacity: 0.7, cursor: 'pointer' }}
+                onClick={() => navigate(`/accounts/${account.id}`)}
               >
                 <td className="p-3 font-medium" style={{ color: 'var(--color-text)' }}>
                   {account.login}
@@ -73,7 +76,7 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
                   <div className="flex justify-end gap-2">
                     <Button
                       size="small"
-                      icon={<CaretRightOutlined size={14} stroke={1.5} />}
+                      icon={<CaretRightOutlined style={{ fontSize: 14 }} />}
                       onClick={() => onEnable(account.id)}
                       style={{ borderRadius: '6px' }}
                     >
@@ -82,7 +85,7 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
                     <Button
                       size="small"
                       danger
-                      icon={<DeleteOutlined size={14} stroke={1.5} />}
+                      icon={<DeleteOutlined style={{ fontSize: 14 }} />}
                       onClick={() => {
                         Modal.confirm({
                           title: t('accounts.disabled.confirmDelete.title'),
@@ -109,7 +112,8 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
           <div
             key={account.id}
             className="rounded-xl p-4"
-            style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)', opacity: 0.7 }}
+            style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)', opacity: 0.7, cursor: 'pointer' }}
+            onClick={() => navigate(`/accounts/${account.id}`)}
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
@@ -139,7 +143,7 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
             <div className="flex gap-2">
               <Button
                 size="small"
-                icon={<CaretRightOutlined size={14} stroke={1.5} />}
+                icon={<CaretRightOutlined style={{ fontSize: 14 }} />}
                 onClick={() => onEnable(account.id)}
                 style={{ borderRadius: '6px', flex: 1 }}
               >
@@ -148,7 +152,7 @@ export default function DisabledAccountsSection({ accounts, onEnable, onDelete }
               <Button
                 size="small"
                 danger
-                icon={<DeleteOutlined size={14} stroke={1.5} />}
+                icon={<DeleteOutlined style={{ fontSize: 14 }} />}
                 onClick={() => {
                   Modal.confirm({
                     title: t('accounts.disabled.confirmDelete.title'),

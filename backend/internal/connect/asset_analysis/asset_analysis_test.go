@@ -8,7 +8,7 @@ import (
 
 func TestNewAssetAnalysisServer_Init(t *testing.T) {
 	t.Parallel()
-	srv := NewAssetAnalysisServer(nil, nil, zap.NewNop())
+	srv := NewAssetAnalysisServer(nil, nil, nil, zap.NewNop())
 	if srv == nil {
 		t.Fatal("expected non-nil server")
 	}
@@ -17,6 +17,9 @@ func TestNewAssetAnalysisServer_Init(t *testing.T) {
 	}
 	if srv.aiSvc != nil {
 		t.Fatal("expected nil aiSvc when nil passed")
+	}
+	if srv.platformSvc != nil {
+		t.Fatal("expected nil platformSvc when nil passed")
 	}
 	if srv.log == nil {
 		t.Fatal("expected non-nil logger")

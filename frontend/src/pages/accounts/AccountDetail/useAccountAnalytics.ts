@@ -90,15 +90,19 @@ export function useAccountAnalytics(
 
   const [historyPage, setHistoryPage] = useState(1);
 
-  const monthlyPnL: AccountMonthlyPnLItem[] = (monthlyPnLQ.data?.monthlyPnl ?? []).map((item) => ({
-    month: String(item.month), monthNum: item.month, month_num: item.month,
-    profit: item.profit, trades: item.trades,
-  }));
+  const monthlyPnL: AccountMonthlyPnLItem[] = useMemo(() =>
+    (monthlyPnLQ.data?.monthlyPnl ?? []).map((item) => ({
+      month: String(item.month), monthNum: item.month, month_num: item.month,
+      profit: item.profit, trades: item.trades,
+    })), [monthlyPnLQ.data?.monthlyPnl]);
 
-  const monthlyAnalysisYears: number[] = monthlyAnalysisQ.data?.years ?? [];
-  const monthlyAnalysisData: unknown[] = Array.isArray(monthlyAnalysisQ.data?.data)
-    ? (monthlyAnalysisQ.data!.data as unknown[])
-    : [];
+  const monthlyAnalysisYears: number[] = useMemo(() =>
+    monthlyAnalysisQ.data?.years ?? [], [monthlyAnalysisQ.data?.years]);
+
+  const monthlyAnalysisData: unknown[] = useMemo(() => {
+    const raw = monthlyAnalysisQ.data?.data;
+    return Array.isArray(raw) ? raw : [];
+  }, [monthlyAnalysisQ.data?.data]);
 
   // ── Derived chart data ──
   const derived = useMemo(() => {

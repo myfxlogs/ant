@@ -3,10 +3,12 @@ import { Button, Space, Tooltip, Select, message, Segmented, Tag } from 'antd';
 import {
   CheckCircleOutlined, CopyOutlined,
   SaveOutlined, SettingOutlined, RobotOutlined,
+  ThunderboltOutlined, KeyOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useSystemAIConfigsQuery } from '@/queries/useSystemAIConfigsQuery';
 import { aiApi } from '@/client/ai';
+import { aiGatewayApi } from '@/client/aiGateway';
 import { discoverSystemAIModels } from '@/pages/ai/systemai/api';
 import type { ValidateExtendedResult } from '@/client/codeAssist';
 import type { AutoFixDebug } from '@/pages/strategy/hooks/useAIWorkflow';
@@ -55,6 +57,7 @@ export default function WorkspaceCodePanel({
   // ── Default Primary Model (compact inline selector) ──
   const [primaryValue, setPrimaryValue] = useState('');
   const [primarySaving, setPrimarySaving] = useState(false);
+  const [gatewayModels, setGatewayModels] = useState<Array<{ providerId: string; model: string; label: string }>>([]);
 
   useEffect(() => {
     let mounted = true;
@@ -67,15 +70,77 @@ export default function WorkspaceCodePanel({
     return () => { mounted = false; };
   }, []);
 
-  const modelOptions = useMemo(() => configs
-    .filter(c => c.enabled && c.has_secret)
-    .flatMap(c => {
-      const models = c.models?.length ? c.models : c.default_model ? [c.default_model] : [];
-      return models.map(m => ({
-        value: `${c.provider_id}|${m}`,
-        label: m,
-      }));
-    }), [configs]);
+  // Fetch gateway models for workspace selector (available even without own API key).
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const list = await aiGatewayApi.listSystemModels();
+        if (mounted) {
+          setGatewayModels(list.map(m => ({
+            providerId: m.providerId, model: m.modelName,
+            label: m.displayName || m.modelName,
+          })));
+        }
+      } catch { /* best effort */ }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  const modelOptions = useMemo(() => {
+    const seen = new Set<string>();
+    const groups: Array<{ label: React.ReactNode; title: string; options: Array<{ value: string; label: React.ReactNode; searchLabel: string }> }> = [];
+    // User's own API key models.
+    const ownItems: Array<{ value: string; label: React.ReactNode; searchLabel: string }> = [];
+    configs
+      .filter(c => c.enabled && c.has_secret)
+      .flatMap(c => {
+        const models = c.models?.length ? c.models : c.default_model ? [c.default_model] : [];
+        return models.map(m => ({ value: `${c.provider_id}|${m}`, label: m }));
+      }).forEach(o => {
+        if (!seen.has(o.value)) {
+          seen.add(o.value);
+          ownItems.push({
+            value: o.value,
+            label: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><KeyOutlined style={{ color: '#1677ff', fontSize: 12 }} />{o.label}</span>,
+            searchLabel: o.label,
+          });
+        }
+      });
+    if (ownItems.length > 0) {
+      groups.push({ label: <span style={{ fontSize: 11, color: '#1677ff', fontWeight: 600 }}><KeyOutlined style={{ fontSize: 11 }} /> {t('ai.gateway.groupMyKeys', 'My API Keys')}</span>, title: 'My Keys', options: ownItems });
+    }
+    // Gateway models (platform-provided).
+    const gwItems: Array<{ value: string; label: React.ReactNode; searchLabel: string }> = [];
+    gatewayModels.forEach(g => {
+      const v = `${g.providerId}|${g.model}`;
+      if (!seen.has(v)) {
+        seen.add(v);
+        gwItems.push({
+          value: v,
+          label: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><ThunderboltOutlined style={{ color: '#722ed1', fontSize: 12 }} />{g.label}</span>,
+          searchLabel: g.label,
+        });
+      }
+    });
+    if (gwItems.length > 0) {
+      groups.push({ label: <span style={{ fontSize: 11, color: '#722ed1', fontWeight: 600 }}><ThunderboltOutlined style={{ fontSize: 11 }} /> {t('ai.gateway.groupGateway', 'AI Gateway')}</span>, title: 'Gateway', options: gwItems });
+    }
+    // Always include the currently saved primary if not in any group.
+    if (primaryValue && !seen.has(primaryValue)) {
+      const [pid, mdl] = primaryValue.split('|');
+      if (pid && mdl) {
+        groups.unshift({
+          label: <span style={{ fontSize: 11, color: '#faad14', fontWeight: 600 }}>{t('ai.gateway.groupCurrent', 'Currently Selected')}</span>, title: 'Current', options: [{
+            value: primaryValue,
+            label: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>{mdl}</span>,
+            searchLabel: mdl,
+          }],
+        });
+      }
+    }
+    return groups;
+  }, [configs, primaryValue, gatewayModels]);
 
   // Auto-refresh model lists from providers on mount + when enabled providers change.
   const refreshKey = useMemo(() =>
@@ -147,18 +212,29 @@ export default function WorkspaceCodePanel({
           background: '#fafafa', borderRadius: 4, border: '1px solid #f0f0f0',
         }}>
           <RobotOutlined style={{ fontSize: 11, color: '#8c8c8c' }} />
-          <Select
-            size="small"
-            style={{ flex: 1, minWidth: 0 }}
-            variant="borderless"
-            value={primaryValue || undefined}
-            placeholder={t('ai.settings.primary.placeholder', { defaultValue: 'Default AI model...' })}
-            options={modelOptions}
-            onChange={(v) => setPrimaryValue(v || '')}
-            showSearch
-            optionFilterProp="label"
-            notFoundContent={t('ai.settings.agent.fields.modelProfileEmpty', { defaultValue: 'No model — configure in AI Settings' })}
-          />
+          {modelOptions.length === 0 ? (
+            <span style={{ flex: 1, fontSize: 12, color: '#8c8c8c' }}>
+              {t('ai.settings.primary.placeholder', { defaultValue: 'Loading models...' })}
+            </span>
+          ) : (
+            <Select
+              size="small"
+              style={{ flex: 1, minWidth: 0 }}
+              variant="borderless"
+              value={primaryValue || undefined}
+              placeholder={t('ai.settings.primary.placeholder', { defaultValue: 'Default AI model...' })}
+              options={modelOptions}
+              onChange={(v) => setPrimaryValue(v || '')}
+              showSearch
+              filterOption={(input, option) => {
+                if (!option) return false;
+                const label = option.label as any;
+                const text = typeof label === 'string' ? label : (label?.props?.children?.[1] || label?.props?.children || '');
+                return String(text).toLowerCase().includes(input.toLowerCase());
+              }}
+              notFoundContent={t('ai.settings.agent.fields.modelProfileEmpty', { defaultValue: 'No model — configure in AI Settings' })}
+            />
+          )}
           {primaryValue && (
             <Button size="small" type="link" loading={primarySaving}
               onClick={() => savePrimary(primaryValue)}

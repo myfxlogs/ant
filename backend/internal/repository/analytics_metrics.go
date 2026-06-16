@@ -79,7 +79,8 @@ func (r *AnalyticsRepository) GetMonthlyAnalysisYears(ctx context.Context, accou
 
 type hourlyRawStat struct {
 	HourStart, Trades int
-	Lots, Profit, GrossProfit, GrossLoss, WinRate float64
+	Lots, Profit, GrossProfit, GrossLoss decimal.Decimal
+	WinRate float64
 }
 
 func (r *AnalyticsRepository) GetHourlyStats(ctx context.Context, accountID uuid.UUID, start, end time.Time) ([]*model.HourlyStats, error) {
@@ -124,11 +125,11 @@ func buildHourlyStatsResult(raw []*hourlyRawStat) []*model.HourlyStats {
 	for _, s := range raw {
 		if s.HourStart < 0 || s.HourStart >= 24 { continue }
 		result[s.HourStart].Trades = s.Trades
-		result[s.HourStart].Lots = decimal.NewFromFloat(s.Lots)
-		result[s.HourStart].Profit = decimal.NewFromFloat(s.Profit)
+		result[s.HourStart].Lots = s.Lots
+		result[s.HourStart].Profit = s.Profit
 		result[s.HourStart].WinRate = decimal.NewFromFloat(s.WinRate)
-		if s.Trades > 0 { result[s.HourStart].AvgPnL = s.Profit / float64(s.Trades) }
-		if s.GrossLoss > 0 { result[s.HourStart].ProfitFactor = decimal.NewFromFloat(s.GrossProfit/s.GrossLoss) }
+		if s.Trades > 0 { result[s.HourStart].AvgPnL = s.Profit.InexactFloat64() / float64(s.Trades) }
+		if s.GrossLoss.IsPositive() { result[s.HourStart].ProfitFactor = s.GrossProfit.Div(s.GrossLoss) }
 	}
 	return result
 }

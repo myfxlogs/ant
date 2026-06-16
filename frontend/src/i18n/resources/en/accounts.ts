@@ -70,7 +70,8 @@ const accounts = {
         noAccessHosts: 'No server addresses available for the selected broker',
         verifyFailed: 'Account verification failed',
         bindSuccess: 'Account bound successfully',
-        bindFailed: 'Failed to bind account'
+        bindFailed: 'Failed to bind account',
+        loginDigitsOnly: 'Trading account must contain only digits'
       },
       errors: {
         brokerUnavailable: 'Server error or incorrect password',
@@ -290,19 +291,17 @@ const accounts = {
       fields: {
         tradingAccount: 'Trading account',
         server: 'Server',
-        password: 'Password'
+        password: 'New password',
+        oldPassword: 'Current password'
       },
       placeholders: {
-        newPassword: 'Enter new password'
-      },
-      actions: {
-        verifyPassword: 'Verify password'
+        newPassword: 'Enter new password',
+        oldPassword: 'Enter current password'
       },
       messages: {
-        enterPassword: 'Please enter password',
-        passwordVerified: 'Password verified successfully',
-        passwordVerifyFailed: 'Password verification failed',
-        verifyFirst: 'Please verify the password first',
+        enterPassword: 'Please enter new password',
+        enterOldPassword: 'Please enter current password',
+        passwordVerifyFailed: 'Password change failed',
         passwordSaved: 'Password saved'
       }
     },
@@ -371,6 +370,7 @@ const accounts = {
       title: 'Trading Report',
       titleShort: 'Report',
       generate: 'Generate Report',
+      goToAISettings: 'Go to AI Settings →',
       aiAnalysis: 'AI Analysis',
       symbolPnL: 'P&L by Symbol',
       direction: 'Direction Breakdown',

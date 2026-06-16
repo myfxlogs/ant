@@ -5,7 +5,7 @@ import { pythonStrategyApi } from '@/client/pythonStrategy';
 import { isTerminalRun, loadRunTitles } from '../StrategyTemplatePage.utils';
 import type { BacktestRunRow } from './libraryTypes';
 
-export function useLibraryRuns() {
+export function useLibraryRuns(templateId: string | undefined) {
   const { t } = useTranslation();
   const [runs, setRuns] = useState<BacktestRunRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -22,7 +22,9 @@ export function useLibraryRuns() {
   const fetchRuns = useCallback(async (p: number = page, ps: number = pageSize) => {
     setLoading(true); setError(null);
     try {
-      const resp: any = await pythonStrategyApi.listBacktestRuns({ limit: ps + 1, offset: (p - 1) * ps });
+      const params: any = { limit: ps + 1, offset: (p - 1) * ps };
+      if (templateId) params.templateId = templateId;
+      const resp: any = await pythonStrategyApi.listBacktestRuns(params);
       const titles = loadRunTitles();
       const rawList: BacktestRunRow[] = (resp?.runs || []).map((r: any) => ({
         ...r,
@@ -34,13 +36,14 @@ export function useLibraryRuns() {
       const displayList = hasMore ? rawList.slice(0, ps) : rawList;
       setRuns(displayList);
       setTotal(hasMore ? p * ps + 1 : (p - 1) * ps + displayList.length);
-    } catch {
+    } catch (e) {
       setRuns([]);
+      console.error('fetchLibraryRuns failed', e);
       setError(t('common.loadingFailed'));
     } finally { setLoading(false); }
-  }, [page, pageSize, t]);
+  }, [page, pageSize, templateId, t]);
 
-  useEffect(() => { fetchRuns(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchRuns(); }, [fetchRuns]);
 
   const updateRunFromStream = useCallback((u: any) => {
     const id = String(u?.run?.id || u?.run?.runId || u?.runId || '');
@@ -80,7 +83,7 @@ export function useLibraryRuns() {
       message.success(t('strategy.templates.messages.backtestReportDeleted'));
       const newPage = runs.length <= 1 && page > 1 ? page - 1 : page;
       setPage(newPage); fetchRuns(newPage, pageSize);
-    } catch { message.error(t('common.deleteFailed')); }
+    } catch (e) { console.error('deleteBacktestRun failed', e); message.error(t('common.deleteFailed')); }
     finally { setDeleting(false); }
   }, [runs.length, page, pageSize, fetchRuns, t]);
 
@@ -92,7 +95,7 @@ export function useLibraryRuns() {
       setSelectedKeys([]);
       const newPage = runs.length <= selectedKeys.length && page > 1 ? page - 1 : page;
       setPage(newPage); fetchRuns(newPage, pageSize);
-    } catch { message.error(t('common.deleteFailed')); }
+    } catch (e) { console.error('deleteBacktestRuns failed', e); message.error(t('common.deleteFailed')); }
     finally { setDeleting(false); }
   }, [selectedKeys, runs.length, page, pageSize, fetchRuns, t]);
 

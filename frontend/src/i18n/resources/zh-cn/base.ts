@@ -204,7 +204,8 @@ const base = {
     detail: {
       comments: '评论',
       noComments: '暂无评论，快来第一个评论吧！',
-      commentPlaceholder: '写评论...（Shift+Enter 换行）'
+      commentPlaceholder: '写评论...（Shift+Enter 换行）',
+      yourRating: '我的评分',
     },
     publishModal: {
       symbolsPlaceholder: 'EURUSD, GBPUSD, XAUUSD',

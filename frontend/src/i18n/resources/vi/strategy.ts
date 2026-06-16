@@ -577,6 +577,7 @@ signal = {
         title: 'Báo cáo backtest',
         empty: 'Chưa có backtest',
         deleteConfirm: 'Xóa báo cáo backtest này?',
+        batchDelete: 'Xóa {{count}}',
         batchDeleteConfirm: 'Xóa {{count}} báo cáo backtest?',
         batchDeleteSuccess: 'Đã xóa {{count}} báo cáo backtest',
         status: {
@@ -1141,6 +1142,7 @@ def run(context):
       atrPct: 'ATR %',
       aiRecommendation: 'Đề xuất chiến lược AI',
       aiUnavailable: 'Đề xuất AI không khả dụng. Vui lòng cấu hình nhà cung cấp AI trong Cài đặt.',
+      configureAI: 'Cấu hình nhà cung cấp AI',
       noLevels: 'Không phát hiện mức đáng kể',
       noResults: 'Không có kết quả phân tích. Thử mã khác.',
       volLow: 'Biến động thấp — cân nhắc chiến lược breakout hoặc mean-reversion với stop chặt.',

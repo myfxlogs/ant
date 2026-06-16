@@ -8,6 +8,7 @@ export type AnalysisPhase = 'idle' | 'mtf_outlook' | 'sr_levels' | 'volatility' 
 const PHASES: AnalysisPhase[] = ['mtf_outlook', 'sr_levels', 'volatility', 'ai_recommendation', 'complete'];
 
 export function useAssetAnalysis() {
+  const [accountId, setAccountId] = useState('');
   const [symbol, setSymbol] = useState('');
   const [phase, setPhase] = useState<AnalysisPhase>('idle');
   const [loading, setLoading] = useState(false);
@@ -16,7 +17,7 @@ export function useAssetAnalysis() {
   const [progress, setProgress] = useState(0);
 
   const analyze = useCallback(async () => {
-    if (!symbol.trim()) return;
+    if (!accountId.trim() || !symbol.trim()) return;
     setLoading(true);
     setPhase('idle');
     setError('');
@@ -26,7 +27,7 @@ export function useAssetAnalysis() {
     const ctrl = new AbortController();
     try {
       const stream = await assetAnalysisClient.analyzeAsset(
-        { symbol: symbol.trim().toUpperCase(), klineCount: 200 },
+        { accountId: accountId.trim(), symbol: symbol.trim().toUpperCase(), klineCount: 200 },
         { signal: ctrl.signal },
       );
 
@@ -56,7 +57,7 @@ export function useAssetAnalysis() {
     } finally {
       setLoading(false);
     }
-  }, [symbol]);
+  }, [accountId, symbol]);
 
-  return { symbol, setSymbol, phase, loading, error, setError, result, progress, analyze };
+  return { accountId, setAccountId, symbol, setSymbol, phase, loading, error, setError, result, progress, analyze };
 }

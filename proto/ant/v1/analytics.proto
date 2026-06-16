@@ -39,80 +39,80 @@ message AccountAnalyticsResponse {
 
 message TradeStats {
   int64 total_trades = 1;
-  double win_rate = 2;
-  double profit_factor = 3;
-  double average_profit = 4;
-  double average_loss = 5;
-  double largest_win = 6;
-  double largest_loss = 7;
+  double win_rate = 2;              // percentage (ratio)
+  double profit_factor = 3;         // ratio
+  string average_profit = 4;        // monetary
+  string average_loss = 5;          // monetary
+  string largest_win = 6;           // monetary
+  string largest_loss = 7;          // monetary
   int64 max_consecutive_wins = 8;
   int64 max_consecutive_losses = 9;
   string average_holding_time = 10;
-  double net_profit = 11;
-  double total_deposit = 12;
-  double total_withdrawal = 13;
-  double net_deposit = 14;
+  string net_profit = 11;           // monetary
+  string total_deposit = 12;        // monetary
+  string total_withdrawal = 13;     // monetary
+  string net_deposit = 14;          // monetary
 }
 
 message RiskMetrics {
-  double max_drawdown_percent = 1;
-  double sharpe_ratio = 2;
-  double sortino_ratio = 3;
-  double calmar_ratio = 4;
-  double volatility = 5;
-  double average_daily_return = 6;
+  double max_drawdown_percent = 1;  // percentage (ratio)
+  double sharpe_ratio = 2;          // ratio
+  double sortino_ratio = 3;         // ratio
+  double calmar_ratio = 4;          // ratio
+  double volatility = 5;            // ratio (std dev)
+  double average_daily_return = 6;  // ratio
 }
 
 message SymbolStat {
   string symbol = 1;
-  double profit = 2;
-  double trade_share_percent = 3;
+  string profit = 2;                // monetary
+  double trade_share_percent = 3;   // percentage (ratio)
 }
 
 message EquityPoint {
   string date = 1;
-  double equity = 2;
-  double balance = 3;
-  double profit = 4;
+  string equity = 2;                // monetary
+  string balance = 3;               // monetary
+  string profit = 4;                // monetary
 }
 
 message DailyPnL {
   string day = 1;
   string date = 2;
-  double pnl = 3;
+  string pnl = 3;                   // monetary
   int64 trades = 4;
-  double lots = 5;
-  double balance = 6;
-  double profit_factor = 7;
-  double max_floating_loss_amount = 8;
-  double max_floating_loss_ratio = 9;
-  double max_floating_profit_amount = 10;
-  double max_floating_profit_ratio = 11;
+  string lots = 5;                  // monetary (volume)
+  string balance = 6;               // monetary
+  double profit_factor = 7;         // ratio
+  string max_floating_loss_amount = 8;   // monetary
+  double max_floating_loss_ratio = 9;    // percentage (ratio)
+  string max_floating_profit_amount = 10; // monetary
+  double max_floating_profit_ratio = 11;  // percentage (ratio)
 }
 
 message HourlyStat {
   int32 hour = 1;
-  double lots = 2;
-  double balance = 3;
-  double profit_factor = 4;
-  double max_floating_loss_amount = 5;
-  double max_floating_loss_ratio = 6;
-  double max_floating_profit_amount = 7;
-  double max_floating_profit_ratio = 8;
+  string lots = 2;                  // monetary (volume)
+  string balance = 3;               // monetary
+  double profit_factor = 4;         // ratio
+  string max_floating_loss_amount = 5;   // monetary
+  double max_floating_loss_ratio = 6;    // percentage (ratio)
+  string max_floating_profit_amount = 7; // monetary
+  double max_floating_profit_ratio = 8;  // percentage (ratio)
 }
 
 message TradeRecord {
   string ticket = 1;
   string symbol = 2;
   string type = 3;
-  double volume = 4;
-  double open_price = 5;
-  double close_price = 6;
-  double profit = 7;
+  string volume = 4;                // monetary (volume)
+  string open_price = 5;            // monetary (price)
+  string close_price = 6;           // monetary (price)
+  string profit = 7;                // monetary
   string open_time = 8;
   string close_time = 9;
-  double swap = 10;
-  double commission = 11;
+  string swap = 10;                 // monetary
+  string commission = 11;           // monetary
   string comment = 12;
 }
 
@@ -129,7 +129,7 @@ message GetRecentTradesResponse {
 
 message MonthlyPnLItem {
   int32 month = 1;
-  double profit = 2;
+  string profit = 2;                // monetary
   int64 trades = 3;
 }
 
@@ -167,33 +167,33 @@ message GetMonthlyDetailResponse {
 }
 
 message MonthlyDetailMetrics {
-  double net_return = 1;
-  double return_percent = 2;
+  string net_return = 1;            // monetary
+  double return_percent = 2;        // percentage (ratio)
   int64 total_trades = 3;
-  double win_rate = 4;
-  double profit_factor = 5;
-  double best_trade = 6;
-  double worst_trade = 7;
+  double win_rate = 4;              // percentage (ratio)
+  double profit_factor = 5;         // ratio
+  string best_trade = 6;            // monetary
+  string worst_trade = 7;           // monetary
 }
 
 message SymbolMonthlyPnL {
   string symbol = 1;
-  double net_profit = 2;
+  string net_profit = 2;            // monetary
   int64 trades = 3;
-  double win_rate = 4;
+  double win_rate = 4;              // percentage (ratio)
 }
 
 message HoldingTimeStats {
-  double average_hours = 1;
-  double median_hours = 2;
-  double max_hours = 3;
-  double min_hours = 4;
+  double average_hours = 1;         // time (hours)
+  double median_hours = 2;          // time (hours)
+  double max_hours = 3;             // time (hours)
+  double min_hours = 4;             // time (hours)
 }
 
 // ── Monthly Bonus (myfxbook-style panels) ──
 
 message MonthlyBonus {
-  double risk_ratio = 1;
+  double risk_ratio = 1;            // ratio
   repeated SymbolPopularityItem symbol_popularity = 2;
   repeated SymbolRiskItem symbol_risks = 3;
   repeated SymbolHoldingSplit symbol_holding_split = 4;
@@ -202,18 +202,18 @@ message MonthlyBonus {
 message SymbolPopularityItem {
   string symbol = 1;
   int64 trades = 2;
-  double share_percent = 3;
+  double share_percent = 3;         // percentage (ratio)
 }
 
 message SymbolRiskItem {
   string symbol = 1;
-  double risk_ratio = 2;
+  double risk_ratio = 2;            // ratio
 }
 
 message SymbolHoldingSplit {
   string symbol = 1;
-  double bulls_seconds = 2;
-  double short_term_seconds = 3;
+  double bulls_seconds = 2;         // time (seconds)
+  double short_term_seconds = 3;    // time (seconds)
 }
 
 // ── Attribution Analysis ──
@@ -231,20 +231,20 @@ message GetAttributionAnalysisResponse {
 
 message SymbolPnL {
   string symbol = 1;
-  double net_profit = 2;
+  string net_profit = 2;            // monetary
   int64 total_trades = 3;
-  double win_rate = 4;
-  double profit_factor = 5;
-  double trade_share_percent = 6;
+  double win_rate = 4;              // percentage (ratio)
+  double profit_factor = 5;         // ratio
+  double trade_share_percent = 6;   // percentage (ratio)
 }
 
 message DirectionBreakdown {
-  double long_profit = 1;
+  string long_profit = 1;           // monetary
   int64 long_trades = 2;
-  double long_win_rate = 3;
-  double short_profit = 4;
+  double long_win_rate = 3;         // percentage (ratio)
+  string short_profit = 4;          // monetary
   int64 short_trades = 5;
-  double short_win_rate = 6;
+  double short_win_rate = 6;        // percentage (ratio)
 }
 
 message TradeDistribution {
@@ -254,16 +254,16 @@ message TradeDistribution {
 
 message TradeBucket {
   string label = 1;
-  double min_value = 2;
-  double max_value = 3;
+  string min_value = 2;             // monetary
+  string max_value = 3;             // monetary
   int64 count = 4;
 }
 
 message HourlyPnL {
   int32 hour = 1;
-  double profit = 2;
+  string profit = 2;                // monetary
   int64 trades = 3;
-  double win_rate = 4;
+  double win_rate = 4;              // percentage (ratio)
 }
 
 // ── Rolling Metrics ──
@@ -282,25 +282,25 @@ message GetRollingMetricsResponse {
 
 message RollingPoint {
   string date = 1;
-  double value = 2;
+  double value = 2;                 // ratio (Sharpe value)
 }
 
 message DrawdownEvent {
   string start_date = 1;
   string end_date = 2;
   int32 duration_days = 3;
-  double depth_percent = 4;
+  double depth_percent = 4;         // percentage (ratio)
   string recovery_date = 5;
 }
 
 message DrawdownPoint {
   string date = 1;
-  double drawdown_percent = 2;
+  double drawdown_percent = 2;      // percentage (ratio)
 }
 
 message MonthlyWinRate {
   string month = 1;
-  double win_rate = 2;
+  double win_rate = 2;              // percentage (ratio)
   int64 total_trades = 3;
 }
 

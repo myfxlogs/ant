@@ -342,7 +342,7 @@ def run(context):
         notRecommended: '直接の本番運用非推奨：高リスクまたは信頼性に欠けます。最適化後に再試行してください。'
       },
       backendRiskScore: {
-        title: 'バックエンドリスクスコア',
+        title: 'ストラテジーリスクスコア',
         loading: '計算中...',
         unknown: '不明',
         reliable: '信頼できる',
@@ -422,6 +422,21 @@ def run(context):
       selectRun: 'バックテスト実行を選択...',
       evaluating: '评估中...',
       runHint: '先运行回测，然后点击"运行Gate"评估策略质量。'
+    },
+    gateway: {
+      title: 'AI ゲートウェイ',
+      useGateway: 'AI ゲートウェイ',
+      useGatewayDesc: 'ウォレット課金 · トークン単位',
+      useOwnKey: '自分の API Key',
+      useOwnKeyDesc: '直接課金 · 自己管理',
+      useOwnKeyHint: '自分の API Key を使用してプロバイダーに直接支払います。下のプロバイダーカードを選択して設定してください。',
+      selectModel: 'モデル選択',
+      modelPlaceholder: 'AI モデルを選択',
+      noModels: '利用可能なモデルがありません',
+      balance: 'ウォレット残高',
+      monthlyTokens: '今月のトークン',
+      monthlyCost: '今月の費用',
+      usageByFeature: '機能別使用量',
     }
   }
 } as const;

@@ -106,6 +106,7 @@ export function useLibrarySchedules(selectedTemplateId: string) {
       const [tpls, schs] = await Promise.all([strategyTemplateApi.list(), strategyScheduleV2Api.list()]);
       setTemplates(tpls || []); setSchedules(schs as ScheduleRow[]); void fetchAccounts();
     } catch (e: any) {
+      console.error('fetchSchedules failed', e);
       setError(e?.message || t('common.loadingFailed'));
     } finally { setLoading(false); }
   }, [t, fetchAccounts]);
@@ -129,7 +130,7 @@ export function useLibrarySchedules(selectedTemplateId: string) {
   }, [sseReady]);
 
   // Re-fetch on template change
-  useEffect(() => { if (selectedTemplateId) void refresh(); }, [selectedTemplateId]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (selectedTemplateId) void refresh(); }, [selectedTemplateId, refresh]);
 
   const templatesForSelect = useMemo((): TemplateOption[] => {
     const out: TemplateOption[] = []; const seen = new Set<string>();
@@ -225,7 +226,7 @@ export function useLibrarySchedules(selectedTemplateId: string) {
       await strategyScheduleV2Api.toggle(row.id, next);
       message.success(next ? t('common.enabled') : t('common.disabled'));
       await refresh();
-    } catch (e: any) { message.error(e?.message || t('common.operationFailed')); }
+    } catch (e: any) { console.error('toggleSchedule failed', e); message.error(e?.message || t('common.operationFailed')); }
   }, [refresh, t]);
 
   const onDelete = useCallback(async (row: ScheduleRow) => {
@@ -233,7 +234,7 @@ export function useLibrarySchedules(selectedTemplateId: string) {
       await strategyScheduleV2Api.delete(row.id);
       message.success(t('common.deleted'));
       await refresh();
-    } catch (e: any) { message.error(e?.message || t('common.deleteFailed')); }
+    } catch (e: any) { console.error('deleteSchedule failed', e); message.error(e?.message || t('common.deleteFailed')); }
   }, [refresh, t]);
 
   useEffect(() => {

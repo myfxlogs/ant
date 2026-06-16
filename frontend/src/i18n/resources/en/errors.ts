@@ -62,7 +62,11 @@ const errors = {
     audit_log_not_found: 'Audit log entry not found',
     broker_search_failed: 'Failed to search for brokers',
     broker_not_found: 'Broker not found',
-    broker_server_unavailable: 'Broker server is currently unavailable'
+    broker_server_unavailable: 'Broker server is currently unavailable',
+    ai: {
+      not_configured: 'No AI provider configured yet. Please click ⚙ to set up an API key in AI Settings.',
+      internal_error: 'AI service error. Please try again later.',
+    }
   }
 } as const;
 

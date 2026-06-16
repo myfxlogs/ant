@@ -61,7 +61,7 @@ func buildUserListFilters(params *model.UserListParams) (countQ, query string, a
 		args = append(args, val)
 	}
 	if params.Search != "" {
-		conds = append(conds, fmt.Sprintf(" (email ILIKE $%d OR nickname ILIKE $%d)", len(args)+1, len(args)+1))
+		conds = append(conds, fmt.Sprintf(" (u.email ILIKE $%d OR u.nickname ILIKE $%d OR u.account_number ILIKE $%d)", len(args)+1, len(args)+1, len(args)+1))
 		args = append(args, "%"+params.Search+"%")
 	}
 	addCond("u.status", params.Status)

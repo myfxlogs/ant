@@ -3,6 +3,8 @@ import React, { memo } from 'react';
 import { PositionPrice } from '@/components/PositionPrice';
 import { formatPrice } from '@/utils/price';
 import { useTranslation } from 'react-i18next';
+import type { Position } from '@/types/trading';
+import type { TradeRecordItem } from '@/client/analyticsTypes';
 
 import { formatTimestamp } from './AccountDetail.utils';
 
@@ -77,7 +79,7 @@ export const SmallInfoCard = memo(
   },
 );
 
-export const PositionRow = memo(({ position }: { position: any }) => {
+export const PositionRow = memo(({ position }: { position: Position }) => {
   const { t } = useTranslation();
   return (
     <tr className="border-b hover:bg-gray-50" style={{ borderColor: 'var(--color-border)' }}>
@@ -111,14 +113,14 @@ export const PositionRow = memo(({ position }: { position: any }) => {
   );
 });
 
-export const PendingOrderRow = memo(({ order }: { order: any }) => {
+export const PendingOrderRow = memo(({ order }: { order: Position }) => {
   const { t } = useTranslation();
   return (
     <tr className="border-b hover:bg-gray-50" style={{ borderColor: 'var(--color-border)' }}>
     <td className="p-3 font-medium" style={{ color: 'var(--color-text)' }}>{order.ticket}</td>
     <td className="p-3" style={{ color: 'var(--color-text)' }}>{order.symbol}</td>
     <td className="p-3">
-      <Tag style={{ background: order.type.includes('buy') ? 'var(--color-success-bg)' : 'var(--color-danger-bg)', color: order.type.includes('buy') ? 'var(--color-success)' : 'var(--color-danger)', border: 'none', borderRadius: '4px' }}>
+      <Tag style={{ background: (typeof order.type === 'string' && order.type.includes('buy')) ? 'var(--color-success-bg)' : 'var(--color-danger-bg)', color: (typeof order.type === 'string' && order.type.includes('buy')) ? 'var(--color-success)' : 'var(--color-danger)', border: 'none', borderRadius: '4px' }}>
         {order.type === 'buy_limit'
           ? t('accounts.detail.orderTypes.buyLimit')
           : order.type === 'sell_limit'
@@ -140,7 +142,7 @@ export const PendingOrderRow = memo(({ order }: { order: any }) => {
               ? order.closePrice
               : undefined
         }
-        orderType={order.type.includes('buy') ? 'buy' : 'sell'}
+        orderType={(typeof order.type === 'string' && order.type.includes('buy')) ? 'buy' : 'sell'}
       />
     </td>
     <td className="p-3" style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>{formatTimestamp(order.openTime)}</td>
@@ -148,7 +150,7 @@ export const PendingOrderRow = memo(({ order }: { order: any }) => {
   );
 });
 
-export const HistoryTradeRow = memo(({ trade }: { trade: any }) => {
+export const HistoryTradeRow = memo(({ trade }: { trade: TradeRecordItem }) => {
   const { t } = useTranslation();
   const rawType = trade.type || trade.orderType || trade.order_type || '';
   const orderType = rawType.replace(/^Op_Op_/, '').replace(/^Op_/, '').toLowerCase();
@@ -159,7 +161,9 @@ export const HistoryTradeRow = memo(({ trade }: { trade: any }) => {
   const symbol = trade.symbol || '';
   // Balance/credit records may have empty symbol and/or balance/credit order type.
   const isBalanceRecord = !symbol || orderType === 'balance' || orderType === 'credit';
-  const isDeposit = trade.profit >= 0;
+  const isDeposit = isBalanceRecord
+    ? (orderType === 'credit' || trade.profit > 0 || (trade.profit === 0 && orderType === 'balance'))
+    : trade.profit >= 0;
   
   return (
     <tr className="border-b" style={{ borderColor: 'var(--color-border)', background: isBalanceRecord ? 'var(--color-gold-bg-hover)' : 'transparent' }}>

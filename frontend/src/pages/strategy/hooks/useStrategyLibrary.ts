@@ -9,7 +9,7 @@ export type LibraryTab = 'overview' | 'schedules' | 'backtest' | 'logs';
 export function useStrategyLibrary() {
   const templates = useLibraryTemplates();
   const schedules = useLibrarySchedules(templates.selectedId);
-  const runs = useLibraryRuns();
+  const runs = useLibraryRuns(templates.selectedId);
   const [activeTab, setActiveTab] = useState<LibraryTab>('overview');
 
   // Reset tab when selection changes and tab is no longer relevant

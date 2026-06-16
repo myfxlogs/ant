@@ -4,7 +4,7 @@ import type { AccountStatusEvent } from '../gen/ant/v1/stream_event_account_pb';
 import type { StreamEvent, BarUpdateEvent } from '../gen/ant/v1/stream_pb';
 import { toCamelCase } from '../adapters/dataAdapter';
 import { isLikelyStreamTransportFailure } from '../utils/streamErrors';
-import type { UserSummary } from '../stores/tradingStore';
+import type { UserSummaryData } from '../bridge/bridgeUserSummary';
 import {
   startSharedStream,
   subscribeShared,
@@ -156,7 +156,7 @@ export const streamApi = {
   },
 
   subscribeUserSummary: (
-    callback: (summary: Partial<UserSummary>) => void,
+    callback: (summary: Partial<UserSummaryData>) => void,
     onError?: (error: unknown) => void,
   ) => {
     let isAborted = false;
@@ -175,7 +175,7 @@ export const streamApi = {
           if (isAborted) break;
           transportFailStreak = 0;
           retryCount = 0;
-          callback(toCamelCase<Partial<UserSummary>>(summary));
+          callback(toCamelCase<Partial<UserSummaryData>>(summary));
         }
 
         if (!isAborted) {
@@ -240,7 +240,7 @@ export function subscribeOrderUpdates(
 }
 
 export function subscribeUserSummary(
-  callback: (summary: Partial<UserSummary>) => void,
+  callback: (summary: Partial<UserSummaryData>) => void,
   onError?: (error: unknown) => void,
 ) {
   return streamApi.subscribeUserSummary(callback, onError);

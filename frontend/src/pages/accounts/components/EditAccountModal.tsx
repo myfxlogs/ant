@@ -1,10 +1,10 @@
 import { Button, Modal } from 'antd';
-import { CheckOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import { showError, showSuccess, showWarning } from '@/utils/message';
 import type { Account } from '@/types/account';
 import GradientButton from '@/components/common/GradientButton';
 import { useTranslation } from 'react-i18next';
+import { accountApi } from '@/client/account';
 
 type Props = {
   open: boolean;
@@ -14,34 +14,37 @@ type Props = {
 
 export default function EditAccountModal({ open, account, onClose }: Props) {
   const { t } = useTranslation();
-  const [editPassword, setEditPassword] = useState('');
-  const [verifying, setVerifying] = useState(false);
-  const [verified, setVerified] = useState(false);
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  const handleVerifyPassword = async () => {
-    if (!editPassword) {
+  const handleSavePassword = async () => {
+    if (!oldPassword) {
+      showWarning(t('accounts.edit.messages.enterOldPassword'));
+      return;
+    }
+    if (!newPassword) {
       showWarning(t('accounts.edit.messages.enterPassword'));
       return;
     }
-    setVerifying(true);
+    if (!account) return;
+    setSaving(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setVerified(true);
-      showSuccess(t('accounts.edit.messages.passwordVerified'));
-    } catch (_error) {
-      showError(t('accounts.edit.messages.passwordVerifyFailed'));
+      const result = await accountApi.updateTradingPassword(account.id, newPassword, oldPassword);
+      if (result.success) {
+        showSuccess(t('accounts.edit.messages.passwordSaved'));
+        setOldPassword('');
+        setNewPassword('');
+        onClose();
+      } else {
+        showError(result.message || t('accounts.edit.messages.passwordVerifyFailed'));
+      }
+    } catch (e: unknown) {
+      const msg = (e as { message?: string })?.message || '';
+      showError(msg || t('accounts.edit.messages.passwordVerifyFailed'));
     } finally {
-      setVerifying(false);
+      setSaving(false);
     }
-  };
-
-  const handleSavePassword = () => {
-    if (!verified) {
-      showWarning(t('accounts.edit.messages.verifyFirst'));
-      return;
-    }
-    showSuccess(t('accounts.edit.messages.passwordSaved'));
-    onClose();
   };
 
   return (
@@ -63,53 +66,56 @@ export default function EditAccountModal({ open, account, onClose }: Props) {
 
           <div>
             <label className="block mb-2" style={{ color: 'var(--color-text-muted)' }}>
-              {t('accounts.edit.fields.password')}
+              {t('accounts.edit.fields.oldPassword')}
             </label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={editPassword}
-                onChange={(e) => {
-                  setEditPassword(e.target.value);
-                  setVerified(false);
-                }}
-                placeholder={t('accounts.edit.placeholders.newPassword')}
-                className="flex-1 outline-none transition-all"
-                style={{
-                  background: 'var(--color-bg-card)',
-                  border: '1px solid rgba(185, 201, 223, 0.4)',
-                  borderRadius: '10px',
-                  padding: '10px 14px',
-                  fontSize: '14px',
-                  color: 'var(--color-text)',
-                }}
-              />
-              <Button onClick={handleVerifyPassword} loading={verifying} style={{ borderRadius: '10px' }}>
-                {t('accounts.edit.actions.verifyPassword')}
-              </Button>
-            </div>
+            <input
+              type="password"
+              autoComplete="current-password"
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+              placeholder={t('accounts.edit.placeholders.oldPassword')}
+              className="flex-1 outline-none transition-all w-full"
+              style={{
+                background: 'var(--color-bg-card)',
+                border: '1px solid rgba(185, 201, 223, 0.4)',
+                borderRadius: '10px',
+                padding: '10px 14px',
+                fontSize: '14px',
+                color: 'var(--color-text)',
+              }}
+            />
           </div>
 
-          {verified && (
-            <div className="flex items-center gap-2 p-3 rounded-xl" style={{ background: 'rgba(0, 166, 81, 0.1)' }}>
-              <CheckOutlined size={18} stroke={1.5} color="#00A651" />
-              <span style={{ color: '#00A651' }}>{t('accounts.edit.messages.passwordVerified')}</span>
-            </div>
-          )}
+          <div>
+            <label className="block mb-2" style={{ color: 'var(--color-text-muted)' }}>
+              {t('accounts.edit.fields.password')}
+            </label>
+            <input
+              type="password"
+              autoComplete="new-password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder={t('accounts.edit.placeholders.newPassword')}
+              className="flex-1 outline-none transition-all w-full"
+              style={{
+                background: 'var(--color-bg-card)',
+                border: '1px solid rgba(185, 201, 223, 0.4)',
+                borderRadius: '10px',
+                padding: '10px 14px',
+                fontSize: '14px',
+                color: 'var(--color-text)',
+              }}
+            />
+          </div>
 
           <div className="flex justify-end gap-2 pt-4">
             <Button onClick={onClose} style={{ borderRadius: '10px' }}>
               {t('common.cancel')}
             </Button>
             <GradientButton
-              onClick={() => {
-                try {
-                  handleSavePassword();
-                } catch (e: unknown) {
-                  showError(e?.message || t('common.saveFailed'));
-                }
-              }}
-              disabled={!verified}
+              onClick={handleSavePassword}
+              disabled={!oldPassword || !newPassword || saving}
+              loading={saving}
               style={{ borderRadius: '10px' }}
             >
               {t('common.save')}

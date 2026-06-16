@@ -98,3 +98,5 @@ export const paperTradingClient = createClient(PaperTradingService, transport);
 export const paperTradingStreamClient = createClient(PaperTradingService, streamTransport);
 export const autoTradingClient = createClient(AutoTradingService, transport);
 export const objectiveScoreClient = createClient(ObjectiveScoreService, transport);
+import { AIGatewayService } from "../gen/ant/v1/ai_gateway_pb";
+export const aiGatewayClient = createClient(AIGatewayService, transport);

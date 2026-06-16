@@ -51,7 +51,8 @@ const RiskRewardPanel = React.memo(({ risks, t }: {
     }));
   }, [risks]);
 
-  const yAxis = useAdaptiveYAxis(chartData.map((d) => d.symbol));
+  const symbols = useMemo(() => chartData.map((d) => d.symbol), [chartData]);
+  const yAxis = useAdaptiveYAxis(symbols);
 
   if (!chartData.length) {
     return (
@@ -188,7 +189,8 @@ const HoldingSplitPanel = React.memo(({ holdingSplit, t }: {
   }
 
   const maxVal = Math.max(...chartData.flatMap((d) => [d.long, d.short]), 1);
-  const yAxis = useAdaptiveYAxis(chartData.map((d) => d.symbol));
+  const holdingSymbols = useMemo(() => chartData.map((d) => d.symbol), [chartData]);
+  const yAxis = useAdaptiveYAxis(holdingSymbols);
 
   // Format milliseconds to human-readable
   const fmtMs = (ms: number): string => {

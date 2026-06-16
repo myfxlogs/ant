@@ -1,10 +1,8 @@
 package system
 
 import (
-	"github.com/shopspring/decimal"
 	"context"
 	"fmt"
-	"math"
 	"time"
 
 	"github.com/google/uuid"
@@ -106,7 +104,10 @@ func (s *AnalyticsServer) computeAnalyticsCore(ctx context.Context, accountID uu
 	if err != nil {
 		return nil, err
 	}
-	symbolStats, _ := s.repo.GetSymbolStats(ctx, accountID, start, now)
+	symbolStats, err := s.repo.GetSymbolStats(ctx, accountID, start, now)
+	if err != nil {
+		s.log.Warn("analytics: get symbol stats failed", zap.Error(err))
+	}
 	return &antv1.AccountAnalyticsResponse{
 		TradeStats:  tradeStatsToProto(tradeStats),
 		RiskMetrics: riskMetricsToProto(sharpe, sortino, calmar, volatility, avgDailyReturn, maxDDPercent),
@@ -115,7 +116,7 @@ func (s *AnalyticsServer) computeAnalyticsCore(ctx context.Context, accountID uu
 }
 
 func (s *AnalyticsServer) fetchTradeStats(ctx context.Context, accountID uuid.UUID, start, now time.Time) (*model.TradeStats, error) {
-	trades, err := s.repo.GetTradeRecords(ctx, accountID, start, now)
+	trades, err := s.repo.GetTradeStatsData(ctx, accountID, start, now)
 	if err != nil { return nil, err }
 	tradeStats := computeTradeStats(trades)
 	maxWins, maxLosses, err := s.repo.GetConsecutiveStats(ctx, accountID, start, now)
@@ -172,12 +173,18 @@ func (s *AnalyticsServer) fetchEquityCurve(ctx context.Context, req *connect.Req
 }
 
 func (s *AnalyticsServer) fetchDailyPnL(ctx context.Context, accountID uuid.UUID, start, now time.Time) []*model.DailyPnL {
-	pnl, _ := s.repo.GetDailyPnL(ctx, accountID, start, now)
+	pnl, err := s.repo.GetDailyPnL(ctx, accountID, start, now)
+	if err != nil {
+		s.log.Warn("analytics: get daily PnL failed", zap.Error(err))
+	}
 	return pnl
 }
 
 func (s *AnalyticsServer) fetchHourlyStats(ctx context.Context, accountID uuid.UUID, start, now time.Time) []*model.HourlyStats {
-	stats, _ := s.repo.GetHourlyStats(ctx, accountID, start, now)
+	stats, err := s.repo.GetHourlyStats(ctx, accountID, start, now)
+	if err != nil {
+		s.log.Warn("analytics: get hourly stats failed", zap.Error(err))
+	}
 	return stats
 }
 
@@ -238,9 +245,9 @@ func equityCurveToProto(points []*model.EquityPoint) []*antv1.EquityPoint {
 	for _, p := range points {
 		result = append(result, &antv1.EquityPoint{
 			Date:    p.Date,
-			Equity:  math.Round(p.Equity.InexactFloat64()*100) / 100,
-			Balance: math.Round(p.Balance.InexactFloat64()*100) / 100,
-			Profit:  math.Round(p.Profit.InexactFloat64()*100) / 100,
+			Equity:  p.Equity.String(),
+			Balance: p.Balance.String(),
+			Profit:  p.Profit.String(),
 		})
 	}
 	return result
@@ -250,14 +257,14 @@ func hourlyStatsToProto(stats []*model.HourlyStats) []*antv1.HourlyStat {
 	result := make([]*antv1.HourlyStat, 0, len(stats))
 	for _, h := range stats {
 		result = append(result, &antv1.HourlyStat{
-			Hour:                   int32(h.HourStart),
-			Lots:                   h.Lots.InexactFloat64(),
-			Balance:                h.Balance.InexactFloat64(),
-			ProfitFactor:           h.ProfitFactor.InexactFloat64(),
-			MaxFloatingLossAmount:  h.MaxFloatingLossAmount,
-			MaxFloatingLossRatio:   h.MaxFloatingLossRatio,
-			MaxFloatingProfitAmount: h.MaxFloatingProfitAmount,
-			MaxFloatingProfitRatio: h.MaxFloatingProfitRatio,
+			Hour:                    int32(h.HourStart),
+			Lots:                    h.Lots.String(),
+			Balance:                 h.Balance.String(),
+			ProfitFactor:            h.ProfitFactor.InexactFloat64(),
+			MaxFloatingLossAmount:   h.MaxFloatingLossAmount.StringFixed(2),
+			MaxFloatingLossRatio:    h.MaxFloatingLossRatio,
+			MaxFloatingProfitAmount: h.MaxFloatingProfitAmount.StringFixed(2),
+			MaxFloatingProfitRatio:  h.MaxFloatingProfitRatio,
 		})
 	}
 	return result
@@ -275,15 +282,15 @@ func appendLiveEquity(ctx context.Context, repo *repository.AnalyticsRepository,
 	today := time.Now().Format("2006-01-02")
 
 	if len(curve) > 0 && curve[len(curve)-1].Date == today {
-		curve[len(curve)-1].Equity = decimal.NewFromFloat(live.Equity)
-		curve[len(curve)-1].Balance = decimal.NewFromFloat(live.Balance)
-		curve[len(curve)-1].Profit = decimal.NewFromFloat(live.Profit)
+		curve[len(curve)-1].Equity = live.Equity
+		curve[len(curve)-1].Balance = live.Balance
+		curve[len(curve)-1].Profit = live.Profit
 	} else {
 		curve = append(curve, &model.EquityPoint{
 			Date:    today,
-			Equity:  decimal.NewFromFloat(math.Round(live.Equity*100) / 100),
-			Balance: decimal.NewFromFloat(math.Round(live.Balance*100) / 100),
-			Profit:  decimal.NewFromFloat(math.Round(live.Profit*100) / 100),
+			Equity:  live.Equity,
+			Balance: live.Balance,
+			Profit:  live.Profit,
 		})
 	}
 	return curve

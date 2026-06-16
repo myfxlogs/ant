@@ -32,7 +32,7 @@ export default function LibraryRightPanel() {
     {
       key: 'schedules' as LibraryTab,
       label: t('strategy.library.schedules'),
-      children: <LibraryScheduleTab />,
+      children: <LibraryScheduleTab {...lib.scheduleProps} />,
     },
     {
       key: 'backtest' as LibraryTab,

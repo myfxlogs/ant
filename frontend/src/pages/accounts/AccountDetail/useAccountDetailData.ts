@@ -11,7 +11,7 @@ import { useConnectAccountMutation } from '@/mutations/useConnectAccountMutation
 import { useEnableDisableAccountMutation } from '@/mutations/useEnableDisableAccountMutation';
 import { useDeleteAccountMutation } from '@/mutations/useDeleteAccountMutation';
 import { useConnect } from '@/providers/useConnect';
-import { formatTimestamp, isPendingOrder } from '../components/AccountDetail.utils';
+import { isPendingOrder } from '../components/AccountDetail.utils';
 import { useAccountAnalytics } from './useAccountAnalytics';
 
 export function useAccountDetailData(id: string | undefined) {
@@ -40,9 +40,13 @@ export function useAccountDetailData(id: string | undefined) {
 
   // ── Account ──
   const currentAccount = accountDetailQ.data ?? null;
-  const hasReceivedData = financialsQ.isSuccess;
+  // Consider data "received" when the financials query has either succeeded
+  // or failed (we can fall back to the account snapshot). Only show loading
+  // when the query is genuinely in-flight.
+  const hasReceivedData = financialsQ.isSuccess || financialsQ.isError;
   const isDataReceived = !!id && hasReceivedData;
-  const isStreamLoading = !isDataReceived;
+  const isStreamLoading = !isDataReceived && financialsQ.isLoading;
+  const accountLoadError = accountDetailQ.isError && !currentAccount;
   const positions = positionsQ.data ?? [];
 
   // ── Analytics (delegated) ──
@@ -117,19 +121,14 @@ export function useAccountDetailData(id: string | undefined) {
   // ── Position filtering ──
   const { realPositions, pendingOrders } = useMemo(() => {
     const list = Array.isArray(positions) ? positions : [];
-    const withDisplay = list.map((p) => ({
-      ...p, open_price: p.openPrice || 0,
-      current_price: p.closePrice || p.currentPrice || 0,
-      open_time: formatTimestamp(p.openTime),
-    }));
     return {
-      realPositions: withDisplay.filter((p) => !isPendingOrder(p.type)),
-      pendingOrders: withDisplay.filter((p) => isPendingOrder(p.type)),
+      realPositions: list.filter((p) => !isPendingOrder(p.type)),
+      pendingOrders: list.filter((p) => isPendingOrder(p.type)),
     };
   }, [positions]);
 
   return {
-    currentAccount, isDataReceived, isStreamLoading, financials,
+    currentAccount, isDataReceived, isStreamLoading, accountLoadError, financials,
     positions: realPositions, pendingOrders,
     chartType, setChartType, chartPeriod, setChartPeriod,
     connecting, disabling,

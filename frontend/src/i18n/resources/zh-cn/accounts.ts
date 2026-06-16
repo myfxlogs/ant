@@ -354,19 +354,17 @@ const accounts = {
       fields: {
         tradingAccount: '交易账号',
         server: '服务器',
-        password: '密码'
+        password: '新密码',
+        oldPassword: '当前密码'
       },
       placeholders: {
-        newPassword: '输入新密码'
-      },
-      actions: {
-        verifyPassword: '验证密码'
+        newPassword: '输入新密码',
+        oldPassword: '输入当前密码'
       },
       messages: {
-        enterPassword: '请输入密码',
-        passwordVerified: '密码验证成功！',
-        passwordVerifyFailed: '密码验证失败',
-        verifyFirst: '请先验证密码',
+        enterPassword: '请输入新密码',
+        enterOldPassword: '请输入当前密码',
+        passwordVerifyFailed: '密码修改失败',
         passwordSaved: '密码已保存'
       }
     },
@@ -435,6 +433,7 @@ const accounts = {
       title: '交易报告',
       titleShort: '报告',
       generate: '生成报告',
+      goToAISettings: '前往 AI 设置 →',
       aiAnalysis: 'AI 分析',
       symbolPnL: '品种盈亏',
       direction: '多空分析',

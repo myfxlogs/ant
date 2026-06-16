@@ -65,7 +65,7 @@ export default function LibraryBacktestHistoryTab() {
               <Popconfirm title={t('strategy.templates.backtestRuns.batchDeleteConfirm', { count: selectedRowKeys.length })}
                 onConfirm={b.onBatchDelete}>
                 <Button danger loading={b.deleting}>
-                  {t('strategy.backtestHistory.batchDelete', '删除 {{count}} 条', { count: selectedRowKeys.length })}
+                  {t('strategy.templates.backtestRuns.batchDelete', '删除 {{count}} 条', { count: selectedRowKeys.length })}
                 </Button>
               </Popconfirm>
             )}
@@ -77,7 +77,7 @@ export default function LibraryBacktestHistoryTab() {
           pagination={{ current: b.page, pageSize: b.pageSize, total: b.total, showSizeChanger: true, showQuickJumper: true,
             showTotal: (t: number) => `${t} runs`, pageSizeOptions: ['10', '20', '50'], onChange: b.onPageChange }}
           size="small" scroll={{ x: 640 }}
-          locale={{ emptyText: t('strategy.backtestHistory.empty') }}
+          locale={{ emptyText: t('strategy.templates.backtestRuns.empty') }}
         />
       </StatusResult>
     </div>

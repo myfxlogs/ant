@@ -8,6 +8,9 @@ import {
   mapRecentTradesResponse,
   mapMonthlyPnLResponse,
   mapMonthlyAnalysisResponse,
+  mapAttributionAnalysis,
+  mapRollingMetrics,
+  mapMonthlyDetail,
 } from './analyticsMappers';
 import type {
   AccountAnalyticsData,
@@ -103,70 +106,12 @@ export const analyticsApi = {
 
   getAttributionAnalysis: async (accountId: string): Promise<AttributionAnalysisData> => {
     const res = await analyticsClient.getAttributionAnalysis({ accountId });
-    return {
-      symbolPnls: (res.symbolPnls || []).map((s) => ({
-        symbol: s.symbol,
-        netProfit: s.netProfit,
-        totalTrades: Number(s.totalTrades),
-        winRate: s.winRate,
-        profitFactor: s.profitFactor,
-        tradeSharePercent: s.tradeSharePercent,
-      })),
-      direction: {
-        longProfit: res.direction?.longProfit || 0,
-        longTrades: Number(res.direction?.longTrades || 0),
-        longWinRate: res.direction?.longWinRate || 0,
-        shortProfit: res.direction?.shortProfit || 0,
-        shortTrades: Number(res.direction?.shortTrades || 0),
-        shortWinRate: res.direction?.shortWinRate || 0,
-      },
-      tradeDistribution: {
-        profitBuckets: (res.tradeDistribution?.profitBuckets || []).map((b) => ({
-          label: b.label,
-          minValue: b.minValue,
-          maxValue: b.maxValue,
-          count: Number(b.count),
-        })),
-      },
-      hourlyPnl: (res.hourlyPnl || []).map((h) => ({
-        hour: h.hour,
-        profit: h.profit,
-        trades: Number(h.trades),
-        winRate: h.winRate,
-      })),
-    };
+    return mapAttributionAnalysis(res);
   },
 
   getRollingMetrics: async (accountId: string): Promise<RollingMetricsData> => {
     const res = await analyticsClient.getRollingMetrics({ accountId });
-    return {
-      rollingSharpe: (res.rollingSharpe || []).map((p) => ({
-        date: p.date,
-        value: p.value,
-      })),
-      drawdownEvents: (res.drawdownEvents || []).map((e) => ({
-        startDate: e.startDate,
-        endDate: e.endDate,
-        durationDays: e.durationDays,
-        depthPercent: e.depthPercent,
-        recoveryDate: e.recoveryDate,
-      })),
-      monthlyWinRates: (res.monthlyWinRates || []).map((m) => ({
-        month: m.month,
-        winRate: m.winRate,
-        totalTrades: Number(m.totalTrades),
-      })),
-      equityCurve: (res.equityCurve || []).map((p) => ({
-        date: p.date,
-        equity: p.equity,
-        balance: p.balance,
-        profit: p.profit,
-      })),
-      drawdownCurve: (res.drawdownCurve || []).map((p) => ({
-        date: p.date,
-        drawdownPercent: p.drawdownPercent,
-      })),
-    };
+    return mapRollingMetrics(res);
   },
 
   generateReportStream: (
@@ -206,45 +151,6 @@ export const analyticsApi = {
 
   getMonthlyDetail: async (accountId: string, year: number, month: number): Promise<MonthlyDetailData> => {
     const res = await analyticsClient.getMonthlyDetail({ accountId, year, month });
-    return {
-      metrics: {
-        netReturn: res.metrics?.netReturn ?? 0,
-        returnPercent: res.metrics?.returnPercent ?? 0,
-        totalTrades: Number(res.metrics?.totalTrades ?? 0),
-        winRate: res.metrics?.winRate ?? 0,
-        profitFactor: res.metrics?.profitFactor ?? 0,
-        bestTrade: res.metrics?.bestTrade ?? 0,
-        worstTrade: res.metrics?.worstTrade ?? 0,
-      },
-      symbolPnls: (res.symbolPnls ?? []).map((s) => ({
-        symbol: s.symbol,
-        netProfit: s.netProfit,
-        trades: Number(s.trades),
-        winRate: s.winRate,
-      })),
-      holdingStats: {
-        averageHours: res.holdingStats?.averageHours ?? 0,
-        medianHours: res.holdingStats?.medianHours ?? 0,
-        maxHours: res.holdingStats?.maxHours ?? 0,
-        minHours: res.holdingStats?.minHours ?? 0,
-      },
-      bonus: res.bonus ? {
-        riskRatio: res.bonus.riskRatio,
-        symbolPopularity: (res.bonus.symbolPopularity ?? []).map((s) => ({
-          symbol: s.symbol,
-          trades: Number(s.trades),
-          sharePercent: s.sharePercent,
-        })),
-        symbolRisks: (res.bonus.symbolRisks ?? []).map((r) => ({
-          symbol: r.symbol,
-          riskRatio: r.riskRatio,
-        })),
-        symbolHoldingSplit: (res.bonus.symbolHoldingSplit ?? []).map((h) => ({
-          symbol: h.symbol,
-          bullsSeconds: h.bullsSeconds,
-          shortTermSeconds: h.shortTermSeconds,
-        })),
-      } : undefined,
-    };
+    return mapMonthlyDetail(res);
   },
 };

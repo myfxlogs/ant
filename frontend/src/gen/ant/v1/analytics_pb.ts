@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file analytics.proto.
  */
 export const file_analytics: GenFile = /*@__PURE__*/
-  fileDesc("Cg9hbmFseXRpY3MucHJvdG8SBmFudC52MSJoChpHZXRBY2NvdW50QW5hbHl0aWNzUmVxdWVzdBISCgphY2NvdW50X2lkGAEgASgJEjYKE2VxdWl0eV9jdXJ2ZV9wZXJpb2QYAiABKA4yGS5hbnQudjEuRXF1aXR5Q3VydmVQZXJpb2QikgIKGEFjY291bnRBbmFseXRpY3NSZXNwb25zZRInCgt0cmFkZV9zdGF0cxgBIAEoCzISLmFudC52MS5UcmFkZVN0YXRzEikKDHJpc2tfbWV0cmljcxgCIAEoCzITLmFudC52MS5SaXNrTWV0cmljcxIoCgxzeW1ib2xfc3RhdHMYAyADKAsyEi5hbnQudjEuU3ltYm9sU3RhdBIpCgxlcXVpdHlfY3VydmUYBCADKAsyEy5hbnQudjEuRXF1aXR5UG9pbnQSIwoJZGFpbHlfcG5sGAUgAygLMhAuYW50LnYxLkRhaWx5UG5MEigKDGhvdXJseV9zdGF0cxgGIAMoCzISLmFudC52MS5Ib3VybHlTdGF0ItoCCgpUcmFkZVN0YXRzEhQKDHRvdGFsX3RyYWRlcxgBIAEoAxIQCgh3aW5fcmF0ZRgCIAEoARIVCg1wcm9maXRfZmFjdG9yGAMgASgBEhYKDmF2ZXJhZ2VfcHJvZml0GAQgASgBEhQKDGF2ZXJhZ2VfbG9zcxgFIAEoARITCgtsYXJnZXN0X3dpbhgGIAEoARIUCgxsYXJnZXN0X2xvc3MYByABKAESHAoUbWF4X2NvbnNlY3V0aXZlX3dpbnMYCCABKAMSHgoWbWF4X2NvbnNlY3V0aXZlX2xvc3NlcxgJIAEoAxIcChRhdmVyYWdlX2hvbGRpbmdfdGltZRgKIAEoCRISCgpuZXRfcHJvZml0GAsgASgBEhUKDXRvdGFsX2RlcG9zaXQYDCABKAESGAoQdG90YWxfd2l0aGRyYXdhbBgNIAEoARITCgtuZXRfZGVwb3NpdBgOIAEoASKgAQoLUmlza01ldHJpY3MSHAoUbWF4X2RyYXdkb3duX3BlcmNlbnQYASABKAESFAoMc2hhcnBlX3JhdGlvGAIgASgBEhUKDXNvcnRpbm9fcmF0aW8YAyABKAESFAoMY2FsbWFyX3JhdGlvGAQgASgBEhIKCnZvbGF0aWxpdHkYBSABKAESHAoUYXZlcmFnZV9kYWlseV9yZXR1cm4YBiABKAEiSQoKU3ltYm9sU3RhdBIOCgZzeW1ib2wYASABKAkSDgoGcHJvZml0GAIgASgBEhsKE3RyYWRlX3NoYXJlX3BlcmNlbnQYAyABKAEiTAoLRXF1aXR5UG9pbnQSDAoEZGF0ZRgBIAEoCRIOCgZlcXVpdHkYAiABKAESDwoHYmFsYW5jZRgDIAEoARIOCgZwcm9maXQYBCABKAEiggIKCERhaWx5UG5MEgsKA2RheRgBIAEoCRIMCgRkYXRlGAIgASgJEgsKA3BubBgDIAEoARIOCgZ0cmFkZXMYBCABKAMSDAoEbG90cxgFIAEoARIPCgdiYWxhbmNlGAYgASgBEhUKDXByb2ZpdF9mYWN0b3IYByABKAESIAoYbWF4X2Zsb2F0aW5nX2xvc3NfYW1vdW50GAggASgBEh8KF21heF9mbG9hdGluZ19sb3NzX3JhdGlvGAkgASgBEiIKGm1heF9mbG9hdGluZ19wcm9maXRfYW1vdW50GAogASgBEiEKGW1heF9mbG9hdGluZ19wcm9maXRfcmF0aW8YCyABKAEi2gEKCkhvdXJseVN0YXQSDAoEaG91chgBIAEoBRIMCgRsb3RzGAIgASgBEg8KB2JhbGFuY2UYAyABKAESFQoNcHJvZml0X2ZhY3RvchgEIAEoARIgChhtYXhfZmxvYXRpbmdfbG9zc19hbW91bnQYBSABKAESHwoXbWF4X2Zsb2F0aW5nX2xvc3NfcmF0aW8YBiABKAESIgoabWF4X2Zsb2F0aW5nX3Byb2ZpdF9hbW91bnQYByABKAESIQoZbWF4X2Zsb2F0aW5nX3Byb2ZpdF9yYXRpbxgIIAEoASLeAQoLVHJhZGVSZWNvcmQSDgoGdGlja2V0GAEgASgJEg4KBnN5bWJvbBgCIAEoCRIMCgR0eXBlGAMgASgJEg4KBnZvbHVtZRgEIAEoARISCgpvcGVuX3ByaWNlGAUgASgBEhMKC2Nsb3NlX3ByaWNlGAYgASgBEg4KBnByb2ZpdBgHIAEoARIRCglvcGVuX3RpbWUYCCABKAkSEgoKY2xvc2VfdGltZRgJIAEoCRIMCgRzd2FwGAogASgBEhIKCmNvbW1pc3Npb24YCyABKAESDwoHY29tbWVudBgMIAEoCSJNChZHZXRSZWNlbnRUcmFkZXNSZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAkSDAoEcGFnZRgCIAEoBRIRCglwYWdlX3NpemUYAyABKAUiTQoXR2V0UmVjZW50VHJhZGVzUmVzcG9uc2USIwoGdHJhZGVzGAEgAygLMhMuYW50LnYxLlRyYWRlUmVjb3JkEg0KBXRvdGFsGAIgASgDIj8KDk1vbnRobHlQbkxJdGVtEg0KBW1vbnRoGAEgASgFEg4KBnByb2ZpdBgCIAEoARIOCgZ0cmFkZXMYAyABKAMiOAoUR2V0TW9udGhseVBuTFJlcXVlc3QSEgoKYWNjb3VudF9pZBgBIAEoCRIMCgR5ZWFyGAIgASgFIkQKFUdldE1vbnRobHlQbkxSZXNwb25zZRIrCgttb250aGx5X3BubBgBIAMoCzIWLmFudC52MS5Nb250aGx5UG5MSXRlbSIvChlHZXRNb250aGx5QW5hbHlzaXNSZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAkiOQoaR2V0TW9udGhseUFuYWx5c2lzUmVzcG9uc2USDQoFeWVhcnMYASADKAUSDAoEZGF0YRgCIAEoDCJKChdHZXRNb250aGx5RGV0YWlsUmVxdWVzdBISCgphY2NvdW50X2lkGAEgASgJEgwKBHllYXIYAiABKAUSDQoFbW9udGgYAyABKAUizgEKGEdldE1vbnRobHlEZXRhaWxSZXNwb25zZRItCgdtZXRyaWNzGAEgASgLMhwuYW50LnYxLk1vbnRobHlEZXRhaWxNZXRyaWNzEi0KC3N5bWJvbF9wbmxzGAIgAygLMhguYW50LnYxLlN5bWJvbE1vbnRobHlQbkwSLwoNaG9sZGluZ19zdGF0cxgDIAEoCzIYLmFudC52MS5Ib2xkaW5nVGltZVN0YXRzEiMKBWJvbnVzGAQgASgLMhQuYW50LnYxLk1vbnRobHlCb251cyKqAQoUTW9udGhseURldGFpbE1ldHJpY3MSEgoKbmV0X3JldHVybhgBIAEoARIWCg5yZXR1cm5fcGVyY2VudBgCIAEoARIUCgx0b3RhbF90cmFkZXMYAyABKAMSEAoId2luX3JhdGUYBCABKAESFQoNcHJvZml0X2ZhY3RvchgFIAEoARISCgpiZXN0X3RyYWRlGAYgASgBEhMKC3dvcnN0X3RyYWRlGAcgASgBIlgKEFN5bWJvbE1vbnRobHlQbkwSDgoGc3ltYm9sGAEgASgJEhIKCm5ldF9wcm9maXQYAiABKAESDgoGdHJhZGVzGAMgASgDEhAKCHdpbl9yYXRlGAQgASgBImUKEEhvbGRpbmdUaW1lU3RhdHMSFQoNYXZlcmFnZV9ob3VycxgBIAEoARIUCgxtZWRpYW5faG91cnMYAiABKAESEQoJbWF4X2hvdXJzGAMgASgBEhEKCW1pbl9ob3VycxgEIAEoASLDAQoMTW9udGhseUJvbnVzEhIKCnJpc2tfcmF0aW8YASABKAESNwoRc3ltYm9sX3BvcHVsYXJpdHkYAiADKAsyHC5hbnQudjEuU3ltYm9sUG9wdWxhcml0eUl0ZW0SLAoMc3ltYm9sX3Jpc2tzGAMgAygLMhYuYW50LnYxLlN5bWJvbFJpc2tJdGVtEjgKFHN5bWJvbF9ob2xkaW5nX3NwbGl0GAQgAygLMhouYW50LnYxLlN5bWJvbEhvbGRpbmdTcGxpdCJNChRTeW1ib2xQb3B1bGFyaXR5SXRlbRIOCgZzeW1ib2wYASABKAkSDgoGdHJhZGVzGAIgASgDEhUKDXNoYXJlX3BlcmNlbnQYAyABKAEiNAoOU3ltYm9sUmlza0l0ZW0SDgoGc3ltYm9sGAEgASgJEhIKCnJpc2tfcmF0aW8YAiABKAEiVwoSU3ltYm9sSG9sZGluZ1NwbGl0Eg4KBnN5bWJvbBgBIAEoCRIVCg1idWxsc19zZWNvbmRzGAIgASgBEhoKEnNob3J0X3Rlcm1fc2Vjb25kcxgDIAEoASIzCh1HZXRBdHRyaWJ1dGlvbkFuYWx5c2lzUmVxdWVzdBISCgphY2NvdW50X2lkGAEgASgJItUBCh5HZXRBdHRyaWJ1dGlvbkFuYWx5c2lzUmVzcG9uc2USJgoLc3ltYm9sX3BubHMYASADKAsyES5hbnQudjEuU3ltYm9sUG5MEi0KCWRpcmVjdGlvbhgCIAEoCzIaLmFudC52MS5EaXJlY3Rpb25CcmVha2Rvd24SNQoSdHJhZGVfZGlzdHJpYnV0aW9uGAMgASgLMhkuYW50LnYxLlRyYWRlRGlzdHJpYnV0aW9uEiUKCmhvdXJseV9wbmwYBCADKAsyES5hbnQudjEuSG91cmx5UG5MIosBCglTeW1ib2xQbkwSDgoGc3ltYm9sGAEgASgJEhIKCm5ldF9wcm9maXQYAiABKAESFAoMdG90YWxfdHJhZGVzGAMgASgDEhAKCHdpbl9yYXRlGAQgASgBEhUKDXByb2ZpdF9mYWN0b3IYBSABKAESGwoTdHJhZGVfc2hhcmVfcGVyY2VudBgGIAEoASKZAQoSRGlyZWN0aW9uQnJlYWtkb3duEhMKC2xvbmdfcHJvZml0GAEgASgBEhMKC2xvbmdfdHJhZGVzGAIgASgDEhUKDWxvbmdfd2luX3JhdGUYAyABKAESFAoMc2hvcnRfcHJvZml0GAQgASgBEhQKDHNob3J0X3RyYWRlcxgFIAEoAxIWCg5zaG9ydF93aW5fcmF0ZRgGIAEoASJuChFUcmFkZURpc3RyaWJ1dGlvbhIrCg5wcm9maXRfYnVja2V0cxgBIAMoCzITLmFudC52MS5UcmFkZUJ1Y2tldBIsCg9ob2xkaW5nX2J1Y2tldHMYAiADKAsyEy5hbnQudjEuVHJhZGVCdWNrZXQiUQoLVHJhZGVCdWNrZXQSDQoFbGFiZWwYASABKAkSEQoJbWluX3ZhbHVlGAIgASgBEhEKCW1heF92YWx1ZRgDIAEoARINCgVjb3VudBgEIAEoAyJLCglIb3VybHlQbkwSDAoEaG91chgBIAEoBRIOCgZwcm9maXQYAiABKAESDgoGdHJhZGVzGAMgASgDEhAKCHdpbl9yYXRlGAQgASgBIi4KGEdldFJvbGxpbmdNZXRyaWNzUmVxdWVzdBISCgphY2NvdW50X2lkGAEgASgJIoYCChlHZXRSb2xsaW5nTWV0cmljc1Jlc3BvbnNlEiwKDnJvbGxpbmdfc2hhcnBlGAEgAygLMhQuYW50LnYxLlJvbGxpbmdQb2ludBIuCg9kcmF3ZG93bl9ldmVudHMYAiADKAsyFS5hbnQudjEuRHJhd2Rvd25FdmVudBIxChFtb250aGx5X3dpbl9yYXRlcxgDIAMoCzIWLmFudC52MS5Nb250aGx5V2luUmF0ZRIpCgxlcXVpdHlfY3VydmUYBCADKAsyEy5hbnQudjEuRXF1aXR5UG9pbnQSLQoOZHJhd2Rvd25fY3VydmUYBSADKAsyFS5hbnQudjEuRHJhd2Rvd25Qb2ludCIrCgxSb2xsaW5nUG9pbnQSDAoEZGF0ZRgBIAEoCRINCgV2YWx1ZRgCIAEoASJ6Cg1EcmF3ZG93bkV2ZW50EhIKCnN0YXJ0X2RhdGUYASABKAkSEAoIZW5kX2RhdGUYAiABKAkSFQoNZHVyYXRpb25fZGF5cxgDIAEoBRIVCg1kZXB0aF9wZXJjZW50GAQgASgBEhUKDXJlY292ZXJ5X2RhdGUYBSABKAkiNwoNRHJhd2Rvd25Qb2ludBIMCgRkYXRlGAEgASgJEhgKEGRyYXdkb3duX3BlcmNlbnQYAiABKAEiRwoOTW9udGhseVdpblJhdGUSDQoFbW9udGgYASABKAkSEAoId2luX3JhdGUYAiABKAESFAoMdG90YWxfdHJhZGVzGAMgASgDIksKFUdlbmVyYXRlUmVwb3J0UmVxdWVzdBISCgphY2NvdW50X2lkGAEgASgJEg4KBnBlcmlvZBgCIAEoCRIOCgZsb2NhbGUYAyABKAkinQEKE0dlbmVyYXRlUmVwb3J0Q2h1bmsSDQoFcGhhc2UYASABKAkSDQoFZGVsdGEYAiABKAkSDwoHc2VjdGlvbhgDIAEoCRINCgVlcnJvchgEIAEoCRIMCgRkb25lGAUgASgIEg8KB3N1bW1hcnkYBiABKAkSEAoIZmluZGluZ3MYByABKAkSFwoPcmVjb21tZW5kYXRpb25zGAggASgJKq8BChFFcXVpdHlDdXJ2ZVBlcmlvZBIjCh9FUVVJVFlfQ1VSVkVfUEVSSU9EX1VOU1BFQ0lGSUVEEAASGwoXRVFVSVRZX0NVUlZFX1BFUklPRF9EQVkQARIcChhFUVVJVFlfQ1VSVkVfUEVSSU9EX1dFRUsQAhIdChlFUVVJVFlfQ1VSVkVfUEVSSU9EX01PTlRIEAMSGwoXRVFVSVRZX0NVUlZFX1BFUklPRF9BTEwQBDLYBQoQQW5hbHl0aWNzU2VydmljZRJbChNHZXRBY2NvdW50QW5hbHl0aWNzEiIuYW50LnYxLkdldEFjY291bnRBbmFseXRpY3NSZXF1ZXN0GiAuYW50LnYxLkFjY291bnRBbmFseXRpY3NSZXNwb25zZRJSCg9HZXRSZWNlbnRUcmFkZXMSHi5hbnQudjEuR2V0UmVjZW50VHJhZGVzUmVxdWVzdBofLmFudC52MS5HZXRSZWNlbnRUcmFkZXNSZXNwb25zZRJMCg1HZXRNb250aGx5UG5MEhwuYW50LnYxLkdldE1vbnRobHlQbkxSZXF1ZXN0Gh0uYW50LnYxLkdldE1vbnRobHlQbkxSZXNwb25zZRJbChJHZXRNb250aGx5QW5hbHlzaXMSIS5hbnQudjEuR2V0TW9udGhseUFuYWx5c2lzUmVxdWVzdBoiLmFudC52MS5HZXRNb250aGx5QW5hbHlzaXNSZXNwb25zZRJVChBHZXRNb250aGx5RGV0YWlsEh8uYW50LnYxLkdldE1vbnRobHlEZXRhaWxSZXF1ZXN0GiAuYW50LnYxLkdldE1vbnRobHlEZXRhaWxSZXNwb25zZRJnChZHZXRBdHRyaWJ1dGlvbkFuYWx5c2lzEiUuYW50LnYxLkdldEF0dHJpYnV0aW9uQW5hbHlzaXNSZXF1ZXN0GiYuYW50LnYxLkdldEF0dHJpYnV0aW9uQW5hbHlzaXNSZXNwb25zZRJYChFHZXRSb2xsaW5nTWV0cmljcxIgLmFudC52MS5HZXRSb2xsaW5nTWV0cmljc1JlcXVlc3QaIS5hbnQudjEuR2V0Um9sbGluZ01ldHJpY3NSZXNwb25zZRJOCg5HZW5lcmF0ZVJlcG9ydBIdLmFudC52MS5HZW5lcmF0ZVJlcG9ydFJlcXVlc3QaGy5hbnQudjEuR2VuZXJhdGVSZXBvcnRDaHVuazABQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
+  fileDesc("Cg9hbmFseXRpY3MucHJvdG8SBmFudC52MSJoChpHZXRBY2NvdW50QW5hbHl0aWNzUmVxdWVzdBISCgphY2NvdW50X2lkGAEgASgJEjYKE2VxdWl0eV9jdXJ2ZV9wZXJpb2QYAiABKA4yGS5hbnQudjEuRXF1aXR5Q3VydmVQZXJpb2QikgIKGEFjY291bnRBbmFseXRpY3NSZXNwb25zZRInCgt0cmFkZV9zdGF0cxgBIAEoCzISLmFudC52MS5UcmFkZVN0YXRzEikKDHJpc2tfbWV0cmljcxgCIAEoCzITLmFudC52MS5SaXNrTWV0cmljcxIoCgxzeW1ib2xfc3RhdHMYAyADKAsyEi5hbnQudjEuU3ltYm9sU3RhdBIpCgxlcXVpdHlfY3VydmUYBCADKAsyEy5hbnQudjEuRXF1aXR5UG9pbnQSIwoJZGFpbHlfcG5sGAUgAygLMhAuYW50LnYxLkRhaWx5UG5MEigKDGhvdXJseV9zdGF0cxgGIAMoCzISLmFudC52MS5Ib3VybHlTdGF0ItoCCgpUcmFkZVN0YXRzEhQKDHRvdGFsX3RyYWRlcxgBIAEoAxIQCgh3aW5fcmF0ZRgCIAEoARIVCg1wcm9maXRfZmFjdG9yGAMgASgBEhYKDmF2ZXJhZ2VfcHJvZml0GAQgASgJEhQKDGF2ZXJhZ2VfbG9zcxgFIAEoCRITCgtsYXJnZXN0X3dpbhgGIAEoCRIUCgxsYXJnZXN0X2xvc3MYByABKAkSHAoUbWF4X2NvbnNlY3V0aXZlX3dpbnMYCCABKAMSHgoWbWF4X2NvbnNlY3V0aXZlX2xvc3NlcxgJIAEoAxIcChRhdmVyYWdlX2hvbGRpbmdfdGltZRgKIAEoCRISCgpuZXRfcHJvZml0GAsgASgJEhUKDXRvdGFsX2RlcG9zaXQYDCABKAkSGAoQdG90YWxfd2l0aGRyYXdhbBgNIAEoCRITCgtuZXRfZGVwb3NpdBgOIAEoCSKgAQoLUmlza01ldHJpY3MSHAoUbWF4X2RyYXdkb3duX3BlcmNlbnQYASABKAESFAoMc2hhcnBlX3JhdGlvGAIgASgBEhUKDXNvcnRpbm9fcmF0aW8YAyABKAESFAoMY2FsbWFyX3JhdGlvGAQgASgBEhIKCnZvbGF0aWxpdHkYBSABKAESHAoUYXZlcmFnZV9kYWlseV9yZXR1cm4YBiABKAEiSQoKU3ltYm9sU3RhdBIOCgZzeW1ib2wYASABKAkSDgoGcHJvZml0GAIgASgJEhsKE3RyYWRlX3NoYXJlX3BlcmNlbnQYAyABKAEiTAoLRXF1aXR5UG9pbnQSDAoEZGF0ZRgBIAEoCRIOCgZlcXVpdHkYAiABKAkSDwoHYmFsYW5jZRgDIAEoCRIOCgZwcm9maXQYBCABKAkiggIKCERhaWx5UG5MEgsKA2RheRgBIAEoCRIMCgRkYXRlGAIgASgJEgsKA3BubBgDIAEoCRIOCgZ0cmFkZXMYBCABKAMSDAoEbG90cxgFIAEoCRIPCgdiYWxhbmNlGAYgASgJEhUKDXByb2ZpdF9mYWN0b3IYByABKAESIAoYbWF4X2Zsb2F0aW5nX2xvc3NfYW1vdW50GAggASgJEh8KF21heF9mbG9hdGluZ19sb3NzX3JhdGlvGAkgASgBEiIKGm1heF9mbG9hdGluZ19wcm9maXRfYW1vdW50GAogASgJEiEKGW1heF9mbG9hdGluZ19wcm9maXRfcmF0aW8YCyABKAEi2gEKCkhvdXJseVN0YXQSDAoEaG91chgBIAEoBRIMCgRsb3RzGAIgASgJEg8KB2JhbGFuY2UYAyABKAkSFQoNcHJvZml0X2ZhY3RvchgEIAEoARIgChhtYXhfZmxvYXRpbmdfbG9zc19hbW91bnQYBSABKAkSHwoXbWF4X2Zsb2F0aW5nX2xvc3NfcmF0aW8YBiABKAESIgoabWF4X2Zsb2F0aW5nX3Byb2ZpdF9hbW91bnQYByABKAkSIQoZbWF4X2Zsb2F0aW5nX3Byb2ZpdF9yYXRpbxgIIAEoASLeAQoLVHJhZGVSZWNvcmQSDgoGdGlja2V0GAEgASgJEg4KBnN5bWJvbBgCIAEoCRIMCgR0eXBlGAMgASgJEg4KBnZvbHVtZRgEIAEoCRISCgpvcGVuX3ByaWNlGAUgASgJEhMKC2Nsb3NlX3ByaWNlGAYgASgJEg4KBnByb2ZpdBgHIAEoCRIRCglvcGVuX3RpbWUYCCABKAkSEgoKY2xvc2VfdGltZRgJIAEoCRIMCgRzd2FwGAogASgJEhIKCmNvbW1pc3Npb24YCyABKAkSDwoHY29tbWVudBgMIAEoCSJNChZHZXRSZWNlbnRUcmFkZXNSZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAkSDAoEcGFnZRgCIAEoBRIRCglwYWdlX3NpemUYAyABKAUiTQoXR2V0UmVjZW50VHJhZGVzUmVzcG9uc2USIwoGdHJhZGVzGAEgAygLMhMuYW50LnYxLlRyYWRlUmVjb3JkEg0KBXRvdGFsGAIgASgDIj8KDk1vbnRobHlQbkxJdGVtEg0KBW1vbnRoGAEgASgFEg4KBnByb2ZpdBgCIAEoCRIOCgZ0cmFkZXMYAyABKAMiOAoUR2V0TW9udGhseVBuTFJlcXVlc3QSEgoKYWNjb3VudF9pZBgBIAEoCRIMCgR5ZWFyGAIgASgFIkQKFUdldE1vbnRobHlQbkxSZXNwb25zZRIrCgttb250aGx5X3BubBgBIAMoCzIWLmFudC52MS5Nb250aGx5UG5MSXRlbSIvChlHZXRNb250aGx5QW5hbHlzaXNSZXF1ZXN0EhIKCmFjY291bnRfaWQYASABKAkiOQoaR2V0TW9udGhseUFuYWx5c2lzUmVzcG9uc2USDQoFeWVhcnMYASADKAUSDAoEZGF0YRgCIAEoDCJKChdHZXRNb250aGx5RGV0YWlsUmVxdWVzdBISCgphY2NvdW50X2lkGAEgASgJEgwKBHllYXIYAiABKAUSDQoFbW9udGgYAyABKAUizgEKGEdldE1vbnRobHlEZXRhaWxSZXNwb25zZRItCgdtZXRyaWNzGAEgASgLMhwuYW50LnYxLk1vbnRobHlEZXRhaWxNZXRyaWNzEi0KC3N5bWJvbF9wbmxzGAIgAygLMhguYW50LnYxLlN5bWJvbE1vbnRobHlQbkwSLwoNaG9sZGluZ19zdGF0cxgDIAEoCzIYLmFudC52MS5Ib2xkaW5nVGltZVN0YXRzEiMKBWJvbnVzGAQgASgLMhQuYW50LnYxLk1vbnRobHlCb251cyKqAQoUTW9udGhseURldGFpbE1ldHJpY3MSEgoKbmV0X3JldHVybhgBIAEoCRIWCg5yZXR1cm5fcGVyY2VudBgCIAEoARIUCgx0b3RhbF90cmFkZXMYAyABKAMSEAoId2luX3JhdGUYBCABKAESFQoNcHJvZml0X2ZhY3RvchgFIAEoARISCgpiZXN0X3RyYWRlGAYgASgJEhMKC3dvcnN0X3RyYWRlGAcgASgJIlgKEFN5bWJvbE1vbnRobHlQbkwSDgoGc3ltYm9sGAEgASgJEhIKCm5ldF9wcm9maXQYAiABKAkSDgoGdHJhZGVzGAMgASgDEhAKCHdpbl9yYXRlGAQgASgBImUKEEhvbGRpbmdUaW1lU3RhdHMSFQoNYXZlcmFnZV9ob3VycxgBIAEoARIUCgxtZWRpYW5faG91cnMYAiABKAESEQoJbWF4X2hvdXJzGAMgASgBEhEKCW1pbl9ob3VycxgEIAEoASLDAQoMTW9udGhseUJvbnVzEhIKCnJpc2tfcmF0aW8YASABKAESNwoRc3ltYm9sX3BvcHVsYXJpdHkYAiADKAsyHC5hbnQudjEuU3ltYm9sUG9wdWxhcml0eUl0ZW0SLAoMc3ltYm9sX3Jpc2tzGAMgAygLMhYuYW50LnYxLlN5bWJvbFJpc2tJdGVtEjgKFHN5bWJvbF9ob2xkaW5nX3NwbGl0GAQgAygLMhouYW50LnYxLlN5bWJvbEhvbGRpbmdTcGxpdCJNChRTeW1ib2xQb3B1bGFyaXR5SXRlbRIOCgZzeW1ib2wYASABKAkSDgoGdHJhZGVzGAIgASgDEhUKDXNoYXJlX3BlcmNlbnQYAyABKAEiNAoOU3ltYm9sUmlza0l0ZW0SDgoGc3ltYm9sGAEgASgJEhIKCnJpc2tfcmF0aW8YAiABKAEiVwoSU3ltYm9sSG9sZGluZ1NwbGl0Eg4KBnN5bWJvbBgBIAEoCRIVCg1idWxsc19zZWNvbmRzGAIgASgBEhoKEnNob3J0X3Rlcm1fc2Vjb25kcxgDIAEoASIzCh1HZXRBdHRyaWJ1dGlvbkFuYWx5c2lzUmVxdWVzdBISCgphY2NvdW50X2lkGAEgASgJItUBCh5HZXRBdHRyaWJ1dGlvbkFuYWx5c2lzUmVzcG9uc2USJgoLc3ltYm9sX3BubHMYASADKAsyES5hbnQudjEuU3ltYm9sUG5MEi0KCWRpcmVjdGlvbhgCIAEoCzIaLmFudC52MS5EaXJlY3Rpb25CcmVha2Rvd24SNQoSdHJhZGVfZGlzdHJpYnV0aW9uGAMgASgLMhkuYW50LnYxLlRyYWRlRGlzdHJpYnV0aW9uEiUKCmhvdXJseV9wbmwYBCADKAsyES5hbnQudjEuSG91cmx5UG5MIosBCglTeW1ib2xQbkwSDgoGc3ltYm9sGAEgASgJEhIKCm5ldF9wcm9maXQYAiABKAkSFAoMdG90YWxfdHJhZGVzGAMgASgDEhAKCHdpbl9yYXRlGAQgASgBEhUKDXByb2ZpdF9mYWN0b3IYBSABKAESGwoTdHJhZGVfc2hhcmVfcGVyY2VudBgGIAEoASKZAQoSRGlyZWN0aW9uQnJlYWtkb3duEhMKC2xvbmdfcHJvZml0GAEgASgJEhMKC2xvbmdfdHJhZGVzGAIgASgDEhUKDWxvbmdfd2luX3JhdGUYAyABKAESFAoMc2hvcnRfcHJvZml0GAQgASgJEhQKDHNob3J0X3RyYWRlcxgFIAEoAxIWCg5zaG9ydF93aW5fcmF0ZRgGIAEoASJuChFUcmFkZURpc3RyaWJ1dGlvbhIrCg5wcm9maXRfYnVja2V0cxgBIAMoCzITLmFudC52MS5UcmFkZUJ1Y2tldBIsCg9ob2xkaW5nX2J1Y2tldHMYAiADKAsyEy5hbnQudjEuVHJhZGVCdWNrZXQiUQoLVHJhZGVCdWNrZXQSDQoFbGFiZWwYASABKAkSEQoJbWluX3ZhbHVlGAIgASgJEhEKCW1heF92YWx1ZRgDIAEoCRINCgVjb3VudBgEIAEoAyJLCglIb3VybHlQbkwSDAoEaG91chgBIAEoBRIOCgZwcm9maXQYAiABKAkSDgoGdHJhZGVzGAMgASgDEhAKCHdpbl9yYXRlGAQgASgBIi4KGEdldFJvbGxpbmdNZXRyaWNzUmVxdWVzdBISCgphY2NvdW50X2lkGAEgASgJIoYCChlHZXRSb2xsaW5nTWV0cmljc1Jlc3BvbnNlEiwKDnJvbGxpbmdfc2hhcnBlGAEgAygLMhQuYW50LnYxLlJvbGxpbmdQb2ludBIuCg9kcmF3ZG93bl9ldmVudHMYAiADKAsyFS5hbnQudjEuRHJhd2Rvd25FdmVudBIxChFtb250aGx5X3dpbl9yYXRlcxgDIAMoCzIWLmFudC52MS5Nb250aGx5V2luUmF0ZRIpCgxlcXVpdHlfY3VydmUYBCADKAsyEy5hbnQudjEuRXF1aXR5UG9pbnQSLQoOZHJhd2Rvd25fY3VydmUYBSADKAsyFS5hbnQudjEuRHJhd2Rvd25Qb2ludCIrCgxSb2xsaW5nUG9pbnQSDAoEZGF0ZRgBIAEoCRINCgV2YWx1ZRgCIAEoASJ6Cg1EcmF3ZG93bkV2ZW50EhIKCnN0YXJ0X2RhdGUYASABKAkSEAoIZW5kX2RhdGUYAiABKAkSFQoNZHVyYXRpb25fZGF5cxgDIAEoBRIVCg1kZXB0aF9wZXJjZW50GAQgASgBEhUKDXJlY292ZXJ5X2RhdGUYBSABKAkiNwoNRHJhd2Rvd25Qb2ludBIMCgRkYXRlGAEgASgJEhgKEGRyYXdkb3duX3BlcmNlbnQYAiABKAEiRwoOTW9udGhseVdpblJhdGUSDQoFbW9udGgYASABKAkSEAoId2luX3JhdGUYAiABKAESFAoMdG90YWxfdHJhZGVzGAMgASgDIksKFUdlbmVyYXRlUmVwb3J0UmVxdWVzdBISCgphY2NvdW50X2lkGAEgASgJEg4KBnBlcmlvZBgCIAEoCRIOCgZsb2NhbGUYAyABKAkinQEKE0dlbmVyYXRlUmVwb3J0Q2h1bmsSDQoFcGhhc2UYASABKAkSDQoFZGVsdGEYAiABKAkSDwoHc2VjdGlvbhgDIAEoCRINCgVlcnJvchgEIAEoCRIMCgRkb25lGAUgASgIEg8KB3N1bW1hcnkYBiABKAkSEAoIZmluZGluZ3MYByABKAkSFwoPcmVjb21tZW5kYXRpb25zGAggASgJKq8BChFFcXVpdHlDdXJ2ZVBlcmlvZBIjCh9FUVVJVFlfQ1VSVkVfUEVSSU9EX1VOU1BFQ0lGSUVEEAASGwoXRVFVSVRZX0NVUlZFX1BFUklPRF9EQVkQARIcChhFUVVJVFlfQ1VSVkVfUEVSSU9EX1dFRUsQAhIdChlFUVVJVFlfQ1VSVkVfUEVSSU9EX01PTlRIEAMSGwoXRVFVSVRZX0NVUlZFX1BFUklPRF9BTEwQBDLYBQoQQW5hbHl0aWNzU2VydmljZRJbChNHZXRBY2NvdW50QW5hbHl0aWNzEiIuYW50LnYxLkdldEFjY291bnRBbmFseXRpY3NSZXF1ZXN0GiAuYW50LnYxLkFjY291bnRBbmFseXRpY3NSZXNwb25zZRJSCg9HZXRSZWNlbnRUcmFkZXMSHi5hbnQudjEuR2V0UmVjZW50VHJhZGVzUmVxdWVzdBofLmFudC52MS5HZXRSZWNlbnRUcmFkZXNSZXNwb25zZRJMCg1HZXRNb250aGx5UG5MEhwuYW50LnYxLkdldE1vbnRobHlQbkxSZXF1ZXN0Gh0uYW50LnYxLkdldE1vbnRobHlQbkxSZXNwb25zZRJbChJHZXRNb250aGx5QW5hbHlzaXMSIS5hbnQudjEuR2V0TW9udGhseUFuYWx5c2lzUmVxdWVzdBoiLmFudC52MS5HZXRNb250aGx5QW5hbHlzaXNSZXNwb25zZRJVChBHZXRNb250aGx5RGV0YWlsEh8uYW50LnYxLkdldE1vbnRobHlEZXRhaWxSZXF1ZXN0GiAuYW50LnYxLkdldE1vbnRobHlEZXRhaWxSZXNwb25zZRJnChZHZXRBdHRyaWJ1dGlvbkFuYWx5c2lzEiUuYW50LnYxLkdldEF0dHJpYnV0aW9uQW5hbHlzaXNSZXF1ZXN0GiYuYW50LnYxLkdldEF0dHJpYnV0aW9uQW5hbHlzaXNSZXNwb25zZRJYChFHZXRSb2xsaW5nTWV0cmljcxIgLmFudC52MS5HZXRSb2xsaW5nTWV0cmljc1JlcXVlc3QaIS5hbnQudjEuR2V0Um9sbGluZ01ldHJpY3NSZXNwb25zZRJOCg5HZW5lcmF0ZVJlcG9ydBIdLmFudC52MS5HZW5lcmF0ZVJlcG9ydFJlcXVlc3QaGy5hbnQudjEuR2VuZXJhdGVSZXBvcnRDaHVuazABQiJaIGFudHRyYWRlci9nZW4vcHJvdG8vYW50L3YxO2FudHYxYgZwcm90bzM");
 
 /**
  * @generated from message ant.v1.GetAccountAnalyticsRequest
@@ -86,34 +86,46 @@ export type TradeStats = Message<"ant.v1.TradeStats"> & {
   totalTrades: bigint;
 
   /**
+   * percentage (ratio)
+   *
    * @generated from field: double win_rate = 2;
    */
   winRate: number;
 
   /**
+   * ratio
+   *
    * @generated from field: double profit_factor = 3;
    */
   profitFactor: number;
 
   /**
-   * @generated from field: double average_profit = 4;
+   * monetary
+   *
+   * @generated from field: string average_profit = 4;
    */
-  averageProfit: number;
+  averageProfit: string;
 
   /**
-   * @generated from field: double average_loss = 5;
+   * monetary
+   *
+   * @generated from field: string average_loss = 5;
    */
-  averageLoss: number;
+  averageLoss: string;
 
   /**
-   * @generated from field: double largest_win = 6;
+   * monetary
+   *
+   * @generated from field: string largest_win = 6;
    */
-  largestWin: number;
+  largestWin: string;
 
   /**
-   * @generated from field: double largest_loss = 7;
+   * monetary
+   *
+   * @generated from field: string largest_loss = 7;
    */
-  largestLoss: number;
+  largestLoss: string;
 
   /**
    * @generated from field: int64 max_consecutive_wins = 8;
@@ -131,24 +143,32 @@ export type TradeStats = Message<"ant.v1.TradeStats"> & {
   averageHoldingTime: string;
 
   /**
-   * @generated from field: double net_profit = 11;
+   * monetary
+   *
+   * @generated from field: string net_profit = 11;
    */
-  netProfit: number;
+  netProfit: string;
 
   /**
-   * @generated from field: double total_deposit = 12;
+   * monetary
+   *
+   * @generated from field: string total_deposit = 12;
    */
-  totalDeposit: number;
+  totalDeposit: string;
 
   /**
-   * @generated from field: double total_withdrawal = 13;
+   * monetary
+   *
+   * @generated from field: string total_withdrawal = 13;
    */
-  totalWithdrawal: number;
+  totalWithdrawal: string;
 
   /**
-   * @generated from field: double net_deposit = 14;
+   * monetary
+   *
+   * @generated from field: string net_deposit = 14;
    */
-  netDeposit: number;
+  netDeposit: string;
 };
 
 /**
@@ -163,31 +183,43 @@ export const TradeStatsSchema: GenMessage<TradeStats> = /*@__PURE__*/
  */
 export type RiskMetrics = Message<"ant.v1.RiskMetrics"> & {
   /**
+   * percentage (ratio)
+   *
    * @generated from field: double max_drawdown_percent = 1;
    */
   maxDrawdownPercent: number;
 
   /**
+   * ratio
+   *
    * @generated from field: double sharpe_ratio = 2;
    */
   sharpeRatio: number;
 
   /**
+   * ratio
+   *
    * @generated from field: double sortino_ratio = 3;
    */
   sortinoRatio: number;
 
   /**
+   * ratio
+   *
    * @generated from field: double calmar_ratio = 4;
    */
   calmarRatio: number;
 
   /**
+   * ratio (std dev)
+   *
    * @generated from field: double volatility = 5;
    */
   volatility: number;
 
   /**
+   * ratio
+   *
    * @generated from field: double average_daily_return = 6;
    */
   averageDailyReturn: number;
@@ -210,11 +242,15 @@ export type SymbolStat = Message<"ant.v1.SymbolStat"> & {
   symbol: string;
 
   /**
-   * @generated from field: double profit = 2;
+   * monetary
+   *
+   * @generated from field: string profit = 2;
    */
-  profit: number;
+  profit: string;
 
   /**
+   * percentage (ratio)
+   *
    * @generated from field: double trade_share_percent = 3;
    */
   tradeSharePercent: number;
@@ -237,19 +273,25 @@ export type EquityPoint = Message<"ant.v1.EquityPoint"> & {
   date: string;
 
   /**
-   * @generated from field: double equity = 2;
+   * monetary
+   *
+   * @generated from field: string equity = 2;
    */
-  equity: number;
+  equity: string;
 
   /**
-   * @generated from field: double balance = 3;
+   * monetary
+   *
+   * @generated from field: string balance = 3;
    */
-  balance: number;
+  balance: string;
 
   /**
-   * @generated from field: double profit = 4;
+   * monetary
+   *
+   * @generated from field: string profit = 4;
    */
-  profit: number;
+  profit: string;
 };
 
 /**
@@ -274,9 +316,11 @@ export type DailyPnL = Message<"ant.v1.DailyPnL"> & {
   date: string;
 
   /**
-   * @generated from field: double pnl = 3;
+   * monetary
+   *
+   * @generated from field: string pnl = 3;
    */
-  pnl: number;
+  pnl: string;
 
   /**
    * @generated from field: int64 trades = 4;
@@ -284,36 +328,50 @@ export type DailyPnL = Message<"ant.v1.DailyPnL"> & {
   trades: bigint;
 
   /**
-   * @generated from field: double lots = 5;
+   * monetary (volume)
+   *
+   * @generated from field: string lots = 5;
    */
-  lots: number;
+  lots: string;
 
   /**
-   * @generated from field: double balance = 6;
+   * monetary
+   *
+   * @generated from field: string balance = 6;
    */
-  balance: number;
+  balance: string;
 
   /**
+   * ratio
+   *
    * @generated from field: double profit_factor = 7;
    */
   profitFactor: number;
 
   /**
-   * @generated from field: double max_floating_loss_amount = 8;
+   * monetary
+   *
+   * @generated from field: string max_floating_loss_amount = 8;
    */
-  maxFloatingLossAmount: number;
+  maxFloatingLossAmount: string;
 
   /**
+   * percentage (ratio)
+   *
    * @generated from field: double max_floating_loss_ratio = 9;
    */
   maxFloatingLossRatio: number;
 
   /**
-   * @generated from field: double max_floating_profit_amount = 10;
+   * monetary
+   *
+   * @generated from field: string max_floating_profit_amount = 10;
    */
-  maxFloatingProfitAmount: number;
+  maxFloatingProfitAmount: string;
 
   /**
+   * percentage (ratio)
+   *
    * @generated from field: double max_floating_profit_ratio = 11;
    */
   maxFloatingProfitRatio: number;
@@ -336,36 +394,50 @@ export type HourlyStat = Message<"ant.v1.HourlyStat"> & {
   hour: number;
 
   /**
-   * @generated from field: double lots = 2;
+   * monetary (volume)
+   *
+   * @generated from field: string lots = 2;
    */
-  lots: number;
+  lots: string;
 
   /**
-   * @generated from field: double balance = 3;
+   * monetary
+   *
+   * @generated from field: string balance = 3;
    */
-  balance: number;
+  balance: string;
 
   /**
+   * ratio
+   *
    * @generated from field: double profit_factor = 4;
    */
   profitFactor: number;
 
   /**
-   * @generated from field: double max_floating_loss_amount = 5;
+   * monetary
+   *
+   * @generated from field: string max_floating_loss_amount = 5;
    */
-  maxFloatingLossAmount: number;
+  maxFloatingLossAmount: string;
 
   /**
+   * percentage (ratio)
+   *
    * @generated from field: double max_floating_loss_ratio = 6;
    */
   maxFloatingLossRatio: number;
 
   /**
-   * @generated from field: double max_floating_profit_amount = 7;
+   * monetary
+   *
+   * @generated from field: string max_floating_profit_amount = 7;
    */
-  maxFloatingProfitAmount: number;
+  maxFloatingProfitAmount: string;
 
   /**
+   * percentage (ratio)
+   *
    * @generated from field: double max_floating_profit_ratio = 8;
    */
   maxFloatingProfitRatio: number;
@@ -398,24 +470,32 @@ export type TradeRecord = Message<"ant.v1.TradeRecord"> & {
   type: string;
 
   /**
-   * @generated from field: double volume = 4;
+   * monetary (volume)
+   *
+   * @generated from field: string volume = 4;
    */
-  volume: number;
+  volume: string;
 
   /**
-   * @generated from field: double open_price = 5;
+   * monetary (price)
+   *
+   * @generated from field: string open_price = 5;
    */
-  openPrice: number;
+  openPrice: string;
 
   /**
-   * @generated from field: double close_price = 6;
+   * monetary (price)
+   *
+   * @generated from field: string close_price = 6;
    */
-  closePrice: number;
+  closePrice: string;
 
   /**
-   * @generated from field: double profit = 7;
+   * monetary
+   *
+   * @generated from field: string profit = 7;
    */
-  profit: number;
+  profit: string;
 
   /**
    * @generated from field: string open_time = 8;
@@ -428,14 +508,18 @@ export type TradeRecord = Message<"ant.v1.TradeRecord"> & {
   closeTime: string;
 
   /**
-   * @generated from field: double swap = 10;
+   * monetary
+   *
+   * @generated from field: string swap = 10;
    */
-  swap: number;
+  swap: string;
 
   /**
-   * @generated from field: double commission = 11;
+   * monetary
+   *
+   * @generated from field: string commission = 11;
    */
-  commission: number;
+  commission: string;
 
   /**
    * @generated from field: string comment = 12;
@@ -509,9 +593,11 @@ export type MonthlyPnLItem = Message<"ant.v1.MonthlyPnLItem"> & {
   month: number;
 
   /**
-   * @generated from field: double profit = 2;
+   * monetary
+   *
+   * @generated from field: string profit = 2;
    */
-  profit: number;
+  profit: string;
 
   /**
    * @generated from field: int64 trades = 3;
@@ -670,11 +756,15 @@ export const GetMonthlyDetailResponseSchema: GenMessage<GetMonthlyDetailResponse
  */
 export type MonthlyDetailMetrics = Message<"ant.v1.MonthlyDetailMetrics"> & {
   /**
-   * @generated from field: double net_return = 1;
+   * monetary
+   *
+   * @generated from field: string net_return = 1;
    */
-  netReturn: number;
+  netReturn: string;
 
   /**
+   * percentage (ratio)
+   *
    * @generated from field: double return_percent = 2;
    */
   returnPercent: number;
@@ -685,24 +775,32 @@ export type MonthlyDetailMetrics = Message<"ant.v1.MonthlyDetailMetrics"> & {
   totalTrades: bigint;
 
   /**
+   * percentage (ratio)
+   *
    * @generated from field: double win_rate = 4;
    */
   winRate: number;
 
   /**
+   * ratio
+   *
    * @generated from field: double profit_factor = 5;
    */
   profitFactor: number;
 
   /**
-   * @generated from field: double best_trade = 6;
+   * monetary
+   *
+   * @generated from field: string best_trade = 6;
    */
-  bestTrade: number;
+  bestTrade: string;
 
   /**
-   * @generated from field: double worst_trade = 7;
+   * monetary
+   *
+   * @generated from field: string worst_trade = 7;
    */
-  worstTrade: number;
+  worstTrade: string;
 };
 
 /**
@@ -722,9 +820,11 @@ export type SymbolMonthlyPnL = Message<"ant.v1.SymbolMonthlyPnL"> & {
   symbol: string;
 
   /**
-   * @generated from field: double net_profit = 2;
+   * monetary
+   *
+   * @generated from field: string net_profit = 2;
    */
-  netProfit: number;
+  netProfit: string;
 
   /**
    * @generated from field: int64 trades = 3;
@@ -732,6 +832,8 @@ export type SymbolMonthlyPnL = Message<"ant.v1.SymbolMonthlyPnL"> & {
   trades: bigint;
 
   /**
+   * percentage (ratio)
+   *
    * @generated from field: double win_rate = 4;
    */
   winRate: number;
@@ -749,21 +851,29 @@ export const SymbolMonthlyPnLSchema: GenMessage<SymbolMonthlyPnL> = /*@__PURE__*
  */
 export type HoldingTimeStats = Message<"ant.v1.HoldingTimeStats"> & {
   /**
+   * time (hours)
+   *
    * @generated from field: double average_hours = 1;
    */
   averageHours: number;
 
   /**
+   * time (hours)
+   *
    * @generated from field: double median_hours = 2;
    */
   medianHours: number;
 
   /**
+   * time (hours)
+   *
    * @generated from field: double max_hours = 3;
    */
   maxHours: number;
 
   /**
+   * time (hours)
+   *
    * @generated from field: double min_hours = 4;
    */
   minHours: number;
@@ -781,6 +891,8 @@ export const HoldingTimeStatsSchema: GenMessage<HoldingTimeStats> = /*@__PURE__*
  */
 export type MonthlyBonus = Message<"ant.v1.MonthlyBonus"> & {
   /**
+   * ratio
+   *
    * @generated from field: double risk_ratio = 1;
    */
   riskRatio: number;
@@ -823,6 +935,8 @@ export type SymbolPopularityItem = Message<"ant.v1.SymbolPopularityItem"> & {
   trades: bigint;
 
   /**
+   * percentage (ratio)
+   *
    * @generated from field: double share_percent = 3;
    */
   sharePercent: number;
@@ -845,6 +959,8 @@ export type SymbolRiskItem = Message<"ant.v1.SymbolRiskItem"> & {
   symbol: string;
 
   /**
+   * ratio
+   *
    * @generated from field: double risk_ratio = 2;
    */
   riskRatio: number;
@@ -867,11 +983,15 @@ export type SymbolHoldingSplit = Message<"ant.v1.SymbolHoldingSplit"> & {
   symbol: string;
 
   /**
+   * time (seconds)
+   *
    * @generated from field: double bulls_seconds = 2;
    */
   bullsSeconds: number;
 
   /**
+   * time (seconds)
+   *
    * @generated from field: double short_term_seconds = 3;
    */
   shortTermSeconds: number;
@@ -943,9 +1063,11 @@ export type SymbolPnL = Message<"ant.v1.SymbolPnL"> & {
   symbol: string;
 
   /**
-   * @generated from field: double net_profit = 2;
+   * monetary
+   *
+   * @generated from field: string net_profit = 2;
    */
-  netProfit: number;
+  netProfit: string;
 
   /**
    * @generated from field: int64 total_trades = 3;
@@ -953,16 +1075,22 @@ export type SymbolPnL = Message<"ant.v1.SymbolPnL"> & {
   totalTrades: bigint;
 
   /**
+   * percentage (ratio)
+   *
    * @generated from field: double win_rate = 4;
    */
   winRate: number;
 
   /**
+   * ratio
+   *
    * @generated from field: double profit_factor = 5;
    */
   profitFactor: number;
 
   /**
+   * percentage (ratio)
+   *
    * @generated from field: double trade_share_percent = 6;
    */
   tradeSharePercent: number;
@@ -980,9 +1108,11 @@ export const SymbolPnLSchema: GenMessage<SymbolPnL> = /*@__PURE__*/
  */
 export type DirectionBreakdown = Message<"ant.v1.DirectionBreakdown"> & {
   /**
-   * @generated from field: double long_profit = 1;
+   * monetary
+   *
+   * @generated from field: string long_profit = 1;
    */
-  longProfit: number;
+  longProfit: string;
 
   /**
    * @generated from field: int64 long_trades = 2;
@@ -990,14 +1120,18 @@ export type DirectionBreakdown = Message<"ant.v1.DirectionBreakdown"> & {
   longTrades: bigint;
 
   /**
+   * percentage (ratio)
+   *
    * @generated from field: double long_win_rate = 3;
    */
   longWinRate: number;
 
   /**
-   * @generated from field: double short_profit = 4;
+   * monetary
+   *
+   * @generated from field: string short_profit = 4;
    */
-  shortProfit: number;
+  shortProfit: string;
 
   /**
    * @generated from field: int64 short_trades = 5;
@@ -1005,6 +1139,8 @@ export type DirectionBreakdown = Message<"ant.v1.DirectionBreakdown"> & {
   shortTrades: bigint;
 
   /**
+   * percentage (ratio)
+   *
    * @generated from field: double short_win_rate = 6;
    */
   shortWinRate: number;
@@ -1049,14 +1185,18 @@ export type TradeBucket = Message<"ant.v1.TradeBucket"> & {
   label: string;
 
   /**
-   * @generated from field: double min_value = 2;
+   * monetary
+   *
+   * @generated from field: string min_value = 2;
    */
-  minValue: number;
+  minValue: string;
 
   /**
-   * @generated from field: double max_value = 3;
+   * monetary
+   *
+   * @generated from field: string max_value = 3;
    */
-  maxValue: number;
+  maxValue: string;
 
   /**
    * @generated from field: int64 count = 4;
@@ -1081,9 +1221,11 @@ export type HourlyPnL = Message<"ant.v1.HourlyPnL"> & {
   hour: number;
 
   /**
-   * @generated from field: double profit = 2;
+   * monetary
+   *
+   * @generated from field: string profit = 2;
    */
-  profit: number;
+  profit: string;
 
   /**
    * @generated from field: int64 trades = 3;
@@ -1091,6 +1233,8 @@ export type HourlyPnL = Message<"ant.v1.HourlyPnL"> & {
   trades: bigint;
 
   /**
+   * percentage (ratio)
+   *
    * @generated from field: double win_rate = 4;
    */
   winRate: number;
@@ -1167,6 +1311,8 @@ export type RollingPoint = Message<"ant.v1.RollingPoint"> & {
   date: string;
 
   /**
+   * ratio (Sharpe value)
+   *
    * @generated from field: double value = 2;
    */
   value: number;
@@ -1199,6 +1345,8 @@ export type DrawdownEvent = Message<"ant.v1.DrawdownEvent"> & {
   durationDays: number;
 
   /**
+   * percentage (ratio)
+   *
    * @generated from field: double depth_percent = 4;
    */
   depthPercent: number;
@@ -1226,6 +1374,8 @@ export type DrawdownPoint = Message<"ant.v1.DrawdownPoint"> & {
   date: string;
 
   /**
+   * percentage (ratio)
+   *
    * @generated from field: double drawdown_percent = 2;
    */
   drawdownPercent: number;
@@ -1248,6 +1398,8 @@ export type MonthlyWinRate = Message<"ant.v1.MonthlyWinRate"> & {
   month: string;
 
   /**
+   * percentage (ratio)
+   *
    * @generated from field: double win_rate = 2;
    */
   winRate: number;

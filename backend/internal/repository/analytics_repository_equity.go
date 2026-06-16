@@ -4,7 +4,6 @@ import (
 	"github.com/shopspring/decimal"
 	"context"
 	"fmt"
-	"math"
 	"time"
 
 	"github.com/google/uuid"
@@ -40,25 +39,25 @@ func (r *AnalyticsRepository) GetEquityCurve(ctx context.Context, accountID uuid
 		for _, dd := range dailyDataList {
 			ddDate := time.Date(dd.Date.Year(), dd.Date.Month(), dd.Date.Day(), 0, 0, 0, 0, start.Location())
 			if ddDate.After(firstSnapDate) { break }
-			balAtSnap += dd.Profit + dd.DepositWithdrawal
+			balAtSnap = balAtSnap.Add(dd.Profit).Add(dd.DepositWithdrawal)
 		}
-		unrealizedPnL = firstSnap.Equity - balAtSnap
+		unrealizedPnL = firstSnap.Equity.Sub(balAtSnap)
 	}
 
 	return r.buildEquityCurveResult(ctx, accountID, initialBalance, unrealizedPnL, dailyDataList, snapshots, start, end)
 }
 
 // getInitialUnrealizedPnL fetches the equity snapshot before the period start.
-func (r *AnalyticsRepository) getInitialUnrealizedPnL(ctx context.Context, accountID uuid.UUID, start time.Time, initialBalance float64) (float64, bool, error) {
-	var unrealizedPnL float64
+func (r *AnalyticsRepository) getInitialUnrealizedPnL(ctx context.Context, accountID uuid.UUID, start time.Time, initialBalance decimal.Decimal) (decimal.Decimal, bool, error) {
+	var unrealizedPnL decimal.Decimal
 	hasInitSnap := false
-	var initSnapEquity float64
+	var initSnapEquity decimal.Decimal
 	err := r.db.QueryRow(ctx,
 		`SELECT equity FROM account_balance_history WHERE account_id = $1 AND recorded_at <= $2 ORDER BY recorded_at DESC LIMIT 1`,
 		accountID, start,
 	).Scan(&initSnapEquity)
 	if err == nil {
-		unrealizedPnL = initSnapEquity - initialBalance
+		unrealizedPnL = initSnapEquity.Sub(initialBalance)
 		hasInitSnap = true
 	}
 	return unrealizedPnL, hasInitSnap, nil
@@ -66,8 +65,8 @@ func (r *AnalyticsRepository) getInitialUnrealizedPnL(ctx context.Context, accou
 
 type dailyData struct {
 	Date              time.Time
-	Profit            float64
-	DepositWithdrawal float64
+	Profit            decimal.Decimal
+	DepositWithdrawal decimal.Decimal
 }
 
 func (r *AnalyticsRepository) getDailyTradeData(ctx context.Context, accountID uuid.UUID, start, end time.Time) ([]dailyData, error) {
@@ -90,7 +89,7 @@ func (r *AnalyticsRepository) getDailyTradeData(ctx context.Context, accountID u
 
 type dailySnapshot struct {
 	Date   time.Time
-	Equity float64
+	Equity decimal.Decimal
 }
 
 func (r *AnalyticsRepository) getDailySnapshots(ctx context.Context, accountID uuid.UUID, start, end time.Time) ([]dailySnapshot, error) {
@@ -113,7 +112,7 @@ func (r *AnalyticsRepository) getDailySnapshots(ctx context.Context, accountID u
 func (r *AnalyticsRepository) buildEquityCurveResult(
 	ctx context.Context,
 	accountID uuid.UUID,
-	initialBalance, unrealizedPnL float64,
+	initialBalance, unrealizedPnL decimal.Decimal,
 	dailyDataList []dailyData,
 	snapshots []dailySnapshot,
 	start, end time.Time,
@@ -125,7 +124,7 @@ func (r *AnalyticsRepository) buildEquityCurveResult(
 	dataIdx, snapIdx := 0, 0
 
 	for !dayCursor.After(endDay) {
-		profit, deposit := 0.0, 0.0
+		profit, deposit := decimal.Zero, decimal.Zero
 		if dataIdx < len(dailyDataList) {
 			ddDate := time.Date(dailyDataList[dataIdx].Date.Year(), dailyDataList[dataIdx].Date.Month(), dailyDataList[dataIdx].Date.Day(), 0, 0, 0, 0, start.Location())
 			if ddDate.Equal(dayCursor) {
@@ -133,33 +132,34 @@ func (r *AnalyticsRepository) buildEquityCurveResult(
 				dataIdx++
 			}
 		}
-		runningBalance += deposit + profit
+		runningBalance = runningBalance.Add(deposit).Add(profit)
 		if snapIdx < len(snapshots) {
 			snapDate := time.Date(snapshots[snapIdx].Date.Year(), snapshots[snapIdx].Date.Month(), snapshots[snapIdx].Date.Day(), 0, 0, 0, 0, start.Location())
 			if snapDate.Equal(dayCursor) {
-				unrealizedPnL = snapshots[snapIdx].Equity - runningBalance
+				unrealizedPnL = snapshots[snapIdx].Equity.Sub(runningBalance)
 				snapIdx++
 			}
 		}
+		equity := runningBalance.Add(unrealizedPnL)
 		result = append(result, &model.EquityPoint{
-			Date: dayCursor.Format("2006-01-02"),
-			Equity: decimal.NewFromFloat(math.Round((runningBalance+unrealizedPnL)*100)/100),
-			Balance: decimal.NewFromFloat(math.Round(runningBalance*100)/100),
-			Profit: decimal.NewFromFloat(math.Round(profit*100)/100),
+			Date:    dayCursor.Format("2006-01-02"),
+			Equity:  equity,
+			Balance: runningBalance,
+			Profit:  profit,
 		})
 		dayCursor = dayCursor.AddDate(0, 0, 1)
 	}
 	if len(result) == 0 {
 		eq := initialBalance
-		var snapEq float64
+		var snapEq decimal.Decimal
 		if err := r.db.QueryRow(ctx, `SELECT equity FROM account_balance_history WHERE account_id=$1 ORDER BY recorded_at DESC LIMIT 1`, accountID).Scan(&snapEq); err == nil {
 			eq = snapEq
 		}
 		result = append(result, &model.EquityPoint{
-			Date: time.Now().Format("2006-01-02"),
-			Equity: decimal.NewFromFloat(math.Round(eq*100)/100),
-			Balance: decimal.NewFromFloat(math.Round(initialBalance*100)/100),
-			Profit: decimal.Zero,
+			Date:    time.Now().Format("2006-01-02"),
+			Equity:  eq,
+			Balance: initialBalance,
+			Profit:  decimal.Zero,
 		})
 	}
 	return result, nil
@@ -167,9 +167,9 @@ func (r *AnalyticsRepository) buildEquityCurveResult(
 
 // CurrentAccountMetrics holds the live balance/equity/profit from mt_accounts.
 type CurrentAccountMetrics struct {
-	Balance float64
-	Equity  float64
-	Profit  float64
+	Balance decimal.Decimal
+	Equity  decimal.Decimal
+	Profit  decimal.Decimal
 }
 
 // GetCurrentAccountMetrics returns the current live balance, equity, and profit

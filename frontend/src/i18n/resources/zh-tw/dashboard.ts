@@ -12,6 +12,7 @@ const dashboard = {
     streamOffline: '即時離線',
     noAccounts: '暫無帳戶，點擊右上角綁定',
     stats: {
+      totalBalance: '總餘額',
       totalEquity: '總淨值',
       connected: '已連線',
       accountCount: '帳戶數',
@@ -34,6 +35,7 @@ const dashboard = {
       market: '行情',
       accounts: '帳戶',
       analytics: '分析',
+      library: '策略庫',
       templates: '策略模板',
       logs: '日誌',
       bindAccount: '綁帳戶',

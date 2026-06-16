@@ -4,24 +4,25 @@ import (
 	"context"
 	"time"
 
+	"github.com/shopspring/decimal"
 	"github.com/google/uuid"
 
 	"anttrader/internal/model"
 )
 
 type TradeRecord struct {
-	ID         uuid.UUID `db:"id"`
-	AccountID  uuid.UUID `db:"account_id"`
-	Symbol     string    `db:"symbol"`
-	OrderType  string    `db:"order_type"`
-	Volume     float64   `db:"volume"`
-	OpenPrice  float64   `db:"open_price"`
-	ClosePrice float64   `db:"close_price"`
-	Profit     float64   `db:"profit"`
-	Swap       float64   `db:"swap"`
-	Commission float64   `db:"commission"`
-	OpenTime   time.Time `db:"open_time"`
-	CloseTime  time.Time `db:"close_time"`
+	ID         uuid.UUID       `db:"id"`
+	AccountID  uuid.UUID       `db:"account_id"`
+	Symbol     string          `db:"symbol"`
+	OrderType  string          `db:"order_type"`
+	Volume     decimal.Decimal `db:"volume"`
+	OpenPrice  decimal.Decimal `db:"open_price"`
+	ClosePrice decimal.Decimal `db:"close_price"`
+	Profit     decimal.Decimal `db:"profit"`
+	Swap       decimal.Decimal `db:"swap"`
+	Commission decimal.Decimal `db:"commission"`
+	OpenTime   time.Time       `db:"open_time"`
+	CloseTime  time.Time       `db:"close_time"`
 }
 
 func (r *AnalyticsRepository) GetTradeRecords(ctx context.Context, accountID uuid.UUID, start, end time.Time) ([]*TradeRecord, error) {
@@ -188,4 +189,43 @@ func (r *AnalyticsRepository) GetTradeRecordsPaginated(ctx context.Context, acco
 		records = append(records, rec)
 	}
 	return records, total, rows.Err()
+}
+
+// TradeStatsRecord is a lightweight struct containing only the columns needed
+// by computeTradeStats (order_type, volume, profit, open_time, close_time).
+// This avoids fetching 7 unused columns (id, account_id, symbol, open_price,
+// close_price, swap, commission) for every trade row.
+type TradeStatsRecord struct {
+	OrderType string          `db:"order_type"`
+	Volume    decimal.Decimal `db:"volume"`
+	Profit    decimal.Decimal `db:"profit"`
+	OpenTime  time.Time       `db:"open_time"`
+	CloseTime time.Time       `db:"close_time"`
+}
+
+// GetTradeStatsData returns trade records with only the columns needed for
+// computing trade statistics — approximately 60% less data over the wire
+// compared to fetching the full TradeRecord.
+func (r *AnalyticsRepository) GetTradeStatsData(ctx context.Context, accountID uuid.UUID, start, end time.Time) ([]*TradeStatsRecord, error) {
+	query := `
+		SELECT order_type, volume, profit, open_time, close_time
+		FROM trade_records
+		WHERE account_id = $1 AND close_time >= $2 AND close_time <= $3
+		AND order_type NOT IN ('balance', 'credit', 'BALANCE', 'CREDIT', 'Balance', 'Credit')
+		ORDER BY close_time ASC
+	`
+	rows, err := r.db.Query(ctx, query, accountID, start, end)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var records []*TradeStatsRecord
+	for rows.Next() {
+		rec := &TradeStatsRecord{}
+		if err := rows.Scan(&rec.OrderType, &rec.Volume, &rec.Profit, &rec.OpenTime, &rec.CloseTime); err != nil {
+			return nil, err
+		}
+		records = append(records, rec)
+	}
+	return records, rows.Err()
 }

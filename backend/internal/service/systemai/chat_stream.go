@@ -48,7 +48,7 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 		return err
 	}
 	httpReq = httpReq.WithContext(ctx)
-	client := &http.Client{Timeout: 0} 
+	client := &http.Client{Timeout: 0}
 	resp, err := client.Do(httpReq)
 	if err != nil {
 		if isTransientChatErr(err) {
@@ -67,6 +67,7 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 	scanner := bufio.NewScanner(resp.Body)
 	scanner.Buffer(make([]byte, 0, 64*1024), 2*1024*1024)
 
+	var streamUsage *ChatUsage
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		if line == "" || !strings.HasPrefix(line, "data: ") {
@@ -76,21 +77,25 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 		if data == "[DONE]" {
 			break
 		}
-		var streamResp struct {
+		var chunk struct {
 			Choices []struct {
 				Delta struct {
 					Content string `json:"content"`
 				} `json:"delta"`
 				FinishReason *string `json:"finish_reason"`
 			} `json:"choices"`
+			Usage *ChatUsage `json:"usage,omitempty"`
 		}
-		if err := json.Unmarshal([]byte(data), &streamResp); err != nil {
+		if err := json.Unmarshal([]byte(data), &chunk); err != nil {
 			continue
 		}
-		if len(streamResp.Choices) == 0 {
+		if chunk.Usage != nil {
+			streamUsage = chunk.Usage
+		}
+		if len(chunk.Choices) == 0 {
 			continue
 		}
-		c := streamResp.Choices[0]
+		c := chunk.Choices[0]
 		done := c.FinishReason != nil && *c.FinishReason != "" && *c.FinishReason != "null"
 		if err := onChunk(ChatStreamChunk{Content: c.Delta.Content, Done: done}); err != nil {
 			return err
@@ -101,6 +106,17 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 	}
 	if err := scanner.Err(); err != nil && !errors.Is(err, context.Canceled) {
 		return fmt.Errorf("read stream: %w", err)
+	}
+	// Record token usage from streaming response.
+	if s.tokenRecorder != nil && streamUsage != nil {
+		feature := "chat"
+		if v := ctx.Value(aiFeatureKey{}); v != nil {
+			feature = v.(string)
+		}
+		s.tokenRecorder(ctx, TokenRecord{
+			UserID: p.userID, ProviderID: p.providerID, Model: p.model,
+			Feature: feature, InputTokens: streamUsage.PromptTokens, OutputTokens: streamUsage.CompletionTokens,
+		})
 	}
 	return nil
 }

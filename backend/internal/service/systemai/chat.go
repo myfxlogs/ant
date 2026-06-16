@@ -33,10 +33,18 @@ type ChatCompletionResponse struct {
 	Choices []struct {
 		Message ChatMessage `json:"message"`
 	} `json:"choices"`
+	Usage *ChatUsage `json:"usage,omitempty"`
 	Error *struct {
 		Message string `json:"message"`
 		Type    string `json:"type"`
 	} `json:"error,omitempty"`
+}
+
+// ChatUsage captures token consumption from an LLM response.
+type ChatUsage struct {
+	PromptTokens     int `json:"prompt_tokens"`
+	CompletionTokens int `json:"completion_tokens"`
+	TotalTokens      int `json:"total_tokens"`
 }
 
 // ChatStreamChunk represents a single delta from a streaming chat completion.
@@ -100,40 +108,61 @@ func doChatRequest(model string, messages []ChatMessage, stream bool, endpoint, 
 
 
 
+// ChatResult bundles the response text with token usage.
+type ChatResult struct {
+	Content string
+	Usage   *ChatUsage
+}
+
 func (s *Service) ChatCompletion(
 	ctx context.Context,
 	userID uuid.UUID,
 	messages []ChatMessage,
 	modelHint string,
 ) (string, error) {
-	providers, err := s.resolveAllChatProviders(ctx, userID, modelHint)
+	result, err := s.ChatCompletionWithUsage(ctx, userID, messages, modelHint)
 	if err != nil {
 		return "", err
+	}
+	return result.Content, nil
+}
+
+// ChatCompletionWithUsage is like ChatCompletion but also returns token usage.
+func (s *Service) ChatCompletionWithUsage(
+	ctx context.Context,
+	userID uuid.UUID,
+	messages []ChatMessage,
+	modelHint string,
+) (*ChatResult, error) {
+	providers, err := s.resolveAllChatProviders(ctx, userID, modelHint)
+	if err != nil {
+		return nil, err
 	}
 
 	var lastErr error
 	for _, p := range providers {
-		result, err := s.tryChatCompletion(ctx, p, messages)
+		result, usage, err := s.tryChatCompletion(ctx, p, messages)
 		if err == nil {
-			return result, nil
+			return &ChatResult{Content: result, Usage: usage}, nil
 		}
 		lastErr = err
 		if !isFailoverErr(err) {
-			return "", err // non-transient: don't try more providers
+			return nil, err
 		}
 	}
 	if lastErr != nil {
-		return "", lastErr
+		return nil, lastErr
 	}
-	return "", fmt.Errorf("AI 未配置：请在 workspace 中点击 ⚙ 进入 AI Settings")
+	return nil, fmt.Errorf("AI 未配置：请在 workspace 中点击 ⚙ 进入 AI Settings")
 }
 
 // tryChatCompletion attempts a single chat completion against one provider.
-func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, messages []ChatMessage) (string, error) {
+// Returns content and usage.
+func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, messages []ChatMessage) (string, *ChatUsage, error) {
 	endpoint := chatEndpoint(p.providerID, p.baseURL)
 	httpReq, err := doChatRequest(p.model, messages, false, endpoint, p.secret)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 	httpReq = httpReq.WithContext(ctx)
 
@@ -156,29 +185,40 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 		if isTransientChatErr(doErr) {
 		recordProviderFailure(p.userID, p.providerID)
 	}
-	return "", &failoverErr{msg: fmt.Sprintf("chat completion http: %v", doErr), transient: isTransientChatErr(doErr)}
+	return "", nil, &failoverErr{msg: fmt.Sprintf("chat completion http: %v", doErr), transient: isTransientChatErr(doErr)}
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		if isFailoverStatus(resp.StatusCode) {
 		recordProviderFailure(p.userID, p.providerID)
 	}
-	return "", &failoverErr{msg: fmt.Sprintf("chat completion: status %d", resp.StatusCode), transient: isFailoverStatus(resp.StatusCode)}
+	return "", nil, &failoverErr{msg: fmt.Sprintf("chat completion: status %d", resp.StatusCode), transient: isFailoverStatus(resp.StatusCode)}
 	}
 
 	var cr ChatCompletionResponse
 	if err := json.NewDecoder(io.LimitReader(resp.Body, 2<<20)).Decode(&cr); err != nil {
-		return "", fmt.Errorf("decode chat response: %w", err)
+		return "", nil, fmt.Errorf("decode chat response: %w", err)
 	}
 	if cr.Error != nil {
 		recordProviderFailure(p.userID, p.providerID)
-	return "", &failoverErr{msg: fmt.Sprintf("chat completion api error: %s", cr.Error.Message), transient: true}
+	return "", nil, &failoverErr{msg: fmt.Sprintf("chat completion api error: %s", cr.Error.Message), transient: true}
 	}
 	if len(cr.Choices) == 0 {
-		return "", fmt.Errorf("chat completion returned no choices")
+		return "", nil, fmt.Errorf("chat completion returned no choices")
 	}
 	recordProviderSuccess(p.userID, p.providerID)
-	return strings.TrimSpace(cr.Choices[0].Message.Content), nil
+	// Record token usage if a recorder is configured.
+	if s.tokenRecorder != nil && cr.Usage != nil {
+		feature := "chat"
+		if v := ctx.Value(aiFeatureKey{}); v != nil {
+			feature = v.(string)
+		}
+		s.tokenRecorder(ctx, TokenRecord{
+			UserID: p.userID, ProviderID: p.providerID, Model: p.model,
+			Feature: feature, InputTokens: cr.Usage.PromptTokens, OutputTokens: cr.Usage.CompletionTokens,
+		})
+	}
+	return strings.TrimSpace(cr.Choices[0].Message.Content), cr.Usage, nil
 }
 
 // It prefers the provider marked as primary for "chat", then falls back to any enabled provider.

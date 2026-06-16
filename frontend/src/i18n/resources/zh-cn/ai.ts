@@ -245,7 +245,7 @@ def run(context):
         notRecommended: '不推荐直接上线：风险较高或不可靠，建议优化后再尝试。'
       },
       backendRiskScore: {
-        title: '后端风险评分',
+        title: '策略风险评分',
         loading: '计算中...',
         unknown: 'unknown',
         reliable: '可靠',
@@ -256,7 +256,7 @@ def run(context):
       },
       score: {
         empty: '暂无评分（等待回测完成或无 metrics）',
-        title: '综合评分（前端启发式）'
+        title: '综合评分（启发式）'
       },
       level: {
         excellent: '优秀',
@@ -438,6 +438,21 @@ def run(context):
         mistral: 'Mistral',
         groq: 'Groq'
       }
+    },
+    gateway: {
+      title: 'AI 网关',
+      useGateway: 'AI 网关',
+      useGatewayDesc: '扣钱包余额 · 按 Token 计费',
+      useOwnKey: '我的 API Key',
+      useOwnKeyDesc: '直付厂商 · 自行管理',
+      useOwnKeyHint: '使用你自己的 API Key，直接向所选厂商付费。在下方选择厂商卡片进行配置。',
+      selectModel: '选择模型',
+      modelPlaceholder: '选择 AI 模型',
+      noModels: '暂无可用模型',
+      balance: '钱包余额',
+      monthlyTokens: '本月 Token',
+      monthlyCost: '本月费用',
+      usageByFeature: '按功能用量',
     }
   }
 } as const;

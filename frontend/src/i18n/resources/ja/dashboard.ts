@@ -12,6 +12,7 @@ const dashboard = {
     streamOffline: 'オフライン',
     noAccounts: '口座がありません。右上から連携してください。',
     stats: {
+      totalBalance: '総残高',
       totalEquity: '有効証拠金合計',
       connected: '接続中',
       accountCount: '口座数',
@@ -34,6 +35,7 @@ const dashboard = {
       market: '相場',
       accounts: '口座',
       analytics: '分析',
+      library: 'ライブラリ',
       templates: 'テンプレート',
       logs: 'ログ',
       bindAccount: '連携',

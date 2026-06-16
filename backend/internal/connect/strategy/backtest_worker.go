@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"time"
 
-	antv1 "anttrader/gen/proto/ant/v1"
-	"anttrader/internal/repository"
+	"github.com/google/uuid"
 	"connectrpc.com/connect"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
+
+	antv1 "anttrader/gen/proto/ant/v1"
+	"anttrader/internal/repository"
 )
 
 const (
@@ -224,6 +226,35 @@ func (s *PythonStrategyServer) handleBacktestError(ctx context.Context, run *rep
 	s.failRun(ctx, run, fmt.Sprintf("backtest execution failed: %v", err))
 }
 
+// persistBacktestTrades converts proto trades to DB rows and writes them via batch insert.
+// Trade persistence is best-effort: failure is logged but does not fail the run,
+// because the authoritative trade data lives in ProtoResponse.
+func (s *PythonStrategyServer) persistBacktestTrades(ctx context.Context, runID uuid.UUID, trades []*antv1.ExecuteBacktestTrade) {
+	if len(trades) == 0 {
+		return
+	}
+	dbTrades := make([]*repository.BacktestRunTrade, 0, len(trades))
+	for _, t := range trades {
+		dbTrades = append(dbTrades, &repository.BacktestRunTrade{
+			RunID:      runID,
+			Ticket:     t.GetTicket(),
+			Side:       t.GetSide(),
+			Volume:     t.GetVolume(),
+			OpenTs:     t.GetOpenTsMs(),
+			OpenPrice:  t.GetOpenPrice(),
+			CloseTs:    t.GetCloseTsMs(),
+			ClosePrice: t.GetClosePrice(),
+			PnL:        t.GetPnl(),
+			Commission: t.GetCommission(),
+			Reason:     t.GetReason(),
+		})
+	}
+	if err := s.backtestRepo.BatchCreateTrades(ctx, dbTrades); err != nil {
+		s.log.Error("backtest worker: persist trades failed",
+			zap.String("runID", runID.String()), zap.Error(err))
+	}
+}
+
 func (s *PythonStrategyServer) saveBacktestResult(ctx context.Context, run *repository.BacktestRun, result *antv1.ExecuteBacktestResponse) {
 	if !result.GetSuccess() { s.failRun(ctx, run, result.GetError()); return }
 	protoResp, err := proto.Marshal(result)
@@ -234,6 +265,9 @@ func (s *PythonStrategyServer) saveBacktestResult(ctx context.Context, run *repo
 		s.log.Error("backtest worker: UpdateAsyncFields failed", zap.String("runID", run.ID.String()), zap.Error(err))
 		return
 	}
+
+	s.persistBacktestTrades(ctx, run.ID, result.GetTrades())
+
 	s.log.Info("backtest worker: run completed", zap.String("runID", run.ID.String()),
 		zap.Float64("total_return", result.GetMetrics().GetTotalReturn()),
 		zap.Float64("sharpe", result.GetMetrics().GetSharpeRatio()))

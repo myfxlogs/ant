@@ -126,12 +126,19 @@ func (s *PythonStrategyServer) ListBacktestRuns(ctx context.Context, req *connec
 			accountID = &id
 		}
 	}
+	var templateID *uuid.UUID
+	if req.Msg.TemplateId != nil && *req.Msg.TemplateId != "" {
+		id, err := uuid.Parse(*req.Msg.TemplateId)
+		if err == nil {
+			templateID = &id
+		}
+	}
 	limit := int(req.Msg.Limit)
 	if limit <= 0 {
 		limit = 50
 	}
 	offset := int(req.Msg.Offset)
-	runs, err := s.backtestRepo.ListByUser(ctx, userID, accountID, limit, offset)
+	runs, err := s.backtestRepo.ListByUser(ctx, userID, accountID, templateID, limit, offset)
 	if err != nil {
 		s.log.Error("ListBacktestRuns", zap.Error(err))
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -149,14 +156,37 @@ func (s *PythonStrategyServer) WatchBacktestRun(ctx context.Context, req *connec
 		return err
 	}
 	userID, _ := uuid.Parse(interceptor.GetUserID(ctx))
-	// LISTEN for status changes (push-first), fallback to 30s ticker
+
+	// Send current state immediately so the client doesn't time out waiting
+	// for the first ticker/notification (which can take up to 30s).
+	run, err := s.backtestRepo.GetByID(ctx, userID, runID)
+	if err != nil {
+		return err
+	}
+	if run == nil {
+		return connect.NewError(connect.CodeNotFound, fmt.Errorf("backtest run %s not found", runID))
+	}
+	if err := stream.Send(&antv1.BacktestRunUpdate{
+		Run:                  toProtoBacktestRun(run),
+		Metrics:              parseMetrics(run.ProtoResponse),
+		EquityCurve:          parseEquityCurve(run.ProtoResponse),
+		Risk:                 parseRisk(run.ProtoResponse),
+		ExecutionAssumptions: parseExecutionAssumptions(run.ProtoResponse),
+	}); err != nil {
+		return err
+	}
+	if run.Status == "SUCCEEDED" || run.Status == "FAILED" || run.Status == "CANCELED" {
+		return nil
+	}
+
+	// Watch for status changes — LISTEN for push events, ticker as fallback.
 	notifCh, listenCancel, _ := s.pgListen.Listen(ctx, "backtest_status")
 	if listenCancel != nil {
 		defer listenCancel()
 	}
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
-	prevStatus := ""
+	prevStatus := run.Status
 	for {
 		select {
 		case <-ctx.Done():

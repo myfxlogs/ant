@@ -185,6 +185,10 @@ const base = {
       loginFirst: 'Please log in first',
       subscribed: 'Added to your purchases',
       subscribeFailed: 'Failed',
+      rated: 'Rating submitted',
+      rateFailed: 'Rating failed',
+      commentPosted: 'Comment posted',
+      commentFailed: 'Comment failed',
       paymentComingSoon: 'Payment coming soon',
     },
     detail: {
@@ -196,6 +200,7 @@ const base = {
       rentPrice: '¥{{amount}} / month', buyPrice: '¥{{amount}} one-time',
       comments: 'Comments', noComments: 'No comments yet',
       commentPlaceholder: 'Write a comment...',
+      yourRating: 'Your Rating',
     },
     purchases: {
       empty: 'No purchases yet. Browse the market to find strategies.',

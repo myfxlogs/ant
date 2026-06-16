@@ -316,6 +316,7 @@ const accounts = {
         noAccessHosts: 'Không có máy chủ khả dụng',
         bindSuccess: 'Liên kết tài khoản thành công',
         bindFailed: 'Liên kết tài khoản thất bại',
+        loginDigitsOnly: 'Tài khoản giao dịch chỉ được chứa chữ số',
         verifyFailed: 'Xác minh tài khoản thất bại'
       },
       errors: {
@@ -354,19 +355,17 @@ const accounts = {
       fields: {
         tradingAccount: 'Tài khoản giao dịch',
         server: 'Máy chủ',
-        password: 'Mật khẩu'
+        password: 'Mật khẩu mới',
+        oldPassword: 'Mật khẩu hiện tại'
       },
       placeholders: {
-        newPassword: 'Nhập mật khẩu mới'
-      },
-      actions: {
-        verifyPassword: 'Xác minh'
+        newPassword: 'Nhập mật khẩu mới',
+        oldPassword: 'Nhập mật khẩu hiện tại'
       },
       messages: {
-        enterPassword: 'Vui lòng nhập mật khẩu',
-        passwordVerified: 'Xác minh mật khẩu thành công!',
-        passwordVerifyFailed: 'Xác minh mật khẩu thất bại',
-        verifyFirst: 'Vui lòng xác minh mật khẩu trước',
+        enterPassword: 'Vui lòng nhập mật khẩu mới',
+        enterOldPassword: 'Vui lòng nhập mật khẩu hiện tại',
+        passwordVerifyFailed: 'Thay đổi mật khẩu thất bại',
         passwordSaved: 'Đã lưu mật khẩu'
       }
     },
@@ -435,6 +434,7 @@ const accounts = {
       title: 'Báo cáo giao dịch',
       titleShort: 'Báo cáo',
       generate: 'Tạo báo cáo',
+      goToAISettings: 'Đi tới Cài đặt AI →',
       aiAnalysis: 'Phân tích AI',
       symbolPnL: 'Lãi/lỗ theo mã',
       direction: 'Phân tích hướng',

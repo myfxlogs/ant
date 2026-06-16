@@ -15,7 +15,7 @@ export function useTrading() {
   const setLoading = useTradingStore((state) => state.setLoading);
 
   // Position data now flows exclusively through SSE → TanStack Query.
-  // No RPC fetchPositions — the SSEQueryBridge handles initial snapshots
+  // No RPC fetchPositions — StreamProvider handles initial snapshots
   // and incremental updates. This eliminates the race condition between
   // SSE and RPC position data.
 

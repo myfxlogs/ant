@@ -12,6 +12,7 @@ const dashboard = {
     streamOffline: 'Offline',
     noAccounts: 'No accounts yet. Click "Bind Account" to get started.',
     stats: {
+      totalBalance: 'Total Balance',
       totalEquity: 'Total Equity',
       connected: 'Connected',
       accountCount: 'Accounts',
@@ -34,6 +35,7 @@ const dashboard = {
       market: 'Market',
       accounts: 'Accounts',
       analytics: 'Analytics',
+      library: 'Library',
       templates: 'Templates',
       logs: 'Logs',
       bindAccount: 'Bind',

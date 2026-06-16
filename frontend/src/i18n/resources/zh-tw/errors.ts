@@ -62,7 +62,11 @@ const errors = {
     audit_log_not_found: '稽核記錄未找到',
     broker_search_failed: '搜尋券商失敗',
     broker_not_found: '券商未找到',
-    broker_server_unavailable: '券商伺服器目前不可用'
+    broker_server_unavailable: '券商伺服器目前不可用',
+    ai: {
+      not_configured: '尚未設定 AI 廠商，請點擊 ⚙ 在 AI 設定中填寫 API Key。',
+      internal_error: 'AI 服務異常，請稍後重試。',
+    }
   }
 } as const;
 

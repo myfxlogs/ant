@@ -37,6 +37,8 @@ func accountWithUserToProto(a *repository.AccountWithUser) *antv1.AccountWithUse
 		Login:         a.Login,
 		Alias:         a.Alias,
 		IsDisabled:    a.IsDisabled,
+		// TODO: proto fields are double (float64), which may lose precision for
+		// decimal financial values. Consider migrating to string-encoded decimals.
 		Balance:       a.Balance.InexactFloat64(),
 		Credit:        a.Credit.InexactFloat64(),
 		Equity:        a.Equity.InexactFloat64(),

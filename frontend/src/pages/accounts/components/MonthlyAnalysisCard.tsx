@@ -29,16 +29,16 @@ const METRIC_OPTIONS: { key: MetricType; labelKey: string }[] = [
 export default function MonthlyAnalysisCard({ accountId, years, data, winRateData, currency = 'USD' }: MonthlyAnalysisCardProps) {
   const { t } = useTranslation();
   const [selectedYear, setSelectedYear] = useState<number>(years[years.length - 1] || new Date().getFullYear());
-  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [hoverMonth, setHoverMonth] = useState<number | null>(null);
   const [selectedMetric, setSelectedMetric] = useState<MetricType>('change');
   const displayMonth = hoverMonth ?? selectedMonth;
 
   // Fetch drill-down detail for the selected month.
   const monthlyDetailQ = useQuery<MonthlyDetailData>({
-    queryKey: queryKeys.analytics.monthlyDetail(accountId!, selectedYear, selectedMonth),
-    queryFn: () => analyticsApi.getMonthlyDetail(accountId!, selectedYear, selectedMonth),
-    enabled: !!accountId,
+    queryKey: queryKeys.analytics.monthlyDetail(accountId!, selectedYear, selectedMonth!),
+    queryFn: () => analyticsApi.getMonthlyDetail(accountId!, selectedYear, selectedMonth!),
+    enabled: !!accountId && selectedMonth != null,
     staleTime: 10 * 60_000,
   });
 

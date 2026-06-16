@@ -63,7 +63,7 @@ const intentAnalysisSystemPrompt = `你是量化策略需求分析专家。分�
 2. needs_clarification=false 当信息足够生成策略，extract 所有能识别的参数
 3. strategy_family 根据策略描述推断，不确定时填 "unknown"
 4. confidence 表示你对提取结果的确信度。模糊描述 → 低分，详细描述 → 高分
-5. questions 必须是针对性的、用户能直接回答的中文问题（不是泛泛的"请详细描述"）`
+5. questions 必须是针对性的、用户能直接回答的具体问题（不是泛泛的"请详细描述"），其语言遵循下方的语言要求`
 
 // IntentAnalyzer uses an LLM to extract structured intent from NL descriptions.
 type IntentAnalyzer struct {
@@ -84,10 +84,14 @@ func NewIntentAnalyzer(chatFn func(ctx context.Context, userID uuid.UUID, messag
 
 // Analyze sends the user message to the LLM for intent extraction.
 // Returns either clarification questions or extracted strategy parameters.
-func (a *IntentAnalyzer) Analyze(ctx context.Context, userID uuid.UUID, message, symbol, timeframe string) (*IntentResult, error) {
+func (a *IntentAnalyzer) Analyze(ctx context.Context, userID uuid.UUID, message, symbol, timeframe, langDirective string) (*IntentResult, error) {
 	userMsg := buildIntentUserMessage(message, symbol, timeframe)
+	sysPrompt := intentAnalysisSystemPrompt
+	if langDirective != "" {
+		sysPrompt += "\n\n## 语言要求\n" + langDirective
+	}
 	resp, err := a.chatFn(ctx, userID, []ChatMessage{
-		{Role: "system", Content: intentAnalysisSystemPrompt},
+		{Role: "system", Content: sysPrompt},
 		{Role: "user", Content: userMsg},
 	}, "") // empty model = use default
 	if err != nil {

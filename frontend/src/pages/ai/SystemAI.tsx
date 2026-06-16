@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   RobotOutlined,
   ReloadOutlined,
@@ -16,6 +16,7 @@ import { StatusBanner } from './systemai/components/SharedComponents';
 import { ProviderCardsSection } from './systemai/components/ProviderCards';
 import { ConnectionFormSection } from './systemai/components/ConnectionForm';
 import { AdvancedSection, SaveSection } from './systemai/components/AdvancedForm';
+import AIGatewayCard from './systemai/components/AIGatewayCard';
 
 const PROVIDER_META: Record<string, ProviderMeta> = {
   openai:          { label: 'OpenAI',                    tagline: 'GPT series · Official',              icon: StarOutlined },
@@ -55,6 +56,8 @@ function useProviderTagline() {
 
 export default function SystemAI() {
   const { t } = useTranslation();
+  const [useGateway, setUseGateway] = useState(true);
+  const [selectedModel, setSelectedModel] = useState('deepseek-chat');
   const providerLabel = useProviderLabel();
   const providerTagline = useProviderTagline();
   const {
@@ -146,7 +149,14 @@ export default function SystemAI() {
         </Button>
       </div>
 
-      {!loading && configs.length > 0 && (
+      <AIGatewayCard
+        useGateway={useGateway}
+        onToggle={setUseGateway}
+        selectedModel={selectedModel}
+        onModelChange={setSelectedModel}
+      />
+
+      {!loading && configs.length > 0 && !useGateway && (
         <StatusBanner
           tone={overallStatus.tone}
           title={overallStatus.title}
@@ -168,7 +178,7 @@ export default function SystemAI() {
         </div>
       )}
 
-      {!loading && configs.length > 0 && (
+      {!loading && configs.length > 0 && !useGateway && (
         <ProviderCardsSection
           providerCards={providerCards}
           selectedProviderId={selectedProviderId}

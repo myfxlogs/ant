@@ -2,7 +2,7 @@ import { Button, Select, Tag } from 'antd';
 import { CloudServerOutlined, CheckOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import GradientButton, { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
 import { useTranslation } from 'react-i18next';
-import type { BrokerSearchResult, BrokerServer } from './BindAccount';
+import type { BrokerSearchResult, BrokerServer, VerifyResult } from './BindAccount';
 
 export function Step1SearchBroker({
   mtType, setMtType, companySearch, setCompanySearch, searching,
@@ -113,6 +113,7 @@ export function Step2Credentials({
   onNext: () => void;
 }) {
   const { t } = useTranslation();
+  const loginHasNonDigits = login.length > 0 && !/^\d+$/.test(login);
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
@@ -130,7 +131,10 @@ export function Step2Credentials({
         <label className="block mb-2 font-medium" style={{ color: 'var(--color-text)' }}>{t('accounts.bind.fields.tradingAccount')}</label>
         <input type="text" value={login} onChange={(e) => setLogin(e.target.value)}
           placeholder={t('accounts.bind.placeholders.tradingAccount')} className="w-full outline-none transition-all"
-          style={{ background: 'var(--color-bg-card)', border: '1px solid rgba(185, 201, 223, 0.4)', borderRadius: '10px', padding: '14px 16px', fontSize: '16px', color: 'var(--color-text)', height: '48px' }} />
+          style={{ background: 'var(--color-bg-card)', border: `1px solid ${loginHasNonDigits ? '#E53935' : 'rgba(185, 201, 223, 0.4)'}`, borderRadius: '10px', padding: '14px 16px', fontSize: '16px', color: 'var(--color-text)', height: '48px' }} />
+        {loginHasNonDigits && (
+          <p className="mt-1 text-xs" style={{ color: '#E53935' }}>{t('accounts.bind.messages.loginDigitsOnly')}</p>
+        )}
       </div>
       <div>
         <label className="block mb-2 font-medium" style={{ color: 'var(--color-text)' }}>{t('accounts.bind.fields.password')}</label>
@@ -156,10 +160,10 @@ export function Step3Verify({
   selectedCompany: BrokerSearchResult | null;
   login: string;
   verifying: boolean;
-  verifyResult: any;
+  verifyResult: VerifyResult | null;
   verifyError: string;
   loading: boolean;
-  setVerifyResult: (v: any) => void;
+  setVerifyResult: (v: VerifyResult | null) => void;
   setVerifyError: (v: string) => void;
   handleVerify: () => Promise<void>;
   handleBind: () => Promise<void>;

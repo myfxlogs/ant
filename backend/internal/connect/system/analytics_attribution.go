@@ -44,14 +44,20 @@ func (s *AnalyticsServer) GetAttributionAnalysis(ctx context.Context, req *conne
 	// Add trade distribution + hourly PnL (not in core — not needed by AI report).
 	now := time.Now()
 	start := now.AddDate(-1, 0, 0)
-	profits, _ := s.repo.GetTradeProfitValues(ctx, accountID, start, now)
+	profits, err := s.repo.GetTradeProfitValues(ctx, accountID, start, now)
+	if err != nil {
+		s.log.Warn("analytics: get trade profit values failed", zap.Error(err))
+	}
 	core.TradeDistribution = buildTradeDistribution(profits)
-	hourlyStats, _ := s.repo.GetHourlyStats(ctx, accountID, start, now)
+	hourlyStats, err := s.repo.GetHourlyStats(ctx, accountID, start, now)
+	if err != nil {
+		s.log.Warn("analytics: get hourly stats for attribution failed", zap.Error(err))
+	}
 	hourlyPnl := make([]*antv1.HourlyPnL, 0, len(hourlyStats))
 	for _, h := range hourlyStats {
 		hourlyPnl = append(hourlyPnl, &antv1.HourlyPnL{
 			Hour:   int32(h.HourStart),
-			Profit: math.Round(h.Profit.InexactFloat64()*100) / 100,
+			Profit: h.Profit.String(),
 			Trades: int64(h.Trades),
 			WinRate: math.Round(h.WinRate.InexactFloat64()*100) / 100,
 		})
@@ -98,11 +104,11 @@ func buildDirectionBreakdown(stats []*repository.DirectionStat) *antv1.Direction
 		}
 		switch s.Direction {
 		case "BUY":
-			dir.LongProfit = math.Round(s.Profit*100) / 100
+			dir.LongProfit = fmt.Sprintf("%.2f", s.Profit)
 			dir.LongTrades = int64(s.Trades)
 			dir.LongWinRate = math.Round(wr*100) / 100
 		case "SELL":
-			dir.ShortProfit = math.Round(s.Profit*100) / 100
+			dir.ShortProfit = fmt.Sprintf("%.2f", s.Profit)
 			dir.ShortTrades = int64(s.Trades)
 			dir.ShortWinRate = math.Round(wr*100) / 100
 		}
@@ -129,10 +135,10 @@ func buildTradeDistribution(profits []float64) *antv1.TradeDistribution {
 		}
 		b := &antv1.TradeBucket{Label: label, Count: buckets[i]}
 		if i < len(bounds) {
-			b.MaxValue = bounds[i]
+			b.MaxValue = fmt.Sprintf("%.2f", bounds[i])
 		}
 		if i > 0 {
-			b.MinValue = bounds[i-1]
+			b.MinValue = fmt.Sprintf("%.2f", bounds[i-1])
 		}
 		dist = append(dist, b)
 	}

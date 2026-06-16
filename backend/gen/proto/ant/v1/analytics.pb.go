@@ -215,19 +215,19 @@ func (x *AccountAnalyticsResponse) GetHourlyStats() []*HourlyStat {
 type TradeStats struct {
 	state                protoimpl.MessageState `protogen:"open.v1"`
 	TotalTrades          int64                  `protobuf:"varint,1,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`
-	WinRate              float64                `protobuf:"fixed64,2,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
-	ProfitFactor         float64                `protobuf:"fixed64,3,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`
-	AverageProfit        float64                `protobuf:"fixed64,4,opt,name=average_profit,json=averageProfit,proto3" json:"average_profit,omitempty"`
-	AverageLoss          float64                `protobuf:"fixed64,5,opt,name=average_loss,json=averageLoss,proto3" json:"average_loss,omitempty"`
-	LargestWin           float64                `protobuf:"fixed64,6,opt,name=largest_win,json=largestWin,proto3" json:"largest_win,omitempty"`
-	LargestLoss          float64                `protobuf:"fixed64,7,opt,name=largest_loss,json=largestLoss,proto3" json:"largest_loss,omitempty"`
+	WinRate              float64                `protobuf:"fixed64,2,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`                 // percentage (ratio)
+	ProfitFactor         float64                `protobuf:"fixed64,3,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`  // ratio
+	AverageProfit        string                 `protobuf:"bytes,4,opt,name=average_profit,json=averageProfit,proto3" json:"average_profit,omitempty"` // monetary
+	AverageLoss          string                 `protobuf:"bytes,5,opt,name=average_loss,json=averageLoss,proto3" json:"average_loss,omitempty"`       // monetary
+	LargestWin           string                 `protobuf:"bytes,6,opt,name=largest_win,json=largestWin,proto3" json:"largest_win,omitempty"`          // monetary
+	LargestLoss          string                 `protobuf:"bytes,7,opt,name=largest_loss,json=largestLoss,proto3" json:"largest_loss,omitempty"`       // monetary
 	MaxConsecutiveWins   int64                  `protobuf:"varint,8,opt,name=max_consecutive_wins,json=maxConsecutiveWins,proto3" json:"max_consecutive_wins,omitempty"`
 	MaxConsecutiveLosses int64                  `protobuf:"varint,9,opt,name=max_consecutive_losses,json=maxConsecutiveLosses,proto3" json:"max_consecutive_losses,omitempty"`
 	AverageHoldingTime   string                 `protobuf:"bytes,10,opt,name=average_holding_time,json=averageHoldingTime,proto3" json:"average_holding_time,omitempty"`
-	NetProfit            float64                `protobuf:"fixed64,11,opt,name=net_profit,json=netProfit,proto3" json:"net_profit,omitempty"`
-	TotalDeposit         float64                `protobuf:"fixed64,12,opt,name=total_deposit,json=totalDeposit,proto3" json:"total_deposit,omitempty"`
-	TotalWithdrawal      float64                `protobuf:"fixed64,13,opt,name=total_withdrawal,json=totalWithdrawal,proto3" json:"total_withdrawal,omitempty"`
-	NetDeposit           float64                `protobuf:"fixed64,14,opt,name=net_deposit,json=netDeposit,proto3" json:"net_deposit,omitempty"`
+	NetProfit            string                 `protobuf:"bytes,11,opt,name=net_profit,json=netProfit,proto3" json:"net_profit,omitempty"`                   // monetary
+	TotalDeposit         string                 `protobuf:"bytes,12,opt,name=total_deposit,json=totalDeposit,proto3" json:"total_deposit,omitempty"`          // monetary
+	TotalWithdrawal      string                 `protobuf:"bytes,13,opt,name=total_withdrawal,json=totalWithdrawal,proto3" json:"total_withdrawal,omitempty"` // monetary
+	NetDeposit           string                 `protobuf:"bytes,14,opt,name=net_deposit,json=netDeposit,proto3" json:"net_deposit,omitempty"`                // monetary
 	unknownFields        protoimpl.UnknownFields
 	sizeCache            protoimpl.SizeCache
 }
@@ -283,32 +283,32 @@ func (x *TradeStats) GetProfitFactor() float64 {
 	return 0
 }
 
-func (x *TradeStats) GetAverageProfit() float64 {
+func (x *TradeStats) GetAverageProfit() string {
 	if x != nil {
 		return x.AverageProfit
 	}
-	return 0
+	return ""
 }
 
-func (x *TradeStats) GetAverageLoss() float64 {
+func (x *TradeStats) GetAverageLoss() string {
 	if x != nil {
 		return x.AverageLoss
 	}
-	return 0
+	return ""
 }
 
-func (x *TradeStats) GetLargestWin() float64 {
+func (x *TradeStats) GetLargestWin() string {
 	if x != nil {
 		return x.LargestWin
 	}
-	return 0
+	return ""
 }
 
-func (x *TradeStats) GetLargestLoss() float64 {
+func (x *TradeStats) GetLargestLoss() string {
 	if x != nil {
 		return x.LargestLoss
 	}
-	return 0
+	return ""
 }
 
 func (x *TradeStats) GetMaxConsecutiveWins() int64 {
@@ -332,42 +332,42 @@ func (x *TradeStats) GetAverageHoldingTime() string {
 	return ""
 }
 
-func (x *TradeStats) GetNetProfit() float64 {
+func (x *TradeStats) GetNetProfit() string {
 	if x != nil {
 		return x.NetProfit
 	}
-	return 0
+	return ""
 }
 
-func (x *TradeStats) GetTotalDeposit() float64 {
+func (x *TradeStats) GetTotalDeposit() string {
 	if x != nil {
 		return x.TotalDeposit
 	}
-	return 0
+	return ""
 }
 
-func (x *TradeStats) GetTotalWithdrawal() float64 {
+func (x *TradeStats) GetTotalWithdrawal() string {
 	if x != nil {
 		return x.TotalWithdrawal
 	}
-	return 0
+	return ""
 }
 
-func (x *TradeStats) GetNetDeposit() float64 {
+func (x *TradeStats) GetNetDeposit() string {
 	if x != nil {
 		return x.NetDeposit
 	}
-	return 0
+	return ""
 }
 
 type RiskMetrics struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
-	MaxDrawdownPercent float64                `protobuf:"fixed64,1,opt,name=max_drawdown_percent,json=maxDrawdownPercent,proto3" json:"max_drawdown_percent,omitempty"`
-	SharpeRatio        float64                `protobuf:"fixed64,2,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`
-	SortinoRatio       float64                `protobuf:"fixed64,3,opt,name=sortino_ratio,json=sortinoRatio,proto3" json:"sortino_ratio,omitempty"`
-	CalmarRatio        float64                `protobuf:"fixed64,4,opt,name=calmar_ratio,json=calmarRatio,proto3" json:"calmar_ratio,omitempty"`
-	Volatility         float64                `protobuf:"fixed64,5,opt,name=volatility,proto3" json:"volatility,omitempty"`
-	AverageDailyReturn float64                `protobuf:"fixed64,6,opt,name=average_daily_return,json=averageDailyReturn,proto3" json:"average_daily_return,omitempty"`
+	MaxDrawdownPercent float64                `protobuf:"fixed64,1,opt,name=max_drawdown_percent,json=maxDrawdownPercent,proto3" json:"max_drawdown_percent,omitempty"` // percentage (ratio)
+	SharpeRatio        float64                `protobuf:"fixed64,2,opt,name=sharpe_ratio,json=sharpeRatio,proto3" json:"sharpe_ratio,omitempty"`                        // ratio
+	SortinoRatio       float64                `protobuf:"fixed64,3,opt,name=sortino_ratio,json=sortinoRatio,proto3" json:"sortino_ratio,omitempty"`                     // ratio
+	CalmarRatio        float64                `protobuf:"fixed64,4,opt,name=calmar_ratio,json=calmarRatio,proto3" json:"calmar_ratio,omitempty"`                        // ratio
+	Volatility         float64                `protobuf:"fixed64,5,opt,name=volatility,proto3" json:"volatility,omitempty"`                                             // ratio (std dev)
+	AverageDailyReturn float64                `protobuf:"fixed64,6,opt,name=average_daily_return,json=averageDailyReturn,proto3" json:"average_daily_return,omitempty"` // ratio
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -447,8 +447,8 @@ func (x *RiskMetrics) GetAverageDailyReturn() float64 {
 type SymbolStat struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
 	Symbol            string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
-	Profit            float64                `protobuf:"fixed64,2,opt,name=profit,proto3" json:"profit,omitempty"`
-	TradeSharePercent float64                `protobuf:"fixed64,3,opt,name=trade_share_percent,json=tradeSharePercent,proto3" json:"trade_share_percent,omitempty"`
+	Profit            string                 `protobuf:"bytes,2,opt,name=profit,proto3" json:"profit,omitempty"`                                                    // monetary
+	TradeSharePercent float64                `protobuf:"fixed64,3,opt,name=trade_share_percent,json=tradeSharePercent,proto3" json:"trade_share_percent,omitempty"` // percentage (ratio)
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -490,11 +490,11 @@ func (x *SymbolStat) GetSymbol() string {
 	return ""
 }
 
-func (x *SymbolStat) GetProfit() float64 {
+func (x *SymbolStat) GetProfit() string {
 	if x != nil {
 		return x.Profit
 	}
-	return 0
+	return ""
 }
 
 func (x *SymbolStat) GetTradeSharePercent() float64 {
@@ -507,9 +507,9 @@ func (x *SymbolStat) GetTradeSharePercent() float64 {
 type EquityPoint struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Date          string                 `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
-	Equity        float64                `protobuf:"fixed64,2,opt,name=equity,proto3" json:"equity,omitempty"`
-	Balance       float64                `protobuf:"fixed64,3,opt,name=balance,proto3" json:"balance,omitempty"`
-	Profit        float64                `protobuf:"fixed64,4,opt,name=profit,proto3" json:"profit,omitempty"`
+	Equity        string                 `protobuf:"bytes,2,opt,name=equity,proto3" json:"equity,omitempty"`   // monetary
+	Balance       string                 `protobuf:"bytes,3,opt,name=balance,proto3" json:"balance,omitempty"` // monetary
+	Profit        string                 `protobuf:"bytes,4,opt,name=profit,proto3" json:"profit,omitempty"`   // monetary
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -551,40 +551,40 @@ func (x *EquityPoint) GetDate() string {
 	return ""
 }
 
-func (x *EquityPoint) GetEquity() float64 {
+func (x *EquityPoint) GetEquity() string {
 	if x != nil {
 		return x.Equity
 	}
-	return 0
+	return ""
 }
 
-func (x *EquityPoint) GetBalance() float64 {
+func (x *EquityPoint) GetBalance() string {
 	if x != nil {
 		return x.Balance
 	}
-	return 0
+	return ""
 }
 
-func (x *EquityPoint) GetProfit() float64 {
+func (x *EquityPoint) GetProfit() string {
 	if x != nil {
 		return x.Profit
 	}
-	return 0
+	return ""
 }
 
 type DailyPnL struct {
 	state                   protoimpl.MessageState `protogen:"open.v1"`
 	Day                     string                 `protobuf:"bytes,1,opt,name=day,proto3" json:"day,omitempty"`
 	Date                    string                 `protobuf:"bytes,2,opt,name=date,proto3" json:"date,omitempty"`
-	Pnl                     float64                `protobuf:"fixed64,3,opt,name=pnl,proto3" json:"pnl,omitempty"`
+	Pnl                     string                 `protobuf:"bytes,3,opt,name=pnl,proto3" json:"pnl,omitempty"` // monetary
 	Trades                  int64                  `protobuf:"varint,4,opt,name=trades,proto3" json:"trades,omitempty"`
-	Lots                    float64                `protobuf:"fixed64,5,opt,name=lots,proto3" json:"lots,omitempty"`
-	Balance                 float64                `protobuf:"fixed64,6,opt,name=balance,proto3" json:"balance,omitempty"`
-	ProfitFactor            float64                `protobuf:"fixed64,7,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`
-	MaxFloatingLossAmount   float64                `protobuf:"fixed64,8,opt,name=max_floating_loss_amount,json=maxFloatingLossAmount,proto3" json:"max_floating_loss_amount,omitempty"`
-	MaxFloatingLossRatio    float64                `protobuf:"fixed64,9,opt,name=max_floating_loss_ratio,json=maxFloatingLossRatio,proto3" json:"max_floating_loss_ratio,omitempty"`
-	MaxFloatingProfitAmount float64                `protobuf:"fixed64,10,opt,name=max_floating_profit_amount,json=maxFloatingProfitAmount,proto3" json:"max_floating_profit_amount,omitempty"`
-	MaxFloatingProfitRatio  float64                `protobuf:"fixed64,11,opt,name=max_floating_profit_ratio,json=maxFloatingProfitRatio,proto3" json:"max_floating_profit_ratio,omitempty"`
+	Lots                    string                 `protobuf:"bytes,5,opt,name=lots,proto3" json:"lots,omitempty"`                                                                           // monetary (volume)
+	Balance                 string                 `protobuf:"bytes,6,opt,name=balance,proto3" json:"balance,omitempty"`                                                                     // monetary
+	ProfitFactor            float64                `protobuf:"fixed64,7,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`                                     // ratio
+	MaxFloatingLossAmount   string                 `protobuf:"bytes,8,opt,name=max_floating_loss_amount,json=maxFloatingLossAmount,proto3" json:"max_floating_loss_amount,omitempty"`        // monetary
+	MaxFloatingLossRatio    float64                `protobuf:"fixed64,9,opt,name=max_floating_loss_ratio,json=maxFloatingLossRatio,proto3" json:"max_floating_loss_ratio,omitempty"`         // percentage (ratio)
+	MaxFloatingProfitAmount string                 `protobuf:"bytes,10,opt,name=max_floating_profit_amount,json=maxFloatingProfitAmount,proto3" json:"max_floating_profit_amount,omitempty"` // monetary
+	MaxFloatingProfitRatio  float64                `protobuf:"fixed64,11,opt,name=max_floating_profit_ratio,json=maxFloatingProfitRatio,proto3" json:"max_floating_profit_ratio,omitempty"`  // percentage (ratio)
 	unknownFields           protoimpl.UnknownFields
 	sizeCache               protoimpl.SizeCache
 }
@@ -633,11 +633,11 @@ func (x *DailyPnL) GetDate() string {
 	return ""
 }
 
-func (x *DailyPnL) GetPnl() float64 {
+func (x *DailyPnL) GetPnl() string {
 	if x != nil {
 		return x.Pnl
 	}
-	return 0
+	return ""
 }
 
 func (x *DailyPnL) GetTrades() int64 {
@@ -647,18 +647,18 @@ func (x *DailyPnL) GetTrades() int64 {
 	return 0
 }
 
-func (x *DailyPnL) GetLots() float64 {
+func (x *DailyPnL) GetLots() string {
 	if x != nil {
 		return x.Lots
 	}
-	return 0
+	return ""
 }
 
-func (x *DailyPnL) GetBalance() float64 {
+func (x *DailyPnL) GetBalance() string {
 	if x != nil {
 		return x.Balance
 	}
-	return 0
+	return ""
 }
 
 func (x *DailyPnL) GetProfitFactor() float64 {
@@ -668,11 +668,11 @@ func (x *DailyPnL) GetProfitFactor() float64 {
 	return 0
 }
 
-func (x *DailyPnL) GetMaxFloatingLossAmount() float64 {
+func (x *DailyPnL) GetMaxFloatingLossAmount() string {
 	if x != nil {
 		return x.MaxFloatingLossAmount
 	}
-	return 0
+	return ""
 }
 
 func (x *DailyPnL) GetMaxFloatingLossRatio() float64 {
@@ -682,11 +682,11 @@ func (x *DailyPnL) GetMaxFloatingLossRatio() float64 {
 	return 0
 }
 
-func (x *DailyPnL) GetMaxFloatingProfitAmount() float64 {
+func (x *DailyPnL) GetMaxFloatingProfitAmount() string {
 	if x != nil {
 		return x.MaxFloatingProfitAmount
 	}
-	return 0
+	return ""
 }
 
 func (x *DailyPnL) GetMaxFloatingProfitRatio() float64 {
@@ -699,13 +699,13 @@ func (x *DailyPnL) GetMaxFloatingProfitRatio() float64 {
 type HourlyStat struct {
 	state                   protoimpl.MessageState `protogen:"open.v1"`
 	Hour                    int32                  `protobuf:"varint,1,opt,name=hour,proto3" json:"hour,omitempty"`
-	Lots                    float64                `protobuf:"fixed64,2,opt,name=lots,proto3" json:"lots,omitempty"`
-	Balance                 float64                `protobuf:"fixed64,3,opt,name=balance,proto3" json:"balance,omitempty"`
-	ProfitFactor            float64                `protobuf:"fixed64,4,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`
-	MaxFloatingLossAmount   float64                `protobuf:"fixed64,5,opt,name=max_floating_loss_amount,json=maxFloatingLossAmount,proto3" json:"max_floating_loss_amount,omitempty"`
-	MaxFloatingLossRatio    float64                `protobuf:"fixed64,6,opt,name=max_floating_loss_ratio,json=maxFloatingLossRatio,proto3" json:"max_floating_loss_ratio,omitempty"`
-	MaxFloatingProfitAmount float64                `protobuf:"fixed64,7,opt,name=max_floating_profit_amount,json=maxFloatingProfitAmount,proto3" json:"max_floating_profit_amount,omitempty"`
-	MaxFloatingProfitRatio  float64                `protobuf:"fixed64,8,opt,name=max_floating_profit_ratio,json=maxFloatingProfitRatio,proto3" json:"max_floating_profit_ratio,omitempty"`
+	Lots                    string                 `protobuf:"bytes,2,opt,name=lots,proto3" json:"lots,omitempty"`                                                                          // monetary (volume)
+	Balance                 string                 `protobuf:"bytes,3,opt,name=balance,proto3" json:"balance,omitempty"`                                                                    // monetary
+	ProfitFactor            float64                `protobuf:"fixed64,4,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`                                    // ratio
+	MaxFloatingLossAmount   string                 `protobuf:"bytes,5,opt,name=max_floating_loss_amount,json=maxFloatingLossAmount,proto3" json:"max_floating_loss_amount,omitempty"`       // monetary
+	MaxFloatingLossRatio    float64                `protobuf:"fixed64,6,opt,name=max_floating_loss_ratio,json=maxFloatingLossRatio,proto3" json:"max_floating_loss_ratio,omitempty"`        // percentage (ratio)
+	MaxFloatingProfitAmount string                 `protobuf:"bytes,7,opt,name=max_floating_profit_amount,json=maxFloatingProfitAmount,proto3" json:"max_floating_profit_amount,omitempty"` // monetary
+	MaxFloatingProfitRatio  float64                `protobuf:"fixed64,8,opt,name=max_floating_profit_ratio,json=maxFloatingProfitRatio,proto3" json:"max_floating_profit_ratio,omitempty"`  // percentage (ratio)
 	unknownFields           protoimpl.UnknownFields
 	sizeCache               protoimpl.SizeCache
 }
@@ -747,18 +747,18 @@ func (x *HourlyStat) GetHour() int32 {
 	return 0
 }
 
-func (x *HourlyStat) GetLots() float64 {
+func (x *HourlyStat) GetLots() string {
 	if x != nil {
 		return x.Lots
 	}
-	return 0
+	return ""
 }
 
-func (x *HourlyStat) GetBalance() float64 {
+func (x *HourlyStat) GetBalance() string {
 	if x != nil {
 		return x.Balance
 	}
-	return 0
+	return ""
 }
 
 func (x *HourlyStat) GetProfitFactor() float64 {
@@ -768,11 +768,11 @@ func (x *HourlyStat) GetProfitFactor() float64 {
 	return 0
 }
 
-func (x *HourlyStat) GetMaxFloatingLossAmount() float64 {
+func (x *HourlyStat) GetMaxFloatingLossAmount() string {
 	if x != nil {
 		return x.MaxFloatingLossAmount
 	}
-	return 0
+	return ""
 }
 
 func (x *HourlyStat) GetMaxFloatingLossRatio() float64 {
@@ -782,11 +782,11 @@ func (x *HourlyStat) GetMaxFloatingLossRatio() float64 {
 	return 0
 }
 
-func (x *HourlyStat) GetMaxFloatingProfitAmount() float64 {
+func (x *HourlyStat) GetMaxFloatingProfitAmount() string {
 	if x != nil {
 		return x.MaxFloatingProfitAmount
 	}
-	return 0
+	return ""
 }
 
 func (x *HourlyStat) GetMaxFloatingProfitRatio() float64 {
@@ -801,14 +801,14 @@ type TradeRecord struct {
 	Ticket        string                 `protobuf:"bytes,1,opt,name=ticket,proto3" json:"ticket,omitempty"`
 	Symbol        string                 `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`
 	Type          string                 `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`
-	Volume        float64                `protobuf:"fixed64,4,opt,name=volume,proto3" json:"volume,omitempty"`
-	OpenPrice     float64                `protobuf:"fixed64,5,opt,name=open_price,json=openPrice,proto3" json:"open_price,omitempty"`
-	ClosePrice    float64                `protobuf:"fixed64,6,opt,name=close_price,json=closePrice,proto3" json:"close_price,omitempty"`
-	Profit        float64                `protobuf:"fixed64,7,opt,name=profit,proto3" json:"profit,omitempty"`
+	Volume        string                 `protobuf:"bytes,4,opt,name=volume,proto3" json:"volume,omitempty"`                           // monetary (volume)
+	OpenPrice     string                 `protobuf:"bytes,5,opt,name=open_price,json=openPrice,proto3" json:"open_price,omitempty"`    // monetary (price)
+	ClosePrice    string                 `protobuf:"bytes,6,opt,name=close_price,json=closePrice,proto3" json:"close_price,omitempty"` // monetary (price)
+	Profit        string                 `protobuf:"bytes,7,opt,name=profit,proto3" json:"profit,omitempty"`                           // monetary
 	OpenTime      string                 `protobuf:"bytes,8,opt,name=open_time,json=openTime,proto3" json:"open_time,omitempty"`
 	CloseTime     string                 `protobuf:"bytes,9,opt,name=close_time,json=closeTime,proto3" json:"close_time,omitempty"`
-	Swap          float64                `protobuf:"fixed64,10,opt,name=swap,proto3" json:"swap,omitempty"`
-	Commission    float64                `protobuf:"fixed64,11,opt,name=commission,proto3" json:"commission,omitempty"`
+	Swap          string                 `protobuf:"bytes,10,opt,name=swap,proto3" json:"swap,omitempty"`             // monetary
+	Commission    string                 `protobuf:"bytes,11,opt,name=commission,proto3" json:"commission,omitempty"` // monetary
 	Comment       string                 `protobuf:"bytes,12,opt,name=comment,proto3" json:"comment,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -865,32 +865,32 @@ func (x *TradeRecord) GetType() string {
 	return ""
 }
 
-func (x *TradeRecord) GetVolume() float64 {
+func (x *TradeRecord) GetVolume() string {
 	if x != nil {
 		return x.Volume
 	}
-	return 0
+	return ""
 }
 
-func (x *TradeRecord) GetOpenPrice() float64 {
+func (x *TradeRecord) GetOpenPrice() string {
 	if x != nil {
 		return x.OpenPrice
 	}
-	return 0
+	return ""
 }
 
-func (x *TradeRecord) GetClosePrice() float64 {
+func (x *TradeRecord) GetClosePrice() string {
 	if x != nil {
 		return x.ClosePrice
 	}
-	return 0
+	return ""
 }
 
-func (x *TradeRecord) GetProfit() float64 {
+func (x *TradeRecord) GetProfit() string {
 	if x != nil {
 		return x.Profit
 	}
-	return 0
+	return ""
 }
 
 func (x *TradeRecord) GetOpenTime() string {
@@ -907,18 +907,18 @@ func (x *TradeRecord) GetCloseTime() string {
 	return ""
 }
 
-func (x *TradeRecord) GetSwap() float64 {
+func (x *TradeRecord) GetSwap() string {
 	if x != nil {
 		return x.Swap
 	}
-	return 0
+	return ""
 }
 
-func (x *TradeRecord) GetCommission() float64 {
+func (x *TradeRecord) GetCommission() string {
 	if x != nil {
 		return x.Commission
 	}
-	return 0
+	return ""
 }
 
 func (x *TradeRecord) GetComment() string {
@@ -1043,7 +1043,7 @@ func (x *GetRecentTradesResponse) GetTotal() int64 {
 type MonthlyPnLItem struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Month         int32                  `protobuf:"varint,1,opt,name=month,proto3" json:"month,omitempty"`
-	Profit        float64                `protobuf:"fixed64,2,opt,name=profit,proto3" json:"profit,omitempty"`
+	Profit        string                 `protobuf:"bytes,2,opt,name=profit,proto3" json:"profit,omitempty"` // monetary
 	Trades        int64                  `protobuf:"varint,3,opt,name=trades,proto3" json:"trades,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1086,11 +1086,11 @@ func (x *MonthlyPnLItem) GetMonth() int32 {
 	return 0
 }
 
-func (x *MonthlyPnLItem) GetProfit() float64 {
+func (x *MonthlyPnLItem) GetProfit() string {
 	if x != nil {
 		return x.Profit
 	}
-	return 0
+	return ""
 }
 
 func (x *MonthlyPnLItem) GetTrades() int64 {
@@ -1422,13 +1422,13 @@ func (x *GetMonthlyDetailResponse) GetBonus() *MonthlyBonus {
 
 type MonthlyDetailMetrics struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	NetReturn     float64                `protobuf:"fixed64,1,opt,name=net_return,json=netReturn,proto3" json:"net_return,omitempty"`
-	ReturnPercent float64                `protobuf:"fixed64,2,opt,name=return_percent,json=returnPercent,proto3" json:"return_percent,omitempty"`
+	NetReturn     string                 `protobuf:"bytes,1,opt,name=net_return,json=netReturn,proto3" json:"net_return,omitempty"`               // monetary
+	ReturnPercent float64                `protobuf:"fixed64,2,opt,name=return_percent,json=returnPercent,proto3" json:"return_percent,omitempty"` // percentage (ratio)
 	TotalTrades   int64                  `protobuf:"varint,3,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`
-	WinRate       float64                `protobuf:"fixed64,4,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
-	ProfitFactor  float64                `protobuf:"fixed64,5,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`
-	BestTrade     float64                `protobuf:"fixed64,6,opt,name=best_trade,json=bestTrade,proto3" json:"best_trade,omitempty"`
-	WorstTrade    float64                `protobuf:"fixed64,7,opt,name=worst_trade,json=worstTrade,proto3" json:"worst_trade,omitempty"`
+	WinRate       float64                `protobuf:"fixed64,4,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`                // percentage (ratio)
+	ProfitFactor  float64                `protobuf:"fixed64,5,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"` // ratio
+	BestTrade     string                 `protobuf:"bytes,6,opt,name=best_trade,json=bestTrade,proto3" json:"best_trade,omitempty"`            // monetary
+	WorstTrade    string                 `protobuf:"bytes,7,opt,name=worst_trade,json=worstTrade,proto3" json:"worst_trade,omitempty"`         // monetary
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1463,11 +1463,11 @@ func (*MonthlyDetailMetrics) Descriptor() ([]byte, []int) {
 	return file_analytics_proto_rawDescGZIP(), []int{18}
 }
 
-func (x *MonthlyDetailMetrics) GetNetReturn() float64 {
+func (x *MonthlyDetailMetrics) GetNetReturn() string {
 	if x != nil {
 		return x.NetReturn
 	}
-	return 0
+	return ""
 }
 
 func (x *MonthlyDetailMetrics) GetReturnPercent() float64 {
@@ -1498,26 +1498,26 @@ func (x *MonthlyDetailMetrics) GetProfitFactor() float64 {
 	return 0
 }
 
-func (x *MonthlyDetailMetrics) GetBestTrade() float64 {
+func (x *MonthlyDetailMetrics) GetBestTrade() string {
 	if x != nil {
 		return x.BestTrade
 	}
-	return 0
+	return ""
 }
 
-func (x *MonthlyDetailMetrics) GetWorstTrade() float64 {
+func (x *MonthlyDetailMetrics) GetWorstTrade() string {
 	if x != nil {
 		return x.WorstTrade
 	}
-	return 0
+	return ""
 }
 
 type SymbolMonthlyPnL struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Symbol        string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
-	NetProfit     float64                `protobuf:"fixed64,2,opt,name=net_profit,json=netProfit,proto3" json:"net_profit,omitempty"`
+	NetProfit     string                 `protobuf:"bytes,2,opt,name=net_profit,json=netProfit,proto3" json:"net_profit,omitempty"` // monetary
 	Trades        int64                  `protobuf:"varint,3,opt,name=trades,proto3" json:"trades,omitempty"`
-	WinRate       float64                `protobuf:"fixed64,4,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
+	WinRate       float64                `protobuf:"fixed64,4,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"` // percentage (ratio)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1559,11 +1559,11 @@ func (x *SymbolMonthlyPnL) GetSymbol() string {
 	return ""
 }
 
-func (x *SymbolMonthlyPnL) GetNetProfit() float64 {
+func (x *SymbolMonthlyPnL) GetNetProfit() string {
 	if x != nil {
 		return x.NetProfit
 	}
-	return 0
+	return ""
 }
 
 func (x *SymbolMonthlyPnL) GetTrades() int64 {
@@ -1582,10 +1582,10 @@ func (x *SymbolMonthlyPnL) GetWinRate() float64 {
 
 type HoldingTimeStats struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AverageHours  float64                `protobuf:"fixed64,1,opt,name=average_hours,json=averageHours,proto3" json:"average_hours,omitempty"`
-	MedianHours   float64                `protobuf:"fixed64,2,opt,name=median_hours,json=medianHours,proto3" json:"median_hours,omitempty"`
-	MaxHours      float64                `protobuf:"fixed64,3,opt,name=max_hours,json=maxHours,proto3" json:"max_hours,omitempty"`
-	MinHours      float64                `protobuf:"fixed64,4,opt,name=min_hours,json=minHours,proto3" json:"min_hours,omitempty"`
+	AverageHours  float64                `protobuf:"fixed64,1,opt,name=average_hours,json=averageHours,proto3" json:"average_hours,omitempty"` // time (hours)
+	MedianHours   float64                `protobuf:"fixed64,2,opt,name=median_hours,json=medianHours,proto3" json:"median_hours,omitempty"`    // time (hours)
+	MaxHours      float64                `protobuf:"fixed64,3,opt,name=max_hours,json=maxHours,proto3" json:"max_hours,omitempty"`             // time (hours)
+	MinHours      float64                `protobuf:"fixed64,4,opt,name=min_hours,json=minHours,proto3" json:"min_hours,omitempty"`             // time (hours)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1650,7 +1650,7 @@ func (x *HoldingTimeStats) GetMinHours() float64 {
 
 type MonthlyBonus struct {
 	state              protoimpl.MessageState  `protogen:"open.v1"`
-	RiskRatio          float64                 `protobuf:"fixed64,1,opt,name=risk_ratio,json=riskRatio,proto3" json:"risk_ratio,omitempty"`
+	RiskRatio          float64                 `protobuf:"fixed64,1,opt,name=risk_ratio,json=riskRatio,proto3" json:"risk_ratio,omitempty"` // ratio
 	SymbolPopularity   []*SymbolPopularityItem `protobuf:"bytes,2,rep,name=symbol_popularity,json=symbolPopularity,proto3" json:"symbol_popularity,omitempty"`
 	SymbolRisks        []*SymbolRiskItem       `protobuf:"bytes,3,rep,name=symbol_risks,json=symbolRisks,proto3" json:"symbol_risks,omitempty"`
 	SymbolHoldingSplit []*SymbolHoldingSplit   `protobuf:"bytes,4,rep,name=symbol_holding_split,json=symbolHoldingSplit,proto3" json:"symbol_holding_split,omitempty"`
@@ -1720,7 +1720,7 @@ type SymbolPopularityItem struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Symbol        string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
 	Trades        int64                  `protobuf:"varint,2,opt,name=trades,proto3" json:"trades,omitempty"`
-	SharePercent  float64                `protobuf:"fixed64,3,opt,name=share_percent,json=sharePercent,proto3" json:"share_percent,omitempty"`
+	SharePercent  float64                `protobuf:"fixed64,3,opt,name=share_percent,json=sharePercent,proto3" json:"share_percent,omitempty"` // percentage (ratio)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1779,7 +1779,7 @@ func (x *SymbolPopularityItem) GetSharePercent() float64 {
 type SymbolRiskItem struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Symbol        string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
-	RiskRatio     float64                `protobuf:"fixed64,2,opt,name=risk_ratio,json=riskRatio,proto3" json:"risk_ratio,omitempty"`
+	RiskRatio     float64                `protobuf:"fixed64,2,opt,name=risk_ratio,json=riskRatio,proto3" json:"risk_ratio,omitempty"` // ratio
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1831,8 +1831,8 @@ func (x *SymbolRiskItem) GetRiskRatio() float64 {
 type SymbolHoldingSplit struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	Symbol           string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
-	BullsSeconds     float64                `protobuf:"fixed64,2,opt,name=bulls_seconds,json=bullsSeconds,proto3" json:"bulls_seconds,omitempty"`
-	ShortTermSeconds float64                `protobuf:"fixed64,3,opt,name=short_term_seconds,json=shortTermSeconds,proto3" json:"short_term_seconds,omitempty"`
+	BullsSeconds     float64                `protobuf:"fixed64,2,opt,name=bulls_seconds,json=bullsSeconds,proto3" json:"bulls_seconds,omitempty"`               // time (seconds)
+	ShortTermSeconds float64                `protobuf:"fixed64,3,opt,name=short_term_seconds,json=shortTermSeconds,proto3" json:"short_term_seconds,omitempty"` // time (seconds)
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -2003,11 +2003,11 @@ func (x *GetAttributionAnalysisResponse) GetHourlyPnl() []*HourlyPnL {
 type SymbolPnL struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
 	Symbol            string                 `protobuf:"bytes,1,opt,name=symbol,proto3" json:"symbol,omitempty"`
-	NetProfit         float64                `protobuf:"fixed64,2,opt,name=net_profit,json=netProfit,proto3" json:"net_profit,omitempty"`
+	NetProfit         string                 `protobuf:"bytes,2,opt,name=net_profit,json=netProfit,proto3" json:"net_profit,omitempty"` // monetary
 	TotalTrades       int64                  `protobuf:"varint,3,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`
-	WinRate           float64                `protobuf:"fixed64,4,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
-	ProfitFactor      float64                `protobuf:"fixed64,5,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`
-	TradeSharePercent float64                `protobuf:"fixed64,6,opt,name=trade_share_percent,json=tradeSharePercent,proto3" json:"trade_share_percent,omitempty"`
+	WinRate           float64                `protobuf:"fixed64,4,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`                                 // percentage (ratio)
+	ProfitFactor      float64                `protobuf:"fixed64,5,opt,name=profit_factor,json=profitFactor,proto3" json:"profit_factor,omitempty"`                  // ratio
+	TradeSharePercent float64                `protobuf:"fixed64,6,opt,name=trade_share_percent,json=tradeSharePercent,proto3" json:"trade_share_percent,omitempty"` // percentage (ratio)
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -2049,11 +2049,11 @@ func (x *SymbolPnL) GetSymbol() string {
 	return ""
 }
 
-func (x *SymbolPnL) GetNetProfit() float64 {
+func (x *SymbolPnL) GetNetProfit() string {
 	if x != nil {
 		return x.NetProfit
 	}
-	return 0
+	return ""
 }
 
 func (x *SymbolPnL) GetTotalTrades() int64 {
@@ -2086,12 +2086,12 @@ func (x *SymbolPnL) GetTradeSharePercent() float64 {
 
 type DirectionBreakdown struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	LongProfit    float64                `protobuf:"fixed64,1,opt,name=long_profit,json=longProfit,proto3" json:"long_profit,omitempty"`
+	LongProfit    string                 `protobuf:"bytes,1,opt,name=long_profit,json=longProfit,proto3" json:"long_profit,omitempty"` // monetary
 	LongTrades    int64                  `protobuf:"varint,2,opt,name=long_trades,json=longTrades,proto3" json:"long_trades,omitempty"`
-	LongWinRate   float64                `protobuf:"fixed64,3,opt,name=long_win_rate,json=longWinRate,proto3" json:"long_win_rate,omitempty"`
-	ShortProfit   float64                `protobuf:"fixed64,4,opt,name=short_profit,json=shortProfit,proto3" json:"short_profit,omitempty"`
+	LongWinRate   float64                `protobuf:"fixed64,3,opt,name=long_win_rate,json=longWinRate,proto3" json:"long_win_rate,omitempty"` // percentage (ratio)
+	ShortProfit   string                 `protobuf:"bytes,4,opt,name=short_profit,json=shortProfit,proto3" json:"short_profit,omitempty"`     // monetary
 	ShortTrades   int64                  `protobuf:"varint,5,opt,name=short_trades,json=shortTrades,proto3" json:"short_trades,omitempty"`
-	ShortWinRate  float64                `protobuf:"fixed64,6,opt,name=short_win_rate,json=shortWinRate,proto3" json:"short_win_rate,omitempty"`
+	ShortWinRate  float64                `protobuf:"fixed64,6,opt,name=short_win_rate,json=shortWinRate,proto3" json:"short_win_rate,omitempty"` // percentage (ratio)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2126,11 +2126,11 @@ func (*DirectionBreakdown) Descriptor() ([]byte, []int) {
 	return file_analytics_proto_rawDescGZIP(), []int{28}
 }
 
-func (x *DirectionBreakdown) GetLongProfit() float64 {
+func (x *DirectionBreakdown) GetLongProfit() string {
 	if x != nil {
 		return x.LongProfit
 	}
-	return 0
+	return ""
 }
 
 func (x *DirectionBreakdown) GetLongTrades() int64 {
@@ -2147,11 +2147,11 @@ func (x *DirectionBreakdown) GetLongWinRate() float64 {
 	return 0
 }
 
-func (x *DirectionBreakdown) GetShortProfit() float64 {
+func (x *DirectionBreakdown) GetShortProfit() string {
 	if x != nil {
 		return x.ShortProfit
 	}
-	return 0
+	return ""
 }
 
 func (x *DirectionBreakdown) GetShortTrades() int64 {
@@ -2223,8 +2223,8 @@ func (x *TradeDistribution) GetHoldingBuckets() []*TradeBucket {
 type TradeBucket struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Label         string                 `protobuf:"bytes,1,opt,name=label,proto3" json:"label,omitempty"`
-	MinValue      float64                `protobuf:"fixed64,2,opt,name=min_value,json=minValue,proto3" json:"min_value,omitempty"`
-	MaxValue      float64                `protobuf:"fixed64,3,opt,name=max_value,json=maxValue,proto3" json:"max_value,omitempty"`
+	MinValue      string                 `protobuf:"bytes,2,opt,name=min_value,json=minValue,proto3" json:"min_value,omitempty"` // monetary
+	MaxValue      string                 `protobuf:"bytes,3,opt,name=max_value,json=maxValue,proto3" json:"max_value,omitempty"` // monetary
 	Count         int64                  `protobuf:"varint,4,opt,name=count,proto3" json:"count,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -2267,18 +2267,18 @@ func (x *TradeBucket) GetLabel() string {
 	return ""
 }
 
-func (x *TradeBucket) GetMinValue() float64 {
+func (x *TradeBucket) GetMinValue() string {
 	if x != nil {
 		return x.MinValue
 	}
-	return 0
+	return ""
 }
 
-func (x *TradeBucket) GetMaxValue() float64 {
+func (x *TradeBucket) GetMaxValue() string {
 	if x != nil {
 		return x.MaxValue
 	}
-	return 0
+	return ""
 }
 
 func (x *TradeBucket) GetCount() int64 {
@@ -2291,9 +2291,9 @@ func (x *TradeBucket) GetCount() int64 {
 type HourlyPnL struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Hour          int32                  `protobuf:"varint,1,opt,name=hour,proto3" json:"hour,omitempty"`
-	Profit        float64                `protobuf:"fixed64,2,opt,name=profit,proto3" json:"profit,omitempty"`
+	Profit        string                 `protobuf:"bytes,2,opt,name=profit,proto3" json:"profit,omitempty"` // monetary
 	Trades        int64                  `protobuf:"varint,3,opt,name=trades,proto3" json:"trades,omitempty"`
-	WinRate       float64                `protobuf:"fixed64,4,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
+	WinRate       float64                `protobuf:"fixed64,4,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"` // percentage (ratio)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2335,11 +2335,11 @@ func (x *HourlyPnL) GetHour() int32 {
 	return 0
 }
 
-func (x *HourlyPnL) GetProfit() float64 {
+func (x *HourlyPnL) GetProfit() string {
 	if x != nil {
 		return x.Profit
 	}
-	return 0
+	return ""
 }
 
 func (x *HourlyPnL) GetTrades() int64 {
@@ -2479,7 +2479,7 @@ func (x *GetRollingMetricsResponse) GetDrawdownCurve() []*DrawdownPoint {
 type RollingPoint struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Date          string                 `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
-	Value         float64                `protobuf:"fixed64,2,opt,name=value,proto3" json:"value,omitempty"`
+	Value         float64                `protobuf:"fixed64,2,opt,name=value,proto3" json:"value,omitempty"` // ratio (Sharpe value)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2533,7 +2533,7 @@ type DrawdownEvent struct {
 	StartDate     string                 `protobuf:"bytes,1,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
 	EndDate       string                 `protobuf:"bytes,2,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`
 	DurationDays  int32                  `protobuf:"varint,3,opt,name=duration_days,json=durationDays,proto3" json:"duration_days,omitempty"`
-	DepthPercent  float64                `protobuf:"fixed64,4,opt,name=depth_percent,json=depthPercent,proto3" json:"depth_percent,omitempty"`
+	DepthPercent  float64                `protobuf:"fixed64,4,opt,name=depth_percent,json=depthPercent,proto3" json:"depth_percent,omitempty"` // percentage (ratio)
 	RecoveryDate  string                 `protobuf:"bytes,5,opt,name=recovery_date,json=recoveryDate,proto3" json:"recovery_date,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -2607,7 +2607,7 @@ func (x *DrawdownEvent) GetRecoveryDate() string {
 type DrawdownPoint struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Date            string                 `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
-	DrawdownPercent float64                `protobuf:"fixed64,2,opt,name=drawdown_percent,json=drawdownPercent,proto3" json:"drawdown_percent,omitempty"`
+	DrawdownPercent float64                `protobuf:"fixed64,2,opt,name=drawdown_percent,json=drawdownPercent,proto3" json:"drawdown_percent,omitempty"` // percentage (ratio)
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -2659,7 +2659,7 @@ func (x *DrawdownPoint) GetDrawdownPercent() float64 {
 type MonthlyWinRate struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Month         string                 `protobuf:"bytes,1,opt,name=month,proto3" json:"month,omitempty"`
-	WinRate       float64                `protobuf:"fixed64,2,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"`
+	WinRate       float64                `protobuf:"fixed64,2,opt,name=win_rate,json=winRate,proto3" json:"win_rate,omitempty"` // percentage (ratio)
 	TotalTrades   int64                  `protobuf:"varint,3,opt,name=total_trades,json=totalTrades,proto3" json:"total_trades,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -2898,20 +2898,20 @@ const file_analytics_proto_rawDesc = "" +
 	"\ftotal_trades\x18\x01 \x01(\x03R\vtotalTrades\x12\x19\n" +
 	"\bwin_rate\x18\x02 \x01(\x01R\awinRate\x12#\n" +
 	"\rprofit_factor\x18\x03 \x01(\x01R\fprofitFactor\x12%\n" +
-	"\x0eaverage_profit\x18\x04 \x01(\x01R\raverageProfit\x12!\n" +
-	"\faverage_loss\x18\x05 \x01(\x01R\vaverageLoss\x12\x1f\n" +
-	"\vlargest_win\x18\x06 \x01(\x01R\n" +
+	"\x0eaverage_profit\x18\x04 \x01(\tR\raverageProfit\x12!\n" +
+	"\faverage_loss\x18\x05 \x01(\tR\vaverageLoss\x12\x1f\n" +
+	"\vlargest_win\x18\x06 \x01(\tR\n" +
 	"largestWin\x12!\n" +
-	"\flargest_loss\x18\a \x01(\x01R\vlargestLoss\x120\n" +
+	"\flargest_loss\x18\a \x01(\tR\vlargestLoss\x120\n" +
 	"\x14max_consecutive_wins\x18\b \x01(\x03R\x12maxConsecutiveWins\x124\n" +
 	"\x16max_consecutive_losses\x18\t \x01(\x03R\x14maxConsecutiveLosses\x120\n" +
 	"\x14average_holding_time\x18\n" +
 	" \x01(\tR\x12averageHoldingTime\x12\x1d\n" +
 	"\n" +
-	"net_profit\x18\v \x01(\x01R\tnetProfit\x12#\n" +
-	"\rtotal_deposit\x18\f \x01(\x01R\ftotalDeposit\x12)\n" +
-	"\x10total_withdrawal\x18\r \x01(\x01R\x0ftotalWithdrawal\x12\x1f\n" +
-	"\vnet_deposit\x18\x0e \x01(\x01R\n" +
+	"net_profit\x18\v \x01(\tR\tnetProfit\x12#\n" +
+	"\rtotal_deposit\x18\f \x01(\tR\ftotalDeposit\x12)\n" +
+	"\x10total_withdrawal\x18\r \x01(\tR\x0ftotalWithdrawal\x12\x1f\n" +
+	"\vnet_deposit\x18\x0e \x01(\tR\n" +
 	"netDeposit\"\xfc\x01\n" +
 	"\vRiskMetrics\x120\n" +
 	"\x14max_drawdown_percent\x18\x01 \x01(\x01R\x12maxDrawdownPercent\x12!\n" +
@@ -2925,53 +2925,53 @@ const file_analytics_proto_rawDesc = "" +
 	"\n" +
 	"SymbolStat\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x16\n" +
-	"\x06profit\x18\x02 \x01(\x01R\x06profit\x12.\n" +
+	"\x06profit\x18\x02 \x01(\tR\x06profit\x12.\n" +
 	"\x13trade_share_percent\x18\x03 \x01(\x01R\x11tradeSharePercent\"k\n" +
 	"\vEquityPoint\x12\x12\n" +
 	"\x04date\x18\x01 \x01(\tR\x04date\x12\x16\n" +
-	"\x06equity\x18\x02 \x01(\x01R\x06equity\x12\x18\n" +
-	"\abalance\x18\x03 \x01(\x01R\abalance\x12\x16\n" +
-	"\x06profit\x18\x04 \x01(\x01R\x06profit\"\x95\x03\n" +
+	"\x06equity\x18\x02 \x01(\tR\x06equity\x12\x18\n" +
+	"\abalance\x18\x03 \x01(\tR\abalance\x12\x16\n" +
+	"\x06profit\x18\x04 \x01(\tR\x06profit\"\x95\x03\n" +
 	"\bDailyPnL\x12\x10\n" +
 	"\x03day\x18\x01 \x01(\tR\x03day\x12\x12\n" +
 	"\x04date\x18\x02 \x01(\tR\x04date\x12\x10\n" +
-	"\x03pnl\x18\x03 \x01(\x01R\x03pnl\x12\x16\n" +
+	"\x03pnl\x18\x03 \x01(\tR\x03pnl\x12\x16\n" +
 	"\x06trades\x18\x04 \x01(\x03R\x06trades\x12\x12\n" +
-	"\x04lots\x18\x05 \x01(\x01R\x04lots\x12\x18\n" +
-	"\abalance\x18\x06 \x01(\x01R\abalance\x12#\n" +
+	"\x04lots\x18\x05 \x01(\tR\x04lots\x12\x18\n" +
+	"\abalance\x18\x06 \x01(\tR\abalance\x12#\n" +
 	"\rprofit_factor\x18\a \x01(\x01R\fprofitFactor\x127\n" +
-	"\x18max_floating_loss_amount\x18\b \x01(\x01R\x15maxFloatingLossAmount\x125\n" +
+	"\x18max_floating_loss_amount\x18\b \x01(\tR\x15maxFloatingLossAmount\x125\n" +
 	"\x17max_floating_loss_ratio\x18\t \x01(\x01R\x14maxFloatingLossRatio\x12;\n" +
 	"\x1amax_floating_profit_amount\x18\n" +
-	" \x01(\x01R\x17maxFloatingProfitAmount\x129\n" +
+	" \x01(\tR\x17maxFloatingProfitAmount\x129\n" +
 	"\x19max_floating_profit_ratio\x18\v \x01(\x01R\x16maxFloatingProfitRatio\"\xdb\x02\n" +
 	"\n" +
 	"HourlyStat\x12\x12\n" +
 	"\x04hour\x18\x01 \x01(\x05R\x04hour\x12\x12\n" +
-	"\x04lots\x18\x02 \x01(\x01R\x04lots\x12\x18\n" +
-	"\abalance\x18\x03 \x01(\x01R\abalance\x12#\n" +
+	"\x04lots\x18\x02 \x01(\tR\x04lots\x12\x18\n" +
+	"\abalance\x18\x03 \x01(\tR\abalance\x12#\n" +
 	"\rprofit_factor\x18\x04 \x01(\x01R\fprofitFactor\x127\n" +
-	"\x18max_floating_loss_amount\x18\x05 \x01(\x01R\x15maxFloatingLossAmount\x125\n" +
+	"\x18max_floating_loss_amount\x18\x05 \x01(\tR\x15maxFloatingLossAmount\x125\n" +
 	"\x17max_floating_loss_ratio\x18\x06 \x01(\x01R\x14maxFloatingLossRatio\x12;\n" +
-	"\x1amax_floating_profit_amount\x18\a \x01(\x01R\x17maxFloatingProfitAmount\x129\n" +
+	"\x1amax_floating_profit_amount\x18\a \x01(\tR\x17maxFloatingProfitAmount\x129\n" +
 	"\x19max_floating_profit_ratio\x18\b \x01(\x01R\x16maxFloatingProfitRatio\"\xcb\x02\n" +
 	"\vTradeRecord\x12\x16\n" +
 	"\x06ticket\x18\x01 \x01(\tR\x06ticket\x12\x16\n" +
 	"\x06symbol\x18\x02 \x01(\tR\x06symbol\x12\x12\n" +
 	"\x04type\x18\x03 \x01(\tR\x04type\x12\x16\n" +
-	"\x06volume\x18\x04 \x01(\x01R\x06volume\x12\x1d\n" +
+	"\x06volume\x18\x04 \x01(\tR\x06volume\x12\x1d\n" +
 	"\n" +
-	"open_price\x18\x05 \x01(\x01R\topenPrice\x12\x1f\n" +
-	"\vclose_price\x18\x06 \x01(\x01R\n" +
+	"open_price\x18\x05 \x01(\tR\topenPrice\x12\x1f\n" +
+	"\vclose_price\x18\x06 \x01(\tR\n" +
 	"closePrice\x12\x16\n" +
-	"\x06profit\x18\a \x01(\x01R\x06profit\x12\x1b\n" +
+	"\x06profit\x18\a \x01(\tR\x06profit\x12\x1b\n" +
 	"\topen_time\x18\b \x01(\tR\bopenTime\x12\x1d\n" +
 	"\n" +
 	"close_time\x18\t \x01(\tR\tcloseTime\x12\x12\n" +
 	"\x04swap\x18\n" +
-	" \x01(\x01R\x04swap\x12\x1e\n" +
+	" \x01(\tR\x04swap\x12\x1e\n" +
 	"\n" +
-	"commission\x18\v \x01(\x01R\n" +
+	"commission\x18\v \x01(\tR\n" +
 	"commission\x12\x18\n" +
 	"\acomment\x18\f \x01(\tR\acomment\"h\n" +
 	"\x16GetRecentTradesRequest\x12\x1d\n" +
@@ -2984,7 +2984,7 @@ const file_analytics_proto_rawDesc = "" +
 	"\x05total\x18\x02 \x01(\x03R\x05total\"V\n" +
 	"\x0eMonthlyPnLItem\x12\x14\n" +
 	"\x05month\x18\x01 \x01(\x05R\x05month\x12\x16\n" +
-	"\x06profit\x18\x02 \x01(\x01R\x06profit\x12\x16\n" +
+	"\x06profit\x18\x02 \x01(\tR\x06profit\x12\x16\n" +
 	"\x06trades\x18\x03 \x01(\x03R\x06trades\"I\n" +
 	"\x14GetMonthlyPnLRequest\x12\x1d\n" +
 	"\n" +
@@ -3012,19 +3012,19 @@ const file_analytics_proto_rawDesc = "" +
 	"\x05bonus\x18\x04 \x01(\v2\x14.ant.v1.MonthlyBonusR\x05bonus\"\xff\x01\n" +
 	"\x14MonthlyDetailMetrics\x12\x1d\n" +
 	"\n" +
-	"net_return\x18\x01 \x01(\x01R\tnetReturn\x12%\n" +
+	"net_return\x18\x01 \x01(\tR\tnetReturn\x12%\n" +
 	"\x0ereturn_percent\x18\x02 \x01(\x01R\rreturnPercent\x12!\n" +
 	"\ftotal_trades\x18\x03 \x01(\x03R\vtotalTrades\x12\x19\n" +
 	"\bwin_rate\x18\x04 \x01(\x01R\awinRate\x12#\n" +
 	"\rprofit_factor\x18\x05 \x01(\x01R\fprofitFactor\x12\x1d\n" +
 	"\n" +
-	"best_trade\x18\x06 \x01(\x01R\tbestTrade\x12\x1f\n" +
-	"\vworst_trade\x18\a \x01(\x01R\n" +
+	"best_trade\x18\x06 \x01(\tR\tbestTrade\x12\x1f\n" +
+	"\vworst_trade\x18\a \x01(\tR\n" +
 	"worstTrade\"|\n" +
 	"\x10SymbolMonthlyPnL\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x1d\n" +
 	"\n" +
-	"net_profit\x18\x02 \x01(\x01R\tnetProfit\x12\x16\n" +
+	"net_profit\x18\x02 \x01(\tR\tnetProfit\x12\x16\n" +
 	"\x06trades\x18\x03 \x01(\x03R\x06trades\x12\x19\n" +
 	"\bwin_rate\x18\x04 \x01(\x01R\awinRate\"\x94\x01\n" +
 	"\x10HoldingTimeStats\x12#\n" +
@@ -3063,18 +3063,18 @@ const file_analytics_proto_rawDesc = "" +
 	"\tSymbolPnL\x12\x16\n" +
 	"\x06symbol\x18\x01 \x01(\tR\x06symbol\x12\x1d\n" +
 	"\n" +
-	"net_profit\x18\x02 \x01(\x01R\tnetProfit\x12!\n" +
+	"net_profit\x18\x02 \x01(\tR\tnetProfit\x12!\n" +
 	"\ftotal_trades\x18\x03 \x01(\x03R\vtotalTrades\x12\x19\n" +
 	"\bwin_rate\x18\x04 \x01(\x01R\awinRate\x12#\n" +
 	"\rprofit_factor\x18\x05 \x01(\x01R\fprofitFactor\x12.\n" +
 	"\x13trade_share_percent\x18\x06 \x01(\x01R\x11tradeSharePercent\"\xe6\x01\n" +
 	"\x12DirectionBreakdown\x12\x1f\n" +
-	"\vlong_profit\x18\x01 \x01(\x01R\n" +
+	"\vlong_profit\x18\x01 \x01(\tR\n" +
 	"longProfit\x12\x1f\n" +
 	"\vlong_trades\x18\x02 \x01(\x03R\n" +
 	"longTrades\x12\"\n" +
 	"\rlong_win_rate\x18\x03 \x01(\x01R\vlongWinRate\x12!\n" +
-	"\fshort_profit\x18\x04 \x01(\x01R\vshortProfit\x12!\n" +
+	"\fshort_profit\x18\x04 \x01(\tR\vshortProfit\x12!\n" +
 	"\fshort_trades\x18\x05 \x01(\x03R\vshortTrades\x12$\n" +
 	"\x0eshort_win_rate\x18\x06 \x01(\x01R\fshortWinRate\"\x8d\x01\n" +
 	"\x11TradeDistribution\x12:\n" +
@@ -3082,12 +3082,12 @@ const file_analytics_proto_rawDesc = "" +
 	"\x0fholding_buckets\x18\x02 \x03(\v2\x13.ant.v1.TradeBucketR\x0eholdingBuckets\"s\n" +
 	"\vTradeBucket\x12\x14\n" +
 	"\x05label\x18\x01 \x01(\tR\x05label\x12\x1b\n" +
-	"\tmin_value\x18\x02 \x01(\x01R\bminValue\x12\x1b\n" +
-	"\tmax_value\x18\x03 \x01(\x01R\bmaxValue\x12\x14\n" +
+	"\tmin_value\x18\x02 \x01(\tR\bminValue\x12\x1b\n" +
+	"\tmax_value\x18\x03 \x01(\tR\bmaxValue\x12\x14\n" +
 	"\x05count\x18\x04 \x01(\x03R\x05count\"j\n" +
 	"\tHourlyPnL\x12\x12\n" +
 	"\x04hour\x18\x01 \x01(\x05R\x04hour\x12\x16\n" +
-	"\x06profit\x18\x02 \x01(\x01R\x06profit\x12\x16\n" +
+	"\x06profit\x18\x02 \x01(\tR\x06profit\x12\x16\n" +
 	"\x06trades\x18\x03 \x01(\x03R\x06trades\x12\x19\n" +
 	"\bwin_rate\x18\x04 \x01(\x01R\awinRate\"9\n" +
 	"\x18GetRollingMetricsRequest\x12\x1d\n" +

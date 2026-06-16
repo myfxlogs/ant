@@ -65,44 +65,44 @@ const BacktestHistoryModal: React.FC<Props> = ({
 
   const columns: ColumnsType<any> = useMemo(() => [
     {
-      title: t('strategy.templates.backtestRuns.status', 'Status'),
+      title: t('strategy.templates.backtestRuns.table.status', 'Status'),
       dataIndex: 'status',
       key: 'status',
       width: 100,
       render: (s: unknown) => <Tag color={statusColor(s)}>{statusText(s, t)}</Tag>,
     },
     {
-      title: t('strategy.templates.backtestRuns.symbol', 'Symbol'),
+      title: t('strategy.templates.backtestRuns.table.symbol', 'Symbol'),
       dataIndex: 'symbol',
       key: 'symbol',
       width: 110,
       render: (v: string) => <Text>{v || '-'}</Text>,
     },
     {
-      title: t('strategy.templates.backtestRuns.timeframe', 'Timeframe'),
+      title: t('strategy.templates.backtestRuns.table.timeframe', 'Timeframe'),
       dataIndex: 'timeframe',
       key: 'timeframe',
       width: 90,
       render: (v: string) => <Text>{v || '-'}</Text>,
     },
     {
-      title: t('strategy.templates.backtestRuns.created', 'Created'),
+      title: t('strategy.templates.backtestRuns.table.createdAt', 'Created'),
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 170,
       render: (v: string | undefined) => <Text>{v ? formatDateTime(v) : '-'}</Text>,
     },
     {
-      title: t('strategy.templates.backtestRuns.actions', 'Actions'),
+      title: t('strategy.templates.backtestRuns.table.actions', 'Actions'),
       key: 'actions',
       width: 140,
       render: (_: unknown, record: any) => (
         <Space size="small">
           <Button type="link" size="small" onClick={() => onViewRun(record.id)}>
-            {t('strategy.backtestHistory.actions.view', 'View')}
+            {t('strategy.templates.backtestRuns.actions.view', 'View')}
           </Button>
           <Popconfirm
-            title={t('strategy.backtestHistory.deleteConfirm', 'Delete this backtest run?')}
+            title={t('strategy.templates.backtestRuns.deleteConfirm', 'Delete this backtest run?')}
             onConfirm={() => onDeleteRun(record.id)}
             okText={t('common.yes', 'Yes')}
             cancelText={t('common.no', 'No')}
@@ -116,7 +116,7 @@ const BacktestHistoryModal: React.FC<Props> = ({
 
   return (
     <Modal
-      title={t('strategy.backtestHistory.title', 'Backtest History')}
+      title={t('strategy.templates.backtestRuns.title', 'Backtest History')}
       open={open}
       onCancel={onClose}
       width={1100}
@@ -129,13 +129,13 @@ const BacktestHistoryModal: React.FC<Props> = ({
           </Button>
           {selectedRowKeys.length > 0 && (
             <Popconfirm
-              title={t('strategy.backtestHistory.batchDeleteConfirm', 'Delete {{count}} selected backtest runs?', { count: selectedRowKeys.length })}
+              title={t('strategy.templates.backtestRuns.batchDeleteConfirm', 'Delete {{count}} selected backtest runs?', { count: selectedRowKeys.length })}
               onConfirm={onBatchDelete}
               okText={t('common.yes', 'Yes')}
               cancelText={t('common.no', 'No')}
             >
               <Button danger loading={deleting}>
-                {t('strategy.backtestHistory.batchDelete', 'Delete {{count}} selected', { count: selectedRowKeys.length })}
+                {t('strategy.templates.backtestRuns.batchDelete', 'Delete {{count}}', { count: selectedRowKeys.length })}
               </Button>
             </Popconfirm>
           )}
@@ -158,7 +158,7 @@ const BacktestHistoryModal: React.FC<Props> = ({
           onChange: onPageChange,
         }}
         size="small"
-        locale={{ emptyText: t('strategy.backtestHistory.empty', 'No backtest runs found') }}
+        locale={{ emptyText: t('strategy.templates.backtestRuns.empty', 'No backtest runs found') }}
         scroll={{ x: 610 }}
       />
     </Modal>

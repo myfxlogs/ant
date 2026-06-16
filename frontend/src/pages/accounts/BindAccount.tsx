@@ -24,6 +24,17 @@ export interface BrokerSearchResult {
   servers: BrokerServer[];
 }
 
+export interface VerifyResult {
+  verified: boolean;
+  balance?: number;
+  equity?: number;
+  margin?: number;
+  freeMargin?: number;
+  leverage?: number;
+  currency?: string;
+  accountType?: string;
+}
+
 /** Translate raw MT broker errors into user-friendly messages via i18n. */
 function friendlyError(msg: string | undefined): string {
   if (!msg) return '';
@@ -47,11 +58,11 @@ export default function BindAccount() {
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const [verifying, setVerifying] = useState(false);
-  const [verifyResult, setVerifyResult] = useState<any>(null);
+  const [verifyResult, setVerifyResult] = useState<VerifyResult | null>(null);
   const [verifyError, setVerifyError] = useState('');
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
-  const { bindAccount } = useAccount();
+  const { createAccount } = useAccount();
   const connectCtx = useContext(ConnectContext);
 
   const [mtType, setMtType] = useState<'MT4' | 'MT5'>('MT4');
@@ -69,9 +80,11 @@ export default function BindAccount() {
     try {
       const companies = await accountApi.searchBroker(companySearch.trim(), mtType);
       if (companies && companies.length > 0) {
-        const results = companies.map((c: any) => ({
-          companyName: c.companyName || c.company_name,
-          servers: (c.servers || []).map((s: any) => ({ name: s.name, access: s.access })),
+        const results: BrokerSearchResult[] = (companies as Array<Record<string, unknown>>).map((c) => ({
+          companyName: String(c.companyName || c.company_name || ''),
+          servers: ((c.servers as Array<Record<string, unknown>>) || []).map((s) => ({
+            name: String(s.name || ''), access: (s.access as string[]) || [],
+          })),
         }));
         setSearchResults(results);
         showSuccess(t('accounts.bind.messages.foundBrokers', { count: results.length }));
@@ -120,13 +133,14 @@ export default function BindAccount() {
         brokerCompany: selectedCompany.companyName,
         brokerServer: selectedServer.name, brokerHost: host,
       };
-      const account = await bindAccount(request) as Account;
+      const account = await createAccount(request);
       setPassword('');
       await accountApi.connect(account.id);
       await connectCtx?.reconnect();
       showSuccess(t('accounts.bind.messages.bindSuccess'));
       navigate(`/accounts/${account.id}`);
     } catch (error) {
+      setPassword('');
       showError(friendlyError(getErrorMessage(error, '')) || t('accounts.bind.messages.bindFailed'));
     } finally { setLoading(false); }
   };

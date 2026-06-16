@@ -88,10 +88,10 @@ export default function AccountCard({
         enablingAccount === account.id ? (
           <Spin size="small" />
         ) : (
-          <CaretRightOutlined size={14} stroke={1.5} />
+          <CaretRightOutlined style={{ fontSize: 14 }} />
         )
       ) : (
-        <PauseCircleOutlined size={14} stroke={1.5} />
+        <PauseCircleOutlined style={{ fontSize: 14 }} />
       ),
       onClick: () => {
         if (account.isDisabled) {
@@ -104,7 +104,7 @@ export default function AccountCard({
     {
       key: 'edit',
       label: t('common.edit'),
-      icon: <EditOutlined size={14} stroke={1.5} />,
+      icon: <EditOutlined style={{ fontSize: 14 }} />,
       onClick: () => onEdit(account),
     },
     {
@@ -113,7 +113,7 @@ export default function AccountCard({
     {
       key: 'delete',
       label: t('common.delete'),
-      icon: <DeleteOutlined size={14} stroke={1.5} />,
+      icon: <DeleteOutlined style={{ fontSize: 14 }} />,
       danger: true,
       onClick: () => {
         Modal.confirm({
@@ -169,7 +169,7 @@ export default function AccountCard({
             <Button
               type="text"
               size="small"
-              icon={<MoreOutlined size={16} stroke={1.5} />}
+              icon={<MoreOutlined style={{ fontSize: 16 }} />}
               style={{ color: 'var(--color-text-muted)' }}
             />
           </Dropdown>
@@ -205,7 +205,7 @@ export default function AccountCard({
         <div className="flex gap-2 pt-3" style={{ borderTop: '1px solid rgba(0, 0, 0, 0.06)' }}>
           <Button
             size="small"
-            icon={<LineChartOutlined size={14} stroke={1.5} />}
+            icon={<LineChartOutlined style={{ fontSize: 14 }} />}
             onClick={() => onNavigateToTrading(account.id)}
             style={{ borderRadius: '6px' }}
           >
@@ -213,7 +213,7 @@ export default function AccountCard({
           </Button>
           <Button
             size="small"
-            icon={<UnorderedListOutlined size={14} stroke={1.5} />}
+            icon={<UnorderedListOutlined style={{ fontSize: 14 }} />}
             onClick={() => onNavigateToDetail(account.id)}
             style={{ borderRadius: '6px' }}
           >
@@ -221,7 +221,7 @@ export default function AccountCard({
           </Button>
           <Button
             size="small"
-            icon={<InfoCircleOutlined size={14} stroke={1.5} />}
+            icon={<InfoCircleOutlined style={{ fontSize: 14 }} />}
             onClick={() => onNavigateToDetail(account.id)}
             style={{ borderRadius: '6px' }}
           >

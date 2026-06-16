@@ -3,7 +3,6 @@ import { Card, Table, Input, Select, Space, Tag, Popconfirm, Button, message, Ty
 import type { TableRowSelection } from 'antd/es/table';
 import { PlusOutlined, DeleteOutlined, UserDeleteOutlined, AuditOutlined, KeyOutlined } from '@ant-design/icons';
 import { formatDateTime } from '@/utils/date';
-import { useTranslation } from 'react-i18next';
 import { StatusResult } from '@/components/common/StatusResult';
 import GradientButton from '@/components/common/GradientButton';
 import { useUserManagement } from './useUserManagement';
@@ -17,7 +16,6 @@ const { Search } = Input;
 const { Text } = Typography;
 
 export default function UserManagement() {
-  const { t } = useTranslation();
   const ctx = useUserManagement();
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [batchDeleting, setBatchDeleting] = useState(false);
@@ -35,65 +33,63 @@ export default function UserManagement() {
       await ctx.handleBatchDelete(selectedRowKeys.map(String));
       setSelectedRowKeys([]);
     } catch {
-      message.error(t('common.deleteFailed'));
+      message.error('删除失败');
     } finally {
       setBatchDeleting(false);
     }
   };
 
   const columns = [
-    { title: t('admin.userManagement.table.id'), dataIndex: 'id', key: 'id', width: 100, ellipsis: true },
-    { title: t('admin.userManagement.table.email'), dataIndex: 'email', key: 'email', width: 200 },
+    { title: 'ID', dataIndex: 'id', key: 'id', width: 100, ellipsis: true },
+    { title: '邮箱', dataIndex: 'email', key: 'email', width: 200 },
     {
-      title: t('admin.userManagement.table.accountNumber', { defaultValue: 'Account' }),
-      dataIndex: 'accountNumber', key: 'accountNumber', width: 100,
+      title: '钱包号', dataIndex: 'accountNumber', key: 'accountNumber', width: 100,
       render: (v: string) => v ? <Tag color="blue">{v}</Tag> : <Text type="secondary">—</Text>,
     },
-    { title: t('admin.userManagement.table.nickname'), dataIndex: 'nickname', key: 'nickname', width: 120 },
+    { title: '昵称', dataIndex: 'nickname', key: 'nickname', width: 120 },
     {
-      title: t('admin.userManagement.table.role'), dataIndex: 'role', key: 'role', width: 100,
+      title: '角色', dataIndex: 'role', key: 'role', width: 100,
       render: (role: string) => {
-        const roleMap: Record<string, { label: string; color: string }> = {
-          user: { label: t('admin.userManagement.roles.user'), color: 'default' },
-          super_admin: { label: t('admin.userManagement.roles.superAdmin'), color: 'gold' },
-          operation: { label: t('admin.userManagement.roles.operation'), color: 'blue' },
-          customer_service: { label: t('admin.userManagement.roles.customerService'), color: 'green' },
-          audit: { label: t('admin.userManagement.roles.audit'), color: 'purple' },
+        const m: Record<string, { label: string; color: string }> = {
+          user: { label: '用户', color: 'default' },
+          super_admin: { label: '超级管理员', color: 'gold' },
+          operation: { label: '运营', color: 'blue' },
+          customer_service: { label: '客服', color: 'green' },
+          audit: { label: '审计', color: 'purple' },
         };
-        const config = roleMap[role] || { label: role, color: 'default' };
-        return <Tag color={config.color}>{config.label}</Tag>;
+        const c = m[role] || { label: role, color: 'default' };
+        return <Tag color={c.color}>{c.label}</Tag>;
       },
     },
-    { title: t('admin.userManagement.table.mtAccountCount'), dataIndex: 'mtAccountCount', key: 'mtAccountCount', width: 80 },
+    { title: 'MT账户', dataIndex: 'mtAccountCount', key: 'mtAccountCount', width: 80 },
     {
-      title: t('admin.userManagement.table.status'), dataIndex: 'status', key: 'status', width: 80,
+      title: '状态', dataIndex: 'status', key: 'status', width: 80,
       render: (status: string) => (
         <Tag color={status === 'active' ? 'success' : 'error'}>
-          {status === 'active' ? t('admin.userManagement.status.active') : t('admin.userManagement.status.suspended')}
+          {status === 'active' ? '活跃' : '已停用'}
         </Tag>
       ),
     },
     {
-      title: t('admin.userManagement.table.createdAt'), dataIndex: 'createdAt', key: 'createdAt', width: 180,
+      title: '注册时间', dataIndex: 'createdAt', key: 'createdAt', width: 180,
       render: (_: unknown, record: UserWithAccounts) => formatDateTime(record.createdAt),
     },
     {
-      title: t('admin.userManagement.table.actions'), key: 'action', width: 280,
+      title: '操作', key: 'action', width: 280,
       render: (_: unknown, record: UserWithAccounts) => (
         <Space size="small">
-          <Button type="link" size="small" onClick={() => ctx.showEditModal(record)}>{t('common.edit')}</Button>
-          <Button type="link" size="small" onClick={() => ctx.showDetailDrawer(record)}>{t('admin.userManagement.actions.details')}</Button>
+          <Button type="link" size="small" onClick={() => ctx.showEditModal(record)}>编辑</Button>
+          <Button type="link" size="small" onClick={() => ctx.showDetailDrawer(record)}>详情</Button>
           <Button type="link" size="small" icon={<KeyOutlined size={14} />} onClick={() => ctx.showPasswordModal(record)}>
-            {t('admin.userManagement.actions.changePassword')}
+            改密
           </Button>
           <Button type="link" size="small"
             icon={record.status === 'active' ? <UserDeleteOutlined size={14} /> : <AuditOutlined size={14} />}
             onClick={() => ctx.handleToggleStatus(record)}>
-            {record.status === 'active' ? t('admin.userManagement.actions.disable') : t('admin.userManagement.actions.enable')}
+            {record.status === 'active' ? '停用' : '启用'}
           </Button>
-          <Popconfirm title={t('admin.userManagement.deleteConfirm.title')}
-            onConfirm={() => ctx.handleDelete(record.id)} okText={t('common.confirm')} cancelText={t('common.cancel')}>
-            <Button type="link" size="small" danger icon={<DeleteOutlined size={14} />}>{t('common.delete')}</Button>
+          <Popconfirm title="确认删除此用户？" onConfirm={() => ctx.handleDelete(record.id)} okText="确认" cancelText="取消">
+            <Button type="link" size="small" danger icon={<DeleteOutlined size={14} />}>删除</Button>
           </Popconfirm>
         </Space>
       ),
@@ -103,45 +99,45 @@ export default function UserManagement() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>{t('admin.userManagement.title')}</h1>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>用户管理</h1>
         <Space>
           {selectedRowKeys.length > 0 && (
             <Popconfirm
-              title={t('admin.userManagement.batchDeleteConfirm', { count: selectedRowKeys.length })}
+              title={`确认删除 ${selectedRowKeys.length} 个用户？`}
               onConfirm={handleBatchDelete}
             >
               <Button danger icon={<DeleteOutlined />} loading={batchDeleting}>
-                {t('common.deleteSelected', { count: selectedRowKeys.length })}
+                删除 {selectedRowKeys.length} 个
               </Button>
             </Popconfirm>
           )}
           <GradientButton icon={<PlusOutlined size={16} />} onClick={() => ctx.setCreateModalVisible(true)}>
-          {t('admin.userManagement.addUser')}
-        </GradientButton>
+            添加用户
+          </GradientButton>
         </Space>
       </div>
       <Card>
         <div className="mb-4 flex gap-4 flex-wrap">
-          <Search placeholder={t('admin.userManagement.filters.searchPlaceholder')} allowClear style={{ width: 250 }}
+          <Search placeholder="搜索邮箱 / 昵称 / 钱包号" allowClear style={{ width: 250 }}
             onSearch={(value) => ctx.setParams({ ...ctx.params, search: value, page: 1 })} />
-          <Select placeholder={t('admin.userManagement.filters.statusPlaceholder')} allowClear style={{ width: 120 }}
+          <Select placeholder="状态筛选" allowClear style={{ width: 120 }}
             onChange={(value) => ctx.setParams({ ...ctx.params, status: value, page: 1 })}
-            options={[{ label: t('admin.userManagement.status.active'), value: 'active' }, { label: t('admin.userManagement.status.suspended'), value: 'suspended' }]} />
-          <Select placeholder={t('admin.userManagement.filters.rolePlaceholder')} allowClear style={{ width: 140 }}
+            options={[{ label: '活跃', value: 'active' }, { label: '已停用', value: 'suspended' }]} />
+          <Select placeholder="角色筛选" allowClear style={{ width: 140 }}
             onChange={(value) => ctx.setParams({ ...ctx.params, role: value, page: 1 })}
             options={[
-              { label: t('admin.userManagement.roles.user'), value: 'user' },
-              { label: t('admin.userManagement.roles.superAdmin'), value: 'super_admin' },
-              { label: t('admin.userManagement.roles.operation'), value: 'operation' },
-              { label: t('admin.userManagement.roles.customerService'), value: 'customer_service' },
-              { label: t('admin.userManagement.roles.audit'), value: 'audit' },
+              { label: '用户', value: 'user' },
+              { label: '超级管理员', value: 'super_admin' },
+              { label: '运营', value: 'operation' },
+              { label: '客服', value: 'customer_service' },
+              { label: '审计', value: 'audit' },
             ]} />
         </div>
         <StatusResult error={ctx.error} onRetry={ctx.fetchUsers}>
           <Table rowSelection={rowSelection} scroll={{ x: 'max-content' }} columns={columns} dataSource={ctx.users} rowKey="id" loading={ctx.loading}
             pagination={{
               current: ctx.params.page, pageSize: ctx.params.pageSize, total: ctx.total, showSizeChanger: true,
-              showTotal: (total) => t('admin.userManagement.pagination.total', { total }),
+              showTotal: (total) => `共 ${total} 个用户`,
               onChange: (page, pageSize) => ctx.setParams({ ...ctx.params, page, pageSize }),
             }} />
         </StatusResult>

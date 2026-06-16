@@ -93,12 +93,15 @@ export function useStrategyWorkspaceState() {
     setHistoryLoading(true);
     try {
       const { pythonStrategyApi } = await import('@/client/pythonStrategy');
-      const resp = await pythonStrategyApi.listBacktestRuns({ accountId, limit: pageSize, offset: (page - 1) * pageSize });
+      const resp = await pythonStrategyApi.listBacktestRuns({ accountId: accountId || undefined, limit: pageSize, offset: (page - 1) * pageSize });
       const runs = resp.runs ?? [];
       setHistoryRuns(runs);
       // API has no total field — infer from returned count
       setHistoryTotal(runs.length < pageSize ? (page - 1) * pageSize + runs.length : page * pageSize + 1);
-    } catch { /* best-effort */ }
+    } catch (e) {
+      setHistoryRuns([]);
+      console.error('fetchHistoryRuns failed', e);
+    }
     finally { setHistoryLoading(false); }
   }, [accountId]);
 
@@ -126,7 +129,9 @@ export function useStrategyWorkspaceState() {
       const newPage = historyRuns.length <= 1 && historyPage > 1 ? historyPage - 1 : historyPage;
       setHistoryPage(newPage);
       fetchHistoryRuns(newPage, historyPageSize);
-    } catch { /* best-effort, onRefresh will retry */ }
+    } catch (e) {
+      console.error('deleteBacktestRun failed', e);
+    }
     finally { setHistoryDeleting(false); }
   }, [historyRuns.length, historyPage, historyPageSize, fetchHistoryRuns]);
 
@@ -140,13 +145,15 @@ export function useStrategyWorkspaceState() {
       const newPage = historyRuns.length <= historySelectedKeys.length && historyPage > 1 ? historyPage - 1 : historyPage;
       setHistoryPage(newPage);
       fetchHistoryRuns(newPage, historyPageSize);
-    } catch { /* best-effort */ }
+    } catch (e) {
+      console.error('deleteBacktestRuns failed', e);
+    }
     finally { setHistoryDeleting(false); }
   }, [historySelectedKeys, historyRuns.length, historyPage, historyPageSize, fetchHistoryRuns]);
 
   // Refetch when account changes while modal is open
   useEffect(() => {
-    if (historyModalOpen && accountId) { setHistoryPage(1); fetchHistoryRuns(1, historyPageSize); }
+    if (historyModalOpen) { setHistoryPage(1); fetchHistoryRuns(1, historyPageSize); }
   }, [accountId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // AI workflow

@@ -1,5 +1,9 @@
 /**
  * Handles SSE profit updates and flushes them to TanStack Query cache.
+ *
+ * State is module-scoped to batch updates across the SSE stream lifetime.
+ * Call `cleanupProfitBridge()` when the SSE stream is torn down to prevent
+ * stale timeouts and phantom cache updates after reconnect.
  */
 import type { QueryClient } from '@tanstack/react-query';
 import type { ProfitUpdate, OrderProfitItem } from '@/adapters/dataAdapter';
@@ -11,6 +15,16 @@ const THROTTLE_MS = 300;
 let profitTimeout: number | null = null;
 let profitLastFlush = 0;
 const pendingProfit = new Map<string, ProfitUpdate>();
+
+/** Release module-scoped state. Call when SSE stream stops / reconnects. */
+export function cleanupProfitBridge() {
+  if (profitTimeout !== null) {
+    window.clearTimeout(profitTimeout);
+    profitTimeout = null;
+  }
+  profitLastFlush = 0;
+  pendingProfit.clear();
+}
 
 function flushProfitUpdates(queryClient: QueryClient) {
   profitTimeout = null;
@@ -52,7 +66,6 @@ function flushProfitUpdates(queryClient: QueryClient) {
               ...(pick(profit.balance) !== undefined ? { balance: pick(profit.balance) } : {}),
               ...(pick(profit.equity) !== undefined ? { equity: pick(profit.equity) } : {}),
               ...(pick(profit.profit) !== undefined ? { profit: pick(profit.profit) } : {}),
-              status: 'connected' as const,
             }
           : a,
       ),
@@ -84,9 +97,11 @@ export function handleProfitUpdate(queryClient: QueryClient, profit: ProfitUpdat
   if (!profit?.accountId) return;
   pendingProfit.set(profit.accountId, profit);
 
-  if (profitTimeout) return;
+  if (profitTimeout !== null) return;
   const now = Date.now();
   const elapsed = now - profitLastFlush;
   const delay = elapsed >= THROTTLE_MS ? 0 : THROTTLE_MS - elapsed;
+  // Clear any stale timeout to prevent double-fire after reconnect.
+  if (profitTimeout !== null) window.clearTimeout(profitTimeout);
   profitTimeout = window.setTimeout(() => flushProfitUpdates(queryClient), delay);
 }

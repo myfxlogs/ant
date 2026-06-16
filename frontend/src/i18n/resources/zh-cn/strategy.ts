@@ -7,7 +7,7 @@ const strategy = {
         title: '风险评估',
         riskHigh: '风险等级：high',
         riskUnreliable: '风险评估：不可靠（isReliable=false）',
-        riskLoading: '后端风险评估仍在计算中'
+        riskLoading: '风险评估仍在计算中'
       }
     },
     codeEditor: {
@@ -186,7 +186,7 @@ const strategy = {
           hfCooldownMs: '高频模式：最小触发间隔(ms)',
           hfCooldownMsExtra: '用于去抖：两次评估/下单之间的最小间隔',
           parametersJson: '参数(JSON对象)',
-          parametersJsonExtra: '用于给策略代码传参，形如 key->value。值会以字符串形式传给后端执行。示例：{ "fast": 10, "slow": 20, "risk": "low" }'
+          parametersJsonExtra: '用于给策略代码传参，形如 key->value，运行时自动注入策略上下文。示例：{ "fast": 10, "slow": 20, "risk": "low" }'
         }
       },
       triggerModal: {
@@ -583,6 +583,7 @@ signal = {
         title: '回测报告',
         empty: '暂无回测记录',
         deleteConfirm: '确定要删除这条回测报告吗？',
+        batchDelete: '删除 {{count}} 条',
         batchDeleteConfirm: '确定要删除 {{count}} 条回测报告吗？',
         batchDeleteSuccess: '已删除 {{count}} 条回测报告',
         status: {
@@ -691,7 +692,7 @@ signal = {
     },
     asset: {
       title: '策略资产库',
-      subtitle: '资产发布、审核状态和克隆由后端维护，克隆结果是独立用户模板。',
+      subtitle: '资产发布、审核状态和克隆由系统维护，克隆结果是独立用户模板。',
       submitAsset: '提交资产',
       assetList: '资产列表',
       name: '名称',
@@ -792,8 +793,8 @@ signal = {
     },
     marketRegime: {
       title: '市场状态识别',
-      subtitle: '后端基于 K 线计算趋势、波动与效率特征，前端只展示结果。',
-      ruleVersionAlert: '当前为规则版检测模型 rule-v1，K 线权威来源仍为后端 Market/Kline 服务。',
+      subtitle: '基于历史 K 线数据分析趋势方向、波动率状态和价格效率，识别当前市场环境。',
+      ruleVersionAlert: '当前为规则版检测模型 rule-v1，由实时 K 线市场数据驱动。',
       detectSuccess: '市场状态检测完成',
       detectFailed: '市场状态检测失败',
       form: {
@@ -820,7 +821,7 @@ signal = {
     },
     experiment: {
       title: '策略实验',
-      subtitle: '参数实验、候选评分与草稿生成均由后端完成，前端只负责提交和展示。',
+      subtitle: '提交参数组合后，系统自动运行实验、评分候选策略并生成草稿。',
       ruleVersionAlert: '当前为确定性参数实验最小闭环，候选仅生成草稿，不会自动发布、调度或交易。',
       jobEventStream: 'Job 事件流',
       noEvents: '暂无事件',
@@ -1168,6 +1169,7 @@ def run(context):
       atrPct: 'ATR %',
       aiRecommendation: 'AI 策略推荐',
       aiUnavailable: 'AI 推荐不可用。请在设置中配置 AI 提供商。',
+      configureAI: '配置 AI 提供商',
       noLevels: '未检测到显著价位',
       noResults: '未返回分析结果。请尝试其他品种。',
       volLow: '低波动率 — 可考虑突破或均值回归策略，配合紧凑止损。',

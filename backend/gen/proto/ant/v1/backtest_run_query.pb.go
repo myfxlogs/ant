@@ -274,6 +274,7 @@ type ListBacktestRunsRequest struct {
 	AccountId     *string                `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3,oneof" json:"account_id,omitempty"`
 	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
 	Offset        int32                  `protobuf:"varint,3,opt,name=offset,proto3" json:"offset,omitempty"`
+	TemplateId    *string                `protobuf:"bytes,4,opt,name=template_id,json=templateId,proto3,oneof" json:"template_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -327,6 +328,13 @@ func (x *ListBacktestRunsRequest) GetOffset() int32 {
 		return x.Offset
 	}
 	return 0
+}
+
+func (x *ListBacktestRunsRequest) GetTemplateId() string {
+	if x != nil && x.TemplateId != nil {
+		return *x.TemplateId
+	}
+	return ""
 }
 
 type ListBacktestRunsResponse struct {
@@ -396,13 +404,16 @@ const file_backtest_run_query_proto_rawDesc = "" +
 	"\ametrics\x18\x02 \x01(\v2\x17.ant.v1.BacktestMetricsR\ametrics\x12!\n" +
 	"\fequity_curve\x18\x03 \x03(\x01R\vequityCurve\x12(\n" +
 	"\x04risk\x18\x04 \x01(\v2\x14.ant.v1.BacktestRiskR\x04risk\x12Q\n" +
-	"\x15execution_assumptions\x18\x05 \x01(\v2\x1c.ant.v1.ExecutionAssumptionsR\x14executionAssumptions\"z\n" +
+	"\x15execution_assumptions\x18\x05 \x01(\v2\x1c.ant.v1.ExecutionAssumptionsR\x14executionAssumptions\"\xb0\x01\n" +
 	"\x17ListBacktestRunsRequest\x12\"\n" +
 	"\n" +
 	"account_id\x18\x01 \x01(\tH\x00R\taccountId\x88\x01\x01\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x16\n" +
-	"\x06offset\x18\x03 \x01(\x05R\x06offsetB\r\n" +
-	"\v_account_id\"C\n" +
+	"\x06offset\x18\x03 \x01(\x05R\x06offset\x12$\n" +
+	"\vtemplate_id\x18\x04 \x01(\tH\x01R\n" +
+	"templateId\x88\x01\x01B\r\n" +
+	"\v_account_idB\x0e\n" +
+	"\f_template_id\"C\n" +
 	"\x18ListBacktestRunsResponse\x12'\n" +
 	"\x04runs\x18\x01 \x03(\v2\x13.ant.v1.BacktestRunR\x04runsB\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 

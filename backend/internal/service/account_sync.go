@@ -1,7 +1,6 @@
 package service
 
 import (
-	"github.com/shopspring/decimal"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -208,30 +207,18 @@ func (s *AccountSyncService) convertRecords(accountID string, uid, userID uuid.U
 		case mthub.OrderCredit:
 			ot = "CREDIT"
 		}
-		volume, vexact := r.Volume.Float64()
-		openPrice, oexact := r.OpenPrice.Float64()
-		closePrice, cexact := r.ClosePrice.Float64()
-		profit, pexact := r.Profit.Float64()
-		swap, sexact := r.Swap.Float64()
-		commission, cmexact := r.Commission.Float64()
-		if !vexact || !oexact || !cexact || !pexact || !sexact || !cmexact {
-			s.log.Warn("syncHistory: precision loss converting decimal to float64",
-				zap.String("account", accountID),
-				zap.Int64("ticket", r.Ticket),
-			)
-		}
 		tradeRecs = append(tradeRecs, &model.TradeRecord{
 			UserID:       userID,
 			AccountID:    uid,
 			Ticket:       r.Ticket,
 			Symbol:       r.SymbolRaw,
 			OrderType:    ot,
-			Volume:       decimal.NewFromFloat(volume),
-			OpenPrice:    decimal.NewFromFloat(openPrice),
-			ClosePrice:   decimal.NewFromFloat(closePrice),
-			Profit:       decimal.NewFromFloat(profit),
-			Swap:         decimal.NewFromFloat(swap),
-			Commission:   decimal.NewFromFloat(commission),
+			Volume:       r.Volume,
+			OpenPrice:    r.OpenPrice,
+			ClosePrice:   r.ClosePrice,
+			Profit:       r.Profit,
+			Swap:         r.Swap,
+			Commission:   r.Commission,
 			OpenTime:     r.OpenTime,
 			CloseTime:    r.CloseTime,
 			OrderComment: r.Comment,

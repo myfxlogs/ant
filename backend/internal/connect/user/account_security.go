@@ -77,7 +77,7 @@ func (s *AccountServer) VerifyAccount(ctx context.Context, req *connect.Request[
 		s.log.Warn("VerifyAccount: connection failed", zap.String("accountLogin", maskLogin(r.Login)), zap.Error(err))
 		return connect.NewResponse(&antv1.VerifyAccountResponse{
 			Verified: false,
-			Message:  err.Error(),
+			Message:  "Account verification failed — please check your credentials and broker server.",
 		}), nil
 	}
 	return connect.NewResponse(&antv1.VerifyAccountResponse{

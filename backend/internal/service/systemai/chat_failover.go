@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"anttrader/internal/repository"
 )
 
 // ── Circuit breaker ──
@@ -135,6 +137,9 @@ func (s *Service) resolveAllChatProviders(ctx context.Context, userID uuid.UUID,
 			if m == "" {
 				m = modelHint
 			}
+			if m == "" && len(row.Models) > 0 {
+				m = strings.TrimSpace(row.Models[0])
+			}
 			if m == "" {
 				continue
 			}
@@ -150,8 +155,38 @@ func (s *Service) resolveAllChatProviders(ctx context.Context, userID uuid.UUID,
 			})
 		}
 	}
+	if len(out) == 0 && s.gatewayProviderRepo != nil {
+		// Fallback: use system providers from AI Gateway.
+		sysProviders, sysErr := s.gatewayProviderRepo.ListEnabled(ctx)
+		if sysErr == nil {
+			for _, sp := range sysProviders {
+				if len(sp.APIKeyEncrypted) == 0 {
+					continue
+				}
+				pt, openErr := repository.OpenAPIKey(sp.APIKeyEncrypted, s.box)
+				if openErr != nil || pt == "" {
+					continue
+				}
+				base := strings.TrimRight(strings.TrimSpace(sp.BaseURL), "/")
+				if base == "" {
+					continue
+				}
+				m := modelHint
+				if m == "" && len(sp.Models) > 0 {
+					m = strings.TrimSpace(sp.Models[0])
+				}
+				if m == "" {
+					continue
+				}
+				out = append(out, chatProvider{
+					userID: userID, providerID: sp.ProviderID, model: m,
+					baseURL: base, secret: pt,
+				})
+			}
+		}
+	}
 	if len(out) == 0 {
-		return nil, fmt.Errorf("AI 未配置：请在 workspace 中点击 ⚙ 进入 AI Settings，选择一个厂商（如 DeepSeek）填写 API Key 和模型名称后启用")
+		return nil, fmt.Errorf("errors.ai.not_configured")
 	}
 	return out, nil
 }

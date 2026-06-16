@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Select } from 'antd';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -21,7 +22,7 @@ interface Props {
   onYearChange: (year: number) => void;
 }
 
-export default function SummaryCharts({
+function SummaryCharts({
   equityCurveData,
   monthlyData,
   selectedYear,
@@ -65,3 +66,5 @@ export default function SummaryCharts({
     </>
   );
 }
+
+export default memo(SummaryCharts);

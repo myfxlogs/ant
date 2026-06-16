@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -22,16 +24,35 @@ var ErrAccountPasswordMismatch = errors.New("old password does not match")
 
 // AccountService provides account CRUD and lifecycle operations.
 type AccountService struct {
-	db      *pgxpool.Pool
-	queries *repository.Queries
-	log     *zap.Logger
+	db           *pgxpool.Pool
+	queries      *repository.Queries
+	log          *zap.Logger
+	summaryMu          sync.RWMutex
+	summaryCache       map[string]*userSummaryCacheEntry // userID -> cached per-account data
+	snapshotThrottleMu sync.Mutex
+	snapshotThrottle   map[string]time.Time
+}
+
+// userSummaryCacheEntry holds per-account data for a user, enabling incremental
+// aggregate updates from profit events without a full DB scan.
+type userSummaryCacheEntry struct {
+	accounts map[string]accountSummaryItem // accountID -> latest metrics
+	summary  UserAccountsSummary           // pre-computed aggregate
+}
+
+type accountSummaryItem struct {
+	balance float64
+	equity  float64
+	status  string
 }
 
 // NewAccountService creates an account service backed by the given pool.
 func NewAccountService(db *pgxpool.Pool) *AccountService {
 	return &AccountService{
-		db:      db,
-		queries: repository.New(db),
+		db:           db,
+		queries:      repository.New(db),
+		summaryCache:     make(map[string]*userSummaryCacheEntry),
+		snapshotThrottle: make(map[string]time.Time),
 	}
 }
 
@@ -144,6 +165,7 @@ func (s *AccountService) CreateAccount(ctx context.Context, userID uuid.UUID, lo
 	if err := tx.Commit(ctx); err != nil {
 		return "", fmt.Errorf("service: commit tx: %w", err)
 	}
+	s.InvalidateSummaryCache(userID.String())
 	return id, nil
 }
 
@@ -163,6 +185,11 @@ func (s *AccountService) UpdateAccount(ctx context.Context, userID uuid.UUID, id
 	}
 	if tag.RowsAffected() == 0 {
 		return pgx.ErrNoRows
+	}
+	// Invalidate summary cache when disabled status may have changed (disabled
+	// accounts stop sending profit events, so incremental updates can't fix it).
+	if isDisabled != nil {
+		s.InvalidateSummaryCache(userID.String())
 	}
 	return nil
 }
@@ -196,5 +223,6 @@ func (s *AccountService) DeleteAccount(ctx context.Context, userID uuid.UUID, id
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("service: delete account: commit tx: %w", err)
 	}
+	s.InvalidateSummaryCache(userID.String())
 	return nil
 }

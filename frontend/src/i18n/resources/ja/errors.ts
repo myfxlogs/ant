@@ -62,7 +62,11 @@ const errors = {
     audit_log_not_found: '監査ログが見つかりません',
     broker_search_failed: 'ブローカーの検索に失敗しました',
     broker_not_found: 'ブローカーが見つかりません',
-    broker_server_unavailable: 'ブローカーサーバーは現在利用できません'
+    broker_server_unavailable: 'ブローカーサーバーは現在利用できません',
+    ai: {
+      not_configured: 'AIプロバイダーが未設定です。⚙をクリックしてAI設定でAPIキーを登録してください。',
+      internal_error: 'AIサービスエラー。しばらくしてから再試行してください。',
+    }
   }
 } as const;
 

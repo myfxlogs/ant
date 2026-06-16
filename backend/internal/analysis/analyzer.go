@@ -133,14 +133,12 @@ func (a *Analyzer) Analyze(
 		return result, err
 	}
 
-	// Phase 4: AI recommendation placeholder.
-	// The handler builds the prompt and calls the LLM after the analysis.
-	if err := phaseFn("ai_recommendation", result); err != nil {
-		return result, err
-	}
-
-	// Phase 5: Complete.
-	return result, phaseFn("complete", result)
+	// Phase 4: Analysis complete — handler takes over for AI recommendation + final completion.
+	// We do NOT send "ai_recommendation" or "complete" here because the handler
+	// calls the LLM after Analyze() returns and then sends those phases itself.
+	// If we sent "complete" now, the frontend would break out of the SSE loop
+	// before receiving the real AI content.
+	return result, nil
 }
 
 // BuildAIPrompt constructs an LLM prompt from the computed analysis.

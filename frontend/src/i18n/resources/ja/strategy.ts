@@ -7,7 +7,7 @@ const strategy = {
         title: 'リスク評価',
         riskHigh: 'リスクレベル：高',
         riskUnreliable: 'リスク評価：信頼できない（isReliable=false）',
-        riskLoading: 'バックエンドリスク評価を計算中です'
+        riskLoading: 'リスク評価を計算中です'
       }
     },
     codeEditor: {
@@ -577,6 +577,7 @@ signal = {
         title: 'バックテストレポート',
         empty: 'バックテスト記録がありません',
         deleteConfirm: 'このバックテストレポートを削除しますか？',
+        batchDelete: '{{count}}件を削除',
         batchDeleteConfirm: '{{count}}件のバックテストレポートを削除しますか？',
         batchDeleteSuccess: '{{count}}件のバックテストレポートを削除しました',
         status: {
@@ -742,7 +743,7 @@ signal = {
     },
     asset: {
       title: 'ストラテジーアセット',
-      subtitle: 'アセットの公開、レビューステータス、複製はバックエンドで管理されます。複製結果は独立したユーザーテンプレートです。',
+      subtitle: 'アセットの公開、レビューステータス、複製はシステムで管理されます。複製結果は独立したユーザーテンプレートです。',
       submitAsset: 'アセットを提出',
       assetList: 'アセット一覧',
       name: '名前',
@@ -803,8 +804,8 @@ signal = {
     },
     marketRegime: {
       title: '相場状態検出',
-      subtitle: 'バックエンドがK線からトレンド、ボラティリティ、効率性の特徴量を計算します。フロントエンドは結果を表示するのみです。',
-      ruleVersionAlert: '現在はルールベース検出モデル rule-v1 を使用しています。K線の正規データソースはバックエンドのMarket/Klineサービスです。',
+      subtitle: '過去のK線データからトレンド方向、ボラティリティ状態、価格効率性を分析し、現在の市場環境を分類します。',
+      ruleVersionAlert: '現在はルールベース検出モデル rule-v1 を使用しており、リアルタイムK線市場データで駆動されています。',
       detectSuccess: '相場状態検出が完了しました',
       detectFailed: '相場状態検出に失敗しました',
       form: {
@@ -831,7 +832,7 @@ signal = {
     },
     experiment: {
       title: 'ストラテジー実験',
-      subtitle: 'パラメーター実験、候補スコアリング、下書き生成はバックエンドが処理します。フロントエンドは送信と表示のみ行います。',
+      subtitle: 'パラメーターの組み合わせを送信すると、システムが自動的に実験を実行し、候補戦略をスコアしてドラフトを生成します。',
       ruleVersionAlert: '現在の最小ループ：決定論的パラメーター実験。候補は下書きを生成するのみで、自動公開、スケジュール、取引は行いません。',
       jobEventStream: 'Jobイベントストリーム',
       noEvents: 'イベントなし',
@@ -1141,6 +1142,7 @@ def run(context):
       atrPct: 'ATR %',
       aiRecommendation: 'AI 戦略推奨',
       aiUnavailable: 'AI推奨は利用できません。設定でAIプロバイダーを構成してください。',
+      configureAI: 'AIプロバイダーを設定',
       noLevels: '有意なレベルは検出されませんでした',
       noResults: '分析結果が返されませんでした。別の銘柄をお試しください。',
       volLow: '低ボラティリティ — ブレイクアウトまたは平均回帰戦略をタイトなストップで検討。',

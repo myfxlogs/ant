@@ -284,7 +284,7 @@ function AccountAnalyticsSection(props: Props) {
               </div>
             ) : (
               <div className="flex items-center justify-center h-[200px]" style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>
-                {t('accounts.analytics.empty.monthlyProfit')}
+                {t('accounts.analytics.empty.symbolDistribution')}
               </div>
             )}
           </StatusResult>

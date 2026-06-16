@@ -68,7 +68,7 @@ async function clickTab(page: Page, re: RegExp): Promise<boolean> {
 // Main
 // ══════════════════════════════════════
 async function run() {
-  const browser = await chromium.launch({ headless: true, executablePath: '/snap/bin/chromium', args: ['--no-sandbox'] });
+  const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   const jsErrs: string[] = [];
   const apiLog: string[] = []; let apiCount = 0;
@@ -123,29 +123,83 @@ async function run() {
     shot(page, 'structure');
   });
 
-  // ═══ PHASE 3: SYMBOL ANALYSIS — ENTER + ANALYZE ═══
-  await phase('Symbol Analysis', page, async () => {
-    // Find the symbol input
-    const inputs = await page.$$('input');
-    let symInput: any = null;
-    for (const inp of inputs) {
-      const ph = await inp.getAttribute('placeholder');
-      if (ph && /symbol|Symbol|品种/i.test(ph)) { symInput = inp; break; }
+  // ═══ PHASE 3: SELECT ACCOUNT ═══
+  await phase('Select Account', page, async () => {
+    // Wait for page to fully render (React lazy-load + account fetch)
+    await page.waitForTimeout(3000);
+
+    // Find all ant-select elements (both account and symbol are Select components)
+    const allSelects = await page.$$('.ant-select');
+    if (allSelects.length < 1) {
+      // Try alternative: look for any select-like elements
+      const altSelects = await page.$$('[class*="select"]');
+      W(`No ant-select found (alt: ${altSelects.length})`);
+      return;
     }
-    if (!symInput) { W('Symbol input not found'); return; }
 
-    // Human-like: click, pause, type symbol
-    await symInput.click({ force: true });
-    await humanPause(300, 600);
-    await page.keyboard.type('EURUSD', { delay: 50 + Math.random() * 40 });
-    await humanPause(400, 800);
-    OK('Symbol: EURUSD');
+    // First Select is the account selector
+    await allSelects[0].click({ force: true });
+    await humanPause(1000, 1500);
 
-    // Click Analyze button
-    const analyzeBtn = await page.$('button.ant-btn-primary:has(.anticon-thunderbolt)');
+    // Find dropdown options
+    const options = await page.$$('.ant-select-item-option');
+    if (options.length > 0) {
+      await options[0].click({ force: true });
+      await humanPause(800, 1200);
+      const selText = await allSelects[0].textContent();
+      OK(`Account selected: ${selText?.trim().slice(0, 40) || '?'}`);
+    } else {
+      // Try typing to trigger search in Select
+      W(`Dropdown had ${options.length} options — trying type-to-search`);
+    }
+    shot(page, 'account-selected');
+  });
+
+  // ═══ PHASE 4: SYMBOL ANALYSIS — SELECT + ANALYZE ═══
+  await phase('Symbol Analysis', page, async () => {
+    // Find all ant-select elements; second one is SymbolPicker
+    const allSelects = await page.$$('.ant-select');
+    if (allSelects.length < 2) { W(`Symbol selector not found (only ${allSelects.length} selects)`); return; }
+
+    // Click SymbolPicker to open dropdown
+    await allSelects[1].click({ force: true });
+    await humanPause(800, 1200);
+
+    // Type to search for EURUSD
+    await page.keyboard.type('EURUSD', { delay: 60 });
+    await humanPause(1200, 1800);
+
+    // Select matching option
+    const symOptions = await page.$$('.ant-select-item-option');
+    if (symOptions.length > 0) {
+      let picked = false;
+      for (const opt of symOptions) {
+        const txt = (await opt.textContent()) || '';
+        if (/EURUSD/i.test(txt)) {
+          await opt.click({ force: true });
+          picked = true;
+          break;
+        }
+      }
+      if (!picked) {
+        await symOptions[0].click({ force: true });
+      }
+      const symText = await allSelects[1].textContent();
+      OK(`Symbol: ${symText?.trim() || '?'}`);
+    } else {
+      W(`No symbol options (${symOptions.length}) — may need account first`);
+      return;
+    }
+
+    await humanPause(500, 800);
+
+    // Click Analyze button (Thunderbolt icon)
+    const analyzeBtn = await page.$('button.ant-btn-primary');
     if (!analyzeBtn) { W('Analyze button not found'); return; }
 
-    await humanPause(400, 900); // hesitation before analyzing
+    const btnText = await analyzeBtn.textContent();
+    if (!/Analyze|分析/i.test(btnText || '')) { W('Button text mismatch'); return; }
+
     await analyzeBtn.click({ force: true });
     OK('Analysis started');
     shot(page, 'analyze-start');
@@ -260,9 +314,21 @@ async function run() {
     await humanPause(400, 700);
 
     const body = await page.textContent('body') || '';
-    // AI recommendation can be markdown or "AI unavailable"
-    const hasAI = /recommend|建议|bullish|bearish|markdown|unavailable|分析/i.test(body);
-    hasAI ? OK('AI recommendation section') : W('No AI section');
+    const hasAICard = /AI Strategy Recommendation|AI 策略推荐/i.test(body);
+    if (!hasAICard) { W('AI Recommendation card missing'); return; }
+
+    // Distinguish real AI content from the fallback "Configure AI Provider"
+    const isFallback = /Configure AI Provider|配置 AI 提供商/i.test(body);
+    if (isFallback) {
+      W('AI unavailable — fallback shown');
+      // Verify the Configure button opens AI Settings
+      const configBtn = await page.$('button:has-text("Configure"), button:has-text("配置")');
+      configBtn ? OK('Configure AI Provider button present + clickable') : W('Configure button missing');
+    } else if (/bullish|bearish|buy|sell|long|short/i.test(body)) {
+      OK('AI recommendation has real trading content');
+    } else {
+      W('AI content unclear (neither real content nor fallback)');
+    }
 
     shot(page, 'ai-rec');
   });

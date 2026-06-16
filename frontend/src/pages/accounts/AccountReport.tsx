@@ -1,32 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Button, Select, Spin, Tag, Typography } from 'antd';
-import {
-  ArrowLeftOutlined, ReloadOutlined, TrophyOutlined,
-  PieChartOutlined, LineChartOutlined, BarChartOutlined,
-  RiseOutlined, FallOutlined,
-} from '@ant-design/icons';
+import { Button, Select, Spin, Tag } from 'antd';
+import { ArrowLeftOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Bar, CartesianGrid, ComposedChart, Cell, Line, Pie, PieChart,
-  ResponsiveContainer, Tooltip, XAxis, YAxis,
-} from 'recharts';
-import { CHART_COLORS } from '@/constants/performance';
 import { analyticsApi } from '@/client/analytics';
-import type {
-  AttributionAnalysisData, RollingMetricsData, TradeBucket,
-  AccountAnalyticsData,
-} from '@/client/analytics';
+import type { AttributionAnalysisData, RollingMetricsData, AccountAnalyticsData } from '@/client/analytics';
 import { queryKeys } from '@/queries/queryKeys';
 import { useAccountDetailQuery } from '@/queries/useAccountDetailQuery';
 import { useAccountFinancials } from '@/queries/useAccountFinancials';
-import { StatusResult } from '@/components/common/StatusResult';
-import MonthlyAnalysisCard from './components/MonthlyAnalysisCard';
+import ReportNarrative from './components/ReportNarrative';
+import ReportChartPanels from './components/ReportChartPanels';
 import type { MonthlyAnalysisPoint } from './components/MonthlyAnalysisCard.shared';
-import { HourlyDailyChart } from './components/HourlyDailyChart';
-
-const { Title, Text, Paragraph } = Typography;
 
 type Period = 'week' | 'month' | 'quarter' | 'year';
 
@@ -47,36 +32,28 @@ export default function AccountReport() {
   const currentAccount = accountQ.data;
   const financials = financialsQ.data ?? { balance: 0, equity: 0, profit: 0, profitPercent: 0, margin: 0, freeMargin: 0, marginLevel: 0, credit: 0 };
 
-  // Attribution data
   const attributionQ = useQuery<AttributionAnalysisData>({
     queryKey: queryKeys.analytics.attribution(id!),
     queryFn: () => analyticsApi.getAttributionAnalysis(id!),
-    enabled: !!id,
-    staleTime: 5 * 60_000,
+    enabled: !!id, staleTime: 5 * 60_000,
   });
 
-  // Rolling metrics data
   const rollingQ = useQuery<RollingMetricsData>({
     queryKey: queryKeys.analytics.rolling(id!),
     queryFn: () => analyticsApi.getRollingMetrics(id!),
-    enabled: !!id,
-    staleTime: 5 * 60_000,
+    enabled: !!id, staleTime: 5 * 60_000,
   });
 
-  // Analytics data (shared cache with detail page)
   const analyticsQ = useQuery<AccountAnalyticsData>({
     queryKey: queryKeys.analytics.detail(id!, period),
     queryFn: () => analyticsApi.getAccountAnalytics(id!, period),
-    enabled: !!id,
-    staleTime: 5 * 60_000,
+    enabled: !!id, staleTime: 5 * 60_000,
   });
 
-  // Monthly analysis data
   const monthlyAnalysisQ = useQuery<{ years: number[]; data: unknown[] }>({
     queryKey: queryKeys.analytics.monthlyAnalysis(id!),
     queryFn: () => analyticsApi.getMonthlyAnalysis(id!),
-    enabled: !!id,
-    staleTime: 5 * 60_000,
+    enabled: !!id, staleTime: 5 * 60_000,
   });
 
   useEffect(() => () => abortRef.current?.(), []);
@@ -88,7 +65,6 @@ export default function AccountReport() {
     setNarrative('');
     setSections({});
     setReportError(null);
-
     const abort = analyticsApi.generateReportStream(id, period, i18n.language, {
       onPhase: () => {},
       onDelta: (delta) => setNarrative((p) => p + delta),
@@ -103,11 +79,8 @@ export default function AccountReport() {
   }, [id, period, i18n.language]);
 
   const { balance = 0, equity = 0, profit = 0, profitPercent = 0, margin = 0, freeMargin = 0, marginLevel = 0 } = financials;
-  const attribution = attributionQ.data;
-  const rolling = rollingQ.data;
   const analytics = analyticsQ.data;
 
-  // Derived chart data from analytics
   const derived = useMemo(() => ({
     hourlyData: (analytics?.hourlyStats || []).map((h) => ({
       ...h, hourLabel: `${String(h.hour).padStart(2, '0')}:00`,
@@ -118,18 +91,15 @@ export default function AccountReport() {
       maxFloatingLossAmount: d.maxFloatingLossAmount, maxFloatingLossRatio: d.maxFloatingLossRatio,
       maxFloatingProfitAmount: d.maxFloatingProfitAmount, maxFloatingProfitRatio: d.maxFloatingProfitRatio,
     })),
-    tradeStats: analytics?.tradeStats || { totalTrades: 0, winRate: 0, profitFactor: 0 },
-    riskMetrics: analytics?.riskMetrics || { maxDrawdownPercent: 0, sharpeRatio: 0 },
   }), [analytics]);
 
   const monthlyAnalysisYears = monthlyAnalysisQ.data?.years ?? [];
-  const monthlyAnalysisData = (monthlyAnalysisQ.data?.data ?? []) as unknown as MonthlyAnalysisPoint[];
+  const raw = monthlyAnalysisQ.data?.data;
+  const monthlyAnalysisData: MonthlyAnalysisPoint[] = Array.isArray(raw) ? raw as MonthlyAnalysisPoint[] : [];
 
   const periodLabels: Record<Period, string> = {
-    week: t('accounts.report.periods.week'),
-    month: t('accounts.report.periods.month'),
-    quarter: t('accounts.report.periods.quarter'),
-    year: t('accounts.report.periods.year'),
+    week: t('accounts.report.periods.week'), month: t('accounts.report.periods.month'),
+    quarter: t('accounts.report.periods.quarter'), year: t('accounts.report.periods.year'),
   };
 
   if (!currentAccount) {
@@ -146,21 +116,16 @@ export default function AccountReport() {
               onClick={() => navigate(`/accounts/${id}`)} style={{ color: 'var(--color-text-muted)' }} />
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
-                  {t('accounts.report.title')}
-                </h1>
+                <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>{t('accounts.report.title')}</h1>
                 <Tag color={currentAccount.mtType === 'MT4' ? 'blue' : 'purple'}>{currentAccount.mtType}</Tag>
               </div>
-              <p style={{ color: 'var(--color-text-muted)', fontSize: 14 }}>
-                {currentAccount.login} · {currentAccount.brokerCompany}
-              </p>
+              <p style={{ color: 'var(--color-text-muted)', fontSize: 14 }}>{currentAccount.login} · {currentAccount.brokerCompany}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <Select value={period} onChange={(v) => setPeriod(v)} style={{ width: 120 }}
               options={Object.entries(periodLabels).map(([k, v]) => ({ value: k, label: v }))} />
-            <Button type="primary" icon={<ReloadOutlined />} loading={generating}
-              onClick={handleGenerate}>
+            <Button type="primary" icon={<ReloadOutlined />} loading={generating} onClick={handleGenerate}>
               {t('accounts.report.generate')}
             </Button>
           </div>
@@ -183,192 +148,35 @@ export default function AccountReport() {
           ))}
         </div>
 
-        {/* AI Narrative */}
-        {(narrative || generating) && (
-          <div className="rounded-2xl p-6 mb-6" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
-            <Title level={5} style={{ marginBottom: 16 }}>
-              <TrophyOutlined /> {t('accounts.report.aiAnalysis')}
-            </Title>
-            {reportError && (
-              <div className="rounded-lg p-3 mb-4" style={{ background: 'var(--color-danger-bg)', border: '1px solid var(--color-danger-bg-subtle)', color: 'var(--color-danger)' }}>
-                {reportError}
-              </div>
-            )}
-            {/* Structured sections */}
-            {sections.summary && (
-              <div className="mb-4">
-                <Text strong style={{ color: 'var(--color-text)' }}>{t('accounts.report.sections.summary')}</Text>
-                <Paragraph style={{ color: 'var(--color-text-secondary)', marginTop: 4 }}>{sections.summary}</Paragraph>
-              </div>
-            )}
-            {sections.findings && (
-              <div className="mb-4">
-                <Text strong style={{ color: 'var(--color-text)' }}>{t('accounts.report.sections.findings')}</Text>
-                <Paragraph style={{ color: 'var(--color-text-secondary)', marginTop: 4, whiteSpace: 'pre-wrap' }}>{sections.findings}</Paragraph>
-              </div>
-            )}
-            {sections.recommendations && (
-              <div className="mb-4">
-                <Text strong style={{ color: 'var(--color-text)' }}>{t('accounts.report.sections.recommendations')}</Text>
-                <Paragraph style={{ color: 'var(--color-text-secondary)', marginTop: 4, whiteSpace: 'pre-wrap' }}>{sections.recommendations}</Paragraph>
-              </div>
-            )}
-            {/* Raw streaming text if sections not parsed yet */}
-            {!sections.summary && narrative && (
-              <div className="rounded-lg p-4" style={{ background: 'var(--color-bg-secondary)', whiteSpace: 'pre-wrap', color: 'var(--color-text-secondary)', fontSize: 14, lineHeight: 1.8 }}>
-                {narrative}
-                {generating && <span className="inline-block w-2 h-4 ml-1 animate-pulse" style={{ background: 'var(--color-primary)' }} />}
-              </div>
-            )}
-          </div>
-        )}
+        {/* AI Report Narrative */}
+        <ReportNarrative
+          narrative={narrative}
+          sections={sections}
+          reportError={reportError}
+          generating={generating}
+          onNavigateAISettings={() => navigate('/strategy/workspace')}
+        />
 
-        {/* Attribution Charts */}
-        <StatusResult loading={attributionQ.isLoading} error={attributionQ.error?.message}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            {/* Symbol P&L ranking */}
-            <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
-              <Title level={5}><BarChartOutlined /> {t('accounts.report.symbolPnL')}</Title>
-              {attribution?.symbolPnls?.length ? (() => {
-                const data = attribution.symbolPnls.slice(0, 8);
-                const maxSymbolLen = Math.max(...data.map((s: { symbol: string }) => s.symbol.length), 3);
-                const yWidth = Math.min(Math.round(maxSymbolLen * 6.8 + 10), 90);
-                const yFontSize = maxSymbolLen > 12 ? 8 : maxSymbolLen > 8 ? 9 : 10;
-                return (
-                <ResponsiveContainer width="100%" height={Math.max(data.length * 36, 140)}>
-                  <ComposedChart layout="vertical" data={data} barCategoryGap="8%">
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" horizontal={false} />
-                    <XAxis type="number" stroke="var(--color-text-muted)" fontSize={11} />
-                    <YAxis type="category" dataKey="symbol" width={yWidth} stroke="var(--color-text-muted)" fontSize={yFontSize} />
-                    <Tooltip contentStyle={{ background: 'var(--color-bg-card)', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px var(--color-shadow)' }} />
-                    <Bar dataKey="netProfit" radius={[0, 4, 4, 0]} maxBarSize={30} isAnimationActive={false} cursor="pointer">
-                      {data.map((_: unknown, i: number) => (
-                        <Cell key={i} fill={(data[i]?.netProfit ?? 0) >= 0 ? 'var(--color-success)' : 'var(--color-danger)'} />
-                      ))}
-                    </Bar>
-                  </ComposedChart>
-                </ResponsiveContainer>
-                );
-              })() : <div className="flex items-center justify-center h-[280px]" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.analytics.empty.monthlyProfit')}</div>}
-            </div>
-
-            {/* Direction breakdown */}
-            <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
-              <Title level={5}><PieChartOutlined /> {t('accounts.report.direction')}</Title>
-              {attribution?.direction ? (
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  {[
-                    { label: t('accounts.report.directionLong'), color: 'var(--color-success)', d: { profit: attribution.direction.longProfit ?? 0, trades: attribution.direction.longTrades ?? 0, winRate: attribution.direction.longWinRate ?? 0 } },
-                    { label: t('accounts.report.directionShort'), color: 'var(--color-danger)', d: { profit: attribution.direction.shortProfit ?? 0, trades: attribution.direction.shortTrades ?? 0, winRate: attribution.direction.shortWinRate ?? 0 } },
-                  ].map(({ label, color, d }) => (
-                    <div key={label} className="rounded-xl p-4" style={{ border: '1px solid var(--color-border)' }}>
-                      <Text strong style={{ color }}>{label}</Text>
-                      <div className="mt-2 space-y-1" style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>
-                        <div>{t('accounts.analytics.stats.netProfit')}: <strong style={{ color: d.profit >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>{d.profit >= 0 ? '+' : ''}{d.profit.toFixed(2)}</strong></div>
-                        <div>{t('accounts.analytics.stats.totalTrades')}: {d.trades}</div>
-                        <div>{t('accounts.analytics.stats.winRate')}: {d.winRate.toFixed(1)}%</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-[200px]" style={{ color: 'var(--color-text-muted)' }}>{t('accounts.analytics.empty.monthlyProfit')}</div>
-              )}
-            </div>
-
-            {/* Trade profit distribution */}
-            {attribution?.tradeDistribution?.profitBuckets?.length ? (
-              <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
-                <Title level={5}><BarChartOutlined /> {t('accounts.report.tradeDistribution')}</Title>
-                <ResponsiveContainer width="100%" height={250}>
-                  <ComposedChart data={attribution.tradeDistribution.profitBuckets} barCategoryGap="10%">
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                    <XAxis dataKey="label" stroke="var(--color-text-muted)" fontSize={10} angle={-30} textAnchor="end" height={60} />
-                    <YAxis stroke="var(--color-text-muted)" fontSize={11} />
-                    <Tooltip contentStyle={{ background: 'var(--color-bg-card)', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px var(--color-shadow)' }} />
-                    <Bar dataKey="count" fill="var(--color-info)" radius={[4, 4, 0, 0]} maxBarSize={50} isAnimationActive={false} cursor="pointer" />
-                  </ComposedChart>
-                </ResponsiveContainer>
-              </div>
-            ) : null}
-          </div>
-        </StatusResult>
-
-        {/* Monthly Analysis + Hourly/Daily */}
-        <StatusResult loading={analyticsQ.isLoading || monthlyAnalysisQ.isLoading} error={(analyticsQ.error || monthlyAnalysisQ.error)?.message}>
-          {monthlyAnalysisYears.length > 0 && (
-            <MonthlyAnalysisCard
-              accountId={id}
-              years={monthlyAnalysisYears}
-              data={monthlyAnalysisData}
-              winRateData={rolling?.monthlyWinRates}
-              currency={currentAccount.currency}
-            />
-          )}
-          {derived.hourlyData.length > 0 && (
-            <HourlyDailyChart hourlyData={derived.hourlyData} dailyPnLData={derived.dailyPnLData} currency={currentAccount.currency || 'USD'} />
-          )}
-        </StatusResult>
-
-        {/* Rolling Metrics */}
-        <StatusResult loading={rollingQ.isLoading} error={rollingQ.error?.message}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            {/* Equity + Drawdown overlay */}
-            {rolling?.equityCurve?.length ? (
-              <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
-                <Title level={5}><LineChartOutlined /> {t('accounts.report.drawdownOverlay')}</Title>
-                <ResponsiveContainer width="100%" height={280}>
-                  <ComposedChart data={rolling.equityCurve.map((p, i) => ({
-                    ...p,
-                    drawdown: rolling.drawdownCurve?.[i]?.drawdownPercent ?? 0,
-                  }))}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                    <XAxis dataKey="date" stroke="var(--color-text-muted)" fontSize={10} />
-                    <YAxis yAxisId="left" stroke="var(--color-text-muted)" fontSize={11} />
-                    <YAxis yAxisId="right" orientation="right" stroke="var(--color-danger)" fontSize={11} domain={[100, 0]} />
-                    <Tooltip contentStyle={{ background: 'var(--color-bg-card)', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px var(--color-shadow)' }} />
-                    <Line yAxisId="left" type="monotone" dataKey="equity" stroke="var(--color-info)" strokeWidth={2} dot={false} name="Equity" isAnimationActive={false} />
-                    <Line yAxisId="right" type="monotone" dataKey="drawdown" stroke="var(--color-danger)" strokeWidth={1} dot={false} name="DD%" isAnimationActive={false} fillOpacity={0.1} fill="var(--color-danger)" />
-                  </ComposedChart>
-                </ResponsiveContainer>
-              </div>
-            ) : null}
-
-            {/* Drawdown events */}
-            {rolling?.drawdownEvents?.length ? (
-              <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
-                <Title level={5}><FallOutlined /> {t('accounts.report.drawdownEvents')}</Title>
-                <div className="space-y-2 max-h-[280px] overflow-y-auto">
-                  {rolling.drawdownEvents.map((e, i) => (
-                    <div key={i} className="flex items-center justify-between rounded-lg p-3" style={{ border: '1px solid var(--color-border)' }}>
-                      <div>
-                        <Text style={{ color: 'var(--color-text)', fontSize: 13 }}>{e.startDate} → {e.endDate || '...'}</Text>
-                        {e.recoveryDate && <Text style={{ color: 'var(--color-text-muted)', fontSize: 12, marginLeft: 8 }}>{t('accounts.report.recovered')}: {e.recoveryDate}</Text>}
-                      </div>
-                      <Tag color="error">{(e.depthPercent ?? 0).toFixed(1)}%</Tag>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            {/* Monthly win rate trend */}
-            {rolling?.monthlyWinRates?.length ? (
-              <div className="rounded-2xl p-5" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
-                <Title level={5}><RiseOutlined /> {t('accounts.report.winRateTrend')}</Title>
-                <ResponsiveContainer width="100%" height={250}>
-                  <ComposedChart data={rolling.monthlyWinRates}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                    <XAxis dataKey="month" stroke="var(--color-text-muted)" fontSize={10} />
-                    <YAxis stroke="var(--color-text-muted)" fontSize={11} domain={[0, 100]} />
-                    <Tooltip contentStyle={{ background: 'var(--color-bg-card)', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px var(--color-shadow)' }} />
-                    <Line type="monotone" dataKey="winRate" stroke="var(--color-success)" strokeWidth={2} dot isAnimationActive={false} />
-                  </ComposedChart>
-                </ResponsiveContainer>
-              </div>
-            ) : null}
-          </div>
-        </StatusResult>
+        {/* Charts */}
+        <ReportChartPanels
+          accountId={id}
+          currency={currentAccount.currency || 'USD'}
+          attribution={attributionQ.data}
+          rolling={rollingQ.data}
+          attributionLoading={attributionQ.isLoading}
+          attributionError={attributionQ.error?.message ?? null}
+          rollingLoading={rollingQ.isLoading}
+          rollingError={rollingQ.error?.message ?? null}
+          analyticsLoading={analyticsQ.isLoading}
+          analyticsError={analyticsQ.error?.message ?? null}
+          monthlyAnalysisLoading={monthlyAnalysisQ.isLoading}
+          monthlyAnalysisError={monthlyAnalysisQ.error?.message ?? null}
+          monthlyAnalysisYears={monthlyAnalysisYears}
+          monthlyAnalysisData={monthlyAnalysisData}
+          monthlyWinRates={rollingQ.data?.monthlyWinRates}
+          hourlyData={derived.hourlyData}
+          dailyPnLData={derived.dailyPnLData}
+        />
       </div>
     </div>
   );

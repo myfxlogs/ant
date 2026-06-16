@@ -72,12 +72,19 @@ export function useWatchBacktestRun(runId?: string | null): WatchBacktestState {
 
 		(async () => {
 			try {
-				// First fetch current snapshot (fast first paint + stream fallback).
+				// First fetch current snapshot (fast first paint).
 				const snapshot: any = await pythonStrategyApi.getBacktestRun(runId);
 				if (stoppedRef.current) return;
 				setRun(snapshot?.run ?? null);
 				setMetrics(snapshot?.metrics ?? null);
 				setEquityCurve(snapshot?.equityCurve ?? []);
+
+				// Stream is only useful for non-terminal runs (still RUNNING/PENDING).
+				// For terminal runs the initial snapshot already has everything.
+				if (isTerminalRun(snapshot?.run)) {
+					stoppedRef.current = true;
+					return;
+				}
 
 				unsubscribe = pythonStrategyApi.watchBacktestRun(
 					runId,
@@ -93,9 +100,11 @@ export function useWatchBacktestRun(runId?: string | null): WatchBacktestState {
 							stopPolling();
 						}
 					},
-					(e: unknown) => {
+					(_e: unknown) => {
+						// Stream failed — silently fall back to polling.
+						// Do NOT set error: the initial snapshot already provided
+						// data, and setting error would hide it in the drawer.
 						if (stoppedRef.current) return;
-						setError(String(e));
 						startPolling();
 					},
 				);
@@ -117,7 +126,8 @@ export function useWatchBacktestRun(runId?: string | null): WatchBacktestState {
 
 	const loading = useMemo(() => {
 		if (!runId) return false;
-		if (error) return false;
+		// Only show loading when we have neither data nor error.
+		if (error && run == null) return false;
 		return run == null;
 	}, [runId, run, error]);
 

@@ -1,7 +1,8 @@
 import { useCallback } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAccountStore } from '@/stores/accountStore';
 import { accountApi } from '@/client/account';
+import type { Account } from '@/types/account';
 import { getErrorMessage } from '@/utils/error';
 import { showSuccess, showError } from '@/utils/message';
 import { queryKeys } from '@/queries/queryKeys';
@@ -9,45 +10,43 @@ import i18n from '@/i18n';
 
 export function useAccount() {
   const queryClient = useQueryClient();
-  const accounts = useAccountStore((state) => state.accounts);
-  const currentAccount = useAccountStore((state) => state.currentAccount);
-  const loading = useAccountStore((state) => state.loading);
-  const setAccounts = useAccountStore((state) => state.setAccounts);
-  const setCurrentAccount = useAccountStore((state) => state.setCurrentAccount);
-  const setLoading = useAccountStore((state) => state.setLoading);
-  const setEnablingAccount = useAccountStore((state) => state.setEnablingAccount);
-  const addAccount = useAccountStore((state) => state.addAccount);
-  const updateAccount = useAccountStore((state) => state.updateAccount);
-  const removeAccount = useAccountStore((state) => state.removeAccount);
+
+  // Single source of truth: TanStack Query cache, shared with MainLayout.
+  const { data: accounts } = useQuery<Account[]>({
+    queryKey: queryKeys.accounts.list(),
+    queryFn: () => accountApi.list(),
+  });
+
+  // UI-only transient state from Zustand.
+  const currentAccount = useAccountStore((s) => s.currentAccount);
+  const loading = useAccountStore((s) => s.loading);
+  const setCurrentAccount = useAccountStore((s) => s.setCurrentAccount);
+  const setLoading = useAccountStore((s) => s.setLoading);
+  const setEnablingAccount = useAccountStore((s) => s.setEnablingAccount);
 
   const fetchAccounts = useCallback(async (force = false) => {
-    const currentAccounts = useAccountStore.getState().accounts;
-    // 如果已有数据且不是强制刷新，不显示 loading，直接返回
-    const hasData = currentAccounts && currentAccounts.length > 0;
+    const cached = queryClient.getQueryData<Account[]>(queryKeys.accounts.list());
+    const hasData = Array.isArray(cached) && cached.length > 0;
     if (hasData && !force) {
-      return currentAccounts;
+      return cached;
     }
-    
+
     setLoading(true);
     try {
       const accountList = await accountApi.list();
-      const accounts = Array.isArray(accountList) ? accountList : [];
-      setAccounts(accounts);
-      queryClient.setQueryData(queryKeys.accounts.list(), accounts);
-      return accounts;
+      const list: Account[] = Array.isArray(accountList) ? accountList : [];
+      queryClient.setQueryData(queryKeys.accounts.list(), list);
+      return list;
     } catch (error) {
       showError(getErrorMessage(error, i18n.t('accounts.messages.fetchListFailed')));
-      setAccounts([]);
       return [];
     } finally {
       setLoading(false);
     }
-  }, [setLoading, setAccounts]);
+  }, [setLoading, queryClient]);
 
   const fetchAccount = useCallback(async (id: string, showLoading = true) => {
-    if (showLoading) {
-      setLoading(true);
-    }
+    if (showLoading) setLoading(true);
     try {
       const account = await accountApi.get(id);
       setCurrentAccount(account);
@@ -56,133 +55,116 @@ export function useAccount() {
       showError(getErrorMessage(error, i18n.t('accounts.messages.fetchAccountFailed')));
       return null;
     } finally {
-      if (showLoading) {
-        setLoading(false);
-      }
+      if (showLoading) setLoading(false);
     }
   }, [setLoading, setCurrentAccount]);
 
   const createAccount = useCallback(async (data: {
-    login: string;
-    password: string;
-    mtType: string;
-    brokerCompany: string;
-    brokerServer: string;
-    brokerHost: string;
+    login: string; password: string; mtType: string;
+    brokerCompany: string; brokerServer: string; brokerHost: string;
   }) => {
     setLoading(true);
     try {
       const account = await accountApi.create(data);
-      addAccount(account);
-      // Success toast is shown by the caller (e.g., BindAccount) to avoid duplicates.
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts.list() });
       return account;
     } catch (_e) {
-      // Error toast shown by caller (BindAccount), not duplicated here.
       throw _e;
     } finally {
       setLoading(false);
     }
-  }, [setLoading, addAccount]);
-
-  const bindAccount = useCallback(async (data: {
-    login: string;
-    password: string;
-    mtType: string;
-    brokerCompany: string;
-    brokerServer: string;
-    brokerHost: string;
-  }) => {
-    return createAccount(data);
-  }, [createAccount]);
+  }, [setLoading, queryClient]);
 
   const connectAccount = useCallback(async (id: string) => {
     try {
-      const result = await accountApi.connect(id);
-      // Success toast is shown by the caller (e.g., AccountDetail) to avoid duplicates.
+      await accountApi.connect(id);
       const account = await accountApi.get(id);
-      updateAccount(account);
+      queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old) =>
+        old?.map((a) => a.id === id ? account : a));
       return account;
     } catch (_e) {
       throw _e;
     }
-  }, [updateAccount]);
+  }, [queryClient]);
 
   const disconnectAccount = useCallback(async (id: string) => {
     try {
       await accountApi.disconnect(id);
       const account = await accountApi.get(id);
-      updateAccount(account);
+      queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old) =>
+        old?.map((a) => a.id === id ? account : a));
     } catch (error) {
       showError(getErrorMessage(error, i18n.t('accounts.messages.disconnectFailed')));
       throw error;
     }
-  }, [updateAccount]);
+  }, [queryClient]);
 
   const disableAccount = useCallback(async (id: string) => {
     try {
-      // Optimistic UI: reflect disabled intent immediately (MT-official-like).
-      useAccountStore.getState().updateAccountStatus(id, 'disconnected');
+      // Optimistic: set status to disconnected in TQ cache.
+      queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old) =>
+        old?.map((a) => a.id === id ? { ...a, status: 'disconnected' } : a));
       await accountApi.update({ id, isDisabled: true });
       const account = await accountApi.get(id);
-      updateAccount(account);
+      queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old) =>
+        old?.map((a) => a.id === id ? account : a));
     } catch (error) {
       showError(getErrorMessage(error, i18n.t('accounts.messages.disableFailed')));
-      // Rollback by refetching account state.
+      // Rollback by refetching.
       try {
         const account = await accountApi.get(id);
-        updateAccount(account);
-      } catch {
-        // ignore
-      }
+        queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old) =>
+          old?.map((a) => a.id === id ? account : a));
+      } catch { /* ignore */ }
       throw error;
     }
-  }, [updateAccount]);
+  }, [queryClient]);
 
   const enableAccount = useCallback(async (id: string) => {
     setEnablingAccount(id);
     try {
-      // Optimistic UI: reflect enabling intent immediately (MT-official-like).
-      useAccountStore.getState().updateAccountStatus(id, 'connecting');
+      // Optimistic: set status to connecting in TQ cache.
+      queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old) =>
+        old?.map((a) => a.id === id ? { ...a, status: 'connecting' } : a));
       await accountApi.update({ id, isDisabled: false });
       const account = await accountApi.get(id);
-      updateAccount(account);
+      queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old) =>
+        old?.map((a) => a.id === id ? account : a));
       return account;
     } catch (error) {
       showError(getErrorMessage(error, i18n.t('accounts.messages.enableFailed')));
-      // Rollback by refetching account state to avoid stale optimistic UI.
+      // Rollback.
       try {
         const account = await accountApi.get(id);
-        updateAccount(account);
-      } catch {
-        // ignore
-      }
+        queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old) =>
+          old?.map((a) => a.id === id ? account : a));
+      } catch { /* ignore */ }
       throw error;
     } finally {
       setEnablingAccount(null);
     }
-  }, [updateAccount, setEnablingAccount]);
+  }, [setEnablingAccount, queryClient]);
 
   const deleteAccount = useCallback(async (id: string, password: string) => {
     try {
       await accountApi.delete(id, password);
-      removeAccount(id);
+      queryClient.setQueryData<Account[]>(queryKeys.accounts.list(), (old) =>
+        old?.filter((a) => a.id !== id));
       showSuccess(i18n.t('accounts.messages.deleted'));
     } catch (error) {
       const msg = getErrorMessage(error, '');
-      // If the backend returned a Chinese error message, prefer it directly.
       showError(msg || i18n.t('accounts.messages.deleteFailed'));
       throw error;
     }
-  }, [removeAccount]);
+  }, [queryClient]);
 
   return {
-    accounts,
+    accounts: accounts ?? [],
     currentAccount,
     loading,
     fetchAccounts,
     fetchAccount,
     createAccount,
-    bindAccount,
     connectAccount,
     disconnectAccount,
     disableAccount,

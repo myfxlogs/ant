@@ -354,19 +354,17 @@ const accounts = {
       fields: {
         tradingAccount: '交易帳號',
         server: '伺服器',
-        password: '密碼'
+        password: '新密碼',
+        oldPassword: '當前密碼'
       },
       placeholders: {
-        newPassword: '輸入新密碼'
-      },
-      actions: {
-        verifyPassword: '驗證密碼'
+        newPassword: '輸入新密碼',
+        oldPassword: '輸入當前密碼'
       },
       messages: {
-        enterPassword: '請輸入密碼',
-        passwordVerified: '密碼驗證成功！',
-        passwordVerifyFailed: '密碼驗證失敗',
-        verifyFirst: '請先驗證密碼',
+        enterPassword: '請輸入新密碼',
+        enterOldPassword: '請輸入當前密碼',
+        passwordVerifyFailed: '密碼修改失敗',
         passwordSaved: '密碼已保存'
       }
     },
@@ -435,6 +433,7 @@ const accounts = {
       title: '交易報告',
       titleShort: '報告',
       generate: '生成報告',
+      goToAISettings: '前往 AI 設定 →',
       aiAnalysis: 'AI 分析',
       symbolPnL: '品種盈虧',
       direction: '多空分析',

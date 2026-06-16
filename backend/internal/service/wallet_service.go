@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -83,3 +84,13 @@ var ErrWalletNotFound = &walletNotFoundError{}
 type walletNotFoundError struct{}
 
 func (e *walletNotFoundError) Error() string { return "wallet not found" }
+
+// InsufficientBalanceError is returned when a wallet has insufficient balance.
+type InsufficientBalanceError struct {
+	Balance string
+	Cost    string
+}
+
+func (e *InsufficientBalanceError) Error() string {
+	return fmt.Sprintf("insufficient balance: have %s, need %s", e.Balance, e.Cost)
+}

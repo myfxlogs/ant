@@ -4,11 +4,11 @@ import "github.com/shopspring/decimal"
 
 
 type TradeStats struct {
-	TotalTrades          int     `json:"total_trades"`
-	WinningTrades        int     `json:"winning_trades"`
-	LosingTrades         int     `json:"losing_trades"`
-	BuyTrades            int     `json:"buy_trades"`
-	SellTrades           int     `json:"sell_trades"`
+	TotalTrades          int             `json:"total_trades"`
+	WinningTrades        int             `json:"winning_trades"`
+	LosingTrades         int             `json:"losing_trades"`
+	BuyTrades            int             `json:"buy_trades"`
+	SellTrades           int             `json:"sell_trades"`
 	WinRate              decimal.Decimal `json:"win_rate"`
 	TotalProfit          decimal.Decimal `json:"total_profit"`
 	TotalLoss            decimal.Decimal `json:"total_loss"`
@@ -16,17 +16,17 @@ type TradeStats struct {
 	ProfitFactor         decimal.Decimal `json:"profit_factor"`
 	AverageProfit        decimal.Decimal `json:"average_profit"`
 	AverageLoss          decimal.Decimal `json:"average_loss"`
-	AverageTrade         float64 `json:"average_trade"`
-	AverageVolume        float64 `json:"average_volume"`
-	LargestWin           float64 `json:"largest_win"`
-	LargestLoss          float64 `json:"largest_loss"`
+	AverageTrade         float64         `json:"average_trade"`
+	AverageVolume        float64         `json:"average_volume"`
+	LargestWin           decimal.Decimal `json:"largest_win"`
+	LargestLoss          decimal.Decimal `json:"largest_loss"`
 	TotalVolume          decimal.Decimal `json:"total_volume"`
-	MaxConsecutiveWins   int     `json:"max_consecutive_wins"`
-	MaxConsecutiveLosses int     `json:"max_consecutive_losses"`
-	AverageHoldingTime   string  `json:"average_holding_time"`
-	TotalDeposit         float64 `json:"total_deposit"`
-	TotalWithdrawal      float64 `json:"total_withdrawal"`
-	NetDeposit           float64 `json:"net_deposit"`
+	MaxConsecutiveWins   int             `json:"max_consecutive_wins"`
+	MaxConsecutiveLosses int             `json:"max_consecutive_losses"`
+	AverageHoldingTime   string          `json:"average_holding_time"`
+	TotalDeposit         decimal.Decimal `json:"total_deposit"`
+	TotalWithdrawal      decimal.Decimal `json:"total_withdrawal"`
+	NetDeposit           decimal.Decimal `json:"net_deposit"`
 }
 
 type RiskMetrics struct {
@@ -56,9 +56,9 @@ type SymbolStats struct {
 	ProfitFactor       decimal.Decimal `json:"profit_factor" db:"profit_factor"`
 	AverageProfit      decimal.Decimal `json:"average_profit" db:"average_profit"`
 	TotalVolume        decimal.Decimal `json:"total_volume" db:"total_volume"`
-	AverageVolume      float64 `json:"average_volume" db:"average_volume"`
-	LargestWin         float64 `json:"largest_win" db:"largest_win"`
-	LargestLoss        float64 `json:"largest_loss" db:"largest_loss"`
+	AverageVolume      decimal.Decimal `json:"average_volume" db:"average_volume"`
+	LargestWin         decimal.Decimal `json:"largest_win" db:"largest_win"`
+	LargestLoss        decimal.Decimal `json:"largest_loss" db:"largest_loss"`
 	AverageHoldingTime string  `json:"average_holding_time" db:"average_holding_time"`
 }
 
@@ -100,10 +100,10 @@ type DailyPnL struct {
 	Lots                   decimal.Decimal `json:"lots"`
 	Balance                decimal.Decimal `json:"balance"`
 	ProfitFactor           decimal.Decimal `json:"profit_factor"`
-	MaxFloatingLossAmount  float64 `json:"max_floating_loss_amount"`
-	MaxFloatingLossRatio   float64 `json:"max_floating_loss_ratio"`
-	MaxFloatingProfitAmount float64 `json:"max_floating_profit_amount"`
-	MaxFloatingProfitRatio float64 `json:"max_floating_profit_ratio"`
+	MaxFloatingLossAmount   decimal.Decimal `json:"max_floating_loss_amount"`
+	MaxFloatingLossRatio    float64         `json:"max_floating_loss_ratio"`
+	MaxFloatingProfitAmount decimal.Decimal `json:"max_floating_profit_amount"`
+	MaxFloatingProfitRatio  float64         `json:"max_floating_profit_ratio"`
 }
 
 type HourlyStats struct {
@@ -116,10 +116,10 @@ type HourlyStats struct {
 	Lots                   decimal.Decimal `json:"lots"`
 	Balance                decimal.Decimal `json:"balance"`
 	ProfitFactor           decimal.Decimal `json:"profit_factor"`
-	MaxFloatingLossAmount  float64 `json:"max_floating_loss_amount"`
-	MaxFloatingLossRatio   float64 `json:"max_floating_loss_ratio"`
-	MaxFloatingProfitAmount float64 `json:"max_floating_profit_amount"`
-	MaxFloatingProfitRatio float64 `json:"max_floating_profit_ratio"`
+	MaxFloatingLossAmount   decimal.Decimal `json:"max_floating_loss_amount"`
+	MaxFloatingLossRatio    float64         `json:"max_floating_loss_ratio"`
+	MaxFloatingProfitAmount decimal.Decimal `json:"max_floating_profit_amount"`
+	MaxFloatingProfitRatio  float64         `json:"max_floating_profit_ratio"`
 }
 
 // WeekdayPnL aggregates closed trades by ISO weekday (1=Monday … 7=Sunday).
@@ -186,21 +186,21 @@ type AccountAnalytics struct {
 
 // MonthlyDetailMetrics holds aggregated metrics for a single month.
 type MonthlyDetailMetrics struct {
-	NetReturn     float64 `json:"net_return"`
-	ReturnPercent float64 `json:"return_percent"` // TODO: requires starting-balance join; always 0 until funded
-	TotalTrades   int     `json:"total_trades"`
-	WinRate       float64 `json:"win_rate"`
-	ProfitFactor  float64 `json:"profit_factor"`
-	BestTrade     float64 `json:"best_trade"`
-	WorstTrade    float64 `json:"worst_trade"`
+	NetReturn     decimal.Decimal `json:"net_return"`
+	ReturnPercent float64         `json:"return_percent"` // TODO: requires starting-balance join; always 0 until funded
+	TotalTrades   int             `json:"total_trades"`
+	WinRate       float64         `json:"win_rate"`
+	ProfitFactor  float64         `json:"profit_factor"`
+	BestTrade     decimal.Decimal `json:"best_trade"`
+	WorstTrade    decimal.Decimal `json:"worst_trade"`
 }
 
 // MonthlySymbolPnL holds per-symbol P&L for a single month.
 type MonthlySymbolPnL struct {
-	Symbol    string  `json:"symbol"`
-	NetProfit float64 `json:"net_profit"`
-	Trades    int     `json:"trades"`
-	WinRate   float64 `json:"win_rate"`
+	Symbol    string          `json:"symbol"`
+	NetProfit decimal.Decimal `json:"net_profit"`
+	Trades    int             `json:"trades"`
+	WinRate   float64         `json:"win_rate"`
 }
 
 // MonthlyHoldingStats holds holding time statistics for a single month.
