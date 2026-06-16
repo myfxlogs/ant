@@ -224,7 +224,7 @@ export default function WorkspaceCodePanel({
               value={primaryValue || undefined}
               placeholder={t('ai.settings.primary.placeholder', { defaultValue: 'Default AI model...' })}
               options={modelOptions}
-              onChange={(v) => setPrimaryValue(v || '')}
+              onChange={(v) => { if (v) savePrimary(v); }}
               showSearch
               filterOption={(input, option) => {
                 if (!option) return false;
@@ -235,13 +235,7 @@ export default function WorkspaceCodePanel({
               notFoundContent={t('ai.settings.agent.fields.modelProfileEmpty', { defaultValue: 'No model — configure in AI Settings' })}
             />
           )}
-          {primaryValue && (
-            <Button size="small" type="link" loading={primarySaving}
-              onClick={() => savePrimary(primaryValue)}
-              style={{ padding: 0, fontSize: 12 }}>
-              {t('common.save', { defaultValue: 'Save' })}
-            </Button>
-          )}
+          {primarySaving && <span style={{ fontSize: 11, color: '#1677ff' }}>saving...</span>}
         </div>
 
         {/* Model refresh warnings */}

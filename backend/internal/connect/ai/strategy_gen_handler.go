@@ -110,7 +110,7 @@ func (s *StrategyGenServer) GenerateStrategy(
 }
 
 func (s *StrategyGenServer) analyzeIntent(ctx context.Context, userID uuid.UUID, m *antv1.GenerateStrategyRequest, lang string) (*ai.IntentResult, error) {
-	intent, err := s.intentAnalyzer.Analyze(ctx, userID, m.Message, m.Symbol, m.Timeframe, clarifyLangDirective(lang))
+	intent, err := s.intentAnalyzer.Analyze(ctx, userID, m.Message, m.Symbol, m.Timeframe, lang, clarifyLangDirective(lang))
 	if err != nil {
 		return nil, err
 	}

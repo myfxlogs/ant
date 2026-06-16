@@ -84,7 +84,7 @@ func NewIntentAnalyzer(chatFn func(ctx context.Context, userID uuid.UUID, messag
 
 // Analyze sends the user message to the LLM for intent extraction.
 // Returns either clarification questions or extracted strategy parameters.
-func (a *IntentAnalyzer) Analyze(ctx context.Context, userID uuid.UUID, message, symbol, timeframe, langDirective string) (*IntentResult, error) {
+func (a *IntentAnalyzer) Analyze(ctx context.Context, userID uuid.UUID, message, symbol, timeframe, lang, langDirective string) (*IntentResult, error) {
 	userMsg := buildIntentUserMessage(message, symbol, timeframe)
 	sysPrompt := intentAnalysisSystemPrompt
 	if langDirective != "" {
@@ -101,19 +101,21 @@ func (a *IntentAnalyzer) Analyze(ctx context.Context, userID uuid.UUID, message,
 	// Extract JSON from response (LLM may wrap in markdown code blocks)
 	jsonStr := extractJSON(resp)
 	var result IntentResult
-	if err := json.Unmarshal([]byte(jsonStr), &result); err != nil {
-		// Fallback: if JSON parse fails, treat as unclear
-		return &IntentResult{
-			NeedsClarification: true,
-			Questions:          []string{"请更详细地描述您的策略思路（入场条件、风控偏好等）"},
-			Confidence:         0.0,
-		}, nil
-	}
+		if err := json.Unmarshal([]byte(jsonStr), &result); err != nil {
+			// Fallback: if JSON parse fails, treat as unclear (language-aware).
+			q, _ := FallbackQuestions(lang)
+			return &IntentResult{
+				NeedsClarification: true,
+				Questions:          []string{q},
+				Confidence:         0.0,
+			}, nil
+		}
 
 	// If confidence is very low but no clarification flagged, add a gentle question
 	if !result.NeedsClarification && result.Confidence < 0.4 {
 		result.NeedsClarification = true
-		result.Questions = []string{"您的策略描述比较简短，能否补充入场条件和风控偏好？"}
+		_, q := FallbackQuestions(lang)
+		result.Questions = []string{q}
 	}
 
 	// Deduplicate and limit questions

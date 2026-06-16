@@ -42,23 +42,9 @@ type BuildContextInput struct {
 }
 
 // localeDirective returns a language instruction for AI prose responses.
-// Code-only modes (generate/revise/repair) are unaffected by language, but
-// the discuss mode and any inline explanations must follow the user's UI language.
+// Delegates to the centralized ai.LocaleDirective.
 func localeDirective(locale string) string {
-	switch {
-	case strings.HasPrefix(locale, "zh-TW"), strings.HasPrefix(locale, "zh-HK"), strings.HasPrefix(locale, "zh-Hant"):
-		return "\n\n请使用繁體中文回复。"
-	case strings.HasPrefix(locale, "zh"):
-		return "\n\n请使用简体中文回复。"
-	case strings.HasPrefix(locale, "ja"):
-		return "\n\n日本語で回答してください。"
-	case strings.HasPrefix(locale, "vi"):
-		return "\n\nVui lòng trả lời bằng tiếng Việt."
-	case locale == "" :
-		return ""
-	default:
-		return "\n\nRespond in English."
-	}
+	return LocaleDirective(locale)
 }
 
 // BuildContext analyzes code + message and returns the appropriate PromptContext.

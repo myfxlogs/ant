@@ -153,20 +153,10 @@ func (s *Service) GetAIPrimary(ctx context.Context, userID uuid.UUID) (providerI
 func (s *Service) SetAIPrimary(ctx context.Context, userID uuid.UUID, providerID, defaultModel string) error {
 	// Authoritative store: the users table is what GetAIPrimary reads first, and it
 	// works for AI Gateway models too (which have no owning system_ai_configs row).
-	if s.userRepo != nil {
-		if err := s.userRepo.SetAIPrimary(ctx, userID, providerID, defaultModel); err != nil {
-			return err
-		}
+	if s.userRepo == nil {
+		return fmt.Errorf("user repository not available")
 	}
-	// Best-effort: keep system_ai_configs.primary_for in sync for users who selected
-	// one of their own API-key providers. Gateway selections match no row here, which
-	// is fine — the users table above already persisted the choice.
-	if err := s.repo.SetAIPrimary(ctx, userID, providerID, defaultModel); err != nil {
-		if s.userRepo == nil {
-			return err
-		}
-	}
-	return nil
+	return s.userRepo.SetAIPrimary(ctx, userID, providerID, defaultModel)
 }
 
 // UpdateSecret encrypts and stores a provider's API key. Empty secret clears it.
