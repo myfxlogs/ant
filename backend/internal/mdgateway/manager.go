@@ -107,7 +107,7 @@ func (m *Manager) AddGateway(ctx context.Context, gw Gateway, syms []string) err
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if _, exists := m.gateways[gw.AccountID()]; exists {
-		return fmt.Errorf("mdgateway: account %s already registered", gw.AccountID())
+		return nil // already registered — idempotent, not an error
 	}
 	m.gateways[gw.AccountID()] = gw
 	return nil
