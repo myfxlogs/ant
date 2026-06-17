@@ -81,6 +81,11 @@ func (s *stubPaperRepo) ListAccounts(_ context.Context, _ string) ([]*repository
 
 func (s *stubPaperRepo) CreateOrder(_ context.Context, _ *repository.PaperOrder) error { return nil }
 func (s *stubPaperRepo) UpdateAccountBalance(_ context.Context, _ string, _, _ decimal.Decimal) error {
+func (s *stubPaperRepo) GetAccount(_ context.Context, id string) (*repository.PaperAccount, error) {
+	if a, ok := s.accounts[id]; ok { return a, nil }
+	return nil, nil
+}
+
 	return nil
 }
 
