@@ -261,7 +261,9 @@ func main() {
 		pipelineCancel()
 	}()
 
-	if err := server.Run(ctx, mux, port, log); err != nil {
+	// Wrap with SSE keepalive to prevent Cloudflare/nginx from closing idle streams.
+	keepaliveHandler := interceptor.SSEKeepaliveMiddleware(10 * time.Second)(mux)
+	if err := server.Run(ctx, keepaliveHandler, port, log); err != nil {
 		log.Fatal("server failed", zap.Error(err))
 	}
 

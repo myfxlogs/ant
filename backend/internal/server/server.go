@@ -17,7 +17,7 @@ func Run(ctx context.Context, handler http.Handler, port string, log *zap.Logger
 		Handler:      handler,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 0, // disabled: streaming endpoints (SSE/ConnectRPC server-stream) hold writes open indefinitely
-		IdleTimeout:  120 * time.Second,
+		IdleTimeout:  0, // disabled: streaming connections (SSE/ConnectRPC) must stay open indefinitely
 	}
 
 	errCh := make(chan error, 1)
