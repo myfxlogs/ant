@@ -98,7 +98,7 @@ func (r *AnalyticsRepository) queryHourlyStats(ctx context.Context, accountID uu
 		        CASE WHEN COUNT(*)>0 THEN SUM(CASE WHEN profit>0 THEN 1 ELSE 0 END)::float/COUNT(*)*100 ELSE 0 END
 		 FROM trade_records WHERE account_id=$1 AND close_time>=$2 AND close_time<=$3
 		   AND order_type NOT IN ('balance','credit','BALANCE','CREDIT','Balance','Credit')
-		 GROUP BY EXTRACT(HOUR FROM close_time) ORDER BY hour_start`,
+		 GROUP BY EXTRACT(HOUR FROM close_time) ORDER BY 1`,
 		accountID, start, end)
 	if err != nil { return nil, err }
 	defer rows.Close()
