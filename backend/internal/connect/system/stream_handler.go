@@ -90,8 +90,11 @@ func (s *StreamServer) SubscribeEvents(
 	}()
 
 	if filterAll && len(profitSubs) == 0 {
-		// No accounts — stream is fully idle. Send periodic pings to prevent
-		// Cloudflare/proxy from closing the idle HTTP/2 stream (100s timeout).
+		// No accounts — stream has no subscriptions. Send StreamEvent
+		// {Type:"ping"} to prevent Cloudflare/proxy idle timeout (100s).
+		// The frontend skips events with Type=="ping", so these keepalives
+		// are zero-cost. When len(profitSubs) > 0, subscription events
+		// provide natural keepalive.
 		ticker := time.NewTicker(15 * time.Second)
 		defer ticker.Stop()
 		for {

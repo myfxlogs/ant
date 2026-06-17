@@ -117,8 +117,12 @@ func (s *StreamServer) SubscribeUserSummary(
 	}
 
 	if len(accountIDs) == 0 {
-		// No accounts — stream is fully idle. Send periodic pings to prevent
-		// Cloudflare/proxy from closing the idle HTTP/2 stream (100s timeout).
+		// No accounts — stream has no data source. Send periodic empty
+		// UserSummaryEvent to prevent Cloudflare/proxy idle timeout (100s).
+		// An empty event (all zeros) IS the correct state when there are no
+		// accounts — it cannot corrupt frontend data because the keepalive
+		// only fires when accountIDs is empty. When len(accountIDs) > 0,
+		// profit subscription events provide natural keepalive.
 		ticker := time.NewTicker(15 * time.Second)
 		defer ticker.Stop()
 		for {

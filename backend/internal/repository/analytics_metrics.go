@@ -91,14 +91,14 @@ func (r *AnalyticsRepository) GetHourlyStats(ctx context.Context, accountID uuid
 
 func (r *AnalyticsRepository) queryHourlyStats(ctx context.Context, accountID uuid.UUID, start, end time.Time) ([]*hourlyRawStat, error) {
 	rows, err := r.db.Query(ctx,
-		`SELECT EXTRACT(HOUR FROM close_time)::int, COUNT(*)::int,
+		`SELECT EXTRACT(HOUR FROM close_time)::int AS hour_start, COUNT(*)::int,
 		        COALESCE(SUM(volume),0), COALESCE(SUM(profit),0),
 		        COALESCE(SUM(CASE WHEN profit>0 THEN profit ELSE 0 END),0),
 		        COALESCE(SUM(CASE WHEN profit<0 THEN ABS(profit) ELSE 0 END),0),
 		        CASE WHEN COUNT(*)>0 THEN SUM(CASE WHEN profit>0 THEN 1 ELSE 0 END)::float/COUNT(*)*100 ELSE 0 END
 		 FROM trade_records WHERE account_id=$1 AND close_time>=$2 AND close_time<=$3
 		   AND order_type NOT IN ('balance','credit','BALANCE','CREDIT','Balance','Credit')
-		 GROUP BY EXTRACT(HOUR FROM close_time) ORDER BY 1`,
+		 GROUP BY hour_start ORDER BY hour_start`,
 		accountID, start, end)
 	if err != nil { return nil, err }
 	defer rows.Close()
