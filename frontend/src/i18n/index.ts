@@ -2,26 +2,13 @@ import i18n from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
 
-export const SUPPORTED_LANGUAGES = ['zh-cn', 'zh-tw', 'en', 'ja', 'vi'] as const;
+export const SUPPORTED_LANGUAGES = ['zh-cn'] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
 export const LANGUAGE_STORAGE_KEY = 'anttrader_lang';
 
-export function normalizeLanguage(input?: string | null): SupportedLanguage {
-  const raw = String(input || '').trim();
-  if (!raw) return 'zh-cn';
-
-  const lower = raw.toLowerCase();
-
-  if (lower === 'zh-cn' || lower === 'zh_cn' || lower.startsWith('zh-hans')) return 'zh-cn';
-  if (lower === 'zh-tw' || lower === 'zh_tw' || lower.startsWith('zh-hant') || lower === 'zh-hk' || lower === 'zh-mo') return 'zh-tw';
-
-  if (lower.startsWith('zh')) return 'zh-cn';
-  if (lower.startsWith('ja')) return 'ja';
-  if (lower.startsWith('vi')) return 'vi';
-  if (lower.startsWith('en')) return 'en';
-
-  return 'en';
+export function normalizeLanguage(_input?: string | null): SupportedLanguage {
+  return 'zh-cn';
 }
 
 const resourceCache = new Map<string, Record<string, unknown>>();
@@ -83,7 +70,7 @@ if (!i18n.isInitialized) {
     .use(initReactI18next)
     .init({
       lng: initial,
-      fallbackLng: 'en',
+      fallbackLng: 'zh-cn',
       cleanCode: false,
       lowerCaseLng: true,
       load: 'currentOnly',
