@@ -83,6 +83,19 @@ func (r *PaperRepo) CreateAccount(ctx context.Context, userID, name string, init
 	return a, nil
 }
 
+// GetAccount returns a single paper account by ID.
+func (r *PaperRepo) GetAccount(ctx context.Context, accountID string) (*PaperAccount, error) {
+	var a PaperAccount
+	err := r.pg.QueryRow(ctx, `
+		SELECT id, user_id, name, initial_balance, current_balance, equity, currency, created_at, archived
+		FROM paper_accounts WHERE id = $1 AND archived = false
+	`, accountID).Scan(&a.ID, &a.UserID, &a.Name, &a.InitialBalance, &a.CurrentBalance, &a.Equity, &a.Currency, &a.CreatedAt, &a.Archived)
+	if err != nil {
+		return nil, err
+	}
+	return &a, nil
+}
+
 // ListAccounts returns all non-archived paper accounts for a user.
 func (r *PaperRepo) ListAccounts(ctx context.Context, userID string) ([]*PaperAccount, error) {
 	rows, err := r.pg.Query(ctx, `

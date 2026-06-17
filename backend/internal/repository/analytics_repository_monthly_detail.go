@@ -5,6 +5,7 @@ import (
 	"math"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"golang.org/x/sync/errgroup"
 
 	"anttrader/internal/model"
@@ -52,6 +53,16 @@ func (r *AnalyticsRepository) GetMonthlyDetailMetrics(ctx context.Context, accou
 	m.NetReturn = m.NetReturn.Round(2)
 	m.BestTrade = m.BestTrade.Round(2)
 	m.WorstTrade = m.WorstTrade.Round(2)
+	// Compute return percentage: NetReturn / starting_balance where available.
+	// Fetch starting balance as the first equity value of the month.
+	var startingBalance decimal.Decimal
+	_ = r.db.QueryRow(ctx,
+		`SELECT COALESCE(balance, equity) FROM account_balance_history
+		 WHERE account_id = $1 AND date_trunc('month', ts) = make_date($2, $3, 1)
+		 ORDER BY ts ASC LIMIT 1`, accountID, year, month).Scan(&startingBalance)
+	if startingBalance.IsPositive() {
+		m.ReturnPercent, _ = m.NetReturn.Div(startingBalance).Mul(decimal.NewFromInt(100)).Float64()
+	}
 	// Ratio fields still float64 — round for display consistency.
 	m.WinRate = math.Round(m.WinRate*100) / 100
 	m.ProfitFactor = math.Round(m.ProfitFactor*100) / 100

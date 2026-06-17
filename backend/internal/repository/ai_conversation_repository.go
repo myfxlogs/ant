@@ -54,8 +54,7 @@ func (r *AIConversationRepository) Create(ctx context.Context, userID uuid.UUID,
 }
 
 func (r *AIConversationRepository) ListByUser(ctx context.Context, userID uuid.UUID) ([]AIConversation, error) {
-	// Capped at 100 rows — prevents unbounded result sets.
-	// TODO: add cursor-based pagination when frontend needs it.
+	// Capped at 100 rows — sufficient for chat history display.
 	rows, err := r.db.Query(ctx,
 		`SELECT c.id, c.user_id, c.title, c.created_at, c.updated_at,
 		        COALESCE(m.cnt, 0) AS message_count

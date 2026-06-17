@@ -26,6 +26,7 @@ import (
 // Defined on the consumer side per Go convention — repository package need not know about it.
 type paperRepository interface {
 	CreateOrder(ctx context.Context, o *repository.PaperOrder) error
+	GetAccount(ctx context.Context, accountID string) (*repository.PaperAccount, error)
 	ListAccounts(ctx context.Context, userID string) ([]*repository.PaperAccount, error)
 	UpdateAccountBalance(ctx context.Context, accountID string, balance, equity decimal.Decimal) error
 }
@@ -80,23 +81,11 @@ func (e *PaperEngine) PlacePaperOrder(ctx context.Context, accountID, symbol, si
 		return err
 	}
 
-	// Update account balance: reduce by margin (simplified: volume * fillPrice * 1%)
-	acct, err := e.repo.ListAccounts(ctx, "") // TODO: filter by accountID when repo supports it
-	if err != nil || len(acct) == 0 {
+	// Fetch the specific paper account for balance update.
+	target, err := e.repo.GetAccount(ctx, accountID)
+	if err != nil || target == nil {
 		e.log.Warn("PaperEngine: cannot fetch account for balance update",
-			zap.String("accountID", accountID))
-		return nil
-	}
-
-	// Find the specific account.
-	var target *repository.PaperAccount
-	for _, a := range acct {
-		if a.ID == accountID {
-			target = a
-			break
-		}
-	}
-	if target == nil {
+			zap.String("accountID", accountID), zap.Error(err))
 		return nil
 	}
 
