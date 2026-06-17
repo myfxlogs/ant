@@ -1,3 +1,4 @@
+// Package interceptor provides the SSE keepalive middleware.
 package interceptor
 
 import (
@@ -13,7 +14,7 @@ import (
 // reverse proxies (especially Cloudflare HTTP/2) from closing idle streams.
 //
 // The middleware activates only when the response Content-Type starts with
-// "text/event-stream" or "application/connect+".
+// "text/event-stream".
 func SSEKeepaliveMiddleware(interval time.Duration) func(http.Handler) http.Handler {
 	if interval <= 0 {
 		interval = 10 * time.Second
@@ -52,7 +53,10 @@ func (w *keepaliveWriter) WriteHeader(code int) {
 func (w *keepaliveWriter) Write(b []byte) (int, error) {
 	w.once.Do(func() {
 		ct := w.ResponseWriter.Header().Get("Content-Type")
-		if (len(ct) >= 9 && ct[:9] == "text/even") || (len(ct) >= 18 && ct[:18] == "application/connec") {
+		// Only activate for text/event-stream (SSE). Do NOT activate for
+		// application/connect+* (ConnectRPC) — its binary framing would be
+		// corrupted by injected ": kp\n\n" comments.
+		if len(ct) >= 9 && ct[:9] == "text/even" {
 			w.wrote = true
 			go w.keepaliveLoop()
 		}
