@@ -52,7 +52,7 @@ func (w *keepaliveWriter) WriteHeader(code int) {
 func (w *keepaliveWriter) Write(b []byte) (int, error) {
 	w.once.Do(func() {
 		ct := w.ResponseWriter.Header().Get("Content-Type")
-		if len(ct) >= 9 && (ct[:9] == "text/even" || ct[:18] == "application/connec") {
+		if (len(ct) >= 9 && ct[:9] == "text/even") || (len(ct) >= 18 && ct[:18] == "application/connec") {
 			w.wrote = true
 			go w.keepaliveLoop()
 		}
