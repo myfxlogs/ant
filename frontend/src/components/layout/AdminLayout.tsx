@@ -20,6 +20,7 @@ import { useAuth } from '@/hooks/useAuth';
 import ContentContainer from '@/components/layout/ContentContainer';
 import { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
 import { useTranslation } from 'react-i18next';
+import i18n, { LANGUAGE_STORAGE_KEY, setLanguage } from '@/i18n';
 
 const { Header, Content, Sider } = Layout;
 
@@ -40,6 +41,16 @@ export default function AdminLayout() {
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Admin section is Chinese-only. Save the user's language on entry,
+  // force zh-cn, and restore their choice on exit.
+  useEffect(() => {
+    const prevLang = localStorage.getItem(LANGUAGE_STORAGE_KEY) || i18n.language || 'zh-cn';
+    setLanguage('zh-cn');
+    return () => {
+      setLanguage(prevLang as any);
+    };
   }, []);
 
   const menuItems = [
