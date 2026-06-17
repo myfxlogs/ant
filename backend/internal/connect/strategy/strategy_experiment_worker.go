@@ -10,6 +10,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"anttrader/internal/ai"
+	"anttrader/internal/pglisten"
 	"anttrader/internal/repository"
 	systemai "anttrader/internal/service/systemai"
 )
@@ -20,7 +21,8 @@ type ExperimentWorker struct {
 	backtestRepo   *repository.BacktestRunRepository
 	marketDataRepo repository.MarketDataStore
 	log            *zap.Logger
-	systemAISvc    *systemai.Service // optional: enables AI multi-round proposal
+	systemAISvc    *systemai.Service    // optional: enables AI multi-round proposal
+	pgListen       *pglisten.Listener   // optional: push-first experiment dispatch
 	stopCh         chan struct{}
 }
 
@@ -41,20 +43,23 @@ func NewExperimentWorker(
 
 func (w *ExperimentWorker) Start(ctx context.Context) {
 	go func() {
+		notifCh, listenCancel, _ := w.pgListen.Listen(ctx, "experiment_status")
+		if listenCancel != nil { defer listenCancel() }
 		ticker := time.NewTicker(10 * time.Second)
 		defer ticker.Stop()
 		for {
 			select {
-			case <-w.stopCh:
-				return
-			case <-ctx.Done():
-				return
-			case <-ticker.C:
-				w.processOneSafe(ctx)
+			case <-w.stopCh: return
+			case <-ctx.Done(): return
+			case <-notifCh: w.processOneSafe(ctx)
+			case <-ticker.C: w.processOneSafe(ctx)
 			}
 		}
 	}()
 }
+
+// SetPgListen enables push-first dispatch via PG LISTEN/NOTIFY.
+func (w *ExperimentWorker) SetPgListen(l *pglisten.Listener) { w.pgListen = l }
 
 // processOneSafe wraps processOne with panic recovery so a single corrupted
 // experiment cannot take down the entire worker loop.

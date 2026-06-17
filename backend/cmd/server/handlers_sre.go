@@ -82,6 +82,7 @@ func registerSREHandlers(
 	strategyExperimentServer.SetPgListen(pglisten.New(pool, log))
 	mux.Handle(antv1c.NewStrategyExperimentServiceHandler(strategyExperimentServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 	experimentWorker := strategy.NewExperimentWorker(strategyExperimentRepo, backtestRunRepo, store, log)
+	experimentWorker.SetPgListen(pglisten.New(pool, log))
 	if aiSvc != nil {
 		experimentWorker.SetAIService(aiSvc)
 	}
