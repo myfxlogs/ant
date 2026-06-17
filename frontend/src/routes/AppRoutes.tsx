@@ -47,6 +47,7 @@ const SREBreakers = lazy(() => import('@/pages/admin/sre/BreakersPage'));
 const SRECanary = lazy(() => import('@/pages/admin/sre/CanaryPage'));
 const AIGatewayManagement = lazy(() => import('@/pages/admin/AIGatewayManagement'));
 const SRELayout = lazy(() => import('@/pages/admin/sre/SRELayout'));
+const SharePerformancePage = lazy(() => import('@/pages/share/SharePerformancePage'));
 
 // ── Route helpers ──
 const wrap = (el: React.ReactNode) => <PageWrapper>{el}</PageWrapper>;
@@ -118,6 +119,7 @@ export function AppRoutes() {
   return (
     <StreamProvider>
       <Routes>
+        <Route path="/share/:token" element={<SharePerformancePage />} />
         {publicRoutes}
         {mainRoutes}
         {adminRoutes}

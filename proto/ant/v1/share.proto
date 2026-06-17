@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+service ShareService {
+  // CreateShareToken generates a new sharing link for account performance.
+  rpc CreateShareToken(CreateShareTokenRequest) returns (CreateShareTokenResponse);
+  // GetSharedPerformance returns account performance by token (public, no auth).
+  rpc GetSharedPerformance(GetSharedPerformanceRequest) returns (GetSharedPerformanceResponse);
+}
+
+message CreateShareTokenRequest {
+  string account_id = 1;
+  string description = 2;   // optional label
+  int32 expire_days = 3;    // default 7
+}
+
+message CreateShareTokenResponse {
+  string token = 1;
+  string share_url = 2;
+  string expires_at = 3;
+}
+
+message GetSharedPerformanceRequest {
+  string token = 1;
+}
+
+message GetSharedPerformanceResponse {
+  string user_name = 1;
+  string account_info = 2;     // broker server + login
+  double total_return = 3;
+  double win_rate = 4;
+  double max_drawdown = 5;
+  double sharpe_ratio = 6;
+  int32 total_trades = 7;
+  repeated double equity_curve = 8;
+  repeated SharedTrade trades = 9;
+  bool expired = 10;
+}
+
+message SharedTrade {
+  string symbol = 1;
+  string side = 2;
+  double volume = 3;
+  double profit = 4;
+  int64 close_time_ms = 5;
+}
