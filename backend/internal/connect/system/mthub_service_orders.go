@@ -156,7 +156,7 @@ func orderRecordToTradeRecord(r *mthub.OrderRecord, accountID, userID uuid.UUID,
 	cm, cmexact := decimalToFloat64(r.Commission)
 
 	rec := &model.TradeRecord{
-		UserID:		uuid.Nil,
+		UserID:		userID,
 		AccountID:    accountID,
 		Ticket:       r.Ticket,
 		Symbol:       r.SymbolRaw,
