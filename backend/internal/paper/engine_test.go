@@ -34,13 +34,6 @@ func (s *stubPaperRepo) CreateOrder(_ context.Context, o *repository.PaperOrder)
 }
 
 func (s *stubPaperRepo) ListAccounts(_ context.Context, _ string) ([]*repository.PaperAccount, error) {
-func (s *stubPaperRepo) GetAccount(_ context.Context, id string) (*repository.PaperAccount, error) {
-	for _, a := range s.accounts {
-		if a.ID == id { return a, nil }
-	}
-	return nil, nil
-}
-
 	if s.listErr != nil {
 		return nil, s.listErr
 	}
@@ -49,6 +42,13 @@ func (s *stubPaperRepo) GetAccount(_ context.Context, id string) (*repository.Pa
 		out = append(out, a)
 	}
 	return out, nil
+}
+
+func (s *stubPaperRepo) GetAccount(_ context.Context, id string) (*repository.PaperAccount, error) {
+	for _, a := range s.accounts {
+		if a.ID == id { return a, nil }
+	}
+	return nil, nil
 }
 
 func (s *stubPaperRepo) UpdateAccountBalance(_ context.Context, accountID string, balance, equity decimal.Decimal) error {
