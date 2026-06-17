@@ -1,4 +1,4 @@
-import { Button, Modal } from 'antd';
+import { Button, Input, Modal } from 'antd';
 import { useState } from 'react';
 import { showError, showSuccess, showWarning } from '@/utils/message';
 import type { Account } from '@/types/account';
@@ -68,8 +68,7 @@ export default function EditAccountModal({ open, account, onClose }: Props) {
             <label className="block mb-2" style={{ color: 'var(--color-text-muted)' }}>
               {t('accounts.edit.fields.oldPassword')}
             </label>
-            <input
-              type="password"
+            <Input.Password
               autoComplete="current-password"
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
@@ -90,8 +89,7 @@ export default function EditAccountModal({ open, account, onClose }: Props) {
             <label className="block mb-2" style={{ color: 'var(--color-text-muted)' }}>
               {t('accounts.edit.fields.password')}
             </label>
-            <input
-              type="password"
+            <Input.Password
               autoComplete="new-password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
