@@ -68,7 +68,7 @@ export default function EditAccountModal({ open, account, onClose }: Props) {
             <label className="block mb-2" style={{ color: 'var(--color-text-muted)' }}>
               {t('accounts.edit.fields.oldPassword')}
             </label>
-            <Input.Password
+            <Input
               autoComplete="current-password"
               value={oldPassword}
               onChange={(e) => setOldPassword(e.target.value)}
@@ -89,7 +89,7 @@ export default function EditAccountModal({ open, account, onClose }: Props) {
             <label className="block mb-2" style={{ color: 'var(--color-text-muted)' }}>
               {t('accounts.edit.fields.password')}
             </label>
-            <Input.Password
+            <Input
               autoComplete="new-password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
