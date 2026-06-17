@@ -274,7 +274,7 @@ func registerHandlers(
 	mux.Handle(antv1c.NewAdminJurisdictionServiceHandler(adminJurisdictionServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor, adminInterceptor)))
 
 	emailNotifier, workerCleanup := registerSREHandlers(
-		mux, log, pool, store, nc, rdb, cfg,
+		userRepo, mux, log, pool, store, nc, rdb, cfg,
 		authInterceptor, otelInterceptor, platformSvc, mthubSvc,
 		authServer,
 		strategyExperimentRepo, strategyAssetRepo, schedHealthRepo,

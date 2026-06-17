@@ -121,8 +121,36 @@ func (r *AdminRepository) Ping(ctx context.Context) error {
 }
 
 // HasPermission checks if a role has a specific permission.
-// Currently implements a simplified model where "admin" has all permissions.
-// TODO: implement fine-grained permission matrix when RBAC is introduced.
+// Permission matrix (expandable):
+//   super_admin → all permissions
+//   operation   → strategy:review, strategy:publish, user:read, order:read
+//   customer_service → user:read, order:read
+//   audit       → read-only (user:read, order:read, strategy:read, log:read)
+//   user        → no admin permissions
 func (r *AdminRepository) HasPermission(ctx context.Context, role, permissionCode string) (bool, error) {
-	return role == "admin", nil
+	switch role {
+	case "super_admin":
+		return true, nil
+	case "operation":
+		allowed := map[string]bool{
+			"strategy:review": true, "strategy:publish": true,
+			"user:read": true, "order:read": true,
+		}
+		return allowed[permissionCode], nil
+	case "customer_service":
+		allowed := map[string]bool{"user:read": true, "order:read": true}
+		return allowed[permissionCode], nil
+	case "audit":
+		return isReadPermission(permissionCode), nil
+	default:
+		return false, nil
+	}
+}
+
+func isReadPermission(code string) bool {
+	switch code {
+	case "user:read", "order:read", "strategy:read", "log:read":
+		return true
+	}
+	return false
 }

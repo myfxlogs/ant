@@ -33,6 +33,7 @@ import (
 )
 
 func registerSREHandlers(
+	userRepo *repository.UserRepository,
 	mux *http.ServeMux,
 	log *zap.Logger,
 	pool *pgxpool.Pool,
@@ -91,7 +92,7 @@ func registerSREHandlers(
 	calSvc := ai.NewCalibrationService(calRepo)
 	reflectionWorker := ai.NewReflectionWorker(calSvc, store, log)
 	reflectionWorker.Start(context.Background())
-	strategyAssetServer := strategy.NewStrategyAssetServer(strategyAssetRepo, log)
+	strategyAssetServer := strategy.NewStrategyAssetServer(strategyAssetRepo, userRepo, log)
 	mux.Handle(antv1c.NewStrategyAssetServiceHandler(strategyAssetServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 	scheduleHealthServer := system.NewScheduleHealthServer(schedHealthRepo, log)
 	mux.Handle(antv1c.NewScheduleHealthServiceHandler(scheduleHealthServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))

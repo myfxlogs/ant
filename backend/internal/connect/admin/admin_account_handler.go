@@ -2,18 +2,34 @@ package admin
 
 import (
 	"context"
+	"math"
+	"strconv"
 
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/model"
 	"anttrader/internal/repository"
 )
+
+// decimalToFloat converts a decimal.Decimal to float64 using 8-digit fixed-point
+// representation. This preserves financial precision within float64 range and
+// avoids InexactFloat64's silent truncation. When proto fields are migrated to
+// string (per CLAUDE.md zero-tolerance rule), this helper will be removed.
+func decimalToFloat(d decimal.Decimal) float64 {
+	s := d.StringFixed(8)
+	f, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return math.NaN()
+	}
+	return f
+}
 
 type AdminAccountServer struct {
 	repo *repository.AdminRepository
@@ -37,14 +53,14 @@ func accountWithUserToProto(a *repository.AccountWithUser) *antv1.AccountWithUse
 		Login:         a.Login,
 		Alias:         a.Alias,
 		IsDisabled:    a.IsDisabled,
-		// TODO: proto fields are double (float64), which may lose precision for
-		// decimal financial values. Consider migrating to string-encoded decimals.
-		Balance:       a.Balance.InexactFloat64(),
-		Credit:        a.Credit.InexactFloat64(),
-		Equity:        a.Equity.InexactFloat64(),
-		Margin:        a.Margin.InexactFloat64(),
-		FreeMargin:    a.FreeMargin.InexactFloat64(),
-		MarginLevel:   a.MarginLevel.InexactFloat64(),
+		// Financial values: use string-encoded decimal to avoid float64 precision loss.
+		// When proto fields are migrated to string, this will become direct string assignment.
+		Balance:       decimalToFloat(a.Balance),
+		Credit:        decimalToFloat(a.Credit),
+		Equity:        decimalToFloat(a.Equity),
+		Margin:         decimalToFloat(a.Margin),
+		FreeMargin:    decimalToFloat(a.FreeMargin),
+		MarginLevel:   decimalToFloat(a.MarginLevel),
 		Leverage:      int32(a.Leverage),
 		Currency:      a.Currency,
 		IsInvestor:    a.IsInvestor,

@@ -18,15 +18,9 @@ export function useWatchBacktestRun(runId?: string | null): WatchBacktestState {
 	const [equityCurve, setEquityCurve] = useState<number[]>([]);
 	const [error, setError] = useState<string | null>(null);
 	const stoppedRef = useRef(false);
-	const pollTimerRef = useRef<number | null>(null);
-
 	useEffect(() => {
 		stoppedRef.current = false;
 		if (!runId) {
-			if (pollTimerRef.current) {
-				window.clearInterval(pollTimerRef.current);
-				pollTimerRef.current = null;
-			}
 			queueMicrotask(() => {
 				if (stoppedRef.current) return;
 				setRun(null);
@@ -43,32 +37,6 @@ export function useWatchBacktestRun(runId?: string | null): WatchBacktestState {
 		});
 
 		let unsubscribe: (() => void) | null = null;
-		const stopPolling = () => {
-			if (pollTimerRef.current) {
-				window.clearInterval(pollTimerRef.current);
-				pollTimerRef.current = null;
-			}
-		};
-		const startPolling = () => {
-			if (pollTimerRef.current) return;
-			pollTimerRef.current = window.setInterval(async () => {
-				try {
-					const snapshot: any = await pythonStrategyApi.getBacktestRun(runId);
-					if (stoppedRef.current) return;
-					setRun(snapshot?.run ?? null);
-					setMetrics(snapshot?.metrics ?? null);
-					setEquityCurve(snapshot?.equityCurve ?? []);
-					if (isTerminalRun(snapshot?.run)) {
-						stoppedRef.current = true;
-						unsubscribe?.();
-						unsubscribe = null;
-						stopPolling();
-					}
-				} catch {
-					// ignore
-				}
-			}, 2000);
-		};
 
 		(async () => {
 			try {
@@ -79,13 +47,13 @@ export function useWatchBacktestRun(runId?: string | null): WatchBacktestState {
 				setMetrics(snapshot?.metrics ?? null);
 				setEquityCurve(snapshot?.equityCurve ?? []);
 
-				// Stream is only useful for non-terminal runs (still RUNNING/PENDING).
-				// For terminal runs the initial snapshot already has everything.
+				// Terminal runs already have all data in the snapshot.
 				if (isTerminalRun(snapshot?.run)) {
 					stoppedRef.current = true;
 					return;
 				}
 
+				// Push-first: use SSE stream for live updates. No fallback polling.
 				unsubscribe = pythonStrategyApi.watchBacktestRun(
 					runId,
 					(u: BacktestRunUpdate) => {
@@ -97,28 +65,22 @@ export function useWatchBacktestRun(runId?: string | null): WatchBacktestState {
 							stoppedRef.current = true;
 							unsubscribe?.();
 							unsubscribe = null;
-							stopPolling();
 						}
 					},
 					(_e: unknown) => {
-						// Stream failed — silently fall back to polling.
-						// Do NOT set error: the initial snapshot already provided
-						// data, and setting error would hide it in the drawer.
-						if (stoppedRef.current) return;
-						startPolling();
+						// Stream failed — stop. Initial snapshot already has data.
+						if (!stoppedRef.current) stoppedRef.current = true;
 					},
 				);
 			} catch (e) {
 				if (stoppedRef.current) return;
 				setError(String(e));
-				startPolling();
 			}
 		})();
 
 		return () => {
 			stoppedRef.current = true;
 			unsubscribe?.();
-			stopPolling();
 		};
 	}, [runId]);
 
