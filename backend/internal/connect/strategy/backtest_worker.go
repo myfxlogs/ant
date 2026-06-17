@@ -16,21 +16,32 @@ import (
 )
 
 const (
-	pollInterval   = 3 * time.Second
+	listenTimeout  = 30 * time.Second // fallback poll interval when no PG notification received
 	leaseFor       = 60 * time.Second
 	defaultWorkers = 3
 )
 
-// backtestWorker polls for PENDING backtest runs and executes them via the Python engine.
+// backtestWorker waits for new PENDING backtest runs via PG LISTEN/NOTIFY,
+// with a 30s fallback ticker for safety (Push-First pattern). This replaces
+// the previous 3-second polling, which violated the project's push-first rule.
 func (s *PythonStrategyServer) backtestWorker(ctx context.Context, workerID int) {
-	ticker := time.NewTicker(pollInterval)
+	// Subscribe to PG notifications for new pending runs.
+	notifCh, listenCancel, _ := s.pgListen.Listen(ctx, "backtest_pending")
+	if listenCancel != nil {
+		defer listenCancel()
+	}
+
+	ticker := time.NewTicker(listenTimeout)
 	defer ticker.Stop()
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
+		case <-notifCh:
+			// New pending run inserted — wake up immediately.
 		case <-ticker.C:
+			// Safety fallback in case notification was missed.
 		}
 
 		// Claim next pending run (atomic SKIP LOCKED — concurrent-safe).
@@ -57,8 +68,6 @@ func (s *PythonStrategyServer) backtestWorker(ctx context.Context, workerID int)
 
 // executeBacktestRun orchestrates a full backtest life cycle: parameter extraction,
 // K-line fetching, Python engine execution, and result persistence.
-// TODO(P2-1): Split into sub-functions — fetchKlineData, buildBacktestRequest, callPythonEngine.
-// Current 181-line body exceeds the 50-line function limit (3.6x over).
 
 // backtestParams holds extracted parameters from a BacktestRun for execution.
 type backtestParams struct {

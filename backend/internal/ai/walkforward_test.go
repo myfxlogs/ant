@@ -36,21 +36,27 @@ func TestWalkForward_InsufficientData(t *testing.T) {
 }
 
 func TestWalkForward_OverfittingDetected(t *testing.T) {
-	t.Skip("TODO: add value assertions with known expected Sharpe/DD values")
 	t.Parallel()
 	returns := make([]float64, 250)
+	// IS fold: strong positive returns (Sharpe should be very high).
 	for i := 0; i < 125; i++ {
 		returns[i] = 5.0
 	}
+	// OOS fold: weak/negative returns (Sharpe should be low or negative).
 	for i := 125; i < 250; i++ {
 		returns[i] = -2.0 + float64(i%5)*0.1
 	}
 	cfg := DefaultWalkForwardConfig()
 	result := WalkForward(returns, cfg)
-	if result.Passed {
-		t.Logf("SharpeDiff=%.4f (overfitting may not trigger if < 1.0)", result.SharpeDiff)
+
+	// Overfitting should be detected: IS Sharpe >> OOS Sharpe.
+	if result.SharpeDiff <= 0.5 {
+		t.Errorf("expected SharpeDiff > 0.5 for overfitted data, got %.4f", result.SharpeDiff)
 	}
-	t.Logf("Overfitting test: SharpeDiff=%.4f MaxDD=%.4f Passed=%v",
+	if result.Passed {
+		t.Errorf("overfitted data should NOT pass walkforward validation (SharpeDiff=%.4f)", result.SharpeDiff)
+	}
+	t.Logf("Overfitting test OK: SharpeDiff=%.4f MaxDD=%.4f Passed=%v",
 		result.SharpeDiff, result.MaxFoldDD, result.Passed)
 }
 
