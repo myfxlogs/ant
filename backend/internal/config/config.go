@@ -17,6 +17,7 @@ type Config struct {
 	DBPassword string
 	DBName     string
 	DBSSLMode  string
+	DBMaxConns int
 
 	// ClickHouse
 	CHHost          string
@@ -82,6 +83,12 @@ func Load() *Config {
 		DBPassword: getenv("DB_PASSWORD", "ant"),
 		DBName:     getenv("DB_NAME", "ant"),
 		DBSSLMode:  getenv("DB_SSLMODE", "disable"),
+		// Default pgxpool MaxConns = max(4, NumCPU) is too small for the
+		// push-first pipeline which holds several long-lived PG LISTEN/NOTIFY
+		// connections plus one per active SSE stream. Those permanent listeners
+		// exhaust the pool and every HTTP request blocks on Acquire. 25 leaves
+		// ample headroom for listeners + concurrent request handling.
+		DBMaxConns: getenvInt("DB_MAX_CONNS", 25),
 
 		CHHost:          getenv("CH_HOST", "clickhouse"),
 		CHPort:          getenv("CH_PORT", "9000"),

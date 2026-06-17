@@ -88,11 +88,19 @@ func main() {
 		cfg.DBName,
 		cfg.DBSSLMode,
 	)
-	pool, err := pgxpool.New(context.Background(), dsn)
+	poolCfg, err := pgxpool.ParseConfig(dsn)
+	if err != nil {
+		log.Fatal("pg parse config failed", zap.Error(err))
+	}
+	if cfg.DBMaxConns > 0 {
+		poolCfg.MaxConns = int32(cfg.DBMaxConns)
+	}
+	pool, err := pgxpool.NewWithConfig(context.Background(), poolCfg)
 	if err != nil {
 		log.Fatal("pg connect failed", zap.Error(err))
 	}
 	defer pool.Close()
+	log.Info("pg pool configured", zap.Int32("max_conns", poolCfg.MaxConns))
 
 	// PG is the system of record for market data.
 	pgStore := repository.NewPgMarketDataStore(pool, log)
