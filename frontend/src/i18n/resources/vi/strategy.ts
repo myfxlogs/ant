@@ -34,7 +34,8 @@ const strategy = {
         loadingSymbols: 'Đang tải danh sách mã...',
         selectSymbol: 'Chọn mã',
         noSymbols: 'Không lấy được danh sách mã',
-        code: 'Dán mã chiến lược Python...'
+        code: 'Dán mã chiến lược Python...',
+        codeSample: 'Dán mã chiến lược vào đây',
       },
       cards: {
         validationResult: 'Kết quả xác thực',

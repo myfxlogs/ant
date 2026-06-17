@@ -47,7 +47,8 @@ const accounts = {
       disableFailed: '停用账户失败',
       deleted: '账户已删除',
       deleteFailed: '删除失败',
-      enableFailed: '启用账户失败'
+      enableFailed: '启用账户失败',
+      loginDigitsOnly: '交易账号只能包含数字',
     },
     tradeTabs: {
       positionsWithCount: '持仓订单 ({{count}})',

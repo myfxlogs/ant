@@ -38,7 +38,8 @@ const strategy = {
         loadingSymbols: '可用品種載入中…',
         selectSymbol: '選擇品種',
         noSymbols: '未取得到品種列表',
-        code: '輸入Python策略代碼...'
+        code: '輸入Python策略代碼...',
+        codeSample: '在此貼上策略代碼',
       },
       cards: {
         validationResult: '驗證結果',

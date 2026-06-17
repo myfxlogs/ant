@@ -34,7 +34,8 @@ const strategy = {
         loadingSymbols: '銘柄を読み込み中...',
         selectSymbol: '銘柄を選択',
         noSymbols: '銘柄一覧を取得できませんでした',
-        code: 'Python 戦略コードを入力...'
+        code: 'Python 戦略コードを入力...',
+        codeSample: 'ここに戦略コードを貼り付け',
       },
       cards: {
         validationResult: '検証結果',

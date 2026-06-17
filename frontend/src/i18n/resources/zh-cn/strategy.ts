@@ -34,7 +34,8 @@ const strategy = {
         loadingSymbols: '可用品种加载中…',
         selectSymbol: '选择品种',
         noSymbols: '未获取到品种列表',
-        code: '输入Python策略代码...'
+        code: '输入Python策略代码...',
+        codeSample: '在此粘贴策略代码',
       },
       cards: {
         validationResult: '验证结果',
