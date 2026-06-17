@@ -90,13 +90,18 @@ func (s *StreamServer) SubscribeEvents(
 	}()
 
 	if filterAll && len(profitSubs) == 0 {
-		ticker := time.NewTicker(30 * time.Second)
+		// No accounts — stream is fully idle. Send periodic pings to prevent
+		// Cloudflare/proxy from closing the idle HTTP/2 stream (100s timeout).
+		ticker := time.NewTicker(15 * time.Second)
 		defer ticker.Stop()
 		for {
 			select {
 			case <-ctx.Done():
 				return nil
 			case <-ticker.C:
+				if err := sendEvent(&antv1.StreamEvent{Type: "ping"}); err != nil {
+					return err
+				}
 			}
 		}
 	}
