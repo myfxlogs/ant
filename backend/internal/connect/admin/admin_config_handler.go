@@ -73,14 +73,9 @@ func (s *AdminConfigServer) ToggleConfigEnabled(ctx context.Context, req *connec
 }
 
 // validConfigKey returns true for recognized configuration keys.
-// Adding a key here is required before SetConfig will accept it.
 func validConfigKey(key string) bool {
 	switch key {
-	case "trading_enabled", "margin_call_threshold", "max_positions_per_user",
-		"max_accounts_per_user", "session_timeout_minutes", "rate_limit_orders_per_minute",
-		"maintenance_mode", "require_kyc_for_trading", "require_disclaimer_for_trading",
-		"require_questionnaire_for_trading", "auto_freeze_on_margin_call",
-		"max_leverage", "default_leverage", "commission_rate":
+	case "maintenance_mode", "session_timeout_minutes":
 		return true
 	}
 	return false
