@@ -159,6 +159,15 @@ export function useStrategyWorkspaceState() {
   // AI workflow
   const ai = useAIWorkflow(codeCtx, btCtx.metrics, setCodePanelVisible);
 
+  // Clear stale accountId from localStorage when the persisted account no longer
+  // exists (deleted) or the user has no accounts — prevents 404/403 API calls.
+  useEffect(() => {
+    if (!accountId) return;
+    if (activeAccounts.length === 0 || !activeAccounts.some(a => a.id === accountId)) {
+      setAccountId(''); setSymbol('');
+    }
+  }, [activeAccounts, accountId, setAccountId, setSymbol]);
+
   // Init
   useEffect(() => { fetchAccounts(); codeCtx.loadTemplates(); }, []);
   useEffect(() => { if (accountId && qt.financialsReady) qt.fetchTradeHistory(); }, [accountId, qt.financialsReady, qt.fetchTradeHistory]);
