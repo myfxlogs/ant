@@ -117,8 +117,20 @@ func (s *StreamServer) SubscribeUserSummary(
 	}
 
 	if len(accountIDs) == 0 {
-		<-ctx.Done()
-		return nil
+		// No accounts — stream is fully idle. Send periodic pings to prevent
+		// Cloudflare/proxy from closing the idle HTTP/2 stream (100s timeout).
+		ticker := time.NewTicker(15 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-ticker.C:
+				if err := stream.Send(&antv1.UserSummaryEvent{}); err != nil {
+					return connect.NewError(connect.CodeInternal, fmt.Errorf("keepalive: %w", err))
+				}
+			}
+		}
 	}
 
 	profitCh := make(chan *mthub.AccountProfitEvent, len(accountIDs)*2)
