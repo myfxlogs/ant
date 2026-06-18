@@ -13,16 +13,17 @@ import AccountAnalyticsSection from './components/AccountAnalyticsSection';
 import AccountMetricsCards from './components/AccountMetricsCards';
 import AccountDeleteModal from './components/AccountDeleteModal';
 import { useAccountDetailData } from './AccountDetail/useAccountDetailData';
-import { useAuthStore } from '@/stores/authStore';
 
 export default function AccountDetail() {
-  const accessToken = useAuthStore((s) => s.accessToken);
   const handleShare = useCallback(async () => {
-    if (!id || !accessToken) return;
+    if (!id) return;
     try {
+      // Lazy import to avoid circular dependency with authStore
+      const { useAuthStore } = await import('@/stores/authStore');
+      const token = useAuthStore.getState().accessToken;
       const resp = await fetch('/ant.v1.ShareService/CreateShareToken', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ account_id: id, expire_days: 7 }),
       });
       const data = await resp.json();
@@ -33,7 +34,7 @@ export default function AccountDetail() {
     } catch {
       message.error(t('accounts.messages.shareLinkFailed', '创建分享链接失败'));
     }
-  }, [id, accessToken, t]);
+  }, [id, t]);
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
