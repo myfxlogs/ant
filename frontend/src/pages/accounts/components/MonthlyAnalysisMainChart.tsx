@@ -92,13 +92,22 @@ export default function MonthlyAnalysisMainChart({
           <XAxis
             dataKey="monthAxisLabel"
             stroke="var(--color-text-muted)"
-            fontSize={10}
+            fontSize={11}
             tickLine={false}
             axisLine={{ stroke: 'var(--color-border)' }}
             interval={0}
             angle={-30}
             textAnchor="end"
             height={42}
+            tick={({ x, y, payload, index }: any) => (
+              <g transform={`translate(${x},${y})`} style={{ cursor: 'pointer' }}
+                onClick={() => onCommitMonthClick(series[index], index)}>
+                <text x={0} y={0} dy={4} textAnchor="end" fill="var(--color-text-muted)" fontSize={11}
+                  transform="rotate(-30)" fontWeight={series[index]?.isActive ? 700 : 400}>
+                  {payload.value}
+                </text>
+              </g>
+            )}
           />
           <YAxis
             stroke="var(--color-text-muted)"
@@ -140,9 +149,10 @@ export default function MonthlyAnalysisMainChart({
           />
           <Bar
             dataKey="value"
-            barSize={20}
+            barSize={28}
+            maxBarSize={36}
             radius={[2, 2, 0, 0]}
-            minPointSize={4}
+            minPointSize={10}
             isAnimationActive={false}
             style={{ cursor: 'pointer' }}
             onClick={onCommitMonthClick}
