@@ -1,17 +1,10 @@
 const logs = {
   logs: {
-    connectionLogs: '連線日誌',
-    executionLogs: '執行日誌',
-    orderHistory: '訂單歷史',
-    operationLogs: '操作日誌',
-    dateRange: '日期範圍',
-    status: '狀態',
-    symbol: '品種',
-    accountId: '帳戶ID',
-    search: '搜尋',
-    reset: '重置',
+    success: '成功',
+    failed: '失敗',
     time: '時間',
     eventType: '事件類型',
+    status: '狀態',
     server: '伺服器',
     loginId: '登入ID',
     message: '訊息',
@@ -28,9 +21,19 @@ const logs = {
     action: '操作',
     details: '詳情',
     ip: 'IP',
-    success: '成功',
-    failed: '失敗',
+
+    connectionLogs: '連線日誌',
+    executionLogs: '執行日誌',
+    orderHistory: '訂單歷史',
+    operationLogs: '操作日誌',
+
+    dateRange: '日期範圍',
+    symbol: '品種',
     exampleSymbolPlaceholder: '例如: XAUUSD',
+    accountId: '帳戶ID',
+
+    search: '搜尋',
+    reset: '重置',
     result: '結果',
     riskCode: '風險代碼',
     requestId: '請求ID',
@@ -42,9 +45,9 @@ const logs = {
       type: '類型',
       lots: '手數',
       open: '開盤',
-      close: '收盤'
-    }
-  }
+      close: '收盤',
+    },
+  },
 } as const;
 
 export default logs;

@@ -18,19 +18,15 @@ const admin = {
         allActive: 'すべてのアクティブ',
         flagged: 'フラグ付き',
         disabled: '無効',
-        archived: 'アーカイブ済み',
+        archived: 'アーカイブされました',
         total: '合計 {{count}} 件',
       },
       actions: {
-      publish: '公開',
-      publishFailed: '公開失敗',
-      publishSuccess: '公開完了',
         code: 'コード',
         flag: 'フラグ',
         unflag: 'フラグ解除',
         unpublish: '公開取消',
-        unpublishFailed: '公開取消失敗',
-        unpublishSuccess: '公開取消完了',
+        publish: '公開',
         disable: '無効化',
         enable: '有効化',
         archive: 'アーカイブ',
@@ -50,7 +46,7 @@ const admin = {
         status: 'ステータス',
         public: '公開',
         yes: 'はい',
-        no: 'いいえ',
+        no: 'No',
         flag: 'フラグ',
         schedules: 'スケジュール',
         preset: 'プリセット',
@@ -69,6 +65,10 @@ const admin = {
         flagFailed: 'フラグに失敗しました',
         unflagSuccess: 'フラグが解除されました',
         unflagFailed: 'フラグ解除に失敗しました',
+        unpublishSuccess: 'Unpublished',
+        unpublishFailed: 'Unpublish failed',
+        publishSuccess: 'Published',
+        publishFailed: 'Publish failed',
         disableSuccess: '無効化されました — すべてのスケジュールが停止しました',
         disableFailed: '無効化に失敗しました',
         enableSuccess: '有効化されました',
@@ -81,5 +81,3 @@ const admin = {
 };
 
 export default admin;
-
-

@@ -3,10 +3,39 @@ const base = {
     name: 'AntTrader'
   },
   auth: {
+    login: {
+      subtitle: '本サービスはテストであり責任を負いません',
+      rememberMe: 'ログイン状態を保持',
+      forgotPassword: 'パスワードをお忘れですか？',
+      signingIn: 'ログイン中...',
+      login: 'ログイン',
+      noAccount: `Don't have an account?`,
+      registerNow: '新規登録',
+    },
+    forgotPassword: {
+      title: 'パスワードリセット',
+      hint: '管理者またはサポートに連絡してパスワードをリセットしてください。',
+      backToLogin: 'Back to Login'
+    },
+    register: {
+      subtitle: '新規アカウント作成',
+      signingUp: '登録中...',
+      register: '登録',
+      haveAccount: 'すでにアカウントをお持ちですか？',
+      loginNow: 'ログイン',
+    },
     fields: {
       email: 'メール',
       password: 'パスワード',
-      confirmPassword: 'パスワード確認'
+      confirmPassword: 'Confirm password'
+    },
+    validation: {
+      emailRequired: 'メールアドレスを入力してください',
+      emailInvalid: '有効なメールアドレスを入力してください',
+      passwordRequired: 'パスワードを入力してください',
+      passwordMin8: 'パスワードは8文字以上必要です',
+      confirmPasswordRequired: 'パスワードを確認してください',
+      passwordMismatch: 'パスワードが一致しません'
     },
     messages: {
       loginSuccess: 'ログインしました',
@@ -14,37 +43,15 @@ const base = {
       registerSuccess: '登録が完了しました。ログインしてください。',
       registerFailed: '登録に失敗しました。しばらくしてから再試行してください。',
       logoutSuccess: 'ログアウトしました',
-      fetchMeFailed: 'ユーザー情報の取得に失敗しました'
-    },
-    validation: {
-      emailRequired: 'メールアドレスを入力してください',
-      emailInvalid: '有効なメールアドレスを入力してください',
-      passwordRequired: 'パスワードを入力してください',
-      passwordMin8: 'パスワードは8文字以上である必要があります',
-      confirmPasswordRequired: 'パスワードを確認してください',
-      passwordMismatch: 'パスワードが一致しません'
-    },
-    login: {
-      subtitle: '本サービスはテストであり責任を負いません',
-      rememberMe: 'ログイン状態を保持',
-      forgotPassword: 'パスワードをお忘れですか？',
-      signingIn: 'ログイン中...',
-      login: 'ログイン',
-      noAccount: 'アカウントをお持ちでないですか？',
-      registerNow: '新規登録'
-    },
-    register: {
-      subtitle: '新規アカウント作成',
-      signingUp: '登録中...',
-      register: '登録',
-      haveAccount: 'すでにアカウントをお持ちですか？',
-      loginNow: 'ログイン'
-    },
-    forgotPassword: {
-      title: 'パスワードリセット',
-      hint: '管理者またはサポートに連絡してパスワードをリセットしてください。',
-      backToLogin: 'ログインに戻る'
+      fetchMeFailed: 'Failed to load user profile'
     }
+  },
+  language: {
+    simplifiedChinese: '简体中文',
+    traditionalChinese: '繁體中文',
+    english: 'English',
+    japanese: '日本語',
+    vietnamese: 'Tiếng Việt'
   },
   common: {
     refresh: '更新',
@@ -53,21 +60,21 @@ const base = {
     updated: '更新しました',
     created: '作成しました',
     enabled: '有効化しました',
-    disabled: '無効化しました',
+    disabled: '已禁用',
     deleted: '削除しました',
     deleteFailed: '削除に失敗しました',
   deleteSelected: '選択した{{count}}件を削除',
     loadingFailed: '読み込みに失敗しました',
     none: 'なし',
     close: '閉じる',
-    operationFailed: '操作に失敗しました',
+    operationFailed: '操作失败',
     pleaseWait: 'しばらくお待ちください...',
     next: '次へ',
     previous: '戻る',
     gotIt: '了解',
     loading: '読み込み中...',
     searching: '検索中...',
-    unknown: '不明',
+    unknown: '未知',
     enable: '有効化',
     disable: '無効化',
     edit: '編集',
@@ -85,49 +92,42 @@ const base = {
     copy: 'コピー',
     copied: 'コピーしました',
     copyFailed: 'コピーに失敗しました',
-    noData: 'データがありません',
-    totalItems: '共 {{count}} 项',
-    time: {
-      minute: '{{n}}分',
-      hour: '{{n}}时',
-      day: '{{n}}天',
-      lessThanMinute: '<1分'
-    },
-    required: '必須',
     ok: 'OK',
     error: 'エラー',
     retry: 'リトライ',
     pageError: 'ページエラー',
     unexpectedError: '予期しないエラーが発生しました',
+    required: '必須',
+    noData: 'データがありません',
     lineColor: 'ライン色',
     selectSymbolToViewChart: '銘柄を選択してチャートを表示',
     currentPosition: '📊 現在のポジション',
     noOpenPositionsForSymbol: '{{symbol}} のポジションはありません',
     indicatorSettings: '{{name}} 設定',
-    active: '启用',
+    totalItems: '共 {{count}} 项',
+    time: {
+      minute: '{{n}}分',
+      hour: '{{n}}时',
+      day: '{{n}}天',
+      lessThanMinute: '<1m'
+    },
+    active: 'アクティブ',
     inactive: '停用',
     clear: '清除',
     saveSuccess: '保存成功',
     remove: '移除',
     yes: '是',
-    no: '否',
+    no: 'No',
     you: '你',
     comingSoon: '即将上线',
-    pageUnderDevelopment: '此页面正在开发中'
-  },
-  language: {
-    simplifiedChinese: '简体中文',
-    traditionalChinese: '繁體中文',
-    english: 'English',
-    japanese: '日本語',
-    vietnamese: 'Tiếng Việt'
+    pageUnderDevelopment: 'This page is under development'
   },
   menu: {
     strategyWorkspace: '戦略ワークスペース',
     strategyLibrary: '戦略ライブラリ',
     dashboard: 'ダッシュボード',
     strategy: '戦略',
-    accounts: '口座管理',
+    accounts: 'アカウント',
     aiAssistant: 'AIアシスタント',
     strategies: '戦略管理',
     trading: '取引',
@@ -136,134 +136,17 @@ const base = {
     market: 'マーケット',
     analytics: '分析',
     marketplace: 'マーケットプレイス',
+    assetAnalysis: 'AI分析',
     experiments: '戦略実験',
     marketRegime: 'マーケットレジーム',
     assets: '戦略資産',
     schedules: '戦略スケジュール',
     indicatorCatalog: 'インジケーターカタログ',
     logs: 'システムログ',
-    assetAnalysis: 'AI分析',
     autoTrading: '自動取引',
     marketTools: 'マーケット分析ツール',
     devGroup: '戦略開発',
     opsGroup: '戦略運用',
-  },
-  market: {
-    searchPlaceholder: '銘柄を検索（例: EURUSD, XAUUSD）',
-    selectAccount: '取引口座を選択',
-    watchlist: 'ウォッチリスト',
-    popularSymbols: '人気銘柄',
-    noSymbolSelected: '銘柄を選択してマーケットデータを表示',
-    bid: '買値',
-    ask: '売値',
-    spread: 'スプレッド',
-    mid: '仲値',
-    allSymbols: '全銘柄',
-    common: '共通',
-    selectSymbol: '銘柄を選択',
-    noSymbolsFound: '銘柄が見つかりません',
-    loadingSymbols: '読み込み中...',
-    emptyWatchlist: '暂无自选',
-    searchSymbol: '搜索品种...'
-  },
-  topbar: {
-    systemOk: 'システムは正常に稼働中',
-    profile: 'プロフィール',
-    settings: '設定',
-    switchToAdmin: '管理画面へ切替',
-    logout: 'ログアウト',
-    user: 'ユーザー'
-  },
-  profile: {
-    title: 'プロフィール',
-    nickname: 'ニックネーム',
-    role: 'ロール',
-    status: 'ステータス',
-    lastLogin: '最終ログイン',
-    registered: '登録日時'
-  },
-  notifications: {
-    title: '通知',
-    empty: '通知はありません',
-    tabs: {
-      all: 'すべて ({{count}})',
-      unread: '未読 ({{count}})'
-    },
-    types: {
-      trade: '取引',
-      signal: 'シグナル',
-      risk_alert: 'リスク',
-      strategy_execution: '戦略',
-      system: 'システム'
-    },
-    actions: {
-      markAllAsRead: 'すべて既読',
-      clearAll: 'クリア',
-      clearAllConfirm: 'すべての通知を削除しますか？'
-    },
-    stream: {
-      strategyExecution: {
-        title: '戦略実行',
-        completed: '{{symbol}} {{action}} が完了しました',
-        failed: '実行失敗: {{error}}'
-      },
-      riskAlert: {
-        title: 'リスクアラート',
-        fallback: 'アラートタイプ: {{alertType}}'
-      },
-      strategySignal: {
-        title: '戦略シグナル',
-        message: '{{symbol}} が {{signalType}} をトリガーしました'
-      },
-      autoTrading: {
-        title: '自動取引',
-        fallback: '自動取引ステータスが更新されました'
-      }
-    },
-    all: 'すべて',
-    unread: '未読',
-    markAllRead: 'すべて既読にする',
-    clearAll: 'すべて消去',
-    confirmClearAll: 'すべての通知を消去しますか？'
-  },
-  errors: {
-    not_authenticated: '認証されていません',
-    invalid_credentials: '認証情報が正しくありません',
-    user_not_found: 'ユーザーが見つかりません',
-    email_already_registered: 'このメールアドレスは既に登録されています',
-    account_not_found: '口座が見つかりません',
-    access_denied: 'アクセスが拒否されました',
-    account_connection_failed: '取引サーバーへの接続に失敗しました',
-    account_connected: '接続しました',
-    schedule_service_not_available: 'スケジュールサービスは利用できません',
-    auto_trading_enabled: '自動売買を有効にしました',
-    auto_trading_disabled: '自動売買を無効にしました',
-    connection_failed: {
-      title: '接続に失敗しました',
-      content: 'バックエンドに接続できません。サーバーが起動しているか確認してください。'
-    },
-    ai: {
-      not_configured: 'AI が設定されていません。先に AI 設定で有効化・設定してください。',
-      config_service_not_initialized: 'AI 設定サービスが初期化されていません',
-      config_valid: 'AI 設定は有効です',
-      no_trade_data_available: '利用可能な取引データがありません',
-      provider_returned_empty_message: 'AI プロバイダが空のメッセージを返しました',
-      provider_required: 'プロバイダを選択してください',
-      invalid_provider: '無効なプロバイダです',
-      api_key_required: 'API Key は必須です',
-      base_url_required: 'Base URL は必須です',
-      invalid_base_url: 'Base URL が無効です',
-      base_url_scheme_invalid: 'Base URL は http:// または https:// で始まる必要があります',
-      base_url_should_not_end_with_chat_completions: 'Base URL は /chat/completions で終わらないようにしてください',
-      failed_to_create_request: 'リクエストの作成に失敗しました',
-      request_failed: 'API リクエストに失敗しました',
-      probe_ok: 'OK',
-      probe_ok_no_models: 'OK（model が返されませんでした）',
-      free_tier_exhausted: 'AI の無料枠が上限に達しました。プロバイダー管理画面で「無料枠のみ使用」を無効化するか、有料キーに切り替えてください。',
-      rate_limited: 'AI サービスがレート制限/クォータ不足（429/資源枯渇）。しばらく待つか、利用可能な API Key/model に切り替えてください。',
-      forbidden_quota: 'AI サービスのクォータ/権限が不足しています（403）。API Key の残高や課金状態を確認してください。'
-    },
-    translate_failed: '翻訳に失敗しました'
   },
   marketplace: {
     title: 'ストラテジーマーケット',
@@ -291,17 +174,17 @@ const base = {
     noSubscriptions: '購読はまだありません',
     card: {
       free: '無料', rent: '¥{{amount}}/月', buy: '¥{{amount}}',
-      owned: '購入済み', users: 'ユーザー',
+      owned: '購入日', users: 'ユーザー',
       winRate: '勝率', pnl: '総損益',
       subscribers: '購読者',
-      by: '作成者',
+      by: 'by',
     },
     assetClass: { forex: 'FX', crypto: '暗号通貨', commodity: '商品', index: '指数', stock: '株式', other: 'その他' },
     risk: { low: '低', medium: '中', high: '高' },
     messages: {
       loginFirst: '先にログインしてください',
       subscribed: '購入に追加しました',
-      subscribeFailed: '操作に失敗しました',
+      subscribeFailed: '失敗',
       rated: '評価を送信しました',
       rateFailed: '評価に失敗しました',
       commentPosted: 'コメントを投稿しました',
@@ -325,7 +208,7 @@ const base = {
       status: 'ステータス', actions: '操作',
     },
     payment: {
-      title: '購入確認',
+      title: '購入確定',
       strategyName: '戦略',
       price: '価格',
       oneTimePurchase: '¥{{amount}} 買い切り',
@@ -333,7 +216,7 @@ const base = {
       balanceAfter: '購入後残高',
       insufficientBalance: '残高不足',
       depositPrompt: '続行するには入金してください。',
-      goToDeposit: '入金する',
+      goToDeposit: '入金',
       confirm: '購入確定',
       cancel: 'キャンセル',
       purchasing: '処理中...',
@@ -342,29 +225,106 @@ const base = {
       alreadyPurchased: 'この戦略は既に購入済みです。',
     },
     author: {
-    performanceFee: 'パフォーマンスフィー',
-      subscription: 'サブスクリプション',
       empty: '公開された戦略はまだありません。戦略ライブラリで公開してください。',
       published: '公開済み', subscribers: '購読者',
       avgRating: '平均評価', noPublished: '公開戦略なし',
     },
+    priceModel: { free: '無料', subscription: 'Subscription', performanceFee: 'Performance Fee' },
+  },
+  market: {
+    searchPlaceholder: '銘柄を検索（例: EURUSD, XAUUSD）',
+    selectAccount: '取引口座を選択',
+    watchlist: 'ウォッチリスト',
+    popularSymbols: '人気銘柄',
+    noSymbolSelected: '銘柄を選択してマーケットデータを表示',
+    bid: '買値',
+    ask: '売値',
+    spread: 'スプレッド',
+    mid: '仲値',
+    allSymbols: '全銘柄',
+    common: '共通',
+    selectSymbol: '銘柄を選択',
+    noSymbolsFound: '銘柄が見つかりません',
+    loadingSymbols: '読み込み中...',
+    emptyWatchlist: '暂无自选',
+    searchSymbol: 'Search symbol...'
+  },
+  topbar: {
+    systemOk: 'システムは正常に稼働中',
+    profile: 'プロフィール',
+    settings: '設定',
+    switchToAdmin: '管理画面へ切替',
+    logout: 'ログアウト',
+    user: 'ユーザー'
+  },
+  profile: {
+    title: 'プロフィール',
+    nickname: 'ニックネーム',
+    role: '役割',
+    status: 'ステータス',
+    lastLogin: '最終ログイン',
+    registered: 'Registered'
+  },
+  notifications: {
+    title: '通知',
+    all: 'すべて',
+    unread: '未読',
+    empty: '通知はありません',
+    markAllRead: 'すべて既読',
+    clearAll: 'クリア',
+    confirmClearAll: 'すべての通知を削除しますか？',
+    tabs: {
+      all: 'すべて ({{count}})',
+      unread: 'Unread ({{count}})'
+    },
+    types: {
+      trade: '取引',
+      signal: 'シグナル',
+      risk_alert: 'リスクアラート',
+      strategy_execution: '戦略',
+      system: 'System'
+    },
+    actions: {
+      markAllAsRead: 'すべて既読',
+      clearAllConfirm: 'すべての通知を削除しますか？',
+      clearAll: 'クリア'
+    },
+    stream: {
+      strategyExecution: {
+        title: '戦略実行',
+        completed: '{{symbol}} {{action}} が完了しました',
+        failed: 'Execution failed: {{error}}'
+      },
+      riskAlert: {
+        title: 'リスクアラート',
+        fallback: 'Alert type: {{alertType}}'
+      },
+      strategySignal: {
+        title: '戦略シグナル',
+        message: '{{symbol}} triggered {{signalType}}'
+      },
+      autoTrading: {
+        title: '自動取引',
+        fallback: 'Auto trading event triggered'
+      }
+    }
   },
   admin: {
     sidebar: {
-      dashboard: 'Dashboard',
-      userManagement: 'User Management',
+      dashboard: 'ダッシュボード',
+      userManagement: 'ユーザー管理',
       walletManagement: 'Wallets',
-      accountManagement: 'Account Management',
-      tradingMonitor: 'Trading Monitor',
+      accountManagement: 'アカウント管理',
+      tradingMonitor: '取引監視',
       operationLogs: 'Operation Logs',
-      systemConfig: 'System Config',
-      jurisdiction: 'Jurisdiction Gate'
+      systemConfig: 'システム設定',
+      jurisdiction: '管轄権管理'
     },
     header: {
       adminMode: 'Admin Mode',
       adminPanel: 'Admin Panel',
       backToUser: 'Back to User',
-      logout: 'Logout',
+      logout: 'ログアウト',
       admin: 'Admin'
     },
     config: {
@@ -372,11 +332,11 @@ const base = {
       editConfig: 'Edit Config: {{key}}',
       configItem: '配置项',
       value: '值',
-      description: '描述',
-      status: '状态',
+      description: '説明',
+      status: 'ステータス',
       toggle: '切换',
       updatedAt: '更新时间',
-      on: '开',
+      on: 'On',
       off: '关',
       maxAccountsPerUser: '每用户最大账户数',
       aiProviderCatalog: 'AI提供商目录',
@@ -384,7 +344,7 @@ const base = {
       strategyHealthConfig: '策略健康度配置',
       provider: '提供商',
       modelName: '模型名称',
-      enableToggle: '启用',
+      enableToggle: '有効化',
       baseUrlLabel: 'Base URL',
       formatJson: '格式化JSON',
       fillTemplate: '填充模板',
@@ -399,7 +359,7 @@ const base = {
         greenMaxFailedRunsNonNegative: '绿色最大失败次数需≥0',
         minSampleSizeNonNegative: '最小样本量需≥0',
         apiKeyRequired: 'API Key不能为空',
-        modelRequired: '模型名称不能为空'
+        modelRequired: 'Model name cannot be empty'
       },
       messages: {
         loadFailed: '加载配置失败',
@@ -415,12 +375,12 @@ const base = {
         model: '输入模型名称',
         baseUrl: '输入Base URL',
         configValue: '输入配置值',
-        description: '输入描述'
+        description: 'Enter description'
       },
       providerOptions: {
         zhipu: '智谱AI',
         deepseek: 'DeepSeek',
-        custom: '自定义'
+        custom: 'Custom / OpenAI Compatible'
       }
     },
     trading: {
@@ -429,7 +389,7 @@ const base = {
       platform: 'プラットフォーム',
       accounts: 'アカウント',
       orders: '注文',
-      volume: '取引量',
+      volume: '数量',
       byPlatform: 'プラットフォーム別',
       profitStats: '損益統計',
       totalUsers: '総ユーザー数',
@@ -442,7 +402,7 @@ const base = {
       netProfit: '純利益',
       totalProfit: '総利益',
       totalLoss: '総損失',
-      pendingOrders: '保留中注文'
+      pendingOrders: 'Pending Orders'
     },
     dashboard: {
       title: '管理ダッシュボード',
@@ -478,7 +438,7 @@ const base = {
         orderSendSuccess: '注文成功',
         orderSendFailed: '注文失敗',
         orderCloseSuccess: '決済成功',
-        orderCloseFailed: '決済失敗'
+        orderCloseFailed: 'Order Closed Failed'
       },
       riskWindow: {
         title: 'リスク管理ウィンドウ',
@@ -493,13 +453,13 @@ const base = {
         rejectRiskCodesHeader: 'リスクコード',
         rejectCount: '拒否数',
         noRejectData: 'この期間に拒否はありません',
-        noData: 'リスクデータなし'
+        noData: 'No window metrics data'
       }
     },
     jurisdiction: {
       title: '管轄権管理',
       sanctionedCountriesTab: '制裁対象国',
-      kycStatusTab: 'KYCステータス',
+      kycStatusTab: 'ユーザーKYCステータス',
       sanctionedCountries: '制裁対象国',
       userKYCStatus: 'ユーザーKYCステータス',
       addCountry: '国を追加',
@@ -508,7 +468,7 @@ const base = {
       countryLabel: '国',
       addedBy: '追加者',
       actions: '操作',
-      userEmail: 'ユーザーメール',
+      userEmail: 'メール',
       kycStatus: 'KYCステータス',
       country: '国',
       sanctioned: '制裁済み',
@@ -534,11 +494,11 @@ const base = {
         kycUpdated: 'KYCステータスを更新しました',
         kycUpdateFailed: 'KYCステータス更新に失敗しました',
         overrideUpdated: '上書き設定を更新しました',
-        overrideUpdateFailed: '上書き設定更新に失敗しました'
+        overrideUpdateFailed: 'Failed to update sanctioned override'
       },
-      overrideWarning: 'このユーザーは制裁対象国からのアクセスです。上書き許可で取引が可能になります。',
       confirmGrantOverride: 'このユーザーに上書き許可を付与しますか？',
-      confirmRevokeOverride: 'このユーザーの上書き許可を取り消しますか？'
+      confirmRevokeOverride: 'このユーザーの上書き許可を取り消しますか？',
+      overrideWarning: 'This user is from a sanctioned country. Granting override will allow trading.'
     },
     userManagement: {
       title: 'ユーザー管理',
@@ -557,26 +517,26 @@ const base = {
         details: '詳細',
         enable: '有効化',
         disable: '無効化',
-        changePassword: 'パスワード変更'
+        changePassword: 'Change Password'
       },
       filters: {
         searchPlaceholder: 'メールまたは名前で検索',
         rolePlaceholder: '役割でフィルター',
-        statusPlaceholder: 'ステータスでフィルター'
+        statusPlaceholder: 'Filter by status'
       },
       status: {
         active: 'アクティブ',
-        suspended: '停止中'
+        suspended: 'Suspended'
       },
       roles: {
         user: 'ユーザー',
         superAdmin: 'スーパー管理者',
         operation: '運用',
         customerService: 'カスタマーサポート',
-        audit: '監査'
+        audit: 'Audit'
       },
       pagination: {
-        total: '合計 {{total}} ユーザー'
+        total: 'Total {{total}} users'
       },
       deleteConfirm: {
         title: 'このユーザーを削除しますか？この操作は元に戻せません。',
@@ -587,7 +547,7 @@ const base = {
       modals: {
         createTitle: 'ユーザー作成',
         editTitle: 'ユーザー編集',
-        passwordTitle: 'パスワード変更'
+        passwordTitle: 'Change Password'
       },
       form: {
         email: 'メール',
@@ -600,7 +560,7 @@ const base = {
         placeholders: {
           email: 'メールを入力',
           nickname: 'ニックネームを入力',
-          password: 'パスワードを入力'
+          password: 'Enter password'
         }
       },
       passwordForm: {
@@ -608,7 +568,7 @@ const base = {
         confirmPassword: 'パスワード確認',
         placeholders: {
           newPassword: '新しいパスワードを入力',
-          confirmPassword: '新しいパスワードを再入力'
+          confirmPassword: 'Re-enter new password'
         },
         submit: 'パスワード更新',
         validation: {
@@ -616,7 +576,7 @@ const base = {
           confirmPasswordRequired: 'パスワード確認が必要です',
           passwordMin8: 'パスワードは8文字以上必要です',
           passwordMismatch: 'パスワードが一致しません',
-          passwordMustContainLettersAndNumbers: 'パスワードには英字と数字の両方を含める必要があります'
+          passwordMustContainLettersAndNumbers: 'Password must contain both letters and numbers'
         }
       },
       messages: {
@@ -630,7 +590,7 @@ const base = {
         userDisabled: 'ユーザーを無効化しました',
         passwordUpdatedSuccess: 'パスワードを更新しました',
         passwordUpdateFailed: 'パスワード更新に失敗しました',
-        newPasswordIs: '新しいパスワード: {{password}}'
+        newPasswordIs: 'New password is: {{password}}'
       },
       drawer: {
         title: 'ユーザー詳細',
@@ -686,6 +646,45 @@ const base = {
       reversal: '取消',
     },
   },
+  errors: {
+    not_authenticated: '認証されていません',
+    invalid_credentials: '認証情報が正しくありません',
+    user_not_found: 'ユーザーが見つかりません',
+    email_already_registered: 'このメールアドレスは既に登録されています',
+    account_not_found: '口座が見つかりません',
+    access_denied: 'アクセスが拒否されました',
+    account_connection_failed: '取引サーバーへの接続に失敗しました',
+    account_connected: '接続しました',
+    schedule_service_not_available: 'スケジュールサービスは利用できません',
+    auto_trading_enabled: '自動売買を有効にしました',
+    auto_trading_disabled: '自動売買を無効にしました',
+    translate_failed: '翻訳に失敗しました',
+    connection_failed: {
+      title: '接続に失敗しました',
+      content: 'Unable to connect to the server. Please check your network and try again.'
+    },
+    ai: {
+      not_configured: 'AI が設定されていません。先に AI 設定で有効化・設定してください。',
+      config_service_not_initialized: 'AI 設定サービスが初期化されていません',
+      config_valid: 'AI 設定は有効です',
+      no_trade_data_available: '利用可能な取引データがありません',
+      provider_returned_empty_message: 'AI プロバイダが空のメッセージを返しました',
+      provider_required: 'プロバイダを選択してください',
+      invalid_provider: '無効なプロバイダです',
+      api_key_required: 'API Key は必須です',
+      base_url_required: 'Base URL は必須です',
+      invalid_base_url: 'Base URL が無効です',
+      base_url_scheme_invalid: 'Base URL は http:// または https:// で始まる必要があります',
+      base_url_should_not_end_with_chat_completions: 'Base URL は /chat/completions で終わらないようにしてください',
+      failed_to_create_request: 'リクエストの作成に失敗しました',
+      request_failed: 'API リクエストに失敗しました',
+      probe_ok: 'OK',
+      probe_ok_no_models: 'OK（model が返されませんでした）',
+      free_tier_exhausted: 'AI の無料枠が上限に達しました。プロバイダー管理画面で「無料枠のみ使用」を無効化するか、有料キーに切り替えてください。',
+      rate_limited: 'AI サービスがレート制限/クォータ不足（429/資源枯渇）。しばらく待つか、利用可能な API Key/model に切り替えてください。',
+      forbidden_quota: 'Quota exceeded'
+    }
+  },
   symbolDetection: {
     label: '検出された銘柄',
     loading: '解析中...',
@@ -706,11 +705,10 @@ const base = {
       enabled: '自動取引が有効です',
       disabled: '自動取引が無効です',
       activeStrategies: 'アクティブ戦略',
-      todayExecutions: '本日の実行',
-      todayProfit: '本日の損益'
+      todayExecutions: `Today's Executions`,
+      todayProfit: `Today's Profit`
     },
     settings: {
-    maxDailyLossHint: '日次損失がこれを超えた場合、自動で取引を無効化',
       title: 'グローバルリスク設定',
       maxRiskPercent: '最大リスク%',
       maxRiskPercentHint: '1取引あたりのリスク許容額（残高の％）',
@@ -719,10 +717,11 @@ const base = {
       maxLotSize: '最大ロットサイズ',
       maxLotSizeHint: '1取引あたりの最大ボリューム（ロット）',
       maxDailyLoss: '最大日次損失',
+      maxDailyLossHint: '日次損失がこれを超えた場合、自動で取引を無効化',
       maxDrawdownPercent: '最大ドローダウン%',
       maxDrawdownPercentHint: 'ドローダウンがこれを超えた場合、自動で取引を無効化',
       saveSuccess: '設定を保存しました',
-      saveFailed: '設定の保存に失敗しました'
+      saveFailed: 'Failed to save settings'
     },
     logs: {
       title: '最近の取引ログ',
@@ -734,17 +733,14 @@ const base = {
         volume: '数量',
         price: '価格',
         profit: '損益',
-        ticket: 'チケット'
+        ticket: 'Ticket'
       }
     },
     messages: {
       loadFailed: '自動取引データの読み込みに失敗しました',
-      toggleFailed: '自動取引の切り替えに失敗しました'
+      toggleFailed: 'Failed to toggle auto trading'
     }
   }
 } as const;
 
 export default base;
-
-
-

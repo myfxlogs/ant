@@ -6,11 +6,11 @@ const aiSettings = {
       primary: {
         title: '預設主模型',
         hint: '用於「釐清意圖」步驟、程式碼生成等。',
-        placeholder: '選擇廠商 · 模型作為兜底大腦'
+        placeholder: '選擇廠商 · 模型作為兜底大腦',
       },
       tabs: {
         config: '模型設定',
-        agents: '智能體 設定'
+        agents: '智能體 設定',
       },
       fields: {
         name: '名稱',
@@ -21,7 +21,7 @@ const aiSettings = {
         apiKeyConfigured: '已設定',
         apiKeyReplaceHint: '如需更換金鑰，請重新輸入',
         deleteApiKey: '刪除金鑰',
-        '模型': '模型',
+        model: '模型',
         defaultModel: '預設模型',
         availableModels: '可用模型',
         availableModelsHint: '同一 API 金鑰 下可同時啟用多個 模型。',
@@ -32,26 +32,25 @@ const aiSettings = {
         temperature: '溫度',
         timeoutSeconds: '逾時秒數',
         maxTokens: '最大 權杖 數',
-        enabledStatus: '啟用狀態',
+        enabledStatus: '已啟用',
         enabledOn: '已啟用 → 點選關閉',
         enabledOff: '已停用 → 點選啟用',
-        model: '模型'
       },
       sections: {
         basic: '基礎資訊',
         connection: '連線設定',
         advanced: '高階參數',
         advancedHint: '僅在瞭解含義時調整；預設值已適配大多數場景',
-        connectionApiKeyLink: '前往申請 / 管理該廠商 API 金鑰'
+        connectionApiKeyLink: '前往申請 / 管理該廠商 API 金鑰',
       },
       inferenceParams: {
-        title: '推理參數'
+        title: '推理參數',
       },
       providers: {
         enabledTitle: '已啟用廠商',
         emptyTitle: '尚無啟用的廠商',
         emptyHint: '請先在 ',
-        emptyHintTail: ' 設定 API 金鑰 與可用模型。',
+        emptyHintTail: '.',
         modelsUnit: '個模型',
         noModels: '未設定可用模型',
         openai: 'OpenAI',
@@ -66,7 +65,7 @@ const aiSettings = {
         mistral: 'Mistral',
         groq: 'Groq',
         custom: '自定義（OpenAI 相容）',
-        openai_compatible: '自定義（OpenAI 相容）'
+        openai_compatible: '自定義（OpenAI 相容）',
       },
       placeholders: {
         name: '例如：DeepSeek-低成本',
@@ -76,39 +75,39 @@ const aiSettings = {
         providerFirst: '請先選擇 AI 提供商',
         modelManual: '請輸入模型名稱',
         modelSelect: '請選擇模型',
-        modelSelectOrType: '從下拉選擇，或直接輸入 模型 ID'
+        modelSelectOrType: '從下拉選擇，或直接輸入 模型 ID',
       },
       apiKeySavedAs: '目前已儲存：{{masked}}',
       apiKeyGuide: {
         title: '申請 API 金鑰 指引',
         selectProviderHint: '選擇一個 AI 提供商後，會在這裡顯示如何申請 API 金鑰。',
-        modelSuggestionZhipu: '模型建議：\`glm-4-flash\` / \`glm-4\`',
-        modelSuggestionDeepSeek: '模型建議：\`deepseek-chat\`',
-        default: '目前 廠商：{{provider}}。請到該服務商官網控制檯建立 API 金鑰。',
+        modelSuggestionZhipu: 'Model suggestion: select `glm-4-flash` / `glm-4` in "Model" dropdown',
+        modelSuggestionDeepSeek: 'Model suggestion: select `deepseek-chat` in "Model" dropdown',
+        default: 'Current provider: {{provider}}. Go to the provider\'s official console to create API Key, then paste above.',
         zhipu: {
           title: '如何獲取智譜 API 金鑰',
           step1: '開啟智譜開放平臺：',
-          step2: '登入/註冊後進入控制檯，建立並複製 API 金鑰'
+          step2: '登入/註冊後進入控制檯，建立並複製 API 金鑰',
         },
         deepseek: {
           title: '如何獲取 DeepSeek API 金鑰',
           step1: '開啟 DeepSeek 平臺：',
-          step2: '登入/註冊後在 API 金鑰s 頁面建立並複製 API 金鑰'
-        }
+          step2: '登入/註冊後在 API 金鑰s 頁面建立並複製 API 金鑰',
+        },
       },
       actions: {
         validateApiKey: '驗證 API 金鑰',
-        saveConfig: '儲存設定'
+        saveConfig: '儲存設定',
       },
       profiles: {
         current: '目前',
         actions: {
-          setCurrent: '設為目前'
+          setCurrent: '設為目前',
         },
         delete: {
           title: '刪除設定',
-          content: '確定要刪除該設定嗎？'
-        }
+          content: '確定要刪除該設定嗎？',
+        },
       },
       messages: {
         loadConfigFailed: '載入 AI 設定失敗',
@@ -123,14 +122,14 @@ const aiSettings = {
         deleted: '已刪除',
         setCurrentSuccess: '已切換目前設定',
         enabled: '已啟用',
-        disabled: '已停用'
+        disabled: '已停用',
       },
       errors: {
         arrearage: '服務商返回：帳號欠費/餘額不足。請到服務商控制檯檢查。',
         invalidModelId: '服務商返回：模型不可用{{model}}。請從下拉列表選擇。',
         unauthorized: '服務商返回：API 金鑰無效（401）。請檢查 Key 是否正確。',
         forbidden: '服務商返回：訪問被拒絕（403）。請檢查 Key 權限。',
-        timeout: '連線逾時。請檢查 基礎網址 是否可訪問。'
+        timeout: '連線逾時。請檢查 基礎網址 是否可訪問。',
       },
       discoverErrors: {
         baseUrlRequired: '請先填寫 Base URL（模型服務位址）。',
@@ -144,9 +143,10 @@ const aiSettings = {
         unreachable: '無法連線到模型服務：請檢查 Base URL、網路或閘道。',
         invalidModelsResponse: '模型服務回傳格式不相容 /models 協定。',
         noModelsReturned: '模型服務未回傳可用模型，請檢查帳號權限或服務設定。',
-        providerRegionBlocked: '地域不可用：模型服務商依偵測到的來源拒絕請求（出口 IP 可能與主機所在地不同）。可嘗試更換部署或出口網路、設定合規 HTTP(S) 代理，或改用其他廠商。',
+        providerRegionBlocked:
+          'Region not supported: the model provider rejected this request based on detected location (egress IP may differ from your server). Try a supported network region, a compliant HTTP(S) proxy, or another provider.',
         generic: '拉取模型失敗，請檢查 Base URL 與金鑰設定。',
-        genericDetail: '拉取模型失敗：{{detail}}'
+        genericDetail: '拉取模型失敗：{{detail}}',
       },
       validation: {
         nameRequired: '名稱不能為空',
@@ -155,7 +155,7 @@ const aiSettings = {
         baseUrlProtocol: '基礎網址 必須以 http:// 或 https:// 開頭',
         baseUrlNoChatCompletionsSuffix: '基礎網址 不要以 /chat/completions 結尾',
         modelRequired: '模型不能為空',
-        modelFormat: '模型格式不正確'
+        modelFormat: '模型格式不正確',
       },
       agent: {
         title: '智能體 身份定義',
@@ -169,7 +169,7 @@ const aiSettings = {
           loadDefaults: '載入預設 8 個 智能體',
           restoreDefaults: '恢復預設',
           restoreDefaultsConfirmTitle: '恢復系統預設身份？',
-          restoreDefaultsConfirmContent: '將把 8 個系統 智能體 重置為預設身份定義。'
+          restoreDefaultsConfirmContent: '將把 8 個系統 智能體 重置為預設身份定義。',
         },
         messages: {
           selectProfileFirst: '請先在左側選擇一個設定',
@@ -177,7 +177,7 @@ const aiSettings = {
           empty: '暫無自定義 智能體，點選"新增"開始設定',
           saveSuccess: '智能體 已儲存',
           saveFailed: '智能體 儲存失敗',
-          defaultsLoaded: '已載入系統預設 智能體 模板'
+          defaultsLoaded: '已載入系統預設 智能體 模板',
         },
         fields: {
           namePlaceholder: '智能體 名稱',
@@ -185,7 +185,7 @@ const aiSettings = {
           inputHintPlaceholder: '輸入提示（可選）',
           modelProfilePlaceholder: '預設（沿用目前設定檔）',
           modelProfileEmpty: '請先在「AI 設定」啟用至少一個 廠商/模型',
-          historicalBinding: '{{value}}（歷史）'
+          historicalBinding: '{{value}}（歷史）',
         },
         types: {
           style: '風格/範式',
@@ -199,79 +199,65 @@ const aiSettings = {
           strategist: '策略分析師',
           risk_manager: '風控經理',
           executor: '執行顧問',
-          researcher: '市場研究員'
+          researcher: '市場研究員',
         },
         defaults: {
           style: {
-            identity: '你是資深量化策略分析師，專注於策略範式選型。',
-            inputHint: '範例：帳戶=EURUSD 零售；週期=H1；目標=月均收益 3%、最大回撤 <10%'
+            identity:
+              'You are a senior quantitative strategy analyst, focused on strategy paradigm selection. Based on account/symbol/timeframe/historical stats (trend strength ADX, volatility ATR, autocorrelation, distribution skew, etc.) and user goals/constraints, recommend one primary paradigm and one alternative from "trend following / mean reversion / breakout / momentum / arbitrage / grid / event-driven", explain applicable/inapplicable conditions. Output in Markdown: 1) reasoning (bullet points) 2) main + alternative + applicable/inapplicable conditions 3) at least 3 risk alerts. Avoid vagueness, do not rely on external data not provided.',
+            inputHint: '範例：帳戶=EURUSD 零售；週期=H1；目標=月均收益 3%、最大回撤 <10%',
           },
           signals: {
-            identity: '你是量化因子與訊號工程師，熟練使用 MA/EMA、RSI、MACD、ADX、ATR 等。',
-            inputHint: '範例：範式=趨勢跟隨；週期=H1；可用指標=EMA/ATR/ADX'
+            identity:
+              'You are a quantitative factor and signal engineer, proficient with MA/EMA, RSI, MACD, ADX, ATR, Bollinger, Bollinger bandwidth, VWAP, Pivot, volume and volatility factors, etc. Without introducing external data (unless user provides macro/event tables), design reproducible, parameterizable entry/exit/filter signal rules, avoid overfitting. Output in Markdown: 1) reasoning 2) executable rule list (entry/exit/filter) with parameters (default/range/step) 3) at least 3 boundary/failure scenarios (range-bound/gap/high volatility/news).',
+            inputHint: '範例：範式=趨勢跟隨；週期=H1；可用指標=EMA/ATR/ADX',
           },
           risk: {
-            identity: '你是交易風險與執行約束專家。',
-            inputHint: '範例：帳戶權益=10,000；可接受月回撤=5%；單筆風險=0.5%'
+            identity:
+              'You are a trading risk and execution constraints expert. Based on user goals and account status, design position sizing (fixed fraction / vol targeting / Kelly modified), stop-loss/take-profit, single/day/week max risk, max drawdown threshold, consecutive loss cooldown, trade frequency cap, spread/slippage anomaly protection, black swan downgrade strategy. Output in Markdown: 1) reasoning 2) hard constraints list + recommended params (suggested/range) + actions after trigger 3) at least 3 failure modes (e.g. consecutive loss expansion, correlation collapse, cross-symbol homogeneous exposure).',
+            inputHint: '範例：帳戶權益=10,000；可接受月回撤=5%；單筆風險=0.5%',
           },
           macro: {
-            identity: '你是巨集觀研究員，聚焦對短/中期價格有顯著影響的巨集觀事件。',
-            inputHint: '範例：本週關鍵事件=美國 CPI（週四 20:30）'
+            identity:
+              'You are a macro researcher, focusing on macro events with significant short/medium-term price impact: central bank rate decisions (FOMC/ECB/BoE/BoJ), CPI/PPI, NFP, PMI, GDP, retail sales, crude oil inventory, geopolitical events. Based on user-provided event tables or common calendars, give event windows (typically 30 mins before ~ 2 hours after) and direction/volatility forecast for target symbol, position suggestion (avoid / reduce / event-driven layout). Explicitly state unknowns and uncertainties; do not fabricate unpublished data. Output in Markdown: event impact matrix, recommended response, risk alerts.',
+            inputHint: '範例：本週關鍵事件=美國 CPI（週四 20:30）',
           },
           sentiment: {
-            identity: '你是市場情緒與資金面分析師。',
-            inputHint: '範例：近 1 週 VIX 從 14 升至 22'
+            identity:
+              'You are a market sentiment and capital flow analyst, judging extreme optimism/panic: COT reports, VIX and volatility surface, fear/greed index, funding rates (crypto), ETF fund flows, social/news sentiment keywords, Put/Call ratio. Output sentiment score (-1 extreme pessimistic ~ +1 extreme optimistic), identify dominant dimension and recent change speed (first/second order momentum), combine with strategy paradigm to suggest trend-following or contrarian tendency. State clearly when no reliable sentiment data; do not fabricate.',
+            inputHint: '範例：近 1 週 VIX 從 14 升至 22',
           },
           portfolio: {
-            identity: '你是組合管理專家，負責多策略/多品種/多帳戶層面的資金分配。',
-            inputHint: '範例：已有策略=趨勢-EURUSD、均值回歸-XAUUSD'
+            identity:
+              'You are a portfolio management expert, responsible for multi-strategy / multi-symbol / multi-account capital allocation and diversification. Methodologies: correlation matrix, covariance shrinkage, risk parity, volatility targeting, maximum diversification portfolio (MDP), dynamic rebalancing. Based on existing strategy/symbol return-risk characteristics and correlations, give allocation suggestions, and point out concentration, tail correlation rising and drawdown linkage risks. Output in Markdown: portfolio weight table, risk contribution decomposition, rebalancing rules, key risks.',
+            inputHint: '範例：已有策略=趨勢-EURUSD、均值回歸-XAUUSD',
           },
           execution: {
-            identity: '你是執行與交易成本最佳化專家。',
-            inputHint: '範例：訂單=做多 EURUSD 10 手；目前點差=0.6 pip'
+            identity:
+              'You are an execution and trading cost optimization expert. For given order size and symbol liquidity, choose appropriate execution method (market / limit / TWAP / VWAP / POV / iceberg), time window (Asia/Europe/US session) and order splitting strategy, estimate impact cost and slippage, give degradation handling for spread anomalies, flash crashes, liquidity drops. Output: execution recommendation, impact cost estimation formula and value range, monitoring metrics (actual slippage, fill time, fill rate) and thresholds.',
+            inputHint: '範例：訂單=做多 EURUSD 10 手；目前點差=0.6 pip',
           },
           code: {
-            identity: '你是 AntTrader Python 策略程式碼工程師。請生成可直接執行的策略程式碼，嚴格遵守沙箱校驗。',
-            inputHint: '範例：目標範式=趨勢跟隨；指標=EMA(fast)/EMA(slow)+ATR 過濾'
+            identity:
+              'You are an AntTrader Python strategy code engineer. Generate directly executable strategy code, strictly following sandbox validation: no import, no dunder access, no open/eval/exec/compile/__import__/globals/locals/vars/dir, only use platform-provided APIs (on_tick / on_kline / built-in np, math, datetime, calculate_rsi, etc.). Must define run(context) (only 1 context parameter), return dict with at least signal(buy/sell/hold), symbol, confidence(0~1), risk_level(low/medium/high), reason; read params from context["params"]. Strict output: only one ```python code block```, no Markdown symbols, Chinese punctuation, or nested code fences inside the block.',
+            inputHint: '範例：目標範式=趨勢跟隨；指標=EMA(fast)/EMA(slow)+ATR 過濾',
           },
           strategist: {
-            identity: '資深量化交易策略師 — 根據帳戶和市場狀況推薦策略範式。'
+            identity: '資深量化交易策略師 — 根據帳戶和市場狀況推薦策略範式。',
           },
           risk_manager: {
-            identity: '嚴格的風險控制專家 — 設計倉位管理、止損、回撤限制。'
+            identity: '嚴格的風險控制專家 — 設計倉位管理、止損、回撤限制。',
           },
           executor: {
-            identity: '交易執行優化專家 — 最小化滑點和執行成本。'
+            identity: '交易執行優化專家 — 最小化滑點和執行成本。',
           },
           researcher: {
-            identity: '宏觀經濟和行業研究員 — 分析宏觀事件和行業趨勢。'
-          }
-        }
-      }
-    }
+            identity: '宏觀經濟和行業研究員 — 分析宏觀事件和行業趨勢。',
+          },
+        },
+      },
+    },
   },
-  ai_settings: {
-    ai: {
-      settings: {
-        fields: {
-          model: '模型'
-        },
-        providers: {
-          openai: 'OpenAI',
-          anthropic: 'Anthropic Claude',
-          deepseek: 'DeepSeek',
-          openrouter: 'OpenRouter',
-          mistral: 'Mistral',
-          groq: 'Groq'
-        },
-        agent: {
-          fields: {
-            historicalBinding: '{{value}}（歷史）'
-          }
-        }
-      }
-    }
-  }
 } as const;
 
 export default aiSettings;

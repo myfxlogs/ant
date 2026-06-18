@@ -5,27 +5,27 @@ const aiWizard = {
       subtitle: 'Mỗi bước một trang, bạn có thể tiến/lùi',
       currentModel: 'Mô hình hiện tại: {{model}}',
       rangePresets: {
-        '1d': '1 ngày gần nhất',
-        '3d': '3 ngày gần nhất',
-        '7d': '1 tuần gần nhất',
-        '30d': '1 tháng gần nhất',
-        '90d': '3 tháng gần nhất'
+        '1d': 'Last 1 day',
+        '3d': 'Last 3 days',
+        '7d': 'Last 1 week',
+        '30d': 'Last 1 month',
+        '90d': 'Last 3 months',
       },
       steps: {
         setup: 'Thiết lập',
         generate: 'Tạo chiến lược',
         publishCode: 'Triển khai - Mã',
         publishBacktest: 'Triển khai - Backtest',
-        publishLaunch: 'Triển khai - Khởi chạy'
+        publishLaunch: 'Triển khai - Khởi chạy',
       },
       actions: {
         prev: 'Trước',
         next: 'Tiếp',
-        cancel: 'Hủy'
+        cancel: 'Hủy',
       },
       generate: {
         cards: {
-          resultsTitle: 'Kết quả chuyên gia'
+          resultsTitle: 'Multiple experts\' results',
         },
         actions: {
           runAgents: 'Phân tích chuyên gia + sinh mã',
@@ -33,13 +33,13 @@ const aiWizard = {
           abort: 'Hủy',
           rerun: 'Chạy lại',
           regenerateSummary: 'Tạo lại tóm tắt',
-          goValidate: 'Đi xác thực'
+          goValidate: 'Đi xác thực',
         },
         hints: {
-          afterGenerated: 'Sau khi tạo xong, sang bước tiếp theo để xác thực/backtest/triển khai.'
+          afterGenerated: 'Sau khi tạo xong, sang bước tiếp theo để xác thực/backtest/triển khai.',
         },
         labels: {
-          elapsed: 'Thời gian'
+          elapsed: 'Thời gian',
         },
         status: {
           inProgress: 'Đang chạy',
@@ -51,25 +51,25 @@ const aiWizard = {
             signals: 'Đang thiết kế tín hiệu/chỉ báo',
             risk: 'Đang thiết kế rủi ro/ràng buộc thực thi',
             code: 'Đang sinh mã',
-            generic: '{{title}} đang chạy'
-          }
+            generic: '{{title}} đang chạy',
+          },
         },
         sections: {
           prompt: 'Prompt gửi tới mô hình',
           output: 'Kết quả mô hình',
-          spec: 'Đặc tả'
+          spec: 'Đặc tả',
         },
         modals: {
           final: {
-            title: 'Đã sinh mã. Khuyến nghị nhấn “Xác thực mã” để xác nhận.'
-          }
-        }
+            title: 'Đã sinh mã. Khuyến nghị nhấn “Xác thực mã” để xác nhận.',
+          },
+        },
       },
       publish: {
         cards: {
           codeTitle: '1) Mã chiến lược (có thể chỉnh sửa)',
           scoreCardTitle: '2) Thẻ điểm backtest',
-          launchTitle: '3) Triển khai lịch chạy'
+          launchTitle: '3) Triển khai lịch chạy',
         },
         placeholders: {
           codeEditable: 'Mã do AI tạo sẽ xuất hiện ở đây. Bạn cũng có thể chỉnh sửa thủ công.',
@@ -77,32 +77,32 @@ const aiWizard = {
         actions: {
           validateCode: 'Xác thực mã',
           startBacktest: 'Backtest (tác vụ bất đồng bộ)',
-          publishTemplate: 'Triển khai template'
+          publishTemplate: 'Triển khai template',
         },
         messages: {
           validateOk: 'validate thành công',
-          validateFailed: 'validate thất bại'
-        }
+          validateFailed: 'validate thất bại',
+        },
       },
       agents: {
         styleTitle: 'Trạng thái thị trường / phong cách',
         signalsTitle: 'Tín hiệu & chỉ báo',
         riskTitle: 'Rủi ro & ràng buộc thực thi',
-        codeTitle: 'Sinh mã'
+        codeTitle: 'Sinh mã',
       },
       template: {
         defaultName: 'Chiến lược AI {{title}}',
-        defaultDescription: 'Tạo bởi trình hướng dẫn AI'
+        defaultDescription: 'Tạo bởi trình hướng dẫn AI',
       },
       schedule: {
-        defaultName: 'Lịch AI {{symbol}} {{timeframe}}'
+        defaultName: 'Lịch AI {{symbol}} {{timeframe}}',
       },
       setup: {
         cards: {
           tradeAndDataTitle: 'Giao dịch & dữ liệu',
           constraintsAndGoalTitle: 'Ràng buộc & mục tiêu',
           hardConstraintsTitle: 'Ràng buộc cứng',
-          hintsTitle: 'Gợi ý'
+          hintsTitle: 'Gợi ý',
         },
         labels: {
           account: 'Tài khoản',
@@ -116,57 +116,55 @@ const aiWizard = {
           maxTradesPerDay: 'Số lệnh tối đa mỗi ngày',
           macroModule: 'Mô-đun vĩ mô',
           macroEvents: 'Sự kiện vĩ mô',
-          intent: 'Ý định chiến lược'
+          intent: 'Ý định chiến lược',
         },
         placeholders: {
           selectAccount: 'Chọn tài khoản',
           selectSymbol: 'Chọn mã',
           selectTimeframe: 'Chọn khung thời gian',
           selectFrozenDataset: 'Chọn dataset đóng băng',
-          macroExample: `Ví dụ:
-2024-01-03 21:15 FOMC Minutes
-2024-01-05 20:30 NFP`,
-          intentExample: 'Ví dụ: Theo xu hướng khi phá vỡ; tránh biến động cao; ưu tiên tỷ lệ thắng...'
+          macroExample: 'Example:\n2024-01-03 21:15 FOMC minutes\n2024-01-05 20:30 NFP',
+          intentExample: 'Ví dụ: Theo xu hướng khi phá vỡ; tránh biến động cao; ưu tiên tỷ lệ thắng...',
         },
         validations: {
           selectAccount: 'Vui lòng chọn tài khoản',
           selectSymbol: 'Vui lòng chọn mã',
           selectTimeframe: 'Vui lòng chọn khung thời gian',
           selectDataset: 'Vui lòng chọn dataset',
-          enterIntent: 'Vui lòng nhập ý định chiến lược'
+          enterIntent: 'Vui lòng nhập ý định chiến lược',
         },
         dataModes: {
           klineRange: 'Phạm vi nến',
-          dataset: 'Dataset đóng băng'
+          dataset: 'Dataset đóng băng',
         },
         actions: {
           refreshDataset: 'Làm mới',
           freezeFromCurrentRange: 'Đóng băng từ phạm vi hiện tại',
-          deleteCurrentDataset: 'Xóa dataset hiện tại'
+          deleteCurrentDataset: 'Xóa dataset hiện tại',
         },
         modals: {
           deleteDataset: {
             title: 'Xóa dataset',
             content: 'Xóa dataset đóng băng đang chọn?',
-            ok: 'Xóa'
-          }
+            ok: 'Xóa',
+          },
         },
         messages: {
-          datasetDeleted: 'Đã xóa dataset'
+          datasetDeleted: 'Đã xóa dataset',
         },
         macro: {
           off: 'Tắt',
-          on: 'Bật'
+          on: 'On',
         },
         hints: {
           nextWillGenerateCode: 'Bước tiếp theo sẽ tạo mã chiến lược.',
-          tradeDataNextStep: 'Sau khi điền xong, nhấn “Tiếp” để tiếp tục thiết lập ràng buộc & mục tiêu.'
-        }
+          tradeDataNextStep: 'Sau khi điền xong, nhấn “Tiếp” để tiếp tục thiết lập ràng buộc & mục tiêu.',
+        },
       },
       publishBacktest: {
         cards: {
-          backtestTitle: 'Kiểm thử lùi',
-          scoreCardTitle: 'Thẻ điểm'
+          backtestTitle: 'Backtest',
+          scoreCardTitle: 'Thẻ điểm',
         },
         actions: {
           startBacktest: 'Bắt đầu backtest',
@@ -175,25 +173,25 @@ const aiWizard = {
           succeeded: 'Thành công',
           inProgress: 'Đang chạy',
           runInBackground: 'Chạy nền',
-          confirm: 'Xác nhận'
+          confirm: 'Xác nhận',
         },
         labels: {
           status: 'Trạng thái',
           elapsed: 'Thời gian',
           scoringProgress: 'Tiến độ chấm điểm',
           overallScore: 'Điểm tổng',
-          confirmed: 'Đã xác nhận'
+          confirmed: 'Đã xác nhận',
         },
         modals: {
           status: {
-            title: 'Backtest đang chạy'
+            title: 'Backtest đang chạy',
           },
           score: {
-            title: 'Xác nhận điểm số'
-          }
+            title: 'Xác nhận điểm số',
+          },
         },
         draftName: 'Kiểm thử lùi {{datetime}} {{symbol}} {{timeframe}}',
-        draftNameShort: 'Kiểm thử lùi {{symbol}} {{timeframe}}'
+        draftNameShort: 'Kiểm thử lùi {{symbol}} {{timeframe}}',
       },
       strategyParams: {
         title: 'Tham số chiến lược (tùy chọn)',
@@ -201,19 +199,19 @@ const aiWizard = {
           intro: 'Các tham số này sẽ:',
           line1: '1) được lưu vào template.parameters',
           line2: '2) được ghi vào schedule.parameters (map<string,string>) khi tạo lịch',
-          line3Prefix: '3) được tiêm vào chiến lược Python khi chạy dưới dạng'
+          line3Prefix: '3) được tiêm vào chiến lược Python khi chạy dưới dạng',
         },
         actions: {
           addParam: 'Thêm tham số',
           exportJson: 'Xuất JSON',
           importJson: 'Nhập JSON',
-          delete: 'Xóa'
+          delete: 'Xóa',
         },
         empty: 'Chưa có tham số. Bạn có thể thêm fast/slow/risk_per_trade... để chiến lược dễ tái sử dụng.',
         paramCardTitle: 'Tham số #{{index}}',
         labels: {
           name: 'tên',
-          type: 'loại',
+          type: 'kiểu',
           value: 'value (giá trị hiện tại của lịch)',
           default: 'mặc định',
           min: 'tối thiểu',
@@ -221,11 +219,11 @@ const aiWizard = {
           step: 'bước',
           label: 'nhãn',
           description: 'mô tả',
-          options: 'options (dùng cho select, phân tách bằng dấu phẩy)'
+          options: 'options (dùng cho select, phân tách bằng dấu phẩy)',
         },
         validations: {
           nameRequired: 'name là bắt buộc',
-          typeRequired: 'type là bắt buộc'
+          typeRequired: 'type là bắt buộc',
         },
         placeholders: {
           nameExample: 'vd: fast',
@@ -234,13 +232,13 @@ const aiWizard = {
           label: 'Tên hiển thị',
           description: 'Mô tả',
           optionsExample: 'vd: low,medium,high',
-          importJson: 'Dán JSON tham số (mảng hoặc {"paramDefs": [...]})'
+          importJson: 'Dán JSON tham số (mảng hoặc {"paramDefs": [...]})',
         },
         modals: {
           exportTitle: 'Xuất JSON tham số',
           importTitle: 'Nhập JSON tham số',
           copyAndClose: 'Sao chép và đóng',
-          importOk: 'Nhập'
+          importOk: 'Nhập',
         },
         messages: {
           jsonParseFailed: 'Phân tích JSON thất bại',
@@ -248,19 +246,19 @@ const aiWizard = {
           importMissingName: 'Nhập thất bại: có mục thiếu name',
           imported: 'Đã nhập {{count}} tham số',
           copied: 'Đã sao chép',
-          copyFailed: 'Sao chép thất bại'
+          copyFailed: 'Sao chép thất bại',
         },
         types: {
           number: 'số',
           string: 'chuỗi',
           bool: 'bool',
-          select: 'chọn'
-        }
+          select: 'chọn',
+        },
       },
       prompts: {
         dataSpec: {
           dataset: 'Sử dụng dataset đã đóng băng datasetId={{datasetId}}',
-          klineRange: 'Sử dụng phạm vi nến lịch sử from={{from}} to={{to}}'
+          klineRange: 'Sử dụng phạm vi nến lịch sử from={{from}} to={{to}}',
         },
         base: {
           account: 'Tài khoản: {{accountId}}',
@@ -268,23 +266,17 @@ const aiWizard = {
           timeframe: 'Khung thời gian: {{timeframe}}',
           data: 'Dữ liệu: {{dataSpec}}',
           constraints: 'Ràng buộc: max drawdown={{maxDrawdownPct}}% rủi ro/lệnh={{riskPerTradePct}}% tối đa lệnh/ngày={{maxTradesPerDay}}',
-          params: `Tham số (định nghĩa + giá trị hiện tại; có trong context["params"] khi chạy):
-{{params}}`,
+          params: 'Parameters (defs+current values; injected into context["params"] at runtime):\n{{params}}',
           empty: '(trống)',
-          macroEnabled: `Sự kiện vĩ mô (người dùng cung cấp):
-{{text}}`,
+          macroEnabled: 'Macro events (user-provided):\n{{text}}',
           macroDisabled: 'Sự kiện vĩ mô: không dùng',
-          userIntent: `Mục tiêu (ngôn ngữ tự nhiên):
-{{intent}}`
+          userIntent: 'User strategy goal (natural language):\n{{intent}}',
         },
         upstream: {
-          style: `[Kết luận trạng thái thị trường / phong cách]
-{{text}}`,
-          signals: `[Kết luận tín hiệu & chỉ báo]
-{{text}}`,
-          risk: `[Kết luận rủi ro & ràng buộc]
-{{text}}`,
-          sectionTitle: '[Kết luận agent phía trên (nguyên văn)]'
+          style: '【Market condition/style conclusion】\n{{text}}',
+          signals: '【Signal design conclusion】\n{{text}}',
+          risk: '【Risk control conclusion】\n{{text}}',
+          sectionTitle: '[Kết luận agent phía trên (nguyên văn)]',
         },
         summary: {
           intro: 'Bạn là trợ lý giải thích chiến lược định lượng. Hãy giải thích ý tưởng cốt lõi của đoạn mã chiến lược AntTrader Python dưới đây bằng các gạch đầu dòng ngắn gọn (tối đa 12 dòng) để giúp người dùng đánh giá có đúng kỳ vọng hay không.',
@@ -293,10 +285,9 @@ const aiWizard = {
           mustInclude2: '2) Điều kiện vào lệnh chính (2-4 ý)',
           mustInclude3: '3) Điều kiện thoát/SL/TP/ràng buộc rủi ro chính (2-4 ý)',
           mustInclude4: '4) 1 bối cảnh phù hợp và 1 bối cảnh không phù hợp',
-          userIntent: `Kỳ vọng người dùng (ngôn ngữ tự nhiên):
-{{intent}}`,
-          codeTitle: 'Mã:'
-        }
+          userIntent: 'User expectation (natural language):\n{{intent}}',
+          codeTitle: 'Mã:',
+        },
       },
       messages: {
         generateCodeFirst: 'Vui lòng tạo mã chiến lược trước',
@@ -317,7 +308,7 @@ const aiWizard = {
         inputIntentFirst: 'Vui lòng nhập mục tiêu/ý tưởng chiến lược trước',
         aiRequestTimeout: 'Hết thời gian yêu cầu AI (> {{seconds}}s)',
         modelReturnedEmpty: 'Mô hình trả về rỗng',
-        noPythonCodeBlock: 'Agent code không xuất \`\`\`python code block\`\`\`. Vui lòng kiểm tra kết quả',
+        noPythonCodeBlock: 'Code agent did not output ```python block```, check result',
         agentFailed: '{{title}} thất bại',
         userAborted: 'Người dùng đã hủy',
         chatAborted: 'Đã hủy trò chuyện với mô hình',
@@ -338,35 +329,10 @@ const aiWizard = {
         scheduleCreatedAndEnabled: 'Đã tạo và bật lịch',
         scheduleCreated: 'Đã tạo lịch',
         createScheduleFailed: 'Không thể tạo lịch',
-        scheduleAlreadyExists: 'Đã tồn tại lịch với cùng template+mã+khung thời gian cho tài khoản này. Vui lòng không tạo trùng.'
-      }
-    }
+        scheduleAlreadyExists: 'Đã tồn tại lịch với cùng template+mã+khung thời gian cho tài khoản này. Vui lòng không tạo trùng.',
+      },
+    },
   },
-  ai_wizard: {
-    ai: {
-      wizard: {
-        publishBacktest: {
-          cards: {
-            backtestTitle: 'Backtest'
-          },
-          draftName: 'Backtest {{datetime}} {{symbol}} {{timeframe}}',
-          draftNameShort: 'Backtest {{symbol}} {{timeframe}}'
-        },
-        strategyParams: {
-          labels: {
-            name: 'tên',
-            type: 'kiểu',
-            default: 'mặc định',
-            min: 'tối thiểu',
-            max: 'tối đa',
-            step: 'bước',
-            label: 'nhãn',
-            description: 'mô tả'
-          }
-        }
-      }
-    }
-  }
 } as const;
 
 export default aiWizard;

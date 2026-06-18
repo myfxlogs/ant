@@ -1,17 +1,10 @@
 const logs = {
   logs: {
-    connectionLogs: 'Nhật ký kết nối',
-    executionLogs: 'Nhật ký thực thi',
-    orderHistory: 'Lịch sử lệnh',
-    operationLogs: 'Nhật ký thao tác',
-    dateRange: 'Khoảng ngày',
-    status: 'Trạng thái',
-    symbol: 'Mã',
-    accountId: 'ID tài khoản',
-    search: 'Tìm kiếm',
-    reset: 'Đặt lại',
+    success: 'Thành công',
+    failed: 'Thất bại',
     time: 'Thời gian',
     eventType: 'Loại sự kiện',
+    status: 'Trạng thái',
     server: 'Máy chủ',
     loginId: 'ID đăng nhập',
     message: 'Thông báo',
@@ -28,9 +21,19 @@ const logs = {
     action: 'Hành động',
     details: 'Chi tiết',
     ip: 'IP',
-    success: 'Thành công',
-    failed: 'Thất bại',
+
+    connectionLogs: 'Nhật ký kết nối',
+    executionLogs: 'Nhật ký thực thi',
+    orderHistory: 'Lịch sử lệnh',
+    operationLogs: 'Nhật ký thao tác',
+
+    dateRange: 'Khoảng ngày',
+    symbol: 'Mã',
     exampleSymbolPlaceholder: 'Ví dụ: XAUUSD',
+    accountId: 'ID tài khoản',
+
+    search: 'Tìm kiếm',
+    reset: 'Đặt lại',
     result: 'Kết quả',
     riskCode: 'Mã rủi ro',
     requestId: 'ID yêu cầu',
@@ -42,9 +45,9 @@ const logs = {
       type: 'Loại',
       lots: 'Lot',
       open: 'Mở',
-      close: 'Đóng'
-    }
-  }
+      close: 'Đóng',
+    },
+  },
 } as const;
 
 export default logs;

@@ -2,15 +2,24 @@ const analytics = {
   analytics: {
     summary: {
       title: '分析',
-      placeholders: {
-        selectAccount: '选择账户',
-      },
       periods: {
         today: '今日',
         week: '本周',
         month: '本月',
         year: '本年',
         all: '全部',
+      },
+      direction: {
+        buy: '买入',
+        sell: '卖出',
+      },
+      profit: {
+        win: '盈利',
+        loss: '亏损',
+      },
+      yearOption: '{{year}}年',
+      placeholders: {
+        selectAccount: '选择账户',
       },
       sections: {
         equityCurve: '资金曲线',
@@ -56,15 +65,6 @@ const analytics = {
         volatility: '波动率',
         var95: 'VaR 95%',
       },
-      direction: {
-        buy: '买入',
-        sell: '卖出',
-      },
-      profit: {
-        win: '盈利',
-        loss: '亏损',
-      },
-      yearOption: '{{year}}年',
       economicCalendar: {
         loading: '正在加载经济日历...',
         empty: '暂无经济事件数据。',

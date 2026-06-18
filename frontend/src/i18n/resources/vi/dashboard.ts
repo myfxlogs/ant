@@ -14,20 +14,20 @@ const dashboard = {
     stats: {
       totalBalance: 'Tổng số dư',
       totalEquity: 'Tổng vốn',
-      connected: 'Đang kết nối',
-      accountCount: 'Số tài khoản',
-      totalProfit: 'Tổng lãi/lỗ thả nổi'
+      connected: 'Đã kết nối',
+      accountCount: 'Tài khoản',
+      totalProfit: 'Total Floating P/L'
     },
     fields: {
       balance: 'Số dư',
       equity: 'Vốn',
-      floating: 'Thả nổi'
+      floating: 'Floating P/L'
     },
     accountStatus: {
       disabled: 'Đã tắt',
       connected: 'Đã kết nối',
       connecting: 'Đang kết nối',
-      disconnected: 'Chưa kết nối'
+      disconnected: 'Disconnected'
     },
     quickActions: {
       title: 'Thao tác nhanh',
@@ -39,9 +39,9 @@ const dashboard = {
       templates: 'Mẫu',
       logs: 'Nhật ký',
       bindAccount: 'Liên kết',
-      closePosition: 'Đóng lệnh'
+      closePosition: 'Close'
     },
-    defaultName: 'Bảng Điều Khiển'
+    defaultName: 'My Dashboard'
   }
 } as const;
 

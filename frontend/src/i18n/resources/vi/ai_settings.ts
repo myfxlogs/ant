@@ -6,7 +6,11 @@ const aiSettings = {
       primary: {
         title: 'Mô hình chính mặc định',
         hint: 'Dùng cho bước "Làm rõ ý định", sinh mã, panel "Trợ lý AI — sửa mã" trong trình soạn template, và bất kỳ Agent nào chưa chọn model riêng.',
-        placeholder: 'Chọn một provider · model làm bộ não mặc định'
+        placeholder: 'Chọn một provider · model làm bộ não mặc định',
+      },
+      tabs: {
+        config: 'Cấu hình Mô hình',
+        agents: 'Cấu hình Tác nhân',
       },
       fields: {
         name: 'Tên',
@@ -28,25 +32,25 @@ const aiSettings = {
         temperature: 'Nhiệt độ (Temperature)',
         timeoutSeconds: 'Thời gian chờ (giây)',
         maxTokens: 'Số token tối đa',
-        enabledStatus: 'Trạng thái bật',
+        enabledStatus: 'Đã bật',
         enabledOn: 'Đang bật → nhấp để tắt',
-        enabledOff: 'Đang tắt → nhấp để bật'
-      },
-      inferenceParams: {
-        title: 'Tham số suy luận'
+        enabledOff: 'Đang tắt → nhấp để bật',
       },
       sections: {
         basic: 'Thông tin cơ bản',
         connection: 'Cấu hình kết nối',
         advanced: 'Tham số nâng cao',
         advancedHint: 'Chỉ chỉnh khi bạn hiểu rõ ý nghĩa; giá trị mặc định phù hợp đa số kịch bản',
-        connectionApiKeyLink: 'Đến trang đăng ký / quản lý API key của nhà cung cấp'
+        connectionApiKeyLink: 'Đến trang đăng ký / quản lý API key của nhà cung cấp',
+      },
+      inferenceParams: {
+        title: 'Tham số suy luận',
       },
       providers: {
         enabledTitle: 'Nhà cung cấp đã bật',
         emptyTitle: 'Chưa có nhà cung cấp nào được bật',
         emptyHint: 'Cấu hình API key và model khả dụng tại ',
-        emptyHintTail: ' trước.',
+        emptyHintTail: '.',
         modelsUnit: 'model',
         noModels: 'Chưa có model khả dụng',
         openai: 'OpenAI',
@@ -61,7 +65,7 @@ const aiSettings = {
         mistral: 'Mistral',
         groq: 'Groq',
         custom: 'Tùy chỉnh (tương thích OpenAI)',
-        openai_compatible: 'Tùy chỉnh (tương thích OpenAI)'
+        openai_compatible: 'Tùy chỉnh (tương thích OpenAI)',
       },
       placeholders: {
         name: 'VD: DeepSeek - chi phí thấp',
@@ -71,39 +75,39 @@ const aiSettings = {
         providerFirst: 'Vui lòng chọn nhà cung cấp trước',
         modelManual: 'Nhập tên mô hình (khuyến nghị copy model id từ trang quản lý)',
         modelSelect: 'Chọn mô hình',
-        modelSelectOrType: 'Chọn từ danh sách hoặc nhập ID mô hình'
+        modelSelectOrType: 'Chọn từ danh sách hoặc nhập ID mô hình',
       },
       apiKeySavedAs: 'Đã lưu: {{masked}}',
       apiKeyGuide: {
         title: 'Hướng dẫn lấy API key',
         selectProviderHint: 'Chọn nhà cung cấp để xem hướng dẫn lấy API key.',
-        modelSuggestionZhipu: 'Gợi ý: chọn \`glm-4-flash\` / \`glm-4\`',
-        modelSuggestionDeepSeek: 'Gợi ý: chọn \`deepseek-chat\`',
-        default: 'Nhà cung cấp: {{provider}}. Tạo API key trong trang quản lý và dán vào ô phía trên.',
+        modelSuggestionZhipu: 'Model suggestion: select `glm-4-flash` / `glm-4` in "Model" dropdown',
+        modelSuggestionDeepSeek: 'Model suggestion: select `deepseek-chat` in "Model" dropdown',
+        default: 'Current provider: {{provider}}. Go to the provider\'s official console to create API Key, then paste above.',
         zhipu: {
           title: 'Lấy Zhipu API key',
           step1: 'Mở nền tảng Zhipu: ',
-          step2: 'Đăng nhập/đăng ký, sau đó tạo và sao chép API key'
+          step2: 'Đăng nhập/đăng ký, sau đó tạo và sao chép API key',
         },
         deepseek: {
           title: 'Lấy DeepSeek API key',
           step1: 'Mở nền tảng DeepSeek: ',
-          step2: 'Đăng nhập/đăng ký, sau đó tạo và sao chép API key trong trang API Keys'
-        }
+          step2: 'Đăng nhập/đăng ký, sau đó tạo và sao chép API key trong trang API Keys',
+        },
       },
       actions: {
         validateApiKey: 'Xác minh API key',
-        saveConfig: 'Lưu cấu hình'
+        saveConfig: 'Lưu cấu hình',
       },
       profiles: {
         current: 'Hiện tại',
         actions: {
-          setCurrent: 'Đặt hiện tại'
+          setCurrent: 'Đặt hiện tại',
         },
         delete: {
           title: 'Xóa cấu hình',
-          content: 'Xóa cấu hình này?'
-        }
+          content: 'Xóa cấu hình này?',
+        },
       },
       messages: {
         loadConfigFailed: 'Tải cấu hình AI thất bại',
@@ -118,14 +122,14 @@ const aiSettings = {
         deleted: 'Đã xóa',
         setCurrentSuccess: 'Đã chuyển cấu hình hiện tại',
         enabled: 'Đã bật',
-        disabled: 'Đã tắt'
+        disabled: 'Đã tắt',
       },
       errors: {
         arrearage: 'Phản hồi từ nhà cung cấp: tài khoản nợ phí/thiếu số dư hoặc trạng thái bất thường. Vui lòng kiểm tra hóa đơn và trạng thái tài khoản.',
         invalidModelId: 'Phản hồi từ nhà cung cấp: mô hình không khả dụng{{model}}. Vui lòng chọn từ danh sách hoặc dùng đúng model id.',
         unauthorized: 'Phản hồi từ nhà cung cấp: không được ủy quyền (401). Vui lòng kiểm tra API key và quyền.',
         forbidden: 'Phản hồi từ nhà cung cấp: bị từ chối (403). Vui lòng kiểm tra quyền, IP allowlist hoặc trạng thái tài khoản.',
-        timeout: 'Hết thời gian chờ. Vui lòng kiểm tra Base URL/mạng và thử lại.'
+        timeout: 'Hết thời gian chờ. Vui lòng kiểm tra Base URL/mạng và thử lại.',
       },
       discoverErrors: {
         baseUrlRequired: 'Vui lòng nhập Base URL (địa chỉ dịch vụ model).',
@@ -139,9 +143,10 @@ const aiSettings = {
         unreachable: 'Không kết nối được dịch vụ model: kiểm tra Base URL, mạng hoặc gateway.',
         invalidModelsResponse: 'Phản hồi không tương thích giao thức /models.',
         noModelsReturned: 'Không có model khả dụng: kiểm tra quyền tài khoản hoặc cấu hình.',
-        providerRegionBlocked: 'Hạn chế khu vực: nhà cung cấp model từ chối theo vùng phát hiện được (IP egress có thể khác vị trí máy chủ). Hãy đổi vùng egress/proxy HTTP(S) hợp lệ hoặc dùng nhà cung cấp khác.',
+        providerRegionBlocked:
+          'Region not supported: the model provider rejected this request based on detected location (egress IP may differ from your server). Try a supported network region, a compliant HTTP(S) proxy, or another provider.',
         generic: 'Không tải được danh sách model. Kiểm tra Base URL và API key.',
-        genericDetail: 'Không tải được danh sách model: {{detail}}'
+        genericDetail: 'Không tải được danh sách model: {{detail}}',
       },
       validation: {
         nameRequired: 'Tên là bắt buộc',
@@ -150,7 +155,7 @@ const aiSettings = {
         baseUrlProtocol: 'Base URL phải bắt đầu bằng http:// hoặc https://',
         baseUrlNoChatCompletionsSuffix: 'Base URL không nên kết thúc bằng /chat/completions',
         modelRequired: 'Mô hình là bắt buộc',
-        modelFormat: 'Định dạng mô hình không hợp lệ'
+        modelFormat: 'Định dạng mô hình không hợp lệ',
       },
       agent: {
         title: 'Định nghĩa Agent',
@@ -164,7 +169,7 @@ const aiSettings = {
           loadDefaults: 'Tải 8 agent mặc định',
           restoreDefaults: 'Khôi phục mặc định',
           restoreDefaultsConfirmTitle: 'Khôi phục nhân dạng mặc định?',
-          restoreDefaultsConfirmContent: 'Thao tác này sẽ đặt lại 8 agent hệ thống (style/signals/risk/macro/sentiment/portfolio/execution/code) về nhân dạng mặc định. Các agent tự thêm sẽ được giữ. Chỉ chỉnh sửa bản náp, phải bấm Lưu mới được lưu vào CSDL.'
+          restoreDefaultsConfirmContent: 'Thao tác này sẽ đặt lại 8 agent hệ thống (style/signals/risk/macro/sentiment/portfolio/execution/code) về nhân dạng mặc định. Các agent tự thêm sẽ được giữ. Chỉ chỉnh sửa bản náp, phải bấm Lưu mới được lưu vào CSDL.',
         },
         messages: {
           selectProfileFirst: 'Vui lòng chọn một cấu hình ở bên trái trước',
@@ -172,7 +177,7 @@ const aiSettings = {
           empty: 'Chưa có agent tuỳ chỉnh, bấm "Thêm" để bắt đầu',
           saveSuccess: 'Đã lưu agents',
           saveFailed: 'Lưu agents thất bại',
-          defaultsLoaded: 'Đã tải mẫu agent mặc định. Bấm Lưu để lưu vào CSDL.'
+          defaultsLoaded: 'Đã tải mẫu agent mặc định. Bấm Lưu để lưu vào CSDL.',
         },
         fields: {
           namePlaceholder: 'Tên agent',
@@ -180,7 +185,7 @@ const aiSettings = {
           inputHintPlaceholder: 'Gợi ý nhập (tuỳ chọn)',
           modelProfilePlaceholder: 'Mặc định (dùng cấu hình hiện tại)',
           modelProfileEmpty: 'Vui lòng bật ít nhất một provider/model trong "Cài đặt AI" trước',
-          historicalBinding: '{{value}} (lịch sử)'
+          historicalBinding: '{{value}} (lịch sử)',
         },
         types: {
           style: 'Phong cách',
@@ -191,103 +196,68 @@ const aiSettings = {
           portfolio: 'Danh mục',
           execution: 'Thực thi',
           code: 'Mã',
-          strategist: 'Nhà phân tích Chiến lược',
-          risk_manager: 'Quản lý Rủi ro',
-          executor: 'Cố vấn Thực thi',
-          researcher: 'Nghiên cứu Thị trường'
+          strategist: 'Chuyên viên phân tích chiến lược',
+          risk_manager: 'Quản lý rủi ro',
+          executor: 'Cố vấn thực thi',
+          researcher: 'Nhà nghiên cứu thị trường',
         },
         defaults: {
           style: {
-            identity: 'Bạn là chiến lược gia định lượng cấp cao, tập trung vào chọn mô hình giao dịch phù hợp. Dựa trên loại tài khoản, công cụ, khung thời gian và thống kê lịch sử cùng mục tiêu và ràng buộc của người dùng, đề xuất một mô hình chính và một mô hình thay thế (trend, mean-reversion, breakout, momentum, arbitrage, grid, event-driven). Giải thích điều kiện phù hợp và không phù hợp, kèm ít nhất ba cảnh báo rủi ro.',
-            inputHint: 'Ví dụ: tài khoản = EURUSD cá nhân; khung thời gian = H1; mục tiêu = lợi nhuận 3%/tháng, drawdown tối đa <10%; ưu tiên = tỷ lệ thắng hơn tỷ lệ lời/lỗ.'
+            identity:
+              'You are a senior quantitative strategy analyst, focused on strategy paradigm selection. Based on account/symbol/timeframe/historical stats (trend strength ADX, volatility ATR, autocorrelation, distribution skew, etc.) and user goals/constraints, recommend one primary paradigm and one alternative from "trend following / mean reversion / breakout / momentum / arbitrage / grid / event-driven", explain applicable/inapplicable conditions. Output in Markdown: 1) reasoning (bullet points) 2) main + alternative + applicable/inapplicable conditions 3) at least 3 risk alerts. Avoid vagueness, do not rely on external data not provided.',
+            inputHint: 'Ví dụ: tài khoản = EURUSD cá nhân; khung thời gian = H1; mục tiêu = lợi nhuận 3%/tháng, drawdown tối đa <10%; ưu tiên = tỷ lệ thắng hơn tỷ lệ lời/lỗ.',
           },
           signals: {
-            identity: 'Bạn là kỹ sư yếu tố và tín hiệu, sử dụng MA/EMA, RSI, MACD, ADX, ATR, Bollinger Bands, VWAP, pivot, khối lượng và biến động. Không dùng dữ liệu bên ngoài, thiết kế các quy tắc vào/ra/lọc có thể tái tạo và tham số hóa, kèm lập luận và ít nhất ba kịch bản thất bại.',
-            inputHint: 'Ví dụ: mô hình = trend-following; khung thời gian = H1; chỉ báo = EMA/ATR/ADX; fast = 20, slow = 60.'
+            identity:
+              'You are a quantitative factor and signal engineer, proficient with MA/EMA, RSI, MACD, ADX, ATR, Bollinger, Bollinger bandwidth, VWAP, Pivot, volume and volatility factors, etc. Without introducing external data (unless user provides macro/event tables), design reproducible, parameterizable entry/exit/filter signal rules, avoid overfitting. Output in Markdown: 1) reasoning 2) executable rule list (entry/exit/filter) with parameters (default/range/step) 3) at least 3 boundary/failure scenarios (range-bound/gap/high volatility/news).',
+            inputHint: 'Ví dụ: mô hình = trend-following; khung thời gian = H1; chỉ báo = EMA/ATR/ADX; fast = 20, slow = 60.',
           },
           risk: {
-            identity: 'Bạn là chuyên gia rủi ro, thiết kế định cỡ vị thế, cắt lỗ, giới hạn rủi ro, drawdown tối đa, quy tắc tạm dừng, giới hạn tần suất giao dịch và bảo vệ bất thường. Đầu ra gồm các ràng buộc cứng với tham số đề xuất và hành động kích hoạt, kèm các chế độ thất bại phổ biến.',
-            inputHint: 'Ví dụ: vốn = 10.000; giới hạn drawdown tháng = 5%; rủi ro mỗi giao dịch = 0,5%; giao dịch trong ngày <= 5; cắt lỗ = 1,5×ATR.'
+            identity:
+              'You are a trading risk and execution constraints expert. Based on user goals and account status, design position sizing (fixed fraction / vol targeting / Kelly modified), stop-loss/take-profit, single/day/week max risk, max drawdown threshold, consecutive loss cooldown, trade frequency cap, spread/slippage anomaly protection, black swan downgrade strategy. Output in Markdown: 1) reasoning 2) hard constraints list + recommended params (suggested/range) + actions after trigger 3) at least 3 failure modes (e.g. consecutive loss expansion, correlation collapse, cross-symbol homogeneous exposure).',
+            inputHint: 'Ví dụ: vốn = 10.000; giới hạn drawdown tháng = 5%; rủi ro mỗi giao dịch = 0,5%; giao dịch trong ngày <= 5; cắt lỗ = 1,5×ATR.',
           },
           macro: {
-            identity: 'Bạn là nhà nghiên cứu vĩ mô, tập trung vào quyết định ngân hàng trung ương, CPI/PPI, NFP, PMI, GDP và các sự kiện quan trọng. Dùng lịch sự kiện, xác định cửa sổ sự kiện và đề xuất vị thế (tránh/giảm/theo sự kiện) cho công cụ mục tiêu.',
-            inputHint: 'Ví dụ: sự kiện chính = CPI Mỹ và biên bản FOMC; mã mục tiêu = XAUUSD.'
+            identity:
+              'You are a macro researcher, focusing on macro events with significant short/medium-term price impact: central bank rate decisions (FOMC/ECB/BoE/BoJ), CPI/PPI, NFP, PMI, GDP, retail sales, crude oil inventory, geopolitical events. Based on user-provided event tables or common calendars, give event windows (typically 30 mins before ~ 2 hours after) and direction/volatility forecast for target symbol, position suggestion (avoid / reduce / event-driven layout). Explicitly state unknowns and uncertainties; do not fabricate unpublished data. Output in Markdown: event impact matrix, recommended response, risk alerts.',
+            inputHint: 'Ví dụ: sự kiện chính = CPI Mỹ và biên bản FOMC; mã mục tiêu = XAUUSD.',
           },
           sentiment: {
-            identity: 'Bạn là nhà phân tích tâm lý và dòng vốn, sử dụng COT, VIX, funding, dòng ETF và tin tức/tâm lý mạng xã hội. Đầu ra là điểm tâm lý từ -1 đến 1 với động lực và thay đổi, cùng cách điều chỉnh hoặc ngược dòng.',
-            inputHint: 'Ví dụ: VIX từ 14 lên 22; vị thế long ròng phi thương mại -18%; tin tức chủ đạo về suy thoái / cắt giảm lãi suất.'
+            identity:
+              'You are a market sentiment and capital flow analyst, judging extreme optimism/panic: COT reports, VIX and volatility surface, fear/greed index, funding rates (crypto), ETF fund flows, social/news sentiment keywords, Put/Call ratio. Output sentiment score (-1 extreme pessimistic ~ +1 extreme optimistic), identify dominant dimension and recent change speed (first/second order momentum), combine with strategy paradigm to suggest trend-following or contrarian tendency. State clearly when no reliable sentiment data; do not fabricate.',
+            inputHint: 'Ví dụ: VIX từ 14 lên 22; vị thế long ròng phi thương mại -18%; tin tức chủ đạo về suy thoái / cắt giảm lãi suất.',
           },
           portfolio: {
-            identity: 'Bạn là nhà quản lý danh mục, phân bổ vốn giữa các chiến lược và công cụ bằng cách dùng tương quan, co rút hiệp phương sai, risk parity, vol-targeting và đa dạng hóa. Cung cấp tỷ trọng, đóng góp rủi ro và quy tắc tái cân bằng.',
-            inputHint: 'Ví dụ: chiến lược = trend-EURUSD và mean-reversion-XAUUSD; vốn = 50.000; vol mục tiêu = 12% năm.'
+            identity:
+              'You are a portfolio management expert, responsible for multi-strategy / multi-symbol / multi-account capital allocation and diversification. Methodologies: correlation matrix, covariance shrinkage, risk parity, volatility targeting, maximum diversification portfolio (MDP), dynamic rebalancing. Based on existing strategy/symbol return-risk characteristics and correlations, give allocation suggestions, and point out concentration, tail correlation rising and drawdown linkage risks. Output in Markdown: portfolio weight table, risk contribution decomposition, rebalancing rules, key risks.',
+            inputHint: 'Ví dụ: chiến lược = trend-EURUSD và mean-reversion-XAUUSD; vốn = 50.000; vol mục tiêu = 12% năm.',
           },
           execution: {
-            identity: 'Bạn là chuyên gia thực thi, chọn phong cách thực thi, phiên giao dịch và chia lệnh, ước tính tác động và trượt giá, xác định hành vi hạ cấp khi thanh khoản kém.',
-            inputHint: 'Ví dụ: mua 10 lot EURUSD; spread = 0,6 pip; mục tiêu 5 phút; trượt giá tối đa = 0,8 pip.'
+            identity:
+              'You are an execution and trading cost optimization expert. For given order size and symbol liquidity, choose appropriate execution method (market / limit / TWAP / VWAP / POV / iceberg), time window (Asia/Europe/US session) and order splitting strategy, estimate impact cost and slippage, give degradation handling for spread anomalies, flash crashes, liquidity drops. Output: execution recommendation, impact cost estimation formula and value range, monitoring metrics (actual slippage, fill time, fill rate) and thresholds.',
+            inputHint: 'Ví dụ: mua 10 lot EURUSD; spread = 0,6 pip; mục tiêu 5 phút; trượt giá tối đa = 0,8 pip.',
           },
           code: {
-            identity: 'Bạn là kỹ sư Python AntTrader, tạo mã chiến lược an toàn sandbox với run(context) trả về signal, symbol, confidence, risk_level và reason từ context["params"], đầu ra là một khối \`\`\`python\`\`\` duy nhất không có Markdown thêm.',
-            inputHint: 'Ví dụ: trend-following EMA(fast)/EMA(slow) với bộ lọc ATR; params = fast, slow, atr_period, risk_per_trade.'
+            identity:
+              'You are an AntTrader Python strategy code engineer. Generate directly executable strategy code, strictly following sandbox validation: no import, no dunder access, no open/eval/exec/compile/__import__/globals/locals/vars/dir, only use platform-provided APIs (on_tick / on_kline / built-in np, math, datetime, calculate_rsi, etc.). Must define run(context) (only 1 context parameter), return dict with at least signal(buy/sell/hold), symbol, confidence(0~1), risk_level(low/medium/high), reason; read params from context["params"]. Strict output: only one ```python code block```, no Markdown symbols, Chinese punctuation, or nested code fences inside the block.',
+            inputHint: 'Ví dụ: trend-following EMA(fast)/EMA(slow) với bộ lọc ATR; params = fast, slow, atr_period, risk_per_trade.',
           },
           strategist: {
-            identity: 'Nhà phân tích chiến lược định lượng cao cấp — đề xuất mô hình chiến lược dựa trên điều kiện tài khoản/thị trường.'
+            identity: 'Chuyên viên phân tích chiến lược định lượng cấp cao — đề xuất mô hình chiến lược dựa trên điều kiện tài khoản/thị trường.',
           },
           risk_manager: {
-            identity: 'Chuyên gia kiểm soát rủi ro nghiêm ngặt — thiết kế định cỡ vị thế, cắt lỗ, giới hạn sụt giảm.'
+            identity: 'Chuyên gia kiểm soát rủi ro nghiêm ngặt — thiết kế quy mô vị thế, cắt lỗ, giới hạn sụt giảm.',
           },
           executor: {
-            identity: 'Chuyên gia tối ưu hóa thực thi giao dịch — giảm thiểu trượt giá và chi phí thực thi.'
+            identity: 'Chuyên gia tối ưu hóa thực thi giao dịch — giảm thiểu trượt giá và chi phí thực thi.',
           },
           researcher: {
-            identity: 'Nhà nghiên cứu kinh tế vĩ mô và ngành — phân tích sự kiện vĩ mô và xu hướng ngành.'
-          }
-        }
-      },
-      tabs: {
-        config: 'Cấu hình Mô hình',
-        agents: 'Cấu hình Tác nhân'
-      }
-    }
-  },
-  ai_settings: {
-    ai: {
-      settings: {
-        tabs: {
-          config: 'Cấu hình mô hình',
-          agents: 'Cấu hình tác nhân'
-        },
-        fields: {
-          baseUrl: 'URL gốc',
-          apiKey: 'Khóa API'
-        },
-        placeholders: {
-          modelSelectOrType: 'Chọn từ danh sách hoặc nhập ID mô hình'
-        },
-        agent: {
-          types: {
-            strategist: 'Chuyên viên phân tích chiến lược',
-            risk_manager: 'Quản lý rủi ro',
-            executor: 'Cố vấn thực thi',
-            researcher: 'Nhà nghiên cứu thị trường'
+            identity: 'Nhà nghiên cứu kinh tế vĩ mô và ngành — phân tích sự kiện vĩ mô và xu hướng ngành.',
           },
-          defaults: {
-            strategist: {
-              identity: 'Chuyên viên phân tích chiến lược định lượng cấp cao — đề xuất mô hình chiến lược dựa trên điều kiện tài khoản/thị trường.'
-            },
-            risk_manager: {
-              identity: 'Chuyên gia kiểm soát rủi ro nghiêm ngặt — thiết kế quy mô vị thế, cắt lỗ, giới hạn sụt giảm.'
-            },
-            executor: {
-              identity: 'Chuyên gia tối ưu hóa thực thi giao dịch — giảm thiểu trượt giá và chi phí thực thi.'
-            },
-            researcher: {
-              identity: 'Nhà nghiên cứu kinh tế vĩ mô và ngành — phân tích sự kiện vĩ mô và xu hướng ngành.'
-            }
-          }
-        }
-      }
-    }
-  }
+        },
+      },
+    },
+  },
 } as const;
 
 export default aiSettings;

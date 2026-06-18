@@ -9,9 +9,9 @@ const aiStore = {
           noDunderAccess: '- 禁止访问任何 dunder 属性（形如 obj.__xxx__）',
           noDunderName: '- 禁止使用 dunder 名称（形如 __xxx__）',
           noDangerousCalls:
-            '- 禁止调用以下函数：open()/eval()/exec()/compile()/__import__()/input()/globals()/locals()/vars()/dir()',
+            '- No calls to: open()/eval()/exec()/compile()/__import__()/input()/globals()/locals()/vars()/dir()',
           runSignature:
-            '- 如果定义 run 函数：只能定义一个 run(context)，必须且只能有 1 个参数 context，且禁止 *args/**kwargs',
+            '- If defining run function: only one run(context), must have exactly 1 parameter context, no *args/**kwargs',
           mustDefineEntry: '- 策略必须定义 signal 变量或 run(context) 函数（建议优先 run(context)）',
         },
         allowedGlobals: '允许使用的全局对象/模块：np, math, datetime, calculate_rsi（不要 import）。',

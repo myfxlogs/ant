@@ -1,361 +1,10 @@
 const strategy = {
   strategy: {
-    validation: {
-      passed: 'Xác minh code thành công',
-      notPassed: 'Xác minh code không đạt',
-      riskEval: {
-        title: 'Đánh giá rủi ro',
-        riskHigh: 'Mức rủi ro: cao',
-        riskUnreliable: 'Đánh giá rủi ro: không đáng tin cậy (isReliable=false)',
-        riskLoading: 'Đánh giá rủi ro phía máy chủ vẫn đang tính toán'
-      }
-    },
-    codeEditor: {
-      title: 'Trình soạn thảo chiến lược',
-      labels: {
-        account: 'Tài khoản',
-        symbol: 'Mã',
-        timeframe: 'Khung thời gian',
-        code: 'Mã chiến lược',
-        disabledSuffix: ' (đã tắt)'
-      },
-      actions: {
-        copy: 'Sao chép',
-        validate: 'Xác thực mã',
-        preview: 'Xem trước tín hiệu',
-        saveAsTemplate: 'Lưu thành template',
-        sendToAI: 'Gửi AI để sửa',
-        sendToAIFixTitleValidate: 'Xác thực thất bại / có cảnh báo',
-        sendToAIFixTitlePreview: 'Xem trước thất bại / cần tối ưu'
-      },
-      placeholders: {
-        selectAccount: 'Chọn tài khoản',
-        selectAccountFirst: 'Vui lòng chọn tài khoản trước',
-        loadingSymbols: 'Đang tải danh sách mã...',
-        selectSymbol: 'Chọn mã',
-        noSymbols: 'Không lấy được danh sách mã',
-        code: 'Dán mã chiến lược Python...',
-        codeSample: 'Dán mã chiến lược vào đây',
-      },
-      cards: {
-        validationResult: 'Kết quả xác thực',
-        previewResult: 'Kết quả xem trước'
-      },
-      hints: {
-        previewInfo: 'Xem trước dùng N nến gần nhất (mặc định 500, cấu hình: strategy.preview_bars); backtest dùng N tháng gần nhất (mặc định 3, cấu hình: strategy.backtest_window_months).'
-      },
-      messages: {
-        enterCode: 'Vui lòng nhập mã chiến lược',
-        selectAccount: 'Vui lòng chọn tài khoản',
-        validateOk: 'Xác thực thành công',
-        validateFailed: 'Xác thực thất bại',
-        validateError: 'Lỗi xác thực',
-        previewOk: 'Xem trước hoàn tất',
-        previewSuccess: 'Xem trước thành công',
-        previewFailed: 'Xem trước thất bại',
-        execFailed: 'Thực thi thất bại',
-        savedAsTemplate: 'Đã lưu thành template',
-        copied: 'Đã sao chép',
-        copyFailed: 'Sao chép thất bại, vui lòng sao chép thủ công'
-      },
-      aiPrompt: {
-        intro: 'Vui lòng chỉnh sửa mã chiến lược theo thông tin bên dưới để vượt qua xác thực và chạy xem trước thành công.',
-        problem: '[Vấn đề] {{title}}',
-        currentCodeTitle: '[Mã hiện tại]',
-        outputTitle: '[Đầu ra]',
-        outro: 'Vui lòng xuất toàn bộ mã đã chỉnh sửa (bọc bằng ```python) và giải thích thay đổi.',
-        pythonFenceStart: '```python',
-        fenceEnd: '```'
-      }
-    },
-    schedules: {
-      title: 'Lịch chạy chiến lược',
-      createSchedule: 'Tạo lịch',
-      format: {
-        interval: 'mỗi {{s}}s',
-        cron: 'cron: {{expr}}',
-      },
-      actions: {
-        create: 'Tạo lịch',
-        logs: 'Nhật ký',
-        healthCheck: 'Kiểm tra sức khỏe',
-        runNow: 'Chạy ngay'
-      },
-      health: {
-        title: 'Kiểm tra sức khỏe chiến lược {{name}}',
-        summaryBanner: 'Mức sức khỏe: {{grade}}; mẫu gần nhất {{totalRuns}} lần, tỷ lệ thành công {{successRate}}%',
-        grade: {
-          pending: 'Chưa kiểm tra',
-          noSample: 'Thiếu mẫu',
-          healthy: 'Tốt',
-          watch: 'Cần theo dõi',
-          alert: 'Cảnh báo'
-        },
-        notes: {
-          pending: 'Vui lòng chạy kiểm tra sức khỏe trước.',
-          noSample: 'Không đủ mẫu để đánh giá (tối thiểu {{minSampleSize}}).',
-          healthy: 'Tỷ lệ thành công cao và số lần thất bại trong ngưỡng.',
-          watch: 'Tỷ lệ thành công đạt ngưỡng theo dõi (>= {{yellowSuccessRate}}%).',
-          alert: 'Tỷ lệ thành công thấp, cần kiểm tra ngay chiến lược và trạng thái tài khoản.'
-        },
-        fields: {
-          grade: 'Mức sức khỏe',
-          rule: 'Tiêu chí đánh giá',
-          thresholds: 'Ngưỡng hiện tại',
-          configKey: 'Khóa cấu hình',
-          lastRunAt: 'Lần chạy gần nhất',
-          latestTicket: 'Ticket khớp lệnh gần nhất',
-          successOverTotal: 'Thành công / Tổng',
-          failedRuns: 'Số lần thất bại',
-          latestProfit: 'Lãi/lỗ gần nhất',
-          latestError: 'Lỗi gần nhất'
-        },
-        thresholdsSummary: 'min_sample_size={{minSampleSize}}; xanh: success>={{greenSuccessRate}}% & failed<={{greenMaxFailedRuns}}; vàng: success>={{yellowSuccessRate}}%',
-        sections: {
-          runLogs: 'Nhật ký chạy gần đây',
-          orders: 'Lịch sử khớp lệnh gần đây'
-        },
-        runLogs: {
-          signalType: 'Tín hiệu'
-        },
-        messages: {
-          loadFailed: 'Tải dữ liệu sức khỏe thất bại',
-          clickRefresh: 'Nhấn làm mới để tải dữ liệu sức khỏe'
-        }
-      },
-      editModal: {
-        title: {
-          create: 'Tạo lịch chạy',
-          edit: 'Chỉnh sửa lịch chạy'
-        },
-        autoName: {
-          strategy: 'Chiến lược'
-        },
-        fields: {
-          template: 'Mẫu',
-          templateExtra: 'Mẫu đã lưu trong “Quản lý chiến lược”',
-          account: 'Tài khoản',
-          name: 'Tên',
-          symbol: 'Mã',
-          lot: 'Khối lượng (Lot)',
-          lotExtra: 'Khối lượng đặt lệnh. Khuyến nghị bắt đầu từ 0.01',
-          runFrequency: 'Tần suất chạy',
-          cronExpression: 'Cron',
-          cronExtra: 'Cron 5 phần: phút giờ ngày tháng thứ. VD: */5 * * * *; 0 9 * * 1-5',
-          intervalSeconds: 'Khoảng (giây)',
-          intervalSecondsExtra: 'Tự theo timeframe; không cần chỉnh',
-          enableExtra: 'Giống EA: bật sẽ chạy liên tục đến khi bạn tắt'
-        },
-        placeholders: {
-          name: 'VD: EURUSD M5 chiến lược buổi sáng',
-          selectAccountFirst: 'Chọn tài khoản trước',
-          symbol: 'Chọn mã'
-        },
-        validation: {
-          templateRequired: 'Vui lòng chọn mẫu',
-          accountRequired: 'Vui lòng chọn tài khoản',
-          nameRequired: 'Vui lòng nhập tên',
-          symbolRequired: 'Vui lòng chọn mã',
-          lotRequired: 'Vui lòng nhập khối lượng',
-          runFrequencyRequired: 'Vui lòng chọn tần suất chạy',
-          cronRequired: 'Vui lòng nhập cron',
-          timeframeRequired: 'Vui lòng chọn timeframe',
-          triggerModeRequired: 'Vui lòng chọn chế độ kích hoạt'
-        },
-        runFrequencyExtra: {
-          cron: 'Nâng cao: dùng Cron để điều khiển thời điểm chạy',
-          byTimeframe: 'Mặc định: kích hoạt theo timeframe (giống EA)'
-        },
-        runFrequencyOptions: {
-          byTimeframe: 'Theo timeframe (khuyến nghị)',
-          cron: 'Cron (nâng cao)'
-        },
-        advanced: {
-          title: 'Nâng cao',
-          fixedIntervalSeconds: 'Khoảng cố định (giây)',
-          fixedIntervalSecondsExtra: 'Tùy chọn. Chạy theo khoảng cố định thay vì theo timeframe. VD: 60 = mỗi 60 giây',
-          timeframe: 'Khung thời gian',
-          timeframeExtra: 'Dùng cho tính nến/chỉ báo',
-          triggerMode: 'Chế độ kích hoạt',
-          triggerModeExtra: 'Ổn định: theo nến/timeframe; Cao tần: theo báo giá (nhanh hơn, cần debounce)',
-          triggerModeOptions: {
-            stable: 'Ổn định (nến/timeframe)',
-            hf: 'Cao tần (báo giá/tick)'
-          },
-          stableOverrideIntervalSeconds: 'Ghi đè khoảng ổn định (giây)',
-          stableOverrideIntervalSecondsExtra: 'Tùy chọn. Ghi đè khoảng kích hoạt ở chế độ ổn định',
-          hfCooldownMs: 'Cooldown cao tần (ms)',
-          hfCooldownMsExtra: 'Debounce: khoảng tối thiểu giữa các lần đánh giá/đặt lệnh',
-          parametersJson: 'Tham số (JSON object)',
-          parametersJsonExtra: 'Truyền tham số vào code chiến lược (dạng chuỗi). VD: { "fast": 10, "slow": 20, "risk": "low" }'
-        }
-      },
-      triggerModal: {
-        title: 'Chạy ngay (đặt lệnh)',
-        actions: {
-          rerun: 'Chạy lại',
-          confirmOrder: 'Xác nhận đặt lệnh'
-        },
-        confirmOrder: {
-          title: 'Xác nhận đặt lệnh?',
-          ok: 'Xác nhận'
-        },
-        summary: {
-          scheduleName: 'Tên lịch',
-          account: 'Tài khoản',
-          symbol: 'Mã',
-          timeframe: 'Khung thời gian'
-        },
-        messages: {
-          signalNotOrderable: 'Không thể đặt lệnh: cần buy/sell và volume > 0'
-        },
-        cards: {
-          logs: 'Nhật ký chạy',
-          signal: 'Tín hiệu (đặt lệnh)'
-        },
-        emptyLogs: '(không có nhật ký)',
-        emptySignal: '(không có tín hiệu)'
-      },
-      table: {
-        name: 'Tên',
-        template: 'Mẫu',
-        account: 'Tài khoản',
-        tradeParams: 'Tham số giao dịch',
-        schedule: 'Lịch',
-        status: 'Trạng thái',
-        lastRun: 'Lần chạy gần nhất',
-        actions: 'Thao tác'
-      },
-      templateVisibility: {
-        public: 'Công khai',
-        private: 'Riêng tư'
-      },
-      status: {
-        running: 'Đang chạy',
-        disabled: 'Đã tắt'
-      },
-      nextRunAt: 'Lần chạy kế tiếp',
-      enableCount: 'Số lần bật',
-      deleteConfirm: {
-        title: 'Xóa lịch này?'
-      },
-      validation: {
-        parametersMustBeJsonObject: 'Tham số phải là một đối tượng JSON'
-      },
-      messages: {
-        parametersParseFailed: 'Phân tích tham số thất bại',
-        defaultTemplateNotFound: 'Không tìm thấy mẫu mặc định. Vui lòng làm mới và thử lại.',
-        importDefaultTemplateFailedNoId: 'Nhập mẫu mặc định thất bại: thiếu template id',
-        templateCodeEmptyCannotExecute: 'Code mẫu trống. Không thể thực thi.',
-        executeFailed: 'Thực thi thất bại',
-        strategyExecuteFailed: 'Thực thi chiến lược thất bại',
-        noOrderableSignal: 'Không có tín hiệu có thể đặt lệnh',
-        signalHoldCannotOrder: 'Tín hiệu là hold/không hành động. Không thể đặt lệnh.',
-        volumeInvalid: 'Khối lượng không hợp lệ (phải > 0)',
-        orderSubmitted: 'Đã gửi lệnh',
-        orderFailed: 'Đặt lệnh thất bại'
-      }
-    },
-    scheduleLogs: {
-      title: 'Nhật ký',
-      titleWithName: 'Nhật ký - {{name}}',
-      tabs: {
-        exec: 'Lần chạy',
-        orders: 'Lệnh',
-        execLogs: '执行日志',
-        orderLogs: '订单日志'
-      },
-      messages: {
-        missingScheduleId: 'Thiếu scheduleId'
-      },
-      summary: {
-        name: 'Tên',
-        status: 'Trạng thái',
-        trade: 'Giao dịch',
-        enableCount: 'Số lần bật',
-        lastRun: 'Lần chạy gần nhất',
-        lastError: 'Lỗi gần nhất'
-      },
-      execStatus: {
-        pending: 'Chờ',
-        running: 'Đang chạy',
-        completed: 'Hoàn tất',
-        failed: 'Thất bại',
-        skipped: 'Bỏ qua'
-      },
-      operationStatus: {
-        success: 'Thành công',
-        failed: 'Thất bại',
-        running: 'Đang chạy'
-      },
-      execTable: {
-        time: 'Thời gian',
-        action: 'Hành động',
-        status: 'Trạng thái',
-        durationMs: 'Thời lượng (ms)',
-        error: 'Lỗi',
-        execute: 'Thực thi'
-      },
-      ordersTable: {
-        time: 'Thời gian',
-        side: 'Hướng',
-        symbol: 'Ký hiệu',
-        lots: 'Khối lượng',
-        openPrice: 'Giá mở',
-        closePrice: 'Giá đóng',
-        profit: 'Lãi/Lỗ',
-        ticket: 'Mã lệnh'
-      },
-      orderSide: {
-        buy: 'Mua thị trường',
-        sell: 'Bán thị trường',
-        close: 'Đóng lệnh',
-        buyLimit: 'Mua giới hạn',
-        sellLimit: 'Bán giới hạn',
-        buyStop: 'Mua stop',
-        sellStop: 'Bán stop',
-        buyStopLimit: 'Mua stop limit',
-        sellStopLimit: 'Bán stop limit'
-      },
-      scheduleIdLabel: 'ID lịch chạy:',
-      status: {
-        success: 'Thành Công',
-        failed: 'Thất Bại'
-      },
-      action: {
-        start: 'Bắt Đầu',
-        stop: 'Dừng',
-        restart: 'Khởi Động Lại'
-      }
-    },
     templates: {
       title: 'Mẫu chiến lược',
       tabs: {
         system: 'Mẫu hệ thống',
-        user: 'Mẫu tự tạo'
-      },
-      copySuffix: ' (Bản sao)',
-      scheduleName: '{{symbol}} {{timeframe}} {{name}}',
-      badges: {
-        preset: 'Mặc định'
-      },
-      visibility: {
-        public: 'Công khai',
-        private: 'Riêng tư'
-      },
-      status: {
-        draft: 'Nháp',
-        published: 'Đã xuất bản'
-      },
-      actions: {
-        create: 'Tạo mẫu',
-        createTemplate: 'Tạo mẫu',
-        edit: 'Chỉnh sửa',
-        delete: 'Xóa',
-        copy: 'Sao chép',
-        viewCode: 'Xem code',
-        backtest: 'Kiểm thử lùi',
-        launchSchedule: 'Khởi chạy lịch'
+        user: 'User templates'
       },
       table: {
         name: 'Tên',
@@ -369,8 +18,33 @@ const strategy = {
         actions: 'Thao tác',
         loadingDefault: 'Đang tải mẫu mặc định...',
         defaultHint: 'Mặc định',
-        emptyUser: 'Chưa có mẫu nào. Nhấp "Tạo mẫu" ở trên để bắt đầu.'
+        emptyUser: 'No user templates yet. Click "Create Template" above to get started.'
       },
+      badges: {
+        preset: 'Mặc định'
+      },
+      visibility: {
+        public: 'Công khai',
+        private: 'Riêng tư'
+      },
+      status: {
+        draft: 'Nháp',
+        published: 'Đã xuất bản'
+      },
+      actions: {
+        create: 'Tạo mẫu',
+        edit: 'Chỉnh sửa',
+        delete: 'Xóa',
+        backtest: 'Kiểm thử lùi',
+        viewCode: 'Xem code',
+        copy: 'Sao chép',
+        launchSchedule: 'Khởi chạy lịch',
+        createTemplate: 'Create template'
+      },
+      copySuffix: ' (Bản sao)',
+      deleteConfirm: 'Delete this template?',
+      defaultDraftName: 'Draft template',
+      scheduleName: '{{symbol}} {{timeframe}} {{name}}',
       scheduleLaunch: {
         title: 'Khởi chạy lịch',
         noRun: 'Chưa có lần chạy backtest',
@@ -380,9 +54,9 @@ const strategy = {
         launchSection: 'Khởi chạy lịch',
         actions: {
           publishTemplate: 'Xuất bản template',
-          createScheduleNoEnable: 'Tạo lịch',
+          createScheduleNoEnable: 'Tạo lịch chạy',
           createAndEnable: 'Tạo & bật',
-          create: '创建计划',
+          create: 'Tạo lịch',
           addAccount: '添加账户',
           updateTradingPassword: '更新交易密码'
         },
@@ -395,16 +69,16 @@ const strategy = {
           totalTrades: 'Số lệnh'
         },
         form: {
-          account: 'Tài Khoản',
+          account: 'Tài khoản',
           accountPlaceholder: '选择账户',
           scheduleName: '计划名称',
-          scheduleNamePlaceholder: '输入计划名称',
+          scheduleNamePlaceholder: 'VD: EURUSD M5 chiến lược buổi sáng',
           scheduleNameMax: '最多64字符',
           scheduleType: '计划类型',
           scheduleTypes: {
             interval: '定时执行',
             hfQuote: '高频报价',
-            klineClose: 'K线收盘'
+            klineClose: 'K-line Close'
           },
           intervalMs: '间隔(毫秒)',
           intervalMsTip: '非高频模式最小1000ms',
@@ -413,7 +87,7 @@ const strategy = {
           symbol: 'Mã',
           symbolPlaceholder: '选择品种',
           symbolPlaceholderEmpty: '未配置品种',
-          timeframe: 'Khung Thời Gian',
+          timeframe: 'Khung thời gian',
           defaultVolume: '默认手数',
           defaultVolumeTip: '每个信号的默认下单量',
           enableAfterCreate: '创建后立即启用',
@@ -441,156 +115,125 @@ const strategy = {
         updatePasswordOk: '交易密码已更新',
         updatePasswordFailed: '更新交易密码失败',
         updatePasswordStillInvestor: '密码更新成功但账户仍为投资者模式，请联系客服。',
-        newPasswordPlaceholder: '输入新交易密码'
+        newPasswordPlaceholder: 'Enter new trading password'
       },
       editTemplateModal: {
         title: {
-          create: 'Tạo mẫu',
-          edit: 'Chỉnh sửa mẫu'
+          edit: 'Chỉnh sửa mẫu',
+          create: 'Create template'
+        },
+        actions: {
+          validateCode: 'Validate code'
         },
         fields: {
           name: 'Tên',
           description: 'Mô tả',
           code: 'Code chiến lược',
-          publicShare: 'Chia sẻ công khai'
+          publicShare: 'Công khai'
+        },
+        validation: {
+          nameRequired: 'Vui lòng nhập tên',
+          codeRequired: 'Code is required'
         },
         placeholders: {
           name: 'VD: Chiến lược cắt MA',
           description: 'Tùy chọn: mô tả',
-          codeSample: `# Ví dụ code chiến lược
-# Biến có sẵn: close, open, high, low, volume, symbol
-# Trả về: signal (dict)
-
-import numpy as np
-
-# Chỉ báo
-maFast = np.mean(close[-10:])
-maSlow = np.mean(close[-20:])
-
-# Tín hiệu
-if maFast > maSlow:
-    signal = 'buy'
-elif maFast < maSlow:
-    signal = 'sell'
-else:
-    signal = 'hold'
-
-# Kết quả
-signal = {
-    'signal': signal,
-    'symbol': symbol,
-    'price': close[-1],
-    'confidence': 0.7,
-    'reason': f'maFast={maFast:.5f}, maSlow={maSlow:.5f}'
-}`
-        },
-        validation: {
-          nameRequired: 'Vui lòng nhập tên',
-          codeRequired: 'Vui lòng nhập code chiến lược'
-        },
+          codeSample: 'Dán mã chiến lược Python...'
+        }
+      },
+      codeModal: {
+        title: 'Mã chiến lược',
         actions: {
-          validateCode: 'Xác thực mã'
+          copy: 'Sao chép'
         }
       },
       backtest: {
         title: 'Kiểm thử lùi',
+        modalTitleWithName: 'Backtest: {{name}}',
+        parameters: {
+          title: '策略参数'
+        },
         fields: {
-          title: 'Tiêu đề',
+          title: 'Title',
           account: 'Tài khoản',
           symbol: 'Mã',
           timeframe: 'Khung thời gian',
-          initialCapital: 'Vốn ban đầu',
-          range: 'Khoảng thời gian',
-          extraSymbols: 'Mã bổ sung (chọn nhiều)'
-        },
-        placeholders: {
-          account: 'Chọn tài khoản',
-          symbol: 'Chọn mã',
-          range: 'Chọn khoảng thời gian',
-          extraSymbols: 'Tùy chọn, hữu ích cho chiến lược cặp/xoay vòng'
+          initialCapital: 'Initial capital',
+          range: 'Phạm vi',
+          extraSymbols: 'Extra symbols (multi-select)'
         },
         validation: {
           accountRequired: 'Vui lòng chọn tài khoản',
           symbolRequired: 'Vui lòng chọn mã',
           timeframeRequired: 'Vui lòng chọn timeframe',
-          initialCapitalRequired: 'Vui lòng nhập vốn ban đầu',
-          rangeRequired: 'Vui lòng chọn khoảng thời gian'
+          initialCapitalRequired: 'Initial capital is required',
+          rangeRequired: 'Range is required'
         },
-        quickRange: {
-          '1d': '1 ngày',
-          '3d': '3 ngày',
-          '1w': '1 tuần',
-          '1y': '1 năm',
-          custom: 'Tùy chỉnh'
-        },
-        accountDisabledSuffix: ' (Đã tắt)',
-        modalTitleWithName: 'Kiểm thử lùi: {{name}}',
-        parameters: {
-          title: 'Tham số chiến lược'
+        placeholders: {
+          account: 'Chọn tài khoản',
+          symbol: 'Chọn mã',
+          range: 'Select range',
+          extraSymbols: 'Optional, useful for pairs/rotation strategies'
         },
         tooltips: {
-          extraSymbols: 'Các mã bổ sung để lấy nến K (cùng tài khoản, cùng khung thời gian). Chiến lược có thể truy cập qua context["closes_by_symbol"].'
+          extraSymbols: 'Additional symbols to fetch K-lines for (same account, same timeframe). Strategy can access them via context["closes_by_symbol"].'
+        },
+        accountDisabledSuffix: ' (đã tắt)',
+        quickRange: {
+          '1d': '1D',
+          '3d': '3D',
+          '1w': '1W',
+          '1y': '1Y',
+          custom: 'Custom'
         }
       },
       messages: {
-        fetchTemplateListFailed: 'Tải danh sách mẫu thất bại',
-        enterStrategyCode: 'Vui lòng nhập code chiến lược',
-        codeValidationPassed: 'Xác minh code thành công',
-        codeValidationNotPassed: 'Xác minh code không đạt',
-        codeValidationFailed: 'Xác minh code thất bại',
-        templateUpdated: 'Đã cập nhật mẫu',
-        templateCreated: 'Đã tạo mẫu',
-        templateDeleted: 'Đã xóa mẫu',
-        readStrategyCodeFailed: 'Tải code chiến lược thất bại',
-        strategyCodeEmptyCannotBacktest: 'Code chiến lược trống. Không thể backtest.',
-        selectBacktestRange: 'Vui lòng chọn khoảng backtest',
-        backtestRangeInvalid: 'Khoảng backtest không hợp lệ',
-        backtestSubmitted: 'Đã gửi backtest',
-        backtestSubmitFailed: 'Gửi backtest thất bại',
-        backtestCancelRequested: 'Đã yêu cầu hủy backtest',
-        backtestCancelFailed: 'Hủy backtest thất bại',
-        backtestReportDeleted: 'Đã xóa báo cáo backtest',
-        backtestReportNotFound: 'Không tìm thấy báo cáo backtest',
-        codeCopied: 'Đã sao chép code',
-        copyFailed: 'Sao chép thất bại',
-        missingScheduleInfo: 'Thiếu thông tin cần thiết để tạo lịch',
-        templateNotPublishedCannotCreateSchedule: 'Mẫu chưa xuất bản. Không thể tạo lịch.',
-        readTemplateStatusFailed: 'Không thể đọc trạng thái mẫu',
-        scheduleCreated: 'Đã tạo lịch',
-        scheduleCreatedAndEnabled: 'Đã tạo lịch và bật',
-        createScheduleFailed: 'Tạo lịch thất bại',
-        deepLinkNavigate: 'Đã mở mẫu và chi tiết lần chạy gần nhất từ liên kết ngoài',
-        templatePublished: 'Đã xuất bản mẫu',
-        cannotPublishAndCreateDraftFailed: 'Không thể xuất bản. Tạo bản nháp thất bại.',
-        republishedButNoTemplateId: 'Đã xuất bản lại, nhưng thiếu ID mẫu.',
-        backtestRunningCannotPublish: 'Backtest đang chạy. Không thể xuất bản ngay bây giờ.',
-        missingDraftIdCannotPublish: 'Thiếu ID bản nháp. Không thể xuất bản.',
-        publishedButNoTemplateId: 'Đã xuất bản, nhưng thiếu ID mẫu.',
-        templateRepublished: 'Đã xuất bản lại mẫu',
-        templateAlreadyPublished: 'Mẫu đã được xuất bản',
-        templateNotDraftUnknownPublishStatus: 'Mẫu không phải bản nháp. Không xác định trạng thái xuất bản.',
-        publishFailed: 'Xuất bản thất bại',
-        backtestRunNoPublishedTemplate: 'Lần chạy backtest không có mẫu đã xuất bản',
-        strategyCodeEmptyCannotPublish: '策略代码为空，请先保存代码再发布。',
-        systemTemplateReadOnly: '系统模板为只读，请克隆后再编辑。'
+        deepLinkNavigate: 'Opened template and latest run details from external link',
+        missingScheduleInfo: 'Missing schedule info',
+        templateNotPublishedCannotCreateSchedule: 'Template is not published. Cannot create schedule.',
+        readTemplateStatusFailed: 'Failed to read template status',
+        scheduleCreatedAndEnabled: 'Schedule created and enabled',
+        scheduleCreated: 'Schedule created',
+        createScheduleFailed: 'Failed to create schedule',
+        templatePublished: 'Template published',
+        cannotPublishAndCreateDraftFailed: 'Unable to publish. Draft creation failed.',
+        republishedButNoTemplateId: 'Republished, but template id is missing.',
+        backtestRunningCannotPublish: 'Backtest is running. Cannot publish now.',
+        missingDraftIdCannotPublish: 'Missing draft id. Cannot publish.',
+        publishedButNoTemplateId: 'Published, but template id is missing.',
+        templateRepublished: 'Template republished',
+        templateAlreadyPublished: 'Template already published',
+        templateNotDraftUnknownPublishStatus: 'Template is not a draft. Unknown publish status.',
+        publishFailed: 'Publish failed',
+        fetchTemplateListFailed: 'Failed to load template list',
+        enterStrategyCode: 'Vui lòng nhập mã chiến lược',
+        codeValidationPassed: 'Code validation passed',
+        codeValidationNotPassed: 'Code validation did not pass',
+        codeValidationFailed: 'Code validation failed',
+        templateUpdated: 'Template updated',
+        templateCreated: 'Template created',
+        templateDeleted: 'Template deleted',
+        readStrategyCodeFailed: 'Failed to read strategy code',
+        strategyCodeEmptyCannotBacktest: 'Strategy code is empty. Cannot backtest.',
+        selectBacktestRange: 'Please select backtest range',
+        backtestRangeInvalid: 'Invalid backtest range',
+        backtestSubmitted: 'Backtest submitted',
+        backtestSubmitFailed: 'Failed to submit backtest',
+        backtestCancelRequested: 'Backtest cancel requested',
+        backtestCancelFailed: 'Failed to cancel backtest',
+        backtestReportDeleted: 'Backtest report deleted',
+        backtestReportNotFound: 'Backtest report not found',
+        backtestRunNoPublishedTemplate: 'Backtest run has no published template',
+        codeCopied: 'Code copied',
+        copyFailed: 'Sao chép thất bại, vui lòng sao chép thủ công',
+        strategyCodeEmptyCannotPublish: 'Strategy code is empty. Please save your code before publishing.',
+        systemTemplateReadOnly: 'System templates are read-only. Clone to edit.'
       },
       backtestRuns: {
-        title: 'Báo cáo backtest',
-        empty: 'Chưa có backtest',
-        deleteConfirm: 'Xóa báo cáo backtest này?',
-        batchDelete: 'Xóa {{count}}',
-        batchDeleteConfirm: 'Xóa {{count}} báo cáo backtest?',
-        batchDeleteSuccess: 'Đã xóa {{count}} báo cáo backtest',
-        status: {
-          queued: 'Đang chờ',
-          running: 'Đang chạy',
-          completed: 'Hoàn tất',
-          failed: 'Thất bại',
-          canceling: 'Đang hủy',
-          canceled: 'Đã hủy'
-        },
+        title: 'Backtest runs',
+        empty: 'No backtest runs',
         table: {
-          title: 'Tiêu đề',
+          title: 'Title',
           status: 'Trạng thái',
           symbol: 'Mã',
           timeframe: 'Khung thời gian',
@@ -598,630 +241,962 @@ signal = {
           actions: 'Thao tác'
         },
         actions: {
-          view: 'Xem',
-          launchSchedule: 'Khởi chạy lịch',
-          createSchedule: 'Tạo lịch'
-        }
-      },
-      deleteConfirm: 'Xóa mẫu này?',
-      defaultDraftName: 'Mẫu nháp',
-      codeModal: {
-        title: 'Mã chiến lược',
-        actions: {
-          copy: 'Sao chép'
+          view: 'View',
+          launchSchedule: 'View score',
+          createSchedule: 'Tạo lịch chạy'
+        },
+        deleteConfirm: 'Delete this run?',
+        batchDelete: 'Delete {{count}}',
+        batchDeleteConfirm: 'Delete {{count}} backtest report(s)?',
+        batchDeleteSuccess: '{{count}} backtest report(s) deleted',
+        status: {
+          queued: 'Queued',
+          running: 'Đang chạy',
+          completed: 'Hoàn tất',
+          failed: 'Thất Bại',
+          canceling: 'Canceling',
+          canceled: 'Canceled'
         }
       }
     },
     defaultTemplates: {
       maCross: {
-        name: 'MA Crossover',
-        description: 'Mua khi MA nhanh cắt lên MA chậm; bán khi cắt xuống'
+        name: 'Dual MA Crossover Strategy',
+        description: 'Buy when fast MA crosses above slow MA, sell when it crosses below'
       },
       forceBuy: {
-        name: 'Force BUY (Test)',
-        description: 'Dùng để kiểm tra luồng đặt lệnh: luôn trả về buy; đọc lot từ context/params làm volume'
+        name: 'Force BUY Test',
+        description: 'For verifying the order pipeline: always returns buy on each execution, reads lot from context/params as volume'
       },
       rsi: {
-        name: 'RSI Quá mua/Quá bán',
-        description: 'Mua khi RSI < 30; bán khi RSI > 70'
+        name: 'RSI Overbought/Oversold Strategy',
+        description: 'Buy when RSI < 30 (oversold), sell when RSI > 70 (overbought)'
       },
       macd: {
-        name: 'MACD Crossover',
-        description: 'Mua khi MACD cắt lên; bán khi cắt xuống'
+        name: 'MACD Strategy',
+        description: 'Buy on MACD golden cross, sell on death cross'
       }
     },
-    codeAssist: {
-      tabAI: 'AI sửa code',
-      tabExplain: 'Giải thích code',
-      explain: 'Giải thích code',
-      requiredParamsTitle: 'Tham số bắt buộc',
-      requiredParamsDesc: 'Chiến lược đọc các tham số này nhưng không có giá trị mặc định. Vui lòng điền trước khi lưu.',
-      optionalParamsTitle: 'Tham số tùy chọn',
-      optionalParamsDesc: 'Các tham số này đã có giá trị mặc định trong code. Để trống để dùng mặc định; nhập giá trị mới chỉ áp dụng cho lần chạy này và không sửa chiến lược đã lưu.',
-      defaultLabel: 'mặc định',
-      paramDescriptions: {
-        riskLevel: 'Mức rủi ro (low / medium / high). Ảnh hưởng kích thước lệnh và biên cắt lỗ / chốt lời.',
-        takeProfit: 'Biên chốt lời (%). Đóng lệnh khi giá đi đúng hướng đạt phần trăm này.',
-        stopLoss: 'Biên cắt lỗ (%). Đóng lệnh khi giá đi ngược đạt phần trăm này.',
-        maxLoss: 'Lỗ tối đa cho mỗi giao dịch (theo tỉ lệ vốn, 0.01 = 1%).',
-        confidence: 'Ngưỡng độ tin cậy của tín hiệu (0–1). Tín hiệu thấp hơn sẽ bị bỏ qua.',
-        threshold: 'Ngưỡng kích hoạt tín hiệu. Ý nghĩa cụ thể tuỳ theo logic trong code.',
-        lotSize: 'Khối lượng lệnh (lot). Càng lớn rủi ro càng cao.',
-        fastPeriod: 'Chu kỳ nhanh (số nến). Dùng cho MACD / 2 đường MA; càng nhỏ càng nhạy.',
-        slowPeriod: 'Chu kỳ chậm (số nến). Dùng cho MACD / 2 đường MA; càng lớn càng mượt.',
-        signalPeriod: 'Chu kỳ đường tín hiệu (số nến). Làm mượt DIF/DEA của MACD.',
-        rsiPeriod: 'Chu kỳ RSI (số nến). Giá trị thường dùng: 14.',
-        emaPeriod: 'Chu kỳ EMA (đường trung bình hàm mũ), tính bằng số nến.',
-        smaPeriod: 'Chu kỳ SMA (đường trung bình đơn giản), tính bằng số nến.',
-        genericPeriod: 'Chu kỳ nhìn lại (số nến) dùng để tính chỉ báo.',
-        genericPercent: 'Tham số dạng phần trăm / tỉ lệ (ví dụ 1 nghĩa là 1%).'
+    validation: {
+      passed: 'Xác thực thành công',
+      notPassed: 'Xác minh code không đạt',
+      riskEval: {
+        title: 'Đánh giá rủi ro',
+        riskHigh: 'Mức rủi ro: cao',
+        riskUnreliable: 'Đánh giá rủi ro: không đáng tin cậy (isReliable=false)',
+        riskLoading: 'Risk assessment is still calculating'
+      }
+    },
+    codeEditor: {
+      title: 'Trình soạn thảo chiến lược',
+      labels: {
+        code: 'Mã chiến lược',
+        account: 'Tài khoản',
+        symbol: 'Mã',
+        timeframe: 'Khung thời gian',
+        disabledSuffix: ' (đã tắt)'
       },
-      required: 'bắt buộc',
-      suggested: 'gợi ý',
-      applyAllSuggestions: 'Áp dụng giá trị gợi ý',
-      fillRequiredParams: 'Vui lòng điền các tham số bắt buộc: {{keys}}',
-      aiReviseTitle: 'Trợ lý AI — sửa code',
-      reviseInputPlaceholder: 'Ví dụ: thay SMA(20) bằng EMA(50) và thêm cắt lỗ 1%.',
-      reviseSend: 'Gửi cho AI',
-      enterInstruction: 'Mô tả thay đổi bạn muốn thực hiện.',
-      codeEmpty: 'Chưa có code để sửa.',
-      codeUpdated: 'Code đã được cập nhật. Vui lòng chạy lại xác thực trước khi lưu.',
-      noPython: 'AI không trả về khối Python. Hãy diễn đạt lại và thử lại.',
-      saveBlockedNotValidated: 'Vui lòng nhấn "Xác thực mã" trước. Lưu sẽ bị vô hiệu hóa cho đến khi xác thực thành công.',
-      generatePlaceholder: '描述你的策略需求...'
+      actions: {
+        copy: 'Sao chép',
+        validate: 'Xác thực mã',
+        preview: 'Xem trước tín hiệu',
+        saveAsTemplate: 'Lưu thành template',
+        sendToAI: 'Gửi AI để sửa',
+        sendToAIFixTitleValidate: 'Xác thực thất bại / có cảnh báo',
+        sendToAIFixTitlePreview: 'Fix preview issues'
+      },
+      placeholders: {
+        code: 'Dán mã chiến lược Python...',
+        selectAccount: 'Chọn tài khoản',
+        selectAccountFirst: 'Chọn tài khoản trước',
+        loadingSymbols: 'Đang tải danh sách mã...',
+        selectSymbol: 'Chọn mã',
+        noSymbols: 'No symbols available'
+      },
+      hints: {
+        previewInfo: 'Preview will execute with sample market data.'
+      },
+      cards: {
+        validationResult: 'Kết quả xác thực',
+        previewResult: 'Preview result'
+      },
+      messages: {
+        enterCode: 'Vui lòng nhập mã chiến lược',
+        validateFailed: 'Xác thực thất bại',
+        validateError: 'Lỗi xác thực',
+        validateOk: 'Xác thực thành công',
+        selectAccount: 'Vui lòng chọn tài khoản',
+        previewOk: 'Xem trước hoàn tất',
+        previewSuccess: 'Xem trước thành công',
+        previewFailed: 'Xem trước thất bại',
+        execFailed: 'Thực thi thất bại',
+        savedAsTemplate: 'Đã lưu thành template',
+        copied: 'Đã sao chép',
+        copyFailed: 'Sao chép thất bại, vui lòng sao chép thủ công'
+      },
+      aiPrompt: {
+        intro: 'Vui lòng chỉnh sửa mã chiến lược theo thông tin bên dưới để vượt qua xác thực và chạy xem trước thành công.',
+        problem: '[Vấn đề] {{title}}',
+        currentCodeTitle: '[Mã hiện tại]',
+        pythonFenceStart: '```python',
+        fenceEnd: '```',
+        outputTitle: '[Đầu ra]',
+        outro: 'Return only the fixed code wrapped in ```python```.'
+      }
     },
     templateModal: {
-      title: 'Lưu làm mẫu',
+      title: 'Lưu thành template',
       fields: {
         name: 'Tên',
         description: 'Mô tả'
       },
       placeholders: {
-        name: 'Nhập tên mẫu',
-        description: 'Nhập mô tả'
+        name: 'Enter template name',
+        description: 'Tùy chọn: mô tả'
       }
     },
     backtestRun: {
-      title: 'Lần chạy backtest',
+      title: 'Backtest run',
       status: {
-        queued: 'Đang chờ',
+        queued: 'Queued',
         running: 'Đang chạy',
-        completed: 'Hoàn thành',
-        failed: 'Thất bại',
-        canceling: 'Đang hủy',
-        canceled: 'Đã hủy',
-        ended: 'Đã kết thúc'
+        completed: 'Hoàn tất',
+        failed: 'Thất Bại',
+        canceling: 'Canceling',
+        canceled: 'Canceled',
+        ended: 'Ended'
       },
       actions: {
-        cancel: 'Hủy'
+        cancel: 'Cancel'
       },
       hints: {
-        queued: 'Backtest đang trong hàng đợi',
-        running: 'Backtest đang chạy',
-        canceling: 'Đang hủy backtest'
+        queued: 'Backtest is queued',
+        running: 'Backtest is running',
+        canceling: 'Canceling backtest'
       },
       fields: {
         status: 'Trạng thái',
         error: 'Lỗi',
-        maxDrawdown: '最大回撤',
-        sharpe: '夏普比率'
+        maxDrawdown: 'Max Drawdown',
+        sharpe: 'Sharpe'
       },
       metrics: {
         totalReturn: 'Tổng lợi nhuận',
-        annualReturn: 'Lợi nhuận hàng năm',
+        annualReturn: 'Lợi nhuận năm',
         maxDrawdown: 'Sụt giảm tối đa',
-        sharpe: 'Tỷ lệ Sharpe',
+        sharpe: 'Sharpe',
         winRate: 'Tỷ lệ thắng',
-        totalTrades: 'Tổng giao dịch',
-        equityCurvePoints: 'Điểm đường cong vốn'
+        totalTrades: 'Số lệnh',
+        equityCurvePoints: 'Equity curve points'
       },
       trades: {
-        title: 'Chi tiết lệnh',
-        empty: 'Không có giao dịch nào được ghi lại',
-        loadFailed: 'Tải chi tiết lệnh thất bại',
-        ticket: 'Vé',
-        side: 'Chiều',
-        sideBuy: 'Mua',
-        sideSell: 'Bán',
-        volume: 'Khối lượng',
-        openTime: 'Thời gian mở',
+        title: 'Order details',
+        empty: 'No trades recorded',
+        loadFailed: 'Failed to load order details',
+        ticket: 'Mã lệnh',
+        side: 'Hướng',
+        sideBuy: 'Buy',
+        sideSell: 'Sell',
+        volume: 'Volume',
+        openTime: 'Open time',
         openPrice: 'Giá mở',
-        closeTime: 'Thời gian đóng',
+        closeTime: 'Close time',
         closePrice: 'Giá đóng',
-        pnl: 'Lãi/Lỗ',
-        commission: 'Hoa hồng',
-        reason: 'Lý do đóng',
+        pnl: 'P&L',
+        commission: 'Commission',
+        reason: 'Close reason',
         reasons: {
-          signal: 'Tín hiệu',
-          sl: 'Cắt lỗ',
-          tp: 'Chốt lời',
-          margin_call: 'Gọi ký quỹ',
-          expired: 'Hết hạn',
-          end_of_test: 'Kết thúc kiểm tra'
+          signal: 'Tín hiệu (đặt lệnh)',
+          sl: 'Stop loss',
+          tp: 'Take profit',
+          margin_call: 'Margin call',
+          expired: 'Expired',
+          end_of_test: 'End of test'
         },
-        summary: '{{count}} giao dịch · {{wins}} thắng / {{losses}} thua · Lãi/Lỗ ròng {{pnl}}'
+        summary: '{{count}} trades · {{wins}} wins / {{losses}} losses · net P&L {{pnl}}'
+      }
+    },
+    scheduleLogs: {
+      title: 'Nhật ký',
+      titleWithName: 'Nhật ký - {{name}}',
+      messages: {
+        missingScheduleId: 'Missing schedule ID'
+      },
+      execStatus: {
+        pending: 'Chưa kiểm tra',
+        running: 'Đang chạy',
+        completed: 'Hoàn tất',
+        failed: 'Thất Bại',
+        skipped: 'Skipped'
+      },
+      operationStatus: {
+        success: 'Thành Công',
+        failed: 'Thất Bại',
+        running: 'Đang chạy'
+      },
+      execTable: {
+        time: 'Thời gian',
+        action: 'Hành động',
+        execute: 'Thực thi',
+        status: 'Trạng thái',
+        durationMs: 'Thời lượng (ms)',
+        error: 'Lỗi'
+      },
+      ordersTable: {
+        time: 'Thời gian',
+        side: 'Hướng',
+        symbol: 'Mã',
+        lots: 'Khối lượng (Lot)',
+        openPrice: 'Giá mở',
+        closePrice: 'Giá đóng',
+        profit: 'Lãi/Lỗ',
+        ticket: 'Mã lệnh'
+      },
+      orderSide: {
+        buy: 'Mua thị trường',
+        sell: 'Bán thị trường',
+        close: 'Đóng lệnh',
+        buyLimit: 'Mua giới hạn',
+        sellLimit: 'Bán giới hạn',
+        buyStop: 'Mua stop',
+        sellStop: 'Bán stop',
+        buyStopLimit: 'Mua stop limit',
+        sellStopLimit: 'Sell stop limit'
+      },
+      scheduleIdLabel: 'ID lịch chạy:',
+      summary: {
+        name: 'Tên',
+        status: 'Trạng thái',
+        trade: 'Giao dịch',
+        enableCount: 'Số lần bật',
+        lastRun: 'Lần chạy gần nhất',
+        lastError: 'Last error'
+      },
+      tabs: {
+        exec: 'Lần chạy',
+        orders: 'Lệnh',
+        execLogs: '执行日志',
+        orderLogs: 'Order Logs'
+      },
+      status: {
+        success: 'Thành Công',
+        failed: 'Thất Bại'
+      },
+      action: {
+        start: 'Bắt Đầu',
+        stop: 'Dừng',
+        restart: 'Restart'
+      }
+    },
+    schedules: {
+      title: 'Lịch chạy chiến lược',
+      createSchedule: 'Tạo lịch',
+      format: {
+        interval: 'mỗi {{s}}s',
+        cron: 'cron: {{expr}}',
+      },
+      status: {
+        running: 'Đang chạy',
+        disabled: 'Disabled'
+      },
+      templateVisibility: {
+        public: 'Công khai',
+        private: 'Riêng tư'
+      },
+      table: {
+        name: 'Tên',
+        template: 'Mẫu',
+        account: 'Tài khoản',
+        tradeParams: 'Tham số giao dịch',
+        schedule: 'Lịch',
+        status: 'Trạng thái',
+        lastRun: 'Lần chạy gần nhất',
+        actions: 'Thao tác'
+      },
+      nextRunAt: 'Lần chạy kế tiếp',
+      enableCount: 'Số lần bật',
+      actions: {
+        create: 'Tạo lịch',
+        logs: 'Nhật ký chạy',
+        healthCheck: 'Kiểm tra sức khỏe',
+        runNow: 'Run now'
+      },
+      health: {
+        title: 'Kiểm tra sức khỏe chiến lược {{name}}',
+        summaryBanner: 'Mức sức khỏe: {{grade}}; mẫu gần nhất {{totalRuns}} lần, tỷ lệ thành công {{successRate}}%',
+        grade: {
+          pending: 'Chưa kiểm tra',
+          noSample: 'Thiếu mẫu',
+          healthy: 'Tốt',
+          watch: 'Cần theo dõi',
+          alert: 'Alert'
+        },
+        notes: {
+          pending: 'Vui lòng chạy kiểm tra sức khỏe trước.',
+          noSample: 'Không đủ mẫu để đánh giá (tối thiểu {{minSampleSize}}).',
+          healthy: 'Tỷ lệ thành công cao và số lần thất bại trong ngưỡng.',
+          watch: 'Tỷ lệ thành công đạt ngưỡng theo dõi (>= {{yellowSuccessRate}}%).',
+          alert: 'Low success rate. Investigate strategy/account conditions now.'
+        },
+        fields: {
+          grade: 'Mức sức khỏe',
+          rule: 'Tiêu chí đánh giá',
+          thresholds: 'Ngưỡng hiện tại',
+          configKey: 'Khóa cấu hình',
+          lastRunAt: 'Lần chạy gần nhất',
+          latestTicket: 'Ticket khớp lệnh gần nhất',
+          successOverTotal: 'Thành công / Tổng',
+          failedRuns: 'Số lần thất bại',
+          latestProfit: 'Lãi/lỗ gần nhất',
+          latestError: 'Latest error'
+        },
+        thresholdsSummary: 'min_sample_size={{minSampleSize}}; xanh: success>={{greenSuccessRate}}% & failed<={{greenMaxFailedRuns}}; vàng: success>={{yellowSuccessRate}}%',
+        sections: {
+          runLogs: 'Nhật ký chạy gần đây',
+          orders: 'Recent order records'
+        },
+        runLogs: {
+          signalType: 'Tín hiệu (đặt lệnh)'
+        },
+        messages: {
+          loadFailed: 'Tải dữ liệu sức khỏe thất bại',
+          clickRefresh: 'Click refresh to load health data'
+        }
+      },
+      deleteConfirm: {
+        title: 'Delete this schedule?'
+      },
+      validation: {
+        parametersMustBeJsonObject: 'Parameters must be a JSON object'
+      },
+      messages: {
+        parametersParseFailed: 'Phân tích tham số thất bại',
+        defaultTemplateNotFound: 'Không tìm thấy mẫu mặc định. Vui lòng làm mới và thử lại.',
+        importDefaultTemplateFailedNoId: 'Nhập mẫu mặc định thất bại: thiếu template id',
+        templateCodeEmptyCannotExecute: 'Code mẫu trống. Không thể thực thi.',
+        strategyExecuteFailed: 'Thực thi chiến lược thất bại',
+        executeFailed: 'Thực thi thất bại',
+        noOrderableSignal: 'Không có tín hiệu có thể đặt lệnh',
+        signalHoldCannotOrder: 'Tín hiệu là hold/không hành động. Không thể đặt lệnh.',
+        volumeInvalid: 'Khối lượng không hợp lệ (phải > 0)',
+        orderSubmitted: 'Đã gửi lệnh',
+        orderFailed: 'Đặt lệnh thất bại'
+      },
+      editModal: {
+        title: {
+          edit: 'Chỉnh sửa lịch chạy',
+          create: 'Tạo lịch chạy'
+        },
+        fields: {
+          template: 'Mẫu',
+          templateExtra: 'Mẫu đã lưu trong “Quản lý chiến lược”',
+          account: 'Tài khoản',
+          name: 'Tên',
+          symbol: 'Mã',
+          lot: 'Khối lượng (Lot)',
+          lotExtra: 'Khối lượng đặt lệnh. Khuyến nghị bắt đầu từ 0.01',
+          runFrequency: 'Tần suất chạy',
+          cronExpression: 'Cron (nâng cao)',
+          cronExtra: 'Cron 5 phần: phút giờ ngày tháng thứ. VD: */5 * * * *; 0 9 * * 1-5',
+          intervalSeconds: 'Khoảng (giây)',
+          intervalSecondsExtra: 'Tự theo timeframe; không cần chỉnh',
+          enableExtra: 'Enable schedule after creating'
+        },
+        placeholders: {
+          name: 'VD: EURUSD M5 chiến lược buổi sáng',
+          selectAccountFirst: 'Chọn tài khoản trước',
+          symbol: 'Chọn mã'
+        },
+        validation: {
+          templateRequired: 'Vui lòng chọn mẫu',
+          accountRequired: 'Vui lòng chọn tài khoản',
+          nameRequired: 'Vui lòng nhập tên',
+          symbolRequired: 'Vui lòng chọn mã',
+          lotRequired: 'Vui lòng nhập khối lượng',
+          runFrequencyRequired: 'Vui lòng chọn tần suất chạy',
+          cronRequired: 'Vui lòng nhập cron',
+          timeframeRequired: 'Vui lòng chọn timeframe',
+          triggerModeRequired: 'Trigger mode is required'
+        },
+        runFrequencyExtra: {
+          cron: 'Nâng cao: dùng Cron để điều khiển thời điểm chạy',
+          byTimeframe: 'Run by timeframe'
+        },
+        runFrequencyOptions: {
+          byTimeframe: 'Theo timeframe (khuyến nghị)',
+          cron: 'Cron'
+        },
+        autoName: {
+          strategy: 'Strategy'
+        },
+        advanced: {
+          title: 'Nâng cao',
+          fixedIntervalSeconds: 'Khoảng cố định (giây)',
+          fixedIntervalSecondsExtra: 'Tùy chọn. Chạy theo khoảng cố định thay vì theo timeframe. VD: 60 = mỗi 60 giây',
+          timeframe: 'Khung thời gian',
+          timeframeExtra: 'Dùng cho tính nến/chỉ báo',
+          triggerMode: 'Chế độ kích hoạt',
+          triggerModeExtra: 'Ổn định: theo nến/timeframe; Cao tần: theo báo giá (nhanh hơn, cần debounce)',
+          triggerModeOptions: {
+            stable: 'Ổn định (nến/timeframe)',
+            hf: 'High-frequency signal stream'
+          },
+          stableOverrideIntervalSeconds: 'Ghi đè khoảng ổn định (giây)',
+          stableOverrideIntervalSecondsExtra: 'Tùy chọn. Ghi đè khoảng kích hoạt ở chế độ ổn định',
+          hfCooldownMs: 'Cooldown cao tần (ms)',
+          hfCooldownMsExtra: 'Debounce: khoảng tối thiểu giữa các lần đánh giá/đặt lệnh',
+          parametersJson: 'Tham số (JSON object)',
+          parametersJsonExtra: 'JSON parameters for the strategy'
+        }
+      },
+      triggerModal: {
+        title: 'Chạy ngay (đặt lệnh)',
+        confirmOrder: {
+          title: 'Xác nhận đặt lệnh',
+          ok: 'Confirm'
+        },
+        actions: {
+          confirmOrder: 'Xác nhận đặt lệnh',
+          rerun: 'Re-run'
+        },
+        summary: {
+          scheduleName: 'Tên lịch',
+          account: 'Tài khoản',
+          symbol: 'Mã',
+          timeframe: 'Khung thời gian'
+        },
+        messages: {
+          signalNotOrderable: 'Signal is not orderable'
+        },
+        cards: {
+          logs: 'Nhật ký chạy',
+          signal: 'Tín hiệu (đặt lệnh)'
+        },
+        emptyLogs: '(không có nhật ký)',
+        emptySignal: 'No signal'
       }
     },
     asset: {
-      title: 'Tài sản chiến lược',
-      subtitle: 'Xuất bản tài sản, trạng thái xét duyệt và nhân bản được duy trì bởi máy chủ. Kết quả nhân bản là các mẫu người dùng độc lập.',
-      submitAsset: 'Gửi tài sản',
-      assetList: 'Danh sách tài sản',
+      title: 'Strategy Assets',
+      subtitle: 'Asset publishing, review status, and cloning are maintained by the system. Cloned results are independent user templates.',
+      submitAsset: 'Submit Asset',
+      assetList: 'Asset List',
       name: 'Tên',
       visibility: 'Hiển thị',
-      reviewStatus: 'Trạng thái xét duyệt',
-      cloneCount: 'Bản sao',
-      version: 'Phiên bản',
+      reviewStatus: 'Review Status',
+      cloneCount: 'Clones',
+      version: 'Version',
       description: 'Mô tả',
-      actions: 'Hành động',
-      cloneAsDraft: 'Nhân bản làm bản nháp',
-      sourceTemplate: 'Mẫu nguồn',
-      assetName: 'Tên tài sản',
-      submit: 'Gửi',
+      actions: 'Thao tác',
+      cloneAsDraft: 'Clone as Draft',
+      sourceTemplate: 'Source Template',
+      assetName: 'Asset Name',
+      submit: 'Submit',
       messages: {
-        loadFailed: 'Tải tài sản chiến lược thất bại',
-        submitSuccess: 'Đã gửi tài sản chiến lược',
-        submitFailed: 'Gửi tài sản chiến lược thất bại',
-        cloneSuccess: 'Đã nhân bản làm mẫu: {{templateId}}',
-        cloneFailed: 'Nhân bản tài sản chiến lược thất bại'
+        loadFailed: 'Failed to load strategy assets',
+        submitSuccess: 'Strategy asset submitted',
+        submitFailed: 'Failed to submit strategy asset',
+        cloneSuccess: 'Cloned as template: {{templateId}}',
+        cloneFailed: 'Failed to clone strategy asset'
       },
       validation: {
-        selectTemplate: 'Vui lòng chọn mẫu nguồn',
-        enterName: 'Vui lòng nhập tên tài sản'
+        selectTemplate: 'Please select a source template',
+        enterName: 'Please enter asset name'
       },
-      empty: '暂无策略资产'
+      empty: 'No strategy assets yet'
+    },
+    paper: {
+      title: '📊 Paper Trading',
+      createAccount: 'Create Paper Account',
+      accountName: 'Account name',
+      create: 'Tạo lịch',
+      noAccounts: 'No paper accounts. Create one to start simulated trading.',
+      running: 'Running {{symbol}} {{timeframe}}',
+      start: 'Bắt Đầu',
+      stop: 'Dừng',
+      watch: 'Cần theo dõi',
+      paper: 'Paper',
+      startStrategy: 'Start Paper Strategy',
+      symbol: 'Mã',
+      timeframe: 'Khung thời gian',
+      strategyCode: 'Strategy Code (Python)',
+      messages: {
+        enterName: 'Enter a name',
+        created: 'Paper account created',
+        createFailed: 'Create failed',
+        pasteCode: 'Paste your strategy code',
+        strategyStarted: 'Paper strategy started',
+        startFailed: 'Start failed',
+        strategyStopped: 'Paper strategy stopped',
+        stopFailed: 'Stop failed'
+      }
+    },
+    aiChat: {
+      title: 'AI Chat',
+      you: 'You',
+      ai: 'AI',
+      revise: 'revise',
+      feedback: '🔄 feedback',
+      streaming: 'streaming',
+      analyzing: 'analyzing',
+      reset: 'reset',
+      applyCode: 'Apply Code',
+      dismiss: 'Dismiss',
+      reviewCode: 'AI generated code — review the chat above before applying.'
+    },
+    assetAnalysis: {
+      title: 'AI Asset Analysis',
+      subtitle: 'Multi-timeframe trend outlook, S/R level detection, volatility classification, and AI strategy recommendation',
+      symbolPlaceholder: 'Enter symbol (e.g. EURUSD, XAUUSD, BTCUSD)',
+      analyze: 'Analyze',
+      fetchingData: 'Fetching market data...',
+      phase: 'Phase: {{phase}}',
+      mtfOutlook: 'Multi-Timeframe Outlook',
+      srLevels: 'Support / Resistance Levels',
+      volatility: 'Volatility',
+      state: 'State',
+      atrPct: 'ATR %',
+      aiRecommendation: 'AI Strategy Recommendation',
+      aiUnavailable: 'AI recommendation unavailable. Please configure an AI provider in Settings.',
+      configureAI: 'Configure AI Provider',
+      noLevels: 'No significant levels detected',
+      noResults: 'No analysis results returned. Try a different symbol.',
+      volLow: 'Low volatility — consider breakout or mean-reversion strategies with tight stops.',
+      volNormal: 'Normal volatility — suitable for most strategy types.',
+      volHigh: 'High volatility — wider stops recommended; trend-following and breakout strategies favored.',
+      volExtreme: 'Extreme volatility — reduce position sizes significantly; wide stops required.'
     },
     gen: {
-      title: 'Tạo chiến lược',
-      send: 'Tạo chiến lược',
-      regenerate: 'Tạo lại',
-      reset: 'Bắt đầu lại',
+      title: 'Strategy Generation',
+      send: 'Generate Strategy',
+      regenerate: 'Regenerate',
+      reset: 'Start Over',
       template: 'Mẫu',
-      generating: 'Đang tạo...',
-      validating: 'Kiểm tra tuân thủ',
-      backtestStarted: 'Backtest đã bắt đầu',
-      done: 'Hoàn thành',
-      backtestMsg: 'Đã tạo tác vụ backtest',
-      clarifyTitle: 'Một số chi tiết cần xác nhận:',
-      useDefaults: 'Tiếp tục với mặc định',
-      placeholder: 'Mô tả chiến lược giao dịch bạn muốn tạo, ví dụ: "Tạo chiến lược mean-reversion Bollinger Band cho EURUSD trên 1H"',
+      generating: 'Generating...',
+      validating: 'Compliance Check',
+      backtestStarted: 'Backtest Started',
+      done: 'Done',
+      backtestMsg: 'Backtest task created',
+      clarifyTitle: 'A few details to confirm:',
+      useDefaults: 'Continue with defaults',
+      placeholder: 'Describe the trading strategy you want to create, e.g.: "Make a Bollinger Band mean-reversion strategy for EURUSD on 1H"',
       chat: {
-        generate: 'Tạo',
-        revise: 'Chỉnh sửa',
-        repair: 'Sửa chữa',
-        discuss: 'Thảo luận'
+        generate: '⚡ Generate',
+        revise: '✏️ Revise',
+        repair: '🔧 Repair',
+        discuss: '💬 Discuss'
       },
       feedback: {
-        heading: 'Kết quả backtest',
-        placeholder: 'Cung cấp phản hồi để lặp lại (ví dụ: "Quá hung hăng", "Thêm cắt lỗ")'
+        heading: '📊 Backtest Results',
+        placeholder: 'Provide feedback to iterate (e.g. "Too aggressive", "Add stop loss")'
       },
       metrics: {
         sharpe: 'Sharpe',
         maxDrawdown: 'Max DD',
-        winRate: 'Thắng',
-        trades: 'Giao dịch',
-        return: 'Lợi nhuận'
+        winRate: 'Win',
+        trades: 'Trades',
+        return: 'Return'
       }
     },
+    codeAssist: {
+      tabAI: 'AI revise',
+      tabExplain: 'Explain code',
+      explain: 'Explain code',
+      requiredParamsTitle: 'Required parameters',
+      requiredParamsDesc: 'The strategy reads these parameters but no default was provided. Fill them in before saving.',
+      optionalParamsTitle: 'Optional parameters',
+      optionalParamsDesc: 'These parameters already have defaults from the code. Leave a field blank to use the default; entering a value only applies to this run and does not modify the saved strategy.',
+      defaultLabel: 'default',
+      paramDescriptions: {
+        riskLevel: 'Risk level (low / medium / high). Controls position size and stop/take-profit width.',
+        takeProfit: 'Take-profit distance (%). Close the position once price moves this far in your favour.',
+        stopLoss: 'Stop-loss distance (%). Close the position once price moves this far against you.',
+        maxLoss: 'Max loss per trade as a fraction of equity (0.01 = 1%).',
+        confidence: 'Signal confidence threshold (0-1). Signals below this value are ignored.',
+        threshold: 'Threshold that triggers a signal. Exact meaning depends on the strategy logic.',
+        lotSize: 'Order size (lots / volume). Larger size means more risk.',
+        fastPeriod: 'Fast period (number of bars). Used by MACD / dual-MA; smaller is more reactive.',
+        slowPeriod: 'Slow period (number of bars). Used by MACD / dual-MA; larger is smoother.',
+        signalPeriod: 'Signal period (number of bars). Smoothing length for MACD DIF/DEA.',
+        rsiPeriod: 'RSI lookback (number of bars). Typical value: 14.',
+        emaPeriod: 'EMA (exponential moving average) lookback in bars.',
+        smaPeriod: 'SMA (simple moving average) lookback in bars.',
+        genericPeriod: 'Lookback window in bars used for indicator calculation.',
+        genericPercent: 'Percentage / ratio parameter (e.g. 1 means 1%).'
+      },
+      required: 'required',
+      suggested: 'suggested',
+      applyAllSuggestions: 'Apply suggested defaults',
+      fillRequiredParams: 'Please fill the required parameters: {{keys}}',
+      aiReviseTitle: 'AI assistant — revise code',
+      reviseInputPlaceholder: 'e.g. Replace SMA(20) with EMA(50) and add a 1% stop-loss.',
+      reviseSend: 'Gửi AI để sửa',
+      enterInstruction: 'Please describe what you want to change.',
+      codeEmpty: 'There is no code to revise yet.',
+      codeUpdated: 'Code updated. Please re-run validation before saving.',
+      noPython: 'AI did not return a Python block. Try rephrasing.',
+      saveBlockedNotValidated: 'Please click "Validate code" first. Save is disabled until validation passes.',
+      generatePlaceholder: 'Describe your strategy requirements...'
+    },
     marketRegime: {
-      title: 'Phát hiện chế độ thị trường',
-      subtitle: 'Máy chủ tính toán các đặc trưng xu hướng, biến động và hiệu quả từ nến K. Giao diện chỉ hiển thị kết quả.',
-      ruleVersionAlert: 'Hiện đang sử dụng mô hình phát hiện dựa trên quy tắc rule-v1. Nguồn nến K có thẩm quyền vẫn là dịch vụ Thị trường/Nến K của máy chủ.',
-      detectSuccess: 'Phát hiện chế độ thị trường đã hoàn thành',
-      detectFailed: 'Phát hiện chế độ thị trường thất bại',
+      title: 'Market Regime Detection',
+      subtitle: 'Analyzes trend direction, volatility regime, and price efficiency from historical K-line data to classify current market conditions.',
+      ruleVersionAlert: 'Currently using rule-based detection model rule-v1, driven by real-time K-line market data.',
+      detectSuccess: 'Market regime detection completed',
+      detectFailed: 'Market regime detection failed',
       form: {
-        title: 'Tham số phát hiện',
-        accountId: 'ID tài khoản',
-        accountIdRequired: 'Yêu cầu ID tài khoản',
-        accountIdPlaceholder: 'UUID tài khoản MT',
-        symbol: 'Mã chứng khoán',
-        symbolRequired: 'Yêu cầu mã chứng khoán',
+        title: 'Detection Parameters',
+        accountId: 'Account ID',
+        accountIdRequired: 'Account ID is required',
+        accountIdPlaceholder: 'MT account UUID',
+        symbol: 'Mã',
+        symbolRequired: 'Vui lòng chọn mã',
         symbolPlaceholder: 'EURUSD',
         timeframe: 'Khung thời gian',
-        klineCount: 'Số lượng nến K',
-        submit: 'Bắt đầu phát hiện'
+        klineCount: 'K-line Count',
+        submit: 'Start Detection'
       },
       result: {
-        title: 'Kết quả phát hiện',
+        title: 'Detection Result',
         status: 'Trạng thái',
-        confidence: 'Độ tin cậy',
-        modelVersion: 'Phiên bản mô hình',
-        strategyFamilies: 'Họ chiến lược',
-        features: 'Đặc trưng',
-        recordId: 'ID bản ghi'
+        confidence: 'Confidence',
+        modelVersion: 'Model Version',
+        strategyFamilies: 'Strategy Families',
+        features: 'Features',
+        recordId: 'Record ID'
       }
     },
     experiment: {
-      title: 'Thử nghiệm chiến lược',
-      subtitle: 'Thử nghiệm tham số, chấm điểm ứng viên và tạo bản nháp do máy chủ xử lý. Giao diện chỉ gửi và hiển thị.',
-      ruleVersionAlert: 'Vòng lặp tối thiểu hiện tại: thử nghiệm tham số xác định. Ứng viên chỉ tạo bản nháp và sẽ không tự động xuất bản, lập lịch hoặc giao dịch.',
-      jobEventStream: 'Luồng sự kiện công việc',
-      noEvents: 'Không có sự kiện',
-      selectJobToView: 'Chọn một thử nghiệm có Công việc để xem sự kiện.',
+      title: 'Strategy Experiment',
+      subtitle: 'Submit parameter combinations to automatically run experiments, score candidate strategies, and generate drafts.',
+      ruleVersionAlert: 'Current minimal loop: deterministic parameter experiment. Candidates only generate drafts and will not auto-publish, schedule, or trade.',
+      jobEventStream: 'Job Event Stream',
+      noEvents: 'No events',
+      selectJobToView: 'Select an experiment with a Job to view events.',
       submitForm: {
-        title: 'Gửi thử nghiệm',
-        baseTemplate: 'Mẫu chiến lược cơ sở',
-        baseTemplateRequired: 'Vui lòng chọn mẫu chiến lược cơ sở',
-        baseTemplatePlaceholder: 'Chọn mẫu',
-        parameterSpace: 'Không gian tham số JSON',
-        parameterSpaceRequired: 'Vui lòng nhập JSON không gian tham số',
-        searchMethod: 'Phương pháp tìm kiếm',
-        maxCandidates: 'Số ứng viên tối đa',
-        objective: 'Mục tiêu',
-        submit: 'Gửi thử nghiệm'
+        title: 'Submit Experiment',
+        baseTemplate: 'Base Strategy Template',
+        baseTemplateRequired: 'Please select a base strategy template',
+        baseTemplatePlaceholder: 'Select template',
+        parameterSpace: 'Parameter Space JSON',
+        parameterSpaceRequired: 'Please enter parameter space JSON',
+        searchMethod: 'Search Method',
+        maxCandidates: 'Max Candidates',
+        objective: 'Objective',
+        submit: 'Submit Experiment'
       },
       list: {
-        title: 'Danh sách thử nghiệm',
+        title: 'Experiment List',
         column: {
           status: 'Trạng thái',
-          searchMethod: 'Phương pháp tìm kiếm',
-          maxCandidates: 'Số ứng viên tối đa',
-          objective: 'Mục tiêu',
-          actions: 'Hành động',
-          viewCandidates: 'Xem ứng viên'
+          searchMethod: 'Search Method',
+          maxCandidates: 'Max Candidates',
+          objective: 'Objective',
+          actions: 'Thao tác',
+          viewCandidates: 'View Candidates'
         }
       },
       candidates: {
-        title: 'Ứng viên',
-        titleWithId: 'Ứng viên: {{id}}',
+        title: 'Candidates',
+        titleWithId: 'Candidates: {{id}}',
         column: {
-          rank: 'Hạng',
-          grade: 'Điểm',
-          score: 'Điểm số',
-          parameters: 'Tham số',
-          summary: 'Tóm tắt',
-          recommendation: 'Đề xuất',
-          actions: 'Hành động',
-          viewCandidates: 'Xem ứng viên',
-          generateDraft: 'Tạo bản nháp'
+          rank: 'Rank',
+          grade: 'Grade',
+          score: 'Điểm',
+          parameters: 'Parameters',
+          summary: 'Summary',
+          recommendation: 'Recommendation',
+          actions: 'Thao tác',
+          viewCandidates: 'View Candidates',
+          generateDraft: 'Generate Draft'
         }
       },
       messages: {
-        loadTemplatesFailed: 'Tải mẫu chiến lược thất bại',
-        loadExperimentsFailed: 'Tải danh sách thử nghiệm thất bại',
-        loadCandidatesFailed: 'Tải ứng viên thất bại',
-        subscribeJobFailed: 'Đăng ký sự kiện Công việc thử nghiệm thất bại',
-        candidatesGenerated: 'Đã tạo ứng viên thử nghiệm chiến lược',
-        submitFailed: 'Gửi thử nghiệm thất bại. Vui lòng kiểm tra không gian tham số có phải JSON hợp lệ không.',
-        draftGenerated: 'Đã tạo bản nháp mẫu: {{templateId}}',
-        promoteFailed: 'Thăng cấp ứng viên lên bản nháp thất bại'
+        loadTemplatesFailed: 'Failed to load strategy templates',
+        loadExperimentsFailed: 'Failed to load experiment list',
+        loadCandidatesFailed: 'Failed to load candidates',
+        subscribeJobFailed: 'Failed to subscribe to experiment Job events',
+        candidatesGenerated: 'Strategy experiment candidates generated',
+        submitFailed: 'Failed to submit experiment. Please verify the parameter space is valid JSON.',
+        draftGenerated: 'Draft template generated: {{templateId}}',
+        promoteFailed: 'Failed to promote candidate to draft'
       }
     },
     workspace: {
-      title: 'Không gian làm việc chiến lược',
+      title: 'Strategy Workspace',
       account: 'Tài khoản',
-      accountPlaceholder: 'ID tài khoản',
-      chartWindow: 'Biểu đồ',
-      hideCode: 'Ẩn mã',
-      showCode: 'Hiện mã',
-      quickTrade: 'Giao dịch nhanh',
-      quickTradeHint: 'Chọn mã chứng khoán trước',
-      tradePanelPlaceholder: 'Bảng giao dịch — sắp ra mắt',
-      selectSymbolHint: 'Chọn tài khoản giao dịch và mã chứng khoán để xem biểu đồ',
-      noAccounts: 'Không có tài khoản khả dụng',
-      selectSymbol: 'Mã chứng khoán',
-      code: 'Mã chiến lược',
-      codePlaceholder: `# Mã chiến lược Python...
+      accountPlaceholder: 'Account ID',
+      chartWindow: 'Chart',
+      backtestRunIdLabel: 'Select backtest run...',
+      hideCode: 'Hide Code',
+      showCode: 'Show Code',
+      investorReadOnly: '投资者(只读)',
+      masterTrading: 'Master (Trading)',
+      riskControls: 'Risk Controls from Code',
+      jumpToCode: 'Jump to code',
+      runningStatus: 'Running...',
+      completedStatus: 'Hoàn tất',
+      backtestResultsLabel: 'Backtest Results',
+      watchlist: 'Watchlist',
+      selectAccount: '选择账户',
+      openPositions: 'Open Positions ({{count}})',
+      noOpenPositions: 'No open positions for this account',
+      chartError: 'Chart error — try refreshing',
+      smartTuning: 'Smart Tuning',
+      quickTrade: 'Quick Trade',
+      quickTradeHint: 'Select a symbol first',
+      selectSymbolHint: 'Select a trading account and symbol to view chart',
+      noAccounts: 'No available accounts',
+      selectSymbol: 'Mã',
+      code: 'Strategy Code',
+      codePlaceholder: `# Python strategy code...
 def run(context):
     return {"signal": "hold"}`,
-      validate: 'Xác thực',
+      validate: 'Xác thực mã',
       validatePass: 'Xác thực thành công',
       validateFailed: 'Xác thực thất bại',
-      validateBeforeSave: 'Vui lòng xác thực mã trước khi lưu',
-      runBacktest: 'Chạy Backtest',
-      save: 'Lưu',
+      validateBeforeSave: 'Please validate code before saving',
+      runBacktest: 'Run Backtest',
+      save: 'Save',
       copy: 'Sao chép',
       copySuccess: 'Đã sao chép',
-      copyFailed: 'Sao chép thất bại',
-      saveSuccess: 'Đã lưu',
-      chart: 'Nến K',
+      copyFailed: 'Sao chép thất bại, vui lòng sao chép thủ công',
+      saveSuccess: 'Saved',
+      chart: 'K-line',
       backtest: 'Kiểm thử lùi',
-      backtestRunning: 'Backtest đang chạy...',
-      backtestCompleted: 'Hoàn thành',
-      backtestError: 'Backtest thất bại',
-      backtestEmpty: 'Chạy backtest để xem kết quả',
-      backtestTab: 'Kết quả backtest',
-      tuningTab: 'Tinh chỉnh thông minh',
-      execAssumptions: 'Giả định thực thi',
+      backtestRunning: 'Backtest running...',
+      backtestCompleted: 'Hoàn tất',
+      backtestError: 'Backtest failed',
+      backtestEmpty: 'Run a backtest to see results',
+      backtestTab: 'Backtest Results',
+      tuningTab: 'Smart Tuning',
+      execAssumptions: 'ℹ Execution Assumptions',
       execAssumptionsFields: {
-        mode: 'Chế độ',
-        timing: 'Thời điểm',
-        fillRule: 'Quy tắc khớp lệnh',
-        direction: 'Hướng',
-        commission: 'Hoa hồng',
-        slippage: 'Trượt giá',
-        leverage: 'Đòn bẩy',
-        mtfFallback: 'Dự phòng MTF'
+        mode: 'Mode',
+        timing: 'Timing',
+        fillRule: 'Fill Rule',
+        direction: 'Direction',
+        commission: 'Commission',
+        slippage: 'Slippage',
+        leverage: 'Leverage',
+        mtfFallback: 'MTF Fallback'
       },
-      aiAssist: 'Trợ lý AI',
+      aiAssist: 'AI Assistant',
       ai: 'AI',
-      runtimeMode: 'Môi trường chạy',
-      saveFailed: 'Lưu thất bại',
+      runtimeMode: 'Runtime',
+      saveFailed: 'Save failed',
       autoFix: {
-        fixing: 'Đang sửa...',
-        button: 'Tự động sửa',
-        askAI: 'Hỏi AI',
-        dismiss: 'Bỏ qua',
-        passed: 'Tự động sửa đã vượt qua trong {{iterations}} lần lặp{{plural}}',
-        failed: 'Tự động sửa: còn {{remaining}} vấn đề sau {{iterations}} lần lặp',
-        fixed: 'Đã sửa ({{count}})',
-        remaining: 'Còn lại ({{count}})',
-        newRegression: 'Hồi quy mới ({{count}})',
-        lineInfo: 'dòng {{line}}'
+        fixing: 'Fixing...',
+        button: 'Auto Fix',
+        askAI: 'Ask AI',
+        dismiss: 'Dismiss',
+        passed: 'Auto-fix passed in {{iterations}} iteration{{plural}}',
+        failed: 'Auto-fix: {{remaining}} issue(s) remain after {{iterations}} iterations',
+        fixed: 'Fixed ({{count}})',
+        remaining: 'Remaining ({{count}})',
+        newRegression: 'New regression ({{count}})',
+        lineInfo: 'line {{line}}'
       },
       template: {
         title: 'Mẫu',
-        selectPlaceholder: 'Chọn mẫu...',
-        load: 'Tải',
-        saveAs: 'Lưu thành mới',
-        loaded: 'Đã tải'
+        selectPlaceholder: 'Select a template...',
+        load: 'Load',
+        saveAs: 'Save As New',
+        loaded: 'Loaded'
       },
-      watchlist: 'Danh sách theo dõi',
-      selectAccount: 'Chọn tài khoản',
-      openPositions: 'Vị thế mở ({{count}})',
-      noOpenPositions: 'Không có vị thế mở cho tài khoản này',
-      chartError: 'Lỗi biểu đồ — hãy thử làm mới',
-      smartTuning: 'Tinh chỉnh thông minh',
       quickTradeSection: {
-        selectSymbol: 'Vui lòng chọn mã giao dịch trước',
-        validVolume: 'Nhập khối lượng hợp lệ',
-        priceRequired: 'Cần nhập giá cho lệnh Limit/Stop',
-        orderPlaced: 'Lệnh {{side}} đã được đặt',
+        selectSymbol: 'Select a symbol first',
+        validVolume: 'Enter a valid volume',
+        priceRequired: 'Price is required for Limit/Stop orders',
+        orderPlaced: '{{side}} order placed',
         orderFailed: 'Đặt lệnh thất bại',
-        amountLots: 'Khối lượng (lô)',
-        marginMode: 'Chế độ ký quỹ',
+        amountLots: 'Amount (lots)',
+        marginMode: 'Margin Mode',
         cross: 'Cross',
-        isolated: 'Cô lập',
-        mt4CrossOnly: 'MT4 chỉ hỗ trợ ký quỹ Cross'
+        isolated: 'Isolated',
+        mt4CrossOnly: 'MT4 supports Cross margin only'
       },
       chartTools: {
-        streamActive: 'Luồng dữ liệu nến trực tiếp đang hoạt động',
-        streamUnavailable: 'Luồng dữ liệu không khả dụng',
-        hide: 'Ẩn',
-        show: 'Hiện',
-        settings: 'Cài đặt',
-        remove: 'Xóa',
-        clearDrawings: 'Xóa tất cả hình vẽ',
-        candle: 'Nến',
+        streamActive: 'Live bar stream active',
+        streamUnavailable: 'Stream unavailable',
+        hide: 'Hide',
+        show: 'Show',
+        settings: 'Settings',
+        remove: 'Remove',
+        clearDrawings: 'Clear All Drawings',
+        candle: 'Candle',
         ohlc: 'OHLC',
-        area: 'Vùng',
+        area: 'Area',
         live: 'LIVE',
         error: 'ERROR',
         static: 'STATIC'
       },
-      backtestRunIdLabel: 'Chọn lần chạy backtest...',
-      investorReadOnly: 'Nhà đầu tư (Chỉ xem)',
-      masterTrading: 'Chủ (Giao dịch)',
-      riskControls: 'Quy tắc rủi ro từ mã',
-      jumpToCode: 'Đi tới mã',
-      runningStatus: 'Đang chạy...',
-      completedStatus: 'Hoàn thành',
-      backtestResultsLabel: 'Kết quả backtest',
       gateTab: 'Gate'
     },
     codeQuality: {
       category: {
-        FUTURE_DATA_LEAK: 'Rò rỉ dữ liệu tương lai',
-        MISSING_PARAM: 'Thiếu tham số',
-        UNREAD_PARAM: 'Tham số chưa đọc',
-        NDARRAY_PANDAS_MISUSE: 'Sử dụng sai ndarray/pandas',
-        NO_STOP_AND_TAKE_PROFIT: 'Thiếu cắt lỗ/chốt lời',
-        NO_ENTRY_PCT: 'Thiếu % vào lệnh'
+        FUTURE_DATA_LEAK: 'Future Data Leak',
+        MISSING_PARAM: 'Missing Param',
+        UNREAD_PARAM: 'Unread Param',
+        NDARRAY_PANDAS_MISUSE: 'ndarray/pandas Misuse',
+        NO_STOP_AND_TAKE_PROFIT: 'Missing Stop/Take Profit',
+        NO_ENTRY_PCT: 'Missing Entry %'
       }
     },
     backtestParams: {
       title: 'Kiểm thử lùi',
-      currentDraft: 'Bản nháp hiện tại',
-      dateRange: 'Khoảng thời gian',
-      execution: 'Thực thi',
-      capital: 'Vốn',
-      leverage: 'Đòn bẩy',
-      commission: 'Hoa hồng',
-      slippage: 'Trượt giá',
+      currentDraft: '📝 Current Draft',
+      dateRange: 'Date Range',
+      execution: 'Execution',
+      capital: 'Capital',
+      leverage: 'Leverage',
+      commission: 'Commission',
+      slippage: 'Slippage',
       trade: 'Giao dịch',
-      direction: 'Hướng',
-      long: 'Mua',
-      short: 'Bán',
-      both: 'Cả hai',
-      strictMode: 'Chế độ nghiêm ngặt',
-      strictModeOn: 'BẬT',
-      strictModeOff: 'TẮT',
-      strictModeOnDesc: 'Mở nến tiếp theo. Tiêu chuẩn, bảo thủ.',
-      strictModeOffDesc: 'Đóng cùng nến + MTF 1m. Độ chính xác cao hơn.',
-      strictModeOnTooltip: 'BẬT: tín hiệu xác nhận khi đóng nến, thực thi khi mở nến tiếp theo',
-      strictModeOffTooltip: 'TẮT: thực thi đóng cùng nến với độ phân giải phụ 1m',
-      vectorizedMode: 'Vector hóa',
+      direction: 'Direction',
+      long: '↑ Long',
+      short: '↓ Short',
+      both: 'Both',
+      strictMode: 'Strict Mode',
+      strictModeOn: 'ON',
+      strictModeOff: 'OFF',
+      strictModeOnDesc: 'Next-bar-open. Standard, conservative.',
+      strictModeOffDesc: 'Same-bar-close + MTF 1m. Higher precision.',
+      strictModeOnTooltip: 'ON: signals confirmed at bar close, executed next bar open',
+      strictModeOffTooltip: 'OFF: same-bar close execution with 1m sub-resolution',
+      vectorizedMode: 'Vectorized',
       eventDrivenMode: 'Run(context)',
-      runtimeMode: 'Môi trường chạy',
-      history: 'Lịch sử backtest',
-      run: 'Chạy',
-      settingsSave: 'Lưu làm mặc định của tôi',
-      settingsLoad: 'Tải mặc định của tôi',
-      settingsReset: 'Đặt lại về mặc định',
-      defaultsSaved: 'Đã lưu mặc định',
-      defaultsLoaded: 'Đã tải mặc định',
-      defaultsReset: 'Đặt lại về mặc định gốc',
+      runtimeMode: 'Runtime',
+      history: 'Backtest History',
+      run: '▶ Run',
+      enterCodeAndSymbol: 'Please enter strategy code and select a symbol',
+      backtestFailed: 'Backtest failed',
+      settingsSave: 'Save as My Defaults',
+      settingsLoad: 'Load My Defaults',
+      settingsReset: 'Reset to Factory',
+      defaultsSaved: 'Defaults saved',
+      defaultsLoaded: 'Defaults loaded',
+      defaultsReset: 'Reset to factory defaults',
       presets: {
-        liveAligned: 'Căn chỉnh thực tế',
-        exploration: 'Khám phá'
-      },
-      enterCodeAndSymbol: 'Vui lòng nhập mã chiến lược và chọn mã',
-      backtestFailed: 'Backtest thất bại'
-    },
-    tuning: {
-      optimizerMethod: 'Phương pháp tối ưu hóa',
-      parameterDimensions: 'Số chiều tham số',
-      enabledCombinations: '{{enabled}} đã bật · {{combos}} tổ hợp',
-      hide: 'Ẩn',
-      preview: 'Xem trước',
-      previewTitle: 'Xem trước ({{shown}}/{{total}})',
-      truncated: 'ĐÃ CẮT',
-      results: 'Kết quả ({{count}})',
-      rank: '#',
-      grade: 'Điểm',
-      score: 'Điểm số',
-      parameters: 'Tham số',
-      summary: 'Tóm tắt',
-      oosScore: 'Điểm OOS',
-      degradation: 'Suy giảm',
-      overfit: 'Quá khớp',
-      overfitWarning: 'CẢNH BÁO QUÁ KHỚP',
-      apply: 'Áp dụng',
-      run: 'Chạy ({{count}})',
-      tuning: 'Đang tinh chỉnh...',
-      requiresAI: 'Yêu cầu đã cấu hình nhà cung cấp AI',
-      switchToDE: 'Chuyển sang DE',
-      waiting: 'Đang chờ thử nghiệm... (SSE tự động làm mới)',
-      gridWarning: 'Tìm kiếm lưới sẽ kiểm tra <b>{{count}}</b> tổ hợp (ngân sách: 48). Cân nhắc chuyển sang <b>Tiến hóa vi phân</b> để xử lý không gian tham số lớn hiệu quả.',
-      oosFootnote: 'Xác thực OOS chạy trên top-5 ứng viên (theo điểm IS). Xanh <20%, cam 20-40%, đỏ >40%.',
-      optimizer: {
-        grid: 'Tìm kiếm lưới',
-        random: 'Tìm kiếm ngẫu nhiên',
-        de: 'Tiến hóa vi phân',
-        tpe: 'TPE (KDE)',
-        ags: 'Gaussian ủ nhiệt',
-        ai: 'Trình tối ưu AI',
-        gridDesc: 'Tích Descartes đầy đủ. Tốt nhất cho <=3 tham số.',
-        randomDesc: 'Lấy mẫu ngẫu nhiên đồng nhất. Tốt cho khám phá.',
-        deDesc: 'Đột biến rand/1/bin. Hội tụ nhanh trên bề mặt trơn.',
-        tpeDesc: 'Ước lượng Parzen có cấu trúc cây. Mô hình KDE phân phối tốt/xấu.',
-        agsDesc: 'Nhiễu Gaussian với ủ nhiệt sigma. Giải pháp nhẹ hơn TPE.',
-        aiDesc: 'Đề xuất đa vòng LLM. Học từ kết quả trước qua 3 vòng.'
-      },
-      started: 'Đã bắt đầu tinh chỉnh thông minh'
-    },
-    paper: {
-      title: '📊 Giao dịch giấy',
-      createAccount: 'Tạo tài khoản giấy',
-      accountName: 'Tên tài khoản',
-      create: 'Tạo',
-      noAccounts: 'Chưa có tài khoản giấy. Tạo một tài khoản để bắt đầu giao dịch mô phỏng.',
-      running: 'Đang chạy {{symbol}} {{timeframe}}',
-      start: 'Bắt đầu',
-      stop: 'Dừng',
-      watch: 'Theo dõi',
-      paper: 'Giấy',
-      startStrategy: 'Bắt đầu chiến lược giấy',
-      symbol: 'Mã',
-      timeframe: 'Khung thời gian',
-      strategyCode: 'Mã chiến lược (Python)',
-      messages: {
-        enterName: 'Nhập tên',
-        created: 'Đã tạo tài khoản giấy',
-        createFailed: 'Tạo thất bại',
-        pasteCode: 'Dán mã chiến lược của bạn',
-        strategyStarted: 'Chiến lược giấy đã bắt đầu',
-        startFailed: 'Bắt đầu thất bại',
-        strategyStopped: 'Chiến lược giấy đã dừng',
-        stopFailed: 'Dừng thất bại'
+        liveAligned: 'Live Aligned',
+        exploration: 'Exploration'
       }
     },
-    aiChat: {
-      title: 'Trò chuyện AI',
-      you: 'Bạn',
-      ai: 'AI',
-      revise: 'sửa đổi',
-      feedback: '🔄 phản hồi',
-      streaming: 'đang tạo',
-      analyzing: 'đang phân tích',
-      reset: 'đặt lại',
-      applyCode: 'Áp dụng mã',
-      dismiss: 'Bỏ qua',
-      reviewCode: 'AI đã tạo mã — hãy xem lại cuộc trò chuyện ở trên trước khi áp dụng.'
-    },
-    assetAnalysis: {
-      title: 'Phân tích tài sản AI',
-      subtitle: 'Triển vọng xu hướng đa khung thời gian, phát hiện mức hỗ trợ/kháng cự, phân loại biến động và đề xuất chiến lược AI',
-      symbolPlaceholder: 'Nhập mã (ví dụ: EURUSD, XAUUSD, BTCUSD)',
-      analyze: 'Phân tích',
-      fetchingData: 'Đang lấy dữ liệu thị trường...',
-      phase: 'Giai đoạn: {{phase}}',
-      mtfOutlook: 'Triển vọng đa khung',
-      srLevels: 'Mức Hỗ trợ / Kháng cự',
-      volatility: 'Biến động',
-      state: 'Trạng thái',
-      atrPct: 'ATR %',
-      aiRecommendation: 'Đề xuất chiến lược AI',
-      aiUnavailable: 'Đề xuất AI không khả dụng. Vui lòng cấu hình nhà cung cấp AI trong Cài đặt.',
-      configureAI: 'Cấu hình nhà cung cấp AI',
-      noLevels: 'Không phát hiện mức đáng kể',
-      noResults: 'Không có kết quả phân tích. Thử mã khác.',
-      volLow: 'Biến động thấp — cân nhắc chiến lược breakout hoặc mean-reversion với stop chặt.',
-      volNormal: 'Biến động bình thường — phù hợp với hầu hết các loại chiến lược.',
-      volHigh: 'Biến động cao — khuyến nghị stop rộng hơn; chiến lược theo xu hướng và breakout có lợi thế.',
-      volExtreme: 'Biến động cực đoan — giảm đáng kể kích thước vị thế; cần stop rộng.'
+    tuning: {
+      optimizerMethod: 'Optimizer method',
+      parameterDimensions: 'Parameter dimensions',
+      enabledCombinations: '{{enabled}} enabled · {{combos}} combinations',
+      hide: 'Hide',
+      preview: 'Xem trước tín hiệu',
+      previewTitle: 'Preview ({{shown}} of {{total}})',
+      truncated: 'TRUNCATED',
+      results: 'Results ({{count}})',
+      rank: '#',
+      grade: 'Grade',
+      score: 'Điểm',
+      parameters: 'Parameters',
+      summary: 'Summary',
+      oosScore: 'OOS Score',
+      degradation: 'Degradation',
+      overfit: 'Overfit',
+      overfitWarning: '⚠ OVERFIT',
+      apply: 'Apply',
+      run: 'Run ({{count}})',
+      started: 'Smart Tuning started',
+      tuning: 'Tuning…',
+      requiresAI: 'Requires AI provider configured',
+      switchToDE: 'Switch to DE',
+      waiting: 'Waiting for experiment... (SSE auto-refresh)',
+      gridWarning: 'Grid Search would test <b>{{count}}</b> combinations (budget: 48). Consider switching to <b>Differential Evolution</b> which handles large parameter spaces efficiently.',
+      oosFootnote: 'OOS validation run on top-5 candidates (by IS score). Green degradation <20%, orange 20-40%, red >40%.',
+      optimizer: {
+        grid: 'Grid Search',
+        random: 'Random Search',
+        de: 'Differential Evolution',
+        tpe: 'TPE (KDE)',
+        ags: 'Annealed Gaussian',
+        ai: 'AI Optimizer',
+        gridDesc: 'Exhaustive Cartesian product. Best for ≤3 params.',
+        randomDesc: 'Uniform random sampling. Good for exploration.',
+        deDesc: 'rand/1/bin mutation. Converges fast on smooth landscapes.',
+        tpeDesc: 'Tree-structured Parzen Estimator. KDE models good/bad distributions.',
+        agsDesc: 'Gaussian jitter with sigma annealing. Lightweight alternative to TPE.',
+        aiDesc: 'LLM multi-round proposal. Learns from previous results over 3 rounds.'
+      }
     },
     ai: {
-      checkSettings: '检查AI设置',
-      refreshFailed: '刷新失败',
-      settings: 'AI设置'
+      checkSettings: 'Check AI Settings',
+      refreshFailed: 'Refresh failed',
+      settings: 'AI Settings'
     },
     backtest: {
-      annualReturn: 'Lợi Nhuận Hàng Năm',
-      equityCurve: '权益曲线',
-      maxDrawdown: 'Sụt Giảm Tối Đa',
+      annualReturn: 'Annual Return',
+      equityCurve: 'Equity Curve',
+      maxDrawdown: 'Max Drawdown',
       sharpe: 'Sharpe',
-      totalReturn: 'Tổng Lợi Nhuận',
-      totalTrades: 'Tổng Giao Dịch',
-      winRate: 'Tỷ Lệ Thắng',
-      tradeLog: '交易日志',
-      tradeTime: '时间',
-      tradeSide: '方向',
-      tradePrice: '价格',
-      tradeVolume: '数量'
+      totalReturn: 'Total Return',
+      totalTrades: 'Total Trades',
+      winRate: 'Win Rate',
+      tradeLog: 'Trade Log',
+      tradeTime: 'Thời gian',
+      tradeSide: 'Hướng',
+      tradePrice: 'Price',
+      tradeVolume: 'Volume'
     },
     chartTools: {
-      clearDrawings: '清除所有绘图',
-      hide: 'Ẩn',
-      show: 'Hiện',
-      settings: 'Cài Đặt',
-      remove: 'Xóa'
+      clearDrawings: 'Clear All Drawings',
+      hide: 'Hide',
+      show: 'Show',
+      settings: 'Settings',
+      remove: 'Remove'
     },
     quickTradeSection: {
-      amountLots: '数量(手)',
-      marginMode: '保证金模式',
-      cross: '跨式',
-      isolated: '逐仓',
-      mt4CrossOnly: 'MT4 仅支持跨式保证金',
-      selectSymbol: '请选择交易品种',
-      validVolume: '交易量需 ≥ 0.01 手',
-      priceRequired: '请输入价格',
-      orderPlaced: 'Đã đặt lệnh',
+      amountLots: 'Amount (Lots)',
+      marginMode: 'Margin Mode',
+      cross: 'Cross',
+      isolated: 'Isolated',
+      mt4CrossOnly: 'MT4 only supports Cross margin',
+      selectSymbol: 'Please select a symbol',
+      validVolume: 'Volume must be ≥ 0.01 lots',
+      priceRequired: 'Price is required',
+      orderPlaced: 'Order placed successfully',
       orderFailed: 'Đặt lệnh thất bại'
     },
     library: {
-    share: 'Chia Sẻ',
-    shared: 'Đã Chia Sẻ',
-      title: 'Thư viện chiến lược',
-      myStrategies: 'Chiến lược của tôi',
-      create: 'Tạo mới',
-      filterAll: 'Tất cả',
-      filterMine: 'Của tôi',
-      filterSystem: 'Có sẵn',
-      searchPlaceholder: 'Tìm kiếm chiến lược...',
-      empty: 'Chưa có chiến lược',
+      title: 'Strategy Library',
+      myStrategies: 'My Strategies',
+      create: 'Tạo lịch',
+      filterAll: 'All',
+      filterMine: 'My',
+      filterSystem: 'Mặc định',
+      searchPlaceholder: 'Search strategies...',
+      empty: 'No strategies found',
+      system: 'System',
+      shared: 'Shared',
+      private: 'Riêng tư',
+      share: 'Share',
       published: 'Đã xuất bản',
-      draft: 'Bản nháp',
-      unpublish: 'Gỡ xuống',
-      unpublishShort: 'Gỡ',
-      publish: 'Xuất bản lên Market',
+      draft: 'Nháp',
+      unpublish: 'Unpublish',
+      unpublishShort: 'Off',
+      publish: 'Publish to Market',
       publishSuccess: 'Đã xuất bản',
-      unpublishSuccess: 'Đã gỡ xuống',
-      publishStatus: 'Trạng thái',
-      selectHint: 'Chọn chiến lược từ danh sách để xem chi tiết',
-      overview: 'Tổng quan',
-      schedules: 'Chạy',
-      backtestHistory: 'Lịch sử backtest',
-      scheduleCount: '{{count}} đang chạy',
-      scheduleRunningCount: '{{count}} đang chạy',
-      noSchedules: 'Chưa chạy',
-      openInWorkspace: 'Mở trong Workspace',
-      createSchedule: 'Tạo lịch chạy',
-      saveAsMine: 'Lưu thành của tôi',
-      saveAsMineSuccess: 'Đã lưu vào Chiến lược của tôi',
-      myCopy: 'Bản sao của tôi',
-      codePreview: 'Xem trước code',
-      viewCode: 'Xem code chiến lược',
+      unpublishSuccess: 'Unpublished',
+      publishStatus: 'Marketplace Status',
+      selectHint: 'Select a strategy from the list to view details',
+      overview: 'Overview',
+      schedules: 'Run',
+      backtestHistory: 'Backtest History',
+      scheduleCount: '{{count}} running',
+      scheduleRunningCount: '{{count}} running',
+      noSchedules: 'Not running',
+      openInWorkspace: 'Open in Workspace',
+      createSchedule: 'Create Run',
+      saveAsMine: 'Save as Mine',
+      saveAsMineSuccess: 'Saved to My Strategies',
+      myCopy: 'My Copy',
+      codePreview: 'Code Preview',
+      viewCode: 'View Strategy Code',
     }
   },
   indicatorCatalog: {
@@ -1241,4 +1216,3 @@ def run(context):
 } as const;
 
 export default strategy;
-

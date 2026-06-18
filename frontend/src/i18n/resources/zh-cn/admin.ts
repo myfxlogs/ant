@@ -46,7 +46,7 @@ const admin = {
         status: '状态',
         public: '公开',
         yes: '是',
-        no: '否',
+        no: 'No',
         flag: '标记',
         schedules: '调度数',
         preset: '预设',

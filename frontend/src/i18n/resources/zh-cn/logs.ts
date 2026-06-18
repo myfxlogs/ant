@@ -1,17 +1,10 @@
 const logs = {
   logs: {
-    connectionLogs: '连接日志',
-    executionLogs: '执行日志',
-    orderHistory: '订单历史',
-    operationLogs: '操作日志',
-    dateRange: '日期范围',
-    status: '状态',
-    symbol: '品种',
-    accountId: '账户ID',
-    search: '搜索',
-    reset: '重置',
+    success: '成功',
+    failed: '失败',
     time: '时间',
     eventType: '事件类型',
+    status: '状态',
     server: '服务器',
     loginId: '登录ID',
     message: '消息',
@@ -28,9 +21,19 @@ const logs = {
     action: '操作',
     details: '详情',
     ip: 'IP',
-    success: '成功',
-    failed: '失败',
+
+    connectionLogs: '连接日志',
+    executionLogs: '执行日志',
+    orderHistory: '订单历史',
+    operationLogs: '操作日志',
+
+    dateRange: '日期范围',
+    symbol: '品种',
     exampleSymbolPlaceholder: '如: XAUUSD',
+    accountId: '账户ID',
+
+    search: '搜索',
+    reset: '重置',
     result: '结果',
     riskCode: '风险码',
     requestId: '请求ID',
@@ -42,9 +45,9 @@ const logs = {
       type: '类型',
       lots: '手数',
       open: '开仓价',
-      close: '平仓价'
-    }
-  }
+      close: '平仓价',
+    },
+  },
 } as const;
 
 export default logs;

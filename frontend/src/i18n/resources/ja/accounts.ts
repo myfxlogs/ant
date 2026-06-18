@@ -6,19 +6,19 @@ const accounts = {
     bind: {
       title: 'MT 口座を連携',
       errorModal: {
-        title: '連携に失敗しました'
+        title: 'Binding failed'
       },
       step1: {
         title: 'プラットフォームとブローカーを選択',
-        subtitle: '取引プラットフォームを選び、ブローカー名で検索します'
+        subtitle: 'Select your trading platform and search for your broker'
       },
       step2: {
         title: '口座情報を入力',
-        subtitle: '取引口座とパスワードを入力してください'
+        subtitle: 'Enter your trading account and password'
       },
       step3: {
         title: '連携内容を確認',
-        subtitle: '以下の内容を確認してください'
+        subtitle: 'Verify credentials and confirm to complete'
       },
       fields: {
         platform: 'プラットフォーム',
@@ -33,16 +33,16 @@ const accounts = {
         company: '会社を選択',
         server: 'サーバーを選択',
         tradingAccount: '取引口座を入力',
-        password: 'パスワードを入力'
+        password: 'Enter password'
       },
       labels: {
-        serverCount: '{{count}} サーバー'
+        serverCount: '{{count}} servers'
       },
       actions: {
         search: '検索',
-        confirmBind: '連携を確定',
         verifyAccount: 'アカウントを確認',
-        retryVerify: '再試行'
+        confirmBind: '連携を確定',
+        retryVerify: 'Retry'
       },
       passwordHint: 'パスワードは HTTPS で送信され、バックエンドで Argon2id ハッシュとして保存されます（復元不可）。',
       summary: {
@@ -55,9 +55,9 @@ const accounts = {
         balance: '残高',
         equity: '純資産',
         margin: '証拠金',
-        freeMargin: '有効証拠金',
+        freeMargin: '余剰証拠金',
         leverage: 'レバレッジ',
-        currency: '通貨'
+        currency: 'Currency'
       },
       messages: {
         enterBrokerName: 'ブローカー名を入力してください',
@@ -68,21 +68,21 @@ const accounts = {
         enterTradingAccount: '取引口座を入力してください',
         enterPassword: 'パスワードを入力してください',
         noAccessHosts: '利用可能なアクセスホストがありません',
+        verifyFailed: 'アカウント確認に失敗しました',
         bindSuccess: '口座を連携しました',
         bindFailed: '口座の連携に失敗しました',
-        loginDigitsOnly: '取引口座は数字のみ入力可能です',
-        verifyFailed: 'アカウント確認に失敗しました'
+        loginDigitsOnly: 'Trading account must contain only digits'
       },
       errors: {
         brokerUnavailable: 'サーバーエラーまたはパスワードが正しくありません',
         invalidCredentials: '口座が見つからないか、パスワードが無効です',
         connectionFailed: 'ブローカーサーバーに接続できません。ネットワークを確認してください',
-        timeout: '接続がタイムアウトしました。再試行してください'
+        timeout: 'Connection timed out, please try again later'
       }
     },
     empty: {
       title: '連携済み口座がありません',
-      subtitle: '下のボタンから MT4/MT5 口座を連携してください'
+      subtitle: 'Click the button below to bind your MT4/MT5 trading account'
     },
     legend: {
       title: '凡例:',
@@ -105,28 +105,28 @@ const accounts = {
       disableFailed: '口座の無効化に失敗しました',
       deleted: '口座を削除しました',
       deleteFailed: '削除に失敗しました',
-      enableFailed: '启用账户失败'
+      enableFailed: 'Failed to enable account'
     },
     analytics: {
       monthlyAnalysis: {
         title: '月次分析',
+        chartMainTitle: '月次リターン（{{metric}}）',
         metrics: {
           change: '変化',
-          profit: '利益',
+          profit: '損益',
           lots: 'ロット',
-          pips: 'pips'
+          pips: 'Pips'
         },
-        chartMainTitle: '月次リターン（{{metric}}）',
         focusedValue: '{{period}} · {{metric}}: {{value}}',
         bonus: {
           chartRiskTitle: 'Bonus: {{month}}のシンボル別プロフィットファクター。',
-          chartPopularTitle: '{{month}}の通貨人気（ロット比率）。',
-          chartHoldingTitle: '{{month}}の平均保有時間（買い/売り合計秒の積み上げ）。',
+          chartPopularTitle: `{{month}}'s currency popularity.`,
+          chartHoldingTitle: `{{month}}'s average holding time.`,
           legendBulls: '買い',
           legendShortTerm: '売り',
           sliceOther: 'その他',
           emptyCharts: 'この月の取引なし',
-          popularityShare: 'ロット比率'
+          popularityShare: 'Lot volume share'
         }
       },
       monthlyDetail: {
@@ -135,8 +135,8 @@ const accounts = {
         holdingTitle: '保有時間',
         riskRewardTitle: '報酬:リスク比率',
         popularityTitle: '通貨人気度',
-        long: 'ロング',
-        short: 'ショート',
+        long: '買い',
+        short: '売り',
         fields: {
           netReturn: '純利益',
           totalTrades: '取引数',
@@ -160,26 +160,41 @@ const accounts = {
         week: '今週',
         month: '今月',
         year: '今年',
-        all: '全期間'
+        all: 'All'
       },
       chartSeries: {
         equity: '純資産',
         balance: '残高',
         profit: '損益',
-        tradeCount: '取引回数'
+        tradeCount: '取引数'
       },
       empty: {
         equityCurve: 'エクイティカーブのデータがありません',
         monthlyProfit: '月次損益データがありません',
         symbolDistribution: '銘柄分布データがありません',
         dailyPnL: '日次損益データがありません',
-        hourly: '時間帯分析データがありません'
+        hourly: 'No time-of-day analysis data'
       },
       monthlyProfitTitle: '月次損益',
       advancedStatsTitle: '詳細統計',
       symbolDistributionTitle: '銘柄分布',
       dailyPnLTitle: '日次損益',
       hourlyTitle: '時間帯分析',
+      advancedTabs: {
+        hourly: '時間足',
+        daily: 'Daily'
+      },
+      timeDetail: {
+        lots: 'ロット',
+        trades: '取引数',
+        profitAmount: '損益額',
+        balance: '残高',
+        profitFactor: 'プロフィットファクター',
+        maxFloatingLossAmount: '最大含み損額',
+        maxFloatingLossRatio: '最大含み損比率',
+        maxFloatingProfitAmount: '最大含み益額',
+        maxFloatingProfitRatio: 'Max floating profit ratio'
+      },
       stats: {
         winRate: '勝率',
         profitFactor: 'プロフィットファクター',
@@ -199,22 +214,7 @@ const accounts = {
         netProfit: '純利益',
         totalDeposit: '総入金',
         totalWithdrawal: '総出金',
-        netDeposit: '純入金'
-      },
-      advancedTabs: {
-        hourly: '時間足',
-        daily: '日足'
-      },
-      timeDetail: {
-        lots: 'ロット',
-        trades: '取引数',
-        profitAmount: '損益額',
-        balance: '残高',
-        profitFactor: 'プロフィットファクター',
-        maxFloatingLossAmount: '最大含み損額',
-        maxFloatingLossRatio: '最大含み損比率',
-        maxFloatingProfitAmount: '最大含み益額',
-        maxFloatingProfitRatio: '最大含み益比率'
+        netDeposit: 'Net deposit'
       }
     },
     card: {
@@ -223,7 +223,7 @@ const accounts = {
         connected: '接続済み',
         connecting: '接続中',
         disconnected: '切断',
-        error: 'エラー'
+        error: 'Error'
       },
       fields: {
         balance: '残高',
@@ -234,11 +234,11 @@ const accounts = {
       actions: {
         positions: '保有ポジション',
         orders: '注文',
-        details: '詳細'
+        details: 'Details'
       },
       deleteConfirm: {
         title: 'この口座を削除しますか？',
-        content: 'この操作は元に戻せません。'
+        content: 'This action cannot be undone'
       }
     },
     disabled: {
@@ -249,15 +249,15 @@ const accounts = {
         broker: 'ブローカー',
         balance: '残高',
         equity: '純資産',
-        actions: '操作'
+        actions: 'Actions'
       },
       confirmDelete: {
         title: 'この口座を削除しますか？',
-        content: 'この操作は元に戻せません。'
+        content: 'This action cannot be undone'
       },
       mobile: {
         balanceLabel: '残高: ',
-        equityLabel: '純資産: '
+        equityLabel: 'Equity: '
       }
     },
     tradeTabs: {
@@ -280,10 +280,10 @@ const accounts = {
         profit: '損益',
         openTime: '建玉時間',
         pendingTime: '注文時間',
-        closeTime: '決済時間'
+        closeTime: 'Close time'
       },
       pagination: {
-        total: '合計 {{total}} 件'
+        total: '{{total}} total'
       }
     },
     edit: {
@@ -292,66 +292,66 @@ const accounts = {
         tradingAccount: '取引口座',
         server: 'サーバー',
         password: '新しいパスワード',
-        oldPassword: '現在のパスワード'
+        oldPassword: 'Current password'
       },
       placeholders: {
         newPassword: '新しいパスワードを入力',
-        oldPassword: '現在のパスワードを入力'
+        oldPassword: 'Enter current password'
       },
       messages: {
         enterPassword: '新しいパスワードを入力してください',
         enterOldPassword: '現在のパスワードを入力してください',
         passwordVerifyFailed: 'パスワード変更に失敗しました',
-        passwordSaved: 'パスワードを保存しました'
+        passwordSaved: 'Password saved'
       }
     },
     detail: {
       messages: {
         fetchAccountFailed: '口座情報の取得に失敗しました。しばらくしてから再試行してください。',
         syncHistorySuccess: '注文履歴の同期に成功しました',
-        syncHistoryFailed: '注文履歴の同期に失敗しました。口座が MT サーバーに接続されていることを確認してください。'
+        syncHistoryFailed: 'Failed to sync order history. Please ensure the account is connected to the MT server.'
       },
       orderTypes: {
         buyLimit: '買い指値',
         sellLimit: '売り指値',
         buyStop: '買い逆指値',
-        sellStop: '売り逆指値'
+        sellStop: 'Sell stop'
       },
       balanceRecord: {
-        deposit: '入金',
-        withdraw: '出金',
+        deposit: '💰 入金',
+        withdraw: '💸 出金',
         depositIconText: '💰 入金',
         withdrawIconText: '💸 出金'
       },
       syncHistory: {
         title: '注文履歴を同期',
         content: '過去1年分の注文履歴を MT サーバーから同期しますか？時間がかかる場合があります。',
-        ok: '同期する'
+        ok: 'Sync'
       },
       actions: {
         enableAccount: '口座を有効化',
         disableAccount: '口座を無効化',
-        syncHistory: '履歴を同期',
         deleteAccount: 'アカウント削除',
         deleteConfirm: '確認して削除',
         deleteWarning: 'この操作は元に戻せません。取引記録、分析データなど、すべてのアカウントデータが完全に削除されます。',
         deletePasswordHint: '確認のため、MT取引パスワードまたは読み取り専用パスワードを入力してください：',
-        deletePasswordPlaceholder: 'MT取引/読み取り専用パスワード'
+        deletePasswordPlaceholder: 'MT取引/読み取り専用パスワード',
+        syncHistory: 'Sync history'
       },
       status: {
         disabled: '無効',
         connected: '接続済み',
         connecting: '接続中',
         disconnected: '切断',
-        error: 'エラー'
+        error: 'Error'
       },
       accountType: {
         real: 'リアル',
-        demo: 'デモ'
+        demo: 'Demo'
       },
       mode: {
         investor: '投資家モード',
-        trader: 'トレーダーモード'
+        trader: 'Trader mode'
       },
       connected: '接続済み',
         lastConnected: '{{time}}',
@@ -363,7 +363,7 @@ const accounts = {
         marginUsed: '使用証拠金',
         marginFree: '余剰証拠金',
         marginLevel: '証拠金維持率',
-        credit: 'クレジット'
+        credit: 'Credit'
       }
     },
     report: {

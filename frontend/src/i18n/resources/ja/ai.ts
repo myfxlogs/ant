@@ -17,169 +17,64 @@ const aiCore = {
         gatewayTimeoutOrUnreachable: 'ゲートウェイ接続タイムアウト/到達不可。',
         gatewayUnauthorized401: 'ゲートウェイ未認証（401）。',
         gatewayForbidden403: 'ゲートウェイアクセス拒否（403）。',
-        gatewayRateLimited429: 'ゲートウェイレート制限（429）。'
+        gatewayRateLimited429: 'Gateway rate limited (429).'
       }
-    },
-    chatBox: {
-      emptyDescription: 'AI アシスタントと会話を開始',
-      thinking: '考え中...',
-      truncated: '内容が長すぎるため切り詰めました',
-      expandAll: 'すべて展開',
-      collapse: '折りたたむ'
-    },
-    systemAI: {
-      taglines: {
-        openai: 'GPT シリーズ · 公式',
-        anthropic: 'Claude シリーズ',
-        deepseek: 'DeepSeek · 高コストパフォーマンス',
-        moonshot: 'Kimi · 長文コンテキスト',
-        qwen: 'Alibaba Cloud · 中国語最適化',
-        zhipu: '清華系 · 汎用',
-        openai_compatible: '任意の互換エンドポイント'
-      },
-      pageTitle: 'AI アシスタント設定',
-      pageSubtitle: 'AI の中枢を設定します — モデルプロバイダー、API キー、利用可能モデルを管理し、サイト全体の既定主モデルを指定します。',
-      emptyConfigs: 'AI プロバイダー 設定がありません（システム起動時に既定 プロバイダー が自動作成されます）',
-      section1: {
-        title: 'モデルプロバイダーを選択',
-        subtitle: '各プロバイダーの設定と準備状態をカードで表示します。クリックして選択してください'
-      },
-      statusBar: {
-        enabled: '有効',
-        disabled: '無効',
-        keyReady: 'キー準備完了',
-        checking: '接続確認中…',
-        connected: '接続正常'
-      },
-      status: {
-        noprovider: 'プロバイダー未選択',
-        noProviderDesc: '下のカードからモデルプロバイダーを選んで設定を開始してください',
-        error: '異常があります',
-        ready: '利用準備完了',
-        readyDesc: '有効化済みで接続正常です',
-        notEnabled: '接続正常、まだ無効です',
-        notEnabledDesc: '「有効」スイッチをオンにすると使用できます',
-        configReady: '設定準備完了',
-        configReadyDesc: '利用可能モデルを追加すると接続確認が自動実行されます',
-        checkUrl: '基底 URL を確認してください',
-        checkUrlDesc: 'API キーは準備済みですが、アドレスが無効の可能性があります',
-        needKey: 'キー設定を完了してください',
-        needKeyDesc: 'API キーを入力するとモデル一覧を自動検出します',
-        connectionFailed: '接続異常です。上の提示を確認してください',
-        noProvider: 'プロバイダーが未選択です'
-      },
-      cardState: {
-        noKey: '未設定',
-        noModel: 'モデル選択待ち',
-        enabled: '有効',
-        readyDisabled: '準備完了 · 無効'
-      },
-      cardTags: {
-        current: '現在',
-        hasKey: 'キー設定済み',
-        noKey: 'キー未設定',
-        noModels: '利用可能モデル未設定',
-        enabledButUnavailable: '有効だが利用不可'
-      },
-      fields: {
-        autoFetching: '自動取得中',
-        baseUrlCustomHint: 'OpenAI 互換エンドポイントを入力してください。例：https://model.example.com/v1',
-        baseUrlReadonlyHint: '公式アドレスはシステム管理のため変更できません',
-        baseUrlCustomPlaceholder: '例：https://model.example.com/v1',
-        baseUrlReadonlyPlaceholder: '公式アドレス（読み取り専用）',
-        httpWarning: '現在 HTTP です。本番環境では HTTPS を推奨します',
-        apiKeyHint: '入力後は自動で暗号化保存されます。手動送信は不要です',
-        apiKeyPastePlaceholder: 'API キーを貼り付けると自動で仮保存されます',
-        enabledHint: '無効にするとこのプロバイダーはシステムルーティングに参加しません',
-        temperatureHint: '高いほど発散的、低いほど安定します',
-        timeoutHint: '1 回のリクエストの最大待機時間',
-        maxTokensHint: '1 回の応答の最大トークン数',
-        primaryFor: '主な用途',
-        primaryForHint: 'サービス内部ルーティング専用：チャット / 埋め込み / 要約 / 推論'
-      },
-      messages: {
-        loadConfigFailed: '設定の読み込みに失敗しました',
-        secretSavedAutoDiscover: 'シークレットを保存しました。モデルを自動検出中...',
-        secretAutoSaveFailed: 'シークレットの自動保存に失敗しました',
-        autoDiscoveredModels: '{{count}}個のモデルを自動検出しました（参考用）',
-        autoValidatedModels: '自動検証完了：{{count}}個のモデルが見つかりました',
-        configSaved: '設定を保存しました',
-        configSaveFailed: '設定の保存に失敗しました',
-        toggleEnabledFailed: '有効状態の切り替えに失敗しました',
-        secretDeletedConfigReset: 'シークレットを削除しました。プロバイダー設定をデフォルトにリセットしました',
-        deleteSecretFailed: 'シークレットの削除に失敗しました',
-        validationPassedModels: '検証完了：{{count}}個のモデルが見つかりました',
-        validationFailedNeedApiKey: '検証に失敗しました：このプロバイダーは通常APIキーが必要です。キーを入力して保存した後、再試行してください。'
-      },
-      customProvider: {
-        deleted: '自定义提供商已删除',
-        fillNameFirst: '请先填写名称',
-        nameHint: '用于识别此提供商的唯一名称',
-        nameLabel: '提供商名称',
-        namePlaceholder: '我的自定义提供商',
-        nameRequired: '提供商名称不能为空'
-      }
-    },
-    tabs: {
-      settings: '設定',
-      agentSettings: 'エージェント設定',
-      gate: 'AIゲート'
     },
     agentPrompts: {
       style: {
         title: '相場環境・スタイル推奨',
-        prompt: `あなたはシニア定量ストラテジーアナリストです。以下の情報に基づき、トレンド/平均回帰/短期売買の戦略パラダイムを推奨し、その理由、適用条件、不適用シナリオを説明してください。
+        prompt: `You are a senior quantitative strategy analyst. Based on the following information, recommend a strategy paradigm: trend / mean reversion / short-term, and explain the reasoning, applicable conditions and inapplicable scenarios.
 
-出力要件：Markdownを使用し、以下を含めてください：
-1) 推論プロセス：データ/制約/目標からどのように導き出したか（箇条書き）
-2) 結論：主推奨（1つの主要パラダイムのみ）+ 代替案 + 適用/不適用条件
-3) リスクアラート：最低3つ
+Output requirements: use Markdown, must include:
+1) Reasoning process: how you derive from data/constraints/objectives (bullet points)
+2) Conclusion: main recommendation (only one primary paradigm) + alternative + applicable/inapplicable conditions
+3) Risk alerts: at least 3
 
 {{baseInfo}}`
       },
       signals: {
         title: 'シグナルとインジケーター設計',
-        prompt: `あなたは定量ファクター・シグナルエンジニアです。外部データに依存せず（ユーザーがマクロイベントテーブルを提供する場合を除く）、実用的な取引シグナルを設計してください。
+        prompt: `You are a quantitative factor and signal engineer. Without relying on external data (unless the user provides macro event tables), design actionable trading signals.
 
-要件：エントリー/エグジット/フィルター条件を明確に定義し、可能な限りパラメーター化し、オーバーフィッティングを避けてください。
+Requirements: clearly define entry/exit/filter conditions, preferably parameterized, avoid overfitting.
 
-出力要件：Markdownを使用し、以下を含めてください：
-1) 推論プロセス：なぜこれらのインジケーター/しきい値/フィルター条件を選択したか（箇条書き）
-2) 結論：実行可能なルール一覧（エントリー/エグジット/フィルター）、パラメーター提案（デフォルト/範囲）
-3) 限界とリスク：最低3つ（例：レンジ相場/ギャップ/高ボラティリティ/ニュースイベント）
+Output requirements: use Markdown, must include:
+1) Reasoning process: why choose these indicators/thresholds/filter conditions (bullet points)
+2) Conclusion: executable rule list (entry/exit/filter), with parameter suggestions (default/range)
+3) Boundaries and risks: at least 3 (e.g.: range-bound/gap/high volatility/news events)
 
 {{baseInfo}}`
       },
       risk: {
         title: 'リスク管理と執行制約',
-        prompt: `あなたは取引リスクと執行の専門家です。以下の情報に基づき、ポジション管理、ストップロス/テイクプロフィット、最大ドローダウン管理、クールダウン期間/取引頻度制限などを設計してください。
+        prompt: `You are a trading risk and execution expert. Based on the following information, design position management, stop-loss/take-profit, max drawdown control, cooldown period/trade frequency limits, etc.
 
-出力要件：Markdownを使用し、以下を含めてください：
-1) 推論プロセス：なぜこれらの制御が目標/制約に適合するか（箇条書き）
-2) 結論：ハード制約 + デフォルトパラメーター（推奨値/範囲）+ トリガー後のアクション
-3) 障害モード：最低3つ（例：連続損失、スリッページ拡大、スプレッド異常）
+Output requirements: use Markdown, must include:
+1) Reasoning process: why these controls match objectives/constraints (bullet points)
+2) Conclusion: hard constraints + default parameters (suggested/range) + actions after trigger
+3) Failure modes: at least 3 (e.g.: consecutive losses, slippage widening, spread anomalies)
 
 {{baseInfo}}`
       },
       code: {
         title: 'コード生成エージェント',
-        prompt: `あなたはAntTraderのPythonストラテジーコードエンジニアです。以下の条件を満たす実行可能なAntTrader Pythonストラテジーコードを生成してください：
-- バリデーションチェックに合格（import不可、dunder不可、サンドボックス制約）
-- on_tick/on_klineなどのプラットフォームAPIを使用（カスタムネットワーク/ファイルアクセス不可）
-- run()は引数を1つだけ受け取る：context（名前はcontextでなければなりません。run(ctx)、run(context, data)などは不可）
-- run(context)は以下を含むdictを返す：signal(buy/sell/hold)、symbol、confidence(0~1)、risk_level(low/medium/high)、reason
-- context["params"]からパラメーターを読み取り（スケジュール注入から）、欠落している場合はデフォルト値を使用
-- 上流のシグナル設計とリスク制御を使用（提供されない場合は適切なデフォルト値を設定）
-- 完全なコードを \`\`\`python でラップして出力
-- 厳密な出力：\`\`\`python ブロック1つのみ、説明文なし
-- コードブロックは純粋なPython：Markdown記号不可、中国語の句読点不可、ネストされたコードフェンス不可
+        prompt: `You are an AntTrader Python strategy code engineer. Generate runnable AntTrader Python strategy code that:
+- Passes validate checks (no import, no dunder, sandbox constraints)
+- Uses platform APIs like on_tick / on_kline (no custom network/file access)
+- run() must receive exactly one parameter: context (must be named context; no run(ctx), run(context, data), etc.)
+- run(context) returns a dict with at least: signal(buy/sell/hold), symbol, confidence(0~1), risk_level(low/medium/high), reason
+- Read parameters from context["params"] (from schedule injection); use defaults if missing
+- Use upstream signal design and risk controls (provide reasonable defaults if not provided)
+- Output full code wrapped in \`\`\`python
+- Strict output: only one \`\`\`python block\`\`\`, no explanation text
+- Code block must be pure Python: no Markdown symbols, no Chinese punctuation, no nested code fences
 
-[必須テンプレート（関数名/パラメーター数/パラメーター名は変更不可）]
+[Mandatory entry template (do not change function name/param count/param name)]
 \`\`\`python
 def run(context):
     params = context.get("params") or {}
     symbol = context.get("symbol") or params.get("symbol") or ""
-    # TODO: シグナル/リスクロジックをここに実装
+    # TODO: implement signal/risk logic here
     return {
         "signal": "hold",
         "symbol": symbol,
@@ -191,24 +86,24 @@ def run(context):
 
 {{baseInfo}}
 
-[注記：上流分析の結論 – コードに適用（欠落している場合は適切なデフォルト値を設定）]`
+[Note: upstream analysis conclusions – apply to code (provide reasonable defaults if missing)]`
       }
     },
     consensus: {
       title: 'コンセンサスと議論',
       actions: {
-        refresh: '更新'
+        refresh: 'Refresh'
       },
       fields: {
         account: '口座',
         symbol: '銘柄',
-        timeframe: '時間足'
+        timeframe: 'Timeframe'
       },
       panel: {
         title: '目標スコア',
         decision: '判定',
         overallScore: '総合',
-        technicalScore: 'テクニカル'
+        technicalScore: 'Technical'
       },
       signals: {
         rsi: {
@@ -220,20 +115,27 @@ def run(context):
           signalLine: 'シグナル線',
           hist: 'ヒストグラム',
           flag: 'シグナル',
-          trend: 'パターン'
+          trend: 'Pattern'
         },
         ma: {
-          trend: 'MAトレンド'
+          trend: 'MA Trend'
         }
       }
     },
     conversation: {
-      defaultTitle: '新しい会話'
+      defaultTitle: 'New Conversation'
+    },
+    chatBox: {
+      emptyDescription: 'Start a conversation with the AI assistant',
+      thinking: 'Thinking...',
+      truncated: 'Content too long, truncated',
+      expandAll: 'Expand all',
+      collapse: 'Collapse'
     },
     reports: {
       tradeAnalysis: {
         title: 'AI取引分析レポート',
-        riskAssessmentPrefix: 'リスク評価：'
+        riskAssessmentPrefix: 'Risk Assessment:'
       }
     },
     signalCard: {
@@ -241,7 +143,7 @@ def run(context):
         pending: '保留中',
         confirmed: '確認済み',
         executed: '執行済み',
-        cancelled: 'キャンセル済み'
+        cancelled: 'Cancelled'
       },
       labels: {
         price: '価格',
@@ -249,79 +151,79 @@ def run(context):
         confidence: '確信度',
         stopLoss: 'ストップロス',
         takeProfit: 'テイクプロフィット',
-        analysisReason: '分析理由'
+        analysisReason: 'Analysis Reason'
       },
       actions: {
         confirm: '確認',
         cancel: 'キャンセル',
-        executeTrade: '取引を執行'
+        executeTrade: 'Execute Trade'
       },
       confirmCancel: {
-        title: 'このシグナルをキャンセルしてもよろしいですか？'
+        title: 'Are you sure you want to cancel this signal?'
       },
       confirmExecute: {
         title: 'この取引シグナルを執行してもよろしいですか？',
-        description: 'すぐに注文を発注します'
+        description: 'Will place the order immediately'
       }
     },
     assistant: {
       messages: {
-        noCodeBlockFound: 'コードブロックが見つかりませんでした（\`\`\`...\`\`\`）'
+        noCodeBlockFound: 'No code block found (\`\`\`...\`\`\`)'
       }
     },
     strategyCard: {
       status: {
         active: '稼働中',
         inactive: '停止中',
-        paused: '一時停止中'
+        paused: 'Paused'
       },
       actionType: {
         buy: '買い',
         sell: '売り',
         closeLong: '買い決済',
         closeShort: '売り決済',
-        alert: 'アラート'
+        alert: 'Alert'
       },
       labels: {
         triggeredCount: '{{count}}回トリガー',
-        lastTriggeredAt: '最終トリガー：{{time}}'
+        lastTriggeredAt: 'Last triggered: {{time}}'
       },
       sections: {
         conditions: 'トリガー条件',
-        actions: 'アクション'
+        actions: 'Actions'
       },
       tooltips: {
         createdAt: '作成日時',
-        lastTriggeredAt: '最終トリガー日時'
+        lastTriggeredAt: 'Last triggered'
       },
       actions: {
         start: '開始',
-        stop: '停止'
+        stop: 'Stop'
       },
       confirmDelete: {
         title: 'このストラテジーを削除してもよろしいですか？',
-        description: '削除後は復元できません'
+        description: 'Cannot be recovered after deletion'
       }
     },
     requireConfig: {
       title: 'LLMがまだ設定されていません',
       description: '先に設定画面でAIプロバイダー、モデル、APIキーを設定してください。その後、ストラテジーウィザードまたはチャットをご利用いただけます。',
       actions: {
-        goSettings: '設定へ'
+        goSettings: 'Go to Settings'
       }
     },
     riskEval: {
-      failed: 'リスク評価に失敗しました'
+      failed: 'Risk evaluation failed'
     },
     workflowRuns: {
       title: 'AIワークフロー',
       defaultTitle: 'AIワークフロー',
       hints: {
-        selectToViewDetail: '左側から実行を選択して詳細を表示'
+        selectToViewDetail: 'Select a run from the left to view details'
       },
       messages: {
         loadListFailed: '実行一覧の読み込みに失敗しました',
-        loadDetailFailed: '詳細の読み込みに失敗しました'
+        loadDetailFailed: 'Failed to load details'
       }
     },
     backtestScoreCard: {
@@ -333,13 +235,13 @@ def run(context):
         pending: 'キュー待ち',
         failed: '失敗',
         cancelRequested: 'キャンセル中',
-        canceled: 'キャンセル済み'
+        canceled: 'Cancelled'
       },
       recommendation: {
         loading: 'リスク評価中です。完了するまでお待ちください。',
         recommended: '本番推奨：リスク管理可能、指標良好。',
         cautious: '本番注意：まずは少額または手動確認でしばらく運用してください。',
-        notRecommended: '直接の本番運用非推奨：高リスクまたは信頼性に欠けます。最適化後に再試行してください。'
+        notRecommended: 'Not recommended for direct live: high risk or unreliable, optimize before trying.'
       },
       backendRiskScore: {
         title: 'ストラテジーリスクスコア',
@@ -349,17 +251,17 @@ def run(context):
         unreliable: '信頼できない',
         reasons: '理由',
         warnings: '警告',
-        empty: 'なし（先にテンプレートを保存してください。バックテスト完了後に自動計算されます）'
+        empty: 'None (save template first, will auto-calculate after backtest completes)'
       },
       score: {
         empty: 'スコア未評価（バックテスト待ちまたは指標なし）',
-        title: '総合スコア（ヒューリスティック）'
+        title: 'Overall Score (heuristic)'
       },
       level: {
         excellent: '優秀',
         good: '良好',
         fair: '普通',
-        poor: '劣る'
+        poor: 'Poor'
       },
       metrics: {
         totalReturn: '総収益率',
@@ -368,11 +270,108 @@ def run(context):
         sharpe: 'シャープレシオ',
         winRate: '勝率',
         totalTrades: '総取引数',
-        equityPoints: 'エクイティポイント'
+        equityPoints: 'Equity points'
       },
       chart: {
-        title: 'エクイティカーブ'
+        title: 'Equity Curve'
       }
+    },
+    systemAI: {
+      taglines: {
+        openai: 'GPT series · Official',
+        anthropic: 'Claude series',
+        deepseek: 'DeepSeek · High cost-performance',
+        moonshot: 'Kimi · Long context',
+        qwen: 'Alibaba Cloud · Chinese optimized',
+        zhipu: 'Tsinghua · General',
+        openai_compatible: 'Any compatible endpoint'
+      },
+      pageTitle: 'AI Assistant Settings',
+      pageSubtitle: 'Configure the AI brain – select providers, manage API keys and available models, and set the default primary model for the whole site.',
+      emptyConfigs: 'No AI Provider configured (system will auto-create default provider on startup)',
+      section1: {
+        title: 'Select Model Provider',
+        subtitle: `Cards show each provider's configuration and readiness; click to select`
+      },
+      statusBar: {
+        enabled: 'Enabled',
+        disabled: 'Disabled',
+        keyReady: 'Key ready',
+        checking: 'Checking connectivity…',
+        connected: 'Connected'
+      },
+      status: {
+        noProvider: 'No provider selected yet',
+        noProviderDesc: 'Pick a model provider from the cards below to start configuration',
+        error: 'Error exists',
+        ready: 'Ready',
+        readyDesc: 'Enabled and connected',
+        notEnabled: 'Connected, not enabled',
+        notEnabledDesc: 'Toggle "Enabled" to activate',
+        configReady: 'Config ready',
+        configReadyDesc: 'Add available models to auto-check connectivity',
+        checkUrl: 'Check Base URL',
+        checkUrlDesc: 'API Key ready, but address seems invalid',
+        needKey: 'Complete key configuration',
+        needKeyDesc: 'Fill API Key to auto-discover model list',
+        connectionFailed: 'Connection error, check prompts above'
+      },
+      cardState: {
+        noKey: 'Not configured',
+        noModel: 'Select model',
+        enabled: 'Enabled',
+        readyDisabled: 'Ready · Disabled'
+      },
+      cardTags: {
+        current: 'Current',
+        hasKey: 'Key configured',
+        noKey: 'No key',
+        noModels: 'No models configured',
+        enabledButUnavailable: 'Enabled but unavailable'
+      },
+      fields: {
+        autoFetching: 'Auto fetching',
+        baseUrlCustomHint: 'Enter OpenAI-compatible endpoint, e.g. https://model.example.com/v1',
+        baseUrlReadonlyHint: 'Official address maintained by system, read-only',
+        baseUrlCustomPlaceholder: 'e.g. https://model.example.com/v1',
+        baseUrlReadonlyPlaceholder: 'Official address (read-only)',
+        httpWarning: 'Currently HTTP, HTTPS recommended for production',
+        apiKeyHint: 'Will be auto-encrypted on save, no manual submission needed',
+        apiKeyPastePlaceholder: 'Paste API Key, will auto-pre-save',
+        enabledHint: 'Disabled providers will not be routed',
+        temperatureHint: 'Higher = more creative, lower = more stable',
+        timeoutHint: 'Max wait time per request',
+        maxTokensHint: 'Max tokens per response',
+        primaryFor: 'Primary For',
+        primaryForHint: 'For internal routing: chat / embedding / summarizer / reasoning'
+      },
+      messages: {
+        loadConfigFailed: 'Failed to load configs',
+        secretSavedAutoDiscover: 'Secret saved, auto-discovering models...',
+        secretAutoSaveFailed: 'Secret auto-save failed',
+        autoDiscoveredModels: 'Auto-discovered {{count}} model(s) (for suggestion only)',
+        autoValidatedModels: 'Auto-validated: {{count}} model(s) found',
+        configSaved: 'Config saved',
+        configSaveFailed: 'Config save failed',
+        toggleEnabledFailed: 'Toggle enabled status failed',
+        secretDeletedConfigReset: 'Secret deleted, provider config reset to defaults',
+        deleteSecretFailed: 'Delete secret failed',
+        validationPassedModels: 'Validation passed: {{count}} model(s) found',
+        validationFailedNeedApiKey: 'Validation failed: this provider typically requires an API Key. Please fill and save the key first, then retry.'
+      },
+      customProvider: {
+        deleted: 'Custom provider deleted',
+        fillNameFirst: 'Fill in name first',
+        nameHint: 'A unique name to identify this provider',
+        nameLabel: 'Provider Name',
+        namePlaceholder: 'My Custom Provider',
+        nameRequired: 'Provider name is required'
+      }
+    },
+    tabs: {
+      settings: 'Settings',
+      agentSettings: 'Agent Settings',
+      gate: 'AI Gate'
     },
     gate: {
       title: 'AIゲート進捗',
@@ -383,7 +382,7 @@ def run(context):
         walkforward: 'ウォークフォワード',
         deflated_sharpe: '収縮シャープレシオ',
         paper: 'ペーパートレーディング',
-        correlation: '相関'
+        correlation: 'Correlation'
       },
       descriptions: {
         compliance: 'DSL式の空チェック',
@@ -391,11 +390,17 @@ def run(context):
         walkforward: 'パージド・ウォークフォワード交差検証',
         deflated_sharpe: 'Lopez de Prado 収縮シャープレシオ',
         paper: '14日以上のペーパートレーディング検証',
-        correlation: '既存ストラテジーとのシグナル相関チェック'
+        correlation: 'Signal correlation check with existing strategies'
       },
       status: {
-        evaluating: '評価中...'
+        evaluating: '评估中...'
       },
+      skipped: 'SKIPPED',
+      noData: 'データがありません',
+      pass: 'PASS',
+      fail: 'FAIL',
+      unknown: '不明',
+      selectRun: 'バックテスト実行を選択...',
       strategyParams: 'ストラテジーパラメーター',
       dslExpression: 'DSL式',
       dailyReturns: '日次リターン（カンマまたは改行区切り）',
@@ -414,14 +419,8 @@ def run(context):
       allPassed: '全6ゲートを通過 — ストラテジーは本番昇格評価の対象です',
       failed: '不合格：{{gate}}',
       details: '詳細',
-      skipped: 'SKIPPED',
-      noData: 'データがありません',
-      pass: 'PASS',
-      fail: 'FAIL',
-      unknown: '不明',
-      selectRun: 'バックテスト実行を選択...',
       evaluating: '评估中...',
-      runHint: '先运行回测，然后点击"运行Gate"评估策略质量。'
+      runHint: 'Run a backtest first, then click "Run Gate" to evaluate strategy quality.'
     },
     gateway: {
       title: 'AI ゲートウェイ',

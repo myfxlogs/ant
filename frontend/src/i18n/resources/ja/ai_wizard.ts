@@ -5,27 +5,27 @@ const aiWizard = {
       subtitle: '1ページ1ステップ',
       currentModel: '現在のモデル: {{model}}',
       rangePresets: {
-        '1d': '最近 1 日',
-        '3d': '最近 3 日',
-        '7d': '最近 1 週',
-        '30d': '最近 1 月',
-        '90d': '最近 3 月'
+        '1d': 'Last 1 day',
+        '3d': 'Last 3 days',
+        '7d': 'Last 1 week',
+        '30d': 'Last 1 month',
+        '90d': 'Last 3 months',
       },
       steps: {
         setup: '基本情報',
         generate: '戦略生成',
         publishCode: 'バックテスト・公開-コード',
         publishBacktest: 'バックテスト・公開-バックテスト',
-        publishLaunch: 'バックテスト・公開-公開'
+        publishLaunch: 'バックテスト・公開-公開',
       },
       actions: {
         prev: '戻る',
         next: '次へ',
-        cancel: 'キャンセル'
+        cancel: 'キャンセル',
       },
       generate: {
         cards: {
-          resultsTitle: '複数専門家の結果'
+          resultsTitle: 'Multiple experts\' results',
         },
         actions: {
           runAgents: '複数専門家分析 + コード生成',
@@ -33,13 +33,13 @@ const aiWizard = {
           abort: '中止',
           rerun: '再生成',
           regenerateSummary: '要約再生成',
-          goValidate: '検証へ'
+          goValidate: '検証へ',
         },
         hints: {
-          afterGenerated: '生成後、検証/バックテスト/公開へ'
+          afterGenerated: '生成後、検証/バックテスト/公開へ',
         },
         labels: {
-          elapsed: '経過時間'
+          elapsed: '経過',
         },
         status: {
           inProgress: '進行中',
@@ -51,25 +51,25 @@ const aiWizard = {
             signals: '進行中',
             risk: '進行中',
             code: '進行中',
-            generic: '{{title}}進行中'
-          }
+            generic: '{{title}}進行中',
+          },
         },
         sections: {
           prompt: 'Prompt',
           output: 'Output',
-          spec: '仕様'
+          spec: '仕様',
         },
         modals: {
           final: {
-            title: 'コード生成完了。検証を推奨。'
-          }
-        }
+            title: 'コード生成完了。検証を推奨。',
+          },
+        },
       },
       publish: {
         cards: {
           codeTitle: '1) コード',
           scoreCardTitle: '2) スコアカード',
-          launchTitle: '3) 公開スケジュール'
+          launchTitle: '3) 公開スケジュール',
         },
         placeholders: {
           codeEditable: 'AI生成コードがここに表示されます。',
@@ -77,32 +77,32 @@ const aiWizard = {
         actions: {
           validateCode: 'コード検証',
           startBacktest: 'バックテスト',
-          publishTemplate: 'テンプレート公開'
+          publishTemplate: 'テンプレート公開',
         },
         messages: {
           validateOk: '検証合格',
-          validateFailed: '検証不合格'
-        }
+          validateFailed: '検証不合格',
+        },
       },
       agents: {
         styleTitle: '市場状況/スタイル',
         signalsTitle: 'シグナル/指標',
         riskTitle: 'リスク管理',
-        codeTitle: 'コード生成'
+        codeTitle: 'コード生成',
       },
       template: {
         defaultName: 'AI戦略 {{title}}',
-        defaultDescription: 'AI生成'
+        defaultDescription: 'AI生成',
       },
       schedule: {
-        defaultName: 'AIスケジュール {{symbol}} {{timeframe}}'
+        defaultName: 'AIスケジュール {{symbol}} {{timeframe}}',
       },
       setup: {
         cards: {
           tradeAndDataTitle: '取引とデータ',
           constraintsAndGoalTitle: '制約と目標',
           hardConstraintsTitle: 'ハード制約',
-          hintsTitle: 'ヒント'
+          hintsTitle: 'ヒント',
         },
         labels: {
           account: 'アカウント',
@@ -116,57 +116,55 @@ const aiWizard = {
           maxTradesPerDay: '1日最大取引数',
           macroModule: 'マクロモジュール',
           macroEvents: 'マクロイベント',
-          intent: '戦略目標/アイデア'
+          intent: '戦略目標/アイデア',
         },
         placeholders: {
           selectAccount: 'アカウント選択',
           selectSymbol: '銘柄選択',
           selectTimeframe: '時間枠選択',
           selectFrozenDataset: 'データセット選択',
-          macroExample: `例:
-2024-01-03 FOMC
-2024-01-05 NFP`,
-          intentExample: '例: トレンドフォロー、高ボラ回避、高勝率重視'
+          macroExample: 'Example:\n2024-01-03 21:15 FOMC minutes\n2024-01-05 20:30 NFP',
+          intentExample: '例: トレンドフォロー、高ボラ回避、高勝率重視',
         },
         validations: {
           selectAccount: 'アカウントを選択',
           selectSymbol: '銘柄を選択',
           selectTimeframe: '時間枠を選択',
           selectDataset: 'データセットを選択',
-          enterIntent: '戦略目標を入力'
+          enterIntent: '戦略目標を入力',
         },
         dataModes: {
           klineRange: '履歴K線',
-          dataset: 'データセット'
+          dataset: 'データセット',
         },
         actions: {
           refreshDataset: '更新',
           freezeFromCurrentRange: '現在範囲から凍結',
-          deleteCurrentDataset: '現在データセット削除'
+          deleteCurrentDataset: '現在データセット削除',
         },
         modals: {
           deleteDataset: {
             title: 'データセット削除',
             content: '選択した凍結データセットを削除しますか？',
-            ok: '削除'
-          }
+            ok: '削除',
+          },
         },
         messages: {
-          datasetDeleted: 'データセット削除済'
+          datasetDeleted: 'データセット削除済',
         },
         macro: {
           off: 'OFF',
-          on: 'ON'
+          on: 'On',
         },
         hints: {
           nextWillGenerateCode: '次でコード生成開始。',
-          tradeDataNextStep: '完了後「次へ」。'
-        }
+          tradeDataNextStep: '完了後「次へ」。',
+        },
       },
       publishBacktest: {
         cards: {
           backtestTitle: 'バックテスト',
-          scoreCardTitle: 'スコアカード'
+          scoreCardTitle: 'スコアカード',
         },
         actions: {
           startBacktest: '開始',
@@ -175,25 +173,25 @@ const aiWizard = {
           succeeded: '成功',
           inProgress: '進行中',
           runInBackground: 'バックグラウンド実行',
-          confirm: '確認'
+          confirm: '確認',
         },
         labels: {
           status: '状態',
           elapsed: '経過',
           scoringProgress: '進捗',
           overallScore: '総合スコア',
-          confirmed: '確認済'
+          confirmed: '確認済',
         },
         modals: {
           status: {
-            title: 'バックテスト進行中'
+            title: 'バックテスト進行中',
           },
           score: {
-            title: 'スコア確認'
-          }
+            title: 'スコア確認',
+          },
         },
         draftName: 'バックテスト {{datetime}} {{symbol}} {{timeframe}}',
-        draftNameShort: 'バックテスト {{symbol}} {{timeframe}}'
+        draftNameShort: 'バックテスト {{symbol}} {{timeframe}}',
       },
       strategyParams: {
         title: '戦略パラメータ（任意）',
@@ -201,13 +199,13 @@ const aiWizard = {
           intro: 'これらのパラメータは:',
           line1: '1) テンプレートに保存',
           line2: '2) スケジュールに書き込み',
-          line3Prefix: '3) Pythonに注入'
+          line3Prefix: '3) Pythonに注入',
         },
         actions: {
           addParam: '追加',
           exportJson: 'JSON出力',
           importJson: 'JSON入力',
-          delete: '削除'
+          delete: '削除',
         },
         empty: 'パラメータなし。',
         paramCardTitle: 'パラメータ #{{index}}',
@@ -221,11 +219,11 @@ const aiWizard = {
           step: '刻み幅',
           label: 'ラベル',
           description: '説明',
-          options: 'options'
+          options: 'options',
         },
         validations: {
           nameRequired: 'name必須',
-          typeRequired: 'type必須'
+          typeRequired: 'type必須',
         },
         placeholders: {
           nameExample: '例: fast',
@@ -234,13 +232,13 @@ const aiWizard = {
           label: '表示名',
           description: '説明',
           optionsExample: '例: low,medium,high',
-          importJson: 'JSON貼り付け'
+          importJson: 'JSON貼り付け',
         },
         modals: {
           exportTitle: 'JSON出力',
           importTitle: 'JSON入力',
           copyAndClose: 'コピーして閉じる',
-          importOk: '入力'
+          importOk: '入力',
         },
         messages: {
           jsonParseFailed: 'JSON解析失敗',
@@ -248,19 +246,19 @@ const aiWizard = {
           importMissingName: 'name欠落',
           imported: '{{count}}個入力',
           copied: 'コピー済',
-          copyFailed: 'コピー失敗'
+          copyFailed: 'コピー失敗',
         },
         types: {
           number: '数値',
           string: '文字列',
           bool: '真偽値',
-          select: '選択'
-        }
+          select: '選択',
+        },
       },
       prompts: {
         dataSpec: {
           dataset: 'データセット {{datasetId}}',
-          klineRange: 'K線範囲 {{from}} - {{to}}'
+          klineRange: 'K線範囲 {{from}} - {{to}}',
         },
         base: {
           account: 'アカウント: {{accountId}}',
@@ -268,23 +266,17 @@ const aiWizard = {
           timeframe: '時間枠: {{timeframe}}',
           data: 'データ: {{dataSpec}}',
           constraints: '制約: DD={{maxDrawdownPct}}% リスク={{riskPerTradePct}}% 最大取引={{maxTradesPerDay}}',
-          params: `パラメータ:
-{{params}}`,
+          params: 'Parameters (defs+current values; injected into context["params"] at runtime):\n{{params}}',
           empty: '(空)',
-          macroEnabled: `マクロ:
-{{text}}`,
+          macroEnabled: 'Macro events (user-provided):\n{{text}}',
           macroDisabled: 'マクロ: 未使用',
-          userIntent: `ユーザー意図:
-{{intent}}`
+          userIntent: 'User strategy goal (natural language):\n{{intent}}',
         },
         upstream: {
-          style: `【市場状況】
-{{text}}`,
-          signals: `【シグナル】
-{{text}}`,
-          risk: `【リスク】
-{{text}}`,
-          sectionTitle: '【上流エージェント結論】'
+          style: '【Market condition/style conclusion】\n{{text}}',
+          signals: '【Signal design conclusion】\n{{text}}',
+          risk: '【Risk control conclusion】\n{{text}}',
+          sectionTitle: '【上流エージェント結論】',
         },
         summary: {
           intro: '戦略コードの核心を簡潔に説明してください。',
@@ -293,10 +285,9 @@ const aiWizard = {
           mustInclude2: '2) 主要エントリー条件',
           mustInclude3: '3) 主要エグジット/リスク管理',
           mustInclude4: '4) 適用/非適用シナリオ',
-          userIntent: `ユーザー期待:
-{{intent}}`,
-          codeTitle: 'コード:'
-        }
+          userIntent: 'User expectation (natural language):\n{{intent}}',
+          codeTitle: 'コード:',
+        },
       },
       messages: {
         generateCodeFirst: 'まずコード生成',
@@ -338,10 +329,10 @@ const aiWizard = {
         scheduleCreatedAndEnabled: 'スケジュール作成・有効化',
         scheduleCreated: 'スケジュール作成',
         createScheduleFailed: '作成失敗',
-        scheduleAlreadyExists: '同じスケジュールが既に存在'
-      }
-    }
-  }
+        scheduleAlreadyExists: '同じスケジュールが既に存在',
+      },
+    },
+  },
 } as const;
 
 export default aiWizard;

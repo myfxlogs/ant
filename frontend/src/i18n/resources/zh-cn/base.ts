@@ -3,18 +3,31 @@ const base = {
     name: 'AntTrader'
   },
   auth: {
+    login: {
+      subtitle: '这是一个测试不具备责任能力',
+      rememberMe: '记住我',
+      forgotPassword: '忘记密码？',
+      signingIn: '登录中...',
+      login: '立即登录',
+      noAccount: `Don't have an account?`,
+      registerNow: '立即注册',
+    },
+    forgotPassword: {
+      title: '重置密码',
+      hint: '请联系管理员或支持人员重置密码。',
+      backToLogin: 'Back to Login'
+    },
+    register: {
+      subtitle: '创建新账号',
+      signingUp: '注册中...',
+      register: '注册',
+      haveAccount: '已有账号？',
+      loginNow: '立即登录',
+    },
     fields: {
       email: '邮箱',
       password: '密码',
-      confirmPassword: '确认密码'
-    },
-    messages: {
-      loginSuccess: '登录成功',
-      loginFailed: '登录失败，请检查邮箱和密码',
-      registerSuccess: '注册成功，请登录',
-      registerFailed: '注册失败，请稍后重试',
-      logoutSuccess: '已退出登录',
-      fetchMeFailed: '获取用户信息失败'
+      confirmPassword: 'Confirm password'
     },
     validation: {
       emailRequired: '请输入邮箱',
@@ -22,29 +35,23 @@ const base = {
       passwordRequired: '请输入密码',
       passwordMin8: '密码至少8位',
       confirmPasswordRequired: '请确认密码',
-      passwordMismatch: '两次输入的密码不一致'
+      passwordMismatch: '两次密码不一致'
     },
-    login: {
-      subtitle: '这是一个测试不具备责任能力',
-      rememberMe: '记住我',
-      forgotPassword: '忘记密码？',
-      signingIn: '登录中...',
-      login: '登录',
-      noAccount: '还没有账号？',
-      registerNow: '立即注册'
-    },
-    register: {
-      subtitle: '创建新账号',
-      signingUp: '注册中...',
-      register: '注册',
-      haveAccount: '已有账号？',
-      loginNow: '立即登录'
-    },
-    forgotPassword: {
-      title: '重置密码',
-      hint: '请联系管理员或支持人员重置密码。',
-      backToLogin: '返回登录'
+    messages: {
+      loginSuccess: '登录成功',
+      loginFailed: '登录失败，请检查邮箱和密码',
+      registerSuccess: '注册成功，请登录',
+      registerFailed: '注册失败，请稍后重试',
+      logoutSuccess: '已退出登录',
+      fetchMeFailed: 'Failed to load user profile'
     }
+  },
+  language: {
+    simplifiedChinese: '简体中文',
+    traditionalChinese: '繁體中文',
+    english: 'English',
+    japanese: '日本語',
+    vietnamese: 'Tiếng Việt'
   },
   common: {
     refresh: '刷新',
@@ -53,14 +60,12 @@ const base = {
     updated: '已更新',
     created: '已创建',
     enabled: '已启用',
-    disabled: '已停用',
+    disabled: '已禁用',
     deleted: '已删除',
     deleteFailed: '删除失败',
   deleteSelected: '删除选中 ({{count}})',
     loadingFailed: '加载失败',
     none: '无',
-    noData: '暂无数据',
-    required: '必填',
     close: '关闭',
     operationFailed: '操作失败',
     pleaseWait: '请稍候...',
@@ -71,7 +76,7 @@ const base = {
     searching: '搜索中...',
     unknown: '未知',
     enable: '启用',
-    disable: '停用',
+    disable: '禁用',
     edit: '编辑',
     delete: '删除',
     confirm: '确定',
@@ -87,53 +92,48 @@ const base = {
     copy: '复制',
     copied: '已复制',
     copyFailed: '复制失败',
-    totalItems: '共 {{count}} 项',
-    time: {
-      minute: '{{n}}分',
-      hour: '{{n}}时',
-      day: '{{n}}天',
-      lessThanMinute: '<1分'
-    },
-    ok: '确定',
+    ok: 'OK',
     error: '错误',
     retry: '重试',
     pageError: '页面错误',
     unexpectedError: '发生了意外错误',
+    required: '必填',
+    noData: '暂无数据',
     lineColor: '线颜色',
     selectSymbolToViewChart: '选择品种查看图表',
     currentPosition: '📊 当前持仓',
     noOpenPositionsForSymbol: '{{symbol}} 暂无持仓',
     indicatorSettings: '{{name}} 设置',
-    active: '启用',
+    totalItems: '共 {{count}} 项',
+    time: {
+      minute: '{{n}}分',
+      hour: '{{n}}时',
+      day: '{{n}}天',
+      lessThanMinute: '<1m'
+    },
+    active: '正常',
     inactive: '停用',
     clear: '清除',
     saveSuccess: '保存成功',
     remove: '移除',
     yes: '是',
-    no: '否',
+    no: 'No',
     you: '你',
     comingSoon: '即将上线',
-    pageUnderDevelopment: '此页面正在开发中'
-  },
-  language: {
-    simplifiedChinese: '简体中文',
-    traditionalChinese: '繁體中文',
-    english: 'English',
-    japanese: '日本語',
-    vietnamese: 'Tiếng Việt'
+    pageUnderDevelopment: 'This page is under development'
   },
   menu: {
     strategyWorkspace: '策略工作台',
     strategyLibrary: '策略库',
     dashboard: '仪表盘',
     strategy: '策略',
-    accounts: '账户管理',
+    accounts: '账户',
     aiAssistant: 'AI助手',
     strategies: '策略管理',
     trading: '交易',
     wallet: '钱包',
     algoDashboard: '算法看板',
-    market: '行情',
+    market: '策略市场',
     analytics: '分析',
     marketplace: '市场',
     assetAnalysis: 'AI分析',
@@ -174,17 +174,17 @@ const base = {
     noSubscriptions: '暂无订阅',
     card: {
       free: '免费', rent: '¥{{amount}}/月', buy: '¥{{amount}}',
-      owned: '已购买', users: '用户',
+      owned: '购买日期', users: '用户',
       winRate: '胜率', pnl: '总盈亏',
       subscribers: '订阅者',
-      by: '发布者',
+      by: 'by',
     },
     assetClass: { forex: '外汇', crypto: '加密货币', commodity: '大宗商品', index: '指数', stock: '股票', other: '其他' },
     risk: { low: '低', medium: '中', high: '高' },
     messages: {
       loginFirst: '请先登录',
       subscribed: '已添加到您的购买',
-      subscribeFailed: '操作失败',
+      subscribeFailed: '失败',
       rated: '评分已提交',
       rateFailed: '评分失败',
       commentPosted: '评论已发布',
@@ -216,7 +216,7 @@ const base = {
       balanceAfter: '购买后余额',
       insufficientBalance: '余额不足',
       depositPrompt: '请先充值后再继续。',
-      goToDeposit: '去充值',
+      goToDeposit: '充值',
       confirm: '确认购买',
       cancel: '取消',
       purchasing: '处理中...',
@@ -229,27 +229,7 @@ const base = {
       published: '已发布', subscribers: '订阅者',
       avgRating: '平均评分', noPublished: '暂无已发布策略',
     },
-    publishModal: {
-      symbolsPlaceholder: 'EURUSD, GBPUSD, XAUUSD',
-      strategyId: '策略ID',
-      title: '发布策略',
-      titleField: '标题',
-      titlePlaceholder: '输入策略标题',
-      description: '描述',
-      assetClass: '资产类别',
-      riskLevel: '风险等级',
-      priceModel: '价格模式',
-      priceAmount: '价格',
-      symbols: '交易品种',
-      tags: '标签',
-      timeframe: '时间周期',
-      submit: '发布',
-    },
-    priceModel: {
-      free: '免费',
-      subscription: '订阅制',
-      performanceFee: '绩效分成',
-    },
+    priceModel: { free: '免费', subscription: 'Subscription', performanceFee: 'Performance Fee' },
   },
   market: {
     searchPlaceholder: '搜索品种（如 EURUSD, XAUUSD）',
@@ -267,7 +247,7 @@ const base = {
     noSymbolsFound: '未找到品种',
     loadingSymbols: '加载中...',
     emptyWatchlist: '暂无自选',
-    searchSymbol: '搜索品种...'
+    searchSymbol: 'Search symbol...'
   },
   topbar: {
     systemOk: '系统正常运行',
@@ -275,7 +255,7 @@ const base = {
     settings: '设置',
     switchToAdmin: '切换到管理',
     logout: '退出登录',
-    user: '用户'
+    user: '普通用户'
   },
   profile: {
     title: '个人信息',
@@ -283,203 +263,51 @@ const base = {
     role: '角色',
     status: '状态',
     lastLogin: '最后登录',
-    registered: '注册时间'
+    registered: 'Registered'
   },
   notifications: {
+    title: '通知中心',
     all: '全部',
     unread: '未读',
     empty: '暂无通知',
     markAllRead: '全部已读',
     clearAll: '清空全部',
-    confirmClearAll: '确认清空所有通知？',
+    confirmClearAll: '确定清空所有通知？',
+    tabs: {
+      all: '全部 ({{count}})',
+      unread: 'Unread ({{count}})'
+    },
     types: {
       trade: '交易',
       signal: '信号',
       risk_alert: '风控告警',
       strategy_execution: '策略执行',
-      system: '系统'
-    },
-    stream: {
-      strategyExecution: {
-        title: '策略执行',
-        completed: '{{symbol}} {{action}} 已完成',
-        failed: '执行失败：{{error}}'
-      },
-      riskAlert: {
-        title: '风控告警',
-        fallback: '告警类型：{{alertType}}'
-      },
-      strategySignal: {
-        title: '策略信号',
-        message: '{{symbol}} 触发 {{signalType}}'
-      },
-      autoTrading: {
-        title: '自动交易',
-        fallback: '自动交易事件已触发'
-      }
-    },
-    title: '通知中心',
-    tabs: {
-      all: '全部 ({{count}})',
-      unread: '未读 ({{count}})'
+      system: 'System'
     },
     actions: {
       markAllAsRead: '全部已读',
       clearAllConfirm: '确定清空所有通知？',
       clearAll: '清空全部'
-    }
-  },
-  errors: {
-    not_authenticated: '未登录',
-    invalid_credentials: '账号或密码错误',
-    user_not_found: '用户不存在',
-    email_already_registered: '邮箱已注册',
-    account_not_found: '账户不存在',
-    access_denied: '无权限访问',
-    account_connection_failed: '无法连接到交易服务器',
-    account_connected: '连接成功',
-    schedule_service_not_available: '调度服务不可用',
-    auto_trading_enabled: '自动交易已开启',
-    auto_trading_disabled: '自动交易已关闭',
-    connection_failed: {
-      title: '连接失败',
-      content: '无法连接到后端服务，请检查服务器是否已启动。'
     },
-    wizard: {
-      title: 'AI 策略向导',
-      subtitle: '发现、购买和使用社区策略',
-      currentModel: '当前模型：{{model}}',
-      steps: {
-        setup: '基础信息',
-        generate: '生成策略',
-        publishCode: '回测上线-代码',
-        publishBacktest: '回测上线-回测',
-        publishLaunch: '回测上线-上线'
+    stream: {
+      strategyExecution: {
+        title: '策略执行',
+        completed: '{{symbol}} {{action}} 已完成',
+        failed: 'Execution failed: {{error}}'
       },
-      actions: {
-        prev: '上一步',
-        next: '下一步',
-        cancel: '取消'
+      riskAlert: {
+        title: '风控告警',
+        fallback: 'Alert type: {{alertType}}'
       },
-      agents: {
-        styleTitle: '市场状态/风格推荐',
-        signalsTitle: '信号与指标设计',
-        riskTitle: '风控与执行约束',
-        codeTitle: '代码生成'
+      strategySignal: {
+        title: '策略信号',
+        message: '{{symbol}} triggered {{signalType}}'
       },
-      template: {
-        defaultName: 'AI 策略 {{title}}',
-        defaultDescription: 'AI 向导生成'
-      },
-      schedule: {
-        defaultName: 'AI 调度 {{symbol}} {{timeframe}}'
-      },
-      prompts: {
-        dataSpec: {
-          dataset: '使用冻结数据集 datasetId={{datasetId}}',
-          klineRange: '使用历史K线范围 from={{from}} to={{to}}'
-        },
-        base: {
-          account: '账号: {{accountId}}',
-          symbol: '品种: {{symbol}}',
-          timeframe: '周期: {{timeframe}}',
-          data: '数据: {{dataSpec}}',
-          constraints: '约束: 最大回撤={{maxDrawdownPct}}% 单笔风险={{riskPerTradePct}}% 日内最多交易={{maxTradesPerDay}} 次',
-          params: `参数（定义+当前值；运行时在 context["params"] 中）：
-{{params}}`,
-          empty: '(空)',
-          macroEnabled: `宏观事件(用户提供):
-{{text}}`,
-          macroDisabled: '宏观事件: 不使用',
-          userIntent: `用户策略目标(自然语言):
-{{intent}}`
-        },
-        upstream: {
-          style: `【市场状态/风格推荐 结论】
-{{text}}`,
-          signals: `【信号与指标设计 结论】
-{{text}}`,
-          risk: `【风控与执行约束 结论】
-{{text}}`,
-          sectionTitle: '【上游 Agent 结论（原样提供）】'
-        },
-        summary: {
-          intro: '你是量化策略解释助手。请用简洁中文（要点形式，最多 12 行）解释下面这段 AntTrader Python 策略代码的核心思路，帮助用户判断是否符合预期。',
-          mustIncludeTitle: '必须包含：',
-          mustInclude1: '1) 策略类型/范式（趋势/均值/突破/动量/网格等，若无法判断则写“无法确定”）',
-          mustInclude2: '2) 主要入场条件（用 2~4 条要点）',
-          mustInclude3: '3) 主要出场/止损止盈/风控约束（用 2~4 条要点）',
-          mustInclude4: '4) 适用/不适用场景各 1 条',
-          userIntent: `用户预期（自然语言）：
-{{intent}}`,
-          codeTitle: '代码如下：'
-        }
-      },
-      messages: {
-        generateCodeFirst: '请先生成策略代码',
-        validateCodeFirst: '请先点击“验证代码”',
-        codeInvalidFixAndContinue: '代码验证未通过，请修复后再继续',
-        startBacktestFirst: '请先点击“回测（异步任务）”启动回测',
-        backtestNotDoneWait: '回测尚未完成，请等待评分卡状态变为“成功/失败/已取消”后再继续',
-        confirmScoreFirst: '请先在评分弹窗中确认评分结果',
-        fillRequiredWithFields: '请先补全必填项：{{fields}}',
-        fillRequired: '请先补全必填项',
-        watchBacktestRunFailed: 'watchBacktestRun 失败',
-        createDraftFailed: '创建草稿失败',
-        loadAccountsFailed: '加载账号失败',
-        loadSymbolsFailed: '加载品种失败',
-        loadDatasetFailed: '加载 dataset 失败',
-        datasetFrozenCreated: '已冻结创建 dataset',
-        freezeDatasetFailed: '冻结 dataset 失败',
-        inputIntentFirst: '请先输入策略目标/想法',
-        aiRequestTimeout: 'AI 请求超时（>{{seconds}}s）',
-        modelReturnedEmpty: '模型返回为空',
-        noPythonCodeBlock: '代码 Agent 未输出 \`\`\`python 代码块\`\`\`，请在结果中检查',
-        agentFailed: '{{title}} 失败',
-        userAborted: '用户已中止',
-        chatAborted: '已中止与模型对话',
-        noCodeToValidate: '暂无代码可验证',
-        validateOk: '验证通过',
-        validateFailed: '验证未通过',
-        validateError: '验证失败',
-        noCodeToBacktest: '暂无代码可回测',
-        backtestCreated: '回测任务已创建',
-        createBacktestFailed: '创建回测失败',
-        draftNotCreated: '草稿未创建',
-        draftSaved: '草稿已保存',
-        saveFailed: '保存失败',
-        publishedNoId: '已发布，但未拿到返回 id（请在策略管理中确认）',
-        templatePublished: '模板已发布',
-        publishFailed: '发布失败',
-        publishTemplateFirst: '请先发布模板',
-        scheduleCreatedAndEnabled: '调度已创建并启用',
-        scheduleCreated: '调度已创建',
-        createScheduleFailed: '创建调度失败',
-        scheduleAlreadyExists: '该账号下已存在相同策略调度（模板+品种+周期相同），请勿重复创建。'
+      autoTrading: {
+        title: '自动交易',
+        fallback: 'Auto trading event triggered'
       }
-    },
-    ai: {
-      not_configured: 'AI 未配置：请先到 AI 设置中启用并配置。',
-      config_service_not_initialized: 'AI 配置服务未初始化',
-      config_valid: 'AI 配置有效',
-      no_trade_data_available: '暂无可用交易数据',
-      provider_returned_empty_message: 'AI 服务返回空消息',
-      provider_required: '请先选择服务商',
-      invalid_provider: '服务商无效',
-      api_key_required: 'API Key 不能为空',
-      base_url_required: 'Base URL 不能为空',
-      invalid_base_url: 'Base URL 无效',
-      base_url_scheme_invalid: 'Base URL 必须以 http:// 或 https:// 开头',
-      base_url_should_not_end_with_chat_completions: 'Base URL 不应以 /chat/completions 结尾',
-      failed_to_create_request: '创建请求失败',
-      request_failed: 'API 请求失败',
-      probe_ok: '正常',
-      probe_ok_no_models: '正常（未返回 models）',
-      free_tier_exhausted: 'AI 模型免费额度已耗尽：请在模型供应商管理后台关闭“use free tier only”或更换付费 Key。',
-      rate_limited: 'AI 服务触发限流/额度不足（429/资源耗尽）。请稍后重试或更换可用的 API Key/模型配置。',
-      forbidden_quota: 'AI 服务额度/权限不足（403）。请检查 API Key 是否有可用额度或是否开启了付费模式。'
-    },
-    translate_failed: '翻译失败'
+    }
   },
   admin: {
     sidebar: {
@@ -490,133 +318,14 @@ const base = {
       tradingMonitor: '交易监控',
       operationLogs: '操作日志',
       systemConfig: '系统配置',
-      jurisdiction: 'Jurisdiction Gate'
+      jurisdiction: '管辖权管理'
     },
     header: {
       adminMode: '管理员模式',
       adminPanel: '管理后台',
       backToUser: '返回用户端',
       logout: '退出登录',
-      admin: '管理员'
-    },
-    userManagement: {
-      title: '用户管理',
-      addUser: '新建用户',
-      filters: {
-        searchPlaceholder: '搜索邮箱或昵称',
-        statusPlaceholder: '按状态筛选',
-        rolePlaceholder: '按角色筛选'
-      },
-      status: {
-        active: '正常',
-        suspended: '已停用'
-      },
-      roles: {
-        user: '普通用户',
-        superAdmin: '超级管理员',
-        operation: '运营',
-        customerService: '客服',
-        audit: '审计'
-      },
-      table: {
-        id: 'ID',
-        email: '邮箱',
-        nickname: '昵称',
-        role: '角色',
-        mtAccountCount: 'MT账户数',
-        status: '状态',
-        createdAt: '创建时间',
-        actions: '操作'
-      },
-      actions: {
-        details: '详情',
-        changePassword: '修改密码',
-        disable: '禁用',
-        enable: '启用'
-      },
-      deleteConfirm: {
-        title: '确认删除此用户？此操作不可撤销。',
-        batchDeleteConfirm: '确认删除 {{count}} 个用户？此操作不可撤销。',
-        batchDeleteSuccess: '已删除 {{count}} 个用户',
-        batchDeletePartial: '已删除 {{deleted}} 个，{{failed}} 个失败',
-      },
-      pagination: {
-        total: '共 {{total}} 个用户'
-      },
-      modals: {
-        createTitle: '新建用户',
-        editTitle: '编辑用户',
-        passwordTitle: '修改密码'
-      },
-      form: {
-        email: '邮箱',
-        password: '密码',
-        nickname: '昵称',
-        role: '角色',
-        status: '状态',
-        accountNumber: '钱包号',
-        accountNumberInvalid: '5-6位数字，无前导零，不含4和7',
-        placeholders: {
-          email: '输入邮箱',
-          password: '输入密码',
-          nickname: '输入昵称'
-        }
-      },
-      passwordForm: {
-        newPassword: '新密码',
-        confirmPassword: '确认密码',
-        submit: '更新密码',
-        placeholders: {
-          newPassword: '输入新密码',
-          confirmPassword: '再次输入新密码'
-        },
-        validation: {
-          newPasswordRequired: '请输入新密码',
-          passwordMin8: '密码至少8位',
-          passwordMustContainLettersAndNumbers: '密码需包含字母和数字',
-          confirmPasswordRequired: '请确认新密码',
-          passwordMismatch: '两次密码不一致'
-        }
-      },
-      drawer: {
-        title: '用户详情',
-        labels: {
-          id: 'ID',
-          email: '邮箱',
-          nickname: '昵称',
-          role: '角色',
-          status: '状态',
-          mtAccountCount: 'MT账户数',
-          lastLogin: '最后登录',
-          createdAt: '创建时间'
-        }
-      },
-      messages: {
-        userCreatedSuccess: '用户创建成功',
-        userCreateFailed: '创建用户失败',
-        userUpdatedSuccess: '用户更新成功',
-        userUpdateFailed: '更新用户失败',
-        userDeletedSuccess: '用户已删除',
-        userDeleteFailed: '删除用户失败',
-        userDisabled: '用户已禁用',
-        userEnabled: '用户已启用',
-        passwordUpdatedSuccess: '密码更新成功',
-        passwordUpdateFailed: '密码更新失败',
-        newPasswordIs: '新密码为: {{password}}'
-      }
-    },
-    wallet: {
-      title: '钱包管理',
-      searchPlaceholder: '搜索邮箱或钱包号...',
-      noUsers: '未找到用户',
-      walletFor: '钱包 -',
-      accountNumber: '钱包号',
-      adjustBalance: '调整余额',
-      adjustSuccess: '余额已调整',
-      adjustFailed: '调整失败',
-      add: '增加',
-      deduct: '扣除',
-      reason: '调整原因...',
+      admin: 'Admin'
     },
     config: {
       title: '系统配置',
@@ -627,7 +336,7 @@ const base = {
       status: '状态',
       toggle: '切换',
       updatedAt: '更新时间',
-      on: '开',
+      on: 'On',
       off: '关',
       maxAccountsPerUser: '每用户最大账户数',
       aiProviderCatalog: 'AI提供商目录',
@@ -650,7 +359,7 @@ const base = {
         greenMaxFailedRunsNonNegative: '绿色最大失败次数需≥0',
         minSampleSizeNonNegative: '最小样本量需≥0',
         apiKeyRequired: 'API Key不能为空',
-        modelRequired: '模型名称不能为空'
+        modelRequired: 'Model name cannot be empty'
       },
       messages: {
         loadFailed: '加载配置失败',
@@ -666,12 +375,12 @@ const base = {
         model: '输入模型名称',
         baseUrl: '输入Base URL',
         configValue: '输入配置值',
-        description: '输入描述'
+        description: 'Enter description'
       },
       providerOptions: {
         zhipu: '智谱AI',
         deepseek: 'DeepSeek',
-        custom: '自定义'
+        custom: 'Custom / OpenAI Compatible'
       }
     },
     trading: {
@@ -680,7 +389,7 @@ const base = {
       platform: '平台',
       accounts: '账户',
       orders: '订单',
-      volume: '交易量',
+      volume: '数量',
       byPlatform: '按平台',
       profitStats: '盈亏统计',
       totalUsers: '总用户数',
@@ -693,14 +402,14 @@ const base = {
       netProfit: '净利润',
       totalProfit: '总盈利',
       totalLoss: '总亏损',
-      pendingOrders: '挂单'
+      pendingOrders: 'Pending Orders'
     },
     dashboard: {
       title: '管理仪表盘',
       loadFailed: '加载仪表盘数据失败',
       totalUsers: '总用户数',
       activeUsers: '活跃用户',
-      mtAccounts: 'MT账户',
+      mtAccounts: 'MT账户数',
       onlineAccounts: '在线账户',
       todayTrades: '今日交易',
       todayProfit: '今日盈亏',
@@ -729,7 +438,7 @@ const base = {
         orderSendSuccess: '下单成功',
         orderSendFailed: '下单失败',
         orderCloseSuccess: '平仓成功',
-        orderCloseFailed: '平仓失败'
+        orderCloseFailed: 'Order Closed Failed'
       },
       riskWindow: {
         title: '风控窗口',
@@ -744,13 +453,13 @@ const base = {
         rejectRiskCodesHeader: '风控代码',
         rejectCount: '拒绝次数',
         noRejectData: '本时段无拒绝记录',
-        noData: '暂无风控数据'
+        noData: 'No window metrics data'
       }
     },
     jurisdiction: {
       title: '管辖权管理',
       sanctionedCountriesTab: '制裁国家',
-      kycStatusTab: 'KYC状态',
+      kycStatusTab: '用户KYC状态',
       sanctionedCountries: '制裁国家',
       userKYCStatus: '用户KYC状态',
       addCountry: '添加国家',
@@ -759,7 +468,7 @@ const base = {
       countryLabel: '国家',
       addedBy: '添加人',
       actions: '操作',
-      userEmail: '用户邮箱',
+      userEmail: '邮箱',
       kycStatus: 'KYC状态',
       country: '国家',
       sanctioned: '已制裁',
@@ -785,11 +494,130 @@ const base = {
         kycUpdated: 'KYC状态已更新',
         kycUpdateFailed: '更新KYC状态失败',
         overrideUpdated: '豁免状态已更新',
-        overrideUpdateFailed: '更新豁免状态失败'
+        overrideUpdateFailed: 'Failed to update sanctioned override'
       },
-      overrideWarning: '该用户来自受制裁国家，授予豁免将允许交易。',
       confirmGrantOverride: '确认授予该用户豁免权限？',
-      confirmRevokeOverride: '确认撤销该用户的豁免权限？'
+      confirmRevokeOverride: '确认撤销该用户的豁免权限？',
+      overrideWarning: 'This user is from a sanctioned country. Granting override will allow trading.'
+    },
+    userManagement: {
+      title: '用户管理',
+      addUser: '新建用户',
+      table: {
+        id: 'ID',
+        email: '邮箱',
+        nickname: '昵称',
+        role: '角色',
+        status: '状态',
+        mtAccountCount: 'MT账户数',
+        createdAt: '创建时间',
+        actions: '操作'
+      },
+      actions: {
+        details: '详情',
+        enable: '启用',
+        disable: '禁用',
+        changePassword: 'Change Password'
+      },
+      filters: {
+        searchPlaceholder: '搜索邮箱或昵称',
+        rolePlaceholder: '按角色筛选',
+        statusPlaceholder: 'Filter by status'
+      },
+      status: {
+        active: '正常',
+        suspended: 'Suspended'
+      },
+      roles: {
+        user: '普通用户',
+        superAdmin: '超级管理员',
+        operation: '运营',
+        customerService: '客服',
+        audit: 'Audit'
+      },
+      pagination: {
+        total: 'Total {{total}} users'
+      },
+      deleteConfirm: {
+        title: '确认删除此用户？此操作不可撤销。',
+        batchDeleteConfirm: '确认删除 {{count}} 个用户？此操作不可撤销。',
+        batchDeleteSuccess: '已删除 {{count}} 个用户',
+        batchDeletePartial: '已删除 {{deleted}} 个，{{failed}} 个失败',
+      },
+      modals: {
+        createTitle: '新建用户',
+        editTitle: '编辑用户',
+        passwordTitle: 'Change Password'
+      },
+      form: {
+        email: '邮箱',
+        nickname: '昵称',
+        password: '密码',
+        role: '角色',
+        status: '状态',
+        accountNumber: '钱包号',
+        accountNumberInvalid: '5-6位数字，无前导零，不含4和7',
+        placeholders: {
+          email: '输入邮箱',
+          nickname: '输入昵称',
+          password: 'Enter password'
+        }
+      },
+      passwordForm: {
+        newPassword: '新密码',
+        confirmPassword: '确认密码',
+        placeholders: {
+          newPassword: '输入新密码',
+          confirmPassword: 'Re-enter new password'
+        },
+        submit: '更新密码',
+        validation: {
+          newPasswordRequired: '请输入新密码',
+          confirmPasswordRequired: '请确认新密码',
+          passwordMin8: '密码至少8位',
+          passwordMismatch: '两次密码不一致',
+          passwordMustContainLettersAndNumbers: 'Password must contain both letters and numbers'
+        }
+      },
+      messages: {
+        userCreatedSuccess: '用户创建成功',
+        userCreateFailed: '创建用户失败',
+        userUpdatedSuccess: '用户更新成功',
+        userUpdateFailed: '更新用户失败',
+        userDeletedSuccess: '用户已删除',
+        userDeleteFailed: '删除用户失败',
+        userEnabled: '用户已启用',
+        userDisabled: '用户已禁用',
+        passwordUpdatedSuccess: '密码更新成功',
+        passwordUpdateFailed: '密码更新失败',
+        newPasswordIs: 'New password is: {{password}}'
+      },
+      drawer: {
+        title: '用户详情',
+        labels: {
+          id: 'ID',
+          email: '邮箱',
+          nickname: '昵称',
+          role: '角色',
+          status: '状态',
+          mtAccountCount: 'MT账户数',
+          createdAt: '创建时间',
+          lastLogin: '最后登录'
+        }
+      }
+    },
+    wallet: {
+      title: '钱包管理',
+      searchPlaceholder: '搜索邮箱或钱包号...',
+      noUsers: '未找到用户',
+      walletFor: '钱包 -',
+      accountNumber: '钱包号',
+      adjustBalance: '调整余额',
+      adjustSuccess: '余额已调整',
+      adjustFailed: '调整失败',
+      add: '增加',
+      deduct: '扣除',
+      reason: '调整原因...',
     }
   },
   wallet: {
@@ -818,6 +646,45 @@ const base = {
       reversal: '冲正',
     },
   },
+  errors: {
+    not_authenticated: '未登录',
+    invalid_credentials: '账号或密码错误',
+    user_not_found: '用户不存在',
+    email_already_registered: '邮箱已注册',
+    account_not_found: '账户不存在',
+    access_denied: '无权限访问',
+    account_connection_failed: '无法连接到交易服务器',
+    account_connected: '连接成功',
+    schedule_service_not_available: '调度服务不可用',
+    auto_trading_enabled: '自动交易已开启',
+    auto_trading_disabled: '自动交易已关闭',
+    translate_failed: '翻译失败',
+    connection_failed: {
+      title: '连接失败',
+      content: 'Unable to connect to the server. Please check your network and try again.'
+    },
+    ai: {
+      not_configured: 'AI 未配置：请先到 AI 设置中启用并配置。',
+      config_service_not_initialized: 'AI 配置服务未初始化',
+      config_valid: 'AI 配置有效',
+      no_trade_data_available: '暂无可用交易数据',
+      provider_returned_empty_message: 'AI 服务返回空消息',
+      provider_required: '请先选择服务商',
+      invalid_provider: '服务商无效',
+      api_key_required: 'API Key 不能为空',
+      base_url_required: 'Base URL 不能为空',
+      invalid_base_url: 'Base URL 无效',
+      base_url_scheme_invalid: 'Base URL 必须以 http:// 或 https:// 开头',
+      base_url_should_not_end_with_chat_completions: 'Base URL 不应以 /chat/completions 结尾',
+      failed_to_create_request: '创建请求失败',
+      request_failed: 'API 请求失败',
+      probe_ok: 'OK',
+      probe_ok_no_models: '正常（未返回 models）',
+      free_tier_exhausted: 'AI 模型免费额度已耗尽：请在模型供应商管理后台关闭“use free tier only”或更换付费 Key。',
+      rate_limited: 'AI 服务触发限流/额度不足（429/资源耗尽）。请稍后重试或更换可用的 API Key/模型配置。',
+      forbidden_quota: 'Quota exceeded'
+    }
+  },
   symbolDetection: {
     label: '识别到的交易品种',
     loading: '正在解析…',
@@ -838,8 +705,8 @@ const base = {
       enabled: '自动交易已开启',
       disabled: '自动交易已关闭',
       activeStrategies: '活跃策略',
-      todayExecutions: '今日执行',
-      todayProfit: '今日盈亏'
+      todayExecutions: `Today's Executions`,
+      todayProfit: `Today's Profit`
     },
     settings: {
       title: '全局风控设置',
@@ -854,7 +721,7 @@ const base = {
       maxDrawdownPercent: '最大回撤%',
       maxDrawdownPercentHint: '回撤超过此值时自动停止交易',
       saveSuccess: '设置已保存',
-      saveFailed: '保存设置失败'
+      saveFailed: 'Failed to save settings'
     },
     logs: {
       title: '最近交易日志',
@@ -866,12 +733,12 @@ const base = {
         volume: '数量',
         price: '价格',
         profit: '盈亏',
-        ticket: '单号'
+        ticket: 'Ticket'
       }
     },
     messages: {
       loadFailed: '加载自动交易数据失败',
-      toggleFailed: '切换自动交易失败'
+      toggleFailed: 'Failed to toggle auto trading'
     }
   }
 } as const;

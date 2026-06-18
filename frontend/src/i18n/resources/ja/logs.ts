@@ -1,17 +1,10 @@
 const logs = {
   logs: {
-    connectionLogs: '接続ログ',
-    executionLogs: '実行ログ',
-    orderHistory: '注文履歴',
-    operationLogs: '操作ログ',
-    dateRange: '日付範囲',
-    status: 'ステータス',
-    symbol: '銘柄',
-    accountId: '口座ID',
-    search: '検索',
-    reset: 'リセット',
+    success: '成功',
+    failed: '失敗',
     time: '時間',
     eventType: 'イベント種別',
+    status: 'ステータス',
     server: 'サーバー',
     loginId: 'ログインID',
     message: 'メッセージ',
@@ -28,23 +21,33 @@ const logs = {
     action: '操作',
     details: '詳細',
     ip: 'IP',
-    success: '成功',
-    failed: '失敗',
+
+    connectionLogs: '接続ログ',
+    executionLogs: '実行ログ',
+    orderHistory: '注文履歴',
+    operationLogs: '操作ログ',
+
+    dateRange: '日付範囲',
+    symbol: '銘柄',
     exampleSymbolPlaceholder: '例: XAUUSD',
-    orderTable: {
-      ticket: 'チケット',
-      type: 'タイプ',
-      lots: 'ロット',
-      open: '建値',
-      close: '決済値'
-    },
+    accountId: '口座ID',
+
+    search: '検索',
+    reset: 'リセット',
     result: '結果',
     riskCode: 'リスクコード',
     requestId: 'リクエストID',
     triggerSource: 'トリガーソース',
     riskLogQuickFilter: 'リスクログクイックフィルター',
-    loadFailed: 'ログの読み込みに失敗しました'
-  }
+    loadFailed: 'ログの読み込みに失敗しました',
+    orderTable: {
+      ticket: 'チケット',
+      type: 'タイプ',
+      lots: 'ロット',
+      open: '建値',
+      close: '決済値',
+    },
+  },
 } as const;
 
 export default logs;

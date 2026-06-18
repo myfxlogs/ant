@@ -6,11 +6,11 @@ const aiSettings = {
       primary: {
         title: 'デフォルト主モデル',
         hint: '意図明確化、コード生成などに使用。',
-        placeholder: 'プロバイダー・モデルを選択してください'
+        placeholder: 'プロバイダー・モデルを選択してください',
       },
       tabs: {
         config: 'モデル設定',
-        agents: 'エージェント設定'
+        agents: 'エージェント設定',
       },
       fields: {
         name: '名前',
@@ -21,7 +21,7 @@ const aiSettings = {
         apiKeyConfigured: '設定済',
         apiKeyReplaceHint: '交換する場合は再入力',
         deleteApiKey: 'キー削除',
-        'モデル': 'モデル',
+        model: 'モデル',
         defaultModel: 'デフォルトモデル',
         availableModels: '利用可能モデル',
         availableModelsHint: '複数モデルを有効化可能。',
@@ -32,26 +32,25 @@ const aiSettings = {
         temperature: '温度',
         timeoutSeconds: 'タイムアウト秒数',
         maxTokens: '最大 トークン 数',
-        enabledStatus: '有効状態',
+        enabledStatus: '有効化',
         enabledOn: '有効→無効化',
         enabledOff: '無効→有効化',
-        model: 'モデル'
       },
       sections: {
         basic: '基本情報',
         connection: '接続設定',
         advanced: '高度パラメータ',
         advancedHint: '意味を理解して調整。',
-        connectionApiKeyLink: 'API キー申請/管理へ'
+        connectionApiKeyLink: 'API キー申請/管理へ',
       },
       inferenceParams: {
-        title: '推論パラメータ'
+        title: '推論パラメータ',
       },
       providers: {
         enabledTitle: '有効プロバイダー',
         emptyTitle: '有効プロバイダーなし',
-        emptyHint: '',
-        emptyHintTail: 'でAPI キーとモデルを設定。',
+        emptyHint: 'Please first configure API Key and available models in ',
+        emptyHintTail: '.',
         modelsUnit: 'モデル',
         noModels: 'モデル未設定',
         openai: 'OpenAI',
@@ -66,7 +65,7 @@ const aiSettings = {
         mistral: 'Mistral',
         groq: 'Groq',
         custom: 'カスタム（OpenAI互換）',
-        openai_compatible: 'カスタム（OpenAI互換）'
+        openai_compatible: 'カスタム（OpenAI互換）',
       },
       placeholders: {
         name: '例: DeepSeek-低コスト',
@@ -76,7 +75,7 @@ const aiSettings = {
         providerFirst: '先にプロバイダー選択',
         modelManual: 'モデル名入力',
         modelSelect: 'モデル選択',
-        modelSelectOrType: '選択または入力'
+        modelSelectOrType: '選択または入力',
       },
       apiKeySavedAs: '現在保存済: {{masked}}',
       apiKeyGuide: {
@@ -84,31 +83,31 @@ const aiSettings = {
         selectProviderHint: 'プロバイダー選択後、申請方法を表示。',
         modelSuggestionZhipu: 'モデル提案: glm-4-flash / glm-4',
         modelSuggestionDeepSeek: 'モデル提案: deepseek-chat',
-        default: 'provider: {{provider}}。コンソールでAPI キー作成。',
+        default: 'Current provider: {{provider}}. Go to the provider\'s official console to create API Key, then paste above.',
         zhipu: {
           title: 'Zhipu API キー取得方法',
           step1: 'Zhipuプラットフォーム:',
-          step2: 'ログイン/登録後、コンソールでAPI キー作成。'
+          step2: 'ログイン/登録後、コンソールでAPI キー作成。',
         },
         deepseek: {
           title: 'DeepSeek API キー取得方法',
           step1: 'DeepSeekプラットフォーム:',
-          step2: 'ログイン/登録後、APIキー管理画面で作成。'
-        }
+          step2: 'ログイン/登録後、APIキー管理画面で作成。',
+        },
       },
       actions: {
         validateApiKey: 'API キー検証',
-        saveConfig: '設定保存'
+        saveConfig: '設定保存',
       },
       profiles: {
         current: '現在',
         actions: {
-          setCurrent: '現在に設定'
+          setCurrent: '現在に設定',
         },
         delete: {
           title: '設定削除',
-          content: '削除しますか？'
-        }
+          content: '削除しますか？',
+        },
       },
       messages: {
         loadConfigFailed: 'AI設定読込失敗',
@@ -123,14 +122,14 @@ const aiSettings = {
         deleted: '削除済',
         setCurrentSuccess: '現在設定切替',
         enabled: '有効化',
-        disabled: '無効化'
+        disabled: '無効化',
       },
       errors: {
         arrearage: '残高不足。コンソールで確認。',
         invalidModelId: 'モデル利用不可{{model}}。',
         unauthorized: 'API キー無効（401）。',
         forbidden: 'アクセス拒否（403）。',
-        timeout: '接続タイムアウト。'
+        timeout: '接続タイムアウト。',
       },
       discoverErrors: {
         baseUrlRequired: '先に Base URL（モデルサービスURL）を入力してください。',
@@ -144,9 +143,10 @@ const aiSettings = {
         unreachable: 'モデルサービスに接続できません: Base URL・ネットワーク・ゲートウェイを確認してください。',
         invalidModelsResponse: '/models 互換ではない応答形式です。',
         noModelsReturned: '利用可能なモデルがありません。権限と設定を確認してください。',
-        providerRegionBlocked: '地域制限: プロバイダーが検出された地域からの利用を拒否しました（出口IPはサーバ所在地と一致しない場合があります）。対応リージョンへの出口移行、準拠した HTTP(S) プロキシ、別プロバイダーへの切替を検討してください。',
+        providerRegionBlocked:
+          'Region not supported: the model provider rejected this request based on detected location (egress IP may differ from your server). Try a supported network region, a compliant HTTP(S) proxy, or another provider.',
         generic: 'モデル一覧の取得に失敗しました。Base URL と API キーを確認してください。',
-        genericDetail: 'モデル一覧の取得に失敗: {{detail}}'
+        genericDetail: 'モデル一覧の取得に失敗: {{detail}}',
       },
       validation: {
         nameRequired: '名前必須',
@@ -155,7 +155,7 @@ const aiSettings = {
         baseUrlProtocol: 'http://またはhttps://で開始',
         baseUrlNoChatCompletionsSuffix: '/chat/completionsで終了不可',
         modelRequired: 'モデル必須',
-        modelFormat: 'モデル形式不正'
+        modelFormat: 'モデル形式不正',
       },
       agent: {
         title: 'エージェント身分定義',
@@ -169,7 +169,7 @@ const aiSettings = {
           loadDefaults: 'デフォルト8エージェント読込',
           restoreDefaults: 'デフォルト復元',
           restoreDefaultsConfirmTitle: 'システムデフォルト復元？',
-          restoreDefaultsConfirmContent: '8システムエージェントをデフォルトにリセット。カスタムは保持。'
+          restoreDefaultsConfirmContent: '8システムエージェントをデフォルトにリセット。カスタムは保持。',
         },
         messages: {
           selectProfileFirst: '先に左で設定選択',
@@ -177,7 +177,7 @@ const aiSettings = {
           empty: 'カスタムエージェントなし。「追加」で設定。',
           saveSuccess: 'エージェント保存',
           saveFailed: '保存失敗',
-          defaultsLoaded: 'デフォルトテンプレート読込。「保存」で確定。'
+          defaultsLoaded: 'デフォルトテンプレート読込。「保存」で確定。',
         },
         fields: {
           namePlaceholder: 'エージェント名',
@@ -185,7 +185,7 @@ const aiSettings = {
           inputHintPlaceholder: '入力ヒント',
           modelProfilePlaceholder: 'デフォルト',
           modelProfileEmpty: '先に「AI設定」でプロバイダー/モデルを有効化',
-          historicalBinding: '{{value}}（過去）'
+          historicalBinding: '{{value}}（過去）',
         },
         types: {
           style: 'スタイル/パラダイム',
@@ -199,57 +199,65 @@ const aiSettings = {
           strategist: 'ストラテジーアナリスト',
           risk_manager: 'リスクマネージャー',
           executor: '執行アドバイザー',
-          researcher: 'マーケットリサーチャー'
+          researcher: 'マーケットリサーチャー',
         },
         defaults: {
           style: {
-            identity: '資深量化戦略アナリスト。戦略パラダイム選定。',
-            inputHint: '例: アカウント=EURUSD小売、時間枠=H1、目標=月収益3%、DD<10%'
+            identity:
+              'You are a senior quantitative strategy analyst, focused on strategy paradigm selection. Based on account/symbol/timeframe/historical stats (trend strength ADX, volatility ATR, autocorrelation, distribution skew, etc.) and user goals/constraints, recommend one primary paradigm and one alternative from "trend following / mean reversion / breakout / momentum / arbitrage / grid / event-driven", explain applicable/inapplicable conditions. Output in Markdown: 1) reasoning (bullet points) 2) main + alternative + applicable/inapplicable conditions 3) at least 3 risk alerts. Avoid vagueness, do not rely on external data not provided.',
+            inputHint: '例: アカウント=EURUSD小売、時間枠=H1、目標=月収益3%、DD<10%',
           },
           signals: {
-            identity: '量化因子・シグナルエンジニア。MA/EMA/RSI/MACD/ADX/ATR等。',
-            inputHint: '例: パラダイム=トレンドフォロー、時間枠=H1、指標=EMA/ATR/ADX'
+            identity:
+              'You are a quantitative factor and signal engineer, proficient with MA/EMA, RSI, MACD, ADX, ATR, Bollinger, Bollinger bandwidth, VWAP, Pivot, volume and volatility factors, etc. Without introducing external data (unless user provides macro/event tables), design reproducible, parameterizable entry/exit/filter signal rules, avoid overfitting. Output in Markdown: 1) reasoning 2) executable rule list (entry/exit/filter) with parameters (default/range/step) 3) at least 3 boundary/failure scenarios (range-bound/gap/high volatility/news).',
+            inputHint: '例: パラダイム=トレンドフォロー、時間枠=H1、指標=EMA/ATR/ADX',
           },
           risk: {
-            identity: '取引リスク・実行専門家。ポジション管理、SL/TP、DD制御等。',
-            inputHint: '例: 資産=10,000、許容DD=5%、取引リスク=0.5%、最大取引=5'
+            identity:
+              'You are a trading risk and execution constraints expert. Based on user goals and account status, design position sizing (fixed fraction / vol targeting / Kelly modified), stop-loss/take-profit, single/day/week max risk, max drawdown threshold, consecutive loss cooldown, trade frequency cap, spread/slippage anomaly protection, black swan downgrade strategy. Output in Markdown: 1) reasoning 2) hard constraints list + recommended params (suggested/range) + actions after trigger 3) at least 3 failure modes (e.g. consecutive loss expansion, correlation collapse, cross-symbol homogeneous exposure).',
+            inputHint: '例: 資産=10,000、許容DD=5%、取引リスク=0.5%、最大取引=5',
           },
           macro: {
-            identity: 'マクロリサーチャー。中央銀行金利、CPI/PPI、NFP、PMI、GDP等。',
-            inputHint: '例: 今週重要イベント=米CPI（木20:30）、FOMC議事録（水翌02:00）'
+            identity:
+              'You are a macro researcher, focusing on macro events with significant short/medium-term price impact: central bank rate decisions (FOMC/ECB/BoE/BoJ), CPI/PPI, NFP, PMI, GDP, retail sales, crude oil inventory, geopolitical events. Based on user-provided event tables or common calendars, give event windows (typically 30 mins before ~ 2 hours after) and direction/volatility forecast for target symbol, position suggestion (avoid / reduce / event-driven layout). Explicitly state unknowns and uncertainties; do not fabricate unpublished data. Output in Markdown: event impact matrix, recommended response, risk alerts.',
+            inputHint: '例: 今週重要イベント=米CPI（木20:30）、FOMC議事録（水翌02:00）',
           },
           sentiment: {
-            identity: '市場センチメント・資金フローアナリスト。COT、VIX、恐怖強欲指数等。',
-            inputHint: '例: VIX 14→22、非商業純ロング-18%、ニュース「リセッション/利下げ」'
+            identity:
+              'You are a market sentiment and capital flow analyst, judging extreme optimism/panic: COT reports, VIX and volatility surface, fear/greed index, funding rates (crypto), ETF fund flows, social/news sentiment keywords, Put/Call ratio. Output sentiment score (-1 extreme pessimistic ~ +1 extreme optimistic), identify dominant dimension and recent change speed (first/second order momentum), combine with strategy paradigm to suggest trend-following or contrarian tendency. State clearly when no reliable sentiment data; do not fabricate.',
+            inputHint: '例: VIX 14→22、非商業純ロング-18%、ニュース「リセッション/利下げ」',
           },
           portfolio: {
-            identity: 'ポートフォリオ管理専門家。相関マトリックス、リスクパリティ、ボラターゲット等。',
-            inputHint: '例: 既存戦略=トレンド-EURUSD、平均回帰-XAUUSD、総資産=50,000'
+            identity:
+              'You are a portfolio management expert, responsible for multi-strategy / multi-symbol / multi-account capital allocation and diversification. Methodologies: correlation matrix, covariance shrinkage, risk parity, volatility targeting, maximum diversification portfolio (MDP), dynamic rebalancing. Based on existing strategy/symbol return-risk characteristics and correlations, give allocation suggestions, and point out concentration, tail correlation rising and drawdown linkage risks. Output in Markdown: portfolio weight table, risk contribution decomposition, rebalancing rules, key risks.',
+            inputHint: '例: 既存戦略=トレンド-EURUSD、平均回帰-XAUUSD、総資産=50,000',
           },
           execution: {
-            identity: '実行・取引コスト最適化専門家。市指/指値/TWAP/VWAP/氷山等。',
-            inputHint: '例: 注文=EURUSDロング10ロット、スプレッド=0.6pip、目標5分、許容スリッページ=0.8pip'
+            identity:
+              'You are an execution and trading cost optimization expert. For given order size and symbol liquidity, choose appropriate execution method (market / limit / TWAP / VWAP / POV / iceberg), time window (Asia/Europe/US session) and order splitting strategy, estimate impact cost and slippage, give degradation handling for spread anomalies, flash crashes, liquidity drops. Output: execution recommendation, impact cost estimation formula and value range, monitoring metrics (actual slippage, fill time, fill rate) and thresholds.',
+            inputHint: '例: 注文=EURUSDロング10ロット、スプレッド=0.6pip、目標5分、許容スリッページ=0.8pip',
           },
           code: {
-            identity: 'AntTrader Pythonコードエンジニア。サンドボックス制約厳守。',
-            inputHint: '例: パラダイム=トレンドフォロー、指標=EMA(fast)/EMA(slow)+ATRフィルタ'
+            identity:
+              'You are an AntTrader Python strategy code engineer. Generate directly executable strategy code, strictly following sandbox validation: no import, no dunder access, no open/eval/exec/compile/__import__/globals/locals/vars/dir, only use platform-provided APIs (on_tick / on_kline / built-in np, math, datetime, calculate_rsi, etc.). Must define run(context) (only 1 context parameter), return dict with at least signal(buy/sell/hold), symbol, confidence(0~1), risk_level(low/medium/high), reason; read params from context["params"]. Strict output: only one ```python code block```, no Markdown symbols, Chinese punctuation, or nested code fences inside the block.',
+            inputHint: '例: パラダイム=トレンドフォロー、指標=EMA(fast)/EMA(slow)+ATRフィルタ',
           },
           strategist: {
-            identity: 'シニア定量ストラテジーアナリスト — 口座・市場状況に基づき戦略パラダイムを推奨。'
+            identity: 'シニア定量ストラテジーアナリスト — 口座・市場状況に基づき戦略パラダイムを推奨。',
           },
           risk_manager: {
-            identity: '厳格なリスク管理専門家 — ポジションサイジング、損切り、ドローダウン制限を設計。'
+            identity: '厳格なリスク管理専門家 — ポジションサイジング、損切り、ドローダウン制限を設計。',
           },
           executor: {
-            identity: '取引執行最適化専門家 — スリッページと執行コストを最小化。'
+            identity: '取引執行最適化専門家 — スリッページと執行コストを最小化。',
           },
           researcher: {
-            identity: 'マクロ経済・業界リサーチャー — マクロイベントとセクター動向を分析。'
-          }
-        }
-      }
-    }
-  }
+            identity: 'マクロ経済・業界リサーチャー — マクロイベントとセクター動向を分析。',
+          },
+        },
+      },
+    },
+  },
 } as const;
 
 export default aiSettings;

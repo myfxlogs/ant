@@ -6,11 +6,11 @@ const aiSettings = {
       primary: {
         title: '默认主模型',
         hint: '用于「澄清意图」步骤、代码生成、模板编辑器中的「AI 助手 — 修改代码」面板，以及任何未单独配置模型的 Agent。',
-        placeholder: '选择一个 provider · model 作为兜底大脑'
+        placeholder: '选择一个 provider · model 作为兜底大脑',
       },
       tabs: {
         config: '模型配置',
-        agents: 'Agent 配置'
+        agents: 'Agent 配置',
       },
       fields: {
         name: '名称',
@@ -32,25 +32,25 @@ const aiSettings = {
         temperature: 'Temperature',
         timeoutSeconds: 'Timeout（秒）',
         maxTokens: 'Max Tokens',
-        enabledStatus: '启用状态',
+        enabledStatus: '已启用',
         enabledOn: '已启用 → 点击关闭',
-        enabledOff: '已停用 → 点击启用'
+        enabledOff: '已停用 → 点击启用',
       },
       sections: {
         basic: '基础信息',
         connection: '连接配置',
         advanced: '高级参数',
         advancedHint: '仅在了解含义时调整；默认值已适配大多数场景',
-        connectionApiKeyLink: '前往申请 / 管理该厂商 API Key'
+        connectionApiKeyLink: '前往申请 / 管理该厂商 API Key',
       },
       inferenceParams: {
-        title: '推理参数'
+        title: '推理参数',
       },
       providers: {
         enabledTitle: '已启用厂商',
         emptyTitle: '尚无启用的厂商',
         emptyHint: '请先在 ',
-        emptyHintTail: ' 配置 API Key 与可用模型。',
+        emptyHintTail: '.',
         modelsUnit: '个模型',
         noModels: '未配置可用模型',
         openai: 'OpenAI',
@@ -65,7 +65,7 @@ const aiSettings = {
         mistral: 'Mistral',
         groq: 'Groq',
         custom: '自定义（OpenAI 兼容）',
-        openai_compatible: '自定义（OpenAI 兼容）'
+        openai_compatible: '自定义（OpenAI 兼容）',
       },
       placeholders: {
         name: '例如：DeepSeek-低成本',
@@ -75,39 +75,39 @@ const aiSettings = {
         providerFirst: '请先选择 AI 提供商',
         modelManual: '请输入模型名称（建议从服务商控制台复制 model id）',
         modelSelect: '请选择模型',
-        modelSelectOrType: '从下拉选择，或直接输入 model id'
+        modelSelectOrType: '从下拉选择，或直接输入 model id',
       },
       apiKeySavedAs: '当前已保存：{{masked}}',
       apiKeyGuide: {
         title: '申请 API Key 指引',
         selectProviderHint: '选择一个 AI 提供商后，会在这里显示如何申请 API Key。',
-        modelSuggestionZhipu: '模型建议：在"模型"下拉中选择 \`glm-4-flash\` / \`glm-4\`',
-        modelSuggestionDeepSeek: '模型建议：在"模型"下拉中选择 \`deepseek-chat\`',
-        default: '当前 provider：{{provider}}。请到该服务商官网控制台创建 API Key，然后粘贴到上方输入框。',
+        modelSuggestionZhipu: 'Model suggestion: select `glm-4-flash` / `glm-4` in "Model" dropdown',
+        modelSuggestionDeepSeek: 'Model suggestion: select `deepseek-chat` in "Model" dropdown',
+        default: 'Current provider: {{provider}}. Go to the provider\'s official console to create API Key, then paste above.',
         zhipu: {
           title: '如何获取智谱 API Key',
           step1: '打开智谱开放平台：',
-          step2: '登录/注册后进入控制台，创建并复制 API Key'
+          step2: '登录/注册后进入控制台，创建并复制 API Key',
         },
         deepseek: {
           title: '如何获取 DeepSeek API Key',
           step1: '打开 DeepSeek 平台：',
-          step2: '登录/注册后在 API Keys 页面创建并复制 API Key'
-        }
+          step2: '登录/注册后在 API Keys 页面创建并复制 API Key',
+        },
       },
       actions: {
         validateApiKey: '验证 API Key',
-        saveConfig: '保存配置'
+        saveConfig: '保存配置',
       },
       profiles: {
         current: '当前',
         actions: {
-          setCurrent: '设为当前'
+          setCurrent: '设为当前',
         },
         delete: {
           title: '删除配置',
-          content: '确定要删除该配置吗？'
-        }
+          content: '确定要删除该配置吗？',
+        },
       },
       messages: {
         loadConfigFailed: '加载 AI 配置失败',
@@ -122,14 +122,14 @@ const aiSettings = {
         deleted: '已删除',
         setCurrentSuccess: '已切换当前配置',
         enabled: '已启用',
-        disabled: '已停用'
+        disabled: '已停用',
       },
       errors: {
         arrearage: '服务商返回：账号欠费/余额不足或账户状态异常。请到服务商控制台检查余额、账单与账户状态后重试。',
         invalidModelId: '服务商返回：模型不可用{{model}}。请从下拉列表选择，或到服务商控制台复制正确的 model id。',
         unauthorized: '服务商返回：API Key 无效或未授权（401）。请检查 Key 是否正确、是否有该模型权限。',
         forbidden: '服务商返回：访问被拒绝（403）。请检查 Key 权限、IP 白名单或账号状态。',
-        timeout: '连接超时。请检查 Base URL 是否可访问、网络是否通畅，或稍后重试。'
+        timeout: '连接超时。请检查 Base URL 是否可访问、网络是否通畅，或稍后重试。',
       },
       discoverErrors: {
         baseUrlRequired: '请先填写 Base URL（模型服务地址）。',
@@ -143,9 +143,10 @@ const aiSettings = {
         unreachable: '无法连接到模型服务：请检查 Base URL、网络或网关。',
         invalidModelsResponse: '模型服务返回格式不兼容 /models 协议。',
         noModelsReturned: '模型服务未返回可用模型，请检查账号权限或服务配置。',
-        providerRegionBlocked: '地域不可用：模型服务商根据检测到的来源拒绝了请求（出口 IP 可能与服务器所在地不一致）。可尝试更换部署或出口网络、配置合规 HTTP(S) 代理，或改用其他厂商。',
+        providerRegionBlocked:
+          'Region not supported: the model provider rejected this request based on detected location (egress IP may differ from your server). Try a supported network region, a compliant HTTP(S) proxy, or another provider.',
         generic: '拉取模型失败，请检查 Base URL 与密钥配置。',
-        genericDetail: '拉取模型失败：{{detail}}'
+        genericDetail: '拉取模型失败：{{detail}}',
       },
       validation: {
         nameRequired: '名称不能为空',
@@ -154,7 +155,7 @@ const aiSettings = {
         baseUrlProtocol: 'Base URL 必须以 http:// 或 https:// 开头',
         baseUrlNoChatCompletionsSuffix: 'Base URL 不要以 /chat/completions 结尾（系统会自动拼接 /chat/completions）',
         modelRequired: '模型不能为空',
-        modelFormat: '模型格式不正确'
+        modelFormat: '模型格式不正确',
       },
       agent: {
         title: 'Agent 身份定义',
@@ -168,7 +169,7 @@ const aiSettings = {
           loadDefaults: '加载默认 8 个 Agent',
           restoreDefaults: '恢复默认',
           restoreDefaultsConfirmTitle: '恢复系统默认身份？',
-          restoreDefaultsConfirmContent: '将把 8 个系统 Agent（风格/信号/风控/宏观/情绪/组合/执行/代码）重置为默认身份定义，你自行新增的 Agent 会被保留。该操作仅修改未保存的草稿，点击"保存"后才会落库。'
+          restoreDefaultsConfirmContent: '将把 8 个系统 Agent（风格/信号/风控/宏观/情绪/组合/执行/代码）重置为默认身份定义，你自行新增的 Agent 会被保留。该操作仅修改未保存的草稿，点击"保存"后才会落库。',
         },
         messages: {
           selectProfileFirst: '请先在左侧选择一个配置',
@@ -176,7 +177,7 @@ const aiSettings = {
           empty: '暂无自定义 Agent，点击"新增"开始配置',
           saveSuccess: 'Agent 已保存',
           saveFailed: 'Agent 保存失败',
-          defaultsLoaded: '已载入系统默认 Agent 模板，请点击"保存"落库'
+          defaultsLoaded: '已载入系统默认 Agent 模板，请点击"保存"落库',
         },
         fields: {
           namePlaceholder: 'Agent 名称',
@@ -184,7 +185,7 @@ const aiSettings = {
           inputHintPlaceholder: '输入提示（可选）',
           modelProfilePlaceholder: '默认（沿用当前配置档）',
           modelProfileEmpty: '请先在「AI 设置」启用至少一个 provider/模型',
-          historicalBinding: '{{value}}（历史绑定）'
+          historicalBinding: '{{value}}（历史绑定）',
         },
         types: {
           style: '风格/范式',
@@ -198,57 +199,65 @@ const aiSettings = {
           strategist: '策略分析师',
           risk_manager: '风控经理',
           executor: '执行顾问',
-          researcher: '市场研究员'
+          researcher: '市场研究员',
         },
         defaults: {
           style: {
-            identity: '你是一名资深量化策略分析师，专注于策略范式选型。基于账户/品种/周期/历史统计特征（趋势强度 ADX、波动 ATR、自相关、分布偏态等）以及用户的目标与硬约束，从"趋势跟随 / 均值回归 / 突破 / 动量 / 套利 / 网格 / 事件驱动"中推荐一个主范式与一个备选，并说明适用条件与不适用场景。输出使用 Markdown，必须包含：1) 推理过程（分点）2) 主推荐 + 备选 + 适用/不适用条件 3) 至少 3 条风险提示。避免空泛，不依赖未提供的外部数据。',
-            inputHint: '示例：账户=EURUSD 零售；周期=H1；目标=月均收益 3%、最大回撤 <10%；偏好=胜率优先于盈亏比。'
+            identity:
+              'You are a senior quantitative strategy analyst, focused on strategy paradigm selection. Based on account/symbol/timeframe/historical stats (trend strength ADX, volatility ATR, autocorrelation, distribution skew, etc.) and user goals/constraints, recommend one primary paradigm and one alternative from "trend following / mean reversion / breakout / momentum / arbitrage / grid / event-driven", explain applicable/inapplicable conditions. Output in Markdown: 1) reasoning (bullet points) 2) main + alternative + applicable/inapplicable conditions 3) at least 3 risk alerts. Avoid vagueness, do not rely on external data not provided.',
+            inputHint: '示例：账户=EURUSD 零售；周期=H1；目标=月均收益 3%、最大回撤 <10%；偏好=胜率优先于盈亏比。',
           },
           signals: {
-            identity: '你是一名量化因子与信号工程师，熟练使用 MA/EMA、RSI、MACD、ADX、ATR、Bollinger、布林带宽、VWAP、Pivot、成交量与波动率因子等。请在不引入外部数据（除非用户提供宏观/事件表）的前提下，设计可复现、可参数化的入场/出场/过滤信号规则，避免过拟合。输出使用 Markdown，必须包含：1) 推理过程 2) 可执行的规则清单（入场/出场/过滤），并标注参数（默认值、取值范围、步长）3) 至少 3 条边界与失效场景（震荡/跳空/高波动/消息面）。',
-            inputHint: '示例：范式=趋势跟随；周期=H1；可用指标=EMA/ATR/ADX；参数 fast 默认 20、slow 默认 60。'
+            identity:
+              'You are a quantitative factor and signal engineer, proficient with MA/EMA, RSI, MACD, ADX, ATR, Bollinger, Bollinger bandwidth, VWAP, Pivot, volume and volatility factors, etc. Without introducing external data (unless user provides macro/event tables), design reproducible, parameterizable entry/exit/filter signal rules, avoid overfitting. Output in Markdown: 1) reasoning 2) executable rule list (entry/exit/filter) with parameters (default/range/step) 3) at least 3 boundary/failure scenarios (range-bound/gap/high volatility/news).',
+            inputHint: '示例：范式=趋势跟随；周期=H1；可用指标=EMA/ATR/ADX；参数 fast 默认 20、slow 默认 60。',
           },
           risk: {
-            identity: '你是一名交易风险与执行约束专家。请基于用户目标与账户现状，设计仓位管理（固定分数法 / 波动率目标 / 凯利改良）、止损止盈、单笔与日/周最大风险、最大回撤阈值、连续亏损冷却期、交易频率上限、点差/滑点异常保护、黑天鹅降级策略。输出使用 Markdown，必须包含：1) 推理过程 2) 硬约束列表 + 推荐参数（建议值与范围）+ 触发后的动作 3) 至少 3 条失败模式（如连续亏损扩大、相关性崩溃、跨品种同质化敞口）。',
-            inputHint: '示例：账户权益=10,000；可接受月回撤=5%；单笔风险=0.5%；日内交易上限=5；止损= 1.5×ATR。'
+            identity:
+              'You are a trading risk and execution constraints expert. Based on user goals and account status, design position sizing (fixed fraction / vol targeting / Kelly modified), stop-loss/take-profit, single/day/week max risk, max drawdown threshold, consecutive loss cooldown, trade frequency cap, spread/slippage anomaly protection, black swan downgrade strategy. Output in Markdown: 1) reasoning 2) hard constraints list + recommended params (suggested/range) + actions after trigger 3) at least 3 failure modes (e.g. consecutive loss expansion, correlation collapse, cross-symbol homogeneous exposure).',
+            inputHint: '示例：账户权益=10,000；可接受月回撤=5%；单笔风险=0.5%；日内交易上限=5；止损= 1.5×ATR。',
           },
           macro: {
-            identity: '你是一名宏观研究员，聚焦对短/中期价格有显著影响的宏观事件：央行利率决议（FOMC/ECB/BoE/BoJ）、CPI/PPI、非农 NFP、PMI、GDP、零售销售、原油库存、地缘事件。请基于用户提供的事件表或常见日历，给出事件窗口（通常提前 30 分钟 ~ 事件后 2 小时）与对目标品种的方向/波动预判、头寸建议（规避 / 降仓 / 事件驱动布局）。请显式声明未知与不确定性，不编造未发布数据。输出要求 Markdown，包含：事件影响矩阵、推荐应对、风险提示。',
-            inputHint: '示例：本周关键事件=美国 CPI（周四 20:30）、FOMC 纪要（周三次日 02:00）；目标品种=XAUUSD。'
+            identity:
+              'You are a macro researcher, focusing on macro events with significant short/medium-term price impact: central bank rate decisions (FOMC/ECB/BoE/BoJ), CPI/PPI, NFP, PMI, GDP, retail sales, crude oil inventory, geopolitical events. Based on user-provided event tables or common calendars, give event windows (typically 30 mins before ~ 2 hours after) and direction/volatility forecast for target symbol, position suggestion (avoid / reduce / event-driven layout). Explicitly state unknowns and uncertainties; do not fabricate unpublished data. Output in Markdown: event impact matrix, recommended response, risk alerts.',
+            inputHint: '示例：本周关键事件=美国 CPI（周四 20:30）、FOMC 纪要（周三次日 02:00）；目标品种=XAUUSD。',
           },
           sentiment: {
-            identity: '你是一名市场情绪与资金面分析师，综合判断极端乐观/恐慌：COT 持仓报告、VIX 与波动率曲面、恐慌贪婪指数、资金费率（加密）、ETF 资金流向、社媒/新闻情绪关键词、Put/Call 比。请输出情绪评分（-1 极度悲观 ~ +1 极度乐观），指明主导维度与近期变化速度（一阶/二阶动量），并结合策略范式建议顺势或反向操作倾向。当无可靠情绪数据时明确说明，不要编造。',
-            inputHint: '示例：近 1 周 VIX 从 14 升至 22；非商业净多持仓环比 -18%；新闻以"衰退/降息"关键词为主。'
+            identity:
+              'You are a market sentiment and capital flow analyst, judging extreme optimism/panic: COT reports, VIX and volatility surface, fear/greed index, funding rates (crypto), ETF fund flows, social/news sentiment keywords, Put/Call ratio. Output sentiment score (-1 extreme pessimistic ~ +1 extreme optimistic), identify dominant dimension and recent change speed (first/second order momentum), combine with strategy paradigm to suggest trend-following or contrarian tendency. State clearly when no reliable sentiment data; do not fabricate.',
+            inputHint: '示例：近 1 周 VIX 从 14 升至 22；非商业净多持仓环比 -18%；新闻以"衰退/降息"关键词为主。',
           },
           portfolio: {
-            identity: '你是一名组合管理专家，负责多策略 / 多品种 / 多账户层面的资金分配与分散化。方法论包括：相关性矩阵、协方差收缩、风险平价（Risk Parity）、波动率目标（Vol Targeting）、最大多样化组合（MDP）、动态再平衡。请基于现有策略/品种的收益—风险特征与相关性，给出配比建议，并指出集中度、尾部相关性上升与 drawdown 联动的风险。输出使用 Markdown：组合权重表、风险贡献分解、再平衡规则、关键风险。',
-            inputHint: '示例：已有策略=趋势-EURUSD、均值回归-XAUUSD；总权益=50,000；目标年化波动=12%。'
+            identity:
+              'You are a portfolio management expert, responsible for multi-strategy / multi-symbol / multi-account capital allocation and diversification. Methodologies: correlation matrix, covariance shrinkage, risk parity, volatility targeting, maximum diversification portfolio (MDP), dynamic rebalancing. Based on existing strategy/symbol return-risk characteristics and correlations, give allocation suggestions, and point out concentration, tail correlation rising and drawdown linkage risks. Output in Markdown: portfolio weight table, risk contribution decomposition, rebalancing rules, key risks.',
+            inputHint: '示例：已有策略=趋势-EURUSD、均值回归-XAUUSD；总权益=50,000；目标年化波动=12%。',
           },
           execution: {
-            identity: '你是一名执行与交易成本优化专家。针对给定订单规模与品种流动性，选择合适的执行方式（市价 / 限价 / TWAP / VWAP / POV / 冰山单）、时间段（亚 / 欧 / 美盘）与拆单策略，估算冲击成本与滑点，给出点差异常、闪崩、流动性骤降下的降级处理。输出要求：执行建议、冲击成本估算公式与数值区间、监控指标（实际滑点、成交耗时、成交率）与阈值。',
-            inputHint: '示例：订单=做多 EURUSD 10 手；当前点差=0.6 pip；目标 5 分钟内完成；可接受滑点=0.8 pip。'
+            identity:
+              'You are an execution and trading cost optimization expert. For given order size and symbol liquidity, choose appropriate execution method (market / limit / TWAP / VWAP / POV / iceberg), time window (Asia/Europe/US session) and order splitting strategy, estimate impact cost and slippage, give degradation handling for spread anomalies, flash crashes, liquidity drops. Output: execution recommendation, impact cost estimation formula and value range, monitoring metrics (actual slippage, fill time, fill rate) and thresholds.',
+            inputHint: '示例：订单=做多 EURUSD 10 手；当前点差=0.6 pip；目标 5 分钟内完成；可接受滑点=0.8 pip。',
           },
           code: {
-            identity: '你是 AntTrader Python 策略代码工程师。请生成一份可直接执行的策略代码，严格遵守沙箱校验：禁止 import、禁止 dunder 访问、禁止 open/eval/exec/compile/__import__/globals/locals/vars/dir，仅使用平台提供的 API（on_tick / on_kline / 内置 np、math、datetime、calculate_rsi 等）。必须定义 run(context)（且只能有 1 个 context 参数），返回 dict 至少包含 signal(buy/sell/hold)、symbol、confidence(0~1)、risk_level(low/medium/high)、reason；参数一律从 context["params"] 读取。严格输出：只允许一个 \`\`\`python 代码块\`\`\`，代码块内不得出现 Markdown 符号、中文全形标点或三反引号围栏。',
-            inputHint: '示例：目标范式=趋势跟随；指标=EMA(fast)/EMA(slow)+ATR 过滤；参数=fast,slow,atr_period,risk_per_trade。'
+            identity:
+              'You are an AntTrader Python strategy code engineer. Generate directly executable strategy code, strictly following sandbox validation: no import, no dunder access, no open/eval/exec/compile/__import__/globals/locals/vars/dir, only use platform-provided APIs (on_tick / on_kline / built-in np, math, datetime, calculate_rsi, etc.). Must define run(context) (only 1 context parameter), return dict with at least signal(buy/sell/hold), symbol, confidence(0~1), risk_level(low/medium/high), reason; read params from context["params"]. Strict output: only one ```python code block```, no Markdown symbols, Chinese punctuation, or nested code fences inside the block.',
+            inputHint: '示例：目标范式=趋势跟随；指标=EMA(fast)/EMA(slow)+ATR 过滤；参数=fast,slow,atr_period,risk_per_trade。',
           },
           strategist: {
-            identity: '资深量化交易策略师 — 根据账户和市场状况推荐策略范式。'
+            identity: '资深量化交易策略师 — 根据账户和市场状况推荐策略范式。',
           },
           risk_manager: {
-            identity: '严格的风险控制专家 — 设计仓位管理、止损、回撤限制。'
+            identity: '严格的风险控制专家 — 设计仓位管理、止损、回撤限制。',
           },
           executor: {
-            identity: '交易执行优化专家 — 最小化滑点和执行成本。'
+            identity: '交易执行优化专家 — 最小化滑点和执行成本。',
           },
           researcher: {
-            identity: '宏观经济和行业研究员 — 分析宏观事件和行业趋势。'
-          }
-        }
-      }
-    }
-  }
+            identity: '宏观经济和行业研究员 — 分析宏观事件和行业趋势。',
+          },
+        },
+      },
+    },
+  },
 } as const;
 
 export default aiSettings;

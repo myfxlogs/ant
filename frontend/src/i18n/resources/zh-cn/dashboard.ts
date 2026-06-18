@@ -15,19 +15,19 @@ const dashboard = {
       totalBalance: '总余额',
       totalEquity: '总净值',
       connected: '已连接',
-      accountCount: '账户数',
-      totalProfit: '总浮动盈亏'
+      accountCount: '账户',
+      totalProfit: 'Total Floating P/L'
     },
     fields: {
       balance: '余额',
       equity: '净值',
-      floating: '浮动'
+      floating: 'Floating P/L'
     },
     accountStatus: {
       disabled: '已禁用',
       connected: '已连接',
       connecting: '连接中',
-      disconnected: '未连接'
+      disconnected: 'Disconnected'
     },
     quickActions: {
       title: '快速操作',
@@ -39,9 +39,9 @@ const dashboard = {
       templates: '策略模板',
       logs: '日志',
       bindAccount: '绑账户',
-      closePosition: '平仓'
+      closePosition: 'Close'
     },
-    defaultName: '我的仪表盘'
+    defaultName: 'My Dashboard'
   }
 } as const;
 

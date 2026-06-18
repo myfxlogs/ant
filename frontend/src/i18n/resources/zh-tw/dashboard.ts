@@ -15,19 +15,19 @@ const dashboard = {
       totalBalance: '總餘額',
       totalEquity: '總淨值',
       connected: '已連線',
-      accountCount: '帳戶數',
-      totalProfit: '總浮動盈虧'
+      accountCount: '帳戶',
+      totalProfit: 'Total Floating P/L'
     },
     fields: {
       balance: '餘額',
       equity: '淨值',
-      floating: '浮動'
+      floating: 'Floating P/L'
     },
     accountStatus: {
       disabled: '已停用',
       connected: '已連線',
       connecting: '連線中',
-      disconnected: '未連線'
+      disconnected: 'Disconnected'
     },
     quickActions: {
       title: '快速操作',
@@ -39,9 +39,9 @@ const dashboard = {
       templates: '策略模板',
       logs: '日誌',
       bindAccount: '綁帳戶',
-      closePosition: '平倉'
+      closePosition: 'Close'
     },
-    defaultName: '我的儀表板'
+    defaultName: 'My Dashboard'
   }
 } as const;
 

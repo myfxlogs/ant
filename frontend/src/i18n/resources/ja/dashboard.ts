@@ -14,20 +14,20 @@ const dashboard = {
     stats: {
       totalBalance: '総残高',
       totalEquity: '有効証拠金合計',
-      connected: '接続中',
-      accountCount: '口座数',
-      totalProfit: '含み損益合計'
+      connected: '接続済み',
+      accountCount: '口座',
+      totalProfit: 'Total Floating P/L'
     },
     fields: {
       balance: '残高',
       equity: '有効証拠金',
-      floating: '含み'
+      floating: 'Floating P/L'
     },
     accountStatus: {
       disabled: '無効',
       connected: '接続済み',
       connecting: '接続中',
-      disconnected: '未接続'
+      disconnected: 'Disconnected'
     },
     quickActions: {
       title: 'クイック操作',
@@ -39,9 +39,9 @@ const dashboard = {
       templates: 'テンプレート',
       logs: 'ログ',
       bindAccount: '連携',
-      closePosition: '決済'
+      closePosition: 'Close'
     },
-    defaultName: '我的仪表盘'
+    defaultName: 'My Dashboard'
   }
 } as const;
 

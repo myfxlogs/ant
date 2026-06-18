@@ -5,11 +5,11 @@ const aiWizard = {
       subtitle: '每步一个页面，可前进/后退',
       currentModel: '当前模型：{{model}}',
       rangePresets: {
-        '1d': '最近 1 天',
-        '3d': '最近 3 天',
-        '7d': '最近 1 周',
-        '30d': '最近 1 月',
-        '90d': '最近 3 月',
+        '1d': 'Last 1 day',
+        '3d': 'Last 3 days',
+        '7d': 'Last 1 week',
+        '30d': 'Last 1 month',
+        '90d': 'Last 3 months',
       },
       steps: {
         setup: '基础信息',
@@ -25,7 +25,7 @@ const aiWizard = {
       },
       generate: {
         cards: {
-          resultsTitle: '多个专家的结果',
+          resultsTitle: 'Multiple experts\' results',
         },
         actions: {
           runAgents: '多个专家分析 + 代码生成',
@@ -39,7 +39,7 @@ const aiWizard = {
           afterGenerated: '生成完成后进入下一步进行验证/回测/上线',
         },
         labels: {
-          elapsed: '计时',
+          elapsed: '耗时',
         },
         status: {
           inProgress: '进行中',
@@ -123,7 +123,7 @@ const aiWizard = {
           selectSymbol: '选择品种',
           selectTimeframe: '选择周期',
           selectFrozenDataset: '选择冻结数据集',
-          macroExample: '示例：\n2024-01-03 21:15 FOMC 会议纪要\n2024-01-05 20:30 非农',
+          macroExample: 'Example:\n2024-01-03 21:15 FOMC minutes\n2024-01-05 20:30 NFP',
           intentExample: '示例：突破趋势跟随；避开高波动；偏好更高胜率...',
         },
         validations: {
@@ -154,7 +154,7 @@ const aiWizard = {
         },
         macro: {
           off: '关闭',
-          on: '开启',
+          on: 'On',
         },
         hints: {
           nextWillGenerateCode: '下一步将开始生成策略代码。',
@@ -266,16 +266,16 @@ const aiWizard = {
           timeframe: '周期: {{timeframe}}',
           data: '数据: {{dataSpec}}',
           constraints: '约束: 最大回撤={{maxDrawdownPct}}% 单笔风险={{riskPerTradePct}}% 日内最多交易={{maxTradesPerDay}} 次',
-          params: '参数（定义+当前值；运行时在 context["params"] 中）：\n{{params}}',
+          params: 'Parameters (defs+current values; injected into context["params"] at runtime):\n{{params}}',
           empty: '(空)',
-          macroEnabled: '宏观事件(用户提供):\n{{text}}',
+          macroEnabled: 'Macro events (user-provided):\n{{text}}',
           macroDisabled: '宏观事件: 不使用',
-          userIntent: '用户策略目标(自然语言):\n{{intent}}',
+          userIntent: 'User strategy goal (natural language):\n{{intent}}',
         },
         upstream: {
-          style: '【市场状态/风格推荐 结论】\n{{text}}',
-          signals: '【信号与指标设计 结论】\n{{text}}',
-          risk: '【风控与执行约束 结论】\n{{text}}',
+          style: '【Market condition/style conclusion】\n{{text}}',
+          signals: '【Signal design conclusion】\n{{text}}',
+          risk: '【Risk control conclusion】\n{{text}}',
           sectionTitle: '【上游 Agent 结论（原样提供）】',
         },
         summary: {
@@ -285,7 +285,7 @@ const aiWizard = {
           mustInclude2: '2) 主要入场条件（用 2~4 条要点）',
           mustInclude3: '3) 主要出场/止损止盈/风控约束（用 2~4 条要点）',
           mustInclude4: '4) 适用/不适用场景各 1 条',
-          userIntent: '用户预期（自然语言）：\n{{intent}}',
+          userIntent: 'User expectation (natural language):\n{{intent}}',
           codeTitle: '代码如下：',
         },
       },

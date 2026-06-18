@@ -5,27 +5,27 @@ const aiWizard = {
       subtitle: '每步一個頁面，可前進/後退',
       currentModel: '目前模型：{{model}}',
       rangePresets: {
-        '1d': '最近 1 天',
-        '3d': '最近 3 天',
-        '7d': '最近 1 週',
-        '30d': '最近 1 月',
-        '90d': '最近 3 月'
+        '1d': 'Last 1 day',
+        '3d': 'Last 3 days',
+        '7d': 'Last 1 week',
+        '30d': 'Last 1 month',
+        '90d': 'Last 3 months',
       },
       steps: {
         setup: '基礎資訊',
         generate: '生成策略',
         publishCode: '回測上線-程式碼',
         publishBacktest: '回測上線-回測',
-        publishLaunch: '回測上線-上線'
+        publishLaunch: '回測上線-上線',
       },
       actions: {
         prev: '上一步',
         next: '下一步',
-        cancel: '取消'
+        cancel: '取消',
       },
       generate: {
         cards: {
-          resultsTitle: '多個專家的結果'
+          resultsTitle: 'Multiple experts\' results',
         },
         actions: {
           runAgents: '多個專家分析 + 程式碼生成',
@@ -33,13 +33,13 @@ const aiWizard = {
           abort: '中止',
           rerun: '重新生成',
           regenerateSummary: '重新生成總結',
-          goValidate: '去校驗'
+          goValidate: '去校驗',
         },
         hints: {
-          afterGenerated: '生成完成後進入下一步進行驗證/回測/上線'
+          afterGenerated: '生成完成後進入下一步進行驗證/回測/上線',
         },
         labels: {
-          elapsed: '計時'
+          elapsed: '耗時',
         },
         status: {
           inProgress: '進行中',
@@ -51,25 +51,25 @@ const aiWizard = {
             signals: '訊號與指標設計中',
             risk: '風控與執行約束中',
             code: '程式碼生成中',
-            generic: '{{title}}中'
-          }
+            generic: '{{title}}中',
+          },
         },
         sections: {
           prompt: '發送給模型（Prompt）',
           output: '模型返回（Output）',
-          spec: '規格（Spec）'
+          spec: '規格（Spec）',
         },
         modals: {
           final: {
-            title: '程式碼已生成，建議點擊「驗證程式碼」確認通過校驗'
-          }
-        }
+            title: '程式碼已生成，建議點擊「驗證程式碼」確認通過校驗',
+          },
+        },
       },
       publish: {
         cards: {
           codeTitle: '1) 策略程式碼（可編輯）',
           scoreCardTitle: '2) 回測評分卡',
-          launchTitle: '3) 上線排程'
+          launchTitle: '3) 上線排程',
         },
         placeholders: {
           codeEditable: '這裡會自動填入 AI 生成的程式碼，你也可以手動修改。',
@@ -77,32 +77,32 @@ const aiWizard = {
         actions: {
           validateCode: '驗證程式碼',
           startBacktest: '回測（非同步任務）',
-          publishTemplate: '發布樣板'
+          publishTemplate: '發布樣板',
         },
         messages: {
           validateOk: 'validate 通過',
-          validateFailed: 'validate 未通過'
-        }
+          validateFailed: 'validate 未通過',
+        },
       },
       agents: {
         styleTitle: '市場狀態/風格推薦',
         signalsTitle: '訊號與指標設計',
         riskTitle: '風控與執行約束',
-        codeTitle: '程式碼生成'
+        codeTitle: '程式碼生成',
       },
       template: {
         defaultName: 'AI 策略 {{title}}',
-        defaultDescription: 'AI 嚮導生成'
+        defaultDescription: 'AI 嚮導生成',
       },
       schedule: {
-        defaultName: 'AI 排程 {{symbol}} {{timeframe}}'
+        defaultName: 'AI 排程 {{symbol}} {{timeframe}}',
       },
       setup: {
         cards: {
           tradeAndDataTitle: '交易與資料',
           constraintsAndGoalTitle: '約束與目標',
           hardConstraintsTitle: '硬約束',
-          hintsTitle: '提示'
+          hintsTitle: '提示',
         },
         labels: {
           account: '帳號',
@@ -116,57 +116,55 @@ const aiWizard = {
           maxTradesPerDay: '日內最多交易次數',
           macroModule: '宏觀模組',
           macroEvents: '宏觀事件',
-          intent: '策略目標/想法'
+          intent: '策略目標/想法',
         },
         placeholders: {
           selectAccount: '選擇帳號',
           selectSymbol: '選擇品種',
           selectTimeframe: '選擇週期',
           selectFrozenDataset: '選擇凍結資料集',
-          macroExample: `範例：
-2024-01-03 21:15 FOMC 會議紀要
-2024-01-05 20:30 非農`,
-          intentExample: '範例：突破趨勢跟隨；避開高波動；偏好更高勝率...'
+          macroExample: 'Example:\n2024-01-03 21:15 FOMC minutes\n2024-01-05 20:30 NFP',
+          intentExample: '範例：突破趨勢跟隨；避開高波動；偏好更高勝率...',
         },
         validations: {
           selectAccount: '請選擇帳號',
           selectSymbol: '請選擇品種',
           selectTimeframe: '請選擇週期',
           selectDataset: '請選擇資料集',
-          enterIntent: '請輸入策略目標/想法'
+          enterIntent: '請輸入策略目標/想法',
         },
         dataModes: {
           klineRange: '歷史K線範圍',
-          dataset: '凍結資料集'
+          dataset: '凍結資料集',
         },
         actions: {
           refreshDataset: '重新整理',
           freezeFromCurrentRange: '從目前範圍凍結',
-          deleteCurrentDataset: '刪除目前資料集'
+          deleteCurrentDataset: '刪除目前資料集',
         },
         modals: {
           deleteDataset: {
             title: '刪除資料集',
             content: '確定刪除目前選中的凍結資料集嗎？',
-            ok: '刪除'
-          }
+            ok: '刪除',
+          },
         },
         messages: {
-          datasetDeleted: '資料集已刪除'
+          datasetDeleted: '資料集已刪除',
         },
         macro: {
           off: '關閉',
-          on: '開啟'
+          on: 'On',
         },
         hints: {
           nextWillGenerateCode: '下一步將開始生成策略程式碼。',
-          tradeDataNextStep: '填寫完成後點擊「下一步」，進入約束與目標設定。'
-        }
+          tradeDataNextStep: '填寫完成後點擊「下一步」，進入約束與目標設定。',
+        },
       },
       publishBacktest: {
         cards: {
           backtestTitle: '回測',
-          scoreCardTitle: '評分卡'
+          scoreCardTitle: '評分卡',
         },
         actions: {
           startBacktest: '開始回測',
@@ -175,25 +173,25 @@ const aiWizard = {
           succeeded: '成功',
           inProgress: '進行中',
           runInBackground: '後台執行',
-          confirm: '確認'
+          confirm: '確認',
         },
         labels: {
           status: '狀態',
           elapsed: '耗時',
           scoringProgress: '評分進度',
           overallScore: '綜合評分',
-          confirmed: '已確認'
+          confirmed: '已確認',
         },
         modals: {
           status: {
-            title: '回測進行中'
+            title: '回測進行中',
           },
           score: {
-            title: '評分確認'
-          }
+            title: '評分確認',
+          },
         },
         draftName: '回測 {{datetime}} {{symbol}} {{timeframe}}',
-        draftNameShort: '回測 {{symbol}} {{timeframe}}'
+        draftNameShort: '回測 {{symbol}} {{timeframe}}',
       },
       strategyParams: {
         title: '策略參數（可選）',
@@ -201,13 +199,13 @@ const aiWizard = {
           intro: '這些參數會：',
           line1: '1) 儲存到樣板 parameters',
           line2: '2) 建立排程時寫入 schedule.parameters',
-          line3Prefix: '3) 執行時系統會把參數注入到 Python 策略的'
+          line3Prefix: '3) 執行時系統會把參數注入到 Python 策略的',
         },
         actions: {
           addParam: '新增參數',
           exportJson: '匯出 JSON',
           importJson: '匯入 JSON',
-          delete: '刪除'
+          delete: '刪除',
         },
         empty: '暫無參數。你可以新增如 fast/slow/risk_per_trade 等參數。',
         paramCardTitle: '參數 #{{index}}',
@@ -220,12 +218,12 @@ const aiWizard = {
           max: '最大值',
           step: '步長',
           label: '標籤',
-          description: '描述',
-          options: 'options（select 可用，逗號分隔）'
+          description: '說明',
+          options: 'options（select 可用，逗號分隔）',
         },
         validations: {
           nameRequired: 'name 必填',
-          typeRequired: 'type 必填'
+          typeRequired: 'type 必填',
         },
         placeholders: {
           nameExample: '例如：fast',
@@ -234,13 +232,13 @@ const aiWizard = {
           label: '展示名',
           description: '說明',
           optionsExample: '例如：low,medium,high',
-          importJson: '貼上參數 JSON'
+          importJson: '貼上參數 JSON',
         },
         modals: {
           exportTitle: '匯出參數 JSON',
           importTitle: '匯入參數 JSON',
           copyAndClose: '複製並關閉',
-          importOk: '匯入'
+          importOk: '匯入',
         },
         messages: {
           jsonParseFailed: 'JSON 解析失敗',
@@ -248,19 +246,19 @@ const aiWizard = {
           importMissingName: '匯入失敗：存在缺少 name 的參數',
           imported: '已匯入 {{count}} 個參數',
           copied: '已複製',
-          copyFailed: '複製失敗'
+          copyFailed: '複製失敗',
         },
         types: {
           number: '數字',
           string: '字串',
           bool: '布林',
-          select: '選擇'
-        }
+          select: '選擇',
+        },
       },
       prompts: {
         dataSpec: {
           dataset: '使用凍結資料集 datasetId={{datasetId}}',
-          klineRange: '使用歷史K線範圍 from={{from}} to={{to}}'
+          klineRange: '使用歷史K線範圍 from={{from}} to={{to}}',
         },
         base: {
           account: '帳號: {{accountId}}',
@@ -268,23 +266,17 @@ const aiWizard = {
           timeframe: '週期: {{timeframe}}',
           data: '資料: {{dataSpec}}',
           constraints: '約束: 最大回撤={{maxDrawdownPct}}% 單筆風險={{riskPerTradePct}}% 日內最多交易={{maxTradesPerDay}} 次',
-          params: `參數（定義+目前值；執行時在 context["params"] 中）：
-{{params}}`,
+          params: 'Parameters (defs+current values; injected into context["params"] at runtime):\n{{params}}',
           empty: '(空)',
-          macroEnabled: `宏觀事件(使用者提供):
-{{text}}`,
+          macroEnabled: 'Macro events (user-provided):\n{{text}}',
           macroDisabled: '宏觀事件: 不使用',
-          userIntent: `使用者策略目標(自然語言):
-{{intent}}`
+          userIntent: 'User strategy goal (natural language):\n{{intent}}',
         },
         upstream: {
-          style: `【市場狀態/風格結論】
-{{text}}`,
-          signals: `【訊號與指標設計結論】
-{{text}}`,
-          risk: `【風控與執行約束結論】
-{{text}}`,
-          sectionTitle: '【上游 Agent 結論（原樣提供）】'
+          style: '【Market condition/style conclusion】\n{{text}}',
+          signals: '【Signal design conclusion】\n{{text}}',
+          risk: '【Risk control conclusion】\n{{text}}',
+          sectionTitle: '【上游 Agent 結論（原樣提供）】',
         },
         summary: {
           intro: '你是量化策略解釋助手。請用簡潔中文（要點形式，最多 12 行）解釋這段 AntTrader Python 策略程式碼的核心思路。',
@@ -293,10 +285,9 @@ const aiWizard = {
           mustInclude2: '2) 主要入場條件（2~4 條要點）',
           mustInclude3: '3) 主要出場/止損止盈/風控約束（2~4 條要點）',
           mustInclude4: '4) 適用/不適用場景各 1 條',
-          userIntent: `使用者預期（自然語言）：
-{{intent}}`,
-          codeTitle: '程式碼如下：'
-        }
+          userIntent: 'User expectation (natural language):\n{{intent}}',
+          codeTitle: '程式碼如下：',
+        },
       },
       messages: {
         generateCodeFirst: '請先生成策略程式碼',
@@ -317,7 +308,7 @@ const aiWizard = {
         inputIntentFirst: '請先輸入策略目標/想法',
         aiRequestTimeout: 'AI 請求逾時（>{{seconds}}s）',
         modelReturnedEmpty: '模型返回為空',
-        noPythonCodeBlock: '程式碼 Agent 未輸出 \`\`\`python 程式碼塊',
+        noPythonCodeBlock: 'Code agent did not output ```python block```, check result',
         agentFailed: '{{title}} 失敗',
         userAborted: '使用者已中止',
         chatAborted: '已中止與模型對話',
@@ -338,28 +329,10 @@ const aiWizard = {
         scheduleCreatedAndEnabled: '排程已建立並啟用',
         scheduleCreated: '排程已建立',
         createScheduleFailed: '建立排程失敗',
-        scheduleAlreadyExists: '該帳號下已存在相同策略排程，請勿重複建立。'
-      }
-    }
+        scheduleAlreadyExists: '該帳號下已存在相同策略排程，請勿重複建立。',
+      },
+    },
   },
-  ai_wizard: {
-    ai: {
-      wizard: {
-        strategyParams: {
-          labels: {
-            name: '名稱',
-            type: '類型',
-            default: '預設值',
-            min: '最小值',
-            max: '最大值',
-            step: '步長',
-            label: '標籤',
-            description: '說明'
-          }
-        }
-      }
-    }
-  }
 } as const;
 
 export default aiWizard;

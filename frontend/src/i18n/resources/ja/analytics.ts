@@ -7,32 +7,32 @@ const analytics = {
         week: '今週',
         month: '今月',
         year: '今年',
-        all: '全期間'
+        all: '全期間',
       },
       direction: {
         buy: '買い',
-        sell: '売り'
+        sell: '売り',
       },
       profit: {
         win: '勝ち',
-        loss: '負け'
+        loss: '負け',
       },
       yearOption: '{{year}}年',
       placeholders: {
-        selectAccount: '口座を選択'
+        selectAccount: '口座を選択',
       },
       sections: {
         equityCurve: 'エクイティカーブ',
-        monthlyStats: '月次統計'
+        monthlyStats: '月次統計',
       },
       labels: {
-        pnl: '損益'
+        pnl: '損益',
       },
       metrics: {
         netProfit: '純利益',
         equity: '有効証拠金',
         balance: '残高',
-        equityValue: '有効証拠金額'
+        equityValue: '有効証拠金額',
       },
       cards: {
         symbolPnlCompare: '銘柄別損益比較',
@@ -41,7 +41,7 @@ const analytics = {
         pnlShare: '損益比率',
         tradeStats: '取引統計',
         riskMetrics: 'リスク指標',
-        economicCalendar: '経済カレンダー'
+        economicCalendar: '経済カレンダー',
       },
       tradeStats: {
         totalTrades: '取引回数',
@@ -55,7 +55,7 @@ const analytics = {
         maxHolding: '最大保有時間',
         avgVolume: '平均ロット',
         avgProfit: '平均利益',
-        avgLoss: '平均損失'
+        avgLoss: '平均損失',
       },
       risk: {
         maxDrawdown: '最大ドローダウン',
@@ -63,7 +63,7 @@ const analytics = {
         sharpe: 'シャープレシオ',
         sortino: 'ソルティノレシオ',
         volatility: 'ボラティリティ',
-        var95: 'VaR 95%'
+        var95: 'VaR 95%',
       },
       economicCalendar: {
         loading: '経済カレンダーを読み込み中...',
@@ -76,11 +76,11 @@ const analytics = {
           CPI: 'インフレ率（CPI）',
           UNRATE: '失業率',
           FEDFUNDS: 'フェデラルファンド金利',
-          GDP: '実質GDP'
-        }
-      }
-    }
-  }
+          GDP: '実質GDP',
+        },
+      },
+    },
+  },
 } as const;
 
 export default analytics;
