@@ -50,6 +50,26 @@ func (r *ShareRepository) GetByToken(ctx context.Context, token string) (*ShareT
 	return &t, nil
 }
 
+func (r *ShareRepository) ListAll(ctx context.Context) ([]*ShareToken, error) {
+	rows, err := r.db.Query(ctx,
+		`SELECT id, user_id, account_id, token, description, expires_at, view_count, max_views, created_at
+		 FROM share_tokens ORDER BY created_at DESC LIMIT 200`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []*ShareToken
+	for rows.Next() {
+		var t ShareToken
+		if err := rows.Scan(&t.ID, &t.UserID, &t.AccountID, &t.Token, &t.Description,
+			&t.ExpiresAt, &t.ViewCount, &t.MaxViews, &t.CreatedAt); err != nil {
+			return nil, err
+		}
+		out = append(out, &t)
+	}
+	return out, rows.Err()
+}
+
 func (r *ShareRepository) IncrementView(ctx context.Context, token string) error {
 	_, err := r.db.Exec(ctx,
 		`UPDATE share_tokens SET view_count = view_count + 1 WHERE token=$1`, token)

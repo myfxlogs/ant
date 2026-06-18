@@ -44,6 +44,7 @@ const JurisdictionGate = lazy(() => import('@/pages/admin/JurisdictionGate'));
 const SREKillSwitch = lazy(() => import('@/pages/admin/sre/KillSwitchPage'));
 const StrategyManagement = lazy(() => import('@/pages/admin/StrategyManagement'));
 const SREBreakers = lazy(() => import('@/pages/admin/sre/BreakersPage'));
+const ShareManagement = lazy(() => import('@/pages/admin/ShareManagement'));
 const SRECanary = lazy(() => import('@/pages/admin/sre/CanaryPage'));
 const AIGatewayManagement = lazy(() => import('@/pages/admin/AIGatewayManagement'));
 const SRELayout = lazy(() => import('@/pages/admin/sre/SRELayout'));
@@ -100,6 +101,7 @@ const adminRoutes = (
     <Route path="config" element={wrap(<SystemConfig />)} />
     <Route path="jurisdiction" element={wrap(<JurisdictionGate />)} />
     <Route path="strategies" element={wrap(<StrategyManagement />)} />
+    <Route path="shares" element={wrap(<ShareManagement />)} />
 	    <Route path="ai-gateway" element={wrap(<AIGatewayManagement />)} />
     <Route path="sre" element={<SRELayout />}>
       <Route index element={<Navigate to="/admin/sre/killswitch" replace />} />

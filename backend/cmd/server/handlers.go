@@ -147,8 +147,22 @@ func registerHandlers(
 	shareRepo := repository.NewShareRepository(pool)
 	tradeLogRepo := repository.NewTradeLogRepository(pool)
 	analyticsRepo := repository.NewAnalyticsRepository(pool)
-	shareServer := user.NewShareServer(shareRepo, tradeLogRepo, analyticsRepo, userRepo, log)
+	shareServer := user.NewShareServer(shareRepo, tradeLogRepo, analyticsRepo, userRepo, jwtSecret, log)
 	mux.Handle(antv1c.NewShareServiceHandler(shareServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
+		mux.HandleFunc("/api/shares/list", shareServer.HandleListShareTokens)
+		mux.HandleFunc("/api/admin/shares/list", func(w http.ResponseWriter, r *http.Request) {
+			uid, err := authInterceptor.UserIDFromHTTP(r)
+			if err != nil {
+				http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+				return
+			}
+			ok, _ := platformSvc.IsAdmin(r.Context(), uid)
+			if !ok {
+				http.Error(w, `{"error":"admin required"}`, http.StatusForbidden)
+				return
+			}
+			shareServer.HandleListAllShareTokens(w, r)
+		})
 
 	// AI Gateway: platform-operated AI model relay with token billing.
 	gatewayProviderRepo := repository.NewSystemAIProviderRepository(pool)

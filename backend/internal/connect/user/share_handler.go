@@ -4,7 +4,10 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"net/http"
+	"strings"
 	"time"
 
 	"connectrpc.com/connect"
@@ -19,17 +22,18 @@ import (
 )
 
 type ShareServer struct {
-	repo     *repository.ShareRepository
-	tradeLog *repository.TradeLogRepository
-	eqRepo   *repository.AnalyticsRepository
-	userRepo *repository.UserRepository
-	log      *zap.Logger
+	repo      *repository.ShareRepository
+	tradeLog  *repository.TradeLogRepository
+	eqRepo    *repository.AnalyticsRepository
+	userRepo  *repository.UserRepository
+	jwtSecret string
+	log       *zap.Logger
 }
 
 var _ antv1c.ShareServiceHandler = (*ShareServer)(nil)
 
-func NewShareServer(repo *repository.ShareRepository, tradeLog *repository.TradeLogRepository, eqRepo *repository.AnalyticsRepository, userRepo *repository.UserRepository, log *zap.Logger) *ShareServer {
-	return &ShareServer{repo: repo, tradeLog: tradeLog, eqRepo: eqRepo, userRepo: userRepo, log: log}
+func NewShareServer(repo *repository.ShareRepository, tradeLog *repository.TradeLogRepository, eqRepo *repository.AnalyticsRepository, userRepo *repository.UserRepository, jwtSecret string, log *zap.Logger) *ShareServer {
+	return &ShareServer{repo: repo, tradeLog: tradeLog, eqRepo: eqRepo, userRepo: userRepo, jwtSecret: jwtSecret, log: log}
 }
 
 func (s *ShareServer) CreateShareToken(ctx context.Context, req *connect.Request[antv1.CreateShareTokenRequest]) (*connect.Response[antv1.CreateShareTokenResponse], error) {
@@ -108,4 +112,80 @@ func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Req
 		TotalReturn: totalRet, WinRate: winRate, MaxDrawdown: maxDDval,
 		EquityCurve: equityVals, Trades: pbTrades,
 	}), nil
+}
+
+// HandleListShareTokens returns the current user's share tokens with view counts.
+func (s *ShareServer) HandleListShareTokens(w http.ResponseWriter, r *http.Request) {
+	tokenStr := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+	if tokenStr == "" || tokenStr == r.Header.Get("Authorization") {
+		http.Error(w, `{"error":"missing authorization header"}`, http.StatusUnauthorized)
+		return
+	}
+	claims, err := interceptor.ValidateToken(tokenStr, s.jwtSecret)
+	if err != nil {
+		http.Error(w, `{"error":"invalid token"}`, http.StatusUnauthorized)
+		return
+	}
+	uid, _ := uuid.Parse(claims.UserID)
+	if uid == uuid.Nil {
+		http.Error(w, `{"error":"login required"}`, http.StatusUnauthorized)
+		return
+	}
+	tokens, err := s.repo.ListByUser(r.Context(), uid)
+	if err != nil {
+		s.log.Error("ListShareTokens: db", zap.Error(err))
+		http.Error(w, `{"error":"internal"}`, http.StatusInternalServerError)
+		return
+	}
+	type item struct {
+		Token       string `json:"token"`
+		ShareURL    string `json:"shareUrl"`
+		Description string `json:"description"`
+		ViewCount   int    `json:"viewCount"`
+		ExpiresAt   string `json:"expiresAt"`
+		CreatedAt   string `json:"createdAt"`
+	}
+	items := make([]item, 0, len(tokens))
+	for _, t := range tokens {
+		items = append(items, item{
+			Token: t.Token, ShareURL: fmt.Sprintf("/share/%s", t.Token),
+			Description: t.Description, ViewCount: t.ViewCount,
+			ExpiresAt: t.ExpiresAt.Format(time.RFC3339),
+			CreatedAt: t.CreatedAt.Format(time.RFC3339),
+		})
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(items)
+}
+
+// HandleListAllShareTokens returns all share tokens (admin only, auth via interceptor).
+func (s *ShareServer) HandleListAllShareTokens(w http.ResponseWriter, r *http.Request) {
+	// Admin check already done by adminInterceptor on the mux.
+	tokens, err := s.repo.ListAll(r.Context())
+	if err != nil {
+		s.log.Error("ListAllShareTokens: db", zap.Error(err))
+		http.Error(w, `{"error":"internal"}`, http.StatusInternalServerError)
+		return
+	}
+	type item struct {
+		Token       string `json:"token"`
+		ShareURL    string `json:"shareUrl"`
+		UserID      string `json:"userId"`
+		Description string `json:"description"`
+		ViewCount   int    `json:"viewCount"`
+		ExpiresAt   string `json:"expiresAt"`
+		CreatedAt   string `json:"createdAt"`
+	}
+	items := make([]item, 0, len(tokens))
+	for _, t := range tokens {
+		items = append(items, item{
+			Token: t.Token, ShareURL: fmt.Sprintf("/share/%s", t.Token),
+			UserID: t.UserID.String(), Description: t.Description,
+			ViewCount: t.ViewCount,
+			ExpiresAt: t.ExpiresAt.Format(time.RFC3339),
+			CreatedAt: t.CreatedAt.Format(time.RFC3339),
+		})
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(items)
 }
