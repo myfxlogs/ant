@@ -1,9 +1,9 @@
 import { useCallback, useMemo } from 'react';
-import { Tag, Button, Spin, Dropdown, message } from 'antd';
+import { Tag, Button, Spin, Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
 import {
   ArrowLeftOutlined, ReloadOutlined, PauseCircleOutlined,
-  CaretRightOutlined, MoreOutlined, ShareAltOutlined,
+  CaretRightOutlined, MoreOutlined,
   WarningOutlined, DeleteOutlined, FileTextOutlined,
 } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -12,29 +12,10 @@ import AccountTradeTabs from './components/AccountTradeTabs';
 import AccountAnalyticsSection from './components/AccountAnalyticsSection';
 import AccountMetricsCards from './components/AccountMetricsCards';
 import AccountDeleteModal from './components/AccountDeleteModal';
+import ShareAccountButton from './components/ShareAccountButton';
 import { useAccountDetailData } from './AccountDetail/useAccountDetailData';
 
 export default function AccountDetail() {
-  const handleShare = useCallback(async () => {
-    if (!id) return;
-    try {
-      // Lazy import to avoid circular dependency with authStore
-      const { useAuthStore } = await import('@/stores/authStore');
-      const token = useAuthStore.getState().accessToken;
-      const resp = await fetch('/ant.v1.ShareService/CreateShareToken', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ account_id: id, expire_days: 7 }),
-      });
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.message || 'Failed');
-      const url = `${window.location.origin}${data.shareUrl}`;
-      await navigator.clipboard.writeText(url);
-      message.success(t('accounts.messages.shareLinkCopied', '分享链接已复制到剪贴板'));
-    } catch {
-      message.error(t('accounts.messages.shareLinkFailed', '创建分享链接失败'));
-    }
-  }, [id, t]);
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -174,9 +155,7 @@ export default function AccountDetail() {
             <Button icon={<FileTextOutlined />} onClick={() => navigate(`/accounts/${id}/report`)}>
               {t('accounts.report.titleShort')}
             </Button>
-            <Button icon={<ShareAltOutlined />} onClick={handleShare}>
-              {t('strategy.share', '分享')}
-            </Button>
+            {id && <ShareAccountButton accountId={id} />}
             <Button icon={<ReloadOutlined />} onClick={handleRefresh} loading={analyticsLoading}>
               {t('common.refresh')}
             </Button>
