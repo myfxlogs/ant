@@ -121,6 +121,10 @@ const base = {
     you: '你',
     comingSoon: '即将上线',
     pageUnderDevelopment: 'This page is under development'
+    months: {
+      jan: '1月', feb: '2月', mar: '3月', apr: '4月', may: '5月', jun: '6月',
+      jul: '7月', aug: '8月', sep: '9月', oct: '10月', nov: '11月', dec: '12月',
+    },
   },
   menu: {
     strategyWorkspace: '策略工作台',
