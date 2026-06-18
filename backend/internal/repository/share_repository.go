@@ -50,12 +50,16 @@ func (r *ShareRepository) GetByToken(ctx context.Context, token string) (*ShareT
 	return &t, nil
 }
 
-func (r *ShareRepository) ListAll(ctx context.Context) ([]*ShareToken, error) {
+func (r *ShareRepository) ListAll(ctx context.Context, limit, offset int) ([]*ShareToken, int, error) {
+	var total int
+	r.db.QueryRow(ctx, `SELECT count(*) FROM share_tokens`).Scan(&total)
+	if limit <= 0 { limit = 20 }
+	if offset < 0 { offset = 0 }
 	rows, err := r.db.Query(ctx,
 		`SELECT id, user_id, account_id, token, description, expires_at, view_count, max_views, created_at
-		 FROM share_tokens ORDER BY created_at DESC LIMIT 200`)
+		 FROM share_tokens ORDER BY created_at DESC LIMIT $1 OFFSET $2`, limit, offset)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer rows.Close()
 	var out []*ShareToken
@@ -63,11 +67,11 @@ func (r *ShareRepository) ListAll(ctx context.Context) ([]*ShareToken, error) {
 		var t ShareToken
 		if err := rows.Scan(&t.ID, &t.UserID, &t.AccountID, &t.Token, &t.Description,
 			&t.ExpiresAt, &t.ViewCount, &t.MaxViews, &t.CreatedAt); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		out = append(out, &t)
 	}
-	return out, rows.Err()
+	return out, total, rows.Err()
 }
 
 func (r *ShareRepository) IncrementView(ctx context.Context, token string) error {

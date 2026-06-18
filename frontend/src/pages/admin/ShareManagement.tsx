@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Table, Tag, Typography } from 'antd';
 import { LinkOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { getAccessToken } from '@/utils/getAccessToken';
 
 interface ShareItem {
   token: string;
@@ -13,29 +14,25 @@ interface ShareItem {
   createdAt: string;
 }
 
-function getAccessToken(): string | null {
-  try {
-    const raw = localStorage.getItem('auth-storage');
-    if (!raw) return null;
-    return JSON.parse(raw)?.state?.accessToken ?? null;
-  } catch { return null; }
-}
-
 export default function ShareManagement() {
   const { t } = useTranslation();
   const [data, setData] = useState<ShareItem[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const fetchData = async () => {
+  const fetchData = async (page = 1, pageSize = 20) => {
     const token = getAccessToken();
     if (!token) return;
     setLoading(true);
     try {
-      const resp = await fetch('/api/admin/shares/list', {
+      const resp = await fetch(`/api/admin/shares/list?page=${page}&pageSize=${pageSize}`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       const json = await resp.json();
-      if (Array.isArray(json)) setData(json);
+      if (json?.items) {
+        setData(json.items);
+        setTotal(json.total || 0);
+      }
     } catch { /* ignore */ }
     finally { setLoading(false); }
   };
@@ -87,7 +84,7 @@ export default function ShareManagement() {
         rowKey="token"
         loading={loading}
         size="small"
-        pagination={{ pageSize: 20 }}
+        pagination={{ total, pageSize: 20, onChange: (p) => fetchData(p) }}
       />
     </div>
   );

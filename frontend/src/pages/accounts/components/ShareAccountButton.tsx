@@ -2,17 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button, Modal, Table, message, Tag, Space, Typography } from 'antd';
 import { ShareAltOutlined, CopyOutlined, LinkOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-
-function getAccessToken(): string | null {
-  try {
-    const raw = localStorage.getItem('auth-storage');
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    return parsed?.state?.accessToken ?? null;
-  } catch {
-    return null;
-  }
-}
+import { getAccessToken } from '@/utils/getAccessToken';
 
 interface ShareItem {
   token: string;

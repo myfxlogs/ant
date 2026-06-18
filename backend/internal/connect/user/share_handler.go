@@ -126,9 +126,9 @@ func (s *ShareServer) HandleListShareTokens(w http.ResponseWriter, r *http.Reque
 		http.Error(w, `{"error":"invalid token"}`, http.StatusUnauthorized)
 		return
 	}
-	uid, _ := uuid.Parse(claims.UserID)
-	if uid == uuid.Nil {
-		http.Error(w, `{"error":"login required"}`, http.StatusUnauthorized)
+	uid, err := uuid.Parse(claims.UserID)
+	if err != nil || uid == uuid.Nil {
+		http.Error(w, `{"error":"invalid user"}`, http.StatusUnauthorized)
 		return
 	}
 	tokens, err := s.repo.ListByUser(r.Context(), uid)
@@ -158,10 +158,16 @@ func (s *ShareServer) HandleListShareTokens(w http.ResponseWriter, r *http.Reque
 	json.NewEncoder(w).Encode(items)
 }
 
-// HandleListAllShareTokens returns all share tokens (admin only, auth via interceptor).
+// HandleListAllShareTokens returns all share tokens (admin only).
 func (s *ShareServer) HandleListAllShareTokens(w http.ResponseWriter, r *http.Request) {
-	// Admin check already done by adminInterceptor on the mux.
-	tokens, err := s.repo.ListAll(r.Context())
+	page := 1
+	pageSize := 20
+	if v := r.URL.Query().Get("page"); v != "" { fmt.Sscanf(v, "%d", &page) }
+	if v := r.URL.Query().Get("pageSize"); v != "" { fmt.Sscanf(v, "%d", &pageSize) }
+	limit, offset := pageSize, (page-1)*pageSize
+	if limit > 100 { limit = 100 }
+
+	tokens, total, err := s.repo.ListAll(r.Context(), limit, offset)
 	if err != nil {
 		s.log.Error("ListAllShareTokens: db", zap.Error(err))
 		http.Error(w, `{"error":"internal"}`, http.StatusInternalServerError)
@@ -187,5 +193,7 @@ func (s *ShareServer) HandleListAllShareTokens(w http.ResponseWriter, r *http.Re
 		})
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(items)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"items": items, "total": total, "page": page, "pageSize": pageSize,
+	})
 }
