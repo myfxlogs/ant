@@ -1068,6 +1068,8 @@ def run(context):
       eventDrivenMode: 'Run(context)',
       runtimeMode: 'Runtime',
       history: 'Backtest History',
+      startDate: 'Start',
+      endDate: 'End',
       run: '▶ Run',
       enterCodeAndSymbol: 'Please enter strategy code and select a symbol',
       backtestFailed: 'Backtest failed',

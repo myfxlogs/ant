@@ -146,9 +146,9 @@ export default function BacktestParamsCard(props: Props) {
                 style={{ fontSize: 10 }}
               />
               <DatePicker size="small" style={{ width: 130 }} value={startDate ? dayjs(startDate) : null}
-                onChange={(d) => d && onStartDateChange(d.format('YYYY-MM-DD'))} placeholder="Start" />
+                onChange={(d) => d && onStartDateChange(d.format('YYYY-MM-DD'))} placeholder={t('strategy.backtestParams.startDate')} />
               <DatePicker size="small" style={{ width: 130 }} value={endDate ? dayjs(endDate) : null}
-                onChange={(d) => d && onEndDateChange(d.format('YYYY-MM-DD'))} placeholder="End" />
+                onChange={(d) => d && onEndDateChange(d.format('YYYY-MM-DD'))} placeholder={t('strategy.backtestParams.endDate')} />
             </div>
             {timeframeWarning && (
               <div style={{ fontSize: 9, color: '#fa8c16', marginTop: 4 }}>

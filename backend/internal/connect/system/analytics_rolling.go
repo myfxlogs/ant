@@ -145,27 +145,46 @@ func computeDrawdownEvents(curve []*model.EquityPoint) []*antv1.DrawdownEvent {
 }
 
 func computeMonthlyWinRates(ctx context.Context, repo *repository.AnalyticsRepository, accountID uuid.UUID, start, end time.Time) []*antv1.MonthlyWinRate {
-	year := end.Year()
-	if start.Year() < year {
-		year = start.Year()
+	// Query all calendar years spanned by [start, end] (up to 2 for a 1-year window).
+	var allMonthlyPnL []monthlyPnLWithYear
+	for y := start.Year(); y <= end.Year(); y++ {
+		monthlyPnL, err := repo.GetMonthlyPnL(ctx, accountID, y)
+		if err != nil {
+			continue
+		}
+		for _, m := range monthlyPnL {
+			// Include only months within [start, end] and with actual trades.
+			monthStart := time.Date(y, time.Month(m.MonthNum), 1, 0, 0, 0, 0, time.UTC)
+			monthEnd := monthStart.AddDate(0, 1, -1)
+			if monthEnd.Before(start) || monthStart.After(end) {
+				continue
+			}
+			if m.Trades == 0 {
+				continue
+			}
+			allMonthlyPnL = append(allMonthlyPnL, monthlyPnLWithYear{year: y, MonthlyPnL: m})
+		}
 	}
-	monthlyPnL, err := repo.GetMonthlyPnL(ctx, accountID, year)
-	if err != nil || len(monthlyPnL) == 0 {
+	if len(allMonthlyPnL) == 0 {
 		return nil
 	}
-	out := make([]*antv1.MonthlyWinRate, 0, len(monthlyPnL))
-	for _, m := range monthlyPnL {
-		wr := 0.0
-		if m.Trades > 0 {
-			wr = float64(m.WinTrades) / float64(m.Trades) * 100
-		}
+	out := make([]*antv1.MonthlyWinRate, 0, len(allMonthlyPnL))
+	for _, m := range allMonthlyPnL {
+		wr := float64(m.WinTrades) / float64(m.Trades) * 100
+		// Use "YYYY-MM" format so months from different years are distinguishable.
+		label := fmt.Sprintf("%d-%02d", m.year, m.MonthNum)
 		out = append(out, &antv1.MonthlyWinRate{
-			Month:       m.Month,
+			Month:       label,
 			WinRate:     math.Round(wr*100) / 100,
 			TotalTrades: int64(m.Trades),
 		})
 	}
 	return out
+}
+
+type monthlyPnLWithYear struct {
+	year int
+	*model.MonthlyPnL
 }
 
 func mean(vals []float64) float64 {

@@ -137,8 +137,8 @@ export default function AccountReport() {
             { label: t('accounts.detail.cards.balance'), value: `${balance.toFixed(2)} ${currentAccount.currency || 'USD'}` },
             { label: t('accounts.detail.cards.equity'), value: `${equity.toFixed(2)} ${currentAccount.currency || 'USD'}` },
             { label: t('accounts.detail.cards.floatingProfit'), value: `${profit >= 0 ? '+' : ''}${profit.toFixed(2)} (${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%)`, color: profit >= 0 ? 'var(--color-success)' : 'var(--color-danger)' },
-            { label: t('accounts.detail.cards.margin'), value: `${margin.toFixed(2)} ${currentAccount.currency || 'USD'}` },
-            { label: t('accounts.detail.cards.freeMargin'), value: `${freeMargin.toFixed(2)} ${currentAccount.currency || 'USD'}` },
+            { label: t('accounts.detail.cards.marginUsed'), value: `${margin.toFixed(2)} ${currentAccount.currency || 'USD'}` },
+            { label: t('accounts.detail.cards.marginFree'), value: `${freeMargin.toFixed(2)} ${currentAccount.currency || 'USD'}` },
             { label: t('accounts.detail.cards.marginLevel'), value: `${marginLevel.toFixed(2)}%` },
           ].map((card, i) => (
             <div key={i} className="rounded-xl p-3" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
