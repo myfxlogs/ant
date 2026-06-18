@@ -231,17 +231,31 @@ export default function SharePerformancePage() {
         </Card>
       )}
 
-      {/* Performance by symbol — pie chart */}
+      {/* Performance by symbol — pie chart + legend */}
       {bySymbol.length > 0 && (
         <Card size="small" title={<span style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>{t('sharePage.bySymbol')}</span>} style={{ marginBottom: 16, borderRadius: 10 }}>
-          <ResponsiveContainer width="100%" height={280}>
-            <PieChart>
-              <Pie data={bySymbol} dataKey="net" nameKey="symbol" cx="50%" cy="50%" outerRadius="60%" innerRadius="35%" paddingAngle={2}>
-                {bySymbol.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
-              </Pie>
-              <RechartsTooltip formatter={(v: number) => signed(v)} />
-            </PieChart>
-          </ResponsiveContainer>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+            <ResponsiveContainer width={110} height={110}>
+              <PieChart>
+                <Pie data={bySymbol} dataKey="net" nameKey="symbol" cx="50%" cy="50%" innerRadius={30} outerRadius={48} paddingAngle={2} isAnimationActive={false}>
+                  {bySymbol.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+            <div style={{ flex: 1, minWidth: 160, fontSize: 'clamp(11px, 2vw, 13px)' }}>
+              {bySymbol.slice(0, 8).map((s, i) => (
+                <div key={s.symbol} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: PIE_COLORS[i % PIE_COLORS.length] }} />
+                    <span style={{ color: 'var(--color-text, #333)' }}>{s.symbol}</span>
+                    <span style={{ color: '#8c8c8c', fontSize: '0.9em' }}>{s.count}{t('sharePage.countUnit', { defaultValue: '笔' })}</span>
+                  </div>
+                  <span style={{ fontWeight: 500, color: s.net >= 0 ? green : red }}>{signed(s.net)}</span>
+                </div>
+              ))}
+              {bySymbol.length > 8 && <div style={{ color: '#8c8c8c', fontSize: 11 }}>+{bySymbol.length - 8} more</div>}
+            </div>
+          </div>
         </Card>
       )}
 

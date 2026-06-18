@@ -307,6 +307,7 @@ const base = {
     profit: '盈亏',
     closeTime: '平仓时间',
     count: '笔数',
+    countUnit: '笔',
     language: '语言',
     footer: '由 AntTrader 生成',
     disclaimer: '过往业绩不代表未来表现。',
