@@ -254,7 +254,8 @@ func (s *ShareServer) HandleGetSharedPerformanceJSON(w http.ResponseWriter, r *h
 		}
 	}
 
-	// Positions — only if the share token allows it. Fetch from MT broker live.
+	// Positions — only if the share token allows it. Use cached snapshot,
+	// fetching live from the MT broker only once to populate the cache.
 	var positionsOut interface{}
 	if st.ShowPositions {
 		type posJSON struct {
@@ -265,7 +266,12 @@ func (s *ShareServer) HandleGetSharedPerformanceJSON(w http.ResponseWriter, r *h
 			Profit    float64 `json:"profit"`
 		}
 		posList := make([]posJSON, 0)
-		if s.mthub != nil {
+
+		// Try cached snapshot first.
+		if cached, err := s.repo.GetPositionsSnapshot(r.Context(), st.Token); err == nil && cached != nil {
+			positionsOut = cached
+		} else if s.mthub != nil {
+			// Fetch live from broker and cache.
 			if orders, err := s.mthub.OpenedOrders(r.Context(), st.AccountID); err == nil {
 				for _, o := range orders {
 					vol, _ := o.Volume.Float64()
@@ -278,9 +284,11 @@ func (s *ShareServer) HandleGetSharedPerformanceJSON(w http.ResponseWriter, r *h
 						Volume: vol, OpenPrice: openP, Profit: prof,
 					})
 				}
+				// Cache snapshot for subsequent views.
+				s.repo.SetPositionsSnapshot(r.Context(), st.Token, posList)
 			}
+			positionsOut = posList
 		}
-		positionsOut = posList
 	}
 
 	w.Header().Set("Content-Type", "application/json")

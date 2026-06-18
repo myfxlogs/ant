@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -77,6 +78,36 @@ func (r *ShareRepository) ListAll(ctx context.Context, limit, offset int) ([]*Sh
 
 func (r *ShareRepository) UpdateShowPositions(ctx context.Context, userID uuid.UUID, token string, show bool) error {
 	_, err := r.db.Exec(ctx, `UPDATE share_tokens SET show_positions=$1 WHERE user_id=$2 AND token=$3`, show, userID, token)
+	return err
+}
+
+func (r *ShareRepository) GetPositionsSnapshot(ctx context.Context, token string) (interface{}, error) {
+	var data []byte
+	var updatedAt time.Time
+	err := r.db.QueryRow(ctx,
+		`SELECT positions_snapshot, COALESCE(positions_snapshot_at, '1970-01-01') FROM share_tokens WHERE token=$1`, token,
+	).Scan(&data, &updatedAt)
+	if err != nil || data == nil {
+		return nil, err
+	}
+	// Refresh cache every 60s so positions stay reasonably current.
+	if time.Since(updatedAt) > 60*time.Second {
+		return nil, nil // signal caller to refresh
+	}
+	var result interface{}
+	if err := json.Unmarshal(data, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (r *ShareRepository) SetPositionsSnapshot(ctx context.Context, token string, snapshot interface{}) error {
+	data, err := json.Marshal(snapshot)
+	if err != nil {
+		return err
+	}
+	_, err = r.db.Exec(ctx,
+		`UPDATE share_tokens SET positions_snapshot=$1, positions_snapshot_at=NOW() WHERE token=$2`, data, token)
 	return err
 }
 
