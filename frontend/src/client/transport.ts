@@ -4,6 +4,7 @@ import { Modal, message } from 'antd';
 import i18n from '@/i18n';
 import { useAuthStore } from '@/stores/authStore';
 import { isLikelyStreamTransportFailure, isStreamAuthFailure, isStreamServiceProcedure } from '@/utils/streamErrors';
+import { AI_INSUFFICIENT_BALANCE } from '@/utils/aiErrorCodes';
 import { translateMaybeI18nKey } from '@/utils/error';
 import { ensureFreshToken, refreshAccessToken } from '@/utils/tokenLifecycle';
 
@@ -98,7 +99,7 @@ const interceptors: Interceptor[] = [
       return await next(req);
     } catch (error: unknown) {
       // Wallet insufficient balance — show friendly message once.
-      if (error instanceof ConnectError && error.code === 9 && error.message.includes('insufficient_balance')) {
+      if (error instanceof ConnectError && error.code === 9 && error.message.includes(AI_INSUFFICIENT_BALANCE)) {
         if (!hasShownBalanceError) {
           hasShownBalanceError = true;
           message.error(i18n.t('errors.ai.insufficient_balance', { defaultValue: '余额不足，请先充值' }));

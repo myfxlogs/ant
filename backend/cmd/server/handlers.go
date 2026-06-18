@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -180,13 +181,19 @@ func registerHandlers(
 	aiSvc.SetGatewayProviderRepo(gatewayProviderRepo)
 
 	// Wire wallet pre-check: block AI calls when balance is insufficient.
+	aiMinBalance := 0.0001
+	if v := os.Getenv("AI_MIN_BALANCE"); v != "" {
+		if parsed, err := strconv.ParseFloat(v, 64); err == nil && parsed >= 0 {
+			aiMinBalance = parsed
+		}
+	}
 	aiSvc.SetWalletChecker(func(ctx context.Context, userID uuid.UUID) error {
 		w, err := walletSvc.GetOrCreateWallet(ctx, userID)
 		if err != nil {
 			return nil // don't block on wallet lookup errors
 		}
 		bal, _ := strconv.ParseFloat(w.Balance, 64)
-		if bal < 0.0001 {
+		if bal < aiMinBalance {
 			return systemai.ErrInsufficientBalance
 		}
 		return nil

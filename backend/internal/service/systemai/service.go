@@ -36,9 +36,12 @@ var defaultProviderSeeds = []struct {
 }
 
 // ErrInsufficientBalance is returned by the wallet pre-check when the user
-// cannot afford an AI call. Handlers should map it to a ConnectRPC
-// FailedPrecondition error so the frontend can show a friendly message.
+// cannot afford an AI call.
 var ErrInsufficientBalance = errors.New("insufficient balance for AI — please top up your wallet")
+
+// InsufficientBalanceCode is the stable error code sent to the frontend so it
+// can reliably detect balance errors without string-matching.
+const InsufficientBalanceCode = "AI_INSUFFICIENT_BALANCE"
 
 // WrapAIError maps AI service errors to ConnectRPC-friendly errors.
 // If err wraps ErrInsufficientBalance, returns FailedPrecondition so
@@ -49,7 +52,7 @@ func WrapAIError(err error) error {
 		return nil
 	}
 	if errors.Is(err, ErrInsufficientBalance) {
-		return connect.NewError(connect.CodeFailedPrecondition, errors.New("insufficient_balance"))
+		return connect.NewError(connect.CodeFailedPrecondition, errors.New(InsufficientBalanceCode))
 	}
 	return err
 }
