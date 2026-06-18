@@ -265,6 +265,17 @@ const base = {
     lastLogin: '最終ログイン',
     registered: 'Registered'
   },
+  share: {
+    title: 'Share Management',
+    createNew: 'Create New Share Link',
+    token: 'Share Link',
+    views: 'Views',
+    expires: 'Expires',
+    actions: '操作',
+    empty: 'No share links yet',
+    userId: 'ユーザー',
+    createdAt: '作成しました',
+  },
   notifications: {
     title: '通知',
     all: 'すべて',
@@ -318,7 +329,8 @@ const base = {
       tradingMonitor: '取引監視',
       operationLogs: 'Operation Logs',
       systemConfig: 'システム設定',
-      jurisdiction: '管轄権管理'
+      jurisdiction: '管轄権管理',
+      shareManagement: 'Share Analytics'
     },
     header: {
       adminMode: 'Admin Mode',

@@ -265,6 +265,17 @@ const base = {
     lastLogin: '最后登入',
     registered: 'Registered'
   },
+  share: {
+    title: 'Share Management',
+    createNew: 'Create New Share Link',
+    token: 'Share Link',
+    views: 'Views',
+    expires: 'Expires',
+    actions: '操作',
+    empty: 'No share links yet',
+    userId: '一般用戶',
+    createdAt: '已建立',
+  },
   notifications: {
     title: '通知中心',
     all: '全部',
@@ -318,7 +329,8 @@ const base = {
       tradingMonitor: '交易監控',
       operationLogs: 'Operation Logs',
       systemConfig: '系统配置',
-      jurisdiction: '管轄权管理'
+      jurisdiction: '管轄权管理',
+      shareManagement: 'Share Analytics'
     },
     header: {
       adminMode: 'Admin Mode',

@@ -265,6 +265,17 @@ const base = {
     lastLogin: 'Đăng Nhập Cuối',
     registered: 'Registered'
   },
+  share: {
+    title: 'Share Management',
+    createNew: 'Create New Share Link',
+    token: 'Share Link',
+    views: 'Views',
+    expires: 'Expires',
+    actions: 'Thao Tác',
+    empty: 'No share links yet',
+    userId: 'Người Dùng',
+    createdAt: 'Đã tạo',
+  },
   notifications: {
     title: 'Thông báo',
     all: 'Tất cả',
@@ -318,7 +329,8 @@ const base = {
       tradingMonitor: 'Giám Sát Giao Dịch',
       operationLogs: 'Operation Logs',
       systemConfig: 'Cấu Hình Hệ Thống',
-      jurisdiction: 'Kiểm Soát Quyền Hạn'
+      jurisdiction: 'Kiểm Soát Quyền Hạn',
+      shareManagement: 'Share Analytics'
     },
     header: {
       adminMode: 'Admin Mode',

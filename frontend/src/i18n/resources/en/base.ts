@@ -265,6 +265,17 @@ const base = {
     lastLogin: 'Last Login',
     registered: 'Registered'
   },
+  share: {
+    title: 'Share Management',
+    createNew: 'Create New Share Link',
+    token: 'Share Link',
+    views: 'Views',
+    expires: 'Expires',
+    actions: 'Actions',
+    empty: 'No share links yet',
+    userId: 'User',
+    createdAt: 'Created',
+  },
   notifications: {
     title: 'Notifications',
     all: 'All',
@@ -318,7 +329,8 @@ const base = {
       tradingMonitor: 'Trading Monitor',
       operationLogs: 'Operation Logs',
       systemConfig: 'System Config',
-      jurisdiction: 'Jurisdiction Gate'
+      jurisdiction: 'Jurisdiction Gate',
+      shareManagement: 'Share Analytics'
     },
     header: {
       adminMode: 'Admin Mode',

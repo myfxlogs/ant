@@ -265,6 +265,17 @@ const base = {
     lastLogin: '最后登录',
     registered: 'Registered'
   },
+  share: {
+    title: '分享管理',
+    createNew: '创建新分享链接',
+    token: '分享链接',
+    views: '浏览量',
+    expires: '过期时间',
+    actions: '操作',
+    empty: '暂无分享链接',
+    userId: '普通用户',
+    createdAt: '已创建',
+  },
   notifications: {
     title: '通知中心',
     all: '全部',
