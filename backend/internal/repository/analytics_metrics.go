@@ -17,6 +17,7 @@ func (r *AnalyticsRepository) GetMonthlyAnalysisRaw(ctx context.Context, account
 			EXTRACT(YEAR FROM close_time)::int AS year,
 			EXTRACT(MONTH FROM close_time)::int AS month,
 			COALESCE(SUM(profit), 0) AS profit,
+			COALESCE(SUM(profit), 0) AS change,
 			COALESCE(SUM(volume), 0) AS lots,
 			COALESCE(SUM(
 				(CASE
@@ -44,7 +45,7 @@ func (r *AnalyticsRepository) GetMonthlyAnalysisRaw(ctx context.Context, account
 	var points []*model.MonthlyAnalysisPoint
 	for rows.Next() {
 		p := &model.MonthlyAnalysisPoint{}
-		if err := rows.Scan(&p.Year, &p.Month, &p.Profit, &p.Lots, &p.Pips, &p.Trades); err != nil {
+		if err := rows.Scan(&p.Year, &p.Month, &p.Profit, &p.Change, &p.Lots, &p.Pips, &p.Trades); err != nil {
 			return nil, err
 		}
 		points = append(points, p)

@@ -154,7 +154,7 @@ export default function MonthlyAnalysisCard({ accountId, years, data, winRateDat
 
   // Y-axis formatter per metric
   const yAxisFormatter = useCallback((v: number) => {
-    if (selectedMetric === 'change') return `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`;
+    if (selectedMetric === 'change') return `${v >= 0 ? '+' : ''}${v.toFixed(2)}`;
     if (selectedMetric === 'profit') return `${v >= 0 ? '+' : ''}${v.toFixed(2)}`;
     if (selectedMetric === 'lots') return v.toFixed(2);
     return `${v >= 0 ? '+' : ''}${v.toFixed(1)}`;

@@ -32,7 +32,7 @@ type Props = {
 function formatTooltipValue(metric: MetricType, point: MonthlyBarRow, currency: string): string {
   switch (metric) {
     case 'change':
-      return `${point.change >= 0 ? '+' : ''}${point.change.toFixed(2)}%`;
+      return `${point.change >= 0 ? '+' : ''}${point.change.toFixed(2)}`;
     case 'profit':
       return `${point.profit >= 0 ? '+' : ''}${point.profit.toFixed(2)} ${currency}`;
     case 'lots':
@@ -152,7 +152,7 @@ export default function MonthlyAnalysisMainChart({
               position="top"
               formatter={(v: number) => {
                 if (!Number.isFinite(v) || Math.abs(Number(v)) < 1e-12) return '';
-                if (selectedMetric === 'change') return `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`;
+                if (selectedMetric === 'change') return `${v >= 0 ? '+' : ''}${v.toFixed(2)}`;
                 if (selectedMetric === 'profit') return `${v >= 0 ? '+' : ''}${v.toFixed(2)}`;
                 if (selectedMetric === 'lots') return v.toFixed(2);
                 return `${v >= 0 ? '+' : ''}${v.toFixed(1)}`;
