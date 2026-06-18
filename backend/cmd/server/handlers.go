@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -180,7 +181,16 @@ func registerHandlers(
 
 	// Wire token billing: all ChatCompletion calls automatically record usage through this hook.
 	aiSvc.SetTokenRecorder(func(ctx context.Context, r systemai.TokenRecord) {
-		_ = gatewayServer.RecordTokenUsage(ctx, r.UserID, "system", r.ProviderID, r.Model, r.Feature, r.InputTokens, r.OutputTokens, "0")
+		// Compute cost from model pricing (per-1M-token rates).
+		cost := "0"
+		if m, err := gatewayModelRepo.GetByProviderAndModel(ctx, r.ProviderID, r.Model); err == nil && m != nil {
+			ip, _ := strconv.ParseFloat(m.PricePer1MInput, 64)
+			op, _ := strconv.ParseFloat(m.PricePer1MOutput, 64)
+			inCost := float64(r.InputTokens) / 1_000_000.0 * ip
+			outCost := float64(r.OutputTokens) / 1_000_000.0 * op
+			cost = strconv.FormatFloat(inCost+outCost, 'f', 8, 64)
+		}
+		_ = gatewayServer.RecordTokenUsage(ctx, r.UserID, "system", r.ProviderID, r.Model, r.Feature, r.InputTokens, r.OutputTokens, cost)
 	})
 
 	streamServer := system.NewStreamServer(mthubSvc, platformSvc, log)

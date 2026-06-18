@@ -236,6 +236,22 @@ func (r *AIModelRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+func (r *AIModelRepository) GetByProviderAndModel(ctx context.Context, providerID, modelName string) (*AIModel, error) {
+	m := &AIModel{}
+	err := r.db.QueryRow(ctx,
+		`SELECT m.id, m.provider_id, m.model_name, m.display_name, m.price_per_1m_input, m.price_per_1m_output,
+		        m.enabled, m.sort_order, m.created_at
+		 FROM ai_models m JOIN system_ai_providers p ON m.provider_id = p.id
+		 WHERE p.provider_id = $1 AND m.model_name = $2`, providerID, modelName,
+	).Scan(&m.ID, &m.ProviderID, &m.ModelName, &m.DisplayName,
+		&m.PricePer1MInput, &m.PricePer1MOutput,
+		&m.Enabled, &m.SortOrder, &m.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (r *AIModelRepository) ListByProvider(ctx context.Context, providerID uuid.UUID) ([]*AIModel, error) {
 	rows, err := r.db.Query(ctx,
 		`SELECT id, provider_id, model_name, display_name, price_per_1m_input, price_per_1m_output, enabled, sort_order, created_at
