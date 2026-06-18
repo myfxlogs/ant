@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -178,6 +179,19 @@ func registerHandlers(
 
 	// Wire AI Gateway fallback: if user has no own API key, use system providers.
 	aiSvc.SetGatewayProviderRepo(gatewayProviderRepo)
+
+	// Wire wallet pre-check: block AI calls when balance is insufficient.
+	aiSvc.SetWalletChecker(func(ctx context.Context, userID uuid.UUID) error {
+		w, err := walletSvc.GetOrCreateWallet(ctx, userID)
+		if err != nil {
+			return nil // don't block on wallet lookup errors
+		}
+		bal, _ := strconv.ParseFloat(w.Balance, 64)
+		if bal < 0.0001 {
+			return fmt.Errorf("insufficient balance for AI: have %.8f, need at least 0.0001", bal)
+		}
+		return nil
+	})
 
 	// Wire token billing: all ChatCompletion calls automatically record usage through this hook.
 	aiSvc.SetTokenRecorder(func(ctx context.Context, r systemai.TokenRecord) {

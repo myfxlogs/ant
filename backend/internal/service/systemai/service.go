@@ -54,6 +54,7 @@ type Service struct {
 	box                 *secretbox.Box
 	secretCache         sync.Map
 	tokenRecorder       TokenRecorder
+	walletChecker       func(ctx context.Context, userID uuid.UUID) error // pre-check before API call
 	gatewayProviderRepo *repository.SystemAIProviderRepository // optional: fallback for AI Gateway
 }
 
@@ -75,6 +76,12 @@ func NewService(repo *repository.SystemAIConfigRepository, box *secretbox.Box) *
 // SetTokenRecorder sets a callback invoked after each successful AI call.
 func (s *Service) SetTokenRecorder(fn TokenRecorder) {
 	s.tokenRecorder = fn
+}
+
+// SetWalletChecker sets a pre-check called before each AI API call.
+// If it returns an error, the API call is aborted before any tokens are consumed.
+func (s *Service) SetWalletChecker(fn func(ctx context.Context, userID uuid.UUID) error) {
+	s.walletChecker = fn
 }
 
 // SetGatewayProviderRepo sets an optional fallback provider repo for AI Gateway.

@@ -134,6 +134,13 @@ func (s *Service) ChatCompletionWithUsage(
 	messages []ChatMessage,
 	modelHint string,
 ) (*ChatResult, error) {
+	// Pre-check wallet balance before making any API call.
+	if s.walletChecker != nil {
+		if err := s.walletChecker(ctx, userID); err != nil {
+			return nil, err
+		}
+	}
+
 	providers, err := s.resolveAllChatProviders(ctx, userID, modelHint)
 	if err != nil {
 		return nil, err
