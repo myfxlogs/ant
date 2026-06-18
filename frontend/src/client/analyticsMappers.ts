@@ -22,6 +22,8 @@ import type {
   HourlyStat as ProtoHourlyStat,
   TradeRecord as ProtoTradeRecord,
 } from '../gen/ant/v1/analytics_pb';
+import { fromBinary } from '@bufbuild/protobuf';
+import { MonthlyAnalysisPointsSchema } from '../gen/ant/v1/market_events_pb';
 import { deepConvertBigIntToNumber } from '@/adapters/dataAdapter';
 import type {
   TradeStats,
@@ -178,10 +180,14 @@ export function mapMonthlyPnLResponse(r: GetMonthlyPnLResponse): MonthlyPnLData 
 }
 
 export function mapMonthlyAnalysisResponse(r: GetMonthlyAnalysisResponse): MonthlyAnalysisData {
-  return {
-    years: r.years || [],
-    data: r.data ?? [],
-  };
+  let points: unknown[] = [];
+  if (r.data && r.data.length > 0) {
+    try {
+      const decoded = fromBinary(MonthlyAnalysisPointsSchema, r.data);
+      points = (decoded.points || []).map(p => ({ ...p, change: Number(p.change), profit: Number(p.profit), lots: Number(p.lots), pips: Number(p.pips) }));
+    } catch { /* keep empty on decode error */ }
+  }
+  return { years: r.years || [], data: points };
 }
 
 export function mapAttributionAnalysis(r: GetAttributionAnalysisResponse): AttributionAnalysisData {
