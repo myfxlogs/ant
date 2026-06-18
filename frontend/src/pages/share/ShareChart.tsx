@@ -1,7 +1,7 @@
 import { ResponsiveContainer, AreaChart, Area, Tooltip, YAxis } from 'recharts';
 
 export default function ShareChart({ data }: { data: number[] }) {
-  const chartData = data.map((v, i) => ({ x: i, value: v }));
+  const chartData = data.map((v, i) => ({ x: i, value: typeof v === 'bigint' ? Number(v) : v }));
   return (
     <ResponsiveContainer width="100%" height={260}>
       <AreaChart data={chartData} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>

@@ -11,6 +11,11 @@ import ShareChart from './ShareChart';
 
 const { Title, Text } = Typography;
 
+function toNum(v: unknown): number {
+  if (typeof v === 'bigint') return Number(v);
+  if (typeof v === 'number') return v;
+  return 0;
+}
 function fmt(n: number, d = 2) { return Number.isFinite(n) ? n.toFixed(d) : '-'; }
 
 export default function SharePerformancePage() {
@@ -34,25 +39,29 @@ export default function SharePerformancePage() {
   if (error || !data) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}><Empty description={error || t('share.page.notFound', { defaultValue: 'Not found' })} /></div>;
   if (data.expired) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}><Empty description={t('share.page.expired', { defaultValue: 'This share link has expired' })} /></div>;
 
-  const isPositive = (data.totalReturn || 0) >= 0;
+  const totalReturn = toNum(data.totalReturn);
+  const winRate = toNum(data.winRate);
+  const maxDrawdown = toNum(data.maxDrawdown);
+  const totalTrades = data.totalTrades ? Number(data.totalTrades) : 0;
+  const isPositive = totalReturn >= 0;
   const trades = data.trades || [];
 
   const kpiCards = [
-    { label: t('share.page.totalReturn', { defaultValue: 'Total Return' }), value: `${isPositive ? '+' : ''}${fmt(data.totalReturn || 0, 2)}%`, color: isPositive ? '#52c41a' : '#ff4d4f', icon: isPositive ? <RiseOutlined /> : <FallOutlined /> },
-    { label: t('share.page.winRate', { defaultValue: 'Win Rate' }), value: `${fmt(data.winRate || 0, 1)}%`, color: '#1677ff', icon: null },
-    { label: t('share.page.maxDrawdown', { defaultValue: 'Max Drawdown' }), value: `${fmt(data.maxDrawdown || 0, 2)}%`, color: '#fa8c16', icon: null },
-    { label: t('share.page.totalTrades', { defaultValue: 'Total Trades' }), value: String(data.totalTrades || 0), color: '#722ed1', icon: null },
+    { label: t('share.page.totalReturn', { defaultValue: 'Total Return' }), value: `${isPositive ? '+' : ''}${fmt(totalReturn, 2)}%`, color: isPositive ? '#52c41a' : '#ff4d4f', icon: isPositive ? <RiseOutlined /> : <FallOutlined /> },
+    { label: t('share.page.winRate', { defaultValue: 'Win Rate' }), value: `${fmt(winRate, 1)}%`, color: '#1677ff', icon: null },
+    { label: t('share.page.maxDrawdown', { defaultValue: 'Max Drawdown' }), value: `${fmt(maxDrawdown, 2)}%`, color: '#fa8c16', icon: null },
+    { label: t('share.page.totalTrades', { defaultValue: 'Total Trades' }), value: String(totalTrades), color: '#722ed1', icon: null },
   ];
 
   const columns = [
     { title: t('share.page.symbol', { defaultValue: 'Symbol' }), dataIndex: 'symbol', key: 'symbol', width: 80, responsive: ['xs' as const, 'sm' as const] },
     { title: t('share.page.side', { defaultValue: 'Side' }), dataIndex: 'side', key: 'side', width: 60,
       render: (v: string) => <Tag color={v?.toLowerCase() === 'buy' ? 'green' : 'red'}>{v}</Tag> },
-    { title: t('share.page.volume', { defaultValue: 'Volume' }), dataIndex: 'volume', key: 'volume', width: 70, render: (v: number) => v?.toFixed(2) },
+    { title: t('share.page.volume', { defaultValue: 'Volume' }), dataIndex: 'volume', key: 'volume', width: 70, render: (v: unknown) => toNum(v).toFixed(2) },
     { title: t('share.page.profit', { defaultValue: 'Profit' }), dataIndex: 'profit', key: 'profit', width: 90,
-      render: (v: number) => <span style={{ color: v >= 0 ? '#52c41a' : '#ff4d4f', fontWeight: 500 }}>{fmt(v, 2)}</span> },
+      render: (v: unknown) => { const n = toNum(v); return <span style={{ color: n >= 0 ? '#52c41a' : '#ff4d4f', fontWeight: 500 }}>{fmt(n, 2)}</span>; } },
     { title: t('share.page.closeTime', { defaultValue: 'Close' }), dataIndex: 'closeTimeMs', key: 'closeTimeMs',
-      render: (v: number) => v ? new Date(v).toLocaleDateString() : '-' },
+      render: (v: unknown) => { const ms = toNum(v); return ms ? new Date(ms).toLocaleDateString() : '-'; } },
   ];
 
   return (
