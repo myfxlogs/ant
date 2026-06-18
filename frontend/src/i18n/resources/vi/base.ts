@@ -120,7 +120,11 @@ const base = {
     no: 'No',
     you: 'Bạn',
     comingSoon: 'Sắp Ra Mắt',
-    pageUnderDevelopment: 'This page is under development'
+    pageUnderDevelopment: 'This page is under development',
+    months: {
+      jan: 'Jan', feb: 'Feb', mar: 'Mar', apr: 'Apr', may: 'May', jun: 'Jun',
+      jul: 'Jul', aug: 'Aug', sep: 'Sep', oct: 'Oct', nov: 'Nov', dec: 'Dec',
+    },
   },
   menu: {
     strategyWorkspace: 'Không gian chiến lược',

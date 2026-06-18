@@ -11,7 +11,7 @@ import {
   type MonthlyAnalysisPoint,
   type MonthlyBarRow,
   monthFromBarClick,
-  monthShortLabels,
+  getMonthLabels,
 } from './MonthlyAnalysisCard.shared';
 import { analyticsApi } from '@/client/analytics';
 import type { MonthlyDetailData } from '@/client/analytics';
@@ -84,18 +84,20 @@ export default function MonthlyAnalysisCard({ accountId, years, data, winRateDat
     pips: t('accounts.analytics.monthlyAnalysis.metrics.pips'),
   };
 
+  const monthLabels = useMemo(() => getMonthLabels(t), [t]);
+
   const series: MonthlyBarRow[] = useMemo(
     () =>
       yearData.map((item) => {
         const isActive = item.month === displayMonth;
         return {
           ...item,
-          monthAxisLabel: monthShortLabels[item.month - 1],
+          monthAxisLabel: monthLabels[item.month - 1],
           value: (item as Record<string, number>)[selectedMetric] ?? 0,
           isActive,
         };
       }),
-    [yearData, selectedMetric, displayMonth]
+    [yearData, selectedMetric, displayMonth, monthLabels]
   );
 
   const seriesRef = useRef<MonthlyBarRow[]>(series);
@@ -221,6 +223,7 @@ export default function MonthlyAnalysisCard({ accountId, years, data, winRateDat
               series={series}
               selectedMetric={selectedMetric}
               currency={currency}
+              monthLabels={monthLabels}
               yAxisFormatter={yAxisFormatter}
               onMouseDown={suppressChartFocus}
               onMouseMove={handleMainChartMouseMove}

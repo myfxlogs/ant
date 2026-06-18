@@ -48,6 +48,16 @@ export type MonthlyAnalysisCardProps = {
 
 export const monthShortLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+/** Returns translated month abbreviations for the current locale. */
+export function getMonthLabels(t: (key: string) => string): string[] {
+  return [
+    t('common.months.jan'), t('common.months.feb'), t('common.months.mar'),
+    t('common.months.apr'), t('common.months.may'), t('common.months.jun'),
+    t('common.months.jul'), t('common.months.aug'), t('common.months.sep'),
+    t('common.months.oct'), t('common.months.nov'), t('common.months.dec'),
+  ];
+}
+
 /** Myfxbook-style pastel bar colors — rotating palette per month. */
 export const MONTH_BAR_PASTELS = [
   '#B486B4', // Jan — mauve

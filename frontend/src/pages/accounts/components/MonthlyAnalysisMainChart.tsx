@@ -12,7 +12,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { barCellFill, monthShortLabels, type MonthlyBarRow } from './MonthlyAnalysisCard.shared';
+import { barCellFill, type MonthlyBarRow } from './MonthlyAnalysisCard.shared';
 
 type MetricType = 'change' | 'profit' | 'lots' | 'pips';
 
@@ -20,6 +20,7 @@ type Props = {
   series: MonthlyBarRow[];
   selectedMetric: MetricType;
   currency: string;
+  monthLabels: string[];
   yAxisFormatter: (v: number) => string;
   onMouseDown: (e: ReactMouseEvent) => void;
   onMouseMove: (activeTooltipIndex: number | string | undefined) => void;
@@ -47,6 +48,7 @@ export default function MonthlyAnalysisMainChart({
   series,
   selectedMetric,
   currency,
+  monthLabels,
   yAxisFormatter,
   onMouseDown,
   onMouseMove,
@@ -54,12 +56,14 @@ export default function MonthlyAnalysisMainChart({
   onCommitByTooltipIndex,
   onCommitMonthClick,
 }: Props) {
+  const maxVal = Math.max(...series.map(s => Math.abs(s.value ?? 0)), 1);
+  const chartHeight = Math.max(210, Math.min(500, maxVal * 2 + 80));
   return (
     <div
       className="outline-none [&_.recharts-wrapper]:!outline-none [&_.recharts-wrapper]:ring-0 [&_.recharts-surface]:outline-none"
       onMouseDown={onMouseDown}
     >
-      <ResponsiveContainer width="100%" height={210}>
+      <ResponsiveContainer width="100%" height={chartHeight}>
         <ComposedChart
           data={series}
           margin={{ top: 20, right: 6, left: 0, bottom: 4 }}
@@ -125,7 +129,7 @@ export default function MonthlyAnalysisMainChart({
                   }}
                 >
                   <div style={{ fontWeight: 700, color: 'var(--color-text)', marginBottom: 2 }}>
-                    {monthShortLabels[(row.month || 1) - 1]} {row.year}
+                    {monthLabels[(row.month || 1) - 1]} {row.year}
                   </div>
                   <div style={{ color: 'var(--color-text-secondary)' }}>
                     {formatTooltipValue(selectedMetric, row, currency)}
