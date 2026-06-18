@@ -312,6 +312,10 @@ const base = {
     count: 'Số Lệnh',
     language: 'Ngôn ngữ',
     footer: 'Được tạo bởi AntTrader',
+    positions: 'Open Positions',
+    noPositions: 'No open positions',
+    positionsLocked: 'Positions hidden by creator',
+    openPrice: 'Open',
     disclaimer: 'Hiệu suất trong quá khứ không đảm bảo kết quả tương lai.',
   },
   notifications: {

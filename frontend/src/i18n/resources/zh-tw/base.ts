@@ -312,6 +312,10 @@ const base = {
     count: '筆數',
     language: '語言',
     footer: '由 AntTrader 產生',
+    positions: 'Open Positions',
+    noPositions: 'No open positions',
+    positionsLocked: 'Positions hidden by creator',
+    openPrice: 'Open',
     disclaimer: '過往績效不代表未來表現。',
   },
   notifications: {

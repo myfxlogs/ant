@@ -312,6 +312,10 @@ const base = {
     count: '取引数',
     language: '言語',
     footer: 'AntTrader により生成',
+    positions: 'Open Positions',
+    noPositions: 'No open positions',
+    positionsLocked: 'Positions hidden by creator',
+    openPrice: 'Open',
     disclaimer: '過去の実績は将来の成果を保証するものではありません。',
   },
   notifications: {
