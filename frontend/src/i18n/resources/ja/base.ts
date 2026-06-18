@@ -275,6 +275,8 @@ const base = {
     empty: '共有リンクはまだありません',
     userId: 'ユーザー',
     deleteConfirm: 'Delete this share link?',
+    showPositions: 'Show positions on new link',
+    positions: 'Positions',
     createdAt: '作成しました',
   },
   sharePage: {

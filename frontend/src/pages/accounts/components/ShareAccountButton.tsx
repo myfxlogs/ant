@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button, Modal, Table, message, Tag, Space, Typography, Popconfirm, Switch } from 'antd';
-import { ShareAltOutlined, CopyOutlined, LinkOutlined, DeleteOutlined, EyeOutlined, LockOutlined } from '@ant-design/icons';
+import { ShareAltOutlined, CopyOutlined, LinkOutlined, DeleteOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { getAccessToken } from '@/utils/getAccessToken';
 
@@ -8,6 +8,7 @@ interface ShareItem {
   token: string;
   shareUrl: string;
   description: string;
+  showPositions: boolean;
   viewCount: number;
   expiresAt: string;
   createdAt: string;
@@ -22,7 +23,7 @@ export default function ShareAccountButton({ accountId }: Props) {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<ShareItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [showPositions, setShowPositions] = useState(false);
+  const [newShowPositions, setNewShowPositions] = useState(false);
 
   const authHeaders = useCallback(() => {
     const token = getAccessToken();
@@ -52,13 +53,14 @@ export default function ShareAccountButton({ accountId }: Props) {
       const resp = await fetch('/api/shares/create', {
         method: 'POST',
         headers: h,
-        body: JSON.stringify({ account_id: accountId, expire_days: 7, show_positions: showPositions }),
+        body: JSON.stringify({ account_id: accountId, expire_days: 7, show_positions: newShowPositions }),
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.message);
       const url = `${window.location.origin}${data.shareUrl}`;
       await navigator.clipboard.writeText(url);
       message.success(t('accounts.messages.shareLinkCopied', { defaultValue: 'Share link copied to clipboard' }));
+      setNewShowPositions(false);
       fetchList();
     } catch {
       message.error(t('accounts.messages.shareLinkFailed', { defaultValue: 'Failed to create share link' }));
@@ -74,7 +76,7 @@ export default function ShareAccountButton({ accountId }: Props) {
     const h = authHeaders();
     if (!h) return;
     try {
-      const resp = await fetch(`/api/shares/delete`, {
+      const resp = await fetch('/api/shares/delete', {
         method: 'POST',
         headers: h,
         body: JSON.stringify({ token: shareToken }),
@@ -84,6 +86,22 @@ export default function ShareAccountButton({ accountId }: Props) {
       fetchList();
     } catch {
       message.error(t('common.deleteFailed', { defaultValue: 'Delete failed' }));
+    }
+  };
+
+  const handleTogglePositions = async (shareToken: string, show: boolean) => {
+    const h = authHeaders();
+    if (!h) return;
+    try {
+      const resp = await fetch('/api/shares/update', {
+        method: 'POST',
+        headers: h,
+        body: JSON.stringify({ token: shareToken, show_positions: show }),
+      });
+      if (!resp.ok) throw new Error('Failed');
+      setItems(prev => prev.map(item => item.token === shareToken ? { ...item, showPositions: show } : item));
+    } catch {
+      message.error(t('common.operationFailed', { defaultValue: 'Operation failed' }));
     }
   };
 
@@ -98,15 +116,21 @@ export default function ShareAccountButton({ accountId }: Props) {
         </Space>
       ),
     },
-    { title: t('share.views', { defaultValue: 'Views' }), dataIndex: 'viewCount', key: 'views', width: 80 },
-    { title: t('share.expires', { defaultValue: 'Expires' }), dataIndex: 'expiresAt', key: 'expires', width: 120,
+    { title: t('share.views', { defaultValue: 'Views' }), dataIndex: 'viewCount', key: 'views', width: 70 },
+    {
+      title: t('share.positions', { defaultValue: 'Positions' }), dataIndex: 'showPositions', key: 'pos', width: 70,
+      render: (v: boolean, row: ShareItem) => (
+        <Switch size="small" checked={v} onChange={(checked: boolean) => handleTogglePositions(row.token, checked)} />
+      ),
+    },
+    { title: t('share.expires', { defaultValue: 'Expires' }), dataIndex: 'expiresAt', key: 'expires', width: 110,
       render: (v: string) => {
         const d = new Date(v);
         const expired = d < new Date();
         return <Tag color={expired ? 'red' : 'green'}>{d.toLocaleDateString()}</Tag>;
       },
     },
-    { title: t('share.actions', { defaultValue: 'Actions' }), key: 'actions', width: 140,
+    { title: t('share.actions', { defaultValue: 'Actions' }), key: 'actions', width: 100,
       render: (_: unknown, row: ShareItem) => (
         <Space size="small">
           <Button size="small" icon={<CopyOutlined />} onClick={() => handleCopy(row.shareUrl)} />
@@ -132,7 +156,7 @@ export default function ShareAccountButton({ accountId }: Props) {
         title={t('share.title', { defaultValue: 'Share Management' })}
         open={open}
         onCancel={() => setOpen(false)}
-        width={680}
+        width={700}
         footer={null}
       >
         <div className="mb-4" style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -140,9 +164,9 @@ export default function ShareAccountButton({ accountId }: Props) {
             {t('share.createNew', { defaultValue: 'Create New Share Link' })}
           </Button>
           <Space>
-            <Switch size="small" checked={showPositions} onChange={setShowPositions} />
+            <Switch size="small" checked={newShowPositions} onChange={setNewShowPositions} />
             <span style={{ fontSize: 12, color: '#8c8c8c' }}>
-              {t('share.showPositions', { defaultValue: 'Show positions in share page' })}
+              {t('share.showPositions', { defaultValue: 'Show positions on new link' })}
             </span>
           </Space>
         </div>

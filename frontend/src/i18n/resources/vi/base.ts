@@ -275,6 +275,8 @@ const base = {
     empty: 'Chưa có liên kết chia sẻ',
     userId: 'Người Dùng',
     deleteConfirm: 'Delete this share link?',
+    showPositions: 'Show positions on new link',
+    positions: 'Positions',
     createdAt: 'Đã tạo',
   },
   sharePage: {

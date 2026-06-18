@@ -275,6 +275,8 @@ const base = {
     empty: 'No share links yet',
     userId: 'User',
     deleteConfirm: 'Delete this share link?',
+    showPositions: 'Show positions on new link',
+    positions: 'Positions',
     createdAt: 'Created',
   },
   sharePage: {

@@ -275,6 +275,8 @@ const base = {
     empty: '尚無分享連結',
     userId: '一般用戶',
     deleteConfirm: 'Delete this share link?',
+    showPositions: 'Show positions on new link',
+    positions: 'Positions',
     createdAt: '已建立',
   },
   sharePage: {
