@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Card, Spin, Tag, Typography, Empty, Row, Col, Table, Statistic, Select, Progress, Divider } from 'antd';
-import { RiseOutlined, FallOutlined, TrophyOutlined, ClockCircleOutlined, BarChartOutlined, GlobalOutlined } from '@ant-design/icons';
+import { RiseOutlined, FallOutlined, TrophyOutlined, ClockCircleOutlined, BarChartOutlined, GlobalOutlined, EyeOutlined, LockOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { normalizeLanguage, setLanguage, SUPPORTED_LANGUAGES, type SupportedLanguage } from '@/i18n';
 import { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
@@ -49,6 +49,8 @@ interface ShareData {
   sharpeRatio: number;
   equityCurve: number[];
   trades: Array<{ symbol: string; side: string; volume: number; profit: number; closeTimeMs: number }>;
+  positions?: Array<{ symbol: string; type: string; volume: number; openPrice: number; currentPrice: number; profit: number; openTimeMs: number }> | null;
+  showPositions?: boolean;
   expired?: boolean;
 }
 
@@ -228,6 +230,39 @@ export default function SharePerformancePage() {
       {equity.length > 0 && (
         <Card size="small" title={<span style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>{t('sharePage.equityCurve')}</span>} style={{ marginBottom: 16, borderRadius: 10 }}>
           <ShareChart data={equity} />
+        </Card>
+      )}
+
+      {/* Open positions — only if creator allowed it */}
+      {data.showPositions && data.positions != null ? (
+        data.positions.length > 0 ? (
+          <Card size="small" title={<span style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}><EyeOutlined /> {t('sharePage.positions', { defaultValue: 'Open Positions' })} ({data.positions.length})</span>} style={{ marginBottom: 16, borderRadius: 10 }}>
+            <Table
+              dataSource={data.positions}
+              columns={[
+                { title: t('sharePage.symbol'), dataIndex: 'symbol', key: 'symbol', ellipsis: true },
+                { title: t('sharePage.side'), dataIndex: 'type', key: 'type',
+                  render: (v: string) => <Tag color={v === 'BUY' ? 'green' : 'red'}>{v}</Tag> },
+                { title: t('sharePage.volume'), dataIndex: 'volume', key: 'volume', render: (v: unknown) => toNum(v).toFixed(2) },
+                { title: t('sharePage.openPrice', { defaultValue: 'Open' }), dataIndex: 'openPrice', key: 'openPrice', render: (v: unknown) => toNum(v).toFixed(5) },
+                { title: t('sharePage.profit'), dataIndex: 'profit', key: 'profit',
+                  render: (v: unknown) => { const n = toNum(v); return <span style={{ color: n >= 0 ? green : red, fontWeight: 500 }}>{signed(n)}</span>; } },
+              ]}
+              rowKey={(_, i) => String(i)}
+              size="small"
+              pagination={false}
+            />
+          </Card>
+        ) : (
+          <Card size="small" style={{ marginBottom: 16, borderRadius: 10, textAlign: 'center' }}>
+            <EyeOutlined style={{ fontSize: 18, color: '#8c8c8c', marginBottom: 4 }} />
+            <div style={{ fontSize: 12, color: '#8c8c8c' }}>{t('sharePage.noPositions', { defaultValue: 'No open positions' })}</div>
+          </Card>
+        )
+      ) : (
+        <Card size="small" style={{ marginBottom: 16, borderRadius: 10, textAlign: 'center', opacity: 0.6 }}>
+          <LockOutlined style={{ fontSize: 24, color: '#bbb', marginBottom: 4 }} />
+          <div style={{ fontSize: 12, color: '#bbb' }}>{t('sharePage.positionsLocked', { defaultValue: 'Positions hidden by creator' })}</div>
         </Card>
       )}
 

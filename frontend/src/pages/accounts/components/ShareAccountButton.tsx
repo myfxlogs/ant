@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Button, Modal, Table, message, Tag, Space, Typography, Popconfirm } from 'antd';
-import { ShareAltOutlined, CopyOutlined, LinkOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Button, Modal, Table, message, Tag, Space, Typography, Popconfirm, Switch } from 'antd';
+import { ShareAltOutlined, CopyOutlined, LinkOutlined, DeleteOutlined, EyeOutlined, LockOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { getAccessToken } from '@/utils/getAccessToken';
 
@@ -22,6 +22,7 @@ export default function ShareAccountButton({ accountId }: Props) {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<ShareItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showPositions, setShowPositions] = useState(false);
 
   const authHeaders = useCallback(() => {
     const token = getAccessToken();
@@ -48,10 +49,10 @@ export default function ShareAccountButton({ accountId }: Props) {
     const h = authHeaders();
     if (!h) return;
     try {
-      const resp = await fetch('/ant.v1.ShareService/CreateShareToken', {
+      const resp = await fetch('/api/shares/create', {
         method: 'POST',
         headers: h,
-        body: JSON.stringify({ account_id: accountId, expire_days: 7 }),
+        body: JSON.stringify({ account_id: accountId, expire_days: 7, show_positions: showPositions }),
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.message);
@@ -134,10 +135,16 @@ export default function ShareAccountButton({ accountId }: Props) {
         width={680}
         footer={null}
       >
-        <div className="mb-4">
+        <div className="mb-4" style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <Button type="primary" icon={<LinkOutlined />} onClick={handleCreate}>
             {t('share.createNew', { defaultValue: 'Create New Share Link' })}
           </Button>
+          <Space>
+            <Switch size="small" checked={showPositions} onChange={setShowPositions} />
+            <span style={{ fontSize: 12, color: '#8c8c8c' }}>
+              {t('share.showPositions', { defaultValue: 'Show positions in share page' })}
+            </span>
+          </Space>
         </div>
         <Table
           dataSource={items}

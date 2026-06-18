@@ -12,6 +12,7 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 
@@ -26,14 +27,15 @@ type ShareServer struct {
 	tradeRecords *repository.TradeRecordRepository
 	eqRepo       *repository.AnalyticsRepository
 	userRepo     *repository.UserRepository
+	pg           *pgxpool.Pool
 	jwtSecret    string
 	log          *zap.Logger
 }
 
 var _ antv1c.ShareServiceHandler = (*ShareServer)(nil)
 
-func NewShareServer(repo *repository.ShareRepository, tradeRecords *repository.TradeRecordRepository, eqRepo *repository.AnalyticsRepository, userRepo *repository.UserRepository, jwtSecret string, log *zap.Logger) *ShareServer {
-	return &ShareServer{repo: repo, tradeRecords: tradeRecords, eqRepo: eqRepo, userRepo: userRepo, jwtSecret: jwtSecret, log: log}
+func NewShareServer(repo *repository.ShareRepository, tradeRecords *repository.TradeRecordRepository, eqRepo *repository.AnalyticsRepository, userRepo *repository.UserRepository, pg *pgxpool.Pool, jwtSecret string, log *zap.Logger) *ShareServer {
+	return &ShareServer{repo: repo, tradeRecords: tradeRecords, eqRepo: eqRepo, userRepo: userRepo, pg: pg, jwtSecret: jwtSecret, log: log}
 }
 
 func (s *ShareServer) CreateShareToken(ctx context.Context, req *connect.Request[antv1.CreateShareTokenRequest]) (*connect.Response[antv1.CreateShareTokenResponse], error) {
@@ -250,20 +252,120 @@ func (s *ShareServer) HandleGetSharedPerformanceJSON(w http.ResponseWriter, r *h
 		}
 	}
 
+	// Positions — only if the share token allows it
+	var positionsOut interface{}
+	if st.ShowPositions {
+		type posJSON struct {
+			Symbol       string  `json:"symbol"`
+			Type         string  `json:"type"`
+			Volume       float64 `json:"volume"`
+			OpenPrice    float64 `json:"openPrice"`
+			CurrentPrice float64 `json:"currentPrice"`
+			Profit       float64 `json:"profit"`
+			OpenTimeMs   int64   `json:"openTimeMs"`
+		}
+		posRows, _ := s.pg.Query(r.Context(),
+			`SELECT symbol, order_type, volume, open_price, COALESCE(current_price,0),
+			        COALESCE(profit,0), open_time
+			 FROM positions WHERE mt_account_id=$1 ORDER BY open_time DESC LIMIT 50`, aid)
+		posList := make([]posJSON, 0)
+		for posRows != nil && posRows.Next() {
+			var p posJSON
+			var vol, openP, curP, prof float64
+			var ot int16
+			var otUnix time.Time
+			posRows.Scan(&p.Symbol, &ot, &vol, &openP, &curP, &prof, &otUnix)
+			p.Volume = vol; p.OpenPrice = openP; p.CurrentPrice = curP; p.Profit = prof
+			p.OpenTimeMs = otUnix.UnixMilli()
+			if ot == 0 { p.Type = "BUY" } else { p.Type = "SELL" }
+			posList = append(posList, p)
+		}
+		if posRows != nil { posRows.Close() }
+		positionsOut = posList
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"userName":      userName,
-		"totalReturn":   totalRet,
-		"winRate":       winRate,
-		"maxDrawdown":   maxDDval,
-		"totalTrades":   len(trades),
-		"totalVolume":   totalVol,
-		"profitFactor":  profitFactor,
-		"avgHoldingMs":  avgHoldingMs,
-		"sharpeRatio":   sharpe,
-		"equityCurve":   equityVals,
-		"trades":        tradesOut,
+		"userName":        userName,
+		"totalReturn":     totalRet,
+		"winRate":         winRate,
+		"maxDrawdown":     maxDDval,
+		"totalTrades":     len(trades),
+		"totalVolume":     totalVol,
+		"profitFactor":    profitFactor,
+		"avgHoldingMs":    avgHoldingMs,
+		"sharpeRatio":     sharpe,
+		"equityCurve":     equityVals,
+		"trades":          tradesOut,
+		"showPositions":   st.ShowPositions,
+		"positions":       positionsOut,
 	})
+}
+
+// HandleCreateShareTokenREST creates a share token via plain JSON (supports show_positions).
+func (s *ShareServer) HandleCreateShareTokenREST(w http.ResponseWriter, r *http.Request) {
+	uid, _ := uuid.Parse(interceptor.GetUserID(r.Context()))
+	if uid == uuid.Nil {
+		http.Error(w, `{"error":"login required"}`, http.StatusUnauthorized)
+		return
+	}
+	var req struct {
+		AccountID     string `json:"account_id"`
+		Description   string `json:"description"`
+		ShowPositions bool   `json:"show_positions"`
+		ExpireDays    int    `json:"expire_days"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, `{"error":"invalid request"}`, http.StatusBadRequest)
+		return
+	}
+	if req.ExpireDays <= 0 {
+		req.ExpireDays = 7
+	}
+	b := make([]byte, 16)
+	rand.Read(b)
+	token := hex.EncodeToString(b)
+	st := &repository.ShareToken{
+		UserID: uid, AccountID: req.AccountID, Token: token,
+		Description: req.Description, ShowPositions: req.ShowPositions,
+		ExpiresAt: time.Now().Add(time.Duration(req.ExpireDays) * 24 * time.Hour),
+	}
+	if err := s.repo.Create(r.Context(), st); err != nil {
+		http.Error(w, `{"error":"create failed"}`, http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"token": token, "shareUrl": "/share/" + token,
+		"expiresAt": st.ExpiresAt.Format(time.RFC3339),
+	})
+}
+
+// HandleUpdateShareToken updates show_positions flag.
+func (s *ShareServer) HandleUpdateShareToken(w http.ResponseWriter, r *http.Request) {
+	tokenStr := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+	if tokenStr == "" {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+	claims, err := interceptor.ValidateToken(tokenStr, s.jwtSecret)
+	if err != nil {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+	uid, _ := uuid.Parse(claims.UserID)
+	var req struct {
+		Token         string `json:"token"`
+		ShowPositions *bool  `json:"show_positions"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, `{"error":"invalid request"}`, http.StatusBadRequest)
+		return
+	}
+	if req.ShowPositions != nil {
+		s.repo.UpdateShowPositions(r.Context(), uid, req.Token, *req.ShowPositions)
+	}
+	w.Write([]byte(`{"ok":true}`))
 }
 
 // HandleListShareTokens returns the current user's share tokens with view counts.
@@ -290,18 +392,20 @@ func (s *ShareServer) HandleListShareTokens(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	type item struct {
-		Token       string `json:"token"`
-		ShareURL    string `json:"shareUrl"`
-		Description string `json:"description"`
-		ViewCount   int    `json:"viewCount"`
-		ExpiresAt   string `json:"expiresAt"`
-		CreatedAt   string `json:"createdAt"`
+		Token         string `json:"token"`
+		ShareURL      string `json:"shareUrl"`
+		Description   string `json:"description"`
+		ShowPositions bool   `json:"showPositions"`
+		ViewCount     int    `json:"viewCount"`
+		ExpiresAt     string `json:"expiresAt"`
+		CreatedAt     string `json:"createdAt"`
 	}
 	items := make([]item, 0, len(tokens))
 	for _, t := range tokens {
 		items = append(items, item{
 			Token: t.Token, ShareURL: fmt.Sprintf("/share/%s", t.Token),
-			Description: t.Description, ViewCount: t.ViewCount,
+			Description: t.Description, ShowPositions: t.ShowPositions,
+			ViewCount: t.ViewCount,
 			ExpiresAt: t.ExpiresAt.Format(time.RFC3339),
 			CreatedAt: t.CreatedAt.Format(time.RFC3339),
 		})
@@ -326,20 +430,21 @@ func (s *ShareServer) HandleListAllShareTokens(w http.ResponseWriter, r *http.Re
 		return
 	}
 	type item struct {
-		Token       string `json:"token"`
-		ShareURL    string `json:"shareUrl"`
-		UserID      string `json:"userId"`
-		Description string `json:"description"`
-		ViewCount   int    `json:"viewCount"`
-		ExpiresAt   string `json:"expiresAt"`
-		CreatedAt   string `json:"createdAt"`
+		Token         string `json:"token"`
+		ShareURL      string `json:"shareUrl"`
+		UserID        string `json:"userId"`
+		Description   string `json:"description"`
+		ShowPositions bool   `json:"showPositions"`
+		ViewCount     int    `json:"viewCount"`
+		ExpiresAt     string `json:"expiresAt"`
+		CreatedAt     string `json:"createdAt"`
 	}
 	items := make([]item, 0, len(tokens))
 	for _, t := range tokens {
 		items = append(items, item{
 			Token: t.Token, ShareURL: fmt.Sprintf("/share/%s", t.Token),
 			UserID: t.UserID.String(), Description: t.Description,
-			ViewCount: t.ViewCount,
+			ShowPositions: t.ShowPositions, ViewCount: t.ViewCount,
 			ExpiresAt: t.ExpiresAt.Format(time.RFC3339),
 			CreatedAt: t.CreatedAt.Format(time.RFC3339),
 		})

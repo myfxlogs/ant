@@ -310,6 +310,11 @@ const base = {
     countUnit: '笔',
     language: '语言',
     footer: '由 AntTrader 生成',
+    positions: '当前持仓',
+    noPositions: '暂无持仓',
+    positionsLocked: '创建者未开放持仓查看',
+    openPrice: '开仓价',
+    showPositions: '在分享页显示持仓',
     disclaimer: '过往业绩不代表未来表现。',
   },
   notifications: {

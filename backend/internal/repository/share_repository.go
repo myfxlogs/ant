@@ -9,15 +9,16 @@ import (
 )
 
 type ShareToken struct {
-	ID          uuid.UUID `db:"id"`
-	UserID      uuid.UUID `db:"user_id"`
-	AccountID   string    `db:"account_id"`
-	Token       string    `db:"token"`
-	Description string    `db:"description"`
-	ExpiresAt   time.Time `db:"expires_at"`
-	ViewCount   int       `db:"view_count"`
-	MaxViews    *int      `db:"max_views"`
-	CreatedAt   time.Time `db:"created_at"`
+	ID            uuid.UUID `db:"id"`
+	UserID        uuid.UUID `db:"user_id"`
+	AccountID     string    `db:"account_id"`
+	Token         string    `db:"token"`
+	Description   string    `db:"description"`
+	ShowPositions bool      `db:"show_positions"`
+	ExpiresAt     time.Time `db:"expires_at"`
+	ViewCount     int       `db:"view_count"`
+	MaxViews      *int      `db:"max_views"`
+	CreatedAt     time.Time `db:"created_at"`
 }
 
 type ShareRepository struct {
@@ -30,8 +31,8 @@ func NewShareRepository(db *pgxpool.Pool) *ShareRepository {
 
 func (r *ShareRepository) Create(ctx context.Context, t *ShareToken) error {
 	_, err := r.db.Exec(ctx,
-		`INSERT INTO share_tokens (user_id, account_id, token, description, expires_at)
-		 VALUES ($1,$2,$3,$4,$5)`,
+		`INSERT INTO share_tokens (user_id, account_id, token, description, show_positions, expires_at)
+		 VALUES ($1,$2,$3,$4,$5,$6)`,
 		t.UserID, t.AccountID, t.Token, t.Description, t.ExpiresAt)
 	return err
 }
@@ -39,9 +40,9 @@ func (r *ShareRepository) Create(ctx context.Context, t *ShareToken) error {
 func (r *ShareRepository) GetByToken(ctx context.Context, token string) (*ShareToken, error) {
 	var t ShareToken
 	err := r.db.QueryRow(ctx,
-		`SELECT id, user_id, account_id, token, description, expires_at, view_count, max_views, created_at
+		`SELECT id, user_id, account_id, token, description, show_positions, expires_at, view_count, max_views, created_at
 		 FROM share_tokens WHERE token=$1`, token).Scan(
-		&t.ID, &t.UserID, &t.AccountID, &t.Token, &t.Description,
+		&t.ID, &t.UserID, &t.AccountID, &t.Token, &t.Description, &t.ShowPositions,
 		&t.ExpiresAt, &t.ViewCount, &t.MaxViews, &t.CreatedAt,
 	)
 	if err != nil {
@@ -56,7 +57,7 @@ func (r *ShareRepository) ListAll(ctx context.Context, limit, offset int) ([]*Sh
 	if limit <= 0 { limit = 20 }
 	if offset < 0 { offset = 0 }
 	rows, err := r.db.Query(ctx,
-		`SELECT id, user_id, account_id, token, description, expires_at, view_count, max_views, created_at
+		`SELECT id, user_id, account_id, token, description, show_positions, expires_at, view_count, max_views, created_at
 		 FROM share_tokens ORDER BY created_at DESC LIMIT $1 OFFSET $2`, limit, offset)
 	if err != nil {
 		return nil, 0, err
@@ -65,13 +66,18 @@ func (r *ShareRepository) ListAll(ctx context.Context, limit, offset int) ([]*Sh
 	var out []*ShareToken
 	for rows.Next() {
 		var t ShareToken
-		if err := rows.Scan(&t.ID, &t.UserID, &t.AccountID, &t.Token, &t.Description,
+		if err := rows.Scan(&t.ID, &t.UserID, &t.AccountID, &t.Token, &t.Description, &t.ShowPositions,
 			&t.ExpiresAt, &t.ViewCount, &t.MaxViews, &t.CreatedAt); err != nil {
 			return nil, 0, err
 		}
 		out = append(out, &t)
 	}
 	return out, total, rows.Err()
+}
+
+func (r *ShareRepository) UpdateShowPositions(ctx context.Context, userID uuid.UUID, token string, show bool) error {
+	_, err := r.db.Exec(ctx, `UPDATE share_tokens SET show_positions=$1 WHERE user_id=$2 AND token=$3`, show, userID, token)
+	return err
 }
 
 func (r *ShareRepository) DeleteByUser(ctx context.Context, userID uuid.UUID, token string) error {
@@ -87,7 +93,7 @@ func (r *ShareRepository) IncrementView(ctx context.Context, token string) error
 
 func (r *ShareRepository) ListByUser(ctx context.Context, userID uuid.UUID) ([]*ShareToken, error) {
 	rows, err := r.db.Query(ctx,
-		`SELECT id, user_id, account_id, token, description, expires_at, view_count, max_views, created_at
+		`SELECT id, user_id, account_id, token, description, show_positions, expires_at, view_count, max_views, created_at
 		 FROM share_tokens WHERE user_id=$1 ORDER BY created_at DESC LIMIT 50`, userID)
 	if err != nil {
 		return nil, err
@@ -96,7 +102,7 @@ func (r *ShareRepository) ListByUser(ctx context.Context, userID uuid.UUID) ([]*
 	var out []*ShareToken
 	for rows.Next() {
 		var t ShareToken
-		if err := rows.Scan(&t.ID, &t.UserID, &t.AccountID, &t.Token, &t.Description,
+		if err := rows.Scan(&t.ID, &t.UserID, &t.AccountID, &t.Token, &t.Description, &t.ShowPositions,
 			&t.ExpiresAt, &t.ViewCount, &t.MaxViews, &t.CreatedAt); err != nil {
 			return nil, err
 		}
