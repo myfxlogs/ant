@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"connectrpc.com/connect"
 	"github.com/google/uuid"
 
 	antv1 "anttrader/gen/proto/ant/v1"
@@ -32,6 +33,25 @@ var defaultProviderSeeds = []struct {
 	{"moonshot", "月之暗面 (Kimi)", "https://api.moonshot.cn/v1"},
 	{"zhipu", "智谱 GLM", "https://open.bigmodel.cn/api/paas/v4"},
 	{"openai_compatible", "自定义 (OpenAI 兼容)", ""},
+}
+
+// ErrInsufficientBalance is returned by the wallet pre-check when the user
+// cannot afford an AI call. Handlers should map it to a ConnectRPC
+// FailedPrecondition error so the frontend can show a friendly message.
+var ErrInsufficientBalance = errors.New("insufficient balance for AI — please top up your wallet")
+
+// WrapAIError maps AI service errors to ConnectRPC-friendly errors.
+// If err wraps ErrInsufficientBalance, returns FailedPrecondition so
+// the frontend can show a friendly "insufficient balance" message.
+// Other errors are returned as-is.
+func WrapAIError(err error) error {
+	if err == nil {
+		return nil
+	}
+	if errors.Is(err, ErrInsufficientBalance) {
+		return connect.NewError(connect.CodeFailedPrecondition, errors.New("insufficient_balance"))
+	}
+	return err
 }
 
 // TokenRecord is passed to the recorder after each successful AI call.
@@ -274,6 +294,9 @@ func RowToProto(r *repository.SystemAIConfigRow) *antv1.SystemAIConfig {
 func FriendlyError(err error) string {
 	if err == nil {
 		return ""
+	}
+	if errors.Is(err, ErrInsufficientBalance) {
+		return "余额不足，请先充值。"
 	}
 	msg := err.Error()
 	// Pass through i18n keys without wrapping.

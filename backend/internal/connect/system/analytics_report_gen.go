@@ -3,6 +3,7 @@ package system
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"sort"
@@ -79,9 +80,13 @@ func (s *AnalyticsServer) GenerateReport(ctx context.Context, req *connect.Reque
 	})
 	if err != nil {
 		s.log.Error("report generation stream failed", zap.Error(err))
+		errMsg := "报告生成失败，请重试"
+		if errors.Is(err, systemai.ErrInsufficientBalance) {
+			errMsg = "余额不足，请先充值后再生成报告。"
+		}
 		_ = stream.Send(&antv1.GenerateReportChunk{
 			Phase: "done",
-			Error: "报告生成失败，请重试",
+			Error: errMsg,
 			Done:  true,
 		})
 		return nil

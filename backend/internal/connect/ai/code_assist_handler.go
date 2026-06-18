@@ -3,6 +3,7 @@ package ai
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -65,7 +66,10 @@ func (s *CodeAssistServer) ReviseCode(ctx context.Context, req *connect.Request[
 	revised, err := s.systemSvc.ChatCompletion(ctx, uid, messages, codeAssistModel)
 	if err != nil {
 		s.log.Warn("CodeAssist: ReviseCode LLM call failed", zap.Error(err))
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(err)))
+		if errors.Is(err, systemai.ErrInsufficientBalance) {
+		return nil, systemai.WrapAIError(err)
+	}
+	return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(err)))
 	}
 
 	result := revised
@@ -102,7 +106,10 @@ func (s *CodeAssistServer) ReviseCodeStream(
 		})
 	if err != nil {
 		s.log.Warn("CodeAssist: ReviseCodeStream LLM call failed", zap.Error(err))
-		return connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(err)))
+		if errors.Is(err, systemai.ErrInsufficientBalance) {
+	return systemai.WrapAIError(err)
+	}
+	return connect.NewError(connect.CodeInternal, fmt.Errorf("%s", systemai.FriendlyError(err)))
 	}
 
 	// Repair mode post-processing

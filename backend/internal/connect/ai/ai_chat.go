@@ -31,7 +31,7 @@ func (s *AIServer) Chat(ctx context.Context, req *connect.Request[antv1.ChatRequ
 	reply, err := s.systemSvc.ChatCompletion(ctx, uid, messages, "")
 	if err != nil {
 		s.log.Error("Chat: ChatCompletion failed", zap.String("user_id", uid.String()))
-		return nil, connect.NewError(connect.CodeInternal, fmt.Errorf("AI service temporarily unavailable"))
+		return nil, systemai.WrapAIError(err)
 	}
 
 	if m.ConversationId != "" {
@@ -82,7 +82,7 @@ func (s *AIServer) ChatStream(ctx context.Context, req *connect.Request[antv1.Ch
 		s.log.Error("ChatStream: streaming failed",
 			zap.String("user_id", uid.String()),
 		)
-		return connect.NewError(connect.CodeInternal, fmt.Errorf("AI streaming temporarily unavailable"))
+		return systemai.WrapAIError(err)
 	}
 
 	// Persist messages to conversation after streaming completes.

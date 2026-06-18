@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -188,7 +187,7 @@ func registerHandlers(
 		}
 		bal, _ := strconv.ParseFloat(w.Balance, 64)
 		if bal < 0.0001 {
-			return fmt.Errorf("insufficient balance for AI: have %.8f, need at least 0.0001", bal)
+			return systemai.ErrInsufficientBalance
 		}
 		return nil
 	})
