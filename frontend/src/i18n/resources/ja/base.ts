@@ -343,6 +343,7 @@ const base = {
     },
     author: {
     performanceFee: 'パフォーマンスフィー',
+      subscription: 'サブスクリプション',
       empty: '公開された戦略はまだありません。戦略ライブラリで公開してください。',
       published: '公開済み', subscribers: '購読者',
       avgRating: '平均評価', noPublished: '公開戦略なし',
@@ -744,5 +745,6 @@ const base = {
 } as const;
 
 export default base;
+
 
 

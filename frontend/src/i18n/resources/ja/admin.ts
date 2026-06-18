@@ -29,6 +29,8 @@ const admin = {
         flag: 'フラグ',
         unflag: 'フラグ解除',
         unpublish: '公開取消',
+        unpublishFailed: '公開取消失敗',
+        unpublishSuccess: '公開取消完了',
         disable: '無効化',
         enable: '有効化',
         archive: 'アーカイブ',
@@ -79,4 +81,5 @@ const admin = {
 };
 
 export default admin;
+
 

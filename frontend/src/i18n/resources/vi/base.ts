@@ -456,6 +456,7 @@ const base = {
     },
     author: {
     performanceFee: 'Phí Hiệu Suất',
+      subscription: 'Đăng Ký',
       empty: 'Chưa có chiến lược nào được xuất bản. Vào Thư Viện Chiến Lược để xuất bản.',
       published: 'Đã Xuất Bản', subscribers: 'Người Đăng Ký',
       avgRating: 'Đánh Giá TB', noPublished: 'Chưa có chiến lược',
@@ -857,5 +858,6 @@ const base = {
 } as const;
 
 export default base;
+
 
 

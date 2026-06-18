@@ -29,6 +29,8 @@ const admin = {
         flag: 'Gắn cờ',
         unflag: 'Bỏ cờ',
         unpublish: 'Hủy xuất bản',
+        unpublishFailed: 'Hủy xuất bản thất bại',
+        unpublishSuccess: 'Hủy xuất bản thành công',
         disable: 'Vô hiệu',
         enable: 'Kích hoạt',
         archive: 'Lưu trữ',
@@ -79,4 +81,5 @@ const admin = {
 };
 
 export default admin;
+
 

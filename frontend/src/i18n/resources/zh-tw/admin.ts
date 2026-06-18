@@ -29,6 +29,8 @@ const admin = {
         flag: '標記',
         unflag: '取消標記',
         unpublish: '取消發布',
+        unpublishFailed: '取消發布失敗',
+        unpublishSuccess: '取消發布成功',
         disable: '禁用',
         enable: '啟用',
         archive: '歸檔',
@@ -79,4 +81,5 @@ const admin = {
 };
 
 export default admin;
+
 
