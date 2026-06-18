@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Card, Spin, Tag, Typography, Empty, Row, Col, Table, Statistic } from 'antd';
 import { RiseOutlined, FallOutlined, ShareAltOutlined, TrophyOutlined, ClockCircleOutlined, BarChartOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { getInitialLanguage, setLanguage } from '@/i18n';
+import { normalizeLanguage, setLanguage } from '@/i18n';
 import ShareChart from './ShareChart';
 
 const { Title, Text } = Typography;
@@ -46,9 +46,10 @@ export default function SharePerformancePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Auto-detect device language on mount
+  // Use device/browser language for the share page (ignore localStorage
+  // since the viewer may be different from the share link creator).
   useEffect(() => {
-    setLanguage(getInitialLanguage());
+    setLanguage(normalizeLanguage(navigator.language));
   }, []);
 
   useEffect(() => {
