@@ -19,6 +19,13 @@ func (s *Service) ChatCompletionStream(
 	modelHint string,
 	onChunk func(chunk ChatStreamChunk) error,
 ) error {
+	// Pre-check wallet balance before making any API call.
+	if s.walletChecker != nil {
+		if err := s.walletChecker(ctx, userID); err != nil {
+			return err
+		}
+	}
+
 	providers, err := s.resolveAllChatProviders(ctx, userID, modelHint)
 	if err != nil {
 		return err
