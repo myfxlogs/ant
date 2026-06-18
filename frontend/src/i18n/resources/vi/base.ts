@@ -455,6 +455,7 @@ const base = {
       alreadyPurchased: 'Bạn đã sở hữu chiến lược này.',
     },
     author: {
+    performanceFee: 'Phí Hiệu Suất',
       empty: 'Chưa có chiến lược nào được xuất bản. Vào Thư Viện Chiến Lược để xuất bản.',
       published: 'Đã Xuất Bản', subscribers: 'Người Đăng Ký',
       avgRating: 'Đánh Giá TB', noPublished: 'Chưa có chiến lược',
@@ -821,12 +822,17 @@ const base = {
       todayProfit: 'Lợi Nhuận Hôm Nay'
     },
     settings: {
+    maxLotSizeHint: 'Khối lượng tối đa mỗi giao dịch (lots)',
       title: 'Cài Đặt Rủi Ro Toàn Cục',
       maxRiskPercent: 'Rủi Ro Tối Đa %',
+      maxRiskPercentHint: 'Phần trăm số dư để rủi ro mỗi giao dịch',
       maxPositions: 'Vị Thế Tối Đa',
+      maxPositionsHint: 'Số vị thế mở tối đa',
       maxLotSize: 'Lot Tối Đa',
       maxDailyLoss: 'Lỗ Tối Đa Hàng Ngày',
+      maxDailyLossHint: 'Tự động tắt giao dịch nếu lỗ hàng ngày vượt quá mức này',
       maxDrawdownPercent: 'Sụt Giảm Tối Đa %',
+      maxDrawdownPercentHint: 'Tự động tắt giao dịch nếu drawdown vượt quá mức này',
       saveSuccess: 'Đã lưu cài đặt',
       saveFailed: 'Lưu cài đặt thất bại'
     },
@@ -851,3 +857,5 @@ const base = {
 } as const;
 
 export default base;
+
+

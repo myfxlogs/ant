@@ -1190,6 +1190,8 @@ def run(context):
       orderFailed: '下单失败'
     },
     library: {
+    share: '共有',
+    shared: '共有済み',
       title: '戦略ライブラリ',
       myStrategies: 'マイ戦略',
       create: '作成',
@@ -1239,3 +1241,4 @@ def run(context):
 } as const;
 
 export default strategy;
+

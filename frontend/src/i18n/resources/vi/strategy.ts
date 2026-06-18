@@ -1190,6 +1190,8 @@ def run(context):
       orderFailed: 'Đặt lệnh thất bại'
     },
     library: {
+    share: 'Chia Sẻ',
+    shared: 'Đã Chia Sẻ',
       title: 'Thư viện chiến lược',
       myStrategies: 'Chiến lược của tôi',
       create: 'Tạo mới',
@@ -1239,3 +1241,4 @@ def run(context):
 } as const;
 
 export default strategy;
+

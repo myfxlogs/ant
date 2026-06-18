@@ -72,7 +72,7 @@ const aiWizard = {
           launchTitle: '3) 上線排程'
         },
         placeholders: {
-          codeEditable: '這裡會自動填入 AI 生成的程式碼，你也可以手動修改。'
+          codeEditable: '這裡會自動填入 AI 生成的程式碼，你也可以手動修改。',
         },
         actions: {
           validateCode: '驗證程式碼',

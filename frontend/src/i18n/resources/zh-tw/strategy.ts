@@ -1194,6 +1194,8 @@ def run(context):
       orderFailed: '下單失敗'
     },
     library: {
+    share: '分享',
+    shared: '已分享',
       title: '策略庫',
       myStrategies: '我的策略',
       create: '新建',
@@ -1243,3 +1245,4 @@ def run(context):
 } as const;
 
 export default strategy;
+

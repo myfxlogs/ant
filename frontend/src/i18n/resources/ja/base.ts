@@ -342,6 +342,7 @@ const base = {
       alreadyPurchased: 'この戦略は既に購入済みです。',
     },
     author: {
+    performanceFee: 'パフォーマンスフィー',
       empty: '公開された戦略はまだありません。戦略ライブラリで公開してください。',
       published: '公開済み', subscribers: '購読者',
       avgRating: '平均評価', noPublished: '公開戦略なし',
@@ -708,12 +709,17 @@ const base = {
       todayProfit: '本日の損益'
     },
     settings: {
+    maxDailyLossHint: '日次損失がこれを超えた場合、自動で取引を無効化',
       title: 'グローバルリスク設定',
       maxRiskPercent: '最大リスク%',
+      maxRiskPercentHint: '1取引あたりのリスク許容額（残高の％）',
       maxPositions: '最大ポジション数',
+      maxPositionsHint: '最大同時オープンポジション数',
       maxLotSize: '最大ロットサイズ',
+      maxLotSizeHint: '1取引あたりの最大ボリューム（ロット）',
       maxDailyLoss: '最大日次損失',
       maxDrawdownPercent: '最大ドローダウン%',
+      maxDrawdownPercentHint: 'ドローダウンがこれを超えた場合、自動で取引を無効化',
       saveSuccess: '設定を保存しました',
       saveFailed: '設定の保存に失敗しました'
     },
@@ -738,3 +744,5 @@ const base = {
 } as const;
 
 export default base;
+
+

@@ -22,6 +22,9 @@ const admin = {
         total: '共 {{count}} 條',
       },
       actions: {
+      publish: '發布',
+      publishFailed: '發布失敗',
+      publishSuccess: '發布成功',
         code: '程式碼',
         flag: '標記',
         unflag: '取消標記',
@@ -64,8 +67,6 @@ const admin = {
         flagFailed: '標記失敗',
         unflagSuccess: '標記已取消',
         unflagFailed: '取消標記失敗',
-        unpublishSuccess: '已取消發布',
-        unpublishFailed: '取消發布失敗',
         disableSuccess: '已禁用 — 所有排程已停止',
         disableFailed: '禁用失敗',
         enableSuccess: '已啟用',
@@ -78,3 +79,4 @@ const admin = {
 };
 
 export default admin;
+

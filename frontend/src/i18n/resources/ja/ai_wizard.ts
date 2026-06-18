@@ -72,7 +72,7 @@ const aiWizard = {
           launchTitle: '3) 公開スケジュール'
         },
         placeholders: {
-          codeEditable: 'AI生成コードがここに表示されます。'
+          codeEditable: 'AI生成コードがここに表示されます。',
         },
         actions: {
           validateCode: 'コード検証',

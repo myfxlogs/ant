@@ -22,6 +22,9 @@ const admin = {
         total: '合計 {{count}} 件',
       },
       actions: {
+      publish: '公開',
+      publishFailed: '公開失敗',
+      publishSuccess: '公開完了',
         code: 'コード',
         flag: 'フラグ',
         unflag: 'フラグ解除',
@@ -64,8 +67,6 @@ const admin = {
         flagFailed: 'フラグに失敗しました',
         unflagSuccess: 'フラグが解除されました',
         unflagFailed: 'フラグ解除に失敗しました',
-        unpublishSuccess: '公開が取り消されました',
-        unpublishFailed: '公開取消に失敗しました',
         disableSuccess: '無効化されました — すべてのスケジュールが停止しました',
         disableFailed: '無効化に失敗しました',
         enableSuccess: '有効化されました',
@@ -78,3 +79,4 @@ const admin = {
 };
 
 export default admin;
+

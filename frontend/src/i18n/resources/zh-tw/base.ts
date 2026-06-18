@@ -455,6 +455,8 @@ const base = {
       alreadyPurchased: '您已擁有此策略。',
     },
     author: {
+    subscription: '訂閱',
+    performanceFee: '績效分成',
       empty: '尚無已發布策略。前往策略庫發布一個。',
       published: '已發布', subscribers: '訂閱者',
       avgRating: '平均評分', noPublished: '尚無已發布策略',
@@ -856,3 +858,5 @@ const base = {
 } as const;
 
 export default base;
+
+

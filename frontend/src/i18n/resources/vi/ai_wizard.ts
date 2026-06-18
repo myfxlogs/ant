@@ -72,7 +72,7 @@ const aiWizard = {
           launchTitle: '3) Triển khai lịch chạy'
         },
         placeholders: {
-          codeEditable: 'Mã do AI tạo sẽ xuất hiện ở đây. Bạn cũng có thể chỉnh sửa thủ công.'
+          codeEditable: 'Mã do AI tạo sẽ xuất hiện ở đây. Bạn cũng có thể chỉnh sửa thủ công.',
         },
         actions: {
           validateCode: 'Xác thực mã',

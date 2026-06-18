@@ -22,6 +22,9 @@ const admin = {
         total: 'Tổng {{count}}',
       },
       actions: {
+      publish: 'Xuất Bản',
+      publishFailed: 'Xuất bản thất bại',
+      publishSuccess: 'Đã Xuất Bản',
         code: 'Mã',
         flag: 'Gắn cờ',
         unflag: 'Bỏ cờ',
@@ -64,8 +67,6 @@ const admin = {
         flagFailed: 'Gắn cờ thất bại',
         unflagSuccess: 'Đã bỏ cờ',
         unflagFailed: 'Bỏ cờ thất bại',
-        unpublishSuccess: 'Đã hủy xuất bản',
-        unpublishFailed: 'Hủy xuất bản thất bại',
         disableSuccess: 'Đã vô hiệu — tất cả lịch trình đã dừng',
         disableFailed: 'Vô hiệu thất bại',
         enableSuccess: 'Đã kích hoạt',
@@ -78,3 +79,4 @@ const admin = {
 };
 
 export default admin;
+
