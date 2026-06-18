@@ -41,7 +41,8 @@ func (i *AuthInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 	return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
 		procedure := req.Spec().Procedure
 		procLower := strings.ToLower(procedure)
-		if strings.HasSuffix(procLower, "/login") || strings.HasSuffix(procLower, "/register") {
+		if strings.HasSuffix(procLower, "/login") || strings.HasSuffix(procLower, "/register") ||
+			strings.HasSuffix(procLower, "/getsharedperformance") {
 			return next(ctx, req)
 		}
 

@@ -148,7 +148,7 @@ func registerHandlers(
 	tradeLogRepo := repository.NewTradeLogRepository(pool)
 	analyticsRepo := repository.NewAnalyticsRepository(pool)
 	shareServer := user.NewShareServer(shareRepo, tradeLogRepo, analyticsRepo, userRepo, log)
-	mux.Handle(antv1c.NewShareServiceHandler(shareServer, connectrpc.WithInterceptors(otelInterceptor)))
+	mux.Handle(antv1c.NewShareServiceHandler(shareServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 
 	// AI Gateway: platform-operated AI model relay with token billing.
 	gatewayProviderRepo := repository.NewSystemAIProviderRepository(pool)
