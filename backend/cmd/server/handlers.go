@@ -145,9 +145,9 @@ func registerHandlers(
 
 	// Share performance: generate expiring public links for trading results.
 	shareRepo := repository.NewShareRepository(pool)
-	tradeLogRepo := repository.NewTradeLogRepository(pool)
+	
 	analyticsRepo := repository.NewAnalyticsRepository(pool)
-	shareServer := user.NewShareServer(shareRepo, tradeLogRepo, analyticsRepo, userRepo, jwtSecret, log)
+	shareServer := user.NewShareServer(shareRepo, tradeRecordRepo, analyticsRepo, userRepo, jwtSecret, log)
 	mux.Handle(antv1c.NewShareServiceHandler(shareServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
 		mux.HandleFunc("/api/shares/delete", shareServer.HandleDeleteShareToken)
 		mux.HandleFunc("/api/shares/list", shareServer.HandleListShareTokens)

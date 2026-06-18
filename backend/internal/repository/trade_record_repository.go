@@ -132,7 +132,7 @@ func (r *TradeRecordRepository) GetByAccountID(ctx context.Context, userID, acco
 			open_time, close_time, stop_loss, take_profit, order_comment, magic_number, platform,
 			created_at, updated_at
 		FROM trade_records
-		WHERE user_id = $1 AND account_id = $2 AND close_time >= $2 AND close_time <= $3
+		WHERE user_id = $1 AND account_id = $2 AND close_time >= $3 AND close_time <= $4
 		ORDER BY close_time DESC
 	`
 	args := []interface{}{userID, accountID, start, end}

@@ -22,18 +22,18 @@ import (
 )
 
 type ShareServer struct {
-	repo      *repository.ShareRepository
-	tradeLog  *repository.TradeLogRepository
-	eqRepo    *repository.AnalyticsRepository
-	userRepo  *repository.UserRepository
-	jwtSecret string
-	log       *zap.Logger
+	repo         *repository.ShareRepository
+	tradeRecords *repository.TradeRecordRepository
+	eqRepo       *repository.AnalyticsRepository
+	userRepo     *repository.UserRepository
+	jwtSecret    string
+	log          *zap.Logger
 }
 
 var _ antv1c.ShareServiceHandler = (*ShareServer)(nil)
 
-func NewShareServer(repo *repository.ShareRepository, tradeLog *repository.TradeLogRepository, eqRepo *repository.AnalyticsRepository, userRepo *repository.UserRepository, jwtSecret string, log *zap.Logger) *ShareServer {
-	return &ShareServer{repo: repo, tradeLog: tradeLog, eqRepo: eqRepo, userRepo: userRepo, jwtSecret: jwtSecret, log: log}
+func NewShareServer(repo *repository.ShareRepository, tradeRecords *repository.TradeRecordRepository, eqRepo *repository.AnalyticsRepository, userRepo *repository.UserRepository, jwtSecret string, log *zap.Logger) *ShareServer {
+	return &ShareServer{repo: repo, tradeRecords: tradeRecords, eqRepo: eqRepo, userRepo: userRepo, jwtSecret: jwtSecret, log: log}
 }
 
 func (s *ShareServer) CreateShareToken(ctx context.Context, req *connect.Request[antv1.CreateShareTokenRequest]) (*connect.Response[antv1.CreateShareTokenResponse], error) {
@@ -85,8 +85,8 @@ func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Req
 		equityVals = append(equityVals, f)
 	}
 
-	// Recent trades + basic stats
-	trades, _ := s.tradeLog.ListByAccountID(ctx, aid, 0, 50)
+	// Recent trades + basic stats from trade_records (not trade_logs).
+	trades, _ := s.tradeRecords.GetByAccountID(ctx, st.UserID, aid, start, end, 50)
 	var totalProfit decimal.Decimal
 	wins, losses := 0, 0
 	var maxDD decimal.Decimal
@@ -98,8 +98,8 @@ func (s *ShareServer) GetSharedPerformance(ctx context.Context, req *connect.Req
 		vol, _ := t.Volume.Float64()
 		prof, _ := t.Profit.Float64()
 		pbTrades = append(pbTrades, &antv1.SharedTrade{
-			Symbol: t.Symbol, Side: t.Action, Volume: vol, Profit: prof,
-			CloseTimeMs: t.CreatedAt.UnixMilli(),
+			Symbol: t.Symbol, Side: t.OrderType, Volume: vol, Profit: prof,
+			CloseTimeMs: t.CloseTime.UnixMilli(),
 		})
 	}
 	totalRet, _ := totalProfit.Float64()
