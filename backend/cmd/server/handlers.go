@@ -149,6 +149,7 @@ func registerHandlers(
 	analyticsRepo := repository.NewAnalyticsRepository(pool)
 	shareServer := user.NewShareServer(shareRepo, tradeRecordRepo, analyticsRepo, userRepo, jwtSecret, log)
 	mux.Handle(antv1c.NewShareServiceHandler(shareServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
+		mux.HandleFunc("/api/share/performance", shareServer.HandleGetSharedPerformanceJSON)
 		mux.HandleFunc("/api/shares/delete", shareServer.HandleDeleteShareToken)
 		mux.HandleFunc("/api/shares/list", shareServer.HandleListShareTokens)
 		mux.HandleFunc("/api/admin/shares/list", func(w http.ResponseWriter, r *http.Request) {

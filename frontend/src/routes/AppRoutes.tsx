@@ -119,14 +119,20 @@ export function AppRoutes() {
     return <div className="min-h-screen flex items-center justify-center"><Spin size="large" /></div>;
   }
   return (
-    <StreamProvider>
-      <Routes>
-        <Route path="/share/:token" element={<SharePerformancePage />} />
-        {publicRoutes}
-        {mainRoutes}
-        {adminRoutes}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </StreamProvider>
+    <Routes>
+      {/* Public share page — standalone, no SSE, no auth */}
+      <Route path="/share/:token" element={<SharePerformancePage />} />
+      {/* Everything else inside StreamProvider */}
+      <Route path="*" element={
+        <StreamProvider>
+          <Routes>
+            {publicRoutes}
+            {mainRoutes}
+            {adminRoutes}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </StreamProvider>
+      } />
+    </Routes>
   );
 }
