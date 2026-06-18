@@ -5,6 +5,7 @@ import { RiseOutlined, FallOutlined, TrophyOutlined, ClockCircleOutlined, BarCha
 import { useTranslation } from 'react-i18next';
 import { normalizeLanguage, setLanguage, SUPPORTED_LANGUAGES, type SupportedLanguage } from '@/i18n';
 import { PRIMARY_GRADIENT } from '@/components/common/GradientButton';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import ShareChart from './ShareChart';
 
 const { Text } = Typography;
@@ -170,22 +171,17 @@ export default function SharePerformancePage() {
     { label: `${t('sharePage.winningTrades')} / ${t('sharePage.losingTrades')}`, value: `${winningTrades} / ${losingTrades}`, color: '#1677ff', icon: null },
   ];
 
+  const PIE_COLORS = ['#1677ff', '#52c41a', '#fa8c16', '#722ed1', '#eb2f96', '#13c2c2', '#a0d911', '#f5222d', '#2f54eb', '#faad14'];
+
   const columns = [
-    { title: t('sharePage.symbol'), dataIndex: 'symbol', key: 'symbol', width: 80 },
-    { title: t('sharePage.side'), dataIndex: 'side', key: 'side', width: 60,
+    { title: t('sharePage.symbol'), dataIndex: 'symbol', key: 'symbol', ellipsis: true },
+    { title: t('sharePage.side'), dataIndex: 'side', key: 'side',
       render: (v: string) => <Tag color={v?.toLowerCase() === 'buy' ? 'green' : 'red'}>{v}</Tag> },
-    { title: t('sharePage.volume'), dataIndex: 'volume', key: 'volume', width: 70, render: (v: unknown) => toNum(v).toFixed(2) },
-    { title: t('sharePage.profit'), dataIndex: 'profit', key: 'profit', width: 90,
+    { title: t('sharePage.volume'), dataIndex: 'volume', key: 'volume', render: (v: unknown) => toNum(v).toFixed(2) },
+    { title: t('sharePage.profit'), dataIndex: 'profit', key: 'profit',
       render: (v: unknown) => { const n = toNum(v); return <span style={{ color: n >= 0 ? green : red, fontWeight: 500 }}>{signed(n)}</span>; } },
     { title: t('sharePage.closeTime'), dataIndex: 'closeTimeMs', key: 'closeTimeMs',
       render: (v: unknown) => { const ms = toNum(v); return ms ? new Date(ms).toLocaleDateString(i18n.language) : '-'; } },
-  ];
-
-  const symbolColumns = [
-    { title: t('sharePage.symbol'), dataIndex: 'symbol', key: 'symbol' },
-    { title: t('sharePage.count'), dataIndex: 'count', key: 'count', align: 'right' as const, render: (v: number) => String(v) },
-    { title: t('sharePage.profit'), dataIndex: 'net', key: 'net', align: 'right' as const,
-      render: (v: number) => <span style={{ color: v >= 0 ? green : red, fontWeight: 500 }}>{signed(v)}</span> },
   ];
 
   return (
@@ -235,17 +231,17 @@ export default function SharePerformancePage() {
         </Card>
       )}
 
-      {/* Performance by symbol */}
+      {/* Performance by symbol — pie chart */}
       {bySymbol.length > 0 && (
         <Card size="small" title={<span style={{ fontSize: 'clamp(12px, 2.5vw, 14px)' }}>{t('sharePage.bySymbol')}</span>} style={{ marginBottom: 16, borderRadius: 10 }}>
-          <Table
-            dataSource={bySymbol}
-            columns={symbolColumns}
-            rowKey="symbol"
-            size="small"
-            pagination={false}
-            scroll={{ x: 'max-content' }}
-          />
+          <ResponsiveContainer width="100%" height={280}>
+            <PieChart>
+              <Pie data={bySymbol} dataKey="net" nameKey="symbol" cx="50%" cy="50%" outerRadius="60%" innerRadius="35%" paddingAngle={2}>
+                {bySymbol.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+              </Pie>
+              <RechartsTooltip formatter={(v: number) => signed(v)} />
+            </PieChart>
+          </ResponsiveContainer>
         </Card>
       )}
 
@@ -259,8 +255,7 @@ export default function SharePerformancePage() {
             columns={columns}
             rowKey={(_, i) => String(i)}
             size="small"
-            pagination={{ pageSize: 20, size: 'small' }}
-            scroll={{ x: 'max-content' }}
+            pagination={{ pageSize: 20, size: 'small', showSizeChanger: true, pageSizeOptions: ['10', '20', '50'] }}
           />
         )}
       </Card>
