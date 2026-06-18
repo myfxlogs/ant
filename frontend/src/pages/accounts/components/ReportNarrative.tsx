@@ -17,7 +17,7 @@ export default function ReportNarrative({
 }: Props) {
   const { t } = useTranslation();
 
-  if (!narrative && !generating) return null;
+  if (!narrative && !generating && !reportError) return null;
 
   return (
     <div className="rounded-2xl p-6 mb-6" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px var(--color-shadow)' }}>
