@@ -25,6 +25,7 @@ const rawStreamUrl = envStreamUrl || API_URL;
 const STREAM_URL = rawStreamUrl.replace(/\/+$/, '');
 
 let hasShownConnectionError = false;
+let hasShownBalanceError = false;
 let lastBizErrorAt = 0;
 
 // Token refresh + lifecycle now lives in @/utils/tokenLifecycle.
@@ -96,6 +97,16 @@ const interceptors: Interceptor[] = [
     try {
       return await next(req);
     } catch (error: unknown) {
+      // Wallet insufficient balance — show friendly message once.
+      if (error instanceof ConnectError && error.code === 9 && error.message.includes('insufficient_balance')) {
+        if (!hasShownBalanceError) {
+          hasShownBalanceError = true;
+          message.error(i18n.t('errors.ai.insufficient_balance', { defaultValue: '余额不足，请先充值' }));
+          setTimeout(() => { hasShownBalanceError = false; }, 3000);
+        }
+        throw error;
+      }
+
       if (error instanceof ConnectError && error.code === 12) {
         throw error; // unimplemented
       }
