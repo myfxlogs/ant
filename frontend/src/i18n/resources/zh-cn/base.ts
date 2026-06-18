@@ -275,8 +275,8 @@ const base = {
     empty: '暂无分享链接',
     userId: '普通用户',
     deleteConfirm: 'Delete this share link?',
-    showPositions: 'Show positions on new link',
-    positions: 'Positions',
+    showPositions: '显示持仓',
+    positions: '持仓',
     createdAt: '创建时间',
   },
   sharePage: {

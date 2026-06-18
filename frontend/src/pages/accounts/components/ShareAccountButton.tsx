@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button, Modal, Table, message, Tag, Space, Typography, Popconfirm, Switch } from 'antd';
-import { ShareAltOutlined, CopyOutlined, LinkOutlined, DeleteOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
+import { ShareAltOutlined, CopyOutlined, LinkOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { getAccessToken } from '@/utils/getAccessToken';
 
@@ -23,8 +23,6 @@ export default function ShareAccountButton({ accountId }: Props) {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<ShareItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [newShowPositions, setNewShowPositions] = useState(false);
-
   const authHeaders = useCallback(() => {
     const token = getAccessToken();
     return token ? { 'Content-Type': 'application/json' as const, 'Authorization': `Bearer ${token}` } : null;
@@ -53,14 +51,13 @@ export default function ShareAccountButton({ accountId }: Props) {
       const resp = await fetch('/api/shares/create', {
         method: 'POST',
         headers: h,
-        body: JSON.stringify({ account_id: accountId, expire_days: 7, show_positions: newShowPositions }),
+        body: JSON.stringify({ account_id: accountId, expire_days: 7 }),
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.message);
       const url = `${window.location.origin}${data.shareUrl}`;
       await navigator.clipboard.writeText(url);
       message.success(t('accounts.messages.shareLinkCopied', { defaultValue: 'Share link copied to clipboard' }));
-      setNewShowPositions(false);
       fetchList();
     } catch {
       message.error(t('accounts.messages.shareLinkFailed', { defaultValue: 'Failed to create share link' }));
@@ -159,16 +156,10 @@ export default function ShareAccountButton({ accountId }: Props) {
         width={700}
         footer={null}
       >
-        <div className="mb-4" style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+        <div className="mb-4">
           <Button type="primary" icon={<LinkOutlined />} onClick={handleCreate}>
             {t('share.createNew', { defaultValue: 'Create New Share Link' })}
           </Button>
-          <Space>
-            <Switch size="small" checked={newShowPositions} onChange={setNewShowPositions} />
-            <span style={{ fontSize: 12, color: '#8c8c8c' }}>
-              {t('share.showPositions', { defaultValue: 'Show positions on new link' })}
-            </span>
-          </Space>
         </div>
         <Table
           dataSource={items}
