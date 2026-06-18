@@ -274,6 +274,7 @@ const base = {
     actions: 'Actions',
     empty: 'No share links yet',
     userId: 'User',
+    deleteConfirm: 'Delete this share link?',
     createdAt: 'Created',
   },
   notifications: {

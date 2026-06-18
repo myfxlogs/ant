@@ -74,6 +74,11 @@ func (r *ShareRepository) ListAll(ctx context.Context, limit, offset int) ([]*Sh
 	return out, total, rows.Err()
 }
 
+func (r *ShareRepository) DeleteByUser(ctx context.Context, userID uuid.UUID, token string) error {
+	_, err := r.db.Exec(ctx, `DELETE FROM share_tokens WHERE user_id=$1 AND token=$2`, userID, token)
+	return err
+}
+
 func (r *ShareRepository) IncrementView(ctx context.Context, token string) error {
 	_, err := r.db.Exec(ctx,
 		`UPDATE share_tokens SET view_count = view_count + 1 WHERE token=$1`, token)

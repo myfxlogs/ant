@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Button, Modal, Table, message, Tag, Space, Typography } from 'antd';
-import { ShareAltOutlined, CopyOutlined, LinkOutlined } from '@ant-design/icons';
+import { Button, Modal, Table, message, Tag, Space, Typography, Popconfirm } from 'antd';
+import { ShareAltOutlined, CopyOutlined, LinkOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { getAccessToken } from '@/utils/getAccessToken';
 
@@ -23,52 +23,71 @@ export default function ShareAccountButton({ accountId }: Props) {
   const [items, setItems] = useState<ShareItem[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchList = useCallback(async () => {
+  const authHeaders = useCallback(() => {
     const token = getAccessToken();
-    if (!token) return;
+    return token ? { 'Content-Type': 'application/json' as const, 'Authorization': `Bearer ${token}` } : null;
+  }, []);
+
+  const fetchList = useCallback(async () => {
+    const h = authHeaders();
+    if (!h) return;
     setLoading(true);
     try {
-      const resp = await fetch('/api/shares/list', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
+      const resp = await fetch('/api/shares/list', { headers: h });
       const data = await resp.json();
       if (Array.isArray(data)) setItems(data);
     } catch { /* ignore */ }
     finally { setLoading(false); }
-  }, []);
+  }, [authHeaders]);
 
   useEffect(() => {
     if (open) fetchList();
   }, [open, fetchList]);
 
   const handleCreate = async () => {
-    const token = getAccessToken();
-    if (!token) return;
+    const h = authHeaders();
+    if (!h) return;
     try {
       const resp = await fetch('/ant.v1.ShareService/CreateShareToken', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        headers: h,
         body: JSON.stringify({ account_id: accountId, expire_days: 7 }),
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.message);
       const url = `${window.location.origin}${data.shareUrl}`;
       await navigator.clipboard.writeText(url);
-      message.success(t('accounts.messages.shareLinkCopied', { defaultValue: '分享链接已复制到剪贴板' }));
+      message.success(t('accounts.messages.shareLinkCopied', { defaultValue: 'Share link copied to clipboard' }));
       fetchList();
     } catch {
-      message.error(t('accounts.messages.shareLinkFailed', { defaultValue: '创建分享链接失败' }));
+      message.error(t('accounts.messages.shareLinkFailed', { defaultValue: 'Failed to create share link' }));
     }
   };
 
   const handleCopy = async (shareUrl: string) => {
-    const url = `${window.location.origin}${shareUrl}`;
-    await navigator.clipboard.writeText(url);
-    message.success(t('accounts.messages.shareLinkCopied', { defaultValue: '已复制' }));
+    await navigator.clipboard.writeText(`${window.location.origin}${shareUrl}`);
+    message.success(t('common.copied', { defaultValue: 'Copied' }));
+  };
+
+  const handleDelete = async (shareToken: string) => {
+    const h = authHeaders();
+    if (!h) return;
+    try {
+      const resp = await fetch(`/api/shares/delete`, {
+        method: 'POST',
+        headers: h,
+        body: JSON.stringify({ token: shareToken }),
+      });
+      if (!resp.ok) throw new Error('Failed');
+      message.success(t('common.deleted', { defaultValue: 'Deleted' }));
+      fetchList();
+    } catch {
+      message.error(t('common.deleteFailed', { defaultValue: 'Delete failed' }));
+    }
   };
 
   const columns = [
-    { title: t('share.token', { defaultValue: '分享链接' }), dataIndex: 'shareUrl', key: 'url',
+    { title: t('share.token', { defaultValue: 'Share Link' }), dataIndex: 'shareUrl', key: 'url',
       render: (url: string) => (
         <Space>
           <LinkOutlined />
@@ -78,19 +97,27 @@ export default function ShareAccountButton({ accountId }: Props) {
         </Space>
       ),
     },
-    { title: t('share.views', { defaultValue: '浏览量' }), dataIndex: 'viewCount', key: 'views', width: 80 },
-    { title: t('share.expires', { defaultValue: '过期时间' }), dataIndex: 'expiresAt', key: 'expires', width: 120,
+    { title: t('share.views', { defaultValue: 'Views' }), dataIndex: 'viewCount', key: 'views', width: 80 },
+    { title: t('share.expires', { defaultValue: 'Expires' }), dataIndex: 'expiresAt', key: 'expires', width: 120,
       render: (v: string) => {
         const d = new Date(v);
         const expired = d < new Date();
         return <Tag color={expired ? 'red' : 'green'}>{d.toLocaleDateString()}</Tag>;
       },
     },
-    { title: t('share.actions', { defaultValue: '操作' }), key: 'actions', width: 80,
+    { title: t('share.actions', { defaultValue: 'Actions' }), key: 'actions', width: 140,
       render: (_: unknown, row: ShareItem) => (
-        <Button size="small" icon={<CopyOutlined />} onClick={() => handleCopy(row.shareUrl)}>
-          {t('common.copy', { defaultValue: '复制' })}
-        </Button>
+        <Space size="small">
+          <Button size="small" icon={<CopyOutlined />} onClick={() => handleCopy(row.shareUrl)} />
+          <Popconfirm
+            title={t('share.deleteConfirm', { defaultValue: 'Delete this share link?' })}
+            onConfirm={() => handleDelete(row.token)}
+            okText={t('common.confirm', { defaultValue: 'OK' })}
+            cancelText={t('common.cancel', { defaultValue: 'Cancel' })}
+          >
+            <Button size="small" danger icon={<DeleteOutlined />} />
+          </Popconfirm>
+        </Space>
       ),
     },
   ];
@@ -98,18 +125,18 @@ export default function ShareAccountButton({ accountId }: Props) {
   return (
     <>
       <Button icon={<ShareAltOutlined />} onClick={() => setOpen(true)}>
-        {t('strategy.share', { defaultValue: '分享' })}
+        {t('strategy.share', { defaultValue: 'Share' })}
       </Button>
       <Modal
-        title={t('share.title', { defaultValue: '分享管理' })}
+        title={t('share.title', { defaultValue: 'Share Management' })}
         open={open}
         onCancel={() => setOpen(false)}
-        width={640}
+        width={680}
         footer={null}
       >
         <div className="mb-4">
           <Button type="primary" icon={<LinkOutlined />} onClick={handleCreate}>
-            {t('share.createNew', { defaultValue: '创建新分享链接' })}
+            {t('share.createNew', { defaultValue: 'Create New Share Link' })}
           </Button>
         </div>
         <Table
@@ -119,7 +146,7 @@ export default function ShareAccountButton({ accountId }: Props) {
           loading={loading}
           size="small"
           pagination={false}
-          locale={{ emptyText: t('share.empty', { defaultValue: '暂无分享链接' }) }}
+          locale={{ emptyText: t('share.empty', { defaultValue: 'No share links yet' }) }}
         />
       </Modal>
     </>

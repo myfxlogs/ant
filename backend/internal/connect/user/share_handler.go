@@ -197,3 +197,34 @@ func (s *ShareServer) HandleListAllShareTokens(w http.ResponseWriter, r *http.Re
 		"items": items, "total": total, "page": page, "pageSize": pageSize,
 	})
 }
+
+// HandleDeleteShareToken deletes a share token owned by the current user.
+func (s *ShareServer) HandleDeleteShareToken(w http.ResponseWriter, r *http.Request) {
+	tokenStr := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+	if tokenStr == "" || tokenStr == r.Header.Get("Authorization") {
+		http.Error(w, `{"error":"missing authorization header"}`, http.StatusUnauthorized)
+		return
+	}
+	claims, err := interceptor.ValidateToken(tokenStr, s.jwtSecret)
+	if err != nil {
+		http.Error(w, `{"error":"invalid token"}`, http.StatusUnauthorized)
+		return
+	}
+	uid, err := uuid.Parse(claims.UserID)
+	if err != nil || uid == uuid.Nil {
+		http.Error(w, `{"error":"invalid user"}`, http.StatusUnauthorized)
+		return
+	}
+	var req struct{ Token string `json:"token"` }
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Token == "" {
+		http.Error(w, `{"error":"invalid request"}`, http.StatusBadRequest)
+		return
+	}
+	if err := s.repo.DeleteByUser(r.Context(), uid, req.Token); err != nil {
+		s.log.Error("DeleteShareToken: db", zap.Error(err))
+		http.Error(w, `{"error":"delete failed"}`, http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"ok":true}`))
+}
