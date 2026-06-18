@@ -41,12 +41,12 @@ export default function ShareManagement() {
 
   const columns = [
     {
-      title: t('share.userId', { defaultValue: '用户' }),
+      title: t('share.userId', { defaultValue: 'User' }),
       dataIndex: 'userId', key: 'user', width: 120,
       render: (v: string) => <Typography.Text ellipsis style={{ maxWidth: 100 }}>{v.slice(0, 8)}</Typography.Text>,
     },
     {
-      title: t('share.token', { defaultValue: '分享链接' }),
+      title: t('share.token', { defaultValue: 'Share Link' }),
       dataIndex: 'shareUrl', key: 'url',
       render: (url: string) => (
         <Typography.Text copyable ellipsis style={{ maxWidth: 200 }}>
@@ -55,11 +55,11 @@ export default function ShareManagement() {
       ),
     },
     {
-      title: t('share.views', { defaultValue: '浏览量' }),
+      title: t('share.views', { defaultValue: 'Views' }),
       dataIndex: 'viewCount', key: 'views', width: 80,
     },
     {
-      title: t('share.expires', { defaultValue: '过期' }),
+      title: t('share.expires', { defaultValue: 'Expires' }),
       dataIndex: 'expiresAt', key: 'expires', width: 110,
       render: (v: string) => {
         const expired = new Date(v) < new Date();
@@ -67,7 +67,7 @@ export default function ShareManagement() {
       },
     },
     {
-      title: t('share.createdAt', { defaultValue: '创建时间' }),
+      title: t('share.createdAt', { defaultValue: 'Created' }),
       dataIndex: 'createdAt', key: 'created', width: 110,
       render: (v: string) => new Date(v).toLocaleDateString(),
     },
@@ -76,7 +76,7 @@ export default function ShareManagement() {
   return (
     <div>
       <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--color-text)' }}>
-        {t('admin.sidebar.shareManagement', { defaultValue: '分享统计' })}
+        {t('admin.sidebar.shareManagement', { defaultValue: 'Share Analytics' })}
       </h2>
       <Table
         dataSource={data}

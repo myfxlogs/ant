@@ -1174,7 +1174,7 @@ def run(context):
       system: 'System',
       shared: 'Shared',
       private: '私有',
-      share: 'Share',
+      share: '分享',
       published: '已發布',
       draft: '草稿',
       unpublish: 'Unpublish',

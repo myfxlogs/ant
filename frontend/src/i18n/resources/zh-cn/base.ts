@@ -273,8 +273,8 @@ const base = {
     expires: '过期时间',
     actions: '操作',
     empty: '暂无分享链接',
-    userId: '普通用户',
-    createdAt: '已创建',
+    userId: '用户',
+    createdAt: '创建时间',
   },
   notifications: {
     title: '通知中心',

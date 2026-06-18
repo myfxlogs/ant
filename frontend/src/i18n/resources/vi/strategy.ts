@@ -1174,7 +1174,7 @@ def run(context):
       system: 'System',
       shared: 'Shared',
       private: 'Riêng tư',
-      share: 'Share',
+      share: 'Chia Sẻ',
       published: 'Đã xuất bản',
       draft: 'Nháp',
       unpublish: 'Unpublish',
