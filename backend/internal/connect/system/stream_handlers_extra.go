@@ -160,17 +160,24 @@ func (s *StreamServer) SubscribeUserSummary(
 	}
 
 	var lastSummary time.Time
+	keepalive := time.NewTicker(30 * time.Second)
+	defer keepalive.Stop()
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
+		case <-keepalive.C:
+			if ev := s.computeSummary(ctx, userID); ev != nil {
+				if err := stream.Send(ev); err != nil {
+					return connect.NewError(connect.CodeInternal, err)
+				}
+				lastSummary = time.Now()
+			}
 		case _, ok := <-profitCh:
 			if !ok {
-				// Defensive: profitCh is never closed; goroutines only forward values.
 				continue
 			}
-			// Throttle: recompute summary at most once every 5 seconds
-			// to avoid flooding the DB with redundant aggregate queries.
+			// Throttle: recompute summary at most once every 5 seconds.
 			if time.Since(lastSummary) < 5*time.Second {
 				continue
 			}
