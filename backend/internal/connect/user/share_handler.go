@@ -19,6 +19,7 @@ import (
 	antv1 "anttrader/gen/proto/ant/v1"
 	antv1c "anttrader/gen/proto/ant/v1/antv1connect"
 	"anttrader/internal/interceptor"
+	"anttrader/internal/mthub"
 	"anttrader/internal/repository"
 )
 
@@ -27,6 +28,7 @@ type ShareServer struct {
 	tradeRecords *repository.TradeRecordRepository
 	eqRepo       *repository.AnalyticsRepository
 	userRepo     *repository.UserRepository
+	mthub        *mthub.MtHubService
 	pg           *pgxpool.Pool
 	jwtSecret    string
 	log          *zap.Logger
@@ -34,8 +36,8 @@ type ShareServer struct {
 
 var _ antv1c.ShareServiceHandler = (*ShareServer)(nil)
 
-func NewShareServer(repo *repository.ShareRepository, tradeRecords *repository.TradeRecordRepository, eqRepo *repository.AnalyticsRepository, userRepo *repository.UserRepository, pg *pgxpool.Pool, jwtSecret string, log *zap.Logger) *ShareServer {
-	return &ShareServer{repo: repo, tradeRecords: tradeRecords, eqRepo: eqRepo, userRepo: userRepo, pg: pg, jwtSecret: jwtSecret, log: log}
+func NewShareServer(repo *repository.ShareRepository, tradeRecords *repository.TradeRecordRepository, eqRepo *repository.AnalyticsRepository, userRepo *repository.UserRepository, mthubSvc *mthub.MtHubService, pg *pgxpool.Pool, jwtSecret string, log *zap.Logger) *ShareServer {
+	return &ShareServer{repo: repo, tradeRecords: tradeRecords, eqRepo: eqRepo, userRepo: userRepo, mthub: mthubSvc, pg: pg, jwtSecret: jwtSecret, log: log}
 }
 
 func (s *ShareServer) CreateShareToken(ctx context.Context, req *connect.Request[antv1.CreateShareTokenRequest]) (*connect.Response[antv1.CreateShareTokenResponse], error) {
@@ -252,35 +254,32 @@ func (s *ShareServer) HandleGetSharedPerformanceJSON(w http.ResponseWriter, r *h
 		}
 	}
 
-	// Positions — only if the share token allows it
+	// Positions — only if the share token allows it. Fetch from MT broker live.
 	var positionsOut interface{}
 	if st.ShowPositions {
 		type posJSON struct {
-			Symbol       string  `json:"symbol"`
-			Type         string  `json:"type"`
-			Volume       float64 `json:"volume"`
-			OpenPrice    float64 `json:"openPrice"`
-			CurrentPrice float64 `json:"currentPrice"`
-			Profit       float64 `json:"profit"`
-			OpenTimeMs   int64   `json:"openTimeMs"`
+			Symbol    string  `json:"symbol"`
+			Type      string  `json:"type"`
+			Volume    float64 `json:"volume"`
+			OpenPrice float64 `json:"openPrice"`
+			Profit    float64 `json:"profit"`
 		}
-		posRows, _ := s.pg.Query(r.Context(),
-			`SELECT symbol, order_type, volume, open_price, COALESCE(current_price,0),
-			        COALESCE(profit,0), open_time
-			 FROM positions WHERE mt_account_id=$1 ORDER BY open_time DESC LIMIT 50`, aid)
 		posList := make([]posJSON, 0)
-		for posRows != nil && posRows.Next() {
-			var p posJSON
-			var vol, openP, curP, prof float64
-			var ot int16
-			var otUnix time.Time
-			posRows.Scan(&p.Symbol, &ot, &vol, &openP, &curP, &prof, &otUnix)
-			p.Volume = vol; p.OpenPrice = openP; p.CurrentPrice = curP; p.Profit = prof
-			p.OpenTimeMs = otUnix.UnixMilli()
-			if ot == 0 { p.Type = "BUY" } else { p.Type = "SELL" }
-			posList = append(posList, p)
+		if s.mthub != nil {
+			if orders, err := s.mthub.OpenedOrders(r.Context(), st.AccountID); err == nil {
+				for _, o := range orders {
+					vol, _ := o.Volume.Float64()
+					openP, _ := o.OpenPrice.Float64()
+					prof, _ := o.Profit.Float64()
+					side := "BUY"
+					if o.Side == -1 { side = "SELL" }
+					posList = append(posList, posJSON{
+						Symbol: o.SymbolRaw, Type: side,
+						Volume: vol, OpenPrice: openP, Profit: prof,
+					})
+				}
+			}
 		}
-		if posRows != nil { posRows.Close() }
 		positionsOut = posList
 	}
 
@@ -304,8 +303,18 @@ func (s *ShareServer) HandleGetSharedPerformanceJSON(w http.ResponseWriter, r *h
 
 // HandleCreateShareTokenREST creates a share token via plain JSON (supports show_positions).
 func (s *ShareServer) HandleCreateShareTokenREST(w http.ResponseWriter, r *http.Request) {
-	uid, _ := uuid.Parse(interceptor.GetUserID(r.Context()))
-	if uid == uuid.Nil {
+	tokenStr := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+	if tokenStr == "" || tokenStr == r.Header.Get("Authorization") {
+		http.Error(w, `{"error":"login required"}`, http.StatusUnauthorized)
+		return
+	}
+	claims, err := interceptor.ValidateToken(tokenStr, s.jwtSecret)
+	if err != nil {
+		http.Error(w, `{"error":"invalid token"}`, http.StatusUnauthorized)
+		return
+	}
+	uid, err := uuid.Parse(claims.UserID)
+	if err != nil || uid == uuid.Nil {
 		http.Error(w, `{"error":"login required"}`, http.StatusUnauthorized)
 		return
 	}
@@ -331,6 +340,7 @@ func (s *ShareServer) HandleCreateShareTokenREST(w http.ResponseWriter, r *http.
 		ExpiresAt: time.Now().Add(time.Duration(req.ExpireDays) * 24 * time.Hour),
 	}
 	if err := s.repo.Create(r.Context(), st); err != nil {
+		s.log.Error("HandleCreateShareTokenREST: create failed", zap.Error(err))
 		http.Error(w, `{"error":"create failed"}`, http.StatusInternalServerError)
 		return
 	}

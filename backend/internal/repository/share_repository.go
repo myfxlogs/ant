@@ -33,7 +33,7 @@ func (r *ShareRepository) Create(ctx context.Context, t *ShareToken) error {
 	_, err := r.db.Exec(ctx,
 		`INSERT INTO share_tokens (user_id, account_id, token, description, show_positions, expires_at)
 		 VALUES ($1,$2,$3,$4,$5,$6)`,
-		t.UserID, t.AccountID, t.Token, t.Description, t.ExpiresAt)
+		t.UserID, t.AccountID, t.Token, t.Description, t.ShowPositions, t.ExpiresAt)
 	return err
 }
 
