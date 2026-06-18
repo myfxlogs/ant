@@ -125,7 +125,7 @@ export default function ShareAccountButton({ accountId }: Props) {
   return (
     <>
       <Button icon={<ShareAltOutlined />} onClick={() => setOpen(true)}>
-        {t('strategy.share', { defaultValue: 'Share' })}
+        {t('strategy.library.share', { defaultValue: 'Share' })}
       </Button>
       <Modal
         title={t('share.title', { defaultValue: 'Share Management' })}
