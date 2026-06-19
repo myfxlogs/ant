@@ -61,7 +61,7 @@ export const VOL_NORMAL_KEY = 'strategy.assetAnalysis.volNormal' as const;
 /** volatility */
 export const VOLATILITY_KEY = 'strategy.assetAnalysis.volatility' as const;
 
-export const ASSETANALYSIS_KEYS = {
+export const STRATEGYASSETANALYSIS_KEYS = {
   ai_recommendation: 'strategy.assetAnalysis.aiRecommendation',
   ai_unavailable: 'strategy.assetAnalysis.aiUnavailable',
   analyze: 'strategy.assetAnalysis.analyze',
@@ -84,4 +84,4 @@ export const ASSETANALYSIS_KEYS = {
   volatility: 'strategy.assetAnalysis.volatility',
 } as const;
 
-export type AssetAnalysisKey = typeof ASSETANALYSIS_KEYS[keyof typeof ASSETANALYSIS_KEYS];
+export type StrategyAssetAnalysisKey = typeof STRATEGYASSETANALYSIS_KEYS[keyof typeof STRATEGYASSETANALYSIS_KEYS];

@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_quick_trade_section_en.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const QuickTradeSection = {
+const StrategyQuickTradeSection = {
   "strategy": {
     "quickTradeSection": {
       "amountLots": "Amount (Lots)",
@@ -16,4 +16,4 @@ const QuickTradeSection = {
     }
   }
 } as const;
-export default QuickTradeSection;
+export default StrategyQuickTradeSection;

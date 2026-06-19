@@ -1,263 +1,246 @@
-const aiSettings = {
-  ai: {
-    settings: {
-      pageTitle: 'AI アシスタント設定',
-      defaultProfileName: 'デフォルト',
-      primary: {
-        title: 'デフォルト主モデル',
-        hint: '意図明確化、コード生成などに使用。',
-        placeholder: 'プロバイダー・モデルを選択してください',
+// Auto-generated from proto/ant/v1/i18n/ai_settings_ja.textproto
+// DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
+const AiSettings = {
+  "ai": {
+    "settings": {
+      "actions": {
+        "saveConfig": "設定保存",
+        "validateApiKey": "API キー検証"
       },
-      tabs: {
-        config: 'モデル設定',
-        agents: 'エージェント設定',
-      },
-      fields: {
-        name: '名前',
-        provider: 'AIプロバイダー',
-        baseUrl: '基底 URL',
-        baseUrlHint: '（モデルサービスアドレス）',
-        apiKey: 'API キー',
-        apiKeyConfigured: '設定済',
-        apiKeyReplaceHint: '交換する場合は再入力',
-        deleteApiKey: 'キー削除',
-        model: 'モデル',
-        defaultModel: 'デフォルトモデル',
-        availableModels: '利用可能モデル',
-        availableModelsHint: '複数モデルを有効化可能。',
-        availableModelsPlaceholder: '選択または入力',
-        availableModelsEmpty: 'モデル IDを入力',
-        availableModelsTip: '削除してもバインド済みエージェントは残ります。',
-        clear: 'クリア',
-        temperature: '温度',
-        timeoutSeconds: 'タイムアウト秒数',
-        maxTokens: '最大 トークン 数',
-        enabledStatus: '有効化',
-        enabledOn: '有効→無効化',
-        enabledOff: '無効→有効化',
-      },
-      sections: {
-        basic: '基本情報',
-        connection: '接続設定',
-        advanced: '高度パラメータ',
-        advancedHint: '意味を理解して調整。',
-        connectionApiKeyLink: 'API キー申請/管理へ',
-      },
-      inferenceParams: {
-        title: '推論パラメータ',
-      },
-      providers: {
-        enabledTitle: '有効プロバイダー',
-        emptyTitle: '有効プロバイダーなし',
-        emptyHint: 'Please first configure API Key and available models in ',
-        emptyHintTail: '.',
-        modelsUnit: 'モデル',
-        noModels: 'モデル未設定',
-        openai: 'OpenAI',
-        anthropic: 'Anthropic Claude',
-        deepseek: 'DeepSeek',
-        zhipu: '智譜AI',
-        qwen: 'Tongyi Qianwen',
-        moonshot: '月之暗面（Kimi）',
-        doubao: 'Doubao',
-        siliconflow: 'SiliconFlow',
-        openrouter: 'OpenRouter',
-        mistral: 'Mistral',
-        groq: 'Groq',
-        custom: 'カスタム（OpenAI互換）',
-        openai_compatible: 'カスタム（OpenAI互換）',
-      },
-      placeholders: {
-        name: '例: DeepSeek-低コスト',
-        provider: 'AIプロバイダー選択',
-        baseUrl: '例: https://api.example.com/v1',
-        apiKey: 'API キー入力',
-        providerFirst: '先にプロバイダー選択',
-        modelManual: 'モデル名入力',
-        modelSelect: 'モデル選択',
-        modelSelectOrType: '選択または入力',
-      },
-      apiKeySavedAs: '現在保存済: {{masked}}',
-      apiKeyGuide: {
-        title: 'API キー申請ガイド',
-        selectProviderHint: 'プロバイダー選択後、申請方法を表示。',
-        modelSuggestionZhipu: 'モデル提案: glm-4-flash / glm-4',
-        modelSuggestionDeepSeek: 'モデル提案: deepseek-chat',
-        default: 'Current provider: {{provider}}. Go to the provider\'s official console to create API Key, then paste above.',
-        zhipu: {
-          title: 'Zhipu API キー取得方法',
-          step1: 'Zhipuプラットフォーム:',
-          step2: 'ログイン/登録後、コンソールでAPI キー作成。',
+      "agent": {
+        "actions": {
+          "add": "追加",
+          "loadDefaults": "デフォルト8エージェント読込",
+          "remove": "削除",
+          "restoreDefaults": "デフォルト復元",
+          "restoreDefaultsConfirmContent": "8システムエージェントをデフォルトにリセット。カスタムは保持。",
+          "restoreDefaultsConfirmTitle": "システムデフォルト復元？",
+          "save": "保存"
         },
-        deepseek: {
-          title: 'DeepSeek API キー取得方法',
-          step1: 'DeepSeekプラットフォーム:',
-          step2: 'ログイン/登録後、APIキー管理画面で作成。',
+        "defaultName": "カスタムエージェント",
+        "defaults": {
+          "code": {
+            "inputHint": "例: パラダイム=トレンドフォロー、指標=EMA(fast)/EMA(slow)+ATRフィルタ"
+          },
+          "execution": {
+            "inputHint": "例: 注文=EURUSDロング10ロット、スプレッド=0.6pip、目標5分、許容スリッページ=0.8pip"
+          },
+          "executor": {
+            "identity": "取引執行最適化専門家 — スリッページと執行コストを最小化。"
+          },
+          "macro": {
+            "inputHint": "例: 今週重要イベント=米CPI（木20:30）、FOMC議事録（水翌02:00）"
+          },
+          "portfolio": {
+            "inputHint": "例: 既存戦略=トレンド-EURUSD、平均回帰-XAUUSD、総資産=50,000"
+          },
+          "researcher": {
+            "identity": "マクロ経済・業界リサーチャー — マクロイベントとセクター動向を分析。"
+          },
+          "risk": {
+            "inputHint": "例: 資産=10,000、許容DD=5%、取引リスク=0.5%、最大取引=5"
+          },
+          "risk_manager": {
+            "identity": "厳格なリスク管理専門家 — ポジションサイジング、損切り、ドローダウン制限を設計。"
+          },
+          "sentiment": {
+            "inputHint": "例: VIX 14→22、非商業純ロング-18%、ニュース「リセッション/利下げ」"
+          },
+          "signals": {
+            "inputHint": "例: パラダイム=トレンドフォロー、時間枠=H1、指標=EMA/ATR/ADX"
+          },
+          "strategist": {
+            "identity": "シニア定量ストラテジーアナリスト — 口座・市場状況に基づき戦略パラダイムを推奨。"
+          },
+          "style": {
+            "inputHint": "例: アカウント=EURUSD小売、時間枠=H1、目標=月収益3%、DD<10%"
+          }
         },
-      },
-      actions: {
-        validateApiKey: 'API キー検証',
-        saveConfig: '設定保存',
-      },
-      profiles: {
-        current: '現在',
-        actions: {
-          setCurrent: '現在に設定',
+        "fields": {
+          "historicalBinding": "{{value}}（過去）",
+          "identityPlaceholder": "身分/人物設定記述",
+          "inputHintPlaceholder": "入力ヒント",
+          "modelProfileEmpty": "先に「AI設定」でプロバイダー/モデルを有効化",
+          "modelProfilePlaceholder": "デフォルト",
+          "namePlaceholder": "エージェント名"
         },
-        delete: {
-          title: '設定削除',
-          content: '削除しますか？',
+        "messages": {
+          "defaultsLoaded": "デフォルトテンプレート読込。「保存」で確定。",
+          "empty": "カスタムエージェントなし。「追加」で設定。",
+          "loading": "読込中…",
+          "saveFailed": "保存失敗",
+          "saveSuccess": "エージェント保存",
+          "selectProfileFirst": "先に左で設定選択"
         },
+        "removeConfirmContent": "削除しますか？",
+        "removeConfirmTitle": "エージェント削除",
+        "title": "エージェント身分定義",
+        "types": {
+          "code": "コード",
+          "execution": "実行",
+          "executor": "執行アドバイザー",
+          "macro": "マクロ",
+          "portfolio": "ポートフォリオ",
+          "researcher": "マーケットリサーチャー",
+          "risk": "リスク",
+          "risk_manager": "リスクマネージャー",
+          "sentiment": "センチメント",
+          "signals": "シグナル/指標",
+          "strategist": "ストラテジーアナリスト",
+          "style": "スタイル/パラダイム"
+        }
       },
-      messages: {
-        loadConfigFailed: 'AI設定読込失敗',
-        probeSuccess: '接続成功',
-        probeFailed: '接続失敗',
-        selectSavedProfileOrEnterKey: '保存済設定選択またはKey入力',
-        validateSuccess: '検証成功',
-        validateFailed: '検証失敗',
-        apiKeyValidated: 'API キー検証成功',
-        validateBeforeSave: '先に「API キー検証」をクリック',
-        saveSuccess: '設定保存成功',
-        deleted: '削除済',
-        setCurrentSuccess: '現在設定切替',
-        enabled: '有効化',
-        disabled: '無効化',
-      },
-      errors: {
-        arrearage: '残高不足。コンソールで確認。',
-        invalidModelId: 'モデル利用不可{{model}}。',
-        unauthorized: 'API キー無効（401）。',
-        forbidden: 'アクセス拒否（403）。',
-        timeout: '接続タイムアウト。',
-      },
-      discoverErrors: {
-        baseUrlRequired: '先に Base URL（モデルサービスURL）を入力してください。',
-        baseUrlInvalid: 'Base URL が無効です。例: https://model.example.com または https://model.example.com/v1',
-        freeTierExhausted: '無料枠を使い切りました。コンソールで設定を確認するか有料キーに切り替えてください。',
-        quotaOrRateLimit: 'クォータまたはレート制限です。課金/制限を確認するか後で再試行してください。',
-        quotaForbidden403: '呼び出し拒否（クォータ）: コンソールの課金/クォータを確認してください。',
-        unauthorized: '認証失敗: API キー/シークレットを確認してください。',
-        endpoint404: 'エンドポイントが見つかりません: Base URL とプロトコル（/v1 など）を確認してください。',
-        timeout: 'タイムアウト: ネットワークを確認するか後で再試行してください。',
-        unreachable: 'モデルサービスに接続できません: Base URL・ネットワーク・ゲートウェイを確認してください。',
-        invalidModelsResponse: '/models 互換ではない応答形式です。',
-        noModelsReturned: '利用可能なモデルがありません。権限と設定を確認してください。',
-        providerRegionBlocked:
-          'Region not supported: the model provider rejected this request based on detected location (egress IP may differ from your server). Try a supported network region, a compliant HTTP(S) proxy, or another provider.',
-        generic: 'モデル一覧の取得に失敗しました。Base URL と API キーを確認してください。',
-        genericDetail: 'モデル一覧の取得に失敗: {{detail}}',
-      },
-      validation: {
-        nameRequired: '名前必須',
-        apiKeyRequired: 'API キー必須',
-        baseUrlRequired: '基底 URL必須',
-        baseUrlProtocol: 'http://またはhttps://で開始',
-        baseUrlNoChatCompletionsSuffix: '/chat/completionsで終了不可',
-        modelRequired: 'モデル必須',
-        modelFormat: 'モデル形式不正',
-      },
-      agent: {
-        title: 'エージェント身分定義',
-        defaultName: 'カスタムエージェント',
-        removeConfirmTitle: 'エージェント削除',
-        removeConfirmContent: '削除しますか？',
-        actions: {
-          add: '追加',
-          save: '保存',
-          remove: '削除',
-          loadDefaults: 'デフォルト8エージェント読込',
-          restoreDefaults: 'デフォルト復元',
-          restoreDefaultsConfirmTitle: 'システムデフォルト復元？',
-          restoreDefaultsConfirmContent: '8システムエージェントをデフォルトにリセット。カスタムは保持。',
+      "apiKeyGuide": {
+        "deepseek": {
+          "step1": "DeepSeekプラットフォーム:",
+          "step2": "ログイン/登録後、APIキー管理画面で作成。",
+          "title": "DeepSeek API キー取得方法"
         },
-        messages: {
-          selectProfileFirst: '先に左で設定選択',
-          loading: '読込中…',
-          empty: 'カスタムエージェントなし。「追加」で設定。',
-          saveSuccess: 'エージェント保存',
-          saveFailed: '保存失敗',
-          defaultsLoaded: 'デフォルトテンプレート読込。「保存」で確定。',
-        },
-        fields: {
-          namePlaceholder: 'エージェント名',
-          identityPlaceholder: '身分/人物設定記述',
-          inputHintPlaceholder: '入力ヒント',
-          modelProfilePlaceholder: 'デフォルト',
-          modelProfileEmpty: '先に「AI設定」でプロバイダー/モデルを有効化',
-          historicalBinding: '{{value}}（過去）',
-        },
-        types: {
-          style: 'スタイル/パラダイム',
-          signals: 'シグナル/指標',
-          risk: 'リスク',
-          macro: 'マクロ',
-          sentiment: 'センチメント',
-          portfolio: 'ポートフォリオ',
-          execution: '実行',
-          code: 'コード',
-          strategist: 'ストラテジーアナリスト',
-          risk_manager: 'リスクマネージャー',
-          executor: '執行アドバイザー',
-          researcher: 'マーケットリサーチャー',
-        },
-        defaults: {
-          style: {
-            identity:
-              'You are a senior quantitative strategy analyst, focused on strategy paradigm selection. Based on account/symbol/timeframe/historical stats (trend strength ADX, volatility ATR, autocorrelation, distribution skew, etc.) and user goals/constraints, recommend one primary paradigm and one alternative from "trend following / mean reversion / breakout / momentum / arbitrage / grid / event-driven", explain applicable/inapplicable conditions. Output in Markdown: 1) reasoning (bullet points) 2) main + alternative + applicable/inapplicable conditions 3) at least 3 risk alerts. Avoid vagueness, do not rely on external data not provided.',
-            inputHint: '例: アカウント=EURUSD小売、時間枠=H1、目標=月収益3%、DD<10%',
-          },
-          signals: {
-            identity:
-              'You are a quantitative factor and signal engineer, proficient with MA/EMA, RSI, MACD, ADX, ATR, Bollinger, Bollinger bandwidth, VWAP, Pivot, volume and volatility factors, etc. Without introducing external data (unless user provides macro/event tables), design reproducible, parameterizable entry/exit/filter signal rules, avoid overfitting. Output in Markdown: 1) reasoning 2) executable rule list (entry/exit/filter) with parameters (default/range/step) 3) at least 3 boundary/failure scenarios (range-bound/gap/high volatility/news).',
-            inputHint: '例: パラダイム=トレンドフォロー、時間枠=H1、指標=EMA/ATR/ADX',
-          },
-          risk: {
-            identity:
-              'You are a trading risk and execution constraints expert. Based on user goals and account status, design position sizing (fixed fraction / vol targeting / Kelly modified), stop-loss/take-profit, single/day/week max risk, max drawdown threshold, consecutive loss cooldown, trade frequency cap, spread/slippage anomaly protection, black swan downgrade strategy. Output in Markdown: 1) reasoning 2) hard constraints list + recommended params (suggested/range) + actions after trigger 3) at least 3 failure modes (e.g. consecutive loss expansion, correlation collapse, cross-symbol homogeneous exposure).',
-            inputHint: '例: 資産=10,000、許容DD=5%、取引リスク=0.5%、最大取引=5',
-          },
-          macro: {
-            identity:
-              'You are a macro researcher, focusing on macro events with significant short/medium-term price impact: central bank rate decisions (FOMC/ECB/BoE/BoJ), CPI/PPI, NFP, PMI, GDP, retail sales, crude oil inventory, geopolitical events. Based on user-provided event tables or common calendars, give event windows (typically 30 mins before ~ 2 hours after) and direction/volatility forecast for target symbol, position suggestion (avoid / reduce / event-driven layout). Explicitly state unknowns and uncertainties; do not fabricate unpublished data. Output in Markdown: event impact matrix, recommended response, risk alerts.',
-            inputHint: '例: 今週重要イベント=米CPI（木20:30）、FOMC議事録（水翌02:00）',
-          },
-          sentiment: {
-            identity:
-              'You are a market sentiment and capital flow analyst, judging extreme optimism/panic: COT reports, VIX and volatility surface, fear/greed index, funding rates (crypto), ETF fund flows, social/news sentiment keywords, Put/Call ratio. Output sentiment score (-1 extreme pessimistic ~ +1 extreme optimistic), identify dominant dimension and recent change speed (first/second order momentum), combine with strategy paradigm to suggest trend-following or contrarian tendency. State clearly when no reliable sentiment data; do not fabricate.',
-            inputHint: '例: VIX 14→22、非商業純ロング-18%、ニュース「リセッション/利下げ」',
-          },
-          portfolio: {
-            identity:
-              'You are a portfolio management expert, responsible for multi-strategy / multi-symbol / multi-account capital allocation and diversification. Methodologies: correlation matrix, covariance shrinkage, risk parity, volatility targeting, maximum diversification portfolio (MDP), dynamic rebalancing. Based on existing strategy/symbol return-risk characteristics and correlations, give allocation suggestions, and point out concentration, tail correlation rising and drawdown linkage risks. Output in Markdown: portfolio weight table, risk contribution decomposition, rebalancing rules, key risks.',
-            inputHint: '例: 既存戦略=トレンド-EURUSD、平均回帰-XAUUSD、総資産=50,000',
-          },
-          execution: {
-            identity:
-              'You are an execution and trading cost optimization expert. For given order size and symbol liquidity, choose appropriate execution method (market / limit / TWAP / VWAP / POV / iceberg), time window (Asia/Europe/US session) and order splitting strategy, estimate impact cost and slippage, give degradation handling for spread anomalies, flash crashes, liquidity drops. Output: execution recommendation, impact cost estimation formula and value range, monitoring metrics (actual slippage, fill time, fill rate) and thresholds.',
-            inputHint: '例: 注文=EURUSDロング10ロット、スプレッド=0.6pip、目標5分、許容スリッページ=0.8pip',
-          },
-          code: {
-            identity:
-              'You are an AntTrader Python strategy code engineer. Generate directly executable strategy code, strictly following sandbox validation: no import, no dunder access, no open/eval/exec/compile/__import__/globals/locals/vars/dir, only use platform-provided APIs (on_tick / on_kline / built-in np, math, datetime, calculate_rsi, etc.). Must define run(context) (only 1 context parameter), return dict with at least signal(buy/sell/hold), symbol, confidence(0~1), risk_level(low/medium/high), reason; read params from context["params"]. Strict output: only one ```python code block```, no Markdown symbols, Chinese punctuation, or nested code fences inside the block.',
-            inputHint: '例: パラダイム=トレンドフォロー、指標=EMA(fast)/EMA(slow)+ATRフィルタ',
-          },
-          strategist: {
-            identity: 'シニア定量ストラテジーアナリスト — 口座・市場状況に基づき戦略パラダイムを推奨。',
-          },
-          risk_manager: {
-            identity: '厳格なリスク管理専門家 — ポジションサイジング、損切り、ドローダウン制限を設計。',
-          },
-          executor: {
-            identity: '取引執行最適化専門家 — スリッページと執行コストを最小化。',
-          },
-          researcher: {
-            identity: 'マクロ経済・業界リサーチャー — マクロイベントとセクター動向を分析。',
-          },
-        },
+        "default": "Current provider: {{provider}}. Go to the provider\\\\\\\\\\\\\\\\",
+        "modelSuggestionDeepSeek": "モデル提案: deepseek-chat",
+        "modelSuggestionZhipu": "モデル提案: glm-4-flash / glm-4",
+        "selectProviderHint": "プロバイダー選択後、申請方法を表示。",
+        "title": "API キー申請ガイド",
+        "zhipu": {
+          "step1": "Zhipuプラットフォーム:",
+          "step2": "ログイン/登録後、コンソールでAPI キー作成。",
+          "title": "Zhipu API キー取得方法"
+        }
       },
-    },
-  },
+      "apiKeySavedAs": "現在保存済: {{masked}}",
+      "defaultProfileName": "デフォルト",
+      "discoverErrors": {
+        "baseUrlInvalid": "Base URL が無効です。例: https://model.example.com または https://model.example.com/v1",
+        "baseUrlRequired": "先に Base URL（モデルサービスURL）を入力してください。",
+        "endpoint404": "エンドポイントが見つかりません: Base URL とプロトコル（/v1 など）を確認してください。",
+        "freeTierExhausted": "無料枠を使い切りました。コンソールで設定を確認するか有料キーに切り替えてください。",
+        "generic": "モデル一覧の取得に失敗しました。Base URL と API キーを確認してください。",
+        "genericDetail": "モデル一覧の取得に失敗: {{detail}}",
+        "invalidModelsResponse": "/models 互換ではない応答形式です。",
+        "noModelsReturned": "利用可能なモデルがありません。権限と設定を確認してください。",
+        "quotaForbidden403": "呼び出し拒否（クォータ）: コンソールの課金/クォータを確認してください。",
+        "quotaOrRateLimit": "クォータまたはレート制限です。課金/制限を確認するか後で再試行してください。",
+        "timeout": "タイムアウト: ネットワークを確認するか後で再試行してください。",
+        "unauthorized": "認証失敗: API キー/シークレットを確認してください。",
+        "unreachable": "モデルサービスに接続できません: Base URL・ネットワーク・ゲートウェイを確認してください。"
+      },
+      "errors": {
+        "arrearage": "残高不足。コンソールで確認。",
+        "forbidden": "アクセス拒否（403）。",
+        "invalidModelId": "モデル利用不可{{model}}。",
+        "timeout": "接続タイムアウト。",
+        "unauthorized": "API キー無効（401）。"
+      },
+      "fields": {
+        "apiKey": "API キー",
+        "apiKeyConfigured": "設定済",
+        "apiKeyReplaceHint": "交換する場合は再入力",
+        "availableModels": "利用可能モデル",
+        "availableModelsEmpty": "モデル IDを入力",
+        "availableModelsHint": "複数モデルを有効化可能。",
+        "availableModelsPlaceholder": "選択または入力",
+        "availableModelsTip": "削除してもバインド済みエージェントは残ります。",
+        "baseUrl": "基底 URL",
+        "baseUrlHint": "（モデルサービスアドレス）",
+        "clear": "クリア",
+        "defaultModel": "デフォルトモデル",
+        "deleteApiKey": "キー削除",
+        "enabledOff": "無効→有効化",
+        "enabledOn": "有効→無効化",
+        "enabledStatus": "有効化",
+        "maxTokens": "最大 トークン 数",
+        "model": "モデル",
+        "name": "名前",
+        "provider": "AIプロバイダー",
+        "temperature": "温度",
+        "timeoutSeconds": "タイムアウト秒数"
+      },
+      "inferenceParams": {
+        "title": "推論パラメータ"
+      },
+      "messages": {
+        "apiKeyValidated": "API キー検証成功",
+        "deleted": "削除済",
+        "disabled": "無効化",
+        "enabled": "有効化",
+        "loadConfigFailed": "AI設定読込失敗",
+        "probeFailed": "接続失敗",
+        "probeSuccess": "接続成功",
+        "saveSuccess": "設定保存成功",
+        "selectSavedProfileOrEnterKey": "保存済設定選択またはKey入力",
+        "setCurrentSuccess": "現在設定切替",
+        "validateBeforeSave": "先に「API キー検証」をクリック",
+        "validateFailed": "検証失敗",
+        "validateSuccess": "検証成功"
+      },
+      "pageTitle": "AI アシスタント設定",
+      "placeholders": {
+        "apiKey": "API キー入力",
+        "baseUrl": "例: https://api.example.com/v1",
+        "modelManual": "モデル名入力",
+        "modelSelect": "モデル選択",
+        "modelSelectOrType": "選択または入力",
+        "name": "例: DeepSeek-低コスト",
+        "provider": "AIプロバイダー選択",
+        "providerFirst": "先にプロバイダー選択"
+      },
+      "primary": {
+        "hint": "意図明確化、コード生成などに使用。",
+        "placeholder": "プロバイダー・モデルを選択してください",
+        "title": "デフォルト主モデル"
+      },
+      "profiles": {
+        "actions": {
+          "setCurrent": "現在に設定"
+        },
+        "current": "現在",
+        "delete": {
+          "content": "削除しますか？",
+          "title": "設定削除"
+        }
+      },
+      "providers": {
+        "anthropic": "Anthropic Claude",
+        "custom": "カスタム（OpenAI互換）",
+        "deepseek": "DeepSeek",
+        "doubao": "Doubao",
+        "emptyHint": "请先在 ",
+        "emptyHintTail": "。",
+        "emptyTitle": "有効プロバイダーなし",
+        "enabledTitle": "有効プロバイダー",
+        "groq": "Groq",
+        "mistral": "Mistral",
+        "modelsUnit": "モデル",
+        "moonshot": "月之暗面（Kimi）",
+        "noModels": "モデル未設定",
+        "openai": "OpenAI",
+        "openai_compatible": "カスタム（OpenAI互換）",
+        "openrouter": "OpenRouter",
+        "qwen": "Tongyi Qianwen",
+        "siliconflow": "硅基流动 SiliconFlow",
+        "zhipu": "智譜AI"
+      },
+      "sections": {
+        "advanced": "高度パラメータ",
+        "advancedHint": "意味を理解して調整。",
+        "basic": "基本情報",
+        "connection": "接続設定",
+        "connectionApiKeyLink": "API キー申請/管理へ"
+      },
+      "tabs": {
+        "agents": "エージェント設定",
+        "config": "モデル設定"
+      },
+      "validation": {
+        "apiKeyRequired": "API キー必須",
+        "baseUrlNoChatCompletionsSuffix": "/chat/completionsで終了不可",
+        "baseUrlProtocol": "http://またはhttps://で開始",
+        "baseUrlRequired": "基底 URL必須",
+        "modelFormat": "モデル形式不正",
+        "modelRequired": "モデル必須",
+        "nameRequired": "名前必須"
+      }
+    }
+  }
 } as const;
-
-export default aiSettings;
+export default AiSettings;

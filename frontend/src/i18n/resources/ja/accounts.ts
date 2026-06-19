@@ -1,399 +1,400 @@
-const accounts = {
-  accounts: {
-    title: '口座',
-    subtitle: 'MT4/MT5 口座を管理します',
-    bindNew: '口座を連携',
-    bind: {
-      title: 'MT 口座を連携',
-      errorModal: {
-        title: 'Binding failed'
+// Auto-generated from proto/ant/v1/i18n/accounts_ja.textproto
+// DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
+const Accounts = {
+  "accounts": {
+    "analytics": {
+      "advancedStatsTitle": "詳細統計",
+      "advancedTabs": {
+        "daily": "日",
+        "hourly": "時間足"
       },
-      step1: {
-        title: 'プラットフォームとブローカーを選択',
-        subtitle: 'Select your trading platform and search for your broker'
+      "chartPeriod": {
+        "all": "全部",
+        "day": "今日",
+        "month": "今月",
+        "week": "今週",
+        "year": "今年"
       },
-      step2: {
-        title: '口座情報を入力',
-        subtitle: 'Enter your trading account and password'
+      "chartSeries": {
+        "balance": "残高",
+        "equity": "純資産",
+        "profit": "損益",
+        "tradeCount": "取引数"
       },
-      step3: {
-        title: '連携内容を確認',
-        subtitle: 'Verify credentials and confirm to complete'
+      "chartType": {
+        "balance": "残高",
+        "equity": "純資産",
+        "profit": "損益"
       },
-      fields: {
-        platform: 'プラットフォーム',
-        brokerName: 'ブローカー名',
-        company: '会社名',
-        server: 'サーバー',
-        tradingAccount: '取引口座',
-        password: 'パスワード'
+      "dailyPnLTitle": "日次損益",
+      "empty": {
+        "dailyPnL": "日次損益データがありません",
+        "equityCurve": "エクイティカーブのデータがありません",
+        "hourly": "暂无时段分析数据",
+        "monthlyProfit": "月次損益データがありません",
+        "symbolDistribution": "銘柄分布データがありません"
       },
-      placeholders: {
-        brokerName: 'ブローカー名を入力（例：XM、IC Markets）',
-        company: '会社を選択',
-        server: 'サーバーを選択',
-        tradingAccount: '取引口座を入力',
-        password: 'Enter password'
-      },
-      labels: {
-        serverCount: '{{count}} servers'
-      },
-      actions: {
-        search: '検索',
-        verifyAccount: 'アカウントを確認',
-        confirmBind: '連携を確定',
-        retryVerify: 'Retry'
-      },
-      passwordHint: 'パスワードは HTTPS で送信され、バックエンドで Argon2id ハッシュとして保存されます（復元不可）。',
-      summary: {
-        broker: 'ブローカー',
-        server: 'サーバー',
-        platform: 'プラットフォーム',
-        tradingAccount: '取引口座',
-        password: 'パスワード',
-        verified: 'アカウント確認済み',
-        balance: '残高',
-        equity: '純資産',
-        margin: '証拠金',
-        freeMargin: '余剰証拠金',
-        leverage: 'レバレッジ',
-        currency: 'Currency'
-      },
-      messages: {
-        enterBrokerName: 'ブローカー名を入力してください',
-        foundBrokers: '{{count}} 件のブローカーが見つかりました',
-        noBrokersFound: '一致するブローカーが見つかりません。名称を確認してください。',
-        searchFailed: '検索に失敗しました。しばらくしてから再試行してください。',
-        selectServer: 'サーバーを選択してください',
-        enterTradingAccount: '取引口座を入力してください',
-        enterPassword: 'パスワードを入力してください',
-        noAccessHosts: '利用可能なアクセスホストがありません',
-        verifyFailed: 'アカウント確認に失敗しました',
-        bindSuccess: '口座を連携しました',
-        bindFailed: '口座の連携に失敗しました',
-        loginDigitsOnly: 'Trading account must contain only digits'
-      },
-      errors: {
-        brokerUnavailable: 'サーバーエラーまたはパスワードが正しくありません',
-        invalidCredentials: '口座が見つからないか、パスワードが無効です',
-        connectionFailed: 'ブローカーサーバーに接続できません。ネットワークを確認してください',
-        timeout: 'Connection timed out, please try again later'
-      }
-    },
-    empty: {
-      title: '連携済み口座がありません',
-      subtitle: 'Click the button below to bind your MT4/MT5 trading account'
-    },
-    legend: {
-      title: '凡例:',
-      connected: '接続済み',
-      connecting: '接続中',
-      disconnectedOrError: '切断/エラー',
-      disabled: '無効'
-    },
-    messages: {
-      disabledSuccess: '口座を無効化しました',
-      connectingMtServer: 'MT サーバーに接続中',
-      enabledSuccess: '口座を有効化しました',
-      fetchListFailed: '口座一覧の取得に失敗しました',
-      fetchAccountFailed: '口座情報の取得に失敗しました',
-      createdSuccess: '口座を作成しました',
-      createFailed: '口座の作成に失敗しました',
-      connectSuccess: '接続しました',
-      connectFailed: '接続に失敗しました',
-      disconnectFailed: '切断に失敗しました',
-      disableFailed: '口座の無効化に失敗しました',
-      deleted: '口座を削除しました',
-      deleteFailed: '削除に失敗しました',
-      enableFailed: 'Failed to enable account'
-    },
-    analytics: {
-      monthlyAnalysis: {
-        title: '月次分析',
-        chartMainTitle: '月次リターン（{{metric}}）',
-        metrics: {
-          change: '変化',
-          profit: '損益',
-          lots: 'ロット',
-          pips: 'Pips'
+      "hourlyTitle": "時間帯分析",
+      "monthlyAnalysis": {
+        "bonus": {
+          "chartHoldingTitle": "{{month}} 平均持仓时间",
+          "chartPopularTitle": "{{month}} 货币热度",
+          "chartRiskTitle": "Bonus: {{month}}のシンボル別プロフィットファクター。",
+          "emptyCharts": "この月の取引なし",
+          "legendBulls": "買い",
+          "legendShortTerm": "売り",
+          "popularityShare": "手数份额",
+          "sliceOther": "その他"
         },
-        focusedValue: '{{period}} · {{metric}}: {{value}}',
-        bonus: {
-          chartRiskTitle: 'Bonus: {{month}}のシンボル別プロフィットファクター。',
-          chartPopularTitle: `{{month}}'s currency popularity.`,
-          chartHoldingTitle: `{{month}}'s average holding time.`,
-          legendBulls: '買い',
-          legendShortTerm: '売り',
-          sliceOther: 'その他',
-          emptyCharts: 'この月の取引なし',
-          popularityShare: 'Lot volume share'
-        }
-      },
-      monthlyDetail: {
-        metricsTitle: '月次指標',
-        symbolPnLTitle: '銘柄別損益',
-        holdingTitle: '保有時間',
-        riskRewardTitle: '報酬:リスク比率',
-        popularityTitle: '通貨人気度',
-        long: '買い',
-        short: '売り',
-        fields: {
-          netReturn: '純利益',
-          totalTrades: '取引数',
-          winRate: '勝率',
-          profitFactor: 'PF',
-          bestTrade: '最良取引',
-          worstTrade: '最悪取引',
-          averageHours: '平均',
-          medianHours: '中央値',
-          maxHours: '最大',
-          minHours: '最小',
+        "chartMainTitle": "月次リターン（{{metric}}）",
+        "focusedValue": "{{period}} · {{metric}}：{{value}}",
+        "metrics": {
+          "change": "変化",
+          "lots": "ロット",
+          "pips": "点",
+          "profit": "損益"
         },
+        "title": "月次分析"
       },
-      chartType: {
-        equity: '純資産',
-        balance: '残高',
-        profit: '損益'
+      "monthlyDetail": {
+        "fields": {
+          "averageHours": "平均",
+          "bestTrade": "最良取引",
+          "maxHours": "最大",
+          "medianHours": "中央値",
+          "minHours": "最小",
+          "netReturn": "純利益",
+          "profitFactor": "PF",
+          "totalTrades": "取引数",
+          "winRate": "勝率",
+          "worstTrade": "最悪取引"
+        },
+        "holdingTitle": "保有時間",
+        "long": "買い",
+        "metricsTitle": "月次指標",
+        "popularityTitle": "通貨人気度",
+        "riskRewardTitle": "報酬:リスク比率",
+        "short": "売り",
+        "symbolPnLTitle": "銘柄別損益"
       },
-      chartPeriod: {
-        day: '今日',
-        week: '今週',
-        month: '今月',
-        year: '今年',
-        all: 'All'
+      "monthlyProfitTitle": "月次損益",
+      "stats": {
+        "avgDailyReturn": "平均日次リターン",
+        "avgHolding": "平均保有時間",
+        "avgLoss": "平均損失",
+        "avgProfit": "平均利益",
+        "calmar": "カルマーレシオ",
+        "consecutiveWinsLosses": "連勝/連敗",
+        "largestLoss": "最大損失",
+        "largestWin": "最大利益",
+        "maxDrawdown": "最大ドローダウン",
+        "netDeposit": "净入金",
+        "netProfit": "純利益",
+        "profitFactor": "プロフィットファクター",
+        "sharpe": "シャープレシオ",
+        "sortino": "ソルティノレシオ",
+        "totalDeposit": "総入金",
+        "totalTrades": "取引回数",
+        "totalWithdrawal": "総出金",
+        "volatility": "ボラティリティ",
+        "winRate": "勝率"
       },
-      chartSeries: {
-        equity: '純資産',
-        balance: '残高',
-        profit: '損益',
-        tradeCount: '取引数'
-      },
-      empty: {
-        equityCurve: 'エクイティカーブのデータがありません',
-        monthlyProfit: '月次損益データがありません',
-        symbolDistribution: '銘柄分布データがありません',
-        dailyPnL: '日次損益データがありません',
-        hourly: 'No time-of-day analysis data'
-      },
-      monthlyProfitTitle: '月次損益',
-      advancedStatsTitle: '詳細統計',
-      symbolDistributionTitle: '銘柄分布',
-      dailyPnLTitle: '日次損益',
-      hourlyTitle: '時間帯分析',
-      advancedTabs: {
-        hourly: '時間足',
-        daily: 'Daily'
-      },
-      timeDetail: {
-        lots: 'ロット',
-        trades: '取引数',
-        profitAmount: '損益額',
-        balance: '残高',
-        profitFactor: 'プロフィットファクター',
-        maxFloatingLossAmount: '最大含み損額',
-        maxFloatingLossRatio: '最大含み損比率',
-        maxFloatingProfitAmount: '最大含み益額',
-        maxFloatingProfitRatio: 'Max floating profit ratio'
-      },
-      stats: {
-        winRate: '勝率',
-        profitFactor: 'プロフィットファクター',
-        maxDrawdown: '最大ドローダウン',
-        totalTrades: '取引回数',
-        avgProfit: '平均利益',
-        avgLoss: '平均損失',
-        avgHolding: '平均保有時間',
-        consecutiveWinsLosses: '連勝/連敗',
-        sharpe: 'シャープレシオ',
-        sortino: 'ソルティノレシオ',
-        calmar: 'カルマーレシオ',
-        largestWin: '最大利益',
-        largestLoss: '最大損失',
-        avgDailyReturn: '平均日次リターン',
-        volatility: 'ボラティリティ',
-        netProfit: '純利益',
-        totalDeposit: '総入金',
-        totalWithdrawal: '総出金',
-        netDeposit: 'Net deposit'
+      "symbolDistributionTitle": "銘柄分布",
+      "timeDetail": {
+        "balance": "残高",
+        "lots": "ロット",
+        "maxFloatingLossAmount": "最大含み損額",
+        "maxFloatingLossRatio": "最大含み損比率",
+        "maxFloatingProfitAmount": "最大含み益額",
+        "maxFloatingProfitRatio": "最大浮动盈利比",
+        "profitAmount": "損益額",
+        "profitFactor": "プロフィットファクター",
+        "trades": "取引数"
       }
     },
-    card: {
-      status: {
-        disabled: '無効',
-        connected: '接続済み',
-        connecting: '接続中',
-        disconnected: '切断',
-        error: 'Error'
+    "bind": {
+      "actions": {
+        "confirmBind": "連携を確定",
+        "retryVerify": "重试",
+        "search": "検索",
+        "verifyAccount": "アカウントを確認"
       },
-      fields: {
-        balance: '残高',
-        equity: '純資産',
-        broker: 'ブローカー',
-        server: 'サーバー'
+      "errorModal": {
+        "title": "绑定失败"
       },
-      actions: {
-        positions: '保有ポジション',
-        orders: '注文',
-        details: 'Details'
+      "errors": {
+        "brokerUnavailable": "サーバーエラーまたはパスワードが正しくありません",
+        "connectionFailed": "ブローカーサーバーに接続できません。ネットワークを確認してください",
+        "invalidCredentials": "口座が見つからないか、パスワードが無効です",
+        "timeout": "连接超时，请稍后重试"
       },
-      deleteConfirm: {
-        title: 'この口座を削除しますか？',
-        content: 'This action cannot be undone'
+      "fields": {
+        "brokerName": "ブローカー名",
+        "company": "会社名",
+        "password": "パスワード",
+        "platform": "プラットフォーム",
+        "server": "サーバー",
+        "tradingAccount": "取引口座"
+      },
+      "labels": {
+        "serverCount": "{{count}} 台服务器"
+      },
+      "messages": {
+        "bindFailed": "口座の連携に失敗しました",
+        "bindSuccess": "口座を連携しました",
+        "enterBrokerName": "ブローカー名を入力してください",
+        "enterPassword": "パスワードを入力してください",
+        "enterTradingAccount": "取引口座を入力してください",
+        "foundBrokers": "{{count}} 件のブローカーが見つかりました",
+        "loginDigitsOnly": "交易账户只能包含数字",
+        "noAccessHosts": "利用可能なアクセスホストがありません",
+        "noBrokersFound": "一致するブローカーが見つかりません。名称を確認してください。",
+        "searchFailed": "検索に失敗しました。しばらくしてから再試行してください。",
+        "selectServer": "サーバーを選択してください",
+        "verifyFailed": "アカウント確認に失敗しました"
+      },
+      "passwordHint": "パスワードは HTTPS で送信され、バックエンドで Argon2id ハッシュとして保存されます（復元不可）。",
+      "placeholders": {
+        "brokerName": "ブローカー名を入力（例：XM、IC Markets）",
+        "company": "会社を選択",
+        "password": "输入密码",
+        "server": "サーバーを選択",
+        "tradingAccount": "取引口座を入力"
+      },
+      "step1": {
+        "subtitle": "选择您的交易平台并搜索经纪商",
+        "title": "プラットフォームとブローカーを選択"
+      },
+      "step2": {
+        "subtitle": "输入您的交易账户和密码",
+        "title": "口座情報を入力"
+      },
+      "step3": {
+        "subtitle": "验证凭据并确认完成",
+        "title": "連携内容を確認"
+      },
+      "summary": {
+        "balance": "残高",
+        "broker": "ブローカー",
+        "currency": "货币",
+        "equity": "純資産",
+        "freeMargin": "余剰証拠金",
+        "leverage": "レバレッジ",
+        "margin": "証拠金",
+        "password": "パスワード",
+        "platform": "プラットフォーム",
+        "server": "サーバー",
+        "tradingAccount": "取引口座",
+        "verified": "アカウント確認済み"
+      },
+      "title": "MT 口座を連携"
+    },
+    "bindNew": "口座を連携",
+    "card": {
+      "actions": {
+        "details": "详情",
+        "orders": "注文",
+        "positions": "保有ポジション"
+      },
+      "deleteConfirm": {
+        "content": "此操作不可撤销",
+        "title": "この口座を削除しますか？"
+      },
+      "fields": {
+        "balance": "残高",
+        "broker": "ブローカー",
+        "equity": "純資産",
+        "server": "サーバー"
+      },
+      "status": {
+        "connected": "接続済み",
+        "connecting": "接続中",
+        "disabled": "無効",
+        "disconnected": "切断",
+        "error": "错误"
       }
     },
-    disabled: {
-      title: '無効な口座',
-      table: {
-        account: '口座',
-        type: 'タイプ',
-        broker: 'ブローカー',
-        balance: '残高',
-        equity: '純資産',
-        actions: 'Actions'
+    "detail": {
+      "accountType": {
+        "demo": "模拟",
+        "real": "リアル"
       },
-      confirmDelete: {
-        title: 'この口座を削除しますか？',
-        content: 'This action cannot be undone'
+      "actions": {
+        "deleteAccount": "アカウント削除",
+        "deleteConfirm": "確認して削除",
+        "deletePasswordHint": "確認のため、MT取引パスワードまたは読み取り専用パスワードを入力してください：",
+        "deletePasswordPlaceholder": "MT取引/読み取り専用パスワード",
+        "deleteWarning": "この操作は元に戻せません。取引記録、分析データなど、すべてのアカウントデータが完全に削除されます。",
+        "disableAccount": "口座を無効化",
+        "enableAccount": "口座を有効化",
+        "syncHistory": "同步历史"
       },
-      mobile: {
-        balanceLabel: '残高: ',
-        equityLabel: 'Equity: '
+      "balanceRecord": {
+        "deposit": "💰 入金",
+        "depositIconText": "💰 入金",
+        "withdraw": "💸 出金",
+        "withdrawIconText": "💸 出金"
+      },
+      "cards": {
+        "balance": "残高",
+        "credit": "授信",
+        "equity": "純資産",
+        "floatingProfit": "含み損益",
+        "marginFree": "余剰証拠金",
+        "marginLevel": "証拠金維持率",
+        "marginUsed": "使用証拠金"
+      },
+      "connected": "接続済み",
+      "lastConnected": "{{time}}",
+      "leverage": "レバレッジ {{leverage}} 倍",
+      "messages": {
+        "fetchAccountFailed": "口座情報の取得に失敗しました。しばらくしてから再試行してください。",
+        "syncHistoryFailed": "同步订单历史失败，请确保账户已连接到 MT 服务器。",
+        "syncHistorySuccess": "注文履歴の同期に成功しました"
+      },
+      "mode": {
+        "investor": "投資家モード",
+        "trader": "交易员模式"
+      },
+      "orderTypes": {
+        "buyLimit": "買い指値",
+        "buyStop": "買い逆指値",
+        "sellLimit": "売り指値",
+        "sellStop": "卖出止损"
+      },
+      "status": {
+        "connected": "接続済み",
+        "connecting": "接続中",
+        "disabled": "無効",
+        "disconnected": "切断",
+        "error": "错误"
+      },
+      "syncHistory": {
+        "content": "過去1年分の注文履歴を MT サーバーから同期しますか？時間がかかる場合があります。",
+        "ok": "同步",
+        "title": "注文履歴を同期"
       }
     },
-    tradeTabs: {
-      positionsWithCount: '保有ポジション（{{count}}）',
-      pendingWithCount: '未決注文（{{count}}）',
-      historyWithCount: '履歴（{{count}}）',
-      emptyPositions: '保有ポジションがありません',
-      emptyHistory: '注文履歴がありません',
-      syncHistory: '履歴同期',
-      table: {
-        orderId: '注文ID',
-        symbol: '銘柄',
-        side: '売買',
-        type: 'タイプ',
-        volume: '数量',
-        openPrice: '建値',
-        currentPrice: '現在値',
-        pendingPrice: '指値/逆指値',
-        closePrice: '決済価格',
-        profit: '損益',
-        openTime: '建玉時間',
-        pendingTime: '注文時間',
-        closeTime: 'Close time'
+    "disabled": {
+      "confirmDelete": {
+        "content": "此操作不可撤销",
+        "title": "この口座を削除しますか？"
       },
-      pagination: {
-        total: '{{total}} total'
+      "mobile": {
+        "balanceLabel": "残高: ",
+        "equityLabel": "净值: "
+      },
+      "table": {
+        "account": "口座",
+        "actions": "操作",
+        "balance": "残高",
+        "broker": "ブローカー",
+        "equity": "純資産",
+        "type": "タイプ"
+      },
+      "title": "無効な口座"
+    },
+    "edit": {
+      "fields": {
+        "oldPassword": "当前密码",
+        "password": "新しいパスワード",
+        "server": "サーバー",
+        "tradingAccount": "取引口座"
+      },
+      "messages": {
+        "enterOldPassword": "現在のパスワードを入力してください",
+        "enterPassword": "新しいパスワードを入力してください",
+        "passwordSaved": "密码已保存",
+        "passwordVerifyFailed": "パスワード変更に失敗しました"
+      },
+      "placeholders": {
+        "newPassword": "新しいパスワードを入力",
+        "oldPassword": "输入当前密码"
+      },
+      "title": "口座編集"
+    },
+    "empty": {
+      "subtitle": "点击下方按钮绑定您的 MT4/MT5 交易账户",
+      "title": "連携済み口座がありません"
+    },
+    "legend": {
+      "connected": "接続済み",
+      "connecting": "接続中",
+      "disabled": "無効",
+      "disconnectedOrError": "切断/エラー",
+      "title": "凡例:"
+    },
+    "messages": {
+      "connectFailed": "接続に失敗しました",
+      "connectSuccess": "接続しました",
+      "connectingMtServer": "MT サーバーに接続中",
+      "createFailed": "口座の作成に失敗しました",
+      "createdSuccess": "口座を作成しました",
+      "deleteFailed": "削除に失敗しました",
+      "deleted": "口座を削除しました",
+      "disableFailed": "口座の無効化に失敗しました",
+      "disabledSuccess": "口座を無効化しました",
+      "disconnectFailed": "切断に失敗しました",
+      "enableFailed": "启用账户失败",
+      "enabledSuccess": "口座を有効化しました",
+      "fetchAccountFailed": "口座情報の取得に失敗しました",
+      "fetchListFailed": "口座一覧の取得に失敗しました"
+    },
+    "report": {
+      "aiAnalysis": "AI分析",
+      "direction": "売買分析",
+      "directionLong": "買い",
+      "directionShort": "売り",
+      "drawdownEvents": "ドローダウンイベント",
+      "drawdownOverlay": "資産曲線 + ドローダウン",
+      "generate": "レポート生成",
+      "goToAISettings": "AI設定へ →",
+      "periods": {
+        "month": "今月",
+        "quarter": "今四半期",
+        "week": "今週",
+        "year": "今年"
+      },
+      "recovered": "回復済み",
+      "sections": {
+        "findings": "主な発見",
+        "recommendations": "改善提案",
+        "summary": "総評"
+      },
+      "symbolPnL": "銘柄別損益",
+      "title": "取引レポート",
+      "titleShort": "レポート",
+      "tradeDistribution": "損益分布",
+      "winRateTrend": "月次勝率トレンド"
+    },
+    "subtitle": "MT4/MT5 口座を管理します",
+    "title": "口座",
+    "tradeTabs": {
+      "emptyHistory": "注文履歴がありません",
+      "emptyPositions": "保有ポジションがありません",
+      "historyWithCount": "履歴（{{count}}）",
+      "pagination": {
+        "total": "共 {{total}} 条"
+      },
+      "pendingWithCount": "未決注文（{{count}}）",
+      "positionsWithCount": "保有ポジション（{{count}}）",
+      "syncHistory": "履歴同期",
+      "table": {
+        "closePrice": "決済価格",
+        "closeTime": "平仓时间",
+        "currentPrice": "現在値",
+        "openPrice": "建値",
+        "openTime": "建玉時間",
+        "orderId": "注文ID",
+        "pendingPrice": "指値/逆指値",
+        "pendingTime": "注文時間",
+        "profit": "損益",
+        "side": "売買",
+        "symbol": "銘柄",
+        "type": "タイプ",
+        "volume": "数量"
       }
-    },
-    edit: {
-      title: '口座編集',
-      fields: {
-        tradingAccount: '取引口座',
-        server: 'サーバー',
-        password: '新しいパスワード',
-        oldPassword: 'Current password'
-      },
-      placeholders: {
-        newPassword: '新しいパスワードを入力',
-        oldPassword: 'Enter current password'
-      },
-      messages: {
-        enterPassword: '新しいパスワードを入力してください',
-        enterOldPassword: '現在のパスワードを入力してください',
-        passwordVerifyFailed: 'パスワード変更に失敗しました',
-        passwordSaved: 'Password saved'
-      }
-    },
-    detail: {
-      messages: {
-        fetchAccountFailed: '口座情報の取得に失敗しました。しばらくしてから再試行してください。',
-        syncHistorySuccess: '注文履歴の同期に成功しました',
-        syncHistoryFailed: 'Failed to sync order history. Please ensure the account is connected to the MT server.'
-      },
-      orderTypes: {
-        buyLimit: '買い指値',
-        sellLimit: '売り指値',
-        buyStop: '買い逆指値',
-        sellStop: 'Sell stop'
-      },
-      balanceRecord: {
-        deposit: '💰 入金',
-        withdraw: '💸 出金',
-        depositIconText: '💰 入金',
-        withdrawIconText: '💸 出金'
-      },
-      syncHistory: {
-        title: '注文履歴を同期',
-        content: '過去1年分の注文履歴を MT サーバーから同期しますか？時間がかかる場合があります。',
-        ok: 'Sync'
-      },
-      actions: {
-        enableAccount: '口座を有効化',
-        disableAccount: '口座を無効化',
-        deleteAccount: 'アカウント削除',
-        deleteConfirm: '確認して削除',
-        deleteWarning: 'この操作は元に戻せません。取引記録、分析データなど、すべてのアカウントデータが完全に削除されます。',
-        deletePasswordHint: '確認のため、MT取引パスワードまたは読み取り専用パスワードを入力してください：',
-        deletePasswordPlaceholder: 'MT取引/読み取り専用パスワード',
-        syncHistory: 'Sync history'
-      },
-      status: {
-        disabled: '無効',
-        connected: '接続済み',
-        connecting: '接続中',
-        disconnected: '切断',
-        error: 'Error'
-      },
-      accountType: {
-        real: 'リアル',
-        demo: 'Demo'
-      },
-      mode: {
-        investor: '投資家モード',
-        trader: 'Trader mode'
-      },
-      connected: '接続済み',
-        lastConnected: '{{time}}',
-        leverage: 'レバレッジ {{leverage}} 倍',
-      cards: {
-        balance: '残高',
-        equity: '純資産',
-        floatingProfit: '含み損益',
-        marginUsed: '使用証拠金',
-        marginFree: '余剰証拠金',
-        marginLevel: '証拠金維持率',
-        credit: 'Credit'
-      }
-    },
-    report: {
-      title: '取引レポート',
-      titleShort: 'レポート',
-      generate: 'レポート生成',
-      goToAISettings: 'AI設定へ →',
-      aiAnalysis: 'AI分析',
-      symbolPnL: '銘柄別損益',
-      direction: '売買分析',
-      directionLong: '買い',
-      directionShort: '売り',
-      tradeDistribution: '損益分布',
-      drawdownOverlay: '資産曲線 + ドローダウン',
-      drawdownEvents: 'ドローダウンイベント',
-      recovered: '回復済み',
-      winRateTrend: '月次勝率トレンド',
-      periods: {
-        week: '今週',
-        month: '今月',
-        quarter: '今四半期',
-        year: '今年',
-      },
-      sections: {
-        summary: '総評',
-        findings: '主な発見',
-        recommendations: '改善提案',
-      },
-    },
+    }
   }
 } as const;
-
-export default accounts;
+export default Accounts;

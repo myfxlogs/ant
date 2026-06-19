@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_gen_ja.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const Gen = {
+const StrategyGen = {
   "strategy": {
     "gen": {
       "backtestMsg": "バックテストタスク作成済",
@@ -36,4 +36,4 @@ const Gen = {
     }
   }
 } as const;
-export default Gen;
+export default StrategyGen;

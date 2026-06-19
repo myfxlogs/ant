@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+message LogsI18n {
+  string account_id = 1;  // Account ID
+  string action = 2;  // Action
+  string connection_logs = 3;  // Connection logs
+  string cost = 4;  // Cost
+  string date_range = 5;  // Date range
+  string details = 6;  // Details
+  string duration = 7;  // Duration
+  string error = 8;  // Error
+  string event_type = 9;  // Event type
+  string example_symbol_placeholder = 10;  // e.g. EURUSD
+  string execution_logs = 11;  // Execution logs
+  string execution_price = 12;  // Execution price
+  string failed = 13;  // Failed
+  string ip = 14;  // IP
+  string load_failed = 15;  // Failed to load logs
+  string login_id = 16;  // Login ID
+  string message = 17;  // Message
+  string module = 18;  // Module
+  string operation_logs = 19;  // Operation logs
+  string order_history = 20;  // Order history
+  string order_table_close = 21;  // Close
+  string order_table_lots = 22;  // Lots
+  string order_table_open = 23;  // Open
+  string order_table_ticket = 24;  // Ticket
+  string order_table_type = 25;  // Type
+  string period = 26;  // Period
+  string product = 27;  // Product
+  string profit = 28;  // P/L
+  string request_id = 29;  // Request ID
+  string reset = 30;  // Reset
+  string result = 31;  // Result
+  string risk_code = 32;  // Risk Code
+  string risk_log_quick_filter = 33;  // Risk Log Quick Filter
+  string search = 34;  // Search
+  string server = 35;  // Server
+  string signal = 36;  // Signal
+  string signal_price = 37;  // Signal price
+  string status = 38;  // Status
+  string success = 39;  // Success
+  string symbol = 40;  // Symbol
+  string time = 41;  // Time
+  string trigger_source = 42;  // Trigger Source
+}

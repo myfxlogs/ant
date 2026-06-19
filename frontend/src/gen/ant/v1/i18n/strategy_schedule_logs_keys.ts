@@ -151,7 +151,7 @@ export const TITLE_KEY = 'strategy.scheduleLogs.title' as const;
 /** titleWithName */
 export const TITLE_WITH_NAME_KEY = 'strategy.scheduleLogs.titleWithName' as const;
 
-export const SCHEDULELOGS_KEYS = {
+export const STRATEGYSCHEDULELOGS_KEYS = {
   action_restart: 'strategy.scheduleLogs.action.restart',
   action_start: 'strategy.scheduleLogs.action.start',
   action_stop: 'strategy.scheduleLogs.action.stop',
@@ -204,4 +204,4 @@ export const SCHEDULELOGS_KEYS = {
   title_with_name: 'strategy.scheduleLogs.titleWithName',
 } as const;
 
-export type ScheduleLogsKey = typeof SCHEDULELOGS_KEYS[keyof typeof SCHEDULELOGS_KEYS];
+export type StrategyScheduleLogsKey = typeof STRATEGYSCHEDULELOGS_KEYS[keyof typeof STRATEGYSCHEDULELOGS_KEYS];

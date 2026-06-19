@@ -19,7 +19,7 @@ export const CATEGORY__N_O__S_T_O_P__A_N_D__T_A_K_E__P_R_O_F_I_T_KEY = 'strategy
 /** category.UNREAD_PARAM */
 export const CATEGORY__U_N_R_E_A_D__P_A_R_A_M_KEY = 'strategy.codeQuality.category.UNREAD_PARAM' as const;
 
-export const CODEQUALITY_KEYS = {
+export const STRATEGYCODEQUALITY_KEYS = {
   category__f_u_t_u_r_e__d_a_t_a__l_e_a_k: 'strategy.codeQuality.category.FUTURE_DATA_LEAK',
   category__m_i_s_s_i_n_g__p_a_r_a_m: 'strategy.codeQuality.category.MISSING_PARAM',
   category__n_d_a_r_r_a_y__p_a_n_d_a_s__m_i_s_u_s_e: 'strategy.codeQuality.category.NDARRAY_PANDAS_MISUSE',
@@ -28,4 +28,4 @@ export const CODEQUALITY_KEYS = {
   category__u_n_r_e_a_d__p_a_r_a_m: 'strategy.codeQuality.category.UNREAD_PARAM',
 } as const;
 
-export type CodeQualityKey = typeof CODEQUALITY_KEYS[keyof typeof CODEQUALITY_KEYS];
+export type StrategyCodeQualityKey = typeof STRATEGYCODEQUALITY_KEYS[keyof typeof STRATEGYCODEQUALITY_KEYS];

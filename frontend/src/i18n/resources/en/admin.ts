@@ -1,83 +1,84 @@
-const admin = {
-  admin: {
-    strategy: {
-      title: 'Strategy Management',
-      tabs: {
-        preset: 'Preset Strategies',
-        allStrategies: 'All Strategies',
+// Auto-generated from proto/ant/v1/i18n/admin_en.textproto
+// DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
+const Admin = {
+  "admin": {
+    "strategy": {
+      "actions": {
+        "archive": "Archive",
+        "archiveConfirm": "Archive this strategy?",
+        "code": "Code",
+        "disable": "Disable",
+        "disableConfirm": "Stop all schedules?",
+        "enable": "Enable",
+        "flag": "Flag",
+        "publish": "Publish",
+        "unflag": "Unflag",
+        "unpublish": "Unpublish"
       },
-      preset: {
-        add: 'Add Preset',
-        edit: 'Edit Preset',
-        create: 'Create Preset',
-        deleteConfirm: 'Delete this preset?',
+      "all": {
+        "allActive": "All Active",
+        "archived": "Archived",
+        "disabled": "Disabled",
+        "flagFilter": "Flag Filter",
+        "flagged": "Flagged",
+        "searchPlaceholder": "Search by name...",
+        "total": "{{count}} total"
       },
-      all: {
-        searchPlaceholder: 'Search by name...',
-        flagFilter: 'Flag Filter',
-        allActive: 'All Active',
-        flagged: 'Flagged',
-        disabled: 'Disabled',
-        archived: 'Archived',
-        total: '{{count}} total',
+      "columns": {
+        "actions": "Actions",
+        "code": "Code",
+        "description": "Description",
+        "flag": "Flag",
+        "name": "Name",
+        "no": "No",
+        "owner": "Owner",
+        "preset": "Preset",
+        "public": "Public",
+        "schedules": "Schedules",
+        "status": "Status",
+        "system": "— System —",
+        "tags": "Tags",
+        "tagsPlaceholder": "trend-following, ma",
+        "type": "Type",
+        "user": "User",
+        "uses": "Uses",
+        "yes": "Yes"
       },
-      actions: {
-        code: 'Code',
-        flag: 'Flag',
-        unflag: 'Unflag',
-        unpublish: 'Unpublish',
-        publish: 'Publish',
-        disable: 'Disable',
-        enable: 'Enable',
-        archive: 'Archive',
-        disableConfirm: 'Stop all schedules?',
-        archiveConfirm: 'Archive this strategy?',
+      "messages": {
+        "archiveFailed": "Archive failed",
+        "archiveSuccess": "Archived",
+        "deleteFailed": "Delete failed",
+        "disableFailed": "Disable failed",
+        "disableSuccess": "Disabled — all schedules stopped",
+        "enableFailed": "Enable failed",
+        "enableSuccess": "Enabled",
+        "flagFailed": "Flag failed",
+        "flagSuccess": "Strategy flagged",
+        "loadPresetFailed": "Failed to load preset strategies",
+        "loadStrategiesFailed": "Failed to load strategies",
+        "presetCreated": "Preset created",
+        "presetDeleted": "Preset deleted",
+        "presetUpdated": "Preset updated",
+        "publishFailed": "Publish failed",
+        "publishSuccess": "Published",
+        "saveFailed": "Save failed",
+        "unflagFailed": "Unflag failed",
+        "unflagSuccess": "Flag removed",
+        "unpublishFailed": "Unpublish failed",
+        "unpublishSuccess": "Unpublished"
       },
-      columns: {
-        name: 'Name',
-        description: 'Description',
-        tags: 'Tags',
-        tagsPlaceholder: 'trend-following, ma',
-        uses: 'Uses',
-        actions: 'Actions',
-        code: 'Code',
-        owner: 'Owner',
-        type: 'Type',
-        status: 'Status',
-        public: 'Public',
-        yes: 'Yes',
-        no: 'No',
-        flag: 'Flag',
-        schedules: 'Schedules',
-        preset: 'Preset',
-        user: 'User',
-        system: '— System —',
+      "preset": {
+        "add": "Add Preset",
+        "create": "Create Preset",
+        "deleteConfirm": "Delete this preset?",
+        "edit": "Edit Preset"
       },
-      messages: {
-        loadPresetFailed: 'Failed to load preset strategies',
-        loadStrategiesFailed: 'Failed to load strategies',
-        saveFailed: 'Save failed',
-        presetUpdated: 'Preset updated',
-        presetCreated: 'Preset created',
-        presetDeleted: 'Preset deleted',
-        deleteFailed: 'Delete failed',
-        flagSuccess: 'Strategy flagged',
-        flagFailed: 'Flag failed',
-        unflagSuccess: 'Flag removed',
-        unflagFailed: 'Unflag failed',
-        unpublishSuccess: 'Unpublished',
-        unpublishFailed: 'Unpublish failed',
-        publishSuccess: 'Published',
-        publishFailed: 'Publish failed',
-        disableSuccess: 'Disabled — all schedules stopped',
-        disableFailed: 'Disable failed',
-        enableSuccess: 'Enabled',
-        enableFailed: 'Enable failed',
-        archiveSuccess: 'Archived',
-        archiveFailed: 'Archive failed',
+      "tabs": {
+        "allStrategies": "All Strategies",
+        "preset": "Preset Strategies"
       },
-    },
-  },
-};
-
-export default admin;
+      "title": "Strategy Management"
+    }
+  }
+} as const;
+export default Admin;

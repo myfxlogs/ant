@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_library_zh-tw.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const Library = {
+const StrategyLibrary = {
   "strategy": {
     "library": {
       "backtestHistory": "回測歷史",
@@ -40,4 +40,4 @@ const Library = {
     }
   }
 } as const;
-export default Library;
+export default StrategyLibrary;

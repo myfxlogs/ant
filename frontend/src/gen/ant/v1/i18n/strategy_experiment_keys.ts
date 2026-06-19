@@ -127,7 +127,7 @@ export const SUBTITLE_KEY = 'strategy.experiment.subtitle' as const;
 /** title */
 export const TITLE_KEY = 'strategy.experiment.title' as const;
 
-export const EXPERIMENT_KEYS = {
+export const STRATEGYEXPERIMENT_KEYS = {
   candidates_column_actions: 'strategy.experiment.candidates.column.actions',
   candidates_column_generate_draft: 'strategy.experiment.candidates.column.generateDraft',
   candidates_column_grade: 'strategy.experiment.candidates.column.grade',
@@ -172,4 +172,4 @@ export const EXPERIMENT_KEYS = {
   title: 'strategy.experiment.title',
 } as const;
 
-export type ExperimentKey = typeof EXPERIMENT_KEYS[keyof typeof EXPERIMENT_KEYS];
+export type StrategyExperimentKey = typeof STRATEGYEXPERIMENT_KEYS[keyof typeof STRATEGYEXPERIMENT_KEYS];

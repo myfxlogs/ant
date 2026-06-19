@@ -1,7 +1,7 @@
 annual_return: 'Lợi Nhuận Năm'
 equity_curve: 'Đường Vốn'
 max_drawdown: 'Sụt Giảm Tối Đa'
-sharpe: 'Sharpe'
+sharpe: '夏普比率'
 total_return: 'Tổng Lợi Nhuận'
 total_trades: 'Tổng Giao Dịch'
 trade_log: 'Nhật Ký Giao Dịch'

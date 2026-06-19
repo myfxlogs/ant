@@ -1,51 +1,48 @@
-const aiStore = {
-  ai: {
-    store: {
-      strategyRules: {
-        title: 'When writing AntTrader Python strategy code, you must strictly follow these validation rules:',
-        rules: {
-          noImport: '- No import / from ... import ... allowed',
-          noGlobal: '- No global / nonlocal',
-          noDunderAccess: '- No access to dunder attributes (obj.__xxx__)',
-          noDunderName: '- No dunder names (__xxx__)',
-          noDangerousCalls:
-            '- No calls to: open()/eval()/exec()/compile()/__import__()/input()/globals()/locals()/vars()/dir()',
-          runSignature:
-            '- If defining run function: only one run(context), must have exactly 1 parameter context, no *args/**kwargs',
-          mustDefineEntry: '- Strategy must define signal variable or run(context) function (prefer run(context))',
+// Auto-generated from proto/ant/v1/i18n/ai_store_zh-tw.textproto
+// DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
+const AiStore = {
+  "ai": {
+    "store": {
+      "context": {
+        "outputRules": {
+          "noImport": "- 不要输出任何 import 语句",
+          "validateFirst": "- 程式碼必须优先保证 validate 通过",
+          "wrapPython": "- 如果你输出策略程式碼，请输出完整程式碼，并用 ```python 包裹"
         },
-        allowedGlobals: 'Allowed globals/modules: np, math, datetime, calculate_rsi (do not import).',
+        "outputTitle": "输出要求：",
+        "userPrefsTitle": "用户偏好（请尽量遵循）："
       },
-      context: {
-        userPrefsTitle: 'User preferences (please follow as much as possible):',
-        outputTitle: 'Output requirements:',
-        outputRules: {
-          wrapPython: '- If outputting strategy code, output full code wrapped in ```python',
-          validateFirst: '- Code must pass validate first',
-          noImport: '- Do not output any import statements',
+      "conversations": {
+        "newConversationTitle": "新對話"
+      },
+      "messages": {
+        "clearedLocalOnly": "当前對話訊息已清空（服务端记录保留）",
+        "createConversationFailed": "建立對話失敗",
+        "deleteConversationFailed": "刪除對話失敗",
+        "generateReportFailed": "报告生成失敗",
+        "generateReportSuccess": "报告生成成功",
+        "getReportsFailed": "获取报告失敗",
+        "loadConversationFailed": "載入對話失敗",
+        "sendFailedInline": "傳送失敗，请重試",
+        "sendFailedToast": "傳送失敗，请重試"
+      },
+      "prefs": {
+        "rememberPrefix": "记住偏好：",
+        "rememberedToast": "已记住偏好，将在后续對話中生效",
+        "savedReply": "偏好已儲存"
+      },
+      "strategyRules": {
+        "allowedGlobals": "允许使用的全局对象/模块：np, math, datetime, calculate_rsi（不要 import）。",
+        "rules": {
+          "mustDefineEntry": "- 策略必须定义 signal 变量或 run(context) 函数（建议优先 run(context)）",
+          "noDunderAccess": "- 禁止访问任何 dunder 属性（形如 obj.__xxx__）",
+          "noDunderName": "- 禁止使用 dunder 名称（形如 __xxx__）",
+          "noGlobal": "- 禁止 global / nonlocal",
+          "noImport": "- 禁止任何 import / from ... import ..."
         },
-      },
-      prefs: {
-        rememberPrefix: 'Remember preference: ',
-        rememberedToast: 'Preference remembered, will apply to subsequent conversations',
-        savedReply: 'Preference saved',
-      },
-      conversations: {
-        newConversationTitle: 'New conversation',
-      },
-      messages: {
-        sendFailedInline: 'Send failed, please retry',
-        sendFailedToast: 'Send failed, please retry',
-        createConversationFailed: 'Create conversation failed',
-        loadConversationFailed: 'Load conversation failed',
-        deleteConversationFailed: 'Delete conversation failed',
-        clearedLocalOnly: 'Current conversation messages cleared (server records retained)',
-        getReportsFailed: 'Get reports failed',
-        generateReportSuccess: 'Report generated successfully',
-        generateReportFailed: 'Report generation failed',
-      },
-    },
-  },
+        "title": "你在编写 AntTrader Python 策略程式碼时，必须严格遵守以下驗證规则："
+      }
+    }
+  }
 } as const;
-
-export default aiStore;
+export default AiStore;

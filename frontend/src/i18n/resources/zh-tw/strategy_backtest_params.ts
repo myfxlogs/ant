@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_backtest_params_zh-tw.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const BacktestParams = {
+const StrategyBacktestParams = {
   "strategy": {
     "backtestParams": {
       "backtestFailed": "回測失敗",
@@ -45,4 +45,4 @@ const BacktestParams = {
     }
   }
 } as const;
-export default BacktestParams;
+export default StrategyBacktestParams;

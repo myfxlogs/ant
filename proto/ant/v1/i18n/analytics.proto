@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+message AnalyticsI18n {
+  string summary_cards_direction_share = 1;  // Direction share
+  string summary_cards_economic_calendar = 2;  // Economic calendar
+  string summary_cards_pnl_share = 3;  // P/L share
+  string summary_cards_risk_metrics = 4;  // Risk metrics
+  string summary_cards_symbol_pnl_compare = 5;  // Symbol P/L comparison
+  string summary_cards_symbol_trade_share = 6;  // Symbol trade share
+  string summary_cards_trade_stats = 7;  // Trade stats
+  string summary_direction_buy = 8;  // Buy
+  string summary_direction_sell = 9;  // Sell
+  string summary_economic_calendar_actual = 10;  // Actual
+  string summary_economic_calendar_empty = 11;  // No economic events available.
+  string summary_economic_calendar_estimate = 12;  // Estimate
+  string summary_economic_calendar_indicators__c_p_i = 13;  // Inflation (CPI)
+  string summary_economic_calendar_indicators__f_e_d_f_u_n_d_s = 14;  // Fed funds rate
+  string summary_economic_calendar_indicators__g_d_p = 15;  // Real GDP
+  string summary_economic_calendar_indicators__u_n_r_a_t_e = 16;  // Unemployment rate
+  string summary_economic_calendar_key_indicators_title = 17;  // Key macro indicators
+  string summary_economic_calendar_loading = 18;  // Loading economic calendar...
+  string summary_economic_calendar_previous = 19;  // Previous
+  string summary_labels_pnl = 20;  // P/L
+  string summary_metrics_balance = 21;  // Balance
+  string summary_metrics_equity = 22;  // Equity
+  string summary_metrics_equity_value = 23;  // Equity value
+  string summary_metrics_net_profit = 24;  // Net profit
+  string summary_periods_all = 25;  // All
+  string summary_periods_month = 26;  // This month
+  string summary_periods_today = 27;  // Today
+  string summary_periods_week = 28;  // This week
+  string summary_periods_year = 29;  // This year
+  string summary_placeholders_select_account = 30;  // Select an account
+  string summary_profit_loss = 31;  // Loss
+  string summary_profit_win = 32;  // Win
+  string summary_risk_max_drawdown = 33;  // Max drawdown
+  string summary_risk_max_drawdown_pct = 34;  // Max drawdown (%)
+  string summary_risk_sharpe = 35;  // Sharpe
+  string summary_risk_sortino = 36;  // Sortino
+  string summary_risk_var95 = 37;  // Value at Risk (95%)
+  string summary_risk_volatility = 38;  // Volatility
+  string summary_sections_equity_curve = 39;  // Equity curve
+  string summary_sections_monthly_stats = 40;  // Monthly stats
+  string summary_title = 41;  // Analytics Summary
+  string summary_trade_stats_avg_holding = 42;  // Avg holding
+  string summary_trade_stats_avg_loss = 43;  // Avg loss
+  string summary_trade_stats_avg_profit = 44;  // Avg profit
+  string summary_trade_stats_avg_volume = 45;  // Avg volume
+  string summary_trade_stats_losses = 46;  // Losses
+  string summary_trade_stats_max_consecutive_losses = 47;  // Max consecutive losses
+  string summary_trade_stats_max_consecutive_wins = 48;  // Max consecutive wins
+  string summary_trade_stats_max_holding = 49;  // Max holding
+  string summary_trade_stats_profit_factor = 50;  // Profit factor
+  string summary_trade_stats_total_trades = 51;  // Total trades
+  string summary_trade_stats_win_rate = 52;  // Win rate
+  string summary_trade_stats_wins = 53;  // Wins
+  string summary_year_option = 54;  // {{year}}
+}

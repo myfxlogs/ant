@@ -25,7 +25,7 @@ export const RSI_DESCRIPTION_KEY = 'strategy.defaultTemplates.rsi.description' a
 /** rsi.name */
 export const RSI_NAME_KEY = 'strategy.defaultTemplates.rsi.name' as const;
 
-export const DEFAULTTEMPLATES_KEYS = {
+export const STRATEGYDEFAULTTEMPLATES_KEYS = {
   force_buy_description: 'strategy.defaultTemplates.forceBuy.description',
   force_buy_name: 'strategy.defaultTemplates.forceBuy.name',
   ma_cross_description: 'strategy.defaultTemplates.maCross.description',
@@ -36,4 +36,4 @@ export const DEFAULTTEMPLATES_KEYS = {
   rsi_name: 'strategy.defaultTemplates.rsi.name',
 } as const;
 
-export type DefaultTemplatesKey = typeof DEFAULTTEMPLATES_KEYS[keyof typeof DEFAULTTEMPLATES_KEYS];
+export type StrategyDefaultTemplatesKey = typeof STRATEGYDEFAULTTEMPLATES_KEYS[keyof typeof STRATEGYDEFAULTTEMPLATES_KEYS];

@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_paper_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const Paper = {
+const StrategyPaper = {
   "strategy": {
     "paper": {
       "accountName": "账户名称",
@@ -30,4 +30,4 @@ const Paper = {
     }
   }
 } as const;
-export default Paper;
+export default StrategyPaper;

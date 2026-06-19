@@ -1,12 +1,12 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_backtest_vi.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const Backtest = {
+const StrategyBacktest = {
   "strategy": {
     "backtest": {
       "annualReturn": "Lợi Nhuận Năm",
       "equityCurve": "Đường Vốn",
       "maxDrawdown": "Sụt Giảm Tối Đa",
-      "sharpe": "Sharpe",
+      "sharpe": "夏普比率",
       "totalReturn": "Tổng Lợi Nhuận",
       "totalTrades": "Tổng Giao Dịch",
       "tradeLog": "Nhật Ký Giao Dịch",
@@ -18,4 +18,4 @@ const Backtest = {
     }
   }
 } as const;
-export default Backtest;
+export default StrategyBacktest;

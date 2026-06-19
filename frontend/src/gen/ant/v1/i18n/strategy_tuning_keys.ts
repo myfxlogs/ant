@@ -115,7 +115,7 @@ export const TUNING_KEY = 'strategy.tuning.tuning' as const;
 /** waiting */
 export const WAITING_KEY = 'strategy.tuning.waiting' as const;
 
-export const TUNING_KEYS = {
+export const STRATEGYTUNING_KEYS = {
   apply: 'strategy.tuning.apply',
   degradation: 'strategy.tuning.degradation',
   enabled_combinations: 'strategy.tuning.enabledCombinations',
@@ -156,4 +156,4 @@ export const TUNING_KEYS = {
   waiting: 'strategy.tuning.waiting',
 } as const;
 
-export type TuningKey = typeof TUNING_KEYS[keyof typeof TUNING_KEYS];
+export type StrategyTuningKey = typeof STRATEGYTUNING_KEYS[keyof typeof STRATEGYTUNING_KEYS];

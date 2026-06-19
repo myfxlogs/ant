@@ -112,7 +112,7 @@ export const TRADE_KEY = 'strategy.backtestParams.trade' as const;
 /** vectorizedMode */
 export const VECTORIZED_MODE_KEY = 'strategy.backtestParams.vectorizedMode' as const;
 
-export const BACKTESTPARAMS_KEYS = {
+export const STRATEGYBACKTESTPARAMS_KEYS = {
   backtest_failed: 'strategy.backtestParams.backtestFailed',
   both: 'strategy.backtestParams.both',
   capital: 'strategy.backtestParams.capital',
@@ -152,4 +152,4 @@ export const BACKTESTPARAMS_KEYS = {
   vectorized_mode: 'strategy.backtestParams.vectorizedMode',
 } as const;
 
-export type BacktestParamsKey = typeof BACKTESTPARAMS_KEYS[keyof typeof BACKTESTPARAMS_KEYS];
+export type StrategyBacktestParamsKey = typeof STRATEGYBACKTESTPARAMS_KEYS[keyof typeof STRATEGYBACKTESTPARAMS_KEYS];

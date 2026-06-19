@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_chart_tools_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const ChartTools = {
+const StrategyChartTools = {
   "strategy": {
     "chartTools": {
       "clearDrawings": "清除所有标注",
@@ -11,4 +11,4 @@ const ChartTools = {
     }
   }
 } as const;
-export default ChartTools;
+export default StrategyChartTools;

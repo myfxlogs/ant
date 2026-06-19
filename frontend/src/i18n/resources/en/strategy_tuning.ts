@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_tuning_en.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const Tuning = {
+const StrategyTuning = {
   "strategy": {
     "tuning": {
       "apply": "Apply",
@@ -46,4 +46,4 @@ const Tuning = {
     }
   }
 } as const;
-export default Tuning;
+export default StrategyTuning;

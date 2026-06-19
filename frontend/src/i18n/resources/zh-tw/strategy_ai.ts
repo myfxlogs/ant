@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_ai_zh-tw.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const Ai = {
+const StrategyAi = {
   "strategy": {
     "ai": {
       "checkSettings": "檢查 AI 設定",
@@ -9,4 +9,4 @@ const Ai = {
     }
   }
 } as const;
-export default Ai;
+export default StrategyAi;

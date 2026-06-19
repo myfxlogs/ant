@@ -34,7 +34,7 @@ export const TITLE_KEY = 'strategy.aiChat.title' as const;
 /** you */
 export const YOU_KEY = 'strategy.aiChat.you' as const;
 
-export const AICHAT_KEYS = {
+export const STRATEGYAICHAT_KEYS = {
   ai: 'strategy.aiChat.ai',
   analyzing: 'strategy.aiChat.analyzing',
   apply_code: 'strategy.aiChat.applyCode',
@@ -48,4 +48,4 @@ export const AICHAT_KEYS = {
   you: 'strategy.aiChat.you',
 } as const;
 
-export type AiChatKey = typeof AICHAT_KEYS[keyof typeof AICHAT_KEYS];
+export type StrategyAiChatKey = typeof STRATEGYAICHAT_KEYS[keyof typeof STRATEGYAICHAT_KEYS];

@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_asset_analysis_ja.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const AssetAnalysis = {
+const StrategyAssetAnalysis = {
   "strategy": {
     "assetAnalysis": {
       "aiRecommendation": "AI戦略推奨",
@@ -26,4 +26,4 @@ const AssetAnalysis = {
     }
   }
 } as const;
-export default AssetAnalysis;
+export default StrategyAssetAnalysis;

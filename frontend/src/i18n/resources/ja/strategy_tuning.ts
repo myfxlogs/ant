@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_tuning_ja.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const Tuning = {
+const StrategyTuning = {
   "strategy": {
     "tuning": {
       "apply": "適用",
@@ -22,7 +22,7 @@ const Tuning = {
         "gridDesc": "網羅的デカルト積。≤3パラメータに最適。",
         "random": "ランダムサーチ",
         "randomDesc": "一様ランダムサンプリング。探索向き。",
-        "tpe": "TPE (KDE)",
+        "tpe": "TPE (核密度估计)",
         "tpeDesc": "ツリー構造Parzen推定量。KDEで良/不良分布をモデル化。"
       },
       "optimizerMethod": "最適化手法",
@@ -46,4 +46,4 @@ const Tuning = {
     }
   }
 } as const;
-export default Tuning;
+export default StrategyTuning;

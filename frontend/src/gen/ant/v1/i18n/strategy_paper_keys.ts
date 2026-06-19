@@ -67,7 +67,7 @@ export const TITLE_KEY = 'strategy.paper.title' as const;
 /** watch */
 export const WATCH_KEY = 'strategy.paper.watch' as const;
 
-export const PAPER_KEYS = {
+export const STRATEGYPAPER_KEYS = {
   account_name: 'strategy.paper.accountName',
   create: 'strategy.paper.create',
   create_account: 'strategy.paper.createAccount',
@@ -92,4 +92,4 @@ export const PAPER_KEYS = {
   watch: 'strategy.paper.watch',
 } as const;
 
-export type PaperKey = typeof PAPER_KEYS[keyof typeof PAPER_KEYS];
+export type StrategyPaperKey = typeof STRATEGYPAPER_KEYS[keyof typeof STRATEGYPAPER_KEYS];

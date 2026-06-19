@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_market_regime_ja.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const MarketRegime = {
+const StrategyMarketRegime = {
   "strategy": {
     "marketRegime": {
       "detectFailed": "市場レジーム検出失敗",
@@ -12,7 +12,7 @@ const MarketRegime = {
         "klineCount": "K線数",
         "submit": "検出開始",
         "symbol": "銘柄",
-        "symbolPlaceholder": "EURUSD",
+        "symbolPlaceholder": "例如 EURUSD",
         "symbolRequired": "銘柄を選択してください",
         "timeframe": "時間足",
         "title": "検出パラメータ"
@@ -32,4 +32,4 @@ const MarketRegime = {
     }
   }
 } as const;
-export default MarketRegime;
+export default StrategyMarketRegime;

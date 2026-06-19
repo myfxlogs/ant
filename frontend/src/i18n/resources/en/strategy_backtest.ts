@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_backtest_en.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const Backtest = {
+const StrategyBacktest = {
   "strategy": {
     "backtest": {
       "annualReturn": "Annual Return",
@@ -18,4 +18,4 @@ const Backtest = {
     }
   }
 } as const;
-export default Backtest;
+export default StrategyBacktest;

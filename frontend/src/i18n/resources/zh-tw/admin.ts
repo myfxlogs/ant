@@ -1,83 +1,84 @@
-const admin = {
-  admin: {
-    strategy: {
-      title: '策略管理',
-      tabs: {
-        preset: '預設策略',
-        allStrategies: '所有策略',
+// Auto-generated from proto/ant/v1/i18n/admin_zh-tw.textproto
+// DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
+const Admin = {
+  "admin": {
+    "strategy": {
+      "actions": {
+        "archive": "歸檔",
+        "archiveConfirm": "歸檔此策略？",
+        "code": "程式碼",
+        "disable": "禁用",
+        "disableConfirm": "停止所有排程？",
+        "enable": "啟用",
+        "flag": "標記",
+        "publish": "發布",
+        "unflag": "取消標記",
+        "unpublish": "取消發布"
       },
-      preset: {
-        add: '添加預設',
-        edit: '編輯預設',
-        create: '創建預設',
-        deleteConfirm: '確認刪除此預設？',
+      "all": {
+        "allActive": "全部活躍",
+        "archived": "已歸檔",
+        "disabled": "已禁用",
+        "flagFilter": "標記篩選",
+        "flagged": "已標記",
+        "searchPlaceholder": "搜尋名稱...",
+        "total": "共 {{count}} 條"
       },
-      all: {
-        searchPlaceholder: '搜尋名稱...',
-        flagFilter: '標記篩選',
-        allActive: '全部活躍',
-        flagged: '已標記',
-        disabled: '已禁用',
-        archived: '已歸檔',
-        total: '共 {{count}} 條',
+      "columns": {
+        "actions": "操作",
+        "code": "程式碼",
+        "description": "描述",
+        "flag": "標記",
+        "name": "名稱",
+        "no": "否",
+        "owner": "所有者",
+        "preset": "預設",
+        "public": "公開",
+        "schedules": "排程數",
+        "status": "狀態",
+        "system": "— 系統 —",
+        "tags": "標籤",
+        "tagsPlaceholder": "趨勢追蹤, MA",
+        "type": "類型",
+        "user": "用戶",
+        "uses": "使用次數",
+        "yes": "是"
       },
-      actions: {
-        code: '程式碼',
-        flag: '標記',
-        unflag: '取消標記',
-        unpublish: '取消發布',
-        publish: '發布',
-        disable: '禁用',
-        enable: '啟用',
-        archive: '歸檔',
-        disableConfirm: '停止所有排程？',
-        archiveConfirm: '歸檔此策略？',
+      "messages": {
+        "archiveFailed": "歸檔失敗",
+        "archiveSuccess": "已歸檔",
+        "deleteFailed": "刪除失敗",
+        "disableFailed": "禁用失敗",
+        "disableSuccess": "已禁用 — 所有排程已停止",
+        "enableFailed": "啟用失敗",
+        "enableSuccess": "已啟用",
+        "flagFailed": "標記失敗",
+        "flagSuccess": "策略已標記",
+        "loadPresetFailed": "載入預設策略失敗",
+        "loadStrategiesFailed": "載入策略列表失敗",
+        "presetCreated": "預設已創建",
+        "presetDeleted": "預設已刪除",
+        "presetUpdated": "預設已更新",
+        "publishFailed": "发布失敗",
+        "publishSuccess": "已发布",
+        "saveFailed": "儲存失敗",
+        "unflagFailed": "取消標記失敗",
+        "unflagSuccess": "標記已取消",
+        "unpublishFailed": "取消发布失敗",
+        "unpublishSuccess": "已取消发布"
       },
-      columns: {
-        name: '名稱',
-        description: '描述',
-        tags: '標籤',
-        tagsPlaceholder: '趨勢追蹤, MA',
-        uses: '使用次數',
-        actions: '操作',
-        code: '程式碼',
-        owner: '所有者',
-        type: '類型',
-        status: '狀態',
-        public: '公開',
-        yes: '是',
-        no: 'No',
-        flag: '標記',
-        schedules: '排程數',
-        preset: '預設',
-        user: '用戶',
-        system: '— 系統 —',
+      "preset": {
+        "add": "添加預設",
+        "create": "創建預設",
+        "deleteConfirm": "確認刪除此預設？",
+        "edit": "編輯預設"
       },
-      messages: {
-        loadPresetFailed: '載入預設策略失敗',
-        loadStrategiesFailed: '載入策略列表失敗',
-        saveFailed: '儲存失敗',
-        presetUpdated: '預設已更新',
-        presetCreated: '預設已創建',
-        presetDeleted: '預設已刪除',
-        deleteFailed: '刪除失敗',
-        flagSuccess: '策略已標記',
-        flagFailed: '標記失敗',
-        unflagSuccess: '標記已取消',
-        unflagFailed: '取消標記失敗',
-        unpublishSuccess: 'Unpublished',
-        unpublishFailed: 'Unpublish failed',
-        publishSuccess: 'Published',
-        publishFailed: 'Publish failed',
-        disableSuccess: '已禁用 — 所有排程已停止',
-        disableFailed: '禁用失敗',
-        enableSuccess: '已啟用',
-        enableFailed: '啟用失敗',
-        archiveSuccess: '已歸檔',
-        archiveFailed: '歸檔失敗',
+      "tabs": {
+        "allStrategies": "所有策略",
+        "preset": "預設策略"
       },
-    },
-  },
-};
-
-export default admin;
+      "title": "策略管理"
+    }
+  }
+} as const;
+export default Admin;

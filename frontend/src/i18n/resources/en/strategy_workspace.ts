@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_workspace_en.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const Workspace = {
+const StrategyWorkspace = {
   "strategy": {
     "workspace": {
       "account": "Account",
@@ -89,4 +89,4 @@ const Workspace = {
     }
   }
 } as const;
-export default Workspace;
+export default StrategyWorkspace;

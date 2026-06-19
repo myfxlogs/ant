@@ -1,86 +1,87 @@
-const analytics = {
-  analytics: {
-    summary: {
-      title: 'Phân tích',
-      periods: {
-        today: 'Hôm nay',
-        week: 'Tuần này',
-        month: 'Tháng này',
-        year: 'Năm nay',
-        all: 'Tất cả',
+// Auto-generated from proto/ant/v1/i18n/analytics_vi.textproto
+// DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
+const Analytics = {
+  "analytics": {
+    "summary": {
+      "cards": {
+        "directionShare": "Tỷ lệ mua/bán",
+        "economicCalendar": "Lịch kinh tế",
+        "pnlShare": "Tỷ lệ lãi/lỗ",
+        "riskMetrics": "Chỉ số rủi ro",
+        "symbolPnlCompare": "Lãi/Lỗ theo mã",
+        "symbolTradeShare": "Tỷ lệ giao dịch theo mã",
+        "tradeStats": "Thống kê giao dịch"
       },
-      direction: {
-        buy: 'Mua',
-        sell: 'Bán',
+      "direction": {
+        "buy": "Mua",
+        "sell": "Bán"
       },
-      profit: {
-        win: 'Lãi',
-        loss: 'Lỗ',
-      },
-      yearOption: '{{year}}',
-      placeholders: {
-        selectAccount: 'Chọn tài khoản',
-      },
-      sections: {
-        equityCurve: 'Đường vốn',
-        monthlyStats: 'Thống kê theo tháng',
-      },
-      labels: {
-        pnl: 'Lãi/Lỗ',
-      },
-      metrics: {
-        netProfit: 'Tổng lãi/lỗ',
-        equity: 'Vốn',
-        balance: 'Số dư',
-        equityValue: 'Vốn',
-      },
-      cards: {
-        symbolPnlCompare: 'Lãi/Lỗ theo mã',
-        symbolTradeShare: 'Tỷ lệ giao dịch theo mã',
-        directionShare: 'Tỷ lệ mua/bán',
-        pnlShare: 'Tỷ lệ lãi/lỗ',
-        tradeStats: 'Thống kê giao dịch',
-        riskMetrics: 'Chỉ số rủi ro',
-        economicCalendar: 'Lịch kinh tế',
-      },
-      tradeStats: {
-        totalTrades: 'Tổng số lệnh',
-        wins: 'Lãi',
-        losses: 'Lỗ',
-        winRate: 'Tỷ lệ thắng',
-        profitFactor: 'Hệ số lợi nhuận',
-        avgHolding: 'Thời gian giữ TB',
-        maxConsecutiveWins: 'Chuỗi lãi dài nhất',
-        maxConsecutiveLosses: 'Chuỗi lỗ dài nhất',
-        maxHolding: 'Thời gian giữ dài nhất',
-        avgVolume: 'Khối lượng TB',
-        avgProfit: 'Lãi TB',
-        avgLoss: 'Lỗ TB',
-      },
-      risk: {
-        maxDrawdown: 'Drawdown tối đa',
-        maxDrawdownPct: 'Tỷ lệ drawdown',
-        sharpe: 'Sharpe',
-        sortino: 'Sortino',
-        volatility: 'Biến động',
-        var95: 'Giá trị rủi ro (95%)',
-      },
-      economicCalendar: {
-        loading: 'Đang tải lịch kinh tế...',
-        empty: 'Không có sự kiện kinh tế nào.',
-        actual: 'Thực tế',
-        previous: 'Trước đó',
-        estimate: 'Dự báo',
-        keyIndicatorsTitle: 'Các chỉ số vĩ mô chính',
-        indicators: {
-          CPI: 'Lạm phát (CPI)',
-          UNRATE: 'Tỷ lệ thất nghiệp',
-          FEDFUNDS: 'Lãi suất quỹ Fed',
-          GDP: 'GDP thực tế',
+      "economicCalendar": {
+        "actual": "Thực tế",
+        "empty": "Không có sự kiện kinh tế nào.",
+        "estimate": "Dự báo",
+        "indicators": {
+          "CPI": "Lạm phát (CPI)",
+          "FEDFUNDS": "Lãi suất quỹ Fed",
+          "GDP": "GDP thực tế",
+          "UNRATE": "Tỷ lệ thất nghiệp"
         },
+        "keyIndicatorsTitle": "Các chỉ số vĩ mô chính",
+        "loading": "Đang tải lịch kinh tế...",
+        "previous": "Trước đó"
       },
-    },
-  },
+      "labels": {
+        "pnl": "Lãi/Lỗ"
+      },
+      "metrics": {
+        "balance": "Số dư",
+        "equity": "Vốn",
+        "equityValue": "Vốn",
+        "netProfit": "Tổng lãi/lỗ"
+      },
+      "periods": {
+        "all": "Tất cả",
+        "month": "Tháng này",
+        "today": "Hôm nay",
+        "week": "Tuần này",
+        "year": "Năm nay"
+      },
+      "placeholders": {
+        "selectAccount": "Chọn tài khoản"
+      },
+      "profit": {
+        "loss": "Lỗ",
+        "win": "Lãi"
+      },
+      "risk": {
+        "maxDrawdown": "Drawdown tối đa",
+        "maxDrawdownPct": "Tỷ lệ drawdown",
+        "sharpe": "夏普比率",
+        "sortino": "索提诺比率",
+        "var95": "Giá trị rủi ro (95%)",
+        "volatility": "Biến động"
+      },
+      "sections": {
+        "equityCurve": "Đường vốn",
+        "monthlyStats": "Thống kê theo tháng"
+      },
+      "title": "Phân tích",
+      "tradeStats": {
+        "avgHolding": "Thời gian giữ TB",
+        "avgLoss": "Lỗ TB",
+        "avgProfit": "Lãi TB",
+        "avgVolume": "Khối lượng TB",
+        "losses": "Lỗ",
+        "maxConsecutiveLosses": "Chuỗi lỗ dài nhất",
+        "maxConsecutiveWins": "Chuỗi lãi dài nhất",
+        "maxHolding": "Thời gian giữ dài nhất",
+        "profitFactor": "Hệ số lợi nhuận",
+        "totalTrades": "Tổng số lệnh",
+        "winRate": "Tỷ lệ thắng",
+        "wins": "Lãi"
+      },
+      "yearOption": "{{year}}年"
+    }
+  }
 } as const;
-
-export default analytics;
+export default Analytics;

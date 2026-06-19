@@ -1,214 +1,163 @@
-const trading = {
-  trading: {
-    title: '交易',
-    account: '账户',
-    balance: '余额',
-    equity: '净值',
-    margin: '已用保证金',
-    freeMargin: '可用保证金',
-    marginLevel: '保证金比例',
-    noAccount: '未选择账户',
-    placeOrder: '下单',
-    symbol: '品种',
-    type: '类型',
-    volume: '数量',
-    price: '价格',
-    stopLoss: '止损',
-    takeProfit: '止盈',
-    side: '方向',
-    buy: '买入',
-    sell: '卖出',
-    market: '市价',
-    limit: '限价',
-    stop: '止损',
-    positions: '持仓',
-    noPositions: '暂无持仓',
-    closePosition: '平仓',
-    closePositionConfirm: '确认平仓？',
-    openTime: '开仓时间',
-    orderHistory: '历史订单',
-    noOrders: '暂无订单',
-    risk: {
-      errors: {
-        RISK_ACCOUNT_TRADE_DISABLED: {
-          title: '当前账户被禁止交易。',
-          action: 'Check account status and permissions, then try again.'
+// Auto-generated from proto/ant/v1/i18n/trading_zh-cn.textproto
+// DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
+const Trading = {
+  "trading": {
+    "account": "账户",
+    "autoTrade": {
+      "confirm": {
+        "disableConfirm": "确认关闭",
+        "disableInfoDescription": "关闭后，系统将停止自动执行交易，但已开启的策略仍会继续监控市场。",
+        "disableInfoTitle": "关闭自动交易",
+        "disableQuestion": "确定要禁用自动交易？",
+        "disableTitle": "关闭自动交易",
+        "enableBullet1": "系统将自动执行符合策略条件的交易",
+        "enableBullet2": "请确保风险配置已正确设置",
+        "enableBullet3": "建议先在模拟账户测试",
+        "enableConfirm": "确认开启",
+        "enableQuestion": "确认开启自动交易功能？",
+        "enableRiskDescription": "开启自动交易后，系统将根据策略自动执行交易操作。请确保您已充分了解相关风险。",
+        "enableRiskTitle": "风险提示",
+        "enableTitle": "开启自动交易"
+      }
+    },
+    "balance": "余额",
+    "buy": "买入",
+    "closePosition": "平仓",
+    "closePositionConfirm": "确认平仓？",
+    "closePositionTitle": "平仓",
+    "equity": "净值",
+    "freeMargin": "可用保证金",
+    "limit": "限价",
+    "margin": "已用保证金",
+    "marginLevel": "保证金比例",
+    "markPrice": "标记价",
+    "market": "市价",
+    "messages": {
+      "fetchOrderHistoryFailed": "加载订单历史失败",
+      "fetchPendingOrdersFailed": "获取挂单失败",
+      "fetchPositionsFailed": "获取持仓失败",
+      "orderCloseFailed": "平仓失败",
+      "orderCloseSuccess": "平仓成功",
+      "orderModifyFailed": "修改订单失败",
+      "orderModifySuccess": "修改订单成功",
+      "orderSendFailed": "下单失败",
+      "orderSendSuccess": "下单成功"
+    },
+    "noAccount": "未选择账户",
+    "noOrders": "暂无订单",
+    "noPositions": "暂无持仓",
+    "openPositionsTitle": "持仓",
+    "openTime": "开仓时间",
+    "orderHistory": "历史订单",
+    "ordersCount": "{{count}} 条订单",
+    "placeOrder": "下单",
+    "pnl": "盈亏",
+    "positionEntryPrice": "入场价",
+    "positionLeverage": "杠杆",
+    "positionLong": "多头",
+    "positionMarkPrice": "标记价",
+    "positionShort": "空头",
+    "positionSide": "方向",
+    "positionSize": "数量",
+    "positionUnrealizedPnL": "未实现盈亏",
+    "positions": "持仓",
+    "price": "价格",
+    "profit": "盈亏",
+    "recentTrades": "最近交易",
+    "risk": {
+      "errors": {
+        "RISK_ACCOUNT_TRADE_DISABLED": {
+          "action": "请检查账户状态和权限后重试。",
+          "title": "当前账户被禁止交易。"
         },
-        RISK_SYMBOL_TRADE_DISABLED: {
-          title: '当前品种暂不可交易。',
-          action: 'Switch to a tradable symbol or try later.'
+        "RISK_INTERNAL_RULE_UNAVAILABLE": {
+          "action": "稍后重试；如问题持续请联系客服。",
+          "title": "风控规则暂不可用。"
         },
-        RISK_MARKET_SESSION_CLOSED: {
-          title: '当前品种处于休市时段。',
-          action: 'Wait for the next trading session and retry.'
+        "RISK_MARGIN_INSUFFICIENT": {
+          "action": "请减少手数、平仓或追加资金。",
+          "title": "可用保证金不足，无法下单。"
         },
-        RISK_VOLUME_INVALID: {
-          title: '下单手数不合法。',
-          action: 'Adjust volume to match min/max/step requirements.'
+        "RISK_MARKET_SESSION_CLOSED": {
+          "action": "请等待下一个交易时段后重试。",
+          "title": "当前品种处于休市时段。"
         },
-        RISK_ORDER_TYPE_UNSUPPORTED: {
-          title: '当前品种不支持该订单类型。',
-          action: 'Choose a supported order type and retry.'
+        "RISK_MAX_OPEN_POSITIONS_EXCEEDED": {
+          "action": "平掉现有持仓或提高上限。",
+          "title": "已达到最大持仓数量限制。"
         },
-        RISK_STOP_DISTANCE_TOO_CLOSE: {
-          title: '止损或止盈距离当前价格过近。',
-          action: 'Increase SL/TP distance and retry.'
+        "RISK_MAX_PENDING_ORDERS_EXCEEDED": {
+          "action": "取消现有挂单或提高上限。",
+          "title": "已达到最大挂单数量限制。"
         },
-        RISK_ORDER_FROZEN_ZONE: {
-          title: '订单处于冻结区，当前不可修改。',
-          action: 'Wait until price moves away from freeze distance, then retry.'
+        "RISK_ORDER_FROZEN_ZONE": {
+          "action": "请等待价格离开冻结区域后重试。",
+          "title": "订单处于冻结区，当前不可修改。"
         },
-        RISK_MARGIN_INSUFFICIENT: {
-          title: '可用保证金不足，无法下单。',
-          action: 'Reduce volume, close positions, or add funds.'
+        "RISK_ORDER_TYPE_UNSUPPORTED": {
+          "action": "请选择支持的订单类型后重试。",
+          "title": "当前品种不支持该订单类型。"
         },
-        RISK_MAX_OPEN_POSITIONS_EXCEEDED: {
-          title: '已达到最大持仓数量限制。',
-          action: 'Close existing positions or raise the limit.'
+        "RISK_STOP_DISTANCE_TOO_CLOSE": {
+          "action": "请增加止损/止盈距离后重试。",
+          "title": "止损或止盈距离当前价格过近。"
         },
-        RISK_MAX_PENDING_ORDERS_EXCEEDED: {
-          title: '已达到最大挂单数量限制。',
-          action: 'Cancel existing pending orders or raise the limit.'
+        "RISK_SYMBOL_TRADE_DISABLED": {
+          "action": "请切换到可交易品种或稍后重试。",
+          "title": "当前品种暂不可交易。"
         },
-        RISK_INTERNAL_RULE_UNAVAILABLE: {
-          title: '风控规则暂不可用。',
-          action: 'Retry later; contact support if the issue persists.'
+        "RISK_VOLUME_INVALID": {
+          "action": "请调整手数以符合最小/最大/步长要求。",
+          "title": "下单手数不合法。"
         },
-        unknown: {
-          title: '交易请求被拒绝。',
-          action: 'Please review order parameters and try again.'
+        "unknown": {
+          "action": "请检查订单参数后重试。",
+          "title": "交易请求被拒绝。"
         }
       }
     },
-    messages: {
-      fetchPositionsFailed: '获取持仓失败',
-      orderSendSuccess: '下单成功',
-      orderSendFailed: '下单失败',
-      orderModifySuccess: '修改订单成功',
-      orderModifyFailed: '修改订单失败',
-      orderCloseSuccess: '平仓成功',
-      orderCloseFailed: '平仓失败',
-      fetchPendingOrdersFailed: '获取挂单失败',
-      fetchOrderHistoryFailed: 'Failed to load order history'
-    },
-    riskConfig: {
-      fields: {
-        maxRiskPercent: '单笔最大风险',
-        maxDailyLoss: '每日最大亏损',
-        maxDrawdownPercent: '最大回撤限制',
-        maxPositions: '最大持仓数量',
-        maxLotSize: '最大手数',
-        trailingStopEnabled: '移动止损',
-        trailingStopPips: 'Trailing Stop (pips)'
+    "riskConfig": {
+      "confirm": {
+        "confirmText": "确认保存",
+        "description": "请确认以下风险配置：",
+        "info": "保存后，所有自动交易将遵循新的风险限额。",
+        "title": "确认保存风险配置"
       },
-      confirm: {
-        title: '确认保存风险配置',
-        confirmText: '确认保存',
-        description: '请确认以下风险配置：',
-        info: 'After saving, all auto trading will follow the new risk limits.'
+      "fields": {
+        "maxDailyLoss": "每日最大亏损",
+        "maxDrawdownPercent": "最大回撤限制",
+        "maxLotSize": "最大手数",
+        "maxPositions": "最大持仓数量",
+        "maxRiskPercent": "单笔最大风险",
+        "trailingStopEnabled": "移动止损",
+        "trailingStopPips": "移动止损 (点)"
       }
     },
-    strategyExecute: {
-      confirm: {
-        title: '确认交易执行',
-        confirmText: '执行',
-        warningTitle: '交易执行确认',
-        warningDescription: '此操作将立即执行真实交易，请仔细核对交易参数。',
-        strategyName: '策略名称',
-        symbol: '品种',
-        action: '方向',
-        buy: '买入',
-        sell: '卖出',
-        volume: '数量'
+    "selectSymbol": "选择品种",
+    "sell": "卖出",
+    "side": "方向",
+    "stop": "止损",
+    "stopLoss": "止损",
+    "strategyExecute": {
+      "confirm": {
+        "action": "方向",
+        "buy": "买入",
+        "confirmText": "执行",
+        "sell": "卖出",
+        "strategyName": "策略名称",
+        "symbol": "品种",
+        "title": "确认交易执行",
+        "volume": "数量",
+        "warningDescription": "此操作将立即执行真实交易，请仔细核对交易参数。",
+        "warningTitle": "交易执行确认"
       }
     },
-    autoTrade: {
-      confirm: {
-        enableTitle: '开启自动交易',
-        disableTitle: '关闭自动交易',
-        enableConfirm: '确认开启',
-        disableConfirm: '确认关闭',
-        enableRiskTitle: '风险提示',
-        enableRiskDescription: '开启自动交易后，系统将根据策略自动执行交易操作。请确保您已充分了解相关风险。',
-        enableQuestion: '确认开启自动交易功能？',
-        enableBullet1: '系统将自动执行符合策略条件的交易',
-        enableBullet2: '请确保风险配置已正确设置',
-        enableBullet3: '建议先在模拟账户测试',
-        disableInfoTitle: '关闭自动交易',
-        disableInfoDescription: '关闭后，系统将停止自动执行交易，但已开启的策略仍会继续监控市场。',
-        disableQuestion: 'Are you sure you want to disable auto trading?'
-      }
-    },
-    pnl: '盈亏',
-    profit: '盈亏',
-    time: '时间',
-    ordersCount: '{{count}} 条订单',
-    markPrice: '标记价',
-    positionSide: '方向',
-    positionSize: '数量',
-    positionEntryPrice: '入场价',
-    positionMarkPrice: '标记价',
-    positionLeverage: '杠杆',
-    positionUnrealizedPnL: '未实现盈亏',
-    positionLong: '多头',
-    positionShort: '空头',
-    openPositionsTitle: '持仓',
-    closePositionTitle: '平仓',
-    recentTrades: '最近交易',
-    selectSymbol: 'Select a symbol'
-  },
-  algo: {
-    submitForm: {
-      title: 'Launch Algo'
-    },
-    actions: {
-      start: '启动',
-      cancel: 'Cancel'
-    },
-    fields: {
-      algo: '算法',
-      symbol: '品种',
-      side: '方向',
-      volume: '数量',
-      limitPrice: '限价',
-      account: '账户',
-      timeRange: '时间范围',
-      urgency: '紧急度',
-      sliceInterval: '切片间隔',
-      participationRate: 'Participation Rate'
-    },
-    side: {
-      buy: '买入',
-      sell: '卖出'
-    },
-    info: {
-      name: '名称',
-      description: 'Description'
-    },
-    messages: {
-      started: 'Algo started'
-    },
-    timePresets: {
-      '1h': '1 Hour',
-      '4h': '4 Hours',
-      EOD: 'End of Day'
-    },
-    dashboard: {
-      title: '算法面板',
-      activeExecutions: '执行中',
-      noActive: 'No active algo executions'
-    },
-    table: {
-      executionId: '执行ID',
-      algo: '算法',
-      symbol: '品种',
-      side: '方向',
-      volume: '数量',
-      progress: '进度',
-      state: '状态',
-      actions: 'Actions'
-    }
+    "symbol": "品种",
+    "takeProfit": "止盈",
+    "time": "时间",
+    "title": "交易",
+    "type": "类型",
+    "volume": "数量"
   }
 } as const;
-
-export default trading;
+export default Trading;

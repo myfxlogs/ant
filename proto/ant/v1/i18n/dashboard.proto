@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+message DashboardI18n {
+  string account_list = 1;  // Account List
+  string account_overview = 2;  // Account Overview
+  string account_status_connected = 3;  // Connected
+  string account_status_connecting = 4;  // Connecting
+  string account_status_disabled = 5;  // Disabled
+  string account_status_disconnected = 6;  // Disconnected
+  string bind_account = 7;  // Bind Account
+  string default_name = 8;  // My Dashboard
+  string fields_balance = 9;  // Balance
+  string fields_equity = 10;  // Equity
+  string fields_floating = 11;  // Floating P/L
+  string logs = 12;  // Logs
+  string no_accounts = 13;  // No accounts yet. Click 'Bind Account' to get started.
+  string quick_actions_accounts = 14;  // Accounts
+  string quick_actions_analytics = 15;  // Analytics
+  string quick_actions_bind_account = 16;  // Bind
+  string quick_actions_close_position = 17;  // Close
+  string quick_actions_library = 18;  // Library
+  string quick_actions_logs = 19;  // Logs
+  string quick_actions_market = 20;  // Market
+  string quick_actions_templates = 21;  // Templates
+  string quick_actions_title = 22;  // Quick Actions
+  string quick_actions_trading = 23;  // Trading
+  string stats_account_count = 24;  // Accounts
+  string stats_connected = 25;  // Connected
+  string stats_total_balance = 26;  // Total Balance
+  string stats_total_equity = 27;  // Total Equity
+  string stats_total_profit = 28;  // Total Floating P/L
+  string stream_live = 29;  // Live
+  string stream_offline = 30;  // Offline
+  string subtitle = 31;  // View your account overview
+  string templates = 32;  // Templates
+  string view_all = 33;  // View all
+  string welcome = 34;  // Welcome back, {{name}}
+}

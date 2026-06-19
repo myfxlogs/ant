@@ -31,7 +31,7 @@ export const SELECT_SYMBOL_KEY = 'strategy.quickTradeSection.selectSymbol' as co
 /** validVolume */
 export const VALID_VOLUME_KEY = 'strategy.quickTradeSection.validVolume' as const;
 
-export const QUICKTRADESECTION_KEYS = {
+export const STRATEGYQUICKTRADESECTION_KEYS = {
   amount_lots: 'strategy.quickTradeSection.amountLots',
   cross: 'strategy.quickTradeSection.cross',
   isolated: 'strategy.quickTradeSection.isolated',
@@ -44,4 +44,4 @@ export const QUICKTRADESECTION_KEYS = {
   valid_volume: 'strategy.quickTradeSection.validVolume',
 } as const;
 
-export type QuickTradeSectionKey = typeof QUICKTRADESECTION_KEYS[keyof typeof QUICKTRADESECTION_KEYS];
+export type StrategyQuickTradeSectionKey = typeof STRATEGYQUICKTRADESECTION_KEYS[keyof typeof STRATEGYQUICKTRADESECTION_KEYS];

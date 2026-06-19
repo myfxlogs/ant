@@ -67,7 +67,7 @@ export const SUBTITLE_KEY = 'strategy.marketRegime.subtitle' as const;
 /** title */
 export const TITLE_KEY = 'strategy.marketRegime.title' as const;
 
-export const MARKETREGIME_KEYS = {
+export const STRATEGYMARKETREGIME_KEYS = {
   detect_failed: 'strategy.marketRegime.detectFailed',
   detect_success: 'strategy.marketRegime.detectSuccess',
   form_account_id: 'strategy.marketRegime.form.accountId',
@@ -92,4 +92,4 @@ export const MARKETREGIME_KEYS = {
   title: 'strategy.marketRegime.title',
 } as const;
 
-export type MarketRegimeKey = typeof MARKETREGIME_KEYS[keyof typeof MARKETREGIME_KEYS];
+export type StrategyMarketRegimeKey = typeof STRATEGYMARKETREGIME_KEYS[keyof typeof STRATEGYMARKETREGIME_KEYS];

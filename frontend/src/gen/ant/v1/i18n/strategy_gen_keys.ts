@@ -73,7 +73,7 @@ export const USE_DEFAULTS_KEY = 'strategy.gen.useDefaults' as const;
 /** validating */
 export const VALIDATING_KEY = 'strategy.gen.validating' as const;
 
-export const GEN_KEYS = {
+export const STRATEGYGEN_KEYS = {
   backtest_msg: 'strategy.gen.backtestMsg',
   backtest_started: 'strategy.gen.backtestStarted',
   chat_discuss: 'strategy.gen.chat.discuss',
@@ -100,4 +100,4 @@ export const GEN_KEYS = {
   validating: 'strategy.gen.validating',
 } as const;
 
-export type GenKey = typeof GEN_KEYS[keyof typeof GEN_KEYS];
+export type StrategyGenKey = typeof STRATEGYGEN_KEYS[keyof typeof STRATEGYGEN_KEYS];

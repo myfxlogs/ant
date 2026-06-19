@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_experiment_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const Experiment = {
+const StrategyExperiment = {
   "strategy": {
     "experiment": {
       "candidates": {
@@ -60,4 +60,4 @@ const Experiment = {
     }
   }
 } as const;
-export default Experiment;
+export default StrategyExperiment;

@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_backtest_run_en.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const BacktestRun = {
+const StrategyBacktestRun = {
   "strategy": {
     "backtestRun": {
       "actions": {
@@ -65,4 +65,4 @@ const BacktestRun = {
     }
   }
 } as const;
-export default BacktestRun;
+export default StrategyBacktestRun;

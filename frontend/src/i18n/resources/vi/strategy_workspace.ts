@@ -1,11 +1,11 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_workspace_vi.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const Workspace = {
+const StrategyWorkspace = {
   "strategy": {
     "workspace": {
       "account": "Tài khoản",
       "accountPlaceholder": "ID Tài Khoản",
-      "ai": "AI",
+      "ai": "AI 助手",
       "aiAssist": "Trợ Lý AI",
       "autoFix": {
         "button": "Tự Động Sửa",
@@ -26,7 +26,7 @@ const Workspace = {
       "backtestRunIdLabel": "Chọn lần backtest...",
       "backtestRunning": "Backtest đang chạy...",
       "backtestTab": "Kết Quả Backtest",
-      "chart": "K-line",
+      "chart": "K线",
       "chartError": "Lỗi biểu đồ — thử làm mới",
       "chartTools": {
         "area": "Vùng",
@@ -89,4 +89,4 @@ const Workspace = {
     }
   }
 } as const;
-export default Workspace;
+export default StrategyWorkspace;

@@ -574,7 +574,7 @@ export const VISIBILITY_PRIVATE_KEY = 'strategy.templates.visibility.private' as
 /** visibility.public */
 export const VISIBILITY_PUBLIC_KEY = 'strategy.templates.visibility.public' as const;
 
-export const TEMPLATES_KEYS = {
+export const STRATEGYTEMPLATES_KEYS = {
   actions_backtest: 'strategy.templates.actions.backtest',
   actions_copy: 'strategy.templates.actions.copy',
   actions_create: 'strategy.templates.actions.create',
@@ -768,4 +768,4 @@ export const TEMPLATES_KEYS = {
   visibility_public: 'strategy.templates.visibility.public',
 } as const;
 
-export type TemplatesKey = typeof TEMPLATES_KEYS[keyof typeof TEMPLATES_KEYS];
+export type StrategyTemplatesKey = typeof STRATEGYTEMPLATES_KEYS[keyof typeof STRATEGYTEMPLATES_KEYS];

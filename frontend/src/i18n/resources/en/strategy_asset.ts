@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_asset_en.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const Asset = {
+const StrategyAsset = {
   "strategy": {
     "asset": {
       "actions": "Actions",
@@ -33,4 +33,4 @@ const Asset = {
     }
   }
 } as const;
-export default Asset;
+export default StrategyAsset;

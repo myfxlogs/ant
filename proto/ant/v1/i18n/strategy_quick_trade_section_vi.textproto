@@ -1,6 +1,6 @@
 amount_lots: 'Khối Lượng (lots)'
-cross: 'Cross'
-isolated: 'Isolated'
+cross: '全仓'
+isolated: '逐仓'
 margin_mode: 'Chế Độ Ký Quỹ'
 mt4_cross_only: 'MT4 chỉ hỗ trợ ký quỹ Cross'
 order_failed: 'Đặt lệnh thất bại'

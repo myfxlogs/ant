@@ -35,6 +35,18 @@ import StrategyGen from './strategy_gen';
 import StrategyAiChat from './strategy_ai_chat';
 import StrategyPaper from './strategy_paper';
 import StrategyDefaultTemplates from './strategy_default_templates';
+import Accounts from './accounts';
+import AiCore from './ai_core';
+import AiSettings from './ai_settings';
+import AiWizard from './ai_wizard';
+import AiStore from './ai_store';
+import Base from './base';
+import Dashboard from './dashboard';
+import Trading from './trading';
+import Analytics from './analytics';
+import Admin from './admin';
+import Logs from './logs';
+import Errors from './errors';
 import { mergeResources } from '../merge';
 
 const en = mergeResources(
@@ -75,6 +87,18 @@ const en = mergeResources(
   strategyWorkspace,
   errors,
   admin,
+  Accounts,
+  AiCore,
+  AiSettings,
+  AiWizard,
+  AiStore,
+  Base,
+  Dashboard,
+  Trading,
+  Analytics,
+  Admin,
+  Logs,
+  Errors,
 ) as const;
 
 export default en;

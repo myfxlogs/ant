@@ -1,804 +1,807 @@
-const base = {
-  app: {
-    name: 'AntTrader'
+// Auto-generated from proto/ant/v1/i18n/base_ja.textproto
+// DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
+const Base = {
+  "app": {
+    "name": "AntTrader"
   },
-  auth: {
-    login: {
-      subtitle: '本サービスはテストであり責任を負いません',
-      rememberMe: 'ログイン状態を保持',
-      forgotPassword: 'パスワードをお忘れですか？',
-      signingIn: 'ログイン中...',
-      login: 'ログイン',
-      noAccount: `Don't have an account?`,
-      registerNow: '新規登録',
+  "auth": {
+    "fields": {
+      "confirmPassword": "确认密码",
+      "email": "メール",
+      "password": "パスワード"
     },
-    forgotPassword: {
-      title: 'パスワードリセット',
-      hint: '管理者またはサポートに連絡してパスワードをリセットしてください。',
-      backToLogin: 'Back to Login'
+    "forgotPassword": {
+      "backToLogin": "返回登录",
+      "hint": "管理者またはサポートに連絡してパスワードをリセットしてください。",
+      "title": "パスワードリセット"
     },
-    register: {
-      subtitle: '新規アカウント作成',
-      signingUp: '登録中...',
-      register: '登録',
-      haveAccount: 'すでにアカウントをお持ちですか？',
-      loginNow: 'ログイン',
+    "login": {
+      "forgotPassword": "パスワードをお忘れですか？",
+      "login": "ログイン",
+      "noAccount": "没有账户？",
+      "registerNow": "新規登録",
+      "rememberMe": "ログイン状態を保持",
+      "signingIn": "ログイン中...",
+      "subtitle": "本サービスはテストであり責任を負いません"
     },
-    fields: {
-      email: 'メール',
-      password: 'パスワード',
-      confirmPassword: 'Confirm password'
+    "messages": {
+      "fetchMeFailed": "加载用户信息失败",
+      "loginFailed": "ログインに失敗しました。メールアドレスとパスワードを確認してください。",
+      "loginSuccess": "ログインしました",
+      "logoutSuccess": "ログアウトしました",
+      "registerFailed": "登録に失敗しました。しばらくしてから再試行してください。",
+      "registerSuccess": "登録が完了しました。ログインしてください。"
     },
-    validation: {
-      emailRequired: 'メールアドレスを入力してください',
-      emailInvalid: '有効なメールアドレスを入力してください',
-      passwordRequired: 'パスワードを入力してください',
-      passwordMin8: 'パスワードは8文字以上必要です',
-      confirmPasswordRequired: 'パスワードを確認してください',
-      passwordMismatch: 'パスワードが一致しません'
+    "register": {
+      "haveAccount": "すでにアカウントをお持ちですか？",
+      "loginNow": "ログイン",
+      "register": "登録",
+      "signingUp": "登録中...",
+      "subtitle": "新規アカウント作成"
     },
-    messages: {
-      loginSuccess: 'ログインしました',
-      loginFailed: 'ログインに失敗しました。メールアドレスとパスワードを確認してください。',
-      registerSuccess: '登録が完了しました。ログインしてください。',
-      registerFailed: '登録に失敗しました。しばらくしてから再試行してください。',
-      logoutSuccess: 'ログアウトしました',
-      fetchMeFailed: 'Failed to load user profile'
+    "validation": {
+      "confirmPasswordRequired": "パスワードを確認してください",
+      "emailInvalid": "有効なメールアドレスを入力してください",
+      "emailRequired": "メールアドレスを入力してください",
+      "passwordMin8": "パスワードは8文字以上必要です",
+      "passwordMismatch": "パスワードが一致しません",
+      "passwordRequired": "パスワードを入力してください"
     }
   },
-  language: {
-    simplifiedChinese: '简体中文',
-    traditionalChinese: '繁體中文',
-    english: 'English',
-    japanese: '日本語',
-    vietnamese: 'Tiếng Việt'
+  "common": {
+    "active": "アクティブ",
+    "back": "戻る",
+    "cancel": "キャンセル",
+    "clear": "清除",
+    "close": "決済",
+    "comingSoon": "即将上线",
+    "confirm": "確定",
+    "copied": "コピーしました",
+    "copy": "コピー",
+    "copyFailed": "コピーに失敗しました",
+    "create": "新規",
+    "created": "作成しました",
+    "currentPosition": "📊 現在のポジション",
+    "delete": "削除",
+    "deleteFailed": "削除に失敗しました",
+    "deleteSelected": "選択した{{count}}件を削除",
+    "deleted": "削除しました",
+    "disable": "無効化",
+    "disabled": "已禁用",
+    "edit": "編集",
+    "enable": "有効化",
+    "enabled": "有効化しました",
+    "error": "エラー",
+    "gotIt": "了解",
+    "hideDetails": "詳細を隠す",
+    "inactive": "停用",
+    "indicatorSettings": "{{name}} 設定",
+    "lineColor": "ライン色",
+    "loading": "読み込み中...",
+    "loadingFailed": "読み込みに失敗しました",
+    "months": {
+      "jan": "1月",
+      "jul": "7月"
+    },
+    "next": "次へ",
+    "no": "否",
+    "noData": "データがありません",
+    "noOpenPositionsForSymbol": "{{symbol}} のポジションはありません",
+    "none": "なし",
+    "ok": "确定",
+    "operationFailed": "操作失败",
+    "pageError": "ページエラー",
+    "pageUnderDevelopment": "此页面开发中",
+    "pleaseWait": "しばらくお待ちください...",
+    "previous": "戻る",
+    "refresh": "更新",
+    "remove": "移除",
+    "required": "必須",
+    "retry": "リトライ",
+    "save": "保存",
+    "saveFailed": "保存に失敗しました",
+    "saveSuccess": "保存成功",
+    "searching": "検索中...",
+    "selectSymbolToViewChart": "銘柄を選択してチャートを表示",
+    "send": "送信",
+    "showDetails": "詳細を表示",
+    "time": {
+      "day": "{{n}}天",
+      "hour": "{{n}}时",
+      "lessThanMinute": "<1分钟",
+      "minute": "{{n}}分"
+    },
+    "totalItems": "共 {{count}} 项",
+    "translate": "翻訳",
+    "unexpectedError": "予期しないエラーが発生しました",
+    "unknown": "未知",
+    "updated": "更新しました",
+    "viewOriginal": "原文を見る",
+    "viewTranslation": "翻訳を見る",
+    "yes": "是",
+    "you": "你"
   },
-  common: {
-    refresh: '更新',
-    create: '新規',
-    back: '戻る',
-    updated: '更新しました',
-    created: '作成しました',
-    enabled: '有効化しました',
-    disabled: '已禁用',
-    deleted: '削除しました',
-    deleteFailed: '削除に失敗しました',
-  deleteSelected: '選択した{{count}}件を削除',
-    loadingFailed: '読み込みに失敗しました',
-    none: 'なし',
-    close: '決済',
-    operationFailed: '操作失败',
-    pleaseWait: 'しばらくお待ちください...',
-    next: '次へ',
-    previous: '戻る',
-    gotIt: '了解',
-    loading: '読み込み中...',
-    searching: '検索中...',
-    unknown: '未知',
-    enable: '有効化',
-    disable: '無効化',
-    edit: '編集',
-    delete: '削除',
-    confirm: '確定',
-    cancel: 'キャンセル',
-    save: '保存',
-    send: '送信',
-    saveFailed: '保存に失敗しました',
-    showDetails: '詳細を表示',
-    hideDetails: '詳細を隠す',
-    translate: '翻訳',
-    viewOriginal: '原文を見る',
-    viewTranslation: '翻訳を見る',
-    copy: 'コピー',
-    copied: 'コピーしました',
-    copyFailed: 'コピーに失敗しました',
-    ok: 'OK',
-    error: 'エラー',
-    retry: 'リトライ',
-    pageError: 'ページエラー',
-    unexpectedError: '予期しないエラーが発生しました',
-    required: '必須',
-    noData: 'データがありません',
-    lineColor: 'ライン色',
-    selectSymbolToViewChart: '銘柄を選択してチャートを表示',
-    currentPosition: '📊 現在のポジション',
-    noOpenPositionsForSymbol: '{{symbol}} のポジションはありません',
-    indicatorSettings: '{{name}} 設定',
-    totalItems: '共 {{count}} 项',
-    time: {
-      minute: '{{n}}分',
-      hour: '{{n}}时',
-      day: '{{n}}天',
-      lessThanMinute: '<1m'
-    },
-    active: 'アクティブ',
-    inactive: '停用',
-    clear: '清除',
-    saveSuccess: '保存成功',
-    remove: '移除',
-    yes: '是',
-    no: 'No',
-    you: '你',
-    comingSoon: '即将上线',
-    pageUnderDevelopment: 'This page is under development',
-    months: {
-      jan: 'Jan', feb: 'Feb', mar: 'Mar', apr: 'Apr', may: 'May', jun: 'Jun',
-      jul: 'Jul', aug: 'Aug', sep: 'Sep', oct: 'Oct', nov: 'Nov', dec: 'Dec',
-    },
+  "language": {
+    "english": "English",
+    "japanese": "日本語",
+    "simplifiedChinese": "简体中文",
+    "traditionalChinese": "繁體中文",
+    "vietnamese": "Tiếng Việt"
   },
-  menu: {
-    strategyWorkspace: '戦略ワークスペース',
-    strategyLibrary: '戦略ライブラリ',
-    dashboard: 'ダッシュボード',
-    strategy: '戦略',
-    accounts: 'アカウント',
-    aiAssistant: 'AIアシスタント',
-    strategies: '戦略管理',
-    trading: '取引',
-    wallet: 'ウォレット',
-    algoDashboard: 'アルゴダッシュボード',
-    market: 'マーケット',
-    analytics: '分析',
-    marketplace: 'マーケットプレイス',
-    assetAnalysis: 'AI分析',
-    experiments: '戦略実験',
-    marketRegime: 'マーケットレジーム',
-    assets: '戦略資産',
-    schedules: '戦略スケジュール',
-    indicatorCatalog: 'インジケーターカタログ',
-    logs: 'システムログ',
-    autoTrading: '自動取引',
-    marketTools: 'マーケット分析ツール',
-    devGroup: '戦略開発',
-    opsGroup: '戦略運用',
-  },
-  marketplace: {
-    title: 'ストラテジーマーケット',
-    subtitle: 'コミュニティ戦略を発見、購入、利用',
-    publish: '戦略を公開',
-    tabs: {
-      marketplace: 'マーケット',
-      purchases: '購入履歴',
-      author: '作成者センター',
-      subscriptions: 'マイ購読',
-    },
-    searchPlaceholder: '戦略を検索...',
-    filterByClass: '資産クラスで絞り込む',
-    filter: { all: 'すべて', free: '無料', paid: '有料' },
-    sort: {
-      score: '総合スコア',
-      newest: '新着順',
-      popular: '人気順',
-      performance: 'パフォーマンス順',
-      rating: '評価順',
-      priceAsc: '価格：安い順',
-      priceDesc: '価格：高い順',
-    },
-    empty: '公開された戦略はまだありません',
-    noSubscriptions: '購読はまだありません',
-    card: {
-      free: '無料', rent: '¥{{amount}}/月', buy: '¥{{amount}}',
-      owned: '購入日', users: 'ユーザー',
-      winRate: '勝率', pnl: '総損益',
-      subscribers: '購読者',
-      by: 'by',
-    },
-    assetClass: { forex: 'FX', crypto: '暗号通貨', commodity: '商品', index: '指数', stock: '株式', other: 'その他' },
-    risk: { low: '低', medium: '中', high: '高' },
-    messages: {
-      loginFirst: '先にログインしてください',
-      subscribed: '購入に追加しました',
-      subscribeFailed: '失敗',
-      rated: '評価を送信しました',
-      rateFailed: '評価に失敗しました',
-      commentPosted: 'コメントを投稿しました',
-      commentFailed: 'コメントに失敗しました',
-      paymentComingSoon: '決済機能は近日公開',
-    },
-    detail: {
-      author: '作成者', price: '価格',
-      assetClass: '資産クラス', riskLevel: 'リスクレベル',
-      subscribers: '購読者', avgRating: '評価',
-      description: '説明', tags: 'タグ',
-      getFree: '無料で入手', buyNow: '今すぐ購入',
-      rentPrice: '¥{{amount}} / 月', buyPrice: '¥{{amount}} 買い切り',
-      comments: 'コメント', noComments: 'まだコメントはありません',
-      commentPlaceholder: 'コメントを書く...',
-      yourRating: 'あなたの評価',
-    },
-    purchases: {
-      empty: '購入履歴はまだありません。マーケットで戦略を見つけましょう。',
-      strategy: '戦略', date: '購入日',
-      status: 'ステータス', actions: '操作',
-    },
-    payment: {
-      title: '購入確定',
-      strategyName: '戦略',
-      price: '価格',
-      oneTimePurchase: '¥{{amount}} 買い切り',
-      walletBalance: '残高',
-      balanceAfter: '購入後残高',
-      insufficientBalance: '残高不足',
-      depositPrompt: '続行するには入金してください。',
-      goToDeposit: '入金',
-      confirm: '購入確定',
-      cancel: 'キャンセル',
-      purchasing: '処理中...',
-      purchaseSuccess: '購入完了！戦略がライブラリに追加されました。',
-      purchaseFailed: '購入に失敗しました。もう一度お試しください。',
-      alreadyPurchased: 'この戦略は既に購入済みです。',
-    },
-    author: {
-      empty: '公開された戦略はまだありません。戦略ライブラリで公開してください。',
-      published: '公開済み', subscribers: '購読者',
-      avgRating: '平均評価', noPublished: '公開戦略なし',
-    },
-    priceModel: { free: '無料', subscription: 'Subscription', performanceFee: 'Performance Fee' },
-  },
-  market: {
-    searchPlaceholder: '銘柄を検索（例: EURUSD, XAUUSD）',
-    selectAccount: '取引口座を選択',
-    watchlist: 'ウォッチリスト',
-    popularSymbols: '人気銘柄',
-    noSymbolSelected: '銘柄を選択してマーケットデータを表示',
-    bid: '買値',
-    ask: '売値',
-    spread: 'スプレッド',
-    mid: '仲値',
-    allSymbols: '全銘柄',
-    common: '共通',
-    selectSymbol: '銘柄を選択',
-    noSymbolsFound: '銘柄が見つかりません',
-    loadingSymbols: '読み込み中...',
-    emptyWatchlist: '暂无自选',
-    searchSymbol: 'Search symbol...'
-  },
-  topbar: {
-    systemOk: 'システムは正常に稼働中',
-    profile: 'プロフィール',
-    settings: '設定',
-    switchToAdmin: '管理画面へ切替',
-    logout: 'ログアウト',
-    user: 'ユーザー'
-  },
-  profile: {
-    title: 'プロフィール',
-    nickname: 'ニックネーム',
-    role: '役割',
-    status: 'ステータス',
-    lastLogin: '最終ログイン',
-    registered: 'Registered'
-  },
-  share: {
-    title: '共有管理',
-    createNew: '新しい共有リンクを作成',
-    token: '共有リンク',
-    views: '閲覧数',
-    expires: '有効期限',
-    actions: '操作',
-    empty: '共有リンクはまだありません',
-    userId: 'ユーザー',
-    deleteConfirm: 'Delete this share link?',
-    showPositions: 'Show positions on new link',
-    positions: 'Positions',
-    createdAt: '作成しました',
-  },
-  sharePage: {
-    title: '取引パフォーマンス',
-    subtitle: '実際の取引成績',
-    loadFailed: '共有データの読み込みに失敗しました',
-    notFound: '見つかりません',
-    expired: 'この共有リンクは期限切れです',
-    netProfit: '純損益',
-    totalReturn: '純損益',
-    winRate: '勝率',
-    maxDrawdown: '最大ドローダウン',
-    totalTrades: '総取引数',
-    totalVolume: '総取引量',
-    profitFactor: 'プロフィットファクター',
-    avgHolding: '平均保有時間',
-    sharpeRatio: 'シャープレシオ',
-    winningTrades: '勝ちトレード数',
-    losingTrades: '負けトレード数',
-    bestTrade: 'ベストトレード',
-    worstTrade: 'ワーストトレード',
-    avgWin: '平均利益',
-    avgLoss: '平均損失',
-    equityCurve: '資産曲線',
-    bySymbol: '銘柄別成績',
-    tradeRecords: '取引履歴',
-    noTrades: '取引履歴がありません',
-    symbol: '銘柄',
-    side: '売買',
-    volume: '数量',
-    profit: '損益',
-    closeTime: '決済',
-    count: '取引数',
-    language: '言語',
-    footer: 'AntTrader により生成',
-    positions: 'Open Positions',
-    noPositions: 'No open positions',
-    positionsLocked: 'Positions hidden by creator',
-    openPrice: 'Open',
-    disclaimer: '過去の実績は将来の成果を保証するものではありません。',
-  },
-  notifications: {
-    title: '通知',
-    all: 'すべて',
-    unread: '未読',
-    empty: '通知はありません',
-    markAllRead: 'すべて既読',
-    clearAll: 'クリア',
-    confirmClearAll: 'すべての通知を削除しますか？',
-    tabs: {
-      all: 'すべて ({{count}})',
-      unread: 'Unread ({{count}})'
-    },
-    types: {
-      trade: '取引',
-      signal: 'シグナル',
-      risk_alert: 'リスクアラート',
-      strategy_execution: '戦略',
-      system: 'System'
-    },
-    actions: {
-      markAllAsRead: 'すべて既読',
-      clearAllConfirm: 'すべての通知を削除しますか？',
-      clearAll: 'クリア'
-    },
-    stream: {
-      strategyExecution: {
-        title: '戦略実行',
-        completed: '{{symbol}} {{action}} が完了しました',
-        failed: 'Execution failed: {{error}}'
-      },
-      riskAlert: {
-        title: 'リスクアラート',
-        fallback: 'Alert type: {{alertType}}'
-      },
-      strategySignal: {
-        title: '戦略シグナル',
-        message: '{{symbol}} triggered {{signalType}}'
-      },
-      autoTrading: {
-        title: '自動取引',
-        fallback: 'Auto trading event triggered'
-      }
-    }
-  },
-  admin: {
-    sidebar: {
-      dashboard: 'ダッシュボード',
-      userManagement: 'ユーザー管理',
-      walletManagement: 'Wallets',
-      accountManagement: 'アカウント管理',
-      tradingMonitor: '取引監視',
-      operationLogs: 'Operation Logs',
-      systemConfig: 'システム設定',
-      jurisdiction: '管轄権管理',
-      shareManagement: 'Share Analytics'
-    },
-    header: {
-      adminMode: 'Admin Mode',
-      adminPanel: 'Admin Panel',
-      backToUser: 'Back to User',
-      logout: 'ログアウト',
-      admin: 'Admin'
-    },
-    config: {
-      title: 'System Configuration',
-      editConfig: 'Edit Config: {{key}}',
-      configItem: '配置项',
-      value: '值',
-      description: '説明',
-      status: 'ステータス',
-      toggle: '切换',
-      updatedAt: '更新时间',
-      on: 'On',
-      off: '关',
-      maxAccountsPerUser: '每用户最大账户数',
-      aiProviderCatalog: 'AI提供商目录',
-      econAIConfig: '经济日历AI配置',
-      strategyHealthConfig: '策略健康度配置',
-      provider: '提供商',
-      modelName: '模型名称',
-      enableToggle: '有効化',
-      baseUrlLabel: 'Base URL',
-      formatJson: '格式化JSON',
-      fillTemplate: '填充模板',
-      thresholdInfo: '阈值说明',
-      thresholdDesc: '阈值描述',
-      validation: {
-        jsonEmpty: 'JSON不能为空',
-        jsonInvalid: 'JSON格式无效',
-        greenSuccessRateRange: '绿色成功率需在0-100之间',
-        yellowSuccessRateRange: '黄色成功率需在0-100之间',
-        yellowNotGreaterThanGreen: '黄色阈值不能超过绿色阈值',
-        greenMaxFailedRunsNonNegative: '绿色最大失败次数需≥0',
-        minSampleSizeNonNegative: '最小样本量需≥0',
-        apiKeyRequired: 'API Key不能为空',
-        modelRequired: 'Model name cannot be empty'
-      },
-      messages: {
-        loadFailed: '加载配置失败',
-        updated: '配置已更新',
-        updateFailed: '更新配置失败',
-        enabled: '已启用',
-        disabled: '已禁用',
-        operationFailed: '操作失败'
-      },
-      placeholders: {
-        json: '输入JSON',
-        apiKey: '输入API Key',
-        model: '输入模型名称',
-        baseUrl: '输入Base URL',
-        configValue: '输入配置值',
-        description: 'Enter description'
-      },
-      providerOptions: {
-        zhipu: '智谱AI',
-        deepseek: 'DeepSeek',
-        custom: 'Custom / OpenAI Compatible'
-      }
-    },
-    trading: {
-      title: '取引監視',
-      loadFailed: 'Failed to load trading statistics',
-      platform: 'プラットフォーム',
-      accounts: 'アカウント',
-      orders: '注文',
-      volume: '数量',
-      byPlatform: 'プラットフォーム別',
-      profitStats: '損益統計',
-      totalUsers: '総ユーザー数',
-      activeUsers: 'アクティブユーザー',
-      totalAccounts: '総アカウント数',
-      connectedAccounts: '接続済み',
-      totalOrders: '総注文数',
-      closedOrders: '決済済み',
-      totalVolume: '総取引量',
-      netProfit: '純利益',
-      totalProfit: '総利益',
-      totalLoss: '総損失',
-      pendingOrders: 'Pending Orders'
-    },
-    dashboard: {
-      title: '管理ダッシュボード',
-      loadFailed: 'ダッシュボードデータの読み込みに失敗しました',
-      totalUsers: '総ユーザー数',
-      activeUsers: 'アクティブユーザー',
-      mtAccounts: 'MTアカウント',
-      onlineAccounts: 'オンラインアカウント',
-      todayTrades: '本日の取引',
-      todayProfit: '本日の損益',
-      recentLogs: '最近のログ',
-      logs: {
-        time: '時間',
-        module: 'モジュール',
-        actionType: 'アクション',
-        target: '対象',
-        status: 'ステータス',
-        success: '成功',
-        failed: '失敗',
-        moduleMap: {
-          userManagement: 'ユーザー管理',
-          accountManagement: 'アカウント管理',
-          trading: '取引',
-          systemConfig: 'システム設定'
+  "marketplace": {
+    "filter": {
+      "assetClass": {
+        "risk": {
+          "admin": {
+            "config": {
+              "aiProviderCatalog": "AI提供商目录",
+              "baseUrlLabel": "Base URL",
+              "configItem": "配置项",
+              "description": "説明",
+              "econAIConfig": "经济日历AI配置",
+              "editConfig": "编辑配置: {{key}}",
+              "enableToggle": "有効化",
+              "fillTemplate": "填充模板",
+              "formatJson": "格式化JSON",
+              "maxAccountsPerUser": "每用户最大账户数",
+              "messages": {
+                "disabled": "已禁用",
+                "enabled": "已启用",
+                "loadFailed": "加载配置失败",
+                "operationFailed": "操作失败",
+                "updateFailed": "更新配置失败",
+                "updated": "配置已更新"
+              },
+              "modelName": "模型名称",
+              "off": "关",
+              "on": "开",
+              "placeholders": {
+                "apiKey": "输入API Key",
+                "baseUrl": "输入Base URL",
+                "configValue": "输入配置值",
+                "description": "输入描述",
+                "json": "输入JSON",
+                "model": "输入模型名称"
+              },
+              "provider": "提供商",
+              "providerOptions": {
+                "custom": "自定义 / OpenAI 兼容",
+                "deepseek": "DeepSeek",
+                "zhipu": "智谱AI"
+              },
+              "status": "ステータス",
+              "strategyHealthConfig": "策略健康度配置",
+              "thresholdDesc": "阈值描述",
+              "thresholdInfo": "阈值说明",
+              "title": "系统配置",
+              "toggle": "切换",
+              "updatedAt": "更新时间",
+              "validation": {
+                "apiKeyRequired": "API Key不能为空",
+                "greenMaxFailedRunsNonNegative": "绿色最大失败次数需≥0",
+                "greenSuccessRateRange": "绿色成功率需在0-100之间",
+                "jsonEmpty": "JSON不能为空",
+                "jsonInvalid": "JSON格式无效",
+                "minSampleSizeNonNegative": "最小样本量需≥0",
+                "modelRequired": "模型名称不能为空",
+                "yellowNotGreaterThanGreen": "黄色阈值不能超过绿色阈值",
+                "yellowSuccessRateRange": "黄色成功率需在0-100之间"
+              },
+              "value": "值"
+            },
+            "dashboard": {
+              "activeUsers": "アクティブユーザー",
+              "loadFailed": "ダッシュボードデータの読み込みに失敗しました",
+              "logs": {
+                "actionType": "アクション",
+                "failed": "失敗",
+                "module": "モジュール",
+                "moduleMap": {
+                  "accountManagement": "アカウント管理",
+                  "systemConfig": "システム設定",
+                  "trading": "取引",
+                  "userManagement": "ユーザー管理"
+                },
+                "status": "ステータス",
+                "success": "成功",
+                "target": "対象",
+                "time": "時間"
+              },
+              "mtAccounts": "MTアカウント",
+              "onlineAccounts": "オンラインアカウント",
+              "recentLogs": "最近のログ",
+              "riskMetrics": {
+                "orderCloseFailed": "平仓失败",
+                "orderCloseSuccess": "決済成功",
+                "orderSendFailed": "注文失敗",
+                "orderSendSuccess": "注文成功",
+                "riskValidateError": "エラー",
+                "riskValidatePass": "通過",
+                "riskValidateReject": "拒否",
+                "riskValidateTotal": "検証総数",
+                "title": "リスク検証指標"
+              },
+              "riskWindow": {
+                "noData": "暂无窗口指标数据",
+                "noRejectData": "この期間に拒否はありません",
+                "orderCloseFailed": "決済失敗",
+                "orderCloseSuccess": "決済OK",
+                "orderSendFailed": "注文失敗",
+                "orderSendSuccess": "注文OK",
+                "rejectCount": "拒否数",
+                "rejectRiskCodesHeader": "リスクコード",
+                "title": "リスク管理ウィンドウ",
+                "validateError": "エラー",
+                "validatePass": "通過",
+                "validateReject": "拒否",
+                "validateTotal": "合計"
+              },
+              "title": "管理ダッシュボード",
+              "todayProfit": "本日の損益",
+              "todayTrades": "本日の取引",
+              "totalUsers": "総ユーザー数"
+            },
+            "header": {
+              "admin": "管理",
+              "adminMode": "管理员模式",
+              "adminPanel": "管理后台",
+              "backToUser": "返回用户端",
+              "logout": "ログアウト"
+            },
+            "jurisdiction": {
+              "actions": "操作",
+              "addCountry": "国を追加",
+              "addSanctionedCountry": "制裁国を追加",
+              "addedBy": "追加者",
+              "confirmGrantOverride": "このユーザーに上書き許可を付与しますか？",
+              "confirmRevokeOverride": "このユーザーの上書き許可を取り消しますか？",
+              "country": "国",
+              "countryCode": "国コード",
+              "countryLabel": "国",
+              "disclaimer": "免責事項",
+              "emptyKYC": "KYCレコードがありません",
+              "emptySanctions": "制裁国はありません",
+              "filterByKYCStatus": "KYCステータスでフィルター",
+              "grantOverride": "上書き許可",
+              "kycStatus": "KYCステータス",
+              "kycStatusTab": "ユーザーKYCステータス",
+              "messages": {
+                "countryAddFailed": "国の追加に失敗しました",
+                "countryAdded": "国を追加しました",
+                "countryRemoveFailed": "国の削除に失敗しました",
+                "countryRemoved": "国を削除しました",
+                "kycUpdateFailed": "KYCステータス更新に失敗しました",
+                "kycUpdated": "KYCステータスを更新しました",
+                "overrideUpdateFailed": "更新制裁豁免失败",
+                "overrideUpdated": "上書き設定を更新しました"
+              },
+              "override": "上書き",
+              "overrideWarning": "此用户来自受制裁国家，授予豁免将允许交易。",
+              "pending": "保留中",
+              "questionnaire": "アンケート",
+              "rejected": "拒否",
+              "revokeOverride": "上書き取消",
+              "sanctioned": "制裁済み",
+              "sanctionedCountries": "制裁対象国",
+              "sanctionedCountriesTab": "制裁対象国",
+              "setKYC": "KYC設定",
+              "setKYCStatus": "KYCステータス設定",
+              "title": "管轄権管理",
+              "unverified": "未確認",
+              "userEmail": "メール",
+              "userKYCStatus": "ユーザーKYCステータス",
+              "verified": "確認済み"
+            },
+            "sidebar": {
+              "accountManagement": "アカウント管理",
+              "dashboard": "ダッシュボード",
+              "jurisdiction": "管轄権管理",
+              "operationLogs": "操作日志",
+              "shareManagement": "分享分析",
+              "systemConfig": "システム設定",
+              "tradingMonitor": "取引監視",
+              "userManagement": "ユーザー管理",
+              "walletManagement": "钱包管理"
+            },
+            "trading": {
+              "accounts": "アカウント",
+              "activeUsers": "アクティブユーザー",
+              "byPlatform": "プラットフォーム別",
+              "closedOrders": "決済済み",
+              "connectedAccounts": "接続済み",
+              "loadFailed": "加载交易统计失败",
+              "netProfit": "純利益",
+              "orders": "注文",
+              "pendingOrders": "挂单",
+              "platform": "プラットフォーム",
+              "profitStats": "損益統計",
+              "title": "取引監視",
+              "totalAccounts": "総アカウント数",
+              "totalLoss": "総損失",
+              "totalOrders": "総注文数",
+              "totalProfit": "総利益",
+              "totalUsers": "総ユーザー数",
+              "totalVolume": "総取引量",
+              "volume": "数量"
+            },
+            "userManagement": {
+              "actions": {
+                "changePassword": "修改密码",
+                "details": "詳細",
+                "disable": "無効化",
+                "enable": "有効化"
+              },
+              "addUser": "ユーザー追加",
+              "deleteConfirm": {
+                "batchDeleteConfirm": "{{count}}人のユーザーを削除しますか？この操作は元に戻せません。",
+                "batchDeletePartial": "{{deleted}}人削除、{{failed}}人失敗",
+                "batchDeleteSuccess": "{{count}}人のユーザーを削除しました",
+                "title": "このユーザーを削除しますか？この操作は元に戻せません。"
+              },
+              "drawer": {
+                "labels": {
+                  "createdAt": "作成日時",
+                  "email": "メール",
+                  "id": "ID",
+                  "lastLogin": "最終ログイン",
+                  "mtAccountCount": "MTアカウント",
+                  "nickname": "ニックネーム",
+                  "role": "役割",
+                  "status": "ステータス"
+                },
+                "title": "ユーザー詳細"
+              },
+              "filters": {
+                "rolePlaceholder": "役割でフィルター",
+                "searchPlaceholder": "メールまたは名前で検索",
+                "statusPlaceholder": "按状态筛选"
+              },
+              "form": {
+                "accountNumber": "口座番号",
+                "accountNumberInvalid": "5-6桁、先頭ゼロなし、4と7は不可",
+                "email": "メール",
+                "nickname": "ニックネーム",
+                "password": "パスワード",
+                "placeholders": {
+                  "email": "メールを入力",
+                  "nickname": "ニックネームを入力",
+                  "password": "输入密码"
+                },
+                "role": "役割",
+                "status": "ステータス"
+              },
+              "messages": {
+                "newPasswordIs": "新密码为: {{password}}",
+                "passwordUpdateFailed": "パスワード更新に失敗しました",
+                "passwordUpdatedSuccess": "パスワードを更新しました",
+                "userCreateFailed": "ユーザー作成に失敗しました",
+                "userCreatedSuccess": "ユーザーを作成しました",
+                "userDeleteFailed": "ユーザー削除に失敗しました",
+                "userDeletedSuccess": "ユーザーを削除しました",
+                "userDisabled": "ユーザーを無効化しました",
+                "userEnabled": "ユーザーを有効化しました",
+                "userUpdateFailed": "ユーザー更新に失敗しました",
+                "userUpdatedSuccess": "ユーザーを更新しました"
+              },
+              "modals": {
+                "createTitle": "ユーザー作成",
+                "editTitle": "ユーザー編集",
+                "passwordTitle": "修改密码"
+              },
+              "pagination": {
+                "total": "共 {{total}} 位用户"
+              },
+              "passwordForm": {
+                "confirmPassword": "パスワード確認",
+                "newPassword": "新しいパスワード",
+                "placeholders": {
+                  "confirmPassword": "再次输入新密码",
+                  "newPassword": "新しいパスワードを入力"
+                },
+                "submit": "パスワード更新",
+                "validation": {
+                  "confirmPasswordRequired": "パスワード確認が必要です",
+                  "newPasswordRequired": "新しいパスワードが必要です",
+                  "passwordMin8": "パスワードは8文字以上必要です",
+                  "passwordMismatch": "パスワードが一致しません",
+                  "passwordMustContainLettersAndNumbers": "密码必须包含字母和数字"
+                }
+              },
+              "roles": {
+                "audit": "审计",
+                "customerService": "カスタマーサポート",
+                "operation": "運用",
+                "superAdmin": "スーパー管理者",
+                "user": "ユーザー"
+              },
+              "status": {
+                "active": "アクティブ",
+                "suspended": "已暂停"
+              },
+              "table": {
+                "actions": "操作",
+                "createdAt": "作成日時",
+                "email": "メール",
+                "id": "ID",
+                "mtAccountCount": "MTアカウント",
+                "nickname": "ニックネーム",
+                "role": "役割",
+                "status": "ステータス"
+              },
+              "title": "ユーザー管理"
+            },
+            "wallet": {
+              "accountNumber": "口座番号",
+              "add": "追加",
+              "adjustBalance": "残高調整",
+              "adjustFailed": "調整に失敗しました",
+              "adjustSuccess": "残高を調整しました",
+              "deduct": "控除",
+              "noUsers": "ユーザーが見つかりません",
+              "reason": "調整理由...",
+              "searchPlaceholder": "メールまたは口座番号で検索...",
+              "title": "ウォレット管理",
+              "walletFor": "ウォレット -"
+            }
+          },
+          "author": {
+            "avgRating": "平均評価",
+            "empty": "公開された戦略はまだありません。戦略ライブラリで公開してください。",
+            "published": "公開済み"
+          },
+          "autoTrading": {
+            "logs": {
+              "columns": {
+                "action": "アクション",
+                "price": "価格",
+                "profit": "損益",
+                "symbol": "銘柄",
+                "ticket": "单号",
+                "time": "時間",
+                "volume": "数量"
+              },
+              "empty": "取引ログはまだありません",
+              "title": "最近の取引ログ"
+            },
+            "messages": {
+              "loadFailed": "自動取引データの読み込みに失敗しました",
+              "toggleFailed": "切换自动交易失败"
+            },
+            "settings": {
+              "maxDailyLoss": "最大日次損失",
+              "maxDailyLossHint": "日次損失がこれを超えた場合、自動で取引を無効化",
+              "maxDrawdownPercent": "最大ドローダウン%",
+              "maxDrawdownPercentHint": "ドローダウンがこれを超えた場合、自動で取引を無効化",
+              "maxLotSize": "最大ロットサイズ",
+              "maxLotSizeHint": "1取引あたりの最大ボリューム（ロット）",
+              "maxPositions": "最大ポジション数",
+              "maxPositionsHint": "最大同時オープンポジション数",
+              "maxRiskPercent": "最大リスク%",
+              "maxRiskPercentHint": "1取引あたりのリスク許容額（残高の％）",
+              "saveFailed": "保存设置失败",
+              "saveSuccess": "設定を保存しました",
+              "title": "グローバルリスク設定"
+            },
+            "status": {
+              "activeStrategies": "アクティブ戦略",
+              "disabled": "自動取引が無効です",
+              "enabled": "自動取引が有効です",
+              "todayExecutions": "Today's Executions",
+              "todayProfit": "Today's Profit"
+            },
+            "title": "自動取引"
+          },
+          "detail": {
+            "assetClass": "資産クラス",
+            "author": "作成者",
+            "commentPlaceholder": "コメントを書く...",
+            "comments": "コメント",
+            "description": "説明",
+            "getFree": "無料で入手",
+            "rentPrice": "¥{{amount}} / 月",
+            "subscribers": "購読者",
+            "yourRating": "あなたの評価"
+          },
+          "errors": {
+            "access_denied": "アクセスが拒否されました",
+            "account_connected": "接続しました",
+            "account_connection_failed": "取引サーバーへの接続に失敗しました",
+            "account_not_found": "口座が見つかりません",
+            "ai": {
+              "api_key_required": "API Key は必須です",
+              "base_url_required": "Base URL は必須です",
+              "base_url_scheme_invalid": "Base URL は http:// または https:// で始まる必要があります",
+              "base_url_should_not_end_with_chat_completions": "Base URL は /chat/completions で終わらないようにしてください",
+              "config_service_not_initialized": "AI 設定サービスが初期化されていません",
+              "config_valid": "AI 設定は有効です",
+              "failed_to_create_request": "リクエストの作成に失敗しました",
+              "forbidden_quota": "配额超限",
+              "free_tier_exhausted": "AI の無料枠が上限に達しました。プロバイダー管理画面で「無料枠のみ使用」を無効化するか、有料キーに切り替えてください。",
+              "invalid_base_url": "Base URL が無効です",
+              "invalid_provider": "無効なプロバイダです",
+              "no_trade_data_available": "利用可能な取引データがありません",
+              "not_configured": "AI が設定されていません。先に AI 設定で有効化・設定してください。",
+              "probe_ok": "确定",
+              "probe_ok_no_models": "OK（model が返されませんでした）",
+              "provider_required": "プロバイダを選択してください",
+              "provider_returned_empty_message": "AI プロバイダが空のメッセージを返しました",
+              "rate_limited": "AI サービスがレート制限/クォータ不足（429/資源枯渇）。しばらく待つか、利用可能な API Key/model に切り替えてください。",
+              "request_failed": "API リクエストに失敗しました"
+            },
+            "auto_trading_disabled": "自動売買を無効にしました",
+            "auto_trading_enabled": "自動売買を有効にしました",
+            "connection_failed": {
+              "content": "无法连接到服务器。请检查网络后重试。",
+              "title": "接続に失敗しました"
+            },
+            "email_already_registered": "このメールアドレスは既に登録されています",
+            "invalid_credentials": "認証情報が正しくありません",
+            "not_authenticated": "認証されていません",
+            "schedule_service_not_available": "スケジュールサービスは利用できません",
+            "translate_failed": "翻訳に失敗しました",
+            "user_not_found": "ユーザーが見つかりません"
+          },
+          "market": {
+            "allSymbols": "全銘柄",
+            "ask": "売値",
+            "bid": "買値",
+            "common": "共通",
+            "emptyWatchlist": "暂无自选",
+            "loadingSymbols": "読み込み中...",
+            "mid": "仲値",
+            "noSymbolSelected": "銘柄を選択してマーケットデータを表示",
+            "noSymbolsFound": "銘柄が見つかりません",
+            "popularSymbols": "人気銘柄",
+            "searchPlaceholder": "銘柄を検索（例: EURUSD, XAUUSD）",
+            "searchSymbol": "搜索品种...",
+            "selectAccount": "取引口座を選択",
+            "selectSymbol": "銘柄を選択",
+            "spread": "スプレッド",
+            "watchlist": "ウォッチリスト"
+          },
+          "messages": {
+            "commentFailed": "コメントに失敗しました",
+            "commentPosted": "コメントを投稿しました",
+            "loginFirst": "先にログインしてください",
+            "paymentComingSoon": "決済機能は近日公開",
+            "rateFailed": "評価に失敗しました",
+            "rated": "評価を送信しました",
+            "subscribeFailed": "失敗",
+            "subscribed": "購入に追加しました"
+          },
+          "notifications": {
+            "actions": {
+              "clearAll": "クリア",
+              "clearAllConfirm": "すべての通知を削除しますか？",
+              "markAllAsRead": "すべて既読"
+            },
+            "all": "すべて",
+            "clearAll": "クリア",
+            "confirmClearAll": "すべての通知を削除しますか？",
+            "empty": "通知はありません",
+            "markAllRead": "すべて既読",
+            "stream": {
+              "autoTrading": {
+                "fallback": "自动交易事件触发",
+                "title": "自動取引"
+              },
+              "riskAlert": {
+                "fallback": "警报类型: {{alertType}}",
+                "title": "リスクアラート"
+              },
+              "strategyExecution": {
+                "completed": "{{symbol}} {{action}} が完了しました",
+                "failed": "执行失败: {{error}}",
+                "title": "戦略実行"
+              },
+              "strategySignal": {
+                "message": "{{symbol}} 触发 {{signalType}}",
+                "title": "戦略シグナル"
+              }
+            },
+            "tabs": {
+              "all": "すべて ({{count}})",
+              "unread": "未读 ({{count}})"
+            },
+            "title": "通知",
+            "types": {
+              "risk_alert": "リスクアラート",
+              "signal": "シグナル",
+              "strategy_execution": "戦略",
+              "system": "系统",
+              "trade": "取引"
+            },
+            "unread": "未読"
+          },
+          "payment": {
+            "alreadyPurchased": "この戦略は既に購入済みです。",
+            "balanceAfter": "購入後残高",
+            "cancel": "キャンセル",
+            "confirm": "購入確定",
+            "depositPrompt": "続行するには入金してください。",
+            "goToDeposit": "入金",
+            "insufficientBalance": "残高不足",
+            "oneTimePurchase": "¥{{amount}} 買い切り",
+            "price": "価格",
+            "purchaseFailed": "購入に失敗しました。もう一度お試しください。",
+            "purchaseSuccess": "購入完了！戦略がライブラリに追加されました。",
+            "purchasing": "処理中...",
+            "strategyName": "戦略",
+            "title": "購入確定",
+            "walletBalance": "残高"
+          },
+          "profile": {
+            "lastLogin": "最終ログイン",
+            "nickname": "ニックネーム",
+            "registered": "已注册",
+            "role": "役割",
+            "status": "ステータス",
+            "title": "プロフィール"
+          },
+          "purchases": {
+            "empty": "購入履歴はまだありません。マーケットで戦略を見つけましょう。",
+            "status": "ステータス",
+            "strategy": "戦略"
+          },
+          "share": {
+            "actions": "操作",
+            "createNew": "新しい共有リンクを作成",
+            "createdAt": "作成しました",
+            "deleteConfirm": "删除此分享链接？",
+            "empty": "共有リンクはまだありません",
+            "expires": "有効期限",
+            "positions": "持仓",
+            "showPositions": "显示持仓",
+            "title": "共有管理",
+            "token": "共有リンク",
+            "userId": "ユーザー",
+            "views": "閲覧数"
+          },
+          "sharePage": {
+            "avgHolding": "平均保有時間",
+            "avgLoss": "平均損失",
+            "avgWin": "平均利益",
+            "bestTrade": "ベストトレード",
+            "bySymbol": "銘柄別成績",
+            "closeTime": "決済",
+            "count": "取引数",
+            "disclaimer": "過去の実績は将来の成果を保証するものではありません。",
+            "equityCurve": "資産曲線",
+            "expired": "この共有リンクは期限切れです",
+            "footer": "AntTrader により生成",
+            "language": "言語",
+            "loadFailed": "共有データの読み込みに失敗しました",
+            "losingTrades": "負けトレード数",
+            "maxDrawdown": "最大ドローダウン",
+            "netProfit": "純損益",
+            "noPositions": "暂无持仓",
+            "noTrades": "取引履歴がありません",
+            "notFound": "見つかりません",
+            "openPrice": "开仓价",
+            "positions": "当前持仓",
+            "positionsLocked": "创建者未开放持仓查看",
+            "profit": "損益",
+            "profitFactor": "プロフィットファクター",
+            "sharpeRatio": "シャープレシオ",
+            "side": "売買",
+            "subtitle": "実際の取引成績",
+            "symbol": "銘柄",
+            "title": "取引パフォーマンス",
+            "totalReturn": "純損益",
+            "totalTrades": "総取引数",
+            "totalVolume": "総取引量",
+            "tradeRecords": "取引履歴",
+            "volume": "数量",
+            "winRate": "勝率",
+            "winningTrades": "勝ちトレード数",
+            "worstTrade": "ワーストトレード"
+          },
+          "symbolDetection": {
+            "label": "検出された銘柄",
+            "loading": "解析中...",
+            "noSymbols": "取引銘柄が検出されませんでした。具体的な銘柄名を含めてみてください（例：「Bitcoin」「EURUSD」「Gold」）",
+            "resolvedTooltip": "ブローカー：{{broker}} | モード：{{mode}}",
+            "tradeMode": {
+              "disabled": "已禁用",
+              "longOnly": "仅做多",
+              "longShort": "多空双向",
+              "shortOnly": "仅做空",
+              "unknown": "未知"
+            },
+            "unresolvedTooltip": "取引口座が未バインドのため、解決できません"
+          },
+          "topbar": {
+            "logout": "ログアウト",
+            "profile": "プロフィール",
+            "settings": "設定",
+            "switchToAdmin": "管理画面へ切替",
+            "systemOk": "システムは正常に稼働中",
+            "user": "ユーザー"
+          },
+          "wallet": {
+            "accountNumber": "口座番号",
+            "balance": "残高",
+            "currency": "通貨",
+            "deposit": "入金",
+            "frozen": "凍結",
+            "frozenBalance": "凍結",
+            "history": "履歴",
+            "table": {
+              "amount": "金額",
+              "balanceAfter": "調整後残高",
+              "description": "説明",
+              "time": "時間",
+              "type": "種類"
+            },
+            "title": "マイウォレット",
+            "transactions": "取引履歴",
+            "txType": {
+              "adjustment": "残高調整",
+              "deposit": "入金",
+              "fee": "手数料",
+              "reversal": "取消",
+              "withdrawal": "出金"
+            },
+            "withdraw": "出金"
+          }
         }
       },
-      riskMetrics: {
-        title: 'リスク検証指標',
-        riskValidateTotal: '検証総数',
-        riskValidatePass: '通過',
-        riskValidateReject: '拒否',
-        riskValidateError: 'エラー',
-        orderSendSuccess: '注文成功',
-        orderSendFailed: '注文失敗',
-        orderCloseSuccess: '決済成功',
-        orderCloseFailed: 'Order Closed Failed'
+      "card": {
+        "by": "by",
+        "free": "無料",
+        "owned": "購入日",
+        "subscribers": "購読者",
+        "winRate": "勝率"
       },
-      riskWindow: {
-        title: 'リスク管理ウィンドウ',
-        validateTotal: '合計',
-        validatePass: '通過',
-        validateReject: '拒否',
-        validateError: 'エラー',
-        orderSendSuccess: '注文OK',
-        orderSendFailed: '注文失敗',
-        orderCloseSuccess: '決済OK',
-        orderCloseFailed: '決済失敗',
-        rejectRiskCodesHeader: 'リスクコード',
-        rejectCount: '拒否数',
-        noRejectData: 'この期間に拒否はありません',
-        noData: 'No window metrics data'
+      "empty": "公開された戦略はまだありません",
+      "noSubscriptions": "購読はまだありません",
+      "sort": {
+        "newest": "新着順",
+        "performance": "パフォーマンス順",
+        "popular": "人気順",
+        "priceAsc": "価格：安い順",
+        "priceDesc": "価格：高い順",
+        "rating": "評価順",
+        "score": "総合スコア"
       }
     },
-    jurisdiction: {
-      title: '管轄権管理',
-      sanctionedCountriesTab: '制裁対象国',
-      kycStatusTab: 'ユーザーKYCステータス',
-      sanctionedCountries: '制裁対象国',
-      userKYCStatus: 'ユーザーKYCステータス',
-      addCountry: '国を追加',
-      addSanctionedCountry: '制裁国を追加',
-      countryCode: '国コード',
-      countryLabel: '国',
-      addedBy: '追加者',
-      actions: '操作',
-      userEmail: 'メール',
-      kycStatus: 'KYCステータス',
-      country: '国',
-      sanctioned: '制裁済み',
-      disclaimer: '免責事項',
-      questionnaire: 'アンケート',
-      override: '上書き',
-      setKYC: 'KYC設定',
-      setKYCStatus: 'KYCステータス設定',
-      grantOverride: '上書き許可',
-      revokeOverride: '上書き取消',
-      filterByKYCStatus: 'KYCステータスでフィルター',
-      unverified: '未確認',
-      pending: '保留中',
-      verified: '確認済み',
-      rejected: '拒否',
-      emptySanctions: '制裁国はありません',
-      emptyKYC: 'KYCレコードがありません',
-      messages: {
-        countryAdded: '国を追加しました',
-        countryAddFailed: '国の追加に失敗しました',
-        countryRemoved: '国を削除しました',
-        countryRemoveFailed: '国の削除に失敗しました',
-        kycUpdated: 'KYCステータスを更新しました',
-        kycUpdateFailed: 'KYCステータス更新に失敗しました',
-        overrideUpdated: '上書き設定を更新しました',
-        overrideUpdateFailed: 'Failed to update sanctioned override'
-      },
-      confirmGrantOverride: 'このユーザーに上書き許可を付与しますか？',
-      confirmRevokeOverride: 'このユーザーの上書き許可を取り消しますか？',
-      overrideWarning: 'This user is from a sanctioned country. Granting override will allow trading.'
+    "filterByClass": "資産クラスで絞り込む",
+    "publish": "戦略を公開",
+    "searchPlaceholder": "戦略を検索...",
+    "subtitle": "コミュニティ戦略を発見、購入、利用",
+    "tabs": {
+      "author": "作成者センター",
+      "marketplace": "マーケット",
+      "purchases": "購入履歴",
+      "subscriptions": "マイ購読"
     },
-    userManagement: {
-      title: 'ユーザー管理',
-      addUser: 'ユーザー追加',
-      table: {
-        id: 'ID',
-        email: 'メール',
-        nickname: 'ニックネーム',
-        role: '役割',
-        status: 'ステータス',
-        mtAccountCount: 'MTアカウント',
-        createdAt: '作成日時',
-        actions: '操作'
-      },
-      actions: {
-        details: '詳細',
-        enable: '有効化',
-        disable: '無効化',
-        changePassword: 'Change Password'
-      },
-      filters: {
-        searchPlaceholder: 'メールまたは名前で検索',
-        rolePlaceholder: '役割でフィルター',
-        statusPlaceholder: 'Filter by status'
-      },
-      status: {
-        active: 'アクティブ',
-        suspended: 'Suspended'
-      },
-      roles: {
-        user: 'ユーザー',
-        superAdmin: 'スーパー管理者',
-        operation: '運用',
-        customerService: 'カスタマーサポート',
-        audit: 'Audit'
-      },
-      pagination: {
-        total: 'Total {{total}} users'
-      },
-      deleteConfirm: {
-        title: 'このユーザーを削除しますか？この操作は元に戻せません。',
-        batchDeleteConfirm: '{{count}}人のユーザーを削除しますか？この操作は元に戻せません。',
-        batchDeleteSuccess: '{{count}}人のユーザーを削除しました',
-        batchDeletePartial: '{{deleted}}人削除、{{failed}}人失敗',
-      },
-      modals: {
-        createTitle: 'ユーザー作成',
-        editTitle: 'ユーザー編集',
-        passwordTitle: 'Change Password'
-      },
-      form: {
-        email: 'メール',
-        nickname: 'ニックネーム',
-        password: 'パスワード',
-        role: '役割',
-        status: 'ステータス',
-        accountNumber: '口座番号',
-        accountNumberInvalid: '5-6桁、先頭ゼロなし、4と7は不可',
-        placeholders: {
-          email: 'メールを入力',
-          nickname: 'ニックネームを入力',
-          password: 'Enter password'
-        }
-      },
-      passwordForm: {
-        newPassword: '新しいパスワード',
-        confirmPassword: 'パスワード確認',
-        placeholders: {
-          newPassword: '新しいパスワードを入力',
-          confirmPassword: 'Re-enter new password'
-        },
-        submit: 'パスワード更新',
-        validation: {
-          newPasswordRequired: '新しいパスワードが必要です',
-          confirmPasswordRequired: 'パスワード確認が必要です',
-          passwordMin8: 'パスワードは8文字以上必要です',
-          passwordMismatch: 'パスワードが一致しません',
-          passwordMustContainLettersAndNumbers: 'Password must contain both letters and numbers'
-        }
-      },
-      messages: {
-        userCreatedSuccess: 'ユーザーを作成しました',
-        userCreateFailed: 'ユーザー作成に失敗しました',
-        userUpdatedSuccess: 'ユーザーを更新しました',
-        userUpdateFailed: 'ユーザー更新に失敗しました',
-        userDeletedSuccess: 'ユーザーを削除しました',
-        userDeleteFailed: 'ユーザー削除に失敗しました',
-        userEnabled: 'ユーザーを有効化しました',
-        userDisabled: 'ユーザーを無効化しました',
-        passwordUpdatedSuccess: 'パスワードを更新しました',
-        passwordUpdateFailed: 'パスワード更新に失敗しました',
-        newPasswordIs: 'New password is: {{password}}'
-      },
-      drawer: {
-        title: 'ユーザー詳細',
-        labels: {
-          id: 'ID',
-          email: 'メール',
-          nickname: 'ニックネーム',
-          role: '役割',
-          status: 'ステータス',
-          mtAccountCount: 'MTアカウント',
-          createdAt: '作成日時',
-          lastLogin: '最終ログイン'
-        }
-      }
-    },
-    wallet: {
-      title: 'ウォレット管理',
-      searchPlaceholder: 'メールまたは口座番号で検索...',
-      noUsers: 'ユーザーが見つかりません',
-      walletFor: 'ウォレット -',
-      accountNumber: '口座番号',
-      adjustBalance: '残高調整',
-      adjustSuccess: '残高を調整しました',
-      adjustFailed: '調整に失敗しました',
-      add: '追加',
-      deduct: '控除',
-      reason: '調整理由...',
-    }
+    "title": "ストラテジーマーケット"
   },
-  wallet: {
-    title: 'マイウォレット',
-    accountNumber: '口座番号',
-    table: {
-      type: '種類',
-      amount: '金額',
-      balanceAfter: '調整後残高',
-      description: '説明',
-      time: '時間',
-    },
-    balance: '残高',
-    frozen: '凍結',
-    frozenBalance: '凍結',
-    currency: '通貨',
-    transactions: '取引履歴',
-    deposit: '入金',
-    withdraw: '出金',
-    history: '履歴',
-    txType: {
-      deposit: '入金',
-      withdrawal: '出金',
-      adjustment: '残高調整',
-      fee: '手数料',
-      reversal: '取消',
-    },
-  },
-  errors: {
-    not_authenticated: '認証されていません',
-    invalid_credentials: '認証情報が正しくありません',
-    user_not_found: 'ユーザーが見つかりません',
-    email_already_registered: 'このメールアドレスは既に登録されています',
-    account_not_found: '口座が見つかりません',
-    access_denied: 'アクセスが拒否されました',
-    account_connection_failed: '取引サーバーへの接続に失敗しました',
-    account_connected: '接続しました',
-    schedule_service_not_available: 'スケジュールサービスは利用できません',
-    auto_trading_enabled: '自動売買を有効にしました',
-    auto_trading_disabled: '自動売買を無効にしました',
-    translate_failed: '翻訳に失敗しました',
-    connection_failed: {
-      title: '接続に失敗しました',
-      content: 'Unable to connect to the server. Please check your network and try again.'
-    },
-    ai: {
-      not_configured: 'AI が設定されていません。先に AI 設定で有効化・設定してください。',
-      config_service_not_initialized: 'AI 設定サービスが初期化されていません',
-      config_valid: 'AI 設定は有効です',
-      no_trade_data_available: '利用可能な取引データがありません',
-      provider_returned_empty_message: 'AI プロバイダが空のメッセージを返しました',
-      provider_required: 'プロバイダを選択してください',
-      invalid_provider: '無効なプロバイダです',
-      api_key_required: 'API Key は必須です',
-      base_url_required: 'Base URL は必須です',
-      invalid_base_url: 'Base URL が無効です',
-      base_url_scheme_invalid: 'Base URL は http:// または https:// で始まる必要があります',
-      base_url_should_not_end_with_chat_completions: 'Base URL は /chat/completions で終わらないようにしてください',
-      failed_to_create_request: 'リクエストの作成に失敗しました',
-      request_failed: 'API リクエストに失敗しました',
-      probe_ok: 'OK',
-      probe_ok_no_models: 'OK（model が返されませんでした）',
-      free_tier_exhausted: 'AI の無料枠が上限に達しました。プロバイダー管理画面で「無料枠のみ使用」を無効化するか、有料キーに切り替えてください。',
-      rate_limited: 'AI サービスがレート制限/クォータ不足（429/資源枯渇）。しばらく待つか、利用可能な API Key/model に切り替えてください。',
-      forbidden_quota: 'Quota exceeded'
-    }
-  },
-  symbolDetection: {
-    label: '検出された銘柄',
-    loading: '解析中...',
-    noSymbols: '取引銘柄が検出されませんでした。具体的な銘柄名を含めてみてください（例：「Bitcoin」「EURUSD」「Gold」）',
-    unresolvedTooltip: '取引口座が未バインドのため、解決できません',
-    resolvedTooltip: 'ブローカー：{{broker}} | モード：{{mode}}',
-    tradeMode: {
-      disabled: '已禁用',
-      longOnly: '仅做多',
-      shortOnly: '仅做空',
-      longShort: '多空双向',
-      unknown: '未知'
-    }
-  },
-  autoTrading: {
-    title: '自動取引',
-    status: {
-      enabled: '自動取引が有効です',
-      disabled: '自動取引が無効です',
-      activeStrategies: 'アクティブ戦略',
-      todayExecutions: `Today's Executions`,
-      todayProfit: `Today's Profit`
-    },
-    settings: {
-      title: 'グローバルリスク設定',
-      maxRiskPercent: '最大リスク%',
-      maxRiskPercentHint: '1取引あたりのリスク許容額（残高の％）',
-      maxPositions: '最大ポジション数',
-      maxPositionsHint: '最大同時オープンポジション数',
-      maxLotSize: '最大ロットサイズ',
-      maxLotSizeHint: '1取引あたりの最大ボリューム（ロット）',
-      maxDailyLoss: '最大日次損失',
-      maxDailyLossHint: '日次損失がこれを超えた場合、自動で取引を無効化',
-      maxDrawdownPercent: '最大ドローダウン%',
-      maxDrawdownPercentHint: 'ドローダウンがこれを超えた場合、自動で取引を無効化',
-      saveSuccess: '設定を保存しました',
-      saveFailed: 'Failed to save settings'
-    },
-    logs: {
-      title: '最近の取引ログ',
-      empty: '取引ログはまだありません',
-      columns: {
-        time: '時間',
-        symbol: '銘柄',
-        action: 'アクション',
-        volume: '数量',
-        price: '価格',
-        profit: '損益',
-        ticket: 'Ticket'
-      }
-    },
-    messages: {
-      loadFailed: '自動取引データの読み込みに失敗しました',
-      toggleFailed: 'Failed to toggle auto trading'
-    }
+  "menu": {
+    "accounts": "アカウント",
+    "aiAssistant": "AIアシスタント",
+    "algoDashboard": "アルゴダッシュボード",
+    "analytics": "分析",
+    "assetAnalysis": "AI分析",
+    "assets": "戦略資産",
+    "autoTrading": "自動取引",
+    "dashboard": "ダッシュボード",
+    "devGroup": "戦略開発",
+    "experiments": "戦略実験",
+    "indicatorCatalog": "インジケーターカタログ",
+    "logs": "システムログ",
+    "market": "マーケット",
+    "marketRegime": "マーケットレジーム",
+    "marketTools": "マーケット分析ツール",
+    "marketplace": "マーケットプレイス",
+    "opsGroup": "戦略運用",
+    "schedules": "戦略スケジュール",
+    "strategies": "戦略管理",
+    "strategy": "戦略",
+    "strategyLibrary": "戦略ライブラリ",
+    "strategyWorkspace": "戦略ワークスペース",
+    "trading": "取引",
+    "wallet": "ウォレット"
   }
 } as const;
-
-export default base;
+export default Base;

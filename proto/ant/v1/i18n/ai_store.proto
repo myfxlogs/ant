@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package ant.v1.i18n;
+
+message AiStoreI18n {
+  string context_output_rules_no_import = 1;  // - Do not output any import statements
+  string context_output_rules_validate_first = 2;  // - Code must pass validate first
+  string context_output_rules_wrap_python = 3;  // - If outputting strategy code, output full code wrapped in `
+  string context_output_title = 4;  // Output requirements:
+  string context_user_prefs_title = 5;  // User preferences (please follow as much as possible):
+  string conversations_new_conversation_title = 6;  // New conversation
+  string messages_cleared_local_only = 7;  // Current conversation messages cleared (server records retain
+  string messages_create_conversation_failed = 8;  // Create conversation failed
+  string messages_delete_conversation_failed = 9;  // Delete conversation failed
+  string messages_generate_report_failed = 10;  // Report generation failed
+  string messages_generate_report_success = 11;  // Report generated successfully
+  string messages_get_reports_failed = 12;  // Get reports failed
+  string messages_load_conversation_failed = 13;  // Load conversation failed
+  string messages_send_failed_inline = 14;  // Send failed, please retry
+  string messages_send_failed_toast = 15;  // Send failed, please retry
+  string prefs_remember_prefix = 16;  // Remember preference: 
+  string prefs_remembered_toast = 17;  // Preference remembered, will apply to subsequent conversation
+  string prefs_saved_reply = 18;  // Preference saved
+  string strategy_rules_allowed_globals = 19;  // Allowed globals/modules: np, math, datetime, calculate_rsi (
+  string strategy_rules_rules_must_define_entry = 20;  // - Strategy must define signal variable or run(context) funct
+  string strategy_rules_rules_no_dunder_access = 21;  // - No access to dunder attributes (obj.__xxx__)
+  string strategy_rules_rules_no_dunder_name = 22;  // - No dunder names (__xxx__)
+  string strategy_rules_rules_no_global = 23;  // - No global / nonlocal
+  string strategy_rules_rules_no_import = 24;  // - No import / from ... import ... allowed
+  string strategy_rules_title = 25;  // When writing AntTrader Python strategy code, you must strict
+}

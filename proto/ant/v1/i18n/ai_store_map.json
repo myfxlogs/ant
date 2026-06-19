@@ -1,0 +1,30 @@
+{
+  "prefix": "ai.store",
+  "fields": {
+    "context_output_rules_no_import": "context.outputRules.noImport",
+    "context_output_rules_validate_first": "context.outputRules.validateFirst",
+    "context_output_rules_wrap_python": "context.outputRules.wrapPython",
+    "context_output_title": "context.outputTitle",
+    "context_user_prefs_title": "context.userPrefsTitle",
+    "conversations_new_conversation_title": "conversations.newConversationTitle",
+    "messages_cleared_local_only": "messages.clearedLocalOnly",
+    "messages_create_conversation_failed": "messages.createConversationFailed",
+    "messages_delete_conversation_failed": "messages.deleteConversationFailed",
+    "messages_generate_report_failed": "messages.generateReportFailed",
+    "messages_generate_report_success": "messages.generateReportSuccess",
+    "messages_get_reports_failed": "messages.getReportsFailed",
+    "messages_load_conversation_failed": "messages.loadConversationFailed",
+    "messages_send_failed_inline": "messages.sendFailedInline",
+    "messages_send_failed_toast": "messages.sendFailedToast",
+    "prefs_remember_prefix": "prefs.rememberPrefix",
+    "prefs_remembered_toast": "prefs.rememberedToast",
+    "prefs_saved_reply": "prefs.savedReply",
+    "strategy_rules_allowed_globals": "strategyRules.allowedGlobals",
+    "strategy_rules_rules_must_define_entry": "strategyRules.rules.mustDefineEntry",
+    "strategy_rules_rules_no_dunder_access": "strategyRules.rules.noDunderAccess",
+    "strategy_rules_rules_no_dunder_name": "strategyRules.rules.noDunderName",
+    "strategy_rules_rules_no_global": "strategyRules.rules.noGlobal",
+    "strategy_rules_rules_no_import": "strategyRules.rules.noImport",
+    "strategy_rules_title": "strategyRules.title"
+  }
+}

@@ -18,29 +18,16 @@ import * as path from 'path';
 const PROTO_DIR = path.resolve(__dirname, '..', 'proto', 'ant', 'v1', 'i18n');
 const LOCALES = ['en', 'zh-cn', 'zh-tw', 'ja', 'vi'] as const;
 const SECTIONS = [
-  'strategy_workspace',
-  'strategy_backtest_params',
-  'strategy_tuning',
-  'strategy_ai',
-  'strategy_backtest',
-  'strategy_code_assist',
-  'strategy_code_quality',
-  'strategy_code_editor',
-  'strategy_chart_tools',
-  'strategy_quick_trade_section',
-  'strategy_library',
-  'strategy_templates',
-  'strategy_experiment',
-  'strategy_market_regime',
-  'strategy_asset',
-  'strategy_asset_analysis',
-  'strategy_backtest_run',
-  'strategy_schedules',
-  'strategy_schedule_logs',
-  'strategy_gen',
-  'strategy_ai_chat',
-  'strategy_paper',
-  'strategy_default_templates',
+  'strategy_workspace', 'strategy_backtest_params', 'strategy_tuning',
+  'strategy_ai', 'strategy_backtest', 'strategy_code_assist',
+  'strategy_code_quality', 'strategy_code_editor', 'strategy_chart_tools',
+  'strategy_quick_trade_section', 'strategy_library', 'strategy_templates',
+  'strategy_experiment', 'strategy_market_regime', 'strategy_asset',
+  'strategy_asset_analysis', 'strategy_backtest_run', 'strategy_schedules',
+  'strategy_schedule_logs', 'strategy_gen', 'strategy_ai_chat',
+  'strategy_paper', 'strategy_default_templates',
+  'accounts', 'ai_core', 'ai_settings', 'ai_wizard', 'ai_store',
+  'base', 'dashboard', 'trading', 'analytics', 'admin', 'logs', 'errors',
 ] as const;
 
 const STRICT = process.argv.includes('--strict');
@@ -118,22 +105,41 @@ function checkSection(section: string): CheckResult {
     }
 
     // 4. English copy detection (value matches en exactly → likely untranslated)
-    // Fields listed here are globally recognized terms / acronyms that don't need translation.
     const EXEMPT_TERMS = new Set([
       'K-line', 'OHLC', 'ATR', 'ATR %', 'EURUSD', 'AI', 'API',
       'Cross', 'Isolated', 'Sharpe', 'Sortino', 'Calmar',
       'EMA', 'SMA', 'RSI', 'MACD', 'TPE', 'KDE', 'DE',
       'TPE (KDE)', 'Run(context)',
       'Cron', 'LIVE', 'ERROR', 'STATIC',
-      'Shared',
+      'Shared', 'by',
+      // Brand / provider names
+      'AntTrader', 'OpenAI', 'Anthropic Claude', 'DeepSeek', 'Groq',
+      'Mistral', 'OpenRouter', 'OpenAI Compatible',
+      // Language names (each locale keeps its own name)
+      'English', 'Tiếng Việt', '繁體中文', '简体中文', '日本語',
+      // Technical
+      'Base URL', 'API Key', 'VaR 95%',
     ]);
-    // Template strings where the English term is universally used in that locale
     const EXEMPT_PATTERNS = [
-      /^Backtest: \{\{/,   // "Backtest" is universal in VN/JP trading
+      /^Backtest: \{\{/,
+      /^Today's/,                   // "Today's Executions", "Today's Profit"
+      /^Cards show each provider/,
+      /^Model suggestion:/,
+      /^Multiple experts/,
+      /^Current provider:/,
+      /^Macro events/,
+      /^User (expectation|strategy goal)/,
+      /^Parameters \(defs/,
+      /^【/,                         // Chinese-style headers
+      /^No code block found/,
+      /^None \(save template/,
+      /^Not recommended for direct/,
     ];
     for (const [key, value] of fields) {
       const enValue = enFields.get(key);
       if (enValue && value === enValue) {
+        // Skip if value contains non-Latin characters (already translated)
+        if (/[^\x00-\x7F]/.test(value)) continue;
         // Skip exempt global terms
         if (EXEMPT_TERMS.has(value.trim())) continue;
         // Skip exempt patterns

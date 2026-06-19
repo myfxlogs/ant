@@ -103,7 +103,7 @@ export const UNPUBLISH_SUCCESS_KEY = 'strategy.library.unpublishSuccess' as cons
 /** viewCode */
 export const VIEW_CODE_KEY = 'strategy.library.viewCode' as const;
 
-export const LIBRARY_KEYS = {
+export const STRATEGYLIBRARY_KEYS = {
   backtest_history: 'strategy.library.backtestHistory',
   code_preview: 'strategy.library.codePreview',
   create: 'strategy.library.create',
@@ -140,4 +140,4 @@ export const LIBRARY_KEYS = {
   view_code: 'strategy.library.viewCode',
 } as const;
 
-export type LibraryKey = typeof LIBRARY_KEYS[keyof typeof LIBRARY_KEYS];
+export type StrategyLibraryKey = typeof STRATEGYLIBRARY_KEYS[keyof typeof STRATEGYLIBRARY_KEYS];

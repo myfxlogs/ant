@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_market_regime_zh-tw.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const MarketRegime = {
+const StrategyMarketRegime = {
   "strategy": {
     "marketRegime": {
       "detectFailed": "市场環境檢測失敗",
@@ -32,4 +32,4 @@ const MarketRegime = {
     }
   }
 } as const;
-export default MarketRegime;
+export default StrategyMarketRegime;

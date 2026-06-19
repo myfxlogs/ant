@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_templates_zh-tw.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const Templates = {
+const StrategyTemplates = {
   "strategy": {
     "templates": {
       "actions": {
@@ -259,4 +259,4 @@ const Templates = {
     }
   }
 } as const;
-export default Templates;
+export default StrategyTemplates;

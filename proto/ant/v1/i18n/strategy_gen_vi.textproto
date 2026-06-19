@@ -11,7 +11,7 @@ feedback_placeholder: 'Cung cấp phản hồi để lặp (VD: "Quá hung hăng
 generating: 'Đang Tạo...'
 metrics_max_drawdown: 'DD Tối Đa'
 metrics_return: 'Lợi Nhuận'
-metrics_sharpe: 'Sharpe'
+metrics_sharpe: '夏普'
 metrics_trades: 'Giao Dịch'
 metrics_win_rate: 'Thắng'
 placeholder: 'Mô tả chiến lược giao dịch bạn muốn tạo, VD: "Tạo chiến lược hồi quy trung bình Bollinger Band cho EURUSD khung 1H"'

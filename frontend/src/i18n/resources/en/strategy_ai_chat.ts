@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_ai_chat_en.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const AiChat = {
+const StrategyAiChat = {
   "strategy": {
     "aiChat": {
       "ai": "AI",
@@ -17,4 +17,4 @@ const AiChat = {
     }
   }
 } as const;
-export default AiChat;
+export default StrategyAiChat;

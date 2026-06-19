@@ -373,7 +373,7 @@ export const TRIGGER_MODAL_TITLE_KEY = 'strategy.schedules.triggerModal.title' a
 /** validation.parametersMustBeJsonObject */
 export const VALIDATION_PARAMETERS_MUST_BE_JSON_OBJECT_KEY = 'strategy.schedules.validation.parametersMustBeJsonObject' as const;
 
-export const SCHEDULES_KEYS = {
+export const STRATEGYSCHEDULES_KEYS = {
   actions_create: 'strategy.schedules.actions.create',
   actions_health_check: 'strategy.schedules.actions.healthCheck',
   actions_logs: 'strategy.schedules.actions.logs',
@@ -500,4 +500,4 @@ export const SCHEDULES_KEYS = {
   validation_parameters_must_be_json_object: 'strategy.schedules.validation.parametersMustBeJsonObject',
 } as const;
 
-export type SchedulesKey = typeof SCHEDULES_KEYS[keyof typeof SCHEDULES_KEYS];
+export type StrategySchedulesKey = typeof STRATEGYSCHEDULES_KEYS[keyof typeof STRATEGYSCHEDULES_KEYS];

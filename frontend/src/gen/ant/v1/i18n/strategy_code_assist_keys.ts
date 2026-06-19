@@ -109,7 +109,7 @@ export const TAB_A_I_KEY = 'strategy.codeAssist.tabAI' as const;
 /** tabExplain */
 export const TAB_EXPLAIN_KEY = 'strategy.codeAssist.tabExplain' as const;
 
-export const CODEASSIST_KEYS = {
+export const STRATEGYCODEASSIST_KEYS = {
   ai_revise_title: 'strategy.codeAssist.aiReviseTitle',
   apply_all_suggestions: 'strategy.codeAssist.applyAllSuggestions',
   code_empty: 'strategy.codeAssist.codeEmpty',
@@ -148,4 +148,4 @@ export const CODEASSIST_KEYS = {
   tab_explain: 'strategy.codeAssist.tabExplain',
 } as const;
 
-export type CodeAssistKey = typeof CODEASSIST_KEYS[keyof typeof CODEASSIST_KEYS];
+export type StrategyCodeAssistKey = typeof STRATEGYCODEASSIST_KEYS[keyof typeof STRATEGYCODEASSIST_KEYS];

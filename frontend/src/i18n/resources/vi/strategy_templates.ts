@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_templates_vi.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const Templates = {
+const StrategyTemplates = {
   "strategy": {
     "templates": {
       "actions": {
@@ -24,7 +24,7 @@ const Templates = {
           "timeframe": "Khung thời gian",
           "title": "Tiêu Đề"
         },
-        "modalTitleWithName": "Backtest: {{name}}",
+        "modalTitleWithName": "回测: {{name}}",
         "parameters": {
           "title": "策略参数"
         },
@@ -259,4 +259,4 @@ const Templates = {
     }
   }
 } as const;
-export default Templates;
+export default StrategyTemplates;

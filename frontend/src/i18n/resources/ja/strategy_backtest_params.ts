@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_backtest_params_ja.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const BacktestParams = {
+const StrategyBacktestParams = {
   "strategy": {
     "backtestParams": {
       "backtestFailed": "バックテストに失敗",
@@ -15,7 +15,7 @@ const BacktestParams = {
       "direction": "方向",
       "endDate": "終了日",
       "enterCodeAndSymbol": "ストラテジーコードを入力して銘柄を選択してください",
-      "eventDrivenMode": "Run(context)",
+      "eventDrivenMode": "Run(context) 事件驱动",
       "execution": "実行",
       "history": "バックテスト履歴",
       "leverage": "レバレッジ",
@@ -33,10 +33,10 @@ const BacktestParams = {
       "slippage": "スリッページ",
       "startDate": "開始日",
       "strictMode": "ストリクトモード",
-      "strictModeOff": "OFF",
+      "strictModeOff": "关闭",
       "strictModeOffDesc": "同一バークローズ + MTF 1分。高精度。",
       "strictModeOffTooltip": "OFF: 同一バークローズで1分サブ解像度実行",
-      "strictModeOn": "ON",
+      "strictModeOn": "开启",
       "strictModeOnDesc": "次バーオープン。標準、保守的。",
       "strictModeOnTooltip": "ON: バークローズでシグナル確認、次バーオープンで実行",
       "title": "バックテスト",
@@ -45,4 +45,4 @@ const BacktestParams = {
     }
   }
 } as const;
-export default BacktestParams;
+export default StrategyBacktestParams;

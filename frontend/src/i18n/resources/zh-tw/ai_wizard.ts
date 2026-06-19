@@ -1,338 +1,332 @@
-const aiWizard = {
-  ai: {
-    wizard: {
-      title: 'AI 策略嚮導',
-      subtitle: '每步一個頁面，可前進/後退',
-      currentModel: '目前模型：{{model}}',
-      rangePresets: {
-        '1d': 'Last 1 day',
-        '3d': 'Last 3 days',
-        '7d': 'Last 1 week',
-        '30d': 'Last 1 month',
-        '90d': 'Last 3 months',
+// Auto-generated from proto/ant/v1/i18n/ai_wizard_zh-tw.textproto
+// DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
+const AiWizard = {
+  "ai": {
+    "wizard": {
+      "actions": {
+        "cancel": "取消",
+        "next": "下一步",
+        "prev": "上一步"
       },
-      steps: {
-        setup: '基礎資訊',
-        generate: '生成策略',
-        publishCode: '回測上線-程式碼',
-        publishBacktest: '回測上線-回測',
-        publishLaunch: '回測上線-上線',
+      "agents": {
+        "codeTitle": "程式碼生成",
+        "riskTitle": "風控與執行約束",
+        "signalsTitle": "訊號與指標設計",
+        "styleTitle": "市場狀態/風格推薦"
       },
-      actions: {
-        prev: '上一步',
-        next: '下一步',
-        cancel: '取消',
+      "currentModel": "目前模型：{{model}}",
+      "generate": {
+        "actions": {
+          "abort": "中止",
+          "goValidate": "去校驗",
+          "hide": "隱藏",
+          "regenerateSummary": "重新生成總結",
+          "rerun": "重新生成",
+          "runAgents": "多個專家分析 + 程式碼生成"
+        },
+        "cards": {
+          "resultsTitle": "Multiple experts\\\\\\\\\\\\\\\\"
+        },
+        "hints": {
+          "afterGenerated": "生成完成後進入下一步進行驗證/回測/上線"
+        },
+        "labels": {
+          "elapsed": "耗時"
+        },
+        "modals": {
+          "final": {
+            "title": "程式碼已生成，建議點擊「驗證程式碼」確認通過校驗"
+          }
+        },
+        "sections": {
+          "output": "模型返回（Output）",
+          "prompt": "發送給模型（Prompt）",
+          "spec": "規格（Spec）"
+        },
+        "status": {
+          "done": "完成",
+          "error": "失敗",
+          "idle": "等待中",
+          "inProgress": "進行中",
+          "running": {
+            "code": "程式碼生成中",
+            "generic": "{{title}}中",
+            "risk": "風控與執行約束中",
+            "signals": "訊號與指標設計中",
+            "style": "市場狀態/風格推薦中"
+          }
+        }
       },
-      generate: {
-        cards: {
-          resultsTitle: 'Multiple experts\' results',
+      "messages": {
+        "agentFailed": "{{title}} 失敗",
+        "aiRequestTimeout": "AI 請求逾時（>{{seconds}}s）",
+        "backtestCreated": "回測任務已建立",
+        "backtestNotDoneWait": "回測尚未完成，請等待評分卡狀態變為成功/失敗/已取消後再繼續",
+        "chatAborted": "已中止與模型對話",
+        "codeInvalidFixAndContinue": "程式碼驗證未通過，請修復後再繼續",
+        "confirmScoreFirst": "請先在評分彈窗中確認評分結果",
+        "createBacktestFailed": "建立回測失敗",
+        "createDraftFailed": "建立草稿失敗",
+        "createScheduleFailed": "建立排程失敗",
+        "datasetFrozenCreated": "已凍結建立 dataset",
+        "draftNotCreated": "草稿未建立",
+        "draftSaved": "草稿已儲存",
+        "fillRequired": "請先補全必填項",
+        "fillRequiredWithFields": "請先補全必填項：{{fields}}",
+        "freezeDatasetFailed": "凍結 dataset 失敗",
+        "generateCodeFirst": "請先生成策略程式碼",
+        "inputIntentFirst": "請先輸入策略目標/想法",
+        "loadAccountsFailed": "載入帳號失敗",
+        "loadDatasetFailed": "載入 dataset 失敗",
+        "loadSymbolsFailed": "載入品種失敗",
+        "modelReturnedEmpty": "模型返回為空",
+        "noCodeToBacktest": "暫無程式碼可回測",
+        "noCodeToValidate": "暫無程式碼可驗證",
+        "noPythonCodeBlock": "程式碼 Agent 未输出 ```python 程式碼块```，请在结果中检查",
+        "publishFailed": "發布失敗",
+        "publishTemplateFirst": "請先發布樣板",
+        "publishedNoId": "已發布，但未拿到返回 id",
+        "saveFailed": "儲存失敗",
+        "scheduleAlreadyExists": "該帳號下已存在相同策略排程，請勿重複建立。",
+        "scheduleCreated": "排程已建立",
+        "scheduleCreatedAndEnabled": "排程已建立並啟用",
+        "startBacktestFirst": "請先點擊「回測（非同步任務）」啟動回測",
+        "templatePublished": "樣板已發布",
+        "userAborted": "使用者已中止",
+        "validateCodeFirst": "請先點擊「驗證程式碼」",
+        "validateError": "驗證失敗",
+        "validateFailed": "驗證未通過",
+        "validateOk": "驗證通過",
+        "watchBacktestRunFailed": "watchBacktestRun 失敗"
+      },
+      "prompts": {
+        "base": {
+          "account": "帳號: {{accountId}}",
+          "constraints": "約束: 最大回撤={{maxDrawdownPct}}% 單筆風險={{riskPerTradePct}}% 日內最多交易={{maxTradesPerDay}} 次",
+          "data": "資料: {{dataSpec}}",
+          "empty": "(空)",
+          "macroDisabled": "宏觀事件: 不使用",
+          "macroEnabled": "Macro events (user-provided):\\\\\\\\\\\\\\\\n{{text}}",
+          "params": "Parameters (defs+current values; injected into context[\"params\"] at runtime):\\\\\\\\\\\\\\\\n{{params}}",
+          "symbol": "品種: {{symbol}}",
+          "timeframe": "週期: {{timeframe}}",
+          "userIntent": "User strategy goal (natural language):\\\\\\\\\\\\\\\\n{{intent}}"
         },
-        actions: {
-          runAgents: '多個專家分析 + 程式碼生成',
-          hide: '隱藏',
-          abort: '中止',
-          rerun: '重新生成',
-          regenerateSummary: '重新生成總結',
-          goValidate: '去校驗',
+        "dataSpec": {
+          "dataset": "使用凍結資料集 datasetId={{datasetId}}",
+          "klineRange": "使用歷史K線範圍 from={{from}} to={{to}}"
         },
-        hints: {
-          afterGenerated: '生成完成後進入下一步進行驗證/回測/上線',
+        "summary": {
+          "codeTitle": "程式碼如下：",
+          "intro": "你是量化策略解釋助手。請用簡潔中文（要點形式，最多 12 行）解釋這段 AntTrader Python 策略程式碼的核心思路。",
+          "mustInclude1": "1) 策略類型/範式",
+          "mustInclude2": "2) 主要入場條件（2~4 條要點）",
+          "mustInclude3": "3) 主要出場/止損止盈/風控約束（2~4 條要點）",
+          "mustInclude4": "4) 適用/不適用場景各 1 條",
+          "mustIncludeTitle": "必須包含：",
+          "userIntent": "User expectation (natural language):\\\\\\\\\\\\\\\\n{{intent}}"
         },
-        labels: {
-          elapsed: '耗時',
+        "upstream": {
+          "risk": "【Risk control conclusion】\\\\\\\\\\\\\\\\n{{text}}",
+          "sectionTitle": "【上游 Agent 結論（原樣提供）】",
+          "signals": "【Signal design conclusion】\\\\\\\\\\\\\\\\n{{text}}",
+          "style": "【Market condition/style conclusion】\\\\\\\\\\\\\\\\n{{text}}"
+        }
+      },
+      "publish": {
+        "actions": {
+          "publishTemplate": "發布樣板",
+          "startBacktest": "回測（非同步任務）",
+          "validateCode": "驗證程式碼"
         },
-        status: {
-          inProgress: '進行中',
-          done: '完成',
-          error: '失敗',
-          idle: '等待中',
-          running: {
-            style: '市場狀態/風格推薦中',
-            signals: '訊號與指標設計中',
-            risk: '風控與執行約束中',
-            code: '程式碼生成中',
-            generic: '{{title}}中',
+        "cards": {
+          "codeTitle": "1) 策略程式碼（可編輯）",
+          "launchTitle": "3) 上線排程",
+          "scoreCardTitle": "2) 回測評分卡"
+        },
+        "messages": {
+          "validateFailed": "validate 未通過",
+          "validateOk": "validate 通過"
+        },
+        "placeholders": {
+          "codeEditable": "這裡會自動填入 AI 生成的程式碼，你也可以手動修改。"
+        }
+      },
+      "publishBacktest": {
+        "actions": {
+          "close": "關閉",
+          "confirm": "確認",
+          "inProgress": "進行中",
+          "retry": "重試",
+          "runInBackground": "後台執行",
+          "startBacktest": "開始回測",
+          "succeeded": "成功"
+        },
+        "cards": {
+          "backtestTitle": "回測",
+          "scoreCardTitle": "評分卡"
+        },
+        "draftName": "回測 {{datetime}} {{symbol}} {{timeframe}}",
+        "draftNameShort": "回測 {{symbol}} {{timeframe}}",
+        "labels": {
+          "confirmed": "已確認",
+          "elapsed": "耗時",
+          "overallScore": "綜合評分",
+          "scoringProgress": "評分進度",
+          "status": "狀態"
+        },
+        "modals": {
+          "score": {
+            "title": "評分確認"
           },
-        },
-        sections: {
-          prompt: '發送給模型（Prompt）',
-          output: '模型返回（Output）',
-          spec: '規格（Spec）',
-        },
-        modals: {
-          final: {
-            title: '程式碼已生成，建議點擊「驗證程式碼」確認通過校驗',
-          },
-        },
+          "status": {
+            "title": "回測進行中"
+          }
+        }
       },
-      publish: {
-        cards: {
-          codeTitle: '1) 策略程式碼（可編輯）',
-          scoreCardTitle: '2) 回測評分卡',
-          launchTitle: '3) 上線排程',
-        },
-        placeholders: {
-          codeEditable: '這裡會自動填入 AI 生成的程式碼，你也可以手動修改。',
-        },
-        actions: {
-          validateCode: '驗證程式碼',
-          startBacktest: '回測（非同步任務）',
-          publishTemplate: '發布樣板',
-        },
-        messages: {
-          validateOk: 'validate 通過',
-          validateFailed: 'validate 未通過',
-        },
+      "schedule": {
+        "defaultName": "AI 排程 {{symbol}} {{timeframe}}"
       },
-      agents: {
-        styleTitle: '市場狀態/風格推薦',
-        signalsTitle: '訊號與指標設計',
-        riskTitle: '風控與執行約束',
-        codeTitle: '程式碼生成',
+      "setup": {
+        "actions": {
+          "deleteCurrentDataset": "刪除目前資料集",
+          "freezeFromCurrentRange": "從目前範圍凍結",
+          "refreshDataset": "重新整理"
+        },
+        "cards": {
+          "constraintsAndGoalTitle": "約束與目標",
+          "hardConstraintsTitle": "硬約束",
+          "hintsTitle": "提示",
+          "tradeAndDataTitle": "交易與資料"
+        },
+        "dataModes": {
+          "dataset": "凍結資料集",
+          "klineRange": "歷史K線範圍"
+        },
+        "hints": {
+          "nextWillGenerateCode": "下一步將開始生成策略程式碼。",
+          "tradeDataNextStep": "填寫完成後點擊「下一步」，進入約束與目標設定。"
+        },
+        "labels": {
+          "account": "帳號",
+          "backtestRange": "回測範圍",
+          "dataset": "凍結資料集",
+          "historicalData": "歷史資料",
+          "intent": "策略目標/想法",
+          "macroEvents": "宏觀事件",
+          "macroModule": "宏觀模組",
+          "maxDrawdownPct": "最大回撤(%)",
+          "maxTradesPerDay": "日內最多交易次數",
+          "riskPerTradePct": "單筆風險(%)",
+          "symbol": "品種",
+          "timeframe": "週期"
+        },
+        "macro": {
+          "off": "關閉",
+          "on": "开"
+        },
+        "messages": {
+          "datasetDeleted": "資料集已刪除"
+        },
+        "modals": {
+          "deleteDataset": {
+            "content": "確定刪除目前選中的凍結資料集嗎？",
+            "ok": "刪除",
+            "title": "刪除資料集"
+          }
+        },
+        "placeholders": {
+          "intentExample": "範例：突破趨勢跟隨；避開高波動；偏好更高勝率...",
+          "macroExample": "Example:\\\\\\\\\\\\\\\\n2024-01-03 21:15 FOMC minutes\\\\\\\\\\\\\\\\n2024-01-05 20:30 NFP",
+          "selectAccount": "選擇帳號",
+          "selectFrozenDataset": "選擇凍結資料集",
+          "selectSymbol": "選擇品種",
+          "selectTimeframe": "選擇週期"
+        },
+        "validations": {
+          "enterIntent": "請輸入策略目標/想法",
+          "selectAccount": "請選擇帳號",
+          "selectDataset": "請選擇資料集",
+          "selectSymbol": "請選擇品種",
+          "selectTimeframe": "請選擇週期"
+        }
       },
-      template: {
-        defaultName: 'AI 策略 {{title}}',
-        defaultDescription: 'AI 嚮導生成',
+      "steps": {
+        "generate": "生成策略",
+        "publishBacktest": "回測上線-回測",
+        "publishCode": "回測上線-程式碼",
+        "publishLaunch": "回測上線-上線",
+        "setup": "基礎資訊"
       },
-      schedule: {
-        defaultName: 'AI 排程 {{symbol}} {{timeframe}}',
+      "strategyParams": {
+        "actions": {
+          "addParam": "新增參數",
+          "delete": "刪除",
+          "exportJson": "匯出 JSON",
+          "importJson": "匯入 JSON"
+        },
+        "empty": "暫無參數。你可以新增如 fast/slow/risk_per_trade 等參數。",
+        "hints": {
+          "intro": "這些參數會：",
+          "line1": "1) 儲存到樣板 parameters",
+          "line2": "2) 建立排程時寫入 schedule.parameters",
+          "line3Prefix": "3) 執行時系統會把參數注入到 Python 策略的"
+        },
+        "labels": {
+          "default": "預設值",
+          "description": "說明",
+          "label": "標籤",
+          "max": "最大值",
+          "min": "最小值",
+          "name": "名稱",
+          "options": "options（select 可用，逗號分隔）",
+          "step": "步長",
+          "type": "類型",
+          "value": "value（排程目前值）"
+        },
+        "messages": {
+          "copied": "已複製",
+          "copyFailed": "複製失敗",
+          "importFormatInvalid": "匯入格式錯誤",
+          "importMissingName": "匯入失敗：存在缺少 name 的參數",
+          "imported": "已匯入 {{count}} 個參數",
+          "jsonParseFailed": "JSON 解析失敗"
+        },
+        "modals": {
+          "copyAndClose": "複製並關閉",
+          "exportTitle": "匯出參數 JSON",
+          "importOk": "匯入",
+          "importTitle": "匯入參數 JSON"
+        },
+        "paramCardTitle": "參數 #{{index}}",
+        "placeholders": {
+          "defaultExample": "例如：10",
+          "description": "說明",
+          "importJson": "貼上參數 JSON",
+          "label": "展示名",
+          "nameExample": "例如：fast",
+          "optionsExample": "例如：low,medium,high",
+          "value": "留空則使用 default"
+        },
+        "title": "策略參數（可選）",
+        "types": {
+          "bool": "布林",
+          "number": "數字",
+          "select": "選擇",
+          "string": "字串"
+        },
+        "validations": {
+          "nameRequired": "name 必填",
+          "typeRequired": "type 必填"
+        }
       },
-      setup: {
-        cards: {
-          tradeAndDataTitle: '交易與資料',
-          constraintsAndGoalTitle: '約束與目標',
-          hardConstraintsTitle: '硬約束',
-          hintsTitle: '提示',
-        },
-        labels: {
-          account: '帳號',
-          symbol: '品種',
-          timeframe: '週期',
-          historicalData: '歷史資料',
-          backtestRange: '回測範圍',
-          dataset: '凍結資料集',
-          maxDrawdownPct: '最大回撤(%)',
-          riskPerTradePct: '單筆風險(%)',
-          maxTradesPerDay: '日內最多交易次數',
-          macroModule: '宏觀模組',
-          macroEvents: '宏觀事件',
-          intent: '策略目標/想法',
-        },
-        placeholders: {
-          selectAccount: '選擇帳號',
-          selectSymbol: '選擇品種',
-          selectTimeframe: '選擇週期',
-          selectFrozenDataset: '選擇凍結資料集',
-          macroExample: 'Example:\n2024-01-03 21:15 FOMC minutes\n2024-01-05 20:30 NFP',
-          intentExample: '範例：突破趨勢跟隨；避開高波動；偏好更高勝率...',
-        },
-        validations: {
-          selectAccount: '請選擇帳號',
-          selectSymbol: '請選擇品種',
-          selectTimeframe: '請選擇週期',
-          selectDataset: '請選擇資料集',
-          enterIntent: '請輸入策略目標/想法',
-        },
-        dataModes: {
-          klineRange: '歷史K線範圍',
-          dataset: '凍結資料集',
-        },
-        actions: {
-          refreshDataset: '重新整理',
-          freezeFromCurrentRange: '從目前範圍凍結',
-          deleteCurrentDataset: '刪除目前資料集',
-        },
-        modals: {
-          deleteDataset: {
-            title: '刪除資料集',
-            content: '確定刪除目前選中的凍結資料集嗎？',
-            ok: '刪除',
-          },
-        },
-        messages: {
-          datasetDeleted: '資料集已刪除',
-        },
-        macro: {
-          off: '關閉',
-          on: 'On',
-        },
-        hints: {
-          nextWillGenerateCode: '下一步將開始生成策略程式碼。',
-          tradeDataNextStep: '填寫完成後點擊「下一步」，進入約束與目標設定。',
-        },
+      "subtitle": "每步一個頁面，可前進/後退",
+      "template": {
+        "defaultDescription": "AI 嚮導生成",
+        "defaultName": "AI 策略 {{title}}"
       },
-      publishBacktest: {
-        cards: {
-          backtestTitle: '回測',
-          scoreCardTitle: '評分卡',
-        },
-        actions: {
-          startBacktest: '開始回測',
-          close: '關閉',
-          retry: '重試',
-          succeeded: '成功',
-          inProgress: '進行中',
-          runInBackground: '後台執行',
-          confirm: '確認',
-        },
-        labels: {
-          status: '狀態',
-          elapsed: '耗時',
-          scoringProgress: '評分進度',
-          overallScore: '綜合評分',
-          confirmed: '已確認',
-        },
-        modals: {
-          status: {
-            title: '回測進行中',
-          },
-          score: {
-            title: '評分確認',
-          },
-        },
-        draftName: '回測 {{datetime}} {{symbol}} {{timeframe}}',
-        draftNameShort: '回測 {{symbol}} {{timeframe}}',
-      },
-      strategyParams: {
-        title: '策略參數（可選）',
-        hints: {
-          intro: '這些參數會：',
-          line1: '1) 儲存到樣板 parameters',
-          line2: '2) 建立排程時寫入 schedule.parameters',
-          line3Prefix: '3) 執行時系統會把參數注入到 Python 策略的',
-        },
-        actions: {
-          addParam: '新增參數',
-          exportJson: '匯出 JSON',
-          importJson: '匯入 JSON',
-          delete: '刪除',
-        },
-        empty: '暫無參數。你可以新增如 fast/slow/risk_per_trade 等參數。',
-        paramCardTitle: '參數 #{{index}}',
-        labels: {
-          name: '名稱',
-          type: '類型',
-          value: 'value（排程目前值）',
-          default: '預設值',
-          min: '最小值',
-          max: '最大值',
-          step: '步長',
-          label: '標籤',
-          description: '說明',
-          options: 'options（select 可用，逗號分隔）',
-        },
-        validations: {
-          nameRequired: 'name 必填',
-          typeRequired: 'type 必填',
-        },
-        placeholders: {
-          nameExample: '例如：fast',
-          value: '留空則使用 default',
-          defaultExample: '例如：10',
-          label: '展示名',
-          description: '說明',
-          optionsExample: '例如：low,medium,high',
-          importJson: '貼上參數 JSON',
-        },
-        modals: {
-          exportTitle: '匯出參數 JSON',
-          importTitle: '匯入參數 JSON',
-          copyAndClose: '複製並關閉',
-          importOk: '匯入',
-        },
-        messages: {
-          jsonParseFailed: 'JSON 解析失敗',
-          importFormatInvalid: '匯入格式錯誤',
-          importMissingName: '匯入失敗：存在缺少 name 的參數',
-          imported: '已匯入 {{count}} 個參數',
-          copied: '已複製',
-          copyFailed: '複製失敗',
-        },
-        types: {
-          number: '數字',
-          string: '字串',
-          bool: '布林',
-          select: '選擇',
-        },
-      },
-      prompts: {
-        dataSpec: {
-          dataset: '使用凍結資料集 datasetId={{datasetId}}',
-          klineRange: '使用歷史K線範圍 from={{from}} to={{to}}',
-        },
-        base: {
-          account: '帳號: {{accountId}}',
-          symbol: '品種: {{symbol}}',
-          timeframe: '週期: {{timeframe}}',
-          data: '資料: {{dataSpec}}',
-          constraints: '約束: 最大回撤={{maxDrawdownPct}}% 單筆風險={{riskPerTradePct}}% 日內最多交易={{maxTradesPerDay}} 次',
-          params: 'Parameters (defs+current values; injected into context["params"] at runtime):\n{{params}}',
-          empty: '(空)',
-          macroEnabled: 'Macro events (user-provided):\n{{text}}',
-          macroDisabled: '宏觀事件: 不使用',
-          userIntent: 'User strategy goal (natural language):\n{{intent}}',
-        },
-        upstream: {
-          style: '【Market condition/style conclusion】\n{{text}}',
-          signals: '【Signal design conclusion】\n{{text}}',
-          risk: '【Risk control conclusion】\n{{text}}',
-          sectionTitle: '【上游 Agent 結論（原樣提供）】',
-        },
-        summary: {
-          intro: '你是量化策略解釋助手。請用簡潔中文（要點形式，最多 12 行）解釋這段 AntTrader Python 策略程式碼的核心思路。',
-          mustIncludeTitle: '必須包含：',
-          mustInclude1: '1) 策略類型/範式',
-          mustInclude2: '2) 主要入場條件（2~4 條要點）',
-          mustInclude3: '3) 主要出場/止損止盈/風控約束（2~4 條要點）',
-          mustInclude4: '4) 適用/不適用場景各 1 條',
-          userIntent: 'User expectation (natural language):\n{{intent}}',
-          codeTitle: '程式碼如下：',
-        },
-      },
-      messages: {
-        generateCodeFirst: '請先生成策略程式碼',
-        validateCodeFirst: '請先點擊「驗證程式碼」',
-        codeInvalidFixAndContinue: '程式碼驗證未通過，請修復後再繼續',
-        startBacktestFirst: '請先點擊「回測（非同步任務）」啟動回測',
-        backtestNotDoneWait: '回測尚未完成，請等待評分卡狀態變為成功/失敗/已取消後再繼續',
-        confirmScoreFirst: '請先在評分彈窗中確認評分結果',
-        fillRequiredWithFields: '請先補全必填項：{{fields}}',
-        fillRequired: '請先補全必填項',
-        watchBacktestRunFailed: 'watchBacktestRun 失敗',
-        createDraftFailed: '建立草稿失敗',
-        loadAccountsFailed: '載入帳號失敗',
-        loadSymbolsFailed: '載入品種失敗',
-        loadDatasetFailed: '載入 dataset 失敗',
-        datasetFrozenCreated: '已凍結建立 dataset',
-        freezeDatasetFailed: '凍結 dataset 失敗',
-        inputIntentFirst: '請先輸入策略目標/想法',
-        aiRequestTimeout: 'AI 請求逾時（>{{seconds}}s）',
-        modelReturnedEmpty: '模型返回為空',
-        noPythonCodeBlock: 'Code agent did not output ```python block```, check result',
-        agentFailed: '{{title}} 失敗',
-        userAborted: '使用者已中止',
-        chatAborted: '已中止與模型對話',
-        noCodeToValidate: '暫無程式碼可驗證',
-        validateOk: '驗證通過',
-        validateFailed: '驗證未通過',
-        validateError: '驗證失敗',
-        noCodeToBacktest: '暫無程式碼可回測',
-        backtestCreated: '回測任務已建立',
-        createBacktestFailed: '建立回測失敗',
-        draftNotCreated: '草稿未建立',
-        draftSaved: '草稿已儲存',
-        saveFailed: '儲存失敗',
-        publishedNoId: '已發布，但未拿到返回 id',
-        templatePublished: '樣板已發布',
-        publishFailed: '發布失敗',
-        publishTemplateFirst: '請先發布樣板',
-        scheduleCreatedAndEnabled: '排程已建立並啟用',
-        scheduleCreated: '排程已建立',
-        createScheduleFailed: '建立排程失敗',
-        scheduleAlreadyExists: '該帳號下已存在相同策略排程，請勿重複建立。',
-      },
-    },
-  },
+      "title": "AI 策略嚮導"
+    }
+  }
 } as const;
-
-export default aiWizard;
+export default AiWizard;

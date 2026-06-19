@@ -1,399 +1,400 @@
-const accounts = {
-  accounts: {
-    title: 'My Accounts',
-    subtitle: 'Manage your MT4/MT5 trading accounts',
-    bindNew: 'Bind New Account',
-    bind: {
-      title: 'Bind MT Account',
-      errorModal: {
-        title: 'Binding failed'
+// Auto-generated from proto/ant/v1/i18n/accounts_en.textproto
+// DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
+const Accounts = {
+  "accounts": {
+    "analytics": {
+      "advancedStatsTitle": "Advanced Statistics",
+      "advancedTabs": {
+        "daily": "Daily",
+        "hourly": "Hourly"
       },
-      step1: {
-        title: 'Choose platform and broker',
-        subtitle: 'Select your trading platform and search for your broker'
+      "chartPeriod": {
+        "all": "All",
+        "day": "Today",
+        "month": "This month",
+        "week": "This week",
+        "year": "This year"
       },
-      step2: {
-        title: 'Enter account information',
-        subtitle: 'Enter your trading account and password'
+      "chartSeries": {
+        "balance": "Balance",
+        "equity": "Equity",
+        "profit": "Profit",
+        "tradeCount": "Trades"
       },
-      step3: {
-        title: 'Verify & confirm',
-        subtitle: 'Verify credentials and confirm to complete'
+      "chartType": {
+        "balance": "Balance",
+        "equity": "Equity",
+        "profit": "Profit"
       },
-      fields: {
-        platform: 'Platform',
-        brokerName: 'Broker name',
-        company: 'Company',
-        server: 'Server',
-        tradingAccount: 'Trading account',
-        password: 'Password'
+      "dailyPnLTitle": "Daily P/L",
+      "empty": {
+        "dailyPnL": "No daily P/L data",
+        "equityCurve": "No equity curve data",
+        "hourly": "No time-of-day analysis data",
+        "monthlyProfit": "No monthly profit data",
+        "symbolDistribution": "No symbol distribution data"
       },
-      placeholders: {
-        brokerName: 'Enter broker name, e.g. XM, IC Markets',
-        company: 'Select company',
-        server: 'Select server',
-        tradingAccount: 'Enter trading account',
-        password: 'Enter password'
-      },
-      labels: {
-        serverCount: '{{count}} servers'
-      },
-      actions: {
-        search: 'Search',
-        verifyAccount: 'Verify account',
-        confirmBind: 'Confirm bind',
-        retryVerify: 'Retry'
-      },
-      passwordHint: 'Password is transmitted via HTTPS and stored as an Argon2id hash (non-reversible) on the backend',
-      summary: {
-        broker: 'Broker',
-        server: 'Server',
-        platform: 'Platform',
-        tradingAccount: 'Trading account',
-        password: 'Password',
-        verified: 'Account verified',
-        balance: 'Balance',
-        equity: 'Equity',
-        margin: 'Margin',
-        freeMargin: 'Free margin',
-        leverage: 'Leverage',
-        currency: 'Currency'
-      },
-      messages: {
-        enterBrokerName: 'Please enter broker name',
-        foundBrokers: 'Found {{count}} brokers',
-        noBrokersFound: 'No matching brokers found. Please check the name.',
-        searchFailed: 'Search failed. Please try again later.',
-        selectServer: 'Please select a server',
-        enterTradingAccount: 'Please enter trading account',
-        enterPassword: 'Please enter password',
-        noAccessHosts: 'No server addresses available for the selected broker',
-        verifyFailed: 'Account verification failed',
-        bindSuccess: 'Account bound successfully',
-        bindFailed: 'Failed to bind account',
-        loginDigitsOnly: 'Trading account must contain only digits'
-      },
-      errors: {
-        brokerUnavailable: 'Server error or incorrect password',
-        invalidCredentials: 'Account not found or invalid password',
-        connectionFailed: 'Unable to connect to broker server, please check your network',
-        timeout: 'Connection timed out, please try again later'
-      }
-    },
-    empty: {
-      title: 'No bound accounts',
-      subtitle: 'Click the button below to bind your MT4/MT5 trading account'
-    },
-    legend: {
-      title: 'Legend:',
-      connected: 'Connected',
-      connecting: 'Connecting',
-      disconnectedOrError: 'Disconnected/Error',
-      disabled: 'Disabled'
-    },
-    messages: {
-      disabledSuccess: 'Account disabled successfully',
-      connectingMtServer: 'Connecting to MT server',
-      enabledSuccess: 'Account enabled successfully',
-      fetchListFailed: 'Failed to load account list',
-      fetchAccountFailed: 'Failed to load account information',
-      createdSuccess: 'Account created successfully',
-      createFailed: 'Failed to create account',
-      connectSuccess: 'Connected successfully',
-      connectFailed: 'Connection failed',
-      disconnectFailed: 'Failed to disconnect',
-      disableFailed: 'Failed to disable account',
-      deleted: 'Account deleted',
-      deleteFailed: 'Delete failed',
-      enableFailed: 'Failed to enable account'
-    },
-    analytics: {
-      monthlyAnalysis: {
-        title: 'Monthly analysis',
-        chartMainTitle: 'Monthly returns ({{metric}})',
-        metrics: {
-          change: 'Change',
-          profit: 'Profit',
-          lots: 'Lots',
-          pips: 'Pips'
+      "hourlyTitle": "Time-of-day Analysis",
+      "monthlyAnalysis": {
+        "bonus": {
+          "chartHoldingTitle": "{{month}}'s average holding time.",
+          "chartPopularTitle": "{{month}}'s currency popularity.",
+          "chartRiskTitle": "Bonus: The risk ratio is {{month}}.",
+          "emptyCharts": "No trades in this month",
+          "legendBulls": "Bulls",
+          "legendShortTerm": "Short-term",
+          "popularityShare": "Lot volume share",
+          "sliceOther": "Other"
         },
-        focusedValue: '{{period}} · {{metric}}: {{value}}',
-        bonus: {
-          chartRiskTitle: 'Bonus: The risk ratio is {{month}}.',
-          chartPopularTitle: `{{month}}'s currency popularity.`,
-          chartHoldingTitle: `{{month}}'s average holding time.`,
-          legendBulls: 'Bulls',
-          legendShortTerm: 'Short-term',
-          sliceOther: 'Other',
-          emptyCharts: 'No trades in this month',
-          popularityShare: 'Lot volume share'
-        }
-      },
-      monthlyDetail: {
-        metricsTitle: 'Monthly Metrics',
-        symbolPnLTitle: 'Symbol P&L',
-        holdingTitle: 'Holding Time',
-        riskRewardTitle: 'Reward:Risk Ratio',
-        popularityTitle: 'Currency Popularity',
-        long: 'Long',
-        short: 'Short',
-        fields: {
-          netReturn: 'Net Return',
-          totalTrades: 'Total Trades',
-          winRate: 'Win Rate',
-          profitFactor: 'Profit Factor',
-          bestTrade: 'Best Trade',
-          worstTrade: 'Worst Trade',
-          averageHours: 'Avg',
-          medianHours: 'Median',
-          maxHours: 'Max',
-          minHours: 'Min',
+        "chartMainTitle": "Monthly returns ({{metric}})",
+        "focusedValue": "{{period}} · {{metric}}: {{value}}",
+        "metrics": {
+          "change": "Change",
+          "lots": "Lots",
+          "pips": "Pips",
+          "profit": "Profit"
         },
+        "title": "Monthly analysis"
       },
-      chartType: {
-        equity: 'Equity',
-        balance: 'Balance',
-        profit: 'Profit'
+      "monthlyDetail": {
+        "fields": {
+          "averageHours": "Avg",
+          "bestTrade": "Best Trade",
+          "maxHours": "Max",
+          "medianHours": "Median",
+          "minHours": "Min",
+          "netReturn": "Net Return",
+          "profitFactor": "Profit Factor",
+          "totalTrades": "Total Trades",
+          "winRate": "Win Rate",
+          "worstTrade": "Worst Trade"
+        },
+        "holdingTitle": "Holding Time",
+        "long": "Long",
+        "metricsTitle": "Monthly Metrics",
+        "popularityTitle": "Currency Popularity",
+        "riskRewardTitle": "Reward:Risk Ratio",
+        "short": "Short",
+        "symbolPnLTitle": "Symbol P&L"
       },
-      chartPeriod: {
-        day: 'Today',
-        week: 'This week',
-        month: 'This month',
-        year: 'This year',
-        all: 'All'
+      "monthlyProfitTitle": "Monthly Profit",
+      "stats": {
+        "avgDailyReturn": "Avg daily return",
+        "avgHolding": "Average holding",
+        "avgLoss": "Average loss",
+        "avgProfit": "Average profit",
+        "calmar": "Calmar ratio",
+        "consecutiveWinsLosses": "Consecutive wins/losses",
+        "largestLoss": "Largest loss",
+        "largestWin": "Largest win",
+        "maxDrawdown": "Max drawdown",
+        "netDeposit": "Net deposit",
+        "netProfit": "Net profit",
+        "profitFactor": "Profit factor",
+        "sharpe": "Sharpe ratio",
+        "sortino": "Sortino ratio",
+        "totalDeposit": "Total deposit",
+        "totalTrades": "Total trades",
+        "totalWithdrawal": "Total withdrawal",
+        "volatility": "Volatility",
+        "winRate": "Win rate"
       },
-      chartSeries: {
-        equity: 'Equity',
-        balance: 'Balance',
-        profit: 'Profit',
-        tradeCount: 'Trades'
-      },
-      empty: {
-        equityCurve: 'No equity curve data',
-        monthlyProfit: 'No monthly profit data',
-        symbolDistribution: 'No symbol distribution data',
-        dailyPnL: 'No daily P/L data',
-        hourly: 'No time-of-day analysis data'
-      },
-      monthlyProfitTitle: 'Monthly Profit',
-      advancedStatsTitle: 'Advanced Statistics',
-      symbolDistributionTitle: 'Symbol Distribution',
-      dailyPnLTitle: 'Daily P/L',
-      hourlyTitle: 'Time-of-day Analysis',
-      advancedTabs: {
-        hourly: 'Hourly',
-        daily: 'Daily'
-      },
-      timeDetail: {
-        lots: 'Lots',
-        trades: 'Trades',
-        profitAmount: 'Profit amount',
-        balance: 'Balance',
-        profitFactor: 'Profit factor',
-        maxFloatingLossAmount: 'Max floating loss amount',
-        maxFloatingLossRatio: 'Max floating loss ratio',
-        maxFloatingProfitAmount: 'Max floating profit amount',
-        maxFloatingProfitRatio: 'Max floating profit ratio'
-      },
-      stats: {
-        winRate: 'Win rate',
-        profitFactor: 'Profit factor',
-        maxDrawdown: 'Max drawdown',
-        totalTrades: 'Total trades',
-        avgProfit: 'Average profit',
-        avgLoss: 'Average loss',
-        avgHolding: 'Average holding',
-        consecutiveWinsLosses: 'Consecutive wins/losses',
-        sharpe: 'Sharpe ratio',
-        sortino: 'Sortino ratio',
-        calmar: 'Calmar ratio',
-        largestWin: 'Largest win',
-        largestLoss: 'Largest loss',
-        avgDailyReturn: 'Avg daily return',
-        volatility: 'Volatility',
-        netProfit: 'Net profit',
-        totalDeposit: 'Total deposit',
-        totalWithdrawal: 'Total withdrawal',
-        netDeposit: 'Net deposit'
+      "symbolDistributionTitle": "Symbol Distribution",
+      "timeDetail": {
+        "balance": "Balance",
+        "lots": "Lots",
+        "maxFloatingLossAmount": "Max floating loss amount",
+        "maxFloatingLossRatio": "Max floating loss ratio",
+        "maxFloatingProfitAmount": "Max floating profit amount",
+        "maxFloatingProfitRatio": "Max floating profit ratio",
+        "profitAmount": "Profit amount",
+        "profitFactor": "Profit factor",
+        "trades": "Trades"
       }
     },
-    card: {
-      status: {
-        disabled: 'Disabled',
-        connected: 'Connected',
-        connecting: 'Connecting',
-        disconnected: 'Disconnected',
-        error: 'Error'
+    "bind": {
+      "actions": {
+        "confirmBind": "Confirm bind",
+        "retryVerify": "Retry",
+        "search": "Search",
+        "verifyAccount": "Verify account"
       },
-      fields: {
-        balance: 'Balance',
-        equity: 'Equity',
-        broker: 'Broker',
-        server: 'Server'
+      "errorModal": {
+        "title": "Binding failed"
       },
-      actions: {
-        positions: 'Positions',
-        orders: 'Orders',
-        details: 'Details'
+      "errors": {
+        "brokerUnavailable": "Server error or incorrect password",
+        "connectionFailed": "Unable to connect to broker server, please check your network",
+        "invalidCredentials": "Account not found or invalid password",
+        "timeout": "Connection timed out, please try again later"
       },
-      deleteConfirm: {
-        title: 'Delete this account?',
-        content: 'This action cannot be undone'
+      "fields": {
+        "brokerName": "Broker name",
+        "company": "Company",
+        "password": "Password",
+        "platform": "Platform",
+        "server": "Server",
+        "tradingAccount": "Trading account"
+      },
+      "labels": {
+        "serverCount": "{{count}} servers"
+      },
+      "messages": {
+        "bindFailed": "Failed to bind account",
+        "bindSuccess": "Account bound successfully",
+        "enterBrokerName": "Please enter broker name",
+        "enterPassword": "Please enter password",
+        "enterTradingAccount": "Please enter trading account",
+        "foundBrokers": "Found {{count}} brokers",
+        "loginDigitsOnly": "Trading account must contain only digits",
+        "noAccessHosts": "No server addresses available for the selected broker",
+        "noBrokersFound": "No matching brokers found. Please check the name.",
+        "searchFailed": "Search failed. Please try again later.",
+        "selectServer": "Please select a server",
+        "verifyFailed": "Account verification failed"
+      },
+      "passwordHint": "Password is transmitted via HTTPS and stored as an Argon2id hash (non-reversible) on the backend",
+      "placeholders": {
+        "brokerName": "Enter broker name, e.g. XM, IC Markets",
+        "company": "Select company",
+        "password": "Enter password",
+        "server": "Select server",
+        "tradingAccount": "Enter trading account"
+      },
+      "step1": {
+        "subtitle": "Select your trading platform and search for your broker",
+        "title": "Choose platform and broker"
+      },
+      "step2": {
+        "subtitle": "Enter your trading account and password",
+        "title": "Enter account information"
+      },
+      "step3": {
+        "subtitle": "Verify credentials and confirm to complete",
+        "title": "Verify & confirm"
+      },
+      "summary": {
+        "balance": "Balance",
+        "broker": "Broker",
+        "currency": "Currency",
+        "equity": "Equity",
+        "freeMargin": "Free margin",
+        "leverage": "Leverage",
+        "margin": "Margin",
+        "password": "Password",
+        "platform": "Platform",
+        "server": "Server",
+        "tradingAccount": "Trading account",
+        "verified": "Account verified"
+      },
+      "title": "Bind MT Account"
+    },
+    "bindNew": "Bind New Account",
+    "card": {
+      "actions": {
+        "details": "Details",
+        "orders": "Orders",
+        "positions": "Positions"
+      },
+      "deleteConfirm": {
+        "content": "This action cannot be undone",
+        "title": "Delete this account?"
+      },
+      "fields": {
+        "balance": "Balance",
+        "broker": "Broker",
+        "equity": "Equity",
+        "server": "Server"
+      },
+      "status": {
+        "connected": "Connected",
+        "connecting": "Connecting",
+        "disabled": "Disabled",
+        "disconnected": "Disconnected",
+        "error": "Error"
       }
     },
-    disabled: {
-      title: 'Disabled Accounts',
-      table: {
-        account: 'Account',
-        type: 'Type',
-        broker: 'Broker',
-        balance: 'Balance',
-        equity: 'Equity',
-        actions: 'Actions'
+    "detail": {
+      "accountType": {
+        "demo": "Demo",
+        "real": "Real"
       },
-      confirmDelete: {
-        title: 'Delete this account?',
-        content: 'This action cannot be undone'
+      "actions": {
+        "deleteAccount": "Delete account",
+        "deleteConfirm": "Verify & Delete",
+        "deletePasswordHint": "Enter the MT trading password or read-only password to verify:",
+        "deletePasswordPlaceholder": "MT trading / read-only password",
+        "deleteWarning": "This action is irreversible. All account data (trade records, analytics, etc.) will be permanently deleted.",
+        "disableAccount": "Disable account",
+        "enableAccount": "Enable account",
+        "syncHistory": "Sync history"
       },
-      mobile: {
-        balanceLabel: 'Balance: ',
-        equityLabel: 'Equity: '
+      "balanceRecord": {
+        "deposit": "Deposit",
+        "depositIconText": "Deposit",
+        "withdraw": "Withdraw",
+        "withdrawIconText": "Withdraw"
+      },
+      "cards": {
+        "balance": "Balance",
+        "credit": "Credit",
+        "equity": "Equity",
+        "floatingProfit": "Floating P/L",
+        "marginFree": "Free margin",
+        "marginLevel": "Margin level",
+        "marginUsed": "Margin used"
+      },
+      "connected": "Connected",
+      "lastConnected": "{{time}}",
+      "leverage": "Leverage {{leverage}}x",
+      "messages": {
+        "fetchAccountFailed": "Failed to load account information. Please try again later.",
+        "syncHistoryFailed": "Failed to sync order history. Please ensure the account is connected to the MT server.",
+        "syncHistorySuccess": "Order history synced successfully"
+      },
+      "mode": {
+        "investor": "Investor mode",
+        "trader": "Trader mode"
+      },
+      "orderTypes": {
+        "buyLimit": "Buy limit",
+        "buyStop": "Buy stop",
+        "sellLimit": "Sell limit",
+        "sellStop": "Sell stop"
+      },
+      "status": {
+        "connected": "Connected",
+        "connecting": "Connecting",
+        "disabled": "Disabled",
+        "disconnected": "Disconnected",
+        "error": "Error"
+      },
+      "syncHistory": {
+        "content": "Sync the last year of order history from the MT server? This may take some time.",
+        "ok": "Sync",
+        "title": "Sync Order History"
       }
     },
-    tradeTabs: {
-      positionsWithCount: 'Positions ({{count}})',
-      pendingWithCount: 'Pending ({{count}})',
-      historyWithCount: 'History ({{count}})',
-      emptyPositions: 'No open positions',
-      emptyHistory: 'No order history',
-      syncHistory: 'Sync History',
-      table: {
-        orderId: 'Order ID',
-        symbol: 'Symbol',
-        side: 'Side',
-        type: 'Type',
-        volume: 'Volume',
-        openPrice: 'Open price',
-        currentPrice: 'Current price',
-        pendingPrice: 'Pending price',
-        closePrice: 'Close price',
-        profit: 'P/L',
-        openTime: 'Open time',
-        pendingTime: 'Pending time',
-        closeTime: 'Close time'
+    "disabled": {
+      "confirmDelete": {
+        "content": "This action cannot be undone",
+        "title": "Delete this account?"
       },
-      pagination: {
-        total: '{{total}} total'
+      "mobile": {
+        "balanceLabel": "Balance: ",
+        "equityLabel": "Equity: "
+      },
+      "table": {
+        "account": "Account",
+        "actions": "Actions",
+        "balance": "Balance",
+        "broker": "Broker",
+        "equity": "Equity",
+        "type": "Type"
+      },
+      "title": "Disabled Accounts"
+    },
+    "edit": {
+      "fields": {
+        "oldPassword": "Current password",
+        "password": "New password",
+        "server": "Server",
+        "tradingAccount": "Trading account"
+      },
+      "messages": {
+        "enterOldPassword": "Please enter current password",
+        "enterPassword": "Please enter new password",
+        "passwordSaved": "Password saved",
+        "passwordVerifyFailed": "Password change failed"
+      },
+      "placeholders": {
+        "newPassword": "Enter new password",
+        "oldPassword": "Enter current password"
+      },
+      "title": "Edit Account"
+    },
+    "empty": {
+      "subtitle": "Click the button below to bind your MT4/MT5 trading account",
+      "title": "No bound accounts"
+    },
+    "legend": {
+      "connected": "Connected",
+      "connecting": "Connecting",
+      "disabled": "Disabled",
+      "disconnectedOrError": "Disconnected/Error",
+      "title": "Legend:"
+    },
+    "messages": {
+      "connectFailed": "Connection failed",
+      "connectSuccess": "Connected successfully",
+      "connectingMtServer": "Connecting to MT server",
+      "createFailed": "Failed to create account",
+      "createdSuccess": "Account created successfully",
+      "deleteFailed": "Delete failed",
+      "deleted": "Account deleted",
+      "disableFailed": "Failed to disable account",
+      "disabledSuccess": "Account disabled successfully",
+      "disconnectFailed": "Failed to disconnect",
+      "enableFailed": "Failed to enable account",
+      "enabledSuccess": "Account enabled successfully",
+      "fetchAccountFailed": "Failed to load account information",
+      "fetchListFailed": "Failed to load account list"
+    },
+    "report": {
+      "aiAnalysis": "AI Analysis",
+      "direction": "Direction Breakdown",
+      "directionLong": "Long",
+      "directionShort": "Short",
+      "drawdownEvents": "Drawdown Events",
+      "drawdownOverlay": "Equity Curve + Drawdown",
+      "generate": "Generate Report",
+      "goToAISettings": "Go to AI Settings →",
+      "periods": {
+        "month": "This Month",
+        "quarter": "This Quarter",
+        "week": "This Week",
+        "year": "This Year"
+      },
+      "recovered": "Recovered",
+      "sections": {
+        "findings": "Key Findings",
+        "recommendations": "Recommendations",
+        "summary": "Summary"
+      },
+      "symbolPnL": "P&L by Symbol",
+      "title": "Trading Report",
+      "titleShort": "Report",
+      "tradeDistribution": "Trade Profit Distribution",
+      "winRateTrend": "Monthly Win Rate Trend"
+    },
+    "subtitle": "Manage your MT4/MT5 trading accounts",
+    "title": "My Accounts",
+    "tradeTabs": {
+      "emptyHistory": "No order history",
+      "emptyPositions": "No open positions",
+      "historyWithCount": "History ({{count}})",
+      "pagination": {
+        "total": "{{total}} total"
+      },
+      "pendingWithCount": "Pending ({{count}})",
+      "positionsWithCount": "Positions ({{count}})",
+      "syncHistory": "Sync History",
+      "table": {
+        "closePrice": "Close price",
+        "closeTime": "Close time",
+        "currentPrice": "Current price",
+        "openPrice": "Open price",
+        "openTime": "Open time",
+        "orderId": "Order ID",
+        "pendingPrice": "Pending price",
+        "pendingTime": "Pending time",
+        "profit": "P/L",
+        "side": "Side",
+        "symbol": "Symbol",
+        "type": "Type",
+        "volume": "Volume"
       }
-    },
-    edit: {
-      title: 'Edit Account',
-      fields: {
-        tradingAccount: 'Trading account',
-        server: 'Server',
-        password: 'New password',
-        oldPassword: 'Current password'
-      },
-      placeholders: {
-        newPassword: 'Enter new password',
-        oldPassword: 'Enter current password'
-      },
-      messages: {
-        enterPassword: 'Please enter new password',
-        enterOldPassword: 'Please enter current password',
-        passwordVerifyFailed: 'Password change failed',
-        passwordSaved: 'Password saved'
-      }
-    },
-    detail: {
-      messages: {
-        fetchAccountFailed: 'Failed to load account information. Please try again later.',
-        syncHistorySuccess: 'Order history synced successfully',
-        syncHistoryFailed: 'Failed to sync order history. Please ensure the account is connected to the MT server.'
-      },
-      orderTypes: {
-        buyLimit: 'Buy limit',
-        sellLimit: 'Sell limit',
-        buyStop: 'Buy stop',
-        sellStop: 'Sell stop'
-      },
-      balanceRecord: {
-        deposit: 'Deposit',
-        withdraw: 'Withdraw',
-        depositIconText: 'Deposit',
-        withdrawIconText: 'Withdraw'
-      },
-      syncHistory: {
-        title: 'Sync Order History',
-        content: 'Sync the last year of order history from the MT server? This may take some time.',
-        ok: 'Sync'
-      },
-      actions: {
-        enableAccount: 'Enable account',
-        disableAccount: 'Disable account',
-        deleteAccount: 'Delete account',
-        deleteConfirm: 'Verify & Delete',
-        deleteWarning: 'This action is irreversible. All account data (trade records, analytics, etc.) will be permanently deleted.',
-        deletePasswordHint: 'Enter the MT trading password or read-only password to verify:',
-        deletePasswordPlaceholder: 'MT trading / read-only password',
-        syncHistory: 'Sync history'
-      },
-      status: {
-        disabled: 'Disabled',
-        connected: 'Connected',
-        connecting: 'Connecting',
-        disconnected: 'Disconnected',
-        error: 'Error'
-      },
-      accountType: {
-        real: 'Real',
-        demo: 'Demo'
-      },
-      mode: {
-        investor: 'Investor mode',
-        trader: 'Trader mode'
-      },
-      connected: 'Connected',
-        lastConnected: '{{time}}',
-        leverage: 'Leverage {{leverage}}x',
-      cards: {
-        balance: 'Balance',
-        equity: 'Equity',
-        floatingProfit: 'Floating P/L',
-        marginUsed: 'Margin used',
-        marginFree: 'Free margin',
-        marginLevel: 'Margin level',
-        credit: 'Credit'
-      }
-    },
-    report: {
-      title: 'Trading Report',
-      titleShort: 'Report',
-      generate: 'Generate Report',
-      goToAISettings: 'Go to AI Settings →',
-      aiAnalysis: 'AI Analysis',
-      symbolPnL: 'P&L by Symbol',
-      direction: 'Direction Breakdown',
-      directionLong: 'Long',
-      directionShort: 'Short',
-      tradeDistribution: 'Trade Profit Distribution',
-      drawdownOverlay: 'Equity Curve + Drawdown',
-      drawdownEvents: 'Drawdown Events',
-      recovered: 'Recovered',
-      winRateTrend: 'Monthly Win Rate Trend',
-      periods: {
-        week: 'This Week',
-        month: 'This Month',
-        quarter: 'This Quarter',
-        year: 'This Year',
-      },
-      sections: {
-        summary: 'Summary',
-        findings: 'Key Findings',
-        recommendations: 'Recommendations',
-      },
-    },
+    }
   }
 } as const;
-
-export default accounts;
+export default Accounts;

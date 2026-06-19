@@ -1,11 +1,11 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_quick_trade_section_vi.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const QuickTradeSection = {
+const StrategyQuickTradeSection = {
   "strategy": {
     "quickTradeSection": {
       "amountLots": "Khối Lượng (lots)",
-      "cross": "Cross",
-      "isolated": "Isolated",
+      "cross": "全仓",
+      "isolated": "逐仓",
       "marginMode": "Chế Độ Ký Quỹ",
       "mt4CrossOnly": "MT4 chỉ hỗ trợ ký quỹ Cross",
       "orderFailed": "Đặt lệnh thất bại",
@@ -16,4 +16,4 @@ const QuickTradeSection = {
     }
   }
 } as const;
-export default QuickTradeSection;
+export default StrategyQuickTradeSection;

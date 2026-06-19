@@ -124,7 +124,7 @@ export const PLACEHOLDERS_SELECT_SYMBOL_KEY = 'strategy.codeEditor.placeholders.
 /** title */
 export const TITLE_KEY = 'strategy.codeEditor.title' as const;
 
-export const CODEEDITOR_KEYS = {
+export const STRATEGYCODEEDITOR_KEYS = {
   actions_copy: 'strategy.codeEditor.actions.copy',
   actions_preview: 'strategy.codeEditor.actions.preview',
   actions_save_as_template: 'strategy.codeEditor.actions.saveAsTemplate',
@@ -168,4 +168,4 @@ export const CODEEDITOR_KEYS = {
   title: 'strategy.codeEditor.title',
 } as const;
 
-export type CodeEditorKey = typeof CODEEDITOR_KEYS[keyof typeof CODEEDITOR_KEYS];
+export type StrategyCodeEditorKey = typeof STRATEGYCODEEDITOR_KEYS[keyof typeof STRATEGYCODEEDITOR_KEYS];

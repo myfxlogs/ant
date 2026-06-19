@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_default_templates_en.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const DefaultTemplates = {
+const StrategyDefaultTemplates = {
   "strategy": {
     "defaultTemplates": {
       "forceBuy": {
@@ -22,4 +22,4 @@ const DefaultTemplates = {
     }
   }
 } as const;
-export default DefaultTemplates;
+export default StrategyDefaultTemplates;

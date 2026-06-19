@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_backtest_params_vi.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const BacktestParams = {
+const StrategyBacktestParams = {
   "strategy": {
     "backtestParams": {
       "backtestFailed": "Backtest thất bại",
@@ -15,7 +15,7 @@ const BacktestParams = {
       "direction": "Hướng",
       "endDate": "Kết Thúc",
       "enterCodeAndSymbol": "Vui lòng nhập code chiến lược và chọn mã",
-      "eventDrivenMode": "Run(context)",
+      "eventDrivenMode": "Run(context) 事件驱动",
       "execution": "Thực Thi",
       "history": "Lịch Sử Backtest",
       "leverage": "Đòn Bẩy",
@@ -45,4 +45,4 @@ const BacktestParams = {
     }
   }
 } as const;
-export default BacktestParams;
+export default StrategyBacktestParams;

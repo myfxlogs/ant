@@ -70,7 +70,7 @@ export const VERSION_KEY = 'strategy.asset.version' as const;
 /** visibility */
 export const VISIBILITY_KEY = 'strategy.asset.visibility' as const;
 
-export const ASSET_KEYS = {
+export const STRATEGYASSET_KEYS = {
   actions: 'strategy.asset.actions',
   asset_list: 'strategy.asset.assetList',
   asset_name: 'strategy.asset.assetName',
@@ -96,4 +96,4 @@ export const ASSET_KEYS = {
   visibility: 'strategy.asset.visibility',
 } as const;
 
-export type AssetKey = typeof ASSET_KEYS[keyof typeof ASSET_KEYS];
+export type StrategyAssetKey = typeof STRATEGYASSET_KEYS[keyof typeof STRATEGYASSET_KEYS];

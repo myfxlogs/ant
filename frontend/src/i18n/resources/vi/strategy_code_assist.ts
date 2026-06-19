@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_code_assist_vi.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const CodeAssist = {
+const StrategyCodeAssist = {
   "strategy": {
     "codeAssist": {
       "aiReviseTitle": "Trợ lý AI — sửa code",
@@ -44,4 +44,4 @@ const CodeAssist = {
     }
   }
 } as const;
-export default CodeAssist;
+export default StrategyCodeAssist;

@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_schedule_logs_ja.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const ScheduleLogs = {
+const StrategyScheduleLogs = {
   "strategy": {
     "scheduleLogs": {
       "action": {
@@ -76,4 +76,4 @@ const ScheduleLogs = {
     }
   }
 } as const;
-export default ScheduleLogs;
+export default StrategyScheduleLogs;

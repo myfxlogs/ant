@@ -1,7 +1,7 @@
 actions_cancel: 'Hủy'
 fields_error: 'Lỗi'
 fields_max_drawdown: 'Sụt Giảm Tối Đa'
-fields_sharpe: 'Sharpe'
+fields_sharpe: '夏普比率'
 fields_status: 'Trạng thái'
 hints_canceling: 'Đang hủy backtest'
 hints_queued: 'Backtest đang chờ'

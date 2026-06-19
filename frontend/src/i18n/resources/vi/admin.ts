@@ -1,83 +1,84 @@
-const admin = {
-  admin: {
-    strategy: {
-      title: 'Quản lý Chiến lược',
-      tabs: {
-        preset: 'Chiến lược Cài sẵn',
-        allStrategies: 'Tất cả Chiến lược',
+// Auto-generated from proto/ant/v1/i18n/admin_vi.textproto
+// DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
+const Admin = {
+  "admin": {
+    "strategy": {
+      "actions": {
+        "archive": "Lưu trữ",
+        "archiveConfirm": "Lưu trữ chiến lược này?",
+        "code": "Mã",
+        "disable": "Vô hiệu",
+        "disableConfirm": "Dừng tất cả lịch trình?",
+        "enable": "Kích hoạt",
+        "flag": "Cờ",
+        "publish": "Xuất Bản",
+        "unflag": "Bỏ cờ",
+        "unpublish": "Hủy xuất bản"
       },
-      preset: {
-        add: 'Thêm Cài sẵn',
-        edit: 'Sửa Cài sẵn',
-        create: 'Tạo Cài sẵn',
-        deleteConfirm: 'Xóa cài sẵn này?',
+      "all": {
+        "allActive": "Tất cả Hoạt động",
+        "archived": "Đã lưu trữ",
+        "disabled": "Đã vô hiệu",
+        "flagFilter": "Bộ lọc Cờ",
+        "flagged": "Đã gắn cờ",
+        "searchPlaceholder": "Tìm theo tên...",
+        "total": "Tổng {{count}}"
       },
-      all: {
-        searchPlaceholder: 'Tìm theo tên...',
-        flagFilter: 'Bộ lọc Cờ',
-        allActive: 'Tất cả Hoạt động',
-        flagged: 'Đã gắn cờ',
-        disabled: 'Đã vô hiệu',
-        archived: 'Đã lưu trữ',
-        total: 'Tổng {{count}}',
+      "columns": {
+        "actions": "Thao tác",
+        "code": "Mã",
+        "description": "Mô tả",
+        "flag": "Cờ",
+        "name": "Tên",
+        "no": "否",
+        "owner": "Chủ sở hữu",
+        "preset": "Cài sẵn",
+        "public": "Công khai",
+        "schedules": "Lịch trình",
+        "status": "Trạng thái",
+        "system": "— Hệ thống —",
+        "tags": "Thẻ",
+        "tagsPlaceholder": "xu-hướng, MA",
+        "type": "Loại",
+        "user": "Người dùng",
+        "uses": "Lượt dùng",
+        "yes": "Có"
       },
-      actions: {
-        code: 'Mã',
-        flag: 'Cờ',
-        unflag: 'Bỏ cờ',
-        unpublish: 'Hủy xuất bản',
-        publish: 'Xuất Bản',
-        disable: 'Vô hiệu',
-        enable: 'Kích hoạt',
-        archive: 'Lưu trữ',
-        disableConfirm: 'Dừng tất cả lịch trình?',
-        archiveConfirm: 'Lưu trữ chiến lược này?',
+      "messages": {
+        "archiveFailed": "Lưu trữ thất bại",
+        "archiveSuccess": "Đã lưu trữ",
+        "deleteFailed": "Xóa thất bại",
+        "disableFailed": "Vô hiệu thất bại",
+        "disableSuccess": "Đã vô hiệu — tất cả lịch trình đã dừng",
+        "enableFailed": "Kích hoạt thất bại",
+        "enableSuccess": "Đã kích hoạt",
+        "flagFailed": "Gắn cờ thất bại",
+        "flagSuccess": "Đã gắn cờ chiến lược",
+        "loadPresetFailed": "Không thể tải chiến lược cài sẵn",
+        "loadStrategiesFailed": "Không thể tải danh sách chiến lược",
+        "presetCreated": "Đã tạo cài sẵn",
+        "presetDeleted": "Đã xóa cài sẵn",
+        "presetUpdated": "Đã cập nhật cài sẵn",
+        "publishFailed": "发布失败",
+        "publishSuccess": "已发布",
+        "saveFailed": "Lưu thất bại",
+        "unflagFailed": "Bỏ cờ thất bại",
+        "unflagSuccess": "Đã bỏ cờ",
+        "unpublishFailed": "取消发布失败",
+        "unpublishSuccess": "已取消发布"
       },
-      columns: {
-        name: 'Tên',
-        description: 'Mô tả',
-        tags: 'Thẻ',
-        tagsPlaceholder: 'xu-hướng, MA',
-        uses: 'Lượt dùng',
-        actions: 'Thao tác',
-        code: 'Mã',
-        owner: 'Chủ sở hữu',
-        type: 'Loại',
-        status: 'Trạng thái',
-        public: 'Công khai',
-        yes: 'Có',
-        no: 'No',
-        flag: 'Cờ',
-        schedules: 'Lịch trình',
-        preset: 'Cài sẵn',
-        user: 'Người dùng',
-        system: '— Hệ thống —',
+      "preset": {
+        "add": "Thêm Cài sẵn",
+        "create": "Tạo Cài sẵn",
+        "deleteConfirm": "Xóa cài sẵn này?",
+        "edit": "Sửa Cài sẵn"
       },
-      messages: {
-        loadPresetFailed: 'Không thể tải chiến lược cài sẵn',
-        loadStrategiesFailed: 'Không thể tải danh sách chiến lược',
-        saveFailed: 'Lưu thất bại',
-        presetUpdated: 'Đã cập nhật cài sẵn',
-        presetCreated: 'Đã tạo cài sẵn',
-        presetDeleted: 'Đã xóa cài sẵn',
-        deleteFailed: 'Xóa thất bại',
-        flagSuccess: 'Đã gắn cờ chiến lược',
-        flagFailed: 'Gắn cờ thất bại',
-        unflagSuccess: 'Đã bỏ cờ',
-        unflagFailed: 'Bỏ cờ thất bại',
-        unpublishSuccess: 'Unpublished',
-        unpublishFailed: 'Unpublish failed',
-        publishSuccess: 'Published',
-        publishFailed: 'Publish failed',
-        disableSuccess: 'Đã vô hiệu — tất cả lịch trình đã dừng',
-        disableFailed: 'Vô hiệu thất bại',
-        enableSuccess: 'Đã kích hoạt',
-        enableFailed: 'Kích hoạt thất bại',
-        archiveSuccess: 'Đã lưu trữ',
-        archiveFailed: 'Lưu trữ thất bại',
+      "tabs": {
+        "allStrategies": "Tất cả Chiến lược",
+        "preset": "Chiến lược Cài sẵn"
       },
-    },
-  },
-};
-
-export default admin;
+      "title": "Quản lý Chiến lược"
+    }
+  }
+} as const;
+export default Admin;

@@ -1,338 +1,332 @@
-const aiWizard = {
-  ai: {
-    wizard: {
-      title: 'AI Strategy Wizard',
-      subtitle: 'One step per page, can go forward/backward',
-      currentModel: 'Current model: {{model}}',
-      rangePresets: {
-        '1d': 'Last 1 day',
-        '3d': 'Last 3 days',
-        '7d': 'Last 1 week',
-        '30d': 'Last 1 month',
-        '90d': 'Last 3 months',
+// Auto-generated from proto/ant/v1/i18n/ai_wizard_en.textproto
+// DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
+const AiWizard = {
+  "ai": {
+    "wizard": {
+      "actions": {
+        "cancel": "Cancel",
+        "next": "Next",
+        "prev": "Previous"
       },
-      steps: {
-        setup: 'Basic Info',
-        generate: 'Generate Strategy',
-        publishCode: 'Backtest & Live - Code',
-        publishBacktest: 'Backtest & Live - Backtest',
-        publishLaunch: 'Backtest & Live - Launch',
+      "agents": {
+        "codeTitle": "Code generation",
+        "riskTitle": "Risk control and execution constraints",
+        "signalsTitle": "Signal and indicator design",
+        "styleTitle": "Market condition / style recommendation"
       },
-      actions: {
-        prev: 'Previous',
-        next: 'Next',
-        cancel: 'Cancel',
+      "currentModel": "Current model: {{model}}",
+      "generate": {
+        "actions": {
+          "abort": "Abort",
+          "goValidate": "Go to validate",
+          "hide": "Hide",
+          "regenerateSummary": "Regenerate summary",
+          "rerun": "Regenerate",
+          "runAgents": "Run multiple experts + generate code"
+        },
+        "cards": {
+          "resultsTitle": "Multiple experts\\\\"
+        },
+        "hints": {
+          "afterGenerated": "After generation, proceed to validate/backtest/launch"
+        },
+        "labels": {
+          "elapsed": "Elapsed"
+        },
+        "modals": {
+          "final": {
+            "title": "Code generated. Recommended to click \"Validate code\" to confirm it passes."
+          }
+        },
+        "sections": {
+          "output": "Model output",
+          "prompt": "Prompt sent to model",
+          "spec": "Spec"
+        },
+        "status": {
+          "done": "Done",
+          "error": "Error",
+          "idle": "Waiting",
+          "inProgress": "In progress",
+          "running": {
+            "code": "Code generation in progress",
+            "generic": "{{title}} in progress",
+            "risk": "Risk control in progress",
+            "signals": "Signal design in progress",
+            "style": "Market condition/style recommending"
+          }
+        }
       },
-      generate: {
-        cards: {
-          resultsTitle: 'Multiple experts\' results',
+      "messages": {
+        "agentFailed": "{{title}} failed",
+        "aiRequestTimeout": "AI request timeout (>{{seconds}}s)",
+        "backtestCreated": "Backtest task created",
+        "backtestNotDoneWait": "Backtest not finished, wait until scorecard status becomes success/failed/cancelled before continuing",
+        "chatAborted": "Chat with model aborted",
+        "codeInvalidFixAndContinue": "Code validation failed, please fix before continuing",
+        "confirmScoreFirst": "Please confirm score result in the score popup first",
+        "createBacktestFailed": "Create backtest failed",
+        "createDraftFailed": "Create draft failed",
+        "createScheduleFailed": "Create schedule failed",
+        "datasetFrozenCreated": "Frozen dataset created",
+        "draftNotCreated": "Draft not created",
+        "draftSaved": "Draft saved",
+        "fillRequired": "Please fill required fields first",
+        "fillRequiredWithFields": "Please fill required fields first: {{fields}}",
+        "freezeDatasetFailed": "Freeze dataset failed",
+        "generateCodeFirst": "Please generate strategy code first",
+        "inputIntentFirst": "Please enter strategy goal/idea first",
+        "loadAccountsFailed": "Load accounts failed",
+        "loadDatasetFailed": "Load dataset failed",
+        "loadSymbolsFailed": "Load symbols failed",
+        "modelReturnedEmpty": "Model returned empty",
+        "noCodeToBacktest": "No code to backtest",
+        "noCodeToValidate": "No code to validate",
+        "noPythonCodeBlock": "Code agent did not output ```python block```, check result",
+        "publishFailed": "Publish failed",
+        "publishTemplateFirst": "Please publish template first",
+        "publishedNoId": "Published but no returned id (please check in strategy management)",
+        "saveFailed": "Save failed",
+        "scheduleAlreadyExists": "Schedule with same template+symbol+timeframe already exists for this account; do not duplicate.",
+        "scheduleCreated": "Schedule created",
+        "scheduleCreatedAndEnabled": "Schedule created and enabled",
+        "startBacktestFirst": "Please click \"Backtest (async task)\" to start backtest first",
+        "templatePublished": "Template published",
+        "userAborted": "User aborted",
+        "validateCodeFirst": "Please click \"Validate code\" first",
+        "validateError": "Validation error",
+        "validateFailed": "Validation failed",
+        "validateOk": "Validation passed",
+        "watchBacktestRunFailed": "watchBacktestRun failed"
+      },
+      "prompts": {
+        "base": {
+          "account": "Account: {{accountId}}",
+          "constraints": "Constraints: Max drawdown={{maxDrawdownPct}}% Risk per trade={{riskPerTradePct}}% Max trades per day={{maxTradesPerDay}}",
+          "data": "Data: {{dataSpec}}",
+          "empty": "(empty)",
+          "macroDisabled": "Macro events: not used",
+          "macroEnabled": "Macro events (user-provided):\\\\n{{text}}",
+          "params": "Parameters (defs+current values; injected into context[\"params\"] at runtime):\\\\n{{params}}",
+          "symbol": "Symbol: {{symbol}}",
+          "timeframe": "Timeframe: {{timeframe}}",
+          "userIntent": "User strategy goal (natural language):\\\\n{{intent}}"
         },
-        actions: {
-          runAgents: 'Run multiple experts + generate code',
-          hide: 'Hide',
-          abort: 'Abort',
-          rerun: 'Regenerate',
-          regenerateSummary: 'Regenerate summary',
-          goValidate: 'Go to validate',
+        "dataSpec": {
+          "dataset": "Use frozen dataset datasetId={{datasetId}}",
+          "klineRange": "Use historical K-line range from={{from}} to={{to}}"
         },
-        hints: {
-          afterGenerated: 'After generation, proceed to validate/backtest/launch',
+        "summary": {
+          "codeTitle": "Code:",
+          "intro": "You are a quantitative strategy explanation assistant. Concisely explain (bullet points, max 12 lines) the core idea of this AntTrader Python strategy code to help users judge if it matches expectations.",
+          "mustInclude1": "1) Strategy type/paradigm (trend/mean/breakout/momentum/grid/etc.; state \"uncertain\" if unclear)",
+          "mustInclude2": "2) Main entry conditions (2-4 bullet points)",
+          "mustInclude3": "3) Main exit/SL/TP/risk controls (2-4 bullet points)",
+          "mustInclude4": "4) Applicable / inapplicable scenario each 1 line",
+          "mustIncludeTitle": "Must include:",
+          "userIntent": "User expectation (natural language):\\\\n{{intent}}"
         },
-        labels: {
-          elapsed: 'Elapsed',
+        "upstream": {
+          "risk": "【Risk control conclusion】\\\\n{{text}}",
+          "sectionTitle": "【Upstream agent conclusions (as provided)】",
+          "signals": "【Signal design conclusion】\\\\n{{text}}",
+          "style": "【Market condition/style conclusion】\\\\n{{text}}"
+        }
+      },
+      "publish": {
+        "actions": {
+          "publishTemplate": "Publish template",
+          "startBacktest": "Backtest (async task)",
+          "validateCode": "Validate code"
         },
-        status: {
-          inProgress: 'In progress',
-          done: 'Done',
-          error: 'Error',
-          idle: 'Waiting',
-          running: {
-            style: 'Market condition/style recommending',
-            signals: 'Signal design in progress',
-            risk: 'Risk control in progress',
-            code: 'Code generation in progress',
-            generic: '{{title}} in progress',
+        "cards": {
+          "codeTitle": "1) Strategy code (editable)",
+          "launchTitle": "3) Launch schedule",
+          "scoreCardTitle": "2) Backtest scorecard"
+        },
+        "messages": {
+          "validateFailed": "validate failed",
+          "validateOk": "validate passed"
+        },
+        "placeholders": {
+          "codeEditable": "AI-generated code will be filled here; you can also edit manually."
+        }
+      },
+      "publishBacktest": {
+        "actions": {
+          "close": "Close",
+          "confirm": "Confirm",
+          "inProgress": "In progress",
+          "retry": "Retry",
+          "runInBackground": "Run in background",
+          "startBacktest": "Start backtest",
+          "succeeded": "Success"
+        },
+        "cards": {
+          "backtestTitle": "Backtest",
+          "scoreCardTitle": "Scorecard"
+        },
+        "draftName": "Backtest {{datetime}} {{symbol}} {{timeframe}}",
+        "draftNameShort": "Backtest {{symbol}} {{timeframe}}",
+        "labels": {
+          "confirmed": "Confirmed",
+          "elapsed": "Elapsed",
+          "overallScore": "Overall score",
+          "scoringProgress": "Scoring progress",
+          "status": "Status"
+        },
+        "modals": {
+          "score": {
+            "title": "Score confirmation"
           },
-        },
-        sections: {
-          prompt: 'Prompt sent to model',
-          output: 'Model output',
-          spec: 'Spec',
-        },
-        modals: {
-          final: {
-            title: 'Code generated. Recommended to click "Validate code" to confirm it passes.',
-          },
-        },
+          "status": {
+            "title": "Backtest in progress"
+          }
+        }
       },
-      publish: {
-        cards: {
-          codeTitle: '1) Strategy code (editable)',
-          scoreCardTitle: '2) Backtest scorecard',
-          launchTitle: '3) Launch schedule',
-        },
-        placeholders: {
-          codeEditable: 'AI-generated code will be filled here; you can also edit manually.',
-        },
-        actions: {
-          validateCode: 'Validate code',
-          startBacktest: 'Backtest (async task)',
-          publishTemplate: 'Publish template',
-        },
-        messages: {
-          validateOk: 'validate passed',
-          validateFailed: 'validate failed',
-        },
+      "schedule": {
+        "defaultName": "AI Schedule {{symbol}} {{timeframe}}"
       },
-      agents: {
-        styleTitle: 'Market condition / style recommendation',
-        signalsTitle: 'Signal and indicator design',
-        riskTitle: 'Risk control and execution constraints',
-        codeTitle: 'Code generation',
+      "setup": {
+        "actions": {
+          "deleteCurrentDataset": "Delete current dataset",
+          "freezeFromCurrentRange": "Freeze from current range",
+          "refreshDataset": "Refresh"
+        },
+        "cards": {
+          "constraintsAndGoalTitle": "Constraints & Goals",
+          "hardConstraintsTitle": "Hard Constraints",
+          "hintsTitle": "Hints",
+          "tradeAndDataTitle": "Trading & Data"
+        },
+        "dataModes": {
+          "dataset": "Frozen dataset",
+          "klineRange": "Historical K-line range"
+        },
+        "hints": {
+          "nextWillGenerateCode": "Next step will start generating strategy code.",
+          "tradeDataNextStep": "Click \"Next\" after filling to proceed to constraints & goals."
+        },
+        "labels": {
+          "account": "Account",
+          "backtestRange": "Backtest Range",
+          "dataset": "Frozen Dataset",
+          "historicalData": "Historical Data",
+          "intent": "Strategy Goal / Idea",
+          "macroEvents": "Macro Events",
+          "macroModule": "Macro Module",
+          "maxDrawdownPct": "Max Drawdown (%)",
+          "maxTradesPerDay": "Max Trades per Day",
+          "riskPerTradePct": "Risk per Trade (%)",
+          "symbol": "Symbol",
+          "timeframe": "Timeframe"
+        },
+        "macro": {
+          "off": "Off",
+          "on": "On"
+        },
+        "messages": {
+          "datasetDeleted": "Dataset deleted"
+        },
+        "modals": {
+          "deleteDataset": {
+            "content": "Are you sure you want to delete the selected frozen dataset?",
+            "ok": "Delete",
+            "title": "Delete dataset"
+          }
+        },
+        "placeholders": {
+          "intentExample": "Example: breakout trend following; avoid high volatility; prefer higher win rate...",
+          "macroExample": "Example:\\\\n2024-01-03 21:15 FOMC minutes\\\\n2024-01-05 20:30 NFP",
+          "selectAccount": "Select account",
+          "selectFrozenDataset": "Select frozen dataset",
+          "selectSymbol": "Select symbol",
+          "selectTimeframe": "Select timeframe"
+        },
+        "validations": {
+          "enterIntent": "Please enter strategy goal/idea",
+          "selectAccount": "Please select account",
+          "selectDataset": "Please select dataset",
+          "selectSymbol": "Please select symbol",
+          "selectTimeframe": "Please select timeframe"
+        }
       },
-      template: {
-        defaultName: 'AI Strategy {{title}}',
-        defaultDescription: 'AI wizard generated',
+      "steps": {
+        "generate": "Generate Strategy",
+        "publishBacktest": "Backtest & Live - Backtest",
+        "publishCode": "Backtest & Live - Code",
+        "publishLaunch": "Backtest & Live - Launch",
+        "setup": "Basic Info"
       },
-      schedule: {
-        defaultName: 'AI Schedule {{symbol}} {{timeframe}}',
+      "strategyParams": {
+        "actions": {
+          "addParam": "Add parameter",
+          "delete": "Delete",
+          "exportJson": "Export JSON",
+          "importJson": "Import JSON"
+        },
+        "empty": "No parameters yet. You can add params like fast/slow/risk_per_trade to make the strategy more templated.",
+        "hints": {
+          "intro": "These parameters will:",
+          "line1": "1) Save to template parameters",
+          "line2": "2) Write to schedule.parameters when creating a schedule (map<string,string>)",
+          "line3Prefix": "3) Backend will inject them into Python strategy"
+        },
+        "labels": {
+          "default": "default",
+          "description": "description",
+          "label": "label",
+          "max": "max",
+          "min": "min",
+          "name": "name",
+          "options": "options (for select, comma-separated)",
+          "step": "step",
+          "type": "type",
+          "value": "value (schedule current value)"
+        },
+        "messages": {
+          "copied": "Copied",
+          "copyFailed": "Copy failed",
+          "importFormatInvalid": "Import format error: must be array or { \"paramDefs\": [...] }",
+          "importMissingName": "Import failed: parameter missing name",
+          "imported": "Imported {{count}} parameters",
+          "jsonParseFailed": "JSON parse failed"
+        },
+        "modals": {
+          "copyAndClose": "Copy and close",
+          "exportTitle": "Export parameters JSON",
+          "importOk": "Import",
+          "importTitle": "Import parameters JSON"
+        },
+        "paramCardTitle": "Param #{{index}}",
+        "placeholders": {
+          "defaultExample": "e.g. 10",
+          "description": "Description",
+          "importJson": "Paste parameter JSON (array or {\"paramDefs\": [...]})",
+          "label": "Display name",
+          "nameExample": "e.g. fast",
+          "optionsExample": "e.g. low,medium,high",
+          "value": "Empty uses default"
+        },
+        "title": "Strategy Parameters (optional)",
+        "types": {
+          "bool": "Boolean",
+          "number": "Number",
+          "select": "Select",
+          "string": "String"
+        },
+        "validations": {
+          "nameRequired": "name required",
+          "typeRequired": "type required"
+        }
       },
-      setup: {
-        cards: {
-          tradeAndDataTitle: 'Trading & Data',
-          constraintsAndGoalTitle: 'Constraints & Goals',
-          hardConstraintsTitle: 'Hard Constraints',
-          hintsTitle: 'Hints',
-        },
-        labels: {
-          account: 'Account',
-          symbol: 'Symbol',
-          timeframe: 'Timeframe',
-          historicalData: 'Historical Data',
-          backtestRange: 'Backtest Range',
-          dataset: 'Frozen Dataset',
-          maxDrawdownPct: 'Max Drawdown (%)',
-          riskPerTradePct: 'Risk per Trade (%)',
-          maxTradesPerDay: 'Max Trades per Day',
-          macroModule: 'Macro Module',
-          macroEvents: 'Macro Events',
-          intent: 'Strategy Goal / Idea',
-        },
-        placeholders: {
-          selectAccount: 'Select account',
-          selectSymbol: 'Select symbol',
-          selectTimeframe: 'Select timeframe',
-          selectFrozenDataset: 'Select frozen dataset',
-          macroExample: 'Example:\n2024-01-03 21:15 FOMC minutes\n2024-01-05 20:30 NFP',
-          intentExample: 'Example: breakout trend following; avoid high volatility; prefer higher win rate...',
-        },
-        validations: {
-          selectAccount: 'Please select account',
-          selectSymbol: 'Please select symbol',
-          selectTimeframe: 'Please select timeframe',
-          selectDataset: 'Please select dataset',
-          enterIntent: 'Please enter strategy goal/idea',
-        },
-        dataModes: {
-          klineRange: 'Historical K-line range',
-          dataset: 'Frozen dataset',
-        },
-        actions: {
-          refreshDataset: 'Refresh',
-          freezeFromCurrentRange: 'Freeze from current range',
-          deleteCurrentDataset: 'Delete current dataset',
-        },
-        modals: {
-          deleteDataset: {
-            title: 'Delete dataset',
-            content: 'Are you sure you want to delete the selected frozen dataset?',
-            ok: 'Delete',
-          },
-        },
-        messages: {
-          datasetDeleted: 'Dataset deleted',
-        },
-        macro: {
-          off: 'Off',
-          on: 'On',
-        },
-        hints: {
-          nextWillGenerateCode: 'Next step will start generating strategy code.',
-          tradeDataNextStep: 'Click "Next" after filling to proceed to constraints & goals.',
-        },
+      "subtitle": "One step per page, can go forward/backward",
+      "template": {
+        "defaultDescription": "AI wizard generated",
+        "defaultName": "AI Strategy {{title}}"
       },
-      publishBacktest: {
-        cards: {
-          backtestTitle: 'Backtest',
-          scoreCardTitle: 'Scorecard',
-        },
-        actions: {
-          startBacktest: 'Start backtest',
-          close: 'Close',
-          retry: 'Retry',
-          succeeded: 'Success',
-          inProgress: 'In progress',
-          runInBackground: 'Run in background',
-          confirm: 'Confirm',
-        },
-        labels: {
-          status: 'Status',
-          elapsed: 'Elapsed',
-          scoringProgress: 'Scoring progress',
-          overallScore: 'Overall score',
-          confirmed: 'Confirmed',
-        },
-        modals: {
-          status: {
-            title: 'Backtest in progress',
-          },
-          score: {
-            title: 'Score confirmation',
-          },
-        },
-        draftName: 'Backtest {{datetime}} {{symbol}} {{timeframe}}',
-        draftNameShort: 'Backtest {{symbol}} {{timeframe}}',
-      },
-      strategyParams: {
-        title: 'Strategy Parameters (optional)',
-        hints: {
-          intro: 'These parameters will:',
-          line1: '1) Save to template parameters',
-          line2: '2) Write to schedule.parameters when creating a schedule (map<string,string>)',
-          line3Prefix: '3) Backend will inject them into Python strategy',
-        },
-        actions: {
-          addParam: 'Add parameter',
-          exportJson: 'Export JSON',
-          importJson: 'Import JSON',
-          delete: 'Delete',
-        },
-        empty: 'No parameters yet. You can add params like fast/slow/risk_per_trade to make the strategy more templated.',
-        paramCardTitle: 'Param #{{index}}',
-        labels: {
-          name: 'name',
-          type: 'type',
-          value: 'value (schedule current value)',
-          default: 'default',
-          min: 'min',
-          max: 'max',
-          step: 'step',
-          label: 'label',
-          description: 'description',
-          options: 'options (for select, comma-separated)',
-        },
-        validations: {
-          nameRequired: 'name required',
-          typeRequired: 'type required',
-        },
-        placeholders: {
-          nameExample: 'e.g. fast',
-          value: 'Empty uses default',
-          defaultExample: 'e.g. 10',
-          label: 'Display name',
-          description: 'Description',
-          optionsExample: 'e.g. low,medium,high',
-          importJson: 'Paste parameter JSON (array or {"paramDefs": [...]})',
-        },
-        modals: {
-          exportTitle: 'Export parameters JSON',
-          importTitle: 'Import parameters JSON',
-          copyAndClose: 'Copy and close',
-          importOk: 'Import',
-        },
-        messages: {
-          jsonParseFailed: 'JSON parse failed',
-          importFormatInvalid: 'Import format error: must be array or { "paramDefs": [...] }',
-          importMissingName: 'Import failed: parameter missing name',
-          imported: 'Imported {{count}} parameters',
-          copied: 'Copied',
-          copyFailed: 'Copy failed',
-        },
-        types: {
-          number: 'Number',
-          string: 'String',
-          bool: 'Boolean',
-          select: 'Select',
-        },
-      },
-      prompts: {
-        dataSpec: {
-          dataset: 'Use frozen dataset datasetId={{datasetId}}',
-          klineRange: 'Use historical K-line range from={{from}} to={{to}}',
-        },
-        base: {
-          account: 'Account: {{accountId}}',
-          symbol: 'Symbol: {{symbol}}',
-          timeframe: 'Timeframe: {{timeframe}}',
-          data: 'Data: {{dataSpec}}',
-          constraints: 'Constraints: Max drawdown={{maxDrawdownPct}}% Risk per trade={{riskPerTradePct}}% Max trades per day={{maxTradesPerDay}}',
-          params: 'Parameters (defs+current values; injected into context["params"] at runtime):\n{{params}}',
-          empty: '(empty)',
-          macroEnabled: 'Macro events (user-provided):\n{{text}}',
-          macroDisabled: 'Macro events: not used',
-          userIntent: 'User strategy goal (natural language):\n{{intent}}',
-        },
-        upstream: {
-          style: '【Market condition/style conclusion】\n{{text}}',
-          signals: '【Signal design conclusion】\n{{text}}',
-          risk: '【Risk control conclusion】\n{{text}}',
-          sectionTitle: '【Upstream agent conclusions (as provided)】',
-        },
-        summary: {
-          intro: 'You are a quantitative strategy explanation assistant. Concisely explain (bullet points, max 12 lines) the core idea of this AntTrader Python strategy code to help users judge if it matches expectations.',
-          mustIncludeTitle: 'Must include:',
-          mustInclude1: '1) Strategy type/paradigm (trend/mean/breakout/momentum/grid/etc.; state "uncertain" if unclear)',
-          mustInclude2: '2) Main entry conditions (2-4 bullet points)',
-          mustInclude3: '3) Main exit/SL/TP/risk controls (2-4 bullet points)',
-          mustInclude4: '4) Applicable / inapplicable scenario each 1 line',
-          userIntent: 'User expectation (natural language):\n{{intent}}',
-          codeTitle: 'Code:',
-        },
-      },
-      messages: {
-        generateCodeFirst: 'Please generate strategy code first',
-        validateCodeFirst: 'Please click "Validate code" first',
-        codeInvalidFixAndContinue: 'Code validation failed, please fix before continuing',
-        startBacktestFirst: 'Please click "Backtest (async task)" to start backtest first',
-        backtestNotDoneWait: 'Backtest not finished, wait until scorecard status becomes success/failed/cancelled before continuing',
-        confirmScoreFirst: 'Please confirm score result in the score popup first',
-        fillRequiredWithFields: 'Please fill required fields first: {{fields}}',
-        fillRequired: 'Please fill required fields first',
-        watchBacktestRunFailed: 'watchBacktestRun failed',
-        createDraftFailed: 'Create draft failed',
-        loadAccountsFailed: 'Load accounts failed',
-        loadSymbolsFailed: 'Load symbols failed',
-        loadDatasetFailed: 'Load dataset failed',
-        datasetFrozenCreated: 'Frozen dataset created',
-        freezeDatasetFailed: 'Freeze dataset failed',
-        inputIntentFirst: 'Please enter strategy goal/idea first',
-        aiRequestTimeout: 'AI request timeout (>{{seconds}}s)',
-        modelReturnedEmpty: 'Model returned empty',
-        noPythonCodeBlock: 'Code agent did not output ```python block```, check result',
-        agentFailed: '{{title}} failed',
-        userAborted: 'User aborted',
-        chatAborted: 'Chat with model aborted',
-        noCodeToValidate: 'No code to validate',
-        validateOk: 'Validation passed',
-        validateFailed: 'Validation failed',
-        validateError: 'Validation error',
-        noCodeToBacktest: 'No code to backtest',
-        backtestCreated: 'Backtest task created',
-        createBacktestFailed: 'Create backtest failed',
-        draftNotCreated: 'Draft not created',
-        draftSaved: 'Draft saved',
-        saveFailed: 'Save failed',
-        publishedNoId: 'Published but no returned id (please check in strategy management)',
-        templatePublished: 'Template published',
-        publishFailed: 'Publish failed',
-        publishTemplateFirst: 'Please publish template first',
-        scheduleCreatedAndEnabled: 'Schedule created and enabled',
-        scheduleCreated: 'Schedule created',
-        createScheduleFailed: 'Create schedule failed',
-        scheduleAlreadyExists: 'Schedule with same template+symbol+timeframe already exists for this account; do not duplicate.',
-      },
-    },
-  },
+      "title": "AI Strategy Wizard"
+    }
+  }
 } as const;
-
-export default aiWizard;
+export default AiWizard;

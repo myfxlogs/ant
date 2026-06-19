@@ -1,263 +1,246 @@
-const aiSettings = {
-  ai: {
-    settings: {
-      pageTitle: 'AI Assistant Settings',
-      defaultProfileName: 'Default',
-      primary: {
-        title: 'Default Primary Model',
-        hint: 'Used for intent clarification, code generation, AI assistant code modification panel in template editor, and any agent without separate model config.',
-        placeholder: 'Select a provider · model as the fallback brain',
+// Auto-generated from proto/ant/v1/i18n/ai_settings_en.textproto
+// DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
+const AiSettings = {
+  "ai": {
+    "settings": {
+      "actions": {
+        "saveConfig": "Save config",
+        "validateApiKey": "Validate API Key"
       },
-      tabs: {
-        config: 'Model Config',
-        agents: 'Agent Config',
-      },
-      fields: {
-        name: 'Name',
-        provider: 'AI Provider',
-        baseUrl: 'Base URL',
-        baseUrlHint: '(Model service address)',
-        apiKey: 'API Key',
-        apiKeyConfigured: 'Configured',
-        apiKeyReplaceHint: 'Enter again to replace key',
-        deleteApiKey: 'Delete key',
-        model: 'Model',
-        defaultModel: 'Default model',
-        availableModels: 'Available models',
-        availableModelsHint: 'Multiple models can be enabled under one API Key; this list appears in /ai/agents dropdown. Default empty; pick from dropdown or type model id then Enter to add; only explicitly selected models are added, not all discovered ones.',
-        availableModelsPlaceholder: 'Select or type model id then Enter (default empty)',
-        availableModelsEmpty: 'Type model id then Enter to add',
-        availableModelsTip: 'Tip: deleting a model will not clear already-bound agents in /ai/agents, but removes it from dropdown suggestions.',
-        clear: 'Clear',
-        temperature: 'Temperature',
-        timeoutSeconds: 'Timeout (seconds)',
-        maxTokens: 'Max Tokens',
-        enabledStatus: 'Enabled',
-        enabledOn: 'Enabled → click to disable',
-        enabledOff: 'Disabled → click to enable',
-      },
-      sections: {
-        basic: 'Basic Info',
-        connection: 'Connection Config',
-        advanced: 'Advanced Params',
-        advancedHint: 'Adjust only if you understand the meaning; defaults fit most scenarios',
-        connectionApiKeyLink: 'Go to apply / manage API Key for this provider',
-      },
-      inferenceParams: {
-        title: 'Inference Parameters',
-      },
-      providers: {
-        enabledTitle: 'Enabled providers',
-        emptyTitle: 'No enabled providers yet',
-        emptyHint: 'Please first configure API Key and available models in ',
-        emptyHintTail: '.',
-        modelsUnit: 'models',
-        noModels: 'No available models configured',
-        openai: 'OpenAI',
-        anthropic: 'Anthropic Claude',
-        deepseek: 'DeepSeek',
-        zhipu: 'Zhipu AI',
-        qwen: 'Tongyi Qianwen / DashScope',
-        moonshot: 'Moonshot (Kimi)',
-        doubao: 'Doubao (Volcano Ark)',
-        siliconflow: 'SiliconFlow',
-        openrouter: 'OpenRouter',
-        mistral: 'Mistral',
-        groq: 'Groq',
-        custom: 'Custom (OpenAI-compatible)',
-        openai_compatible: 'Custom (OpenAI-compatible)',
-      },
-      placeholders: {
-        name: 'e.g. DeepSeek-LowCost',
-        provider: 'Select AI provider',
-        baseUrl: 'e.g. https://api-inference.modelscope.cn/v1 or https://ark.cn-beijing.volces.com/api/v3',
-        apiKey: 'Enter API Key',
-        providerFirst: 'Please select AI provider first',
-        modelManual: 'Enter model name (copy model id from provider console)',
-        modelSelect: 'Select model',
-        modelSelectOrType: 'Select from dropdown or type model id',
-      },
-      apiKeySavedAs: 'Currently saved: {{masked}}',
-      apiKeyGuide: {
-        title: 'API Key Application Guide',
-        selectProviderHint: 'After selecting an AI provider, how to apply API Key will be shown here.',
-        modelSuggestionZhipu: 'Model suggestion: select `glm-4-flash` / `glm-4` in "Model" dropdown',
-        modelSuggestionDeepSeek: 'Model suggestion: select `deepseek-chat` in "Model" dropdown',
-        default: 'Current provider: {{provider}}. Go to the provider\'s official console to create API Key, then paste above.',
-        zhipu: {
-          title: 'How to get Zhipu API Key',
-          step1: 'Open Zhipu platform: ',
-          step2: 'Login/register, then go to console and create/copy API Key',
+      "agent": {
+        "actions": {
+          "add": "Add",
+          "loadDefaults": "Load default 8 agents",
+          "remove": "Delete",
+          "restoreDefaults": "Restore defaults",
+          "restoreDefaultsConfirmContent": "Will reset 8 system agents (style/signals/risk/macro/sentiment/portfolio/execution/code) to default identity definitions; your custom agents will be kept. This only modifies unsaved drafts; click \"Save\" to persist.",
+          "restoreDefaultsConfirmTitle": "Restore system default identities?",
+          "save": "Save"
         },
-        deepseek: {
-          title: 'How to get DeepSeek API Key',
-          step1: 'Open DeepSeek platform: ',
-          step2: 'Login/register, then go to API Keys page and create/copy API Key',
+        "defaultName": "Custom Agent",
+        "defaults": {
+          "code": {
+            "inputHint": "Example: target paradigm=trend following; indicators=EMA(fast)/EMA(slow)+ATR filter; params=fast,slow,atr_period,risk_per_trade."
+          },
+          "execution": {
+            "inputHint": "Example: Order=long EURUSD 10 lots; current spread=0.6 pip; target completion in 5 mins; acceptable slippage=0.8 pip."
+          },
+          "executor": {
+            "identity": "Trade execution optimization expert — minimizes slippage and execution costs."
+          },
+          "macro": {
+            "inputHint": "Example: This week key events=US CPI (Thu 20:30), FOMC minutes (Wed next day 02:00); target symbol=XAUUSD."
+          },
+          "portfolio": {
+            "inputHint": "Example: Existing strategies=trend-EURUSD, mean reversion-XAUUSD; total equity=50,000; target annual vol=12%."
+          },
+          "researcher": {
+            "identity": "Macroeconomic and industry researcher — analyzes macro events and sector trends."
+          },
+          "risk": {
+            "inputHint": "Example: Account equity=10,000; acceptable monthly drawdown=5%; risk per trade=0.5%; day trade cap=5; stop-loss=1.5×ATR."
+          },
+          "risk_manager": {
+            "identity": "Strict risk control expert — designs position sizing, stop-loss, drawdown limits."
+          },
+          "sentiment": {
+            "inputHint": "Example: Last week VIX rose from 14 to 22; non-commercial net long positions -18% WoW; news dominated by \"recession/rate cut\" keywords."
+          },
+          "signals": {
+            "inputHint": "Example: Paradigm=trend following; Timeframe=H1; Available indicators=EMA/ATR/ADX; fast default 20, slow default 60."
+          },
+          "strategist": {
+            "identity": "Senior quantitative strategy analyst — recommends strategy paradigms based on account/market conditions."
+          },
+          "style": {
+            "inputHint": "Example: Account=EURUSD retail; Timeframe=H1; Goal=3% monthly return, max drawdown <10%; Preference=win rate over R/R."
+          }
         },
-      },
-      actions: {
-        validateApiKey: 'Validate API Key',
-        saveConfig: 'Save config',
-      },
-      profiles: {
-        current: 'Current',
-        actions: {
-          setCurrent: 'Set current',
+        "fields": {
+          "historicalBinding": "{{value}} (historical)",
+          "identityPlaceholder": "Identity/persona description (will be appended to system prompt)",
+          "inputHintPlaceholder": "Input hint (optional)",
+          "modelProfileEmpty": "Please first enable at least one provider/model in \"AI Settings\"",
+          "modelProfilePlaceholder": "Default (use current profile)",
+          "namePlaceholder": "Agent name"
         },
-        delete: {
-          title: 'Delete config',
-          content: 'Are you sure you want to delete this config?',
+        "messages": {
+          "defaultsLoaded": "System default agent templates loaded, click \"Save\" to persist",
+          "empty": "No custom agents yet, click \"Add\" to configure",
+          "loading": "Loading...",
+          "saveFailed": "Agent save failed",
+          "saveSuccess": "Agent saved",
+          "selectProfileFirst": "Please first select a config on the left"
         },
+        "removeConfirmContent": "Are you sure you want to delete this agent?",
+        "removeConfirmTitle": "Delete Agent",
+        "title": "Agent Identity Definition",
+        "types": {
+          "code": "Code",
+          "execution": "Execution",
+          "executor": "Execution Advisor",
+          "macro": "Macro",
+          "portfolio": "Portfolio",
+          "researcher": "Market Researcher",
+          "risk": "Risk",
+          "risk_manager": "Risk Manager",
+          "sentiment": "Sentiment",
+          "signals": "Signals/Indicators",
+          "strategist": "Strategy Analyst",
+          "style": "Style/Paradigm"
+        }
       },
-      messages: {
-        loadConfigFailed: 'Failed to load AI config',
-        probeSuccess: 'Connection success',
-        probeFailed: 'Connection failed',
-        selectSavedProfileOrEnterKey: 'Please first select a saved config, or enter API Key',
-        validateSuccess: 'Validation success',
-        validateFailed: 'Validation failed',
-        apiKeyValidated: 'API Key validated',
-        validateBeforeSave: 'Please first click "Validate API Key", can save only after validation passes',
-        saveSuccess: 'Config saved',
-        deleted: 'Deleted',
-        setCurrentSuccess: 'Switched current config',
-        enabled: 'Enabled',
-        disabled: 'Disabled',
-      },
-      errors: {
-        arrearage: 'Provider response: account in arrears / insufficient balance or account status abnormal. Check balance, billing and account status in provider console, then retry.',
-        invalidModelId: 'Provider response: model unavailable{{model}}. Please select from dropdown, or copy correct model id from provider console.',
-        unauthorized: 'Provider response: API Key invalid or unauthorized (401). Check if key is correct and has model permission.',
-        forbidden: 'Provider response: access denied (403). Check key permissions, IP whitelist or account status.',
-        timeout: 'Connection timeout. Check if Base URL is accessible, network is smooth, or retry later.',
-      },
-      discoverErrors: {
-        baseUrlRequired: 'Please enter Base URL (model service address).',
-        baseUrlInvalid: 'Invalid Base URL: use a full URL such as https://model.example.com or https://model.example.com/v1',
-        freeTierExhausted: 'Free tier exhausted: disable free-tier-only in the provider console or use a paid key.',
-        quotaOrRateLimit: 'Quota or rate limit: the provider rejected the call. Check billing/rate limits or retry later.',
-        quotaForbidden403: 'Call denied (quota): check billing and quota in the provider console.',
-        unauthorized: 'Auth failed: check API key/secret.',
-        endpoint404: 'Model endpoint not found: ensure Base URL matches the OpenAI-compatible API (some need /v1).',
-        timeout: 'Request timed out: check connectivity or retry later.',
-        unreachable: 'Cannot reach model service: check Base URL, network, or gateway.',
-        invalidModelsResponse: 'Model service response is not compatible with /models.',
-        noModelsReturned: 'No models returned: check account permissions or configuration.',
-        providerRegionBlocked:
-          'Region not supported: the model provider rejected this request based on detected location (egress IP may differ from your server). Try a supported network region, a compliant HTTP(S) proxy, or another provider.',
-        generic: 'Failed to list models. Check Base URL and API key.',
-        genericDetail: 'Failed to list models: {{detail}}',
-      },
-      validation: {
-        nameRequired: 'Name cannot be empty',
-        apiKeyRequired: 'API Key cannot be empty',
-        baseUrlRequired: 'Base URL cannot be empty',
-        baseUrlProtocol: 'Base URL must start with http:// or https://',
-        baseUrlNoChatCompletionsSuffix: 'Base URL should not end with /chat/completions (system will auto-append)',
-        modelRequired: 'Model cannot be empty',
-        modelFormat: 'Invalid model format',
-      },
-      agent: {
-        title: 'Agent Identity Definition',
-        defaultName: 'Custom Agent',
-        removeConfirmTitle: 'Delete Agent',
-        removeConfirmContent: 'Are you sure you want to delete this agent?',
-        actions: {
-          add: 'Add',
-          save: 'Save',
-          remove: 'Delete',
-          loadDefaults: 'Load default 8 agents',
-          restoreDefaults: 'Restore defaults',
-          restoreDefaultsConfirmTitle: 'Restore system default identities?',
-          restoreDefaultsConfirmContent: 'Will reset 8 system agents (style/signals/risk/macro/sentiment/portfolio/execution/code) to default identity definitions; your custom agents will be kept. This only modifies unsaved drafts; click "Save" to persist.',
+      "apiKeyGuide": {
+        "deepseek": {
+          "step1": "Open DeepSeek platform: ",
+          "step2": "Login/register, then go to API Keys page and create/copy API Key",
+          "title": "How to get DeepSeek API Key"
         },
-        messages: {
-          selectProfileFirst: 'Please first select a config on the left',
-          loading: 'Loading...',
-          empty: 'No custom agents yet, click "Add" to configure',
-          saveSuccess: 'Agent saved',
-          saveFailed: 'Agent save failed',
-          defaultsLoaded: 'System default agent templates loaded, click "Save" to persist',
-        },
-        fields: {
-          namePlaceholder: 'Agent name',
-          identityPlaceholder: 'Identity/persona description (will be appended to system prompt)',
-          inputHintPlaceholder: 'Input hint (optional)',
-          modelProfilePlaceholder: 'Default (use current profile)',
-          modelProfileEmpty: 'Please first enable at least one provider/model in "AI Settings"',
-          historicalBinding: '{{value}} (historical)',
-        },
-        types: {
-          style: 'Style/Paradigm',
-          signals: 'Signals/Indicators',
-          risk: 'Risk',
-          macro: 'Macro',
-          sentiment: 'Sentiment',
-          portfolio: 'Portfolio',
-          execution: 'Execution',
-          code: 'Code',
-          strategist: 'Strategy Analyst',
-          risk_manager: 'Risk Manager',
-          executor: 'Execution Advisor',
-          researcher: 'Market Researcher',
-        },
-        defaults: {
-          style: {
-            identity:
-              'You are a senior quantitative strategy analyst, focused on strategy paradigm selection. Based on account/symbol/timeframe/historical stats (trend strength ADX, volatility ATR, autocorrelation, distribution skew, etc.) and user goals/constraints, recommend one primary paradigm and one alternative from "trend following / mean reversion / breakout / momentum / arbitrage / grid / event-driven", explain applicable/inapplicable conditions. Output in Markdown: 1) reasoning (bullet points) 2) main + alternative + applicable/inapplicable conditions 3) at least 3 risk alerts. Avoid vagueness, do not rely on external data not provided.',
-            inputHint: 'Example: Account=EURUSD retail; Timeframe=H1; Goal=3% monthly return, max drawdown <10%; Preference=win rate over R/R.',
-          },
-          signals: {
-            identity:
-              'You are a quantitative factor and signal engineer, proficient with MA/EMA, RSI, MACD, ADX, ATR, Bollinger, Bollinger bandwidth, VWAP, Pivot, volume and volatility factors, etc. Without introducing external data (unless user provides macro/event tables), design reproducible, parameterizable entry/exit/filter signal rules, avoid overfitting. Output in Markdown: 1) reasoning 2) executable rule list (entry/exit/filter) with parameters (default/range/step) 3) at least 3 boundary/failure scenarios (range-bound/gap/high volatility/news).',
-            inputHint: 'Example: Paradigm=trend following; Timeframe=H1; Available indicators=EMA/ATR/ADX; fast default 20, slow default 60.',
-          },
-          risk: {
-            identity:
-              'You are a trading risk and execution constraints expert. Based on user goals and account status, design position sizing (fixed fraction / vol targeting / Kelly modified), stop-loss/take-profit, single/day/week max risk, max drawdown threshold, consecutive loss cooldown, trade frequency cap, spread/slippage anomaly protection, black swan downgrade strategy. Output in Markdown: 1) reasoning 2) hard constraints list + recommended params (suggested/range) + actions after trigger 3) at least 3 failure modes (e.g. consecutive loss expansion, correlation collapse, cross-symbol homogeneous exposure).',
-            inputHint: 'Example: Account equity=10,000; acceptable monthly drawdown=5%; risk per trade=0.5%; day trade cap=5; stop-loss=1.5×ATR.',
-          },
-          macro: {
-            identity:
-              'You are a macro researcher, focusing on macro events with significant short/medium-term price impact: central bank rate decisions (FOMC/ECB/BoE/BoJ), CPI/PPI, NFP, PMI, GDP, retail sales, crude oil inventory, geopolitical events. Based on user-provided event tables or common calendars, give event windows (typically 30 mins before ~ 2 hours after) and direction/volatility forecast for target symbol, position suggestion (avoid / reduce / event-driven layout). Explicitly state unknowns and uncertainties; do not fabricate unpublished data. Output in Markdown: event impact matrix, recommended response, risk alerts.',
-            inputHint: 'Example: This week key events=US CPI (Thu 20:30), FOMC minutes (Wed next day 02:00); target symbol=XAUUSD.',
-          },
-          sentiment: {
-            identity:
-              'You are a market sentiment and capital flow analyst, judging extreme optimism/panic: COT reports, VIX and volatility surface, fear/greed index, funding rates (crypto), ETF fund flows, social/news sentiment keywords, Put/Call ratio. Output sentiment score (-1 extreme pessimistic ~ +1 extreme optimistic), identify dominant dimension and recent change speed (first/second order momentum), combine with strategy paradigm to suggest trend-following or contrarian tendency. State clearly when no reliable sentiment data; do not fabricate.',
-            inputHint: 'Example: Last week VIX rose from 14 to 22; non-commercial net long positions -18% WoW; news dominated by "recession/rate cut" keywords.',
-          },
-          portfolio: {
-            identity:
-              'You are a portfolio management expert, responsible for multi-strategy / multi-symbol / multi-account capital allocation and diversification. Methodologies: correlation matrix, covariance shrinkage, risk parity, volatility targeting, maximum diversification portfolio (MDP), dynamic rebalancing. Based on existing strategy/symbol return-risk characteristics and correlations, give allocation suggestions, and point out concentration, tail correlation rising and drawdown linkage risks. Output in Markdown: portfolio weight table, risk contribution decomposition, rebalancing rules, key risks.',
-            inputHint: 'Example: Existing strategies=trend-EURUSD, mean reversion-XAUUSD; total equity=50,000; target annual vol=12%.',
-          },
-          execution: {
-            identity:
-              'You are an execution and trading cost optimization expert. For given order size and symbol liquidity, choose appropriate execution method (market / limit / TWAP / VWAP / POV / iceberg), time window (Asia/Europe/US session) and order splitting strategy, estimate impact cost and slippage, give degradation handling for spread anomalies, flash crashes, liquidity drops. Output: execution recommendation, impact cost estimation formula and value range, monitoring metrics (actual slippage, fill time, fill rate) and thresholds.',
-            inputHint: 'Example: Order=long EURUSD 10 lots; current spread=0.6 pip; target completion in 5 mins; acceptable slippage=0.8 pip.',
-          },
-          code: {
-            identity:
-              'You are an AntTrader Python strategy code engineer. Generate directly executable strategy code, strictly following sandbox validation: no import, no dunder access, no open/eval/exec/compile/__import__/globals/locals/vars/dir, only use platform-provided APIs (on_tick / on_kline / built-in np, math, datetime, calculate_rsi, etc.). Must define run(context) (only 1 context parameter), return dict with at least signal(buy/sell/hold), symbol, confidence(0~1), risk_level(low/medium/high), reason; read params from context["params"]. Strict output: only one ```python code block```, no Markdown symbols, Chinese punctuation, or nested code fences inside the block.',
-            inputHint: 'Example: target paradigm=trend following; indicators=EMA(fast)/EMA(slow)+ATR filter; params=fast,slow,atr_period,risk_per_trade.',
-          },
-          strategist: {
-            identity: 'Senior quantitative strategy analyst — recommends strategy paradigms based on account/market conditions.',
-          },
-          risk_manager: {
-            identity: 'Strict risk control expert — designs position sizing, stop-loss, drawdown limits.',
-          },
-          executor: {
-            identity: 'Trade execution optimization expert — minimizes slippage and execution costs.',
-          },
-          researcher: {
-            identity: 'Macroeconomic and industry researcher — analyzes macro events and sector trends.',
-          },
-        },
+        "default": "Current provider: {{provider}}. Go to the provider\\\\",
+        "modelSuggestionDeepSeek": "Model suggestion: select `deepseek-chat` in \"Model\" dropdown",
+        "modelSuggestionZhipu": "Model suggestion: select `glm-4-flash` / `glm-4` in \"Model\" dropdown",
+        "selectProviderHint": "After selecting an AI provider, how to apply API Key will be shown here.",
+        "title": "API Key Application Guide",
+        "zhipu": {
+          "step1": "Open Zhipu platform: ",
+          "step2": "Login/register, then go to console and create/copy API Key",
+          "title": "How to get Zhipu API Key"
+        }
       },
-    },
-  },
+      "apiKeySavedAs": "Currently saved: {{masked}}",
+      "defaultProfileName": "Default",
+      "discoverErrors": {
+        "baseUrlInvalid": "Invalid Base URL: use a full URL such as https://model.example.com or https://model.example.com/v1",
+        "baseUrlRequired": "Please enter Base URL (model service address).",
+        "endpoint404": "Model endpoint not found: ensure Base URL matches the OpenAI-compatible API (some need /v1).",
+        "freeTierExhausted": "Free tier exhausted: disable free-tier-only in the provider console or use a paid key.",
+        "generic": "Failed to list models. Check Base URL and API key.",
+        "genericDetail": "Failed to list models: {{detail}}",
+        "invalidModelsResponse": "Model service response is not compatible with /models.",
+        "noModelsReturned": "No models returned: check account permissions or configuration.",
+        "quotaForbidden403": "Call denied (quota): check billing and quota in the provider console.",
+        "quotaOrRateLimit": "Quota or rate limit: the provider rejected the call. Check billing/rate limits or retry later.",
+        "timeout": "Request timed out: check connectivity or retry later.",
+        "unauthorized": "Auth failed: check API key/secret.",
+        "unreachable": "Cannot reach model service: check Base URL, network, or gateway."
+      },
+      "errors": {
+        "arrearage": "Provider response: account in arrears / insufficient balance or account status abnormal. Check balance, billing and account status in provider console, then retry.",
+        "forbidden": "Provider response: access denied (403). Check key permissions, IP whitelist or account status.",
+        "invalidModelId": "Provider response: model unavailable{{model}}. Please select from dropdown, or copy correct model id from provider console.",
+        "timeout": "Connection timeout. Check if Base URL is accessible, network is smooth, or retry later.",
+        "unauthorized": "Provider response: API Key invalid or unauthorized (401). Check if key is correct and has model permission."
+      },
+      "fields": {
+        "apiKey": "API Key",
+        "apiKeyConfigured": "Configured",
+        "apiKeyReplaceHint": "Enter again to replace key",
+        "availableModels": "Available models",
+        "availableModelsEmpty": "Type model id then Enter to add",
+        "availableModelsHint": "Multiple models can be enabled under one API Key; this list appears in /ai/agents dropdown. Default empty; pick from dropdown or type model id then Enter to add; only explicitly selected models are added, not all discovered ones.",
+        "availableModelsPlaceholder": "Select or type model id then Enter (default empty)",
+        "availableModelsTip": "Tip: deleting a model will not clear already-bound agents in /ai/agents, but removes it from dropdown suggestions.",
+        "baseUrl": "Base URL",
+        "baseUrlHint": "(Model service address)",
+        "clear": "Clear",
+        "defaultModel": "Default model",
+        "deleteApiKey": "Delete key",
+        "enabledOff": "Disabled → click to enable",
+        "enabledOn": "Enabled → click to disable",
+        "enabledStatus": "Enabled",
+        "maxTokens": "Max Tokens",
+        "model": "Model",
+        "name": "Name",
+        "provider": "AI Provider",
+        "temperature": "Temperature",
+        "timeoutSeconds": "Timeout (seconds)"
+      },
+      "inferenceParams": {
+        "title": "Inference Parameters"
+      },
+      "messages": {
+        "apiKeyValidated": "API Key validated",
+        "deleted": "Deleted",
+        "disabled": "Disabled",
+        "enabled": "Enabled",
+        "loadConfigFailed": "Failed to load AI config",
+        "probeFailed": "Connection failed",
+        "probeSuccess": "Connection success",
+        "saveSuccess": "Config saved",
+        "selectSavedProfileOrEnterKey": "Please first select a saved config, or enter API Key",
+        "setCurrentSuccess": "Switched current config",
+        "validateBeforeSave": "Please first click \"Validate API Key\", can save only after validation passes",
+        "validateFailed": "Validation failed",
+        "validateSuccess": "Validation success"
+      },
+      "pageTitle": "AI Assistant Settings",
+      "placeholders": {
+        "apiKey": "Enter API Key",
+        "baseUrl": "e.g. https://api-inference.modelscope.cn/v1 or https://ark.cn-beijing.volces.com/api/v3",
+        "modelManual": "Enter model name (copy model id from provider console)",
+        "modelSelect": "Select model",
+        "modelSelectOrType": "Select from dropdown or type model id",
+        "name": "e.g. DeepSeek-LowCost",
+        "provider": "Select AI provider",
+        "providerFirst": "Please select AI provider first"
+      },
+      "primary": {
+        "hint": "Used for intent clarification, code generation, AI assistant code modification panel in template editor, and any agent without separate model config.",
+        "placeholder": "Select a provider · model as the fallback brain",
+        "title": "Default Primary Model"
+      },
+      "profiles": {
+        "actions": {
+          "setCurrent": "Set current"
+        },
+        "current": "Current",
+        "delete": {
+          "content": "Are you sure you want to delete this config?",
+          "title": "Delete config"
+        }
+      },
+      "providers": {
+        "anthropic": "Anthropic Claude",
+        "custom": "Custom (OpenAI-compatible)",
+        "deepseek": "DeepSeek",
+        "doubao": "Doubao (Volcano Ark)",
+        "emptyHint": "Please first configure API Key and available models in ",
+        "emptyHintTail": ".",
+        "emptyTitle": "No enabled providers yet",
+        "enabledTitle": "Enabled providers",
+        "groq": "Groq",
+        "mistral": "Mistral",
+        "modelsUnit": "models",
+        "moonshot": "Moonshot (Kimi)",
+        "noModels": "No available models configured",
+        "openai": "OpenAI",
+        "openai_compatible": "Custom (OpenAI-compatible)",
+        "openrouter": "OpenRouter",
+        "qwen": "Tongyi Qianwen / DashScope",
+        "siliconflow": "SiliconFlow",
+        "zhipu": "Zhipu AI"
+      },
+      "sections": {
+        "advanced": "Advanced Params",
+        "advancedHint": "Adjust only if you understand the meaning; defaults fit most scenarios",
+        "basic": "Basic Info",
+        "connection": "Connection Config",
+        "connectionApiKeyLink": "Go to apply / manage API Key for this provider"
+      },
+      "tabs": {
+        "agents": "Agent Config",
+        "config": "Model Config"
+      },
+      "validation": {
+        "apiKeyRequired": "API Key cannot be empty",
+        "baseUrlNoChatCompletionsSuffix": "Base URL should not end with /chat/completions (system will auto-append)",
+        "baseUrlProtocol": "Base URL must start with http:// or https://",
+        "baseUrlRequired": "Base URL cannot be empty",
+        "modelFormat": "Invalid model format",
+        "modelRequired": "Model cannot be empty",
+        "nameRequired": "Name cannot be empty"
+      }
+    }
+  }
 } as const;
-
-export default aiSettings;
+export default AiSettings;

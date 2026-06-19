@@ -1,48 +1,49 @@
-const dashboard = {
-  dashboard: {
-    welcome: 'Welcome back, {{name}}',
-    subtitle: 'View your account overview',
-    templates: 'Templates',
-    logs: 'Logs',
-    bindAccount: 'Bind Account',
-    accountOverview: 'Account Overview',
-    accountList: 'Account List',
-    viewAll: 'View all',
-    streamLive: 'Live',
-    streamOffline: 'Offline',
-    noAccounts: 'No accounts yet. Click "Bind Account" to get started.',
-    stats: {
-      totalBalance: 'Total Balance',
-      totalEquity: 'Total Equity',
-      connected: 'Connected',
-      accountCount: 'Accounts',
-      totalProfit: 'Total Floating P/L'
+// Auto-generated from proto/ant/v1/i18n/dashboard_en.textproto
+// DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
+const Dashboard = {
+  "dashboard": {
+    "accountList": "Account List",
+    "accountOverview": "Account Overview",
+    "accountStatus": {
+      "connected": "Connected",
+      "connecting": "Connecting",
+      "disabled": "Disabled",
+      "disconnected": "Disconnected"
     },
-    fields: {
-      balance: 'Balance',
-      equity: 'Equity',
-      floating: 'Floating P/L'
+    "bindAccount": "Bind Account",
+    "defaultName": "My Dashboard",
+    "fields": {
+      "balance": "Balance",
+      "equity": "Equity",
+      "floating": "Floating P/L"
     },
-    accountStatus: {
-      disabled: 'Disabled',
-      connected: 'Connected',
-      connecting: 'Connecting',
-      disconnected: 'Disconnected'
+    "logs": "Logs",
+    "noAccounts": "No accounts yet. Click \"Bind Account\" to get started.",
+    "quickActions": {
+      "accounts": "Accounts",
+      "analytics": "Analytics",
+      "bindAccount": "Bind",
+      "closePosition": "Close",
+      "library": "Library",
+      "logs": "Logs",
+      "market": "Market",
+      "templates": "Templates",
+      "title": "Quick Actions",
+      "trading": "Trading"
     },
-    quickActions: {
-      title: 'Quick Actions',
-      trading: 'Trading',
-      market: 'Market',
-      accounts: 'Accounts',
-      analytics: 'Analytics',
-      library: 'Library',
-      templates: 'Templates',
-      logs: 'Logs',
-      bindAccount: 'Bind',
-      closePosition: 'Close'
+    "stats": {
+      "accountCount": "Accounts",
+      "connected": "Connected",
+      "totalBalance": "Total Balance",
+      "totalEquity": "Total Equity",
+      "totalProfit": "Total Floating P/L"
     },
-    defaultName: 'My Dashboard'
+    "streamLive": "Live",
+    "streamOffline": "Offline",
+    "subtitle": "View your account overview",
+    "templates": "Templates",
+    "viewAll": "View all",
+    "welcome": "Welcome back, {{name}}"
   }
 } as const;
-
-export default dashboard;
+export default Dashboard;

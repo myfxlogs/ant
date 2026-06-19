@@ -136,7 +136,7 @@ export const TRADES_TITLE_KEY = 'strategy.backtestRun.trades.title' as const;
 /** trades.volume */
 export const TRADES_VOLUME_KEY = 'strategy.backtestRun.trades.volume' as const;
 
-export const BACKTESTRUN_KEYS = {
+export const STRATEGYBACKTESTRUN_KEYS = {
   actions_cancel: 'strategy.backtestRun.actions.cancel',
   fields_error: 'strategy.backtestRun.fields.error',
   fields_max_drawdown: 'strategy.backtestRun.fields.maxDrawdown',
@@ -184,4 +184,4 @@ export const BACKTESTRUN_KEYS = {
   trades_volume: 'strategy.backtestRun.trades.volume',
 } as const;
 
-export type BacktestRunKey = typeof BACKTESTRUN_KEYS[keyof typeof BACKTESTRUN_KEYS];
+export type StrategyBacktestRunKey = typeof STRATEGYBACKTESTRUN_KEYS[keyof typeof STRATEGYBACKTESTRUN_KEYS];

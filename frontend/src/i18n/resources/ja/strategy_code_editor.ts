@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_code_editor_ja.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const CodeEditor = {
+const StrategyCodeEditor = {
   "strategy": {
     "codeEditor": {
       "actions": {
@@ -61,4 +61,4 @@ const CodeEditor = {
     }
   }
 } as const;
-export default CodeEditor;
+export default StrategyCodeEditor;

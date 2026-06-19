@@ -16,7 +16,7 @@ export const SETTINGS_KEY = 'strategy.chartTools.settings' as const;
 /** show */
 export const SHOW_KEY = 'strategy.chartTools.show' as const;
 
-export const CHARTTOOLS_KEYS = {
+export const STRATEGYCHARTTOOLS_KEYS = {
   clear_drawings: 'strategy.chartTools.clearDrawings',
   hide: 'strategy.chartTools.hide',
   remove: 'strategy.chartTools.remove',
@@ -24,4 +24,4 @@ export const CHARTTOOLS_KEYS = {
   show: 'strategy.chartTools.show',
 } as const;
 
-export type ChartToolsKey = typeof CHARTTOOLS_KEYS[keyof typeof CHARTTOOLS_KEYS];
+export type StrategyChartToolsKey = typeof STRATEGYCHARTTOOLS_KEYS[keyof typeof STRATEGYCHARTTOOLS_KEYS];

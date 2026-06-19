@@ -289,7 +289,7 @@ export const VALIDATE_PASS_KEY = 'strategy.workspace.validatePass' as const;
 /** watchlist */
 export const WATCHLIST_KEY = 'strategy.workspace.watchlist' as const;
 
-export const WORKSPACE_KEYS = {
+export const STRATEGYWORKSPACE_KEYS = {
   account: 'strategy.workspace.account',
   account_placeholder: 'strategy.workspace.accountPlaceholder',
   ai: 'strategy.workspace.ai',
@@ -388,4 +388,4 @@ export const WORKSPACE_KEYS = {
   watchlist: 'strategy.workspace.watchlist',
 } as const;
 
-export type WorkspaceKey = typeof WORKSPACE_KEYS[keyof typeof WORKSPACE_KEYS];
+export type StrategyWorkspaceKey = typeof STRATEGYWORKSPACE_KEYS[keyof typeof STRATEGYWORKSPACE_KEYS];

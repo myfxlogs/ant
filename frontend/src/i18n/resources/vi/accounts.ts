@@ -1,399 +1,400 @@
-const accounts = {
-  accounts: {
-    title: 'Tài khoản',
-    subtitle: 'Quản lý tài khoản MT4/MT5',
-    bindNew: 'Liên kết tài khoản mới',
-    bind: {
-      title: 'Liên kết tài khoản MT',
-      errorModal: {
-        title: 'Binding failed'
+// Auto-generated from proto/ant/v1/i18n/accounts_vi.textproto
+// DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
+const Accounts = {
+  "accounts": {
+    "analytics": {
+      "advancedStatsTitle": "Thống kê nâng cao",
+      "advancedTabs": {
+        "daily": "日",
+        "hourly": "Theo giờ"
       },
-      step1: {
-        title: 'Chọn nền tảng và nhà môi giới',
-        subtitle: 'Select your trading platform and search for your broker'
+      "chartPeriod": {
+        "all": "全部",
+        "day": "Hôm nay",
+        "month": "Tháng này",
+        "week": "Tuần này",
+        "year": "Năm nay"
       },
-      step2: {
-        title: 'Nhập thông tin tài khoản',
-        subtitle: 'Enter your trading account and password'
+      "chartSeries": {
+        "balance": "Số dư",
+        "equity": "Vốn",
+        "profit": "Lợi nhuận",
+        "tradeCount": "Giao dịch"
       },
-      step3: {
-        title: 'Xác nhận liên kết',
-        subtitle: 'Verify credentials and confirm to complete'
+      "chartType": {
+        "balance": "Số dư",
+        "equity": "Vốn",
+        "profit": "Lợi nhuận"
       },
-      fields: {
-        platform: 'Nền tảng',
-        brokerName: 'Tên môi giới',
-        company: 'Công ty',
-        server: 'Máy chủ',
-        tradingAccount: 'Tài khoản giao dịch',
-        password: 'Mật khẩu'
+      "dailyPnLTitle": "📅 Lãi/lỗ theo ngày",
+      "empty": {
+        "dailyPnL": "Không có dữ liệu lãi/lỗ theo ngày",
+        "equityCurve": "Không có dữ liệu đường vốn",
+        "hourly": "暂无时段分析数据",
+        "monthlyProfit": "Không có dữ liệu lãi/lỗ theo tháng",
+        "symbolDistribution": "Không có dữ liệu phân bổ mã"
       },
-      placeholders: {
-        brokerName: 'Nhập tên môi giới, ví dụ: XM, IC Markets',
-        company: 'Chọn công ty môi giới',
-        server: 'Chọn máy chủ',
-        tradingAccount: 'Nhập tài khoản giao dịch',
-        password: 'Enter password'
-      },
-      labels: {
-        serverCount: '{{count}} servers'
-      },
-      actions: {
-        search: 'Tìm kiếm',
-        verifyAccount: 'Xác minh tài khoản',
-        confirmBind: 'Xác nhận',
-        retryVerify: 'Retry'
-      },
-      passwordHint: 'Mật khẩu được truyền qua HTTPS. Backend lưu dưới dạng băm Argon2id không thể đảo ngược.',
-      summary: {
-        broker: 'Nhà môi giới',
-        server: 'Máy chủ',
-        platform: 'Nền tảng',
-        tradingAccount: 'Tài khoản giao dịch',
-        password: 'Mật khẩu',
-        verified: 'Tài khoản đã xác minh',
-        balance: 'Số dư',
-        equity: 'Vốn',
-        margin: 'Ký quỹ',
-        freeMargin: 'Ký quỹ khả dụng',
-        leverage: 'Đòn bẩy',
-        currency: 'Currency'
-      },
-      messages: {
-        enterBrokerName: 'Vui lòng nhập tên môi giới',
-        foundBrokers: 'Tìm thấy {{count}} nhà môi giới',
-        noBrokersFound: 'Không tìm thấy nhà môi giới phù hợp. Vui lòng kiểm tra tên.',
-        searchFailed: 'Tìm kiếm thất bại. Vui lòng thử lại sau.',
-        selectServer: 'Vui lòng chọn máy chủ',
-        enterTradingAccount: 'Vui lòng nhập tài khoản giao dịch',
-        enterPassword: 'Vui lòng nhập mật khẩu',
-        noAccessHosts: 'Không có máy chủ khả dụng',
-        verifyFailed: 'Xác minh tài khoản thất bại',
-        bindSuccess: 'Liên kết tài khoản thành công',
-        bindFailed: 'Liên kết tài khoản thất bại',
-        loginDigitsOnly: 'Trading account must contain only digits'
-      },
-      errors: {
-        brokerUnavailable: 'Lỗi máy chủ hoặc mật khẩu không đúng',
-        invalidCredentials: 'Không tìm thấy tài khoản hoặc mật khẩu không đúng',
-        connectionFailed: 'Không thể kết nối đến máy chủ môi giới, vui lòng kiểm tra mạng',
-        timeout: 'Connection timed out, please try again later'
-      }
-    },
-    empty: {
-      title: 'Chưa có tài khoản',
-      subtitle: 'Click the button below to bind your MT4/MT5 trading account'
-    },
-    legend: {
-      title: 'Chú giải:',
-      connected: 'Đã kết nối',
-      connecting: 'Đang kết nối',
-      disconnectedOrError: 'Mất kết nối/Lỗi',
-      disabled: 'Đã tắt'
-    },
-    messages: {
-      disabledSuccess: 'Vô hiệu hóa tài khoản thành công',
-      connectingMtServer: 'Đang kết nối đến máy chủ MT',
-      enabledSuccess: 'Kích hoạt tài khoản thành công',
-      fetchListFailed: 'Không thể tải danh sách tài khoản',
-      fetchAccountFailed: 'Không thể tải thông tin tài khoản',
-      createdSuccess: 'Tạo tài khoản thành công',
-      createFailed: 'Tạo tài khoản thất bại',
-      connectSuccess: 'Kết nối thành công',
-      connectFailed: 'Kết nối thất bại',
-      disconnectFailed: 'Ngắt kết nối thất bại',
-      disableFailed: 'Vô hiệu hóa tài khoản thất bại',
-      deleted: 'Đã xóa',
-      deleteFailed: 'Xóa thất bại',
-      enableFailed: 'Failed to enable account'
-    },
-    analytics: {
-      monthlyAnalysis: {
-        title: 'Phan tich theo thang',
-        chartMainTitle: 'Loi nhuan theo thang ({{metric}})',
-        metrics: {
-          change: 'Thay doi',
-          profit: 'Lợi nhuận',
-          lots: 'Lot',
-          pips: 'Pips'
+      "hourlyTitle": "⏰ Phân tích theo giờ",
+      "monthlyAnalysis": {
+        "bonus": {
+          "chartHoldingTitle": "{{month}} 平均持仓时间",
+          "chartPopularTitle": "{{month}} 货币热度",
+          "chartRiskTitle": "Bonus: Ty so loi nhuan (profit factor) theo symbol — {{month}}.",
+          "emptyCharts": "Khong co lenh trong thang",
+          "legendBulls": "Mua",
+          "legendShortTerm": "Ban",
+          "popularityShare": "手数份额",
+          "sliceOther": "Khac"
         },
-        focusedValue: '{{period}} · {{metric}}: {{value}}',
-        bonus: {
-          chartRiskTitle: 'Bonus: Ty so loi nhuan (profit factor) theo symbol — {{month}}.',
-          chartPopularTitle: `{{month}}'s currency popularity.`,
-          chartHoldingTitle: `{{month}}'s average holding time.`,
-          legendBulls: 'Mua',
-          legendShortTerm: 'Ban',
-          sliceOther: 'Khac',
-          emptyCharts: 'Khong co lenh trong thang',
-          popularityShare: 'Lot volume share'
-        }
-      },
-      monthlyDetail: {
-        metricsTitle: 'Chỉ số tháng',
-        symbolPnLTitle: 'Lợi nhuận theo cặp',
-        holdingTitle: 'Thời gian giữ lệnh',
-        riskRewardTitle: 'Tỷ lệ R:R',
-        popularityTitle: 'Mức độ phổ biến',
-        long: 'Mua',
-        short: 'Bán',
-        fields: {
-          netReturn: 'Lợi nhuận ròng',
-          totalTrades: 'Tổng lệnh',
-          winRate: 'Tỷ lệ thắng',
-          profitFactor: 'Hệ số lợi nhuận',
-          bestTrade: 'Lệnh tốt nhất',
-          worstTrade: 'Lệnh tệ nhất',
-          averageHours: 'TB',
-          medianHours: 'Trung vị',
-          maxHours: 'Tối đa',
-          minHours: 'Tối thiểu',
+        "chartMainTitle": "Loi nhuan theo thang ({{metric}})",
+        "focusedValue": "{{period}} · {{metric}}：{{value}}",
+        "metrics": {
+          "change": "Thay doi",
+          "lots": "Lot",
+          "pips": "点",
+          "profit": "Lợi nhuận"
         },
+        "title": "Phan tich theo thang"
       },
-      chartType: {
-        equity: 'Vốn',
-        balance: 'Số dư',
-        profit: 'Lợi nhuận'
+      "monthlyDetail": {
+        "fields": {
+          "averageHours": "TB",
+          "bestTrade": "Lệnh tốt nhất",
+          "maxHours": "Tối đa",
+          "medianHours": "Trung vị",
+          "minHours": "Tối thiểu",
+          "netReturn": "Lợi nhuận ròng",
+          "profitFactor": "Hệ số lợi nhuận",
+          "totalTrades": "Tổng lệnh",
+          "winRate": "Tỷ lệ thắng",
+          "worstTrade": "Lệnh tệ nhất"
+        },
+        "holdingTitle": "Thời gian giữ lệnh",
+        "long": "Mua",
+        "metricsTitle": "Chỉ số tháng",
+        "popularityTitle": "Mức độ phổ biến",
+        "riskRewardTitle": "Tỷ lệ R:R",
+        "short": "Bán",
+        "symbolPnLTitle": "Lợi nhuận theo cặp"
       },
-      chartPeriod: {
-        day: 'Hôm nay',
-        week: 'Tuần này',
-        month: 'Tháng này',
-        year: 'Năm nay',
-        all: 'All'
+      "monthlyProfitTitle": "Lãi/lỗ theo tháng",
+      "stats": {
+        "avgDailyReturn": "Lợi nhuận ngày TB",
+        "avgHolding": "Thời gian giữ TB",
+        "avgLoss": "Lỗ trung bình",
+        "avgProfit": "Lãi trung bình",
+        "calmar": "Calmar",
+        "consecutiveWinsLosses": "Chuỗi thắng/thua",
+        "largestLoss": "Lỗ lớn nhất",
+        "largestWin": "Lãi lớn nhất",
+        "maxDrawdown": "Drawdown tối đa",
+        "netDeposit": "净入金",
+        "netProfit": "Lợi nhuận ròng",
+        "profitFactor": "Hệ số lợi nhuận",
+        "sharpe": "Sharpe",
+        "sortino": "Sortino",
+        "totalDeposit": "Nạp",
+        "totalTrades": "Tổng số lệnh",
+        "totalWithdrawal": "Rút",
+        "volatility": "Biến động",
+        "winRate": "Tỷ lệ thắng"
       },
-      chartSeries: {
-        equity: 'Vốn',
-        balance: 'Số dư',
-        profit: 'Lợi nhuận',
-        tradeCount: 'Giao dịch'
-      },
-      empty: {
-        equityCurve: 'Không có dữ liệu đường vốn',
-        monthlyProfit: 'Không có dữ liệu lãi/lỗ theo tháng',
-        symbolDistribution: 'Không có dữ liệu phân bổ mã',
-        dailyPnL: 'Không có dữ liệu lãi/lỗ theo ngày',
-        hourly: 'No time-of-day analysis data'
-      },
-      monthlyProfitTitle: 'Lãi/lỗ theo tháng',
-      advancedStatsTitle: 'Thống kê nâng cao',
-      symbolDistributionTitle: 'Phân bổ mã',
-      dailyPnLTitle: '📅 Lãi/lỗ theo ngày',
-      hourlyTitle: '⏰ Phân tích theo giờ',
-      advancedTabs: {
-        hourly: 'Theo giờ',
-        daily: 'Daily'
-      },
-      timeDetail: {
-        lots: 'Lot',
-        trades: 'Giao dịch',
-        profitAmount: 'Lợi nhuận',
-        balance: 'Số dư',
-        profitFactor: 'Hệ số lợi nhuận',
-        maxFloatingLossAmount: 'Lỗ thả nổi tối đa',
-        maxFloatingLossRatio: 'Tỷ lệ lỗ thả nổi tối đa',
-        maxFloatingProfitAmount: 'Lợi nhuận thả nổi tối đa',
-        maxFloatingProfitRatio: 'Max floating profit ratio'
-      },
-      stats: {
-        winRate: 'Tỷ lệ thắng',
-        profitFactor: 'Hệ số lợi nhuận',
-        maxDrawdown: 'Drawdown tối đa',
-        totalTrades: 'Tổng số lệnh',
-        avgProfit: 'Lãi trung bình',
-        avgLoss: 'Lỗ trung bình',
-        avgHolding: 'Thời gian giữ TB',
-        consecutiveWinsLosses: 'Chuỗi thắng/thua',
-        sharpe: 'Sharpe',
-        sortino: 'Sortino',
-        calmar: 'Calmar',
-        largestWin: 'Lãi lớn nhất',
-        largestLoss: 'Lỗ lớn nhất',
-        avgDailyReturn: 'Lợi nhuận ngày TB',
-        volatility: 'Biến động',
-        netProfit: 'Lợi nhuận ròng',
-        totalDeposit: 'Nạp',
-        totalWithdrawal: 'Rút',
-        netDeposit: 'Net deposit'
+      "symbolDistributionTitle": "Phân bổ mã",
+      "timeDetail": {
+        "balance": "Số dư",
+        "lots": "Lot",
+        "maxFloatingLossAmount": "Lỗ thả nổi tối đa",
+        "maxFloatingLossRatio": "Tỷ lệ lỗ thả nổi tối đa",
+        "maxFloatingProfitAmount": "Lợi nhuận thả nổi tối đa",
+        "maxFloatingProfitRatio": "最大浮动盈利比",
+        "profitAmount": "Lợi nhuận",
+        "profitFactor": "Hệ số lợi nhuận",
+        "trades": "Giao dịch"
       }
     },
-    card: {
-      status: {
-        disabled: 'Đã tắt',
-        connected: 'Đã kết nối',
-        connecting: 'Đang kết nối',
-        disconnected: 'Mất kết nối',
-        error: 'Error'
+    "bind": {
+      "actions": {
+        "confirmBind": "Xác nhận",
+        "retryVerify": "重试",
+        "search": "Tìm kiếm",
+        "verifyAccount": "Xác minh tài khoản"
       },
-      fields: {
-        balance: 'Số dư',
-        equity: 'Vốn',
-        broker: 'Nhà môi giới',
-        server: 'Máy chủ'
+      "errorModal": {
+        "title": "绑定失败"
       },
-      actions: {
-        positions: 'Vị thế',
-        orders: 'Lệnh',
-        details: 'Details'
+      "errors": {
+        "brokerUnavailable": "Lỗi máy chủ hoặc mật khẩu không đúng",
+        "connectionFailed": "Không thể kết nối đến máy chủ môi giới, vui lòng kiểm tra mạng",
+        "invalidCredentials": "Không tìm thấy tài khoản hoặc mật khẩu không đúng",
+        "timeout": "连接超时，请稍后重试"
       },
-      deleteConfirm: {
-        title: 'Xóa tài khoản này?',
-        content: 'This action cannot be undone'
+      "fields": {
+        "brokerName": "Tên môi giới",
+        "company": "Công ty",
+        "password": "Mật khẩu",
+        "platform": "Nền tảng",
+        "server": "Máy chủ",
+        "tradingAccount": "Tài khoản giao dịch"
+      },
+      "labels": {
+        "serverCount": "{{count}} 台服务器"
+      },
+      "messages": {
+        "bindFailed": "Liên kết tài khoản thất bại",
+        "bindSuccess": "Liên kết tài khoản thành công",
+        "enterBrokerName": "Vui lòng nhập tên môi giới",
+        "enterPassword": "Vui lòng nhập mật khẩu",
+        "enterTradingAccount": "Vui lòng nhập tài khoản giao dịch",
+        "foundBrokers": "Tìm thấy {{count}} nhà môi giới",
+        "loginDigitsOnly": "交易账户只能包含数字",
+        "noAccessHosts": "Không có máy chủ khả dụng",
+        "noBrokersFound": "Không tìm thấy nhà môi giới phù hợp. Vui lòng kiểm tra tên.",
+        "searchFailed": "Tìm kiếm thất bại. Vui lòng thử lại sau.",
+        "selectServer": "Vui lòng chọn máy chủ",
+        "verifyFailed": "Xác minh tài khoản thất bại"
+      },
+      "passwordHint": "Mật khẩu được truyền qua HTTPS. Backend lưu dưới dạng băm Argon2id không thể đảo ngược.",
+      "placeholders": {
+        "brokerName": "Nhập tên môi giới, ví dụ: XM, IC Markets",
+        "company": "Chọn công ty môi giới",
+        "password": "输入密码",
+        "server": "Chọn máy chủ",
+        "tradingAccount": "Nhập tài khoản giao dịch"
+      },
+      "step1": {
+        "subtitle": "选择您的交易平台并搜索经纪商",
+        "title": "Chọn nền tảng và nhà môi giới"
+      },
+      "step2": {
+        "subtitle": "输入您的交易账户和密码",
+        "title": "Nhập thông tin tài khoản"
+      },
+      "step3": {
+        "subtitle": "验证凭据并确认完成",
+        "title": "Xác nhận liên kết"
+      },
+      "summary": {
+        "balance": "Số dư",
+        "broker": "Nhà môi giới",
+        "currency": "货币",
+        "equity": "Vốn",
+        "freeMargin": "Ký quỹ khả dụng",
+        "leverage": "Đòn bẩy",
+        "margin": "Ký quỹ",
+        "password": "Mật khẩu",
+        "platform": "Nền tảng",
+        "server": "Máy chủ",
+        "tradingAccount": "Tài khoản giao dịch",
+        "verified": "Tài khoản đã xác minh"
+      },
+      "title": "Liên kết tài khoản MT"
+    },
+    "bindNew": "Liên kết tài khoản mới",
+    "card": {
+      "actions": {
+        "details": "详情",
+        "orders": "Lệnh",
+        "positions": "Vị thế"
+      },
+      "deleteConfirm": {
+        "content": "此操作不可撤销",
+        "title": "Xóa tài khoản này?"
+      },
+      "fields": {
+        "balance": "Số dư",
+        "broker": "Nhà môi giới",
+        "equity": "Vốn",
+        "server": "Máy chủ"
+      },
+      "status": {
+        "connected": "Đã kết nối",
+        "connecting": "Đang kết nối",
+        "disabled": "Đã tắt",
+        "disconnected": "Mất kết nối",
+        "error": "错误"
       }
     },
-    disabled: {
-      title: 'Tài khoản đã tắt',
-      table: {
-        account: 'Tài khoản',
-        type: 'Loại',
-        broker: 'Nhà môi giới',
-        balance: 'Số dư',
-        equity: 'Vốn',
-        actions: 'Actions'
+    "detail": {
+      "accountType": {
+        "demo": "模拟",
+        "real": "Thực"
       },
-      confirmDelete: {
-        title: 'Xóa tài khoản này?',
-        content: 'This action cannot be undone'
+      "actions": {
+        "deleteAccount": "Xóa tài khoản",
+        "deleteConfirm": "Xác minh & Xóa",
+        "deletePasswordHint": "Nhập mật khẩu giao dịch MT hoặc mật khẩu chỉ-đọc để xác minh:",
+        "deletePasswordPlaceholder": "Mật khẩu giao dịch / chỉ-đọc MT",
+        "deleteWarning": "Hành động này không thể hoàn tác. Toàn bộ dữ liệu tài khoản (lịch sử giao dịch, phân tích, v.v.) sẽ bị xóa vĩnh viễn.",
+        "disableAccount": "Tắt tài khoản",
+        "enableAccount": "Bật tài khoản",
+        "syncHistory": "同步历史"
       },
-      mobile: {
-        balanceLabel: 'Số dư: ',
-        equityLabel: 'Equity: '
+      "balanceRecord": {
+        "deposit": "💰 Nạp tiền",
+        "depositIconText": "💰 Nạp tiền",
+        "withdraw": "💸 Rút tiền",
+        "withdrawIconText": "💸 Rút tiền"
+      },
+      "cards": {
+        "balance": "Số dư",
+        "credit": "授信",
+        "equity": "Vốn",
+        "floatingProfit": "Lãi/lỗ thả nổi",
+        "marginFree": "Ký quỹ khả dụng",
+        "marginLevel": "Tỷ lệ ký quỹ",
+        "marginUsed": "Ký quỹ đã dùng"
+      },
+      "connected": "Đã kết nối",
+      "lastConnected": "{{time}}",
+      "leverage": "Đòn bẩy {{leverage}}x",
+      "messages": {
+        "fetchAccountFailed": "Không thể tải thông tin tài khoản. Vui lòng thử lại sau.",
+        "syncHistoryFailed": "同步订单历史失败，请确保账户已连接到 MT 服务器。",
+        "syncHistorySuccess": "Đồng bộ lịch sử lệnh thành công"
+      },
+      "mode": {
+        "investor": "Chế độ nhà đầu tư",
+        "trader": "交易员模式"
+      },
+      "orderTypes": {
+        "buyLimit": "Mua giới hạn",
+        "buyStop": "Mua dừng",
+        "sellLimit": "Bán giới hạn",
+        "sellStop": "卖出止损"
+      },
+      "status": {
+        "connected": "Đã kết nối",
+        "connecting": "Đang kết nối",
+        "disabled": "Đã tắt",
+        "disconnected": "Mất kết nối",
+        "error": "错误"
+      },
+      "syncHistory": {
+        "content": "Đồng bộ lịch sử lệnh 1 năm gần nhất từ máy chủ MT? Việc này có thể mất một chút thời gian.",
+        "ok": "同步",
+        "title": "Đồng bộ lịch sử lệnh"
       }
     },
-    tradeTabs: {
-      positionsWithCount: 'Vị thế ({{count}})',
-      pendingWithCount: 'Lệnh chờ ({{count}})',
-      historyWithCount: 'Lịch sử ({{count}})',
-      emptyPositions: 'Chưa có vị thế',
-      emptyHistory: 'Chưa có lịch sử lệnh',
-      syncHistory: 'Đồng bộ lịch sử',
-      table: {
-        orderId: 'Mã lệnh',
-        symbol: 'Mã',
-        side: 'Hướng',
-        type: 'Loại',
-        volume: 'Khối lượng',
-        openPrice: 'Giá mở',
-        currentPrice: 'Giá hiện tại',
-        pendingPrice: 'Giá đặt',
-        closePrice: 'Giá đóng',
-        profit: 'Lợi nhuận',
-        openTime: 'Thời gian mở',
-        pendingTime: 'Thời gian đặt',
-        closeTime: 'Close time'
+    "disabled": {
+      "confirmDelete": {
+        "content": "此操作不可撤销",
+        "title": "Xóa tài khoản này?"
       },
-      pagination: {
-        total: '{{total}} total'
+      "mobile": {
+        "balanceLabel": "Số dư: ",
+        "equityLabel": "净值: "
+      },
+      "table": {
+        "account": "Tài khoản",
+        "actions": "操作",
+        "balance": "Số dư",
+        "broker": "Nhà môi giới",
+        "equity": "Vốn",
+        "type": "Loại"
+      },
+      "title": "Tài khoản đã tắt"
+    },
+    "edit": {
+      "fields": {
+        "oldPassword": "当前密码",
+        "password": "Mật khẩu mới",
+        "server": "Máy chủ",
+        "tradingAccount": "Tài khoản giao dịch"
+      },
+      "messages": {
+        "enterOldPassword": "Vui lòng nhập mật khẩu hiện tại",
+        "enterPassword": "Vui lòng nhập mật khẩu mới",
+        "passwordSaved": "密码已保存",
+        "passwordVerifyFailed": "Thay đổi mật khẩu thất bại"
+      },
+      "placeholders": {
+        "newPassword": "Nhập mật khẩu mới",
+        "oldPassword": "输入当前密码"
+      },
+      "title": "Chỉnh sửa tài khoản"
+    },
+    "empty": {
+      "subtitle": "点击下方按钮绑定您的 MT4/MT5 交易账户",
+      "title": "Chưa có tài khoản"
+    },
+    "legend": {
+      "connected": "Đã kết nối",
+      "connecting": "Đang kết nối",
+      "disabled": "Đã tắt",
+      "disconnectedOrError": "Mất kết nối/Lỗi",
+      "title": "Chú giải:"
+    },
+    "messages": {
+      "connectFailed": "Kết nối thất bại",
+      "connectSuccess": "Kết nối thành công",
+      "connectingMtServer": "Đang kết nối đến máy chủ MT",
+      "createFailed": "Tạo tài khoản thất bại",
+      "createdSuccess": "Tạo tài khoản thành công",
+      "deleteFailed": "Xóa thất bại",
+      "deleted": "Đã xóa",
+      "disableFailed": "Vô hiệu hóa tài khoản thất bại",
+      "disabledSuccess": "Vô hiệu hóa tài khoản thành công",
+      "disconnectFailed": "Ngắt kết nối thất bại",
+      "enableFailed": "启用账户失败",
+      "enabledSuccess": "Kích hoạt tài khoản thành công",
+      "fetchAccountFailed": "Không thể tải thông tin tài khoản",
+      "fetchListFailed": "Không thể tải danh sách tài khoản"
+    },
+    "report": {
+      "aiAnalysis": "Phân tích AI",
+      "direction": "Phân tích hướng",
+      "directionLong": "Mua",
+      "directionShort": "Bán",
+      "drawdownEvents": "Sự kiện drawdown",
+      "drawdownOverlay": "Đường vốn + Drawdown",
+      "generate": "Tạo báo cáo",
+      "goToAISettings": "Đi tới Cài đặt AI →",
+      "periods": {
+        "month": "Tháng này",
+        "quarter": "Quý này",
+        "week": "Tuần này",
+        "year": "Năm nay"
+      },
+      "recovered": "Đã phục hồi",
+      "sections": {
+        "findings": "Phát hiện chính",
+        "recommendations": "Khuyến nghị",
+        "summary": "Tổng quan"
+      },
+      "symbolPnL": "Lãi/lỗ theo mã",
+      "title": "Báo cáo giao dịch",
+      "titleShort": "Báo cáo",
+      "tradeDistribution": "Phân phối lãi/lỗ",
+      "winRateTrend": "Xu hướng tỷ lệ thắng"
+    },
+    "subtitle": "Quản lý tài khoản MT4/MT5",
+    "title": "Tài khoản",
+    "tradeTabs": {
+      "emptyHistory": "Chưa có lịch sử lệnh",
+      "emptyPositions": "Chưa có vị thế",
+      "historyWithCount": "Lịch sử ({{count}})",
+      "pagination": {
+        "total": "共 {{total}} 条"
+      },
+      "pendingWithCount": "Lệnh chờ ({{count}})",
+      "positionsWithCount": "Vị thế ({{count}})",
+      "syncHistory": "Đồng bộ lịch sử",
+      "table": {
+        "closePrice": "Giá đóng",
+        "closeTime": "平仓时间",
+        "currentPrice": "Giá hiện tại",
+        "openPrice": "Giá mở",
+        "openTime": "Thời gian mở",
+        "orderId": "Mã lệnh",
+        "pendingPrice": "Giá đặt",
+        "pendingTime": "Thời gian đặt",
+        "profit": "Lợi nhuận",
+        "side": "Hướng",
+        "symbol": "Mã",
+        "type": "Loại",
+        "volume": "Khối lượng"
       }
-    },
-    edit: {
-      title: 'Chỉnh sửa tài khoản',
-      fields: {
-        tradingAccount: 'Tài khoản giao dịch',
-        server: 'Máy chủ',
-        password: 'Mật khẩu mới',
-        oldPassword: 'Current password'
-      },
-      placeholders: {
-        newPassword: 'Nhập mật khẩu mới',
-        oldPassword: 'Enter current password'
-      },
-      messages: {
-        enterPassword: 'Vui lòng nhập mật khẩu mới',
-        enterOldPassword: 'Vui lòng nhập mật khẩu hiện tại',
-        passwordVerifyFailed: 'Thay đổi mật khẩu thất bại',
-        passwordSaved: 'Password saved'
-      }
-    },
-    detail: {
-      messages: {
-        fetchAccountFailed: 'Không thể tải thông tin tài khoản. Vui lòng thử lại sau.',
-        syncHistorySuccess: 'Đồng bộ lịch sử lệnh thành công',
-        syncHistoryFailed: 'Failed to sync order history. Please ensure the account is connected to the MT server.'
-      },
-      orderTypes: {
-        buyLimit: 'Mua giới hạn',
-        sellLimit: 'Bán giới hạn',
-        buyStop: 'Mua dừng',
-        sellStop: 'Sell stop'
-      },
-      balanceRecord: {
-        deposit: '💰 Nạp tiền',
-        withdraw: '💸 Rút tiền',
-        depositIconText: '💰 Nạp tiền',
-        withdrawIconText: '💸 Rút tiền'
-      },
-      syncHistory: {
-        title: 'Đồng bộ lịch sử lệnh',
-        content: 'Đồng bộ lịch sử lệnh 1 năm gần nhất từ máy chủ MT? Việc này có thể mất một chút thời gian.',
-        ok: 'Sync'
-      },
-      actions: {
-        enableAccount: 'Bật tài khoản',
-        disableAccount: 'Tắt tài khoản',
-        deleteAccount: 'Xóa tài khoản',
-        deleteConfirm: 'Xác minh & Xóa',
-        deleteWarning: 'Hành động này không thể hoàn tác. Toàn bộ dữ liệu tài khoản (lịch sử giao dịch, phân tích, v.v.) sẽ bị xóa vĩnh viễn.',
-        deletePasswordHint: 'Nhập mật khẩu giao dịch MT hoặc mật khẩu chỉ-đọc để xác minh:',
-        deletePasswordPlaceholder: 'Mật khẩu giao dịch / chỉ-đọc MT',
-        syncHistory: 'Sync history'
-      },
-      status: {
-        disabled: 'Đã tắt',
-        connected: 'Đã kết nối',
-        connecting: 'Đang kết nối',
-        disconnected: 'Mất kết nối',
-        error: 'Error'
-      },
-      accountType: {
-        real: 'Thực',
-        demo: 'Demo'
-      },
-      mode: {
-        investor: 'Chế độ nhà đầu tư',
-        trader: 'Trader mode'
-      },
-      connected: 'Đã kết nối',
-        lastConnected: '{{time}}',
-        leverage: 'Đòn bẩy {{leverage}}x',
-      cards: {
-        balance: 'Số dư',
-        equity: 'Vốn',
-        floatingProfit: 'Lãi/lỗ thả nổi',
-        marginUsed: 'Ký quỹ đã dùng',
-        marginFree: 'Ký quỹ khả dụng',
-        marginLevel: 'Tỷ lệ ký quỹ',
-        credit: 'Credit'
-      }
-    },
-    report: {
-      title: 'Báo cáo giao dịch',
-      titleShort: 'Báo cáo',
-      generate: 'Tạo báo cáo',
-      goToAISettings: 'Đi tới Cài đặt AI →',
-      aiAnalysis: 'Phân tích AI',
-      symbolPnL: 'Lãi/lỗ theo mã',
-      direction: 'Phân tích hướng',
-      directionLong: 'Mua',
-      directionShort: 'Bán',
-      tradeDistribution: 'Phân phối lãi/lỗ',
-      drawdownOverlay: 'Đường vốn + Drawdown',
-      drawdownEvents: 'Sự kiện drawdown',
-      recovered: 'Đã phục hồi',
-      winRateTrend: 'Xu hướng tỷ lệ thắng',
-      periods: {
-        week: 'Tuần này',
-        month: 'Tháng này',
-        quarter: 'Quý này',
-        year: 'Năm nay',
-      },
-      sections: {
-        summary: 'Tổng quan',
-        findings: 'Phát hiện chính',
-        recommendations: 'Khuyến nghị',
-      },
-    },
+    }
   }
 } as const;
-
-export default accounts;
+export default Accounts;

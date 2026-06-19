@@ -1,11 +1,11 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_workspace_ja.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const Workspace = {
+const StrategyWorkspace = {
   "strategy": {
     "workspace": {
       "account": "口座",
       "accountPlaceholder": "アカウントID",
-      "ai": "AI",
+      "ai": "AI 助手",
       "aiAssist": "AIアシスタント",
       "autoFix": {
         "button": "自動修正",
@@ -89,4 +89,4 @@ const Workspace = {
     }
   }
 } as const;
-export default Workspace;
+export default StrategyWorkspace;

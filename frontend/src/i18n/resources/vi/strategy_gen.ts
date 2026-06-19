@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_gen_vi.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const Gen = {
+const StrategyGen = {
   "strategy": {
     "gen": {
       "backtestMsg": "Tác vụ backtest đã tạo",
@@ -21,7 +21,7 @@ const Gen = {
       "metrics": {
         "maxDrawdown": "DD Tối Đa",
         "return": "Lợi Nhuận",
-        "sharpe": "Sharpe",
+        "sharpe": "夏普",
         "trades": "Giao Dịch",
         "winRate": "Thắng"
       },
@@ -36,4 +36,4 @@ const Gen = {
     }
   }
 } as const;
-export default Gen;
+export default StrategyGen;

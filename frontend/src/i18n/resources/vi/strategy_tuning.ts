@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_tuning_vi.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const Tuning = {
+const StrategyTuning = {
   "strategy": {
     "tuning": {
       "apply": "Áp Dụng",
@@ -22,7 +22,7 @@ const Tuning = {
         "gridDesc": "Tích Descartes đầy đủ. Tốt nhất cho ≤3 tham số.",
         "random": "Tìm Kiếm Ngẫu Nhiên",
         "randomDesc": "Lấy mẫu ngẫu nhiên đều. Tốt cho khám phá.",
-        "tpe": "TPE (KDE)",
+        "tpe": "TPE (核密度估计)",
         "tpeDesc": "Công cụ Ước lượng Parzen Cấu Trúc Cây. KDE mô hình hóa phân phối tốt/xấu."
       },
       "optimizerMethod": "Phương Pháp Tối Ưu",
@@ -46,4 +46,4 @@ const Tuning = {
     }
   }
 } as const;
-export default Tuning;
+export default StrategyTuning;

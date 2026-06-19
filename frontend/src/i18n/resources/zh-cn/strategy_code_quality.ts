@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_code_quality_zh-cn.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const CodeQuality = {
+const StrategyCodeQuality = {
   "strategy": {
     "codeQuality": {
       "category": {
@@ -14,4 +14,4 @@ const CodeQuality = {
     }
   }
 } as const;
-export default CodeQuality;
+export default StrategyCodeQuality;

@@ -1,6 +1,6 @@
 // Auto-generated from proto/ant/v1/i18n/strategy_schedules_ja.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
-const Schedules = {
+const StrategySchedules = {
   "strategy": {
     "schedules": {
       "actions": {
@@ -62,7 +62,7 @@ const Schedules = {
         },
         "runFrequencyOptions": {
           "byTimeframe": "時間足でトリガー（推奨）",
-          "cron": "Cron"
+          "cron": "Cron 表达式"
         },
         "title": {
           "create": "スケジュール作成",
@@ -82,7 +82,7 @@ const Schedules = {
       },
       "enableCount": "有効化回数",
       "format": {
-        "cron": "cron: {{expr}}",
+        "cron": "定时: {{expr}}",
         "interval": "{{s}}秒毎"
       },
       "health": {
@@ -192,4 +192,4 @@ const Schedules = {
     }
   }
 } as const;
-export default Schedules;
+export default StrategySchedules;
