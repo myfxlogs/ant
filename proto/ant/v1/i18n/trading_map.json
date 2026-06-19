@@ -142,6 +142,10 @@
     "trading_time": "trading.time",
     "trading_title": "trading.title",
     "trading_type": "trading.type",
-    "trading_volume": "trading.volume"
+    "trading_volume": "trading.volume",
+    "algo_twap": "algo.twap",
+    "algo_vwap": "algo.vwap",
+    "algo_pov": "algo.pov",
+    "algo_shortfall": "algo.shortfall"
   }
 }

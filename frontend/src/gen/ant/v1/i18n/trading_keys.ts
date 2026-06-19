@@ -427,6 +427,18 @@ export const TRADING_TYPE_KEY = 'trading.type' as const;
 /** trading.volume */
 export const TRADING_VOLUME_KEY = 'trading.volume' as const;
 
+/** algo.twap */
+export const ALGO_TWAP_KEY = 'algo.twap' as const;
+
+/** algo.vwap */
+export const ALGO_VWAP_KEY = 'algo.vwap' as const;
+
+/** algo.pov */
+export const ALGO_POV_KEY = 'algo.pov' as const;
+
+/** algo.shortfall */
+export const ALGO_SHORTFALL_KEY = 'algo.shortfall' as const;
+
 export const TRADING_KEYS = {
   algo_actions_cancel: '__root__.algo.actions.cancel',
   algo_actions_start: '__root__.algo.actions.start',
@@ -570,6 +582,10 @@ export const TRADING_KEYS = {
   trading_title: '__root__.trading.title',
   trading_type: '__root__.trading.type',
   trading_volume: '__root__.trading.volume',
+  algo_twap: '__root__.algo.twap',
+  algo_vwap: '__root__.algo.vwap',
+  algo_pov: '__root__.algo.pov',
+  algo_shortfall: '__root__.algo.shortfall',
 } as const;
 
 export type TradingKey = typeof TRADING_KEYS[keyof typeof TRADING_KEYS];

@@ -49,7 +49,11 @@ const Trading = {
     },
     "timePresets": {
       "EOD": "End of Day"
-    }
+    },
+    "twap": "TWAP",
+    "vwap": "VWAP",
+    "pov": "POV",
+    "shortfall": "Shortfall"
   },
   "trading": {
     "account": "Account",

@@ -49,7 +49,11 @@ const Trading = {
     },
     "timePresets": {
       "EOD": "当日结束"
-    }
+    },
+    "twap": "TWAP (时间加权均价)",
+    "vwap": "VWAP (成交量加权均价)",
+    "pov": "POV (参与率算法)",
+    "shortfall": "Shortfall (最小缺口)"
   },
   "trading": {
     "account": "Tài Khoản",
