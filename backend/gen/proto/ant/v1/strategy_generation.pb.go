@@ -142,8 +142,11 @@ type GenerateStrategyChunk struct {
 	TemplateName     string                 `protobuf:"bytes,7,opt,name=template_name,json=templateName,proto3" json:"template_name,omitempty"`             // matched template name (generating phase)
 	Error            string                 `protobuf:"bytes,8,opt,name=error,proto3" json:"error,omitempty"`                                               // non-fatal error message
 	// Phase 3: structured feedback output
-	Analysis      string `protobuf:"bytes,9,opt,name=analysis,proto3" json:"analysis,omitempty"` // AI analysis paragraph (feedback mode)
-	Advice        string `protobuf:"bytes,10,opt,name=advice,proto3" json:"advice,omitempty"`    // AI advice paragraph (feedback mode)
+	Analysis string `protobuf:"bytes,9,opt,name=analysis,proto3" json:"analysis,omitempty"` // AI analysis paragraph (feedback mode)
+	Advice   string `protobuf:"bytes,10,opt,name=advice,proto3" json:"advice,omitempty"`    // AI advice paragraph (feedback mode)
+	// Claude Code style: visible execution plan
+	Plan          string `protobuf:"bytes,11,opt,name=plan,proto3" json:"plan,omitempty"`                                     // AI execution plan (shown before generating)
+	PreviousCode  string `protobuf:"bytes,12,opt,name=previous_code,json=previousCode,proto3" json:"previous_code,omitempty"` // previous code for diff view (revision path)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -248,6 +251,20 @@ func (x *GenerateStrategyChunk) GetAdvice() string {
 	return ""
 }
 
+func (x *GenerateStrategyChunk) GetPlan() string {
+	if x != nil {
+		return x.Plan
+	}
+	return ""
+}
+
+func (x *GenerateStrategyChunk) GetPreviousCode() string {
+	if x != nil {
+		return x.PreviousCode
+	}
+	return ""
+}
+
 var File_strategy_generation_proto protoreflect.FileDescriptor
 
 const file_strategy_generation_proto_rawDesc = "" +
@@ -264,7 +281,7 @@ const file_strategy_generation_proto_rawDesc = "" +
 	"\rprevious_code\x18\t \x01(\tR\fpreviousCode\x122\n" +
 	"\x15backtest_metrics_json\x18\n" +
 	" \x01(\tR\x13backtestMetricsJson\x12)\n" +
-	"\x10feedback_message\x18\v \x01(\tR\x0ffeedbackMessage\"\xb9\x02\n" +
+	"\x10feedback_message\x18\v \x01(\tR\x0ffeedbackMessage\"\xf2\x02\n" +
 	"\x15GenerateStrategyChunk\x12\x14\n" +
 	"\x05phase\x18\x01 \x01(\tR\x05phase\x12\x14\n" +
 	"\x05delta\x18\x02 \x01(\tR\x05delta\x12\x1c\n" +
@@ -276,7 +293,9 @@ const file_strategy_generation_proto_rawDesc = "" +
 	"\x05error\x18\b \x01(\tR\x05error\x12\x1a\n" +
 	"\banalysis\x18\t \x01(\tR\banalysis\x12\x16\n" +
 	"\x06advice\x18\n" +
-	" \x01(\tR\x06advice2q\n" +
+	" \x01(\tR\x06advice\x12\x12\n" +
+	"\x04plan\x18\v \x01(\tR\x04plan\x12#\n" +
+	"\rprevious_code\x18\f \x01(\tR\fpreviousCode2q\n" +
 	"\x19StrategyGenerationService\x12T\n" +
 	"\x10GenerateStrategy\x12\x1f.ant.v1.GenerateStrategyRequest\x1a\x1d.ant.v1.GenerateStrategyChunk0\x01B\"Z anttrader/gen/proto/ant/v1;antv1b\x06proto3"
 

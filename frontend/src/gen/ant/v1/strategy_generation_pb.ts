@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file strategy_generation.proto.
  */
 export const file_strategy_generation: GenFile = /*@__PURE__*/
-  fileDesc("ChlzdHJhdGVneV9nZW5lcmF0aW9uLnByb3RvEgZhbnQudjEi6AEKF0dlbmVyYXRlU3RyYXRlZ3lSZXF1ZXN0EhcKD2NvbnZlcnNhdGlvbl9pZBgBIAEoCRIPCgdtZXNzYWdlGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkSEwoLdGVtcGxhdGVfaWQYBSABKAkSGwoTY2xhcmlmaWNhdGlvbl9yb3VuZBgGIAEoBRIVCg1wcmV2aW91c19jb2RlGAkgASgJEh0KFWJhY2t0ZXN0X21ldHJpY3NfanNvbhgKIAEoCRIYChBmZWVkYmFja19tZXNzYWdlGAsgASgJItIBChVHZW5lcmF0ZVN0cmF0ZWd5Q2h1bmsSDQoFcGhhc2UYASABKAkSDQoFZGVsdGEYAiABKAkSEQoJcXVlc3Rpb25zGAMgAygJEgwKBGNvZGUYBCABKAkSGQoRY29tcGxpYW5jZV9pc3N1ZXMYBSADKAkSFwoPYmFja3Rlc3RfcnVuX2lkGAYgASgJEhUKDXRlbXBsYXRlX25hbWUYByABKAkSDQoFZXJyb3IYCCABKAkSEAoIYW5hbHlzaXMYCSABKAkSDgoGYWR2aWNlGAogASgJMnEKGVN0cmF0ZWd5R2VuZXJhdGlvblNlcnZpY2USVAoQR2VuZXJhdGVTdHJhdGVneRIfLmFudC52MS5HZW5lcmF0ZVN0cmF0ZWd5UmVxdWVzdBodLmFudC52MS5HZW5lcmF0ZVN0cmF0ZWd5Q2h1bmswAUIiWiBhbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MTthbnR2MWIGcHJvdG8z");
+  fileDesc("ChlzdHJhdGVneV9nZW5lcmF0aW9uLnByb3RvEgZhbnQudjEi6AEKF0dlbmVyYXRlU3RyYXRlZ3lSZXF1ZXN0EhcKD2NvbnZlcnNhdGlvbl9pZBgBIAEoCRIPCgdtZXNzYWdlGAIgASgJEg4KBnN5bWJvbBgDIAEoCRIRCgl0aW1lZnJhbWUYBCABKAkSEwoLdGVtcGxhdGVfaWQYBSABKAkSGwoTY2xhcmlmaWNhdGlvbl9yb3VuZBgGIAEoBRIVCg1wcmV2aW91c19jb2RlGAkgASgJEh0KFWJhY2t0ZXN0X21ldHJpY3NfanNvbhgKIAEoCRIYChBmZWVkYmFja19tZXNzYWdlGAsgASgJIvcBChVHZW5lcmF0ZVN0cmF0ZWd5Q2h1bmsSDQoFcGhhc2UYASABKAkSDQoFZGVsdGEYAiABKAkSEQoJcXVlc3Rpb25zGAMgAygJEgwKBGNvZGUYBCABKAkSGQoRY29tcGxpYW5jZV9pc3N1ZXMYBSADKAkSFwoPYmFja3Rlc3RfcnVuX2lkGAYgASgJEhUKDXRlbXBsYXRlX25hbWUYByABKAkSDQoFZXJyb3IYCCABKAkSEAoIYW5hbHlzaXMYCSABKAkSDgoGYWR2aWNlGAogASgJEgwKBHBsYW4YCyABKAkSFQoNcHJldmlvdXNfY29kZRgMIAEoCTJxChlTdHJhdGVneUdlbmVyYXRpb25TZXJ2aWNlElQKEEdlbmVyYXRlU3RyYXRlZ3kSHy5hbnQudjEuR2VuZXJhdGVTdHJhdGVneVJlcXVlc3QaHS5hbnQudjEuR2VuZXJhdGVTdHJhdGVneUNodW5rMAFCIlogYW50dHJhZGVyL2dlbi9wcm90by9hbnQvdjE7YW50djFiBnByb3RvMw");
 
 /**
  * @generated from message ant.v1.GenerateStrategyRequest
@@ -166,6 +166,22 @@ export type GenerateStrategyChunk = Message<"ant.v1.GenerateStrategyChunk"> & {
    * @generated from field: string advice = 10;
    */
   advice: string;
+
+  /**
+   * Claude Code style: visible execution plan
+   *
+   * AI execution plan (shown before generating)
+   *
+   * @generated from field: string plan = 11;
+   */
+  plan: string;
+
+  /**
+   * previous code for diff view (revision path)
+   *
+   * @generated from field: string previous_code = 12;
+   */
+  previousCode: string;
 };
 
 /**

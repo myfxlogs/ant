@@ -13,6 +13,31 @@ import (
 	systemai "anttrader/internal/service/systemai"
 )
 
+// loadConversationHistory returns the last N messages from a conversation
+// as systemai.ChatMessage history. Returns nil if conversation_id is empty
+// or the conversation doesn't exist.
+func (s *AIServer) loadConversationHistory(ctx context.Context, uid uuid.UUID, conversationID string, maxHistory int) []systemai.ChatMessage {
+	if conversationID == "" {
+		return nil
+	}
+	cid, err := uuid.Parse(conversationID)
+	if err != nil {
+		return nil
+	}
+	msgs, err := s.conversations.GetMessages(ctx, uid, cid)
+	if err != nil || len(msgs) == 0 {
+		return nil
+	}
+	if maxHistory > 0 && len(msgs) > maxHistory {
+		msgs = msgs[len(msgs)-maxHistory:]
+	}
+	history := make([]systemai.ChatMessage, len(msgs))
+	for i, m := range msgs {
+		history[i] = systemai.ChatMessage{Role: m.Role, Content: m.Content}
+	}
+	return history
+}
+
 // Chat handles a single-turn AI conversation request.
 func (s *AIServer) Chat(ctx context.Context, req *connect.Request[antv1.ChatRequest]) (*connect.Response[antv1.ChatResponse], error) {
 	m := req.Msg
@@ -26,9 +51,9 @@ func (s *AIServer) Chat(ctx context.Context, req *connect.Request[antv1.ChatRequ
 	}
 
 	systemPrompt := LangPrompt(LangFromAccept(req.Header().Get("Accept-Language")))
-	s.log.Info("AI Chat", zap.String("lang", LangFromAccept(req.Header().Get("Accept-Language"))), zap.String("user_id", uid.String()))
-	messages := systemai.BuildChatMessages(systemPrompt, m.Message, nil)
-	reply, err := s.systemSvc.ChatCompletion(ctx, uid, messages)
+	history := s.loadConversationHistory(ctx, uid, m.ConversationId, 20)
+	s.log.Info("AI Chat", zap.String("lang", LangFromAccept(req.Header().Get("Accept-Language"))), zap.String("user_id", uid.String()), zap.Int("history", len(history)))
+	reply, err := s.systemSvc.ChatCompletion(ctx, uid, systemai.BuildChatMessages(systemPrompt, m.Message, history))
 	if err != nil {
 		s.log.Error("Chat: ChatCompletion failed", zap.String("user_id", uid.String()))
 		return nil, systemai.WrapAIError(err)
@@ -36,10 +61,7 @@ func (s *AIServer) Chat(ctx context.Context, req *connect.Request[antv1.ChatRequ
 
 	if m.ConversationId != "" {
 		cid, parseErr := uuid.Parse(m.ConversationId)
-		if parseErr != nil {
-			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid conversation_id: %w", parseErr))
-		}
-		if _, lookupErr := s.conversations.GetByID(ctx, cid, uid); lookupErr == nil {
+		if parseErr == nil {
 			if _, aErr := s.conversations.AddMessage(ctx, uid, cid, "user", m.Message); aErr != nil {
 				s.log.Warn("Chat: AddMessage user failed", zap.Error(aErr))
 			}
@@ -71,28 +93,24 @@ func (s *AIServer) ChatStream(ctx context.Context, req *connect.Request[antv1.Ch
 	}
 
 	systemPrompt := LangPrompt(LangFromAccept(req.Header().Get("Accept-Language")))
+	history := s.loadConversationHistory(ctx, uid, m.ConversationId, 20)
 	var fullReply strings.Builder
 
-	err = s.systemSvc.ChatCompletionStream(ctx, uid, systemai.BuildChatMessages(systemPrompt, m.Message, nil), func(chunk systemai.ChatStreamChunk) error {
+	err = s.systemSvc.ChatCompletionStream(ctx, uid, systemai.BuildChatMessages(systemPrompt, m.Message, history), func(chunk systemai.ChatStreamChunk) error {
 		fullReply.WriteString(chunk.Content)
 		sendChunk := &antv1.ChatStreamChunk{Delta: chunk.Content, Done: chunk.Done}
 		return stream.Send(sendChunk)
 	})
 	if err != nil {
-		s.log.Error("ChatStream: streaming failed",
-			zap.String("user_id", uid.String()),
-		)
+		s.log.Error("ChatStream: streaming failed", zap.String("user_id", uid.String()))
 		return systemai.WrapAIError(err)
 	}
 
 	// Persist messages to conversation after streaming completes.
 	if m.ConversationId != "" {
 		cid, parseErr := uuid.Parse(m.ConversationId)
-		if parseErr != nil {
-			return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid conversation_id: %w", parseErr))
-		}
-		reply := fullReply.String()
-		if _, lookupErr := s.conversations.GetByID(ctx, cid, uid); lookupErr == nil {
+		if parseErr == nil {
+			reply := fullReply.String()
 			if _, aErr := s.conversations.AddMessage(ctx, uid, cid, "user", m.Message); aErr != nil {
 				s.log.Warn("ChatStream: AddMessage user failed", zap.Error(aErr))
 			}

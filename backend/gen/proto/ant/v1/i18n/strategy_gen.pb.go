@@ -22,33 +22,35 @@ const (
 )
 
 type GenI18N struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	BacktestMsg         string                 `protobuf:"bytes,1,opt,name=backtest_msg,json=backtestMsg,proto3" json:"backtest_msg,omitempty"`                          // Backtest task created
-	BacktestStarted     string                 `protobuf:"bytes,2,opt,name=backtest_started,json=backtestStarted,proto3" json:"backtest_started,omitempty"`              // Backtest Started
-	ChatDiscuss         string                 `protobuf:"bytes,3,opt,name=chat_discuss,json=chatDiscuss,proto3" json:"chat_discuss,omitempty"`                          // 💬 Discuss
-	ChatGenerate        string                 `protobuf:"bytes,4,opt,name=chat_generate,json=chatGenerate,proto3" json:"chat_generate,omitempty"`                       // ⚡ Generate
-	ChatRepair          string                 `protobuf:"bytes,5,opt,name=chat_repair,json=chatRepair,proto3" json:"chat_repair,omitempty"`                             // 🔧 Repair
-	ChatRevise          string                 `protobuf:"bytes,6,opt,name=chat_revise,json=chatRevise,proto3" json:"chat_revise,omitempty"`                             // ✏️ Revise
-	ClarifyTitle        string                 `protobuf:"bytes,7,opt,name=clarify_title,json=clarifyTitle,proto3" json:"clarify_title,omitempty"`                       // A few details to confirm:
-	Done                string                 `protobuf:"bytes,8,opt,name=done,proto3" json:"done,omitempty"`                                                           // Done
-	FeedbackHeading     string                 `protobuf:"bytes,9,opt,name=feedback_heading,json=feedbackHeading,proto3" json:"feedback_heading,omitempty"`              // 📊 Backtest Results
-	FeedbackPlaceholder string                 `protobuf:"bytes,10,opt,name=feedback_placeholder,json=feedbackPlaceholder,proto3" json:"feedback_placeholder,omitempty"` // Provide feedback to iterate (e.g. "Too aggressive", "Add stop loss")
-	Generating          string                 `protobuf:"bytes,11,opt,name=generating,proto3" json:"generating,omitempty"`                                              // Generating...
-	MetricsMaxDrawdown  string                 `protobuf:"bytes,12,opt,name=metrics_max_drawdown,json=metricsMaxDrawdown,proto3" json:"metrics_max_drawdown,omitempty"`  // Max DD
-	MetricsReturn       string                 `protobuf:"bytes,13,opt,name=metrics_return,json=metricsReturn,proto3" json:"metrics_return,omitempty"`                   // Return
-	MetricsSharpe       string                 `protobuf:"bytes,14,opt,name=metrics_sharpe,json=metricsSharpe,proto3" json:"metrics_sharpe,omitempty"`                   // Sharpe
-	MetricsTrades       string                 `protobuf:"bytes,15,opt,name=metrics_trades,json=metricsTrades,proto3" json:"metrics_trades,omitempty"`                   // Trades
-	MetricsWinRate      string                 `protobuf:"bytes,16,opt,name=metrics_win_rate,json=metricsWinRate,proto3" json:"metrics_win_rate,omitempty"`              // Win
-	Placeholder         string                 `protobuf:"bytes,17,opt,name=placeholder,proto3" json:"placeholder,omitempty"`                                            // Describe the trading strategy you want to create, e.g.: "Make a Bollinger Band m
-	Regenerate          string                 `protobuf:"bytes,18,opt,name=regenerate,proto3" json:"regenerate,omitempty"`                                              // Regenerate
-	Reset_              string                 `protobuf:"bytes,19,opt,name=reset,proto3" json:"reset,omitempty"`                                                        // Start Over
-	Send                string                 `protobuf:"bytes,20,opt,name=send,proto3" json:"send,omitempty"`                                                          // Generate Strategy
-	Template            string                 `protobuf:"bytes,21,opt,name=template,proto3" json:"template,omitempty"`                                                  // Template
-	Title               string                 `protobuf:"bytes,22,opt,name=title,proto3" json:"title,omitempty"`                                                        // Strategy Generation
-	UseDefaults         string                 `protobuf:"bytes,23,opt,name=use_defaults,json=useDefaults,proto3" json:"use_defaults,omitempty"`                         // Continue with defaults
-	Validating          string                 `protobuf:"bytes,24,opt,name=validating,proto3" json:"validating,omitempty"`                                              // Compliance Check
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	state                    protoimpl.MessageState `protogen:"open.v1"`
+	BacktestMsg              string                 `protobuf:"bytes,1,opt,name=backtest_msg,json=backtestMsg,proto3" json:"backtest_msg,omitempty"`                                           // Backtest task created
+	BacktestStarted          string                 `protobuf:"bytes,2,opt,name=backtest_started,json=backtestStarted,proto3" json:"backtest_started,omitempty"`                               // Backtest Started
+	ChatDiscuss              string                 `protobuf:"bytes,3,opt,name=chat_discuss,json=chatDiscuss,proto3" json:"chat_discuss,omitempty"`                                           // 💬 Discuss
+	ChatGenerate             string                 `protobuf:"bytes,4,opt,name=chat_generate,json=chatGenerate,proto3" json:"chat_generate,omitempty"`                                        // ⚡ Generate
+	ChatRepair               string                 `protobuf:"bytes,5,opt,name=chat_repair,json=chatRepair,proto3" json:"chat_repair,omitempty"`                                              // 🔧 Repair
+	ChatRevise               string                 `protobuf:"bytes,6,opt,name=chat_revise,json=chatRevise,proto3" json:"chat_revise,omitempty"`                                              // ✏️ Revise
+	ClarifyTitle             string                 `protobuf:"bytes,7,opt,name=clarify_title,json=clarifyTitle,proto3" json:"clarify_title,omitempty"`                                        // A few details to confirm:
+	Done                     string                 `protobuf:"bytes,8,opt,name=done,proto3" json:"done,omitempty"`                                                                            // Done
+	FeedbackHeading          string                 `protobuf:"bytes,9,opt,name=feedback_heading,json=feedbackHeading,proto3" json:"feedback_heading,omitempty"`                               // 📊 Backtest Results
+	FeedbackPlaceholder      string                 `protobuf:"bytes,10,opt,name=feedback_placeholder,json=feedbackPlaceholder,proto3" json:"feedback_placeholder,omitempty"`                  // Provide feedback to iterate (e.g. "Too aggressive", "Add stop loss")
+	Generating               string                 `protobuf:"bytes,11,opt,name=generating,proto3" json:"generating,omitempty"`                                                               // Generating...
+	MetricsMaxDrawdown       string                 `protobuf:"bytes,12,opt,name=metrics_max_drawdown,json=metricsMaxDrawdown,proto3" json:"metrics_max_drawdown,omitempty"`                   // Max DD
+	MetricsReturn            string                 `protobuf:"bytes,13,opt,name=metrics_return,json=metricsReturn,proto3" json:"metrics_return,omitempty"`                                    // Return
+	MetricsSharpe            string                 `protobuf:"bytes,14,opt,name=metrics_sharpe,json=metricsSharpe,proto3" json:"metrics_sharpe,omitempty"`                                    // Sharpe
+	MetricsTrades            string                 `protobuf:"bytes,15,opt,name=metrics_trades,json=metricsTrades,proto3" json:"metrics_trades,omitempty"`                                    // Trades
+	MetricsWinRate           string                 `protobuf:"bytes,16,opt,name=metrics_win_rate,json=metricsWinRate,proto3" json:"metrics_win_rate,omitempty"`                               // Win
+	Placeholder              string                 `protobuf:"bytes,17,opt,name=placeholder,proto3" json:"placeholder,omitempty"`                                                             // Describe the trading strategy you want to create, e.g.: "Make a Bollinger Band m
+	Regenerate               string                 `protobuf:"bytes,18,opt,name=regenerate,proto3" json:"regenerate,omitempty"`                                                               // Regenerate
+	Reset_                   string                 `protobuf:"bytes,19,opt,name=reset,proto3" json:"reset,omitempty"`                                                                         // Start Over
+	Send                     string                 `protobuf:"bytes,20,opt,name=send,proto3" json:"send,omitempty"`                                                                           // Generate Strategy
+	Template                 string                 `protobuf:"bytes,21,opt,name=template,proto3" json:"template,omitempty"`                                                                   // Template
+	Title                    string                 `protobuf:"bytes,22,opt,name=title,proto3" json:"title,omitempty"`                                                                         // Strategy Generation
+	UseDefaults              string                 `protobuf:"bytes,23,opt,name=use_defaults,json=useDefaults,proto3" json:"use_defaults,omitempty"`                                          // Continue with defaults
+	Validating               string                 `protobuf:"bytes,24,opt,name=validating,proto3" json:"validating,omitempty"`                                                               // Compliance Check
+	UseDefaultsHint          string                 `protobuf:"bytes,25,opt,name=use_defaults_hint,json=useDefaultsHint,proto3" json:"use_defaults_hint,omitempty"`                            // AI will generate a generic strategy template with default parameters
+	FeedbackInputPlaceholder string                 `protobuf:"bytes,26,opt,name=feedback_input_placeholder,json=feedbackInputPlaceholder,proto3" json:"feedback_input_placeholder,omitempty"` // Not satisfied? Provide feedback to refine, e.g.: "Too aggressive, add stop loss"
+	unknownFields            protoimpl.UnknownFields
+	sizeCache                protoimpl.SizeCache
 }
 
 func (x *GenI18N) Reset() {
@@ -249,11 +251,25 @@ func (x *GenI18N) GetValidating() string {
 	return ""
 }
 
+func (x *GenI18N) GetUseDefaultsHint() string {
+	if x != nil {
+		return x.UseDefaultsHint
+	}
+	return ""
+}
+
+func (x *GenI18N) GetFeedbackInputPlaceholder() string {
+	if x != nil {
+		return x.FeedbackInputPlaceholder
+	}
+	return ""
+}
+
 var File_i18n_strategy_gen_proto protoreflect.FileDescriptor
 
 const file_i18n_strategy_gen_proto_rawDesc = "" +
 	"\n" +
-	"\x17i18n/strategy_gen.proto\x12\vant.v1.i18n\"\xca\x06\n" +
+	"\x17i18n/strategy_gen.proto\x12\vant.v1.i18n\"\xb4\a\n" +
 	"\aGenI18n\x12!\n" +
 	"\fbacktest_msg\x18\x01 \x01(\tR\vbacktestMsg\x12)\n" +
 	"\x10backtest_started\x18\x02 \x01(\tR\x0fbacktestStarted\x12!\n" +
@@ -287,7 +303,9 @@ const file_i18n_strategy_gen_proto_rawDesc = "" +
 	"\fuse_defaults\x18\x17 \x01(\tR\vuseDefaults\x12\x1e\n" +
 	"\n" +
 	"validating\x18\x18 \x01(\tR\n" +
-	"validatingB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
+	"validating\x12*\n" +
+	"\x11use_defaults_hint\x18\x19 \x01(\tR\x0fuseDefaultsHint\x12<\n" +
+	"\x1afeedback_input_placeholder\x18\x1a \x01(\tR\x18feedbackInputPlaceholderB!Z\x1fanttrader/gen/proto/ant/v1/i18nb\x06proto3"
 
 var (
 	file_i18n_strategy_gen_proto_rawDescOnce sync.Once

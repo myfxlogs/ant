@@ -265,6 +265,11 @@ func registerHandlers(
 	mux.Handle(antv1c.NewGateServiceHandler(gateEvalServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 	strategyGenServer := ai.NewStrategyGenServer(aiSvc, templatesRepo, convRepo, backtestRunRepo, log)
 	mux.Handle(antv1c.NewStrategyGenerationServiceHandler(strategyGenServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
+
+	// Claude Code style: separated plan → execute pipeline
+	strategyPlanServer := ai.NewStrategyPlanServer(aiSvc, templatesRepo, backtestRunRepo, convRepo, log)
+	mux.Handle(antv1c.NewStrategyPlanServiceHandler(strategyPlanServer, connectrpc.WithInterceptors(otelInterceptor, authInterceptor)))
+
 	economicDataServer := system.NewEconomicDataServer(log)
 	mux.Handle(antv1c.NewEconomicDataServiceHandler(economicDataServer, connectrpc.WithInterceptors(otelInterceptor,authInterceptor)))
 	jobServer := system.NewJobServer(jobRepo, log)

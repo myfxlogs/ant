@@ -1,0 +1,107 @@
+syntax = "proto3";
+
+package ant.v1;
+
+option go_package = "anttrader/gen/proto/ant/v1;antv1";
+
+// ── Claude Code style: Understanding phase ──
+// Plans are discussed collaboratively, no code is generated.
+
+service StrategyPlanService {
+  rpc AnalyzePlan(AnalyzePlanRequest) returns (stream AnalyzePlanChunk);
+  rpc ExecutePlan(ExecutePlanRequest) returns (stream ExecutePlanChunk);
+}
+
+message AnalyzePlanRequest {
+  string message = 1;
+  string conversation_id = 2;
+  string symbol = 3;
+  string timeframe = 4;
+}
+
+message AnalyzePlanChunk {
+  string phase = 1;   // "analyzing" | "plan_ready" | "error"
+  string delta = 2;   // streaming thought process
+  string plan = 3;    // final structured plan (markdown, sent when phase=plan_ready)
+  string error = 4;   // error message
+}
+
+// ── Claude Code style: Execution phase ──
+// Confirmed plans are turned into code via a tool-use pipeline.
+
+message ExecutePlanRequest {
+  string plan = 1;               // confirmed plan text
+  string conversation_id = 2;
+  string symbol = 3;
+  string timeframe = 4;
+  string previous_code = 5;      // for iteration: old code for diff
+  string feedback_message = 6;   // for iteration: user's adjustment request
+  string backtest_metrics_json = 7; // for diagnosis: latest backtest results
+}
+
+message ExecutePlanChunk {
+  string phase = 1;              // "generating" | "tool_call" | "tool_result" | "done" | "error"
+  string delta = 2;              // streaming code delta (generating phase)
+  string code = 3;               // final code (done phase)
+  string previous_code = 4;      // old code for diff (done phase, when iterating)
+  ToolCall tool_call = 5;        // tool being invoked (tool_call phase)
+  ToolResult tool_result = 6;    // tool output (tool_result phase)
+  string error = 7;
+  string analysis = 8;           // AI explanation/diagnosis (done phase, when feedback)
+}
+
+message ExecutePlanResponse {
+  string code = 1;
+  string previous_code = 2;
+  repeated ToolResult tool_results = 3;
+  string error = 4;
+}
+
+// ── Tool Use Protocol ──
+
+message ToolCall {
+  string call_id = 1;
+  string name = 2;               // "compliance_check" | "backtest" | "gate_eval" | "walkforward"
+  string params_json = 3;        // tool-specific parameters as JSON
+}
+
+message ToolResult {
+  string call_id = 1;
+  string name = 2;
+  bool success = 3;
+  string output_json = 4;        // tool-specific output as JSON
+  string error = 5;
+}
+
+// ── Tool: Compliance Check ──
+
+message ComplianceIssue {
+  string rule = 1;
+  string message = 2;
+  string severity = 3;  // "block" | "warn"
+  int32 line = 4;
+}
+
+message ComplianceResult {
+  bool passed = 1;
+  repeated ComplianceIssue issues = 2;
+}
+
+// ── Tool: Backtest Run ──
+
+message BacktestMetricsMsg {
+  double total_return = 1;
+  double sharpe_ratio = 2;
+  double max_drawdown = 3;
+  double win_rate = 4;
+  double profit_factor = 5;
+  int32 total_trades = 6;
+}
+
+// ── Tool: Gate Evaluation ──
+
+message GateEvaluationResult {
+  bool passed = 1;
+  string failed_gate = 2;   // e.g. "lookahead", "deflated_sharpe"
+  string reason = 3;
+}

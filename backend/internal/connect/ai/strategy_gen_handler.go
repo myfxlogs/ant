@@ -17,7 +17,7 @@ import (
 	systemai "anttrader/internal/service/systemai"
 )
 
-const maxClarificationRounds = 3
+const maxClarificationRounds = 1 // Claude Code style: generate first, refine via feedback
 
 type StrategyGenServer struct {
 	systemSvc     *systemai.Service
@@ -95,6 +95,11 @@ func (s *StrategyGenServer) GenerateStrategy(
 		return stream.Send(&antv1.GenerateStrategyChunk{Phase: "clarifying", Questions: intent.Questions})
 	}
 
+	// ── Claude Code style: send plan before generating ──
+	if intent.Plan != "" {
+		_ = stream.Send(&antv1.GenerateStrategyChunk{Phase: "planning", Plan: intent.Plan})
+	}
+
 	// Build prompt with extracted intent parameters, using the detected language.
 	tmpl, sysPrompt, userPrompt := s.buildStrategyPrompt(ctx, userID, m, intent, lang)
 	if err := s.sendTemplateInfo(stream, tmpl); err != nil { return err }
@@ -115,7 +120,11 @@ func (s *StrategyGenServer) GenerateStrategy(
 	// Auto-persist exchange to strategy session
 	s.persistExchange(ctx, userID, m.ConversationId, m.Message, code)
 
-	return stream.Send(&antv1.GenerateStrategyChunk{Phase: "done", Code: code, BacktestRunId: runID, Error: btErr})
+	prevCode := ""
+	if m.PreviousCode != "" {
+		prevCode = m.PreviousCode
+	}
+	return stream.Send(&antv1.GenerateStrategyChunk{Phase: "done", Code: code, PreviousCode: prevCode, BacktestRunId: runID, Error: btErr})
 }
 
 func (s *StrategyGenServer) analyzeIntent(ctx context.Context, userID uuid.UUID, m *antv1.GenerateStrategyRequest, lang string) (*ai.IntentResult, error) {
@@ -284,7 +293,7 @@ func (s *StrategyGenServer) handleFeedback(
 	s.persistExchange(ctx, userID, m.ConversationId, m.FeedbackMessage, code)
 
 	return stream.Send(&antv1.GenerateStrategyChunk{
-		Phase: "done", Code: code, BacktestRunId: runID,
+		Phase: "done", Code: code, PreviousCode: m.PreviousCode, BacktestRunId: runID,
 		Analysis: fullSections.Analysis, Advice: fullSections.Advice,
 		Error: btErr,
 	})

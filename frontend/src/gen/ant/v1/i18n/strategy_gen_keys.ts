@@ -73,6 +73,105 @@ export const USE_DEFAULTS_KEY = 'strategy.gen.useDefaults' as const;
 /** useDefaultsHint */
 export const USE_DEFAULTS_HINT_KEY = 'strategy.gen.useDefaultsHint' as const;
 
+/** feedbackInputPlaceholder */
+export const FEEDBACK_INPUT_PLACEHOLDER_KEY = 'strategy.gen.feedbackInputPlaceholder' as const;
+
+/** planTitle */
+export const PLAN_TITLE_KEY = 'strategy.gen.planTitle' as const;
+
+/** planAnalyzing */
+export const PLAN_ANALYZING_KEY = 'strategy.gen.planAnalyzing' as const;
+
+/** planErrorTag */
+export const PLAN_ERROR_TAG_KEY = 'strategy.gen.planErrorTag' as const;
+
+/** planReset */
+export const PLAN_RESET_KEY = 'strategy.gen.planReset' as const;
+
+/** planCardTitle */
+export const PLAN_CARD_TITLE_KEY = 'strategy.gen.planCardTitle' as const;
+
+/** planEdit */
+export const PLAN_EDIT_KEY = 'strategy.gen.planEdit' as const;
+
+/** planEditCancel */
+export const PLAN_EDIT_CANCEL_KEY = 'strategy.gen.planEditCancel' as const;
+
+/** planConfirmBtn */
+export const PLAN_CONFIRM_BTN_KEY = 'strategy.gen.planConfirmBtn' as const;
+
+/** planSendBtn */
+export const PLAN_SEND_BTN_KEY = 'strategy.gen.planSendBtn' as const;
+
+/** planSymbolWarn */
+export const PLAN_SYMBOL_WARN_KEY = 'strategy.gen.planSymbolWarn' as const;
+
+/** planSymbolOk */
+export const PLAN_SYMBOL_OK_KEY = 'strategy.gen.planSymbolOk' as const;
+
+/** planPrerequisiteMsg */
+export const PLAN_PREREQUISITE_MSG_KEY = 'strategy.gen.planPrerequisiteMsg' as const;
+
+/** execTitle */
+export const EXEC_TITLE_KEY = 'strategy.gen.execTitle' as const;
+
+/** execRunning */
+export const EXEC_RUNNING_KEY = 'strategy.gen.execRunning' as const;
+
+/** execDone */
+export const EXEC_DONE_KEY = 'strategy.gen.execDone' as const;
+
+/** execBackToPlan */
+export const EXEC_BACK_TO_PLAN_KEY = 'strategy.gen.execBackToPlan' as const;
+
+/** execPlanLabel */
+export const EXEC_PLAN_LABEL_KEY = 'strategy.gen.execPlanLabel' as const;
+
+/** execComplianceTool */
+export const EXEC_COMPLIANCE_TOOL_KEY = 'strategy.gen.execComplianceTool' as const;
+
+/** execBacktestTool */
+export const EXEC_BACKTEST_TOOL_KEY = 'strategy.gen.execBacktestTool' as const;
+
+/** execToolRunning */
+export const EXEC_TOOL_RUNNING_KEY = 'strategy.gen.execToolRunning' as const;
+
+/** execFeedbackTitle */
+export const EXEC_FEEDBACK_TITLE_KEY = 'strategy.gen.execFeedbackTitle' as const;
+
+/** execFeedbackHint */
+export const EXEC_FEEDBACK_HINT_KEY = 'strategy.gen.execFeedbackHint' as const;
+
+/** execFeedbackPlaceholder */
+export const EXEC_FEEDBACK_PLACEHOLDER_KEY = 'strategy.gen.execFeedbackPlaceholder' as const;
+
+/** execChipLowerDd */
+export const EXEC_CHIP_LOWER_DD_KEY = 'strategy.gen.execChipLowerDd' as const;
+
+/** execChipRaiseReturn */
+export const EXEC_CHIP_RAISE_RETURN_KEY = 'strategy.gen.execChipRaiseReturn' as const;
+
+/** execChipTightenSl */
+export const EXEC_CHIP_TIGHTEN_SL_KEY = 'strategy.gen.execChipTightenSl' as const;
+
+/** execChipLongOnly */
+export const EXEC_CHIP_LONG_ONLY_KEY = 'strategy.gen.execChipLongOnly' as const;
+
+/** execSendFeedback */
+export const EXEC_SEND_FEEDBACK_KEY = 'strategy.gen.execSendFeedback' as const;
+
+/** execClear */
+export const EXEC_CLEAR_KEY = 'strategy.gen.execClear' as const;
+
+/** execApplyCode */
+export const EXEC_APPLY_CODE_KEY = 'strategy.gen.execApplyCode' as const;
+
+/** execSkipNoSymbol */
+export const EXEC_SKIP_NO_SYMBOL_KEY = 'strategy.gen.execSkipNoSymbol' as const;
+
+/** execSkipNoCode */
+export const EXEC_SKIP_NO_CODE_KEY = 'strategy.gen.execSkipNoCode' as const;
+
 /** validating */
 export const VALIDATING_KEY = 'strategy.gen.validating' as const;
 
@@ -101,6 +200,39 @@ export const STRATEGYGEN_KEYS = {
   title: 'strategy.gen.title',
   use_defaults: 'strategy.gen.useDefaults',
   use_defaults_hint: 'strategy.gen.useDefaultsHint',
+  feedback_input_placeholder: 'strategy.gen.feedbackInputPlaceholder',
+  plan_title: 'strategy.gen.planTitle',
+  plan_analyzing: 'strategy.gen.planAnalyzing',
+  plan_error_tag: 'strategy.gen.planErrorTag',
+  plan_reset: 'strategy.gen.planReset',
+  plan_card_title: 'strategy.gen.planCardTitle',
+  plan_edit: 'strategy.gen.planEdit',
+  plan_edit_cancel: 'strategy.gen.planEditCancel',
+  plan_confirm_btn: 'strategy.gen.planConfirmBtn',
+  plan_send_btn: 'strategy.gen.planSendBtn',
+  plan_symbol_warn: 'strategy.gen.planSymbolWarn',
+  plan_symbol_ok: 'strategy.gen.planSymbolOk',
+  plan_prerequisite_msg: 'strategy.gen.planPrerequisiteMsg',
+  exec_title: 'strategy.gen.execTitle',
+  exec_running: 'strategy.gen.execRunning',
+  exec_done: 'strategy.gen.execDone',
+  exec_back_to_plan: 'strategy.gen.execBackToPlan',
+  exec_plan_label: 'strategy.gen.execPlanLabel',
+  exec_compliance_tool: 'strategy.gen.execComplianceTool',
+  exec_backtest_tool: 'strategy.gen.execBacktestTool',
+  exec_tool_running: 'strategy.gen.execToolRunning',
+  exec_feedback_title: 'strategy.gen.execFeedbackTitle',
+  exec_feedback_hint: 'strategy.gen.execFeedbackHint',
+  exec_feedback_placeholder: 'strategy.gen.execFeedbackPlaceholder',
+  exec_chip_lower_dd: 'strategy.gen.execChipLowerDd',
+  exec_chip_raise_return: 'strategy.gen.execChipRaiseReturn',
+  exec_chip_tighten_sl: 'strategy.gen.execChipTightenSl',
+  exec_chip_long_only: 'strategy.gen.execChipLongOnly',
+  exec_send_feedback: 'strategy.gen.execSendFeedback',
+  exec_clear: 'strategy.gen.execClear',
+  exec_apply_code: 'strategy.gen.execApplyCode',
+  exec_skip_no_symbol: 'strategy.gen.execSkipNoSymbol',
+  exec_skip_no_code: 'strategy.gen.execSkipNoCode',
   validating: 'strategy.gen.validating',
 } as const;
 

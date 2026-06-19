@@ -18,56 +18,51 @@ import (
 
 // IntentResult is the output of LLM-driven intent analysis.
 type IntentResult struct {
-	NeedsClarification bool              `json:"needs_clarification"`
-	Questions          []string          `json:"questions"`
-	Language           string            `json:"language"`           // detected input language: "zh", "zh-tw", "ja", "vi", "en", or "" (unknown)
-	StrategyFamily     string            `json:"strategy_family"`    // trend_following, mean_reversion, breakout, grid, martingale
-	StrategyType       string            `json:"strategy_type"`      // "run_dataframe" (vectorized/indicator) or "run_context" (event-driven) or ""
-	RiskLevel          string            `json:"risk_level"`         // low, medium, high
-	TradeDirection     string            `json:"trade_direction"`    // long, short, both
-	MaxDrawdown        string            `json:"max_drawdown"`       // e.g. "0.10", "0.30"
-	HoldingPeriod      string            `json:"holding_period"`     // intraday, swing, position
-	EntrySignals       []string          `json:"entry_signals"`      // e.g. ["rsi_oversold", "ma_cross"]
-	ExitSignals        []string          `json:"exit_signals"`       // e.g. ["take_profit", "trailing_stop"]
-	StopLoss           string            `json:"stop_loss"`          // "tight", "medium", "wide", "none"
-	TakeProfit         string            `json:"take_profit"`        // "tight", "medium", "wide", "none"
-	Confidence         float64           `json:"confidence"`         // 0.0-1.0
+	NeedsClarification bool     `json:"needs_clarification"`
+	Questions          []string `json:"questions"`
+	Language           string   `json:"language"`        // detected input language
+	StrategyFamily     string   `json:"strategy_family"` // trend_following, mean_reversion, breakout, grid, martingale
+	StrategyType       string   `json:"strategy_type"`   // "run_dataframe" or "run_context"
+	RiskLevel          string   `json:"risk_level"`      // low, medium, high
+	TradeDirection     string   `json:"trade_direction"` // long, short, both
+	MaxDrawdown        string   `json:"max_drawdown"`
+	HoldingPeriod      string   `json:"holding_period"`
+	EntrySignals       []string `json:"entry_signals"`
+	ExitSignals        []string `json:"exit_signals"`
+	StopLoss           string   `json:"stop_loss"`
+	TakeProfit         string   `json:"take_profit"`
+	Confidence         float64  `json:"confidence"` // 0.0-1.0
+	Plan               string   `json:"plan"`       // brief execution plan (1-2 sentences)
 }
 
-const intentAnalysisSystemPrompt = `你是量化策略需求分析专家。分析用户的自然语言描述，提取结构化意图。
+const intentAnalysisSystemPrompt = `You are a quantitative strategy analyst. Extract structured intent from the user's natural language description.
 
-## 输出格式（严格遵守 — 只要 JSON，不要任何其他文本）
+## Output format (strict — JSON only, no other text)
 
 {
   "needs_clarification": true/false,
-  "questions": ["问题1", "问题2"],
+  "questions": ["question 1", "question 2"],
   "language": "zh|zh-tw|ja|vi|en|",
   "strategy_family": "trend_following|mean_reversion|breakout|grid|martingale|unknown",
   "strategy_type": "run_dataframe|run_context|",
   "risk_level": "low|medium|high|unknown",
   "trade_direction": "long|short|both|unknown",
-  "max_drawdown": "容忍的最大回撤，如0.10表示10%。未提及则为空字符串",
+  "max_drawdown": "e.g. 0.10 for 10%. Empty string if not mentioned.",
   "holding_period": "intraday|swing|position|unknown",
-  "entry_signals": ["用户提及的入场信号"],
-  "exit_signals": ["用户提及的离场信号"],
+  "entry_signals": ["signals the user mentioned"],
+  "exit_signals": ["signals the user mentioned"],
   "stop_loss": "tight|medium|wide|none|unknown",
   "take_profit": "tight|medium|wide|none|unknown",
-  "confidence": 0.0-1.0
+  "confidence": 0.0-1.0,
+  "plan": "Brief 1-2 sentence execution plan: what kind of strategy, key indicators to use, risk management approach. Use defaults for anything not specified."
 }
 
-## strategy_type 判断规则
-- "run_dataframe": 用户提到"指标"、"矢量"、"图表"、"画线"、"均线交叉"、"RSI"、"布林带"、"MACD"、"金叉死叉"、"指标策略"、"数据帧"、"df"等 → 矢量模式
-- "run_context": 用户提到"逐笔"、"逐K"、"事件驱动"、"持仓管理"、"移动止损"、"动态仓位"、"分批加仓"、"bot"、"网格"等 → 事件驱动模式
-- "": 无法判断或用户未提及，默认为空（系统会使用 run_context 作为默认值）
-
-## 规则
-1. needs_clarification=true 当用户描述过于模糊（只说"做个策略"、"帮我赚钱"），此时 questions 必须包含1-3个具体的追问
-2. needs_clarification=false 当信息足够生成策略，extract 所有能识别的参数
-3. strategy_family 根据策略描述推断，不确定时填 "unknown"
-4. confidence 表示你对提取结果的确信度。模糊描述 → 低分，详细描述 → 高分
-5. questions 必须是针对性的、用户能直接回答的具体问题（不是泛泛的"请详细描述"），其语言遵循下方的语言要求
-6. language 根据用户输入的语言检测，取值为: "zh"(简体中文), "zh-tw"(繁体中文), "ja"(日语), "vi"(越南语), "en"(英语)。无法判断时返回空字符串 ""。仅检测用户输入文本的语言，不受下方语言要求影响。`
-
+## CRITICAL RULES (Claude Code style — generate first, refine later)
+1. **Only set needs_clarification=true when**: the input is TRULY empty (e.g. "？", "help") or completely nonsensical. Even then, ask at most ONE specific question.
+2. **For vague but well-intentioned input** (e.g. "做个策略", "帮我写个EURUSD策略"): set needs_clarification=FALSE. Pick reasonable defaults (mean_reversion, medium risk, swing holding) and generate a plan. The user will refine via feedback — that's faster than a Q&A loop.
+3. **For detailed input**: extract everything, set needs_clarification=false, write a concrete plan.
+4. **Plan field**: Always write a brief plan summarizing what you'll build. Mention key indicators, entry/exit logic, and risk controls. Fill gaps with sensible defaults.
+5. **Confidence**: low confidence is fine — the system will iterate. Do NOT ask questions just because confidence < 0.4.`
 // IntentAnalyzer uses an LLM to extract structured intent from NL descriptions.
 type IntentAnalyzer struct {
 	chatFn func(ctx context.Context, userID uuid.UUID, messages []ChatMessage, model string) (string, error)
@@ -104,28 +99,18 @@ func (a *IntentAnalyzer) Analyze(ctx context.Context, userID uuid.UUID, message,
 	// Extract JSON from response (LLM may wrap in markdown code blocks)
 	jsonStr := extractJSON(resp)
 	var result IntentResult
-		if err := json.Unmarshal([]byte(jsonStr), &result); err != nil {
-			// Fallback: if JSON parse fails, treat as unclear (language-aware).
-			q, _ := FallbackQuestions(lang)
-			return &IntentResult{
-				NeedsClarification: true,
-				Questions:          []string{q},
-				Confidence:         0.0,
-			}, nil
-		}
-
-	// If confidence is very low but no clarification flagged, add a gentle question
-	if !result.NeedsClarification && result.Confidence < 0.4 {
-		result.NeedsClarification = true
-		_, q := FallbackQuestions(lang)
-		result.Questions = []string{q}
+	if err := json.Unmarshal([]byte(jsonStr), &result); err != nil {
+		// JSON parse failed — don't block the user. Generate with defaults.
+		return &IntentResult{NeedsClarification: false, Confidence: 0.0}, nil
 	}
 
-	// Deduplicate and limit questions
+	// Deduplicate and limit questions (only when truly needed per new prompt rules).
 	result.Questions = deduplicateStrings(result.Questions)
-	if len(result.Questions) > 3 {
-		result.Questions = result.Questions[:3]
+	if len(result.Questions) > 1 {
+		result.Questions = result.Questions[:1]
 	}
+	// Never auto-escalate low confidence to clarification — let the user
+	// iterate via feedback. This is the Claude Code "ship early, refine later" approach.
 
 	return &result, nil
 }

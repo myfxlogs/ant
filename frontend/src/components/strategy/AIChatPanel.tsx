@@ -1,16 +1,18 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Button, Space, Tag, Typography, message } from 'antd';
-import { ThunderboltOutlined, LoadingOutlined } from '@ant-design/icons';
+import { Button, Segmented, Space, Tag, Typography, message } from 'antd';
+import { CodeOutlined, MessageOutlined, EditOutlined, ToolOutlined, ThunderboltOutlined, LoadingOutlined, RobotOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
 import { ANALYZING_KEY, FEEDBACK_KEY, RESET_KEY, REVISE_KEY, STREAMING_KEY, TITLE_KEY as AI_CHAT_TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_ai_chat_keys';
 import { CODE_UPDATED_KEY } from '@/gen/ant/v1/i18n/strategy_code_assist_keys';
-import { TITLE_KEY as GEN_TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
+import { CHAT_DISCUSS_KEY, CHAT_GENERATE_KEY, CHAT_REPAIR_KEY, CHAT_REVISE_KEY, TITLE_KEY as GEN_TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
 import { TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_market_regime_keys';
 import { generateStrategyStream } from '@/client/strategyGen';
 import { codeAssistApi, type CodeChatMessage } from '@/client/codeAssist';
 import { pythonStrategyApi } from '@/client/pythonStrategy';
 import type { BacktestRunUpdate } from '@/gen/ant/v1/backtest_run_query_pb';
 import { isSucceededRun } from '@/pages/strategy/StrategyTemplatePage.utils';
+import StepProgress from './StepProgress';
+import DiffView from './DiffView';
 import {
   ChatMessagesView,
   ChatClarificationView,
@@ -51,6 +53,9 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
   const [analysisText, setAnalysisText] = useState('');
   const [adviceText, setAdviceText] = useState('');
   const [lastGeneratedCode, setLastGeneratedCode] = useState('');
+  const [plan, setPlan] = useState('');
+  const [prevCode, setPrevCode] = useState('');
+  const [manualMode, setManualMode] = useState<string>('auto');
   const abortRef = useRef<(() => void) | null>(null);
   const streamRef = useRef('');
   const watchRef = useRef<(() => void) | null>(null);
@@ -67,7 +72,7 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
     setMode('idle'); setStreamText(''); setQuestions([]);
     setGenCode(''); setError(''); setPhase(''); setBacktestId('');
     setBacktestMetrics(null); setAnalysisText(''); setAdviceText('');
-    setLastGeneratedCode('');
+    setLastGeneratedCode(''); setPlan(''); setPrevCode('');
   }, []);
 
   const handleGenerate = useCallback((msg: string, round: number, isFeedback = false) => {
@@ -102,6 +107,7 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
         },
         onBacktestId: (id) => {
           setBacktestId(id);
+          setPlan(""); setPrevCode("");
           watchRef.current?.();
           const stop = pythonStrategyApi.watchBacktestRun(id, (update: BacktestRunUpdate) => {
             if (isSucceededRun(update.run) && update.metrics) {
@@ -119,6 +125,8 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
         },
         onAnalysis: (a) => setAnalysisText(a),
         onAdvice: (a) => setAdviceText(a),
+        onPlan: (p) => setPlan(p),
+        onPreviousCode: (c) => setPrevCode(c),
         onError: (e) => setError(e),
         onDone: () => setMode('done'),
       },
@@ -157,15 +165,21 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
     abortRef.current = abort;
   }, [code, history, i18n.language, sessionId, onApply, t]);
 
+  const resolveIntent = useCallback((msg: string) => {
+    if (manualMode !== 'auto') return manualMode;
+    return detectMode(msg, !!code.trim(), !!backtestMetrics);
+  }, [manualMode, code, backtestMetrics]);
+
   const handleSend = useCallback(() => {
     const msg = draft.trim();
     if (!msg) return;
     setDraft(''); setClarifyRound(0); setQuestions([]);
     const hasBacktest = !!backtestMetrics;
-    const intent = detectMode(msg, !!code.trim(), hasBacktest);
-    if (intent === 'generate') handleGenerate(msg, 0, hasBacktest);
+    const intent = resolveIntent(msg);
+    if (intent === 'generate' || intent === 'discuss')
+      handleGenerate(msg, 0, hasBacktest || intent === 'discuss');
     else handleRevise(msg);
-  }, [draft, code, handleGenerate, handleRevise, backtestMetrics]);
+  }, [draft, code, handleGenerate, handleRevise, backtestMetrics, resolveIntent]);
 
   const handleClarifyAnswer = useCallback((answer: string) => {
     const next = clarifyRound + 1;
@@ -175,10 +189,12 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
 
   const isBusy = mode === 'streaming';
 
-  // Compute mode tag for input bar
-  const currentMode = draft.trim()
-    ? detectMode(draft, !!code.trim(), !!backtestMetrics)
-    : code.trim() ? 'revise' : 'generate';
+  // Compute display mode for tag
+  const currentMode = manualMode !== 'auto'
+    ? manualMode
+    : draft.trim()
+      ? detectMode(draft, !!code.trim(), !!backtestMetrics)
+      : code.trim() ? 'revise' : 'generate';
 
   // Clarification mode — early return
   if (questions.length > 0) {
@@ -224,10 +240,36 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
         t={t}
       />
 
+      {/* Progress timeline */}
+      <StepProgress phase={isBusy ? (phase || mode) : 'idle'} plan={plan} />
+
+      {/* Code diff when previous code exists */}
+      {prevCode && genCode && (
+        <DiffView oldCode={prevCode} newCode={genCode} />
+      )}
+
       {/* Error */}
       {error && (
         <div style={{ padding: 4, marginBottom: 6, background: '#fff2f0', borderRadius: 4,
           fontSize: 11, color: '#cf1322' }}>{error}</div>
+      )}
+
+      {/* Mode switcher */}
+      {!isBusy && (
+        <div style={{ marginBottom: 8 }}>
+          <Segmented size="small"
+            value={manualMode}
+            onChange={(v) => setManualMode(String(v))}
+            options={[
+              { label: <span><RobotOutlined /> Auto</span>, value: 'auto' },
+              { label: <span><CodeOutlined /> {t(CHAT_GENERATE_KEY, 'Generate')}</span>, value: 'generate' },
+              { label: <span><MessageOutlined /> {t(CHAT_DISCUSS_KEY, 'Discuss')}</span>, value: 'discuss' },
+              { label: <span><EditOutlined /> {t(CHAT_REVISE_KEY, 'Revise')}</span>, value: 'revise' },
+              { label: <span><ToolOutlined /> {t(CHAT_REPAIR_KEY, 'Repair')}</span>, value: 'repair' },
+            ]}
+            style={{ width: '100%' }}
+          />
+        </div>
       )}
 
       {/* Pending code — shown when autoApply=false */}
@@ -250,6 +292,7 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
         modeColor={MODE_COLORS[currentMode]}
         onDraftChange={setDraft}
         onSend={handleSend}
+        onChipClick={(chip) => { setDraft(chip); }}
         t={t}
       />
     </div>

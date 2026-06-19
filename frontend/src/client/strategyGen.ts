@@ -19,6 +19,8 @@ export interface StrategyGenCallbacks {
   onDelta: (delta: string) => void;
   onQuestions: (questions: string[]) => void;
   onCode: (code: string) => void;
+  onPlan?: (plan: string) => void;
+  onPreviousCode?: (code: string) => void;
   onBacktestId: (runId: string) => void;
   onTemplate: (name: string) => void;
   // Phase 3: structured feedback output
@@ -80,6 +82,12 @@ function handleChunk(chunk: GenerateStrategyChunk, cbs: StrategyGenCallbacks): v
     cbs.onTemplate(chunk.templateName);
   }
   if (chunk.code) {
+	if (chunk.plan) {
+		cbs.onPlan?.(chunk.plan);
+	}
+	if (chunk.previousCode) {
+		cbs.onPreviousCode?.(chunk.previousCode);
+	}
     cbs.onCode(chunk.code);
   }
   if (chunk.backtestRunId) {

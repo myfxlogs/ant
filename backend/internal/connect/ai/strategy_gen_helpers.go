@@ -137,38 +137,39 @@ func (s *StrategyGenServer) collectComplianceIssues(blocks []ai.ComplianceIssue,
 	return issues
 }
 
-// triggerBacktest creates a PENDING backtest run for the generated code.
-func (s *StrategyGenServer) triggerBacktest(ctx context.Context, userID uuid.UUID, code, symbol, timeframe string) (string, error) {
-	if s.backtestRepo == nil {
+// CreateBacktestRun is a standalone helper used by both StrategyGenServer and StrategyPlanServer.
+func CreateBacktestRun(ctx context.Context, repo *repository.BacktestRunRepository, userID uuid.UUID, code, symbol, timeframe string) (string, error) {
+	return triggerBacktest(ctx, repo, userID, code, symbol, timeframe)
+}
+
+func triggerBacktest(ctx context.Context, repo *repository.BacktestRunRepository, userID uuid.UUID, code, symbol, timeframe string) (string, error) {
+	if repo == nil {
 		return "", nil
 	}
-	if code == "" || symbol == "" || timeframe == "" {
-		return "", nil
+	if code == "" {
+		return "", fmt.Errorf("回测跳过：代码为空")
+	}
+	if symbol == "" || timeframe == "" {
+		return "", fmt.Errorf("回测跳过：未选择交易品种和时间周期。请在顶部工具栏选择后再生成策略。")
 	}
 	run := &repository.BacktestRun{
-		ID:            uuid.New(),
-		UserID:        userID,
-		AccountID:     uuid.Nil,
-		Symbol:        symbol,
-		Timeframe:     timeframe,
-		Mode:          "KLINE_RANGE",
-		Status:        "PENDING",
-		StrategyCode:  &code,
-		InitialCapital: ptr.F64(10000),
-			Commission:       ptr.F64(0.001),
-			Slippage:         ptr.F64(0),
-			Leverage:         ptr.F64(1),
-			TradeDirection:   ptr.Str("both"),
-			StrictMode:       ptr.Bool(true),
-		StrategyCodeHash: "",
-		Error:         "",
-		ExtraSymbols:  []string{},
+		ID: uuid.New(), UserID: userID, AccountID: uuid.Nil,
+		Symbol: symbol, Timeframe: timeframe, Mode: "KLINE_RANGE", Status: "PENDING",
+		StrategyCode: &code,
+		InitialCapital: ptr.F64(10000), Commission: ptr.F64(0.001),
+		Slippage: ptr.F64(0), Leverage: ptr.F64(1),
+		TradeDirection: ptr.Str("both"), StrictMode: ptr.Bool(true), ExtraSymbols: []string{},
 	}
-	id, err := s.backtestRepo.Create(ctx, run)
+	id, err := repo.Create(ctx, run)
 	if err != nil {
 		return "", fmt.Errorf("create backtest run: %w", err)
 	}
 	return id.String(), nil
+}
+
+// triggerBacktest delegates to the standalone helper for backward compatibility.
+func (s *StrategyGenServer) triggerBacktest(ctx context.Context, userID uuid.UUID, code, symbol, timeframe string) (string, error) {
+	return CreateBacktestRun(ctx, s.backtestRepo, userID, code, symbol, timeframe)
 }
 
 

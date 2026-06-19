@@ -33,6 +33,7 @@ import { IndicatorCatalogService } from "../gen/ant/v1/indicator_catalog_pb";
 import { ExecutionAlgoService } from "../gen/ant/v1/execution_algo_pb";
 import { GateService } from "../gen/ant/v1/ai_gate_pb";
 import { StrategyGenerationService } from "../gen/ant/v1/strategy_generation_pb";
+import { StrategyPlanService } from "../gen/ant/v1/strategy_execution_pb";
 import { NotificationService } from "../gen/ant/v1/notification_service_pb";
 import { AssetAnalysisService } from "../gen/ant/v1/asset_analysis_pb";
 import { PaperTradingService } from "../gen/ant/v1/paper_trading_pb";
@@ -91,6 +92,7 @@ export const indicatorCatalogClient = createClient(IndicatorCatalogService, tran
 export const executionAlgoClient = createClient(ExecutionAlgoService, transport);
 export const gateClient = createClient(GateService, streamTransport);
 export const strategyGenClient = createClient(StrategyGenerationService, streamTransport);
+export const strategyPlanClient = createClient(StrategyPlanService, streamTransport);
 export const notificationClient = createClient(NotificationService, transport);
 export const notificationStreamClient = createClient(NotificationService, streamTransport);
 export const assetAnalysisClient = createClient(AssetAnalysisService, streamTransport);

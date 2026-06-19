@@ -1,7 +1,7 @@
 import { AI_KEY, APPLY_CODE_KEY, DISMISS_KEY, REVIEW_CODE_KEY, YOU_KEY } from '@/gen/ant/v1/i18n/strategy_ai_chat_keys';
 import { METRICS_MAX_DRAWDOWN_KEY, METRICS_SHARPE_KEY, METRICS_WIN_RATE_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_run_keys';
 import { REVISE_INPUT_PLACEHOLDER_KEY, REVISE_SEND_KEY } from '@/gen/ant/v1/i18n/strategy_code_assist_keys';
-import { CLARIFY_TITLE_KEY, FEEDBACK_HEADING_KEY, FEEDBACK_PLACEHOLDER_KEY, METRICS_RETURN_KEY, METRICS_TRADES_KEY, PLACEHOLDER_KEY, SEND_KEY, USE_DEFAULTS_HINT_KEY, USE_DEFAULTS_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
+import { CLARIFY_TITLE_KEY, FEEDBACK_HEADING_KEY, FEEDBACK_INPUT_PLACEHOLDER_KEY, FEEDBACK_PLACEHOLDER_KEY, METRICS_RETURN_KEY, METRICS_TRADES_KEY, PLACEHOLDER_KEY, SEND_KEY, USE_DEFAULTS_HINT_KEY, USE_DEFAULTS_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
 
 // AIChatPanelSections.tsx — Display-only subcomponents + shared helpers extracted from AIChatPanel.
 // These are pure presentational components: messages, clarification, backtest metrics,
@@ -232,22 +232,49 @@ interface ChatInputBarProps {
   modeColor: string;
   onDraftChange: (v: string) => void;
   onSend: () => void;
-  t: (k: string) => string;
+  onChipClick?: (v: string) => void;
+  t: (k: string, d?: string) => string;
 }
 
-export function ChatInputBar({ draft, busy, hasCode, hasBacktest, modeTag, modeColor, onDraftChange, onSend, t }: ChatInputBarProps) {
+const QUICK_FEEDBACK_CHIPS: Record<string, string[]> = {
+  en:    ['Lower drawdown', 'Increase Sharpe', 'Add stop loss', 'Long only'],
+  ja:    ['ドローダウン低減', 'シャープ向上', '損切り追加', 'ロングのみ'],
+  vi:    ['Giảm drawdown', 'Tăng Sharpe', 'Thêm cắt lỗ', 'Chỉ Long'],
+  'zh-cn': ['降低回撤', '提高夏普', '加止损', '只做多'],
+  'zh-tw': ['降低回撤', '提高夏普', '加入停損', '只做多'],
+};
+
+function getChips(lang: string): string[] {
+  return QUICK_FEEDBACK_CHIPS[lang] || QUICK_FEEDBACK_CHIPS['en'];
+}
+
+export function ChatInputBar({ draft, busy, hasCode, hasBacktest, modeTag, modeColor, onDraftChange, onSend, onChipClick, t }: ChatInputBarProps) {
+  const lang = document.documentElement.lang || 'en';
+
+  const placeholder = hasBacktest
+    ? t(FEEDBACK_INPUT_PLACEHOLDER_KEY, '对回测结果不满意？输入反馈来优化策略')
+    : !hasCode
+      ? t(PLACEHOLDER_KEY, '描述你想创建的交易策略…')
+      : t(REVISE_INPUT_PLACEHOLDER_KEY, '修改代码指令…');
+
   return (
     <>
       <TextArea rows={2} value={draft} onChange={e => onDraftChange(e.target.value)}
         disabled={busy}
-        placeholder={
-          !hasCode
-            ? t(PLACEHOLDER_KEY, '描述你想创建的交易策略，例如："做一个 EURUSD 的布林带均值回归策略"')
-            : t(REVISE_INPUT_PLACEHOLDER_KEY, 'e.g. Replace SMA(20) with EMA(50) and add a 1% stop-loss.')
-        }
+        placeholder={placeholder}
         onPressEnter={e => { if (!e.shiftKey) { e.preventDefault(); onSend(); } }}
-        style={{ fontSize: 13, marginBottom: 8 }}
+        style={{ fontSize: 13, marginBottom: 6 }}
       />
+      {hasBacktest && !busy && (
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
+          {getChips(lang).map((chip, i) => (
+            <Tag key={i} color="purple" style={{ cursor: 'pointer', fontSize: 11, margin: 0, padding: '0 8px' }}
+              onClick={() => onChipClick?.(chip)}>
+              💬 {chip}
+            </Tag>
+          ))}
+        </div>
+      )}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
         <Tag color={modeColor}>{modeTag}</Tag>
         <Button type="primary" icon={<SendOutlined />} loading={busy}

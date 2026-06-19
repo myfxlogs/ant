@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file i18n/strategy_gen.proto.
  */
 export const file_i18n_strategy_gen: GenFile = /*@__PURE__*/
-  fileDesc("ChdpMThuL3N0cmF0ZWd5X2dlbi5wcm90bxILYW50LnYxLmkxOG4ikgQKB0dlbkkxOG4SFAoMYmFja3Rlc3RfbXNnGAEgASgJEhgKEGJhY2t0ZXN0X3N0YXJ0ZWQYAiABKAkSFAoMY2hhdF9kaXNjdXNzGAMgASgJEhUKDWNoYXRfZ2VuZXJhdGUYBCABKAkSEwoLY2hhdF9yZXBhaXIYBSABKAkSEwoLY2hhdF9yZXZpc2UYBiABKAkSFQoNY2xhcmlmeV90aXRsZRgHIAEoCRIMCgRkb25lGAggASgJEhgKEGZlZWRiYWNrX2hlYWRpbmcYCSABKAkSHAoUZmVlZGJhY2tfcGxhY2Vob2xkZXIYCiABKAkSEgoKZ2VuZXJhdGluZxgLIAEoCRIcChRtZXRyaWNzX21heF9kcmF3ZG93bhgMIAEoCRIWCg5tZXRyaWNzX3JldHVybhgNIAEoCRIWCg5tZXRyaWNzX3NoYXJwZRgOIAEoCRIWCg5tZXRyaWNzX3RyYWRlcxgPIAEoCRIYChBtZXRyaWNzX3dpbl9yYXRlGBAgASgJEhMKC3BsYWNlaG9sZGVyGBEgASgJEhIKCnJlZ2VuZXJhdGUYEiABKAkSDQoFcmVzZXQYEyABKAkSDAoEc2VuZBgUIAEoCRIQCgh0ZW1wbGF0ZRgVIAEoCRINCgV0aXRsZRgWIAEoCRIUCgx1c2VfZGVmYXVsdHMYFyABKAkSEgoKdmFsaWRhdGluZxgYIAEoCUIhWh9hbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MS9pMThuYgZwcm90bzM");
+  fileDesc("ChdpMThuL3N0cmF0ZWd5X2dlbi5wcm90bxILYW50LnYxLmkxOG4i0QQKB0dlbkkxOG4SFAoMYmFja3Rlc3RfbXNnGAEgASgJEhgKEGJhY2t0ZXN0X3N0YXJ0ZWQYAiABKAkSFAoMY2hhdF9kaXNjdXNzGAMgASgJEhUKDWNoYXRfZ2VuZXJhdGUYBCABKAkSEwoLY2hhdF9yZXBhaXIYBSABKAkSEwoLY2hhdF9yZXZpc2UYBiABKAkSFQoNY2xhcmlmeV90aXRsZRgHIAEoCRIMCgRkb25lGAggASgJEhgKEGZlZWRiYWNrX2hlYWRpbmcYCSABKAkSHAoUZmVlZGJhY2tfcGxhY2Vob2xkZXIYCiABKAkSEgoKZ2VuZXJhdGluZxgLIAEoCRIcChRtZXRyaWNzX21heF9kcmF3ZG93bhgMIAEoCRIWCg5tZXRyaWNzX3JldHVybhgNIAEoCRIWCg5tZXRyaWNzX3NoYXJwZRgOIAEoCRIWCg5tZXRyaWNzX3RyYWRlcxgPIAEoCRIYChBtZXRyaWNzX3dpbl9yYXRlGBAgASgJEhMKC3BsYWNlaG9sZGVyGBEgASgJEhIKCnJlZ2VuZXJhdGUYEiABKAkSDQoFcmVzZXQYEyABKAkSDAoEc2VuZBgUIAEoCRIQCgh0ZW1wbGF0ZRgVIAEoCRINCgV0aXRsZRgWIAEoCRIUCgx1c2VfZGVmYXVsdHMYFyABKAkSEgoKdmFsaWRhdGluZxgYIAEoCRIZChF1c2VfZGVmYXVsdHNfaGludBgZIAEoCRIiChpmZWVkYmFja19pbnB1dF9wbGFjZWhvbGRlchgaIAEoCUIhWh9hbnR0cmFkZXIvZ2VuL3Byb3RvL2FudC92MS9pMThuYgZwcm90bzM");
 
 /**
  * @generated from message ant.v1.i18n.GenI18n
@@ -183,6 +183,20 @@ export type GenI18n = Message<"ant.v1.i18n.GenI18n"> & {
    * @generated from field: string validating = 24;
    */
   validating: string;
+
+  /**
+   * AI will generate a generic strategy template with default parameters
+   *
+   * @generated from field: string use_defaults_hint = 25;
+   */
+  useDefaultsHint: string;
+
+  /**
+   * Not satisfied? Provide feedback to refine, e.g.: "Too aggressive, add stop loss"
+   *
+   * @generated from field: string feedback_input_placeholder = 26;
+   */
+  feedbackInputPlaceholder: string;
 };
 
 /**

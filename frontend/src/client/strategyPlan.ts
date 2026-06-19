@@ -1,0 +1,89 @@
+import { strategyPlanClient } from './connect';
+import type { AnalyzePlanChunk, ExecutePlanChunk, ToolCall, ToolResult } from '../gen/ant/v1/strategy_execution_pb';
+
+export interface PlanCallbacks {
+  onDelta: (delta: string) => void;
+  onPlan: (plan: string) => void;
+  onError: (error: string) => void;
+  onDone: () => void;
+}
+
+export interface ExecuteCallbacks {
+  onPhase: (phase: string) => void;
+  onDelta: (delta: string) => void;
+  onCode: (code: string) => void;
+  onPreviousCode: (code: string) => void;
+  onAnalysis?: (text: string) => void;
+  onToolCall: (call: ToolCall) => void;
+  onToolResult: (result: ToolResult) => void;
+  onError: (error: string) => void;
+  onDone: () => void;
+}
+
+export function analyzePlan(
+  input: { message: string; conversationId?: string; symbol?: string; timeframe?: string },
+  callbacks: PlanCallbacks,
+): () => void {
+  const abort = new AbortController();
+  (async () => {
+    try {
+      const stream = strategyPlanClient.analyzePlan({
+        message: input.message,
+        conversationId: input.conversationId || '',
+        symbol: input.symbol || '',
+        timeframe: input.timeframe || '',
+      }, { signal: abort.signal });
+      for await (const chunk of stream) {
+        if (chunk.delta) callbacks.onDelta(chunk.delta);
+        if (chunk.plan) callbacks.onPlan(chunk.plan);
+        if (chunk.error) callbacks.onError(chunk.error);
+      }
+      callbacks.onDone();
+    } catch (e: unknown) {
+      const s = String(e);
+      if ((e as { name?: string })?.name === 'AbortError' || s.includes('canceled')) return;
+      callbacks.onError(s);
+    }
+  })();
+  return () => abort.abort();
+}
+
+export function executePlan(
+  input: { plan: string; conversationId?: string; symbol?: string; timeframe?: string; previousCode?: string; feedbackMessage?: string; backtestMetricsJson?: string },
+  callbacks: ExecuteCallbacks,
+): () => void {
+  const abort = new AbortController();
+  (async () => {
+    try {
+      const stream = strategyPlanClient.executePlan({
+        plan: input.plan,
+        conversationId: input.conversationId || '',
+        symbol: input.symbol || '',
+        timeframe: input.timeframe || '',
+        previousCode: input.previousCode || '',
+        feedbackMessage: input.feedbackMessage || '',
+        backtestMetricsJson: input.backtestMetricsJson || '',
+      }, { signal: abort.signal });
+      for await (const chunk of stream) {
+        handleExecuteChunk(chunk, callbacks);
+      }
+      callbacks.onDone();
+    } catch (e: unknown) {
+      const s = String(e);
+      if ((e as { name?: string })?.name === 'AbortError' || s.includes('canceled')) return;
+      callbacks.onError(s);
+    }
+  })();
+  return () => abort.abort();
+}
+
+function handleExecuteChunk(chunk: ExecutePlanChunk, cbs: ExecuteCallbacks): void {
+  cbs.onPhase(chunk.phase);
+  if (chunk.delta) cbs.onDelta(chunk.delta);
+  if (chunk.code) cbs.onCode(chunk.code);
+  if (chunk.previousCode) cbs.onPreviousCode(chunk.previousCode);
+  if (chunk.toolCall) cbs.onToolCall(chunk.toolCall);
+  if (chunk.toolResult) cbs.onToolResult(chunk.toolResult);
+  if (chunk.analysis) cbs.onAnalysis?.(chunk.analysis);
+  if (chunk.error) cbs.onError(chunk.error);
+}

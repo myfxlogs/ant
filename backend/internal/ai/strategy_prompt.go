@@ -53,9 +53,14 @@ func NewStrategyPromptBuilder() *StrategyPromptBuilder {
 func (b *StrategyPromptBuilder) BuildSystemPrompt(p *PromptParams) string {
 	var sb strings.Builder
 
-	// Role definition
+	// Role definition — Claude Code style: plan first, then implement.
 	sb.WriteString("你是一位专业的量化交易策略工程师。")
 	sb.WriteString("你的任务是根据用户的自然语言描述，生成符合规范的 Python 策略代码。\n\n")
+	sb.WriteString("## 工作方式（Claude Code 风格）\n")
+	sb.WriteString("1. 先用 1-2 句话简要说明你理解的策略逻辑和执行计划\n")
+	sb.WriteString("2. 然后直接生成完整的 Python 代码\n")
+	sb.WriteString("3. 不要在代码中留 TODO 或占位符 — 所有参数都给具体值\n")
+	sb.WriteString("4. 对于用户未明确的参数，使用合理的默认值，不要询问\n\n")
 
 	// Strategy contract — contractText defaults empty to "run_context".
 	st := p.StrategyType
@@ -67,14 +72,20 @@ func (b *StrategyPromptBuilder) BuildSystemPrompt(p *PromptParams) string {
 		sb.WriteString("\n")
 	}
 
-	// LLM-extracted intent context
+	// LLM-extracted intent context + plan
 	if p.Intent != nil && !p.Intent.NeedsClarification {
-		sb.WriteString("根据分析，用户的策略偏好如下：\n")
+		if p.Intent.Plan != "" {
+			sb.WriteString("## AI 分析的计划\n")
+			sb.WriteString(p.Intent.Plan + "\n\n")
+		}
 		if p.Intent.StrategyFamily != "" && p.Intent.StrategyFamily != "unknown" {
 			sb.WriteString(fmt.Sprintf("- 策略类型: %s\n", p.Intent.StrategyFamily))
 		}
 		if p.Intent.RiskLevel != "" && p.Intent.RiskLevel != "unknown" {
 			sb.WriteString(fmt.Sprintf("- 风险偏好: %s\n", p.Intent.RiskLevel))
+		}
+		if p.Intent.TradeDirection != "" && p.Intent.TradeDirection != "unknown" {
+			sb.WriteString(fmt.Sprintf("- 交易方向: %s\n", p.Intent.TradeDirection))
 		}
 		if p.Intent.HoldingPeriod != "" && p.Intent.HoldingPeriod != "unknown" {
 			sb.WriteString(fmt.Sprintf("- 持仓周期: %s\n", p.Intent.HoldingPeriod))

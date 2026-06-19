@@ -11,7 +11,7 @@ import WorkspaceTemplateManager from './components/workspace/WorkspaceTemplateMa
 import WorkspaceToolbar from './components/workspace/WorkspaceToolbar';
 import BacktestParamsCard from './components/workspace/BacktestParamsCard';
 import MiniPositionsTable from './components/workspace/MiniPositionsTable';
-import AIChatPanel from '@/components/strategy/AIChatPanel';
+import AICodePanel from '@/components/strategy/AICodePanel';
 import { useAuthStore } from '@/stores/authStore';
 import PriceChart from '@/components/chart/PriceChart';
 import BacktestRunDrawer from '@/components/strategy/BacktestRunDrawer';
@@ -98,7 +98,7 @@ export default function StrategyWorkspacePage() {
               autoFixDebug={ws.ai.autoFixDebug}
               onDismissDebug={ws.ai.dismissDebug}
             />
-            <AIChatPanel code={ws.code.code} symbol={ws.account.symbol} timeframe={ws.account.timeframe} onApply={ws.code.setCode} initialPrompt={ws.ai.optimizePrompt} autoApply={ws.ai.chatAutoApply} sessionId={sessionId} chatHistory={chatHistory} />
+            <AICodePanel symbol={ws.account.symbol} timeframe={ws.account.timeframe} sessionId={sessionId} onApply={(code, prevCode) => { ws.code.setCode(code); }} />
             <Collapse ghost size="small" style={{ background: 'transparent' }} items={[
               { key: 'template', label: t(TEMPLATE_TITLE_KEY, 'Template'), children: <WorkspaceTemplateManager templates={ws.code.templates} loading={ws.code.templatesLoading} loadedTemplate={ws.code.loadedTemplate} onLoad={ws.code.handleLoadTemplate} onSaveAs={ws.code.handleSaveAs} /> },
             ]} />

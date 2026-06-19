@@ -40,4 +40,8 @@ message GenerateStrategyChunk {
   // Phase 3: structured feedback output
   string analysis = 9;                 // AI analysis paragraph (feedback mode)
   string advice = 10;                  // AI advice paragraph (feedback mode)
+
+  // Claude Code style: visible execution plan
+  string plan = 11;                    // AI execution plan (shown before generating)
+  string previous_code = 12;           // previous code for diff view (revision path)
 }
