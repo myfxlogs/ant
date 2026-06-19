@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package ant.v1.i18n;
+option go_package = "anttrader/gen/proto/ant/v1/i18n";
 
 message TradingI18n {
   string account = 1;  // Account

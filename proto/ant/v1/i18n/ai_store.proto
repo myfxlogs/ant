@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package ant.v1.i18n;
+option go_package = "anttrader/gen/proto/ant/v1/i18n";
 
 message AiStoreI18n {
   string context_output_rules_no_import = 1;  // - Do not output any import statements
