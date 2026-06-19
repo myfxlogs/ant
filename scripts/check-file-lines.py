@@ -66,6 +66,14 @@ def classify_file(rel: str) -> tuple[str, int]:
             return "test", int(TS_BASE * EXEMPT_MUL)
         return "test", OTHER_LIMIT
 
+    # textproto / proto files — pure data, exempt from line limits
+    if ext in (".textproto", ".proto"):
+        return "other", 9999
+
+    # i18n JSON maps — generated field mappings, not hand-maintained
+    if "/i18n/" in r and ext == ".json":
+        return "other", 9999
+
     # i18n translation resource files — data, not logic
     if "/i18n/" in r:
         return "i18n", I18N_LIMIT
