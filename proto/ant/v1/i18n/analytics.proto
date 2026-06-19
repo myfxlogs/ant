@@ -16,10 +16,10 @@ message AnalyticsI18n {
   string summary_economic_calendar_actual = 10;  // Actual
   string summary_economic_calendar_empty = 11;  // No economic events available.
   string summary_economic_calendar_estimate = 12;  // Estimate
-  string summary_economic_calendar_indicators__c_p_i = 13;  // Inflation (CPI)
-  string summary_economic_calendar_indicators__f_e_d_f_u_n_d_s = 14;  // Fed funds rate
-  string summary_economic_calendar_indicators__g_d_p = 15;  // Real GDP
-  string summary_economic_calendar_indicators__u_n_r_a_t_e = 16;  // Unemployment rate
+  string summary_economic_calendar_indicators_c_p_i = 13;  // Inflation (CPI)
+  string summary_economic_calendar_indicators_f_e_d_f_u_n_d_s = 14;  // Fed funds rate
+  string summary_economic_calendar_indicators_g_d_p = 15;  // Real GDP
+  string summary_economic_calendar_indicators_u_n_r_a_t_e = 16;  // Unemployment rate
   string summary_economic_calendar_key_indicators_title = 17;  // Key macro indicators
   string summary_economic_calendar_loading = 18;  // Loading economic calendar...
   string summary_economic_calendar_previous = 19;  // Previous

@@ -2,30 +2,30 @@
 // Source: proto/ant/v1/i18n/strategy_code_quality.proto
 
 /** category.FUTURE_DATA_LEAK */
-export const CATEGORY__F_U_T_U_R_E__D_A_T_A__L_E_A_K_KEY = 'strategy.codeQuality.category.FUTURE_DATA_LEAK' as const;
+export const CATEGORY_F_U_T_U_R_E_D_A_T_A_L_E_A_K_KEY = 'strategy.codeQuality.category.FUTURE_DATA_LEAK' as const;
 
 /** category.MISSING_PARAM */
-export const CATEGORY__M_I_S_S_I_N_G__P_A_R_A_M_KEY = 'strategy.codeQuality.category.MISSING_PARAM' as const;
+export const CATEGORY_M_I_S_S_I_N_G_P_A_R_A_M_KEY = 'strategy.codeQuality.category.MISSING_PARAM' as const;
 
 /** category.NDARRAY_PANDAS_MISUSE */
-export const CATEGORY__N_D_A_R_R_A_Y__P_A_N_D_A_S__M_I_S_U_S_E_KEY = 'strategy.codeQuality.category.NDARRAY_PANDAS_MISUSE' as const;
+export const CATEGORY_N_D_A_R_R_A_Y_P_A_N_D_A_S_M_I_S_U_S_E_KEY = 'strategy.codeQuality.category.NDARRAY_PANDAS_MISUSE' as const;
 
 /** category.NO_ENTRY_PCT */
-export const CATEGORY__N_O__E_N_T_R_Y__P_C_T_KEY = 'strategy.codeQuality.category.NO_ENTRY_PCT' as const;
+export const CATEGORY_N_O_E_N_T_R_Y_P_C_T_KEY = 'strategy.codeQuality.category.NO_ENTRY_PCT' as const;
 
 /** category.NO_STOP_AND_TAKE_PROFIT */
-export const CATEGORY__N_O__S_T_O_P__A_N_D__T_A_K_E__P_R_O_F_I_T_KEY = 'strategy.codeQuality.category.NO_STOP_AND_TAKE_PROFIT' as const;
+export const CATEGORY_N_O_S_T_O_P_A_N_D_T_A_K_E_P_R_O_F_I_T_KEY = 'strategy.codeQuality.category.NO_STOP_AND_TAKE_PROFIT' as const;
 
 /** category.UNREAD_PARAM */
-export const CATEGORY__U_N_R_E_A_D__P_A_R_A_M_KEY = 'strategy.codeQuality.category.UNREAD_PARAM' as const;
+export const CATEGORY_U_N_R_E_A_D_P_A_R_A_M_KEY = 'strategy.codeQuality.category.UNREAD_PARAM' as const;
 
 export const STRATEGYCODEQUALITY_KEYS = {
-  category__f_u_t_u_r_e__d_a_t_a__l_e_a_k: 'strategy.codeQuality.category.FUTURE_DATA_LEAK',
-  category__m_i_s_s_i_n_g__p_a_r_a_m: 'strategy.codeQuality.category.MISSING_PARAM',
-  category__n_d_a_r_r_a_y__p_a_n_d_a_s__m_i_s_u_s_e: 'strategy.codeQuality.category.NDARRAY_PANDAS_MISUSE',
-  category__n_o__e_n_t_r_y__p_c_t: 'strategy.codeQuality.category.NO_ENTRY_PCT',
-  category__n_o__s_t_o_p__a_n_d__t_a_k_e__p_r_o_f_i_t: 'strategy.codeQuality.category.NO_STOP_AND_TAKE_PROFIT',
-  category__u_n_r_e_a_d__p_a_r_a_m: 'strategy.codeQuality.category.UNREAD_PARAM',
+  category_f_u_t_u_r_e_d_a_t_a_l_e_a_k: 'strategy.codeQuality.category.FUTURE_DATA_LEAK',
+  category_m_i_s_s_i_n_g_p_a_r_a_m: 'strategy.codeQuality.category.MISSING_PARAM',
+  category_n_d_a_r_r_a_y_p_a_n_d_a_s_m_i_s_u_s_e: 'strategy.codeQuality.category.NDARRAY_PANDAS_MISUSE',
+  category_n_o_e_n_t_r_y_p_c_t: 'strategy.codeQuality.category.NO_ENTRY_PCT',
+  category_n_o_s_t_o_p_a_n_d_t_a_k_e_p_r_o_f_i_t: 'strategy.codeQuality.category.NO_STOP_AND_TAKE_PROFIT',
+  category_u_n_r_e_a_d_p_a_r_a_m: 'strategy.codeQuality.category.UNREAD_PARAM',
 } as const;
 
 export type StrategyCodeQualityKey = typeof STRATEGYCODEQUALITY_KEYS[keyof typeof STRATEGYCODEQUALITY_KEYS];

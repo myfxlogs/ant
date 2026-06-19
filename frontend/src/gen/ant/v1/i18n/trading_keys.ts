@@ -170,70 +170,70 @@ export const PROFIT_KEY = 'trading.profit' as const;
 export const RECENT_TRADES_KEY = 'trading.recentTrades' as const;
 
 /** risk.errors.RISK_ACCOUNT_TRADE_DISABLED.action */
-export const RISK_ERRORS__R_I_S_K__A_C_C_O_U_N_T__T_R_A_D_E__D_I_S_A_B_L_E_D_ACTION_KEY = 'trading.risk.errors.RISK_ACCOUNT_TRADE_DISABLED.action' as const;
+export const RISK_ERRORS_R_I_S_K_A_C_C_O_U_N_T_T_R_A_D_E_D_I_S_A_B_L_E_D_ACTION_KEY = 'trading.risk.errors.RISK_ACCOUNT_TRADE_DISABLED.action' as const;
 
 /** risk.errors.RISK_ACCOUNT_TRADE_DISABLED.title */
-export const RISK_ERRORS__R_I_S_K__A_C_C_O_U_N_T__T_R_A_D_E__D_I_S_A_B_L_E_D_TITLE_KEY = 'trading.risk.errors.RISK_ACCOUNT_TRADE_DISABLED.title' as const;
+export const RISK_ERRORS_R_I_S_K_A_C_C_O_U_N_T_T_R_A_D_E_D_I_S_A_B_L_E_D_TITLE_KEY = 'trading.risk.errors.RISK_ACCOUNT_TRADE_DISABLED.title' as const;
 
 /** risk.errors.RISK_INTERNAL_RULE_UNAVAILABLE.action */
-export const RISK_ERRORS__R_I_S_K__I_N_T_E_R_N_A_L__R_U_L_E__U_N_A_V_A_I_L_A_B_L_E_ACTION_KEY = 'trading.risk.errors.RISK_INTERNAL_RULE_UNAVAILABLE.action' as const;
+export const RISK_ERRORS_R_I_S_K_I_N_T_E_R_N_A_L_R_U_L_E_U_N_A_V_A_I_L_A_B_L_E_ACTION_KEY = 'trading.risk.errors.RISK_INTERNAL_RULE_UNAVAILABLE.action' as const;
 
 /** risk.errors.RISK_INTERNAL_RULE_UNAVAILABLE.title */
-export const RISK_ERRORS__R_I_S_K__I_N_T_E_R_N_A_L__R_U_L_E__U_N_A_V_A_I_L_A_B_L_E_TITLE_KEY = 'trading.risk.errors.RISK_INTERNAL_RULE_UNAVAILABLE.title' as const;
+export const RISK_ERRORS_R_I_S_K_I_N_T_E_R_N_A_L_R_U_L_E_U_N_A_V_A_I_L_A_B_L_E_TITLE_KEY = 'trading.risk.errors.RISK_INTERNAL_RULE_UNAVAILABLE.title' as const;
 
 /** risk.errors.RISK_MARGIN_INSUFFICIENT.action */
-export const RISK_ERRORS__R_I_S_K__M_A_R_G_I_N__I_N_S_U_F_F_I_C_I_E_N_T_ACTION_KEY = 'trading.risk.errors.RISK_MARGIN_INSUFFICIENT.action' as const;
+export const RISK_ERRORS_R_I_S_K_M_A_R_G_I_N_I_N_S_U_F_F_I_C_I_E_N_T_ACTION_KEY = 'trading.risk.errors.RISK_MARGIN_INSUFFICIENT.action' as const;
 
 /** risk.errors.RISK_MARGIN_INSUFFICIENT.title */
-export const RISK_ERRORS__R_I_S_K__M_A_R_G_I_N__I_N_S_U_F_F_I_C_I_E_N_T_TITLE_KEY = 'trading.risk.errors.RISK_MARGIN_INSUFFICIENT.title' as const;
+export const RISK_ERRORS_R_I_S_K_M_A_R_G_I_N_I_N_S_U_F_F_I_C_I_E_N_T_TITLE_KEY = 'trading.risk.errors.RISK_MARGIN_INSUFFICIENT.title' as const;
 
 /** risk.errors.RISK_MARKET_SESSION_CLOSED.action */
-export const RISK_ERRORS__R_I_S_K__M_A_R_K_E_T__S_E_S_S_I_O_N__C_L_O_S_E_D_ACTION_KEY = 'trading.risk.errors.RISK_MARKET_SESSION_CLOSED.action' as const;
+export const RISK_ERRORS_R_I_S_K_M_A_R_K_E_T_S_E_S_S_I_O_N_C_L_O_S_E_D_ACTION_KEY = 'trading.risk.errors.RISK_MARKET_SESSION_CLOSED.action' as const;
 
 /** risk.errors.RISK_MARKET_SESSION_CLOSED.title */
-export const RISK_ERRORS__R_I_S_K__M_A_R_K_E_T__S_E_S_S_I_O_N__C_L_O_S_E_D_TITLE_KEY = 'trading.risk.errors.RISK_MARKET_SESSION_CLOSED.title' as const;
+export const RISK_ERRORS_R_I_S_K_M_A_R_K_E_T_S_E_S_S_I_O_N_C_L_O_S_E_D_TITLE_KEY = 'trading.risk.errors.RISK_MARKET_SESSION_CLOSED.title' as const;
 
 /** risk.errors.RISK_MAX_OPEN_POSITIONS_EXCEEDED.action */
-export const RISK_ERRORS__R_I_S_K__M_A_X__O_P_E_N__P_O_S_I_T_I_O_N_S__E_X_C_E_E_D_E_D_ACTION_KEY = 'trading.risk.errors.RISK_MAX_OPEN_POSITIONS_EXCEEDED.action' as const;
+export const RISK_ERRORS_R_I_S_K_M_A_X_O_P_E_N_P_O_S_I_T_I_O_N_S_E_X_C_E_E_D_E_D_ACTION_KEY = 'trading.risk.errors.RISK_MAX_OPEN_POSITIONS_EXCEEDED.action' as const;
 
 /** risk.errors.RISK_MAX_OPEN_POSITIONS_EXCEEDED.title */
-export const RISK_ERRORS__R_I_S_K__M_A_X__O_P_E_N__P_O_S_I_T_I_O_N_S__E_X_C_E_E_D_E_D_TITLE_KEY = 'trading.risk.errors.RISK_MAX_OPEN_POSITIONS_EXCEEDED.title' as const;
+export const RISK_ERRORS_R_I_S_K_M_A_X_O_P_E_N_P_O_S_I_T_I_O_N_S_E_X_C_E_E_D_E_D_TITLE_KEY = 'trading.risk.errors.RISK_MAX_OPEN_POSITIONS_EXCEEDED.title' as const;
 
 /** risk.errors.RISK_MAX_PENDING_ORDERS_EXCEEDED.action */
-export const RISK_ERRORS__R_I_S_K__M_A_X__P_E_N_D_I_N_G__O_R_D_E_R_S__E_X_C_E_E_D_E_D_ACTION_KEY = 'trading.risk.errors.RISK_MAX_PENDING_ORDERS_EXCEEDED.action' as const;
+export const RISK_ERRORS_R_I_S_K_M_A_X_P_E_N_D_I_N_G_O_R_D_E_R_S_E_X_C_E_E_D_E_D_ACTION_KEY = 'trading.risk.errors.RISK_MAX_PENDING_ORDERS_EXCEEDED.action' as const;
 
 /** risk.errors.RISK_MAX_PENDING_ORDERS_EXCEEDED.title */
-export const RISK_ERRORS__R_I_S_K__M_A_X__P_E_N_D_I_N_G__O_R_D_E_R_S__E_X_C_E_E_D_E_D_TITLE_KEY = 'trading.risk.errors.RISK_MAX_PENDING_ORDERS_EXCEEDED.title' as const;
+export const RISK_ERRORS_R_I_S_K_M_A_X_P_E_N_D_I_N_G_O_R_D_E_R_S_E_X_C_E_E_D_E_D_TITLE_KEY = 'trading.risk.errors.RISK_MAX_PENDING_ORDERS_EXCEEDED.title' as const;
 
 /** risk.errors.RISK_ORDER_FROZEN_ZONE.action */
-export const RISK_ERRORS__R_I_S_K__O_R_D_E_R__F_R_O_Z_E_N__Z_O_N_E_ACTION_KEY = 'trading.risk.errors.RISK_ORDER_FROZEN_ZONE.action' as const;
+export const RISK_ERRORS_R_I_S_K_O_R_D_E_R_F_R_O_Z_E_N_Z_O_N_E_ACTION_KEY = 'trading.risk.errors.RISK_ORDER_FROZEN_ZONE.action' as const;
 
 /** risk.errors.RISK_ORDER_FROZEN_ZONE.title */
-export const RISK_ERRORS__R_I_S_K__O_R_D_E_R__F_R_O_Z_E_N__Z_O_N_E_TITLE_KEY = 'trading.risk.errors.RISK_ORDER_FROZEN_ZONE.title' as const;
+export const RISK_ERRORS_R_I_S_K_O_R_D_E_R_F_R_O_Z_E_N_Z_O_N_E_TITLE_KEY = 'trading.risk.errors.RISK_ORDER_FROZEN_ZONE.title' as const;
 
 /** risk.errors.RISK_ORDER_TYPE_UNSUPPORTED.action */
-export const RISK_ERRORS__R_I_S_K__O_R_D_E_R__T_Y_P_E__U_N_S_U_P_P_O_R_T_E_D_ACTION_KEY = 'trading.risk.errors.RISK_ORDER_TYPE_UNSUPPORTED.action' as const;
+export const RISK_ERRORS_R_I_S_K_O_R_D_E_R_T_Y_P_E_U_N_S_U_P_P_O_R_T_E_D_ACTION_KEY = 'trading.risk.errors.RISK_ORDER_TYPE_UNSUPPORTED.action' as const;
 
 /** risk.errors.RISK_ORDER_TYPE_UNSUPPORTED.title */
-export const RISK_ERRORS__R_I_S_K__O_R_D_E_R__T_Y_P_E__U_N_S_U_P_P_O_R_T_E_D_TITLE_KEY = 'trading.risk.errors.RISK_ORDER_TYPE_UNSUPPORTED.title' as const;
+export const RISK_ERRORS_R_I_S_K_O_R_D_E_R_T_Y_P_E_U_N_S_U_P_P_O_R_T_E_D_TITLE_KEY = 'trading.risk.errors.RISK_ORDER_TYPE_UNSUPPORTED.title' as const;
 
 /** risk.errors.RISK_STOP_DISTANCE_TOO_CLOSE.action */
-export const RISK_ERRORS__R_I_S_K__S_T_O_P__D_I_S_T_A_N_C_E__T_O_O__C_L_O_S_E_ACTION_KEY = 'trading.risk.errors.RISK_STOP_DISTANCE_TOO_CLOSE.action' as const;
+export const RISK_ERRORS_R_I_S_K_S_T_O_P_D_I_S_T_A_N_C_E_T_O_O_C_L_O_S_E_ACTION_KEY = 'trading.risk.errors.RISK_STOP_DISTANCE_TOO_CLOSE.action' as const;
 
 /** risk.errors.RISK_STOP_DISTANCE_TOO_CLOSE.title */
-export const RISK_ERRORS__R_I_S_K__S_T_O_P__D_I_S_T_A_N_C_E__T_O_O__C_L_O_S_E_TITLE_KEY = 'trading.risk.errors.RISK_STOP_DISTANCE_TOO_CLOSE.title' as const;
+export const RISK_ERRORS_R_I_S_K_S_T_O_P_D_I_S_T_A_N_C_E_T_O_O_C_L_O_S_E_TITLE_KEY = 'trading.risk.errors.RISK_STOP_DISTANCE_TOO_CLOSE.title' as const;
 
 /** risk.errors.RISK_SYMBOL_TRADE_DISABLED.action */
-export const RISK_ERRORS__R_I_S_K__S_Y_M_B_O_L__T_R_A_D_E__D_I_S_A_B_L_E_D_ACTION_KEY = 'trading.risk.errors.RISK_SYMBOL_TRADE_DISABLED.action' as const;
+export const RISK_ERRORS_R_I_S_K_S_Y_M_B_O_L_T_R_A_D_E_D_I_S_A_B_L_E_D_ACTION_KEY = 'trading.risk.errors.RISK_SYMBOL_TRADE_DISABLED.action' as const;
 
 /** risk.errors.RISK_SYMBOL_TRADE_DISABLED.title */
-export const RISK_ERRORS__R_I_S_K__S_Y_M_B_O_L__T_R_A_D_E__D_I_S_A_B_L_E_D_TITLE_KEY = 'trading.risk.errors.RISK_SYMBOL_TRADE_DISABLED.title' as const;
+export const RISK_ERRORS_R_I_S_K_S_Y_M_B_O_L_T_R_A_D_E_D_I_S_A_B_L_E_D_TITLE_KEY = 'trading.risk.errors.RISK_SYMBOL_TRADE_DISABLED.title' as const;
 
 /** risk.errors.RISK_VOLUME_INVALID.action */
-export const RISK_ERRORS__R_I_S_K__V_O_L_U_M_E__I_N_V_A_L_I_D_ACTION_KEY = 'trading.risk.errors.RISK_VOLUME_INVALID.action' as const;
+export const RISK_ERRORS_R_I_S_K_V_O_L_U_M_E_I_N_V_A_L_I_D_ACTION_KEY = 'trading.risk.errors.RISK_VOLUME_INVALID.action' as const;
 
 /** risk.errors.RISK_VOLUME_INVALID.title */
-export const RISK_ERRORS__R_I_S_K__V_O_L_U_M_E__I_N_V_A_L_I_D_TITLE_KEY = 'trading.risk.errors.RISK_VOLUME_INVALID.title' as const;
+export const RISK_ERRORS_R_I_S_K_V_O_L_U_M_E_I_N_V_A_L_I_D_TITLE_KEY = 'trading.risk.errors.RISK_VOLUME_INVALID.title' as const;
 
 /** risk.errors.unknown.action */
 export const RISK_ERRORS_UNKNOWN_ACTION_KEY = 'trading.risk.errors.unknown.action' as const;
@@ -394,28 +394,28 @@ export const TRADING_KEYS = {
   price: 'trading.price',
   profit: 'trading.profit',
   recent_trades: 'trading.recentTrades',
-  risk_errors__r_i_s_k__a_c_c_o_u_n_t__t_r_a_d_e__d_i_s_a_b_l_e_d_action: 'trading.risk.errors.RISK_ACCOUNT_TRADE_DISABLED.action',
-  risk_errors__r_i_s_k__a_c_c_o_u_n_t__t_r_a_d_e__d_i_s_a_b_l_e_d_title: 'trading.risk.errors.RISK_ACCOUNT_TRADE_DISABLED.title',
-  risk_errors__r_i_s_k__i_n_t_e_r_n_a_l__r_u_l_e__u_n_a_v_a_i_l_a_b_l_e_action: 'trading.risk.errors.RISK_INTERNAL_RULE_UNAVAILABLE.action',
-  risk_errors__r_i_s_k__i_n_t_e_r_n_a_l__r_u_l_e__u_n_a_v_a_i_l_a_b_l_e_title: 'trading.risk.errors.RISK_INTERNAL_RULE_UNAVAILABLE.title',
-  risk_errors__r_i_s_k__m_a_r_g_i_n__i_n_s_u_f_f_i_c_i_e_n_t_action: 'trading.risk.errors.RISK_MARGIN_INSUFFICIENT.action',
-  risk_errors__r_i_s_k__m_a_r_g_i_n__i_n_s_u_f_f_i_c_i_e_n_t_title: 'trading.risk.errors.RISK_MARGIN_INSUFFICIENT.title',
-  risk_errors__r_i_s_k__m_a_r_k_e_t__s_e_s_s_i_o_n__c_l_o_s_e_d_action: 'trading.risk.errors.RISK_MARKET_SESSION_CLOSED.action',
-  risk_errors__r_i_s_k__m_a_r_k_e_t__s_e_s_s_i_o_n__c_l_o_s_e_d_title: 'trading.risk.errors.RISK_MARKET_SESSION_CLOSED.title',
-  risk_errors__r_i_s_k__m_a_x__o_p_e_n__p_o_s_i_t_i_o_n_s__e_x_c_e_e_d_e_d_action: 'trading.risk.errors.RISK_MAX_OPEN_POSITIONS_EXCEEDED.action',
-  risk_errors__r_i_s_k__m_a_x__o_p_e_n__p_o_s_i_t_i_o_n_s__e_x_c_e_e_d_e_d_title: 'trading.risk.errors.RISK_MAX_OPEN_POSITIONS_EXCEEDED.title',
-  risk_errors__r_i_s_k__m_a_x__p_e_n_d_i_n_g__o_r_d_e_r_s__e_x_c_e_e_d_e_d_action: 'trading.risk.errors.RISK_MAX_PENDING_ORDERS_EXCEEDED.action',
-  risk_errors__r_i_s_k__m_a_x__p_e_n_d_i_n_g__o_r_d_e_r_s__e_x_c_e_e_d_e_d_title: 'trading.risk.errors.RISK_MAX_PENDING_ORDERS_EXCEEDED.title',
-  risk_errors__r_i_s_k__o_r_d_e_r__f_r_o_z_e_n__z_o_n_e_action: 'trading.risk.errors.RISK_ORDER_FROZEN_ZONE.action',
-  risk_errors__r_i_s_k__o_r_d_e_r__f_r_o_z_e_n__z_o_n_e_title: 'trading.risk.errors.RISK_ORDER_FROZEN_ZONE.title',
-  risk_errors__r_i_s_k__o_r_d_e_r__t_y_p_e__u_n_s_u_p_p_o_r_t_e_d_action: 'trading.risk.errors.RISK_ORDER_TYPE_UNSUPPORTED.action',
-  risk_errors__r_i_s_k__o_r_d_e_r__t_y_p_e__u_n_s_u_p_p_o_r_t_e_d_title: 'trading.risk.errors.RISK_ORDER_TYPE_UNSUPPORTED.title',
-  risk_errors__r_i_s_k__s_t_o_p__d_i_s_t_a_n_c_e__t_o_o__c_l_o_s_e_action: 'trading.risk.errors.RISK_STOP_DISTANCE_TOO_CLOSE.action',
-  risk_errors__r_i_s_k__s_t_o_p__d_i_s_t_a_n_c_e__t_o_o__c_l_o_s_e_title: 'trading.risk.errors.RISK_STOP_DISTANCE_TOO_CLOSE.title',
-  risk_errors__r_i_s_k__s_y_m_b_o_l__t_r_a_d_e__d_i_s_a_b_l_e_d_action: 'trading.risk.errors.RISK_SYMBOL_TRADE_DISABLED.action',
-  risk_errors__r_i_s_k__s_y_m_b_o_l__t_r_a_d_e__d_i_s_a_b_l_e_d_title: 'trading.risk.errors.RISK_SYMBOL_TRADE_DISABLED.title',
-  risk_errors__r_i_s_k__v_o_l_u_m_e__i_n_v_a_l_i_d_action: 'trading.risk.errors.RISK_VOLUME_INVALID.action',
-  risk_errors__r_i_s_k__v_o_l_u_m_e__i_n_v_a_l_i_d_title: 'trading.risk.errors.RISK_VOLUME_INVALID.title',
+  risk_errors_r_i_s_k_a_c_c_o_u_n_t_t_r_a_d_e_d_i_s_a_b_l_e_d_action: 'trading.risk.errors.RISK_ACCOUNT_TRADE_DISABLED.action',
+  risk_errors_r_i_s_k_a_c_c_o_u_n_t_t_r_a_d_e_d_i_s_a_b_l_e_d_title: 'trading.risk.errors.RISK_ACCOUNT_TRADE_DISABLED.title',
+  risk_errors_r_i_s_k_i_n_t_e_r_n_a_l_r_u_l_e_u_n_a_v_a_i_l_a_b_l_e_action: 'trading.risk.errors.RISK_INTERNAL_RULE_UNAVAILABLE.action',
+  risk_errors_r_i_s_k_i_n_t_e_r_n_a_l_r_u_l_e_u_n_a_v_a_i_l_a_b_l_e_title: 'trading.risk.errors.RISK_INTERNAL_RULE_UNAVAILABLE.title',
+  risk_errors_r_i_s_k_m_a_r_g_i_n_i_n_s_u_f_f_i_c_i_e_n_t_action: 'trading.risk.errors.RISK_MARGIN_INSUFFICIENT.action',
+  risk_errors_r_i_s_k_m_a_r_g_i_n_i_n_s_u_f_f_i_c_i_e_n_t_title: 'trading.risk.errors.RISK_MARGIN_INSUFFICIENT.title',
+  risk_errors_r_i_s_k_m_a_r_k_e_t_s_e_s_s_i_o_n_c_l_o_s_e_d_action: 'trading.risk.errors.RISK_MARKET_SESSION_CLOSED.action',
+  risk_errors_r_i_s_k_m_a_r_k_e_t_s_e_s_s_i_o_n_c_l_o_s_e_d_title: 'trading.risk.errors.RISK_MARKET_SESSION_CLOSED.title',
+  risk_errors_r_i_s_k_m_a_x_o_p_e_n_p_o_s_i_t_i_o_n_s_e_x_c_e_e_d_e_d_action: 'trading.risk.errors.RISK_MAX_OPEN_POSITIONS_EXCEEDED.action',
+  risk_errors_r_i_s_k_m_a_x_o_p_e_n_p_o_s_i_t_i_o_n_s_e_x_c_e_e_d_e_d_title: 'trading.risk.errors.RISK_MAX_OPEN_POSITIONS_EXCEEDED.title',
+  risk_errors_r_i_s_k_m_a_x_p_e_n_d_i_n_g_o_r_d_e_r_s_e_x_c_e_e_d_e_d_action: 'trading.risk.errors.RISK_MAX_PENDING_ORDERS_EXCEEDED.action',
+  risk_errors_r_i_s_k_m_a_x_p_e_n_d_i_n_g_o_r_d_e_r_s_e_x_c_e_e_d_e_d_title: 'trading.risk.errors.RISK_MAX_PENDING_ORDERS_EXCEEDED.title',
+  risk_errors_r_i_s_k_o_r_d_e_r_f_r_o_z_e_n_z_o_n_e_action: 'trading.risk.errors.RISK_ORDER_FROZEN_ZONE.action',
+  risk_errors_r_i_s_k_o_r_d_e_r_f_r_o_z_e_n_z_o_n_e_title: 'trading.risk.errors.RISK_ORDER_FROZEN_ZONE.title',
+  risk_errors_r_i_s_k_o_r_d_e_r_t_y_p_e_u_n_s_u_p_p_o_r_t_e_d_action: 'trading.risk.errors.RISK_ORDER_TYPE_UNSUPPORTED.action',
+  risk_errors_r_i_s_k_o_r_d_e_r_t_y_p_e_u_n_s_u_p_p_o_r_t_e_d_title: 'trading.risk.errors.RISK_ORDER_TYPE_UNSUPPORTED.title',
+  risk_errors_r_i_s_k_s_t_o_p_d_i_s_t_a_n_c_e_t_o_o_c_l_o_s_e_action: 'trading.risk.errors.RISK_STOP_DISTANCE_TOO_CLOSE.action',
+  risk_errors_r_i_s_k_s_t_o_p_d_i_s_t_a_n_c_e_t_o_o_c_l_o_s_e_title: 'trading.risk.errors.RISK_STOP_DISTANCE_TOO_CLOSE.title',
+  risk_errors_r_i_s_k_s_y_m_b_o_l_t_r_a_d_e_d_i_s_a_b_l_e_d_action: 'trading.risk.errors.RISK_SYMBOL_TRADE_DISABLED.action',
+  risk_errors_r_i_s_k_s_y_m_b_o_l_t_r_a_d_e_d_i_s_a_b_l_e_d_title: 'trading.risk.errors.RISK_SYMBOL_TRADE_DISABLED.title',
+  risk_errors_r_i_s_k_v_o_l_u_m_e_i_n_v_a_l_i_d_action: 'trading.risk.errors.RISK_VOLUME_INVALID.action',
+  risk_errors_r_i_s_k_v_o_l_u_m_e_i_n_v_a_l_i_d_title: 'trading.risk.errors.RISK_VOLUME_INVALID.title',
   risk_errors_unknown_action: 'trading.risk.errors.unknown.action',
   risk_errors_unknown_title: 'trading.risk.errors.unknown.title',
   risk_config_confirm_confirm_text: 'trading.riskConfig.confirm.confirmText',

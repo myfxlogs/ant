@@ -38,16 +38,16 @@ export const SUMMARY_ECONOMIC_CALENDAR_EMPTY_KEY = 'analytics.summary.economicCa
 export const SUMMARY_ECONOMIC_CALENDAR_ESTIMATE_KEY = 'analytics.summary.economicCalendar.estimate' as const;
 
 /** summary.economicCalendar.indicators.CPI */
-export const SUMMARY_ECONOMIC_CALENDAR_INDICATORS__C_P_I_KEY = 'analytics.summary.economicCalendar.indicators.CPI' as const;
+export const SUMMARY_ECONOMIC_CALENDAR_INDICATORS_C_P_I_KEY = 'analytics.summary.economicCalendar.indicators.CPI' as const;
 
 /** summary.economicCalendar.indicators.FEDFUNDS */
-export const SUMMARY_ECONOMIC_CALENDAR_INDICATORS__F_E_D_F_U_N_D_S_KEY = 'analytics.summary.economicCalendar.indicators.FEDFUNDS' as const;
+export const SUMMARY_ECONOMIC_CALENDAR_INDICATORS_F_E_D_F_U_N_D_S_KEY = 'analytics.summary.economicCalendar.indicators.FEDFUNDS' as const;
 
 /** summary.economicCalendar.indicators.GDP */
-export const SUMMARY_ECONOMIC_CALENDAR_INDICATORS__G_D_P_KEY = 'analytics.summary.economicCalendar.indicators.GDP' as const;
+export const SUMMARY_ECONOMIC_CALENDAR_INDICATORS_G_D_P_KEY = 'analytics.summary.economicCalendar.indicators.GDP' as const;
 
 /** summary.economicCalendar.indicators.UNRATE */
-export const SUMMARY_ECONOMIC_CALENDAR_INDICATORS__U_N_R_A_T_E_KEY = 'analytics.summary.economicCalendar.indicators.UNRATE' as const;
+export const SUMMARY_ECONOMIC_CALENDAR_INDICATORS_U_N_R_A_T_E_KEY = 'analytics.summary.economicCalendar.indicators.UNRATE' as const;
 
 /** summary.economicCalendar.keyIndicatorsTitle */
 export const SUMMARY_ECONOMIC_CALENDAR_KEY_INDICATORS_TITLE_KEY = 'analytics.summary.economicCalendar.keyIndicatorsTitle' as const;
@@ -176,10 +176,10 @@ export const ANALYTICS_KEYS = {
   summary_economic_calendar_actual: 'analytics.summary.economicCalendar.actual',
   summary_economic_calendar_empty: 'analytics.summary.economicCalendar.empty',
   summary_economic_calendar_estimate: 'analytics.summary.economicCalendar.estimate',
-  summary_economic_calendar_indicators__c_p_i: 'analytics.summary.economicCalendar.indicators.CPI',
-  summary_economic_calendar_indicators__f_e_d_f_u_n_d_s: 'analytics.summary.economicCalendar.indicators.FEDFUNDS',
-  summary_economic_calendar_indicators__g_d_p: 'analytics.summary.economicCalendar.indicators.GDP',
-  summary_economic_calendar_indicators__u_n_r_a_t_e: 'analytics.summary.economicCalendar.indicators.UNRATE',
+  summary_economic_calendar_indicators_c_p_i: 'analytics.summary.economicCalendar.indicators.CPI',
+  summary_economic_calendar_indicators_f_e_d_f_u_n_d_s: 'analytics.summary.economicCalendar.indicators.FEDFUNDS',
+  summary_economic_calendar_indicators_g_d_p: 'analytics.summary.economicCalendar.indicators.GDP',
+  summary_economic_calendar_indicators_u_n_r_a_t_e: 'analytics.summary.economicCalendar.indicators.UNRATE',
   summary_economic_calendar_key_indicators_title: 'analytics.summary.economicCalendar.keyIndicatorsTitle',
   summary_economic_calendar_loading: 'analytics.summary.economicCalendar.loading',
   summary_economic_calendar_previous: 'analytics.summary.economicCalendar.previous',
