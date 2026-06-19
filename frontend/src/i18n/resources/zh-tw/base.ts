@@ -802,6 +802,127 @@ const Base = {
     "strategyWorkspace": "策略工作台",
     "trading": "交易",
     "wallet": "錢包"
+  },
+  "share": {
+    "title": "分享管理",
+    "createNew": "創建新分享連結",
+    "token": "分享連結",
+    "views": "瀏覽量",
+    "expires": "過期時間",
+    "actions": "操作",
+    "empty": "尚無分享連結",
+    "userId": "一般用戶",
+    "deleteConfirm": "刪除此分享連結？",
+    "showPositions": "显示持仓",
+    "positions": "持仓",
+    "createdAt": "已建立"
+  },
+  "wallet": {
+    "accountNumber": "錢包號",
+    "balance": "餘額",
+    "currency": "幣種",
+    "deposit": "充值",
+    "frozen": "凍結",
+    "frozenBalance": "凍結",
+    "history": "歷史記錄",
+    "table": {
+      "amount": "金額",
+      "balanceAfter": "調整後餘額",
+      "description": "描述",
+      "time": "時間",
+      "type": "類型"
+    },
+    "title": "我的錢包",
+    "transactions": "交易記錄",
+    "txType": {
+      "adjustment": "餘額調整",
+      "deposit": "充值",
+      "fee": "手續費",
+      "reversal": "沖正",
+      "withdrawal": "提取"
+    },
+    "withdraw": "提取"
+  },
+  "autoTrading": {
+    "logs": {
+      "columns": {
+        "action": "操作",
+        "price": "價格",
+        "profit": "盈虧",
+        "symbol": "商品",
+        "ticket": "单号",
+        "time": "時間",
+        "volume": "數量"
+      },
+      "empty": "暫無交易日誌",
+      "title": "最近交易日誌"
+    },
+    "messages": {
+      "loadFailed": "載入自動交易資料失敗",
+      "toggleFailed": "切换自動交易失敗"
+    },
+    "settings": {
+      "maxDailyLoss": "每日最大虧損",
+      "maxDailyLossHint": "日虧損超過此值時自動停止交易",
+      "maxDrawdownPercent": "最大回撤%",
+      "maxDrawdownPercentHint": "回撤超過此值時自動停止交易",
+      "maxLotSize": "最大手數",
+      "maxLotSizeHint": "每筆交易最大交易量(手)",
+      "maxPositions": "最大持倉數",
+      "maxPositionsHint": "同時持有的最大倉位數量",
+      "maxRiskPercent": "最大風險%",
+      "maxRiskPercentHint": "每筆交易風險佔餘額百分比",
+      "saveFailed": "儲存設定失敗",
+      "saveSuccess": "設定已儲存",
+      "title": "全域風控設定"
+    },
+    "status": {
+      "activeStrategies": "活躍策略",
+      "disabled": "自動交易已關閉",
+      "enabled": "自動交易已開啟",
+      "todayExecutions": "Today's Executions",
+      "todayProfit": "Today's Profit"
+    },
+    "title": "自動交易"
+  },
+  "sharePage": {
+    "avgHolding": "平均持倉時長",
+    "avgLoss": "平均虧損",
+    "avgWin": "平均獲利",
+    "bestTrade": "最佳交易",
+    "bySymbol": "商品績效",
+    "closeTime": "平倉時間",
+    "count": "筆數",
+    "disclaimer": "過往績效不代表未來表現。",
+    "equityCurve": "淨值曲線",
+    "expired": "此分享連結已過期",
+    "footer": "由 AntTrader 產生",
+    "language": "語言",
+    "loadFailed": "載入分享資料失敗",
+    "losingTrades": "虧損筆數",
+    "maxDrawdown": "最大回撤",
+    "netProfit": "淨損益",
+    "noPositions": "暫無持仓",
+    "noTrades": "暫無交易紀錄",
+    "notFound": "找不到",
+    "openPrice": "开仓价",
+    "positions": "当前持仓",
+    "positionsLocked": "建立者未开放持仓查看",
+    "profit": "損益",
+    "profitFactor": "獲利因子",
+    "sharpeRatio": "夏普比率",
+    "side": "方向",
+    "subtitle": "真實交易成績",
+    "symbol": "商品",
+    "title": "交易績效",
+    "totalReturn": "淨損益",
+    "totalTrades": "總交易數",
+    "totalVolume": "總交易量",
+    "tradeRecords": "交易紀錄",
+    "volume": "數量",
+    "winRate": "勝率",
+    "winningTrades": "獲利筆數",
+    "worstTrade": "最差交易"
   }
 } as const;
 export default Base;

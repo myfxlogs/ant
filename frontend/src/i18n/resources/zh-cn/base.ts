@@ -802,6 +802,127 @@ const Base = {
     "strategyWorkspace": "策略工作台",
     "trading": "交易",
     "wallet": "钱包"
+  },
+  "share": {
+    "title": "分享管理",
+    "createNew": "创建新分享链接",
+    "token": "分享链接",
+    "views": "浏览量",
+    "expires": "过期时间",
+    "actions": "操作",
+    "empty": "暂无分享链接",
+    "userId": "普通用户",
+    "deleteConfirm": "删除此分享链接？",
+    "showPositions": "显示持仓",
+    "positions": "持仓",
+    "createdAt": "创建时间"
+  },
+  "wallet": {
+    "accountNumber": "钱包号",
+    "balance": "余额",
+    "currency": "币种",
+    "deposit": "充值",
+    "frozen": "冻结",
+    "frozenBalance": "冻结",
+    "history": "历史记录",
+    "table": {
+      "amount": "金额",
+      "balanceAfter": "调整后余额",
+      "description": "描述",
+      "time": "时间",
+      "type": "类型"
+    },
+    "title": "我的钱包",
+    "transactions": "交易记录",
+    "txType": {
+      "adjustment": "余额调整",
+      "deposit": "充值",
+      "fee": "手续费",
+      "reversal": "冲正",
+      "withdrawal": "提取"
+    },
+    "withdraw": "提取"
+  },
+  "autoTrading": {
+    "logs": {
+      "columns": {
+        "action": "操作",
+        "price": "价格",
+        "profit": "盈亏",
+        "symbol": "品种",
+        "ticket": "单号",
+        "time": "时间",
+        "volume": "数量"
+      },
+      "empty": "暂无交易日志",
+      "title": "最近交易日志"
+    },
+    "messages": {
+      "loadFailed": "加载自动交易数据失败",
+      "toggleFailed": "切换自动交易失败"
+    },
+    "settings": {
+      "maxDailyLoss": "每日最大亏损",
+      "maxDailyLossHint": "日亏损超过此值时自动停止交易",
+      "maxDrawdownPercent": "最大回撤%",
+      "maxDrawdownPercentHint": "回撤超过此值时自动停止交易",
+      "maxLotSize": "最大手数",
+      "maxLotSizeHint": "每笔交易最大交易量(手)",
+      "maxPositions": "最大持仓数",
+      "maxPositionsHint": "同时持有的最大仓位数量",
+      "maxRiskPercent": "最大风险%",
+      "maxRiskPercentHint": "每笔交易风险占余额百分比",
+      "saveFailed": "保存设置失败",
+      "saveSuccess": "设置已保存",
+      "title": "全局风控设置"
+    },
+    "status": {
+      "activeStrategies": "活跃策略",
+      "disabled": "自动交易已关闭",
+      "enabled": "自动交易已开启",
+      "todayExecutions": "Today's Executions",
+      "todayProfit": "Today's Profit"
+    },
+    "title": "自动交易"
+  },
+  "sharePage": {
+    "avgHolding": "平均持仓时长",
+    "avgLoss": "平均亏损",
+    "avgWin": "平均盈利",
+    "bestTrade": "最佳交易",
+    "bySymbol": "品种业绩",
+    "closeTime": "平仓时间",
+    "count": "笔数",
+    "disclaimer": "过往业绩不代表未来表现。",
+    "equityCurve": "净值曲线",
+    "expired": "该分享链接已过期",
+    "footer": "由 AntTrader 生成",
+    "language": "语言",
+    "loadFailed": "加载分享数据失败",
+    "losingTrades": "亏损笔数",
+    "maxDrawdown": "最大回撤",
+    "netProfit": "净盈亏",
+    "noPositions": "暂无持仓",
+    "noTrades": "暂无交易记录",
+    "notFound": "未找到",
+    "openPrice": "开仓价",
+    "positions": "当前持仓",
+    "positionsLocked": "创建者未开放持仓查看",
+    "profit": "盈亏",
+    "profitFactor": "盈利因子",
+    "sharpeRatio": "夏普比率",
+    "side": "方向",
+    "subtitle": "真实交易成绩",
+    "symbol": "品种",
+    "title": "交易业绩",
+    "totalReturn": "净盈亏",
+    "totalTrades": "总交易数",
+    "totalVolume": "总交易量",
+    "tradeRecords": "交易记录",
+    "volume": "数量",
+    "winRate": "胜率",
+    "winningTrades": "盈利笔数",
+    "worstTrade": "最差交易"
   }
 } as const;
 export default Base;

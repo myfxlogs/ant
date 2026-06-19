@@ -802,6 +802,127 @@ const Base = {
     "strategyWorkspace": "戦略ワークスペース",
     "trading": "取引",
     "wallet": "ウォレット"
+  },
+  "share": {
+    "title": "共有管理",
+    "createNew": "新しい共有リンクを作成",
+    "token": "共有リンク",
+    "views": "閲覧数",
+    "expires": "有効期限",
+    "actions": "操作",
+    "empty": "共有リンクはまだありません",
+    "userId": "ユーザー",
+    "deleteConfirm": "删除此分享链接？",
+    "showPositions": "显示持仓",
+    "positions": "持仓",
+    "createdAt": "作成しました"
+  },
+  "wallet": {
+    "accountNumber": "口座番号",
+    "balance": "残高",
+    "currency": "通貨",
+    "deposit": "入金",
+    "frozen": "凍結",
+    "frozenBalance": "凍結",
+    "history": "履歴",
+    "table": {
+      "amount": "金額",
+      "balanceAfter": "調整後残高",
+      "description": "説明",
+      "time": "時間",
+      "type": "種類"
+    },
+    "title": "マイウォレット",
+    "transactions": "取引履歴",
+    "txType": {
+      "adjustment": "残高調整",
+      "deposit": "入金",
+      "fee": "手数料",
+      "reversal": "取消",
+      "withdrawal": "出金"
+    },
+    "withdraw": "出金"
+  },
+  "autoTrading": {
+    "logs": {
+      "columns": {
+        "action": "アクション",
+        "price": "価格",
+        "profit": "損益",
+        "symbol": "銘柄",
+        "ticket": "单号",
+        "time": "時間",
+        "volume": "数量"
+      },
+      "empty": "取引ログはまだありません",
+      "title": "最近の取引ログ"
+    },
+    "messages": {
+      "loadFailed": "自動取引データの読み込みに失敗しました",
+      "toggleFailed": "切换自动交易失败"
+    },
+    "settings": {
+      "maxDailyLoss": "最大日次損失",
+      "maxDailyLossHint": "日次損失がこれを超えた場合、自動で取引を無効化",
+      "maxDrawdownPercent": "最大ドローダウン%",
+      "maxDrawdownPercentHint": "ドローダウンがこれを超えた場合、自動で取引を無効化",
+      "maxLotSize": "最大ロットサイズ",
+      "maxLotSizeHint": "1取引あたりの最大ボリューム（ロット）",
+      "maxPositions": "最大ポジション数",
+      "maxPositionsHint": "最大同時オープンポジション数",
+      "maxRiskPercent": "最大リスク%",
+      "maxRiskPercentHint": "1取引あたりのリスク許容額（残高の％）",
+      "saveFailed": "保存设置失败",
+      "saveSuccess": "設定を保存しました",
+      "title": "グローバルリスク設定"
+    },
+    "status": {
+      "activeStrategies": "アクティブ戦略",
+      "disabled": "自動取引が無効です",
+      "enabled": "自動取引が有効です",
+      "todayExecutions": "Today's Executions",
+      "todayProfit": "Today's Profit"
+    },
+    "title": "自動取引"
+  },
+  "sharePage": {
+    "avgHolding": "平均保有時間",
+    "avgLoss": "平均損失",
+    "avgWin": "平均利益",
+    "bestTrade": "ベストトレード",
+    "bySymbol": "銘柄別成績",
+    "closeTime": "決済",
+    "count": "取引数",
+    "disclaimer": "過去の実績は将来の成果を保証するものではありません。",
+    "equityCurve": "資産曲線",
+    "expired": "この共有リンクは期限切れです",
+    "footer": "AntTrader により生成",
+    "language": "言語",
+    "loadFailed": "共有データの読み込みに失敗しました",
+    "losingTrades": "負けトレード数",
+    "maxDrawdown": "最大ドローダウン",
+    "netProfit": "純損益",
+    "noPositions": "暂无持仓",
+    "noTrades": "取引履歴がありません",
+    "notFound": "見つかりません",
+    "openPrice": "开仓价",
+    "positions": "当前持仓",
+    "positionsLocked": "创建者未开放持仓查看",
+    "profit": "損益",
+    "profitFactor": "プロフィットファクター",
+    "sharpeRatio": "シャープレシオ",
+    "side": "売買",
+    "subtitle": "実際の取引成績",
+    "symbol": "銘柄",
+    "title": "取引パフォーマンス",
+    "totalReturn": "純損益",
+    "totalTrades": "総取引数",
+    "totalVolume": "総取引量",
+    "tradeRecords": "取引履歴",
+    "volume": "数量",
+    "winRate": "勝率",
+    "winningTrades": "勝ちトレード数",
+    "worstTrade": "ワーストトレード"
   }
 } as const;
 export default Base;

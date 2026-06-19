@@ -802,6 +802,127 @@ const Base = {
     "strategyWorkspace": "Không gian chiến lược",
     "trading": "Giao Dịch",
     "wallet": "Ví"
+  },
+  "share": {
+    "title": "Quản Lý Chia Sẻ",
+    "createNew": "Tạo Liên Kết Chia Sẻ Mới",
+    "token": "Liên Kết Chia Sẻ",
+    "views": "Lượt Xem",
+    "expires": "Hết Hạn",
+    "actions": "Thao Tác",
+    "empty": "Chưa có liên kết chia sẻ",
+    "userId": "Người Dùng",
+    "deleteConfirm": "删除此分享链接？",
+    "showPositions": "显示持仓",
+    "positions": "持仓",
+    "createdAt": "Đã tạo"
+  },
+  "wallet": {
+    "accountNumber": "Số TK",
+    "balance": "Số Dư",
+    "currency": "Tiền Tệ",
+    "deposit": "Nạp Tiền",
+    "frozen": "Đóng Băng",
+    "frozenBalance": "Đóng Băng",
+    "history": "Lịch Sử",
+    "table": {
+      "amount": "Số Tiền",
+      "balanceAfter": "Số Dư Sau",
+      "description": "Mô Tả",
+      "time": "Thời Gian",
+      "type": "Loại"
+    },
+    "title": "Ví Của Tôi",
+    "transactions": "Giao Dịch",
+    "txType": {
+      "adjustment": "Điều Chỉnh",
+      "deposit": "Nạp Tiền",
+      "fee": "Phí",
+      "reversal": "Hoàn Tác",
+      "withdrawal": "Rút Tiền"
+    },
+    "withdraw": "Rút Tiền"
+  },
+  "autoTrading": {
+    "logs": {
+      "columns": {
+        "action": "Hành Động",
+        "price": "Giá",
+        "profit": "Lãi/Lỗ",
+        "symbol": "Mã",
+        "ticket": "单号",
+        "time": "Thời Gian",
+        "volume": "Khối Lượng"
+      },
+      "empty": "Chưa có nhật ký giao dịch",
+      "title": "Nhật Ký Giao Dịch Gần Đây"
+    },
+    "messages": {
+      "loadFailed": "Tải dữ liệu giao dịch tự động thất bại",
+      "toggleFailed": "切换自动交易失败"
+    },
+    "settings": {
+      "maxDailyLoss": "Lỗ Tối Đa Hàng Ngày",
+      "maxDailyLossHint": "Tự động tắt giao dịch nếu lỗ hàng ngày vượt quá mức này",
+      "maxDrawdownPercent": "Sụt Giảm Tối Đa %",
+      "maxDrawdownPercentHint": "Tự động tắt giao dịch nếu drawdown vượt quá mức này",
+      "maxLotSize": "Lot Tối Đa",
+      "maxLotSizeHint": "Khối lượng tối đa mỗi giao dịch (lots)",
+      "maxPositions": "Vị Thế Tối Đa",
+      "maxPositionsHint": "Số vị thế mở tối đa",
+      "maxRiskPercent": "Rủi Ro Tối Đa %",
+      "maxRiskPercentHint": "Phần trăm số dư để rủi ro mỗi giao dịch",
+      "saveFailed": "保存设置失败",
+      "saveSuccess": "Đã lưu cài đặt",
+      "title": "Cài Đặt Rủi Ro Toàn Cục"
+    },
+    "status": {
+      "activeStrategies": "Chiến Lược Đang Hoạt Động",
+      "disabled": "Giao Dịch Tự Động Đã Tắt",
+      "enabled": "Giao Dịch Tự Động Đã Bật",
+      "todayExecutions": "Today's Executions",
+      "todayProfit": "Today's Profit"
+    },
+    "title": "Giao Dịch Tự Động"
+  },
+  "sharePage": {
+    "avgHolding": "Thời Gian Giữ TB",
+    "avgLoss": "Lỗ TB",
+    "avgWin": "Lãi TB",
+    "bestTrade": "Lệnh Tốt Nhất",
+    "bySymbol": "Hiệu Suất Theo Mã",
+    "closeTime": "Đóng",
+    "count": "Số Lệnh",
+    "disclaimer": "Hiệu suất trong quá khứ không đảm bảo kết quả tương lai.",
+    "equityCurve": "Đường Cong Vốn",
+    "expired": "Liên kết chia sẻ này đã hết hạn",
+    "footer": "Được tạo bởi AntTrader",
+    "language": "Ngôn ngữ",
+    "loadFailed": "Không tải được dữ liệu chia sẻ",
+    "losingTrades": "Lệnh Thua",
+    "maxDrawdown": "Sụt Giảm Tối Đa",
+    "netProfit": "Lợi Nhuận Ròng",
+    "noPositions": "暂无持仓",
+    "noTrades": "Chưa có giao dịch",
+    "notFound": "Không tìm thấy",
+    "openPrice": "开仓价",
+    "positions": "当前持仓",
+    "positionsLocked": "创建者未开放持仓查看",
+    "profit": "Lợi Nhuận",
+    "profitFactor": "Hệ Số Lợi Nhuận",
+    "sharpeRatio": "Tỷ Số Sharpe",
+    "side": "Lệnh",
+    "subtitle": "Kết quả giao dịch thực tế",
+    "symbol": "Mã",
+    "title": "Hiệu Suất Giao Dịch",
+    "totalReturn": "Lợi Nhuận Ròng",
+    "totalTrades": "Tổng Số Lệnh",
+    "totalVolume": "Tổng Khối Lượng",
+    "tradeRecords": "Lịch Sử Giao Dịch",
+    "volume": "Khối Lượng",
+    "winRate": "Tỷ Lệ Thắng",
+    "winningTrades": "Lệnh Thắng",
+    "worstTrade": "Lệnh Tệ Nhất"
   }
 } as const;
 export default Base;

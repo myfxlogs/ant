@@ -1885,6 +1885,303 @@ export const MENU_TRADING_KEY = '__root__.menu.trading' as const;
 /** menu.wallet */
 export const MENU_WALLET_KEY = '__root__.menu.wallet' as const;
 
+/** share.title */
+export const SHARE_TITLE_KEY = '__root__.share.title' as const;
+
+/** share.createNew */
+export const SHARE_CREATENEW_KEY = '__root__.share.createNew' as const;
+
+/** share.token */
+export const SHARE_TOKEN_KEY = '__root__.share.token' as const;
+
+/** share.views */
+export const SHARE_VIEWS_KEY = '__root__.share.views' as const;
+
+/** share.expires */
+export const SHARE_EXPIRES_KEY = '__root__.share.expires' as const;
+
+/** share.actions */
+export const SHARE_ACTIONS_KEY = '__root__.share.actions' as const;
+
+/** share.empty */
+export const SHARE_EMPTY_KEY = '__root__.share.empty' as const;
+
+/** share.userId */
+export const SHARE_USERID_KEY = '__root__.share.userId' as const;
+
+/** share.deleteConfirm */
+export const SHARE_DELETECONFIRM_KEY = '__root__.share.deleteConfirm' as const;
+
+/** share.showPositions */
+export const SHARE_SHOWPOSITIONS_KEY = '__root__.share.showPositions' as const;
+
+/** share.positions */
+export const SHARE_POSITIONS_KEY = '__root__.share.positions' as const;
+
+/** share.createdAt */
+export const SHARE_CREATEDAT_KEY = '__root__.share.createdAt' as const;
+
+/** wallet.accountNumber */
+export const WALLET_ACCOUNTNUMBER_KEY = '__root__.wallet.accountNumber' as const;
+
+/** wallet.balance */
+export const WALLET_BALANCE_KEY = '__root__.wallet.balance' as const;
+
+/** wallet.currency */
+export const WALLET_CURRENCY_KEY = '__root__.wallet.currency' as const;
+
+/** wallet.deposit */
+export const WALLET_DEPOSIT_KEY = '__root__.wallet.deposit' as const;
+
+/** wallet.frozen */
+export const WALLET_FROZEN_KEY = '__root__.wallet.frozen' as const;
+
+/** wallet.frozenBalance */
+export const WALLET_FROZENBALANCE_KEY = '__root__.wallet.frozenBalance' as const;
+
+/** wallet.history */
+export const WALLET_HISTORY_KEY = '__root__.wallet.history' as const;
+
+/** wallet.table.amount */
+export const WALLET_TABLE_AMOUNT_KEY = '__root__.wallet.table.amount' as const;
+
+/** wallet.table.balanceAfter */
+export const WALLET_TABLE_BALANCEAFTER_KEY = '__root__.wallet.table.balanceAfter' as const;
+
+/** wallet.table.description */
+export const WALLET_TABLE_DESCRIPTION_KEY = '__root__.wallet.table.description' as const;
+
+/** wallet.table.time */
+export const WALLET_TABLE_TIME_KEY = '__root__.wallet.table.time' as const;
+
+/** wallet.table.type */
+export const WALLET_TABLE_TYPE_KEY = '__root__.wallet.table.type' as const;
+
+/** wallet.title */
+export const WALLET_TITLE_KEY = '__root__.wallet.title' as const;
+
+/** wallet.transactions */
+export const WALLET_TRANSACTIONS_KEY = '__root__.wallet.transactions' as const;
+
+/** wallet.txType.adjustment */
+export const WALLET_TXTYPE_ADJUSTMENT_KEY = '__root__.wallet.txType.adjustment' as const;
+
+/** wallet.txType.deposit */
+export const WALLET_TXTYPE_DEPOSIT_KEY = '__root__.wallet.txType.deposit' as const;
+
+/** wallet.txType.fee */
+export const WALLET_TXTYPE_FEE_KEY = '__root__.wallet.txType.fee' as const;
+
+/** wallet.txType.reversal */
+export const WALLET_TXTYPE_REVERSAL_KEY = '__root__.wallet.txType.reversal' as const;
+
+/** wallet.txType.withdrawal */
+export const WALLET_TXTYPE_WITHDRAWAL_KEY = '__root__.wallet.txType.withdrawal' as const;
+
+/** wallet.withdraw */
+export const WALLET_WITHDRAW_KEY = '__root__.wallet.withdraw' as const;
+
+/** autoTrading.logs.columns.action */
+export const AUTOTRADING_LOGS_COLUMNS_ACTION_KEY = '__root__.autoTrading.logs.columns.action' as const;
+
+/** autoTrading.logs.columns.price */
+export const AUTOTRADING_LOGS_COLUMNS_PRICE_KEY = '__root__.autoTrading.logs.columns.price' as const;
+
+/** autoTrading.logs.columns.profit */
+export const AUTOTRADING_LOGS_COLUMNS_PROFIT_KEY = '__root__.autoTrading.logs.columns.profit' as const;
+
+/** autoTrading.logs.columns.symbol */
+export const AUTOTRADING_LOGS_COLUMNS_SYMBOL_KEY = '__root__.autoTrading.logs.columns.symbol' as const;
+
+/** autoTrading.logs.columns.ticket */
+export const AUTOTRADING_LOGS_COLUMNS_TICKET_KEY = '__root__.autoTrading.logs.columns.ticket' as const;
+
+/** autoTrading.logs.columns.time */
+export const AUTOTRADING_LOGS_COLUMNS_TIME_KEY = '__root__.autoTrading.logs.columns.time' as const;
+
+/** autoTrading.logs.columns.volume */
+export const AUTOTRADING_LOGS_COLUMNS_VOLUME_KEY = '__root__.autoTrading.logs.columns.volume' as const;
+
+/** autoTrading.logs.empty */
+export const AUTOTRADING_LOGS_EMPTY_KEY = '__root__.autoTrading.logs.empty' as const;
+
+/** autoTrading.logs.title */
+export const AUTOTRADING_LOGS_TITLE_KEY = '__root__.autoTrading.logs.title' as const;
+
+/** autoTrading.messages.loadFailed */
+export const AUTOTRADING_MESSAGES_LOADFAILED_KEY = '__root__.autoTrading.messages.loadFailed' as const;
+
+/** autoTrading.messages.toggleFailed */
+export const AUTOTRADING_MESSAGES_TOGGLEFAILED_KEY = '__root__.autoTrading.messages.toggleFailed' as const;
+
+/** autoTrading.settings.maxDailyLoss */
+export const AUTOTRADING_SETTINGS_MAXDAILYLOSS_KEY = '__root__.autoTrading.settings.maxDailyLoss' as const;
+
+/** autoTrading.settings.maxDailyLossHint */
+export const AUTOTRADING_SETTINGS_MAXDAILYLOSSHINT_KEY = '__root__.autoTrading.settings.maxDailyLossHint' as const;
+
+/** autoTrading.settings.maxDrawdownPercent */
+export const AUTOTRADING_SETTINGS_MAXDRAWDOWNPERCENT_KEY = '__root__.autoTrading.settings.maxDrawdownPercent' as const;
+
+/** autoTrading.settings.maxDrawdownPercentHint */
+export const AUTOTRADING_SETTINGS_MAXDRAWDOWNPERCENTHINT_KEY = '__root__.autoTrading.settings.maxDrawdownPercentHint' as const;
+
+/** autoTrading.settings.maxLotSize */
+export const AUTOTRADING_SETTINGS_MAXLOTSIZE_KEY = '__root__.autoTrading.settings.maxLotSize' as const;
+
+/** autoTrading.settings.maxLotSizeHint */
+export const AUTOTRADING_SETTINGS_MAXLOTSIZEHINT_KEY = '__root__.autoTrading.settings.maxLotSizeHint' as const;
+
+/** autoTrading.settings.maxPositions */
+export const AUTOTRADING_SETTINGS_MAXPOSITIONS_KEY = '__root__.autoTrading.settings.maxPositions' as const;
+
+/** autoTrading.settings.maxPositionsHint */
+export const AUTOTRADING_SETTINGS_MAXPOSITIONSHINT_KEY = '__root__.autoTrading.settings.maxPositionsHint' as const;
+
+/** autoTrading.settings.maxRiskPercent */
+export const AUTOTRADING_SETTINGS_MAXRISKPERCENT_KEY = '__root__.autoTrading.settings.maxRiskPercent' as const;
+
+/** autoTrading.settings.maxRiskPercentHint */
+export const AUTOTRADING_SETTINGS_MAXRISKPERCENTHINT_KEY = '__root__.autoTrading.settings.maxRiskPercentHint' as const;
+
+/** autoTrading.settings.saveFailed */
+export const AUTOTRADING_SETTINGS_SAVEFAILED_KEY = '__root__.autoTrading.settings.saveFailed' as const;
+
+/** autoTrading.settings.saveSuccess */
+export const AUTOTRADING_SETTINGS_SAVESUCCESS_KEY = '__root__.autoTrading.settings.saveSuccess' as const;
+
+/** autoTrading.settings.title */
+export const AUTOTRADING_SETTINGS_TITLE_KEY = '__root__.autoTrading.settings.title' as const;
+
+/** autoTrading.status.activeStrategies */
+export const AUTOTRADING_STATUS_ACTIVESTRATEGIES_KEY = '__root__.autoTrading.status.activeStrategies' as const;
+
+/** autoTrading.status.disabled */
+export const AUTOTRADING_STATUS_DISABLED_KEY = '__root__.autoTrading.status.disabled' as const;
+
+/** autoTrading.status.enabled */
+export const AUTOTRADING_STATUS_ENABLED_KEY = '__root__.autoTrading.status.enabled' as const;
+
+/** autoTrading.status.todayExecutions */
+export const AUTOTRADING_STATUS_TODAYEXECUTIONS_KEY = '__root__.autoTrading.status.todayExecutions' as const;
+
+/** autoTrading.status.todayProfit */
+export const AUTOTRADING_STATUS_TODAYPROFIT_KEY = '__root__.autoTrading.status.todayProfit' as const;
+
+/** autoTrading.title */
+export const AUTOTRADING_TITLE_KEY = '__root__.autoTrading.title' as const;
+
+/** sharePage.avgHolding */
+export const SHAREPAGE_AVGHOLDING_KEY = '__root__.sharePage.avgHolding' as const;
+
+/** sharePage.avgLoss */
+export const SHAREPAGE_AVGLOSS_KEY = '__root__.sharePage.avgLoss' as const;
+
+/** sharePage.avgWin */
+export const SHAREPAGE_AVGWIN_KEY = '__root__.sharePage.avgWin' as const;
+
+/** sharePage.bestTrade */
+export const SHAREPAGE_BESTTRADE_KEY = '__root__.sharePage.bestTrade' as const;
+
+/** sharePage.bySymbol */
+export const SHAREPAGE_BYSYMBOL_KEY = '__root__.sharePage.bySymbol' as const;
+
+/** sharePage.closeTime */
+export const SHAREPAGE_CLOSETIME_KEY = '__root__.sharePage.closeTime' as const;
+
+/** sharePage.count */
+export const SHAREPAGE_COUNT_KEY = '__root__.sharePage.count' as const;
+
+/** sharePage.disclaimer */
+export const SHAREPAGE_DISCLAIMER_KEY = '__root__.sharePage.disclaimer' as const;
+
+/** sharePage.equityCurve */
+export const SHAREPAGE_EQUITYCURVE_KEY = '__root__.sharePage.equityCurve' as const;
+
+/** sharePage.expired */
+export const SHAREPAGE_EXPIRED_KEY = '__root__.sharePage.expired' as const;
+
+/** sharePage.footer */
+export const SHAREPAGE_FOOTER_KEY = '__root__.sharePage.footer' as const;
+
+/** sharePage.language */
+export const SHAREPAGE_LANGUAGE_KEY = '__root__.sharePage.language' as const;
+
+/** sharePage.loadFailed */
+export const SHAREPAGE_LOADFAILED_KEY = '__root__.sharePage.loadFailed' as const;
+
+/** sharePage.losingTrades */
+export const SHAREPAGE_LOSINGTRADES_KEY = '__root__.sharePage.losingTrades' as const;
+
+/** sharePage.maxDrawdown */
+export const SHAREPAGE_MAXDRAWDOWN_KEY = '__root__.sharePage.maxDrawdown' as const;
+
+/** sharePage.netProfit */
+export const SHAREPAGE_NETPROFIT_KEY = '__root__.sharePage.netProfit' as const;
+
+/** sharePage.noPositions */
+export const SHAREPAGE_NOPOSITIONS_KEY = '__root__.sharePage.noPositions' as const;
+
+/** sharePage.noTrades */
+export const SHAREPAGE_NOTRADES_KEY = '__root__.sharePage.noTrades' as const;
+
+/** sharePage.notFound */
+export const SHAREPAGE_NOTFOUND_KEY = '__root__.sharePage.notFound' as const;
+
+/** sharePage.openPrice */
+export const SHAREPAGE_OPENPRICE_KEY = '__root__.sharePage.openPrice' as const;
+
+/** sharePage.positions */
+export const SHAREPAGE_POSITIONS_KEY = '__root__.sharePage.positions' as const;
+
+/** sharePage.positionsLocked */
+export const SHAREPAGE_POSITIONSLOCKED_KEY = '__root__.sharePage.positionsLocked' as const;
+
+/** sharePage.profit */
+export const SHAREPAGE_PROFIT_KEY = '__root__.sharePage.profit' as const;
+
+/** sharePage.profitFactor */
+export const SHAREPAGE_PROFITFACTOR_KEY = '__root__.sharePage.profitFactor' as const;
+
+/** sharePage.sharpeRatio */
+export const SHAREPAGE_SHARPERATIO_KEY = '__root__.sharePage.sharpeRatio' as const;
+
+/** sharePage.side */
+export const SHAREPAGE_SIDE_KEY = '__root__.sharePage.side' as const;
+
+/** sharePage.subtitle */
+export const SHAREPAGE_SUBTITLE_KEY = '__root__.sharePage.subtitle' as const;
+
+/** sharePage.symbol */
+export const SHAREPAGE_SYMBOL_KEY = '__root__.sharePage.symbol' as const;
+
+/** sharePage.title */
+export const SHAREPAGE_TITLE_KEY = '__root__.sharePage.title' as const;
+
+/** sharePage.totalReturn */
+export const SHAREPAGE_TOTALRETURN_KEY = '__root__.sharePage.totalReturn' as const;
+
+/** sharePage.totalTrades */
+export const SHAREPAGE_TOTALTRADES_KEY = '__root__.sharePage.totalTrades' as const;
+
+/** sharePage.totalVolume */
+export const SHAREPAGE_TOTALVOLUME_KEY = '__root__.sharePage.totalVolume' as const;
+
+/** sharePage.tradeRecords */
+export const SHAREPAGE_TRADERECORDS_KEY = '__root__.sharePage.tradeRecords' as const;
+
+/** sharePage.volume */
+export const SHAREPAGE_VOLUME_KEY = '__root__.sharePage.volume' as const;
+
+/** sharePage.winRate */
+export const SHAREPAGE_WINRATE_KEY = '__root__.sharePage.winRate' as const;
+
+/** sharePage.winningTrades */
+export const SHAREPAGE_WINNINGTRADES_KEY = '__root__.sharePage.winningTrades' as const;
+
+/** sharePage.worstTrade */
+export const SHAREPAGE_WORSTTRADE_KEY = '__root__.sharePage.worstTrade' as const;
+
 export const BASE_KEYS = {
   app_name: '__root__.app.name',
   auth_fields_confirm_password: '__root__.auth.fields.confirmPassword',
@@ -2514,6 +2811,105 @@ export const BASE_KEYS = {
   menu_strategy_workspace: '__root__.menu.strategyWorkspace',
   menu_trading: '__root__.menu.trading',
   menu_wallet: '__root__.menu.wallet',
+  share_title: '__root__.share.title',
+  share_createNew: '__root__.share.createNew',
+  share_token: '__root__.share.token',
+  share_views: '__root__.share.views',
+  share_expires: '__root__.share.expires',
+  share_actions: '__root__.share.actions',
+  share_empty: '__root__.share.empty',
+  share_userId: '__root__.share.userId',
+  share_deleteConfirm: '__root__.share.deleteConfirm',
+  share_showPositions: '__root__.share.showPositions',
+  share_positions: '__root__.share.positions',
+  share_createdAt: '__root__.share.createdAt',
+  wallet_accountNumber: '__root__.wallet.accountNumber',
+  wallet_balance: '__root__.wallet.balance',
+  wallet_currency: '__root__.wallet.currency',
+  wallet_deposit: '__root__.wallet.deposit',
+  wallet_frozen: '__root__.wallet.frozen',
+  wallet_frozenBalance: '__root__.wallet.frozenBalance',
+  wallet_history: '__root__.wallet.history',
+  wallet_table_amount: '__root__.wallet.table.amount',
+  wallet_table_balanceAfter: '__root__.wallet.table.balanceAfter',
+  wallet_table_description: '__root__.wallet.table.description',
+  wallet_table_time: '__root__.wallet.table.time',
+  wallet_table_type: '__root__.wallet.table.type',
+  wallet_title: '__root__.wallet.title',
+  wallet_transactions: '__root__.wallet.transactions',
+  wallet_txType_adjustment: '__root__.wallet.txType.adjustment',
+  wallet_txType_deposit: '__root__.wallet.txType.deposit',
+  wallet_txType_fee: '__root__.wallet.txType.fee',
+  wallet_txType_reversal: '__root__.wallet.txType.reversal',
+  wallet_txType_withdrawal: '__root__.wallet.txType.withdrawal',
+  wallet_withdraw: '__root__.wallet.withdraw',
+  autoTrading_logs_columns_action: '__root__.autoTrading.logs.columns.action',
+  autoTrading_logs_columns_price: '__root__.autoTrading.logs.columns.price',
+  autoTrading_logs_columns_profit: '__root__.autoTrading.logs.columns.profit',
+  autoTrading_logs_columns_symbol: '__root__.autoTrading.logs.columns.symbol',
+  autoTrading_logs_columns_ticket: '__root__.autoTrading.logs.columns.ticket',
+  autoTrading_logs_columns_time: '__root__.autoTrading.logs.columns.time',
+  autoTrading_logs_columns_volume: '__root__.autoTrading.logs.columns.volume',
+  autoTrading_logs_empty: '__root__.autoTrading.logs.empty',
+  autoTrading_logs_title: '__root__.autoTrading.logs.title',
+  autoTrading_messages_loadFailed: '__root__.autoTrading.messages.loadFailed',
+  autoTrading_messages_toggleFailed: '__root__.autoTrading.messages.toggleFailed',
+  autoTrading_settings_maxDailyLoss: '__root__.autoTrading.settings.maxDailyLoss',
+  autoTrading_settings_maxDailyLossHint: '__root__.autoTrading.settings.maxDailyLossHint',
+  autoTrading_settings_maxDrawdownPercent: '__root__.autoTrading.settings.maxDrawdownPercent',
+  autoTrading_settings_maxDrawdownPercentHint: '__root__.autoTrading.settings.maxDrawdownPercentHint',
+  autoTrading_settings_maxLotSize: '__root__.autoTrading.settings.maxLotSize',
+  autoTrading_settings_maxLotSizeHint: '__root__.autoTrading.settings.maxLotSizeHint',
+  autoTrading_settings_maxPositions: '__root__.autoTrading.settings.maxPositions',
+  autoTrading_settings_maxPositionsHint: '__root__.autoTrading.settings.maxPositionsHint',
+  autoTrading_settings_maxRiskPercent: '__root__.autoTrading.settings.maxRiskPercent',
+  autoTrading_settings_maxRiskPercentHint: '__root__.autoTrading.settings.maxRiskPercentHint',
+  autoTrading_settings_saveFailed: '__root__.autoTrading.settings.saveFailed',
+  autoTrading_settings_saveSuccess: '__root__.autoTrading.settings.saveSuccess',
+  autoTrading_settings_title: '__root__.autoTrading.settings.title',
+  autoTrading_status_activeStrategies: '__root__.autoTrading.status.activeStrategies',
+  autoTrading_status_disabled: '__root__.autoTrading.status.disabled',
+  autoTrading_status_enabled: '__root__.autoTrading.status.enabled',
+  autoTrading_status_todayExecutions: '__root__.autoTrading.status.todayExecutions',
+  autoTrading_status_todayProfit: '__root__.autoTrading.status.todayProfit',
+  autoTrading_title: '__root__.autoTrading.title',
+  sharePage_avgHolding: '__root__.sharePage.avgHolding',
+  sharePage_avgLoss: '__root__.sharePage.avgLoss',
+  sharePage_avgWin: '__root__.sharePage.avgWin',
+  sharePage_bestTrade: '__root__.sharePage.bestTrade',
+  sharePage_bySymbol: '__root__.sharePage.bySymbol',
+  sharePage_closeTime: '__root__.sharePage.closeTime',
+  sharePage_count: '__root__.sharePage.count',
+  sharePage_disclaimer: '__root__.sharePage.disclaimer',
+  sharePage_equityCurve: '__root__.sharePage.equityCurve',
+  sharePage_expired: '__root__.sharePage.expired',
+  sharePage_footer: '__root__.sharePage.footer',
+  sharePage_language: '__root__.sharePage.language',
+  sharePage_loadFailed: '__root__.sharePage.loadFailed',
+  sharePage_losingTrades: '__root__.sharePage.losingTrades',
+  sharePage_maxDrawdown: '__root__.sharePage.maxDrawdown',
+  sharePage_netProfit: '__root__.sharePage.netProfit',
+  sharePage_noPositions: '__root__.sharePage.noPositions',
+  sharePage_noTrades: '__root__.sharePage.noTrades',
+  sharePage_notFound: '__root__.sharePage.notFound',
+  sharePage_openPrice: '__root__.sharePage.openPrice',
+  sharePage_positions: '__root__.sharePage.positions',
+  sharePage_positionsLocked: '__root__.sharePage.positionsLocked',
+  sharePage_profit: '__root__.sharePage.profit',
+  sharePage_profitFactor: '__root__.sharePage.profitFactor',
+  sharePage_sharpeRatio: '__root__.sharePage.sharpeRatio',
+  sharePage_side: '__root__.sharePage.side',
+  sharePage_subtitle: '__root__.sharePage.subtitle',
+  sharePage_symbol: '__root__.sharePage.symbol',
+  sharePage_title: '__root__.sharePage.title',
+  sharePage_totalReturn: '__root__.sharePage.totalReturn',
+  sharePage_totalTrades: '__root__.sharePage.totalTrades',
+  sharePage_totalVolume: '__root__.sharePage.totalVolume',
+  sharePage_tradeRecords: '__root__.sharePage.tradeRecords',
+  sharePage_volume: '__root__.sharePage.volume',
+  sharePage_winRate: '__root__.sharePage.winRate',
+  sharePage_winningTrades: '__root__.sharePage.winningTrades',
+  sharePage_worstTrade: '__root__.sharePage.worstTrade',
 } as const;
 
 export type BaseKey = typeof BASE_KEYS[keyof typeof BASE_KEYS];
