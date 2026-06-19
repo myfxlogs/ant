@@ -57,24 +57,22 @@ export default function WorkspaceCodePanel({
   const { data, refetch } = useSystemAIConfigsQuery();
   const configs = data?.items ?? [];
 
-  // Refetch provider list when AI Settings modal closes (user may have changed configs).
-  const handleSettingsClose = () => { setSettingsOpen(false); refetch(); };
+  // Refetch provider list and primary when AI Settings modal closes.
+  const handleSettingsClose = () => { setSettingsOpen(false); refetch(); refreshPrimary(); };
 
   // ── Default Primary Model (compact inline selector) ──
   const [primaryValue, setPrimaryValue] = useState('');
   const [primarySaving, setPrimarySaving] = useState(false);
   const [gatewayModels, setGatewayModels] = useState<Array<{ providerId: string; model: string; label: string }>>([]);
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const r = await aiApi.getPrimary();
-        if (mounted) setPrimaryValue(r.providerId ? `${r.providerId}|${r.model || ''}` : '');
-      } catch { /* fetch failure → keep empty */ }
-    })();
-    return () => { mounted = false; };
-  }, []);
+  const refreshPrimary = async () => {
+    try {
+      const r = await aiApi.getPrimary();
+      setPrimaryValue(r.providerId ? `${r.providerId}|${r.model || ''}` : '');
+    } catch { /* fetch failure → keep current */ }
+  };
+
+  useEffect(() => { refreshPrimary(); }, []);
 
   // Fetch gateway models for workspace selector (available even without own API key).
   useEffect(() => {

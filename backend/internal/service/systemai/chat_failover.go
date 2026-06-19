@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,49 +14,62 @@ import (
 	"anttrader/internal/repository"
 )
 
-// ── Circuit breaker ──
+// ── Circuit breaker (PG-backed, shared across instances) ──
 
 const (
-	cbFailThreshold = 3           // consecutive failures before opening
-	cbCooldown      = 30 * time.Second // skip provider for this long after threshold
+	cbFailThreshold = 3
+	cbCooldown      = 30 * time.Second
 )
 
-var cbState sync.Map // key: "userID|providerID" → *circuitBreaker
-
-type circuitBreaker struct {
-	consecutiveFails int
-	openedAt         time.Time
+// SetCircuitBreakerDB wires a pgxpool-like executor for persistent circuit
+// breaker state. Use pgxpool.NewCBAdapter(pool) from the handlers package.
+// Without it, the circuit breaker silently degrades to a no-op.
+func (s *Service) SetCircuitBreakerDB(db cbExecutor) {
+	s.cbDB = db
 }
 
-func (cb *circuitBreaker) isOpen() bool {
-	if cb.consecutiveFails < cbFailThreshold {
+// cbExecutor is the minimal interface needed for circuit breaker queries.
+type cbExecutor interface {
+	Exec(ctx context.Context, sql string, args ...any) (any, error)
+	QueryRow(ctx context.Context, sql string, args ...any) interface{ Scan(dest ...any) error }
+}
+
+func (s *Service) recordProviderFailure(ctx context.Context, userID uuid.UUID, providerID string) {
+	if s.cbDB == nil {
+		return
+	}
+	s.cbDB.Exec(ctx,
+		`INSERT INTO ai_circuit_breaker (user_id, provider_id, consecutive_fails, opened_at)
+		 VALUES ($1, $2, 1, CASE WHEN 1 >= $3 THEN NOW() ELSE NULL END)
+		 ON CONFLICT (user_id, provider_id) DO UPDATE SET
+		   consecutive_fails = ai_circuit_breaker.consecutive_fails + 1,
+		   opened_at = CASE WHEN ai_circuit_breaker.consecutive_fails + 1 >= $3 THEN NOW() ELSE ai_circuit_breaker.opened_at END`,
+		userID, providerID, cbFailThreshold)
+}
+
+func (s *Service) recordProviderSuccess(ctx context.Context, userID uuid.UUID, providerID string) {
+	if s.cbDB == nil {
+		return
+	}
+	s.cbDB.Exec(ctx, `DELETE FROM ai_circuit_breaker WHERE user_id=$1 AND provider_id=$2`, userID, providerID)
+}
+
+func (s *Service) isCircuitOpen(ctx context.Context, userID uuid.UUID, providerID string) bool {
+	if s.cbDB == nil {
 		return false
 	}
-	return time.Since(cb.openedAt) < cbCooldown
-}
-
-func recordProviderSuccess(userID uuid.UUID, providerID string) {
-	key := userID.String() + "|" + providerID
-	cbState.Delete(key)
-}
-
-func recordProviderFailure(userID uuid.UUID, providerID string) {
-	key := userID.String() + "|" + providerID
-	v, _ := cbState.LoadOrStore(key, &circuitBreaker{})
-	cb := v.(*circuitBreaker)
-	cb.consecutiveFails++
-	if cb.consecutiveFails >= cbFailThreshold {
-		cb.openedAt = time.Now()
+	var fails int
+	var openedAt *time.Time
+	row := s.cbDB.QueryRow(ctx,
+		`SELECT consecutive_fails, opened_at FROM ai_circuit_breaker WHERE user_id=$1 AND provider_id=$2`,
+		userID, providerID)
+	if err := row.Scan(&fails, &openedAt); err != nil {
+		return false // not found = closed
 	}
-	cbState.Store(key, cb)
-}
-
-func isCircuitOpen(userID uuid.UUID, providerID string) bool {
-	v, ok := cbState.Load(userID.String() + "|" + providerID)
-	if !ok {
+	if fails < cbFailThreshold || openedAt == nil {
 		return false
 	}
-	return v.(*circuitBreaker).isOpen()
+	return time.Since(*openedAt) < cbCooldown
 }
 
 // ── Failover ──
@@ -98,24 +110,8 @@ func isFailoverStatus(code int) bool {
 	}
 }
 
-// isModelNotFoundError checks whether a provider error body indicates the
-// requested model doesn't exist on this provider. When true, failover to
-// another provider is appropriate.
-func isModelNotFoundError(body string) bool {
-	low := strings.ToLower(body)
-	// Common patterns across OpenAI / DeepSeek / Zhipu / etc.
-	return strings.Contains(low, "model not found") ||
-		strings.Contains(low, "does not exist") ||
-		strings.Contains(low, "invalid_model") ||
-		strings.Contains(low, "no such model") ||
-		strings.Contains(low, "unknown model") ||
-		strings.Contains(low, "model_not_found") ||
-		strings.Contains(low, "invalid model") ||
-		strings.Contains(low, "model is not supported")
-}
-
-// isAuthErrorBody checks whether a 400/401/403 body indicates an auth problem
-// (bad key format, expired key, etc.). Failover is pointless in this case.
+// isAuthErrorBody checks whether an error body indicates an auth problem.
+// When true, failover is pointless — the key itself is invalid.
 func isAuthErrorBody(body string) bool {
 	low := strings.ToLower(body)
 	return strings.Contains(low, "invalid api key") ||
@@ -126,63 +122,54 @@ func isAuthErrorBody(body string) bool {
 		strings.Contains(low, "api key not valid")
 }
 
-// isContentTooLongError checks whether a 400 body indicates the request
-// exceeded the model's context window. Failover to a larger-context provider
-// is appropriate.
-func isContentTooLongError(body string) bool {
-	low := strings.ToLower(body)
-	return strings.Contains(low, "context length") ||
-		strings.Contains(low, "too long") ||
-		strings.Contains(low, "max tokens") ||
-		strings.Contains(low, "maximum context") ||
-		strings.Contains(low, "token limit") ||
-		strings.Contains(low, "context window") ||
-		strings.Contains(low, "max context") ||
-		strings.Contains(low, "reduce the length") ||
-		strings.Contains(low, "context_length_exceeded")
+// apiError holds a parsed OpenAI-compatible error response.
+type apiError struct {
+	Type    string // e.g. "invalid_request_error", "authentication_error"
+	Message string // human-readable description
+	Raw     string // original text if JSON parse fails
 }
 
-// isStreamingNotSupportedError checks whether a provider error body indicates
-// the model doesn't support SSE streaming. When true, the caller should retry
-// the same provider with streaming=false rather than failing over.
-func isStreamingNotSupportedError(body string) bool {
-	low := strings.ToLower(body)
-	return strings.Contains(low, "streaming is not supported") ||
-		strings.Contains(low, "does not support streaming") ||
-		strings.Contains(low, "streaming not available") ||
-		strings.Contains(low, "streaming disabled") ||
-		strings.Contains(low, "streaming is disabled")
-}
-
-// readAPIErrorBody reads up to 8 KiB of a non-2xx response body and extracts
-// a human-readable error message (OpenAI-compatible error JSON or raw text).
-func readAPIErrorBody(resp *http.Response) string {
+// readAPIErrorBody reads up to 8 KiB of a non-2xx response body and parses it.
+func readAPIErrorBody(resp *http.Response) apiError {
 	if resp == nil || resp.Body == nil {
-		return ""
+		return apiError{}
 	}
-	body, err := io.ReadAll(io.LimitReader(resp.Body, 8<<10))
-	if err != nil {
-		return ""
-	}
-	var apiErr struct {
+	body, _ := io.ReadAll(io.LimitReader(resp.Body, 8<<10))
+	return parseAPIError(body)
+}
+
+// readAPIErrorBodyFromBytes parses an already-read response body.
+func readAPIErrorBodyFromBytes(body []byte) apiError {
+	return parseAPIError(body)
+}
+
+func parseAPIError(body []byte) apiError {
+	var parsed struct {
 		Error struct {
 			Message string `json:"message"`
 			Type    string `json:"type"`
 			Code    string `json:"code"`
 		} `json:"error"`
 	}
-	if json.Unmarshal(body, &apiErr) == nil && apiErr.Error.Message != "" {
-		if apiErr.Error.Type != "" {
-			return apiErr.Error.Type + ": " + apiErr.Error.Message
-		}
-		return apiErr.Error.Message
+	if json.Unmarshal(body, &parsed) == nil && parsed.Error.Message != "" {
+		return apiError{Type: parsed.Error.Type, Message: parsed.Error.Message}
 	}
-	// Fallback: return first non-empty line of raw body.
 	raw := strings.TrimSpace(string(body))
 	if len(raw) > 500 {
 		raw = raw[:500]
 	}
-	return raw
+	return apiError{Raw: raw}
+}
+
+// String returns a compact representation for error messages.
+func (e apiError) String() string {
+	if e.Type != "" {
+		return e.Type + ": " + e.Message
+	}
+	if e.Message != "" {
+		return e.Message
+	}
+	return e.Raw
 }
 
 // chatEndpoint constructs the chat completion API endpoint from a provider's base URL.
@@ -205,59 +192,63 @@ type chatProvider struct {
 }
 
 // resolveAllChatProviders returns all enabled providers with valid secrets,
-// ordered by preference (primary first, then others). Used for multi-provider
-// failover: if the first provider fails with a transient error, the caller
-// can try the next one without re-resolving.
-func (s *Service) resolveAllChatProviders(ctx context.Context, userID uuid.UUID, modelHint string) ([]chatProvider, error) {
+// ordered by the user's saved primary preference (via SetAIPrimary → users table).
+// The primary provider comes first; then other user-configured providers; finally
+// Gateway system providers as a fallback when the user has no configs at all.
+func (s *Service) resolveAllChatProviders(ctx context.Context, userID uuid.UUID) ([]chatProvider, error) {
+	// ── Determine the user's explicit primary choice ──
+	primaryPID, primaryModel := s.getAIPrimaryGateway(ctx, userID)
+
+	// ── Collect user-configured providers ──
 	rows, err := s.List(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("list AI providers: %w", err)
 	}
-	var out []chatProvider
-	for _, preferPrimary := range []bool{true, false} {
-		for _, row := range rows {
-			if row == nil || !row.Enabled {
-				continue
-			}
-			if preferPrimary && !hasPrimaryChat(row.PrimaryFor) {
-				continue
-			}
-			sec, secErr := s.getCachedSecret(ctx, userID, row.ProviderID)
-			if secErr != nil || sec == "" {
-				continue
-			}
-			base := strings.TrimRight(strings.TrimSpace(row.BaseURL), "/")
-			if base == "" {
-				continue
-			}
-			m := strings.TrimSpace(row.DefaultModel)
-			if m == "" {
-				m = modelHint
-			}
-			if m == "" && len(row.Models) > 0 {
-				m = strings.TrimSpace(row.Models[0])
-			}
-			if m == "" {
-				continue
-			}
-			if isCircuitOpen(userID, row.ProviderID) {
-				continue // skip provider in cooldown
-			}
-			out = append(out, chatProvider{
-				userID:     userID,
-				providerID: row.ProviderID,
-				model:      m,
-				baseURL:    base,
-				secret:     sec,
-			})
+
+	var primary, rest []chatProvider
+	seenPID := map[string]bool{}
+
+	for _, row := range rows {
+		if row == nil || !row.Enabled {
+			continue
+		}
+		sec, secErr := s.getCachedSecret(ctx, userID, row.ProviderID)
+		if secErr != nil || sec == "" {
+			continue
+		}
+		base := strings.TrimRight(strings.TrimSpace(row.BaseURL), "/")
+		if base == "" {
+			continue
+		}
+		m := resolveModel(row.DefaultModel, row.Models, row.ProviderID, primaryPID, primaryModel)
+		if m == "" {
+			continue
+		}
+		if s.isCircuitOpen(ctx, userID, row.ProviderID) {
+			continue
+		}
+		cp := chatProvider{
+			userID: userID, providerID: row.ProviderID,
+			model: m, baseURL: base, secret: sec,
+		}
+		seenPID[row.ProviderID] = true
+		if row.ProviderID == primaryPID {
+			primary = append(primary, cp)
+		} else {
+			rest = append(rest, cp)
 		}
 	}
+	out := append(primary, rest...)
+
+	// ── Gateway system providers (fallback when user has no own configs) ──
 	if len(out) == 0 && s.gatewayProviderRepo != nil {
-		// Fallback: use system providers from AI Gateway.
 		sysProviders, sysErr := s.gatewayProviderRepo.ListEnabled(ctx)
 		if sysErr == nil {
 			for _, sp := range sysProviders {
-				if len(sp.APIKeyEncrypted) == 0 {
+				if seenPID[sp.ProviderID] {
+					continue // user already has a config for this provider
+				}
+				if len(sp.APIKeyEncrypted) == 0 || len(sp.Models) == 0 {
 					continue
 				}
 				pt, openErr := repository.OpenAPIKey(sp.APIKeyEncrypted, s.box)
@@ -268,17 +259,16 @@ func (s *Service) resolveAllChatProviders(ctx context.Context, userID uuid.UUID,
 				if base == "" {
 					continue
 				}
-				m := modelHint
-				if m == "" && len(sp.Models) > 0 {
-					m = strings.TrimSpace(sp.Models[0])
+				m := resolveModel(sp.DefaultModel, sp.Models, sp.ProviderID, primaryPID, primaryModel)
+				cp := chatProvider{
+					userID: userID, providerID: sp.ProviderID,
+					model: m, baseURL: base, secret: pt,
 				}
-				if m == "" {
-					continue
+				if sp.ProviderID == primaryPID {
+					out = append([]chatProvider{cp}, out...)
+				} else {
+					out = append(out, cp)
 				}
-				out = append(out, chatProvider{
-					userID: userID, providerID: sp.ProviderID, model: m,
-					baseURL: base, secret: pt,
-				})
 			}
 		}
 	}
@@ -288,4 +278,25 @@ func (s *Service) resolveAllChatProviders(ctx context.Context, userID uuid.UUID,
 	return out, nil
 }
 
-// resolveChatProvider picks a provider, model, base URL, and secret for the given user.
+// getAIPrimaryGateway reads the user's saved Gateway model preference.
+// Returns ("", "") when not set (user hasn't picked a Gateway model yet).
+func (s *Service) getAIPrimaryGateway(ctx context.Context, userID uuid.UUID) (providerID, model string) {
+	id, m, err := s.GetAIPrimary(ctx, userID)
+	if err != nil || id == "" {
+		return "", ""
+	}
+	return id, m
+}
+
+// resolveModel picks the best model for a provider given the user's preferences.
+// Priority: primaryModel (explicit user pick) > defaultModel > models[0].
+func resolveModel(defaultModel string, models []string, providerID, primaryPID, primaryModel string) string {
+	m := strings.TrimSpace(defaultModel)
+	if m == "" && len(models) > 0 {
+		m = strings.TrimSpace(models[0])
+	}
+	if providerID == primaryPID && primaryModel != "" {
+		m = primaryModel
+	}
+	return m
+}

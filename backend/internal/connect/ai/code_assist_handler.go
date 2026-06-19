@@ -18,7 +18,6 @@ import (
 	systemai "anttrader/internal/service/systemai"
 )
 
-const codeAssistModel = "gpt-4o"
 const maxCodeLen = 100 * 1024
 const maxInstrLen = 4 * 1024
 
@@ -63,7 +62,7 @@ func (s *CodeAssistServer) ReviseCode(ctx context.Context, req *connect.Request[
 
 	pc := ai.BuildContext(ai.BuildContextInput{Code: code, Message: instruction, Locale: req.Msg.Locale})
 	messages := systemai.BuildChatMessages(pc.SystemPrompt, pc.UserMessage, protoHistoryToChat(req.Msg.History))
-	revised, err := s.systemSvc.ChatCompletion(ctx, uid, messages, codeAssistModel)
+	revised, err := s.systemSvc.ChatCompletion(ctx, uid, messages)
 	if err != nil {
 		s.log.Warn("CodeAssist: ReviseCode LLM call failed", zap.Error(err))
 		if errors.Is(err, systemai.ErrInsufficientBalance) {
@@ -99,7 +98,7 @@ func (s *CodeAssistServer) ReviseCodeStream(
 	pc := ai.BuildContext(ai.BuildContextInput{Code: code, Message: instruction, Locale: req.Msg.Locale})
 	messages := systemai.BuildChatMessages(pc.SystemPrompt, pc.UserMessage, protoHistoryToChat(req.Msg.History))
 	var fullText strings.Builder
-	err = s.systemSvc.ChatCompletionStream(ctx, uid, messages, codeAssistModel,
+	err = s.systemSvc.ChatCompletionStream(ctx, uid, messages,
 		func(chunk systemai.ChatStreamChunk) error {
 			fullText.WriteString(chunk.Content)
 			return stream.Send(&antv1.ReviseCodeStreamChunk{Delta: chunk.Content, Done: chunk.Done})
@@ -162,7 +161,7 @@ func (s *CodeAssistServer) ExplainCode(ctx context.Context, req *connect.Request
 	userMsg := fmt.Sprintf("Please explain this trading strategy:\n```python\n%s\n```", code)
 	messages := systemai.BuildChatMessages(sysPrompt, userMsg, nil)
 
-	explanation, err := s.systemSvc.ChatCompletion(ctx, uid, messages, codeAssistModel)
+	explanation, err := s.systemSvc.ChatCompletion(ctx, uid, messages)
 	if err != nil {
 		s.log.Warn("CodeAssist: ExplainCode LLM call failed", zap.Error(err))
 		return connect.NewResponse(&antv1.ExplainCodeResponse{
@@ -184,7 +183,7 @@ func (s *CodeAssistServer) ValidateStrategyExtended(ctx context.Context, req *co
 	}
 
 	messages := systemai.BuildChatMessages(buildValidationPrompt(), fmt.Sprintf("Validate this trading strategy:\n```python\n%s\n```", code), nil)
-	result, err := s.systemSvc.ChatCompletion(ctx, uid, messages, codeAssistModel)
+	result, err := s.systemSvc.ChatCompletion(ctx, uid, messages)
 	if err != nil {
 		s.log.Warn("CodeAssist: ValidateStrategyExtended LLM call failed, falling back to basic check", zap.Error(err))
 		return connect.NewResponse(&antv1.ValidateStrategyExtendedResponse{

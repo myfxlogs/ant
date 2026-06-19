@@ -28,7 +28,7 @@ func (s *AIServer) Chat(ctx context.Context, req *connect.Request[antv1.ChatRequ
 	systemPrompt := LangPrompt(LangFromAccept(req.Header().Get("Accept-Language")))
 	s.log.Info("AI Chat", zap.String("lang", LangFromAccept(req.Header().Get("Accept-Language"))), zap.String("user_id", uid.String()))
 	messages := systemai.BuildChatMessages(systemPrompt, m.Message, nil)
-	reply, err := s.systemSvc.ChatCompletion(ctx, uid, messages, "")
+	reply, err := s.systemSvc.ChatCompletion(ctx, uid, messages)
 	if err != nil {
 		s.log.Error("Chat: ChatCompletion failed", zap.String("user_id", uid.String()))
 		return nil, systemai.WrapAIError(err)
@@ -73,7 +73,7 @@ func (s *AIServer) ChatStream(ctx context.Context, req *connect.Request[antv1.Ch
 	systemPrompt := LangPrompt(LangFromAccept(req.Header().Get("Accept-Language")))
 	var fullReply strings.Builder
 
-	err = s.systemSvc.ChatCompletionStream(ctx, uid, systemai.BuildChatMessages(systemPrompt, m.Message, nil), "", func(chunk systemai.ChatStreamChunk) error {
+	err = s.systemSvc.ChatCompletionStream(ctx, uid, systemai.BuildChatMessages(systemPrompt, m.Message, nil), func(chunk systemai.ChatStreamChunk) error {
 		fullReply.WriteString(chunk.Content)
 		sendChunk := &antv1.ChatStreamChunk{Delta: chunk.Content, Done: chunk.Done}
 		return stream.Send(sendChunk)

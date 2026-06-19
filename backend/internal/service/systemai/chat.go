@@ -118,9 +118,8 @@ func (s *Service) ChatCompletion(
 	ctx context.Context,
 	userID uuid.UUID,
 	messages []ChatMessage,
-	modelHint string,
 ) (string, error) {
-	result, err := s.ChatCompletionWithUsage(ctx, userID, messages, modelHint)
+	result, err := s.ChatCompletionWithUsage(ctx, userID, messages)
 	if err != nil {
 		return "", err
 	}
@@ -132,7 +131,6 @@ func (s *Service) ChatCompletionWithUsage(
 	ctx context.Context,
 	userID uuid.UUID,
 	messages []ChatMessage,
-	modelHint string,
 ) (*ChatResult, error) {
 	// Pre-check wallet balance before making any API call.
 	if s.walletChecker != nil {
@@ -141,7 +139,7 @@ func (s *Service) ChatCompletionWithUsage(
 		}
 	}
 
-	providers, err := s.resolveAllChatProviders(ctx, userID, modelHint)
+	providers, err := s.resolveAllChatProviders(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +162,8 @@ func (s *Service) ChatCompletionWithUsage(
 }
 
 // tryChatCompletion attempts a single chat completion against one provider.
-// Returns content and usage.
+// Retries once on transient network errors AND once on transient HTTP statuses
+// (429/5xx) before giving up — so a single-provider user isn't immediately failed.
 func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, messages []ChatMessage) (string, *ChatUsage, error) {
 	endpoint := chatEndpoint(p.providerID, p.baseURL)
 	httpReq, err := doChatRequest(p.model, messages, false, endpoint, p.secret)
@@ -172,115 +171,75 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 		return "", nil, err
 	}
 	httpReq = httpReq.WithContext(ctx)
-
 	client := &http.Client{Timeout: chatTimeout}
-	var resp *http.Response
-	var doErr error
-	for attempt := 0; attempt <= 1; attempt++ {
+
+	const maxAttempts = 2
+	for attempt := 0; attempt < maxAttempts; attempt++ {
 		if attempt > 0 {
-			time.Sleep(1 * time.Second)
+			time.Sleep(time.Duration(attempt) * time.Second) // 0s, 1s backoff
 		}
-		resp, doErr = client.Do(httpReq)
-		if doErr == nil {
-			break
+		resp, doErr := client.Do(httpReq)
+		if doErr != nil {
+			if !isTransientChatErr(doErr) || attempt == maxAttempts-1 {
+				if isTransientChatErr(doErr) {
+					s.recordProviderFailure(ctx, p.userID, p.providerID)
+				}
+				return "", nil, &failoverErr{msg: fmt.Sprintf("chat completion http: %v", doErr), transient: isTransientChatErr(doErr)}
+			}
+			continue
 		}
-		if !isTransientChatErr(doErr) {
-			break
+		bodyBytes, _ := io.ReadAll(io.LimitReader(resp.Body, 64<<10))
+		resp.Body.Close()
+
+		if resp.StatusCode == http.StatusOK {
+			var cr ChatCompletionResponse
+			if err := json.Unmarshal(bodyBytes, &cr); err != nil {
+				return "", nil, fmt.Errorf("decode chat response: %w", err)
+			}
+			if cr.Error != nil {
+				s.recordProviderFailure(ctx, p.userID, p.providerID)
+				return "", nil, &failoverErr{msg: fmt.Sprintf("chat completion api error: %s", cr.Error.Message), transient: true}
+			}
+			if len(cr.Choices) == 0 {
+				return "", nil, fmt.Errorf("chat completion: empty choices")
+			}
+			s.recordProviderSuccess(ctx, p.userID, p.providerID)
+			if s.tokenRecorder != nil && cr.Usage != nil {
+				feature := "chat"
+				if v := ctx.Value(aiFeatureKey{}); v != nil {
+					feature = v.(string)
+				}
+				s.tokenRecorder(ctx, TokenRecord{
+					UserID: p.userID, ProviderID: p.providerID, Model: p.model,
+					Feature: feature, InputTokens: cr.Usage.PromptTokens, OutputTokens: cr.Usage.CompletionTokens,
+				})
+			}
+			return strings.TrimSpace(cr.Choices[0].Message.Content), cr.Usage, nil
 		}
-	}
-	if doErr != nil {
-		if isTransientChatErr(doErr) {
-		recordProviderFailure(p.userID, p.providerID)
-	}
-	return "", nil, &failoverErr{msg: fmt.Sprintf("chat completion http: %v", doErr), transient: isTransientChatErr(doErr)}
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		errBody := readAPIErrorBody(resp)
+
+		// Non-2xx: parse error, decide whether to retry or fail.
+		ae := readAPIErrorBodyFromBytes(bodyBytes)
 		transient := isFailoverStatus(resp.StatusCode)
-		// 400 with model-not-found is safe to failover; auth errors are not.
-		if resp.StatusCode == 400 && isAuthErrorBody(errBody) {
+		if resp.StatusCode == 400 && isAuthErrorBody(ae.Raw) {
 			transient = false
 		}
-		msg := fmt.Sprintf("chat completion: status %d", resp.StatusCode)
-		if errBody != "" {
-			msg += " (" + errBody + ")"
+		if !transient || attempt == maxAttempts-1 {
+			msg := fmt.Sprintf("[%s] chat completion: status %d", ae.Type, resp.StatusCode)
+			if ae.Message != "" {
+				msg += " (" + ae.Message + ")"
+			} else if ae.Raw != "" {
+				msg += " (" + ae.Raw + ")"
+			}
+			if transient {
+				s.recordProviderFailure(ctx, p.userID, p.providerID)
+			}
+			return "", nil, &failoverErr{msg: msg, transient: transient}
 		}
-		if transient {
-			recordProviderFailure(p.userID, p.providerID)
-		}
-		return "", nil, &failoverErr{msg: msg, transient: transient}
+		// Transient status — retry after backoff.
 	}
-
-	var cr ChatCompletionResponse
-	if err := json.NewDecoder(io.LimitReader(resp.Body, 2<<20)).Decode(&cr); err != nil {
-		return "", nil, fmt.Errorf("decode chat response: %w", err)
-	}
-	if cr.Error != nil {
-		recordProviderFailure(p.userID, p.providerID)
-	return "", nil, &failoverErr{msg: fmt.Sprintf("chat completion api error: %s", cr.Error.Message), transient: true}
-	}
-	if len(cr.Choices) == 0 {
-		return "", nil, fmt.Errorf("chat completion returned no choices")
-	}
-	recordProviderSuccess(p.userID, p.providerID)
-	// Record token usage if a recorder is configured.
-	if s.tokenRecorder != nil && cr.Usage != nil {
-		feature := "chat"
-		if v := ctx.Value(aiFeatureKey{}); v != nil {
-			feature = v.(string)
-		}
-		s.tokenRecorder(ctx, TokenRecord{
-			UserID: p.userID, ProviderID: p.providerID, Model: p.model,
-			Feature: feature, InputTokens: cr.Usage.PromptTokens, OutputTokens: cr.Usage.CompletionTokens,
-		})
-	}
-	return strings.TrimSpace(cr.Choices[0].Message.Content), cr.Usage, nil
+	return "", nil, fmt.Errorf("chat completion: exhausted retries")
 }
 
-// It prefers the provider marked as primary for "chat", then falls back to any enabled provider.
-func (s *Service) resolveChatProvider(ctx context.Context, userID uuid.UUID, modelHint string) (providerID, model, baseURL, secret string, err error) {
-	rows, err := s.List(ctx, userID)
-	if err != nil {
-		return "", "", "", "", fmt.Errorf("list AI providers: %w", err)
-	}
-	for _, preferPrimary := range []bool{true, false} {
-		for _, row := range rows {
-			if row == nil || !row.Enabled {
-				continue
-			}
-			if preferPrimary && !hasPrimaryChat(row.PrimaryFor) {
-				continue
-			}
-			sec, secErr := s.getCachedSecret(ctx, userID, row.ProviderID)
-			if secErr != nil || sec == "" {
-				continue
-			}
-			base := strings.TrimRight(strings.TrimSpace(row.BaseURL), "/")
-			if base == "" {
-				continue
-			}
-			m := strings.TrimSpace(row.DefaultModel)
-			if m == "" {
-				m = modelHint
-			}
-			if m == "" {
-				continue
-			}
-			return row.ProviderID, m, base, sec, nil
-		}
-	}
-	return "", "", "", "", fmt.Errorf("AI 未配置：请在 workspace 中点击 ⚙ 进入 AI Settings，选择一个厂商（如 DeepSeek）填写 API Key 和模型名称后启用")
-}
-
-func hasPrimaryChat(primaryFor []string) bool {
-	for _, p := range primaryFor {
-		if p == "chat" {
-			return true
-		}
-	}
-	return false
-}
 func isTransientChatErr(err error) bool {
 	if err == nil {
 		return false

@@ -79,6 +79,7 @@ type Service struct {
 	tokenRecorder       TokenRecorder
 	walletChecker       func(ctx context.Context, userID uuid.UUID) error // pre-check before API call
 	gatewayProviderRepo *repository.SystemAIProviderRepository // optional: fallback for AI Gateway
+	cbDB                cbExecutor                             // optional: PG pool for persistent circuit breaker
 }
 
 // SetUserRepo sets the user repository for AI primary model queries.
@@ -307,13 +308,43 @@ func FriendlyError(err error) string {
 		return msg
 	}
 	low := strings.ToLower(msg)
+	// Extract OpenAI error type from "[type] ..." prefix added by chat layer.
+	errType := ""
+	if strings.HasPrefix(msg, "[") {
+		if end := strings.IndexByte(msg, ']'); end > 1 {
+			errType = strings.ToLower(msg[1:end])
+		}
+	}
+
 	switch {
 	case errors.Is(err, errBaseURLEmpty):
 		return "请先填写 Base URL（模型服务地址）。"
+
+	// ── Error-type-based matching (robust, not string-matching on messages) ──
+	case errType == "insufficient_quota" || errType == "rate_limit_error" ||
+		strings.Contains(low, "status 429"):
+		return "配额受限或被限流：厂商已拒绝调用。请检查计费/速率限制或稍后重试。"
+	case errType == "authentication_error" || errType == "invalid_api_key" ||
+		strings.Contains(low, "status 401"):
+		return "鉴权失败：请检查 API Key 是否正确，或确认网关是否需要密钥。"
+	case errType == "invalid_request_error":
+		// Sub-classify by message keywords for actionable guidance.
+		switch {
+		case strings.Contains(low, "model") && (strings.Contains(low, "not found") || strings.Contains(low, "not exist") || strings.Contains(low, "unknown")):
+			return "模型名称不存在于当前供应商，请检查模型名称或切换到其他厂商。"
+		case strings.Contains(low, "context") || strings.Contains(low, "token") || strings.Contains(low, "too long"):
+			return "输入内容超出模型上下文限制，请缩短消息或清除对话历史后重试。"
+		case strings.Contains(low, "stream"):
+			return "当前模型不支持流式输出，正在自动切换非流式模式，请稍候重试。"
+		default:
+			return "请求参数有误：" + extractMessage(msg)
+		}
+	case errType == "server_error":
+		return "模型服务内部错误，请稍后重试或切换到其他厂商。"
+
+	// ── Legacy string-based fallbacks ──
 	case strings.Contains(low, "free-tier") || strings.Contains(low, "free tier"):
 		return "免费额度已耗尽：请在厂商控制台关闭「仅使用免费档」或更换付费 Key。"
-	case strings.Contains(low, "quota") || strings.Contains(low, "rate limit") || strings.Contains(low, "too many requests") || strings.Contains(low, "status 429"):
-		return "配额受限或被限流：厂商已拒绝调用。请检查计费/速率限制或稍后重试。"
 	case strings.Contains(low, "unauthorized"):
 		return "鉴权失败：请检查 API Key 是否正确，或确认网关是否需要密钥。"
 	case strings.Contains(low, "endpoint not found") || strings.Contains(low, "status 404"):
@@ -327,32 +358,22 @@ func FriendlyError(err error) string {
 	case strings.Contains(low, "no models"):
 		return "模型服务未返回可用模型，请检查账号权限或服务配置。"
 	case strings.Contains(low, "user location is not supported"):
-		// English only: frontend i18n maps this to user locale (zh-CN/zh-TW/ja/vi/…).
 		return "User location is not supported for the API use. The upstream may block this region (egress IP); try a supported network, proxy, or another provider."
 	case strings.Contains(low, "base url"):
 		return "Base URL 格式无效：请填写完整地址，例如 https://api.example.com/v1。"
-	// ── 400 sub-types (read from provider error body) ──
-	case strings.Contains(low, "status 400") && strings.Contains(low, "model not found") ||
-		strings.Contains(low, "status 400") && strings.Contains(low, "does not exist") ||
-		strings.Contains(low, "status 400") && strings.Contains(low, "invalid_model") ||
-		strings.Contains(low, "status 400") && strings.Contains(low, "no such model") ||
-		strings.Contains(low, "status 400") && strings.Contains(low, "unknown model"):
-		return "模型名称不存在于当前供应商，请检查模型名称或切换到其他厂商。"
-	case strings.Contains(low, "status 400") && strings.Contains(low, "context") ||
-		strings.Contains(low, "status 400") && strings.Contains(low, "too long") ||
-		strings.Contains(low, "status 400") && strings.Contains(low, "token limit") ||
-		strings.Contains(low, "status 400") && strings.Contains(low, "max tokens"):
-		return "输入内容超出模型上下文限制，请缩短消息或清除对话历史后重试。"
-	case strings.Contains(low, "status 400") && strings.Contains(low, "invalid api key") ||
-		strings.Contains(low, "status 400") && strings.Contains(low, "incorrect api key"):
-		return "API Key 格式无效：请检查密钥是否正确，或确认已启用该供应商。"
-	case strings.Contains(low, "status 400") && strings.Contains(low, "stream") ||
-		strings.Contains(low, "status 400") && strings.Contains(low, "does not support"):
-		return "当前模型不支持流式输出，请在设置中更换模型或关闭流式传输。"
+	case strings.Contains(low, "api key") && (strings.Contains(low, "expired") || strings.Contains(low, "revoked") || strings.Contains(low, "suspended") || strings.Contains(low, "disabled") || strings.Contains(low, "billing") || strings.Contains(low, "forbidden")):
+		return "API Key 已失效（过期/被撤销/欠费），请更新密钥或联系供应商。"
 	case strings.Contains(low, "status 400"):
-		// Generic 400 — try to extract the provider error message for context.
 		return "模型服务拒绝了请求，可能是参数不兼容或模型暂时不可用。详情：" + msg
 	default:
 		return "拉取模型失败：" + msg
 	}
+}
+
+// extractMessage strips the error type prefix and returns the human-readable part.
+func extractMessage(msg string) string {
+	if idx := strings.IndexByte(msg, ']'); idx > 0 && idx < len(msg)-1 {
+		return strings.TrimSpace(msg[idx+1:])
+	}
+	return msg
 }

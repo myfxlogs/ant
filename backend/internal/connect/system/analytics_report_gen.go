@@ -66,7 +66,7 @@ func (s *AnalyticsServer) GenerateReport(ctx context.Context, req *connect.Reque
 	}
 
 	var fullText strings.Builder
-	err = s.aiSvc.ChatCompletionStream(ctx, uuid.MustParse(userID), messages, "", func(chunk systemai.ChatStreamChunk) error {
+	err = s.aiSvc.ChatCompletionStream(ctx, uuid.MustParse(userID), messages, func(chunk systemai.ChatStreamChunk) error {
 		fullText.WriteString(chunk.Content)
 		phase := "analyzing"
 		if chunk.Done {

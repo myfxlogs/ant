@@ -24,5 +24,5 @@ func (a *systemAIAdapter) ChatCompletion(ctx context.Context, systemPrompt, user
 		{Role: "system", Content: systemPrompt},
 		{Role: "user", Content: userPrompt},
 	}
-	return a.svc.ChatCompletion(ctx, a.userID, msgs, "")
+	return a.svc.ChatCompletion(ctx, a.userID, msgs)
 }

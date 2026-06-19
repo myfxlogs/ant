@@ -38,12 +38,12 @@ func NewStrategyGenServer(
 	log *zap.Logger,
 ) *StrategyGenServer {
 	// Build LLM-driven intent analyzer from the system AI service
-	analyzer := ai.NewIntentAnalyzer(func(ctx context.Context, userID uuid.UUID, messages []ai.ChatMessage, model string) (string, error) {
+	analyzer := ai.NewIntentAnalyzer(func(ctx context.Context, userID uuid.UUID, messages []ai.ChatMessage, _ string) (string, error) {
 		sysMsgs := make([]systemai.ChatMessage, len(messages))
 		for i, m := range messages {
 			sysMsgs[i] = systemai.ChatMessage{Role: m.Role, Content: m.Content}
 		}
-		return systemSvc.ChatCompletion(ctx, userID, sysMsgs, model)
+		return systemSvc.ChatCompletion(ctx, userID, sysMsgs)
 	})
 	return &StrategyGenServer{
 		systemSvc:     systemSvc,
@@ -167,7 +167,7 @@ func (s *StrategyGenServer) streamLLMCode(ctx context.Context, userID uuid.UUID,
 	var codeBuf strings.Builder
 	err := s.systemSvc.ChatCompletionStream(ctx, userID,
 		[]systemai.ChatMessage{{Role: "system", Content: sysPrompt}, {Role: "user", Content: userPrompt}},
-		"", func(chunk systemai.ChatStreamChunk) error {
+		func(chunk systemai.ChatStreamChunk) error {
 			if err := stream.Send(&antv1.GenerateStrategyChunk{Phase: "generating", Delta: chunk.Content}); err != nil {
 				return err
 			}
@@ -247,7 +247,7 @@ func (s *StrategyGenServer) handleFeedback(
 	var fullBuf strings.Builder
 	err := s.systemSvc.ChatCompletionStream(ctx, userID,
 		[]systemai.ChatMessage{{Role: "system", Content: sysPrompt}, {Role: "user", Content: userPrompt}},
-		"", func(chunk systemai.ChatStreamChunk) error {
+		func(chunk systemai.ChatStreamChunk) error {
 			fullBuf.WriteString(chunk.Content)
 			sections := parseSections(fullBuf.String())
 			return stream.Send(&antv1.GenerateStrategyChunk{

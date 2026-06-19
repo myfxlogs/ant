@@ -113,7 +113,7 @@ func (s *AssetAnalysisServer) AnalyzeAsset(
 		sysPrompt := buildSystemPrompt(lang)
 		messages := systemai.BuildChatMessages(sysPrompt, prompt, nil)
 
-		recommendation, aiErr := s.aiSvc.ChatCompletion(ctx, userID, messages, "")
+		recommendation, aiErr := s.aiSvc.ChatCompletion(ctx, userID, messages)
 		if aiErr != nil {
 			s.log.Warn("analysis: AI recommendation failed",
 				zap.String("symbol", symbol),

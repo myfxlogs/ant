@@ -16,7 +16,6 @@ func (s *Service) ChatCompletionStream(
 	ctx context.Context,
 	userID uuid.UUID,
 	messages []ChatMessage,
-	modelHint string,
 	onChunk func(chunk ChatStreamChunk) error,
 ) error {
 	// Pre-check wallet balance before making any API call.
@@ -26,7 +25,7 @@ func (s *Service) ChatCompletionStream(
 		}
 	}
 
-	providers, err := s.resolveAllChatProviders(ctx, userID, modelHint)
+	providers, err := s.resolveAllChatProviders(ctx, userID)
 	if err != nil {
 		return err
 	}
@@ -59,31 +58,34 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 	resp, err := client.Do(httpReq)
 	if err != nil {
 		if isTransientChatErr(err) {
-			recordProviderFailure(p.userID, p.providerID)
+			s.recordProviderFailure(ctx, p.userID, p.providerID)
 		}
 		return &failoverErr{msg: fmt.Sprintf("chat completion stream http: %v", err), transient: isTransientChatErr(err)}
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		errBody := readAPIErrorBody(resp)
+		ae := readAPIErrorBody(resp)
 		transient := isFailoverStatus(resp.StatusCode)
-		// 400 with model-not-found is safe to failover; auth errors are not.
-		if resp.StatusCode == 400 && isAuthErrorBody(errBody) {
+		if resp.StatusCode == 400 && isAuthErrorBody(ae.Raw) {
 			transient = false
 		}
-		msg := fmt.Sprintf("chat completion stream: status %d", resp.StatusCode)
-		if errBody != "" {
-			msg += " (" + errBody + ")"
+		msg := fmt.Sprintf("[%s] chat completion stream: status %d", ae.Type, resp.StatusCode)
+		if ae.Message != "" {
+			msg += " (" + ae.Message + ")"
+		} else if ae.Raw != "" {
+			msg += " (" + ae.Raw + ")"
 		}
-		// Auto-fallback: if streaming is not supported, retry same provider
-		// without streaming. Transparent to the caller — the frontend still
-		// receives chunks via onChunk (as a single full-content chunk).
-		if resp.StatusCode == 400 && isStreamingNotSupportedError(errBody) {
+		// PRIORITY: fallbackNonStream fires BEFORE failover for 400 errors.
+		//  1. 400 + streaming → fallbackNonStream (same provider, no streaming)
+		//  2. fallbackNonStream fails → failover to next provider (if transient)
+		//  3. non-transient → stop, return FriendlyError
+		// Only auth errors skip the fallback (retrying non-streaming won't fix a bad key).
+		if resp.StatusCode == 400 && !isAuthErrorBody(ae.Raw) {
 			return s.fallbackNonStream(ctx, p, messages, onChunk)
 		}
 		if transient {
-			recordProviderFailure(p.userID, p.providerID)
+			s.recordProviderFailure(ctx, p.userID, p.providerID)
 		}
 		return &failoverErr{msg: msg, transient: transient}
 	}

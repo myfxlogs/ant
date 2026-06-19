@@ -54,7 +54,7 @@ func autoFixCode(
 		{Role: "system", Content: sysPrompt},
 		{Role: "user", Content: userPrompt},
 	}
-	resp, err := aiSvc.ChatCompletion(ctx, run.UserID, msgs, "")
+	resp, err := aiSvc.ChatCompletion(ctx, run.UserID, msgs)
 	if err != nil {
 		log.Warn("auto-fix: LLM call failed",
 			zap.String("run_id", run.ID.String()),

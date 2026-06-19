@@ -20,7 +20,8 @@ type SystemAIProvider struct {
 	BaseURL         string    `db:"base_url"`
 	APIKeyEncrypted []byte    `db:"api_key_encrypted"`
 	Enabled         bool      `db:"enabled"`
-	Models          []string  `db:"-"` // populated from ai_models
+	DefaultModel    string    `db:"default_model"`
+	Models          []string  `db:"-"` // populated from ai_models join
 	CreatedAt       time.Time `db:"created_at"`
 	UpdatedAt       time.Time `db:"updated_at"`
 }
@@ -78,7 +79,9 @@ func NewSystemAIProviderRepository(db *pgxpool.Pool) *SystemAIProviderRepository
 
 func (r *SystemAIProviderRepository) ListEnabled(ctx context.Context) ([]*SystemAIProvider, error) {
 	rows, err := r.db.Query(ctx,
-		`SELECT p.id, p.provider_id, p.name, p.base_url, p.api_key_encrypted, p.enabled, p.created_at, p.updated_at,
+		`SELECT p.id, p.provider_id, p.name, p.base_url, p.api_key_encrypted, p.enabled,
+		        COALESCE(p.default_model, '') AS default_model,
+		        p.created_at, p.updated_at,
 		        COALESCE(array_agg(m.model_name ORDER BY m.sort_order) FILTER (WHERE m.enabled), '{}') AS models
 		 FROM system_ai_providers p
 		 LEFT JOIN ai_models m ON m.provider_id = p.id
@@ -93,7 +96,7 @@ func (r *SystemAIProviderRepository) ListEnabled(ctx context.Context) ([]*System
 	for rows.Next() {
 		var p SystemAIProvider
 		var models []string
-		if err := rows.Scan(&p.ID, &p.ProviderID, &p.Name, &p.BaseURL, &p.APIKeyEncrypted, &p.Enabled, &p.CreatedAt, &p.UpdatedAt, &models); err != nil {
+		if err := rows.Scan(&p.ID, &p.ProviderID, &p.Name, &p.BaseURL, &p.APIKeyEncrypted, &p.Enabled, &p.DefaultModel, &p.CreatedAt, &p.UpdatedAt, &models); err != nil {
 			return nil, err
 		}
 		p.Models = models

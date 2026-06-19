@@ -133,6 +133,7 @@ func registerHandlers(
 	}
 	aiSvc := systemai.NewService(aiRepo, aiBox)
 	aiSvc.SetUserRepo(userRepo)
+	aiSvc.SetCircuitBreakerDB(&pgxCB{p: pool}) // persistent, shared across instances
 	agentDefRepo := repository.NewAIAgentDefinitionRepository(pool)
 	aiServer := ai.NewAIServer(aiSvc, convRepo, session, log)
 	aiServer.SetAgentDefRepo(agentDefRepo)
