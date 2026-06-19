@@ -113,7 +113,7 @@ export default function AssetAnalysisPage() {
         {t(TITLE_KEY)}
       </Title>
       <Text type="secondary" style={{ display: 'block', marginBottom: 24 }}>
-        {t(SUBTITLE_KEY)}
+        {t(SUBTRADING_TITLE_KEY)}
       </Text>
 
       {/* Account + Symbol selectors — both use the same column width for visual alignment. */}

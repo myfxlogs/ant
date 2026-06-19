@@ -76,7 +76,7 @@ export function HourlyDailyChart({ hourlyData, dailyPnLData, currency }: Props) 
     <div className="rounded-2xl p-5 mb-6" style={{ background: 'var(--color-bg-card)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)' }}>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
-          {t(ANALYTICS_HOURLY_TITLE_KEY)} / {t(ANALYTICS_DAILY_PN_L_TITLE_KEY)}
+          {t(ANALYTICS_HOURLY_TRADING_TITLE_KEY)} / {t(ANALYTICS_DAILY_PN_L_TRADING_TITLE_KEY)}
         </h2>
         <div className="inline-flex rounded-lg p-1" style={{ background: 'var(--color-bg-secondary)' }}>
           {(['hourly', 'daily'] as const).map((tab) => (
@@ -98,7 +98,7 @@ export function HourlyDailyChart({ hourlyData, dailyPnLData, currency }: Props) 
             <div>{t(ANALYTICS_TIME_DETAIL_LOTS_KEY)}: <span className="font-semibold">{Number(selectedTimePoint?.lots || 0).toFixed(2)}</span></div>
             <div>{t(ANALYTICS_TIME_DETAIL_TRADES_KEY)}: <span className="font-semibold">{Number(selectedTimePoint?.trades || 0)}</span></div>
             <div>{t(ANALYTICS_TIME_DETAIL_PROFIT_AMOUNT_KEY)}: <span className="font-semibold">{formatMoney(Number(selectedTimePoint?.profit || 0))}</span></div>
-            <div>{t(ANALYTICS_TIME_DETAIL_BALANCE_KEY)}: <span className="font-semibold">{formatMoney(Number(selectedTimePoint?.balance || 0))}</span></div>
+            <div>{t(ANALYTICS_TIME_DETAIL_TRADING_BALANCE_KEY)}: <span className="font-semibold">{formatMoney(Number(selectedTimePoint?.balance || 0))}</span></div>
             <div>{t(ANALYTICS_TIME_DETAIL_PROFIT_FACTOR_KEY)}: <span className="font-semibold">{Number(selectedTimePoint?.profitFactor || 0).toFixed(2)}</span></div>
             <div>{t(ANALYTICS_TIME_DETAIL_MAX_FLOATING_LOSS_AMOUNT_KEY)}: <span className="font-semibold">{formatMoney(Number(selectedTimePoint?.maxFloatingLossAmount || 0))}</span></div>
             <div>{t(ANALYTICS_TIME_DETAIL_MAX_FLOATING_LOSS_RATIO_KEY)}: <span className="font-semibold">{formatRatio(Number(selectedTimePoint?.maxFloatingLossRatio || 0))}</span></div>

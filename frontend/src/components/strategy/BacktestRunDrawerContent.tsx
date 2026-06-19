@@ -57,7 +57,7 @@ export default function BacktestRunDrawerContent({ watched, statusText, trades, 
             <Descriptions.Item label={t(FIELDS_SHARPE_KEY)}>{isCompleted ? watched.metrics?.sharpeRatio ?? '-' : '-'}</Descriptions.Item>
           </Descriptions>
           <div className="mt-4" />
-          <Typography.Text strong>{t(TRADES_TITLE_KEY)}</Typography.Text>
+          <Typography.Text strong>{t(TRADES_TRADING_TITLE_KEY)}</Typography.Text>
           {summary && <div className="text-xs mt-1 mb-2" style={{ color: 'var(--color-text-muted)' }}>{summary}</div>}
           {tradesError ? (
             <Alert type="error" title={tradesError} />

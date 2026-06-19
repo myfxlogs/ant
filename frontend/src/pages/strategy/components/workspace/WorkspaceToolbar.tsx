@@ -85,7 +85,7 @@ export default function WorkspaceToolbar({
           <Select size="small" style={{ minWidth: 120, width: 220, maxWidth: '36vw' }}
             value={accountId || undefined} onChange={onAccountChange} disabled={busy}
             onDropdownVisibleChange={maybeCloseCode}
-            placeholder={t(SELECT_ACCOUNT_KEY)} showSearch optionFilterProp="label"
+            placeholder={t(SELECT_TRADING_ACCOUNT_KEY)} showSearch optionFilterProp="label"
             notFoundContent={t(NO_ACCOUNTS_KEY)}
             options={(accounts || []).map((a) => ({ value: a.id, label: `${a.brokerServer} · ${a.login}` }))} />
           <SymbolPicker accountId={accountId} value={symbol} onChange={onSymbolChange}

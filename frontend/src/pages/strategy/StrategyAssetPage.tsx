@@ -83,7 +83,7 @@ export default function StrategyAssetPage() {
     <div className="space-y-4">
       <div>
         <Title level={3}>{t(TITLE_KEY)}</Title>
-        <Text type="secondary">{t(SUBTITLE_KEY)}</Text>
+        <Text type="secondary">{t(SUBTRADING_TITLE_KEY)}</Text>
       </div>
       <Card title={t(SUBMIT_ASSET_KEY)}>
         <Form form={form} layout="vertical" onFinish={submit} initialValues={{ visibility: 'private' }}>

@@ -198,9 +198,9 @@ export default function AIChatPanel({ code, onApply, symbol, timeframe, initialP
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
         <ThunderboltOutlined style={{ color: '#faad14' }} />
-        <Typography.Text strong style={{ fontSize: 13 }}>{t(AI_CHAT_TITLE_KEY)}</Typography.Text>
+        <Typography.Text strong style={{ fontSize: 13 }}>{t(AI_CHAT_TRADING_TITLE_KEY)}</Typography.Text>
         <Space size={4} wrap style={{ marginLeft: 8 }}>
-          {!code.trim() && !backtestMetrics && <Tag color="blue">{t(GEN_TITLE_KEY, '策略生成')}</Tag>}
+          {!code.trim() && !backtestMetrics && <Tag color="blue">{t(GEN_TRADING_TITLE_KEY, '策略生成')}</Tag>}
           {!!code.trim() && !backtestMetrics && <Tag color="green">{t(REVISE_KEY)}</Tag>}
           {backtestMetrics && <Tag color="purple">{t(FEEDBACK_KEY)}</Tag>}
           {isBusy && <Tag icon={<LoadingOutlined />} color="processing">{t(STREAMING_KEY)}</Tag>}

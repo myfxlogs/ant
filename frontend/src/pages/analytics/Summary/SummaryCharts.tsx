@@ -60,7 +60,7 @@ function SummaryCharts({
             <YAxis stroke="var(--color-text-muted)" fontSize={12} />
             <Tooltip
               contentStyle={{ background: 'var(--color-bg-card)', border: '1px solid rgba(0, 0, 0, 0.1)', borderRadius: '8px' }}
-              formatter={(value: number | undefined) => [`$${(value || 0).toFixed(2)}`, t(SUMMARY_LABELS_PNL_KEY)]}
+              formatter={(value: number | undefined) => [`$${(value || 0).toFixed(2)}`, t(SUMMARY_LABELS_TRADING_PNL_KEY)]}
             />
             <Bar dataKey="profit" fill="#D4AF37" radius={[4, 4, 0, 0]} />
           </BarChart>

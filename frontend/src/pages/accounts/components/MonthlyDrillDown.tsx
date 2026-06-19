@@ -60,9 +60,9 @@ const RiskRewardPanel = React.memo(({ risks, t }: {
   if (!chartData.length) {
     return (
       <div style={sectionStyle}>
-        <h4 style={titleStyle}>{t(ANALYTICS_MONTHLY_DETAIL_RISK_REWARD_TITLE_KEY)}</h4>
+        <h4 style={titleStyle}>{t(ANALYTICS_MONTHLY_DETAIL_RISK_REWARD_TRADING_TITLE_KEY)}</h4>
         <div className="flex items-center justify-center h-[100px]" style={{ color: 'var(--color-text-muted)', fontSize: 11 }}>
-          {t(ANALYTICS_EMPTY_MONTHLY_PROFIT_KEY)}
+          {t(ANALYTICS_EMPTY_MONTHLY_TRADING_PROFIT_KEY)}
         </div>
       </div>
     );
@@ -70,7 +70,7 @@ const RiskRewardPanel = React.memo(({ risks, t }: {
 
   return (
     <div style={sectionStyle}>
-      <h4 style={titleStyle}>{t(ANALYTICS_MONTHLY_DETAIL_RISK_REWARD_TITLE_KEY)}</h4>
+      <h4 style={titleStyle}>{t(ANALYTICS_MONTHLY_DETAIL_RISK_REWARD_TRADING_TITLE_KEY)}</h4>
       <ResponsiveContainer width="100%" height={Math.max(chartData.length * 36, 140)}>
         <BarChart layout="vertical" data={chartData} margin={{ top: 0, right: 28, bottom: 0, left: 0 }} barCategoryGap="8%">
           <CartesianGrid strokeDasharray="2 2" stroke="var(--color-border)" horizontal={false} />
@@ -125,9 +125,9 @@ const PopularityPanel = React.memo(({ popularity, t }: {
   if (!pieData.length) {
     return (
       <div style={sectionStyle}>
-        <h4 style={titleStyle}>{t(ANALYTICS_MONTHLY_DETAIL_POPULARITY_TITLE_KEY)}</h4>
+        <h4 style={titleStyle}>{t(ANALYTICS_MONTHLY_DETAIL_POPULARITY_TRADING_TITLE_KEY)}</h4>
         <div className="flex items-center justify-center h-[140px]" style={{ color: 'var(--color-text-muted)', fontSize: 11 }}>
-          {t(ANALYTICS_EMPTY_MONTHLY_PROFIT_KEY)}
+          {t(ANALYTICS_EMPTY_MONTHLY_TRADING_PROFIT_KEY)}
         </div>
       </div>
     );
@@ -135,7 +135,7 @@ const PopularityPanel = React.memo(({ popularity, t }: {
 
   return (
     <div style={sectionStyle}>
-      <h4 style={titleStyle}>{t(ANALYTICS_MONTHLY_DETAIL_POPULARITY_TITLE_KEY)}</h4>
+      <h4 style={titleStyle}>{t(ANALYTICS_MONTHLY_DETAIL_POPULARITY_TRADING_TITLE_KEY)}</h4>
       <ResponsiveContainer width="100%" height={pieHeight}>
         <PieChart>
           <Pie
@@ -183,9 +183,9 @@ const HoldingSplitPanel = React.memo(({ holdingSplit, t }: {
   if (!chartData.length) {
     return (
       <div style={sectionStyle}>
-        <h4 style={titleStyle}>{t(ANALYTICS_MONTHLY_DETAIL_HOLDING_TITLE_KEY)}</h4>
+        <h4 style={titleStyle}>{t(ANALYTICS_MONTHLY_DETAIL_HOLDING_TRADING_TITLE_KEY)}</h4>
         <div className="flex items-center justify-center h-[100px]" style={{ color: 'var(--color-text-muted)', fontSize: 11 }}>
-          {t(ANALYTICS_EMPTY_MONTHLY_PROFIT_KEY)}
+          {t(ANALYTICS_EMPTY_MONTHLY_TRADING_PROFIT_KEY)}
         </div>
       </div>
     );
@@ -207,7 +207,7 @@ const HoldingSplitPanel = React.memo(({ holdingSplit, t }: {
 
   return (
     <div style={sectionStyle}>
-      <h4 style={titleStyle}>{t(ANALYTICS_MONTHLY_DETAIL_HOLDING_TITLE_KEY)}</h4>
+      <h4 style={titleStyle}>{t(ANALYTICS_MONTHLY_DETAIL_HOLDING_TRADING_TITLE_KEY)}</h4>
       <ResponsiveContainer width="100%" height={Math.max(chartData.length * 44, 150)}>
         <BarChart layout="vertical" data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
           barGap={1} barCategoryGap="6%">

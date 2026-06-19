@@ -66,8 +66,8 @@ export default function AccountDetail() {
     {
       key: 'toggle',
       label: currentAccount?.isDisabled
-        ? t(DETAIL_ACTIONS_ENABLE_ACCOUNT_KEY)
-        : t(DETAIL_ACTIONS_DISABLE_ACCOUNT_KEY),
+        ? t(DETAIL_ACTIONS_ENABLE_TRADING_ACCOUNT_KEY)
+        : t(DETAIL_ACTIONS_DISABLE_TRADING_ACCOUNT_KEY),
       icon: togglePending ? <Spin size="small" />
         : currentAccount?.isDisabled ? <CaretRightOutlined /> : <PauseCircleOutlined />,
       onClick: handleToggleStatus,
@@ -75,7 +75,7 @@ export default function AccountDetail() {
     },
     {
       key: 'delete',
-      label: t(DETAIL_ACTIONS_DELETE_ACCOUNT_KEY),
+      label: t(DETAIL_ACTIONS_DELETE_TRADING_ACCOUNT_KEY),
       icon: <DeleteOutlined style={{ color: 'var(--color-danger)' }} />,
       onClick: () => setDeleteModalOpen(true),
       danger: true,

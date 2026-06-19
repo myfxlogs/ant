@@ -51,12 +51,12 @@ export default function EditAccountModal({ open, account, onClose }: Props) {
   };
 
   return (
-    <Modal title={t(EDIT_TITLE_KEY)} open={open} onCancel={onClose} footer={null} width={480}>
+    <Modal title={t(EDIT_TRADING_TITLE_KEY)} open={open} onCancel={onClose} footer={null} width={480}>
       {account && (
         <div className="space-y-4">
           <div className="p-4 rounded-xl" style={{ background: 'var(--color-bg-secondary)' }}>
             <div className="flex justify-between mb-2">
-              <span style={{ color: 'var(--color-text-muted)' }}>{t(EDIT_FIELDS_TRADING_ACCOUNT_KEY)}</span>
+              <span style={{ color: 'var(--color-text-muted)' }}>{t(EDIT_FIELDS_TRADING_TRADING_ACCOUNT_KEY)}</span>
               <span style={{ color: 'var(--color-text)' }}>{account.login}</span>
             </div>
             <div className="flex justify-between">

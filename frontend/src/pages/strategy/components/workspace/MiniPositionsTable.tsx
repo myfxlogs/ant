@@ -28,7 +28,7 @@ export default function MiniPositionsTable({ positions, onClosePosition }: Props
           padding: '6px 14px', cursor: 'pointer', userSelect: 'none',
           background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)' }}>
         <span style={{ fontSize: 11, fontWeight: 700, color: '#262626' }}>
-          {t(OPEN_POSITIONS_KEY, { count: positions.length })}
+          {t(OPEN_TRADING_POSITIONS_KEY, { count: positions.length })}
         </span>
         <span style={{ fontSize: 10, color: '#8c8c8c' }}>{expanded ? <CaretUpOutlined /> : <CaretDownOutlined />}</span>
       </div>

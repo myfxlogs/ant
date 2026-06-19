@@ -44,7 +44,7 @@ function EconomicCalendarSection({ calendarEvents, keyIndicators }: Props) {
           )}
         </Col>
         <Col xs={24} md={10}>
-          <div className="mb-2 text-sm font-medium" style={{ color: 'var(--color-text)' }}>{t(SUMMARY_ECONOMIC_CALENDAR_KEY_INDICATORS_TITLE_KEY) || 'Key macro indicators'}</div>
+          <div className="mb-2 text-sm font-medium" style={{ color: 'var(--color-text)' }}>{t(SUMMARY_ECONOMIC_CALENDAR_KEY_INDICATORS_TRADING_TITLE_KEY) || 'Key macro indicators'}</div>
           {keyIndicators.length === 0 ? (
             <div style={{ color: 'var(--color-text-muted)' }}>{t(SUMMARY_ECONOMIC_CALENDAR_EMPTY_KEY) || 'No economic events available.'}</div>
           ) : (

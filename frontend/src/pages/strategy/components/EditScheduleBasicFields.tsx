@@ -48,7 +48,7 @@ export default function EditScheduleBasicFields({
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item label={t(SCHEDULE_LAUNCH_FORM_ACCOUNT_KEY, '交易账户')} name="accountId"
+            <Form.Item label={t(SCHEDULE_LAUNCH_FORM_TRADING_ACCOUNT_KEY, '交易账户')} name="accountId"
               rules={[{ required: true, message: t('common.required', '必填') }]}>
               <Select showSearch optionFilterProp="label" options={accountOptions} />
             </Form.Item>
@@ -63,7 +63,7 @@ export default function EditScheduleBasicFields({
 
       <Row gutter={12}>
         <Col span={12}>
-          <Form.Item label={t(SCHEDULE_LAUNCH_FORM_SYMBOL_KEY, '交易品种')} name="symbol"
+          <Form.Item label={t(SCHEDULE_LAUNCH_FORM_TRADING_SYMBOL_KEY, '交易品种')} name="symbol"
             rules={[{ required: true, message: t('common.required', '必填') }]}>
             <Select showSearch allowClear loading={symbolsLoading} options={symbols}
               optionFilterProp="label" placeholder={symbolPlaceholder} disabled={symbolDisabled} />
@@ -77,7 +77,7 @@ export default function EditScheduleBasicFields({
         </Col>
       </Row>
 
-      <Form.Item label={t(SCHEDULE_LAUNCH_FORM_SCHEDULE_TYPE_KEY, '调度类型')} name="scheduleType"
+      <Form.Item label={t(SCHEDULE_LAUNCH_FORM_SCHEDULE_TRADING_TYPE_KEY, '调度类型')} name="scheduleType"
         rules={[{ required: true }]}>
         <Select options={[
           { value: 'interval', label: t(SCHEDULE_LAUNCH_FORM_SCHEDULE_TYPES_INTERVAL_KEY, '固定间隔') },

@@ -2,1888 +2,1888 @@
 // Source: proto/ant/v1/i18n/base.proto
 
 /** admin.config.aiProviderCatalog */
-export const ADMIN_CONFIG_AI_PROVIDER_CATALOG_KEY = '__root__.admin.config.aiProviderCatalog' as const;
+export const ADMIN_CONFIG_AI_PROVIDER_CATALOG_KEY = 'admin.config.aiProviderCatalog' as const;
 
 /** admin.config.baseUrlLabel */
-export const ADMIN_CONFIG_BASE_URL_LABEL_KEY = '__root__.admin.config.baseUrlLabel' as const;
+export const ADMIN_CONFIG_BASE_URL_LABEL_KEY = 'admin.config.baseUrlLabel' as const;
 
 /** admin.config.configItem */
-export const ADMIN_CONFIG_CONFIG_ITEM_KEY = '__root__.admin.config.configItem' as const;
+export const ADMIN_CONFIG_CONFIG_ITEM_KEY = 'admin.config.configItem' as const;
 
 /** admin.config.description */
-export const ADMIN_CONFIG_DESCRIPTION_KEY = '__root__.admin.config.description' as const;
+export const ADMIN_CONFIG_DESCRIPTION_KEY = 'admin.config.description' as const;
 
 /** admin.config.econAIConfig */
-export const ADMIN_CONFIG_ECON_A_I_CONFIG_KEY = '__root__.admin.config.econAIConfig' as const;
+export const ADMIN_CONFIG_ECON_A_I_CONFIG_KEY = 'admin.config.econAIConfig' as const;
 
 /** admin.config.editConfig */
-export const ADMIN_CONFIG_EDIT_CONFIG_KEY = '__root__.admin.config.editConfig' as const;
+export const ADMIN_CONFIG_EDIT_CONFIG_KEY = 'admin.config.editConfig' as const;
 
 /** admin.config.enableToggle */
-export const ADMIN_CONFIG_ENABLE_TOGGLE_KEY = '__root__.admin.config.enableToggle' as const;
+export const ADMIN_CONFIG_ENABLE_TOGGLE_KEY = 'admin.config.enableToggle' as const;
 
 /** admin.config.fillTemplate */
-export const ADMIN_CONFIG_FILL_TEMPLATE_KEY = '__root__.admin.config.fillTemplate' as const;
+export const ADMIN_CONFIG_FILL_TEMPLATE_KEY = 'admin.config.fillTemplate' as const;
 
 /** admin.config.formatJson */
-export const ADMIN_CONFIG_FORMAT_JSON_KEY = '__root__.admin.config.formatJson' as const;
+export const ADMIN_CONFIG_FORMAT_JSON_KEY = 'admin.config.formatJson' as const;
 
 /** admin.config.maxAccountsPerUser */
-export const ADMIN_CONFIG_MAX_ACCOUNTS_PER_USER_KEY = '__root__.admin.config.maxAccountsPerUser' as const;
+export const ADMIN_CONFIG_MAX_ACCOUNTS_PER_USER_KEY = 'admin.config.maxAccountsPerUser' as const;
 
 /** admin.config.messages.disabled */
-export const ADMIN_CONFIG_MESSAGES_DISABLED_KEY = '__root__.admin.config.messages.disabled' as const;
+export const ADMIN_CONFIG_MESSAGES_DISABLED_KEY = 'admin.config.messages.disabled' as const;
 
 /** admin.config.messages.enabled */
-export const ADMIN_CONFIG_MESSAGES_ENABLED_KEY = '__root__.admin.config.messages.enabled' as const;
+export const ADMIN_CONFIG_MESSAGES_ENABLED_KEY = 'admin.config.messages.enabled' as const;
 
 /** admin.config.messages.loadFailed */
-export const ADMIN_CONFIG_MESSAGES_LOAD_FAILED_KEY = '__root__.admin.config.messages.loadFailed' as const;
+export const ADMIN_CONFIG_MESSAGES_LOAD_FAILED_KEY = 'admin.config.messages.loadFailed' as const;
 
 /** admin.config.messages.operationFailed */
-export const ADMIN_CONFIG_MESSAGES_OPERATION_FAILED_KEY = '__root__.admin.config.messages.operationFailed' as const;
+export const ADMIN_CONFIG_MESSAGES_OPERATION_FAILED_KEY = 'admin.config.messages.operationFailed' as const;
 
 /** admin.config.messages.updateFailed */
-export const ADMIN_CONFIG_MESSAGES_UPDATE_FAILED_KEY = '__root__.admin.config.messages.updateFailed' as const;
+export const ADMIN_CONFIG_MESSAGES_UPDATE_FAILED_KEY = 'admin.config.messages.updateFailed' as const;
 
 /** admin.config.messages.updated */
-export const ADMIN_CONFIG_MESSAGES_UPDATED_KEY = '__root__.admin.config.messages.updated' as const;
+export const ADMIN_CONFIG_MESSAGES_UPDATED_KEY = 'admin.config.messages.updated' as const;
 
 /** admin.config.modelName */
-export const ADMIN_CONFIG_MODEL_NAME_KEY = '__root__.admin.config.modelName' as const;
+export const ADMIN_CONFIG_MODEL_NAME_KEY = 'admin.config.modelName' as const;
 
 /** admin.config.off */
-export const ADMIN_CONFIG_OFF_KEY = '__root__.admin.config.off' as const;
+export const ADMIN_CONFIG_OFF_KEY = 'admin.config.off' as const;
 
 /** admin.config.on */
-export const ADMIN_CONFIG_ON_KEY = '__root__.admin.config.on' as const;
+export const ADMIN_CONFIG_ON_KEY = 'admin.config.on' as const;
 
 /** admin.config.placeholders.apiKey */
-export const ADMIN_CONFIG_PLACEHOLDERS_API_KEY_KEY = '__root__.admin.config.placeholders.apiKey' as const;
+export const ADMIN_CONFIG_PLACEHOLDERS_API_KEY_KEY = 'admin.config.placeholders.apiKey' as const;
 
 /** admin.config.placeholders.baseUrl */
-export const ADMIN_CONFIG_PLACEHOLDERS_BASE_URL_KEY = '__root__.admin.config.placeholders.baseUrl' as const;
+export const ADMIN_CONFIG_PLACEHOLDERS_BASE_URL_KEY = 'admin.config.placeholders.baseUrl' as const;
 
 /** admin.config.placeholders.configValue */
-export const ADMIN_CONFIG_PLACEHOLDERS_CONFIG_VALUE_KEY = '__root__.admin.config.placeholders.configValue' as const;
+export const ADMIN_CONFIG_PLACEHOLDERS_CONFIG_VALUE_KEY = 'admin.config.placeholders.configValue' as const;
 
 /** admin.config.placeholders.description */
-export const ADMIN_CONFIG_PLACEHOLDERS_DESCRIPTION_KEY = '__root__.admin.config.placeholders.description' as const;
+export const ADMIN_CONFIG_PLACEHOLDERS_DESCRIPTION_KEY = 'admin.config.placeholders.description' as const;
 
 /** admin.config.placeholders.json */
-export const ADMIN_CONFIG_PLACEHOLDERS_JSON_KEY = '__root__.admin.config.placeholders.json' as const;
+export const ADMIN_CONFIG_PLACEHOLDERS_JSON_KEY = 'admin.config.placeholders.json' as const;
 
 /** admin.config.placeholders.model */
-export const ADMIN_CONFIG_PLACEHOLDERS_MODEL_KEY = '__root__.admin.config.placeholders.model' as const;
+export const ADMIN_CONFIG_PLACEHOLDERS_MODEL_KEY = 'admin.config.placeholders.model' as const;
 
 /** admin.config.provider */
-export const ADMIN_CONFIG_PROVIDER_KEY = '__root__.admin.config.provider' as const;
+export const ADMIN_CONFIG_PROVIDER_KEY = 'admin.config.provider' as const;
 
 /** admin.config.providerOptions.custom */
-export const ADMIN_CONFIG_PROVIDER_OPTIONS_CUSTOM_KEY = '__root__.admin.config.providerOptions.custom' as const;
+export const ADMIN_CONFIG_PROVIDER_OPTIONS_CUSTOM_KEY = 'admin.config.providerOptions.custom' as const;
 
 /** admin.config.providerOptions.deepseek */
-export const ADMIN_CONFIG_PROVIDER_OPTIONS_DEEPSEEK_KEY = '__root__.admin.config.providerOptions.deepseek' as const;
+export const ADMIN_CONFIG_PROVIDER_OPTIONS_DEEPSEEK_KEY = 'admin.config.providerOptions.deepseek' as const;
 
 /** admin.config.providerOptions.zhipu */
-export const ADMIN_CONFIG_PROVIDER_OPTIONS_ZHIPU_KEY = '__root__.admin.config.providerOptions.zhipu' as const;
+export const ADMIN_CONFIG_PROVIDER_OPTIONS_ZHIPU_KEY = 'admin.config.providerOptions.zhipu' as const;
 
 /** admin.config.status */
-export const ADMIN_CONFIG_STATUS_KEY = '__root__.admin.config.status' as const;
+export const ADMIN_CONFIG_STATUS_KEY = 'admin.config.status' as const;
 
 /** admin.config.strategyHealthConfig */
-export const ADMIN_CONFIG_STRATEGY_HEALTH_CONFIG_KEY = '__root__.admin.config.strategyHealthConfig' as const;
+export const ADMIN_CONFIG_STRATEGY_HEALTH_CONFIG_KEY = 'admin.config.strategyHealthConfig' as const;
 
 /** admin.config.thresholdDesc */
-export const ADMIN_CONFIG_THRESHOLD_DESC_KEY = '__root__.admin.config.thresholdDesc' as const;
+export const ADMIN_CONFIG_THRESHOLD_DESC_KEY = 'admin.config.thresholdDesc' as const;
 
 /** admin.config.thresholdInfo */
-export const ADMIN_CONFIG_THRESHOLD_INFO_KEY = '__root__.admin.config.thresholdInfo' as const;
+export const ADMIN_CONFIG_THRESHOLD_INFO_KEY = 'admin.config.thresholdInfo' as const;
 
 /** admin.config.title */
-export const ADMIN_CONFIG_TITLE_KEY = '__root__.admin.config.title' as const;
+export const ADMIN_CONFIG_TITLE_KEY = 'admin.config.title' as const;
 
 /** admin.config.toggle */
-export const ADMIN_CONFIG_TOGGLE_KEY = '__root__.admin.config.toggle' as const;
+export const ADMIN_CONFIG_TOGGLE_KEY = 'admin.config.toggle' as const;
 
 /** admin.config.updatedAt */
-export const ADMIN_CONFIG_UPDATED_AT_KEY = '__root__.admin.config.updatedAt' as const;
+export const ADMIN_CONFIG_UPDATED_AT_KEY = 'admin.config.updatedAt' as const;
 
 /** admin.config.validation.apiKeyRequired */
-export const ADMIN_CONFIG_VALIDATION_API_KEY_REQUIRED_KEY = '__root__.admin.config.validation.apiKeyRequired' as const;
+export const ADMIN_CONFIG_VALIDATION_API_KEY_REQUIRED_KEY = 'admin.config.validation.apiKeyRequired' as const;
 
 /** admin.config.validation.greenMaxFailedRunsNonNegative */
-export const ADMIN_CONFIG_VALIDATION_GREEN_MAX_FAILED_RUNS_NON_NEGATIVE_KEY = '__root__.admin.config.validation.greenMaxFailedRunsNonNegative' as const;
+export const ADMIN_CONFIG_VALIDATION_GREEN_MAX_FAILED_RUNS_NON_NEGATIVE_KEY = 'admin.config.validation.greenMaxFailedRunsNonNegative' as const;
 
 /** admin.config.validation.greenSuccessRateRange */
-export const ADMIN_CONFIG_VALIDATION_GREEN_SUCCESS_RATE_RANGE_KEY = '__root__.admin.config.validation.greenSuccessRateRange' as const;
+export const ADMIN_CONFIG_VALIDATION_GREEN_SUCCESS_RATE_RANGE_KEY = 'admin.config.validation.greenSuccessRateRange' as const;
 
 /** admin.config.validation.jsonEmpty */
-export const ADMIN_CONFIG_VALIDATION_JSON_EMPTY_KEY = '__root__.admin.config.validation.jsonEmpty' as const;
+export const ADMIN_CONFIG_VALIDATION_JSON_EMPTY_KEY = 'admin.config.validation.jsonEmpty' as const;
 
 /** admin.config.validation.jsonInvalid */
-export const ADMIN_CONFIG_VALIDATION_JSON_INVALID_KEY = '__root__.admin.config.validation.jsonInvalid' as const;
+export const ADMIN_CONFIG_VALIDATION_JSON_INVALID_KEY = 'admin.config.validation.jsonInvalid' as const;
 
 /** admin.config.validation.minSampleSizeNonNegative */
-export const ADMIN_CONFIG_VALIDATION_MIN_SAMPLE_SIZE_NON_NEGATIVE_KEY = '__root__.admin.config.validation.minSampleSizeNonNegative' as const;
+export const ADMIN_CONFIG_VALIDATION_MIN_SAMPLE_SIZE_NON_NEGATIVE_KEY = 'admin.config.validation.minSampleSizeNonNegative' as const;
 
 /** admin.config.validation.modelRequired */
-export const ADMIN_CONFIG_VALIDATION_MODEL_REQUIRED_KEY = '__root__.admin.config.validation.modelRequired' as const;
+export const ADMIN_CONFIG_VALIDATION_MODEL_REQUIRED_KEY = 'admin.config.validation.modelRequired' as const;
 
 /** admin.config.validation.yellowNotGreaterThanGreen */
-export const ADMIN_CONFIG_VALIDATION_YELLOW_NOT_GREATER_THAN_GREEN_KEY = '__root__.admin.config.validation.yellowNotGreaterThanGreen' as const;
+export const ADMIN_CONFIG_VALIDATION_YELLOW_NOT_GREATER_THAN_GREEN_KEY = 'admin.config.validation.yellowNotGreaterThanGreen' as const;
 
 /** admin.config.validation.yellowSuccessRateRange */
-export const ADMIN_CONFIG_VALIDATION_YELLOW_SUCCESS_RATE_RANGE_KEY = '__root__.admin.config.validation.yellowSuccessRateRange' as const;
+export const ADMIN_CONFIG_VALIDATION_YELLOW_SUCCESS_RATE_RANGE_KEY = 'admin.config.validation.yellowSuccessRateRange' as const;
 
 /** admin.config.value */
-export const ADMIN_CONFIG_VALUE_KEY = '__root__.admin.config.value' as const;
+export const ADMIN_CONFIG_VALUE_KEY = 'admin.config.value' as const;
 
 /** admin.dashboard.activeUsers */
-export const ADMIN_DASHBOARD_ACTIVE_USERS_KEY = '__root__.admin.dashboard.activeUsers' as const;
+export const ADMIN_DASHBOARD_ACTIVE_USERS_KEY = 'admin.dashboard.activeUsers' as const;
 
 /** admin.dashboard.loadFailed */
-export const ADMIN_DASHBOARD_LOAD_FAILED_KEY = '__root__.admin.dashboard.loadFailed' as const;
+export const ADMIN_DASHBOARD_LOAD_FAILED_KEY = 'admin.dashboard.loadFailed' as const;
 
 /** admin.dashboard.logs.actionType */
-export const ADMIN_DASHBOARD_LOGS_ACTION_TYPE_KEY = '__root__.admin.dashboard.logs.actionType' as const;
+export const ADMIN_DASHBOARD_LOGS_ACTION_TYPE_KEY = 'admin.dashboard.logs.actionType' as const;
 
 /** admin.dashboard.logs.failed */
-export const ADMIN_DASHBOARD_LOGS_FAILED_KEY = '__root__.admin.dashboard.logs.failed' as const;
+export const ADMIN_DASHBOARD_LOGS_FAILED_KEY = 'admin.dashboard.logs.failed' as const;
 
 /** admin.dashboard.logs.module */
-export const ADMIN_DASHBOARD_LOGS_MODULE_KEY = '__root__.admin.dashboard.logs.module' as const;
+export const ADMIN_DASHBOARD_LOGS_MODULE_KEY = 'admin.dashboard.logs.module' as const;
 
 /** admin.dashboard.logs.moduleMap.accountManagement */
-export const ADMIN_DASHBOARD_LOGS_MODULE_MAP_ACCOUNT_MANAGEMENT_KEY = '__root__.admin.dashboard.logs.moduleMap.accountManagement' as const;
+export const ADMIN_DASHBOARD_LOGS_MODULE_MAP_ACCOUNT_MANAGEMENT_KEY = 'admin.dashboard.logs.moduleMap.accountManagement' as const;
 
 /** admin.dashboard.logs.moduleMap.systemConfig */
-export const ADMIN_DASHBOARD_LOGS_MODULE_MAP_SYSTEM_CONFIG_KEY = '__root__.admin.dashboard.logs.moduleMap.systemConfig' as const;
+export const ADMIN_DASHBOARD_LOGS_MODULE_MAP_SYSTEM_CONFIG_KEY = 'admin.dashboard.logs.moduleMap.systemConfig' as const;
 
 /** admin.dashboard.logs.moduleMap.trading */
-export const ADMIN_DASHBOARD_LOGS_MODULE_MAP_TRADING_KEY = '__root__.admin.dashboard.logs.moduleMap.trading' as const;
+export const ADMIN_DASHBOARD_LOGS_MODULE_MAP_TRADING_KEY = 'admin.dashboard.logs.moduleMap.trading' as const;
 
 /** admin.dashboard.logs.moduleMap.userManagement */
-export const ADMIN_DASHBOARD_LOGS_MODULE_MAP_USER_MANAGEMENT_KEY = '__root__.admin.dashboard.logs.moduleMap.userManagement' as const;
+export const ADMIN_DASHBOARD_LOGS_MODULE_MAP_USER_MANAGEMENT_KEY = 'admin.dashboard.logs.moduleMap.userManagement' as const;
 
 /** admin.dashboard.logs.status */
-export const ADMIN_DASHBOARD_LOGS_STATUS_KEY = '__root__.admin.dashboard.logs.status' as const;
+export const ADMIN_DASHBOARD_LOGS_STATUS_KEY = 'admin.dashboard.logs.status' as const;
 
 /** admin.dashboard.logs.success */
-export const ADMIN_DASHBOARD_LOGS_SUCCESS_KEY = '__root__.admin.dashboard.logs.success' as const;
+export const ADMIN_DASHBOARD_LOGS_SUCCESS_KEY = 'admin.dashboard.logs.success' as const;
 
 /** admin.dashboard.logs.target */
-export const ADMIN_DASHBOARD_LOGS_TARGET_KEY = '__root__.admin.dashboard.logs.target' as const;
+export const ADMIN_DASHBOARD_LOGS_TARGET_KEY = 'admin.dashboard.logs.target' as const;
 
 /** admin.dashboard.logs.time */
-export const ADMIN_DASHBOARD_LOGS_TIME_KEY = '__root__.admin.dashboard.logs.time' as const;
+export const ADMIN_DASHBOARD_LOGS_TIME_KEY = 'admin.dashboard.logs.time' as const;
 
 /** admin.dashboard.mtAccounts */
-export const ADMIN_DASHBOARD_MT_ACCOUNTS_KEY = '__root__.admin.dashboard.mtAccounts' as const;
+export const ADMIN_DASHBOARD_MT_ACCOUNTS_KEY = 'admin.dashboard.mtAccounts' as const;
 
 /** admin.dashboard.onlineAccounts */
-export const ADMIN_DASHBOARD_ONLINE_ACCOUNTS_KEY = '__root__.admin.dashboard.onlineAccounts' as const;
+export const ADMIN_DASHBOARD_ONLINE_ACCOUNTS_KEY = 'admin.dashboard.onlineAccounts' as const;
 
 /** admin.dashboard.recentLogs */
-export const ADMIN_DASHBOARD_RECENT_LOGS_KEY = '__root__.admin.dashboard.recentLogs' as const;
+export const ADMIN_DASHBOARD_RECENT_LOGS_KEY = 'admin.dashboard.recentLogs' as const;
 
 /** admin.dashboard.riskMetrics.orderCloseFailed */
-export const ADMIN_DASHBOARD_RISK_METRICS_ORDER_CLOSE_FAILED_KEY = '__root__.admin.dashboard.riskMetrics.orderCloseFailed' as const;
+export const ADMIN_DASHBOARD_RISK_METRICS_ORDER_CLOSE_FAILED_KEY = 'admin.dashboard.riskMetrics.orderCloseFailed' as const;
 
 /** admin.dashboard.riskMetrics.orderCloseSuccess */
-export const ADMIN_DASHBOARD_RISK_METRICS_ORDER_CLOSE_SUCCESS_KEY = '__root__.admin.dashboard.riskMetrics.orderCloseSuccess' as const;
+export const ADMIN_DASHBOARD_RISK_METRICS_ORDER_CLOSE_SUCCESS_KEY = 'admin.dashboard.riskMetrics.orderCloseSuccess' as const;
 
 /** admin.dashboard.riskMetrics.orderSendFailed */
-export const ADMIN_DASHBOARD_RISK_METRICS_ORDER_SEND_FAILED_KEY = '__root__.admin.dashboard.riskMetrics.orderSendFailed' as const;
+export const ADMIN_DASHBOARD_RISK_METRICS_ORDER_SEND_FAILED_KEY = 'admin.dashboard.riskMetrics.orderSendFailed' as const;
 
 /** admin.dashboard.riskMetrics.orderSendSuccess */
-export const ADMIN_DASHBOARD_RISK_METRICS_ORDER_SEND_SUCCESS_KEY = '__root__.admin.dashboard.riskMetrics.orderSendSuccess' as const;
+export const ADMIN_DASHBOARD_RISK_METRICS_ORDER_SEND_SUCCESS_KEY = 'admin.dashboard.riskMetrics.orderSendSuccess' as const;
 
 /** admin.dashboard.riskMetrics.riskValidateError */
-export const ADMIN_DASHBOARD_RISK_METRICS_RISK_VALIDATE_ERROR_KEY = '__root__.admin.dashboard.riskMetrics.riskValidateError' as const;
+export const ADMIN_DASHBOARD_RISK_METRICS_RISK_VALIDATE_ERROR_KEY = 'admin.dashboard.riskMetrics.riskValidateError' as const;
 
 /** admin.dashboard.riskMetrics.riskValidatePass */
-export const ADMIN_DASHBOARD_RISK_METRICS_RISK_VALIDATE_PASS_KEY = '__root__.admin.dashboard.riskMetrics.riskValidatePass' as const;
+export const ADMIN_DASHBOARD_RISK_METRICS_RISK_VALIDATE_PASS_KEY = 'admin.dashboard.riskMetrics.riskValidatePass' as const;
 
 /** admin.dashboard.riskMetrics.riskValidateReject */
-export const ADMIN_DASHBOARD_RISK_METRICS_RISK_VALIDATE_REJECT_KEY = '__root__.admin.dashboard.riskMetrics.riskValidateReject' as const;
+export const ADMIN_DASHBOARD_RISK_METRICS_RISK_VALIDATE_REJECT_KEY = 'admin.dashboard.riskMetrics.riskValidateReject' as const;
 
 /** admin.dashboard.riskMetrics.riskValidateTotal */
-export const ADMIN_DASHBOARD_RISK_METRICS_RISK_VALIDATE_TOTAL_KEY = '__root__.admin.dashboard.riskMetrics.riskValidateTotal' as const;
+export const ADMIN_DASHBOARD_RISK_METRICS_RISK_VALIDATE_TOTAL_KEY = 'admin.dashboard.riskMetrics.riskValidateTotal' as const;
 
 /** admin.dashboard.riskMetrics.title */
-export const ADMIN_DASHBOARD_RISK_METRICS_TITLE_KEY = '__root__.admin.dashboard.riskMetrics.title' as const;
+export const ADMIN_DASHBOARD_RISK_METRICS_TITLE_KEY = 'admin.dashboard.riskMetrics.title' as const;
 
 /** admin.dashboard.riskWindow.noData */
-export const ADMIN_DASHBOARD_RISK_WINDOW_NO_DATA_KEY = '__root__.admin.dashboard.riskWindow.noData' as const;
+export const ADMIN_DASHBOARD_RISK_WINDOW_NO_DATA_KEY = 'admin.dashboard.riskWindow.noData' as const;
 
 /** admin.dashboard.riskWindow.noRejectData */
-export const ADMIN_DASHBOARD_RISK_WINDOW_NO_REJECT_DATA_KEY = '__root__.admin.dashboard.riskWindow.noRejectData' as const;
+export const ADMIN_DASHBOARD_RISK_WINDOW_NO_REJECT_DATA_KEY = 'admin.dashboard.riskWindow.noRejectData' as const;
 
 /** admin.dashboard.riskWindow.orderCloseFailed */
-export const ADMIN_DASHBOARD_RISK_WINDOW_ORDER_CLOSE_FAILED_KEY = '__root__.admin.dashboard.riskWindow.orderCloseFailed' as const;
+export const ADMIN_DASHBOARD_RISK_WINDOW_ORDER_CLOSE_FAILED_KEY = 'admin.dashboard.riskWindow.orderCloseFailed' as const;
 
 /** admin.dashboard.riskWindow.orderCloseSuccess */
-export const ADMIN_DASHBOARD_RISK_WINDOW_ORDER_CLOSE_SUCCESS_KEY = '__root__.admin.dashboard.riskWindow.orderCloseSuccess' as const;
+export const ADMIN_DASHBOARD_RISK_WINDOW_ORDER_CLOSE_SUCCESS_KEY = 'admin.dashboard.riskWindow.orderCloseSuccess' as const;
 
 /** admin.dashboard.riskWindow.orderSendFailed */
-export const ADMIN_DASHBOARD_RISK_WINDOW_ORDER_SEND_FAILED_KEY = '__root__.admin.dashboard.riskWindow.orderSendFailed' as const;
+export const ADMIN_DASHBOARD_RISK_WINDOW_ORDER_SEND_FAILED_KEY = 'admin.dashboard.riskWindow.orderSendFailed' as const;
 
 /** admin.dashboard.riskWindow.orderSendSuccess */
-export const ADMIN_DASHBOARD_RISK_WINDOW_ORDER_SEND_SUCCESS_KEY = '__root__.admin.dashboard.riskWindow.orderSendSuccess' as const;
+export const ADMIN_DASHBOARD_RISK_WINDOW_ORDER_SEND_SUCCESS_KEY = 'admin.dashboard.riskWindow.orderSendSuccess' as const;
 
 /** admin.dashboard.riskWindow.rejectCount */
-export const ADMIN_DASHBOARD_RISK_WINDOW_REJECT_COUNT_KEY = '__root__.admin.dashboard.riskWindow.rejectCount' as const;
+export const ADMIN_DASHBOARD_RISK_WINDOW_REJECT_COUNT_KEY = 'admin.dashboard.riskWindow.rejectCount' as const;
 
 /** admin.dashboard.riskWindow.rejectRiskCodesHeader */
-export const ADMIN_DASHBOARD_RISK_WINDOW_REJECT_RISK_CODES_HEADER_KEY = '__root__.admin.dashboard.riskWindow.rejectRiskCodesHeader' as const;
+export const ADMIN_DASHBOARD_RISK_WINDOW_REJECT_RISK_CODES_HEADER_KEY = 'admin.dashboard.riskWindow.rejectRiskCodesHeader' as const;
 
 /** admin.dashboard.riskWindow.title */
-export const ADMIN_DASHBOARD_RISK_WINDOW_TITLE_KEY = '__root__.admin.dashboard.riskWindow.title' as const;
+export const ADMIN_DASHBOARD_RISK_WINDOW_TITLE_KEY = 'admin.dashboard.riskWindow.title' as const;
 
 /** admin.dashboard.riskWindow.validateError */
-export const ADMIN_DASHBOARD_RISK_WINDOW_VALIDATE_ERROR_KEY = '__root__.admin.dashboard.riskWindow.validateError' as const;
+export const ADMIN_DASHBOARD_RISK_WINDOW_VALIDATE_ERROR_KEY = 'admin.dashboard.riskWindow.validateError' as const;
 
 /** admin.dashboard.riskWindow.validatePass */
-export const ADMIN_DASHBOARD_RISK_WINDOW_VALIDATE_PASS_KEY = '__root__.admin.dashboard.riskWindow.validatePass' as const;
+export const ADMIN_DASHBOARD_RISK_WINDOW_VALIDATE_PASS_KEY = 'admin.dashboard.riskWindow.validatePass' as const;
 
 /** admin.dashboard.riskWindow.validateReject */
-export const ADMIN_DASHBOARD_RISK_WINDOW_VALIDATE_REJECT_KEY = '__root__.admin.dashboard.riskWindow.validateReject' as const;
+export const ADMIN_DASHBOARD_RISK_WINDOW_VALIDATE_REJECT_KEY = 'admin.dashboard.riskWindow.validateReject' as const;
 
 /** admin.dashboard.riskWindow.validateTotal */
-export const ADMIN_DASHBOARD_RISK_WINDOW_VALIDATE_TOTAL_KEY = '__root__.admin.dashboard.riskWindow.validateTotal' as const;
+export const ADMIN_DASHBOARD_RISK_WINDOW_VALIDATE_TOTAL_KEY = 'admin.dashboard.riskWindow.validateTotal' as const;
 
 /** admin.dashboard.title */
-export const ADMIN_DASHBOARD_TITLE_KEY = '__root__.admin.dashboard.title' as const;
+export const ADMIN_DASHBOARD_TITLE_KEY = 'admin.dashboard.title' as const;
 
 /** admin.dashboard.todayProfit */
-export const ADMIN_DASHBOARD_TODAY_PROFIT_KEY = '__root__.admin.dashboard.todayProfit' as const;
+export const ADMIN_DASHBOARD_TODAY_PROFIT_KEY = 'admin.dashboard.todayProfit' as const;
 
 /** admin.dashboard.todayTrades */
-export const ADMIN_DASHBOARD_TODAY_TRADES_KEY = '__root__.admin.dashboard.todayTrades' as const;
+export const ADMIN_DASHBOARD_TODAY_TRADES_KEY = 'admin.dashboard.todayTrades' as const;
 
 /** admin.dashboard.totalUsers */
-export const ADMIN_DASHBOARD_TOTAL_USERS_KEY = '__root__.admin.dashboard.totalUsers' as const;
+export const ADMIN_DASHBOARD_TOTAL_USERS_KEY = 'admin.dashboard.totalUsers' as const;
 
 /** admin.header.admin */
-export const ADMIN_HEADER_ADMIN_KEY = '__root__.admin.header.admin' as const;
+export const ADMIN_HEADER_ADMIN_KEY = 'admin.header.admin' as const;
 
 /** admin.header.adminMode */
-export const ADMIN_HEADER_ADMIN_MODE_KEY = '__root__.admin.header.adminMode' as const;
+export const ADMIN_HEADER_ADMIN_MODE_KEY = 'admin.header.adminMode' as const;
 
 /** admin.header.adminPanel */
-export const ADMIN_HEADER_ADMIN_PANEL_KEY = '__root__.admin.header.adminPanel' as const;
+export const ADMIN_HEADER_ADMIN_PANEL_KEY = 'admin.header.adminPanel' as const;
 
 /** admin.header.backToUser */
-export const ADMIN_HEADER_BACK_TO_USER_KEY = '__root__.admin.header.backToUser' as const;
+export const ADMIN_HEADER_BACK_TO_USER_KEY = 'admin.header.backToUser' as const;
 
 /** admin.header.logout */
-export const ADMIN_HEADER_LOGOUT_KEY = '__root__.admin.header.logout' as const;
+export const ADMIN_HEADER_LOGOUT_KEY = 'admin.header.logout' as const;
 
 /** admin.jurisdiction.actions */
-export const ADMIN_JURISDICTION_ACTIONS_KEY = '__root__.admin.jurisdiction.actions' as const;
+export const ADMIN_JURISDICTION_ACTIONS_KEY = 'admin.jurisdiction.actions' as const;
 
 /** admin.jurisdiction.addCountry */
-export const ADMIN_JURISDICTION_ADD_COUNTRY_KEY = '__root__.admin.jurisdiction.addCountry' as const;
+export const ADMIN_JURISDICTION_ADD_COUNTRY_KEY = 'admin.jurisdiction.addCountry' as const;
 
 /** admin.jurisdiction.addSanctionedCountry */
-export const ADMIN_JURISDICTION_ADD_SANCTIONED_COUNTRY_KEY = '__root__.admin.jurisdiction.addSanctionedCountry' as const;
+export const ADMIN_JURISDICTION_ADD_SANCTIONED_COUNTRY_KEY = 'admin.jurisdiction.addSanctionedCountry' as const;
 
 /** admin.jurisdiction.addedBy */
-export const ADMIN_JURISDICTION_ADDED_BY_KEY = '__root__.admin.jurisdiction.addedBy' as const;
+export const ADMIN_JURISDICTION_ADDED_BY_KEY = 'admin.jurisdiction.addedBy' as const;
 
 /** admin.jurisdiction.confirmGrantOverride */
-export const ADMIN_JURISDICTION_CONFIRM_GRANT_OVERRIDE_KEY = '__root__.admin.jurisdiction.confirmGrantOverride' as const;
+export const ADMIN_JURISDICTION_CONFIRM_GRANT_OVERRIDE_KEY = 'admin.jurisdiction.confirmGrantOverride' as const;
 
 /** admin.jurisdiction.confirmRevokeOverride */
-export const ADMIN_JURISDICTION_CONFIRM_REVOKE_OVERRIDE_KEY = '__root__.admin.jurisdiction.confirmRevokeOverride' as const;
+export const ADMIN_JURISDICTION_CONFIRM_REVOKE_OVERRIDE_KEY = 'admin.jurisdiction.confirmRevokeOverride' as const;
 
 /** admin.jurisdiction.country */
-export const ADMIN_JURISDICTION_COUNTRY_KEY = '__root__.admin.jurisdiction.country' as const;
+export const ADMIN_JURISDICTION_COUNTRY_KEY = 'admin.jurisdiction.country' as const;
 
 /** admin.jurisdiction.countryCode */
-export const ADMIN_JURISDICTION_COUNTRY_CODE_KEY = '__root__.admin.jurisdiction.countryCode' as const;
+export const ADMIN_JURISDICTION_COUNTRY_CODE_KEY = 'admin.jurisdiction.countryCode' as const;
 
 /** admin.jurisdiction.countryLabel */
-export const ADMIN_JURISDICTION_COUNTRY_LABEL_KEY = '__root__.admin.jurisdiction.countryLabel' as const;
+export const ADMIN_JURISDICTION_COUNTRY_LABEL_KEY = 'admin.jurisdiction.countryLabel' as const;
 
 /** admin.jurisdiction.disclaimer */
-export const ADMIN_JURISDICTION_DISCLAIMER_KEY = '__root__.admin.jurisdiction.disclaimer' as const;
+export const ADMIN_JURISDICTION_DISCLAIMER_KEY = 'admin.jurisdiction.disclaimer' as const;
 
 /** admin.jurisdiction.emptyKYC */
-export const ADMIN_JURISDICTION_EMPTY_K_Y_C_KEY = '__root__.admin.jurisdiction.emptyKYC' as const;
+export const ADMIN_JURISDICTION_EMPTY_K_Y_C_KEY = 'admin.jurisdiction.emptyKYC' as const;
 
 /** admin.jurisdiction.emptySanctions */
-export const ADMIN_JURISDICTION_EMPTY_SANCTIONS_KEY = '__root__.admin.jurisdiction.emptySanctions' as const;
+export const ADMIN_JURISDICTION_EMPTY_SANCTIONS_KEY = 'admin.jurisdiction.emptySanctions' as const;
 
 /** admin.jurisdiction.filterByKYCStatus */
-export const ADMIN_JURISDICTION_FILTER_BY_K_Y_C_STATUS_KEY = '__root__.admin.jurisdiction.filterByKYCStatus' as const;
+export const ADMIN_JURISDICTION_FILTER_BY_K_Y_C_STATUS_KEY = 'admin.jurisdiction.filterByKYCStatus' as const;
 
 /** admin.jurisdiction.grantOverride */
-export const ADMIN_JURISDICTION_GRANT_OVERRIDE_KEY = '__root__.admin.jurisdiction.grantOverride' as const;
+export const ADMIN_JURISDICTION_GRANT_OVERRIDE_KEY = 'admin.jurisdiction.grantOverride' as const;
 
 /** admin.jurisdiction.kycStatus */
-export const ADMIN_JURISDICTION_KYC_STATUS_KEY = '__root__.admin.jurisdiction.kycStatus' as const;
+export const ADMIN_JURISDICTION_KYC_STATUS_KEY = 'admin.jurisdiction.kycStatus' as const;
 
 /** admin.jurisdiction.kycStatusTab */
-export const ADMIN_JURISDICTION_KYC_STATUS_TAB_KEY = '__root__.admin.jurisdiction.kycStatusTab' as const;
+export const ADMIN_JURISDICTION_KYC_STATUS_TAB_KEY = 'admin.jurisdiction.kycStatusTab' as const;
 
 /** admin.jurisdiction.messages.countryAddFailed */
-export const ADMIN_JURISDICTION_MESSAGES_COUNTRY_ADD_FAILED_KEY = '__root__.admin.jurisdiction.messages.countryAddFailed' as const;
+export const ADMIN_JURISDICTION_MESSAGES_COUNTRY_ADD_FAILED_KEY = 'admin.jurisdiction.messages.countryAddFailed' as const;
 
 /** admin.jurisdiction.messages.countryAdded */
-export const ADMIN_JURISDICTION_MESSAGES_COUNTRY_ADDED_KEY = '__root__.admin.jurisdiction.messages.countryAdded' as const;
+export const ADMIN_JURISDICTION_MESSAGES_COUNTRY_ADDED_KEY = 'admin.jurisdiction.messages.countryAdded' as const;
 
 /** admin.jurisdiction.messages.countryRemoveFailed */
-export const ADMIN_JURISDICTION_MESSAGES_COUNTRY_REMOVE_FAILED_KEY = '__root__.admin.jurisdiction.messages.countryRemoveFailed' as const;
+export const ADMIN_JURISDICTION_MESSAGES_COUNTRY_REMOVE_FAILED_KEY = 'admin.jurisdiction.messages.countryRemoveFailed' as const;
 
 /** admin.jurisdiction.messages.countryRemoved */
-export const ADMIN_JURISDICTION_MESSAGES_COUNTRY_REMOVED_KEY = '__root__.admin.jurisdiction.messages.countryRemoved' as const;
+export const ADMIN_JURISDICTION_MESSAGES_COUNTRY_REMOVED_KEY = 'admin.jurisdiction.messages.countryRemoved' as const;
 
 /** admin.jurisdiction.messages.kycUpdateFailed */
-export const ADMIN_JURISDICTION_MESSAGES_KYC_UPDATE_FAILED_KEY = '__root__.admin.jurisdiction.messages.kycUpdateFailed' as const;
+export const ADMIN_JURISDICTION_MESSAGES_KYC_UPDATE_FAILED_KEY = 'admin.jurisdiction.messages.kycUpdateFailed' as const;
 
 /** admin.jurisdiction.messages.kycUpdated */
-export const ADMIN_JURISDICTION_MESSAGES_KYC_UPDATED_KEY = '__root__.admin.jurisdiction.messages.kycUpdated' as const;
+export const ADMIN_JURISDICTION_MESSAGES_KYC_UPDATED_KEY = 'admin.jurisdiction.messages.kycUpdated' as const;
 
 /** admin.jurisdiction.messages.overrideUpdateFailed */
-export const ADMIN_JURISDICTION_MESSAGES_OVERRIDE_UPDATE_FAILED_KEY = '__root__.admin.jurisdiction.messages.overrideUpdateFailed' as const;
+export const ADMIN_JURISDICTION_MESSAGES_OVERRIDE_UPDATE_FAILED_KEY = 'admin.jurisdiction.messages.overrideUpdateFailed' as const;
 
 /** admin.jurisdiction.messages.overrideUpdated */
-export const ADMIN_JURISDICTION_MESSAGES_OVERRIDE_UPDATED_KEY = '__root__.admin.jurisdiction.messages.overrideUpdated' as const;
+export const ADMIN_JURISDICTION_MESSAGES_OVERRIDE_UPDATED_KEY = 'admin.jurisdiction.messages.overrideUpdated' as const;
 
 /** admin.jurisdiction.override */
-export const ADMIN_JURISDICTION_OVERRIDE_KEY = '__root__.admin.jurisdiction.override' as const;
+export const ADMIN_JURISDICTION_OVERRIDE_KEY = 'admin.jurisdiction.override' as const;
 
 /** admin.jurisdiction.overrideWarning */
-export const ADMIN_JURISDICTION_OVERRIDE_WARNING_KEY = '__root__.admin.jurisdiction.overrideWarning' as const;
+export const ADMIN_JURISDICTION_OVERRIDE_WARNING_KEY = 'admin.jurisdiction.overrideWarning' as const;
 
 /** admin.jurisdiction.pending */
-export const ADMIN_JURISDICTION_PENDING_KEY = '__root__.admin.jurisdiction.pending' as const;
+export const ADMIN_JURISDICTION_PENDING_KEY = 'admin.jurisdiction.pending' as const;
 
 /** admin.jurisdiction.questionnaire */
-export const ADMIN_JURISDICTION_QUESTIONNAIRE_KEY = '__root__.admin.jurisdiction.questionnaire' as const;
+export const ADMIN_JURISDICTION_QUESTIONNAIRE_KEY = 'admin.jurisdiction.questionnaire' as const;
 
 /** admin.jurisdiction.rejected */
-export const ADMIN_JURISDICTION_REJECTED_KEY = '__root__.admin.jurisdiction.rejected' as const;
+export const ADMIN_JURISDICTION_REJECTED_KEY = 'admin.jurisdiction.rejected' as const;
 
 /** admin.jurisdiction.revokeOverride */
-export const ADMIN_JURISDICTION_REVOKE_OVERRIDE_KEY = '__root__.admin.jurisdiction.revokeOverride' as const;
+export const ADMIN_JURISDICTION_REVOKE_OVERRIDE_KEY = 'admin.jurisdiction.revokeOverride' as const;
 
 /** admin.jurisdiction.sanctioned */
-export const ADMIN_JURISDICTION_SANCTIONED_KEY = '__root__.admin.jurisdiction.sanctioned' as const;
+export const ADMIN_JURISDICTION_SANCTIONED_KEY = 'admin.jurisdiction.sanctioned' as const;
 
 /** admin.jurisdiction.sanctionedCountries */
-export const ADMIN_JURISDICTION_SANCTIONED_COUNTRIES_KEY = '__root__.admin.jurisdiction.sanctionedCountries' as const;
+export const ADMIN_JURISDICTION_SANCTIONED_COUNTRIES_KEY = 'admin.jurisdiction.sanctionedCountries' as const;
 
 /** admin.jurisdiction.sanctionedCountriesTab */
-export const ADMIN_JURISDICTION_SANCTIONED_COUNTRIES_TAB_KEY = '__root__.admin.jurisdiction.sanctionedCountriesTab' as const;
+export const ADMIN_JURISDICTION_SANCTIONED_COUNTRIES_TAB_KEY = 'admin.jurisdiction.sanctionedCountriesTab' as const;
 
 /** admin.jurisdiction.setKYC */
-export const ADMIN_JURISDICTION_SET_K_Y_C_KEY = '__root__.admin.jurisdiction.setKYC' as const;
+export const ADMIN_JURISDICTION_SET_K_Y_C_KEY = 'admin.jurisdiction.setKYC' as const;
 
 /** admin.jurisdiction.setKYCStatus */
-export const ADMIN_JURISDICTION_SET_K_Y_C_STATUS_KEY = '__root__.admin.jurisdiction.setKYCStatus' as const;
+export const ADMIN_JURISDICTION_SET_K_Y_C_STATUS_KEY = 'admin.jurisdiction.setKYCStatus' as const;
 
 /** admin.jurisdiction.title */
-export const ADMIN_JURISDICTION_TITLE_KEY = '__root__.admin.jurisdiction.title' as const;
+export const ADMIN_JURISDICTION_TITLE_KEY = 'admin.jurisdiction.title' as const;
 
 /** admin.jurisdiction.unverified */
-export const ADMIN_JURISDICTION_UNVERIFIED_KEY = '__root__.admin.jurisdiction.unverified' as const;
+export const ADMIN_JURISDICTION_UNVERIFIED_KEY = 'admin.jurisdiction.unverified' as const;
 
 /** admin.jurisdiction.userEmail */
-export const ADMIN_JURISDICTION_USER_EMAIL_KEY = '__root__.admin.jurisdiction.userEmail' as const;
+export const ADMIN_JURISDICTION_USER_EMAIL_KEY = 'admin.jurisdiction.userEmail' as const;
 
 /** admin.jurisdiction.userKYCStatus */
-export const ADMIN_JURISDICTION_USER_K_Y_C_STATUS_KEY = '__root__.admin.jurisdiction.userKYCStatus' as const;
+export const ADMIN_JURISDICTION_USER_K_Y_C_STATUS_KEY = 'admin.jurisdiction.userKYCStatus' as const;
 
 /** admin.jurisdiction.verified */
-export const ADMIN_JURISDICTION_VERIFIED_KEY = '__root__.admin.jurisdiction.verified' as const;
+export const ADMIN_JURISDICTION_VERIFIED_KEY = 'admin.jurisdiction.verified' as const;
 
 /** admin.sidebar.accountManagement */
-export const ADMIN_SIDEBAR_ACCOUNT_MANAGEMENT_KEY = '__root__.admin.sidebar.accountManagement' as const;
+export const ADMIN_SIDEBAR_ACCOUNT_MANAGEMENT_KEY = 'admin.sidebar.accountManagement' as const;
 
 /** admin.sidebar.dashboard */
-export const ADMIN_SIDEBAR_DASHBOARD_KEY = '__root__.admin.sidebar.dashboard' as const;
+export const ADMIN_SIDEBAR_DASHBOARD_KEY = 'admin.sidebar.dashboard' as const;
 
 /** admin.sidebar.jurisdiction */
-export const ADMIN_SIDEBAR_JURISDICTION_KEY = '__root__.admin.sidebar.jurisdiction' as const;
+export const ADMIN_SIDEBAR_JURISDICTION_KEY = 'admin.sidebar.jurisdiction' as const;
 
 /** admin.sidebar.operationLogs */
-export const ADMIN_SIDEBAR_OPERATION_LOGS_KEY = '__root__.admin.sidebar.operationLogs' as const;
+export const ADMIN_SIDEBAR_OPERATION_LOGS_KEY = 'admin.sidebar.operationLogs' as const;
 
 /** admin.sidebar.shareManagement */
-export const ADMIN_SIDEBAR_SHARE_MANAGEMENT_KEY = '__root__.admin.sidebar.shareManagement' as const;
+export const ADMIN_SIDEBAR_SHARE_MANAGEMENT_KEY = 'admin.sidebar.shareManagement' as const;
 
 /** admin.sidebar.systemConfig */
-export const ADMIN_SIDEBAR_SYSTEM_CONFIG_KEY = '__root__.admin.sidebar.systemConfig' as const;
+export const ADMIN_SIDEBAR_SYSTEM_CONFIG_KEY = 'admin.sidebar.systemConfig' as const;
 
 /** admin.sidebar.tradingMonitor */
-export const ADMIN_SIDEBAR_TRADING_MONITOR_KEY = '__root__.admin.sidebar.tradingMonitor' as const;
+export const ADMIN_SIDEBAR_TRADING_MONITOR_KEY = 'admin.sidebar.tradingMonitor' as const;
 
 /** admin.sidebar.userManagement */
-export const ADMIN_SIDEBAR_USER_MANAGEMENT_KEY = '__root__.admin.sidebar.userManagement' as const;
+export const ADMIN_SIDEBAR_USER_MANAGEMENT_KEY = 'admin.sidebar.userManagement' as const;
 
 /** admin.sidebar.walletManagement */
-export const ADMIN_SIDEBAR_WALLET_MANAGEMENT_KEY = '__root__.admin.sidebar.walletManagement' as const;
+export const ADMIN_SIDEBAR_WALLET_MANAGEMENT_KEY = 'admin.sidebar.walletManagement' as const;
 
 /** admin.trading.accounts */
-export const ADMIN_TRADING_ACCOUNTS_KEY = '__root__.admin.trading.accounts' as const;
+export const ADMIN_TRADING_ACCOUNTS_KEY = 'admin.trading.accounts' as const;
 
 /** admin.trading.activeUsers */
-export const ADMIN_TRADING_ACTIVE_USERS_KEY = '__root__.admin.trading.activeUsers' as const;
+export const ADMIN_TRADING_ACTIVE_USERS_KEY = 'admin.trading.activeUsers' as const;
 
 /** admin.trading.byPlatform */
-export const ADMIN_TRADING_BY_PLATFORM_KEY = '__root__.admin.trading.byPlatform' as const;
+export const ADMIN_TRADING_BY_PLATFORM_KEY = 'admin.trading.byPlatform' as const;
 
 /** admin.trading.closedOrders */
-export const ADMIN_TRADING_CLOSED_ORDERS_KEY = '__root__.admin.trading.closedOrders' as const;
+export const ADMIN_TRADING_CLOSED_ORDERS_KEY = 'admin.trading.closedOrders' as const;
 
 /** admin.trading.connectedAccounts */
-export const ADMIN_TRADING_CONNECTED_ACCOUNTS_KEY = '__root__.admin.trading.connectedAccounts' as const;
+export const ADMIN_TRADING_CONNECTED_ACCOUNTS_KEY = 'admin.trading.connectedAccounts' as const;
 
 /** admin.trading.loadFailed */
-export const ADMIN_TRADING_LOAD_FAILED_KEY = '__root__.admin.trading.loadFailed' as const;
+export const ADMIN_TRADING_LOAD_FAILED_KEY = 'admin.trading.loadFailed' as const;
 
 /** admin.trading.netProfit */
-export const ADMIN_TRADING_NET_PROFIT_KEY = '__root__.admin.trading.netProfit' as const;
+export const ADMIN_TRADING_NET_PROFIT_KEY = 'admin.trading.netProfit' as const;
 
 /** admin.trading.orders */
-export const ADMIN_TRADING_ORDERS_KEY = '__root__.admin.trading.orders' as const;
+export const ADMIN_TRADING_ORDERS_KEY = 'admin.trading.orders' as const;
 
 /** admin.trading.pendingOrders */
-export const ADMIN_TRADING_PENDING_ORDERS_KEY = '__root__.admin.trading.pendingOrders' as const;
+export const ADMIN_TRADING_PENDING_ORDERS_KEY = 'admin.trading.pendingOrders' as const;
 
 /** admin.trading.platform */
-export const ADMIN_TRADING_PLATFORM_KEY = '__root__.admin.trading.platform' as const;
+export const ADMIN_TRADING_PLATFORM_KEY = 'admin.trading.platform' as const;
 
 /** admin.trading.profitStats */
-export const ADMIN_TRADING_PROFIT_STATS_KEY = '__root__.admin.trading.profitStats' as const;
+export const ADMIN_TRADING_PROFIT_STATS_KEY = 'admin.trading.profitStats' as const;
 
 /** admin.trading.title */
-export const ADMIN_TRADING_TITLE_KEY = '__root__.admin.trading.title' as const;
+export const ADMIN_TRADING_TITLE_KEY = 'admin.trading.title' as const;
 
 /** admin.trading.totalAccounts */
-export const ADMIN_TRADING_TOTAL_ACCOUNTS_KEY = '__root__.admin.trading.totalAccounts' as const;
+export const ADMIN_TRADING_TOTAL_ACCOUNTS_KEY = 'admin.trading.totalAccounts' as const;
 
 /** admin.trading.totalLoss */
-export const ADMIN_TRADING_TOTAL_LOSS_KEY = '__root__.admin.trading.totalLoss' as const;
+export const ADMIN_TRADING_TOTAL_LOSS_KEY = 'admin.trading.totalLoss' as const;
 
 /** admin.trading.totalOrders */
-export const ADMIN_TRADING_TOTAL_ORDERS_KEY = '__root__.admin.trading.totalOrders' as const;
+export const ADMIN_TRADING_TOTAL_ORDERS_KEY = 'admin.trading.totalOrders' as const;
 
 /** admin.trading.totalProfit */
-export const ADMIN_TRADING_TOTAL_PROFIT_KEY = '__root__.admin.trading.totalProfit' as const;
+export const ADMIN_TRADING_TOTAL_PROFIT_KEY = 'admin.trading.totalProfit' as const;
 
 /** admin.trading.totalUsers */
-export const ADMIN_TRADING_TOTAL_USERS_KEY = '__root__.admin.trading.totalUsers' as const;
+export const ADMIN_TRADING_TOTAL_USERS_KEY = 'admin.trading.totalUsers' as const;
 
 /** admin.trading.totalVolume */
-export const ADMIN_TRADING_TOTAL_VOLUME_KEY = '__root__.admin.trading.totalVolume' as const;
+export const ADMIN_TRADING_TOTAL_VOLUME_KEY = 'admin.trading.totalVolume' as const;
 
 /** admin.trading.volume */
-export const ADMIN_TRADING_VOLUME_KEY = '__root__.admin.trading.volume' as const;
+export const ADMIN_TRADING_VOLUME_KEY = 'admin.trading.volume' as const;
 
 /** admin.userManagement.actions.changePassword */
-export const ADMIN_USER_MANAGEMENT_ACTIONS_CHANGE_PASSWORD_KEY = '__root__.admin.userManagement.actions.changePassword' as const;
+export const ADMIN_USER_MANAGEMENT_ACTIONS_CHANGE_PASSWORD_KEY = 'admin.userManagement.actions.changePassword' as const;
 
 /** admin.userManagement.actions.details */
-export const ADMIN_USER_MANAGEMENT_ACTIONS_DETAILS_KEY = '__root__.admin.userManagement.actions.details' as const;
+export const ADMIN_USER_MANAGEMENT_ACTIONS_DETAILS_KEY = 'admin.userManagement.actions.details' as const;
 
 /** admin.userManagement.actions.disable */
-export const ADMIN_USER_MANAGEMENT_ACTIONS_DISABLE_KEY = '__root__.admin.userManagement.actions.disable' as const;
+export const ADMIN_USER_MANAGEMENT_ACTIONS_DISABLE_KEY = 'admin.userManagement.actions.disable' as const;
 
 /** admin.userManagement.actions.enable */
-export const ADMIN_USER_MANAGEMENT_ACTIONS_ENABLE_KEY = '__root__.admin.userManagement.actions.enable' as const;
+export const ADMIN_USER_MANAGEMENT_ACTIONS_ENABLE_KEY = 'admin.userManagement.actions.enable' as const;
 
 /** admin.userManagement.addUser */
-export const ADMIN_USER_MANAGEMENT_ADD_USER_KEY = '__root__.admin.userManagement.addUser' as const;
+export const ADMIN_USER_MANAGEMENT_ADD_USER_KEY = 'admin.userManagement.addUser' as const;
 
 /** admin.userManagement.deleteConfirm.batchDeleteConfirm */
-export const ADMIN_USER_MANAGEMENT_DELETE_CONFIRM_BATCH_DELETE_CONFIRM_KEY = '__root__.admin.userManagement.deleteConfirm.batchDeleteConfirm' as const;
+export const ADMIN_USER_MANAGEMENT_DELETE_CONFIRM_BATCH_DELETE_CONFIRM_KEY = 'admin.userManagement.deleteConfirm.batchDeleteConfirm' as const;
 
 /** admin.userManagement.deleteConfirm.batchDeletePartial */
-export const ADMIN_USER_MANAGEMENT_DELETE_CONFIRM_BATCH_DELETE_PARTIAL_KEY = '__root__.admin.userManagement.deleteConfirm.batchDeletePartial' as const;
+export const ADMIN_USER_MANAGEMENT_DELETE_CONFIRM_BATCH_DELETE_PARTIAL_KEY = 'admin.userManagement.deleteConfirm.batchDeletePartial' as const;
 
 /** admin.userManagement.deleteConfirm.batchDeleteSuccess */
-export const ADMIN_USER_MANAGEMENT_DELETE_CONFIRM_BATCH_DELETE_SUCCESS_KEY = '__root__.admin.userManagement.deleteConfirm.batchDeleteSuccess' as const;
+export const ADMIN_USER_MANAGEMENT_DELETE_CONFIRM_BATCH_DELETE_SUCCESS_KEY = 'admin.userManagement.deleteConfirm.batchDeleteSuccess' as const;
 
 /** admin.userManagement.deleteConfirm.title */
-export const ADMIN_USER_MANAGEMENT_DELETE_CONFIRM_TITLE_KEY = '__root__.admin.userManagement.deleteConfirm.title' as const;
+export const ADMIN_USER_MANAGEMENT_DELETE_CONFIRM_TITLE_KEY = 'admin.userManagement.deleteConfirm.title' as const;
 
 /** admin.userManagement.drawer.labels.createdAt */
-export const ADMIN_USER_MANAGEMENT_DRAWER_LABELS_CREATED_AT_KEY = '__root__.admin.userManagement.drawer.labels.createdAt' as const;
+export const ADMIN_USER_MANAGEMENT_DRAWER_LABELS_CREATED_AT_KEY = 'admin.userManagement.drawer.labels.createdAt' as const;
 
 /** admin.userManagement.drawer.labels.email */
-export const ADMIN_USER_MANAGEMENT_DRAWER_LABELS_EMAIL_KEY = '__root__.admin.userManagement.drawer.labels.email' as const;
+export const ADMIN_USER_MANAGEMENT_DRAWER_LABELS_EMAIL_KEY = 'admin.userManagement.drawer.labels.email' as const;
 
 /** admin.userManagement.drawer.labels.id */
-export const ADMIN_USER_MANAGEMENT_DRAWER_LABELS_ID_KEY = '__root__.admin.userManagement.drawer.labels.id' as const;
+export const ADMIN_USER_MANAGEMENT_DRAWER_LABELS_ID_KEY = 'admin.userManagement.drawer.labels.id' as const;
 
 /** admin.userManagement.drawer.labels.lastLogin */
-export const ADMIN_USER_MANAGEMENT_DRAWER_LABELS_LAST_LOGIN_KEY = '__root__.admin.userManagement.drawer.labels.lastLogin' as const;
+export const ADMIN_USER_MANAGEMENT_DRAWER_LABELS_LAST_LOGIN_KEY = 'admin.userManagement.drawer.labels.lastLogin' as const;
 
 /** admin.userManagement.drawer.labels.mtAccountCount */
-export const ADMIN_USER_MANAGEMENT_DRAWER_LABELS_MT_ACCOUNT_COUNT_KEY = '__root__.admin.userManagement.drawer.labels.mtAccountCount' as const;
+export const ADMIN_USER_MANAGEMENT_DRAWER_LABELS_MT_ACCOUNT_COUNT_KEY = 'admin.userManagement.drawer.labels.mtAccountCount' as const;
 
 /** admin.userManagement.drawer.labels.nickname */
-export const ADMIN_USER_MANAGEMENT_DRAWER_LABELS_NICKNAME_KEY = '__root__.admin.userManagement.drawer.labels.nickname' as const;
+export const ADMIN_USER_MANAGEMENT_DRAWER_LABELS_NICKNAME_KEY = 'admin.userManagement.drawer.labels.nickname' as const;
 
 /** admin.userManagement.drawer.labels.role */
-export const ADMIN_USER_MANAGEMENT_DRAWER_LABELS_ROLE_KEY = '__root__.admin.userManagement.drawer.labels.role' as const;
+export const ADMIN_USER_MANAGEMENT_DRAWER_LABELS_ROLE_KEY = 'admin.userManagement.drawer.labels.role' as const;
 
 /** admin.userManagement.drawer.labels.status */
-export const ADMIN_USER_MANAGEMENT_DRAWER_LABELS_STATUS_KEY = '__root__.admin.userManagement.drawer.labels.status' as const;
+export const ADMIN_USER_MANAGEMENT_DRAWER_LABELS_STATUS_KEY = 'admin.userManagement.drawer.labels.status' as const;
 
 /** admin.userManagement.drawer.title */
-export const ADMIN_USER_MANAGEMENT_DRAWER_TITLE_KEY = '__root__.admin.userManagement.drawer.title' as const;
+export const ADMIN_USER_MANAGEMENT_DRAWER_TITLE_KEY = 'admin.userManagement.drawer.title' as const;
 
 /** admin.userManagement.filters.rolePlaceholder */
-export const ADMIN_USER_MANAGEMENT_FILTERS_ROLE_PLACEHOLDER_KEY = '__root__.admin.userManagement.filters.rolePlaceholder' as const;
+export const ADMIN_USER_MANAGEMENT_FILTERS_ROLE_PLACEHOLDER_KEY = 'admin.userManagement.filters.rolePlaceholder' as const;
 
 /** admin.userManagement.filters.searchPlaceholder */
-export const ADMIN_USER_MANAGEMENT_FILTERS_SEARCH_PLACEHOLDER_KEY = '__root__.admin.userManagement.filters.searchPlaceholder' as const;
+export const ADMIN_USER_MANAGEMENT_FILTERS_SEARCH_PLACEHOLDER_KEY = 'admin.userManagement.filters.searchPlaceholder' as const;
 
 /** admin.userManagement.filters.statusPlaceholder */
-export const ADMIN_USER_MANAGEMENT_FILTERS_STATUS_PLACEHOLDER_KEY = '__root__.admin.userManagement.filters.statusPlaceholder' as const;
+export const ADMIN_USER_MANAGEMENT_FILTERS_STATUS_PLACEHOLDER_KEY = 'admin.userManagement.filters.statusPlaceholder' as const;
 
 /** admin.userManagement.form.accountNumber */
-export const ADMIN_USER_MANAGEMENT_FORM_ACCOUNT_NUMBER_KEY = '__root__.admin.userManagement.form.accountNumber' as const;
+export const ADMIN_USER_MANAGEMENT_FORM_ACCOUNT_NUMBER_KEY = 'admin.userManagement.form.accountNumber' as const;
 
 /** admin.userManagement.form.accountNumberInvalid */
-export const ADMIN_USER_MANAGEMENT_FORM_ACCOUNT_NUMBER_INVALID_KEY = '__root__.admin.userManagement.form.accountNumberInvalid' as const;
+export const ADMIN_USER_MANAGEMENT_FORM_ACCOUNT_NUMBER_INVALID_KEY = 'admin.userManagement.form.accountNumberInvalid' as const;
 
 /** admin.userManagement.form.email */
-export const ADMIN_USER_MANAGEMENT_FORM_EMAIL_KEY = '__root__.admin.userManagement.form.email' as const;
+export const ADMIN_USER_MANAGEMENT_FORM_EMAIL_KEY = 'admin.userManagement.form.email' as const;
 
 /** admin.userManagement.form.nickname */
-export const ADMIN_USER_MANAGEMENT_FORM_NICKNAME_KEY = '__root__.admin.userManagement.form.nickname' as const;
+export const ADMIN_USER_MANAGEMENT_FORM_NICKNAME_KEY = 'admin.userManagement.form.nickname' as const;
 
 /** admin.userManagement.form.password */
-export const ADMIN_USER_MANAGEMENT_FORM_PASSWORD_KEY = '__root__.admin.userManagement.form.password' as const;
+export const ADMIN_USER_MANAGEMENT_FORM_PASSWORD_KEY = 'admin.userManagement.form.password' as const;
 
 /** admin.userManagement.form.placeholders.email */
-export const ADMIN_USER_MANAGEMENT_FORM_PLACEHOLDERS_EMAIL_KEY = '__root__.admin.userManagement.form.placeholders.email' as const;
+export const ADMIN_USER_MANAGEMENT_FORM_PLACEHOLDERS_EMAIL_KEY = 'admin.userManagement.form.placeholders.email' as const;
 
 /** admin.userManagement.form.placeholders.nickname */
-export const ADMIN_USER_MANAGEMENT_FORM_PLACEHOLDERS_NICKNAME_KEY = '__root__.admin.userManagement.form.placeholders.nickname' as const;
+export const ADMIN_USER_MANAGEMENT_FORM_PLACEHOLDERS_NICKNAME_KEY = 'admin.userManagement.form.placeholders.nickname' as const;
 
 /** admin.userManagement.form.placeholders.password */
-export const ADMIN_USER_MANAGEMENT_FORM_PLACEHOLDERS_PASSWORD_KEY = '__root__.admin.userManagement.form.placeholders.password' as const;
+export const ADMIN_USER_MANAGEMENT_FORM_PLACEHOLDERS_PASSWORD_KEY = 'admin.userManagement.form.placeholders.password' as const;
 
 /** admin.userManagement.form.role */
-export const ADMIN_USER_MANAGEMENT_FORM_ROLE_KEY = '__root__.admin.userManagement.form.role' as const;
+export const ADMIN_USER_MANAGEMENT_FORM_ROLE_KEY = 'admin.userManagement.form.role' as const;
 
 /** admin.userManagement.form.status */
-export const ADMIN_USER_MANAGEMENT_FORM_STATUS_KEY = '__root__.admin.userManagement.form.status' as const;
+export const ADMIN_USER_MANAGEMENT_FORM_STATUS_KEY = 'admin.userManagement.form.status' as const;
 
 /** admin.userManagement.messages.newPasswordIs */
-export const ADMIN_USER_MANAGEMENT_MESSAGES_NEW_PASSWORD_IS_KEY = '__root__.admin.userManagement.messages.newPasswordIs' as const;
+export const ADMIN_USER_MANAGEMENT_MESSAGES_NEW_PASSWORD_IS_KEY = 'admin.userManagement.messages.newPasswordIs' as const;
 
 /** admin.userManagement.messages.passwordUpdateFailed */
-export const ADMIN_USER_MANAGEMENT_MESSAGES_PASSWORD_UPDATE_FAILED_KEY = '__root__.admin.userManagement.messages.passwordUpdateFailed' as const;
+export const ADMIN_USER_MANAGEMENT_MESSAGES_PASSWORD_UPDATE_FAILED_KEY = 'admin.userManagement.messages.passwordUpdateFailed' as const;
 
 /** admin.userManagement.messages.passwordUpdatedSuccess */
-export const ADMIN_USER_MANAGEMENT_MESSAGES_PASSWORD_UPDATED_SUCCESS_KEY = '__root__.admin.userManagement.messages.passwordUpdatedSuccess' as const;
+export const ADMIN_USER_MANAGEMENT_MESSAGES_PASSWORD_UPDATED_SUCCESS_KEY = 'admin.userManagement.messages.passwordUpdatedSuccess' as const;
 
 /** admin.userManagement.messages.userCreateFailed */
-export const ADMIN_USER_MANAGEMENT_MESSAGES_USER_CREATE_FAILED_KEY = '__root__.admin.userManagement.messages.userCreateFailed' as const;
+export const ADMIN_USER_MANAGEMENT_MESSAGES_USER_CREATE_FAILED_KEY = 'admin.userManagement.messages.userCreateFailed' as const;
 
 /** admin.userManagement.messages.userCreatedSuccess */
-export const ADMIN_USER_MANAGEMENT_MESSAGES_USER_CREATED_SUCCESS_KEY = '__root__.admin.userManagement.messages.userCreatedSuccess' as const;
+export const ADMIN_USER_MANAGEMENT_MESSAGES_USER_CREATED_SUCCESS_KEY = 'admin.userManagement.messages.userCreatedSuccess' as const;
 
 /** admin.userManagement.messages.userDeleteFailed */
-export const ADMIN_USER_MANAGEMENT_MESSAGES_USER_DELETE_FAILED_KEY = '__root__.admin.userManagement.messages.userDeleteFailed' as const;
+export const ADMIN_USER_MANAGEMENT_MESSAGES_USER_DELETE_FAILED_KEY = 'admin.userManagement.messages.userDeleteFailed' as const;
 
 /** admin.userManagement.messages.userDeletedSuccess */
-export const ADMIN_USER_MANAGEMENT_MESSAGES_USER_DELETED_SUCCESS_KEY = '__root__.admin.userManagement.messages.userDeletedSuccess' as const;
+export const ADMIN_USER_MANAGEMENT_MESSAGES_USER_DELETED_SUCCESS_KEY = 'admin.userManagement.messages.userDeletedSuccess' as const;
 
 /** admin.userManagement.messages.userDisabled */
-export const ADMIN_USER_MANAGEMENT_MESSAGES_USER_DISABLED_KEY = '__root__.admin.userManagement.messages.userDisabled' as const;
+export const ADMIN_USER_MANAGEMENT_MESSAGES_USER_DISABLED_KEY = 'admin.userManagement.messages.userDisabled' as const;
 
 /** admin.userManagement.messages.userEnabled */
-export const ADMIN_USER_MANAGEMENT_MESSAGES_USER_ENABLED_KEY = '__root__.admin.userManagement.messages.userEnabled' as const;
+export const ADMIN_USER_MANAGEMENT_MESSAGES_USER_ENABLED_KEY = 'admin.userManagement.messages.userEnabled' as const;
 
 /** admin.userManagement.messages.userUpdateFailed */
-export const ADMIN_USER_MANAGEMENT_MESSAGES_USER_UPDATE_FAILED_KEY = '__root__.admin.userManagement.messages.userUpdateFailed' as const;
+export const ADMIN_USER_MANAGEMENT_MESSAGES_USER_UPDATE_FAILED_KEY = 'admin.userManagement.messages.userUpdateFailed' as const;
 
 /** admin.userManagement.messages.userUpdatedSuccess */
-export const ADMIN_USER_MANAGEMENT_MESSAGES_USER_UPDATED_SUCCESS_KEY = '__root__.admin.userManagement.messages.userUpdatedSuccess' as const;
+export const ADMIN_USER_MANAGEMENT_MESSAGES_USER_UPDATED_SUCCESS_KEY = 'admin.userManagement.messages.userUpdatedSuccess' as const;
 
 /** admin.userManagement.modals.createTitle */
-export const ADMIN_USER_MANAGEMENT_MODALS_CREATE_TITLE_KEY = '__root__.admin.userManagement.modals.createTitle' as const;
+export const ADMIN_USER_MANAGEMENT_MODALS_CREATE_TITLE_KEY = 'admin.userManagement.modals.createTitle' as const;
 
 /** admin.userManagement.modals.editTitle */
-export const ADMIN_USER_MANAGEMENT_MODALS_EDIT_TITLE_KEY = '__root__.admin.userManagement.modals.editTitle' as const;
+export const ADMIN_USER_MANAGEMENT_MODALS_EDIT_TITLE_KEY = 'admin.userManagement.modals.editTitle' as const;
 
 /** admin.userManagement.modals.passwordTitle */
-export const ADMIN_USER_MANAGEMENT_MODALS_PASSWORD_TITLE_KEY = '__root__.admin.userManagement.modals.passwordTitle' as const;
+export const ADMIN_USER_MANAGEMENT_MODALS_PASSWORD_TITLE_KEY = 'admin.userManagement.modals.passwordTitle' as const;
 
 /** admin.userManagement.pagination.total */
-export const ADMIN_USER_MANAGEMENT_PAGINATION_TOTAL_KEY = '__root__.admin.userManagement.pagination.total' as const;
+export const ADMIN_USER_MANAGEMENT_PAGINATION_TOTAL_KEY = 'admin.userManagement.pagination.total' as const;
 
 /** admin.userManagement.passwordForm.confirmPassword */
-export const ADMIN_USER_MANAGEMENT_PASSWORD_FORM_CONFIRM_PASSWORD_KEY = '__root__.admin.userManagement.passwordForm.confirmPassword' as const;
+export const ADMIN_USER_MANAGEMENT_PASSWORD_FORM_CONFIRM_PASSWORD_KEY = 'admin.userManagement.passwordForm.confirmPassword' as const;
 
 /** admin.userManagement.passwordForm.newPassword */
-export const ADMIN_USER_MANAGEMENT_PASSWORD_FORM_NEW_PASSWORD_KEY = '__root__.admin.userManagement.passwordForm.newPassword' as const;
+export const ADMIN_USER_MANAGEMENT_PASSWORD_FORM_NEW_PASSWORD_KEY = 'admin.userManagement.passwordForm.newPassword' as const;
 
 /** admin.userManagement.passwordForm.placeholders.confirmPassword */
-export const ADMIN_USER_MANAGEMENT_PASSWORD_FORM_PLACEHOLDERS_CONFIRM_PASSWORD_KEY = '__root__.admin.userManagement.passwordForm.placeholders.confirmPassword' as const;
+export const ADMIN_USER_MANAGEMENT_PASSWORD_FORM_PLACEHOLDERS_CONFIRM_PASSWORD_KEY = 'admin.userManagement.passwordForm.placeholders.confirmPassword' as const;
 
 /** admin.userManagement.passwordForm.placeholders.newPassword */
-export const ADMIN_USER_MANAGEMENT_PASSWORD_FORM_PLACEHOLDERS_NEW_PASSWORD_KEY = '__root__.admin.userManagement.passwordForm.placeholders.newPassword' as const;
+export const ADMIN_USER_MANAGEMENT_PASSWORD_FORM_PLACEHOLDERS_NEW_PASSWORD_KEY = 'admin.userManagement.passwordForm.placeholders.newPassword' as const;
 
 /** admin.userManagement.passwordForm.submit */
-export const ADMIN_USER_MANAGEMENT_PASSWORD_FORM_SUBMIT_KEY = '__root__.admin.userManagement.passwordForm.submit' as const;
+export const ADMIN_USER_MANAGEMENT_PASSWORD_FORM_SUBMIT_KEY = 'admin.userManagement.passwordForm.submit' as const;
 
 /** admin.userManagement.passwordForm.validation.confirmPasswordRequired */
-export const ADMIN_USER_MANAGEMENT_PASSWORD_FORM_VALIDATION_CONFIRM_PASSWORD_REQUIRED_KEY = '__root__.admin.userManagement.passwordForm.validation.confirmPasswordRequired' as const;
+export const ADMIN_USER_MANAGEMENT_PASSWORD_FORM_VALIDATION_CONFIRM_PASSWORD_REQUIRED_KEY = 'admin.userManagement.passwordForm.validation.confirmPasswordRequired' as const;
 
 /** admin.userManagement.passwordForm.validation.newPasswordRequired */
-export const ADMIN_USER_MANAGEMENT_PASSWORD_FORM_VALIDATION_NEW_PASSWORD_REQUIRED_KEY = '__root__.admin.userManagement.passwordForm.validation.newPasswordRequired' as const;
+export const ADMIN_USER_MANAGEMENT_PASSWORD_FORM_VALIDATION_NEW_PASSWORD_REQUIRED_KEY = 'admin.userManagement.passwordForm.validation.newPasswordRequired' as const;
 
 /** admin.userManagement.passwordForm.validation.passwordMin8 */
-export const ADMIN_USER_MANAGEMENT_PASSWORD_FORM_VALIDATION_PASSWORD_MIN8_KEY = '__root__.admin.userManagement.passwordForm.validation.passwordMin8' as const;
+export const ADMIN_USER_MANAGEMENT_PASSWORD_FORM_VALIDATION_PASSWORD_MIN8_KEY = 'admin.userManagement.passwordForm.validation.passwordMin8' as const;
 
 /** admin.userManagement.passwordForm.validation.passwordMismatch */
-export const ADMIN_USER_MANAGEMENT_PASSWORD_FORM_VALIDATION_PASSWORD_MISMATCH_KEY = '__root__.admin.userManagement.passwordForm.validation.passwordMismatch' as const;
+export const ADMIN_USER_MANAGEMENT_PASSWORD_FORM_VALIDATION_PASSWORD_MISMATCH_KEY = 'admin.userManagement.passwordForm.validation.passwordMismatch' as const;
 
 /** admin.userManagement.passwordForm.validation.passwordMustContainLettersAndNumbers */
-export const ADMIN_USER_MANAGEMENT_PASSWORD_FORM_VALIDATION_PASSWORD_MUST_CONTAIN_LETTERS_AND_NUMBERS_KEY = '__root__.admin.userManagement.passwordForm.validation.passwordMustContainLettersAndNumbers' as const;
+export const ADMIN_USER_MANAGEMENT_PASSWORD_FORM_VALIDATION_PASSWORD_MUST_CONTAIN_LETTERS_AND_NUMBERS_KEY = 'admin.userManagement.passwordForm.validation.passwordMustContainLettersAndNumbers' as const;
 
 /** admin.userManagement.roles.audit */
-export const ADMIN_USER_MANAGEMENT_ROLES_AUDIT_KEY = '__root__.admin.userManagement.roles.audit' as const;
+export const ADMIN_USER_MANAGEMENT_ROLES_AUDIT_KEY = 'admin.userManagement.roles.audit' as const;
 
 /** admin.userManagement.roles.customerService */
-export const ADMIN_USER_MANAGEMENT_ROLES_CUSTOMER_SERVICE_KEY = '__root__.admin.userManagement.roles.customerService' as const;
+export const ADMIN_USER_MANAGEMENT_ROLES_CUSTOMER_SERVICE_KEY = 'admin.userManagement.roles.customerService' as const;
 
 /** admin.userManagement.roles.operation */
-export const ADMIN_USER_MANAGEMENT_ROLES_OPERATION_KEY = '__root__.admin.userManagement.roles.operation' as const;
+export const ADMIN_USER_MANAGEMENT_ROLES_OPERATION_KEY = 'admin.userManagement.roles.operation' as const;
 
 /** admin.userManagement.roles.superAdmin */
-export const ADMIN_USER_MANAGEMENT_ROLES_SUPER_ADMIN_KEY = '__root__.admin.userManagement.roles.superAdmin' as const;
+export const ADMIN_USER_MANAGEMENT_ROLES_SUPER_ADMIN_KEY = 'admin.userManagement.roles.superAdmin' as const;
 
 /** admin.userManagement.roles.user */
-export const ADMIN_USER_MANAGEMENT_ROLES_USER_KEY = '__root__.admin.userManagement.roles.user' as const;
+export const ADMIN_USER_MANAGEMENT_ROLES_USER_KEY = 'admin.userManagement.roles.user' as const;
 
 /** admin.userManagement.status.active */
-export const ADMIN_USER_MANAGEMENT_STATUS_ACTIVE_KEY = '__root__.admin.userManagement.status.active' as const;
+export const ADMIN_USER_MANAGEMENT_STATUS_ACTIVE_KEY = 'admin.userManagement.status.active' as const;
 
 /** admin.userManagement.status.suspended */
-export const ADMIN_USER_MANAGEMENT_STATUS_SUSPENDED_KEY = '__root__.admin.userManagement.status.suspended' as const;
+export const ADMIN_USER_MANAGEMENT_STATUS_SUSPENDED_KEY = 'admin.userManagement.status.suspended' as const;
 
 /** admin.userManagement.table.actions */
-export const ADMIN_USER_MANAGEMENT_TABLE_ACTIONS_KEY = '__root__.admin.userManagement.table.actions' as const;
+export const ADMIN_USER_MANAGEMENT_TABLE_ACTIONS_KEY = 'admin.userManagement.table.actions' as const;
 
 /** admin.userManagement.table.createdAt */
-export const ADMIN_USER_MANAGEMENT_TABLE_CREATED_AT_KEY = '__root__.admin.userManagement.table.createdAt' as const;
+export const ADMIN_USER_MANAGEMENT_TABLE_CREATED_AT_KEY = 'admin.userManagement.table.createdAt' as const;
 
 /** admin.userManagement.table.email */
-export const ADMIN_USER_MANAGEMENT_TABLE_EMAIL_KEY = '__root__.admin.userManagement.table.email' as const;
+export const ADMIN_USER_MANAGEMENT_TABLE_EMAIL_KEY = 'admin.userManagement.table.email' as const;
 
 /** admin.userManagement.table.id */
-export const ADMIN_USER_MANAGEMENT_TABLE_ID_KEY = '__root__.admin.userManagement.table.id' as const;
+export const ADMIN_USER_MANAGEMENT_TABLE_ID_KEY = 'admin.userManagement.table.id' as const;
 
 /** admin.userManagement.table.mtAccountCount */
-export const ADMIN_USER_MANAGEMENT_TABLE_MT_ACCOUNT_COUNT_KEY = '__root__.admin.userManagement.table.mtAccountCount' as const;
+export const ADMIN_USER_MANAGEMENT_TABLE_MT_ACCOUNT_COUNT_KEY = 'admin.userManagement.table.mtAccountCount' as const;
 
 /** admin.userManagement.table.nickname */
-export const ADMIN_USER_MANAGEMENT_TABLE_NICKNAME_KEY = '__root__.admin.userManagement.table.nickname' as const;
+export const ADMIN_USER_MANAGEMENT_TABLE_NICKNAME_KEY = 'admin.userManagement.table.nickname' as const;
 
 /** admin.userManagement.table.role */
-export const ADMIN_USER_MANAGEMENT_TABLE_ROLE_KEY = '__root__.admin.userManagement.table.role' as const;
+export const ADMIN_USER_MANAGEMENT_TABLE_ROLE_KEY = 'admin.userManagement.table.role' as const;
 
 /** admin.userManagement.table.status */
-export const ADMIN_USER_MANAGEMENT_TABLE_STATUS_KEY = '__root__.admin.userManagement.table.status' as const;
+export const ADMIN_USER_MANAGEMENT_TABLE_STATUS_KEY = 'admin.userManagement.table.status' as const;
 
 /** admin.userManagement.title */
-export const ADMIN_USER_MANAGEMENT_TITLE_KEY = '__root__.admin.userManagement.title' as const;
+export const ADMIN_USER_MANAGEMENT_TITLE_KEY = 'admin.userManagement.title' as const;
 
 /** admin.wallet.accountNumber */
-export const ADMIN_WALLET_ACCOUNT_NUMBER_KEY = '__root__.admin.wallet.accountNumber' as const;
+export const ADMIN_WALLET_ACCOUNT_NUMBER_KEY = 'admin.wallet.accountNumber' as const;
 
 /** admin.wallet.add */
-export const ADMIN_WALLET_ADD_KEY = '__root__.admin.wallet.add' as const;
+export const ADMIN_WALLET_ADD_KEY = 'admin.wallet.add' as const;
 
 /** admin.wallet.adjustBalance */
-export const ADMIN_WALLET_ADJUST_BALANCE_KEY = '__root__.admin.wallet.adjustBalance' as const;
+export const ADMIN_WALLET_ADJUST_BALANCE_KEY = 'admin.wallet.adjustBalance' as const;
 
 /** admin.wallet.adjustFailed */
-export const ADMIN_WALLET_ADJUST_FAILED_KEY = '__root__.admin.wallet.adjustFailed' as const;
+export const ADMIN_WALLET_ADJUST_FAILED_KEY = 'admin.wallet.adjustFailed' as const;
 
 /** admin.wallet.adjustSuccess */
-export const ADMIN_WALLET_ADJUST_SUCCESS_KEY = '__root__.admin.wallet.adjustSuccess' as const;
+export const ADMIN_WALLET_ADJUST_SUCCESS_KEY = 'admin.wallet.adjustSuccess' as const;
 
 /** admin.wallet.deduct */
-export const ADMIN_WALLET_DEDUCT_KEY = '__root__.admin.wallet.deduct' as const;
+export const ADMIN_WALLET_DEDUCT_KEY = 'admin.wallet.deduct' as const;
 
 /** admin.wallet.noUsers */
-export const ADMIN_WALLET_NO_USERS_KEY = '__root__.admin.wallet.noUsers' as const;
+export const ADMIN_WALLET_NO_USERS_KEY = 'admin.wallet.noUsers' as const;
 
 /** admin.wallet.reason */
-export const ADMIN_WALLET_REASON_KEY = '__root__.admin.wallet.reason' as const;
+export const ADMIN_WALLET_REASON_KEY = 'admin.wallet.reason' as const;
 
 /** admin.wallet.searchPlaceholder */
-export const ADMIN_WALLET_SEARCH_PLACEHOLDER_KEY = '__root__.admin.wallet.searchPlaceholder' as const;
+export const ADMIN_WALLET_SEARCH_PLACEHOLDER_KEY = 'admin.wallet.searchPlaceholder' as const;
 
 /** admin.wallet.title */
-export const ADMIN_WALLET_TITLE_KEY = '__root__.admin.wallet.title' as const;
+export const ADMIN_WALLET_TITLE_KEY = 'admin.wallet.title' as const;
 
 /** admin.wallet.walletFor */
-export const ADMIN_WALLET_WALLET_FOR_KEY = '__root__.admin.wallet.walletFor' as const;
+export const ADMIN_WALLET_WALLET_FOR_KEY = 'admin.wallet.walletFor' as const;
 
 /** app.name */
-export const APP_NAME_KEY = '__root__.app.name' as const;
+export const APP_NAME_KEY = 'app.name' as const;
 
 /** auth.fields.confirmPassword */
-export const AUTH_FIELDS_CONFIRM_PASSWORD_KEY = '__root__.auth.fields.confirmPassword' as const;
+export const AUTH_FIELDS_CONFIRM_PASSWORD_KEY = 'auth.fields.confirmPassword' as const;
 
 /** auth.fields.email */
-export const AUTH_FIELDS_EMAIL_KEY = '__root__.auth.fields.email' as const;
+export const AUTH_FIELDS_EMAIL_KEY = 'auth.fields.email' as const;
 
 /** auth.fields.password */
-export const AUTH_FIELDS_PASSWORD_KEY = '__root__.auth.fields.password' as const;
+export const AUTH_FIELDS_PASSWORD_KEY = 'auth.fields.password' as const;
 
 /** auth.forgotPassword.backToLogin */
-export const AUTH_FORGOT_PASSWORD_BACK_TO_LOGIN_KEY = '__root__.auth.forgotPassword.backToLogin' as const;
+export const AUTH_FORGOT_PASSWORD_BACK_TO_LOGIN_KEY = 'auth.forgotPassword.backToLogin' as const;
 
 /** auth.forgotPassword.hint */
-export const AUTH_FORGOT_PASSWORD_HINT_KEY = '__root__.auth.forgotPassword.hint' as const;
+export const AUTH_FORGOT_PASSWORD_HINT_KEY = 'auth.forgotPassword.hint' as const;
 
 /** auth.forgotPassword.title */
-export const AUTH_FORGOT_PASSWORD_TITLE_KEY = '__root__.auth.forgotPassword.title' as const;
+export const AUTH_FORGOT_PASSWORD_TITLE_KEY = 'auth.forgotPassword.title' as const;
 
 /** auth.login.forgotPassword */
-export const AUTH_LOGIN_FORGOT_PASSWORD_KEY = '__root__.auth.login.forgotPassword' as const;
+export const AUTH_LOGIN_FORGOT_PASSWORD_KEY = 'auth.login.forgotPassword' as const;
 
 /** auth.login.login */
-export const AUTH_LOGIN_LOGIN_KEY = '__root__.auth.login.login' as const;
+export const AUTH_LOGIN_LOGIN_KEY = 'auth.login.login' as const;
 
 /** auth.login.noAccount */
-export const AUTH_LOGIN_NO_ACCOUNT_KEY = '__root__.auth.login.noAccount' as const;
+export const AUTH_LOGIN_NO_ACCOUNT_KEY = 'auth.login.noAccount' as const;
 
 /** auth.login.registerNow */
-export const AUTH_LOGIN_REGISTER_NOW_KEY = '__root__.auth.login.registerNow' as const;
+export const AUTH_LOGIN_REGISTER_NOW_KEY = 'auth.login.registerNow' as const;
 
 /** auth.login.rememberMe */
-export const AUTH_LOGIN_REMEMBER_ME_KEY = '__root__.auth.login.rememberMe' as const;
+export const AUTH_LOGIN_REMEMBER_ME_KEY = 'auth.login.rememberMe' as const;
 
 /** auth.login.signingIn */
-export const AUTH_LOGIN_SIGNING_IN_KEY = '__root__.auth.login.signingIn' as const;
+export const AUTH_LOGIN_SIGNING_IN_KEY = 'auth.login.signingIn' as const;
 
 /** auth.login.subtitle */
-export const AUTH_LOGIN_SUBTITLE_KEY = '__root__.auth.login.subtitle' as const;
+export const AUTH_LOGIN_SUBTITLE_KEY = 'auth.login.subtitle' as const;
 
 /** auth.messages.fetchMeFailed */
-export const AUTH_MESSAGES_FETCH_ME_FAILED_KEY = '__root__.auth.messages.fetchMeFailed' as const;
+export const AUTH_MESSAGES_FETCH_ME_FAILED_KEY = 'auth.messages.fetchMeFailed' as const;
 
 /** auth.messages.loginFailed */
-export const AUTH_MESSAGES_LOGIN_FAILED_KEY = '__root__.auth.messages.loginFailed' as const;
+export const AUTH_MESSAGES_LOGIN_FAILED_KEY = 'auth.messages.loginFailed' as const;
 
 /** auth.messages.loginSuccess */
-export const AUTH_MESSAGES_LOGIN_SUCCESS_KEY = '__root__.auth.messages.loginSuccess' as const;
+export const AUTH_MESSAGES_LOGIN_SUCCESS_KEY = 'auth.messages.loginSuccess' as const;
 
 /** auth.messages.logoutSuccess */
-export const AUTH_MESSAGES_LOGOUT_SUCCESS_KEY = '__root__.auth.messages.logoutSuccess' as const;
+export const AUTH_MESSAGES_LOGOUT_SUCCESS_KEY = 'auth.messages.logoutSuccess' as const;
 
 /** auth.messages.registerFailed */
-export const AUTH_MESSAGES_REGISTER_FAILED_KEY = '__root__.auth.messages.registerFailed' as const;
+export const AUTH_MESSAGES_REGISTER_FAILED_KEY = 'auth.messages.registerFailed' as const;
 
 /** auth.messages.registerSuccess */
-export const AUTH_MESSAGES_REGISTER_SUCCESS_KEY = '__root__.auth.messages.registerSuccess' as const;
+export const AUTH_MESSAGES_REGISTER_SUCCESS_KEY = 'auth.messages.registerSuccess' as const;
 
 /** auth.register.haveAccount */
-export const AUTH_REGISTER_HAVE_ACCOUNT_KEY = '__root__.auth.register.haveAccount' as const;
+export const AUTH_REGISTER_HAVE_ACCOUNT_KEY = 'auth.register.haveAccount' as const;
 
 /** auth.register.loginNow */
-export const AUTH_REGISTER_LOGIN_NOW_KEY = '__root__.auth.register.loginNow' as const;
+export const AUTH_REGISTER_LOGIN_NOW_KEY = 'auth.register.loginNow' as const;
 
 /** auth.register.register */
-export const AUTH_REGISTER_REGISTER_KEY = '__root__.auth.register.register' as const;
+export const AUTH_REGISTER_REGISTER_KEY = 'auth.register.register' as const;
 
 /** auth.register.signingUp */
-export const AUTH_REGISTER_SIGNING_UP_KEY = '__root__.auth.register.signingUp' as const;
+export const AUTH_REGISTER_SIGNING_UP_KEY = 'auth.register.signingUp' as const;
 
 /** auth.register.subtitle */
-export const AUTH_REGISTER_SUBTITLE_KEY = '__root__.auth.register.subtitle' as const;
+export const AUTH_REGISTER_SUBTITLE_KEY = 'auth.register.subtitle' as const;
 
 /** auth.validation.confirmPasswordRequired */
-export const AUTH_VALIDATION_CONFIRM_PASSWORD_REQUIRED_KEY = '__root__.auth.validation.confirmPasswordRequired' as const;
+export const AUTH_VALIDATION_CONFIRM_PASSWORD_REQUIRED_KEY = 'auth.validation.confirmPasswordRequired' as const;
 
 /** auth.validation.emailInvalid */
-export const AUTH_VALIDATION_EMAIL_INVALID_KEY = '__root__.auth.validation.emailInvalid' as const;
+export const AUTH_VALIDATION_EMAIL_INVALID_KEY = 'auth.validation.emailInvalid' as const;
 
 /** auth.validation.emailRequired */
-export const AUTH_VALIDATION_EMAIL_REQUIRED_KEY = '__root__.auth.validation.emailRequired' as const;
+export const AUTH_VALIDATION_EMAIL_REQUIRED_KEY = 'auth.validation.emailRequired' as const;
 
 /** auth.validation.passwordMin8 */
-export const AUTH_VALIDATION_PASSWORD_MIN8_KEY = '__root__.auth.validation.passwordMin8' as const;
+export const AUTH_VALIDATION_PASSWORD_MIN8_KEY = 'auth.validation.passwordMin8' as const;
 
 /** auth.validation.passwordMismatch */
-export const AUTH_VALIDATION_PASSWORD_MISMATCH_KEY = '__root__.auth.validation.passwordMismatch' as const;
+export const AUTH_VALIDATION_PASSWORD_MISMATCH_KEY = 'auth.validation.passwordMismatch' as const;
 
 /** auth.validation.passwordRequired */
-export const AUTH_VALIDATION_PASSWORD_REQUIRED_KEY = '__root__.auth.validation.passwordRequired' as const;
+export const AUTH_VALIDATION_PASSWORD_REQUIRED_KEY = 'auth.validation.passwordRequired' as const;
 
 /** autoTrading.logs.columns.action */
-export const AUTO_TRADING_LOGS_COLUMNS_ACTION_KEY = '__root__.autoTrading.logs.columns.action' as const;
+export const AUTO_TRADING_LOGS_COLUMNS_ACTION_KEY = 'autoTrading.logs.columns.action' as const;
 
 /** autoTrading.logs.columns.price */
-export const AUTO_TRADING_LOGS_COLUMNS_PRICE_KEY = '__root__.autoTrading.logs.columns.price' as const;
+export const AUTO_TRADING_LOGS_COLUMNS_PRICE_KEY = 'autoTrading.logs.columns.price' as const;
 
 /** autoTrading.logs.columns.profit */
-export const AUTO_TRADING_LOGS_COLUMNS_PROFIT_KEY = '__root__.autoTrading.logs.columns.profit' as const;
+export const AUTO_TRADING_LOGS_COLUMNS_PROFIT_KEY = 'autoTrading.logs.columns.profit' as const;
 
 /** autoTrading.logs.columns.symbol */
-export const AUTO_TRADING_LOGS_COLUMNS_SYMBOL_KEY = '__root__.autoTrading.logs.columns.symbol' as const;
+export const AUTO_TRADING_LOGS_COLUMNS_SYMBOL_KEY = 'autoTrading.logs.columns.symbol' as const;
 
 /** autoTrading.logs.columns.ticket */
-export const AUTO_TRADING_LOGS_COLUMNS_TICKET_KEY = '__root__.autoTrading.logs.columns.ticket' as const;
+export const AUTO_TRADING_LOGS_COLUMNS_TICKET_KEY = 'autoTrading.logs.columns.ticket' as const;
 
 /** autoTrading.logs.columns.time */
-export const AUTO_TRADING_LOGS_COLUMNS_TIME_KEY = '__root__.autoTrading.logs.columns.time' as const;
+export const AUTO_TRADING_LOGS_COLUMNS_TIME_KEY = 'autoTrading.logs.columns.time' as const;
 
 /** autoTrading.logs.columns.volume */
-export const AUTO_TRADING_LOGS_COLUMNS_VOLUME_KEY = '__root__.autoTrading.logs.columns.volume' as const;
+export const AUTO_TRADING_LOGS_COLUMNS_VOLUME_KEY = 'autoTrading.logs.columns.volume' as const;
 
 /** autoTrading.logs.empty */
-export const AUTO_TRADING_LOGS_EMPTY_KEY = '__root__.autoTrading.logs.empty' as const;
+export const AUTO_TRADING_LOGS_EMPTY_KEY = 'autoTrading.logs.empty' as const;
 
 /** autoTrading.logs.title */
-export const AUTO_TRADING_LOGS_TITLE_KEY = '__root__.autoTrading.logs.title' as const;
+export const AUTO_TRADING_LOGS_TITLE_KEY = 'autoTrading.logs.title' as const;
 
 /** autoTrading.messages.loadFailed */
-export const AUTO_TRADING_MESSAGES_LOAD_FAILED_KEY = '__root__.autoTrading.messages.loadFailed' as const;
+export const AUTO_TRADING_MESSAGES_LOAD_FAILED_KEY = 'autoTrading.messages.loadFailed' as const;
 
 /** autoTrading.messages.toggleFailed */
-export const AUTO_TRADING_MESSAGES_TOGGLE_FAILED_KEY = '__root__.autoTrading.messages.toggleFailed' as const;
+export const AUTO_TRADING_MESSAGES_TOGGLE_FAILED_KEY = 'autoTrading.messages.toggleFailed' as const;
 
 /** autoTrading.settings.maxDailyLoss */
-export const AUTO_TRADING_SETTINGS_MAX_DAILY_LOSS_KEY = '__root__.autoTrading.settings.maxDailyLoss' as const;
+export const AUTO_TRADING_SETTINGS_MAX_DAILY_LOSS_KEY = 'autoTrading.settings.maxDailyLoss' as const;
 
 /** autoTrading.settings.maxDailyLossHint */
-export const AUTO_TRADING_SETTINGS_MAX_DAILY_LOSS_HINT_KEY = '__root__.autoTrading.settings.maxDailyLossHint' as const;
+export const AUTO_TRADING_SETTINGS_MAX_DAILY_LOSS_HINT_KEY = 'autoTrading.settings.maxDailyLossHint' as const;
 
 /** autoTrading.settings.maxDrawdownPercent */
-export const AUTO_TRADING_SETTINGS_MAX_DRAWDOWN_PERCENT_KEY = '__root__.autoTrading.settings.maxDrawdownPercent' as const;
+export const AUTO_TRADING_SETTINGS_MAX_DRAWDOWN_PERCENT_KEY = 'autoTrading.settings.maxDrawdownPercent' as const;
 
 /** autoTrading.settings.maxDrawdownPercentHint */
-export const AUTO_TRADING_SETTINGS_MAX_DRAWDOWN_PERCENT_HINT_KEY = '__root__.autoTrading.settings.maxDrawdownPercentHint' as const;
+export const AUTO_TRADING_SETTINGS_MAX_DRAWDOWN_PERCENT_HINT_KEY = 'autoTrading.settings.maxDrawdownPercentHint' as const;
 
 /** autoTrading.settings.maxLotSize */
-export const AUTO_TRADING_SETTINGS_MAX_LOT_SIZE_KEY = '__root__.autoTrading.settings.maxLotSize' as const;
+export const AUTO_TRADING_SETTINGS_MAX_LOT_SIZE_KEY = 'autoTrading.settings.maxLotSize' as const;
 
 /** autoTrading.settings.maxLotSizeHint */
-export const AUTO_TRADING_SETTINGS_MAX_LOT_SIZE_HINT_KEY = '__root__.autoTrading.settings.maxLotSizeHint' as const;
+export const AUTO_TRADING_SETTINGS_MAX_LOT_SIZE_HINT_KEY = 'autoTrading.settings.maxLotSizeHint' as const;
 
 /** autoTrading.settings.maxPositions */
-export const AUTO_TRADING_SETTINGS_MAX_POSITIONS_KEY = '__root__.autoTrading.settings.maxPositions' as const;
+export const AUTO_TRADING_SETTINGS_MAX_POSITIONS_KEY = 'autoTrading.settings.maxPositions' as const;
 
 /** autoTrading.settings.maxPositionsHint */
-export const AUTO_TRADING_SETTINGS_MAX_POSITIONS_HINT_KEY = '__root__.autoTrading.settings.maxPositionsHint' as const;
+export const AUTO_TRADING_SETTINGS_MAX_POSITIONS_HINT_KEY = 'autoTrading.settings.maxPositionsHint' as const;
 
 /** autoTrading.settings.maxRiskPercent */
-export const AUTO_TRADING_SETTINGS_MAX_RISK_PERCENT_KEY = '__root__.autoTrading.settings.maxRiskPercent' as const;
+export const AUTO_TRADING_SETTINGS_MAX_RISK_PERCENT_KEY = 'autoTrading.settings.maxRiskPercent' as const;
 
 /** autoTrading.settings.maxRiskPercentHint */
-export const AUTO_TRADING_SETTINGS_MAX_RISK_PERCENT_HINT_KEY = '__root__.autoTrading.settings.maxRiskPercentHint' as const;
+export const AUTO_TRADING_SETTINGS_MAX_RISK_PERCENT_HINT_KEY = 'autoTrading.settings.maxRiskPercentHint' as const;
 
 /** autoTrading.settings.saveFailed */
-export const AUTO_TRADING_SETTINGS_SAVE_FAILED_KEY = '__root__.autoTrading.settings.saveFailed' as const;
+export const AUTO_TRADING_SETTINGS_SAVE_FAILED_KEY = 'autoTrading.settings.saveFailed' as const;
 
 /** autoTrading.settings.saveSuccess */
-export const AUTO_TRADING_SETTINGS_SAVE_SUCCESS_KEY = '__root__.autoTrading.settings.saveSuccess' as const;
+export const AUTO_TRADING_SETTINGS_SAVE_SUCCESS_KEY = 'autoTrading.settings.saveSuccess' as const;
 
 /** autoTrading.settings.title */
-export const AUTO_TRADING_SETTINGS_TITLE_KEY = '__root__.autoTrading.settings.title' as const;
+export const AUTO_TRADING_SETTINGS_TITLE_KEY = 'autoTrading.settings.title' as const;
 
 /** autoTrading.status.activeStrategies */
-export const AUTO_TRADING_STATUS_ACTIVE_STRATEGIES_KEY = '__root__.autoTrading.status.activeStrategies' as const;
+export const AUTO_TRADING_STATUS_ACTIVE_STRATEGIES_KEY = 'autoTrading.status.activeStrategies' as const;
 
 /** autoTrading.status.disabled */
-export const AUTO_TRADING_STATUS_DISABLED_KEY = '__root__.autoTrading.status.disabled' as const;
+export const AUTO_TRADING_STATUS_DISABLED_KEY = 'autoTrading.status.disabled' as const;
 
 /** autoTrading.status.enabled */
-export const AUTO_TRADING_STATUS_ENABLED_KEY = '__root__.autoTrading.status.enabled' as const;
+export const AUTO_TRADING_STATUS_ENABLED_KEY = 'autoTrading.status.enabled' as const;
 
 /** autoTrading.status.todayExecutions */
-export const AUTO_TRADING_STATUS_TODAY_EXECUTIONS_KEY = '__root__.autoTrading.status.todayExecutions' as const;
+export const AUTO_TRADING_STATUS_TODAY_EXECUTIONS_KEY = 'autoTrading.status.todayExecutions' as const;
 
 /** autoTrading.status.todayProfit */
-export const AUTO_TRADING_STATUS_TODAY_PROFIT_KEY = '__root__.autoTrading.status.todayProfit' as const;
+export const AUTO_TRADING_STATUS_TODAY_PROFIT_KEY = 'autoTrading.status.todayProfit' as const;
 
 /** autoTrading.title */
-export const AUTO_TRADING_TITLE_KEY = '__root__.autoTrading.title' as const;
+export const AUTO_TRADING_TITLE_KEY = 'autoTrading.title' as const;
 
 /** common.active */
-export const COMMON_ACTIVE_KEY = '__root__.common.active' as const;
+export const COMMON_ACTIVE_KEY = 'common.active' as const;
 
 /** common.back */
-export const COMMON_BACK_KEY = '__root__.common.back' as const;
+export const COMMON_BACK_KEY = 'common.back' as const;
 
 /** common.cancel */
-export const COMMON_CANCEL_KEY = '__root__.common.cancel' as const;
+export const COMMON_CANCEL_KEY = 'common.cancel' as const;
 
 /** common.clear */
-export const COMMON_CLEAR_KEY = '__root__.common.clear' as const;
+export const COMMON_CLEAR_KEY = 'common.clear' as const;
 
 /** common.close */
-export const COMMON_CLOSE_KEY = '__root__.common.close' as const;
+export const COMMON_CLOSE_KEY = 'common.close' as const;
 
 /** common.comingSoon */
-export const COMMON_COMING_SOON_KEY = '__root__.common.comingSoon' as const;
+export const COMMON_COMING_SOON_KEY = 'common.comingSoon' as const;
 
 /** common.confirm */
-export const COMMON_CONFIRM_KEY = '__root__.common.confirm' as const;
+export const COMMON_CONFIRM_KEY = 'common.confirm' as const;
 
 /** common.copied */
-export const COMMON_COPIED_KEY = '__root__.common.copied' as const;
+export const COMMON_COPIED_KEY = 'common.copied' as const;
 
 /** common.copy */
-export const COMMON_COPY_KEY = '__root__.common.copy' as const;
+export const COMMON_COPY_KEY = 'common.copy' as const;
 
 /** common.copyFailed */
-export const COMMON_COPY_FAILED_KEY = '__root__.common.copyFailed' as const;
+export const COMMON_COPY_FAILED_KEY = 'common.copyFailed' as const;
 
 /** common.create */
-export const COMMON_CREATE_KEY = '__root__.common.create' as const;
+export const COMMON_CREATE_KEY = 'common.create' as const;
 
 /** common.created */
-export const COMMON_CREATED_KEY = '__root__.common.created' as const;
+export const COMMON_CREATED_KEY = 'common.created' as const;
 
 /** common.currentPosition */
-export const COMMON_CURRENT_POSITION_KEY = '__root__.common.currentPosition' as const;
+export const COMMON_CURRENT_POSITION_KEY = 'common.currentPosition' as const;
 
 /** common.delete */
-export const COMMON_DELETE_KEY = '__root__.common.delete' as const;
+export const COMMON_DELETE_KEY = 'common.delete' as const;
 
 /** common.deleteFailed */
-export const COMMON_DELETE_FAILED_KEY = '__root__.common.deleteFailed' as const;
+export const COMMON_DELETE_FAILED_KEY = 'common.deleteFailed' as const;
 
 /** common.deleteSelected */
-export const COMMON_DELETE_SELECTED_KEY = '__root__.common.deleteSelected' as const;
+export const COMMON_DELETE_SELECTED_KEY = 'common.deleteSelected' as const;
 
 /** common.deleted */
-export const COMMON_DELETED_KEY = '__root__.common.deleted' as const;
+export const COMMON_DELETED_KEY = 'common.deleted' as const;
 
 /** common.disable */
-export const COMMON_DISABLE_KEY = '__root__.common.disable' as const;
+export const COMMON_DISABLE_KEY = 'common.disable' as const;
 
 /** common.disabled */
-export const COMMON_DISABLED_KEY = '__root__.common.disabled' as const;
+export const COMMON_DISABLED_KEY = 'common.disabled' as const;
 
 /** common.edit */
-export const COMMON_EDIT_KEY = '__root__.common.edit' as const;
+export const COMMON_EDIT_KEY = 'common.edit' as const;
 
 /** common.enable */
-export const COMMON_ENABLE_KEY = '__root__.common.enable' as const;
+export const COMMON_ENABLE_KEY = 'common.enable' as const;
 
 /** common.enabled */
-export const COMMON_ENABLED_KEY = '__root__.common.enabled' as const;
+export const COMMON_ENABLED_KEY = 'common.enabled' as const;
 
 /** common.error */
-export const COMMON_ERROR_KEY = '__root__.common.error' as const;
+export const COMMON_ERROR_KEY = 'common.error' as const;
 
 /** common.gotIt */
-export const COMMON_GOT_IT_KEY = '__root__.common.gotIt' as const;
+export const COMMON_GOT_IT_KEY = 'common.gotIt' as const;
 
 /** common.hideDetails */
-export const COMMON_HIDE_DETAILS_KEY = '__root__.common.hideDetails' as const;
+export const COMMON_HIDE_DETAILS_KEY = 'common.hideDetails' as const;
 
 /** common.inactive */
-export const COMMON_INACTIVE_KEY = '__root__.common.inactive' as const;
+export const COMMON_INACTIVE_KEY = 'common.inactive' as const;
 
 /** common.indicatorSettings */
-export const COMMON_INDICATOR_SETTINGS_KEY = '__root__.common.indicatorSettings' as const;
+export const COMMON_INDICATOR_SETTINGS_KEY = 'common.indicatorSettings' as const;
 
 /** common.lineColor */
-export const COMMON_LINE_COLOR_KEY = '__root__.common.lineColor' as const;
+export const COMMON_LINE_COLOR_KEY = 'common.lineColor' as const;
 
 /** common.loading */
-export const COMMON_LOADING_KEY = '__root__.common.loading' as const;
+export const COMMON_LOADING_KEY = 'common.loading' as const;
 
 /** common.loadingFailed */
-export const COMMON_LOADING_FAILED_KEY = '__root__.common.loadingFailed' as const;
+export const COMMON_LOADING_FAILED_KEY = 'common.loadingFailed' as const;
 
 /** common.months.jan */
-export const COMMON_MONTHS_JAN_KEY = '__root__.common.months.jan' as const;
+export const COMMON_MONTHS_JAN_KEY = 'common.months.jan' as const;
 
 /** common.months.jul */
-export const COMMON_MONTHS_JUL_KEY = '__root__.common.months.jul' as const;
+export const COMMON_MONTHS_JUL_KEY = 'common.months.jul' as const;
 
 /** common.next */
-export const COMMON_NEXT_KEY = '__root__.common.next' as const;
+export const COMMON_NEXT_KEY = 'common.next' as const;
 
 /** common.no */
-export const COMMON_NO_KEY = '__root__.common.no' as const;
+export const COMMON_NO_KEY = 'common.no' as const;
 
 /** common.noData */
-export const COMMON_NO_DATA_KEY = '__root__.common.noData' as const;
+export const COMMON_NO_DATA_KEY = 'common.noData' as const;
 
 /** common.noOpenPositionsForSymbol */
-export const COMMON_NO_OPEN_POSITIONS_FOR_SYMBOL_KEY = '__root__.common.noOpenPositionsForSymbol' as const;
+export const COMMON_NO_OPEN_POSITIONS_FOR_SYMBOL_KEY = 'common.noOpenPositionsForSymbol' as const;
 
 /** common.none */
-export const COMMON_NONE_KEY = '__root__.common.none' as const;
+export const COMMON_NONE_KEY = 'common.none' as const;
 
 /** common.ok */
-export const COMMON_OK_KEY = '__root__.common.ok' as const;
+export const COMMON_OK_KEY = 'common.ok' as const;
 
 /** common.operationFailed */
-export const COMMON_OPERATION_FAILED_KEY = '__root__.common.operationFailed' as const;
+export const COMMON_OPERATION_FAILED_KEY = 'common.operationFailed' as const;
 
 /** common.pageError */
-export const COMMON_PAGE_ERROR_KEY = '__root__.common.pageError' as const;
+export const COMMON_PAGE_ERROR_KEY = 'common.pageError' as const;
 
 /** common.pageUnderDevelopment */
-export const COMMON_PAGE_UNDER_DEVELOPMENT_KEY = '__root__.common.pageUnderDevelopment' as const;
+export const COMMON_PAGE_UNDER_DEVELOPMENT_KEY = 'common.pageUnderDevelopment' as const;
 
 /** common.pleaseWait */
-export const COMMON_PLEASE_WAIT_KEY = '__root__.common.pleaseWait' as const;
+export const COMMON_PLEASE_WAIT_KEY = 'common.pleaseWait' as const;
 
 /** common.previous */
-export const COMMON_PREVIOUS_KEY = '__root__.common.previous' as const;
+export const COMMON_PREVIOUS_KEY = 'common.previous' as const;
 
 /** common.refresh */
-export const COMMON_REFRESH_KEY = '__root__.common.refresh' as const;
+export const COMMON_REFRESH_KEY = 'common.refresh' as const;
 
 /** common.remove */
-export const COMMON_REMOVE_KEY = '__root__.common.remove' as const;
+export const COMMON_REMOVE_KEY = 'common.remove' as const;
 
 /** common.required */
-export const COMMON_REQUIRED_KEY = '__root__.common.required' as const;
+export const COMMON_REQUIRED_KEY = 'common.required' as const;
 
 /** common.retry */
-export const COMMON_RETRY_KEY = '__root__.common.retry' as const;
+export const COMMON_RETRY_KEY = 'common.retry' as const;
 
 /** common.save */
-export const COMMON_SAVE_KEY = '__root__.common.save' as const;
+export const COMMON_SAVE_KEY = 'common.save' as const;
 
 /** common.saveFailed */
-export const COMMON_SAVE_FAILED_KEY = '__root__.common.saveFailed' as const;
+export const COMMON_SAVE_FAILED_KEY = 'common.saveFailed' as const;
 
 /** common.saveSuccess */
-export const COMMON_SAVE_SUCCESS_KEY = '__root__.common.saveSuccess' as const;
+export const COMMON_SAVE_SUCCESS_KEY = 'common.saveSuccess' as const;
 
 /** common.searching */
-export const COMMON_SEARCHING_KEY = '__root__.common.searching' as const;
+export const COMMON_SEARCHING_KEY = 'common.searching' as const;
 
 /** common.selectSymbolToViewChart */
-export const COMMON_SELECT_SYMBOL_TO_VIEW_CHART_KEY = '__root__.common.selectSymbolToViewChart' as const;
+export const COMMON_SELECT_SYMBOL_TO_VIEW_CHART_KEY = 'common.selectSymbolToViewChart' as const;
 
 /** common.send */
-export const COMMON_SEND_KEY = '__root__.common.send' as const;
+export const COMMON_SEND_KEY = 'common.send' as const;
 
 /** common.showDetails */
-export const COMMON_SHOW_DETAILS_KEY = '__root__.common.showDetails' as const;
+export const COMMON_SHOW_DETAILS_KEY = 'common.showDetails' as const;
 
 /** common.time.day */
-export const COMMON_TIME_DAY_KEY = '__root__.common.time.day' as const;
+export const COMMON_TIME_DAY_KEY = 'common.time.day' as const;
 
 /** common.time.hour */
-export const COMMON_TIME_HOUR_KEY = '__root__.common.time.hour' as const;
+export const COMMON_TIME_HOUR_KEY = 'common.time.hour' as const;
 
 /** common.time.lessThanMinute */
-export const COMMON_TIME_LESS_THAN_MINUTE_KEY = '__root__.common.time.lessThanMinute' as const;
+export const COMMON_TIME_LESS_THAN_MINUTE_KEY = 'common.time.lessThanMinute' as const;
 
 /** common.time.minute */
-export const COMMON_TIME_MINUTE_KEY = '__root__.common.time.minute' as const;
+export const COMMON_TIME_MINUTE_KEY = 'common.time.minute' as const;
 
 /** common.totalItems */
-export const COMMON_TOTAL_ITEMS_KEY = '__root__.common.totalItems' as const;
+export const COMMON_TOTAL_ITEMS_KEY = 'common.totalItems' as const;
 
 /** common.translate */
-export const COMMON_TRANSLATE_KEY = '__root__.common.translate' as const;
+export const COMMON_TRANSLATE_KEY = 'common.translate' as const;
 
 /** common.unexpectedError */
-export const COMMON_UNEXPECTED_ERROR_KEY = '__root__.common.unexpectedError' as const;
+export const COMMON_UNEXPECTED_ERROR_KEY = 'common.unexpectedError' as const;
 
 /** common.unknown */
-export const COMMON_UNKNOWN_KEY = '__root__.common.unknown' as const;
+export const COMMON_UNKNOWN_KEY = 'common.unknown' as const;
 
 /** common.updated */
-export const COMMON_UPDATED_KEY = '__root__.common.updated' as const;
+export const COMMON_UPDATED_KEY = 'common.updated' as const;
 
 /** common.viewOriginal */
-export const COMMON_VIEW_ORIGINAL_KEY = '__root__.common.viewOriginal' as const;
+export const COMMON_VIEW_ORIGINAL_KEY = 'common.viewOriginal' as const;
 
 /** common.viewTranslation */
-export const COMMON_VIEW_TRANSLATION_KEY = '__root__.common.viewTranslation' as const;
+export const COMMON_VIEW_TRANSLATION_KEY = 'common.viewTranslation' as const;
 
 /** common.yes */
-export const COMMON_YES_KEY = '__root__.common.yes' as const;
+export const COMMON_YES_KEY = 'common.yes' as const;
 
 /** common.you */
-export const COMMON_YOU_KEY = '__root__.common.you' as const;
+export const COMMON_YOU_KEY = 'common.you' as const;
 
 /** errors.access_denied */
-export const ERRORS_ACCESS_DENIED_KEY = '__root__.errors.access_denied' as const;
+export const ERRORS_ACCESS_DENIED_KEY = 'errors.access_denied' as const;
 
 /** errors.account_connected */
-export const ERRORS_ACCOUNT_CONNECTED_KEY = '__root__.errors.account_connected' as const;
+export const ERRORS_ACCOUNT_CONNECTED_KEY = 'errors.account_connected' as const;
 
 /** errors.account_connection_failed */
-export const ERRORS_ACCOUNT_CONNECTION_FAILED_KEY = '__root__.errors.account_connection_failed' as const;
+export const ERRORS_ACCOUNT_CONNECTION_FAILED_KEY = 'errors.account_connection_failed' as const;
 
 /** errors.account_not_found */
-export const ERRORS_ACCOUNT_NOT_FOUND_KEY = '__root__.errors.account_not_found' as const;
+export const ERRORS_ACCOUNT_NOT_FOUND_KEY = 'errors.account_not_found' as const;
 
 /** errors.ai.api_key_required */
-export const ERRORS_AI_API_KEY_REQUIRED_KEY = '__root__.errors.ai.api_key_required' as const;
+export const ERRORS_AI_API_KEY_REQUIRED_KEY = 'errors.ai.api_key_required' as const;
 
 /** errors.ai.base_url_required */
-export const ERRORS_AI_BASE_URL_REQUIRED_KEY = '__root__.errors.ai.base_url_required' as const;
+export const ERRORS_AI_BASE_URL_REQUIRED_KEY = 'errors.ai.base_url_required' as const;
 
 /** errors.ai.base_url_scheme_invalid */
-export const ERRORS_AI_BASE_URL_SCHEME_INVALID_KEY = '__root__.errors.ai.base_url_scheme_invalid' as const;
+export const ERRORS_AI_BASE_URL_SCHEME_INVALID_KEY = 'errors.ai.base_url_scheme_invalid' as const;
 
 /** errors.ai.base_url_should_not_end_with_chat_completions */
-export const ERRORS_AI_BASE_URL_SHOULD_NOT_END_WITH_CHAT_COMPLETIONS_KEY = '__root__.errors.ai.base_url_should_not_end_with_chat_completions' as const;
+export const ERRORS_AI_BASE_URL_SHOULD_NOT_END_WITH_CHAT_COMPLETIONS_KEY = 'errors.ai.base_url_should_not_end_with_chat_completions' as const;
 
 /** errors.ai.config_service_not_initialized */
-export const ERRORS_AI_CONFIG_SERVICE_NOT_INITIALIZED_KEY = '__root__.errors.ai.config_service_not_initialized' as const;
+export const ERRORS_AI_CONFIG_SERVICE_NOT_INITIALIZED_KEY = 'errors.ai.config_service_not_initialized' as const;
 
 /** errors.ai.config_valid */
-export const ERRORS_AI_CONFIG_VALID_KEY = '__root__.errors.ai.config_valid' as const;
+export const ERRORS_AI_CONFIG_VALID_KEY = 'errors.ai.config_valid' as const;
 
 /** errors.ai.failed_to_create_request */
-export const ERRORS_AI_FAILED_TO_CREATE_REQUEST_KEY = '__root__.errors.ai.failed_to_create_request' as const;
+export const ERRORS_AI_FAILED_TO_CREATE_REQUEST_KEY = 'errors.ai.failed_to_create_request' as const;
 
 /** errors.ai.forbidden_quota */
-export const ERRORS_AI_FORBIDDEN_QUOTA_KEY = '__root__.errors.ai.forbidden_quota' as const;
+export const ERRORS_AI_FORBIDDEN_QUOTA_KEY = 'errors.ai.forbidden_quota' as const;
 
 /** errors.ai.free_tier_exhausted */
-export const ERRORS_AI_FREE_TIER_EXHAUSTED_KEY = '__root__.errors.ai.free_tier_exhausted' as const;
+export const ERRORS_AI_FREE_TIER_EXHAUSTED_KEY = 'errors.ai.free_tier_exhausted' as const;
 
 /** errors.ai.invalid_base_url */
-export const ERRORS_AI_INVALID_BASE_URL_KEY = '__root__.errors.ai.invalid_base_url' as const;
+export const ERRORS_AI_INVALID_BASE_URL_KEY = 'errors.ai.invalid_base_url' as const;
 
 /** errors.ai.invalid_provider */
-export const ERRORS_AI_INVALID_PROVIDER_KEY = '__root__.errors.ai.invalid_provider' as const;
+export const ERRORS_AI_INVALID_PROVIDER_KEY = 'errors.ai.invalid_provider' as const;
 
 /** errors.ai.no_trade_data_available */
-export const ERRORS_AI_NO_TRADE_DATA_AVAILABLE_KEY = '__root__.errors.ai.no_trade_data_available' as const;
+export const ERRORS_AI_NO_TRADE_DATA_AVAILABLE_KEY = 'errors.ai.no_trade_data_available' as const;
 
 /** errors.ai.not_configured */
-export const ERRORS_AI_NOT_CONFIGURED_KEY = '__root__.errors.ai.not_configured' as const;
+export const ERRORS_AI_NOT_CONFIGURED_KEY = 'errors.ai.not_configured' as const;
 
 /** errors.ai.probe_ok */
-export const ERRORS_AI_PROBE_OK_KEY = '__root__.errors.ai.probe_ok' as const;
+export const ERRORS_AI_PROBE_OK_KEY = 'errors.ai.probe_ok' as const;
 
 /** errors.ai.probe_ok_no_models */
-export const ERRORS_AI_PROBE_OK_NO_MODELS_KEY = '__root__.errors.ai.probe_ok_no_models' as const;
+export const ERRORS_AI_PROBE_OK_NO_MODELS_KEY = 'errors.ai.probe_ok_no_models' as const;
 
 /** errors.ai.provider_required */
-export const ERRORS_AI_PROVIDER_REQUIRED_KEY = '__root__.errors.ai.provider_required' as const;
+export const ERRORS_AI_PROVIDER_REQUIRED_KEY = 'errors.ai.provider_required' as const;
 
 /** errors.ai.provider_returned_empty_message */
-export const ERRORS_AI_PROVIDER_RETURNED_EMPTY_MESSAGE_KEY = '__root__.errors.ai.provider_returned_empty_message' as const;
+export const ERRORS_AI_PROVIDER_RETURNED_EMPTY_MESSAGE_KEY = 'errors.ai.provider_returned_empty_message' as const;
 
 /** errors.ai.rate_limited */
-export const ERRORS_AI_RATE_LIMITED_KEY = '__root__.errors.ai.rate_limited' as const;
+export const ERRORS_AI_RATE_LIMITED_KEY = 'errors.ai.rate_limited' as const;
 
 /** errors.ai.request_failed */
-export const ERRORS_AI_REQUEST_FAILED_KEY = '__root__.errors.ai.request_failed' as const;
+export const ERRORS_AI_REQUEST_FAILED_KEY = 'errors.ai.request_failed' as const;
 
 /** errors.auto_trading_disabled */
-export const ERRORS_AUTO_TRADING_DISABLED_KEY = '__root__.errors.auto_trading_disabled' as const;
+export const ERRORS_AUTO_TRADING_DISABLED_KEY = 'errors.auto_trading_disabled' as const;
 
 /** errors.auto_trading_enabled */
-export const ERRORS_AUTO_TRADING_ENABLED_KEY = '__root__.errors.auto_trading_enabled' as const;
+export const ERRORS_AUTO_TRADING_ENABLED_KEY = 'errors.auto_trading_enabled' as const;
 
 /** errors.connection_failed.content */
-export const ERRORS_CONNECTION_FAILED_CONTENT_KEY = '__root__.errors.connection_failed.content' as const;
+export const ERRORS_CONNECTION_FAILED_CONTENT_KEY = 'errors.connection_failed.content' as const;
 
 /** errors.connection_failed.title */
-export const ERRORS_CONNECTION_FAILED_TITLE_KEY = '__root__.errors.connection_failed.title' as const;
+export const ERRORS_CONNECTION_FAILED_TITLE_KEY = 'errors.connection_failed.title' as const;
 
 /** errors.email_already_registered */
-export const ERRORS_EMAIL_ALREADY_REGISTERED_KEY = '__root__.errors.email_already_registered' as const;
+export const ERRORS_EMAIL_ALREADY_REGISTERED_KEY = 'errors.email_already_registered' as const;
 
 /** errors.invalid_credentials */
-export const ERRORS_INVALID_CREDENTIALS_KEY = '__root__.errors.invalid_credentials' as const;
+export const ERRORS_INVALID_CREDENTIALS_KEY = 'errors.invalid_credentials' as const;
 
 /** errors.not_authenticated */
-export const ERRORS_NOT_AUTHENTICATED_KEY = '__root__.errors.not_authenticated' as const;
+export const ERRORS_NOT_AUTHENTICATED_KEY = 'errors.not_authenticated' as const;
 
 /** errors.schedule_service_not_available */
-export const ERRORS_SCHEDULE_SERVICE_NOT_AVAILABLE_KEY = '__root__.errors.schedule_service_not_available' as const;
+export const ERRORS_SCHEDULE_SERVICE_NOT_AVAILABLE_KEY = 'errors.schedule_service_not_available' as const;
 
 /** errors.translate_failed */
-export const ERRORS_TRANSLATE_FAILED_KEY = '__root__.errors.translate_failed' as const;
+export const ERRORS_TRANSLATE_FAILED_KEY = 'errors.translate_failed' as const;
 
 /** errors.user_not_found */
-export const ERRORS_USER_NOT_FOUND_KEY = '__root__.errors.user_not_found' as const;
+export const ERRORS_USER_NOT_FOUND_KEY = 'errors.user_not_found' as const;
 
 /** language.english */
-export const LANGUAGE_ENGLISH_KEY = '__root__.language.english' as const;
+export const LANGUAGE_ENGLISH_KEY = 'language.english' as const;
 
 /** language.japanese */
-export const LANGUAGE_JAPANESE_KEY = '__root__.language.japanese' as const;
+export const LANGUAGE_JAPANESE_KEY = 'language.japanese' as const;
 
 /** language.simplifiedChinese */
-export const LANGUAGE_SIMPLIFIED_CHINESE_KEY = '__root__.language.simplifiedChinese' as const;
+export const LANGUAGE_SIMPLIFIED_CHINESE_KEY = 'language.simplifiedChinese' as const;
 
 /** language.traditionalChinese */
-export const LANGUAGE_TRADITIONAL_CHINESE_KEY = '__root__.language.traditionalChinese' as const;
+export const LANGUAGE_TRADITIONAL_CHINESE_KEY = 'language.traditionalChinese' as const;
 
 /** language.vietnamese */
-export const LANGUAGE_VIETNAMESE_KEY = '__root__.language.vietnamese' as const;
+export const LANGUAGE_VIETNAMESE_KEY = 'language.vietnamese' as const;
 
 /** market.allSymbols */
-export const MARKET_ALL_SYMBOLS_KEY = '__root__.market.allSymbols' as const;
+export const MARKET_ALL_SYMBOLS_KEY = 'market.allSymbols' as const;
 
 /** market.ask */
-export const MARKET_ASK_KEY = '__root__.market.ask' as const;
+export const MARKET_ASK_KEY = 'market.ask' as const;
 
 /** market.bid */
-export const MARKET_BID_KEY = '__root__.market.bid' as const;
+export const MARKET_BID_KEY = 'market.bid' as const;
 
 /** market.common */
-export const MARKET_COMMON_KEY = '__root__.market.common' as const;
+export const MARKET_COMMON_KEY = 'market.common' as const;
 
 /** market.emptyWatchlist */
-export const MARKET_EMPTY_WATCHLIST_KEY = '__root__.market.emptyWatchlist' as const;
+export const MARKET_EMPTY_WATCHLIST_KEY = 'market.emptyWatchlist' as const;
 
 /** market.loadingSymbols */
-export const MARKET_LOADING_SYMBOLS_KEY = '__root__.market.loadingSymbols' as const;
+export const MARKET_LOADING_SYMBOLS_KEY = 'market.loadingSymbols' as const;
 
 /** market.mid */
-export const MARKET_MID_KEY = '__root__.market.mid' as const;
+export const MARKET_MID_KEY = 'market.mid' as const;
 
 /** market.noSymbolSelected */
-export const MARKET_NO_SYMBOL_SELECTED_KEY = '__root__.market.noSymbolSelected' as const;
+export const MARKET_NO_SYMBOL_SELECTED_KEY = 'market.noSymbolSelected' as const;
 
 /** market.noSymbolsFound */
-export const MARKET_NO_SYMBOLS_FOUND_KEY = '__root__.market.noSymbolsFound' as const;
+export const MARKET_NO_SYMBOLS_FOUND_KEY = 'market.noSymbolsFound' as const;
 
 /** market.popularSymbols */
-export const MARKET_POPULAR_SYMBOLS_KEY = '__root__.market.popularSymbols' as const;
+export const MARKET_POPULAR_SYMBOLS_KEY = 'market.popularSymbols' as const;
 
 /** market.searchPlaceholder */
-export const MARKET_SEARCH_PLACEHOLDER_KEY = '__root__.market.searchPlaceholder' as const;
+export const MARKET_SEARCH_PLACEHOLDER_KEY = 'market.searchPlaceholder' as const;
 
 /** market.searchSymbol */
-export const MARKET_SEARCH_SYMBOL_KEY = '__root__.market.searchSymbol' as const;
+export const MARKET_SEARCH_SYMBOL_KEY = 'market.searchSymbol' as const;
 
 /** market.selectAccount */
-export const MARKET_SELECT_ACCOUNT_KEY = '__root__.market.selectAccount' as const;
+export const MARKET_SELECT_ACCOUNT_KEY = 'market.selectAccount' as const;
 
 /** market.selectSymbol */
-export const MARKET_SELECT_SYMBOL_KEY = '__root__.market.selectSymbol' as const;
+export const MARKET_SELECT_SYMBOL_KEY = 'market.selectSymbol' as const;
 
 /** market.spread */
-export const MARKET_SPREAD_KEY = '__root__.market.spread' as const;
+export const MARKET_SPREAD_KEY = 'market.spread' as const;
 
 /** market.watchlist */
-export const MARKET_WATCHLIST_KEY = '__root__.market.watchlist' as const;
+export const MARKET_WATCHLIST_KEY = 'market.watchlist' as const;
 
 /** marketplace.author.avgRating */
-export const MARKETPLACE_AUTHOR_AVG_RATING_KEY = '__root__.marketplace.author.avgRating' as const;
+export const MARKETPLACE_AUTHOR_AVG_RATING_KEY = 'marketplace.author.avgRating' as const;
 
 /** marketplace.author.empty */
-export const MARKETPLACE_AUTHOR_EMPTY_KEY = '__root__.marketplace.author.empty' as const;
+export const MARKETPLACE_AUTHOR_EMPTY_KEY = 'marketplace.author.empty' as const;
 
 /** marketplace.author.published */
-export const MARKETPLACE_AUTHOR_PUBLISHED_KEY = '__root__.marketplace.author.published' as const;
+export const MARKETPLACE_AUTHOR_PUBLISHED_KEY = 'marketplace.author.published' as const;
 
 /** marketplace.card.by */
-export const MARKETPLACE_CARD_BY_KEY = '__root__.marketplace.card.by' as const;
+export const MARKETPLACE_CARD_BY_KEY = 'marketplace.card.by' as const;
 
 /** marketplace.card.free */
-export const MARKETPLACE_CARD_FREE_KEY = '__root__.marketplace.card.free' as const;
+export const MARKETPLACE_CARD_FREE_KEY = 'marketplace.card.free' as const;
 
 /** marketplace.card.owned */
-export const MARKETPLACE_CARD_OWNED_KEY = '__root__.marketplace.card.owned' as const;
+export const MARKETPLACE_CARD_OWNED_KEY = 'marketplace.card.owned' as const;
 
 /** marketplace.card.subscribers */
-export const MARKETPLACE_CARD_SUBSCRIBERS_KEY = '__root__.marketplace.card.subscribers' as const;
+export const MARKETPLACE_CARD_SUBSCRIBERS_KEY = 'marketplace.card.subscribers' as const;
 
 /** marketplace.card.winRate */
-export const MARKETPLACE_CARD_WIN_RATE_KEY = '__root__.marketplace.card.winRate' as const;
+export const MARKETPLACE_CARD_WIN_RATE_KEY = 'marketplace.card.winRate' as const;
 
 /** marketplace.detail.assetClass */
-export const MARKETPLACE_DETAIL_ASSET_CLASS_KEY = '__root__.marketplace.detail.assetClass' as const;
+export const MARKETPLACE_DETAIL_ASSET_CLASS_KEY = 'marketplace.detail.assetClass' as const;
 
 /** marketplace.detail.author */
-export const MARKETPLACE_DETAIL_AUTHOR_KEY = '__root__.marketplace.detail.author' as const;
+export const MARKETPLACE_DETAIL_AUTHOR_KEY = 'marketplace.detail.author' as const;
 
 /** marketplace.detail.commentPlaceholder */
-export const MARKETPLACE_DETAIL_COMMENT_PLACEHOLDER_KEY = '__root__.marketplace.detail.commentPlaceholder' as const;
+export const MARKETPLACE_DETAIL_COMMENT_PLACEHOLDER_KEY = 'marketplace.detail.commentPlaceholder' as const;
 
 /** marketplace.detail.comments */
-export const MARKETPLACE_DETAIL_COMMENTS_KEY = '__root__.marketplace.detail.comments' as const;
+export const MARKETPLACE_DETAIL_COMMENTS_KEY = 'marketplace.detail.comments' as const;
 
 /** marketplace.detail.description */
-export const MARKETPLACE_DETAIL_DESCRIPTION_KEY = '__root__.marketplace.detail.description' as const;
+export const MARKETPLACE_DETAIL_DESCRIPTION_KEY = 'marketplace.detail.description' as const;
 
 /** marketplace.detail.getFree */
-export const MARKETPLACE_DETAIL_GET_FREE_KEY = '__root__.marketplace.detail.getFree' as const;
+export const MARKETPLACE_DETAIL_GET_FREE_KEY = 'marketplace.detail.getFree' as const;
 
 /** marketplace.detail.rentPrice */
-export const MARKETPLACE_DETAIL_RENT_PRICE_KEY = '__root__.marketplace.detail.rentPrice' as const;
+export const MARKETPLACE_DETAIL_RENT_PRICE_KEY = 'marketplace.detail.rentPrice' as const;
 
 /** marketplace.detail.subscribers */
-export const MARKETPLACE_DETAIL_SUBSCRIBERS_KEY = '__root__.marketplace.detail.subscribers' as const;
+export const MARKETPLACE_DETAIL_SUBSCRIBERS_KEY = 'marketplace.detail.subscribers' as const;
 
 /** marketplace.detail.yourRating */
-export const MARKETPLACE_DETAIL_YOUR_RATING_KEY = '__root__.marketplace.detail.yourRating' as const;
+export const MARKETPLACE_DETAIL_YOUR_RATING_KEY = 'marketplace.detail.yourRating' as const;
 
 /** marketplace.empty */
-export const MARKETPLACE_EMPTY_KEY = '__root__.marketplace.empty' as const;
+export const MARKETPLACE_EMPTY_KEY = 'marketplace.empty' as const;
 
 /** marketplace.filterByClass */
-export const MARKETPLACE_FILTER_BY_CLASS_KEY = '__root__.marketplace.filterByClass' as const;
+export const MARKETPLACE_FILTER_BY_CLASS_KEY = 'marketplace.filterByClass' as const;
 
 /** marketplace.messages.commentFailed */
-export const MARKETPLACE_MESSAGES_COMMENT_FAILED_KEY = '__root__.marketplace.messages.commentFailed' as const;
+export const MARKETPLACE_MESSAGES_COMMENT_FAILED_KEY = 'marketplace.messages.commentFailed' as const;
 
 /** marketplace.messages.commentPosted */
-export const MARKETPLACE_MESSAGES_COMMENT_POSTED_KEY = '__root__.marketplace.messages.commentPosted' as const;
+export const MARKETPLACE_MESSAGES_COMMENT_POSTED_KEY = 'marketplace.messages.commentPosted' as const;
 
 /** marketplace.messages.loginFirst */
-export const MARKETPLACE_MESSAGES_LOGIN_FIRST_KEY = '__root__.marketplace.messages.loginFirst' as const;
+export const MARKETPLACE_MESSAGES_LOGIN_FIRST_KEY = 'marketplace.messages.loginFirst' as const;
 
 /** marketplace.messages.paymentComingSoon */
-export const MARKETPLACE_MESSAGES_PAYMENT_COMING_SOON_KEY = '__root__.marketplace.messages.paymentComingSoon' as const;
+export const MARKETPLACE_MESSAGES_PAYMENT_COMING_SOON_KEY = 'marketplace.messages.paymentComingSoon' as const;
 
 /** marketplace.messages.rateFailed */
-export const MARKETPLACE_MESSAGES_RATE_FAILED_KEY = '__root__.marketplace.messages.rateFailed' as const;
+export const MARKETPLACE_MESSAGES_RATE_FAILED_KEY = 'marketplace.messages.rateFailed' as const;
 
 /** marketplace.messages.rated */
-export const MARKETPLACE_MESSAGES_RATED_KEY = '__root__.marketplace.messages.rated' as const;
+export const MARKETPLACE_MESSAGES_RATED_KEY = 'marketplace.messages.rated' as const;
 
 /** marketplace.messages.subscribeFailed */
-export const MARKETPLACE_MESSAGES_SUBSCRIBE_FAILED_KEY = '__root__.marketplace.messages.subscribeFailed' as const;
+export const MARKETPLACE_MESSAGES_SUBSCRIBE_FAILED_KEY = 'marketplace.messages.subscribeFailed' as const;
 
 /** marketplace.messages.subscribed */
-export const MARKETPLACE_MESSAGES_SUBSCRIBED_KEY = '__root__.marketplace.messages.subscribed' as const;
+export const MARKETPLACE_MESSAGES_SUBSCRIBED_KEY = 'marketplace.messages.subscribed' as const;
 
 /** marketplace.noSubscriptions */
-export const MARKETPLACE_NO_SUBSCRIPTIONS_KEY = '__root__.marketplace.noSubscriptions' as const;
+export const MARKETPLACE_NO_SUBSCRIPTIONS_KEY = 'marketplace.noSubscriptions' as const;
 
 /** marketplace.payment.alreadyPurchased */
-export const MARKETPLACE_PAYMENT_ALREADY_PURCHASED_KEY = '__root__.marketplace.payment.alreadyPurchased' as const;
+export const MARKETPLACE_PAYMENT_ALREADY_PURCHASED_KEY = 'marketplace.payment.alreadyPurchased' as const;
 
 /** marketplace.payment.balanceAfter */
-export const MARKETPLACE_PAYMENT_BALANCE_AFTER_KEY = '__root__.marketplace.payment.balanceAfter' as const;
+export const MARKETPLACE_PAYMENT_BALANCE_AFTER_KEY = 'marketplace.payment.balanceAfter' as const;
 
 /** marketplace.payment.cancel */
-export const MARKETPLACE_PAYMENT_CANCEL_KEY = '__root__.marketplace.payment.cancel' as const;
+export const MARKETPLACE_PAYMENT_CANCEL_KEY = 'marketplace.payment.cancel' as const;
 
 /** marketplace.payment.confirm */
-export const MARKETPLACE_PAYMENT_CONFIRM_KEY = '__root__.marketplace.payment.confirm' as const;
+export const MARKETPLACE_PAYMENT_CONFIRM_KEY = 'marketplace.payment.confirm' as const;
 
 /** marketplace.payment.depositPrompt */
-export const MARKETPLACE_PAYMENT_DEPOSIT_PROMPT_KEY = '__root__.marketplace.payment.depositPrompt' as const;
+export const MARKETPLACE_PAYMENT_DEPOSIT_PROMPT_KEY = 'marketplace.payment.depositPrompt' as const;
 
 /** marketplace.payment.goToDeposit */
-export const MARKETPLACE_PAYMENT_GO_TO_DEPOSIT_KEY = '__root__.marketplace.payment.goToDeposit' as const;
+export const MARKETPLACE_PAYMENT_GO_TO_DEPOSIT_KEY = 'marketplace.payment.goToDeposit' as const;
 
 /** marketplace.payment.insufficientBalance */
-export const MARKETPLACE_PAYMENT_INSUFFICIENT_BALANCE_KEY = '__root__.marketplace.payment.insufficientBalance' as const;
+export const MARKETPLACE_PAYMENT_INSUFFICIENT_BALANCE_KEY = 'marketplace.payment.insufficientBalance' as const;
 
 /** marketplace.payment.oneTimePurchase */
-export const MARKETPLACE_PAYMENT_ONE_TIME_PURCHASE_KEY = '__root__.marketplace.payment.oneTimePurchase' as const;
+export const MARKETPLACE_PAYMENT_ONE_TIME_PURCHASE_KEY = 'marketplace.payment.oneTimePurchase' as const;
 
 /** marketplace.payment.price */
-export const MARKETPLACE_PAYMENT_PRICE_KEY = '__root__.marketplace.payment.price' as const;
+export const MARKETPLACE_PAYMENT_PRICE_KEY = 'marketplace.payment.price' as const;
 
 /** marketplace.payment.purchaseFailed */
-export const MARKETPLACE_PAYMENT_PURCHASE_FAILED_KEY = '__root__.marketplace.payment.purchaseFailed' as const;
+export const MARKETPLACE_PAYMENT_PURCHASE_FAILED_KEY = 'marketplace.payment.purchaseFailed' as const;
 
 /** marketplace.payment.purchaseSuccess */
-export const MARKETPLACE_PAYMENT_PURCHASE_SUCCESS_KEY = '__root__.marketplace.payment.purchaseSuccess' as const;
+export const MARKETPLACE_PAYMENT_PURCHASE_SUCCESS_KEY = 'marketplace.payment.purchaseSuccess' as const;
 
 /** marketplace.payment.purchasing */
-export const MARKETPLACE_PAYMENT_PURCHASING_KEY = '__root__.marketplace.payment.purchasing' as const;
+export const MARKETPLACE_PAYMENT_PURCHASING_KEY = 'marketplace.payment.purchasing' as const;
 
 /** marketplace.payment.strategyName */
-export const MARKETPLACE_PAYMENT_STRATEGY_NAME_KEY = '__root__.marketplace.payment.strategyName' as const;
+export const MARKETPLACE_PAYMENT_STRATEGY_NAME_KEY = 'marketplace.payment.strategyName' as const;
 
 /** marketplace.payment.title */
-export const MARKETPLACE_PAYMENT_TITLE_KEY = '__root__.marketplace.payment.title' as const;
+export const MARKETPLACE_PAYMENT_TITLE_KEY = 'marketplace.payment.title' as const;
 
 /** marketplace.payment.walletBalance */
-export const MARKETPLACE_PAYMENT_WALLET_BALANCE_KEY = '__root__.marketplace.payment.walletBalance' as const;
+export const MARKETPLACE_PAYMENT_WALLET_BALANCE_KEY = 'marketplace.payment.walletBalance' as const;
 
 /** marketplace.publish */
-export const MARKETPLACE_PUBLISH_KEY = '__root__.marketplace.publish' as const;
+export const MARKETPLACE_PUBLISH_KEY = 'marketplace.publish' as const;
 
 /** marketplace.purchases.empty */
-export const MARKETPLACE_PURCHASES_EMPTY_KEY = '__root__.marketplace.purchases.empty' as const;
+export const MARKETPLACE_PURCHASES_EMPTY_KEY = 'marketplace.purchases.empty' as const;
 
 /** marketplace.purchases.status */
-export const MARKETPLACE_PURCHASES_STATUS_KEY = '__root__.marketplace.purchases.status' as const;
+export const MARKETPLACE_PURCHASES_STATUS_KEY = 'marketplace.purchases.status' as const;
 
 /** marketplace.purchases.strategy */
-export const MARKETPLACE_PURCHASES_STRATEGY_KEY = '__root__.marketplace.purchases.strategy' as const;
+export const MARKETPLACE_PURCHASES_STRATEGY_KEY = 'marketplace.purchases.strategy' as const;
 
 /** marketplace.searchPlaceholder */
-export const MARKETPLACE_SEARCH_PLACEHOLDER_KEY = '__root__.marketplace.searchPlaceholder' as const;
+export const MARKETPLACE_SEARCH_PLACEHOLDER_KEY = 'marketplace.searchPlaceholder' as const;
 
 /** marketplace.sort.newest */
-export const MARKETPLACE_SORT_NEWEST_KEY = '__root__.marketplace.sort.newest' as const;
+export const MARKETPLACE_SORT_NEWEST_KEY = 'marketplace.sort.newest' as const;
 
 /** marketplace.sort.performance */
-export const MARKETPLACE_SORT_PERFORMANCE_KEY = '__root__.marketplace.sort.performance' as const;
+export const MARKETPLACE_SORT_PERFORMANCE_KEY = 'marketplace.sort.performance' as const;
 
 /** marketplace.sort.popular */
-export const MARKETPLACE_SORT_POPULAR_KEY = '__root__.marketplace.sort.popular' as const;
+export const MARKETPLACE_SORT_POPULAR_KEY = 'marketplace.sort.popular' as const;
 
 /** marketplace.sort.priceAsc */
-export const MARKETPLACE_SORT_PRICE_ASC_KEY = '__root__.marketplace.sort.priceAsc' as const;
+export const MARKETPLACE_SORT_PRICE_ASC_KEY = 'marketplace.sort.priceAsc' as const;
 
 /** marketplace.sort.priceDesc */
-export const MARKETPLACE_SORT_PRICE_DESC_KEY = '__root__.marketplace.sort.priceDesc' as const;
+export const MARKETPLACE_SORT_PRICE_DESC_KEY = 'marketplace.sort.priceDesc' as const;
 
 /** marketplace.sort.rating */
-export const MARKETPLACE_SORT_RATING_KEY = '__root__.marketplace.sort.rating' as const;
+export const MARKETPLACE_SORT_RATING_KEY = 'marketplace.sort.rating' as const;
 
 /** marketplace.sort.score */
-export const MARKETPLACE_SORT_SCORE_KEY = '__root__.marketplace.sort.score' as const;
+export const MARKETPLACE_SORT_SCORE_KEY = 'marketplace.sort.score' as const;
 
 /** marketplace.subtitle */
-export const MARKETPLACE_SUBTITLE_KEY = '__root__.marketplace.subtitle' as const;
+export const MARKETPLACE_SUBTITLE_KEY = 'marketplace.subtitle' as const;
 
 /** marketplace.tabs.author */
-export const MARKETPLACE_TABS_AUTHOR_KEY = '__root__.marketplace.tabs.author' as const;
+export const MARKETPLACE_TABS_AUTHOR_KEY = 'marketplace.tabs.author' as const;
 
 /** marketplace.tabs.marketplace */
-export const MARKETPLACE_TABS_MARKETPLACE_KEY = '__root__.marketplace.tabs.marketplace' as const;
+export const MARKETPLACE_TABS_MARKETPLACE_KEY = 'marketplace.tabs.marketplace' as const;
 
 /** marketplace.tabs.purchases */
-export const MARKETPLACE_TABS_PURCHASES_KEY = '__root__.marketplace.tabs.purchases' as const;
+export const MARKETPLACE_TABS_PURCHASES_KEY = 'marketplace.tabs.purchases' as const;
 
 /** marketplace.tabs.subscriptions */
-export const MARKETPLACE_TABS_SUBSCRIPTIONS_KEY = '__root__.marketplace.tabs.subscriptions' as const;
+export const MARKETPLACE_TABS_SUBSCRIPTIONS_KEY = 'marketplace.tabs.subscriptions' as const;
 
 /** marketplace.title */
-export const MARKETPLACE_TITLE_KEY = '__root__.marketplace.title' as const;
+export const MARKETPLACE_TITLE_KEY = 'marketplace.title' as const;
 
 /** menu.accounts */
-export const MENU_ACCOUNTS_KEY = '__root__.menu.accounts' as const;
+export const MENU_ACCOUNTS_KEY = 'menu.accounts' as const;
 
 /** menu.aiAssistant */
-export const MENU_AI_ASSISTANT_KEY = '__root__.menu.aiAssistant' as const;
+export const MENU_AI_ASSISTANT_KEY = 'menu.aiAssistant' as const;
 
 /** menu.algoDashboard */
-export const MENU_ALGO_DASHBOARD_KEY = '__root__.menu.algoDashboard' as const;
+export const MENU_ALGO_DASHBOARD_KEY = 'menu.algoDashboard' as const;
 
 /** menu.analytics */
-export const MENU_ANALYTICS_KEY = '__root__.menu.analytics' as const;
+export const MENU_ANALYTICS_KEY = 'menu.analytics' as const;
 
 /** menu.assetAnalysis */
-export const MENU_ASSET_ANALYSIS_KEY = '__root__.menu.assetAnalysis' as const;
+export const MENU_ASSET_ANALYSIS_KEY = 'menu.assetAnalysis' as const;
 
 /** menu.assets */
-export const MENU_ASSETS_KEY = '__root__.menu.assets' as const;
+export const MENU_ASSETS_KEY = 'menu.assets' as const;
 
 /** menu.autoTrading */
-export const MENU_AUTO_TRADING_KEY = '__root__.menu.autoTrading' as const;
+export const MENU_AUTO_TRADING_KEY = 'menu.autoTrading' as const;
 
 /** menu.dashboard */
-export const MENU_DASHBOARD_KEY = '__root__.menu.dashboard' as const;
+export const MENU_DASHBOARD_KEY = 'menu.dashboard' as const;
 
 /** menu.devGroup */
-export const MENU_DEV_GROUP_KEY = '__root__.menu.devGroup' as const;
+export const MENU_DEV_GROUP_KEY = 'menu.devGroup' as const;
 
 /** menu.experiments */
-export const MENU_EXPERIMENTS_KEY = '__root__.menu.experiments' as const;
+export const MENU_EXPERIMENTS_KEY = 'menu.experiments' as const;
 
 /** menu.indicatorCatalog */
-export const MENU_INDICATOR_CATALOG_KEY = '__root__.menu.indicatorCatalog' as const;
+export const MENU_INDICATOR_CATALOG_KEY = 'menu.indicatorCatalog' as const;
 
 /** menu.logs */
-export const MENU_LOGS_KEY = '__root__.menu.logs' as const;
+export const MENU_LOGS_KEY = 'menu.logs' as const;
 
 /** menu.market */
-export const MENU_MARKET_KEY = '__root__.menu.market' as const;
+export const MENU_MARKET_KEY = 'menu.market' as const;
 
 /** menu.marketRegime */
-export const MENU_MARKET_REGIME_KEY = '__root__.menu.marketRegime' as const;
+export const MENU_MARKET_REGIME_KEY = 'menu.marketRegime' as const;
 
 /** menu.marketTools */
-export const MENU_MARKET_TOOLS_KEY = '__root__.menu.marketTools' as const;
+export const MENU_MARKET_TOOLS_KEY = 'menu.marketTools' as const;
 
 /** menu.marketplace */
-export const MENU_MARKETPLACE_KEY = '__root__.menu.marketplace' as const;
+export const MENU_MARKETPLACE_KEY = 'menu.marketplace' as const;
 
 /** menu.opsGroup */
-export const MENU_OPS_GROUP_KEY = '__root__.menu.opsGroup' as const;
+export const MENU_OPS_GROUP_KEY = 'menu.opsGroup' as const;
 
 /** menu.schedules */
-export const MENU_SCHEDULES_KEY = '__root__.menu.schedules' as const;
+export const MENU_SCHEDULES_KEY = 'menu.schedules' as const;
 
 /** menu.strategies */
-export const MENU_STRATEGIES_KEY = '__root__.menu.strategies' as const;
+export const MENU_STRATEGIES_KEY = 'menu.strategies' as const;
 
 /** menu.strategy */
-export const MENU_STRATEGY_KEY = '__root__.menu.strategy' as const;
+export const MENU_STRATEGY_KEY = 'menu.strategy' as const;
 
 /** menu.strategyLibrary */
-export const MENU_STRATEGY_LIBRARY_KEY = '__root__.menu.strategyLibrary' as const;
+export const MENU_STRATEGY_LIBRARY_KEY = 'menu.strategyLibrary' as const;
 
 /** menu.strategyWorkspace */
-export const MENU_STRATEGY_WORKSPACE_KEY = '__root__.menu.strategyWorkspace' as const;
+export const MENU_STRATEGY_WORKSPACE_KEY = 'menu.strategyWorkspace' as const;
 
 /** menu.trading */
-export const MENU_TRADING_KEY = '__root__.menu.trading' as const;
+export const MENU_TRADING_KEY = 'menu.trading' as const;
 
 /** menu.wallet */
-export const MENU_WALLET_KEY = '__root__.menu.wallet' as const;
+export const MENU_WALLET_KEY = 'menu.wallet' as const;
 
 /** notifications.actions.clearAll */
-export const NOTIFICATIONS_ACTIONS_CLEAR_ALL_KEY = '__root__.notifications.actions.clearAll' as const;
+export const NOTIFICATIONS_ACTIONS_CLEAR_ALL_KEY = 'notifications.actions.clearAll' as const;
 
 /** notifications.actions.clearAllConfirm */
-export const NOTIFICATIONS_ACTIONS_CLEAR_ALL_CONFIRM_KEY = '__root__.notifications.actions.clearAllConfirm' as const;
+export const NOTIFICATIONS_ACTIONS_CLEAR_ALL_CONFIRM_KEY = 'notifications.actions.clearAllConfirm' as const;
 
 /** notifications.actions.markAllAsRead */
-export const NOTIFICATIONS_ACTIONS_MARK_ALL_AS_READ_KEY = '__root__.notifications.actions.markAllAsRead' as const;
+export const NOTIFICATIONS_ACTIONS_MARK_ALL_AS_READ_KEY = 'notifications.actions.markAllAsRead' as const;
 
 /** notifications.all */
-export const NOTIFICATIONS_ALL_KEY = '__root__.notifications.all' as const;
+export const NOTIFICATIONS_ALL_KEY = 'notifications.all' as const;
 
 /** notifications.clearAll */
-export const NOTIFICATIONS_CLEAR_ALL_KEY = '__root__.notifications.clearAll' as const;
+export const NOTIFICATIONS_CLEAR_ALL_KEY = 'notifications.clearAll' as const;
 
 /** notifications.confirmClearAll */
-export const NOTIFICATIONS_CONFIRM_CLEAR_ALL_KEY = '__root__.notifications.confirmClearAll' as const;
+export const NOTIFICATIONS_CONFIRM_CLEAR_ALL_KEY = 'notifications.confirmClearAll' as const;
 
 /** notifications.empty */
-export const NOTIFICATIONS_EMPTY_KEY = '__root__.notifications.empty' as const;
+export const NOTIFICATIONS_EMPTY_KEY = 'notifications.empty' as const;
 
 /** notifications.markAllRead */
-export const NOTIFICATIONS_MARK_ALL_READ_KEY = '__root__.notifications.markAllRead' as const;
+export const NOTIFICATIONS_MARK_ALL_READ_KEY = 'notifications.markAllRead' as const;
 
 /** notifications.stream.autoTrading.fallback */
-export const NOTIFICATIONS_STREAM_AUTO_TRADING_FALLBACK_KEY = '__root__.notifications.stream.autoTrading.fallback' as const;
+export const NOTIFICATIONS_STREAM_AUTO_TRADING_FALLBACK_KEY = 'notifications.stream.autoTrading.fallback' as const;
 
 /** notifications.stream.autoTrading.title */
-export const NOTIFICATIONS_STREAM_AUTO_TRADING_TITLE_KEY = '__root__.notifications.stream.autoTrading.title' as const;
+export const NOTIFICATIONS_STREAM_AUTO_TRADING_TITLE_KEY = 'notifications.stream.autoTrading.title' as const;
 
 /** notifications.stream.riskAlert.fallback */
-export const NOTIFICATIONS_STREAM_RISK_ALERT_FALLBACK_KEY = '__root__.notifications.stream.riskAlert.fallback' as const;
+export const NOTIFICATIONS_STREAM_RISK_ALERT_FALLBACK_KEY = 'notifications.stream.riskAlert.fallback' as const;
 
 /** notifications.stream.riskAlert.title */
-export const NOTIFICATIONS_STREAM_RISK_ALERT_TITLE_KEY = '__root__.notifications.stream.riskAlert.title' as const;
+export const NOTIFICATIONS_STREAM_RISK_ALERT_TITLE_KEY = 'notifications.stream.riskAlert.title' as const;
 
 /** notifications.stream.strategyExecution.completed */
-export const NOTIFICATIONS_STREAM_STRATEGY_EXECUTION_COMPLETED_KEY = '__root__.notifications.stream.strategyExecution.completed' as const;
+export const NOTIFICATIONS_STREAM_STRATEGY_EXECUTION_COMPLETED_KEY = 'notifications.stream.strategyExecution.completed' as const;
 
 /** notifications.stream.strategyExecution.failed */
-export const NOTIFICATIONS_STREAM_STRATEGY_EXECUTION_FAILED_KEY = '__root__.notifications.stream.strategyExecution.failed' as const;
+export const NOTIFICATIONS_STREAM_STRATEGY_EXECUTION_FAILED_KEY = 'notifications.stream.strategyExecution.failed' as const;
 
 /** notifications.stream.strategyExecution.title */
-export const NOTIFICATIONS_STREAM_STRATEGY_EXECUTION_TITLE_KEY = '__root__.notifications.stream.strategyExecution.title' as const;
+export const NOTIFICATIONS_STREAM_STRATEGY_EXECUTION_TITLE_KEY = 'notifications.stream.strategyExecution.title' as const;
 
 /** notifications.stream.strategySignal.message */
-export const NOTIFICATIONS_STREAM_STRATEGY_SIGNAL_MESSAGE_KEY = '__root__.notifications.stream.strategySignal.message' as const;
+export const NOTIFICATIONS_STREAM_STRATEGY_SIGNAL_MESSAGE_KEY = 'notifications.stream.strategySignal.message' as const;
 
 /** notifications.stream.strategySignal.title */
-export const NOTIFICATIONS_STREAM_STRATEGY_SIGNAL_TITLE_KEY = '__root__.notifications.stream.strategySignal.title' as const;
+export const NOTIFICATIONS_STREAM_STRATEGY_SIGNAL_TITLE_KEY = 'notifications.stream.strategySignal.title' as const;
 
 /** notifications.tabs.all */
-export const NOTIFICATIONS_TABS_ALL_KEY = '__root__.notifications.tabs.all' as const;
+export const NOTIFICATIONS_TABS_ALL_KEY = 'notifications.tabs.all' as const;
 
 /** notifications.tabs.unread */
-export const NOTIFICATIONS_TABS_UNREAD_KEY = '__root__.notifications.tabs.unread' as const;
+export const NOTIFICATIONS_TABS_UNREAD_KEY = 'notifications.tabs.unread' as const;
 
 /** notifications.title */
-export const NOTIFICATIONS_TITLE_KEY = '__root__.notifications.title' as const;
+export const NOTIFICATIONS_TITLE_KEY = 'notifications.title' as const;
 
 /** notifications.types.risk_alert */
-export const NOTIFICATIONS_TYPES_RISK_ALERT_KEY = '__root__.notifications.types.risk_alert' as const;
+export const NOTIFICATIONS_TYPES_RISK_ALERT_KEY = 'notifications.types.risk_alert' as const;
 
 /** notifications.types.signal */
-export const NOTIFICATIONS_TYPES_SIGNAL_KEY = '__root__.notifications.types.signal' as const;
+export const NOTIFICATIONS_TYPES_SIGNAL_KEY = 'notifications.types.signal' as const;
 
 /** notifications.types.strategy_execution */
-export const NOTIFICATIONS_TYPES_STRATEGY_EXECUTION_KEY = '__root__.notifications.types.strategy_execution' as const;
+export const NOTIFICATIONS_TYPES_STRATEGY_EXECUTION_KEY = 'notifications.types.strategy_execution' as const;
 
 /** notifications.types.system */
-export const NOTIFICATIONS_TYPES_SYSTEM_KEY = '__root__.notifications.types.system' as const;
+export const NOTIFICATIONS_TYPES_SYSTEM_KEY = 'notifications.types.system' as const;
 
 /** notifications.types.trade */
-export const NOTIFICATIONS_TYPES_TRADE_KEY = '__root__.notifications.types.trade' as const;
+export const NOTIFICATIONS_TYPES_TRADE_KEY = 'notifications.types.trade' as const;
 
 /** notifications.unread */
-export const NOTIFICATIONS_UNREAD_KEY = '__root__.notifications.unread' as const;
+export const NOTIFICATIONS_UNREAD_KEY = 'notifications.unread' as const;
 
 /** profile.lastLogin */
-export const PROFILE_LAST_LOGIN_KEY = '__root__.profile.lastLogin' as const;
+export const PROFILE_LAST_LOGIN_KEY = 'profile.lastLogin' as const;
 
 /** profile.nickname */
-export const PROFILE_NICKNAME_KEY = '__root__.profile.nickname' as const;
+export const PROFILE_NICKNAME_KEY = 'profile.nickname' as const;
 
 /** profile.registered */
-export const PROFILE_REGISTERED_KEY = '__root__.profile.registered' as const;
+export const PROFILE_REGISTERED_KEY = 'profile.registered' as const;
 
 /** profile.role */
-export const PROFILE_ROLE_KEY = '__root__.profile.role' as const;
+export const PROFILE_ROLE_KEY = 'profile.role' as const;
 
 /** profile.status */
-export const PROFILE_STATUS_KEY = '__root__.profile.status' as const;
+export const PROFILE_STATUS_KEY = 'profile.status' as const;
 
 /** profile.title */
-export const PROFILE_TITLE_KEY = '__root__.profile.title' as const;
+export const PROFILE_TITLE_KEY = 'profile.title' as const;
 
 /** share.actions */
-export const SHARE_ACTIONS_KEY = '__root__.share.actions' as const;
+export const SHARE_ACTIONS_KEY = 'share.actions' as const;
 
 /** share.createNew */
-export const SHARE_CREATE_NEW_KEY = '__root__.share.createNew' as const;
+export const SHARE_CREATE_NEW_KEY = 'share.createNew' as const;
 
 /** share.createdAt */
-export const SHARE_CREATED_AT_KEY = '__root__.share.createdAt' as const;
+export const SHARE_CREATED_AT_KEY = 'share.createdAt' as const;
 
 /** share.deleteConfirm */
-export const SHARE_DELETE_CONFIRM_KEY = '__root__.share.deleteConfirm' as const;
+export const SHARE_DELETE_CONFIRM_KEY = 'share.deleteConfirm' as const;
 
 /** share.empty */
-export const SHARE_EMPTY_KEY = '__root__.share.empty' as const;
+export const SHARE_EMPTY_KEY = 'share.empty' as const;
 
 /** share.expires */
-export const SHARE_EXPIRES_KEY = '__root__.share.expires' as const;
+export const SHARE_EXPIRES_KEY = 'share.expires' as const;
 
 /** share.positions */
-export const SHARE_POSITIONS_KEY = '__root__.share.positions' as const;
+export const SHARE_POSITIONS_KEY = 'share.positions' as const;
 
 /** share.showPositions */
-export const SHARE_SHOW_POSITIONS_KEY = '__root__.share.showPositions' as const;
+export const SHARE_SHOW_POSITIONS_KEY = 'share.showPositions' as const;
 
 /** share.title */
-export const SHARE_TITLE_KEY = '__root__.share.title' as const;
+export const SHARE_TITLE_KEY = 'share.title' as const;
 
 /** share.token */
-export const SHARE_TOKEN_KEY = '__root__.share.token' as const;
+export const SHARE_TOKEN_KEY = 'share.token' as const;
 
 /** share.userId */
-export const SHARE_USER_ID_KEY = '__root__.share.userId' as const;
+export const SHARE_USER_ID_KEY = 'share.userId' as const;
 
 /** share.views */
-export const SHARE_VIEWS_KEY = '__root__.share.views' as const;
+export const SHARE_VIEWS_KEY = 'share.views' as const;
 
 /** sharePage.avgHolding */
-export const SHARE_PAGE_AVG_HOLDING_KEY = '__root__.sharePage.avgHolding' as const;
+export const SHARE_PAGE_AVG_HOLDING_KEY = 'sharePage.avgHolding' as const;
 
 /** sharePage.avgLoss */
-export const SHARE_PAGE_AVG_LOSS_KEY = '__root__.sharePage.avgLoss' as const;
+export const SHARE_PAGE_AVG_LOSS_KEY = 'sharePage.avgLoss' as const;
 
 /** sharePage.avgWin */
-export const SHARE_PAGE_AVG_WIN_KEY = '__root__.sharePage.avgWin' as const;
+export const SHARE_PAGE_AVG_WIN_KEY = 'sharePage.avgWin' as const;
 
 /** sharePage.bestTrade */
-export const SHARE_PAGE_BEST_TRADE_KEY = '__root__.sharePage.bestTrade' as const;
+export const SHARE_PAGE_BEST_TRADE_KEY = 'sharePage.bestTrade' as const;
 
 /** sharePage.bySymbol */
-export const SHARE_PAGE_BY_SYMBOL_KEY = '__root__.sharePage.bySymbol' as const;
+export const SHARE_PAGE_BY_SYMBOL_KEY = 'sharePage.bySymbol' as const;
 
 /** sharePage.closeTime */
-export const SHARE_PAGE_CLOSE_TIME_KEY = '__root__.sharePage.closeTime' as const;
+export const SHARE_PAGE_CLOSE_TIME_KEY = 'sharePage.closeTime' as const;
 
 /** sharePage.count */
-export const SHARE_PAGE_COUNT_KEY = '__root__.sharePage.count' as const;
+export const SHARE_PAGE_COUNT_KEY = 'sharePage.count' as const;
 
 /** sharePage.disclaimer */
-export const SHARE_PAGE_DISCLAIMER_KEY = '__root__.sharePage.disclaimer' as const;
+export const SHARE_PAGE_DISCLAIMER_KEY = 'sharePage.disclaimer' as const;
 
 /** sharePage.equityCurve */
-export const SHARE_PAGE_EQUITY_CURVE_KEY = '__root__.sharePage.equityCurve' as const;
+export const SHARE_PAGE_EQUITY_CURVE_KEY = 'sharePage.equityCurve' as const;
 
 /** sharePage.expired */
-export const SHARE_PAGE_EXPIRED_KEY = '__root__.sharePage.expired' as const;
+export const SHARE_PAGE_EXPIRED_KEY = 'sharePage.expired' as const;
 
 /** sharePage.footer */
-export const SHARE_PAGE_FOOTER_KEY = '__root__.sharePage.footer' as const;
+export const SHARE_PAGE_FOOTER_KEY = 'sharePage.footer' as const;
 
 /** sharePage.language */
-export const SHARE_PAGE_LANGUAGE_KEY = '__root__.sharePage.language' as const;
+export const SHARE_PAGE_LANGUAGE_KEY = 'sharePage.language' as const;
 
 /** sharePage.loadFailed */
-export const SHARE_PAGE_LOAD_FAILED_KEY = '__root__.sharePage.loadFailed' as const;
+export const SHARE_PAGE_LOAD_FAILED_KEY = 'sharePage.loadFailed' as const;
 
 /** sharePage.losingTrades */
-export const SHARE_PAGE_LOSING_TRADES_KEY = '__root__.sharePage.losingTrades' as const;
+export const SHARE_PAGE_LOSING_TRADES_KEY = 'sharePage.losingTrades' as const;
 
 /** sharePage.maxDrawdown */
-export const SHARE_PAGE_MAX_DRAWDOWN_KEY = '__root__.sharePage.maxDrawdown' as const;
+export const SHARE_PAGE_MAX_DRAWDOWN_KEY = 'sharePage.maxDrawdown' as const;
 
 /** sharePage.netProfit */
-export const SHARE_PAGE_NET_PROFIT_KEY = '__root__.sharePage.netProfit' as const;
+export const SHARE_PAGE_NET_PROFIT_KEY = 'sharePage.netProfit' as const;
 
 /** sharePage.noPositions */
-export const SHARE_PAGE_NO_POSITIONS_KEY = '__root__.sharePage.noPositions' as const;
+export const SHARE_PAGE_NO_POSITIONS_KEY = 'sharePage.noPositions' as const;
 
 /** sharePage.noTrades */
-export const SHARE_PAGE_NO_TRADES_KEY = '__root__.sharePage.noTrades' as const;
+export const SHARE_PAGE_NO_TRADES_KEY = 'sharePage.noTrades' as const;
 
 /** sharePage.notFound */
-export const SHARE_PAGE_NOT_FOUND_KEY = '__root__.sharePage.notFound' as const;
+export const SHARE_PAGE_NOT_FOUND_KEY = 'sharePage.notFound' as const;
 
 /** sharePage.openPrice */
-export const SHARE_PAGE_OPEN_PRICE_KEY = '__root__.sharePage.openPrice' as const;
+export const SHARE_PAGE_OPEN_PRICE_KEY = 'sharePage.openPrice' as const;
 
 /** sharePage.positions */
-export const SHARE_PAGE_POSITIONS_KEY = '__root__.sharePage.positions' as const;
+export const SHARE_PAGE_POSITIONS_KEY = 'sharePage.positions' as const;
 
 /** sharePage.positionsLocked */
-export const SHARE_PAGE_POSITIONS_LOCKED_KEY = '__root__.sharePage.positionsLocked' as const;
+export const SHARE_PAGE_POSITIONS_LOCKED_KEY = 'sharePage.positionsLocked' as const;
 
 /** sharePage.profit */
-export const SHARE_PAGE_PROFIT_KEY = '__root__.sharePage.profit' as const;
+export const SHARE_PAGE_PROFIT_KEY = 'sharePage.profit' as const;
 
 /** sharePage.profitFactor */
-export const SHARE_PAGE_PROFIT_FACTOR_KEY = '__root__.sharePage.profitFactor' as const;
+export const SHARE_PAGE_PROFIT_FACTOR_KEY = 'sharePage.profitFactor' as const;
 
 /** sharePage.sharpeRatio */
-export const SHARE_PAGE_SHARPE_RATIO_KEY = '__root__.sharePage.sharpeRatio' as const;
+export const SHARE_PAGE_SHARPE_RATIO_KEY = 'sharePage.sharpeRatio' as const;
 
 /** sharePage.side */
-export const SHARE_PAGE_SIDE_KEY = '__root__.sharePage.side' as const;
+export const SHARE_PAGE_SIDE_KEY = 'sharePage.side' as const;
 
 /** sharePage.subtitle */
-export const SHARE_PAGE_SUBTITLE_KEY = '__root__.sharePage.subtitle' as const;
+export const SHARE_PAGE_SUBTITLE_KEY = 'sharePage.subtitle' as const;
 
 /** sharePage.symbol */
-export const SHARE_PAGE_SYMBOL_KEY = '__root__.sharePage.symbol' as const;
+export const SHARE_PAGE_SYMBOL_KEY = 'sharePage.symbol' as const;
 
 /** sharePage.title */
-export const SHARE_PAGE_TITLE_KEY = '__root__.sharePage.title' as const;
+export const SHARE_PAGE_TITLE_KEY = 'sharePage.title' as const;
 
 /** sharePage.totalReturn */
-export const SHARE_PAGE_TOTAL_RETURN_KEY = '__root__.sharePage.totalReturn' as const;
+export const SHARE_PAGE_TOTAL_RETURN_KEY = 'sharePage.totalReturn' as const;
 
 /** sharePage.totalTrades */
-export const SHARE_PAGE_TOTAL_TRADES_KEY = '__root__.sharePage.totalTrades' as const;
+export const SHARE_PAGE_TOTAL_TRADES_KEY = 'sharePage.totalTrades' as const;
 
 /** sharePage.totalVolume */
-export const SHARE_PAGE_TOTAL_VOLUME_KEY = '__root__.sharePage.totalVolume' as const;
+export const SHARE_PAGE_TOTAL_VOLUME_KEY = 'sharePage.totalVolume' as const;
 
 /** sharePage.tradeRecords */
-export const SHARE_PAGE_TRADE_RECORDS_KEY = '__root__.sharePage.tradeRecords' as const;
+export const SHARE_PAGE_TRADE_RECORDS_KEY = 'sharePage.tradeRecords' as const;
 
 /** sharePage.volume */
-export const SHARE_PAGE_VOLUME_KEY = '__root__.sharePage.volume' as const;
+export const SHARE_PAGE_VOLUME_KEY = 'sharePage.volume' as const;
 
 /** sharePage.winRate */
-export const SHARE_PAGE_WIN_RATE_KEY = '__root__.sharePage.winRate' as const;
+export const SHARE_PAGE_WIN_RATE_KEY = 'sharePage.winRate' as const;
 
 /** sharePage.winningTrades */
-export const SHARE_PAGE_WINNING_TRADES_KEY = '__root__.sharePage.winningTrades' as const;
+export const SHARE_PAGE_WINNING_TRADES_KEY = 'sharePage.winningTrades' as const;
 
 /** sharePage.worstTrade */
-export const SHARE_PAGE_WORST_TRADE_KEY = '__root__.sharePage.worstTrade' as const;
+export const SHARE_PAGE_WORST_TRADE_KEY = 'sharePage.worstTrade' as const;
 
 /** symbolDetection.label */
-export const SYMBOL_DETECTION_LABEL_KEY = '__root__.symbolDetection.label' as const;
+export const SYMBOL_DETECTION_LABEL_KEY = 'symbolDetection.label' as const;
 
 /** symbolDetection.loading */
-export const SYMBOL_DETECTION_LOADING_KEY = '__root__.symbolDetection.loading' as const;
+export const SYMBOL_DETECTION_LOADING_KEY = 'symbolDetection.loading' as const;
 
 /** symbolDetection.noSymbols */
-export const SYMBOL_DETECTION_NO_SYMBOLS_KEY = '__root__.symbolDetection.noSymbols' as const;
+export const SYMBOL_DETECTION_NO_SYMBOLS_KEY = 'symbolDetection.noSymbols' as const;
 
 /** symbolDetection.resolvedTooltip */
-export const SYMBOL_DETECTION_RESOLVED_TOOLTIP_KEY = '__root__.symbolDetection.resolvedTooltip' as const;
+export const SYMBOL_DETECTION_RESOLVED_TOOLTIP_KEY = 'symbolDetection.resolvedTooltip' as const;
 
 /** symbolDetection.tradeMode.disabled */
-export const SYMBOL_DETECTION_TRADE_MODE_DISABLED_KEY = '__root__.symbolDetection.tradeMode.disabled' as const;
+export const SYMBOL_DETECTION_TRADE_MODE_DISABLED_KEY = 'symbolDetection.tradeMode.disabled' as const;
 
 /** symbolDetection.tradeMode.longOnly */
-export const SYMBOL_DETECTION_TRADE_MODE_LONG_ONLY_KEY = '__root__.symbolDetection.tradeMode.longOnly' as const;
+export const SYMBOL_DETECTION_TRADE_MODE_LONG_ONLY_KEY = 'symbolDetection.tradeMode.longOnly' as const;
 
 /** symbolDetection.tradeMode.longShort */
-export const SYMBOL_DETECTION_TRADE_MODE_LONG_SHORT_KEY = '__root__.symbolDetection.tradeMode.longShort' as const;
+export const SYMBOL_DETECTION_TRADE_MODE_LONG_SHORT_KEY = 'symbolDetection.tradeMode.longShort' as const;
 
 /** symbolDetection.tradeMode.shortOnly */
-export const SYMBOL_DETECTION_TRADE_MODE_SHORT_ONLY_KEY = '__root__.symbolDetection.tradeMode.shortOnly' as const;
+export const SYMBOL_DETECTION_TRADE_MODE_SHORT_ONLY_KEY = 'symbolDetection.tradeMode.shortOnly' as const;
 
 /** symbolDetection.tradeMode.unknown */
-export const SYMBOL_DETECTION_TRADE_MODE_UNKNOWN_KEY = '__root__.symbolDetection.tradeMode.unknown' as const;
+export const SYMBOL_DETECTION_TRADE_MODE_UNKNOWN_KEY = 'symbolDetection.tradeMode.unknown' as const;
 
 /** symbolDetection.unresolvedTooltip */
-export const SYMBOL_DETECTION_UNRESOLVED_TOOLTIP_KEY = '__root__.symbolDetection.unresolvedTooltip' as const;
+export const SYMBOL_DETECTION_UNRESOLVED_TOOLTIP_KEY = 'symbolDetection.unresolvedTooltip' as const;
 
 /** topbar.logout */
-export const TOPBAR_LOGOUT_KEY = '__root__.topbar.logout' as const;
+export const TOPBAR_LOGOUT_KEY = 'topbar.logout' as const;
 
 /** topbar.profile */
-export const TOPBAR_PROFILE_KEY = '__root__.topbar.profile' as const;
+export const TOPBAR_PROFILE_KEY = 'topbar.profile' as const;
 
 /** topbar.settings */
-export const TOPBAR_SETTINGS_KEY = '__root__.topbar.settings' as const;
+export const TOPBAR_SETTINGS_KEY = 'topbar.settings' as const;
 
 /** topbar.switchToAdmin */
-export const TOPBAR_SWITCH_TO_ADMIN_KEY = '__root__.topbar.switchToAdmin' as const;
+export const TOPBAR_SWITCH_TO_ADMIN_KEY = 'topbar.switchToAdmin' as const;
 
 /** topbar.systemOk */
-export const TOPBAR_SYSTEM_OK_KEY = '__root__.topbar.systemOk' as const;
+export const TOPBAR_SYSTEM_OK_KEY = 'topbar.systemOk' as const;
 
 /** topbar.user */
-export const TOPBAR_USER_KEY = '__root__.topbar.user' as const;
+export const TOPBAR_USER_KEY = 'topbar.user' as const;
 
 /** wallet.accountNumber */
-export const WALLET_ACCOUNT_NUMBER_KEY = '__root__.wallet.accountNumber' as const;
+export const WALLET_ACCOUNT_NUMBER_KEY = 'wallet.accountNumber' as const;
 
 /** wallet.balance */
-export const WALLET_BALANCE_KEY = '__root__.wallet.balance' as const;
+export const WALLET_BALANCE_KEY = 'wallet.balance' as const;
 
 /** wallet.currency */
-export const WALLET_CURRENCY_KEY = '__root__.wallet.currency' as const;
+export const WALLET_CURRENCY_KEY = 'wallet.currency' as const;
 
 /** wallet.deposit */
-export const WALLET_DEPOSIT_KEY = '__root__.wallet.deposit' as const;
+export const WALLET_DEPOSIT_KEY = 'wallet.deposit' as const;
 
 /** wallet.frozen */
-export const WALLET_FROZEN_KEY = '__root__.wallet.frozen' as const;
+export const WALLET_FROZEN_KEY = 'wallet.frozen' as const;
 
 /** wallet.frozenBalance */
-export const WALLET_FROZEN_BALANCE_KEY = '__root__.wallet.frozenBalance' as const;
+export const WALLET_FROZEN_BALANCE_KEY = 'wallet.frozenBalance' as const;
 
 /** wallet.history */
-export const WALLET_HISTORY_KEY = '__root__.wallet.history' as const;
+export const WALLET_HISTORY_KEY = 'wallet.history' as const;
 
 /** wallet.table.amount */
-export const WALLET_TABLE_AMOUNT_KEY = '__root__.wallet.table.amount' as const;
+export const WALLET_TABLE_AMOUNT_KEY = 'wallet.table.amount' as const;
 
 /** wallet.table.balanceAfter */
-export const WALLET_TABLE_BALANCE_AFTER_KEY = '__root__.wallet.table.balanceAfter' as const;
+export const WALLET_TABLE_BALANCE_AFTER_KEY = 'wallet.table.balanceAfter' as const;
 
 /** wallet.table.description */
-export const WALLET_TABLE_DESCRIPTION_KEY = '__root__.wallet.table.description' as const;
+export const WALLET_TABLE_DESCRIPTION_KEY = 'wallet.table.description' as const;
 
 /** wallet.table.time */
-export const WALLET_TABLE_TIME_KEY = '__root__.wallet.table.time' as const;
+export const WALLET_TABLE_TIME_KEY = 'wallet.table.time' as const;
 
 /** wallet.table.type */
-export const WALLET_TABLE_TYPE_KEY = '__root__.wallet.table.type' as const;
+export const WALLET_TABLE_TYPE_KEY = 'wallet.table.type' as const;
 
 /** wallet.title */
-export const WALLET_TITLE_KEY = '__root__.wallet.title' as const;
+export const WALLET_TITLE_KEY = 'wallet.title' as const;
 
 /** wallet.transactions */
-export const WALLET_TRANSACTIONS_KEY = '__root__.wallet.transactions' as const;
+export const WALLET_TRANSACTIONS_KEY = 'wallet.transactions' as const;
 
 /** wallet.txType.adjustment */
-export const WALLET_TX_TYPE_ADJUSTMENT_KEY = '__root__.wallet.txType.adjustment' as const;
+export const WALLET_TX_TYPE_ADJUSTMENT_KEY = 'wallet.txType.adjustment' as const;
 
 /** wallet.txType.deposit */
-export const WALLET_TX_TYPE_DEPOSIT_KEY = '__root__.wallet.txType.deposit' as const;
+export const WALLET_TX_TYPE_DEPOSIT_KEY = 'wallet.txType.deposit' as const;
 
 /** wallet.txType.fee */
-export const WALLET_TX_TYPE_FEE_KEY = '__root__.wallet.txType.fee' as const;
+export const WALLET_TX_TYPE_FEE_KEY = 'wallet.txType.fee' as const;
 
 /** wallet.txType.reversal */
-export const WALLET_TX_TYPE_REVERSAL_KEY = '__root__.wallet.txType.reversal' as const;
+export const WALLET_TX_TYPE_REVERSAL_KEY = 'wallet.txType.reversal' as const;
 
 /** wallet.txType.withdrawal */
-export const WALLET_TX_TYPE_WITHDRAWAL_KEY = '__root__.wallet.txType.withdrawal' as const;
+export const WALLET_TX_TYPE_WITHDRAWAL_KEY = 'wallet.txType.withdrawal' as const;
 
 /** wallet.withdraw */
-export const WALLET_WITHDRAW_KEY = '__root__.wallet.withdraw' as const;
+export const WALLET_WITHDRAW_KEY = 'wallet.withdraw' as const;
 
 export const BASE_KEYS = {
   admin_config_ai_provider_catalog: '__root__.admin.config.aiProviderCatalog',

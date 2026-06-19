@@ -105,7 +105,7 @@ export default function DefaultPrimaryModelCard({
 	return (
 		<Card
 			className="mb-4"
-			title={t(PRIMARY_TITLE_KEY, { defaultValue: 'Default Primary Model' })}
+			title={t(PRIMARY_TRADING_TITLE_KEY, { defaultValue: 'Default Primary Model' })}
 			loading={!loaded}
 		>
 			<div style={{ marginBottom: 8 }}>

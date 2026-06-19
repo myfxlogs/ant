@@ -147,7 +147,7 @@ function buildKeyConstants(section: string, fieldMap: FieldMap): string {
 
   // Individual key constants
   for (const [protoField, i18nRelPath] of Object.entries(fieldMap.fields)) {
-    const fullPath = `${fieldMap.prefix}.${i18nRelPath}`;
+    const fullPath = fieldMap.prefix === '__root__' ? i18nRelPath : `${fieldMap.prefix}.${i18nRelPath}`;
     const constName = protoField.toUpperCase() + '_KEY';
     ts += `/** ${i18nRelPath} */\n`;
     ts += `export const ${constName} = '${fullPath}' as const;\n\n`;

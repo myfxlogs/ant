@@ -112,7 +112,7 @@ export default function AccountTradeTabs({
         realPositions.length === 0 && pendingOrders.length === 0 ? (
           <div className="text-center py-12" style={{ color: 'var(--color-text-muted)' }}>
             <LineChartOutlined style={{ fontSize: 48, opacity: 0.3 }} color="#D4AF37" />
-            <p className="mt-4">{t(TRADE_TABS_EMPTY_POSITIONS_KEY)}</p>
+            <p className="mt-4">{t(TRADE_TABS_EMPTY_TRADING_POSITIONS_KEY)}</p>
           </div>
         ) : (
           <div>
@@ -122,13 +122,13 @@ export default function AccountTradeTabs({
                   <thead>
                     <tr style={{ background: 'var(--color-bg-secondary)' }}>
                       <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_ORDER_ID_KEY)}</th>
-                      <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_SYMBOL_KEY)}</th>
-                      <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_SIDE_KEY)}</th>
-                      <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_VOLUME_KEY)}</th>
-                      <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_OPEN_PRICE_KEY)}</th>
-                      <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_CURRENT_PRICE_KEY)}</th>
-                      <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_PROFIT_KEY)}</th>
-                      <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_OPEN_TIME_KEY)}</th>
+                      <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_TRADING_SYMBOL_KEY)}</th>
+                      <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_TRADING_SIDE_KEY)}</th>
+                      <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_TRADING_VOLUME_KEY)}</th>
+                      <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_OPEN_TRADING_PRICE_KEY)}</th>
+                      <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_CURRENT_TRADING_PRICE_KEY)}</th>
+                      <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_TRADING_PROFIT_KEY)}</th>
+                      <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_TRADING_OPEN_TRADING_TIME_KEY)}</th>
                     </tr>
                   </thead>
                   <tbody>{realPositions.map((p) => <PositionRow key={p.ticket} position={p} />)}</tbody>
@@ -145,12 +145,12 @@ export default function AccountTradeTabs({
                     <thead>
                       <tr style={{ background: '#FAFBFC' }}>
                         <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_ORDER_ID_KEY)}</th>
-                        <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_SYMBOL_KEY)}</th>
-                        <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_TYPE_KEY)}</th>
-                        <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_VOLUME_KEY)}</th>
-                        <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_PENDING_PRICE_KEY)}</th>
-                        <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_CURRENT_PRICE_KEY)}</th>
-                        <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_PENDING_TIME_KEY)}</th>
+                        <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_TRADING_SYMBOL_KEY)}</th>
+                        <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_TRADING_TYPE_KEY)}</th>
+                        <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_TRADING_VOLUME_KEY)}</th>
+                        <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_PENDING_TRADING_PRICE_KEY)}</th>
+                        <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_CURRENT_TRADING_PRICE_KEY)}</th>
+                        <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_PENDING_TRADING_TIME_KEY)}</th>
                       </tr>
                     </thead>
                     <tbody>{pendingOrders.map((p) => <PendingOrderRow key={p.ticket} order={p} />)}</tbody>
@@ -205,13 +205,13 @@ export default function AccountTradeTabs({
                 <thead>
                   <tr style={{ background: 'var(--color-bg-secondary)' }}>
                     <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_ORDER_ID_KEY)}</th>
-                    <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_SYMBOL_KEY)}</th>
-                    <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_SIDE_KEY)}</th>
-                    <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_VOLUME_KEY)}</th>
-                    <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_OPEN_PRICE_KEY)}</th>
-                    <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_CLOSE_PRICE_KEY)}</th>
-                    <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_PROFIT_KEY)}</th>
-                    <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_CLOSE_TIME_KEY)}</th>
+                    <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_TRADING_SYMBOL_KEY)}</th>
+                    <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_TRADING_SIDE_KEY)}</th>
+                    <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_TRADING_VOLUME_KEY)}</th>
+                    <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_OPEN_TRADING_PRICE_KEY)}</th>
+                    <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_CLOSE_TRADING_PRICE_KEY)}</th>
+                    <th className="text-right p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_TRADING_PROFIT_KEY)}</th>
+                    <th className="text-left p-3 text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>{t(TRADE_TABS_TABLE_CLOSE_TRADING_TIME_KEY)}</th>
                   </tr>
                 </thead>
                 <tbody>

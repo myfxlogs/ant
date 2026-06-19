@@ -81,7 +81,7 @@ const BacktestRunsCard: React.FC<Props> = ({ runs, loading, onRefresh, onView, o
   };
   const columns: ColumnsType<any> = [
     {
-      title: t(BACKTEST_RUNS_TABLE_TITLE_KEY),
+      title: t(BACKTEST_RUNS_TABLE_TRADING_TITLE_KEY),
       dataIndex: 'title',
       key: 'title',
       width: 260,
@@ -111,7 +111,7 @@ const BacktestRunsCard: React.FC<Props> = ({ runs, loading, onRefresh, onView, o
       render: (s: unknown) => <Tag>{statusText(s, t)}</Tag>,
     },
     {
-      title: t(BACKTEST_RUNS_TABLE_SYMBOL_KEY),
+      title: t(BACKTEST_RUNS_TABLE_TRADING_SYMBOL_KEY),
       dataIndex: 'symbol',
       key: 'symbol',
       width: 120,
@@ -156,7 +156,7 @@ const BacktestRunsCard: React.FC<Props> = ({ runs, loading, onRefresh, onView, o
 
   return (
     <Card
-      title={t(BACKTEST_RUNS_TITLE_KEY)}
+      title={t(BACKTEST_RUNS_TRADING_TITLE_KEY)}
       extra={
         <Space>
           {selectedRowKeys.length > 0 && (

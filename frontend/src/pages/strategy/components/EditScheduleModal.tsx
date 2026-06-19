@@ -79,13 +79,13 @@ export default function EditScheduleModal({
     >
       {noAccount && (
         <Alert type="warning" showIcon icon={<ExclamationCircleOutlined />} className="mb-3"
-          message={t(SCHEDULE_LAUNCH_NO_ACCOUNT_TITLE_KEY, '还没有可用的交易账号')}
+          message={t(SCHEDULE_LAUNCH_NO_ACCOUNT_TRADING_TITLE_KEY, '还没有可用的交易账号')}
           description={
             <div>
               {t(SCHEDULE_LAUNCH_NO_ACCOUNT_BODY_KEY, '请先在"账户管理"中添加并绑定 MT4/MT5 账号，账号联机成功后才能上线调度。')}
               <div className="mt-2">
                 <Button size="small" type="primary" onClick={() => window.open('/accounts/bind', '_blank')}>
-                  {t(SCHEDULE_LAUNCH_ACTIONS_ADD_ACCOUNT_KEY, '去添加交易账号')}
+                  {t(SCHEDULE_LAUNCH_ACTIONS_ADD_TRADING_ACCOUNT_KEY, '去添加交易账号')}
                 </Button>
               </div>
             </div>
@@ -106,7 +106,7 @@ export default function EditScheduleModal({
         <EditScheduleRiskFields />
         <Collapse items={[{
           key: 'advanced',
-          label: t(EDIT_MODAL_ADVANCED_TITLE_KEY),
+          label: t(EDIT_MODAL_ADVANCED_TRADING_TITLE_KEY),
           children: (
             <Form.Item
               label={t(EDIT_MODAL_ADVANCED_PARAMETERS_JSON_KEY)}

@@ -61,13 +61,13 @@ export const getDirectionPieData = (t: (key: string, opts?: Record<string, unkno
   const short = Number(direction?.shortTrades || 0);
   if (long === 0 && short === 0) {
     return [
-      { name: t(SUMMARY_DIRECTION_BUY_KEY), value: 0, color: '#00A651' },
-      { name: t(SUMMARY_DIRECTION_SELL_KEY), value: 0, color: '#E53935' },
+      { name: t(SUMMARY_DIRECTION_TRADING_BUY_KEY), value: 0, color: '#00A651' },
+      { name: t(SUMMARY_DIRECTION_TRADING_SELL_KEY), value: 0, color: '#E53935' },
     ];
   }
   return [
-    { name: t(SUMMARY_DIRECTION_BUY_KEY), value: long, color: '#00A651' },
-    { name: t(SUMMARY_DIRECTION_SELL_KEY), value: short, color: '#E53935' },
+    { name: t(SUMMARY_DIRECTION_TRADING_BUY_KEY), value: long, color: '#00A651' },
+    { name: t(SUMMARY_DIRECTION_TRADING_SELL_KEY), value: short, color: '#E53935' },
   ];
 };
 

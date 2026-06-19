@@ -17,7 +17,7 @@ export default function AISettingsModal({ open, onClose }: Props) {
   const { t } = useTranslation();
 
   return (
-    <Modal title={<><SettingOutlined style={{ marginRight: 8 }} />{t(PAGE_TITLE_KEY, 'AI Settings')}</>}
+    <Modal title={<><SettingOutlined style={{ marginRight: 8 }} />{t(PAGE_TRADING_TITLE_KEY, 'AI Settings')}</>}
       open={open} onCancel={onClose} footer={null} width={900} style={{ top: 8 }}>
       <div style={{ maxHeight: '80vh', overflowY: 'auto' }}>
         <style>{`

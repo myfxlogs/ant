@@ -16,7 +16,7 @@ export default function EditScheduleRiskFields() {
           <Form.Item
             label={
               <Tooltip title={t(SCHEDULE_LAUNCH_FORM_DEFAULT_VOLUME_TIP_KEY, '策略信号里 volume=0 时默认下单量。手数单位。')}>
-                <span>{t(SCHEDULE_LAUNCH_FORM_DEFAULT_VOLUME_KEY, '默认手数')}</span>
+                <span>{t(SCHEDULE_LAUNCH_FORM_DEFAULT_TRADING_VOLUME_KEY, '默认手数')}</span>
               </Tooltip>
             }
             name="defaultVolume"
@@ -28,7 +28,7 @@ export default function EditScheduleRiskFields() {
           <Form.Item
             label={
               <Tooltip title={t(SCHEDULE_LAUNCH_FORM_MAX_POSITIONS_TIP_KEY, '同一品种上允许同时持有的最多持仓数；达到后本次信号跳过。')}>
-                <span>{t(SCHEDULE_LAUNCH_FORM_MAX_POSITIONS_KEY, '最大持仓数')}</span>
+                <span>{t(SCHEDULE_LAUNCH_FORM_MAX_TRADING_POSITIONS_KEY, '最大持仓数')}</span>
               </Tooltip>
             }
             name="maxPositions"

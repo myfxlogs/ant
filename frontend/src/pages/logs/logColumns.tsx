@@ -42,7 +42,7 @@ interface ColumnOpts {
 export function buildConnectionColumns({ t, formatTime, accountById }: ColumnOpts) {
   return [
     { title: t(TIME_KEY), dataIndex: 'createdAt', key: 'createdAt', width: 180, render: (v: unknown) => formatTime(v) },
-    { title: t(EVENT_TYPE_KEY), dataIndex: 'eventType', key: 'eventType', width: 120, render: getEventTypeTag },
+    { title: t(EVENT_TRADING_TYPE_KEY), dataIndex: 'eventType', key: 'eventType', width: 120, render: getEventTypeTag },
     { title: t(STATUS_KEY), dataIndex: 'status', key: 'status', width: 100, render: (v: string) => getStatusTag(v, t) },
     { title: t(SERVER_KEY), key: 'server', width: 200, render: (_: unknown, r: ConnectionLog) => {
       const a = accountById.get(String(r.accountId || ''));
@@ -64,8 +64,8 @@ export function buildExecutionColumns({ t, formatTime }: ColumnOpts) {
     { title: t(PERIOD_KEY), dataIndex: 'timeframe', key: 'timeframe', width: 80 },
     { title: t(STATUS_KEY), dataIndex: 'status', key: 'status', width: 100, render: (v: string) => getStatusTag(v, t) },
     { title: t(SIGNAL_KEY), dataIndex: 'signalType', key: 'signalType', width: 80, render: getSignalTypeTag },
-    { title: t(SIGNAL_PRICE_KEY), dataIndex: 'signalPrice', key: 'signalPrice', width: 100, render: (v: number) => v?.toFixed(5) || '-' },
-    { title: t(EXECUTION_PRICE_KEY), dataIndex: 'executedPrice', key: 'executedPrice', width: 100, render: (v: number) => v?.toFixed(5) || '-' },
+    { title: t(SIGNAL_TRADING_PRICE_KEY), dataIndex: 'signalPrice', key: 'signalPrice', width: 100, render: (v: number) => v?.toFixed(5) || '-' },
+    { title: t(EXECUTION_TRADING_PRICE_KEY), dataIndex: 'executedPrice', key: 'executedPrice', width: 100, render: (v: number) => v?.toFixed(5) || '-' },
     { title: t(PROFIT_KEY), dataIndex: 'profit', key: 'profit', width: 100, render: (v: number) => v ? <span style={{ color: v >= 0 ? 'green' : 'red' }}>{v.toFixed(2)}</span> : '-' },
     { title: t(COST_KEY), dataIndex: 'executionTimeMs', key: 'executionTimeMs', width: 80, render: (v: number) => v ? `${v}ms` : '-' },
     { title: t(ERROR_KEY), dataIndex: 'errorMessage', key: 'errorMessage', ellipsis: true },
@@ -77,7 +77,7 @@ export function buildOrderColumns({ t, formatTime }: ColumnOpts) {
     { title: t(TIME_KEY), dataIndex: 'openTime', key: 'openTime', width: 180, render: (v: unknown) => formatTime(v) },
     { title: t(ORDER_TABLE_TICKET_KEY), dataIndex: 'ticket', key: 'ticket', width: 100 },
     { title: t(PRODUCT_KEY), dataIndex: 'symbol', key: 'symbol', width: 100 },
-    { title: t(ORDER_TABLE_TYPE_KEY), dataIndex: 'orderType', key: 'orderType', width: 100 },
+    { title: t(ORDER_TABLE_TRADING_TYPE_KEY), dataIndex: 'orderType', key: 'orderType', width: 100 },
     { title: t(ORDER_TABLE_LOTS_KEY), dataIndex: 'lots', key: 'lots', width: 80 },
     { title: t(ORDER_TABLE_OPEN_KEY), dataIndex: 'openPrice', key: 'openPrice', width: 100, render: (v: number) => v?.toFixed(5) || '-' },
     { title: t(ORDER_TABLE_CLOSE_KEY), dataIndex: 'closePrice', key: 'closePrice', width: 100, render: (v: number) => v?.toFixed(5) || '-' },

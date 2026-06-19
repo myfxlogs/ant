@@ -15,9 +15,9 @@ interface Props {
 function SummaryTopMetrics({ netProfit, latestEquity, latestBalance }: Props) {
   const { t } = useTranslation();
   const cards = [
-    { icon: <RiseOutlined />, color: '#00A651', label: t(SUMMARY_METRICS_NET_PROFIT_KEY), value: `$${Number(netProfit || 0).toFixed(2)}`, valueColor: netProfit >= 0 ? '#00A651' : '#E53935' },
-    { icon: <LineChartOutlined />, color: '#2196F3', label: t(SUMMARY_METRICS_EQUITY_KEY), value: `$${latestEquity.toFixed(2)}`, valueColor: 'var(--color-text)' },
-    { icon: <AimOutlined />, color: '#D4AF37', label: t(SUMMARY_METRICS_BALANCE_KEY), value: `$${Number(latestBalance).toFixed(2)}`, valueColor: 'var(--color-text)' },
+    { icon: <RiseOutlined />, color: '#00A651', label: t(SUMMARY_METRICS_NET_TRADING_PROFIT_KEY), value: `$${Number(netProfit || 0).toFixed(2)}`, valueColor: netProfit >= 0 ? '#00A651' : '#E53935' },
+    { icon: <LineChartOutlined />, color: '#2196F3', label: t(SUMMARY_METRICS_TRADING_EQUITY_KEY), value: `$${latestEquity.toFixed(2)}`, valueColor: 'var(--color-text)' },
+    { icon: <AimOutlined />, color: '#D4AF37', label: t(SUMMARY_METRICS_TRADING_BALANCE_KEY), value: `$${Number(latestBalance).toFixed(2)}`, valueColor: 'var(--color-text)' },
     { icon: <PieChartOutlined />, color: '#9C27B0', label: t(SUMMARY_METRICS_EQUITY_VALUE_KEY), value: `$${latestEquity.toFixed(2)}`, valueColor: 'var(--color-text)' },
   ];
   return (

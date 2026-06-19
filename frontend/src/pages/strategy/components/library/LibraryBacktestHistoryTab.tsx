@@ -40,7 +40,7 @@ export default function LibraryBacktestHistoryTab() {
   const columns: ColumnsType<BacktestRunRow> = [
     { title: t(BACKTEST_RUNS_TABLE_STATUS_KEY), dataIndex: 'status', key: 'status', width: 100,
       render: (s: unknown) => <Tag>{statusLabel(s, t)}</Tag> },
-    { title: t(BACKTEST_RUNS_TABLE_SYMBOL_KEY), dataIndex: 'symbol', key: 'symbol', width: 120,
+    { title: t(BACKTEST_RUNS_TABLE_TRADING_SYMBOL_KEY), dataIndex: 'symbol', key: 'symbol', width: 120,
       render: (v: string) => <Text>{v || '-'}</Text> },
     { title: t(BACKTEST_RUNS_TABLE_TIMEFRAME_KEY), dataIndex: 'timeframe', key: 'timeframe', width: 90,
       render: (v: string) => <Text>{v || '-'}</Text> },
