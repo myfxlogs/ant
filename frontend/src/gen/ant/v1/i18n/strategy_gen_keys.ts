@@ -70,6 +70,9 @@ export const TITLE_KEY = 'strategy.gen.title' as const;
 /** useDefaults */
 export const USE_DEFAULTS_KEY = 'strategy.gen.useDefaults' as const;
 
+/** useDefaultsHint */
+export const USE_DEFAULTS_HINT_KEY = 'strategy.gen.useDefaultsHint' as const;
+
 /** validating */
 export const VALIDATING_KEY = 'strategy.gen.validating' as const;
 
@@ -97,6 +100,7 @@ export const STRATEGYGEN_KEYS = {
   template: 'strategy.gen.template',
   title: 'strategy.gen.title',
   use_defaults: 'strategy.gen.useDefaults',
+  use_defaults_hint: 'strategy.gen.useDefaultsHint',
   validating: 'strategy.gen.validating',
 } as const;
 

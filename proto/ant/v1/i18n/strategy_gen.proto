@@ -31,4 +31,5 @@ message GenI18n {
   string title = 22;  // Strategy Generation
   string use_defaults = 23;  // Continue with defaults
   string validating = 24;  // Compliance Check
+  string use_defaults_hint = 25;  // AI will generate a generic strategy template with default parameters
 }

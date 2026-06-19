@@ -32,6 +32,7 @@ const StrategyGen = {
       "template": "模板",
       "title": "策略生成",
       "useDefaults": "使用默认值继续",
+      "useDefaultsHint": "AI 将使用通用参数生成策略模板",
       "validating": "合规检查"
     }
   }

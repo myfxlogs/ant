@@ -32,6 +32,7 @@ const StrategyGen = {
       "template": "Template",
       "title": "Strategy Generation",
       "useDefaults": "Continue with defaults",
+      "useDefaultsHint": "AI will generate a strategy using generic template parameters",
       "validating": "Compliance Check"
     }
   }

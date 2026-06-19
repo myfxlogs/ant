@@ -64,29 +64,38 @@ func (s *StrategyGenServer) GenerateStrategy(
 	if err != nil { return err }
 	m := req.Msg
 
-	// Detect the user's UI language so all AI-generated text (analysis, advice,
-	// clarification questions, code comments) follows it. Frontend sends this on
-	// every ConnectRPC request via the Accept-Language header.
-	lang := LangFromAccept(req.Header().Get("Accept-Language"))
+	// Detect the user's UI language from Accept-Language header.
+	// This is the initial guess — it will be overridden when the LLM detects a
+	// different language from the user's actual input text (see below).
+	headerLang := LangFromAccept(req.Header().Get("Accept-Language"))
 
 	// ── Phase 3: FEEDBACK MODE ──
 	if m.PreviousCode != "" && m.BacktestMetricsJson != "" {
-		return s.handleFeedback(ctx, userID, m, stream, lang)
+		return s.handleFeedback(ctx, userID, m, stream, headerLang)
 	}
 
 	// ── Phase 1: LLM-driven intent analysis ──
-	intent, err := s.analyzeIntent(ctx, userID, m, lang)
+	// The first LLM call uses headerLang for its output directive. In the
+	// response, the LLM also detects the user's INPUT language — we use that
+	// detection to override the language for ALL subsequent LLM calls.
+	intent, err := s.analyzeIntent(ctx, userID, m, headerLang)
 	if err != nil {
 		s.log.Warn("intent analysis failed, falling back to direct generation", zap.Error(err))
-		// Fallback: if LLM call fails, skip clarification and generate directly
 		intent = &ai.IntentResult{NeedsClarification: false}
+	}
+
+	// Input-language-first: override with LLM-detected language from user's text.
+	// Falls back to headerLang when detection is empty (very short/ambiguous input).
+	lang := headerLang
+	if intent.Language != "" {
+		lang = intent.Language
 	}
 
 	if intent.NeedsClarification && m.ClarificationRound < maxClarificationRounds {
 		return stream.Send(&antv1.GenerateStrategyChunk{Phase: "clarifying", Questions: intent.Questions})
 	}
 
-	// Build prompt with extracted intent parameters
+	// Build prompt with extracted intent parameters, using the detected language.
 	tmpl, sysPrompt, userPrompt := s.buildStrategyPrompt(ctx, userID, m, intent, lang)
 	if err := s.sendTemplateInfo(stream, tmpl); err != nil { return err }
 

@@ -20,6 +20,7 @@ import (
 type IntentResult struct {
 	NeedsClarification bool              `json:"needs_clarification"`
 	Questions          []string          `json:"questions"`
+	Language           string            `json:"language"`           // detected input language: "zh", "zh-tw", "ja", "vi", "en", or "" (unknown)
 	StrategyFamily     string            `json:"strategy_family"`    // trend_following, mean_reversion, breakout, grid, martingale
 	StrategyType       string            `json:"strategy_type"`      // "run_dataframe" (vectorized/indicator) or "run_context" (event-driven) or ""
 	RiskLevel          string            `json:"risk_level"`         // low, medium, high
@@ -40,6 +41,7 @@ const intentAnalysisSystemPrompt = `你是量化策略需求分析专家。分�
 {
   "needs_clarification": true/false,
   "questions": ["问题1", "问题2"],
+  "language": "zh|zh-tw|ja|vi|en|",
   "strategy_family": "trend_following|mean_reversion|breakout|grid|martingale|unknown",
   "strategy_type": "run_dataframe|run_context|",
   "risk_level": "low|medium|high|unknown",
@@ -63,7 +65,8 @@ const intentAnalysisSystemPrompt = `你是量化策略需求分析专家。分�
 2. needs_clarification=false 当信息足够生成策略，extract 所有能识别的参数
 3. strategy_family 根据策略描述推断，不确定时填 "unknown"
 4. confidence 表示你对提取结果的确信度。模糊描述 → 低分，详细描述 → 高分
-5. questions 必须是针对性的、用户能直接回答的具体问题（不是泛泛的"请详细描述"），其语言遵循下方的语言要求`
+5. questions 必须是针对性的、用户能直接回答的具体问题（不是泛泛的"请详细描述"），其语言遵循下方的语言要求
+6. language 根据用户输入的语言检测，取值为: "zh"(简体中文), "zh-tw"(繁体中文), "ja"(日语), "vi"(越南语), "en"(英语)。无法判断时返回空字符串 ""。仅检测用户输入文本的语言，不受下方语言要求影响。`
 
 // IntentAnalyzer uses an LLM to extract structured intent from NL descriptions.
 type IntentAnalyzer struct {

@@ -32,6 +32,7 @@ const StrategyGen = {
       "template": "Mẫu",
       "title": "Tạo Chiến Lược",
       "useDefaults": "Tiếp Tục Với Mặc Định",
+      "useDefaultsHint": "AI sẽ tạo chiến lược bằng tham số mẫu chung",
       "validating": "Kiểm Tra Tuân Thủ"
     }
   }

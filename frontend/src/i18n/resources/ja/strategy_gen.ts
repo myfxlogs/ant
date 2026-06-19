@@ -32,6 +32,7 @@ const StrategyGen = {
       "template": "テンプレート",
       "title": "ストラテジー生成",
       "useDefaults": "デフォルトで続行",
+      "useDefaultsHint": "AIは汎用テンプレートパラメータを使用して成略を生成します",
       "validating": "コンプライアンスチェック"
     }
   }

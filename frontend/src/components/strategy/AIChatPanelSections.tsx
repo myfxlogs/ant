@@ -1,13 +1,14 @@
 import { AI_KEY, APPLY_CODE_KEY, DISMISS_KEY, REVIEW_CODE_KEY, YOU_KEY } from '@/gen/ant/v1/i18n/strategy_ai_chat_keys';
 import { METRICS_MAX_DRAWDOWN_KEY, METRICS_SHARPE_KEY, METRICS_WIN_RATE_KEY } from '@/gen/ant/v1/i18n/strategy_backtest_run_keys';
 import { REVISE_INPUT_PLACEHOLDER_KEY, REVISE_SEND_KEY } from '@/gen/ant/v1/i18n/strategy_code_assist_keys';
-import { CLARIFY_TITLE_KEY, FEEDBACK_HEADING_KEY, FEEDBACK_PLACEHOLDER_KEY, METRICS_RETURN_KEY, METRICS_TRADES_KEY, PLACEHOLDER_KEY, USE_DEFAULTS_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
+import { CLARIFY_TITLE_KEY, FEEDBACK_HEADING_KEY, FEEDBACK_PLACEHOLDER_KEY, METRICS_RETURN_KEY, METRICS_TRADES_KEY, PLACEHOLDER_KEY, SEND_KEY, USE_DEFAULTS_HINT_KEY, USE_DEFAULTS_KEY } from '@/gen/ant/v1/i18n/strategy_gen_keys';
 
 // AIChatPanelSections.tsx — Display-only subcomponents + shared helpers extracted from AIChatPanel.
 // These are pure presentational components: messages, clarification, backtest metrics,
 // pending code banner, and input bar. They receive data/events via props only.
 // Also exports intent classification helpers shared with the parent.
 
+import { useState } from 'react';
 import { Button, Space, Tag, Typography, Input } from 'antd';
 import { SendOutlined, LoadingOutlined } from '@ant-design/icons';
 import type { CodeChatMessage } from '@/client/codeAssist';
@@ -150,22 +151,46 @@ interface ChatClarificationViewProps {
 }
 
 export function ChatClarificationView({ questions, clarifyRound, onAnswer, onUseDefaults, t }: ChatClarificationViewProps) {
+  const [clarifyDraft, setClarifyDraft] = useState('');
+
+  const handleSend = () => {
+    const msg = clarifyDraft.trim();
+    if (!msg) return;
+    setClarifyDraft('');
+    onAnswer(msg);
+  };
+
   return (
     <div style={{ padding: 12, background: '#fffbe6', borderRadius: 6, border: '1px solid #ffe58f' }}>
       <Typography.Text strong style={{ fontSize: 13 }}>
         {t(CLARIFY_TITLE_KEY, '需要确认几个细节：')}
       </Typography.Text>
-      <Space direction="vertical" size={6} style={{ width: '100%', marginTop: 8 }}>
+      <ul style={{ margin: '8px 0 4px', paddingLeft: 18, fontSize: 12, color: '#595959' }}>
         {questions.map((q, i) => (
-          <Button key={i} block size="small" type="dashed" onClick={() => onAnswer(q)}
-            disabled={clarifyRound >= 3}>{q}</Button>
+          <li key={i} style={{ marginBottom: 3 }}>{q}</li>
         ))}
-        {clarifyRound >= 3 && (
-          <Button block size="small" type="primary" onClick={onUseDefaults}>
+      </ul>
+      <TextArea rows={3} value={clarifyDraft} onChange={e => setClarifyDraft(e.target.value)}
+        placeholder={t(PLACEHOLDER_KEY, '描述你想创建的交易策略…')}
+        onPressEnter={e => { if (!e.shiftKey) { e.preventDefault(); handleSend(); } }}
+        style={{ fontSize: 13, marginTop: 8 }}
+        disabled={clarifyRound >= 3}
+      />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: 8 }}>
+        <div>
+          <Button size="small" type="link" onClick={onUseDefaults}
+            style={{ padding: 0, fontSize: 12 }}>
             {t(USE_DEFAULTS_KEY, '使用默认设置继续')}
           </Button>
-        )}
-      </Space>
+          <Typography.Text type="secondary" style={{ display: 'block', fontSize: 10, marginTop: 1 }}>
+            {t(USE_DEFAULTS_HINT_KEY)}
+          </Typography.Text>
+        </div>
+        <Button type="primary" size="small" icon={<SendOutlined />}
+          onClick={handleSend} disabled={!clarifyDraft.trim() || clarifyRound >= 3}>
+          {t(SEND_KEY, '提交')}
+        </Button>
+      </div>
     </div>
   );
 }

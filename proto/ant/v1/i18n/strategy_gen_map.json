@@ -24,6 +24,7 @@
     "template": "template",
     "title": "title",
     "use_defaults": "useDefaults",
+    "use_defaults_hint": "useDefaultsHint",
     "validating": "validating"
   }
 }
