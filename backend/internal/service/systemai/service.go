@@ -331,6 +331,27 @@ func FriendlyError(err error) string {
 		return "User location is not supported for the API use. The upstream may block this region (egress IP); try a supported network, proxy, or another provider."
 	case strings.Contains(low, "base url"):
 		return "Base URL 格式无效：请填写完整地址，例如 https://api.example.com/v1。"
+	// ── 400 sub-types (read from provider error body) ──
+	case strings.Contains(low, "status 400") && strings.Contains(low, "model not found") ||
+		strings.Contains(low, "status 400") && strings.Contains(low, "does not exist") ||
+		strings.Contains(low, "status 400") && strings.Contains(low, "invalid_model") ||
+		strings.Contains(low, "status 400") && strings.Contains(low, "no such model") ||
+		strings.Contains(low, "status 400") && strings.Contains(low, "unknown model"):
+		return "模型名称不存在于当前供应商，请检查模型名称或切换到其他厂商。"
+	case strings.Contains(low, "status 400") && strings.Contains(low, "context") ||
+		strings.Contains(low, "status 400") && strings.Contains(low, "too long") ||
+		strings.Contains(low, "status 400") && strings.Contains(low, "token limit") ||
+		strings.Contains(low, "status 400") && strings.Contains(low, "max tokens"):
+		return "输入内容超出模型上下文限制，请缩短消息或清除对话历史后重试。"
+	case strings.Contains(low, "status 400") && strings.Contains(low, "invalid api key") ||
+		strings.Contains(low, "status 400") && strings.Contains(low, "incorrect api key"):
+		return "API Key 格式无效：请检查密钥是否正确，或确认已启用该供应商。"
+	case strings.Contains(low, "status 400") && strings.Contains(low, "stream") ||
+		strings.Contains(low, "status 400") && strings.Contains(low, "does not support"):
+		return "当前模型不支持流式输出，请在设置中更换模型或关闭流式传输。"
+	case strings.Contains(low, "status 400"):
+		// Generic 400 — try to extract the provider error message for context.
+		return "模型服务拒绝了请求，可能是参数不兼容或模型暂时不可用。详情：" + msg
 	default:
 		return "拉取模型失败：" + msg
 	}

@@ -2,7 +2,10 @@ package systemai
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"strings"
 	"sync"
 	"time"
@@ -76,10 +79,16 @@ func isFailoverErr(err error) bool {
 
 // isFailoverStatus returns true for HTTP status codes that indicate a
 // provider-level issue (try next) rather than a request-level issue (stop).
+//
+// For 400 errors (which can be either request-level or provider-level),
+// the caller should additionally inspect the response body — model-not-found
+// errors are safe to failover because another provider may host the model.
 func isFailoverStatus(code int) bool {
 	switch code {
 	case 401:
 		return false // bad API key — don't retry
+	case 400:
+		return true // may be model-specific → try next; caller checks body for auth errors
 	case 403, 429:
 		return true // quota/rate-limit/region-block → try next
 	case 502, 503, 504:
@@ -88,6 +97,81 @@ func isFailoverStatus(code int) bool {
 		return code >= 500 // other server errors → try next
 	}
 }
+
+// isModelNotFoundError checks whether a provider error body indicates the
+// requested model doesn't exist on this provider. When true, failover to
+// another provider is appropriate.
+func isModelNotFoundError(body string) bool {
+	low := strings.ToLower(body)
+	// Common patterns across OpenAI / DeepSeek / Zhipu / etc.
+	return strings.Contains(low, "model not found") ||
+		strings.Contains(low, "does not exist") ||
+		strings.Contains(low, "invalid_model") ||
+		strings.Contains(low, "no such model") ||
+		strings.Contains(low, "unknown model") ||
+		strings.Contains(low, "model_not_found") ||
+		strings.Contains(low, "invalid model") ||
+		strings.Contains(low, "model is not supported")
+}
+
+// isAuthErrorBody checks whether a 400/401/403 body indicates an auth problem
+// (bad key format, expired key, etc.). Failover is pointless in this case.
+func isAuthErrorBody(body string) bool {
+	low := strings.ToLower(body)
+	return strings.Contains(low, "invalid api key") ||
+		strings.Contains(low, "invalid key") ||
+		strings.Contains(low, "invalid authentication") ||
+		strings.Contains(low, "authorization header") ||
+		strings.Contains(low, "incorrect api key") ||
+		strings.Contains(low, "api key not valid")
+}
+
+// isContentTooLongError checks whether a 400 body indicates the request
+// exceeded the model's context window. Failover to a larger-context provider
+// is appropriate.
+func isContentTooLongError(body string) bool {
+	low := strings.ToLower(body)
+	return strings.Contains(low, "context length") ||
+		strings.Contains(low, "too long") ||
+		strings.Contains(low, "max tokens") ||
+		strings.Contains(low, "maximum context") ||
+		strings.Contains(low, "token limit") ||
+		strings.Contains(low, "context window") ||
+		strings.Contains(low, "max context") ||
+		strings.Contains(low, "reduce the length") ||
+		strings.Contains(low, "context_length_exceeded")
+}
+// readAPIErrorBody reads up to 8 KiB of a non-2xx response body and extracts
+// a human-readable error message (OpenAI-compatible error JSON or raw text).
+func readAPIErrorBody(resp *http.Response) string {
+	if resp == nil || resp.Body == nil {
+		return ""
+	}
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 8<<10))
+	if err != nil {
+		return ""
+	}
+	var apiErr struct {
+		Error struct {
+			Message string `json:"message"`
+			Type    string `json:"type"`
+			Code    string `json:"code"`
+		} `json:"error"`
+	}
+	if json.Unmarshal(body, &apiErr) == nil && apiErr.Error.Message != "" {
+		if apiErr.Error.Type != "" {
+			return apiErr.Error.Type + ": " + apiErr.Error.Message
+		}
+		return apiErr.Error.Message
+	}
+	// Fallback: return first non-empty line of raw body.
+	raw := strings.TrimSpace(string(body))
+	if len(raw) > 500 {
+		raw = raw[:500]
+	}
+	return raw
+}
+
 // chatEndpoint constructs the chat completion API endpoint from a provider's base URL.
 func chatEndpoint(providerID, baseURL string) string {
 	base := strings.TrimRight(baseURL, "/")

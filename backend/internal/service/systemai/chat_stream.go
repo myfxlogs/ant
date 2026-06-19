@@ -66,10 +66,20 @@ func (s *Service) tryChatCompletionStream(ctx context.Context, p chatProvider, m
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		if isFailoverStatus(resp.StatusCode) {
+		errBody := readAPIErrorBody(resp)
+		transient := isFailoverStatus(resp.StatusCode)
+		// 400 with model-not-found is safe to failover; auth errors are not.
+		if resp.StatusCode == 400 && isAuthErrorBody(errBody) {
+			transient = false
+		}
+		msg := fmt.Sprintf("chat completion stream: status %d", resp.StatusCode)
+		if errBody != "" {
+			msg += " (" + errBody + ")"
+		}
+		if transient {
 			recordProviderFailure(p.userID, p.providerID)
 		}
-		return &failoverErr{msg: fmt.Sprintf("chat completion stream: status %d", resp.StatusCode), transient: isFailoverStatus(resp.StatusCode)}
+		return &failoverErr{msg: msg, transient: transient}
 	}
 	scanner := bufio.NewScanner(resp.Body)
 	scanner.Buffer(make([]byte, 0, 64*1024), 2*1024*1024)

@@ -196,10 +196,20 @@ func (s *Service) tryChatCompletion(ctx context.Context, p chatProvider, message
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		if isFailoverStatus(resp.StatusCode) {
-		recordProviderFailure(p.userID, p.providerID)
-	}
-	return "", nil, &failoverErr{msg: fmt.Sprintf("chat completion: status %d", resp.StatusCode), transient: isFailoverStatus(resp.StatusCode)}
+		errBody := readAPIErrorBody(resp)
+		transient := isFailoverStatus(resp.StatusCode)
+		// 400 with model-not-found is safe to failover; auth errors are not.
+		if resp.StatusCode == 400 && isAuthErrorBody(errBody) {
+			transient = false
+		}
+		msg := fmt.Sprintf("chat completion: status %d", resp.StatusCode)
+		if errBody != "" {
+			msg += " (" + errBody + ")"
+		}
+		if transient {
+			recordProviderFailure(p.userID, p.providerID)
+		}
+		return "", nil, &failoverErr{msg: msg, transient: transient}
 	}
 
 	var cr ChatCompletionResponse
