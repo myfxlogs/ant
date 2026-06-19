@@ -3,10 +3,6 @@
 const StrategyWorkspace = {
   "strategy": {
     "workspace": {
-      "account": "账号",
-      "accountPlaceholder": "账户 ID",
-      "ai": "AI 助手",
-      "aiAssist": "AI 助手",
       "autoFix": {
         "button": "自动修复",
         "dismiss": "忽略",
@@ -18,16 +14,6 @@ const StrategyWorkspace = {
         "passed": "自动修复通过，共 {{iterations}} 轮{{plural}}",
         "remaining": "剩余 ({{count}})"
       },
-      "backtest": "回测",
-      "backtestCompleted": "已完成",
-      "backtestEmpty": "运行回测以查看结果",
-      "backtestError": "回测失败",
-      "backtestResultsLabel": "回测结果",
-      "backtestRunIdLabel": "选择回测记录...",
-      "backtestRunning": "回测运行中...",
-      "backtestTab": "回测结果",
-      "chart": "K线",
-      "chartError": "图表加载错误 — 请刷新重试",
       "chartTools": {
         "area": "面积图",
         "candle": "蜡烛图",
@@ -43,6 +29,27 @@ const StrategyWorkspace = {
         "streamActive": "实时K线流已连接",
         "streamUnavailable": "数据流不可用"
       },
+      "template": {
+        "load": "加载",
+        "loaded": "已加载",
+        "saveAs": "另存为新模板",
+        "selectPlaceholder": "选择模板...",
+        "title": "模板"
+      },
+      "account": "账号",
+      "accountPlaceholder": "账户 ID",
+      "ai": "AI 助手",
+      "aiAssist": "AI 助手",
+      "backtest": "回测",
+      "backtestCompleted": "已完成",
+      "backtestEmpty": "运行回测以查看结果",
+      "backtestError": "回测失败",
+      "backtestResultsLabel": "回测结果",
+      "backtestRunIdLabel": "选择回测记录...",
+      "backtestRunning": "回测运行中...",
+      "backtestTab": "回测结果",
+      "chart": "K线",
+      "chartError": "图表加载错误 — 请刷新重试",
       "chartWindow": "图表",
       "code": "策略代码",
       "completedStatus": "已完成",
@@ -72,13 +79,6 @@ const StrategyWorkspace = {
       "selectSymbolHint": "请选择交易账户和品种以查看图表",
       "showCode": "显示代码",
       "smartTuning": "智能调优",
-      "template": {
-        "load": "加载",
-        "loaded": "已加载",
-        "saveAs": "另存为新模板",
-        "selectPlaceholder": "选择模板...",
-        "title": "模板"
-      },
       "title": "策略工作区",
       "tuningTab": "智能调优",
       "validate": "验证代码",

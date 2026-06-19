@@ -3,6 +3,10 @@
 const StrategyBacktestParams = {
   "strategy": {
     "backtestParams": {
+      "presets": {
+        "exploration": "探索",
+        "liveAligned": "実取引連動"
+      },
       "backtestFailed": "バックテストに失敗",
       "both": "両方",
       "capital": "資金",
@@ -20,10 +24,6 @@ const StrategyBacktestParams = {
       "history": "バックテスト履歴",
       "leverage": "レバレッジ",
       "long": "↑ ロング",
-      "presets": {
-        "exploration": "探索",
-        "liveAligned": "実取引連動"
-      },
       "run": "▶ 実行",
       "runtimeMode": "ランタイム",
       "settingsLoad": "デフォルトを読込",

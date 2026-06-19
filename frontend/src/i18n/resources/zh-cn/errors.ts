@@ -2,6 +2,10 @@
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const Errors = {
   "errors": {
+    "ai": {
+      "internal_error": "AI 服务异常，请稍后重试。",
+      "not_configured": "尚未配置 AI 厂商，请点击 ⚙ 在 AI 设置中填写 API Key。"
+    },
     "account_already_bound": "该交易账户已被绑定",
     "account_auth_failed": "交易账户认证失败",
     "account_connection_failed": "无法连接到交易服务器",
@@ -11,10 +15,6 @@ const Errors = {
     "account_not_found": "交易账户未找到",
     "account_timeout": "连接交易服务器超时",
     "admin_access_denied": "需要管理员权限",
-    "ai": {
-      "internal_error": "AI 服务异常，请稍后重试。",
-      "not_configured": "尚未配置 AI 厂商，请点击 ⚙ 在 AI 设置中填写 API Key。"
-    },
     "analytics_not_available": "分析数据不可用",
     "audit_log_not_found": "审计日志未找到",
     "broker_not_found": "券商未找到",

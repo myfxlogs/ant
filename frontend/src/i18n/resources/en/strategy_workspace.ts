@@ -3,10 +3,6 @@
 const StrategyWorkspace = {
   "strategy": {
     "workspace": {
-      "account": "Account",
-      "accountPlaceholder": "Account ID",
-      "ai": "AI",
-      "aiAssist": "AI Assistant",
       "autoFix": {
         "button": "Auto Fix",
         "dismiss": "Dismiss",
@@ -18,16 +14,6 @@ const StrategyWorkspace = {
         "passed": "Auto-fix passed in {{iterations}} iteration{{plural}}",
         "remaining": "Remaining ({{count}})"
       },
-      "backtest": "Backtest",
-      "backtestCompleted": "Completed",
-      "backtestEmpty": "Run a backtest to see results",
-      "backtestError": "Backtest failed",
-      "backtestResultsLabel": "Backtest Results",
-      "backtestRunIdLabel": "Select backtest run...",
-      "backtestRunning": "Backtest running...",
-      "backtestTab": "Backtest Results",
-      "chart": "K-line",
-      "chartError": "Chart error — try refreshing",
       "chartTools": {
         "area": "Area",
         "candle": "Candle",
@@ -43,6 +29,27 @@ const StrategyWorkspace = {
         "streamActive": "Live bar stream active",
         "streamUnavailable": "Stream unavailable"
       },
+      "template": {
+        "load": "Load",
+        "loaded": "Loaded",
+        "saveAs": "Save As New",
+        "selectPlaceholder": "Select a template...",
+        "title": "Template"
+      },
+      "account": "Account",
+      "accountPlaceholder": "Account ID",
+      "ai": "AI",
+      "aiAssist": "AI Assistant",
+      "backtest": "Backtest",
+      "backtestCompleted": "Completed",
+      "backtestEmpty": "Run a backtest to see results",
+      "backtestError": "Backtest failed",
+      "backtestResultsLabel": "Backtest Results",
+      "backtestRunIdLabel": "Select backtest run...",
+      "backtestRunning": "Backtest running...",
+      "backtestTab": "Backtest Results",
+      "chart": "K-line",
+      "chartError": "Chart error — try refreshing",
       "chartWindow": "Chart",
       "code": "Strategy Code",
       "completedStatus": "Completed",
@@ -72,13 +79,6 @@ const StrategyWorkspace = {
       "selectSymbolHint": "Select a trading account and symbol to view chart",
       "showCode": "Show Code",
       "smartTuning": "Smart Tuning",
-      "template": {
-        "load": "Load",
-        "loaded": "Loaded",
-        "saveAs": "Save As New",
-        "selectPlaceholder": "Select a template...",
-        "title": "Template"
-      },
       "title": "Strategy Workspace",
       "tuningTab": "Smart Tuning",
       "validate": "Validate",

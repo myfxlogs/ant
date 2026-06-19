@@ -2,6 +2,39 @@
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const AiCore = {
   "ai": {
+    "consensus": {
+      "signals": {
+        "ma": {
+          "trend": "均线趋势"
+        },
+        "macd": {
+          "flag": "シグナル",
+          "hist": "ヒストグラム",
+          "signalLine": "シグナル線",
+          "trend": "形态",
+          "value": "MACD"
+        },
+        "rsi": {
+          "flag": "シグナル",
+          "value": "RSI"
+        }
+      },
+      "actions": {
+        "refresh": "刷新"
+      },
+      "fields": {
+        "account": "口座",
+        "symbol": "銘柄",
+        "timeframe": "周期"
+      },
+      "panel": {
+        "decision": "判定",
+        "overallScore": "総合",
+        "technicalScore": "技术面",
+        "title": "目標スコア"
+      },
+      "title": "コンセンサスと議論"
+    },
     "agentPrompts": {
       "code": {
         "title": "コード生成エージェント"
@@ -60,7 +93,6 @@ const AiCore = {
         "empty": "スコア未評価（バックテスト待ちまたは指標なし）",
         "title": "综合评分（启发式）"
       },
-      "stateLabel": "状態",
       "status": {
         "cancelRequested": "キャンセル中",
         "canceled": "已取消",
@@ -69,14 +101,8 @@ const AiCore = {
         "running": "実行中",
         "succeeded": "成功"
       },
+      "stateLabel": "状態",
       "title": "バックテストスコアカード"
-    },
-    "chatBox": {
-      "collapse": "收起",
-      "emptyDescription": "开始与AI助手对话",
-      "expandAll": "展开全部",
-      "thinking": "思考中...",
-      "truncated": "内容过长，已截断"
     },
     "client": {
       "errors": {
@@ -98,47 +124,7 @@ const AiCore = {
         "unauthorized": "プロバイダーから 401 未認証：API キー が正しいか、モデル権限があるかを確認してください。"
       }
     },
-    "consensus": {
-      "actions": {
-        "refresh": "刷新"
-      },
-      "fields": {
-        "account": "口座",
-        "symbol": "銘柄",
-        "timeframe": "周期"
-      },
-      "panel": {
-        "decision": "判定",
-        "overallScore": "総合",
-        "technicalScore": "技术面",
-        "title": "目標スコア"
-      },
-      "signals": {
-        "ma": {
-          "trend": "均线趋势"
-        },
-        "macd": {
-          "flag": "シグナル",
-          "hist": "ヒストグラム",
-          "signalLine": "シグナル線",
-          "trend": "形态",
-          "value": "MACD"
-        },
-        "rsi": {
-          "flag": "シグナル",
-          "value": "RSI"
-        }
-      },
-      "title": "コンセンサスと議論"
-    },
-    "conversation": {
-      "defaultTitle": "新对话"
-    },
     "gate": {
-      "allPassed": "全6ゲートを通過 — ストラテジーは本番昇格評価の対象です",
-      "backtestGrossReturn": "バックテスト総収益率",
-      "backtestNetReturn": "バックテスト純収益率",
-      "dailyReturns": "日次リターン（カンマまたは改行区切り）",
       "descriptions": {
         "compliance": "DSL式の空チェック",
         "correlation": "与现有策略的信号相关性检查",
@@ -147,12 +133,6 @@ const AiCore = {
         "paper": "14日以上のペーパートレーディング検証",
         "walkforward": "パージド・ウォークフォワード交差検証"
       },
-      "details": "詳細",
-      "dslExpression": "DSL式",
-      "evaluating": "评估中...",
-      "fail": "失败",
-      "failed": "不合格：{{gate}}",
-      "gateProgress": "ゲート評価進捗",
       "labels": {
         "compliance": "コンプライアンス",
         "correlation": "相关性",
@@ -161,6 +141,19 @@ const AiCore = {
         "paper": "ペーパートレーディング",
         "walkforward": "ウォークフォワード"
       },
+      "status": {
+        "evaluating": "评估中..."
+      },
+      "allPassed": "全6ゲートを通過 — ストラテジーは本番昇格評価の対象です",
+      "backtestGrossReturn": "バックテスト総収益率",
+      "backtestNetReturn": "バックテスト純収益率",
+      "dailyReturns": "日次リターン（カンマまたは改行区切り）",
+      "details": "詳細",
+      "dslExpression": "DSL式",
+      "evaluating": "评估中...",
+      "fail": "失败",
+      "failed": "不合格：{{gate}}",
+      "gateProgress": "ゲート評価進捗",
       "noData": "データがありません",
       "numAttempts": "ストラテジー試行回数",
       "paperDays": "ペーパー日数",
@@ -176,27 +169,9 @@ const AiCore = {
       "runPipeline": "ゲートパイプライン実行",
       "selectRun": "バックテスト実行を選択...",
       "skipped": "已跳过",
-      "status": {
-        "evaluating": "评估中..."
-      },
       "strategyParams": "ストラテジーパラメーター",
       "title": "AIゲート進捗",
       "unknown": "不明"
-    },
-    "gateway": {
-      "balance": "ウォレット残高",
-      "modelPlaceholder": "AI モデルを選択",
-      "monthlyCost": "今月の費用",
-      "monthlyTokens": "今月のトークン",
-      "noModels": "利用可能なモデルがありません",
-      "selectModel": "モデル選択",
-      "title": "AI ゲートウェイ",
-      "usageByFeature": "機能別使用量",
-      "useGateway": "AI ゲートウェイ",
-      "useGatewayDesc": "ウォレット課金 · トークン単位",
-      "useOwnKey": "自分の API Key",
-      "useOwnKeyDesc": "直接課金 · 自己管理",
-      "useOwnKeyHint": "自分の API Key を使用してプロバイダーに直接支払います。下のプロバイダーカードを選択して設定してください。"
     },
     "reports": {
       "tradeAnalysis": {
@@ -210,9 +185,6 @@ const AiCore = {
       },
       "description": "先に設定画面でAIプロバイダー、モデル、APIキーを設定してください。その後、ストラテジーウィザードまたはチャットをご利用いただけます。",
       "title": "LLMがまだ設定されていません"
-    },
-    "riskEval": {
-      "failed": "风险评估失败"
     },
     "signalCard": {
       "actions": {
@@ -298,7 +270,6 @@ const AiCore = {
         "namePlaceholder": "我的自定义提供商",
         "nameRequired": "服务商名称不能为空"
       },
-      "emptyConfigs": "暂无 AI Provider 配置（系统启动时会自动创建默认 Provider）",
       "fields": {
         "apiKeyHint": "输入后将自动加密保存，无需手动提交",
         "apiKeyPastePlaceholder": "粘贴 API Key，将自动预保存",
@@ -329,8 +300,6 @@ const AiCore = {
         "validationFailedNeedApiKey": "検証失敗：このプロバイダーは通常APIキーが必要です。キーを入力・保存してから再試行してください。",
         "validationPassedModels": "验证通过：发现 {{count}} 个模型"
       },
-      "pageSubtitle": "配置 AI 大脑 — 选择模型厂商、管理 API 密钥与可用模型，并指定全站兜底使用的「默认主模型」。",
-      "pageTitle": "AI 助手设置",
       "section1": {
         "subtitle": "Cards show each provider's configuration and readiness; click to select",
         "title": "选择模型厂商"
@@ -366,15 +335,12 @@ const AiCore = {
         "openai_compatible": "任意兼容端点",
         "qwen": "阿里云 · 中文优化",
         "zhipu": "清华系 · 通用"
-      }
-    },
-    "tabs": {
-      "agentSettings": "专家设置",
-      "gate": "AI 质量门",
-      "settings": "设置"
+      },
+      "emptyConfigs": "暂无 AI Provider 配置（系统启动时会自动创建默认 Provider）",
+      "pageSubtitle": "配置 AI 大脑 — 选择模型厂商、管理 API 密钥与可用模型，并指定全站兜底使用的「默认主模型」。",
+      "pageTitle": "AI 助手设置"
     },
     "workflowRuns": {
-      "defaultTitle": "AIワークフロー",
       "hints": {
         "selectToViewDetail": "从左侧选择运行记录查看详情"
       },
@@ -382,7 +348,41 @@ const AiCore = {
         "loadDetailFailed": "加载详情失败",
         "loadListFailed": "実行一覧の読み込みに失敗しました"
       },
+      "defaultTitle": "AIワークフロー",
       "title": "AIワークフロー"
+    },
+    "chatBox": {
+      "collapse": "收起",
+      "emptyDescription": "开始与AI助手对话",
+      "expandAll": "展开全部",
+      "thinking": "思考中...",
+      "truncated": "内容过长，已截断"
+    },
+    "conversation": {
+      "defaultTitle": "新对话"
+    },
+    "gateway": {
+      "balance": "ウォレット残高",
+      "modelPlaceholder": "AI モデルを選択",
+      "monthlyCost": "今月の費用",
+      "monthlyTokens": "今月のトークン",
+      "noModels": "利用可能なモデルがありません",
+      "selectModel": "モデル選択",
+      "title": "AI ゲートウェイ",
+      "usageByFeature": "機能別使用量",
+      "useGateway": "AI ゲートウェイ",
+      "useGatewayDesc": "ウォレット課金 · トークン単位",
+      "useOwnKey": "自分の API Key",
+      "useOwnKeyDesc": "直接課金 · 自己管理",
+      "useOwnKeyHint": "自分の API Key を使用してプロバイダーに直接支払います。下のプロバイダーカードを選択して設定してください。"
+    },
+    "riskEval": {
+      "failed": "风险评估失败"
+    },
+    "tabs": {
+      "agentSettings": "专家设置",
+      "gate": "AI 质量门",
+      "settings": "设置"
     }
   }
 } as const;

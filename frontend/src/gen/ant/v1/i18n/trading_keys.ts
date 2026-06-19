@@ -427,18 +427,6 @@ export const TRADING_TYPE_KEY = 'trading.type' as const;
 /** trading.volume */
 export const TRADING_VOLUME_KEY = 'trading.volume' as const;
 
-/** algo.twap */
-export const ALGO_TWAP_KEY = 'algo.twap' as const;
-
-/** algo.vwap */
-export const ALGO_VWAP_KEY = 'algo.vwap' as const;
-
-/** algo.pov */
-export const ALGO_POV_KEY = 'algo.pov' as const;
-
-/** algo.shortfall */
-export const ALGO_SHORTFALL_KEY = 'algo.shortfall' as const;
-
 /** algo.twap.name */
 export const ALGO_TWAP_NAME_KEY = 'algo.twap.name' as const;
 
@@ -462,6 +450,18 @@ export const ALGO_SHORTFALL_NAME_KEY = 'algo.shortfall.name' as const;
 
 /** algo.shortfall.description */
 export const ALGO_SHORTFALL_DESCRIPTION_KEY = 'algo.shortfall.description' as const;
+
+/** algo.label.twap */
+export const ALGO_LABEL_TWAP_KEY = 'algo.label.twap' as const;
+
+/** algo.label.vwap */
+export const ALGO_LABEL_VWAP_KEY = 'algo.label.vwap' as const;
+
+/** algo.label.pov */
+export const ALGO_LABEL_POV_KEY = 'algo.label.pov' as const;
+
+/** algo.label.shortfall */
+export const ALGO_LABEL_SHORTFALL_KEY = 'algo.label.shortfall' as const;
 
 export const TRADING_KEYS = {
   algo_actions_cancel: '__root__.algo.actions.cancel',
@@ -606,10 +606,6 @@ export const TRADING_KEYS = {
   trading_title: '__root__.trading.title',
   trading_type: '__root__.trading.type',
   trading_volume: '__root__.trading.volume',
-  algo_twap: '__root__.algo.twap',
-  algo_vwap: '__root__.algo.vwap',
-  algo_pov: '__root__.algo.pov',
-  algo_shortfall: '__root__.algo.shortfall',
   algo_twap_name: '__root__.algo.twap.name',
   algo_twap_description: '__root__.algo.twap.description',
   algo_vwap_name: '__root__.algo.vwap.name',
@@ -618,6 +614,10 @@ export const TRADING_KEYS = {
   algo_pov_description: '__root__.algo.pov.description',
   algo_shortfall_name: '__root__.algo.shortfall.name',
   algo_shortfall_description: '__root__.algo.shortfall.description',
+  algo_label_twap: '__root__.algo.label.twap',
+  algo_label_vwap: '__root__.algo.label.vwap',
+  algo_label_pov: '__root__.algo.label.pov',
+  algo_label_shortfall: '__root__.algo.label.shortfall',
 } as const;
 
 export type TradingKey = typeof TRADING_KEYS[keyof typeof TRADING_KEYS];

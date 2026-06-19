@@ -3,10 +3,6 @@
 const StrategyWorkspace = {
   "strategy": {
     "workspace": {
-      "account": "帳號",
-      "accountPlaceholder": "帳戶 ID",
-      "ai": "AI 助手",
-      "aiAssist": "AI 助手",
       "autoFix": {
         "button": "自動修復",
         "dismiss": "忽略",
@@ -18,16 +14,6 @@ const StrategyWorkspace = {
         "passed": "自動修復通過，共 {{iterations}} 輪{{plural}}",
         "remaining": "剩余 ({{count}})"
       },
-      "backtest": "回測",
-      "backtestCompleted": "已完成",
-      "backtestEmpty": "執行回測以查看结果",
-      "backtestError": "回測失敗",
-      "backtestResultsLabel": "回測结果",
-      "backtestRunIdLabel": "選擇回測记录...",
-      "backtestRunning": "回測執行中...",
-      "backtestTab": "回測结果",
-      "chart": "K線",
-      "chartError": "圖表載入錯誤 — 請重新整理重試",
       "chartTools": {
         "area": "面積圖",
         "candle": "蠟燭圖",
@@ -43,6 +29,27 @@ const StrategyWorkspace = {
         "streamActive": "即時K線流已連接",
         "streamUnavailable": "資料串流不可用"
       },
+      "template": {
+        "load": "載入",
+        "loaded": "已載入",
+        "saveAs": "另存為新範本",
+        "selectPlaceholder": "選擇範本...",
+        "title": "模板"
+      },
+      "account": "帳號",
+      "accountPlaceholder": "帳戶 ID",
+      "ai": "AI 助手",
+      "aiAssist": "AI 助手",
+      "backtest": "回測",
+      "backtestCompleted": "已完成",
+      "backtestEmpty": "執行回測以查看结果",
+      "backtestError": "回測失敗",
+      "backtestResultsLabel": "回測结果",
+      "backtestRunIdLabel": "選擇回測记录...",
+      "backtestRunning": "回測執行中...",
+      "backtestTab": "回測结果",
+      "chart": "K線",
+      "chartError": "圖表載入錯誤 — 請重新整理重試",
       "chartWindow": "图表",
       "code": "策略程式碼",
       "completedStatus": "已完成",
@@ -72,13 +79,6 @@ const StrategyWorkspace = {
       "selectSymbolHint": "請選擇交易帳戶和品種以查看图表",
       "showCode": "顯示程式碼",
       "smartTuning": "智慧調校",
-      "template": {
-        "load": "載入",
-        "loaded": "已載入",
-        "saveAs": "另存為新範本",
-        "selectPlaceholder": "選擇範本...",
-        "title": "模板"
-      },
       "title": "策略工作區",
       "tuningTab": "智慧調校",
       "validate": "驗證代碼",

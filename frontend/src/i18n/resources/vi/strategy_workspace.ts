@@ -3,10 +3,6 @@
 const StrategyWorkspace = {
   "strategy": {
     "workspace": {
-      "account": "Tài khoản",
-      "accountPlaceholder": "ID Tài Khoản",
-      "ai": "AI 助手",
-      "aiAssist": "Trợ Lý AI",
       "autoFix": {
         "button": "Tự Động Sửa",
         "dismiss": "Bỏ Qua",
@@ -18,16 +14,6 @@ const StrategyWorkspace = {
         "passed": "Tự động sửa thành công sau {{iterations}} lần lặp{{plural}}",
         "remaining": "Còn Lại ({{count}})"
       },
-      "backtest": "Kiểm thử lùi",
-      "backtestCompleted": "Hoàn tất",
-      "backtestEmpty": "Chạy backtest để xem kết quả",
-      "backtestError": "Backtest thất bại",
-      "backtestResultsLabel": "Kết Quả Backtest",
-      "backtestRunIdLabel": "Chọn lần backtest...",
-      "backtestRunning": "Backtest đang chạy...",
-      "backtestTab": "Kết Quả Backtest",
-      "chart": "K线",
-      "chartError": "Lỗi biểu đồ — thử làm mới",
       "chartTools": {
         "area": "Vùng",
         "candle": "Nến",
@@ -43,6 +29,27 @@ const StrategyWorkspace = {
         "streamActive": "Luồng nến trực tiếp đang hoạt động",
         "streamUnavailable": "Luồng không khả dụng"
       },
+      "template": {
+        "load": "Tải",
+        "loaded": "Đã Tải",
+        "saveAs": "Lưu Thành Mới",
+        "selectPlaceholder": "Chọn mẫu...",
+        "title": "Mẫu"
+      },
+      "account": "Tài khoản",
+      "accountPlaceholder": "ID Tài Khoản",
+      "ai": "AI 助手",
+      "aiAssist": "Trợ Lý AI",
+      "backtest": "Kiểm thử lùi",
+      "backtestCompleted": "Hoàn tất",
+      "backtestEmpty": "Chạy backtest để xem kết quả",
+      "backtestError": "Backtest thất bại",
+      "backtestResultsLabel": "Kết Quả Backtest",
+      "backtestRunIdLabel": "Chọn lần backtest...",
+      "backtestRunning": "Backtest đang chạy...",
+      "backtestTab": "Kết Quả Backtest",
+      "chart": "K线",
+      "chartError": "Lỗi biểu đồ — thử làm mới",
       "chartWindow": "Biểu Đồ",
       "code": "Code Chiến Lược",
       "completedStatus": "Hoàn tất",
@@ -72,13 +79,6 @@ const StrategyWorkspace = {
       "selectSymbolHint": "Chọn tài khoản giao dịch và mã để xem biểu đồ",
       "showCode": "Hiện Code",
       "smartTuning": "Tinh Chỉnh Thông Minh",
-      "template": {
-        "load": "Tải",
-        "loaded": "Đã Tải",
-        "saveAs": "Lưu Thành Mới",
-        "selectPlaceholder": "Chọn mẫu...",
-        "title": "Mẫu"
-      },
       "title": "Không Gian Chiến Lược",
       "tuningTab": "Tinh Chỉnh Thông Minh",
       "validate": "Xác thực mã",

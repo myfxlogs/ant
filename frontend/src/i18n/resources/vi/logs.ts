@@ -2,6 +2,13 @@
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const Logs = {
   "logs": {
+    "orderTable": {
+      "close": "Đóng",
+      "lots": "Lot",
+      "open": "Mở",
+      "ticket": "Vé",
+      "type": "Loại"
+    },
     "accountId": "ID tài khoản",
     "action": "Hành động",
     "connectionLogs": "Nhật ký kết nối",
@@ -22,13 +29,6 @@ const Logs = {
     "module": "Mô-đun",
     "operationLogs": "Nhật ký thao tác",
     "orderHistory": "Lịch sử lệnh",
-    "orderTable": {
-      "close": "Đóng",
-      "lots": "Lot",
-      "open": "Mở",
-      "ticket": "Vé",
-      "type": "Loại"
-    },
     "period": "Khung thời gian",
     "product": "Mã",
     "profit": "Lãi/Lỗ",

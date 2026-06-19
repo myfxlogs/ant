@@ -2,6 +2,10 @@
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const Errors = {
   "errors": {
+    "ai": {
+      "internal_error": "AI service error. Please try again later.",
+      "not_configured": "No AI provider configured yet. Please click ⚙ to set up an API key in AI Settings."
+    },
     "account_already_bound": "This trading account is already linked",
     "account_auth_failed": "Trading account authentication failed",
     "account_connection_failed": "Failed to connect to trading server",
@@ -11,10 +15,6 @@ const Errors = {
     "account_not_found": "Trading account not found",
     "account_timeout": "Connection to trading server timed out",
     "admin_access_denied": "Administrator access required",
-    "ai": {
-      "internal_error": "AI service error. Please try again later.",
-      "not_configured": "No AI provider configured yet. Please click ⚙ to set up an API key in AI Settings."
-    },
     "analytics_not_available": "Analytics data is not available",
     "audit_log_not_found": "Audit log entry not found",
     "broker_not_found": "Broker not found",

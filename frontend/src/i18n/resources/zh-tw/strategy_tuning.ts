@@ -3,14 +3,6 @@
 const StrategyTuning = {
   "strategy": {
     "tuning": {
-      "apply": "套用",
-      "degradation": "衰減",
-      "enabledCombinations": "{{enabled}} 個啟用 · {{combos}} 個組合",
-      "grade": "評級",
-      "gridWarning": "網格搜尋将测试 <b>{{count}}</b> 個組合 (限制: 48)。建議切换到 <b>差分進化</b> 以高效处理大參數空间。",
-      "hide": "隱藏",
-      "oosFootnote": "对前5个候選 (按样本内評分) 进行样本外驗證。绿色衰減 <20%, 橙色 20-40%, 红色 >40%。",
-      "oosScore": "樣本外評分",
       "optimizer": {
         "ags": "退火高斯",
         "agsDesc": "带 sigma 退火的高斯擾動。輕量級 TPE 替代方案。",
@@ -25,6 +17,14 @@ const StrategyTuning = {
         "tpe": "TPE (核密度估计)",
         "tpeDesc": "树结构 Parzen 估计器。KDE 建模好/坏分布。"
       },
+      "apply": "套用",
+      "degradation": "衰減",
+      "enabledCombinations": "{{enabled}} 個啟用 · {{combos}} 個組合",
+      "grade": "評級",
+      "gridWarning": "網格搜尋将测试 <b>{{count}}</b> 個組合 (限制: 48)。建議切换到 <b>差分進化</b> 以高效处理大參數空间。",
+      "hide": "隱藏",
+      "oosFootnote": "对前5个候選 (按样本内評分) 进行样本外驗證。绿色衰減 <20%, 橙色 20-40%, 红色 >40%。",
+      "oosScore": "樣本外評分",
       "optimizerMethod": "最佳化方法",
       "overfit": "過度擬合",
       "overfitWarning": "⚠ 過度擬合",

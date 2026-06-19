@@ -3,21 +3,16 @@
 const StrategyGen = {
   "strategy": {
     "gen": {
-      "backtestMsg": "Tác vụ backtest đã tạo",
-      "backtestStarted": "Backtest Đã Bắt Đầu",
       "chat": {
         "discuss": "💬 Thảo Luận",
         "generate": "⚡ Tạo",
         "repair": "🔧 Sửa Chữa",
         "revise": "✏️ Sửa"
       },
-      "clarifyTitle": "Một vài chi tiết cần xác nhận:",
-      "done": "Xong",
       "feedback": {
         "heading": "📊 Kết Quả Backtest",
         "placeholder": "Cung cấp phản hồi để lặp (VD: \"Quá hung hăng\", \"Thêm cắt lỗ\")"
       },
-      "generating": "Đang Tạo...",
       "metrics": {
         "maxDrawdown": "DD Tối Đa",
         "return": "Lợi Nhuận",
@@ -25,6 +20,11 @@ const StrategyGen = {
         "trades": "Giao Dịch",
         "winRate": "Thắng"
       },
+      "backtestMsg": "Tác vụ backtest đã tạo",
+      "backtestStarted": "Backtest Đã Bắt Đầu",
+      "clarifyTitle": "Một vài chi tiết cần xác nhận:",
+      "done": "Xong",
+      "generating": "Đang Tạo...",
       "placeholder": "Mô tả chiến lược giao dịch bạn muốn tạo, VD: \"Tạo chiến lược hồi quy trung bình Bollinger Band cho EURUSD khung 1H\"",
       "regenerate": "Tạo Lại",
       "reset": "Bắt Đầu Lại",

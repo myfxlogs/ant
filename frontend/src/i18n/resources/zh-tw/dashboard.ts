@@ -2,23 +2,17 @@
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const Dashboard = {
   "dashboard": {
-    "accountList": "帳戶列表",
-    "accountOverview": "帳戶總覽",
     "accountStatus": {
       "connected": "已連線",
       "connecting": "連線中",
       "disabled": "已停用",
       "disconnected": "已断开"
     },
-    "bindAccount": "綁定帳戶",
-    "defaultName": "我的儀表板",
     "fields": {
       "balance": "餘額",
       "equity": "淨值",
       "floating": "浮動盈亏"
     },
-    "logs": "日誌",
-    "noAccounts": "暫無帳戶，點擊右上角綁定",
     "quickActions": {
       "accounts": "帳戶",
       "analytics": "分析",
@@ -38,6 +32,12 @@ const Dashboard = {
       "totalEquity": "總淨值",
       "totalProfit": "总浮動盈亏"
     },
+    "accountList": "帳戶列表",
+    "accountOverview": "帳戶總覽",
+    "bindAccount": "綁定帳戶",
+    "defaultName": "我的儀表板",
+    "logs": "日誌",
+    "noAccounts": "暫無帳戶，點擊右上角綁定",
     "streamLive": "即時連接",
     "streamOffline": "即時離線",
     "subtitle": "查看您的帳戶總覽",

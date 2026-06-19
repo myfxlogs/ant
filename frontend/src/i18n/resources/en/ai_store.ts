@@ -12,6 +12,17 @@ const AiStore = {
         "outputTitle": "Output requirements:",
         "userPrefsTitle": "User preferences (please follow as much as possible):"
       },
+      "strategyRules": {
+        "rules": {
+          "mustDefineEntry": "- Strategy must define signal variable or run(context) function (prefer run(context))",
+          "noDunderAccess": "- No access to dunder attributes (obj.__xxx__)",
+          "noDunderName": "- No dunder names (__xxx__)",
+          "noGlobal": "- No global / nonlocal",
+          "noImport": "- No import / from ... import ... allowed"
+        },
+        "allowedGlobals": "Allowed globals/modules: np, math, datetime, calculate_rsi (do not import).",
+        "title": "When writing AntTrader Python strategy code, you must strictly follow these validation rules:"
+      },
       "conversations": {
         "newConversationTitle": "New conversation"
       },
@@ -30,17 +41,6 @@ const AiStore = {
         "rememberPrefix": "Remember preference: ",
         "rememberedToast": "Preference remembered, will apply to subsequent conversations",
         "savedReply": "Preference saved"
-      },
-      "strategyRules": {
-        "allowedGlobals": "Allowed globals/modules: np, math, datetime, calculate_rsi (do not import).",
-        "rules": {
-          "mustDefineEntry": "- Strategy must define signal variable or run(context) function (prefer run(context))",
-          "noDunderAccess": "- No access to dunder attributes (obj.__xxx__)",
-          "noDunderName": "- No dunder names (__xxx__)",
-          "noGlobal": "- No global / nonlocal",
-          "noImport": "- No import / from ... import ... allowed"
-        },
-        "title": "When writing AntTrader Python strategy code, you must strictly follow these validation rules:"
       }
     }
   }

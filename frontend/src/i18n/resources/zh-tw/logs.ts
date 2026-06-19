@@ -2,6 +2,13 @@
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const Logs = {
   "logs": {
+    "orderTable": {
+      "close": "收盤",
+      "lots": "手數",
+      "open": "開盤",
+      "ticket": "訂單號",
+      "type": "類型"
+    },
     "accountId": "帳戶ID",
     "action": "操作",
     "connectionLogs": "連線日誌",
@@ -22,13 +29,6 @@ const Logs = {
     "module": "模組",
     "operationLogs": "操作日誌",
     "orderHistory": "訂單歷史",
-    "orderTable": {
-      "close": "收盤",
-      "lots": "手數",
-      "open": "開盤",
-      "ticket": "訂單號",
-      "type": "類型"
-    },
     "period": "週期",
     "product": "品種",
     "profit": "盈虧",

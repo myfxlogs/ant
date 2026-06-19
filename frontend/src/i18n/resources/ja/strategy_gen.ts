@@ -3,21 +3,16 @@
 const StrategyGen = {
   "strategy": {
     "gen": {
-      "backtestMsg": "バックテストタスク作成済",
-      "backtestStarted": "バックテスト開始",
       "chat": {
         "discuss": "💬 議論",
         "generate": "⚡ 生成",
         "repair": "🔧 修復",
         "revise": "✏️ 修正"
       },
-      "clarifyTitle": "確認事項:",
-      "done": "完了",
       "feedback": {
         "heading": "📊 バックテスト結果",
         "placeholder": "フィードバックを入力（例：「攻め過ぎ」「損切り追加」）"
       },
-      "generating": "生成中...",
       "metrics": {
         "maxDrawdown": "最大DD",
         "return": "リターン",
@@ -25,6 +20,11 @@ const StrategyGen = {
         "trades": "取引",
         "winRate": "勝率"
       },
+      "backtestMsg": "バックテストタスク作成済",
+      "backtestStarted": "バックテスト開始",
+      "clarifyTitle": "確認事項:",
+      "done": "完了",
+      "generating": "生成中...",
       "placeholder": "作成する取引戦略を説明してください。例：「EURUSD 1Hのボリンジャーバンド平均回帰戦略」",
       "regenerate": "再生成",
       "reset": "最初から",

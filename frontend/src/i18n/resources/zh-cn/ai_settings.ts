@@ -3,21 +3,7 @@
 const AiSettings = {
   "ai": {
     "settings": {
-      "actions": {
-        "saveConfig": "保存配置",
-        "validateApiKey": "验证 API Key"
-      },
       "agent": {
-        "actions": {
-          "add": "新增",
-          "loadDefaults": "加载默认 8 个 Agent",
-          "remove": "删除",
-          "restoreDefaults": "恢复默认",
-          "restoreDefaultsConfirmContent": "将把 8 个系统 Agent（风格/信号/风控/宏观/情绪/组合/执行/代码）重置为默认身份定义，你自行新增的 Agent 会被保留。该操作仅修改未保存的草稿，点击\"保存\"后才会落库。",
-          "restoreDefaultsConfirmTitle": "恢复系统默认身份？",
-          "save": "保存"
-        },
-        "defaultName": "自定义 Agent",
         "defaults": {
           "code": {
             "inputHint": "示例：目标范式=趋势跟随；指标=EMA(fast)/EMA(slow)+ATR 过滤；参数=fast,slow,atr_period,risk_per_trade。"
@@ -56,6 +42,15 @@ const AiSettings = {
             "inputHint": "示例：账户=EURUSD 零售；周期=H1；目标=月均收益 3%、最大回撤 <10%；偏好=胜率优先于盈亏比。"
           }
         },
+        "actions": {
+          "add": "新增",
+          "loadDefaults": "加载默认 8 个 Agent",
+          "remove": "删除",
+          "restoreDefaults": "恢复默认",
+          "restoreDefaultsConfirmContent": "将把 8 个系统 Agent（风格/信号/风控/宏观/情绪/组合/执行/代码）重置为默认身份定义，你自行新增的 Agent 会被保留。该操作仅修改未保存的草稿，点击\"保存\"后才会落库。",
+          "restoreDefaultsConfirmTitle": "恢复系统默认身份？",
+          "save": "保存"
+        },
         "fields": {
           "historicalBinding": "{{value}}（历史绑定）",
           "identityPlaceholder": "身份/人设描述（会拼接到 system prompt）",
@@ -72,9 +67,6 @@ const AiSettings = {
           "saveSuccess": "Agent 已保存",
           "selectProfileFirst": "请先在左侧选择一个配置"
         },
-        "removeConfirmContent": "确定要删除该 Agent 吗？",
-        "removeConfirmTitle": "删除 Agent",
-        "title": "Agent 身份定义",
         "types": {
           "code": "代码",
           "execution": "执行",
@@ -88,7 +80,11 @@ const AiSettings = {
           "signals": "信号/指标",
           "strategist": "策略分析师",
           "style": "风格/范式"
-        }
+        },
+        "defaultName": "自定义 Agent",
+        "removeConfirmContent": "确定要删除该 Agent 吗？",
+        "removeConfirmTitle": "删除 Agent",
+        "title": "Agent 身份定义"
       },
       "apiKeyGuide": {
         "deepseek": {
@@ -96,19 +92,31 @@ const AiSettings = {
           "step2": "登录/注册后在 API Keys 页面创建并复制 API Key",
           "title": "如何获取 DeepSeek API Key"
         },
-        "default": "Current provider: {{provider}}. Go to the provider\\\\\\\\\\\\\\\\",
-        "modelSuggestionDeepSeek": "模型建议: 在\"模型\"下拉中选择 `deepseek-chat`",
-        "modelSuggestionZhipu": "模型建议: 在\"模型\"下拉中选择 `glm-4-flash` / `glm-4`",
-        "selectProviderHint": "选择一个 AI 提供商后，会在这里显示如何申请 API Key。",
-        "title": "申请 API Key 指引",
         "zhipu": {
           "step1": "打开智谱开放平台：",
           "step2": "登录/注册后进入控制台，创建并复制 API Key",
           "title": "如何获取智谱 API Key"
-        }
+        },
+        "default": "Current provider: {{provider}}. Go to the provider\\\\\\\\\\\\\\\\",
+        "modelSuggestionDeepSeek": "模型建议: 在\"模型\"下拉中选择 `deepseek-chat`",
+        "modelSuggestionZhipu": "模型建议: 在\"模型\"下拉中选择 `glm-4-flash` / `glm-4`",
+        "selectProviderHint": "选择一个 AI 提供商后，会在这里显示如何申请 API Key。",
+        "title": "申请 API Key 指引"
       },
-      "apiKeySavedAs": "当前已保存：{{masked}}",
-      "defaultProfileName": "默认",
+      "profiles": {
+        "actions": {
+          "setCurrent": "设为当前"
+        },
+        "delete": {
+          "content": "确定要删除该配置吗？",
+          "title": "删除配置"
+        },
+        "current": "当前"
+      },
+      "actions": {
+        "saveConfig": "保存配置",
+        "validateApiKey": "验证 API Key"
+      },
       "discoverErrors": {
         "baseUrlInvalid": "Base URL 格式无效：请填写完整地址，例如 https://model.example.com 或 https://model.example.com/v1",
         "baseUrlRequired": "请先填写 Base URL（模型服务地址）。",
@@ -173,7 +181,6 @@ const AiSettings = {
         "validateFailed": "验证失败",
         "validateSuccess": "验证成功"
       },
-      "pageTitle": "AI 助手设置",
       "placeholders": {
         "apiKey": "输入 API Key",
         "baseUrl": "例如：https://api-inference.modelscope.cn/v1 或 https://ark.cn-beijing.volces.com/api/v3",
@@ -188,16 +195,6 @@ const AiSettings = {
         "hint": "用于「澄清意图」步骤、代码生成、模板编辑器中的「AI 助手 — 修改代码」面板，以及任何未单独配置模型的 Agent。",
         "placeholder": "选择一个 provider · model 作为兜底大脑",
         "title": "默认主模型"
-      },
-      "profiles": {
-        "actions": {
-          "setCurrent": "设为当前"
-        },
-        "current": "当前",
-        "delete": {
-          "content": "确定要删除该配置吗？",
-          "title": "删除配置"
-        }
       },
       "providers": {
         "anthropic": "Anthropic Claude",
@@ -239,7 +236,10 @@ const AiSettings = {
         "modelFormat": "模型格式不正确",
         "modelRequired": "模型不能为空",
         "nameRequired": "名称不能为空"
-      }
+      },
+      "apiKeySavedAs": "当前已保存：{{masked}}",
+      "defaultProfileName": "默认",
+      "pageTitle": "AI 助手设置"
     }
   }
 } as const;

@@ -3,18 +3,6 @@
 const StrategyCodeAssist = {
   "strategy": {
     "codeAssist": {
-      "aiReviseTitle": "AI assistant — revise code",
-      "applyAllSuggestions": "Apply suggested defaults",
-      "codeEmpty": "There is no code to revise yet.",
-      "codeUpdated": "Code updated. Please re-run validation before saving.",
-      "defaultLabel": "default",
-      "enterInstruction": "Please describe what you want to change.",
-      "explain": "Explain code",
-      "fillRequiredParams": "Please fill the required parameters: {{keys}}",
-      "generatePlaceholder": "Describe your strategy requirements...",
-      "noPython": "AI did not return a Python block. Try rephrasing.",
-      "optionalParamsDesc": "These parameters already have defaults from the code. Leave a field blank to use the default; entering a value only applies to this run and does not modify the saved strategy.",
-      "optionalParamsTitle": "Optional parameters",
       "paramDescriptions": {
         "confidence": "Signal confidence threshold (0-1). Signals below this value are ignored.",
         "emaPeriod": "EMA (exponential moving average) lookback in bars.",
@@ -32,6 +20,18 @@ const StrategyCodeAssist = {
         "takeProfit": "Take-profit distance (%). Close the position once price moves this far in your favour.",
         "threshold": "Threshold that triggers a signal. Exact meaning depends on the strategy logic."
       },
+      "aiReviseTitle": "AI assistant — revise code",
+      "applyAllSuggestions": "Apply suggested defaults",
+      "codeEmpty": "There is no code to revise yet.",
+      "codeUpdated": "Code updated. Please re-run validation before saving.",
+      "defaultLabel": "default",
+      "enterInstruction": "Please describe what you want to change.",
+      "explain": "Explain code",
+      "fillRequiredParams": "Please fill the required parameters: {{keys}}",
+      "generatePlaceholder": "Describe your strategy requirements...",
+      "noPython": "AI did not return a Python block. Try rephrasing.",
+      "optionalParamsDesc": "These parameters already have defaults from the code. Leave a field blank to use the default; entering a value only applies to this run and does not modify the saved strategy.",
+      "optionalParamsTitle": "Optional parameters",
       "required": "required",
       "requiredParamsDesc": "The strategy reads these parameters but no default was provided. Fill them in before saving.",
       "requiredParamsTitle": "Required parameters",

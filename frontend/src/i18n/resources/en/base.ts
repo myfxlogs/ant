@@ -2,83 +2,22 @@
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const Base = {
   "admin": {
-    "config": {
-      "aiProviderCatalog": "AI Model Provider Catalog",
-      "baseUrlLabel": "Base URL (optional, custom/OpenAI compatible only)",
-      "configItem": "Config Item",
-      "description": "Description",
-      "econAIConfig": "Economic Calendar Translation AI Config",
-      "editConfig": "Edit Config: {{key}}",
-      "enableToggle": "Enable",
-      "fillTemplate": "Fill Example",
-      "formatJson": "Format JSON",
-      "maxAccountsPerUser": "Max Accounts Per User",
-      "messages": {
-        "disabled": "Config disabled",
-        "enabled": "Config enabled",
-        "loadFailed": "Failed to load configs",
-        "operationFailed": "Operation failed",
-        "updateFailed": "Update failed",
-        "updated": "Config updated"
-      },
-      "modelName": "Model Name",
-      "off": "Off",
-      "on": "On",
-      "placeholders": {
-        "apiKey": "Enter API Key",
-        "baseUrl": "e.g. https://api.openai.com or self-hosted gateway",
-        "configValue": "Enter config value",
-        "description": "Enter description",
-        "json": "Enter JSON",
-        "model": "e.g. glm-4-flash / deepseek-chat / gpt-4o-mini"
-      },
-      "provider": "Provider",
-      "providerOptions": {
-        "custom": "Custom / OpenAI Compatible",
-        "deepseek": "DeepSeek",
-        "zhipu": "Zhipu"
-      },
-      "status": "Status",
-      "strategyHealthConfig": "Strategy Health Grading Config",
-      "thresholdDesc": "green_success_rate: green success rate threshold; green_max_failed_runs: max failed runs for green; yellow_success_rate: yellow success rate threshold; min_sample_size: minimum sample size.",
-      "thresholdInfo": "Threshold Field Description",
-      "title": "System Configuration",
-      "toggle": "Toggle",
-      "updatedAt": "Updated At",
-      "validation": {
-        "apiKeyRequired": "API Key cannot be empty",
-        "greenMaxFailedRunsNonNegative": "green_max_failed_runs must be >= 0",
-        "greenSuccessRateRange": "green_success_rate must be between 0 and 100",
-        "jsonEmpty": "JSON cannot be empty",
-        "jsonInvalid": "Invalid JSON format",
-        "minSampleSizeNonNegative": "min_sample_size must be >= 0",
-        "modelRequired": "Model name cannot be empty",
-        "yellowNotGreaterThanGreen": "yellow_success_rate cannot be greater than green_success_rate",
-        "yellowSuccessRateRange": "yellow_success_rate must be between 0 and 100"
-      },
-      "value": "Value"
-    },
     "dashboard": {
-      "activeUsers": "Active Users",
-      "loadFailed": "Failed to load dashboard data",
       "logs": {
-        "actionType": "Action Type",
-        "failed": "Failed",
-        "module": "Module",
         "moduleMap": {
           "accountManagement": "Account Management",
           "systemConfig": "System Config",
           "trading": "Trading",
           "userManagement": "User Management"
         },
+        "actionType": "Action Type",
+        "failed": "Failed",
+        "module": "Module",
         "status": "Status",
         "success": "Success",
         "target": "Target",
         "time": "Time"
       },
-      "mtAccounts": "MT Accounts",
-      "onlineAccounts": "Online Accounts",
-      "recentLogs": "Recent Operation Logs",
       "riskMetrics": {
         "orderCloseFailed": "Order Closed Failed",
         "orderCloseSuccess": "Order Closed Success",
@@ -105,19 +44,189 @@ const Base = {
         "validateReject": "{{window}} Reject",
         "validateTotal": "{{window}} Validated Total"
       },
+      "activeUsers": "Active Users",
+      "loadFailed": "Failed to load dashboard data",
+      "mtAccounts": "MT Accounts",
+      "onlineAccounts": "Online Accounts",
+      "recentLogs": "Recent Operation Logs",
       "title": "Admin Dashboard",
       "todayProfit": "Today P&L",
       "todayTrades": "Today Trades",
       "totalUsers": "Total Users"
     },
-    "header": {
-      "admin": "Admin",
-      "adminMode": "Admin Mode",
-      "adminPanel": "Admin Panel",
-      "backToUser": "Back to User",
-      "logout": "Logout"
+    "userManagement": {
+      "drawer": {
+        "labels": {
+          "createdAt": "Created At",
+          "email": "Email",
+          "id": "ID",
+          "lastLogin": "Last Login",
+          "mtAccountCount": "MT Accounts",
+          "nickname": "Nickname",
+          "role": "Role",
+          "status": "Status"
+        },
+        "title": "User Details"
+      },
+      "form": {
+        "placeholders": {
+          "email": "Enter email",
+          "nickname": "Enter nickname",
+          "password": "Enter password"
+        },
+        "accountNumber": "Account Number",
+        "accountNumberInvalid": "5-6 digits, no leading 0, no 4 or 7",
+        "email": "Email",
+        "nickname": "Nickname",
+        "password": "Password",
+        "role": "Role",
+        "status": "Status"
+      },
+      "passwordForm": {
+        "placeholders": {
+          "confirmPassword": "Re-enter new password",
+          "newPassword": "Enter new password"
+        },
+        "validation": {
+          "confirmPasswordRequired": "Please confirm the new password",
+          "newPasswordRequired": "New password is required",
+          "passwordMin8": "Password must be at least 8 characters",
+          "passwordMismatch": "Passwords do not match",
+          "passwordMustContainLettersAndNumbers": "Password must contain both letters and numbers"
+        },
+        "confirmPassword": "Confirm Password",
+        "newPassword": "New Password",
+        "submit": "Update Password"
+      },
+      "actions": {
+        "changePassword": "Change Password",
+        "details": "Details",
+        "disable": "Disable",
+        "enable": "Enable"
+      },
+      "deleteConfirm": {
+        "batchDeleteConfirm": "Delete {{count}} user(s)? This action cannot be undone.",
+        "batchDeletePartial": "{{deleted}} deleted, {{failed}} failed",
+        "batchDeleteSuccess": "{{count}} user(s) deleted",
+        "title": "Delete this user? This action cannot be undone."
+      },
+      "filters": {
+        "rolePlaceholder": "Filter by role",
+        "searchPlaceholder": "Search by email or nickname",
+        "statusPlaceholder": "Filter by status"
+      },
+      "messages": {
+        "newPasswordIs": "New password is: {{password}}",
+        "passwordUpdateFailed": "Failed to update password",
+        "passwordUpdatedSuccess": "Password updated successfully",
+        "userCreateFailed": "Failed to create user",
+        "userCreatedSuccess": "User created successfully",
+        "userDeleteFailed": "Failed to delete user",
+        "userDeletedSuccess": "User deleted successfully",
+        "userDisabled": "User disabled",
+        "userEnabled": "User enabled",
+        "userUpdateFailed": "Failed to update user",
+        "userUpdatedSuccess": "User updated successfully"
+      },
+      "modals": {
+        "createTitle": "Create User",
+        "editTitle": "Edit User",
+        "passwordTitle": "Change Password"
+      },
+      "pagination": {
+        "total": "Total {{total}} users"
+      },
+      "roles": {
+        "audit": "Audit",
+        "customerService": "Customer Service",
+        "operation": "Operation",
+        "superAdmin": "Super Admin",
+        "user": "User"
+      },
+      "status": {
+        "active": "Active",
+        "suspended": "Suspended"
+      },
+      "table": {
+        "actions": "Actions",
+        "createdAt": "Created At",
+        "email": "Email",
+        "id": "ID",
+        "mtAccountCount": "MT Accounts",
+        "nickname": "Nickname",
+        "role": "Role",
+        "status": "Status"
+      },
+      "addUser": "Add User",
+      "title": "User Management"
+    },
+    "config": {
+      "messages": {
+        "disabled": "Config disabled",
+        "enabled": "Config enabled",
+        "loadFailed": "Failed to load configs",
+        "operationFailed": "Operation failed",
+        "updateFailed": "Update failed",
+        "updated": "Config updated"
+      },
+      "placeholders": {
+        "apiKey": "Enter API Key",
+        "baseUrl": "e.g. https://api.openai.com or self-hosted gateway",
+        "configValue": "Enter config value",
+        "description": "Enter description",
+        "json": "Enter JSON",
+        "model": "e.g. glm-4-flash / deepseek-chat / gpt-4o-mini"
+      },
+      "providerOptions": {
+        "custom": "Custom / OpenAI Compatible",
+        "deepseek": "DeepSeek",
+        "zhipu": "Zhipu"
+      },
+      "validation": {
+        "apiKeyRequired": "API Key cannot be empty",
+        "greenMaxFailedRunsNonNegative": "green_max_failed_runs must be >= 0",
+        "greenSuccessRateRange": "green_success_rate must be between 0 and 100",
+        "jsonEmpty": "JSON cannot be empty",
+        "jsonInvalid": "Invalid JSON format",
+        "minSampleSizeNonNegative": "min_sample_size must be >= 0",
+        "modelRequired": "Model name cannot be empty",
+        "yellowNotGreaterThanGreen": "yellow_success_rate cannot be greater than green_success_rate",
+        "yellowSuccessRateRange": "yellow_success_rate must be between 0 and 100"
+      },
+      "aiProviderCatalog": "AI Model Provider Catalog",
+      "baseUrlLabel": "Base URL (optional, custom/OpenAI compatible only)",
+      "configItem": "Config Item",
+      "description": "Description",
+      "econAIConfig": "Economic Calendar Translation AI Config",
+      "editConfig": "Edit Config: {{key}}",
+      "enableToggle": "Enable",
+      "fillTemplate": "Fill Example",
+      "formatJson": "Format JSON",
+      "maxAccountsPerUser": "Max Accounts Per User",
+      "modelName": "Model Name",
+      "off": "Off",
+      "on": "On",
+      "provider": "Provider",
+      "status": "Status",
+      "strategyHealthConfig": "Strategy Health Grading Config",
+      "thresholdDesc": "green_success_rate: green success rate threshold; green_max_failed_runs: max failed runs for green; yellow_success_rate: yellow success rate threshold; min_sample_size: minimum sample size.",
+      "thresholdInfo": "Threshold Field Description",
+      "title": "System Configuration",
+      "toggle": "Toggle",
+      "updatedAt": "Updated At",
+      "value": "Value"
     },
     "jurisdiction": {
+      "messages": {
+        "countryAddFailed": "Failed to add sanctioned country",
+        "countryAdded": "Sanctioned country added",
+        "countryRemoveFailed": "Failed to remove sanctioned country",
+        "countryRemoved": "Sanctioned country removed",
+        "kycUpdateFailed": "Failed to update KYC status",
+        "kycUpdated": "KYC status updated",
+        "overrideUpdateFailed": "Failed to update sanctioned override",
+        "overrideUpdated": "Sanctioned override updated"
+      },
       "actions": "Actions",
       "addCountry": "Add Country",
       "addSanctionedCountry": "Add Sanctioned Country",
@@ -134,16 +243,6 @@ const Base = {
       "grantOverride": "Grant Override",
       "kycStatus": "KYC Status",
       "kycStatusTab": "User KYC Status",
-      "messages": {
-        "countryAddFailed": "Failed to add sanctioned country",
-        "countryAdded": "Sanctioned country added",
-        "countryRemoveFailed": "Failed to remove sanctioned country",
-        "countryRemoved": "Sanctioned country removed",
-        "kycUpdateFailed": "Failed to update KYC status",
-        "kycUpdated": "KYC status updated",
-        "overrideUpdateFailed": "Failed to update sanctioned override",
-        "overrideUpdated": "Sanctioned override updated"
-      },
       "override": "Override",
       "overrideWarning": "This user is from a sanctioned country. Granting override will allow trading.",
       "pending": "Pending",
@@ -160,6 +259,13 @@ const Base = {
       "userEmail": "Email",
       "userKYCStatus": "User KYC Status",
       "verified": "Verified"
+    },
+    "header": {
+      "admin": "Admin",
+      "adminMode": "Admin Mode",
+      "adminPanel": "Admin Panel",
+      "backToUser": "Back to User",
+      "logout": "Logout"
     },
     "sidebar": {
       "accountManagement": "Account Management",
@@ -193,112 +299,6 @@ const Base = {
       "totalVolume": "Total Volume",
       "volume": "Volume"
     },
-    "userManagement": {
-      "actions": {
-        "changePassword": "Change Password",
-        "details": "Details",
-        "disable": "Disable",
-        "enable": "Enable"
-      },
-      "addUser": "Add User",
-      "deleteConfirm": {
-        "batchDeleteConfirm": "Delete {{count}} user(s)? This action cannot be undone.",
-        "batchDeletePartial": "{{deleted}} deleted, {{failed}} failed",
-        "batchDeleteSuccess": "{{count}} user(s) deleted",
-        "title": "Delete this user? This action cannot be undone."
-      },
-      "drawer": {
-        "labels": {
-          "createdAt": "Created At",
-          "email": "Email",
-          "id": "ID",
-          "lastLogin": "Last Login",
-          "mtAccountCount": "MT Accounts",
-          "nickname": "Nickname",
-          "role": "Role",
-          "status": "Status"
-        },
-        "title": "User Details"
-      },
-      "filters": {
-        "rolePlaceholder": "Filter by role",
-        "searchPlaceholder": "Search by email or nickname",
-        "statusPlaceholder": "Filter by status"
-      },
-      "form": {
-        "accountNumber": "Account Number",
-        "accountNumberInvalid": "5-6 digits, no leading 0, no 4 or 7",
-        "email": "Email",
-        "nickname": "Nickname",
-        "password": "Password",
-        "placeholders": {
-          "email": "Enter email",
-          "nickname": "Enter nickname",
-          "password": "Enter password"
-        },
-        "role": "Role",
-        "status": "Status"
-      },
-      "messages": {
-        "newPasswordIs": "New password is: {{password}}",
-        "passwordUpdateFailed": "Failed to update password",
-        "passwordUpdatedSuccess": "Password updated successfully",
-        "userCreateFailed": "Failed to create user",
-        "userCreatedSuccess": "User created successfully",
-        "userDeleteFailed": "Failed to delete user",
-        "userDeletedSuccess": "User deleted successfully",
-        "userDisabled": "User disabled",
-        "userEnabled": "User enabled",
-        "userUpdateFailed": "Failed to update user",
-        "userUpdatedSuccess": "User updated successfully"
-      },
-      "modals": {
-        "createTitle": "Create User",
-        "editTitle": "Edit User",
-        "passwordTitle": "Change Password"
-      },
-      "pagination": {
-        "total": "Total {{total}} users"
-      },
-      "passwordForm": {
-        "confirmPassword": "Confirm Password",
-        "newPassword": "New Password",
-        "placeholders": {
-          "confirmPassword": "Re-enter new password",
-          "newPassword": "Enter new password"
-        },
-        "submit": "Update Password",
-        "validation": {
-          "confirmPasswordRequired": "Please confirm the new password",
-          "newPasswordRequired": "New password is required",
-          "passwordMin8": "Password must be at least 8 characters",
-          "passwordMismatch": "Passwords do not match",
-          "passwordMustContainLettersAndNumbers": "Password must contain both letters and numbers"
-        }
-      },
-      "roles": {
-        "audit": "Audit",
-        "customerService": "Customer Service",
-        "operation": "Operation",
-        "superAdmin": "Super Admin",
-        "user": "User"
-      },
-      "status": {
-        "active": "Active",
-        "suspended": "Suspended"
-      },
-      "table": {
-        "actions": "Actions",
-        "createdAt": "Created At",
-        "email": "Email",
-        "id": "ID",
-        "mtAccountCount": "MT Accounts",
-        "nickname": "Nickname",
-        "role": "Role",
-        "status": "Status"
-      },
-      "title": "User Management"
-    },
     "wallet": {
       "accountNumber": "Account",
       "add": "Add",
@@ -313,8 +313,91 @@ const Base = {
       "walletFor": "Wallet for"
     }
   },
-  "app": {
-    "name": "AntTrader"
+  "autoTrading": {
+    "logs": {
+      "columns": {
+        "action": "Action",
+        "price": "Price",
+        "profit": "P&L",
+        "symbol": "Symbol",
+        "ticket": "Ticket",
+        "time": "Time",
+        "volume": "Volume"
+      },
+      "empty": "No trading logs yet",
+      "title": "Recent Trading Logs"
+    },
+    "messages": {
+      "loadFailed": "Failed to load auto trading data",
+      "toggleFailed": "Failed to toggle auto trading"
+    },
+    "settings": {
+      "maxDailyLoss": "Max Daily Loss",
+      "maxDailyLossHint": "Auto-disable trading if daily loss exceeds this",
+      "maxDrawdownPercent": "Max Drawdown %",
+      "maxDrawdownPercentHint": "Auto-disable trading if drawdown exceeds this",
+      "maxLotSize": "Max Lot Size",
+      "maxLotSizeHint": "Maximum volume per trade (lots)",
+      "maxPositions": "Max Positions",
+      "maxPositionsHint": "Maximum concurrent open positions",
+      "maxRiskPercent": "Max Risk %",
+      "maxRiskPercentHint": "Percentage of balance to risk per trade",
+      "saveFailed": "Failed to save settings",
+      "saveSuccess": "Settings saved",
+      "title": "Global Risk Settings"
+    },
+    "status": {
+      "activeStrategies": "Active Strategies",
+      "disabled": "Auto Trading Disabled",
+      "enabled": "Auto Trading Enabled",
+      "todayExecutions": "Today's Executions",
+      "todayProfit": "Today's Profit"
+    },
+    "title": "Auto Trading"
+  },
+  "notifications": {
+    "stream": {
+      "autoTrading": {
+        "fallback": "Auto trading event triggered",
+        "title": "Auto Trading"
+      },
+      "riskAlert": {
+        "fallback": "Alert type: {{alertType}}",
+        "title": "Risk Alert"
+      },
+      "strategyExecution": {
+        "completed": "{{symbol}} {{action}} completed",
+        "failed": "Execution failed: {{error}}",
+        "title": "Strategy Execution"
+      },
+      "strategySignal": {
+        "message": "{{symbol}} triggered {{signalType}}",
+        "title": "Strategy Signal"
+      }
+    },
+    "actions": {
+      "clearAll": "Clear all",
+      "clearAllConfirm": "Clear all notifications?",
+      "markAllAsRead": "Mark all as read"
+    },
+    "tabs": {
+      "all": "All ({{count}})",
+      "unread": "Unread ({{count}})"
+    },
+    "types": {
+      "risk_alert": "Risk Alert",
+      "signal": "Signal",
+      "strategy_execution": "Execution",
+      "system": "System",
+      "trade": "Trade"
+    },
+    "all": "All",
+    "clearAll": "Clear all",
+    "confirmClearAll": "Clear all notifications?",
+    "empty": "No notifications",
+    "markAllRead": "Mark all as read",
+    "title": "Notifications",
+    "unread": "Unread"
   },
   "auth": {
     "fields": {
@@ -360,49 +443,17 @@ const Base = {
       "passwordRequired": "Password is required"
     }
   },
-  "autoTrading": {
-    "logs": {
-      "columns": {
-        "action": "Action",
-        "price": "Price",
-        "profit": "P&L",
-        "symbol": "Symbol",
-        "ticket": "Ticket",
-        "time": "Time",
-        "volume": "Volume"
-      },
-      "empty": "No trading logs yet",
-      "title": "Recent Trading Logs"
-    },
-    "messages": {
-      "loadFailed": "Failed to load auto trading data",
-      "toggleFailed": "Failed to toggle auto trading"
-    },
-    "settings": {
-      "maxDailyLoss": "Max Daily Loss",
-      "maxDailyLossHint": "Auto-disable trading if daily loss exceeds this",
-      "maxDrawdownPercent": "Max Drawdown %",
-      "maxDrawdownPercentHint": "Auto-disable trading if drawdown exceeds this",
-      "maxLotSize": "Max Lot Size",
-      "maxLotSizeHint": "Maximum volume per trade (lots)",
-      "maxPositions": "Max Positions",
-      "maxPositionsHint": "Maximum concurrent open positions",
-      "maxRiskPercent": "Max Risk %",
-      "maxRiskPercentHint": "Percentage of balance to risk per trade",
-      "saveFailed": "Failed to save settings",
-      "saveSuccess": "Settings saved",
-      "title": "Global Risk Settings"
-    },
-    "status": {
-      "activeStrategies": "Active Strategies",
-      "disabled": "Auto Trading Disabled",
-      "enabled": "Auto Trading Enabled",
-      "todayExecutions": "Today's Executions",
-      "todayProfit": "Today's Profit"
-    },
-    "title": "Auto Trading"
-  },
   "common": {
+    "months": {
+      "jan": "Jan",
+      "jul": "Jul"
+    },
+    "time": {
+      "day": "{{n}}d",
+      "hour": "{{n}}h",
+      "lessThanMinute": "<1m",
+      "minute": "{{n}}m"
+    },
     "active": "Active",
     "back": "Back",
     "cancel": "Cancel",
@@ -433,10 +484,6 @@ const Base = {
     "lineColor": "Line Color",
     "loading": "Loading...",
     "loadingFailed": "Loading failed",
-    "months": {
-      "jan": "Jan",
-      "jul": "Jul"
-    },
     "next": "Next",
     "no": "No",
     "noData": "No data",
@@ -459,12 +506,6 @@ const Base = {
     "selectSymbolToViewChart": "Select a symbol to view chart",
     "send": "Send",
     "showDetails": "Show details",
-    "time": {
-      "day": "{{n}}d",
-      "hour": "{{n}}h",
-      "lessThanMinute": "<1m",
-      "minute": "{{n}}m"
-    },
     "totalItems": "Total {{count}} items",
     "translate": "Translate",
     "unexpectedError": "An unexpected error occurred",
@@ -476,10 +517,6 @@ const Base = {
     "you": "You"
   },
   "errors": {
-    "access_denied": "Access denied",
-    "account_connected": "Connected to trading server",
-    "account_connection_failed": "Could not connect to the trading server",
-    "account_not_found": "Account not found",
     "ai": {
       "api_key_required": "API Key is required",
       "base_url_required": "Base URL is required",
@@ -501,18 +538,144 @@ const Base = {
       "rate_limited": "Rate limited. Please try again later.",
       "request_failed": "API request failed"
     },
-    "auto_trading_disabled": "Auto trading disabled",
-    "auto_trading_enabled": "Auto trading enabled",
     "connection_failed": {
       "content": "Unable to connect to the server. Please check your network and try again.",
       "title": "Connection failed"
     },
+    "access_denied": "Access denied",
+    "account_connected": "Connected to trading server",
+    "account_connection_failed": "Could not connect to the trading server",
+    "account_not_found": "Account not found",
+    "auto_trading_disabled": "Auto trading disabled",
+    "auto_trading_enabled": "Auto trading enabled",
     "email_already_registered": "This email is already registered",
     "invalid_credentials": "Invalid email or password",
     "not_authenticated": "Not signed in",
     "schedule_service_not_available": "Schedule service is unavailable",
     "translate_failed": "Translation failed",
     "user_not_found": "User not found"
+  },
+  "marketplace": {
+    "author": {
+      "avgRating": "Avg Rating",
+      "empty": "No strategies published yet. Go to Strategy Library to publish one.",
+      "published": "Published"
+    },
+    "card": {
+      "by": "by",
+      "free": "Free",
+      "owned": "Purchased",
+      "subscribers": "Subscribers",
+      "winRate": "Win Rate"
+    },
+    "detail": {
+      "assetClass": "Asset Class",
+      "author": "Author",
+      "commentPlaceholder": "Write a comment...",
+      "comments": "Comments",
+      "description": "Description",
+      "getFree": "Get Free",
+      "rentPrice": "¥{{amount}} / month",
+      "subscribers": "Subscribers",
+      "yourRating": "Your Rating"
+    },
+    "messages": {
+      "commentFailed": "Comment failed",
+      "commentPosted": "Comment posted",
+      "loginFirst": "Please log in first",
+      "paymentComingSoon": "Payment coming soon",
+      "rateFailed": "Rating failed",
+      "rated": "Rating submitted",
+      "subscribeFailed": "Failed",
+      "subscribed": "Added to your purchases"
+    },
+    "payment": {
+      "alreadyPurchased": "You already own this strategy.",
+      "balanceAfter": "Balance after purchase",
+      "cancel": "Cancel",
+      "confirm": "Confirm Purchase",
+      "depositPrompt": "Please deposit funds to continue.",
+      "goToDeposit": "Deposit",
+      "insufficientBalance": "Insufficient balance",
+      "oneTimePurchase": "¥{{amount}} one-time",
+      "price": "Price",
+      "purchaseFailed": "Purchase failed. Please try again.",
+      "purchaseSuccess": "Purchase successful! Strategy added to your library.",
+      "purchasing": "Processing...",
+      "strategyName": "Strategy",
+      "title": "Confirm Purchase",
+      "walletBalance": "Your Balance"
+    },
+    "purchases": {
+      "empty": "No purchases yet. Browse the market to find strategies.",
+      "status": "Status",
+      "strategy": "Strategy"
+    },
+    "sort": {
+      "newest": "Newest",
+      "performance": "Best Performance",
+      "popular": "Most Popular",
+      "priceAsc": "Price: Low to High",
+      "priceDesc": "Price: High to Low",
+      "rating": "Highest Rated",
+      "score": "Composite Score"
+    },
+    "tabs": {
+      "author": "Author Center",
+      "marketplace": "Market",
+      "purchases": "My Purchases",
+      "subscriptions": "My Subscriptions"
+    },
+    "empty": "No strategies published yet",
+    "filterByClass": "Filter by asset class",
+    "noSubscriptions": "No subscriptions yet",
+    "publish": "Publish Strategy",
+    "searchPlaceholder": "Search strategies...",
+    "subtitle": "Discover, buy, and use community strategies",
+    "title": "Strategy Marketplace"
+  },
+  "symbolDetection": {
+    "tradeMode": {
+      "disabled": "Disabled",
+      "longOnly": "Long Only",
+      "longShort": "Long & Short",
+      "shortOnly": "Short Only",
+      "unknown": "Unknown"
+    },
+    "label": "Detected Symbols",
+    "loading": "Parsing…",
+    "noSymbols": "No trading symbols detected. Try including specific symbol names (e.g. \"Bitcoin\", \"EURUSD\", \"Gold\").",
+    "resolvedTooltip": "broker: {{broker}} | mode: {{mode}}",
+    "unresolvedTooltip": "No trading account bound yet, unable to resolve"
+  },
+  "wallet": {
+    "table": {
+      "amount": "Amount",
+      "balanceAfter": "Balance After",
+      "description": "Description",
+      "time": "Time",
+      "type": "Type"
+    },
+    "txType": {
+      "adjustment": "Adjustment",
+      "deposit": "Deposit",
+      "fee": "Fee",
+      "reversal": "Reversal",
+      "withdrawal": "Withdrawal"
+    },
+    "accountNumber": "Account",
+    "balance": "Balance",
+    "currency": "Currency",
+    "deposit": "Deposit",
+    "frozen": "Frozen",
+    "frozenBalance": "Frozen",
+    "history": "History",
+    "title": "My Wallet",
+    "transactions": "Transactions",
+    "withdraw": "Withdraw"
+  },
+  "app": {
+    "name": "AntTrader"
   },
   "language": {
     "english": "English",
@@ -539,85 +702,6 @@ const Base = {
     "spread": "Spread",
     "watchlist": "Watchlist"
   },
-  "marketplace": {
-    "author": {
-      "avgRating": "Avg Rating",
-      "empty": "No strategies published yet. Go to Strategy Library to publish one.",
-      "published": "Published"
-    },
-    "card": {
-      "by": "by",
-      "free": "Free",
-      "owned": "Purchased",
-      "subscribers": "Subscribers",
-      "winRate": "Win Rate"
-    },
-    "detail": {
-      "assetClass": "Asset Class",
-      "author": "Author",
-      "commentPlaceholder": "Write a comment...",
-      "comments": "Comments",
-      "description": "Description",
-      "getFree": "Get Free",
-      "rentPrice": "¥{{amount}} / month",
-      "subscribers": "Subscribers",
-      "yourRating": "Your Rating"
-    },
-    "empty": "No strategies published yet",
-    "filterByClass": "Filter by asset class",
-    "messages": {
-      "commentFailed": "Comment failed",
-      "commentPosted": "Comment posted",
-      "loginFirst": "Please log in first",
-      "paymentComingSoon": "Payment coming soon",
-      "rateFailed": "Rating failed",
-      "rated": "Rating submitted",
-      "subscribeFailed": "Failed",
-      "subscribed": "Added to your purchases"
-    },
-    "noSubscriptions": "No subscriptions yet",
-    "payment": {
-      "alreadyPurchased": "You already own this strategy.",
-      "balanceAfter": "Balance after purchase",
-      "cancel": "Cancel",
-      "confirm": "Confirm Purchase",
-      "depositPrompt": "Please deposit funds to continue.",
-      "goToDeposit": "Deposit",
-      "insufficientBalance": "Insufficient balance",
-      "oneTimePurchase": "¥{{amount}} one-time",
-      "price": "Price",
-      "purchaseFailed": "Purchase failed. Please try again.",
-      "purchaseSuccess": "Purchase successful! Strategy added to your library.",
-      "purchasing": "Processing...",
-      "strategyName": "Strategy",
-      "title": "Confirm Purchase",
-      "walletBalance": "Your Balance"
-    },
-    "publish": "Publish Strategy",
-    "purchases": {
-      "empty": "No purchases yet. Browse the market to find strategies.",
-      "status": "Status",
-      "strategy": "Strategy"
-    },
-    "searchPlaceholder": "Search strategies...",
-    "sort": {
-      "newest": "Newest",
-      "performance": "Best Performance",
-      "popular": "Most Popular",
-      "priceAsc": "Price: Low to High",
-      "priceDesc": "Price: High to Low",
-      "rating": "Highest Rated",
-      "score": "Composite Score"
-    },
-    "subtitle": "Discover, buy, and use community strategies",
-    "tabs": {
-      "author": "Author Center",
-      "marketplace": "Market",
-      "purchases": "My Purchases",
-      "subscriptions": "My Subscriptions"
-    },
-    "title": "Strategy Marketplace"
-  },
   "menu": {
     "accounts": "Accounts",
     "aiAssistant": "AI Assistant",
@@ -643,50 +727,6 @@ const Base = {
     "strategyWorkspace": "Strategy Workspace",
     "trading": "Trading",
     "wallet": "Wallet"
-  },
-  "notifications": {
-    "actions": {
-      "clearAll": "Clear all",
-      "clearAllConfirm": "Clear all notifications?",
-      "markAllAsRead": "Mark all as read"
-    },
-    "all": "All",
-    "clearAll": "Clear all",
-    "confirmClearAll": "Clear all notifications?",
-    "empty": "No notifications",
-    "markAllRead": "Mark all as read",
-    "stream": {
-      "autoTrading": {
-        "fallback": "Auto trading event triggered",
-        "title": "Auto Trading"
-      },
-      "riskAlert": {
-        "fallback": "Alert type: {{alertType}}",
-        "title": "Risk Alert"
-      },
-      "strategyExecution": {
-        "completed": "{{symbol}} {{action}} completed",
-        "failed": "Execution failed: {{error}}",
-        "title": "Strategy Execution"
-      },
-      "strategySignal": {
-        "message": "{{symbol}} triggered {{signalType}}",
-        "title": "Strategy Signal"
-      }
-    },
-    "tabs": {
-      "all": "All ({{count}})",
-      "unread": "Unread ({{count}})"
-    },
-    "title": "Notifications",
-    "types": {
-      "risk_alert": "Risk Alert",
-      "signal": "Signal",
-      "strategy_execution": "Execution",
-      "system": "System",
-      "trade": "Trade"
-    },
-    "unread": "Unread"
   },
   "profile": {
     "lastLogin": "Last Login",
@@ -749,20 +789,6 @@ const Base = {
     "winningTrades": "Winning Trades",
     "worstTrade": "Worst Trade"
   },
-  "symbolDetection": {
-    "label": "Detected Symbols",
-    "loading": "Parsing…",
-    "noSymbols": "No trading symbols detected. Try including specific symbol names (e.g. \"Bitcoin\", \"EURUSD\", \"Gold\").",
-    "resolvedTooltip": "broker: {{broker}} | mode: {{mode}}",
-    "tradeMode": {
-      "disabled": "Disabled",
-      "longOnly": "Long Only",
-      "longShort": "Long & Short",
-      "shortOnly": "Short Only",
-      "unknown": "Unknown"
-    },
-    "unresolvedTooltip": "No trading account bound yet, unable to resolve"
-  },
   "topbar": {
     "logout": "Logout",
     "profile": "Profile",
@@ -770,32 +796,6 @@ const Base = {
     "switchToAdmin": "Switch to Admin",
     "systemOk": "System running normally",
     "user": "User"
-  },
-  "wallet": {
-    "accountNumber": "Account",
-    "balance": "Balance",
-    "currency": "Currency",
-    "deposit": "Deposit",
-    "frozen": "Frozen",
-    "frozenBalance": "Frozen",
-    "history": "History",
-    "table": {
-      "amount": "Amount",
-      "balanceAfter": "Balance After",
-      "description": "Description",
-      "time": "Time",
-      "type": "Type"
-    },
-    "title": "My Wallet",
-    "transactions": "Transactions",
-    "txType": {
-      "adjustment": "Adjustment",
-      "deposit": "Deposit",
-      "fee": "Fee",
-      "reversal": "Reversal",
-      "withdrawal": "Withdrawal"
-    },
-    "withdraw": "Withdraw"
   }
 } as const;
 export default Base;

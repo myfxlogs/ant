@@ -3,9 +3,6 @@
 const StrategyPaper = {
   "strategy": {
     "paper": {
-      "accountName": "Account name",
-      "create": "Create",
-      "createAccount": "Create Paper Account",
       "messages": {
         "createFailed": "Create failed",
         "created": "Paper account created",
@@ -16,6 +13,9 @@ const StrategyPaper = {
         "strategyStarted": "Paper strategy started",
         "strategyStopped": "Paper strategy stopped"
       },
+      "accountName": "Account name",
+      "create": "Create",
+      "createAccount": "Create Paper Account",
       "noAccounts": "No paper accounts. Create one to start simulated trading.",
       "paper": "Paper",
       "running": "Running {{symbol}} {{timeframe}}",

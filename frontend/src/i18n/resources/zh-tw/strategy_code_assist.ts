@@ -3,18 +3,6 @@
 const StrategyCodeAssist = {
   "strategy": {
     "codeAssist": {
-      "aiReviseTitle": "AI 助手 — 修改程式碼",
-      "applyAllSuggestions": "套用建議預設值",
-      "codeEmpty": "尚無程式碼可修改。",
-      "codeUpdated": "程式碼已更新。儲存前請重新驗證。",
-      "defaultLabel": "預設值",
-      "enterInstruction": "請說明您要修改的內容。",
-      "explain": "解釋程式碼",
-      "fillRequiredParams": "請填寫必要參數: {{keys}}",
-      "generatePlaceholder": "說明您的策略需求...",
-      "noPython": "AI 未返回 Python 程式碼區塊。請嘗試重新說明。",
-      "optionalParamsDesc": "這些參數已有程式碼預設值。留空則使用預設值；填入的值僅對本次執行生效，不會修改已儲存的策略。",
-      "optionalParamsTitle": "可選參數",
       "paramDescriptions": {
         "confidence": "訊號信心度閾值 (0-1)。低於此值的訊號將被忽略。",
         "emaPeriod": "EMA (指數移動平均) 回溯週期。",
@@ -32,6 +20,18 @@ const StrategyCodeAssist = {
         "takeProfit": "止盈距離 (%)。價格朝有利方向移動此幅度後平倉。",
         "threshold": "觸發訊號的閾值，具體含義取決於策略邏輯。"
       },
+      "aiReviseTitle": "AI 助手 — 修改程式碼",
+      "applyAllSuggestions": "套用建議預設值",
+      "codeEmpty": "尚無程式碼可修改。",
+      "codeUpdated": "程式碼已更新。儲存前請重新驗證。",
+      "defaultLabel": "預設值",
+      "enterInstruction": "請說明您要修改的內容。",
+      "explain": "解釋程式碼",
+      "fillRequiredParams": "請填寫必要參數: {{keys}}",
+      "generatePlaceholder": "說明您的策略需求...",
+      "noPython": "AI 未返回 Python 程式碼區塊。請嘗試重新說明。",
+      "optionalParamsDesc": "這些參數已有程式碼預設值。留空則使用預設值；填入的值僅對本次執行生效，不會修改已儲存的策略。",
+      "optionalParamsTitle": "可選參數",
       "required": "必要",
       "requiredParamsDesc": "策略讀取了這些參數但未提供預設值，請在儲存前填寫。",
       "requiredParamsTitle": "必要參數",

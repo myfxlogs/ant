@@ -3,13 +3,6 @@
 const StrategyAsset = {
   "strategy": {
     "asset": {
-      "actions": "操作",
-      "assetList": "资产列表",
-      "assetName": "资产名称",
-      "cloneAsDraft": "克隆为草稿",
-      "cloneCount": "克隆数",
-      "description": "描述",
-      "empty": "暂无策略资产",
       "messages": {
         "cloneFailed": "克隆策略资产失败",
         "cloneSuccess": "已克隆为模板: {{templateId}}",
@@ -17,6 +10,17 @@ const StrategyAsset = {
         "submitFailed": "提交策略资产失败",
         "submitSuccess": "策略资产已提交"
       },
+      "validation": {
+        "enterName": "请输入资产名称",
+        "selectTemplate": "请选择源模板"
+      },
+      "actions": "操作",
+      "assetList": "资产列表",
+      "assetName": "资产名称",
+      "cloneAsDraft": "克隆为草稿",
+      "cloneCount": "克隆数",
+      "description": "描述",
+      "empty": "暂无策略资产",
       "name": "名称",
       "reviewStatus": "审核状态",
       "sourceTemplate": "源模板",
@@ -24,10 +28,6 @@ const StrategyAsset = {
       "submitAsset": "提交资产",
       "subtitle": "资产发布、审核状态和克隆由系统维护。克隆结果为独立的用户模板。",
       "title": "策略资产",
-      "validation": {
-        "enterName": "请输入资产名称",
-        "selectTemplate": "请选择源模板"
-      },
       "version": "版本",
       "visibility": "可见性"
     }

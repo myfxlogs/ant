@@ -3,21 +3,7 @@
 const AiSettings = {
   "ai": {
     "settings": {
-      "actions": {
-        "saveConfig": "設定保存",
-        "validateApiKey": "API キー検証"
-      },
       "agent": {
-        "actions": {
-          "add": "追加",
-          "loadDefaults": "デフォルト8エージェント読込",
-          "remove": "削除",
-          "restoreDefaults": "デフォルト復元",
-          "restoreDefaultsConfirmContent": "8システムエージェントをデフォルトにリセット。カスタムは保持。",
-          "restoreDefaultsConfirmTitle": "システムデフォルト復元？",
-          "save": "保存"
-        },
-        "defaultName": "カスタムエージェント",
         "defaults": {
           "code": {
             "inputHint": "例: パラダイム=トレンドフォロー、指標=EMA(fast)/EMA(slow)+ATRフィルタ"
@@ -56,6 +42,15 @@ const AiSettings = {
             "inputHint": "例: アカウント=EURUSD小売、時間枠=H1、目標=月収益3%、DD<10%"
           }
         },
+        "actions": {
+          "add": "追加",
+          "loadDefaults": "デフォルト8エージェント読込",
+          "remove": "削除",
+          "restoreDefaults": "デフォルト復元",
+          "restoreDefaultsConfirmContent": "8システムエージェントをデフォルトにリセット。カスタムは保持。",
+          "restoreDefaultsConfirmTitle": "システムデフォルト復元？",
+          "save": "保存"
+        },
         "fields": {
           "historicalBinding": "{{value}}（過去）",
           "identityPlaceholder": "身分/人物設定記述",
@@ -72,9 +67,6 @@ const AiSettings = {
           "saveSuccess": "エージェント保存",
           "selectProfileFirst": "先に左で設定選択"
         },
-        "removeConfirmContent": "削除しますか？",
-        "removeConfirmTitle": "エージェント削除",
-        "title": "エージェント身分定義",
         "types": {
           "code": "コード",
           "execution": "実行",
@@ -88,7 +80,11 @@ const AiSettings = {
           "signals": "シグナル/指標",
           "strategist": "ストラテジーアナリスト",
           "style": "スタイル/パラダイム"
-        }
+        },
+        "defaultName": "カスタムエージェント",
+        "removeConfirmContent": "削除しますか？",
+        "removeConfirmTitle": "エージェント削除",
+        "title": "エージェント身分定義"
       },
       "apiKeyGuide": {
         "deepseek": {
@@ -96,19 +92,31 @@ const AiSettings = {
           "step2": "ログイン/登録後、APIキー管理画面で作成。",
           "title": "DeepSeek API キー取得方法"
         },
-        "default": "Current provider: {{provider}}. Go to the provider\\\\\\\\\\\\\\\\",
-        "modelSuggestionDeepSeek": "モデル提案: deepseek-chat",
-        "modelSuggestionZhipu": "モデル提案: glm-4-flash / glm-4",
-        "selectProviderHint": "プロバイダー選択後、申請方法を表示。",
-        "title": "API キー申請ガイド",
         "zhipu": {
           "step1": "Zhipuプラットフォーム:",
           "step2": "ログイン/登録後、コンソールでAPI キー作成。",
           "title": "Zhipu API キー取得方法"
-        }
+        },
+        "default": "Current provider: {{provider}}. Go to the provider\\\\\\\\\\\\\\\\",
+        "modelSuggestionDeepSeek": "モデル提案: deepseek-chat",
+        "modelSuggestionZhipu": "モデル提案: glm-4-flash / glm-4",
+        "selectProviderHint": "プロバイダー選択後、申請方法を表示。",
+        "title": "API キー申請ガイド"
       },
-      "apiKeySavedAs": "現在保存済: {{masked}}",
-      "defaultProfileName": "デフォルト",
+      "profiles": {
+        "actions": {
+          "setCurrent": "現在に設定"
+        },
+        "delete": {
+          "content": "削除しますか？",
+          "title": "設定削除"
+        },
+        "current": "現在"
+      },
+      "actions": {
+        "saveConfig": "設定保存",
+        "validateApiKey": "API キー検証"
+      },
       "discoverErrors": {
         "baseUrlInvalid": "Base URL が無効です。例: https://model.example.com または https://model.example.com/v1",
         "baseUrlRequired": "先に Base URL（モデルサービスURL）を入力してください。",
@@ -173,7 +181,6 @@ const AiSettings = {
         "validateFailed": "検証失敗",
         "validateSuccess": "検証成功"
       },
-      "pageTitle": "AI アシスタント設定",
       "placeholders": {
         "apiKey": "API キー入力",
         "baseUrl": "例: https://api.example.com/v1",
@@ -188,16 +195,6 @@ const AiSettings = {
         "hint": "意図明確化、コード生成などに使用。",
         "placeholder": "プロバイダー・モデルを選択してください",
         "title": "デフォルト主モデル"
-      },
-      "profiles": {
-        "actions": {
-          "setCurrent": "現在に設定"
-        },
-        "current": "現在",
-        "delete": {
-          "content": "削除しますか？",
-          "title": "設定削除"
-        }
       },
       "providers": {
         "anthropic": "Anthropic Claude",
@@ -239,7 +236,10 @@ const AiSettings = {
         "modelFormat": "モデル形式不正",
         "modelRequired": "モデル必須",
         "nameRequired": "名前必須"
-      }
+      },
+      "apiKeySavedAs": "現在保存済: {{masked}}",
+      "defaultProfileName": "デフォルト",
+      "pageTitle": "AI アシスタント設定"
     }
   }
 } as const;

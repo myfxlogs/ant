@@ -3,8 +3,6 @@
 const StrategyMarketRegime = {
   "strategy": {
     "marketRegime": {
-      "detectFailed": "市场環境檢測失敗",
-      "detectSuccess": "市场環境檢測完成",
       "form": {
         "accountId": "帳戶 ID",
         "accountIdPlaceholder": "输入 MT 帳戶 UUID",
@@ -26,6 +24,8 @@ const StrategyMarketRegime = {
         "strategyFamilies": "策略族类",
         "title": "檢測结果"
       },
+      "detectFailed": "市场環境檢測失敗",
+      "detectSuccess": "市场環境檢測完成",
       "ruleVersionAlert": "当前使用基于规则的檢測模型 rule-v1，由即時 K 线市场資料驱动。",
       "subtitle": "从历史 K 线資料分析趋势方向、波動率狀態和價格效率，分类当前市场環境。",
       "title": "市场環境檢測"

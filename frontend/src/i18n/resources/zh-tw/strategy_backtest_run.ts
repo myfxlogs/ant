@@ -3,6 +3,32 @@
 const StrategyBacktestRun = {
   "strategy": {
     "backtestRun": {
+      "trades": {
+        "reasons": {
+          "end_of_test": "测试结束",
+          "expired": "已過期",
+          "margin_call": "保证金不足",
+          "signal": "信號(用於下單)",
+          "sl": "止損",
+          "tp": "止盈"
+        },
+        "closePrice": "平倉價",
+        "closeTime": "平仓時間",
+        "commission": "手續費",
+        "empty": "无交易紀錄",
+        "loadFailed": "載入訂單明細失敗",
+        "openPrice": "開倉價",
+        "openTime": "开仓時間",
+        "pnl": "盈亏",
+        "reason": "平仓原因",
+        "side": "方向",
+        "sideBuy": "买入",
+        "sideSell": "卖出",
+        "summary": "{{count}} 笔交易 · {{wins}} 胜 / {{losses}} 负 · 净盈亏 {{pnl}}",
+        "ticket": "訂單號",
+        "title": "訂單明細",
+        "volume": "手數"
+      },
       "actions": {
         "cancel": "取消"
       },
@@ -35,33 +61,7 @@ const StrategyBacktestRun = {
         "queued": "佇列中",
         "running": "運行中"
       },
-      "title": "回測執行",
-      "trades": {
-        "closePrice": "平倉價",
-        "closeTime": "平仓時間",
-        "commission": "手續費",
-        "empty": "无交易紀錄",
-        "loadFailed": "載入訂單明細失敗",
-        "openPrice": "開倉價",
-        "openTime": "开仓時間",
-        "pnl": "盈亏",
-        "reason": "平仓原因",
-        "reasons": {
-          "end_of_test": "测试结束",
-          "expired": "已過期",
-          "margin_call": "保证金不足",
-          "signal": "信號(用於下單)",
-          "sl": "止損",
-          "tp": "止盈"
-        },
-        "side": "方向",
-        "sideBuy": "买入",
-        "sideSell": "卖出",
-        "summary": "{{count}} 笔交易 · {{wins}} 胜 / {{losses}} 负 · 净盈亏 {{pnl}}",
-        "ticket": "訂單號",
-        "title": "訂單明細",
-        "volume": "手數"
-      }
+      "title": "回測執行"
     }
   }
 } as const;

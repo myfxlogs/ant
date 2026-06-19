@@ -3,18 +3,12 @@
 const StrategySchedules = {
   "strategy": {
     "schedules": {
-      "actions": {
-        "create": "Tạo lịch",
-        "healthCheck": "Kiểm tra sức khỏe",
-        "logs": "Nhật ký chạy",
-        "runNow": "Chạy Ngay"
-      },
-      "createSchedule": "Tạo lịch",
-      "deleteConfirm": {
-        "title": "Xóa lịch này?"
-      },
       "editModal": {
         "advanced": {
+          "triggerModeOptions": {
+            "hf": "Luồng Tín Hiệu Tần Suất Cao",
+            "stable": "Ổn định (nến/timeframe)"
+          },
           "fixedIntervalSeconds": "Khoảng cố định (giây)",
           "fixedIntervalSecondsExtra": "Tùy chọn. Chạy theo khoảng cố định thay vì theo timeframe. VD: 60 = mỗi 60 giây",
           "hfCooldownMs": "Cooldown cao tần (ms)",
@@ -27,11 +21,7 @@ const StrategySchedules = {
           "timeframeExtra": "Dùng cho tính nến/chỉ báo",
           "title": "Nâng cao",
           "triggerMode": "Chế độ kích hoạt",
-          "triggerModeExtra": "Ổn định: theo nến/timeframe; Cao tần: theo báo giá (nhanh hơn, cần debounce)",
-          "triggerModeOptions": {
-            "hf": "Luồng Tín Hiệu Tần Suất Cao",
-            "stable": "Ổn định (nến/timeframe)"
-          }
+          "triggerModeExtra": "Ổn định: theo nến/timeframe; Cao tần: theo báo giá (nhanh hơn, cần debounce)"
         },
         "autoName": {
           "strategy": "Chiến Lược"
@@ -80,11 +70,6 @@ const StrategySchedules = {
           "triggerModeRequired": "Chế độ kích hoạt là bắt buộc"
         }
       },
-      "enableCount": "Số lần bật",
-      "format": {
-        "cron": "定时: {{expr}}",
-        "interval": "mỗi {{s}}s"
-      },
       "health": {
         "fields": {
           "configKey": "Khóa cấu hình",
@@ -127,6 +112,45 @@ const StrategySchedules = {
         "thresholdsSummary": "min_sample_size={{minSampleSize}}; xanh: success>={{greenSuccessRate}}% & failed<={{greenMaxFailedRuns}}; vàng: success>={{yellowSuccessRate}}%",
         "title": "Kiểm tra sức khỏe chiến lược {{name}}"
       },
+      "triggerModal": {
+        "actions": {
+          "confirmOrder": "Xác nhận đặt lệnh",
+          "rerun": "Chạy Lại"
+        },
+        "cards": {
+          "logs": "Nhật ký chạy",
+          "signal": "Tín hiệu (đặt lệnh)"
+        },
+        "confirmOrder": {
+          "ok": "Xác Nhận",
+          "title": "Xác nhận đặt lệnh"
+        },
+        "messages": {
+          "signalNotOrderable": "Tín hiệu không thể đặt lệnh"
+        },
+        "summary": {
+          "account": "Tài khoản",
+          "scheduleName": "Tên lịch",
+          "symbol": "Mã",
+          "timeframe": "Khung thời gian"
+        },
+        "emptyLogs": "(không có nhật ký)",
+        "emptySignal": "Không Có Tín Hiệu",
+        "title": "Chạy ngay (đặt lệnh)"
+      },
+      "actions": {
+        "create": "Tạo lịch",
+        "healthCheck": "Kiểm tra sức khỏe",
+        "logs": "Nhật ký chạy",
+        "runNow": "Chạy Ngay"
+      },
+      "deleteConfirm": {
+        "title": "Xóa lịch này?"
+      },
+      "format": {
+        "cron": "定时: {{expr}}",
+        "interval": "mỗi {{s}}s"
+      },
       "messages": {
         "defaultTemplateNotFound": "Không tìm thấy mẫu mặc định. Vui lòng làm mới và thử lại.",
         "executeFailed": "Thực thi thất bại",
@@ -140,7 +164,6 @@ const StrategySchedules = {
         "templateCodeEmptyCannotExecute": "Code mẫu trống. Không thể thực thi.",
         "volumeInvalid": "Khối lượng không hợp lệ (phải > 0)"
       },
-      "nextRunAt": "Lần chạy kế tiếp",
       "status": {
         "disabled": "Đã Tắt",
         "running": "Đang chạy"
@@ -159,36 +182,13 @@ const StrategySchedules = {
         "private": "Riêng tư",
         "public": "Công khai"
       },
-      "title": "Lịch chạy chiến lược",
-      "triggerModal": {
-        "actions": {
-          "confirmOrder": "Xác nhận đặt lệnh",
-          "rerun": "Chạy Lại"
-        },
-        "cards": {
-          "logs": "Nhật ký chạy",
-          "signal": "Tín hiệu (đặt lệnh)"
-        },
-        "confirmOrder": {
-          "ok": "Xác Nhận",
-          "title": "Xác nhận đặt lệnh"
-        },
-        "emptyLogs": "(không có nhật ký)",
-        "emptySignal": "Không Có Tín Hiệu",
-        "messages": {
-          "signalNotOrderable": "Tín hiệu không thể đặt lệnh"
-        },
-        "summary": {
-          "account": "Tài khoản",
-          "scheduleName": "Tên lịch",
-          "symbol": "Mã",
-          "timeframe": "Khung thời gian"
-        },
-        "title": "Chạy ngay (đặt lệnh)"
-      },
       "validation": {
         "parametersMustBeJsonObject": "Tham số phải là đối tượng JSON"
-      }
+      },
+      "createSchedule": "Tạo lịch",
+      "enableCount": "Số lần bật",
+      "nextRunAt": "Lần chạy kế tiếp",
+      "title": "Lịch chạy chiến lược"
     }
   }
 } as const;

@@ -3,6 +3,20 @@
 const Analytics = {
   "analytics": {
     "summary": {
+      "economicCalendar": {
+        "indicators": {
+          "CPI": "インフレ率（CPI）",
+          "FEDFUNDS": "フェデラルファンド金利",
+          "GDP": "実質GDP",
+          "UNRATE": "失業率"
+        },
+        "actual": "実績",
+        "empty": "利用可能な経済イベントはありません。",
+        "estimate": "予想",
+        "keyIndicatorsTitle": "主要マクロ経済指標",
+        "loading": "経済カレンダーを読み込み中...",
+        "previous": "前回"
+      },
       "cards": {
         "directionShare": "方向比率",
         "economicCalendar": "経済カレンダー",
@@ -15,20 +29,6 @@ const Analytics = {
       "direction": {
         "buy": "買い",
         "sell": "売り"
-      },
-      "economicCalendar": {
-        "actual": "実績",
-        "empty": "利用可能な経済イベントはありません。",
-        "estimate": "予想",
-        "indicators": {
-          "CPI": "インフレ率（CPI）",
-          "FEDFUNDS": "フェデラルファンド金利",
-          "GDP": "実質GDP",
-          "UNRATE": "失業率"
-        },
-        "keyIndicatorsTitle": "主要マクロ経済指標",
-        "loading": "経済カレンダーを読み込み中...",
-        "previous": "前回"
       },
       "labels": {
         "pnl": "損益"
@@ -65,7 +65,6 @@ const Analytics = {
         "equityCurve": "エクイティカーブ",
         "monthlyStats": "月次統計"
       },
-      "title": "分析サマリー",
       "tradeStats": {
         "avgHolding": "平均保有時間",
         "avgLoss": "平均損失",
@@ -80,6 +79,7 @@ const Analytics = {
         "winRate": "勝率",
         "wins": "勝ち"
       },
+      "title": "分析サマリー",
       "yearOption": "{{year}}年"
     }
   }

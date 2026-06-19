@@ -3,18 +3,79 @@
 const StrategyTemplates = {
   "strategy": {
     "templates": {
-      "actions": {
-        "backtest": "回测",
-        "copy": "复制",
-        "create": "新建模板",
-        "createTemplate": "新建模板",
-        "delete": "删除",
-        "edit": "编辑",
-        "launchSchedule": "上线调度",
-        "viewCode": "查看代码"
+      "scheduleLaunch": {
+        "form": {
+          "scheduleTypes": {
+            "hfQuote": "高频报价",
+            "interval": "定时执行",
+            "klineClose": "K 线收盘触发"
+          },
+          "account": "账号",
+          "accountPlaceholder": "选择账户",
+          "defaultVolume": "默认手数",
+          "defaultVolumeTip": "每个信号的默认下单量",
+          "enableAfterCreate": "创建后立即启用",
+          "hfCooldownMs": "高频冷却(毫秒)",
+          "hfCooldownMsTip": "报价驱动执行间的冷却时间",
+          "intervalMs": "间隔(毫秒)",
+          "intervalMsTip": "非高频模式最小1000ms",
+          "investorTag": "投资者(只读)",
+          "maxDrawdownPct": "最大回撤%",
+          "maxDrawdownPctTip": "回撤超过此阈值自动停止",
+          "maxPositions": "最大持仓数",
+          "maxPositionsTip": "同时持有的最大仓位数量",
+          "riskSection": "风控设置",
+          "scheduleName": "计划名称",
+          "scheduleNameMax": "最多64字符",
+          "scheduleNamePlaceholder": "例如：EURUSD M5 早盘策略",
+          "scheduleType": "计划类型",
+          "stopLossOffset": "止损偏移",
+          "stopLossOffsetTip": "距入场价的止损距离(点)",
+          "strategyParamsSection": "策略参数",
+          "symbol": "品种",
+          "symbolPlaceholder": "选择品种",
+          "symbolPlaceholderEmpty": "未配置品种",
+          "takeProfitOffset": "止盈偏移",
+          "takeProfitOffsetTip": "距入场价的止盈距离(点)",
+          "timeframe": "周期"
+        },
+        "actions": {
+          "addAccount": "添加账户",
+          "create": "创建调度",
+          "createAndEnable": "创建并启用",
+          "createScheduleNoEnable": "新建调度任务",
+          "publishTemplate": "发布模板",
+          "updateTradingPassword": "更新交易密码"
+        },
+        "metrics": {
+          "annualReturn": "年化收益",
+          "maxDrawdown": "最大回撤",
+          "sharpe": "夏普比率",
+          "totalReturn": "总收益",
+          "totalTrades": "交易次数",
+          "winRate": "胜率"
+        },
+        "backtestRunningHint": "回测正在运行，请稍候。",
+        "errorInvestorAccount": "无法使用投资者账户启动计划。请更新交易密码以启用交易。",
+        "investorWarningBody": "此账户为投资者(只读)模式，需要交易权限才能启动计划。",
+        "investorWarningTitle": "投资者账户",
+        "keyMetrics": "关键指标",
+        "launchSection": "上线调度",
+        "newPasswordPlaceholder": "输入新的交易密码",
+        "noAccountBody": "启动计划前需要先绑定MT账户。",
+        "noAccountTitle": "无账户",
+        "noRun": "暂无回测运行",
+        "score": "评分",
+        "title": "上线调度",
+        "tradePermissionOk": "交易权限验证通过",
+        "updatePasswordFailed": "更新交易密码失败",
+        "updatePasswordHint": "输入此账户的交易密码以启用交易。",
+        "updatePasswordOk": "交易密码已更新",
+        "updatePasswordStillInvestor": "密码更新成功但账户仍为投资者模式，请联系客服。",
+        "updatePasswordTitle": "更新交易密码",
+        "verifyingPermission": "验证交易权限中..."
       },
       "backtest": {
-        "accountDisabledSuffix": "（已禁用）",
         "fields": {
           "account": "账号",
           "extraSymbols": "额外品种 (多选)",
@@ -24,7 +85,6 @@ const StrategyTemplates = {
           "timeframe": "周期",
           "title": "标题"
         },
-        "modalTitleWithName": "回测: {{name}}",
         "parameters": {
           "title": "策略参数"
         },
@@ -37,7 +97,6 @@ const StrategyTemplates = {
         "quickRange": {
           "custom": "自定义"
         },
-        "title": "回测",
         "tooltips": {
           "extraSymbols": "额外获取 K 线的品种 (同账户、同周期)。策略可通过 context[\"closes_by_symbol\"] 访问。"
         },
@@ -47,7 +106,10 @@ const StrategyTemplates = {
           "rangeRequired": "请选择日期范围",
           "symbolRequired": "请选择品种",
           "timeframeRequired": "请选择周期"
-        }
+        },
+        "accountDisabledSuffix": "（已禁用）",
+        "modalTitleWithName": "回测: {{name}}",
+        "title": "回测"
       },
       "backtestRuns": {
         "actions": {
@@ -55,11 +117,6 @@ const StrategyTemplates = {
           "launchSchedule": "查看评分",
           "view": "查看"
         },
-        "batchDelete": "删除 {{count}} 条",
-        "batchDeleteConfirm": "删除 {{count}} 条回测报告？",
-        "batchDeleteSuccess": "已删除 {{count}} 条回测报告",
-        "deleteConfirm": "删除此记录？",
-        "empty": "暂无回测记录",
         "status": {
           "canceled": "已取消",
           "canceling": "取消中",
@@ -76,10 +133,12 @@ const StrategyTemplates = {
           "timeframe": "周期",
           "title": "标题"
         },
+        "batchDelete": "删除 {{count}} 条",
+        "batchDeleteConfirm": "删除 {{count}} 条回测报告？",
+        "batchDeleteSuccess": "已删除 {{count}} 条回测报告",
+        "deleteConfirm": "删除此记录？",
+        "empty": "暂无回测记录",
         "title": "回测记录"
-      },
-      "badges": {
-        "preset": "预设"
       },
       "codeModal": {
         "actions": {
@@ -87,9 +146,6 @@ const StrategyTemplates = {
         },
         "title": "策略代码"
       },
-      "copySuffix": " (副本)",
-      "defaultDraftName": "草稿模板",
-      "deleteConfirm": "删除此模板？",
       "editTemplateModal": {
         "actions": {
           "validateCode": "验证代码"
@@ -113,6 +169,19 @@ const StrategyTemplates = {
           "codeRequired": "代码不能为空",
           "nameRequired": "请输入名称"
         }
+      },
+      "actions": {
+        "backtest": "回测",
+        "copy": "复制",
+        "create": "新建模板",
+        "createTemplate": "新建模板",
+        "delete": "删除",
+        "edit": "编辑",
+        "launchSchedule": "上线调度",
+        "viewCode": "查看代码"
+      },
+      "badges": {
+        "preset": "预设"
       },
       "messages": {
         "backtestCancelFailed": "取消回测失败",
@@ -156,79 +225,6 @@ const StrategyTemplates = {
         "templateRepublished": "模板已重新发布",
         "templateUpdated": "模板已更新"
       },
-      "scheduleLaunch": {
-        "actions": {
-          "addAccount": "添加账户",
-          "create": "创建调度",
-          "createAndEnable": "创建并启用",
-          "createScheduleNoEnable": "新建调度任务",
-          "publishTemplate": "发布模板",
-          "updateTradingPassword": "更新交易密码"
-        },
-        "backtestRunningHint": "回测正在运行，请稍候。",
-        "errorInvestorAccount": "无法使用投资者账户启动计划。请更新交易密码以启用交易。",
-        "form": {
-          "account": "账号",
-          "accountPlaceholder": "选择账户",
-          "defaultVolume": "默认手数",
-          "defaultVolumeTip": "每个信号的默认下单量",
-          "enableAfterCreate": "创建后立即启用",
-          "hfCooldownMs": "高频冷却(毫秒)",
-          "hfCooldownMsTip": "报价驱动执行间的冷却时间",
-          "intervalMs": "间隔(毫秒)",
-          "intervalMsTip": "非高频模式最小1000ms",
-          "investorTag": "投资者(只读)",
-          "maxDrawdownPct": "最大回撤%",
-          "maxDrawdownPctTip": "回撤超过此阈值自动停止",
-          "maxPositions": "最大持仓数",
-          "maxPositionsTip": "同时持有的最大仓位数量",
-          "riskSection": "风控设置",
-          "scheduleName": "计划名称",
-          "scheduleNameMax": "最多64字符",
-          "scheduleNamePlaceholder": "例如：EURUSD M5 早盘策略",
-          "scheduleType": "计划类型",
-          "scheduleTypes": {
-            "hfQuote": "高频报价",
-            "interval": "定时执行",
-            "klineClose": "K 线收盘触发"
-          },
-          "stopLossOffset": "止损偏移",
-          "stopLossOffsetTip": "距入场价的止损距离(点)",
-          "strategyParamsSection": "策略参数",
-          "symbol": "品种",
-          "symbolPlaceholder": "选择品种",
-          "symbolPlaceholderEmpty": "未配置品种",
-          "takeProfitOffset": "止盈偏移",
-          "takeProfitOffsetTip": "距入场价的止盈距离(点)",
-          "timeframe": "周期"
-        },
-        "investorWarningBody": "此账户为投资者(只读)模式，需要交易权限才能启动计划。",
-        "investorWarningTitle": "投资者账户",
-        "keyMetrics": "关键指标",
-        "launchSection": "上线调度",
-        "metrics": {
-          "annualReturn": "年化收益",
-          "maxDrawdown": "最大回撤",
-          "sharpe": "夏普比率",
-          "totalReturn": "总收益",
-          "totalTrades": "交易次数",
-          "winRate": "胜率"
-        },
-        "newPasswordPlaceholder": "输入新的交易密码",
-        "noAccountBody": "启动计划前需要先绑定MT账户。",
-        "noAccountTitle": "无账户",
-        "noRun": "暂无回测运行",
-        "score": "评分",
-        "title": "上线调度",
-        "tradePermissionOk": "交易权限验证通过",
-        "updatePasswordFailed": "更新交易密码失败",
-        "updatePasswordHint": "输入此账户的交易密码以启用交易。",
-        "updatePasswordOk": "交易密码已更新",
-        "updatePasswordStillInvestor": "密码更新成功但账户仍为投资者模式，请联系客服。",
-        "updatePasswordTitle": "更新交易密码",
-        "verifyingPermission": "验证交易权限中..."
-      },
-      "scheduleName": "{{symbol}} {{timeframe}} {{name}}",
       "status": {
         "draft": "草稿",
         "published": "已发布"
@@ -251,11 +247,15 @@ const StrategyTemplates = {
         "system": "系统模板",
         "user": "用户模板"
       },
-      "title": "策略模板",
       "visibility": {
         "private": "私有",
         "public": "公开"
-      }
+      },
+      "copySuffix": " (副本)",
+      "defaultDraftName": "草稿模板",
+      "deleteConfirm": "删除此模板？",
+      "scheduleName": "{{symbol}} {{timeframe}} {{name}}",
+      "title": "策略模板"
     }
   }
 } as const;

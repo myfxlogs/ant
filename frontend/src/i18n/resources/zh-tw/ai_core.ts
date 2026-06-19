@@ -2,6 +2,39 @@
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const AiCore = {
   "ai": {
+    "consensus": {
+      "signals": {
+        "ma": {
+          "trend": "均線趨勢"
+        },
+        "macd": {
+          "flag": "訊號",
+          "hist": "柱狀圖",
+          "signalLine": "訊號線",
+          "trend": "形態",
+          "value": "MACD"
+        },
+        "rsi": {
+          "flag": "訊號",
+          "value": "RSI"
+        }
+      },
+      "actions": {
+        "refresh": "重新整理"
+      },
+      "fields": {
+        "account": "帳戶",
+        "symbol": "品種",
+        "timeframe": "周期"
+      },
+      "panel": {
+        "decision": "決策",
+        "overallScore": "總體",
+        "technicalScore": "技術面",
+        "title": "目標評分"
+      },
+      "title": "共識與討論"
+    },
     "agentPrompts": {
       "code": {
         "title": "程式碼生成 Agent"
@@ -60,7 +93,6 @@ const AiCore = {
         "empty": "暫無評分（等待回測或無指標資料）",
         "title": "綜合評分（啟發式）"
       },
-      "stateLabel": "狀態",
       "status": {
         "cancelRequested": "取消中",
         "canceled": "已取消",
@@ -69,14 +101,8 @@ const AiCore = {
         "running": "執行中",
         "succeeded": "成功"
       },
+      "stateLabel": "狀態",
       "title": "回測評分卡"
-    },
-    "chatBox": {
-      "collapse": "摺疊",
-      "emptyDescription": "開始與AI助手對話",
-      "expandAll": "全部展開",
-      "thinking": "思考中...",
-      "truncated": "內容過長，已截斷"
     },
     "client": {
       "errors": {
@@ -98,47 +124,7 @@ const AiCore = {
         "unauthorized": "供應商拒絕API金鑰（401）。請檢查金鑰值及其對所選模型的存取權限。"
       }
     },
-    "consensus": {
-      "actions": {
-        "refresh": "重新整理"
-      },
-      "fields": {
-        "account": "帳戶",
-        "symbol": "品種",
-        "timeframe": "周期"
-      },
-      "panel": {
-        "decision": "決策",
-        "overallScore": "總體",
-        "technicalScore": "技術面",
-        "title": "目標評分"
-      },
-      "signals": {
-        "ma": {
-          "trend": "均線趨勢"
-        },
-        "macd": {
-          "flag": "訊號",
-          "hist": "柱狀圖",
-          "signalLine": "訊號線",
-          "trend": "形態",
-          "value": "MACD"
-        },
-        "rsi": {
-          "flag": "訊號",
-          "value": "RSI"
-        }
-      },
-      "title": "共識與討論"
-    },
-    "conversation": {
-      "defaultTitle": "新對話"
-    },
     "gate": {
-      "allPassed": "全部6個閘道已通過——策略符合推廣至上線評估條件",
-      "backtestGrossReturn": "回測總收益率",
-      "backtestNetReturn": "回測淨收益率",
-      "dailyReturns": "每日收益率（逗號或換行分隔）",
       "descriptions": {
         "compliance": "DSL表達式非空驗證",
         "correlation": "与现有策略的訊號相關性檢查",
@@ -147,12 +133,6 @@ const AiCore = {
         "paper": "≥14天紙交易驗證",
         "walkforward": "淨化前進式交叉驗證"
       },
-      "details": "詳情",
-      "dslExpression": "DSL表達式",
-      "evaluating": "評估中...",
-      "fail": "失敗",
-      "failed": "失敗：{{gate}}",
-      "gateProgress": "閘道評估進度",
       "labels": {
         "compliance": "合規性",
         "correlation": "相關性",
@@ -161,6 +141,19 @@ const AiCore = {
         "paper": "紙交易",
         "walkforward": "前進式驗證"
       },
+      "status": {
+        "evaluating": "評估中..."
+      },
+      "allPassed": "全部6個閘道已通過——策略符合推廣至上線評估條件",
+      "backtestGrossReturn": "回測總收益率",
+      "backtestNetReturn": "回測淨收益率",
+      "dailyReturns": "每日收益率（逗號或換行分隔）",
+      "details": "詳情",
+      "dslExpression": "DSL表達式",
+      "evaluating": "評估中...",
+      "fail": "失敗",
+      "failed": "失敗：{{gate}}",
+      "gateProgress": "閘道評估進度",
       "noData": "無數據",
       "numAttempts": "策略嘗試次數",
       "paperDays": "紙交易天數",
@@ -176,27 +169,9 @@ const AiCore = {
       "runPipeline": "執行閘道管線",
       "selectRun": "選擇回測運行...",
       "skipped": "已跳过",
-      "status": {
-        "evaluating": "評估中..."
-      },
       "strategyParams": "策略參數",
       "title": "AI閘道進度",
       "unknown": "未知"
-    },
-    "gateway": {
-      "balance": "錢包餘額",
-      "modelPlaceholder": "選擇 AI 模型",
-      "monthlyCost": "本月費用",
-      "monthlyTokens": "本月 Token",
-      "noModels": "暫無可用模型",
-      "selectModel": "選擇模型",
-      "title": "AI 網關",
-      "usageByFeature": "按功能用量",
-      "useGateway": "AI 網關",
-      "useGatewayDesc": "扣錢包餘額 · 按 Token 計費",
-      "useOwnKey": "我的 API Key",
-      "useOwnKeyDesc": "直付廠商 · 自行管理",
-      "useOwnKeyHint": "使用你自己的 API Key，直接向所選廠商付費。在下方選擇廠商卡片進行配置。"
     },
     "reports": {
       "tradeAnalysis": {
@@ -210,9 +185,6 @@ const AiCore = {
       },
       "description": "請先前往設定頁面配置AI供應商、模型及API金鑰，然後再使用策略精靈或聊天功能。",
       "title": "尚未配置LLM"
-    },
-    "riskEval": {
-      "failed": "風險評估失敗"
     },
     "signalCard": {
       "actions": {
@@ -298,7 +270,6 @@ const AiCore = {
         "namePlaceholder": "我的自訂提供者",
         "nameRequired": "服务商名称不能為空"
       },
-      "emptyConfigs": "暫無 AI 廠商 設定（系統啟動時會自動建立預設 廠商）",
       "fields": {
         "apiKeyHint": "輸入後將自動加密儲存，無需手動提交",
         "apiKeyPastePlaceholder": "貼上 API 金鑰，將自動預儲存",
@@ -329,8 +300,6 @@ const AiCore = {
         "validationFailedNeedApiKey": "驗證失敗：此服務商通常需要 API Key，請先填寫並儲存 Key 後重試。",
         "validationPassedModels": "驗證通過：找到{{count}}個模型"
       },
-      "pageSubtitle": "設定 AI 大腦 — 選擇模型廠商、管理 API 金鑰與可用模型，並指定全站兜底使用的「預設主模型」。",
-      "pageTitle": "AI 助手設定",
       "section1": {
         "subtitle": "Cards show each provider's configuration and readiness; click to select",
         "title": "選擇模型廠商"
@@ -366,15 +335,12 @@ const AiCore = {
         "openai_compatible": "任意相容端點",
         "qwen": "阿里雲 · 中文最佳化",
         "zhipu": "清華系 · 通用"
-      }
-    },
-    "tabs": {
-      "agentSettings": "專家設定",
-      "gate": "AI 质量门",
-      "settings": "設定"
+      },
+      "emptyConfigs": "暫無 AI 廠商 設定（系統啟動時會自動建立預設 廠商）",
+      "pageSubtitle": "設定 AI 大腦 — 選擇模型廠商、管理 API 金鑰與可用模型，並指定全站兜底使用的「預設主模型」。",
+      "pageTitle": "AI 助手設定"
     },
     "workflowRuns": {
-      "defaultTitle": "AI工作流程",
       "hints": {
         "selectToViewDetail": "从左侧選擇執行记录查看詳情"
       },
@@ -382,7 +348,41 @@ const AiCore = {
         "loadDetailFailed": "載入詳情失敗",
         "loadListFailed": "載入執行列表失敗"
       },
+      "defaultTitle": "AI工作流程",
       "title": "AI工作流程"
+    },
+    "chatBox": {
+      "collapse": "摺疊",
+      "emptyDescription": "開始與AI助手對話",
+      "expandAll": "全部展開",
+      "thinking": "思考中...",
+      "truncated": "內容過長，已截斷"
+    },
+    "conversation": {
+      "defaultTitle": "新對話"
+    },
+    "gateway": {
+      "balance": "錢包餘額",
+      "modelPlaceholder": "選擇 AI 模型",
+      "monthlyCost": "本月費用",
+      "monthlyTokens": "本月 Token",
+      "noModels": "暫無可用模型",
+      "selectModel": "選擇模型",
+      "title": "AI 網關",
+      "usageByFeature": "按功能用量",
+      "useGateway": "AI 網關",
+      "useGatewayDesc": "扣錢包餘額 · 按 Token 計費",
+      "useOwnKey": "我的 API Key",
+      "useOwnKeyDesc": "直付廠商 · 自行管理",
+      "useOwnKeyHint": "使用你自己的 API Key，直接向所選廠商付費。在下方選擇廠商卡片進行配置。"
+    },
+    "riskEval": {
+      "failed": "風險評估失敗"
+    },
+    "tabs": {
+      "agentSettings": "專家設定",
+      "gate": "AI 质量门",
+      "settings": "設定"
     }
   }
 } as const;

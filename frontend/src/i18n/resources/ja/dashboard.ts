@@ -2,23 +2,17 @@
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const Dashboard = {
   "dashboard": {
-    "accountList": "口座一覧",
-    "accountOverview": "口座概要",
     "accountStatus": {
       "connected": "接続済み",
       "connecting": "接続中",
       "disabled": "無効",
       "disconnected": "已断开"
     },
-    "bindAccount": "口座を連携",
-    "defaultName": "我的仪表盘",
     "fields": {
       "balance": "残高",
       "equity": "有効証拠金",
       "floating": "浮动盈亏"
     },
-    "logs": "ログ",
-    "noAccounts": "口座がありません。右上から連携してください。",
     "quickActions": {
       "accounts": "口座",
       "analytics": "分析",
@@ -38,6 +32,12 @@ const Dashboard = {
       "totalEquity": "有効証拠金合計",
       "totalProfit": "总浮动盈亏"
     },
+    "accountList": "口座一覧",
+    "accountOverview": "口座概要",
+    "bindAccount": "口座を連携",
+    "defaultName": "我的仪表盘",
+    "logs": "ログ",
+    "noAccounts": "口座がありません。右上から連携してください。",
     "streamLive": "ライブ接続",
     "streamOffline": "オフライン",
     "subtitle": "口座の概要を確認できます",

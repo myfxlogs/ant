@@ -3,8 +3,6 @@
 const StrategyMarketRegime = {
   "strategy": {
     "marketRegime": {
-      "detectFailed": "Phát hiện chế độ thị trường thất bại",
-      "detectSuccess": "Phát hiện chế độ thị trường hoàn tất",
       "form": {
         "accountId": "ID Tài Khoản",
         "accountIdPlaceholder": "UUID tài khoản MT",
@@ -26,6 +24,8 @@ const StrategyMarketRegime = {
         "strategyFamilies": "Họ Chiến Lược",
         "title": "Kết Quả Phát Hiện"
       },
+      "detectFailed": "Phát hiện chế độ thị trường thất bại",
+      "detectSuccess": "Phát hiện chế độ thị trường hoàn tất",
       "ruleVersionAlert": "Hiện đang dùng mô hình phát hiện dựa trên quy tắc rule-v1, điều khiển bởi dữ liệu K-line thời gian thực.",
       "subtitle": "Phân tích hướng xu hướng, chế độ biến động và hiệu quả giá từ dữ liệu K-line lịch sử để phân loại điều kiện thị trường hiện tại.",
       "title": "Phát Hiện Chế Độ Thị Trường"

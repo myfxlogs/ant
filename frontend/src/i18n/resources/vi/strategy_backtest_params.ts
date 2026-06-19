@@ -3,6 +3,10 @@
 const StrategyBacktestParams = {
   "strategy": {
     "backtestParams": {
+      "presets": {
+        "exploration": "Khám Phá",
+        "liveAligned": "Đồng Bộ Thực"
+      },
       "backtestFailed": "Backtest thất bại",
       "both": "Cả Hai",
       "capital": "Vốn",
@@ -20,10 +24,6 @@ const StrategyBacktestParams = {
       "history": "Lịch Sử Backtest",
       "leverage": "Đòn Bẩy",
       "long": "↑ Mua",
-      "presets": {
-        "exploration": "Khám Phá",
-        "liveAligned": "Đồng Bộ Thực"
-      },
       "run": "▶ Chạy",
       "runtimeMode": "Thời Gian Chạy",
       "settingsLoad": "Tải Mặc Định Của Tôi",

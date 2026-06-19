@@ -2,6 +2,39 @@
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const AiCore = {
   "ai": {
+    "consensus": {
+      "signals": {
+        "ma": {
+          "trend": "均线趋势"
+        },
+        "macd": {
+          "flag": "Tín hiệu",
+          "hist": "Biểu đồ cột",
+          "signalLine": "Đường tín hiệu",
+          "trend": "形态",
+          "value": "MACD"
+        },
+        "rsi": {
+          "flag": "Tín hiệu",
+          "value": "RSI"
+        }
+      },
+      "actions": {
+        "refresh": "刷新"
+      },
+      "fields": {
+        "account": "Tài khoản",
+        "symbol": "Mã chứng khoán",
+        "timeframe": "周期"
+      },
+      "panel": {
+        "decision": "Quyết định",
+        "overallScore": "Tổng thể",
+        "technicalScore": "技术面",
+        "title": "Điểm mục tiêu"
+      },
+      "title": "Đồng thuận & Thảo luận"
+    },
     "agentPrompts": {
       "code": {
         "title": "Sinh mã"
@@ -60,7 +93,6 @@ const AiCore = {
         "empty": "Chưa có điểm (đợi backtest hoàn tất hoặc thiếu metrics)",
         "title": "综合评分（启发式）"
       },
-      "stateLabel": "Trạng thái",
       "status": {
         "cancelRequested": "Đang hủy",
         "canceled": "已取消",
@@ -69,14 +101,8 @@ const AiCore = {
         "running": "Đang chạy",
         "succeeded": "Thành công"
       },
+      "stateLabel": "Trạng thái",
       "title": "Thẻ điểm backtest"
-    },
-    "chatBox": {
-      "collapse": "收起",
-      "emptyDescription": "Bắt đầu trò chuyện với trợ lý AI",
-      "expandAll": "Mở rộng tất cả",
-      "thinking": "Đang suy nghĩ...",
-      "truncated": "Nội dung quá dài và đã bị cắt bớt"
     },
     "client": {
       "errors": {
@@ -98,47 +124,7 @@ const AiCore = {
         "unauthorized": "服务商拒绝了 API Key (401)。请检查 Key 值及其是否有权访问所选模型。"
       }
     },
-    "consensus": {
-      "actions": {
-        "refresh": "刷新"
-      },
-      "fields": {
-        "account": "Tài khoản",
-        "symbol": "Mã chứng khoán",
-        "timeframe": "周期"
-      },
-      "panel": {
-        "decision": "Quyết định",
-        "overallScore": "Tổng thể",
-        "technicalScore": "技术面",
-        "title": "Điểm mục tiêu"
-      },
-      "signals": {
-        "ma": {
-          "trend": "均线趋势"
-        },
-        "macd": {
-          "flag": "Tín hiệu",
-          "hist": "Biểu đồ cột",
-          "signalLine": "Đường tín hiệu",
-          "trend": "形态",
-          "value": "MACD"
-        },
-        "rsi": {
-          "flag": "Tín hiệu",
-          "value": "RSI"
-        }
-      },
-      "title": "Đồng thuận & Thảo luận"
-    },
-    "conversation": {
-      "defaultTitle": "新对话"
-    },
     "gate": {
-      "allPassed": "Cả 6 cổng đều vượt qua — chiến lược đủ điều kiện đánh giá PromoteToLive",
-      "backtestGrossReturn": "Lợi nhuận gộp backtest",
-      "backtestNetReturn": "Lợi nhuận ròng backtest",
-      "dailyReturns": "Lợi nhuận hàng ngày (phân cách bằng dấu phẩy hoặc xuống dòng)",
       "descriptions": {
         "compliance": "Xác thực biểu thức DSL không rỗng",
         "correlation": "与现有策略的信号相关性检查",
@@ -147,12 +133,6 @@ const AiCore = {
         "paper": "Xác thực giao dịch giấy >=14 ngày",
         "walkforward": "Xác thực chéo Walk-Forward đã thanh lọc"
       },
-      "details": "Chi tiết",
-      "dslExpression": "Biểu thức DSL",
-      "evaluating": "Đang đánh giá...",
-      "fail": "失败",
-      "failed": "Thất bại: {{gate}}",
-      "gateProgress": "Tiến trình đánh giá Cổng",
       "labels": {
         "compliance": "Tuân thủ",
         "correlation": "相关性",
@@ -161,6 +141,19 @@ const AiCore = {
         "paper": "Giao dịch giấy",
         "walkforward": "前向分析"
       },
+      "status": {
+        "evaluating": "Đang đánh giá..."
+      },
+      "allPassed": "Cả 6 cổng đều vượt qua — chiến lược đủ điều kiện đánh giá PromoteToLive",
+      "backtestGrossReturn": "Lợi nhuận gộp backtest",
+      "backtestNetReturn": "Lợi nhuận ròng backtest",
+      "dailyReturns": "Lợi nhuận hàng ngày (phân cách bằng dấu phẩy hoặc xuống dòng)",
+      "details": "Chi tiết",
+      "dslExpression": "Biểu thức DSL",
+      "evaluating": "Đang đánh giá...",
+      "fail": "失败",
+      "failed": "Thất bại: {{gate}}",
+      "gateProgress": "Tiến trình đánh giá Cổng",
       "noData": "không có dữ liệu",
       "numAttempts": "Số lần thử chiến lược",
       "paperDays": "Ngày giao dịch giấy",
@@ -176,27 +169,9 @@ const AiCore = {
       "runPipeline": "Chạy quy trình Cổng",
       "selectRun": "Chọn lần chạy kiểm thử lùi...",
       "skipped": "已跳过",
-      "status": {
-        "evaluating": "Đang đánh giá..."
-      },
       "strategyParams": "Tham số chiến lược",
       "title": "Tiến trình Cổng AI",
       "unknown": "không xác định"
-    },
-    "gateway": {
-      "balance": "Số dư ví",
-      "modelPlaceholder": "Chọn mô hình AI",
-      "monthlyCost": "Chi phí tháng này",
-      "monthlyTokens": "Token tháng này",
-      "noModels": "Không có mô hình nào",
-      "selectModel": "Chọn mô hình",
-      "title": "AI 网关",
-      "usageByFeature": "Sử dụng theo tính năng",
-      "useGateway": "AI Gateway",
-      "useGatewayDesc": "Trừ ví · Tính theo token",
-      "useOwnKey": "API Key của tôi",
-      "useOwnKeyDesc": "Thanh toán trực tiếp · Tự quản lý",
-      "useOwnKeyHint": "Sử dụng API Key của bạn để thanh toán trực tiếp cho nhà cung cấp. Chọn thẻ nhà cung cấp bên dưới để cấu hình."
     },
     "reports": {
       "tradeAnalysis": {
@@ -210,9 +185,6 @@ const AiCore = {
       },
       "description": "Vui lòng cấu hình nhà cung cấp, mô hình và API key trong Cài đặt trước khi dùng trình hướng dẫn hoặc trò chuyện.",
       "title": "Chưa cấu hình AI"
-    },
-    "riskEval": {
-      "failed": "风险评估失败"
     },
     "signalCard": {
       "actions": {
@@ -298,7 +270,6 @@ const AiCore = {
         "namePlaceholder": "Nhà Cung Cấp Của Tôi",
         "nameRequired": "服务商名称不能为空"
       },
-      "emptyConfigs": "Chưa có cấu hình AI Provider (hệ thống sẽ tạo provider mặc định khi khởi động).",
       "fields": {
         "apiKeyHint": "Sau khi nhập sẽ được mã hoá và lưu tự động, không cần submit thủ công",
         "apiKeyPastePlaceholder": "Dán API key — sẽ được lưu trước tự động",
@@ -329,8 +300,6 @@ const AiCore = {
         "validationFailedNeedApiKey": "Xác thực thất bại: nhà cung cấp này thường yêu cầu API Key. Vui lòng điền và lưu key trước, rồi thử lại.",
         "validationPassedModels": "Xác thực thành công: tìm thấy {{count}} mô hình"
       },
-      "pageSubtitle": "Cấu hình bộ não AI — chọn nhà cung cấp, quản lý API key và model khả dụng, và chỉ định \"Mô hình chính mặc định\" dùng cho toàn hệ thống.",
-      "pageTitle": "Cài đặt trợ lý AI",
       "section1": {
         "subtitle": "Cards show each provider's configuration and readiness; click to select",
         "title": "Chọn nhà cung cấp model"
@@ -366,15 +335,12 @@ const AiCore = {
         "openai_compatible": "任意兼容端点",
         "qwen": "Alibaba Cloud · Tối ưu tiếng Trung",
         "zhipu": "Hệ Thanh Hoa · Đa dụng"
-      }
-    },
-    "tabs": {
-      "agentSettings": "Thiết lập chuyên gia",
-      "gate": "AI 质量门",
-      "settings": "Cài đặt"
+      },
+      "emptyConfigs": "Chưa có cấu hình AI Provider (hệ thống sẽ tạo provider mặc định khi khởi động).",
+      "pageSubtitle": "Cấu hình bộ não AI — chọn nhà cung cấp, quản lý API key và model khả dụng, và chỉ định \"Mô hình chính mặc định\" dùng cho toàn hệ thống.",
+      "pageTitle": "Cài đặt trợ lý AI"
     },
     "workflowRuns": {
-      "defaultTitle": "Quy trình AI",
       "hints": {
         "selectToViewDetail": "从左侧选择运行记录查看详情"
       },
@@ -382,7 +348,41 @@ const AiCore = {
         "loadDetailFailed": "加载详情失败",
         "loadListFailed": "Tải danh sách lần chạy thất bại"
       },
+      "defaultTitle": "Quy trình AI",
       "title": "Quy trình AI"
+    },
+    "chatBox": {
+      "collapse": "收起",
+      "emptyDescription": "Bắt đầu trò chuyện với trợ lý AI",
+      "expandAll": "Mở rộng tất cả",
+      "thinking": "Đang suy nghĩ...",
+      "truncated": "Nội dung quá dài và đã bị cắt bớt"
+    },
+    "conversation": {
+      "defaultTitle": "新对话"
+    },
+    "gateway": {
+      "balance": "Số dư ví",
+      "modelPlaceholder": "Chọn mô hình AI",
+      "monthlyCost": "Chi phí tháng này",
+      "monthlyTokens": "Token tháng này",
+      "noModels": "Không có mô hình nào",
+      "selectModel": "Chọn mô hình",
+      "title": "AI 网关",
+      "usageByFeature": "Sử dụng theo tính năng",
+      "useGateway": "AI Gateway",
+      "useGatewayDesc": "Trừ ví · Tính theo token",
+      "useOwnKey": "API Key của tôi",
+      "useOwnKeyDesc": "Thanh toán trực tiếp · Tự quản lý",
+      "useOwnKeyHint": "Sử dụng API Key của bạn để thanh toán trực tiếp cho nhà cung cấp. Chọn thẻ nhà cung cấp bên dưới để cấu hình."
+    },
+    "riskEval": {
+      "failed": "风险评估失败"
+    },
+    "tabs": {
+      "agentSettings": "Thiết lập chuyên gia",
+      "gate": "AI 质量门",
+      "settings": "Cài đặt"
     }
   }
 } as const;

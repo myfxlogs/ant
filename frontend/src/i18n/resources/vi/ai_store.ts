@@ -12,6 +12,17 @@ const AiStore = {
         "outputTitle": "Yêu cầu đầu ra:",
         "userPrefsTitle": "Tùy chọn người dùng (vui lòng tuân thủ càng nhiều càng tốt):"
       },
+      "strategyRules": {
+        "rules": {
+          "mustDefineEntry": "- Chiến lược phải định nghĩa biến signal hoặc hàm run(context) (ưu tiên run(context))",
+          "noDunderAccess": "- Không được truy cập thuộc tính dunder (obj.__xxx__)",
+          "noDunderName": "- Không được dùng tên dunder (__xxx__)",
+          "noGlobal": "- Không được dùng global / nonlocal",
+          "noImport": "- Không được phép import / from ... import ..."
+        },
+        "allowedGlobals": "Toàn cục/mô-đun được phép: np, math, datetime, calculate_rsi (không import).",
+        "title": "Khi viết mã chiến lược Python AntTrader, bạn phải tuân thủ nghiêm ngặt các quy tắc xác thực sau:"
+      },
       "conversations": {
         "newConversationTitle": "Hội thoại mới"
       },
@@ -30,17 +41,6 @@ const AiStore = {
         "rememberPrefix": "/remember ",
         "rememberedToast": "Đã lưu tùy chọn",
         "savedReply": "Đã lưu tùy chọn của bạn."
-      },
-      "strategyRules": {
-        "allowedGlobals": "Toàn cục/mô-đun được phép: np, math, datetime, calculate_rsi (không import).",
-        "rules": {
-          "mustDefineEntry": "- Chiến lược phải định nghĩa biến signal hoặc hàm run(context) (ưu tiên run(context))",
-          "noDunderAccess": "- Không được truy cập thuộc tính dunder (obj.__xxx__)",
-          "noDunderName": "- Không được dùng tên dunder (__xxx__)",
-          "noGlobal": "- Không được dùng global / nonlocal",
-          "noImport": "- Không được phép import / from ... import ..."
-        },
-        "title": "Khi viết mã chiến lược Python AntTrader, bạn phải tuân thủ nghiêm ngặt các quy tắc xác thực sau:"
       }
     }
   }

@@ -52,7 +52,6 @@ const StrategyScheduleLogs = {
         "ticket": "Mã lệnh",
         "time": "Thời gian"
       },
-      "scheduleIdLabel": "ID lịch chạy:",
       "status": {
         "failed": "Thất Bại",
         "success": "Thành Công"
@@ -71,6 +70,7 @@ const StrategyScheduleLogs = {
         "orderLogs": "Nhật Ký Lệnh",
         "orders": "Lệnh"
       },
+      "scheduleIdLabel": "ID lịch chạy:",
       "title": "Nhật ký",
       "titleWithName": "Nhật ký - {{name}}"
     }

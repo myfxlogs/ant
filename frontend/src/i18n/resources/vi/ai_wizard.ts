@@ -3,19 +3,25 @@
 const AiWizard = {
   "ai": {
     "wizard": {
-      "actions": {
-        "cancel": "Hủy",
-        "next": "Tiếp",
-        "prev": "Trước"
-      },
-      "agents": {
-        "codeTitle": "Sinh mã",
-        "riskTitle": "Rủi ro & ràng buộc thực thi",
-        "signalsTitle": "Tín hiệu & chỉ báo",
-        "styleTitle": "Trạng thái thị trường / phong cách"
-      },
-      "currentModel": "Mô hình hiện tại: {{model}}",
       "generate": {
+        "modals": {
+          "final": {
+            "title": "Đã sinh mã. Khuyến nghị nhấn “Xác thực mã” để xác nhận."
+          }
+        },
+        "status": {
+          "running": {
+            "code": "Đang sinh mã",
+            "generic": "{{title}} đang chạy",
+            "risk": "Đang thiết kế rủi ro/ràng buộc thực thi",
+            "signals": "Đang thiết kế tín hiệu/chỉ báo",
+            "style": "Đang phân tích trạng thái/phong cách thị trường"
+          },
+          "done": "Hoàn tất",
+          "error": "Thất bại",
+          "idle": "Đang chờ",
+          "inProgress": "Đang chạy"
+        },
         "actions": {
           "abort": "Hủy",
           "goValidate": "Đi xác thực",
@@ -33,71 +39,107 @@ const AiWizard = {
         "labels": {
           "elapsed": "Thời gian"
         },
-        "modals": {
-          "final": {
-            "title": "Đã sinh mã. Khuyến nghị nhấn “Xác thực mã” để xác nhận."
-          }
-        },
         "sections": {
           "output": "Kết quả mô hình",
           "prompt": "Prompt gửi tới mô hình",
           "spec": "Đặc tả"
-        },
-        "status": {
-          "done": "Hoàn tất",
-          "error": "Thất bại",
-          "idle": "Đang chờ",
-          "inProgress": "Đang chạy",
-          "running": {
-            "code": "Đang sinh mã",
-            "generic": "{{title}} đang chạy",
-            "risk": "Đang thiết kế rủi ro/ràng buộc thực thi",
-            "signals": "Đang thiết kế tín hiệu/chỉ báo",
-            "style": "Đang phân tích trạng thái/phong cách thị trường"
-          }
         }
       },
-      "messages": {
-        "agentFailed": "{{title}} thất bại",
-        "aiRequestTimeout": "Hết thời gian yêu cầu AI (> {{seconds}}s)",
-        "backtestCreated": "Đã tạo backtest",
-        "backtestNotDoneWait": "Backtest chưa xong. Hãy chờ đến khi trạng thái thành “Succeeded/Failed/Canceled”",
-        "chatAborted": "Đã hủy trò chuyện với mô hình",
-        "codeInvalidFixAndContinue": "Xác thực mã thất bại. Hãy sửa trước khi tiếp tục",
-        "confirmScoreFirst": "Vui lòng xác nhận kết quả trong popup điểm số trước",
-        "createBacktestFailed": "Không thể tạo backtest",
-        "createDraftFailed": "Không thể tạo bản nháp",
-        "createScheduleFailed": "Không thể tạo lịch",
-        "datasetFrozenCreated": "Đã tạo dataset đóng băng",
-        "draftNotCreated": "Chưa tạo bản nháp",
-        "draftSaved": "Đã lưu bản nháp",
-        "fillRequired": "Vui lòng điền các trường bắt buộc",
-        "fillRequiredWithFields": "Vui lòng điền các trường bắt buộc: {{fields}}",
-        "freezeDatasetFailed": "Không thể đóng băng dataset",
-        "generateCodeFirst": "Vui lòng tạo mã chiến lược trước",
-        "inputIntentFirst": "Vui lòng nhập mục tiêu/ý tưởng chiến lược trước",
-        "loadAccountsFailed": "Không thể tải tài khoản",
-        "loadDatasetFailed": "Không thể tải dataset",
-        "loadSymbolsFailed": "Không thể tải mã",
-        "modelReturnedEmpty": "Mô hình trả về rỗng",
-        "noCodeToBacktest": "Không có mã để backtest",
-        "noCodeToValidate": "Không có mã để xác thực",
-        "noPythonCodeBlock": "代码 Agent 未输出 ```python 代码块```，请在结果中检查",
-        "publishFailed": "Triển khai thất bại",
-        "publishTemplateFirst": "Vui lòng triển khai template trước",
-        "publishedNoId": "Đã triển khai nhưng không nhận được id (vui lòng kiểm tra trong quản lý chiến lược)",
-        "saveFailed": "Lưu thất bại",
-        "scheduleAlreadyExists": "Đã tồn tại lịch với cùng template+mã+khung thời gian cho tài khoản này. Vui lòng không tạo trùng.",
-        "scheduleCreated": "Đã tạo lịch",
-        "scheduleCreatedAndEnabled": "Đã tạo và bật lịch",
-        "startBacktestFirst": "Vui lòng bắt đầu backtest trước",
-        "templatePublished": "Đã triển khai template",
-        "userAborted": "Người dùng đã hủy",
-        "validateCodeFirst": "Vui lòng nhấn “Xác thực mã” trước",
-        "validateError": "Lỗi xác thực",
-        "validateFailed": "Xác thực thất bại",
-        "validateOk": "Xác thực thành công",
-        "watchBacktestRunFailed": "watchBacktestRun thất bại"
+      "publishBacktest": {
+        "modals": {
+          "score": {
+            "title": "Xác nhận điểm số"
+          },
+          "status": {
+            "title": "Backtest đang chạy"
+          }
+        },
+        "actions": {
+          "close": "Đóng",
+          "confirm": "Xác nhận",
+          "inProgress": "Đang chạy",
+          "retry": "Thử lại",
+          "runInBackground": "Chạy nền",
+          "startBacktest": "Bắt đầu backtest",
+          "succeeded": "Thành công"
+        },
+        "cards": {
+          "backtestTitle": "回测",
+          "scoreCardTitle": "Thẻ điểm"
+        },
+        "labels": {
+          "confirmed": "Đã xác nhận",
+          "elapsed": "Thời gian",
+          "overallScore": "Điểm tổng",
+          "scoringProgress": "Tiến độ chấm điểm",
+          "status": "Trạng thái"
+        },
+        "draftName": "Kiểm thử lùi {{datetime}} {{symbol}} {{timeframe}}",
+        "draftNameShort": "Kiểm thử lùi {{symbol}} {{timeframe}}"
+      },
+      "setup": {
+        "modals": {
+          "deleteDataset": {
+            "content": "Xóa dataset đóng băng đang chọn?",
+            "ok": "Xóa",
+            "title": "Xóa dataset"
+          }
+        },
+        "actions": {
+          "deleteCurrentDataset": "Xóa dataset hiện tại",
+          "freezeFromCurrentRange": "Đóng băng từ phạm vi hiện tại",
+          "refreshDataset": "Làm mới"
+        },
+        "cards": {
+          "constraintsAndGoalTitle": "Ràng buộc & mục tiêu",
+          "hardConstraintsTitle": "Ràng buộc cứng",
+          "hintsTitle": "Gợi ý",
+          "tradeAndDataTitle": "Giao dịch & dữ liệu"
+        },
+        "dataModes": {
+          "dataset": "Dataset đóng băng",
+          "klineRange": "Phạm vi nến"
+        },
+        "hints": {
+          "nextWillGenerateCode": "Bước tiếp theo sẽ tạo mã chiến lược.",
+          "tradeDataNextStep": "Sau khi điền xong, nhấn “Tiếp” để tiếp tục thiết lập ràng buộc & mục tiêu."
+        },
+        "labels": {
+          "account": "Tài khoản",
+          "backtestRange": "Phạm vi backtest",
+          "dataset": "Dataset đóng băng",
+          "historicalData": "Dữ liệu lịch sử",
+          "intent": "Ý định chiến lược",
+          "macroEvents": "Sự kiện vĩ mô",
+          "macroModule": "Mô-đun vĩ mô",
+          "maxDrawdownPct": "Sụt giảm tối đa (%)",
+          "maxTradesPerDay": "Số lệnh tối đa mỗi ngày",
+          "riskPerTradePct": "Rủi ro mỗi lệnh (%)",
+          "symbol": "Mã",
+          "timeframe": "Khung thời gian"
+        },
+        "macro": {
+          "off": "Tắt",
+          "on": "开"
+        },
+        "messages": {
+          "datasetDeleted": "Đã xóa dataset"
+        },
+        "placeholders": {
+          "intentExample": "Ví dụ: Theo xu hướng khi phá vỡ; tránh biến động cao; ưu tiên tỷ lệ thắng...",
+          "macroExample": "Example:\\\\\\\\\\\\\\\\n2024-01-03 21:15 FOMC minutes\\\\\\\\\\\\\\\\n2024-01-05 20:30 NFP",
+          "selectAccount": "Chọn tài khoản",
+          "selectFrozenDataset": "Chọn dataset đóng băng",
+          "selectSymbol": "Chọn mã",
+          "selectTimeframe": "Chọn khung thời gian"
+        },
+        "validations": {
+          "enterIntent": "Vui lòng nhập ý định chiến lược",
+          "selectAccount": "Vui lòng chọn tài khoản",
+          "selectDataset": "Vui lòng chọn dataset",
+          "selectSymbol": "Vui lòng chọn mã",
+          "selectTimeframe": "Vui lòng chọn khung thời gian"
+        }
       },
       "prompts": {
         "base": {
@@ -152,112 +194,6 @@ const AiWizard = {
           "codeEditable": "Mã do AI tạo sẽ xuất hiện ở đây. Bạn cũng có thể chỉnh sửa thủ công."
         }
       },
-      "publishBacktest": {
-        "actions": {
-          "close": "Đóng",
-          "confirm": "Xác nhận",
-          "inProgress": "Đang chạy",
-          "retry": "Thử lại",
-          "runInBackground": "Chạy nền",
-          "startBacktest": "Bắt đầu backtest",
-          "succeeded": "Thành công"
-        },
-        "cards": {
-          "backtestTitle": "回测",
-          "scoreCardTitle": "Thẻ điểm"
-        },
-        "draftName": "Kiểm thử lùi {{datetime}} {{symbol}} {{timeframe}}",
-        "draftNameShort": "Kiểm thử lùi {{symbol}} {{timeframe}}",
-        "labels": {
-          "confirmed": "Đã xác nhận",
-          "elapsed": "Thời gian",
-          "overallScore": "Điểm tổng",
-          "scoringProgress": "Tiến độ chấm điểm",
-          "status": "Trạng thái"
-        },
-        "modals": {
-          "score": {
-            "title": "Xác nhận điểm số"
-          },
-          "status": {
-            "title": "Backtest đang chạy"
-          }
-        }
-      },
-      "schedule": {
-        "defaultName": "Lịch AI {{symbol}} {{timeframe}}"
-      },
-      "setup": {
-        "actions": {
-          "deleteCurrentDataset": "Xóa dataset hiện tại",
-          "freezeFromCurrentRange": "Đóng băng từ phạm vi hiện tại",
-          "refreshDataset": "Làm mới"
-        },
-        "cards": {
-          "constraintsAndGoalTitle": "Ràng buộc & mục tiêu",
-          "hardConstraintsTitle": "Ràng buộc cứng",
-          "hintsTitle": "Gợi ý",
-          "tradeAndDataTitle": "Giao dịch & dữ liệu"
-        },
-        "dataModes": {
-          "dataset": "Dataset đóng băng",
-          "klineRange": "Phạm vi nến"
-        },
-        "hints": {
-          "nextWillGenerateCode": "Bước tiếp theo sẽ tạo mã chiến lược.",
-          "tradeDataNextStep": "Sau khi điền xong, nhấn “Tiếp” để tiếp tục thiết lập ràng buộc & mục tiêu."
-        },
-        "labels": {
-          "account": "Tài khoản",
-          "backtestRange": "Phạm vi backtest",
-          "dataset": "Dataset đóng băng",
-          "historicalData": "Dữ liệu lịch sử",
-          "intent": "Ý định chiến lược",
-          "macroEvents": "Sự kiện vĩ mô",
-          "macroModule": "Mô-đun vĩ mô",
-          "maxDrawdownPct": "Sụt giảm tối đa (%)",
-          "maxTradesPerDay": "Số lệnh tối đa mỗi ngày",
-          "riskPerTradePct": "Rủi ro mỗi lệnh (%)",
-          "symbol": "Mã",
-          "timeframe": "Khung thời gian"
-        },
-        "macro": {
-          "off": "Tắt",
-          "on": "开"
-        },
-        "messages": {
-          "datasetDeleted": "Đã xóa dataset"
-        },
-        "modals": {
-          "deleteDataset": {
-            "content": "Xóa dataset đóng băng đang chọn?",
-            "ok": "Xóa",
-            "title": "Xóa dataset"
-          }
-        },
-        "placeholders": {
-          "intentExample": "Ví dụ: Theo xu hướng khi phá vỡ; tránh biến động cao; ưu tiên tỷ lệ thắng...",
-          "macroExample": "Example:\\\\\\\\\\\\\\\\n2024-01-03 21:15 FOMC minutes\\\\\\\\\\\\\\\\n2024-01-05 20:30 NFP",
-          "selectAccount": "Chọn tài khoản",
-          "selectFrozenDataset": "Chọn dataset đóng băng",
-          "selectSymbol": "Chọn mã",
-          "selectTimeframe": "Chọn khung thời gian"
-        },
-        "validations": {
-          "enterIntent": "Vui lòng nhập ý định chiến lược",
-          "selectAccount": "Vui lòng chọn tài khoản",
-          "selectDataset": "Vui lòng chọn dataset",
-          "selectSymbol": "Vui lòng chọn mã",
-          "selectTimeframe": "Vui lòng chọn khung thời gian"
-        }
-      },
-      "steps": {
-        "generate": "Tạo chiến lược",
-        "publishBacktest": "Triển khai - Backtest",
-        "publishCode": "Triển khai - Mã",
-        "publishLaunch": "Triển khai - Khởi chạy",
-        "setup": "Thiết lập"
-      },
       "strategyParams": {
         "actions": {
           "addParam": "Thêm tham số",
@@ -265,7 +201,6 @@ const AiWizard = {
           "exportJson": "Xuất JSON",
           "importJson": "Nhập JSON"
         },
-        "empty": "Chưa có tham số. Bạn có thể thêm fast/slow/risk_per_trade... để chiến lược dễ tái sử dụng.",
         "hints": {
           "intro": "Các tham số này sẽ:",
           "line1": "1) được lưu vào template.parameters",
@@ -298,7 +233,6 @@ const AiWizard = {
           "importOk": "Nhập",
           "importTitle": "Nhập JSON tham số"
         },
-        "paramCardTitle": "Tham số #{{index}}",
         "placeholders": {
           "defaultExample": "vd: 10",
           "description": "Mô tả",
@@ -308,7 +242,6 @@ const AiWizard = {
           "optionsExample": "vd: low,medium,high",
           "value": "Để trống sẽ dùng default"
         },
-        "title": "Tham số chiến lược (tùy chọn)",
         "types": {
           "bool": "bool",
           "number": "số",
@@ -318,13 +251,80 @@ const AiWizard = {
         "validations": {
           "nameRequired": "name là bắt buộc",
           "typeRequired": "type là bắt buộc"
-        }
+        },
+        "empty": "Chưa có tham số. Bạn có thể thêm fast/slow/risk_per_trade... để chiến lược dễ tái sử dụng.",
+        "paramCardTitle": "Tham số #{{index}}",
+        "title": "Tham số chiến lược (tùy chọn)"
       },
-      "subtitle": "Mỗi bước một trang, bạn có thể tiến/lùi",
+      "actions": {
+        "cancel": "Hủy",
+        "next": "Tiếp",
+        "prev": "Trước"
+      },
+      "agents": {
+        "codeTitle": "Sinh mã",
+        "riskTitle": "Rủi ro & ràng buộc thực thi",
+        "signalsTitle": "Tín hiệu & chỉ báo",
+        "styleTitle": "Trạng thái thị trường / phong cách"
+      },
+      "messages": {
+        "agentFailed": "{{title}} thất bại",
+        "aiRequestTimeout": "Hết thời gian yêu cầu AI (> {{seconds}}s)",
+        "backtestCreated": "Đã tạo backtest",
+        "backtestNotDoneWait": "Backtest chưa xong. Hãy chờ đến khi trạng thái thành “Succeeded/Failed/Canceled”",
+        "chatAborted": "Đã hủy trò chuyện với mô hình",
+        "codeInvalidFixAndContinue": "Xác thực mã thất bại. Hãy sửa trước khi tiếp tục",
+        "confirmScoreFirst": "Vui lòng xác nhận kết quả trong popup điểm số trước",
+        "createBacktestFailed": "Không thể tạo backtest",
+        "createDraftFailed": "Không thể tạo bản nháp",
+        "createScheduleFailed": "Không thể tạo lịch",
+        "datasetFrozenCreated": "Đã tạo dataset đóng băng",
+        "draftNotCreated": "Chưa tạo bản nháp",
+        "draftSaved": "Đã lưu bản nháp",
+        "fillRequired": "Vui lòng điền các trường bắt buộc",
+        "fillRequiredWithFields": "Vui lòng điền các trường bắt buộc: {{fields}}",
+        "freezeDatasetFailed": "Không thể đóng băng dataset",
+        "generateCodeFirst": "Vui lòng tạo mã chiến lược trước",
+        "inputIntentFirst": "Vui lòng nhập mục tiêu/ý tưởng chiến lược trước",
+        "loadAccountsFailed": "Không thể tải tài khoản",
+        "loadDatasetFailed": "Không thể tải dataset",
+        "loadSymbolsFailed": "Không thể tải mã",
+        "modelReturnedEmpty": "Mô hình trả về rỗng",
+        "noCodeToBacktest": "Không có mã để backtest",
+        "noCodeToValidate": "Không có mã để xác thực",
+        "noPythonCodeBlock": "代码 Agent 未输出 ```python 代码块```，请在结果中检查",
+        "publishFailed": "Triển khai thất bại",
+        "publishTemplateFirst": "Vui lòng triển khai template trước",
+        "publishedNoId": "Đã triển khai nhưng không nhận được id (vui lòng kiểm tra trong quản lý chiến lược)",
+        "saveFailed": "Lưu thất bại",
+        "scheduleAlreadyExists": "Đã tồn tại lịch với cùng template+mã+khung thời gian cho tài khoản này. Vui lòng không tạo trùng.",
+        "scheduleCreated": "Đã tạo lịch",
+        "scheduleCreatedAndEnabled": "Đã tạo và bật lịch",
+        "startBacktestFirst": "Vui lòng bắt đầu backtest trước",
+        "templatePublished": "Đã triển khai template",
+        "userAborted": "Người dùng đã hủy",
+        "validateCodeFirst": "Vui lòng nhấn “Xác thực mã” trước",
+        "validateError": "Lỗi xác thực",
+        "validateFailed": "Xác thực thất bại",
+        "validateOk": "Xác thực thành công",
+        "watchBacktestRunFailed": "watchBacktestRun thất bại"
+      },
+      "schedule": {
+        "defaultName": "Lịch AI {{symbol}} {{timeframe}}"
+      },
+      "steps": {
+        "generate": "Tạo chiến lược",
+        "publishBacktest": "Triển khai - Backtest",
+        "publishCode": "Triển khai - Mã",
+        "publishLaunch": "Triển khai - Khởi chạy",
+        "setup": "Thiết lập"
+      },
       "template": {
         "defaultDescription": "Tạo bởi trình hướng dẫn AI",
         "defaultName": "Chiến lược AI {{title}}"
       },
+      "currentModel": "Mô hình hiện tại: {{model}}",
+      "subtitle": "Mỗi bước một trang, bạn có thể tiến/lùi",
       "title": "Trình hướng dẫn chiến lược AI"
     }
   }

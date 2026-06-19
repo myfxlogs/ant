@@ -1,123 +1,7 @@
 // Auto-generated from proto/ant/v1/i18n/trading_en.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const Trading = {
-  "algo": {
-    "actions": {
-      "cancel": "Cancel",
-      "start": "Start"
-    },
-    "dashboard": {
-      "activeExecutions": "Active Executions",
-      "noActive": "No active algo executions",
-      "title": "Algo Dashboard"
-    },
-    "fields": {
-      "account": "Account",
-      "algo": "Algorithm",
-      "limitPrice": "Limit Price",
-      "participationRate": "Participation Rate",
-      "side": "Side",
-      "sliceInterval": "Slice Interval",
-      "symbol": "Symbol",
-      "timeRange": "Time Range",
-      "urgency": "Urgency",
-      "volume": "Volume"
-    },
-    "info": {
-      "description": "Description",
-      "name": "Name"
-    },
-    "messages": {
-      "started": "Algo started"
-    },
-    "side": {
-      "buy": "Buy",
-      "sell": "Sell"
-    },
-    "submitForm": {
-      "title": "Launch Algo"
-    },
-    "table": {
-      "actions": "Actions",
-      "algo": "Algorithm",
-      "executionId": "Execution ID",
-      "progress": "Progress",
-      "side": "Side",
-      "state": "State",
-      "symbol": "Symbol",
-      "volume": "Volume"
-    },
-    "timePresets": {
-      "EOD": "End of Day"
-    },
-    "twap": "TWAP",
-    "vwap": "VWAP",
-    "pov": "POV",
-    "shortfall": "Shortfall"
-  },
   "trading": {
-    "account": "Account",
-    "autoTrade": {
-      "confirm": {
-        "disableConfirm": "Disable",
-        "disableInfoDescription": "Auto trading will stop placing new orders.",
-        "disableInfoTitle": "Disable auto trading",
-        "disableQuestion": "Are you sure you want to disable auto trading?",
-        "disableTitle": "Disable auto trading",
-        "enableBullet1": "Orders will be executed automatically.",
-        "enableBullet2": "Market volatility can cause losses.",
-        "enableBullet3": "You can disable auto trading at any time.",
-        "enableConfirm": "Enable",
-        "enableQuestion": "Are you sure you want to enable auto trading?",
-        "enableRiskDescription": "Auto trading will place orders automatically. Please ensure you understand the risks.",
-        "enableRiskTitle": "Risk notice",
-        "enableTitle": "Enable auto trading"
-      }
-    },
-    "balance": "Balance",
-    "buy": "Buy",
-    "closePosition": "Close",
-    "closePositionConfirm": "Close this position?",
-    "closePositionTitle": "Close Position",
-    "equity": "Equity",
-    "freeMargin": "Free Margin",
-    "limit": "Limit",
-    "margin": "Margin",
-    "marginLevel": "Margin Level",
-    "markPrice": "Mark Price",
-    "market": "Market",
-    "messages": {
-      "fetchOrderHistoryFailed": "Failed to load order history",
-      "fetchPendingOrdersFailed": "Failed to load pending orders",
-      "fetchPositionsFailed": "Failed to load positions",
-      "orderCloseFailed": "Failed to close position",
-      "orderCloseSuccess": "Position closed successfully",
-      "orderModifyFailed": "Failed to update order",
-      "orderModifySuccess": "Order updated successfully",
-      "orderSendFailed": "Failed to place order",
-      "orderSendSuccess": "Order placed successfully"
-    },
-    "noAccount": "No account selected",
-    "noOrders": "No orders yet",
-    "noPositions": "No open positions",
-    "openPositionsTitle": "Open Positions",
-    "openTime": "Open Time",
-    "orderHistory": "Order History",
-    "ordersCount": "{{count}} orders",
-    "placeOrder": "Place Order",
-    "pnl": "P&L",
-    "positionEntryPrice": "Entry Price",
-    "positionLeverage": "Leverage",
-    "positionLong": "LONG",
-    "positionMarkPrice": "Mark Price",
-    "positionShort": "SHORT",
-    "positionSide": "Side",
-    "positionSize": "Size",
-    "positionUnrealizedPnL": "Unrealized PnL",
-    "positions": "Positions",
-    "price": "Price",
-    "profit": "Profit",
-    "recentTrades": "Recent Trades",
     "risk": {
       "errors": {
         "RISK_ACCOUNT_TRADE_DISABLED": {
@@ -170,6 +54,23 @@ const Trading = {
         }
       }
     },
+    "autoTrade": {
+      "confirm": {
+        "disableConfirm": "Disable",
+        "disableInfoDescription": "Auto trading will stop placing new orders.",
+        "disableInfoTitle": "Disable auto trading",
+        "disableQuestion": "Are you sure you want to disable auto trading?",
+        "disableTitle": "Disable auto trading",
+        "enableBullet1": "Orders will be executed automatically.",
+        "enableBullet2": "Market volatility can cause losses.",
+        "enableBullet3": "You can disable auto trading at any time.",
+        "enableConfirm": "Enable",
+        "enableQuestion": "Are you sure you want to enable auto trading?",
+        "enableRiskDescription": "Auto trading will place orders automatically. Please ensure you understand the risks.",
+        "enableRiskTitle": "Risk notice",
+        "enableTitle": "Enable auto trading"
+      }
+    },
     "riskConfig": {
       "confirm": {
         "confirmText": "Save",
@@ -187,11 +88,6 @@ const Trading = {
         "trailingStopPips": "Trailing Stop (pips)"
       }
     },
-    "selectSymbol": "Select a symbol",
-    "sell": "Sell",
-    "side": "Side",
-    "stop": "Stop",
-    "stopLoss": "Stop Loss",
     "strategyExecute": {
       "confirm": {
         "action": "Side",
@@ -206,12 +102,134 @@ const Trading = {
         "warningTitle": "Trade execution confirmation"
       }
     },
+    "messages": {
+      "fetchOrderHistoryFailed": "Failed to load order history",
+      "fetchPendingOrdersFailed": "Failed to load pending orders",
+      "fetchPositionsFailed": "Failed to load positions",
+      "orderCloseFailed": "Failed to close position",
+      "orderCloseSuccess": "Position closed successfully",
+      "orderModifyFailed": "Failed to update order",
+      "orderModifySuccess": "Order updated successfully",
+      "orderSendFailed": "Failed to place order",
+      "orderSendSuccess": "Order placed successfully"
+    },
+    "account": "Account",
+    "balance": "Balance",
+    "buy": "Buy",
+    "closePosition": "Close",
+    "closePositionConfirm": "Close this position?",
+    "closePositionTitle": "Close Position",
+    "equity": "Equity",
+    "freeMargin": "Free Margin",
+    "limit": "Limit",
+    "margin": "Margin",
+    "marginLevel": "Margin Level",
+    "markPrice": "Mark Price",
+    "market": "Market",
+    "noAccount": "No account selected",
+    "noOrders": "No orders yet",
+    "noPositions": "No open positions",
+    "openPositionsTitle": "Open Positions",
+    "openTime": "Open Time",
+    "orderHistory": "Order History",
+    "ordersCount": "{{count}} orders",
+    "placeOrder": "Place Order",
+    "pnl": "P&L",
+    "positionEntryPrice": "Entry Price",
+    "positionLeverage": "Leverage",
+    "positionLong": "LONG",
+    "positionMarkPrice": "Mark Price",
+    "positionShort": "SHORT",
+    "positionSide": "Side",
+    "positionSize": "Size",
+    "positionUnrealizedPnL": "Unrealized PnL",
+    "positions": "Positions",
+    "price": "Price",
+    "profit": "Profit",
+    "recentTrades": "Recent Trades",
+    "selectSymbol": "Select a symbol",
+    "sell": "Sell",
+    "side": "Side",
+    "stop": "Stop",
+    "stopLoss": "Stop Loss",
     "symbol": "Symbol",
     "takeProfit": "Take Profit",
     "time": "Time",
     "title": "Trading",
     "type": "Type",
     "volume": "Volume"
+  },
+  "algo": {
+    "actions": {
+      "cancel": "Cancel",
+      "start": "Start"
+    },
+    "dashboard": {
+      "activeExecutions": "Active Executions",
+      "noActive": "No active algo executions",
+      "title": "Algo Dashboard"
+    },
+    "fields": {
+      "account": "Account",
+      "algo": "Algorithm",
+      "limitPrice": "Limit Price",
+      "participationRate": "Participation Rate",
+      "side": "Side",
+      "sliceInterval": "Slice Interval",
+      "symbol": "Symbol",
+      "timeRange": "Time Range",
+      "urgency": "Urgency",
+      "volume": "Volume"
+    },
+    "info": {
+      "description": "Description",
+      "name": "Name"
+    },
+    "messages": {
+      "started": "Algo started"
+    },
+    "side": {
+      "buy": "Buy",
+      "sell": "Sell"
+    },
+    "submitForm": {
+      "title": "Launch Algo"
+    },
+    "table": {
+      "actions": "Actions",
+      "algo": "Algorithm",
+      "executionId": "Execution ID",
+      "progress": "Progress",
+      "side": "Side",
+      "state": "State",
+      "symbol": "Symbol",
+      "volume": "Volume"
+    },
+    "timePresets": {
+      "EOD": "End of Day"
+    },
+    "twap": {
+      "name": "TWAP",
+      "description": "Time-Weighted Average Price — splits a large order into smaller chunks distributed evenly over time."
+    },
+    "vwap": {
+      "name": "VWAP",
+      "description": "Volume-Weighted Average Price — executes orders proportional to historical volume distribution."
+    },
+    "pov": {
+      "name": "POV",
+      "description": "Percentage of Volume — participates at a fixed percentage of market volume."
+    },
+    "shortfall": {
+      "name": "Shortfall",
+      "description": "Implementation Shortfall — minimizes the difference between decision price and execution price."
+    },
+    "label": {
+      "twap": "TWAP",
+      "vwap": "VWAP",
+      "pov": "POV",
+      "shortfall": "Shortfall"
+    }
   }
 } as const;
 export default Trading;

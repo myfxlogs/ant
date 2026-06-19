@@ -3,21 +3,7 @@
 const AiSettings = {
   "ai": {
     "settings": {
-      "actions": {
-        "saveConfig": "Save config",
-        "validateApiKey": "Validate API Key"
-      },
       "agent": {
-        "actions": {
-          "add": "Add",
-          "loadDefaults": "Load default 8 agents",
-          "remove": "Delete",
-          "restoreDefaults": "Restore defaults",
-          "restoreDefaultsConfirmContent": "Will reset 8 system agents (style/signals/risk/macro/sentiment/portfolio/execution/code) to default identity definitions; your custom agents will be kept. This only modifies unsaved drafts; click \"Save\" to persist.",
-          "restoreDefaultsConfirmTitle": "Restore system default identities?",
-          "save": "Save"
-        },
-        "defaultName": "Custom Agent",
         "defaults": {
           "code": {
             "inputHint": "Example: target paradigm=trend following; indicators=EMA(fast)/EMA(slow)+ATR filter; params=fast,slow,atr_period,risk_per_trade."
@@ -56,6 +42,15 @@ const AiSettings = {
             "inputHint": "Example: Account=EURUSD retail; Timeframe=H1; Goal=3% monthly return, max drawdown <10%; Preference=win rate over R/R."
           }
         },
+        "actions": {
+          "add": "Add",
+          "loadDefaults": "Load default 8 agents",
+          "remove": "Delete",
+          "restoreDefaults": "Restore defaults",
+          "restoreDefaultsConfirmContent": "Will reset 8 system agents (style/signals/risk/macro/sentiment/portfolio/execution/code) to default identity definitions; your custom agents will be kept. This only modifies unsaved drafts; click \"Save\" to persist.",
+          "restoreDefaultsConfirmTitle": "Restore system default identities?",
+          "save": "Save"
+        },
         "fields": {
           "historicalBinding": "{{value}} (historical)",
           "identityPlaceholder": "Identity/persona description (will be appended to system prompt)",
@@ -72,9 +67,6 @@ const AiSettings = {
           "saveSuccess": "Agent saved",
           "selectProfileFirst": "Please first select a config on the left"
         },
-        "removeConfirmContent": "Are you sure you want to delete this agent?",
-        "removeConfirmTitle": "Delete Agent",
-        "title": "Agent Identity Definition",
         "types": {
           "code": "Code",
           "execution": "Execution",
@@ -88,7 +80,11 @@ const AiSettings = {
           "signals": "Signals/Indicators",
           "strategist": "Strategy Analyst",
           "style": "Style/Paradigm"
-        }
+        },
+        "defaultName": "Custom Agent",
+        "removeConfirmContent": "Are you sure you want to delete this agent?",
+        "removeConfirmTitle": "Delete Agent",
+        "title": "Agent Identity Definition"
       },
       "apiKeyGuide": {
         "deepseek": {
@@ -96,19 +92,31 @@ const AiSettings = {
           "step2": "Login/register, then go to API Keys page and create/copy API Key",
           "title": "How to get DeepSeek API Key"
         },
-        "default": "Current provider: {{provider}}. Go to the provider\\\\",
-        "modelSuggestionDeepSeek": "Model suggestion: select `deepseek-chat` in \"Model\" dropdown",
-        "modelSuggestionZhipu": "Model suggestion: select `glm-4-flash` / `glm-4` in \"Model\" dropdown",
-        "selectProviderHint": "After selecting an AI provider, how to apply API Key will be shown here.",
-        "title": "API Key Application Guide",
         "zhipu": {
           "step1": "Open Zhipu platform: ",
           "step2": "Login/register, then go to console and create/copy API Key",
           "title": "How to get Zhipu API Key"
-        }
+        },
+        "default": "Current provider: {{provider}}. Go to the provider\\\\",
+        "modelSuggestionDeepSeek": "Model suggestion: select `deepseek-chat` in \"Model\" dropdown",
+        "modelSuggestionZhipu": "Model suggestion: select `glm-4-flash` / `glm-4` in \"Model\" dropdown",
+        "selectProviderHint": "After selecting an AI provider, how to apply API Key will be shown here.",
+        "title": "API Key Application Guide"
       },
-      "apiKeySavedAs": "Currently saved: {{masked}}",
-      "defaultProfileName": "Default",
+      "profiles": {
+        "actions": {
+          "setCurrent": "Set current"
+        },
+        "delete": {
+          "content": "Are you sure you want to delete this config?",
+          "title": "Delete config"
+        },
+        "current": "Current"
+      },
+      "actions": {
+        "saveConfig": "Save config",
+        "validateApiKey": "Validate API Key"
+      },
       "discoverErrors": {
         "baseUrlInvalid": "Invalid Base URL: use a full URL such as https://model.example.com or https://model.example.com/v1",
         "baseUrlRequired": "Please enter Base URL (model service address).",
@@ -173,7 +181,6 @@ const AiSettings = {
         "validateFailed": "Validation failed",
         "validateSuccess": "Validation success"
       },
-      "pageTitle": "AI Assistant Settings",
       "placeholders": {
         "apiKey": "Enter API Key",
         "baseUrl": "e.g. https://api-inference.modelscope.cn/v1 or https://ark.cn-beijing.volces.com/api/v3",
@@ -188,16 +195,6 @@ const AiSettings = {
         "hint": "Used for intent clarification, code generation, AI assistant code modification panel in template editor, and any agent without separate model config.",
         "placeholder": "Select a provider · model as the fallback brain",
         "title": "Default Primary Model"
-      },
-      "profiles": {
-        "actions": {
-          "setCurrent": "Set current"
-        },
-        "current": "Current",
-        "delete": {
-          "content": "Are you sure you want to delete this config?",
-          "title": "Delete config"
-        }
       },
       "providers": {
         "anthropic": "Anthropic Claude",
@@ -239,7 +236,10 @@ const AiSettings = {
         "modelFormat": "Invalid model format",
         "modelRequired": "Model cannot be empty",
         "nameRequired": "Name cannot be empty"
-      }
+      },
+      "apiKeySavedAs": "Currently saved: {{masked}}",
+      "defaultProfileName": "Default",
+      "pageTitle": "AI Assistant Settings"
     }
   }
 } as const;

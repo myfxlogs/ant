@@ -2,6 +2,10 @@
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const Errors = {
   "errors": {
+    "ai": {
+      "internal_error": "Lỗi dịch vụ AI. Vui lòng thử lại sau.",
+      "not_configured": "Chưa cấu hình nhà cung cấp AI. Nhấp ⚙ để thiết lập API Key trong Cài đặt AI."
+    },
     "account_already_bound": "Tài khoản giao dịch này đã được liên kết",
     "account_auth_failed": "Xác thực tài khoản giao dịch thất bại",
     "account_connection_failed": "Không thể kết nối đến máy chủ giao dịch",
@@ -11,10 +15,6 @@ const Errors = {
     "account_not_found": "Không tìm thấy tài khoản giao dịch",
     "account_timeout": "Kết nối đến máy chủ giao dịch đã hết thời gian",
     "admin_access_denied": "Yêu cầu quyền quản trị viên",
-    "ai": {
-      "internal_error": "Lỗi dịch vụ AI. Vui lòng thử lại sau.",
-      "not_configured": "Chưa cấu hình nhà cung cấp AI. Nhấp ⚙ để thiết lập API Key trong Cài đặt AI."
-    },
     "analytics_not_available": "Dữ liệu phân tích không khả dụng",
     "audit_log_not_found": "Không tìm thấy mục nhật ký kiểm toán",
     "broker_not_found": "Không tìm thấy nhà môi giới",

@@ -3,38 +3,6 @@
 const Accounts = {
   "accounts": {
     "analytics": {
-      "advancedStatsTitle": "高级统计",
-      "advancedTabs": {
-        "daily": "日",
-        "hourly": "按小时"
-      },
-      "chartPeriod": {
-        "all": "全部",
-        "day": "今日",
-        "month": "本月",
-        "week": "本周",
-        "year": "本年"
-      },
-      "chartSeries": {
-        "balance": "余额",
-        "equity": "净值",
-        "profit": "盈亏",
-        "tradeCount": "次数"
-      },
-      "chartType": {
-        "balance": "余额",
-        "equity": "净值",
-        "profit": "盈亏"
-      },
-      "dailyPnLTitle": "📅 每日盈亏",
-      "empty": {
-        "dailyPnL": "暂无每日盈亏数据",
-        "equityCurve": "暂无净值曲线数据",
-        "hourly": "暂无时段分析数据",
-        "monthlyProfit": "暂无月度盈亏数据",
-        "symbolDistribution": "暂无品种数据"
-      },
-      "hourlyTitle": "⏰ 时段分析",
       "monthlyAnalysis": {
         "bonus": {
           "chartHoldingTitle": "{{month}} 平均持仓时间",
@@ -46,14 +14,14 @@ const Accounts = {
           "popularityShare": "手数份额",
           "sliceOther": "其他"
         },
-        "chartMainTitle": "每月收益（{{metric}}）",
-        "focusedValue": "{{period}} · {{metric}}：{{value}}",
         "metrics": {
           "change": "变化",
           "lots": "手数",
           "pips": "点",
           "profit": "盈亏"
         },
+        "chartMainTitle": "每月收益（{{metric}}）",
+        "focusedValue": "{{period}} · {{metric}}：{{value}}",
         "title": "月度分析"
       },
       "monthlyDetail": {
@@ -77,7 +45,35 @@ const Accounts = {
         "short": "做空",
         "symbolPnLTitle": "品种盈亏"
       },
-      "monthlyProfitTitle": "月度盈亏",
+      "advancedTabs": {
+        "daily": "日",
+        "hourly": "按小时"
+      },
+      "chartPeriod": {
+        "all": "全部",
+        "day": "今日",
+        "month": "本月",
+        "week": "本周",
+        "year": "本年"
+      },
+      "chartSeries": {
+        "balance": "余额",
+        "equity": "净值",
+        "profit": "盈亏",
+        "tradeCount": "次数"
+      },
+      "chartType": {
+        "balance": "余额",
+        "equity": "净值",
+        "profit": "盈亏"
+      },
+      "empty": {
+        "dailyPnL": "暂无每日盈亏数据",
+        "equityCurve": "暂无净值曲线数据",
+        "hourly": "暂无时段分析数据",
+        "monthlyProfit": "暂无月度盈亏数据",
+        "symbolDistribution": "暂无品种数据"
+      },
       "stats": {
         "avgDailyReturn": "日均收益",
         "avgHolding": "平均持仓",
@@ -99,7 +95,6 @@ const Accounts = {
         "volatility": "波动率",
         "winRate": "胜率"
       },
-      "symbolDistributionTitle": "品种分布",
       "timeDetail": {
         "balance": "余额",
         "lots": "手数",
@@ -110,7 +105,12 @@ const Accounts = {
         "profitAmount": "盈亏金额",
         "profitFactor": "盈亏比",
         "trades": "次数"
-      }
+      },
+      "advancedStatsTitle": "高级统计",
+      "dailyPnLTitle": "📅 每日盈亏",
+      "hourlyTitle": "⏰ 时段分析",
+      "monthlyProfitTitle": "月度盈亏",
+      "symbolDistributionTitle": "品种分布"
     },
     "bind": {
       "actions": {
@@ -153,7 +153,6 @@ const Accounts = {
         "selectServer": "请选择服务器",
         "verifyFailed": "账户验证失败"
       },
-      "passwordHint": "密码将通过 HTTPS 加密传输，后端使用 Argon2id 哈希存储不可回逆",
       "placeholders": {
         "brokerName": "输入经纪商名称，如：XMGlobal、ICMarkets",
         "company": "请选择经纪商公司",
@@ -187,9 +186,9 @@ const Accounts = {
         "tradingAccount": "交易账号",
         "verified": "账户验证通过"
       },
+      "passwordHint": "密码将通过 HTTPS 加密传输，后端使用 Argon2id 哈希存储不可回逆",
       "title": "绑定 MT 账户"
     },
-    "bindNew": "绑定新账户",
     "card": {
       "actions": {
         "details": "详情",
@@ -244,9 +243,6 @@ const Accounts = {
         "marginLevel": "保证金比例",
         "marginUsed": "已用保证金"
       },
-      "connected": "已连接",
-      "lastConnected": "{{time}}",
-      "leverage": "杠杆 {{leverage}}x",
       "messages": {
         "fetchAccountFailed": "获取账户信息失败，请稍后重试",
         "syncHistoryFailed": "同步订单历史失败，请确保账户已连接到 MT 服务器。",
@@ -273,7 +269,10 @@ const Accounts = {
         "content": "确定要从MT服务器同步过去一年的历史订单吗？这可能需要一些时间。",
         "ok": "同步",
         "title": "同步历史订单"
-      }
+      },
+      "connected": "已连接",
+      "lastConnected": "{{time}}",
+      "leverage": "杠杆 {{leverage}}x"
     },
     "disabled": {
       "confirmDelete": {
@@ -313,6 +312,59 @@ const Accounts = {
       },
       "title": "编辑账户"
     },
+    "report": {
+      "periods": {
+        "month": "本月",
+        "quarter": "本季度",
+        "week": "本周",
+        "year": "今年"
+      },
+      "sections": {
+        "findings": "关键发现",
+        "recommendations": "改进建议",
+        "summary": "总体评价"
+      },
+      "aiAnalysis": "AI 分析",
+      "direction": "多空分析",
+      "directionLong": "做多",
+      "directionShort": "做空",
+      "drawdownEvents": "回撤事件",
+      "drawdownOverlay": "权益曲线 + 回撤",
+      "generate": "生成报告",
+      "goToAISettings": "前往 AI 设置 →",
+      "recovered": "已恢复",
+      "symbolPnL": "品种盈亏",
+      "title": "交易报告",
+      "titleShort": "报告",
+      "tradeDistribution": "盈亏分布",
+      "winRateTrend": "月度胜率趋势"
+    },
+    "tradeTabs": {
+      "pagination": {
+        "total": "共 {{total}} 条"
+      },
+      "table": {
+        "closePrice": "平仓价",
+        "closeTime": "平仓时间",
+        "currentPrice": "当前价",
+        "openPrice": "开仓价",
+        "openTime": "开仓时间",
+        "orderId": "订单号",
+        "pendingPrice": "挂单价格",
+        "pendingTime": "挂单时间",
+        "profit": "盈亏",
+        "side": "方向",
+        "symbol": "品种",
+        "type": "类型",
+        "volume": "手数"
+      },
+      "emptyHistory": "暂无历史订单",
+      "emptyPositions": "暂无持仓",
+      "historyWithCount": "历史订单 ({{count}})",
+      "pendingWithCount": "挂单 ({{count}})",
+      "positionsWithCount": "持仓订单 ({{count}})",
+      "syncHistory": "同步历史"
+    },
     "empty": {
       "subtitle": "点击下方按钮绑定您的 MT4/MT5 交易账户",
       "title": "暂无绑定账户"
@@ -340,61 +392,9 @@ const Accounts = {
       "fetchAccountFailed": "获取账户信息失败",
       "fetchListFailed": "获取账户列表失败"
     },
-    "report": {
-      "aiAnalysis": "AI 分析",
-      "direction": "多空分析",
-      "directionLong": "做多",
-      "directionShort": "做空",
-      "drawdownEvents": "回撤事件",
-      "drawdownOverlay": "权益曲线 + 回撤",
-      "generate": "生成报告",
-      "goToAISettings": "前往 AI 设置 →",
-      "periods": {
-        "month": "本月",
-        "quarter": "本季度",
-        "week": "本周",
-        "year": "今年"
-      },
-      "recovered": "已恢复",
-      "sections": {
-        "findings": "关键发现",
-        "recommendations": "改进建议",
-        "summary": "总体评价"
-      },
-      "symbolPnL": "品种盈亏",
-      "title": "交易报告",
-      "titleShort": "报告",
-      "tradeDistribution": "盈亏分布",
-      "winRateTrend": "月度胜率趋势"
-    },
+    "bindNew": "绑定新账户",
     "subtitle": "管理您的 MT4/MT5 交易账户",
-    "title": "我的账户",
-    "tradeTabs": {
-      "emptyHistory": "暂无历史订单",
-      "emptyPositions": "暂无持仓",
-      "historyWithCount": "历史订单 ({{count}})",
-      "pagination": {
-        "total": "共 {{total}} 条"
-      },
-      "pendingWithCount": "挂单 ({{count}})",
-      "positionsWithCount": "持仓订单 ({{count}})",
-      "syncHistory": "同步历史",
-      "table": {
-        "closePrice": "平仓价",
-        "closeTime": "平仓时间",
-        "currentPrice": "当前价",
-        "openPrice": "开仓价",
-        "openTime": "开仓时间",
-        "orderId": "订单号",
-        "pendingPrice": "挂单价格",
-        "pendingTime": "挂单时间",
-        "profit": "盈亏",
-        "side": "方向",
-        "symbol": "品种",
-        "type": "类型",
-        "volume": "手数"
-      }
-    }
+    "title": "我的账户"
   }
 } as const;
 export default Accounts;

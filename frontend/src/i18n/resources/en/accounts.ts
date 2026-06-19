@@ -3,38 +3,6 @@
 const Accounts = {
   "accounts": {
     "analytics": {
-      "advancedStatsTitle": "Advanced Statistics",
-      "advancedTabs": {
-        "daily": "Daily",
-        "hourly": "Hourly"
-      },
-      "chartPeriod": {
-        "all": "All",
-        "day": "Today",
-        "month": "This month",
-        "week": "This week",
-        "year": "This year"
-      },
-      "chartSeries": {
-        "balance": "Balance",
-        "equity": "Equity",
-        "profit": "Profit",
-        "tradeCount": "Trades"
-      },
-      "chartType": {
-        "balance": "Balance",
-        "equity": "Equity",
-        "profit": "Profit"
-      },
-      "dailyPnLTitle": "Daily P/L",
-      "empty": {
-        "dailyPnL": "No daily P/L data",
-        "equityCurve": "No equity curve data",
-        "hourly": "No time-of-day analysis data",
-        "monthlyProfit": "No monthly profit data",
-        "symbolDistribution": "No symbol distribution data"
-      },
-      "hourlyTitle": "Time-of-day Analysis",
       "monthlyAnalysis": {
         "bonus": {
           "chartHoldingTitle": "{{month}}'s average holding time.",
@@ -46,14 +14,14 @@ const Accounts = {
           "popularityShare": "Lot volume share",
           "sliceOther": "Other"
         },
-        "chartMainTitle": "Monthly returns ({{metric}})",
-        "focusedValue": "{{period}} · {{metric}}: {{value}}",
         "metrics": {
           "change": "Change",
           "lots": "Lots",
           "pips": "Pips",
           "profit": "Profit"
         },
+        "chartMainTitle": "Monthly returns ({{metric}})",
+        "focusedValue": "{{period}} · {{metric}}: {{value}}",
         "title": "Monthly analysis"
       },
       "monthlyDetail": {
@@ -77,7 +45,35 @@ const Accounts = {
         "short": "Short",
         "symbolPnLTitle": "Symbol P&L"
       },
-      "monthlyProfitTitle": "Monthly Profit",
+      "advancedTabs": {
+        "daily": "Daily",
+        "hourly": "Hourly"
+      },
+      "chartPeriod": {
+        "all": "All",
+        "day": "Today",
+        "month": "This month",
+        "week": "This week",
+        "year": "This year"
+      },
+      "chartSeries": {
+        "balance": "Balance",
+        "equity": "Equity",
+        "profit": "Profit",
+        "tradeCount": "Trades"
+      },
+      "chartType": {
+        "balance": "Balance",
+        "equity": "Equity",
+        "profit": "Profit"
+      },
+      "empty": {
+        "dailyPnL": "No daily P/L data",
+        "equityCurve": "No equity curve data",
+        "hourly": "No time-of-day analysis data",
+        "monthlyProfit": "No monthly profit data",
+        "symbolDistribution": "No symbol distribution data"
+      },
       "stats": {
         "avgDailyReturn": "Avg daily return",
         "avgHolding": "Average holding",
@@ -99,7 +95,6 @@ const Accounts = {
         "volatility": "Volatility",
         "winRate": "Win rate"
       },
-      "symbolDistributionTitle": "Symbol Distribution",
       "timeDetail": {
         "balance": "Balance",
         "lots": "Lots",
@@ -110,7 +105,12 @@ const Accounts = {
         "profitAmount": "Profit amount",
         "profitFactor": "Profit factor",
         "trades": "Trades"
-      }
+      },
+      "advancedStatsTitle": "Advanced Statistics",
+      "dailyPnLTitle": "Daily P/L",
+      "hourlyTitle": "Time-of-day Analysis",
+      "monthlyProfitTitle": "Monthly Profit",
+      "symbolDistributionTitle": "Symbol Distribution"
     },
     "bind": {
       "actions": {
@@ -153,7 +153,6 @@ const Accounts = {
         "selectServer": "Please select a server",
         "verifyFailed": "Account verification failed"
       },
-      "passwordHint": "Password is transmitted via HTTPS and stored as an Argon2id hash (non-reversible) on the backend",
       "placeholders": {
         "brokerName": "Enter broker name, e.g. XM, IC Markets",
         "company": "Select company",
@@ -187,9 +186,9 @@ const Accounts = {
         "tradingAccount": "Trading account",
         "verified": "Account verified"
       },
+      "passwordHint": "Password is transmitted via HTTPS and stored as an Argon2id hash (non-reversible) on the backend",
       "title": "Bind MT Account"
     },
-    "bindNew": "Bind New Account",
     "card": {
       "actions": {
         "details": "Details",
@@ -244,9 +243,6 @@ const Accounts = {
         "marginLevel": "Margin level",
         "marginUsed": "Margin used"
       },
-      "connected": "Connected",
-      "lastConnected": "{{time}}",
-      "leverage": "Leverage {{leverage}}x",
       "messages": {
         "fetchAccountFailed": "Failed to load account information. Please try again later.",
         "syncHistoryFailed": "Failed to sync order history. Please ensure the account is connected to the MT server.",
@@ -273,7 +269,10 @@ const Accounts = {
         "content": "Sync the last year of order history from the MT server? This may take some time.",
         "ok": "Sync",
         "title": "Sync Order History"
-      }
+      },
+      "connected": "Connected",
+      "lastConnected": "{{time}}",
+      "leverage": "Leverage {{leverage}}x"
     },
     "disabled": {
       "confirmDelete": {
@@ -313,6 +312,59 @@ const Accounts = {
       },
       "title": "Edit Account"
     },
+    "report": {
+      "periods": {
+        "month": "This Month",
+        "quarter": "This Quarter",
+        "week": "This Week",
+        "year": "This Year"
+      },
+      "sections": {
+        "findings": "Key Findings",
+        "recommendations": "Recommendations",
+        "summary": "Summary"
+      },
+      "aiAnalysis": "AI Analysis",
+      "direction": "Direction Breakdown",
+      "directionLong": "Long",
+      "directionShort": "Short",
+      "drawdownEvents": "Drawdown Events",
+      "drawdownOverlay": "Equity Curve + Drawdown",
+      "generate": "Generate Report",
+      "goToAISettings": "Go to AI Settings →",
+      "recovered": "Recovered",
+      "symbolPnL": "P&L by Symbol",
+      "title": "Trading Report",
+      "titleShort": "Report",
+      "tradeDistribution": "Trade Profit Distribution",
+      "winRateTrend": "Monthly Win Rate Trend"
+    },
+    "tradeTabs": {
+      "pagination": {
+        "total": "{{total}} total"
+      },
+      "table": {
+        "closePrice": "Close price",
+        "closeTime": "Close time",
+        "currentPrice": "Current price",
+        "openPrice": "Open price",
+        "openTime": "Open time",
+        "orderId": "Order ID",
+        "pendingPrice": "Pending price",
+        "pendingTime": "Pending time",
+        "profit": "P/L",
+        "side": "Side",
+        "symbol": "Symbol",
+        "type": "Type",
+        "volume": "Volume"
+      },
+      "emptyHistory": "No order history",
+      "emptyPositions": "No open positions",
+      "historyWithCount": "History ({{count}})",
+      "pendingWithCount": "Pending ({{count}})",
+      "positionsWithCount": "Positions ({{count}})",
+      "syncHistory": "Sync History"
+    },
     "empty": {
       "subtitle": "Click the button below to bind your MT4/MT5 trading account",
       "title": "No bound accounts"
@@ -340,61 +392,9 @@ const Accounts = {
       "fetchAccountFailed": "Failed to load account information",
       "fetchListFailed": "Failed to load account list"
     },
-    "report": {
-      "aiAnalysis": "AI Analysis",
-      "direction": "Direction Breakdown",
-      "directionLong": "Long",
-      "directionShort": "Short",
-      "drawdownEvents": "Drawdown Events",
-      "drawdownOverlay": "Equity Curve + Drawdown",
-      "generate": "Generate Report",
-      "goToAISettings": "Go to AI Settings →",
-      "periods": {
-        "month": "This Month",
-        "quarter": "This Quarter",
-        "week": "This Week",
-        "year": "This Year"
-      },
-      "recovered": "Recovered",
-      "sections": {
-        "findings": "Key Findings",
-        "recommendations": "Recommendations",
-        "summary": "Summary"
-      },
-      "symbolPnL": "P&L by Symbol",
-      "title": "Trading Report",
-      "titleShort": "Report",
-      "tradeDistribution": "Trade Profit Distribution",
-      "winRateTrend": "Monthly Win Rate Trend"
-    },
+    "bindNew": "Bind New Account",
     "subtitle": "Manage your MT4/MT5 trading accounts",
-    "title": "My Accounts",
-    "tradeTabs": {
-      "emptyHistory": "No order history",
-      "emptyPositions": "No open positions",
-      "historyWithCount": "History ({{count}})",
-      "pagination": {
-        "total": "{{total}} total"
-      },
-      "pendingWithCount": "Pending ({{count}})",
-      "positionsWithCount": "Positions ({{count}})",
-      "syncHistory": "Sync History",
-      "table": {
-        "closePrice": "Close price",
-        "closeTime": "Close time",
-        "currentPrice": "Current price",
-        "openPrice": "Open price",
-        "openTime": "Open time",
-        "orderId": "Order ID",
-        "pendingPrice": "Pending price",
-        "pendingTime": "Pending time",
-        "profit": "P/L",
-        "side": "Side",
-        "symbol": "Symbol",
-        "type": "Type",
-        "volume": "Volume"
-      }
-    }
+    "title": "My Accounts"
   }
 } as const;
 export default Accounts;

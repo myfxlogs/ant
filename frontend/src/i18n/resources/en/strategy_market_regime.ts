@@ -3,8 +3,6 @@
 const StrategyMarketRegime = {
   "strategy": {
     "marketRegime": {
-      "detectFailed": "Market regime detection failed",
-      "detectSuccess": "Market regime detection completed",
       "form": {
         "accountId": "Account ID",
         "accountIdPlaceholder": "MT account UUID",
@@ -26,6 +24,8 @@ const StrategyMarketRegime = {
         "strategyFamilies": "Strategy Families",
         "title": "Detection Result"
       },
+      "detectFailed": "Market regime detection failed",
+      "detectSuccess": "Market regime detection completed",
       "ruleVersionAlert": "Currently using rule-based detection model rule-v1, driven by real-time K-line market data.",
       "subtitle": "Analyzes trend direction, volatility regime, and price efficiency from historical K-line data to classify current market conditions.",
       "title": "Market Regime Detection"

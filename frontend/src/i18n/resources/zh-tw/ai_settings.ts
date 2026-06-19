@@ -3,21 +3,7 @@
 const AiSettings = {
   "ai": {
     "settings": {
-      "actions": {
-        "saveConfig": "儲存設定",
-        "validateApiKey": "驗證 API 金鑰"
-      },
       "agent": {
-        "actions": {
-          "add": "新增",
-          "loadDefaults": "載入預設 8 個 智能體",
-          "remove": "刪除",
-          "restoreDefaults": "恢復預設",
-          "restoreDefaultsConfirmContent": "將把 8 個系統 智能體 重置為預設身份定義。",
-          "restoreDefaultsConfirmTitle": "恢復系統預設身份？",
-          "save": "儲存"
-        },
-        "defaultName": "自定義 智能體",
         "defaults": {
           "code": {
             "inputHint": "範例：目標範式=趨勢跟隨；指標=EMA(fast)/EMA(slow)+ATR 過濾"
@@ -56,6 +42,15 @@ const AiSettings = {
             "inputHint": "範例：帳戶=EURUSD 零售；週期=H1；目標=月均收益 3%、最大回撤 <10%"
           }
         },
+        "actions": {
+          "add": "新增",
+          "loadDefaults": "載入預設 8 個 智能體",
+          "remove": "刪除",
+          "restoreDefaults": "恢復預設",
+          "restoreDefaultsConfirmContent": "將把 8 個系統 智能體 重置為預設身份定義。",
+          "restoreDefaultsConfirmTitle": "恢復系統預設身份？",
+          "save": "儲存"
+        },
         "fields": {
           "historicalBinding": "{{value}}（歷史）",
           "identityPlaceholder": "身份/人設描述",
@@ -72,9 +67,6 @@ const AiSettings = {
           "saveSuccess": "智能體 已儲存",
           "selectProfileFirst": "請先在左側選擇一個設定"
         },
-        "removeConfirmContent": "確定要刪除該 智能體 嗎？",
-        "removeConfirmTitle": "刪除 智能體",
-        "title": "智能體 身份定義",
         "types": {
           "code": "程式碼",
           "execution": "執行",
@@ -88,7 +80,11 @@ const AiSettings = {
           "signals": "訊號/指標",
           "strategist": "策略分析師",
           "style": "風格/範式"
-        }
+        },
+        "defaultName": "自定義 智能體",
+        "removeConfirmContent": "確定要刪除該 智能體 嗎？",
+        "removeConfirmTitle": "刪除 智能體",
+        "title": "智能體 身份定義"
       },
       "apiKeyGuide": {
         "deepseek": {
@@ -96,19 +92,31 @@ const AiSettings = {
           "step2": "登入/註冊後在 API 金鑰s 頁面建立並複製 API 金鑰",
           "title": "如何獲取 DeepSeek API 金鑰"
         },
-        "default": "Current provider: {{provider}}. Go to the provider\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\",
-        "modelSuggestionDeepSeek": "模型建議: 在\"模型\"下拉中選擇 `deepseek-chat`",
-        "modelSuggestionZhipu": "模型建議: 在\"模型\"下拉中選擇 `glm-4-flash` / `glm-4`",
-        "selectProviderHint": "選擇一個 AI 提供商後，會在這裡顯示如何申請 API 金鑰。",
-        "title": "申請 API 金鑰 指引",
         "zhipu": {
           "step1": "開啟智譜開放平臺：",
           "step2": "登入/註冊後進入控制檯，建立並複製 API 金鑰",
           "title": "如何獲取智譜 API 金鑰"
-        }
+        },
+        "default": "Current provider: {{provider}}. Go to the provider\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\",
+        "modelSuggestionDeepSeek": "模型建議: 在\"模型\"下拉中選擇 `deepseek-chat`",
+        "modelSuggestionZhipu": "模型建議: 在\"模型\"下拉中選擇 `glm-4-flash` / `glm-4`",
+        "selectProviderHint": "選擇一個 AI 提供商後，會在這裡顯示如何申請 API 金鑰。",
+        "title": "申請 API 金鑰 指引"
       },
-      "apiKeySavedAs": "目前已儲存：{{masked}}",
-      "defaultProfileName": "預設",
+      "profiles": {
+        "actions": {
+          "setCurrent": "設為目前"
+        },
+        "delete": {
+          "content": "確定要刪除該設定嗎？",
+          "title": "刪除設定"
+        },
+        "current": "目前"
+      },
+      "actions": {
+        "saveConfig": "儲存設定",
+        "validateApiKey": "驗證 API 金鑰"
+      },
       "discoverErrors": {
         "baseUrlInvalid": "Base URL 格式無效：請填寫完整位址，例如 https://model.example.com 或 https://model.example.com/v1",
         "baseUrlRequired": "請先填寫 Base URL（模型服務位址）。",
@@ -173,7 +181,6 @@ const AiSettings = {
         "validateFailed": "驗證失敗",
         "validateSuccess": "驗證成功"
       },
-      "pageTitle": "AI 助手設定",
       "placeholders": {
         "apiKey": "輸入 API 金鑰",
         "baseUrl": "例如：https://api.example.com/v1",
@@ -188,16 +195,6 @@ const AiSettings = {
         "hint": "用於「釐清意圖」步驟、程式碼生成等。",
         "placeholder": "選擇廠商 · 模型作為兜底大腦",
         "title": "預設主模型"
-      },
-      "profiles": {
-        "actions": {
-          "setCurrent": "設為目前"
-        },
-        "current": "目前",
-        "delete": {
-          "content": "確定要刪除該設定嗎？",
-          "title": "刪除設定"
-        }
       },
       "providers": {
         "anthropic": "Anthropic Claude",
@@ -239,7 +236,10 @@ const AiSettings = {
         "modelFormat": "模型格式不正確",
         "modelRequired": "模型不能為空",
         "nameRequired": "名稱不能為空"
-      }
+      },
+      "apiKeySavedAs": "目前已儲存：{{masked}}",
+      "defaultProfileName": "預設",
+      "pageTitle": "AI 助手設定"
     }
   }
 } as const;

@@ -3,6 +3,10 @@
 const StrategyBacktestParams = {
   "strategy": {
     "backtestParams": {
+      "presets": {
+        "exploration": "Exploration",
+        "liveAligned": "Live Aligned"
+      },
       "backtestFailed": "Backtest failed",
       "both": "Both",
       "capital": "Capital",
@@ -20,10 +24,6 @@ const StrategyBacktestParams = {
       "history": "Backtest History",
       "leverage": "Leverage",
       "long": "↑ Long",
-      "presets": {
-        "exploration": "Exploration",
-        "liveAligned": "Live Aligned"
-      },
       "run": "▶ Run",
       "runtimeMode": "Runtime",
       "settingsLoad": "Load My Defaults",

@@ -1,123 +1,7 @@
 // Auto-generated from proto/ant/v1/i18n/trading_ja.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const Trading = {
-  "algo": {
-    "actions": {
-      "cancel": "取消",
-      "start": "開始"
-    },
-    "dashboard": {
-      "activeExecutions": "実行中",
-      "noActive": "アクティブな実行はありません",
-      "title": "アルゴダッシュボード"
-    },
-    "fields": {
-      "account": "口座",
-      "algo": "アルゴリズム",
-      "limitPrice": "指値",
-      "participationRate": "参加率",
-      "side": "方向",
-      "sliceInterval": "スライス間隔",
-      "symbol": "銘柄",
-      "timeRange": "期間",
-      "urgency": "緊急度",
-      "volume": "数量"
-    },
-    "info": {
-      "description": "説明",
-      "name": "名前"
-    },
-    "messages": {
-      "started": "アルゴリズム開始"
-    },
-    "side": {
-      "buy": "買い",
-      "sell": "売り"
-    },
-    "submitForm": {
-      "title": "アルゴリズム起動"
-    },
-    "table": {
-      "actions": "操作",
-      "algo": "アルゴリズム",
-      "executionId": "実行ID",
-      "progress": "進捗",
-      "side": "方向",
-      "state": "状態",
-      "symbol": "銘柄",
-      "volume": "数量"
-    },
-    "timePresets": {
-      "EOD": "当日終了"
-    },
-    "twap": "TWAP (時間加重平均)",
-    "vwap": "VWAP (出来高加重平均)",
-    "pov": "POV (参加率アルゴリズム)",
-    "shortfall": "Shortfall (最小ショートフォール)"
-  },
   "trading": {
-    "account": "口座",
-    "autoTrade": {
-      "confirm": {
-        "disableConfirm": "無効化",
-        "disableInfoDescription": "無効化すると自動取引は停止しますが、有効化済みの戦略は市場監視を継続する場合があります。",
-        "disableInfoTitle": "自動取引を無効化",
-        "disableQuestion": "自動取引を無効化しますか？",
-        "disableTitle": "自動取引を無効化",
-        "enableBullet1": "戦略条件に合致した取引が自動で実行されます",
-        "enableBullet2": "リスク設定が正しいことを確認してください",
-        "enableBullet3": "まずはデモ口座でのテストを推奨します",
-        "enableConfirm": "有効化",
-        "enableQuestion": "自動取引を有効化しますか？",
-        "enableRiskDescription": "自動取引を有効化すると、戦略に基づいて自動で取引が実行されます。リスクを理解したうえで実行してください。",
-        "enableRiskTitle": "リスク注意",
-        "enableTitle": "自動取引を有効化"
-      }
-    },
-    "balance": "残高",
-    "buy": "買い",
-    "closePosition": "決済",
-    "closePositionConfirm": "このポジションを決済しますか？",
-    "closePositionTitle": "ポジションを決済",
-    "equity": "純資産",
-    "freeMargin": "有効証拠金",
-    "limit": "指値",
-    "margin": "証拠金",
-    "marginLevel": "証拠金維持率",
-    "markPrice": "マーク価格",
-    "market": "成行",
-    "messages": {
-      "fetchOrderHistoryFailed": "注文履歴の取得に失敗しました",
-      "fetchPendingOrdersFailed": "未決注文の取得に失敗しました",
-      "fetchPositionsFailed": "保有ポジションの取得に失敗しました",
-      "orderCloseFailed": "決済に失敗しました",
-      "orderCloseSuccess": "決済しました",
-      "orderModifyFailed": "注文の変更に失敗しました",
-      "orderModifySuccess": "注文を変更しました",
-      "orderSendFailed": "注文の送信に失敗しました",
-      "orderSendSuccess": "注文を送信しました"
-    },
-    "noAccount": "口座が選択されていません",
-    "noOrders": "まだ注文はありません",
-    "noPositions": "保有ポジションなし",
-    "openPositionsTitle": "保有ポジション",
-    "openTime": "エントリー時間",
-    "orderHistory": "注文履歴",
-    "ordersCount": "{{count}} 件の注文",
-    "placeOrder": "注文する",
-    "pnl": "損益",
-    "positionEntryPrice": "エントリー価格",
-    "positionLeverage": "レバレッジ",
-    "positionLong": "ロング",
-    "positionMarkPrice": "マーク価格",
-    "positionShort": "ショート",
-    "positionSide": "方向",
-    "positionSize": "数量",
-    "positionUnrealizedPnL": "含み損益",
-    "positions": "ポジション",
-    "price": "価格",
-    "profit": "損益",
-    "recentTrades": "最近の取引",
     "risk": {
       "errors": {
         "RISK_ACCOUNT_TRADE_DISABLED": {
@@ -170,6 +54,23 @@ const Trading = {
         }
       }
     },
+    "autoTrade": {
+      "confirm": {
+        "disableConfirm": "無効化",
+        "disableInfoDescription": "無効化すると自動取引は停止しますが、有効化済みの戦略は市場監視を継続する場合があります。",
+        "disableInfoTitle": "自動取引を無効化",
+        "disableQuestion": "自動取引を無効化しますか？",
+        "disableTitle": "自動取引を無効化",
+        "enableBullet1": "戦略条件に合致した取引が自動で実行されます",
+        "enableBullet2": "リスク設定が正しいことを確認してください",
+        "enableBullet3": "まずはデモ口座でのテストを推奨します",
+        "enableConfirm": "有効化",
+        "enableQuestion": "自動取引を有効化しますか？",
+        "enableRiskDescription": "自動取引を有効化すると、戦略に基づいて自動で取引が実行されます。リスクを理解したうえで実行してください。",
+        "enableRiskTitle": "リスク注意",
+        "enableTitle": "自動取引を有効化"
+      }
+    },
     "riskConfig": {
       "confirm": {
         "confirmText": "保存",
@@ -187,11 +88,6 @@ const Trading = {
         "trailingStopPips": "トレーリングストップ (pips)"
       }
     },
-    "selectSymbol": "銘柄を選択",
-    "sell": "売り",
-    "side": "方向",
-    "stop": "逆指値",
-    "stopLoss": "損切り",
     "strategyExecute": {
       "confirm": {
         "action": "方向",
@@ -206,12 +102,134 @@ const Trading = {
         "warningTitle": "取引実行確認"
       }
     },
+    "messages": {
+      "fetchOrderHistoryFailed": "注文履歴の取得に失敗しました",
+      "fetchPendingOrdersFailed": "未決注文の取得に失敗しました",
+      "fetchPositionsFailed": "保有ポジションの取得に失敗しました",
+      "orderCloseFailed": "決済に失敗しました",
+      "orderCloseSuccess": "決済しました",
+      "orderModifyFailed": "注文の変更に失敗しました",
+      "orderModifySuccess": "注文を変更しました",
+      "orderSendFailed": "注文の送信に失敗しました",
+      "orderSendSuccess": "注文を送信しました"
+    },
+    "account": "口座",
+    "balance": "残高",
+    "buy": "買い",
+    "closePosition": "決済",
+    "closePositionConfirm": "このポジションを決済しますか？",
+    "closePositionTitle": "ポジションを決済",
+    "equity": "純資産",
+    "freeMargin": "有効証拠金",
+    "limit": "指値",
+    "margin": "証拠金",
+    "marginLevel": "証拠金維持率",
+    "markPrice": "マーク価格",
+    "market": "成行",
+    "noAccount": "口座が選択されていません",
+    "noOrders": "まだ注文はありません",
+    "noPositions": "保有ポジションなし",
+    "openPositionsTitle": "保有ポジション",
+    "openTime": "エントリー時間",
+    "orderHistory": "注文履歴",
+    "ordersCount": "{{count}} 件の注文",
+    "placeOrder": "注文する",
+    "pnl": "損益",
+    "positionEntryPrice": "エントリー価格",
+    "positionLeverage": "レバレッジ",
+    "positionLong": "ロング",
+    "positionMarkPrice": "マーク価格",
+    "positionShort": "ショート",
+    "positionSide": "方向",
+    "positionSize": "数量",
+    "positionUnrealizedPnL": "含み損益",
+    "positions": "ポジション",
+    "price": "価格",
+    "profit": "損益",
+    "recentTrades": "最近の取引",
+    "selectSymbol": "銘柄を選択",
+    "sell": "売り",
+    "side": "方向",
+    "stop": "逆指値",
+    "stopLoss": "損切り",
     "symbol": "銘柄",
     "takeProfit": "利確",
     "time": "時間",
     "title": "取引",
     "type": "タイプ",
     "volume": "数量"
+  },
+  "algo": {
+    "actions": {
+      "cancel": "取消",
+      "start": "開始"
+    },
+    "dashboard": {
+      "activeExecutions": "実行中",
+      "noActive": "アクティブな実行はありません",
+      "title": "アルゴダッシュボード"
+    },
+    "fields": {
+      "account": "口座",
+      "algo": "アルゴリズム",
+      "limitPrice": "指値",
+      "participationRate": "参加率",
+      "side": "方向",
+      "sliceInterval": "スライス間隔",
+      "symbol": "銘柄",
+      "timeRange": "期間",
+      "urgency": "緊急度",
+      "volume": "数量"
+    },
+    "info": {
+      "description": "説明",
+      "name": "名前"
+    },
+    "messages": {
+      "started": "アルゴリズム開始"
+    },
+    "side": {
+      "buy": "買い",
+      "sell": "売り"
+    },
+    "submitForm": {
+      "title": "アルゴリズム起動"
+    },
+    "table": {
+      "actions": "操作",
+      "algo": "アルゴリズム",
+      "executionId": "実行ID",
+      "progress": "進捗",
+      "side": "方向",
+      "state": "状態",
+      "symbol": "銘柄",
+      "volume": "数量"
+    },
+    "timePresets": {
+      "EOD": "当日終了"
+    },
+    "twap": {
+      "name": "TWAP (時間加重平均)",
+      "description": "時間加重平均価格 — 大口注文を小さく分割し、時間軸で均等に執行します。"
+    },
+    "vwap": {
+      "name": "VWAP (出来高加重平均)",
+      "description": "出来高加重平均価格 — 過去の出来高分布に比例して注文を執行します。"
+    },
+    "pov": {
+      "name": "POV (参加率)",
+      "description": "参加率アルゴリズム — 市場出来高の一定割合で参加します。"
+    },
+    "shortfall": {
+      "name": "Shortfall (最小ショートフォール)",
+      "description": "インプリメンテーションショートフォール — 決定価格と執行価格の差を最小化します。"
+    },
+    "label": {
+      "twap": "TWAP (時間加重平均)",
+      "vwap": "VWAP (出来高加重平均)",
+      "pov": "POV (参加率アルゴリズム)",
+      "shortfall": "Shortfall (最小ショートフォール)"
+    }
   }
 } as const;
 export default Trading;

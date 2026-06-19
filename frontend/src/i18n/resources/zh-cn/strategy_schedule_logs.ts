@@ -52,7 +52,6 @@ const StrategyScheduleLogs = {
         "ticket": "订单号",
         "time": "时间"
       },
-      "scheduleIdLabel": "调度ID:",
       "status": {
         "failed": "失败",
         "success": "成功"
@@ -71,6 +70,7 @@ const StrategyScheduleLogs = {
         "orderLogs": "订单日志",
         "orders": "交易记录"
       },
+      "scheduleIdLabel": "调度ID:",
       "title": "记录",
       "titleWithName": "记录 - {{name}}"
     }

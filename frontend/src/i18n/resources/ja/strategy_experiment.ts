@@ -18,7 +18,6 @@ const StrategyExperiment = {
         "title": "候補",
         "titleWithId": "候補: {{id}}"
       },
-      "jobEventStream": "ジョブイベントストリーム",
       "list": {
         "column": {
           "actions": "操作",
@@ -40,9 +39,6 @@ const StrategyExperiment = {
         "submitFailed": "実験提出失敗。パラメータ空間が有効なJSONか確認してください。",
         "subscribeJobFailed": "実験ジョブイベントの購読失敗"
       },
-      "noEvents": "イベントなし",
-      "ruleVersionAlert": "現在の最小ループ：決定論的パラメータ実験。候補は下書き生成のみで自動公開・スケジュール・取引は行われません。",
-      "selectJobToView": "ジョブ付き実験を選択してイベント表示。",
       "submitForm": {
         "baseTemplate": "ベースストラテジーテンプレート",
         "baseTemplatePlaceholder": "テンプレート選択",
@@ -55,6 +51,10 @@ const StrategyExperiment = {
         "submit": "実験提出",
         "title": "実験提出"
       },
+      "jobEventStream": "ジョブイベントストリーム",
+      "noEvents": "イベントなし",
+      "ruleVersionAlert": "現在の最小ループ：決定論的パラメータ実験。候補は下書き生成のみで自動公開・スケジュール・取引は行われません。",
+      "selectJobToView": "ジョブ付き実験を選択してイベント表示。",
       "subtitle": "パラメータ組合せを提出して自動実験、候補スコアリング、下書き生成。",
       "title": "ストラテジー実験"
     }

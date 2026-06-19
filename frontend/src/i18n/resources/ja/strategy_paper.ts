@@ -3,9 +3,6 @@
 const StrategyPaper = {
   "strategy": {
     "paper": {
-      "accountName": "アカウント名",
-      "create": "スケジュール作成",
-      "createAccount": "ペーパーアカウント作成",
       "messages": {
         "createFailed": "作成失敗",
         "created": "ペーパーアカウント作成済",
@@ -16,6 +13,9 @@ const StrategyPaper = {
         "strategyStarted": "ペーパー戦略開始済",
         "strategyStopped": "ペーパー戦略停止済"
       },
+      "accountName": "アカウント名",
+      "create": "スケジュール作成",
+      "createAccount": "ペーパーアカウント作成",
       "noAccounts": "ペーパーアカウントがありません。作成して模擬取引開始。",
       "paper": "ペーパー",
       "running": "{{symbol}} {{timeframe}} 実行中",

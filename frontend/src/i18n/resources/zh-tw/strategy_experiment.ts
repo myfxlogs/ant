@@ -18,7 +18,6 @@ const StrategyExperiment = {
         "title": "候選策略",
         "titleWithId": "候選: {{id}}"
       },
-      "jobEventStream": "任务事件流",
       "list": {
         "column": {
           "actions": "操作",
@@ -40,9 +39,6 @@ const StrategyExperiment = {
         "submitFailed": "提交實驗失敗，請確認參數空间为有效 JSON。",
         "subscribeJobFailed": "订阅實驗任务事件失敗"
       },
-      "noEvents": "暫無事件",
-      "ruleVersionAlert": "当前最小回路：确定性參數實驗。候選仅生成草稿，不会自动发布、排程或交易。",
-      "selectJobToView": "選擇带有任务的實驗以查看事件。",
       "submitForm": {
         "baseTemplate": "基础策略範本",
         "baseTemplatePlaceholder": "選擇範本",
@@ -55,6 +51,10 @@ const StrategyExperiment = {
         "submit": "提交實驗",
         "title": "提交實驗"
       },
+      "jobEventStream": "任务事件流",
+      "noEvents": "暫無事件",
+      "ruleVersionAlert": "当前最小回路：确定性參數實驗。候選仅生成草稿，不会自动发布、排程或交易。",
+      "selectJobToView": "選擇带有任务的實驗以查看事件。",
       "subtitle": "提交參數组合以自动執行實驗、評分候選策略并生成草稿。",
       "title": "策略實驗"
     }

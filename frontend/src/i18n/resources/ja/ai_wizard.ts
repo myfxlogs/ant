@@ -3,19 +3,25 @@
 const AiWizard = {
   "ai": {
     "wizard": {
-      "actions": {
-        "cancel": "キャンセル",
-        "next": "次へ",
-        "prev": "戻る"
-      },
-      "agents": {
-        "codeTitle": "コード生成",
-        "riskTitle": "リスク管理",
-        "signalsTitle": "シグナル/指標",
-        "styleTitle": "市場状況/スタイル"
-      },
-      "currentModel": "現在のモデル: {{model}}",
       "generate": {
+        "modals": {
+          "final": {
+            "title": "コード生成完了。検証を推奨。"
+          }
+        },
+        "status": {
+          "running": {
+            "code": "進行中",
+            "generic": "{{title}}進行中",
+            "risk": "進行中",
+            "signals": "進行中",
+            "style": "進行中"
+          },
+          "done": "完了",
+          "error": "エラー",
+          "idle": "待機中",
+          "inProgress": "進行中"
+        },
         "actions": {
           "abort": "中止",
           "goValidate": "検証へ",
@@ -33,71 +39,107 @@ const AiWizard = {
         "labels": {
           "elapsed": "経過"
         },
-        "modals": {
-          "final": {
-            "title": "コード生成完了。検証を推奨。"
-          }
-        },
         "sections": {
           "output": "Output",
           "prompt": "Prompt",
           "spec": "仕様"
-        },
-        "status": {
-          "done": "完了",
-          "error": "エラー",
-          "idle": "待機中",
-          "inProgress": "進行中",
-          "running": {
-            "code": "進行中",
-            "generic": "{{title}}進行中",
-            "risk": "進行中",
-            "signals": "進行中",
-            "style": "進行中"
-          }
         }
       },
-      "messages": {
-        "agentFailed": "{{title}}失敗",
-        "aiRequestTimeout": "AIリクエストがタイムアウトしました（>{{seconds}}秒）",
-        "backtestCreated": "バックテスト作成",
-        "backtestNotDoneWait": "バックテスト完了待ち",
-        "chatAborted": "中止",
-        "codeInvalidFixAndContinue": "コード検証失敗",
-        "confirmScoreFirst": "まずスコア確認",
-        "createBacktestFailed": "作成失敗",
-        "createDraftFailed": "ドラフト作成失敗",
-        "createScheduleFailed": "作成失敗",
-        "datasetFrozenCreated": "データセット凍結作成",
-        "draftNotCreated": "ドラフト未作成",
-        "draftSaved": "ドラフト保存",
-        "fillRequired": "必須項目入力",
-        "fillRequiredWithFields": "必須項目入力: {{fields}}",
-        "freezeDatasetFailed": "凍結失敗",
-        "generateCodeFirst": "まずコード生成",
-        "inputIntentFirst": "まず戦略目標入力",
-        "loadAccountsFailed": "アカウント読込失敗",
-        "loadDatasetFailed": "データセット読込失敗",
-        "loadSymbolsFailed": "銘柄読込失敗",
-        "modelReturnedEmpty": "空返答",
-        "noCodeToBacktest": "バックテストするコードなし",
-        "noCodeToValidate": "検証するコードなし",
-        "noPythonCodeBlock": "コードブロックなし",
-        "publishFailed": "公開失敗",
-        "publishTemplateFirst": "まずテンプレート公開",
-        "publishedNoId": "公開済（ID未取得）",
-        "saveFailed": "保存失敗",
-        "scheduleAlreadyExists": "同じスケジュールが既に存在",
-        "scheduleCreated": "スケジュール作成",
-        "scheduleCreatedAndEnabled": "スケジュール作成・有効化",
-        "startBacktestFirst": "まずバックテスト開始",
-        "templatePublished": "テンプレート公開",
-        "userAborted": "中止",
-        "validateCodeFirst": "まずコード検証",
-        "validateError": "検証エラー",
-        "validateFailed": "検証不合格",
-        "validateOk": "検証合格",
-        "watchBacktestRunFailed": "watch失敗"
+      "publishBacktest": {
+        "modals": {
+          "score": {
+            "title": "スコア確認"
+          },
+          "status": {
+            "title": "バックテスト進行中"
+          }
+        },
+        "actions": {
+          "close": "閉じる",
+          "confirm": "確認",
+          "inProgress": "進行中",
+          "retry": "再試行",
+          "runInBackground": "バックグラウンド実行",
+          "startBacktest": "開始",
+          "succeeded": "成功"
+        },
+        "cards": {
+          "backtestTitle": "バックテスト",
+          "scoreCardTitle": "スコアカード"
+        },
+        "labels": {
+          "confirmed": "確認済",
+          "elapsed": "経過",
+          "overallScore": "総合スコア",
+          "scoringProgress": "進捗",
+          "status": "状態"
+        },
+        "draftName": "バックテスト {{datetime}} {{symbol}} {{timeframe}}",
+        "draftNameShort": "バックテスト {{symbol}} {{timeframe}}"
+      },
+      "setup": {
+        "modals": {
+          "deleteDataset": {
+            "content": "選択した凍結データセットを削除しますか？",
+            "ok": "削除",
+            "title": "データセット削除"
+          }
+        },
+        "actions": {
+          "deleteCurrentDataset": "現在データセット削除",
+          "freezeFromCurrentRange": "現在範囲から凍結",
+          "refreshDataset": "更新"
+        },
+        "cards": {
+          "constraintsAndGoalTitle": "制約と目標",
+          "hardConstraintsTitle": "ハード制約",
+          "hintsTitle": "ヒント",
+          "tradeAndDataTitle": "取引とデータ"
+        },
+        "dataModes": {
+          "dataset": "データセット",
+          "klineRange": "履歴K線"
+        },
+        "hints": {
+          "nextWillGenerateCode": "次でコード生成開始。",
+          "tradeDataNextStep": "完了後「次へ」。"
+        },
+        "labels": {
+          "account": "アカウント",
+          "backtestRange": "バックテスト範囲",
+          "dataset": "データセット",
+          "historicalData": "履歴データ",
+          "intent": "戦略目標/アイデア",
+          "macroEvents": "マクロイベント",
+          "macroModule": "マクロモジュール",
+          "maxDrawdownPct": "最大DD(%)",
+          "maxTradesPerDay": "1日最大取引数",
+          "riskPerTradePct": "取引リスク(%)",
+          "symbol": "銘柄",
+          "timeframe": "時間枠"
+        },
+        "macro": {
+          "off": "OFF",
+          "on": "开"
+        },
+        "messages": {
+          "datasetDeleted": "データセット削除済"
+        },
+        "placeholders": {
+          "intentExample": "例: トレンドフォロー、高ボラ回避、高勝率重視",
+          "macroExample": "Example:\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n2024-01-03 21:15 FOMC minutes\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n2024-01-05 20:30 NFP",
+          "selectAccount": "アカウント選択",
+          "selectFrozenDataset": "データセット選択",
+          "selectSymbol": "銘柄選択",
+          "selectTimeframe": "時間枠選択"
+        },
+        "validations": {
+          "enterIntent": "戦略目標を入力",
+          "selectAccount": "アカウントを選択",
+          "selectDataset": "データセットを選択",
+          "selectSymbol": "銘柄を選択",
+          "selectTimeframe": "時間枠を選択"
+        }
       },
       "prompts": {
         "base": {
@@ -152,112 +194,6 @@ const AiWizard = {
           "codeEditable": "AI生成コードがここに表示されます。"
         }
       },
-      "publishBacktest": {
-        "actions": {
-          "close": "閉じる",
-          "confirm": "確認",
-          "inProgress": "進行中",
-          "retry": "再試行",
-          "runInBackground": "バックグラウンド実行",
-          "startBacktest": "開始",
-          "succeeded": "成功"
-        },
-        "cards": {
-          "backtestTitle": "バックテスト",
-          "scoreCardTitle": "スコアカード"
-        },
-        "draftName": "バックテスト {{datetime}} {{symbol}} {{timeframe}}",
-        "draftNameShort": "バックテスト {{symbol}} {{timeframe}}",
-        "labels": {
-          "confirmed": "確認済",
-          "elapsed": "経過",
-          "overallScore": "総合スコア",
-          "scoringProgress": "進捗",
-          "status": "状態"
-        },
-        "modals": {
-          "score": {
-            "title": "スコア確認"
-          },
-          "status": {
-            "title": "バックテスト進行中"
-          }
-        }
-      },
-      "schedule": {
-        "defaultName": "AIスケジュール {{symbol}} {{timeframe}}"
-      },
-      "setup": {
-        "actions": {
-          "deleteCurrentDataset": "現在データセット削除",
-          "freezeFromCurrentRange": "現在範囲から凍結",
-          "refreshDataset": "更新"
-        },
-        "cards": {
-          "constraintsAndGoalTitle": "制約と目標",
-          "hardConstraintsTitle": "ハード制約",
-          "hintsTitle": "ヒント",
-          "tradeAndDataTitle": "取引とデータ"
-        },
-        "dataModes": {
-          "dataset": "データセット",
-          "klineRange": "履歴K線"
-        },
-        "hints": {
-          "nextWillGenerateCode": "次でコード生成開始。",
-          "tradeDataNextStep": "完了後「次へ」。"
-        },
-        "labels": {
-          "account": "アカウント",
-          "backtestRange": "バックテスト範囲",
-          "dataset": "データセット",
-          "historicalData": "履歴データ",
-          "intent": "戦略目標/アイデア",
-          "macroEvents": "マクロイベント",
-          "macroModule": "マクロモジュール",
-          "maxDrawdownPct": "最大DD(%)",
-          "maxTradesPerDay": "1日最大取引数",
-          "riskPerTradePct": "取引リスク(%)",
-          "symbol": "銘柄",
-          "timeframe": "時間枠"
-        },
-        "macro": {
-          "off": "OFF",
-          "on": "开"
-        },
-        "messages": {
-          "datasetDeleted": "データセット削除済"
-        },
-        "modals": {
-          "deleteDataset": {
-            "content": "選択した凍結データセットを削除しますか？",
-            "ok": "削除",
-            "title": "データセット削除"
-          }
-        },
-        "placeholders": {
-          "intentExample": "例: トレンドフォロー、高ボラ回避、高勝率重視",
-          "macroExample": "Example:\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n2024-01-03 21:15 FOMC minutes\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n2024-01-05 20:30 NFP",
-          "selectAccount": "アカウント選択",
-          "selectFrozenDataset": "データセット選択",
-          "selectSymbol": "銘柄選択",
-          "selectTimeframe": "時間枠選択"
-        },
-        "validations": {
-          "enterIntent": "戦略目標を入力",
-          "selectAccount": "アカウントを選択",
-          "selectDataset": "データセットを選択",
-          "selectSymbol": "銘柄を選択",
-          "selectTimeframe": "時間枠を選択"
-        }
-      },
-      "steps": {
-        "generate": "戦略生成",
-        "publishBacktest": "バックテスト・公開-バックテスト",
-        "publishCode": "バックテスト・公開-コード",
-        "publishLaunch": "バックテスト・公開-公開",
-        "setup": "基本情報"
-      },
       "strategyParams": {
         "actions": {
           "addParam": "追加",
@@ -265,7 +201,6 @@ const AiWizard = {
           "exportJson": "JSON出力",
           "importJson": "JSON入力"
         },
-        "empty": "パラメータなし。",
         "hints": {
           "intro": "これらのパラメータは:",
           "line1": "1) テンプレートに保存",
@@ -298,7 +233,6 @@ const AiWizard = {
           "importOk": "入力",
           "importTitle": "JSON入力"
         },
-        "paramCardTitle": "パラメータ #{{index}}",
         "placeholders": {
           "defaultExample": "例: 10",
           "description": "説明",
@@ -308,7 +242,6 @@ const AiWizard = {
           "optionsExample": "例: low,medium,high",
           "value": "空欄でdefault使用"
         },
-        "title": "戦略パラメータ（任意）",
         "types": {
           "bool": "真偽値",
           "number": "数値",
@@ -318,13 +251,80 @@ const AiWizard = {
         "validations": {
           "nameRequired": "name必須",
           "typeRequired": "type必須"
-        }
+        },
+        "empty": "パラメータなし。",
+        "paramCardTitle": "パラメータ #{{index}}",
+        "title": "戦略パラメータ（任意）"
       },
-      "subtitle": "1ページ1ステップ",
+      "actions": {
+        "cancel": "キャンセル",
+        "next": "次へ",
+        "prev": "戻る"
+      },
+      "agents": {
+        "codeTitle": "コード生成",
+        "riskTitle": "リスク管理",
+        "signalsTitle": "シグナル/指標",
+        "styleTitle": "市場状況/スタイル"
+      },
+      "messages": {
+        "agentFailed": "{{title}}失敗",
+        "aiRequestTimeout": "AIリクエストがタイムアウトしました（>{{seconds}}秒）",
+        "backtestCreated": "バックテスト作成",
+        "backtestNotDoneWait": "バックテスト完了待ち",
+        "chatAborted": "中止",
+        "codeInvalidFixAndContinue": "コード検証失敗",
+        "confirmScoreFirst": "まずスコア確認",
+        "createBacktestFailed": "作成失敗",
+        "createDraftFailed": "ドラフト作成失敗",
+        "createScheduleFailed": "作成失敗",
+        "datasetFrozenCreated": "データセット凍結作成",
+        "draftNotCreated": "ドラフト未作成",
+        "draftSaved": "ドラフト保存",
+        "fillRequired": "必須項目入力",
+        "fillRequiredWithFields": "必須項目入力: {{fields}}",
+        "freezeDatasetFailed": "凍結失敗",
+        "generateCodeFirst": "まずコード生成",
+        "inputIntentFirst": "まず戦略目標入力",
+        "loadAccountsFailed": "アカウント読込失敗",
+        "loadDatasetFailed": "データセット読込失敗",
+        "loadSymbolsFailed": "銘柄読込失敗",
+        "modelReturnedEmpty": "空返答",
+        "noCodeToBacktest": "バックテストするコードなし",
+        "noCodeToValidate": "検証するコードなし",
+        "noPythonCodeBlock": "コードブロックなし",
+        "publishFailed": "公開失敗",
+        "publishTemplateFirst": "まずテンプレート公開",
+        "publishedNoId": "公開済（ID未取得）",
+        "saveFailed": "保存失敗",
+        "scheduleAlreadyExists": "同じスケジュールが既に存在",
+        "scheduleCreated": "スケジュール作成",
+        "scheduleCreatedAndEnabled": "スケジュール作成・有効化",
+        "startBacktestFirst": "まずバックテスト開始",
+        "templatePublished": "テンプレート公開",
+        "userAborted": "中止",
+        "validateCodeFirst": "まずコード検証",
+        "validateError": "検証エラー",
+        "validateFailed": "検証不合格",
+        "validateOk": "検証合格",
+        "watchBacktestRunFailed": "watch失敗"
+      },
+      "schedule": {
+        "defaultName": "AIスケジュール {{symbol}} {{timeframe}}"
+      },
+      "steps": {
+        "generate": "戦略生成",
+        "publishBacktest": "バックテスト・公開-バックテスト",
+        "publishCode": "バックテスト・公開-コード",
+        "publishLaunch": "バックテスト・公開-公開",
+        "setup": "基本情報"
+      },
       "template": {
         "defaultDescription": "AI生成",
         "defaultName": "AI戦略 {{title}}"
       },
+      "currentModel": "現在のモデル: {{model}}",
+      "subtitle": "1ページ1ステップ",
       "title": "AI 戦略ウィザード"
     }
   }

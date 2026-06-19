@@ -3,14 +3,6 @@
 const StrategyTuning = {
   "strategy": {
     "tuning": {
-      "apply": "適用",
-      "degradation": "劣化",
-      "enabledCombinations": "{{enabled}} 有効 · {{combos}} 組合せ",
-      "grade": "グレード",
-      "gridWarning": "グリッドサーチは<b>{{count}}</b>組み合わせをテストします（上限48）。<b>差分進化</b>への切替を推奨。",
-      "hide": "非表示",
-      "oosFootnote": "上位5候補をOOS検証（ISスコア基準）。緑の劣化<20%、橙20-40%、赤>40%。",
-      "oosScore": "OOSスコア",
       "optimizer": {
         "ags": "焼鈍ガウス",
         "agsDesc": "シグマ焼鈍付きガウス摂動。TPEの軽量代替。",
@@ -25,6 +17,14 @@ const StrategyTuning = {
         "tpe": "TPE (核密度估计)",
         "tpeDesc": "ツリー構造Parzen推定量。KDEで良/不良分布をモデル化。"
       },
+      "apply": "適用",
+      "degradation": "劣化",
+      "enabledCombinations": "{{enabled}} 有効 · {{combos}} 組合せ",
+      "grade": "グレード",
+      "gridWarning": "グリッドサーチは<b>{{count}}</b>組み合わせをテストします（上限48）。<b>差分進化</b>への切替を推奨。",
+      "hide": "非表示",
+      "oosFootnote": "上位5候補をOOS検証（ISスコア基準）。緑の劣化<20%、橙20-40%、赤>40%。",
+      "oosScore": "OOSスコア",
       "optimizerMethod": "最適化手法",
       "overfit": "過学習",
       "overfitWarning": "⚠ 過学習",

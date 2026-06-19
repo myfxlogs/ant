@@ -2,6 +2,10 @@
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const Errors = {
   "errors": {
+    "ai": {
+      "internal_error": "AIサービスエラー。しばらくしてから再試行してください。",
+      "not_configured": "AIプロバイダーが未設定です。⚙をクリックしてAI設定でAPIキーを登録してください。"
+    },
     "account_already_bound": "この取引口座は既に連携されています",
     "account_auth_failed": "取引口座の認証に失敗しました",
     "account_connection_failed": "取引サーバーに接続できませんでした",
@@ -11,10 +15,6 @@ const Errors = {
     "account_not_found": "取引口座が見つかりません",
     "account_timeout": "取引サーバーへの接続がタイムアウトしました",
     "admin_access_denied": "管理者権限が必要です",
-    "ai": {
-      "internal_error": "AIサービスエラー。しばらくしてから再試行してください。",
-      "not_configured": "AIプロバイダーが未設定です。⚙をクリックしてAI設定でAPIキーを登録してください。"
-    },
     "analytics_not_available": "分析データは利用できません",
     "audit_log_not_found": "監査ログが見つかりません",
     "broker_not_found": "ブローカーが見つかりません",

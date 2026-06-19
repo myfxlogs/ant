@@ -3,18 +3,12 @@
 const StrategySchedules = {
   "strategy": {
     "schedules": {
-      "actions": {
-        "create": "スケジュール作成",
-        "healthCheck": "ヘルスチェック",
-        "logs": "実行ログ",
-        "runNow": "今すぐ実行"
-      },
-      "createSchedule": "スケジュール作成",
-      "deleteConfirm": {
-        "title": "このスケジュールを削除しますか？"
-      },
       "editModal": {
         "advanced": {
+          "triggerModeOptions": {
+            "hf": "高頻度シグナルストリーム",
+            "stable": "安定（ローソク/周期）"
+          },
           "fixedIntervalSeconds": "固定間隔(秒)",
           "fixedIntervalSecondsExtra": "任意。固定間隔で実行（時間足追従しない）。例：60 は60秒ごと",
           "hfCooldownMs": "高頻度クールダウン(ms)",
@@ -27,11 +21,7 @@ const StrategySchedules = {
           "timeframeExtra": "ローソク/指標計算に使用",
           "title": "詳細設定",
           "triggerMode": "トリガーモード",
-          "triggerModeExtra": "安定：ローソク/周期（ノイズ少・遅延あり）；高頻度：クオート（速い・デバウンス必要）",
-          "triggerModeOptions": {
-            "hf": "高頻度シグナルストリーム",
-            "stable": "安定（ローソク/周期）"
-          }
+          "triggerModeExtra": "安定：ローソク/周期（ノイズ少・遅延あり）；高頻度：クオート（速い・デバウンス必要）"
         },
         "autoName": {
           "strategy": "ストラテジー"
@@ -80,11 +70,6 @@ const StrategySchedules = {
           "triggerModeRequired": "トリガーモードが必要です"
         }
       },
-      "enableCount": "有効化回数",
-      "format": {
-        "cron": "定时: {{expr}}",
-        "interval": "{{s}}秒毎"
-      },
       "health": {
         "fields": {
           "configKey": "設定キー",
@@ -127,6 +112,45 @@ const StrategySchedules = {
         "thresholdsSummary": "min_sample_size={{minSampleSize}}、緑: 成功率>={{greenSuccessRate}}% かつ 失敗<={{greenMaxFailedRuns}}、黄: 成功率>={{yellowSuccessRate}}%",
         "title": "戦略ヘルスチェック {{name}}"
       },
+      "triggerModal": {
+        "actions": {
+          "confirmOrder": "発注する",
+          "rerun": "再実行"
+        },
+        "cards": {
+          "logs": "実行ログ",
+          "signal": "シグナル（発注用）"
+        },
+        "confirmOrder": {
+          "ok": "確認",
+          "title": "発注する"
+        },
+        "messages": {
+          "signalNotOrderable": "シグナルは注文不可"
+        },
+        "summary": {
+          "account": "口座",
+          "scheduleName": "スケジュール名",
+          "symbol": "銘柄",
+          "timeframe": "時間足"
+        },
+        "emptyLogs": "(ログなし)",
+        "emptySignal": "シグナルなし",
+        "title": "今すぐ実行（即時発注）"
+      },
+      "actions": {
+        "create": "スケジュール作成",
+        "healthCheck": "ヘルスチェック",
+        "logs": "実行ログ",
+        "runNow": "今すぐ実行"
+      },
+      "deleteConfirm": {
+        "title": "このスケジュールを削除しますか？"
+      },
+      "format": {
+        "cron": "定时: {{expr}}",
+        "interval": "{{s}}秒毎"
+      },
       "messages": {
         "defaultTemplateNotFound": "デフォルトテンプレートが見つかりません。更新して再試行してください。",
         "executeFailed": "実行に失敗しました",
@@ -140,7 +164,6 @@ const StrategySchedules = {
         "templateCodeEmptyCannotExecute": "テンプレートコードが空です。実行できません。",
         "volumeInvalid": "数量が不正です（> 0）"
       },
-      "nextRunAt": "次回実行",
       "status": {
         "disabled": "無効",
         "running": "実行中"
@@ -159,36 +182,13 @@ const StrategySchedules = {
         "private": "非公開",
         "public": "公開"
       },
-      "title": "戦略スケジュール",
-      "triggerModal": {
-        "actions": {
-          "confirmOrder": "発注する",
-          "rerun": "再実行"
-        },
-        "cards": {
-          "logs": "実行ログ",
-          "signal": "シグナル（発注用）"
-        },
-        "confirmOrder": {
-          "ok": "確認",
-          "title": "発注する"
-        },
-        "emptyLogs": "(ログなし)",
-        "emptySignal": "シグナルなし",
-        "messages": {
-          "signalNotOrderable": "シグナルは注文不可"
-        },
-        "summary": {
-          "account": "口座",
-          "scheduleName": "スケジュール名",
-          "symbol": "銘柄",
-          "timeframe": "時間足"
-        },
-        "title": "今すぐ実行（即時発注）"
-      },
       "validation": {
         "parametersMustBeJsonObject": "パラメータはJSONオブジェクトである必要があります"
-      }
+      },
+      "createSchedule": "スケジュール作成",
+      "enableCount": "有効化回数",
+      "nextRunAt": "次回実行",
+      "title": "戦略スケジュール"
     }
   }
 } as const;

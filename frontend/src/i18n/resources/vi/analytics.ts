@@ -3,6 +3,20 @@
 const Analytics = {
   "analytics": {
     "summary": {
+      "economicCalendar": {
+        "indicators": {
+          "CPI": "Lạm phát (CPI)",
+          "FEDFUNDS": "Lãi suất quỹ Fed",
+          "GDP": "GDP thực tế",
+          "UNRATE": "Tỷ lệ thất nghiệp"
+        },
+        "actual": "Thực tế",
+        "empty": "Không có sự kiện kinh tế nào.",
+        "estimate": "Dự báo",
+        "keyIndicatorsTitle": "Các chỉ số vĩ mô chính",
+        "loading": "Đang tải lịch kinh tế...",
+        "previous": "Trước đó"
+      },
       "cards": {
         "directionShare": "Tỷ lệ mua/bán",
         "economicCalendar": "Lịch kinh tế",
@@ -15,20 +29,6 @@ const Analytics = {
       "direction": {
         "buy": "Mua",
         "sell": "Bán"
-      },
-      "economicCalendar": {
-        "actual": "Thực tế",
-        "empty": "Không có sự kiện kinh tế nào.",
-        "estimate": "Dự báo",
-        "indicators": {
-          "CPI": "Lạm phát (CPI)",
-          "FEDFUNDS": "Lãi suất quỹ Fed",
-          "GDP": "GDP thực tế",
-          "UNRATE": "Tỷ lệ thất nghiệp"
-        },
-        "keyIndicatorsTitle": "Các chỉ số vĩ mô chính",
-        "loading": "Đang tải lịch kinh tế...",
-        "previous": "Trước đó"
       },
       "labels": {
         "pnl": "Lãi/Lỗ"
@@ -65,7 +65,6 @@ const Analytics = {
         "equityCurve": "Đường vốn",
         "monthlyStats": "Thống kê theo tháng"
       },
-      "title": "Phân tích",
       "tradeStats": {
         "avgHolding": "Thời gian giữ TB",
         "avgLoss": "Lỗ TB",
@@ -80,6 +79,7 @@ const Analytics = {
         "winRate": "Tỷ lệ thắng",
         "wins": "Lãi"
       },
+      "title": "Phân tích",
       "yearOption": "{{year}}年"
     }
   }

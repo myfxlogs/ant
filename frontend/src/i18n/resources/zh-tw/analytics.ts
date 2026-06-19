@@ -3,6 +3,20 @@
 const Analytics = {
   "analytics": {
     "summary": {
+      "economicCalendar": {
+        "indicators": {
+          "CPI": "通貨膨脹（CPI）",
+          "FEDFUNDS": "聯邦基金利率",
+          "GDP": "實際GDP",
+          "UNRATE": "失業率"
+        },
+        "actual": "實際值",
+        "empty": "暫無經濟事件。",
+        "estimate": "預測值",
+        "keyIndicatorsTitle": "關鍵宏觀指標",
+        "loading": "正在載入經濟日曆...",
+        "previous": "前值"
+      },
       "cards": {
         "directionShare": "買賣方向占比",
         "economicCalendar": "經濟日曆",
@@ -15,20 +29,6 @@ const Analytics = {
       "direction": {
         "buy": "買入",
         "sell": "賣出"
-      },
-      "economicCalendar": {
-        "actual": "實際值",
-        "empty": "暫無經濟事件。",
-        "estimate": "預測值",
-        "indicators": {
-          "CPI": "通貨膨脹（CPI）",
-          "FEDFUNDS": "聯邦基金利率",
-          "GDP": "實際GDP",
-          "UNRATE": "失業率"
-        },
-        "keyIndicatorsTitle": "關鍵宏觀指標",
-        "loading": "正在載入經濟日曆...",
-        "previous": "前值"
       },
       "labels": {
         "pnl": "盈虧"
@@ -65,7 +65,6 @@ const Analytics = {
         "equityCurve": "資金曲線",
         "monthlyStats": "月度統計"
       },
-      "title": "分析",
       "tradeStats": {
         "avgHolding": "平均持倉",
         "avgLoss": "平均虧損",
@@ -80,6 +79,7 @@ const Analytics = {
         "winRate": "勝率",
         "wins": "盈利"
       },
+      "title": "分析",
       "yearOption": "{{year}}年"
     }
   }

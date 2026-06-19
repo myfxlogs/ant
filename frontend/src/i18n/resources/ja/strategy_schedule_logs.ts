@@ -52,7 +52,6 @@ const StrategyScheduleLogs = {
         "ticket": "チケット",
         "time": "時間"
       },
-      "scheduleIdLabel": "スケジュールID:",
       "status": {
         "failed": "失败",
         "success": "成功"
@@ -71,6 +70,7 @@ const StrategyScheduleLogs = {
         "orderLogs": "注文ログ",
         "orders": "取引履歴"
       },
+      "scheduleIdLabel": "スケジュールID:",
       "title": "記録",
       "titleWithName": "記録 - {{name}}"
     }

@@ -2,6 +2,13 @@
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const Logs = {
   "logs": {
+    "orderTable": {
+      "close": "Close",
+      "lots": "Lots",
+      "open": "Open",
+      "ticket": "Ticket",
+      "type": "Type"
+    },
     "accountId": "Account ID",
     "action": "Action",
     "connectionLogs": "Connection logs",
@@ -22,13 +29,6 @@ const Logs = {
     "module": "Module",
     "operationLogs": "Operation logs",
     "orderHistory": "Order history",
-    "orderTable": {
-      "close": "Close",
-      "lots": "Lots",
-      "open": "Open",
-      "ticket": "Ticket",
-      "type": "Type"
-    },
     "period": "Period",
     "product": "Product",
     "profit": "P/L",

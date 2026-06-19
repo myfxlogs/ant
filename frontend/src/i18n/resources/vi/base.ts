@@ -2,83 +2,22 @@
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const Base = {
   "admin": {
-    "config": {
-      "aiProviderCatalog": "AI提供商目录",
-      "baseUrlLabel": "Base URL",
-      "configItem": "配置项",
-      "description": "Mô Tả",
-      "econAIConfig": "经济日历AI配置",
-      "editConfig": "编辑配置: {{key}}",
-      "enableToggle": "Kích Hoạt",
-      "fillTemplate": "填充模板",
-      "formatJson": "格式化JSON",
-      "maxAccountsPerUser": "每用户最大账户数",
-      "messages": {
-        "disabled": "已禁用",
-        "enabled": "已启用",
-        "loadFailed": "加载配置失败",
-        "operationFailed": "操作失败",
-        "updateFailed": "更新配置失败",
-        "updated": "配置已更新"
-      },
-      "modelName": "模型名称",
-      "off": "关",
-      "on": "开",
-      "placeholders": {
-        "apiKey": "输入API Key",
-        "baseUrl": "输入Base URL",
-        "configValue": "输入配置值",
-        "description": "输入描述",
-        "json": "输入JSON",
-        "model": "输入模型名称"
-      },
-      "provider": "提供商",
-      "providerOptions": {
-        "custom": "自定义 / OpenAI 兼容",
-        "deepseek": "DeepSeek",
-        "zhipu": "智谱AI"
-      },
-      "status": "Trạng Thái",
-      "strategyHealthConfig": "策略健康度配置",
-      "thresholdDesc": "阈值描述",
-      "thresholdInfo": "阈值说明",
-      "title": "系统配置",
-      "toggle": "切换",
-      "updatedAt": "更新时间",
-      "validation": {
-        "apiKeyRequired": "API Key不能为空",
-        "greenMaxFailedRunsNonNegative": "绿色最大失败次数需≥0",
-        "greenSuccessRateRange": "绿色成功率需在0-100之间",
-        "jsonEmpty": "JSON不能为空",
-        "jsonInvalid": "JSON格式无效",
-        "minSampleSizeNonNegative": "最小样本量需≥0",
-        "modelRequired": "模型名称不能为空",
-        "yellowNotGreaterThanGreen": "黄色阈值不能超过绿色阈值",
-        "yellowSuccessRateRange": "黄色成功率需在0-100之间"
-      },
-      "value": "值"
-    },
     "dashboard": {
-      "activeUsers": "Người Dùng Hoạt Động",
-      "loadFailed": "Tải dữ liệu bảng điều khiển thất bại",
       "logs": {
-        "actionType": "Hành Động",
-        "failed": "Thất Bại",
-        "module": "Mô-đun",
         "moduleMap": {
           "accountManagement": "Quản Lý Tài Khoản",
           "systemConfig": "Cấu Hình Hệ Thống",
           "trading": "Giao Dịch",
           "userManagement": "Quản Lý Người Dùng"
         },
+        "actionType": "Hành Động",
+        "failed": "Thất Bại",
+        "module": "Mô-đun",
         "status": "Trạng Thái",
         "success": "Thành Công",
         "target": "Mục Tiêu",
         "time": "Thời Gian"
       },
-      "mtAccounts": "TK MT",
-      "onlineAccounts": "Trực Tuyến",
-      "recentLogs": "Nhật Ký Gần Đây",
       "riskMetrics": {
         "orderCloseFailed": "平仓失败",
         "orderCloseSuccess": "平仓成功",
@@ -105,19 +44,189 @@ const Base = {
         "validateReject": "拒绝",
         "validateTotal": "总计"
       },
+      "activeUsers": "Người Dùng Hoạt Động",
+      "loadFailed": "Tải dữ liệu bảng điều khiển thất bại",
+      "mtAccounts": "TK MT",
+      "onlineAccounts": "Trực Tuyến",
+      "recentLogs": "Nhật Ký Gần Đây",
       "title": "Bảng Điều Khiển Quản Trị",
       "todayProfit": "Lợi Nhuận Hôm Nay",
       "todayTrades": "Giao Dịch Hôm Nay",
       "totalUsers": "Tổng Người Dùng"
     },
-    "header": {
-      "admin": "管理",
-      "adminMode": "管理员模式",
-      "adminPanel": "管理后台",
-      "backToUser": "返回用户端",
-      "logout": "Đăng xuất"
+    "userManagement": {
+      "drawer": {
+        "labels": {
+          "createdAt": "Ngày Tạo",
+          "email": "用户邮箱",
+          "id": "ID",
+          "lastLogin": "Đăng Nhập Cuối",
+          "mtAccountCount": "TK MT",
+          "nickname": "Biệt Danh",
+          "role": "Vai Trò",
+          "status": "Trạng Thái"
+        },
+        "title": "Chi Tiết Người Dùng"
+      },
+      "form": {
+        "placeholders": {
+          "email": "Nhập email",
+          "nickname": "Nhập biệt danh",
+          "password": "输入密码"
+        },
+        "accountNumber": "Số Tài Khoản",
+        "accountNumberInvalid": "5-6 chữ số, không có số 0 ở đầu, không có 4 hoặc 7",
+        "email": "用户邮箱",
+        "nickname": "Biệt Danh",
+        "password": "Mật Khẩu",
+        "role": "Vai Trò",
+        "status": "Trạng Thái"
+      },
+      "passwordForm": {
+        "placeholders": {
+          "confirmPassword": "再次输入新密码",
+          "newPassword": "Nhập mật khẩu mới"
+        },
+        "validation": {
+          "confirmPasswordRequired": "Vui lòng xác nhận mật khẩu mới",
+          "newPasswordRequired": "Vui lòng nhập mật khẩu mới",
+          "passwordMin8": "Mật khẩu phải có ít nhất 8 ký tự",
+          "passwordMismatch": "Mật khẩu không khớp",
+          "passwordMustContainLettersAndNumbers": "密码必须包含字母和数字"
+        },
+        "confirmPassword": "Xác Nhận Mật Khẩu",
+        "newPassword": "Mật Khẩu Mới",
+        "submit": "Cập Nhật Mật Khẩu"
+      },
+      "actions": {
+        "changePassword": "修改密码",
+        "details": "Chi Tiết",
+        "disable": "Vô Hiệu",
+        "enable": "Kích Hoạt"
+      },
+      "deleteConfirm": {
+        "batchDeleteConfirm": "Xóa {{count}} người dùng? Hành động này không thể hoàn tác.",
+        "batchDeletePartial": "Đã xóa {{deleted}}, {{failed}} thất bại",
+        "batchDeleteSuccess": "Đã xóa {{count}} người dùng",
+        "title": "Xóa người dùng này? Hành động này không thể hoàn tác."
+      },
+      "filters": {
+        "rolePlaceholder": "Lọc theo vai trò",
+        "searchPlaceholder": "Tìm theo email hoặc biệt danh",
+        "statusPlaceholder": "按状态筛选"
+      },
+      "messages": {
+        "newPasswordIs": "新密码为: {{password}}",
+        "passwordUpdateFailed": "Cập nhật mật khẩu thất bại",
+        "passwordUpdatedSuccess": "Đã cập nhật mật khẩu",
+        "userCreateFailed": "Tạo người dùng thất bại",
+        "userCreatedSuccess": "Đã tạo người dùng",
+        "userDeleteFailed": "Xóa người dùng thất bại",
+        "userDeletedSuccess": "Đã xóa người dùng",
+        "userDisabled": "Đã vô hiệu người dùng",
+        "userEnabled": "Đã kích hoạt người dùng",
+        "userUpdateFailed": "Cập nhật người dùng thất bại",
+        "userUpdatedSuccess": "Đã cập nhật người dùng"
+      },
+      "modals": {
+        "createTitle": "Tạo Người Dùng",
+        "editTitle": "Sửa Người Dùng",
+        "passwordTitle": "修改密码"
+      },
+      "pagination": {
+        "total": "共 {{total}} 位用户"
+      },
+      "roles": {
+        "audit": "审计",
+        "customerService": "CSKH",
+        "operation": "Vận Hành",
+        "superAdmin": "Quản Trị Viên",
+        "user": "Người Dùng"
+      },
+      "status": {
+        "active": "Hoạt Động",
+        "suspended": "已停用"
+      },
+      "table": {
+        "actions": "Thao Tác",
+        "createdAt": "Ngày Tạo",
+        "email": "用户邮箱",
+        "id": "ID",
+        "mtAccountCount": "TK MT",
+        "nickname": "Biệt Danh",
+        "role": "Vai Trò",
+        "status": "Trạng Thái"
+      },
+      "addUser": "Thêm Người Dùng",
+      "title": "Quản Lý Người Dùng"
+    },
+    "config": {
+      "messages": {
+        "disabled": "已禁用",
+        "enabled": "已启用",
+        "loadFailed": "加载配置失败",
+        "operationFailed": "操作失败",
+        "updateFailed": "更新配置失败",
+        "updated": "配置已更新"
+      },
+      "placeholders": {
+        "apiKey": "输入API Key",
+        "baseUrl": "输入Base URL",
+        "configValue": "输入配置值",
+        "description": "输入描述",
+        "json": "输入JSON",
+        "model": "输入模型名称"
+      },
+      "providerOptions": {
+        "custom": "自定义 / OpenAI 兼容",
+        "deepseek": "DeepSeek",
+        "zhipu": "智谱AI"
+      },
+      "validation": {
+        "apiKeyRequired": "API Key不能为空",
+        "greenMaxFailedRunsNonNegative": "绿色最大失败次数需≥0",
+        "greenSuccessRateRange": "绿色成功率需在0-100之间",
+        "jsonEmpty": "JSON不能为空",
+        "jsonInvalid": "JSON格式无效",
+        "minSampleSizeNonNegative": "最小样本量需≥0",
+        "modelRequired": "模型名称不能为空",
+        "yellowNotGreaterThanGreen": "黄色阈值不能超过绿色阈值",
+        "yellowSuccessRateRange": "黄色成功率需在0-100之间"
+      },
+      "aiProviderCatalog": "AI提供商目录",
+      "baseUrlLabel": "Base URL",
+      "configItem": "配置项",
+      "description": "Mô Tả",
+      "econAIConfig": "经济日历AI配置",
+      "editConfig": "编辑配置: {{key}}",
+      "enableToggle": "Kích Hoạt",
+      "fillTemplate": "填充模板",
+      "formatJson": "格式化JSON",
+      "maxAccountsPerUser": "每用户最大账户数",
+      "modelName": "模型名称",
+      "off": "关",
+      "on": "开",
+      "provider": "提供商",
+      "status": "Trạng Thái",
+      "strategyHealthConfig": "策略健康度配置",
+      "thresholdDesc": "阈值描述",
+      "thresholdInfo": "阈值说明",
+      "title": "系统配置",
+      "toggle": "切换",
+      "updatedAt": "更新时间",
+      "value": "值"
     },
     "jurisdiction": {
+      "messages": {
+        "countryAddFailed": "添加国家失败",
+        "countryAdded": "国家已添加",
+        "countryRemoveFailed": "移除国家失败",
+        "countryRemoved": "国家已移除",
+        "kycUpdateFailed": "更新KYC状态失败",
+        "kycUpdated": "KYC状态已更新",
+        "overrideUpdateFailed": "更新制裁豁免失败",
+        "overrideUpdated": "豁免状态已更新"
+      },
       "actions": "Thao Tác",
       "addCountry": "Thêm Quốc Gia",
       "addSanctionedCountry": "添加制裁国家",
@@ -134,16 +243,6 @@ const Base = {
       "grantOverride": "Cấp Ghi Đè",
       "kycStatus": "Trạng Thái KYC",
       "kycStatusTab": "用户KYC状态",
-      "messages": {
-        "countryAddFailed": "添加国家失败",
-        "countryAdded": "国家已添加",
-        "countryRemoveFailed": "移除国家失败",
-        "countryRemoved": "国家已移除",
-        "kycUpdateFailed": "更新KYC状态失败",
-        "kycUpdated": "KYC状态已更新",
-        "overrideUpdateFailed": "更新制裁豁免失败",
-        "overrideUpdated": "豁免状态已更新"
-      },
       "override": "Ghi Đè",
       "overrideWarning": "此用户来自受制裁国家，授予豁免将允许交易。",
       "pending": "Đang Chờ",
@@ -160,6 +259,13 @@ const Base = {
       "userEmail": "用户邮箱",
       "userKYCStatus": "用户KYC状态",
       "verified": "Đã Xác Minh"
+    },
+    "header": {
+      "admin": "管理",
+      "adminMode": "管理员模式",
+      "adminPanel": "管理后台",
+      "backToUser": "返回用户端",
+      "logout": "Đăng xuất"
     },
     "sidebar": {
       "accountManagement": "Quản Lý Tài Khoản",
@@ -193,112 +299,6 @@ const Base = {
       "totalVolume": "Tổng Khối Lượng",
       "volume": "Khối Lượng"
     },
-    "userManagement": {
-      "actions": {
-        "changePassword": "修改密码",
-        "details": "Chi Tiết",
-        "disable": "Vô Hiệu",
-        "enable": "Kích Hoạt"
-      },
-      "addUser": "Thêm Người Dùng",
-      "deleteConfirm": {
-        "batchDeleteConfirm": "Xóa {{count}} người dùng? Hành động này không thể hoàn tác.",
-        "batchDeletePartial": "Đã xóa {{deleted}}, {{failed}} thất bại",
-        "batchDeleteSuccess": "Đã xóa {{count}} người dùng",
-        "title": "Xóa người dùng này? Hành động này không thể hoàn tác."
-      },
-      "drawer": {
-        "labels": {
-          "createdAt": "Ngày Tạo",
-          "email": "用户邮箱",
-          "id": "ID",
-          "lastLogin": "Đăng Nhập Cuối",
-          "mtAccountCount": "TK MT",
-          "nickname": "Biệt Danh",
-          "role": "Vai Trò",
-          "status": "Trạng Thái"
-        },
-        "title": "Chi Tiết Người Dùng"
-      },
-      "filters": {
-        "rolePlaceholder": "Lọc theo vai trò",
-        "searchPlaceholder": "Tìm theo email hoặc biệt danh",
-        "statusPlaceholder": "按状态筛选"
-      },
-      "form": {
-        "accountNumber": "Số Tài Khoản",
-        "accountNumberInvalid": "5-6 chữ số, không có số 0 ở đầu, không có 4 hoặc 7",
-        "email": "用户邮箱",
-        "nickname": "Biệt Danh",
-        "password": "Mật Khẩu",
-        "placeholders": {
-          "email": "Nhập email",
-          "nickname": "Nhập biệt danh",
-          "password": "输入密码"
-        },
-        "role": "Vai Trò",
-        "status": "Trạng Thái"
-      },
-      "messages": {
-        "newPasswordIs": "新密码为: {{password}}",
-        "passwordUpdateFailed": "Cập nhật mật khẩu thất bại",
-        "passwordUpdatedSuccess": "Đã cập nhật mật khẩu",
-        "userCreateFailed": "Tạo người dùng thất bại",
-        "userCreatedSuccess": "Đã tạo người dùng",
-        "userDeleteFailed": "Xóa người dùng thất bại",
-        "userDeletedSuccess": "Đã xóa người dùng",
-        "userDisabled": "Đã vô hiệu người dùng",
-        "userEnabled": "Đã kích hoạt người dùng",
-        "userUpdateFailed": "Cập nhật người dùng thất bại",
-        "userUpdatedSuccess": "Đã cập nhật người dùng"
-      },
-      "modals": {
-        "createTitle": "Tạo Người Dùng",
-        "editTitle": "Sửa Người Dùng",
-        "passwordTitle": "修改密码"
-      },
-      "pagination": {
-        "total": "共 {{total}} 位用户"
-      },
-      "passwordForm": {
-        "confirmPassword": "Xác Nhận Mật Khẩu",
-        "newPassword": "Mật Khẩu Mới",
-        "placeholders": {
-          "confirmPassword": "再次输入新密码",
-          "newPassword": "Nhập mật khẩu mới"
-        },
-        "submit": "Cập Nhật Mật Khẩu",
-        "validation": {
-          "confirmPasswordRequired": "Vui lòng xác nhận mật khẩu mới",
-          "newPasswordRequired": "Vui lòng nhập mật khẩu mới",
-          "passwordMin8": "Mật khẩu phải có ít nhất 8 ký tự",
-          "passwordMismatch": "Mật khẩu không khớp",
-          "passwordMustContainLettersAndNumbers": "密码必须包含字母和数字"
-        }
-      },
-      "roles": {
-        "audit": "审计",
-        "customerService": "CSKH",
-        "operation": "Vận Hành",
-        "superAdmin": "Quản Trị Viên",
-        "user": "Người Dùng"
-      },
-      "status": {
-        "active": "Hoạt Động",
-        "suspended": "已停用"
-      },
-      "table": {
-        "actions": "Thao Tác",
-        "createdAt": "Ngày Tạo",
-        "email": "用户邮箱",
-        "id": "ID",
-        "mtAccountCount": "TK MT",
-        "nickname": "Biệt Danh",
-        "role": "Vai Trò",
-        "status": "Trạng Thái"
-      },
-      "title": "Quản Lý Người Dùng"
-    },
     "wallet": {
       "accountNumber": "Số TK",
       "add": "Thêm",
@@ -313,8 +313,91 @@ const Base = {
       "walletFor": "Ví của"
     }
   },
-  "app": {
-    "name": "AntTrader"
+  "autoTrading": {
+    "logs": {
+      "columns": {
+        "action": "Hành Động",
+        "price": "Giá",
+        "profit": "Lãi/Lỗ",
+        "symbol": "Mã",
+        "ticket": "单号",
+        "time": "Thời Gian",
+        "volume": "Khối Lượng"
+      },
+      "empty": "Chưa có nhật ký giao dịch",
+      "title": "Nhật Ký Giao Dịch Gần Đây"
+    },
+    "messages": {
+      "loadFailed": "Tải dữ liệu giao dịch tự động thất bại",
+      "toggleFailed": "切换自动交易失败"
+    },
+    "settings": {
+      "maxDailyLoss": "Lỗ Tối Đa Hàng Ngày",
+      "maxDailyLossHint": "Tự động tắt giao dịch nếu lỗ hàng ngày vượt quá mức này",
+      "maxDrawdownPercent": "Sụt Giảm Tối Đa %",
+      "maxDrawdownPercentHint": "Tự động tắt giao dịch nếu drawdown vượt quá mức này",
+      "maxLotSize": "Lot Tối Đa",
+      "maxLotSizeHint": "Khối lượng tối đa mỗi giao dịch (lots)",
+      "maxPositions": "Vị Thế Tối Đa",
+      "maxPositionsHint": "Số vị thế mở tối đa",
+      "maxRiskPercent": "Rủi Ro Tối Đa %",
+      "maxRiskPercentHint": "Phần trăm số dư để rủi ro mỗi giao dịch",
+      "saveFailed": "保存设置失败",
+      "saveSuccess": "Đã lưu cài đặt",
+      "title": "Cài Đặt Rủi Ro Toàn Cục"
+    },
+    "status": {
+      "activeStrategies": "Chiến Lược Đang Hoạt Động",
+      "disabled": "Giao Dịch Tự Động Đã Tắt",
+      "enabled": "Giao Dịch Tự Động Đã Bật",
+      "todayExecutions": "Today's Executions",
+      "todayProfit": "Today's Profit"
+    },
+    "title": "Giao Dịch Tự Động"
+  },
+  "notifications": {
+    "stream": {
+      "autoTrading": {
+        "fallback": "自动交易事件触发",
+        "title": "Giao Dịch Tự Động"
+      },
+      "riskAlert": {
+        "fallback": "警报类型: {{alertType}}",
+        "title": "Cảnh báo Rủi ro"
+      },
+      "strategyExecution": {
+        "completed": "{{symbol}} {{action}} đã hoàn thành",
+        "failed": "执行失败: {{error}}",
+        "title": "Thực thi Chiến lược"
+      },
+      "strategySignal": {
+        "message": "{{symbol}} triggered {{signalType}}",
+        "title": "Tín hiệu Chiến lược"
+      }
+    },
+    "actions": {
+      "clearAll": "Xóa",
+      "clearAllConfirm": "Xóa tất cả thông báo?",
+      "markAllAsRead": "Đánh dấu đã đọc"
+    },
+    "tabs": {
+      "all": "Tất cả ({{count}})",
+      "unread": "未读 ({{count}})"
+    },
+    "types": {
+      "risk_alert": "Cảnh báo Rủi ro",
+      "signal": "Tín hiệu",
+      "strategy_execution": "Chiến lược",
+      "system": "系统",
+      "trade": "Giao dịch"
+    },
+    "all": "Tất cả",
+    "clearAll": "Xóa",
+    "confirmClearAll": "Xóa tất cả thông báo?",
+    "empty": "Không có thông báo",
+    "markAllRead": "Đánh dấu đã đọc",
+    "title": "Thông báo",
+    "unread": "Chưa đọc"
   },
   "auth": {
     "fields": {
@@ -360,49 +443,17 @@ const Base = {
       "passwordRequired": "Vui lòng nhập mật khẩu"
     }
   },
-  "autoTrading": {
-    "logs": {
-      "columns": {
-        "action": "Hành Động",
-        "price": "Giá",
-        "profit": "Lãi/Lỗ",
-        "symbol": "Mã",
-        "ticket": "单号",
-        "time": "Thời Gian",
-        "volume": "Khối Lượng"
-      },
-      "empty": "Chưa có nhật ký giao dịch",
-      "title": "Nhật Ký Giao Dịch Gần Đây"
-    },
-    "messages": {
-      "loadFailed": "Tải dữ liệu giao dịch tự động thất bại",
-      "toggleFailed": "切换自动交易失败"
-    },
-    "settings": {
-      "maxDailyLoss": "Lỗ Tối Đa Hàng Ngày",
-      "maxDailyLossHint": "Tự động tắt giao dịch nếu lỗ hàng ngày vượt quá mức này",
-      "maxDrawdownPercent": "Sụt Giảm Tối Đa %",
-      "maxDrawdownPercentHint": "Tự động tắt giao dịch nếu drawdown vượt quá mức này",
-      "maxLotSize": "Lot Tối Đa",
-      "maxLotSizeHint": "Khối lượng tối đa mỗi giao dịch (lots)",
-      "maxPositions": "Vị Thế Tối Đa",
-      "maxPositionsHint": "Số vị thế mở tối đa",
-      "maxRiskPercent": "Rủi Ro Tối Đa %",
-      "maxRiskPercentHint": "Phần trăm số dư để rủi ro mỗi giao dịch",
-      "saveFailed": "保存设置失败",
-      "saveSuccess": "Đã lưu cài đặt",
-      "title": "Cài Đặt Rủi Ro Toàn Cục"
-    },
-    "status": {
-      "activeStrategies": "Chiến Lược Đang Hoạt Động",
-      "disabled": "Giao Dịch Tự Động Đã Tắt",
-      "enabled": "Giao Dịch Tự Động Đã Bật",
-      "todayExecutions": "Today's Executions",
-      "todayProfit": "Today's Profit"
-    },
-    "title": "Giao Dịch Tự Động"
-  },
   "common": {
+    "months": {
+      "jan": "1月",
+      "jul": "7月"
+    },
+    "time": {
+      "day": "{{n}}ngày",
+      "hour": "{{n}}giờ",
+      "lessThanMinute": "<1分钟",
+      "minute": "{{n}}ph"
+    },
     "active": "Hoạt Động",
     "back": "Quay lại",
     "cancel": "Hủy",
@@ -433,10 +484,6 @@ const Base = {
     "lineColor": "Màu đường",
     "loading": "Đang tải...",
     "loadingFailed": "Tải thất bại",
-    "months": {
-      "jan": "1月",
-      "jul": "7月"
-    },
     "next": "Tiếp theo",
     "no": "否",
     "noData": "Không có dữ liệu",
@@ -459,12 +506,6 @@ const Base = {
     "selectSymbolToViewChart": "Chọn mã để xem biểu đồ",
     "send": "Gửi",
     "showDetails": "Xem chi tiết",
-    "time": {
-      "day": "{{n}}ngày",
-      "hour": "{{n}}giờ",
-      "lessThanMinute": "<1分钟",
-      "minute": "{{n}}ph"
-    },
     "totalItems": "Tổng {{count}} mục",
     "translate": "Dịch",
     "unexpectedError": "Đã xảy ra lỗi không mong muốn",
@@ -476,10 +517,6 @@ const Base = {
     "you": "Bạn"
   },
   "errors": {
-    "access_denied": "Từ chối truy cập",
-    "account_connected": "Kết nối thành công",
-    "account_connection_failed": "Không thể kết nối đến máy chủ giao dịch",
-    "account_not_found": "Không tìm thấy tài khoản",
     "ai": {
       "api_key_required": "API key là bắt buộc",
       "base_url_required": "Base URL là bắt buộc",
@@ -501,18 +538,144 @@ const Base = {
       "rate_limited": "AI bị giới hạn tốc độ hoặc hết hạn mức (429/resource exhausted). Vui lòng thử lại sau.",
       "request_failed": "Yêu cầu API thất bại"
     },
-    "auto_trading_disabled": "Đã tắt giao dịch tự động",
-    "auto_trading_enabled": "Đã bật giao dịch tự động",
     "connection_failed": {
       "content": "无法连接到服务器，请检查网络后重试。",
       "title": "Kết nối thất bại"
     },
+    "access_denied": "Từ chối truy cập",
+    "account_connected": "Kết nối thành công",
+    "account_connection_failed": "Không thể kết nối đến máy chủ giao dịch",
+    "account_not_found": "Không tìm thấy tài khoản",
+    "auto_trading_disabled": "Đã tắt giao dịch tự động",
+    "auto_trading_enabled": "Đã bật giao dịch tự động",
     "email_already_registered": "Email đã được đăng ký",
     "invalid_credentials": "Thông tin đăng nhập không hợp lệ",
     "not_authenticated": "Chưa đăng nhập",
     "schedule_service_not_available": "Dịch vụ lịch biểu không khả dụng",
     "translate_failed": "Dịch thất bại",
     "user_not_found": "Không tìm thấy người dùng"
+  },
+  "marketplace": {
+    "author": {
+      "avgRating": "Đánh Giá TB",
+      "empty": "Chưa có chiến lược nào được xuất bản. Vào Thư Viện Chiến Lược để xuất bản.",
+      "published": "Đã Xuất Bản"
+    },
+    "card": {
+      "by": "by",
+      "free": "Miễn Phí",
+      "owned": "Ngày Mua",
+      "subscribers": "Người Đăng Ký",
+      "winRate": "Tỷ Lệ Thắng"
+    },
+    "detail": {
+      "assetClass": "Loại Tài Sản",
+      "author": "Tác Giả",
+      "commentPlaceholder": "Viết bình luận...",
+      "comments": "Bình Luận",
+      "description": "Mô Tả",
+      "getFree": "Nhận Miễn Phí",
+      "rentPrice": "¥{{amount}} / tháng",
+      "subscribers": "Người Đăng Ký",
+      "yourRating": "Đánh Giá Của Bạn"
+    },
+    "messages": {
+      "commentFailed": "Bình luận thất bại",
+      "commentPosted": "Đã đăng bình luận",
+      "loginFirst": "Vui lòng đăng nhập trước",
+      "paymentComingSoon": "Thanh toán sắp ra mắt",
+      "rateFailed": "Đánh giá thất bại",
+      "rated": "Đã gửi đánh giá",
+      "subscribeFailed": "Thất Bại",
+      "subscribed": "Đã thêm vào mục đã mua"
+    },
+    "payment": {
+      "alreadyPurchased": "Bạn đã sở hữu chiến lược này.",
+      "balanceAfter": "Số dư sau khi mua",
+      "cancel": "Hủy",
+      "confirm": "Xác Nhận Mua",
+      "depositPrompt": "Vui lòng nạp tiền để tiếp tục.",
+      "goToDeposit": "Nạp Tiền",
+      "insufficientBalance": "Số dư không đủ",
+      "oneTimePurchase": "¥{{amount}} mua đứt",
+      "price": "Giá",
+      "purchaseFailed": "Mua thất bại. Vui lòng thử lại.",
+      "purchaseSuccess": "Mua thành công! Chiến lược đã được thêm vào thư viện.",
+      "purchasing": "Đang xử lý...",
+      "strategyName": "Chiến Lược",
+      "title": "Xác Nhận Mua",
+      "walletBalance": "Số Dư Của Bạn"
+    },
+    "purchases": {
+      "empty": "Chưa có giao dịch mua nào. Duyệt chợ để tìm chiến lược.",
+      "status": "Trạng Thái",
+      "strategy": "Chiến Lược"
+    },
+    "sort": {
+      "newest": "Mới Nhất",
+      "performance": "Hiệu Suất Tốt Nhất",
+      "popular": "Phổ Biến Nhất",
+      "priceAsc": "Giá: Thấp đến Cao",
+      "priceDesc": "Giá: Cao đến Thấp",
+      "rating": "Đánh Giá Cao Nhất",
+      "score": "Điểm Tổng Hợp"
+    },
+    "tabs": {
+      "author": "Trung Tâm Tác Giả",
+      "marketplace": "Chợ",
+      "purchases": "Đã Mua",
+      "subscriptions": "Đăng Ký"
+    },
+    "empty": "Chưa có chiến lược nào được xuất bản",
+    "filterByClass": "Lọc theo loại tài sản",
+    "noSubscriptions": "Chưa có đăng ký nào",
+    "publish": "Xuất Bản Chiến Lược",
+    "searchPlaceholder": "Tìm kiếm chiến lược...",
+    "subtitle": "Khám phá, mua và sử dụng chiến lược cộng đồng",
+    "title": "Chợ Chiến Lược"
+  },
+  "symbolDetection": {
+    "tradeMode": {
+      "disabled": "Đã Tắt",
+      "longOnly": "Chỉ Mua",
+      "longShort": "Mua & Bán",
+      "shortOnly": "Chỉ Bán",
+      "unknown": "Không Xác Định"
+    },
+    "label": "Biểu tượng được Phát hiện",
+    "loading": "Đang phân tích…",
+    "noSymbols": "Không phát hiện biểu tượng giao dịch. Thử bao gồm tên biểu tượng cụ thể (ví dụ: \"Bitcoin\", \"EURUSD\", \"Vàng\").",
+    "resolvedTooltip": "môi giới: {{broker}} | chế độ: {{mode}}",
+    "unresolvedTooltip": "Chưa liên kết tài khoản giao dịch, không thể phân giải"
+  },
+  "wallet": {
+    "table": {
+      "amount": "Số Tiền",
+      "balanceAfter": "Số Dư Sau",
+      "description": "Mô Tả",
+      "time": "Thời Gian",
+      "type": "Loại"
+    },
+    "txType": {
+      "adjustment": "Điều Chỉnh",
+      "deposit": "Nạp Tiền",
+      "fee": "Phí",
+      "reversal": "Hoàn Tác",
+      "withdrawal": "Rút Tiền"
+    },
+    "accountNumber": "Số TK",
+    "balance": "Số Dư",
+    "currency": "Tiền Tệ",
+    "deposit": "Nạp Tiền",
+    "frozen": "Đóng Băng",
+    "frozenBalance": "Đóng Băng",
+    "history": "Lịch Sử",
+    "title": "Ví Của Tôi",
+    "transactions": "Giao Dịch",
+    "withdraw": "Rút Tiền"
+  },
+  "app": {
+    "name": "AntTrader"
   },
   "language": {
     "english": "English",
@@ -539,85 +702,6 @@ const Base = {
     "spread": "Chênh lệch",
     "watchlist": "Danh sách theo dõi"
   },
-  "marketplace": {
-    "author": {
-      "avgRating": "Đánh Giá TB",
-      "empty": "Chưa có chiến lược nào được xuất bản. Vào Thư Viện Chiến Lược để xuất bản.",
-      "published": "Đã Xuất Bản"
-    },
-    "card": {
-      "by": "by",
-      "free": "Miễn Phí",
-      "owned": "Ngày Mua",
-      "subscribers": "Người Đăng Ký",
-      "winRate": "Tỷ Lệ Thắng"
-    },
-    "detail": {
-      "assetClass": "Loại Tài Sản",
-      "author": "Tác Giả",
-      "commentPlaceholder": "Viết bình luận...",
-      "comments": "Bình Luận",
-      "description": "Mô Tả",
-      "getFree": "Nhận Miễn Phí",
-      "rentPrice": "¥{{amount}} / tháng",
-      "subscribers": "Người Đăng Ký",
-      "yourRating": "Đánh Giá Của Bạn"
-    },
-    "empty": "Chưa có chiến lược nào được xuất bản",
-    "filterByClass": "Lọc theo loại tài sản",
-    "messages": {
-      "commentFailed": "Bình luận thất bại",
-      "commentPosted": "Đã đăng bình luận",
-      "loginFirst": "Vui lòng đăng nhập trước",
-      "paymentComingSoon": "Thanh toán sắp ra mắt",
-      "rateFailed": "Đánh giá thất bại",
-      "rated": "Đã gửi đánh giá",
-      "subscribeFailed": "Thất Bại",
-      "subscribed": "Đã thêm vào mục đã mua"
-    },
-    "noSubscriptions": "Chưa có đăng ký nào",
-    "payment": {
-      "alreadyPurchased": "Bạn đã sở hữu chiến lược này.",
-      "balanceAfter": "Số dư sau khi mua",
-      "cancel": "Hủy",
-      "confirm": "Xác Nhận Mua",
-      "depositPrompt": "Vui lòng nạp tiền để tiếp tục.",
-      "goToDeposit": "Nạp Tiền",
-      "insufficientBalance": "Số dư không đủ",
-      "oneTimePurchase": "¥{{amount}} mua đứt",
-      "price": "Giá",
-      "purchaseFailed": "Mua thất bại. Vui lòng thử lại.",
-      "purchaseSuccess": "Mua thành công! Chiến lược đã được thêm vào thư viện.",
-      "purchasing": "Đang xử lý...",
-      "strategyName": "Chiến Lược",
-      "title": "Xác Nhận Mua",
-      "walletBalance": "Số Dư Của Bạn"
-    },
-    "publish": "Xuất Bản Chiến Lược",
-    "purchases": {
-      "empty": "Chưa có giao dịch mua nào. Duyệt chợ để tìm chiến lược.",
-      "status": "Trạng Thái",
-      "strategy": "Chiến Lược"
-    },
-    "searchPlaceholder": "Tìm kiếm chiến lược...",
-    "sort": {
-      "newest": "Mới Nhất",
-      "performance": "Hiệu Suất Tốt Nhất",
-      "popular": "Phổ Biến Nhất",
-      "priceAsc": "Giá: Thấp đến Cao",
-      "priceDesc": "Giá: Cao đến Thấp",
-      "rating": "Đánh Giá Cao Nhất",
-      "score": "Điểm Tổng Hợp"
-    },
-    "subtitle": "Khám phá, mua và sử dụng chiến lược cộng đồng",
-    "tabs": {
-      "author": "Trung Tâm Tác Giả",
-      "marketplace": "Chợ",
-      "purchases": "Đã Mua",
-      "subscriptions": "Đăng Ký"
-    },
-    "title": "Chợ Chiến Lược"
-  },
   "menu": {
     "accounts": "Tài Khoản",
     "aiAssistant": "Trợ lý AI",
@@ -643,50 +727,6 @@ const Base = {
     "strategyWorkspace": "Không gian chiến lược",
     "trading": "Giao Dịch",
     "wallet": "Ví"
-  },
-  "notifications": {
-    "actions": {
-      "clearAll": "Xóa",
-      "clearAllConfirm": "Xóa tất cả thông báo?",
-      "markAllAsRead": "Đánh dấu đã đọc"
-    },
-    "all": "Tất cả",
-    "clearAll": "Xóa",
-    "confirmClearAll": "Xóa tất cả thông báo?",
-    "empty": "Không có thông báo",
-    "markAllRead": "Đánh dấu đã đọc",
-    "stream": {
-      "autoTrading": {
-        "fallback": "自动交易事件触发",
-        "title": "Giao Dịch Tự Động"
-      },
-      "riskAlert": {
-        "fallback": "警报类型: {{alertType}}",
-        "title": "Cảnh báo Rủi ro"
-      },
-      "strategyExecution": {
-        "completed": "{{symbol}} {{action}} đã hoàn thành",
-        "failed": "执行失败: {{error}}",
-        "title": "Thực thi Chiến lược"
-      },
-      "strategySignal": {
-        "message": "{{symbol}} triggered {{signalType}}",
-        "title": "Tín hiệu Chiến lược"
-      }
-    },
-    "tabs": {
-      "all": "Tất cả ({{count}})",
-      "unread": "未读 ({{count}})"
-    },
-    "title": "Thông báo",
-    "types": {
-      "risk_alert": "Cảnh báo Rủi ro",
-      "signal": "Tín hiệu",
-      "strategy_execution": "Chiến lược",
-      "system": "系统",
-      "trade": "Giao dịch"
-    },
-    "unread": "Chưa đọc"
   },
   "profile": {
     "lastLogin": "Đăng Nhập Cuối",
@@ -749,20 +789,6 @@ const Base = {
     "winningTrades": "Lệnh Thắng",
     "worstTrade": "Lệnh Tệ Nhất"
   },
-  "symbolDetection": {
-    "label": "Biểu tượng được Phát hiện",
-    "loading": "Đang phân tích…",
-    "noSymbols": "Không phát hiện biểu tượng giao dịch. Thử bao gồm tên biểu tượng cụ thể (ví dụ: \"Bitcoin\", \"EURUSD\", \"Vàng\").",
-    "resolvedTooltip": "môi giới: {{broker}} | chế độ: {{mode}}",
-    "tradeMode": {
-      "disabled": "Đã Tắt",
-      "longOnly": "Chỉ Mua",
-      "longShort": "Mua & Bán",
-      "shortOnly": "Chỉ Bán",
-      "unknown": "Không Xác Định"
-    },
-    "unresolvedTooltip": "Chưa liên kết tài khoản giao dịch, không thể phân giải"
-  },
   "topbar": {
     "logout": "Đăng xuất",
     "profile": "Hồ sơ",
@@ -770,32 +796,6 @@ const Base = {
     "switchToAdmin": "Chuyển sang quản trị",
     "systemOk": "Hệ thống đang hoạt động bình thường",
     "user": "Người Dùng"
-  },
-  "wallet": {
-    "accountNumber": "Số TK",
-    "balance": "Số Dư",
-    "currency": "Tiền Tệ",
-    "deposit": "Nạp Tiền",
-    "frozen": "Đóng Băng",
-    "frozenBalance": "Đóng Băng",
-    "history": "Lịch Sử",
-    "table": {
-      "amount": "Số Tiền",
-      "balanceAfter": "Số Dư Sau",
-      "description": "Mô Tả",
-      "time": "Thời Gian",
-      "type": "Loại"
-    },
-    "title": "Ví Của Tôi",
-    "transactions": "Giao Dịch",
-    "txType": {
-      "adjustment": "Điều Chỉnh",
-      "deposit": "Nạp Tiền",
-      "fee": "Phí",
-      "reversal": "Hoàn Tác",
-      "withdrawal": "Rút Tiền"
-    },
-    "withdraw": "Rút Tiền"
   }
 } as const;
 export default Base;

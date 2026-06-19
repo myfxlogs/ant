@@ -19,7 +19,7 @@ interface Props {
 }
 
 const ALGO_OPTIONS = [
-  { value: 'twap', labelKey: 'algo.twap' },
+  { value: 'twap', labelKey: 'algo.label.twap' },
   { value: 'vwap', labelKey: 'algo.vwap' },
   { value: 'pov', labelKey: 'algo.pov' },
   { value: 'shortfall', labelKey: 'algo.shortfall' },

@@ -3,14 +3,6 @@
 const StrategyTuning = {
   "strategy": {
     "tuning": {
-      "apply": "Áp Dụng",
-      "degradation": "Suy Giảm",
-      "enabledCombinations": "{{enabled}} bật · {{combos}} tổ hợp",
-      "grade": "Xếp Hạng",
-      "gridWarning": "Tìm Kiếm Lưới sẽ kiểm tra <b>{{count}}</b> tổ hợp (giới hạn: 48). Cân nhắc chuyển sang <b>Tiến Hóa Vi Phân</b> để xử lý không gian tham số lớn hiệu quả.",
-      "hide": "Ẩn",
-      "oosFootnote": "Xác thực OOS trên 5 ứng viên hàng đầu (theo điểm IS). Suy giảm xanh <20%, cam 20-40%, đỏ >40%.",
-      "oosScore": "Điểm OOS",
       "optimizer": {
         "ags": "Gaussian Ủ",
         "agsDesc": "Nhiễu Gaussian với ủ sigma. Thay thế nhẹ cho TPE.",
@@ -25,6 +17,14 @@ const StrategyTuning = {
         "tpe": "TPE (核密度估计)",
         "tpeDesc": "Công cụ Ước lượng Parzen Cấu Trúc Cây. KDE mô hình hóa phân phối tốt/xấu."
       },
+      "apply": "Áp Dụng",
+      "degradation": "Suy Giảm",
+      "enabledCombinations": "{{enabled}} bật · {{combos}} tổ hợp",
+      "grade": "Xếp Hạng",
+      "gridWarning": "Tìm Kiếm Lưới sẽ kiểm tra <b>{{count}}</b> tổ hợp (giới hạn: 48). Cân nhắc chuyển sang <b>Tiến Hóa Vi Phân</b> để xử lý không gian tham số lớn hiệu quả.",
+      "hide": "Ẩn",
+      "oosFootnote": "Xác thực OOS trên 5 ứng viên hàng đầu (theo điểm IS). Suy giảm xanh <20%, cam 20-40%, đỏ >40%.",
+      "oosScore": "Điểm OOS",
       "optimizerMethod": "Phương Pháp Tối Ưu",
       "overfit": "Quá Khớp",
       "overfitWarning": "⚠ QUÁ KHỚP",

@@ -3,18 +3,6 @@
 const StrategyCodeAssist = {
   "strategy": {
     "codeAssist": {
-      "aiReviseTitle": "AI 助手 — 修改代码",
-      "applyAllSuggestions": "应用建议默认值",
-      "codeEmpty": "尚无代码可修改。",
-      "codeUpdated": "代码已更新。保存前请重新验证。",
-      "defaultLabel": "默认值",
-      "enterInstruction": "请描述您要修改的内容。",
-      "explain": "解释代码",
-      "fillRequiredParams": "请填写必填参数: {{keys}}",
-      "generatePlaceholder": "描述您的策略需求...",
-      "noPython": "AI 未返回 Python 代码块。请尝试重新描述。",
-      "optionalParamsDesc": "这些参数已有代码默认值。留空则使用默认值；填入的值仅对本次运行生效，不会修改已保存的策略。",
-      "optionalParamsTitle": "可选参数",
       "paramDescriptions": {
         "confidence": "信号置信度阈值 (0-1)。低于此值的信号将被忽略。",
         "emaPeriod": "EMA (指数移动平均) 回溯周期。",
@@ -32,6 +20,18 @@ const StrategyCodeAssist = {
         "takeProfit": "止盈距离 (%)。价格朝有利方向移动此幅度后平仓。",
         "threshold": "触发信号的阈值，具体含义取决于策略逻辑。"
       },
+      "aiReviseTitle": "AI 助手 — 修改代码",
+      "applyAllSuggestions": "应用建议默认值",
+      "codeEmpty": "尚无代码可修改。",
+      "codeUpdated": "代码已更新。保存前请重新验证。",
+      "defaultLabel": "默认值",
+      "enterInstruction": "请描述您要修改的内容。",
+      "explain": "解释代码",
+      "fillRequiredParams": "请填写必填参数: {{keys}}",
+      "generatePlaceholder": "描述您的策略需求...",
+      "noPython": "AI 未返回 Python 代码块。请尝试重新描述。",
+      "optionalParamsDesc": "这些参数已有代码默认值。留空则使用默认值；填入的值仅对本次运行生效，不会修改已保存的策略。",
+      "optionalParamsTitle": "可选参数",
       "required": "必填",
       "requiredParamsDesc": "策略读取了这些参数但未提供默认值，请在保存前填写。",
       "requiredParamsTitle": "必填参数",

@@ -3,6 +3,10 @@
 const StrategyBacktestParams = {
   "strategy": {
     "backtestParams": {
+      "presets": {
+        "exploration": "探索模式",
+        "liveAligned": "实盘对齐"
+      },
       "backtestFailed": "回测失败",
       "both": "双向",
       "capital": "本金",
@@ -20,10 +24,6 @@ const StrategyBacktestParams = {
       "history": "回测历史",
       "leverage": "杠杆",
       "long": "↑ 做多",
-      "presets": {
-        "exploration": "探索模式",
-        "liveAligned": "实盘对齐"
-      },
       "run": "▶ 运行",
       "runtimeMode": "运行模式",
       "settingsLoad": "加载我的默认值",

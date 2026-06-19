@@ -2,23 +2,17 @@
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const Dashboard = {
   "dashboard": {
-    "accountList": "Danh sách tài khoản",
-    "accountOverview": "Tổng quan tài khoản",
     "accountStatus": {
       "connected": "Đã kết nối",
       "connecting": "Đang kết nối",
       "disabled": "Đã tắt",
       "disconnected": "已断开"
     },
-    "bindAccount": "Liên kết tài khoản",
-    "defaultName": "我的仪表盘",
     "fields": {
       "balance": "Số dư",
       "equity": "Vốn",
       "floating": "浮动盈亏"
     },
-    "logs": "Nhật ký",
-    "noAccounts": "Chưa có tài khoản. Hãy nhấn “Liên kết tài khoản”.",
     "quickActions": {
       "accounts": "Tài khoản",
       "analytics": "Phân tích",
@@ -38,6 +32,12 @@ const Dashboard = {
       "totalEquity": "Tổng vốn",
       "totalProfit": "总浮动盈亏"
     },
+    "accountList": "Danh sách tài khoản",
+    "accountOverview": "Tổng quan tài khoản",
+    "bindAccount": "Liên kết tài khoản",
+    "defaultName": "我的仪表盘",
+    "logs": "Nhật ký",
+    "noAccounts": "Chưa có tài khoản. Hãy nhấn “Liên kết tài khoản”.",
     "streamLive": "Kết nối trực tiếp",
     "streamOffline": "Ngoại tuyến",
     "subtitle": "Xem tổng quan tài khoản của bạn",

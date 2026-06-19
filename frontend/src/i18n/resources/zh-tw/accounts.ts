@@ -3,38 +3,6 @@
 const Accounts = {
   "accounts": {
     "analytics": {
-      "advancedStatsTitle": "進階統計",
-      "advancedTabs": {
-        "daily": "日",
-        "hourly": "每小時"
-      },
-      "chartPeriod": {
-        "all": "全部",
-        "day": "今日",
-        "month": "本月",
-        "week": "本週",
-        "year": "今年"
-      },
-      "chartSeries": {
-        "balance": "餘額",
-        "equity": "淨值",
-        "profit": "盈虧",
-        "tradeCount": "交易次數"
-      },
-      "chartType": {
-        "balance": "餘額",
-        "equity": "淨值",
-        "profit": "盈虧"
-      },
-      "dailyPnLTitle": "📅 每日盈虧",
-      "empty": {
-        "dailyPnL": "暫無每日盈虧資料",
-        "equityCurve": "暫無淨值曲線資料",
-        "hourly": "暫無時段分析資料",
-        "monthlyProfit": "暫無月度盈虧資料",
-        "symbolDistribution": "暫無品種資料"
-      },
-      "hourlyTitle": "⏰ 時段分析",
       "monthlyAnalysis": {
         "bonus": {
           "chartHoldingTitle": "{{month}} 平均持仓时间",
@@ -46,14 +14,14 @@ const Accounts = {
           "popularityShare": "手數份額",
           "sliceOther": "其他"
         },
-        "chartMainTitle": "每月收益（{{metric}}）",
-        "focusedValue": "{{period}} · {{metric}}：{{value}}",
         "metrics": {
           "change": "變化",
           "lots": "手數",
           "pips": "点",
           "profit": "盈虧"
         },
+        "chartMainTitle": "每月收益（{{metric}}）",
+        "focusedValue": "{{period}} · {{metric}}：{{value}}",
         "title": "月度分析"
       },
       "monthlyDetail": {
@@ -77,7 +45,35 @@ const Accounts = {
         "short": "做空",
         "symbolPnLTitle": "品種盈虧"
       },
-      "monthlyProfitTitle": "月度盈虧",
+      "advancedTabs": {
+        "daily": "日",
+        "hourly": "每小時"
+      },
+      "chartPeriod": {
+        "all": "全部",
+        "day": "今日",
+        "month": "本月",
+        "week": "本週",
+        "year": "今年"
+      },
+      "chartSeries": {
+        "balance": "餘額",
+        "equity": "淨值",
+        "profit": "盈虧",
+        "tradeCount": "交易次數"
+      },
+      "chartType": {
+        "balance": "餘額",
+        "equity": "淨值",
+        "profit": "盈虧"
+      },
+      "empty": {
+        "dailyPnL": "暫無每日盈虧資料",
+        "equityCurve": "暫無淨值曲線資料",
+        "hourly": "暫無時段分析資料",
+        "monthlyProfit": "暫無月度盈虧資料",
+        "symbolDistribution": "暫無品種資料"
+      },
       "stats": {
         "avgDailyReturn": "日均收益",
         "avgHolding": "平均持倉",
@@ -99,7 +95,6 @@ const Accounts = {
         "volatility": "波動率",
         "winRate": "勝率"
       },
-      "symbolDistributionTitle": "品種分布",
       "timeDetail": {
         "balance": "餘額",
         "lots": "手數",
@@ -110,7 +105,12 @@ const Accounts = {
         "profitAmount": "利潤金額",
         "profitFactor": "盈虧比",
         "trades": "交易次數"
-      }
+      },
+      "advancedStatsTitle": "進階統計",
+      "dailyPnLTitle": "📅 每日盈虧",
+      "hourlyTitle": "⏰ 時段分析",
+      "monthlyProfitTitle": "月度盈虧",
+      "symbolDistributionTitle": "品種分布"
     },
     "bind": {
       "actions": {
@@ -153,7 +153,6 @@ const Accounts = {
         "selectServer": "請選擇伺服器",
         "verifyFailed": "帳戶驗證失敗"
       },
-      "passwordHint": "密碼將透過 HTTPS 加密傳輸，後端使用 Argon2id 雜湊儲存不可回逆",
       "placeholders": {
         "brokerName": "輸入經紀商名稱，如：XMGlobal、ICMarkets",
         "company": "請選擇經紀商公司",
@@ -187,9 +186,9 @@ const Accounts = {
         "tradingAccount": "交易帳號",
         "verified": "帳戶已驗證"
       },
+      "passwordHint": "密碼將透過 HTTPS 加密傳輸，後端使用 Argon2id 雜湊儲存不可回逆",
       "title": "綁定 MT 帳戶"
     },
-    "bindNew": "綁定新帳戶",
     "card": {
       "actions": {
         "details": "詳情",
@@ -244,9 +243,6 @@ const Accounts = {
         "marginLevel": "保證金比例",
         "marginUsed": "已用保證金"
       },
-      "connected": "已連接",
-      "lastConnected": "{{time}}",
-      "leverage": "槓桿 {{leverage}}x",
       "messages": {
         "fetchAccountFailed": "獲取帳戶資訊失敗，請稍後重試",
         "syncHistoryFailed": "同步訂單歷史失敗，请確保帳戶已連接到 MT 伺服器。",
@@ -273,7 +269,10 @@ const Accounts = {
         "content": "確定要從MT伺服器同步過去一年的歷史訂單嗎？這可能需要一些時間。",
         "ok": "同步",
         "title": "同步歷史訂單"
-      }
+      },
+      "connected": "已連接",
+      "lastConnected": "{{time}}",
+      "leverage": "槓桿 {{leverage}}x"
     },
     "disabled": {
       "confirmDelete": {
@@ -313,6 +312,59 @@ const Accounts = {
       },
       "title": "編輯帳戶"
     },
+    "report": {
+      "periods": {
+        "month": "本月",
+        "quarter": "本季度",
+        "week": "本週",
+        "year": "今年"
+      },
+      "sections": {
+        "findings": "關鍵發現",
+        "recommendations": "改進建議",
+        "summary": "總體評價"
+      },
+      "aiAnalysis": "AI 分析",
+      "direction": "多空分析",
+      "directionLong": "做多",
+      "directionShort": "做空",
+      "drawdownEvents": "回撤事件",
+      "drawdownOverlay": "權益曲線 + 回撤",
+      "generate": "生成報告",
+      "goToAISettings": "前往 AI 設定 →",
+      "recovered": "已恢復",
+      "symbolPnL": "品種盈虧",
+      "title": "交易報告",
+      "titleShort": "報告",
+      "tradeDistribution": "盈虧分佈",
+      "winRateTrend": "月度勝率趨勢"
+    },
+    "tradeTabs": {
+      "pagination": {
+        "total": "共 {{total}} 条"
+      },
+      "table": {
+        "closePrice": "平倉價",
+        "closeTime": "平倉时间",
+        "currentPrice": "當前價",
+        "openPrice": "開倉價",
+        "openTime": "開倉時間",
+        "orderId": "訂單號",
+        "pendingPrice": "掛單價格",
+        "pendingTime": "掛單時間",
+        "profit": "盈虧",
+        "side": "方向",
+        "symbol": "品種",
+        "type": "類型",
+        "volume": "手數"
+      },
+      "emptyHistory": "暫無歷史訂單",
+      "emptyPositions": "暫無持倉",
+      "historyWithCount": "歷史訂單 ({{count}})",
+      "pendingWithCount": "掛單 ({{count}})",
+      "positionsWithCount": "持倉訂單 ({{count}})",
+      "syncHistory": "同步历史"
+    },
     "empty": {
       "subtitle": "點選下方按钮绑定您的 MT4/MT5 交易帳戶",
       "title": "暫無綁定帳戶"
@@ -340,61 +392,9 @@ const Accounts = {
       "fetchAccountFailed": "取得帳戶資訊失敗",
       "fetchListFailed": "取得帳戶列表失敗"
     },
-    "report": {
-      "aiAnalysis": "AI 分析",
-      "direction": "多空分析",
-      "directionLong": "做多",
-      "directionShort": "做空",
-      "drawdownEvents": "回撤事件",
-      "drawdownOverlay": "權益曲線 + 回撤",
-      "generate": "生成報告",
-      "goToAISettings": "前往 AI 設定 →",
-      "periods": {
-        "month": "本月",
-        "quarter": "本季度",
-        "week": "本週",
-        "year": "今年"
-      },
-      "recovered": "已恢復",
-      "sections": {
-        "findings": "關鍵發現",
-        "recommendations": "改進建議",
-        "summary": "總體評價"
-      },
-      "symbolPnL": "品種盈虧",
-      "title": "交易報告",
-      "titleShort": "報告",
-      "tradeDistribution": "盈虧分佈",
-      "winRateTrend": "月度勝率趨勢"
-    },
+    "bindNew": "綁定新帳戶",
     "subtitle": "管理您的 MT4/MT5 交易帳戶",
-    "title": "我的帳戶",
-    "tradeTabs": {
-      "emptyHistory": "暫無歷史訂單",
-      "emptyPositions": "暫無持倉",
-      "historyWithCount": "歷史訂單 ({{count}})",
-      "pagination": {
-        "total": "共 {{total}} 条"
-      },
-      "pendingWithCount": "掛單 ({{count}})",
-      "positionsWithCount": "持倉訂單 ({{count}})",
-      "syncHistory": "同步历史",
-      "table": {
-        "closePrice": "平倉價",
-        "closeTime": "平倉时间",
-        "currentPrice": "當前價",
-        "openPrice": "開倉價",
-        "openTime": "開倉時間",
-        "orderId": "訂單號",
-        "pendingPrice": "掛單價格",
-        "pendingTime": "掛單時間",
-        "profit": "盈虧",
-        "side": "方向",
-        "symbol": "品種",
-        "type": "類型",
-        "volume": "手數"
-      }
-    }
+    "title": "我的帳戶"
   }
 } as const;
 export default Accounts;

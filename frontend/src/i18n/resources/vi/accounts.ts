@@ -3,38 +3,6 @@
 const Accounts = {
   "accounts": {
     "analytics": {
-      "advancedStatsTitle": "Thống kê nâng cao",
-      "advancedTabs": {
-        "daily": "日",
-        "hourly": "Theo giờ"
-      },
-      "chartPeriod": {
-        "all": "全部",
-        "day": "Hôm nay",
-        "month": "Tháng này",
-        "week": "Tuần này",
-        "year": "Năm nay"
-      },
-      "chartSeries": {
-        "balance": "Số dư",
-        "equity": "Vốn",
-        "profit": "Lợi nhuận",
-        "tradeCount": "Giao dịch"
-      },
-      "chartType": {
-        "balance": "Số dư",
-        "equity": "Vốn",
-        "profit": "Lợi nhuận"
-      },
-      "dailyPnLTitle": "📅 Lãi/lỗ theo ngày",
-      "empty": {
-        "dailyPnL": "Không có dữ liệu lãi/lỗ theo ngày",
-        "equityCurve": "Không có dữ liệu đường vốn",
-        "hourly": "暂无时段分析数据",
-        "monthlyProfit": "Không có dữ liệu lãi/lỗ theo tháng",
-        "symbolDistribution": "Không có dữ liệu phân bổ mã"
-      },
-      "hourlyTitle": "⏰ Phân tích theo giờ",
       "monthlyAnalysis": {
         "bonus": {
           "chartHoldingTitle": "{{month}} 平均持仓时间",
@@ -46,14 +14,14 @@ const Accounts = {
           "popularityShare": "手数份额",
           "sliceOther": "Khac"
         },
-        "chartMainTitle": "Loi nhuan theo thang ({{metric}})",
-        "focusedValue": "{{period}} · {{metric}}：{{value}}",
         "metrics": {
           "change": "Thay doi",
           "lots": "Lot",
           "pips": "点",
           "profit": "Lợi nhuận"
         },
+        "chartMainTitle": "Loi nhuan theo thang ({{metric}})",
+        "focusedValue": "{{period}} · {{metric}}：{{value}}",
         "title": "Phan tich theo thang"
       },
       "monthlyDetail": {
@@ -77,7 +45,35 @@ const Accounts = {
         "short": "Bán",
         "symbolPnLTitle": "Lợi nhuận theo cặp"
       },
-      "monthlyProfitTitle": "Lãi/lỗ theo tháng",
+      "advancedTabs": {
+        "daily": "日",
+        "hourly": "Theo giờ"
+      },
+      "chartPeriod": {
+        "all": "全部",
+        "day": "Hôm nay",
+        "month": "Tháng này",
+        "week": "Tuần này",
+        "year": "Năm nay"
+      },
+      "chartSeries": {
+        "balance": "Số dư",
+        "equity": "Vốn",
+        "profit": "Lợi nhuận",
+        "tradeCount": "Giao dịch"
+      },
+      "chartType": {
+        "balance": "Số dư",
+        "equity": "Vốn",
+        "profit": "Lợi nhuận"
+      },
+      "empty": {
+        "dailyPnL": "Không có dữ liệu lãi/lỗ theo ngày",
+        "equityCurve": "Không có dữ liệu đường vốn",
+        "hourly": "暂无时段分析数据",
+        "monthlyProfit": "Không có dữ liệu lãi/lỗ theo tháng",
+        "symbolDistribution": "Không có dữ liệu phân bổ mã"
+      },
       "stats": {
         "avgDailyReturn": "Lợi nhuận ngày TB",
         "avgHolding": "Thời gian giữ TB",
@@ -99,7 +95,6 @@ const Accounts = {
         "volatility": "Biến động",
         "winRate": "Tỷ lệ thắng"
       },
-      "symbolDistributionTitle": "Phân bổ mã",
       "timeDetail": {
         "balance": "Số dư",
         "lots": "Lot",
@@ -110,7 +105,12 @@ const Accounts = {
         "profitAmount": "Lợi nhuận",
         "profitFactor": "Hệ số lợi nhuận",
         "trades": "Giao dịch"
-      }
+      },
+      "advancedStatsTitle": "Thống kê nâng cao",
+      "dailyPnLTitle": "📅 Lãi/lỗ theo ngày",
+      "hourlyTitle": "⏰ Phân tích theo giờ",
+      "monthlyProfitTitle": "Lãi/lỗ theo tháng",
+      "symbolDistributionTitle": "Phân bổ mã"
     },
     "bind": {
       "actions": {
@@ -153,7 +153,6 @@ const Accounts = {
         "selectServer": "Vui lòng chọn máy chủ",
         "verifyFailed": "Xác minh tài khoản thất bại"
       },
-      "passwordHint": "Mật khẩu được truyền qua HTTPS. Backend lưu dưới dạng băm Argon2id không thể đảo ngược.",
       "placeholders": {
         "brokerName": "Nhập tên môi giới, ví dụ: XM, IC Markets",
         "company": "Chọn công ty môi giới",
@@ -187,9 +186,9 @@ const Accounts = {
         "tradingAccount": "Tài khoản giao dịch",
         "verified": "Tài khoản đã xác minh"
       },
+      "passwordHint": "Mật khẩu được truyền qua HTTPS. Backend lưu dưới dạng băm Argon2id không thể đảo ngược.",
       "title": "Liên kết tài khoản MT"
     },
-    "bindNew": "Liên kết tài khoản mới",
     "card": {
       "actions": {
         "details": "详情",
@@ -244,9 +243,6 @@ const Accounts = {
         "marginLevel": "Tỷ lệ ký quỹ",
         "marginUsed": "Ký quỹ đã dùng"
       },
-      "connected": "Đã kết nối",
-      "lastConnected": "{{time}}",
-      "leverage": "Đòn bẩy {{leverage}}x",
       "messages": {
         "fetchAccountFailed": "Không thể tải thông tin tài khoản. Vui lòng thử lại sau.",
         "syncHistoryFailed": "同步订单历史失败，请确保账户已连接到 MT 服务器。",
@@ -273,7 +269,10 @@ const Accounts = {
         "content": "Đồng bộ lịch sử lệnh 1 năm gần nhất từ máy chủ MT? Việc này có thể mất một chút thời gian.",
         "ok": "同步",
         "title": "Đồng bộ lịch sử lệnh"
-      }
+      },
+      "connected": "Đã kết nối",
+      "lastConnected": "{{time}}",
+      "leverage": "Đòn bẩy {{leverage}}x"
     },
     "disabled": {
       "confirmDelete": {
@@ -313,6 +312,59 @@ const Accounts = {
       },
       "title": "Chỉnh sửa tài khoản"
     },
+    "report": {
+      "periods": {
+        "month": "Tháng này",
+        "quarter": "Quý này",
+        "week": "Tuần này",
+        "year": "Năm nay"
+      },
+      "sections": {
+        "findings": "Phát hiện chính",
+        "recommendations": "Khuyến nghị",
+        "summary": "Tổng quan"
+      },
+      "aiAnalysis": "Phân tích AI",
+      "direction": "Phân tích hướng",
+      "directionLong": "Mua",
+      "directionShort": "Bán",
+      "drawdownEvents": "Sự kiện drawdown",
+      "drawdownOverlay": "Đường vốn + Drawdown",
+      "generate": "Tạo báo cáo",
+      "goToAISettings": "Đi tới Cài đặt AI →",
+      "recovered": "Đã phục hồi",
+      "symbolPnL": "Lãi/lỗ theo mã",
+      "title": "Báo cáo giao dịch",
+      "titleShort": "Báo cáo",
+      "tradeDistribution": "Phân phối lãi/lỗ",
+      "winRateTrend": "Xu hướng tỷ lệ thắng"
+    },
+    "tradeTabs": {
+      "pagination": {
+        "total": "共 {{total}} 条"
+      },
+      "table": {
+        "closePrice": "Giá đóng",
+        "closeTime": "平仓时间",
+        "currentPrice": "Giá hiện tại",
+        "openPrice": "Giá mở",
+        "openTime": "Thời gian mở",
+        "orderId": "Mã lệnh",
+        "pendingPrice": "Giá đặt",
+        "pendingTime": "Thời gian đặt",
+        "profit": "Lợi nhuận",
+        "side": "Hướng",
+        "symbol": "Mã",
+        "type": "Loại",
+        "volume": "Khối lượng"
+      },
+      "emptyHistory": "Chưa có lịch sử lệnh",
+      "emptyPositions": "Chưa có vị thế",
+      "historyWithCount": "Lịch sử ({{count}})",
+      "pendingWithCount": "Lệnh chờ ({{count}})",
+      "positionsWithCount": "Vị thế ({{count}})",
+      "syncHistory": "Đồng bộ lịch sử"
+    },
     "empty": {
       "subtitle": "点击下方按钮绑定您的 MT4/MT5 交易账户",
       "title": "Chưa có tài khoản"
@@ -340,61 +392,9 @@ const Accounts = {
       "fetchAccountFailed": "Không thể tải thông tin tài khoản",
       "fetchListFailed": "Không thể tải danh sách tài khoản"
     },
-    "report": {
-      "aiAnalysis": "Phân tích AI",
-      "direction": "Phân tích hướng",
-      "directionLong": "Mua",
-      "directionShort": "Bán",
-      "drawdownEvents": "Sự kiện drawdown",
-      "drawdownOverlay": "Đường vốn + Drawdown",
-      "generate": "Tạo báo cáo",
-      "goToAISettings": "Đi tới Cài đặt AI →",
-      "periods": {
-        "month": "Tháng này",
-        "quarter": "Quý này",
-        "week": "Tuần này",
-        "year": "Năm nay"
-      },
-      "recovered": "Đã phục hồi",
-      "sections": {
-        "findings": "Phát hiện chính",
-        "recommendations": "Khuyến nghị",
-        "summary": "Tổng quan"
-      },
-      "symbolPnL": "Lãi/lỗ theo mã",
-      "title": "Báo cáo giao dịch",
-      "titleShort": "Báo cáo",
-      "tradeDistribution": "Phân phối lãi/lỗ",
-      "winRateTrend": "Xu hướng tỷ lệ thắng"
-    },
+    "bindNew": "Liên kết tài khoản mới",
     "subtitle": "Quản lý tài khoản MT4/MT5",
-    "title": "Tài khoản",
-    "tradeTabs": {
-      "emptyHistory": "Chưa có lịch sử lệnh",
-      "emptyPositions": "Chưa có vị thế",
-      "historyWithCount": "Lịch sử ({{count}})",
-      "pagination": {
-        "total": "共 {{total}} 条"
-      },
-      "pendingWithCount": "Lệnh chờ ({{count}})",
-      "positionsWithCount": "Vị thế ({{count}})",
-      "syncHistory": "Đồng bộ lịch sử",
-      "table": {
-        "closePrice": "Giá đóng",
-        "closeTime": "平仓时间",
-        "currentPrice": "Giá hiện tại",
-        "openPrice": "Giá mở",
-        "openTime": "Thời gian mở",
-        "orderId": "Mã lệnh",
-        "pendingPrice": "Giá đặt",
-        "pendingTime": "Thời gian đặt",
-        "profit": "Lợi nhuận",
-        "side": "Hướng",
-        "symbol": "Mã",
-        "type": "Loại",
-        "volume": "Khối lượng"
-      }
-    }
+    "title": "Tài khoản"
   }
 } as const;
 export default Accounts;

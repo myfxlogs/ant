@@ -3,38 +3,6 @@
 const Accounts = {
   "accounts": {
     "analytics": {
-      "advancedStatsTitle": "詳細統計",
-      "advancedTabs": {
-        "daily": "日",
-        "hourly": "時間足"
-      },
-      "chartPeriod": {
-        "all": "全部",
-        "day": "今日",
-        "month": "今月",
-        "week": "今週",
-        "year": "今年"
-      },
-      "chartSeries": {
-        "balance": "残高",
-        "equity": "純資産",
-        "profit": "損益",
-        "tradeCount": "取引数"
-      },
-      "chartType": {
-        "balance": "残高",
-        "equity": "純資産",
-        "profit": "損益"
-      },
-      "dailyPnLTitle": "日次損益",
-      "empty": {
-        "dailyPnL": "日次損益データがありません",
-        "equityCurve": "エクイティカーブのデータがありません",
-        "hourly": "暂无时段分析数据",
-        "monthlyProfit": "月次損益データがありません",
-        "symbolDistribution": "銘柄分布データがありません"
-      },
-      "hourlyTitle": "時間帯分析",
       "monthlyAnalysis": {
         "bonus": {
           "chartHoldingTitle": "{{month}} 平均持仓时间",
@@ -46,14 +14,14 @@ const Accounts = {
           "popularityShare": "手数份额",
           "sliceOther": "その他"
         },
-        "chartMainTitle": "月次リターン（{{metric}}）",
-        "focusedValue": "{{period}} · {{metric}}：{{value}}",
         "metrics": {
           "change": "変化",
           "lots": "ロット",
           "pips": "点",
           "profit": "損益"
         },
+        "chartMainTitle": "月次リターン（{{metric}}）",
+        "focusedValue": "{{period}} · {{metric}}：{{value}}",
         "title": "月次分析"
       },
       "monthlyDetail": {
@@ -77,7 +45,35 @@ const Accounts = {
         "short": "売り",
         "symbolPnLTitle": "銘柄別損益"
       },
-      "monthlyProfitTitle": "月次損益",
+      "advancedTabs": {
+        "daily": "日",
+        "hourly": "時間足"
+      },
+      "chartPeriod": {
+        "all": "全部",
+        "day": "今日",
+        "month": "今月",
+        "week": "今週",
+        "year": "今年"
+      },
+      "chartSeries": {
+        "balance": "残高",
+        "equity": "純資産",
+        "profit": "損益",
+        "tradeCount": "取引数"
+      },
+      "chartType": {
+        "balance": "残高",
+        "equity": "純資産",
+        "profit": "損益"
+      },
+      "empty": {
+        "dailyPnL": "日次損益データがありません",
+        "equityCurve": "エクイティカーブのデータがありません",
+        "hourly": "暂无时段分析数据",
+        "monthlyProfit": "月次損益データがありません",
+        "symbolDistribution": "銘柄分布データがありません"
+      },
       "stats": {
         "avgDailyReturn": "平均日次リターン",
         "avgHolding": "平均保有時間",
@@ -99,7 +95,6 @@ const Accounts = {
         "volatility": "ボラティリティ",
         "winRate": "勝率"
       },
-      "symbolDistributionTitle": "銘柄分布",
       "timeDetail": {
         "balance": "残高",
         "lots": "ロット",
@@ -110,7 +105,12 @@ const Accounts = {
         "profitAmount": "損益額",
         "profitFactor": "プロフィットファクター",
         "trades": "取引数"
-      }
+      },
+      "advancedStatsTitle": "詳細統計",
+      "dailyPnLTitle": "日次損益",
+      "hourlyTitle": "時間帯分析",
+      "monthlyProfitTitle": "月次損益",
+      "symbolDistributionTitle": "銘柄分布"
     },
     "bind": {
       "actions": {
@@ -153,7 +153,6 @@ const Accounts = {
         "selectServer": "サーバーを選択してください",
         "verifyFailed": "アカウント確認に失敗しました"
       },
-      "passwordHint": "パスワードは HTTPS で送信され、バックエンドで Argon2id ハッシュとして保存されます（復元不可）。",
       "placeholders": {
         "brokerName": "ブローカー名を入力（例：XM、IC Markets）",
         "company": "会社を選択",
@@ -187,9 +186,9 @@ const Accounts = {
         "tradingAccount": "取引口座",
         "verified": "アカウント確認済み"
       },
+      "passwordHint": "パスワードは HTTPS で送信され、バックエンドで Argon2id ハッシュとして保存されます（復元不可）。",
       "title": "MT 口座を連携"
     },
-    "bindNew": "口座を連携",
     "card": {
       "actions": {
         "details": "详情",
@@ -244,9 +243,6 @@ const Accounts = {
         "marginLevel": "証拠金維持率",
         "marginUsed": "使用証拠金"
       },
-      "connected": "接続済み",
-      "lastConnected": "{{time}}",
-      "leverage": "レバレッジ {{leverage}} 倍",
       "messages": {
         "fetchAccountFailed": "口座情報の取得に失敗しました。しばらくしてから再試行してください。",
         "syncHistoryFailed": "同步订单历史失败，请确保账户已连接到 MT 服务器。",
@@ -273,7 +269,10 @@ const Accounts = {
         "content": "過去1年分の注文履歴を MT サーバーから同期しますか？時間がかかる場合があります。",
         "ok": "同步",
         "title": "注文履歴を同期"
-      }
+      },
+      "connected": "接続済み",
+      "lastConnected": "{{time}}",
+      "leverage": "レバレッジ {{leverage}} 倍"
     },
     "disabled": {
       "confirmDelete": {
@@ -313,6 +312,59 @@ const Accounts = {
       },
       "title": "口座編集"
     },
+    "report": {
+      "periods": {
+        "month": "今月",
+        "quarter": "今四半期",
+        "week": "今週",
+        "year": "今年"
+      },
+      "sections": {
+        "findings": "主な発見",
+        "recommendations": "改善提案",
+        "summary": "総評"
+      },
+      "aiAnalysis": "AI分析",
+      "direction": "売買分析",
+      "directionLong": "買い",
+      "directionShort": "売り",
+      "drawdownEvents": "ドローダウンイベント",
+      "drawdownOverlay": "資産曲線 + ドローダウン",
+      "generate": "レポート生成",
+      "goToAISettings": "AI設定へ →",
+      "recovered": "回復済み",
+      "symbolPnL": "銘柄別損益",
+      "title": "取引レポート",
+      "titleShort": "レポート",
+      "tradeDistribution": "損益分布",
+      "winRateTrend": "月次勝率トレンド"
+    },
+    "tradeTabs": {
+      "pagination": {
+        "total": "共 {{total}} 条"
+      },
+      "table": {
+        "closePrice": "決済価格",
+        "closeTime": "平仓时间",
+        "currentPrice": "現在値",
+        "openPrice": "建値",
+        "openTime": "建玉時間",
+        "orderId": "注文ID",
+        "pendingPrice": "指値/逆指値",
+        "pendingTime": "注文時間",
+        "profit": "損益",
+        "side": "売買",
+        "symbol": "銘柄",
+        "type": "タイプ",
+        "volume": "数量"
+      },
+      "emptyHistory": "注文履歴がありません",
+      "emptyPositions": "保有ポジションがありません",
+      "historyWithCount": "履歴（{{count}}）",
+      "pendingWithCount": "未決注文（{{count}}）",
+      "positionsWithCount": "保有ポジション（{{count}}）",
+      "syncHistory": "履歴同期"
+    },
     "empty": {
       "subtitle": "点击下方按钮绑定您的 MT4/MT5 交易账户",
       "title": "連携済み口座がありません"
@@ -340,61 +392,9 @@ const Accounts = {
       "fetchAccountFailed": "口座情報の取得に失敗しました",
       "fetchListFailed": "口座一覧の取得に失敗しました"
     },
-    "report": {
-      "aiAnalysis": "AI分析",
-      "direction": "売買分析",
-      "directionLong": "買い",
-      "directionShort": "売り",
-      "drawdownEvents": "ドローダウンイベント",
-      "drawdownOverlay": "資産曲線 + ドローダウン",
-      "generate": "レポート生成",
-      "goToAISettings": "AI設定へ →",
-      "periods": {
-        "month": "今月",
-        "quarter": "今四半期",
-        "week": "今週",
-        "year": "今年"
-      },
-      "recovered": "回復済み",
-      "sections": {
-        "findings": "主な発見",
-        "recommendations": "改善提案",
-        "summary": "総評"
-      },
-      "symbolPnL": "銘柄別損益",
-      "title": "取引レポート",
-      "titleShort": "レポート",
-      "tradeDistribution": "損益分布",
-      "winRateTrend": "月次勝率トレンド"
-    },
+    "bindNew": "口座を連携",
     "subtitle": "MT4/MT5 口座を管理します",
-    "title": "口座",
-    "tradeTabs": {
-      "emptyHistory": "注文履歴がありません",
-      "emptyPositions": "保有ポジションがありません",
-      "historyWithCount": "履歴（{{count}}）",
-      "pagination": {
-        "total": "共 {{total}} 条"
-      },
-      "pendingWithCount": "未決注文（{{count}}）",
-      "positionsWithCount": "保有ポジション（{{count}}）",
-      "syncHistory": "履歴同期",
-      "table": {
-        "closePrice": "決済価格",
-        "closeTime": "平仓时间",
-        "currentPrice": "現在値",
-        "openPrice": "建値",
-        "openTime": "建玉時間",
-        "orderId": "注文ID",
-        "pendingPrice": "指値/逆指値",
-        "pendingTime": "注文時間",
-        "profit": "損益",
-        "side": "売買",
-        "symbol": "銘柄",
-        "type": "タイプ",
-        "volume": "数量"
-      }
-    }
+    "title": "口座"
   }
 } as const;
 export default Accounts;

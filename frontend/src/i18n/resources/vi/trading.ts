@@ -1,123 +1,7 @@
 // Auto-generated from proto/ant/v1/i18n/trading_vi.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const Trading = {
-  "algo": {
-    "actions": {
-      "cancel": "Hủy",
-      "start": "Bắt Đầu"
-    },
-    "dashboard": {
-      "activeExecutions": "Đang Thực Thi",
-      "noActive": "Không có lệnh nào đang chạy",
-      "title": "Bảng Thuật Toán"
-    },
-    "fields": {
-      "account": "Tài Khoản",
-      "algo": "Thuật Toán",
-      "limitPrice": "Giá Giới Hạn",
-      "participationRate": "Tỷ Lệ Tham Gia",
-      "side": "Hướng",
-      "sliceInterval": "Khoảng Cắt Lệnh",
-      "symbol": "Mã",
-      "timeRange": "Khoảng Thời Gian",
-      "urgency": "Độ Khẩn Cấp",
-      "volume": "Khối Lượng"
-    },
-    "info": {
-      "description": "Mô tả",
-      "name": "Tên"
-    },
-    "messages": {
-      "started": "Đã khởi động thuật toán"
-    },
-    "side": {
-      "buy": "Mua",
-      "sell": "Bán"
-    },
-    "submitForm": {
-      "title": "Khởi Động Thuật Toán"
-    },
-    "table": {
-      "actions": "Thao Tác",
-      "algo": "Thuật Toán",
-      "executionId": "Mã Thực Thi",
-      "progress": "Tiến Độ",
-      "side": "Hướng",
-      "state": "Trạng Thái",
-      "symbol": "Mã",
-      "volume": "Khối Lượng"
-    },
-    "timePresets": {
-      "EOD": "Cuối Ngày"
-    },
-    "twap": "TWAP (Giá Bình Quân Thời Gian)",
-    "vwap": "VWAP (Giá Bình Quân Khối Lượng)",
-    "pov": "POV (Tỷ Lệ Tham Gia)",
-    "shortfall": "Shortfall (Giảm Khoảng Cách)"
-  },
   "trading": {
-    "account": "Tài Khoản",
-    "autoTrade": {
-      "confirm": {
-        "disableConfirm": "Xác nhận tắt",
-        "disableInfoDescription": "Sau khi tắt, hệ thống sẽ dừng giao dịch tự động, nhưng các chiến lược đang bật vẫn có thể tiếp tục theo dõi thị trường.",
-        "disableInfoTitle": "Tắt giao dịch tự động",
-        "disableQuestion": "Bạn có chắc muốn tắt giao dịch tự động?",
-        "disableTitle": "Tắt giao dịch tự động",
-        "enableBullet1": "Hệ thống sẽ tự động thực hiện giao dịch khi điều kiện chiến lược thỏa mãn",
-        "enableBullet2": "Hãy đảm bảo cấu hình rủi ro đã được thiết lập đúng",
-        "enableBullet3": "Nên thử nghiệm trước trên tài khoản demo",
-        "enableConfirm": "Xác nhận bật",
-        "enableQuestion": "Bật tính năng giao dịch tự động?",
-        "enableRiskDescription": "Khi bật giao dịch tự động, hệ thống sẽ tự động thực hiện giao dịch theo chiến lược. Vui lòng chắc chắn bạn hiểu rõ các rủi ro.",
-        "enableRiskTitle": "Cảnh báo rủi ro",
-        "enableTitle": "Bật giao dịch tự động"
-      }
-    },
-    "balance": "Số dư",
-    "buy": "Mua",
-    "closePosition": "Đóng",
-    "closePositionConfirm": "Đóng vị thế này?",
-    "closePositionTitle": "Đóng vị thế",
-    "equity": "Vốn chủ sở hữu",
-    "freeMargin": "Ký quỹ tự do",
-    "limit": "Giới hạn",
-    "margin": "Ký quỹ",
-    "marginLevel": "Mức ký quỹ",
-    "markPrice": "Giá thị trường",
-    "market": "Thị trường",
-    "messages": {
-      "fetchOrderHistoryFailed": "Tải lịch sử lệnh thất bại",
-      "fetchPendingOrdersFailed": "Không thể tải lệnh chờ",
-      "fetchPositionsFailed": "Không thể tải vị thế",
-      "orderCloseFailed": "Đóng lệnh thất bại",
-      "orderCloseSuccess": "Đóng lệnh thành công",
-      "orderModifyFailed": "Sửa lệnh thất bại",
-      "orderModifySuccess": "Sửa lệnh thành công",
-      "orderSendFailed": "Đặt lệnh thất bại",
-      "orderSendSuccess": "Đặt lệnh thành công"
-    },
-    "noAccount": "Chưa chọn tài khoản",
-    "noOrders": "Chưa có lệnh nào",
-    "noPositions": "Không có vị thế mở",
-    "openPositionsTitle": "Vị thế mở",
-    "openTime": "Thời gian mở",
-    "orderHistory": "Lịch sử lệnh",
-    "ordersCount": "{{count}} lệnh",
-    "placeOrder": "Đặt lệnh",
-    "pnl": "Lãi/Lỗ",
-    "positionEntryPrice": "Giá vào lệnh",
-    "positionLeverage": "Đòn bẩy",
-    "positionLong": "LONG",
-    "positionMarkPrice": "Giá thị trường",
-    "positionShort": "SHORT",
-    "positionSide": "Hướng",
-    "positionSize": "Khối lượng",
-    "positionUnrealizedPnL": "Lãi/Lỗ thả nổi",
-    "positions": "Vị thế",
-    "price": "Giá",
-    "profit": "Lợi nhuận",
-    "recentTrades": "Giao dịch gần đây",
     "risk": {
       "errors": {
         "RISK_ACCOUNT_TRADE_DISABLED": {
@@ -170,6 +54,23 @@ const Trading = {
         }
       }
     },
+    "autoTrade": {
+      "confirm": {
+        "disableConfirm": "Xác nhận tắt",
+        "disableInfoDescription": "Sau khi tắt, hệ thống sẽ dừng giao dịch tự động, nhưng các chiến lược đang bật vẫn có thể tiếp tục theo dõi thị trường.",
+        "disableInfoTitle": "Tắt giao dịch tự động",
+        "disableQuestion": "Bạn có chắc muốn tắt giao dịch tự động?",
+        "disableTitle": "Tắt giao dịch tự động",
+        "enableBullet1": "Hệ thống sẽ tự động thực hiện giao dịch khi điều kiện chiến lược thỏa mãn",
+        "enableBullet2": "Hãy đảm bảo cấu hình rủi ro đã được thiết lập đúng",
+        "enableBullet3": "Nên thử nghiệm trước trên tài khoản demo",
+        "enableConfirm": "Xác nhận bật",
+        "enableQuestion": "Bật tính năng giao dịch tự động?",
+        "enableRiskDescription": "Khi bật giao dịch tự động, hệ thống sẽ tự động thực hiện giao dịch theo chiến lược. Vui lòng chắc chắn bạn hiểu rõ các rủi ro.",
+        "enableRiskTitle": "Cảnh báo rủi ro",
+        "enableTitle": "Bật giao dịch tự động"
+      }
+    },
     "riskConfig": {
       "confirm": {
         "confirmText": "Lưu",
@@ -187,11 +88,6 @@ const Trading = {
         "trailingStopPips": "Trailing Stop (pips)"
       }
     },
-    "selectSymbol": "Chọn mã",
-    "sell": "Bán",
-    "side": "Hướng",
-    "stop": "Dừng",
-    "stopLoss": "Cắt lỗ",
     "strategyExecute": {
       "confirm": {
         "action": "Hướng",
@@ -206,12 +102,134 @@ const Trading = {
         "warningTitle": "Xác nhận thực thi giao dịch"
       }
     },
+    "messages": {
+      "fetchOrderHistoryFailed": "Tải lịch sử lệnh thất bại",
+      "fetchPendingOrdersFailed": "Không thể tải lệnh chờ",
+      "fetchPositionsFailed": "Không thể tải vị thế",
+      "orderCloseFailed": "Đóng lệnh thất bại",
+      "orderCloseSuccess": "Đóng lệnh thành công",
+      "orderModifyFailed": "Sửa lệnh thất bại",
+      "orderModifySuccess": "Sửa lệnh thành công",
+      "orderSendFailed": "Đặt lệnh thất bại",
+      "orderSendSuccess": "Đặt lệnh thành công"
+    },
+    "account": "Tài Khoản",
+    "balance": "Số dư",
+    "buy": "Mua",
+    "closePosition": "Đóng",
+    "closePositionConfirm": "Đóng vị thế này?",
+    "closePositionTitle": "Đóng vị thế",
+    "equity": "Vốn chủ sở hữu",
+    "freeMargin": "Ký quỹ tự do",
+    "limit": "Giới hạn",
+    "margin": "Ký quỹ",
+    "marginLevel": "Mức ký quỹ",
+    "markPrice": "Giá thị trường",
+    "market": "Thị trường",
+    "noAccount": "Chưa chọn tài khoản",
+    "noOrders": "Chưa có lệnh nào",
+    "noPositions": "Không có vị thế mở",
+    "openPositionsTitle": "Vị thế mở",
+    "openTime": "Thời gian mở",
+    "orderHistory": "Lịch sử lệnh",
+    "ordersCount": "{{count}} lệnh",
+    "placeOrder": "Đặt lệnh",
+    "pnl": "Lãi/Lỗ",
+    "positionEntryPrice": "Giá vào lệnh",
+    "positionLeverage": "Đòn bẩy",
+    "positionLong": "LONG",
+    "positionMarkPrice": "Giá thị trường",
+    "positionShort": "SHORT",
+    "positionSide": "Hướng",
+    "positionSize": "Khối lượng",
+    "positionUnrealizedPnL": "Lãi/Lỗ thả nổi",
+    "positions": "Vị thế",
+    "price": "Giá",
+    "profit": "Lợi nhuận",
+    "recentTrades": "Giao dịch gần đây",
+    "selectSymbol": "Chọn mã",
+    "sell": "Bán",
+    "side": "Hướng",
+    "stop": "Dừng",
+    "stopLoss": "Cắt lỗ",
     "symbol": "Mã",
     "takeProfit": "Chốt lời",
     "time": "Thời gian",
     "title": "Giao dịch",
     "type": "Loại",
     "volume": "Khối Lượng"
+  },
+  "algo": {
+    "actions": {
+      "cancel": "Hủy",
+      "start": "Bắt Đầu"
+    },
+    "dashboard": {
+      "activeExecutions": "Đang Thực Thi",
+      "noActive": "Không có lệnh nào đang chạy",
+      "title": "Bảng Thuật Toán"
+    },
+    "fields": {
+      "account": "Tài Khoản",
+      "algo": "Thuật Toán",
+      "limitPrice": "Giá Giới Hạn",
+      "participationRate": "Tỷ Lệ Tham Gia",
+      "side": "Hướng",
+      "sliceInterval": "Khoảng Cắt Lệnh",
+      "symbol": "Mã",
+      "timeRange": "Khoảng Thời Gian",
+      "urgency": "Độ Khẩn Cấp",
+      "volume": "Khối Lượng"
+    },
+    "info": {
+      "description": "Mô tả",
+      "name": "Tên"
+    },
+    "messages": {
+      "started": "Đã khởi động thuật toán"
+    },
+    "side": {
+      "buy": "Mua",
+      "sell": "Bán"
+    },
+    "submitForm": {
+      "title": "Khởi Động Thuật Toán"
+    },
+    "table": {
+      "actions": "Thao Tác",
+      "algo": "Thuật Toán",
+      "executionId": "Mã Thực Thi",
+      "progress": "Tiến Độ",
+      "side": "Hướng",
+      "state": "Trạng Thái",
+      "symbol": "Mã",
+      "volume": "Khối Lượng"
+    },
+    "timePresets": {
+      "EOD": "Cuối Ngày"
+    },
+    "twap": {
+      "name": "TWAP (Giá Bình Quân Thời Gian)",
+      "description": "Giá Trung Bình Theo Thời Gian — chia lệnh lớn thành các phần nhỏ phân bổ đều theo thời gian."
+    },
+    "vwap": {
+      "name": "VWAP (Giá Bình Quân Khối Lượng)",
+      "description": "Giá Trung Bình Theo Khối Lượng — thực hiện lệnh theo tỷ lệ phân phối khối lượng lịch sử."
+    },
+    "pov": {
+      "name": "POV (Tỷ Lệ Tham Gia)",
+      "description": "Phần Trăm Khối Lượng — tham gia với tỷ lệ cố định trên khối lượng thị trường."
+    },
+    "shortfall": {
+      "name": "Shortfall (Giảm Khoảng Cách)",
+      "description": "Giảm Thiểu Khoảng Cách — giảm thiểu chênh lệch giữa giá quyết định và giá thực thi."
+    },
+    "label": {
+      "twap": "TWAP (Giá Bình Quân Thời Gian)",
+      "vwap": "VWAP (Giá Bình Quân Khối Lượng)",
+      "pov": "POV (Tỷ Lệ Tham Gia)",
+      "shortfall": "Shortfall (Giảm Khoảng Cách)"
+    }
   }
 } as const;
 export default Trading;

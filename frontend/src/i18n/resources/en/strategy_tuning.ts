@@ -3,14 +3,6 @@
 const StrategyTuning = {
   "strategy": {
     "tuning": {
-      "apply": "Apply",
-      "degradation": "Degradation",
-      "enabledCombinations": "{{enabled}} enabled · {{combos}} combinations",
-      "grade": "Grade",
-      "gridWarning": "Grid Search would test <b>{{count}}</b> combinations (budget: 48). Consider switching to <b>Differential Evolution</b> which handles large parameter spaces efficiently.",
-      "hide": "Hide",
-      "oosFootnote": "OOS validation run on top-5 candidates (by IS score). Green degradation <20%, orange 20-40%, red >40%.",
-      "oosScore": "OOS Score",
       "optimizer": {
         "ags": "Annealed Gaussian",
         "agsDesc": "Gaussian jitter with sigma annealing. Lightweight alternative to TPE.",
@@ -25,6 +17,14 @@ const StrategyTuning = {
         "tpe": "TPE (KDE)",
         "tpeDesc": "Tree-structured Parzen Estimator. KDE models good/bad distributions."
       },
+      "apply": "Apply",
+      "degradation": "Degradation",
+      "enabledCombinations": "{{enabled}} enabled · {{combos}} combinations",
+      "grade": "Grade",
+      "gridWarning": "Grid Search would test <b>{{count}}</b> combinations (budget: 48). Consider switching to <b>Differential Evolution</b> which handles large parameter spaces efficiently.",
+      "hide": "Hide",
+      "oosFootnote": "OOS validation run on top-5 candidates (by IS score). Green degradation <20%, orange 20-40%, red >40%.",
+      "oosScore": "OOS Score",
       "optimizerMethod": "Optimizer method",
       "overfit": "Overfit",
       "overfitWarning": "⚠ OVERFIT",

@@ -2,6 +2,39 @@
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const AiCore = {
   "ai": {
+    "consensus": {
+      "signals": {
+        "ma": {
+          "trend": "均线趋势"
+        },
+        "macd": {
+          "flag": "信号",
+          "hist": "柱体",
+          "signalLine": "信号线",
+          "trend": "形态",
+          "value": "MACD"
+        },
+        "rsi": {
+          "flag": "信号",
+          "value": "RSI"
+        }
+      },
+      "actions": {
+        "refresh": "刷新"
+      },
+      "fields": {
+        "account": "账号",
+        "symbol": "品种",
+        "timeframe": "周期"
+      },
+      "panel": {
+        "decision": "决策",
+        "overallScore": "总体分",
+        "technicalScore": "技术面",
+        "title": "客观评分"
+      },
+      "title": "共识与对话"
+    },
     "agentPrompts": {
       "code": {
         "title": "代码生成 Agent"
@@ -60,7 +93,6 @@ const AiCore = {
         "empty": "暂无评分（等待回测完成或无 metrics）",
         "title": "综合评分（启发式）"
       },
-      "stateLabel": "状态",
       "status": {
         "cancelRequested": "取消中",
         "canceled": "已取消",
@@ -69,14 +101,8 @@ const AiCore = {
         "running": "运行中",
         "succeeded": "成功"
       },
+      "stateLabel": "状态",
       "title": "回测评分卡"
-    },
-    "chatBox": {
-      "collapse": "收起",
-      "emptyDescription": "开始与AI助手对话",
-      "expandAll": "展开全部",
-      "thinking": "思考中...",
-      "truncated": "内容过长，已截断"
     },
     "client": {
       "errors": {
@@ -98,47 +124,7 @@ const AiCore = {
         "unauthorized": "服务商拒绝了 API Key (401)。请检查 Key 值及其是否有权访问所选模型。"
       }
     },
-    "consensus": {
-      "actions": {
-        "refresh": "刷新"
-      },
-      "fields": {
-        "account": "账号",
-        "symbol": "品种",
-        "timeframe": "周期"
-      },
-      "panel": {
-        "decision": "决策",
-        "overallScore": "总体分",
-        "technicalScore": "技术面",
-        "title": "客观评分"
-      },
-      "signals": {
-        "ma": {
-          "trend": "均线趋势"
-        },
-        "macd": {
-          "flag": "信号",
-          "hist": "柱体",
-          "signalLine": "信号线",
-          "trend": "形态",
-          "value": "MACD"
-        },
-        "rsi": {
-          "flag": "信号",
-          "value": "RSI"
-        }
-      },
-      "title": "共识与对话"
-    },
-    "conversation": {
-      "defaultTitle": "新对话"
-    },
     "gate": {
-      "allPassed": "所有 6 个 Gate 通过，策略可进入 PromoteToLive 评估",
-      "backtestGrossReturn": "回测毛收益",
-      "backtestNetReturn": "回测净收益",
-      "dailyReturns": "日收益率 (逗号或换行分隔)",
       "descriptions": {
         "compliance": "DSL 表达式非空验证",
         "correlation": "与现有策略的信号相关性检查",
@@ -147,12 +133,6 @@ const AiCore = {
         "paper": "≥14 天模拟交易验证",
         "walkforward": "Purged Walk-Forward 交叉验证"
       },
-      "details": "详细结果",
-      "dslExpression": "DSL 表达式",
-      "evaluating": "评估中...",
-      "fail": "失败",
-      "failed": "未通过: {{gate}}",
-      "gateProgress": "Gate 评估进度",
       "labels": {
         "compliance": "合规检查",
         "correlation": "相关性",
@@ -161,6 +141,19 @@ const AiCore = {
         "paper": "模拟交易",
         "walkforward": "前向分析"
       },
+      "status": {
+        "evaluating": "评估中..."
+      },
+      "allPassed": "所有 6 个 Gate 通过，策略可进入 PromoteToLive 评估",
+      "backtestGrossReturn": "回测毛收益",
+      "backtestNetReturn": "回测净收益",
+      "dailyReturns": "日收益率 (逗号或换行分隔)",
+      "details": "详细结果",
+      "dslExpression": "DSL 表达式",
+      "evaluating": "评估中...",
+      "fail": "失败",
+      "failed": "未通过: {{gate}}",
+      "gateProgress": "Gate 评估进度",
       "noData": "无数据",
       "numAttempts": "策略尝试次数",
       "paperDays": "模拟天数",
@@ -176,27 +169,9 @@ const AiCore = {
       "runPipeline": "运行 Gate 管道",
       "selectRun": "选择回测运行...",
       "skipped": "已跳过",
-      "status": {
-        "evaluating": "评估中..."
-      },
       "strategyParams": "策略参数",
       "title": "AI Gate 进度面板",
       "unknown": "未知"
-    },
-    "gateway": {
-      "balance": "钱包余额",
-      "modelPlaceholder": "选择 AI 模型",
-      "monthlyCost": "本月费用",
-      "monthlyTokens": "本月 Token",
-      "noModels": "暂无可用模型",
-      "selectModel": "选择模型",
-      "title": "AI 网关",
-      "usageByFeature": "按功能用量",
-      "useGateway": "AI 网关",
-      "useGatewayDesc": "扣钱包余额 · 按 Token 计费",
-      "useOwnKey": "我的 API Key",
-      "useOwnKeyDesc": "直付厂商 · 自行管理",
-      "useOwnKeyHint": "使用你自己的 API Key，直接向所选厂商付费。在下方选择厂商卡片进行配置。"
     },
     "reports": {
       "tradeAnalysis": {
@@ -210,9 +185,6 @@ const AiCore = {
       },
       "description": "请先到设置页配置 AI 提供商、模型与 API Key，然后再使用策略向导或聊天。",
       "title": "尚未配置大模型"
-    },
-    "riskEval": {
-      "failed": "风险评估失败"
     },
     "signalCard": {
       "actions": {
@@ -298,7 +270,6 @@ const AiCore = {
         "namePlaceholder": "我的自定义提供商",
         "nameRequired": "服务商名称不能为空"
       },
-      "emptyConfigs": "暂无 AI Provider 配置（系统启动时会自动创建默认 Provider）",
       "fields": {
         "apiKeyHint": "输入后将自动加密保存，无需手动提交",
         "apiKeyPastePlaceholder": "粘贴 API Key，将自动预保存",
@@ -329,8 +300,6 @@ const AiCore = {
         "validationFailedNeedApiKey": "验证失败：此服务商通常需要 API Key，请先填写并保存 Key 后重试。",
         "validationPassedModels": "验证通过：发现 {{count}} 个模型"
       },
-      "pageSubtitle": "配置 AI 大脑 — 选择模型厂商、管理 API 密钥与可用模型，并指定全站兜底使用的「默认主模型」。",
-      "pageTitle": "AI 助手设置",
       "section1": {
         "subtitle": "Cards show each provider's configuration and readiness; click to select",
         "title": "选择模型厂商"
@@ -366,15 +335,12 @@ const AiCore = {
         "openai_compatible": "任意兼容端点",
         "qwen": "阿里云 · 中文优化",
         "zhipu": "清华系 · 通用"
-      }
-    },
-    "tabs": {
-      "agentSettings": "专家设置",
-      "gate": "AI 质量门",
-      "settings": "设置"
+      },
+      "emptyConfigs": "暂无 AI Provider 配置（系统启动时会自动创建默认 Provider）",
+      "pageSubtitle": "配置 AI 大脑 — 选择模型厂商、管理 API 密钥与可用模型，并指定全站兜底使用的「默认主模型」。",
+      "pageTitle": "AI 助手设置"
     },
     "workflowRuns": {
-      "defaultTitle": "AI 工作流",
       "hints": {
         "selectToViewDetail": "从左侧选择运行记录查看详情"
       },
@@ -382,7 +348,41 @@ const AiCore = {
         "loadDetailFailed": "加载详情失败",
         "loadListFailed": "加载运行记录失败"
       },
+      "defaultTitle": "AI 工作流",
       "title": "AI 工作流"
+    },
+    "chatBox": {
+      "collapse": "收起",
+      "emptyDescription": "开始与AI助手对话",
+      "expandAll": "展开全部",
+      "thinking": "思考中...",
+      "truncated": "内容过长，已截断"
+    },
+    "conversation": {
+      "defaultTitle": "新对话"
+    },
+    "gateway": {
+      "balance": "钱包余额",
+      "modelPlaceholder": "选择 AI 模型",
+      "monthlyCost": "本月费用",
+      "monthlyTokens": "本月 Token",
+      "noModels": "暂无可用模型",
+      "selectModel": "选择模型",
+      "title": "AI 网关",
+      "usageByFeature": "按功能用量",
+      "useGateway": "AI 网关",
+      "useGatewayDesc": "扣钱包余额 · 按 Token 计费",
+      "useOwnKey": "我的 API Key",
+      "useOwnKeyDesc": "直付厂商 · 自行管理",
+      "useOwnKeyHint": "使用你自己的 API Key，直接向所选厂商付费。在下方选择厂商卡片进行配置。"
+    },
+    "riskEval": {
+      "failed": "风险评估失败"
+    },
+    "tabs": {
+      "agentSettings": "专家设置",
+      "gate": "AI 质量门",
+      "settings": "设置"
     }
   }
 } as const;

@@ -3,21 +3,7 @@
 const AiSettings = {
   "ai": {
     "settings": {
-      "actions": {
-        "saveConfig": "Lưu cấu hình",
-        "validateApiKey": "Xác minh API key"
-      },
       "agent": {
-        "actions": {
-          "add": "Thêm",
-          "loadDefaults": "Tải 8 agent mặc định",
-          "remove": "Xoá",
-          "restoreDefaults": "Khôi phục mặc định",
-          "restoreDefaultsConfirmContent": "Thao tác này sẽ đặt lại 8 agent hệ thống (style/signals/risk/macro/sentiment/portfolio/execution/code) về nhân dạng mặc định. Các agent tự thêm sẽ được giữ. Chỉ chỉnh sửa bản náp, phải bấm Lưu mới được lưu vào CSDL.",
-          "restoreDefaultsConfirmTitle": "Khôi phục nhân dạng mặc định?",
-          "save": "Lưu"
-        },
-        "defaultName": "Agent tùy chỉnh",
         "defaults": {
           "code": {
             "inputHint": "Ví dụ: trend-following EMA(fast)/EMA(slow) với bộ lọc ATR; params = fast, slow, atr_period, risk_per_trade."
@@ -56,6 +42,15 @@ const AiSettings = {
             "inputHint": "Ví dụ: tài khoản = EURUSD cá nhân; khung thời gian = H1; mục tiêu = lợi nhuận 3%/tháng, drawdown tối đa <10%; ưu tiên = tỷ lệ thắng hơn tỷ lệ lời/lỗ."
           }
         },
+        "actions": {
+          "add": "Thêm",
+          "loadDefaults": "Tải 8 agent mặc định",
+          "remove": "Xoá",
+          "restoreDefaults": "Khôi phục mặc định",
+          "restoreDefaultsConfirmContent": "Thao tác này sẽ đặt lại 8 agent hệ thống (style/signals/risk/macro/sentiment/portfolio/execution/code) về nhân dạng mặc định. Các agent tự thêm sẽ được giữ. Chỉ chỉnh sửa bản náp, phải bấm Lưu mới được lưu vào CSDL.",
+          "restoreDefaultsConfirmTitle": "Khôi phục nhân dạng mặc định?",
+          "save": "Lưu"
+        },
         "fields": {
           "historicalBinding": "{{value}} (lịch sử)",
           "identityPlaceholder": "Nhân dạng / persona (ghép vào system prompt)",
@@ -72,9 +67,6 @@ const AiSettings = {
           "saveSuccess": "Đã lưu agents",
           "selectProfileFirst": "Vui lòng chọn một cấu hình ở bên trái trước"
         },
-        "removeConfirmContent": "Bạn chắc chắn muốn xoá agent này?",
-        "removeConfirmTitle": "Xoá Agent",
-        "title": "Định nghĩa Agent",
         "types": {
           "code": "Mã",
           "execution": "Thực thi",
@@ -88,7 +80,11 @@ const AiSettings = {
           "signals": "Tín hiệu",
           "strategist": "Chuyên viên phân tích chiến lược",
           "style": "Phong cách"
-        }
+        },
+        "defaultName": "Agent tùy chỉnh",
+        "removeConfirmContent": "Bạn chắc chắn muốn xoá agent này?",
+        "removeConfirmTitle": "Xoá Agent",
+        "title": "Định nghĩa Agent"
       },
       "apiKeyGuide": {
         "deepseek": {
@@ -96,19 +92,31 @@ const AiSettings = {
           "step2": "Đăng nhập/đăng ký, sau đó tạo và sao chép API key trong trang API Keys",
           "title": "Lấy DeepSeek API key"
         },
-        "default": "Current provider: {{provider}}. Go to the provider\\\\\\\\\\\\\\\\",
-        "modelSuggestionDeepSeek": "模型建议: 在\"模型\"下拉中选择 `deepseek-chat`",
-        "modelSuggestionZhipu": "模型建议: 在\"模型\"下拉中选择 `glm-4-flash` / `glm-4`",
-        "selectProviderHint": "Chọn nhà cung cấp để xem hướng dẫn lấy API key.",
-        "title": "Hướng dẫn lấy API key",
         "zhipu": {
           "step1": "Mở nền tảng Zhipu: ",
           "step2": "Đăng nhập/đăng ký, sau đó tạo và sao chép API key",
           "title": "Lấy Zhipu API key"
-        }
+        },
+        "default": "Current provider: {{provider}}. Go to the provider\\\\\\\\\\\\\\\\",
+        "modelSuggestionDeepSeek": "模型建议: 在\"模型\"下拉中选择 `deepseek-chat`",
+        "modelSuggestionZhipu": "模型建议: 在\"模型\"下拉中选择 `glm-4-flash` / `glm-4`",
+        "selectProviderHint": "Chọn nhà cung cấp để xem hướng dẫn lấy API key.",
+        "title": "Hướng dẫn lấy API key"
       },
-      "apiKeySavedAs": "Đã lưu: {{masked}}",
-      "defaultProfileName": "Mặc định",
+      "profiles": {
+        "actions": {
+          "setCurrent": "Đặt hiện tại"
+        },
+        "delete": {
+          "content": "Xóa cấu hình này?",
+          "title": "Xóa cấu hình"
+        },
+        "current": "Hiện tại"
+      },
+      "actions": {
+        "saveConfig": "Lưu cấu hình",
+        "validateApiKey": "Xác minh API key"
+      },
       "discoverErrors": {
         "baseUrlInvalid": "Base URL không hợp lệ: dùng URL đầy đủ, ví dụ https://model.example.com hoặc https://model.example.com/v1",
         "baseUrlRequired": "Vui lòng nhập Base URL (địa chỉ dịch vụ model).",
@@ -173,7 +181,6 @@ const AiSettings = {
         "validateFailed": "Xác minh thất bại",
         "validateSuccess": "Xác minh thành công"
       },
-      "pageTitle": "Cài đặt trợ lý AI",
       "placeholders": {
         "apiKey": "Nhập API key",
         "baseUrl": "VD: https://api.example.com/v1",
@@ -188,16 +195,6 @@ const AiSettings = {
         "hint": "Dùng cho bước \"Làm rõ ý định\", sinh mã, panel \"Trợ lý AI — sửa mã\" trong trình soạn template, và bất kỳ Agent nào chưa chọn model riêng.",
         "placeholder": "Chọn một provider · model làm bộ não mặc định",
         "title": "Mô hình chính mặc định"
-      },
-      "profiles": {
-        "actions": {
-          "setCurrent": "Đặt hiện tại"
-        },
-        "current": "Hiện tại",
-        "delete": {
-          "content": "Xóa cấu hình này?",
-          "title": "Xóa cấu hình"
-        }
       },
       "providers": {
         "anthropic": "Anthropic Claude",
@@ -239,7 +236,10 @@ const AiSettings = {
         "modelFormat": "Định dạng mô hình không hợp lệ",
         "modelRequired": "Mô hình là bắt buộc",
         "nameRequired": "Tên là bắt buộc"
-      }
+      },
+      "apiKeySavedAs": "Đã lưu: {{masked}}",
+      "defaultProfileName": "Mặc định",
+      "pageTitle": "Cài đặt trợ lý AI"
     }
   }
 } as const;

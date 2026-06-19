@@ -97,10 +97,15 @@ function buildI18nextResource(
   fields: Map<string, string>,
   fieldMap: FieldMap,
 ): Record<string, unknown> {
+  // Sort by path depth descending — nested keys (a.b.c) must be set before
+  // parent keys (a.b) to avoid overwriting objects with strings.
+  const sortedFields = Object.entries(fieldMap.fields)
+    .sort(([, a], [, b]) => (b.match(/\./g) || []).length - (a.match(/\./g) || []).length);
+
   if (fieldMap.prefix === '__root__') {
     // Root-level keys (base.ts) — no prefix nesting
     const resource: Record<string, unknown> = {};
-    for (const [protoField, i18nRelPath] of Object.entries(fieldMap.fields)) {
+    for (const [protoField, i18nRelPath] of sortedFields) {
       const value = fields.get(protoField);
       if (value !== undefined) {
         setNested(resource, i18nRelPath, value);
@@ -118,8 +123,8 @@ function buildI18nextResource(
     current = current[part] as Record<string, unknown>;
   }
 
-  // Fill in translations
-  for (const [protoField, i18nRelPath] of Object.entries(fieldMap.fields)) {
+  // Fill in translations — sorted by depth so nested keys come before parent keys
+  for (const [protoField, i18nRelPath] of sortedFields) {
     const value = fields.get(protoField);
     if (value !== undefined) {
       setNested(current, i18nRelPath, value);

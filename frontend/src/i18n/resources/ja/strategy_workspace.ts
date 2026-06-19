@@ -3,10 +3,6 @@
 const StrategyWorkspace = {
   "strategy": {
     "workspace": {
-      "account": "口座",
-      "accountPlaceholder": "アカウントID",
-      "ai": "AI 助手",
-      "aiAssist": "AIアシスタント",
       "autoFix": {
         "button": "自動修正",
         "dismiss": "閉じる",
@@ -18,16 +14,6 @@ const StrategyWorkspace = {
         "passed": "自動修正通過 {{iterations}} イテレーション{{plural}}",
         "remaining": "残り ({{count}})"
       },
-      "backtest": "バックテスト",
-      "backtestCompleted": "完了",
-      "backtestEmpty": "バックテストを実行して結果を表示",
-      "backtestError": "バックテストに失敗",
-      "backtestResultsLabel": "バックテスト結果",
-      "backtestRunIdLabel": "バックテスト実行を選択...",
-      "backtestRunning": "バックテスト実行中...",
-      "backtestTab": "バックテスト結果",
-      "chart": "K線",
-      "chartError": "チャートエラー — 再読込してください",
       "chartTools": {
         "area": "エリア",
         "candle": "ローソク足",
@@ -43,6 +29,27 @@ const StrategyWorkspace = {
         "streamActive": "リアルタイムバー配信中",
         "streamUnavailable": "配信利用不可"
       },
+      "template": {
+        "load": "読込",
+        "loaded": "読込済",
+        "saveAs": "新規保存",
+        "selectPlaceholder": "テンプレートを選択...",
+        "title": "テンプレート"
+      },
+      "account": "口座",
+      "accountPlaceholder": "アカウントID",
+      "ai": "AI 助手",
+      "aiAssist": "AIアシスタント",
+      "backtest": "バックテスト",
+      "backtestCompleted": "完了",
+      "backtestEmpty": "バックテストを実行して結果を表示",
+      "backtestError": "バックテストに失敗",
+      "backtestResultsLabel": "バックテスト結果",
+      "backtestRunIdLabel": "バックテスト実行を選択...",
+      "backtestRunning": "バックテスト実行中...",
+      "backtestTab": "バックテスト結果",
+      "chart": "K線",
+      "chartError": "チャートエラー — 再読込してください",
       "chartWindow": "チャート",
       "code": "ストラテジーコード",
       "completedStatus": "完了",
@@ -72,13 +79,6 @@ const StrategyWorkspace = {
       "selectSymbolHint": "取引アカウントと銘柄を選択してチャートを表示",
       "showCode": "コードを表示",
       "smartTuning": "スマートチューニング",
-      "template": {
-        "load": "読込",
-        "loaded": "読込済",
-        "saveAs": "新規保存",
-        "selectPlaceholder": "テンプレートを選択...",
-        "title": "テンプレート"
-      },
       "title": "ストラテジーワークスペース",
       "tuningTab": "スマートチューニング",
       "validate": "コード検証",

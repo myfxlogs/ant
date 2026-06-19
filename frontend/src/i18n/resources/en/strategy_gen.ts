@@ -3,21 +3,16 @@
 const StrategyGen = {
   "strategy": {
     "gen": {
-      "backtestMsg": "Backtest task created",
-      "backtestStarted": "Backtest Started",
       "chat": {
         "discuss": "💬 Discuss",
         "generate": "⚡ Generate",
         "repair": "🔧 Repair",
         "revise": "✏️ Revise"
       },
-      "clarifyTitle": "A few details to confirm:",
-      "done": "Done",
       "feedback": {
         "heading": "📊 Backtest Results",
         "placeholder": "Provide feedback to iterate (e.g. \"Too aggressive\", \"Add stop loss\")"
       },
-      "generating": "Generating...",
       "metrics": {
         "maxDrawdown": "Max DD",
         "return": "Return",
@@ -25,6 +20,11 @@ const StrategyGen = {
         "trades": "Trades",
         "winRate": "Win"
       },
+      "backtestMsg": "Backtest task created",
+      "backtestStarted": "Backtest Started",
+      "clarifyTitle": "A few details to confirm:",
+      "done": "Done",
+      "generating": "Generating...",
       "placeholder": "Describe the trading strategy you want to create, e.g.: \"Make a Bollinger Band mean-reversion strategy for EURUSD on 1H\"",
       "regenerate": "Regenerate",
       "reset": "Start Over",

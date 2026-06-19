@@ -3,9 +3,6 @@
 const StrategyPaper = {
   "strategy": {
     "paper": {
-      "accountName": "Tên Tài Khoản",
-      "create": "Tạo lịch",
-      "createAccount": "Tạo Tài Khoản Giấy",
       "messages": {
         "createFailed": "Tạo thất bại",
         "created": "Tài khoản giấy đã tạo",
@@ -16,6 +13,9 @@ const StrategyPaper = {
         "strategyStarted": "Chiến lược giấy đã bắt đầu",
         "strategyStopped": "Chiến lược giấy đã dừng"
       },
+      "accountName": "Tên Tài Khoản",
+      "create": "Tạo lịch",
+      "createAccount": "Tạo Tài Khoản Giấy",
       "noAccounts": "Không có tài khoản giấy. Tạo một tài khoản để bắt đầu giao dịch mô phỏng.",
       "paper": "Giấy",
       "running": "Đang Chạy {{symbol}} {{timeframe}}",

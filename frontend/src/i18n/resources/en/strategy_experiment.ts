@@ -18,7 +18,6 @@ const StrategyExperiment = {
         "title": "Candidates",
         "titleWithId": "Candidates: {{id}}"
       },
-      "jobEventStream": "Job Event Stream",
       "list": {
         "column": {
           "actions": "Actions",
@@ -40,9 +39,6 @@ const StrategyExperiment = {
         "submitFailed": "Failed to submit experiment. Please verify the parameter space is valid JSON.",
         "subscribeJobFailed": "Failed to subscribe to experiment Job events"
       },
-      "noEvents": "No events",
-      "ruleVersionAlert": "Current minimal loop: deterministic parameter experiment. Candidates only generate drafts and will not auto-publish, schedule, or trade.",
-      "selectJobToView": "Select an experiment with a Job to view events.",
       "submitForm": {
         "baseTemplate": "Base Strategy Template",
         "baseTemplatePlaceholder": "Select template",
@@ -55,6 +51,10 @@ const StrategyExperiment = {
         "submit": "Submit Experiment",
         "title": "Submit Experiment"
       },
+      "jobEventStream": "Job Event Stream",
+      "noEvents": "No events",
+      "ruleVersionAlert": "Current minimal loop: deterministic parameter experiment. Candidates only generate drafts and will not auto-publish, schedule, or trade.",
+      "selectJobToView": "Select an experiment with a Job to view events.",
       "subtitle": "Submit parameter combinations to automatically run experiments, score candidate strategies, and generate drafts.",
       "title": "Strategy Experiment"
     }

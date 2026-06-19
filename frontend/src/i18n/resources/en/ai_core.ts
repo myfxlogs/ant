@@ -2,6 +2,39 @@
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const AiCore = {
   "ai": {
+    "consensus": {
+      "signals": {
+        "ma": {
+          "trend": "MA Trend"
+        },
+        "macd": {
+          "flag": "Signal",
+          "hist": "Histogram",
+          "signalLine": "Signal Line",
+          "trend": "Pattern",
+          "value": "MACD"
+        },
+        "rsi": {
+          "flag": "Signal",
+          "value": "RSI"
+        }
+      },
+      "actions": {
+        "refresh": "Refresh"
+      },
+      "fields": {
+        "account": "Account",
+        "symbol": "Symbol",
+        "timeframe": "Timeframe"
+      },
+      "panel": {
+        "decision": "Decision",
+        "overallScore": "Overall",
+        "technicalScore": "Technical",
+        "title": "Objective Score"
+      },
+      "title": "Consensus & Discussion"
+    },
     "agentPrompts": {
       "code": {
         "title": "Code generation agent"
@@ -60,7 +93,6 @@ const AiCore = {
         "empty": "No score yet (wait for backtest or no metrics)",
         "title": "Overall Score (heuristic)"
       },
-      "stateLabel": "State",
       "status": {
         "cancelRequested": "Cancelling",
         "canceled": "Cancelled",
@@ -69,14 +101,8 @@ const AiCore = {
         "running": "Running",
         "succeeded": "Success"
       },
+      "stateLabel": "State",
       "title": "Backtest Scorecard"
-    },
-    "chatBox": {
-      "collapse": "Collapse",
-      "emptyDescription": "Start a conversation with the AI assistant",
-      "expandAll": "Expand all",
-      "thinking": "Thinking...",
-      "truncated": "Content too long, truncated"
     },
     "client": {
       "errors": {
@@ -98,47 +124,7 @@ const AiCore = {
         "unauthorized": "The provider rejected the API key (401). Check the key value and that it has access to the selected model."
       }
     },
-    "consensus": {
-      "actions": {
-        "refresh": "Refresh"
-      },
-      "fields": {
-        "account": "Account",
-        "symbol": "Symbol",
-        "timeframe": "Timeframe"
-      },
-      "panel": {
-        "decision": "Decision",
-        "overallScore": "Overall",
-        "technicalScore": "Technical",
-        "title": "Objective Score"
-      },
-      "signals": {
-        "ma": {
-          "trend": "MA Trend"
-        },
-        "macd": {
-          "flag": "Signal",
-          "hist": "Histogram",
-          "signalLine": "Signal Line",
-          "trend": "Pattern",
-          "value": "MACD"
-        },
-        "rsi": {
-          "flag": "Signal",
-          "value": "RSI"
-        }
-      },
-      "title": "Consensus & Discussion"
-    },
-    "conversation": {
-      "defaultTitle": "New Conversation"
-    },
     "gate": {
-      "allPassed": "All 6 gates passed — strategy eligible for PromoteToLive evaluation",
-      "backtestGrossReturn": "Backtest Gross Return",
-      "backtestNetReturn": "Backtest Net Return",
-      "dailyReturns": "Daily Returns (comma or newline separated)",
       "descriptions": {
         "compliance": "DSL expression non-empty validation",
         "correlation": "Signal correlation check with existing strategies",
@@ -147,12 +133,6 @@ const AiCore = {
         "paper": "≥14 days paper trading validation",
         "walkforward": "Purged Walk-Forward cross-validation"
       },
-      "details": "Details",
-      "dslExpression": "DSL Expression",
-      "evaluating": "Evaluating...",
-      "fail": "FAIL",
-      "failed": "Failed: {{gate}}",
-      "gateProgress": "Gate Evaluation Progress",
       "labels": {
         "compliance": "Compliance",
         "correlation": "Correlation",
@@ -161,6 +141,19 @@ const AiCore = {
         "paper": "Paper Trading",
         "walkforward": "Walk-Forward"
       },
+      "status": {
+        "evaluating": "Evaluating..."
+      },
+      "allPassed": "All 6 gates passed — strategy eligible for PromoteToLive evaluation",
+      "backtestGrossReturn": "Backtest Gross Return",
+      "backtestNetReturn": "Backtest Net Return",
+      "dailyReturns": "Daily Returns (comma or newline separated)",
+      "details": "Details",
+      "dslExpression": "DSL Expression",
+      "evaluating": "Evaluating...",
+      "fail": "FAIL",
+      "failed": "Failed: {{gate}}",
+      "gateProgress": "Gate Evaluation Progress",
       "noData": "no data",
       "numAttempts": "Strategy Attempts",
       "paperDays": "Paper Days",
@@ -176,27 +169,9 @@ const AiCore = {
       "runPipeline": "Run Gate Pipeline",
       "selectRun": "Select backtest run...",
       "skipped": "SKIPPED",
-      "status": {
-        "evaluating": "Evaluating..."
-      },
       "strategyParams": "Strategy Parameters",
       "title": "AI Gate Progress",
       "unknown": "unknown"
-    },
-    "gateway": {
-      "balance": "Balance",
-      "modelPlaceholder": "Choose an AI model",
-      "monthlyCost": "Cost this month",
-      "monthlyTokens": "Tokens this month",
-      "noModels": "No models available",
-      "selectModel": "Select Model",
-      "title": "AI Gateway",
-      "usageByFeature": "Usage by Feature",
-      "useGateway": "Platform Models",
-      "useGatewayDesc": "Wallet billing · Pay per token",
-      "useOwnKey": "My API Key",
-      "useOwnKeyDesc": "Direct billing · Self-managed",
-      "useOwnKeyHint": "Use your own API key to pay the provider directly. Select a provider card below to configure."
     },
     "reports": {
       "tradeAnalysis": {
@@ -210,9 +185,6 @@ const AiCore = {
       },
       "description": "Please go to Settings first to configure the AI provider, model, and API key, then use the strategy wizard or chat.",
       "title": "No LLM configured yet"
-    },
-    "riskEval": {
-      "failed": "Risk evaluation failed"
     },
     "signalCard": {
       "actions": {
@@ -298,7 +270,6 @@ const AiCore = {
         "namePlaceholder": "My Custom Provider",
         "nameRequired": "Provider name is required"
       },
-      "emptyConfigs": "No AI Provider configured (system will auto-create default provider on startup)",
       "fields": {
         "apiKeyHint": "Will be auto-encrypted on save, no manual submission needed",
         "apiKeyPastePlaceholder": "Paste API Key, will auto-pre-save",
@@ -329,8 +300,6 @@ const AiCore = {
         "validationFailedNeedApiKey": "Validation failed: this provider typically requires an API Key. Please fill and save the key first, then retry.",
         "validationPassedModels": "Validation passed: {{count}} model(s) found"
       },
-      "pageSubtitle": "Configure the AI brain – select providers, manage API keys and available models, and set the default primary model for the whole site.",
-      "pageTitle": "AI Assistant Settings",
       "section1": {
         "subtitle": "Cards show each provider's configuration and readiness; click to select",
         "title": "Select Model Provider"
@@ -366,15 +335,12 @@ const AiCore = {
         "openai_compatible": "Any compatible endpoint",
         "qwen": "Alibaba Cloud · Chinese optimized",
         "zhipu": "Tsinghua · General"
-      }
-    },
-    "tabs": {
-      "agentSettings": "Agent Settings",
-      "gate": "AI Gate",
-      "settings": "Settings"
+      },
+      "emptyConfigs": "No AI Provider configured (system will auto-create default provider on startup)",
+      "pageSubtitle": "Configure the AI brain – select providers, manage API keys and available models, and set the default primary model for the whole site.",
+      "pageTitle": "AI Assistant Settings"
     },
     "workflowRuns": {
-      "defaultTitle": "AI Workflow",
       "hints": {
         "selectToViewDetail": "Select a run from the left to view details"
       },
@@ -382,7 +348,41 @@ const AiCore = {
         "loadDetailFailed": "Failed to load details",
         "loadListFailed": "Failed to load run list"
       },
+      "defaultTitle": "AI Workflow",
       "title": "AI Workflow"
+    },
+    "chatBox": {
+      "collapse": "Collapse",
+      "emptyDescription": "Start a conversation with the AI assistant",
+      "expandAll": "Expand all",
+      "thinking": "Thinking...",
+      "truncated": "Content too long, truncated"
+    },
+    "conversation": {
+      "defaultTitle": "New Conversation"
+    },
+    "gateway": {
+      "balance": "Balance",
+      "modelPlaceholder": "Choose an AI model",
+      "monthlyCost": "Cost this month",
+      "monthlyTokens": "Tokens this month",
+      "noModels": "No models available",
+      "selectModel": "Select Model",
+      "title": "AI Gateway",
+      "usageByFeature": "Usage by Feature",
+      "useGateway": "Platform Models",
+      "useGatewayDesc": "Wallet billing · Pay per token",
+      "useOwnKey": "My API Key",
+      "useOwnKeyDesc": "Direct billing · Self-managed",
+      "useOwnKeyHint": "Use your own API key to pay the provider directly. Select a provider card below to configure."
+    },
+    "riskEval": {
+      "failed": "Risk evaluation failed"
+    },
+    "tabs": {
+      "agentSettings": "Agent Settings",
+      "gate": "AI Gate",
+      "settings": "Settings"
     }
   }
 } as const;

@@ -3,18 +3,12 @@
 const StrategySchedules = {
   "strategy": {
     "schedules": {
-      "actions": {
-        "create": "新建調度",
-        "healthCheck": "健康檢查",
-        "logs": "執行日誌",
-        "runNow": "立即執行"
-      },
-      "createSchedule": "建立調度",
-      "deleteConfirm": {
-        "title": "删除此排程？"
-      },
       "editModal": {
         "advanced": {
+          "triggerModeOptions": {
+            "hf": "高频信号流",
+            "stable": "穩定（K線/週期）"
+          },
           "fixedIntervalSeconds": "固定間隔(秒)",
           "fixedIntervalSecondsExtra": "可選。填寫後將按固定間隔執行（不會再自動跟隨週期）。例如：60 表示每 60 秒執行一次",
           "hfCooldownMs": "高頻模式：最小觸發間隔(ms)",
@@ -27,11 +21,7 @@ const StrategySchedules = {
           "timeframeExtra": "預設即可。僅用於K線與指標計算，不影響EA本質（策略驅動交易）",
           "title": "高級設定",
           "triggerMode": "觸發模式",
-          "triggerModeExtra": "穩定：按K線/週期觸發（信號更穩但有延遲）；高頻：報價流觸發（更快但噪聲大，需要去抖）",
-          "triggerModeOptions": {
-            "hf": "高频信号流",
-            "stable": "穩定（K線/週期）"
-          }
+          "triggerModeExtra": "穩定：按K線/週期觸發（信號更穩但有延遲）；高頻：報價流觸發（更快但噪聲大，需要去抖）"
         },
         "autoName": {
           "strategy": "策略"
@@ -80,11 +70,6 @@ const StrategySchedules = {
           "triggerModeRequired": "請選擇触发模式"
         }
       },
-      "enableCount": "啟用次數",
-      "format": {
-        "cron": "定時: {{expr}}",
-        "interval": "每 {{s}}秒"
-      },
       "health": {
         "fields": {
           "configKey": "設定鍵",
@@ -127,6 +112,45 @@ const StrategySchedules = {
         "thresholdsSummary": "min_sample_size={{minSampleSize}}；綠色：成功率>={{greenSuccessRate}}% 且失敗次數<={{greenMaxFailedRuns}}；黃色：成功率>={{yellowSuccessRate}}%",
         "title": "策略健康檢查 {{name}}"
       },
+      "triggerModal": {
+        "actions": {
+          "confirmOrder": "確認下單",
+          "rerun": "重新執行"
+        },
+        "cards": {
+          "logs": "執行日誌",
+          "signal": "信號(用於下單)"
+        },
+        "confirmOrder": {
+          "ok": "确认",
+          "title": "確認下單"
+        },
+        "messages": {
+          "signalNotOrderable": "信号不可下单"
+        },
+        "summary": {
+          "account": "帳號",
+          "scheduleName": "調度名稱",
+          "symbol": "品種",
+          "timeframe": "週期"
+        },
+        "emptyLogs": "(無日誌)",
+        "emptySignal": "无信号",
+        "title": "立即執行(直接下單)"
+      },
+      "actions": {
+        "create": "新建調度",
+        "healthCheck": "健康檢查",
+        "logs": "執行日誌",
+        "runNow": "立即執行"
+      },
+      "deleteConfirm": {
+        "title": "删除此排程？"
+      },
+      "format": {
+        "cron": "定時: {{expr}}",
+        "interval": "每 {{s}}秒"
+      },
       "messages": {
         "defaultTemplateNotFound": "預設模板不存在，請刷新頁面重試",
         "executeFailed": "執行失敗",
@@ -140,7 +164,6 @@ const StrategySchedules = {
         "templateCodeEmptyCannotExecute": "模板 code 為空，無法執行",
         "volumeInvalid": "下單手數無效（volume 必須 > 0）"
       },
-      "nextRunAt": "下次運行",
       "status": {
         "disabled": "已停用",
         "running": "運行中"
@@ -159,36 +182,13 @@ const StrategySchedules = {
         "private": "私有",
         "public": "公開"
       },
-      "title": "策略調度",
-      "triggerModal": {
-        "actions": {
-          "confirmOrder": "確認下單",
-          "rerun": "重新執行"
-        },
-        "cards": {
-          "logs": "執行日誌",
-          "signal": "信號(用於下單)"
-        },
-        "confirmOrder": {
-          "ok": "确认",
-          "title": "確認下單"
-        },
-        "emptyLogs": "(無日誌)",
-        "emptySignal": "无信号",
-        "messages": {
-          "signalNotOrderable": "信号不可下单"
-        },
-        "summary": {
-          "account": "帳號",
-          "scheduleName": "調度名稱",
-          "symbol": "品種",
-          "timeframe": "週期"
-        },
-        "title": "立即執行(直接下單)"
-      },
       "validation": {
         "parametersMustBeJsonObject": "參數必须为 JSON 对象"
-      }
+      },
+      "createSchedule": "建立調度",
+      "enableCount": "啟用次數",
+      "nextRunAt": "下次運行",
+      "title": "策略調度"
     }
   }
 } as const;

@@ -3,6 +3,32 @@
 const StrategyBacktestRun = {
   "strategy": {
     "backtestRun": {
+      "trades": {
+        "reasons": {
+          "end_of_test": "テスト終了",
+          "expired": "期限切れ",
+          "margin_call": "追証",
+          "signal": "シグナル（発注用）",
+          "sl": "損切り",
+          "tp": "利確"
+        },
+        "closePrice": "決済値",
+        "closeTime": "終了時刻",
+        "commission": "手数料",
+        "empty": "取引記録なし",
+        "loadFailed": "注文詳細の読込失敗",
+        "openPrice": "建値",
+        "openTime": "開始時刻",
+        "pnl": "損益",
+        "reason": "決済理由",
+        "side": "方向",
+        "sideBuy": "買い",
+        "sideSell": "売り",
+        "summary": "{{count}}取引 · {{wins}}勝 / {{losses}}敗 · 純損益 {{pnl}}",
+        "ticket": "チケット",
+        "title": "注文詳細",
+        "volume": "数量"
+      },
       "actions": {
         "cancel": "キャンセル"
       },
@@ -35,33 +61,7 @@ const StrategyBacktestRun = {
         "queued": "待機中",
         "running": "実行中"
       },
-      "title": "バックテスト実行",
-      "trades": {
-        "closePrice": "決済値",
-        "closeTime": "終了時刻",
-        "commission": "手数料",
-        "empty": "取引記録なし",
-        "loadFailed": "注文詳細の読込失敗",
-        "openPrice": "建値",
-        "openTime": "開始時刻",
-        "pnl": "損益",
-        "reason": "決済理由",
-        "reasons": {
-          "end_of_test": "テスト終了",
-          "expired": "期限切れ",
-          "margin_call": "追証",
-          "signal": "シグナル（発注用）",
-          "sl": "損切り",
-          "tp": "利確"
-        },
-        "side": "方向",
-        "sideBuy": "買い",
-        "sideSell": "売り",
-        "summary": "{{count}}取引 · {{wins}}勝 / {{losses}}敗 · 純損益 {{pnl}}",
-        "ticket": "チケット",
-        "title": "注文詳細",
-        "volume": "数量"
-      }
+      "title": "バックテスト実行"
     }
   }
 } as const;

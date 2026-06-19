@@ -3,6 +3,32 @@
 const StrategyBacktestRun = {
   "strategy": {
     "backtestRun": {
+      "trades": {
+        "reasons": {
+          "end_of_test": "End of test",
+          "expired": "Expired",
+          "margin_call": "Margin call",
+          "signal": "Signal",
+          "sl": "Stop loss",
+          "tp": "Take profit"
+        },
+        "closePrice": "Close price",
+        "closeTime": "Close time",
+        "commission": "Commission",
+        "empty": "No trades recorded",
+        "loadFailed": "Failed to load order details",
+        "openPrice": "Open price",
+        "openTime": "Open time",
+        "pnl": "P&L",
+        "reason": "Close reason",
+        "side": "Side",
+        "sideBuy": "Buy",
+        "sideSell": "Sell",
+        "summary": "{{count}} trades · {{wins}} wins / {{losses}} losses · net P&L {{pnl}}",
+        "ticket": "Ticket",
+        "title": "Order details",
+        "volume": "Volume"
+      },
       "actions": {
         "cancel": "Cancel"
       },
@@ -35,33 +61,7 @@ const StrategyBacktestRun = {
         "queued": "Queued",
         "running": "Running"
       },
-      "title": "Backtest run",
-      "trades": {
-        "closePrice": "Close price",
-        "closeTime": "Close time",
-        "commission": "Commission",
-        "empty": "No trades recorded",
-        "loadFailed": "Failed to load order details",
-        "openPrice": "Open price",
-        "openTime": "Open time",
-        "pnl": "P&L",
-        "reason": "Close reason",
-        "reasons": {
-          "end_of_test": "End of test",
-          "expired": "Expired",
-          "margin_call": "Margin call",
-          "signal": "Signal",
-          "sl": "Stop loss",
-          "tp": "Take profit"
-        },
-        "side": "Side",
-        "sideBuy": "Buy",
-        "sideSell": "Sell",
-        "summary": "{{count}} trades · {{wins}} wins / {{losses}} losses · net P&L {{pnl}}",
-        "ticket": "Ticket",
-        "title": "Order details",
-        "volume": "Volume"
-      }
+      "title": "Backtest run"
     }
   }
 } as const;

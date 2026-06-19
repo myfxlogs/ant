@@ -3,18 +3,12 @@
 const StrategySchedules = {
   "strategy": {
     "schedules": {
-      "actions": {
-        "create": "Create",
-        "healthCheck": "Health check",
-        "logs": "Logs",
-        "runNow": "Run now"
-      },
-      "createSchedule": "Create Schedule",
-      "deleteConfirm": {
-        "title": "Delete this schedule?"
-      },
       "editModal": {
         "advanced": {
+          "triggerModeOptions": {
+            "hf": "High-frequency signal stream",
+            "stable": "Stable K-line"
+          },
           "fixedIntervalSeconds": "Fixed interval (seconds)",
           "fixedIntervalSecondsExtra": "Override default interval",
           "hfCooldownMs": "HF cooldown (ms)",
@@ -27,11 +21,7 @@ const StrategySchedules = {
           "timeframeExtra": "Select timeframe for execution",
           "title": "Advanced",
           "triggerMode": "Trigger mode",
-          "triggerModeExtra": "Choose when to trigger signals",
-          "triggerModeOptions": {
-            "hf": "High-frequency signal stream",
-            "stable": "Stable K-line"
-          }
+          "triggerModeExtra": "Choose when to trigger signals"
         },
         "autoName": {
           "strategy": "Strategy"
@@ -80,11 +70,6 @@ const StrategySchedules = {
           "triggerModeRequired": "Trigger mode is required"
         }
       },
-      "enableCount": "Enable count",
-      "format": {
-        "cron": "cron: {{expr}}",
-        "interval": "every {{s}}s"
-      },
       "health": {
         "fields": {
           "configKey": "Config key",
@@ -127,6 +112,45 @@ const StrategySchedules = {
         "thresholdsSummary": "min_sample_size={{minSampleSize}}, green: success>={{greenSuccessRate}}% & failed<={{greenMaxFailedRuns}}, yellow: success>={{yellowSuccessRate}}%",
         "title": "Strategy health check {{name}}"
       },
+      "triggerModal": {
+        "actions": {
+          "confirmOrder": "Confirm order",
+          "rerun": "Re-run"
+        },
+        "cards": {
+          "logs": "Logs",
+          "signal": "Signal"
+        },
+        "confirmOrder": {
+          "ok": "Confirm",
+          "title": "Confirm order"
+        },
+        "messages": {
+          "signalNotOrderable": "Signal is not orderable"
+        },
+        "summary": {
+          "account": "Account",
+          "scheduleName": "Schedule name",
+          "symbol": "Symbol",
+          "timeframe": "Timeframe"
+        },
+        "emptyLogs": "No logs",
+        "emptySignal": "No signal",
+        "title": "Trigger schedule"
+      },
+      "actions": {
+        "create": "Create",
+        "healthCheck": "Health check",
+        "logs": "Logs",
+        "runNow": "Run now"
+      },
+      "deleteConfirm": {
+        "title": "Delete this schedule?"
+      },
+      "format": {
+        "cron": "cron: {{expr}}",
+        "interval": "every {{s}}s"
+      },
       "messages": {
         "defaultTemplateNotFound": "Default template not found",
         "executeFailed": "Execution failed",
@@ -140,7 +164,6 @@ const StrategySchedules = {
         "templateCodeEmptyCannotExecute": "Template code is empty. Cannot execute.",
         "volumeInvalid": "Invalid volume"
       },
-      "nextRunAt": "Next run at",
       "status": {
         "disabled": "Disabled",
         "running": "Running"
@@ -159,36 +182,13 @@ const StrategySchedules = {
         "private": "Private",
         "public": "Public"
       },
-      "title": "Schedules",
-      "triggerModal": {
-        "actions": {
-          "confirmOrder": "Confirm order",
-          "rerun": "Re-run"
-        },
-        "cards": {
-          "logs": "Logs",
-          "signal": "Signal"
-        },
-        "confirmOrder": {
-          "ok": "Confirm",
-          "title": "Confirm order"
-        },
-        "emptyLogs": "No logs",
-        "emptySignal": "No signal",
-        "messages": {
-          "signalNotOrderable": "Signal is not orderable"
-        },
-        "summary": {
-          "account": "Account",
-          "scheduleName": "Schedule name",
-          "symbol": "Symbol",
-          "timeframe": "Timeframe"
-        },
-        "title": "Trigger schedule"
-      },
       "validation": {
         "parametersMustBeJsonObject": "Parameters must be a JSON object"
-      }
+      },
+      "createSchedule": "Create Schedule",
+      "enableCount": "Enable count",
+      "nextRunAt": "Next run at",
+      "title": "Schedules"
     }
   }
 } as const;

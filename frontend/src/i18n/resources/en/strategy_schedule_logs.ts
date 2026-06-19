@@ -52,7 +52,6 @@ const StrategyScheduleLogs = {
         "ticket": "Ticket",
         "time": "Time"
       },
-      "scheduleIdLabel": "Schedule ID:",
       "status": {
         "failed": "Failed",
         "success": "Success"
@@ -71,6 +70,7 @@ const StrategyScheduleLogs = {
         "orderLogs": "Order Logs",
         "orders": "Orders"
       },
+      "scheduleIdLabel": "Schedule ID:",
       "title": "Schedule logs",
       "titleWithName": "Schedule logs: {{name}}"
     }

@@ -3,6 +3,20 @@
 const Analytics = {
   "analytics": {
     "summary": {
+      "economicCalendar": {
+        "indicators": {
+          "CPI": "Inflation (CPI)",
+          "FEDFUNDS": "Fed funds rate",
+          "GDP": "Real GDP",
+          "UNRATE": "Unemployment rate"
+        },
+        "actual": "Actual",
+        "empty": "No economic events available.",
+        "estimate": "Estimate",
+        "keyIndicatorsTitle": "Key macro indicators",
+        "loading": "Loading economic calendar...",
+        "previous": "Previous"
+      },
       "cards": {
         "directionShare": "Direction share",
         "economicCalendar": "Economic calendar",
@@ -15,20 +29,6 @@ const Analytics = {
       "direction": {
         "buy": "Buy",
         "sell": "Sell"
-      },
-      "economicCalendar": {
-        "actual": "Actual",
-        "empty": "No economic events available.",
-        "estimate": "Estimate",
-        "indicators": {
-          "CPI": "Inflation (CPI)",
-          "FEDFUNDS": "Fed funds rate",
-          "GDP": "Real GDP",
-          "UNRATE": "Unemployment rate"
-        },
-        "keyIndicatorsTitle": "Key macro indicators",
-        "loading": "Loading economic calendar...",
-        "previous": "Previous"
       },
       "labels": {
         "pnl": "P/L"
@@ -65,7 +65,6 @@ const Analytics = {
         "equityCurve": "Equity curve",
         "monthlyStats": "Monthly stats"
       },
-      "title": "Analytics Summary",
       "tradeStats": {
         "avgHolding": "Avg holding",
         "avgLoss": "Avg loss",
@@ -80,6 +79,7 @@ const Analytics = {
         "winRate": "Win rate",
         "wins": "Wins"
       },
+      "title": "Analytics Summary",
       "yearOption": "{{year}}"
     }
   }

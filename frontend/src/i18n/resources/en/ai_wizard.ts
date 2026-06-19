@@ -3,19 +3,25 @@
 const AiWizard = {
   "ai": {
     "wizard": {
-      "actions": {
-        "cancel": "Cancel",
-        "next": "Next",
-        "prev": "Previous"
-      },
-      "agents": {
-        "codeTitle": "Code generation",
-        "riskTitle": "Risk control and execution constraints",
-        "signalsTitle": "Signal and indicator design",
-        "styleTitle": "Market condition / style recommendation"
-      },
-      "currentModel": "Current model: {{model}}",
       "generate": {
+        "modals": {
+          "final": {
+            "title": "Code generated. Recommended to click \"Validate code\" to confirm it passes."
+          }
+        },
+        "status": {
+          "running": {
+            "code": "Code generation in progress",
+            "generic": "{{title}} in progress",
+            "risk": "Risk control in progress",
+            "signals": "Signal design in progress",
+            "style": "Market condition/style recommending"
+          },
+          "done": "Done",
+          "error": "Error",
+          "idle": "Waiting",
+          "inProgress": "In progress"
+        },
         "actions": {
           "abort": "Abort",
           "goValidate": "Go to validate",
@@ -33,71 +39,107 @@ const AiWizard = {
         "labels": {
           "elapsed": "Elapsed"
         },
-        "modals": {
-          "final": {
-            "title": "Code generated. Recommended to click \"Validate code\" to confirm it passes."
-          }
-        },
         "sections": {
           "output": "Model output",
           "prompt": "Prompt sent to model",
           "spec": "Spec"
-        },
-        "status": {
-          "done": "Done",
-          "error": "Error",
-          "idle": "Waiting",
-          "inProgress": "In progress",
-          "running": {
-            "code": "Code generation in progress",
-            "generic": "{{title}} in progress",
-            "risk": "Risk control in progress",
-            "signals": "Signal design in progress",
-            "style": "Market condition/style recommending"
-          }
         }
       },
-      "messages": {
-        "agentFailed": "{{title}} failed",
-        "aiRequestTimeout": "AI request timeout (>{{seconds}}s)",
-        "backtestCreated": "Backtest task created",
-        "backtestNotDoneWait": "Backtest not finished, wait until scorecard status becomes success/failed/cancelled before continuing",
-        "chatAborted": "Chat with model aborted",
-        "codeInvalidFixAndContinue": "Code validation failed, please fix before continuing",
-        "confirmScoreFirst": "Please confirm score result in the score popup first",
-        "createBacktestFailed": "Create backtest failed",
-        "createDraftFailed": "Create draft failed",
-        "createScheduleFailed": "Create schedule failed",
-        "datasetFrozenCreated": "Frozen dataset created",
-        "draftNotCreated": "Draft not created",
-        "draftSaved": "Draft saved",
-        "fillRequired": "Please fill required fields first",
-        "fillRequiredWithFields": "Please fill required fields first: {{fields}}",
-        "freezeDatasetFailed": "Freeze dataset failed",
-        "generateCodeFirst": "Please generate strategy code first",
-        "inputIntentFirst": "Please enter strategy goal/idea first",
-        "loadAccountsFailed": "Load accounts failed",
-        "loadDatasetFailed": "Load dataset failed",
-        "loadSymbolsFailed": "Load symbols failed",
-        "modelReturnedEmpty": "Model returned empty",
-        "noCodeToBacktest": "No code to backtest",
-        "noCodeToValidate": "No code to validate",
-        "noPythonCodeBlock": "Code agent did not output ```python block```, check result",
-        "publishFailed": "Publish failed",
-        "publishTemplateFirst": "Please publish template first",
-        "publishedNoId": "Published but no returned id (please check in strategy management)",
-        "saveFailed": "Save failed",
-        "scheduleAlreadyExists": "Schedule with same template+symbol+timeframe already exists for this account; do not duplicate.",
-        "scheduleCreated": "Schedule created",
-        "scheduleCreatedAndEnabled": "Schedule created and enabled",
-        "startBacktestFirst": "Please click \"Backtest (async task)\" to start backtest first",
-        "templatePublished": "Template published",
-        "userAborted": "User aborted",
-        "validateCodeFirst": "Please click \"Validate code\" first",
-        "validateError": "Validation error",
-        "validateFailed": "Validation failed",
-        "validateOk": "Validation passed",
-        "watchBacktestRunFailed": "watchBacktestRun failed"
+      "publishBacktest": {
+        "modals": {
+          "score": {
+            "title": "Score confirmation"
+          },
+          "status": {
+            "title": "Backtest in progress"
+          }
+        },
+        "actions": {
+          "close": "Close",
+          "confirm": "Confirm",
+          "inProgress": "In progress",
+          "retry": "Retry",
+          "runInBackground": "Run in background",
+          "startBacktest": "Start backtest",
+          "succeeded": "Success"
+        },
+        "cards": {
+          "backtestTitle": "Backtest",
+          "scoreCardTitle": "Scorecard"
+        },
+        "labels": {
+          "confirmed": "Confirmed",
+          "elapsed": "Elapsed",
+          "overallScore": "Overall score",
+          "scoringProgress": "Scoring progress",
+          "status": "Status"
+        },
+        "draftName": "Backtest {{datetime}} {{symbol}} {{timeframe}}",
+        "draftNameShort": "Backtest {{symbol}} {{timeframe}}"
+      },
+      "setup": {
+        "modals": {
+          "deleteDataset": {
+            "content": "Are you sure you want to delete the selected frozen dataset?",
+            "ok": "Delete",
+            "title": "Delete dataset"
+          }
+        },
+        "actions": {
+          "deleteCurrentDataset": "Delete current dataset",
+          "freezeFromCurrentRange": "Freeze from current range",
+          "refreshDataset": "Refresh"
+        },
+        "cards": {
+          "constraintsAndGoalTitle": "Constraints & Goals",
+          "hardConstraintsTitle": "Hard Constraints",
+          "hintsTitle": "Hints",
+          "tradeAndDataTitle": "Trading & Data"
+        },
+        "dataModes": {
+          "dataset": "Frozen dataset",
+          "klineRange": "Historical K-line range"
+        },
+        "hints": {
+          "nextWillGenerateCode": "Next step will start generating strategy code.",
+          "tradeDataNextStep": "Click \"Next\" after filling to proceed to constraints & goals."
+        },
+        "labels": {
+          "account": "Account",
+          "backtestRange": "Backtest Range",
+          "dataset": "Frozen Dataset",
+          "historicalData": "Historical Data",
+          "intent": "Strategy Goal / Idea",
+          "macroEvents": "Macro Events",
+          "macroModule": "Macro Module",
+          "maxDrawdownPct": "Max Drawdown (%)",
+          "maxTradesPerDay": "Max Trades per Day",
+          "riskPerTradePct": "Risk per Trade (%)",
+          "symbol": "Symbol",
+          "timeframe": "Timeframe"
+        },
+        "macro": {
+          "off": "Off",
+          "on": "On"
+        },
+        "messages": {
+          "datasetDeleted": "Dataset deleted"
+        },
+        "placeholders": {
+          "intentExample": "Example: breakout trend following; avoid high volatility; prefer higher win rate...",
+          "macroExample": "Example:\\\\n2024-01-03 21:15 FOMC minutes\\\\n2024-01-05 20:30 NFP",
+          "selectAccount": "Select account",
+          "selectFrozenDataset": "Select frozen dataset",
+          "selectSymbol": "Select symbol",
+          "selectTimeframe": "Select timeframe"
+        },
+        "validations": {
+          "enterIntent": "Please enter strategy goal/idea",
+          "selectAccount": "Please select account",
+          "selectDataset": "Please select dataset",
+          "selectSymbol": "Please select symbol",
+          "selectTimeframe": "Please select timeframe"
+        }
       },
       "prompts": {
         "base": {
@@ -152,112 +194,6 @@ const AiWizard = {
           "codeEditable": "AI-generated code will be filled here; you can also edit manually."
         }
       },
-      "publishBacktest": {
-        "actions": {
-          "close": "Close",
-          "confirm": "Confirm",
-          "inProgress": "In progress",
-          "retry": "Retry",
-          "runInBackground": "Run in background",
-          "startBacktest": "Start backtest",
-          "succeeded": "Success"
-        },
-        "cards": {
-          "backtestTitle": "Backtest",
-          "scoreCardTitle": "Scorecard"
-        },
-        "draftName": "Backtest {{datetime}} {{symbol}} {{timeframe}}",
-        "draftNameShort": "Backtest {{symbol}} {{timeframe}}",
-        "labels": {
-          "confirmed": "Confirmed",
-          "elapsed": "Elapsed",
-          "overallScore": "Overall score",
-          "scoringProgress": "Scoring progress",
-          "status": "Status"
-        },
-        "modals": {
-          "score": {
-            "title": "Score confirmation"
-          },
-          "status": {
-            "title": "Backtest in progress"
-          }
-        }
-      },
-      "schedule": {
-        "defaultName": "AI Schedule {{symbol}} {{timeframe}}"
-      },
-      "setup": {
-        "actions": {
-          "deleteCurrentDataset": "Delete current dataset",
-          "freezeFromCurrentRange": "Freeze from current range",
-          "refreshDataset": "Refresh"
-        },
-        "cards": {
-          "constraintsAndGoalTitle": "Constraints & Goals",
-          "hardConstraintsTitle": "Hard Constraints",
-          "hintsTitle": "Hints",
-          "tradeAndDataTitle": "Trading & Data"
-        },
-        "dataModes": {
-          "dataset": "Frozen dataset",
-          "klineRange": "Historical K-line range"
-        },
-        "hints": {
-          "nextWillGenerateCode": "Next step will start generating strategy code.",
-          "tradeDataNextStep": "Click \"Next\" after filling to proceed to constraints & goals."
-        },
-        "labels": {
-          "account": "Account",
-          "backtestRange": "Backtest Range",
-          "dataset": "Frozen Dataset",
-          "historicalData": "Historical Data",
-          "intent": "Strategy Goal / Idea",
-          "macroEvents": "Macro Events",
-          "macroModule": "Macro Module",
-          "maxDrawdownPct": "Max Drawdown (%)",
-          "maxTradesPerDay": "Max Trades per Day",
-          "riskPerTradePct": "Risk per Trade (%)",
-          "symbol": "Symbol",
-          "timeframe": "Timeframe"
-        },
-        "macro": {
-          "off": "Off",
-          "on": "On"
-        },
-        "messages": {
-          "datasetDeleted": "Dataset deleted"
-        },
-        "modals": {
-          "deleteDataset": {
-            "content": "Are you sure you want to delete the selected frozen dataset?",
-            "ok": "Delete",
-            "title": "Delete dataset"
-          }
-        },
-        "placeholders": {
-          "intentExample": "Example: breakout trend following; avoid high volatility; prefer higher win rate...",
-          "macroExample": "Example:\\\\n2024-01-03 21:15 FOMC minutes\\\\n2024-01-05 20:30 NFP",
-          "selectAccount": "Select account",
-          "selectFrozenDataset": "Select frozen dataset",
-          "selectSymbol": "Select symbol",
-          "selectTimeframe": "Select timeframe"
-        },
-        "validations": {
-          "enterIntent": "Please enter strategy goal/idea",
-          "selectAccount": "Please select account",
-          "selectDataset": "Please select dataset",
-          "selectSymbol": "Please select symbol",
-          "selectTimeframe": "Please select timeframe"
-        }
-      },
-      "steps": {
-        "generate": "Generate Strategy",
-        "publishBacktest": "Backtest & Live - Backtest",
-        "publishCode": "Backtest & Live - Code",
-        "publishLaunch": "Backtest & Live - Launch",
-        "setup": "Basic Info"
-      },
       "strategyParams": {
         "actions": {
           "addParam": "Add parameter",
@@ -265,7 +201,6 @@ const AiWizard = {
           "exportJson": "Export JSON",
           "importJson": "Import JSON"
         },
-        "empty": "No parameters yet. You can add params like fast/slow/risk_per_trade to make the strategy more templated.",
         "hints": {
           "intro": "These parameters will:",
           "line1": "1) Save to template parameters",
@@ -298,7 +233,6 @@ const AiWizard = {
           "importOk": "Import",
           "importTitle": "Import parameters JSON"
         },
-        "paramCardTitle": "Param #{{index}}",
         "placeholders": {
           "defaultExample": "e.g. 10",
           "description": "Description",
@@ -308,7 +242,6 @@ const AiWizard = {
           "optionsExample": "e.g. low,medium,high",
           "value": "Empty uses default"
         },
-        "title": "Strategy Parameters (optional)",
         "types": {
           "bool": "Boolean",
           "number": "Number",
@@ -318,13 +251,80 @@ const AiWizard = {
         "validations": {
           "nameRequired": "name required",
           "typeRequired": "type required"
-        }
+        },
+        "empty": "No parameters yet. You can add params like fast/slow/risk_per_trade to make the strategy more templated.",
+        "paramCardTitle": "Param #{{index}}",
+        "title": "Strategy Parameters (optional)"
       },
-      "subtitle": "One step per page, can go forward/backward",
+      "actions": {
+        "cancel": "Cancel",
+        "next": "Next",
+        "prev": "Previous"
+      },
+      "agents": {
+        "codeTitle": "Code generation",
+        "riskTitle": "Risk control and execution constraints",
+        "signalsTitle": "Signal and indicator design",
+        "styleTitle": "Market condition / style recommendation"
+      },
+      "messages": {
+        "agentFailed": "{{title}} failed",
+        "aiRequestTimeout": "AI request timeout (>{{seconds}}s)",
+        "backtestCreated": "Backtest task created",
+        "backtestNotDoneWait": "Backtest not finished, wait until scorecard status becomes success/failed/cancelled before continuing",
+        "chatAborted": "Chat with model aborted",
+        "codeInvalidFixAndContinue": "Code validation failed, please fix before continuing",
+        "confirmScoreFirst": "Please confirm score result in the score popup first",
+        "createBacktestFailed": "Create backtest failed",
+        "createDraftFailed": "Create draft failed",
+        "createScheduleFailed": "Create schedule failed",
+        "datasetFrozenCreated": "Frozen dataset created",
+        "draftNotCreated": "Draft not created",
+        "draftSaved": "Draft saved",
+        "fillRequired": "Please fill required fields first",
+        "fillRequiredWithFields": "Please fill required fields first: {{fields}}",
+        "freezeDatasetFailed": "Freeze dataset failed",
+        "generateCodeFirst": "Please generate strategy code first",
+        "inputIntentFirst": "Please enter strategy goal/idea first",
+        "loadAccountsFailed": "Load accounts failed",
+        "loadDatasetFailed": "Load dataset failed",
+        "loadSymbolsFailed": "Load symbols failed",
+        "modelReturnedEmpty": "Model returned empty",
+        "noCodeToBacktest": "No code to backtest",
+        "noCodeToValidate": "No code to validate",
+        "noPythonCodeBlock": "Code agent did not output ```python block```, check result",
+        "publishFailed": "Publish failed",
+        "publishTemplateFirst": "Please publish template first",
+        "publishedNoId": "Published but no returned id (please check in strategy management)",
+        "saveFailed": "Save failed",
+        "scheduleAlreadyExists": "Schedule with same template+symbol+timeframe already exists for this account; do not duplicate.",
+        "scheduleCreated": "Schedule created",
+        "scheduleCreatedAndEnabled": "Schedule created and enabled",
+        "startBacktestFirst": "Please click \"Backtest (async task)\" to start backtest first",
+        "templatePublished": "Template published",
+        "userAborted": "User aborted",
+        "validateCodeFirst": "Please click \"Validate code\" first",
+        "validateError": "Validation error",
+        "validateFailed": "Validation failed",
+        "validateOk": "Validation passed",
+        "watchBacktestRunFailed": "watchBacktestRun failed"
+      },
+      "schedule": {
+        "defaultName": "AI Schedule {{symbol}} {{timeframe}}"
+      },
+      "steps": {
+        "generate": "Generate Strategy",
+        "publishBacktest": "Backtest & Live - Backtest",
+        "publishCode": "Backtest & Live - Code",
+        "publishLaunch": "Backtest & Live - Launch",
+        "setup": "Basic Info"
+      },
       "template": {
         "defaultDescription": "AI wizard generated",
         "defaultName": "AI Strategy {{title}}"
       },
+      "currentModel": "Current model: {{model}}",
+      "subtitle": "One step per page, can go forward/backward",
       "title": "AI Strategy Wizard"
     }
   }

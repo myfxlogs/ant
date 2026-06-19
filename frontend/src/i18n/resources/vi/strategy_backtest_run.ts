@@ -3,6 +3,32 @@
 const StrategyBacktestRun = {
   "strategy": {
     "backtestRun": {
+      "trades": {
+        "reasons": {
+          "end_of_test": "Kết Thúc Kiểm Tra",
+          "expired": "Hết Hạn",
+          "margin_call": "Gọi Ký Quỹ",
+          "signal": "Tín hiệu (đặt lệnh)",
+          "sl": "Cắt Lỗ",
+          "tp": "Chốt Lời"
+        },
+        "closePrice": "Giá đóng",
+        "closeTime": "Giờ Đóng",
+        "commission": "Hoa Hồng",
+        "empty": "Không có giao dịch",
+        "loadFailed": "Tải chi tiết lệnh thất bại",
+        "openPrice": "Giá mở",
+        "openTime": "Giờ Mở",
+        "pnl": "Lãi/Lỗ",
+        "reason": "Lý Do Đóng",
+        "side": "Hướng",
+        "sideBuy": "Mua",
+        "sideSell": "Bán",
+        "summary": "{{count}} giao dịch · {{wins}} thắng / {{losses}} thua · lãi/lỗ ròng {{pnl}}",
+        "ticket": "Mã lệnh",
+        "title": "Chi Tiết Lệnh",
+        "volume": "Khối Lượng"
+      },
       "actions": {
         "cancel": "Hủy"
       },
@@ -35,33 +61,7 @@ const StrategyBacktestRun = {
         "queued": "Đang Chờ",
         "running": "Đang chạy"
       },
-      "title": "Chạy Backtest",
-      "trades": {
-        "closePrice": "Giá đóng",
-        "closeTime": "Giờ Đóng",
-        "commission": "Hoa Hồng",
-        "empty": "Không có giao dịch",
-        "loadFailed": "Tải chi tiết lệnh thất bại",
-        "openPrice": "Giá mở",
-        "openTime": "Giờ Mở",
-        "pnl": "Lãi/Lỗ",
-        "reason": "Lý Do Đóng",
-        "reasons": {
-          "end_of_test": "Kết Thúc Kiểm Tra",
-          "expired": "Hết Hạn",
-          "margin_call": "Gọi Ký Quỹ",
-          "signal": "Tín hiệu (đặt lệnh)",
-          "sl": "Cắt Lỗ",
-          "tp": "Chốt Lời"
-        },
-        "side": "Hướng",
-        "sideBuy": "Mua",
-        "sideSell": "Bán",
-        "summary": "{{count}} giao dịch · {{wins}} thắng / {{losses}} thua · lãi/lỗ ròng {{pnl}}",
-        "ticket": "Mã lệnh",
-        "title": "Chi Tiết Lệnh",
-        "volume": "Khối Lượng"
-      }
+      "title": "Chạy Backtest"
     }
   }
 } as const;

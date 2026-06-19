@@ -2,6 +2,13 @@
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const Logs = {
   "logs": {
+    "orderTable": {
+      "close": "平仓价",
+      "lots": "手数",
+      "open": "开仓价",
+      "ticket": "订单号",
+      "type": "类型"
+    },
     "accountId": "账户ID",
     "action": "操作",
     "connectionLogs": "连接日志",
@@ -22,13 +29,6 @@ const Logs = {
     "module": "模块",
     "operationLogs": "操作日志",
     "orderHistory": "订单历史",
-    "orderTable": {
-      "close": "平仓价",
-      "lots": "手数",
-      "open": "开仓价",
-      "ticket": "订单号",
-      "type": "类型"
-    },
     "period": "周期",
     "product": "品种",
     "profit": "盈亏",

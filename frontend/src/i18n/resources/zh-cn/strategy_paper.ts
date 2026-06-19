@@ -3,9 +3,6 @@
 const StrategyPaper = {
   "strategy": {
     "paper": {
-      "accountName": "账户名称",
-      "create": "新建调度",
-      "createAccount": "创建纸上账户",
       "messages": {
         "createFailed": "创建失败",
         "created": "纸上账户已创建",
@@ -16,6 +13,9 @@ const StrategyPaper = {
         "strategyStarted": "纸上策略已启动",
         "strategyStopped": "纸上策略已停止"
       },
+      "accountName": "账户名称",
+      "create": "新建调度",
+      "createAccount": "创建纸上账户",
       "noAccounts": "暂无纸上账户，创建一个以开始模拟交易。",
       "paper": "纸上",
       "running": "运行中 {{symbol}} {{timeframe}}",

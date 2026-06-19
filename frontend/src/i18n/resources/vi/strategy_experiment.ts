@@ -18,7 +18,6 @@ const StrategyExperiment = {
         "title": "Ứng Viên",
         "titleWithId": "Ứng Viên: {{id}}"
       },
-      "jobEventStream": "Luồng Sự Kiện Job",
       "list": {
         "column": {
           "actions": "Thao tác",
@@ -40,9 +39,6 @@ const StrategyExperiment = {
         "submitFailed": "Nộp thử nghiệm thất bại. Vui lòng xác minh không gian tham số là JSON hợp lệ.",
         "subscribeJobFailed": "Đăng ký sự kiện Job thử nghiệm thất bại"
       },
-      "noEvents": "Không có sự kiện",
-      "ruleVersionAlert": "Vòng lặp tối thiểu hiện tại: thử nghiệm tham số xác định. Ứng viên chỉ tạo bản nháp, không tự động xuất bản, lên lịch hoặc giao dịch.",
-      "selectJobToView": "Chọn thử nghiệm có Job để xem sự kiện.",
       "submitForm": {
         "baseTemplate": "Mẫu Chiến Lược Cơ Sở",
         "baseTemplatePlaceholder": "Chọn Mẫu",
@@ -55,6 +51,10 @@ const StrategyExperiment = {
         "submit": "Nộp Thử Nghiệm",
         "title": "Nộp Thử Nghiệm"
       },
+      "jobEventStream": "Luồng Sự Kiện Job",
+      "noEvents": "Không có sự kiện",
+      "ruleVersionAlert": "Vòng lặp tối thiểu hiện tại: thử nghiệm tham số xác định. Ứng viên chỉ tạo bản nháp, không tự động xuất bản, lên lịch hoặc giao dịch.",
+      "selectJobToView": "Chọn thử nghiệm có Job để xem sự kiện.",
       "subtitle": "Nộp tổ hợp tham số để tự động chạy thử nghiệm, chấm điểm ứng viên và tạo bản nháp.",
       "title": "Thử Nghiệm Chiến Lược"
     }

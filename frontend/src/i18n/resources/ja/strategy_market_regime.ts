@@ -3,8 +3,6 @@
 const StrategyMarketRegime = {
   "strategy": {
     "marketRegime": {
-      "detectFailed": "市場レジーム検出失敗",
-      "detectSuccess": "市場レジーム検出完了",
       "form": {
         "accountId": "アカウントID",
         "accountIdPlaceholder": "MTアカウントUUID",
@@ -26,6 +24,8 @@ const StrategyMarketRegime = {
         "strategyFamilies": "ストラテジーファミリー",
         "title": "検出結果"
       },
+      "detectFailed": "市場レジーム検出失敗",
+      "detectSuccess": "市場レジーム検出完了",
       "ruleVersionAlert": "現在、ルールベース検出モデル rule-v1 を使用。リアルタイムK線データ駆動。",
       "subtitle": "過去のK線データからトレンド方向、ボラティリティレジーム、価格効率性を分析し、現在の市場状態を分類します。",
       "title": "市場レジーム検出"

@@ -12,6 +12,17 @@ const AiStore = {
         "outputTitle": "输出要求：",
         "userPrefsTitle": "用户偏好（请尽量遵循）："
       },
+      "strategyRules": {
+        "rules": {
+          "mustDefineEntry": "- 策略必须定义 signal 变量或 run(context) 函数（建议优先 run(context)）",
+          "noDunderAccess": "- 禁止访问任何 dunder 属性（形如 obj.__xxx__）",
+          "noDunderName": "- 禁止使用 dunder 名称（形如 __xxx__）",
+          "noGlobal": "- 禁止 global / nonlocal",
+          "noImport": "- 禁止任何 import / from ... import ..."
+        },
+        "allowedGlobals": "允许使用的全局对象/模块：np, math, datetime, calculate_rsi（不要 import）。",
+        "title": "你在编写 AntTrader Python 策略代码时，必须严格遵守以下验证规则："
+      },
       "conversations": {
         "newConversationTitle": "新对话"
       },
@@ -30,17 +41,6 @@ const AiStore = {
         "rememberPrefix": "记住偏好：",
         "rememberedToast": "已记住偏好，将在后续对话中生效",
         "savedReply": "偏好已保存"
-      },
-      "strategyRules": {
-        "allowedGlobals": "允许使用的全局对象/模块：np, math, datetime, calculate_rsi（不要 import）。",
-        "rules": {
-          "mustDefineEntry": "- 策略必须定义 signal 变量或 run(context) 函数（建议优先 run(context)）",
-          "noDunderAccess": "- 禁止访问任何 dunder 属性（形如 obj.__xxx__）",
-          "noDunderName": "- 禁止使用 dunder 名称（形如 __xxx__）",
-          "noGlobal": "- 禁止 global / nonlocal",
-          "noImport": "- 禁止任何 import / from ... import ..."
-        },
-        "title": "你在编写 AntTrader Python 策略代码时，必须严格遵守以下验证规则："
       }
     }
   }
