@@ -94,33 +94,33 @@ export default function AlgoDashboard() {
   }, []);
 
   const columns: ColumnsType<ActiveAlgo> = [
-    { title: t('trading.algo.table.executionId'), dataIndex: 'executionId', key: 'id', width: 100, render: (v: string) => <Typography.Text code>{v.slice(0, 8)}</Typography.Text> },
-    { title: t('trading.algo.table.algo'), dataIndex: 'algo', key: 'algo', width: 100, render: (v: string) => <Tag>{v?.toUpperCase()}</Tag> },
-    { title: t('trading.algo.table.symbol'), dataIndex: 'symbol', key: 'symbol', width: 90 },
+    { title: t('algo.table.executionId'), dataIndex: 'executionId', key: 'id', width: 100, render: (v: string) => <Typography.Text code>{v.slice(0, 8)}</Typography.Text> },
+    { title: t('algo.table.algo'), dataIndex: 'algo', key: 'algo', width: 100, render: (v: string) => <Tag>{v?.toUpperCase()}</Tag> },
+    { title: t('algo.table.symbol'), dataIndex: 'symbol', key: 'symbol', width: 90 },
     {
-      title: t('trading.algo.table.side'), dataIndex: 'side', key: 'side', width: 70,
+      title: t('algo.table.side'), dataIndex: 'side', key: 'side', width: 70,
       render: (v: string) => <Tag color={v === 'buy' ? 'green' : 'red'}>{v?.toUpperCase()}</Tag>,
     },
-    { title: t('trading.algo.table.volume'), dataIndex: 'volume', key: 'volume', width: 80, render: (v: number) => v?.toFixed(2) || '-' },
+    { title: t('algo.table.volume'), dataIndex: 'volume', key: 'volume', width: 80, render: (v: number) => v?.toFixed(2) || '-' },
     {
-      title: t('trading.algo.table.progress'), key: 'progress', width: 150,
+      title: t('algo.table.progress'), key: 'progress', width: 150,
       render: (_: unknown, r: ActiveAlgo) => {
         const pct = r.totalSlices > 0 ? Math.round((r.submittedSlices / r.totalSlices) * 100) : 0;
         return <span>{r.submittedSlices}/{r.totalSlices} ({pct}%)</span>;
       },
     },
     {
-      title: t('trading.algo.table.state'), dataIndex: 'state', key: 'state', width: 100,
+      title: t('algo.table.state'), dataIndex: 'state', key: 'state', width: 100,
       render: (v: string) => {
         const colors: Record<string, string> = { running: 'blue', paused: 'orange', completed: 'green', cancelled: 'default', failed: 'red' };
         return <Tag color={colors[v] || 'default'}>{v}</Tag>;
       },
     },
     {
-      title: t('trading.algo.table.actions'), key: 'actions', width: 80,
+      title: t('algo.table.actions'), key: 'actions', width: 80,
       render: (_: unknown, r: ActiveAlgo) =>
         r.state === 'running' || r.state === 'paused' ? (
-          <Button size="small" danger onClick={() => handleCancel(r.executionId)}>{t('trading.algo.actions.cancel')}</Button>
+          <Button size="small" danger onClick={() => handleCancel(r.executionId)}>{t('algo.actions.cancel')}</Button>
         ) : null,
     },
   ];
@@ -128,15 +128,15 @@ export default function AlgoDashboard() {
   return (
     <div style={{ padding: '0 0 24px 0' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <Title level={4} style={{ margin: 0 }}>{t('trading.algo.dashboard.title')}</Title>
+        <Title level={4} style={{ margin: 0 }}>{t('algo.dashboard.title')}</Title>
         <Button icon={<ReloadOutlined />} onClick={refreshAll} loading={loading}>{t('common.refresh')}</Button>
       </div>
 
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         <AlgoSubmitForm onStarted={handleStarted} />
 
-        <Card title={t('trading.algo.dashboard.activeExecutions')} size="small">
-          <StatusResult empty={algos.length === 0} emptyText={t('trading.algo.dashboard.noActive')}>
+        <Card title={t('algo.dashboard.activeExecutions')} size="small">
+          <StatusResult empty={algos.length === 0} emptyText={t('algo.dashboard.noActive')}>
             <Table<ActiveAlgo>
               columns={columns}
               dataSource={algos}
