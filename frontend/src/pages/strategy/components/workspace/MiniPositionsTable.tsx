@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Tag, Button } from 'antd';
 import { CaretUpOutlined, CaretDownOutlined, RiseOutlined, FallOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
-import { CLOSE_POSITION_KEY, MARK_PRICE_KEY, PNL_KEY, PRICE_KEY, SIDE_KEY, SYMBOL_KEY, VOLUME_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+import { TRADING_CLOSE_POSITION_KEY, TRADING_MARK_PRICE_KEY, TRADING_PNL_KEY, TRADING_PRICE_KEY, TRADING_SIDE_KEY, TRADING_SYMBOL_KEY, TRADING_VOLUME_KEY } from '@/gen/ant/v1/i18n/trading_keys';
 import { OPEN_POSITIONS_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 ;
 import type { QuickTradePosition } from '../../hooks/useStrategyWorkspaceState';
@@ -37,9 +37,9 @@ export default function MiniPositionsTable({ positions, onClosePosition }: Props
           <table style={{ width: '100%', fontSize: 11, borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ color: '#8c8c8c', borderBottom: '1px solid #e8e8e8' }}>
-                <th style={th}>{t(SYMBOL_KEY)}</th><th style={th}>{t(SIDE_KEY)}</th><th style={thR}>{t(VOLUME_KEY)}</th>
-                <th style={thR}>{t(PRICE_KEY)}</th><th style={thR}>{t(MARK_PRICE_KEY)}</th>
-                <th style={thR}>{t(PNL_KEY)}</th><th style={th}></th>
+                <th style={th}>{t(TRADING_SYMBOL_KEY)}</th><th style={th}>{t(TRADING_SIDE_KEY)}</th><th style={thR}>{t(TRADING_VOLUME_KEY)}</th>
+                <th style={thR}>{t(TRADING_PRICE_KEY)}</th><th style={thR}>{t(TRADING_MARK_PRICE_KEY)}</th>
+                <th style={thR}>{t(TRADING_PNL_KEY)}</th><th style={th}></th>
               </tr>
             </thead>
             <tbody>
@@ -60,7 +60,7 @@ export default function MiniPositionsTable({ positions, onClosePosition }: Props
                   <td style={td}>
                     <Button size="small" danger type="link"
                       onClick={e => { e.stopPropagation(); onClosePosition?.(p.ticket, p.volume); }}
-                      style={{ fontSize: 10, padding: 0, height: 20 }}>{t(CLOSE_POSITION_KEY)}</Button>
+                      style={{ fontSize: 10, padding: 0, height: 20 }}>{t(TRADING_CLOSE_POSITION_KEY)}</Button>
                   </td>
                 </tr>
               ))}

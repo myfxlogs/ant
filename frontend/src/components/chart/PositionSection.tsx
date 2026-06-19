@@ -1,6 +1,6 @@
 import { Tag, Button } from 'antd';
 import { useTranslation } from 'react-i18next'
-import { CLOSE_POSITION_KEY, POSITION_ENTRY_PRICE_KEY, POSITION_LEVERAGE_KEY, POSITION_LONG_KEY, POSITION_MARK_PRICE_KEY, POSITION_SHORT_KEY, POSITION_SIDE_KEY, POSITION_SIZE_KEY, POSITION_UNREALIZED_PN_L_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+import { TRADING_CLOSE_POSITION_KEY, TRADING_POSITION_ENTRY_PRICE_KEY, TRADING_POSITION_LEVERAGE_KEY, TRADING_POSITION_LONG_KEY, TRADING_POSITION_MARK_PRICE_KEY, TRADING_POSITION_SHORT_KEY, TRADING_POSITION_SIDE_KEY, TRADING_POSITION_SIZE_KEY, TRADING_POSITION_UNREALIZED_PN_L_KEY } from '@/gen/ant/v1/i18n/trading_keys';
 
 ;
 
@@ -56,23 +56,23 @@ export default function PositionSection({ symbol, positions, closingTicket, onCl
             borderLeft: `3px solid ${isLong ? '#26a69a' : '#ef5350'}`,
             display: 'flex', flexDirection: 'column', gap: 3,
           }}>
-            <Row label={t(POSITION_SIDE_KEY)}>
+            <Row label={t(TRADING_POSITION_SIDE_KEY)}>
               <Tag color={isLong ? 'success' : 'error'} style={{ fontSize: 10, lineHeight: '16px' }}>
-                {isLong ? t(POSITION_LONG_KEY) : t(POSITION_SHORT_KEY)}
+                {isLong ? t(TRADING_POSITION_LONG_KEY) : t(TRADING_POSITION_SHORT_KEY)}
               </Tag>
             </Row>
-            <Row label={t(POSITION_SIZE_KEY)}><span>{pos.volume}</span></Row>
-            <Row label={t(POSITION_ENTRY_PRICE_KEY)}><span>${num(pos.openPrice)}</span></Row>
-            {pos.markPrice && <Row label={t(POSITION_MARK_PRICE_KEY)}><span>${num(pos.markPrice)}</span></Row>}
-            {pos.leverage && pos.leverage > 1 && <Row label={t(POSITION_LEVERAGE_KEY)}><span>{pos.leverage}x</span></Row>}
-            <Row label={t(POSITION_UNREALIZED_PN_L_KEY)}>
+            <Row label={t(TRADING_POSITION_SIZE_KEY)}><span>{pos.volume}</span></Row>
+            <Row label={t(TRADING_POSITION_ENTRY_PRICE_KEY)}><span>${num(pos.openPrice)}</span></Row>
+            {pos.markPrice && <Row label={t(TRADING_POSITION_MARK_PRICE_KEY)}><span>${num(pos.markPrice)}</span></Row>}
+            {pos.leverage && pos.leverage > 1 && <Row label={t(TRADING_POSITION_LEVERAGE_KEY)}><span>{pos.leverage}x</span></Row>}
+            <Row label={t(TRADING_POSITION_UNREALIZED_PN_L_KEY)}>
               <span style={{ color: pos.profit >= 0 ? '#26a69a' : '#ef5350', fontWeight: 700 }}>
                 {pnl(pos.profit)}
               </span>
             </Row>
             <Button danger size="small" block ghost loading={closingTicket === pos.ticket}
               style={{ marginTop: 4 }} onClick={() => onClosePosition(pos.ticket, pos.volume)}>
-              {t(CLOSE_POSITION_KEY)}
+              {t(TRADING_CLOSE_POSITION_KEY)}
             </Button>
           </div>
         );

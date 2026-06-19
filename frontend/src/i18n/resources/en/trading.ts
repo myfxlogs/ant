@@ -1,6 +1,56 @@
 // Auto-generated from proto/ant/v1/i18n/trading_en.textproto
 // DO NOT EDIT MANUALLY — run: npx tsx scripts/i18n-build.ts
 const Trading = {
+  "algo": {
+    "actions": {
+      "cancel": "Cancel",
+      "start": "Start"
+    },
+    "dashboard": {
+      "activeExecutions": "Active Executions",
+      "noActive": "No active algo executions",
+      "title": "Algo Dashboard"
+    },
+    "fields": {
+      "account": "Account",
+      "algo": "Algorithm",
+      "limitPrice": "Limit Price",
+      "participationRate": "Participation Rate",
+      "side": "Side",
+      "sliceInterval": "Slice Interval",
+      "symbol": "Symbol",
+      "timeRange": "Time Range",
+      "urgency": "Urgency",
+      "volume": "Volume"
+    },
+    "info": {
+      "description": "Description",
+      "name": "Name"
+    },
+    "messages": {
+      "started": "Algo started"
+    },
+    "side": {
+      "buy": "Buy",
+      "sell": "Sell"
+    },
+    "submitForm": {
+      "title": "Launch Algo"
+    },
+    "table": {
+      "actions": "Actions",
+      "algo": "Algorithm",
+      "executionId": "Execution ID",
+      "progress": "Progress",
+      "side": "Side",
+      "state": "State",
+      "symbol": "Symbol",
+      "volume": "Volume"
+    },
+    "timePresets": {
+      "EOD": "End of Day"
+    }
+  },
   "trading": {
     "account": "Account",
     "autoTrade": {

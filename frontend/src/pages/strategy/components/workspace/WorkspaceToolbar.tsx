@@ -1,7 +1,7 @@
 import { Select, Space, Button, Tooltip, Tag } from 'antd';
 import { ThunderboltOutlined, CodeOutlined, RiseOutlined, FallOutlined, BankOutlined, AimOutlined, KeyOutlined, EyeOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
-import { BALANCE_KEY, EQUITY_KEY, FREE_MARGIN_KEY, MARGIN_LEVEL_KEY, POSITIONS_KEY, POSITION_LEVERAGE_KEY, PROFIT_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+import { TRADING_BALANCE_KEY, TRADING_EQUITY_KEY, TRADING_FREE_MARGIN_KEY, TRADING_MARGIN_LEVEL_KEY, TRADING_POSITIONS_KEY, TRADING_POSITION_LEVERAGE_KEY, TRADING_PROFIT_KEY } from '@/gen/ant/v1/i18n/trading_keys';
 import { NO_ACCOUNTS_KEY } from '@/gen/ant/v1/i18n/dashboard_keys';
 import { HIDE_CODE_KEY, INVESTOR_READ_ONLY_KEY, MASTER_TRADING_KEY, QUICK_TRADE_KEY, SELECT_ACCOUNT_KEY, SHOW_CODE_KEY, WATCHLIST_KEY } from '@/gen/ant/v1/i18n/strategy_workspace_keys';
 
@@ -96,19 +96,19 @@ export default function WorkspaceToolbar({
       {/* Account Summary — shown inline in spare toolbar space */}
       {hasData && (
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-          <SummaryChip label={t(BALANCE_KEY)} value={`$${fmtCompact(accountInfo!.balance)}`} />
-          <SummaryChip label={t(EQUITY_KEY)} value={`$${fmtCompact(accountInfo!.equity)}`} />
+          <SummaryChip label={t(TRADING_BALANCE_KEY)} value={`$${fmtCompact(accountInfo!.balance)}`} />
+          <SummaryChip label={t(TRADING_EQUITY_KEY)} value={`$${fmtCompact(accountInfo!.equity)}`} />
           <SummaryChip
-            label={t(PROFIT_KEY)}
+            label={t(TRADING_PROFIT_KEY)}
             value={`$${fmtCompact(Math.abs(accountInfo!.profit))}`}
             color={profitColor}
             icon={accountInfo!.profit >= 0
               ? <RiseOutlined style={{ fontSize: 11 }} />
               : <FallOutlined style={{ fontSize: 11 }} />}
           />
-          <SummaryChip label={t(FREE_MARGIN_KEY)} value={`$${fmtCompact(accountInfo!.freeMargin)}`} />
+          <SummaryChip label={t(TRADING_FREE_MARGIN_KEY)} value={`$${fmtCompact(accountInfo!.freeMargin)}`} />
           {accountInfo!.marginLevel > 0 && (
-            <SummaryChip label={t(MARGIN_LEVEL_KEY)} value={`${accountInfo!.marginLevel.toFixed(0)}%`} />
+            <SummaryChip label={t(TRADING_MARGIN_LEVEL_KEY)} value={`${accountInfo!.marginLevel.toFixed(0)}%`} />
           )}
         </div>
       )}
@@ -117,7 +117,7 @@ export default function WorkspaceToolbar({
       <div onClick={onTogglePositionsPanel} role="button" tabIndex={0}
         onKeyUp={e => e.key === 'Enter' && onTogglePositionsPanel?.()}
         style={{ cursor: 'pointer' }}>
-        <SummaryChip label={t(POSITIONS_KEY)} value={positionCount != null ? String(positionCount) : '0'}
+        <SummaryChip label={t(TRADING_POSITIONS_KEY)} value={positionCount != null ? String(positionCount) : '0'}
           color={positionCount != null && positionCount > 0 ? '#1677ff' : undefined} />
       </div>
 
@@ -142,7 +142,7 @@ export default function WorkspaceToolbar({
             {selectedAccount.isInvestor ? t(INVESTOR_READ_ONLY_KEY) : t(MASTER_TRADING_KEY)}
           </Tag>
           {selectedAccount.leverage && selectedAccount.leverage > 0 && (
-            <SummaryChip label={t(POSITION_LEVERAGE_KEY)} value={`1:${selectedAccount.leverage}`} />
+            <SummaryChip label={t(TRADING_POSITION_LEVERAGE_KEY)} value={`1:${selectedAccount.leverage}`} />
           )}
         </div>
       )}

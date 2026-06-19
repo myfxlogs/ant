@@ -1,5 +1,5 @@
 
-import { MESSAGES_FETCH_ORDER_HISTORY_FAILED_KEY, MESSAGES_ORDER_CLOSE_FAILED_KEY, MESSAGES_ORDER_CLOSE_SUCCESS_KEY, MESSAGES_ORDER_SEND_FAILED_KEY, MESSAGES_ORDER_SEND_SUCCESS_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+import { TRADING_MESSAGES_FETCH_ORDER_HISTORY_FAILED_KEY, TRADING_MESSAGES_ORDER_CLOSE_FAILED_KEY, TRADING_MESSAGES_ORDER_CLOSE_SUCCESS_KEY, TRADING_MESSAGES_ORDER_SEND_FAILED_KEY, TRADING_MESSAGES_ORDER_SEND_SUCCESS_KEY } from '@/gen/ant/v1/i18n/trading_keys';
 import { MESSAGES_CONNECT_FAILED_KEY } from '@/gen/ant/v1/i18n/accounts_keys';
 
 import { useCallback } from 'react'
@@ -48,10 +48,10 @@ export function useTrading() {
         );
         return null;
       }
-      showSuccess(i18n.t(MESSAGES_ORDER_SEND_SUCCESS_KEY));
+      showSuccess(i18n.t(TRADING_MESSAGES_ORDER_SEND_SUCCESS_KEY));
       return result.order;
     } catch (error) {
-      showError(getErrorMessage(error, i18n.t(MESSAGES_ORDER_SEND_FAILED_KEY)));
+      showError(getErrorMessage(error, i18n.t(TRADING_MESSAGES_ORDER_SEND_FAILED_KEY)));
       throw error;
     } finally {
       setLoading(false);
@@ -80,11 +80,11 @@ export function useTrading() {
         );
         return null;
       }
-      showSuccess(i18n.t(MESSAGES_ORDER_CLOSE_SUCCESS_KEY));
+      showSuccess(i18n.t(TRADING_MESSAGES_ORDER_CLOSE_SUCCESS_KEY));
       queryClient.invalidateQueries({ queryKey: queryKeys.positions.byAccount(params.accountId) });
       return result.order;
     } catch (error) {
-      showError(getErrorMessage(error, i18n.t(MESSAGES_ORDER_CLOSE_FAILED_KEY)));
+      showError(getErrorMessage(error, i18n.t(TRADING_MESSAGES_ORDER_CLOSE_FAILED_KEY)));
       throw error;
     } finally {
       setLoading(false);
@@ -102,7 +102,7 @@ export function useTrading() {
       const result = await tradingApi.getOrderHistory(params);
       return result;
     } catch (error) {
-      showError(getErrorMessage(error, i18n.t(MESSAGES_FETCH_ORDER_HISTORY_FAILED_KEY)));
+      showError(getErrorMessage(error, i18n.t(TRADING_MESSAGES_FETCH_ORDER_HISTORY_FAILED_KEY)));
       return { orders: [], total: 0, page: 1, pageSize: 50 };
     }
   }, []);

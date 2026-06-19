@@ -5,11 +5,11 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Button, Card, Input, List, Modal, Space, Tag, Typography, message, Statistic, Row, Col, Form, Select } from 'antd';
 import { PlusOutlined, PlayCircleOutlined, StopOutlined, RiseOutlined, FallOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
-import { BALANCE_KEY, EQUITY_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+import { TRADING_BALANCE_KEY, TRADING_EQUITY_KEY } from '@/gen/ant/v1/i18n/trading_keys';
 import { NO_ACCOUNTS_KEY } from '@/gen/ant/v1/i18n/dashboard_keys';
 import { CREATE_KEY } from '@/gen/ant/v1/i18n/strategy_library_keys';
-import { TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_market_regime_keys';
-import { ACCOUNT_NAME_KEY, CREATE_ACCOUNT_KEY, MESSAGES_CREATED_KEY, MESSAGES_CREATE_FAILED_KEY, MESSAGES_ENTER_NAME_KEY, MESSAGES_PASTE_CODE_KEY, MESSAGES_START_FAILED_KEY, MESSAGES_STOP_FAILED_KEY, MESSAGES_STRATEGY_STARTED_KEY, MESSAGES_STRATEGY_STOPPED_KEY, PAPER_KEY, RUNNING_KEY, START_KEY, START_STRATEGY_KEY, STOP_KEY, STRATEGY_CODE_KEY, SYMBOL_KEY, TIMEFRAME_KEY, WATCH_KEY } from '@/gen/ant/v1/i18n/strategy_paper_keys';
+import { TRADING_TITLE_KEY } from '@/gen/ant/v1/i18n/strategy_market_regime_keys';
+import { ACCOUNT_NAME_KEY, CREATE_ACCOUNT_KEY, MESSAGES_CREATED_KEY, MESSAGES_CREATE_FAILED_KEY, MESSAGES_ENTER_NAME_KEY, MESSAGES_PASTE_CODE_KEY, MESSAGES_START_FAILED_KEY, MESSAGES_STOP_FAILED_KEY, MESSAGES_STRATEGY_STARTED_KEY, MESSAGES_STRATEGY_STOPPED_KEY, PAPER_KEY, RUNNING_KEY, START_KEY, START_STRATEGY_KEY, TRADING_STOP_KEY, STRATEGY_CODE_KEY, TRADING_SYMBOL_KEY, TIMEFRAME_KEY, WATCH_KEY } from '@/gen/ant/v1/i18n/strategy_paper_keys';
 
 ;
 import { paperTradingClient, paperTradingStreamClient } from '@/client/connect';
@@ -174,7 +174,7 @@ export default function PaperAccountPanel() {
 
   return (
     <div style={{ padding: 16 }}>
-      <Title level={5} style={{ marginBottom: 16 }}>{t(TITLE_KEY)}</Title>
+      <Title level={5} style={{ marginBottom: 16 }}>{t(TRADING_TITLE_KEY)}</Title>
 
       {/* Create account */}
       <Card size="small" style={{ marginBottom: 16, background: '#fafafa' }}>
@@ -183,7 +183,7 @@ export default function PaperAccountPanel() {
           <Space>
             <Input size="small" placeholder={t(ACCOUNT_NAME_KEY)} value={createName}
               onChange={e => setCreateName(e.target.value)} style={{ width: 160 }} />
-            <Input size="small" placeholder={t(BALANCE_KEY)} value={createBalance}
+            <Input size="small" placeholder={t(TRADING_BALANCE_KEY)} value={createBalance}
               onChange={e => setCreateBalance(e.target.value)} style={{ width: 100 }} />
             <Button size="small" type="primary" icon={<PlusOutlined />}
               onClick={handleCreate}>{t(CREATE_KEY)}</Button>
@@ -210,11 +210,11 @@ export default function PaperAccountPanel() {
                   <Text type="secondary" style={{ fontSize: 11 }}>{a.id?.slice(0, 8)}</Text>
                 </Col>
                 <Col span={8}>
-                  <Statistic title={t(BALANCE_KEY)} value={a.currentBalance || '0'}
+                  <Statistic title={t(TRADING_BALANCE_KEY)} value={a.currentBalance || '0'}
                     valueStyle={{ fontSize: 14 }} prefix="$" />
                 </Col>
                 <Col span={8}>
-                  <Statistic title={t(EQUITY_KEY)} value={a.equity || '0'}
+                  <Statistic title={t(TRADING_EQUITY_KEY)} value={a.equity || '0'}
                     valueStyle={{ fontSize: 14, color: eq >= ib ? '#26a69a' : '#ef5350' }}
                     prefix={eq >= ib ? <RiseOutlined /> : <FallOutlined />} />
                 </Col>
@@ -228,7 +228,7 @@ export default function PaperAccountPanel() {
                     <Button size="small" icon={<StopOutlined />} danger
                       loading={isBusy}
                       onClick={() => handleStop(a.id)}>
-                      {t(STOP_KEY)}
+                      {t(TRADING_STOP_KEY)}
                     </Button>
                   </>
                 ) : (
@@ -237,7 +237,7 @@ export default function PaperAccountPanel() {
                       onClick={() => openStartModal(a.id)}>
                       {t(START_KEY)}
                     </Button>
-                    <Button size="small" icon={<StopOutlined />} disabled>{t(STOP_KEY)}</Button>
+                    <Button size="small" icon={<StopOutlined />} disabled>{t(TRADING_STOP_KEY)}</Button>
                   </>
                 )}
                 <Button size="small" icon={<ReloadOutlined />}
@@ -261,7 +261,7 @@ export default function PaperAccountPanel() {
         okText={t(START_KEY)}
       >
         <Form layout="vertical" size="small" style={{ marginTop: 16 }}>
-          <Form.Item label={t(SYMBOL_KEY)}>
+          <Form.Item label={t(TRADING_SYMBOL_KEY)}>
             <Input
               value={startSymbol}
               onChange={e => setStartSymbol(e.target.value.toUpperCase())}

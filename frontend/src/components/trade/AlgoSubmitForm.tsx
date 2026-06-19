@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, Form, Select, InputNumber, DatePicker, Button, Space, message, Descriptions } from 'antd';
 import { PlayCircleOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
-import { MARKET_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+import { TRADING_MARKET_KEY } from '@/gen/ant/v1/i18n/trading_keys';
 import { NO_ACCOUNTS_KEY } from '@/gen/ant/v1/i18n/dashboard_keys';
 
 ;
@@ -122,7 +122,7 @@ export default function AlgoSubmitForm({ onStarted }: Props) {
         </Form.Item>
         <Space wrap>
           <Form.Item name="limitPrice" label={t('trading.algo.fields.limitPrice')}>
-            <InputNumber min={0} step={0.0001} style={{ width: 120 }} placeholder={t(MARKET_KEY)} />
+            <InputNumber min={0} step={0.0001} style={{ width: 120 }} placeholder={t(TRADING_MARKET_KEY)} />
           </Form.Item>
           <Form.Item name="sliceInterval" label={t('trading.algo.fields.sliceInterval')}>
             <InputNumber min={1} max={3600} style={{ width: 100 }} placeholder="60s" addonAfter="s" />

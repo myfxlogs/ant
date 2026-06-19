@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { Button, Select, InputNumber, Radio, message, Row, Col } from 'antd';
 import { SendOutlined, RiseOutlined, FallOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
-import { BUY_KEY, OPEN_POSITIONS_TITLE_KEY, PRICE_KEY, SELL_KEY, STOP_LOSS_KEY, TAKE_PROFIT_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+import { TRADING_BUY_KEY, TRADING_OPEN_POSITIONS_TITLE_KEY, TRADING_PRICE_KEY, TRADING_SELL_KEY, TRADING_STOP_LOSS_KEY, TRADING_TAKE_PROFIT_KEY } from '@/gen/ant/v1/i18n/trading_keys';
 import { AMOUNT_LOTS_KEY, CROSS_KEY, ISOLATED_KEY, MARGIN_MODE_KEY, MT4_CROSS_ONLY_KEY, ORDER_FAILED_KEY, ORDER_PLACED_KEY, PRICE_REQUIRED_KEY, SELECT_SYMBOL_KEY, VALID_VOLUME_KEY } from '@/gen/ant/v1/i18n/strategy_quick_trade_section_keys';
 
 ;
@@ -106,7 +106,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
             background: side === 'buy' ? '#22c55e' : '#f1f5f9',
             borderColor: side === 'buy' ? '#22c55e' : '#d1d5db',
             color: side === 'buy' ? '#fff' : '#64748b',
-          }}>{t(BUY_KEY)}</Button>
+          }}>{t(TRADING_BUY_KEY)}</Button>
         <Button block type={side === 'sell' ? 'primary' : 'default'}
           onClick={() => setSide('sell')} icon={<FallOutlined />}
           style={{
@@ -114,7 +114,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
             background: side === 'sell' ? '#ef4444' : '#f1f5f9',
             borderColor: side === 'sell' ? '#ef4444' : '#d1d5db',
             color: side === 'sell' ? '#fff' : '#64748b',
-          }}>{t(SELL_KEY)}</Button>
+          }}>{t(TRADING_SELL_KEY)}</Button>
       </div>
 
       {/* Order type */}
@@ -132,7 +132,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
       {/* Price (Limit/Stop only) */}
       {isLimitOrStop && (
         <div>
-          <div style={labelSm}>{t(PRICE_KEY)}</div>
+          <div style={labelSm}>{t(TRADING_PRICE_KEY)}</div>
           <InputNumber size="small" style={{ width: '100%' }} min={0} step={0.00001}
             value={price} onChange={(v) => setPrice(v)} placeholder="0.00000" />
         </div>
@@ -155,12 +155,12 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
       {/* SL / TP */}
       <Row gutter={8}>
         <Col span={12}>
-          <div style={labelSm}>{t(STOP_LOSS_KEY)}</div>
+          <div style={labelSm}>{t(TRADING_STOP_LOSS_KEY)}</div>
           <InputNumber size="small" style={{ width: '100%' }} min={0} step={0.00001}
             value={stopLoss} onChange={(v) => setStopLoss(v)} placeholder="SL" />
         </Col>
         <Col span={12}>
-          <div style={labelSm}>{t(TAKE_PROFIT_KEY)}</div>
+          <div style={labelSm}>{t(TRADING_TAKE_PROFIT_KEY)}</div>
           <InputNumber size="small" style={{ width: '100%' }} min={0} step={0.00001}
             value={takeProfit} onChange={(v) => setTakeProfit(v)} placeholder="TP" />
         </Col>
@@ -179,7 +179,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
             ? '0 2px 8px rgba(34,197,94,0.35)'
             : '0 2px 8px rgba(239,68,68,0.35)',
         }}>
-        {side === 'buy' ? t(BUY_KEY) : t(SELL_KEY)} {symbol || '—'}
+        {side === 'buy' ? t(TRADING_BUY_KEY) : t(TRADING_SELL_KEY)} {symbol || '—'}
       </Button>
       </>)}
 
@@ -187,7 +187,7 @@ export default function QuickTradePanel({ accountId, symbol, accountMeta, allPos
       <div onClick={onToggleAllPositions} role="button" tabIndex={0}
         onKeyUp={e => e.key === 'Enter' && onToggleAllPositions?.()}
         style={{ ...cardBox, display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-        <span style={labelSm}>{t(OPEN_POSITIONS_TITLE_KEY)}</span>
+        <span style={labelSm}>{t(TRADING_OPEN_POSITIONS_TITLE_KEY)}</span>
         <span style={{ fontSize: 13, fontWeight: 700, color: '#262626' }}>
           {totalLots.toFixed(2)} lots · {allPositions.length} &gt;
         </span>

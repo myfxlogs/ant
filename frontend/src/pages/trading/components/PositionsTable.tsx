@@ -1,7 +1,7 @@
 import { Table, Button, Popconfirm, Tag } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next'
-import { CLOSE_POSITION_CONFIRM_KEY, CLOSE_POSITION_KEY, NO_POSITIONS_KEY, OPEN_TIME_KEY, PRICE_KEY, SIDE_KEY, STOP_LOSS_KEY, SYMBOL_KEY, TAKE_PROFIT_KEY, VOLUME_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+import { TRADING_CLOSE_POSITION_CONFIRM_KEY, TRADING_CLOSE_POSITION_KEY, TRADING_NO_POSITIONS_KEY, TRADING_OPEN_TIME_KEY, TRADING_PRICE_KEY, TRADING_SIDE_KEY, TRADING_STOP_LOSS_KEY, TRADING_SYMBOL_KEY, TRADING_TAKE_PROFIT_KEY, TRADING_VOLUME_KEY } from '@/gen/ant/v1/i18n/trading_keys';
 ;
 import { useMemo, useCallback } from 'react';
 import { useTradingStore } from '@/stores/tradingStore';
@@ -45,13 +45,13 @@ export default function PositionsTable() {
         render: (v: number) => String(v),
       },
       {
-        title: t(SYMBOL_KEY, 'Symbol'),
+        title: t(TRADING_SYMBOL_KEY, 'Symbol'),
         dataIndex: 'symbol',
         key: 'symbol',
         width: 100,
       },
       {
-        title: t(SIDE_KEY, 'Side'),
+        title: t(TRADING_SIDE_KEY, 'Side'),
         dataIndex: 'type',
         key: 'type',
         width: 80,
@@ -62,42 +62,42 @@ export default function PositionsTable() {
         },
       },
       {
-        title: t(VOLUME_KEY, 'Volume'),
+        title: t(TRADING_VOLUME_KEY, 'Volume'),
         dataIndex: 'volume',
         key: 'volume',
         width: 80,
         render: (v: number) => (v ?? 0).toFixed(2),
       },
       {
-        title: t(PRICE_KEY, 'Open Price'),
+        title: t(TRADING_PRICE_KEY, 'Open Price'),
         dataIndex: 'openPrice',
         key: 'openPrice',
         width: 100,
         render: (v: number) => fmt(v),
       },
       {
-        title: t(PRICE_KEY, 'Current'),
+        title: t(TRADING_PRICE_KEY, 'Current'),
         dataIndex: 'currentPrice',
         key: 'currentPrice',
         width: 100,
         render: (v: number) => fmt(v),
       },
       {
-        title: t(STOP_LOSS_KEY, 'SL'),
+        title: t(TRADING_STOP_LOSS_KEY, 'SL'),
         dataIndex: 'sl',
         key: 'sl',
         width: 80,
         render: (v: number) => (v && v !== 0 ? fmt(v) : '-'),
       },
       {
-        title: t(TAKE_PROFIT_KEY, 'TP'),
+        title: t(TRADING_TAKE_PROFIT_KEY, 'TP'),
         dataIndex: 'tp',
         key: 'tp',
         width: 80,
         render: (v: number) => (v && v !== 0 ? fmt(v) : '-'),
       },
       {
-        title: t(OPEN_TIME_KEY, 'Open Time'),
+        title: t(TRADING_OPEN_TIME_KEY, 'Open Time'),
         dataIndex: 'openTime',
         key: 'openTime',
         width: 160,
@@ -119,13 +119,13 @@ export default function PositionsTable() {
         width: 80,
         render: (_: unknown, record: Position) => (
           <Popconfirm
-            title={t(CLOSE_POSITION_CONFIRM_KEY, 'Close this position?')}
+            title={t(TRADING_CLOSE_POSITION_CONFIRM_KEY, 'Close this position?')}
             onConfirm={() => handleClose(record.ticket)}
             okText={t('common.ok')}
             cancelText={t('common.cancel')}
           >
             <Button size="small" danger icon={<CloseOutlined />}>
-              {t(CLOSE_POSITION_KEY, 'Close')}
+              {t(TRADING_CLOSE_POSITION_KEY, 'Close')}
             </Button>
           </Popconfirm>
         ),
@@ -141,7 +141,7 @@ export default function PositionsTable() {
       loading={loading}
       size="small"
       pagination={false}
-      locale={{ emptyText: t(NO_POSITIONS_KEY, 'No open positions') }}
+      locale={{ emptyText: t(TRADING_NO_POSITIONS_KEY, 'No open positions') }}
       scroll={{ x: 1040 }}
       tableLayout="fixed"
       style={{ marginTop: 16 }}

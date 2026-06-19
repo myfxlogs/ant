@@ -1,7 +1,7 @@
 import React from 'react';
 import { Typography, Space, Alert } from 'antd';
 import { useTranslation } from 'react-i18next'
-import { AUTO_TRADE_CONFIRM_DISABLE_CONFIRM_KEY, AUTO_TRADE_CONFIRM_DISABLE_INFO_DESCRIPTION_KEY, AUTO_TRADE_CONFIRM_DISABLE_INFO_TITLE_KEY, AUTO_TRADE_CONFIRM_DISABLE_QUESTION_KEY, AUTO_TRADE_CONFIRM_DISABLE_TITLE_KEY, AUTO_TRADE_CONFIRM_ENABLE_BULLET1_KEY, AUTO_TRADE_CONFIRM_ENABLE_BULLET2_KEY, AUTO_TRADE_CONFIRM_ENABLE_BULLET3_KEY, AUTO_TRADE_CONFIRM_ENABLE_CONFIRM_KEY, AUTO_TRADE_CONFIRM_ENABLE_QUESTION_KEY, AUTO_TRADE_CONFIRM_ENABLE_RISK_DESCRIPTION_KEY, AUTO_TRADE_CONFIRM_ENABLE_RISK_TITLE_KEY, AUTO_TRADE_CONFIRM_ENABLE_TITLE_KEY } from '@/gen/ant/v1/i18n/trading_keys';
+import { TRADING_AUTO_TRADE_CONFIRM_DISABLE_CONFIRM_KEY, TRADING_AUTO_TRADE_CONFIRM_DISABLE_INFO_DESCRIPTION_KEY, TRADING_AUTO_TRADE_CONFIRM_DISABLE_INFO_TITLE_KEY, TRADING_AUTO_TRADE_CONFIRM_DISABLE_QUESTION_KEY, TRADING_AUTO_TRADE_CONFIRM_DISABLE_TITLE_KEY, TRADING_AUTO_TRADE_CONFIRM_ENABLE_BULLET1_KEY, TRADING_AUTO_TRADE_CONFIRM_ENABLE_BULLET2_KEY, TRADING_AUTO_TRADE_CONFIRM_ENABLE_BULLET3_KEY, TRADING_AUTO_TRADE_CONFIRM_ENABLE_CONFIRM_KEY, TRADING_AUTO_TRADE_CONFIRM_ENABLE_QUESTION_KEY, TRADING_AUTO_TRADE_CONFIRM_ENABLE_RISK_DESCRIPTION_KEY, TRADING_AUTO_TRADE_CONFIRM_ENABLE_RISK_TITLE_KEY, TRADING_AUTO_TRADE_CONFIRM_ENABLE_TITLE_KEY } from '@/gen/ant/v1/i18n/trading_keys';
 
 ;
 import { TradeConfirmModal } from './TradeConfirmModal';
@@ -24,9 +24,9 @@ export const AutoTradeConfirmModal: React.FC<AutoTradeConfirmProps> = ({
   return (
     <TradeConfirmModal
       open={open}
-      title={enabling ? t(AUTO_TRADE_CONFIRM_ENABLE_TITLE_KEY) : t(AUTO_TRADE_CONFIRM_DISABLE_TITLE_KEY)}
+      title={enabling ? t(TRADING_AUTO_TRADE_CONFIRM_ENABLE_TITLE_KEY) : t(TRADING_AUTO_TRADE_CONFIRM_DISABLE_TITLE_KEY)}
       danger={enabling}
-      confirmText={enabling ? t(AUTO_TRADE_CONFIRM_ENABLE_CONFIRM_KEY) : t(AUTO_TRADE_CONFIRM_DISABLE_CONFIRM_KEY)}
+      confirmText={enabling ? t(TRADING_AUTO_TRADE_CONFIRM_ENABLE_CONFIRM_KEY) : t(TRADING_AUTO_TRADE_CONFIRM_DISABLE_CONFIRM_KEY)}
       loading={loading}
       onConfirm={onConfirm}
       onCancel={onCancel}
@@ -35,23 +35,23 @@ export const AutoTradeConfirmModal: React.FC<AutoTradeConfirmProps> = ({
           {enabling ? (
             <>
               <Alert type="warning" showIcon
-                message={t(AUTO_TRADE_CONFIRM_ENABLE_RISK_TITLE_KEY)}
-                description={t(AUTO_TRADE_CONFIRM_ENABLE_RISK_DESCRIPTION_KEY)} />
+                message={t(TRADING_AUTO_TRADE_CONFIRM_ENABLE_RISK_TITLE_KEY)}
+                description={t(TRADING_AUTO_TRADE_CONFIRM_ENABLE_RISK_DESCRIPTION_KEY)} />
               <div>
-                <Text>{t(AUTO_TRADE_CONFIRM_ENABLE_QUESTION_KEY)}</Text>
+                <Text>{t(TRADING_AUTO_TRADE_CONFIRM_ENABLE_QUESTION_KEY)}</Text>
                 <ul style={{ marginTop: 8, marginBottom: 0 }}>
-                  <li>{t(AUTO_TRADE_CONFIRM_ENABLE_BULLET1_KEY)}</li>
-                  <li>{t(AUTO_TRADE_CONFIRM_ENABLE_BULLET2_KEY)}</li>
-                  <li>{t(AUTO_TRADE_CONFIRM_ENABLE_BULLET3_KEY)}</li>
+                  <li>{t(TRADING_AUTO_TRADE_CONFIRM_ENABLE_BULLET1_KEY)}</li>
+                  <li>{t(TRADING_AUTO_TRADE_CONFIRM_ENABLE_BULLET2_KEY)}</li>
+                  <li>{t(TRADING_AUTO_TRADE_CONFIRM_ENABLE_BULLET3_KEY)}</li>
                 </ul>
               </div>
             </>
           ) : (
             <>
               <Alert type="info" showIcon
-                message={t(AUTO_TRADE_CONFIRM_DISABLE_INFO_TITLE_KEY)}
-                description={t(AUTO_TRADE_CONFIRM_DISABLE_INFO_DESCRIPTION_KEY)} />
-              <Text>{t(AUTO_TRADE_CONFIRM_DISABLE_QUESTION_KEY)}</Text>
+                message={t(TRADING_AUTO_TRADE_CONFIRM_DISABLE_INFO_TITLE_KEY)}
+                description={t(TRADING_AUTO_TRADE_CONFIRM_DISABLE_INFO_DESCRIPTION_KEY)} />
+              <Text>{t(TRADING_AUTO_TRADE_CONFIRM_DISABLE_QUESTION_KEY)}</Text>
             </>
           )}
         </Space>
